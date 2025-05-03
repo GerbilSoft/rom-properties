@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * XAttrReader.cpp: Extended Attribute reader (common functions)           *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -53,7 +53,7 @@ int XAttrReader::lastError(void) const
 bool XAttrReader::hasExt2Attributes(void) const
 {
 	RP_D(const XAttrReader);
-	return d->hasExt2Attributes;
+	return !!(d->hasAttributes & static_cast<uint8_t>(XAttrReaderPrivate::AttrBit::Ext2Attributes));
 }
 
 /**
@@ -73,7 +73,7 @@ int XAttrReader::ext2Attributes(void) const
 bool XAttrReader::hasXfsAttributes(void) const
 {
 	RP_D(const XAttrReader);
-	return d->hasExt2Attributes;
+	return !!(d->hasAttributes & static_cast<uint8_t>(XAttrReaderPrivate::AttrBit::XfsAttributes));
 }
 
 /**
@@ -103,7 +103,7 @@ uint32_t XAttrReader::xfsProjectId(void) const
 bool XAttrReader::hasDosAttributes(void) const
 {
 	RP_D(const XAttrReader);
-	return d->hasDosAttributes;
+	return !!(d->hasAttributes & static_cast<uint8_t>(XAttrReaderPrivate::AttrBit::DosAttributes));
 }
 
 /**
@@ -128,6 +128,26 @@ unsigned int XAttrReader::validDosAttributes(void) const
 }
 
 /**
+ * Get the compression algoirthm used for this file.
+ * @return Compression algorithm
+ */
+XAttrReader::ZAlgorithm XAttrReader::zAlgorithm(void) const
+{
+	RP_D(const XAttrReader);
+	return d->zAlgorithm;
+}
+
+/**
+ * Does this file have a compression algorithm specified?
+ * @return True if it does; false if not.
+ */
+bool XAttrReader::hasZAlgorithm(void) const
+{
+	RP_D(const XAttrReader);
+	return !!(d->hasAttributes & static_cast<uint8_t>(XAttrReaderPrivate::AttrBit::ZAlgorithm));
+}
+
+/**
  * Does this file have generic extended attributes?
  * (POSIX xattr on Linux; ADS on Windows)
  * @return True if it does; false if not.
@@ -135,7 +155,7 @@ unsigned int XAttrReader::validDosAttributes(void) const
 bool XAttrReader::hasGenericXAttrs(void) const
 {
 	RP_D(const XAttrReader);
-	return d->hasGenericXAttrs;
+	return !!(d->hasAttributes & static_cast<uint8_t>(XAttrReaderPrivate::AttrBit::GenericXAttrs));
 }
 
 /**

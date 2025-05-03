@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_XAttrView.cpp: Extended attribute viewer property page.              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -105,6 +105,34 @@ int RP_XAttrView_Private::loadDosAttrs(void)
 	}
 
 	return (likely(hasDosAttributes)) ? 0 : -ENOENT;
+}
+
+/**
+ * Load the compression algorithm, if available.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RP_XAttrView_Private::loadCompressionAlgorithm(void)
+{
+	HWND hCboZAlg = GetDlgItem(hDlgSheet, IDC_XATTRVIEW_NTFS_COMPRESSION_ALG);
+
+	if (!xattrReader->hasZAlgorithm()) {
+		// No compression algorithm...
+		// NOTE: If FILE_ATTRIBUTE_COMPRESSED is set, assume LZNT1.
+		XAttrReader::ZAlgorithm zalg = XAttrReader::ZAlgorithm::None;
+		if (xattrReader->hasDosAttributes()) {
+			if ((xattrReader->validDosAttributes() & FILE_ATTRIBUTE_COMPRESSED) &&
+			    (xattrReader->dosAttributes() & FILE_ATTRIBUTE_COMPRESSED))
+			{
+				// File is compressed. Assume LZNT1.
+				zalg = XAttrReader::ZAlgorithm::LZNT1;
+			}
+		}
+		ComboBox_SetCurSel(hCboZAlg, static_cast<int>(zalg));
+		return -ENOENT;
+	}
+
+	ComboBox_SetCurSel(hCboZAlg, static_cast<int>(xattrReader->zAlgorithm()));
+	return 0;
 }
 
 /**
@@ -215,6 +243,10 @@ int RP_XAttrView_Private::loadAttributes(void)
 	if (ret == 0) {
 		hasAnyAttrs = true;
 	}
+	ret = loadCompressionAlgorithm();
+	if (ret == 0) {
+		hasAnyAttrs = true;
+	}
 	ret = loadADS();
 	if (ret == 0) {
 		hasAnyAttrs = true;
@@ -264,6 +296,16 @@ void RP_XAttrView_Private::initDialog(void)
 
 	// Determine if Dark Mode is enabled.
 	isDarkModeEnabled = VerifyDialogDarkMode(GetParent(hDlgSheet));
+
+	// Set up strings for NTFS compression.
+	// NOTE: Not localized!
+	HWND hCboZAlg = GetDlgItem(hDlgSheet, IDC_XATTRVIEW_NTFS_COMPRESSION_ALG);
+	ComboBox_AddString(hCboZAlg, _T("None"));	// TODO: Localize this?
+	ComboBox_AddString(hCboZAlg, _T("LZNT1"));
+	ComboBox_AddString(hCboZAlg, _T("XPRESS4K"));
+	ComboBox_AddString(hCboZAlg, _T("LZX"));
+	ComboBox_AddString(hCboZAlg, _T("XPRESS8K"));
+	ComboBox_AddString(hCboZAlg, _T("XPRESS16K"));
 
 	// Initialize ADS ListView columns.
 	HWND hListViewADS = GetDlgItem(hDlgSheet, IDC_XATTRVIEW_LISTVIEW_ADS);
@@ -562,6 +604,27 @@ INT_PTR RP_XAttrView_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 	return ret;
 }
 
+/**
+ * WM_COMMAND handler for the property sheet.
+ * @param hDlg Dialog window
+ * @param wParam
+ * @param lParam
+ * @return Return value.
+ */
+INT_PTR RP_XAttrView_Private::DlgProc_WM_COMMAND(HWND hDlg, WPARAM wParam, LPARAM lParam)
+{
+	RP_UNUSED(lParam);
+
+	if (wParam == MAKEWPARAM(IDC_XATTRVIEW_NTFS_COMPRESSION_ALG, CBN_SELCHANGE)) {
+		// Don't allow the user to change the compression algorithm.
+		// TODO: Maybe make it possible to do that later?
+		loadCompressionAlgorithm();
+	}
+
+	// Nothing to do here...
+	return FALSE;
+}
+
 //
 //   FUNCTION: FilePropPageDlgProc
 //
@@ -629,6 +692,16 @@ INT_PTR CALLBACK RP_XAttrView_Private::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			}
 
 			return d->DlgProc_WM_NOTIFY(hDlg, reinterpret_cast<NMHDR*>(lParam));
+		}
+
+		case WM_COMMAND: {
+			auto *const d = reinterpret_cast<RP_XAttrView_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			if (!d) {
+				// No RP_XAttrView_Private. Can't do anything...
+				return false;
+			}
+
+			return d->DlgProc_WM_COMMAND(hDlg, wParam, lParam);
 		}
 
 		case WM_SYSCOLORCHANGE:

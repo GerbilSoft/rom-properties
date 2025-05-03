@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ common)                      *
- * Ext2AttrView.h: Ext2 file system attribute viewer widget.               *
+ * Ext2AttrView.hpp: Ext2 file system attribute viewer widget.             *
  *                                                                         *
  * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -9,6 +9,10 @@
 #pragma once
 
 #include "gtk-compat.h"
+
+#ifdef __cplusplus
+#  include "librpfile/xattr/XAttrReader.hpp"
+#endif /* __cplusplus */
 
 G_BEGIN_DECLS
 
@@ -34,3 +38,9 @@ int 		rp_ext2_attr_view_get_flags		(RpExt2AttrView *widget);
 void		rp_ext2_attr_view_clear_flags		(RpExt2AttrView *widget);
 
 G_END_DECLS
+
+#ifdef __cplusplus
+void					rp_ext2_attr_view_set_zAlgorithm	(RpExt2AttrView *widget, LibRpFile::XAttrReader::ZAlgorithm zAlgorithm);
+LibRpFile::XAttrReader::ZAlgorithm	rp_ext2_attr_view_get_zAlgorithm	(RpExt2AttrView *widget);
+void					rp_ext2_attr_view_clear_zAlgorithm	(RpExt2AttrView *widget);
+#endif /* __cplusplus */

@@ -79,6 +79,12 @@ private:
 	int loadDosAttrs(void);
 
 	/**
+	 * Load the compression algorithm, if available.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int loadCompressionAlgorithm(void);
+
+	/**
 	 * Load alternate data streams, if available.
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
@@ -107,6 +113,7 @@ public:
 private:
 	// Internal functions used by the callback functions.
 	INT_PTR DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr);
+	INT_PTR DlgProc_WM_COMMAND(HWND hDlg, WPARAM wParam, LPARAM lParam);
 
 public:
 	// Property sheet callback functions.

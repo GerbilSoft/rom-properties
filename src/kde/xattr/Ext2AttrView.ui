@@ -13,7 +13,7 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QHBoxLayout" name="hboxLsAttr" stretch="0,0,1">
-     <item>
+     <item alignment="Qt::AlignLeft">
       <widget class="QLabel" name="lblLsAttrDesc">
        <property name="text">
         <string>lsattr:</string>
@@ -23,7 +23,7 @@
        </property>
       </widget>
      </item>
-     <item>
+     <item alignment="Qt::AlignLeft">
       <widget class="QLabel" name="lblLsAttr">
        <property name="font">
         <font>
@@ -41,18 +41,18 @@
        </property>
       </widget>
      </item>
-     <item>
-      <spacer name="hspcLsAttr">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+     <item alignment="Qt::AlignRight">
+      <widget class="QLabel" name="lblCompression">
+       <property name="text">
+        <string notr="true">Compression:</string>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>10</height>
-        </size>
+       <property name="textFormat">
+        <enum>Qt::PlainText</enum>
        </property>
-      </spacer>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

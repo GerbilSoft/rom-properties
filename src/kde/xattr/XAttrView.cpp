@@ -94,13 +94,18 @@ int XAttrViewPrivate::loadExt2Attrs(void)
 	// If we do have attributes, we'll show the widgets there.
 	ui.grpExt2Attributes->hide();
 
-	if (!xattrReader->hasExt2Attributes()) {
+	// NOTE: Showing the compression algorithm in Ext2AttrView,
+	// since most file systems that support compression support
+	// Ext2-style attributes.
+	if (!xattrReader->hasExt2Attributes() &&
+	    !xattrReader->hasZAlgorithm()) {
 		// No Ext2 attributes.
 		return -ENOENT;
 	}
 
 	// We have Ext2 attributes.
 	ui.ext2AttrView->setFlags(xattrReader->ext2Attributes());
+	ui.ext2AttrView->setZAlgorithm(xattrReader->zAlgorithm());
 	ui.grpExt2Attributes->show();
 	return 0;
 }

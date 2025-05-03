@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * Ext2AttrView.hpp: Ext2 file system attribute viewer widget.             *
  *                                                                         *
- * Copyright (c) 2022-2023 by David Korth.                                 *
+ * Copyright (c) 2022-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,12 +11,17 @@
 // Qt includes
 #include <QWidget>
 
+// XAttrReader::ZAlgorithm
+#include "librpfile/xattr/XAttrReader.hpp"
+
 class Ext2AttrViewPrivate;
 class Ext2AttrView : public QWidget
 {
 Q_OBJECT
 
 Q_PROPERTY(int flags READ flags WRITE setFlags RESET clearFlags)
+// TODO: Proper enum registration.
+//Q_PROPERTY(XAttrReader::ZAlgorithm zAlgorithm READ zAlgorithm WRITE setZAlgorithm RESET clearZAlgorithm)
 
 public:
 	explicit Ext2AttrView(QWidget *parent = nullptr);
@@ -56,6 +61,23 @@ public:
 	 * Clear the current Ext2 attributes.
 	 */
 	void clearFlags(void);
+
+	/**
+	 * Get the current compression algorithm.
+	 * @return Compression algorithm
+	 */
+	LibRpFile::XAttrReader::ZAlgorithm zAlgorithm(void) const;
+
+	/**
+	 * Set the current compression algorithm.
+	 * @param zAlgorithm Compression algorithm
+	 */
+	void setZAlgorithm(LibRpFile::XAttrReader::ZAlgorithm zAlgorithm);
+
+	/**
+	 * Clear the current compression algorithm.
+	 */
+	void clearZAlgorithm(void);
 
 protected slots:
 	/**

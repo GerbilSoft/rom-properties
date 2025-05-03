@@ -13,7 +13,43 @@
 // Windows SDK
 #include "libwin32common/RpWin32_sdk.h"
 #include "libwin32common/MiniU82T.hpp"
+#include "libwin32common/rp_versionhelpers.h"
+#include <winioctl.h>
 using namespace LibWin32Common;
+
+// NOTE: wofapi.h might not be available.
+// Define the WOF stuff here.
+typedef struct _WOF_EXTERNAL_INFO {
+	ULONG Version;
+	ULONG Provider;
+} WOF_EXTERNAL_INFO, *PWOF_EXTERNAL_INFO;
+
+typedef struct _FILE_PROVIDER_EXTERNAL_INFO_V1 {
+	ULONG Version;
+	ULONG Algorithm;
+	ULONG Flags;
+} FILE_PROVIDER_EXTERNAL_INFO_V1, *PFILE_PROVIDER_EXTERNAL_INFO_V1;
+
+#ifndef FSCTL_GET_EXTERNAL_BACKING
+#  define FSCTL_GET_EXTERNAL_BACKING CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 196, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#endif
+
+#ifndef WOF_PROVIDER_FILE
+#  define WOF_PROVIDER_FILE 2
+#endif
+
+#ifndef FILE_PROVIDER_COMPRESSION_XPRESS4K
+#  define FILE_PROVIDER_COMPRESSION_XPRESS4K 0
+#endif
+#ifndef FILE_PROVIDER_COMPRESSION_LZX
+#  define FILE_PROVIDER_COMPRESSION_LZX 1
+#endif
+#ifndef FILE_PROVIDER_COMPRESSION_XPRESS8K
+#  define FILE_PROVIDER_COMPRESSION_XPRESS8K 2
+#endif
+#ifndef FILE_PROVIDER_COMPRESSION_XPRESS16K
+#  define FILE_PROVIDER_COMPRESSION_XPRESS16K 3
+#endif
 
 // C++ STL classes
 using std::string;
@@ -53,15 +89,13 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 #endif /* _UNICODE */
 	: filename(filename)
 	, lastError(0)
-	, hasExt2Attributes(false)
-	, hasXfsAttributes(false)
-	, hasDosAttributes(false)
-	, hasGenericXAttrs(false)
+	, hasAttributes(0)
 	, ext2Attributes(0)
 	, xfsXFlags(0)
 	, xfsProjectId(0)
 	, dosAttributes(0)
 	, validDosAttributes(0)
+	, zAlgorithm(XAttrReader::ZAlgorithm::None)
 {
 	// NOTE: While there is a GetFileInformationByHandle() function,
 	// there's no easy way to get alternate data streams using a
@@ -70,7 +104,13 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	// Load the attributes.
 	loadExt2Attrs();
 	loadXfsAttrs();
+
+	// NOTE: Load the compression algorithm first.
+	// GetFileAttributes() does *not* set "Compressed" if a
+	// WIM compression method is set.
+	loadZAlgorithm();
 	loadDosAttrs();
+
 	loadGenericXattrs();
 }
 
@@ -83,7 +123,7 @@ int XAttrReaderPrivate::loadExt2Attrs(void)
 {
 	// FIXME: WSL support?
 	ext2Attributes = 0;
-	hasExt2Attributes = false;
+	hasAttributes &= ~static_cast<uint8_t>(AttrBit::Ext2Attributes);
 	return -ENOTSUP;
 }
 
@@ -97,7 +137,7 @@ int XAttrReaderPrivate::loadXfsAttrs(void)
 	// FIXME: WSL support?
 	xfsXFlags = 0;
 	xfsProjectId = 0;
-	hasXfsAttributes = false;
+	hasAttributes &= ~static_cast<uint8_t>(AttrBit::XfsAttributes);
 	return -ENOTSUP;
 }
 
@@ -109,12 +149,15 @@ int XAttrReaderPrivate::loadXfsAttrs(void)
 int XAttrReaderPrivate::loadDosAttrs(void)
 {
 	dosAttributes = GetFileAttributes(filename.c_str());
-	hasDosAttributes = (dosAttributes != INVALID_FILE_ATTRIBUTES);
-	if (!hasDosAttributes) {
+	if (dosAttributes == INVALID_FILE_ATTRIBUTES) {
 		// No MS-DOS attributes?
+		hasAttributes &= ~static_cast<uint8_t>(AttrBit::DosAttributes);
 		validDosAttributes = 0;
 		return -ENOTSUP;
 	}
+
+	// We have DOS attributes.
+	hasAttributes |= static_cast<uint8_t>(AttrBit::DosAttributes);
 
 	// NOTE: Assuming generic FAT attributes if unable to determine the actual file system.
 	validDosAttributes = VALID_DOS_ATTRIBUTES_FAT;
@@ -146,6 +189,14 @@ int XAttrReaderPrivate::loadDosAttrs(void)
 	if (fileSystemFlags & FILE_FILE_COMPRESSION) {
 		// Compression is supported.
 		validDosAttributes |= FILE_ATTRIBUTE_COMPRESSED;
+		if ((hasAttributes & static_cast<uint8_t>(AttrBit::ZAlgorithm)) &&
+		     zAlgorithm > XAttrReader::ZAlgorithm::None)
+		{
+			// File is definitely compressed.
+			// GetFileAttributes() will *not* set FILE_ATTRIBUTE_COMPRESSED for
+			// anything other than LZNT1, so we'll set it ourselves.
+			dosAttributes |= FILE_ATTRIBUTE_COMPRESSED;
+		}
 	}
 	if (fileSystemFlags & FILE_SUPPORTS_ENCRYPTION) {
 		// Encryption is supported.
@@ -154,6 +205,105 @@ int XAttrReaderPrivate::loadDosAttrs(void)
 
 	// Valid MS-DOS attributes obtained.
 	return 0;
+}
+
+/**
+ * Load the compression algorithm, if available.
+ * Internal fd (filename on Windows) must be set.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int XAttrReaderPrivate::loadZAlgorithm(void)
+{
+	HANDLE hFile = CreateFile(filename.c_str(),
+		GENERIC_READ, FILE_SHARE_READ, nullptr,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+	if (!hFile || hFile == INVALID_HANDLE_VALUE) {
+		// Unable to open the file...
+		hasAttributes &= ~static_cast<uint8_t>(AttrBit::ZAlgorithm);
+		zAlgorithm = XAttrReader::ZAlgorithm::None;
+		return -EIO;
+	}
+
+	// Check for a WIM compression algorithm first.
+	// (Windows 10 and later)
+	if (IsWindows10OrGreater()) {
+		struct ExternalBacking {
+			WOF_EXTERNAL_INFO ExternalInfo;
+			FILE_PROVIDER_EXTERNAL_INFO_V1 ProviderInfo;
+		};
+		ExternalBacking Buffer;
+		DWORD BytesReturned = 0;
+
+		BOOL bRet = DeviceIoControl(
+			hFile,				// hDevice
+			FSCTL_GET_EXTERNAL_BACKING,	// dwIoControlCode
+			nullptr,			// lpInBuffer
+			0,				// nInBufferSize
+			&Buffer,			// lpOutBuffer
+			sizeof(Buffer),			// nOutBufferSize
+			&BytesReturned,			// lpBytesReturned
+			nullptr);			// lpOverlapped
+		if (bRet && BytesReturned == sizeof(Buffer)) {
+			// Retrieved the Win10 compression algorithm.
+			if (Buffer.ExternalInfo.Provider == WOF_PROVIDER_FILE) {
+				// It's an individual file.
+				if (Buffer.ProviderInfo.Algorithm >= FILE_PROVIDER_COMPRESSION_XPRESS4K &&
+				Buffer.ProviderInfo.Algorithm <= FILE_PROVIDER_COMPRESSION_XPRESS16K)
+				{
+					// Supported algorithm.
+					zAlgorithm = static_cast<XAttrReader::ZAlgorithm>(
+						static_cast<int>(XAttrReader::ZAlgorithm::XPRESS4K) + Buffer.ProviderInfo.Algorithm);
+					hasAttributes |= static_cast<uint8_t>(AttrBit::ZAlgorithm);
+					CloseHandle(hFile);
+					return 0;
+				}
+			}
+		}
+	}
+
+	// Not WIM compression.
+	// Check for "classic" NTFS compression, aka LZNT1.
+	uint16_t ntfs_compress = 0;
+	DWORD BytesReturned = 0;
+
+	BOOL bRet = DeviceIoControl(
+		hFile,				// hDevice
+		FSCTL_GET_COMPRESSION,		// dwIoControlCode
+		nullptr,			// lpInBuffer
+		0,				// nInBufferSize
+		&ntfs_compress,			// lpOutBuffer
+		sizeof(ntfs_compress),		// nOutBufferSize
+		&BytesReturned,			// lpBytesReturned,
+		nullptr);			// lpOverlapped
+	CloseHandle(hFile);
+	if (bRet && BytesReturned == sizeof(ntfs_compress)) {
+		switch (ntfs_compress) {
+			case COMPRESSION_FORMAT_NONE:
+				// No compression
+				zAlgorithm = XAttrReader::ZAlgorithm::None;
+				hasAttributes |= static_cast<uint8_t>(AttrBit::ZAlgorithm);
+				break;
+
+			case COMPRESSION_FORMAT_LZNT1:
+				// LZNT1 compression
+				zAlgorithm = XAttrReader::ZAlgorithm::LZNT1;
+				hasAttributes |= static_cast<uint8_t>(AttrBit::ZAlgorithm);
+				break;
+
+			default:
+				// Unsupported?
+				zAlgorithm = XAttrReader::ZAlgorithm::None;
+				hasAttributes &= ~static_cast<uint8_t>(AttrBit::ZAlgorithm);
+				// TODO: Return an error code.
+				break;
+		}
+		return 0;
+	}
+
+	// Not supported.
+	hasAttributes &= ~static_cast<uint8_t>(AttrBit::ZAlgorithm);
+	zAlgorithm = XAttrReader::ZAlgorithm::None;
+	return -ENOTSUP;
 }
 
 #ifdef UNICODE
@@ -289,7 +439,7 @@ int XAttrReaderPrivate::loadGenericXattrs_FindFirstStreamW(void)
 	FindClose(hFindADS);
 
 	// Extended attributes retrieved.
-	hasGenericXAttrs = true;
+	hasAttributes |= static_cast<uint8_t>(AttrBit::GenericXAttrs);
 	return 0;
 }
 #endif /* UNICODE */
