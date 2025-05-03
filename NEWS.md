@@ -46,6 +46,11 @@
     a console. (Cyan for status messages; red for error messages.)
     * Colorization is now disabled on non-Windows systems if TERM is not set to
       a terminal that supports color.
+  * The xattr tab now supports displaying file compression algorithms in some
+    cases. On Windows, it will indicate LZNT1 ("standard" NTFS compression) on
+    all versions, and if using Windows 10 or later, it will indicate newer
+    algorithms in use, e.g. the XPRESS and LZX algorithms. On Linux, btrfs's
+    zlib, lzo, and zstd algorithms will be displayed.
 
 ## v2.5 (released 2025/04/19)
 
