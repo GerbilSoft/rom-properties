@@ -46,6 +46,8 @@
     a console. (Cyan for status messages; red for error messages.)
     * Colorization is now disabled on non-Windows systems if TERM is not set to
       a terminal that supports color.
+    * URLs are now colorized and marked up using "OSC 8", which makes them
+      clickable on terminals that support it.
   * The xattr tab now supports displaying file compression algorithms in some
     cases. On Windows, it will indicate LZNT1 ("standard" NTFS compression) on
     all versions, and if using Windows 10 or later, it will indicate newer
