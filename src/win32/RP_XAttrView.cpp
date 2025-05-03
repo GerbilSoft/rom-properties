@@ -115,7 +115,7 @@ int RP_XAttrView_Private::loadCompressionAlgorithm(void)
 {
 	HWND hCboZAlg = GetDlgItem(hDlgSheet, IDC_XATTRVIEW_NTFS_COMPRESSION_ALG);
 
-	if (!xattrReader->hasCompressionAlgorithm()) {
+	if (!xattrReader->hasZAlgorithm()) {
 		// No compression algorithm...
 		// NOTE: If FILE_ATTRIBUTE_COMPRESSED is set, assume LZNT1.
 		XAttrReader::ZAlgorithm zalg = XAttrReader::ZAlgorithm::None;
@@ -131,7 +131,7 @@ int RP_XAttrView_Private::loadCompressionAlgorithm(void)
 		return -ENOENT;
 	}
 
-	ComboBox_SetCurSel(hCboZAlg, static_cast<int>(xattrReader->compressionAlgorithm()));
+	ComboBox_SetCurSel(hCboZAlg, static_cast<int>(xattrReader->zAlgorithm()));
 	return 0;
 }
 

@@ -92,14 +92,14 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	, hasExt2Attributes(false)
 	, hasXfsAttributes(false)
 	, hasDosAttributes(false)
-	, hasCompressionAlgorithm(false)
+	, hasZAlgorithm(false)
 	, hasGenericXAttrs(false)
 	, ext2Attributes(0)
 	, xfsXFlags(0)
 	, xfsProjectId(0)
 	, dosAttributes(0)
 	, validDosAttributes(0)
-	, compressionAlgorithm(XAttrReader::ZAlgorithm::None)
+	, zAlgorithm(XAttrReader::ZAlgorithm::None)
 {
 	// NOTE: While there is a GetFileInformationByHandle() function,
 	// there's no easy way to get alternate data streams using a
@@ -112,7 +112,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	// NOTE: Load the compression algorithm first.
 	// GetFileAttributes() does *not* set "Compressed" if a
 	// WIM compression method is set.
-	loadCompressionAlgorithm();
+	loadZAlgorithm();
 	loadDosAttrs();
 
 	loadGenericXattrs();
@@ -190,7 +190,7 @@ int XAttrReaderPrivate::loadDosAttrs(void)
 	if (fileSystemFlags & FILE_FILE_COMPRESSION) {
 		// Compression is supported.
 		validDosAttributes |= FILE_ATTRIBUTE_COMPRESSED;
-		if (hasCompressionAlgorithm && compressionAlgorithm > XAttrReader::ZAlgorithm::None) {
+		if (hasZAlgorithm && zAlgorithm > XAttrReader::ZAlgorithm::None) {
 			// File is definitely compressed.
 			// GetFileAttributes() will *not* set FILE_ATTRIBUTE_COMPRESSED for
 			// anything other than LZNT1, so we'll set it ourselves.
@@ -211,15 +211,15 @@ int XAttrReaderPrivate::loadDosAttrs(void)
  * Internal fd (filename on Windows) must be set.
  * @return 0 on success; negative POSIX error code on error.
  */
-int XAttrReaderPrivate::loadCompressionAlgorithm(void)
+int XAttrReaderPrivate::loadZAlgorithm(void)
 {
 	HANDLE hFile = CreateFile(filename.c_str(),
 		GENERIC_READ, FILE_SHARE_READ, nullptr,
 		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if (!hFile || hFile == INVALID_HANDLE_VALUE) {
 		// Unable to open the file...
-		hasCompressionAlgorithm = false;
-		compressionAlgorithm = XAttrReader::ZAlgorithm::None;
+		hasZAlgorithm = false;
+		zAlgorithm = XAttrReader::ZAlgorithm::None;
 		return -EIO;
 	}
 
@@ -250,9 +250,9 @@ int XAttrReaderPrivate::loadCompressionAlgorithm(void)
 				Buffer.ProviderInfo.Algorithm <= FILE_PROVIDER_COMPRESSION_XPRESS16K)
 				{
 					// Supported algorithm.
-					compressionAlgorithm = static_cast<XAttrReader::ZAlgorithm>(
+					zAlgorithm = static_cast<XAttrReader::ZAlgorithm>(
 						static_cast<int>(XAttrReader::ZAlgorithm::XPRESS4K) + Buffer.ProviderInfo.Algorithm);
-					hasCompressionAlgorithm = true;
+					hasZAlgorithm = true;
 					CloseHandle(hFile);
 					return 0;
 				}
@@ -279,20 +279,20 @@ int XAttrReaderPrivate::loadCompressionAlgorithm(void)
 		switch (ntfs_compress) {
 			case COMPRESSION_FORMAT_NONE:
 				// No compression
-				compressionAlgorithm = XAttrReader::ZAlgorithm::None;
-				hasCompressionAlgorithm = true;
+				zAlgorithm = XAttrReader::ZAlgorithm::None;
+				hasZAlgorithm = true;
 				break;
 
 			case COMPRESSION_FORMAT_LZNT1:
 				// LZNT1 compression
-				compressionAlgorithm = XAttrReader::ZAlgorithm::LZNT1;
-				hasCompressionAlgorithm = true;
+				zAlgorithm = XAttrReader::ZAlgorithm::LZNT1;
+				hasZAlgorithm = true;
 				break;
 
 			default:
 				// Unsupported?
-				compressionAlgorithm = XAttrReader::ZAlgorithm::None;
-				hasCompressionAlgorithm = false;
+				zAlgorithm = XAttrReader::ZAlgorithm::None;
+				hasZAlgorithm = false;
 				// TODO: Return an error code.
 				break;
 		}
@@ -300,8 +300,8 @@ int XAttrReaderPrivate::loadCompressionAlgorithm(void)
 	}
 
 	// Not supported.
-	hasCompressionAlgorithm = false;
-	compressionAlgorithm = XAttrReader::ZAlgorithm::None;
+	hasZAlgorithm = false;
+	zAlgorithm = XAttrReader::ZAlgorithm::None;
 	return -ENOTSUP;
 }
 

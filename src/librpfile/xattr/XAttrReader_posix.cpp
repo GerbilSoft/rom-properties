@@ -113,14 +113,14 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	, hasExt2Attributes(false)
 	, hasXfsAttributes(false)
 	, hasDosAttributes(false)
-	, hasCompressionAlgorithm(false)
+	, hasZAlgorithm(false)
 	, hasGenericXAttrs(false)
 	, ext2Attributes(0)
 	, xfsXFlags(0)
 	, xfsProjectId(0)
 	, dosAttributes(0)
 	, validDosAttributes(0)
-	, compressionAlgorithm(XAttrReader::ZAlgorithm::None)
+	, zAlgorithm(XAttrReader::ZAlgorithm::None)
 {
 	// Make sure this is a regular file or a directory.
 	mode_t mode;
@@ -176,7 +176,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	loadExt2Attrs();
 	loadXfsAttrs();
 	loadDosAttrs();
-	loadCompressionAlgorithm();
+	loadZAlgorithm();
 	loadGenericXattrs();
 
 	lastError = 0;
@@ -325,10 +325,10 @@ int XAttrReaderPrivate::loadDosAttrs(void)
  * Internal fd (filename on Windows) must be set.
  * @return 0 on success; negative POSIX error code on error.
  */
-int XAttrReaderPrivate::loadCompressionAlgorithm(void)
+int XAttrReaderPrivate::loadZAlgorithm(void)
 {
-	hasCompressionAlgorithm = false;
-	compressionAlgorithm = XAttrReader::ZAlgorithm::None;
+	hasZAlgorithm = false;
+	zAlgorithm = XAttrReader::ZAlgorithm::None;
 
 #if defined(__linux__) && defined(HAVE_SYS_XATTR_H) && !defined(__stub_getxattr)
 	// TODO: Get the mount point, then look it up in /proc/mounts.
@@ -354,14 +354,14 @@ int XAttrReaderPrivate::loadCompressionAlgorithm(void)
 			value[sizeof(value)-1] = '\0';
 
 			if (!strcmp(value, "zlib")) {
-				compressionAlgorithm = XAttrReader::ZAlgorithm::ZLIB;
-				hasCompressionAlgorithm = true;
+				zAlgorithm = XAttrReader::ZAlgorithm::ZLIB;
+				hasZAlgorithm = true;
 			} else if (!strcmp(value, "lzo")) {
-				compressionAlgorithm = XAttrReader::ZAlgorithm::LZO;
-				hasCompressionAlgorithm = true;
+				zAlgorithm = XAttrReader::ZAlgorithm::LZO;
+				hasZAlgorithm = true;
 			} else if (!strcmp(value, "zstd")) {
-				compressionAlgorithm = XAttrReader::ZAlgorithm::ZSTD;
-				hasCompressionAlgorithm = true;
+				zAlgorithm = XAttrReader::ZAlgorithm::ZSTD;
+				hasZAlgorithm = true;
 			}
 			break;
 		}

@@ -131,20 +131,20 @@ unsigned int XAttrReader::validDosAttributes(void) const
  * Get the compression algoirthm used for this file.
  * @return Compression algorithm
  */
-XAttrReader::ZAlgorithm XAttrReader::compressionAlgorithm(void) const
+XAttrReader::ZAlgorithm XAttrReader::zAlgorithm(void) const
 {
 	RP_D(const XAttrReader);
-	return d->compressionAlgorithm;
+	return d->zAlgorithm;
 }
 
 /**
  * Does this file have a compression algorithm specified?
  * @return True if it does; false if not.
  */
-bool XAttrReader::hasCompressionAlgorithm(void) const
+bool XAttrReader::hasZAlgorithm(void) const
 {
 	RP_D(const XAttrReader);
-	return d->hasCompressionAlgorithm;
+	return d->hasZAlgorithm;
 }
 
 /**

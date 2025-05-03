@@ -125,13 +125,13 @@ public:
 	 * Get the compression algoirthm used for this file.
 	 * @return Compression algorithm
 	 */
-	ZAlgorithm compressionAlgorithm(void) const;
+	ZAlgorithm zAlgorithm(void) const;
 
 	/**
 	 * Does this file have a compression algorithm specified?
 	 * @return True if it does; false if not.
 	 */
-	bool hasCompressionAlgorithm(void) const;
+	bool hasZAlgorithm(void) const;
 
 	/**
 	 * Does this file have generic extended attributes?

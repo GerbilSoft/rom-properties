@@ -98,14 +98,14 @@ int XAttrViewPrivate::loadExt2Attrs(void)
 	// since most file systems that support compression support
 	// Ext2-style attributes.
 	if (!xattrReader->hasExt2Attributes() &&
-	    !xattrReader->hasCompressionAlgorithm()) {
+	    !xattrReader->hasZAlgorithm()) {
 		// No Ext2 attributes.
 		return -ENOENT;
 	}
 
 	// We have Ext2 attributes.
 	ui.ext2AttrView->setFlags(xattrReader->ext2Attributes());
-	ui.ext2AttrView->setZAlgorithm(xattrReader->compressionAlgorithm());
+	ui.ext2AttrView->setZAlgorithm(xattrReader->zAlgorithm());
 	ui.grpExt2Attributes->show();
 	return 0;
 }
