@@ -16,6 +16,9 @@
 // Ext2AttrData
 #include "librpfile/xattr/Ext2AttrData.h"
 
+// librpfile
+using LibRpFile::XAttrReader;
+
 // C++ STL classes
 using std::array;
 using std::string;
@@ -28,6 +31,7 @@ class Ext2AttrViewPrivate
 public:
 	Ext2AttrViewPrivate()
 		: flags(0)
+		, zAlgorithm(XAttrReader::ZAlgorithm::None)
 	{}
 
 private:
@@ -36,6 +40,7 @@ private:
 public:
 	Ui::Ext2AttrView ui;
 	int flags;
+	XAttrReader::ZAlgorithm zAlgorithm;
 
 	// See Ext2AttrData.h
 	array<QCheckBox*, EXT2_ATTR_CHECKBOX_MAX> checkBoxes;
@@ -59,12 +64,18 @@ public:
 	void updateFlagsCheckboxes(void);
 
 	/**
-	 * Update the flags display.
+	 * Update the compression algorithm label.
 	 */
-	inline void updateFlagsDisplay(void)
+	void updateZAlgorithmLabel(void);
+
+	/**
+	 * Update the entire display.
+	 */
+	inline void updateDisplay(void)
 	{
 		updateFlagsString();
 		updateFlagsCheckboxes();
+		updateZAlgorithmLabel();
 	}
 };
 
@@ -148,6 +159,38 @@ void Ext2AttrViewPrivate::updateFlagsCheckboxes(void)
 	}
 }
 
+/**
+ * Update the compression algorithm label.
+ */
+void Ext2AttrViewPrivate::updateZAlgorithmLabel(void)
+{
+	QString s_alg;
+	switch (zAlgorithm) {
+		default:
+		case XAttrReader::ZAlgorithm::None:
+			// No compression...
+			break;
+		case XAttrReader::ZAlgorithm::ZLIB:
+			s_alg = QLatin1String("zlib");
+			break;
+		case XAttrReader::ZAlgorithm::LZO:
+			s_alg = QLatin1String("lzo");
+			break;
+		case XAttrReader::ZAlgorithm::ZSTD:
+			s_alg = QLatin1String("zstd");
+			break;
+	}
+
+	printf("s_alg: '%s', empty: %d\n", s_alg.toUtf8().constData(), s_alg.isEmpty());
+	if (!s_alg.isEmpty()) {
+		ui.lblCompression->setText(Ext2AttrView::tr("Compression: %1").arg(s_alg));
+	} else {
+		// NOTE: Can't hide the label because that would break the layout.
+		// Clear it instead.
+		ui.lblCompression->clear();
+	}
+}
+
 /** Ext2AttrView **/
 
 Ext2AttrView::Ext2AttrView(QWidget *parent)
@@ -188,6 +231,10 @@ Ext2AttrView::Ext2AttrView(QWidget *parent)
 			row++;
 		}
 	}
+
+	// Clear the compression label by default.
+	// NOTE: Can't hide it because that would break the layout.
+	d->ui.lblCompression->clear();
 
 	// Retranslate the checkboxes.
 	d->retranslateUi_nonDesigner();
@@ -249,7 +296,7 @@ void Ext2AttrView::setFlags(int flags)
 	Q_D(Ext2AttrView);
 	if (d->flags != flags) {
 		d->flags = flags;
-		d->updateFlagsDisplay();
+		d->updateDisplay();
 	}
 }
 
@@ -261,7 +308,42 @@ void Ext2AttrView::clearFlags(void)
 	Q_D(Ext2AttrView);
 	if (d->flags != 0) {
 		d->flags = 0;
-		d->updateFlagsDisplay();
+		d->updateDisplay();
+	}
+}
+
+/**
+ * Get the current compression algorithm.
+ * @return Compression algorithm
+ */
+XAttrReader::ZAlgorithm Ext2AttrView::zAlgorithm(void) const
+{
+	Q_D(const Ext2AttrView);
+	return d->zAlgorithm;
+}
+
+/**
+ * Set the current compression algorithm.
+ * @param zAlgorithm Compression algorithm
+ */
+void Ext2AttrView::setZAlgorithm(XAttrReader::ZAlgorithm zAlgorithm)
+{
+	Q_D(Ext2AttrView);
+	if (d->zAlgorithm != zAlgorithm) {
+		d->zAlgorithm = zAlgorithm;
+		d->updateZAlgorithmLabel();
+	}
+}
+
+/**
+ * Clear the current compression algorithm.
+ */
+void Ext2AttrView::clearZAlgorithm(void)
+{
+	Q_D(Ext2AttrView);
+	if (d->zAlgorithm != XAttrReader::ZAlgorithm::None) {
+		d->zAlgorithm = XAttrReader::ZAlgorithm::None;
+		d->updateZAlgorithmLabel();
 	}
 }
 
