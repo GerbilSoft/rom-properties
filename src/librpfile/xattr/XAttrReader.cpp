@@ -73,7 +73,7 @@ int XAttrReader::ext2Attributes(void) const
 bool XAttrReader::hasXfsAttributes(void) const
 {
 	RP_D(const XAttrReader);
-	return d->hasExt2Attributes;
+	return d->hasXfsAttributes;
 }
 
 /**
