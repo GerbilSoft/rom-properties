@@ -146,6 +146,10 @@ rp_ext2_attr_view_init(RpExt2AttrView *widget)
 	// Compression
 	widget->lblCompression = gtk_label_new("Compression:");
 	gtk_widget_set_name(widget->lblCompression, "lblCompression");
+#if GTK_CHECK_VERSION(4, 0, 0)
+	gtk_widget_set_hexpand(widget->lblCompression, true);
+	GTK_LABEL_XALIGN_RIGHT(widget->lblCompression);
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	// Checkboxes
 	int col = 0, row = 0;
