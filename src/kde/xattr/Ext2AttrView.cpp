@@ -180,7 +180,6 @@ void Ext2AttrViewPrivate::updateZAlgorithmLabel(void)
 			break;
 	}
 
-	printf("s_alg: '%s', empty: %d\n", s_alg.toUtf8().constData(), s_alg.isEmpty());
 	if (!s_alg.isEmpty()) {
 		ui.lblCompression->setText(Ext2AttrView::tr("Compression: %1").arg(s_alg));
 	} else {
