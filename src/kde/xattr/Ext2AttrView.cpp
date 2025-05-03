@@ -71,11 +71,10 @@ public:
 	/**
 	 * Update the entire display.
 	 */
-	inline void updateDisplay(void)
+	inline void updateFlagsDisplay(void)
 	{
 		updateFlagsString();
 		updateFlagsCheckboxes();
-		updateZAlgorithmLabel();
 	}
 };
 
@@ -296,7 +295,7 @@ void Ext2AttrView::setFlags(int flags)
 	Q_D(Ext2AttrView);
 	if (d->flags != flags) {
 		d->flags = flags;
-		d->updateDisplay();
+		d->updateFlagsDisplay();
 	}
 }
 
@@ -308,7 +307,7 @@ void Ext2AttrView::clearFlags(void)
 	Q_D(Ext2AttrView);
 	if (d->flags != 0) {
 		d->flags = 0;
-		d->updateDisplay();
+		d->updateFlagsDisplay();
 	}
 }
 
