@@ -107,11 +107,14 @@ public:
 
 	int lastError;
 
-	bool hasExt2Attributes;
-	bool hasXfsAttributes;
-	bool hasDosAttributes;
-	bool hasZAlgorithm;
-	bool hasGenericXAttrs;
+	enum class AttrBit : uint8_t {
+		Ext2Attributes	= (1U << 0),
+		XfsAttributes	= (1U << 1),
+		DosAttributes	= (1U << 2),
+		ZAlgorithm	= (1U << 3),
+		GenericXAttrs	= (1U << 4),
+	};
+	uint8_t hasAttributes;
 
 	int ext2Attributes;
 	uint32_t xfsXFlags;

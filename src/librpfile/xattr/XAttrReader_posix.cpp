@@ -110,11 +110,7 @@ static constexpr unsigned int VALID_DOS_ATTRIBUTES_NTFS = \
 XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	: fd(-1)
 	, lastError(0)
-	, hasExt2Attributes(false)
-	, hasXfsAttributes(false)
-	, hasDosAttributes(false)
-	, hasZAlgorithm(false)
-	, hasGenericXAttrs(false)
+	, hasAttributes(0)
 	, ext2Attributes(0)
 	, xfsXFlags(0)
 	, xfsProjectId(0)
@@ -207,7 +203,7 @@ int XAttrReaderPrivate::loadExt2Attrs(void)
 	int ret;
 	if (!ioctl(fd, FS_IOC_GETFLAGS, &ext2Attributes)) {
 		// ioctl() succeeded. We have Ext2 flags.
-		hasExt2Attributes = true;
+		hasAttributes |= static_cast<uint8_t>(AttrBit::Ext2Attributes);
 		ret = 0;
 	} else {
 		// No Ext2 flags on this file.
@@ -218,7 +214,7 @@ int XAttrReaderPrivate::loadExt2Attrs(void)
 		}
 
 		ext2Attributes = 0;
-		hasExt2Attributes = false;
+		hasAttributes &= ~static_cast<uint8_t>(AttrBit::Ext2Attributes);
 	}
 	return ret;
 #else /* !__linux__ || !FS_IOC_GETFLAGS */
@@ -245,7 +241,7 @@ int XAttrReaderPrivate::loadXfsAttrs(void)
 		// ioctl() succeeded. We have XFS flags.
 		xfsXFlags = fsx.fsx_xflags;
 		xfsProjectId = fsx.fsx_projid;
-		hasXfsAttributes = true;
+		hasAttributes |= static_cast<uint8_t>(AttrBit::XfsAttributes);
 		ret = 0;
 	} else {
 		// No XFS flags on this file.
@@ -257,7 +253,7 @@ int XAttrReaderPrivate::loadXfsAttrs(void)
 
 		xfsXFlags = 0;
 		xfsProjectId = 0;
-		hasXfsAttributes = false;
+		hasAttributes &= ~static_cast<uint8_t>(AttrBit::XfsAttributes);
 	}
 	return ret;
 #else /* !__linux__ || !FS_IOC_FSGETXATTR */
@@ -280,7 +276,7 @@ int XAttrReaderPrivate::loadDosAttrs(void)
 	if (!ioctl(fd, FAT_IOCTL_GET_ATTRIBUTES, &dosAttributes)) {
 		// ioctl() succeeded. We have MS-DOS attributes.
 		validDosAttributes = VALID_DOS_ATTRIBUTES_FAT;
-		hasDosAttributes = true;
+		hasAttributes |= static_cast<uint8_t>(AttrBit::DosAttributes);
 		return 0;
 	}
 
@@ -307,7 +303,7 @@ int XAttrReaderPrivate::loadDosAttrs(void)
 		if (sz == 4) {
 			dosAttributes = (p.be32) ? be32_to_cpu(buf.u32) : le32_to_cpu(buf.u32);
 			validDosAttributes = VALID_DOS_ATTRIBUTES_NTFS;
-			hasDosAttributes = true;
+			hasAttributes |= static_cast<uint8_t>(AttrBit::DosAttributes);
 			return 0;
 		}
 	}
@@ -327,7 +323,7 @@ int XAttrReaderPrivate::loadDosAttrs(void)
  */
 int XAttrReaderPrivate::loadZAlgorithm(void)
 {
-	hasZAlgorithm = false;
+	hasAttributes &= ~static_cast<uint8_t>(AttrBit::ZAlgorithm);
 	zAlgorithm = XAttrReader::ZAlgorithm::None;
 
 #if defined(__linux__) && defined(HAVE_SYS_XATTR_H) && !defined(__stub_getxattr)
@@ -355,13 +351,13 @@ int XAttrReaderPrivate::loadZAlgorithm(void)
 
 			if (!strcmp(value, "zlib")) {
 				zAlgorithm = XAttrReader::ZAlgorithm::ZLIB;
-				hasZAlgorithm = true;
+				hasAttributes |= static_cast<uint8_t>(AttrBit::ZAlgorithm);
 			} else if (!strcmp(value, "lzo")) {
 				zAlgorithm = XAttrReader::ZAlgorithm::LZO;
-				hasZAlgorithm = true;
+				hasAttributes |= static_cast<uint8_t>(AttrBit::ZAlgorithm);
 			} else if (!strcmp(value, "zstd")) {
 				zAlgorithm = XAttrReader::ZAlgorithm::ZSTD;
-				hasZAlgorithm = true;
+				hasAttributes |= static_cast<uint8_t>(AttrBit::ZAlgorithm);
 			}
 			break;
 		}
@@ -429,7 +425,7 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 			continue;
 		} else if (listlen == 0) {
 			// No extended attributes.
-			hasGenericXAttrs = true;
+			hasAttributes |= static_cast<uint8_t>(AttrBit::GenericXAttrs);
 			return 0;
 		} else if (listlen == -1 && errno == ENOTSUP) {
 			// Filesystem does not support extended attributes.
@@ -532,7 +528,7 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 	}
 
 	// Extended attributes retrieved.
-	hasGenericXAttrs = true;
+	hasAttributes |= static_cast<uint8_t>(AttrBit::GenericXAttrs);
 	return 0;
 }
 

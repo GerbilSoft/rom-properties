@@ -89,11 +89,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 #endif /* _UNICODE */
 	: filename(filename)
 	, lastError(0)
-	, hasExt2Attributes(false)
-	, hasXfsAttributes(false)
-	, hasDosAttributes(false)
-	, hasZAlgorithm(false)
-	, hasGenericXAttrs(false)
+	, hasAttributes(0)
 	, ext2Attributes(0)
 	, xfsXFlags(0)
 	, xfsProjectId(0)
@@ -127,7 +123,7 @@ int XAttrReaderPrivate::loadExt2Attrs(void)
 {
 	// FIXME: WSL support?
 	ext2Attributes = 0;
-	hasExt2Attributes = false;
+	hasAttributes &= ~static_cast<uint8_t>(AttrBit::Ext2Attributes);
 	return -ENOTSUP;
 }
 
@@ -141,7 +137,7 @@ int XAttrReaderPrivate::loadXfsAttrs(void)
 	// FIXME: WSL support?
 	xfsXFlags = 0;
 	xfsProjectId = 0;
-	hasXfsAttributes = false;
+	hasAttributes &= ~static_cast<uint8_t>(AttrBit::XfsAttributes);
 	return -ENOTSUP;
 }
 
@@ -153,12 +149,15 @@ int XAttrReaderPrivate::loadXfsAttrs(void)
 int XAttrReaderPrivate::loadDosAttrs(void)
 {
 	dosAttributes = GetFileAttributes(filename.c_str());
-	hasDosAttributes = (dosAttributes != INVALID_FILE_ATTRIBUTES);
-	if (!hasDosAttributes) {
+	if (dosAttributes == INVALID_FILE_ATTRIBUTES) {
 		// No MS-DOS attributes?
+		hasAttributes &= ~static_cast<uint8_t>(AttrBit::DosAttributes);
 		validDosAttributes = 0;
 		return -ENOTSUP;
 	}
+
+	// We have DOS attributes.
+	hasAttributes |= static_cast<uint8_t>(AttrBit::DosAttributes);
 
 	// NOTE: Assuming generic FAT attributes if unable to determine the actual file system.
 	validDosAttributes = VALID_DOS_ATTRIBUTES_FAT;
@@ -190,7 +189,9 @@ int XAttrReaderPrivate::loadDosAttrs(void)
 	if (fileSystemFlags & FILE_FILE_COMPRESSION) {
 		// Compression is supported.
 		validDosAttributes |= FILE_ATTRIBUTE_COMPRESSED;
-		if (hasZAlgorithm && zAlgorithm > XAttrReader::ZAlgorithm::None) {
+		if ((hasAttributes & static_cast<uint8_t>(AttrBit::ZAlgorithm)) &&
+		     zAlgorithm > XAttrReader::ZAlgorithm::None)
+		{
 			// File is definitely compressed.
 			// GetFileAttributes() will *not* set FILE_ATTRIBUTE_COMPRESSED for
 			// anything other than LZNT1, so we'll set it ourselves.
@@ -218,7 +219,7 @@ int XAttrReaderPrivate::loadZAlgorithm(void)
 		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if (!hFile || hFile == INVALID_HANDLE_VALUE) {
 		// Unable to open the file...
-		hasZAlgorithm = false;
+		hasAttributes &= ~static_cast<uint8_t>(AttrBit::ZAlgorithm);
 		zAlgorithm = XAttrReader::ZAlgorithm::None;
 		return -EIO;
 	}
@@ -252,7 +253,7 @@ int XAttrReaderPrivate::loadZAlgorithm(void)
 					// Supported algorithm.
 					zAlgorithm = static_cast<XAttrReader::ZAlgorithm>(
 						static_cast<int>(XAttrReader::ZAlgorithm::XPRESS4K) + Buffer.ProviderInfo.Algorithm);
-					hasZAlgorithm = true;
+					hasAttributes |= static_cast<uint8_t>(AttrBit::ZAlgorithm);
 					CloseHandle(hFile);
 					return 0;
 				}
@@ -280,19 +281,19 @@ int XAttrReaderPrivate::loadZAlgorithm(void)
 			case COMPRESSION_FORMAT_NONE:
 				// No compression
 				zAlgorithm = XAttrReader::ZAlgorithm::None;
-				hasZAlgorithm = true;
+				hasAttributes |= static_cast<uint8_t>(AttrBit::ZAlgorithm);
 				break;
 
 			case COMPRESSION_FORMAT_LZNT1:
 				// LZNT1 compression
 				zAlgorithm = XAttrReader::ZAlgorithm::LZNT1;
-				hasZAlgorithm = true;
+				hasAttributes |= static_cast<uint8_t>(AttrBit::ZAlgorithm);
 				break;
 
 			default:
 				// Unsupported?
 				zAlgorithm = XAttrReader::ZAlgorithm::None;
-				hasZAlgorithm = false;
+				hasAttributes &= ~static_cast<uint8_t>(AttrBit::ZAlgorithm);
 				// TODO: Return an error code.
 				break;
 		}
@@ -300,7 +301,7 @@ int XAttrReaderPrivate::loadZAlgorithm(void)
 	}
 
 	// Not supported.
-	hasZAlgorithm = false;
+	hasAttributes &= ~static_cast<uint8_t>(AttrBit::ZAlgorithm);
 	zAlgorithm = XAttrReader::ZAlgorithm::None;
 	return -ENOTSUP;
 }
@@ -438,7 +439,7 @@ int XAttrReaderPrivate::loadGenericXattrs_FindFirstStreamW(void)
 	FindClose(hFindADS);
 
 	// Extended attributes retrieved.
-	hasGenericXAttrs = true;
+	hasAttributes |= static_cast<uint8_t>(AttrBit::GenericXAttrs);
 	return 0;
 }
 #endif /* UNICODE */

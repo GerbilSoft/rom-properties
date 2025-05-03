@@ -53,7 +53,7 @@ int XAttrReader::lastError(void) const
 bool XAttrReader::hasExt2Attributes(void) const
 {
 	RP_D(const XAttrReader);
-	return d->hasExt2Attributes;
+	return !!(d->hasAttributes & static_cast<uint8_t>(XAttrReaderPrivate::AttrBit::Ext2Attributes));
 }
 
 /**
@@ -73,7 +73,7 @@ int XAttrReader::ext2Attributes(void) const
 bool XAttrReader::hasXfsAttributes(void) const
 {
 	RP_D(const XAttrReader);
-	return d->hasXfsAttributes;
+	return !!(d->hasAttributes & static_cast<uint8_t>(XAttrReaderPrivate::AttrBit::XfsAttributes));
 }
 
 /**
@@ -103,7 +103,7 @@ uint32_t XAttrReader::xfsProjectId(void) const
 bool XAttrReader::hasDosAttributes(void) const
 {
 	RP_D(const XAttrReader);
-	return d->hasDosAttributes;
+	return !!(d->hasAttributes & static_cast<uint8_t>(XAttrReaderPrivate::AttrBit::DosAttributes));
 }
 
 /**
@@ -144,7 +144,7 @@ XAttrReader::ZAlgorithm XAttrReader::zAlgorithm(void) const
 bool XAttrReader::hasZAlgorithm(void) const
 {
 	RP_D(const XAttrReader);
-	return d->hasZAlgorithm;
+	return !!(d->hasAttributes & static_cast<uint8_t>(XAttrReaderPrivate::AttrBit::ZAlgorithm));
 }
 
 /**
@@ -155,7 +155,7 @@ bool XAttrReader::hasZAlgorithm(void) const
 bool XAttrReader::hasGenericXAttrs(void) const
 {
 	RP_D(const XAttrReader);
-	return d->hasGenericXAttrs;
+	return !!(d->hasAttributes & static_cast<uint8_t>(XAttrReaderPrivate::AttrBit::GenericXAttrs));
 }
 
 /**
