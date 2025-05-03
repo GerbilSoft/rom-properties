@@ -328,12 +328,15 @@ int WiiTicket::isRomSupported_static(const DetectInfo *info)
 		default:
 			// Unsupported ticket version.
 			return -1;
+
 		case 0:
-			if (info->szFile != sizeof(RVL_Ticket)) {
+			// NOTE: vWii titles may have a certificate chain appended to the ticket.
+			if (info->szFile < static_cast<off64_t>(sizeof(RVL_Ticket))) {
 				// Incorrect file size.
 				return -1;
 			}
 			break;
+
 		case 1:
 			if (info->szFile < static_cast<off64_t>(sizeof(RVL_Ticket_V1))) {
 				// Incorrect file size.
