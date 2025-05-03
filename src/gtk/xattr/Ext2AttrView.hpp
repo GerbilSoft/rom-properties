@@ -10,6 +10,10 @@
 
 #include "gtk-compat.h"
 
+#ifdef __cplusplus
+#  include "librpfile/xattr/XAttrReader.hpp"
+#endif /* __cplusplus */
+
 G_BEGIN_DECLS
 
 #define RP_TYPE_EXT2_ATTR_VIEW (rp_ext2_attr_view_get_type())
@@ -34,3 +38,9 @@ int 		rp_ext2_attr_view_get_flags		(RpExt2AttrView *widget);
 void		rp_ext2_attr_view_clear_flags		(RpExt2AttrView *widget);
 
 G_END_DECLS
+
+#ifdef __cplusplus
+void					rp_ext2_attr_view_set_zAlgorithm	(RpExt2AttrView *widget, LibRpFile::XAttrReader::ZAlgorithm zAlgorithm);
+LibRpFile::XAttrReader::ZAlgorithm	rp_ext2_attr_view_get_zAlgorithm	(RpExt2AttrView *widget);
+void					rp_ext2_attr_view_clear_zAlgorithm	(RpExt2AttrView *widget);
+#endif /* __cplusplus */

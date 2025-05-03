@@ -308,7 +308,11 @@ rp_xattr_view_load_ext2_attrs(RpXAttrView *widget)
 	// If we do have attributes, we'll show the widgets there.
 	gtk_widget_set_visible(widget->fraExt2Attributes, false);
 
-	if (!widget->xattrReader->hasExt2Attributes()) {
+	// NOTE: Showing the compression algorithm in Ext2AttrView,
+	// since most file systems that support compression support
+	// Ext2-style attributes.
+	if (!widget->xattrReader->hasExt2Attributes() &&
+	    !widget->xattrReader->hasZAlgorithm()) {
 		// No Ext2 attributes.
 		return -ENOENT;
 	}
@@ -316,6 +320,8 @@ rp_xattr_view_load_ext2_attrs(RpXAttrView *widget)
 	// We have Ext2 attributes.
 	rp_ext2_attr_view_set_flags(RP_EXT2_ATTR_VIEW(widget->ext2AttrView),
 		widget->xattrReader->ext2Attributes());
+	rp_ext2_attr_view_set_zAlgorithm(RP_EXT2_ATTR_VIEW(widget->ext2AttrView),
+		widget->xattrReader->zAlgorithm());
 	gtk_widget_set_visible(widget->fraExt2Attributes, true);
 	return 0;
 }
