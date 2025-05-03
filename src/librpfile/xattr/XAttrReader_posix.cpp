@@ -338,7 +338,6 @@ int XAttrReaderPrivate::loadCompressionAlgorithm(void)
 		return -EIO;
 	}
 	const uint32_t f_type = static_cast<uint32_t>(sfbuf.f_type);
-	printf("f_type: 0x%08X\n", f_type);
 
 	switch (f_type) {
 		default:
@@ -355,15 +354,12 @@ int XAttrReaderPrivate::loadCompressionAlgorithm(void)
 			value[sizeof(value)-1] = '\0';
 
 			if (!strcmp(value, "zlib")) {
-				printf("is zlib\n");
 				compressionAlgorithm = XAttrReader::ZAlgorithm::ZLIB;
 				hasCompressionAlgorithm = true;
 			} else if (!strcmp(value, "lzo")) {
-				printf("is lzo\n");
 				compressionAlgorithm = XAttrReader::ZAlgorithm::LZO;
 				hasCompressionAlgorithm = true;
 			} else if (!strcmp(value, "zstd")) {
-				printf("is zstd\n");
 				compressionAlgorithm = XAttrReader::ZAlgorithm::ZSTD;
 				hasCompressionAlgorithm = true;
 			}
