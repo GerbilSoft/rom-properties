@@ -83,6 +83,9 @@ struct _RpDragImageClass {
 struct _RpDragImageCxx {
 	_RpDragImageCxx()
 		: anim(nullptr)
+#if GTK_CHECK_VERSION(4, 0, 0)
+		, pngBytes(nullptr)
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 	{}
 
 	~_RpDragImageCxx()
