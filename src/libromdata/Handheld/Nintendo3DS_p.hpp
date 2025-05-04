@@ -80,7 +80,7 @@ public:
 		HEADER_TMD	= (1U << 3),	// ticket, tmd_header
 		HEADER_NCSD	= (1U << 4),	// ncsd_header, cinfo_header
 	};
-	uint32_t headers_loaded;	// HeadersPresent
+	uint8_t headers_loaded;	// HeadersPresent
 
 	// Media unit shift
 	// This is usually 9 (512 bytes), though NCSD images
