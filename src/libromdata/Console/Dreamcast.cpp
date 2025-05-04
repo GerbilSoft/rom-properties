@@ -307,8 +307,8 @@ void DreamcastPrivate::parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) c
 	    discHeader.device_info[12] == '/')
 	{
 		// "GD-ROM" is present.
-		if (ISDIGIT(discHeader.device_info[11]) &&
-		    ISDIGIT(discHeader.device_info[13]))
+		if (isdigit_ascii(discHeader.device_info[11]) &&
+		    isdigit_ascii(discHeader.device_info[13]))
 		{
 			// Disc digits are present.
 			disc_num = discHeader.device_info[11] & 0x0F;

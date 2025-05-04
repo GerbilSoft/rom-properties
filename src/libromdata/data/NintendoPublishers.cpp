@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoPublishers.cpp: Nintendo third-party publishers list.           *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -52,17 +52,17 @@ const char *lookup(const char *code)
 
 	// Lookup table uses Base 36. [0-9A-Z]
 	unsigned int idx;
-	if (ISDIGIT(code[0])) {
+	if (isdigit_ascii(code[0])) {
 		idx = (code[0] - '0') * 36;
-	} else if (ISUPPER(code[0])) {
+	} else if (isupper_ascii(code[0])) {
 		idx = (code[0] - 'A' + 10) * 36;
 	} else {
 		// Invalid code.
 		return nullptr;
 	}
-	if (ISDIGIT(code[1])) {
+	if (isdigit_ascii(code[1])) {
 		idx += (code[1] - '0');
-	} else if (ISUPPER(code[1])) {
+	} else if (isupper_ascii(code[1])) {
 		idx += (code[1] - 'A' + 10);
 	} else {
 		// Invalid code.

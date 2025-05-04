@@ -434,8 +434,8 @@ string GameCubePrivate::getPublisher(void) const
 	}
 
 	// Unknown publisher.
-	if (ISALNUM(discHeader.company[0]) &&
-	    ISALNUM(discHeader.company[1]))
+	if (isalnum_ascii(discHeader.company[0]) &&
+	    isalnum_ascii(discHeader.company[1]))
 	{
 		// Disc ID is alphanumeric.
 		const array<char, 3> s_company = {{
@@ -1700,8 +1700,8 @@ int GameCube::loadFieldData(void)
 					char chr[4];
 				} part_type;
 				part_type.be32_type = cpu_to_be32(entry.type);
-				if (ISALNUM(part_type.chr[0]) && ISALNUM(part_type.chr[1]) &&
-				    ISALNUM(part_type.chr[2]) && ISALNUM(part_type.chr[3]))
+				if (isalnum_ascii(part_type.chr[0]) && isalnum_ascii(part_type.chr[1]) &&
+				    isalnum_ascii(part_type.chr[2]) && isalnum_ascii(part_type.chr[3]))
 				{
 					// All four bytes are ASCII letters and/or numbers.
 					s_ptype = latin1_to_utf8(part_type.chr, sizeof(part_type.chr));

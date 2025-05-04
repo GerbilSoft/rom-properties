@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MegaDriveRegions.cpp: Sega Mega Drive region code detection.            *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -41,7 +41,7 @@ unsigned int parseRegionCodes(const char *region_codes, int size)
 	unsigned int ret = 0;
 
 	// Check for a hex code.
-	if (ISALNUM(region_codes[0]) &&
+	if (isalnum_ascii(region_codes[0]) &&
 	    (region_codes[1] == 0 || ISSPACE(region_codes[1])))
 	{
 		// Single character region code.

@@ -304,11 +304,11 @@ int N64::loadFieldData(void)
 		romHeader->entrypoint, RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 
 	// OS version
-	// TODO: ISALPHA(), or ISUPPER()?
+	// TODO: isalpha_ascii(), or isupper_ascii()?
 	const char *const os_version_title = C_("RomData", "OS Version");
 	if (romHeader->os_version[0] == 0x00 &&
 	    romHeader->os_version[1] == 0x00 &&
-	    ISALPHA(romHeader->os_version[3]))
+	    isalpha_ascii(romHeader->os_version[3]))
 	{
 		d->fields.addField_string(os_version_title,
 			fmt::format(FSTR("OS{:d}.{:d}{:c}"),

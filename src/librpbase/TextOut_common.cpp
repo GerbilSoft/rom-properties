@@ -3,7 +3,7 @@
  * TextOut.hpp: Text output for RomData. (common functions)                *
  *                                                                         *
  * Copyright (c) 2016-2018 by Egor.                                        *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -37,7 +37,7 @@ string urlPartialUnescape(const string &url)
 			// Check for two hex digits.
 			const char chr0 = url[i+1];
 			const char chr1 = url[i+2];
-			if (ISXDIGIT(chr0) && ISXDIGIT(chr1)) {
+			if (isxdigit_ascii(chr0) && isxdigit_ascii(chr1)) {
 				// Unescape it.
 				uint8_t val = (chr0 & 0x0F) << 4;
 				if (chr0 >= 'A') {

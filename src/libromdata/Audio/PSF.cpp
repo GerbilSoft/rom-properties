@@ -282,7 +282,7 @@ unsigned int PSFPrivate::lengthToMs(const char *str)
 		unsigned int digit_count = 0;
 		dp++;
 		for (; *dp != '\0'; dp++) {
-			if (ISDIGIT(*dp)) {
+			if (isdigit_ascii(*dp)) {
 				// Found a digit.
 				digit_count++;
 			} else {

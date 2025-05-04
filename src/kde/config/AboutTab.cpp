@@ -400,8 +400,9 @@ void AboutTabPrivate::initLibrariesTab(void)
 	string pngVersionCompiled = "libpng " PNG_LIBPNG_VER_STRING;
 	for (size_t i = pngVersionCompiled.size()-1; i > 6; i--) {
 		const char chr = pngVersionCompiled[i];
-		if (ISDIGIT(chr))
+		if (isdigit_ascii(chr)) {
 			break;
+		}
 		pngVersionCompiled.resize(i);
 	}
 

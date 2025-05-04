@@ -472,7 +472,7 @@ string RomHeaderTest::test_case_suffix_generator(const ::testing::TestParamInfo<
 	for (char &c : suffix) {
 		if (c == '+') {
 			c = 'x';
-		} else if (!ISALNUM(c)) {
+		} else if (!isalnum_ascii(c)) {
 			c = '_';
 		}
 	}

@@ -153,7 +153,7 @@ int SAPPrivate::durationToMsLoop(const char *str, uint32_t *pMs, bool *pLoop)
 		unsigned int digit_count = 0;
 		dp++;
 		for (; *dp != '\0'; dp++) {
-			if (ISDIGIT(*dp)) {
+			if (isdigit_ascii(*dp)) {
 				// Found a digit.
 				digit_count++;
 			} else {

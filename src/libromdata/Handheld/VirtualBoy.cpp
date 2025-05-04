@@ -44,39 +44,38 @@ public:
 	 * @param c The character
 	 * @return Whether or not character is valid
 	 */
-	static inline constexpr bool isJISX0201(unsigned char c)
+	static inline constexpr bool isJISX0201(char c)
 	{
-		return (c >= ' ' && c <= '~') || (c > 0xA0 && c < 0xE0);
+		return (c >= ' ' && c <= '~') ||
+		       ((uint8_t)c > 0xA0 && (uint8_t)c < 0xE0);
 	}
 
 	/**
 	 * Is character a valid Publisher ID character?
 	 * @param c The character
-	 * @return Wether or not character is valid
+	 * @return Whether or not character is valid
 	 */
-	static inline bool isPublisherID(char c)
+	static inline constexpr bool isPublisherID(char c)
 	{
 		// Valid characters:
 		// - Uppercase letters
 		// - Digits
-		// FIXME: This is not constexpr on MSVC 2022.
-		return (ISUPPER(c) || ISDIGIT(c));
+		return (isupper_ascii(c) || isdigit_ascii(c));
 	}
 
 	/**
 	 * Is character a valid Game ID character?
 	 * @param c The character
-	 * @return Wether or not character is valid
+	 * @return Whether or not character is valid
 	 */
-	static inline bool isGameID(char c)
+	static inline constexpr bool isGameID(char c)
 	{
 		// Valid characters:
 		// - Uppercase letters
 		// - Digits
 		// - Space (' ')
 		// - Hyphen ('-')
-		// FIXME: This is not constexpr on MSVC 2022.
-		return (ISUPPER(c) || ISDIGIT(c) || c == ' ' || c == '-');
+		return (isupper_ascii(c) || isdigit_ascii(c) || c == ' ' || c == '-');
 	}
 	
 public:
@@ -330,8 +329,8 @@ int VirtualBoy::loadFieldData(void)
 		d->fields.addField_string(s_publisher_title, publisher);
 	} else {
 		string s_publisher;
-		if (ISALNUM(romFooter->publisher[0]) &&
-		    ISALNUM(romFooter->publisher[1]))
+		if (isalnum_ascii(romFooter->publisher[0]) &&
+		    isalnum_ascii(romFooter->publisher[1]))
 		{
 			const array<char, 3> s_company = {{
 				romFooter->publisher[0],
@@ -410,8 +409,8 @@ int VirtualBoy::loadMetaData(void)
 		d->metaData.addMetaData_string(Property::Publisher, publisher);
 	} else {
 		string s_publisher;
-		if (ISALNUM(romFooter->publisher[0]) &&
-		    ISALNUM(romFooter->publisher[1]))
+		if (isalnum_ascii(romFooter->publisher[0]) &&
+		    isalnum_ascii(romFooter->publisher[1]))
 		{
 			const array<char, 3> s_company = {{
 				romFooter->publisher[0],

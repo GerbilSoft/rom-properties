@@ -373,8 +373,8 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 	if (romHeader->snes.old_publisher_code == 0x33) {
 		// Extended header should be present.
 		// New publisher code and game ID must be alphanumeric.
-		if (!ISALNUM(romHeader->snes.ext.new_publisher_code.c[0]) ||
-		    !ISALNUM(romHeader->snes.ext.new_publisher_code.c[1]))
+		if (!isalnum_ascii(romHeader->snes.ext.new_publisher_code.c[0]) ||
+		    !isalnum_ascii(romHeader->snes.ext.new_publisher_code.c[1]))
 		{
 			// New publisher code is invalid.
 			// NOTE: Allowing '00' for certain prototypes or homebrew.
@@ -390,7 +390,7 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 		} else {
 			for (size_t i = 0; i < ARRAY_SIZE(romHeader->snes.ext.id4.c); i++) {
 				// ID4 should be in the format "SMWJ" or "MW  ".
-				if (ISALNUM(romHeader->snes.ext.id4.c[i])) {
+				if (isalnum_ascii(romHeader->snes.ext.id4.c[i])) {
 					// Alphanumeric character.
 					continue;
 				} else if (i >= 2 && (romHeader->snes.ext.id4.c[i] == ' ' || romHeader->snes.ext.id4.c[i] == '\0')) {
@@ -501,8 +501,8 @@ bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHi
 	// FIXME: Some BS-X ROMs have an invalid publisher code...
 #if 0
 	// New publisher code must be alphanumeric.
-	if (!ISALNUM(romHeader->bsx.ext.new_publisher_code.c[0]) ||
-	    !ISALNUM(romHeader->bsx.ext.new_publisher_code.c[1]))
+	if (!isalnum_ascii(romHeader->bsx.ext.new_publisher_code.c[0]) ||
+	    !isalnum_ascii(romHeader->bsx.ext.new_publisher_code.c[1]))
 	{
 		// New publisher code is invalid.
 		return false;
@@ -620,8 +620,8 @@ string SNESPrivate::getPublisher(void) const
 		if (publisher) {
 			s_publisher = publisher;
 		} else {
-			if (ISALNUM(romHeader.snes.ext.new_publisher_code.c[0]) &&
-			    ISALNUM(romHeader.snes.ext.new_publisher_code.c[1]))
+			if (isalnum_ascii(romHeader.snes.ext.new_publisher_code.c[0]) &&
+			    isalnum_ascii(romHeader.snes.ext.new_publisher_code.c[1]))
 			{
 				const array<char, 3> s_pub_code = {{
 					romHeader.snes.ext.new_publisher_code.c[0],

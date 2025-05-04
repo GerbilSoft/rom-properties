@@ -323,8 +323,8 @@ void SegaSaturnPrivate::parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) 
 	             discHeader.device_info[4] == '/')
 	{
 		// "CD-ROM" is present.
-		if (ISDIGIT(discHeader.device_info[3]) &&
-		    ISDIGIT(discHeader.device_info[5]))
+		if (isdigit_ascii(discHeader.device_info[3]) &&
+		    isdigit_ascii(discHeader.device_info[5]))
 		{
 			// Disc digits are present.
 			disc_num = discHeader.device_info[3] & 0x0F;

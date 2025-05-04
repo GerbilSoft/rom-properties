@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * SystemRegion.cpp: Get the system country code.                          *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -146,12 +146,12 @@ static int getSystemRegion_LC_MESSAGES(const char *locale)
 	int ret = -1;
 
 	// Language code: Read up to the first non-alphabetic character.
-	if (ISALPHA(locale[0]) && ISALPHA(locale[1])) {
-		if (!ISALPHA(locale[2])) {
+	if (isalpha_ascii(locale[0]) && isalpha_ascii(locale[1])) {
+		if (!isalpha_ascii(locale[2])) {
 			// 2-character language code.
 			lc = ((TOLOWER(locale[0]) << 8) |
 			       TOLOWER(locale[1]));
-		} else if (ISALPHA(locale[2]) && !ISALPHA(locale[3])) {
+		} else if (isalpha_ascii(locale[2]) && !isalpha_ascii(locale[3])) {
 			// 3-character language code.
 			lc = ((TOLOWER(locale[0]) << 16) |
 			      (TOLOWER(locale[1]) << 8) |
@@ -177,19 +177,19 @@ static int getSystemRegion_LC_MESSAGES(const char *locale)
 	}
 
 	// Found an underscore.
-	if (ISALPHA(underscore[1]) && ISALPHA(underscore[2])) {
-		if (!ISALPHA(underscore[3])) {
+	if (isalpha_ascii(underscore[1]) && isalpha_ascii(underscore[2])) {
+		if (!isalpha_ascii(underscore[3])) {
 			// 2-character country code.
 			cc = ((TOUPPER(underscore[1]) << 8) |
 			       TOUPPER(underscore[2]));
 			ret = 0;
-		} else if (ISALPHA(underscore[3]) && !ISALPHA(underscore[4])) {
+		} else if (isalpha_ascii(underscore[3]) && !isalpha_ascii(underscore[4])) {
 			// 3-character country code.
 			cc = ((TOUPPER(underscore[1]) << 16) |
 			      (TOUPPER(underscore[2]) << 8) |
 			       TOUPPER(underscore[3]));
 			ret = 0;
-		} else if (ISALPHA(underscore[4]) && !ISALPHA(underscore[5])) {
+		} else if (isalpha_ascii(underscore[4]) && !isalpha_ascii(underscore[5])) {
 			// 4-character country code.
 			cc = ((TOUPPER(underscore[1]) << 24) |
 			      (TOUPPER(underscore[2]) << 16) |

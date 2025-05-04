@@ -443,10 +443,10 @@ int WiiSave::loadFieldData(void)
 	// NOTE: Uses the ID from the Bk header.
 	// TODO: Check if it matches the savegame header?
 	if (isBkValid) {
-		if (ISALNUM(bkHeader->id4[0]) &&
-		    ISALNUM(bkHeader->id4[1]) &&
-		    ISALNUM(bkHeader->id4[2]) &&
-		    ISALNUM(bkHeader->id4[3]))
+		if (isalnum_ascii(bkHeader->id4[0]) &&
+		    isalnum_ascii(bkHeader->id4[1]) &&
+		    isalnum_ascii(bkHeader->id4[2]) &&
+		    isalnum_ascii(bkHeader->id4[3]))
 		{
 			// Print the game ID.
 			// TODO: Is the publisher code available anywhere?

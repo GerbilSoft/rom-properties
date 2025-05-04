@@ -266,7 +266,7 @@ time_t RomDataPrivate::ascii_yyyymmdd_to_unix_time(const char *ascii_date)
 	// Convert the date to an unsigned integer first.
 	unsigned int ymd = 0;
 	for (unsigned int i = 0; i < 8; i++) {
-		if (unlikely(!ISDIGIT(ascii_date[i]))) {
+		if (unlikely(!isdigit_ascii(ascii_date[i]))) {
 			// Invalid digit.
 			return -1;
 		}

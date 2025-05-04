@@ -500,7 +500,7 @@ int GdiReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
 		if (pHeader[i] == '\r' || pHeader[i] == '\n') {
 			// End of line.
 			break;
-		} else if (ISDIGIT(pHeader[i])) {
+		} else if (isdigit_ascii(pHeader[i])) {
 			// Digit.
 			trackCount *= 10;
 			trackCount += (pHeader[i] & 0xF);

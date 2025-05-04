@@ -1002,12 +1002,12 @@ int Xbox360_STFS::loadFieldData(void)
 	// FIXME: Verify behavior on big-endian.
 	// TODO: Consolidate implementations into a shared function.
 	string tid_str;
-	if (ISUPPER(stfsMetadata->title_id.a)) {
+	if (isupper_ascii(stfsMetadata->title_id.a)) {
 		tid_str += stfsMetadata->title_id.a;
 	} else {
 		tid_str += fmt::format(FSTR("\\x{:0>2X}"), static_cast<uint8_t>(stfsMetadata->title_id.a));
 	}
-	if (ISUPPER(stfsMetadata->title_id.b)) {
+	if (isupper_ascii(stfsMetadata->title_id.b)) {
 		tid_str += stfsMetadata->title_id.b;
 	} else {
 		tid_str += fmt::format(FSTR("\\x{:0>2X}"), static_cast<uint8_t>(stfsMetadata->title_id.b));

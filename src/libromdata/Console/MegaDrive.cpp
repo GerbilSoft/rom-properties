@@ -1820,7 +1820,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) c
 				// Different discs have a different number in the
 				// MCD System ID, but the serial number is identical
 				// on all MCD discs, and all MCD32X discs.
-				if (ISDIGIT(d->mcd_systemID.volume_name[10])) {
+				if (isdigit_ascii(d->mcd_systemID.volume_name[10])) {
 					// Append the disc number.
 					gameID += ".disc";
 					gameID += d->mcd_systemID.volume_name[10];

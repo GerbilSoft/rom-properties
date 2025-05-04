@@ -11,6 +11,8 @@
 
 #include "vt.hpp"
 
+#include "ctypex.h"
+
 // C++ STL classes
 using std::array;
 using std::ostream;
@@ -356,27 +358,6 @@ int win32_write_to_console(const ConsoleInfo_t *ci, const char *str, int len)
 }
 
 /**
- * Non-localized isdigit() implementation for ANSI escape sequence processing.
- * @param c Character
- * @param True if c is a digit; false if not.
- */
-static constexpr inline bool vt_isdigit(char c)
-{
-	return ((uint8_t)c >= '0' && (uint8_t)c <= '9');
-}
-
-/**
- * Non-localized isalpha() implementation for ANSI escape sequence processing.
- * @param c Character
- * @param True if c is a letter; false if not.
- */
-static constexpr inline bool vt_isalpha(char c)
-{
-	return ((uint8_t)c >= 'A' && (uint8_t)c <= 'Z') ||
-	       ((uint8_t)c >= 'a' && (uint8_t)c <= 'z');
-}
-
-/**
  * Write text with ANSI escape sequences to the Windows console. (stdout)
  * Color escapes will be handled using SetConsoleTextAttribute().
  *
@@ -463,12 +444,12 @@ int win32_console_print_ansi_color(const char *str)
 				// Save the parameter.
 				params.push_back(num);
 				num = 0;
-			} else if (vt_isdigit(c)) {
+			} else if (isdigit_ascii(c)) {
 				// Found a digit.
 				// This is part of a parameter.
 				num *= 10;
 				num += (c - '0');
-			} else if (vt_isalpha(c)) {
+			} else if (isalpha_ascii(c)) {
 				// Found a letter.
 				// Finished processing this sequence.
 

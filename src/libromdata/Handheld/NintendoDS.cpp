@@ -691,7 +691,7 @@ int NintendoDS::loadFieldData(void)
 	if (publisher) {
 		d->fields.addField_string(publisher_title, publisher);
 	} else {
-		if (ISALNUM(romHeader->company[0]) && ISALNUM(romHeader->company[1])) {
+		if (isalnum_ascii(romHeader->company[0]) && isalnum_ascii(romHeader->company[1])) {
 			const array<char, 3> s_company = {{
 				romHeader->company[0],
 				romHeader->company[1],
@@ -1021,7 +1021,7 @@ int NintendoDS::loadMetaData(void)
 	if (publisher) {
 		d->metaData.addMetaData_string(Property::Publisher, publisher);
 	} else {
-		if (ISALNUM(romHeader->company[0]) && ISALNUM(romHeader->company[1])) {
+		if (isalnum_ascii(romHeader->company[0]) && isalnum_ascii(romHeader->company[1])) {
 			const array<char, 3> s_company = {{
 				romHeader->company[0],
 				romHeader->company[1],

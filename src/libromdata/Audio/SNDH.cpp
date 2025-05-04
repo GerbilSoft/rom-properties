@@ -457,14 +457,14 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				// two bytes per subtune, two more bytes, then two NULL bytes.
 				bool handled = false;
 				if (p < p_end - 4+2) {
-					if (p[4+2] == 0 && ISUPPER(p[4+2+1])) {
+					if (p[4+2] == 0 && isupper_ascii(p[4+2+1])) {
 						p += 4+2+1;
 						handled = true;
 					}
 				}
 
 				if (!handled && p < p_end - 4+3) {
-					if (p[4+3] == 0 && ISUPPER(p[4+3+1])) {
+					if (p[4+3] == 0 && isupper_ascii(p[4+3+1])) {
 						p += 4+3+1;
 						handled = true;
 					}
@@ -473,13 +473,13 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				// Check for the 5-byte version.
 				if (!handled && (p < p_end - 4+5+1)) {
 					// Might not have a NULL terminator.
-					if (p[4+5] != 0 && ISUPPER(p[4+5+1])) {
+					if (p[4+5] != 0 && isupper_ascii(p[4+5+1])) {
 						// No NULL terminator.
 						p += 4+5;
 						handled = true;
 					} else {
 						// NULL terminator.
-						if (p[4] == '~' && p + 4+6+2 < p_end && ISUPPER(p[4+5+2])) {
+						if (p[4] == '~' && p + 4+6+2 < p_end && isupper_ascii(p[4+5+2])) {
 							p += 4+5+1;
 							handled = true;
 						}
@@ -539,9 +539,9 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 					break;
 				}
 
-				assert(ISDIGIT(p[2]));
-				assert(ISDIGIT(p[3]));
-				if (!ISDIGIT(p[2]) || !ISDIGIT(p[3])) {
+				assert(isdigit_ascii(p[2]));
+				assert(isdigit_ascii(p[3]));
+				if (!isdigit_ascii(p[2]) || !isdigit_ascii(p[3])) {
 					// Not digits.
 					p = p_end;
 					break;
@@ -572,7 +572,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				// If present, this is probably the end of the header,
 				// and the file is missing an HDNS tag.
 				// See: Beast/Boring.sndh
-				if (!ISDIGIT(p[2])) {
+				if (!isdigit_ascii(p[2])) {
 					// End of header.
 					p = p_end;
 					break;

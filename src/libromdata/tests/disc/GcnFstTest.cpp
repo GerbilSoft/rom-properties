@@ -586,7 +586,7 @@ string GcnFstTest::test_case_suffix_generator(const ::testing::TestParamInfo<Gcn
 	// Replace all non-alphanumeric characters with '_'.
 	// See gtest-param-util.h::IsValidParamName().
 	std::replace_if(suffix.begin(), suffix.end(),
-		[](char c) noexcept -> bool { return !ISALNUM(c); }, '_');
+		[](char c) noexcept -> bool { return !isalnum_ascii(c); }, '_');
 
 	return suffix;
 }

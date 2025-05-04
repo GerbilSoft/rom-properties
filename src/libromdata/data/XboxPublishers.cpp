@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * XboxPublishers.hpp: Xbox third-party publishers list.                   *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -59,13 +59,13 @@ const char *lookup(const char *code)
 
 	// Lookup table uses Base 26. [A-Z]
 	unsigned int idx;
-	if (ISUPPER(code[0])) {
+	if (isupper_ascii(code[0])) {
 		idx = (code[0] - 'A') * 26;
 	} else {
 		// Invalid code.
 		return nullptr;
 	}
-	if (ISUPPER(code[1])) {
+	if (isupper_ascii(code[1])) {
 		idx += (code[1] - 'A');
 	} else {
 		// Invalid code.

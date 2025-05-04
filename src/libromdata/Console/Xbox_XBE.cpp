@@ -365,8 +365,8 @@ string Xbox_XBE_Private::getPublisher(void) const
 	}
 
 	// Unknown publisher.
-	if (ISALNUM(xbeCertificate.title_id.a) &&
-	    ISALNUM(xbeCertificate.title_id.b))
+	if (isalnum_ascii(xbeCertificate.title_id.a) &&
+	    isalnum_ascii(xbeCertificate.title_id.b))
 	{
 		// Publisher ID is alphanumeric.
 		return fmt::format(FRUN(C_("RomData", "Unknown ({:c}{:c})")),
@@ -692,13 +692,13 @@ int Xbox_XBE::loadFieldData(void)
 		// FIXME: Verify behavior on big-endian.
 		// TODO: Consolidate implementations into a shared function.
 		string tid_str;
-		if (ISUPPER(xbeCertificate->title_id.a)) {
+		if (isupper_ascii(xbeCertificate->title_id.a)) {
 			tid_str += xbeCertificate->title_id.a;
 		} else {
 			tid_str += fmt::format(FSTR("\\x{:0>2X}"),
 				static_cast<uint8_t>(xbeCertificate->title_id.a));
 		}
-		if (ISUPPER(xbeCertificate->title_id.b)) {
+		if (isupper_ascii(xbeCertificate->title_id.b)) {
 			tid_str += xbeCertificate->title_id.b;
 		} else {
 			tid_str += fmt::format(FSTR("\\x{:0>2X}"),

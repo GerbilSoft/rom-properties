@@ -352,8 +352,8 @@ int WiiU::loadFieldData(void)
 	if (publisher) {
 		s_publisher = publisher;
 	} else {
-		if (ISALNUM(publisher_code[0]) && ISALNUM(publisher_code[1]) &&
-		    ISALNUM(publisher_code[2]) && ISALNUM(publisher_code[3]))
+		if (isalnum_ascii(publisher_code[0]) && isalnum_ascii(publisher_code[1]) &&
+		    isalnum_ascii(publisher_code[2]) && isalnum_ascii(publisher_code[3]))
 		{
 			s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), publisher_code.data());
 		} else {

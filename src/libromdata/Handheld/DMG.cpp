@@ -465,8 +465,8 @@ void DMGPrivate::getTitleAndGameID(const DMG_RomHeader *pRomHeader, string &s_ti
 
 		if (isGameID) {
 			// Second and third bytes must be uppercase and/or numeric.
-			if ((!ISUPPER(pRomHeader->title15[12]) && !ISDIGIT(pRomHeader->title15[12])) ||
-			    (!ISUPPER(pRomHeader->title15[13]) && !ISDIGIT(pRomHeader->title15[13])))
+			if ((!isupper_ascii(pRomHeader->title15[12]) && !isdigit_ascii(pRomHeader->title15[12])) ||
+			    (!isupper_ascii(pRomHeader->title15[13]) && !isdigit_ascii(pRomHeader->title15[13])))
 			{
 				// This is not a Game ID.
 				isGameID = false;
@@ -536,8 +536,8 @@ string DMGPrivate::getPublisher(void) const
 		if (publisher) {
 			s_publisher = publisher;
 		} else {
-			if (ISALNUM(romHeader.new_publisher_code[0]) &&
-			    ISALNUM(romHeader.new_publisher_code[1]))
+			if (isalnum_ascii(romHeader.new_publisher_code[0]) &&
+			    isalnum_ascii(romHeader.new_publisher_code[1]))
 			{
 				const array<char, 3> s_company = {{
 					romHeader.new_publisher_code[0],

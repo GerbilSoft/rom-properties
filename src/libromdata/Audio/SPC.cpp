@@ -913,7 +913,7 @@ int SPC::loadFieldData(void)
 			string s_track_num = fmt::to_string(track_num);
 
 			const char track_letter = data.uvalue & 0xFF;
-			if (ISALNUM(track_letter)) {
+			if (isalnum_ascii(track_letter)) {
 				// Valid track letter
 				s_track_num += track_letter;
 			}

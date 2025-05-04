@@ -1306,8 +1306,8 @@ string Xbox360_XEX_Private::getPublisher(void) const
 	}
 
 	// Unknown publisher
-	if (ISALNUM(executionID.title_id.a) &&
-	    ISALNUM(executionID.title_id.b))
+	if (isalnum_ascii(executionID.title_id.a) &&
+	    isalnum_ascii(executionID.title_id.b))
 	{
 		// Publisher ID is alphanumeric.
 		return fmt::format(FRUN(C_("RomData", "Unknown ({:c}{:c})")),
@@ -1849,17 +1849,17 @@ int Xbox360_XEX::loadFieldData(void)
 		// FIXME: Verify behavior on big-endian.
 		// TODO: Consolidate implementations into a shared function.
 		string tid_str;
-		if (ISUPPER(d->executionID.title_id.a)) {
+		if (isupper_ascii(d->executionID.title_id.a)) {
 			tid_str += (char)d->executionID.title_id.a;
 		} else {
 			tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)d->executionID.title_id.a);
 		}
-		if (ISUPPER(d->executionID.title_id.b)) {
+		if (isupper_ascii(d->executionID.title_id.b)) {
 			tid_str += (char)d->executionID.title_id.b;
 		} else {
 			tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)d->executionID.title_id.b);
 		}
-			
+
 		d->fields.addField_string(C_("Xbox360_XEX", "Title ID"),
 			// tr: Xbox 360 title ID (32-bit hex, then two letters followed by a 4-digit decimal number)
 			fmt::format(FRUN(C_("Xbox360_XEX", "{0:0>8X} ({1:s}-{2:0>4d})")),

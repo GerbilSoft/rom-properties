@@ -585,7 +585,7 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 		// NOTE: Stored as ASCII, not UTF-16!
 		const char *const ique_data =
 			&reinterpret_cast<const char*>(smdhHeader->titles[N3DS_LANG_CHINESE_SIMP].desc_long)[218];
-		if (ISDIGIT(ique_data[0])) {
+		if (isdigit_ascii(ique_data[0])) {
 			// Found it.
 			// Each field is fixed-width.
 			// Format:

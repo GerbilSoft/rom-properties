@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiUPackage.hpp: Wii U NUS Package reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -168,7 +168,7 @@ string ColecoVisionPrivate::getTitle(int *pOutYear) const
 		// Check if the next four characters are a release year.
 		int year = 0;
 		for (unsigned int i = 0; i < 4; i++, p++) {
-			if (!ISDIGIT(*p)) {
+			if (!isdigit_ascii(*p)) {
 				// Not a digit.
 				year = -1;
 				break;

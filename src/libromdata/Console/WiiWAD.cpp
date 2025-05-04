@@ -867,10 +867,10 @@ int WiiWAD::loadFieldData(void)
 	// Game ID
 	// NOTE: Only displayed if TID lo is all alphanumeric characters.
 	// TODO: Only for certain TID hi?
-	if (ISALNUM(tmdHeader->title_id.u8[4]) &&
-	    ISALNUM(tmdHeader->title_id.u8[5]) &&
-	    ISALNUM(tmdHeader->title_id.u8[6]) &&
-	    ISALNUM(tmdHeader->title_id.u8[7]))
+	if (isalnum_ascii(tmdHeader->title_id.u8[4]) &&
+	    isalnum_ascii(tmdHeader->title_id.u8[5]) &&
+	    isalnum_ascii(tmdHeader->title_id.u8[6]) &&
+	    isalnum_ascii(tmdHeader->title_id.u8[7]))
 	{
 		// Print the game ID.
 		// TODO: Is the publisher code available anywhere?
@@ -1231,7 +1231,7 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) cons
 			// that means it's a DLC title. GameTDB doesn't
 			// have artwork for DLC titles.
 			const char firstID4 = be32_to_cpu(tmdHeader->title_id.lo) >> 24;
-			if (ISLOWER(firstID4)) {
+			if (islower_ascii(firstID4)) {
 				// It's lowercase.
 				return -ENOENT;
 			}

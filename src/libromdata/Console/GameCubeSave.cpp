@@ -209,7 +209,7 @@ bool GameCubeSavePrivate::isCardDirEntry(const uint8_t *buffer, uint32_t data_si
 	// TODO: NDDEMO has a NULL in the game ID, but I don't think
 	// it has save files.
 	for (int i = 6-1; i >= 0; i--) {
-		if (!ISALNUM(direntry->id6[i])) {
+		if (!isalnum_ascii(direntry->id6[i])) {
 			// Non-alphanumeric character.
 			return false;
 		}
