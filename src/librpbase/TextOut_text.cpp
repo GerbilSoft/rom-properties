@@ -355,8 +355,11 @@ static string formatDateTime(time_t timestamp, RomFields::DateTimeFlags dtflags)
 	if (dtflags & RomFields::RFT_DATETIME_IS_UTC) {
 		tm_struct = fmt::gmtime(timestamp);
 	} else {
-		tzset(); // FIXME: Is this still needed?
-		tm_struct = fmt::localtime(timestamp);
+		tzset();
+		if (!localtime_r(&timestamp, &tm_struct)) {
+			// localtime_r() failed.
+			return {};
+		}
 	}
 
 	if (likely(SystemRegion::getLanguageCode() != 0)) {
