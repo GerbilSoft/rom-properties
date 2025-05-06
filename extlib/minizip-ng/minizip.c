@@ -461,6 +461,7 @@ int32_t minizip_erase(const char *src_path, const char *target_path, int32_t arg
     if (err != MZ_OK) {
         printf("Error %" PRId32 " opening archive for reading %s\n", err, src_path);
         mz_zip_reader_delete(&reader);
+        mz_zip_reader_delete(&writer);
         return err;
     }
 

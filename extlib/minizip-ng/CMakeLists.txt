@@ -8,7 +8,7 @@
 #cmake_minimum_required(VERSION 3.13)
 
 # Library version
-set(VERSION "4.0.9")
+set(VERSION "4.0.10")
 # API version
 set(SOVERSION "4")
 
@@ -721,6 +721,7 @@ set_target_properties(${MINIZIP_TARGET} PROPERTIES
 # rom-properties: Only export symbols if building shared libraries.
 IF(BUILD_SHARED_LIBS)
     set_target_properties(${MINIZIP_TARGET} PROPERTIES
+                          LINKER_LANGUAGE C
                           DEFINE_SYMBOL "MZ_EXPORTS")
 ENDIF(BUILD_SHARED_LIBS)
 

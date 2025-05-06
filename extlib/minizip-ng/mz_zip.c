@@ -17,6 +17,7 @@
 
 #include "mz.h"
 #include "mz_crypt.h"
+#include "mz_os.h"
 #include "mz_strm.h"
 #ifdef HAVE_BZIP2
 #  include "mz_strm_bzip.h"
@@ -1566,8 +1567,7 @@ int32_t mz_zip_set_comment(void *handle, const char *comment) {
     zip->comment = (char *)calloc(comment_size + 1, sizeof(char));
     if (!zip->comment)
         return MZ_MEM_ERROR;
-    // using memcpy() instead of strncpy() to avoid -Werror=stringop-truncation
-    memcpy(zip->comment, comment, comment_size + 1);
+    strncpy(zip->comment, comment, comment_size);
     return MZ_OK;
 }
 
@@ -1988,7 +1988,7 @@ int32_t mz_zip_entry_write_open(void *handle, const mz_zip_file *file_info, int1
     if (mz_zip_attrib_is_dir(zip->file_info.external_fa, zip->file_info.version_madeby) == MZ_OK)
         is_dir = 1;
 
-    if (!is_dir) {
+    if (!raw && !is_dir) {
         if (zip->data_descriptor)
             zip->file_info.flag |= MZ_ZIP_FLAG_DATA_DESCRIPTOR;
         if (password)
@@ -2296,8 +2296,7 @@ int32_t mz_zip_entry_is_dir(void *handle) {
 
     filename_length = (int32_t)strlen(zip->file_info.filename);
     if (filename_length > 0) {
-        if ((zip->file_info.filename[filename_length - 1] == '/') ||
-            (zip->file_info.filename[filename_length - 1] == '\\'))
+        if (mz_os_is_dir_separator(zip->file_info.filename[filename_length - 1]))
             return MZ_OK;
     }
     return MZ_EXIST_ERROR;

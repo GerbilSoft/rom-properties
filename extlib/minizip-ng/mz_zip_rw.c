@@ -39,7 +39,7 @@ typedef struct mz_zip_reader_s {
     uint16_t hash_algorithm;
     uint16_t hash_digest_size;
     mz_zip_file *file_info;
-    const char *pattern;
+    char *pattern;
     uint8_t pattern_ignore_case;
     const char *password;
     void *overwrite_userdata;
@@ -228,6 +228,11 @@ int32_t mz_zip_reader_close(void *handle) {
     if (reader->mem_stream) {
         mz_stream_close(reader->mem_stream);
         mz_stream_delete(&reader->mem_stream);
+    }
+
+    if (reader->pattern) {
+        free(reader->pattern);
+        reader->pattern = NULL;
     }
 
     return err;
@@ -654,18 +659,18 @@ int32_t mz_zip_reader_entry_save_file(void *handle, const char *path) {
     if (!reader->file_info || !path)
         return MZ_PARAM_ERROR;
 
-    /* Convert to forward slashes for unix which doesn't like backslashes */
     pathwfs = (char *)strdup(path);
     if (!pathwfs)
         return MZ_MEM_ERROR;
-    mz_path_convert_slashes(pathwfs, MZ_PATH_SLASH_UNIX);
 
     if (reader->entry_cb)
         reader->entry_cb(handle, reader->entry_userdata, reader->file_info, pathwfs);
 
     directory = (char *)strdup(pathwfs);
-    if (!directory)
-        return MZ_MEM_ERROR;
+    if (!directory) {
+        err = MZ_MEM_ERROR;
+        goto save_cleanup;
+    }
     mz_path_remove_filename(directory);
 
     /* If it is a directory entry then create a directory instead of writing file */
@@ -905,7 +910,19 @@ save_all_cleanup:
 
 void mz_zip_reader_set_pattern(void *handle, const char *pattern, uint8_t ignore_case) {
     mz_zip_reader *reader = (mz_zip_reader *)handle;
-    reader->pattern = pattern;
+    if (!reader)
+        return;
+    free(reader->pattern);
+    reader->pattern = NULL;
+    if (pattern) {
+        /* pattern can be NULL */
+        int32_t pattern_size = (int32_t)strlen(pattern);
+        reader->pattern = (char *)calloc(pattern_size + 1, sizeof(char));
+        if (!reader->pattern)
+        /* Reference: `mz_zip_set_comment`, should return MZ_MEM_ERROR */
+            return;
+        strncpy(reader->pattern, pattern, pattern_size);
+    }
     reader->pattern_ignore_case = ignore_case;
 }
 
@@ -1642,7 +1659,7 @@ int32_t mz_zip_writer_add_path(void *handle, const char *path, const char *root_
     char full_path[1024];
     char path_dir[1024];
 
-    if (strrchr(path, '*')) {
+    if (strrchr(path, '*') && mz_os_file_exists(path) != MZ_OK) {
         strncpy(path_dir, path, sizeof(path_dir) - 1);
         path_dir[sizeof(path_dir) - 1] = 0;
         mz_path_remove_filename(path_dir);

@@ -37,6 +37,10 @@
 #  include <stdlib.h> /* arc4random_buf */
 #endif
 
+#ifndef MZ_PRESERVE_NATIVE_STRUCTURE
+#  define MZ_PRESERVE_NATIVE_STRUCTURE 1
+#endif
+
 /***************************************************************************/
 
 #if defined(HAVE_ICONV)
@@ -49,21 +53,17 @@ char *mz_os_utf8_string_create(const char *string, int32_t encoding) {
     char *string_utf8 = NULL;
     char *string_utf8_ptr = NULL;
 
-    if (!string)
+    if (!string || encoding <= 0)
         return NULL;
 
-    if (encoding == MZ_ENCODING_CODEPAGE_437)
-        from_encoding = "CP437";
-    else if (encoding == MZ_ENCODING_CODEPAGE_932)
-        from_encoding = "CP932";
-    else if (encoding == MZ_ENCODING_CODEPAGE_936)
-        from_encoding = "CP936";
-    else if (encoding == MZ_ENCODING_CODEPAGE_950)
-        from_encoding = "CP950";
-    else if (encoding == MZ_ENCODING_UTF8)
+    if (encoding == MZ_ENCODING_UTF8)
         from_encoding = "UTF-8";
-    else
-        return NULL;
+    else {
+        /// up to CP2147483647
+        char string_encoding[13];
+        snprintf(string_encoding, sizeof(string_encoding), "CP%03" PRId32, encoding);
+        from_encoding = string_encoding;
+    }
 
     cd = iconv_open("UTF-8", from_encoding);
     if (cd == (iconv_t)-1)
@@ -89,7 +89,6 @@ char *mz_os_utf8_string_create(const char *string, int32_t encoding) {
 }
 #else
 char *mz_os_utf8_string_create(const char *string, int32_t encoding) {
-    MZ_UNUSED(encoding);
     return strdup(string);
 }
 #endif
@@ -288,6 +287,18 @@ int32_t mz_os_close_dir(DIR *dir) {
     if (closedir(dir) == -1)
         return MZ_INTERNAL_ERROR;
     return MZ_OK;
+}
+
+int32_t mz_os_is_dir_separator(const char c) {
+#if MZ_PRESERVE_NATIVE_STRUCTURE
+    // While not strictly adhering to 4.4.17.1,
+    // this preserves UNIX filesystem structure.
+    return c == '/';
+#else
+    // While strictly adhering to 4.4.17.1,
+    // this corrupts UNIX filesystem structure (a filename with a '\\' will become a folder + a file).
+    return c == '\\' || c == '/';
+#endif
 }
 
 int32_t mz_os_is_dir(const char *path) {
