@@ -430,6 +430,15 @@ size_t Xbox360_XEX_Private::getOptHdrData(uint32_t header_id, rp::uvector<uint8_
 		size = be32_to_cpu(dwSize);
 	}
 
+	// Sanity check: Header must be 16 MB or less.
+	static constexpr size_t MAX_HEADER_SIZE = 16U*1024*1024;
+	assert(size <= MAX_HEADER_SIZE);
+	if (size > MAX_HEADER_SIZE) {
+		// Invalid header size.
+		pVec.clear();
+		return 0;
+	}
+
 	// Read the data.
 	// NOTE: This includes the size value for 0xFF structs.
 	pVec.resize(size);
