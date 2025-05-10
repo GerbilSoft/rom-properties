@@ -83,18 +83,18 @@ public:
  */
 void Ext2AttrViewPrivate::retranslateUi_nonDesigner(void)
 {
-	// tr: format string for Ext2 attribute checkbox labels ({:c} == lsattr character)
-	const char *const s_lsattr_fmt = C_("Ext2AttrView", "{:c}: {:s}");
+	// tr: format string for Ext2 attribute checkbox labels (%1 == lsattr character)
+	const QString qs_lsattr_fmt = Ext2AttrView::tr("%1: %2");
 
-	string s_label;
 	for (size_t i = 0; i < checkBoxes.size(); i++) {
 		const Ext2AttrCheckboxInfo_t *const p = ext2AttrCheckboxInfo(static_cast<Ext2AttrCheckboxID>(i));
 
 		// Prepend the lsattr character to the checkbox label.
-		s_label = fmt::format(FRUN(s_lsattr_fmt), p->lsattr_chr,
-			pgettext_expr("Ext2AttrView", p->label));
+		const QString qs_label = qs_lsattr_fmt
+			.arg(QLatin1Char(p->lsattr_chr))
+			.arg(QLatin1String(p->label));
 
-		checkBoxes[i]->setText(U82Q(s_label));
+		checkBoxes[i]->setText(qs_label);
 		checkBoxes[i]->setToolTip(qpgettext_expr("Ext2AttrView", p->tooltip));
 	}
 }
