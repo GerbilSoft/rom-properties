@@ -134,7 +134,7 @@ static inline float __swabf(float f)
 	union {
 		uint32_t u32;
 		float f;
-	} u32_f;
+	} u32_f = { 0 };
 	u32_f.f = f;
 	u32_f.u32 = __swab32(u32_f.u32);
 	return u32_f.f;
