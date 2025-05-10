@@ -160,7 +160,7 @@ static char *rp_iconv(const char *src, int len,
 	return nullptr;
 }
 
-/** Generic code page functions. **/
+/** Generic code page functions **/
 
 /**
  * Convert a code page to an encoding name.
@@ -168,24 +168,23 @@ static char *rp_iconv(const char *src, int len,
  * @param len		[in] Length of enc_name.
  * @param cp		[in] Code page number.
  */
-static inline void codePageToEncName(char *enc_name, size_t len, unsigned int cp)
+static string codePageToEncName(unsigned int cp)
 {
 	// Check for "special" code pages.
 	switch (cp) {
 		case CP_ACP:
 			// TODO: Get the system code page.
 			// Assuming cp1252 for now.
-			snprintf(enc_name, len, "CP1252");
-			break;
+			return "CP1252";
 		case CP_LATIN1:
-			snprintf(enc_name, len, "LATIN1");
-			break;
+			return "LATIN1";
 		case CP_UTF8:
-			snprintf(enc_name, len, "UTF-8");
-			break;
-		default:
-			snprintf(enc_name, len, "CP%u", cp);
-			break;
+			return "UTF-8";
+		default: {
+			string str = "CP";
+			str += std::to_string(cp);
+			return str;
+		}
 	}
 }
 
@@ -209,8 +208,7 @@ static std::basic_string<T> T_cpN_to_unicode(const char *out_encoding, unsigned 
 	len = check_NULL_terminator(str, len);
 
 	// Get the encoding name for the primary code page.
-	char cp_name[20];
-	codePageToEncName(cp_name, sizeof(cp_name), cp);
+	const string cp_name = codePageToEncName(cp);
 
 	// If we *want* to fall back to cp1252 on error,
 	// then the first conversion should fail on errors.
@@ -255,7 +253,7 @@ static std::basic_string<T> T_cpN_to_unicode(const char *out_encoding, unsigned 
 
 	if (!out_str) {
 		// Standard string conversion
-		out_str = reinterpret_cast<T*>(rp_iconv((char*)str, len*sizeof(*str), cp_name, out_encoding, ignoreErr));
+		out_str = reinterpret_cast<T*>(rp_iconv((char*)str, len*sizeof(*str), cp_name.c_str(), out_encoding, ignoreErr));
 	}
 
 	if (!out_str /*&& (flags & TEXTCONV_FLAG_CP1252_FALLBACK)*/) {
@@ -361,12 +359,11 @@ string utf8_to_cpN(unsigned int cp, const char *str, int len)
 	len = check_NULL_terminator(str, len);
 
 	// Get the encoding name for the primary code page.
-	char cp_name[20];
-	codePageToEncName(cp_name, sizeof(cp_name), cp);
+	const string cp_name = codePageToEncName(cp);
 
 	// Attempt to convert the text from UTF-8.
 	string ret;
-	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len*sizeof(*str), "UTF-8", cp_name, true));
+	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len*sizeof(*str), "UTF-8", cp_name.c_str(), true));
 	if (mbs) {
 		ret.assign(mbs);
 		free(mbs);
@@ -391,15 +388,14 @@ string utf16_to_cpN(unsigned int cp, const char16_t *wcs, int len)
 	len = check_NULL_terminator(wcs, len);
 
 	// Get the encoding name for the primary code page.
-	char cp_name[20];
-	codePageToEncName(cp_name, sizeof(cp_name), cp);
+	const string cp_name = codePageToEncName(cp);
 
 	// Ignore errors if converting to anything other than UTF-8.
 	const bool ignoreErr = (cp != CP_UTF8);
 
 	// Attempt to convert the text from UTF-8.
 	string ret;
-	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), RP_ICONV_UTF16_ENCODING, cp_name, ignoreErr));
+	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), RP_ICONV_UTF16_ENCODING, cp_name.c_str(), ignoreErr));
 	if (mbs) {
 		ret.assign(mbs);
 		free(mbs);
