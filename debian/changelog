@@ -1,3 +1,15 @@
+rom-properties (2.5.1-1ppa2~bionic1) bionic; urgency=medium
+
+  * Build for Ubuntu 18.04 "Bionic" Beaver.
+
+    * Nautilus extensions directory is now multi-arch compliant.
+    * Tracker API version increased to 2.
+    * LTO compilation is enabled.
+
+  * PPA version bumped to ensure it updates from previous versions.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 10 May 2025 17:26:28 -0400
+
 rom-properties (2.5.1-1ppa1~xenial3) xenial; urgency=medium
 
   * Disable RomHeaderTest, again.
