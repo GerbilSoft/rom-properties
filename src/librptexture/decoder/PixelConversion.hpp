@@ -341,11 +341,15 @@ static inline constexpr uint32_t RG88_to_ARGB32(uint16_t px16)
  * @param px16 GR88 pixel
  * @return ARGB32 pixel
  */
+// FIXME: __swab16() is not constexpr on MSVC 2022.
+#ifndef _MSC_VER
 static inline constexpr uint32_t GR88_to_ARGB32(uint16_t px16)
+#else /* _MSC_VER */
+static inline uint32_t GR88_to_ARGB32(uint16_t px16)
+#endif /* !_MSC_VER */
 {
 	// GR88:     GGGGGGGG RRRRRRRR
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	// FIXME: __swab16() is not constexpr on MSVC 2022.
 	return 0xFF000000 | (static_cast<uint32_t>(__swab16(px16)) << 8);
 }
 
