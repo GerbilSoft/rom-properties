@@ -309,7 +309,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			ConsolePrintNewline(&ci_stderr);
 			fflush(stderr);
 			if (json) {
-				ConsolePrint(&ci_stderr, fmt::format(FSTR("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n"), file->lastError()));
+				ConsolePrint(&ci_stdout, fmt::format(FSTR("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n"), file->lastError()));
 				fflush(stdout);
 			}
 			return;
@@ -1031,7 +1031,6 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				// FIXME: Unicode character on Windows.
 				ConsolePrint(&ci_stderr,
 					fmt::format(FRUN(C_("rpcli", "Warning: skipping unknown switch '{:c}'")), (char)argv[i][1]), true);
-				ConsolePrintNewline(&ci_stderr);
 				fflush(stderr);
 				break;
 			}
