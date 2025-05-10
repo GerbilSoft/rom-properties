@@ -1,3 +1,14 @@
+rom-properties (2.5.1-1ppa2~noble1) noble; urgency=medium
+
+  * Build for Ubuntu 24.04 "Noble" Numbat.
+
+    * Enable GTK4 builds. (Nautilus 43)
+    * KF5 5.115.0 supports ThumbnailCreator.
+
+  * PPA version bumped to ensure it updates from previous versions.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 10 May 2025 18:54:17 -0400
+
 rom-properties (2.5.1-1ppa2~jammy1) jammy; urgency=medium
 
   * Build for Ubuntu 22.04 "Jammy" Jellyfish.
