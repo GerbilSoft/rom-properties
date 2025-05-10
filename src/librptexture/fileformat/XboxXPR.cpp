@@ -99,7 +99,20 @@ class XboxXPRPrivate final : public FileFormatPrivate
 		 * @param value
 		 * @return
 		 */
-		static uint32_t fill_pattern(uint32_t pattern, uint32_t value);
+		static constexpr uint32_t fill_pattern(uint32_t pattern, uint32_t value)
+		{
+			uint32_t result = 0;
+			uint32_t bit = 1;
+			while(value) {
+				if (pattern & bit) {
+					/* Copy bit to result */
+					result |= value & 1 ? bit : 0;
+					value >>= 1;
+				}
+				bit <<= 1;
+			}
+			return result;
+		}
 
 		/**
 		 * Get a swizzled texture offset.
@@ -117,10 +130,14 @@ class XboxXPRPrivate final : public FileFormatPrivate
 		 * @param bytes_per_pixel
 		 * @return
 		 */
-		static inline unsigned int get_swizzled_offset(
+		static inline constexpr unsigned int get_swizzled_offset(
 			unsigned int x, unsigned int y,
 			uint32_t mask_x, uint32_t mask_y,
-			unsigned int bytes_per_pixel);
+			unsigned int bytes_per_pixel)
+		{
+			return bytes_per_pixel * (fill_pattern(mask_x, x)
+			                       |  fill_pattern(mask_y, y));
+		}
 
 		/**
 		 * Unswizzle an ARGB texture.
@@ -218,58 +235,6 @@ void XboxXPRPrivate::generate_swizzle_masks(
 	assert((x ^ y) == (mask_bit - 1));
 	*mask_x = x;
 	*mask_y = y;
-}
-
-/**
- * This fills a pattern with a value if your value has bits abcd and your
- * pattern is 11010100100 this will return: 0a0b0c00d00
- *
- * Based on Cxbx-Reloaded's unswizzling code:
- * https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
- * Original license: LGPLv2 (GPLv2 for contributions after 2012/01/13)
- *
- * @param pattern
- * @param value
- * @return
- */
-uint32_t XboxXPRPrivate::fill_pattern(uint32_t pattern, uint32_t value)
-{
-	uint32_t result = 0;
-	uint32_t bit = 1;
-	while(value) {
-		if (pattern & bit) {
-			/* Copy bit to result */
-			result |= value & 1 ? bit : 0;
-			value >>= 1;
-		}
-		bit <<= 1;
-	}
-	return result;
-}
-
-/**
- * Get a swizzled texture offset.
- * Based on Cxbx-Reloaded's unswizzling code:
- * https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
- * Original license: LGPLv2 (GPLv2 for contributions after 2012/01/13)
- *
- * rom-properties modification: Removed depth, since we're only
- * handling 2D textures.
- *
- * @param x
- * @param y
- * @param mask_x
- * @param mask_y
- * @param bytes_per_pixel
- * @return
- */
-inline unsigned int XboxXPRPrivate::get_swizzled_offset(
-	unsigned int x, unsigned int y,
-	uint32_t mask_x, uint32_t mask_y,
-	unsigned int bytes_per_pixel)
-{
-	return bytes_per_pixel * (fill_pattern(mask_x, x)
-	                       |  fill_pattern(mask_y, y));
 }
 
 /**

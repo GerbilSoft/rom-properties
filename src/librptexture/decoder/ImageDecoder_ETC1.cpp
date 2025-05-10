@@ -193,12 +193,12 @@ static constexpr array<uint16_t, 2> etc1_subblock_mapping = {{
 	0xCCCC,
 }};
 
-// 3-bit 2's complement lookup table.
+// 3-bit 2's complement lookup table
 static constexpr array<int8_t, 8> etc1_3bit_diff_tbl = {{
 	0, 1, 2, 3, -4, -3, -2, -1
 }};
 
-// ETC2 block mode.
+// ETC2 block mode
 enum class etc2_block_mode {
 	Unknown = 0,
 	ETC1,	// ETC1-compatible mode (indiv, diff)
@@ -206,13 +206,13 @@ enum class etc2_block_mode {
 	Planar,	// ETC2 'Planar' mode
 };
 
-// ETC2 distance table for 'T' and 'H' modes.
+// ETC2 distance table for 'T' and 'H' modes
 static constexpr array<uint8_t, 8> etc2_dist_tbl = {{
 	 3,  6, 11, 16,
 	23, 32, 41, 64,
 }};
 
-// ETC2 alpha modifiers table.
+// ETC2 alpha modifiers table
 static constexpr int8_t etc2_alpha_tbl[16][8] = {
 	{-3, -6,  -9, -15, 2, 5, 8, 14},
 	{-3, -7, -10, -13, 2, 6, 9, 12},
@@ -234,8 +234,8 @@ static constexpr int8_t etc2_alpha_tbl[16][8] = {
 
 /**
  * Extend a 4-bit color component to 8-bit color.
- * @param value 4-bit color component.
- * @return 8-bit color value.
+ * @param value 4-bit color component
+ * @return 8-bit color value
  */
 static inline constexpr uint8_t extend_4to8bits(uint8_t value)
 {
@@ -244,8 +244,8 @@ static inline constexpr uint8_t extend_4to8bits(uint8_t value)
 
 /**
  * Extend a 5-bit color component to 8-bit color.
- * @param value 5-bit color component.
- * @return 8-bit color value.
+ * @param value 5-bit color component
+ * @return 8-bit color value
  */
 static inline constexpr uint8_t extend_5to8bits(uint8_t value)
 {
@@ -254,8 +254,8 @@ static inline constexpr uint8_t extend_5to8bits(uint8_t value)
 
 /**
  * Extend a 6-bit color component to 8-bit color.
- * @param value 6-bit color component.
- * @return 8-bit color value.
+ * @param value 6-bit color component
+ * @return 8-bit color value
  */
 static inline constexpr uint8_t extend_6to8bits(uint8_t value)
 {
@@ -264,8 +264,8 @@ static inline constexpr uint8_t extend_6to8bits(uint8_t value)
 
 /**
  * Extend a 7-bit color component to 8-bit color.
- * @param value 7-bit color component.
- * @return 7-bit color value.
+ * @param value 7-bit color component
+ * @return 7-bit color value
  */
 static inline constexpr uint8_t extend_7to8bits(uint8_t value)
 {
@@ -285,7 +285,7 @@ struct ColorRGB {
  * @param color ColorRGB struct.
  * @return xRGB32 value. (Alpha channel set to 0xFF)
  */
-static inline uint32_t clamp_ColorRGB(ColorRGB color)
+static inline constexpr uint32_t clamp_ColorRGB(ColorRGB color)
 {
 	uint32_t xrgb32 = 0;
 	if (color.B > 255) {
@@ -306,7 +306,7 @@ static inline uint32_t clamp_ColorRGB(ColorRGB color)
 	return xrgb32 | 0xFF000000;
 }
 
-// ETC decoding mode.
+// ETC decoding mode
 enum ETC_Decoding_Mode {
 	// Bit 0: ETC1 vs. ETC2
 	ETC_DM_ETC1	= (0U << 0),	// ETC1
@@ -319,9 +319,9 @@ enum ETC_Decoding_Mode {
 
 /**
  * Decode an ETC1/ETC2 RGB block.
- * @param mode          [in] Mode flags.
- * @param tileBuf	[out] Destination tile buffer.
- * @param src		[in] Source RGB block.
+ * @param mode          [in] Mode flags
+ * @param tileBuf	[out] Destination tile buffer
+ * @param src		[in] Source RGB block
  */
 template</* ETC_Decoding_Mode */ unsigned int mode>
 static void decodeBlock_ETC_RGB(array<uint32_t, 4*4> &tileBuf, const etc1_block *etc1_src)

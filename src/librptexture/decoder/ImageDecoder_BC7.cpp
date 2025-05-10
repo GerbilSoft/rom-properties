@@ -123,7 +123,12 @@ static uint8_t interpolate_component(unsigned int bits, unsigned int index, uint
  * @param dword0 LSB DWORD.
  * @return Mode number.
  */
+#ifdef _MSC_VER
+// MSVC doesn't like using constexpr with _BitScanForward().
 static inline int get_mode(uint32_t dword0)
+#else /* !_MSC_VER */
+static inline constexpr int get_mode(uint32_t dword0)
+#endif /* _MSC_VER */
 {
 #ifdef _MSC_VER
 	unsigned long index;

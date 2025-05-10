@@ -62,7 +62,10 @@ public:
 	 * Check if an fst_entry is a directory.
 	 * @return True if this is a directory; false if it's a regular file.
 	 */
-	static inline bool is_dir(const WUP_FST_Entry *fst_entry);
+	static inline bool is_dir(const WUP_FST_Entry *fst_entry)
+	{
+		return ((be32_to_cpu(fst_entry->file_type_name_offset) >> 24) == 1);
+	}
 
 	/**
 	 * Get an FST entry's name.
@@ -196,15 +199,6 @@ WiiUFstPrivate::~WiiUFstPrivate()
 {
 	assert(fstDirCount == 0);
 	delete[] fstData;
-}
-
-/**
- * Check if an fst_entry is a directory.
- * @return True if this is a directory; false if it's a regular file.
- */
-inline bool WiiUFstPrivate::is_dir(const WUP_FST_Entry *fst_entry)
-{
-	return ((be32_to_cpu(fst_entry->file_type_name_offset) >> 24) == 1);
 }
 
 /**

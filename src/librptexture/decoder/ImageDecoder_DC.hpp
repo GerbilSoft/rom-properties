@@ -52,7 +52,7 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
  * @param width Texture width.
  * @return Number of palette entries.
  */
-static inline int calcDreamcastSmallVQPaletteEntries_NoMipmaps(int width)
+static inline constexpr int calcDreamcastSmallVQPaletteEntries_NoMipmaps(int width)
 {
 	if (width <= 16) {
 		return 8*4;
@@ -72,7 +72,7 @@ static inline int calcDreamcastSmallVQPaletteEntries_NoMipmaps(int width)
  * @param width Texture width.
  * @return Number of palette entries.
  */
-static inline int calcDreamcastSmallVQPaletteEntries_WithMipmaps(int width)
+static inline constexpr int calcDreamcastSmallVQPaletteEntries_WithMipmaps(int width)
 {
 	if (width <= 16) {
 		return 16*4;

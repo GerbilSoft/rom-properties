@@ -23,7 +23,7 @@
 namespace LibRpBase { namespace Tests {
 
 // `struct tm` initialization macro using ISO date format.
-static inline struct tm TM_INIT(int year, int month, int day, int hour, int minute, int second)
+static struct tm TM_INIT(int year, int month, int day, int hour, int minute, int second)
 {
 	// NOTE: We can't simply use struct initialization because
 	// BSD/GNU systems have extra tm_gmtoff and tm_zone fields.

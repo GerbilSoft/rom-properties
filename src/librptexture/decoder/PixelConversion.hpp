@@ -59,10 +59,10 @@ static constexpr std::array<uint8_t, 8> c3_lookup = {{
 
 /**
  * Convert an RGB565 pixel to ARGB32.
- * @param px16 RGB565 pixel.
- * @return ARGB32 pixel.
+ * @param px16 RGB565 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t RGB565_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t RGB565_to_ARGB32(uint16_t px16)
 {
 	// RGB565: RRRRRGGG GGGBBBBB
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -77,10 +77,10 @@ static inline uint32_t RGB565_to_ARGB32(uint16_t px16)
 
 /**
  * Convert a BGR565 pixel to ARGB32.
- * @param px16 BGR565 pixel.
- * @return ARGB32 pixel.
+ * @param px16 BGR565 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t BGR565_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t BGR565_to_ARGB32(uint16_t px16)
 {
 	// RGB565: BBBBBGGG GGGRRRRR
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -95,10 +95,10 @@ static inline uint32_t BGR565_to_ARGB32(uint16_t px16)
 
 /**
  * Convert an ARGB1555 pixel to ARGB32.
- * @param px16 ARGB1555 pixel.
- * @return ARGB32 pixel.
+ * @param px16 ARGB1555 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t ARGB1555_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t ARGB1555_to_ARGB32(uint16_t px16)
 {
 	// ARGB1555: ARRRRRGG GGGBBBBB
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -106,7 +106,7 @@ static inline uint32_t ARGB1555_to_ARGB32(uint16_t px16)
 	                (((px16 << 6) & 0x00F800)) |	// Green
 	                (((px16 << 3) & 0x0000F8));	// Blue
 	px32 |= ((px32 >> 5) & 0x070707);		// Expand from 5-bit to 8-bit
-	// Alpha channel.
+	// Alpha channel
 	if (px16 & 0x8000) {
 		px32 |= 0xFF000000U;
 	}
@@ -115,10 +115,10 @@ static inline uint32_t ARGB1555_to_ARGB32(uint16_t px16)
 
 /**
  * Convert an ABGR1555 pixel to ARGB32.
- * @param px16 ABGR1555 pixel.
- * @return ARGB32 pixel.
+ * @param px16 ABGR1555 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t ABGR1555_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t ABGR1555_to_ARGB32(uint16_t px16)
 {
 	// ABGR1555: ABBBBBGG GGGRRRRR
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -126,7 +126,7 @@ static inline uint32_t ABGR1555_to_ARGB32(uint16_t px16)
 	                (((px16 <<  6) & 0x00F800)) |	// Green
 	                (((px16 >>  7) & 0x0000F8));	// Blue
 	px32 |= ((px32 >>  5) & 0x070707);		// Expand from 5-bit to 8-bit
-	// Alpha channel.
+	// Alpha channel
 	if (px16 & 0x8000) {
 		px32 |= 0xFF000000U;
 	}
@@ -135,10 +135,10 @@ static inline uint32_t ABGR1555_to_ARGB32(uint16_t px16)
 
 /**
  * Convert an RGBA5551 pixel to ARGB32.
- * @param px16 RGBA5551 pixel.
- * @return ARGB32 pixel.
+ * @param px16 RGBA5551 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t RGBA5551_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t RGBA5551_to_ARGB32(uint16_t px16)
 {
 	// RGBA5551: RRRRRGGG GGBBBBBA
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -146,7 +146,7 @@ static inline uint32_t RGBA5551_to_ARGB32(uint16_t px16)
 	                (((px16 << 5) & 0x00F800)) |	// Green
 	                (((px16 << 2) & 0x0000F8));	// Blue
 	px32 |= ((px32 >> 5) & 0x070707);		// Expand from 5-bit to 8-bit
-	// Alpha channel.
+	// Alpha channel
 	if (px16 & 0x0001) {
 		px32 |= 0xFF000000U;
 	}
@@ -155,10 +155,10 @@ static inline uint32_t RGBA5551_to_ARGB32(uint16_t px16)
 
 /**
  * Convert a BGRA5551 pixel to ARGB32.
- * @param px16 BGRA5551 pixel.
- * @return ARGB32 pixel.
+ * @param px16 BGRA5551 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t BGRA5551_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t BGRA5551_to_ARGB32(uint16_t px16)
 {
 	// BGRA5551: BBBBBGGG GGRRRRRA
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -166,7 +166,7 @@ static inline uint32_t BGRA5551_to_ARGB32(uint16_t px16)
 	                (((px16 <<  5) & 0x00F800)) |	// Green
 	                (((px16 >>  8) & 0x0000F8));	// Blue
 	px32 |= ((px32 >>  5) & 0x070707);		// Expand from 5-bit to 8-bit
-	// Alpha channel.
+	// Alpha channel
 	if (px16 & 0x0001) {
 		px32 |= 0xFF000000U;
 	}
@@ -175,10 +175,10 @@ static inline uint32_t BGRA5551_to_ARGB32(uint16_t px16)
 
 /**
  * Convert an ARGB4444 pixel to ARGB32.
- * @param px16 ARGB4444 pixel.
- * @return ARGB32 pixel.
+ * @param px16 ARGB4444 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t ARGB4444_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t ARGB4444_to_ARGB32(uint16_t px16)
 {
 	// ARGB4444: AAAARRRR GGGGBBBB
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -192,10 +192,10 @@ static inline uint32_t ARGB4444_to_ARGB32(uint16_t px16)
 
 /**
  * Convert an ABGR4444 pixel to ARGB32.
- * @param px16 ABGR4444 pixel.
- * @return ARGB32 pixel.
+ * @param px16 ABGR4444 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t ABGR4444_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t ABGR4444_to_ARGB32(uint16_t px16)
 {
 	// ARGB4444: AAAABBBB GGGGRRRR
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -209,10 +209,10 @@ static inline uint32_t ABGR4444_to_ARGB32(uint16_t px16)
 
 /**
  * Convert an RGBA4444 pixel to ARGB32.
- * @param px16 RGBA4444 pixel.
- * @return ARGB32 pixel.
+ * @param px16 RGBA4444 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t RGBA4444_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t RGBA4444_to_ARGB32(uint16_t px16)
 {
 	// RGBA4444: RRRRGGGG BBBBAAAA
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -226,10 +226,10 @@ static inline uint32_t RGBA4444_to_ARGB32(uint16_t px16)
 
 /**
  * Convert a BGRA4444 pixel to ARGB32.
- * @param px16 BGRA4444 pixel.
- * @return ARGB32 pixel.
+ * @param px16 BGRA4444 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t BGRA4444_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t BGRA4444_to_ARGB32(uint16_t px16)
 {
 	// RGBA4444: BBBBGGGG RRRRAAAA
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -243,10 +243,10 @@ static inline uint32_t BGRA4444_to_ARGB32(uint16_t px16)
 
 /**
  * Convert an xRGB4444 pixel to ARGB32.
- * @param px16 xRGB4444 pixel.
- * @return ARGB32 pixel.
+ * @param px16 xRGB4444 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t xRGB4444_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t xRGB4444_to_ARGB32(uint16_t px16)
 {
 	// xRGB4444: xxxxRRRR GGGGBBBB
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -260,10 +260,10 @@ static inline uint32_t xRGB4444_to_ARGB32(uint16_t px16)
 
 /**
  * Convert an xBGR4444 pixel to ARGB32.
- * @param px16 xBGR4444 pixel.
- * @return ARGB32 pixel.
+ * @param px16 xBGR4444 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t xBGR4444_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t xBGR4444_to_ARGB32(uint16_t px16)
 {
 	// xRGB4444: xxxxBBBB GGGGRRRR
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -277,10 +277,10 @@ static inline uint32_t xBGR4444_to_ARGB32(uint16_t px16)
 
 /**
  * Convert an RGBx4444 pixel to ARGB32.
- * @param px16 RGBx4444 pixel.
- * @return ARGB32 pixel.
+ * @param px16 RGBx4444 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t RGBx4444_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t RGBx4444_to_ARGB32(uint16_t px16)
 {
 	// RGBx4444: RRRRGGGG BBBBxxxx
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -294,10 +294,10 @@ static inline uint32_t RGBx4444_to_ARGB32(uint16_t px16)
 
 /**
  * Convert a BGRx4444 pixel to ARGB32.
- * @param px16 BGRx4444 pixel.
- * @return ARGB32 pixel.
+ * @param px16 BGRx4444 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t BGRx4444_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t BGRx4444_to_ARGB32(uint16_t px16)
 {
 	// RGBx4444: BBBBGGGG RRRRxxxx
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -311,8 +311,8 @@ static inline uint32_t BGRx4444_to_ARGB32(uint16_t px16)
 
 /**
  * Convert an ARGB8332 pixel to ARGB32.
- * @param px16 ARGB8332 pixel.
- * @return ARGB32 pixel.
+ * @param px16 ARGB8332 pixel
+ * @return ARGB32 pixel
  */
 static inline constexpr uint32_t ARGB8332_to_ARGB32(uint16_t px16)
 {
@@ -326,8 +326,8 @@ static inline constexpr uint32_t ARGB8332_to_ARGB32(uint16_t px16)
 
 /**
  * Convert an RG88 pixel to ARGB32.
- * @param px16 RG88 pixel.
- * @return ARGB32 pixel.
+ * @param px16 RG88 pixel
+ * @return ARGB32 pixel
  */
 static inline constexpr uint32_t RG88_to_ARGB32(uint16_t px16)
 {
@@ -338,10 +338,10 @@ static inline constexpr uint32_t RG88_to_ARGB32(uint16_t px16)
 
 /**
  * Convert a GR88 pixel to ARGB32.
- * @param px16 GR88 pixel.
- * @return ARGB32 pixel.
+ * @param px16 GR88 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t GR88_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t GR88_to_ARGB32(uint16_t px16)
 {
 	// GR88:     GGGGGGGG RRRRRRRR
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -353,10 +353,10 @@ static inline uint32_t GR88_to_ARGB32(uint16_t px16)
 
 /**
  * Convert an RGB5A3 pixel to ARGB32. (GameCube/Wii)
- * @param px16 RGB5A3 pixel. (Must be host-endian.)
- * @return ARGB32 pixel.
+ * @param px16 RGB5A3 pixel (Must be host-endian.)
+ * @return ARGB32 pixel
  */
-static inline uint32_t RGB5A3_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t RGB5A3_to_ARGB32(uint16_t px16)
 {
 	// px16 high bit: if set, no alpha channel
 	uint32_t px32 = (px16 & 0x8000U)
@@ -388,10 +388,10 @@ static inline uint32_t RGB5A3_to_ARGB32(uint16_t px16)
 /**
  * Convert an IA8 pixel to ARGB32. (GameCube/Wii)
  * NOTE: Uses a grayscale palette.
- * @param px16 IA8 pixel.
- * @return ARGB32 pixel.
+ * @param px16 IA8 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t IA8_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t IA8_to_ARGB32(uint16_t px16)
 {
 	// FIXME: What's the component order of IA8?
 	// Assuming I=MSB, A=LSB...
@@ -409,11 +409,11 @@ static inline uint32_t IA8_to_ARGB32(uint16_t px16)
 
 /**
  * Convert an RGB565+A4 pixel to ARGB32.
- * @param px16 RGB565 pixel.
- * @param a4 A4 value.
- * @return ARGB32 pixel.
+ * @param px16 RGB565 pixel
+ * @param a4 A4 value
+ * @return ARGB32 pixel
  */
-static inline uint32_t RGB565_A4_to_ARGB32(uint16_t px16, uint8_t a4)
+static inline constexpr uint32_t RGB565_A4_to_ARGB32(uint16_t px16, uint8_t a4)
 {
 	// RGB565: RRRRRGGG GGGBBBBB
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -432,10 +432,10 @@ static inline uint32_t RGB565_A4_to_ARGB32(uint16_t px16, uint8_t a4)
 /**
  * Convert a BGR5A3 pixel to ARGB32. (PlayStation 2)
  * Similar to GameCube RGB5A3, but the R and B channels are swapped.
- * @param px16 BGR5A3 pixel. (Must be host-endian.)
- * @return ARGB32 pixel.
+ * @param px16 BGR5A3 pixel (Must be host-endian.)
+ * @return ARGB32 pixel
  */
-static inline uint32_t BGR5A3_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t BGR5A3_to_ARGB32(uint16_t px16)
 {
 	// px16 high bit: if set, no alpha channel
 	uint32_t px32 = (px16 & 0x8000U)
@@ -469,10 +469,10 @@ static inline uint32_t BGR5A3_to_ARGB32(uint16_t px16)
 
 /**
  * Convert an RGB555 pixel to ARGB32.
- * @param px16 RGB555 pixel.
- * @return ARGB32 pixel.
+ * @param px16 RGB555 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t RGB555_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t RGB555_to_ARGB32(uint16_t px16)
 {
 	// RGB555: xRRRRRGG GGGBBBBB
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -486,10 +486,10 @@ static inline uint32_t RGB555_to_ARGB32(uint16_t px16)
 
 /**
  * Convert a BGR555 pixel to ARGB32.
- * @param px16 BGR555 pixel.
- * @return ARGB32 pixel.
+ * @param px16 BGR555 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t BGR555_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t BGR555_to_ARGB32(uint16_t px16)
 {
 	// BGR555: xBBBBBGG GGGRRRRR
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -505,8 +505,8 @@ static inline uint32_t BGR555_to_ARGB32(uint16_t px16)
 
 /**
  * Convert a G16R16 pixel to ARGB32.
- * @param px32 G16R16 pixel.
- * @return ARGB32 pixel.
+ * @param px32 G16R16 pixel
+ * @return ARGB32 pixel
  */
 static inline constexpr uint32_t G16R16_to_ARGB32(uint32_t px32)
 {
@@ -522,8 +522,8 @@ static inline constexpr uint32_t G16R16_to_ARGB32(uint32_t px32)
 
 /**
  * Convert an A2R10G10B10 pixel to ARGB32.
- * @param px32 A2R10G10B10 pixel.
- * @return ARGB32 pixel.
+ * @param px32 A2R10G10B10 pixel
+ * @return ARGB32 pixel
  */
 static inline constexpr uint32_t A2R10G10B10_to_ARGB32(uint32_t px32)
 {
@@ -540,8 +540,8 @@ static inline constexpr uint32_t A2R10G10B10_to_ARGB32(uint32_t px32)
 
 /**
  * Convert an A2B10G10R10 pixel to ARGB32.
- * @param px32 A2B10G10R10 pixel.
- * @return ARGB32 pixel.
+ * @param px32 A2B10G10R10 pixel
+ * @return ARGB32 pixel
  */
 static inline constexpr uint32_t A2B10G10R10_to_ARGB32(uint32_t px32)
 {
@@ -559,10 +559,10 @@ static inline constexpr uint32_t A2B10G10R10_to_ARGB32(uint32_t px32)
 /**
  * Convert an RGB9_E5 pixel to ARGB32.
  * NOTE: RGB9_E5 is an HDR format; this converts to LDR.
- * @param px32 A2B10G10R10 pixel.
- * @return ARGB32 pixel.
+ * @param px32 A2B10G10R10 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t RGB9_E5_to_ARGB32(uint32_t px32)
+static inline constexpr uint32_t RGB9_E5_to_ARGB32(uint32_t px32)
 {
 	// NOTE: This will truncate the color channels.
 	// TODO: Add ARGB64 support?
@@ -600,10 +600,10 @@ static inline uint32_t RGB9_E5_to_ARGB32(uint32_t px32)
  * Convert a BGR888_ABGR7888 pixel to ARGB32. (PlayStation 2)
  * Similar to GameCube RGB5A3, but with 32-bit channels.
  * (Why would you do this... Just set alpha to 0xFF!)
- * @param px16 BGR888_ABGR7888 pixel. (Must be host-endian.)
- * @return ARGB32 pixel.
+ * @param px16 BGR888_ABGR7888 pixel (Must be host-endian.)
+ * @return ARGB32 pixel
  */
-static inline uint32_t BGR888_ABGR7888_to_ARGB32(uint32_t px32)
+static inline constexpr uint32_t BGR888_ABGR7888_to_ARGB32(uint32_t px32)
 {
 	// px32 high bit: if set, no alpha channel
 	uint32_t argb = (px32 & 0x80000000U)
@@ -634,8 +634,8 @@ static inline uint32_t BGR888_ABGR7888_to_ARGB32(uint32_t px32)
 /**
  * Convert an L8 pixel to ARGB32.
  * NOTE: Uses a grayscale palette.
- * @param px8 L8 pixel.
- * @return ARGB32 pixel.
+ * @param px8 L8 pixel
+ * @return ARGB32 pixel
  */
 static inline constexpr uint32_t L8_to_ARGB32(uint8_t px8)
 {
@@ -648,10 +648,10 @@ static inline constexpr uint32_t L8_to_ARGB32(uint8_t px8)
 /**
  * Convert an A4L4 pixel to ARGB32.
  * NOTE: Uses a grayscale palette.
- * @param px8 A4L4 pixel.
- * @return ARGB32 pixel.
+ * @param px8 A4L4 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t A4L4_to_ARGB32(uint8_t px8)
+static inline constexpr uint32_t A4L4_to_ARGB32(uint8_t px8)
 {
 	//   A4L4: AAAALLLL
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -665,8 +665,8 @@ static inline uint32_t A4L4_to_ARGB32(uint8_t px8)
 /**
  * Convert an L16 pixel to ARGB32.
  * NOTE: Uses a grayscale palette.
- * @param px16 L16 pixel.
- * @return ARGB32 pixel.
+ * @param px16 L16 pixel
+ * @return ARGB32 pixel
  */
 static inline constexpr uint32_t L16_to_ARGB32(uint16_t px16)
 {
@@ -678,10 +678,10 @@ static inline constexpr uint32_t L16_to_ARGB32(uint16_t px16)
 /**
  * Convert an A8L8 pixel to ARGB32.
  * NOTE: Uses a grayscale palette.
- * @param px16 A8L8 pixel.
- * @return ARGB32 pixel.
+ * @param px16 A8L8 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t A8L8_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t A8L8_to_ARGB32(uint16_t px16)
 {
 	//   A8L8: AAAAAAAA LLLLLLLL
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -694,10 +694,10 @@ static inline uint32_t A8L8_to_ARGB32(uint16_t px16)
 /**
  * Convert an L8A8 pixel to ARGB32.
  * NOTE: Uses a grayscale palette.
- * @param px16 L8A8 pixel.
- * @return ARGB32 pixel.
+ * @param px16 L8A8 pixel
+ * @return ARGB32 pixel
  */
-static inline uint32_t L8A8_to_ARGB32(uint16_t px16)
+static inline constexpr uint32_t L8A8_to_ARGB32(uint16_t px16)
 {
 	// FIXME: What's the component order of IA8?
 	// Assuming I=MSB, A=LSB...
@@ -716,8 +716,8 @@ static inline uint32_t L8A8_to_ARGB32(uint16_t px16)
 /**
  * Convert an A8 pixel to ARGB32.
  * NOTE: Uses a black background.
- * @param px8 A8 pixel.
- * @return ARGB32 pixel.
+ * @param px8 A8 pixel
+ * @return ARGB32 pixel
  */
 static inline constexpr uint32_t A8_to_ARGB32(uint8_t px8)
 {
@@ -730,8 +730,8 @@ static inline constexpr uint32_t A8_to_ARGB32(uint8_t px8)
 
 /**
  * Convert an R8 pixel to ARGB32.
- * @param px8 R8 pixel.
- * @return ARGB32 pixel.
+ * @param px8 R8 pixel
+ * @return ARGB32 pixel
  */
 static inline constexpr uint32_t R8_to_ARGB32(uint8_t px8)
 {
@@ -742,8 +742,8 @@ static inline constexpr uint32_t R8_to_ARGB32(uint8_t px8)
 
 /**
  * Convert an RGB332 pixel to ARGB32.
- * @param px8 RGB332 pixel.
- * @return ARGB32 pixel.
+ * @param px8 RGB332 pixel
+ * @return ARGB32 pixel
  */
 static inline constexpr uint32_t RGB332_to_ARGB32(uint8_t px8)
 {

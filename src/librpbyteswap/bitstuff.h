@@ -42,7 +42,11 @@
  * @return uilog2(n)
  */
 ATTR_CONST
+#ifndef _MSC_VER
+static inline CONSTEXPR unsigned int uilog2(unsigned int n)
+#else /* _MSC_VER */
 static inline unsigned int uilog2(unsigned int n)
+#endif /*! MSC_VER */
 {
 #if defined(__GNUC__)
 	// NOTE: XOR is needed to return the bit index
@@ -124,6 +128,7 @@ static inline CONSTEXPR T nextPow2(T x)
 static inline T nextPow2(T x)
 #  endif /* !_MSC_VER */
 #else /* !__cplusplus */
+ATTR_CONST
 static inline unsigned int nextPow2(unsigned int x)
 #endif /* __cplusplus */
 {

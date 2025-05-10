@@ -18,6 +18,15 @@
 #include <stdint.h>
 #include "common.h"
 
+// constexpr is not valid in C.
+#ifndef CONSTEXPR
+#  ifdef __cplusplus
+#    define CONSTEXPR constexpr
+#  else
+#    define CONSTEXPR
+#  endif /* !__cplusplus */
+#endif /* !CONSTEXPR */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -164,16 +173,12 @@ ASSERT_STRUCT(CDROM_2352_Sector_t, 2352);
  * @param sector Raw CD-ROM sector.
  * @return Start of user data section.
  */
-static inline constexpr const uint8_t *cdromSectorDataPtr(const CDROM_2352_Sector_t *sector)
+static inline CONSTEXPR const uint8_t *cdromSectorDataPtr(const CDROM_2352_Sector_t *sector)
 {
 	return (unlikely(sector->mode == 2))
 		? sector->m2xa_f1.data
 		: sector->m1.data;
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 // CD-ROM sector information.
 // Convenience struct to be used by various classes.
@@ -182,3 +187,7 @@ typedef struct _CdromSectorInfo {
 	uint16_t sector_size;
 	uint16_t subchannel_size;
 } CdromSectorInfo;
+
+#ifdef __cplusplus
+}
+#endif

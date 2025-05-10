@@ -120,14 +120,14 @@ public:
 	 * @param type Cartridge type byte
 	 * @return dmg_cart_type struct
 	 */
-	static inline dmg_cart_type CartType(uint8_t type);
+	static dmg_cart_type CartType(uint8_t type);
 
 	/**
 	 * Convert the ROM size value to an actual size.
 	 * @param type ROM size value.
 	 * @return ROM size, in kilobytes. (-1 on error)
 	 */
-	static inline int RomSize(uint8_t type);
+	static int RomSize(uint8_t type);
 
 public:
 	// DMG RAM size array
@@ -353,7 +353,7 @@ uint32_t DMGPrivate::systemID(const DMG_RomHeader *pRomHeader)
  * @param type Cartridge type byte.
  * @return dmg_cart_type struct.
  */
-inline DMGPrivate::dmg_cart_type DMGPrivate::CartType(uint8_t type)
+DMGPrivate::dmg_cart_type DMGPrivate::CartType(uint8_t type)
 {
 	// Check for low cartridge types.
 	if (type < dmg_cart_types_start.size()) {
@@ -375,7 +375,7 @@ inline DMGPrivate::dmg_cart_type DMGPrivate::CartType(uint8_t type)
  * @param type ROM size value.
  * @return ROM size, in kilobytes. (-1 on error)
  */
-inline int DMGPrivate::RomSize(uint8_t type)
+int DMGPrivate::RomSize(uint8_t type)
 {
 	constexpr array<uint16_t, 8> rom_size = {{32, 64, 128, 256, 512, 1024, 2048, 4096}};
 	constexpr array<uint16_t, 4> rom_size_52 = {{1152, 1280, 1536}};

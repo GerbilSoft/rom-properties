@@ -1319,7 +1319,7 @@ int RpPngWriter::write_IHDR(const rp_image::sBIT_t *sBIT, const uint32_t *palett
  * @param str UTF-8 string.
  * @return 0 if it's ASCII; 1 if it's Latin-1; 2 if it's not Latin-1.
  */
-static inline int u8strIsPngLatin1(const char *str)
+static int u8strIsPngLatin1(const char *str)
 {
 	int ret = 0;
 	for (; *str != 0; str++) {

@@ -71,7 +71,7 @@ public:
 	 * @param x Original DWORD
 	 * @return PDP-swapped DWORD
 	 */
-	static inline uint32_t PDP_SWAP(uint32_t x)
+	static inline constexpr uint32_t PDP_SWAP(uint32_t x)
 	{
 		union { uint16_t w[2]; uint32_t d; } tmp;
 		tmp.d = be32_to_cpu(x);

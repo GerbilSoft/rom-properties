@@ -23,6 +23,25 @@
 #include "dll-macros.h"
 #include "force_inline.h"
 
+// const: Function does not have any effects except on the return value,
+// and it only depends on the input parameters. (similar to constexpr)
+#ifndef ATTR_CONST
+#  ifdef __GNUC__
+#    define ATTR_CONST __attribute__((const))
+#  else /* !__GNUC__ */
+#    define ATTR_CONST
+#  endif /* __GNUC__ */
+#endif /* ATTR_CONST */
+
+// constexpr is not valid in C.
+#ifndef CONSTEXPR
+#  ifdef __cplusplus
+#    define CONSTEXPR constexpr
+#  else
+#    define CONSTEXPR
+#  endif /* !__cplusplus */
+#endif /* !CONSTEXPR */
+
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
 #  include "librpcpuid/cpuflags_x86.h"
 /* MSVC does not support MMX intrinsics in 64-bit builds. */
@@ -105,7 +124,12 @@
  * @param f Float to byteswap
  * @return Byteswapped float
  */
+ATTR_CONST
+#ifndef _MSC_VER
+static inline CONSTEXPR float __swabf(float f)
+#else /* _MSC_VER */
 static inline float __swabf(float f)
+#endif /* !_MSC_VER */
 {
 	union {
 		uint32_t u32;

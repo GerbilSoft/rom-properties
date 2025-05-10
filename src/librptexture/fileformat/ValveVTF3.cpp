@@ -60,7 +60,7 @@ public:
 	 * @param f Float to byteswap.
 	 * @return Byteswapped flaot.
 	 */
-	static inline float __swabf(float f)
+	static inline constexpr float __swabf(float f)
 	{
 		union {
 			uint32_t u32;
