@@ -1,3 +1,10 @@
+rom-properties (2.5.1-1ppa2~bionic2) bionic; urgency=medium
+
+  * Update rom-properties-tracker.install so the files actually install
+    properly.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 10 May 2025 17:44:11 -0400
+
 rom-properties (2.5.1-1ppa2~bionic1) bionic; urgency=medium
 
   * Build for Ubuntu 18.04 "Bionic" Beaver.
