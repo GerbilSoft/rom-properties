@@ -11,9 +11,11 @@ video game ROM and disc images.
 [![CodeFactor](https://www.codefactor.io/repository/github/gerbilsoft/rom-properties/badge)](https://www.codefactor.io/repository/github/gerbilsoft/rom-properties/overview)
 [![codecov](https://codecov.io/gh/GerbilSoft/rom-properties/graph/badge.svg?token=oIiL6oVPwZ)](https://codecov.io/gh/GerbilSoft/rom-properties)
 
-## v2.5
+## v2.5.1
 
 ![KDE Dolphin showing J2ME packages.](doc/img/rp-v2.5-kde6.J2ME.png)
+
+v2.5.1 is a bugfix release with no significant new features.
 
 Major additions in v2.5 include:
 
@@ -37,7 +39,7 @@ language, check out the [Crowdin project](https://crowdin.com/project/rom-proper
 Crowdin project page, file an issue here on GitHub with the requested
 language.)
 
-See [`NEWS.md`](NEWS.md) for a full list of changes in v2.5.
+See [`NEWS.md`](NEWS.md) for a full list of changes in v2.5.1.
 
 ## Feedback
 
