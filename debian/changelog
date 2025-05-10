@@ -1,3 +1,11 @@
+rom-properties (2.5.1-1ppa1~xenial2) xenial; urgency=medium
+
+  * Explicitly specify the Tracker API version.
+
+    NOTE: This must be updated for each Ubuntu version!
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 10 May 2025 16:52:48 -0400
+
 rom-properties (2.5.1-1ppa1~xenial1) xenial; urgency=medium
 
   * 2.5.1 release.
