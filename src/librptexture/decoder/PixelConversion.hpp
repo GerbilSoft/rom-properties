@@ -566,7 +566,7 @@ static inline constexpr uint32_t A2B10G10R10_to_ARGB32(uint32_t px32)
  * @param px32 A2B10G10R10 pixel
  * @return ARGB32 pixel
  */
-static inline constexpr uint32_t RGB9_E5_to_ARGB32(uint32_t px32)
+static inline uint32_t RGB9_E5_to_ARGB32(uint32_t px32)
 {
 	// NOTE: This will truncate the color channels.
 	// TODO: Add ARGB64 support?
