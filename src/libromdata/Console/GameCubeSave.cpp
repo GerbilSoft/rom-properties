@@ -78,7 +78,10 @@ public:
 	static inline uint32_t PDP_SWAP(uint32_t x)
 #endif /* _MSC_VER */
 	{
-		union { uint16_t w[2]; uint32_t d; } tmp;
+		union {
+			uint32_t d;
+			uint16_t w[2];
+		} tmp = { 0 };
 		tmp.d = be32_to_cpu(x);
 		tmp.w[0] = __swab16(tmp.w[0]);
 		tmp.w[1] = __swab16(tmp.w[1]);
