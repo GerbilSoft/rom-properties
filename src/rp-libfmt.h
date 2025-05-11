@@ -41,4 +41,15 @@
 #  endif /* FMT_VERSION >= 80000 */
 #endif /* _WIN32 */
 
+// Windows: fmt::to_tstring()
+// NOTE: `using` statements within `namespace fmt` didn't work:
+// src\rp-libfmt.h(48,21): error C2061: syntax error: identifier 'to_wstring'
+#ifdef _WIN32
+#  ifdef _UNICODE
+#    define to_tstring to_wstring
+#  else /* !_UNICODE */
+#    define to_tstring to_string
+#  endif /* _UNICODE */
+#endif /* _WIN32 */
+
 #endif /* __cplusplus */

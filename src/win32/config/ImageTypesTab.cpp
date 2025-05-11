@@ -403,8 +403,7 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 	// tr: Don't use this image type for this particular system.
 	ComboBox_AddString(cboImageType, TC_("ImageTypesTab|Values", "No"));
 	for (int i = 1; i <= max_prio; i++) {
-		// FIXME: fmt::to_tstring()?
-		ComboBox_AddString(cboImageType, fmt::to_wstring(i).c_str());
+		ComboBox_AddString(cboImageType, fmt::to_tstring(i).c_str());
 	}
 	ComboBox_SetCurSel(cboImageType, 0);
 }

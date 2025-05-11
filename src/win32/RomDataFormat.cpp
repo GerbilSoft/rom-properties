@@ -124,12 +124,7 @@ tstring formatDimensions(const int dimensions[3])
 				dimensions[0], dimensions[1]);
 		}
 	} else {
-		// FIXME: fmt::to_tstring()?
-#ifdef _UNICODE
-		tstr = fmt::to_wstring(dimensions[0]);
-#else /* !_UNICODE */
-		tstr = fmt::to_string(dimensions[0]);
-#endif /* _UNICODE */
+		tstr = fmt::to_tstring(dimensions[0]);
 	}
 
 	return tstr;
