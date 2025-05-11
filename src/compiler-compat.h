@@ -75,3 +75,17 @@ typedef int64_t off64_t;
 #ifdef _WIN32
 #  include "c99-compat.msvcrt.h"
 #endif
+
+// Some MSVC intrinsics aren't constexpr.
+#ifdef _MSC_VER
+#  define CONSTEXPR_NO_MSVC
+#else /* !_MSC_VER */
+#  define CONSTEXPR_NO_MSVC constexpr
+#endif
+
+// MSVC prior to MSVC 2022 does not support constexpr on multi-line functions.
+#if !defined(__cplusplus) || (defined(_MSC_VER) && _MSC_VER < 1930)
+#  define CONSTEXPR_IF_MSVC2022
+#else
+#  define CONSTEXPR_IF_MSVC2022 constexpr
+#endif

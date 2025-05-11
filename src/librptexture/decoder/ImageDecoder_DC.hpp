@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_DC.hpp: Image decoding functions: Dreamcast                *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -48,11 +48,10 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 /**
  * Get the number of palette entries for Dreamcast SmallVQ textures.
  * This version is for textures without mipmaps.
- * TODO: constexpr?
  * @param width Texture width.
  * @return Number of palette entries.
  */
-static inline constexpr int calcDreamcastSmallVQPaletteEntries_NoMipmaps(int width)
+static inline CONSTEXPR_IF_MSVC2022 int calcDreamcastSmallVQPaletteEntries_NoMipmaps(int width)
 {
 	if (width <= 16) {
 		return 8*4;
@@ -68,11 +67,10 @@ static inline constexpr int calcDreamcastSmallVQPaletteEntries_NoMipmaps(int wid
 /**
  * Get the number of palette entries for Dreamcast SmallVQ textures.
  * This version is for textures with mipmaps.
- * TODO: constexpr?
  * @param width Texture width.
  * @return Number of palette entries.
  */
-static inline constexpr int calcDreamcastSmallVQPaletteEntries_WithMipmaps(int width)
+static inline CONSTEXPR_IF_MSVC2022 int calcDreamcastSmallVQPaletteEntries_WithMipmaps(int width)
 {
 	if (width <= 16) {
 		return 16*4;

@@ -99,7 +99,7 @@ class XboxXPRPrivate final : public FileFormatPrivate
 		 * @param value
 		 * @return
 		 */
-		static constexpr uint32_t fill_pattern(uint32_t pattern, uint32_t value)
+		static CONSTEXPR_IF_MSVC2022 uint32_t fill_pattern(uint32_t pattern, uint32_t value)
 		{
 			uint32_t result = 0;
 			uint32_t bit = 1;
@@ -130,7 +130,7 @@ class XboxXPRPrivate final : public FileFormatPrivate
 		 * @param bytes_per_pixel
 		 * @return
 		 */
-		static inline constexpr unsigned int get_swizzled_offset(
+		static inline CONSTEXPR_IF_MSVC2022 unsigned int get_swizzled_offset(
 			unsigned int x, unsigned int y,
 			uint32_t mask_x, uint32_t mask_y,
 			unsigned int bytes_per_pixel)

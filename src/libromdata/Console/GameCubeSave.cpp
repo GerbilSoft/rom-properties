@@ -72,11 +72,7 @@ public:
 	 * @return PDP-swapped DWORD
 	 */
 	// FIXME: be32_to_cpu() and __swab16() are not constexpr on MSVC 2022.
-#ifndef _MSC_VER
-	static inline constexpr uint32_t PDP_SWAP(uint32_t x)
-#else /* !_MSC_VER */
-	static inline uint32_t PDP_SWAP(uint32_t x)
-#endif /* _MSC_VER */
+	static inline CONSTEXPR_NO_MSVC uint32_t PDP_SWAP(uint32_t x)
 	{
 		union {
 			uint32_t d;

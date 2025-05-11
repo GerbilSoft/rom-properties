@@ -50,7 +50,7 @@ static char lc_decimal[8];
 /** File size formatting **/
 
 template<typename T>
-static inline constexpr int calc_frac_part_binary(T val, T mask)
+static inline CONSTEXPR_IF_MSVC2022 int calc_frac_part_binary(T val, T mask)
 {
 	const float f = static_cast<float>(val & (mask - 1)) / static_cast<float>(mask);
 	int frac_part = static_cast<int>(f * 1000.0f);
@@ -70,7 +70,7 @@ static inline constexpr int calc_frac_part_binary(T val, T mask)
 }
 
 template<typename T>
-static inline constexpr int calc_frac_part_decimal(T val, T divisor)
+static inline CONSTEXPR_IF_MSVC2022 int calc_frac_part_decimal(T val, T divisor)
 {
 	const float f = static_cast<float>(val % divisor) / static_cast<float>(divisor);
 	int frac_part = static_cast<int>(f * 1000.0f);
