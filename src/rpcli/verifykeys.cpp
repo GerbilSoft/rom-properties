@@ -115,7 +115,7 @@ int VerifyKeys(void)
 					break;
 			}
 
-			gsvt_fputs(fmt::format(FSTR("{:s}: "), key->name), gsvt_stdout);
+			Gsvt::StdOut.fputs(fmt::format(FSTR("{:s}: "), key->name));
 			if (isOK) {
 				Gsvt::StdOut.textColorSet8(2, true);	// green
 				Gsvt::StdOut.fputs(s_err);
