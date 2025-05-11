@@ -506,7 +506,7 @@ static int gsvt_win32_console_print_ANSI_emulate(gsvt_console *vt, const char *s
 				case 0:
 					// Reset
 					wAttributes = vt->wAttributesOrig;
-					bold = false;
+					bold = !!(wAttributes & FOREGROUND_INTENSITY);
 					bright = false;
 					break;
 				case 1:
