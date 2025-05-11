@@ -830,8 +830,8 @@ static void InitDialog(HWND hDlg)
 	ShowStatusMessage(hDlg, line1, line2, (bErr ? MB_ICONEXCLAMATION : 0));
 	EnableButtons(hDlg, !bErr);
 
-	// FIXME: INITIAL COMMIT: Set focus to the "Install" button.
-	// NOTE: Not working...???
+	// Set focus to the "Install" button.
+	// FIXME: Not working...???
 	SetFocus(GetDlgItem(hDlg, IDC_BUTTON_INSTALL));
 }
 

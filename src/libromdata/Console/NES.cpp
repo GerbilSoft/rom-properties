@@ -573,7 +573,6 @@ int NESPrivate::loadInternalFooter(void)
 					break;
 				}
 
-				// TODO: ascii_to_utf8()?
 				s_footerName = cp1252_to_utf8(&footer.title[start], len);
 			} else {
 				// Trim 0xFF characters.

@@ -93,6 +93,7 @@ setup_listitem_cb_text(GtkListItemFactory *factory, GtkListItem *list_item, gpoi
 static void
 bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer user_data)
 {
+	// TODO: Alternating row colors?
 	RP_UNUSED(factory);
 
 	GtkWidget *const widget = gtk_list_item_get_child(list_item);

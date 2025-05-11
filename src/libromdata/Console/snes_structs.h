@@ -137,10 +137,10 @@ typedef struct _SNES_RomHeader {
 			/** Standard SNES header. **/
 			char title[21];			// [0x7FC0] NOTE: May be Shift-JIS?
 			uint8_t rom_mapping;		// [0x7FD5] LoROM, HiROM
-			uint8_t rom_type;		// [0x7FD6] ROM type. (enhancements)
-			uint8_t rom_size;		// [0x7FD7] ROM size. (1024 << rom_size)
-			uint8_t sram_size;		// [0x7FD8] SRAM size. (1024 << sram_size);
-			uint8_t destination_code;	// [0x7FD9] Destination code. (TODO: Enum?)
+			uint8_t rom_type;		// [0x7FD6] ROM type (enhancements)
+			uint8_t rom_size;		// [0x7FD7] ROM size (1024 << rom_size)
+			uint8_t sram_size;		// [0x7FD8] SRAM size (1024 << sram_size);
+			uint8_t destination_code;	// [0x7FD9] Destination code (see SNES_Destination_Code_e)
 			uint8_t old_publisher_code;	// [0x7FDA]
 			uint8_t version;		// [0x7FDB]
 			uint16_t checksum_complement;	// [0x7FDC]
@@ -158,7 +158,7 @@ typedef struct _SNES_RomHeader {
 #pragma pack(1)
 			struct RP_PACKED {
 				char new_publisher_code[2];	// [0x7FB0]
-				uint32_t program_type;		// [0x7FB2] See SNES_BSX_Program_Type.
+				uint32_t program_type;		// [0x7FB2] See SNES_BSX_Program_Type_e.
 				uint8_t reserved[10];		// [0x7FB6] Usually 0x00.
 			} ext;
 #pragma pack()
@@ -237,7 +237,7 @@ typedef enum {
 	SNES_DEST_OTHER_X	= 0x12,
 	SNES_DEST_OTHER_Y	= 0x13,
 	SNES_DEST_OTHER_Z	= 0x14,
-} SNES_Destination_Code;
+} SNES_Destination_Code_e;
 
 /**
  * BS-X program type.
@@ -246,7 +246,7 @@ typedef enum {
 	SNES_BSX_PRG_65c816	= 0x00000000,	// 65c816 program
 	SNES_BSX_PRG_SCRIPT	= 0x00000100,	// BS-X script
 	SNES_BSX_PRG_SA_1	= 0x00000200,	// SA-1 program
-} SNES_BSX_Program_Type;
+} SNES_BSX_Program_Type_e;
 
 /**
  * Nintendo Power directory entry

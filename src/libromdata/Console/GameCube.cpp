@@ -329,7 +329,6 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	}
 
 	// Check the crypto and hash method.
-	// TODO: Lookup table instead of branches?
 	unsigned int cryptoMethod = 0;
 	if (discHeader.disc_noCrypto != 0 || isNASOSFormatDiscImage()) {
 		// No encryption.

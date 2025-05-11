@@ -190,7 +190,6 @@ int WiiTicketPrivate::getEncKey(void)
 	}
 
 	// Determine the key in use by checking the issuer.
-	// TODO: WiiTicket probably isn't the best place for Wii U keys...
 	char issuer[64];
 	memcpy(issuer, ticket.v0.signature_issuer, sizeof(ticket.v0.signature_issuer));
 	issuer[sizeof(issuer)-1] = '\0';
@@ -415,9 +414,9 @@ const char *WiiTicket::systemName(unsigned int type) const
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
-	// GBA has the same name worldwide, so we can
+	// Wii has the same name worldwide, so we can
 	// ignore the region selection.
-	// TODO: Abbreviation might be different... (Japan uses AGB?)
+	// TODO: iQue DSi?
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"WiiTicket::systemName() array index optimization needs to be updated.");
 

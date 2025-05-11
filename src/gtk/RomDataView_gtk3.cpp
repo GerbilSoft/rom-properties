@@ -319,7 +319,6 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 	// GTK+ 2.x: Use the "rules hint" for alternating row colors.
 	// Deprecated in GTK+ 3.14 (and removed in GTK4), but it doesn't
 	// work with GTK+ 3.x anyway.
-	// TODO: GTK4's GtkListView might have a similar function.
 	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(treeView), true);
 #endif /* !GTK_CHECK_VERSION(3, 0, 0) */
 
