@@ -16,6 +16,9 @@ using LibRomData::WiiUFst;
 // i18n
 #include "libi18n/i18n.h"
 
+// libgsvt for VT handling
+#include "gsvtpp.hpp"
+
 // C includes (C++ namespace)
 #include <cerrno>
 #include <cstdio>
@@ -69,12 +72,17 @@ int RP_C_API main(int argc, char *argv[])
 	setlocale(LC_CTYPE, "C");
 #endif /* _WIN32 */
 
+	// Detect console information.
+	// NOTE: Technically not needed, since Gsvt::Console access
+	// will call this for us...
+	gsvt_init();
+
 	// Initialize i18n.
 	rp_i18n_init();
 
 	if (argc < 2 || argc > 3) {
-		fmt::print(stderr, FRUN(C_("WiiUFstPrint", "Syntax: {:s} fst.bin")), argv[0]);
-		fputc('\n', stderr);
+		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("WiiUFstPrint", "Syntax: {:s} fst.bin")), argv[0]));
+		Gsvt::StdErr.newline();
 		return EXIT_FAILURE;
 	}
 
@@ -82,8 +90,8 @@ int RP_C_API main(int argc, char *argv[])
 	FILE *f = fopen(argv[1], "rb");
 	if (!f) {
 		// tr: {0:s} == filename, {1:s} == error message
-		fmt::print(stderr, FRUN(C_("GcnFstPrint", "Error opening '{0:s}': '{1:s}'")), argv[1], strerror(errno));
-		fputc('\n', stderr);
+		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("GcnFstPrint", "Error opening '{0:s}': '{1:s}'")), argv[1], strerror(errno)));
+		Gsvt::StdErr.newline();
 		return EXIT_FAILURE;
 	}
 
@@ -91,8 +99,8 @@ int RP_C_API main(int argc, char *argv[])
 	fseeko(f, 0, SEEK_END);
 	const off64_t fileSize_o = ftello(f);
 	if (fileSize_o > (16*1024*1024)) {
-		fputs(C_("GcnFstPrint", "ERROR: FST is too big. (Maximum of 16 MB.)"), stderr);
-		fputc('\n', stderr);
+		Gsvt::StdErr.fputs(C_("GcnFstPrint", "ERROR: FST is too big. (Maximum of 16 MB.)"));
+		Gsvt::StdErr.newline();
 		fclose(f);
 		return EXIT_FAILURE;
 	}
@@ -105,9 +113,9 @@ int RP_C_API main(int argc, char *argv[])
 	fclose(f);
 	if (rd_size != fileSize) {
 		// tr: {0:Ld} == number of bytes read, {1:Ld} == number of bytes expected to read
-		fmt::print(stderr, FRUN(C_("GcnFstPrint", "ERROR: Read {0:Ld} bytes, expected {1:Ld} bytes.")),
-			rd_size, fileSize);
-		fputc('\n', stderr);
+		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("GcnFstPrint", "ERROR: Read {0:Ld} bytes, expected {1:Ld} bytes.")),
+			rd_size, fileSize));
+		Gsvt::StdErr.newline();
 		return EXIT_FAILURE;
 	}
 
@@ -116,8 +124,8 @@ int RP_C_API main(int argc, char *argv[])
 	// "look" like an FST?
 	unique_ptr<IFst> fst(new WiiUFst(fstData.get(), static_cast<uint32_t>(fileSize)));
 	if (!fst->isOpen()) {
-		fmt::print(stderr, FRUN(C_("WiiUFstPrint", "*** ERROR: Could not parse '{:s}' as WiiUFst.")), argv[1]);
-		fputc('\n', stderr);
+		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("WiiUFstPrint", "*** ERROR: Could not parse '{:s}' as WiiUFst.")), argv[1]));
+		Gsvt::StdErr.newline();
 		return EXIT_FAILURE;
 	}
 
@@ -125,26 +133,12 @@ int RP_C_API main(int argc, char *argv[])
 	ostringstream oss;
 	LibRomData::fstPrint(fst.get(), oss, true);
 	const string fst_str = oss.str();
-
-#ifdef _WIN32
-	// FIXME: isatty() might not work properly on Win8+ with MinGW.
-	// Reference: https://lists.gnu.org/archive/html/bug-gnulib/2013-01/msg00007.html
-	if (isatty(fileno(stdout))) {
-		// Convert to wchar_t, then print it.
-		_fputts(U82T_s(fst_str), stdout);
-	} else {
-		// Writing to file. Print the original UTF-8.
-		fputs(fst_str.c_str(), stdout);
-	}
-#else /* !_WIN32 */
-	// Print the FST.
-	fputs(fst_str.c_str(), stdout);
-#endif
+	Gsvt::StdOut.fputs(oss.str());
 
 	if (fst->hasErrors()) {
-		fputc('\n', stderr);
-		fputs(C_("WiiUFstPrint", "*** WARNING: FST has errors and may be unusable."), stderr);
-		fputc('\n', stderr);
+		Gsvt::StdErr.newline();
+		Gsvt::StdErr.fputs(C_("WiiUFstPrint", "*** WARNING: FST has errors and may be unusable."));
+		Gsvt::StdErr.newline();
 	}
 
 	// Cleanup.
