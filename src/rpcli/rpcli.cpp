@@ -46,7 +46,6 @@ using namespace LibRomData;
 #include "librptexture/img/rp_image.hpp"
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
-#  include "libwin32common/rp_versionhelpers.h"
 #  include "librptexture/img/GdiplusHelper.hpp"
 #endif /* _WIN32 */
 using namespace LibRpTexture;
@@ -122,18 +121,6 @@ DELAYLOAD_TEST_FUNCTION_IMPL1(libintl_textdomain, nullptr);
 #  define T2U8c(tcs) (T2U8(tcs).c_str())
 #else /* !_WIN32 */
 #  define T2U8c(tcs) (tcs)
-#endif /* _WIN32 */
-
-#ifdef _WIN32
-// Console code page restoration
-// For UTF-8 console output on Windows 10.
-static UINT old_console_output_cp = 0;
-static void RestoreConsoleOutputCP(void)
-{
-	if (old_console_output_cp != 0) {
-		SetConsoleOutputCP(old_console_output_cp);
-	}
-}
 #endif /* _WIN32 */
 
 struct ExtractParam {
@@ -764,18 +751,6 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	}
 #  endif /* _MSC_VER */
 #endif /* RP_LIBROMDATA_IS_DLL */
-
-#ifdef _WIN32
-	// Enable UTF-8 console output on Windows 10.
-	// For older Windows, which doesn't support ANSI escape sequences,
-	// WriteConsoleW() will be used for Unicode output instead.
-	// TODO: Require Windows 10 1607 or later for ANSI escape sequences?
-	if (IsWindows10OrGreater()) {
-		old_console_output_cp = GetConsoleOutputCP();
-		atexit(RestoreConsoleOutputCP);
-		SetConsoleOutputCP(CP_UTF8);
-	}
-#endif /* _WIN32 */
 
 	// Initialize i18n.
 	rp_i18n_init();

@@ -18,6 +18,7 @@
 
 // Windows-specific stuff
 #include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/rp_versionhelpers.h"
 #include <winternl.h>
 #include <tchar.h>
 
@@ -42,6 +43,18 @@ typedef NTSTATUS (WINAPI *pfnNtQueryObject_t)(
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #  define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4
 #endif /* !ENABLE_VIRTUAL_TERMINAL_PROCESSING */
+
+#ifdef _WIN32
+// Console code page restoration
+// For UTF-8 console output on Windows 10.
+static UINT old_console_output_cp = 0;
+static void gsvt_win32_restore_console_output_cp(void)
+{
+	if (old_console_output_cp != 0) {
+		SetConsoleOutputCP(old_console_output_cp);
+	}
+}
+#endif /* _WIN32 */
 
 struct _gsvt_console {
 	FILE *stream;		// File handle, e.g. stdout or stderr
@@ -205,6 +218,16 @@ static void gsvt_init_win32(gsvt_console *vt, FILE *f, DWORD fd)
  */
 void gsvt_init(void)
 {
+	// Enable UTF-8 console output on Windows 10.
+	// For older Windows, which doesn't support ANSI escape sequences,
+	// WriteConsoleW() will be used for Unicode output instead.
+	// TODO: Require Windows 10 1607 or later for ANSI escape sequences?
+	if (IsWindows10OrGreater() && old_console_output_cp == 0) {
+		old_console_output_cp = GetConsoleOutputCP();
+		atexit(gsvt_win32_restore_console_output_cp);
+		SetConsoleOutputCP(CP_UTF8);
+	}
+
 	// Initialize the gsvt_console variables using stdout/stderr.
 	gsvt_init_win32(&__gsvt_stdout, stdout, STD_OUTPUT_HANDLE);
 	gsvt_init_win32(&__gsvt_stderr, stderr, STD_ERROR_HANDLE);
