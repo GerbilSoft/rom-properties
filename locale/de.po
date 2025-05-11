@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.4\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2025-05-11 03:29-0400\n"
+"POT-Creation-Date: 2025-05-11 03:42-0400\n"
 "PO-Revision-Date: 2024-11-03 20:21\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
@@ -1291,6 +1291,17 @@ msgstr "<b>ROM-Eigenschaften Seite</b><br>Shell-Erweiterung"
 msgctxt "ConfigDialog"
 msgid "<b>ERROR:</b> %1"
 msgstr "<b>FEHLER:</b> %1"
+
+#. tr: format string for Ext2 attribute checkbox labels (%1 == lsattr character)
+#: ../src/kde/xattr/Ext2AttrView.cpp:87
+msgctxt "Ext2AttrView"
+msgid "%1: %2"
+msgstr ""
+
+#: ../src/kde/xattr/Ext2AttrView.cpp:184
+msgctxt "Ext2AttrView"
+msgid "Compression: %1"
+msgstr "Kompression: %1"
 
 #. tr: XAttrView tab title
 #: ../src/kde/xattr/XAttrViewPropertiesDialogPlugin.cpp:83

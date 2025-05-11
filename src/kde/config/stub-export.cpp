@@ -128,16 +128,15 @@ Q_DECL_EXPORT int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 	QApplication *const app = initQApp(argc, argv, applicationDisplayName);
 
 	// Set up KAboutData.
-	const QString displayName = ConfigDialog::tr("ROM Properties Page configuration");
 	const char *const copyrightString =
 		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::Copyright);
 	assert(copyrightString != nullptr);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	KAboutData aboutData(
 		QLatin1String("rp-config"),	// componentName
-		displayName,			// displayName
+		applicationDisplayName,		// displayName
 		app->applicationVersion(),	// version
-		displayName,			// shortDescription (TODO: Better value?)
+		applicationDisplayName,		// shortDescription (TODO: Better value?)
 		KAboutLicense::GPL_V2,		// licenseType
 		QString::fromUtf8(copyrightString),	// copyrightStatement
 		QString(),			// otherText
@@ -149,9 +148,9 @@ Q_DECL_EXPORT int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 	KAboutData aboutData(
 		QByteArray("rp-config"),		// appName
 		QByteArray("rom-properties"),		// catalogName
-		KLocalizedString() /*displayName*/,	// programName
+		KLocalizedString() /*applicationDisplayName*/,	// programName
 		app->applicationVersion().toUtf8(),	// version
-		KLocalizedString() /*displayName*/,	// shortDescription (TODO: Better value?)
+		KLocalizedString() /*applicationDisplayName*/,	// shortDescription (TODO: Better value?)
 		KAboutData::License_GPL_V2,		// licenseType
 		KLocalizedString(), /*QString::fromUtf8(copyrightString)*/	// copyrightStatement
 		KLocalizedString(),			// otherText

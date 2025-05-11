@@ -84,7 +84,7 @@ public:
 void Ext2AttrViewPrivate::retranslateUi_nonDesigner(void)
 {
 	// tr: format string for Ext2 attribute checkbox labels (%1 == lsattr character)
-	const QString qs_lsattr_fmt = Ext2AttrView::tr("%1: %2");
+	const QString qs_lsattr_fmt = QC_("Ext2AttrView", "%1: %2");
 
 	for (size_t i = 0; i < checkBoxes.size(); i++) {
 		const Ext2AttrCheckboxInfo_t *const p = ext2AttrCheckboxInfo(static_cast<Ext2AttrCheckboxID>(i));
@@ -181,7 +181,7 @@ void Ext2AttrViewPrivate::updateZAlgorithmLabel(void)
 	}
 
 	if (!s_alg.isEmpty()) {
-		ui.lblCompression->setText(Ext2AttrView::tr("Compression: %1").arg(s_alg));
+		ui.lblCompression->setText(QC_("Ext2AttrView", "Compression: %1").arg(s_alg));
 	} else {
 		// NOTE: Can't hide the label because that would break the layout.
 		// Clear it instead.
