@@ -334,50 +334,39 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			fflush(stderr);
 
 #ifdef _WIN32
-			if (gsvt_is_console(gsvt_stdout) && ci_stdout.is_real_console) {
-				// Windows: Using a real console on stdout.
-				// Use WriteConsole(), which is faster than printf/cout.
-				ostringstream oss;
-				oss << JSONROMOutput(romData.get(), flags) << '\n';
-				cout.flush();
-				fflush(stdout);
-				const string str = oss.str();
-				// TODO: Error checking.
-				win32_write_to_console(&ci_stdout, str.data(), static_cast<int>(str.size()));
-			} else
+			// Windows: Use gsvt_fwrite() for faster console output where applicable.
+			// FIXME: gsvt_cout wrapper.
+			// FIXME: gsvt_fwrite_raw() function to skip ANSI escape parsing.
+			ostringstream oss;
+			oss << JSONROMOutput(romData.get(), flags) << '\n';
+			const string str = oss.str();
+			// TODO: Error checking.
+			gsvt_fwrite(str.data(), str.size(), gsvt_stdout);
+#else /* !_WIN32 */
+			// Not Windows: Write directly to cout.
+			// FIXME: gsvt_cout wrapper.
+			cout << JSONROMOutput(romData.get(), flags) << '\n';
 #endif /* _WIN32 */
-			{
-				// Windows: Using stdout console with UTF-8 support,
-				// or redirected to a file, or not using Windows.
-				cout << JSONROMOutput(romData.get(), flags) << '\n';
-			}
 		} else {
 #ifdef _WIN32
-			if (gsvt_is_console(gsvt_stdout) && ci_stdout.is_real_console && !gsvt_supports_ansi(gsvt_stdout)) {
-				// Windows: Using stdout console, but it doesn't support ANSI escapes.
-				// NOTE: Console may support UTF-8, but since it doesn't support
-				// ANSI escapes, we're better off using WriteConsoleW() anyway.
-				// Support for ANSI escape sequences was added in Windows 10 1607.
-				ostringstream oss;
-				oss << ROMOutput(romData.get(), lc, flags) << '\n';
-				cout.flush();
-				fflush(stdout);
-				// TODO: Error checking.
-				win32_console_print_ansi_color(oss.str().c_str());
-				fflush(stdout);
-			} else
-#endif /* _WIN32 */
-			{
+			// Windows: Use gsvt_fwrite() for faster console output where applicable.
+			// FIXME: gsvt_cout wrapper.
+			ostringstream oss;
+			oss << ROMOutput(romData.get(), lc, flags) << '\n';
+			const string str = oss.str();
+			// TODO: Error checking.
+			gsvt_fwrite(str.data(), str.size(), gsvt_stdout);
+#else /* !_WIN32 */
 #ifdef ENABLE_SIXEL
-				// If this is a tty, print the icon/banner using libsixel.
-				if (gsvt_is_console(gsvt_stdout)) {
-					print_sixel_icon_banner(romData);
-				}
-#endif /* ENABLE_SIXEL */
-				// Windows: Using stdout console with UTF-8 and ANSI escape support,
-				// or redirected to a file, or not using Windows.
-				cout << ROMOutput(romData.get(), lc, flags) << '\n';
+			// If this is a tty, print the icon/banner using libsixel.
+			if (gsvt_is_console(gsvt_stdout)) {
+				print_sixel_icon_banner(romData);
 			}
+#endif /* ENABLE_SIXEL */
+			// Not Windows: Write directly to cout.
+			// FIXME: gsvt_cout wrapper.
+			cout << ROMOutput(romData.get(), lc, flags) << '\n';
+#endif /* _WIN32 */
 		}
 		cout.flush();
 		fflush(stdout);
@@ -522,21 +511,21 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 		//cout.flush();
 	} else {
 #ifdef _WIN32
-		if (gsvt_is_console(gsvt_stdout) && ci_stdout.is_real_console) {
-			// Windows: Using a real console on stdout.
-			// Use WriteConsole(), which is faster than printf/cout.
-			ostringstream oss;
-			oss << ScsiInquiry(file.get()) << '\n';
-			cout.flush();
-			const string str = oss.str();
-			// TODO: Error checking.
-			win32_write_to_console(&ci_stdout, str.data(), static_cast<int>(str.size()));
-		} else
+		// Windows: Use gsvt_fwrite() for faster console output where applicable.
+		// FIXME: gsvt_cout wrapper.
+		// FIXME: gsvt_fwrite_raw() function to skip ANSI escape parsing.
+		ostringstream oss;
+		oss << ScsiInquiry(file.get()) << '\n';
+		cout.flush();
+		const string str = oss.str();
+		// TODO: Error checking.
+		gsvt_fwrite(str.data(), str.size(), gsvt_stdout);
+#else /* !_WIN32 */
+		// Not Windows: Write directly to cout.
+		// FIXME: gsvt_cout wrapper.
+		cout << ScsiInquiry(file.get()) << '\n';
+		cout.flush();
 #endif /* _WIN32 */
-		{
-			cout << ScsiInquiry(file.get()) << '\n';
-			cout.flush();
-		}
 	}
 }
 
@@ -603,21 +592,21 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 		//cout.flush();
 	} else {
 #ifdef _WIN32
-		if (gsvt_is_console(gsvt_stdout) && ci_stdout.is_real_console) {
-			// Windows: Using a real console on stdout.
-			// Use WriteConsole(), which is faster than printf/cout.
-			ostringstream oss;
-			oss << AtaIdentifyDevice(file.get(), packet) << '\n';
-			cout.flush();
-			const string str = oss.str();
-			// TODO: Error checking.
-			win32_write_to_console(&ci_stdout, str.data(), static_cast<int>(str.size()));
-		} else
+		// Windows: Use gsvt_fwrite() for faster console output where applicable.
+		// FIXME: gsvt_cout wrapper.
+		// FIXME: gsvt_fwrite_raw() function to skip ANSI escape parsing.
+		ostringstream oss;
+		oss << AtaIdentifyDevice(file.get(), packet) << '\n';
+		cout.flush();
+		const string str = oss.str();
+		// TODO: Error checking.
+		gsvt_fwrite(str.data(), str.size(), gsvt_stdout);
+#else /* !_WIN32 */
+		// Not Windows: Write directly to cout.
+		// FIXME: gsvt_cout wrapper.
+		cout << AtaIdentifyDevice(file.get(), packet) << '\n';
+		cout.flush();
 #endif /* _WIN32 */
-		{
-			cout << AtaIdentifyDevice(file.get(), packet) << '\n';
-			cout.flush();
-		}
 	}
 }
 #endif /* RP_OS_SCSI_SUPPORTED */

@@ -6,8 +6,7 @@ PROJECT(gsvt LANGUAGES C)
 ######################
 
 IF(WIN32)
-	# TODO: Windows version.
-	#SET(${PROJECT_NAME}_SRCS gsvt_win32.c)
+	SET(${PROJECT_NAME}_SRCS gsvt_win32.c)
 ELSE(WIN32)
 	SET(${PROJECT_NAME}_SRCS gsvt_posix.c)
 ENDIF(WIN32)
