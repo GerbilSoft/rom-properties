@@ -48,7 +48,6 @@ typedef NTSTATUS (WINAPI *pfnNtQueryObject_t)(
 #  define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4
 #endif /* !ENABLE_VIRTUAL_TERMINAL_PROCESSING */
 
-#ifdef _WIN32
 // Console code page restoration
 // For UTF-8 console output on Windows 10.
 static UINT old_console_output_cp = 0;
@@ -58,7 +57,6 @@ static void gsvt_win32_restore_console_output_cp(void)
 		SetConsoleOutputCP(old_console_output_cp);
 	}
 }
-#endif /* _WIN32 */
 
 struct _gsvt_console {
 	FILE *stream;		// File handle, e.g. stdout or stderr
