@@ -42,12 +42,14 @@
 #  define CTYPEX_CONSTEXPR
 #endif
 
+/** is*_ascii() functions **/
+
 /**
  * Non-localized isdigit() implementation.
  * @param c Character
  * @param True if c is a digit; false if not.
  */
-static CTYPEX_CONSTEXPR inline bool isdigit_ascii(char c)
+static CTYPEX_CONSTEXPR inline bool isdigit_ascii(int c)
 {
 	return (c >= '0' && c <= '9');
 }
@@ -57,7 +59,7 @@ static CTYPEX_CONSTEXPR inline bool isdigit_ascii(char c)
  * @param c Character
  * @param True if c is a digit; false if not.
  */
-static CTYPEX_CONSTEXPR inline bool isxdigit_ascii(char c)
+static CTYPEX_CONSTEXPR inline bool isxdigit_ascii(int c)
 {
 	return isdigit_ascii(c) ||
 	       (c >= 'A' && c <= 'F') ||
@@ -69,7 +71,7 @@ static CTYPEX_CONSTEXPR inline bool isxdigit_ascii(char c)
  * @param c Character
  * @param True if c is an uppercase letter; false if not.
  */
-static CTYPEX_CONSTEXPR inline bool isupper_ascii(char c)
+static CTYPEX_CONSTEXPR inline bool isupper_ascii(int c)
 {
 	return (c >= 'A' && c <= 'Z');
 }
@@ -79,7 +81,7 @@ static CTYPEX_CONSTEXPR inline bool isupper_ascii(char c)
  * @param c Character
  * @param True if c is an uppercase letter; false if not.
  */
-static CTYPEX_CONSTEXPR inline bool islower_ascii(char c)
+static CTYPEX_CONSTEXPR inline bool islower_ascii(int c)
 {
 	return (c >= 'a' && c <= 'z');
 }
@@ -89,7 +91,7 @@ static CTYPEX_CONSTEXPR inline bool islower_ascii(char c)
  * @param c Character
  * @param True if c is a letter; false if not.
  */
-static CTYPEX_CONSTEXPR inline bool isalpha_ascii(char c)
+static CTYPEX_CONSTEXPR inline bool isalpha_ascii(int c)
 {
 	return isupper_ascii(c) || islower_ascii(c);
 }
@@ -99,7 +101,29 @@ static CTYPEX_CONSTEXPR inline bool isalpha_ascii(char c)
  * @param c Character
  * @param True if c is a letter or a number; false if not.
  */
-static CTYPEX_CONSTEXPR inline bool isalnum_ascii(char c)
+static CTYPEX_CONSTEXPR inline bool isalnum_ascii(int c)
 {
 	return isalpha_ascii(c) || isdigit_ascii(c);
+}
+
+/** to*_ascii() functions **/
+
+/**
+ * Non-localized toupper() implementation.
+ * @param c Character
+ * @return Uppercase character if it's lowercase, or the original character otherwise.
+ */
+static CTYPEX_CONSTEXPR inline int toupper_ascii(int c)
+{
+	return islower_ascii(c) ? (c & ~0x20) : c;
+}
+
+/**
+ * Non-localized tolower() implementation.
+ * @param c Character
+ * @return Lowercase character if it's uppercase, or the original character otherwise.
+ */
+static CTYPEX_CONSTEXPR inline int tolower_ascii(int c)
+{
+	return isupper_ascii(c) ? (c | 0x20) : c;
 }

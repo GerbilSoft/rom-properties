@@ -73,6 +73,9 @@ using namespace LibRpTexture;
 #endif
 #include "tcharx.h"
 
+// C includes
+#include "ctypex.h"
+
 // C++ STL classes
 #include <sstream>
 using std::array;
@@ -873,12 +876,21 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				uint32_t new_lc = 0;
 				int pos;
 				for (pos = 0; pos < 4 && s_lang[pos] != _T('\0'); pos++) {
+					TCHAR c = tolower_ascii(s_lang[pos]);
+					if (!islower_ascii(c)) {
+						// Not a valid language code character.
+						new_lc = 0;
+						break;
+					}
+
 					new_lc <<= 8;
-					new_lc |= static_cast<uint8_t>(s_lang[pos]);
+					new_lc |= static_cast<uint8_t>(c);
 				}
-				if (pos == 4 && s_lang[pos] != _T('\0')) {
+				if (new_lc == 0 || (pos == 4 && s_lang[pos] != _T('\0'))) {
 					// Invalid language code.
+					gsvt_text_color_set8(gsvt_stderr, 3, true);	// yellow
 					gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Warning: ignoring invalid language code '{:s}'")), T2U8c(s_lang)), gsvt_stderr);
+					gsvt_text_color_reset(gsvt_stderr);
 					gsvt_newline(gsvt_stderr);
 					fflush(stderr);
 					break;
