@@ -3,7 +3,7 @@
  * ImageDecoder_Linear.cpp: Image decoding functions: Linear               *
  * SSSE3-optimized version.                                                *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -229,6 +229,10 @@ rp_image_ptr fromLinear32_ssse3(PixelFormat px_format,
 		if (unlikely(stride % bytespp != 0 || stride < (width * bytespp))) {
 			// Invalid stride.
 			return nullptr;
+		} else if (unlikely((stride % 16 != 0) && px_format != PixelFormat::Host_ARGB32)) {
+			// Unaligned stride.
+			// Use the C++ version.
+			return fromLinear32_cpp(px_format, width, height, img_buf, img_siz, stride);
 		}
 		src_stride_adj = (stride / bytespp) - width;
 	} else {
