@@ -924,12 +924,16 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #else /* !_WIN32 */
 					const char *const s_imgType = ts_imgType;
 #endif /* _WIN32 */
+					gsvt_text_color_set8(gsvt_stderr, 3, true);	// yellow
 					gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Warning: skipping invalid image type '{:s}'")), s_imgType), gsvt_stderr);
+					gsvt_text_color_reset(gsvt_stderr);
 					gsvt_newline(gsvt_stderr);
 					fflush(stderr);
 					i++; continue;
 				} else if (num < RomData::IMG_INT_MIN || num > RomData::IMG_INT_MAX) {
+					gsvt_text_color_set8(gsvt_stderr, 3, true);	// yellow
 					gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Warning: skipping unknown image type {:d}")), num), gsvt_stderr);
+					gsvt_text_color_reset(gsvt_stderr);
 					gsvt_newline(gsvt_stderr);
 					fflush(stderr);
 					i++; continue;
@@ -949,12 +953,16 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #else /* !_WIN32 */
 					const char *const s_mipmapLevel = ts_mipmapLevel;
 #endif /* _WIN32 */
+					gsvt_text_color_set8(gsvt_stderr, 3, true);	// yellow
 					gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Warning: skipping invalid mipmap level '{:s}'")), s_mipmapLevel), gsvt_stderr);
+					gsvt_text_color_reset(gsvt_stderr);
 					gsvt_newline(gsvt_stderr);
 					fflush(stderr);
 					i++; continue;
 				} else if (num < -1 || num > 1024) {
+					gsvt_text_color_set8(gsvt_stderr, 3, true);	// yellow
 					gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Warning: skipping out-of-range mipmap level {:d}")), num), gsvt_stderr);
+					gsvt_text_color_reset(gsvt_stderr);
 					gsvt_newline(gsvt_stderr);
 					fflush(stderr);
 					i++; continue;
@@ -988,6 +996,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 						inq_ata_packet = true;
 						break;
 					default:
+						gsvt_text_color_set8(gsvt_stderr, 3, true);	// yellow
 						if (argv[i][2] == _T('\0')) {
 							gsvt_fputs(C_("rpcli", "Warning: no inquiry request specified for '-i'"), gsvt_stderr);
 						} else {
@@ -995,6 +1004,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 							gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Warning: skipping unknown inquiry request '{:c}'")),
 								(char)argv[i][2]), gsvt_stderr);
 						}
+						gsvt_text_color_reset(gsvt_stderr);
 						gsvt_newline(gsvt_stderr);
 						fflush(stderr);
 						break;
@@ -1004,7 +1014,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 			default:
 				// FIXME: Unicode character on Windows.
+				gsvt_text_color_set8(gsvt_stderr, 3, true);	// yellow
 				gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Warning: skipping unknown switch '{:c}'")), (char)argv[i][1]), gsvt_stderr);
+				gsvt_text_color_reset(gsvt_stderr);
 				gsvt_newline(gsvt_stderr);
 				fflush(stderr);
 				break;
