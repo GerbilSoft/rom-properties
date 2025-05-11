@@ -331,7 +331,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			oss << JSONROMOutput(romData.get(), flags) << '\n';
 			const string str = oss.str();
 			// TODO: Error checking.
-			gsvt_fwrite(str.data(), str.size(), gsvt_stdout);
+			gsvt_fputs(str, gsvt_stdout);
 #else /* !_WIN32 */
 			// Not Windows: Write directly to cout.
 			// FIXME: gsvt_cout wrapper.
@@ -345,7 +345,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			oss << ROMOutput(romData.get(), lc, flags) << '\n';
 			const string str = oss.str();
 			// TODO: Error checking.
-			gsvt_fwrite(str.data(), str.size(), gsvt_stdout);
+			gsvt_fputs(str, gsvt_stdout);
 #else /* !_WIN32 */
 #ifdef ENABLE_SIXEL
 			// If this is a tty, print the icon/banner using libsixel.
@@ -509,7 +509,7 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 		cout.flush();
 		const string str = oss.str();
 		// TODO: Error checking.
-		gsvt_fwrite(str.data(), str.size(), gsvt_stdout);
+		gsvt_fputs(str, gsvt_stdout);
 #else /* !_WIN32 */
 		// Not Windows: Write directly to cout.
 		// FIXME: gsvt_cout wrapper.
@@ -590,7 +590,7 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 		cout.flush();
 		const string str = oss.str();
 		// TODO: Error checking.
-		gsvt_fwrite(str.data(), str.size(), gsvt_stdout);
+		gsvt_fputs(str, gsvt_stdout);
 #else /* !_WIN32 */
 		// Not Windows: Write directly to cout.
 		// FIXME: gsvt_cout wrapper.
