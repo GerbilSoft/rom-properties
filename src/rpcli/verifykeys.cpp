@@ -77,7 +77,7 @@ int VerifyKeys(void)
 			if (!key) {
 				ConsoleSetTextColor(&ci_stdout, 3, true);	// yellow
 				ConsolePrint(&ci_stdout,
-					fmt::format(FRUN(C_("rpcli", "WARNING: Key [{:d},{:d}] has no Key object. Skipping...")), sectIdx, keyIdx), true);
+					fmt::format(FRUN(C_("rpcli", "WARNING: Key [{:d},{:d}] has no Key object. Skipping...")), sectIdx, keyIdx));
 				ConsoleResetTextColor(&ci_stdout);
 				ConsolePrintNewline(&ci_stdout);
 				fflush(stdout);
@@ -88,7 +88,7 @@ int VerifyKeys(void)
 			if (key->name.empty()) {
 				ConsoleSetTextColor(&ci_stdout, 3, true);	// yellow
 				ConsolePrint(&ci_stdout,
-					fmt::format(FRUN(C_("rpcli", "WARNING: Key [{:d},{:d}] has no name. Skipping...")), sectIdx, keyIdx), true);
+					fmt::format(FRUN(C_("rpcli", "WARNING: Key [{:d},{:d}] has no name. Skipping...")), sectIdx, keyIdx));
 				ConsoleResetTextColor(&ci_stdout);
 				ConsolePrintNewline(&ci_stdout);
 				fflush(stdout);
