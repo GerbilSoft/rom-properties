@@ -8,12 +8,6 @@
 
 #include "gsvtpp.hpp"
 
-struct _gsvt_console {
-	FILE *stream;		// File handle, e.g. stdout or stderr
-	bool is_console;	// True if this is a real console and not redirected to a file
-	bool supports_ansi;	// True if the console supports ANSI escape sequences
-};
-
 namespace Gsvt {
 
 Console StdOut(gsvt_stdout);
