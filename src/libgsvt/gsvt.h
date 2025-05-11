@@ -84,6 +84,14 @@ size_t gsvt_fwrite(const char *ptr, size_t nmemb, gsvt_console *vt);
  */
 int gsvt_fputs(const char *s, gsvt_console *vt);
 
+/**
+ * fflush() wrapper function for gsvt_console.
+ *
+ * @param vt
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int gsvt_fflush(gsvt_console *vt);
+
 /** Convenience functions **/
 
 /**

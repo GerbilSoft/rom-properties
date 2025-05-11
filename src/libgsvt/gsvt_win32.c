@@ -14,6 +14,7 @@
 
 // C includes
 #include <assert.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -692,6 +693,20 @@ int gsvt_fputs(const char *s, gsvt_console *vt)
 
 	// Not a real console. Use fputs().
 	return fputs(s, vt->stream);
+}
+
+/**
+ * fflush() wrapper function for gsvt_console.
+ *
+ * @param vt
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int gsvt_fflush(gsvt_console *vt)
+{
+	// NOTE: No need to flush when using WriteConsole(),
+	// but we'll flush it anyway, "just in case".
+	int ret = fflush(vt->stream);
+	return (ret == 0) ? 0 : errno;
 }
 
 /** Convenience functions **/

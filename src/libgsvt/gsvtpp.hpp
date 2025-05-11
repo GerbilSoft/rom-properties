@@ -109,6 +109,16 @@ public:
 		return static_cast<int>(gsvt_fwrite(s.data(), s.size(), m_console));
 	}
 
+	/**
+	 * fflush() wrapper function for gsvt_console.
+	 *
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int fflush(void)
+	{
+		return gsvt_fflush(m_console);
+	}
+
 public:
 	/** Convenience functions **/
 

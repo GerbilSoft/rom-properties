@@ -14,6 +14,7 @@
 
 // C includes
 #include <assert.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -225,6 +226,19 @@ int gsvt_fputs(const char *s, gsvt_console *vt)
 {
 	// NOTE: Simple wrapper around fputs().
 	return fputs(s, vt->stream);
+}
+
+/**
+ * fflush() wrapper function for gsvt_console.
+ *
+ * @param vt
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int gsvt_fflush(gsvt_console *vt)
+{
+	// NOTE: Simple wrapper around fflush().
+	int ret = fflush(vt->stream);
+	return (ret == 0) ? 0 : errno;
 }
 
 /** Convenience functions **/

@@ -67,7 +67,6 @@ int VerifyKeys(void)
 		Gsvt::StdOut.fputs(fmt::format(FRUN(C_("rpcli", "Checking encryption keys: {:s}")), keyStore.sectName(sectIdx)));
 		Gsvt::StdOut.textColorReset();
 		Gsvt::StdOut.newline();
-		fflush(stdout);
 
 		const int keyCount = keyStore.keyCount(sectIdx);
 		for (int keyIdx = 0; keyIdx < keyCount; keyIdx++) {
@@ -78,7 +77,6 @@ int VerifyKeys(void)
 				Gsvt::StdOut.fputs(fmt::format(FRUN(C_("rpcli", "WARNING: Key [{:d},{:d}] has no Key object. Skipping...")), sectIdx, keyIdx));
 				Gsvt::StdOut.textColorReset();
 				Gsvt::StdOut.newline();
-				fflush(stdout);
 				ret = 1;
 				continue;
 			}
@@ -88,7 +86,6 @@ int VerifyKeys(void)
 				Gsvt::StdOut.fputs(fmt::format(FRUN(C_("rpcli", "WARNING: Key [{:d},{:d}] has no name. Skipping...")), sectIdx, keyIdx));
 				Gsvt::StdOut.textColorReset();
 				Gsvt::StdOut.newline();
-				fflush(stdout);
 				ret = 1;
 				continue;
 			}
@@ -129,10 +126,9 @@ int VerifyKeys(void)
 			}
 			Gsvt::StdOut.textColorReset();
 			Gsvt::StdOut.newline();
-			fflush(stdout);
 		}
 	}
 
-	fflush(stdout);
+	Gsvt::StdOut.fflush();
 	return ret;
 }
