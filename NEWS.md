@@ -1,5 +1,11 @@
 # Changes
 
+## v2.6 (released 2025/??/??)
+
+* Other changes:
+  * rpcli: Added more colorization for warning messages.
+  * rpcli: Refactored console handling into a separate library, libgsvt.
+
 ## v2.5.1 (released 2025/05/10)
 
 * New parser features:
