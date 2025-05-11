@@ -114,18 +114,28 @@ string IntellivisionPrivate::getTitle(int *pOutYear) const
 	// Title is a NULL-terminated ASCII string, but it's 16-bit words.
 	// Convert it to 8-bit ASCII.
 	// NOTE: Removing the high bit to ensure UTF-8 compatibility.
-	// TODO: Verify the whole EXEC character set.
-	// FIXME: 0x5E and 0x5F are arrows, similar to PETSCII.
+	// NOTE: 0x7F-0xFF are graphics characters. Not sure if it maps to Unicode well...
 	string title;
 	title.reserve(32);
 	const uint16_t *const p_end = &romHeader.u16[ARRAY_SIZE(romHeader.u16)];
 	for (const uint16_t *p = &romHeader.u16[title_addr+1]; p < p_end; p++) {
-		const uint16_t chr = *p;
+		uint16_t chr = *p;
 		if (chr == 0) {
 			break;
 		}
 
-		title += static_cast<char>(static_cast<uint8_t>(be16_to_cpu(chr)));
+		// Convert from big-endian.
+		chr = be16_to_cpu(chr);
+		if (chr == 0x3E) {
+			// U+2191 UPWARDS ARROW
+			title += "\xE2\x86\x91";
+		} else if (chr == 0x3F) {
+			// U+2190 LEFTWARDS ARROW
+			title += "\xE2\x86\x90";
+		} else {
+			// Other character
+			title += static_cast<char>(static_cast<uint8_t>(chr));
+		}
 	}
 
 	// Trim the title.
