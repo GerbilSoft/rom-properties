@@ -16,8 +16,8 @@
 
 #include "verifykeys.hpp"
 
-// VT handling
-#include "vt.hpp"
+// libgsvt for VT handling
+#include "gsvt.h"
 
 // Other rom-properties libraries
 #include "libi18n/i18n.h"
@@ -58,16 +58,15 @@ int VerifyKeys(void)
 	const int sectCount = keyStore.sectCount();
 	for (int sectIdx = 0; sectIdx < sectCount; sectIdx++) {
 		if (printedOne) {
-			ConsolePrintNewline(&ci_stdout);
+			gsvt_newline(gsvt_stdout);
 		}
 		printedOne = true;
 
-		ConsoleSetTextColor(&ci_stdout, 6, true);	// cyan
-		ConsolePrint(&ci_stdout, "*** ");
-		ConsolePrint(&ci_stdout,
-			fmt::format(FRUN(C_("rpcli", "Checking encryption keys: {:s}")), keyStore.sectName(sectIdx)));
-		ConsoleResetTextColor(&ci_stdout);
-		ConsolePrintNewline(&ci_stdout);
+		gsvt_text_color_set8(gsvt_stdout, 6, true);	// cyan
+		gsvt_fputs("*** ", gsvt_stdout);
+		gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Checking encryption keys: {:s}")), keyStore.sectName(sectIdx)), gsvt_stdout);
+		gsvt_text_color_reset(gsvt_stdout);
+		gsvt_newline(gsvt_stdout);
 		fflush(stdout);
 
 		const int keyCount = keyStore.keyCount(sectIdx);
@@ -75,22 +74,20 @@ int VerifyKeys(void)
 			const KeyStoreUI::Key *const key = keyStore.getKey(sectIdx, keyIdx);
 			assert(key != nullptr);
 			if (!key) {
-				ConsoleSetTextColor(&ci_stdout, 3, true);	// yellow
-				ConsolePrint(&ci_stdout,
-					fmt::format(FRUN(C_("rpcli", "WARNING: Key [{:d},{:d}] has no Key object. Skipping...")), sectIdx, keyIdx));
-				ConsoleResetTextColor(&ci_stdout);
-				ConsolePrintNewline(&ci_stdout);
+				gsvt_text_color_set8(gsvt_stdout, 3, true);	// yellow
+				gsvt_fputs(fmt::format(FRUN(C_("rpcli", "WARNING: Key [{:d},{:d}] has no Key object. Skipping...")), sectIdx, keyIdx), gsvt_stdout);
+				gsvt_text_color_reset(gsvt_stdout);
+				gsvt_newline(gsvt_stdout);
 				fflush(stdout);
 				ret = 1;
 				continue;
 			}
 			assert(!key->name.empty());
 			if (key->name.empty()) {
-				ConsoleSetTextColor(&ci_stdout, 3, true);	// yellow
-				ConsolePrint(&ci_stdout,
-					fmt::format(FRUN(C_("rpcli", "WARNING: Key [{:d},{:d}] has no name. Skipping...")), sectIdx, keyIdx));
-				ConsoleResetTextColor(&ci_stdout);
-				ConsolePrintNewline(&ci_stdout);
+				gsvt_text_color_set8(gsvt_stdout, 3, true);	// yellow
+				gsvt_fputs(fmt::format(FRUN(C_("rpcli", "WARNING: Key [{:d},{:d}] has no name. Skipping...")), sectIdx, keyIdx), gsvt_stdout);
+				gsvt_text_color_reset(gsvt_stdout);
+				gsvt_newline(gsvt_stdout);
 				fflush(stdout);
 				ret = 1;
 				continue;
@@ -121,17 +118,17 @@ int VerifyKeys(void)
 					break;
 			}
 
-			ConsolePrint(&ci_stdout, fmt::format(FSTR("{:s}: "), key->name));
+			gsvt_fputs(fmt::format(FSTR("{:s}: "), key->name), gsvt_stdout);
 			if (isOK) {
-				ConsoleSetTextColor(&ci_stdout, 2, true);	// green
-				ConsolePrint(&ci_stdout, s_err);
+				gsvt_text_color_set8(gsvt_stdout, 2, true);	// green
+				gsvt_fputs(s_err, gsvt_stdout);
 			} else {
-				ConsoleSetTextColor(&ci_stdout, 1, true);	// red
-				ConsolePrint(&ci_stdout, fmt::format(FRUN(C_("rpcli", "ERROR: {:s}")), s_err));
+				gsvt_text_color_set8(gsvt_stdout, 1, true);	// red
+				gsvt_fputs(fmt::format(FRUN(C_("rpcli", "ERROR: {:s}")), s_err), gsvt_stdout);
 				ret = 1;
 			}
-			ConsoleResetTextColor(&ci_stdout);
-			ConsolePrintNewline(&ci_stdout);
+			gsvt_text_color_reset(gsvt_stdout);
+			gsvt_newline(gsvt_stdout);
 			fflush(stdout);
 		}
 	}
