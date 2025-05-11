@@ -243,12 +243,7 @@ void gsvt_text_color_set8(gsvt_console *vt, uint8_t color, bool bold)
 	assert(color < 8);
 	color &= 0x07;
 
-	char buf[16];
-	int len = snprintf(buf, sizeof(buf), "\033[3%u%sm", color, (bold ? ";1" : ""));
-	if (len >= (int)sizeof(buf)) {
-		len = (int)sizeof(buf);
-	}
-	fwrite(buf, 1, len, vt->stream);
+	fprintf(vt->stream, "\033[3%u%sm", color, (bold ? ";1" : ""));
 }
 
 /**

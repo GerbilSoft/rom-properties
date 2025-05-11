@@ -714,7 +714,12 @@ void gsvt_text_color_set8(gsvt_console *vt, uint8_t color, bool bold)
 	if (len >= (int)sizeof(buf)) {
 		len = (int)sizeof(buf);
 	}
-	fwrite(buf, 1, len, vt->stream);
+
+	if (vt->is_real_console) {
+		WriteConsoleA(vt->hConsole, buf, len, NULL, NULL);
+	} else {
+		fwrite(buf, 1, len, vt->stream);
+	}
 }
 
 /**
@@ -741,5 +746,9 @@ void gsvt_text_color_reset(gsvt_console *vt)
 
 	// ANSI escape sequences are supported.
 	static const char ansi_color_reset[] = "\033[0m";
-	fwrite(ansi_color_reset, 1, sizeof(ansi_color_reset)-1, vt->stream);
+	if (vt->is_real_console) {
+		WriteConsoleA(vt->hConsole, ansi_color_reset, sizeof(ansi_color_reset)-1, NULL, NULL);
+	} else {
+		fwrite(ansi_color_reset, 1, sizeof(ansi_color_reset)-1, vt->stream);
+	}
 }
