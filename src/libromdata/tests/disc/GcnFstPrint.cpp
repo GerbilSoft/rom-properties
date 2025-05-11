@@ -93,7 +93,9 @@ int RP_C_API main(int argc, char *argv[])
 		char *endptr = nullptr;
 		long ltmp = strtol(argv[2], &endptr, 10);
 		if (*endptr != '\0' || (ltmp != 0 && ltmp != 2)) {
+			Gsvt::StdErr.textColorSet8(1, true);	// red
 			Gsvt::StdErr.fputs(fmt::format(FRUN(C_("GcnFstPrint", "Invalid offset shift '{:s}' specified.")), argv[2]));
+			Gsvt::StdErr.textColorReset();
 			Gsvt::StdErr.newline();
 			Gsvt::StdErr.fputs(C_("GcnFstPrint", "offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)"));
 			Gsvt::StdErr.newline();
@@ -105,8 +107,10 @@ int RP_C_API main(int argc, char *argv[])
 	// Open and read the FST file.
 	FILE *f = fopen(argv[1], "rb");
 	if (!f) {
+		Gsvt::StdErr.textColorSet8(1, true);	// red
 		// tr: {0:s} == filename, {1:s} == error message
 		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("GcnFstPrint", "Error opening '{0:s}': '{1:s}'")), argv[1], strerror(errno)));
+		Gsvt::StdErr.textColorReset();
 		Gsvt::StdErr.newline();
 		return EXIT_FAILURE;
 	}
@@ -115,7 +119,9 @@ int RP_C_API main(int argc, char *argv[])
 	fseeko(f, 0, SEEK_END);
 	const off64_t fileSize_o = ftello(f);
 	if (fileSize_o > (16*1024*1024)) {
+		Gsvt::StdErr.textColorSet8(1, true);	// red
 		Gsvt::StdErr.fputs(C_("GcnFstPrint", "ERROR: FST is too big. (Maximum of 16 MB.)"));
+		Gsvt::StdErr.textColorReset();
 		Gsvt::StdErr.newline();
 		fclose(f);
 		return EXIT_FAILURE;
@@ -128,9 +134,11 @@ int RP_C_API main(int argc, char *argv[])
 	size_t rd_size = fread(fstData.get(), 1, fileSize, f);
 	fclose(f);
 	if (rd_size != fileSize) {
+		Gsvt::StdErr.textColorSet8(1, true);	// red
 		// tr: {0:d} == number of bytes read, {1:d} == number of bytes expected to read
 		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("GcnFstPrint", "ERROR: Read {0:Ld} bytes, expected {1:Ld} bytes.")),
 			rd_size, fileSize));
+		Gsvt::StdErr.textColorReset();
 		Gsvt::StdErr.newline();
 		return EXIT_FAILURE;
 	}
@@ -153,7 +161,9 @@ int RP_C_API main(int argc, char *argv[])
 	unique_ptr<IFst> fst(new GcnFst(&fstData[fst_start_offset],
 		static_cast<uint32_t>(fileSize - fst_start_offset), offsetShift));
 	if (!fst->isOpen()) {
+		Gsvt::StdErr.textColorSet8(1, true);	// red
 		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("GcnFstPrint", "*** ERROR: Could not parse '{:s}' as GcnFst.")), argv[1]));
+		Gsvt::StdErr.textColorReset();
 		Gsvt::StdErr.newline();
 		return EXIT_FAILURE;
 	}
@@ -165,7 +175,9 @@ int RP_C_API main(int argc, char *argv[])
 
 	if (fst->hasErrors()) {
 		Gsvt::StdErr.newline();
+		Gsvt::StdErr.textColorSet8(3, true);	// yellow
 		Gsvt::StdErr.fputs(C_("GcnFstPrint", "*** WARNING: FST has errors and may be unusable."));
+		Gsvt::StdErr.textColorReset();
 		Gsvt::StdErr.newline();
 	}
 
