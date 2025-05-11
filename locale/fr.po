@@ -1228,7 +1228,7 @@ msgstr ""
 #, c-format
 msgctxt "Ext2AttrView"
 msgid "%c: %s"
-msgstr ""
+msgstr "%c : %s"
 
 #: ../src/gtk/xattr/XAttrView.cpp:95
 msgctxt "XAttrView"
@@ -1252,7 +1252,7 @@ msgstr "<b>ERREUR :</b> %1"
 #: ../src/kde/xattr/Ext2AttrView.cpp:87
 msgctxt "Ext2AttrView"
 msgid "%1: %2"
-msgstr ""
+msgstr "%1 : %2"
 
 #: ../src/kde/xattr/Ext2AttrView.cpp:184
 msgctxt "Ext2AttrView"
