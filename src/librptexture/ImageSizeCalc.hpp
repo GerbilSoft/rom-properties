@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageSizeCalc.hpp: Image size calculation functions.                    *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -122,24 +122,12 @@ unsigned int T_calcImageSizePVRTC_PoT(int width, int height);
  * @param block_y	[in] Block height
  * @return True if valid; false if not.
  */
-static inline bool validateBlockSizeASTC(uint8_t block_x, uint8_t block_y)
+static inline constexpr bool validateBlockSizeASTC(uint8_t block_x, uint8_t block_y)
 {
-	// FIXME: MSVC 2015 doesn't like assert() in a constexpr function.
-	assert(block_x >= 4);
-	assert(block_x <= 12);
-	assert(block_y >= 4);
-	assert(block_y <= 12);
-	assert(block_x >= block_y);
-	if (block_x < 4 || block_x > 12 ||
-	    block_y < 4 || block_y > 12 ||
-	    block_x < block_y)
-	{
-		// Invalid block size.
-		return false;
-	}
-
 	// TODO: Validate combinations?
-	return true;
+	return (block_x >= 4 && block_x <= 12) &&
+	       (block_y >= 4 && block_y <= 12) &&
+	       (block_x >= block_y);
 }
 
 /**
