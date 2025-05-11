@@ -34,7 +34,14 @@ Build-Depends:
  liblz4-dev,
  liblzo2-dev,
  libgsound-dev,
- libfmt-dev
+ libfmt-dev,
+ libfmt-dev,
+ qt6-base-dev,
+ qt6-tools-dev-tools,
+ libkf6kio-dev,
+ libkf6widgetsaddons-dev,
+ libkf6filemetadata-dev,
+ libkf6crash-dev
 Standards-Version: 3.9.8
 Homepage: https://github.com/GerbilSoft/rom-properties
 Vcs-Git: https://github.com/GerbilSoft/rom-properties
@@ -42,7 +49,7 @@ Vcs-Browser: https://github.com/GerbilSoft/rom-properties
 
 Package: rom-properties-all
 Architecture: any
-Depends: ${misc:Depends}, libromdata6, rom-properties-kf5, rom-properties-gtk3, rom-properties-gtk4, rom-properties-cli, rom-properties-tracker, rom-properties-utils, rom-properties-lang, rom-properties-thumbnailer-dbus
+Depends: ${misc:Depends}, libromdata6, rom-properties-kf5, rom-properties-kf6, rom-properties-gtk3, rom-properties-gtk4, rom-properties-cli, rom-properties-tracker, rom-properties-utils, rom-properties-lang, rom-properties-thumbnailer-dbus
 Description: ROM Properties Page shell extension (meta package)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
@@ -85,6 +92,17 @@ Description: ROM Properties Page shell extension (KF5 UI frontend)
  including Nintendo GameCube and Wii.
  .
  This package contains the KDE Frameworks 5 UI frontend.
+
+Package: rom-properties-kf6
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata6, rom-properties-utils, rom-properties-xdg, rom-properties-kio-servicemenus
+Recommends: rom-properties-lang
+Description: ROM Properties Page shell extension
+ This shell extension provides thumbnailing and property page functionality
+ for ROM images, disc images, and save files for various game consoles,
+ including Nintendo GameCube and Wii.
+ .
+ This package contains the KDE Frameworks 6 UI frontend.
 
 Package: rom-properties-gtk3
 Architecture: any

@@ -1,3 +1,14 @@
+rom-properties (2.5.1-1ppa2~plucky1) plucky; urgency=medium
+
+  * Build for Ubuntu 25.04 "Plucky" Puffin.
+
+    * Enable KF6 builds.
+    * Tracker API version increased to 3L.
+
+  * PPA version bumped to ensure it updates from previous versions.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 10 May 2025 20:08:20 -0400
+
 rom-properties (2.5.1-1ppa2~noble1) noble; urgency=medium
 
   * Build for Ubuntu 24.04 "Noble" Numbat.
