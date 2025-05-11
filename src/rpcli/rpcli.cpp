@@ -17,7 +17,7 @@
 #include "rpcli_secure.h"
 
 // libgsvt for VT handling
-#include "gsvt.h"
+#include "gsvtpp.hpp"
 
 // librpbyteswap
 #include "librpbyteswap/byteswap_rp.h"
@@ -167,34 +167,33 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 
 			if (image && image->isValid()) {
 				found = true;
-				gsvt_text_color_set8(gsvt_stderr, 6, true);	// cyan
-				gsvt_fputs("-- ", gsvt_stderr);
+				Gsvt::StdErr.textColorSet8(6, true);	// cyan
+				Gsvt::StdErr.fputs("-- ");
 				if (likely(!isMipmap)) {
 					// tr: {0:s} == image type name, {1:s} == output filename
-					gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Extracting {0:s} into '{1:s}'")),
-						RomData::getImageTypeName(imageType),
-						T2U8c(p.filename)), gsvt_stderr);
+					Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Extracting {0:s} into '{1:s}'")),
+						RomData::getImageTypeName(imageType), T2U8c(p.filename)));
 				} else {
 					// tr: {0:d} == mipmap level, {1:s} == output filename
-					gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Extracting mipmap level {0:d} into '{1:s}'")),
-						p.mipmapLevel, T2U8c(p.filename)), gsvt_stderr);
+					Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Extracting mipmap level {0:d} into '{1:s}'")),
+						p.mipmapLevel, T2U8c(p.filename)));
 				}
-				gsvt_text_color_reset(gsvt_stderr);
-				gsvt_newline(gsvt_stderr);
+				Gsvt::StdErr.textColorReset();
+				Gsvt::StdErr.newline();
 				fflush(stderr);
 
 				int errcode = RpPng::save(p.filename, image);
 				if (errcode != 0) {
 					// tr: {0:s} == filename, {1:s} == error message
-					gsvt_text_color_set8(gsvt_stderr, 1, true);	// red
-					gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Couldn't create file '{0:s}': {1:s}")),
-						T2U8c(p.filename), strerror(-errcode)), gsvt_stderr);
-					gsvt_text_color_reset(gsvt_stderr);
-					gsvt_newline(gsvt_stderr);
+					Gsvt::StdErr.textColorSet8(1, true);	// red
+					Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Couldn't create file '{0:s}': {1:s}")),
+						T2U8c(p.filename), strerror(-errcode)));
+					Gsvt::StdErr.textColorReset();
+					Gsvt::StdErr.newline();
 				} else {
-					gsvt_fputs("   ", gsvt_stderr);
-					gsvt_fputs(C_("rpcli", "Done"), gsvt_stderr);
-					gsvt_newline(gsvt_stderr);
+					Gsvt::StdErr.fputs("   ");
+					Gsvt::StdErr.fputs(C_("rpcli", "Done"));
+					Gsvt::StdErr.newline();
 				}
 				fflush(stderr);
 			}
@@ -203,36 +202,35 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 			auto iconAnimData = romData->iconAnimData();
 			if (iconAnimData && iconAnimData->count != 0 && iconAnimData->seq_count != 0) {
 				found = true;
-				gsvt_text_color_set8(gsvt_stderr, 6, true);	// cyan
-				gsvt_fputs("-- ", gsvt_stderr);
-				gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Extracting animated icon into '{:s}'")),
-					T2U8c(p.filename)), gsvt_stderr);
-				gsvt_text_color_reset(gsvt_stderr);
-				gsvt_newline(gsvt_stderr);
+				Gsvt::StdErr.textColorSet8(6, true);	// cyan
+				Gsvt::StdErr.fputs("-- ");
+				Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Extracting animated icon into '{:s}'")), T2U8c(p.filename)));
+				Gsvt::StdErr.textColorReset();
+				Gsvt::StdErr.newline();
 				fflush(stderr);
 
 				int errcode = RpPng::save(p.filename, iconAnimData);
 				if (errcode == -ENOTSUP) {
-					gsvt_text_color_set8(gsvt_stderr, 3, true);	// yellow
-					gsvt_fputs("   ", gsvt_stderr);
-					gsvt_fputs(C_("rpcli", "APNG is not supported, extracting only the first frame"), gsvt_stderr);
-					gsvt_text_color_reset(gsvt_stderr);
-					gsvt_newline(gsvt_stderr);
+					Gsvt::StdErr.textColorSet8(3, true);	// yellow
+					Gsvt::StdErr.fputs("   ");
+					Gsvt::StdErr.fputs(C_("rpcli", "APNG is not supported, extracting only the first frame"));
+					Gsvt::StdErr.textColorReset();
+					Gsvt::StdErr.newline();
 					fflush(stderr);
 					// falling back to outputting the first frame
 					errcode = RpPng::save(p.filename, iconAnimData->frames[iconAnimData->seq_index[0]]);
 				}
 				if (errcode != 0) {
-					gsvt_text_color_set8(gsvt_stderr, 1, true);	// red
-					gsvt_fputs("   ", gsvt_stderr);
-					gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Couldn't create file '{0:s}': {1:s}")),
-						T2U8c(p.filename), strerror(-errcode)), gsvt_stderr);
-					gsvt_text_color_reset(gsvt_stderr);
-					gsvt_newline(gsvt_stderr);
+					Gsvt::StdErr.textColorSet8(1, true);	// red
+					Gsvt::StdErr.fputs("   ");
+					Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Couldn't create file '{0:s}': {1:s}")),
+						T2U8c(p.filename), strerror(-errcode)));
+					Gsvt::StdErr.textColorReset();
+					Gsvt::StdErr.newline();
 				} else {
-					gsvt_fputs("   ", gsvt_stderr);
-					gsvt_fputs(C_("rpcli", "Done"), gsvt_stderr);
-					gsvt_newline(gsvt_stderr);
+					Gsvt::StdErr.fputs("   ");
+					Gsvt::StdErr.fputs(C_("rpcli", "Done"));
+					Gsvt::StdErr.newline();
 				}
 				fflush(stderr);
 			}
@@ -240,20 +238,20 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 
 		if (!found) {
 			// TODO: Return an error code?
-			gsvt_text_color_set8(gsvt_stderr, 1, true);	// red
-			gsvt_fputs("-- ", gsvt_stderr);
+			Gsvt::StdErr.textColorSet8(1, true);	// red
+			Gsvt::StdErr.fputs("-- ");
 			if (p.imageType == -1) {
-				gsvt_fputs(C_("rpcli", "Animated icon not found"), gsvt_stderr);
+				Gsvt::StdErr.fputs(C_("rpcli", "Animated icon not found"));
 			} else if (p.mipmapLevel >= 0) {
-				gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Mipmap level {:d} not found")), p.mipmapLevel), gsvt_stderr);
+				Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Mipmap level {:d} not found")), p.mipmapLevel));
 			} else {
 				const RomData::ImageType imageType =
 					static_cast<RomData::ImageType>(p.imageType);
-				gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Image '{:s}' not found")),
-					RomData::getImageTypeName(imageType)), gsvt_stderr);
+				Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Image '{:s}' not found")),
+					RomData::getImageTypeName(imageType)));
 			}
-			gsvt_text_color_reset(gsvt_stderr);
-			gsvt_newline(gsvt_stderr);
+			Gsvt::StdErr.textColorReset();
+			Gsvt::StdErr.newline();
 			fflush(stderr);
 		}
 	}
@@ -276,24 +274,24 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 		// File: Open the file and call RomDataFactory::create() with the opened file.
 
 		// FIXME: Make T2U8c() unnecessary here.
-		gsvt_text_color_set8(gsvt_stderr, 6, true);	// cyan
-		gsvt_fputs("== ", gsvt_stderr);
-		gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Reading file '{:s}'...")), T2U8c(filename)), gsvt_stderr);
-		gsvt_text_color_reset(gsvt_stderr);
-		gsvt_newline(gsvt_stderr);
+		Gsvt::StdErr.textColorSet8(6, true);	// cyan
+		Gsvt::StdErr.fputs("== ");
+		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Reading file '{:s}'...")), T2U8c(filename)));
+		Gsvt::StdErr.textColorReset();
+		Gsvt::StdErr.newline();
 		fflush(stderr);
 
 		shared_ptr<RpFile> file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
 		if (!file->isOpen()) {
 			// TODO: Return an error code?
-			gsvt_text_color_set8(gsvt_stderr, 1, true);	// red
-			gsvt_fputs("-- ", gsvt_stderr);
-			gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())), gsvt_stderr);
-			gsvt_text_color_reset(gsvt_stderr);
-			gsvt_newline(gsvt_stderr);
+			Gsvt::StdErr.textColorSet8(1, true);	// red
+			Gsvt::StdErr.fputs("-- ");
+			Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())));
+			Gsvt::StdErr.textColorReset();
+			Gsvt::StdErr.newline();
 			fflush(stderr);
 			if (json) {
-				gsvt_fputs(fmt::format(FSTR("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n"), file->lastError()), gsvt_stdout);
+				Gsvt::StdOut.fputs(fmt::format(FSTR("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n"), file->lastError()));
 				fflush(stdout);
 			}
 			return;
@@ -304,11 +302,11 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 		// Directory: Call RomDataFactory::create() with the filename.
 
 		// FIXME: Make T2U8c() unnecessary here.
-		gsvt_text_color_set8(gsvt_stderr, 6, true);	// cyan
-		gsvt_fputs("== ", gsvt_stderr);
-		gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Reading directory '{:s}'...")), T2U8c(filename)), gsvt_stderr);
-		gsvt_text_color_reset(gsvt_stderr);
-		gsvt_newline(gsvt_stderr);
+		Gsvt::StdErr.textColorSet8(6, true);	// cyan
+		Gsvt::StdErr.fputs("== ");
+		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Reading directory '{:s}'...")), T2U8c(filename)));
+		Gsvt::StdErr.textColorReset();
+		Gsvt::StdErr.newline();
 		fflush(stderr);
 
 		romData = RomDataFactory::create(filename);
@@ -316,11 +314,11 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 
 	if (romData) {
 		if (json) {
-			gsvt_text_color_set8(gsvt_stderr, 6, true);	// cyan
-			gsvt_fputs("-- ", gsvt_stderr);
-			gsvt_fputs(C_("rpcli", "Outputting JSON data"), gsvt_stderr);
-			gsvt_text_color_reset(gsvt_stderr);
-			gsvt_newline(gsvt_stderr);
+			Gsvt::StdErr.textColorSet8(6, true);	// cyan
+			Gsvt::StdErr.fputs("-- ");
+			Gsvt::StdErr.fputs(C_("rpcli", "Outputting JSON data"));
+			Gsvt::StdErr.textColorReset();
+			Gsvt::StdErr.newline();
 			fflush(stderr);
 
 #ifdef _WIN32
@@ -331,7 +329,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			oss << JSONROMOutput(romData.get(), flags) << '\n';
 			const string str = oss.str();
 			// TODO: Error checking.
-			gsvt_fputs(str, gsvt_stdout);
+			Gsvt::StdOut.fputs(str);
 #else /* !_WIN32 */
 			// Not Windows: Write directly to cout.
 			// FIXME: gsvt_cout wrapper.
@@ -345,11 +343,11 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			oss << ROMOutput(romData.get(), lc, flags) << '\n';
 			const string str = oss.str();
 			// TODO: Error checking.
-			gsvt_fputs(str, gsvt_stdout);
+			Gsvt::StdOut.fputs(str);
 #else /* !_WIN32 */
 #ifdef ENABLE_SIXEL
 			// If this is a tty, print the icon/banner using libsixel.
-			if (gsvt_is_console(gsvt_stdout)) {
+			if (Gsvt::StdOut.isConsole()) {
 				print_sixel_icon_banner(romData);
 			}
 #endif /* ENABLE_SIXEL */
@@ -362,15 +360,15 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 		fflush(stdout);
 		ExtractImages(romData.get(), extract);
 	} else {
-		gsvt_text_color_set8(gsvt_stderr, 1, true);	// red
-		gsvt_fputs("-- ", gsvt_stderr);
-		gsvt_fputs(C_("rpcli", "ROM is not supported"), gsvt_stderr);
-		gsvt_text_color_reset(gsvt_stderr);
-		gsvt_newline(gsvt_stderr);
+		Gsvt::StdErr.textColorSet8(1, true);	// red
+		Gsvt::StdErr.fputs("-- ");
+		Gsvt::StdErr.fputs(C_("rpcli", "ROM is not supported"));
+		Gsvt::StdErr.textColorReset();
+		Gsvt::StdErr.newline();
 		fflush(stderr);
 
 		if (json) {
-			gsvt_fputs(("{\"error\":\"rom is not supported\"}\n"), gsvt_stdout);
+			Gsvt::StdOut.fputs(("{\"error\":\"rom is not supported\"}\n"));
 			fflush(stdout);
 		}
 	}
@@ -392,9 +390,9 @@ static void PrintSystemRegion(void)
 			buf += static_cast<char>(lc & 0xFF);
 		}
 	}
-	gsvt_fputs(fmt::format(FRUN(C_("rpcli", "System language code: {:s}")),
-		(!buf.empty() ? buf.c_str() : C_("rpcli", "0 (this is a bug!)"))), gsvt_stdout);
-	gsvt_newline(gsvt_stdout);
+	Gsvt::StdOut.fputs(fmt::format(FRUN(C_("rpcli", "System language code: {:s}")),
+		(!buf.empty() ? buf.c_str() : C_("rpcli", "0 (this is a bug!)"))));
+	Gsvt::StdOut.newline();
 
 	uint32_t cc = __swab32(SystemRegion::getCountryCode());
 	buf.clear();
@@ -405,12 +403,12 @@ static void PrintSystemRegion(void)
 			buf += static_cast<char>(cc & 0xFF);
 		}
 	}
-	gsvt_fputs(fmt::format(FRUN(C_("rpcli", "System country code: {:s}")),
-		(!buf.empty() ? buf.c_str() : C_("rpcli", "0 (this is a bug!)"))), gsvt_stdout);
-	gsvt_newline(gsvt_stdout);
+	Gsvt::StdOut.fputs(fmt::format(FRUN(C_("rpcli", "System country code: {:s}")),
+		(!buf.empty() ? buf.c_str() : C_("rpcli", "0 (this is a bug!)"))));
+	Gsvt::StdOut.newline();
 
 	// Extra line. (TODO: Only if multiple commands are specified.)
-	gsvt_newline(gsvt_stdout);
+	Gsvt::StdOut.newline();
 	fflush(stdout);
 }
 
@@ -421,7 +419,7 @@ static void PrintPathnames(void)
 {
 	// TODO: Localize these strings?
 	// TODO: Only print an extra line if multiple commands are specified.
-	gsvt_fputs(fmt::format(FSTR(
+	Gsvt::StdOut.fputs(fmt::format(FSTR(
 		"User's home directory:   {:s}\n"
 		"User's cache directory:  {:s}\n"
 		"User's config directory: {:s}\n"
@@ -432,8 +430,8 @@ static void PrintPathnames(void)
 		OS_NAMESPACE::getCacheDirectory(),
 		OS_NAMESPACE::getConfigDirectory(),
 		FileSystem::getCacheDirectory(),
-		FileSystem::getConfigDirectory()), gsvt_stdout);
-	gsvt_newline(gsvt_stdout);
+		FileSystem::getConfigDirectory()));
+	Gsvt::StdOut.newline();
 
 	fflush(stdout);
 }
@@ -447,25 +445,25 @@ static void PrintPathnames(void)
 static void DoScsiInquiry(const TCHAR *filename, bool json)
 {
 	// FIXME: Make T2U8c() unnecessary here.
-	gsvt_text_color_set8(gsvt_stderr, 6, true);	// cyan
-	gsvt_fputs("== ", gsvt_stderr);
-	gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8c(filename)), gsvt_stderr);
-	gsvt_text_color_reset(gsvt_stderr);
-	gsvt_newline(gsvt_stderr);
+	Gsvt::StdErr.textColorSet8(6, true);	// cyan
+	Gsvt::StdErr.fputs("== ");
+	Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8c(filename)));
+	Gsvt::StdErr.textColorReset();
+	Gsvt::StdErr.newline();
 	fflush(stderr);
 
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
 	if (!file->isOpen()) {
 		// TODO: Return an error code?
-		gsvt_text_color_set8(gsvt_stderr, 1, true);	// red
-		gsvt_fputs("-- ", gsvt_stderr);
-		gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())), gsvt_stderr);
-		gsvt_text_color_reset(gsvt_stderr);
-		gsvt_newline(gsvt_stderr);
+		Gsvt::StdErr.textColorSet8(1, true);	// red
+		Gsvt::StdErr.fputs("-- ");
+		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())));
+		Gsvt::StdErr.textColorReset();
+		Gsvt::StdErr.newline();
 		fflush(stderr);
 
 		if (json) {
-			gsvt_fputs(fmt::format("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n", file->lastError()), gsvt_stdout);
+			Gsvt::StdOut.fputs(fmt::format("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n", file->lastError()));
 			fflush(stdout);
 		}
 		return;
@@ -474,26 +472,26 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 	// TODO: Check for unsupported devices? (Only CD-ROM is supported.)
 	if (!file->isDevice()) {
 		// TODO: Return an error code?
-		gsvt_text_color_set8(gsvt_stderr, 1, true);	// red
-		gsvt_fputs("-- ", gsvt_stderr);
-		gsvt_fputs(C_("rpcli", "Not a device file"), gsvt_stderr);
-		gsvt_text_color_reset(gsvt_stderr);
-		gsvt_newline(gsvt_stderr);
+		Gsvt::StdErr.textColorSet8(1, true);	// red
+		Gsvt::StdErr.fputs("-- ");
+		Gsvt::StdErr.fputs(C_("rpcli", "Not a device file"));
+		Gsvt::StdErr.textColorReset();
+		Gsvt::StdErr.newline();
 		fflush(stderr);
 
 		if (json) {
-			gsvt_fputs("{\"error\":\"not a device file\"}\n", gsvt_stdout);
+			Gsvt::StdOut.fputs("{\"error\":\"not a device file\"}\n");
 			fflush(stdout);
 		}
 		return;
 	}
 
 	if (json) {
-		gsvt_text_color_set8(gsvt_stderr, 6, true);	// cyan
-		gsvt_fputs("-- ", gsvt_stderr);
-		gsvt_fputs(C_("rpcli", "Outputting JSON data"), gsvt_stderr);
-		gsvt_text_color_reset(gsvt_stderr);
-		gsvt_newline(gsvt_stderr);
+		Gsvt::StdErr.textColorSet8(6, true);	// cyan
+		Gsvt::StdErr.fputs("-- ");
+		Gsvt::StdErr.fputs(C_("rpcli", "Outputting JSON data"));
+		Gsvt::StdErr.textColorReset();
+		Gsvt::StdErr.newline();
 		fflush(stderr);
 
 		// TODO: JSONScsiInquiry
@@ -509,7 +507,7 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 		cout.flush();
 		const string str = oss.str();
 		// TODO: Error checking.
-		gsvt_fputs(str, gsvt_stdout);
+		Gsvt::StdOut.fputs(str);
 #else /* !_WIN32 */
 		// Not Windows: Write directly to cout.
 		// FIXME: gsvt_cout wrapper.
@@ -528,25 +526,25 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 {
 	// FIXME: Make T2U8c() unnecessary here.
-	gsvt_text_color_set8(gsvt_stderr, 6, true);	// cyan
-	gsvt_fputs("== ", gsvt_stderr);
-	gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8c(filename)), gsvt_stderr);
-	gsvt_text_color_reset(gsvt_stderr);
-	gsvt_newline(gsvt_stderr);
+	Gsvt::StdErr.textColorSet8(6, true);	// cyan
+	Gsvt::StdErr.fputs("== ");
+	Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8c(filename)));
+	Gsvt::StdErr.textColorReset();
+	Gsvt::StdErr.newline();
 	fflush(stderr);
 
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
 	if (!file->isOpen()) {
 		// TODO: Return an error code?
-		gsvt_text_color_set8(gsvt_stderr, 1, true);	// red
-		gsvt_fputs("-- ", gsvt_stderr);
-		gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())), gsvt_stderr);
-		gsvt_text_color_reset(gsvt_stderr);
-		gsvt_newline(gsvt_stderr);
+		Gsvt::StdErr.textColorSet8(1, true);	// red
+		Gsvt::StdErr.fputs("-- ");
+		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())));
+		Gsvt::StdErr.textColorReset();
+		Gsvt::StdErr.newline();
 		fflush(stderr);
 
 		if (json) {
-			gsvt_fputs(fmt::format("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n", file->lastError()), gsvt_stdout);
+			Gsvt::StdOut.fputs(fmt::format("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n", file->lastError()));
 			fflush(stdout);
 		}
 		return;
@@ -555,26 +553,26 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 	// TODO: Check for unsupported devices? (Only CD-ROM is supported.)
 	if (!file->isDevice()) {
 		// TODO: Return an error code?
-		gsvt_text_color_set8(gsvt_stderr, 1, true);	// red
-		gsvt_fputs("-- ", gsvt_stderr);
-		gsvt_fputs(C_("rpcli", "Not a device file"), gsvt_stderr);
-		gsvt_text_color_reset(gsvt_stderr);
-		gsvt_newline(gsvt_stderr);
+		Gsvt::StdErr.textColorSet8(1, true);	// red
+		Gsvt::StdErr.fputs("-- ");
+		Gsvt::StdErr.fputs(C_("rpcli", "Not a device file"));
+		Gsvt::StdErr.textColorReset();
+		Gsvt::StdErr.newline();
 		fflush(stderr);
 
 		if (json) {
-			gsvt_fputs("{\"error\":\"Not a device file\"}\n", gsvt_stdout);
+			Gsvt::StdOut.fputs("{\"error\":\"Not a device file\"}\n");
 			fflush(stdout);
 		}
 		return;
 	}
 
 	if (json) {
-		gsvt_text_color_set8(gsvt_stderr, 6, true);	// cyan
-		gsvt_fputs("-- ", gsvt_stderr);
-		gsvt_fputs(C_("rpcli", "Outputting JSON data"), gsvt_stderr);
-		gsvt_text_color_reset(gsvt_stderr);
-		gsvt_newline(gsvt_stderr);
+		Gsvt::StdErr.textColorSet8(6, true);	// cyan
+		Gsvt::StdErr.fputs("-- ");
+		Gsvt::StdErr.fputs(C_("rpcli", "Outputting JSON data"));
+		Gsvt::StdErr.textColorReset();
+		Gsvt::StdErr.newline();
 		fflush(stderr);
 
 		// TODO: JSONAtaIdentifyDevice
@@ -590,7 +588,7 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 		cout.flush();
 		const string str = oss.str();
 		// TODO: Error checking.
-		gsvt_fputs(str, gsvt_stdout);
+		Gsvt::StdOut.fputs(str);
 #else /* !_WIN32 */
 		// Not Windows: Write directly to cout.
 		// FIXME: gsvt_cout wrapper.
@@ -609,8 +607,8 @@ static void ShowUsage(void)
 #else /* !ENABLE_DECRYPTION */
 	const char *const s_usage = C_("rpcli", "Usage: rpcli [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...");
 #endif /* ENABLE_DECRYPTION */
-	gsvt_fputs(s_usage, gsvt_stderr);
-	gsvt_newline(gsvt_stderr);
+	Gsvt::StdErr.fputs(s_usage);
+	Gsvt::StdErr.newline();
 
 	struct cmd_t {
 		char opt[8];	// TODO: Automatic padding?
@@ -635,11 +633,11 @@ static void ShowUsage(void)
 	}};
 
 	for (const auto &p : cmds) {
-		gsvt_fputs(p.opt, gsvt_stderr);
-		gsvt_fputs(pgettext_expr("rpcli", p.desc), gsvt_stderr);
-		gsvt_newline(gsvt_stderr);
+		Gsvt::StdErr.fputs(p.opt);
+		Gsvt::StdErr.fputs(pgettext_expr("rpcli", p.desc));
+		Gsvt::StdErr.newline();
 	}
-	gsvt_newline(gsvt_stderr);
+	Gsvt::StdErr.newline();
 
 #ifdef RP_OS_SCSI_SUPPORTED
 	// Commands for devices
@@ -649,26 +647,26 @@ static void ShowUsage(void)
 		{"  -ip: ", NOP_C_("rpcli", "Run an ATA IDENTIFY PACKET DEVICE command.")},
 	}};
 
-	gsvt_fputs(C_("rpcli", "Special options for devices:"), gsvt_stderr);
-	gsvt_newline(gsvt_stderr);
+	Gsvt::StdErr.fputs(C_("rpcli", "Special options for devices:"));
+	Gsvt::StdErr.newline();
 	for (const auto &p : cmds_dev) {
-		gsvt_fputs(p.opt, gsvt_stderr);
-		gsvt_fputs(pgettext_expr("rpcli", p.desc), gsvt_stderr);
-		gsvt_newline(gsvt_stderr);
+		Gsvt::StdErr.fputs(p.opt);
+		Gsvt::StdErr.fputs(pgettext_expr("rpcli", p.desc));
+		Gsvt::StdErr.newline();
 	}
-	gsvt_newline(gsvt_stderr);
+	Gsvt::StdErr.newline();
 #endif /* RP_OS_SCSI_SUPPORTED */
 
-	gsvt_fputs(C_("rpcli", "Examples:"), gsvt_stderr);
-	gsvt_newline(gsvt_stderr);
-	gsvt_fputs("* rpcli s3.gen\n", gsvt_stderr);
-	gsvt_fputs("\t ", gsvt_stderr);
-		gsvt_fputs(C_("rpcli", "displays info about s3.gen"), gsvt_stderr);
-		gsvt_newline(gsvt_stderr);
-	gsvt_fputs("* rpcli -x0 icon.png pokeb2.nds\n", gsvt_stderr);
-	gsvt_fputs("\t ", gsvt_stderr);
-		gsvt_fputs(C_("rpcli", "extracts icon from pokeb2.nds"), gsvt_stderr);
-		gsvt_newline(gsvt_stderr);
+	Gsvt::StdErr.fputs(C_("rpcli", "Examples:"));
+	Gsvt::StdErr.newline();
+	Gsvt::StdErr.fputs("* rpcli s3.gen\n");
+	Gsvt::StdErr.fputs("\t ");
+		Gsvt::StdErr.fputs(C_("rpcli", "displays info about s3.gen"));
+		Gsvt::StdErr.newline();
+	Gsvt::StdErr.fputs("* rpcli -x0 icon.png pokeb2.nds\n");
+	Gsvt::StdErr.fputs("\t ");
+		Gsvt::StdErr.fputs(C_("rpcli", "extracts icon from pokeb2.nds"));
+		Gsvt::StdErr.newline();
 	fflush(stderr);
 }
 
@@ -699,6 +697,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #endif /* _WIN32 */
 
 	// Detect console information.
+	// NOTE: Technically not needed, since Gsvt::Console access
+	// will call this for us...
 	gsvt_init();
 
 #if defined(ENABLE_NLS) && defined(_MSC_VER)
@@ -706,14 +706,14 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// TODO: Skip this if not linked with /DELAYLOAD?
 	if (DelayLoad_test_libintl_textdomain() != 0) {
 		// Delay load failed.
-		gsvt_text_color_set8(gsvt_stderr, 1, true);	// red
-		gsvt_fputs("*** ERROR: " LIBGNUINTL_DLL " could not be loaded.", gsvt_stderr);
-		gsvt_text_color_reset(gsvt_stderr);
-		gsvt_fputs("\n\n"
+		Gsvt::StdErr.textColorSet8(1, true);	// red
+		Gsvt::StdErr.fputs("*** ERROR: " LIBGNUINTL_DLL " could not be loaded.");
+		Gsvt::StdErr.textColorReset();
+		Gsvt::StdErr.fputs("\n\n"
 			"This build of rom-properties has localization enabled,\n"
 			"which requires the use of GNU gettext.\n\n"
 			"Please redownload rom-properties " RP_VERSION_STRING " and copy the\n"
-			LIBGNUINTL_DLL " file to the installation directory.\n", gsvt_stderr);
+			LIBGNUINTL_DLL " file to the installation directory.\n");
 		fflush(stderr);
 		return EXIT_FAILURE;
 	}
@@ -743,12 +743,12 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// TODO: Skip this if not linked with /DELAYLOAD?
 	if (DelayLoad_test_ImageTypesConfig_className() != 0) {
 		// Delay load failed.
-		gsvt_text_color_set8(gsvt_stderr, 1, true);	// red
-		gsvt_fputs("*** ERROR: " ROMDATA_DLL " could not be loaded.", gsvt_stderr);
-		gsvt_text_color_reset(gsvt_stderr);
-		gsvt_fputs("\n\n"
+		Gsvt::StdErr.textColorSet8(1, true);	// red
+		Gsvt::StdErr.fputs("*** ERROR: " ROMDATA_DLL " could not be loaded.");
+		Gsvt::StdErr.textColorReset();
+		Gsvt::StdErr.fputs("\n\n"
 			"Please redownload rom-properties " RP_VERSION_STRING " and copy the\n"
-			ROMDATA_DLL " file to the installation directory.\n", gsvt_stderr);
+			ROMDATA_DLL " file to the installation directory.\n");
 		fflush(stderr);
 		return EXIT_FAILURE;
 	}
@@ -774,10 +774,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 	// TODO: Add a command line option to override color output.
 	// NOTE: Only checking ci_stdout here, since the actual data is printed to stdout.
-	if (gsvt_is_console(gsvt_stdout)) {
+	if (Gsvt::StdOut.isConsole()) {
 #ifndef _WIN32
 		// Non-Windows: ANSI color support is required.
-		if (gsvt_supports_ansi(gsvt_stdout))
+		if (Gsvt::StdOut.supportsAnsi())
 #endif /* !_WIN32 */
 		{
 			flags |= OF_Text_UseAnsiColor;
@@ -796,7 +796,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	}
 	if (json) {
 		cout.flush();
-		gsvt_fputs("[\n", gsvt_stdout);
+		Gsvt::StdOut.fputs("[\n");
 		fflush(stdout);
 	}
 
@@ -805,10 +805,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	const ULONG_PTR gdipToken = GdiplusHelper::InitGDIPlus();
 	assert(gdipToken != 0);
 	if (gdipToken == 0) {
-		gsvt_text_color_set8(gsvt_stderr, 6, true);	// red
-		gsvt_fputs(C_("rpcli", "*** ERROR: GDI+ initialization failed."), gsvt_stderr);
-		gsvt_text_color_reset(gsvt_stderr);
-		gsvt_newline(gsvt_stderr);
+		Gsvt::StdErr.textColorSet8(6, true);	// red
+		Gsvt::StdErr.fputs(C_("rpcli", "*** ERROR: GDI+ initialization failed."));
+		Gsvt::StdErr.textColorReset();
+		Gsvt::StdErr.newline();
 		fflush(stderr);
 		return -EIO;
 	}
@@ -829,8 +829,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				// Force-enable ANSI escape sequences, even if it's not supported by the
 				// console or we're redirected to a file.
 				// TODO: Document this, and provide an option to force-disable ANSI.
-				gsvt_force_color_on(gsvt_stdout);
-				gsvt_force_color_on(gsvt_stderr);
+				Gsvt::StdOut.forceColorOn();
+				Gsvt::StdErr.forceColorOn();
 				flags |= OF_Text_UseAnsiColor;
 				break;
 
@@ -888,10 +888,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				}
 				if (new_lc == 0 || (pos == 4 && s_lang[pos] != _T('\0'))) {
 					// Invalid language code.
-					gsvt_text_color_set8(gsvt_stderr, 3, true);	// yellow
-					gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Warning: ignoring invalid language code '{:s}'")), T2U8c(s_lang)), gsvt_stderr);
-					gsvt_text_color_reset(gsvt_stderr);
-					gsvt_newline(gsvt_stderr);
+					Gsvt::StdErr.textColorSet8(3, true);	// yellow
+					Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Warning: ignoring invalid language code '{:s}'")), T2U8c(s_lang)));
+					Gsvt::StdErr.textColorReset();
+					Gsvt::StdErr.newline();
 					fflush(stderr);
 					break;
 				}
@@ -924,17 +924,17 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #else /* !_WIN32 */
 					const char *const s_imgType = ts_imgType;
 #endif /* _WIN32 */
-					gsvt_text_color_set8(gsvt_stderr, 3, true);	// yellow
-					gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Warning: skipping invalid image type '{:s}'")), s_imgType), gsvt_stderr);
-					gsvt_text_color_reset(gsvt_stderr);
-					gsvt_newline(gsvt_stderr);
+					Gsvt::StdErr.textColorSet8(3, true);	// yellow
+					Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Warning: skipping invalid image type '{:s}'")), s_imgType));
+					Gsvt::StdErr.textColorReset();
+					Gsvt::StdErr.newline();
 					fflush(stderr);
 					i++; continue;
 				} else if (num < RomData::IMG_INT_MIN || num > RomData::IMG_INT_MAX) {
-					gsvt_text_color_set8(gsvt_stderr, 3, true);	// yellow
-					gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Warning: skipping unknown image type {:d}")), num), gsvt_stderr);
-					gsvt_text_color_reset(gsvt_stderr);
-					gsvt_newline(gsvt_stderr);
+					Gsvt::StdErr.textColorSet8(3, true);	// yellow
+					Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Warning: skipping unknown image type {:d}")), num));
+					Gsvt::StdErr.textColorReset();
+					Gsvt::StdErr.newline();
 					fflush(stderr);
 					i++; continue;
 				}
@@ -953,17 +953,17 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #else /* !_WIN32 */
 					const char *const s_mipmapLevel = ts_mipmapLevel;
 #endif /* _WIN32 */
-					gsvt_text_color_set8(gsvt_stderr, 3, true);	// yellow
-					gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Warning: skipping invalid mipmap level '{:s}'")), s_mipmapLevel), gsvt_stderr);
-					gsvt_text_color_reset(gsvt_stderr);
-					gsvt_newline(gsvt_stderr);
+					Gsvt::StdErr.textColorSet8(3, true);	// yellow
+					Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Warning: skipping invalid mipmap level '{:s}'")), s_mipmapLevel));
+					Gsvt::StdErr.textColorReset();
+					Gsvt::StdErr.newline();
 					fflush(stderr);
 					i++; continue;
 				} else if (num < -1 || num > 1024) {
-					gsvt_text_color_set8(gsvt_stderr, 3, true);	// yellow
-					gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Warning: skipping out-of-range mipmap level {:d}")), num), gsvt_stderr);
-					gsvt_text_color_reset(gsvt_stderr);
-					gsvt_newline(gsvt_stderr);
+					Gsvt::StdErr.textColorSet8(3, true);	// yellow
+					Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Warning: skipping out-of-range mipmap level {:d}")), num));
+					Gsvt::StdErr.textColorReset();
+					Gsvt::StdErr.newline();
 					fflush(stderr);
 					i++; continue;
 				}
@@ -996,16 +996,16 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 						inq_ata_packet = true;
 						break;
 					default:
-						gsvt_text_color_set8(gsvt_stderr, 3, true);	// yellow
+						Gsvt::StdErr.textColorSet8(3, true);	// yellow
 						if (argv[i][2] == _T('\0')) {
-							gsvt_fputs(C_("rpcli", "Warning: no inquiry request specified for '-i'"), gsvt_stderr);
+							Gsvt::StdErr.fputs(C_("rpcli", "Warning: no inquiry request specified for '-i'"));
 						} else {
 							// FIXME: Unicode character on Windows.
-							gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Warning: skipping unknown inquiry request '{:c}'")),
-								(char)argv[i][2]), gsvt_stderr);
+							Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Warning: skipping unknown inquiry request '{:c}'")),
+								(char)argv[i][2]));
 						}
-						gsvt_text_color_reset(gsvt_stderr);
-						gsvt_newline(gsvt_stderr);
+						Gsvt::StdErr.textColorReset();
+						Gsvt::StdErr.newline();
 						fflush(stderr);
 						break;
 				}
@@ -1014,10 +1014,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 			default:
 				// FIXME: Unicode character on Windows.
-				gsvt_text_color_set8(gsvt_stderr, 3, true);	// yellow
-				gsvt_fputs(fmt::format(FRUN(C_("rpcli", "Warning: skipping unknown switch '{:c}'")), (char)argv[i][1]), gsvt_stderr);
-				gsvt_text_color_reset(gsvt_stderr);
-				gsvt_newline(gsvt_stderr);
+				Gsvt::StdErr.textColorSet8(3, true);	// yellow
+				Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Warning: skipping unknown switch '{:c}'")), (char)argv[i][1]));
+				Gsvt::StdErr.textColorReset();
+				Gsvt::StdErr.newline();
 				fflush(stderr);
 				break;
 			}
@@ -1026,7 +1026,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				first = false;
 			} else if (json) {
 				cout.flush();
-				gsvt_fputs(",\n", gsvt_stdout);
+				Gsvt::StdOut.fputs(",\n");
 				fflush(stdout);
 			}
 
@@ -1058,7 +1058,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	}
 	if (json) {
 		cout.flush();
-		gsvt_fputs("]\n", gsvt_stdout);
+		Gsvt::StdOut.fputs("]\n");
 		fflush(stdout);
 	}
 

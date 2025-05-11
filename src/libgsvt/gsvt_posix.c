@@ -9,6 +9,9 @@
 #include "gsvt.h"
 #include "common.h"
 
+// librpthreads
+#include "librpthreads/pthread_once.h"
+
 // C includes
 #include <assert.h>
 #include <stdio.h>
@@ -130,13 +133,23 @@ static void gsvt_init_posix(gsvt_console *vt, FILE *f)
 
 /**
  * Initialize VT detection.
+ * Internal function; called by pthread_once().
  */
-void gsvt_init(void)
+static void gsvt_init_int(void)
 {
 	// Initialize the gsvt_console variables using stdout/stderr.
 	check_TERM_variable();
 	gsvt_init_posix(&__gsvt_stdout, stdout);
 	gsvt_init_posix(&__gsvt_stderr, stderr);
+}
+
+/**
+ * Initialize VT detection.
+ */
+void gsvt_init(void)
+{
+	static pthread_once_t once_control = PTHREAD_ONCE_INIT;
+	pthread_once(&once_control, gsvt_init_int);
 }
 
 /**

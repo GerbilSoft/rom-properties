@@ -9,6 +9,9 @@
 #include "gsvt.h"
 #include "common.h"
 
+// librpthreads
+#include "librpthreads/pthread_once.h"
+
 // C includes
 #include <assert.h>
 #include <stdio.h>
@@ -215,8 +218,9 @@ static void gsvt_init_win32(gsvt_console *vt, FILE *f, DWORD fd)
 
 /**
  * Initialize VT detection.
+ * Internal function; called by pthread_once().
  */
-void gsvt_init(void)
+static void gsvt_init_int(void)
 {
 	// Enable UTF-8 console output on Windows 10.
 	// For older Windows, which doesn't support ANSI escape sequences,
@@ -231,6 +235,15 @@ void gsvt_init(void)
 	// Initialize the gsvt_console variables using stdout/stderr.
 	gsvt_init_win32(&__gsvt_stdout, stdout, STD_OUTPUT_HANDLE);
 	gsvt_init_win32(&__gsvt_stderr, stderr, STD_ERROR_HANDLE);
+}
+
+/**
+ * Initialize VT detection.
+ */
+void gsvt_init(void)
+{
+	static pthread_once_t once_control = PTHREAD_ONCE_INIT;
+	pthread_once(&once_control, gsvt_init_int);
 }
 
 /**

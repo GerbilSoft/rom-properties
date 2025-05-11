@@ -1,17 +1,29 @@
 # Virtual Terminal emulation for older Windows versions.
-PROJECT(gsvt LANGUAGES C)
+PROJECT(gsvt LANGUAGES C CXX)
 
 ######################
 # Build the library. #
 ######################
 
 IF(WIN32)
-	SET(${PROJECT_NAME}_SRCS gsvt_win32.c)
+	SET(${PROJECT_NAME}_OS_SRCS gsvt_win32.c)
 ELSE(WIN32)
-	SET(${PROJECT_NAME}_SRCS gsvt_posix.c)
+	SET(${PROJECT_NAME}_OS_SRCS gsvt_posix.c)
 ENDIF(WIN32)
 
-ADD_LIBRARY(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SRCS} gsvt.h)
+SET(${PROJECT_NAME}_SRCS
+	gsvtpp.cpp
+	)
+SET(${PROJECT_NAME}_H
+	gsvt.h
+	gsvtpp.hpp
+	)
+
+ADD_LIBRARY(${PROJECT_NAME} STATIC
+	${${PROJECT_NAME}_OS_SRCS}
+	${${PROJECT_NAME}_SRCS}
+	${${PROJECT_NAME}_H}
+	)
 INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(${PROJECT_NAME})
 # Exclude from ALL builds; enable PIC.
@@ -29,3 +41,4 @@ TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 	PRVIATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# ..
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# ..
 	)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpthreads)
