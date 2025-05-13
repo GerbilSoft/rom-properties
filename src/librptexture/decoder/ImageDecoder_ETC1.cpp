@@ -285,7 +285,7 @@ struct ColorRGB {
  * @param color ColorRGB struct.
  * @return xRGB32 value. (Alpha channel set to 0xFF)
  */
-static inline CONSTEXPR_IF_MSVC2022 uint32_t clamp_ColorRGB(ColorRGB color)
+static inline CONSTEXPR_MULTILINE uint32_t clamp_ColorRGB(ColorRGB color)
 {
 	uint32_t xrgb32 = 0;
 	if (color.B > 255) {

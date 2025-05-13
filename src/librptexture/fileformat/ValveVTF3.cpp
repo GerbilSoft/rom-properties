@@ -53,24 +53,6 @@ public:
 	 * @return Image, or nullptr on error.
 	 */
 	rp_image_const_ptr loadImage(void);
-
-#if SYS_BYTEORDER == SYS_BIG_ENDIAN
-	/**
-	 * Byteswap a float. (TODO: Move to byteswap_rp.h?)
-	 * @param f Float to byteswap.
-	 * @return Byteswapped flaot.
-	 */
-	static inline constexpr float __swabf(float f)
-	{
-		union {
-			uint32_t u32;
-			float f;
-		} u32_f;
-		u32_f.f = f;
-		u32_f.u32 = __swab32(u32_f.u32);
-		return u32_f.f;
-	}
-#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 };
 
 FILEFORMAT_IMPL(ValveVTF3)

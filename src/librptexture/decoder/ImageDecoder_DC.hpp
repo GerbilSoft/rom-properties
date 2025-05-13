@@ -51,7 +51,7 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
  * @param width Texture width.
  * @return Number of palette entries.
  */
-static inline CONSTEXPR_IF_MSVC2022 int calcDreamcastSmallVQPaletteEntries_NoMipmaps(int width)
+static inline CONSTEXPR_MULTILINE int calcDreamcastSmallVQPaletteEntries_NoMipmaps(int width)
 {
 	if (width <= 16) {
 		return 8*4;
@@ -70,7 +70,7 @@ static inline CONSTEXPR_IF_MSVC2022 int calcDreamcastSmallVQPaletteEntries_NoMip
  * @param width Texture width.
  * @return Number of palette entries.
  */
-static inline CONSTEXPR_IF_MSVC2022 int calcDreamcastSmallVQPaletteEntries_WithMipmaps(int width)
+static inline CONSTEXPR_MULTILINE int calcDreamcastSmallVQPaletteEntries_WithMipmaps(int width)
 {
 	if (width <= 16) {
 		return 16*4;

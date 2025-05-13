@@ -42,6 +42,20 @@
 #  endif /* !__cplusplus */
 #endif /* !CONSTEXPR */
 
+// MSVC prior to MSVC 2022 does not support constexpr on multi-line functions.
+// gcc doesn't support constexpr on multi-line functions before gcc-5. (requires C++14)
+#ifndef CONSTEXPR_MULTILINE
+#  if !defined(__cplusplus)
+#    define CONSTEXPR_MULTILINE
+#  elif defined(_MSC_VER) && _MSC_VER < 1930
+#    define CONSTEXPR_MULTILINE
+#  elif defined(__GNUC__) && !defined(__clang__) && (__GNUC__ < 5 || __cplusplus < 201402L)
+#    define CONSTEXPR_MULTILINE
+#  else
+#    define CONSTEXPR_MULTILINE constexpr
+#  endif
+#endif /* !CONSTEXPR_MULTILINE */
+
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
 #  include "librpcpuid/cpuflags_x86.h"
 /* MSVC does not support MMX intrinsics in 64-bit builds. */
@@ -124,12 +138,8 @@
  * @param f Float to byteswap
  * @return Byteswapped float
  */
-ATTR_CONST
-#ifndef _MSC_VER
-static inline CONSTEXPR float __swabf(float f)
-#else /* _MSC_VER */
+ATTR_CONST CONSTEXPR_MULTILINE
 static inline float __swabf(float f)
-#endif /* !_MSC_VER */
 {
 	union {
 		uint32_t u32;

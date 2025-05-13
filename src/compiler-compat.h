@@ -84,8 +84,19 @@ typedef int64_t off64_t;
 #endif
 
 // MSVC prior to MSVC 2022 does not support constexpr on multi-line functions.
-#if !defined(__cplusplus) || (defined(_MSC_VER) && _MSC_VER < 1930)
-#  define CONSTEXPR_IF_MSVC2022
+// gcc doesn't support constexpr on multi-line functions before gcc-5. (requires C++14)
+#if !defined(__cplusplus)
+#  define CONSTEXPR_MULTILINE
+#elif defined(_MSC_VER) && _MSC_VER < 1930
+#  define CONSTEXPR_MULTILINE
+#elif defined(__GNUC__) && !defined(__clang__) && (__GNUC__ < 5 || __cplusplus < 201402L)
+#  define CONSTEXPR_MULTILINE
 #else
-#  define CONSTEXPR_IF_MSVC2022 constexpr
+#  define CONSTEXPR_MULTILINE constexpr
+#endif
+
+#ifdef _MSC_VER
+#  define CONSTEXPR_MULTILINE_NO_MSVC
+#else /* !_MSC_VER */
+#  define CONSTEXPR_MULTILINE_NO_MSVC CONSTEXPR_MULTILINE
 #endif
