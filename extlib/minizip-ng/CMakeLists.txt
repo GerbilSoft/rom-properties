@@ -191,12 +191,16 @@ if(MZ_LIBCOMP)
 endif()
 
 if(MZ_ZLIB)
+    # rom-properties: Don't check for ZLIB/ZLIBNG here.
+    # We've already checked for it.
+    IF(0)
     # Check if zlib is present
     if(NOT MZ_FORCE_FETCH_LIBS)
         find_package(ZLIBNG QUIET)
         find_package(ZLIB QUIET)
         set(ZLIB_VERSION ${ZLIB_VERSION_STRING})
     endif()
+    ENDIF(0) # rom-properties
 
     if(ZLIBNG_FOUND AND NOT MZ_FORCE_FETCH_LIBS)
         message(STATUS "Using ZLIBNG")
