@@ -212,6 +212,7 @@ static void gsvt_init_win32(gsvt_console *vt, FILE *f, DWORD fd)
 	if (GetConsoleScreenBufferInfo(hStd, &csbi)) {
 		vt->wAttributesOrig = csbi.wAttributes;
 		vt->wAttributesCur = csbi.wAttributes;
+		bold = !!(csbi.wAttributes & FOREGROUND_INTENSITY);
 	}
 }
 
