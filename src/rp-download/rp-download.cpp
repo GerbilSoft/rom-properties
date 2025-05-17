@@ -214,6 +214,33 @@ static int get_file_size_and_mtime(const TCHAR *filename, off64_t *pFileSize, ti
 }
 
 /**
+ * Get the MIME type for the specified cache key (or filename).
+ * @param cache_key Cache key (or filename)
+ * @return MIME type, or nullptr if not supported
+ */
+static const TCHAR *getMimeType(const TCHAR *cache_key)
+{
+	// Find the last dot.
+	const TCHAR *const dotpos = _tcsrchr(cache_key, _T('.'));
+	if (!dotpos) {
+		return nullptr;
+	}
+
+	// Check the file extension.
+	const TCHAR *mimeType = nullptr;
+
+	if (!_tcscmp(dotpos, _T(".png"))) {
+		mimeType = _T("image/png");
+	} else if (!_tcscmp(dotpos, _T(".jpg"))) {
+		mimeType = _T("image/jpg");
+	} else if (!_tcscmp(dotpos, _T(".txt"))) {
+		mimeType = _T("text/plain");
+	}
+
+	return mimeType;
+}
+
+/**
  * rp-download: Download an image from a supported online database.
  * @param cache_key Cache key, e.g. "ds/cover/US/ADAE.png"
  * @return 0 on success; non-zero on error.
@@ -517,6 +544,12 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// Only download if the file on the server is newer than
 		// what's in our cache directory.
 		downloader.setIfModifiedSince(filemtime);
+	}
+
+	// Set the MIME type, if available.
+	const TCHAR *mimeType = getMimeType(cache_key);
+	if (mimeType) {
+		downloader.setRequestedMimeType(mimeType);
 	}
 
 	downloader.setUrl(full_url);

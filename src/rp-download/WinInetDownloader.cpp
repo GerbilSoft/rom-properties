@@ -77,7 +77,8 @@ int WinInetDownloader::download(void)
 		}
 	}
 
-	tstring headers;
+	// Custom headers
+	tstring req_headers;
 	if (m_if_modified_since >= 0) {
 		// Add an "If-Modified-Since" header.
 		// FIXME: +4 is needed to avoid ERROR_INSUFFICIENT_BUFFER.
@@ -87,17 +88,26 @@ int WinInetDownloader::download(void)
 		UnixTimeToSystemTime(m_if_modified_since, &st);
 		BOOL bRet = InternetTimeFromSystemTime(&st, INTERNET_RFC1123_FORMAT, szTime, sizeof(szTime));
 		if (bRet) {
-			headers = _T("If-Modified-Since: ");
-			headers += szTime;
+			req_headers = _T("If-Modified-Since: ");
+			req_headers += szTime;
 		}
+	}
+	if (!m_reqMimeType.empty()) {
+		// Add the "Accept:" header.
+		if (!req_headers.empty()) {
+			req_headers += _T("\r\n");
+		}
+
+		req_headers += _T("Accept: ");
+		req_headers += m_reqMimeType;
 	}
 
 	// Request the URL.
 	HINTERNET hURL = InternetOpenUrl(
 		hConnection,	// hInternet
 		m_url.c_str(),	// lpszUrl (Latin-1 characters only!)
-		!headers.empty() ? headers.data() : nullptr,	// lpszHeaders
-		static_cast<DWORD>(headers.size()),	// dwHeaderLength
+		!req_headers.empty() ? req_headers.data() : nullptr,	// lpszHeaders
+		static_cast<DWORD>(req_headers.size()),			// dwHeaderLength
 		dwFlags,	// dwFlags
 		reinterpret_cast<DWORD_PTR>(this));	// dwContext
 	if (!hURL) {

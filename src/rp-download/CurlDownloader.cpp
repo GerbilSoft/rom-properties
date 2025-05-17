@@ -195,6 +195,21 @@ int CurlDownloader::download(void)
 		curl_easy_setopt(curl, CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE);
 	}
 
+	// Custom headers
+	struct curl_slist *req_headers = nullptr;
+	if (!m_reqMimeType.empty()) {
+		// Add the "Accept:" header.
+		tstring accept_header = _T("Accept: ");
+		accept_header += m_reqMimeType;
+
+		req_headers = curl_slist_append(req_headers, accept_header.c_str());
+		
+	}
+
+	if (req_headers) {
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, req_headers);
+	}
+
 	// Header and data functions.
 	curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, parse_header);
 	curl_easy_setopt(curl, CURLOPT_HEADERDATA, this);
@@ -254,6 +269,7 @@ int CurlDownloader::download(void)
 			break;
 	}
 
+	curl_slist_free_all(req_headers);
 	curl_easy_cleanup(curl);
 	if (ret != 0) {
 		return ret;

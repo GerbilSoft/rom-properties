@@ -138,6 +138,37 @@ void IDownloader::setIfModifiedSince(time_t timestamp)
 	m_if_modified_since = timestamp;
 }
 
+/**
+ * Get the specified MIME type(s) for the "Accept:" header.
+ * @return MIME type(s), or nullptr if not set.
+ */
+const TCHAR *IDownloader::requestedMimeType(void) const
+{
+	return (!m_reqMimeType.empty()) ? m_reqMimeType.c_str() : nullptr;
+}
+
+/**
+ * Set the valid MIME type(s) for the "Accept:" header.
+ * @param mimeType Valid MIME type(s), or nullptr to clear.
+ */
+void IDownloader::setRequestedMimeType(const TCHAR *mimeType)
+{
+	if (mimeType) {
+		m_reqMimeType = mimeType;
+	} else {
+		m_reqMimeType.clear();
+	}
+}
+
+/**
+ * Set the valid MIME type(s) for the "Accept:" header.
+ * @param mimeType Valid MIME type(s), or nullptr to clear.
+ */
+void IDownloader::setRequestedMimeType(const std::tstring &mimeType)
+{
+	m_reqMimeType = mimeType;
+}
+
 /** Data accessors **/
 
 /**

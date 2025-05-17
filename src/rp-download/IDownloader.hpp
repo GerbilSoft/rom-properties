@@ -86,6 +86,24 @@ public:
 	 */
 	void setIfModifiedSince(time_t timestamp);
 
+	/**
+	 * Get the specified MIME type(s) for the "Accept:" header.
+	 * @return MIME type(s), or nullptr if not set.
+	 */
+	const TCHAR *requestedMimeType(void) const;
+
+	/**
+	 * Set the valid MIME type(s) for the "Accept:" header.
+	 * @param mimeType Valid MIME type(s), or nullptr to clear.
+	 */
+	void setRequestedMimeType(const TCHAR *mimeType);
+
+	/**
+	 * Set the valid MIME type(s) for the "Accept:" header.
+	 * @param mimeType Valid MIME type(s), or nullptr to clear.
+	 */
+	void setRequestedMimeType(const std::tstring &mimeType);
+
 public:
 	/** Data accessors **/
 
@@ -140,6 +158,7 @@ protected:
 
 	time_t m_mtime;			// Last-Modified response
 	time_t m_if_modified_since;	// If-Modified-Since request
+	std::tstring m_reqMimeType;	// MIME type for "Accept:" header
 
 	size_t m_maxSize;		// Maximum buffer size. (0 == unlimited)
 	std::tstring m_userAgent;	// User-Agent
