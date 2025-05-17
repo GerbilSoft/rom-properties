@@ -138,7 +138,8 @@
  * @param f Float to byteswap
  * @return Byteswapped float
  */
-ATTR_CONST CONSTEXPR_MULTILINE
+ATTR_CONST
+CONSTEXPR_MULTILINE_NO_MSVC
 static inline float __swabf(float f)
 {
 	union {
