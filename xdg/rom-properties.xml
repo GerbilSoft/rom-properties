@@ -1376,4 +1376,13 @@
     </magic>
   </mime-type>
 
+  <!-- GameCube/Wii executables -->
+  <!-- These are showing up as "image/vnd.microsoft.icon" for some reason... -->
+  <mime-type type="application/x-gamecube-executable">
+    <comment>Nintendo GameCube/Wii executable</comment>
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="application-x-executable"/>
+    <glob pattern="*.dol"/>
+  </mime-type>
+
 </mime-info>
