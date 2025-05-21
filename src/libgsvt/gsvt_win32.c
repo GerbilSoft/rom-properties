@@ -212,7 +212,9 @@ static void gsvt_init_win32(gsvt_console *vt, FILE *f, DWORD fd)
 	if (GetConsoleScreenBufferInfo(hStd, &csbi)) {
 		vt->wAttributesOrig = csbi.wAttributes;
 		vt->wAttributesCur = csbi.wAttributes;
-		bold = !!(csbi.wAttributes & FOREGROUND_INTENSITY);
+		// Initialize the "bold" value.
+		// NOTE: "bright" is only used for explicit bright SGR, i.e. 90-97.
+		vt->bold = !!(csbi.wAttributes & FOREGROUND_INTENSITY);
 	}
 }
 
