@@ -151,10 +151,15 @@ string formatFileSize(off64_t size, BinaryUnitDialect dialect)
 	int whole_part, frac_part;
 	bool needs_pgettext = true;
 
+	// TODO: Have the UI frontend set the "default" dialect, e.g. using kdeglobals on KDE.
+	static constexpr BinaryUnitDialect defaultDialect = BinaryUnitDialect::IECBinaryDialect;
+	if (dialect == BinaryUnitDialect::DefaultBinaryDialect) {
+		dialect = defaultDialect;
+	}
+
 	if (likely(dialect != BinaryUnitDialect::MetricBinaryDialect)) {
 		// Binary KiB (or binary KB)
-		const bool isKiB = (dialect == BinaryUnitDialect::DefaultBinaryDialect ||
-		                    dialect == BinaryUnitDialect::IECBinaryDialect);
+		const bool isKiB = (dialect == BinaryUnitDialect::IECBinaryDialect);
 
 		if (size < 0) {
 			// Invalid size. Print the value as-is.
