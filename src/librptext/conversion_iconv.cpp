@@ -41,8 +41,10 @@ static const char RP_ICONV_UTF16_ENCODING[] = "UTF-16LE";
 #include <cassert>
 
 // C++ STL classes
+#include <vector>
 using std::string;
 using std::u16string;
+using std::vector;
 
 namespace LibRpText {
 
@@ -449,6 +451,76 @@ string utf16le_to_utf8(const char16_t *wcs, int len)
 string utf16be_to_utf8(const char16_t *wcs, int len)
 {
 	return INT_utf16_to_utf8("UTF-16BE", wcs, len);
+}
+
+/**
+ * Convert UTF-16 text to cp1252.
+ * Trailing NULL bytes will be removed.
+ *
+ * NOTE: On non-Windows systems, iconv() does *not* handle "invalid" cp1252 characters.
+ * This function preprocesses the string in order to process those characters.
+ * This is needed in order to handle Xbox 360 "mojibake" encoding.
+ *
+ * @param wcs	[in] UTF-16 text
+ * @param len	[in] Length of str, in bytes (-1 for NULL-terminated string)
+ * @return cp1252 string.
+ */
+std::string utf16_to_cp1252(const char16_t *wcs, int len)
+{
+	len = check_NULL_terminator(wcs, len);
+
+	// Find any "invalid" cp1252 characters.
+	// Character indexes in wcs are stored, which should map directly
+	// to character indexes in the resulting string.
+	// FIXME: This may break if non-BMP characters are present.
+	vector<int> char_idx;
+
+	for (int i = 0; i < len; i++) {
+		switch (wcs[i]) {
+			default:
+				break;
+
+			case 0x0081:
+			case 0x008D:
+			case 0x008F:
+			case 0x0090:
+			case 0x009D:
+				// Invalid cp1252 character.
+				char_idx.push_back(i);
+				break;
+		}
+	}
+
+	if (char_idx.empty()) {
+		// No invalid characters. Convert it directly.
+		char *mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), RP_ICONV_UTF16_ENCODING, "CP1252", false));
+		if (!mbs) {
+			// Conversion failed...
+			return {};
+		}
+
+		return string(mbs);
+	}
+
+	// Convert using "//TRANSLIT", then manually replace the bad characters.
+	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), RP_ICONV_UTF16_ENCODING, "CP1252//TRANSLIT", false));
+	if (!mbs) {
+		// Conversion failed...
+		return {};
+	}
+
+	string str(mbs);
+	const int str_size = static_cast<int>(str.size());
+	for (int idx : char_idx) {
+		assert(idx < str_size);
+		if (idx >= str_size) {
+			// Invalid index?
+			return {};
+		}
+		str[idx] = static_cast<char>(static_cast<uint8_t>(wcs[idx]));
+	}
+
+	return str;
 }
 
 }

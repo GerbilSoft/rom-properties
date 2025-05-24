@@ -2,11 +2,19 @@
 
 ## v2.6 (released 2025/??/??)
 
+* New parser features:
+  * Xbox360_STFS: Fix titles for some packages that were authored incorrectly
+    and have mojibake titles. This includes cases where UTF-8 was parsed as
+    cp1252, and where Shift-JIS was parsed as cp1252.
+    * Fixes #450: X360 - Non-Latin Titles appearing as mojibake
+      * Reported by @Masamune3210.
+
 * Bug fixes:
   * Windows: Work around a potential libpng crash when attempting to read
     empty data as a PNG image. (Needs more debugging for a proper fix...)
     * See #451: libpng errors crash due to libpng setjmp/longjmp (Windows 10, release builds only)
       * Reported by @Masamune3210.
+
 * Other changes:
   * rpcli: Added more colorization for warning messages.
   * rpcli: Refactored console handling into a separate library, libgsvt.

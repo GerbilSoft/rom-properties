@@ -317,17 +317,51 @@ static inline std::string utf8_to_cp1252(const char *str, int len)
 	return utf8_to_cpN(1252, str, len);
 }
 
+#ifdef _WIN32
 /**
  * Convert UTF-16 text to cp1252.
  * Trailing NULL bytes will be removed.
- * Invalid characters will be ignored.
- * @param wcs	[in] UTF-16 text.
- * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
+ *
+ * NOTE: On Windows, WideCharToMultiByte() handles "invalid" cp1252 characters.
+ * We don't need to handle it ourselves.
+ *
+ * @param wcs	[in] UTF-16 text
+ * @param len	[in] Length of str, in bytes (-1 for NULL-terminated string)
  * @return cp1252 string.
  */
 static inline std::string utf16_to_cp1252(const char16_t *wcs, int len)
 {
 	return utf16_to_cpN(1252, wcs, len);
+}
+#else /* !_WIN32 */
+/**
+ * Convert UTF-16 text to cp1252.
+ * Trailing NULL bytes will be removed.
+ *
+ * NOTE: On non-Windows systems, iconv() does *not* handle "invalid" cp1252 characters.
+ * This function preprocesses the string in order to process those characters.
+ * This is needed in order to handle Xbox 360 "mojibake" encoding.
+ *
+ * @param wcs	[in] UTF-16 text
+ * @param len	[in] Length of str, in bytes (-1 for NULL-terminated string)
+ * @return cp1252 string.
+ */
+std::string utf16_to_cp1252(const char16_t *wcs, int len);
+#endif /* _WIN32 */
+
+/**
+ * Convert UTF-16 text to cp1252.
+ * Trailing NULL bytes will be removed.
+ *
+ * NOTE: Specialized function that does *not* ignore "invalid" cp1252 characters.
+ * This is needed in order to handle Xbox 360 "mojibake" encoding.
+ *
+ * @param wcs	[in] UTF-16 string
+ * @return cp1252 string.
+ */
+static inline std::string utf16_to_cp1252(const std::u16string &wcs)
+{
+	return utf16_to_cp1252(wcs.data(), static_cast<int>(wcs.size()));
 }
 
 /* Shift-JIS (cp932) with cp1252 fallback */

@@ -31,6 +31,7 @@ using namespace LibRpTexture;
 using std::array;
 using std::shared_ptr;
 using std::string;
+using std::u16string;
 using std::unique_ptr;
 using std::vector;
 
@@ -151,6 +152,18 @@ public:
 	 * @return Default executable on success; nullptr on error.
 	 */
 	Xbox360_XEX *openDefaultXex(void);
+
+public:
+	/**
+	 * Get the title.
+	 *
+	 * Encoded as UTF-16BE, but some titles were incorrectly converted
+	 * from cp1252 when they should have been converted from Shift-JIS,
+	 * so this function has a heuristic to detect and fix this.
+	 *
+	 * @return Title
+	 */
+	string getTitle(void) const;
 };
 
 ROMDATA_IMPL(Xbox360_STFS)
@@ -560,6 +573,66 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 	return this->xex.get();
 }
 
+/**
+ * Get the title.
+ *
+ * The text was incorrectly converted from cp1252 to UTF-16BE, when the original
+ * text was actually encoded as UTF-8. This function uses a heuristic to detect
+ * this incorrect conversion and fix it.
+ *
+ * @return Title
+ */
+string Xbox360_STFS_Private::getTitle(void) const
+{
+	// Check for common mojibake characters.
+	static constexpr array<char16_t, 5> mojibake_chars = {{
+		0x0192,	// 'ƒ': LATIN SMALL LETTER F WITH HOOK
+		0x00E6,	// 'æ': LATIN SMALL LETTER AE
+		0x20AC,	// '€': EURO SIGN
+		0x2020,	// '†': DAGGER
+	}};
+
+	// TODO: Also check for Japanese characters.
+	// If found, this is *not* an incorrect conversion.
+	bool isMojibake = false;
+	bool isMojibakeSJIS = false;
+	for (const char16_t *p = stfsMetadata.title_name; *p != 0; p++) {
+		// FIXME: Use proper byteswapping as the cases instead of using be16_to_cpu().
+		const char16_t c = be16_to_cpu(*p);
+		switch (c) {
+			case 0x0192:	// 'ƒ': LATIN SMALL LETTER F WITH HOOK
+			case 0x00E6:	// 'æ': LATIN SMALL LETTER AE
+			case 0x20AC:	// '€': EURO SIGN
+			case 0x2020:	// '†': DAGGER
+				// Likely mojibake
+				isMojibake = true;
+				break;
+
+			case 0x0081:
+				// Likely mojibake, with Shift-JIS encoding instead of UTF-8.
+				isMojibake = true;
+				isMojibakeSJIS = true;
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	if (likely(!isMojibake)) {
+		return utf16be_to_utf8(stfsMetadata.title_name, ARRAY_SIZE(stfsMetadata.title_name));
+	}
+
+	// Convert to cp1252. This will actually be either UTF-8 or Shift-JIS.
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	u16string str_utf16 = utf16be_to_utf16(stfsMetadata.title_name, ARRAY_SIZE(stfsMetadata.title_name));
+	string str_cp1252 = utf16_to_cp1252(str_utf16.data(), static_cast<int>(str_utf16.size()));
+	return utf16_to_cp1252(str_utf16.data(), static_cast<int>(str_utf16.size()));
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+	return utf16_to_cp1252(stfsMetadata.title_name, ARRAY_SIZE(stfsMetadata.title_name));
+#endif
+}
+
 /** Xbox360_STFS **/
 
 /**
@@ -957,9 +1030,7 @@ int Xbox360_STFS::loadFieldData(void)
 
 	// Title
 	if (stfsMetadata->title_name[0] != 0) {
-		d->fields.addField_string(C_("RomData", "Title"),
-			utf16be_to_utf8(stfsMetadata->title_name,
-				ARRAY_SIZE(stfsMetadata->title_name)));
+		d->fields.addField_string(C_("RomData", "Title"), d->getTitle());
 	}
 
 	// File type
