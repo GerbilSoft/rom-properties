@@ -4,8 +4,9 @@
 
 * New parser features:
   * Xbox360_STFS: Fix titles for some packages that were authored incorrectly
-    and have mojibake titles. This includes cases where UTF-8 was parsed as
-    cp1252, and where Shift-JIS was parsed as cp1252.
+    and have mojibake titles. Specifically, the titles were originally encoded
+    as UTF-8, but when building the package, they were handled as if they were
+    cp1252 when being converted to UTF-16BE.
     * Fixes #450: X360 - Non-Latin Titles appearing as mojibake
       * Reported by @Masamune3210.
 
