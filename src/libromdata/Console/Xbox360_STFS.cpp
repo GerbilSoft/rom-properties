@@ -584,14 +584,6 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
  */
 string Xbox360_STFS_Private::getTitle(void) const
 {
-	// Check for common mojibake characters.
-	static constexpr array<char16_t, 5> mojibake_chars = {{
-		0x0192,	// 'ƒ': LATIN SMALL LETTER F WITH HOOK
-		0x00E6,	// 'æ': LATIN SMALL LETTER AE
-		0x20AC,	// '€': EURO SIGN
-		0x2020,	// '†': DAGGER
-	}};
-
 	// TODO: Also check for Japanese characters.
 	// If found, this is *not* an incorrect conversion.
 	bool isMojibake = false;
