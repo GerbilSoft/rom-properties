@@ -27,6 +27,12 @@ IF(POLICY CMP0151)
 	CMAKE_POLICY(SET CMP0151 NEW)
 ENDIF(POLICY CMP0151)
 
+# CMP0177: Normalize INSTALL() destination paths.
+# Introduced in CMake 3.31.
+IF(POLICY CMP0177)
+	CMAKE_POLICY(SET CMP0177 NEW)
+ENDIF(POLICY CMP0177)
+
 # Read the project version.
 CONFIGURE_FILE(version.txt version.txt.tmp)
 FILE(STRINGS version.txt RP_VERSION_FILE)
