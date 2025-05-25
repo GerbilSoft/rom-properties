@@ -13,6 +13,7 @@
 // TextFuncs
 #include "../conversion.hpp"
 #include "../formatting.hpp"
+#include "../fourCC.hpp"
 #include "../utf8_strlen.hpp"
 #include "librpbyteswap/byteorder.h"
 using namespace LibRpText;
@@ -28,6 +29,7 @@ using namespace LibRpText;
 
 // C++ includes
 #include <array>
+#include <iomanip>
 #include <string>
 using std::array;
 using std::string;
@@ -1336,6 +1338,57 @@ TEST_F(TextFuncsTest, convSampleToMs)
 	EXPECT_EQ(3250U, convSampleToMs(24000U*13U/4U, 24000U));
 	EXPECT_EQ(3250U, convSampleToMs(44100U*13U/4U, 44100U));
 	EXPECT_EQ(3250U, convSampleToMs(48000U*13U/4U, 48000U));
+}
+
+struct fourCC_test_data_t {
+	char s[5];
+	uint32_t u32;
+};
+
+static const array<fourCC_test_data_t, 7> fourCC_test_data = {{
+	{"ABCD",       'ABCD'},
+	{"ABCD",       0x41424344},
+	{"ABC\x00",    0x41424300},
+	{"AB\x00" "D", 0x41420044},
+	{"A\x00" "CD", 0x41004344},
+	{"\x00" "BCD", 0x00424344},
+	{"sBIT",       'sBIT'},
+}};
+
+/**
+ * Test fourCCtoString(). (char* version)
+ */
+TEST_F(TextFuncsTest, fourCCtoString_char)
+{
+	char fourCC_hex[16];
+	char buf[5];
+
+	for (const fourCC_test_data_t &p : fourCC_test_data) {
+		snprintf(fourCC_hex, sizeof(fourCC_hex), "0x%08X", p.u32);
+		int ret = fourCCtoString(buf, sizeof(buf), p.u32);
+		EXPECT_EQ(0, ret) << "Failed to convert FourCC: " << fourCC_hex;
+		if (ret == 0) {
+			EXPECT_EQ('\0', buf[4]) << "Failed to convert FourCC: " << fourCC_hex;
+			EXPECT_EQ(0, memcmp(buf, p.s, 4)) << "Failed to convert FourCC: " << fourCC_hex;
+		}
+	}
+}
+
+/**
+ * Test fourCCtoString(). (std::string version)
+ */
+TEST_F(TextFuncsTest, fourCCtoString_string)
+{
+	char fourCC_hex[16];
+
+	for (const fourCC_test_data_t &p : fourCC_test_data) {
+		snprintf(fourCC_hex, sizeof(fourCC_hex), "0x%08X", p.u32);
+		string str = fourCCtoString(p.u32);
+		EXPECT_EQ(4U, str.size()) << "Failed to convert FourCC: " << fourCC_hex;
+		if (str.size() == 4) {
+			EXPECT_EQ(0, memcmp(str.data(), p.s, 4)) << "Failed to convert FourCC: " << fourCC_hex;
+		}
+	}
 }
 
 } }
