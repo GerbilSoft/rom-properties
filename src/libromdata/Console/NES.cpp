@@ -231,8 +231,15 @@ time_t NESPrivate::fds_bcd_datestamp_to_unix_time(const FDS_BCD_DateStamp *fds_b
 	struct tm fdstime;
 
 	// TODO: Check for invalid BCD values.
-	fdstime.tm_year = ((fds_bcd_ds->year >> 4) * 10) +
-			   (fds_bcd_ds->year & 0x0F) + 1925 - 1900;
+	unsigned int bcd_year = ((fds_bcd_ds->year >> 4) * 10) +
+	                         (fds_bcd_ds->year & 0x0F);
+	if (bcd_year >= 58) {
+		// >=58 (1983+): Shōwa era (1926-1989); add 1925
+		fdstime.tm_year = bcd_year + 1925 - 1900;
+	} else /*if (bcd_year <= 57)*/ {
+		// <=57: Heisei era (1989-2019); add 1988
+		fdstime.tm_year = bcd_year + 1988 - 1900;
+	}
 	fdstime.tm_mon  = ((fds_bcd_ds->mon >> 4) * 10) +
 			   (fds_bcd_ds->mon & 0x0F) - 1;
 	fdstime.tm_mday = ((fds_bcd_ds->mday >> 4) * 10) +

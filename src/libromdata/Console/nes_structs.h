@@ -343,7 +343,11 @@ typedef enum {
 // Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
 typedef struct RP_PACKED _FDS_BCD_DateStamp {
-	uint8_t year;	// Add 1925 to this.
+	uint8_t year;	// [0x000] Year, using Japanese eras:
+	                // - >=58 (1983+): Shōwa era (1926-1989); add 1925
+	                // - <=57: Heisei era (1989-2019); add 1988
+	                // NOTE: Using 1983 as a lower bound for Shōwa instead
+	                // of 1986 just in case.
 	uint8_t mon;	// 1-12
 	uint8_t mday;	// 1-31
 } FDS_BCD_DateStamp;
