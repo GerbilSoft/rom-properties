@@ -1,5 +1,5 @@
 # ROM Properties Page Shell Extension
-CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.5...3.10)
 
 # CMP0048: Set VERSION variables based on the project version specified in PROJECT().
 # Introduced in CMake 3.0.
