@@ -689,6 +689,14 @@ if(MSVC OR (WIN32 AND (CMAKE_C_COMPILER_ID MATCHES "Clang")))
   add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
 endif()
 
+# rom-properties: FIXME: "/guard:cf" causes png_longjmp() to crash
+# in MSVC 2022 Release builds on Windows 10.
+IF(MSVC)
+  FOREACH(_var CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_EXE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS CMAKE_MODULE_LINKER_FLAGS)
+    STRING(REPLACE "/guard:cf" "" ${_var} "${${${_var}}}")
+  ENDFOREACH(_var)
+ENDIF(MSVC)
+
 # rom-properties: Add -DPNG_DEBUG=0 in debug builds.
 IF(0)
 if(PNG_DEBUG)
