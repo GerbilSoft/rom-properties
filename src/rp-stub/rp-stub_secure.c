@@ -112,6 +112,9 @@ int rp_stub_do_security_options(bool config)
 		SCMP_SYS(arch_prctl), SCMP_SYS(mkdir), SCMP_SYS(prctl),
 		SCMP_SYS(pread64), SCMP_SYS(seccomp),
 
+		// Needed by cURL 8.13 for QUIC (HTTP/3).
+		SCMP_SYS(recvmmsg),
+
 		-1	// End of whitelist
 	};
 	param.syscall_wl = syscall_wl;

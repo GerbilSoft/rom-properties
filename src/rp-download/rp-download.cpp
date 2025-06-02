@@ -347,6 +347,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// (called from getaddrinfo())
 		SCMP_SYS(time),
 
+		// Needed by cURL 8.13 for QUIC (HTTP/3).
+		SCMP_SYS(recvmmsg),
+
 		-1	// End of whitelist
 	};
 	param.syscall_wl = syscall_wl;
