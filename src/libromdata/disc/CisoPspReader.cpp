@@ -24,8 +24,23 @@
 #  include "libwin32common/DelayLoadHelper.h"
 #endif /* _MSC_VER */
 
-// LZ4
+#ifdef _WIN32
+#  include "libwin32common/RpWin32_sdk.h"
+#  define dlsym(handle, symbol)	GetProcAddress((handle), (symbol))
+#  define dlclose(handle)	FreeLibrary(handle)
+#else /* !_WIN32 */
+#  include <dlfcn.h>	// for dlopen()
+typedef void *HMODULE;
+#endif /* !_WIN32 */
+
 #ifdef HAVE_LZ4
+#  if defined(USE_INTERNAL_LZ4) && !defined(USE_INTERNAL_LZ4_DLL)
+	// Using a statically linked copy of LZ4.
+#    define LZ4_DIRECT_LINKAGE 1
+#  else
+	// Using a shared library copy of LZ4.
+#    define LZ4_SHARED_LINKAGE 1
+#  endif /* USE_INTERNAL_LZ4 && USE_INTERNAL_LZ4_DLL */
 #  include <lz4.h>
 #endif /* HAVE_LZ4 */
 
@@ -48,9 +63,6 @@ namespace LibRomData {
 #ifdef _MSC_VER
 // DelayLoad test implementation.
 DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
-#  ifdef HAVE_LZ4
-DELAYLOAD_TEST_FUNCTION_IMPL0(LZ4_versionNumber);
-#  endif /* HAVE_LZ4 */
 #  ifdef HAVE_LZO
 DELAYLOAD_TEST_FUNCTION_IMPL0(lzo_version);
 #  endif /* HAVE_LZO */
@@ -60,6 +72,7 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate
 {
 public:
 	explicit CisoPspReaderPrivate(CisoPspReader *q);
+	~CisoPspReaderPrivate();
 
 private:
 	typedef SparseDiscReaderPrivate super;
@@ -70,11 +83,8 @@ public:
 		Unknown	= -1,
 
 		CISO	= 0,
-#ifdef HAVE_LZ4
 		ZISO	= 1,
-#endif /* HAVE_LZ4 */
 		JISO	= 2,
-
 		DAX	= 3,
 
 		Max
@@ -115,6 +125,23 @@ public:
 	 * @return Block's compressed size, or 0 on error.
 	 */
 	uint32_t getBlockCompressedSize(uint32_t blockNum) const;
+
+public:
+	/** Function pointers (for shared linkage via dlopen()) **/
+	// TODO: Shared object with reference counting?
+
+#ifdef LZ4_SHARED_LINKAGE
+	// LZ4
+	HMODULE liblz4;
+	typedef __typeof__(LZ4_decompress_safe) *pfn_LZ4_decompress_safe_t;
+	pfn_LZ4_decompress_safe_t pfn_LZ4_decompress_safe;
+
+	/**
+	 * Initialize the LZ4 function pointers.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int init_pfn_LZ4(void);
+#endif /* LZ4_SHARED_LINKAGE */
 };
 
 /** CisoPspReaderPrivate **/
@@ -125,9 +152,23 @@ CisoPspReaderPrivate::CisoPspReaderPrivate(CisoPspReader *q)
 	, blockCacheIdx(~0U)
 	, index_shift(0)
 	, isDaxWithoutNCTable(false)
+#ifdef LZ4_SHARED_LINKAGE
+	, liblz4(nullptr)
+	, pfn_LZ4_decompress_safe(nullptr)
+#endif /* LZ4_SHARED_LINKAGE */
 {
 	// Clear the header structs.
 	memset(&header, 0, sizeof(header));
+}
+
+CisoPspReaderPrivate::~CisoPspReaderPrivate()
+{
+	// Close dlopen()'d libraries, if necessary.
+#ifdef LZ4_SHARED_LINKAGE
+	if (liblz4) {
+		dlclose(liblz4);
+	}
+#endif /* LZ4_SHARED_LINKAGE */
 }
 
 /**
@@ -152,9 +193,7 @@ uint32_t CisoPspReaderPrivate::getBlockCompressedSize(uint32_t blockNum) const
 			return 0;
 
 		case CisoPspReaderPrivate::CisoType::CISO:
-#ifdef HAVE_LZ4
 		case CisoPspReaderPrivate::CisoType::ZISO:
-#endif /* HAVE_LZ4 */
 			// Index entry table has an extra entry for the final block.
 			// Hence, we don't need the same workaround as GCZ.
 			assert(blockNum != indexEntries.size()-1);
@@ -187,6 +226,47 @@ uint32_t CisoPspReaderPrivate::getBlockCompressedSize(uint32_t blockNum) const
 	}
 	return size;
 }
+
+#ifdef LZ4_SHARED_LINKAGE
+/**
+ * Initialize the LZ4 function pointers.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int CisoPspReaderPrivate::init_pfn_LZ4(void)
+{
+	if (liblz4) {
+		// Already loaded.
+		return 0;
+	}
+
+#ifdef _WIN32
+#  ifndef NDEBUG
+#    define LZ4_DLL_FILENAME "lz4d.dll"
+#  else /* NDEBUG */
+#    define LZ4_DLL_FILENAME "lz4.dll"
+#  endif /* NDEBUG */
+	HMODULE lib = rp_LoadLibrary(LZ4_DLL_FILENAME);
+#else /* !_WIN32 */
+	HMODULE lib = dlopen("liblz4.so.1", RTLD_LOCAL|RTLD_NOW);
+#endif /* _WIN32 */
+	if (!lib) {
+		// NOTE: dlopen() does not set errno, but it does have dlerror().
+		return -EIO;	// TODO: Better error code.
+	}
+
+	// Attempt to load the function pointers.
+	pfn_LZ4_decompress_safe = reinterpret_cast<pfn_LZ4_decompress_safe_t>(dlsym(lib, "LZ4_decompress_safe"));
+	if (!pfn_LZ4_decompress_safe) {
+		// Failed to load the function pointers.
+		dlclose(lib);
+		return -EIO;	// TODO: Better error code.
+	}
+
+	// Function pointers loaded.
+	liblz4 = lib;
+	return 0;
+}
+#endif /* LZ4_SHARED_LINKAGE */
 
 /** CisoPspReader **/
 
@@ -221,10 +301,10 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 
 	unsigned int indexEntryTblPos;
 	bool isZlib = false;	// If zlib, we have to call get_crc_table().
-#ifdef _MSC_VER
-#  if defined(HAVE_LZ4) && defined(LZ4_IS_DLL)
+#ifdef LZ4_SHARED_LINKAGE
 	bool isLZ4 = false;
-#  endif /* HAVE_LZ4 && LZ4_IS_DLL */
+#endif /* LZ4_SHARED_LINKAGE */
+#ifdef _MSC_VER
 #  if defined(HAVE_LZO) && defined(LZO_IS_DLL)
 	bool isLZO = false;
 #  endif /* HAVE_LZO && LZO_IS_DLL */
@@ -256,7 +336,7 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 			d->index_shift = d->header.cisoPsp.index_shift;
 			indexEntryTblPos = static_cast<off64_t>(sizeof(d->header.cisoPsp));
 
-#if defined(_MSC_VER) && defined(HAVE_LZ4)
+#ifdef LZ4_SHARED_LINKAGE
 			// If CISOv2, we might also have LZ4.
 			// If ZISO, we *definitely* have LZ4.
 			if (d->header.cisoPsp.version >= 2 ||
@@ -264,7 +344,7 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 			{
 				isLZ4 = true;
 			}
-#endif /* _MSC_VER && HAVE_LZ4 */
+#endif /* !LZ4_SHARED_LINKAGE */
 			break;
 
 		case CisoPspReaderPrivate::CisoType::JISO:
@@ -339,15 +419,20 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 		}
 	}
 #  endif /* ZLIB_IS_DLL */
-#  if defined(HAVE_LZ4) && defined(LZ4_IS_DLL)
+#endif
+
+#ifdef LZ4_SHARED_LINKAGE
 	if (isLZ4) {
-		if (DelayLoad_test_LZ4_versionNumber() != 0) {
-			// Delay load for LZ4 failed.
+		// Attempt to load the LZ4 function pointers.
+		if (d->init_pfn_LZ4() != 0) {
+			// Failed to load the LZ4 function pointers.
 			m_file.reset();
 			return;
 		}
 	}
-#  endif /* HAVE_LZ4 && LZ4_IS_DLL */
+#endif /* LZ4_SHARED_LINKAGE */
+
+#ifdef _MSC_VER
 #  if defined(HAVE_LZO) && defined(LZO_IS_DLL)
 	if (isLZO) {
 		if (DelayLoad_test_lzo_version() != 0) {
@@ -356,7 +441,7 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 			return;
 		}
 	}
-#  endif /* HAVE_LZ4 && LZ4_IS_DLL */
+#  endif /* HAVE_LZO && LZ4_IS_DLL */
 #endif /* _MSC_VER */
 
 #if !defined(_MSC_VER) || !defined(ZLIB_IS_DLL)
@@ -381,9 +466,7 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 	uint32_t num_blocks_alloc = num_blocks;
 	switch (d->cisoType) {
 		case CisoPspReaderPrivate::CisoType::CISO:
-#ifdef HAVE_LZ4
 		case CisoPspReaderPrivate::CisoType::ZISO:
-#endif /* HAVE_LZ4 */
 		case CisoPspReaderPrivate::CisoType::JISO:
 			num_blocks_alloc++;
 			break;
@@ -516,11 +599,9 @@ int CisoPspReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 
 	// Check the magic number.
 	const uint32_t *const pu32 = reinterpret_cast<const uint32_t*>(pHeader);
-	if ((*pu32 == be32_to_cpu(CISO_MAGIC)
-#ifdef HAVE_LZ4
-	     || *pu32 == be32_to_cpu(ZISO_MAGIC)
-#endif /* HAVE_LZ4 */
-	     ) && szHeader >= sizeof(CisoPspHeader))
+	if ((*pu32 == be32_to_cpu(CISO_MAGIC) ||
+	     *pu32 == be32_to_cpu(ZISO_MAGIC)) &&
+	    szHeader >= sizeof(CisoPspHeader))
 	{
 		// CISO/ZISO magic.
 		const CisoPspHeader *const cisoPspHeader = reinterpret_cast<const CisoPspHeader*>(pHeader);
@@ -540,13 +621,10 @@ int CisoPspReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 		}
 
 		// Version checks.
-#ifdef HAVE_LZ4
 		if (pHeader[0] == 'Z' && cisoPspHeader->version != 1) {
 			// ZISO: Only v1 is known to exist.
 			return -1;
-		} else
-#endif /* HAVE_LZ4 */
-		if (cisoPspHeader->version > 2) {
+		} else if (cisoPspHeader->version > 2) {
 			// CISO: v2 is max.
 			return -1;
 		}
@@ -578,12 +656,9 @@ int CisoPspReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 		}
 
 		// This is a valid CISO PSP image.
-#ifdef HAVE_LZ4
-		if (pHeader[0] == 'Z') {
-			return (int)CisoPspReaderPrivate::CisoType::ZISO;
-		}
-#endif /* HAVE_LZ4 */
-		return (int)CisoPspReaderPrivate::CisoType::CISO;
+		return (pHeader[0] == 'Z')
+			? (int)CisoPspReaderPrivate::CisoType::ZISO
+			: (int)CisoPspReaderPrivate::CisoType::CISO;
 	} else if (*pu32 == be32_to_cpu(JISO_MAGIC) && szHeader >= sizeof(JisoHeader)) {
 		// JISO magic.
 		const JisoHeader *const jisoHeader = reinterpret_cast<const JisoHeader*>(pHeader);
@@ -697,9 +772,7 @@ off64_t CisoPspReader::getPhysBlockAddr(uint32_t blockIdx) const
 			return 0;
 
 		case CisoPspReaderPrivate::CisoType::CISO:
-#ifdef HAVE_LZ4
 		case CisoPspReaderPrivate::CisoType::ZISO:
-#endif /* HAVE_LZ4 */
 			addr = static_cast<off64_t>(d->indexEntries[blockIdx] & ~CISO_PSP_V0_NOT_COMPRESSED);
 			addr <<= d->index_shift;
 			break;
@@ -820,7 +893,6 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 			}
 			break;
 
-#ifdef HAVE_LZ4
 		case CisoPspReaderPrivate::CisoType::ZISO:
 			// ZISO uses LZ4.
 
@@ -833,7 +905,6 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 				? CompressionMode::None
 				: CompressionMode::LZ4;
 			break;
-#endif /* HAVE_LZ4 */
 
 #ifdef HAVE_LZO
 		case CisoPspReaderPrivate::CisoType::JISO:
@@ -980,7 +1051,6 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 		}
 
 		case CompressionMode::LZ4: {
-#ifdef HAVE_LZ4
 			// Read compressed data into a temporary buffer,
 			// then decompress it.
 			uint32_t z_max_size = d->block_size;
@@ -1007,10 +1077,17 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 			}
 
 			// Decompress the data.
+#ifdef LZ4_SHARED_LINKAGE
+			int sz_rd = d->pfn_LZ4_decompress_safe(
+				reinterpret_cast<const char*>(d->z_buffer.data()),
+				reinterpret_cast<char*>(d->blockCache.data()),
+				z_block_size, d->block_size);
+#else /* !LZ4_SHARED_LINKAGE */
 			int sz_rd = LZ4_decompress_safe(
 				reinterpret_cast<const char*>(d->z_buffer.data()),
 				reinterpret_cast<char*>(d->blockCache.data()),
 				z_block_size, d->block_size);
+#endif /* LZ4_SHARED_LINKAGE */
 			if (sz_rd != (int)d->block_size) {
 				// Decompression error.
 				// TODO: Print warnings and/or more comprehensive error codes.
@@ -1019,12 +1096,6 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 				return 0;
 			}
 			break;
-#else /* !HAVE_LZ4 */
-			// TODO: If it's CISOv2, check for LZ4-compressed blocks and fail early?
-			assert(!"LZ4 is not enabled in this build.");
-			m_lastError = EIO;
-			return 0;
-#endif /* HAVE_LZ4 */
 		}
 
 		case CompressionMode::LZO: {

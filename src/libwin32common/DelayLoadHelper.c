@@ -9,6 +9,8 @@
 // Reference: http://otb.manusoft.com/2013/01/using-delayload-to-specify-dependent-dll-path.htm
 #include "stdafx.h"
 #include "DelayLoadHelper.h"
+
+#include "stdboolx.h"
 #include "tcharx.h"
 
 #include "libromdata/config.libromdata.h"
@@ -81,11 +83,13 @@ static const char *const dll_whitelist[] = {
 };
 
 /**
- * Explicit LoadLibrary() for delay-load.
- * @param pdli Delay-load info.
+ * Explicit LoadLibrary() for delay-load. (internal version)
+ * Used by both MSVC DelayLoad and our own DLL loading functions.
+ * @param pdli Delay-load info
+ * @param bCheckWhitelist If true, check the module name against the DLL whitelist.
  * @return Library handle, or NULL on error.
  */
-static HMODULE WINAPI rp_LoadLibrary(LPCSTR pszModuleName)
+static HMODULE WINAPI rp_LoadLibrary_int(LPCSTR pszModuleName, bool bCheckWhitelist)
 {
 	// We only want to handle DLLs included with rom-properties.
 	// System DLLs should be handled normally.
@@ -97,19 +101,22 @@ static HMODULE WINAPI rp_LoadLibrary(LPCSTR pszModuleName)
 
 	DWORD dwResult;
 	unsigned int path_len;
-	unsigned int i;
-	bool match = false;
 
-	for (i = 0; i < _countof(dll_whitelist); i++) {
-		if (!strcasecmp(pszModuleName, dll_whitelist[i])) {
-			// Found a match.
-			match = true;
-			break;
+	if (bCheckWhitelist) {
+		bool match = false;
+
+		for (size_t i = 0; i < _countof(dll_whitelist); i++) {
+			if (!strcasecmp(pszModuleName, dll_whitelist[i])) {
+				// Found a match.
+				match = true;
+				break;
+			}
 		}
-	}
-	if (!match) {
-		// Not a match. Use standard delay-load.
-		return NULL;
+
+		if (!match) {
+			// Not a match. Use standard delay-load.
+			return NULL;
+		}
 	}
 
 	// NOTE: Delay-load only supports ANSI module names.
@@ -143,7 +150,7 @@ static HMODULE WINAPI rp_LoadLibrary(LPCSTR pszModuleName)
 	*dest = 0;
 
 	// Attempt to load the DLL.
-	hDll = LoadLibraryEx(dll_fullpath, NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
+	hDll = LoadLibraryEx(dll_fullpath, NULL, 0);
 	if (hDll != NULL) {
 		// DLL loaded successfully.
 		return hDll;
@@ -165,7 +172,30 @@ static HMODULE WINAPI rp_LoadLibrary(LPCSTR pszModuleName)
 	*dest = 0;
 
 	// Attempt to load the DLL.
-	return LoadLibraryEx(dll_fullpath, NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
+	return LoadLibraryEx(dll_fullpath, NULL, 0);
+}
+
+/**
+ * Explicit LoadLibrary() for delay-load.
+ * Used by our own DLL loading functions, so the DLL whitelist check is skipped.
+ * @param pdli Delay-load info
+ * @return Library handle, or NULL on error.
+ */
+HMODULE WINAPI rp_LoadLibrary(LPCSTR pszModuleName)
+{
+	return rp_LoadLibrary_int(pszModuleName, false);
+}
+
+/**
+ * Explicit LoadLibrary() for delay-load. (internal version)
+ * Used by MSVC DelayLoad, which requires checking the DLL whitelist.
+ * @param pdli Delay-load info
+ * @param bCheckWhitelist If true, check the module name against the DLL whitelist.
+ * @return Library handle, or NULL on error.
+ */
+static HMODULE WINAPI rp_LoadLibrary_msvc(LPCSTR pszModuleName)
+{
+	return rp_LoadLibrary_int(pszModuleName, true);
 }
 
 /**
@@ -178,7 +208,7 @@ static FARPROC WINAPI rp_dliNotifyHook(unsigned int dliNotify, PDelayLoadInfo pd
 {
 	switch (dliNotify) {
 		case dliNotePreLoadLibrary:
-			return (FARPROC)rp_LoadLibrary(pdli->szDll);
+			return (FARPROC)rp_LoadLibrary_msvc(pdli->szDll);
 		default:
 			break;
 	}

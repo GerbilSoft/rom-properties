@@ -25,6 +25,10 @@
 #  define FACILITY_VISUALCPP 109
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * DELAYLOAD_FILTER_FUNCTION_IMPL(): Implementation of the DelayLoad filter function.
  * Don't use this directly; it's used by DELAYLOAD_TEST_FUNCTION_IMPL*().
@@ -103,3 +107,15 @@ static int DelayLoad_test_##fn(void) { \
 	} \
 	return 0; \
 }
+
+/**
+ * Explicit LoadLibrary() for delay-load.
+ * Used by our own DLL loading functions, so the DLL whitelist check is skipped.
+ * @param pdli Delay-load info
+ * @return Library handle, or NULL on error.
+ */
+HMODULE WINAPI rp_LoadLibrary(LPCSTR pszModuleName);
+
+#ifdef __cplusplus
+}
+#endif
