@@ -319,10 +319,8 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 
 		case CisoPspReaderPrivate::CisoType::CISO:
 			isZlib = true;
-#ifdef HAVE_LZ4
 			// fall-through
 		case CisoPspReaderPrivate::CisoType::ZISO:
-#endif /* HAVE_LZ4 */
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
 			// Byteswap the header.
 			d->header.cisoPsp.magic			= le32_to_cpu(d->header.cisoPsp.magic);
