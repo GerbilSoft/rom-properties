@@ -35,10 +35,10 @@ typedef void *HMODULE;
 
 #ifdef HAVE_LZ4
 #  if defined(USE_INTERNAL_LZ4) && !defined(USE_INTERNAL_LZ4_DLL)
-	// Using a statically linked copy of LZ4.
+     // Using a statically linked copy of LZ4.
 #    define LZ4_DIRECT_LINKAGE 1
-#  else
-	// Using a shared library copy of LZ4.
+#  else /* !(USE_INTERNAL_LZ4 && USE_INTERNAL_LZ4_DLL) */
+     // Using a shared library copy of LZ4.
 #    define LZ4_SHARED_LINKAGE 1
 #  endif /* USE_INTERNAL_LZ4 && USE_INTERNAL_LZ4_DLL */
 #  include <lz4.h>
@@ -47,6 +47,13 @@ typedef void *HMODULE;
 // LZO (JISO)
 // NOTE: The bundled version is MiniLZO.
 #ifdef HAVE_LZO
+#  if defined(USE_INTERNAL_LZO) && !defined(USE_INTERNAL_LZO_DLL)
+     // Using a statically linked copy of LZO.
+#    define LZO_DIRECT_LINKAGE 1
+#  else /* !(USE_INTERNAL_LZO && USE_INTERNAL_LZO_DLL) */
+     // Using a shared library copy of LZO.
+#    define LZO_SHARED_LINKAGE 1
+#  endif /* USE_INTERNAL_LZO && USE_INTERNAL_LZO_DLL */
 #  ifdef USE_INTERNAL_LZO
 #    include "minilzo.h"
 #  else
@@ -63,9 +70,6 @@ namespace LibRomData {
 #ifdef _MSC_VER
 // DelayLoad test implementation.
 DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
-#  ifdef HAVE_LZO
-DELAYLOAD_TEST_FUNCTION_IMPL0(lzo_version);
-#  endif /* HAVE_LZO */
 #endif /* _MSC_VER */
 
 class CisoPspReaderPrivate : public SparseDiscReaderPrivate
@@ -133,6 +137,7 @@ public:
 #ifdef LZ4_SHARED_LINKAGE
 	// LZ4
 	HMODULE liblz4;
+
 	typedef __typeof__(LZ4_decompress_safe) *pfn_LZ4_decompress_safe_t;
 	pfn_LZ4_decompress_safe_t pfn_LZ4_decompress_safe;
 
@@ -142,6 +147,20 @@ public:
 	 */
 	int init_pfn_LZ4(void);
 #endif /* LZ4_SHARED_LINKAGE */
+
+#ifdef LZO_SHARED_LINKAGE
+	// LZO
+	HMODULE liblzo2;
+
+	typedef __typeof__(lzo1x_decompress_safe) *pfn_lzo1x_decompress_safe_t;
+	pfn_lzo1x_decompress_safe_t pfn_lzo1x_decompress_safe;
+
+	/**
+	 * Initialize the LZO function pointers.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int init_pfn_LZO(void);
+#endif /* LZO_SHARED_LINKAGE */
 };
 
 /** CisoPspReaderPrivate **/
@@ -156,6 +175,10 @@ CisoPspReaderPrivate::CisoPspReaderPrivate(CisoPspReader *q)
 	, liblz4(nullptr)
 	, pfn_LZ4_decompress_safe(nullptr)
 #endif /* LZ4_SHARED_LINKAGE */
+#ifdef LZO_SHARED_LINKAGE
+	, liblzo2(nullptr)
+	, pfn_lzo1x_decompress_safe(nullptr)
+#endif /* LZO_SHARED_LINKAGE */
 {
 	// Clear the header structs.
 	memset(&header, 0, sizeof(header));
@@ -169,6 +192,11 @@ CisoPspReaderPrivate::~CisoPspReaderPrivate()
 		dlclose(liblz4);
 	}
 #endif /* LZ4_SHARED_LINKAGE */
+#ifdef LZO_SHARED_LINKAGE
+	if (liblzo2) {
+		dlclose(liblzo2);
+	}
+#endif /* LZO_SHARED_LINKAGE */
 }
 
 /**
@@ -268,6 +296,68 @@ int CisoPspReaderPrivate::init_pfn_LZ4(void)
 }
 #endif /* LZ4_SHARED_LINKAGE */
 
+#ifdef LZO_SHARED_LINKAGE
+/**
+ * Initialize the LZO function pointers.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int CisoPspReaderPrivate::init_pfn_LZO(void)
+{
+	if (liblzo2) {
+		// Already loaded.
+		return 0;
+	}
+
+#ifdef _WIN32
+#  ifndef NDEBUG
+#    define LZ4_DLL_FILENAME "minilzod.dll"
+#  else /* NDEBUG */
+#    define LZ4_DLL_FILENAME "minilzo.dll"
+#  endif /* NDEBUG */
+	HMODULE lib = rp_LoadLibrary(LZ4_DLL_FILENAME);
+#else /* !_WIN32 */
+	HMODULE lib = dlopen("liblzo2.so.2", RTLD_LOCAL|RTLD_NOW);
+#endif /* _WIN32 */
+	if (!lib) {
+		// NOTE: dlopen() does not set errno, but it does have dlerror().
+		return -EIO;	// TODO: Better error code.
+	}
+
+	// Load the __lzo_init_v2 function pointer first and initialize LZO.
+	typedef __typeof__(__lzo_init_v2) *pfn___lzo_init_v2_t;
+	pfn___lzo_init_v2_t pfn___lzo_init_v2 = reinterpret_cast<pfn___lzo_init_v2_t>(dlsym(lib, "__lzo_init_v2"));
+	if (!pfn___lzo_init_v2) {
+		// Failed to load the LZO initialization function pointer.
+		dlclose(lib);
+		return -EIO;	// TODO: Better error code.
+	}
+
+	// Initialize the LZO library.
+	// Based on the lzo_init() macro from lzoconf.h.
+	int ret = pfn___lzo_init_v2(LZO_VERSION, (int)sizeof(short), (int)sizeof(int),
+		(int)sizeof(long), (int)sizeof(lzo_uint32_t), (int)sizeof(lzo_uint),
+		(int)lzo_sizeof_dict_t, (int)sizeof(char *),(int)sizeof(lzo_voidp),
+		(int)sizeof(lzo_callback_t));
+	if (ret != LZO_E_OK) {
+		// Failed to initialize LZO.
+		dlclose(lib);
+		return -EIO;	// TODO: Better error code.
+	}
+
+	// Attempt to load the remaining function pointers.
+	pfn_lzo1x_decompress_safe = reinterpret_cast<pfn_lzo1x_decompress_safe_t>(dlsym(lib, "lzo1x_decompress_safe"));
+	if (!pfn_lzo1x_decompress_safe) {
+		// Failed to load the function pointers.
+		dlclose(lib);
+		return -EIO;	// TODO: Better error code.
+	}
+
+	// Function pointers loaded.
+	liblzo2 = lib;
+	return 0;
+}
+#endif /* LZO_SHARED_LINKAGE */
+
 /** CisoPspReader **/
 
 CisoPspReader::CisoPspReader(const IRpFilePtr &file)
@@ -304,11 +394,9 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 #ifdef LZ4_SHARED_LINKAGE
 	bool isLZ4 = false;
 #endif /* LZ4_SHARED_LINKAGE */
-#ifdef _MSC_VER
-#  if defined(HAVE_LZO) && defined(LZO_IS_DLL)
+#ifdef LZO_SHARED_LINKAGE
 	bool isLZO = false;
-#  endif /* HAVE_LZO && LZO_IS_DLL */
-#endif /* MSC_VER */
+#endif /* LZO_SHARED_LINKAGE */
 	switch (d->cisoType) {
 		default:
 		case CisoPspReaderPrivate::CisoType::Unknown:
@@ -346,15 +434,6 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 			break;
 
 		case CisoPspReaderPrivate::CisoType::JISO:
-#ifndef HAVE_LZO
-			if (d->header.jiso.method == JISO_METHOD_LZO) {
-				// LZO is not available.
-				m_file.reset();
-				m_lastError = ENOTSUP;
-				return;
-			}
-#endif /* HAVE_LZO */
-
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
 			// Byteswap the header.
 			d->header.jiso.magic			= le32_to_cpu(d->header.jiso.magic);
@@ -363,23 +442,22 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 			d->header.jiso.header_size		= le32_to_cpu(d->header.jiso.block_size);
 #endif /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
 
-#ifdef _MSC_VER
 			// Determine which library should be checked
 			// by the Delay Load helper.
 			switch (d->header.jiso.method) {
 				default:
 					break;
 
-#  if defined(HAVE_LZO) && defined(LZO_IS_DLL)
+#ifdef LZO_SHARED_LINKAGE
 				case JISO_METHOD_LZO:
 					isLZO = true;
 					break;
-#  endif /* HAVE_LZO && LZO_IS_DLL */
+#endif /* LZO_SHARED_LINKAGE */
+
 				case JISO_METHOD_ZLIB:
 					isZlib = true;
 					break;
 			}
-#endif /* _MSC_VER */
 
 			d->block_size = d->header.jiso.block_size;
 			d->disc_size = d->header.jiso.uncompressed_size;
@@ -430,17 +508,24 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 	}
 #endif /* LZ4_SHARED_LINKAGE */
 
-#ifdef _MSC_VER
-#  if defined(HAVE_LZO) && defined(LZO_IS_DLL)
 	if (isLZO) {
-		if (DelayLoad_test_lzo_version() != 0) {
-			// Delay load for LZO failed.
+#ifdef LZO_SHARED_LINKAGE
+		// Attempt to load the LZO function pointers.
+		if (d->init_pfn_LZO() != LZO_E_OK) {
+			// Failed to load the LZO function pointers.
 			m_file.reset();
 			return;
 		}
+#else /* !LZO_SHARED_LINKAGE */
+		// Need to call init_lzo(), even in static library builds.
+		if (init_lzo() != LZO_E_OK) {
+			// Failed to initialize LZO.
+			m_file.reset();
+			return;
+		}
+#endif /* LZO_SHARED_LINKAGE */
 	}
-#  endif /* HAVE_LZO && LZ4_IS_DLL */
-#endif /* _MSC_VER */
+
 
 #if !defined(_MSC_VER) || !defined(ZLIB_IS_DLL)
 	if (isZlib) {
@@ -484,15 +569,6 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 		m_file.reset();
 		return;
 	}
-
-#ifdef HAVE_LZO
-	if (d->cisoType == CisoPspReaderPrivate::CisoType::JISO &&
-	    d->header.jiso.method == JISO_METHOD_LZO)
-	{
-		// Initialize LZO.
-		lzo_init();
-	}
-#endif /* HAVE_LZO */
 
 	// TODO: NC areas for JISO.
 	if (d->cisoType == CisoPspReaderPrivate::CisoType::DAX) {
@@ -775,12 +851,10 @@ off64_t CisoPspReader::getPhysBlockAddr(uint32_t blockIdx) const
 			addr <<= d->index_shift;
 			break;
 
-#ifdef HAVE_LZO
 		case CisoPspReaderPrivate::CisoType::JISO:
 			// TODO: Does JISO have an index_shift field? Assuming it doesn't for now...
 			addr = static_cast<off64_t>(d->indexEntries[blockIdx]);
 			break;
-#endif /* HAVE_LZO */
 
 		case CisoPspReaderPrivate::CisoType::DAX:
 			// TODO: Does DAX have an index_shift field? Assuming it doesn't for now...
@@ -904,7 +978,6 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 				: CompressionMode::LZ4;
 			break;
 
-#ifdef HAVE_LZO
 		case CisoPspReaderPrivate::CisoType::JISO:
 			// JISO uses LZO or zlib.
 			// TODO: Verify the rest of this.
@@ -947,7 +1020,6 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 				}
 			}
 			break;
-#endif /* HAVE_LZO */
 
 		case CisoPspReaderPrivate::CisoType::DAX:
 			// TODO: Does DAX have an index_shift field? Assuming it doesn't for now...
@@ -1097,7 +1169,6 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 		}
 
 		case CompressionMode::LZO: {
-#ifdef HAVE_LZO
 			// Read compressed data into a temporary buffer,
 			// then decompress it.
 			uint32_t z_max_size = d->block_size;
@@ -1126,10 +1197,17 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 			// Decompress the data.
 			// TODO: LZO in-place decompression?
 			lzo_uint dst_len = d->block_size;
+#ifdef LZO_SHARED_LINKAGE
+			int ret = d->pfn_lzo1x_decompress_safe(
+				d->z_buffer.data(), z_block_size,
+				d->blockCache.data(), &dst_len,
+				nullptr);
+#else /* !LZO_SHARED_LINKAGE */
 			int ret = lzo1x_decompress_safe(
 				d->z_buffer.data(), z_block_size,
 				d->blockCache.data(), &dst_len,
 				nullptr);
+#endif /* LZO_SHARED_LINKAGE */
 			if (ret != LZO_E_OK || dst_len != d->block_size) {
 				// Decompression error.
 				// TODO: Print warnings and/or more comprehensive error codes.
@@ -1138,11 +1216,6 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 				return 0;
 			}
 			break;
-#else /* !HAVE_LZO */
-			assert(!"LZO is not enabled in this build.");
-			m_lastError = EIO;
-			return 0;
-#endif /* HAVE_LZO */
 		}
 	}
 
