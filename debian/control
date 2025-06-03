@@ -52,7 +52,7 @@ Description: ROM Properties Page shell extension (meta package)
 
 Package: libromdata6
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, rom-properties-data
+Depends: ${shlibs:Depends}, ${misc:Depends}, rom-properties-data, liblz4-1, liblzo2-2
 Description: ROM Properties Page shell extension (shared library)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
