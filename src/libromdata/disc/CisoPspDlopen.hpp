@@ -45,6 +45,12 @@ typedef void *HMODULE;
 #  else
 #    include <lzo/lzo1x.h>
 #  endif
+#else /* !HAVE_LZO */
+typedef uint8_t *lzo_bytep;
+typedef size_t lzo_uint, *lzo_uintp;
+typedef void *lzo_voidp;
+#  define LZO_E_OK    0
+#  define LZO_E_ERROR (-1)
 #endif /* HAVE_LZO */
 
 namespace LibRomData {
@@ -141,6 +147,10 @@ public:
 #ifdef HAVE_LZ4
 		return ::LZ4_decompress_safe(src, dst, compressedSize, dstCapacity);
 #else /* !HAVE_LZ4 */
+		RP_UNUSED(src);
+		RP_UNUSED(dst);
+		RP_UNUSED(compressedSize);
+		RP_UNUSED(dstCapacity);
 		return -1;
 #endif /* HAVE_LZ4 */
 	}
@@ -207,6 +217,11 @@ public:
 #ifdef HAVE_LZO
 		return ::lzo1x_decompress_safe(src, src_len, dst, dst_len, wrkmem);
 #else /* !HAVE_LZO */
+		RP_UNUSED(src);
+		RP_UNUSED(src_len);
+		RP_UNUSED(dst);
+		RP_UNUSED(dst_len);
+		RP_UNUSED(wrkmem);
 		return LZO_E_ERROR;
 #endif /* HAVE_LZO */
 	}
