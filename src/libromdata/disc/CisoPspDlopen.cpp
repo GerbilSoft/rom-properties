@@ -18,7 +18,6 @@ namespace LibRomData {
 
 CisoPspDlopen::CisoPspDlopen()
 {
-	printf("+++ CTOR: CisoPspDlopen\n");
 #ifdef LZ4_SHARED_LINKAGE
 	m_liblz4 = nullptr;
 	m_pfn_LZ4_decompress_safe = nullptr;
@@ -34,7 +33,6 @@ CisoPspDlopen::CisoPspDlopen()
 
 CisoPspDlopen::~CisoPspDlopen()
 {
-	printf("--- DTOR: CisoPspDlopen\n");
 #ifdef LZ4_SHARED_LINKAGE
 	if (m_liblz4) {
 		dlclose(m_liblz4);
