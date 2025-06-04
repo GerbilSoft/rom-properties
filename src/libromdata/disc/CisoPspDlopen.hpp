@@ -14,6 +14,7 @@
 #  include "libwin32common/RpWin32_sdk.h"
 #  define dlsym(handle, symbol)	GetProcAddress((handle), (symbol))
 #  define dlclose(handle)	FreeLibrary(handle)
+typedef int pthread_once_t;
 #else /* !_WIN32 */
 #  include <dlfcn.h>	// for dlopen()
 typedef void *HMODULE;
