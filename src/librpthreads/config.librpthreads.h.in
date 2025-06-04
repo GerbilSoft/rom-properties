@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpthreads)                     *
  * config.librpthreads.h.in: librpthreads configuration. (source file)     *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,3 +13,10 @@
 
 /* Define to 1 if the system uses POSIX threads. */
 #cmakedefine HAVE_PTHREADS 1
+
+/* Define to 1 if you have the `sched_yield` function. */
+#cmakedefine HAVE_SCHED_YIELD 1
+
+#ifndef HAVE_SCHED_YIELD
+#  define sched_yield() pthread_yield()
+#endif /* !HAVE_SCHED_YIELD */

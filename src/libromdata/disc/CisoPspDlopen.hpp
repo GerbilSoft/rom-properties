@@ -58,6 +58,13 @@ private:
 	// dlopen()'d modules
 
 #ifdef LZ4_SHARED_LINKAGE
+	pthread_once_t m_once_lz4;
+#endif /* LZ4_SHARED_LINKAGE */
+#ifdef LZO_SHARED_LINKAGE
+	pthread_once_t m_once_lzo;
+#endif /* LZO_SHARED_LINKAGE */
+
+#ifdef LZ4_SHARED_LINKAGE
 	HMODULE m_liblz4;
 
 	typedef __typeof__(::LZ4_decompress_safe) *pfn_LZ4_decompress_safe_t;
@@ -73,8 +80,15 @@ private:
 	bool m_lzoInit;
 #endif /* LZO_SHARED_LINKAGE */
 
-public:
 #ifdef LZ4_SHARED_LINKAGE
+private:
+	/**
+	 * Initialize the LZ4 function pointers.
+	 * (Internal version, called using pthread_once().)
+	 */
+	void init_pfn_LZ4_int(void);
+
+public:
 	/**
 	 * Initialize the LZ4 function pointers.
 	 * @return 0 on success; negative POSIX error code on error.
@@ -95,6 +109,7 @@ public:
 		return m_pfn_LZ4_decompress_safe(src, dst, compressedSize, dstCapacity);
 	}
 #else /* LZ4_SHARED_LINKAGE */
+public:
 	/**
 	 * Initialize the LZ4 function pointers.
 	 * @return 0 on success; negative POSIX error code on error.
@@ -132,6 +147,14 @@ public:
 #endif /* LZ4_SHARED_LINKAGE */
 
 #ifdef LZO_SHARED_LINKAGE
+private:
+	/**
+	 * Initialize the LZO function pointers.
+	 * (Internal version, called using pthread_once().)
+	 */
+	void init_pfn_LZO_int(void);
+
+public:
 	/**
 	 * Initialize the LZO function pointers.
 	 * @return 0 on success; negative POSIX error code on error.
@@ -154,6 +177,7 @@ public:
 		return m_pfn_lzo1x_decompress_safe(src, src_len, dst, dst_len, wrkmem);
 	}
 #else /* !LZO_SHARED_LINKAGE */
+public:
 	/**
 	 * Initialize the LZO function pointers.
 	 * @return 0 on success; negative POSIX error code on error.

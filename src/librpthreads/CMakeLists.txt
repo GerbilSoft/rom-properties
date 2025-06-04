@@ -25,6 +25,10 @@ IF(CMAKE_USE_WIN32_THREADS_INIT)
 	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} pthread_once.c)
 ELSEIF(CMAKE_USE_PTHREADS_INIT)
 	SET(HAVE_PTHREADS 1)
+
+	# Check for sched_yield().
+	# If not found, pthread_yield() will be used instead.
+	CHECK_SYMBOL_EXISTS(sched_yield "sched.h" HAVE_SCHED_YIELD)
 ELSE()
 	MESSAGE(FATAL_ERROR "No threading model is supported on this system.")
 ENDIF()

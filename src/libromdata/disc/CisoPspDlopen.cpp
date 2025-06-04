@@ -9,6 +9,13 @@
 #include "stdafx.h"
 #include "CisoPspDlopen.hpp"
 
+#include "config.librpthreads.h"
+#include "librpthreads/Atomics.h"
+#ifdef _WIN32
+#  include "libwin32common/RpWin32_sdk.h"
+#  define sched_yield() SwitchToThread()
+#endif
+
 #ifdef _MSC_VER
 // MSVC: rp_LoadLibrary()
 #  include "libwin32common/DelayLoadHelper.h"
@@ -19,11 +26,13 @@ namespace LibRomData {
 CisoPspDlopen::CisoPspDlopen()
 {
 #ifdef LZ4_SHARED_LINKAGE
+	m_once_lz4 = PTHREAD_ONCE_INIT;
 	m_liblz4 = nullptr;
 	m_pfn_LZ4_decompress_safe = nullptr;
 #endif /* LZ4_SHARED_LINKAGE */
 
 #ifdef LZO_SHARED_LINKAGE
+	m_once_lzo = PTHREAD_ONCE_INIT;
 	m_liblzo2 = nullptr;
 	m_pfn_lzo1x_decompress_safe = nullptr;
 #elif defined(HAVE_LZO)
@@ -45,18 +54,41 @@ CisoPspDlopen::~CisoPspDlopen()
 #endif /* LZO_SHARED_LINKAGE */
 }
 
+// NOTE: Cannot use pthread_once() with a member function,
+// so we'll reimplement pthread_once() here.
+#define pthread_once_inl(once_control, init_routine) do { \
+	if (*(once_control) != 1) { \
+		while (1) { \
+			/* Check if once_control is 0. If it is, set it to 2. */ \
+			/* NOTE: ATOMIC_CMPXCHG() returns the initial value,  */ \
+			/* so it will return 0 if once_control was 0, though  */ \
+			/* once_control will now be 2.                        */ \
+			switch (ATOMIC_CMPXCHG(once_control, 0, 2)) { \
+				case 0: \
+					/* NOTE: pthread_once() doesn't have a way to */ \
+					/* indicate that initialization failed.       */ \
+					init_routine(); \
+					ATOMIC_EXCHANGE(once_control, 1); \
+					return 0; \
+				case 1: \
+					/* The initializer has already been executed. */ \
+					return 0; \
+				default: \
+					/* The initializer is being processed by another thread. */ \
+					sched_yield(); \
+					break; \
+			} \
+		} \
+	} \
+} while (0)
+
 #ifdef LZ4_SHARED_LINKAGE
 /**
  * Initialize the LZ4 function pointers.
- * @return 0 on success; negative POSIX error code on error.
+ * (Internal version, called using pthread_once().)
  */
-int CisoPspDlopen::init_pfn_LZ4(void)
+void CisoPspDlopen::init_pfn_LZ4_int(void)
 {
-	if (m_liblz4) {
-		// Already loaded.
-		return 0;
-	}
-
 #ifdef _WIN32
 #  ifndef NDEBUG
 #    define LZ4_DLL_FILENAME "lz4d.dll"
@@ -69,7 +101,7 @@ int CisoPspDlopen::init_pfn_LZ4(void)
 #endif /* _WIN32 */
 	if (!lib) {
 		// NOTE: dlopen() does not set errno, but it does have dlerror().
-		return -EIO;	// TODO: Better error code.
+		return;	// TODO: Better error code.
 	}
 
 	// Attempt to load the function pointers.
@@ -77,27 +109,32 @@ int CisoPspDlopen::init_pfn_LZ4(void)
 	if (!m_pfn_LZ4_decompress_safe) {
 		// Failed to load the function pointers.
 		dlclose(lib);
-		return -EIO;	// TODO: Better error code.
+		return;	// TODO: Better error code.
 	}
 
 	// Function pointers loaded.
 	m_liblz4 = lib;
-	return 0;
+}
+
+/**
+ * Initialize the LZ4 function pointers.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int CisoPspDlopen::init_pfn_LZ4(void)
+{
+	// TODO: Better error code.
+	pthread_once_inl(&m_once_lz4, init_pfn_LZ4_int);
+	return (m_liblz4 != nullptr) ? 0 : -EIO;
 }
 #endif /* LZ4_SHARED_LINKAGE */
 
 #ifdef LZO_SHARED_LINKAGE
 /**
- * Initialize the LZO function pointers.
- * @return 0 on success; negative POSIX error code on error.
+ * Initialize the LZ4 function pointers.
+ * (Internal version, called using pthread_once().)
  */
-int CisoPspDlopen::init_pfn_LZO(void)
+void CisoPspDlopen::init_pfn_LZO_int(void)
 {
-	if (m_liblzo2) {
-		// Already loaded.
-		return 0;
-	}
-
 #ifdef _WIN32
 #  ifndef NDEBUG
 #    define LZO_DLL_FILENAME "minilzod.dll"
@@ -110,7 +147,7 @@ int CisoPspDlopen::init_pfn_LZO(void)
 #endif /* _WIN32 */
 	if (!lib) {
 		// NOTE: dlopen() does not set errno, but it does have dlerror().
-		return -EIO;	// TODO: Better error code.
+		return;
 	}
 
 	// Load the __lzo_init_v2 function pointer first and initialize LZO.
@@ -119,7 +156,7 @@ int CisoPspDlopen::init_pfn_LZO(void)
 	if (!pfn___lzo_init_v2) {
 		// Failed to load the LZO initialization function pointer.
 		dlclose(lib);
-		return -EIO;	// TODO: Better error code.
+		return;
 	}
 
 	// Initialize the LZO library.
@@ -131,7 +168,7 @@ int CisoPspDlopen::init_pfn_LZO(void)
 	if (ret != LZO_E_OK) {
 		// Failed to initialize LZO.
 		dlclose(lib);
-		return -EIO;	// TODO: Better error code.
+		return;
 	}
 
 	// Attempt to load the remaining function pointers.
@@ -139,12 +176,22 @@ int CisoPspDlopen::init_pfn_LZO(void)
 	if (!m_pfn_lzo1x_decompress_safe) {
 		// Failed to load the function pointers.
 		dlclose(lib);
-		return -EIO;	// TODO: Better error code.
+		return;
 	}
 
 	// Function pointers loaded.
 	m_liblzo2 = lib;
-	return 0;
+}
+
+/**
+ * Initialize the LZO function pointers.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int CisoPspDlopen::init_pfn_LZO(void)
+{
+	// TODO: Better error code.
+	pthread_once_inl(&m_once_lzo, init_pfn_LZO_int);
+	return (m_liblzo2 != nullptr) ? 0 : -EIO;
 }
 #elif defined(HAVE_LZO)
 /**
