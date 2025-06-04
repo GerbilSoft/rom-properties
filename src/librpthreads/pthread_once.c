@@ -3,7 +3,7 @@
  * pthread_once.h: pthread_once() implementation for systems that don't    *
  * support pthreads natively.                                              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,19 +11,23 @@
 // - https://chromium.googlesource.com/chromium/src.git/+/18ad5f3a40ceab583961ca5dc064e01900514c57%5E%21/#F0
 #include "pthread_once.h"
 #ifdef HAVE_PTHREADS
-#error pthread_once.c should not be compiled if pthreads is available.
+#  error pthread_once.c should not be compiled if pthreads is available.
 #endif /* HAVE_PTHREADS */
 
+#include "config.librpthreads.h"
 #include "Atomics.h"
 
 #ifdef HAVE_WIN32_THREADS
-# ifndef WIN32_LEAN_AND_MEAN
-#  define WIN32_LEAN_AND_MEAN 1
-# endif
-# include <windows.h>
-# define pthread_yield() SwitchToThread()
+#  ifndef WIN32_LEAN_AND_MEAN
+#    define WIN32_LEAN_AND_MEAN 1
+#  endif
+#  include <windows.h>
+#  ifdef sched_yield
+#    undef sched_yield
+#  endif
+#  define sched_yield() SwitchToThread()
 #else
-# error Unsupported threading model.
+#  error Unsupported threading model.
 #endif
 
 /**
@@ -57,7 +61,7 @@ int pthread_once(pthread_once_t *once_control, void (*init_routine)(void))
 					return 0;
 				default:
 					// The initializer is being processed by another thread.
-					pthread_yield();
+					sched_yield();
 					break;
 			}
 		}
