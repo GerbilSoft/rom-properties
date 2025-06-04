@@ -24,42 +24,8 @@
 #  include "libwin32common/DelayLoadHelper.h"
 #endif /* _MSC_VER */
 
-#ifdef _WIN32
-#  include "libwin32common/RpWin32_sdk.h"
-#  define dlsym(handle, symbol)	GetProcAddress((handle), (symbol))
-#  define dlclose(handle)	FreeLibrary(handle)
-#else /* !_WIN32 */
-#  include <dlfcn.h>	// for dlopen()
-typedef void *HMODULE;
-#endif /* !_WIN32 */
-
-#ifdef HAVE_LZ4
-#  if defined(USE_INTERNAL_LZ4) && !defined(USE_INTERNAL_LZ4_DLL)
-     // Using a statically linked copy of LZ4.
-#    define LZ4_DIRECT_LINKAGE 1
-#  else /* !(USE_INTERNAL_LZ4 && USE_INTERNAL_LZ4_DLL) */
-     // Using a shared library copy of LZ4.
-#    define LZ4_SHARED_LINKAGE 1
-#  endif /* USE_INTERNAL_LZ4 && USE_INTERNAL_LZ4_DLL */
-#  include <lz4.h>
-#endif /* HAVE_LZ4 */
-
-// LZO (JISO)
-// NOTE: The bundled version is MiniLZO.
-#ifdef HAVE_LZO
-#  if defined(USE_INTERNAL_LZO) && !defined(USE_INTERNAL_LZO_DLL)
-     // Using a statically linked copy of LZO.
-#    define LZO_DIRECT_LINKAGE 1
-#  else /* !(USE_INTERNAL_LZO && USE_INTERNAL_LZO_DLL) */
-     // Using a shared library copy of LZO.
-#    define LZO_SHARED_LINKAGE 1
-#  endif /* USE_INTERNAL_LZO && USE_INTERNAL_LZO_DLL */
-#  ifdef USE_INTERNAL_LZO
-#    include "minilzo.h"
-#  else
-#    include <lzo/lzo1x.h>
-#  endif
-#endif /* HAVE_LZO */
+// dlopen() handler
+#include "CisoPspDlopen.hpp"
 
 // Other rom-properties libraries
 using namespace LibRpBase;
@@ -76,7 +42,6 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate
 {
 public:
 	explicit CisoPspReaderPrivate(CisoPspReader *q);
-	~CisoPspReaderPrivate();
 
 private:
 	typedef SparseDiscReaderPrivate super;
@@ -131,36 +96,8 @@ public:
 	uint32_t getBlockCompressedSize(uint32_t blockNum) const;
 
 public:
-	/** Function pointers (for shared linkage via dlopen()) **/
-	// TODO: Shared object with reference counting?
-
-#ifdef LZ4_SHARED_LINKAGE
-	// LZ4
-	HMODULE liblz4;
-
-	typedef __typeof__(LZ4_decompress_safe) *pfn_LZ4_decompress_safe_t;
-	pfn_LZ4_decompress_safe_t pfn_LZ4_decompress_safe;
-
-	/**
-	 * Initialize the LZ4 function pointers.
-	 * @return 0 on success; negative POSIX error code on error.
-	 */
-	int init_pfn_LZ4(void);
-#endif /* LZ4_SHARED_LINKAGE */
-
-#ifdef LZO_SHARED_LINKAGE
-	// LZO
-	HMODULE liblzo2;
-
-	typedef __typeof__(lzo1x_decompress_safe) *pfn_lzo1x_decompress_safe_t;
-	pfn_lzo1x_decompress_safe_t pfn_lzo1x_decompress_safe;
-
-	/**
-	 * Initialize the LZO function pointers.
-	 * @return 0 on success; negative POSIX error code on error.
-	 */
-	int init_pfn_LZO(void);
-#endif /* LZO_SHARED_LINKAGE */
+	// dlopen() handler
+	CisoPspDlopen dlopenHandler;
 };
 
 /** CisoPspReaderPrivate **/
@@ -171,33 +108,11 @@ CisoPspReaderPrivate::CisoPspReaderPrivate(CisoPspReader *q)
 	, blockCacheIdx(~0U)
 	, index_shift(0)
 	, isDaxWithoutNCTable(false)
-#ifdef LZ4_SHARED_LINKAGE
-	, liblz4(nullptr)
-	, pfn_LZ4_decompress_safe(nullptr)
-#endif /* LZ4_SHARED_LINKAGE */
-#ifdef LZO_SHARED_LINKAGE
-	, liblzo2(nullptr)
-	, pfn_lzo1x_decompress_safe(nullptr)
-#endif /* LZO_SHARED_LINKAGE */
 {
 	// Clear the header structs.
 	memset(&header, 0, sizeof(header));
 }
 
-CisoPspReaderPrivate::~CisoPspReaderPrivate()
-{
-	// Close dlopen()'d libraries, if necessary.
-#ifdef LZ4_SHARED_LINKAGE
-	if (liblz4) {
-		dlclose(liblz4);
-	}
-#endif /* LZ4_SHARED_LINKAGE */
-#ifdef LZO_SHARED_LINKAGE
-	if (liblzo2) {
-		dlclose(liblzo2);
-	}
-#endif /* LZO_SHARED_LINKAGE */
-}
 
 /**
  * Get the compressed size of a block.
@@ -255,109 +170,6 @@ uint32_t CisoPspReaderPrivate::getBlockCompressedSize(uint32_t blockNum) const
 	return size;
 }
 
-#ifdef LZ4_SHARED_LINKAGE
-/**
- * Initialize the LZ4 function pointers.
- * @return 0 on success; negative POSIX error code on error.
- */
-int CisoPspReaderPrivate::init_pfn_LZ4(void)
-{
-	if (liblz4) {
-		// Already loaded.
-		return 0;
-	}
-
-#ifdef _WIN32
-#  ifndef NDEBUG
-#    define LZ4_DLL_FILENAME "lz4d.dll"
-#  else /* NDEBUG */
-#    define LZ4_DLL_FILENAME "lz4.dll"
-#  endif /* NDEBUG */
-	HMODULE lib = rp_LoadLibrary(LZ4_DLL_FILENAME);
-#else /* !_WIN32 */
-	HMODULE lib = dlopen("liblz4.so.1", RTLD_LOCAL|RTLD_NOW);
-#endif /* _WIN32 */
-	if (!lib) {
-		// NOTE: dlopen() does not set errno, but it does have dlerror().
-		return -EIO;	// TODO: Better error code.
-	}
-
-	// Attempt to load the function pointers.
-	pfn_LZ4_decompress_safe = reinterpret_cast<pfn_LZ4_decompress_safe_t>(dlsym(lib, "LZ4_decompress_safe"));
-	if (!pfn_LZ4_decompress_safe) {
-		// Failed to load the function pointers.
-		dlclose(lib);
-		return -EIO;	// TODO: Better error code.
-	}
-
-	// Function pointers loaded.
-	liblz4 = lib;
-	return 0;
-}
-#endif /* LZ4_SHARED_LINKAGE */
-
-#ifdef LZO_SHARED_LINKAGE
-/**
- * Initialize the LZO function pointers.
- * @return 0 on success; negative POSIX error code on error.
- */
-int CisoPspReaderPrivate::init_pfn_LZO(void)
-{
-	if (liblzo2) {
-		// Already loaded.
-		return 0;
-	}
-
-#ifdef _WIN32
-#  ifndef NDEBUG
-#    define LZO_DLL_FILENAME "minilzod.dll"
-#  else /* NDEBUG */
-#    define LZO_DLL_FILENAME "minilzo.dll"
-#  endif /* NDEBUG */
-	HMODULE lib = rp_LoadLibrary(LZO_DLL_FILENAME);
-#else /* !_WIN32 */
-	HMODULE lib = dlopen("liblzo2.so.2", RTLD_LOCAL|RTLD_NOW);
-#endif /* _WIN32 */
-	if (!lib) {
-		// NOTE: dlopen() does not set errno, but it does have dlerror().
-		return -EIO;	// TODO: Better error code.
-	}
-
-	// Load the __lzo_init_v2 function pointer first and initialize LZO.
-	typedef __typeof__(__lzo_init_v2) *pfn___lzo_init_v2_t;
-	pfn___lzo_init_v2_t pfn___lzo_init_v2 = reinterpret_cast<pfn___lzo_init_v2_t>(dlsym(lib, "__lzo_init_v2"));
-	if (!pfn___lzo_init_v2) {
-		// Failed to load the LZO initialization function pointer.
-		dlclose(lib);
-		return -EIO;	// TODO: Better error code.
-	}
-
-	// Initialize the LZO library.
-	// Based on the lzo_init() macro from lzoconf.h.
-	int ret = pfn___lzo_init_v2(LZO_VERSION, (int)sizeof(short), (int)sizeof(int),
-		(int)sizeof(long), (int)sizeof(lzo_uint32_t), (int)sizeof(lzo_uint),
-		(int)lzo_sizeof_dict_t, (int)sizeof(char *),(int)sizeof(lzo_voidp),
-		(int)sizeof(lzo_callback_t));
-	if (ret != LZO_E_OK) {
-		// Failed to initialize LZO.
-		dlclose(lib);
-		return -EIO;	// TODO: Better error code.
-	}
-
-	// Attempt to load the remaining function pointers.
-	pfn_lzo1x_decompress_safe = reinterpret_cast<pfn_lzo1x_decompress_safe_t>(dlsym(lib, "lzo1x_decompress_safe"));
-	if (!pfn_lzo1x_decompress_safe) {
-		// Failed to load the function pointers.
-		dlclose(lib);
-		return -EIO;	// TODO: Better error code.
-	}
-
-	// Function pointers loaded.
-	liblzo2 = lib;
-	return 0;
-}
-#endif /* LZO_SHARED_LINKAGE */
-
 /** CisoPspReader **/
 
 CisoPspReader::CisoPspReader(const IRpFilePtr &file)
@@ -394,9 +206,7 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 #ifdef LZ4_SHARED_LINKAGE
 	bool isLZ4 = false;
 #endif /* LZ4_SHARED_LINKAGE */
-#ifdef LZO_SHARED_LINKAGE
 	bool isLZO = false;
-#endif /* LZO_SHARED_LINKAGE */
 	switch (d->cisoType) {
 		default:
 		case CisoPspReaderPrivate::CisoType::Unknown:
@@ -500,7 +310,7 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 #ifdef LZ4_SHARED_LINKAGE
 	if (isLZ4) {
 		// Attempt to load the LZ4 function pointers.
-		if (d->init_pfn_LZ4() != 0) {
+		if (d->dlopenHandler.init_pfn_LZ4() != 0) {
 			// Failed to load the LZ4 function pointers.
 			m_file.reset();
 			return;
@@ -509,21 +319,14 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 #endif /* LZ4_SHARED_LINKAGE */
 
 	if (isLZO) {
-#ifdef LZO_SHARED_LINKAGE
 		// Attempt to load the LZO function pointers.
-		if (d->init_pfn_LZO() != LZO_E_OK) {
+		// NOTE: This is done in static library builds too,
+		// since init_lzo() must be called.
+		if (d->dlopenHandler.init_pfn_LZO() != LZO_E_OK) {
 			// Failed to load the LZO function pointers.
 			m_file.reset();
 			return;
 		}
-#else /* !LZO_SHARED_LINKAGE */
-		// Need to call init_lzo(), even in static library builds.
-		if (init_lzo() != LZO_E_OK) {
-			// Failed to initialize LZO.
-			m_file.reset();
-			return;
-		}
-#endif /* LZO_SHARED_LINKAGE */
 	}
 
 
@@ -1147,17 +950,10 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 			}
 
 			// Decompress the data.
-#ifdef LZ4_SHARED_LINKAGE
-			int sz_rd = d->pfn_LZ4_decompress_safe(
+			int sz_rd = d->dlopenHandler.LZ4_decompress_safe(
 				reinterpret_cast<const char*>(d->z_buffer.data()),
 				reinterpret_cast<char*>(d->blockCache.data()),
 				z_block_size, d->block_size);
-#else /* !LZ4_SHARED_LINKAGE */
-			int sz_rd = LZ4_decompress_safe(
-				reinterpret_cast<const char*>(d->z_buffer.data()),
-				reinterpret_cast<char*>(d->blockCache.data()),
-				z_block_size, d->block_size);
-#endif /* LZ4_SHARED_LINKAGE */
 			if (sz_rd != (int)d->block_size) {
 				// Decompression error.
 				// TODO: Print warnings and/or more comprehensive error codes.
@@ -1197,17 +993,10 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 			// Decompress the data.
 			// TODO: LZO in-place decompression?
 			lzo_uint dst_len = d->block_size;
-#ifdef LZO_SHARED_LINKAGE
-			int ret = d->pfn_lzo1x_decompress_safe(
+			int ret = d->dlopenHandler.lzo1x_decompress_safe(
 				d->z_buffer.data(), z_block_size,
 				d->blockCache.data(), &dst_len,
 				nullptr);
-#else /* !LZO_SHARED_LINKAGE */
-			int ret = lzo1x_decompress_safe(
-				d->z_buffer.data(), z_block_size,
-				d->blockCache.data(), &dst_len,
-				nullptr);
-#endif /* LZO_SHARED_LINKAGE */
 			if (ret != LZO_E_OK || dst_len != d->block_size) {
 				// Decompression error.
 				// TODO: Print warnings and/or more comprehensive error codes.
