@@ -97,10 +97,13 @@ public:
 
 public:
 	// dlopen() handler
-	CisoPspDlopen dlopenHandler;
+	static CisoPspDlopen dlopenHandler;
 };
 
 /** CisoPspReaderPrivate **/
+
+// dlopen() handler
+CisoPspDlopen CisoPspReaderPrivate::dlopenHandler;
 
 CisoPspReaderPrivate::CisoPspReaderPrivate(CisoPspReader *q)
 	: super(q)
