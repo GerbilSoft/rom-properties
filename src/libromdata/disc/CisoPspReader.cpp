@@ -310,11 +310,11 @@ int CisoPspReaderPrivate::init_pfn_LZO(void)
 
 #ifdef _WIN32
 #  ifndef NDEBUG
-#    define LZ4_DLL_FILENAME "minilzod.dll"
+#    define LZO_DLL_FILENAME "minilzod.dll"
 #  else /* NDEBUG */
-#    define LZ4_DLL_FILENAME "minilzo.dll"
+#    define LZO_DLL_FILENAME "minilzo.dll"
 #  endif /* NDEBUG */
-	HMODULE lib = rp_LoadLibrary(LZ4_DLL_FILENAME);
+	HMODULE lib = rp_LoadLibrary(LZO_DLL_FILENAME);
 #else /* !_WIN32 */
 	HMODULE lib = dlopen("liblzo2.so.2", RTLD_LOCAL|RTLD_NOW);
 #endif /* _WIN32 */
