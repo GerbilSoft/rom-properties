@@ -14,6 +14,7 @@
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
 #  define sched_yield() SwitchToThread()
+static constexpr pthread_once_t PTHREAD_ONCE_INIT = 0;
 #endif
 
 #ifdef _MSC_VER
