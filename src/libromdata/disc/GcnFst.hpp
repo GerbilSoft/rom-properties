@@ -68,7 +68,7 @@ public:
 	 * @return DirEnt*, or nullptr if end of directory or on error.
 	 * (TODO: Add lastError()?)
 	 */
-	DirEnt *readdir(Dir *dirp) final;
+	const DirEnt *readdir(Dir *dirp) final;
 
 	/**
 	 * Close an opened directory.

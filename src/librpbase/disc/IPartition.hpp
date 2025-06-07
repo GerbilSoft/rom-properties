@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IPartition.hpp: Partition reader interface.                             *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -87,7 +87,7 @@ public:
 	 * @return IFst::DirEnt, or nullptr if end of directory or on error.
 	 * (TODO: Add lastError()?)
 	 */
-	virtual IFst::DirEnt *readdir(IFst::Dir *dirp);
+	virtual const IFst::DirEnt *readdir(IFst::Dir *dirp);
 
 	/**
 	 * Close an opened directory.

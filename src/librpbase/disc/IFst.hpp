@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IFst.hpp: File System Table interface.                                  *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -95,7 +95,7 @@ public:
 	 * @return DirEnt*, or nullptr if end of directory or on error.
 	 * (TODO: Add lastError()?)
 	 */
-	virtual DirEnt *readdir(Dir *dirp) = 0;
+	virtual const DirEnt *readdir(Dir *dirp) = 0;
 
 	/**
 	 * Close an opened directory.

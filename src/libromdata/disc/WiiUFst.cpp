@@ -492,7 +492,7 @@ IFst::Dir *WiiUFst::opendir(const char *path)
  * @return IFst::DirEnt*, or nullptr if end of directory or on error.
  * (End of directory does not set lastError; an error does.)
  */
-IFst::DirEnt *WiiUFst::readdir(IFst::Dir *dirp)
+const IFst::DirEnt *WiiUFst::readdir(IFst::Dir *dirp)
 {
 	RP_D(WiiUFst);
 	assert(dirp != nullptr);

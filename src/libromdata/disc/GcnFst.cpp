@@ -447,7 +447,7 @@ IFst::Dir *GcnFst::opendir(const char *path)
  * @return IFst::DirEnt*, or nullptr if end of directory or on error.
  * (End of directory does not set lastError; an error does.)
  */
-IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
+const IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 {
 	assert(dirp != nullptr);
 	assert(dirp->parent == this);

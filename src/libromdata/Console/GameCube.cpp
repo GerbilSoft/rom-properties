@@ -1550,10 +1550,11 @@ int GameCube::loadFieldData(void)
 			//   - 21.29: IOS version. (21.29 == v5405)
 			IFst::Dir *const dirp = d->updatePartition->opendir("/_sys/");
 			if (dirp) {
-				IFst::DirEnt *dirent;
+				const IFst::DirEnt *dirent;
 				while ((dirent = d->updatePartition->readdir(dirp)) != nullptr) {
-					if (!dirent->name || dirent->type != DT_REG)
+					if (!dirent->name || dirent->type != DT_REG) {
 						continue;
+					}
 
 					// Check for a retail System Menu.
 					if (dirent->name[0] == 'R') {

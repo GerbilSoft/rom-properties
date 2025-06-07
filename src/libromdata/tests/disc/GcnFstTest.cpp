@@ -357,7 +357,7 @@ void GcnFstTest::checkNoDuplicateFilenames(const char *subdir)
 	ASSERT_TRUE(dirp != nullptr) <<
 		"Failed to open directory '" << subdir << "'.";
 
-	IFst::DirEnt *dirent = m_fst->readdir(dirp);
+	const IFst::DirEnt *dirent = m_fst->readdir(dirp);
 	while (dirent != nullptr) {
 		// Make sure we haven't seen this filename in
 		// the current subdirectory yet.
