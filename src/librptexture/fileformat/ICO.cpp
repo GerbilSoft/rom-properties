@@ -154,9 +154,8 @@ rp_image_const_ptr ICOPrivate::loadImage_Win1(void)
 		return {};
 	}
 
-	// Convert the main icon first.
-	// TODO: Apply masks.
-	img = ImageDecoder::fromLinearMono(width, height, icon_data.data() + icon_size, icon_size, stride);
+	// Convert the icon.
+	img = ImageDecoder::fromLinearMono_WinIcon(width, height, icon_data.data(), icon_size * 2, stride);
 	return img;
 }
 
