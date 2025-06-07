@@ -444,7 +444,7 @@ const IsoPartitionPrivate::DirData_t *IsoPartitionPrivate::getDirectory(const ch
 
 		if (!pDir) {
 			// Can't find the parent directory.
-			// getDirectory() already set q->lastError().
+			// getDirectory() already set q->m_lastError().
 			return nullptr;
 		}
 
@@ -452,7 +452,11 @@ const IsoPartitionPrivate::DirData_t *IsoPartitionPrivate::getDirectory(const ch
 		const ISO_DirEntry *const entry = lookup_int(pDir, path, true);
 		if (!entry) {
 			// Not found.
-			// lookup_int() already set q->lastError().
+			// lookup_int() already set q->m_lastError().
+			return nullptr;
+		} else if (!(entry->flags & ISO_FLAG_DIRECTORY)) {
+			// Entry found, but it's a directory.
+			q->m_lastError = ENOTDIR;
 			return nullptr;
 		}
 
@@ -515,7 +519,7 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup(const char *filename)
 
 	if (!pDir) {
 		// Error getting the directory.
-		// getDirectory() has already set q->lastError.
+		// getDirectory() has already set q->m_lastError.
 		return nullptr;
 	}
 
