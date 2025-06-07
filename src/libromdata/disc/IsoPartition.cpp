@@ -66,14 +66,16 @@ public:
 		return (c == '/') || (c == '\\');
 	}
 
+private:
 	/**
 	 * Find the last slash or backslash in a path.
+	 * (Internal function!)
 	 * @param path Path
+	 * @param size Size of path
 	 * @return Last slash or backslash, or nullptr if not found.
 	 */
-	static inline const char *findLastSlash(const char *path)
+	static inline const char *findLastSlash(const char *path, size_t size)
 	{
-		size_t size = strlen(path);
 		const char *p = path + size - 1;
 		for (; size > 0; size--, p--) {
 			if (is_slash(*p)) {
@@ -82,6 +84,39 @@ public:
 		}
 		return nullptr;
 	}
+
+public:
+	/**
+	 * Find the last slash or backslash in a path.
+	 * @param path Path
+	 * @return Last slash or backslash, or nullptr if not found.
+	 */
+	static inline const char *findLastSlash(const char *path)
+	{
+		return findLastSlash(path, strlen(path));
+	}
+
+	/**
+	 * Find the last slash or backslash in a path.
+	 * @param path Path
+	 * @return Last slash or backslash, or nullptr if not found.
+	 */
+	static inline const char *findLastSlash(const string &path)
+	{
+		return findLastSlash(path.c_str(), path.size());
+	}
+
+	/**
+	 * Sanitize an incoming path for ISO-9660 lookup.
+	 *
+	 * This function does the following:
+	 * - Converts the path from UTF-8 to cp1252.
+	 * - Removes leading and trailing slashes.
+	 *
+	 * @param path Path to sanitize
+	 * @return Sanitized path (empty string for "/")
+	 */
+	static std::string sanitize_path(const char *path);
 
 	/**
 	 * Look up a directory entry from a base filename and directory.
@@ -169,6 +204,38 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q,
 IsoPartitionPrivate::~IsoPartitionPrivate()
 {
 	assert(fstDirCount == 0);
+}
+
+/**
+ * Sanitize an incoming path for ISO-9660 lookup.
+ *
+ * This function does the following:
+ * - Converts the path from UTF-8 to cp1252.
+ * - Removes leading and trailing slashes.
+ *
+ * @param path Path to sanitize
+ * @return Sanitized path (empty string for "/")
+ */
+std::string IsoPartitionPrivate::sanitize_path(const char *path)
+{
+	// Remove leading slashes.
+	while (is_slash(*path)) {
+		path++;
+	}
+	if (*path == '\0') {
+		// Nothing but slashes?
+		return {};
+	}
+
+	// Convert to cp1252, then remove trailing slashes.
+	string s_path = utf8_to_cp1252(path, -1);
+	size_t s_path_len = s_path.size();
+	while (s_path_len > 0 && is_slash(s_path[s_path_len-1])) {
+		s_path_len--;
+	}
+	s_path.resize(s_path_len);
+
+	return s_path;
 }
 
 /**
@@ -424,28 +491,21 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup(const char *filename)
 {
 	assert(filename != nullptr);
 	assert(filename[0] != '\0');
-	RP_Q(IsoPartition);
 
-	// Remove leading slashes.
-	while (*filename == '/') {
-		filename++;
-	}
-	if (filename[0] == 0) {
-		// Nothing but slashes...
-		q->m_lastError = EINVAL;
-		return nullptr;
-	}
+	// Sanitize the filename.
+	// If the return value is an empty string, that means root directory.
+	string s_filename = sanitize_path(filename);
 
 	// TODO: Which encoding?
 	// Assuming cp1252...
 	const DirData_t *pDir;
 
 	// Is this file in a subdirectory?
-	const char *const sl = findLastSlash(filename);
+	const char *const sl = findLastSlash(s_filename);
 	if (sl) {
 		// This file is in a subdirectory.
-		const string s_parentDir = utf8_to_cp1252(filename, static_cast<int>(sl - filename));
-		filename = sl + 1;
+		const string s_parentDir = s_filename.substr(0, sl - s_filename.c_str());
+		s_filename.assign(sl + 1);
 		pDir = getDirectory(s_parentDir.c_str());
 	} else {
 		// Not in a subdirectory.
@@ -460,7 +520,6 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup(const char *filename)
 	}
 
 	// Find the file in the directory.
-	const string s_filename = utf8_to_cp1252(filename, -1);
 	return lookup_int(pDir, s_filename.c_str(), false);
 }
 
@@ -646,7 +705,11 @@ off64_t IsoPartition::partition_size_used(void) const
 IFst::Dir *IsoPartition::opendir(const char *path)
 {
 	RP_D(IsoPartition);
-	const IsoPartitionPrivate::DirData_t *const pDir = d->getDirectory(path);
+
+	// Sanitize the path.
+	// If the return value is an empty string, that means root directory.	
+	string s_path = d->sanitize_path(path);
+	const IsoPartitionPrivate::DirData_t *const pDir = d->getDirectory(s_path.c_str());
 	if (!pDir) {
 		// Path not found.
 		// TODO: Return an error code?
