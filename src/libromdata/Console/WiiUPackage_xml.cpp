@@ -305,24 +305,18 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		array<const char*, WiiU_LC_COUNT> longnames;
 		array<const char*, WiiU_LC_COUNT> shortnames;
 		array<const char*, WiiU_LC_COUNT> publishers;
-		string longname_key = "longname_";
-		string shortname_key = "shortname_";
-		string publisher_key = "publisher_";
-		longname_key.reserve(13);
-		shortname_key.reserve(14);
-		publisher_key.reserve(14);
+		char longname_key[16] = "longname_";
+		char shortname_key[16] = "shortname_";
+		char publisher_key[16] = "publisher_";
 		for (size_t i = 0; i < xml_lc_map.size(); i++) {
-			longname_key.resize(9);
-			shortname_key.resize(10);
-			publisher_key.resize(10);
+			// NOTE: xml_lc_map[i].xml_lc cannot be more than 3 letters.
+			strcpy(&longname_key[9],   xml_lc_map[i].xml_lc);
+			strcpy(&shortname_key[10], xml_lc_map[i].xml_lc);
+			strcpy(&publisher_key[10], xml_lc_map[i].xml_lc);
 
-			longname_key += xml_lc_map[i].xml_lc;
-			shortname_key += xml_lc_map[i].xml_lc;
-			publisher_key += xml_lc_map[i].xml_lc;
-
-			longnames[i] = metaRootNode.child(longname_key.c_str()).text().as_string(nullptr);
-			shortnames[i] = metaRootNode.child(shortname_key.c_str()).text().as_string(nullptr);
-			publishers[i] = metaRootNode.child(publisher_key.c_str()).text().as_string(nullptr);
+			longnames[i] = metaRootNode.child(longname_key).text().as_string(nullptr);
+			shortnames[i] = metaRootNode.child(shortname_key).text().as_string(nullptr);
+			publishers[i] = metaRootNode.child(publisher_key).text().as_string(nullptr);
 		}
 
 		// If English is valid, we'll deduplicate titles.
@@ -334,9 +328,9 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		RomFields::StringMultiMap_t *const pMap_publisher = new RomFields::StringMultiMap_t();
 		for (int langID = 0; langID < static_cast<int>(xml_lc_map.size()); langID++) {
 			// Check for empty strings first.
-			if ((!longnames[langID] || longnames[langID][0] == '\0') &&
-			(!shortnames[langID] || shortnames[langID][0] == '\0') &&
-			(!publishers[langID] || publishers[langID][0] == '\0'))
+			if (( !longnames[langID] ||  longnames[langID][0] == '\0') &&
+			    (!shortnames[langID] || shortnames[langID][0] == '\0') &&
+			    (!publishers[langID] || publishers[langID][0] == '\0'))
 			{
 				// Strings are empty.
 				continue;
@@ -344,9 +338,9 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 
 			if (dedupe_titles && langID != 1 /* English */) {
 				// Check if the title matches English.
-				if (longnames[langID] && longnames[1] && !strcmp(longnames[langID], longnames[1]) &&
-				shortnames[langID] && shortnames[1] && !strcmp(shortnames[langID], shortnames[1]) &&
-				publishers[langID] && publishers[1] && !strcmp(publishers[langID], publishers[1]))
+				if ( longnames[langID] &&  longnames[1] && !strcmp( longnames[langID], longnames[1]) &&
+				    shortnames[langID] && shortnames[1] && !strcmp(shortnames[langID], shortnames[1]) &&
+				    publishers[langID] && publishers[1] && !strcmp(publishers[langID], publishers[1]))
 				{
 					// All three title fields match English.
 					continue;
