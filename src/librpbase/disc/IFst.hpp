@@ -57,6 +57,7 @@ public:
 		const char *name;	// Filename
 
 		// TODO: Additional placeholders?
+		void *extra;		// Extra data
 		unsigned int ptnum;	// Partition or content number
 		int idx;		// File index
 		uint8_t type;		// File type (See d_type.h)
@@ -64,11 +65,17 @@ public:
 
 	struct Dir {
 		IFst *const parent;	// IFst that owns this Dir
-		int dir_idx;		// Directory index in the FST
+		intptr_t dir_idx;	// Directory index in the FST
 		DirEnt entry;		// Current DirEnt
 
-		explicit Dir(IFst *parent)
+		explicit Dir(IFst *parent, intptr_t dir_idx)
 			: parent(parent)
+			, dir_idx(dir_idx)
+		{}
+
+		explicit Dir(IFst *parent, void *dir_idx)
+			: parent(parent)
+			, dir_idx(reinterpret_cast<intptr_t>(dir_idx))
 		{}
 	};
 

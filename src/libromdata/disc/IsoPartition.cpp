@@ -27,6 +27,7 @@ class IsoPartitionPrivate
 {
 public:
 	IsoPartitionPrivate(IsoPartition *q, off64_t partition_offset, int iso_start_offset);
+	~IsoPartitionPrivate();
 
 private:
 	RP_DISABLE_COPY(IsoPartitionPrivate)
@@ -53,9 +54,12 @@ public:
 	// -1 == unknown
 	int iso_start_offset;
 
+	// IFst::Dir* reference counter
+	int fstDirCount;
+
 	/**
 	 * Find the last slash or backslash in a path.
-	 * @param path Path.
+	 * @param path Path
 	 * @return Last slash or backslash, or nullptr if not found.
 	 */
 	static inline const char *findLastSlash(const char *path)
@@ -90,14 +94,14 @@ public:
 	/**
 	 * Look up a directory entry from a filename.
 	 * @param filename Filename [UTF-8]
-	 * @return ISO directory entry.
+	 * @return ISO directory entry
 	 */
 	const ISO_DirEntry *lookup(const char *filename);
 
 	/**
 	 * Parse an ISO-9660 timestamp.
-	 * @param isofiletime File timestamp.
-	 * @return Unix time.
+	 * @param isofiletime File timestamp
+	 * @return Unix time
 	 */
 	static time_t parseTimestamp(const ISO_Dir_DateTime_t *isofiletime);
 };
@@ -110,6 +114,7 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q,
 	, partition_offset(partition_offset)
 	, partition_size(0)
 	, iso_start_offset(iso_start_offset)
+	, fstDirCount(0)
 {
 	// Clear the PVD struct.
 	memset(&pvd, 0, sizeof(pvd));
@@ -152,6 +157,11 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q,
 	getDirectory("/");
 }
 
+IsoPartitionPrivate::~IsoPartitionPrivate()
+{
+	assert(fstDirCount == 0);
+}
+
 /**
  * Look up a directory entry from a base filename and directory.
  * @param pDir		[in] Directory
@@ -169,10 +179,26 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup_int(const DirData_t *pDir, const
 	const ISO_DirEntry *dirEntry_found = nullptr;
 	const uint8_t *p = pDir->data();
 	const uint8_t *const p_end = p + pDir->size();
-	while (p < p_end) {
+	while ((p + sizeof(ISO_DirEntry)) < p_end) {
 		const ISO_DirEntry *dirEntry = reinterpret_cast<const ISO_DirEntry*>(p);
-		if (dirEntry->entry_length < sizeof(*dirEntry)) {
-			// End of directory.
+		if (dirEntry->entry_length == 0) {
+			// Directory entries cannot span multiple sectors in
+			// multi-sector directories, so if needed, the rest
+			// of the sector is padded with 00.
+			// Find the next non-zero byte.
+			for (p++; p < p_end; p++) {
+				if (*p != '\0') {
+					// Found a non-zero byte.
+					break;
+				}
+			}
+			if (p >= p_end) {
+				// No more non-zero bytes.
+				break;
+			}
+			continue;
+		} else if (dirEntry->entry_length < sizeof(*dirEntry)) {
+			// Invalid directory entry?
 			break;
 		}
 
@@ -180,6 +206,17 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup_int(const DirData_t *pDir, const
 		if (entry_filename + dirEntry->filename_length > reinterpret_cast<const char*>(p_end)) {
 			// Filename is out of bounds.
 			break;
+		}
+
+		// Skip subdirectories with names "\x00" and "\x01".
+		// These are Joliet "special directory identifiers".
+		// TODO: Joliet subdirectory support?
+		if ((dirEntry->flags & ISO_FLAG_DIRECTORY) && dirEntry->filename_length == 1) {
+			if (static_cast<uint8_t>(entry_filename[0]) <= 0x01) {
+				// Skip this filename.
+				p += dirEntry->entry_length;
+				continue;
+			}
 		}
 
 		// Check the filename.
@@ -301,6 +338,7 @@ const IsoPartitionPrivate::DirData_t *IsoPartitionPrivate::getDirectory(const ch
 			// in which case, we'll need to assume that the
 			// root directory starts at block 20.
 			// TODO: Better heuristics.
+			// TODO: Find the block that starts with "CD001" instead of this heuristic.
 			if (rootdir->block.he < 20) {
 				// Starting block is invalid.
 				q->m_lastError = EIO;
@@ -371,7 +409,7 @@ const IsoPartitionPrivate::DirData_t *IsoPartitionPrivate::getDirectory(const ch
 /**
  * Look up a directory entry from a filename.
  * @param filename Filename [UTF-8]
- * @return ISO directory entry.
+ * @return ISO directory entry
  */
 const ISO_DirEntry *IsoPartitionPrivate::lookup(const char *filename)
 {
@@ -419,8 +457,8 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup(const char *filename)
 
 /**
  * Parse an ISO-9660 timestamp.
- * @param isofiletime File timestamp.
- * @return Unix time.
+ * @param isofiletime File timestamp
+ * @return Unix time
  */
 time_t IsoPartitionPrivate::parseTimestamp(const ISO_Dir_DateTime_t *isofiletime)
 {
@@ -589,68 +627,181 @@ off64_t IsoPartition::partition_size_used(void) const
 
 /** IsoPartition **/
 
-/** GcnFst wrapper functions. **/
+/** IFst wrapper functions **/
 
-// TODO
-
-#if 0
 /**
  * Open a directory.
- * @param path	[in] Directory path.
+ * @param path	[in] Directory path
  * @return IFst::Dir*, or nullptr on error.
  */
 IFst::Dir *IsoPartition::opendir(const char *path)
 {
 	RP_D(IsoPartition);
-	if (!d->fst) {
-		// FST isn't loaded.
-		if (d->loadFst() != 0) {
-			// FST load failed.
-			// TODO: Errors?
-			return nullptr;
-		}
+	const IsoPartitionPrivate::DirData_t *const pDir = d->getDirectory(path);
+	if (!pDir) {
+		// Path not found.
+		// TODO: Return an error code?
+		return nullptr;
 	}
 
-	return d->fst->opendir(path);
+	// FIXME: Create an IsoFst class? Cannot pass `this` as IFst*.
+	IFst::Dir *const dirp = new IFst::Dir(nullptr, (void*)pDir);
+	d->fstDirCount++;
+
+	// Initialize the entry to this directory.
+	// readdir() will automatically seek to the next entry.
+	dirp->entry.extra = nullptr;	// temporary filename storage
+	dirp->entry.ptnum = 0;		// not used for ISO
+	dirp->entry.idx = 0;
+	dirp->entry.type = DT_UNKNOWN;
+	dirp->entry.name = nullptr;
+	// offset and size are not valid for directories.
+	dirp->entry.offset = 0;
+	dirp->entry.size = 0;
+
+	// Return the IFst::Dir*.
+	return dirp;
 }
 
 /**
  * Read a directory entry.
- * @param dirp FstDir pointer.
+ * @param dirp FstDir pointer
  * @return IFst::DirEnt*, or nullptr if end of directory or on error.
  * (TODO: Add lastError()?)
  */
-IFst::DirEnt *IsoPartition::readdir(IFst::Dir *dirp)
+const IFst::DirEnt *IsoPartition::readdir(IFst::Dir *dirp)
 {
-	RP_D(IsoPartition);
-	if (!d->fst) {
-		// TODO: Errors?
+	assert(dirp != nullptr);
+	//assert(dirp->parent == this);
+	if (!dirp /*|| dirp->parent != this*/) {
+		// No directory pointer, or the dirp
+		// doesn't belong to this IFst.
 		return nullptr;
 	}
 
-	return d->fst->readdir(dirp);
+	const IsoPartitionPrivate::DirData_t *const pDir =
+		reinterpret_cast<const IsoPartitionPrivate::DirData_t*>(dirp->dir_idx);
+	const uint8_t *p = pDir->data();
+	const uint8_t *const p_end = p + pDir->size();
+	p += dirp->entry.idx;
+
+	// NOTE: Using a loop in order to skip files that aren't really files.
+	const ISO_DirEntry *dirEntry = nullptr;
+	const char *entry_filename = nullptr;
+	while (p < p_end) {
+		dirEntry = reinterpret_cast<const ISO_DirEntry*>(p);
+		if (dirEntry->entry_length == 0) {
+			// Directory entries cannot span multiple sectors in
+			// multi-sector directories, so if needed, the rest
+			// of the sector is padded with 00.
+			// Find the next non-zero byte.
+			for (p++; p < p_end; p++) {
+				if (*p != '\0') {
+					// Found a non-zero byte.
+					dirp->entry.idx = static_cast<int>(p - pDir->data());
+					break;
+				}
+			}
+			if (p >= p_end) {
+				// No more non-zero bytes.
+				dirp->entry.idx = static_cast<int>(pDir->size());
+				break;
+			}
+			continue;
+		} else if (dirEntry->entry_length < sizeof(*dirEntry)) {
+			// Invalid directory entry?
+			return nullptr;
+		}
+
+		entry_filename = reinterpret_cast<const char*>(p) + sizeof(*dirEntry);
+		if (entry_filename + dirEntry->filename_length > reinterpret_cast<const char*>(p_end)) {
+			// Filename is out of bounds.
+			return nullptr;
+		}
+
+		// Skip subdirectories with names "\x00" and "\x01".
+		// These are Joliet "special directory identifiers".
+		// TODO: Joliet subdirectory support?
+		if ((dirEntry->flags & ISO_FLAG_DIRECTORY) && dirEntry->filename_length == 1) {
+			if (static_cast<uint8_t>(entry_filename[0]) <= 0x01) {
+				// Skip this filename.
+				dirp->entry.idx += dirEntry->entry_length;
+				p += dirEntry->entry_length;
+				continue;
+			}
+		}
+
+		// Found a valid file.
+		break;
+	}
+	if (!dirEntry) {
+		// Could not find a valid file. (End of directory?)
+		return nullptr;
+	}
+
+	const bool isDir = !!(dirEntry->flags & ISO_FLAG_DIRECTORY);
+	if (isDir) {
+		// Technically, offset/size are valid for directories on ISO-9660,
+		// but we're going to set them to 0.
+		dirp->entry.type = DT_DIR;
+		dirp->entry.offset = 0;
+		dirp->entry.size = 0;
+	} else {
+		RP_D(IsoPartition);
+		const unsigned int block_size = d->pvd.logical_block_size.he;
+		dirp->entry.type = DT_REG;
+		dirp->entry.offset = static_cast<off64_t>(dirEntry->block.he) * block_size;
+		dirp->entry.size = dirEntry->size.he;
+	}
+
+	// NOTE: Need to copy the filename in order to have NULL-termination.
+	// TODO: Remove ";1" from the filename, if present?
+	char *extra = static_cast<char*>(dirp->entry.extra);
+	delete[] extra;
+	extra = new char[dirEntry->filename_length + 1];
+	memcpy(extra, entry_filename, dirEntry->filename_length);
+	extra[dirEntry->filename_length] = '\0';
+
+	dirp->entry.name = extra;
+	dirp->entry.extra = extra;
+
+	// Next file entry.
+	dirp->entry.idx += dirEntry->entry_length;
+
+	return &dirp->entry;
 }
 
 /**
  * Close an opened directory.
- * @param dirp FstDir pointer.
+ * @param dirp FstDir pointer
  * @return 0 on success; negative POSIX error code on error.
  */
 int IsoPartition::closedir(IFst::Dir *dirp)
 {
-	RP_D(IsoPartition);
-	if (!d->fst) {
-		// TODO: Errors?
-		return -EBADF;
-	}
+	assert(dirp != nullptr);
+	//assert(dirp->parent == this);
+	if (!dirp) {
+		// No directory pointer.
+		// In release builds, this is a no-op.
+		return 0;
+	} /*else if (dirp->parent != this) {
+		// The dirp doesn't belong to this IFst.
+		return -EINVAL;
+	}*/
 
-	return d->fst->closedir(dirp);
+	RP_D(IsoPartition);
+	assert(d->fstDirCount > 0);
+	if (dirp->entry.extra) {
+		delete[] static_cast<char*>(dirp->entry.extra);
+	}
+	delete dirp;
+	d->fstDirCount--;
+	return 0;
 }
-#endif
 
 /**
  * Open a file. (read-only)
- * @param filename Filename.
+ * @param filename Filename
  * @return IRpFile*, or nullptr on error.
  */
 IRpFilePtr IsoPartition::open(const char *filename)
@@ -707,9 +858,11 @@ IRpFilePtr IsoPartition::open(const char *filename)
 	return std::make_shared<PartitionFile>(this->shared_from_this(), file_addr, dirEntry->size.he);
 }
 
+/** IsoPartition-specific functions **/
+
 /**
  * Get a file's timestamp.
- * @param filename Filename.
+ * @param filename Filename
  * @return Timestamp, or -1 on error.
  */
 time_t IsoPartition::get_mtime(const char *filename)

@@ -90,41 +90,41 @@ public:
 public:
 	/** IFst wrapper functions **/
 
-	// TODO
-#if 0
 	/**
 	 * Open a directory.
-	 * @param path	[in] Directory path.
+	 * @param path	[in] Directory path
 	 * @return IFst::Dir*, or nullptr on error.
 	 */
 	LibRpBase::IFst::Dir *opendir(const char *path) final;
 
 	/**
 	 * Read a directory entry.
-	 * @param dirp IFst::Dir pointer.
+	 * @param dirp IFst::Dir pointer
 	 * @return IFst::DirEnt, or nullptr if end of directory or on error.
 	 * (TODO: Add lastError()?)
 	 */
-	LibRpBase::IFst::DirEnt *readdir(LibRpBase::IFst::Dir *dirp) final;
+	const LibRpBase::IFst::DirEnt *readdir(LibRpBase::IFst::Dir *dirp) final;
 
 	/**
 	 * Close an opened directory.
-	 * @param dirp IFst::Dir pointer.
+	 * @param dirp IFst::Dir pointer
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
 	int closedir(LibRpBase::IFst::Dir *dirp) final;
-#endif
 
 	/**
 	 * Open a file. (read-only)
-	 * @param filename Filename.
+	 * @param filename Filename
 	 * @return IRpFile*, or nullptr on error.
 	 */
 	LibRpFile::IRpFilePtr open(const char *filename) final;
 
+public:
+	/** IsoPartition-specific functions **/
+
 	/**
 	 * Get a file's timestamp.
-	 * @param filename Filename.
+	 * @param filename Filename
 	 * @return Timestamp, or -1 on error.
 	 */
 	time_t get_mtime(const char *filename);
