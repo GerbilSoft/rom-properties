@@ -19,6 +19,8 @@ using namespace LibRpText;
 using std::string;
 using std::unordered_map;
 
+// TODO: HSFS/CDI support?
+
 namespace LibRomData {
 
 class IsoPartitionPrivate
@@ -56,7 +58,7 @@ public:
 	 * @param path Path.
 	 * @return Last slash or backslash, or nullptr if not found.
 	 */
-	inline const char *findLastSlash(const char *path)
+	static inline const char *findLastSlash(const char *path)
 	{
 		const char *sl = strrchr(path, '/');
 		const char *const bs = strrchr(path, '\\');
@@ -65,7 +67,7 @@ public:
 				sl = bs;
 			}
 		}
-		return (sl ? sl : bs);
+		return (sl) ? sl : bs;
 	}
 
 	/**
@@ -97,7 +99,7 @@ public:
 	 * @param isofiletime File timestamp.
 	 * @return Unix time.
 	 */
-	time_t parseTimestamp(const ISO_Dir_DateTime_t *isofiletime);
+	static time_t parseTimestamp(const ISO_Dir_DateTime_t *isofiletime);
 };
 
 /** IsoPartitionPrivate **/

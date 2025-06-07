@@ -14,6 +14,9 @@
 #include "../iso_structs.h"
 #include "hsfs_structs.h"
 
+// TESTING
+#include "../disc/IsoPartition.hpp"
+
 // Other rom-properties libraries
 #include "librpbase/Achievements.hpp"
 #include "librpbase/disc/PartitionFile.hpp"
@@ -910,6 +913,17 @@ int ISO::loadFieldData(void)
 		d->fields.addField_string(C_("ISO", "UDF Version"),
 			d->s_udf_version);
 	}
+
+	// TESTING: readdir()
+	IsoPartition *iso = new IsoPartition(d->file, 0, 0);
+	auto dirp = iso->opendir("/NT3x");
+	printf("dirp: %p\n", dirp);
+	const IFst::DirEnt *dirent;
+	while ((dirent = iso->readdir(dirp)) != nullptr) {
+		printf("- type %d, name: %s\n", dirent->type, dirent->name);
+	}
+	int ret = iso->closedir(dirp);
+	printf("closedir: %d\n", ret);
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
