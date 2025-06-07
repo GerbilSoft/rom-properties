@@ -185,63 +185,6 @@ rp_image_const_ptr ICOPrivate::loadImage(void)
 	}
 	// TODO: Load icons.
 	return {};
-#if 0
-	// Sanity check: Maximum image dimensions of 32768x32768.
-	assert(qoiHeader.desc.width > 0);
-	assert(qoiHeader.desc.width <= 32768);
-	assert(qoiHeader.desc.height > 0);
-	assert(qoiHeader.desc.height <= 32768);
-	if (qoiHeader.desc.width == 0 || qoiHeader.desc.width > 32768 ||
-	    qoiHeader.desc.height == 0 || qoiHeader.desc.height > 32768)
-	{
-		// Invalid image dimensions.
-		return {};
-	}
-
-	if (file->size() > 128*1024*1024) {
-		// Sanity check: ICO files shouldn't be more than 128 MB.
-		return {};
-	}
-	const uint32_t file_sz = static_cast<uint32_t>(file->size());
-
-	// ICO stores either 24-bit RGB or 32-bit RGBA image data.
-	// We want to read it in as 32-bit RGBA.
-
-	// Read in the entire file. (TODO: mmap?)
-	auto buf = aligned_uptr<uint8_t>(16, file_sz);
-	size_t size = file->seekAndRead(0, buf.get(), file_sz);
-	if (size != file_sz) {
-		// Seek and/or read error.
-		return {};
-	}
-
-	// Decode the image.
-	qoi_desc tmp_desc;
-	void *pixels = qoi_decode(buf.get(), file_sz, &tmp_desc, 4);
-	if (!pixels) {
-		// Error decoding the image.
-		return {};
-	}
-	buf.reset();
-
-	// Copy the decoded image into an rp_image.
-	rp_image *const tmp_img = new rp_image(qoiHeader.desc.width, qoiHeader.desc.height, rp_image::Format::ARGB32);
-	uint32_t *px_dest = static_cast<uint32_t*>(tmp_img->bits());
-	const uint32_t *px_src = static_cast<uint32_t*>(pixels);
-	const int src_stride = qoiHeader.desc.width;
-	const int src_bytes = src_stride * sizeof(*px_src);
-	const int dest_stride = tmp_img->stride() / sizeof(*px_dest);
-
-	for (unsigned int y = qoiHeader.desc.height; y > 0; y--) {
-		memcpy(px_dest, px_src, src_bytes);
-		px_dest += dest_stride;
-		px_src += src_stride;
-	}
-	free(pixels);
-	
-	img.reset(tmp_img);
-	return img;
-#endif
 }
 
 /** ICO **/
