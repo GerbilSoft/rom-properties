@@ -461,8 +461,8 @@ IF(RP_LIBROMDATA_IS_DLL)
 	ADD_DEFINITIONS(-DRP_BUILDING_FOR_DLL=1)
 	# NOTE: Not using the project version here.
 	# This represents the ABI version.
-	SET(${PROJECT_NAME}_VERSION 6.2)
-	SET(${PROJECT_NAME}_SOVERSION 6)
+	SET(${PROJECT_NAME}_VERSION 7.0)
+	SET(${PROJECT_NAME}_SOVERSION 7)
 	IF(MSVC)
 		# Delay-load sources.
 		SET(${PROJECT_NAME}-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)

@@ -9,7 +9,6 @@
 #pragma once
 
 #include "librpbase/config.librpbase.h"
-#include "dll-macros.h"
 
 #include <png.h>
 
@@ -26,13 +25,11 @@ extern "C" {
  *
  * @return 0 on success; non-zero on error.
  */
-RP_LIBROMDATA_PUBLIC
 extern int RP_C_API APNG_ref(void);
 
 /**
  * Decrement the APNG reference counter.
  */
-RP_LIBROMDATA_PUBLIC
 extern void RP_C_API APNG_unref(void);
 
 /**
