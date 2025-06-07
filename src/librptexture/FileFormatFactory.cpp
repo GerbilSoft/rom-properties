@@ -32,6 +32,7 @@ using std::vector;
 #include "fileformat/DidjTex.hpp"
 #include "fileformat/DirectDrawSurface.hpp"
 #include "fileformat/GodotSTEX.hpp"
+#include "fileformat/ICO.hpp"
 #include "fileformat/KhronosKTX.hpp"
 #include "fileformat/KhronosKTX2.hpp"
 #include "fileformat/PowerVR3.hpp"
@@ -178,6 +179,10 @@ FileFormatPtr create(const IRpFilePtr &file)
 		}
 	}
 
+	// Check for specific file extensions.
+	// - ICO, CUR: Windows icons and cursors don't have a useful magic number.
+	// - TGA: There's no header magic number, but there *is* some information.
+
 	// Use some heuristics to check for TGA files.
 	// Based on heuristics from `file`.
 	// TGA 2.0 has an identifying footer as well.
@@ -185,28 +190,45 @@ FileFormatPtr create(const IRpFilePtr &file)
 	// conflicts with "WWF Raw" on SNES.
 	const char *const filename = file->filename();
 	const char *const ext = FileSystem::file_ext(filename);
-	bool ext_ok = false;
+	bool is_ico = false, maybe_tga = false;
 	if (!ext || ext[0] == '\0') {
 		// No extension. Check for TGA anyway.
-		ext_ok = true;
+		maybe_tga = true;
 	} else if (!strcasecmp(ext, ".tga")) {
 		// TGA extension.
-		ext_ok = true;
+		maybe_tga = true;
+	} else if (!strcasecmp(ext, ".ico") || !strcasecmp(ext, ".cur")) {
+		// ICO or CUR extension.
+		is_ico = true;
 	} else if (!strcasecmp(ext, ".gz")) {
 		// Check if it's ".tga.gz".
 		const size_t filename_len = strlen(filename);
 		if (filename_len >= 7) {
 			if (!strncasecmp(&filename[filename_len-7], ".tga", 4)) {
 				// It's ".tga.gz".
-				ext_ok = true;
+				maybe_tga = true;
+			} else if (!strncasecmp(&filename[filename_len-7], ".ico", 4) ||
+			           !strncasecmp(&filename[filename_len-7], ".cur", 4))
+			{
+				// It's ".ico.gz" or ".cur.gz".
+				is_ico = true;
 			}
+		}
+	}
+
+	if (is_ico) {
+		// This might be a Windows icon or cursor.
+		FileFormatPtr fileFormat = std::make_shared<ICO>(file);
+		if (fileFormat->isValid()) {
+			// FileFormat subclass obtained.
+			return fileFormat;
 		}
 	}
 
 	// test of Color Map Type 0~no 1~color map
 	// and Image Type 1 2 3 9 10 11 32 33
 	// and Color Map Entry Size 0 15 16 24 32
-	if (ext_ok &&
+	if (maybe_tga &&
 	    ((magic.u32[0] & be32_to_cpu(0x00FEC400)) == 0) &&
 	    ((magic.u32[1] & be32_to_cpu(0x000000C0)) == 0))
 	{
