@@ -430,7 +430,7 @@ static int gsvt_win32_console_print_ANSI_emulate(gsvt_console *vt, const char *s
 				// Operating System Command (OSC)
 				// May be used for hyperlinks, but we can't easily support this
 				// with regular Windows cmd, so skip it entirely.
-				// Search for a valid end sequence.
+				// Search for the end sequence: "\033\\" (ST) or "\007" (BEL)
 				for (str++; *str != '\0'; str++) {
 					if (str[0] == '\033' && str[1] == '\\') {
 						// Found ST.
@@ -534,6 +534,8 @@ static int gsvt_win32_console_print_ANSI_emulate(gsvt_console *vt, const char *s
 				case 22:
 					// Normal intensity
 					wAttributes &= ~FOREGROUND_INTENSITY;
+					bold = false;
+					bright = false;
 					break;
 				case 24:
 					// Not underline
