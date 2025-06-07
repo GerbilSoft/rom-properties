@@ -263,8 +263,8 @@ rp_image_ptr fromLinearMono_WinIcon(int width, int height,
 				// MSB == left-most pixel
 				if (pxMask & 0x80) {
 					// Mask bit is set: this is either screen or inverted.
-					// FIXME: Inverted doesn't work here. Assuming screen.
-					*px_dest = 0;
+					// FIXME: Inverted doesn't work here. Will use white for inverted.
+					*px_dest = (pxIcon & 0x80) ? 2 : 0;
 				} else {
 					// Mask bit is clear: this is the image.
 					*px_dest = (pxIcon & 0x80) ? 2 : 1;
