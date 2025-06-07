@@ -111,15 +111,12 @@ int AchQtDBus::notifyFunc(Achievements::ID id)
 	// Build the text.
 	// TODO: Better formatting?
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-	QString text = QLatin1String("<u>");
-	text += U82Q(pAch->getName(id)).toHtmlEscaped();
-	text += QLatin1String("</u>\n");
-	text += U82Q(pAch->getDescUnlocked(id)).toHtmlEscaped();
+	QString text = QString::fromLatin1("<u>%1</u>\n%2")
+		.arg(U82Q(pAch->getName(id)).toHtmlEscaped(),
+		     U82Q(pAch->getDescUnlocked(id)).toHtmlEscaped());
 #else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
-	QString text = QLatin1String("<u>");
-	text += Qt::escape(U82Q(pAch->getName(id)));
-	text += QLatin1String("</u>\n");
-	text += Qt::escape(U82Q(pAch->getDescUnlocked(id)));
+		.arg(Qt::escape(U82Q(pAch->getName(id))),
+		     Qt::escape(U82Q(pAch->getDescUnlocked(id))));
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 
 	// Hints, including image data.
