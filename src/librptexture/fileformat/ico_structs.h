@@ -66,6 +66,7 @@ typedef struct _ICONDIR {
 	uint16_t idType;	// [0x002] See ICO_Win3_idType_e
 	uint16_t idCount;	// [0x004] Number of images
 } ICONDIR, ICONHEADER;
+ASSERT_STRUCT(ICONDIR, 6);
 
 /**
  * Windows 3.x: Icon types
@@ -74,6 +75,81 @@ typedef enum {
 	ICO_WIN3_TYPE_ICON	= 0x0001U,
 	ICO_WIN3_TYPE_CURSOR	= 0x0002U,
 } ICO_Win3_IdType_e;
+
+/**
+ * Windows 3.x: Icon directory entry
+ */
+typedef struct _ICONDIRENTRY {
+	uint8_t  bWidth;	// [0x000] Width (0 is actually 256)
+	uint8_t  bHeight;	// [0x001] Height (0 is actually 256)
+	uint8_t  bColorCount;	// [0x002] Color count
+	uint8_t  bReserved;	// [0x003]
+	uint16_t wPlanes;	// [0x004] Bitplanes (if >1, multiply by wBitCount)
+	uint16_t wBitCount;	// [0x006] Bitcount
+	uint32_t dwBytesInRes;	// [0x008] Size
+	uint32_t dwImageOffset;	// [0x00C] Offset
+} ICONDIRENTRY;
+ASSERT_STRUCT(ICONDIRENTRY, 16);
+
+// Windows 3.x icons can either have BITMAPCOREHEADER, BITMAPINFOHEADER,
+// or a raw PNG image (supported by Windows Vista and later).
+
+// TODO: Combine with librpbase/tests/bmp.h?
+
+/**
+ * BITMAPCOREHEADER
+ * All fields are little-endian.
+ * Reference: https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapcoreheader
+ */
+#define BITMAPCOREHEADER_SIZE 12U
+typedef struct tagBITMAPCOREHEADER {
+	uint32_t bcSize;
+	uint16_t bcWidth;
+	uint16_t bcHeight;
+	uint16_t bcPlanes;
+	uint16_t bcBitCount;
+} BITMAPCOREHEADER;
+ASSERT_STRUCT(BITMAPCOREHEADER, BITMAPCOREHEADER_SIZE);
+
+/**
+ * BITMAPINFOHEADER
+ * All fields are little-endian.
+ * Reference: https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapinfoheader
+ */
+#define BITMAPINFOHEADER_SIZE	40U
+#define BITMAPV2INFOHEADER_SIZE	52U
+#define BITMAPV3INFOHEADER_SIZE	56U
+#define BITMAPV4HEADER_SIZE	108U
+#define BITMAPV5HEADER_SIZE	124U
+typedef struct tagBITMAPINFOHEADER {
+	uint32_t biSize;		// [0x000] sizeof(BITMAPINFOHEADER)
+	int32_t  biWidth;		// [0x004] Width, in pixels
+	int32_t  biHeight;		// [0x008] Height, in pixels
+	uint16_t biPlanes;		// [0x00C] Bitplanes
+	uint16_t biBitCount;		// [0x00E] Bitcount
+	uint32_t biCompression;		// [0x010] Compression (see BMP_Compression_e)
+	uint32_t biSizeImage;
+	int32_t  biXPelsPerMeter;
+	int32_t  biYPelsPerMeter;
+	uint32_t biClrUsed;
+	uint32_t biClrImportant;
+} BITMAPINFOHEADER;
+ASSERT_STRUCT(BITMAPINFOHEADER, BITMAPINFOHEADER_SIZE);
+
+/**
+ * Bitmap compression
+ *
+ * NOTE: For Windows icons, only BI_RGB and BI_BITFIELDS are valid.
+ * For PNG, use a raw PNG without BITMAPINFOHEADER.
+ */
+typedef enum {
+	BI_RGB		= 0U,
+	BI_RLE8		= 1U,
+	BI_RLE4		= 2U,
+	BI_BITFIELDS	= 3U,
+	BI_JPEG		= 4U,
+	BI_PNG		= 5U,
+} BMP_Compression_e;
 
 #ifdef __cplusplus
 }
