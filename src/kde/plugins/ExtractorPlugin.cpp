@@ -209,7 +209,7 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 
 	// Check if this is a directory.
 	const QUrl localUrl = localizeQUrl(inputUrl);
-	const string s_local_filename = localUrl.toLocalFile().toUtf8().constData();
+	const string s_local_filename = Q2U8_StdString(localUrl.toLocalFile());
 	if (unlikely(!s_local_filename.empty() && FileSystem::is_directory(s_local_filename))) {
 		const Config *const config = Config::instance();
 		if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {

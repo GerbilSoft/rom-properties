@@ -255,7 +255,7 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 	// TODO: QTextStream wrapper for ostream.
 	// For now, we'll use ofstream.
 	ofstream ofs;
-	ofs.open(out_filename.toUtf8().constData(), ofstream::out);
+	ofs.open(Q2U8(out_filename), ofstream::out);
 	if (ofs.fail()) {
 		// TODO: Show an error message?
 		return;

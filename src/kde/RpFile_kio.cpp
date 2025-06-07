@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpFile_kio.cpp: IRpFile implementation using KIO.                       *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -330,5 +330,6 @@ off64_t RpFileKio::size(void)
 const char *RpFileKio::filename(void) const
 {
 	RP_D(const RpFileKio);
-	return (!d->uri.isEmpty() ? d->uri.toString().toUtf8().constData() : nullptr);
+	// FIXME: Q2U8() returns a temporary, which may be gone by the time this function returns...
+	return (!d->uri.isEmpty() ? Q2U8(d->uri.toString()) : nullptr);
 }

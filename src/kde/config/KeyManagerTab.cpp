@@ -160,13 +160,13 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 				// tr: {0:s} == filename, {1:s} == error message
 				msg = fmt::format(FRUN(C_("KeyManagerTab",
 					"An error occurred while opening '{0:s}': {1:s}")),
-					fileNoPath.toUtf8().constData(),
+					Q2U8(fileNoPath),
 					strerror(iret.error_code));
 			} else {
 				// tr: {:s} == filename
 				msg = fmt::format(FRUN(C_("KeyManagerTab",
 					"An error occurred while opening '{:s}'.")),
-					fileNoPath.toUtf8().constData());
+					Q2U8(fileNoPath));
 			}
 			type = KMessageWidget::Error;
 			icon = QStyle::SP_MessageBoxCritical;
@@ -178,13 +178,13 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 				// tr: {0:s} == filename, {1:s} == error message
 				msg = fmt::format(FRUN(C_("KeyManagerTab",
 					"An error occurred while reading '{0:s}': {1:s}")),
-					fileNoPath.toUtf8().constData(),
+					Q2U8(fileNoPath),
 					strerror(iret.error_code));
 			} else {
 				// tr: {:s} == filename
 				msg = fmt::format(FRUN(C_("KeyManagerTab",
 					"An error occurred while reading '{:s}'.")),
-					fileNoPath.toUtf8().constData());
+					Q2U8(fileNoPath));
 			}
 			type = KMessageWidget::Error;
 			icon = QStyle::SP_MessageBoxCritical;
@@ -194,8 +194,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			// tr: {0:s} == filename, {1:s} == type of file
 			msg = fmt::format(FRUN(C_("KeyManagerTab",
 				"The file '{0:s}' is not a valid {1:s} file.")),
-				fileNoPath.toUtf8().constData(),
-				keyType.toUtf8().constData());
+				Q2U8(fileNoPath), Q2U8(keyType));
 			type = KMessageWidget::Warning;
 			icon = QStyle::SP_MessageBoxWarning;
 			break;
@@ -204,7 +203,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			// tr: {:s} == filename
 			msg = fmt::format(FRUN(C_("KeyManagerTab",
 				"No keys were imported from '{:s}'.")),
-				fileNoPath.toUtf8().constData());
+				Q2U8(fileNoPath));
 			type = KMessageWidget::Information;
 			icon = QStyle::SP_MessageBoxInformation;
 			showKeyStats = true;
@@ -217,7 +216,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 				"{0:Ld} key was imported from '{1:s}'.",
 				"{0:Ld} keys were imported from '{1:s}'.",
 				keyCount)),
-				keyCount, fileNoPath.toUtf8().constData());
+				keyCount, Q2U8(fileNoPath));
 			type = KMessageWidget::Positive;
 			icon = QStyle::SP_DialogOkButton;
 			showKeyStats = true;

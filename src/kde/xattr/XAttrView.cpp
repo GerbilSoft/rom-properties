@@ -243,9 +243,9 @@ int XAttrViewPrivate::loadAttributes(void)
 
 	string s_local_filename;
 	if (filename.scheme().isEmpty()) {
-		s_local_filename = filename.path().toUtf8().constData();
+		s_local_filename = Q2U8_StdString(filename.path());
 	} else if (filename.isLocalFile()) {
-		s_local_filename = filename.toLocalFile().toUtf8().constData();
+		s_local_filename = Q2U8_StdString(filename.toLocalFile());
 	}
 
 	// Open an XAttrReader.

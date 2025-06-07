@@ -85,7 +85,7 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	RomDataPtr romData;
 
 	// Check if this is a directory.
-	const string s_filename = path.toUtf8().constData();
+	const string s_filename = Q2U8_StdString(path);
 	if (likely(!FileSystem::is_directory(s_filename.c_str()))) {
 		const Config *const config = Config::instance();
 		if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {

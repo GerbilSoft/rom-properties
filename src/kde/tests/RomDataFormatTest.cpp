@@ -19,6 +19,8 @@ using LibRpBase::RomFields;
 // RomDataFormat
 #include "RomDataFormat.hpp"
 
+// for Q2U8()
+#include "RpQt.hpp"
 // for RP_KDE_UPPER
 #include "RpQtNS.hpp"
 
@@ -49,9 +51,9 @@ struct DimensionsTestData {
 	const char *str;
 };
 
-// NOTE: To make debugging easier, EXPECT_STREQ() will be used with
-// QString::toUtf8().constData(). This means that invalid values will
-// return an empty string ("") instead of nullptr.
+// NOTE: To make debugging easier, EXPECT_STREQ() will be used with Q2U8().
+// This means that invalid values will return an empty string ("") instead
+// of nullptr.
 
 /**
  * formatDateTime format 0: Invalid format
@@ -82,7 +84,7 @@ TEST_F(RomDataFormatDeathTest, formatDateTime_0_invalid)
 		// FIXME: With "fast", the message *does* print, but the subprocess doesn't exit properly...
 		//"RomDataFormat\\.cpp:[0-9]+: gchar\\* rom_data_format_datetime\\(time_t, unsigned int\\): Assertion `format\\[0\\] != '\\\\0'' failed\\."
 		EXPECT_DEBUG_DEATH(str = formatDateTime(test.timestamp, flags), "");
-		EXPECT_STREQ(test.str, str.toUtf8().constData());
+		EXPECT_STREQ(test.str, Q2U8(str));
 	}
 }
 
@@ -108,7 +110,7 @@ TEST_F(RomDataFormatTest, formatDateTime_1_dateOnly)
 
 	for (const auto &test : dateTimeTestData) {
 		QString str = formatDateTime(test.timestamp, flags);
-		EXPECT_STREQ(test.str, str.toUtf8().constData());
+		EXPECT_STREQ(test.str, Q2U8(str));
 	}
 }
 
@@ -134,7 +136,7 @@ TEST_F(RomDataFormatTest, formatDateTime_2_timeOnly)
 
 	for (const auto &test : dateTimeTestData) {
 		QString str = formatDateTime(test.timestamp, flags);
-		EXPECT_STREQ(test.str, str.toUtf8().constData());
+		EXPECT_STREQ(test.str, Q2U8(str));
 	}
 }
 
@@ -161,7 +163,7 @@ TEST_F(RomDataFormatTest, formatDateTime_3_dateAndTime)
 
 	for (const auto &test : dateTimeTestData) {
 		QString str = formatDateTime(test.timestamp, flags);
-		EXPECT_STREQ(test.str, str.toUtf8().constData());
+		EXPECT_STREQ(test.str, Q2U8(str));
 	}
 }
 
@@ -195,7 +197,7 @@ TEST_F(RomDataFormatDeathTest, formatDateTime_4_invalid)
 		// FIXME: With "fast", the message *does* print, but the subprocess doesn't exit properly...
 		//"RomDataFormat\\.cpp:[0-9]+: gchar\\* rom_data_format_datetime\\(time_t, unsigned int\\): Assertion `format\\[0\\] != '\\\\0'' failed\\."
 		EXPECT_DEBUG_DEATH(str = formatDateTime(test.timestamp, flags), "");
-		EXPECT_STREQ(test.str, str.toUtf8().constData());
+		EXPECT_STREQ(test.str, Q2U8(str));
 	}
 }
 
@@ -222,7 +224,7 @@ TEST_F(RomDataFormatTest, formatDateTime_5_dateOnly)
 
 	for (const auto &test : dateTimeTestData) {
 		QString str = formatDateTime(test.timestamp, flags);
-		EXPECT_STREQ(test.str, str.toUtf8().constData());
+		EXPECT_STREQ(test.str, Q2U8(str));
 	}
 }
 
@@ -249,7 +251,7 @@ TEST_F(RomDataFormatTest, formatDateTime_6_timeOnly_noYear)
 
 	for (const auto &test : dateTimeTestData) {
 		QString str = formatDateTime(test.timestamp, flags);
-		EXPECT_STREQ(test.str, str.toUtf8().constData());
+		EXPECT_STREQ(test.str, Q2U8(str));
 	}
 }
 
@@ -277,7 +279,7 @@ TEST_F(RomDataFormatTest, formatDateTime_7_dateAndTime_noYear)
 
 	for (const auto &test : dateTimeTestData) {
 		QString str = formatDateTime(test.timestamp, flags);
-		EXPECT_STREQ(test.str, str.toUtf8().constData());
+		EXPECT_STREQ(test.str, Q2U8(str));
 	}
 }
 
@@ -303,7 +305,7 @@ TEST_F(RomDataFormatTest, formatDimensions)
 
 	for (const auto &test : dimensionsTestData) {
 		QString str = formatDimensions(test.dimensions);
-		EXPECT_STREQ(test.str, str.toUtf8().constData());
+		EXPECT_STREQ(test.str, Q2U8(str));
 	}
 }
 

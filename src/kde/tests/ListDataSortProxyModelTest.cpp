@@ -199,7 +199,7 @@ TEST_F(ListDataSortProxyModelTest, ascendingSort)
 				continue;
 			}
 
-			EXPECT_STREQ(sorted_strings_asc[col][row], str.toUtf8().constData()) << "sorting column " << col << ", checking row " << row;
+			EXPECT_STREQ(sorted_strings_asc[col][row], Q2U8(str)) << "sorting column " << col << ", checking row " << row;
 		}
 	}
 }
@@ -232,7 +232,7 @@ TEST_F(ListDataSortProxyModelTest, descendingSort)
 				continue;
 			}
 
-			EXPECT_STREQ(sorted_strings_asc[col][drow], str.toUtf8().constData()) << "sorting column " << col << ", checking row " << row;
+			EXPECT_STREQ(sorted_strings_asc[col][drow], Q2U8(str)) << "sorting column " << col << ", checking row " << row;
 		}
 	}
 }

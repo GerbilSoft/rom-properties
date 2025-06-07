@@ -98,6 +98,24 @@ static inline QString U82Q(const char *str, rp_qsizetype len = -1)
 #define Q2U8(qs) ((qs).toUtf8().constData())
 
 /**
+ * Convert a QString to a UTF-8 std::string.
+ * @param qs QString
+ * @return UTF-8 std::string
+ */
+static inline std::string Q2U8_StdString(const QString &qs)
+{
+#if QT_VERSION >= 0x50000
+	// Qt5/Qt6: QString::toStdString() always uses UTF-8.
+	return qs.toStdString();
+#else /* QT_VERSION < 0x40000 */
+	// Qt4: QString::toStdString() uses toAscii().
+	// Use a customized version.
+	QByteArray ba = qs.toUtf8();
+	return std::string(ba.constData(), static_cast<size_t>(ba.size()));
+#endif
+}
+
+/**
  * Convert a language code to a QString.
  * @param lc Language code.
  * @return QString.

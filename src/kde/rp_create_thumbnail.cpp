@@ -58,7 +58,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 
 	// Check if this is a directory.
 	const QUrl localUrl = localizeQUrl(QUrl(QString::fromUtf8(source_file)));
-	const string s_local_filename = localUrl.toLocalFile().toUtf8().constData();
+	const string s_local_filename = Q2U8_StdString(localUrl.toLocalFile());
 	if (unlikely(!s_local_filename.empty() && FileSystem::is_directory(s_local_filename))) {
 		const Config *const config = Config::instance();
 		if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {

@@ -63,9 +63,9 @@ RomDataView *RomPropertiesDialogPlugin::createRomDataView(const KFileItem &fileI
 
 		string s_local_filename;
 		if (localUrl.scheme().isEmpty()) {
-			s_local_filename = localUrl.path().toUtf8().constData();
+			s_local_filename = Q2U8_StdString(localUrl.path());
 		} else if (localUrl.isLocalFile()) {
-			s_local_filename = localUrl.toLocalFile().toUtf8().constData();
+			s_local_filename = Q2U8_StdString(localUrl.toLocalFile());
 		}
 
 		if (likely(!s_local_filename.empty())) {
