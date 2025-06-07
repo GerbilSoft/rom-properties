@@ -324,7 +324,15 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup_int(const DirData_t *pDir, const
 			// Exact length match.
 			if (!strncasecmp(entry_filename, filename, filename_len)) {
 				// Found it!
-				dirEntry_found = dirEntry;
+				// Verify directory vs. file.
+				const bool isDir = !!(dirEntry->flags & ISO_FLAG_DIRECTORY);
+				if (isDir == bFindDir) {
+					// Directory attribute matches.
+					dirEntry_found = dirEntry;
+				} else {
+					// Not a match.
+					err = (isDir ? EISDIR : ENOTDIR);
+				}
 				break;
 			}
 		}
