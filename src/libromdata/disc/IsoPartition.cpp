@@ -58,20 +58,29 @@ public:
 	int fstDirCount;
 
 	/**
+	 * Is this character a slash or backslash?
+	 * @return True if it is; false if it isn't.
+	 */
+	static inline bool is_slash(char c)
+	{
+		return (c == '/') || (c == '\\');
+	}
+
+	/**
 	 * Find the last slash or backslash in a path.
 	 * @param path Path
 	 * @return Last slash or backslash, or nullptr if not found.
 	 */
 	static inline const char *findLastSlash(const char *path)
 	{
-		const char *sl = strrchr(path, '/');
-		const char *const bs = strrchr(path, '\\');
-		if (sl && bs) {
-			if (bs > sl) {
-				sl = bs;
+		size_t size = strlen(path);
+		const char *p = path + size - 1;
+		for (; size > 0; size--, p--) {
+			if (is_slash(*p)) {
+				return p;
 			}
 		}
-		return (sl) ? sl : bs;
+		return nullptr;
 	}
 
 	/**
