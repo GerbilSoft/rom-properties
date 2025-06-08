@@ -618,7 +618,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 			// Unable to open the resource.
 			return {};
 		}
-		addr = 0;
+		addr = header_size;
 	} else {
 		// Get the icon's starting address within the .ico file.
 		const ICONDIRENTRY *const pBestIcon = dir.ico->pBestIcon;
