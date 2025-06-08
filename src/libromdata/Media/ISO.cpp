@@ -981,12 +981,10 @@ uint32_t ISO::imgpf(ImageType imageType) const
 {
 	ASSERT_imgpf(imageType);
 
-	RP_D(const ISO);
 	uint32_t ret = 0;
 	switch (imageType) {
 		case IMG_INT_ICON:
 			// TODO: Use nearest-neighbor for < 64x64.
-			break;
 			break;
 
 		default:
