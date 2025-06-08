@@ -108,6 +108,7 @@ SET(${PROJECT_NAME}_H
 	fileformat/dds_structs.h
 	fileformat/didj_tex_structs.h
 	fileformat/godot_stex_structs.h
+	fileformat/ico_structs.h
 	fileformat/ktx_structs.h
 	fileformat/ktx_structs.h
 	fileformat/palmos_tbmp_structs.h
