@@ -390,7 +390,6 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 		uint8_t *bits = static_cast<uint8_t*>(img->bits());
 		const uint8_t *mask = mask_data;
 		int dest_stride_adj = img->stride() - width;
-		int i = 0;
 		for (unsigned int y = half_height; y > 0; y--) {
 			// TODO: Mask stride adjustment?
 			unsigned int mask_bits_remain = 8;
@@ -415,7 +414,51 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 			bits += dest_stride_adj;
 		}
 	} else {
-		// TODO: Icon masks for 8-bit, 16-bit, 24-bit, and 32-bit color icons.
+		// CI8 needs to be converted to ARGB32.
+		if (img->format() != rp_image::Format::ARGB32) {
+			rp_image_ptr convimg = img->dup_ARGB32();
+			assert((bool)convimg);
+			if (!convimg) {
+				// Cannot convert the image for some reason...
+				// Flip it if necessary and then give up.
+				if (is_upside_down) {
+					rp_image_ptr flipimg = img->flip(rp_image::FLIP_V);
+					if (flipimg) {
+						img = std::move(flipimg);
+					}
+				}
+				return img;
+			}
+		}
+
+		// TODO: Set sBIT.
+		assert(img->format() == rp_image::Format::ARGB32);
+
+		uint32_t *bits = static_cast<uint32_t*>(img->bits());
+		const uint8_t *mask = mask_data;
+		int dest_stride_adj = img->stride() - width;
+		for (unsigned int y = half_height; y > 0; y--) {
+			// TODO: Mask stride adjustment?
+			unsigned int mask_bits_remain = 8;
+			uint8_t mask_byte = *mask++;
+
+			for (unsigned int x = width; x > 0; x--, bits++, mask_byte <<= 1, mask_bits_remain--) {
+				if (mask_bits_remain == 0) {
+					// Get the next mask byte.
+					mask_byte = *mask++;
+					mask_bits_remain = 8;
+				}
+
+				if (mask_byte & 0x80) {
+					// Make the pixel transparent.
+					// NOTE: Complete transparency, without keeping the RGB.
+					*bits = 0;
+				}
+			}
+
+			// Next row.
+			bits += dest_stride_adj;
+		}
 	}
 
 	// Flip the icon after the mask is processed.
