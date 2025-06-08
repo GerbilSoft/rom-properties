@@ -393,7 +393,16 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 
 		case 4:
 			// 16-color
-			img = ImageDecoder::fromLinearCI4(ImageDecoder::PixelFormat::Host_ARGB32, true,
+			img = ImageDecoder::fromLinearCI4(ImageDecoder::PixelFormat::Host_xRGB32, true,
+				width, half_height,
+				icon_data, icon_size,
+				pal_data.data(), pal_data.size() * sizeof(uint32_t),
+				stride);
+			break;
+
+		case 8:
+			// 256-color
+			img = ImageDecoder::fromLinearCI8(ImageDecoder::PixelFormat::Host_xRGB32,
 				width, half_height,
 				icon_data, icon_size,
 				pal_data.data(), pal_data.size() * sizeof(uint32_t),
@@ -416,6 +425,8 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 	}
 
 	// Apply the icon mask.
+	rp_image::sBIT_t sBIT;
+	img->get_sBIT(&sBIT);
 	if (bitcount < 8) {
 		// Keep the icon as CI8 and add a transparency color.
 		// TODO: Set sBIT.
@@ -452,6 +463,12 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 			bits += dest_stride_adj;
 			mask += mask_stride_adj;
 		}
+
+		// Update the sBIT metadata.
+		if (sBIT.alpha == 0) {
+			sBIT.alpha = 1;
+			img->set_sBIT(&sBIT);
+		}
 	} else {
 		// CI8 needs to be converted to ARGB32.
 		if (img->format() != rp_image::Format::ARGB32) {
@@ -468,9 +485,9 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 				}
 				return img;
 			}
+			img = std::move(convimg);
 		}
 
-		// TODO: Set sBIT.
 		assert(img->format() == rp_image::Format::ARGB32);
 
 		uint32_t *bits = static_cast<uint32_t*>(img->bits());
@@ -499,6 +516,12 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 			// Next row.
 			bits += dest_stride_adj;
 			mask += mask_stride_adj;
+		}
+
+		// Update the sBIT metadata.
+		if (sBIT.alpha == 0) {
+			sBIT.alpha = 1;
+			img->set_sBIT(&sBIT);
 		}
 	}
 
