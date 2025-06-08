@@ -2,18 +2,18 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PEResourceReader.hpp: Portable Executable resource reader.              *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include "IResourceReader.hpp"
+#include "librpbase/disc/IResourceReader.hpp"
 
 namespace LibRomData {
 
 class PEResourceReaderPrivate;
-class PEResourceReader final : public IResourceReader
+class PEResourceReader final : public LibRpBase::IResourceReader
 {
 public:
 	/**
@@ -31,7 +31,7 @@ public:
 	~PEResourceReader() final;
 
 private:
-	typedef IResourceReader super;
+	typedef LibRpBase::IResourceReader super;
 	RP_DISABLE_COPY(PEResourceReader)
 protected:
 	friend class PEResourceReaderPrivate;
@@ -93,9 +93,9 @@ public:
 
 	/**
 	 * Open a resource.
-	 * @param type Resource type ID.
-	 * @param id Resource ID. (-1 for "first entry")
-	 * @param lang Language ID. (-1 for "first entry")
+	 * @param type	[in] Resource type ID
+	 * @param id	[in] Resource ID (-1 for "first entry")
+	 * @param lang	[in] Language ID (-1 for "first entry")
 	 * @return IRpFile*, or nullptr on error.
 	 */
 	LibRpFile::IRpFilePtr open(uint16_t type, int id, int lang) final;
@@ -110,8 +110,8 @@ public:
 	/**
 	 * Load a VS_VERSION_INFO resource.
 	 * Data will be byteswapped to host-endian if necessary.
-	 * @param id		[in] Resource ID. (-1 for "first entry")
-	 * @param lang		[in] Language ID. (-1 for "first entry")
+	 * @param id		[in] Resource ID (-1 for "first entry")
+	 * @param lang		[in] Language ID (-1 for "first entry")
 	 * @param pVsFfi	[out] VS_FIXEDFILEINFO (host-endian)
 	 * @param pVsSfi	[out] StringFileInfo section.
 	 * @return 0 on success; non-zero on error.

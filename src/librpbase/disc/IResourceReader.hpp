@@ -1,16 +1,15 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata)                       *
+ * ROM Properties Page shell extension. (librpbase)                        *
  * IResourceReader.hpp: Interface for Windows resource readers.            *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include "../Other/exe_res_structs.h"
+#include "exe_res_structs.h"
 
-// librpbase
 #include "librpbase/disc/IPartition.hpp"
 
 // C++ includes
@@ -29,9 +28,9 @@ typedef WCHAR *LPWSTR;
 typedef const WCHAR *LPCWSTR;
 #endif /* _WIN32 && !_WINNT_ */
 
-namespace LibRomData {
+namespace LibRpBase {
 
-class NOVTABLE IResourceReader : public LibRpBase::IPartition
+class NOVTABLE IResourceReader : public IPartition
 {
 protected:
 	IResourceReader(const LibRpFile::IRpFilePtr &file)
@@ -41,7 +40,7 @@ public:
 	~IResourceReader() override = 0;
 
 private:
-	typedef LibRpBase::IPartition super;
+	typedef IPartition super;
 	RP_DISABLE_COPY(IResourceReader)
 
 public:
@@ -67,9 +66,9 @@ private:
 public:
 	/**
 	 * Open a resource.
-	 * @param type Resource type ID
-	 * @param id Resource ID (-1 for "first entry")
-	 * @param lang Language ID (-1 for "first entry")
+	 * @param type	[in] Resource type ID
+	 * @param id	[in] Resource ID (-1 for "first entry")
+	 * @param lang	[in] Language ID (-1 for "first entry")
 	 * @return IRpFile*, or nullptr on error.
 	 */
 	virtual LibRpFile::IRpFilePtr open(uint16_t type, int id, int lang) = 0;
@@ -113,8 +112,8 @@ public:
 	 * Load a VS_VERSION_INFO resource.
 	 * Data will be byteswapped to host-endian if necessary.
 	 *
-	 * @param id		[in] Resource ID. (-1 for "first entry")
-	 * @param lang		[in] Language ID. (-1 for "first entry")
+	 * @param id		[in] Resource ID (-1 for "first entry")
+	 * @param lang		[in] Language ID (-1 for "first entry")
 	 * @param pVsFfi	[out] VS_FIXEDFILEINFO (host-endian)
 	 * @param pVsSfi	[out] StringFileInfo section.
 	 * @return 0 on success; non-zero on error.

@@ -17,6 +17,8 @@
 #include "exe_le_structs.h"
 
 #include "disc/PEResourceReader.hpp"
+using LibRpBase::IResourceReader;
+using LibRpBase::IResourceReaderPtr;
 
 // Uninitialized vector class
 #include "uvector.h"
