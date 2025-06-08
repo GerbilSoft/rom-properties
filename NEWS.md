@@ -2,6 +2,15 @@
 
 ## v2.6 (released 2025/??/??)
 
+* New parsers:
+  * ICO: Windows icons and cursors. Supports most icons and cursors designed
+    for Windows 3.x and later (including Windows Vista PNG-format icons),
+    plus the old Windows 1.x format. Only the "best" version for each icon
+    is selected for thumbnailing. (Largest size and highest color depth.)
+    * Icon thumbnailing is not actually enabled on Windows and Linux systems
+      at the moment, since it may conflict with system icon handling.
+      It's mostly only usable for rpcli and for use as a subclass elsewhere.
+
 * New parser features:
   * Xbox360_STFS: Fix titles for some packages that were authored incorrectly
     and have mojibake titles. Specifically, the titles were originally encoded
@@ -9,6 +18,13 @@
     cp1252 when being converted to UTF-16BE.
     * Fixes #450: X360 - Non-Latin Titles appearing as mojibake
       * Reported by @Masamune3210.
+  * EXE: The application icon can now be extracted using rpcli.
+  * ISO: Thumbnailing for ISO images with AUTORUN.INF and a specified icon
+    from a .ico, .exe, or .dll file is now supported.
+  * ISO: Joliet file systems are now partially supported. This was added to
+    handle older Windows disc images that use a long filename for the icon,
+    and the disc is authored with Joliet for long filenames but an old version
+    of ISO-9660, resulting in 8.3 filenames in the ISO-9660 directories.
 
 * Bug fixes:
   * Windows: Work around a potential libpng crash when attempting to read
@@ -19,6 +35,7 @@
 * Other changes:
   * rpcli: Added more colorization for warning messages.
   * rpcli: Refactored console handling into a separate library, libgsvt.
+  * IsoPartition: Implemented readdir(). Not currently used by anything, though.
 
 ## v2.5.1 (released 2025/05/10)
 
