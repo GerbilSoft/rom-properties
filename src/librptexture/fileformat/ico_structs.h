@@ -151,6 +151,35 @@ typedef enum {
 	BI_PNG		= 5U,
 } BMP_Compression_e;
 
+/** PNG chunks (TODO: Combine with librpbase/tests/bmp.h?) **/
+
+/**
+ * PNG IHDR chunk
+ */
+#pragma pack(1)
+typedef struct RP_PACKED _PNG_IHDR_t {
+	uint32_t width;		// BE32
+	uint32_t height;	// BE32
+	uint8_t bit_depth;
+	uint8_t color_type;
+	uint8_t compression_method;
+	uint8_t filter_method;
+	uint8_t interlace_method;
+} PNG_IHDR_t;
+ASSERT_STRUCT(PNG_IHDR_t, 13);
+#pragma pack()
+
+// PNG IHDR struct, with length, name, and CRC32.
+#pragma pack(1)
+typedef struct RP_PACKED _PNG_IHDR_full_t {
+	uint32_t chunk_size;	// BE32
+	char chunk_name[4];	// "IHDR"
+	PNG_IHDR_t data;
+	uint32_t crc32;
+} PNG_IHDR_full_t;
+ASSERT_STRUCT(PNG_IHDR_full_t, 25);
+#pragma pack()
+
 #ifdef __cplusplus
 }
 #endif

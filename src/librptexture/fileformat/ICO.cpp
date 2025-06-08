@@ -69,11 +69,26 @@ public:
 		ICONHEADER win3;
 	} icoHeader;
 
-	// Icon directory (Win3.x)
+	/** Win3.x icon stuff **/
+
+	// Icon directory
+	// NOTE: *Not* byteswapped.
 	rp::uvector<ICONDIRENTRY> iconDirectory;
 
 	// "Best" icon in the icon directory
+	// NOTE: *Not* byteswapped.
 	const ICONDIRENTRY *pBestIcon;
+
+	// Icon bitmap header
+	union {
+		uint32_t size;
+		BITMAPCOREHEADER bch;
+		BITMAPINFOHEADER bih;
+		struct {
+			uint8_t magic[8];
+			PNG_IHDR_full_t ihdr;
+		} png;
+	} iconHeader;
 
 	// Decoded image
 	rp_image_ptr img;
@@ -184,6 +199,15 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 	// NOTE: Picking the first icon for now.
 	// TODO: Pick the largest, then highest color depth.
 	pBestIcon = &iconDirectory[0];
+
+	// Load the icon image header.
+	unsigned int addr = le32_to_cpu(pBestIcon->dwImageOffset);
+	size = file->seekAndRead(addr, &iconHeader, sizeof(iconHeader));
+	if (size != sizeof(iconHeader)) {
+		// Seek and/or read error.
+		return -EIO;
+	}
+
 	return 0;
 }
 
@@ -227,25 +251,12 @@ rp_image_const_ptr ICOPrivate::loadImage_Win1(void)
  */
 rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 {
-	// Get the icon image header.
-	// May be BITMAPCOREHEADER or BITMAPINFOHEADER.
+	// Icon image header was already loaded by loadIconDirectory_Win3().
 	// TODO: Verify dwBytesInRes.
 
-	union {
-		uint32_t size;
-		BITMAPCOREHEADER bch;
-		BITMAPINFOHEADER bih;
-	} header;
-	unsigned int addr = le32_to_cpu(pBestIcon->dwImageOffset);
-	size_t size = file->seekAndRead(addr, &header, sizeof(header));
-	if (size != sizeof(header)) {
-		// Seek and/or read error.
-		return {};
-	}
-
 	// Check the header size.
-	const unsigned int header_size = le32_to_cpu(header.size);
-	addr += header_size;
+	const unsigned int header_size = le32_to_cpu(iconHeader.size);
+	unsigned int addr = le32_to_cpu(pBestIcon->dwImageOffset) + header_size;
 	switch (header_size) {
 		default:
 			// Not supported...
@@ -272,11 +283,13 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 	// and the bottom is the monochrome mask.
 	// NOTE 2: If height > 0, the entire bitmap is upside-down.
 
+	const BITMAPINFOHEADER *bih = &iconHeader.bih;
+
 	// Make sure width and height are valid.
 	// Height cannot be 0 or an odd number.
 	// NOTE: Negative height is allowed for "right-side up".
-	const unsigned int width = le32_to_cpu((unsigned int)(header.bih.biWidth));
-	const int orig_height = static_cast<int>(le32_to_cpu(header.bih.biHeight));
+	const unsigned int width = le32_to_cpu((unsigned int)(bih->biWidth));
+	const int orig_height = static_cast<int>(le32_to_cpu(bih->biHeight));
 	const bool is_upside_down = (orig_height > 0);
 	const unsigned int height = abs(orig_height);
 	const unsigned int half_height = height / 2;
@@ -287,14 +300,14 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 
 	// Only supporting 16-color images for now.
 	// TODO: Handle BI_BITFIELDS?
-	if (le32_to_cpu(header.bih.biPlanes) > 1) {
+	if (le32_to_cpu(bih->biPlanes) > 1) {
 		// Cannot handle planar bitmaps.
 		return {};
 	}
 
 	// Row must be 32-bit aligned.
 	// FIXME: Including for 24-bit images?
-	const unsigned int bitcount = le32_to_cpu(header.bih.biBitCount);
+	const unsigned int bitcount = le32_to_cpu(bih->biBitCount);
 	unsigned int stride = width;
 	switch (bitcount) {
 		default:
@@ -333,7 +346,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 		const unsigned int palette_count = (1U << bitcount);
 		const size_t palette_size = palette_count * sizeof(uint32_t);
 		pal_data.resize(palette_count);
-		size = file->seekAndRead(addr, pal_data.data(), palette_size);
+		size_t size = file->seekAndRead(addr, pal_data.data(), palette_size);
 		if (size != palette_size) {
 			// Seek and/or read error.
 			return {};
@@ -354,7 +367,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 	size_t biSizeImage = icon_size + mask_size;
 	rp::uvector<uint8_t> img_data;
 	img_data.resize(biSizeImage);
-	size = file->seekAndRead(addr, img_data.data(), biSizeImage);
+	size_t size = file->seekAndRead(addr, img_data.data(), biSizeImage);
 	if (size != biSizeImage) {
 		// Seek and/or read error.
 		return {};
@@ -389,7 +402,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 
 		case 32: {
 			// 32-bit ARGB
-			const uint32_t biCompression = le32_to_cpu(header.bih.biCompression);
+			const uint32_t biCompression = le32_to_cpu(bih->biCompression);
 			if (biCompression != BI_RGB) {
 				// FIXME: BI_BITFIELDS is not supported right now.
 				return {};
@@ -658,8 +671,32 @@ ICO::ICO(const IRpFilePtr &file)
 				return;
 			}
 
-			d->dimensions[0] = d->pBestIcon->bWidth;
-			d->dimensions[1] = d->pBestIcon->bHeight;
+			switch (d->iconHeader.size) {
+				default:
+					// Not supported...
+					d->file.reset();
+					return;
+
+				case BITMAPCOREHEADER_SIZE:
+					d->dimensions[0] = le16_to_cpu(d->iconHeader.bch.bcWidth);
+					d->dimensions[1] = le16_to_cpu(d->iconHeader.bch.bcHeight);
+					break;
+
+				case BITMAPINFOHEADER_SIZE:
+				case BITMAPV2INFOHEADER_SIZE:
+				case BITMAPV3INFOHEADER_SIZE:
+				case BITMAPV4HEADER_SIZE:
+				case BITMAPV5HEADER_SIZE:
+					d->dimensions[0] = le32_to_cpu(d->iconHeader.bih.biWidth);
+					d->dimensions[1] = le32_to_cpu(d->iconHeader.bih.biHeight);
+					break;
+
+				case 0x474E5089:	// "\x89PNG"
+					// TODO: Verify more IHDR fields?
+					d->dimensions[0] = be32_to_cpu(d->iconHeader.png.ihdr.data.width);
+					d->dimensions[1] = be32_to_cpu(d->iconHeader.png.ihdr.data.height);
+					break;
+			}
 			break;
 	}
 
