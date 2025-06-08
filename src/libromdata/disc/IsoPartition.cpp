@@ -789,7 +789,7 @@ const IFst::DirEnt *IsoPartition::readdir(IFst::Dir *dirp)
 			if (p >= p_end) {
 				// No more non-zero bytes.
 				dirp->entry.idx = static_cast<int>(pDir->size());
-				break;
+				return nullptr;
 			}
 			continue;
 		} else if (dirEntry->entry_length < sizeof(*dirEntry)) {
