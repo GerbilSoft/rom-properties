@@ -28,6 +28,7 @@ using namespace LibRpText;
 #include "ini.h"
 
 // Windows icon handler
+#include "../Other/EXE.hpp"
 #include "librptexture/fileformat/ICO.hpp"
 using namespace LibRpTexture;
 
@@ -687,22 +688,42 @@ rp_image_const_ptr ISOPrivate::loadIcon(void)
 	}
 
 	// Open the icon file from the disc.
-	// FIXME: Handle EXEs, with optional index.
-	// Assuming .ico only for now.
 	f_file = isoPartition->open(icon_filename.c_str());
 	if (!f_file) {
 		// Unable to open the icon file.
 		return {};
 	}
 
-	unique_ptr<ICO> ico(new ICO(f_file));
-	if (!ico->isValid()) {
-		// Not a Windows icon file.
-		return {};
+	// Use the file extension to determine the reader.
+	// NOTE: May be better to check the file header...
+	rp_image_const_ptr icon;
+
+	const size_t icon_filename_size = icon_filename.size();
+	if (icon_filename_size > 4) {
+		if (!strncasecmp(&icon_filename[icon_filename_size-4], ".exe", 4) ||
+		    !strncasecmp(&icon_filename[icon_filename_size-4], ".dll", 4))
+		{
+			// EXE or DLL.
+			unique_ptr<EXE> exe(new EXE(f_file));
+			if (exe->isValid()) {
+				// TODO: Handle the icon index.
+				int ret = exe->loadInternalImage(RomData::IMG_INT_ICON, icon);
+				if (ret != 0) {
+					icon.reset();
+				}
+			}
+		}
 	}
 
-	// Get the image.
-	return ico->image();
+	if (!icon) {
+		// No EXE or DLL. Try plain .ico.
+		unique_ptr<ICO> ico(new ICO(f_file));
+		if (ico->isValid()) {
+			icon = ico->image();
+		}
+	}
+
+	return icon;
 }
 
 /** ISO **/
