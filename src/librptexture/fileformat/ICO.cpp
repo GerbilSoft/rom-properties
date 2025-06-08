@@ -37,6 +37,7 @@ class ICOPrivate final : public FileFormatPrivate
 {
 public:
 	ICOPrivate(ICO *q, const IRpFilePtr &file);
+	ICOPrivate(ICO *q, const IResourceReaderPtr &resReader, uint16_t type, int id, int lang);
 	~ICOPrivate();
 
 private:
@@ -73,7 +74,7 @@ public:
 	// ICO header
 	union {
 		ICO_Win1_Header win1;
-		ICONHEADER win3;
+		ICONDIR win3;		// ICONDIR and GRPICONDIR are essentially the same
 	} icoHeader;
 
 	/** Win3.x icon stuff **/
@@ -85,6 +86,22 @@ public:
 	inline bool isResource(void) const
 	{
 		return (iconType >= IconType::IconRes_Win3) && (iconType <= IconType::CursorRes_Win3);
+	}
+
+	/**
+	 * Get the resource type for the individual icon or cursor.
+	 * @return RT_ICON or RT_CURSOR, or 0 if this is a standalone .ico/.cur file.
+	 */
+	inline uint16_t imageResType(void) const
+	{
+		switch (iconType) {
+			case IconType::IconRes_Win3:
+				return RT_ICON;
+			case IconType::CursorRes_Win3:
+				return RT_CURSOR;
+			default:
+				return 0;
+		}
 	}
 
 	// NOTE: ICONDIRENTRY (for .ico files) and GRPICONDIRENTRY (for resources)
@@ -113,8 +130,20 @@ public:
 		// NOTE: *Not* byteswapped.
 		const GRPICONDIRENTRY *pBestIcon;
 
-		icodir_res()
+		// IResourceReader for loading icons from Windows executables
+		IResourceReaderPtr resReader;
+
+		// Resource information
+		uint16_t type;
+		int id;
+		int lang;
+
+		icodir_res(const IResourceReaderPtr &resReader, uint16_t type, int id, int lang)
 			: pBestIcon(nullptr)
+			, resReader(resReader)
+			, type(type)
+			, id(id)
+			, lang(lang)
 		{ }
 	};
 
@@ -123,18 +152,6 @@ public:
 		icodir_ico *ico;
 		icodir_res *res;
 	} dir;
-
-	void reset_dir_union(void)
-	{
-		if (dir.v) {
-			if (isResource()) {
-				delete dir.res;
-			} else {
-				delete dir.ico;
-			}
-			dir.v = nullptr;
-		}
-	}
 
 	// Icon bitmap header
 	union IconBitmapHeader_t {
@@ -235,13 +252,42 @@ ICOPrivate::ICOPrivate(ICO *q, const IRpFilePtr &file)
 	// Clear the ICO header union.
 	memset(&icoHeader, 0, sizeof(icoHeader));
 
-	// Clear the icon directory union.
-	dir.v = nullptr;
+	// Initialize the icon directory union.
+	dir.ico = new icodir_ico();
+}
+
+ICOPrivate::ICOPrivate(ICO *q, const IResourceReaderPtr &resReader, uint16_t type, int id, int lang)
+	: super(q, resReader, &textureInfo)
+	, iconType(IconType::Unknown)
+	, pIconHeader(nullptr)
+{
+	// Clear the ICO header union.
+	memset(&icoHeader, 0, sizeof(icoHeader));
+
+	// Determine the icon type here.
+	assert(type == RT_GROUP_ICON || type == RT_GROUP_CURSOR);
+	if (type == RT_GROUP_ICON) {
+		iconType = IconType::IconRes_Win3;
+	} else if (type == RT_GROUP_CURSOR) {
+		iconType = IconType::CursorRes_Win3;
+	} else {
+		// Unrecognized?
+		dir.v = nullptr;
+	}
+
+	// Initialize the icon directory union.
+	dir.res = new icodir_res(resReader, type, id, lang);
 }
 
 ICOPrivate::~ICOPrivate()
 {
-	reset_dir_union();
+	if (dir.v) {
+		if (isResource()) {
+			delete dir.res;
+		} else {
+			delete dir.ico;
+		}
+	}
 }
 
 /**
@@ -261,34 +307,78 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 		return -ENOENT;
 	}
 
-	reset_dir_union();
-	const size_t fullsize = count * sizeof(ICONDIRENTRY);
-	dir.ico = new icodir_ico();
-	auto &iconDirectory = dir.ico->iconDirectory;
-	iconDirectory.resize(count);
-	size_t size = file->seekAndRead(sizeof(ICONHEADER), iconDirectory.data(), fullsize);
-	if (size != fullsize) {
-		// Seek and/or read error.
-		reset_dir_union();
-		return -EIO;
-	}
+	const uint16_t rt = imageResType();
+	if (rt != 0) {
+		// Icon/cursor resource from a Windows executable.
 
-	// Load all of the icon image headers.
-	iconBitmapHeaders.resize(count);
-	IconBitmapHeader_t *p = iconBitmapHeaders.data();
-	for (auto iter = iconDirectory.cbegin(); iter != iconDirectory.cend(); ++iter, p++) {
-		unsigned int addr = le32_to_cpu(iter->dwImageOffset);
-		size_t size = file->seekAndRead(addr, p, sizeof(*p));
-		if (size != sizeof(*p)) {
+		// Open the RT_GROUP_ICON / RT_GROUP_CURSOR resource.
+		auto &res = *(dir.res);
+		IRpFilePtr f_icondir = res.resReader->open(res.type, res.id, res.lang);
+		if (!f_icondir) {
+			// Unable to open the RT_GROUP_ICON / RT_GROUP_CURSOR.
+			return -ENOENT;
+		}
+
+		const size_t fullsize = count * sizeof(GRPICONDIRENTRY);
+		auto &iconDirectory = res.iconDirectory;
+		iconDirectory.resize(count);
+		size_t size = file->seekAndRead(sizeof(GRPICONDIR), iconDirectory.data(), fullsize);
+		if (size != fullsize) {
 			// Seek and/or read error.
-			reset_dir_union();
-			iconBitmapHeaders.clear();
+			iconDirectory.clear();
 			return -EIO;
+		}
+
+		// Load all of the icon image headers.
+		iconBitmapHeaders.resize(count);
+		IconBitmapHeader_t *p = iconBitmapHeaders.data();
+		for (auto iter = iconDirectory.cbegin(); iter != iconDirectory.cend(); ++iter, p++) {
+			IRpFilePtr f_icon = res.resReader->open(rt, le16_to_cpu(iter->nID), res.lang);
+			if (!f_icon) {
+				// Unable to open the resource.
+				iconDirectory.clear();
+				iconBitmapHeaders.clear();
+				return -ENOENT;
+			}
+
+			size_t size = file->read(p, sizeof(*p));
+			if (size != sizeof(*p)) {
+				// Short read.
+				iconDirectory.clear();
+				iconBitmapHeaders.clear();
+				return -EIO;
+			}
+		}
+	} else {
+		// Standalone .ico/.cur file.
+		const size_t fullsize = count * sizeof(ICONDIRENTRY);
+		auto &iconDirectory = dir.ico->iconDirectory;
+		iconDirectory.resize(count);
+		size_t size = file->seekAndRead(sizeof(ICONDIR), iconDirectory.data(), fullsize);
+		if (size != fullsize) {
+			// Seek and/or read error.
+			iconDirectory.clear();
+			return -EIO;
+		}
+
+		// Load all of the icon image headers.
+		iconBitmapHeaders.resize(count);
+		IconBitmapHeader_t *p = iconBitmapHeaders.data();
+		for (auto iter = iconDirectory.cbegin(); iter != iconDirectory.cend(); ++iter, p++) {
+			unsigned int addr = le32_to_cpu(iter->dwImageOffset);
+			size_t size = file->seekAndRead(addr, p, sizeof(*p));
+			if (size != sizeof(*p)) {
+				// Seek and/or read error.
+				iconDirectory.clear();
+				iconBitmapHeaders.clear();
+				return -EIO;
+			}
 		}
 	}
 
 	// Go through the icon bitmap headers and figure out the "best" one.
 	unsigned int width_best = 0, height_best = 0, bitcount_best = 0;
+	int best_icon = -1;
 	for (unsigned int i = 0; i < count; i++) {
 		// Get the width, height, and color depth from this bitmap header.
 		const IconBitmapHeader_t *const p = &iconBitmapHeaders[i];
@@ -367,7 +457,7 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 
 		if (icon_is_better) {
 			// This icon is better.
-			dir.ico->pBestIcon = &iconDirectory[i];
+			best_icon = static_cast<int>(i);
 			pIconHeader = p;
 			width_best = width;
 			height_best = height;
@@ -375,7 +465,17 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 		}
 	}
 
-	return (width_best > 0 && height_best > 0) ? 0 : -ENOENT;
+	if (best_icon >= 0) {
+		if (rt != 0) {
+			dir.res->pBestIcon = &dir.res->iconDirectory[best_icon];
+		} else {
+			dir.ico->pBestIcon = &dir.ico->iconDirectory[best_icon];
+		}
+		return 0;
+	}
+
+	// No icons???
+	return -ENOENT;
 }
 
 /**
@@ -505,8 +605,26 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 	// Mask row is 1bpp and must also be 32-bit aligned.
 	unsigned int mask_stride = ALIGN_BYTES(4, width / 8);
 
-	const ICONDIRENTRY *const pBestIcon = dir.ico->pBestIcon;
-	unsigned int addr = le32_to_cpu(pBestIcon->dwImageOffset) + header_size;
+	// Icon file (this->file for .ico; IResourceReader::open() for .exe/.dll)
+	IRpFilePtr f_icon;
+	unsigned int addr;
+
+	const uint16_t rt = imageResType();
+	if (rt != 0) {
+		// Open the resource.
+		const auto &res = *(dir.res);
+		f_icon = res.resReader->open(rt, le16_to_cpu(res.pBestIcon->nID), res.lang);
+		if (!f_icon) {
+			// Unable to open the resource.
+			return {};
+		}
+		addr = 0;
+	} else {
+		// Get the icon's starting address within the .ico file.
+		const ICONDIRENTRY *const pBestIcon = dir.ico->pBestIcon;
+		f_icon = this->file;
+		addr = le32_to_cpu(pBestIcon->dwImageOffset) + header_size;
+	}
 
 	// For 8bpp or less, a color table is present.
 	// NOTE: Need to manually set the alpha channel to 0xFF.
@@ -515,7 +633,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 		const unsigned int palette_count = (1U << bitcount);
 		const size_t palette_size = palette_count * sizeof(uint32_t);
 		pal_data.resize(palette_count);
-		size_t size = file->seekAndRead(addr, pal_data.data(), palette_size);
+		size_t size = f_icon->seekAndRead(addr, pal_data.data(), palette_size);
 		if (size != palette_size) {
 			// Seek and/or read error.
 			return {};
@@ -536,7 +654,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 	size_t biSizeImage = icon_size + mask_size;
 	rp::uvector<uint8_t> img_data;
 	img_data.resize(biSizeImage);
-	size_t size = file->seekAndRead(addr, img_data.data(), biSizeImage);
+	size_t size = f_icon->seekAndRead(addr, img_data.data(), biSizeImage);
 	if (size != biSizeImage) {
 		// Seek and/or read error.
 		return {};
@@ -714,14 +832,22 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 rp_image_const_ptr ICOPrivate::loadImage_WinVista_PNG(void)
 {
 	// Use RpPng to load a PNG image.
-	// NOTE: PartitionFile only supports IDiscReader, so we'll need to
-	// create a dummy DiscReader object.
+	IRpFilePtr f_png;
 
-	IDiscReaderPtr discReader = std::make_shared<DiscReader>(file, 0, file->size());
-	const ICONDIRENTRY *const pBestIcon = dir.ico->pBestIcon;
-	PartitionFile *const partitionFile = new PartitionFile(discReader, pBestIcon->dwImageOffset, pBestIcon->dwBytesInRes);
-	img = RpPng::load(partitionFile);
-	delete partitionFile;
+	const uint16_t rt = imageResType();
+	if (rt != 0) {
+		// Load the PNG from a resource.
+		const auto &res = *(dir.res);
+		f_png = res.resReader->open(rt, res.id, res.lang);
+	} else {
+		// NOTE: PartitionFile only supports IDiscReader, so we'll need to
+		// create a dummy DiscReader object.
+		IDiscReaderPtr discReader = std::make_shared<DiscReader>(file, 0, file->size());
+		const ICONDIRENTRY *const pBestIcon = dir.ico->pBestIcon;
+		f_png = std::make_shared<PartitionFile>(discReader, pBestIcon->dwImageOffset, pBestIcon->dwBytesInRes);
+	}
+
+	img = RpPng::load(f_png);
 	return img;
 }
 
@@ -774,6 +900,37 @@ rp_image_const_ptr ICOPrivate::loadImage(void)
 ICO::ICO(const IRpFilePtr &file)
 	: super(new ICOPrivate(this, file))
 {
+	init(false);
+}
+
+/**
+ * Read an icon or cursor from a Windows executable.
+ *
+ * A ROM image must be opened by the caller. The file handle
+ * will be ref()'d and must be kept open in order to load
+ * data from the ROM image.
+ *
+ * To close the file, either delete this object or call close().
+ *
+ * NOTE: Check isValid() to determine if this is a valid ROM.
+ *
+ * @param resReader	[in] IResourceReader
+ * @param type		[in] Resource type ID (RT_GROUP_ICON or RT_GROUP_CURSOR)
+ * @param id		[in] Resource ID (-1 for "first entry")
+ * @param lang		[in] Language ID (-1 for "first entry")
+ */
+ICO::ICO(const LibRpBase::IResourceReaderPtr &resReader, uint16_t type, int id, int lang)
+	: super(new ICOPrivate(this, resReader, type, id, lang))
+{
+	init(true);
+}
+
+/**
+ * Common initialization function.
+ * @param res True if the icon is in a Windows executable; false if not.
+ */
+void ICO::init(bool res)
+{
 	RP_D(ICO);
 
 	if (!d->file) {
@@ -781,12 +938,31 @@ ICO::ICO(const IRpFilePtr &file)
 		return;
 	}
 
-	// Read the ICO header.
-	d->file->rewind();
-	size_t size = d->file->read(&d->icoHeader, sizeof(d->icoHeader));
-	if (size != sizeof(d->icoHeader)) {
-		d->file.reset();
-		return;
+	// Read the ICONDIR.
+	if (res) {
+		const auto &res = *(d->dir.res);
+		IRpFilePtr f_icondir = res.resReader->open(res.type, res.id, res.lang);
+		if (!f_icondir) {
+			// Unable to open the RT_GROUP_ICON / RT_GROUP_CURSOR.
+			d->file.reset();
+			delete d->dir.res;
+			d->dir.res = nullptr;
+			return;
+		}
+		size_t size = f_icondir->read(&d->icoHeader, sizeof(d->icoHeader));
+		if (size != sizeof(d->icoHeader)) {
+			d->file.reset();
+			delete d->dir.res;
+			d->dir.res = nullptr;
+			return;
+		}
+	} else {
+		d->file->rewind();
+		size_t size = d->file->read(&d->icoHeader, sizeof(d->icoHeader));
+		if (size != sizeof(d->icoHeader)) {
+			d->file.reset();
+			return;
+		}
 	}
 
 	// Determine the icon type.
@@ -794,6 +970,10 @@ ICO::ICO(const IRpFilePtr &file)
 		default:
 			// Not recognized...
 			d->file.reset();
+			if (res) {
+				delete d->dir.res;
+				d->dir.res = nullptr;
+			}
 			return;
 
 		case ICO_WIN1_FORMAT_MAYBE_WIN3: {
@@ -801,6 +981,10 @@ ICO::ICO(const IRpFilePtr &file)
 				default:
 					// Not recognized...
 					d->file.reset();
+					if (res) {
+						delete d->dir.res;
+						d->dir.res = nullptr;
+					}
 					return;
 				case ICO_WIN3_TYPE_ICON:
 					d->iconType = ICOPrivate::IconType::Icon_Win3;
@@ -819,6 +1003,10 @@ ICO::ICO(const IRpFilePtr &file)
 			if (ret != 0) {
 				// Failed to load the icon directory.
 				d->file.reset();
+				if (res) {
+					delete d->dir.res;
+					d->dir.res = nullptr;
+				}
 				return;
 			}
 			break;
@@ -849,6 +1037,10 @@ ICO::ICO(const IRpFilePtr &file)
 			// Shouldn't get here...
 			assert(!"Invalid case!");
 			d->file.reset();
+			if (res) {
+				delete d->dir.res;
+				d->dir.res = nullptr;
+			}
 			return;
 
 		case ICOPrivate::IconType::Icon_Win1:
@@ -863,6 +1055,10 @@ ICO::ICO(const IRpFilePtr &file)
 			if (!d->dir.ico->pBestIcon) {
 				// No "best" icon...
 				d->file.reset();
+				if (res) {
+					delete d->dir.res;
+					d->dir.res = nullptr;
+				}
 				return;
 			}
 
@@ -871,6 +1067,10 @@ ICO::ICO(const IRpFilePtr &file)
 				default:
 					// Not supported...
 					d->file.reset();
+					if (res) {
+						delete d->dir.res;
+						d->dir.res = nullptr;
+					}
 					return;
 
 				case BITMAPCOREHEADER_SIZE:
