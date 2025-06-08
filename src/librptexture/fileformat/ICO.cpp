@@ -370,12 +370,27 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 			return {};
 
 		case 4:
+			// 16-color
 			img = ImageDecoder::fromLinearCI4(ImageDecoder::PixelFormat::Host_ARGB32, true,
 				width, half_height,
 				icon_data, icon_size,
 				pal_data.data(), pal_data.size() * sizeof(uint32_t),
 				stride);
 			break;
+
+		case 32: {
+			// 32-bit ARGB
+			const uint32_t biCompression = le32_to_cpu(header.bih.biCompression);
+			if (biCompression != BI_RGB) {
+				// FIXME: BI_BITFIELDS is not supported right now.
+				return {};
+			}
+			img = ImageDecoder::fromLinear32(ImageDecoder::PixelFormat::ARGB8888,
+				width, half_height,
+				reinterpret_cast<const uint32_t*>(icon_data), icon_size,
+				stride);
+			break;
+		}
 	}
 
 	// Apply the icon mask.
@@ -390,6 +405,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 		uint8_t *bits = static_cast<uint8_t*>(img->bits());
 		const uint8_t *mask = mask_data;
 		int dest_stride_adj = img->stride() - width;
+		int mask_stride_adj = mask_stride - ((width / 8) + (width % 8 > 0));
 		for (unsigned int y = half_height; y > 0; y--) {
 			// TODO: Mask stride adjustment?
 			unsigned int mask_bits_remain = 8;
@@ -412,6 +428,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 
 			// Next row.
 			bits += dest_stride_adj;
+			mask += mask_stride_adj;
 		}
 	} else {
 		// CI8 needs to be converted to ARGB32.
@@ -436,7 +453,8 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 
 		uint32_t *bits = static_cast<uint32_t*>(img->bits());
 		const uint8_t *mask = mask_data;
-		int dest_stride_adj = img->stride() - width;
+		int dest_stride_adj = (img->stride() / sizeof(uint32_t)) - width;
+		int mask_stride_adj = mask_stride - ((width / 8) + (width % 8 > 0));
 		for (unsigned int y = half_height; y > 0; y--) {
 			// TODO: Mask stride adjustment?
 			unsigned int mask_bits_remain = 8;
@@ -458,6 +476,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 
 			// Next row.
 			bits += dest_stride_adj;
+			mask += mask_stride_adj;
 		}
 	}
 
