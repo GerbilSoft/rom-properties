@@ -153,6 +153,22 @@ typedef enum {
 
 /** PNG chunks (TODO: Combine with librpbase/tests/bmp.h?) **/
 
+/* These describe the color_type field in png_info. */
+/* color type masks */
+#define PNG_COLOR_MASK_PALETTE    1
+#define PNG_COLOR_MASK_COLOR      2
+#define PNG_COLOR_MASK_ALPHA      4
+
+/* color types.  Note that not all combinations are legal */
+#define PNG_COLOR_TYPE_GRAY		0
+#define PNG_COLOR_TYPE_PALETTE		(PNG_COLOR_MASK_COLOR | PNG_COLOR_MASK_PALETTE)
+#define PNG_COLOR_TYPE_RGB		(PNG_COLOR_MASK_COLOR)
+#define PNG_COLOR_TYPE_RGB_ALPHA	(PNG_COLOR_MASK_COLOR | PNG_COLOR_MASK_ALPHA)
+#define PNG_COLOR_TYPE_GRAY_ALPHA	(PNG_COLOR_MASK_ALPHA)
+/* aliases */
+#define PNG_COLOR_TYPE_RGBA		PNG_COLOR_TYPE_RGB_ALPHA
+#define PNG_COLOR_TYPE_GA		PNG_COLOR_TYPE_GRAY_ALPHA
+
 /**
  * PNG IHDR chunk
  */
@@ -169,7 +185,9 @@ typedef struct RP_PACKED _PNG_IHDR_t {
 ASSERT_STRUCT(PNG_IHDR_t, 13);
 #pragma pack()
 
-// PNG IHDR struct, with length, name, and CRC32.
+/**
+ * PNG IHDR struct, with length, name, and CRC32.
+ */
 #pragma pack(1)
 typedef struct RP_PACKED _PNG_IHDR_full_t {
 	uint32_t chunk_size;	// BE32

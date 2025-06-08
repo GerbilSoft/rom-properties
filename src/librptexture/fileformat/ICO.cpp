@@ -220,11 +220,95 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 		}
 	}
 
-	// NOTE: Picking the first icon for now.
-	// TODO: Pick the largest, then highest color depth.
-	pBestIcon = &iconDirectory[0];
-	pIconHeader = &iconBitmapHeaders[0];
-	return 0;
+	// Go through the icon bitmap headers and figure out the "best" one.
+	unsigned int width_best = 0, height_best = 0, bitcount_best = 0;
+	for (unsigned int i = 0; i < count; i++) {
+		// Get the width, height, and color depth from this bitmap header.
+		const IconBitmapHeader_t *const p = &iconBitmapHeaders[i];
+		unsigned int width, height, bitcount;
+
+		switch (p->size) {
+			default:
+				// Not supported...
+				continue;
+
+			case BITMAPCOREHEADER_SIZE:
+				if (le32_to_cpu(p->bch.bcPlanes) > 1) {
+					// Cannot handle planar bitmaps.
+					continue;
+				}
+				width = le16_to_cpu(p->bch.bcWidth);
+				height = le16_to_cpu(p->bch.bcHeight) / 2;
+				bitcount = le16_to_cpu(p->bch.bcBitCount);
+				break;
+
+			case BITMAPINFOHEADER_SIZE:
+			case BITMAPV2INFOHEADER_SIZE:
+			case BITMAPV3INFOHEADER_SIZE:
+			case BITMAPV4HEADER_SIZE:
+			case BITMAPV5HEADER_SIZE:
+				if (le32_to_cpu(p->bih.biPlanes) > 1) {
+					// Cannot handle planar bitmaps.
+					continue;
+				}
+				width = le32_to_cpu(p->bih.biWidth);
+				height = le32_to_cpu(p->bih.biHeight) / 2;
+				bitcount = le16_to_cpu(p->bih.biBitCount);
+				break;
+
+			case 0x474E5089:	// "\x89PNG"
+				switch (p->png.ihdr.data.color_type) {
+					default:
+						// Not supported...
+						continue;
+
+					case PNG_COLOR_TYPE_PALETTE:
+						bitcount = p->png.ihdr.data.bit_depth;
+						break;
+
+					case PNG_COLOR_TYPE_GRAY:
+					case PNG_COLOR_TYPE_RGB:
+						// Handling as if it's RGB.
+						bitcount = p->png.ihdr.data.bit_depth * 3;
+						break;
+
+					case PNG_COLOR_TYPE_GRAY_ALPHA:
+					case PNG_COLOR_TYPE_RGB_ALPHA:
+						// Handling as if it's ARGB.
+						bitcount = p->png.ihdr.data.bit_depth * 4;
+						break;
+				}
+
+				width = be32_to_cpu(p->png.ihdr.data.width);
+				height = be32_to_cpu(p->png.ihdr.data.height);
+				break;
+		}
+
+		// Check if the image is larger.
+		// TODO: Non-square icon handling.
+		bool icon_is_better = false;
+		if (width > width_best || height > height_best) {
+			// Image is larger.
+			icon_is_better = true;
+		} else if (width == width_best && height == height_best) {
+			// Image is the same size.
+			if (bitcount > bitcount_best) {
+				// Color depth is higher.
+				icon_is_better = true;
+			}
+		}
+
+		if (icon_is_better) {
+			// This icon is better.
+			pBestIcon = &iconDirectory[i];
+			pIconHeader = p;
+			width_best = width;
+			height_best = height;
+			bitcount_best = bitcount;
+		}
+	}
+
+	return (pBestIcon) ? 0 : -ENOENT;
 }
 
 /**
