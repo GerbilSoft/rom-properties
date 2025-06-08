@@ -355,11 +355,13 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 	// TODO: Apply the mask.
 	const uint8_t *icon_data, *mask_data;
 	if (is_upside_down) {
-		mask_data = img_data.data();
-		icon_data = mask_data;// + mask_size;
-	} else {
 		icon_data = img_data.data();
 		mask_data = icon_data + icon_size;
+	} else {
+		// TODO: Need to test this. Might not be correct.
+		// I don't have any right-side up icons...
+		mask_data = img_data.data();
+		icon_data = mask_data + mask_size;
 	}
 
 	switch (bitcount) {
