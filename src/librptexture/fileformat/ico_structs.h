@@ -57,7 +57,7 @@ typedef enum {
 
 /**
  * Windows 3.x: Icon header
- * Layout-compatible with the Windows 1.0 header.
+ * Layout-compatible with the Windows 1.0 icon header.
  *
  * All fields are in little-endian.
  */
@@ -69,6 +69,18 @@ typedef struct _ICONDIR {
 ASSERT_STRUCT(ICONDIR, 6);
 
 /**
+ * Windows 3.x: Icon header, RES version (RT_GROUP_ICON)
+ *
+ * All fields are in little-endian.
+ */
+typedef struct _GRPICONDIR {
+	uint16_t idReserved;	// [0x000] Zero for Win3.x icons
+	uint16_t idType;	// [0x002] See ICO_Win3_idType_e
+	uint16_t idCount;	// [0x004] Number of images
+} GRPICONDIR;
+ASSERT_STRUCT(GRPICONDIR, 6);
+
+/**
  * Windows 3.x: Icon types
  */
 typedef enum {
@@ -78,6 +90,8 @@ typedef enum {
 
 /**
  * Windows 3.x: Icon directory entry
+ *
+ * All fields are in little-endian.
  */
 typedef struct _ICONDIRENTRY {
 	uint8_t  bWidth;	// [0x000] Width (0 is actually 256)
@@ -90,6 +104,25 @@ typedef struct _ICONDIRENTRY {
 	uint32_t dwImageOffset;	// [0x00C] Offset
 } ICONDIRENTRY;
 ASSERT_STRUCT(ICONDIRENTRY, 16);
+
+/**
+ * Windows 3.x: Icon directory entry, RES version (RT_GROUP_ICON)
+ *
+ * All fields are in little-endian.
+ */
+#pragma pack(2)
+typedef struct RP_PACKED _GRPICONDIRENTRY {
+	uint8_t  bWidth;	// [0x000] Width (0 is actually 256)
+	uint8_t  bHeight;	// [0x001] Height (0 is actually 256)
+	uint8_t  bColorCount;	// [0x002] Color count
+	uint8_t  bReserved;	// [0x003]
+	uint16_t wPlanes;	// [0x004] Bitplanes (if >1, multiply by wBitCount)
+	uint16_t wBitCount;	// [0x006] Bitcount
+	uint32_t dwBytesInRes;	// [0x008] Size
+	uint16_t nID;		// [0x00C] RT_ICON ID
+} GRPICONDIRENTRY;
+ASSERT_STRUCT(GRPICONDIRENTRY, 14);
+#pragma pack()
 
 // Windows 3.x icons can either have BITMAPCOREHEADER, BITMAPINFOHEADER,
 // or a raw PNG image (supported by Windows Vista and later).

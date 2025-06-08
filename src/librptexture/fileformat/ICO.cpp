@@ -53,11 +53,17 @@ public:
 	enum class IconType {
 		Unknown	= -1,
 
+		// Win1.x .ico/.cur
 		Icon_Win1 = 0,
 		Cursor_Win1 = 1,
 
+		// Win3.x .ico/.cur
 		Icon_Win3 = 2,
 		Cursor_Win3 = 3,
+
+		// Win3.x resources (RT_GROUP_ICON, RT_GROUP_CURSOR)
+		IconRes_Win3 = 4,
+		CursorRes_Win3 = 5,
 
 		Max
 	};
@@ -73,7 +79,15 @@ public:
 
 	// Icon directory
 	// NOTE: *Not* byteswapped.
-	rp::uvector<ICONDIRENTRY> iconDirectory;
+	// NOTE: ICONDIRENTRY and GRPICONDIRENTRY are different sizes,
+	// so this has to be interpreted based on IconType.
+	rp::uvector<uint8_t> iconDirectory_u8;
+
+	// "Best" icon in the icon directory
+	// NOTE: *Not* byteswapped.
+	// NOTE: ICONDIRENTRY and GRPICONDIRENTRY are different sizes,
+	// so this has to be interpreted based on IconType.
+	const uint8_t *pBestIcon_u8;
 
 	// Icon bitmap header
 	union IconBitmapHeader_t {
@@ -90,10 +104,6 @@ public:
 	// These all have to be loaded in order to
 	// determine which one is the "best" icon.
 	rp::uvector<IconBitmapHeader_t> iconBitmapHeaders;
-
-	// "Best" icon in the icon directory
-	// NOTE: *Not* byteswapped.
-	const ICONDIRENTRY *pBestIcon;
 
 	// "Best" icon: Bitmap header
 	const IconBitmapHeader_t *pIconHeader;
@@ -173,7 +183,7 @@ const TextureInfo ICOPrivate::textureInfo = {
 ICOPrivate::ICOPrivate(ICO *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, iconType(IconType::Unknown)
-	, pBestIcon(nullptr)
+	, pBestIcon_u8(nullptr)
 	, pIconHeader(nullptr)
 {
 	// Clear the ICO header union.
@@ -198,23 +208,27 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 	}
 
 	const size_t fullsize = count * sizeof(ICONDIRENTRY);
-	iconDirectory.resize(count);
-	size_t size = file->seekAndRead(sizeof(ICONHEADER), iconDirectory.data(), fullsize);
+	iconDirectory_u8.resize(fullsize);
+	size_t size = file->seekAndRead(sizeof(ICONHEADER), iconDirectory_u8.data(), fullsize);
 	if (size != fullsize) {
 		// Seek and/or read error.
-		iconDirectory.clear();
+		iconDirectory_u8.clear();
 		return -EIO;
 	}
 
 	// Load all of the icon image headers.
 	iconBitmapHeaders.resize(count);
-	IconBitmapHeader_t *p = iconBitmapHeaders.data();
-	for (auto iter = iconDirectory.cbegin(); iter != iconDirectory.cend(); ++iter, p++) {
-		unsigned int addr = le32_to_cpu(iter->dwImageOffset);
-		size_t size = file->seekAndRead(addr, p, sizeof(*p));
-		if (size != sizeof(*p)) {
+	IconBitmapHeader_t *pBmpHdr = iconBitmapHeaders.data();
+	const ICONDIRENTRY *const pIconDirectory = reinterpret_cast<const ICONDIRENTRY*>(iconDirectory_u8.data());
+	const ICONDIRENTRY *const pIconDirectory_end = pIconDirectory + count;
+	for (const ICONDIRENTRY *pIconDirEntry = pIconDirectory;
+	     pIconDirEntry < pIconDirectory_end; pBmpHdr++, pIconDirEntry++)
+	{
+		unsigned int addr = le32_to_cpu(pIconDirEntry->dwImageOffset);
+		size_t size = file->seekAndRead(addr, pBmpHdr, sizeof(*pBmpHdr));
+		if (size != sizeof(*pBmpHdr)) {
 			// Seek and/or read error.
-			iconDirectory.clear();
+			iconDirectory_u8.clear();
 			iconBitmapHeaders.clear();
 			return -EIO;
 		}
@@ -300,7 +314,7 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 
 		if (icon_is_better) {
 			// This icon is better.
-			pBestIcon = &iconDirectory[i];
+			pBestIcon_u8 = reinterpret_cast<const uint8_t*>(&pIconDirectory[i]);
 			pIconHeader = p;
 			width_best = width;
 			height_best = height;
@@ -308,7 +322,7 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 		}
 	}
 
-	return (pBestIcon) ? 0 : -ENOENT;
+	return (pBestIcon_u8) ? 0 : -ENOENT;
 }
 
 /**
@@ -356,7 +370,6 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 
 	// Check the header size.
 	const unsigned int header_size = le32_to_cpu(pIconHeader->size);
-	unsigned int addr = le32_to_cpu(pBestIcon->dwImageOffset) + header_size;
 	switch (header_size) {
 		default:
 			// Not supported...
@@ -438,6 +451,9 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 
 	// Mask row is 1bpp and must also be 32-bit aligned.
 	unsigned int mask_stride = ALIGN_BYTES(4, width / 8);
+
+	const ICONDIRENTRY *const pBestIcon = reinterpret_cast<const ICONDIRENTRY*>(pBestIcon_u8);
+	unsigned int addr = le32_to_cpu(pBestIcon->dwImageOffset) + header_size;
 
 	// For 8bpp or less, a color table is present.
 	// NOTE: Need to manually set the alpha channel to 0xFF.
@@ -649,6 +665,7 @@ rp_image_const_ptr ICOPrivate::loadImage_WinVista_PNG(void)
 	// create a dummy DiscReader object.
 
 	IDiscReaderPtr discReader = std::make_shared<DiscReader>(file, 0, file->size());
+	const ICONDIRENTRY *const pBestIcon = reinterpret_cast<const ICONDIRENTRY*>(pBestIcon_u8);
 	PartitionFile *const partitionFile = new PartitionFile(discReader, pBestIcon->dwImageOffset, pBestIcon->dwBytesInRes);
 	img = RpPng::load(partitionFile);
 	delete partitionFile;
@@ -790,7 +807,7 @@ ICO::ICO(const IRpFilePtr &file)
 		case ICOPrivate::IconType::Icon_Win3:
 		case ICOPrivate::IconType::Cursor_Win3:
 			// TODO: Need to check BITMAPINFOHEADER, BITMAPCOREHEADER, or PNG header.
-			if (!d->pBestIcon) {
+			if (!d->pBestIcon_u8) {
 				// No "best" icon...
 				d->file.reset();
 				return;
