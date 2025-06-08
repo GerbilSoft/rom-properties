@@ -18,6 +18,15 @@ ROMDATA_DECL_METADATA()
 ROMDATA_DECL_IMGSUPPORT()
 ROMDATA_DECL_IMGPF()
 ROMDATA_DECL_IMGINT()
+
+public:
+	/**
+	 * Load a specific icon by index.
+	 * @param iconindex Icon index (positive for zero-based index; negative for resource ID)
+	 * @return Icon, or nullptr if not found.
+	 */
+	LibRpTexture::rp_image_const_ptr loadSpecificIcon(int iconindex);
+
 ROMDATA_DECL_VIEWED_ACHIEVEMENTS()
 ROMDATA_DECL_END()
 

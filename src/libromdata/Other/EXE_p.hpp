@@ -120,7 +120,14 @@ public:
 	void addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const IResourceReader::StringFileInfo *pVsSfi);
 
 	// Icon
-	LibRpTexture::rp_image_ptr img_icon;
+	LibRpTexture::rp_image_const_ptr img_icon;
+
+	/**
+	 * Load a specific icon by index.
+	 * @param iconindex Icon index (positive for zero-based index; negative for resource ID)
+	 * @return Icon, or nullptr if not found.
+	 */
+	LibRpTexture::rp_image_const_ptr loadSpecificIcon(int iconindex);
 
 	/**
 	 * Load the icon.

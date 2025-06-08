@@ -687,6 +687,25 @@ rp_image_const_ptr ISOPrivate::loadIcon(void)
 		return {};
 	}
 
+	// Check if there's an icon index specified.
+	// - Positive: Zero-based index
+	// - Negative: Resource ID
+	int iconindex = 0;	// default is "first icon"
+	size_t dotpos = icon_filename.find_last_of('.');
+	size_t commapos = icon_filename.find_last_of(',');
+	if (commapos < (icon_filename.size()-1) && dotpos < commapos) {
+		// Found an icon index.
+		char *endptr = nullptr;
+		iconindex = strtol(&icon_filename[commapos+1], &endptr, 10);
+		if (*endptr == '\0') {
+			// Icon index is valid. Use it.
+			icon_filename.resize(commapos);
+		} else {
+			// Icon index is invalid.
+			iconindex = 0;
+		}
+	}
+
 	// Open the icon file from the disc.
 	f_file = isoPartition->open(icon_filename.c_str());
 	if (!f_file) {
@@ -706,11 +725,7 @@ rp_image_const_ptr ISOPrivate::loadIcon(void)
 			// EXE or DLL.
 			unique_ptr<EXE> exe(new EXE(f_file));
 			if (exe->isValid()) {
-				// TODO: Handle the icon index.
-				int ret = exe->loadInternalImage(RomData::IMG_INT_ICON, icon);
-				if (ret != 0) {
-					icon.reset();
-				}
+				icon = exe->loadSpecificIcon(iconindex);
 			}
 		}
 	}
