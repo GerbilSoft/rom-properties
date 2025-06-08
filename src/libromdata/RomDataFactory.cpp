@@ -1155,7 +1155,7 @@ static void init_supportedFileExtensions(void)
 	const vector<const char*> &vec_exts_fileFormat = FileFormatFactory::supportedFileExtensions();
 	for (const char *ext : vec_exts_fileFormat) {
 		// Explicitly prevent thumbnailing of ".ico" and ".cur" on Windows.
-		const bool block_thumbnail = !strcmp(ext, ".ico") || !strcmp(exe, ".cur");
+		const bool block_thumbnail = !strcmp(ext, ".ico") || !strcmp(ext, ".cur");
 		unsigned int attrs = (unlikely(block_thumbnail)) ? ATTR_HAS_METADATA : FFF_ATTRS;
 
 		auto iter = map_exts.find(ext);
