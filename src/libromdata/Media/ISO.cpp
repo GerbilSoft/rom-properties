@@ -340,24 +340,23 @@ void ISOPrivate::checkVolumeDescriptors(void)
 
 						// Check if this is a valid UCS-2 level seqeunce.
 						// NOTE: Using the highest level specified.
+						JolietSVDType newType = JolietSVDType::None;
 						switch (p[2]) {
 							case '@':
-								if (jolietSVDType < JolietSVDType::UCS2_Level1) {
-									jolietSVDType = JolietSVDType::UCS2_Level1;
-								}
+								newType = JolietSVDType::UCS2_Level1;
 								break;
 							case 'C':
-								if (jolietSVDType < JolietSVDType::UCS2_Level2) {
-									jolietSVDType = JolietSVDType::UCS2_Level2;
-								}
+								newType = JolietSVDType::UCS2_Level2;
 								break;
 							case 'E':
-								if (jolietSVDType < JolietSVDType::UCS2_Level3) {
-									jolietSVDType = JolietSVDType::UCS2_Level3;
-								}
+								newType = JolietSVDType::UCS2_Level3;
 								break;
 							default:
 								break;
+						}
+
+						if (jolietSVDType < newType) {
+							jolietSVDType = newType;
 						}
 					}
 				}
