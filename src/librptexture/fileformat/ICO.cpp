@@ -75,12 +75,8 @@ public:
 	// NOTE: *Not* byteswapped.
 	rp::uvector<ICONDIRENTRY> iconDirectory;
 
-	// "Best" icon in the icon directory
-	// NOTE: *Not* byteswapped.
-	const ICONDIRENTRY *pBestIcon;
-
 	// Icon bitmap header
-	union {
+	union IconBitmapHeader_t {
 		uint32_t size;
 		BITMAPCOREHEADER bch;
 		BITMAPINFOHEADER bih;
@@ -88,7 +84,19 @@ public:
 			uint8_t magic[8];
 			PNG_IHDR_full_t ihdr;
 		} png;
-	} iconHeader;
+	};
+
+	// All icon bitmap headers
+	// These all have to be loaded in order to
+	// determine which one is the "best" icon.
+	rp::uvector<IconBitmapHeader_t> iconBitmapHeaders;
+
+	// "Best" icon in the icon directory
+	// NOTE: *Not* byteswapped.
+	const ICONDIRENTRY *pBestIcon;
+
+	// "Best" icon: Bitmap header
+	const IconBitmapHeader_t *pIconHeader;
 
 	// Decoded image
 	rp_image_ptr img;
@@ -166,6 +174,7 @@ ICOPrivate::ICOPrivate(ICO *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, iconType(IconType::Unknown)
 	, pBestIcon(nullptr)
+	, pIconHeader(nullptr)
 {
 	// Clear the ICO header union.
 	memset(&icoHeader, 0, sizeof(icoHeader));
@@ -193,21 +202,28 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 	size_t size = file->seekAndRead(sizeof(ICONHEADER), iconDirectory.data(), fullsize);
 	if (size != fullsize) {
 		// Seek and/or read error.
+		iconDirectory.clear();
 		return -EIO;
+	}
+
+	// Load all of the icon image headers.
+	iconBitmapHeaders.resize(count);
+	IconBitmapHeader_t *p = iconBitmapHeaders.data();
+	for (auto iter = iconDirectory.cbegin(); iter != iconDirectory.cend(); ++iter, p++) {
+		unsigned int addr = le32_to_cpu(iter->dwImageOffset);
+		size_t size = file->seekAndRead(addr, p, sizeof(*p));
+		if (size != sizeof(*p)) {
+			// Seek and/or read error.
+			iconDirectory.clear();
+			iconBitmapHeaders.clear();
+			return -EIO;
+		}
 	}
 
 	// NOTE: Picking the first icon for now.
 	// TODO: Pick the largest, then highest color depth.
 	pBestIcon = &iconDirectory[0];
-
-	// Load the icon image header.
-	unsigned int addr = le32_to_cpu(pBestIcon->dwImageOffset);
-	size = file->seekAndRead(addr, &iconHeader, sizeof(iconHeader));
-	if (size != sizeof(iconHeader)) {
-		// Seek and/or read error.
-		return -EIO;
-	}
-
+	pIconHeader = &iconBitmapHeaders[0];
 	return 0;
 }
 
@@ -255,7 +271,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 	// TODO: Verify dwBytesInRes.
 
 	// Check the header size.
-	const unsigned int header_size = le32_to_cpu(iconHeader.size);
+	const unsigned int header_size = le32_to_cpu(pIconHeader->size);
 	unsigned int addr = le32_to_cpu(pBestIcon->dwImageOffset) + header_size;
 	switch (header_size) {
 		default:
@@ -283,7 +299,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 	// and the bottom is the monochrome mask.
 	// NOTE 2: If height > 0, the entire bitmap is upside-down.
 
-	const BITMAPINFOHEADER *bih = &iconHeader.bih;
+	const BITMAPINFOHEADER *bih = &pIconHeader->bih;
 
 	// Make sure width and height are valid.
 	// Height cannot be 0 or an odd number.
@@ -694,15 +710,16 @@ ICO::ICO(const IRpFilePtr &file)
 				return;
 			}
 
-			switch (d->iconHeader.size) {
+			const ICOPrivate::IconBitmapHeader_t *const pIconHeader = d->pIconHeader;
+			switch (pIconHeader->size) {
 				default:
 					// Not supported...
 					d->file.reset();
 					return;
 
 				case BITMAPCOREHEADER_SIZE:
-					d->dimensions[0] = le16_to_cpu(d->iconHeader.bch.bcWidth);
-					d->dimensions[1] = le16_to_cpu(d->iconHeader.bch.bcHeight) / 2;
+					d->dimensions[0] = le16_to_cpu(pIconHeader->bch.bcWidth);
+					d->dimensions[1] = le16_to_cpu(pIconHeader->bch.bcHeight) / 2;
 					break;
 
 				case BITMAPINFOHEADER_SIZE:
@@ -710,14 +727,14 @@ ICO::ICO(const IRpFilePtr &file)
 				case BITMAPV3INFOHEADER_SIZE:
 				case BITMAPV4HEADER_SIZE:
 				case BITMAPV5HEADER_SIZE:
-					d->dimensions[0] = le32_to_cpu(d->iconHeader.bih.biWidth);
-					d->dimensions[1] = le32_to_cpu(d->iconHeader.bih.biHeight) / 2;
+					d->dimensions[0] = le32_to_cpu(pIconHeader->bih.biWidth);
+					d->dimensions[1] = le32_to_cpu(pIconHeader->bih.biHeight) / 2;
 					break;
 
 				case 0x474E5089:	// "\x89PNG"
 					// TODO: Verify more IHDR fields?
-					d->dimensions[0] = be32_to_cpu(d->iconHeader.png.ihdr.data.width);
-					d->dimensions[1] = be32_to_cpu(d->iconHeader.png.ihdr.data.height);
+					d->dimensions[0] = be32_to_cpu(pIconHeader->png.ihdr.data.width);
+					d->dimensions[1] = be32_to_cpu(pIconHeader->png.ihdr.data.height);
 					break;
 			}
 			break;
