@@ -14,8 +14,11 @@
 
 // Other rom-properties libraries
 #include "libi18n/i18n.h"
+#include "librpbase/disc/DiscReader.hpp"
+#include "librpbase/disc/PartitionFile.hpp"
+#include "librpbase/img/RpPng.hpp"
+using namespace LibRpBase;
 using namespace LibRpFile;
-using LibRpBase::RomFields;
 
 // librptexture
 #include "img/rp_image.hpp"
@@ -95,6 +98,12 @@ private:
 	 * @return Image, or nullptr on error.
 	 */
 	rp_image_const_ptr loadImage_Win3(void);
+
+	/**
+	 * Load the image. (Windows Vista PNG format)
+	 * @return Image, or nullptr on error.
+	 */
+	rp_image_const_ptr loadImage_WinVista_PNG(void);
 
 public:
 	/**
@@ -220,7 +229,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 {
 	// Get the icon image header.
 	// May be BITMAPCOREHEADER or BITMAPINFOHEADER.
-	// TODO: PNG header?
+	// TODO: Verify dwBytesInRes.
 
 	union {
 		uint32_t size;
@@ -254,8 +263,8 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 			break;
 
 		case 0x474E5089:	// "\x89PNG"
-			// TODO: Read the PNG header.
-			return {};
+			// Load it as a PNG image.
+			return loadImage_WinVista_PNG();
 	}
 
 	// NOTE: For standard icons (non-alpha, not PNG), the height is
@@ -488,6 +497,23 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 		}
 	}
 
+	return img;
+}
+
+/**
+ * Load the image. (Windows Vista PNG format)
+ * @return Image, or nullptr on error.
+ */
+rp_image_const_ptr ICOPrivate::loadImage_WinVista_PNG(void)
+{
+	// Use RpPng to load a PNG image.
+	// NOTE: PartitionFile only supports IDiscReader, so we'll need to
+	// create a dummy DiscReader object.
+
+	IDiscReaderPtr discReader = std::make_shared<DiscReader>(file, 0, file->size());
+	PartitionFile *const partitionFile = new PartitionFile(discReader, pBestIcon->dwImageOffset, pBestIcon->dwBytesInRes);
+	img = RpPng::load(partitionFile);
+	delete partitionFile;
 	return img;
 }
 
