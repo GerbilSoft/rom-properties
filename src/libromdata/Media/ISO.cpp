@@ -675,7 +675,6 @@ rp_image_const_ptr ISOPrivate::loadIcon(void)
 		// Short read.
 		return {};
 	}
-	f_file.reset();
 	buf[static_cast<size_t>(autorun_inf_size)] = '\0';
 
 	// Parse AUTORUN.INF.
