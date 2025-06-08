@@ -37,6 +37,7 @@ class ICOPrivate final : public FileFormatPrivate
 {
 public:
 	ICOPrivate(ICO *q, const IRpFilePtr &file);
+	~ICOPrivate();
 
 private:
 	typedef FileFormatPrivate super;
@@ -77,17 +78,63 @@ public:
 
 	/** Win3.x icon stuff **/
 
-	// Icon directory
-	// NOTE: *Not* byteswapped.
-	// NOTE: ICONDIRENTRY and GRPICONDIRENTRY are different sizes,
-	// so this has to be interpreted based on IconType.
-	rp::uvector<uint8_t> iconDirectory_u8;
+	/**
+	 * Is this an icon resource from a .exe/.dll?
+	 * @return True if it's a resource; false if it's a .ico file.
+	 */
+	inline bool isResource(void) const
+	{
+		return (iconType >= IconType::IconRes_Win3) && (iconType <= IconType::CursorRes_Win3);
+	}
 
-	// "Best" icon in the icon directory
-	// NOTE: *Not* byteswapped.
-	// NOTE: ICONDIRENTRY and GRPICONDIRENTRY are different sizes,
-	// so this has to be interpreted based on IconType.
-	const uint8_t *pBestIcon_u8;
+	// NOTE: ICONDIRENTRY (for .ico files) and GRPICONDIRENTRY (for resources)
+	// are different sizes. Hence, we have to use this union of struct pointers hack.
+	struct icodir_ico {
+		// Icon directory
+		// NOTE: *Not* byteswapped.
+		rp::uvector<ICONDIRENTRY> iconDirectory;
+
+		// "Best" icon in the icon directory
+		// NOTE: *Not* byteswapped.
+		const ICONDIRENTRY *pBestIcon;
+
+		icodir_ico()
+			: pBestIcon(nullptr)
+		{ }
+	};
+	struct icodir_res {
+		// Icon directory
+		// NOTE: *Not* byteswapped.
+		// NOTE: ICONDIRENTRY and GRPICONDIRENTRY are different sizes,
+		// so this has to be interpreted based on IconType.
+		rp::uvector<GRPICONDIRENTRY> iconDirectory;
+
+		// "Best" icon in the icon directory
+		// NOTE: *Not* byteswapped.
+		const GRPICONDIRENTRY *pBestIcon;
+
+		icodir_res()
+			: pBestIcon(nullptr)
+		{ }
+	};
+
+	union {
+		void *v;
+		icodir_ico *ico;
+		icodir_res *res;
+	} dir;
+
+	void reset_dir_union(void)
+	{
+		if (dir.v) {
+			if (isResource()) {
+				delete dir.res;
+			} else {
+				delete dir.ico;
+			}
+			dir.v = nullptr;
+		}
+	}
 
 	// Icon bitmap header
 	union IconBitmapHeader_t {
@@ -183,11 +230,18 @@ const TextureInfo ICOPrivate::textureInfo = {
 ICOPrivate::ICOPrivate(ICO *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, iconType(IconType::Unknown)
-	, pBestIcon_u8(nullptr)
 	, pIconHeader(nullptr)
 {
 	// Clear the ICO header union.
 	memset(&icoHeader, 0, sizeof(icoHeader));
+
+	// Clear the icon directory union.
+	dir.v = nullptr;
+}
+
+ICOPrivate::~ICOPrivate()
+{
+	reset_dir_union();
 }
 
 /**
@@ -207,28 +261,27 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 		return -ENOENT;
 	}
 
+	reset_dir_union();
 	const size_t fullsize = count * sizeof(ICONDIRENTRY);
-	iconDirectory_u8.resize(fullsize);
-	size_t size = file->seekAndRead(sizeof(ICONHEADER), iconDirectory_u8.data(), fullsize);
+	dir.ico = new icodir_ico();
+	auto &iconDirectory = dir.ico->iconDirectory;
+	iconDirectory.resize(count);
+	size_t size = file->seekAndRead(sizeof(ICONHEADER), iconDirectory.data(), fullsize);
 	if (size != fullsize) {
 		// Seek and/or read error.
-		iconDirectory_u8.clear();
+		reset_dir_union();
 		return -EIO;
 	}
 
 	// Load all of the icon image headers.
 	iconBitmapHeaders.resize(count);
-	IconBitmapHeader_t *pBmpHdr = iconBitmapHeaders.data();
-	const ICONDIRENTRY *const pIconDirectory = reinterpret_cast<const ICONDIRENTRY*>(iconDirectory_u8.data());
-	const ICONDIRENTRY *const pIconDirectory_end = pIconDirectory + count;
-	for (const ICONDIRENTRY *pIconDirEntry = pIconDirectory;
-	     pIconDirEntry < pIconDirectory_end; pBmpHdr++, pIconDirEntry++)
-	{
-		unsigned int addr = le32_to_cpu(pIconDirEntry->dwImageOffset);
-		size_t size = file->seekAndRead(addr, pBmpHdr, sizeof(*pBmpHdr));
-		if (size != sizeof(*pBmpHdr)) {
+	IconBitmapHeader_t *p = iconBitmapHeaders.data();
+	for (auto iter = iconDirectory.cbegin(); iter != iconDirectory.cend(); ++iter, p++) {
+		unsigned int addr = le32_to_cpu(iter->dwImageOffset);
+		size_t size = file->seekAndRead(addr, p, sizeof(*p));
+		if (size != sizeof(*p)) {
 			// Seek and/or read error.
-			iconDirectory_u8.clear();
+			reset_dir_union();
 			iconBitmapHeaders.clear();
 			return -EIO;
 		}
@@ -314,7 +367,7 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 
 		if (icon_is_better) {
 			// This icon is better.
-			pBestIcon_u8 = reinterpret_cast<const uint8_t*>(&pIconDirectory[i]);
+			dir.ico->pBestIcon = &iconDirectory[i];
 			pIconHeader = p;
 			width_best = width;
 			height_best = height;
@@ -322,7 +375,7 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 		}
 	}
 
-	return (pBestIcon_u8) ? 0 : -ENOENT;
+	return (width_best > 0 && height_best > 0) ? 0 : -ENOENT;
 }
 
 /**
@@ -452,7 +505,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 	// Mask row is 1bpp and must also be 32-bit aligned.
 	unsigned int mask_stride = ALIGN_BYTES(4, width / 8);
 
-	const ICONDIRENTRY *const pBestIcon = reinterpret_cast<const ICONDIRENTRY*>(pBestIcon_u8);
+	const ICONDIRENTRY *const pBestIcon = dir.ico->pBestIcon;
 	unsigned int addr = le32_to_cpu(pBestIcon->dwImageOffset) + header_size;
 
 	// For 8bpp or less, a color table is present.
@@ -665,7 +718,7 @@ rp_image_const_ptr ICOPrivate::loadImage_WinVista_PNG(void)
 	// create a dummy DiscReader object.
 
 	IDiscReaderPtr discReader = std::make_shared<DiscReader>(file, 0, file->size());
-	const ICONDIRENTRY *const pBestIcon = reinterpret_cast<const ICONDIRENTRY*>(pBestIcon_u8);
+	const ICONDIRENTRY *const pBestIcon = dir.ico->pBestIcon;
 	PartitionFile *const partitionFile = new PartitionFile(discReader, pBestIcon->dwImageOffset, pBestIcon->dwBytesInRes);
 	img = RpPng::load(partitionFile);
 	delete partitionFile;
@@ -807,7 +860,7 @@ ICO::ICO(const IRpFilePtr &file)
 		case ICOPrivate::IconType::Icon_Win3:
 		case ICOPrivate::IconType::Cursor_Win3:
 			// TODO: Need to check BITMAPINFOHEADER, BITMAPCOREHEADER, or PNG header.
-			if (!d->pBestIcon_u8) {
+			if (!d->dir.ico->pBestIcon) {
 				// No "best" icon...
 				d->file.reset();
 				return;
