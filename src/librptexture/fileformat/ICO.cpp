@@ -679,7 +679,7 @@ ICO::ICO(const IRpFilePtr &file)
 
 				case BITMAPCOREHEADER_SIZE:
 					d->dimensions[0] = le16_to_cpu(d->iconHeader.bch.bcWidth);
-					d->dimensions[1] = le16_to_cpu(d->iconHeader.bch.bcHeight);
+					d->dimensions[1] = le16_to_cpu(d->iconHeader.bch.bcHeight) / 2;
 					break;
 
 				case BITMAPINFOHEADER_SIZE:
@@ -688,7 +688,7 @@ ICO::ICO(const IRpFilePtr &file)
 				case BITMAPV4HEADER_SIZE:
 				case BITMAPV5HEADER_SIZE:
 					d->dimensions[0] = le32_to_cpu(d->iconHeader.bih.biWidth);
-					d->dimensions[1] = le32_to_cpu(d->iconHeader.bih.biHeight);
+					d->dimensions[1] = le32_to_cpu(d->iconHeader.bih.biHeight) / 2;
 					break;
 
 				case 0x474E5089:	// "\x89PNG"
