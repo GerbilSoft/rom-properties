@@ -338,8 +338,7 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup_int(const DirData_t *pDir, const
 		}
 
 		// Skip subdirectories with names "\x00" and "\x01".
-		// These are Joliet "special directory identifiers".
-		// TODO: Joliet subdirectory support?
+		// These are "special directory identifiers", representing "." and "..", respectively.
 		if ((dirEntry->flags & ISO_FLAG_DIRECTORY) && dirEntry->filename_length == 1) {
 			if (static_cast<uint8_t>(entry_filename[0]) <= 0x01) {
 				// Skip this filename.
@@ -877,8 +876,7 @@ const IFst::DirEnt *IsoPartition::readdir(IFst::Dir *dirp)
 		}
 
 		// Skip subdirectories with names "\x00" and "\x01".
-		// These are Joliet "special directory identifiers".
-		// TODO: Joliet subdirectory support?
+		// These are "special directory identifiers", representing "." and "..", respectively.
 		if ((dirEntry->flags & ISO_FLAG_DIRECTORY) && dirEntry->filename_length == 1) {
 			if (static_cast<uint8_t>(entry_filename[0]) <= 0x01) {
 				// Skip this filename.
