@@ -493,7 +493,9 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 
 		case 4:
 			// 16-color
-			img = ImageDecoder::fromLinearCI4(ImageDecoder::PixelFormat::Host_xRGB32, true,
+			// NOTE: fromLinearCI4() doesn't support Host_xRGB32,
+			// and we're setting the alpha channel to 0xFF ourselves.
+			img = ImageDecoder::fromLinearCI4(ImageDecoder::PixelFormat::Host_ARGB32, true,
 				width, half_height,
 				icon_data, icon_size,
 				pal_data.data(), pal_data.size() * sizeof(uint32_t),
