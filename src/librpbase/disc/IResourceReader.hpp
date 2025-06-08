@@ -119,6 +119,16 @@ public:
 	 * @return 0 on success; non-zero on error.
 	 */
 	virtual int load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *pVsFfi, StringFileInfo *pVsSfi) = 0;
+
+	/**
+	 * Look up a resource ID given a zero-based index.
+	 * Mostly useful for icon indexes.
+	 *
+	 * @param type	[in] Resource type ID
+	 * @param index	[in] Zero-based index
+	 * @return Resource ID, or negative POSIX error code on error.
+	 */
+	virtual int lookup_resource_ID(int type, int index) = 0;
 };
 
 typedef std::shared_ptr<IResourceReader> IResourceReaderPtr;

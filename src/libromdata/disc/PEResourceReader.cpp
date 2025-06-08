@@ -861,4 +861,35 @@ int PEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 	return 0;
 }
 
+/**
+ * Look up a resource ID given a zero-based index.
+ * Mostly useful for icon indexes.
+ *
+ * @param type	[in] Resource type ID
+ * @param index	[in] Zero-based index
+ * @param lang	[in] Language ID (-1 for "first entry")
+ * @return Resource ID, or negative POSIX error code on error.
+ */
+int PEResourceReader::lookup_resource_ID(int type, int index)
+{
+	if (index < 0) {
+		return -EINVAL;
+	}
+
+	// Get the resource directory for this type.
+	RP_D(PEResourceReader);
+	const PEResourceReaderPrivate::rsrc_dir_t *type_dir = d->getTypeDir(type);
+	if (!type_dir) {
+		return -ENOENT;
+	}
+
+	if (index >= static_cast<int>(type_dir->size())) {
+		// Zero-based index is out of bounds.
+		return -ENOENT;
+	}
+
+	// Return the ID at this index.
+	return type_dir->at(index).id;
+}
+
 }

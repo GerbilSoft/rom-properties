@@ -646,11 +646,13 @@ IRpFilePtr NEResourceReader::open(uint16_t type, int id, int lang)
 
 	// Get the directory for the specified type.
 	auto iter_dir = d->res_types.find(type);
-	if (iter_dir == d->res_types.end())
+	if (iter_dir == d->res_types.end()) {
 		return nullptr;
+	}
 	auto &dir = iter_dir->second;
-	if (dir.empty())
+	if (dir.empty()) {
 		return nullptr;
+	}
 	
 	const NEResourceReaderPrivate::ResTblEntry *entry = nullptr;
 	if (id == -1) {
@@ -779,6 +781,39 @@ int NEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 
 	// Version information read successfully.
 	return 0;
+}
+
+/**
+ * Look up a resource ID given a zero-based index.
+ * Mostly useful for icon indexes.
+ *
+ * @param type	[in] Resource type ID
+ * @param index	[in] Zero-based index
+ * @param lang	[in] Language ID (-1 for "first entry")
+ * @return Resource ID, or negative POSIX error code on error.
+ */
+int NEResourceReader::lookup_resource_ID(int type, int index)
+{
+	if (index < 0) {
+		return -EINVAL;
+	}
+
+	// Get the resource directory for this type.
+	RP_D(NEResourceReader);
+	auto iter_find = d->res_types.find(type);
+	if (iter_find == d->res_types.end()) {
+		// Not found.
+		return -ENOENT;
+	}
+
+	const NEResourceReaderPrivate::rsrc_dir_t &type_dir = iter_find->second;
+	if (index >= static_cast<int>(type_dir.size())) {
+		// Zero-based index is out of bounds.
+		return -ENOENT;
+	}
+
+	// Return the ID at this index.
+	return type_dir[index].id;
 }
 
 }

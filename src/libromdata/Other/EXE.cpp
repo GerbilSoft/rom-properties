@@ -405,8 +405,11 @@ rp_image_const_ptr EXEPrivate::loadSpecificIcon(int iconindex)
 	} else if (iconindex > 0) {
 		// Positive icon index
 		// This is a zero-based index into the RT_GROUP_ICON table.
-		// TODO: Add IResourceReader function to get a resource ID from a zero-based index.
-		return {};
+		resID = rsrcReader->lookup_resource_ID(RT_GROUP_ICON, iconindex);
+		if (resID < 0) {
+			// Not found.
+			return {};
+		}
 	} else {
 		// Negative icon index
 		// This is an actual resource ID.
