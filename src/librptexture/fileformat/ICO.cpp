@@ -322,7 +322,7 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 		const size_t fullsize = count * sizeof(GRPICONDIRENTRY);
 		auto &iconDirectory = res.iconDirectory;
 		iconDirectory.resize(count);
-		size_t size = file->seekAndRead(sizeof(GRPICONDIR), iconDirectory.data(), fullsize);
+		size_t size = f_icondir->seekAndRead(sizeof(GRPICONDIR), iconDirectory.data(), fullsize);
 		if (size != fullsize) {
 			// Seek and/or read error.
 			iconDirectory.clear();
@@ -341,7 +341,7 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 				return -ENOENT;
 			}
 
-			size_t size = file->read(p, sizeof(*p));
+			size_t size = f_icon->read(p, sizeof(*p));
 			if (size != sizeof(*p)) {
 				// Short read.
 				iconDirectory.clear();
@@ -877,6 +877,8 @@ rp_image_const_ptr ICOPrivate::loadImage(void)
 
 		case IconType::Icon_Win3:
 		case IconType::Cursor_Win3:
+		case IconType::IconRes_Win3:
+		case IconType::CursorRes_Win3:
 			// Windows 3.x icon or cursor
 			return loadImage_Win3();
 	}
@@ -949,6 +951,7 @@ void ICO::init(bool res)
 			d->dir.res = nullptr;
 			return;
 		}
+
 		size_t size = f_icondir->read(&d->icoHeader, sizeof(d->icoHeader));
 		if (size != sizeof(d->icoHeader)) {
 			d->file.reset();
@@ -966,6 +969,8 @@ void ICO::init(bool res)
 	}
 
 	// Determine the icon type.
+	// NOTE: d->iconType is already set if loading from a Windows resource.
+	// Only set it if it's still ICOPrivate::IconType::Unknown.
 	switch (le16_to_cpu(d->icoHeader.win1.format)) {
 		default:
 			// Not recognized...
@@ -987,12 +992,16 @@ void ICO::init(bool res)
 					}
 					return;
 				case ICO_WIN3_TYPE_ICON:
-					d->iconType = ICOPrivate::IconType::Icon_Win3;
+					if (d->iconType == ICOPrivate::IconType::Unknown) {
+						d->iconType = ICOPrivate::IconType::Icon_Win3;
+					}
 					d->mimeType = "image/vnd.microsoft.icon";
 					d->textureFormatName = "Windows 3.x Icon";
 					break;
 				case ICO_WIN3_TYPE_CURSOR:
-					d->iconType = ICOPrivate::IconType::Cursor_Win3;
+					if (d->iconType == ICOPrivate::IconType::Unknown) {
+						d->iconType = ICOPrivate::IconType::Cursor_Win3;
+					}
 					d->mimeType = "image/vnd.microsoft.cursor";
 					d->textureFormatName = "Windows 3.x Icon";
 					break;
@@ -1015,7 +1024,9 @@ void ICO::init(bool res)
 		case ICO_WIN1_FORMAT_ICON_DIB:
 		case ICO_WIN1_FORMAT_ICON_DDB:
 		case ICO_WIN1_FORMAT_ICON_BOTH:
-			d->iconType = ICOPrivate::IconType::Icon_Win1;
+			if (d->iconType == ICOPrivate::IconType::Unknown) {
+				d->iconType = ICOPrivate::IconType::Icon_Win1;
+			}
 			// TODO: Different MIME type for Windows 1.x?
 			d->mimeType = "image/vnd.microsoft.icon";
 			d->textureFormatName = "Windows 1.x Icon";
@@ -1024,7 +1035,9 @@ void ICO::init(bool res)
 		case ICO_WIN1_FORMAT_CURSOR_DIB:
 		case ICO_WIN1_FORMAT_CURSOR_DDB:
 		case ICO_WIN1_FORMAT_CURSOR_BOTH:
-			d->iconType = ICOPrivate::IconType::Cursor_Win1;
+			if (d->iconType == ICOPrivate::IconType::Unknown) {
+				d->iconType = ICOPrivate::IconType::Cursor_Win1;
+			}
 			// TODO: Different MIME type for Windows 1.x?
 			d->mimeType = "image/vnd.microsoft.cursor";
 			d->textureFormatName = "Windows 1.x Cursor";
@@ -1051,7 +1064,8 @@ void ICO::init(bool res)
 
 		case ICOPrivate::IconType::Icon_Win3:
 		case ICOPrivate::IconType::Cursor_Win3:
-			// TODO: Need to check BITMAPINFOHEADER, BITMAPCOREHEADER, or PNG header.
+		case ICOPrivate::IconType::IconRes_Win3:
+		case ICOPrivate::IconType::CursorRes_Win3:
 			if (!d->dir.ico->pBestIcon) {
 				// No "best" icon...
 				d->file.reset();

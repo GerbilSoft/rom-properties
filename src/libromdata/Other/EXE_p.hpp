@@ -103,6 +103,12 @@ public:
 	IResourceReaderPtr rsrcReader;
 
 	/**
+	 * Make sure the resource reader is loaded.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int loadResourceReader(void);
+
+	/**
 	 * Add VS_VERSION_INFO fields.
 	 *
 	 * NOTE: A subtab is NOT created here; if one is desired,
@@ -112,6 +118,15 @@ public:
 	 * @param pVsSfi	[in,opt] IResourceReader::StringFileInfo
 	 */
 	void addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const IResourceReader::StringFileInfo *pVsSfi);
+
+	// Icon
+	LibRpTexture::rp_image_ptr img_icon;
+
+	/**
+	 * Load the icon.
+	 * @return Icon, or nullptr on error.
+	 */
+	LibRpTexture::rp_image_const_ptr loadIcon(void);
 
 	/** MZ-specific **/
 
