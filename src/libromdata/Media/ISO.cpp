@@ -88,9 +88,14 @@ public:
 	// actual sector information.
 	unsigned int sector_offset;
 
-	// UDF version
-	// TODO: Descriptors?
-	const char *s_udf_version;
+	// Joliet level
+	enum class JolietSVDType : uint8_t {
+		None		= 0,
+		UCS2_Level1	= 1,	// NOTE: UCS-2 BE
+		UCS2_Level2	= 2,	// NOTE: UCS-2 BE
+		UCS2_Level3	= 3,	// NOTE: UCS-2 BE
+	};
+	JolietSVDType jolietSVDType;
 
 public:
 	// El Torito boot catalog LBA. (present if non-zero)
@@ -103,6 +108,11 @@ public:
 		BOOT_PLATFORM_EFI	= (1U << 1),
 	};
 	uint32_t boot_platforms;
+
+public:
+	// UDF version
+	// TODO: Descriptors?
+	const char *s_udf_version;
 
 public:
 	/**
@@ -259,9 +269,10 @@ ISOPrivate::ISOPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, sector_offset(0)
-	, s_udf_version(nullptr)
+	, jolietSVDType(JolietSVDType::None)
 	, boot_catalog_LBA(0)
 	, boot_platforms(0)
+	, s_udf_version(nullptr)
 {
 	// Clear the disc header structs.
 	memset(&pvd, 0, sizeof(pvd));
@@ -306,6 +317,7 @@ void ISOPrivate::checkVolumeDescriptors(void)
 				// Found the terminator.
 				foundTerminator = true;
 				break;
+
 			case ISO_VDT_BOOT_RECORD:
 				if (boot_LBA != 0)
 					break;
@@ -315,6 +327,43 @@ void ISOPrivate::checkVolumeDescriptors(void)
 					boot_LBA = le32_to_cpu(vd.boot.boot_catalog_addr);
 				}
 				break;
+
+			case ISO_VDT_SUPPLEMENTARY: {
+				if (vd.header.version == ISO_VD_VERSION) {
+					// Check the escape sequences.
+					// Escape sequence format: '%', '/', x
+					const char *const p_end = &vd.pri.svd_escape_sequences[sizeof(vd.pri.svd_escape_sequences)-3];
+					for (const char *p = vd.pri.svd_escape_sequences; p < p_end && *p != '\0'; p++) {
+						if (p[0] != '%' || p[1] != '/') {
+							continue;
+						}
+
+						// Check if this is a valid UCS-2 level seqeunce.
+						// NOTE: Using the highest level specified.
+						switch (p[2]) {
+							case '@':
+								if (jolietSVDType < JolietSVDType::UCS2_Level1) {
+									jolietSVDType = JolietSVDType::UCS2_Level1;
+								}
+								break;
+							case 'C':
+								if (jolietSVDType < JolietSVDType::UCS2_Level2) {
+									jolietSVDType = JolietSVDType::UCS2_Level2;
+								}
+								break;
+							case 'E':
+								if (jolietSVDType < JolietSVDType::UCS2_Level3) {
+									jolietSVDType = JolietSVDType::UCS2_Level3;
+								}
+								break;
+							default:
+								break;
+						}
+					}
+				}
+				break;
+			}
+
 			default:
 				break;
 		}
@@ -1047,7 +1096,7 @@ int ISO::loadFieldData(void)
 		return -EIO;
 	}
 
-	d->fields.reserve(18);	// Maximum of 18 fields.
+	d->fields.reserve(19);	// Maximum of 19 fields.
 
 	// NOTE: All fields are space-padded. (0x20, ' ')
 	// TODO: ascii_to_utf8()?
@@ -1093,7 +1142,7 @@ int ISO::loadFieldData(void)
 	d->fields.addField_string(C_("ISO", "Sector Format"), sector_format);
 
 	switch (d->discType) {
-		case ISOPrivate::DiscType::ISO9660:
+		case ISOPrivate::DiscType::ISO9660: {
 			// ISO-9660
 			d->fields.setTabName(0, C_("ISO", "ISO-9660 PVD"));
 
@@ -1121,7 +1170,17 @@ int ISO::loadFieldData(void)
 					v_boot_platforms_names, 0, d->boot_platforms);
 
 			}
+
+			// Joliet SVD
+			const char *const s_joliet_title = C_("ISO", "Joliet");
+			if (d->jolietSVDType == ISOPrivate::JolietSVDType::None) {
+				d->fields.addField_string(s_joliet_title, C_("ISO|JolietSVDType", "Not Present"));
+			} else {
+				d->fields.addField_string(s_joliet_title,
+					fmt::format(FRUN("UCS-2 Level {:d}"), static_cast<uint8_t>(d->jolietSVDType)));
+			}
 			break;
+		}
 
 		case ISOPrivate::DiscType::HighSierra:
 			// High Sierra
