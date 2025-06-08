@@ -378,14 +378,53 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 			break;
 	}
 
+	// Apply the icon mask.
+	if (bitcount < 8) {
+		// Keep the icon as CI8 and add a transparency color.
+		// TODO: Set sBIT.
+		assert(img->format() == rp_image::Format::CI8);
+		uint8_t tr_idx = (1U << bitcount);
+		img->palette()[tr_idx] = 0;
+		img->set_tr_idx(tr_idx);
+
+		uint8_t *bits = static_cast<uint8_t*>(img->bits());
+		const uint8_t *mask = mask_data;
+		int dest_stride_adj = img->stride() - width;
+		int i = 0;
+		for (unsigned int y = half_height; y > 0; y--) {
+			// TODO: Mask stride adjustment?
+			unsigned int mask_bits_remain = 8;
+			uint8_t mask_byte = *mask++;
+
+			for (unsigned int x = width; x > 0; x--, bits++, mask_byte <<= 1, mask_bits_remain--) {
+				if (mask_bits_remain == 0) {
+					// Get the next mask byte.
+					mask_byte = *mask++;
+					mask_bits_remain = 8;
+				}
+
+				if (mask_byte & 0x80) {
+					// Mask the pixel.
+					// TODO: For 1bpp, if the destination pixel is white, don't mask it.
+					// This would be "invert" mode.
+					*bits = tr_idx;
+				}
+			}
+
+			// Next row.
+			bits += dest_stride_adj;
+		}
+	} else {
+		// TODO: Icon masks for 8-bit, 16-bit, 24-bit, and 32-bit color icons.
+	}
+
+	// Flip the icon after the mask is processed.
 	if (is_upside_down) {
 		rp_image_ptr flipimg = img->flip(rp_image::FLIP_V);
 		if (flipimg) {
 			img = std::move(flipimg);
 		}
 	}
-
-	// TODO: Apply the icon mask.
 
 	return img;
 }
