@@ -631,7 +631,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 	rp::uvector<uint32_t> pal_data;
 	if (bitcount <= 8) {
 		const unsigned int palette_count = (1U << bitcount);
-		const size_t palette_size = palette_count * sizeof(uint32_t);
+		const unsigned int palette_size = palette_count * static_cast<unsigned int>(sizeof(uint32_t));
 		pal_data.resize(palette_count);
 		size_t size = f_icon->seekAndRead(addr, pal_data.data(), palette_size);
 		if (size != palette_size) {
