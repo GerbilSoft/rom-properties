@@ -14,9 +14,6 @@
 #include "../iso_structs.h"
 #include "hsfs_structs.h"
 
-// TESTING
-#include "../disc/IsoPartition.hpp"
-
 // Other rom-properties libraries
 #include "librpbase/Achievements.hpp"
 #include "librpbase/disc/PartitionFile.hpp"
@@ -26,10 +23,18 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
+// ISO-9660 file system access for AUTORUN.INF
+#include "../disc/IsoPartition.hpp"
+#include "ini.h"
+
+// Windows icon handler
+#include "librptexture/fileformat/ICO.hpp"
+using namespace LibRpTexture;
+
 // C++ STL classes
-#include <typeinfo>
 using std::array;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -192,6 +197,29 @@ public:
 	{
 		return (likely(discType != DiscType::CDi) ? lm32.he : be32_to_cpu(lm32.be));
 	}
+
+public:
+	// Icon
+	rp_image_ptr img_icon;
+
+	// Icon filename (from AUTORUN.INF)
+	string icon_filename;
+
+	/**
+	 * ini.h callback for parsing AUTORUN.INF.
+	 * @param user		[in] User data parameter (this)
+	 * @param section	[in] Section name
+	 * @param name		[in] Value name
+	 * @param value		[in] Value
+	 * @return 0 to continue; 1 to stop.
+	 */
+	static int parse_autorun_inf(void *user, const char *section, const char *name, const char *value);
+
+	/**
+	 * Load the icon.
+	 * @return Icon, or nullptr on error.
+	 */
+	rp_image_const_ptr loadIcon(void);
 };
 
 ROMDATA_IMPL(ISO)
@@ -576,6 +604,108 @@ void ISOPrivate::addPVDTimestamps_metaData(RomMetaData *metaData, const T *pvd)
 		pvd_time_to_unix_time(&pvd->btime));
 }
 
+/**
+ * ini.h callback for parsing AUTORUN.INF.
+ * @param user		[in] User data parameter (this)
+ * @param section	[in] Section name
+ * @param name		[in] Value name
+ * @param value		[in] Value
+ * @return 0 to continue; 1 to stop.
+ */
+int ISOPrivate::parse_autorun_inf(void *user, const char *section, const char *name, const char *value)
+{
+	// Verify the correct section.
+	if (strcasecmp(section, "autorun") != 0) {
+		// Not "[autorun]".
+		return 0;
+	}
+
+	// Verify the correct key.
+	if (strcasecmp(name, "icon")) {
+		// Not "icon".
+		return 0;
+	}
+
+	// Found the icon filename.
+	// Save the value for later.
+	ISOPrivate *const d = static_cast<ISOPrivate*>(user);
+	d->icon_filename = value;
+	return 1;
+}
+
+/**
+ * Load the icon.
+ * @return Icon, or nullptr on error.
+ */
+rp_image_const_ptr ISOPrivate::loadIcon(void)
+{
+	if (img_icon) {
+		// Icon has already been loaded.
+		return img_icon;
+	} else if (!this->isValid || static_cast<int>(this->discType) < 0) {
+		// Can't load the icon.
+		return {};
+	}
+
+	// Attempt to load AUTORUN.INF from the ISO-9660 file system.
+	IsoPartitionPtr isoPartition = std::make_shared<IsoPartition>(file, 0, 0);
+	if (!isoPartition->isOpen()) {
+		// Unable to open the ISO-9660 file system.
+		return {};
+	}
+
+	IRpFilePtr f_file = isoPartition->open("/AUTORUN.INF");
+	if (!f_file) {
+		// Unable to open AUTORUN.INF.
+		return {};
+	}
+
+	// AUTORUN.INF should be 2048 bytes or less.
+	static constexpr size_t AUTORUN_INF_SIZE_MAX = 2048;
+	const off64_t autorun_inf_size = f_file->size();
+	if (autorun_inf_size > static_cast<off64_t>(AUTORUN_INF_SIZE_MAX)) {
+		// File is too big.
+		return {};
+	}
+
+	// Read the entire file into memory.
+	char buf[AUTORUN_INF_SIZE_MAX + 1];
+	size_t size = f_file->read(buf, AUTORUN_INF_SIZE_MAX);
+	if (size != static_cast<size_t>(autorun_inf_size)) {
+		// Short read.
+		return {};
+	}
+	f_file.reset();
+	buf[static_cast<size_t>(autorun_inf_size)] = '\0';
+
+	// Parse AUTORUN.INF.
+	// TODO: Save other AUTORUN data for a tab?
+	icon_filename.clear();
+	ini_parse_string(buf, parse_autorun_inf, this);
+	if (icon_filename.empty()) {
+		// No icon...
+		return {};
+	}
+
+	// Open the icon file from the disc.
+	// FIXME: Handle EXEs, with optional index.
+	// Assuming .ico only for now.
+	f_file = isoPartition->open(icon_filename.c_str());
+	if (!f_file) {
+		// Unable to open the icon file.
+		return {};
+	}
+
+	unique_ptr<ICO> ico(new ICO(f_file));
+	if (!ico->isValid()) {
+		// Not a Windows icon file.
+		return {};
+	}
+
+	// Get the image.
+	return ico->image();
+}
+
 /** ISO **/
 
 /**
@@ -778,6 +908,94 @@ const char *ISO::systemName(unsigned int type) const
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t ISO::supportedImageTypes_static(void)
+{
+	return IMGBF_INT_ICON;
+}
+
+/**
+ * Get a bitfield of image types this object can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t ISO::supportedImageTypes(void) const
+{
+	return supportedImageTypes_static();
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> ISO::supportedImageSizes_static(ImageType imageType)
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+		case IMG_INT_ICON:
+			// Assuming 32x32.
+			return {{nullptr, 32, 32, 0}};
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return {};
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> ISO::supportedImageSizes(ImageType imageType) const
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+		case IMG_INT_ICON:
+			// Assuming 32x32.
+			// TODO: Load the icon and check?
+			return {{nullptr, 32, 32, 0}};
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return {};
+}
+
+/**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t ISO::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	RP_D(const ISO);
+	uint32_t ret = 0;
+	switch (imageType) {
+		case IMG_INT_ICON:
+			// TODO: Use nearest-neighbor for < 64x64.
+			break;
+			break;
+
+		default:
+			break;
+	}
+	return ret;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -914,17 +1132,6 @@ int ISO::loadFieldData(void)
 			d->s_udf_version);
 	}
 
-	// TESTING: readdir()
-	IsoPartition *iso = new IsoPartition(d->file, 0, 0);
-	auto dirp = iso->opendir("/NT3x");
-	printf("dirp: %p\n", dirp);
-	const IFst::DirEnt *dirent;
-	while ((dirent = iso->readdir(dirp)) != nullptr) {
-		printf("- type %d, name: %s\n", dirent->type, dirent->name);
-	}
-	int ret = iso->closedir(dirp);
-	printf("closedir: %d\n", ret);
-
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
 }
@@ -967,6 +1174,26 @@ int ISO::loadMetaData(void)
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
+}
+
+/**
+ * Load an internal image.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int ISO::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
+{
+	ASSERT_loadInternalImage(imageType, pImage);
+	RP_D(ISO);
+	ROMDATA_loadInternalImage_single(
+		IMG_INT_ICON,	// ourImageType
+		d->file,	// file
+		d->isValid,	// isValid
+		d->discType,	// romType
+		d->img_icon,	// imgCache
+		d->loadIcon);	// func
 }
 
 /**
