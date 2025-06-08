@@ -39,8 +39,15 @@ public:
 	off64_t partition_offset;
 	off64_t partition_size;		// Calculated partition size
 
-	// ISO primary volume descriptor
-	ISO_Primary_Volume_Descriptor pvd;
+	// ISO volume descriptors
+	ISO_Primary_Volume_Descriptor pvd, svd;
+	enum class JolietSVDType : uint8_t {
+		None		= 0,
+		UCS2_Level1	= 1,	// NOTE: UCS-2 BE
+		UCS2_Level2	= 2,	// NOTE: UCS-2 BE
+		UCS2_Level3	= 3,	// NOTE: UCS-2 BE
+	};
+	JolietSVDType jolietSVDType;
 
 	// Directories
 	// - Key: Directory name, WITHOUT leading slash. (Root == empty string) [cp1252]
@@ -157,11 +164,13 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q,
 	: q_ptr(q)
 	, partition_offset(partition_offset)
 	, partition_size(0)
+	, jolietSVDType(JolietSVDType::None)
 	, iso_start_offset(iso_start_offset)
 	, fstDirCount(0)
 {
-	// Clear the PVD struct.
+	// Clear the Volume Descriptor structs.
 	memset(&pvd, 0, sizeof(pvd));
+	memset(&svd, 0, sizeof(svd));
 
 	if (!q->m_file) {
 		q->m_lastError = EIO;
@@ -195,6 +204,47 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q,
 		// Invalid volume descriptor.
 		q->m_file.reset();
 		return;
+	}
+
+	// Attempt to load the Supplementary Volume Descriptor.
+	// TODO: Keep loading VDs until we reach 0xFF?
+	size = q->m_file->seekAndRead(partition_offset + ISO_SVD_ADDRESS_2048, &svd, sizeof(svd));
+	// Verify the signature and volume descriptor type.
+	if (size == sizeof(svd) &&
+	    svd.header.type == ISO_VDT_SUPPLEMENTARY && svd.header.version == ISO_VD_VERSION &&
+	    !memcmp(svd.header.identifier, ISO_VD_MAGIC, sizeof(svd.header.identifier)))
+	{
+		// This is a supplementary volume descriptor.
+		// Check the escape sequences.
+		// Escape sequence format: '%', '/', x
+		const char *const p_end = &svd.svd_escape_sequences[sizeof(svd.svd_escape_sequences)-3];
+		for (const char *p = svd.svd_escape_sequences; p < p_end && *p != '\0'; p++) {
+			if (p[0] != '%' || p[1] != '/') {
+				continue;
+			}
+
+			// Check if this is a valid UCS-2 level seqeunce.
+			// NOTE: Using the highest level specified.
+			switch (p[2]) {
+				case '@':
+					if (jolietSVDType < JolietSVDType::UCS2_Level1) {
+						jolietSVDType = JolietSVDType::UCS2_Level1;
+					}
+					break;
+				case 'C':
+					if (jolietSVDType < JolietSVDType::UCS2_Level2) {
+						jolietSVDType = JolietSVDType::UCS2_Level2;
+					}
+					break;
+				case 'E':
+					if (jolietSVDType < JolietSVDType::UCS2_Level3) {
+						jolietSVDType = JolietSVDType::UCS2_Level3;
+					}
+					break;
+				default:
+					break;
+			}
+		}
 	}
 
 	// Load the root directory.
@@ -255,6 +305,10 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup_int(const DirData_t *pDir, const
 	const ISO_DirEntry *dirEntry_found = nullptr;
 	const uint8_t *p = pDir->data();
 	const uint8_t *const p_end = p + pDir->size();
+
+	// Temporary buffer for converting Joliet UCS-2 filenames to cp1252.
+	char joliet_cp1252_buf[128];
+
 	while ((p + sizeof(ISO_DirEntry)) < p_end) {
 		const ISO_DirEntry *dirEntry = reinterpret_cast<const ISO_DirEntry*>(p);
 		if (dirEntry->entry_length == 0) {
@@ -278,7 +332,7 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup_int(const DirData_t *pDir, const
 			break;
 		}
 
-		const char *const entry_filename = reinterpret_cast<const char*>(p) + sizeof(*dirEntry);
+		const char *entry_filename = reinterpret_cast<const char*>(p) + sizeof(*dirEntry);
 		if (entry_filename + dirEntry->filename_length > reinterpret_cast<const char*>(p_end)) {
 			// Filename is out of bounds.
 			break;
@@ -295,10 +349,27 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup_int(const DirData_t *pDir, const
 			}
 		}
 
+		// If using Joliet, the filename is encoded as UCS-2 (UTF-16).
+		// Use a quick-and-dirty (and not necessarily accurate) conversion to cp1252.
+		// FIXME: Proper conversion?
+		uint8_t dirEntry_filename_len = dirEntry->filename_length;
+		if (jolietSVDType > JolietSVDType::None) {
+			// dirEntry_filename_len is in bytes, which means it's double
+			// the number of UCS-2 code points.
+			// NOTE: UCS-2 *Big-Endian*.
+			dirEntry_filename_len /= 2;
+			unsigned int i = 0;
+			for (; i < dirEntry_filename_len; i++) {
+				joliet_cp1252_buf[i] = entry_filename[(i * 2) + 1];
+			}
+			joliet_cp1252_buf[i] = '\0';
+			entry_filename = joliet_cp1252_buf;
+		}
+
 		// Check the filename.
 		// 1990s and early 2000s CD-ROM games usually have
 		// ";1" filenames, so check for that first.
-		if (dirEntry->filename_length == filename_len + 2) {
+		if (dirEntry_filename_len == filename_len + 2) {
 			// +2 length match.
 			// This might have ";1".
 			if (!strncasecmp(entry_filename, filename, filename_len)) {
@@ -320,7 +391,7 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup_int(const DirData_t *pDir, const
 					break;
 				}
 			}
-		} else if (dirEntry->filename_length == filename_len) {
+		} else if (dirEntry_filename_len == filename_len) {
 			// Exact length match.
 			if (!strncasecmp(entry_filename, filename, filename_len)) {
 				// Found it!
@@ -396,7 +467,10 @@ const IsoPartitionPrivate::DirData_t *IsoPartitionPrivate::getDirectory(const ch
 		// Loading the root directory.
 
 		// Check the root directory entry.
-		const ISO_DirEntry *const rootdir = &pvd.dir_entry_root;
+		const ISO_DirEntry *const rootdir = (jolietSVDType > JolietSVDType::None)
+			? &svd.dir_entry_root
+			: &pvd.dir_entry_root;
+
 		if (rootdir->size.he > 16*1024*1024) {
 			// Root directory is too big.
 			q->m_lastError = EIO;
@@ -587,7 +661,7 @@ time_t IsoPartitionPrivate::parseTimestamp(const ISO_Dir_DateTime_t *isofiletime
 IsoPartition::IsoPartition(const IRpFilePtr &discReader, off64_t partition_offset, int iso_start_offset)
 	: super(discReader)
 	, d_ptr(new IsoPartitionPrivate(this, partition_offset, iso_start_offset))
-{}
+{ }
 
 IsoPartition::~IsoPartition()
 {
@@ -842,9 +916,30 @@ const IFst::DirEnt *IsoPartition::readdir(IFst::Dir *dirp)
 	// TODO: Remove ";1" from the filename, if present?
 	char *extra = static_cast<char*>(dirp->entry.extra);
 	delete[] extra;
-	extra = new char[dirEntry->filename_length + 1];
-	memcpy(extra, entry_filename, dirEntry->filename_length);
-	extra[dirEntry->filename_length] = '\0';
+
+	// If using Joliet, the filename is encoded as UCS-2 (UTF-16).
+	// Use a quick-and-dirty (and not necessarily accurate) conversion to cp1252.
+	// FIXME: Proper conversion?
+	// TODO: Convert to UTF-8 for readdir()?
+	RP_D(IsoPartition);
+	uint8_t dirEntry_filename_len = dirEntry->filename_length;
+	if (d->jolietSVDType > IsoPartitionPrivate::JolietSVDType::None) {
+		// dirEntry_filename_len is in bytes, which means it's double
+		// the number of UCS-2 code points.
+		// NOTE: UCS-2 *Big-Endian*.
+		dirEntry_filename_len /= 2;
+		extra = new char[dirEntry_filename_len + 1];
+		unsigned int i = 0;
+		for (; i < dirEntry_filename_len; i++) {
+			extra[i] = entry_filename[(i * 2) + 1];
+		}
+		extra[i] = '\0';
+	} else {
+		// TODO: Convert from cp1252 to UTF-8 for readdir()?
+		extra = new char[dirEntry_filename_len + 1];
+		memcpy(extra, entry_filename, dirEntry_filename_len);
+		extra[dirEntry_filename_len] = '\0';
+	}
 
 	dirp->entry.name = extra;
 	dirp->entry.extra = extra;
