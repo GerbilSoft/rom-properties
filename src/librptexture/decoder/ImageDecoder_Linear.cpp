@@ -309,6 +309,7 @@ rp_image_ptr fromLinearCI8(PixelFormat px_format,
 	}
 
 	// Verify palette size.
+	// TODO: Table to map PixelFormat to bpp?
 	switch (px_format) {
 		case PixelFormat::RGB888:
 			// 24-bit palette required.
@@ -320,6 +321,9 @@ rp_image_ptr fromLinearCI8(PixelFormat px_format,
 
 		case PixelFormat::BGR888_ABGR7888:
 		case PixelFormat::Host_ARGB32:
+		case PixelFormat::Swap_ARGB32:
+		case PixelFormat::Host_xRGB32:
+		case PixelFormat::Swap_xRGB32:
 			// 32-bit palette required.
 			assert(pal_siz >= 256*4);
 			if (pal_siz < 256*4) {
