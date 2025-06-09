@@ -190,13 +190,14 @@ int NEResourceReaderPrivate::loadResTbl(void)
 	int ret = -EIO;
 	while (pos < rsrc_tbl_size) {
 		// Read the next type ID.
-		if ((pos + 2) >= rsrc_tbl_size) {
+		if ((pos + 2) > rsrc_tbl_size) {
 			// I/O error; should be at least 2 bytes left...
 			break;
 		}
 		const NE_TYPEINFO *typeInfo = reinterpret_cast<const NE_TYPEINFO*>(&rsrcTblData[pos]);
 		const uint16_t rtTypeID = le16_to_cpu(typeInfo->rtTypeID);
 		if (rtTypeID == 0) {
+			// typeInfo is actually pointing to rscEndTypes.
 			// End of rscTypes[].
 			ret = 0;
 			break;
