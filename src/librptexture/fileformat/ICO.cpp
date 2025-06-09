@@ -273,6 +273,7 @@ ICOPrivate::ICOPrivate(ICO *q, const IResourceReaderPtr &resReader, uint16_t typ
 	} else {
 		// Unrecognized?
 		dir.v = nullptr;
+		return;
 	}
 
 	// Initialize the icon directory union.
