@@ -271,7 +271,6 @@ ICOPrivate::ICOPrivate(ICO *q, const IResourceReaderPtr &resReader, uint16_t typ
 	memset(&icoHeader, 0, sizeof(icoHeader));
 
 	// Determine the icon type here.
-	assert(type == RT_ICON || type == RT_CURSOR || type == RT_GROUP_ICON || type == RT_GROUP_CURSOR);
 	switch (type) {
 		default:
 			assert(!"Unsupported resource type");
@@ -333,7 +332,7 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 
 		// Open the RT_GROUP_ICON / RT_GROUP_CURSOR resource.
 		auto &res = *(dir.res);
-		IRpFilePtr f_icondir = res.resReader->open(rt, res.id, res.lang);
+		IRpFilePtr f_icondir = res.resReader->open(res.type, res.id, res.lang);
 		if (!f_icondir) {
 			// Unable to open the RT_GROUP_ICON / RT_GROUP_CURSOR.
 			return -ENOENT;
