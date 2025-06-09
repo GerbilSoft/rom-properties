@@ -19,6 +19,7 @@ namespace LibRpBase {
 namespace LibRomData {
 
 ROMDATA_DECL_BEGIN(ISO)
+ROMDATA_DECL_CLOSE()
 
 public:
 	/**

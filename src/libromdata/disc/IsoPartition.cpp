@@ -1002,6 +1002,7 @@ IRpFilePtr IsoPartition::open(const char *filename)
 	const ISO_DirEntry *const dirEntry = d->lookup(filename);
 	if (!dirEntry) {
 		// Not found.
+		m_lastError = ENOENT;
 		return nullptr;
 	}
 

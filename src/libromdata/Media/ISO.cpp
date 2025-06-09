@@ -36,6 +36,7 @@ using namespace LibRpTexture;
 using std::array;
 using std::string;
 using std::unique_ptr;
+using std::unordered_map;
 using std::vector;
 
 namespace LibRomData {
@@ -213,8 +214,18 @@ public:
 	// Icon
 	rp_image_ptr img_icon;
 
-	// Icon filename (from AUTORUN.INF)
-	string icon_filename;
+	// IsoPartition
+	IsoPartitionPtr isoPartition;
+
+	/**
+	 * Open the ISO-9660 partition.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int openIsoPartition(void);
+
+	// AUTORUN.INF contents
+	// Keys are stored in lowercase, in the format "section|key".
+	unordered_map<string, string> autorun_inf;
 
 	/**
 	 * ini.h callback for parsing AUTORUN.INF.
@@ -225,6 +236,13 @@ public:
 	 * @return 0 to continue; 1 to stop.
 	 */
 	static int parse_autorun_inf(void *user, const char *section, const char *name, const char *value);
+
+	/**
+	 * Load AUTORUN.INF.
+	 * AUTORUN.INF will be loaded into autorun_inf.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int loadAutorunInf(void);
 
 	/**
 	 * Load the icon.
@@ -654,6 +672,31 @@ void ISOPrivate::addPVDTimestamps_metaData(RomMetaData *metaData, const T *pvd)
 }
 
 /**
+ * Open the ISO-9660 partition.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int ISOPrivate::openIsoPartition(void)
+{
+	if (isoPartition) {
+		// ISO-9660 partition is already open.
+		return 0;
+	} else if (!file) {
+		// File is not open.
+		return -EBADF;
+	}
+
+	isoPartition = std::make_shared<IsoPartition>(file, 0, 0);
+	if (!isoPartition->isOpen()) {
+		// Unable to open the ISO-9660 file system.
+		// TODO: Better error code?
+		isoPartition.reset();
+		return -EIO;
+	}
+
+	return 0;
+}
+
+/**
  * ini.h callback for parsing AUTORUN.INF.
  * @param user		[in] User data parameter (this)
  * @param section	[in] Section name
@@ -663,23 +706,78 @@ void ISOPrivate::addPVDTimestamps_metaData(RomMetaData *metaData, const T *pvd)
  */
 int ISOPrivate::parse_autorun_inf(void *user, const char *section, const char *name, const char *value)
 {
-	// Verify the correct section.
-	if (strcasecmp(section, "autorun") != 0) {
-		// Not "[autorun]".
-		return 0;
-	}
+	// TODO: Character encoding? Assuming ASCII.
 
-	// Verify the correct key.
-	if (strcasecmp(name, "icon")) {
-		// Not "icon".
-		return 0;
+	// Concatenate the section and key names.
+	string s_name;
+	if (section[0] != '\0') {
+		s_name = section;
+		s_name += '|';
 	}
+	s_name += name;
 
-	// Found the icon filename.
+	// Convert the name to lowercase.
+	std::transform(s_name.begin(), s_name.end(), s_name.begin(),
+		[](char c) noexcept -> char { return std::tolower(c); });
+
 	// Save the value for later.
 	ISOPrivate *const d = static_cast<ISOPrivate*>(user);
-	d->icon_filename = value;
-	return 1;
+	auto ret = d->autorun_inf.emplace(std::move(s_name), value);
+	// NOTE: This will stop processing if a duplicate key is found.
+	return (ret.second ? 0 : 1);
+}
+
+/**
+ * Load AUTORUN.INF.
+ * AUTORUN.INF will be loaded into autorun_inf.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int ISOPrivate::loadAutorunInf(void)
+{
+	if (!autorun_inf.empty()) {
+		// AUTORUN.INF is already loaded.
+		return 0;
+	}
+
+	// Make sure the ISO-9660 file system is open.
+	int ret = openIsoPartition();
+	if (ret != 0) {
+		return ret;
+	}
+
+	// Attempt to load AUTORUN.INF from the ISO-9660 file system.
+	IRpFilePtr f_autorun_inf = isoPartition->open("/AUTORUN.INF");
+	if (!f_autorun_inf) {
+		// Unable to open AUTORUN.INF.
+		return -isoPartition->lastError();
+	}
+
+	// AUTORUN.INF should be 2048 bytes or less.
+	static constexpr size_t AUTORUN_INF_SIZE_MAX = 2048;
+	const off64_t autorun_inf_size = f_autorun_inf->size();
+	if (autorun_inf_size > static_cast<off64_t>(AUTORUN_INF_SIZE_MAX)) {
+		// File is too big.
+		return -ENOMEM;
+	}
+
+	// Read the entire file into memory.
+	char buf[AUTORUN_INF_SIZE_MAX + 1];
+	size_t size = f_autorun_inf->read(buf, AUTORUN_INF_SIZE_MAX);
+	if (size != static_cast<size_t>(autorun_inf_size)) {
+		// Short read.
+		return {};
+	}
+	buf[static_cast<size_t>(autorun_inf_size)] = '\0';
+
+	// Parse AUTORUN.INF.
+	// TODO: Save other AUTORUN data for a tab?
+	ret = ini_parse_string(buf, parse_autorun_inf, this);
+	if (ret < 0) {
+		// Failed to parse AUTORUN.INF.
+		autorun_inf.clear();
+		return -EIO;
+	}
+	return 0;
 }
 
 /**
@@ -696,44 +794,26 @@ rp_image_const_ptr ISOPrivate::loadIcon(void)
 		return {};
 	}
 
-	// Attempt to load AUTORUN.INF from the ISO-9660 file system.
-	IsoPartitionPtr isoPartition = std::make_shared<IsoPartition>(file, 0, 0);
-	if (!isoPartition->isOpen()) {
-		// Unable to open the ISO-9660 file system.
+	// Make sure the ISO-9660 file system is open.
+	int ret = openIsoPartition();
+	if (ret != 0) {
 		return {};
 	}
 
-	IRpFilePtr f_file = isoPartition->open("/AUTORUN.INF");
-	if (!f_file) {
-		// Unable to open AUTORUN.INF.
+	// Make sure AUTORUN.INF is loaded.
+	ret = loadAutorunInf();
+	if (ret != 0 || autorun_inf.empty()) {
+		// Unable to load AUTORUN.INF.
 		return {};
 	}
 
-	// AUTORUN.INF should be 2048 bytes or less.
-	static constexpr size_t AUTORUN_INF_SIZE_MAX = 2048;
-	const off64_t autorun_inf_size = f_file->size();
-	if (autorun_inf_size > static_cast<off64_t>(AUTORUN_INF_SIZE_MAX)) {
-		// File is too big.
-		return {};
-	}
-
-	// Read the entire file into memory.
-	char buf[AUTORUN_INF_SIZE_MAX + 1];
-	size_t size = f_file->read(buf, AUTORUN_INF_SIZE_MAX);
-	if (size != static_cast<size_t>(autorun_inf_size)) {
-		// Short read.
-		return {};
-	}
-	buf[static_cast<size_t>(autorun_inf_size)] = '\0';
-
-	// Parse AUTORUN.INF.
-	// TODO: Save other AUTORUN data for a tab?
-	icon_filename.clear();
-	ini_parse_string(buf, parse_autorun_inf, this);
-	if (icon_filename.empty()) {
+	// Get the icon filename.
+	auto iter = autorun_inf.find("autorun|icon");
+	if (iter == autorun_inf.end()) {
 		// No icon...
 		return {};
 	}
+	string icon_filename = iter->second;
 
 	// Check if there's an icon index specified.
 	// - Positive: Zero-based index
@@ -755,7 +835,7 @@ rp_image_const_ptr ISOPrivate::loadIcon(void)
 	}
 
 	// Open the icon file from the disc.
-	f_file = isoPartition->open(icon_filename.c_str());
+	IRpFilePtr f_file = isoPartition->open(icon_filename.c_str());
 	if (!f_file) {
 		// Unable to open the icon file.
 		return {};
@@ -878,7 +958,19 @@ ISO::ISO(const IRpFilePtr &file)
 	}
 }
 
-/** ROM detection functions. **/
+/**
+ * Close the opened file.
+ */
+void ISO::close(void)
+{
+	RP_D(ISO);
+	d->isoPartition.reset();
+
+	// Call the superclass function.
+	super::close();
+}
+
+/** ROM detection functions **/
 
 /**
  * Check for a valid PVD.
