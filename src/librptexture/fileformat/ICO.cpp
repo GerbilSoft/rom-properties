@@ -714,7 +714,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 	switch (bitcount) {
 		default:
 			// Not supported yet...
-			assert(!"Win3.x icon format is not supported!");
+			assert(!"This Win3.x icon format is not supported yet!");
 			return {};
 
 		case 1:
