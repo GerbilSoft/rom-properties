@@ -838,4 +838,19 @@ int NEResourceReader::lookup_resource_ID(int type, int index)
 	return type_dir[index].id;
 }
 
+/**
+ * Do we have any resources of the specified type?
+ * @param type	[in] Resource type ID
+ * @return True if we have these resources; false if we don't.
+ */
+bool NEResourceReader::has_resource_type(int type)
+{
+	// NOTE: Type and resource IDs have the high bit set for integers.
+	// We're only supporting integer IDs, so set the high bits here.
+	type |= 0x8000;
+
+	RP_D(const NEResourceReader);
+	return (d->res_types.find(type) != d->res_types.end());
+}
+
 }

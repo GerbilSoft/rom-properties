@@ -63,9 +63,13 @@ public:
 		Icon_Win3 = 2,
 		Cursor_Win3 = 3,
 
+		// Win1.x resources (RT_ICON, RT_CURSOR)
+		IconRes_Win1 = 4,
+		CursorRes_Win1 = 5,
+
 		// Win3.x resources (RT_GROUP_ICON, RT_GROUP_CURSOR)
-		IconRes_Win3 = 4,
-		CursorRes_Win3 = 5,
+		IconRes_Win3 = 6,
+		CursorRes_Win3 = 7,
 
 		Max
 	};
@@ -85,7 +89,7 @@ public:
 	 */
 	inline bool isResource(void) const
 	{
-		return (iconType >= IconType::IconRes_Win3) && (iconType <= IconType::CursorRes_Win3);
+		return (iconType >= IconType::IconRes_Win1) && (iconType <= IconType::CursorRes_Win3);
 	}
 
 	/**
@@ -95,8 +99,10 @@ public:
 	inline uint16_t imageResType(void) const
 	{
 		switch (iconType) {
+			case IconType::IconRes_Win1:
 			case IconType::IconRes_Win3:
 				return RT_ICON;
+			case IconType::CursorRes_Win1:
 			case IconType::CursorRes_Win3:
 				return RT_CURSOR;
 			default:
@@ -265,15 +271,28 @@ ICOPrivate::ICOPrivate(ICO *q, const IResourceReaderPtr &resReader, uint16_t typ
 	memset(&icoHeader, 0, sizeof(icoHeader));
 
 	// Determine the icon type here.
-	assert(type == RT_GROUP_ICON || type == RT_GROUP_CURSOR);
-	if (type == RT_GROUP_ICON) {
-		iconType = IconType::IconRes_Win3;
-	} else if (type == RT_GROUP_CURSOR) {
-		iconType = IconType::CursorRes_Win3;
-	} else {
-		// Unrecognized?
-		dir.v = nullptr;
-		return;
+	assert(type == RT_ICON || type == RT_CURSOR || type == RT_GROUP_ICON || type == RT_GROUP_CURSOR);
+	switch (type) {
+		default:
+			assert(!"Unsupported resource type");
+			dir.v = nullptr;
+			return;
+
+		// NOTE: Assuming individual icon/cursor is Windows 1.x/2.x format.
+		// TODO: Check the header to verify?
+		case RT_ICON:
+			iconType = IconType::IconRes_Win1;
+			break;
+		case RT_CURSOR:
+			iconType = IconType::CursorRes_Win1;
+			break;
+
+		case RT_GROUP_ICON:
+			iconType = IconType::IconRes_Win3;
+			break;
+		case RT_GROUP_CURSOR:
+			iconType = IconType::CursorRes_Win3;
+			break;
 	}
 
 	// Initialize the icon directory union.
@@ -314,7 +333,7 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 
 		// Open the RT_GROUP_ICON / RT_GROUP_CURSOR resource.
 		auto &res = *(dir.res);
-		IRpFilePtr f_icondir = res.resReader->open(res.type, res.id, res.lang);
+		IRpFilePtr f_icondir = res.resReader->open(rt, res.id, res.lang);
 		if (!f_icondir) {
 			// Unable to open the RT_GROUP_ICON / RT_GROUP_CURSOR.
 			return -ENOENT;
@@ -502,7 +521,26 @@ rp_image_const_ptr ICOPrivate::loadImage_Win1(void)
 	// Load the icon data.
 	rp::uvector<uint8_t> icon_data;
 	icon_data.resize(icon_size * 2);
-	size_t size = file->seekAndRead(sizeof(icoHeader.win1), icon_data.data(), icon_size * 2);
+
+	// Is this from a file or a resource?
+	size_t size;
+	const uint16_t rt = imageResType();
+	if (rt != 0) {
+		// Open the resource.
+		const auto &res = *(dir.res);
+		IRpFilePtr f_icon = res.resReader->open(rt, res.id, res.lang);
+		if (!f_icon) {
+			// Unable to open the resource.
+			return {};
+		}
+
+		// Read from the resource.
+		size = f_icon->seekAndRead(sizeof(icoHeader.win1), icon_data.data(), icon_size * 2);
+	} else {
+		// Read from the file.
+		size = file->seekAndRead(sizeof(icoHeader.win1), icon_data.data(), icon_size * 2);
+	}
+
 	if (size != icon_size * 2) {
 		// Seek and/or read error.
 		return {};
@@ -873,6 +911,8 @@ rp_image_const_ptr ICOPrivate::loadImage(void)
 
 		case IconType::Icon_Win1:
 		case IconType::Cursor_Win1:
+		case IconType::IconRes_Win1:
+		case IconType::CursorRes_Win1:
 			// Windows 1.0 icon or cursor
 			return loadImage_Win1();
 
@@ -918,7 +958,7 @@ ICO::ICO(const IRpFilePtr &file)
  * NOTE: Check isValid() to determine if this is a valid ROM.
  *
  * @param resReader	[in] IResourceReader
- * @param type		[in] Resource type ID (RT_GROUP_ICON or RT_GROUP_CURSOR)
+ * @param type		[in] Resource type ID
  * @param id		[in] Resource ID (-1 for "first entry")
  * @param lang		[in] Language ID (-1 for "first entry")
  */
@@ -946,7 +986,7 @@ void ICO::init(bool res)
 		const auto &res = *(d->dir.res);
 		IRpFilePtr f_icondir = res.resReader->open(res.type, res.id, res.lang);
 		if (!f_icondir) {
-			// Unable to open the RT_GROUP_ICON / RT_GROUP_CURSOR.
+			// Unable to open the icon or cursor.
 			d->file.reset();
 			delete d->dir.res;
 			d->dir.res = nullptr;
@@ -1059,6 +1099,8 @@ void ICO::init(bool res)
 
 		case ICOPrivate::IconType::Icon_Win1:
 		case ICOPrivate::IconType::Cursor_Win1:
+		case ICOPrivate::IconType::IconRes_Win1:
+		case ICOPrivate::IconType::CursorRes_Win1:
 			d->dimensions[0] = le16_to_cpu(d->icoHeader.win1.width);
 			d->dimensions[1] = le16_to_cpu(d->icoHeader.win1.height);
 			break;

@@ -127,6 +127,13 @@ public:
 	 * @return Resource ID, or negative POSIX error code on error.
 	 */
 	int lookup_resource_ID(int type, int index) final;
+
+	/**
+	 * Do we have any resources of the specified type?
+	 * @param type	[in] Resource type ID
+	 * @return True if we have these resources; false if we don't.
+	 */
+	bool has_resource_type(int type) final;
 };
 
 }

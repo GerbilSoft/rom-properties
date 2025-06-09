@@ -394,7 +394,26 @@ rp_image_const_ptr EXEPrivate::loadSpecificIcon(int iconindex)
 	int ret = loadResourceReader();
 	if (ret != 0 || !rsrcReader) {
 		// No resources available.
-		return 0;
+		return {};
+	}
+
+	uint16_t type = RT_GROUP_ICON;
+	if (exeType == ExeType::NE || exeType == ExeType::COM_NE) {
+		// Windows 1.x/2.x executables don't have RT_GROUP_ICON,
+		// but do have RT_ICON. If this is Win16, check for
+		// RT_GROUP_ICON first, then try RT_ICON.
+		// NOTE: Can't simply check based on if it's a 1.x/2.x
+		// executable because some EXEs converted to 3.x will
+		// still show up as 1.x/2.x.
+		if (rsrcReader->has_resource_type(RT_GROUP_ICON)) {
+			// We have RT_GROUP_ICON.
+		} else if (rsrcReader->has_resource_type(RT_ICON)) {
+			// We have RT_ICON.
+			type = RT_ICON;
+		} else {
+			// No icons...
+			return {};
+		}
 	}
 
 	// Get the resource ID.
@@ -417,7 +436,7 @@ rp_image_const_ptr EXEPrivate::loadSpecificIcon(int iconindex)
 	}
 
 	// Attempt to load the default icon.
-	unique_ptr<ICO> ico(new ICO(rsrcReader, RT_GROUP_ICON, resID, -1));
+	unique_ptr<ICO> ico(new ICO(rsrcReader, type, resID, -1));
 	if (!ico->isValid()) {
 		// Unable to load the default icon.
 		return {};

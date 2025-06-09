@@ -892,4 +892,15 @@ int PEResourceReader::lookup_resource_ID(int type, int index)
 	return type_dir->at(index).id;
 }
 
+/**
+ * Do we have any resources of the specified type?
+ * @param type	[in] Resource type ID
+ * @return True if we have these resources; false if we don't.
+ */
+bool PEResourceReader::has_resource_type(int type)
+{
+	RP_D(PEResourceReader);
+	return (d->getTypeDir(type) != nullptr);
+}
+
 }

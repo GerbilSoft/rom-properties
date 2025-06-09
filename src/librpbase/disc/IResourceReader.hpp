@@ -129,6 +129,13 @@ public:
 	 * @return Resource ID, or negative POSIX error code on error.
 	 */
 	virtual int lookup_resource_ID(int type, int index) = 0;
+
+	/**
+	 * Do we have any resources of the specified type?
+	 * @param type	[in] Resource type ID
+	 * @return True if we have these resources; false if we don't.
+	 */
+	virtual bool has_resource_type(int type) = 0;
 };
 
 typedef std::shared_ptr<IResourceReader> IResourceReaderPtr;
