@@ -10,6 +10,7 @@
     * Icon thumbnailing is not actually enabled on Windows and Linux systems
       at the moment, since it may conflict with system icon handling.
       It's mostly only usable for rpcli and for use as a subclass elsewhere.
+    * Partially fixes #170: Icon files: ICNS, ICO, EXE
 
 * New parser features:
   * Xbox360_STFS: Fix titles for some packages that were authored incorrectly
@@ -19,8 +20,9 @@
     * Fixes #450: X360 - Non-Latin Titles appearing as mojibake
       * Reported by @Masamune3210.
   * EXE: The application icon can now be extracted using rpcli.
-  * ISO: Thumbnailing for ISO images with AUTORUN.INF and a specified icon
-    from a .ico, .exe, or .dll file is now supported.
+  * ISO: AUTORUN.INF is now parsed. This includes a tab showing the contents
+    of AUTORUN.INF, as well as the disc icon from a .ico or .exe/.dll file.
+    * Fixes #232: ISO: Parse autorun.inf
   * ISO: Joliet file systems are now partially supported. This was added to
     handle older Windows disc images that use a long filename for the icon,
     and the disc is authored with Joliet for long filenames but an old version
