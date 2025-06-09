@@ -816,8 +816,12 @@ int NEResourceReader::lookup_resource_ID(int type, int index)
 		return -EINVAL;
 	}
 
+	// NOTE: Type and resource IDs have the high bit set for integers.
+	// We're only supporting integer IDs, so set the high bits here.
+	type |= 0x8000;
+
 	// Get the resource directory for this type.
-	RP_D(NEResourceReader);
+	RP_D(const NEResourceReader);
 	auto iter_find = d->res_types.find(type);
 	if (iter_find == d->res_types.end()) {
 		// Not found.
