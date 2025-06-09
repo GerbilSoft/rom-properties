@@ -224,7 +224,9 @@ public:
 	int openIsoPartition(void);
 
 	// AUTORUN.INF contents
-	// Keys are stored in lowercase, in the format "section|key".
+	// TODO: Concatenate the section and key names.
+	// For now, only handling the "[autorun]" section.
+	// Keys are stored as-is, without concatenation.
 	unordered_map<string, string> autorun_inf;
 
 	/**
@@ -708,15 +710,23 @@ int ISOPrivate::parse_autorun_inf(void *user, const char *section, const char *n
 {
 	// TODO: Character encoding? Assuming ASCII.
 
-	// Concatenate the section and key names.
+	// TODO: Concatenate the section and key names.
+	// For now, only handling the "[autorun]" section.
+#if 0
 	string s_name;
 	if (section[0] != '\0') {
 		s_name = section;
 		s_name += '|';
 	}
 	s_name += name;
+#endif
+	if (strcasecmp(section, "autorun") != 0) {
+		// Not "[autorun]".
+		return 0;
+	}
 
 	// Convert the name to lowercase.
+	string s_name = name;
 	std::transform(s_name.begin(), s_name.end(), s_name.begin(),
 		[](char c) noexcept -> char { return std::tolower(c); });
 
@@ -808,7 +818,9 @@ rp_image_const_ptr ISOPrivate::loadIcon(void)
 	}
 
 	// Get the icon filename.
-	auto iter = autorun_inf.find("autorun|icon");
+	// TODO: Concatenate the section and key names.
+	// For now, only handling the "[autorun]" section.
+	auto iter = autorun_inf.find("icon");
 	if (iter == autorun_inf.end()) {
 		// No icon...
 		return {};
