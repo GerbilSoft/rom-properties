@@ -34,9 +34,9 @@ using namespace LibRpTexture;
 
 // C++ STL classes
 using std::array;
+using std::map;
 using std::string;
 using std::unique_ptr;
-using std::unordered_map;
 using std::vector;
 
 namespace LibRomData {
@@ -227,7 +227,7 @@ public:
 	// TODO: Concatenate the section and key names.
 	// For now, only handling the "[autorun]" section.
 	// Keys are stored as-is, without concatenation.
-	unordered_map<string, string> autorun_inf;
+	map<string, string> autorun_inf;
 
 	/**
 	 * ini.h callback for parsing AUTORUN.INF.
@@ -726,6 +726,7 @@ int ISOPrivate::parse_autorun_inf(void *user, const char *section, const char *n
 	}
 
 	// Convert the name to lowercase.
+	// TODO: Store the original case elsewhere?
 	string s_name = name;
 	std::transform(s_name.begin(), s_name.end(), s_name.begin(),
 		[](char c) noexcept -> char { return std::tolower(c); });
@@ -1325,6 +1326,16 @@ int ISO::loadFieldData(void)
 		// show a separate tab for UDF?
 		d->fields.addField_string(C_("ISO", "UDF Version"),
 			d->s_udf_version);
+	}
+
+	// AUTORUN.INF
+	int ret = d->loadAutorunInf();
+	if (ret == 0) {
+		// Add the AUTORUN.INF fields as-is.
+		d->fields.addTab("AUTORUN.INF");
+		for (const auto &pair : d->autorun_inf) {
+			d->fields.addField_string(pair.first.c_str(), pair.second);
+		}
 	}
 
 	// Finished reading the field data.
