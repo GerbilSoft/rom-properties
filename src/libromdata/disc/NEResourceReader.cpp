@@ -244,11 +244,27 @@ int NEResourceReaderPrivate::loadResTbl(void)
 			const NE_NAMEINFO *nameInfo = reinterpret_cast<const NE_NAMEINFO*>(&rsrcTblData[pos]);
 			pos += sizeof(NE_NAMEINFO);
 
+			/**
+			 * NOTE: If the ID doesn't have 0x8000 set, the name is a string.
+			 * The ID is the offset of the string, in bytes relative to the
+			 * beginning of the resource table. The sting is a Pascal string;
+			 * one byte indicating length, followed by the string data.
+			 * ***NOT NULL-TERMINATED!***
+			 *
+			 * We'll allow it for now as-is, since CALC.EXE, and probably
+			 * other Windows 3.1 programs, have RT_GROUP_ICONs that use
+			 * string names.
+			 *
+			 * TODO: How does Windows 3.1 select the application icon if
+			 * the icons have names?
+			 */
 			const uint16_t rnID = le16_to_cpu(nameInfo->rnID);
+#if 0
 			if (!(rnID & 0x8000)) {
 				// Resource name is a string. Not supported.
 				continue;
 			}
+#endif
 
 			// Add the resource information.
 			auto &entry = dir[entriesRead];
@@ -260,8 +276,9 @@ int NEResourceReaderPrivate::loadResTbl(void)
 			entry.len = le16_to_cpu(nameInfo->rnLength) << rscAlignShift;
 			entriesRead++;
 		}
-		if (isErr)
+		if (isErr) {
 			break;
+		}
 
 		// Shrink the vector in case we skipped some entries.
 		dir.resize(entriesRead);
