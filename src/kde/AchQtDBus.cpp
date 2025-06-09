@@ -110,8 +110,8 @@ int AchQtDBus::notifyFunc(Achievements::ID id)
 
 	// Build the text.
 	// TODO: Better formatting?
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	QString text = QString::fromLatin1("<u>%1</u>\n%2")
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 		.arg(U82Q(pAch->getName(id)).toHtmlEscaped(),
 		     U82Q(pAch->getDescUnlocked(id)).toHtmlEscaped());
 #else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
