@@ -89,6 +89,15 @@ application/x-ms-wim			# Wim
 # Texture
 # Formats listed here are widely supported by Linux desktop
 # environments, but not other systems.
+application/ico				# ICO
+image/ico				# ICO
+image/icon				# ICO
+image/x-cursor				# ICO
+image/x-ico				# ICO
+image/x-icon				# ICO
+image/vnd.microsoft.cursor		# ICO
+image/vnd.microsoft.icon		# ICO
+text/ico				# ICO
 application/tga				# TGA
 application/x-targa			# TGA
 application/x-tga			# TGA
