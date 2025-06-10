@@ -23,10 +23,20 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
+// ISO-9660 file system access for AUTORUN.INF
+#include "../disc/IsoPartition.hpp"
+#include "ini.h"
+
+// Windows icon handler
+#include "../Other/EXE.hpp"
+#include "librptexture/fileformat/ICO.hpp"
+using namespace LibRpTexture;
+
 // C++ STL classes
-#include <typeinfo>
 using std::array;
+using std::map;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -79,9 +89,14 @@ public:
 	// actual sector information.
 	unsigned int sector_offset;
 
-	// UDF version
-	// TODO: Descriptors?
-	const char *s_udf_version;
+	// Joliet level
+	enum class JolietSVDType : uint8_t {
+		None		= 0,
+		UCS2_Level1	= 1,	// NOTE: UCS-2 BE
+		UCS2_Level2	= 2,	// NOTE: UCS-2 BE
+		UCS2_Level3	= 3,	// NOTE: UCS-2 BE
+	};
+	JolietSVDType jolietSVDType;
 
 public:
 	// El Torito boot catalog LBA. (present if non-zero)
@@ -94,6 +109,11 @@ public:
 		BOOT_PLATFORM_EFI	= (1U << 1),
 	};
 	uint32_t boot_platforms;
+
+public:
+	// UDF version
+	// TODO: Descriptors?
+	const char *s_udf_version;
 
 public:
 	/**
@@ -189,6 +209,48 @@ public:
 	{
 		return (likely(discType != DiscType::CDi) ? lm32.he : be32_to_cpu(lm32.be));
 	}
+
+public:
+	// Icon
+	rp_image_ptr img_icon;
+
+	// IsoPartition
+	IsoPartitionPtr isoPartition;
+
+	/**
+	 * Open the ISO-9660 partition.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int openIsoPartition(void);
+
+	// AUTORUN.INF contents
+	// TODO: Concatenate the section and key names.
+	// For now, only handling the "[autorun]" section.
+	// Keys are stored as-is, without concatenation.
+	map<string, string> autorun_inf;
+
+	/**
+	 * ini.h callback for parsing AUTORUN.INF.
+	 * @param user		[in] User data parameter (this)
+	 * @param section	[in] Section name
+	 * @param name		[in] Value name
+	 * @param value		[in] Value
+	 * @return 0 to continue; 1 to stop.
+	 */
+	static int parse_autorun_inf(void *user, const char *section, const char *name, const char *value);
+
+	/**
+	 * Load AUTORUN.INF.
+	 * AUTORUN.INF will be loaded into autorun_inf.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int loadAutorunInf(void);
+
+	/**
+	 * Load the icon.
+	 * @return Icon, or nullptr on error.
+	 */
+	rp_image_const_ptr loadIcon(void);
 };
 
 ROMDATA_IMPL(ISO)
@@ -227,9 +289,10 @@ ISOPrivate::ISOPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, sector_offset(0)
-	, s_udf_version(nullptr)
+	, jolietSVDType(JolietSVDType::None)
 	, boot_catalog_LBA(0)
 	, boot_platforms(0)
+	, s_udf_version(nullptr)
 {
 	// Clear the disc header structs.
 	memset(&pvd, 0, sizeof(pvd));
@@ -274,6 +337,7 @@ void ISOPrivate::checkVolumeDescriptors(void)
 				// Found the terminator.
 				foundTerminator = true;
 				break;
+
 			case ISO_VDT_BOOT_RECORD:
 				if (boot_LBA != 0)
 					break;
@@ -283,6 +347,42 @@ void ISOPrivate::checkVolumeDescriptors(void)
 					boot_LBA = le32_to_cpu(vd.boot.boot_catalog_addr);
 				}
 				break;
+
+			case ISO_VDT_SUPPLEMENTARY: {
+				if (vd.header.version == ISO_VD_VERSION) {
+					// Check the escape sequences.
+					// Escape sequence format: '%', '/', x
+					const char *const p_end = &vd.pri.svd_escape_sequences[sizeof(vd.pri.svd_escape_sequences)-3];
+					for (const char *p = vd.pri.svd_escape_sequences; p < p_end && *p != '\0'; p++) {
+						if (p[0] != '%' || p[1] != '/') {
+							continue;
+						}
+
+						// Check if this is a valid UCS-2 level seqeunce.
+						// NOTE: Using the highest level specified.
+						JolietSVDType newType = JolietSVDType::None;
+						switch (p[2]) {
+							case '@':
+								newType = JolietSVDType::UCS2_Level1;
+								break;
+							case 'C':
+								newType = JolietSVDType::UCS2_Level2;
+								break;
+							case 'E':
+								newType = JolietSVDType::UCS2_Level3;
+								break;
+							default:
+								break;
+						}
+
+						if (jolietSVDType < newType) {
+							jolietSVDType = newType;
+						}
+					}
+				}
+				break;
+			}
+
 			default:
 				break;
 		}
@@ -573,6 +673,215 @@ void ISOPrivate::addPVDTimestamps_metaData(RomMetaData *metaData, const T *pvd)
 		pvd_time_to_unix_time(&pvd->btime));
 }
 
+/**
+ * Open the ISO-9660 partition.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int ISOPrivate::openIsoPartition(void)
+{
+	if (isoPartition) {
+		// ISO-9660 partition is already open.
+		return 0;
+	} else if (!file) {
+		// File is not open.
+		return -EBADF;
+	}
+
+	isoPartition = std::make_shared<IsoPartition>(file, 0, 0);
+	if (!isoPartition->isOpen()) {
+		// Unable to open the ISO-9660 file system.
+		// TODO: Better error code?
+		isoPartition.reset();
+		return -EIO;
+	}
+
+	return 0;
+}
+
+/**
+ * ini.h callback for parsing AUTORUN.INF.
+ * @param user		[in] User data parameter (this)
+ * @param section	[in] Section name
+ * @param name		[in] Value name
+ * @param value		[in] Value
+ * @return 0 to continue; 1 to stop.
+ */
+int ISOPrivate::parse_autorun_inf(void *user, const char *section, const char *name, const char *value)
+{
+	// TODO: Character encoding? Assuming ASCII.
+
+	// TODO: Concatenate the section and key names.
+	// For now, only handling the "[autorun]" section.
+#if 0
+	string s_name;
+	if (section[0] != '\0') {
+		s_name = section;
+		s_name += '|';
+	}
+	s_name += name;
+#endif
+	if (strcasecmp(section, "autorun") != 0) {
+		// Not "[autorun]".
+		return 0;
+	}
+
+	// Convert the name to lowercase.
+	// TODO: Store the original case elsewhere?
+	string s_name = name;
+	std::transform(s_name.begin(), s_name.end(), s_name.begin(),
+		[](char c) noexcept -> char { return std::tolower(c); });
+
+	// Save the value for later.
+	ISOPrivate *const d = static_cast<ISOPrivate*>(user);
+	auto ret = d->autorun_inf.emplace(std::move(s_name), value);
+	// NOTE: This will stop processing if a duplicate key is found.
+	return (ret.second ? 0 : 1);
+}
+
+/**
+ * Load AUTORUN.INF.
+ * AUTORUN.INF will be loaded into autorun_inf.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int ISOPrivate::loadAutorunInf(void)
+{
+	if (!autorun_inf.empty()) {
+		// AUTORUN.INF is already loaded.
+		return 0;
+	}
+
+	// Make sure the ISO-9660 file system is open.
+	int ret = openIsoPartition();
+	if (ret != 0) {
+		return ret;
+	}
+
+	// Attempt to load AUTORUN.INF from the ISO-9660 file system.
+	IRpFilePtr f_autorun_inf = isoPartition->open("/AUTORUN.INF");
+	if (!f_autorun_inf) {
+		// Unable to open AUTORUN.INF.
+		return -isoPartition->lastError();
+	}
+
+	// AUTORUN.INF should be 2048 bytes or less.
+	static constexpr size_t AUTORUN_INF_SIZE_MAX = 2048;
+	const off64_t autorun_inf_size = f_autorun_inf->size();
+	if (autorun_inf_size > static_cast<off64_t>(AUTORUN_INF_SIZE_MAX)) {
+		// File is too big.
+		return -ENOMEM;
+	}
+
+	// Read the entire file into memory.
+	char buf[AUTORUN_INF_SIZE_MAX + 1];
+	size_t size = f_autorun_inf->read(buf, AUTORUN_INF_SIZE_MAX);
+	if (size != static_cast<size_t>(autorun_inf_size)) {
+		// Short read.
+		return {};
+	}
+	buf[static_cast<size_t>(autorun_inf_size)] = '\0';
+
+	// Parse AUTORUN.INF.
+	// TODO: Save other AUTORUN data for a tab?
+	ret = ini_parse_string(buf, parse_autorun_inf, this);
+	if (ret < 0) {
+		// Failed to parse AUTORUN.INF.
+		autorun_inf.clear();
+		return -EIO;
+	}
+	return 0;
+}
+
+/**
+ * Load the icon.
+ * @return Icon, or nullptr on error.
+ */
+rp_image_const_ptr ISOPrivate::loadIcon(void)
+{
+	if (img_icon) {
+		// Icon has already been loaded.
+		return img_icon;
+	} else if (!this->isValid || static_cast<int>(this->discType) < 0) {
+		// Can't load the icon.
+		return {};
+	}
+
+	// Make sure the ISO-9660 file system is open.
+	int ret = openIsoPartition();
+	if (ret != 0) {
+		return {};
+	}
+
+	// Make sure AUTORUN.INF is loaded.
+	ret = loadAutorunInf();
+	if (ret != 0 || autorun_inf.empty()) {
+		// Unable to load AUTORUN.INF.
+		return {};
+	}
+
+	// Get the icon filename.
+	// TODO: Concatenate the section and key names.
+	// For now, only handling the "[autorun]" section.
+	auto iter = autorun_inf.find("icon");
+	if (iter == autorun_inf.end()) {
+		// No icon...
+		return {};
+	}
+	string icon_filename = iter->second;
+
+	// Check if there's an icon index specified.
+	// - Positive: Zero-based index
+	// - Negative: Resource ID
+	int iconindex = 0;	// default is "first icon"
+	size_t dotpos = icon_filename.find_last_of('.');
+	size_t commapos = icon_filename.find_last_of(',');
+	if (commapos < (icon_filename.size()-1) && dotpos < commapos) {
+		// Found an icon index.
+		char *endptr = nullptr;
+		iconindex = strtol(&icon_filename[commapos+1], &endptr, 10);
+		if (*endptr == '\0') {
+			// Icon index is valid. Use it.
+			icon_filename.resize(commapos);
+		} else {
+			// Icon index is invalid.
+			iconindex = 0;
+		}
+	}
+
+	// Open the icon file from the disc.
+	IRpFilePtr f_file = isoPartition->open(icon_filename.c_str());
+	if (!f_file) {
+		// Unable to open the icon file.
+		return {};
+	}
+
+	// Use the file extension to determine the reader.
+	// NOTE: May be better to check the file header...
+	rp_image_const_ptr icon;
+
+	const size_t icon_filename_size = icon_filename.size();
+	if (icon_filename_size > 4) {
+		if (!strncasecmp(&icon_filename[icon_filename_size-4], ".exe", 4) ||
+		    !strncasecmp(&icon_filename[icon_filename_size-4], ".dll", 4))
+		{
+			// EXE or DLL.
+			unique_ptr<EXE> exe(new EXE(f_file));
+			if (exe->isValid()) {
+				icon = exe->loadSpecificIcon(iconindex);
+			}
+		}
+	}
+
+	if (!icon) {
+		// No EXE or DLL. Try plain .ico.
+		unique_ptr<ICO> ico(new ICO(f_file));
+		if (ico->isValid()) {
+			icon = ico->image();
+		}
+	}
+
+	return icon;
+}
+
 /** ISO **/
 
 /**
@@ -662,7 +971,19 @@ ISO::ISO(const IRpFilePtr &file)
 	}
 }
 
-/** ROM detection functions. **/
+/**
+ * Close the opened file.
+ */
+void ISO::close(void)
+{
+	RP_D(ISO);
+	d->isoPartition.reset();
+
+	// Call the superclass function.
+	super::close();
+}
+
+/** ROM detection functions **/
 
 /**
  * Check for a valid PVD.
@@ -775,6 +1096,92 @@ const char *ISO::systemName(unsigned int type) const
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t ISO::supportedImageTypes_static(void)
+{
+	return IMGBF_INT_ICON;
+}
+
+/**
+ * Get a bitfield of image types this object can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t ISO::supportedImageTypes(void) const
+{
+	return supportedImageTypes_static();
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> ISO::supportedImageSizes_static(ImageType imageType)
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+		case IMG_INT_ICON:
+			// Assuming 32x32.
+			return {{nullptr, 32, 32, 0}};
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return {};
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> ISO::supportedImageSizes(ImageType imageType) const
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+		case IMG_INT_ICON:
+			// Assuming 32x32.
+			// TODO: Load the icon and check?
+			return {{nullptr, 32, 32, 0}};
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return {};
+}
+
+/**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t ISO::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	uint32_t ret = 0;
+	switch (imageType) {
+		case IMG_INT_ICON:
+			// TODO: Use nearest-neighbor for < 64x64.
+			break;
+
+		default:
+			break;
+	}
+	return ret;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -793,7 +1200,7 @@ int ISO::loadFieldData(void)
 		return -EIO;
 	}
 
-	d->fields.reserve(18);	// Maximum of 18 fields.
+	d->fields.reserve(19);	// Maximum of 19 fields.
 
 	// NOTE: All fields are space-padded. (0x20, ' ')
 	// TODO: ascii_to_utf8()?
@@ -839,7 +1246,7 @@ int ISO::loadFieldData(void)
 	d->fields.addField_string(C_("ISO", "Sector Format"), sector_format);
 
 	switch (d->discType) {
-		case ISOPrivate::DiscType::ISO9660:
+		case ISOPrivate::DiscType::ISO9660: {
 			// ISO-9660
 			d->fields.setTabName(0, C_("ISO", "ISO-9660 PVD"));
 
@@ -867,7 +1274,17 @@ int ISO::loadFieldData(void)
 					v_boot_platforms_names, 0, d->boot_platforms);
 
 			}
+
+			// Joliet SVD
+			const char *const s_joliet_title = C_("ISO", "Joliet");
+			if (d->jolietSVDType == ISOPrivate::JolietSVDType::None) {
+				d->fields.addField_string(s_joliet_title, C_("ISO|JolietSVDType", "Not Present"));
+			} else {
+				d->fields.addField_string(s_joliet_title,
+					fmt::format(FRUN("UCS-2 Level {:d}"), static_cast<uint8_t>(d->jolietSVDType)));
+			}
 			break;
+		}
 
 		case ISOPrivate::DiscType::HighSierra:
 			// High Sierra
@@ -909,6 +1326,16 @@ int ISO::loadFieldData(void)
 		// show a separate tab for UDF?
 		d->fields.addField_string(C_("ISO", "UDF Version"),
 			d->s_udf_version);
+	}
+
+	// AUTORUN.INF
+	int ret = d->loadAutorunInf();
+	if (ret == 0) {
+		// Add the AUTORUN.INF fields as-is.
+		d->fields.addTab("AUTORUN.INF");
+		for (const auto &pair : d->autorun_inf) {
+			d->fields.addField_string(pair.first.c_str(), pair.second);
+		}
 	}
 
 	// Finished reading the field data.
@@ -953,6 +1380,26 @@ int ISO::loadMetaData(void)
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
+}
+
+/**
+ * Load an internal image.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int ISO::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
+{
+	ASSERT_loadInternalImage(imageType, pImage);
+	RP_D(ISO);
+	ROMDATA_loadInternalImage_single(
+		IMG_INT_ICON,	// ourImageType
+		d->file,	// file
+		d->isValid,	// isValid
+		d->discType,	// romType
+		d->img_icon,	// imgCache
+		d->loadIcon);	// func
 }
 
 /**

@@ -190,13 +190,14 @@ int NEResourceReaderPrivate::loadResTbl(void)
 	int ret = -EIO;
 	while (pos < rsrc_tbl_size) {
 		// Read the next type ID.
-		if ((pos + 2) >= rsrc_tbl_size) {
+		if ((pos + 2) > rsrc_tbl_size) {
 			// I/O error; should be at least 2 bytes left...
 			break;
 		}
 		const NE_TYPEINFO *typeInfo = reinterpret_cast<const NE_TYPEINFO*>(&rsrcTblData[pos]);
 		const uint16_t rtTypeID = le16_to_cpu(typeInfo->rtTypeID);
 		if (rtTypeID == 0) {
+			// typeInfo is actually pointing to rscEndTypes.
 			// End of rscTypes[].
 			ret = 0;
 			break;
@@ -244,11 +245,27 @@ int NEResourceReaderPrivate::loadResTbl(void)
 			const NE_NAMEINFO *nameInfo = reinterpret_cast<const NE_NAMEINFO*>(&rsrcTblData[pos]);
 			pos += sizeof(NE_NAMEINFO);
 
+			/**
+			 * NOTE: If the ID doesn't have 0x8000 set, the name is a string.
+			 * The ID is the offset of the string, in bytes relative to the
+			 * beginning of the resource table. The sting is a Pascal string;
+			 * one byte indicating length, followed by the string data.
+			 * ***NOT NULL-TERMINATED!***
+			 *
+			 * We'll allow it for now as-is, since CALC.EXE, and probably
+			 * other Windows 3.1 programs, have RT_GROUP_ICONs that use
+			 * string names.
+			 *
+			 * TODO: How does Windows 3.1 select the application icon if
+			 * the icons have names?
+			 */
 			const uint16_t rnID = le16_to_cpu(nameInfo->rnID);
+#if 0
 			if (!(rnID & 0x8000)) {
 				// Resource name is a string. Not supported.
 				continue;
 			}
+#endif
 
 			// Add the resource information.
 			auto &entry = dir[entriesRead];
@@ -260,8 +277,9 @@ int NEResourceReaderPrivate::loadResTbl(void)
 			entry.len = le16_to_cpu(nameInfo->rnLength) << rscAlignShift;
 			entriesRead++;
 		}
-		if (isErr)
+		if (isErr) {
 			break;
+		}
 
 		// Shrink the vector in case we skipped some entries.
 		dir.resize(entriesRead);
@@ -646,11 +664,13 @@ IRpFilePtr NEResourceReader::open(uint16_t type, int id, int lang)
 
 	// Get the directory for the specified type.
 	auto iter_dir = d->res_types.find(type);
-	if (iter_dir == d->res_types.end())
+	if (iter_dir == d->res_types.end()) {
 		return nullptr;
+	}
 	auto &dir = iter_dir->second;
-	if (dir.empty())
+	if (dir.empty()) {
 		return nullptr;
+	}
 	
 	const NEResourceReaderPrivate::ResTblEntry *entry = nullptr;
 	if (id == -1) {
@@ -779,6 +799,58 @@ int NEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 
 	// Version information read successfully.
 	return 0;
+}
+
+/**
+ * Look up a resource ID given a zero-based index.
+ * Mostly useful for icon indexes.
+ *
+ * @param type	[in] Resource type ID
+ * @param index	[in] Zero-based index
+ * @param lang	[in] Language ID (-1 for "first entry")
+ * @return Resource ID, or negative POSIX error code on error.
+ */
+int NEResourceReader::lookup_resource_ID(int type, int index)
+{
+	if (index < 0) {
+		return -EINVAL;
+	}
+
+	// NOTE: Type and resource IDs have the high bit set for integers.
+	// We're only supporting integer IDs, so set the high bits here.
+	type |= 0x8000;
+
+	// Get the resource directory for this type.
+	RP_D(const NEResourceReader);
+	auto iter_find = d->res_types.find(type);
+	if (iter_find == d->res_types.end()) {
+		// Not found.
+		return -ENOENT;
+	}
+
+	const NEResourceReaderPrivate::rsrc_dir_t &type_dir = iter_find->second;
+	if (index >= static_cast<int>(type_dir.size())) {
+		// Zero-based index is out of bounds.
+		return -ENOENT;
+	}
+
+	// Return the ID at this index.
+	return type_dir[index].id;
+}
+
+/**
+ * Do we have any resources of the specified type?
+ * @param type	[in] Resource type ID
+ * @return True if we have these resources; false if we don't.
+ */
+bool NEResourceReader::has_resource_type(int type)
+{
+	// NOTE: Type and resource IDs have the high bit set for integers.
+	// We're only supporting integer IDs, so set the high bits here.
+	type |= 0x8000;
+
+	RP_D(const NEResourceReader);
+	return (d->res_types.find(type) != d->res_types.end());
 }
 
 }

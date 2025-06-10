@@ -19,6 +19,7 @@ namespace LibRpBase {
 namespace LibRomData {
 
 ROMDATA_DECL_BEGIN(ISO)
+ROMDATA_DECL_CLOSE()
 
 public:
 	/**
@@ -38,6 +39,9 @@ public:
 	static void addMetaData_PVD(LibRpBase::RomMetaData *metaData, const struct _ISO_Primary_Volume_Descriptor *pvd);
 
 ROMDATA_DECL_METADATA()
+ROMDATA_DECL_IMGSUPPORT()
+ROMDATA_DECL_IMGPF()
+ROMDATA_DECL_IMGINT()
 ROMDATA_DECL_VIEWED_ACHIEVEMENTS()
 ROMDATA_DECL_END()
 

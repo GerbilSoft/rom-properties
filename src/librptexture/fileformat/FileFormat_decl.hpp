@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormat_decl.hpp: Texture file format base class. (Subclass macros)  *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -58,7 +58,7 @@ private: \
 #define FILEFORMAT_DECL_CTOR_DEFAULT(klass) \
 public: \
 	/** \
-	 * Read a texture file file. \
+	 * Read a texture file. \
 	 * \
 	 * A ROM image must be opened by the caller. The file handle \
 	 * will be ref()'d and must be kept open in order to load \

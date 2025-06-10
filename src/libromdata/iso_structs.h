@@ -192,16 +192,22 @@ ASSERT_STRUCT(ISO_Boot_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
  * Primary volume descriptor.
  *
  * NOTE: All fields are space-padded. (0x20, ' ')
+ *
+ * NOTE 2: SVD fields are only valid in Supplementary Volume Descriptors.
+ * In PVDs, these fields should be all zero.
  */
 typedef struct _ISO_Primary_Volume_Descriptor {
 	ISO_Volume_Descriptor_Header header;
 
-	uint8_t reserved1;			// [0x007] 0x00
+	uint8_t svd_volume_flags;		// [0x007] Bit 0, if clear, indicates escape sequences *only* has
+						//         valid sequences from ISO 2375. If set, it has sequences
+						//         that aren't in ISO 2375.
+
 	char sysID[32];				// [0x008] (strA) System identifier.
 	char volID[32];				// [0x028] (strD) Volume identifier.
 	uint8_t reserved2[8];			// [0x048] All zeroes.
 	uint32_lsb_msb_t volume_space_size;	// [0x050] Size of volume, in blocks.
-	uint8_t reserved3[32];			// [0x058] All zeroes.
+	char svd_escape_sequences[32];		// [0x058] SVD: Escape sequences (indicates character sets)
 	uint16_lsb_msb_t volume_set_size;	// [0x078] Size of the logical volume. (number of discs)
 	uint16_lsb_msb_t volume_seq_number;	// [0x07C] Disc number in the volume set.
 	uint16_lsb_msb_t logical_block_size;	// [0x080] Logical block size. (usually 2048)
@@ -245,14 +251,22 @@ ASSERT_STRUCT(ISO_Primary_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
 /**
  * Volume descriptor.
  *
- * Primary volume descriptor is located at sector 0x10. (0x8000)
+ * Primary Volume Descriptor is located at sector 0x10. (0x8000)
+ * Supplementary Volume Descriptor is usually located at sector 0x11, if present. (0x8800)
  */
 #define ISO_VD_MAGIC "CD001"
 #define ISO_VD_VERSION 0x01
+
 #define ISO_PVD_LBA 0x10
 #define ISO_PVD_ADDRESS_2048	(ISO_PVD_LBA * ISO_SECTOR_SIZE_MODE1_COOKED)
 #define ISO_PVD_ADDRESS_2352	(ISO_PVD_LBA * ISO_SECTOR_SIZE_MODE1_RAW)
 #define ISO_PVD_ADDRESS_2448	(ISO_PVD_LBA * ISO_SECTOR_SIZE_MODE1_RAW_SUBCHAN)
+
+#define ISO_SVD_LBA 0x11
+#define ISO_SVD_ADDRESS_2048	(ISO_SVD_LBA * ISO_SECTOR_SIZE_MODE1_COOKED)
+#define ISO_SVD_ADDRESS_2352	(ISO_SVD_LBA * ISO_SECTOR_SIZE_MODE1_RAW)
+#define ISO_SVD_ADDRESS_2448	(ISO_SVD_LBA * ISO_SECTOR_SIZE_MODE1_RAW_SUBCHAN)
+
 typedef union _ISO_Volume_Descriptor {
 	ISO_Volume_Descriptor_Header header;
 

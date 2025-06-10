@@ -17,6 +17,8 @@
 #include "exe_le_structs.h"
 
 #include "disc/PEResourceReader.hpp"
+using LibRpBase::IResourceReader;
+using LibRpBase::IResourceReaderPtr;
 
 // Uninitialized vector class
 #include "uvector.h"
@@ -101,6 +103,12 @@ public:
 	IResourceReaderPtr rsrcReader;
 
 	/**
+	 * Make sure the resource reader is loaded.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int loadResourceReader(void);
+
+	/**
 	 * Add VS_VERSION_INFO fields.
 	 *
 	 * NOTE: A subtab is NOT created here; if one is desired,
@@ -110,6 +118,22 @@ public:
 	 * @param pVsSfi	[in,opt] IResourceReader::StringFileInfo
 	 */
 	void addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const IResourceReader::StringFileInfo *pVsSfi);
+
+	// Icon
+	LibRpTexture::rp_image_const_ptr img_icon;
+
+	/**
+	 * Load a specific icon by index.
+	 * @param iconindex Icon index (positive for zero-based index; negative for resource ID)
+	 * @return Icon, or nullptr if not found.
+	 */
+	LibRpTexture::rp_image_const_ptr loadSpecificIcon(int iconindex);
+
+	/**
+	 * Load the icon.
+	 * @return Icon, or nullptr on error.
+	 */
+	LibRpTexture::rp_image_const_ptr loadIcon(void);
 
 	/** MZ-specific **/
 

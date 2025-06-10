@@ -44,6 +44,7 @@ SET(${PROJECT_NAME}_SRCS
 	fileformat/DidjTex.cpp
 	fileformat/DirectDrawSurface.cpp
 	fileformat/GodotSTEX.cpp
+	fileformat/ICO.cpp
 	fileformat/KhronosKTX.cpp
 	fileformat/KhronosKTX2.cpp
 	fileformat/PalmOS_Tbmp.cpp
@@ -91,6 +92,7 @@ SET(${PROJECT_NAME}_H
 	fileformat/DidjTex.hpp
 	fileformat/DirectDrawSurface.hpp
 	fileformat/GodotSTEX.hpp
+	fileformat/ICO.hpp
 	fileformat/KhronosKTX.hpp
 	fileformat/KhronosKTX2.hpp
 	fileformat/PalmOS_Tbmp.hpp
@@ -106,6 +108,7 @@ SET(${PROJECT_NAME}_H
 	fileformat/dds_structs.h
 	fileformat/didj_tex_structs.h
 	fileformat/godot_stex_structs.h
+	fileformat/ico_structs.h
 	fileformat/ktx_structs.h
 	fileformat/ktx_structs.h
 	fileformat/palmos_tbmp_structs.h

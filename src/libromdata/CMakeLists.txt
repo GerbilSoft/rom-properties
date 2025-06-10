@@ -126,7 +126,6 @@ SET(${PROJECT_NAME}_SRCS
 	disc/GcnPartition_p.cpp
 	disc/GczReader.cpp
 	disc/GdiReader.cpp
-	disc/IResourceReader.cpp
 	disc/IsoPartition.cpp
 	disc/NASOSReader.cpp
 	disc/NCCHReader.cpp
@@ -298,7 +297,6 @@ SET(${PROJECT_NAME}_H
 	Other/exe_mz_structs.h
 	Other/exe_ne_structs.h
 	Other/exe_pe_structs.h
-	Other/exe_res_structs.h
 	Other/macho_structs.h
 	Other/nfp_structs.h
 
@@ -345,7 +343,6 @@ SET(${PROJECT_NAME}_H
 	disc/GcnPartition_p.hpp
 	disc/GczReader.hpp
 	disc/GdiReader.hpp
-	disc/IResourceReader.hpp
 	disc/IsoPartition.hpp
 	disc/MultiTrackSparseDiscReader.hpp
 	disc/NASOSReader.hpp

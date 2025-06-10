@@ -71,7 +71,7 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 	}
 
 	// Read the directory entries.
-	IFst::DirEnt *dirent = fst->readdir(dirp);
+	const IFst::DirEnt *dirent = fst->readdir(dirp);
 	while (dirent != nullptr) {
 		if (!dirent->name || dirent->name[0] == 0) {
 			// Empty name...
@@ -79,8 +79,7 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 		}
 
 		// Print the tree lines.
-		for (int i = 0; i < level; i++)
-		{
+		for (int i = 0; i < level; i++) {
 			if (tree_lines[i]) {
 				// Directory tree exists for this segment.
 				os << "\xE2\x94\x82   ";

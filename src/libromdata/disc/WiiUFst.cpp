@@ -467,13 +467,14 @@ IFst::Dir *WiiUFst::opendir(const char *path)
 		return nullptr;
 	}
 
-	IFst::Dir *dirp = new IFst::Dir(this);
-	d->fstDirCount++;
 	// TODO: Better way to get dir_idx?
-	dirp->dir_idx = static_cast<int>(fst_entry - d->fstEntries);
+	const int dir_idx = static_cast<int>(fst_entry - d->fstEntries);
+	IFst::Dir *dirp = new IFst::Dir(this, dir_idx);
+	d->fstDirCount++;
 
 	// Initialize the entry to this directory.
 	// readdir() will automatically seek to the next entry.
+	dirp->entry.extra = nullptr;	// not used for Wii U
 	dirp->entry.ptnum = be16_to_cpu(fst_entry->storage_cluster_index);
 	dirp->entry.idx = dirp->dir_idx;
 	dirp->entry.type = DT_DIR;
@@ -492,7 +493,7 @@ IFst::Dir *WiiUFst::opendir(const char *path)
  * @return IFst::DirEnt*, or nullptr if end of directory or on error.
  * (End of directory does not set lastError; an error does.)
  */
-IFst::DirEnt *WiiUFst::readdir(IFst::Dir *dirp)
+const IFst::DirEnt *WiiUFst::readdir(IFst::Dir *dirp)
 {
 	RP_D(WiiUFst);
 	assert(dirp != nullptr);

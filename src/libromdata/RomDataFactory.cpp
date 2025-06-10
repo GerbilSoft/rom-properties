@@ -306,7 +306,8 @@ static const array<RomDataFns, 38> romDataFns_header = {{
 	// so they should go at the end of the address=0 section.
 #ifdef _WIN32
 	// NOTE: Windows provides its own thumbnail and metadata extraction for EXEs.
-	GetRomDataFns(EXE, ATTR_HAS_DPOVERLAY),
+	// NOTE 2: EXE class does support thumbnailing now, but it shouldn't be registered as such.
+	GetRomDataFns(EXE, /*ATTR_HAS_THUMBNAIL |*/ ATTR_HAS_DPOVERLAY),
 #else /* !_WIN32 */
 	GetRomDataFns(EXE, ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA),	// TODO: Thumbnailing on non-Windows platforms.
 #endif /* _WIN32 */
@@ -1153,15 +1154,19 @@ static void init_supportedFileExtensions(void)
 	static constexpr unsigned int FFF_ATTRS = ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA;
 	const vector<const char*> &vec_exts_fileFormat = FileFormatFactory::supportedFileExtensions();
 	for (const char *ext : vec_exts_fileFormat) {
+		// Explicitly prevent thumbnailing of ".ico" and ".cur" on Windows.
+		const bool block_thumbnail = !strcmp(ext, ".ico") || !strcmp(ext, ".cur");
+		unsigned int attrs = (unlikely(block_thumbnail)) ? ATTR_HAS_METADATA : FFF_ATTRS;
+
 		auto iter = map_exts.find(ext);
 		if (iter != map_exts.end()) {
 			// We already had this extension.
 			// Update its attributes.
-			iter->second |= FFF_ATTRS;
+			iter->second |= attrs;
 		} else {
 			// First time encountering this extension.
-			map_exts[ext] = FFF_ATTRS;
-			vec_exts.emplace_back(ext, FFF_ATTRS);
+			map_exts[ext] = attrs;
+			vec_exts.emplace_back(ext, attrs);
 		}
 	}
 

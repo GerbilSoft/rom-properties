@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IPartition.cpp: Partition reader interface.                             *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -38,7 +38,7 @@ IFst::Dir *IPartition::opendir(const char *path)
  * @return IFst::DirEnt, or nullptr if end of directory or on error.
  * (TODO: Add lastError()?)
  */
-IFst::DirEnt *IPartition::readdir(IFst::Dir *dirp)
+const IFst::DirEnt *IPartition::readdir(IFst::Dir *dirp)
 {
 	RP_UNUSED(dirp);
 	assert(!"IFst wrapper functions are not implemented for this class!");

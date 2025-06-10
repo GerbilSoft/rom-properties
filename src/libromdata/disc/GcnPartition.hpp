@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GcnPartition.hpp: GameCube partition reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -107,7 +107,7 @@ public:
 	 * @return IFst::DirEnt, or nullptr if end of directory or on error.
 	 * (TODO: Add lastError()?)
 	 */
-	LibRpBase::IFst::DirEnt *readdir(LibRpBase::IFst::Dir *dirp) final;
+	const LibRpBase::IFst::DirEnt *readdir(LibRpBase::IFst::Dir *dirp) final;
 
 	/**
 	 * Close an opened directory.

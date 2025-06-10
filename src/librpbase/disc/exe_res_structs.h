@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata)                       *
+ * ROM Properties Page shell extension. (librpbase)                        *
  * exe_res_structs.h: DOS/Windows executable structures. (resources)       *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -57,6 +57,7 @@ typedef enum {
 
 /** Version resource **/
 
+#ifndef VER_H
 //#define VS_FILE_INFO RT_VERSION	// TODO
 #define VS_VERSION_INFO 1
 #define VS_USER_DEFINED 100
@@ -151,6 +152,7 @@ typedef struct _VS_FIXEDFILEINFO {
 	uint32_t dwFileDateLS;
 } VS_FIXEDFILEINFO;
 ASSERT_STRUCT(VS_FIXEDFILEINFO, 13*sizeof(uint32_t));
+#endif /* VER_H */
 
 #ifdef __cplusplus
 }
