@@ -49,20 +49,23 @@ rp_image_ptr fromLinearGray2bpp(int width, int height,
  * Convert a linear monochrome image to rp_image.
  *
  * Windows icons are handled a bit different compared to "regular" monochrome images:
- * - Actual image height should be double the `height` value.
- * - Two images are stored: mask, then image.
+ * - Two images are required: icon and mask
  * - Transparency is supported using the mask.
  * - 0 == black; 1 == white
  *
  * @param width		[in] Image width
  * @param height	[in] Image height
  * @param img_buf	[in] Monochrome image buffer
- * @param img_siz	[in] Size of image data [must be >= ((w*h)/8)*2]
+ * @param img_siz	[in] Size of image data [must be >= ((w*h)/8)]
+ * @param mask_buf	[in] Mask buffer
+ * @param mask_siz	[in] Size of mask buffer [must be == img_siz]
  * @param stride	[in,opt] Stride, in bytes (if 0, assumes width*bytespp)
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
+ATTR_ACCESS_SIZE(read_only, 5, 6)
 rp_image_ptr fromLinearMono_WinIcon(int width, int height,
-	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
+	const uint8_t *RESTRICT mask_buf, size_t mask_siz, int stride = 0);
 
 } }

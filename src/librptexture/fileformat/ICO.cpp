@@ -504,7 +504,7 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 rp_image_const_ptr ICOPrivate::loadImage_Win1(void)
 {
 	// Icon data is located immediately after the header.
-	// Each icon is actually two icons: a 1bpp icon, then a 1bpp mask.
+	// Each icon is actually two icons: a 1bpp mask, then a 1bpp icon.
 
 	// NOTE: If the file has *both* DIB and DDB, then the DIB is first,
 	// followed by the DDB, with its own icon header. Not handling this
@@ -546,7 +546,10 @@ rp_image_const_ptr ICOPrivate::loadImage_Win1(void)
 	}
 
 	// Convert the icon.
-	img = ImageDecoder::fromLinearMono_WinIcon(width, height, icon_data.data(), icon_size * 2, stride);
+	const uint8_t *const p_mask_data = icon_data.data();
+	const uint8_t *const p_icon_data = p_mask_data + icon_size;
+	img = ImageDecoder::fromLinearMono_WinIcon(width, height,
+		p_icon_data, icon_size, p_mask_data, icon_size, stride);
 	return img;
 }
 
@@ -718,9 +721,12 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 			return {};
 
 		case 1:
-			// Monochrome (TODO: Find a test icon)
-			assert(!"Win3.x 1bpp icon format is not supported yet!");
-			return {};
+			// 1bpp (monochrome)
+			// NOTE: ImageDecoder::fromLinearMono_WinIcon() handles the mask.
+			img = ImageDecoder::fromLinearMono_WinIcon(width, half_height,
+				icon_data, icon_size,
+				mask_data, mask_size, stride);
+			break;
 
 		case 4:
 			// 16-color
@@ -760,7 +766,9 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 	// Apply the icon mask.
 	rp_image::sBIT_t sBIT;
 	img->get_sBIT(&sBIT);
-	if (bitcount < 8) {
+	if (bitcount == 1) {
+		// Monochrome icons are handled by ImageDecoder::fromLinearMono_WinIcon().
+	} else if (bitcount < 8) {
 		// Keep the icon as CI8 and add a transparency color.
 		// TODO: Set sBIT.
 		assert(img->format() == rp_image::Format::CI8);

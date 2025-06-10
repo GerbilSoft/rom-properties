@@ -190,29 +190,33 @@ rp_image_ptr fromLinearGray2bpp(int width, int height,
  * Convert a linear monochrome image to rp_image.
  *
  * Windows icons are handled a bit different compared to "regular" monochrome images:
- * - Actual image height should be double the `height` value.
- * - Two images are stored: mask, then image.
+ * - Two images are required: icon and mask
  * - Transparency is supported using the mask.
  * - 0 == black; 1 == white
  *
  * @param width		[in] Image width
  * @param height	[in] Image height
  * @param img_buf	[in] Monochrome image buffer
- * @param img_siz	[in] Size of image data [must be >= ((w*h)/8)*2]
+ * @param img_siz	[in] Size of image data [must be >= ((w*h)/8)]
+ * @param mask_buf	[in] Mask buffer
+ * @param mask_siz	[in] Size of mask buffer [must be == img_siz]
  * @param stride	[in,opt] Stride, in bytes (if 0, assumes width*bytespp)
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image_ptr fromLinearMono_WinIcon(int width, int height,
-	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride)
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
+	const uint8_t *RESTRICT mask_buf, size_t mask_siz, int stride)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= (static_cast<size_t>(width) * static_cast<size_t>(height) / 8) * 2);
+	assert(img_siz >= (static_cast<size_t>(width) * static_cast<size_t>(height) / 8));
+	assert(img_siz == mask_siz);
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) / 8) * 2)
+	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) / 8) ||
+	    img_siz != mask_siz)
 	{
 		return {};
 	}
@@ -247,12 +251,10 @@ rp_image_ptr fromLinearMono_WinIcon(int width, int height,
 
 	// Convert one line at a time. (monochrome -> CI8)
 	uint8_t *px_dest = static_cast<uint8_t*>(img->bits());
-	const uint8_t *mask_buf = img_buf;
-	const uint8_t *icon_buf = img_buf + (static_cast<size_t>(height) * static_cast<size_t>(stride));
 	for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 		for (int x = width; x > 0; x -= 8) {
 			uint8_t pxMask = *mask_buf++;
-			uint8_t pxIcon = *icon_buf++;
+			uint8_t pxIcon = *img_buf++;
 
 			// For images where width is not a multiple of 8,
 			// we'll discard the remaining bits in the last byte.
@@ -281,6 +283,7 @@ rp_image_ptr fromLinearMono_WinIcon(int width, int height,
 	// Set the sBIT metadata.
 	// NOTE: Setting the grayscale value, though we're
 	// not saving grayscale PNGs at the moment.
+	// TODO: Don't set alpha if the icon mask doesn't have any set bits?
 	static const rp_image::sBIT_t sBIT = {1,1,1,1,1};
 	img->set_sBIT(&sBIT);
 
