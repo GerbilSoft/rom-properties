@@ -597,13 +597,14 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 	// NOTE: Negative height is allowed for "right-side up".
 	const unsigned int width = le32_to_cpu((unsigned int)(bih->biWidth));
 	const int orig_height = static_cast<int>(le32_to_cpu(bih->biHeight));
-	const bool is_upside_down = (orig_height > 0);
 	const unsigned int height = abs(orig_height);
-	const unsigned int half_height = height / 2;
 	if (width <= 0 || height == 0 || (height & 1)) {
 		// Invalid bitmap size.
 		return {};
 	}
+
+	const bool is_upside_down = (orig_height > 0);
+	const unsigned int half_height = height / 2;
 
 	// Only supporting 16-color images for now.
 	// TODO: Handle BI_BITFIELDS?
