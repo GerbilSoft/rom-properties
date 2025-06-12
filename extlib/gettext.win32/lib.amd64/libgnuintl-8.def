@@ -5,6 +5,20 @@ EXPORTS
     _nl_msg_cat_cntr DATA
     bind_textdomain_codeset
     bindtextdomain
+    c32isalnum
+    c32isalpha
+    c32isblank
+    c32iscntrl
+    c32isdigit
+    c32isgraph
+    c32islower
+    c32isprint
+    c32ispunct
+    c32isspace
+    c32isupper
+    c32isxdigit
+    c32tolower
+    c32width
     dcgettext
     dcngettext
     dgettext
@@ -45,10 +59,45 @@ EXPORTS
     libintl_wbindtextdomain
     libintl_wprintf
     locale_charset
+    mb_copy
+    mb_width_aux
+    mbiterf_next
+    mbrtoc32
+    mbsnlen
     ngettext
     rpl_getcwd
+    rpl_iswalnum
+    rpl_iswalpha
+    rpl_iswblank
+    rpl_iswcntrl
+    rpl_iswdigit
+    rpl_iswgraph
+    rpl_iswlower
+    rpl_iswprint
+    rpl_iswpunct
+    rpl_iswspace
+    rpl_iswupper
+    rpl_iswxdigit
+    rpl_localeconv
     rpl_pthread_once
+    rpl_towlower
+    rpl_towupper
     setlocale_messages
     setlocale_messages_null
     textdomain
+    uc_is_alnum
+    uc_is_alpha
+    uc_is_blank
+    uc_is_cntrl
+    uc_is_digit
+    uc_is_graph
+    uc_is_lower
+    uc_is_print
+    uc_is_punct
+    uc_is_space
+    uc_is_upper
+    uc_is_xdigit
+    uc_tolower
+    uc_width
+    wcwidth
     wgetcwd
