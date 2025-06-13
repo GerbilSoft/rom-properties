@@ -85,15 +85,6 @@ public:
 
 	/** Win3.x icon stuff **/
 
-	/**
-	 * Is this an icon resource from a .exe/.dll?
-	 * @return True if it's a resource; false if it's a .ico file.
-	 */
-	inline bool isResource(void) const
-	{
-		return (iconType >= IconType::IconRes_Win1) && (iconType <= IconType::CursorRes_Win3);
-	}
-
 	// NOTE: ICONDIRENTRY (for .ico files) and GRPICONDIRENTRY (for resources)
 	// are different sizes. Hence, we have to use this union of struct pointers hack.
 	struct icodir_ico {
@@ -311,7 +302,7 @@ ICOPrivate::ICOPrivate(ICO *q, const IResourceReaderPtr &resReader, uint16_t typ
 ICOPrivate::~ICOPrivate()
 {
 	if (dir.v) {
-		if (isResource()) {
+		if (dir.is_res) {
 			delete dir.res;
 		} else {
 			delete dir.ico;
