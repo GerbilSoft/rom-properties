@@ -110,6 +110,11 @@ TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 IF(WIN32)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE win32common rptext-noi18n)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE wininet advapi32)
+	# NTDLL is used to open Alternate Data Streams without requiring the original filename.
+	# NOTE: Only works in Unicode builds. Non-Unicode builds would be for Win9x, which
+	# doesn't support Alternate Data Streams, anyway.
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ntdll)
+
 	# Delay-load shell32.dll and ole32.dll to prevent a performance penalty due to gdi32.dll.
 	# Reference: https://randomascii.wordpress.com/2018/12/03/a-not-called-function-can-cause-a-5x-slowdown/
 	# This is also needed when disabling direct Win32k syscalls,
