@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * IsoPartition.cpp: ISO-9660 partition reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -535,7 +535,7 @@ const IsoPartitionPrivate::DirData_t *IsoPartitionPrivate::getDirectory(const ch
 			// lookup_int() already set q->m_lastError().
 			return nullptr;
 		} else if (!(entry->flags & ISO_FLAG_DIRECTORY)) {
-			// Entry found, but it's a directory.
+			// Entry found, but it's not a directory.
 			q->m_lastError = ENOTDIR;
 			return nullptr;
 		}
