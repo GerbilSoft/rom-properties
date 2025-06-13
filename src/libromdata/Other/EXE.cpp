@@ -40,7 +40,7 @@ ROMDATA_IMPL(EXE)
 /** EXEPrivate **/
 
 /* RomDataInfo */
-const array<const char*, (8*2)+1> EXEPrivate::exts = {{
+const array<const char*, (9*2)+1> EXEPrivate::exts = {{
 	// References:
 	// - https://en.wikipedia.org/wiki/Portable_Executable
 
@@ -51,6 +51,9 @@ const array<const char*, (8*2)+1> EXEPrivate::exts = {{
 	".efi", ".mui",
 	".ocx", ".scr",
 	".sys", ".tsp",
+
+	// Windows multi-lingual user interface files (PE)
+	".mui", ".mun",
 
 	// NE extensions
 	".fon", ".icl",

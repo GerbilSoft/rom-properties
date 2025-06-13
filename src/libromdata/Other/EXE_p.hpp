@@ -45,7 +45,7 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const std::array<const char*, (8*2)+1> exts;
+	static const std::array<const char*, (9*2)+1> exts;
 	static const std::array<const char*, 5+1> mimeTypes;
 	static const LibRpBase::RomDataInfo romDataInfo;
 
