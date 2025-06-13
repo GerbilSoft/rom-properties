@@ -59,6 +59,11 @@ __kernel_entry NTSYSCALLAPI NTSTATUS NtDeleteFile(
 	PCOBJECT_ATTRIBUTES ObjectAttributes
 );
 
+typedef __typeof__(NtCreateFile) *pfn_NtCreateFile_t;
+typedef __typeof__(NtWriteFile)  *pfn_NtWriteFile_t;
+typedef __typeof__(NtClose)      *pfn_NtClose_t;
+typedef __typeof__(NtDeleteFile) *pfn_NtDeleteFile_t;
+
 }
 #endif /* UNICODE */
 
@@ -135,6 +140,28 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 		// - https://cqureacademy.com/blog/alternate-data-streams
 		// - https://stackoverflow.com/questions/46141321/open-alternate-data-stream-ads-from-file-handle-or-file-id
 		// - https://stackoverflow.com/a/46141949
+
+		// NOTE: ntdll.lib isn't present in all build environments.
+		// Use GetModuleHandle() and GetProcAddress() instead.
+		HMODULE hNtDll = GetModuleHandle(_T("ntdll.dll"));
+		if (!hNtDll) {
+			// No NTDLL.DLL? Maybe this is Win9x...
+			break;
+		}
+
+#define NTDLL_LOAD(fn) pfn_##fn##_t pfn_##fn = reinterpret_cast<pfn_##fn##_t>(GetProcAddress(hNtDll, #fn))
+		NTDLL_LOAD(NtCreateFile);
+		NTDLL_LOAD(NtWriteFile);
+		NTDLL_LOAD(NtClose);
+		NTDLL_LOAD(NtDeleteFile);
+
+		if (!pfn_NtCreateFile || !pfn_NtWriteFile ||
+		    !pfn_NtClose || !pfn_NtDeleteFile)
+		{
+			// At least one function pointer is missing.
+			break;
+		}
+
 		HANDLE hFile = reinterpret_cast<HANDLE>(_get_osfhandle(fileno(file)));
 		IO_STATUS_BLOCK iosb;
 		UNICODE_STRING ObjectName = RTL_CONSTANT_STRING(L":Zone.Identifier");
@@ -143,7 +170,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 		InitializeObjectAttributes(&oa, &ObjectName, 0, hFile, nullptr);
 
 		HANDLE hAds = nullptr;
-		NTSTATUS status = NtCreateFile(
+		NTSTATUS status = pfn_NtCreateFile(
 			&hAds,			// FileHandle
 			FILE_GENERIC_WRITE,	// DesiredAccess
 			&oa,			// ObjectAttributes
@@ -177,7 +204,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 		s_zoneID += T2U8(url);
 		s_zoneID += "\r\n";
 
-		status = NtWriteFile(
+		status = pfn_NtWriteFile(
 			hAds,					// FileHandle
 			nullptr,				// Event
 			nullptr,				// ApcRoutine
@@ -187,12 +214,12 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 			static_cast<DWORD>(s_zoneID.size()),	// Length
 			nullptr,				// ByteOffset
 			nullptr);				// Key
-		NtClose(hAds);
+		pfn_NtClose(hAds);
 
 		if (status < 0) {
 			// Error writing the stream data.
 			// Delete the stream.
-			NtDeleteFile(&oa);
+			pfn_NtDeleteFile(&oa);
 
 			// TODO: Convert NTSTATUS to Win32?
 			err = -EIO;
