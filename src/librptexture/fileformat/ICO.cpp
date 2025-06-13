@@ -161,9 +161,6 @@ public:
 	// NOTE: *Not* byteswapped.
 	rp::uvector<IconBitmapHeader_t> iconBitmapHeaders;
 
-	// "Best" icon: Bitmap header
-	const IconBitmapHeader_t *pIconHeader;
-
 	// Decoded image
 	rp_image_ptr img;
 
@@ -242,7 +239,6 @@ const TextureInfo ICOPrivate::textureInfo = {
 ICOPrivate::ICOPrivate(ICO *q, const IRpFilePtr &file)
 	: super(q, file, &textureInfo)
 	, iconType(IconType::Unknown)
-	, pIconHeader(nullptr)
 {
 	// Clear the ICO header union.
 	memset(&icoHeader, 0, sizeof(icoHeader));
@@ -254,7 +250,6 @@ ICOPrivate::ICOPrivate(ICO *q, const IRpFilePtr &file)
 ICOPrivate::ICOPrivate(ICO *q, const IResourceReaderPtr &resReader, uint16_t type, int id, int lang)
 	: super(q, resReader, &textureInfo)
 	, iconType(IconType::Unknown)
-	, pIconHeader(nullptr)
 {
 	// Clear the ICO header union.
 	memset(&icoHeader, 0, sizeof(icoHeader));
@@ -470,7 +465,6 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 		if (icon_is_better) {
 			// This icon is better.
 			bestIcon_idx = static_cast<int>(i);
-			pIconHeader = p;
 			width_best = width;
 			height_best = height;
 			bitcount_best = bitcount;
@@ -552,6 +546,15 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 	// TODO: Verify dwBytesInRes.
 
 	// Check the header size.
+	if (idx < 0) {
+		idx = dir.bestIcon_idx;
+	}
+	if (idx < 0 || idx >= static_cast<int>(iconBitmapHeaders.size())) {
+		// Index is out of range.
+		return {};
+	}
+
+	const IconBitmapHeader_t *const pIconHeader = &iconBitmapHeaders[idx];
 	const unsigned int header_size = le32_to_cpu(pIconHeader->size);
 	switch (header_size) {
 		default:
@@ -1157,7 +1160,7 @@ void ICO::init(bool res)
 		case ICOPrivate::IconType::Cursor_Win3:
 		case ICOPrivate::IconType::IconRes_Win3:
 		case ICOPrivate::IconType::CursorRes_Win3:
-			if (d->dir.bestIcon_idx < 0) {
+			if (d->dir.bestIcon_idx < 0 || d->dir.bestIcon_idx >= static_cast<int>(d->iconBitmapHeaders.size())) {
 				// No "best" icon...
 				d->file.reset();
 				if (res) {
@@ -1167,7 +1170,7 @@ void ICO::init(bool res)
 				return;
 			}
 
-			const ICOPrivate::IconBitmapHeader_t *const pIconHeader = d->pIconHeader;
+			const ICOPrivate::IconBitmapHeader_t *const pIconHeader = &d->iconBitmapHeaders[d->dir.bestIcon_idx];
 			switch (pIconHeader->size) {
 				default:
 					// Not supported...
