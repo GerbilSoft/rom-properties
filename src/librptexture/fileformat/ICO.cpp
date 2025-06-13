@@ -891,7 +891,7 @@ rp_image_const_ptr ICOPrivate::loadImage_WinVista_PNG(void)
 	if (rt != 0) {
 		// Load the PNG from a resource.
 		const auto &res = *(dir.res);
-		f_png = res.resReader->open(rt, res.id, res.lang);
+		f_png = res.resReader->open(rt, le16_to_cpu(res.pBestIcon->nID), res.lang);
 	} else {
 		// NOTE: PartitionFile only supports IDiscReader, so we'll need to
 		// create a dummy DiscReader object.
