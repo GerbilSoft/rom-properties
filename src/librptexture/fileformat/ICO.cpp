@@ -27,6 +27,8 @@ using namespace LibRpFile;
 
 // C++ STL classes
 using std::array;
+using std::string;
+using std::vector;
 
 // Uninitialized vector class
 #include "uvector.h"
@@ -166,6 +168,25 @@ public:
 
 public:
 	/**
+	 * Useful data from IconBitmapHeader_t
+	 */
+	struct IconBitmapHeader_data {
+		int width;
+		int height;
+		unsigned int bitcount;
+		bool isPNG;
+		char pixel_format[7];
+	};
+
+	/**
+	 * Get useful data from an IconBitmapHeader_t.
+	 * @param pHeader	[in] IconBitmapHeader_t
+	 * @return Useful data (on error, all values will be 0)
+	 */
+	static IconBitmapHeader_data getIconBitmapHeaderData(const IconBitmapHeader_t *pHeader);
+
+public:
+	/**
 	 * Load the icon directory. (Windows 3.x)
 	 * This function will also select the "best" icon to use.
 	 * @return 0 on success; negative POSIX error code on error.
@@ -196,10 +217,10 @@ private:
 public:
 	/**
 	 * Load the image.
-	 * This loads the "best" bitmap from the icon.
+	 * @param idx Icon's bitmap index (-1 for "best")
 	 * @return Image, or nullptr on error.
 	 */
-	rp_image_const_ptr loadImage(void);
+	rp_image_const_ptr loadImage(int idx = -1);
 };
 
 FILEFORMAT_IMPL(ICO)
@@ -299,6 +320,88 @@ ICOPrivate::~ICOPrivate()
 }
 
 /**
+ * Get useful data from an IconBitmapHeader_t.
+ * @param pHeader	[in] IconBitmapHeader_t
+ * @return Useful data (on error, all values will be 0)
+ */
+ICOPrivate::IconBitmapHeader_data ICOPrivate::getIconBitmapHeaderData(const IconBitmapHeader_t *pHeader)
+{
+	IconBitmapHeader_data data = {0, 0, 0, false, ""};
+
+	switch (le32_to_cpu(pHeader->size)) {
+		default:
+			// Not supported...
+			break;
+
+		case BITMAPCOREHEADER_SIZE:
+			if (le32_to_cpu(pHeader->bch.bcPlanes) > 1) {
+				// Cannot handle planar bitmaps.
+				break;
+			}
+			data.width = le16_to_cpu(pHeader->bch.bcWidth);
+			data.height = le16_to_cpu(pHeader->bch.bcHeight) / 2;
+			data.bitcount = le16_to_cpu(pHeader->bch.bcBitCount);
+			break;
+
+		case BITMAPINFOHEADER_SIZE:
+		case BITMAPV2INFOHEADER_SIZE:
+		case BITMAPV3INFOHEADER_SIZE:
+		case BITMAPV4HEADER_SIZE:
+		case BITMAPV5HEADER_SIZE:
+			if (le32_to_cpu(pHeader->bih.biPlanes) > 1) {
+				// Cannot handle planar bitmaps.
+				break;
+			}
+			data.width = le32_to_cpu(pHeader->bih.biWidth);
+			data.height = le32_to_cpu(pHeader->bih.biHeight) / 2;
+			data.bitcount = le16_to_cpu(pHeader->bih.biBitCount);
+			break;
+
+		case 0x474E5089:	// "\x89PNG"
+			data.isPNG = true;
+			switch (pHeader->png.ihdr.data.color_type) {
+				default:
+					// Not supported...
+					break;
+
+				case PNG_COLOR_TYPE_PALETTE:
+					data.bitcount = pHeader->png.ihdr.data.bit_depth;
+					break;
+
+				case PNG_COLOR_TYPE_GRAY:
+				case PNG_COLOR_TYPE_RGB:
+					// Handling as if it's RGB.
+					data.bitcount = pHeader->png.ihdr.data.bit_depth * 3;
+					break;
+
+				case PNG_COLOR_TYPE_GRAY_ALPHA:
+				case PNG_COLOR_TYPE_RGB_ALPHA:
+					// Handling as if it's ARGB.
+					data.bitcount = pHeader->png.ihdr.data.bit_depth * 4;
+					break;
+			}
+
+			data.width = be32_to_cpu(pHeader->png.ihdr.data.width);
+			data.height = be32_to_cpu(pHeader->png.ihdr.data.height);
+			break;
+	}
+
+	// Determine pixel format based on bitcount.
+	// TODO: Other bitcounts?
+	if (data.bitcount == 1) {
+		snprintf(data.pixel_format, sizeof(data.pixel_format), "%s", C_("ICO|PixelFormat", "Mono"));
+	} else if (data.bitcount <= 8) {
+		snprintf(data.pixel_format, sizeof(data.pixel_format), "CI%u", data.bitcount);
+	} else if (data.bitcount == 24) {
+		strcpy(data.pixel_format, "RGB");
+	} else if (data.bitcount == 32) {
+		strcpy(data.pixel_format, "ARGB");
+	}
+
+	return data;
+}
+
+/**
  * Load the icon directory. (Windows 3.x)
  * This function will also select the "best" icon to use.
  * @return 0 on success; negative POSIX error code on error.
@@ -384,79 +487,28 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 	}
 
 	// Go through the icon bitmap headers and figure out the "best" one.
-	unsigned int width_best = 0, height_best = 0, bitcount_best = 0;
+	int width_best = 0, height_best = 0;
+	unsigned int bitcount_best = 0;
 	int bestIcon_idx = -1;
 	for (unsigned int i = 0; i < count; i++) {
 		// Get the width, height, and color depth from this bitmap header.
 		const IconBitmapHeader_t *const p = &iconBitmapHeaders[i];
-		unsigned int width, height, bitcount;
 
-		switch (le32_to_cpu(p->size)) {
-			default:
-				// Not supported...
-				continue;
-
-			case BITMAPCOREHEADER_SIZE:
-				if (le32_to_cpu(p->bch.bcPlanes) > 1) {
-					// Cannot handle planar bitmaps.
-					continue;
-				}
-				width = le16_to_cpu(p->bch.bcWidth);
-				height = le16_to_cpu(p->bch.bcHeight) / 2;
-				bitcount = le16_to_cpu(p->bch.bcBitCount);
-				break;
-
-			case BITMAPINFOHEADER_SIZE:
-			case BITMAPV2INFOHEADER_SIZE:
-			case BITMAPV3INFOHEADER_SIZE:
-			case BITMAPV4HEADER_SIZE:
-			case BITMAPV5HEADER_SIZE:
-				if (le32_to_cpu(p->bih.biPlanes) > 1) {
-					// Cannot handle planar bitmaps.
-					continue;
-				}
-				width = le32_to_cpu(p->bih.biWidth);
-				height = le32_to_cpu(p->bih.biHeight) / 2;
-				bitcount = le16_to_cpu(p->bih.biBitCount);
-				break;
-
-			case 0x474E5089:	// "\x89PNG"
-				switch (p->png.ihdr.data.color_type) {
-					default:
-						// Not supported...
-						continue;
-
-					case PNG_COLOR_TYPE_PALETTE:
-						bitcount = p->png.ihdr.data.bit_depth;
-						break;
-
-					case PNG_COLOR_TYPE_GRAY:
-					case PNG_COLOR_TYPE_RGB:
-						// Handling as if it's RGB.
-						bitcount = p->png.ihdr.data.bit_depth * 3;
-						break;
-
-					case PNG_COLOR_TYPE_GRAY_ALPHA:
-					case PNG_COLOR_TYPE_RGB_ALPHA:
-						// Handling as if it's ARGB.
-						bitcount = p->png.ihdr.data.bit_depth * 4;
-						break;
-				}
-
-				width = be32_to_cpu(p->png.ihdr.data.width);
-				height = be32_to_cpu(p->png.ihdr.data.height);
-				break;
+		IconBitmapHeader_data data = getIconBitmapHeaderData(p);
+		if (data.bitcount == 0) {
+			// Not supported...
+			continue;
 		}
 
 		// Check if the image is larger.
 		// TODO: Non-square icon handling.
 		bool icon_is_better = false;
-		if (width > width_best || height > height_best) {
+		if (data.width > width_best || data.height > height_best) {
 			// Image is larger.
 			icon_is_better = true;
-		} else if (width == width_best && height == height_best) {
+		} else if (data.width == width_best && data.height == height_best) {
 			// Image is the same size.
-			if (bitcount > bitcount_best) {
+			if (data.bitcount > bitcount_best) {
 				// Color depth is higher.
 				icon_is_better = true;
 			}
@@ -465,9 +517,9 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 		if (icon_is_better) {
 			// This icon is better.
 			bestIcon_idx = static_cast<int>(i);
-			width_best = width;
-			height_best = height;
-			bitcount_best = bitcount;
+			width_best = data.width;
+			height_best = data.height;
+			bitcount_best = data.bitcount;
 		}
 	}
 
@@ -938,18 +990,12 @@ rp_image_const_ptr ICOPrivate::loadImage_WinVista_PNG(int idx)
 
 /**
  * Load the image.
- * This loads the "best" bitmap from the icon.
+ * @param idx Icon's bitmap index (-1 for "best")
  * @return Image, or nullptr on error.
  */
-rp_image_const_ptr ICOPrivate::loadImage(void)
+rp_image_const_ptr ICOPrivate::loadImage(int idx)
 {
-	if (img) {
-		// Image has already been loaded.
-		return img;
-	} else if (!this->isValid || !this->file) {
-		// Can't load the image.
-		return {};
-	}
+	// NOTE: d->img_icon caching is handled by ICO::loadInternalImage().
 
 	switch (iconType) {
 		default:
@@ -961,6 +1007,7 @@ rp_image_const_ptr ICOPrivate::loadImage(void)
 		case IconType::IconRes_Win1:
 		case IconType::CursorRes_Win1:
 			// Windows 1.0 icon or cursor
+			// NOTE: No icon index for Win1.0.
 			return loadImage_Win1();
 
 		case IconType::Icon_Win3:
@@ -968,7 +1015,7 @@ rp_image_const_ptr ICOPrivate::loadImage(void)
 		case IconType::IconRes_Win3:
 		case IconType::CursorRes_Win3:
 			// Windows 3.x icon or cursor
-			return loadImage_Win3();
+			return loadImage_Win3(idx);
 	}
 }
 
@@ -1262,6 +1309,66 @@ int ICO::getFields(RomFields *fields) const
 
 	// TODO: ICO/CUR fields?
 	// and "color" for Win1.x cursors
+
+	if (d->iconType == ICOPrivate::IconType::Icon_Win3 ||
+	    d->iconType == ICOPrivate::IconType::Cursor_Win3)
+	{
+		// Add an RFT_LISTDATA with all icon variants.
+		// TODO: Also for resources?
+		// TODO: Only if more than one icon bitmap?
+
+		// Columns
+		// TODO: Hotspot for cursors?
+		static const array<const char*, 3> icon_col_names = {{
+			NOP_C_("ICO", "Size"),
+			"bpp",
+			NOP_C_("ICO", "Format"),
+		}};
+		vector<string> *const v_icon_col_names = RomFields::strArrayToVector_i18n(
+			"ICO", icon_col_names);
+
+		const int icon_count = static_cast<int>(d->iconBitmapHeaders.size());
+		auto *const vv_text = new RomFields::ListData_t(icon_count);
+		auto *const vv_icons = new RomFields::ListDataIcons_t(icon_count);
+
+		for (int i = 0; i < icon_count; i++) {
+			// Get the icon dimensions and color depth.
+			ICOPrivate::IconBitmapHeader_data data = d->getIconBitmapHeaderData(&d->iconBitmapHeaders[i]);
+			auto &data_row = vv_text->at(i);
+
+			if (data.bitcount == 0) {
+				// Invalid bitmap header.
+				// FIXME: This will result in an empty row...
+				data_row.resize(icon_col_names.size());
+				continue;
+			}
+
+			// Get the icon.
+			vv_icons->at(i) = const_cast<ICOPrivate*>(d)->loadImage(i);
+
+			// Add text fields.
+			data_row.push_back(fmt::format(FSTR("{:d}x{:d}"), data.width, data.height));
+			data_row.push_back(fmt::to_string(data.bitcount));
+			string s_pixel_format = data.pixel_format;
+			if (data.isPNG) {
+				s_pixel_format += " (PNG)";
+			}
+			data_row.push_back(std::move(s_pixel_format));
+		}
+
+		// Add the list data.
+		RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW |
+		                              RomFields::RFT_LISTDATA_ICONS, 0);
+		params.headers = v_icon_col_names;
+		params.data.single = vv_text;
+		// TODO: Header alignment?
+		params.col_attrs.align_data	= AFLD_ALIGN3(TXA_D, TXA_R, TXA_D);
+		params.col_attrs.sorting	= AFLD_ALIGN3(COLSORT_NUM, COLSORT_NUM, COLSORT_STD);
+		params.col_attrs.sort_col	= 0;	// Size
+		params.col_attrs.sort_dir	= RomFields::COLSORTORDER_DESCENDING;
+		params.mxd.icons = vv_icons;
+		fields->addField_listData(C_("ICO", "Icon Directory"), &params);
+	}
 
 	// Finished reading the field data.
 	return (fields->count() - initial_count);
