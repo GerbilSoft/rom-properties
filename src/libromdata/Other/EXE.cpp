@@ -658,6 +658,7 @@ EXE::EXE(const IRpFilePtr &file)
 			// Seek and/or read error.
 			d->exeType = EXEPrivate::ExeType::Unknown;
 			d->isValid = false;
+			d->file.reset();
 			return;
 		}
 
@@ -671,6 +672,7 @@ EXE::EXE(const IRpFilePtr &file)
 			// but COMs don't have useful headers.
 			d->exeType = EXEPrivate::ExeType::Unknown;
 			d->isValid = false;
+			d->file.reset();
 		}
 		return;
 	}
@@ -1070,7 +1072,36 @@ uint32_t EXE::supportedImageTypes_static(void)
  */
 uint32_t EXE::supportedImageTypes(void) const
 {
-	return supportedImageTypes_static();
+	// Only NE and PE executables have an application icon.
+	// TODO: OS/2 application icons? (LE/LX)
+
+	RP_D(const EXE);
+	if (d->fileType != FileType::Executable) {
+		return 0;
+	}
+
+	uint32_t ret = 0;
+	switch (d->exeType) {
+		default:
+			break;
+
+		case EXEPrivate::ExeType::NE:
+		case EXEPrivate::ExeType::COM_NE:
+			// Application icon may be present.
+			// TODO: Verify that it is first.
+			// TODO: Verify Win1.x/2.x.
+			ret = IMGBF_INT_ICON;
+			break;
+
+		case EXEPrivate::ExeType::PE:
+		case EXEPrivate::ExeType::PE32PLUS:
+			// Application icon may be present.
+			// TODO: Verify that it is first.
+			ret = IMGBF_INT_ICON;
+			break;
+	}
+
+	return ret;
 }
 
 /**
@@ -1107,7 +1138,12 @@ vector<RomData::ImageSizeDef> EXE::supportedImageSizes(ImageType imageType) cons
 		case IMG_INT_ICON:
 			// Assuming 32x32.
 			// TODO: Load the icon and check?
+			if (!(supportedImageTypes() & IMGBF_INT_ICON)) {
+				// This EXE type doesn't support icons.
+				break;
+			}
 			return {{nullptr, 32, 32, 0}};
+
 		default:
 			break;
 	}
