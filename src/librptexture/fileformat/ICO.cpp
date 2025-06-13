@@ -198,19 +198,22 @@ private:
 
 	/**
 	 * Load the image. (Windows 3.x icon format)
+	 * @param idx Icon's bitmap index (-1 for "best")
 	 * @return Image, or nullptr on error.
 	 */
-	rp_image_const_ptr loadImage_Win3(void);
+	rp_image_const_ptr loadImage_Win3(int idx = -1);
 
 	/**
 	 * Load the image. (Windows Vista PNG format)
+	 * @param idx Icon's bitmap index (-1 for "best")
 	 * @return Image, or nullptr on error.
 	 */
-	rp_image_const_ptr loadImage_WinVista_PNG(void);
+	rp_image_const_ptr loadImage_WinVista_PNG(int idx = -1);
 
 public:
 	/**
 	 * Load the image.
+	 * This loads the "best" bitmap from the icon.
 	 * @return Image, or nullptr on error.
 	 */
 	rp_image_const_ptr loadImage(void);
@@ -555,9 +558,10 @@ rp_image_const_ptr ICOPrivate::loadImage_Win1(void)
 
 /**
  * Load the image. (Windows 3.x icon format)
+ * @param idx Icon's bitmap index (-1 for "best")
  * @return Image, or nullptr on error.
  */
-rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
+rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 {
 	// Icon image header was already loaded by loadIconDirectory_Win3().
 	// TODO: Verify dwBytesInRes.
@@ -653,9 +657,19 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 
 	const uint16_t rt = imageResType();
 	if (rt != 0) {
-		// Open the resource.
+		// Load the icon from a resource.
 		const auto &res = *(dir.res);
-		f_icon = res.resReader->open(rt, le16_to_cpu(res.pBestIcon->nID), res.lang);
+		const GRPICONDIRENTRY *pBestIcon;
+		if (idx < 0) {
+			pBestIcon = res.pBestIcon;
+		} else if (idx < static_cast<int>(res.iconDirectory.size())) {
+			pBestIcon = &res.iconDirectory[idx];
+		} else {
+			// Invalid index.
+			return {};
+		}
+
+		f_icon = res.resReader->open(rt, le16_to_cpu(pBestIcon->nID), res.lang);
 		if (!f_icon) {
 			// Unable to open the resource.
 			return {};
@@ -663,7 +677,17 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 		addr = header_size;
 	} else {
 		// Get the icon's starting address within the .ico file.
-		const ICONDIRENTRY *const pBestIcon = dir.ico->pBestIcon;
+		const auto &ico = *(dir.ico);
+		const ICONDIRENTRY *pBestIcon;
+		if (idx < 0) {
+			pBestIcon = ico.pBestIcon;
+		} else if (idx < static_cast<int>(ico.iconDirectory.size())) {
+			pBestIcon = &ico.iconDirectory[idx];
+		} else {
+			// Invalid index.
+			return {};
+		}
+		
 		f_icon = this->file;
 		addr = le32_to_cpu(pBestIcon->dwImageOffset) + header_size;
 	}
@@ -880,9 +904,10 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(void)
 
 /**
  * Load the image. (Windows Vista PNG format)
+ * @param idx Icon's bitmap index (-1 for "best")
  * @return Image, or nullptr on error.
  */
-rp_image_const_ptr ICOPrivate::loadImage_WinVista_PNG(void)
+rp_image_const_ptr ICOPrivate::loadImage_WinVista_PNG(int idx)
 {
 	// Use RpPng to load a PNG image.
 	IRpFilePtr f_png;
@@ -891,12 +916,33 @@ rp_image_const_ptr ICOPrivate::loadImage_WinVista_PNG(void)
 	if (rt != 0) {
 		// Load the PNG from a resource.
 		const auto &res = *(dir.res);
-		f_png = res.resReader->open(rt, le16_to_cpu(res.pBestIcon->nID), res.lang);
+		const GRPICONDIRENTRY *pBestIcon;
+		if (idx < 0) {
+			pBestIcon = res.pBestIcon;
+		} else if (idx < static_cast<int>(res.iconDirectory.size())) {
+			pBestIcon = &res.iconDirectory[idx];
+		} else {
+			// Invalid index.
+			return {};
+		}
+
+		f_png = res.resReader->open(rt, le16_to_cpu(pBestIcon->nID), res.lang);
 	} else {
+		// Get the PNG's starting address within the .ico file.
+		const auto &ico = *(dir.ico);
+		const ICONDIRENTRY *pBestIcon;
+		if (idx < 0) {
+			pBestIcon = ico.pBestIcon;
+		} else if (idx < static_cast<int>(ico.iconDirectory.size())) {
+			pBestIcon = &ico.iconDirectory[idx];
+		} else {
+			// Invalid index.
+			return {};
+		}
+
 		// NOTE: PartitionFile only supports IDiscReader, so we'll need to
 		// create a dummy DiscReader object.
 		IDiscReaderPtr discReader = std::make_shared<DiscReader>(file, 0, file->size());
-		const ICONDIRENTRY *const pBestIcon = dir.ico->pBestIcon;
 		f_png = std::make_shared<PartitionFile>(discReader, pBestIcon->dwImageOffset, pBestIcon->dwBytesInRes);
 	}
 
@@ -906,6 +952,7 @@ rp_image_const_ptr ICOPrivate::loadImage_WinVista_PNG(void)
 
 /**
  * Load the image.
+ * This loads the "best" bitmap from the icon.
  * @return Image, or nullptr on error.
  */
 rp_image_const_ptr ICOPrivate::loadImage(void)
