@@ -116,14 +116,6 @@ public:
 		// Icon directory
 		// NOTE: *Not* byteswapped.
 		rp::uvector<ICONDIRENTRY> iconDirectory;
-
-		// "Best" icon in the icon directory
-		// NOTE: *Not* byteswapped.
-		const ICONDIRENTRY *pBestIcon;
-
-		icodir_ico()
-			: pBestIcon(nullptr)
-		{ }
 	};
 	struct icodir_res {
 		// Icon directory
@@ -131,10 +123,6 @@ public:
 		// NOTE: ICONDIRENTRY and GRPICONDIRENTRY are different sizes,
 		// so this has to be interpreted based on IconType.
 		rp::uvector<GRPICONDIRENTRY> iconDirectory;
-
-		// "Best" icon in the icon directory
-		// NOTE: *Not* byteswapped.
-		const GRPICONDIRENTRY *pBestIcon;
 
 		// IResourceReader for loading icons from Windows executables
 		IResourceReaderPtr resReader;
@@ -145,19 +133,30 @@ public:
 		int lang;
 
 		icodir_res(const IResourceReaderPtr &resReader, uint16_t type, int id, int lang)
-			: pBestIcon(nullptr)
-			, resReader(resReader)
+			: resReader(resReader)
 			, type(type)
 			, id(id)
 			, lang(lang)
 		{ }
 	};
 
-	union {
-		void *v;
-		icodir_ico *ico;
-		icodir_res *res;
-	} dir;
+	struct dir_t {
+		union {
+			void *v;
+			icodir_ico *ico;
+			icodir_res *res;
+		};
+
+		// "Best" icon in the icon directory.
+		// NOTE: This is an index into iconDirectory.
+		// If -1, a "best" icon has not been determined.
+		int bestIcon_idx;
+
+		dir_t()
+			: bestIcon_idx(-1)
+		{ }
+	};
+	dir_t dir;
 
 	// Icon bitmap header
 	union IconBitmapHeader_t {
@@ -400,7 +399,7 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 
 	// Go through the icon bitmap headers and figure out the "best" one.
 	unsigned int width_best = 0, height_best = 0, bitcount_best = 0;
-	int best_icon = -1;
+	int bestIcon_idx = -1;
 	for (unsigned int i = 0; i < count; i++) {
 		// Get the width, height, and color depth from this bitmap header.
 		const IconBitmapHeader_t *const p = &iconBitmapHeaders[i];
@@ -479,7 +478,7 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 
 		if (icon_is_better) {
 			// This icon is better.
-			best_icon = static_cast<int>(i);
+			bestIcon_idx = static_cast<int>(i);
 			pIconHeader = p;
 			width_best = width;
 			height_best = height;
@@ -487,12 +486,8 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 		}
 	}
 
-	if (best_icon >= 0) {
-		if (rt != 0) {
-			dir.res->pBestIcon = &dir.res->iconDirectory[best_icon];
-		} else {
-			dir.ico->pBestIcon = &dir.ico->iconDirectory[best_icon];
-		}
+	if (bestIcon_idx >= 0) {
+		dir.bestIcon_idx = bestIcon_idx;
 		return 0;
 	}
 
@@ -660,8 +655,8 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 		// Load the icon from a resource.
 		const auto &res = *(dir.res);
 		const GRPICONDIRENTRY *pBestIcon;
-		if (idx < 0) {
-			pBestIcon = res.pBestIcon;
+		if (idx < 0 && dir.bestIcon_idx >= 0) {
+			pBestIcon = &res.iconDirectory[dir.bestIcon_idx];
 		} else if (idx < static_cast<int>(res.iconDirectory.size())) {
 			pBestIcon = &res.iconDirectory[idx];
 		} else {
@@ -679,8 +674,8 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 		// Get the icon's starting address within the .ico file.
 		const auto &ico = *(dir.ico);
 		const ICONDIRENTRY *pBestIcon;
-		if (idx < 0) {
-			pBestIcon = ico.pBestIcon;
+		if (idx < 0 && dir.bestIcon_idx >= 0) {
+			pBestIcon = &ico.iconDirectory[dir.bestIcon_idx];
 		} else if (idx < static_cast<int>(ico.iconDirectory.size())) {
 			pBestIcon = &ico.iconDirectory[idx];
 		} else {
@@ -917,8 +912,8 @@ rp_image_const_ptr ICOPrivate::loadImage_WinVista_PNG(int idx)
 		// Load the PNG from a resource.
 		const auto &res = *(dir.res);
 		const GRPICONDIRENTRY *pBestIcon;
-		if (idx < 0) {
-			pBestIcon = res.pBestIcon;
+		if (idx < 0 && dir.bestIcon_idx >= 0) {
+			pBestIcon = &res.iconDirectory[dir.bestIcon_idx];
 		} else if (idx < static_cast<int>(res.iconDirectory.size())) {
 			pBestIcon = &res.iconDirectory[idx];
 		} else {
@@ -931,8 +926,8 @@ rp_image_const_ptr ICOPrivate::loadImage_WinVista_PNG(int idx)
 		// Get the PNG's starting address within the .ico file.
 		const auto &ico = *(dir.ico);
 		const ICONDIRENTRY *pBestIcon;
-		if (idx < 0) {
-			pBestIcon = ico.pBestIcon;
+		if (idx < 0 && dir.bestIcon_idx >= 0) {
+			pBestIcon = &ico.iconDirectory[dir.bestIcon_idx];
 		} else if (idx < static_cast<int>(ico.iconDirectory.size())) {
 			pBestIcon = &ico.iconDirectory[idx];
 		} else {
@@ -1170,7 +1165,7 @@ void ICO::init(bool res)
 		case ICOPrivate::IconType::Cursor_Win3:
 		case ICOPrivate::IconType::IconRes_Win3:
 		case ICOPrivate::IconType::CursorRes_Win3:
-			if (!d->dir.ico->pBestIcon) {
+			if (d->dir.bestIcon_idx < 0) {
 				// No "best" icon...
 				d->file.reset();
 				if (res) {
