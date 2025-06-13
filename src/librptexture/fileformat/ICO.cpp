@@ -158,6 +158,7 @@ public:
 	// All icon bitmap headers
 	// These all have to be loaded in order to
 	// determine which one is the "best" icon.
+	// NOTE: *Not* byteswapped.
 	rp::uvector<IconBitmapHeader_t> iconBitmapHeaders;
 
 	// "Best" icon: Bitmap header
@@ -395,7 +396,7 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 		const IconBitmapHeader_t *const p = &iconBitmapHeaders[i];
 		unsigned int width, height, bitcount;
 
-		switch (p->size) {
+		switch (le32_to_cpu(p->size)) {
 			default:
 				// Not supported...
 				continue;
