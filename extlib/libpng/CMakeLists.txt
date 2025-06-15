@@ -19,7 +19,7 @@
 
 set(PNGLIB_MAJOR 1)
 set(PNGLIB_MINOR 6)
-set(PNGLIB_REVISION 48)
+set(PNGLIB_REVISION 49)
 set(PNGLIB_SUBREVISION 0)
 #set(PNGLIB_SUBREVISION "git")
 set(PNGLIB_VERSION ${PNGLIB_MAJOR}.${PNGLIB_MINOR}.${PNGLIB_REVISION})
@@ -116,8 +116,7 @@ if(NOT PNG_EXECUTABLES)
   endif()
 endif()
 
-# Allow the users to configure various compilation options.
-option(PNG_DEBUG "Enable debug output" OFF)
+# Allow the users to switch on/off the use of hardware (SIMD) optimized code.
 option(PNG_HARDWARE_OPTIMIZATIONS "Enable hardware optimizations" ON)
 ENDIF(0) # rom-properties
 
@@ -159,6 +158,7 @@ else()
   find_package(ZLIB REQUIRED)
 endif()
 
+# Find the math library (where available).
 if(UNIX
    AND NOT (APPLE OR BEOS OR HAIKU)
    AND NOT EMSCRIPTEN)
@@ -170,6 +170,13 @@ if(UNIX
   endif()
 else()
   # libm is not available or not needed.
+endif()
+
+# Silence function deprecation warnings on the Windows compilers that might
+# use the MSVC Runtime library headers.
+if(WIN32 AND (CMAKE_C_COMPILER_ID MATCHES "MSVC|Intel|Clang"))
+  add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
+  add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
 endif()
 
 if(PNG_HARDWARE_OPTIMIZATIONS)
@@ -360,6 +367,35 @@ if(PNG_HARDWARE_OPTIMIZATIONS)
     endif()
   endif()
 
+  # Set definitions and sources for RISC-V.
+  if(PNG_TARGET_ARCHITECTURE MATCHES "^(riscv)")
+    include(CheckCCompilerFlag)
+    set(PNG_RISCV_RVV_POSSIBLE_VALUES check on off)
+    set(PNG_RISCV_RVV "off"
+      CACHE STRING "Enable RISC-V Vector optimizations: check|on|off; off is default")
+    set_property(CACHE PNG_RISCV_RVV
+                PROPERTY STRINGS ${PNG_RISCV_RVV_POSSIBLE_VALUES})
+    list(FIND PNG_RISCV_RVV_POSSIBLE_VALUES ${PNG_RISCV_RVV} index)
+    if(index EQUAL -1)
+      message(FATAL_ERROR "PNG_RISCV_RVV must be one of [${PNG_RISCV_RVV_POSSIBLE_VALUES}]")
+    elseif(NOT PNG_RISCV_RVV STREQUAL "off")
+      check_c_compiler_flag("-march=rv64gv1p0" COMPILER_SUPPORTS_RVV)
+      if(NOT COMPILER_SUPPORTS_RVV)
+        message(FATAL_ERROR "Compiler does not support -march=rv64gv1p0 option")
+      endif()
+      set(libpng_riscv_sources
+          riscv/filter_rvv_intrinsics.c
+          riscv/riscv_init.c)
+      if(PNG_RISCV_RVV STREQUAL "on")
+        add_definitions(-DPNG_RISCV_RVV_OPT=2)
+      elseif(PNG_RISCV_RVV STREQUAL "check")
+        add_definitions(-DPNG_RISCV_RVV_CHECK_SUPPORTED)
+      endif()
+    else()
+      add_definitions(-DPNG_RISCV_RVV_OPT=0)
+    endif()
+  endif()
+
 else(PNG_HARDWARE_OPTIMIZATIONS)
 
   # Set definitions and sources for ARM.
@@ -385,6 +421,11 @@ else(PNG_HARDWARE_OPTIMIZATIONS)
   # Set definitions and sources for LoongArch.
   if(PNG_TARGET_ARCHITECTURE MATCHES "^(loongarch)")
     add_definitions(-DPNG_LOONGARCH_LSX_OPT=0)
+  endif()
+
+  # Set definitions and sources for RISC-V.
+  if(PNG_TARGET_ARCHITECTURE MATCHES "^(riscv)")
+    add_definitions(-DPNG_RISCV_RVV_OPT=0)
   endif()
 
 endif(PNG_HARDWARE_OPTIMIZATIONS)
@@ -442,13 +483,13 @@ if(PNG_LIBCONF_HEADER STREQUAL "")
 endif()
 
 # Include the internal module PNGCheckLibconf.cmake
-include(${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake/PNGCheckLibconf.cmake)
+include("${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake/PNGCheckLibconf.cmake")
 
 if(NOT PNG_LIBCONF_HEADER STREQUAL "")
   # Configure libpng with the user-defined pnglibconf.h file.
   png_check_libconf(HEADER "${PNG_LIBCONF_HEADER}")
   configure_file("${PNG_LIBCONF_HEADER}"
-                 ${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.h
+                 "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.h"
                  @ONLY)
   add_custom_target(png_genfiles)
 elseif(NOT AWK)
@@ -456,47 +497,43 @@ elseif(NOT AWK)
   # Configure libpng with pnglibconf.h.prebuilt.
   png_check_libconf(HEADER "${PNG_LIBCONF_HEADER_PREBUILT}")
   configure_file("${PNG_LIBCONF_HEADER_PREBUILT}"
-                 ${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.h
+                 "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.h"
                  @ONLY)
   add_custom_target(png_genfiles)
 else()
   png_check_libconf(DFA_XTRA "${DFA_XTRA}")
 
   # Include the internal module PNGGenConfig.cmake
-  include(${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake/PNGGenConfig.cmake)
+  include("${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake/PNGGenConfig.cmake")
 
   # Work around a limitation of various Windows AWK programs that are
   # unable to process CRLF-terminated AWK scripts.
   # Copy these AWK scripts to a temporary location, converting their
   # line endings from Windows (CRLF) to Unix (LF) at the destination.
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/scripts/checksym.awk
-                 ${CMAKE_CURRENT_BINARY_DIR}/scripts/checksym.awk
+  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/scripts/checksym.awk"
+                 "${CMAKE_CURRENT_BINARY_DIR}/scripts/checksym.awk"
                  @ONLY
                  NEWLINE_STYLE LF)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/scripts/options.awk
-                 ${CMAKE_CURRENT_BINARY_DIR}/scripts/options.awk
+  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/scripts/options.awk"
+                 "${CMAKE_CURRENT_BINARY_DIR}/scripts/options.awk"
                  @ONLY
                  NEWLINE_STYLE LF)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/scripts/dfn.awk
-                 ${CMAKE_CURRENT_BINARY_DIR}/scripts/dfn.awk
+  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/scripts/dfn.awk"
+                 "${CMAKE_CURRENT_BINARY_DIR}/scripts/dfn.awk"
                  @ONLY
                  NEWLINE_STYLE LF)
 
   # Generate scripts/pnglibconf.h
-  generate_source(OUTPUT "scripts/pnglibconf.c"
+  generate_source(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/scripts/pnglibconf.c"
                   DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/scripts/pnglibconf.dfa"
                           "${CMAKE_CURRENT_BINARY_DIR}/scripts/options.awk"
                           "${CMAKE_CURRENT_SOURCE_DIR}/pngconf.h")
-  add_custom_target(png_scripts_pnglibconf_c
-                    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/scripts/pnglibconf.c")
 
   # Generate pnglibconf.c
-  generate_source(OUTPUT "pnglibconf.c"
+  generate_source(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.c"
                   DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/scripts/pnglibconf.dfa"
                           "${CMAKE_CURRENT_BINARY_DIR}/scripts/options.awk"
                           "${CMAKE_CURRENT_SOURCE_DIR}/pngconf.h")
-  add_custom_target(pnglibconf_c
-                    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.c")
 
   if(PNG_PREFIX)
     set(PNGLIBCONF_H_EXTRA_DEPENDS
@@ -507,85 +544,53 @@ else()
   endif()
 
   generate_out(INPUT "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.c"
-               OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.out"
-               DEPENDS pnglibconf_c)
-  add_custom_target(pnglibconf_out
-                    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.out")
+               OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.out")
 
   # Generate pnglibconf.h
-  generate_source(OUTPUT "pnglibconf.h"
+  generate_source(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.h"
                   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.out"
-                          pnglibconf_out
                           ${PNGLIBCONF_H_EXTRA_DEPENDS})
-  add_custom_target(pnglibconf_h
-                    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.h")
 
   generate_out(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/intprefix.c"
                OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/scripts/intprefix.out"
-               DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.h"
-                       pnglibconf_h)
-  add_custom_target(png_scripts_intprefix_out
-                    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/scripts/intprefix.out")
+               DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.h")
 
   generate_out(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/prefix.c"
                OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/scripts/prefix.out"
                DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/png.h"
                        "${CMAKE_CURRENT_SOURCE_DIR}/pngconf.h"
-                       "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.out"
-                       pnglibconf_out)
-  add_custom_target(png_scripts_prefix_out
-                    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/scripts/prefix.out")
+                       "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.out")
 
   # Generate pngprefix.h
-  generate_source(OUTPUT "pngprefix.h"
+  generate_source(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/pngprefix.h"
                   DEPENDS ${PNGPREFIX_H_EXTRA_DEPENDS})
-  add_custom_target(pngprefix_h
-                    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/pngprefix.h")
 
   generate_out(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/sym.c"
                OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/scripts/sym.out"
-               DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.h"
-                       pnglibconf_h)
-  add_custom_target(png_scripts_sym_out
-                    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/scripts/sym.out")
+               DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.h")
 
   generate_out(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/symbols.c"
                OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/scripts/symbols.out"
                DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/png.h"
                        "${CMAKE_CURRENT_SOURCE_DIR}/pngconf.h"
                        "${CMAKE_CURRENT_SOURCE_DIR}/scripts/pnglibconf.h.prebuilt")
-  add_custom_target(png_scripts_symbols_out
-                    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/scripts/symbols.out")
 
   generate_out(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/vers.c"
                OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/scripts/vers.out"
                DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/png.h"
                        "${CMAKE_CURRENT_SOURCE_DIR}/pngconf.h"
-                       "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.h"
-                       pnglibconf_h)
-  add_custom_target(png_scripts_vers_out
-                    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/scripts/vers.out")
+                       "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.h")
 
   generate_chk(INPUT "${CMAKE_CURRENT_BINARY_DIR}/scripts/symbols.out"
                OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/scripts/symbols.chk"
-               DEPENDS png_scripts_symbols_out
-                       "${CMAKE_CURRENT_BINARY_DIR}/scripts/checksym.awk"
+               DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/scripts/checksym.awk"
                        "${CMAKE_CURRENT_SOURCE_DIR}/scripts/symbols.def")
 
-  add_custom_target(png_scripts_symbols_chk
-                    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/scripts/symbols.chk")
-
   generate_copy(INPUT "${CMAKE_CURRENT_BINARY_DIR}/scripts/sym.out"
-                OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/libpng.sym"
-                DEPENDS png_scripts_sym_out)
-  generate_copy(INPUT "${CMAKE_CURRENT_BINARY_DIR}/scripts/vers.out"
-                OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/libpng.vers"
-                DEPENDS png_scripts_vers_out)
+                OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/libpng.sym")
 
-  add_custom_target(png_genvers
-                    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/libpng.vers")
-  add_custom_target(png_gensym
-                    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/libpng.sym")
+  generate_copy(INPUT "${CMAKE_CURRENT_BINARY_DIR}/scripts/vers.out"
+                OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/libpng.vers")
 
   add_custom_target(png_genprebuilt
                     COMMAND "${CMAKE_COMMAND}"
@@ -596,31 +601,18 @@ else()
   # A single target handles generation of all generated files.
   add_custom_target(png_genfiles
                     DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/libpng.sym"
-                            png_gensym
                             "${CMAKE_CURRENT_BINARY_DIR}/libpng.vers"
-                            png_genvers
                             "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.c"
-                            pnglibconf_c
                             "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.h"
-                            pnglibconf_h
                             "${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.out"
-                            pnglibconf_out
                             "${CMAKE_CURRENT_BINARY_DIR}/pngprefix.h"
-                            pngprefix_h
                             "${CMAKE_CURRENT_BINARY_DIR}/scripts/intprefix.out"
-                            png_scripts_intprefix_out
                             "${CMAKE_CURRENT_BINARY_DIR}/scripts/pnglibconf.c"
-                            png_scripts_pnglibconf_c
                             "${CMAKE_CURRENT_BINARY_DIR}/scripts/prefix.out"
-                            png_scripts_prefix_out
                             "${CMAKE_CURRENT_BINARY_DIR}/scripts/sym.out"
-                            png_scripts_sym_out
                             "${CMAKE_CURRENT_BINARY_DIR}/scripts/symbols.chk"
-                            png_scripts_symbols_chk
                             "${CMAKE_CURRENT_BINARY_DIR}/scripts/symbols.out"
-                            png_scripts_symbols_out
-                            "${CMAKE_CURRENT_BINARY_DIR}/scripts/vers.out"
-                            png_scripts_vers_out)
+                            "${CMAKE_CURRENT_BINARY_DIR}/scripts/vers.out")
 endif()
 
 # List the source code files.
@@ -661,7 +653,9 @@ set(libpng_sources
     ${libpng_mips_sources}
     ${libpng_powerpc_sources}
     ${libpng_loongarch_sources}
+    ${libpng_riscv_sources}
 )
+
 set(pngtest_sources
     pngtest.c
 )
@@ -683,11 +677,6 @@ set(pngfix_sources
 set(png_fix_itxt_sources
     contrib/tools/png-fix-itxt.c
 )
-
-if(MSVC OR (WIN32 AND (CMAKE_C_COMPILER_ID MATCHES "Clang")))
-  add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
-  add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
-endif()
 
 # rom-properties: FIXME: "/guard:cf" causes png_longjmp() to crash
 # in MSVC 2022 Release builds on Windows 10.
@@ -775,12 +764,12 @@ if(PNG_SHARED)
       )
   endif()
   target_include_directories(png_shared
-                             PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+                             PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
   target_include_directories(png_shared
-                             PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
+                             PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
   target_include_directories(png_shared
                              SYSTEM
-                             INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libpng${PNGLIB_ABI_VERSION}>)
+                             INTERFACE "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libpng${PNGLIB_ABI_VERSION}>")
   # rom-properties: ZLIB::ZLIB -> ${ZLIB_LIBRARY}
   target_link_libraries(png_shared
                         PUBLIC ${ZLIB_LIBRARY} ${M_LIBRARY})
@@ -799,12 +788,12 @@ if(PNG_STATIC)
                         PROPERTIES OUTPUT_NAME "${PNG_STATIC_OUTPUT_NAME}"
                                    DEBUG_POSTFIX "${PNG_DEBUG_POSTFIX}")
   target_include_directories(png_static
-                             PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+                             PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
   target_include_directories(png_static
-                             PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
+                             PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
   target_include_directories(png_static
                              SYSTEM
-                             INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libpng${PNGLIB_ABI_VERSION}>)
+                             INTERFACE "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libpng${PNGLIB_ABI_VERSION}>")
   # rom-properties: ZLIB::ZLIB -> ${ZLIB_LIBRARY}
   target_link_libraries(png_static
                         PUBLIC ${ZLIB_LIBRARY} ${M_LIBRARY})
@@ -835,12 +824,12 @@ if(PNG_FRAMEWORK)
   set_target_properties(png_framework
                         PROPERTIES DEFINE_SYMBOL "")
   target_include_directories(png_framework
-                             PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+                             PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
   target_include_directories(png_framework
-                             PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
+                             PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
   target_include_directories(png_framework
                              SYSTEM
-                             INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libpng${PNGLIB_ABI_VERSION}>)
+                             INTERFACE "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libpng${PNGLIB_ABI_VERSION}>")
   # rom-properties: ZLIB::ZLIB -> ${ZLIB_LIBRARY}
   target_link_libraries(png_framework
                         PUBLIC ${ZLIB_LIBRARY} ${M_LIBRARY})
@@ -856,7 +845,7 @@ if(PNG_TESTS AND PNG_SHARED)
   enable_testing()
 
   # Include the internal module PNGTest.cmake
-  include(${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake/PNGTest.cmake)
+  include("${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake/PNGTest.cmake")
 
   # Find test PNG files by globbing, but sort lists to ensure
   # consistency between different filesystems.
@@ -1067,12 +1056,14 @@ function(create_symlink DEST_FILE)
     if(CMAKE_HOST_WIN32 AND NOT CYGWIN)
       execute_process(COMMAND "${CMAKE_COMMAND}"
                               -E copy_if_different
-                              ${_SYM_FILE} ${DEST_FILE}
+                              "${_SYM_FILE}"
+                              "${DEST_FILE}"
                       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
     else()
       execute_process(COMMAND "${CMAKE_COMMAND}"
                               -E create_symlink
-                              ${_SYM_FILE} ${DEST_FILE}
+                              "${_SYM_FILE}"
+                              "${DEST_FILE}"
                       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
     endif()
   endif()
@@ -1086,28 +1077,28 @@ function(create_symlink DEST_FILE)
                          POST_BUILD
                          COMMAND "${CMAKE_COMMAND}"
                                  -E copy_if_different
-                                 $<TARGET_LINKER_FILE_DIR:${_SYM_TARGET}>/$<TARGET_LINKER_FILE_NAME:${_SYM_TARGET}>
-                                 $<TARGET_LINKER_FILE_DIR:${_SYM_TARGET}>/${DEST_FILE})
+                                 "$<TARGET_LINKER_FILE_DIR:${_SYM_TARGET}>/$<TARGET_LINKER_FILE_NAME:${_SYM_TARGET}>"
+                                 "$<TARGET_LINKER_FILE_DIR:${_SYM_TARGET}>/${DEST_FILE}")
     else()
       add_custom_command(TARGET ${_SYM_TARGET}
                          POST_BUILD
                          COMMAND "${CMAKE_COMMAND}"
                                  -E create_symlink
-                                 $<TARGET_LINKER_FILE_NAME:${_SYM_TARGET}>
-                                 $<TARGET_LINKER_FILE_DIR:${_SYM_TARGET}>/${DEST_FILE})
+                                 "$<TARGET_LINKER_FILE_NAME:${_SYM_TARGET}>"
+                                 "$<TARGET_LINKER_FILE_DIR:${_SYM_TARGET}>/${DEST_FILE}")
     endif()
   endif()
 endfunction()
 
 # Create source generation scripts.
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake/genchk.cmake.in
-               ${CMAKE_CURRENT_BINARY_DIR}/scripts/cmake/genchk.cmake
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake/genchk.cmake.in"
+               "${CMAKE_CURRENT_BINARY_DIR}/scripts/cmake/genchk.cmake"
                @ONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake/genout.cmake.in
-               ${CMAKE_CURRENT_BINARY_DIR}/scripts/cmake/genout.cmake
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake/genout.cmake.in"
+               "${CMAKE_CURRENT_BINARY_DIR}/scripts/cmake/genout.cmake"
                @ONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake/gensrc.cmake.in
-               ${CMAKE_CURRENT_BINARY_DIR}/scripts/cmake/gensrc.cmake
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake/gensrc.cmake.in"
+               "${CMAKE_CURRENT_BINARY_DIR}/scripts/cmake/gensrc.cmake"
                @ONLY)
 
 # libpng is a library so default to 'lib'
@@ -1120,17 +1111,17 @@ endif()
 # Only do this on Windows for Cygwin - the files don't make much sense
 # outside of a UNIX look-alike.
 if(NOT WIN32 OR CYGWIN OR MINGW)
-  set(prefix ${CMAKE_INSTALL_PREFIX})
-  set(exec_prefix ${CMAKE_INSTALL_PREFIX})
-  set(libdir ${CMAKE_INSTALL_FULL_LIBDIR})
-  set(includedir ${CMAKE_INSTALL_FULL_INCLUDEDIR})
+  set(prefix "${CMAKE_INSTALL_PREFIX}")
+  set(exec_prefix "${CMAKE_INSTALL_PREFIX}")
+  set(libdir "${CMAKE_INSTALL_FULL_LIBDIR}")
+  set(includedir "${CMAKE_INSTALL_FULL_INCLUDEDIR}")
   set(LIBS "-lz -lm")
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libpng.pc.in
-                 ${CMAKE_CURRENT_BINARY_DIR}/libpng${PNGLIB_ABI_VERSION}.pc
+  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/libpng.pc.in"
+                 "${CMAKE_CURRENT_BINARY_DIR}/libpng${PNGLIB_ABI_VERSION}.pc"
                  @ONLY)
   create_symlink(libpng.pc FILE libpng${PNGLIB_ABI_VERSION}.pc)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libpng-config.in
-                 ${CMAKE_CURRENT_BINARY_DIR}/libpng${PNGLIB_ABI_VERSION}-config
+  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/libpng-config.in"
+                 "${CMAKE_CURRENT_BINARY_DIR}/libpng${PNGLIB_ABI_VERSION}-config"
                  @ONLY)
   create_symlink(libpng-config FILE libpng${PNGLIB_ABI_VERSION}-config)
 endif()
@@ -1146,10 +1137,10 @@ if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
   # - Disabled the export rule
   install(TARGETS ${PNG_LIBRARY_TARGETS}
           #EXPORT libpng
-          RUNTIME DESTINATION ${INSTALL_BIN_DIR}
-          #LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-          #ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-          FRAMEWORK DESTINATION ${INSTALL_LIB_DIR})
+          RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
+          #LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+          #ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+          FRAMEWORK DESTINATION "${INSTALL_LIB_DIR}")
 
   IF(INSTALL_DEBUG AND PNG_SHARED)
     # FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
@@ -1174,16 +1165,16 @@ if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
     # Create a symlink for libpng.dll.a => libpng16.dll.a on Cygwin
     if(NOT WIN32 OR CYGWIN OR MINGW)
       create_symlink(libpng${CMAKE_SHARED_LIBRARY_SUFFIX} TARGET png_shared)
-      install(FILES $<TARGET_LINKER_FILE_DIR:png_shared>/libpng${CMAKE_SHARED_LIBRARY_SUFFIX}
-              DESTINATION ${CMAKE_INSTALL_LIBDIR})
+      install(FILES "$<TARGET_LINKER_FILE_DIR:png_shared>/libpng${CMAKE_SHARED_LIBRARY_SUFFIX}"
+              DESTINATION "${CMAKE_INSTALL_LIBDIR}")
     endif()
   endif()
 
   if(PNG_STATIC)
     if(NOT WIN32 OR CYGWIN OR MINGW)
       create_symlink(libpng${CMAKE_STATIC_LIBRARY_SUFFIX} TARGET png_static)
-      install(FILES $<TARGET_LINKER_FILE_DIR:png_static>/libpng${CMAKE_STATIC_LIBRARY_SUFFIX}
-              DESTINATION ${CMAKE_INSTALL_LIBDIR})
+      install(FILES "$<TARGET_LINKER_FILE_DIR:png_static>/libpng${CMAKE_STATIC_LIBRARY_SUFFIX}"
+              DESTINATION "${CMAKE_INSTALL_LIBDIR}")
     endif()
   endif()
   ENDIF(0)
@@ -1191,40 +1182,40 @@ endif()
 
 if(NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL)
   install(FILES ${libpng_public_hdrs}
-          DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+          DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
   install(FILES ${libpng_public_hdrs}
-          DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libpng${PNGLIB_ABI_VERSION})
+          DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/libpng${PNGLIB_ABI_VERSION}")
 endif()
 if(NOT SKIP_INSTALL_EXECUTABLES AND NOT SKIP_INSTALL_ALL)
   if(NOT WIN32 OR CYGWIN OR MINGW)
-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/libpng-config
-            DESTINATION ${CMAKE_INSTALL_BINDIR})
-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/libpng${PNGLIB_ABI_VERSION}-config
-            DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/libpng-config"
+            DESTINATION "${CMAKE_INSTALL_BINDIR}")
+    install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/libpng${PNGLIB_ABI_VERSION}-config"
+            DESTINATION "${CMAKE_INSTALL_BINDIR}")
   endif()
 endif()
 
 if(NOT SKIP_INSTALL_PROGRAMS AND NOT SKIP_INSTALL_ALL)
   install(TARGETS ${PNG_BIN_TARGETS}
-          RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+          RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 endif()
 
 if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
   # Install the man pages.
   install(FILES libpng.3 libpngpf.3
-          DESTINATION ${CMAKE_INSTALL_MANDIR}/man3)
+          DESTINATION "${CMAKE_INSTALL_MANDIR}/man3")
   install(FILES png.5
-          DESTINATION ${CMAKE_INSTALL_MANDIR}/man5)
+          DESTINATION "${CMAKE_INSTALL_MANDIR}/man5")
   # Install the pkg-config files.
   if(NOT CMAKE_HOST_WIN32 OR CYGWIN OR MINGW)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libpng.pc
-            DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/libpng-config
-            DESTINATION ${CMAKE_INSTALL_BINDIR})
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libpng${PNGLIB_ABI_VERSION}.pc
-            DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/libpng${PNGLIB_ABI_VERSION}-config
-            DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libpng.pc"
+            DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+    install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/libpng-config"
+            DESTINATION "${CMAKE_INSTALL_BINDIR}")
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libpng${PNGLIB_ABI_VERSION}.pc"
+            DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+    install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/libpng${PNGLIB_ABI_VERSION}-config"
+            DESTINATION "${CMAKE_INSTALL_BINDIR}")
   endif()
 endif()
 
@@ -1233,7 +1224,7 @@ endif()
 IF(0)
 if(NOT SKIP_INSTALL_EXPORT AND NOT SKIP_INSTALL_ALL)
   install(EXPORT libpng
-          DESTINATION ${CMAKE_INSTALL_LIBDIR}/libpng
+          DESTINATION "${CMAKE_INSTALL_LIBDIR}/libpng"
           FILE libpng${PNGLIB_ABI_VERSION}.cmake)
 endif()
 ENDIF(0) # rom-properties
@@ -1242,10 +1233,10 @@ ENDIF(0) # rom-properties
 if(NOT SKIP_INSTALL_CONFIG_FILE AND NOT SKIP_INSTALL_ALL)
   install(TARGETS ${PNG_LIBRARY_TARGETS}
           EXPORT PNGTargets
-          RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-          LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-          ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-          FRAMEWORK DESTINATION ${CMAKE_INSTALL_LIBDIR})
+          RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+          LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+          ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+          FRAMEWORK DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 
   include(CMakePackageConfigHelpers)
   write_basic_package_version_file(PNGConfigVersion.cmake
@@ -1255,11 +1246,11 @@ if(NOT SKIP_INSTALL_CONFIG_FILE AND NOT SKIP_INSTALL_ALL)
   install(EXPORT PNGTargets
           FILE PNGTargets.cmake
           NAMESPACE PNG::
-          DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/PNG)
+          DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/PNG")
 
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake/PNGConfig.cmake
-                ${CMAKE_CURRENT_BINARY_DIR}/PNGConfigVersion.cmake
-          DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/PNG)
+  install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake/PNGConfig.cmake"
+                "${CMAKE_CURRENT_BINARY_DIR}/PNGConfigVersion.cmake"
+          DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/PNG")
 endif()
 
 # TODO: Create MSVC import lib for MinGW-compiled shared lib.
