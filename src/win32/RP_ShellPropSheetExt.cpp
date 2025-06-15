@@ -1125,13 +1125,23 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 				int iImage = -1;
 				HBITMAP hbmIcon;
 				// FIXME: If not rescaled, C64 monochrome icons show up as completely white.
-				if (icon->width() == sizeListIconPhys.cx || icon->height() == sizeListIconPhys.cy) {
+				const int icon_w = icon->width();
+				const int icon_h = icon->height();
+				if (icon_w == sizeListIconPhys.cx || icon_h == sizeListIconPhys.cy) {
 					// No rescaling is necessary.
 					hbmIcon = RpImageWin32::toHBITMAP_alpha(icon);
 				} else {
 					// Icon needs to be rescaled.
+					// NOTE: Using nearest-neighbor scaling if it's an integer multiple for scaling up.
+					bool nearest = false;
+					if (sizeListIconPhys.cx > icon_w && sizeListIconPhys.cy > icon_h) {
+						// NOTE: Assuming square icons.
+						if (icon_w != 0) {
+							nearest = ((sizeListIconPhys.cx % icon_w) == 0);
+						}
+					}
 					// TODO: Use nearest-neighbor scaling if it's an integer multiple?
-					hbmIcon = RpImageWin32::toHBITMAP_alpha(icon, sizeListIconPhys, false);
+					hbmIcon = RpImageWin32::toHBITMAP_alpha(icon, sizeListIconPhys, nearest);
 				}
 				assert(hbmIcon != nullptr);
 				if (hbmIcon) {
