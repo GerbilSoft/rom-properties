@@ -179,6 +179,28 @@ void ListDataModelPrivate::updateIconPixmaps(void)
 
 		QPixmap pixmap = QPixmap::fromImage(rpToQImage(img));
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+		// NOTE: Assuming square pixmaps.
+		if (img->width() > iconSize.width()) {
+			// Instead of scaling icons down, set a device pixel ratio.
+			// This allows for higher-resolution display on high-DPI screens.
+			pixmap.setDevicePixelRatio(static_cast<qreal>(img->width()) / static_cast<qreal>(iconSize.width()));
+		} else {
+			// Scale up using integer scaling, then set a device pixel ratio.
+			int w = img->width();
+			int h = img->height();
+			if (w <= 0) {
+				continue;
+			}
+			while (w < iconSize.width()) {
+				w += img->width();
+				h += img->height();
+			}
+			pixmap = pixmap.scaled(w, h, Qt::KeepAspectRatio, Qt::FastTransformation);
+			
+			pixmap.setDevicePixelRatio(static_cast<qreal>(w) / static_cast<qreal>(iconSize.width()));
+		}
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 		// Do we need to resize the icon?
 		if (img->width() != iconSize.width() ||
 		    img->height() != iconSize.height())
@@ -186,6 +208,7 @@ void ListDataModelPrivate::updateIconPixmaps(void)
 			// Resize is needed.
 			pixmap = pixmap.scaled(iconSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 		}
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 
 		icons.push_back(std::move(pixmap));
 	}
