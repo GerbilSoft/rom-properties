@@ -76,7 +76,7 @@ int rp_image::swizzle_neon(const char *swz_spec)
 	} u8_32;
 	u8_32 swz_ch;
 	memcpy(&swz_ch, swz_spec, sizeof(swz_ch));
-	if (swz_ch.u32 == 'rgba') {
+	if (swz_ch.u32 == be32_to_cpu('rgba')) {
 		// 'rgba' == NULL swizzle. Don't bother doing anything.
 		return 0;
 	}
@@ -84,9 +84,14 @@ int rp_image::swizzle_neon(const char *swz_spec)
 	// NOTE: Texture uses ARGB format, but swizzle uses rgba.
 	// Rotate swz_ch to convert it to argb.
 	// The entire thing needs to be byteswapped to match the internal order, too.
-	// TODO: Verify on big-endian.
-	swz_ch.u32 = (swz_ch.u32 >> 24) | (swz_ch.u32 << 8);
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	// LE: Rotate 8-bits right
+	swz_ch.u32 = (swz_ch.u32 >> 24) | (swz_ch.u32 <<  8);
 	swz_ch.u32 = be32_to_cpu(swz_ch.u32);
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+	// BE: Rotate 8-bits left
+	swz_ch.u32 = (swz_ch.u32 >>  8) | (swz_ch.u32 << 24);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 	// Determine the pshufb mask.
 	// This can be used for [rgba0].

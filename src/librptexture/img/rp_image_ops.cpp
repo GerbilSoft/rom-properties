@@ -726,7 +726,7 @@ int rp_image::swizzle_cpp(const char *swz_spec)
 	} u8_32;
 	u8_32 swz_ch;
 	memcpy(&swz_ch, swz_spec, sizeof(swz_ch));
-	if (swz_ch.u32 == 'rgba') {
+	if (swz_ch.u32 == be32_to_cpu('rgba')) {
 		// 'rgba' == NULL swizzle. Don't bother doing anything.
 		return 0;
 	}

@@ -3,7 +3,7 @@
  * rp_image_ops.cpp: Image class. (operations)                             *
  * SSSE3-optimized version.                                                *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -48,7 +48,7 @@ int rp_image::swizzle_ssse3(const char *swz_spec)
 	} u8_32;
 	u8_32 swz_ch;
 	memcpy(&swz_ch, swz_spec, sizeof(swz_ch));
-	if (swz_ch.u32 == 'rgba') {
+	if (swz_ch.u32 == be32_to_cpu('rgba')) {
 		// 'rgba' == NULL swizzle. Don't bother doing anything.
 		return 0;
 	}
@@ -56,7 +56,7 @@ int rp_image::swizzle_ssse3(const char *swz_spec)
 	// NOTE: Texture uses ARGB format, but swizzle uses rgba.
 	// Rotate swz_ch to convert it to argb.
 	// The entire thing needs to be byteswapped to match the internal order, too.
-	// TODO: Verify on big-endian.
+	// NOTE 2: SSSE3 is guaranteed to be little-endian. (x86)
 	swz_ch.u32 = (swz_ch.u32 >> 24) | (swz_ch.u32 << 8);
 	swz_ch.u32 = be32_to_cpu(swz_ch.u32);
 
