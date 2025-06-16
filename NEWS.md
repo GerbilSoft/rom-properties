@@ -35,6 +35,7 @@
       * Reported by @Masamune3210.
   * Qoi: R/B channels were incorrectly swapped when this was first added in v2.5.
     * Affects: v2.5 - v2.5.1
+  * Fix an issue where an 'abgr' swizzle might fail on little-endian systems.
 
 * Other changes:
   * rpcli: Added more colorization for warning messages.
