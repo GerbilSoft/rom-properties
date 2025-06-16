@@ -2049,6 +2049,16 @@ INSTANTIATE_TEST_SUITE_P(MAME, ImageDecoderTest,
 		MAME_MIPMAP_TEST("texture_compression_etc2.ktx", 7, "COMPRESSED_RGB8_ETC2"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
+// Qoi tests
+#define QOI_IMAGE_TEST(file, format) ImageDecoderTest_mode( \
+			"Qoi/" file ".qoi.gz", \
+			file ".png", (format))
+INSTANTIATE_TEST_SUITE_P(Qoi, ImageDecoderTest,
+	::testing::Values(
+		QOI_IMAGE_TEST("argb-reference", "ARGB32"),
+		QOI_IMAGE_TEST("rgb-reference", "RGB888"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
 // TODO: NPOT tests for compressed formats. (partial block sizes)
 
 } }
