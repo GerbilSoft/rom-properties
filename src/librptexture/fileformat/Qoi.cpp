@@ -162,7 +162,14 @@ rp_image_const_ptr QoiPrivate::loadImage(void)
 		px_src += src_stride;
 	}
 	free(pixels);
-	
+
+	// NOTE: qoi.h has the R and B channels swapped compared to what rp_image expects.
+	int ret = tmp_img->swizzle("bgra");
+	if (ret != 0) {
+		// Swizzle failed.
+		return {};
+	}
+
 	img.reset(tmp_img);
 	return img;
 }

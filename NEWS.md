@@ -33,6 +33,8 @@
     empty data as a PNG image. (Needs more debugging for a proper fix...)
     * See #451: libpng errors crash due to libpng setjmp/longjmp (Windows 10, release builds only)
       * Reported by @Masamune3210.
+  * Qoi: R/B channels were incorrectly swapped when this was first added in v2.5.
+    * Affects: v2.5 - v2.5.1
 
 * Other changes:
   * rpcli: Added more colorization for warning messages.
