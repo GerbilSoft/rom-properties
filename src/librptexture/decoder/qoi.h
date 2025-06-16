@@ -335,7 +335,6 @@ enough for anybody. */
 
 typedef union {
 	struct { unsigned char r, g, b, a; } rgba;
-	unsigned char u8[4];
 	unsigned int v;
 } qoi_rgba_t;
 
@@ -554,12 +553,15 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 			int b1 = bytes[p++];
 
 			if (b1 == QOI_OP_RGB) {
-				memcpy(px.u8, bytes, 3);
-				p += 3;
+				px.rgba.r = bytes[p++];
+				px.rgba.g = bytes[p++];
+				px.rgba.b = bytes[p++];
 			}
 			else if (b1 == QOI_OP_RGBA) {
-				memcpy(px.u8, bytes, 4);
-				p += 4;
+				px.rgba.r = bytes[p++];
+				px.rgba.g = bytes[p++];
+				px.rgba.b = bytes[p++];
+				px.rgba.a = bytes[p++];
 			}
 			else if ((b1 & QOI_MASK_2) == QOI_OP_INDEX) {
 				px = index[b1];
@@ -583,8 +585,10 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 			index[QOI_COLOR_HASH(px) & (64 - 1)] = px;
 		}
 
-		memcpy(&pixels[px_pos], px.u8, 3);
-
+		pixels[px_pos + 0] = px.rgba.r;
+		pixels[px_pos + 1] = px.rgba.g;
+		pixels[px_pos + 2] = px.rgba.b;
+		
 		if (channels == 4) {
 			pixels[px_pos + 3] = px.rgba.a;
 		}
