@@ -79,8 +79,11 @@ public:
 
 	// ICO header
 	union {
-		ICO_Win1_Header win1;
-		ICONDIR win3;		// ICONDIR and GRPICONDIR are essentially the same
+		// Win1.x icon files may contain a DIB, a DDB, or both.
+		ICO_Win1_Header win1[2];
+
+		// Win3.x: ICONDIR and GRPICONDIR are essentially the same
+		ICONDIR win3;
 	} icoHeader;
 
 	/** Win3.x icon stuff **/
@@ -187,9 +190,10 @@ public:
 private:
 	/**
 	 * Load the image. (Windows 1.0 icon format)
+	 * @param idx Icon's bitmap index (-1 for "best")
 	 * @return Image, or nullptr on error.
 	 */
-	rp_image_const_ptr loadImage_Win1(void);
+	rp_image_const_ptr loadImage_Win1(int idx = -1);
 
 	/**
 	 * Load the image. (Windows 3.x icon format)
@@ -525,20 +529,45 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 
 /**
  * Load the image. (Windows 1.0 icon format)
+ * @param idx Icon's bitmap index (-1 for "best")
  * @return Image, or nullptr on error.
  */
-rp_image_const_ptr ICOPrivate::loadImage_Win1(void)
+rp_image_const_ptr ICOPrivate::loadImage_Win1(int idx)
 {
 	// Icon data is located immediately after the header.
 	// Each icon is actually two icons: a 1bpp mask, then a 1bpp icon.
+	unsigned int addr = sizeof(ICO_Win1_Header);
 
 	// NOTE: If the file has *both* DIB and DDB, then the DIB is first,
-	// followed by the DDB, with its own icon header. Not handling this
-	// for now; only reading the DIB.
+	// followed by the DDB, with its own icon header.
+	if (idx < 0) {
+		// Use the first icon. (DIB if both are present.)
+		idx = 0;
+	} else if (idx > 1) {
+		// No Win1.x icon has more than 2 bitmaps.
+		return {};
+	} else if (idx == 1) {
+		// Only valid if this icon has both DIB and DDB.
+		uint16_t format = le16_to_cpu(icoHeader.win1[0].format);
+		if ((format >> 8) != 2) {
+			// This icon does *not* have both DIB and DDB.
+			// Only a single bitmap is present.
+			return {};
+		}
 
-	const int width = le16_to_cpu(icoHeader.win1.width);
-	const int height = le16_to_cpu(icoHeader.win1.height);
-	const unsigned int stride = le16_to_cpu(icoHeader.win1.stride);
+		// Add the first icon size to the address.
+		// NOTE: 2x height * stride because of bitmap + mask.
+		// NOTE 2: Second icon header does *not* have a format value.
+		addr += (sizeof(ICO_Win1_Header) - 2);
+		const int ico0_height = le16_to_cpu(icoHeader.win1[0].height);
+		const int ico0_stride = le16_to_cpu(icoHeader.win1[0].stride);
+		addr += ((ico0_height * ico0_stride) * 2);
+	}
+
+	const ICO_Win1_Header *const pIcoHeaderWin1 = &icoHeader.win1[idx];
+	const int width = le16_to_cpu(pIcoHeaderWin1->width);
+	const int height = le16_to_cpu(pIcoHeaderWin1->height);
+	const unsigned int stride = le16_to_cpu(pIcoHeaderWin1->stride);
 
 	// Single icon size
 	const size_t icon_size = static_cast<size_t>(height) * stride;
@@ -559,10 +588,10 @@ rp_image_const_ptr ICOPrivate::loadImage_Win1(void)
 		}
 
 		// Read from the resource.
-		size = f_icon->seekAndRead(sizeof(icoHeader.win1), icon_data.data(), icon_size * 2);
+		size = f_icon->seekAndRead(addr, icon_data.data(), icon_size * 2);
 	} else {
 		// Read from the file.
-		size = file->seekAndRead(sizeof(icoHeader.win1), icon_data.data(), icon_size * 2);
+		size = file->seekAndRead(addr, icon_data.data(), icon_size * 2);
 	}
 
 	if (size != icon_size * 2) {
@@ -999,7 +1028,7 @@ rp_image_const_ptr ICOPrivate::loadImage(int idx)
 		case IconType::CursorRes_Win1:
 			// Windows 1.0 icon or cursor
 			// NOTE: No icon index for Win1.0.
-			return loadImage_Win1();
+			return loadImage_Win1(idx);
 
 		case IconType::Icon_Win3:
 		case IconType::Cursor_Win3:
@@ -1067,9 +1096,10 @@ void ICO::init(bool res)
 	}
 
 	// Read the ICONDIR.
+	IRpFilePtr f_icondir;
 	if (res) {
 		const auto &res = *(d->dir.res);
-		IRpFilePtr f_icondir = res.resReader->open(res.type, res.id, res.lang);
+		f_icondir = res.resReader->open(res.type, res.id, res.lang);
 		if (!f_icondir) {
 			// Unable to open the icon or cursor.
 			d->file.reset();
@@ -1092,12 +1122,14 @@ void ICO::init(bool res)
 			d->file.reset();
 			return;
 		}
+		f_icondir = d->file;
 	}
 
 	// Determine the icon type.
 	// NOTE: d->iconType is already set if loading from a Windows resource.
 	// Only set it if it's still ICOPrivate::IconType::Unknown.
-	switch (le16_to_cpu(d->icoHeader.win1.format)) {
+	bool isWin1_Both = false;
+	switch (le16_to_cpu(d->icoHeader.win1[0].format)) {
 		default:
 			// Not recognized...
 			d->file.reset();
@@ -1149,9 +1181,11 @@ void ICO::init(bool res)
 			break;
 		}
 
+		case ICO_WIN1_FORMAT_ICON_BOTH:
+			isWin1_Both = true;
+			// fall-through
 		case ICO_WIN1_FORMAT_ICON_DIB:
 		case ICO_WIN1_FORMAT_ICON_DDB:
-		case ICO_WIN1_FORMAT_ICON_BOTH:
 			if (d->iconType == ICOPrivate::IconType::Unknown) {
 				d->iconType = ICOPrivate::IconType::Icon_Win1;
 				d->dir.rt = RT_ICON;
@@ -1161,9 +1195,11 @@ void ICO::init(bool res)
 			d->textureFormatName = "Windows 1.x Icon";
 			break;
 
+		case ICO_WIN1_FORMAT_CURSOR_BOTH:
+			isWin1_Both = true;
+			// fall-through
 		case ICO_WIN1_FORMAT_CURSOR_DIB:
 		case ICO_WIN1_FORMAT_CURSOR_DDB:
-		case ICO_WIN1_FORMAT_CURSOR_BOTH:
 			if (d->iconType == ICOPrivate::IconType::Unknown) {
 				d->iconType = ICOPrivate::IconType::Cursor_Win1;
 				d->dir.rt = RT_CURSOR;
@@ -1172,6 +1208,28 @@ void ICO::init(bool res)
 			d->mimeType = "image/vnd.microsoft.cursor";
 			d->textureFormatName = "Windows 1.x Cursor";
 			break;
+	}
+
+	if (isWin1_Both) {
+		// Read the second icon header.
+		// NOTE: 2x height * stride because of bitmap + mask.
+		// NOTE 2: Second icon header does *not* have a format value.
+		// To work around this, we'll seek to 2 bytes before, and zero out the format value.
+		unsigned int addr = sizeof(ICO_Win1_Header);
+		const int ico0_height = le16_to_cpu(d->icoHeader.win1[0].height);
+		const int ico0_stride = le16_to_cpu(d->icoHeader.win1[0].stride);
+		addr += ((ico0_height * ico0_stride) * 2) - 2;
+
+		size_t size = f_icondir->seekAndRead(addr, &d->icoHeader.win1[1], sizeof(d->icoHeader.win1[1]));
+		if (size != sizeof(d->icoHeader.win1[1])) {
+			d->file.reset();
+			if (d->dir.is_res) {
+				delete d->dir.res;
+				d->dir.res = nullptr;
+			}
+			return;
+		}
+		d->icoHeader.win1[1].format = 0;
 	}
 
 	// Cache the dimensions for the FileFormat base class.
@@ -1190,8 +1248,8 @@ void ICO::init(bool res)
 		case ICOPrivate::IconType::Cursor_Win1:
 		case ICOPrivate::IconType::IconRes_Win1:
 		case ICOPrivate::IconType::CursorRes_Win1:
-			d->dimensions[0] = le16_to_cpu(d->icoHeader.win1.width);
-			d->dimensions[1] = le16_to_cpu(d->icoHeader.win1.height);
+			d->dimensions[0] = le16_to_cpu(d->icoHeader.win1[0].width);
+			d->dimensions[1] = le16_to_cpu(d->icoHeader.win1[0].height);
 			break;
 
 		case ICOPrivate::IconType::Icon_Win3:
@@ -1300,14 +1358,10 @@ int ICO::getFields(RomFields *fields) const
 
 	// TODO: ICO/CUR fields?
 	// and "color" for Win1.x cursors
+	// TODO: Also for resources?
+	// TODO: Only if more than one icon bitmap?
 
-	if (d->iconType == ICOPrivate::IconType::Icon_Win3 ||
-	    d->iconType == ICOPrivate::IconType::Cursor_Win3)
-	{
-		// Add an RFT_LISTDATA with all icon variants.
-		// TODO: Also for resources?
-		// TODO: Only if more than one icon bitmap?
-
+	if (!d->dir.is_res) {
 		// Columns
 		// TODO: Hotspot for cursors?
 		static const array<const char*, 3> icon_col_names = {{
@@ -1318,47 +1372,83 @@ int ICO::getFields(RomFields *fields) const
 		vector<string> *const v_icon_col_names = RomFields::strArrayToVector_i18n(
 			"ICO", icon_col_names);
 
-		const int icon_count = static_cast<int>(d->iconBitmapHeaders.size());
-		auto *const vv_text = new RomFields::ListData_t(icon_count);
-		auto *const vv_icons = new RomFields::ListDataIcons_t(icon_count);
+		RomFields::ListData_t *vv_text = nullptr;
+		RomFields::ListDataIcons_t *v_icons = nullptr;
 
-		for (int i = 0; i < icon_count; i++) {
-			// Get the icon dimensions and color depth.
-			ICOPrivate::IconBitmapHeader_data data = d->getIconBitmapHeaderData(&d->iconBitmapHeaders[i]);
-			auto &data_row = vv_text->at(i);
+		// Add an RFT_LISTDATA with all icon variants.
+		if (d->iconType == ICOPrivate::IconType::Icon_Win1 ||
+		    d->iconType == ICOPrivate::IconType::Cursor_Win1)
+		{
+			// Win1.x icons can have a DIB, a DDB, or both.
+			// All of them are 1-bit mono.
+			const int icon_count = ((le16_to_cpu(d->icoHeader.win1[0].format) >> 8) == 2) ? 2 : 1;
+			vv_text = new RomFields::ListData_t(icon_count);
+			v_icons = new RomFields::ListDataIcons_t(icon_count);
 
-			if (data.bitcount == 0) {
-				// Invalid bitmap header.
-				// FIXME: This will result in an empty row...
-				data_row.resize(icon_col_names.size());
-				continue;
+			for (int i = 0; i < icon_count; i++) {
+				// Get the icon.
+				v_icons->at(i) = const_cast<ICOPrivate*>(d)->loadImage(i);
+
+				// Add text fields.
+				auto &data_row = vv_text->at(i);
+				data_row.push_back(fmt::format(FSTR("{:d}x{:d}"),
+					le16_to_cpu(d->icoHeader.win1[i].width),
+					le16_to_cpu(d->icoHeader.win1[i].height)));
+				data_row.push_back("1");
+				data_row.push_back("Mono");
 			}
+		}
+		else if (d->iconType == ICOPrivate::IconType::Icon_Win3 ||
+		         d->iconType == ICOPrivate::IconType::Cursor_Win3)
+		{
+			const int icon_count = static_cast<int>(d->iconBitmapHeaders.size());
+			vv_text = new RomFields::ListData_t(icon_count);
+			v_icons = new RomFields::ListDataIcons_t(icon_count);
 
-			// Get the icon.
-			vv_icons->at(i) = const_cast<ICOPrivate*>(d)->loadImage(i);
+			for (int i = 0; i < icon_count; i++) {
+				// Get the icon dimensions and color depth.
+				ICOPrivate::IconBitmapHeader_data data = d->getIconBitmapHeaderData(&d->iconBitmapHeaders[i]);
+				auto &data_row = vv_text->at(i);
 
-			// Add text fields.
-			data_row.push_back(fmt::format(FSTR("{:d}x{:d}"), data.width, data.height));
-			data_row.push_back(fmt::to_string(data.bitcount));
-			string s_pixel_format = data.pixel_format;
-			if (data.isPNG) {
-				s_pixel_format += " (PNG)";
+				if (data.bitcount == 0) {
+					// Invalid bitmap header.
+					// FIXME: This will result in an empty row...
+					data_row.resize(icon_col_names.size());
+					continue;
+				}
+
+				// Get the icon.
+				v_icons->at(i) = const_cast<ICOPrivate*>(d)->loadImage(i);
+
+				// Add text fields.
+				data_row.push_back(fmt::format(FSTR("{:d}x{:d}"), data.width, data.height));
+				data_row.push_back(fmt::to_string(data.bitcount));
+				string s_pixel_format = data.pixel_format;
+				if (data.isPNG) {
+					s_pixel_format += " (PNG)";
+				}
+				data_row.push_back(std::move(s_pixel_format));
 			}
-			data_row.push_back(std::move(s_pixel_format));
 		}
 
-		// Add the list data.
-		RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW |
-		                              RomFields::RFT_LISTDATA_ICONS, 0);
-		params.headers = v_icon_col_names;
-		params.data.single = vv_text;
-		// TODO: Header alignment?
-		params.col_attrs.align_data	= AFLD_ALIGN3(TXA_D, TXA_R, TXA_D);
-		params.col_attrs.sorting	= AFLD_ALIGN3(COLSORT_NUM, COLSORT_NUM, COLSORT_STD);
-		params.col_attrs.sort_col	= 0;	// Size
-		params.col_attrs.sort_dir	= RomFields::COLSORTORDER_DESCENDING;
-		params.mxd.icons = vv_icons;
-		fields->addField_listData(C_("ICO", "Icon Directory"), &params);
+		if (vv_text && v_icons) {
+			// Add the list data.
+			RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW |
+			                              RomFields::RFT_LISTDATA_ICONS, 0);
+			params.headers = v_icon_col_names;
+			params.data.single = vv_text;
+			// TODO: Header alignment?
+			params.col_attrs.align_data	= AFLD_ALIGN3(TXA_D, TXA_R, TXA_D);
+			params.col_attrs.sorting	= AFLD_ALIGN3(COLSORT_NUM, COLSORT_NUM, COLSORT_STD);
+			params.col_attrs.sort_col	= 0;	// Size
+			params.col_attrs.sort_dir	= RomFields::COLSORTORDER_DESCENDING;
+			params.mxd.icons = v_icons;
+			fields->addField_listData(C_("ICO", "Icon Directory"), &params);
+		} else {
+			// Prevent memory leaks. (Shouldn't happen...)
+			delete vv_text;
+			delete v_icons;
+		}
 	}
 
 	// Finished reading the field data.
