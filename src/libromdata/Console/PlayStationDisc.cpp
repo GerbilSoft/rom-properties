@@ -951,7 +951,7 @@ int PlayStationDisc::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int s
 	if (pos != string::npos) {
 		region_code = gameID.substr(0, pos);
 		gameID[pos] = '-';
-	} else if (d->boot_filename.size() > 4) {
+	} else if (gameID.size() > 4) {
 		// No underscore. Use the first four characters as the region.
 		region_code = gameID.substr(0, 4);
 	} else {
