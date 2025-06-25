@@ -124,6 +124,10 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 	/** librpsecure **/
 
+	// Suppress Windows "critical" error dialogs.
+	// This is a legacy MS-DOS holdover, e.g. the "Abort, Retry, Fail" prompt.
+	SetErrorMode(SEM_FAILCRITICALERRORS);
+
 	// Restrict DLL lookups.
 	rp_secure_restrict_dll_lookups();
 

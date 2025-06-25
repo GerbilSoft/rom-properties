@@ -1208,6 +1208,10 @@ static int check_system_architectures(void)
  */
 int CALLBACK _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPTSTR lpCmdLine, _In_ int nCmdShow)
 {
+	// Suppress Windows "critical" error dialogs.
+	// This is a legacy MS-DOS holdover, e.g. the "Abort, Retry, Fail" prompt.
+	SetErrorMode(SEM_FAILCRITICALERRORS);
+
 	// Restrict DLL lookups.
 	rp_secure_restrict_dll_lookups();
 	// Set Win32 security options.
