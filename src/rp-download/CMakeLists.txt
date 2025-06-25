@@ -34,11 +34,13 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.${PROJECT_NAME}.h.in" "${CMAK
 
 SET(${PROJECT_NAME}_SRCS
 	rp-download.cpp
+	rp-download_secure.c
 	IDownloader.cpp
 	http-status.cpp
 	CacheKeyVerify.cpp
 	)
 SET(${PROJECT_NAME}_H
+	rp-download_secure.h
 	IDownloader.hpp
 	http-status.hpp
 	CacheKeyVerify.hpp
