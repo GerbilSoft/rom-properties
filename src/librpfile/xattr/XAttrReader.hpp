@@ -54,22 +54,26 @@ public:
 	enum class ZAlgorithm {
 		None,
 
-#ifdef _WIN32
 		// NTFS-specific compression
 		LZNT1,
 		XPRESS4K,
 		LZX,
 		XPRESS8K,
 		XPRESS16K,
-#endif /* _WIN32 */
 
-#ifndef _WIN32
 		// btrfs compression algorithms
 		ZLIB,
 		LZO,
 		ZSTD,
-#endif /* _WIN32 */
+
+		Max
 	};
+
+	/**
+	 * Get a string representation of a compression algorithm.
+	 * @return String representation, or nullptr if the value is invalid.
+	 */
+	static const char *zAlgorithmToString(ZAlgorithm zAlgorithm);
 
 public:
 	/**

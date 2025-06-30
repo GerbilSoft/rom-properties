@@ -163,25 +163,10 @@ void Ext2AttrViewPrivate::updateFlagsCheckboxes(void)
  */
 void Ext2AttrViewPrivate::updateZAlgorithmLabel(void)
 {
-	QString s_alg;
-	switch (zAlgorithm) {
-		default:
-		case XAttrReader::ZAlgorithm::None:
-			// No compression...
-			break;
-		case XAttrReader::ZAlgorithm::ZLIB:
-			s_alg = QLatin1String("zlib");
-			break;
-		case XAttrReader::ZAlgorithm::LZO:
-			s_alg = QLatin1String("lzo");
-			break;
-		case XAttrReader::ZAlgorithm::ZSTD:
-			s_alg = QLatin1String("zstd");
-			break;
-	}
-
-	if (!s_alg.isEmpty()) {
-		ui.lblCompression->setText(QC_("Ext2AttrView", "Compression: %1").arg(s_alg));
+	const char *const s_alg = XAttrReader::zAlgorithmToString(zAlgorithm);
+	if (s_alg) {
+		ui.lblCompression->setText(U82Q(
+			fmt::format(FRUN(C_("Ext2AttrView", "Compression: {:s}")), s_alg)));
 	} else {
 		// NOTE: Can't hide the label because that would break the layout.
 		// Clear it instead.

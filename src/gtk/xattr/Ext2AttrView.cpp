@@ -354,26 +354,10 @@ rp_ext2_attr_view_update_flags_display(RpExt2AttrView *widget)
 static void
 rp_ext2_attr_view_update_zAlgorithm_label(RpExt2AttrView *widget)
 {
-	const char *s_alg;
-	switch (widget->zAlgorithm) {
-		default:
-		case XAttrReader::ZAlgorithm::None:
-			// No compression...
-			s_alg = nullptr;
-			break;
-		case XAttrReader::ZAlgorithm::ZLIB:
-			s_alg = "zlib";
-			break;
-		case XAttrReader::ZAlgorithm::LZO:
-			s_alg = "lzo";
-			break;
-		case XAttrReader::ZAlgorithm::ZSTD:
-			s_alg = "zstd";
-			break;
-	}
-
+	const char *const s_alg = XAttrReader::zAlgorithmToString(widget->zAlgorithm);
 	if (s_alg) {
-		gtk_label_set_text(GTK_LABEL(widget->lblCompression), fmt::format(FSTR("Compression: {:s}"), s_alg).c_str());
+		gtk_label_set_text(GTK_LABEL(widget->lblCompression),
+			fmt::format(FSTR("Compression: {:s}"), s_alg).c_str());
 		gtk_widget_set_visible(widget->lblCompression, true);
 	} else {
 		gtk_widget_set_visible(widget->lblCompression, false);

@@ -47,6 +47,37 @@ int XAttrReader::lastError(void) const
 }
 
 /**
+ * Get a string representation of a compression algorithm.
+ * @return String representation, or nullptr if the value is invalid.
+ */
+const char *XAttrReader::zAlgorithmToString(ZAlgorithm zAlgorithm)
+{
+	static const char *const zAlgorithm_tbl[] = {
+		nullptr,
+
+		// NTFS-specific compression
+		"LZNT1",
+		"XPRESS4K",
+		"LZX",
+		"XPRESS8K",
+		"XPRESS16K",
+
+		// btrfs compression algorithms
+		"zlib",
+		"lzo",
+		"zstd",
+	};
+
+	assert(zAlgorithm >= ZAlgorithm::None);
+	assert(zAlgorithm < ZAlgorithm::Max);
+	if (zAlgorithm < ZAlgorithm::None || zAlgorithm >= ZAlgorithm::Max) {
+		return nullptr;
+	}
+
+	return zAlgorithm_tbl[static_cast<int>(zAlgorithm)];
+}
+
+/**
  * Does this file have Ext2 attributes?
  * @return True if it does; false if not.
  */
