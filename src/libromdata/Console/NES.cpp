@@ -22,8 +22,22 @@ using namespace LibRpText;
 // C++ STL classes
 using std::array;
 using std::string;
+using std::unique_ptr;
+using std::vector;
+
+// zlib for crc32()
+#include <zlib.h>
+#ifdef _MSC_VER
+// MSVC: Exception handling for /DELAYLOAD.
+#  include "libwin32common/DelayLoadHelper.h"
+#endif /* _MSC_VER */
 
 namespace LibRomData {
+
+#ifdef _MSC_VER
+// DelayLoad test implementation.
+DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
+#endif /* _MSC_VER */
 
 class NESPrivate final : public RomDataPrivate
 {
@@ -91,6 +105,10 @@ public:
 	bool hasCheckedIntFooter;	// True if we already checked.
 	uint8_t intFooterErrno;		// If checked: 0 if valid, positive errno on error.
 
+	// CRC32s for external images
+	// 0 == PRG ROM; 1 == CHR ROM (if present)
+	uint32_t rom_8k_crc32[2];
+
 	/**
 	 * Convert an FDS BCD datestamp to Unix time.
 	 * @param fds_bcd_ds FDS BCD datestamp.
@@ -136,9 +154,27 @@ public:
 	 * @return 0 if found; negative POSIX error code on error.
 	 */
 	int loadInternalFooter(void);
+
+public:
+	/**
+	 * Initialize zlib.
+	 * @return 0 on success; non-zero on error.
+	 */
+	static int zlibInit(void);
+
+	/**
+	 * Calculate the CRC32s of the first 8 KB of PRG ROM and CHR ROM.
+	 * This is used for external image URLs.
+	 *
+	 * The CRC32s will be stored in rom_8k_crc32[].
+	 *
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int calcRomCRC32s(void);
 };
 
 ROMDATA_IMPL(NES)
+ROMDATA_IMPL_IMG(NES)
 
 /** NESPrivate **/
 
@@ -200,6 +236,9 @@ NESPrivate::NESPrivate(const IRpFilePtr &file)
 	// Clear the ROM header structs.
 	memset(&header, 0, sizeof(header));
 	memset(&footer, 0, sizeof(footer));
+
+	// Clear the CRC32s.
+	memset(rom_8k_crc32, 0, sizeof(rom_8k_crc32));
 }
 
 /**
@@ -611,6 +650,119 @@ int NESPrivate::loadInternalFooter(void)
 	return 0;
 }
 
+/**
+ * Initialize zlib.
+ * @return 0 on success; non-zero on error.
+ */
+int NESPrivate::zlibInit(void)
+{
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_get_crc_table() != 0) {
+		// Delay load failed.
+		// Can't calculate the CRC32.
+		return -ENOENT;
+	}
+#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
+	// zlib isn't in a DLL, but we need to ensure that the
+	// CRC table is initialized anyway.
+	get_crc_table();
+#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
+
+	// zlib initialized.
+	return 0;
+}
+
+int NESPrivate::calcRomCRC32s(void)
+{
+	if (rom_8k_crc32[0] != 0) {
+		// We already have the CRC32s.
+		return 0;
+	}
+
+	// CRC32s haven't been calculated yet.
+	if (zlibInit() != 0) {
+		// zlib could not be initialized.
+		return -EIO;
+	}
+
+	if (!file || !file->isOpen()) {
+		// File isn't open. Can't calculate the CRC32.
+		return -EBADF;
+	}
+
+	// Determine the starting addresses of PRG and CHR.
+	uint32_t prg_addr, chr_addr;
+	switch (romType & NESPrivate::ROM_FORMAT_MASK) {
+		case NESPrivate::ROM_FORMAT_OLD_INES:
+		case NESPrivate::ROM_FORMAT_INES:
+		case NESPrivate::ROM_FORMAT_NES2:
+		case NESPrivate::ROM_FORMAT_TNES: {
+			prg_addr = static_cast<uint32_t>(sizeof(header.ines));
+
+			// If a trainer is present, add 512.
+			if (header.ines.mapper_lo & INES_F6_TRAINER) {
+				prg_addr += 512;
+			}
+
+			// PRG ROM is stored here.
+			// CHR ROM is stored after all PRG ROM banks.
+			if (likely(get_chr_rom_size() != 0)) {
+				chr_addr = prg_addr + get_prg_rom_size();
+			} else {
+				// No CHR ROM in this image.
+				chr_addr = 0;
+			}
+			break;
+		}
+
+		case NESPrivate::ROM_FORMAT_FDS:
+		case NESPrivate::ROM_FORMAT_FDS_FWNES:
+		case NESPrivate::ROM_FORMAT_FDS_TNES:
+			// TODO
+			return -ENOENT;
+
+		default:
+			// Not supported.
+			return -ENOENT;
+	}
+
+	static constexpr size_t NES_ROM_BUF_SIZ = (8U * 1024U);
+	unique_ptr<uint8_t[]> buf(new uint8_t[NES_ROM_BUF_SIZ]);
+
+	// Read 8 KB of PRG ROM.
+	size_t sz_rd = file->seekAndRead(prg_addr, buf.get(), NES_ROM_BUF_SIZ);
+	if (sz_rd != NES_ROM_BUF_SIZ) {
+		// Seek and/or read error.
+		int err = -file->lastError();
+		if (err == 0) {
+			err = -EIO;
+		}
+		return err;
+	}
+	rom_8k_crc32[0] = crc32(0, buf.get(), NES_ROM_BUF_SIZ);
+
+	// Read 8 KB of CHR ROM.
+	if (likely(chr_addr != 0)) {
+		size_t sz_rd = file->seekAndRead(chr_addr, buf.get(), NES_ROM_BUF_SIZ);
+		if (sz_rd != NES_ROM_BUF_SIZ) {
+			// Seek and/or read error.
+			int err = -file->lastError();
+			if (err == 0) {
+				err = -EIO;
+			}
+			return err;
+		}
+		rom_8k_crc32[1] = crc32(0, buf.get(), NES_ROM_BUF_SIZ);
+	} else {
+		// No CHR ROM.
+		rom_8k_crc32[1] = 0;
+	}
+
+	return 0;
+}
+
 /** NES **/
 
 /**
@@ -978,6 +1130,62 @@ const char *NES::systemName(unsigned int type) const
 
 	// Should not get here...
 	return nullptr;
+}
+
+/**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t NES::supportedImageTypes_static(void)
+{
+	return IMGBF_EXT_TITLE_SCREEN;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> NES::supportedImageSizes_static(ImageType imageType)
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			// NOTE: Always using 256x240.
+			return {{nullptr, 256, 240, 0}};
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return {};
+}
+
+/**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t NES::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	uint32_t ret = 0;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			// Rescaling is required for the 8:7 pixel aspect ratio.
+			ret = IMGPF_RESCALE_ASPECT_8to7;
+			break;
+
+		default:
+			break;
+	}
+	return ret;
 }
 
 /**
@@ -1581,6 +1789,120 @@ int NES::loadFieldData(void)
 
 	// TODO: More fields.
 	return static_cast<int>(d->fields.count());
+}
+
+/**
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type
+ * @param extURLs	[out]    Output vector
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int NES::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
+{
+	extURLs.clear();
+	ASSERT_extURLs(imageType);
+
+	RP_D(NES);
+	if (!d->isValid || (int)d->romType < 0) {
+		// ROM image isn't valid.
+		return -EIO;
+	}
+
+	// Image URL consists of two CRC32s:
+	// - First 8 KB of PRG ROM
+	// - First 8 KB of CHR ROM
+	// NOTE: If the title uses CHR RAM, then the second CRC32 is omitted.
+	// TODO: FDS?
+	int ret = d->calcRomCRC32s();
+	if (ret != 0) {
+		// Unable to get the ROM CRC32s.
+		return ret;
+	}
+	if (d->rom_8k_crc32[0] == 0) {
+	}
+
+	// Lowercase hex CRC32s are used.
+	string s_crc32;
+	if (likely(d->rom_8k_crc32[1] != 0)) {
+		// CHR ROM is present.
+		s_crc32 = fmt::format(FSTR("{:0>8X}-{:0>8X}"),
+			 d->rom_8k_crc32[0], d->rom_8k_crc32[1]);
+	} else {
+		// CHR ROM is not present.
+		s_crc32 = fmt::format(FSTR("{:0>8X}"),
+			 d->rom_8k_crc32[0]);
+	}
+
+	// NOTE: We only have one size for NES.
+	RP_UNUSED(size);
+	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
+	assert(sizeDefs.size() == 1);
+	if (sizeDefs.empty()) {
+		// No image sizes.
+		return -ENOENT;
+	}
+
+	// NOTE: RPDB's title screen database only has one size.
+	// There's no need to check image sizes, but we need to
+	// get the image size for the extURLs struct.
+
+	// Determine the image type name.
+	const char *imageTypeName;
+	const char *ext;
+	switch (imageType) {
+		case IMG_EXT_TITLE_SCREEN:
+			imageTypeName = "title";
+			ext = ".png";
+			break;
+		default:
+			// Unsupported image type.
+			return -ENOENT;
+	}
+
+	// TODO: Table lookup?
+	const char *sys;
+	switch (d->romType & NESPrivate::ROM_SYSTEM_MASK) {
+		case NESPrivate::ROM_SYSTEM_NES:
+			sys = "nes";
+			break;
+		case NESPrivate::ROM_SYSTEM_FDS:
+			sys = "fds";
+			break;
+		case NESPrivate::ROM_SYSTEM_VS:
+			sys = "vs";
+			break;
+		case NESPrivate::ROM_SYSTEM_PC10:
+			sys = "pc10";
+			break;
+		default:
+			assert(!"Invalid system.");
+			return -EIO;
+	}
+
+	// NOTE: If this system doesn't have mappers, '-1' will be used.
+	char s_mapper[16];
+	snprintf(s_mapper, sizeof(s_mapper), "%d", d->get_iNES_mapper_number());
+
+	// Add the URLs.
+	extURLs.resize(1);
+	ExtURL &extURL = extURLs[0];
+	extURL.url = d->getURL_RPDB(sys, imageTypeName, s_mapper, s_crc32.c_str(), ext);
+	extURL.cache_key = d->getCacheKey_RPDB(sys, imageTypeName, s_mapper, s_crc32.c_str(), ext);
+	extURL.width = sizeDefs[0].width;
+	extURL.height = sizeDefs[0].height;
+	extURL.high_res = (sizeDefs[0].index >= 2);
+
+	// All URLs added.
+	return 0;
 }
 
 } // namespace LibRomData

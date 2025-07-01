@@ -275,7 +275,7 @@ static const array<RomDataFns, 38> romDataFns_header = {{
 	// MegaDrive: ATTR_SUPPORTS_DEVICES for Sega CD
 	GetRomDataFns(MegaDrive, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
 	GetRomDataFns(N64, ATTR_HAS_METADATA),
-	GetRomDataFns(NES, ATTR_NONE),
+	GetRomDataFns(NES, ATTR_HAS_THUMBNAIL),
 	GetRomDataFns(SNES, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(SegaSaturn, ATTR_NONE | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
 	GetRomDataFns(WiiSave, ATTR_HAS_THUMBNAIL),

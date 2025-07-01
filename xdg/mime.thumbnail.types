@@ -58,6 +58,8 @@ application/x-genesis-32x-rom		# MegaDrive
 application/x-sega-cd-32x-rom		# MegaDrive
 application/x-sega-pico-rom		# MegaDrive
 application/x-sega-teradrive-rom	# MegaDrive
+application/x-nes-rom			# NES
+application/x-fds-disk			# NES
 application/x-ps1-save			# PlayStationSave
 application/x-saturn-rom		# SegaSaturn
 application/vnd.nintendo.snes.rom	# SNES
