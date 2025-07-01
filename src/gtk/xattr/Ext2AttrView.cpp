@@ -357,7 +357,7 @@ rp_ext2_attr_view_update_zAlgorithm_label(RpExt2AttrView *widget)
 	const char *const s_alg = XAttrReader::zAlgorithmToString(widget->zAlgorithm);
 	if (s_alg) {
 		gtk_label_set_text(GTK_LABEL(widget->lblCompression),
-			fmt::format(FSTR("Compression: {:s}"), s_alg).c_str());
+			fmt::format(FRUN(C_("Ext2AttrView", "Compression: {:s}")), s_alg).c_str());
 		gtk_widget_set_visible(widget->lblCompression, true);
 	} else {
 		gtk_widget_set_visible(widget->lblCompression, false);
