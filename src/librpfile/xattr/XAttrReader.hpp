@@ -54,7 +54,7 @@ public:
 	enum class ZAlgorithm {
 		None,
 
-		// NTFS-specific compression
+		// NTFS-specific compression algorithms
 		LZNT1,
 		XPRESS4K,
 		LZX,
