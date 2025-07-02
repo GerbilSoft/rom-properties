@@ -283,6 +283,9 @@ PARSE_MIME_TYPES(MIMETYPES_THUMBONLY
 PARSE_MIME_TYPES(MIMETYPES_ALL
 	"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
 	"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types")
+PARSE_MIME_TYPES_JSON(MIMETYPES_THUMBONLY_JSON_ARRAY "            "
+	"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
+	)
 PARSE_MIME_TYPES_JSON(MIMETYPES_ALL_JSON_ARRAY "            "
 	"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
 	"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types")

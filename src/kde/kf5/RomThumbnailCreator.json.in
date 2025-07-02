@@ -7,10 +7,10 @@
             "ThumbnailCreator"
         ],
         "MimeTypes": [
-@MIMETYPES_ALL_JSON_ARRAY@
+@MIMETYPES_THUMBONLY_JSON_ARRAY@
         ]
     },
-    "MimeType": "@MIMETYPES_ALL@",
+    "MimeType": "@MIMETYPES_THUMBONLY@",
     "X-KDE-Protocols": [
         "file",
         "desktop"

@@ -50,6 +50,8 @@
   * rpcli: Refactored console handling into a separate library, libgsvt.
   * IsoPartition: Implemented readdir(). Not currently used by anything, though.
   * KDE (KF5, KF6): Improved image quality for RFT_LISTDATA fields with icons.
+  * KDE (KF5, KF6): RomThumbnailCreator now only has MIME types that can actually
+    be thumbnailed, which may reduce processing time slightly.
 
 ## v2.5.1 (released 2025/05/10)
 
