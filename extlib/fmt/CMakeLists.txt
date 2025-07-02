@@ -71,7 +71,7 @@ function(add_module_library name)
   DO_SPLIT_DEBUG(${name})
   SET_WINDOWS_SUBSYSTEM(${name} WIN32)
 
-  IF(INSTALL_DEBUG)
+  IF(INSTALL_DEBUG AND BUILD_SHARED_LIBS)
     # FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
     INCLUDE(DirInstallPaths)
     GET_TARGET_PROPERTY(DEBUG_FILENAME ${name} PDB)
@@ -95,7 +95,7 @@ function(add_module_library name)
         )
     ENDIF(WIN32)
     UNSET(DEBUG_FILENAME)
-  ENDIF(INSTALL_DEBUG)
+  ENDIF(INSTALL_DEBUG AND BUILD_SHARED_LIBS)
 
   if (NOT ${${AML_IF}})
     # Create a non-modular library.

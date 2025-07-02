@@ -40,6 +40,10 @@
   * Qoi: R/B channels were incorrectly swapped when this was first added in v2.5.
     * Affects: v2.5 - v2.5.1
   * Fix an issue where an 'abgr' swizzle might fail on little-endian systems.
+  * fmt: Don't attempt to install a split debug file if building the internal
+    copy of fmt as a static library. (Usually only on Linux systems.)
+    * Fixes #456: "sudo make install" Fails
+      * Reported by @Techokami.
 
 * Other changes:
   * rpcli: Added more colorization for warning messages.
