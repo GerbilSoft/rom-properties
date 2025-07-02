@@ -138,6 +138,18 @@ public:
 	bool hasZAlgorithm(void) const;
 
 	/**
+	 * Get the compression level used for this file.
+	 * @return Compression level (0 for not specified)
+	 */
+	int zLevel(void) const;
+
+	/**
+	 * Does this file have a compression level specified?
+	 * @return True if it does; false if not.
+	 */
+	bool hasZLevel(void) const;
+
+	/**
 	 * Does this file have generic extended attributes?
 	 * (POSIX xattr on Linux; ADS on Windows)
 	 * @return True if it does; false if not.

@@ -105,7 +105,7 @@ int XAttrViewPrivate::loadExt2Attrs(void)
 
 	// We have Ext2 attributes.
 	ui.ext2AttrView->setFlags(xattrReader->ext2Attributes());
-	ui.ext2AttrView->setZAlgorithm(xattrReader->zAlgorithm());
+	ui.ext2AttrView->setZAlgorithmAndZLevel(xattrReader->zAlgorithm(), xattrReader->zLevel());
 	ui.grpExt2Attributes->show();
 	return 0;
 }

@@ -117,6 +117,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	, dosAttributes(0)
 	, validDosAttributes(0)
 	, zAlgorithm(XAttrReader::ZAlgorithm::None)
+	, zLevel(0)
 {
 	// Make sure this is a regular file or a directory.
 	mode_t mode;
@@ -349,6 +350,24 @@ int XAttrReaderPrivate::loadZAlgorithm(void)
 			}
 			value[sizeof(value)-1] = '\0';
 
+			// btrfs compression string may have a level value after ':'.
+			const char *s_level = nullptr;
+			char *const p = strchr(value, ':');
+			if (p != nullptr) {
+				*p = '\0';
+				s_level = p + 1;
+				if (*s_level != '\0') {
+					char *endptr = nullptr;
+					int level = static_cast<int>(strtol(s_level, &endptr, 10));
+					if (endptr && *endptr == '\0') {
+						// Found a valid level.
+						zLevel = level;
+						hasAttributes |= static_cast<uint8_t>(AttrBit::ZLevel);
+					}
+				}
+			}
+
+			// Check the compression algorithm.
 			if (!strcmp(value, "zlib")) {
 				zAlgorithm = XAttrReader::ZAlgorithm::ZLIB;
 				hasAttributes |= static_cast<uint8_t>(AttrBit::ZAlgorithm);

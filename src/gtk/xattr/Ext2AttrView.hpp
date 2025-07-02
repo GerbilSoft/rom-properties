@@ -43,4 +43,11 @@ G_END_DECLS
 void					rp_ext2_attr_view_set_zAlgorithm	(RpExt2AttrView *widget, LibRpFile::XAttrReader::ZAlgorithm zAlgorithm);
 LibRpFile::XAttrReader::ZAlgorithm	rp_ext2_attr_view_get_zAlgorithm	(RpExt2AttrView *widget);
 void					rp_ext2_attr_view_clear_zAlgorithm	(RpExt2AttrView *widget);
+
+void					rp_ext2_attr_view_set_zLevel		(RpExt2AttrView *widget, int zLevel);
+int					rp_ext2_attr_view_get_zLevel		(RpExt2AttrView *widget);
+void					rp_ext2_attr_view_clear_zLevel		(RpExt2AttrView *widget);
+
+void					rp_ext2_attr_view_set_zAlgorithm_and_zLevel	(RpExt2AttrView *widget, LibRpFile::XAttrReader::ZAlgorithm zAlgorithm, int zLevel);
+void					rp_ext2_attr_view_clear_zAlgorithm_and_zLevel	(RpExt2AttrView *widget);
 #endif /* __cplusplus */

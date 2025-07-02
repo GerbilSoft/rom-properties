@@ -22,6 +22,7 @@ Q_OBJECT
 Q_PROPERTY(int flags READ flags WRITE setFlags RESET clearFlags)
 // TODO: Proper enum registration.
 //Q_PROPERTY(XAttrReader::ZAlgorithm zAlgorithm READ zAlgorithm WRITE setZAlgorithm RESET clearZAlgorithm)
+Q_PROPERTY(int zLevel READ zLevel WRITE setZLevel RESET clearZLevel)
 
 public:
 	explicit Ext2AttrView(QWidget *parent = nullptr);
@@ -78,6 +79,35 @@ public:
 	 * Clear the current compression algorithm.
 	 */
 	void clearZAlgorithm(void);
+
+	/**
+	 * Get the current compression level.
+	 * @return Compression level (0 for not specified)
+	 */
+	int zLevel(void) const;
+
+	/**
+	* Set the current compression level.
+	 * @param zLevel Compression level (0 for not specified)
+	 */
+	void setZLevel(int zLevel);
+
+	/**
+	 * Clear the current compression level.
+	 */
+	void clearZLevel(void);
+
+	/**
+	 * Set the current compression algorithm and level.
+	 * @param zAlgorithm Compression algorithm
+	 * @param zLevel Compression level (0 for not specified)
+	 */
+	void setZAlgorithmAndZLevel(LibRpFile::XAttrReader::ZAlgorithm zAlgorithm, int zLevel);
+
+	/**
+	 * Clear the current compression algorithm and level.
+	 */
+	void clearZAlgorithmAndZLevel(void);
 
 protected slots:
 	/**

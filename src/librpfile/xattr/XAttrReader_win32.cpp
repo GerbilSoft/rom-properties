@@ -96,6 +96,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	, dosAttributes(0)
 	, validDosAttributes(0)
 	, zAlgorithm(XAttrReader::ZAlgorithm::None)
+	, zLevel(0)
 {
 	// NOTE: While there is a GetFileInformationByHandle() function,
 	// there's no easy way to get alternate data streams using a

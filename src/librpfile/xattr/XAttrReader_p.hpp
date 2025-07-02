@@ -112,7 +112,8 @@ public:
 		XfsAttributes	= (1U << 1),
 		DosAttributes	= (1U << 2),
 		ZAlgorithm	= (1U << 3),
-		GenericXAttrs	= (1U << 4),
+		ZLevel		= (1U << 4),
+		GenericXAttrs	= (1U << 5),
 	};
 	uint8_t hasAttributes;
 
@@ -122,6 +123,7 @@ public:
 	unsigned int dosAttributes;
 	unsigned int validDosAttributes;
 	XAttrReader::ZAlgorithm zAlgorithm;
+	int zLevel;
 	XAttrReader::XAttrList genericXAttrs;
 };
 

@@ -320,8 +320,8 @@ rp_xattr_view_load_ext2_attrs(RpXAttrView *widget)
 	// We have Ext2 attributes.
 	rp_ext2_attr_view_set_flags(RP_EXT2_ATTR_VIEW(widget->ext2AttrView),
 		widget->xattrReader->ext2Attributes());
-	rp_ext2_attr_view_set_zAlgorithm(RP_EXT2_ATTR_VIEW(widget->ext2AttrView),
-		widget->xattrReader->zAlgorithm());
+	rp_ext2_attr_view_set_zAlgorithm_and_zLevel(RP_EXT2_ATTR_VIEW(widget->ext2AttrView),
+		widget->xattrReader->zAlgorithm(), widget->xattrReader->zLevel());
 	gtk_widget_set_visible(widget->fraExt2Attributes, true);
 	return 0;
 }

@@ -179,6 +179,26 @@ bool XAttrReader::hasZAlgorithm(void) const
 }
 
 /**
+ * Get the compression level used for this file.
+ * @return Compression level (0 for not specified)
+ */
+int XAttrReader::zLevel(void) const
+{
+	RP_D(const XAttrReader);
+	return d->zLevel;
+}
+
+/**
+ * Does this file have a compression level specified?
+ * @return True if it does; false if not.
+ */
+bool XAttrReader::hasZLevel(void) const
+{
+	RP_D(const XAttrReader);
+	return !!(d->hasAttributes & static_cast<uint8_t>(XAttrReaderPrivate::AttrBit::ZLevel));
+}
+
+/**
  * Does this file have generic extended attributes?
  * (POSIX xattr on Linux; ADS on Windows)
  * @return True if it does; false if not.

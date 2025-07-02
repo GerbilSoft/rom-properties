@@ -18,12 +18,16 @@
 // librpfile
 using LibRpFile::XAttrReader;
 
+// C++ STL classes
+using std::string;
+
 /* Property identifiers */
 typedef enum {
 	PROP_0,
 
 	PROP_FLAGS,
 	PROP_ZALGORITHM,
+	PROP_ZLEVEL,
 
 	PROP_LAST
 } RpExt2AttrViewPropID;
@@ -72,6 +76,7 @@ struct _RpExt2AttrView {
 
 	int flags;
 	XAttrReader::ZAlgorithm zAlgorithm;
+	int zLevel;
 
 	// Inhibit checkbox toggling while updating.
 	gboolean inhibit_checkbox_no_toggle;
@@ -115,6 +120,11 @@ rp_ext2_attr_view_class_init(RpExt2AttrViewClass *klass)
 	props[PROP_ZALGORITHM] = g_param_spec_uint(
 		"zalgorithm", "zAlgorithm", "Compression algorithm",
 		0, G_MAXUINT, 0,
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
+
+	props[PROP_ZLEVEL] = g_param_spec_int(
+		"zlevel", "zLevel", "Compression level (0 for not specified)",
+		G_MININT, G_MAXINT, 0,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
 	// Install the properties.
@@ -356,8 +366,13 @@ rp_ext2_attr_view_update_zAlgorithm_label(RpExt2AttrView *widget)
 {
 	const char *const s_alg = XAttrReader::zAlgorithmToString(widget->zAlgorithm);
 	if (s_alg) {
-		gtk_label_set_text(GTK_LABEL(widget->lblCompression),
-			fmt::format(FRUN(C_("Ext2AttrView", "Compression: {:s}")), s_alg).c_str());
+		string s_lbl;
+		if (likely(widget->zLevel == 0)) {
+			s_lbl = fmt::format(FRUN(C_("Ext2AttrView", "Compression: {:s}")), s_alg);
+		} else {
+			s_lbl = fmt::format(FRUN(C_("Ext2AttrView", "Compression: {:s}:{:d}")), s_alg, widget->zLevel);
+		}
+		gtk_label_set_text(GTK_LABEL(widget->lblCompression), s_lbl.c_str());
 		gtk_widget_set_visible(widget->lblCompression, true);
 	} else {
 		gtk_widget_set_visible(widget->lblCompression, false);
@@ -412,11 +427,14 @@ rp_ext2_attr_view_clear_flags(RpExt2AttrView *widget)
 
 /**
  * Set the current compression algorithm.
+ * @param widget Ext2AttrView
  * @return Compression algorithm
  */
 void
 rp_ext2_attr_view_set_zAlgorithm(RpExt2AttrView *widget, XAttrReader::ZAlgorithm zAlgorithm)
 {
+	g_return_if_fail(RP_IS_EXT2_ATTR_VIEW(widget));
+
 	if (widget->zAlgorithm != zAlgorithm) {
 		widget->zAlgorithm = zAlgorithm;
 		rp_ext2_attr_view_update_zAlgorithm_label(widget);
@@ -425,8 +443,9 @@ rp_ext2_attr_view_set_zAlgorithm(RpExt2AttrView *widget, XAttrReader::ZAlgorithm
 }
 
 /**
- * Set the current compression algorithm.
- * @param zAlgorithm Compression algorithm
+ * Get the current compression algorithm.
+ * @param widget Ext2AttrView
+ * @return Compression algorithm
  */
 XAttrReader::ZAlgorithm
 rp_ext2_attr_view_get_zAlgorithm(RpExt2AttrView *widget)
@@ -437,10 +456,103 @@ rp_ext2_attr_view_get_zAlgorithm(RpExt2AttrView *widget)
 
 /**
  * Clear the current compression algorithm.
+ * @param widget Ext2AttrView
  */
 void
 rp_ext2_attr_view_clear_zAlgorithm(RpExt2AttrView *widget)
 {
+	g_return_if_fail(RP_IS_EXT2_ATTR_VIEW(widget));
+
+	if (widget->zAlgorithm != XAttrReader::ZAlgorithm::None) {
+		widget->zAlgorithm = XAttrReader::ZAlgorithm::None;
+		rp_ext2_attr_view_update_zAlgorithm_label(widget);
+		g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_ZALGORITHM]);
+	}
+}
+
+/**
+ * Set the current compression level.
+ * @param widget Ext2AttrView
+ * @return Compression level (0 if not specified)
+ */
+void
+rp_ext2_attr_view_set_zLevel(RpExt2AttrView *widget, int zLevel)
+{
+	g_return_if_fail(RP_IS_EXT2_ATTR_VIEW(widget));
+
+	if (widget->zLevel != zLevel) {
+		widget->zLevel = zLevel;
+		rp_ext2_attr_view_update_zAlgorithm_label(widget);
+		g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_ZALGORITHM]);
+	}
+}
+
+/**
+ * Get the current compression level.
+ * @param widget Ext2AttrView
+ * @return Compression level (0 if not specified)
+ */
+int
+rp_ext2_attr_view_get_zLevel(RpExt2AttrView *widget)
+{
+	g_return_val_if_fail(RP_IS_EXT2_ATTR_VIEW(widget), 0);
+	return widget->zLevel;
+}
+
+/**
+ * Clear the current compression level.
+ * @param widget Ext2AttrView (0 if not specified)
+ */
+void
+rp_ext2_attr_view_clear_zLevel(RpExt2AttrView *widget)
+{
+	g_return_if_fail(RP_IS_EXT2_ATTR_VIEW(widget));
+
+	if (widget->zLevel != 0) {
+		widget->zLevel = 0;
+		rp_ext2_attr_view_update_zAlgorithm_label(widget);
+		g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_ZLEVEL]);
+	}
+}
+
+/**
+ * Set the current compression algorithm and level.
+ * @param widget Ext2AttrView
+ * @return Compression algorithm
+ * @param widget Ext2AttrView (0 if not specified)
+ */
+void
+rp_ext2_attr_view_set_zAlgorithm_and_zLevel(RpExt2AttrView *widget, XAttrReader::ZAlgorithm zAlgorithm, int zLevel)
+{
+	g_return_if_fail(RP_IS_EXT2_ATTR_VIEW(widget));
+	bool doUpdate = false;
+
+	if (widget->zAlgorithm != zAlgorithm) {
+		widget->zAlgorithm = zAlgorithm;
+		doUpdate = true;
+		g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_ZALGORITHM]);
+	}
+
+	if (widget->zLevel != zLevel) {
+		widget->zLevel = zLevel;
+		doUpdate = true;
+		g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_ZLEVEL]);
+	}
+
+	if (doUpdate) {
+		rp_ext2_attr_view_update_zAlgorithm_label(widget);
+	}
+}
+
+/**
+ * Clear the current compression algorithm.
+ * @param widget Ext2AttrView
+ */
+void
+rp_ext2_attr_view_clear_zAlgorithm_and_zLevel(RpExt2AttrView *widget)
+{
+	g_return_if_fail(RP_IS_EXT2_ATTR_VIEW(widget));
+
 	if (widget->zAlgorithm != XAttrReader::ZAlgorithm::None) {
 		widget->zAlgorithm = XAttrReader::ZAlgorithm::None;
 		rp_ext2_attr_view_update_zAlgorithm_label(widget);
