@@ -53,6 +53,9 @@ CacheKeyError verifyCacheKey(tstring &outURL, bool &check_newer, const TCHAR *ca
 	// - ps1:    https://rpdb.gerbilsoft.com/ps1/[key]
 	// - ps2:    https://rpdb.gerbilsoft.com/ps2/[key]
 	// - nes:    https://rpdb.gerbilsoft.com/nes/[key]
+	// - fds:    https://rpdb.gerbilsoft.com/fds/[key]
+	// - vs:     https://rpdb.gerbilsoft.com/vs/[key]
+	// - pc10:   https://rpdb.gerbilsoft.com/pc10/[key]
 	// - sys:    https://rpdb.gerbilsoft.com/sys/[key] [system info, e.g. update version]
 	const TCHAR *slash_pos = _tcschr(cache_key, _T('/'));
 	if (slash_pos == nullptr || slash_pos == cache_key ||
@@ -136,7 +139,8 @@ CacheKeyError verifyCacheKey(tstring &outURL, bool &check_newer, const TCHAR *ca
 			case 2:
 				if (!_tmemcmp_inline(cache_key, _T("gb"), 2) ||
 				    !_tmemcmp_inline(cache_key, _T("ws"), 2) ||
-				    !_tmemcmp_inline(cache_key, _T("md"), 2))
+				    !_tmemcmp_inline(cache_key, _T("md"), 2) ||
+				    !_tmemcmp_inline(cache_key, _T("vs"), 2))
 				{
 					ok = true;
 				}
@@ -148,7 +152,8 @@ CacheKeyError verifyCacheKey(tstring &outURL, bool &check_newer, const TCHAR *ca
 				    !_tmemcmp_inline(cache_key, _T("c64"), 3) ||
 				    !_tmemcmp_inline(cache_key, _T("ps1"), 3) ||
 				    !_tmemcmp_inline(cache_key, _T("ps2"), 3) ||
-				    !_tmemcmp_inline(cache_key, _T("nes"), 3))
+				    !_tmemcmp_inline(cache_key, _T("nes"), 3) ||
+				    !_tmemcmp_inline(cache_key, _T("fds"), 3))
 				{
 					ok = true;
 				}
@@ -163,7 +168,8 @@ CacheKeyError verifyCacheKey(tstring &outURL, bool &check_newer, const TCHAR *ca
 				    !_tmemcmp_inline(cache_key, _T("ngpc"), 4) ||
 				    !_tmemcmp_inline(cache_key, _T("pico"), 4) ||
 				    !_tmemcmp_inline(cache_key, _T("tera"), 4) ||
-				    !_tmemcmp_inline(cache_key, _T("c128"), 4))
+				    !_tmemcmp_inline(cache_key, _T("c128"), 4) ||
+				    !_tmemcmp_inline(cache_key, _T("pc10"), 4))
 				{
 					ok = true;
 				}
