@@ -798,6 +798,16 @@ static inline bool T_isOnBadFS(const CharType *filename, bool allowNetFS)
 		return !allowNetFS;
 	}
 
+	// Also check if the file is marked as "offline".
+	DWORD dwAttrs = GetFileAttributes(filename);
+	if (dwAttrs != INVALID_FILE_ATTRIBUTES) {
+		if ((dwAttrs & (FILE_ATTRIBUTE_OFFLINE | FILE_ATTRIBUTE_RECALL_ON_OPEN | FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS)) != 0) {
+			// File is offline, and/or must be recalled from a remote source on open.
+			// This is likely to be slow.
+			return !allowNetFS;
+		}
+	}
+
 	// Not on a network share.
 	return false;
 }

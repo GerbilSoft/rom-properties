@@ -52,6 +52,9 @@
   * KDE (KF5, KF6): Improved image quality for RFT_LISTDATA fields with icons.
   * KDE (KF5, KF6): RomThumbnailCreator now only has MIME types that can actually
     be thumbnailed, which may reduce processing time slightly.
+  * Windows: Files marked as "offline" (e.g. not synchronized with a cloud backup
+    provider) will now be considered to be on a "slow" file system, and won't be
+    thumbnailed if the option to thumbnail network file systems is unchecked.
 
 ## v2.5.1 (released 2025/05/10)
 
