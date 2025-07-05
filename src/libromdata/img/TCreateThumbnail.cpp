@@ -384,7 +384,7 @@ skip_image_check:
 
 		if (field[1]) {
 			// Found rescale dimensions.
-			ImgSize rescaleSize = {
+			const ImgSize rescaleSize = {
 				field[1]->data.dimensions[0],
 				field[1]->data.dimensions[1],
 			};
@@ -415,11 +415,12 @@ skip_image_check:
 				break;
 		}
 		if (scaleW != 0) {
-			pOutParams->fullSize.width = scaleW;
-			ImgClass scaled_img = rescaleImgClass(pOutParams->retImg, pOutParams->fullSize, ScalingMethod::Bilinear);
+			const ImgSize newFullSize = {scaleW, pOutParams->fullSize.height};
+			ImgClass scaled_img = rescaleImgClass(pOutParams->retImg, newFullSize, ScalingMethod::Bilinear);
 			if (isImgClassValid(scaled_img)) {
 				freeImgClass(pOutParams->retImg);
 				pOutParams->retImg = scaled_img;
+				pOutParams->fullSize.width = scaleW;
 
 				// Disable nearest-neighbor scaling, since we already lost
 				// pixel-perfect sharpness with the 8:7 rescale.
