@@ -377,6 +377,11 @@ public:
 		// Image is internally stored as a PNG file.
 		// (Internal images only)
 		IMGPF_INTERNAL_PNG_FORMAT	= (1U << 6),
+
+		// Image is from an NTSC NES ROM and, if 256x240, can have
+		// the overscan area (top 8px, bottom 8px) cropped to get
+		// a 256x224 image.
+		IMGPF_NTSC_NES_OVERSCAN		= (1U << 7),
 	};
 
 	struct ImageSizeDef {

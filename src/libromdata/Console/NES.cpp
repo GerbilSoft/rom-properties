@@ -1153,6 +1153,7 @@ vector<RomData::ImageSizeDef> NES::supportedImageSizes_static(ImageType imageTyp
 	switch (imageType) {
 		case IMG_EXT_TITLE_SCREEN:
 			// NOTE: Always using 256x240.
+			// TODO: Return x224 if NTSC and the user has selected to crop overscan?
 			return {{nullptr, 256, 240, 0}};
 		default:
 			break;
@@ -1177,10 +1178,17 @@ uint32_t NES::imgpf(ImageType imageType) const
 
 	uint32_t ret = 0;
 	switch (imageType) {
-		case IMG_EXT_TITLE_SCREEN:
+		case IMG_EXT_TITLE_SCREEN: {
 			// Rescaling is required for the 8:7 pixel aspect ratio.
-			ret = IMGPF_RESCALE_ASPECT_8to7;
+			// Also, crop overscan if this isn't confirmed to be a PAL ROM.
+			RP_D(NES);
+			if (unlikely(d->isPAL)) {
+				ret = IMGPF_RESCALE_ASPECT_8to7;
+			} else {
+				ret = IMGPF_RESCALE_ASPECT_8to7 | IMGPF_NTSC_NES_OVERSCAN;
+			}
 			break;
+		}
 
 		default:
 			break;
