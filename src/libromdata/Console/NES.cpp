@@ -19,6 +19,9 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
+// C includes
+#include "ctypex.h"
+
 // C++ STL classes
 using std::array;
 using std::string;
@@ -1825,29 +1828,49 @@ int NES::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 		return -EIO;
 	}
 
-	// Image URL consists of two CRC32s:
+	// For NES ROMs, the filename consists of one or two CRC32s:
 	// - First 8 KB of PRG ROM
 	// - First 8 KB of CHR ROM
 	// NOTE: If the title uses CHR RAM, then the second CRC32 is omitted.
-	// TODO: FDS?
-	int ret = d->calcRomCRC32s();
-	if (ret != 0) {
-		// Unable to get the ROM CRC32s.
-		return ret;
-	}
-	if (d->rom_8k_crc32[0] == 0) {
-	}
+	// NOTE 2: For FDS ROMs, the game ID from the disk header is used instead.
+	string s_filename;
+	bool isFDS = ((d->romType & NESPrivate::ROM_SYSTEM_MASK) == NESPrivate::ROM_SYSTEM_FDS);
+	if (likely(!isFDS)) {
+		int ret = d->calcRomCRC32s();
+		if (ret != 0) {
+			// Unable to get the ROM CRC32s.
+			return ret;
+		}
 
-	// Lowercase hex CRC32s are used.
-	string s_crc32;
-	if (likely(d->rom_8k_crc32[1] != 0)) {
-		// CHR ROM is present.
-		s_crc32 = fmt::format(FSTR("{:0>8X}-{:0>8X}"),
-			 d->rom_8k_crc32[0], d->rom_8k_crc32[1]);
+		// Lowercase hex CRC32s are used.
+		if (likely(d->rom_8k_crc32[1] != 0)) {
+			// CHR ROM is present.
+			s_filename = fmt::format(FSTR("{:0>8X}-{:0>8X}"),
+				d->rom_8k_crc32[0], d->rom_8k_crc32[1]);
+		} else {
+			// CHR ROM is not present.
+			s_filename = fmt::format(FSTR("{:0>8X}"),
+				d->rom_8k_crc32[0]);
+		}
 	} else {
-		// CHR ROM is not present.
-		s_crc32 = fmt::format(FSTR("{:0>8X}"),
-			 d->rom_8k_crc32[0]);
+		// Famicom Disk System: Use the game ID from the header.
+		const auto *const header = &d->header;
+
+		char game_id[4];
+		memcpy(game_id, header->fds.game_id, 3);
+		game_id[3] = '\0';
+
+		// Verify that the game ID is valid. (uppercase letters, and numbers)
+		for (unsigned int i = 0; i < 3; i++) {
+			const char c = game_id[i];
+			if (!isupper_ascii(c) && !isdigit_ascii(c)) {
+				// Not a valid character.
+				return -ENOENT;
+			}
+		}
+
+		s_filename = fmt::format(FSTR("{:s}-{:s}"),
+			(header->fds.disk_type == FDS_DTYPE_FSC ? "FSC" : "FMC"), game_id);
 	}
 
 	// NOTE: We only have one size for NES.
@@ -1898,13 +1921,15 @@ int NES::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 
 	// NOTE: If this system doesn't have mappers, '-1' will be used.
 	char s_mapper[16];
-	snprintf(s_mapper, sizeof(s_mapper), "%d", d->get_iNES_mapper_number());
+	if (likely(!isFDS)) {
+		snprintf(s_mapper, sizeof(s_mapper), "%d", d->get_iNES_mapper_number());
+	}
 
 	// Add the URLs.
 	extURLs.resize(1);
 	ExtURL &extURL = extURLs[0];
-	extURL.url = d->getURL_RPDB(sys, imageTypeName, s_mapper, s_crc32.c_str(), ext);
-	extURL.cache_key = d->getCacheKey_RPDB(sys, imageTypeName, s_mapper, s_crc32.c_str(), ext);
+	extURL.url = d->getURL_RPDB(sys, imageTypeName, likely(!isFDS) ? s_mapper : nullptr, s_filename.c_str(), ext);
+	extURL.cache_key = d->getCacheKey_RPDB(sys, imageTypeName, likely(!isFDS) ? s_mapper : nullptr, s_filename.c_str(), ext);
 	extURL.width = sizeDefs[0].width;
 	extURL.height = sizeDefs[0].height;
 	extURL.high_res = (sizeDefs[0].index >= 2);
