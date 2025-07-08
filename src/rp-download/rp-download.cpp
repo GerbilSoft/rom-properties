@@ -331,8 +331,16 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			return EXIT_FAILURE;
 	}
 
+	// TODO: IDownloaderFactory?
+#ifdef _WIN32
+	WinInetDownloader downloader;
+#else /* !_WIN32 */
+	CurlDownloader downloader;
+#endif /* _WIN32 */
+
 	if (verbose) {
-		_ftprintf(stderr, _T("URL: %s\n"), full_url.c_str());
+		_ftprintf(stderr, _T("User-Agent: %s\nURL: %s\n"),
+			downloader.userAgent().c_str(), full_url.c_str());
 	}
 
 	// Make sure we have a valid cache directory.
@@ -421,13 +429,6 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	}
 
 	// Attempt to download the file.
-	// TODO: IDownloaderFactory?
-#ifdef _WIN32
-	WinInetDownloader downloader;
-#else /* !_WIN32 */
-	CurlDownloader downloader;
-#endif /* _WIN32 */
-
 	// TODO: Configure this somewhere?
 	downloader.setMaxSize(4*1024*1024);
 

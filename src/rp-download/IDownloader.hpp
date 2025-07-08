@@ -137,6 +137,12 @@ public:
 	 */
 	virtual int download(void) = 0;
 
+	/**
+	 * Get the User-Agent value.
+	 * @return User-Agent
+	 */
+	const std::tstring &userAgent(void);
+
 private:
 	/**
 	 * Create the User-Agent value.

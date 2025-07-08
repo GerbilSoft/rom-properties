@@ -378,6 +378,18 @@ tstring IDownloader::getOSRelease(void)
 }
 
 /**
+ * Get the User-Agent value.
+ * @return User-Agent
+ */
+const std::tstring &IDownloader::userAgent(void)
+{
+	if (m_userAgent.empty()) {
+		createUserAgent();
+	}
+	return m_userAgent;
+}
+
+/**
  * Create the User-Agent value.
  */
 void IDownloader::createUserAgent(void)
