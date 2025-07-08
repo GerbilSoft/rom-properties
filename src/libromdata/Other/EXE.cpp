@@ -445,8 +445,14 @@ rp_image_const_ptr EXEPrivate::loadSpecificIcon(int iconindex)
 		return {};
 	}
 
+	rp_image_const_ptr icon = ico->image();
+	if (iconindex == 0) {
+		// Cache the main icon.
+		img_icon = icon;
+	}
+
 	// Return the icon's image.
-	return ico->image();
+	return icon;
 }
 
 /**
@@ -1168,15 +1174,27 @@ uint32_t EXE::imgpf(ImageType imageType) const
 {
 	ASSERT_imgpf(imageType);
 
-	uint32_t ret = 0;
-	switch (imageType) {
-		case IMG_INT_ICON:
-			// TODO: Use nearest-neighbor for < 64x64.
-			break;
-
-		default:
-			break;
+	if (imageType != IMG_INT_ICON) {
+		// Only IMG_INT_ICON is supported by EXE.
+		return 0;
 	}
+
+	// Need to ensure the icon is loaded.
+	RP_D(const EXE);
+	const_cast<EXEPrivate*>(d)->loadIcon();
+	if (!d->img_icon) {
+		// No icon...
+		return 0;
+	}
+
+	// If both dimensions of the texture are 64 or less,
+	// specify nearest-neighbor scaling.
+	uint32_t ret = 0;
+	if (d->img_icon->width() <= 64 && d->img_icon->height() <= 64) {
+		// 64x64 or smaller.
+		ret = IMGPF_RESCALE_NEAREST;
+	}
+
 	return ret;
 }
 
@@ -1428,13 +1446,7 @@ rp_image_const_ptr EXE::loadSpecificIcon(int iconindex)
 		}
 	}
 
-	rp_image_const_ptr icon = d->loadSpecificIcon(iconindex);
-	if (iconindex == 0) {
-		// Cache the main icon.
-		d->img_icon = icon;
-	}
-
-	return icon;
+	return d->loadSpecificIcon(iconindex);
 }
 
 /**
