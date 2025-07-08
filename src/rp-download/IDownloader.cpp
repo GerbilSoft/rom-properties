@@ -17,13 +17,21 @@
 #include <string>
 using std::tstring;
 
-#ifdef __linux__
-#  include "ini.h"
-#endif /* __linux__ */
+#if defined(__unix__) && __ANDROID__
+#  define PLATFORM_ANDROID 1
+#elif defined(__linux__)
+#  define PLATFORM_LINUX 1
+#elif defined(__APPLE__)
+#  define PLATFORM_MACOSX 1
+#endif
 
-#ifdef __APPLE__
+#if defined(PLATFORM_ANDROID)
+#  include <sys/system_properties.h>
+#elif defined(PLATFORM_LINUX)
+#  include "ini.h"
+#elif defined(PLATFORM_MACOSX)
 #  include <CoreServices/CoreServices.h>
-#endif /* __APPLE__ */
+#endif
 
 namespace RpDownload {
 
@@ -208,7 +216,7 @@ void IDownloader::clear(void)
 	m_data.clear();
 }
 
-#ifdef __linux__
+#ifdef PLATFORM_LINUX
 struct inih_ctx {
 	const char *field_name;
 	char ret_value[64];
@@ -249,7 +257,7 @@ static int parse_os_release(void *user, const char *section, const char *name, c
 	// Continue processing.
 	return 0;
 }
-#endif /* __linux__ */
+#endif /* PLATFORM_LINUX */
 
 /**
  * Get the OS release information.
@@ -325,7 +333,18 @@ tstring IDownloader::getOSRelease(void)
 	}
 #  endif /* _WIN64 */
 
-#elif defined(__linux__)
+#elif defined(PLATFORM_ANDROID)
+
+	// Get the system build version release property.
+	// Reference: https://stackoverflow.com/questions/19355783/getting-os-version-with-ndk-in-c
+	char osVersion[PROP_VALUE_MAX+1];
+	int osVersionLength = __system_property_get("ro.build.version.release", osVersion);
+	if (osVersionLength > static_cast<int>(sizeof(osVersion))) {
+		osVersionLength = sizeof(osVersion);
+	}
+	s_os_release.assign(osVersion, osVersionLength);
+
+#elif defined(PLATFORM_LINUX)
 
 	// Reference: https://www.freedesktop.org/software/systemd/man/os-release.html
 
@@ -448,7 +467,16 @@ void IDownloader::createUserAgent(void)
 	}
 #  endif /* NO_CPU */
 	m_userAgent += _T(')');
-#elif defined(__linux__)
+#elif defined(PLATFORM_ANDROID)
+	const tstring s_os_release = getOSRelease();
+	m_userAgent += _T(" (Android");
+	if (!s_os_release.empty()) {
+		m_userAgent += _T(' ');
+		m_userAgent += s_os_release;
+	}
+	m_userAgent += _T("; Mobile; ");
+	m_userAgent += _T(CPU) _T(")");
+#elif defined(PLATFORM_LINUX)
 	const tstring s_os_release = getOSRelease();
 	m_userAgent += _T(" (");
 	if (!s_os_release.empty()) {
@@ -471,7 +499,7 @@ void IDownloader::createUserAgent(void)
 #elif defined(__DragonFly__)
 	// TODO: Distribution version?
 	m_userAgent += _T(" (DragonFlyBSD; ") _T(CPU) _T(")");
-#elif defined(__APPLE__)
+#elif defined(PLATFORM_MACOSX)
 	// Get the OS version.
 	// TODO: Include the bugfix version?
 	SInt32 major, minor;
