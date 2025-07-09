@@ -77,6 +77,18 @@ public:
 	};
 	IconType iconType;
 
+	inline bool isWin1(void) const
+	{
+		return (iconType == IconType::Icon_Win1 || iconType == IconType::Cursor_Win1 ||
+		        iconType == IconType::IconRes_Win1 || iconType == IconType::CursorRes_Win1);
+	}
+
+	inline bool isWin3(void) const
+	{
+		return (iconType == IconType::Icon_Win3 || iconType == IconType::Cursor_Win3 ||
+		        iconType == IconType::IconRes_Win3 || iconType == IconType::CursorRes_Win3);
+	}
+
 	// ICO header
 	union {
 		// Win1.x icon files may contain a DIB, a DDB, or both.
@@ -1344,13 +1356,18 @@ const char *ICO::pixelFormat(void) const
 int ICO::getFields(RomFields *fields) const
 {
 	assert(fields != nullptr);
-	if (!fields)
+	if (!fields) {
 		return 0;
+	}
 
 	RP_D(const ICO);
 	if (!d->isValid) {
 		// Unknown file type.
 		return -EIO;
+	}
+	if (d->dir.is_res) {
+		// Not adding fields for .exe/.dll resources right now.
+		return 0;
 	}
 
 	const int initial_count = fields->count();
@@ -1358,97 +1375,90 @@ int ICO::getFields(RomFields *fields) const
 
 	// TODO: ICO/CUR fields?
 	// and "color" for Win1.x cursors
-	// TODO: Also for resources?
 	// TODO: Only if more than one icon bitmap?
 
-	if (!d->dir.is_res) {
-		// Columns
-		// TODO: Hotspot for cursors?
-		static const array<const char*, 3> icon_col_names = {{
-			NOP_C_("ICO", "Size"),
-			"bpp",
-			NOP_C_("ICO", "Format"),
-		}};
-		vector<string> *const v_icon_col_names = RomFields::strArrayToVector_i18n(
-			"ICO", icon_col_names);
+	// Columns
+	// TODO: Hotspot for cursors?
+	static const array<const char*, 3> icon_col_names = {{
+		NOP_C_("ICO", "Size"),
+		"bpp",
+		NOP_C_("ICO", "Format"),
+	}};
+	vector<string> *const v_icon_col_names = RomFields::strArrayToVector_i18n(
+		"ICO", icon_col_names);
 
-		RomFields::ListData_t *vv_text = nullptr;
-		RomFields::ListDataIcons_t *v_icons = nullptr;
+	RomFields::ListData_t *vv_text = nullptr;
+	RomFields::ListDataIcons_t *v_icons = nullptr;
 
-		// Add an RFT_LISTDATA with all icon variants.
-		if (d->iconType == ICOPrivate::IconType::Icon_Win1 ||
-		    d->iconType == ICOPrivate::IconType::Cursor_Win1)
-		{
-			// Win1.x icons can have a DIB, a DDB, or both.
-			// All of them are 1-bit mono.
-			const int icon_count = ((le16_to_cpu(d->icoHeader.win1[0].format) >> 8) == 2) ? 2 : 1;
-			vv_text = new RomFields::ListData_t(icon_count);
-			v_icons = new RomFields::ListDataIcons_t(icon_count);
+	// Add an RFT_LISTDATA with all icon variants.
+	if (d->isWin1()) {
+		// Win1.x icons can have a DIB, a DDB, or both.
+		// All of them are 1-bit mono.
+		const int icon_count = ((le16_to_cpu(d->icoHeader.win1[0].format) >> 8) == 2) ? 2 : 1;
+		vv_text = new RomFields::ListData_t(icon_count);
+		v_icons = new RomFields::ListDataIcons_t(icon_count);
 
-			for (int i = 0; i < icon_count; i++) {
-				// Get the icon.
-				v_icons->at(i) = const_cast<ICOPrivate*>(d)->loadImage(i);
+		for (int i = 0; i < icon_count; i++) {
+			// Get the icon.
+			v_icons->at(i) = const_cast<ICOPrivate*>(d)->loadImage(i);
 
-				// Add text fields.
-				auto &data_row = vv_text->at(i);
-				data_row.push_back(fmt::format(FSTR("{:d}x{:d}"),
-					le16_to_cpu(d->icoHeader.win1[i].width),
-					le16_to_cpu(d->icoHeader.win1[i].height)));
-				data_row.push_back("1");
-				data_row.push_back("Mono");
+			// Add text fields.
+			auto &data_row = vv_text->at(i);
+			data_row.push_back(fmt::format(FSTR("{:d}x{:d}"),
+				le16_to_cpu(d->icoHeader.win1[i].width),
+				le16_to_cpu(d->icoHeader.win1[i].height)));
+			data_row.push_back("1");
+			data_row.push_back("Mono");
+		}
+	} else if (d->isWin3()) {
+		// Win3.x icons can have an arbitrary number of images.
+		const int icon_count = static_cast<int>(d->iconBitmapHeaders.size());
+		vv_text = new RomFields::ListData_t(icon_count);
+		v_icons = new RomFields::ListDataIcons_t(icon_count);
+
+		for (int i = 0; i < icon_count; i++) {
+			// Get the icon dimensions and color depth.
+			ICOPrivate::IconBitmapHeader_data data = d->getIconBitmapHeaderData(&d->iconBitmapHeaders[i]);
+			auto &data_row = vv_text->at(i);
+
+			if (data.bitcount == 0) {
+				// Invalid bitmap header.
+				// FIXME: This will result in an empty row...
+				data_row.resize(icon_col_names.size());
+				continue;
 			}
-		}
-		else if (d->iconType == ICOPrivate::IconType::Icon_Win3 ||
-		         d->iconType == ICOPrivate::IconType::Cursor_Win3)
-		{
-			const int icon_count = static_cast<int>(d->iconBitmapHeaders.size());
-			vv_text = new RomFields::ListData_t(icon_count);
-			v_icons = new RomFields::ListDataIcons_t(icon_count);
 
-			for (int i = 0; i < icon_count; i++) {
-				// Get the icon dimensions and color depth.
-				ICOPrivate::IconBitmapHeader_data data = d->getIconBitmapHeaderData(&d->iconBitmapHeaders[i]);
-				auto &data_row = vv_text->at(i);
+			// Get the icon.
+			v_icons->at(i) = const_cast<ICOPrivate*>(d)->loadImage(i);
 
-				if (data.bitcount == 0) {
-					// Invalid bitmap header.
-					// FIXME: This will result in an empty row...
-					data_row.resize(icon_col_names.size());
-					continue;
-				}
-
-				// Get the icon.
-				v_icons->at(i) = const_cast<ICOPrivate*>(d)->loadImage(i);
-
-				// Add text fields.
-				data_row.push_back(fmt::format(FSTR("{:d}x{:d}"), data.width, data.height));
-				data_row.push_back(fmt::to_string(data.bitcount));
-				string s_pixel_format = data.pixel_format;
-				if (data.isPNG) {
-					s_pixel_format += " (PNG)";
-				}
-				data_row.push_back(std::move(s_pixel_format));
+			// Add text fields.
+			data_row.push_back(fmt::format(FSTR("{:d}x{:d}"), data.width, data.height));
+			data_row.push_back(fmt::to_string(data.bitcount));
+			string s_pixel_format = data.pixel_format;
+			if (data.isPNG) {
+				s_pixel_format += " (PNG)";
 			}
+			data_row.push_back(std::move(s_pixel_format));
 		}
+	}
 
-		if (vv_text && v_icons) {
-			// Add the list data.
-			RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW |
-			                              RomFields::RFT_LISTDATA_ICONS, 0);
-			params.headers = v_icon_col_names;
-			params.data.single = vv_text;
-			// TODO: Header alignment?
-			params.col_attrs.align_data	= AFLD_ALIGN3(TXA_D, TXA_R, TXA_D);
-			params.col_attrs.sorting	= AFLD_ALIGN3(COLSORT_NUM, COLSORT_NUM, COLSORT_STD);
-			params.col_attrs.sort_col	= 0;	// Size
-			params.col_attrs.sort_dir	= RomFields::COLSORTORDER_DESCENDING;
-			params.mxd.icons = v_icons;
-			fields->addField_listData(C_("ICO", "Icon Directory"), &params);
-		} else {
-			// Prevent memory leaks. (Shouldn't happen...)
-			delete vv_text;
-			delete v_icons;
-		}
+	if (vv_text && v_icons) {
+		// Add the list data.
+		RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW |
+		                              RomFields::RFT_LISTDATA_ICONS, 0);
+		params.headers = v_icon_col_names;
+		params.data.single = vv_text;
+		// TODO: Header alignment?
+		params.col_attrs.align_data	= AFLD_ALIGN3(TXA_D, TXA_R, TXA_D);
+		params.col_attrs.sorting	= AFLD_ALIGN3(COLSORT_NUM, COLSORT_NUM, COLSORT_STD);
+		params.col_attrs.sort_col	= 0;	// Size
+		params.col_attrs.sort_dir	= RomFields::COLSORTORDER_DESCENDING;
+		params.mxd.icons = v_icons;
+		fields->addField_listData(C_("ICO", "Icon Directory"), &params);
+	} else {
+		// Prevent memory leaks. (Shouldn't happen...)
+		delete vv_text;
+		delete v_icons;
 	}
 
 	// Finished reading the field data.
