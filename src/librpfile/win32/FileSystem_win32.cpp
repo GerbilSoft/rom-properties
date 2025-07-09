@@ -31,8 +31,15 @@ using std::wstring;
 #include "libwin32common/w32time.h"
 using namespace LibWin32Common;
 
-// Windows includes.
+// Windows includes
 #include <direct.h>
+
+#ifndef FILE_ATTRIBUTE_RECALL_ON_OPEN
+#  define FILE_ATTRIBUTE_RECALL_ON_OPEN 0x00040000
+#endif
+#ifndef FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS
+#  define FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS 0x00400000
+#endif
 
 static inline constexpr bool IsDriveLetterA(char letter)
 {
@@ -773,6 +780,16 @@ bool is_directory(const wchar_t *filename)
 	return (attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_DIRECTORY));
 }
 
+static inline DWORD GetFileAttributes_ovl(LPCSTR lpFileName)
+{
+	return GetFileAttributesA(lpFileName);
+}
+
+static inline DWORD GetFileAttributes_ovl(LPCTSTR lpFileName)
+{
+	return GetFileAttributesW(lpFileName);
+}
+
 /**
  * Is a file located on a "bad" file system?
  *
@@ -799,7 +816,7 @@ static inline bool T_isOnBadFS(const CharType *filename, bool allowNetFS)
 	}
 
 	// Also check if the file is marked as "offline".
-	DWORD dwAttrs = GetFileAttributes(filename);
+	DWORD dwAttrs = GetFileAttributes_ovl(filename);
 	if (dwAttrs != INVALID_FILE_ATTRIBUTES) {
 		if ((dwAttrs & (FILE_ATTRIBUTE_OFFLINE | FILE_ATTRIBUTE_RECALL_ON_OPEN | FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS)) != 0) {
 			// File is offline, and/or must be recalled from a remote source on open.
