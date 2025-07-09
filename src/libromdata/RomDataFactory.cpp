@@ -136,6 +136,18 @@ using std::vector;
 
 namespace LibRomData { namespace RomDataFactory {
 
+// Test mode: Set to `true` if running in a test suite.
+bool TestMode = false;
+
+/**
+ * Set test mode.
+ * @param mode True for testing; false for not testing.
+ */
+void setTestMode(bool mode)
+{
+	TestMode = mode;
+}
+
 namespace Private {
 
 /** RomData subclass check arrays **/

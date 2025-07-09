@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RomDataFactory.hpp: RomData factory class.                              *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,6 +20,16 @@
 #include <vector>
 
 namespace LibRomData { namespace RomDataFactory {
+
+// Test mode: Set to `true` if running in a test suite.
+extern bool TestMode;
+
+/**
+ * Set test mode.
+ * @param mode True for testing; false for not testing.
+ */
+RP_LIBROMDATA_PUBLIC
+void setTestMode(bool mode);
 
 // Using file extensions on Windows,
 // and MIME types on other platforms.

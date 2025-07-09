@@ -13,6 +13,9 @@
 #include "data/NESMappers.hpp"
 #include "nes_structs.h"
 
+// for testMode
+#include "RomDataFactory.hpp"
+
 // Other rom-properties libraries
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
@@ -1836,6 +1839,11 @@ int NES::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 	string s_filename;
 	bool isFDS = ((d->romType & NESPrivate::ROM_SYSTEM_MASK) == NESPrivate::ROM_SYSTEM_FDS);
 	if (likely(!isFDS)) {
+		if (unlikely(RomDataFactory::TestMode)) {
+			// Cannot thumbnail NES ROM images in Test Mode.
+			return -EFAULT;
+		}
+
 		int ret = d->calcRomCRC32s();
 		if (ret != 0) {
 			// Unable to get the ROM CRC32s.

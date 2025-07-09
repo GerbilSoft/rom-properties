@@ -700,6 +700,9 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 	fmt::print(stderr, FSTR("LibRomData test suite: RomHeader tests.\n\n"));
 	fflush(nullptr);
 
+	// Set test mode.
+	LibRomData::RomDataFactory::setTestMode(true);
+
 	// Check for amiibo-data.bin in the current directory or bin/.
 	// If found, set the AmiiboData override.
 	TCHAR amiibo_data_bin_path[4096];
