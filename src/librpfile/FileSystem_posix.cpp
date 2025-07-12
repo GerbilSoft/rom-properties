@@ -166,26 +166,6 @@ off64_t filesize(const char *filename)
 }
 
 /**
- * Set the modification timestamp of a file.
- * @param filename	[in] Filename (UTF-8)
- * @param mtime		[in] Modification time (UNIX timestamp)
- * @return 0 on success; negative POSIX error code on error.
- */
-int set_mtime(const char *filename, time_t mtime)
-{
-	assert(filename && filename[0] != '\0');
-	if (!filename || filename[0] == '\0')
-		return -EINVAL;
-
-	struct utimbuf utbuf;
-	utbuf.actime = time(nullptr);
-	utbuf.modtime = mtime;
-	int ret = utime(filename, &utbuf);
-
-	return (ret == 0 ? 0 : -errno);
-}
-
-/**
  * Get the modification timestamp of a file.
  * @param filename	[in] Filename (UTF-8)
  * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)

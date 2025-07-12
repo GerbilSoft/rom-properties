@@ -137,46 +137,6 @@ RP_LIBROMDATA_PUBLIC
 const std::string &getConfigDirectory(void);
 
 /**
- * Set the modification timestamp of a file.
- * @param filename	[in] Filename (UTF-8)
- * @param mtime		[in] Modification time (UNIX timestamp)
- * @return 0 on success; negative POSIX error code on error.
- */
-int set_mtime(const char *filename, time_t mtime);
-
-/**
- * Set the modification timestamp of a file.
- * @param filename	[in] Filename (UTF-8)
- * @param mtime		[in] Modification time (UNIX timestamp)
- * @return 0 on success; negative POSIX error code on error.
- */
-static inline int set_mtime(const std::string &filename, time_t mtime)
-{
-	return set_mtime(filename.c_str(), mtime);
-}
-
-#ifdef _WIN32
-/**
- * Set the modification timestamp of a file.
- * @param filename	[in] Filename (UTF-16)
- * @param mtime		[in] Modification time (UNIX timestamp)
- * @return 0 on success; negative POSIX error code on error.
- */
-int set_mtime(const wchar_t *filename, time_t mtime);
-
-/**
- * Set the modification timestamp of a file.
- * @param filename	[in] Filename (UTF-16)
- * @param mtime		[in] Modification time (UNIX timestamp)
- * @return 0 on success; negative POSIX error code on error.
- */
-static inline int set_mtime(const std::wstring &filename, time_t mtime)
-{
-	return set_mtime(filename.c_str(), mtime);
-}
-#endif /* _WIN32 */
-
-/**
  * Get the modification timestamp of a file.
  * @param filename	[in] Filename (UTF-8)
  * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)

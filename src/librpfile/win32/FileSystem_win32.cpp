@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem_win32.cpp: File system functions. (Win32 implementation)     *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -360,6 +360,7 @@ static off64_t filesize_int(const tstring &tfilename)
 #if _USE_32BIT_TIME_T
 # error 32-bit time_t is not supported. Get a newer compiler.
 #endif
+
 	// Use GetFileSize() instead of _stati64().
 	HANDLE hFile = CreateFile(tfilename.c_str(),
 		GENERIC_READ, FILE_SHARE_READ, nullptr,
@@ -399,51 +400,6 @@ off64_t filesize(const char *filename)
 off64_t filesize(const wchar_t *filename)
 {
 	return filesize_int(makeWinPath(filename));
-}
-
-/**
- * Set the modification timestamp of a file.
- * @param tfilename	[in] Filename (TCHAR)
- * @param mtime		[in] Modification time (UNIX timestamp)
- * @return 0 on success; negative POSIX error code on error.
- */
-static int set_mtime_int(const tstring &tfilename, time_t mtime)
-{
-	// TODO: Add a static_warning() macro?
-	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
-#if _USE_32BIT_TIME_T
-#  error 32-bit time_t is not supported. Get a newer compiler.
-#endif
-
-	// TODO: Use Win32 API directly instead of MSVCRT?
-	struct __utimbuf64 utbuf;
-	utbuf.actime = _time64(nullptr);
-	utbuf.modtime = mtime;
-	int ret = _tutime64(tfilename.c_str(), &utbuf);
-
-	return (ret == 0 ? 0 : -errno);
-}
-
-/**
- * Set the modification timestamp of a file.
- * @param filename	[in] Filename (UTF-8)
- * @param mtime		[in] Modification time (UNIX timestamp)
- * @return 0 on success; negative POSIX error code on error.
- */
-int set_mtime(const char *filename, time_t mtime)
-{
-	return set_mtime_int(makeWinPath(filename), mtime);
-}
-
-/**
- * Set the modification timestamp of a file.
- * @param filename	[in] Filename (UTF-16)
- * @param mtime		[in] Modification time (UNIX timestamp)
- * @return 0 on success; negative POSIX error code on error.
- */
-int set_mtime(const wchar_t *filename, time_t mtime)
-{
-	return set_mtime_int(makeWinPath(filename), mtime);
 }
 
 /**
