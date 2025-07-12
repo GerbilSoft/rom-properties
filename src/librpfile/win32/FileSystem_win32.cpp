@@ -301,13 +301,14 @@ int rmkdir(const wstring &path, int mode)
 
 		// Attempt to create this directory.
 		// FIXME: This won't work on ANSI...
-		if (::_wmkdir(wpath.c_str()) != 0) {
+		if (!CreateDirectoryW(wpath.c_str(), nullptr)) {
 			// Could not create the directory.
 			// If it exists already, that's fine.
 			// Otherwise, something went wrong.
-			if (errno != EEXIST) {
+			DWORD dwErr = GetLastError();
+			if (dwErr != ERROR_ALREADY_EXISTS) {
 				// Something went wrong.
-				return -errno;
+				return -w32err_to_posix(dwErr);
 			}
 		}
 
