@@ -505,14 +505,14 @@ const IFst::DirEnt *WiiUFst::readdir(IFst::Dir *dirp)
 	}
 
 	// Get the directory's fst_entry.
-	const WUP_FST_Entry *const dir_fst_entry = d->entry(dirp->dir_idx);
+	const WUP_FST_Entry *const dir_fst_entry = d->entry(static_cast<int>(dirp->dir_idx));
 	if (!dir_fst_entry) {
 		// dir_idx is corrupted.
 		return nullptr;
 	}
 
 	// Seek to the next entry in the directory.
-	int idx = dirp->entry.idx;
+	int idx = static_cast<int>(dirp->entry.idx);
 	const WUP_FST_Entry *fst_entry = d->entry(idx, nullptr);
 	if (!fst_entry) {
 		// No more entries.

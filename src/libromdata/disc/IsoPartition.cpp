@@ -854,13 +854,13 @@ const IFst::DirEnt *IsoPartition::readdir(IFst::Dir *dirp)
 			for (p++; p < p_end; p++) {
 				if (*p != '\0') {
 					// Found a non-zero byte.
-					dirp->entry.idx = static_cast<int>(p - pDir->data());
+					dirp->entry.idx = (p - pDir->data());
 					break;
 				}
 			}
 			if (p >= p_end) {
 				// No more non-zero bytes.
-				dirp->entry.idx = static_cast<int>(pDir->size());
+				dirp->entry.idx = static_cast<intptr_t>(pDir->size());
 				return nullptr;
 			}
 			continue;

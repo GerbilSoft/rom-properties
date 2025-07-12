@@ -59,8 +59,8 @@ public:
 		// TODO: Additional placeholders?
 		void *extra;		// Extra data
 		unsigned int ptnum;	// Partition or content number
-		int idx;		// File index
 		uint8_t type;		// File type (See d_type.h)
+		intptr_t idx;		// File index
 	};
 
 	struct Dir {

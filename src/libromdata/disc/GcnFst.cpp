@@ -460,14 +460,14 @@ const IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 
 	// Get the directory's fst_entry.
 	RP_D(GcnFst);
-	const GCN_FST_Entry *dir_fst_entry = d->entry(dirp->dir_idx);
+	const GCN_FST_Entry *dir_fst_entry = d->entry(static_cast<int>(dirp->dir_idx));
 	if (!dir_fst_entry) {
 		// dir_idx is corrupted.
 		return nullptr;
 	}
 
 	// Seek to the next entry in the directory.
-	int idx = dirp->entry.idx;
+	int idx = static_cast<int>(dirp->entry.idx);
 	const GCN_FST_Entry *fst_entry = d->entry(idx, nullptr);
 	if (!fst_entry) {
 		// No more entries.
