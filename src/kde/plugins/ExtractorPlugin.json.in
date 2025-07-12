@@ -1,0 +1,7 @@
+{
+    "Name": "extractorplugin_rom-properties-@KF_SUFFIX@",
+    "Id": "com.gerbilsoft.@KF_SUFFIX@.extractorplugin",
+    "MimeTypes": {
+@MIMETYPES_ALL_JSON_VERSIONED_ARRAY@
+    }
+}

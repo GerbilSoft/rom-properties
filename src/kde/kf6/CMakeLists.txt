@@ -2,6 +2,7 @@
 PROJECT(rom-properties-kf6 LANGUAGES CXX)
 
 # Find Qt6 and KF6.
+SET(KF_SUFFIX "kf6")
 INCLUDE(RP_FindQt6andKF6)
 FIND_QT6_AND_KF6()
 IF(NOT BUILD_KF6)
@@ -291,7 +292,7 @@ PARSE_MIME_TYPES_JSON_VERSIONED(MIMETYPES_ALL_JSON_VERSIONED_ARRAY "        "
 
 CONFIGURE_FILE(${PROJECT_NAME}.json.in ${PROJECT_NAME}.json @ONLY)
 CONFIGURE_FILE(RomThumbnailCreator.json.in RomThumbnailCreator.json @ONLY)
-CONFIGURE_FILE(ExtractorPlugin.json.in ExtractorPlugin.json @ONLY)
+CONFIGURE_FILE(../plugins/ExtractorPlugin.json.in ExtractorPlugin.json @ONLY)
 CONFIGURE_FILE(OverlayIconPlugin.json.in OverlayIconPlugin.json @ONLY)
 
 # Install plugins in the appropriate subdirectories.

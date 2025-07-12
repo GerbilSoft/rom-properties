@@ -2,6 +2,7 @@
 PROJECT(rom-properties-kf5 LANGUAGES CXX)
 
 # Find Qt5 and KF5.
+SET(KF_SUFFIX "kf5")
 INCLUDE(RP_FindQt5andKF5)
 FIND_QT5_AND_KF5()
 IF(NOT BUILD_KF5)
@@ -305,7 +306,7 @@ CONFIGURE_FILE(${PROJECT_NAME}.json.in ${PROJECT_NAME}.json @ONLY)
 IF(HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H)
 	CONFIGURE_FILE(RomThumbnailCreator.json.in RomThumbnailCreator.json @ONLY)
 ENDIF(HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H)
-CONFIGURE_FILE(ExtractorPlugin.json.in ExtractorPlugin.json @ONLY)
+CONFIGURE_FILE(../plugins/ExtractorPlugin.json.in ExtractorPlugin.json @ONLY)
 CONFIGURE_FILE(OverlayIconPlugin.json.in OverlayIconPlugin.json @ONLY)
 
 IF(HAVE_JSON_PLUGIN_LOADER)

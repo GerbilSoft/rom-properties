@@ -1,7 +1,0 @@
-{
-    "Name": "extractorplugin_rom-properties-kf6",
-    "Id": "com.gerbilsoft.kf6.extractorplugin",
-    "MimeTypes": {
-@MIMETYPES_ALL_JSON_VERSIONED_ARRAY@
-    }
-}
