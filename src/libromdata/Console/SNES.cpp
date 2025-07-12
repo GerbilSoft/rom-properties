@@ -1461,30 +1461,42 @@ int SNES::loadFieldData(void)
 
 	// ROM mapping
 	// NOTE: Not translatable!
-	struct rom_mapping_tbl_t {
-		uint8_t rom_mapping;
-		const char *s_rom_mapping;
+	static const char rom_mapping_strtbl[] = {
+		"LoROM\0"		// 0
+		"HiROM\0"		// 6
+		"LoROM + S-DD1\0"	// 12
+		"LoROM + SA-1\0"	// 26
+		"ExHiROM\0"		// 39
+		"LoROM + FastROM\0"	// 47
+		"HiROM + FastROM\0"	// 63
+		"ExLoROM + FastROM\0"	// 79
+		"ExHiROM + FastROM\0"	// 97
+		"HiROM + SPC7110\0"	// 115
 	};
-	static const array<rom_mapping_tbl_t, 10> rom_mapping_tbl = {{
-		{SNES_ROMMAPPING_LoROM,			"LoROM"},
-		{SNES_ROMMAPPING_HiROM,			"HiROM"},
-		{SNES_ROMMAPPING_LoROM_S_DD1,		"LoROM + S-DD1"},
-		{SNES_ROMMAPPING_LoROM_SA_1,		"LoROM + SA-1"},
-		{SNES_ROMMAPPING_ExHiROM,		"ExHiROM"},
-		{SNES_ROMMAPPING_LoROM_FastROM,		"LoROM + FastROM"},
-		{SNES_ROMMAPPING_HiROM_FastROM,		"HiROM + FastROM"},
-		{SNES_ROMMAPPING_ExLoROM_FastROM,	"ExLoROM + FastROM"},
-		{SNES_ROMMAPPING_ExHiROM_FastROM,	"ExHiROM + FastROM"},
-		{SNES_ROMMAPPING_HiROM_FastROM_SPC7110,	"HiROM + SPC7110"},
+	struct rom_mapping_offtbl_t {
+		uint8_t rom_mapping;
+		uint8_t offset;
+	};
+	static const array<rom_mapping_offtbl_t, 10> rom_mapping_offtbl = {{
+		{SNES_ROMMAPPING_LoROM,			0},
+		{SNES_ROMMAPPING_HiROM,			6},
+		{SNES_ROMMAPPING_LoROM_S_DD1,		12},
+		{SNES_ROMMAPPING_LoROM_SA_1,		26},
+		{SNES_ROMMAPPING_ExHiROM,		39},
+		{SNES_ROMMAPPING_LoROM_FastROM,		47},
+		{SNES_ROMMAPPING_HiROM_FastROM,		63},
+		{SNES_ROMMAPPING_ExLoROM_FastROM,	79},
+		{SNES_ROMMAPPING_ExHiROM_FastROM,	97},
+		{SNES_ROMMAPPING_HiROM_FastROM_SPC7110,	115},
 	}};
 
 	const char *s_rom_mapping = nullptr;
-	auto iter = std::find_if(rom_mapping_tbl.cbegin(), rom_mapping_tbl.cend(),
-		[rom_mapping](const rom_mapping_tbl_t &p) noexcept -> bool {
+	auto iter = std::find_if(rom_mapping_offtbl.cbegin(), rom_mapping_offtbl.cend(),
+		[rom_mapping](rom_mapping_offtbl_t p) noexcept -> bool {
 			return (p.rom_mapping == rom_mapping);
 		});
-	if (iter != rom_mapping_tbl.cend()) {
-		s_rom_mapping = iter->s_rom_mapping;
+	if (iter != rom_mapping_offtbl.cend()) {
+		s_rom_mapping = &rom_mapping_strtbl[iter->offset];
 	}
 
 	const char *const rom_mapping_title = C_("SNES", "ROM Mapping");
