@@ -131,6 +131,9 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 #  error 32-bit time_t is not supported. Get a newer compiler.
 #endif
 
+	// We need the Win32 file handle to use Win32 API instead of MSVCRT functions.
+	HANDLE hFile = reinterpret_cast<HANDLE>(_get_osfhandle(fileno(file)));
+
 #ifdef UNICODE
 	// Check if storeFileOriginInfo is enabled.
 	const bool storeFileOriginInfo = getStoreFileOriginInfo();
@@ -162,7 +165,6 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 			break;
 		}
 
-		HANDLE hFile = reinterpret_cast<HANDLE>(_get_osfhandle(fileno(file)));
 		IO_STATUS_BLOCK iosb;
 		UNICODE_STRING ObjectName = RTL_CONSTANT_STRING(L":Zone.Identifier");
 
@@ -228,19 +230,18 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 #endif /* UNICODE */
 
 	if (mtime >= 0) {
-		// TODO: 100ns timestamp precision for access time?
-		struct _utimbuf utimbuf;
-		utimbuf.actime = time(nullptr);
-		utimbuf.modtime = mtime;
-
 		// Flush the file before setting the times to ensure
 		// that MSVCRT doesn't write anything afterwards.
 		::fflush(file);
 
-		// Set the mtime.
-		int ret = _futime(fileno(file), &utimbuf);
-		if (ret != 0 && err == 0) {
-			err = errno;
+		// SetFileTime() requires FILETIME format.
+		// NOTE: We only need to adjust mtime, not atime.
+		FILETIME ft_mtime;
+		UnixTimeToFileTime(mtime, &ft_mtime);
+
+		if (!SetFileTime(hFile, nullptr, nullptr, &ft_mtime)) {
+			// Error setting the file time.
+			err = w32err_to_posix(GetLastError());
 			if (err == 0) {
 				err = EIO;
 			}
