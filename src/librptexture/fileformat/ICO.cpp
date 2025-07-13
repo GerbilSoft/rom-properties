@@ -48,7 +48,7 @@ private:
 
 public:
 	/** TextureInfo **/
-	static const array<const char*, 2+1> exts;
+	static const array<const char*, 3+1> exts;
 	static const array<const char*, 9+1> mimeTypes;
 	static const TextureInfo textureInfo;
 
@@ -235,9 +235,13 @@ FILEFORMAT_IMPL(ICO)
 /** ICOPrivate **/
 
 /* TextureInfo */
-const array<const char*, 2+1> ICOPrivate::exts = {{
+const array<const char*, 3+1> ICOPrivate::exts = {{
 	".ico",
 	".cur",
+
+	// Some older icons have .icn extensions.
+	// Reference: https://github.com/ImageMagick/ImageMagick/pull/8107
+	".icn",
 
 	nullptr
 }};
