@@ -706,7 +706,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 							// Unable to create the "Import" popup menu.
 							return true;
 						}
-						for (unsigned int i = 0; i < (unsigned int)ARRAY_SIZE(import_menu_actions); i++) {
+						for (size_t i = 0; i < import_menu_actions.size(); i++) {
 							AppendMenu(d->hMenuImport, MF_STRING, import_menu_actions_ids[i], import_menu_actions[i]);
 						}
 					}

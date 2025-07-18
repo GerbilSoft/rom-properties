@@ -138,7 +138,9 @@ NGPC::NGPC(const IRpFilePtr &file)
 	}
 
 	// Set the MIME type.
-	if (static_cast<int>(d->romType) < ARRAY_SIZE_I(d->mimeTypes)-1) {
+	assert((int)d->romType >= 0);
+	assert((int)d->romType < static_cast<int>(d->mimeTypes.size()));
+	if ((int)d->romType < static_cast<int>(d->mimeTypes.size())) {
 		d->mimeType = d->mimeTypes[static_cast<int>(d->romType)];
 	}
 }

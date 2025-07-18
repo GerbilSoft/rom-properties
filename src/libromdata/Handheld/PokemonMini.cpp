@@ -282,9 +282,9 @@ int PokemonMini::loadFieldData(void)
 	static constexpr array<uint8_t, 6> vec_empty_ff = {{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}};
 	static constexpr array<uint8_t, 6> vec_empty_00 = {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
 
-	auto *const vv_vectors = new RomFields::ListData_t(ARRAY_SIZE(vectors_names));
+	auto *const vv_vectors = new RomFields::ListData_t(vectors_names.size());
 	uint32_t pc = 0x2100 + offsetof(PokemonMini_RomHeader, irqs);
-	for (unsigned int i = 0; i < vectors_names.size(); i++, pc += 6) {
+	for (unsigned int i = 0; i < static_cast<unsigned int>(vectors_names.size()); i++, pc += 6) {
 		auto &data_row = vv_vectors->at(i);
 		data_row.reserve(3);
 

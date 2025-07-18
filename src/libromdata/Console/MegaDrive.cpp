@@ -917,7 +917,8 @@ MegaDrive::MegaDrive(const IRpFilePtr &file)
 
 	// Determine the MIME type.
 	const uint8_t sysID = (d->romType & MegaDrivePrivate::ROM_SYSTEM_MASK);
-	if (sysID < ARRAY_SIZE(d->mimeTypes)-1) {
+	assert(sysID < d->mimeTypes.size() - 1);
+	if (sysID < d->mimeTypes.size() - 1) {
 		d->mimeType = d->mimeTypes[sysID];
 	}
 

@@ -134,7 +134,7 @@ GBS::GBS(const IRpFilePtr &file)
 	if (static_cast<int>(d->audioFormat) < 0) {
 		d->file.reset();
 		return;
-	} else if (static_cast<int>(d->audioFormat) < ARRAY_SIZE_I(d->mimeTypes)-1) {
+	} else if (static_cast<int>(d->audioFormat) < static_cast<int>(d->mimeTypes.size()) - 1) {
 		d->mimeType = d->mimeTypes[static_cast<int>(d->audioFormat)];
 		d->isValid = true;
 	}

@@ -322,8 +322,8 @@ RomFields::ListData_t *NintendoDSPrivate::getDSiFlagsStringVector(void)
 	}};
 
 	// Convert to RomFields::ListData_t for RFT_LISTDATA.
-	auto *const vv_dsi_flags = new RomFields::ListData_t(ARRAY_SIZE(dsi_flags_bitfield_names));
-	for (int i = ARRAY_SIZE(dsi_flags_bitfield_names)-1; i >= 0; i--) {
+	auto *const vv_dsi_flags = new RomFields::ListData_t(dsi_flags_bitfield_names.size());
+	for (int i = static_cast<int>(dsi_flags_bitfield_names.size()) - 1; i >= 0; i--) {
 		auto &data_row = vv_dsi_flags->at(i);
 		data_row.emplace_back(
 			pgettext_expr("NintendoDS|DSi_Flags",
@@ -944,8 +944,8 @@ int NintendoDS::loadFieldData(void)
 	}};
 
 	// Convert to RomFields::ListData_t for RFT_LISTDATA.
-	auto *const vv_dsi_perm = new RomFields::ListData_t(ARRAY_SIZE(dsi_permissions_bitfield_names));
-	for (int i = ARRAY_SIZE(dsi_permissions_bitfield_names)-1; i >= 0; i--) {
+	auto *const vv_dsi_perm = new RomFields::ListData_t(dsi_permissions_bitfield_names.size());
+	for (int i = static_cast<int>(dsi_permissions_bitfield_names.size()) - 1; i >= 0; i--) {
 		auto &data_row = vv_dsi_perm->at(i);
 		data_row.emplace_back(
 			pgettext_expr("NintendoDS|DSi_Permissions",

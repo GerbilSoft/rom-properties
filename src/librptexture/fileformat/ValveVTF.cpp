@@ -825,7 +825,7 @@ int ValveVTF::getFields(RomFields *fields) const
 
 	// Convert to ListData_t for RFT_LISTDATA.
 	auto *const vv_flags = new RomFields::ListData_t();
-	vv_flags->reserve(ARRAY_SIZE(flags_names));
+	vv_flags->reserve(flags_names.size());
 	for (const char *pFlagName : flags_names) {
 		if (!pFlagName)
 			continue;

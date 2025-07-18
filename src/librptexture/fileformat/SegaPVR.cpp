@@ -1330,9 +1330,11 @@ SegaPVR::SegaPVR(const IRpFilePtr &file)
 		"Sega SVR for PlayStation 2",
 		"Sega PVRX for Xbox",
 	}};
+	static_assert(ARRAY_SIZE(d->mimeTypes) - 1 == ARRAY_SIZE(sysNames), "d->mimeTypes[] and sysNames[] are out of sync");
 
-	static_assert(ARRAY_SIZE(d->mimeTypes)-1 == ARRAY_SIZE(sysNames), "d->mimeTypes[] and sysNames[] are out of sync");
-	if (static_cast<int>(d->pvrType) < ARRAY_SIZE_I(d->mimeTypes)-1) {
+	assert(static_cast<int>(d->pvrType) >= 0);
+	assert(static_cast<int>(d->pvrType) < static_cast<int>(d->mimeTypes.size()) - 1);
+	if (static_cast<int>(d->pvrType) < static_cast<int>(d->mimeTypes.size()) - 1) {
 		d->mimeType = d->mimeTypes[static_cast<int>(d->pvrType)];
 		d->textureFormatName = sysNames[static_cast<int>(d->pvrType)];
 	}

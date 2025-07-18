@@ -905,8 +905,10 @@ DMG::DMG(const IRpFilePtr &file)
 
 	// Set the MIME type. (unofficial)
 	assert((int)d->romType >= 0);
-	assert((int)d->romType < ARRAY_SIZE_I(d->mimeTypes));
-	d->mimeType = d->mimeTypes[static_cast<int>(d->romType)];
+	assert((int)d->romType < static_cast<int>(d->mimeTypes.size()));
+	if ((int)d->romType < static_cast<int>(d->mimeTypes.size())) {
+		d->mimeType = d->mimeTypes[static_cast<int>(d->romType)];
+	}
 }
 
 /** ROM detection functions. **/

@@ -525,7 +525,9 @@ NintendoBadge::NintendoBadge(const IRpFilePtr &file)
 	}
 
 	// Set the MIME type.
-	if (static_cast<int>(d->badgeType) < ARRAY_SIZE_I(d->mimeTypes)-1) {
+	assert((int)d->badgeType >= 0);
+	assert((int)d->badgeType < static_cast<int>(d->mimeTypes.size()));
+	if ((int)d->badgeType < static_cast<int>(d->mimeTypes.size())) {
 		d->mimeType = d->mimeTypes[static_cast<int>(d->badgeType)];
 	}
 }
