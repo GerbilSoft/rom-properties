@@ -8,10 +8,22 @@
 
 #pragma once
 
+// NOTE: tcharx.h has _sntprintf(), but not sntprintf().
+// As of MSVC 2015, snprintf() always NULL-terminates the buffer,
+// but _snprintf(), and thus _sntprintf(), does *not* in some cases.
+// We're switching to our own sntprintf() macro to handle this.
+// Reference: https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/snprintf-snprintf-snprintf-l-snwprintf-snwprintf-l?view=msvc-170
+#define _snprintf __DO_NOT_USE_OLD_MSVC__SNPRINTF
+#define _sntprintf __DO_NOT_USE_OLD_MSVC__SNTPRINTF
+#define _snwprintf __DO_NOT_USE_OLD_MSVC__SNWPRINTF
+#define _swprintf __DO_NOT_USE_OLD_MSVC__SWPRINTF
+
 #ifdef _WIN32
 
 // Windows: Use the SDK tchar.h.
 #include <tchar.h>
+
+#define sntprintf swprintf
 
 // std::tstring, std::tstringstream
 #if defined(__cplusplus) && !defined(tstring)
@@ -45,6 +57,7 @@ static inline int _tmemcmp_inline(const TCHAR *s1, const TCHAR *s2, size_t n)
 }
 
 #else /* !_UNICODE */
+#  define sntprintf snprintf
 #  define _tmemcmp(s1, s2, n)		memcmp((s1), (s2), (n))
 #  define _tmemcmp_inline(s1, s2, n)	memcmp((s1), (s2), (n))
 #endif /* _UNICODE */
@@ -61,6 +74,8 @@ typedef char TCHAR;
 #define _istalpha(c) isalpha(c)
 
 // stdio.h
+#define sntprintf snprintf
+
 #define _fputts(s, stream) fputs((s), (stream))
 #define _fputtc(c, stream) fputc((c), (stream))
 
@@ -72,7 +87,6 @@ typedef char TCHAR;
 
 #define _tprintf printf
 #define _ftprintf fprintf
-#define _sntprintf snprintf
 #define _vtprintf vprintf
 #define _vftprintf vfprintf
 #define _vsprintf vsprintf

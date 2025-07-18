@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpsecure/win32)                *
  * integrity_level.c: Integrity level manipulation for process tokens.     *
  *                                                                         *
- * Copyright (c) 2020-2023 by David Korth.                                 *
+ * Copyright (c) 2020-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -43,7 +43,7 @@ static DWORD adjustTokenIntegrityLevel(HANDLE hToken, int level)
 		return ERROR_INVALID_PARAMETER;
 	}
 
-	// NOTE: We can't use _sntprintf() here because that's a libc function,
+	// NOTE: We can't use sntprintf() here because that's a libc function,
 	// and we can't link to libc because of static vs. DLL CRT issues when
 	// linking to svrplus release builds.
 	if (level == 0) {

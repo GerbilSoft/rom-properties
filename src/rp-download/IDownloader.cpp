@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * IDownloader.cpp: Downloader interface.                                  *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -301,7 +301,7 @@ tstring IDownloader::getOSRelease(void)
 		// Windows 11
 		osvi.dwMajorVersion = 11;
 	}
-	_sntprintf(buf, _countof(buf), _T("%lu.%lu"), osvi.dwMajorVersion, osvi.dwMinorVersion);
+	sntprintf(buf, _countof(buf), _T("%lu.%lu"), osvi.dwMajorVersion, osvi.dwMinorVersion);
 	s_os_release += buf;
 
 #  ifdef _WIN64

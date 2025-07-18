@@ -552,7 +552,7 @@ IFACEMETHODIMP RP_ContextMenu::InvokeCommand(_In_ CMINVOKECOMMANDINFO *pici)
 
 IFACEMETHODIMP RP_ContextMenu::GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT uType, _Reserved_ UINT *pReserved, _Out_ CHAR *pszName, _In_  UINT cchMax)
 {
-	// NOTE: Using snprintf()/_snwprintf() because strncpy()
+	// NOTE: Using snprintf()/swprintf() because strncpy()
 	// clears the buffer, which can be slow.
 	RP_UNUSED(pReserved);
 
@@ -563,7 +563,7 @@ IFACEMETHODIMP RP_ContextMenu::GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT u
 				snprintf(pszName, cchMax, "%s", CTX_VERB_A);
 				return S_OK;
 			case GCS_VERBW:
-				_snwprintf(reinterpret_cast<LPWSTR>(pszName), cchMax, L"%s", CTX_VERB_W);
+				swprintf(reinterpret_cast<LPWSTR>(pszName), cchMax, L"%s", CTX_VERB_W);
 				return S_OK;
 
 			case GCS_HELPTEXTA:
@@ -588,9 +588,9 @@ IFACEMETHODIMP RP_ContextMenu::GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT u
 			nc);
 
 		if (likely(uType == GCS_HELPTEXTW)) {
-			_snwprintf(reinterpret_cast<LPWSTR>(pszName), cchMax, L"%s", U82T_c(msg));
+			swprintf(reinterpret_cast<LPWSTR>(pszName), cchMax, L"%s", U82T_c(msg));
 		} else /*if (uType == GCS_HELPTEXTA)*/ {
-			_snprintf(pszName, cchMax, "%s", U82A_c(msg));
+			snprintf(pszName, cchMax, "%s", U82A_c(msg));
 		}
 		return S_OK;
 	} else {

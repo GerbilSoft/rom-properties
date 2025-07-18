@@ -1,7 +1,7 @@
 /***************************************************************************
  * c99-compat.msvcrt.h: C99 compatibility header. (MSVC)                   *
  *                                                                         *
- * Copyright (c) 2011-2023 by David Korth.                                 *
+ * Copyright (c) 2011-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,25 +10,6 @@
 #ifndef _WIN32
 #  error c99-compat.msvcrt.h should only be included in Win32 builds.
 #endif
-
-/**
- * MSVC 2015 added proper support for C99 snprintf().
- * Older versions have _snprintf(), which isn't fully compatible,
- * but works fine in most cases. The only incompatibility is the
- * return value, which is -1 if the string doesn't fit instead of
- * the number of characters (minus NULL terminator) required.
- */
-
-/** snprintf() **/
-#ifdef _MSC_VER
-#  if _MSC_VER < 1400
-/* MSVC 2003 and older. Don't use variadic macros. */
-#    define snprintf _snprintf
-#  elif _MSC_VER < 1900
-/* MSVC 2005 through MSVC 2013. Use variadic macros. */
-#    define snprintf(str, size, format, ...) _snprintf((str), (size), (format), __VA_ARGS__)
-#  endif
-#endif /* _MSC_VER */
 
 /**
  * MSVC 2015 added support for 'inline' in C mode.

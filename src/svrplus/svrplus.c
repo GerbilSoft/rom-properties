@@ -290,7 +290,7 @@ static int GetSystemDirFilePath(TCHAR *pszPath, size_t cchPath, const TCHAR *fil
 		return -EINVAL;
 
 	// Append the System32 directory name and the filename.
-	len += _sntprintf(&pszPath[len], cchPath-len, _T("%s\\%s"),
+	len += sntprintf(&pszPath[len], cchPath-len, _T("%s\\%s"),
 		system32_dir, filename);
 	return len;
 }
@@ -515,7 +515,7 @@ static InstallServerResult TryInstallServer(HWND hWnd,
 		assert(ls_ret > 0); \
 		assert(s_strtbl != NULL); \
 		if (ls_ret > 0) { \
-			_sntprintf(sErrBuf, cchErrBuf, s_strtbl, __VA_ARGS__); \
+			sntprintf(sErrBuf, cchErrBuf, s_strtbl, __VA_ARGS__); \
 		} else { \
 			_tcscpy_s(sErrBuf, cchErrBuf, _T("RES ERR")); \
 		} \
@@ -613,7 +613,7 @@ static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
 			if (msg2[0] != _T('\0')) {
 				_tcscat_s(msg2, _countof(msg2), _T("\n"));
 			}
-			_sntprintf(arch_msg, _countof(arch_msg), BULLET _T(" %s: %s"), s_arch->name, msg_ret);
+			sntprintf(arch_msg, _countof(arch_msg), BULLET _T(" %s: %s"), s_arch->name, msg_ret);
 			_tcscat_s(msg2, _countof(msg2), arch_msg);
 		}
 	}
@@ -774,7 +774,7 @@ static void InitDialog(HWND hDlg)
 				assert(ls_ret > 0);
 				assert(s_strtbl != NULL);
 				if (ls_ret > 0) {
-					_sntprintf(line2, _countof(line2), s_strtbl, vcyear);
+					sntprintf(line2, _countof(line2), s_strtbl, vcyear);
 				} else {
 					_tcscpy_s(line2, _countof(line2), _T("RES ERR"));
 				}
@@ -799,7 +799,7 @@ static void InitDialog(HWND hDlg)
 		assert(ls_ret > 0);
 		assert(s_strtbl != NULL);
 		if (ls_ret > 0) {
-			_sntprintf(line1, _countof(line1), s_strtbl, s_missing_arch_names, vcyear);
+			sntprintf(line1, _countof(line1), s_strtbl, s_missing_arch_names, vcyear);
 		} else {
 			_tcscpy_s(line1, _countof(line1), _T("RES ERR"));
 		}
@@ -815,7 +815,7 @@ static void InitDialog(HWND hDlg)
 				// No runtime name specified...
 				continue;
 			}
-			_sntprintf(s_runtime_line, _countof(s_runtime_line),
+			sntprintf(s_runtime_line, _countof(s_runtime_line),
 				_T("\n") BULLET _T(" %s: <a href=\"https://aka.ms/vs/%u/release/VC_redist.%s.exe\">")
 					_T("https://aka.ms/vs/%u/release/VC_redist.%s.exe</a>"),
 				s_arch->name, vcver, s_arch->runtime, vcver, s_arch->runtime);
@@ -875,7 +875,7 @@ static void HandleInstallUninstall(HWND hDlg, bool isUninstall)
 		TCHAR threadErr[128];
 		const DWORD lastError = GetLastError();
 		// TODO: Localize this.
-		_sntprintf(threadErr, _countof(threadErr), BULLET _T(" Win32 error code: %u"), lastError);
+		sntprintf(threadErr, _countof(threadErr), BULLET _T(" Win32 error code: %u"), lastError);
 
 		ls_ret = LoadString(NULL, IDS_ERROR_STARTING_WORKER_THREAD, (LPTSTR)&msg, 0);
 		assert(ls_ret > 0);
@@ -974,7 +974,7 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 						assert(ls_ret > 0);
 						assert(msg != NULL);
 						if (ls_ret > 0) {
-							_sntprintf(err, _countof(err), msg, (int)ret);
+							sntprintf(err, _countof(err), msg, (int)ret);
 						} else {
 							_tcscpy_s(err, _countof(err), _T("RES ERR"));
 						}

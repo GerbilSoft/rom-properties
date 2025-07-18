@@ -69,7 +69,7 @@ typedef int64_t off64_t;
 #endif
 
 /**
- * MSVCRT prior to MSVC 2015 has a non-compliant _snprintf().
+ * MSVCRT compatibility fixes for C99.
  * Note that MinGW-w64 uses MSVCRT.
  */
 #ifdef _WIN32
