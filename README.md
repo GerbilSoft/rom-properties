@@ -11,6 +11,8 @@ video game ROM and disc images.
 [![CodeFactor](https://www.codefactor.io/repository/github/gerbilsoft/rom-properties/badge)](https://www.codefactor.io/repository/github/gerbilsoft/rom-properties/overview)
 [![codecov](https://codecov.io/gh/GerbilSoft/rom-properties/graph/badge.svg?token=oIiL6oVPwZ)](https://codecov.io/gh/GerbilSoft/rom-properties)
 
+###### no vibes, no bevis
+
 ## v2.5.1
 
 ![KDE Dolphin showing J2ME packages.](doc/img/rp-v2.5-kde6.J2ME.png)
