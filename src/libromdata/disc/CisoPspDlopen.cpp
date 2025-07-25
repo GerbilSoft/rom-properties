@@ -14,7 +14,7 @@
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
 #  define sched_yield() SwitchToThread()
-static constexpr pthread_once_t PTHREAD_ONCE_INIT = 0;
+static constexpr pthread_once_inl_t PTHREAD_ONCE_INIT = 0;
 #endif
 
 #ifdef _MSC_VER
@@ -59,7 +59,8 @@ CisoPspDlopen::~CisoPspDlopen()
 // so we'll reimplement pthread_once() here.
 #define pthread_once_inl(once_control, init_routine) do { \
 	if (*(once_control) != 1) { \
-		while (1) { \
+		bool run = true; \
+		while (run) { \
 			/* Check if once_control is 0. If it is, set it to 2. */ \
 			/* NOTE: ATOMIC_CMPXCHG() returns the initial value,  */ \
 			/* so it will return 0 if once_control was 0, though  */ \
@@ -70,10 +71,12 @@ CisoPspDlopen::~CisoPspDlopen()
 					/* indicate that initialization failed.       */ \
 					init_routine(); \
 					ATOMIC_EXCHANGE(once_control, 1); \
-					return 0; \
+					run = false; \
+					break; \
 				case 1: \
 					/* The initializer has already been executed. */ \
-					return 0; \
+					run = false; \
+					break; \
 				default: \
 					/* The initializer is being processed by another thread. */ \
 					sched_yield(); \
@@ -86,7 +89,7 @@ CisoPspDlopen::~CisoPspDlopen()
 #ifdef LZ4_SHARED_LINKAGE
 /**
  * Initialize the LZ4 function pointers.
- * (Internal version, called using pthread_once().)
+ * (Internal version, called using pthread_once_inl().)
  */
 void CisoPspDlopen::init_pfn_LZ4_int(void)
 {
@@ -131,8 +134,8 @@ int CisoPspDlopen::init_pfn_LZ4(void)
 
 #ifdef LZO_SHARED_LINKAGE
 /**
- * Initialize the LZ4 function pointers.
- * (Internal version, called using pthread_once().)
+ * Initialize the LZO function pointers.
+ * (Internal version, called using pthread_once_inl().)
  */
 void CisoPspDlopen::init_pfn_LZO_int(void)
 {

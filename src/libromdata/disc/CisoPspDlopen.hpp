@@ -14,11 +14,13 @@
 #  include "libwin32common/RpWin32_sdk.h"
 #  define dlsym(handle, symbol)	GetProcAddress((handle), (symbol))
 #  define dlclose(handle)	FreeLibrary(handle)
-typedef int pthread_once_t;
 #else /* !_WIN32 */
 #  include <dlfcn.h>	// for dlopen()
 typedef void *HMODULE;
 #endif /* !_WIN32 */
+
+// pthread_once_inl() needs its own type.
+typedef int pthread_once_inl_t;
 
 #ifdef HAVE_LZ4
 #  if defined(USE_INTERNAL_LZ4) && !defined(USE_INTERNAL_LZ4_DLL)
@@ -65,10 +67,10 @@ private:
 	// dlopen()'d modules
 
 #ifdef LZ4_SHARED_LINKAGE
-	pthread_once_t m_once_lz4;
+	pthread_once_inl_t m_once_lz4;
 #endif /* LZ4_SHARED_LINKAGE */
 #ifdef LZO_SHARED_LINKAGE
-	pthread_once_t m_once_lzo;
+	pthread_once_inl_t m_once_lzo;
 #endif /* LZO_SHARED_LINKAGE */
 
 #ifdef LZ4_SHARED_LINKAGE
@@ -91,7 +93,7 @@ private:
 private:
 	/**
 	 * Initialize the LZ4 function pointers.
-	 * (Internal version, called using pthread_once().)
+	 * (Internal version, called using pthread_once_inl().)
 	 */
 	void init_pfn_LZ4_int(void);
 
@@ -161,7 +163,7 @@ public:
 private:
 	/**
 	 * Initialize the LZO function pointers.
-	 * (Internal version, called using pthread_once().)
+	 * (Internal version, called using pthread_once_inl().)
 	 */
 	void init_pfn_LZO_int(void);
 
