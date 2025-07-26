@@ -354,7 +354,7 @@ int WiiUAncast::isRomSupported_static(const DetectInfo *info)
 	// Verify the NULLs and signature type.
 	if (sigCommon->null_0 == 0 && sigCommon->null_1 == 0 &&
 	    sigCommon->null_2[0] == 0 && sigCommon->null_2[1] == 0 &&
-	    sigCommon->null_2[2] == 0 && sigCommon->null_2[3] == 0)
+	    sigCommon->null_2[2] == 0 /*&& sigCommon->null_2[3] == 0*/)
 	{
 		switch (be32_to_cpu(sigCommon->sig_type)) {
 			default:
