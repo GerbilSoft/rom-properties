@@ -11,18 +11,11 @@
 #include "wiiu_ancast_structs.h"
 
 // Other rom-properties libraries
-#include "librpbase/crypto/Hash.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
-using namespace LibRpText;
-
-// for memmem() if it's not available in <string.h>
-#include "librptext/libc.h"
 
 // C++ STL classes
 using std::array;
-using std::string;
-using std::unique_ptr;
 
 namespace LibRomData {
 
