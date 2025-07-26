@@ -18,6 +18,9 @@
 extern "C" {
 #endif
 
+// "Toucan" image magic number (BE32)
+#define WIIU_TOUCAN_HEADER_MAGIC 0xFD9B5B7A
+
 // "Ancast" image magic number (BE32)
 #define WIIU_ANCAST_HEADER_MAGIC 0xEFA282D9
 

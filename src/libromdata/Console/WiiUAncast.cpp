@@ -218,14 +218,40 @@ WiiUAncast::WiiUAncast(const IRpFilePtr &file)
 		0		// szFile (not needed for WiiUAncast)
 	};
 	d->ancastType = static_cast<WiiUAncastPrivate::AncastType>(isRomSupported_static(&info));
-	if (static_cast<int>(d->ancastType) < 0) {
-		// vWii "Ancast" images may be embedded in a DOL executable.
-		// The "Ancast" image is located in Data0, while a load stub
-		// is located in Text0.
-		// Data0 start offset is the be32 at 0x1C.
-		const uint32_t *pData32 = reinterpret_cast<const uint32_t*>(&d->ancastHeader);
-		uint32_t data0_offset = be32_to_cpu(pData32[0x1C/4]);
-		size = d->file->seekAndRead(data0_offset, &d->ancastHeader, sizeof(d->ancastHeader));
+	if (static_cast<int>(d->ancastType) < 0 || d->ancastHeader.sigCommon.magic != cpu_to_be32(WIIU_ANCAST_HEADER_MAGIC)) {
+		// The "Ancast" image may be embedded in some other container.
+		uint32_t start_addr = 0;
+
+		if (unlikely(d->ancastHeader.sigCommon.magic == cpu_to_be32(WIIU_TOUCAN_HEADER_MAGIC))) {
+			// Toucan image. "Ancast" image is usually stored in the third section.
+			const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(&d->ancastHeader);
+
+			// Get the section count.
+			const uint32_t section_count = be32_to_cpu(pData32[0x0004/4]);
+			if (section_count < 3) {
+				// Not enough sections...
+				d->file.reset();
+				return;
+			}
+
+			// Section headers start at 0x20, and consist of a load address and a length.
+			// Add the section 0 and section 1 lengths to get the section 2 start address.
+			// NOTE: Requires 32-byte alignment.
+			start_addr = 0x20 + (8 * section_count);
+			start_addr += be32_to_cpu(pData32[0x0024/4]);
+			start_addr += be32_to_cpu(pData32[0x0028/4]);
+			start_addr = ALIGN_BYTES(0x20, start_addr);
+		} else {
+			// vWii "Ancast" images may be embedded in a DOL executable.
+			// The "Ancast" image is located in Data0, while a load stub
+			// is located in Text0.
+			// Data0 start offset is the be32 at 0x1C.
+			const uint32_t *pData32 = reinterpret_cast<const uint32_t*>(&d->ancastHeader);
+			start_addr = be32_to_cpu(pData32[0x1C/4]);	// Data0 offset
+		}
+
+		// Check at the new starting address.
+		size = d->file->seekAndRead(start_addr, &d->ancastHeader, sizeof(d->ancastHeader));
 		if (size != sizeof(d->ancastHeader)) {
 			d->file.reset();
 			return;
@@ -262,7 +288,33 @@ int WiiUAncast::isRomSupported_static(const DetectInfo *info)
 	// Check the "Ancast" magic.
 	const WiiU_Ancast_Header_SigCommon_t *sigCommon =
 		reinterpret_cast<const WiiU_Ancast_Header_SigCommon_t*>(info->header.pData);
-	if (sigCommon->magic != cpu_to_be32(WIIU_ANCAST_HEADER_MAGIC)) {
+	if (unlikely(sigCommon->magic == cpu_to_be32(WIIU_TOUCAN_HEADER_MAGIC))) {
+		// Toucan image. "Ancast" image is usually stored in the third section.
+		const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(info->header.pData);
+
+		// Get the section count.
+		const uint32_t section_count = be32_to_cpu(pData32[0x0004/4]);
+		if (section_count < 3) {
+			// Not enough sections...
+			return static_cast<int>(WiiUAncastPrivate::AncastType::Unknown);
+		}
+
+		// Section headers start at 0x20, and consist of a load address and a length.
+		// Add the section 0 and section 1 lengths to get the section 2 start address.
+		// NOTE: Requires 32-byte alignment.
+		uint32_t start_addr = 0x20 + (8 * section_count);
+		start_addr += be32_to_cpu(pData32[0x0024/4]);
+		start_addr += be32_to_cpu(pData32[0x0028/4]);
+		start_addr = ALIGN_BYTES(0x20, start_addr);
+
+		// Check at the new starting address.
+		sigCommon = reinterpret_cast<const WiiU_Ancast_Header_SigCommon_t*>(&info->header.pData[start_addr]);
+		if (sigCommon->magic != cpu_to_be32(WIIU_ANCAST_HEADER_MAGIC)) {
+			// Still no magic.
+			printf("toucan NOPE\n");
+			return static_cast<int>(WiiUAncastPrivate::AncastType::Unknown);
+		}
+	} else if (sigCommon->magic != cpu_to_be32(WIIU_ANCAST_HEADER_MAGIC)) {
 		// vWii "Ancast" images may be embedded in a DOL executable.
 		// The "Ancast" image is located in Data0, while a load stub
 		// is located in Text0.
