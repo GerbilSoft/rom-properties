@@ -135,6 +135,21 @@ WiiUAncast::WiiUAncast(const IRpFilePtr &file)
 		0		// szFile (not needed for WiiUAncast)
 	};
 	d->ancastType = static_cast<WiiUAncastPrivate::AncastType>(isRomSupported_static(&info));
+	if (static_cast<int>(d->ancastType) < 0) {
+		// vWii "Ancast" images may be embedded in a DOL executable.
+		// The "Ancast" image is located in Data0, while a load stub
+		// is located in Text0.
+		// Data0 start offset is the be32 at 0x1C.
+		const uint32_t *pData32 = reinterpret_cast<const uint32_t*>(&d->ancastHeader);
+		uint32_t data0_offset = be32_to_cpu(pData32[0x1C/4]);
+		size = d->file->seekAndRead(data0_offset, &d->ancastHeader, sizeof(d->ancastHeader));
+		if (size != sizeof(d->ancastHeader)) {
+			d->file.reset();
+			return;
+		}
+		d->ancastType = static_cast<WiiUAncastPrivate::AncastType>(isRomSupported_static(&info));
+	}
+
 	d->isValid = (static_cast<int>(d->ancastType) >= 0);
 
 	if (!d->isValid) {
@@ -161,28 +176,42 @@ int WiiUAncast::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
-	// Check the FIRM magic.
-	// TODO: vWii images may be embedded in a DOL.
-	const WiiU_Ancast_Header_SigCommon_t *const sigCommon =
+	// Check the "Ancast" magic.
+	const WiiU_Ancast_Header_SigCommon_t *sigCommon =
 		reinterpret_cast<const WiiU_Ancast_Header_SigCommon_t*>(info->header.pData);
-	if (sigCommon->magic == cpu_to_be32(WIIU_ANCAST_HEADER_MAGIC)) {
-		// Magic number is correct.
-		// Verify the NULLs and signature type.
-		if (sigCommon->null_0 == 0 && sigCommon->null_1 == 0 &&
-		    sigCommon->null_2[0] == 0 && sigCommon->null_2[1] == 0 &&
-		    sigCommon->null_2[2] == 0 && sigCommon->null_2[3] == 0)
-		{
-			switch (be32_to_cpu(sigCommon->sig_type)) {
-				default:
-					// Invalid signature type.
-					break;
-				case WIIU_ANCAST_SIGTYPE_ECDSA:
-					// ECDSA: Used by PowerPC "Ancast" images.
-					return static_cast<int>(WiiUAncastPrivate::AncastType::PowerPC);
-				case WIIU_ANCAST_SIGTYPE_RSA2048:
-					// RSA-2048: Used by ARM "Ancast" images.
-					return static_cast<int>(WiiUAncastPrivate::AncastType::ARM);
+	if (sigCommon->magic != cpu_to_be32(WIIU_ANCAST_HEADER_MAGIC)) {
+		// vWii "Ancast" images may be embedded in a DOL executable.
+		// The "Ancast" image is located in Data0, while a load stub
+		// is located in Text0.
+		// Data0 start offset is the be32 at 0x1C.
+		const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(info->header.pData);
+		uint32_t data0_offset = be32_to_cpu(pData32[0x1C/4]);
+		if (data0_offset + sizeof(WiiU_Ancast_Header_SigCommon_t) <= info->header.size) {
+			// Check at data0_offset.
+			sigCommon = reinterpret_cast<const WiiU_Ancast_Header_SigCommon_t*>(&info->header.pData[data0_offset]);
+			if (sigCommon->magic != cpu_to_be32(WIIU_ANCAST_HEADER_MAGIC)) {
+				// Still no magic.
+				return static_cast<int>(WiiUAncastPrivate::AncastType::Unknown);
 			}
+		}	
+	}
+
+	// Magic number is correct.
+	// Verify the NULLs and signature type.
+	if (sigCommon->null_0 == 0 && sigCommon->null_1 == 0 &&
+	    sigCommon->null_2[0] == 0 && sigCommon->null_2[1] == 0 &&
+	    sigCommon->null_2[2] == 0 && sigCommon->null_2[3] == 0)
+	{
+		switch (be32_to_cpu(sigCommon->sig_type)) {
+			default:
+				// Invalid signature type.
+				break;
+			case WIIU_ANCAST_SIGTYPE_ECDSA:
+				// ECDSA: Used by PowerPC "Ancast" images.
+				return static_cast<int>(WiiUAncastPrivate::AncastType::PowerPC);
+			case WIIU_ANCAST_SIGTYPE_RSA2048:
+				// RSA-2048: Used by ARM "Ancast" images.
+				return static_cast<int>(WiiUAncastPrivate::AncastType::ARM);
 		}
 	}
 
