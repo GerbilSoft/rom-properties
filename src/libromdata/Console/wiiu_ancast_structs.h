@@ -48,7 +48,10 @@ typedef struct _WiiU_Ancast_Header_ARM_t {
 	uint32_t sig_type;		// [0x020] Signature type (see WiiU_Ancast_SigType_e)
 					//         (should be 2 aka RSA-2048)
 
-	uint8_t signature[0x100];	// [0x024] RSA-2048 signature
+	union {
+		uint8_t u8[0x100];
+		uint32_t u32[0x100/4];
+	} signature;			// [0x024] RSA-2048 signature
 	uint8_t padding0[0x7C];		// [0x124] Padding (NULL)
 
 	uint16_t null_3;		// [0x1A0] NULL
@@ -77,7 +80,10 @@ typedef struct _WiiU_Ancast_Header_PPC_t {
 	uint32_t sig_type;		// [0x020] Signature type (see WiiU_Ancast_SigType_e)
 					//         (should be 1 aka ECDSA)
 
-	uint8_t signature[0x38];	// [0x024] ECDSA signature
+	union {
+		uint8_t u8[0x38];
+		uint32_t u32[0x38/4];
+	} signature;			// [0x024] ECDSA signature
 	uint8_t padding0[0x44];		// [0x05C] Padding (NULL)
 
 	uint16_t null_3;		// [0x0A0] NULL

@@ -236,7 +236,7 @@ int WiiUAncast::loadFieldData(void)
 	// Wii U "Ancast" image header (signature common fields)
 	// Image header is read in the constructor.
 	const WiiU_Ancast_Header_SigCommon_t *const sigCommon = &d->ancastHeader.sigCommon;
-	d->fields.reserve(9); // Maximum of 9 fields.
+	d->fields.reserve(5); // Maximum of 5 fields.
 
 	// CPU
 	const char *s_cpu = nullptr;
@@ -257,19 +257,36 @@ int WiiUAncast::loadFieldData(void)
 	const char *s_sigType = nullptr;
 	unsigned int target_device = 0;
 	unsigned int console_type = 0;
+	bool has_signature = false;
 	switch (be32_to_cpu(sigCommon->sig_type)) {
 		default:
 			break;
-		case WIIU_ANCAST_SIGTYPE_ECDSA:
+
+		case WIIU_ANCAST_SIGTYPE_ECDSA: {
+			const WiiU_Ancast_Header_PPC_t *const ppc = &d->ancastHeader.ppc;
+
 			s_sigType = "ECDSA";
-			target_device = be32_to_cpu(d->ancastHeader.ppc.target_device);
-			console_type = be32_to_cpu(d->ancastHeader.ppc.console_type);
+			target_device = be32_to_cpu(ppc->target_device);
+			console_type = be32_to_cpu(ppc->console_type);
+
+			// Check if the first and last u32s of the signature are non-zero.
+			has_signature = ((ppc->signature.u32[0] != 0) &&
+			                 (ppc->signature.u32[(sizeof(ppc->signature.u32)/sizeof(uint32_t)) - 1] != 0));
 			break;
-		case WIIU_ANCAST_SIGTYPE_RSA2048:
+		}
+
+		case WIIU_ANCAST_SIGTYPE_RSA2048: {
+			const WiiU_Ancast_Header_ARM_t *const arm = &d->ancastHeader.arm;
+
 			s_sigType = "RSA-2048";
-			target_device = be32_to_cpu(d->ancastHeader.arm.target_device);
-			console_type = be32_to_cpu(d->ancastHeader.arm.console_type);
+			target_device = be32_to_cpu(arm->target_device);
+			console_type = be32_to_cpu(arm->console_type);
+
+			// Check if the first and last u32s of the signature are non-zero.
+			has_signature = ((arm->signature.u32[0] != 0) &&
+			                 (arm->signature.u32[(sizeof(arm->signature.u32)/sizeof(uint32_t)) - 1] != 0));
 			break;
+		}
 	}
 
 	if (!s_sigType) {
@@ -280,6 +297,12 @@ int WiiUAncast::loadFieldData(void)
 
 	// Signature type
 	d->fields.addField_string(C_("WiiUAncast", "Signature Type"), s_sigType);
+
+	// Has signature?
+	// Unsigned images will only boot on systems with blank OTP/eFuses,
+	// unless an exploit such as de_Fuse or Paid The Beak is used.
+	d->fields.addField_string(C_("WiiUAncast", "Has Signature?"),
+		has_signature ? C_("RomData", "Yes") : C_("RomData", "No"));
 
 	// Target device
 	const char *const s_target_device_title = C_("WiiUAncast", "Target Device");
