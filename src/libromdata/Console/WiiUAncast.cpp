@@ -37,7 +37,7 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const array<const char*, 2+1> exts;
+	static const array<const char*, 3+1> exts;
 	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
@@ -66,8 +66,10 @@ ROMDATA_IMPL(WiiUAncast)
 /** WiiUAncastPrivate **/
 
 /* RomDataInfo */
-const array<const char*, 2+1> WiiUAncastPrivate::exts = {{
-	".img",
+const array<const char*, 3+1> WiiUAncastPrivate::exts = {{
+	".img",		// Wii U fw.img, kernel.img
+	".app",		// vWii titles
+	".ancast",	// custom
 
 	nullptr
 }};
