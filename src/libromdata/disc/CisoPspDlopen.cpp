@@ -14,8 +14,9 @@
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
 #  define sched_yield() SwitchToThread()
-static constexpr pthread_once_inl_t PTHREAD_ONCE_INIT = 0;
 #endif
+
+static constexpr pthread_once_inl_t PTHREAD_ONCE_INL_INIT = 0;
 
 #ifdef _MSC_VER
 // MSVC: rp_LoadLibrary()
@@ -27,13 +28,13 @@ namespace LibRomData {
 CisoPspDlopen::CisoPspDlopen()
 {
 #ifdef LZ4_SHARED_LINKAGE
-	m_once_lz4 = PTHREAD_ONCE_INIT;
+	m_once_lz4 = PTHREAD_ONCE_INL_INIT;
 	m_liblz4 = nullptr;
 	m_pfn_LZ4_decompress_safe = nullptr;
 #endif /* LZ4_SHARED_LINKAGE */
 
 #ifdef LZO_SHARED_LINKAGE
-	m_once_lzo = PTHREAD_ONCE_INIT;
+	m_once_lzo = PTHREAD_ONCE_INL_INIT;
 	m_liblzo2 = nullptr;
 	m_pfn_lzo1x_decompress_safe = nullptr;
 #elif defined(HAVE_LZO)

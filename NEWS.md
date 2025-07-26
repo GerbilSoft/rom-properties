@@ -44,6 +44,8 @@
     copy of fmt as a static library. (Usually only on Linux systems.)
     * Fixes #456: "sudo make install" Fails
       * Reported by @Techokami.
+  * CisoPspDlopen: Fix an issue that could cause compile failures on macOS
+    and some *BSD systems.
 
 * Other changes:
   * rpcli: Added more colorization for warning messages.
