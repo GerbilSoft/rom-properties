@@ -10,12 +10,19 @@
 #include "WiiUAncast.hpp"
 #include "wiiu_ancast_structs.h"
 
+// "Happy Wii U" PNG images
+#include "../res/img/happy-wii-u.h"
+
 // Other rom-properties libraries
+#include "librpbase/img/RpPng.hpp"
+#include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
+using namespace LibRpTexture;
 
 // C++ STL classes
 using std::array;
+using std::vector;
 
 namespace LibRomData {
 
@@ -45,6 +52,15 @@ public:
 	};
 	AncastType ancastType;
 
+	// Icon
+	rp_image_ptr img_icon;
+
+	/**
+	 * Load the icon.
+	 * @return Icon, or nullptr on error.
+	 */
+	rp_image_const_ptr loadIcon(void);
+
 	// "Ancast" image header
 	// NOTE: Must be byteswapped on access.
 	union {
@@ -55,6 +71,7 @@ public:
 };
 
 ROMDATA_IMPL(WiiUAncast)
+ROMDATA_IMPL_IMG(WiiUAncast)
 
 /** WiiUAncastPrivate **/
 
@@ -84,6 +101,79 @@ WiiUAncastPrivate::WiiUAncastPrivate(const IRpFilePtr &file)
 {
 	// Clear the various structs.
 	memset(&ancastHeader, 0, sizeof(ancastHeader));
+}
+
+/**
+ * Load the icon.
+ * @return Icon, or nullptr on error.
+ */
+rp_image_const_ptr WiiUAncastPrivate::loadIcon(void)
+{
+	// TODO: Point to a preinstalled icon instead of generating a thumbnail.
+	// On Windows, point to an icon resource in the DLL?
+	// On Linux, point to a preinstalled icon in /usr/share/icons/.
+
+	if (img_icon) {
+		// Icon has already been loaded.
+		return img_icon;
+	} else if (!this->isValid || static_cast<int>(this->ancastType) < 0) {
+		// Can't load the icon.
+		return nullptr;
+	}
+
+	// Determine the target device and console type,
+	// then load the matching PNG image.
+	unsigned int target_device = 0;
+	unsigned int console_type = 0;
+
+	switch (be32_to_cpu(ancastHeader.sigCommon.sig_type)) {
+		default:
+			break;
+
+		case WIIU_ANCAST_SIGTYPE_ECDSA: {
+			const WiiU_Ancast_Header_PPC_t *const ppc = &ancastHeader.ppc;
+			target_device = be32_to_cpu(ppc->target_device);
+			console_type = be32_to_cpu(ppc->console_type);
+			break;
+		}
+
+		case WIIU_ANCAST_SIGTYPE_RSA2048: {
+			const WiiU_Ancast_Header_ARM_t *const arm = &ancastHeader.arm;
+			target_device = be32_to_cpu(arm->target_device);
+			console_type = be32_to_cpu(arm->console_type);
+			break;
+		}
+	}
+
+	// Select the PNG image based on console_type and target_device.
+	// TODO: Wii U with "?" for unknown target device or console type.
+	// TODO: Indicate missing signature?
+	const uint8_t *png_data = nullptr;
+	size_t png_size = 0;
+	if (likely(console_type != WIIU_ANCAST_CONSOLE_TYPE_DEVEL)) {
+		// Retail (prod)
+		if (likely(target_device != WIIU_ANCAST_TARGET_DEVICE_ARM_SD)) {
+			png_data = happy_wii_u_prod_png;
+			png_size = sizeof(happy_wii_u_prod_png);
+		} else {
+			png_data = happy_wii_u_prod_sdboot_png;
+			png_size = sizeof(happy_wii_u_prod_sdboot_png);
+		}
+	} else {
+		// Debug (devel)
+		if (likely(target_device != WIIU_ANCAST_TARGET_DEVICE_ARM_SD)) {
+			png_data = happy_wii_u_devel_png;
+			png_size = sizeof(happy_wii_u_devel_png);
+		} else {
+			png_data = happy_wii_u_devel_sdboot_png;
+			png_size = sizeof(happy_wii_u_devel_sdboot_png);
+		}
+	}
+
+	// Create a MemFile and decode the image.
+	MemFile f_mem(png_data, png_size);
+	this->img_icon = RpPng::load(&f_mem);
+	return this->img_icon;
 }
 
 /** WiiUAncast **/
@@ -237,6 +327,64 @@ const char *WiiUAncast::systemName(unsigned int type) const
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t WiiUAncast::supportedImageTypes_static(void)
+{
+	return IMGBF_INT_ICON;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ *
+ * The first item in the returned vector is the "default" size.
+ * If the width/height is 0, then an image exists, but the size is unknown.
+ *
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> WiiUAncast::supportedImageSizes_static(ImageType imageType)
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	if (imageType != IMG_INT_ICON) {
+		// Only icons are supported.
+		return {};
+	}
+
+	// Our custom Wii U icons are all 48x48.
+	return {{nullptr, 48, 48, 0}};
+}
+
+/**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t WiiUAncast::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	uint32_t ret = 0;
+	switch (imageType) {
+		case IMG_INT_ICON: {
+			// Use nearest-neighbor scaling when resizing.
+			ret = IMGPF_RESCALE_NEAREST;
+			break;
+		}
+
+		default:
+			break;
+	}
+	return ret;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -378,6 +526,26 @@ int WiiUAncast::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
+}
+
+/**
+ * Load an internal image.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int WiiUAncast::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
+{
+	ASSERT_loadInternalImage(imageType, pImage);
+	RP_D(WiiUAncast);
+	ROMDATA_loadInternalImage_single(
+		IMG_INT_ICON,	// ourImageType
+		d->file,	// file
+		d->isValid,	// isValid
+		d->ancastType,	// romType
+		d->img_icon,	// imgCache
+		d->loadIcon);	// func
 }
 
 } // namespace LibRomData

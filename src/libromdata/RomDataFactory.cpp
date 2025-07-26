@@ -291,7 +291,7 @@ static const array<RomDataFns, 39> romDataFns_header = {{
 	GetRomDataFns(NES, ATTR_HAS_THUMBNAIL),
 	GetRomDataFns(SNES, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(SegaSaturn, ATTR_NONE | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
-	GetRomDataFns(WiiUAncast, 0),	// FIXME: Has magic, but vWii has it in a potentially variable location...
+	GetRomDataFns(WiiUAncast, ATTR_HAS_THUMBNAIL),	// FIXME: Has magic, but vWii has it in a potentially variable location...
 	GetRomDataFns(WiiSave, ATTR_HAS_THUMBNAIL),
 	GetRomDataFns(WiiTicket, ATTR_HAS_METADATA),
 	GetRomDataFns(WiiTMD, ATTR_HAS_METADATA),

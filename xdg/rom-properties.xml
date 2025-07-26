@@ -561,6 +561,19 @@
     </magic>
   </mime-type>
 
+  <!-- WiiUAncast -->
+  <mime-type type="application/x-wii-u-ancast">
+    <comment>Wii U ancast image</comment>
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="application-x-executable"/>
+    <glob pattern="*.ancast"/>
+    <magic priority="70">
+      <match value="0xEFA282D9" type="big32" offset="0"/>
+      <!-- FIXME: Hard-coded for DOL Data0 at 0x500. -->
+      <match value="0xEFA282D9" type="big32" offset="1280"/>
+    </magic>
+  </mime-type>
+
   <!-- WiiWAD -->
   <!-- Wii WADs have 64-byte alignment; BroadOn WADs do not. -->
   <!-- DSi debug TADs *usually* don't have 64-byte alignment. -->
