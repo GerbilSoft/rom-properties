@@ -57,6 +57,7 @@ using std::vector;
 #include "Console/WiiTicket.hpp"
 #include "Console/WiiTMD.hpp"
 #include "Console/WiiU.hpp"
+#include "Console/WiiUAncast.hpp"
 #include "Console/WiiUPackage.hpp"
 #include "Console/WiiWAD.hpp"
 #include "Console/WiiWIBN.hpp"
@@ -275,7 +276,7 @@ static const array<RomDataFns, 39> romDataFns_magic = {{
  * Headers with addresses other than 0 should be
  * placed at the end of this array.
  */
-static const array<RomDataFns, 38> romDataFns_header = {{
+static const array<RomDataFns, 39> romDataFns_header = {{
 	// Consoles
 	GetRomDataFns(ColecoVision, ATTR_HAS_METADATA),
 	GetRomDataFns(Dreamcast, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
@@ -290,6 +291,7 @@ static const array<RomDataFns, 38> romDataFns_header = {{
 	GetRomDataFns(NES, ATTR_HAS_THUMBNAIL),
 	GetRomDataFns(SNES, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(SegaSaturn, ATTR_NONE | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
+	GetRomDataFns(WiiUAncast, 0),	// FIXME: Has magic, but vWii has it in a potentially variable location...
 	GetRomDataFns(WiiSave, ATTR_HAS_THUMBNAIL),
 	GetRomDataFns(WiiTicket, ATTR_HAS_METADATA),
 	GetRomDataFns(WiiTMD, ATTR_HAS_METADATA),
