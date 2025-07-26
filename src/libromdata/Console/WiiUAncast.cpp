@@ -42,6 +42,7 @@ public:
 	static const RomDataInfo romDataInfo;
 
 public:
+	// TODO: Single "AncastType" variable, using masks? (like MegaDrive)
 	enum class AncastType {
 		Unknown	= -1,
 
@@ -51,6 +52,17 @@ public:
 		Max
 	};
 	AncastType ancastType;
+
+	enum class Container {
+		Unknown	= -1,
+
+		Ancast	= 0,	// Plain "Ancast" image
+		DOL	= 1,	// DOL executable
+		Toucan	= 2,	// Toucan image
+
+		Max
+	};
+	Container container;
 
 	// Icon
 	rp_image_ptr img_icon;
@@ -98,6 +110,7 @@ const RomDataInfo WiiUAncastPrivate::romDataInfo = {
 WiiUAncastPrivate::WiiUAncastPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, ancastType(AncastType::Unknown)
+	, container(Container::Unknown)
 {
 	// Clear the various structs.
 	memset(&ancastHeader, 0, sizeof(ancastHeader));
@@ -218,7 +231,10 @@ WiiUAncast::WiiUAncast(const IRpFilePtr &file)
 		0		// szFile (not needed for WiiUAncast)
 	};
 	d->ancastType = static_cast<WiiUAncastPrivate::AncastType>(isRomSupported_static(&info));
-	if (static_cast<int>(d->ancastType) < 0 || d->ancastHeader.sigCommon.magic != cpu_to_be32(WIIU_ANCAST_HEADER_MAGIC)) {
+	if (static_cast<int>(d->ancastType) >= 0 && d->ancastHeader.sigCommon.magic == cpu_to_be32(WIIU_ANCAST_HEADER_MAGIC)) {
+		// Found a valid "Ancast" image in a standard "Ancast" container.
+		d->container = WiiUAncastPrivate::Container::Ancast;
+	} else {
 		// The "Ancast" image may be embedded in some other container.
 		uint32_t start_addr = 0;
 
@@ -237,6 +253,7 @@ WiiUAncast::WiiUAncast(const IRpFilePtr &file)
 			// Section headers start at 0x20, and consist of a load address and a length.
 			// Add the section 0 and section 1 lengths to get the section 2 start address.
 			// NOTE: Requires 32-byte alignment.
+			d->container = WiiUAncastPrivate::Container::Toucan;
 			start_addr = 0x20 + (8 * section_count);
 			start_addr += be32_to_cpu(pData32[0x0024/4]);
 			start_addr += be32_to_cpu(pData32[0x0028/4]);
@@ -246,6 +263,7 @@ WiiUAncast::WiiUAncast(const IRpFilePtr &file)
 			// The "Ancast" image is located in Data0, while a load stub
 			// is located in Text0.
 			// Data0 start offset is the be32 at 0x1C.
+			d->container = WiiUAncastPrivate::Container::DOL;
 			const uint32_t *pData32 = reinterpret_cast<const uint32_t*>(&d->ancastHeader);
 			start_addr = be32_to_cpu(pData32[0x1C/4]);	// Data0 offset
 		}
@@ -263,6 +281,7 @@ WiiUAncast::WiiUAncast(const IRpFilePtr &file)
 
 	if (!d->isValid) {
 		d->file.reset();
+		d->container = WiiUAncastPrivate::Container::Unknown;
 	}
 }
 
@@ -458,7 +477,26 @@ int WiiUAncast::loadFieldData(void)
 	// Wii U "Ancast" image header (signature common fields)
 	// Image header is read in the constructor.
 	const WiiU_Ancast_Header_SigCommon_t *const sigCommon = &d->ancastHeader.sigCommon;
-	d->fields.reserve(5); // Maximum of 5 fields.
+	d->fields.reserve(6); // Maximum of 6 fields.
+
+	// Container
+	// TODO: Localization?
+	const char *s_container = nullptr;
+	switch (d->container) {
+		default:
+			s_container = C_("RomData", "Unknown");
+			break;
+		case WiiUAncastPrivate::Container::Ancast:
+			s_container = "Ancast image";
+			break;
+		case WiiUAncastPrivate::Container::DOL:
+			s_container = "DOL executable";
+			break;
+		case WiiUAncastPrivate::Container::Toucan:
+			s_container = "Toucan image";
+			break;
+	}
+	d->fields.addField_string(C_("WiiUAncast", "Container"), s_container);
 
 	// CPU
 	const char *s_cpu = nullptr;
