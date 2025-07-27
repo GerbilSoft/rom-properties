@@ -38,7 +38,7 @@ private:
 public:
 	/** RomDataInfo **/
 	static const array<const char*, 3+1> exts;
-	static const array<const char*, 1+1> mimeTypes;
+	static const array<const char*, 2+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -95,11 +95,12 @@ const array<const char*, 3+1> WiiUAncastPrivate::exts = {{
 
 	nullptr
 }};
-const array<const char*, 1+1> WiiUAncastPrivate::mimeTypes = {{
+const array<const char*, 2+1> WiiUAncastPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	// TODO: Change from "Ancast" to "Firmware"?
 	"application/x-wii-u-ancast",
+	"application/x-wii-u-toucan",
 
 	nullptr
 }};

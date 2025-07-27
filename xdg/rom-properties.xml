@@ -574,6 +574,15 @@
       <match value="0xEFA282D9" type="big32" offset="1280"/>
     </magic>
   </mime-type>
+  <mime-type type="application/x-wii-u-toucan">
+    <comment>Wii U Toucan image</comment>
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="application-x-executable"/>
+    <!-- <glob pattern="*.bin"/> FIXME: Too generic? -->
+    <magic priority="70">
+      <match value="0xFD9B5B7A" type="big32" offset="0"/>
+    </magic>
+  </mime-type>
 
   <!-- WiiWAD -->
   <!-- Wii WADs have 64-byte alignment; BroadOn WADs do not. -->
