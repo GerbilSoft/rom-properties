@@ -11,6 +11,9 @@
       at the moment, since it may conflict with system icon handling.
       It's mostly only usable for rpcli and for use as a subclass elsewhere.
     * Partially fixes #170: Icon files: ICNS, ICO, EXE
+  * WiiUAncast: Wii U firmware images (commonly known as "ancast" images).
+    Supports plain fw.img and kernel.img, as well as vWii images embedded in
+    DOL executables and Toucan images found in certain diagnostics software.
 
 * New parser features:
   * Xbox360_STFS: Fix titles for some packages that were authored incorrectly

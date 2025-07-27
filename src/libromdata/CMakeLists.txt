@@ -38,6 +38,7 @@ SET(${PROJECT_NAME}_SRCS
 	Console/WiiTicket.cpp
 	Console/WiiTMD.cpp
 	Console/WiiU.cpp
+	Console/WiiUAncast.cpp
 	Console/WiiUPackage.cpp
 	Console/WiiWAD.cpp
 	Console/WiiWAD_ops.cpp
@@ -179,6 +180,7 @@ SET(${PROJECT_NAME}_H
 	Console/WiiTMD.hpp
 	Console/WiiSave.hpp
 	Console/WiiU.hpp
+	Console/WiiUAncast.hpp
 	Console/WiiUPackage.hpp
 	Console/WiiUPackage_p.hpp
 	Console/WiiWAD.hpp
@@ -212,6 +214,7 @@ SET(${PROJECT_NAME}_H
 	Console/wii_structs.h
 	Console/wii_banner.h
 	Console/wii_wad.h
+	Console/wiiu_ancast_structs.h
 	Console/wiiu_structs.h
 	Console/xbox_xbe_structs.h
 	Console/xbox360_common_structs.h
