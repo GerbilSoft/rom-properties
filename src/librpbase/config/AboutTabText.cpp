@@ -148,7 +148,6 @@ const CreditsData_t *getCreditsData(void)
 static const array<SupportSite_t, 3+1> supportSites = {{
 	{"GitHub: GerbilSoft/rom-properties", "https://github.com/GerbilSoft/rom-properties"},
 	{"Sonic Retro", "https://forums.sonicretro.org/index.php?showtopic=35692"},
-	{"GBAtemp", "https://gbatemp.net/threads/rom-properties-page-shell-extension.442424/"},
 
 	{nullptr, nullptr}
 }};
