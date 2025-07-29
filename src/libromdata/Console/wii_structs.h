@@ -273,7 +273,7 @@ typedef struct RP_PACKED _RVL_TMD_Header {
 
 	uint8_t ipc_mask[12];		// [0x1BA] IPC mask
 	uint8_t reserved4[18];		// [0x1C6]
-	uint32_t access_rights;		// [0x1D8] Access rights (See RVL_Access_Rights_e)
+	uint32_t access_rights;		// [0x1D8] Access rights (See RVL_Access_Rights_e or NC_Access_Rights_e)
 	uint16_t title_version;		// [0x1DC] Title version
 	uint16_t nbr_cont;		// [0x1DE] Number of contents
 	uint16_t boot_index;		// [0x1E0] Boot index
@@ -287,12 +287,29 @@ ASSERT_STRUCT(RVL_TMD_Header, 0x1E4);
 #pragma pack()
 
 /**
- * Access rights.
+ * Wii: Access rights
  */
 typedef enum {
 	RVL_ACCESS_RIGHTS_AHBPROT	= (1U << 0),
 	RVL_ACCESS_RIGHTS_DVD_VIDEO	= (1U << 1),
 } RVL_Access_Rights_e;
+
+/**
+ * NetCard: Access rights
+ */
+typedef enum {
+	// Bits 0-2: Save type
+	NC_ACCESS_RIGHTS_SAVE_TYPE_NONE			= 0,
+	NC_ACCESS_RIGHTS_SAVE_TYPE_32_KIB_SRAM		= 1,
+	NC_ACCESS_RIGHTS_SAVE_TYPE_64_KIB_FLASH		= 2,
+	NC_ACCESS_RIGHTS_SAVE_TYPE_128_KIB_FLASH	= 3,
+	NC_ACCESS_RIGHTS_SAVE_TYPE_512_BYTE_EEPROM	= 4,
+	NC_ACCESS_RIGHTS_SAVE_TYPE_8_KIB_EEPROM		= 5,
+	NC_ACCESS_RIGHTS_SAVE_TYPE_MASK	= 0x07,
+
+	// Bit 3: RTC emulation (set if enabled)
+	NC_ACCESS_RIGHTS_RTC_EMULATION			= (1U << 3),
+} NC_Access_Rights_e;
 
 /**
  * Wii content entry (Stored after the TMD) (v0)

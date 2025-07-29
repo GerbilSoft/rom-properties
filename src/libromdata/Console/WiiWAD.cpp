@@ -821,9 +821,11 @@ int WiiWAD::loadFieldData(void)
 
 	// WAD headers are read in the constructor.
 	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
-	const uint16_t sys_id = be16_to_cpu(tmdHeader->title_id.sysID);
-	d->fields.reserve(12);	// Maximum of 12 fields.
-	d->fields.setTabName(0, (sys_id != NINTENDO_SYSID_TWL) ? "WAD" : "TAD");
+	d->fields.reserve(13);	// Maximum of 13 fields.
+
+	const uint16_t sysID = be16_to_cpu(tmdHeader->title_id.sysID);
+	const uint16_t catID = be16_to_cpu(tmdHeader->title_id.catID);
+	d->fields.setTabName(0, (sysID != NINTENDO_SYSID_TWL) ? "WAD" : "TAD");
 
 	if (d->key_status != KeyManager::VerifyResult::OK) {
 		// Unable to get the decryption key.
@@ -910,7 +912,7 @@ int WiiWAD::loadFieldData(void)
 	unsigned int gcnRegion = ~0U;
 	const char id4_region = (char)tmdHeader->title_id.u8[7];
 	const uint32_t tid_hi = be32_to_cpu(tmdHeader->title_id.hi);
-	if (sys_id <= NINTENDO_SYSID_RVL) {
+	if (sysID <= NINTENDO_SYSID_RVL) {
 		// Region code
 		if (tid_hi == 0x00000001) {
 			// IOS and/or System Menu.
@@ -979,7 +981,7 @@ int WiiWAD::loadFieldData(void)
 		}
 
 		// Required IOS version.
-		if (sys_id <= NINTENDO_SYSID_RVL) {
+		if (sysID <= NINTENDO_SYSID_RVL) {
 			const char *const ios_version_title = C_("Wii", "IOS Version");
 			const uint32_t ios_lo = be32_to_cpu(tmdHeader->sys_version.lo);
 			if (tmdHeader->sys_version.hi == cpu_to_be32(0x00000001) &&
@@ -998,15 +1000,50 @@ int WiiWAD::loadFieldData(void)
 			}
 		}
 
-		// Access rights.
-		vector<string> *const v_access_rights_hdr = new vector<string>({
-			"AHBPROT",
-			C_("Wii", "DVD Video")
-		});
-		d->fields.addField_bitfield(C_("Wii", "Access Rights"),
-			v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
+		if (sysID == NINTENDO_SYSID_RVL ||
+			(sysID == NINTENDO_SYSID_BROADON &&
+				(catID == NINTENDO_CATID_BROADON_RVL || catID == NINTENDO_CATID_BROADON_WUP)))
+		{
+			// Wii: Access rights
+			vector<string> *const v_access_rights_hdr = new vector<string>({
+				"AHBPROT",
+				C_("Wii", "DVD Video")
+			});
+			d->fields.addField_bitfield(C_("Wii", "Access Rights"),
+				v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
+		} else if (sysID == NINTENDO_SYSID_NC ||
+			(sysID == NINTENDO_SYSID_BROADON && catID == NINTENDO_CATID_BROADON_NC))
+		{
+			const uint32_t access_rights = be32_to_cpu(tmdHeader->access_rights);
 
-		if (sys_id == NINTENDO_SYSID_RVL) {
+			// tr: NetCard: GBA save type
+			const char *const s_save_type_title = C_("Wii", "GBA Save Type");
+			static const array<const char*, 6> save_type_tbl = {{
+				C_("Wii|NetCardGBASaveType", "None"),
+				C_("Wii|NetCardGBASaveType", "32 KiB SRAM"),
+				C_("Wii|NetCardGBASaveType", "64 KiB Flash ROM"),
+				C_("Wii|NetCardGBASaveType", "128 KiB Flash ROM"),
+				C_("Wii|NetCardGBASaveType", "512-byte EEPROM"),
+				C_("Wii|NetCardGBASaveType", "8 KiB EEPROM"),
+			}};
+
+			const unsigned int save_type = (access_rights & NC_ACCESS_RIGHTS_SAVE_TYPE_MASK);
+			if (save_type < save_type_tbl.size()) {
+				d->fields.addField_string(s_save_type_title,
+					pgettext_expr("Wii|NetCardGBASaveType", save_type_tbl[save_type]));
+			} else {
+				d->fields.addField_string(s_save_type_title,
+					fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), save_type));
+			}
+
+			// tr: NetCard: RTC emulation
+			d->fields.addField_string(C_("Wii", "RTC Emulation"),
+				(access_rights & NC_ACCESS_RIGHTS_RTC_EMULATION)
+					? C_("RomData", "Yes")
+					: C_("RomData", "No"));
+		}
+
+		if (sysID == NINTENDO_SYSID_RVL) {
 			// Get age rating(s).
 			// TODO: Combine with GameCube::addFieldData()'s code.
 			// Note that not all 16 fields are present on Wii,
@@ -1072,10 +1109,10 @@ int WiiWAD::loadFieldData(void)
 		if (mainContentFields) {
 			// For Wii, add the fields to the same tab.
 			// For DSi, add the fields to new tabs.
-			const int tabOffset = (sys_id == NINTENDO_SYSID_TWL ? RomFields::TabOffset_AddTabs : 0);
+			const int tabOffset = (sysID == NINTENDO_SYSID_TWL ? RomFields::TabOffset_AddTabs : 0);
 			d->fields.addFields_romFields(mainContentFields, tabOffset);
 		}
-	} else if (sys_id != NINTENDO_SYSID_TWL) {
+	} else if (sysID != NINTENDO_SYSID_TWL) {
 		// No main content object.
 		// Get the IMET data if it's available.
 		RomFields::StringMultiMap_t *const pMap_bannerName = WiiCommon::getWiiBannerStrings(
@@ -1237,8 +1274,8 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) cons
 	// TMD Header
 	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
 
-	const uint16_t sys_id = be16_to_cpu(tmdHeader->title_id.sysID);
-	if (sys_id != NINTENDO_SYSID_TWL) {
+	const uint16_t sysID = be16_to_cpu(tmdHeader->title_id.sysID);
+	if (sysID != NINTENDO_SYSID_TWL) {
 #ifdef ENABLE_DECRYPTION
 		if (d->mainContent) {
 			// Main content is present.
@@ -1260,7 +1297,7 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) cons
 
 	// Check for a valid TID hi.
 	const char *sysDir;
-	switch (sys_id) {
+	switch (sysID) {
 		case NINTENDO_SYSID_RVL:	// Wii
 			// Check for a valid LOWORD.
 			switch (be16_to_cpu(tmdHeader->title_id.catID)) {
