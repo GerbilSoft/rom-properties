@@ -34,6 +34,7 @@
     a header with an identifiable game title or serial number, the mapper,
     CRC32 of the first 8k of PRG ROM, and CRC32 of the first 8k of CHR ROM
     (if present) are used.
+  * WiiWAD: Add support for iQue NetCard WADs.
 
 * Bug fixes:
   * Windows: Work around a potential libpng crash when attempting to read

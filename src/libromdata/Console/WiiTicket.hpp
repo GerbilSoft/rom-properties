@@ -82,6 +82,10 @@ public:
 		Key_WUP_Starbuck_WiiU_Common,
 		Key_CAT_Starbuck_WiiU_Common,
 
+		// iQue NetCard
+		Key_NC_Retail,
+		Key_NC_Debug,
+
 		Max
 	};
 

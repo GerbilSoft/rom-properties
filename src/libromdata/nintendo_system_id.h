@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * nintendo_system_id.h: Nintendo system IDs.                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -71,9 +71,9 @@ ASSERT_STRUCT(Nintendo_TitleID_LE_t, sizeof(uint64_t));
  * Nintendo Switch drops it in favor of a new schema.
  */
 typedef enum {
-	NINTENDO_SYSID_IOS	= 0,	// Wii IOS
+	NINTENDO_SYSID_BROADON	= 0,	// BroadOn
 	NINTENDO_SYSID_RVL	= 1,	// Wii
-	NINTENDO_SYSID_NETCARD	= 2,	// GBA NetCard
+	NINTENDO_SYSID_NC	= 2,	// GBA NetCard
 	NINTENDO_SYSID_TWL	= 3,	// DSi
 	NINTENDO_SYSID_CTR	= 4,	// 3DS
 	NINTENDO_SYSID_WUP	= 5,	// Wii U
@@ -81,12 +81,13 @@ typedef enum {
 } Nintendo_SysID_e;
 
 /**
- * Nintendo Title ID: Wii IOS: Category IDs.
+ * Nintendo Title ID: BroadOn: Category IDs.
  * For SysID == 0.
  */
 typedef enum {
-	NINTENDO_CATID_IOS_RVL	= 1,	// Wii IOS
-	NINTENDO_CATID_IOS_WUP	= 7,	// vWii IOS
+	NINTENDO_CATID_BROADON_RVL	= 1,	// Wii IOS
+	NINTENDO_CATID_BROADON_NC	= 2,	// NetCard
+	NINTENDO_CATID_BROADON_WUP	= 7,	// vWii IOS
 } Nintendo_CatID_IOS_e;
 
 /**

@@ -581,18 +581,38 @@ const char *WiiWAD::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"WiiWAD::systemName() array index optimization needs to be updated.");
 
-	// TODO: Enum for Nintendo system IDs.
+	static const array<const char*, 4> sysNames_Wii = {{
+		"Nintendo Wii", "Wii", "Wii", nullptr
+	}};
+	static const array<const char*, 4> sysNames_NC = {{
+		"iQue NetCard", "NetCard", "NC", nullptr
+	}};
+
 	type &= SYSNAME_TYPE_MASK;
 	switch (be16_to_cpu(d->tmdHeader.title_id.sysID)) {
 		default:
-		case NINTENDO_SYSID_IOS:
-		case NINTENDO_SYSID_RVL: {
+		case NINTENDO_SYSID_BROADON:
+			// BroadOn: Check the category ID.
+			switch (be16_to_cpu(d->tmdHeader.title_id.catID)) {
+				default:
+				case NINTENDO_CATID_BROADON_RVL:
+				case NINTENDO_CATID_BROADON_WUP:
+					// TODO: Something else for WUP (vWii)?
+					return sysNames_Wii[type];
+
+				case NINTENDO_CATID_BROADON_NC:
+					return sysNames_NC[type];
+
+				// NOTE: Not sure if there are any TWL titles with sysID 0...
+			}
+
+		case NINTENDO_SYSID_RVL:
 			// Wii
-			static const array<const char*, 4> sysNames_Wii = {{
-				"Nintendo Wii", "Wii", "Wii", nullptr
-			}};
 			return sysNames_Wii[type];
-		}
+
+		case NINTENDO_SYSID_NC:
+			// iQue NetCard (not released)
+			return sysNames_NC[type];
 
 		case NINTENDO_SYSID_TWL: {
 			// DSi

@@ -360,10 +360,13 @@ int WiiTMD::loadFieldData(void)
 			default:
 				break;
 
-			case NINTENDO_SYSID_IOS: {
-				// Wii (IOS)
-				if (be32_to_cpu(os_tid.hi) != 1)
+			case NINTENDO_SYSID_BROADON: {
+				// BroadOn
+				// Check for Wii IOS.
+				if (be32_to_cpu(os_tid.hi) != NINTENDO_SYSID_RVL) {
+					// Not Wii IOS.
 					break;
+				}
 
 				// IOS slots
 				const uint32_t tid_lo = be32_to_cpu(os_tid.lo);

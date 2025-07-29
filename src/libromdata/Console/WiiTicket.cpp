@@ -113,6 +113,10 @@ const std::array<const char*, static_cast<size_t>(WiiTicket::EncryptionKeys::Max
 	// Wii U mode keys
 	"wup-starbuck-wiiu-common",
 	"cat-starbuck-wiiu-common",
+
+	// iQue NetCard
+	"ique-nc-prod",
+	"ique-nc-devel",	// NOTE: Same as rvt-korean.
 }};
 
 const uint8_t WiiTicketPrivate::EncryptionKeyVerifyData[static_cast<size_t>(WiiTicket::EncryptionKeys::Max)][16] = {
@@ -161,6 +165,16 @@ const uint8_t WiiTicketPrivate::EncryptionKeyVerifyData[static_cast<size_t>(WiiT
 	// cat-starbuck-wiiu-common
 	{0xF3,0xE2,0xED,0xF4,0x8D,0x99,0x2A,0x5B,
 	 0xD8,0xE1,0x3F,0xA2,0x9B,0x89,0x73,0xAA},
+
+	 /* iQue NetCard **/
+
+	 // ique-nc-prod
+	{0x27,0xE4,0xE2,0x10,0xBA,0x3F,0x20,0x34,
+	 0xA1,0x96,0x0E,0xE5,0x97,0x6F,0xE8,0x2D},
+
+	// ique-nc-devel
+	{0x31,0x81,0xF2,0xCA,0xFE,0x70,0x58,0xCB,
+	 0x3C,0x0F,0xB9,0x9D,0x2D,0x45,0x74,0xDA},
 };
 #endif /* ENABLE_DECRYPTION */
 
@@ -210,11 +224,11 @@ int WiiTicketPrivate::getEncKey(void)
 
 	// Check CA and XS.
 	struct ca_xs_tbl_t {
-		uint8_t ca;
-		uint8_t xs;
+		uint16_t ca;
+		uint16_t xs;
 		WiiTicket::EncryptionKeys encKey;
 	};
-	static const array<ca_xs_tbl_t, 5> ca_xs_tbl = {{
+	static const array<ca_xs_tbl_t, 7> ca_xs_tbl = {{
 		// RVL retail
 		{1, 3, WiiTicket::EncryptionKeys::Key_RVL_Common},
 
@@ -229,6 +243,12 @@ int WiiTicketPrivate::getEncKey(void)
 
 		// CTR debug (also used for some early/system CAT debug titles for some reason)
 		{4, 0x9, WiiTicket::EncryptionKeys::Key_CAT_Starbuck_WiiU_Common},
+
+		// iQue NetCard debug
+		{0x1E, 0x1F, WiiTicket::EncryptionKeys::Key_NC_Debug},
+
+		// iQue NetCard retail (NOTE: Not released...)
+		{0x111, 0x114, WiiTicket::EncryptionKeys::Key_NC_Retail},
 	}};
 
 	WiiTicket::EncryptionKeys encKey = WiiTicket::EncryptionKeys::Unknown;
@@ -240,6 +260,8 @@ int WiiTicketPrivate::getEncKey(void)
 		}
 	}
 
+	// If the key wasn't found, this is some issuer we don't support...
+	assert(static_cast<int>(encKey) >= 0);
 	if (static_cast<int>(encKey) < 0) {
 		// Unsupported CA/XS combination.
 		return -EINVAL;
@@ -709,6 +731,13 @@ const char *WiiTicket::encKeyName_static(EncryptionKeys encKey)
 		NOP_C_("Wii|EncKey", "Retail (Wii U)"),
 		// tr: Key_CAT_Starbuck_WiiU_Common - Debug Wii U encryption key
 		NOP_C_("Wii|EncKey", "Debug (Wii U)"),
+
+		// iQue NetCard keys
+
+		// tr: Key_NC_Retail
+		NOP_C_("Wii|EncKey", "Retail (iQue NetCard)"),
+		// tr: Key_NC_Debug
+		NOP_C_("Wii|EncKey", "Debug (iQue NetCard)"),
 	}};
 
 	const char *s_key_name;
