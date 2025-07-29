@@ -54,13 +54,13 @@ Or use the Mibbit Web IRC client: http://mibbit.com/?server=irc.badnik.zone&chan
 ## Installation
 
 Currently, the ROM Properties Page shell extension is compatible with the
-following platforms:
-* KDE Frameworks 5.x and 6.x
-* XFCE (GTK+ 2.x, GTK+ 3.x)
-* GNOME and Unity (GTK+ 3.x)
-* GNOME 43 (GTK 4.x)
-* MATE Desktop (1.18+; GTK+ 3.x)
-* Cinnamon Desktop
+following platforms and file browsers:
+* KDE Frameworks 5.x and 6.x (Dolphin and Konqueror)
+* XFCE (Thunar)
+* GNOME 3.x through 42 (Nautilus)
+* GNOME 43 (Nautilus)
+* MATE Desktop (1.18+) (Caja)
+* Cinnamon Desktop (Nemo)
 * Windows 7 (and later)
 
 The following platforms are still compatible, but may not receive as much support:
