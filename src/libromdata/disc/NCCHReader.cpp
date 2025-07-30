@@ -1011,12 +1011,10 @@ IRpFilePtr NCCHReader::open(int section, const char *filename)
 	}
 
 	// Get the file offset.
-	const uint32_t offset = (le32_to_cpu(d->ncch_header.hdr.exefs_offset) << d->media_unit_shift) +
-		sizeof(d->exefs_header) + le32_to_cpu(file_header->offset);
+	const off64_t offset = (static_cast<off64_t>(le32_to_cpu(d->ncch_header.hdr.exefs_offset)) << d->media_unit_shift) +
+		sizeof(d->exefs_header) + static_cast<off64_t>(le32_to_cpu(file_header->offset));
 	const uint32_t size = le32_to_cpu(file_header->size);
-	if (offset >= d->ncch_length ||
-	    (static_cast<off64_t>(offset) + size) > d->ncch_length)
-	{
+	if (offset >= d->ncch_length || (offset + size) > d->ncch_length) {
 		// File offset/size is out of bounds.
 		m_lastError = EIO;	// TODO: Better error code?
 		return nullptr;
