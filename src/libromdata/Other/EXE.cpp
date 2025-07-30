@@ -510,7 +510,7 @@ void EXEPrivate::addFields_MZ(void)
 		if (file_size != -1) {
 			off64_t image_size = le16_to_cpu(mz.e_cp)*512;
 			if (mz.e_cblp != 0)
-				image_size -= 512 - le16_to_cpu(mz.e_cblp);
+				image_size -= (512 - static_cast<int>(le16_to_cpu(mz.e_cblp)));
 			if (file_size < image_size) {
 				fields.addField_string(C_("RomData", "Warning"),
 					C_("EXE", "Program image truncated"), RomFields::STRF_WARNING);
