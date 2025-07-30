@@ -96,7 +96,7 @@ unsigned int WINAPI UpdateChecker::ThreadProc(LPVOID lpParameter)
 	// Split into 4 elements using strtok_r(), and
 	// convert to a 64-bit version. (ignoring the development flag)
 	uint64_t updateVersion = 0;
-	char *saveptr;
+	char *saveptr = nullptr;
 	const char *token = strtok_r(buf, ".", &saveptr);
 	for (unsigned int i = 0; i < 3; i++, updateVersion <<= 16U) {
 		if (!token) {
