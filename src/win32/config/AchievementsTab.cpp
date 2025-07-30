@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * AchievementsTab.cpp: Achievements tab for rp-config.                    *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -69,9 +69,6 @@ public:
 	HPROPSHEETPAGE hPropSheetPage;
 	HWND hWndPropSheet;
 
-	// Image list for achievement icons.
-	HIMAGELIST himglAch;
-
 	// Alternate row color.
 	COLORREF colorAltRow;
 	HBRUSH hbrAltRow;
@@ -110,7 +107,6 @@ public:
 AchievementsTabPrivate::AchievementsTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
-	, himglAch(nullptr)
 	, colorAltRow(0)
 	, hbrAltRow(nullptr)
 	, hbrBkgnd(nullptr)
@@ -120,9 +116,6 @@ AchievementsTabPrivate::AchievementsTabPrivate()
 
 AchievementsTabPrivate::~AchievementsTabPrivate()
 {
-	if (himglAch) {
-		ImageList_Destroy(himglAch);
-	}
 	if (hbrAltRow) {
 		DeleteBrush(hbrAltRow);
 	}
@@ -339,15 +332,10 @@ void AchievementsTabPrivate::updateImageList(void)
 	// Remove the current ImageList from the ListView.
 	HWND hListView = GetDlgItem(hWndPropSheet, IDC_ACHIEVEMENTS_LIST);
 	assert(hListView != nullptr);
-	if (!hListView)
+	if (!hListView) {
 		return;
-	ListView_SetImageList(hListView, nullptr, LVSIL_SMALL);
-
-	if (!himglAch) {
-		// Delete the existing ImageList.
-		ImageList_Destroy(himglAch);
-		himglAch = nullptr;
 	}
+	ListView_SetImageList(hListView, nullptr, LVSIL_SMALL);
 
 	// Get the icon size for the current DPI.
 	// Reference: https://docs.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows
@@ -376,11 +364,12 @@ void AchievementsTabPrivate::updateImageList(void)
 #endif
 
 	// Create the image list.
-	himglAch = ImageList_Create(iconSize, iconSize, ILC_COLOR32,
+	HIMAGELIST himglAch = ImageList_Create(iconSize, iconSize, ILC_COLOR32,
 		(int)Achievements::ID::Max, (int)Achievements::ID::Max);
 	assert(himglAch != nullptr);
-	if (!himglAch)
+	if (!himglAch) {
 		return;
+	}
 
 	// Load the achievements sprite sheet.
 	AchSpriteSheet achSpriteSheet(iconSize);
@@ -404,7 +393,11 @@ void AchievementsTabPrivate::updateImageList(void)
 	// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
 	// TODO: The row highlight doesn't surround the empty area
 	// of the icon. LVS_OWNERDRAW is probably needed for that.
-	ListView_SetImageList(hListView, himglAch, LVSIL_SMALL);
+	HIMAGELIST himglOld = ListView_SetImageList(hListView, himglAch, LVSIL_SMALL);
+	if (himglOld) {
+		// Delete the previous imagelist.
+		ImageList_Destroy(himglOld);
+	}
 }
 
 /**
@@ -529,13 +522,15 @@ void AchievementsTabPrivate::reset(void)
 	// Load achievements.
 	HWND hListView = GetDlgItem(hWndPropSheet, IDC_ACHIEVEMENTS_LIST);
 	assert(hListView != nullptr);
-	if (!hListView)
+	if (!hListView) {
 		return;
+	}
 
 	// Clear the ListView.
 	ListView_DeleteAllItems(hListView);
-	if (himglAch) {
-		ListView_SetImageList(hListView, nullptr, LVSIL_SMALL);
+	HIMAGELIST himglOld = ListView_SetImageList(hListView, nullptr, LVSIL_SMALL);
+	if (himglOld) {
+		ImageList_Destroy(himglOld);
 	}
 
 	// Check if we need to set up columns.
