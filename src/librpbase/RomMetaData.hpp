@@ -153,238 +153,238 @@ enum class PropertyType : uint8_t {
 class RomMetaDataPrivate;
 class RomMetaData
 {
-	public:
-		// String format flags. (Property::String)
-		// NOTE: These have the same values as RomFields::StringFormat.
-		enum StringFormat {
-			// Trim spaces from the end of strings.
-			STRF_TRIM_END	= (1U << 3),
-		};
+public:
+	// String format flags. (Property::String)
+	// NOTE: These have the same values as RomFields::StringFormat.
+	enum StringFormat {
+		// Trim spaces from the end of strings.
+		STRF_TRIM_END	= (1U << 3),
+	};
 
-		// ROM metadata struct.
-		// Dynamically allocated.
-		struct MetaData {
-			Property name;		// Property name.
-			PropertyType type;	// Property type.
-
-			/**
-			 * Initialize a RomMetaData::MetaData object.
-			 * Defaults to zero init.
-			 */
-			MetaData();
-
-			/**
-			 * Initialize a RomMetaData::MetaData object.
-			 * Property data will be zero-initialized.
-			 * @param name
-			 * @param type
-			 */
-			MetaData(Property name, PropertyType type);
-
-			// Destructor to handle automatic string deletion.
-			~MetaData();
-
-			MetaData(const MetaData &other);		// copy constructor
-			MetaData& operator=(MetaData other);		// assignment operator
-			MetaData(MetaData &&other) noexcept;		// move constructor
-			MetaData& operator=(MetaData &&other) noexcept;	// move assignment operator
-
-			/** Fields **/
-
-			union _data {
-				// intptr_t field to cover everything.
-				// Mainly used to reset the entire field.
-				intptr_t iptrvalue;
-
-				// Integer property
-				int ivalue;
-
-				// Unsigned integer property
-				unsigned int uvalue;
-
-				// String property
-				const char *str;
-
-				// UNIX timestamp
-				time_t timestamp;
-
-				// Double-precision floating point value
-				double dvalue;
-			} data;
-		};
-
-	public:
-		/**
-		 * Initialize a ROM Metadata class.
-		 */
-		RomMetaData();
-		~RomMetaData();
-
-	private:
-		RP_DISABLE_COPY(RomMetaData)
-	private:
-		friend class RomMetaDataPrivate;
-		RomMetaDataPrivate *d_ptr;
-
-	public:
-		/** Metadata iterator types **/
-		typedef std::vector<MetaData>::const_iterator const_iterator;
-
-	public:
-		/** Metadata accessors. **/
+	// ROM metadata struct.
+	// Dynamically allocated.
+	struct MetaData {
+		Property name;		// Property name.
+		PropertyType type;	// Property type.
 
 		/**
-		 * Get the number of metadata properties.
-		 * @return Number of metadata properties.
+		 * Initialize a RomMetaData::MetaData object.
+		 * Defaults to zero init.
 		 */
-		RP_LIBROMDATA_PUBLIC
-		int count(void) const;
+		MetaData();
 
 		/**
-		 * Is this RomMetaData empty?
-		 * @return True if empty; false if not.
+		 * Initialize a RomMetaData::MetaData object.
+		 * Property data will be zero-initialized.
+		 * @param name
+		 * @param type
 		 */
-		RP_LIBROMDATA_PUBLIC
-		bool empty(void) const;
+		MetaData(Property name, PropertyType type);
 
-		/**
-		 * Get a metadata property.
-		 * @param idx Metadata index
-		 * @return Metadata property, or nullptr if the index is invalid.
-		 */
-		RP_LIBROMDATA_PUBLIC
-		const MetaData *at(int idx) const;
+		// Destructor to handle automatic string deletion.
+		~MetaData();
 
-		/**
-		 * Get a const iterator pointing to the beginning of the RomMetaData.
-		 * @return Const iterator
-		 */
-		RP_LIBROMDATA_PUBLIC
-		const_iterator cbegin(void) const;
+		MetaData(const MetaData &other);		// copy constructor
+		MetaData& operator=(MetaData other);		// assignment operator
+		MetaData(MetaData &&other) noexcept;		// move constructor
+		MetaData& operator=(MetaData &&other) noexcept;	// move assignment operator
 
-		/**
-		 * Get a const iterator pointing to the end of the RomMetaData.
-		 * @return Const iterator
-		 */
-		RP_LIBROMDATA_PUBLIC
-		const_iterator cend(void) const;
+		/** Fields **/
 
-		/**
-		 * Get a const iterator pointing to the beginning of the RomMetaData.
-		 * Alias function required for range-based `for` loops.
-		 * @return Const iterator
-		 */
-		const_iterator begin(void) const
-		{
-			return cbegin();
+		union _data {
+			// intptr_t field to cover everything.
+			// Mainly used to reset the entire field.
+			intptr_t iptrvalue;
+
+			// Integer property
+			int ivalue;
+
+			// Unsigned integer property
+			unsigned int uvalue;
+
+			// String property
+			const char *str;
+
+			// UNIX timestamp
+			time_t timestamp;
+
+			// Double-precision floating point value
+			double dvalue;
+		} data;
+	};
+
+public:
+	/**
+	 * Initialize a ROM Metadata class.
+	 */
+	RomMetaData();
+	~RomMetaData();
+
+private:
+	RP_DISABLE_COPY(RomMetaData)
+private:
+	friend class RomMetaDataPrivate;
+	RomMetaDataPrivate *d_ptr;
+
+public:
+	/** Metadata iterator types **/
+	typedef std::vector<MetaData>::const_iterator const_iterator;
+
+public:
+	/** Metadata accessors **/
+
+	/**
+	 * Get the number of metadata properties.
+	 * @return Number of metadata properties.
+	 */
+	RP_LIBROMDATA_PUBLIC
+	int count(void) const;
+
+	/**
+	 * Is this RomMetaData empty?
+	 * @return True if empty; false if not.
+	 */
+	RP_LIBROMDATA_PUBLIC
+	bool empty(void) const;
+
+	/**
+	 * Get a metadata property.
+	 * @param idx Metadata index
+	 * @return Metadata property, or nullptr if the index is invalid.
+	 */
+	RP_LIBROMDATA_PUBLIC
+	const MetaData *at(int idx) const;
+
+	/**
+	 * Get a const iterator pointing to the beginning of the RomMetaData.
+	 * @return Const iterator
+	 */
+	RP_LIBROMDATA_PUBLIC
+	const_iterator cbegin(void) const;
+
+	/**
+	 * Get a const iterator pointing to the end of the RomMetaData.
+	 * @return Const iterator
+	 */
+	RP_LIBROMDATA_PUBLIC
+	const_iterator cend(void) const;
+
+	/**
+	 * Get a const iterator pointing to the beginning of the RomMetaData.
+	 * Alias function required for range-based `for` loops.
+	 * @return Const iterator
+	 */
+	const_iterator begin(void) const
+	{
+		return cbegin();
+	}
+
+	/**
+	 * Get a const iterator pointing to the end of the RomMetaData.
+	 * Alias function required for range-based `for` loops.
+	 * @return Const iterator
+	 */
+	const_iterator end(void) const
+	{
+		return cend();
+	}
+
+public:
+	/** Convenience functions for RomData subclasses **/
+
+	/**
+	 * Reserve space for metadata.
+	 * @param n Desired capacity
+	 */
+	void reserve(int n);
+
+	/**
+	 * Add metadata from another RomMetaData object.
+	 *
+	 * If metadata properties with the same names already exist,
+	 * they will be overwritten.
+	 *
+	 * @param other Source RomMetaData object
+	 * @return Metadata index of the last metadata added.
+	 */
+	int addMetaData_metaData(const RomMetaData *other);
+
+	/**
+	 * Add an integer metadata property.
+	 *
+	 * If a metadata property with the same name already exists,
+	 * it will be overwritten.
+	 *
+	 * @param name Property name
+	 * @param val Integer value
+	 * @return Metadata index, or -1 on error.
+	 */
+	int addMetaData_integer(Property name, int value);
+
+	/**
+	 * Add an unsigned integer metadata property.
+	 * @param name Property name
+	 * @param val Unsigned integer value
+	 * @return Metadata index, or -1 on error.
+	 */
+	int addMetaData_uint(Property name, unsigned int value);
+
+	/**
+	 * Add a string metadata property.
+	 *
+	 * If a metadata property with the same name already exists,
+	 * it will be overwritten.
+	 *
+	 * @param name Property name
+	 * @param str String value
+	 * @param flags Formatting flags
+	 * @return Metadata index, or -1 on error.
+	 */
+	int addMetaData_string(Property name, const char *str, unsigned int flags = 0);
+
+	/**
+	 * Add a string metadata property.
+	 *
+	 * If a metadata property with the same name already exists,
+	 * it will be overwritten.
+	 *
+	 * @param name Property name
+	 * @param str String value
+	 * @param flags Formatting flags
+	 * @return Metadata index, or -1 on error.
+	 */
+	int addMetaData_string(Property name, const std::string &str, unsigned int flags = 0)
+	{
+		if (str.empty()) {
+			// Ignore empty strings.
+			return -1;
 		}
+		return addMetaData_string(name, str.c_str(), flags);
+	}
 
-		/**
-		 * Get a const iterator pointing to the end of the RomMetaData.
-		 * Alias function required for range-based `for` loops.
-		 * @return Const iterator
-		 */
-		const_iterator end(void) const
-		{
-			return cend();
-		}
+	/**
+	 * Add a timestamp metadata property.
+	 *
+	 * If a metadata property with the same name already exists,
+	 * it will be overwritten.
+	 *
+	 * @param name Metadata name
+	 * @param timestamp UNIX timestamp
+	 * @return Metadata index, or -1 on error.
+	 */
+	int addMetaData_timestamp(Property name, time_t timestamp);
 
-	public:
-		/** Convenience functions for RomData subclasses. **/
-
-		/**
-		 * Reserve space for metadata.
-		 * @param n Desired capacity
-		 */
-		void reserve(int n);
-
-		/**
-		 * Add metadata from another RomMetaData object.
-		 *
-		 * If metadata properties with the same names already exist,
-		 * they will be overwritten.
-		 *
-		 * @param other Source RomMetaData object
-		 * @return Metadata index of the last metadata added.
-		 */
-		int addMetaData_metaData(const RomMetaData *other);
-
-		/**
-		 * Add an integer metadata property.
-		 *
-		 * If a metadata property with the same name already exists,
-		 * it will be overwritten.
-		 *
-		 * @param name Property name
-		 * @param val Integer value
-		 * @return Metadata index, or -1 on error.
-		 */
-		int addMetaData_integer(Property name, int value);
-
-		/**
-		 * Add an unsigned integer metadata property.
-		 * @param name Property name
-		 * @param val Unsigned integer value
-		 * @return Metadata index, or -1 on error.
-		 */
-		int addMetaData_uint(Property name, unsigned int value);
-
-		/**
-		 * Add a string metadata property.
-		 *
-		 * If a metadata property with the same name already exists,
-		 * it will be overwritten.
-		 *
-		 * @param name Property name
-		 * @param str String value
-		 * @param flags Formatting flags
-		 * @return Metadata index, or -1 on error.
-		 */
-		int addMetaData_string(Property name, const char *str, unsigned int flags = 0);
-
-		/**
-		 * Add a string metadata property.
-		 *
-		 * If a metadata property with the same name already exists,
-		 * it will be overwritten.
-		 *
-		 * @param name Property name
-		 * @param str String value
-		 * @param flags Formatting flags
-		 * @return Metadata index, or -1 on error.
-		 */
-		int addMetaData_string(Property name, const std::string &str, unsigned int flags = 0)
-		{
-			if (str.empty()) {
-				// Ignore empty strings.
-				return -1;
-			}
-			return addMetaData_string(name, str.c_str(), flags);
-		}
-
-		/**
-		 * Add a timestamp metadata property.
-		 *
-		 * If a metadata property with the same name already exists,
-		 * it will be overwritten.
-		 *
-		 * @param name Metadata name
-		 * @param timestamp UNIX timestamp
-		 * @return Metadata index, or -1 on error.
-		 */
-		int addMetaData_timestamp(Property name, time_t timestamp);
-
-		/**
-		 * Add a double-precision floating point metadata property.
-		 *
-		 * If a metadata property with the same name already exists,
-		 * it will be overwritten.
-		 *
-		 * @param name Property name
-		 * @param dvalue Double value
-		 * @return Metadata index, or -1 on error.
-		 */
-		int addMetaData_double(Property name, double dvalue);
+	/**
+	 * Add a double-precision floating point metadata property.
+	 *
+	 * If a metadata property with the same name already exists,
+	 * it will be overwritten.
+	 *
+	 * @param name Property name
+	 * @param dvalue Double value
+	 * @return Metadata index, or -1 on error.
+	 */
+	int addMetaData_double(Property name, double dvalue);
 };
 
 } // namespace LibRpBase

@@ -22,26 +22,26 @@ namespace LibRpBase {
 
 class RomFieldsPrivate
 {
-	public:
-		RomFieldsPrivate();
+public:
+	RomFieldsPrivate();
 
-	private:
-		RP_DISABLE_COPY(RomFieldsPrivate)
+private:
+	RP_DISABLE_COPY(RomFieldsPrivate)
 
-	public:
-		// ROM field structs.
-		vector<RomFields::Field> fields;
+public:
+	// ROM field structs
+	vector<RomFields::Field> fields;
 
-		// Tab names.
-		vector<string> tabNames;
+	// Tab names
+	vector<string> tabNames;
 
-		// Current tab index.
-		uint8_t tabIdx;
+	// Current tab index
+	uint8_t tabIdx;
 
-		// Default language code.
-		// Set by the first call to addField_string_multi()
-		// and/or addField_listData with RFT_LISTDATA_MULTI.
-		uint32_t def_lc;
+	// Default language code
+	// Set by the first call to addField_string_multi()
+	// and/or addField_listData with RFT_LISTDATA_MULTI.
+	uint32_t def_lc;
 };
 
 /** RomFieldsPrivate **/
@@ -276,11 +276,6 @@ RomFields::Field& RomFields::Field::operator=(Field &&other) noexcept
 
 /** RomFields **/
 
-/**
- * Initialize a ROM Fields class.
- * @param fields Array of fields.
- * @param count Number of fields.
- */
 RomFields::RomFields()
 	: d_ptr(new RomFieldsPrivate())
 { }
@@ -293,7 +288,7 @@ RomFields::~RomFields()
 /**
  * Get the abbreviation of an age rating organization.
  * (TODO: Full name function?)
- * @param country Rating country.
+ * @param country Rating country
  * @return Abbreviation, or nullptr if invalid.
  */
 const char *RomFields::ageRatingAbbrev(AgeRatingsCountry country)
@@ -322,12 +317,8 @@ const char *RomFields::ageRatingAbbrev(AgeRatingsCountry country)
 /**
  * Decode an age rating into a human-readable string.
  * This does not include the name of the rating organization.
- *
- * NOTE: The returned string is in UTF-8 in order to
- * be able to use special characters.
- *
- * @param country Rating country.
- * @param rating Rating value.
+ * @param country Rating country
+ * @param rating Rating value
  * @return Human-readable string, or empty string if the rating isn't active.
  */
 string RomFields::ageRatingDecode(AgeRatingsCountry country, uint16_t rating)
@@ -479,7 +470,7 @@ string RomFields::ageRatingDecode(AgeRatingsCountry country, uint16_t rating)
 /**
  * Decode all age ratings into a human-readable string.
  * This includes the names of the rating organizations.
- * @param age_ratings Age ratings.
+ * @param age_ratings Age ratings
  * @param newlines If true, print newlines after every four ratings.
  * @return Human-readable string, or empty string if no ratings.
  */
@@ -529,13 +520,13 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 	return str;
 }
 
-/** Multi-language convenience functions. **/
+/** Multi-language convenience functions **/
 
 /**
  * Get a string from an RFT_STRING_MULTI field.
  * @param pStr_multi StringMultiMap_t*
- * @param def_lc Default language code.
- * @param user_lc User-specified language code.
+ * @param def_lc Default language code
+ * @param user_lc User-specified language code
  * @return Pointer to string, or nullptr if not found.
  */
 const string *RomFields::getFromStringMulti(const StringMultiMap_t *pStr_multi, uint32_t def_lc, uint32_t user_lc)
@@ -571,8 +562,8 @@ const string *RomFields::getFromStringMulti(const StringMultiMap_t *pStr_multi, 
 /**
  * Get ListData_t from an RFT_LISTDATA_MULTI field.
  * @param pListData_multi ListDataMultiMap_t*
- * @param def_lc Default language code.
- * @param user_lc User-specified language code.
+ * @param def_lc Default language code
+ * @param user_lc User-specified language code
  * @return Pointer to ListData_t, or nullptr if not found.
  */
 const RomFields::ListData_t *RomFields::getFromListDataMulti(const ListDataMultiMap_t *pListData_multi, uint32_t def_lc, uint32_t user_lc)
@@ -606,7 +597,7 @@ const RomFields::ListData_t *RomFields::getFromListDataMulti(const ListDataMulti
 }
 
 
-/** Field accessors. **/
+/** Field accessors **/
 
 /**
  * Get the number of fields.
@@ -661,13 +652,13 @@ RomFields::const_iterator RomFields::cend(void) const
 	return d->fields.cend();
 }
 
-/** Convenience functions for RomData subclasses. **/
+/** Convenience functions for RomData subclasses **/
 
 /** Tabs **/
 
 /**
  * Reserve space for tabs.
- * @param n Desired tab count.
+ * @param n Desired tab count
  */
 void RomFields::reserveTabs(int n)
 {
@@ -680,7 +671,7 @@ void RomFields::reserveTabs(int n)
 
 /**
  * Set the tab index for new fields.
- * @param idx Tab index.
+ * @param idx Tab index
  */
 void RomFields::setTabIndex(int tabIdx)
 {
@@ -695,8 +686,8 @@ void RomFields::setTabIndex(int tabIdx)
 /**
  * Set a tab name.
  * NOTE: An empty tab name will hide the tab.
- * @param tabIdx Tab index.
- * @param name Tab name.
+ * @param tabIdx Tab index
+ * @param name Tab name
  */
 void RomFields::setTabName(int tabIdx, const char *name)
 {
@@ -715,8 +706,8 @@ void RomFields::setTabName(int tabIdx, const char *name)
 
 /**
  * Add a tab to the end and select it.
- * @param name Tab name.
- * @return Tab index.
+ * @param name Tab name
+ * @return Tab index
  */
 int RomFields::addTab(const char *name)
 {
@@ -728,7 +719,7 @@ int RomFields::addTab(const char *name)
 
 /**
  * Get the tab count.
- * @return Tab count. (highest tab index, plus 1)
+ * @return Tab count (highest tab index, plus 1)
  */
 int RomFields::tabCount(void) const
 {
@@ -742,7 +733,7 @@ int RomFields::tabCount(void) const
 
 /**
  * Get the name of the specified tab.
- * @param tabIdx Tab index.
+ * @param tabIdx Tab index
  * @return Tab name, or nullptr if no name is set.
  */
 const char *RomFields::tabName(int tabIdx) const
@@ -777,7 +768,7 @@ uint32_t RomFields::defaultLanguageCode(void) const
 
 /**
  * Reserve space for fields.
- * @param n Desired capacity.
+ * @param n Desired capacity
  */
 void RomFields::reserve(int n)
 {
@@ -854,8 +845,8 @@ vector<string> *RomFields::strArrayToVector_i18n(const char *msgctxt, const char
 
 /**
  * Add fields from another RomFields object.
- * @param other Source RomFields object.
- * @param tabOffset Tab index to add to the original tabs.
+ * @param other Source RomFields object
+ * @param tabOffset Tab index to add to the original tabs
  *
  * Special tabOffset values:
  * - -1: Ignore the original tab indexes.
@@ -948,11 +939,11 @@ int RomFields::addField_string(const char *name, const char *str, unsigned int f
 
 /**
  * Add string field data using a numeric value.
- * @param name Field name.
- * @param val Numeric value.
- * @param base Base. If not decimal, a prefix will be added.
- * @param digits Number of leading digits. (0 for none)
- * @param flags Formatting flags.
+ * @param name Field name
+ * @param val Numeric value
+ * @param base Base (If not decimal, a prefix will be added.)
+ * @param digits Number of leading digits (0 for none)
+ * @param flags Formatting flags
  * @return Field index, or -1 on error.
  */
 int RomFields::addField_string_numeric(const char *name, uint32_t val, Base base, int digits, unsigned int flags)
@@ -984,10 +975,10 @@ int RomFields::addField_string_numeric(const char *name, uint32_t val, Base base
 
 /**
  * Add a string field formatted like a hex dump
- * @param name Field name.
- * @param buf Input bytes.
- * @param size Byte count.
- * @param flags Formatting flags.
+ * @param name Field name
+ * @param buf Input bytes
+ * @param size Byte count
+ * @param flags Formatting flags
  * @return Field index, or -1 on error.
  */
 int RomFields::addField_string_hexdump(const char *name, const uint8_t *buf, size_t size, unsigned int flags)
@@ -1042,12 +1033,12 @@ int RomFields::addField_string_hexdump(const char *name, const uint8_t *buf, siz
 
 /**
  * Add a string field formatted for an address range.
- * @param name Field name.
- * @param start Start address.
- * @param end End address.
- * @param suffix Suffix string.
- * @param digits Number of leading digits. (default is 8 for 32-bit)
- * @param flags Formatting flags.
+ * @param name Field name
+ * @param start Start address
+ * @param end End address
+ * @param suffix Suffix string
+ * @param digits Number of leading digits (default is 8 for 32-bit)
+ * @param flags Formatting flags
  * @return Field index, or -1 on error.
  */
 int RomFields::addField_string_address_range(const char *name,
@@ -1084,10 +1075,10 @@ int RomFields::addField_string_address_range(const char *name,
 /**
  * Add bitfield data.
  * NOTE: This object takes ownership of the vector.
- * @param name Field name.
- * @param bit_names Bit names.
- * @param elemsPerRow Number of elements per row.
- * @param bitfield Bitfield.
+ * @param name Field name
+ * @param bit_names Bit names
+ * @param elemsPerRow Number of elements per row
+ * @param bitfield Bitfield
  * @return Field index, or -1 on error.
  */
 int RomFields::addField_bitfield(const char *name,
@@ -1113,8 +1104,8 @@ int RomFields::addField_bitfield(const char *name,
 /**
  * Add ListData.
  * NOTE: This object takes ownership of the vectors.
- * @param name Field name.
- * @param params Parameters.
+ * @param name Field name
+ * @param params Parameters
  *
  * NOTE: If headers is nullptr, the column count will be
  * determined using the first row in list_data.
@@ -1184,9 +1175,9 @@ int RomFields::addField_listData(const char *name, const AFLD_PARAMS *params)
 
 /**
  * Add DateTime.
- * @param name Field name.
- * @param date_time Date/Time.
- * @param flags Date/Time flags.
+ * @param name Field name
+ * @param date_time Date/Time
+ * @param flags Date/Time flags
  * @return Field index, or -1 on error.
  */
 int RomFields::addField_dateTime(const char *name, time_t date_time, unsigned int flags)
@@ -1207,8 +1198,8 @@ int RomFields::addField_dateTime(const char *name, time_t date_time, unsigned in
 /**
  * Add age ratings.
  * The array is copied into the RomFields struct.
- * @param name Field name.
- * @param age_ratings Pointer to age ratings array.
+ * @param name Field name
+ * @param age_ratings Pointer to age ratings array
  * @return Field index, or -1 on error.
  */
 int RomFields::addField_ageRatings(const char *name, const age_ratings_t &age_ratings)
@@ -1229,10 +1220,10 @@ int RomFields::addField_ageRatings(const char *name, const age_ratings_t &age_ra
 
 /**
  * Add image dimensions.
- * @param name Field name.
- * @param dimX X dimension.
- * @param dimY Y dimension.
- * @param dimZ Z dimension.
+ * @param name Field name
+ * @param dimX X dimension
+ * @param dimY Y dimension
+ * @param dimZ Z dimension
  * @return Field index, or -1 on error.
  */
 int RomFields::addField_dimensions(const char *name, int dimX, int dimY, int dimZ)
@@ -1255,10 +1246,10 @@ int RomFields::addField_dimensions(const char *name, int dimX, int dimY, int dim
 /**
  * Add a multi-language string.
  * NOTE: This object takes ownership of the map.
- * @param name Field name.
- * @param str_multi Map of strings with language codes.
- * @param def_lc Default language code if no languages match.
- * @param flags Formatting flags.
+ * @param name Field name
+ * @param str_multi Map of strings with language codes
+ * @param def_lc Default language code if no languages match
+ * @param flags Formatting flags
  * @return Field index, or -1 on error.
  */
 int RomFields::addField_string_multi(const char *name, const StringMultiMap_t *str_multi, uint32_t def_lc, unsigned int flags)
