@@ -14,7 +14,13 @@ SET(ListDataSortProxyModelTest_SRCS
 SET(RomDataFormatTest_SRCS
 	RomDataFormatTest.cpp
 	)
-	
+
+### RomDataView tests
+
+SET(RomDataViewTest_SRCS
+	RomDataViewTest.cpp
+	)
+
 ###### Add version-specific subdirectories
 
 IF(BUILD_KDE4)

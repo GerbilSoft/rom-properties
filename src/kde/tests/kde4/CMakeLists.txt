@@ -40,6 +40,21 @@ TARGET_INCLUDE_DIRECTORIES(RomDataFormatTest_kde4
 	)
 LIST(APPEND KF5_TESTS RomDataFormatTest_kde4)
 
+### RomDataView tests
+
+STRING(REGEX REPLACE "([^;]+)" "../\\1" RomDataViewTest_kde4_SRCS "${RomDataViewTest_SRCS}")
+
+ADD_EXECUTABLE(RomDataViewTest_kde4
+	${RomDataViewTest_kde4_SRCS}
+	)
+TARGET_LINK_LIBRARIES(RomDataViewTest_kde4 PRIVATE rptest romdata)
+TARGET_LINK_LIBRARIES(RomDataViewTest_kde4 PRIVATE rom-properties-kde4_LIB)
+# Include directories required for stdafx.h.
+TARGET_INCLUDE_DIRECTORIES(RomDataViewTest_kde4
+	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/../../../librptext"
+	)
+LIST(APPEND KF5_TESTS RomDataViewTest_kde4)
+
 ###### Add tests to CTest ######
 
 FOREACH(_target ${KDE4_TESTS})

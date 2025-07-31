@@ -42,6 +42,22 @@ TARGET_INCLUDE_DIRECTORIES(RomDataFormatTest_kf5
 	)
 LIST(APPEND KF5_TESTS RomDataFormatTest_kf5)
 
+### RomDataView tests
+
+STRING(REGEX REPLACE "([^;]+)" "../\\1" RomDataViewTest_kf5_SRCS "${RomDataViewTest_SRCS}")
+
+ADD_EXECUTABLE(RomDataViewTest_kf5
+	${RomDataViewTest_kf5_SRCS}
+	${RomDataViewTest_kf5_H}
+	)
+TARGET_LINK_LIBRARIES(RomDataViewTest_kf5 PRIVATE rptest romdata)
+TARGET_LINK_LIBRARIES(RomDataViewTest_kf5 PRIVATE rom-properties-kf5_LIB)
+# Include directories required for stdafx.h.
+TARGET_INCLUDE_DIRECTORIES(RomDataViewTest_kf5
+	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/../../../librptext"
+	)
+LIST(APPEND KF5_TESTS RomDataViewTest_kf5)
+
 ###### Add tests to CTest ######
 
 FOREACH(_target ${KF5_TESTS})

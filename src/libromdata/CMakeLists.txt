@@ -638,6 +638,7 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 	SET(SYMS_FORCE
 		RP_LibRpBase_AboutTabText_ForceLinkage
 		RP_LibRpBase_IconAnimHelper_ForceLinkage
+		RP_LibRpBase_RomDataTestObject_ForceLinkage
 		RP_LibRpBase_RpImageLoader_ForceLinkage
 		RP_LibRpBase_TextOut_json_ForceLinkage
 		RP_LibRpBase_TextOut_text_ForceLinkage

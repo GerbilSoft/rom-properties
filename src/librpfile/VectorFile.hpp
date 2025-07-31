@@ -21,8 +21,9 @@ public:
 	/**
 	 * Open an IRpFile backed by an std::vector.
 	 * The resulting IRpFile is writable.
+	 * @param size Initial size
 	 */
-	VectorFile();
+	VectorFile(size_t size = 0);
 public:
 	~VectorFile() final;
 
@@ -145,6 +146,23 @@ public:
 	const std::vector<uint8_t> &vector(void) const
 	{
 		return *m_pVector;
+	}
+
+	/**
+	 * Resize the vector.
+	 * @param newSize New size
+	 */
+	void resize(size_t newSize)
+	{
+		m_pVector->resize(newSize);
+	}
+
+	/**
+	 * Clear the vector.
+	 */
+	void clear(void)
+	{
+		m_pVector->clear();
 	}
 
 protected:

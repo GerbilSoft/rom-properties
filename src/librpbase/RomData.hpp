@@ -51,6 +51,7 @@ protected:
 	 */
 	explicit RomData(RomDataPrivate *d);
 public:
+	RP_LIBROMDATA_PUBLIC
 	virtual ~RomData();
 
 private:

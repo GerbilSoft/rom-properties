@@ -20,13 +20,17 @@ static constexpr off64_t MAX_SIZE = 128U*1024U*1024U;
 /**
  * Open an IRpFile backed by an std::vector.
  * The resulting IRpFile is writable.
+ * @param size Initial size
  */
-VectorFile::VectorFile()
-	: m_pVector(new std::vector<uint8_t>())
+VectorFile::VectorFile(size_t size)
+	: m_pVector(new std::vector<uint8_t>(size))
 	, m_pos(0)
 {
-	// Reserve at least 16 KB.
-	m_pVector->reserve(16*1024);
+	// Reserve at least 16 KiB.
+	static constexpr size_t INITIAL_RESERVE = 16U * 1024;
+	if (size < INITIAL_RESERVE) {
+		m_pVector->reserve(INITIAL_RESERVE);
+	}
 
 	// VectorFile is writable.
 	m_isWritable = true;
