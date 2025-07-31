@@ -7,30 +7,12 @@ PROJECT(kde-tests LANGUAGES CXX)
 
 SET(ListDataSortProxyModelTest_SRCS
 	ListDataSortProxyModelTest.cpp
-	../ListDataModel.cpp
-	../ListDataSortProxyModel.cpp
-	../RomDataFormat.cpp
-	../RpQImageBackend.cpp
-	../RpQUrl.cpp
-	../RpQt.cpp
-	)
-SET(ListDataSortProxyModelTest_H
-	../ListDataModel.hpp
-	../ListDataSortProxyModel.hpp
-	../RomDataFormat.hpp
-	../RpQImageBackend.hpp
-	../RpQUrl.hpp
-	../RpQt.hpp
 	)
 
 ### RomDataFormat tests
 
 SET(RomDataFormatTest_SRCS
 	RomDataFormatTest.cpp
-	../RomDataFormat.cpp
-	)
-SET(RomDataFormatTest_H
-	../RomDataFormat.hpp
 	)
 	
 ###### Add version-specific subdirectories

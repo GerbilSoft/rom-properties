@@ -17,28 +17,25 @@ IF(BUILD_KF6)
 ### ListDataSortProxyModel tests
 
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ListDataSortProxyModelTest_kf6_SRCS "${ListDataSortProxyModelTest_SRCS}")
-STRING(REGEX REPLACE "([^;]+)" "../\\1" ListDataSortProxyModelTest_kf6_H    "${ListDataSortProxyModelTest_H}")
 
 ADD_EXECUTABLE(ListDataSortProxyModelTest_kf6
 	${ListDataSortProxyModelTest_kf6_SRCS}
 	${ListDataSortProxyModelTest_kf6_H}
 	)
 TARGET_LINK_LIBRARIES(ListDataSortProxyModelTest_kf6 PRIVATE rptest romdata)
-TARGET_LINK_LIBRARIES(ListDataSortProxyModelTest_kf6 PUBLIC Qt6::Widgets Qt6::Gui Qt6::Core)
+TARGET_LINK_LIBRARIES(ListDataSortProxyModelTest_kf6 PRIVATE rom-properties-kf6_LIB)
 LIST(APPEND KF6_TESTS ListDataSortProxyModelTest_kf6)
 
 ### RomDataFormat tests
 
 STRING(REGEX REPLACE "([^;]+)" "../\\1" RomDataFormatTest_kf6_SRCS "${RomDataFormatTest_SRCS}")
-STRING(REGEX REPLACE "([^;]+)" "../\\1" RomDataFormatTest_kf6_H    "${RomDataFormatTest_H}")
 
 ADD_EXECUTABLE(RomDataFormatTest_kf6
 	${RomDataFormatTest_kf6_SRCS}
 	${RomDataFormatTest_kf6_H}
 	)
 TARGET_LINK_LIBRARIES(RomDataFormatTest_kf6 PRIVATE rptest romdata)
-# NOTE: QtWidgets is still needed for stdafx.h.
-TARGET_LINK_LIBRARIES(RomDataFormatTest_kf6 PUBLIC Qt6::Widgets Qt6::Core)
+TARGET_LINK_LIBRARIES(RomDataFormatTest_kf6 PRIVATE rom-properties-kf6_LIB)
 # Include directories required for stdafx.h.
 TARGET_INCLUDE_DIRECTORIES(RomDataFormatTest_kf6
 	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/../../../librptext"
