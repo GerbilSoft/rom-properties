@@ -182,13 +182,13 @@ static RomDataPtr RomData_ctor(const IRpFilePtr &file)
 #define GetRomDataFns(sys, attrs) \
 	{sys::isRomSupported_static, \
 	 RomData_ctor<sys>, \
-	 sys::romDataInfo, \
+	 sys::romDataInfo_static, \
 	 (attrs), 0, 0}
 
 #define GetRomDataFns_addr(sys, attrs, address, size) \
 	{sys::isRomSupported_static, \
 	 RomData_ctor<sys>, \
-	 sys::romDataInfo, \
+	 sys::romDataInfo_static, \
 	 (attrs), (address), (size)}
 
 #ifdef ROMDATAFACTORY_USE_FILE_EXTENSIONS

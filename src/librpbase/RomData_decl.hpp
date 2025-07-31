@@ -102,10 +102,16 @@ public: \
 	const char *systemName(unsigned int type) const final; \
 \
 	/** \
-	 * Get the static RomDataInfo for this class. \
-	 * @return Static RomDataInfo \
+	 * Get the RomDataInfo for this class. \
+	 * @return RomDataInfo \
 	 */ \
-	static const LibRpBase::RomDataInfo *romDataInfo(void); \
+	static const LibRpBase::RomDataInfo *romDataInfo_static(void); \
+\
+	/** \
+	 * Get the RomDataInfo for this object. \
+	 * @return RomDataInfo \
+	 */ \
+	const LibRpBase::RomDataInfo *romDataInfo(void) const final; \
 \
 protected: \
 	/** \
@@ -403,10 +409,19 @@ int klass::isRomSupported(const DetectInfo *info) const \
 } \
 \
 /** \
- * Get the static RomDataInfo for this class. \
- * @return Static RomDataInfo \
+ * Get the RomDataInfo for this class. \
+ * @return RomDataInfo \
  */ \
-const LibRpBase::RomDataInfo *klass::romDataInfo(void) \
+const LibRpBase::RomDataInfo *klass::romDataInfo_static(void) \
+{ \
+	return &klass##Private::romDataInfo; \
+} \
+\
+/** \
+ * Get the RomDataInfo for this object. \
+ * @return RomDataInfo \
+ */ \
+const LibRpBase::RomDataInfo *klass::romDataInfo(void) const \
 { \
 	return &klass##Private::romDataInfo; \
 }
