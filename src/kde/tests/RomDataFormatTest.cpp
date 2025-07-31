@@ -27,7 +27,7 @@ using LibRpBase::RomFields;
 // C++ STL classes
 using std::array;
 
-namespace LibRomData { namespace Tests {
+namespace RomPropertiesKDE { namespace Tests {
 
 class RomDataFormatTest : public ::testing::Test
 {

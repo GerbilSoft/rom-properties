@@ -33,7 +33,7 @@ using std::string;
 // Test data
 #include "SortFuncsTest_data.h"
 
-namespace LibRomData { namespace Tests {
+namespace RomPropertiesGTK { namespace Tests {
 
 class SortFuncsTest_gtk3 : public ::testing::Test
 {

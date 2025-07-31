@@ -23,7 +23,7 @@ using LibRpBase::RomFields;
 using std::array;
 using std::string;
 
-namespace LibRomData { namespace Tests {
+namespace RomPropertiesGTK { namespace Tests {
 
 class RomDataFormatTest : public ::testing::Test
 {};

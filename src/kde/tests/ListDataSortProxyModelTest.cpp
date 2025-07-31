@@ -30,7 +30,7 @@ using LibRpBase::RomFields;
 using std::string;
 using std::vector;
 
-namespace LibRomData { namespace Tests {
+namespace RomPropertiesKDE { namespace Tests {
 
 class ListDataSortProxyModelTest : public ::testing::Test
 {
