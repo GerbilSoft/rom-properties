@@ -119,6 +119,8 @@ int rp_secure_enable(rp_secure_param_t param)
 		SCMP_SYS(fcntl),	// for managing .gcda files
 #endif /* GCOV */
 
+		SCMP_SYS(madvise),	// glibc-2.42 (or gcc-15.1?) for OpenMP [TODO: Only in OpenMP builds?]
+
 		-1	// End of whitelist
 	};
 
