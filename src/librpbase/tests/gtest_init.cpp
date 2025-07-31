@@ -158,6 +158,7 @@ static constexpr int16_t syscall_wl_qt[] = {
 	SCMP_SYS(shmget), SCMP_SYS(shmat),
 	SCMP_SYS(shmctl), SCMP_SYS(shmdt),
 	SCMP_SYS(getsockopt),	// Qt4 only
+	SCMP_SYS(pipe2),	// Qt4 only
 };
 #endif /* HAVE_SECCOMP */
 
