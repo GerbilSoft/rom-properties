@@ -140,8 +140,14 @@ static inline QString lcToQString(uint32_t lc)
  * @param T Type.
  * @param aName Name to match, or empty string for any object of type T.
  */
+#if QT_VERSION >= 0x60700
+// Starting with Qt 6.7, QObject::findChild<> takes QAnyStringView instead of QString.
+template<typename T>
+static inline T findDirectChild(QObject *obj, QAnyStringView aName = QAnyStringView())
+#else /* QT_VERSION < 0x60700 */
 template<typename T>
 static inline T findDirectChild(QObject *obj, const QString &aName = QString())
+#endif /* QT_VERSION >= 0x60700 */
 {
 #if QT_VERSION >= 0x50000
 	return obj->findChild<T>(aName, Qt::FindDirectChildrenOnly);

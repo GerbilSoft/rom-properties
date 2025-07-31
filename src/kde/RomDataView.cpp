@@ -64,15 +64,19 @@ RomDataViewPrivate::~RomDataViewPrivate()
 void RomDataViewPrivate::createOptionsButton(void)
 {
 	assert(btnOptions == nullptr);
-	if (btnOptions)
+	if (btnOptions) {
 		return;
+	}
 	Q_Q(RomDataView);
 
 	// Parent should be a KPropertiesDialog.
+	// NOTE: This might not be the case in unit tests or if
+	// another program has embedded RomDataView.
 	QObject *const parent = q->parent();
-	assert(parent != nullptr);
-	if (!parent)
+	//assert(parent != nullptr);
+	if (!parent) {
 		return;
+	}
 
 	// Parent should contain a KPageWidget.
 	// NOTE: Kubuntu 16.04 (Dolphin 15.12.3, KWidgetsAddons 5.18.0) has

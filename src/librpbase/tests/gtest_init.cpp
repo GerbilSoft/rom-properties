@@ -118,6 +118,40 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(unlink),	// to remove temporary files: /tmp/gtest_captured_stream.XXXXXX
 		//SCMP_SYS(execve),	// only used if the above syscalls fail?
 
+		// for Qt tests: Qt checks for setuid root and fails if detected:
+		// "FATAL: The application binary appears to be running setuid, this is a security hole."
+		SCMP_SYS(geteuid), SCMP_SYS(getuid),
+		// Other uid/gid functions that aren't directly related to the above error,
+		// but are still needed by Qt5/Qt6.
+		SCMP_SYS(getegid), SCMP_SYS(getgid),
+		SCMP_SYS(getresuid), SCMP_SYS(getresgid),
+
+		// Other syscalls required by Qt
+		// TODO: Only enable these syscalls for Qt tests?
+		SCMP_SYS(readlink),
+		SCMP_SYS(getdents), SCMP_SYS(getdents64),
+		// Qt5's QStandardPaths needs mkdir(), but we probably shouldn't allow it...
+		// TODO: Stubs that simply return success or failure?
+		SCMP_SYS(mkdir),
+		SCMP_SYS(socket),
+		SCMP_SYS(eventfd2),
+		SCMP_SYS(prctl),
+		SCMP_SYS(poll), SCMP_SYS(ppoll),
+		SCMP_SYS(getsockname),
+		SCMP_SYS(sendmsg),
+		// Needed on Xubuntu 16.04 by both Qt4 and Qt5 for some reason
+		// (Possibly the "minimal" QPA plugin wasn't that minimal?)
+		SCMP_SYS(fstatfs),	// Qt4 only
+		SCMP_SYS(sysinfo),	// Qt4 only
+		SCMP_SYS(statfs),
+		SCMP_SYS(getpeername),
+		SCMP_SYS(writev),
+		SCMP_SYS(recvfrom),
+		SCMP_SYS(shutdown),
+		SCMP_SYS(shmget), SCMP_SYS(shmat),
+		SCMP_SYS(shmctl), SCMP_SYS(shmdt),
+		SCMP_SYS(getsockopt),	// Qt4 only
+
 		-1	// End of whitelist
 	};
 	param.syscall_wl = syscall_wl;

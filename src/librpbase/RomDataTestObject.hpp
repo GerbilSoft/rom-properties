@@ -23,4 +23,6 @@ public:
 
 ROMDATA_DECL_END()
 
+typedef std::shared_ptr<RomDataTestObject> RomDataTestObjectPtr;
+
 } // namespace LibRpBase
