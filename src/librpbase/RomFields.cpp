@@ -58,24 +58,28 @@ RomFields::Field::~Field()
 	free(const_cast<char*>(name));
 
 	switch (type) {
-		case RomFields::RFT_INVALID:
+		case RomFieldType::RFT_INVALID:
 			// Destroying an invalid field.
 			// May have been the source object for std::move,
 			// so we'll allow it.
 			break;
+		default:
+			// ERROR!
+			assert(!"Unsupported RomFields::RomFieldsType.");
+			break;
 
-		case RomFields::RFT_DATETIME:
-		case RomFields::RFT_DIMENSIONS:
+		case RomFieldType::RFT_DATETIME:
+		case RomFieldType::RFT_DIMENSIONS:
 			// No data here.
 			break;
 
-		case RomFields::RFT_STRING:
+		case RomFieldType::RFT_STRING:
 			free(const_cast<char*>(data.str));
 			break;
-		case RomFields::RFT_BITFIELD:
+		case RomFieldType::RFT_BITFIELD:
 			delete const_cast<vector<string>*>(desc.bitfield.names);
 			break;
-		case RomFields::RFT_LISTDATA:
+		case RomFieldType::RFT_LISTDATA:
 			delete const_cast<vector<string>*>(desc.list_data.names);
 			if (flags & RomFields::RFT_LISTDATA_MULTI) {
 				delete const_cast<RomFields::ListDataMultiMap_t*>(data.list_data.data.multi);
@@ -86,15 +90,11 @@ RomFields::Field::~Field()
 				delete const_cast<RomFields::ListDataIcons_t*>(data.list_data.mxd.icons);
 			}
 			break;
-		case RomFields::RFT_AGE_RATINGS:
+		case RomFieldType::RFT_AGE_RATINGS:
 			delete const_cast<RomFields::age_ratings_t*>(data.age_ratings);
 			break;
-		case RomFields::RFT_STRING_MULTI:
+		case RomFieldType::RFT_STRING_MULTI:
 			delete const_cast<RomFields::StringMultiMap_t*>(data.str_multi);
-			break;
-		default:
-			// ERROR!
-			assert(!"Unsupported RomFields::RomFieldsType.");
 			break;
 	}
 }
@@ -112,21 +112,24 @@ RomFields::Field::Field(const Field &other)
 	assert(other.name != nullptr);
 
 	switch (other.type) {
-		case RFT_INVALID:
+		case RomFieldType::RFT_INVALID:
 			assert(!"Field type is RFT_INVALID");
 			break;
+		default:
+			assert(!"Unsupported RomFields::RomFieldsType.");
+			break;
 
-		case RFT_STRING:
+		case RomFieldType::RFT_STRING:
 			this->data.str = (other.data.str ? strdup(other.data.str) : nullptr);
 			break;
-		case RFT_BITFIELD:
+		case RomFieldType::RFT_BITFIELD:
 			this->desc.bitfield.names = (other.desc.bitfield.names)
 					? new vector<string>(*(other.desc.bitfield.names))
 					: nullptr;
 			this->desc.bitfield.elemsPerRow = other.desc.bitfield.elemsPerRow;
 			this->data.bitfield = other.data.bitfield;
 			break;
-		case RFT_LISTDATA:
+		case RomFieldType::RFT_LISTDATA:
 			this->desc.list_data.names = (other.desc.list_data.names)
 					? new vector<string>(*(other.desc.list_data.names))
 					: nullptr;
@@ -152,25 +155,21 @@ RomFields::Field::Field(const Field &other)
 				this->data.list_data.mxd.checkboxes = other.data.list_data.mxd.checkboxes;
 			}
 			break;
-		case RFT_DATETIME:
+		case RomFieldType::RFT_DATETIME:
 			this->data.date_time = other.data.date_time;
 			break;
-		case RFT_AGE_RATINGS:
+		case RomFieldType::RFT_AGE_RATINGS:
 			this->data.age_ratings = (other.data.age_ratings)
 					? new age_ratings_t(*other.data.age_ratings)
 					: nullptr;
 			break;
-		case RFT_DIMENSIONS:
+		case RomFieldType::RFT_DIMENSIONS:
 			memcpy(this->data.dimensions, other.data.dimensions, sizeof(other.data.dimensions));
 			break;
-		case RFT_STRING_MULTI:
+		case RomFieldType::RFT_STRING_MULTI:
 			this->data.str_multi = (other.data.str_multi)
 				? new StringMultiMap_t(*(other.data.str_multi))
 				: nullptr;
-			break;
-
-		default:
-			assert(!"Unsupported RomFields::RomFieldsType.");
 			break;
 	}
 }
@@ -199,13 +198,13 @@ RomFields::Field& RomFields::Field::operator=(Field other)
 	// the original Field will be set to RFT_INVALID.
 	// NOTE: Using memcpy() to simplify things, even if it
 	// results in slightly more memory copying than without it.
-	assert(other.type != RFT_INVALID);
+	assert(other.type != RomFieldType::RFT_INVALID);
 	memcpy(&this->desc, &other.desc, sizeof(this->desc));
 	memcpy(&this->data, &other.data, sizeof(this->data));
 
 	// Reset the other object.
 	other.name = nullptr;
-	other.type = RFT_INVALID;
+	other.type = RomFieldType::RFT_INVALID;
 	return *this;
 }
 
@@ -232,13 +231,13 @@ RomFields::Field::Field(Field &&other) noexcept
 	// the original Field will be set to RFT_INVALID.
 	// NOTE: Using memcpy() to simplify things, even if it
 	// results in slightly more memory copying than without it.
-	assert(other.type != RFT_INVALID);
+	assert(other.type != RomFieldType::RFT_INVALID);
 	memcpy(&this->desc, &other.desc, sizeof(this->desc));
 	memcpy(&this->data, &other.data, sizeof(this->data));
 
 	// Reset the other object.
 	other.name = nullptr;
-	other.type = RFT_INVALID;
+	other.type = RomFieldType::RFT_INVALID;
 }
 
 /**
@@ -263,14 +262,14 @@ RomFields::Field& RomFields::Field::operator=(Field &&other) noexcept
 	this->tabIdx = other.tabIdx;
 	this->flags = other.flags;
 
-	assert(other.type != RFT_INVALID);
+	assert(other.type != RomFieldType::RFT_INVALID);
 	memcpy(&this->desc, &other.desc, sizeof(this->desc));
 	memcpy(&this->data, &other.data, sizeof(this->data));
 
 	// Reset the other object.
 	// TODO: Is this needed for move assignment?
 	other.name = nullptr;
-	other.type = RFT_INVALID;
+	other.type = RomFieldType::RFT_INVALID;
 	return *this;
 }
 
@@ -931,7 +930,7 @@ int RomFields::addField_string(const char *name, const char *str, unsigned int f
 	}
 
 	RP_D(RomFields);
-	d->fields.emplace_back(name, RFT_STRING, d->tabIdx, flags);
+	d->fields.emplace_back(name, RomFieldType::RFT_STRING, d->tabIdx, flags);
 	Field &field = *(d->fields.rbegin());
 	field.data.str = nstr;
 	return static_cast<int>(d->fields.size() - 1);
@@ -1092,7 +1091,7 @@ int RomFields::addField_bitfield(const char *name,
 
 	// RFT_BITFIELD
 	RP_D(RomFields);
-	d->fields.emplace_back(name, RFT_BITFIELD, d->tabIdx, 0);
+	d->fields.emplace_back(name, RomFieldType::RFT_BITFIELD, d->tabIdx, 0);
 	Field &field = *(d->fields.rbegin());
 
 	field.desc.bitfield.names = bit_names;
@@ -1135,7 +1134,7 @@ int RomFields::addField_listData(const char *name, const AFLD_PARAMS *params)
 
 	// RFT_LISTDATA
 	RP_D(RomFields);
-	d->fields.emplace_back(name, RFT_LISTDATA, d->tabIdx, params->flags);
+	d->fields.emplace_back(name, RomFieldType::RFT_LISTDATA, d->tabIdx, params->flags);
 	Field &field = *(d->fields.rbegin());
 
 	assert(params->rows_visible >= 0);
@@ -1188,7 +1187,7 @@ int RomFields::addField_dateTime(const char *name, time_t date_time, unsigned in
 
 	// RFT_DATETIME
 	RP_D(RomFields);
-	d->fields.emplace_back(name, RFT_DATETIME, d->tabIdx, flags);
+	d->fields.emplace_back(name, RomFieldType::RFT_DATETIME, d->tabIdx, flags);
 	Field &field = *(d->fields.rbegin());
 
 	field.data.date_time = date_time;
@@ -1210,7 +1209,7 @@ int RomFields::addField_ageRatings(const char *name, const age_ratings_t &age_ra
 
 	// RFT_AGE_RATINGS
 	RP_D(RomFields);
-	d->fields.emplace_back(name, RFT_AGE_RATINGS, d->tabIdx, 0);
+	d->fields.emplace_back(name, RomFieldType::RFT_AGE_RATINGS, d->tabIdx, 0);
 	Field &field = *(d->fields.rbegin());
 
 	field.data.age_ratings = new age_ratings_t(age_ratings);
@@ -1234,7 +1233,7 @@ int RomFields::addField_dimensions(const char *name, int dimX, int dimY, int dim
 
 	// RFT_DIMENSIONS
 	RP_D(RomFields);
-	d->fields.emplace_back(name, RFT_DIMENSIONS, d->tabIdx, 0);
+	d->fields.emplace_back(name, RomFieldType::RFT_DIMENSIONS, d->tabIdx, 0);
 	Field &field = *(d->fields.rbegin());
 
 	field.data.dimensions[0] = dimX;
@@ -1260,7 +1259,7 @@ int RomFields::addField_string_multi(const char *name, const StringMultiMap_t *s
 
 	// RFT_STRING_MULTI
 	RP_D(RomFields);
-	d->fields.emplace_back(name, RFT_STRING_MULTI, d->tabIdx, flags);
+	d->fields.emplace_back(name, RomFieldType::RFT_STRING_MULTI, d->tabIdx, flags);
 	Field &field = *(d->fields.rbegin());
 
 	if (d->def_lc == 0) {

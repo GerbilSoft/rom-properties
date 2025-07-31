@@ -426,7 +426,7 @@ const char *RpTextureWrapper::dx10Format(void) const
 	// sets LC_ALL=C, which disables localization.
 	// NOTE 2: This should not be used outside of tests for now!
 	for (const RomFields::Field &field : d->fields) {
-		if (field.type == RomFields::RFT_STRING && !strcmp(field.name, "DX10 Format")) {
+		if (field.type == RomFields::RomFieldType::RFT_STRING && !strcmp(field.name, "DX10 Format")) {
 			// Found the DX10 format.
 			return field.data.str;
 		}

@@ -941,34 +941,35 @@ public:
 			}
 
 			switch (romField.type) {
-				case RomFields::RFT_INVALID:
+				case RomFields::RomFieldType::RFT_INVALID:
 					// Should not happen due to the above check...
 					assert(!"Field type is RFT_INVALID");
-					break;
-				case RomFields::RFT_STRING:
-					os << StringField(maxWidth, romField, useAnsiColor);
-					break;
-				case RomFields::RFT_BITFIELD:
-					os << BitfieldField(maxWidth, romField);
-					break;
-				case RomFields::RFT_LISTDATA:
-					os << ListDataField(maxWidth, romField, def_lc, user_lc, fo.flags);
-					break;
-				case RomFields::RFT_DATETIME:
-					os << DateTimeField(maxWidth, romField);
-					break;
-				case RomFields::RFT_AGE_RATINGS:
-					os << AgeRatingsField(maxWidth, romField);
-					break;
-				case RomFields::RFT_DIMENSIONS:
-					os << DimensionsField(maxWidth, romField);
-					break;
-				case RomFields::RFT_STRING_MULTI:
-					os << StringMultiField(maxWidth, romField, def_lc, user_lc);
 					break;
 				default:
 					assert(!"Unknown RomFieldType");
 					os << ColonPad(maxWidth, romField.name) << "NYI";
+					break;
+
+				case RomFields::RomFieldType::RFT_STRING:
+					os << StringField(maxWidth, romField, useAnsiColor);
+					break;
+				case RomFields::RomFieldType::RFT_BITFIELD:
+					os << BitfieldField(maxWidth, romField);
+					break;
+				case RomFields::RomFieldType::RFT_LISTDATA:
+					os << ListDataField(maxWidth, romField, def_lc, user_lc, fo.flags);
+					break;
+				case RomFields::RomFieldType::RFT_DATETIME:
+					os << DateTimeField(maxWidth, romField);
+					break;
+				case RomFields::RomFieldType::RFT_AGE_RATINGS:
+					os << AgeRatingsField(maxWidth, romField);
+					break;
+				case RomFields::RomFieldType::RFT_DIMENSIONS:
+					os << DimensionsField(maxWidth, romField);
+					break;
+				case RomFields::RomFieldType::RFT_STRING_MULTI:
+					os << StringMultiField(maxWidth, romField, def_lc, user_lc);
 					break;
 			}
 

@@ -371,7 +371,7 @@ skip_image_check:
 		assert(fields != nullptr);
 		array<const RomFields::Field*, 2> field = {{nullptr, nullptr}};
 		for (const RomFields::Field &pf : *fields) {
-			if (pf.type != RomFields::RFT_DIMENSIONS)
+			if (pf.type != RomFields::RomFieldType::RFT_DIMENSIONS)
 				continue;
 			// Found an RFT_DIMENSIONS.
 			if (!field[0]) {

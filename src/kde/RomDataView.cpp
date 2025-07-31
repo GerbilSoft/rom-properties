@@ -322,7 +322,7 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 	lblString->setMinimumWidth(1);
 
 	// Check for any formatting options. (RFT_STRING only)
-	if (field.type == RomFields::RFT_STRING) {
+	if (field.type == RomFields::RomFieldType::RFT_STRING) {
 		// Monospace font?
 		if (field.flags & RomFields::STRF_MONOSPACE) {
 			lblString->setFont(getSystemMonospaceFont());
@@ -342,7 +342,7 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 
 	// Credits?
 	auto &tab = tabs[field.tabIdx];
-	if (field.type == RomFields::RFT_STRING &&
+	if (field.type == RomFields::RomFieldType::RFT_STRING &&
 	    (field.flags & RomFields::STRF_CREDITS))
 	{
 		// Credits row goes at the end.
@@ -1029,7 +1029,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 
 		QObject *obj;
 		switch (field.type) {
-			case RomFields::RFT_INVALID:
+			case RomFields::RomFieldType::RFT_INVALID:
 				// No data here.
 				assert(!"Field type is RFT_INVALID");
 				obj = nullptr;
@@ -1042,25 +1042,25 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 				delete lblDesc;
 				break;
 
-			case RomFields::RFT_STRING:
+			case RomFields::RomFieldType::RFT_STRING:
 				obj = initString(lblDesc, field);
 				break;
-			case RomFields::RFT_BITFIELD:
+			case RomFields::RomFieldType::RFT_BITFIELD:
 				obj = initBitfield(lblDesc, field);
 				break;
-			case RomFields::RFT_LISTDATA:
+			case RomFields::RomFieldType::RFT_LISTDATA:
 				obj = initListData(lblDesc, field);
 				break;
-			case RomFields::RFT_DATETIME:
+			case RomFields::RomFieldType::RFT_DATETIME:
 				obj = initDateTime(lblDesc, field);
 				break;
-			case RomFields::RFT_AGE_RATINGS:
+			case RomFields::RomFieldType::RFT_AGE_RATINGS:
 				obj = initAgeRatings(lblDesc, field);
 				break;
-			case RomFields::RFT_DIMENSIONS:
+			case RomFields::RomFieldType::RFT_DIMENSIONS:
 				obj = initDimensions(lblDesc, field);
 				break;
-			case RomFields::RFT_STRING_MULTI:
+			case RomFields::RomFieldType::RFT_STRING_MULTI:
 				obj = initStringMulti(lblDesc, field);
 				break;
 		}

@@ -102,7 +102,7 @@ const char *const ListDataSortProxyModelTest::sorted_strings_asc[4][25] = {
 void ListDataSortProxyModelTest::SetUp()
 {
 	// Create a fake RFT_LISTDATA field.
-	field = new RomFields::Field("LDSPMT", RomFields::RFT_LISTDATA, 0, 0);
+	field = new RomFields::Field("LDSPMT", RomFields::RomFieldType::RFT_LISTDATA, 0, 0);
 	auto &listDataDesc = field->desc.list_data;
 	listDataDesc.names = new vector<string>({"Col0", "Col1", "Col2", "Col3"});
 	listDataDesc.rows_visible = 0;

@@ -128,7 +128,7 @@ rp_rom_data_view_update_field(RpRomDataView *page, int fieldIdx)
 	// Update the value widget(s).
 	int ret;
 	switch (field->type) {
-		case RomFields::RFT_INVALID:
+		case RomFields::RomFieldType::RFT_INVALID:
 			assert(!"Cannot update an RFT_INVALID field.");
 			ret = 5;
 			break;
@@ -137,7 +137,7 @@ rp_rom_data_view_update_field(RpRomDataView *page, int fieldIdx)
 			ret = 6;
 			break;
 
-		case RomFields::RFT_STRING: {
+		case RomFields::RomFieldType::RFT_STRING: {
 			// GtkWidget is a GtkLabel.
 			assert(GTK_IS_LABEL(widget));
 			if (!GTK_IS_LABEL(widget)) {
@@ -150,7 +150,7 @@ rp_rom_data_view_update_field(RpRomDataView *page, int fieldIdx)
 			break;
 		}
 
-		case RomFields::RFT_BITFIELD: {
+		case RomFields::RomFieldType::RFT_BITFIELD: {
 			// GtkWidget is a GtkGrid/GtkTable GtkCheckButton widgets.
 #ifdef USE_GTK_GRID
 			assert(GTK_IS_GRID(widget));

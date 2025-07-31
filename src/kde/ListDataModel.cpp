@@ -525,8 +525,8 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		return;
 	}
 
-	assert(pField->type == RomFields::RFT_LISTDATA);
-	if (pField->type != RomFields::RFT_LISTDATA) {
+	assert(pField->type == RomFields::RomFieldType::RFT_LISTDATA);
+	if (pField->type != RomFields::RomFieldType::RFT_LISTDATA) {
 		// Not an RFT_LISTDATA field.
 		return;
 	}

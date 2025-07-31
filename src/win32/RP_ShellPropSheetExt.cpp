@@ -343,14 +343,14 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 				assert(!"Unsupported field type!");
 				return 0;
 
-			case RomFields::RFT_STRING:
+			case RomFields::RomFieldType::RFT_STRING:
 				// NULL string == empty string
 				if (field.data.str) {
 					str_nl = LibWin32UI::unix2dos(U82T_s(field.data.str), &lf_count);
 				}
 				break;
 
-			case RomFields::RFT_STRING_MULTI:
+			case RomFields::RomFieldType::RFT_STRING_MULTI:
 				// Need to count newlines for *all* strings in this field.
 				const auto *const pStr_multi = field.data.str_multi;
 				for (const auto &p : *pStr_multi) {
@@ -389,7 +389,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 
 	// Check for any formatting options.
 	bool isWarning = false, isMonospace = false;
-	if (field.type == RomFields::RFT_STRING) {
+	if (field.type == RomFields::RomFieldType::RFT_STRING) {
 		// FIXME: STRF_MONOSPACE | STRF_WARNING is not supported.
 		// Preferring STRF_WARNING.
 		assert((field.flags &
@@ -419,7 +419,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 	const uint16_t cId = IDC_RFT_STRING(fieldIdx);
 	HWND hDlgItem;
 
-	if (field.type == RomFields::RFT_STRING &&
+	if (field.type == RomFields::RomFieldType::RFT_STRING &&
 	    (field.flags & RomFields::STRF_CREDITS))
 	{
 		// Align to the bottom of the dialog and center-align the text.
@@ -1724,7 +1724,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		// Get the width of this specific entry.
 		// TODO: Use measureTextSize()?
 		SIZE textSize;
-		if (field.type == RomFields::RFT_STRING &&
+		if (field.type == RomFields::RomFieldType::RFT_STRING &&
 		    field.flags & RomFields::STRF_WARNING)
 		{
 			// Label is bold.
@@ -1969,7 +1969,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		const POINT pt_start = {tab.curPt.x + descSize.cx, tab.curPt.y};
 		SIZE size = {dlg_value_width_base - descSize.cx, field_cy};
 		switch (field.type) {
-			case RomFields::RFT_INVALID:
+			case RomFields::RomFieldType::RFT_INVALID:
 				// Should not happen due to the above check...
 				assert(!"Field type is RFT_INVALID");
 				field_cy = 0;
@@ -1980,16 +1980,16 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 				field_cy = 0;
 				break;
 
-			case RomFields::RFT_STRING:
+			case RomFields::RomFieldType::RFT_STRING:
 				// String data.
 				field_cy = initString(tab.hDlg, pt_start, size, field, fieldIdx, nullptr);
 				break;
-			case RomFields::RFT_BITFIELD:
+			case RomFields::RomFieldType::RFT_BITFIELD:
 				// Create checkboxes starting at the current point.
 				field_cy = initBitfield(tab.hDlg, pt_start, field, fieldIdx);
 				break;
 
-			case RomFields::RFT_LISTDATA: {
+			case RomFields::RomFieldType::RFT_LISTDATA: {
 				// Create a ListView control.
 				size.cy *= 6;	// TODO: Is this needed?
 				POINT pt_ListData = pt_start;
@@ -2052,19 +2052,19 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 				break;
 			}
 
-			case RomFields::RFT_DATETIME:
+			case RomFields::RomFieldType::RFT_DATETIME:
 				// Date/Time in Unix format.
 				field_cy = initDateTime(tab.hDlg, pt_start, size, field, fieldIdx);
 				break;
-			case RomFields::RFT_AGE_RATINGS:
+			case RomFields::RomFieldType::RFT_AGE_RATINGS:
 				// Age Ratings field.
 				field_cy = initAgeRatings(tab.hDlg, pt_start, size, field, fieldIdx);
 				break;
-			case RomFields::RFT_DIMENSIONS:
+			case RomFields::RomFieldType::RFT_DIMENSIONS:
 				// Dimensions field.
 				field_cy = initDimensions(tab.hDlg, pt_start, size, field, fieldIdx);
 				break;
-			case RomFields::RFT_STRING_MULTI:
+			case RomFields::RomFieldType::RFT_STRING_MULTI:
 				// Multi-language string field.
 				field_cy = initStringMulti(tab.hDlg, pt_start, size, field, fieldIdx);
 				break;

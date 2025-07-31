@@ -100,7 +100,7 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 	// Update the value widget(s).
 	int ret;
 	switch (field->type) {
-		case RomFields::RFT_INVALID:
+		case RomFields::RomFieldType::RFT_INVALID:
 			assert(!"Cannot update an RFT_INVALID field.");
 			ret = 5;
 			break;
@@ -109,7 +109,7 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 			ret = 6;
 			break;
 
-		case RomFields::RFT_STRING: {
+		case RomFields::RomFieldType::RFT_STRING: {
 			// QObject is a QLabel.
 			QLabel *const label = qobject_cast<QLabel*>(qObj);
 			assert(label != nullptr);
@@ -127,7 +127,7 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 			break;
 		}
 
-		case RomFields::RFT_BITFIELD: {
+		case RomFields::RomFieldType::RFT_BITFIELD: {
 			// QObject is a QGridLayout with QCheckBox widgets.
 			QGridLayout *const layout = qobject_cast<QGridLayout*>(qObj);
 			assert(layout != nullptr);

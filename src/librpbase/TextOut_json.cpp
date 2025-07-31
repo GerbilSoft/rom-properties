@@ -118,12 +118,21 @@ public:
 
 			Value field_obj(kObjectType);	// field
 			switch (romField.type) {
-				case RomFields::RFT_INVALID:
+				case RomFields::RomFieldType::RFT_INVALID:
 					// Should not happen due to the above check...
 					assert(!"Field type is RFT_INVALID");
 					break;
+				default: {
+					assert(!"Unknown RomFieldType");
+					field_obj.AddMember("type", "NYI", allocator);
 
-				case RomFields::RFT_STRING: {
+					Value desc_obj(kObjectType);	// desc
+					desc_obj.AddMember("name", StringRef(romField.name), allocator);
+					field_obj.AddMember("desc", desc_obj, allocator);
+					break;
+				}
+
+				case RomFields::RomFieldType::RFT_STRING: {
 					field_obj.AddMember("type", "STRING", allocator);
 
 					Value desc_obj(kObjectType);	// desc
@@ -137,7 +146,7 @@ public:
 					break;
 				}
 
-				case RomFields::RFT_BITFIELD: {
+				case RomFields::RomFieldType::RFT_BITFIELD: {
 					field_obj.AddMember("type", "BITFIELD", allocator);
 					const auto &bitfieldDesc = romField.desc.bitfield;
 
@@ -172,7 +181,7 @@ public:
 					break;
 				}
 
-				case RomFields::RFT_LISTDATA: {
+				case RomFields::RomFieldType::RFT_LISTDATA: {
 					field_obj.AddMember("type", "LISTDATA", allocator);
 					const auto &listDataDesc = romField.desc.list_data;
 
@@ -236,7 +245,7 @@ public:
 					break;
 				}
 
-				case RomFields::RFT_DATETIME: {
+				case RomFields::RomFieldType::RFT_DATETIME: {
 					field_obj.AddMember("type", "DATETIME", allocator);
 
 					Value desc_obj(kObjectType);	// desc
@@ -248,7 +257,7 @@ public:
 					break;
 				}
 
-				case RomFields::RFT_AGE_RATINGS: {
+				case RomFields::RomFieldType::RFT_AGE_RATINGS: {
 					field_obj.AddMember("type", "AGE_RATINGS", allocator);
 
 					Value desc_obj(kObjectType);	// desc
@@ -291,7 +300,7 @@ public:
 					break;
 				}
 
-				case RomFields::RFT_DIMENSIONS: {
+				case RomFields::RomFieldType::RFT_DIMENSIONS: {
 					field_obj.AddMember("type", "DIMENSIONS", allocator);
 
 					const int *const dimensions = romField.data.dimensions;
@@ -307,7 +316,7 @@ public:
 					break;
 				}
 
-				case RomFields::RFT_STRING_MULTI: {
+				case RomFields::RomFieldType::RFT_STRING_MULTI: {
 					// TODO: Act like RFT_STRING if there's only one language?
 					field_obj.AddMember("type", "STRING_MULTI", allocator);
 
@@ -325,16 +334,6 @@ public:
 					}
 
 					field_obj.AddMember("data", data_obj, allocator);
-					break;
-				}
-
-				default: {
-					assert(!"Unknown RomFieldType");
-					field_obj.AddMember("type", "NYI", allocator);
-
-					Value desc_obj(kObjectType);	// desc
-					desc_obj.AddMember("name", StringRef(romField.name), allocator);
-					field_obj.AddMember("desc", desc_obj, allocator);
 					break;
 				}
 			}

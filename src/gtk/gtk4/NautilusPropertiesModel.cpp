@@ -56,7 +56,7 @@ static void
 rp_nautilus_properties_model_init_string(RpNautilusPropertiesModel *self,
 	const RomFields::Field &field)
 {
-	if (field.type == RomFields::RFT_STRING &&
+	if (field.type == RomFields::RomFieldType::RFT_STRING &&
 	    (field.flags & RomFields::STRF_CREDITS))
 	{
 		// TODO: Handle credits.
@@ -241,7 +241,7 @@ rp_nautilus_properties_model_load_from_romData(RpNautilusPropertiesModel *self,
 		}
 
 		switch (field.type) {
-			case RomFields::RFT_INVALID:
+			case RomFields::RomFieldType::RFT_INVALID:
 				// Should not happen due to the above check...
 				assert(!"Field type is RFT_INVALID");
 				break;
@@ -250,25 +250,25 @@ rp_nautilus_properties_model_load_from_romData(RpNautilusPropertiesModel *self,
 				assert(!"Unsupported RomFields::RomFieldsType.");
 				break;
 
-			case RomFields::RFT_STRING:
+			case RomFields::RomFieldType::RFT_STRING:
 				rp_nautilus_properties_model_init_string(self, field);
 				break;
-			case RomFields::RFT_BITFIELD:
+			case RomFields::RomFieldType::RFT_BITFIELD:
 				rp_nautilus_properties_model_init_bitfield(self, field);
 				break;
-			case RomFields::RFT_LISTDATA:
+			case RomFields::RomFieldType::RFT_LISTDATA:
 				// TODO: Allow single-column RFT_LISTDATA?
 				break;
-			case RomFields::RFT_DATETIME:
+			case RomFields::RomFieldType::RFT_DATETIME:
 				rp_nautilus_properties_model_init_datetime(self, field);
 				break;
-			case RomFields::RFT_AGE_RATINGS:
+			case RomFields::RomFieldType::RFT_AGE_RATINGS:
 				rp_nautilus_properties_model_init_age_ratings(self, field);
 				break;
-			case RomFields::RFT_DIMENSIONS:
+			case RomFields::RomFieldType::RFT_DIMENSIONS:
 				rp_nautilus_properties_model_init_dimensions(self, field);
 				break;
-			case RomFields::RFT_STRING_MULTI:
+			case RomFields::RomFieldType::RFT_STRING_MULTI:
 				rp_nautilus_properties_model_init_string_multi(self, field, def_lc);
 				break;
 		}

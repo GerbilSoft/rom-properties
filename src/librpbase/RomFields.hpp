@@ -64,7 +64,7 @@ class RomFields
 {
 public:
 	// ROM field types
-	enum RomFieldType : uint8_t {
+	enum class RomFieldType : uint8_t {
 		RFT_INVALID,		// Invalid. (skips the field)
 		RFT_STRING,		// Basic string.
 		RFT_BITFIELD,		// Bitfield.
@@ -269,7 +269,7 @@ public:
 		 */
 		Field()
 			: name(nullptr)
-			, type(RFT_INVALID)
+			, type(RomFieldType::RFT_INVALID)
 			, tabIdx(0)
 			, flags(0)
 		{
@@ -320,7 +320,7 @@ public:
 
 		inline bool isValid(void) const
 		{
-			return (type != RFT_INVALID);
+			return (type != RomFieldType::RFT_INVALID);
 		}
 
 		// Field description

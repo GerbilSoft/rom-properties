@@ -233,7 +233,7 @@ int RP_ShellPropSheetExt_Private::updateField(int fieldIdx)
 	// Update the value widget(s).
 	int ret;
 	switch (field->type) {
-		case RomFields::RFT_INVALID:
+		case RomFields::RomFieldType::RFT_INVALID:
 			assert(!"Cannot update an RFT_INVALID field.");
 			ret = 5;
 			break;
@@ -242,7 +242,7 @@ int RP_ShellPropSheetExt_Private::updateField(int fieldIdx)
 			ret = 6;
 			break;
 
-		case RomFields::RFT_STRING: {
+		case RomFields::RomFieldType::RFT_STRING: {
 			// HWND is a STATIC control.
 			HWND hLabel = GetDlgItem(hDlg, IDC_RFT_STRING(fieldIdx));
 			assert(hLabel != nullptr);
@@ -261,7 +261,7 @@ int RP_ShellPropSheetExt_Private::updateField(int fieldIdx)
 			break;
 		}
 
-		case RomFields::RFT_BITFIELD: {
+		case RomFields::RomFieldType::RFT_BITFIELD: {
 			// Multiple checkboxes with unique dialog IDs.
 
 			// Bits with a blank name aren't included, so we'll need to iterate

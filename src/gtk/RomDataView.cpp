@@ -725,7 +725,7 @@ rp_rom_data_view_init_string(RpRomDataView *page,
 		str = field.data.str;
 	}
 
-	if (field.type == RomFields::RFT_STRING &&
+	if (field.type == RomFields::RomFieldType::RFT_STRING &&
 	    (field.flags & RomFields::STRF_CREDITS))
 	{
 		// Credits text. Enable formatting and center alignment.
@@ -747,7 +747,7 @@ rp_rom_data_view_init_string(RpRomDataView *page,
 	}
 
 	// Check for any formatting options. (RFT_STRING only)
-	if (field.type == RomFields::RFT_STRING && field.flags != 0) {
+	if (field.type == RomFields::RomFieldType::RFT_STRING && field.flags != 0) {
 		PangoAttrList *const attr_lst = pango_attr_list_new();
 
 		// Monospace font?
@@ -1430,7 +1430,7 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 		GtkWidget *widget = nullptr;
 		bool separate_rows = false;
 		switch (field.type) {
-			case RomFields::RFT_INVALID:
+			case RomFields::RomFieldType::RFT_INVALID:
 				// Should not happen due to the above check...
 				assert(!"Field type is RFT_INVALID");
 				break;
@@ -1439,26 +1439,26 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 				assert(!"Unsupported RomFields::RomFieldsType.");
 				break;
 
-			case RomFields::RFT_STRING:
+			case RomFields::RomFieldType::RFT_STRING:
 				widget = rp_rom_data_view_init_string(page, field);
 				break;
-			case RomFields::RFT_BITFIELD:
+			case RomFields::RomFieldType::RFT_BITFIELD:
 				widget = rp_rom_data_view_init_bitfield(page, field);
 				break;
-			case RomFields::RFT_LISTDATA:
+			case RomFields::RomFieldType::RFT_LISTDATA:
 				separate_rows = !!(field.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW);
 				widget = rp_rom_data_view_init_listdata(page, field);
 				break;
-			case RomFields::RFT_DATETIME:
+			case RomFields::RomFieldType::RFT_DATETIME:
 				widget = rp_rom_data_view_init_datetime(page, field);
 				break;
-			case RomFields::RFT_AGE_RATINGS:
+			case RomFields::RomFieldType::RFT_AGE_RATINGS:
 				widget = rp_rom_data_view_init_age_ratings(page, field);
 				break;
-			case RomFields::RFT_DIMENSIONS:
+			case RomFields::RomFieldType::RFT_DIMENSIONS:
 				widget = rp_rom_data_view_init_dimensions(page, field);
 				break;
-			case RomFields::RFT_STRING_MULTI:
+			case RomFields::RomFieldType::RFT_STRING_MULTI:
 				widget = rp_rom_data_view_init_string_multi(page, field);
 				break;
 		}
@@ -1482,7 +1482,7 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 
 		// Check if this is an RFT_STRING with warning set.
 		// If it is, set the "RFT_STRING_warning" flag.
-		const guint is_warning = ((field.type == RomFields::RFT_STRING) &&
+		const guint is_warning = ((field.type == RomFields::RomFieldType::RFT_STRING) &&
 		                          (field.flags & RomFields::STRF_WARNING));
 		g_object_set_qdata(G_OBJECT(lblDesc), RFT_STRING_warning_quark, GUINT_TO_POINTER((guint)is_warning));
 
