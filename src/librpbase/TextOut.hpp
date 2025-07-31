@@ -36,24 +36,24 @@ enum OutputFlags {
 std::string urlPartialUnescape(const std::string &url);
 
 class ROMOutput {
-	const RomData *const romdata;
+	const RomData *const romData;
 	uint32_t lc;
 	unsigned int flags;
 public:
 	RP_LIBROMDATA_PUBLIC
-	explicit ROMOutput(const RomData *romdata, uint32_t lc = 0, unsigned int flags = 0);
+	explicit ROMOutput(const RomData *romData, uint32_t lc = 0, unsigned int flags = 0);
 
 	RP_LIBROMDATA_PUBLIC
 	friend std::ostream& operator<<(std::ostream& os, const ROMOutput& fo);
 };
 
 class JSONROMOutput {
-	const RomData *const romdata;
+	const RomData *const romData;
 	unsigned int flags;
 	bool crlf_;
 public:
 	RP_LIBROMDATA_PUBLIC
-	explicit JSONROMOutput(const RomData *romdata, unsigned int flags = 0);
+	explicit JSONROMOutput(const RomData *romData, unsigned int flags = 0);
 
 	RP_LIBROMDATA_PUBLIC
 	friend std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo);
