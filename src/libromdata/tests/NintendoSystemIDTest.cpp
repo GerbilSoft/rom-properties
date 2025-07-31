@@ -7,8 +7,7 @@
  ***************************************************************************/
 
 // Google Test
-#include "gtest/gtest.h"
-#include "tcharx.h"
+#include "gtest_init.hpp"
 
 #include "librpbyteswap/byteswap_rp.h"
 #include "nintendo_system_id.h"
@@ -60,6 +59,10 @@ TEST_F(NintendoSystemIDTest, leTest)
 }
 
 } }
+
+#ifdef HAVE_SECCOMP
+const unsigned int rp_gtest_syscall_set = 0;
+#endif /* HAVE_SECCOMP */
 
 /**
  * Test suite main function.

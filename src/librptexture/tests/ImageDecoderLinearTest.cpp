@@ -8,8 +8,7 @@
  ***************************************************************************/
 
 // Google Test
-#include "gtest/gtest.h"
-#include "tcharx.h"
+#include "gtest_init.hpp"
 #include "common.h"
 
 // librpbyteswap, librpbase
@@ -1315,6 +1314,10 @@ INSTANTIATE_TEST_SUITE_P(fromLinear16_384, ImageDecoderLinearTest,
 	, ImageDecoderLinearTest::test_case_suffix_generator);
 
 } }
+
+#ifdef HAVE_SECCOMP
+const unsigned int rp_gtest_syscall_set = 0;
+#endif /* HAVE_SECCOMP */
 
 /**
  * Test suite main function.

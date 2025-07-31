@@ -9,8 +9,7 @@
 #include "config.librpbase.h"
 
 // Google Test
-#include "gtest/gtest.h"
-#include "tcharx.h"
+#include "gtest_init.hpp"
 
 // Hash
 #include "../crypto/Hash.hpp"

@@ -7,8 +7,7 @@
  ***************************************************************************/
 
 // Google Test
-#include "gtest/gtest.h"
-#include "tcharx.h"
+#include "gtest_init.hpp"
 
 // RomDataTestObject
 #include "librpbase/RomDataTestObject.hpp"
@@ -121,6 +120,10 @@ TEST_F(RomDataViewTest, RFT_STRING)
 }
 
 } }
+
+#ifdef HAVE_SECCOMP
+const unsigned int rp_gtest_syscall_set = RP_GTEST_SYSCALL_SET_QT;
+#endif /* HAVE_SECCOMP */
 
 /**
  * Test suite main function.

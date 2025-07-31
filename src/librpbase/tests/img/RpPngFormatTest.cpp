@@ -7,7 +7,7 @@
  ***************************************************************************/
 
 // Google Test
-#include "gtest/gtest.h"
+#include "gtest_init.hpp"
 
 // zlib and libpng
 #include <zlib.h>
@@ -29,7 +29,6 @@
 #endif
 
 #include "common.h"
-#include "tcharx.h"	// for DIR_SEP_CHR
 
 // Uninitialized vector class
 #include "uvector.h"
@@ -1313,6 +1312,10 @@ INSTANTIATE_TEST_SUITE_P(happy_mac_mono_png, RpPngFormatTest,
 	, RpPngFormatTest::test_case_suffix_generator);
 
 } }
+
+#ifdef HAVE_SECCOMP
+const unsigned int rp_gtest_syscall_set = 0;
+#endif /* HAVE_SECCOMP */
 
 /**
  * Test suite main function.

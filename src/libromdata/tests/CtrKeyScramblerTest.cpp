@@ -7,8 +7,7 @@
  ***************************************************************************/
 
 // Google Test
-#include "gtest/gtest.h"
-#include "tcharx.h"
+#include "gtest_init.hpp"
 
 // CtrKeyScrambler
 #include "librpbase/crypto/KeyManager.hpp"
@@ -198,6 +197,10 @@ INSTANTIATE_TEST_SUITE_P(ctrScrambleTest, CtrKeyScramblerTest,
 		CtrKeyScramblerTest_mode(test_CtrScramble.data(), test_KeyX.data(), test_KeyY.data())
 	));
 } }
+
+#ifdef HAVE_SECCOMP
+const unsigned int rp_gtest_syscall_set = 0;
+#endif /* HAVE_SECCOMP */
 
 /**
  * Test suite main function.

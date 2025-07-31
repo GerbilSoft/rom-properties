@@ -7,8 +7,7 @@
  ***************************************************************************/
 
 // Google Test
-#include "gtest/gtest.h"
-#include "tcharx.h"
+#include "gtest_init.hpp"
 
 // RomFields (for RFT_DATETIME format flags)
 #include "librpbase/RomFields.hpp"
@@ -284,6 +283,14 @@ TEST_F(RomDataFormatTest, formatDimensions)
 }
 
 } }
+
+#ifdef HAVE_SECCOMP
+#  ifndef NDEBUG
+const unsigned int rp_gtest_syscall_set = RP_GTEST_SYSCALL_SET_GTEST_DEATH_TEST;
+#  else /* !NDEBUG */
+const unsigned int rp_gtest_syscall_set = 0;
+#  endif /* NDEBUG */
+#endif /* HAVE_SECCOMP */
 
 /**
  * Test suite main function.

@@ -7,8 +7,7 @@
  ***************************************************************************/
 
 // Google Test
-#include "gtest/gtest.h"
-#include "tcharx.h"
+#include "gtest_init.hpp"
 
 // libcachecommon
 #include "../CacheKeys.hpp"
@@ -369,6 +368,10 @@ TEST_F(FilterCacheKeyTest, filterCacheKey_invalid_UTF8)
 // TODO: Invalid UTF-16 sequence test for Windows.
 
 } } //namespace LibCacheCommon::Tests
+
+#ifdef HAVE_SECCOMP
+const unsigned int rp_gtest_syscall_set = 0;
+#endif /* HAVE_SECCOMP */
 
 /**
  * Test suite main function.
