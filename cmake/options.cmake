@@ -167,3 +167,6 @@ OPTION(ENABLE_NETWORKING "Enable network support for e.g. downloads of external 
 
 # Install documentation
 OPTION(INSTALL_DOC "Install documentation." ON)
+
+# Test suites
+OPTION(BUILD_TESTING "Build the rom-properties test suites." OFF)
