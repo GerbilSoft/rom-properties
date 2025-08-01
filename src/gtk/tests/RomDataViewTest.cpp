@@ -165,18 +165,18 @@ TEST_F(RomDataViewTest, RFT_STRING)
 	// FIXME: GtkGrid doesn't have an easy way to get the total number of
 	// rows and columns. GtkTable does...
 
-#if GTK_CHECK_VERSION(3, 0, 0)
+#ifdef USE_GTK_GRID
 	// Get the widgets for the first row.
 	GtkWidget *const lblDesc = gtk_grid_get_child_at(GTK_GRID(tableTab0), 0, 0);
 	ASSERT_TRUE(GTK_IS_LABEL(lblDesc));
 	GtkWidget *const lblValue = gtk_grid_get_child_at(GTK_GRID(tableTab0), 1, 0);
 	ASSERT_TRUE(GTK_IS_LABEL(lblValue));
-#else /* !GTK_CHECK_VERSION(3, 0, 0) */
+#else /* !USE_GTK_GRID */
 	// TODO: GtkTable version.
 	GtkWidget *const lblDesc = nullptr;
 	GtkWidget *const lblValue = nullptr;
 	ASSERT_TRUE(!"not implemented for GTK2 yet...");
-#endif /* GTK_CHECK_VERSION(3, 0, 0) */
+#endif /* USE_GTK_GRID */
 
 	// Verify the label contents.
 	// NOTE: Description label will have an added ':'.
