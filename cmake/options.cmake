@@ -170,3 +170,6 @@ OPTION(INSTALL_DOC "Install documentation." ON)
 
 # Test suites
 OPTION(BUILD_TESTING "Build the rom-properties test suites." OFF)
+IF(UNIX AND NOT APPLE)
+	OPTION(USE_XVFB "Use XVFB for test suites that need a display server." OFF)
+ENDIF(UNIX AND NOT APPLE)

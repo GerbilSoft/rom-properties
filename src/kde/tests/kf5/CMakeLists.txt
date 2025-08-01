@@ -46,10 +46,8 @@ LIST(APPEND KF5_TESTS RomDataFormatTest_kf5)
 
 STRING(REGEX REPLACE "([^;]+)" "../\\1" RomDataViewTest_kf5_SRCS "${RomDataViewTest_SRCS}")
 
-ADD_EXECUTABLE(RomDataViewTest_kf5
-	${RomDataViewTest_kf5_SRCS}
-	${RomDataViewTest_kf5_H}
-	)
+ADD_EXECUTABLE(RomDataViewTest_kf5 ${RomDataViewTest_kf5_SRCS})
+SET(RomDataViewTest_kf5_XVFB ON)
 TARGET_LINK_LIBRARIES(RomDataViewTest_kf5 PRIVATE rptest romdata)
 TARGET_LINK_LIBRARIES(RomDataViewTest_kf5 PRIVATE rom-properties-kf5_LIB)
 # Include directories required for stdafx.h.
@@ -64,7 +62,14 @@ FOREACH(_target ${KF5_TESTS})
 	DO_SPLIT_DEBUG(${_target})
 	SET_WINDOWS_SUBSYSTEM(${_target} CONSOLE)
 	SET_WINDOWS_ENTRYPOINT(${_target} wmain OFF)
-	ADD_TEST(NAME ${_target} COMMAND ${_target} --gtest_brief)
+
+	IF(USE_XVFB AND ${_target}_XVFB)
+		# Use Xvfb for this test.
+		ADD_TEST(NAME ${_target} COMMAND ${XVFB_RUN} -a $<TARGET_FILE:${_target}> --gtest_brief)
+	ELSE(USE_XVFB AND ${_target}_XVFB)
+		# Xvfb is not required.
+		ADD_TEST(NAME ${_target} COMMAND ${_target} --gtest_brief)
+	ENDIF(USE_XVFB AND ${_target}_XVFB)
 ENDFOREACH(_target)
 
 ENDIF(BUILD_KF5)

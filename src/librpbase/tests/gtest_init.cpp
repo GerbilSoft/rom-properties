@@ -215,6 +215,21 @@ static constexpr int16_t syscall_wl_gtk[] = {
 	// GTK2
 	SCMP_SYS(writev),
 	SCMP_SYS(uname),	// NOTE: Only in code coverage builds?
+
+	// GTK3 when using Xvfb-run with DISPLAY= WAYLAND_DISPLAY=
+	SCMP_SYS(sched_setaffinity),
+	SCMP_SYS(sysinfo),
+	SCMP_SYS(ftruncate),	// FIXME: Is this actually needed? Stub it?
+	SCMP_SYS(statfs),
+	SCMP_SYS(inotify_init1), SCMP_SYS(inotify_add_watch),
+
+	// GTK4 when using Xvfb-run with DISPLAY= WAYLAND_DISPLAY=
+	SCMP_SYS(kcmp),
+	SCMP_SYS(sched_setscheduler),
+	SCMP_SYS(setpriority),
+	SCMP_SYS(flock),	// FIXME: Is this actually needed? Stub it?
+	SCMP_SYS(rename),	// FIXME: Is this actually needed? Stub it?
+	//SCMP_SYS(unlink),	// Not used if rename() works...
 };
 
 #endif /* HAVE_SECCOMP */
