@@ -2,13 +2,14 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * Achievements.hpp: Achievements class.                                   *
  *                                                                         *
- * Copyright (c) 2020-2024 by David Korth.                                 *
+ * Copyright (c) 2020-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
 #include "common.h"
+#include "dll-macros.h"
 
 namespace LibRpBase {
 

@@ -63,6 +63,7 @@ ENDIF(ENABLE_NETWORKING)
 SET(${PROJECT_NAME}_GLib_SRCS
 	${NetworkManager_GDBus_SRCS}
 	${Notifications_GDBus_SRCS}
+	rp_log_domain.h
 	RomDataFormat.cpp
 	RpFile_gio.cpp
 	is-supported.cpp
