@@ -81,8 +81,10 @@ static void	rp_options_menu_button_get_property	(GObject	*object,
 							 GValue		*value,
 							 GParamSpec	*pspec);
 
+#if !GTK_CHECK_VERSION(4, 0, 0)
 static gboolean	menuButton_clicked_signal_handler	(GtkButton	*button,
 							 RpOptionsMenuButton *widget);
+#endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 static gboolean	menuButton_activate_signal_handler	(GtkButton	*button,
 							 RpOptionsMenuButton *widget);
 #ifndef USE_GTK_MENU_BUTTON
@@ -398,6 +400,7 @@ rp_options_menu_button_set_direction(RpOptionsMenuButton *widget, GtkArrowType a
 	g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_DIRECTION]);
 }
 
+#if !GTK_CHECK_VERSION(4, 0, 0)
 static gboolean
 menuButton_clicked_signal_handler(GtkButton *button, RpOptionsMenuButton *widget)
 {
@@ -406,6 +409,7 @@ menuButton_clicked_signal_handler(GtkButton *button, RpOptionsMenuButton *widget
 	g_signal_emit(GTK_WIDGET(widget), signals[SIGNAL_CLICKED], 0);
 	return TRUE;
 }
+#endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 
 static gboolean
 menuButton_activate_signal_handler(GtkButton *button, RpOptionsMenuButton *widget)
