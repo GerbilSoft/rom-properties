@@ -33,6 +33,7 @@ using LibRpFile::VectorFilePtr;
 using std::array;
 using std::string;
 using std::unordered_map;
+using std::vector;
 
 // libfmt
 #include "rp-libfmt.h"
@@ -210,6 +211,8 @@ TEST_F(RomDataViewTest, RFT_STRING)
 	ASSERT_NE(nullptr, widgetIter);
 	GtkWidget *const tableTab0 = GTK_WIDGET(widgetIter->data);
 #  if GTK_CHECK_VERSION(3, 0, 0)
+	// FIXME: GtkGrid doesn't have an easy way to get the total number of
+	// rows and columns. GtkTable does...
 	ASSERT_TRUE(GTK_IS_GRID(tableTab0));
 #  else /* !GTK_CHECK_VERSION(3, 0, 0) */
 	ASSERT_TRUE(GTK_IS_TABLE(tableTab0));
@@ -221,9 +224,6 @@ TEST_F(RomDataViewTest, RFT_STRING)
 	EXPECT_EQ(1, table_rows) << "Main table has the wrong number of rows.";
 #  endif /* GTK_CHECK_VERSION(3, 0, 0) */
 #endif /* GTK_CHECK_VERSION(3, 89, 3) */
-
-	// FIXME: GtkGrid doesn't have an easy way to get the total number of
-	// rows and columns. GtkTable does...
 
 #ifdef USE_GTK_GRID
 	// Get the widgets for the first row.
@@ -254,6 +254,183 @@ TEST_F(RomDataViewTest, RFT_STRING)
 	// NOTE: Using gtk_label_get_label(), which returns mnemonics and Pango markup.
 	EXPECT_STREQ(stds_field_desc.c_str(), gtk_label_get_label(GTK_LABEL(lblDesc))) << "Field description is incorrect.";
 	EXPECT_STREQ(s_field_value, gtk_label_get_label(GTK_LABEL(lblValue))) << "Field value is incorrect.";
+}
+
+/**
+ * Test RomDataView with a RomData object with an RFT_BITFIELD field.
+ * Non-sparse: Bitfield has 16 contiguous bits.
+ */
+TEST_F(RomDataViewTest, RFT_BITFIELD_non_sparse)
+{
+	// Add an RFT_BITFIELD field.
+	static const char s_field_desc[] = "RFT_BITFIELD 0";
+
+	static const array<const char*, 16> bitfield_names = {{
+		"bit 0", "bit 1", "bit 2", "bit 3",
+		"bit 4", "bit 5", "bit 6", "bit 7",
+		"bit 8", "bit 9", "bit 10", "bit 11",
+		"bit 12", "bit 13", "bit 14", "bit 15",
+	}};
+	static constexpr uint32_t bitfield_value = 0xAA55;
+
+	vector<string> *const v_bitfield_names = RomFields::strArrayToVector(bitfield_names);
+
+	RomFields *const fields = m_romData->getWritableFields();
+	fields->addField_bitfield(s_field_desc, v_bitfield_names, 4, bitfield_value);
+
+	/** Verify the GTK widgets. **/
+
+	// Create a RomDataView.
+	// TODO: Set description format type properly.
+	m_romDataView = rp_rom_data_view_new_with_romData("", m_romData, RP_DFT_GNOME);
+#if GTK_CHECK_VERSION(3, 98, 4)
+	g_object_ref_sink(m_romDataView);
+#endif /* GTK_CHECK_VERSION(3, 98, 4) */
+
+	// NOTE: For efficiency reasons, GTK RomDataView uses g_idle_add()
+	// to schedule its display update. Force it to run here.
+	ASSERT_EQ(true, rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(m_romDataView)));
+
+	// There shouldn't be any tabs.
+	// First child widget of RomDataView is the header row: GtkBox (GTK3+) or GtkHBox (GTK2)
+	// Second child widget of RomDataView is the GtkGrid (GTK3+) or GtkTable (GTK2)
+#if GTK_CHECK_VERSION(3, 89, 3)
+	// GTK4: Use first_child/next_sibling.
+	GtkWidget *const hboxHeaderRow = gtk_widget_get_first_child(m_romDataView);
+	ASSERT_TRUE(GTK_IS_BOX(hboxHeaderRow));
+
+	GtkWidget *const tableTab0 = gtk_widget_get_next_sibling(hboxHeaderRow);
+	ASSERT_TRUE(GTK_IS_GRID(tableTab0));
+#else /* !GTK_CHECK_VERSION(3, 89, 3) */
+	// GTK2, GTK3: Need to get the entire widget list and get the second entry.
+	m_widgetList = gtk_container_get_children(GTK_CONTAINER(m_romDataView));
+	ASSERT_NE(nullptr, m_widgetList);
+
+	GList *widgetIter = g_list_first(m_widgetList);
+	ASSERT_NE(nullptr, widgetIter);
+	GtkWidget *const hboxHeaderRow = GTK_WIDGET(widgetIter->data);
+#  if GTK_CHECK_VERSION(3, 0, 0)
+	ASSERT_TRUE(GTK_IS_BOX(hboxHeaderRow));
+#  else /* !GTK_CHECK_VERSION(3, 0, 0) */
+	ASSERT_TRUE(GTK_IS_HBOX(hboxHeaderRow));
+#  endif /* GTK_CHECK_VERSION(3, 0, 0) */
+
+	widgetIter = g_list_next(m_widgetList);
+	ASSERT_NE(nullptr, widgetIter);
+	GtkWidget *const tableTab0 = GTK_WIDGET(widgetIter->data);
+#  if GTK_CHECK_VERSION(3, 0, 0)
+	// FIXME: GtkGrid doesn't have an easy way to get the total number of
+	// rows and columns. GtkTable does...
+	ASSERT_TRUE(GTK_IS_GRID(tableTab0));
+#  else /* !GTK_CHECK_VERSION(3, 0, 0) */
+	ASSERT_TRUE(GTK_IS_TABLE(tableTab0));
+
+	// Verify the number of rows and columns in GtkTable.
+	guint table_rows = 0, table_columns = 0;
+	gtk_table_get_size(GTK_TABLE(tableTab0), &table_rows, &table_columns);
+	EXPECT_EQ(2, table_columns) << "Main table has the wrong number of columns.";
+	EXPECT_EQ(1, table_rows) << "Main table has the wrong number of rows.";
+#  endif /* GTK_CHECK_VERSION(3, 0, 0) */
+#endif /* GTK_CHECK_VERSION(3, 89, 3) */
+
+#ifdef USE_GTK_GRID
+	// Get the widgets for the first row.
+	GtkWidget *const lblDesc = gtk_grid_get_child_at(GTK_GRID(tableTab0), 0, 0);
+	ASSERT_TRUE(GTK_IS_LABEL(lblDesc));
+	GtkWidget *const gridBitfield = gtk_grid_get_child_at(GTK_GRID(tableTab0), 1, 0);
+	ASSERT_TRUE(GTK_IS_GRID(gridBitfield));
+#else /* !USE_GTK_GRID */
+	unordered_map<uint32_t, GtkWidget*> mapWidgets = gtk_table_get_widgets(GTK_TABLE(tableTab0));
+	ASSERT_FALSE(mapWidgets.empty());
+
+	auto iter = mapWidgets.find(rowColumnToDWORD(0, 0));
+	ASSERT_TRUE(iter != mapWidgets.end());
+	GtkWidget *const lblDesc = iter->second;
+	ASSERT_TRUE(GTK_IS_LABEL(lblDesc));
+
+	iter = mapWidgets.find(rowColumnToDWORD(1, 0));
+	ASSERT_TRUE(iter != mapWidgets.end());
+	GtkWidget *const gridBitfield = iter->second;
+	ASSERT_TRUE(GTK_IS_TABLE(gridBitfield));
+#endif /* USE_GTK_GRID */
+
+	// Verify the label contents.
+	// NOTE: Description label will have an added ':'.
+	string stds_field_desc = s_field_desc;
+	stds_field_desc += ':';
+
+	// NOTE: Using gtk_label_get_label(), which returns mnemonics and Pango markup.
+	EXPECT_STREQ(stds_field_desc.c_str(), gtk_label_get_label(GTK_LABEL(lblDesc))) << "Field description is incorrect.";
+
+	// Grid should be 4x4, since we specified 4 items per column,
+	// and we have 16 items.
+	guint rowCount = 0, columnCount = 0;
+#ifdef USE_GTK_GRID
+	// FIXME: GtkGrid doesn't have an easy way to get the total number of
+	// rows and columns. GtkTable does...
+
+	// Assuming we have the correct number.
+	rowCount = 4;
+	columnCount = 4;
+#else /* !USE_GTK_GRID */
+	gtk_table_get_size(GTK_TABLE(gridBitfield), &rowCount, &columnCount);
+	EXPECT_EQ(4, columnCount) << "Bitfield table has the wrong number of columns.";
+	EXPECT_EQ(4, rowCount) << "Bitfield table has the wrong number of rows.";
+
+	// Get the widgets.
+	mapWidgets = gtk_table_get_widgets(GTK_TABLE(gridBitfield));
+	ASSERT_FALSE(mapWidgets.empty());
+#endif /* USE_GTK_GRID */
+
+	// Go through each item.
+	unsigned int bit = 0;
+	unsigned int row = 0, col = 0;
+	for (; row < rowCount && bit < bitfield_names.size(); bit++) {
+		const char *const name = bitfield_names[bit];
+		EXPECT_NE(nullptr, name);
+		if (!name) {
+			// nullptr description.
+			// Continue without incrementing row or col.
+			continue;
+		}
+
+#ifdef USE_GTK_GRID
+		GtkWidget *const checkBox = gtk_grid_get_child_at(GTK_GRID(gridBitfield), col, row);
+#else /* !USE_GTK_GRID */
+		auto iter = mapWidgets.find(rowColumnToDWORD(col, row));
+		EXPECT_TRUE(iter != mapWidgets.end());
+		if (iter == mapWidgets.end()) {
+			continue;
+		}
+		GtkWidget *const checkBox = iter->second;
+#endif /* USE_GTK_GRID */
+		EXPECT_TRUE(GTK_IS_CHECK_BUTTON(checkBox));
+		if (!GTK_IS_CHECK_BUTTON(checkBox)) {
+			continue;
+		}
+
+		// NOTE: gtk_check_button_get_label() wasn't added until GTK4.
+		// We'll have to get the label property manually.
+		gchar *label = nullptr;
+		g_object_get(checkBox, "label", &label, nullptr);
+
+		// Verify the checkbox's label.
+		EXPECT_STREQ(name, label) << "GtkCheckButton " << bit << " label is incorrect.";
+		g_free(label);
+
+		// Verify the checkbox's value.
+		EXPECT_EQ(!!(bitfield_value & (1U << bit)), gtk_check_button_get_active(GTK_CHECK_BUTTON(checkBox))) << "GtkCheckButton " << bit << " value is incorrect.";
+
+		// Next column.
+		col++;
+		if (col >= columnCount) {
+			col = 0;
+			row++;
+		}
+	}
+
+	// Make sure we've processed all of the bits.
+	EXPECT_EQ(bit, bitfield_names.size()) << "Incorrect number of bits processed.";
 }
 
 } }
