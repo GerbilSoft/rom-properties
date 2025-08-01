@@ -32,6 +32,7 @@ using LibRpFile::VectorFilePtr;
 // C++ STL classes
 using std::array;
 using std::string;
+using std::unordered_map;
 
 // libfmt
 #include "rp-libfmt.h"
@@ -88,6 +89,29 @@ protected:
 		}
 #endif /* GTK_CHECK_VERSION(3, 98, 4) */
 	}
+
+#ifndef USE_GTK_GRID
+	/**
+	 * Convert row/column into a 32-bit value.
+	 * - LOWORD == column/left
+	 * - HIWORD == row/top
+	 * NOTE: Parameter ordering matches gtk_grid_get_child_at().
+	 * @param column
+	 * @param row
+	 * @return 32-bit value
+	 */
+	static constexpr inline uint32_t rowColumnToDWORD(uint16_t column, uint16_t row)
+	{
+		return (row << 16) | column;
+	}
+
+	/**
+	 * Get all widgets from a GtkTable in a way that can be looked up easily.
+	 * @param table GtkTable
+	 * @return Map of widgets, with uint32_t key: LOWORD == column, HIWORD == row
+	 */
+	unordered_map<uint32_t, GtkWidget*> gtk_table_get_widgets(GtkTable *table);
+#endif /* USE_GTK_GRID */
 };
 
 void RomDataViewTest::SetUp()
@@ -102,6 +126,36 @@ void RomDataViewTest::TearDown()
 	m_romData.reset();
 	m_vectorFile->clear();
 }
+
+#ifndef USE_GTK_GRID
+/**
+ * Get all widgets from a GtkTable in a way that can be looked up easily.
+ * @param table GtkTable
+ * @return Map of widgets, with uint32_t key: LOWORD == column, HIWORD == row
+ */
+unordered_map<uint32_t, GtkWidget*> RomDataViewTest::gtk_table_get_widgets(GtkTable *table)
+{
+	unordered_map<uint32_t, GtkWidget*> ret;
+	g_return_val_if_fail(GTK_IS_TABLE(table), ret);
+
+	GtkContainer *const container = GTK_CONTAINER(table);
+	GList *const widgets = gtk_container_get_children(container);
+	for (GList *p = widgets; p != nullptr; p = g_list_next(p)) {
+		// NOTE: Assuming each widget occupies exactly 1 cell.
+		GtkWidget *const widget = GTK_WIDGET(p->data);
+		if (!widget) {
+			continue;
+		}
+
+		guint left = 0, top = 0;
+		gtk_container_child_get(container, widget, "left-attach", &left, "top-attach", &top, nullptr);
+		ret.emplace(rowColumnToDWORD(left, top), widget);
+	}
+
+	g_list_free(widgets);
+	return ret;
+}
+#endif /* USE_GTK_GRID */
 
 /**
  * Test RomDataView with a RomData object with an RFT_STRING field.
@@ -172,10 +226,18 @@ TEST_F(RomDataViewTest, RFT_STRING)
 	GtkWidget *const lblValue = gtk_grid_get_child_at(GTK_GRID(tableTab0), 1, 0);
 	ASSERT_TRUE(GTK_IS_LABEL(lblValue));
 #else /* !USE_GTK_GRID */
-	// TODO: GtkTable version.
-	GtkWidget *const lblDesc = nullptr;
-	GtkWidget *const lblValue = nullptr;
-	ASSERT_TRUE(!"not implemented for GTK2 yet...");
+	unordered_map<uint32_t, GtkWidget*> mapWidgets = gtk_table_get_widgets(GTK_TABLE(tableTab0));
+	ASSERT_FALSE(mapWidgets.empty());
+
+	auto iter = mapWidgets.find(rowColumnToDWORD(0, 0));
+	ASSERT_TRUE(iter != mapWidgets.end());
+	GtkWidget *const lblDesc = iter->second;
+	ASSERT_TRUE(GTK_IS_LABEL(lblDesc));
+
+	iter = mapWidgets.find(rowColumnToDWORD(1, 0));
+	ASSERT_TRUE(iter != mapWidgets.end());
+	GtkWidget *const lblValue = iter->second;
+	ASSERT_TRUE(GTK_IS_LABEL(lblValue));
 #endif /* USE_GTK_GRID */
 
 	// Verify the label contents.
