@@ -213,6 +213,12 @@ TEST_F(RomDataViewTest, RFT_STRING)
 	ASSERT_TRUE(GTK_IS_GRID(tableTab0));
 #  else /* !GTK_CHECK_VERSION(3, 0, 0) */
 	ASSERT_TRUE(GTK_IS_TABLE(tableTab0));
+
+	// Verify the number of rows and columns in GtkTable.
+	guint table_rows = 0, table_columns = 0;
+	gtk_table_get_size(GTK_TABLE(tableTab0), &table_rows, &table_columns);
+	EXPECT_EQ(2, table_columns) << "Main table has the wrong number of columns.";
+	EXPECT_EQ(1, table_rows) << "Main table has the wrong number of rows.";
 #  endif /* GTK_CHECK_VERSION(3, 0, 0) */
 #endif /* GTK_CHECK_VERSION(3, 89, 3) */
 
