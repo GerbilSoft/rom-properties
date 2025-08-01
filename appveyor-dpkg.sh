@@ -1,7 +1,7 @@
 #!/bin/sh
 set -ev
 
-add-apt-repository --remove "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main"
+add-apt-repository --remove "deb http://apt.postgresql.org/pub/repos/apt/ jammy-pgdg main"
 
 apt-get update
 apt-get -y install \
@@ -37,4 +37,6 @@ apt-get -y install \
 	libgtk-3-dev \
 	libcairo2-dev \
 	libnautilus-extension-dev \
-	libblkid-dev
+	libblkid-dev \
+	\
+	xvfb
