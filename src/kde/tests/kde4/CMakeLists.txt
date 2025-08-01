@@ -38,7 +38,7 @@ TARGET_LINK_LIBRARIES(RomDataFormatTest_kde4 PRIVATE rom-properties-kde4_LIB)
 TARGET_INCLUDE_DIRECTORIES(RomDataFormatTest_kde4
 	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/../../../librptext"
 	)
-LIST(APPEND KF5_TESTS RomDataFormatTest_kde4)
+LIST(APPEND KDE4_TESTS RomDataFormatTest_kde4)
 
 ### RomDataView tests
 
@@ -53,7 +53,7 @@ TARGET_LINK_LIBRARIES(RomDataViewTest_kde4 PRIVATE rom-properties-kde4_LIB)
 TARGET_INCLUDE_DIRECTORIES(RomDataViewTest_kde4
 	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/../../../librptext"
 	)
-LIST(APPEND KF5_TESTS RomDataViewTest_kde4)
+LIST(APPEND KDE4_TESTS RomDataViewTest_kde4)
 
 ###### Add tests to CTest ######
 
