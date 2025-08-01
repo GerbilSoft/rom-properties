@@ -160,6 +160,63 @@ static constexpr int16_t syscall_wl_qt[] = {
 	SCMP_SYS(getsockopt),	// Qt4 only
 	SCMP_SYS(pipe2),	// Qt4 only
 };
+
+// for GTK tests
+static constexpr int16_t syscall_wl_gtk[] = {
+	/**
+	 * GTK3 (probably GTK4 too, not sure about GTK2) checks for setuid root and fails if detected:
+	 *
+	 * This process is currently running setuid or setgid.
+	 * This is not a supported use of GTK+. You must create a helper
+	 * program instea.d For further details, see:
+	 *
+	 *   http://www.gtk.org/setuid.html
+	 *
+	 * Refusing to initialize GTK+.
+	 */
+
+	// NOTE: Ordering here is based mostly on GTK3.
+	// GTK2 and GTK4 are similar, but in a different order.
+	// Not that it matters at all...
+	SCMP_SYS(getresuid),
+	SCMP_SYS(geteuid), SCMP_SYS(getuid),
+	SCMP_SYS(getegid), SCMP_SYS(getgid),
+	SCMP_SYS(getpeername),
+
+	// Additional syscalls needed for initialization.
+	SCMP_SYS(getresgid),
+	SCMP_SYS(socket),
+	SCMP_SYS(prctl),	// for __pthread_setname_np()
+	SCMP_SYS(readlink),	// GTK4 needs this
+	SCMP_SYS(shutdown),	// GTK3 on Xubuntu 16.04 needs this
+
+	SCMP_SYS(eventfd2),
+	SCMP_SYS(sched_getattr),
+	SCMP_SYS(sched_setattr),
+	SCMP_SYS(getdents), SCMP_SYS(getdents64),
+
+	// D-Bus initialization
+	SCMP_SYS(pwrite64),
+	SCMP_SYS(sendmsg), SCMP_SYS(recvfrom),
+	SCMP_SYS(poll), SCMP_SYS(ppoll),
+
+	// dconf initialization
+	SCMP_SYS(mkdir),	// FIXME: Is this actually needed? Stub it?
+	SCMP_SYS(memfd_create),
+	SCMP_SYS(fallocate),
+	SCMP_SYS(getsockname),
+	SCMP_SYS(mremap),
+
+	// GTK4
+	SCMP_SYS(getrandom),
+	SCMP_SYS(setsockopt),
+	SCMP_SYS(fstatfs),
+
+	// GTK2
+	SCMP_SYS(writev),
+	SCMP_SYS(uname),	// NOTE: Only in code coverage builds?
+};
+
 #endif /* HAVE_SECCOMP */
 
 extern "C" int gtest_main(int argc, TCHAR *argv[]);
@@ -185,6 +242,11 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	if (rp_gtest_syscall_set & RP_GTEST_SYSCALL_SET_QT) {
 		// Add Qt syscalls.
 		syscall_wl.insert(syscall_wl.end(), syscall_wl_qt, &syscall_wl_qt[ARRAY_SIZE(syscall_wl_qt)]);
+	}
+
+	if (rp_gtest_syscall_set & RP_GTEST_SYSCALL_SET_GTK) {
+		// Add GTK syscalls.
+		syscall_wl.insert(syscall_wl.end(), syscall_wl_gtk, &syscall_wl_gtk[ARRAY_SIZE(syscall_wl_gtk)]);
 	}
 
 	// End of syscalls.

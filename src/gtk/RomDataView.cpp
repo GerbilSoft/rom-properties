@@ -574,10 +574,20 @@ rp_rom_data_view_desc_format_type_changed(RpRomDataView	*page,
 gboolean
 rp_rom_data_view_is_showing_data(RpRomDataView *page)
 {
-	// FIXME: This was intended to be used to determine if
-	// the RomData was valid, but the RomData isn't loaded
-	// until idle is processed...
 	g_return_val_if_fail(RP_IS_ROM_DATA_VIEW(page), false);
+
+	// If page->changed_idle is non-zero, the display hasn't been updated yet.
+	// Update it, then clear the idle timeout.
+	const guint changed_idle = page->changed_idle;
+	if (changed_idle != 0) {
+		gboolean ret = rp_rom_data_view_update_display(page);
+		if (ret == G_SOURCE_REMOVE) {
+			// rp_rom_data_view_update_display() sets page->changed_idle to 0,
+			// but expects the caller to actually remove the source.
+			g_source_remove(changed_idle);
+		}
+	}
+
 	return (bool)page->cxx->romData;
 }
 
@@ -1095,12 +1105,15 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 	// - caja-3.x: GtkNotebook
 	// - nemo-3.x: GtkStack
 	// - GTK4: GtkStack, then GtkNotebook
+	// NOTE: This might not be the case in unit tests or if
+	// another program has embedded RomDataView.
 #ifndef GTK_IS_STACK
 #  define GTK_IS_STACK(x) 1
 #endif
-	assert(GTK_IS_NOTEBOOK(parent) || GTK_IS_STACK(parent));
-	if (!GTK_IS_NOTEBOOK(parent) && !GTK_IS_STACK(parent))
+	//assert(parent && (GTK_IS_NOTEBOOK(parent) || GTK_IS_STACK(parent)));
+	if (!parent || (!GTK_IS_NOTEBOOK(parent) && !GTK_IS_STACK(parent))) {
 		return;
+	}
 #if GTK_CHECK_VERSION(4, 0, 0)
 	if (GTK_IS_STACK(parent)) {
 		// GtkStack; next widget up might be GtkNotebook.

@@ -27,6 +27,7 @@ extern const unsigned int rp_gtest_syscall_set;
 typedef enum {
 	RP_GTEST_SYSCALL_SET_GTEST_DEATH_TEST	= (1U << 0),
 	RP_GTEST_SYSCALL_SET_QT			= (1U << 1),
+	RP_GTEST_SYSCALL_SET_GTK		= (1U << 2),
 } RP_GTest_Syscall_Set_e;
 
 #endif /* HAVE_SECCOMP */
