@@ -32,6 +32,7 @@ using LibRpFile::VectorFilePtr;
 // C++ STL classes
 #include <unordered_map>
 using std::array;
+using std::pair;
 using std::string;
 using std::unordered_map;
 using std::vector;
@@ -50,6 +51,8 @@ protected:
 #if !GTK_CHECK_VERSION(3, 89, 3)
 		, m_widgetList(nullptr)
 #endif /* !GTK_CHECK_VERSION(3, 89, 3) */
+		, m_lblDesc(nullptr)
+		, m_widgetValue(nullptr)
 	{ }
 
 	~RomDataViewTest()
@@ -114,12 +117,30 @@ protected:
 	 */
 	unordered_map<uint32_t, GtkWidget*> gtk_table_get_widgets(GtkTable *table);
 #endif /* USE_GTK_GRID */
+
+	/**
+	 * Get the widgets from the first row in RomDataView.
+	 * Widgets will be returned in m_lblDesc and m_widgetValue.
+	 *
+	 * NOTE: Cannot return a value from this function due to
+	 * how Google Test functions.
+	 *
+	 * @param RomDataView
+	 */
+	void getFirstRowWidgets(RpRomDataView *romDataView);
+
+	GtkWidget *m_lblDesc;
+	GtkWidget *m_widgetValue;
 };
 
 void RomDataViewTest::SetUp()
 {
 	m_vectorFile->resize(VECTOR_FILE_SIZE);
 	m_romData = std::make_shared<RomDataTestObject>(m_vectorFile);
+
+	// May be used by getFirstRowWidgets().
+	m_lblDesc = nullptr;
+	m_widgetValue = nullptr;
 }
 
 void RomDataViewTest::TearDown()
@@ -160,43 +181,29 @@ unordered_map<uint32_t, GtkWidget*> RomDataViewTest::gtk_table_get_widgets(GtkTa
 #endif /* USE_GTK_GRID */
 
 /**
- * Test RomDataView with a RomData object with an RFT_STRING field.
+ * Get the widgets from the first row in RomDataView.
+ * @param RomDataView
+ * @return pair<GtkWidget*, GtkWidget*>
  */
-TEST_F(RomDataViewTest, RFT_STRING)
+void RomDataViewTest::getFirstRowWidgets(RpRomDataView *romDataView)
 {
-	// Add an RFT_STRING field.
-	static const char s_field_desc[] = "RFT_STRING 0";
-	static const char s_field_value[] = "Test string! omgwtflolbbq";
-
-	RomFields *const fields = m_romData->getWritableFields();
-	fields->addField_string(s_field_desc, s_field_value);
-
-	/** Verify the GTK widgets. **/
-
-	// Create a RomDataView.
-	// TODO: Set description format type properly.
-	m_romDataView = rp_rom_data_view_new_with_romData("", m_romData, RP_DFT_GNOME);
-#if GTK_CHECK_VERSION(3, 98, 4)
-	g_object_ref_sink(m_romDataView);
-#endif /* GTK_CHECK_VERSION(3, 98, 4) */
-
-	// NOTE: For efficiency reasons, GTK RomDataView uses g_idle_add()
-	// to schedule its display update. Force it to run here.
-	ASSERT_EQ(true, rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(m_romDataView)));
+	// Initialize the widgets to nullptr before doing anything else.
+	m_lblDesc = nullptr;
+	m_widgetValue = nullptr;
 
 	// There shouldn't be any tabs.
 	// First child widget of RomDataView is the header row: GtkBox (GTK3+) or GtkHBox (GTK2)
 	// Second child widget of RomDataView is the GtkGrid (GTK3+) or GtkTable (GTK2)
 #if GTK_CHECK_VERSION(3, 89, 3)
 	// GTK4: Use first_child/next_sibling.
-	GtkWidget *const hboxHeaderRow = gtk_widget_get_first_child(m_romDataView);
+	GtkWidget *const hboxHeaderRow = gtk_widget_get_first_child(GTK_WIDGET(romDataView));
 	ASSERT_TRUE(GTK_IS_BOX(hboxHeaderRow));
 
 	GtkWidget *const tableTab0 = gtk_widget_get_next_sibling(hboxHeaderRow);
 	ASSERT_TRUE(GTK_IS_GRID(tableTab0));
 #else /* !GTK_CHECK_VERSION(3, 89, 3) */
 	// GTK2, GTK3: Need to get the entire widget list and get the second entry.
-	m_widgetList = gtk_container_get_children(GTK_CONTAINER(m_romDataView));
+	m_widgetList = gtk_container_get_children(GTK_CONTAINER(romDataView));
 	ASSERT_NE(nullptr, m_widgetList);
 
 	GList *widgetIter = g_list_first(m_widgetList);
@@ -228,24 +235,55 @@ TEST_F(RomDataViewTest, RFT_STRING)
 
 #ifdef USE_GTK_GRID
 	// Get the widgets for the first row.
-	GtkWidget *const lblDesc = gtk_grid_get_child_at(GTK_GRID(tableTab0), 0, 0);
-	ASSERT_TRUE(GTK_IS_LABEL(lblDesc));
-	GtkWidget *const lblValue = gtk_grid_get_child_at(GTK_GRID(tableTab0), 1, 0);
-	ASSERT_TRUE(GTK_IS_LABEL(lblValue));
+	m_lblDesc = gtk_grid_get_child_at(GTK_GRID(tableTab0), 0, 0);
+	ASSERT_TRUE(GTK_IS_LABEL(m_lblDesc));
+	m_widgetValue = gtk_grid_get_child_at(GTK_GRID(tableTab0), 1, 0);
+	ASSERT_TRUE(GTK_IS_WIDGET(m_widgetValue));
 #else /* !USE_GTK_GRID */
 	unordered_map<uint32_t, GtkWidget*> mapWidgets = gtk_table_get_widgets(GTK_TABLE(tableTab0));
 	ASSERT_FALSE(mapWidgets.empty());
 
 	auto iter = mapWidgets.find(rowColumnToDWORD(0, 0));
 	ASSERT_TRUE(iter != mapWidgets.end());
-	GtkWidget *const lblDesc = iter->second;
-	ASSERT_TRUE(GTK_IS_LABEL(lblDesc));
+	m_lblDesc = iter->second;
+	ASSERT_TRUE(GTK_IS_LABEL(m_lblDesc));
 
 	iter = mapWidgets.find(rowColumnToDWORD(1, 0));
 	ASSERT_TRUE(iter != mapWidgets.end());
-	GtkWidget *const lblValue = iter->second;
-	ASSERT_TRUE(GTK_IS_LABEL(lblValue));
+	m_widgetValue = iter->second;
+	ASSERT_TRUE(GTK_IS_WIDGET(m_widgetValue));
 #endif /* USE_GTK_GRID */
+}
+
+/**
+ * Test RomDataView with a RomData object with an RFT_STRING field.
+ */
+TEST_F(RomDataViewTest, RFT_STRING)
+{
+	// Add an RFT_STRING field.
+	static const char s_field_desc[] = "RFT_STRING 0";
+	static const char s_field_value[] = "Test string! omgwtflolbbq";
+
+	RomFields *const fields = m_romData->getWritableFields();
+	fields->addField_string(s_field_desc, s_field_value);
+
+	/** Verify the GTK widgets. **/
+
+	// Create a RomDataView.
+	// TODO: Set description format type properly.
+	m_romDataView = rp_rom_data_view_new_with_romData("", m_romData, RP_DFT_GNOME);
+#if GTK_CHECK_VERSION(3, 98, 4)
+	g_object_ref_sink(m_romDataView);
+#endif /* GTK_CHECK_VERSION(3, 98, 4) */
+
+	// NOTE: For efficiency reasons, GTK RomDataView uses g_idle_add()
+	// to schedule its display update. Force it to run here.
+	ASSERT_EQ(true, rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(m_romDataView)));
+
+	// Get the widgets from the first row.
+	// Widgets will be stored in m_lblDesc and m_widgetValue.
+	ASSERT_NO_FATAL_FAILURE(getFirstRowWidgets(RP_ROM_DATA_VIEW(m_romDataView)));
+	ASSERT_TRUE(GTK_IS_LABEL(m_widgetValue));
 
 	// Verify the label contents.
 	// NOTE: Description label will have an added ':'.
@@ -253,8 +291,8 @@ TEST_F(RomDataViewTest, RFT_STRING)
 	stds_field_desc += ':';
 
 	// NOTE: Using gtk_label_get_label(), which returns mnemonics and Pango markup.
-	EXPECT_STREQ(stds_field_desc.c_str(), gtk_label_get_label(GTK_LABEL(lblDesc))) << "Field description is incorrect.";
-	EXPECT_STREQ(s_field_value, gtk_label_get_label(GTK_LABEL(lblValue))) << "Field value is incorrect.";
+	EXPECT_STREQ(stds_field_desc.c_str(), gtk_label_get_label(GTK_LABEL(m_lblDesc))) << "Field description is incorrect.";
+	EXPECT_STREQ(s_field_value, gtk_label_get_label(GTK_LABEL(m_widgetValue))) << "Field value is incorrect.";
 }
 
 /**
@@ -292,66 +330,13 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_non_sparse)
 	// to schedule its display update. Force it to run here.
 	ASSERT_EQ(true, rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(m_romDataView)));
 
-	// There shouldn't be any tabs.
-	// First child widget of RomDataView is the header row: GtkBox (GTK3+) or GtkHBox (GTK2)
-	// Second child widget of RomDataView is the GtkGrid (GTK3+) or GtkTable (GTK2)
-#if GTK_CHECK_VERSION(3, 89, 3)
-	// GTK4: Use first_child/next_sibling.
-	GtkWidget *const hboxHeaderRow = gtk_widget_get_first_child(m_romDataView);
-	ASSERT_TRUE(GTK_IS_BOX(hboxHeaderRow));
-
-	GtkWidget *const tableTab0 = gtk_widget_get_next_sibling(hboxHeaderRow);
-	ASSERT_TRUE(GTK_IS_GRID(tableTab0));
-#else /* !GTK_CHECK_VERSION(3, 89, 3) */
-	// GTK2, GTK3: Need to get the entire widget list and get the second entry.
-	m_widgetList = gtk_container_get_children(GTK_CONTAINER(m_romDataView));
-	ASSERT_NE(nullptr, m_widgetList);
-
-	GList *widgetIter = g_list_first(m_widgetList);
-	ASSERT_NE(nullptr, widgetIter);
-	GtkWidget *const hboxHeaderRow = GTK_WIDGET(widgetIter->data);
-#  if GTK_CHECK_VERSION(3, 0, 0)
-	ASSERT_TRUE(GTK_IS_BOX(hboxHeaderRow));
-#  else /* !GTK_CHECK_VERSION(3, 0, 0) */
-	ASSERT_TRUE(GTK_IS_HBOX(hboxHeaderRow));
-#  endif /* GTK_CHECK_VERSION(3, 0, 0) */
-
-	widgetIter = g_list_next(m_widgetList);
-	ASSERT_NE(nullptr, widgetIter);
-	GtkWidget *const tableTab0 = GTK_WIDGET(widgetIter->data);
-#  if GTK_CHECK_VERSION(3, 0, 0)
-	// FIXME: GtkGrid doesn't have an easy way to get the total number of
-	// rows and columns. GtkTable does...
-	ASSERT_TRUE(GTK_IS_GRID(tableTab0));
-#  else /* !GTK_CHECK_VERSION(3, 0, 0) */
-	ASSERT_TRUE(GTK_IS_TABLE(tableTab0));
-
-	// Verify the number of rows and columns in GtkTable.
-	guint table_rows = 0, table_columns = 0;
-	gtk_table_get_size(GTK_TABLE(tableTab0), &table_rows, &table_columns);
-	EXPECT_EQ(2, table_columns) << "Main table has the wrong number of columns.";
-	EXPECT_EQ(1, table_rows) << "Main table has the wrong number of rows.";
-#  endif /* GTK_CHECK_VERSION(3, 0, 0) */
-#endif /* GTK_CHECK_VERSION(3, 89, 3) */
-
+	// Get the widgets from the first row.
+	// Widgets will be stored in m_lblDesc and m_widgetValue.
+	ASSERT_NO_FATAL_FAILURE(getFirstRowWidgets(RP_ROM_DATA_VIEW(m_romDataView)));
+	GtkWidget *const gridBitfield = m_widgetValue;
 #ifdef USE_GTK_GRID
-	// Get the widgets for the first row.
-	GtkWidget *const lblDesc = gtk_grid_get_child_at(GTK_GRID(tableTab0), 0, 0);
-	ASSERT_TRUE(GTK_IS_LABEL(lblDesc));
-	GtkWidget *const gridBitfield = gtk_grid_get_child_at(GTK_GRID(tableTab0), 1, 0);
 	ASSERT_TRUE(GTK_IS_GRID(gridBitfield));
 #else /* !USE_GTK_GRID */
-	unordered_map<uint32_t, GtkWidget*> mapWidgets = gtk_table_get_widgets(GTK_TABLE(tableTab0));
-	ASSERT_FALSE(mapWidgets.empty());
-
-	auto iter = mapWidgets.find(rowColumnToDWORD(0, 0));
-	ASSERT_TRUE(iter != mapWidgets.end());
-	GtkWidget *const lblDesc = iter->second;
-	ASSERT_TRUE(GTK_IS_LABEL(lblDesc));
-
-	iter = mapWidgets.find(rowColumnToDWORD(1, 0));
-	ASSERT_TRUE(iter != mapWidgets.end());
-	GtkWidget *const gridBitfield = iter->second;
 	ASSERT_TRUE(GTK_IS_TABLE(gridBitfield));
 #endif /* USE_GTK_GRID */
 
@@ -361,7 +346,7 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_non_sparse)
 	stds_field_desc += ':';
 
 	// NOTE: Using gtk_label_get_label(), which returns mnemonics and Pango markup.
-	EXPECT_STREQ(stds_field_desc.c_str(), gtk_label_get_label(GTK_LABEL(lblDesc))) << "Field description is incorrect.";
+	EXPECT_STREQ(stds_field_desc.c_str(), gtk_label_get_label(GTK_LABEL(m_lblDesc))) << "Field description is incorrect.";
 
 	// Grid should be 4x4, since we specified 4 items per column,
 	// and we have 16 items.
@@ -379,7 +364,7 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_non_sparse)
 	EXPECT_EQ(4, rowCount) << "Bitfield table has the wrong number of rows.";
 
 	// Get the widgets.
-	mapWidgets = gtk_table_get_widgets(GTK_TABLE(gridBitfield));
+	unordered_map<uint32_t, GtkWidget*> mapWidgets = gtk_table_get_widgets(GTK_TABLE(gridBitfield));
 	ASSERT_FALSE(mapWidgets.empty());
 #endif /* USE_GTK_GRID */
 
@@ -471,66 +456,13 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_sparse)
 	// to schedule its display update. Force it to run here.
 	ASSERT_EQ(true, rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(m_romDataView)));
 
-	// There shouldn't be any tabs.
-	// First child widget of RomDataView is the header row: GtkBox (GTK3+) or GtkHBox (GTK2)
-	// Second child widget of RomDataView is the GtkGrid (GTK3+) or GtkTable (GTK2)
-#if GTK_CHECK_VERSION(3, 89, 3)
-	// GTK4: Use first_child/next_sibling.
-	GtkWidget *const hboxHeaderRow = gtk_widget_get_first_child(m_romDataView);
-	ASSERT_TRUE(GTK_IS_BOX(hboxHeaderRow));
-
-	GtkWidget *const tableTab0 = gtk_widget_get_next_sibling(hboxHeaderRow);
-	ASSERT_TRUE(GTK_IS_GRID(tableTab0));
-#else /* !GTK_CHECK_VERSION(3, 89, 3) */
-	// GTK2, GTK3: Need to get the entire widget list and get the second entry.
-	m_widgetList = gtk_container_get_children(GTK_CONTAINER(m_romDataView));
-	ASSERT_NE(nullptr, m_widgetList);
-
-	GList *widgetIter = g_list_first(m_widgetList);
-	ASSERT_NE(nullptr, widgetIter);
-	GtkWidget *const hboxHeaderRow = GTK_WIDGET(widgetIter->data);
-#  if GTK_CHECK_VERSION(3, 0, 0)
-	ASSERT_TRUE(GTK_IS_BOX(hboxHeaderRow));
-#  else /* !GTK_CHECK_VERSION(3, 0, 0) */
-	ASSERT_TRUE(GTK_IS_HBOX(hboxHeaderRow));
-#  endif /* GTK_CHECK_VERSION(3, 0, 0) */
-
-	widgetIter = g_list_next(m_widgetList);
-	ASSERT_NE(nullptr, widgetIter);
-	GtkWidget *const tableTab0 = GTK_WIDGET(widgetIter->data);
-#  if GTK_CHECK_VERSION(3, 0, 0)
-	// FIXME: GtkGrid doesn't have an easy way to get the total number of
-	// rows and columns. GtkTable does...
-	ASSERT_TRUE(GTK_IS_GRID(tableTab0));
-#  else /* !GTK_CHECK_VERSION(3, 0, 0) */
-	ASSERT_TRUE(GTK_IS_TABLE(tableTab0));
-
-	// Verify the number of rows and columns in GtkTable.
-	guint table_rows = 0, table_columns = 0;
-	gtk_table_get_size(GTK_TABLE(tableTab0), &table_rows, &table_columns);
-	EXPECT_EQ(2, table_columns) << "Main table has the wrong number of columns.";
-	EXPECT_EQ(1, table_rows) << "Main table has the wrong number of rows.";
-#  endif /* GTK_CHECK_VERSION(3, 0, 0) */
-#endif /* GTK_CHECK_VERSION(3, 89, 3) */
-
+	// Get the widgets from the first row.
+	// Widgets will be stored in m_lblDesc and m_widgetValue.
+	ASSERT_NO_FATAL_FAILURE(getFirstRowWidgets(RP_ROM_DATA_VIEW(m_romDataView)));
+	GtkWidget *const gridBitfield = m_widgetValue;
 #ifdef USE_GTK_GRID
-	// Get the widgets for the first row.
-	GtkWidget *const lblDesc = gtk_grid_get_child_at(GTK_GRID(tableTab0), 0, 0);
-	ASSERT_TRUE(GTK_IS_LABEL(lblDesc));
-	GtkWidget *const gridBitfield = gtk_grid_get_child_at(GTK_GRID(tableTab0), 1, 0);
 	ASSERT_TRUE(GTK_IS_GRID(gridBitfield));
 #else /* !USE_GTK_GRID */
-	unordered_map<uint32_t, GtkWidget*> mapWidgets = gtk_table_get_widgets(GTK_TABLE(tableTab0));
-	ASSERT_FALSE(mapWidgets.empty());
-
-	auto iter = mapWidgets.find(rowColumnToDWORD(0, 0));
-	ASSERT_TRUE(iter != mapWidgets.end());
-	GtkWidget *const lblDesc = iter->second;
-	ASSERT_TRUE(GTK_IS_LABEL(lblDesc));
-
-	iter = mapWidgets.find(rowColumnToDWORD(1, 0));
-	ASSERT_TRUE(iter != mapWidgets.end());
-	GtkWidget *const gridBitfield = iter->second;
 	ASSERT_TRUE(GTK_IS_TABLE(gridBitfield));
 #endif /* USE_GTK_GRID */
 
@@ -540,7 +472,7 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_sparse)
 	stds_field_desc += ':';
 
 	// NOTE: Using gtk_label_get_label(), which returns mnemonics and Pango markup.
-	EXPECT_STREQ(stds_field_desc.c_str(), gtk_label_get_label(GTK_LABEL(lblDesc))) << "Field description is incorrect.";
+	EXPECT_STREQ(stds_field_desc.c_str(), gtk_label_get_label(GTK_LABEL(m_lblDesc))) << "Field description is incorrect.";
 
 	// Grid should be 4x4, since we specified 4 items per column,
 	// and we have 16 items.
@@ -559,7 +491,7 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_sparse)
 	EXPECT_EQ(/*3*/ 4, rowCount) << "Bitfield table has the wrong number of rows.";
 
 	// Get the widgets.
-	mapWidgets = gtk_table_get_widgets(GTK_TABLE(gridBitfield));
+	unordered_map<uint32_t, GtkWidget*> mapWidgets = gtk_table_get_widgets(GTK_TABLE(gridBitfield));
 	ASSERT_FALSE(mapWidgets.empty());
 #endif /* USE_GTK_GRID */
 
