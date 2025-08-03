@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "config.libsecure.h"
+#include "config.librpsecure.h"
 
 #ifdef ENABLE_SECCOMP_DEBUG
 
