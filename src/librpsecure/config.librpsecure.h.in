@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpsecure)                      *
  * config.librpsecure.h.in: librpsecure configuration. (source file)       *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,6 +19,9 @@
 
 /* Define to 1 if you have the Linux `seccomp` library. */
 #cmakedefine HAVE_SECCOMP 1
+
+/* Define to 1 if seccomp debugging should be enabled. */
+#cmakedefine ENABLE_SECCOMP_DEBUG 1
 
 /* Define to 1 to enable extra security functionality. */
 #cmakedefine ENABLE_EXTRA_SECURITY 1

@@ -2,15 +2,13 @@
  * ROM Properties Page shell extension. (librpsecure)                      *
  * seccomp-debug.c: Linux seccomp debug functionality.                     *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#ifndef NDEBUG
-#  define ENABLE_SECCOMP_DEBUG 1
-#endif /* !NDEBUG */
+#include "config.libspecure.h"
 
 #ifdef ENABLE_SECCOMP_DEBUG
 

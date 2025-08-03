@@ -27,6 +27,7 @@ IF(ENABLE_EXTRA_SECURITY)
 		# Check for system security functionality.
 		IF(CMAKE_SYSTEM MATCHES "Linux")
 			# Linux: Use seccomp().
+			OPTION(ENABLE_SECCOMP_DEBUG "Enable seccomp debugging. (DO NOT USE IN PRODUCTION)" OFF)
 			FIND_PACKAGE(SECCOMP REQUIRED)
 			IF(SECCOMP_FOUND)
 				SET(${PROJECT_NAME}_OS_SRCS os-secure_linux.c seccomp-debug.c)
