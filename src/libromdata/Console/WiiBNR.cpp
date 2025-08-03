@@ -79,7 +79,10 @@ WiiBNRPrivate::WiiBNRPrivate(const IRpFilePtr &file, uint32_t gcnRegion, char id
 	: super(file, &romDataInfo)
 	, gcnRegion(gcnRegion)
 	, id4_region(id4_region)
-{}
+{
+	// Clear the structs.
+	memset(&imet, 0, sizeof(imet));
+}
 
 /** WiiBNR **/
 
