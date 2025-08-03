@@ -2,13 +2,12 @@
  * ROM Properties Page shell extension. (win32/tests)                      *
  * RomDataFormatTest.cpp: RomDataFormat tests                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Google Test
-#include "gtest/gtest.h"
-#include "tcharx.h"
+#include "gtest_init.hpp"
 
 // RomFields (for RFT_DATETIME format flags)
 #include "librpbase/RomFields.hpp"
@@ -21,7 +20,7 @@ using LibRpBase::RomFields;
 using std::array;
 using std::tstring;
 
-namespace LibRomData { namespace Tests {
+namespace RomPropertiesWin32 { namespace Tests {
 
 class RomDataFormatTest : public ::testing::Test
 {
@@ -284,6 +283,14 @@ TEST_F(RomDataFormatTest, formatDimensions)
 }
 
 } }
+
+#ifdef HAVE_SECCOMP
+#  ifndef NDEBUG
+const unsigned int rp_gtest_syscall_set = RP_GTEST_SYSCALL_SET_GTEST_DEATH_TEST;
+#  else /* !NDEBUG */
+const unsigned int rp_gtest_syscall_set = 0;
+#  endif /* NDEBUG */
+#endif /* HAVE_SECCOMP */
 
 /**
  * Test suite main function.

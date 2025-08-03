@@ -344,17 +344,17 @@ public:
 };
 
 
-JSONROMOutput::JSONROMOutput(const RomData *romdata, unsigned int flags)
-	: romdata(romdata)
+JSONROMOutput::JSONROMOutput(const RomData *romData, unsigned int flags)
+	: romData(romData)
 	, flags(flags)
 	, crlf_(false) { }
 RP_LIBROMDATA_PUBLIC
 std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
-	const auto *const romdata = fo.romdata;
-	assert(romdata && romdata->isValid());
+	const auto *const romData = fo.romData;
+	assert(romData && romData->isValid());
 
-	const char *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
-	const char *const fileType = romdata->fileType_string();
+	const char *const systemName = romData->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
+	const char *const fileType = romData->fileType_string();
 	assert(systemName != nullptr);
 	assert(fileType != nullptr);
 
@@ -365,7 +365,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	document.AddMember("filetype", StringRef(fileType ? fileType : "unknown"), allocator);
 
 	// Fields
-	const RomFields *const fields = romdata->fields();
+	const RomFields *const fields = romData->fields();
 	assert(fields != nullptr);
 	if (fields) {
 		Value fields_array(kArrayType);	// fields
@@ -375,7 +375,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 		}
 	}
 
-	const uint32_t imgbf = romdata->supportedImageTypes();
+	const uint32_t imgbf = romData->supportedImageTypes();
 	if (imgbf != 0) {
 		if (!(fo.flags & OF_SkipInternalImages)) {
 			// Internal images
@@ -385,7 +385,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 				if (!(imgbf & (1U << i)))
 					continue;
 
-				auto image = romdata->image(static_cast<RomData::ImageType>(i));
+				auto image = romData->image(static_cast<RomData::ImageType>(i));
 				if (!image || !image->isValid())
 					continue;
 
@@ -398,13 +398,13 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 				size_array.PushBack(image->height(), allocator);
 				imgint_obj.AddMember("size", size_array, allocator);
 
-				const uint32_t ppf = romdata->imgpf(static_cast<RomData::ImageType>(i));
+				const uint32_t ppf = romData->imgpf(static_cast<RomData::ImageType>(i));
 				if (ppf) {
 					imgint_obj.AddMember("postprocessing", ppf, allocator);
 				}
 
 				if (ppf & RomData::IMGPF_ICON_ANIMATED) {
-					auto animdata = romdata->iconAnimData();
+					auto animdata = romData->iconAnimData();
 					if (animdata) {
 						imgint_obj.AddMember("frames", animdata->count, allocator);
 
@@ -443,7 +443,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 			extURLs.clear();	// NOTE: May not be needed...
 			// TODO: Customize the image size parameter?
 			// TODO: Option to retrieve supported image size?
-			int ret = romdata->extURLs(static_cast<RomData::ImageType>(i), extURLs, RomData::IMAGE_SIZE_DEFAULT);
+			int ret = romData->extURLs(static_cast<RomData::ImageType>(i), extURLs, RomData::IMAGE_SIZE_DEFAULT);
 			if (ret != 0 || extURLs.empty())
 				continue;
 

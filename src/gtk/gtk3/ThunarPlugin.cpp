@@ -6,8 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.gtk.h"
+#include "rp_log_domain.h"
+
 #include "ThunarPlugin.hpp"
 
 #include "AchGDBus.hpp"

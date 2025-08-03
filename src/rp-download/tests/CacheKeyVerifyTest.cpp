@@ -2,13 +2,12 @@
  * ROM Properties Page shell extension. (rp-download/tests)                *
  * CacheKeyVerifyTest.cpp: CacheKeyVerify test.                            *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Google Test
-#include "gtest/gtest.h"
-#include "tcharx.h"
+#include "gtest_init.hpp"
 
 // CacheKeyVerify
 #include "../CacheKeyVerify.hpp"
@@ -124,6 +123,10 @@ INSTANTIATE_TEST_SUITE_P(InvalidCacheKeys, CacheKeyVerifyTest,
 	);
 
 } }
+
+#ifdef HAVE_SECCOMP
+const unsigned int rp_gtest_syscall_set = 0;
+#endif /* HAVE_SECCOMP */
 
 /**
  * Test suite main function

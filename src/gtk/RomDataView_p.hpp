@@ -25,7 +25,6 @@ namespace LibRpBase {
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_BOX
-#  define USE_GTK_GRID 1	// Use GtkGrid instead of GtkTable.
 #else /* !GTK_CHECK_VERSION(3, 0, 0) */
 typedef GtkVBoxClass superclass;
 typedef GtkVBox super;

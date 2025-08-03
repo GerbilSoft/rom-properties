@@ -9,8 +9,7 @@
 #include "config.librpbase.h"
 
 // Google Test
-#include "gtest/gtest.h"
-#include "tcharx.h"
+#include "gtest_init.hpp"
 
 // CBCReader
 #include "../disc/CBCReader.hpp"
@@ -385,6 +384,10 @@ INSTANTIATE_TEST_SUITE_P(CBCReaderTest, CBCReaderTest,
 #endif /* ENABLE_DECRYPTION */
 
 } }
+
+#ifdef HAVE_SECCOMP
+const unsigned int rp_gtest_syscall_set = 0;
+#endif /* HAVE_SECCOMP */
 
 /**
  * Test suite main function.

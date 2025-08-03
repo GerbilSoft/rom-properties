@@ -7,8 +7,7 @@
  ***************************************************************************/
 
 // Google Test
-#include "gtest/gtest.h"
-#include "tcharx.h"
+#include "gtest_init.hpp"
 
 // timegm() and/or replacement function.
 #include "time_r.h"
@@ -220,6 +219,10 @@ TEST(TimegmTest, gcnEpochTest)
 }
 
 } }
+
+#ifdef HAVE_SECCOMP
+const unsigned int rp_gtest_syscall_set = 0;
+#endif /* HAVE_SECCOMP */
 
 /**
  * Test suite main function.

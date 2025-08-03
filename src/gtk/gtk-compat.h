@@ -29,6 +29,11 @@ gtk_widget_get_window(GtkWidget *widget)
 
 /** Functions added in GTK+ 3.0.0 **/
 
+#if GTK_CHECK_VERSION(2, 91, 2)
+// GtkGrid was added in GTK+ 2.91.2.
+#  define USE_GTK_GRID 1
+#endif /* GTK_CHECK_VERSION(2, 91, 2) */
+
 #if !GTK_CHECK_VERSION(2, 91, 6)
 static inline GtkWidget*
 gtk_tree_view_column_get_button(GtkTreeViewColumn *tree_column)

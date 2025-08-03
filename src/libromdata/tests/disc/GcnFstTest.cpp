@@ -10,8 +10,7 @@
 #include "config.librpbase.h"
 
 // Google Test
-#include "gtest/gtest.h"
-#include "tcharx.h"
+#include "gtest_init.hpp"
 
 // MiniZip
 #include <zlib.h>
@@ -600,6 +599,10 @@ INSTANTIATE_TEST_SUITE_P(Wii, GcnFstTest,
 	, GcnFstTest::test_case_suffix_generator);
 
 } }
+
+#ifdef HAVE_SECCOMP
+const unsigned int rp_gtest_syscall_set = 0;
+#endif /* HAVE_SECCOMP */
 
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {

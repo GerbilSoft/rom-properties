@@ -34,7 +34,24 @@ namespace LibRpBase {
 class klass##Private; \
 class klass final : public LibRpBase::RomData { \
 private: \
-	typedef RomData super; \
+	typedef LibRpBase::RomData super; \
+	friend class klass##Private; \
+	RP_DISABLE_COPY(klass); \
+
+/**
+ * Initial declaration for an exported RomData subclass.
+ * NOTE: This should *only* be used for RomDataTestObject.
+ *
+ * No constructor is included with this version.
+ * ROMDATA_DECL_COMMON_FNS() must be used afterwards.
+ *
+ * @param klass Class name
+ */
+#define ROMDATA_DECL_BEGIN_NO_CTOR_EXPORT(klass) \
+class klass##Private; \
+class RP_LIBROMDATA_PUBLIC klass final : public LibRpBase::RomData { \
+private: \
+	typedef LibRpBase::RomData super; \
 	friend class klass##Private; \
 	RP_DISABLE_COPY(klass); \
 
@@ -85,10 +102,16 @@ public: \
 	const char *systemName(unsigned int type) const final; \
 \
 	/** \
-	 * Get the static RomDataInfo for this class. \
-	 * @return Static RomDataInfo \
+	 * Get the RomDataInfo for this class. \
+	 * @return RomDataInfo \
 	 */ \
-	static const LibRpBase::RomDataInfo *romDataInfo(void); \
+	static const LibRpBase::RomDataInfo *romDataInfo_static(void); \
+\
+	/** \
+	 * Get the RomDataInfo for this object. \
+	 * @return RomDataInfo \
+	 */ \
+	const LibRpBase::RomDataInfo *romDataInfo(void) const final; \
 \
 protected: \
 	/** \
@@ -106,6 +129,17 @@ protected: \
  */
 #define ROMDATA_DECL_BEGIN(klass) \
 ROMDATA_DECL_BEGIN_NO_CTOR(klass) \
+ROMDATA_DECL_CTOR_DEFAULT(klass) \
+ROMDATA_DECL_COMMON_FNS()
+
+/**
+ * Initial declaration for an exported RomData subclass.
+ * NOTE: This should *only* be used for RomDataTestObject.
+ * Declares functions common to all RomData subclasses.
+ * @param klass Class name
+ */
+#define ROMDATA_DECL_BEGIN_EXPORT(klass) \
+ROMDATA_DECL_BEGIN_NO_CTOR_EXPORT(klass) \
 ROMDATA_DECL_CTOR_DEFAULT(klass) \
 ROMDATA_DECL_COMMON_FNS()
 
@@ -236,6 +270,7 @@ public: \
 	 * @param pImage	[out] Reference to rp_image_const_ptr to store the image in. \
 	 * @return 0 on success; negative POSIX error code on error. \
 	 */ \
+	RP_LIBROMDATA_LOCAL \
 	int loadInternalImage(ImageType imageType, LibRpTexture::rp_image_const_ptr &pImage) final;
 
 /**
@@ -254,6 +289,7 @@ public: \
 	 * @param pImage	[out] Reference to rp_image_const_ptr to store the image in. \
 	 * @return 0 on success; negative POSIX error code on error. \
 	 */ \
+	RP_LIBROMDATA_LOCAL \
 	int loadInternalMipmap(int mipmapLevel, LibRpTexture::rp_image_const_ptr &pImage) final;
 
 /**
@@ -373,10 +409,19 @@ int klass::isRomSupported(const DetectInfo *info) const \
 } \
 \
 /** \
- * Get the static RomDataInfo for this class. \
- * @return Static RomDataInfo \
+ * Get the RomDataInfo for this class. \
+ * @return RomDataInfo \
  */ \
-const LibRpBase::RomDataInfo *klass::romDataInfo(void) \
+const LibRpBase::RomDataInfo *klass::romDataInfo_static(void) \
+{ \
+	return &klass##Private::romDataInfo; \
+} \
+\
+/** \
+ * Get the RomDataInfo for this object. \
+ * @return RomDataInfo \
+ */ \
+const LibRpBase::RomDataInfo *klass::romDataInfo(void) const \
 { \
 	return &klass##Private::romDataInfo; \
 }

@@ -20,11 +20,16 @@ IF(NOT WIN32)
 ENDIF(NOT WIN32)
 
 # librptest library
-ADD_LIBRARY(rptest STATIC gtest_init.cpp)
+ADD_LIBRARY(rptest STATIC gtest_init.cpp gtest_init.hpp)
 TARGET_LINK_LIBRARIES(rptest PUBLIC rpsecure)
 # librptest doesn't use gtest directly, but all tests do,
 # so add it with interface linkage.
+# NOTE: The include path is still needed because gtest_init.hpp includes "gtest/gtest.h".
 TARGET_LINK_LIBRARIES(rptest INTERFACE gtest)
+TARGET_INCLUDE_DIRECTORIES(rptest
+	PUBLIC  "${CMAKE_CURRENT_SOURCE_DIR}"
+	PRIVATE "${CMAKE_SOURCE_DIR}/extlib/googletest/googletest/include"
+	)
 # librptest *does* use libfmt directly, as do most tests.
 # Add it with public linkage.
 IF(Fmt_FOUND)

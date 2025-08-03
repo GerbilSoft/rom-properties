@@ -10,8 +10,7 @@
  ***************************************************************************/
 
 // Google Test
-#include "gtest/gtest.h"
-#include "tcharx.h"
+#include "gtest_init.hpp"
 
 // For .tar.zst
 #include "microtar_zstd.h"
@@ -694,6 +693,10 @@ INSTANTIATE_TEST_SUITE_P(DirectDrawSurface, RomHeaderTest,
 	, RomHeaderTest::test_case_suffix_generator);
 
 } }
+
+#ifdef HAVE_SECCOMP
+const unsigned int rp_gtest_syscall_set = 0;
+#endif /* HAVE_SECCOMP */
 
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {

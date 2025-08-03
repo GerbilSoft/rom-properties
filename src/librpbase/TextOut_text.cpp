@@ -980,15 +980,15 @@ public:
 };
 
 
-ROMOutput::ROMOutput(const RomData *romdata, uint32_t lc, unsigned int flags)
-	: romdata(romdata)
+ROMOutput::ROMOutput(const RomData *romData, uint32_t lc, unsigned int flags)
+	: romData(romData)
 	, lc(lc)
 	, flags(flags) { }
 RP_LIBROMDATA_PUBLIC
 std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
-	const auto *const romdata = fo.romdata;
-	const char *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
-	const char *const fileType = romdata->fileType_string();
+	const auto *const romData = fo.romData;
+	const char *const systemName = romData->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
+	const char *const fileType = romData->fileType_string();
 	assert(systemName != nullptr);
 	assert(fileType != nullptr);
 
@@ -1003,13 +1003,13 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	}
 
 	// Fields
-	const RomFields *const fields = romdata->fields();
+	const RomFields *const fields = romData->fields();
 	assert(fields != nullptr);
 	if (fields) {
 		os << FieldsOutput(*fields, fo.lc, fo.flags) << '\n';
 	}
 
-	const uint32_t imgbf = romdata->supportedImageTypes();
+	const uint32_t imgbf = romData->supportedImageTypes();
 	if (imgbf != 0) {
 		// Internal images
 		if (!(fo.flags & OF_SkipInternalImages)) {
@@ -1018,7 +1018,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 					continue;
 				}
 
-				auto image = romdata->image(static_cast<RomData::ImageType>(i));
+				auto image = romData->image(static_cast<RomData::ImageType>(i));
 				if (image && image->isValid()) {
 					// tr: Image Type name, followed by Image Type ID
 					os << "-- " << fmt::format(FRUN(C_("TextOut", "{0:s} is present (use -x{1:d} to extract)")),
@@ -1026,7 +1026,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 					// TODO: After localizing, add enough spaces for alignment.
 					os << "   Format : " << rp_image::getFormatName(image->format()) << '\n';
 					os << "   Size   : " << image->width() << " x " << image->height() << '\n';
-					if (romdata->imgpf(static_cast<RomData::ImageType>(i))  & RomData::IMGPF_ICON_ANIMATED) {
+					if (romData->imgpf(static_cast<RomData::ImageType>(i))  & RomData::IMGPF_ICON_ANIMATED) {
 						os << "   " << C_("TextOut", "Animated icon is present (use -a to extract)") << '\n';
 					}
 				}
@@ -1048,7 +1048,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 			extURLs.clear();	// NOTE: May not be needed...
 			// TODO: Customize the image size parameter?
 			// TODO: Option to retrieve supported image size?
-			int ret = romdata->extURLs(static_cast<RomData::ImageType>(i), extURLs, RomData::IMAGE_SIZE_DEFAULT);
+			int ret = romData->extURLs(static_cast<RomData::ImageType>(i), extURLs, RomData::IMAGE_SIZE_DEFAULT);
 			if (ret != 0 || extURLs.empty()) {
 				continue;
 			}

@@ -7,8 +7,7 @@
  ***************************************************************************/
 
 // Google Test
-#include "gtest/gtest.h"
-#include "tcharx.h"
+#include "gtest_init.hpp"
 
 // GTK
 #include "gtk-compat.h"
@@ -33,7 +32,7 @@ using std::string;
 // Test data
 #include "SortFuncsTest_data.h"
 
-namespace LibRomData { namespace Tests {
+namespace RomPropertiesGTK { namespace Tests {
 
 class SortFuncsTest_gtk3 : public ::testing::Test
 {
@@ -162,6 +161,10 @@ TEST_F(SortFuncsTest_gtk3, descendingSort)
 }
 
 } }
+
+#ifdef HAVE_SECCOMP
+const unsigned int rp_gtest_syscall_set = 0;
+#endif /* HAVE_SECCOMP */
 
 /**
  * Test suite main function.

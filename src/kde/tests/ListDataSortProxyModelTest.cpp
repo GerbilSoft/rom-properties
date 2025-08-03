@@ -7,8 +7,7 @@
  ***************************************************************************/
 
 // Google Test
-#include "gtest/gtest.h"
-#include "tcharx.h"
+#include "gtest_init.hpp"
 
 // RpQImageBackend
 #include "RpQt.hpp"
@@ -30,7 +29,7 @@ using LibRpBase::RomFields;
 using std::string;
 using std::vector;
 
-namespace LibRomData { namespace Tests {
+namespace RomPropertiesKDE { namespace Tests {
 
 class ListDataSortProxyModelTest : public ::testing::Test
 {
@@ -238,6 +237,10 @@ TEST_F(ListDataSortProxyModelTest, descendingSort)
 }
 
 } }
+
+#ifdef HAVE_SECCOMP
+const unsigned int rp_gtest_syscall_set = 0;
+#endif /* HAVE_SECCOMP */
 
 /**
  * Test suite main function.

@@ -7,8 +7,7 @@
  ***************************************************************************/
 
 // Google Test
-#include "gtest/gtest.h"
-#include "tcharx.h"
+#include "gtest_init.hpp"
 
 // TextFuncs
 #include "../conversion.hpp"
@@ -1392,6 +1391,10 @@ TEST_F(TextFuncsTest, fourCCtoString_string)
 }
 
 } }
+
+#ifdef HAVE_SECCOMP
+const unsigned int rp_gtest_syscall_set = 0;
+#endif /* HAVE_SECCOMP */
 
 /**
  * Test suite main function.

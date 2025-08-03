@@ -51,6 +51,7 @@ protected:
 	 */
 	explicit RomData(RomDataPrivate *d);
 public:
+	RP_LIBROMDATA_PUBLIC
 	virtual ~RomData();
 
 private:
@@ -171,6 +172,12 @@ public:
 	 * @return System name, or nullptr if type is invalid.
 	 */
 	virtual const char *systemName(unsigned int type) const = 0;
+
+	/**
+	 * Get the RomDataInfo for this class.
+	 * @return RomDataInfo
+	 */
+	virtual const LibRpBase::RomDataInfo *romDataInfo(void) const = 0;
 
 	/**
 	 * Get the class name for the user configuration.

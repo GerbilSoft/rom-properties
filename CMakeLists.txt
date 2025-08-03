@@ -79,9 +79,13 @@ SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib" CACHE INTERNAL "Put
 SET(CMAKE_LINK_DEPENDS_NO_SHARED ON)
 
 # Enable testing.
-# TODO: INCLUDE(CTest) for more advanced testing after
-# enough tests are added.
-ENABLE_TESTING()
+INCLUDE(CTest)
+IF(BUILD_TESTING)
+	ENABLE_TESTING()
+	IF(USE_XVFB)
+		FIND_PROGRAM(XVFB_RUN xvfb-run REQUIRED)
+	ENDIF(USE_XVFB)
+ENDIF(BUILD_TESTING)
 
 # Set the standards versions. (Minimum C11, C++14)
 # C17 was added in CMake 3.21; for older versions, use C11.

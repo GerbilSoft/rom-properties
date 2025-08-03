@@ -2,13 +2,12 @@
  * ROM Properties Page shell extension. (librpbyteswap/tests)              *
  * ByteswapTest.cpp: Byteswap functions test.                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Google Test
-#include "gtest/gtest.h"
-#include "tcharx.h"
+#include "gtest_init.hpp"
 
 // Byteswap functions.
 #include "librpbyteswap/byteswap_rp.h"
@@ -444,6 +443,10 @@ DO_ARRAY_32_BENCHMARK		(dispatch, 4, true, "")
 #endif /* BYTESWAP_HAS_MMX || BYTESWAP_HAS_SSE2 || BYTESWAP_HAS_SSSE3 || BYTESWAP_HAS_NEON */
 
 } }
+
+#ifdef HAVE_SECCOMP
+const unsigned int rp_gtest_syscall_set = 0;
+#endif /* HAVE_SECCOMP */
 
 /**
  * Test suite main function.

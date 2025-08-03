@@ -11,8 +11,7 @@
 #include "config.librptexture.h"
 
 // Google Test
-#include "gtest/gtest.h"
-#include "tcharx.h"
+#include "gtest_init.hpp"
 
 // zlib and libpng
 #include <zlib.h>
@@ -2062,6 +2061,10 @@ INSTANTIATE_TEST_SUITE_P(Qoi, ImageDecoderTest,
 // TODO: NPOT tests for compressed formats. (partial block sizes)
 
 } }
+
+#ifdef HAVE_SECCOMP
+const unsigned int rp_gtest_syscall_set = 0;
+#endif /* HAVE_SECCOMP */
 
 /**
  * Test suite main function.

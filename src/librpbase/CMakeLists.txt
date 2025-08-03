@@ -31,6 +31,7 @@ SET(${PROJECT_NAME}_SRCS
 	RomData.cpp
 	RomFields.cpp
 	RomMetaData.cpp
+	RomDataTestObject.cpp
 	SystemRegion.cpp
 	TextOut_common.cpp
 	TextOut_text.cpp
@@ -60,6 +61,7 @@ SET(${PROJECT_NAME}_H
 	RomData_p.hpp
 	RomFields.hpp
 	RomMetaData.hpp
+	RomDataTestObject.hpp
 	SystemRegion.hpp
 	TextOut.hpp
 	Achievements.hpp
