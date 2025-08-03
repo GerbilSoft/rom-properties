@@ -125,7 +125,7 @@ protected:
 	 * NOTE: Cannot return a value from this function due to
 	 * how Google Test functions.
 	 *
-	 * @param RomDataView
+	 * @param romDataView RpRomDataView
 	 */
 	void getFirstRowWidgets(RpRomDataView *romDataView);
 
