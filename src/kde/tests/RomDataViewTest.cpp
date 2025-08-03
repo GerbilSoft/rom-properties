@@ -49,6 +49,8 @@ class RomDataViewTest : public ::testing::Test
 protected:
 	RomDataViewTest()
 		: m_vectorFile(std::make_shared<VectorFile>(VECTOR_FILE_SIZE))
+		, m_lblDesc(nullptr)
+		, m_widgetValue(nullptr)
 	{ }
 
 public:
@@ -64,12 +66,33 @@ protected:
 
 	// RomDataView
 	unique_ptr<RomDataView> m_romDataView;
+
+	/**
+	 * Get the widgets from the first row in RomDataView.
+	 * Widgets will be returned in m_lblDesc and m_widgetValue.
+	 *
+	 * NOTE: Cannot return a value from this function due to
+	 * how Google Test functions.
+	 *
+	 * @param romDataView RomDataView
+	 */
+	void getFirstRowWidgets(RomDataView *romDataView);
+
+	QLabel *m_lblDesc;
+	union {
+		QWidget *m_widgetValue;
+		QLayout *m_layoutValue;
+	};
 };
 
 void RomDataViewTest::SetUp()
 {
 	m_vectorFile->resize(VECTOR_FILE_SIZE);
 	m_romData = std::make_shared<RomDataTestObject>(m_vectorFile);
+
+	// May be used by getFirstRowWidgets().
+	m_lblDesc = nullptr;
+	m_widgetValue = nullptr;
 }
 
 void RomDataViewTest::TearDown()
@@ -77,6 +100,42 @@ void RomDataViewTest::TearDown()
 	m_romDataView.reset();
 	m_romData.reset();
 	m_vectorFile->clear();
+}
+
+/**
+ * Get the widgets from the first row in RomDataView.
+ * @param RomDataView
+ * @return pair<GtkWidget*, GtkWidget*>
+ */
+void RomDataViewTest::getFirstRowWidgets(RomDataView *romDataView)
+{
+	// Initialize the widgets to nullptr before doing anything else.
+	m_lblDesc = nullptr;
+	m_widgetValue = nullptr;
+
+	// There shouldn't be any tabs.
+	// Get the first VBox and form layout.
+	QVBoxLayout *const vboxTab0 = findDirectChild<QVBoxLayout*>(romDataView, QLatin1String("vboxTab0"));
+	ASSERT_NE(nullptr, vboxTab0);
+	QFormLayout *const formTab0 = findDirectChild<QFormLayout*>(vboxTab0, QLatin1String("formTab0"));
+	ASSERT_NE(nullptr, formTab0);
+
+	// Get the layout items for the first row.
+	QLayoutItem *const itemDesc = formTab0->itemAt(0, QFormLayout::LabelRole);
+	ASSERT_NE(nullptr, itemDesc);
+	QLayoutItem *const itemValue = formTab0->itemAt(0, QFormLayout::FieldRole);
+	ASSERT_NE(nullptr, itemValue);
+
+	// Get the widgets from the first row.
+	// Widgets will be stored in m_lblDesc and m_widgetValue.
+	m_lblDesc = qobject_cast<QLabel*>(itemDesc->widget());
+	ASSERT_NE(nullptr, m_lblDesc);
+	m_widgetValue = itemValue->widget();
+	if (!m_widgetValue) {
+		m_layoutValue = itemValue->layout();
+		ASSERT_NE(nullptr, m_layoutValue);
+	}
+	ASSERT_NE(nullptr, m_widgetValue);
 }
 
 /**
@@ -95,24 +154,8 @@ TEST_F(RomDataViewTest, RFT_STRING)
 
 	// Create a RomDataView.
 	m_romDataView.reset(new RomDataView(m_romData));
-
-	// There shouldn't be any tabs.
-	// Get the first VBox and form layout.
-	QVBoxLayout *const vboxTab0 = findDirectChild<QVBoxLayout*>(m_romDataView.get(), QLatin1String("vboxTab0"));
-	ASSERT_NE(nullptr, vboxTab0);
-	QFormLayout *const formTab0 = findDirectChild<QFormLayout*>(vboxTab0, QLatin1String("formTab0"));
-	ASSERT_NE(nullptr, formTab0);
-
-	// Get the layout items for the first row.
-	QLayoutItem *const itemDesc = formTab0->itemAt(0, QFormLayout::LabelRole);
-	ASSERT_NE(nullptr, itemDesc);
-	QLayoutItem *const itemValue = formTab0->itemAt(0, QFormLayout::FieldRole);
-	ASSERT_NE(nullptr, itemValue);
-
-	// Both the description and value widgets should be QLabel.
-	QLabel *const lblDesc = qobject_cast<QLabel*>(itemDesc->widget());
-	ASSERT_NE(nullptr, lblDesc);
-	QLabel *const lblValue = qobject_cast<QLabel*>(itemValue->widget());
+	ASSERT_NO_FATAL_FAILURE(getFirstRowWidgets(m_romDataView.get()));
+	QLabel *const lblValue = qobject_cast<QLabel*>(m_widgetValue);
 	ASSERT_NE(nullptr, lblValue);
 
 	// Verify the label contents.
@@ -120,7 +163,7 @@ TEST_F(RomDataViewTest, RFT_STRING)
 	QString qs_field_desc = QLatin1String(s_field_desc);
 	qs_field_desc += QChar(L':');
 
-	EXPECT_EQ(qs_field_desc, lblDesc->text()) << "Field description is incorrect.";
+	EXPECT_EQ(qs_field_desc, m_lblDesc->text()) << "Field description is incorrect.";
 	EXPECT_EQ(QLatin1String(s_field_value), lblValue->text()) << "Field value is incorrect.";
 }
 
@@ -150,44 +193,26 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_non_sparse)
 
 	// Create a RomDataView.
 	m_romDataView.reset(new RomDataView(m_romData));
-
-	// There shouldn't be any tabs.
-	// Get the first VBox and form layout.
-	QVBoxLayout *const vboxTab0 = findDirectChild<QVBoxLayout*>(m_romDataView.get(), QLatin1String("vboxTab0"));
-	ASSERT_NE(nullptr, vboxTab0);
-	QFormLayout *const formTab0 = findDirectChild<QFormLayout*>(vboxTab0, QLatin1String("formTab0"));
-	ASSERT_NE(nullptr, formTab0);
-
-	// Get the layout items for the first row.
-	QLayoutItem *const itemDesc = formTab0->itemAt(0, QFormLayout::LabelRole);
-	ASSERT_NE(nullptr, itemDesc);
-	QLayoutItem *const itemValue = formTab0->itemAt(0, QFormLayout::FieldRole);
-	ASSERT_NE(nullptr, itemValue);
-
-	// Label should be QLabel.
-	QLabel *const lblDesc = qobject_cast<QLabel*>(itemDesc->widget());
-	ASSERT_NE(nullptr, lblDesc);
+	ASSERT_NO_FATAL_FAILURE(getFirstRowWidgets(m_romDataView.get()));
+	QGridLayout *const gridBitfield = qobject_cast<QGridLayout*>(m_layoutValue);
+	ASSERT_NE(nullptr, gridBitfield);
 
 	// Verify the label contents.
 	// NOTE: Description label will have an added ':'.
 	QString qs_field_desc = QLatin1String(s_field_desc);
 	qs_field_desc += QChar(L':');
-	EXPECT_EQ(qs_field_desc, lblDesc->text()) << "Field description is incorrect.";
-
-	// The value item will be a QGridLayout.
-	QGridLayout *const gridLayout = qobject_cast<QGridLayout*>(itemValue->layout());
-	ASSERT_NE(nullptr, gridLayout);
+	EXPECT_EQ(qs_field_desc, m_lblDesc->text()) << "Field description is incorrect.";
 
 	// Grid should be 4x4, since we specified 4 items per column,
 	// and we have 16 items.
-	EXPECT_EQ(4, gridLayout->columnCount());
-	EXPECT_EQ(4, gridLayout->rowCount());
+	EXPECT_EQ(4, gridBitfield->columnCount());
+	EXPECT_EQ(4, gridBitfield->rowCount());
 
 	// Go through each item.
 	unsigned int bit = 0;
 	int row = 0, col = 0;
-	const int rowCount = gridLayout->rowCount();
-	const int columnCount = gridLayout->columnCount();
+	const int rowCount = gridBitfield->rowCount();
+	const int columnCount = gridBitfield->columnCount();
 	for (; row < rowCount && bit < bitfield_names.size(); bit++) {
 		const char *const name = bitfield_names[bit];
 		EXPECT_NE(nullptr, name);
@@ -197,7 +222,7 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_non_sparse)
 			continue;
 		}
 
-		QLayoutItem *const layoutItem = gridLayout->itemAtPosition(row, col);
+		QLayoutItem *const layoutItem = gridBitfield->itemAtPosition(row, col);
 		EXPECT_NE(nullptr, layoutItem);
 		if (!layoutItem) {
 			continue;
@@ -256,45 +281,27 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_sparse)
 
 	// Create a RomDataView.
 	m_romDataView.reset(new RomDataView(m_romData));
-
-	// There shouldn't be any tabs.
-	// Get the first VBox and form layout.
-	QVBoxLayout *const vboxTab0 = findDirectChild<QVBoxLayout*>(m_romDataView.get(), QLatin1String("vboxTab0"));
-	ASSERT_NE(nullptr, vboxTab0);
-	QFormLayout *const formTab0 = findDirectChild<QFormLayout*>(vboxTab0, QLatin1String("formTab0"));
-	ASSERT_NE(nullptr, formTab0);
-
-	// Get the layout items for the first row.
-	QLayoutItem *const itemDesc = formTab0->itemAt(0, QFormLayout::LabelRole);
-	ASSERT_NE(nullptr, itemDesc);
-	QLayoutItem *const itemValue = formTab0->itemAt(0, QFormLayout::FieldRole);
-	ASSERT_NE(nullptr, itemValue);
-
-	// Label should be QLabel.
-	QLabel *const lblDesc = qobject_cast<QLabel*>(itemDesc->widget());
-	ASSERT_NE(nullptr, lblDesc);
+	ASSERT_NO_FATAL_FAILURE(getFirstRowWidgets(m_romDataView.get()));
+	QGridLayout *const gridBitfield = qobject_cast<QGridLayout*>(m_layoutValue);
+	ASSERT_NE(nullptr, gridBitfield);
 
 	// Verify the label contents.
 	// NOTE: Description label will have an added ':'.
 	QString qs_field_desc = QLatin1String(s_field_desc);
 	qs_field_desc += QChar(L':');
-	EXPECT_EQ(qs_field_desc, lblDesc->text()) << "Field description is incorrect.";
-
-	// The value item will be a QGridLayout.
-	QGridLayout *const gridLayout = qobject_cast<QGridLayout*>(itemValue->layout());
-	ASSERT_NE(nullptr, gridLayout);
+	EXPECT_EQ(qs_field_desc, m_lblDesc->text()) << "Field description is incorrect.";
 
 	// Grid should be 4x3, since we specified 4 items per column,
 	// and we have 16 items; however, 5 have nullptr descriptions,
 	// so we'll only have 3 rows.
-	EXPECT_EQ(4, gridLayout->columnCount());
-	EXPECT_EQ(3, gridLayout->rowCount());
+	EXPECT_EQ(4, gridBitfield->columnCount());
+	EXPECT_EQ(3, gridBitfield->rowCount());
 
 	// Go through each item.
 	unsigned int bit = 0;
 	int row = 0, col = 0;
-	const int rowCount = gridLayout->rowCount();
-	const int columnCount = gridLayout->columnCount();
+	const int rowCount = gridBitfield->rowCount();
+	const int columnCount = gridBitfield->columnCount();
 	for (; row < rowCount && bit < bitfield_names.size(); bit++) {
 		const char *const name = bitfield_names[bit];
 		if (!name) {
@@ -303,7 +310,7 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_sparse)
 			continue;
 		}
 
-		QLayoutItem *const layoutItem = gridLayout->itemAtPosition(row, col);
+		QLayoutItem *const layoutItem = gridBitfield->itemAtPosition(row, col);
 		EXPECT_NE(nullptr, layoutItem);
 		if (!layoutItem) {
 			continue;
@@ -333,7 +340,7 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_sparse)
 	// Verify that the remaining grid cells are empty.
 	for (; row < rowCount; row++) {
 		for (; col < columnCount; col++) {
-			QLayoutItem *const layoutItem = gridLayout->itemAtPosition(row, col);
+			QLayoutItem *const layoutItem = gridBitfield->itemAtPosition(row, col);
 			EXPECT_EQ(nullptr, layoutItem);
 		}
 
