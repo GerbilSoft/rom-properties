@@ -14,6 +14,9 @@
   * WiiUAncast: Wii U firmware images (commonly known as "ancast" images).
     Supports plain fw.img and kernel.img, as well as vWii images embedded in
     DOL executables and Toucan images found in certain diagnostics software.
+  * WiiSettingTxt: Wii setting.txt reader. These are usually encrypted (well,
+    obfuscated using XOR), so this makes it easier to quickly view the contents
+    of a setting.txt file.
 
 * New parser features:
   * Xbox360_STFS: Fix titles for some packages that were authored incorrectly

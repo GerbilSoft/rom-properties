@@ -35,6 +35,7 @@ SET(${PROJECT_NAME}_SRCS
 	Console/WiiBNR.cpp
 	Console/WiiCommon.cpp
 	Console/WiiSave.cpp
+	Console/WiiSettingTxt.cpp
 	Console/WiiTicket.cpp
 	Console/WiiTMD.cpp
 	Console/WiiU.cpp
@@ -176,9 +177,10 @@ SET(${PROJECT_NAME}_H
 	Console/SufamiTurbo.hpp
 	Console/WiiBNR.hpp
 	Console/WiiCommon.hpp
+	Console/WiiSave.hpp
+	Console/WiiSettingTxt.hpp
 	Console/WiiTicket.hpp
 	Console/WiiTMD.hpp
-	Console/WiiSave.hpp
 	Console/WiiU.hpp
 	Console/WiiUAncast.hpp
 	Console/WiiUPackage.hpp

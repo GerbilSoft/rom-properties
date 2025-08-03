@@ -54,6 +54,7 @@ using std::vector;
 #include "Console/SufamiTurbo.hpp"
 #include "Console/WiiBNR.hpp"
 #include "Console/WiiSave.hpp"
+#include "Console/WiiSettingTxt.hpp"
 #include "Console/WiiTicket.hpp"
 #include "Console/WiiTMD.hpp"
 #include "Console/WiiU.hpp"
@@ -215,7 +216,7 @@ pthread_once_t once_mimeTypes = PTHREAD_ONCE_INIT;
  *
  * TODO: Add support for multiple magic numbers per class.
  */
-static const array<RomDataFns, 39> romDataFns_magic = {{
+static const array<RomDataFns, 40> romDataFns_magic = {{
 	// Consoles
 	GetRomDataFns_addr(Atari7800, ATTR_HAS_METADATA, 4, 'RI78'),	// "ATARI7800"
 	GetRomDataFns_addr(GameCubeBNR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'BNR1'),
@@ -224,6 +225,7 @@ static const array<RomDataFns, 39> romDataFns_magic = {{
 	GetRomDataFns_addr(SufamiTurbo, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 8, 'FC-A'),	// Less common than "BAND"
 	GetRomDataFns_addr(WiiBNR, ATTR_HAS_METADATA, 64, 'IMET'),	// common
 	GetRomDataFns_addr(WiiBNR, ATTR_HAS_METADATA, 128, 'IMET'),	// seen in some homebrew
+	GetRomDataFns_addr(WiiSettingTxt, 0, 0, 0xBBA6AC92),
 	GetRomDataFns_addr(WiiU, ATTR_HAS_THUMBNAIL | ATTR_SUPPORTS_DEVICES, 0, 'WUP-'),
 	GetRomDataFns_addr(WiiWIBN, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'WIBN'),
 	GetRomDataFns_addr(Xbox_XBE, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XBEH'),

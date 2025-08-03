@@ -533,6 +533,19 @@
     </magic>
   </mime-type>
 
+  <!-- WiiSettingTxt -->
+  <!-- FIXME: Conflicts with text/plain -->
+  <mime-type type="application/x-wii-setting-txt">
+    <comment>Wii settings file</comment>
+    <sub-classof type="text/plain"/>  <!-- it's obfuscated plain text -->
+    <generic-icon name="application-x-sharedlib"/> <!-- FIXME: Better icon? -->
+    <!-- must be >= 80 to beat ".txt" -->
+    <magic priority="90">
+      <!-- "AREA" key; always at the beginning of the file -->
+      <match value="0xbba6ac92" type="big32" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- WiiTicket -->
   <mime-type type="application/x-nintendo-ticket">
     <comment>Nintendo Ticket</comment>

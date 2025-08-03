@@ -34,6 +34,7 @@ application/x-sms-rom			# Sega8Bit
 application/x-gamegear-rom		# Sega8Bit
 application/x-saturn-rom		# SegaSaturn
 application/x-gamecube-bnr		# WiiBNR
+application/x-wii-setting-txt		# WiiSettingTxt
 application/x-nintendo-ticket		# WiiTicket
 application/x-nintendo-tmd		# WiiTMD
 
