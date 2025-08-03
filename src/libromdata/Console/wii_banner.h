@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * wii_banner.h: Nintendo Wii banner structures.                           *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -83,10 +83,12 @@ typedef enum {
  * This contains the game title.
  * Reference: https://wiibrew.org/wiki/Opening.bnr#banner.bin_and_icon.bin
  *
+ * NOTE: This does not include the 64 or 128 bytes of data
+ * that may show up before Wii_IMET_t.
+ *
  * All fields are in big-endian.
  */
 typedef struct _Wii_IMET_t {
-	uint8_t zeroes1[64];
 	uint32_t magic;		// "IMET"
 	uint32_t hashsize;	// Hash length
 	uint32_t unknown;
@@ -103,7 +105,36 @@ typedef struct _Wii_IMET_t {
 	uint8_t md5[16];	// MD5 of 0 to 'hashsize' in the header.
 				// This field is all 0 when calculating.
 } Wii_IMET_t;
-ASSERT_STRUCT(Wii_IMET_t, 1536);
+ASSERT_STRUCT(Wii_IMET_t, 1472);
+
+/**
+ * IMET from NAND titles.
+ *
+ * This includes an extra header with the build string
+ * and the builder, plus 64 zero bytes.
+ *
+ * All fields are in big-endian.
+ */
+typedef struct _Wii_IMET_NAND_t {
+	char build_string[0x30];	// [0x000] Build string
+	char builder[0x10];		// [0x030] Builder
+	uint8_t padding[0x40];		// [0x040] Padding (all zeroes)
+	Wii_IMET_t imet;		// [0x080] IMET header
+} Wii_IMET_NAND_t;
+ASSERT_STRUCT(Wii_IMET_NAND_t, 1472+128);
+
+/**
+ * IMET from disc titles.
+ *
+ * This includes 64 zero bytes.
+ *
+ * All fields are in big-endian.
+ */
+typedef struct _Wii_IMET_Disc_t {
+	uint8_t padding[0x40];		// [0x000] Padding (all zeroes)
+	Wii_IMET_t imet;		// [0x040] IMET header
+} Wii_IMET_Disc_t;
+ASSERT_STRUCT(Wii_IMET_Disc_t, 1472+64);
 
 // Wii languages. (Maps to IMET indexes.)
 typedef enum {

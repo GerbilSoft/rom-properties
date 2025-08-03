@@ -123,14 +123,13 @@ WiiBNR::WiiBNR(const LibRpFile::IRpFilePtr &file, uint32_t gcnRegion, char id4_r
 	unsigned int addr = 0;
 	static constexpr array<uint8_t, 2> addrs = {{64, 128}};
 	for (unsigned int p : addrs) {
-		uint32_t bnr_magic;
-		size_t size = d->file->seekAndRead(p, &bnr_magic, sizeof(bnr_magic));
-		if (size != sizeof(bnr_magic)) {
+		size_t size = d->file->seekAndRead(p, &d->imet, sizeof(d->imet));
+		if (size != sizeof(d->imet)) {
 			// Seek and/or read error.
 			d->file.reset();
 			return;
 		}
-		if (bnr_magic == cpu_to_be32(WII_IMET_MAGIC)) {
+		if (d->imet.magic == cpu_to_be32(WII_IMET_MAGIC)) {
 			// Found it!
 			addr = p;
 			break;
@@ -138,16 +137,6 @@ WiiBNR::WiiBNR(const LibRpFile::IRpFilePtr &file, uint32_t gcnRegion, char id4_r
 	}
 	if (addr == 0) {
 		// Not found.
-		d->file.reset();
-		return;
-	}
-
-	// Load the full IMET data.
-	// NOTE: Wii_IMET_t includes 64 zero bytes *before* the IMET data,
-	// so we need to subtract 64 from addr.
-	size_t size = d->file->seekAndRead(addr-64, &d->imet, sizeof(d->imet));
-	if (size != sizeof(d->imet)) {
-		// Seek and/or read error.
 		d->file.reset();
 		return;
 	}
@@ -183,10 +172,9 @@ int WiiBNR::isRomSupported_static(const DetectInfo *info)
 	// - 128: Some homebrew
 	static constexpr array<uint8_t, 2> addrs = {{64, 128}};
 	for (unsigned int p : addrs) {
-		// NOTE: Wii_IMET_t includes 64 zero bytes *before* the IMET data,
-		// so we need to subtract 64 from p.
-		if ((p + sizeof(Wii_IMET_t) - 64) >= info->header.size)
+		if ((p + sizeof(Wii_IMET_t)) >= info->header.size) {
 			break;
+		}
 
 		if (pData32[p/sizeof(uint32_t)] == cpu_to_be32(WII_IMET_MAGIC)) {
 			// Found the IMET magic number.
