@@ -178,7 +178,13 @@ ADD_LIBRARY(${PROJECT_NAME} MODULE
 	)
 SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(${PROJECT_NAME})
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_LIB)
+# NOTE: Need to use -Wl,--whole-archive. Otherwise, some exported symbols
+# may be trimmed, and the Qt Resoruces will *definitely* be trimmed.
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE
+	-Wl,--whole-archive
+	${PROJECT_NAME}_LIB
+	-Wl,--no-whole-archive
+	)
 
 #######################
 # Install the plugin. #
