@@ -250,7 +250,14 @@ rp_rom_data_view_init(RpRomDataView *page)
 	 */
 
 	// NOTE: This matches Thunar (GTK+2) and Nautilus (GTK+3).
+#if GTK_CHECK_VERSION(4, 0, 0)
+	g_object_set(page, "margin-top", 8, nullptr);
+	g_object_set(page, "margin-bottom", 8, nullptr);
+	g_object_set(page, "margin-start", 8, nullptr);
+	g_object_set(page, "margin-end", 8, nullptr);
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	g_object_set(page, "border-width", 8, nullptr);
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 #if GTK_CHECK_VERSION(3, 0, 0)
 	// Make this a VBox.
