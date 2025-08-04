@@ -109,7 +109,7 @@ FOREACH(_target ${GTK_TESTS})
 	IF(USE_XVFB AND ${_target}_XVFB)
 		# Use Xvfb for this test.
 		ADD_TEST(NAME ${_target} COMMAND ${XVFB_RUN} -a $<TARGET_FILE:${_target}> --gtest_brief)
-		SET_PROPERTY(TEST ${_target} PROPERTY ENVIRONMENT "LIBGL_ALWAYS_SOFTWARE=1")
+		SET_PROPERTY(TEST ${_target} PROPERTY ENVIRONMENT "LIBGL_ALWAYS_SOFTWARE=1;DISPLAY=;WAYLAND_DISPLAY=")
 	ELSE(USE_XVFB AND ${_target}_XVFB)
 		# Xvfb is not required.
 		ADD_TEST(NAME ${_target} COMMAND ${_target} --gtest_brief)
