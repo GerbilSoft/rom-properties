@@ -222,6 +222,11 @@ static constexpr int16_t syscall_wl_gtk[] = {
 	SCMP_SYS(ftruncate),	// FIXME: Is this actually needed? Stub it?
 	SCMP_SYS(statfs),
 	SCMP_SYS(inotify_init1), SCMP_SYS(inotify_add_watch),
+	// GTK3 on AppVeyor (using Xvfb-run)
+	SCMP_SYS(pipe2),
+	SCMP_SYS(wait4),
+	SCMP_SYS(dup2),
+	//SCMP_SYS(execve),	// FIXME: Why is it calling execve()?
 
 	// GTK4 when using Xvfb-run with DISPLAY= WAYLAND_DISPLAY=
 	SCMP_SYS(kcmp),
