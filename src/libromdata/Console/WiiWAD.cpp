@@ -424,8 +424,10 @@ WiiWAD::WiiWAD(const IRpFilePtr &file)
 
 	// Create a CBC reader to decrypt the data section.
 	// TODO: Verify some known data?
+	// NOTE: Need to round up data_size to 16 bytes.
+	// FIXME: Is this correct for BroadOn WAD Format?
 	d->cbcReader = std::make_shared<CBCReader>(d->file,
-		d->data_offset, d->data_size, d->dec_title_key.data(), iv.data());
+		d->data_offset, ALIGN_BYTES(16, d->data_size), d->dec_title_key.data(), iv.data());
 
 	if (d->tmdHeader.title_id.sysID != cpu_to_be16(3)) {
 		// Wii: Contents may be one of the following:
