@@ -68,15 +68,16 @@ protected:
 	unique_ptr<RomDataView> m_romDataView;
 
 	/**
-	 * Get the widgets from the first row in RomDataView.
+	 * Get the widgets from a row in RomDataView.
 	 * Widgets will be returned in m_lblDesc and m_widgetValue.
 	 *
 	 * NOTE: Cannot return a value from this function due to
 	 * how Google Test functions.
 	 *
 	 * @param romDataView RomDataView
+	 * @param row Row number (starting at 0)
 	 */
-	void getFirstRowWidgets(RomDataView *romDataView);
+	void getRowWidgets(RomDataView *romDataView, int row = 0);
 
 	QLabel *m_lblDesc;
 	union {
@@ -103,11 +104,16 @@ void RomDataViewTest::TearDown()
 }
 
 /**
- * Get the widgets from the first row in RomDataView.
- * @param RomDataView
- * @return pair<GtkWidget*, GtkWidget*>
+ * Get the widgets from a row in RomDataView.
+ * Widgets will be returned in m_lblDesc and m_widgetValue.
+ *
+ * NOTE: Cannot return a value from this function due to
+ * how Google Test functions.
+ *
+ * @param romDataView RomDataView
+ * @param row Row number (starting at 0)
  */
-void RomDataViewTest::getFirstRowWidgets(RomDataView *romDataView)
+void RomDataViewTest::getRowWidgets(RomDataView *romDataView, int row)
 {
 	// Initialize the widgets to nullptr before doing anything else.
 	m_lblDesc = nullptr;
@@ -120,10 +126,14 @@ void RomDataViewTest::getFirstRowWidgets(RomDataView *romDataView)
 	QFormLayout *const formTab0 = findDirectChild<QFormLayout*>(vboxTab0, QLatin1String("formTab0"));
 	ASSERT_NE(nullptr, formTab0);
 
+	// Verify the row count.
+	ASSERT_GE(row, 0);
+	ASSERT_LT(row, formTab0->rowCount());
+
 	// Get the layout items for the first row.
-	QLayoutItem *const itemDesc = formTab0->itemAt(0, QFormLayout::LabelRole);
+	QLayoutItem *const itemDesc = formTab0->itemAt(row, QFormLayout::LabelRole);
 	ASSERT_NE(nullptr, itemDesc);
-	QLayoutItem *const itemValue = formTab0->itemAt(0, QFormLayout::FieldRole);
+	QLayoutItem *const itemValue = formTab0->itemAt(row, QFormLayout::FieldRole);
 	ASSERT_NE(nullptr, itemValue);
 
 	// Get the widgets from the first row.
@@ -154,7 +164,7 @@ TEST_F(RomDataViewTest, RFT_STRING)
 
 	// Create a RomDataView.
 	m_romDataView.reset(new RomDataView(m_romData));
-	ASSERT_NO_FATAL_FAILURE(getFirstRowWidgets(m_romDataView.get()));
+	ASSERT_NO_FATAL_FAILURE(getRowWidgets(m_romDataView.get()));
 	QLabel *const lblValue = qobject_cast<QLabel*>(m_widgetValue);
 	ASSERT_NE(nullptr, lblValue);
 
@@ -193,7 +203,7 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_non_sparse)
 
 	// Create a RomDataView.
 	m_romDataView.reset(new RomDataView(m_romData));
-	ASSERT_NO_FATAL_FAILURE(getFirstRowWidgets(m_romDataView.get()));
+	ASSERT_NO_FATAL_FAILURE(getRowWidgets(m_romDataView.get()));
 	QGridLayout *const gridBitfield = qobject_cast<QGridLayout*>(m_layoutValue);
 	ASSERT_NE(nullptr, gridBitfield);
 
@@ -281,7 +291,7 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_sparse)
 
 	// Create a RomDataView.
 	m_romDataView.reset(new RomDataView(m_romData));
-	ASSERT_NO_FATAL_FAILURE(getFirstRowWidgets(m_romDataView.get()));
+	ASSERT_NO_FATAL_FAILURE(getRowWidgets(m_romDataView.get()));
 	QGridLayout *const gridBitfield = qobject_cast<QGridLayout*>(m_layoutValue);
 	ASSERT_NE(nullptr, gridBitfield);
 
