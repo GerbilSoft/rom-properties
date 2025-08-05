@@ -275,6 +275,8 @@ TEST_F(RomDataViewTest, NoRomData)
 
 	// NOTE: For efficiency reasons, GTK RomDataView uses g_idle_add()
 	// to schedule its display update. Force it to run here.
+	// FIXME: With an empty RomData object, rp_rom_data_view_is_showing_data()
+	// doesn't function correctly. It needs to call rp_rom_data_view_load_rom_data().
 	ASSERT_FALSE(rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(m_romDataView)));
 
 	// Check the child widgets.
