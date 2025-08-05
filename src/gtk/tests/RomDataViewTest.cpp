@@ -119,15 +119,16 @@ protected:
 #endif /* USE_GTK_GRID */
 
 	/**
-	 * Get the widgets from the first row in RomDataView.
+	 * Get the widgets from a row in RomDataView.
 	 * Widgets will be returned in m_lblDesc and m_widgetValue.
 	 *
 	 * NOTE: Cannot return a value from this function due to
 	 * how Google Test functions.
 	 *
 	 * @param romDataView RpRomDataView
+	 * @param row Row number (starting at 0)
 	 */
-	void getFirstRowWidgets(RpRomDataView *romDataView);
+	void getRowWidgets(RpRomDataView *romDataView, int row = 0);
 
 	GtkWidget *m_lblDesc;
 	GtkWidget *m_widgetValue;
@@ -138,7 +139,7 @@ void RomDataViewTest::SetUp()
 	m_vectorFile->resize(VECTOR_FILE_SIZE);
 	m_romData = std::make_shared<RomDataTestObject>(m_vectorFile);
 
-	// May be used by getFirstRowWidgets().
+	// May be used by getRowWidgets().
 	m_lblDesc = nullptr;
 	m_widgetValue = nullptr;
 }
@@ -181,11 +182,16 @@ unordered_map<uint32_t, GtkWidget*> RomDataViewTest::gtk_table_get_widgets(GtkTa
 #endif /* USE_GTK_GRID */
 
 /**
- * Get the widgets from the first row in RomDataView.
- * @param RomDataView
- * @return pair<GtkWidget*, GtkWidget*>
+ * Get the widgets from a row in RomDataView.
+ * Widgets will be returned in m_lblDesc and m_widgetValue.
+ *
+ * NOTE: Cannot return a value from this function due to
+ * how Google Test functions.
+ *
+ * @param romDataView RpRomDataView
+ * @param row Row number (starting at 0)
  */
-void RomDataViewTest::getFirstRowWidgets(RpRomDataView *romDataView)
+void RomDataViewTest::getRowWidgets(RpRomDataView *romDataView, int row)
 {
 	// Initialize the widgets to nullptr before doing anything else.
 	m_lblDesc = nullptr;
@@ -235,20 +241,20 @@ void RomDataViewTest::getFirstRowWidgets(RpRomDataView *romDataView)
 
 #ifdef USE_GTK_GRID
 	// Get the widgets for the first row.
-	m_lblDesc = gtk_grid_get_child_at(GTK_GRID(tableTab0), 0, 0);
+	m_lblDesc = gtk_grid_get_child_at(GTK_GRID(tableTab0), 0, row);
 	ASSERT_TRUE(GTK_IS_LABEL(m_lblDesc));
-	m_widgetValue = gtk_grid_get_child_at(GTK_GRID(tableTab0), 1, 0);
+	m_widgetValue = gtk_grid_get_child_at(GTK_GRID(tableTab0), 1, row);
 	ASSERT_TRUE(GTK_IS_WIDGET(m_widgetValue));
 #else /* !USE_GTK_GRID */
 	unordered_map<uint32_t, GtkWidget*> mapWidgets = gtk_table_get_widgets(GTK_TABLE(tableTab0));
 	ASSERT_FALSE(mapWidgets.empty());
 
-	auto iter = mapWidgets.find(rowColumnToDWORD(0, 0));
+	auto iter = mapWidgets.find(rowColumnToDWORD(0, row));
 	ASSERT_TRUE(iter != mapWidgets.end());
 	m_lblDesc = iter->second;
 	ASSERT_TRUE(GTK_IS_LABEL(m_lblDesc));
 
-	iter = mapWidgets.find(rowColumnToDWORD(1, 0));
+	iter = mapWidgets.find(rowColumnToDWORD(1, row));
 	ASSERT_TRUE(iter != mapWidgets.end());
 	m_widgetValue = iter->second;
 	ASSERT_TRUE(GTK_IS_WIDGET(m_widgetValue));
@@ -282,7 +288,7 @@ TEST_F(RomDataViewTest, RFT_STRING)
 
 	// Get the widgets from the first row.
 	// Widgets will be stored in m_lblDesc and m_widgetValue.
-	ASSERT_NO_FATAL_FAILURE(getFirstRowWidgets(RP_ROM_DATA_VIEW(m_romDataView)));
+	ASSERT_NO_FATAL_FAILURE(getRowWidgets(RP_ROM_DATA_VIEW(m_romDataView)));
 	ASSERT_TRUE(GTK_IS_LABEL(m_widgetValue));
 
 	// Verify the label contents.
@@ -332,7 +338,7 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_non_sparse)
 
 	// Get the widgets from the first row.
 	// Widgets will be stored in m_lblDesc and m_widgetValue.
-	ASSERT_NO_FATAL_FAILURE(getFirstRowWidgets(RP_ROM_DATA_VIEW(m_romDataView)));
+	ASSERT_NO_FATAL_FAILURE(getRowWidgets(RP_ROM_DATA_VIEW(m_romDataView)));
 	GtkWidget *const gridBitfield = m_widgetValue;
 #ifdef USE_GTK_GRID
 	ASSERT_TRUE(GTK_IS_GRID(gridBitfield));
@@ -458,7 +464,7 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_sparse)
 
 	// Get the widgets from the first row.
 	// Widgets will be stored in m_lblDesc and m_widgetValue.
-	ASSERT_NO_FATAL_FAILURE(getFirstRowWidgets(RP_ROM_DATA_VIEW(m_romDataView)));
+	ASSERT_NO_FATAL_FAILURE(getRowWidgets(RP_ROM_DATA_VIEW(m_romDataView)));
 	GtkWidget *const gridBitfield = m_widgetValue;
 #ifdef USE_GTK_GRID
 	ASSERT_TRUE(GTK_IS_GRID(gridBitfield));
