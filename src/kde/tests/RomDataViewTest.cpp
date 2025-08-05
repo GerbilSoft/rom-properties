@@ -34,6 +34,7 @@ using LibRpFile::VectorFilePtr;
 #include <QCheckBox>
 #include <QFormLayout>
 #include <QLabel>
+#include <QTabWidget>
 #include <QVBoxLayout>
 
 // C++ STL classes
@@ -146,6 +147,31 @@ void RomDataViewTest::getRowWidgets(RomDataView *romDataView, int row)
 		ASSERT_NE(nullptr, m_layoutValue);
 	}
 	ASSERT_NE(nullptr, m_widgetValue);
+}
+
+/**
+ * Test RomDataView with no RomData object.
+ */
+TEST_F(RomDataViewTest, NoRomData)
+{
+	// Create a RomDataView with no RomData object.
+	m_romDataView.reset(new RomDataView());
+
+	// The main QVBoxLayout should have a single child object, a QHBoxLayout.
+	QVBoxLayout *const vboxLayout = findDirectChild<QVBoxLayout*>(m_romDataView.get(), QLatin1String("vboxLayout"));
+	ASSERT_NE(nullptr, vboxLayout);
+	{
+		const QObjectList &objectList = vboxLayout->children();
+		ASSERT_EQ(1, objectList.size()) << "Expected only one item in vboxLayout";
+
+		QHBoxLayout *const hboxLayout = qobject_cast<QHBoxLayout*>(objectList[0]);
+		ASSERT_NE(nullptr, hboxLayout) << "vboxLayout child is not QHBoxLayout";
+	}
+
+	// The QTabWidget should be empty.
+	QTabWidget *const tabWidget = findDirectChild<QTabWidget*>(m_romDataView.get(), QLatin1String("tabWidget"));
+	ASSERT_NE(nullptr, tabWidget) << "tabWidget not found";
+	ASSERT_EQ(0, tabWidget->count()) << "tabWidget should be empty";
 }
 
 /**

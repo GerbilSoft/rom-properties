@@ -262,6 +262,46 @@ void RomDataViewTest::getRowWidgets(RpRomDataView *romDataView, int row)
 }
 
 /**
+ * Test RomDataView with no RomData object.
+ */
+TEST_F(RomDataViewTest, NoRomData)
+{
+	// Create a RomDataView.
+	// TODO: Set description format type properly.
+	m_romDataView = rp_rom_data_view_new_with_romData("", nullptr, RP_DFT_GNOME);
+#if GTK_CHECK_VERSION(3, 98, 4)
+	g_object_ref_sink(m_romDataView);
+#endif /* GTK_CHECK_VERSION(3, 98, 4) */
+
+	// NOTE: For efficiency reasons, GTK RomDataView uses g_idle_add()
+	// to schedule its display update. Force it to run here.
+	ASSERT_FALSE(rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(m_romDataView)));
+
+	// Check the child widgets.
+	// There should be a single GtkBox (GtkHBox on GTK2) for the header row.
+#if GTK_CHECK_VERSION(4, 0, 0)
+	GtkWidget *child = gtk_widget_get_first_child(m_romDataView);
+	ASSERT_NE(nullptr, child);
+	EXPECT_TRUE(GTK_IS_BOX(child));
+	child = gtk_widget_get_next_sibling(child);
+	ASSERT_EQ(nullptr, child);
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
+	GList *lstChildren = gtk_container_get_children(GTK_CONTAINER(m_romDataView));
+	ASSERT_NE(nullptr, lstChildren);
+	EXPECT_NE(nullptr, lstChildren->data);
+	EXPECT_EQ(nullptr, g_list_next(lstChildren));
+	if (lstChildren->data) {
+#  if GTK_CHECK_VERSION(3, 0, 0)
+		EXPECT_TRUE(GTK_IS_BOX(lstChildren->data));
+#  else /* !GTK_CHECK_VERSION(3, 0, 0) */
+		EXPECT_TRUE(GTK_IS_HBOX(lstChildren->data));
+#  endif /* GTK_CHECK_VERSION(3, 0, 0) */
+	}
+	g_list_free(lstChildren);
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
+}
+
+/**
  * Test RomDataView with a RomData object with an RFT_STRING field.
  */
 TEST_F(RomDataViewTest, RFT_STRING)
@@ -284,7 +324,7 @@ TEST_F(RomDataViewTest, RFT_STRING)
 
 	// NOTE: For efficiency reasons, GTK RomDataView uses g_idle_add()
 	// to schedule its display update. Force it to run here.
-	ASSERT_EQ(true, rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(m_romDataView)));
+	ASSERT_TRUE(rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(m_romDataView)));
 
 	// Get the widgets from the first row.
 	// Widgets will be stored in m_lblDesc and m_widgetValue.
@@ -334,7 +374,7 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_non_sparse)
 
 	// NOTE: For efficiency reasons, GTK RomDataView uses g_idle_add()
 	// to schedule its display update. Force it to run here.
-	ASSERT_EQ(true, rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(m_romDataView)));
+	ASSERT_TRUE(rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(m_romDataView)));
 
 	// Get the widgets from the first row.
 	// Widgets will be stored in m_lblDesc and m_widgetValue.
@@ -460,7 +500,7 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_sparse)
 
 	// NOTE: For efficiency reasons, GTK RomDataView uses g_idle_add()
 	// to schedule its display update. Force it to run here.
-	ASSERT_EQ(true, rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(m_romDataView)));
+	ASSERT_TRUE(rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(m_romDataView)));
 
 	// Get the widgets from the first row.
 	// Widgets will be stored in m_lblDesc and m_widgetValue.
@@ -594,7 +634,7 @@ TEST_F(RomDataViewTest, RFT_DATETIME)
 
 	// NOTE: For efficiency reasons, GTK RomDataView uses g_idle_add()
 	// to schedule its display update. Force it to run here.
-	ASSERT_EQ(true, rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(m_romDataView)));
+	ASSERT_TRUE(rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(m_romDataView)));
 
 	// Get the widgets from the first row.
 	// Widgets will be stored in m_lblDesc and m_widgetValue.
