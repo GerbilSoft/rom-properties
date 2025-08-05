@@ -42,11 +42,8 @@ rp_language_combo_box_init_gtkX(struct _RpLanguageComboBox *widget)
 
 	// Create the GtkListStore
 	widget->listStore = gtk_list_store_new(3, PIMGTYPE_GOBJECT_TYPE, G_TYPE_STRING, G_TYPE_UINT);
+	g_object_ref_sink(widget->listStore);
 	gtk_combo_box_set_model(GTK_COMBO_BOX(widget->comboBox), GTK_TREE_MODEL(widget->listStore));
-
-	// Remove our reference on widget->listStore.
-	// The GtkComboBox will automatically destroy it.
-	g_object_unref(widget->listStore);
 
 	/** Cell renderers **/
 

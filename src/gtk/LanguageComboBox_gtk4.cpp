@@ -71,19 +71,18 @@ bind_listitem_cb(GtkListItemFactory	*factory,
 }
 
 /**
- * Initialize the GTK3/GTK4-specific portion of the LanguageComboBox.
+ * (Re-)create the GtkDropDown.
+ *
+ * NOTE: widget->listStore must have been created already.
+ *
  * @param widget RpLanguageComboBox
  */
-void
-rp_language_combo_box_init_gtkX(struct _RpLanguageComboBox *widget)
+static void
+rp_language_combo_box_re_create_GtkDropDown(struct _RpLanguageComboBox *widget)
 {
-	// Create the GListStore
-	widget->listStore = g_list_store_new(RP_TYPE_LANGUAGE_COMBO_BOX_ITEM);
-
-	// Create the GtkDropDown widget
+	// (Re-)Create the GtkDropDown widget.
 	// NOTE: GtkDropDown takes ownership of widget->listStore.
 	widget->dropDown = gtk_drop_down_new(G_LIST_MODEL(widget->listStore), nullptr);
-	gtk_box_append(GTK_BOX(widget), widget->dropDown);
 
 	// Create the GtkSignalListItemFactory
 	GtkListItemFactory *const factory = gtk_signal_list_item_factory_new();
@@ -92,12 +91,26 @@ rp_language_combo_box_init_gtkX(struct _RpLanguageComboBox *widget)
 	gtk_drop_down_set_factory(GTK_DROP_DOWN(widget->dropDown), factory);
 	g_object_unref(factory);	// we don't need to keep a reference
 
-	/** Signals **/
+	// Add the GtkDropDown.
+	gtk_box_append(GTK_BOX(widget), widget->dropDown);
+}
 
-	// GtkDropDown doesn't have a "changed" signal, and its
-	// GtkSelectionModel object isn't accessible.
-	// Listen for GObject::notify for the "selected" property.
-	g_signal_connect(widget->dropDown, "notify::selected", G_CALLBACK(rp_language_combo_box_notify_selected_handler), widget);
+/**
+ * Initialize the GTK3/GTK4-specific portion of the LanguageComboBox.
+ * @param widget RpLanguageComboBox
+ */
+void
+rp_language_combo_box_init_gtkX(struct _RpLanguageComboBox *widget)
+{
+	// Create the GListStore.
+	// NOTE: GtkDropDown takes ownership, so we'll take our own ref.
+	widget->listStore = g_list_store_new(RP_TYPE_LANGUAGE_COMBO_BOX_ITEM);
+	g_object_ref_sink(widget->listStore);
+	// NOTE: Need to take a second reference for some reason...
+	g_object_ref(widget->listStore);
+
+	// Create the GtkDropDown.
+	rp_language_combo_box_re_create_GtkDropDown(widget);
 }
 
 /**
@@ -131,6 +144,13 @@ rp_language_combo_box_rebuild_icons(struct _RpLanguageComboBox *widget)
 #  endif /* 0 */
 #endif /* GTK_CHECK_VERSION(3, 10, 0) */
 
+	if (widget->dropDown) {
+		// Remove the dropdown so we can rebuild it.
+		// Otherwise, the icons might not show up properly.
+		gtk_box_remove(GTK_BOX(widget), widget->dropDown);
+		widget->dropDown = nullptr;
+	}
+
 	// Flag sprite sheet
 	FlagSpriteSheet flagSpriteSheet(iconSize);
 
@@ -153,6 +173,17 @@ rp_language_combo_box_rebuild_icons(struct _RpLanguageComboBox *widget)
 			rp_language_combo_box_item_set_icon(item, nullptr);
 		}
 	}
+
+	// (Re-)Create the GtkDropDown widget.
+	// NOTE: GtkDropDown takes ownership of widget->listStore.
+	rp_language_combo_box_re_create_GtkDropDown(widget);
+
+	/** Signals **/
+
+	// GtkDropDown doesn't have a "changed" signal, and its
+	// GtkSelectionModel object isn't accessible.
+	// Listen for GObject::notify for the "selected" property.
+	g_signal_connect(widget->dropDown, "notify::selected", G_CALLBACK(rp_language_combo_box_notify_selected_handler), widget);
 }
 
 /** Property accessors / mutators **/
@@ -245,6 +276,10 @@ void
 rp_language_combo_box_clear_lcs(RpLanguageComboBox *widget)
 {
 	g_return_if_fail(RP_IS_LANGUAGE_COMBO_BOX(widget));
+	if (!widget->dropDown) {
+		// Dropdown isn't created yet.
+		return;
+	}
 
 	const guint cur_idx = gtk_drop_down_get_selected(GTK_DROP_DOWN(widget->dropDown));
 	g_list_store_remove_all(widget->listStore);
@@ -269,6 +304,11 @@ gboolean
 rp_language_combo_box_set_selected_lc(RpLanguageComboBox *widget, uint32_t lc)
 {
 	g_return_val_if_fail(RP_IS_LANGUAGE_COMBO_BOX(widget), false);
+	if (!widget->dropDown) {
+		// Dropdown isn't created yet.
+		// There aren't any language codes to set.
+		return false;
+	}
 
 	// Check if this LC is already selected.
 	if (lc == rp_language_combo_box_get_selected_lc(widget)) {
@@ -318,6 +358,11 @@ uint32_t
 rp_language_combo_box_get_selected_lc(RpLanguageComboBox *widget)
 {
 	g_return_val_if_fail(RP_IS_LANGUAGE_COMBO_BOX(widget), 0);
+	if (!widget->dropDown) {
+		// Dropdown isn't created yet.
+		// There aren't any language codes available yet.
+		return 0;
+	}
 
 	const gpointer obj = gtk_drop_down_get_selected_item(GTK_DROP_DOWN(widget->dropDown));
 	if (!obj) {

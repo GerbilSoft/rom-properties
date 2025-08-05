@@ -131,13 +131,17 @@ rp_language_combo_box_get_property(GObject	*object,
 static void
 rp_language_combo_box_dispose(GObject *object)
 {
-#ifdef USE_GTK_DROP_DOWN
 	RpLanguageComboBox *const widget = RP_LANGUAGE_COMBO_BOX(object);
 
+#ifdef USE_GTK_DROP_DOWN
 	if (widget->dropDown) {
 		gtk_drop_down_set_factory(GTK_DROP_DOWN(widget->dropDown), nullptr);
 	}
 #endif /* USE_GTK_DROP_DOWN */
+
+	if (widget->listStore) {
+		g_object_unref(widget->listStore);
+	}
 
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(rp_language_combo_box_parent_class)->dispose(object);
