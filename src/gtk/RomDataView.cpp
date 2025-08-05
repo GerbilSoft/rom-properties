@@ -85,6 +85,16 @@ static void	cboLanguage_notify_selected_lc_handler(RpLanguageComboBox *widget,
 						       GParamSpec	*pspec,
 						       RpRomDataView	*page);
 
+// GTK+ 3.12 deprecated 'margin-left' and 'margin-right'
+// in favor of 'margin-start' and 'margin-end'.
+#if GTK_CHECK_VERSION(3, 11, 2)
+#  define MARGIN_START "margin-start"
+#  define MARGIN_END   "margin-end"
+#else /* !GTK_CHECK_VERSION(3, 11, 2) */
+#  define MARGIN_START "margin-left"
+#  define MARGIN_END   "margin-right"
+#endif /* GTK_CHECK_VERSION(3, 11, 2) */
+
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_TYPE_EXTENDED(RpRomDataView, rp_rom_data_view,
@@ -251,10 +261,10 @@ rp_rom_data_view_init(RpRomDataView *page)
 
 	// NOTE: This matches Thunar (GTK+2) and Nautilus (GTK+3).
 #if GTK_CHECK_VERSION(4, 0, 0)
-	g_object_set(page, "margin-top", 8, nullptr);
-	g_object_set(page, "margin-bottom", 8, nullptr);
-	g_object_set(page, "margin-start", 8, nullptr);
-	g_object_set(page, "margin-end", 8, nullptr);
+	g_object_set(page,
+		MARGIN_START, 8, MARGIN_END,      8,
+		"margin-top", 8, "margin-bottom", 8,
+		nullptr);
 #else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	g_object_set(page, "border-width", 8, nullptr);
 #endif /* GTK_CHECK_VERSION(4, 0, 0) */
@@ -1565,8 +1575,8 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 				// NOTE: Setting top margin to 0 due to spacing from the
 				// GtkTable/GtkGrid. (Still has extra spacing that needs to be fixed...)
 				g_object_set(widget,
-					"margin-left", 8, "margin-right",  8,
-					"margin-top",  0, "margin-bottom", 8,
+					MARGIN_START, 8, MARGIN_END,      8,
+					"margin-top", 0, "margin-bottom", 8,
 					nullptr);
 
 				GtkWidget *const widget_add = widget;
