@@ -363,6 +363,39 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_sparse)
 	EXPECT_EQ(bit, bitfield_names.size()) << "Incorrect number of bits processed.";
 }
 
+/**
+ * Test RomDataView with a RomData object with an RFT_DATETIME field.
+ */
+TEST_F(RomDataViewTest, RFT_DATETIME)
+{
+	// Add an RFT_DATETIME field.
+	static const char s_field_desc[] = "RFT_STRING 0";
+	static constexpr time_t time_value = 722574855;
+	static const char s_field_value[] = "24 Nov 1992 03:14:15";
+
+	RomFields *const fields = m_romData->getWritableFields();
+	fields->addField_dateTime(s_field_desc, time_value,
+		RomFields::RFT_DATETIME_HAS_DATE |
+		RomFields::RFT_DATETIME_HAS_TIME |
+		RomFields::RFT_DATETIME_IS_UTC);
+
+	/** Verify the Qt widgets. **/
+
+	// Create a RomDataView.
+	m_romDataView.reset(new RomDataView(m_romData));
+	ASSERT_NO_FATAL_FAILURE(getRowWidgets(m_romDataView.get()));
+	QLabel *const lblValue = qobject_cast<QLabel*>(m_widgetValue);
+	ASSERT_NE(nullptr, lblValue);
+
+	// Verify the label contents.
+	// NOTE: Description label will have an added ':'.
+	QString qs_field_desc = QLatin1String(s_field_desc);
+	qs_field_desc += QChar(L':');
+
+	EXPECT_STREQ(Q2U8(qs_field_desc), Q2U8(m_lblDesc->text())) << "Field description is incorrect.";
+	EXPECT_STREQ(s_field_value, Q2U8(lblValue->text())) << "Field value is incorrect.";
+}
+
 } }
 
 #ifdef HAVE_SECCOMP
