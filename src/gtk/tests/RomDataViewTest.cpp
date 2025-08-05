@@ -567,6 +567,50 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_sparse)
 	EXPECT_EQ(bit, bitfield_names.size()) << "Incorrect number of bits processed.";
 }
 
+/**
+ * Test RomDataView with a RomData object with an RFT_DATETIME field.
+ */
+TEST_F(RomDataViewTest, RFT_DATETIME)
+{
+	// Add an RFT_DATETIME field.
+	static const char s_field_desc[] = "RFT_STRING 0";
+	static constexpr time_t time_value = 722574855;
+	static const char s_field_value[] = "11/24/92 03:14:15";
+
+	RomFields *const fields = m_romData->getWritableFields();
+	fields->addField_dateTime(s_field_desc, time_value,
+		RomFields::RFT_DATETIME_HAS_DATE |
+		RomFields::RFT_DATETIME_HAS_TIME |
+		RomFields::RFT_DATETIME_IS_UTC);
+
+	/** Verify the GTK widgets. **/
+
+	// Create a RomDataView.
+	// TODO: Set description format type properly.
+	m_romDataView = rp_rom_data_view_new_with_romData("", m_romData, RP_DFT_GNOME);
+#if GTK_CHECK_VERSION(3, 98, 4)
+	g_object_ref_sink(m_romDataView);
+#endif /* GTK_CHECK_VERSION(3, 98, 4) */
+
+	// NOTE: For efficiency reasons, GTK RomDataView uses g_idle_add()
+	// to schedule its display update. Force it to run here.
+	ASSERT_EQ(true, rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(m_romDataView)));
+
+	// Get the widgets from the first row.
+	// Widgets will be stored in m_lblDesc and m_widgetValue.
+	ASSERT_NO_FATAL_FAILURE(getRowWidgets(RP_ROM_DATA_VIEW(m_romDataView)));
+	ASSERT_TRUE(GTK_IS_LABEL(m_widgetValue));
+
+	// Verify the label contents.
+	// NOTE: Description label will have an added ':'.
+	string stds_field_desc = s_field_desc;
+	stds_field_desc += ':';
+
+	// NOTE: Using gtk_label_get_label(), which returns mnemonics and Pango markup.
+	EXPECT_STREQ(stds_field_desc.c_str(), gtk_label_get_label(GTK_LABEL(m_lblDesc))) << "Field description is incorrect.";
+	EXPECT_STREQ(s_field_value, gtk_label_get_label(GTK_LABEL(m_widgetValue))) << "Field value is incorrect.";
+}
+
 } }
 
 #ifdef HAVE_SECCOMP
