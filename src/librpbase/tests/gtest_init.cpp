@@ -226,7 +226,7 @@ static constexpr int16_t syscall_wl_gtk[] = {
 	SCMP_SYS(pipe2),
 	SCMP_SYS(wait4),
 	SCMP_SYS(dup2),
-	//SCMP_SYS(execve),	// FIXME: Why is it calling execve()?
+	//SCMP_SYS(execve),	// only used if the above syscalls fail?
 
 	// GTK4 when using Xvfb-run with DISPLAY= WAYLAND_DISPLAY=
 	SCMP_SYS(kcmp),
