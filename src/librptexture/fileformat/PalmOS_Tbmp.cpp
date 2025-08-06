@@ -63,7 +63,7 @@ public:
 	 * Decompress a scanline-compressed bitmap.
 	 * @param compr_data		[in] Compressed bitmap data
 	 * @param compr_data_len	[in] Length of compr_data
-	 * @return Buffer containing the decompressed bitmap (rowBytes * height), or nullptr on error.
+	 * @return Aligned buffer containing the decompressed bitmap (rowBytes * height), or nullptr on error. [USE aligned_free()!]
 	 */
 	uint8_t *decompress_scanline(const uint8_t *compr_data, size_t compr_data_len);
 
@@ -71,7 +71,7 @@ public:
 	 * Decompress an RLE-compressed bitmap.
 	 * @param compr_data		[in] Compressed bitmap data
 	 * @param compr_data_len	[in] Length of compr_data
-	 * @return Buffer containing the decompressed bitmap (rowBytes * height), or nullptr on error.
+	 * @return Aligned buffer containing the decompressed bitmap (rowBytes * height), or nullptr on error. [USE aligned_free()!]
 	 */
 	uint8_t *decompress_RLE(const uint8_t *compr_data, size_t compr_data_len);
 
@@ -79,7 +79,7 @@ public:
 	 * Decompress a PackBits-compressed bitmap. (8-bpp version)
 	 * @param compr_data		[in] Compressed bitmap data
 	 * @param compr_data_len	[in] Length of compr_data
-	 * @return Buffer containing the decompressed bitmap (rowBytes * height), or nullptr on error.
+	 * @return Aligned buffer containing the decompressed bitmap (rowBytes * height), or nullptr on error. [USE aligned_free()!]
 	 */
 	uint8_t *decompress_PackBits8(const uint8_t *compr_data, size_t compr_data_len);
 
@@ -124,7 +124,7 @@ PalmOS_Tbmp_Private::PalmOS_Tbmp_Private(PalmOS_Tbmp *q, const IRpFilePtr &file,
  * Decompress a scanline-compressed bitmap.
  * @param compr_data		[in] Compressed bitmap data
  * @param compr_data_len	[in] Length of compr_data
- * @return Buffer containing the decompressed bitmap (rowBytes * height), or nullptr on error.
+ * @return Aligned buffer containing the decompressed bitmap (rowBytes * height), or nullptr on error. [USE aligned_free()!]
  */
 uint8_t *PalmOS_Tbmp_Private::decompress_scanline(const uint8_t *compr_data, size_t compr_data_len)
 {
@@ -134,7 +134,7 @@ uint8_t *PalmOS_Tbmp_Private::decompress_scanline(const uint8_t *compr_data, siz
 	const unsigned int rowBytes = be16_to_cpu(bitmapType.rowBytes);
 	const size_t icon_data_len = static_cast<size_t>(rowBytes) * static_cast<size_t>(height);
 
-	unique_ptr<uint8_t[]> decomp_buf(new uint8_t[icon_data_len]);
+	auto decomp_buf(aligned_uptr<uint8_t>(16, icon_data_len));
 	uint8_t *dest = decomp_buf.get();
 	const uint8_t *lastrow = dest;
 	for (int y = 0; y < height; y++) {
@@ -143,8 +143,9 @@ uint8_t *PalmOS_Tbmp_Private::decompress_scanline(const uint8_t *compr_data, siz
 			// an 8-byte group are the same as the previous row.
 			// NOTE: Assumed to be 0 for the first row.
 			assert(compr_data < compr_data_end);
-			if (compr_data >= compr_data_end)
+			if (compr_data >= compr_data_end) {
 				return nullptr;
+			}
 
 			uint8_t diffmask = *compr_data++;
 			if (y == 0)
@@ -160,16 +161,18 @@ uint8_t *PalmOS_Tbmp_Private::decompress_scanline(const uint8_t *compr_data, siz
 				} else {
 					// Read a byte from the source data.
 					assert(compr_data < compr_data_end);
-					if (compr_data >= compr_data_end)
+					if (compr_data >= compr_data_end) {
 						return nullptr;
+					}
 					px = *compr_data++;
 				}
 				*dest++ = px;
 			}
 		}
 
-		if (y > 0)
+		if (y > 0) {
 			lastrow += rowBytes;
+		}
 	}
 
 	// Bitmap has been decompressed.
@@ -180,7 +183,7 @@ uint8_t *PalmOS_Tbmp_Private::decompress_scanline(const uint8_t *compr_data, siz
  * Decompress an RLE-compressed bitmap.
  * @param compr_data		[in] Compressed bitmap data
  * @param compr_data_len	[in] Length of compr_data
- * @return Buffer containing the decompressed bitmap (rowBytes * height), or nullptr on error.
+ * @return Aligned buffer containing the decompressed bitmap (rowBytes * height), or nullptr on error. [USE aligned_free()!]
  */
 uint8_t *PalmOS_Tbmp_Private::decompress_RLE(const uint8_t *compr_data, size_t compr_data_len)
 {
@@ -190,14 +193,15 @@ uint8_t *PalmOS_Tbmp_Private::decompress_RLE(const uint8_t *compr_data, size_t c
 	const unsigned int rowBytes = be16_to_cpu(bitmapType.rowBytes);
 	const size_t icon_data_len = static_cast<size_t>(rowBytes) * static_cast<size_t>(height);
 
-	unique_ptr<uint8_t[]> decomp_buf(new uint8_t[icon_data_len]);
-	const uint8_t *const dest_end = &decomp_buf[icon_data_len];
+	auto decomp_buf(aligned_uptr<uint8_t>(16, icon_data_len));
 	uint8_t *dest = decomp_buf.get();
+	const uint8_t *const dest_end = &dest[icon_data_len];
 	for (int y = 0; y < height; y++) {
 		for (unsigned int x = 0; x < rowBytes; ) {
 			assert(compr_data < compr_data_end);
-			if (compr_data >= compr_data_end)
+			if (compr_data >= compr_data_end) {
 				return nullptr;
+			}
 
 			// Read the RLE count byte.
 			const uint8_t b_count = *compr_data++;
@@ -214,8 +218,9 @@ uint8_t *PalmOS_Tbmp_Private::decompress_RLE(const uint8_t *compr_data, size_t c
 
 			// Read the RLE data byte.
 			assert(compr_data < compr_data_end);
-			if (compr_data >= compr_data_end)
+			if (compr_data >= compr_data_end) {
 				return nullptr;
+			}
 			const uint8_t b_data = *compr_data++;
 
 			// Write the decompressed data bytes.
@@ -232,8 +237,9 @@ uint8_t *PalmOS_Tbmp_Private::decompress_RLE(const uint8_t *compr_data, size_t c
 
 	// Sanity check: We should be at the end of the bitmap.
 	assert(dest == dest_end);
-	if (dest != dest_end)
+	if (dest != dest_end) {
 		return nullptr;
+	}
 
 	// Bitmap has been decompressed.
 	return decomp_buf.release();
@@ -243,7 +249,7 @@ uint8_t *PalmOS_Tbmp_Private::decompress_RLE(const uint8_t *compr_data, size_t c
  * Decompress a PackBits-compressed bitmap. (8-bpp version)
  * @param compr_data		[in] Compressed bitmap data
  * @param compr_data_len	[in] Length of compr_data
- * @return Buffer containing the decompressed bitmap (rowBytes * height), or nullptr on error.
+ * @return Aligned buffer containing the decompressed bitmap (rowBytes * height), or nullptr on error. [USE aligned_free()!]
  */
 uint8_t *PalmOS_Tbmp_Private::decompress_PackBits8(const uint8_t *compr_data, size_t compr_data_len)
 {
@@ -254,7 +260,7 @@ uint8_t *PalmOS_Tbmp_Private::decompress_PackBits8(const uint8_t *compr_data, si
 	const unsigned int rowBytes = be16_to_cpu(bitmapType.rowBytes);
 	const size_t icon_data_len = static_cast<size_t>(rowBytes) * static_cast<size_t>(height);
 
-	unique_ptr<uint8_t[]> decomp_buf(new uint8_t[icon_data_len]);
+	auto decomp_buf(aligned_uptr<uint8_t>(16, icon_data_len));
 	uint8_t *dest = decomp_buf.get();
 	for (int y = 0; y < height; y++) {
 		for (unsigned int x = 0; x < rowBytes; ) {
@@ -277,8 +283,9 @@ uint8_t *PalmOS_Tbmp_Private::decompress_PackBits8(const uint8_t *compr_data, si
 				}
 
 				assert(compr_data < compr_data_end);
-				if (compr_data >= compr_data_end)
+				if (compr_data >= compr_data_end) {
 					return nullptr;
+				}
 				const uint8_t data = *compr_data++;
 				memset(dest, data, reps);
 				dest += reps;
@@ -288,8 +295,9 @@ uint8_t *PalmOS_Tbmp_Private::decompress_PackBits8(const uint8_t *compr_data, si
 				const unsigned int reps = 1 + static_cast<unsigned int>(cbyte);
 
 				assert(compr_data + reps <= compr_data_end);
-				if (compr_data + reps > compr_data_end)
+				if (compr_data + reps > compr_data_end) {
 					return nullptr;
+				}
 
 				// NOTE: Limited to the remaining bytes in the current row.
 				// TODO: Assert if too many bytes?

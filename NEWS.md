@@ -53,6 +53,9 @@
       * Reported by @Techokami.
   * CisoPspDlopen: Fix an issue that could cause compile failures on macOS
     and some *BSD systems.
+  * PalmOS_Tbmp: Fix a crash on Windows when decoding a compressed icon.
+    * Fixes #457: Palm OS file causes explorer.exe crash (Windows 11)
+      * Reported by @ldroberts02.
 
 * Other changes:
   * rpcli: Added more colorization for warning messages.
