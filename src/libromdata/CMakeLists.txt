@@ -469,8 +469,10 @@ IF(RP_LIBROMDATA_IS_DLL)
 	# Delay-load sources.
 	# NOTE: Delay-load is not supported with MinGW, but we still need
 	# access to the rp_LoadLibrary() function.
-	SET(${PROJECT_NAME}-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
-	SET(${PROJECT_NAME}-DELAYLOAD_H   ../libwin32common/DelayLoadHelper.h)
+	IF(WIN32)
+		SET(${PROJECT_NAME}-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
+		SET(${PROJECT_NAME}-DELAYLOAD_H   ../libwin32common/DelayLoadHelper.h)
+	ENDIF(WIN32)
 ELSE()
 	SET(${PROJECT_NAME}_LINKAGE STATIC)
 ENDIF()
