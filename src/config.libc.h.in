@@ -85,3 +85,8 @@
 #  define FOPEN_CLOEXEC_FLAG
 #  define _TFOPEN_CLOEXEC_FLAG
 #endif /* !HAVE_FOPEN_CLOEXEC */
+
+/** C++ STL **/
+
+/* Define to 1 if you have the `std::variant` class. */
+#cmakedefine HAVE_STD_VARIANT 1

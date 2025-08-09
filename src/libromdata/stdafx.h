@@ -34,8 +34,20 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
-#include <variant>
 #include <vector>
+
+#ifdef HAVE_STD_VARIANT
+#  include <variant>
+#else /* !HAVE_STD_VARIANT */
+// std::variant<> is not available on this system.
+// Use mpark variant instead.
+#  include "mpark/variant.hpp"
+namespace std {
+	using mpark::variant;
+	using mpark::holds_alternative;
+	using mpark::get;
+}
+#endif /* HAVE_STD_VARIANT */
 
 // libfmt
 #ifndef RP_NO_INCLUDE_LIBFMT_IN_STDAFX_H

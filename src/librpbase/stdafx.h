@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "config.libc.h"
+
 // time_r.h needs to be here due to *_r() issues on MinGW-w64.
 #include "time_r.h"
 
@@ -35,8 +37,20 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
-#include <variant>
 #include <vector>
+
+#ifdef HAVE_STD_VARIANT
+#  include <variant>
+#else /* !HAVE_STD_VARIANT */
+// std::variant<> is not available on this system.
+// Use mpark variant instead.
+#  include "mpark/variant.hpp"
+namespace std {
+	using mpark::variant;
+	using mpark::holds_alternative;
+	using mpark::get;
+}
+#endif /* HAVE_STD_VARIANT */
 
 // libfmt
 #ifndef RP_NO_INCLUDE_LIBFMT_IN_STDAFX_H
@@ -60,12 +74,12 @@
 
 // MSVC intrinsics
 #if defined(_MSC_VER) && _MSC_VER >= 1400
-# include <intrin.h>
+#  include <intrin.h>
 #endif
 
 // libwin32common
 #ifdef _WIN32
-# include "libwin32common/RpWin32_sdk.h"
+#  include "libwin32common/RpWin32_sdk.h"
 #endif /* _WIN32 */
 
 // librpbyteswap
