@@ -78,12 +78,13 @@
 static int make_decode_table(unsigned int nsyms, unsigned int nbits,
                              unsigned char *length, unsigned short *table)
 {
-    register unsigned short sym, next_symbol;
+    register unsigned short next_symbol;
+    register unsigned int sym;
     register unsigned int leaf, fill;
 #ifdef BITS_ORDER_LSB
     register unsigned int reverse;
 #endif
-    register unsigned char bit_num;
+    register unsigned int bit_num;
     unsigned int pos         = 0; /* the current position in the decode table */
     unsigned int table_mask  = 1 << nbits;
     unsigned int bit_mask    = table_mask >> 1; /* don't do 0 length codes */
