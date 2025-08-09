@@ -10,12 +10,10 @@
 #pragma once
 
 #include "RpWin32_sdk.h"
+#include "force_inline.h"
+#include "stdboolx.h"
 
-#ifdef __cplusplus
-#  define VERSIONHELPERAPI inline bool
-#else
-#  define VERSIONHELPERAPI FORCEINLINE BOOL
-#endif
+#define VERSIONHELPERAPI static inline bool
 
 #if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
 /* gcc complains about missing field initializers. */
@@ -26,10 +24,10 @@
 VERSIONHELPERAPI IsWindowsVersionOrGreater(WORD major, WORD minor, WORD servpack)
 {
     OSVERSIONINFOEXW vi = {sizeof(vi),major,minor,0,0,{0},servpack};
-    return VerifyVersionInfoW(&vi, VER_MAJORVERSION|VER_MINORVERSION|VER_SERVICEPACKMAJOR,
+    return !!VerifyVersionInfoW(&vi, VER_MAJORVERSION|VER_MINORVERSION|VER_SERVICEPACKMAJOR,
         VerSetConditionMask(VerSetConditionMask(VerSetConditionMask(0,
-            VER_MAJORVERSION,VER_GREATER_EQUAL),
-            VER_MINORVERSION,VER_GREATER_EQUAL),
+            VER_MAJORVERSION, VER_GREATER_EQUAL),
+            VER_MINORVERSION, VER_GREATER_EQUAL),
             VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL));
 }
 
