@@ -114,8 +114,6 @@ public:
 
 	// opening.bnr
 	struct {
-		// FIXME: gcn_partition used to be in the 'gcn' union.
-		// Can't do that with shared_ptr...
 		GcnPartitionPtr gcnPartition;	// GcnPartition for opening.bnr
 		RomDataPtr romData;		// either GameCubeBNR or WiiBNR
 	} opening_bnr;
