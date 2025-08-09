@@ -3,7 +3,7 @@
  * RP_ThumbnailProvider_Register.cpp: IThumbnailProvider implementation.   *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,7 +20,6 @@ using std::unique_ptr;
 
 #define IID_IThumbnailProvider_String		TEXT("{E357FCCD-A995-4576-B01F-234630154E96}")
 #define CLSID_RP_ThumbnailProvider_String	TEXT("{4723DF58-463E-4590-8F4A-8D9DD4F4355A}")
-CLSID_IMPL(RP_ThumbnailProvider, _T("ROM Properties Page - Thumbnail Provider"))
 
 /**
  * Register the file type handler.

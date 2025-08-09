@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractImage.hpp: IExtractImage implementation.                      *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -45,7 +45,6 @@ private:
 	RP_ExtractImage_Private *const d_ptr;
 
 public:
-	CLSID_DECL(RP_ExtractImage)
 	FILETYPE_HANDLER_DECL(RP_ExtractImage)
 
 public:

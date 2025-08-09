@@ -541,6 +541,39 @@ static inline bool checkDirectory(void)
 }
 
 /**
+ * Register a COM object.
+ * This will also add the COM object to the list of "approved" shell extensions.
+ * @param rclsid CLSID
+ * @param description COM object description
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+static LONG RegisterCLSID(_In_ REFCLSID rclsid, _In_ LPCTSTR description)
+{
+	// Register the COM object.
+	LONG lResult = RegKey::RegisterComObject(HINST_THISCOMPONENT,
+		rclsid, RP_ProgID, description);
+	if (lResult != ERROR_SUCCESS) {
+		return lResult;
+	}
+
+	// Register as an "approved" shell extension.
+	// NOTE: Only checked by NT 4.0-6.0. Win7 and later ignores it.
+	return RegKey::RegisterApprovedExtension(rclsid, description);
+}
+
+/**
+ * Unregister a COM object.
+ * This will also remove the COM object from the list of "approved" shell extensions.
+ * @param rclsid CLSID
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+static LONG UnregisterCLSID(_In_ REFCLSID rclsid)
+{
+	// TODO: Split out removal of the "approved" shell extension from UnregisterComObject()?
+	return RegKey::UnregisterComObject(rclsid, RP_ProgID);
+}
+
+/**
  * Register the DLL.
  */
 STDAPI DllRegisterServer(void)
@@ -553,25 +586,27 @@ STDAPI DllRegisterServer(void)
 	}
 
 	// Register the COM objects.
-	lResult = RP_ExtractIcon::RegisterCLSID();
+	lResult = RegisterCLSID(__uuidof(RP_ExtractIcon), _T("ROM Properties Page - Icon Extractor"));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ExtractImage::RegisterCLSID();
+	lResult = RegisterCLSID(__uuidof(RP_ExtractImage), _T("ROM Properties Page - Image Extractor"));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ShellPropSheetExt::RegisterCLSID();
+	lResult = RegisterCLSID(__uuidof(RP_ShellPropSheetExt), _T("ROM Properties Page - Property Sheet"));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ThumbnailProvider::RegisterCLSID();
+	lResult = RegisterCLSID(__uuidof(RP_ThumbnailProvider), _T("ROM Properties Page - Thumbnail Provider"));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 #ifdef HAVE_RP_PROPERTYSTORE_DEPS
-	lResult = RP_PropertyStore::RegisterCLSID();
+	lResult = RegisterCLSID(__uuidof(RP_PropertyStore), _T("ROM Properties Page - Property Store"));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 #endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 #ifdef ENABLE_OVERLAY_ICON_HANDLER
-	lResult = RP_ShellIconOverlayIdentifier::RegisterCLSID();
+	lResult = RegisterCLSID(__uuidof(RP_ShellIconOverlayIdentifier), _T("ROM Properties Page - Shell Icon Overlay Identifier"));
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ShellIconOverlayIdentifer::RegisterShellIconOverlayIdentifier();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 #endif /* ENABLE_OVERLAY_ICON_HANDLER */
-	lResult = RP_ContextMenu::RegisterCLSID();
+	lResult = RegisterCLSID(__uuidof(RP_ContextMenu), _T("ROM Properties Page - Context Menu"));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_XAttrView::RegisterCLSID();
+	lResult = RegisterCLSID(__uuidof(RP_XAttrView), _T("ROM Properties Page - Extended Attribute viewer"));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Enumerate user hives.
@@ -689,23 +724,27 @@ STDAPI DllRegisterServer(void)
 STDAPI DllUnregisterServer(void)
 {
 	// Unregister the COM objects.
-	LONG lResult = RP_ExtractIcon::UnregisterCLSID();
+	LONG lResult = UnregisterCLSID(__uuidof(RP_ExtractIcon));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ExtractImage::UnregisterCLSID();
+	lResult = UnregisterCLSID(__uuidof(RP_ExtractImage));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ShellPropSheetExt::UnregisterCLSID();
+	lResult = UnregisterCLSID(__uuidof(RP_ShellPropSheetExt));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ThumbnailProvider::UnregisterCLSID();
+	lResult = UnregisterCLSID(__uuidof(RP_ThumbnailProvider));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 #ifdef HAVE_RP_PROPERTYSTORE_DEPS
-	lResult = RP_PropertyStore::UnregisterCLSID();
+	lResult = UnregisterCLSID(__uuidof(RP_PropertyStore));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 #endif /* HAVE_RP_PROPERTYSTORE_DEPS */
-	lResult = RP_ShellIconOverlayIdentifier::UnregisterCLSID();
+#ifdef ENABLE_OVERLAY_ICON_HANDLER
+	lResult = RP_ShellIconOverlayIdentifer::UnregisterShellIconOverlayIdentifier();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ContextMenu::UnregisterCLSID();
+	lResult = UnregisterCLSID(__uuidof(RP_ShellIconOverlayIdentifier));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_XAttrView::UnregisterCLSID();
+#endif /* ENABLE_OVERLAY_ICON_HANDLER */
+	lResult = UnregisterCLSID(__uuidof(RP_ContextMenu));
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = UnregisterCLSID(__uuidof(RP_XAttrView));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Enumerate user hives.

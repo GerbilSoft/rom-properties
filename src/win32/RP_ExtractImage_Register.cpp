@@ -3,7 +3,7 @@
  * RP_ExtractImage_Register.cpp: IExtractImage implementation.             *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,7 +20,6 @@ using std::unique_ptr;
 
 #define IID_IExtractImage_String	TEXT("{BB2E617C-0920-11D1-9A0B-00C04FC2D6C1}")
 #define CLSID_RP_ExtractImage_String	TEXT("{84573BC0-9502-42F8-8066-CC527D0779E5}")
-CLSID_IMPL(RP_ExtractImage, _T("ROM Properties Page - Image Extractor"))
 
 /**
  * Register the file type handler.

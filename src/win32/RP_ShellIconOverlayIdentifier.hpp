@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellIconOverlayIdentifier.cpp: IShellIconOverlayIdentifier          *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -45,7 +45,17 @@ private:
 	RP_ShellIconOverlayIdentifier_Private *const d_ptr;
 
 public:
-	CLSID_DECL_NOINLINE(RP_ShellIconOverlayIdentifier)
+	/**
+	 * Register as a Shell Icon Overlay Identifier.
+	 * @return ERROR_SUCCESS on success; Win32 error code on error.
+	 */
+	static LONG RegisterShellIconOverlayIdentifier(void);
+
+	/**
+	 * Unregister as a Shell Icon Overlay Identifier.
+	 * @return ERROR_SUCCESS on success; Win32 error code on error.
+	 */
+	static LONG UnregisterShellIconOverlayIdentifier(void);
 
 public:
 	// IUnknown

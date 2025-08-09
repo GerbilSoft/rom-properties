@@ -3,7 +3,7 @@
  * RP_PropSheet_Register.cpp: IPropertyStore implementation.               *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,7 +19,6 @@ using std::tstring;
 using std::unique_ptr;
 
 #define CLSID_RP_PropertyStore_String	TEXT("{4A1E3510-50BD-4B03-A801-E4C954F43B96}")
-CLSID_IMPL(RP_PropertyStore, _T("ROM Properties Page - Property Store"))
 
 /**
  * Get the PreviewDetails string.

@@ -3,7 +3,7 @@
  * RP_ExtractIcon_Register.cpp: IExtractIcon implementation.               *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,7 +18,6 @@ using LibWin32UI::RegKey;
 using std::tstring;
 
 #define CLSID_RP_ExtractIcon_String	TEXT("{E51BC107-E491-4B29-A6A3-2A4309259802}")
-CLSID_IMPL(RP_ExtractIcon, _T("ROM Properties Page - Icon Extractor"))
 
 /**
  * Register the file type handler.

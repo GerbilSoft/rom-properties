@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ContextMenu.hpp: IContextMenu implementation.                        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -45,7 +45,6 @@ private:
 	RP_ContextMenu_Private *const d_ptr;
 
 public:
-	CLSID_DECL(RP_ContextMenu)
 	FILETYPE_HANDLER_DECL(RP_ContextMenu)
 
 public:

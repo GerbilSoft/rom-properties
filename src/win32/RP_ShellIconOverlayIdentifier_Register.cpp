@@ -21,26 +21,11 @@ extern const TCHAR RP_ProgID[];
 static const TCHAR RP_OverlayHandler[] = _T("RpDangerousPermissionsOverlay");
 
 /**
- * Register the COM object.
+ * Register as a Shell Icon Overlay Identifier.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ShellIconOverlayIdentifier::RegisterCLSID(void)
+LONG RP_ShellIconOverlayIdentifier::RegisterShellIconOverlayIdentifier(void)
 {
-	static const TCHAR description[] = _T("ROM Properties Page - Shell Icon Overlay Identifier");
-
-	// Register the COM object.
-	LONG lResult = RegKey::RegisterComObject(HINST_THISCOMPONENT,
-		__uuidof(RP_ShellIconOverlayIdentifier), RP_ProgID, description);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// Register as an "approved" shell extension.
-	lResult = RegKey::RegisterApprovedExtension(__uuidof(RP_ShellIconOverlayIdentifier), description);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
 	// Register as a shell icon overlay handler.
 	RegKey hklm_SIOI(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ShellIconOverlayIdentifiers"), KEY_READ, false);
 	if (!hklm_SIOI.isOpen())
@@ -54,22 +39,15 @@ LONG RP_ShellIconOverlayIdentifier::RegisterCLSID(void)
 	if (!hklm_rpi.isOpen())
 		return hklm_rpi.lOpenRes();
 
-	lResult = hklm_rpi.write(nullptr, CLSID_RP_ShellIconOverlayIdentifier_String);
-	return lResult;
+	return hklm_rpi.write(nullptr, CLSID_RP_ShellIconOverlayIdentifier_String);
 }
 
 /**
- * Unregister the COM object.
+ * Unregister as a Shell Icon Overlay Identifier.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ShellIconOverlayIdentifier::UnregisterCLSID(void)
+LONG RP_ShellIconOverlayIdentifier::UnregisterShellIconOverlayIdentifier(void)
 {
-	// Unegister the COM object.
-	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_ShellIconOverlayIdentifier), RP_ProgID);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
 	// Remove the shell icon overlay handler.
 	RegKey hklm_SIOI(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ShellIconOverlayIdentifiers"), KEY_READ, false);
 	if (hklm_SIOI.isOpen()) {

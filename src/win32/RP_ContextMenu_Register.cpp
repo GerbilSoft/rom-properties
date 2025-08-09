@@ -3,7 +3,7 @@
  * RP_ContextMenu_Register.cpp: IContextMenu implementation.               *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,7 +19,6 @@ using std::tstring;
 using std::unique_ptr;
 
 #define CLSID_RP_ContextMenu_String	TEXT("{150715EA-6843-472C-9709-2CFA56690501}")
-CLSID_IMPL(RP_ContextMenu, _T("ROM Properties Page - Context Menu"))
 
 extern const TCHAR RP_ProgID[];
 

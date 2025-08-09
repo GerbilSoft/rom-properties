@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractIcon.hpp: IExtractIcon implementation.                        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -45,7 +45,6 @@ private:
 	RP_ExtractIcon_Private *const d_ptr;
 
 public:
-	CLSID_DECL(RP_ExtractIcon)
 	FILETYPE_HANDLER_DECL(RP_ExtractIcon)
 
 public:

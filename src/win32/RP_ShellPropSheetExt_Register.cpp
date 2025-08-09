@@ -3,7 +3,7 @@
  * RP_ShellPropSheetExt_Register.cpp: IShellPropSheetExt implementation.   *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,7 +17,6 @@ using LibWin32UI::RegKey;
 using std::tstring;
 
 #define CLSID_RP_ShellPropSheetExt_String	TEXT("{2443C158-DF7C-4352-B435-BC9F885FFD52}")
-CLSID_IMPL(RP_ShellPropSheetExt, _T("ROM Properties Page - Property Sheet"))
 
 extern const TCHAR RP_ProgID[];
 
