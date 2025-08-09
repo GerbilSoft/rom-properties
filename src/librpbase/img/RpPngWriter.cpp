@@ -74,6 +74,7 @@ using namespace LibRpTexture;
 using std::array;
 using std::string;
 using std::unique_ptr;
+using std::variant;
 using std::vector;
 
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
@@ -157,9 +158,8 @@ public:
 	// Open file reference
 	IRpFilePtr file;
 
-	// TODO: Union of std::shared_ptr<>, or std::variant<>?
-	rp_image_const_ptr img;
-	IconAnimDataConstPtr iconAnimData;
+	// Image data
+	variant<rp_image_const_ptr, IconAnimDataConstPtr> data;
 
 	// Cached width, height, and image format.
 	struct cache_t {
@@ -331,7 +331,6 @@ RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, int width, int
 	, imageTag(ImageTag::Invalid), IHDR_written(false)
 	, file(theFile), png_ptr(nullptr), info_ptr(nullptr)
 {
-	this->img = nullptr;
 	if (!file || width <= 0 || height <= 0 ||
 	    (format != rp_image::Format::CI8 && format != rp_image::Format::ARGB32))
 	{
@@ -452,9 +451,9 @@ RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, const rp_image
 	}
 
 	// Cache the image parameters.
-	this->img = img;
+	this->data = img;
 	imageTag = ImageTag::RpImage;
-	cache.setFrom(this->img);
+	cache.setFrom(img);
 }
 
 RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, const IconAnimDataConstPtr &iconAnimData)
@@ -521,10 +520,10 @@ RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, const IconAnim
 
 	// Set img or iconAnimData.
 	if (imageTag == ImageTag::IconAnimData) {
-		this->iconAnimData = iconAnimData;
+		this->data = iconAnimData;
 		// Cache the image parameters.
-		const rp_image_const_ptr &img0 = this->iconAnimData->frames[iconAnimData->seq_index[0]];
-		assert(img0 != nullptr);
+		const rp_image_const_ptr &img0 = iconAnimData->frames[iconAnimData->seq_index[0]];
+		assert((bool)img0);
 		if (unlikely(!img0)) {
 			// Invalid animated image.
 			lastError = EINVAL;
@@ -532,8 +531,9 @@ RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, const IconAnim
 		}
 		cache.setFrom(img0);
 	} else {
-		this->img = iconAnimData->frames[iconAnimData->seq_index[0]];
-		cache.setFrom(this->img);
+		const rp_image_const_ptr &img = iconAnimData->frames[iconAnimData->seq_index[0]];
+		this->data = img;
+		cache.setFrom(img);
 	}
 
 	// Initialize the PNG write structs.
@@ -771,10 +771,9 @@ int RpPngWriterPrivate::write_IDAT(const png_byte *const *row_pointers, bool is_
 int RpPngWriterPrivate::write_IDAT(void)
 {
 	assert(file != nullptr);
-	assert((bool)img);
 	assert(imageTag == ImageTag::RpImage);
 	assert(IHDR_written);
-	if (unlikely(!file || !img || imageTag != ImageTag::RpImage)) {
+	if (unlikely(!file || imageTag != ImageTag::RpImage)) {
 		// Invalid state.
 		lastError = EIO;
 		return -lastError;
@@ -782,6 +781,13 @@ int RpPngWriterPrivate::write_IDAT(void)
 	if (unlikely(!IHDR_written)) {
 		// IHDR has not been written yet.
 		// TODO: Better error code?
+		lastError = EIO;
+		return -lastError;
+	}
+
+	// Make sure we have a static image and not an animated image.
+	assert(std::holds_alternative<rp_image_const_ptr>(data));
+	if (!std::holds_alternative<rp_image_const_ptr>(data)) {
 		lastError = EIO;
 		return -lastError;
 	}
@@ -795,6 +801,7 @@ int RpPngWriterPrivate::write_IDAT(void)
 	}
 
 	// Initialize the row pointers array.
+	const rp_image *const img = std::get<rp_image_const_ptr>(data).get();
 	for (int y = cache.height-1; y >= 0; y--) {
 		row_pointers[y] = static_cast<const png_byte*>(img->scanLine(y));
 	}
@@ -819,14 +826,21 @@ int RpPngWriterPrivate::write_IDAT(void)
 int RpPngWriterPrivate::write_IDAT_APNG(void)
 {
 	assert(file != nullptr);
-	assert(iconAnimData != nullptr);
 	assert(imageTag == ImageTag::IconAnimData);
 	assert(IHDR_written);
-	if (unlikely(!file || !iconAnimData || imageTag != ImageTag::IconAnimData)) {
+	if (unlikely(!file || imageTag != ImageTag::IconAnimData)) {
 		// Invalid state.
 		lastError = EIO;
 		return -lastError;
 	}
+
+	// Make sure we have an animated image and not an animated image.
+	assert(std::holds_alternative<IconAnimDataConstPtr>(data));
+	if (!std::holds_alternative<IconAnimDataConstPtr>(data)) {
+		lastError = EIO;
+		return -lastError;
+	}
+
 	if (unlikely(!IHDR_written)) {
 		// IHDR has not been written yet.
 		// TODO: Better error code?
@@ -880,10 +894,12 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
 	}
 
 	// Write the images.
+	const IconAnimData *const iconAnimData = std::get<IconAnimDataConstPtr>(data).get();
 	for (int i = 0; i < iconAnimData->seq_count; i++) {
-		const rp_image_const_ptr &img = iconAnimData->frames[iconAnimData->seq_index[i]];
-		if (!img)
+		const rp_image *const img = iconAnimData->frames[iconAnimData->seq_index[i]].get();
+		if (!img) {
 			break;
+		}
 
 		// Initialize the row pointers array.
 		for (int y = cache.height-1; y >= 0; y--) {
@@ -1250,7 +1266,8 @@ int RpPngWriter::write_IHDR(void)
 
 	if (d->imageTag == RpPngWriterPrivate::ImageTag::IconAnimData) {
 		// Write an acTL chunk to indicate that this is an APNG image.
-		png_set_acTL(d->png_ptr, d->info_ptr, d->iconAnimData->seq_count, 0);
+		const int seq_count = std::get<IconAnimDataConstPtr>(d->data)->seq_count;
+		png_set_acTL(d->png_ptr, d->info_ptr, seq_count, 0);
 	}
 
 #ifdef PNG_sBIT_SUPPORTED
