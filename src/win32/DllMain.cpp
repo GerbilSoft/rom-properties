@@ -127,9 +127,9 @@ STDAPI DllCanUnloadNow(void)
 
 /**
  * Get a class factory to create an object of the requested type.
- * @param rclsid	[in] CLSID of the object.
- * @param riid		[in] IID_IClassFactory.
- * @param ppv		[out] Pointer that receives the interface pointer requested in riid.
+ * @param rclsid	[in] CLSID of the object
+ * @param riid		[in] IID_IClassFactory
+ * @param ppv		[out] Pointer that receives the interface pointer requested in riid
  * @return Error code.
  */
 _Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Outptr_ LPVOID FAR* ppv)
@@ -170,27 +170,27 @@ _Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, 
 	try {
 		IClassFactory *pCF = nullptr;
 
-#define CHECK_INTERFACE(Interface) \
-		if (IsEqualIID(rclsid, CLSID_##Interface)) { \
-			/* Create a new class factory for this Interface. */ \
-			pCF = new RP_ClassFactory<Interface>(); \
+#define CHECK_CLSID(klass) \
+		if (IsEqualIID(rclsid, CLSID_##klass)) { \
+			/* Create a new class factory for this CLSID. */ \
+			pCF = new RP_ClassFactory<klass>(); \
 			if (pCF) { \
 				goto got_pCF; \
 			} \
 		}
 
-		CHECK_INTERFACE(RP_ExtractIcon)
-		else CHECK_INTERFACE(RP_ExtractImage)
-		else CHECK_INTERFACE(RP_ShellPropSheetExt)
-		else CHECK_INTERFACE(RP_ThumbnailProvider)
+		CHECK_CLSID(RP_ExtractIcon)
+		else CHECK_CLSID(RP_ExtractImage)
+		else CHECK_CLSID(RP_ShellPropSheetExt)
+		else CHECK_CLSID(RP_ThumbnailProvider)
 #ifdef HAVE_RP_PROPERTYSTORE_DEPS
-		else CHECK_INTERFACE(RP_PropertyStore)
+		else CHECK_CLSID(RP_PropertyStore)
 #endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 #ifdef ENABLE_OVERLAY_ICON_HANDLER
-		else CHECK_INTERFACE(RP_ShellIconOverlayIdentifier)
+		else CHECK_CLSID(RP_ShellIconOverlayIdentifier)
 #endif /* ENABLE_OVERLAY_ICON_HANDLER */
-		else CHECK_INTERFACE(RP_ContextMenu)
-		else CHECK_INTERFACE(RP_XAttrView)
+		else CHECK_CLSID(RP_ContextMenu)
+		else CHECK_CLSID(RP_XAttrView)
 
 		// Unable to find a matching interface.
 		*ppv = nullptr;
