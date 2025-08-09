@@ -465,11 +465,12 @@ IF(RP_LIBROMDATA_IS_DLL)
 	# This represents the ABI version.
 	SET(${PROJECT_NAME}_VERSION 7.0)
 	SET(${PROJECT_NAME}_SOVERSION 7)
-	IF(MSVC)
-		# Delay-load sources.
-		SET(${PROJECT_NAME}-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
-		SET(${PROJECT_NAME}-DELAYLOAD_H   ../libwin32common/DelayLoadHelper.h)
-	ENDIF(MSVC)
+
+	# Delay-load sources.
+	# NOTE: Delay-load is not supported with MinGW, but we still need
+	# access to the rp_LoadLibrary() function.
+	SET(${PROJECT_NAME}-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
+	SET(${PROJECT_NAME}-DELAYLOAD_H   ../libwin32common/DelayLoadHelper.h)
 ELSE()
 	SET(${PROJECT_NAME}_LINKAGE STATIC)
 ENDIF()

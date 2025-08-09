@@ -18,8 +18,10 @@
 
 static constexpr pthread_once_inl_t PTHREAD_ONCE_INL_INIT = 0;
 
-#ifdef _MSC_VER
-// MSVC: rp_LoadLibrary()
+#ifdef _WIN32
+// rp_LoadLibrary()
+// NOTE: Delay-load is not supported with MinGW, but we still need
+// access to the rp_LoadLibrary() function.
 #  include "libwin32common/DelayLoadHelper.h"
 #endif /* _MSC_VER */
 

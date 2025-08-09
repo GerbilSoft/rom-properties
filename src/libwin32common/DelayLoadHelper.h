@@ -2,22 +2,26 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * DelayLoadHelper.h: DelayLoad helper functions and macros.               *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#if !defined(_WIN32) || !defined(_MSC_VER)
+// NOTE: Delay-load is not supported with MinGW, but we still need
+// access to the rp_LoadLibrary() function.
+#ifndef _WIN32
 #  error DelayLoadHelper.h is MSVC and Win32 only at the moment.
-#endif
+#endif /* !_WIN32 */
 
 // MSVC: Exception handling for /DELAYLOAD.
 // TODO: Check for /DELAYLOAD usage.
 #include "libwin32common/RpWin32_sdk.h"
-#include <delayimp.h>
-#include <excpt.h>
-#include <errno.h>
+#ifdef _MSC_VER
+#  include <delayimp.h>
+#  include <excpt.h>
+#  include <errno.h>
+#endif /* _MSC_VER */
 
 // This isn't defined if compiling with MSVC 2012+
 // when using the Windows 7 SDK.
@@ -29,6 +33,7 @@
 extern "C" {
 #endif
 
+#ifdef _MSC_VER
 /**
  * DELAYLOAD_FILTER_FUNCTION_IMPL(): Implementation of the DelayLoad filter function.
  * Don't use this directly; it's used by DELAYLOAD_TEST_FUNCTION_IMPL*().
@@ -107,6 +112,7 @@ static int DelayLoad_test_##fn(void) { \
 	} \
 	return 0; \
 }
+#endif /* _MSC_VER */
 
 /**
  * Explicit LoadLibrary() for delay-load.

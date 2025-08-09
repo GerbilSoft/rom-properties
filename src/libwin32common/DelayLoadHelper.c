@@ -65,6 +65,7 @@ static const TCHAR rp_subdir[] = _T("riscv64\\");
 #else
 #  define ROMDATA_PREFIX "lib"
 #  define DEBUG_SUFFIX ""
+#  define PUGI_DEBUG_SUFFIX ""
 #endif
 
 static const char *const dll_whitelist[] = {
@@ -186,6 +187,7 @@ HMODULE WINAPI rp_LoadLibrary(LPCSTR pszModuleName)
 	return rp_LoadLibrary_int(pszModuleName, false);
 }
 
+#ifdef _MSC_VER
 /**
  * Explicit LoadLibrary() for delay-load. (internal version)
  * Used by MSVC DelayLoad, which requires checking the DLL whitelist.
@@ -221,8 +223,9 @@ static FARPROC WINAPI rp_dliNotifyHook(unsigned int dliNotify, PDelayLoadInfo pd
 // References:
 // - https://docs.microsoft.com/en-us/cpp/build/reference/notification-hooks?view=vs-2019
 // - https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=vs-2019
-#if _MSC_VER > 1900 || (_MSC_VER == 1900 && _MSC_FULL_VER >= 190024210)
+#  if _MSC_VER > 1900 || (_MSC_VER == 1900 && _MSC_FULL_VER >= 190024210)
 const PfnDliHook __pfnDliNotifyHook2 = rp_dliNotifyHook;
-#else
+#  else
 PfnDliHook __pfnDliNotifyHook2 = rp_dliNotifyHook;
-#endif
+#  endif
+#endif /* _MSC_VER */
