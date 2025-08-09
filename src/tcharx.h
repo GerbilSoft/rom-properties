@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension.                                    *
  * tcharx.h: TCHAR support for Windows and Linux.                          *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,6 +13,9 @@
 // but _snprintf(), and thus _sntprintf(), does *not* in some cases.
 // We're switching to our own sntprintf() macro to handle this.
 // Reference: https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/snprintf-snprintf-snprintf-l-snwprintf-snwprintf-l?view=msvc-170
+#ifdef _sntprintf
+#  undef _sntprintf
+#endif
 #define _snprintf __DO_NOT_USE_OLD_MSVC__SNPRINTF
 #define _sntprintf __DO_NOT_USE_OLD_MSVC__SNTPRINTF
 #define _snwprintf __DO_NOT_USE_OLD_MSVC__SNWPRINTF
