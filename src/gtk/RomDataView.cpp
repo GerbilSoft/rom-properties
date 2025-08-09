@@ -583,8 +583,39 @@ rp_rom_data_view_desc_format_type_changed(RpRomDataView	*page,
 	// TODO: If we already have PangoAttrLists, is it possible to
 	// update them in place?
 	init_pango_attr_lists(page);
-	for (GtkLabel *label : page->cxx->vecDescLabels) {
-		set_label_format_type(page, label);
+	for (auto &tab : page->cxx->tabs) {
+		// Process all column 0 widgets in each tab grid/table.
+#ifdef USE_GTK_GRID
+		// NOTE: GtkGrid doesn't let us get the total row count.
+		// Keep going until we get nullptr or a non-GtkLabel widget.
+		GtkGrid *const grid = GTK_GRID(tab.table);
+		for (int i = 0; ; i++) {
+			GtkWidget *const lblDesc = gtk_grid_get_child_at(grid, 0, i);
+			if (!GTK_IS_LABEL(lblDesc)) {
+				break;
+			}
+
+			set_label_format_type(page, GTK_LABEL(lblDesc));
+		}
+#else /* !USE_GTK_GRID */
+		// NOTE: We have to enumerate all child widgets and then
+		// check the attachment.
+		GtkContainer *const container = GTK_CONTAINER(tab.table);
+		GList *const widgets = gtk_container_get_children(container);
+		for (GList *p = widgets; p != nullptr; p = g_list_next(p)) {
+			// NOTE: Assuming each widget occupies exactly 1 cell.
+			GtkWidget *const widget = GTK_WIDGET(p->data);
+			if (!GTK_IS_LABEL(widget)) {
+				continue;
+			}
+
+			guint left = ~0;
+			gtk_container_child_get(container, widget, "left-attach", &left, nullptr);
+			if (left == 0) {
+				set_label_format_type(page, GTK_LABEL(widget));
+			}
+		}
+#endif /* USE_GTK_GRID */
 	}
 }
 
@@ -891,7 +922,7 @@ rp_rom_data_view_init_bitfield(RpRomDataView *page,
 		// connect this signal *after* setting the initial value.
 		g_signal_connect(checkBox, "toggled", G_CALLBACK(checkbox_no_toggle_signal_handler), page);
 
-#if USE_GTK_GRID
+#ifdef USE_GTK_GRID
 		// TODO: GTK_FILL
 		gtk_grid_attach(GTK_GRID(widget), checkBox, col, row, 1, 1);
 #else /* !USE_GTK_GRID */
@@ -1323,7 +1354,9 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 		page->changed_idle = 0;
 		return G_SOURCE_REMOVE;
 	}
+#ifndef USE_GTK_GRID
 	int fieldCount = pFields->count();
+#endif /* !USE_GTK_GRID */
 
 	// Create the GtkNotebook.
 	auto &tabs = page->cxx->tabs;
@@ -1355,7 +1388,7 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 
 			tab.vbox = rp_gtk_vbox_new(8);
 			gtk_widget_set_name(tab.vbox, fmt::format(FSTR("vboxTab{:d}"), i).c_str());
-#if USE_GTK_GRID
+#ifdef USE_GTK_GRID
 			tab.table = gtk_grid_new();
 			gtk_grid_set_row_spacing(GTK_GRID(tab.table), 2);
 			gtk_grid_set_column_spacing(GTK_GRID(tab.table), 8);
@@ -1405,7 +1438,7 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 		auto &tab = tabs.at(0);
 		tab.vbox = GTK_WIDGET(page);
 
-#if USE_GTK_GRID
+#ifdef USE_GTK_GRID
 		tab.table = gtk_grid_new();
 		gtk_grid_set_row_spacing(GTK_GRID(tab.table), 2);
 		gtk_grid_set_column_spacing(GTK_GRID(tab.table), 8);
@@ -1428,8 +1461,6 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 #endif /* GTK_CHECK_VERSION(4, 0, 0) */
 	}
 
-	// Reserve enough space for vecDescLabels.
-	page->cxx->vecDescLabels.reserve(fieldCount);
 	// Per-tab row counts.
 	unique_ptr<int[]> tabRowCount(new int[tabs.size()]());
 
@@ -1518,14 +1549,13 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 
 		gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
 		set_label_format_type(page, GTK_LABEL(lblDesc));
-		page->cxx->vecDescLabels.push_back(GTK_LABEL(lblDesc));
 #if !GTK_CHECK_VERSION(4, 0, 0)
 		gtk_widget_show(lblDesc);
 #endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 
 		// Value widget
 		int &row = tabRowCount[tabIdx];
-#if USE_GTK_GRID
+#ifdef USE_GTK_GRID
 		// TODO: GTK_FILL
 		gtk_grid_attach(GTK_GRID(tab.table), lblDesc, 0, row, 1, 1);
 		// Widget halign is set above.
@@ -1566,7 +1596,7 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 				// setting a fixed height.
 				g_object_set_qdata(G_OBJECT(widget), RFT_LISTDATA_rows_visible_quark, GINT_TO_POINTER(0));
 
-#if USE_GTK_GRID
+#ifdef USE_GTK_GRID
 				// Set expand and fill properties.
 				gtk_widget_set_vexpand(widget, true);
 				gtk_widget_set_valign(widget, GTK_ALIGN_FILL);
@@ -1614,7 +1644,7 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 				row++;
 			} else {
 				// Add the widget to the GtkTable/GtkGrid.
-#if USE_GTK_GRID
+#ifdef USE_GTK_GRID
 				gtk_grid_attach(GTK_GRID(tab.table), widget, 0, row+1, 2, 1);
 #else /* !USE_GTK_GRID */
 				fieldCount++;
@@ -1626,7 +1656,7 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 			}
 		} else {
 			// Single row.
-#if USE_GTK_GRID
+#ifdef USE_GTK_GRID
 			gtk_grid_attach(GTK_GRID(tab.table), widget, 1, row, 1, 1);
 #else /* !USE_GTK_GRID */
 			gtk_table_attach(GTK_TABLE(tab.table), widget, 1, 2, row, row+1,
@@ -1779,7 +1809,6 @@ rp_rom_data_view_delete_tabs(RpRomDataView *page)
 	}
 
 	// Clear the various widget references.
-	cxx->vecDescLabels.clear();
 	cxx->def_lc = 0;
 	cxx->vecStringMulti.clear();
 	cxx->vecListDataMulti.clear();

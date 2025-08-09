@@ -82,9 +82,6 @@ struct _RpRomDataViewCxx {
 	};
 	std::vector<tab> tabs;
 
-	// Description labels
-	std::vector<GtkLabel*> vecDescLabels;
-
 	// RFT_STRING_MULTI value labels
 	std::vector<Data_StringMulti_t> vecStringMulti;
 
