@@ -574,6 +574,28 @@ static LONG UnregisterCLSID(_In_ REFCLSID rclsid)
 }
 
 /**
+ * Table of CLSIDs to register and/or unregister.
+ */
+struct CLSID_tbl_t {
+	REFCLSID rclsid;
+	LPCTSTR description;
+};
+static const CLSID_tbl_t CLSID_tbl[] = {
+	{__uuidof(RP_ExtractIcon),		_T("ROM Properties Page - Icon Extractor")},
+	{__uuidof(RP_ExtractImage),		_T("ROM Properties Page - Image Extractor")},
+	{__uuidof(RP_ShellPropSheetExt),	_T("ROM Properties Page - Property Sheet")},
+	{__uuidof(RP_ThumbnailProvider),	_T("ROM Properties Page - Thumbnail Provider")},
+#ifdef HAVE_RP_PROPERTYSTORE_DEPS
+	{__uuidof(RP_PropertyStore),		_T("ROM Properties Page - Property Store")},
+#endif /* HAVE_RP_PROPERTYSTORE_DEPS */
+#ifdef ENABLE_OVERLAY_ICON_HANDLER
+	{__uuidof(RP_ShellIconOverlayIdentifier), _T("ROM Properties Page - Shell Icon Overlay Identifier")},
+#endif /* ENABLE_OVERLAY_ICON_HANDLER */
+	{__uuidof(RP_ContextMenu),		_T("ROM Properties Page - Context Menu")},
+	{__uuidof(RP_XAttrView),		_T("ROM Properties Page - Extended Attribute viewer")},
+};
+
+/**
  * Register the DLL.
  */
 STDAPI DllRegisterServer(void)
@@ -586,28 +608,14 @@ STDAPI DllRegisterServer(void)
 	}
 
 	// Register the COM objects.
-	lResult = RegisterCLSID(__uuidof(RP_ExtractIcon), _T("ROM Properties Page - Icon Extractor"));
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RegisterCLSID(__uuidof(RP_ExtractImage), _T("ROM Properties Page - Image Extractor"));
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RegisterCLSID(__uuidof(RP_ShellPropSheetExt), _T("ROM Properties Page - Property Sheet"));
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RegisterCLSID(__uuidof(RP_ThumbnailProvider), _T("ROM Properties Page - Thumbnail Provider"));
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-#ifdef HAVE_RP_PROPERTYSTORE_DEPS
-	lResult = RegisterCLSID(__uuidof(RP_PropertyStore), _T("ROM Properties Page - Property Store"));
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-#endif /* HAVE_RP_PROPERTYSTORE_DEPS */
+	for (const auto &p : CLSID_tbl) {
+		lResult = RegisterCLSID(p.rclsid, p.description);
+		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	}
 #ifdef ENABLE_OVERLAY_ICON_HANDLER
-	lResult = RegisterCLSID(__uuidof(RP_ShellIconOverlayIdentifier), _T("ROM Properties Page - Shell Icon Overlay Identifier"));
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_ShellIconOverlayIdentifer::RegisterShellIconOverlayIdentifier();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 #endif /* ENABLE_OVERLAY_ICON_HANDLER */
-	lResult = RegisterCLSID(__uuidof(RP_ContextMenu), _T("ROM Properties Page - Context Menu"));
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RegisterCLSID(__uuidof(RP_XAttrView), _T("ROM Properties Page - Extended Attribute viewer"));
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Enumerate user hives.
 	RegKey hku(HKEY_USERS, nullptr, KEY_READ, false);
@@ -723,29 +731,17 @@ STDAPI DllRegisterServer(void)
  */
 STDAPI DllUnregisterServer(void)
 {
+	LONG lResult;
+
 	// Unregister the COM objects.
-	LONG lResult = UnregisterCLSID(__uuidof(RP_ExtractIcon));
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = UnregisterCLSID(__uuidof(RP_ExtractImage));
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = UnregisterCLSID(__uuidof(RP_ShellPropSheetExt));
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = UnregisterCLSID(__uuidof(RP_ThumbnailProvider));
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-#ifdef HAVE_RP_PROPERTYSTORE_DEPS
-	lResult = UnregisterCLSID(__uuidof(RP_PropertyStore));
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-#endif /* HAVE_RP_PROPERTYSTORE_DEPS */
+	for (const auto &p : CLSID_tbl) {
+		lResult = UnregisterCLSID(p.rclsid);
+		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	}
 #ifdef ENABLE_OVERLAY_ICON_HANDLER
 	lResult = RP_ShellIconOverlayIdentifer::UnregisterShellIconOverlayIdentifier();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = UnregisterCLSID(__uuidof(RP_ShellIconOverlayIdentifier));
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 #endif /* ENABLE_OVERLAY_ICON_HANDLER */
-	lResult = UnregisterCLSID(__uuidof(RP_ContextMenu));
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = UnregisterCLSID(__uuidof(RP_XAttrView));
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Enumerate user hives.
 	RegKey hku(HKEY_USERS, nullptr, KEY_READ, false);
