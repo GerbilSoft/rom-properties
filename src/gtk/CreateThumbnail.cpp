@@ -407,8 +407,10 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 	guchar *pixels;
 #ifdef RP_GTK_USE_GDKTEXTURE
 	guchar *texdata = nullptr;
-#endif /* RP_GTK_USE_GDKTEXTURE */
+	size_t rowstride;
+#else /* !RP_GTK_USE_GDKTEXTURE */
 	int rowstride;
+#endif /* RP_GTK_USE_GDKTEXTURE */
 	int pwRet;
 
 	// tEXt chunks
@@ -520,6 +522,12 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 	// FIXME: Downscaling isn't working for GdkTexture yet, so we have to use the full image size.
 	//rowstride = outParams.thumbSize.width * sizeof(uint32_t);
 	//pixels = static_cast<guchar*>(malloc(rowstride * outParams.thumbSize.height));
+	assert(outParams.fullSize.width > 0);
+	if (outParams.fullSize.width <= 0) {
+		// Invalid image width.
+		ret = RPCT_ERROR_INVALID_IMAGE_SIZE;
+		goto cleanup;
+	}
 	rowstride = outParams.fullSize.width * sizeof(uint32_t);
 	texdata = static_cast<guchar*>(g_malloc(rowstride * outParams.fullSize.height));
 	// FIXME: Using GdkTextureDownloader to convert to GDK_MEMORY_B8G8R8A8
