@@ -42,6 +42,11 @@ using std::tstring;
 // NTDLL functions not declared in winternl.h.
 extern "C" {
 
+#ifndef _MSC_VER
+// MinGW might not have __kernel_entry defined.
+#  define __kernel_entry
+#endif
+
 __kernel_entry NTSYSCALLAPI NTSTATUS NtWriteFile(
 	HANDLE           FileHandle,
 	HANDLE           Event,
