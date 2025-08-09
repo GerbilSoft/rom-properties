@@ -78,9 +78,9 @@ SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib" CACHE INTERNAL "Put
 # changed but its headers haven't changed.
 SET(CMAKE_LINK_DEPENDS_NO_SHARED ON)
 
-# Enable testing.
-INCLUDE(CTest)
 IF(BUILD_TESTING)
+	# Enable testing.
+	INCLUDE(CTest)
 	ENABLE_TESTING()
 	IF(USE_XVFB)
 		FIND_PROGRAM(XVFB_RUN xvfb-run REQUIRED)
