@@ -1,9 +1,9 @@
-This copy of inih-r58 is a modified version of the original.
+This copy of inih-r61 is a modified version of the original.
 
-commit 9de2a5fe4956447a22a324e2efc0648c5aad5285
-chore: bump meson.build version number to 60
+commit 3eda303b34610adc0554bdea08d02a25668c774c
+Bump version to 61 for release
 
-Tag: r60
+Tag: r61
 
 The following changes have been made to the original:
 
@@ -11,5 +11,5 @@ The following changes have been made to the original:
 
 - The Meson build scripts have been removed.
 
-To obtain the original inih-r58, visit:
+To obtain the original inih-r61, visit:
 https://github.com/benhoyt/inih
