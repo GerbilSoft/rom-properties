@@ -459,11 +459,22 @@ uint8_t win32_attrs_to_d_type(uint32_t dwAttrs);
 
 /**
  * Get a file's d_type.
- * @param filename Filename
+ * @param filename Filename (UTF-8)
  * @param deref If true, dereference symbolic links (lstat)
  * @return File d_type
  */
 RP_LIBROMDATA_PUBLIC
 uint8_t get_file_d_type(const char *filename, bool deref = false);
+
+#ifdef _WIN32
+/**
+ * Get a file's d_type.
+ * @param filename Filename (UTF-16)
+ * @param deref If true, dereference symbolic links (lstat)
+ * @return File d_type
+ */
+RP_LIBROMDATA_PUBLIC
+uint8_t get_file_d_type(const wchar_t *filename, bool deref = false);
+#endif /* _WIN32 */
 
 } }

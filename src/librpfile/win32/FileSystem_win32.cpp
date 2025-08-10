@@ -923,11 +923,13 @@ uint8_t win32_attrs_to_d_type(uint32_t dwAttrs)
 
 /**
  * Get a file's d_type.
+ * @tparam CharType Character type (char for UTF-8; wchar_t for Windows UTF-16)
  * @param filename Filename
  * @param deref If true, dereference symbolic links (lstat)
- * @return File d_type
+ * @return File's d_type, or DT_UNKNOWN if not available.
  */
-uint8_t get_file_d_type(const char *filename, bool deref)
+template<typename CharType>
+static uint8_t T_get_file_d_type(const CharType *filename, bool deref)
 {
 	assert(filename != nullptr);
 	assert(filename[0] != '\0');
@@ -940,6 +942,28 @@ uint8_t get_file_d_type(const char *filename, bool deref)
 
 	const tstring tfilename = makeWinPath(filename);
 	return win32_attrs_to_d_type(GetFileAttributes(tfilename.c_str()));
+}
+
+/**
+ * Get a file's d_type.
+ * @param filename Filename (UTF-8)
+ * @param deref If true, dereference symbolic links (lstat)
+ * @return File d_type
+ */
+uint8_t get_file_d_type(const char *filename, bool deref)
+{
+	return T_get_file_d_type(filename, deref);
+}
+
+/**
+ * Get a file's d_type.
+ * @param filename Filename (UTF-16)
+ * @param deref If true, dereference symbolic links (lstat)
+ * @return File d_type
+ */
+uint8_t get_file_d_type(const wchar_t *filename, bool deref)
+{
+	return T_get_file_d_type(filename, deref);
 }
 
 } }
