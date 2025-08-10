@@ -37,6 +37,13 @@ RP_ThumbnailProvider_Private::RP_ThumbnailProvider_Private()
 	, grfMode(0)
 {}
 
+RP_ThumbnailProvider_Private::~RP_ThumbnailProvider_Private()
+{
+	if (pstream) {
+		pstream->Release();
+	}
+}
+
 /** RP_ThumbnailProvider **/
 
 RP_ThumbnailProvider::RP_ThumbnailProvider()
@@ -91,6 +98,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::Initialize(_In_ IStream *pstream, DWORD grf
 	std::swap(d->file, file);
 
 	// Save the IStream and grfMode.
+	pstream->AddRef();
 	d->pstream = pstream;
 	d->grfMode = grfMode;
 	return S_OK;
