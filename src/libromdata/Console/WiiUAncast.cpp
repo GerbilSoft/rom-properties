@@ -446,7 +446,9 @@ uint32_t WiiUAncast::imgpf(ImageType imageType) const
 	switch (imageType) {
 		case IMG_INT_ICON: {
 			// Use nearest-neighbor scaling when resizing.
-			ret = IMGPF_RESCALE_NEAREST;
+			// Also, indicate that this icon is provided by rom-properties
+			// rather than from the firmware image itself.
+			ret = IMGPF_RESCALE_NEAREST | IMGPF_RP_GENERATED;
 			break;
 		}
 

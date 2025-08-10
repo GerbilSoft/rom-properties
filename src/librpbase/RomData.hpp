@@ -390,6 +390,11 @@ public:
 		// the overscan area (top 8px, bottom 8px) cropped to get
 		// a 256x224 image.
 		IMGPF_NTSC_NES_OVERSCAN		= (1U << 7),
+
+		// Image is provided by rom-properties as either a built-in or
+		// generated icon, and is not an internal or external image from
+		// the ROM itself. (e.g. "Happy Wii U" for WiiUAncast)
+		IMGPF_RP_GENERATED		= (1U << 8),
 	};
 
 	struct ImageSizeDef {
