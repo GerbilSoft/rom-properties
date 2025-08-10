@@ -294,18 +294,37 @@ LONG RP_ExtractIcon_Private::Fallback(HICON *phiconLarge, HICON *phiconSmall, UI
 {
 	// TODO: Check HKCU first.
 
-	// Get the file extension.
 	if (unlikely(olefilename.empty())) {
 		return ERROR_FILE_NOT_FOUND;
 	}
-	const wchar_t *wfile_ext = FileSystem::file_ext(olefilename);
-	if (!wfile_ext) {
-		// Invalid or missing file extension.
-		return ERROR_FILE_NOT_FOUND;
+
+	// Check the file type.
+	const wchar_t *filetype_key;
+	const uint8_t d_type = FileSystem::get_file_d_type(olefilename.c_str());
+	switch (d_type) {
+		case DT_CHR:
+		case DT_BLK:
+			// Device (probably a drive root)
+			filetype_key = L"Drive";
+			break;
+
+		case DT_DIR:
+			// Directory
+			filetype_key = L"Directory";
+			break;
+
+		default:
+			// Check the file extension.
+			filetype_key = FileSystem::file_ext(olefilename);
+			if (!filetype_key) {
+				// Invalid or missing file extension.
+				return ERROR_FILE_NOT_FOUND;
+			}
+			break;
 	}
 
-	// Open the filetype key in HKCR.
-	RegKey hkcr_Assoc(HKEY_CLASSES_ROOT, wfile_ext, KEY_READ, false);
+	// Open the file type key in HKCR.
+	RegKey hkcr_Assoc(HKEY_CLASSES_ROOT, filetype_key, KEY_READ, false);
 	if (!hkcr_Assoc.isOpen()) {
 		return hkcr_Assoc.lOpenRes();
 	}
