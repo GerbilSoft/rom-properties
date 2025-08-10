@@ -39,6 +39,6 @@ apt-get -y install \
 	libnautilus-extension-dev \
 	libblkid-dev \
 	\
-	libgtk-4-dev
+	libgtk-4-dev \
 	\
 	xvfb
