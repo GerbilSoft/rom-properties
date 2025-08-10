@@ -9,11 +9,8 @@ MACRO(FIND_QT6_AND_KF6)
 	SET(QT_DEFAULT_MAJOR_VERSION 6)
 	SET(QT_NO_CREATE_VERSIONLESS_TARGETS TRUE)
 
-	# FIXME: Search for Qt6 first instead of ECM?
-	SET(KF6_MIN 5.248.0)
-
 	# Find KF6 Extra CMake Modules.
-	FIND_PACKAGE(ECM ${REQUIRE_KF6} ${KF6_MIN} NO_MODULE)
+	FIND_PACKAGE(ECM ${REQUIRE_KF6} NO_MODULE)
 	IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		# Make sure ECM's CMake files don't create an uninstall rule.
 		SET(KDE_SKIP_UNINSTALL_TARGET TRUE)
@@ -48,8 +45,9 @@ MACRO(FIND_QT6_AND_KF6)
 
 			# Find the qtpaths6 executable.
 			FIND_PROGRAM(QTPATHS6 NAMES qtpaths6 qtpaths
-				PATHS /usr/local/lib/qt6/bin	# FreeBSD
-				/usr/lib/qt6/bin	#Archlinux
+				PATHS /usr/lib64/qt6/bin	# Gentoo
+				      /usr/lib/qt6/bin		# Archlinux
+				      /usr/local/lib/qt6/bin	# FreeBSD
 				)
 			IF(NOT QTPATHS6)
 				MESSAGE(FATAL_ERROR "qtpaths6 not found. Install one of these packages:
