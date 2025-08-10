@@ -178,6 +178,10 @@ RP_PropertyStore_Private::~RP_PropertyStore_Private()
 	for (PROPVARIANT &pv : prop_val) {
 		PropVariantClear(&pv);
 	}
+
+	if (pstream) {
+		pstream->Release();
+	}
 }
 
 /** RP_PropertyStore **/
@@ -234,6 +238,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 	std::swap(d->file, file);
 
 	// Save the IStream and grfMode.
+	pstream->AddRef();
 	d->pstream = pstream;
 	d->grfMode = grfMode;
 
