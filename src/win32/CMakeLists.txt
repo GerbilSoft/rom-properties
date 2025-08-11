@@ -49,8 +49,9 @@ SET(${PROJECT_NAME}_SRCS
 	RP_ExtractImage_Fallback.cpp
 	RpImageWin32.cpp
 	RP_ShellPropSheetExt.cpp
-	RP_ShellPropSheetExt_ops.cpp
 	RP_ShellPropSheetExt_Register.cpp
+	#RomDataView.cpp
+	#RomDataView_ops.cpp
 	RP_ThumbnailProvider.cpp
 	RP_ThumbnailProvider_Register.cpp
 	RP_ThumbnailProvider_Fallback.cpp
@@ -91,7 +92,8 @@ SET(${PROJECT_NAME}_H
 	RP_ExtractImage_p.hpp
 	RpImageWin32.hpp
 	RP_ShellPropSheetExt.hpp
-	RP_ShellPropSheetExt_p.hpp
+	RomDataView.hpp
+	#RomDataView_p.hpp
 	thumbcache-wrapper.hpp
 	RP_ThumbnailProvider.hpp
 	RP_ThumbnailProvider_p.hpp

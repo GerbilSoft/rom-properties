@@ -30,9 +30,6 @@ namespace LibWin32UI {
 	class RegKey;
 }
 
-// C++ includes.
-#include <string>
-
 class RP_ShellPropSheetExt_Private;
 
 class UUID_ATTR("{2443C158-DF7C-4352-B435-BC9F885FFD52}")

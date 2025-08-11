@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (Win32)                            *
- * RP_ShellPropSheetExt_p.hpp: IShellPropSheetExt implementation.          *
+ * RomDataView_p.hpp: RomData viewer control.                              *
  * (Private class)                                                         *
  *                                                                         *
  * Copyright (c) 2016-2025 by David Korth.                                 *
@@ -21,7 +21,7 @@
 #include <unordered_map>
 #include <vector>
 
-// Control base IDs.
+// Control base IDs
 #define IDC_STATIC_BANNER		0x0100
 #define IDC_STATIC_ICON			0x0101
 #define IDC_TAB_WIDGET			0x0102
@@ -64,32 +64,33 @@ class DragImageLabel;
 // ListView Data
 #include "LvData.hpp"
 
-/** RP_ShellPropSheetExt_Private **/
-// Workaround for RP_D() expecting the no-underscore naming convention.
-#define RP_ShellPropSheetExtPrivate RP_ShellPropSheetExt_Private
+/** RomDataViewPrivate **/
 
-class RP_ShellPropSheetExt_Private
+class RomDataViewPrivate
 {
 public:
 	/**
-	 * RP_ShellPropSheetExt_Private constructor
-	 * @param q
+	 * RomDataViewPrivate constructor
+	 * @param hWnd RomDataView control
 	 * @param tfilename
 	 */
-	explicit RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q, const TCHAR *tfilename);
+	explicit RomDataViewPrivate(HWND hWnd, const TCHAR *tfilename);
 
 private:
-	RP_DISABLE_COPY(RP_ShellPropSheetExt_Private)
+	RP_DISABLE_COPY(RomDataViewPrivate)
 private:
 	RP_ShellPropSheetExt *const q_ptr;
 
 public:
+	// GetWindowLongPtr() offsets
+	static constexpr int GWLP_ROMDATAVIEW_D = 0;
+
 	// Property for "tab pointer".
-	// This points to the RP_ShellPropSheetExt_Private::tab object.
+	// This points to the RomDataViewPrivate::tab object.
 	static const TCHAR TAB_PTR_PROP[];
 
 public:
-	HWND hDlgSheet;			// Property sheet
+	HWND hWnd;			// RomDataView control
 
 	std::tstring tfilename;		// ROM filename
 	LibRpBase::RomDataPtr romData;	// ROM data (Not opened until the properties tab is shown.)
@@ -376,7 +377,7 @@ public:
 	 * @param wParam	WPARAM
 	 * @param lParam	LPARAM
 	 * @param uIdSubclass	Subclass ID (usually the control ID)
-	 * @param dwRefData	RP_ShellPropSheetExt_Private*
+	 * @param dwRefData	RomDataViewPrivate*
 	 */
 	static LRESULT CALLBACK MainDialogSubclassProc(
 		HWND hWnd, UINT uMsg,
@@ -390,15 +391,14 @@ public:
 	void createOptionsButton(void);
 
 private:
-	// Internal functions used by the callback functions.
-	INT_PTR DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr);
-	INT_PTR DlgProc_WM_COMMAND(HWND hDlg, WPARAM wParam, LPARAM lParam);
-	INT_PTR DlgProc_WM_PAINT(HWND hDlg);
+	// Internal functions used by the callback functions
+	INT_PTR WndProc_WM_NOTIFY(HWND hWnd, NMHDR *pHdr);
+	INT_PTR WndProc_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam);
+	INT_PTR WndProc_WM_PAINT(HWND hWnd);
 
 public:
-	// Property sheet callback functions.
-	static INT_PTR CALLBACK DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static UINT CALLBACK CallbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
+	// Property sheet callback functions
+	static INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	/**
 	 * Dialog procedure for subtabs.
