@@ -2195,8 +2195,6 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	UINT nFiles, cchFilename;
 	TCHAR *tfilename = nullptr;
 
-	const Config *config;
-
 	// Determine how many files are involved in this operation. This
 	// code sample displays the custom context menu item when only
 	// one file is selected.
@@ -2221,13 +2219,6 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	cchFilename = DragQueryFile(hDrop, 0, tfilename, cchFilename+1);
 	if (cchFilename == 0) {
 		// No filename.
-		goto cleanup;
-	}
-
-	// Check for "bad" file systems.
-	config = Config::instance();
-	if (FileSystem::isOnBadFS(tfilename, config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS))) {
-		// This file is on a "bad" file system.
 		goto cleanup;
 	}
 
