@@ -44,9 +44,9 @@ public:
 	static AchWin32 instance;
 	bool hasRegistered;
 
-	// Property for "NotifyIconData uID".
-	// This contains the uID set in NotifyIconData.
-	static const TCHAR NID_UID_PTR_PROP[];
+	// GetWindowLongPtr() offsets
+	static constexpr int GWLP_ACHWIN32_D = 0;
+	static constexpr int GWLP_ACHWIN32_NID_UID = static_cast<int>(sizeof(LONG_PTR));
 
 	// Timeout for the achievement popup. (in ms)
 	static constexpr unsigned int ACHWIN32_TIMEOUT = 10U * 1000U;
@@ -109,10 +109,6 @@ public:
 	unordered_map<HWND, DWORD> map_hWndToTID;
 };
 
-// Property for "NotifyIconData uID".
-// This contains the uID set in NotifyIconData.
-const TCHAR AchWin32Private::NID_UID_PTR_PROP[] = _T("AchWin32Private::NID_uID");
-
 /** AchWin32Private **/
 
 // Singleton instance.
@@ -141,7 +137,7 @@ AchWin32Private::~AchWin32Private()
 		// Zero out the user data to prevent WM_NCDESTROY from
 		// attempting to modify the maps.
 		HWND hWnd = pair.second;
-		SetWindowLongPtr(hWnd, GWLP_USERDATA, 0);
+		SetWindowLongPtr(hWnd, GWLP_ACHWIN32_D, 0);
 
 		// Now destroy the window.
 		DestroyWindow(hWnd);
@@ -199,7 +195,7 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 			0, 0,				// nWidth, nHeight
 			nullptr, nullptr,		// hWndParent, hMenu
 			nullptr, this);			// hInstance, lpParam
-		SetWindowLongPtr(hNotifyWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+		SetWindowLongPtr(hNotifyWnd, GWLP_ACHWIN32_D, reinterpret_cast<LONG_PTR>(this));
 		map_tidToHWND.emplace(tid, hNotifyWnd);
 		map_hWndToTID.emplace(hNotifyWnd, tid);
 	}
@@ -239,7 +235,7 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 	}
 
 	// Set the notification uID property.
-	SetProp(hNotifyWnd, NID_UID_PTR_PROP, (HANDLE)(INT_PTR)nid_uID);
+	SetWindowLongPtr(hNotifyWnd, GWLP_ACHWIN32_NID_UID, static_cast<LONG_PTR>(nid_uID));
 
 	// uVersion must be set after the icon is added.
 	Shell_NotifyIcon(NIM_SETVERSION, &nid);
@@ -325,7 +321,7 @@ void AchWin32Private::registerWindowClass(void)
 		CS_HREDRAW | CS_VREDRAW,	// style
 		RpAchNotifyWndProc,		// lpfnWndProc
 		0,				// cbClsExtra
-		0,				// cbWndExtra
+		sizeof(LONG_PTR) * 2,		// cbWndExtra [this, nid_uID]
 		HINST_THISCOMPONENT,		// hInstance
 		nullptr,			// hIcon
 		nullptr,			// hCursor
@@ -346,10 +342,10 @@ void AchWin32Private::registerWindowClass(void)
  */
 void AchWin32Private::removeWindowFromTracking(HWND hWnd)
 {
-	const DWORD nid_uID = (DWORD)(INT_PTR)GetProp(hWnd, NID_UID_PTR_PROP);
+	const DWORD nid_uID = static_cast<DWORD>(GetWindowLongPtr(hWnd, GWLP_ACHWIN32_NID_UID));
 	if (nid_uID > 0) {
 		// Notification icon was set.
-		RemoveProp(hWnd, NID_UID_PTR_PROP);
+		SetWindowLongPtr(hWnd, GWLP_ACHWIN32_NID_UID, 0);
 
 		// Make sure the notification icon is destroyed.
 		const DWORD tid = GetCurrentThreadId();
@@ -366,7 +362,7 @@ void AchWin32Private::removeWindowFromTracking(HWND hWnd)
 	}
 
 	// Remove the window from the maps.
-	auto *const d = reinterpret_cast<AchWin32Private*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+	auto *const d = reinterpret_cast<AchWin32Private*>(GetWindowLongPtr(hWnd, GWLP_ACHWIN32_D));
 	if (d) {
 		d->map_tidToHWND.erase(GetCurrentThreadId());
 		d->map_hWndToTID.erase(hWnd);
