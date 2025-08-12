@@ -26,16 +26,14 @@ class RP_XAttrView_Private
 public:
 	/**
 	 * RP_XAttrView_Private constructor
-	 * @param q
-	 * @param filename Filename (RP_XAttrView_Private takes ownership)
+	 * @param tfilename Filename (RP_XAttrView_Private takes ownership)
 	 */
-	explicit RP_XAttrView_Private(RP_XAttrView *q, LPTSTR filename);
+	explicit RP_XAttrView_Private(LPTSTR tfilename);
 
 	~RP_XAttrView_Private();
 
 private:
 	RP_DISABLE_COPY(RP_XAttrView_Private)
-	RP_XAttrView *const q_ptr;
 
 public:
 	// Property for "tab pointer".

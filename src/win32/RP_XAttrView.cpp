@@ -50,12 +50,10 @@ const TCHAR RP_XAttrView_Private::TAB_PTR_PROP[] = _T("RP_XAttrView_Private::tab
 
 /**
  * RP_XAttrView_Private constructor
- * @param q
- * @param filename Filename (RP_XAttrView_Private takes ownership)
+ * @param tfilename Filename (RP_XAttrView_Private takes ownership)
  */
-RP_XAttrView_Private::RP_XAttrView_Private(RP_XAttrView *q, LPTSTR tfilename)
-	: q_ptr(q)
-	, hDlgSheet(nullptr)
+RP_XAttrView_Private::RP_XAttrView_Private(LPTSTR tfilename)
+	: hDlgSheet(nullptr)
 	, tfilename(tfilename)
 	, dwExStyleRTL(LibWin32UI::isSystemRTL())
 	, colorAltRow(0)	// initialized later
@@ -455,7 +453,7 @@ IFACEMETHODIMP RP_XAttrView::Initialize(
 
 	// Save the filename in the private class for later.
 	if (!d_ptr) {
-		d_ptr = new RP_XAttrView_Private(this, tfilename);
+		d_ptr = new RP_XAttrView_Private(tfilename);
 		tfilename = nullptr;
 	}
 
