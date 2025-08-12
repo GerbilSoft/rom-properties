@@ -294,27 +294,13 @@ IFACEMETHODIMP RP_ExtractImage::GetDateStamp(_Out_ FILETIME *pDateStamp)
 	// Open the file and get the last write time.
 	// NOTE: LibRpBase::FileSystem::get_mtime() exists,
 	// but its resolution is seconds, less than FILETIME.
-	HANDLE hFile = CreateFile(d->olefilename.c_str(),
-		GENERIC_READ, FILE_SHARE_READ, nullptr,
-		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-	if (!hFile) {
-		// Could not open the file.
+	WIN32_FILE_ATTRIBUTE_DATA fileAttrData;
+	if (!GetFileAttributesEx(d->olefilename.c_str(), GetFileExInfoStandard, &fileAttrData)) {
+		// Unable to get file attributes.
 		// TODO: Return STG_E_FILENOTFOUND?
 		return E_FAIL;
 	}
 
-	FILETIME ftLastWriteTime;
-	BOOL bRet = GetFileTime(hFile, nullptr, nullptr, &ftLastWriteTime);
-	CloseHandle(hFile);
-	if (!bRet) {
-		// Failed to retrieve the timestamp.
-		return E_FAIL;
-	}
-
-	SYSTEMTIME stUTC, stLocal;
-	FileTimeToSystemTime(&ftLastWriteTime, &stUTC);
-	SystemTimeToTzSpecificLocalTime(nullptr, &stUTC, &stLocal);
-
-	*pDateStamp = ftLastWriteTime;
-	return NOERROR; 
+	*pDateStamp = fileAttrData.ftLastWriteTime;
+	return S_OK; 
 }
