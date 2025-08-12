@@ -73,9 +73,11 @@ class RP_ShellPropSheetExt_Private
 public:
 	/**
 	 * RP_ShellPropSheetExt_Private constructor
-	 * @param tfilename
+	 * @param tfilename Filename (RP_ShellPropSheetExt_Private takes ownership)
 	 */
-	explicit RP_ShellPropSheetExt_Private(const TCHAR *tfilename);
+	explicit RP_ShellPropSheetExt_Private(LPTSTR tfilename);
+
+	~RP_ShellPropSheetExt_Private();
 
 private:
 	RP_DISABLE_COPY(RP_ShellPropSheetExt_Private)
@@ -88,7 +90,7 @@ public:
 public:
 	HWND hDlgSheet;			// Property sheet
 
-	std::tstring tfilename;		// ROM filename
+	LPTSTR tfilename;		// ROM filename
 	LibRpBase::RomDataPtr romData;	// ROM data (Not opened until the properties tab is shown.)
 
 	// Font handler

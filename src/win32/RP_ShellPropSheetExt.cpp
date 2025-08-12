@@ -65,10 +65,9 @@ const TCHAR RP_ShellPropSheetExt_Private::TAB_PTR_PROP[] = _T("RP_ShellPropSheet
 
 /**
  * RP_ShellPropSheetExt_Private constructor
- * @param q
- * @param tfilename
+ * @param tfilename Filename (RP_ShellPropSheetExt_Private takes ownership)
  */
-RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(const TCHAR *tfilename)
+RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(LPTSTR tfilename)
 	: hDlgSheet(nullptr)
 	, tfilename(tfilename)
 	, fontHandler(nullptr)
@@ -87,6 +86,11 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(const TCHAR *tfilenam
 	// Initialize structs.
 	dlgSize.cx = 0;
 	dlgSize.cy = 0;
+}
+
+RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
+{
+	free(tfilename);
 }
 
 /**
@@ -2238,6 +2242,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	// Save the filename in the private class for later.
 	if (!d_ptr) {
 		d_ptr = new RP_ShellPropSheetExt_Private(tfilename);
+		tfilename = nullptr;
 	}
 
 	// Make sure the Dark Mode function pointers are initialized.
