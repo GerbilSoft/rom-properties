@@ -7,16 +7,17 @@
  ***************************************************************************/
 
 #include "config.libwin32ui.h"
-#include "HiDPI.h"
+#include "HiDPI.hpp"
 
 #include "tcharx.h"
-
-// librpthreads
-#include "pthread_once.h"
 
 #ifdef HAVE_SHELLSCALINGAPI_H
 //# include <shellscalingapi.h>
 #endif
+
+// C++ STL classes
+#include <mutex>
+using std::unique_ptr;
 
 // MONITOR_DPI_TYPE is defined in shellscalingapi.h.
 // If that header isn't available, we'll define it here.
@@ -49,8 +50,8 @@ typedef HRESULT (WINAPI *pfnGetDpiForMonitor_t)(
 	_Out_ UINT *dpiX,
 	_Out_ UINT *dpiY);
 
-// pthread_once() control variable
-static pthread_once_t hidpi_once_control = PTHREAD_ONCE_INIT;
+// std::call_once() control variable
+static std::once_flag hidpi_once_flag;
 
 // Function pointers.
 static union {
@@ -59,8 +60,19 @@ static union {
 } pfns;
 
 // shcore.dll (Windows 8.1)
-// NOTE: We have to ensure that this is unloaded properly!
-static HMODULE hShcore_dll = NULL;
+class HMODULE_deleter
+{
+public:
+	typedef HMODULE pointer;
+
+	void operator()(HMODULE hModule)
+	{
+		if (hModule) {
+			FreeLibrary(hModule);
+		}
+	}
+};
+static unique_ptr<HMODULE, HMODULE_deleter> hShcore_dll;
 
 // DPI query type.
 typedef enum {
@@ -72,7 +84,7 @@ static DPIQueryType dpiQueryType = DPIQT_GetDeviceCaps;
 
 /**
  * Initialize the DPI function pointers.
- * Called by pthread_once().
+ * Called by std::call_once().
  */
 static void rp_init_DPIQueryType(void)
 {
@@ -88,35 +100,21 @@ static void rp_init_DPIQueryType(void)
 	}
 
 	// Try GetDpiForMonitor(). (Windows 8.1)
-	hShcore_dll = LoadLibraryEx(_T("shcore.dll"), NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
+	hShcore_dll.reset(LoadLibraryEx(_T("shcore.dll"), NULL, LOAD_LIBRARY_SEARCH_SYSTEM32));
 	if (hShcore_dll) {
-		pfns.pfnGetDpiForMonitor = (pfnGetDpiForMonitor_t)GetProcAddress(hShcore_dll, "GetDpiForMonitor");
+		pfns.pfnGetDpiForMonitor = (pfnGetDpiForMonitor_t)GetProcAddress(hShcore_dll.get(), "GetDpiForMonitor");
 		if (pfns.pfnGetDpiForMonitor) {
 			// Found GetDpiForMonitor().
 			dpiQueryType = DPIQT_GetDpiForMonitor;
 			return;
 		}
 		// Not found. Unload the DLL.
-		FreeLibrary(hShcore_dll);
-		hShcore_dll = NULL;
+		hShcore_dll.reset(nullptr);
 	}
 
 	// None of those functions are available.
 	// Fall back to system-wide DPI.
 	dpiQueryType = DPIQT_GetDeviceCaps;
-}
-
-/**
- * Unload modules and reset the DPI configuration.
- * This should be done on DLL exit.
- */
-void rp_DpiUnloadModules(void)
-{
-	if (hShcore_dll) {
-		FreeLibrary(hShcore_dll);
-		hShcore_dll = NULL;
-	}
-	hidpi_once_control = PTHREAD_ONCE_INIT;
 }
 
 /**
@@ -127,7 +125,7 @@ void rp_DpiUnloadModules(void)
 UINT rp_GetDpiForWindow(HWND hWnd)
 {
 	UINT dpi = 0;
-	pthread_once(&hidpi_once_control, rp_init_DPIQueryType);
+	std::call_once(hidpi_once_flag, rp_init_DPIQueryType);
 
 	switch (dpiQueryType) {
 		default:

@@ -101,7 +101,7 @@
 // libwin32common C headers
 #include "libwin32common/w32time.h"
 // libwin32ui C headers
-#include "libwin32ui/HiDPI.h"
+#include "libwin32ui/HiDPI.hpp"
 
 #ifdef __cplusplus
 // libwin32common C++ headers

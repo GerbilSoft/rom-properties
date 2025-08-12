@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32ui)                       *
  * HiDPI.h: High DPI wrapper functions.                                    *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,12 +13,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/**
- * Unload modules and reset the DPI configuration.
- * This should be done on DLL exit.
- */
-void rp_DpiUnloadModules(void);
 
 /**
  * Get the DPI for the specified window.

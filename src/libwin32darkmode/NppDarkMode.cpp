@@ -19,7 +19,7 @@
 #include <tchar.h>
 
 // High DPI support
-#include "libwin32ui/HiDPI.h"
+#include "libwin32ui/HiDPI.hpp"
 
 static const COLORREF colorEdge = RGB(100,100,100);
 static HPEN hpenEdge = nullptr;
