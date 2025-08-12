@@ -19,16 +19,16 @@
 namespace LibWin32Common {
 
 // References of all objects.
-static volatile ULONG RP_ulTotalRefCount = 0;
+static volatile long RP_lTotalRefCount = 0;
 
 void incRpGlobalRefCount(void)
 {
-	InterlockedIncrement(&RP_ulTotalRefCount);
+	_InterlockedIncrement(&RP_lTotalRefCount);
 }
 
 void decRpGlobalRefCount(void)
 {
-	InterlockedDecrement(&RP_ulTotalRefCount);
+	_InterlockedDecrement(&RP_lTotalRefCount);
 }
 
 /**
@@ -37,7 +37,7 @@ void decRpGlobalRefCount(void)
  */
 bool ComBase_isReferenced(void)
 {
-	return (RP_ulTotalRefCount > 0);
+	return (RP_lTotalRefCount > 0);
 }
 
 /**

@@ -25,6 +25,9 @@
 #include "common.h"	// for NOVTABLE
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
+// MSVC intrinsics
+#include <intrin.h>
+
 namespace LibWin32Common {
 
 // Manipulate the global COM reference count.
@@ -47,16 +50,16 @@ HRESULT WINAPI rp_QISearch(_Inout_ void *that, _In_ LPCQITAB pqit, _In_ REFIID r
 { \
 	protected: \
 		/* References of this object */ \
-		volatile ULONG m_ulRefCount; \
+		volatile long m_lRefCount; \
 	\
 	public: \
-		name() : m_ulRefCount(1) \
+		name() : m_lRefCount(1) \
 		{ \
 			incRpGlobalRefCount(); \
 		} \
 		virtual ~name() \
 		{ \
-			assert(m_ulRefCount == 0); \
+			assert(m_lRefCount == 0); \
 		} \
 	\
 	public: \
@@ -64,20 +67,20 @@ HRESULT WINAPI rp_QISearch(_Inout_ void *that, _In_ LPCQITAB pqit, _In_ REFIID r
 		IFACEMETHODIMP_(ULONG) AddRef(void) final \
 		{ \
 			incRpGlobalRefCount(); \
-			InterlockedIncrement(&m_ulRefCount); \
-			return m_ulRefCount; \
+			_InterlockedIncrement(&m_lRefCount); \
+			return static_cast<ULONG>(m_lRefCount); \
 		} \
 		\
 		IFACEMETHODIMP_(ULONG) Release(void) final \
 		{ \
-			assert(m_ulRefCount > 0); \
-			ULONG ulRefCount = InterlockedDecrement(&m_ulRefCount); \
-			if (ulRefCount == 0) { \
+			assert(m_lRefCount > 0); \
+			long lRefCount = _InterlockedDecrement(&m_lRefCount); \
+			if (lRefCount == 0) { \
 				/* No more references */ \
 				delete this; \
 			} \
 			decRpGlobalRefCount(); \
-			return ulRefCount; \
+			return static_cast<ULONG>(lRefCount); \
 		} \
 }
 
