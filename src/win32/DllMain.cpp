@@ -37,6 +37,7 @@
 #include "LanguageComboBox.hpp"
 #include "MessageWidget.hpp"
 #include "OptionsMenuButton.hpp"
+#include "RomDataView.hpp"
 
 // rp_image backend registration
 #include "librptexture/img/GdiplusHelper.hpp"
@@ -108,9 +109,11 @@ STDAPI DllCanUnloadNow(void)
 	}
 
 	// Unregister window classes.
+	// TODO: Reference counters for the window classes?
 	MessageWidgetUnregister();
 	LanguageComboBoxUnregister();
 	OptionsMenuButtonUnregister();
+	RomDataViewUnregister();
 
 	// Unload modules needed for High-DPI, if necessary.
 	rp_DpiUnloadModules();

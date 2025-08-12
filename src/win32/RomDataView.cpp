@@ -65,9 +65,9 @@ const TCHAR RomDataViewPrivate::TAB_PTR_PROP[] = _T("RomDataViewPrivate::tab");
  * @param hWnd RomDataView control
  * @param tfilename
  */
-RomDataViewPrivate::RomDataViewPrivate(HWND hWnd, const TCHAR *tfilename)
-	: hWnd(hWnd)
-	, tfilename(tfilename ? tfilename : "")
+RomDataViewPrivate::RomDataViewPrivate(HWND hWnd, LPCTSTR tfilename)
+	: hWndThis(hWnd)
+	, tfilename(tfilename ? tfilename : _T(""))
 	, fontHandler(nullptr)
 	, lblSysInfo(nullptr)
 	, tabWidget(nullptr)
@@ -101,7 +101,7 @@ void RomDataViewPrivate::loadImages(void)
 	const uint32_t imgbf = romData->supportedImageTypes();
 	// FIXME: Store the standard image height somewhere else.
 	// FIXME: Adjust image sizes if the DPI changes.
-	const int imgStdHeight = rp_AdjustSizeForDpi(32, rp_GetDpiForWindow(hDlgSheet));
+	const int imgStdHeight = rp_AdjustSizeForDpi(32, rp_GetDpiForWindow(hWndThis));
 
 	// Banner
 	bool ok = false;
@@ -110,7 +110,7 @@ void RomDataViewPrivate::loadImages(void)
 		const rp_image_const_ptr banner = romData->image(RomData::IMG_INT_BANNER);
 		if (banner && banner->isValid()) {
 			if (!lblBanner) {
-				lblBanner.reset(new DragImageLabel(hDlgSheet));
+				lblBanner.reset(new DragImageLabel(hWndThis));
 				// TODO: Required size? For now, disabling scaling.
 				lblBanner->setRequiredSize(0, 0);
 			}
@@ -148,7 +148,7 @@ void RomDataViewPrivate::loadImages(void)
 		const rp_image_const_ptr icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
 			if (!lblIcon) {
-				lblIcon.reset(new DragImageLabel(hDlgSheet));
+				lblIcon.reset(new DragImageLabel(hWndThis));
 			}
 
 			// Is this an animated icon?
@@ -186,6 +186,22 @@ void RomDataViewPrivate::loadImages(void)
 }
 
 /**
+ * Map a dialog RECT without using a dialog.
+ * @param hWnd
+ * @param lpRect
+ */
+void RomDataViewPrivate::MapDialogRect_nondlg(_In_ HWND hWnd, _Inout_ LPRECT lpRect)
+{
+	const UINT dpi = rp_GetDpiForWindow(hWnd);
+	const long baseUnits = GetDialogBaseUnits();
+
+	lpRect->left   = lpRect->left   * dpi * LOWORD(baseUnits) / (96 * 4);
+	lpRect->right  = lpRect->right  * dpi * LOWORD(baseUnits) / (96 * 4);
+	lpRect->top    = lpRect->top    * dpi * HIWORD(baseUnits) / (96 * 8);
+	lpRect->bottom = lpRect->bottom * dpi * HIWORD(baseUnits) / (96 * 8);
+}
+
+/**
  * Create the header row.
  * @param hDlg		[in] Dialog window
  * @param pt_start	[in] Starting position, in pixels
@@ -194,7 +210,7 @@ void RomDataViewPrivate::loadImages(void)
  */
 int RomDataViewPrivate::createHeaderRow(_In_ POINT pt_start, _In_ SIZE size)
 {
-	if (!hDlgSheet || !romData)
+	if (!hWndThis || !romData)
 		return 0;
 
 	// Total widget width.
@@ -207,7 +223,7 @@ int RomDataViewPrivate::createHeaderRow(_In_ POINT pt_start, _In_ SIZE size)
 	// TODO: Handle these assertions in release builds.
 	HFONT hFont = fontHandler.boldFont();
 	if (!hFont) {
-		hFont = GetWindowFont(hDlgSheet);
+		hFont = GetWindowFont(hWndThis);
 	}
 
 	// System name and file type.
@@ -231,7 +247,7 @@ int RomDataViewPrivate::createHeaderRow(_In_ POINT pt_start, _In_ SIZE size)
 
 	if (!ts_sysInfo.empty()) {
 		// Determine the appropriate label size.
-		if (!LibWin32UI::measureTextSize(hDlgSheet, hFont, ts_sysInfo, &size_lblSysInfo)) {
+		if (!LibWin32UI::measureTextSize(hWndThis, hFont, ts_sysInfo, &size_lblSysInfo)) {
 			// Start the total_widget_width.
 			total_widget_width = size_lblSysInfo.cx;
 		} else {
@@ -275,7 +291,7 @@ int RomDataViewPrivate::createHeaderRow(_In_ POINT pt_start, _In_ SIZE size)
 			WS_CHILD | WS_VISIBLE | SS_CENTER,
 			ptSysInfo.x, ptSysInfo.y,
 			size_lblSysInfo.cx, size_lblSysInfo.cy,
-			hDlgSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
+			hWndThis, (HMENU)IDC_STATIC, nullptr, nullptr);
 		SetWindowFont(lblSysInfo, hFont, false);
 		curPt.x += size_lblSysInfo.cx + pt_start.x;
 	}
@@ -381,7 +397,7 @@ int RomDataViewPrivate::initString(_In_ HWND hWndTab,
 	}
 
 	// Get the default font.
-	HFONT hFont = GetWindowFont(hDlgSheet);
+	HFONT hFont = GetWindowFont(hWndThis);
 
 	// Check for any formatting options.
 	bool isWarning = false, isMonospace = false;
@@ -422,7 +438,7 @@ int RomDataViewPrivate::initString(_In_ HWND hWndTab,
 		// 7x7 DLU margin is recommended by the Windows UX guidelines.
 		// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
 		RECT tmpRect = {7, 7, 8, 8};
-		MapDialogRect(hWndTab, &tmpRect);
+		MapDialogRect_nondlg(hWndTab, &tmpRect);
 		RECT winRect;
 		GetClientRect(hWndTab, &winRect);
 		// NOTE: We need to move left by 1px.
@@ -482,7 +498,7 @@ int RomDataViewPrivate::initString(_In_ HWND hWndTab,
 				: LibWin32UI::SingleLineEditProc;
 			SetWindowSubclass(hDlgItem, proc,
 				static_cast<UINT_PTR>(cId),
-				reinterpret_cast<DWORD_PTR>(GetParent(hDlgSheet)));
+				reinterpret_cast<DWORD_PTR>(GetParent(hWndThis)));
 		}
 
 		tab.lblCredits = hDlgItem;
@@ -545,7 +561,7 @@ int RomDataViewPrivate::initString(_In_ HWND hWndTab,
 			: LibWin32UI::SingleLineEditProc;
 		SetWindowSubclass(hDlgItem, proc,
 			static_cast<UINT_PTR>(cId),
-			reinterpret_cast<DWORD_PTR>(GetParent(hDlgSheet)));
+			reinterpret_cast<DWORD_PTR>(GetParent(hWndThis)));
 	}
 
 	// Save the control in the appropriate container, if necessary.
@@ -578,11 +594,11 @@ int RomDataViewPrivate::initBitfield(_In_ HWND hWndTab,
 	// Checkbox size.
 	// Reference: http://stackoverflow.com/questions/1164868/how-to-get-size-of-check-and-gap-in-check-box
 	RECT rect_chkbox = {0, 0, 12+4, 11};
-	MapDialogRect(hDlgSheet, &rect_chkbox);
+	MapDialogRect_nondlg(hWndThis, &rect_chkbox);
 
 	// Dialog font and device context.
 	// NOTE: Using the parent dialog's font.
-	HFONT hFontDlg = GetWindowFont(hDlgSheet);
+	HFONT hFontDlg = GetWindowFont(hWndThis);
 	AutoGetDC_font hDC(hWndTab, hFontDlg);
 
 	// Create a grid of checkboxes.
@@ -681,7 +697,7 @@ int RomDataViewPrivate::initBitfield(_In_ HWND hWndTab,
 	POINT pt = pt_start;
 	// Subtract 0.5 DLU from the starting row.
 	RECT rect_subtract = {0, 0, 1, 1};
-	MapDialogRect(hDlgSheet, &rect_subtract);
+	MapDialogRect_nondlg(hWndThis, &rect_subtract);
 	if (rect_subtract.bottom > 1) {
 		rect_subtract.bottom /= 2;
 	}
@@ -811,7 +827,7 @@ int RomDataViewPrivate::initListData(_In_ HWND hWndTab,
 		lvsStyle |= LVS_NOCOLUMNHEADER;
 	}
 	const uint16_t cId = IDC_RFT_LISTDATA(fieldIdx);
-	HFONT hFontDlg = GetWindowFont(hDlgSheet);
+	HFONT hFontDlg = GetWindowFont(hWndThis);
 	HWND hListView = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE | dwExStyleRTL,
 		WC_LISTVIEW, nullptr, lvsStyle,
 		pt_start.x, pt_start.y, size.cx, size.cy,
@@ -1032,7 +1048,7 @@ int RomDataViewPrivate::initListData(_In_ HWND hWndTab,
 		// 16 pixels.
 		// TODO: Handle this better.
 		// FIXME: This only works if the RFT_LISTDATA has icons.
-		const int px = rp_AdjustSizeForDpi(32, rp_GetDpiForWindow(hDlgSheet));
+		const int px = rp_AdjustSizeForDpi(32, rp_GetDpiForWindow(hWndThis));
 		lvData.col0sizeadj = px;
 
 		const SIZE sizeListIconOrig = {px, px};
@@ -1201,7 +1217,7 @@ int RomDataViewPrivate::initListData(_In_ HWND hWndTab,
 	// 7x7 DLU margin is recommended by the Windows UX guidelines.
 	// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
 	RECT dlgMargin = {7, 7, 8, 8};
-	MapDialogRect(hDlgSheet, &dlgMargin);
+	MapDialogRect_nondlg(hWndThis, &dlgMargin);
 
 	// Increase the ListView height.
 	// Default: 5 rows, plus the header.
@@ -1392,7 +1408,7 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 		}
 	}
 
-	HFONT hFontDlg = GetWindowFont(hDlgSheet);
+	HFONT hFontDlg = GetWindowFont(hWndThis);
 
 	// RFT_LISTDATA_MULTI
 	for (auto &&mlvd : map_lvData) {
@@ -1552,7 +1568,7 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 
 		// NOTE: We need to initialize combobox height to iconSize * 8 in order
 		// to allow up to 8 entries to be displayed at once.
-		const UINT dpi = rp_GetDpiForWindow(hDlgSheet);
+		const UINT dpi = rp_GetDpiForWindow(hWndThis);
 		int iconSize;
 		if (dpi < 120) {
 			// [96,120) dpi: Use 16x16.
@@ -1568,7 +1584,7 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 
 		// Calculate text height.
 		SIZE textSize;
-		if (LibWin32UI::measureTextSize(hDlgSheet, hFontDlg, _T("Ay"), &textSize) != 0) {
+		if (LibWin32UI::measureTextSize(hWndThis, hFontDlg, _T("Ay"), &textSize) != 0) {
 			// Error getting text height.
 			textSize.cy = 0;
 		}
@@ -1578,7 +1594,7 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 			WC_LANGUAGECOMBOBOX, nullptr,
 			CBS_DROPDOWNLIST | WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			0, 0, 0, (iconSize * 8) + textSize.cy - (textSize.cy / 8),
-			hDlgSheet, (HMENU)(INT_PTR)IDC_CBO_LANGUAGE, nullptr, nullptr);
+			hWndThis, (HMENU)(INT_PTR)IDC_CBO_LANGUAGE, nullptr, nullptr);
 		SetWindowFont(cboLanguage, hFontDlg, false);
 
 		// Set the languages.
@@ -1619,7 +1635,7 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 		// 7x7 DLU margin is recommended by the Windows UX guidelines.
 		// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
 		RECT dlgMargin = { 7, 7, 8, 8 };
-		MapDialogRect(hDlgSheet, &dlgMargin);
+		MapDialogRect_nondlg(hWndThis, &dlgMargin);
 
 		// Adjust the header row.
 		const int adj = (GET_X_LPARAM(minSize) + dlgMargin.left) / 2;
@@ -1642,14 +1658,14 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 }
 
 /**
- * Initialize the dialog. (hDlgSheet)
+ * Initialize the dialog. (hWndThis)
  * Called by WM_INITDIALOG.
  */
 void RomDataViewPrivate::initDialog(void)
 {
-	assert(hDlgSheet != nullptr);
+	assert(hWndThis != nullptr);
 	assert(romData != nullptr);
-	if (!hDlgSheet || !romData) {
+	if (!hWndThis || !romData) {
 		// No dialog, or no ROM data loaded.
 		return;
 	}
@@ -1657,13 +1673,14 @@ void RomDataViewPrivate::initDialog(void)
 	// Set the dialog to allow automatic right-to-left adjustment
 	// if the system is using an RTL language.
 	if (dwExStyleRTL != 0) {
-		LONG_PTR lpExStyle = GetWindowLongPtr(hDlgSheet, GWL_EXSTYLE);
+		LONG_PTR lpExStyle = GetWindowLongPtr(hWndThis, GWL_EXSTYLE);
 		lpExStyle |= WS_EX_LAYOUTRTL;
-		SetWindowLongPtr(hDlgSheet, GWL_EXSTYLE, lpExStyle);
+		SetWindowLongPtr(hWndThis, GWL_EXSTYLE, lpExStyle);
 	}
 
 	// Determine if Dark Mode is enabled.
-	isDarkModeEnabled = VerifyDialogDarkMode(GetParent(hDlgSheet));
+	// TODO: May need to get the parent of the parent?
+	isDarkModeEnabled = VerifyDialogDarkMode(GetParent(hWndThis));
 
 	// Get the fields.
 	const RomFields *const pFields = romData->fields();
@@ -1688,10 +1705,10 @@ void RomDataViewPrivate::initDialog(void)
 	InitCommonControlsEx(&initCommCtrl);
 
 	// Initialize the font handler.
-	fontHandler.setWindow(hDlgSheet);
+	fontHandler.setWindow(hWndThis);
 
 	// Device context for text measurement
-	AutoGetDC_font hDC(hDlgSheet, GetWindowFont(hDlgSheet));
+	AutoGetDC_font hDC(hWndThis, GetWindowFont(hWndThis));
 
 	// Convert the bitfield description names to the
 	// native Windows encoding once.
@@ -1767,7 +1784,7 @@ void RomDataViewPrivate::initDialog(void)
 	// Each static control is max_text_width pixels wide
 	// and 8 DLUs tall, plus 4 vertical DLUs for spacing.
 	RECT tmpRect = {0, 0, 0, 8+4};
-	MapDialogRect(hDlgSheet, &tmpRect);
+	MapDialogRect_nondlg(hWndThis, &tmpRect);
 	SIZE descSize = {0, tmpRect.bottom};
 	this->lblDescHeight = descSize.cy;
 
@@ -1775,7 +1792,7 @@ void RomDataViewPrivate::initDialog(void)
 	// 7x7 DLU margin is recommended by the Windows UX guidelines.
 	// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
 	RECT dlgMargin = {7, 7, 8, 8};
-	MapDialogRect(hDlgSheet, &dlgMargin);
+	MapDialogRect_nondlg(hWndThis, &dlgMargin);
 
 	// Get the dialog size.
 	// - fullDlgRect: Full dialog size
@@ -1783,7 +1800,7 @@ void RomDataViewPrivate::initDialog(void)
 	// FIXME: Vertical height is off by 3px on Win7...
 	// Verified with WinSpy++: expected 341x408, got 341x405.
 	RECT fullDlgRect, dlgRect;
-	GetClientRect(hDlgSheet, &fullDlgRect);
+	GetClientRect(hWndThis, &fullDlgRect);
 	dlgRect = fullDlgRect;
 	// Adjust the rectangle for margins.
 	InflateRect(&dlgRect, -dlgMargin.left, -dlgMargin.top);
@@ -1814,7 +1831,7 @@ void RomDataViewPrivate::initDialog(void)
 	dlgSize.cy -= (headerH + 2);
 	headerPt.y += headerH;
 
-	HFONT hFontDlg = GetWindowFont(hDlgSheet);
+	HFONT hFontDlg = GetWindowFont(hWndThis);
 
 	// Do we need to create a tab widget?
 	if (tabCount > 1) {
@@ -1829,7 +1846,7 @@ void RomDataViewPrivate::initDialog(void)
 			WC_TABCONTROL, nullptr,
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			dlgRect.left, dlgRect.top, dlgSize.cx, dlgSize.cy,
-			hDlgSheet, (HMENU)(INT_PTR)IDC_TAB_WIDGET, nullptr, nullptr);
+			hWndThis, (HMENU)(INT_PTR)IDC_TAB_WIDGET, nullptr, nullptr);
 		SetWindowFont(tabWidget, hFontDlg, false);
 
 		// Add tabs.
@@ -1874,7 +1891,7 @@ void RomDataViewPrivate::initDialog(void)
 			// Create a child dialog for the tab.
 			tab.hDlg = CreateDialog(HINST_THISCOMPONENT,
 				MAKEINTRESOURCE(IDD_SUBTAB_CHILD_DIALOG),
-				hDlgSheet, SubtabDlgProc);
+				hWndThis, SubtabDlgProc);
 			SetWindowPos(tab.hDlg, nullptr,
 				dlgRect.left, dlgRect.top,
 				dlgSize.cx, dlgSize.cy,
@@ -1907,7 +1924,7 @@ void RomDataViewPrivate::initDialog(void)
 		// Create a child dialog.
 		tab.hDlg = CreateDialog(HINST_THISCOMPONENT,
 			MAKEINTRESOURCE(IDD_SUBTAB_CHILD_DIALOG),
-			hDlgSheet, SubtabDlgProc);
+			hWndThis, SubtabDlgProc);
 		SetWindowPos(tab.hDlg, nullptr,
 			dlgRect.left, dlgRect.top,
 			dlgSize.cx, dlgSize.cy,
@@ -2113,10 +2130,48 @@ void RomDataViewPrivate::initDialog(void)
 	romData->checkViewedAchievements();
 
 	// Register for WTS session notifications. (Remote Desktop)
-	wts.registerSessionNotification(hDlgSheet, NOTIFY_FOR_THIS_SESSION);
+	wts.registerSessionNotification(hWndThis, NOTIFY_FOR_THIS_SESSION);
 
 	// Window is fully initialized.
 	isFullyInit = true;
+}
+
+/**
+ * Initialize the control.
+ * tfilename must have been set to the ROM filename.
+ */
+void RomDataViewPrivate::initControl(void)
+{
+	if (isFullyInit) {
+		// Control is already initialized.
+		// TODO: Re-initialize it? (new filename)
+		return;
+	}
+
+	// Get the appropriate RomData class for this ROM.
+	romData = RomDataFactory::create(tfilename);
+	if (!romData) {
+		// Unable to get a RomData object.
+		return;
+	}
+
+	// Load the images.
+	loadImages();
+	// Initialize the dialog.
+	initDialog();
+	// We can close the RomData's underlying IRpFile now.
+	romData->close();
+
+#if 0
+	// TODO: Update for RomDataView.
+	// Create the "Options" button in the parent window.
+	createOptionsButton();
+#endif
+
+	// Start the icon animation timer.
+	if (lblIcon) {
+		lblIcon->startAnimTimer();
+	}
 }
 
 /** Callback functions **/
@@ -2305,22 +2360,6 @@ inline int RomDataViewPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) const
 	return result;
 }
 
-/** RomDataView **/
-
-RomDataView::RomDataView()
-	: d_ptr(nullptr)
-{
-	// NOTE: d_ptr is not initialized until we receive a valid
-	// ROM file. This reduces overhead in cases where there are
-	// lots of files with ROM-like file extensions but aren't
-	// actually supported by rom-properties.
-}
-
-RomDataView::~RomDataView()
-{
-	delete d_ptr;
-}
-
 /**
  * WM_NOTIFY handler for RomDataView
  * @param hWnd RomDataView
@@ -2409,18 +2448,11 @@ INT_PTR RomDataViewPrivate::WndProc_WM_NOTIFY(HWND hWnd, NMHDR *pHdr)
 
 		case NM_CUSTOMDRAW: {
 			// Custom drawing notification.
-			if ((pHdr->idFrom & 0xFC00) != IDC_RFT_LISTDATA(0))
+			if ((pHdr->idFrom & 0xFC00) != IDC_RFT_LISTDATA(0)) {
 				break;
+			}
 
-			// NOTE: Since this is a DlgProc, we can't simply return
-			// the CDRF code. It has to be set as DWLP_MSGRESULT.
-			// References:
-			// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
-			// - https://stackoverflow.com/a/40552426
-			const int result = ListView_CustomDraw(reinterpret_cast<NMLVCUSTOMDRAW*>(pHdr));
-			SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
-			ret = true;
-			break;
+			return ListView_CustomDraw(reinterpret_cast<NMLVCUSTOMDRAW*>(pHdr));
 		}
 
 		case LVN_ITEMCHANGING: {
@@ -2434,15 +2466,13 @@ INT_PTR RomDataViewPrivate::WndProc_WM_NOTIFY(HWND hWnd, NMHDR *pHdr)
 
 			const NMLISTVIEW *const pnmlv = reinterpret_cast<const NMLISTVIEW*>(pHdr);
 			const unsigned int state = (pnmlv->uOldState ^ pnmlv->uNewState) & LVIS_STATEIMAGEMASK;
-			// Set result to true if the state difference is non-zero (i.e. it's changed).
-			SetWindowLongPtr(hDlg, DWLP_MSGRESULT, (state != 0));
-			ret = true;
-			break;
+			return (state != 0);
 		}
 
 		case MSGWN_CLOSED: {
 			// MessageWidget Close button was clicked.
-			adjustTabsForMessageWidgetVisibility(false);
+			// TODO: Reimplement this for the RomDataView split.
+			//adjustTabsForMessageWidgetVisibility(false);
 			ret = true;
 			break;
 		}
@@ -2459,13 +2489,11 @@ INT_PTR RomDataViewPrivate::WndProc_WM_NOTIFY(HWND hWnd, NMHDR *pHdr)
  * @param hWnd RomDataView
  * @param wParam
  * @param lParam
- * @return Return value.
  */
-INT_PTR RomDataViewPrivate::WndProc_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
+void RomDataViewPrivate::WndProc_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	((void)hWnd);
 	((void)lParam);
-	INT_PTR ret = false;
 
 	switch (HIWORD(wParam)) {
 		case CBN_SELCHANGE: {
@@ -2486,8 +2514,6 @@ INT_PTR RomDataViewPrivate::WndProc_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM 
 		default:
 			break;
 	}
-
-	return ret;
 }
 
 /**
@@ -2538,6 +2564,9 @@ INT_PTR CALLBACK RomDataViewPrivate::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam
 			// Store the D object pointer.
 			SetWindowLongPtr(hWnd, GWLP_ROMDATAVIEW_D, reinterpret_cast<LONG_PTR>(d));
 
+			// Store the hWnd.
+			d->hWndThis = hWnd;
+
 			// Dialog initialization is postponed to WM_SHOWWINDOW,
 			// since some other extension (e.g. HashTab) may be
 			// resizing the dialog.
@@ -2565,44 +2594,6 @@ INT_PTR CALLBACK RomDataViewPrivate::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam
 			break;
 		}
 
-		// FIXME: FBI's age rating is cut off on Windows
-		// if we don't adjust for WM_SHOWWINDOW.
-		case WM_SHOWWINDOW: {
-			auto *const d = reinterpret_cast<RomDataViewPrivate*>(GetWindowLongPtr(hWnd, GWLP_ROMDATAVIEW_D));
-			if (!d) {
-				// No RomDataViewPrivate. Can't do anything...
-				break;
-			}
-
-			if (d->isFullyInit) {
-				// Control is already initialized.
-				break;
-			}
-
-			// Get the appropriate RomData class for this ROM.
-			d->romData = RomDataFactory::create(d->tfilename);
-			if (!d->romData) {
-				// Unable to get a RomData object.
-				break;
-			}
-
-			// Load the images.
-			d->loadImages();
-			// Initialize the dialog.
-			d->initDialog();
-			// We can close the RomData's underlying IRpFile now.
-			d->romData->close();
-
-			// Create the "Options" button in the parent window.
-			d->createOptionsButton();
-
-			// Start the icon animation timer.
-			if (d->lblIcon) {
-				d->lblIcon->startAnimTimer();
-			}
-			break;
-		}
-
 		case WM_NOTIFY: {
 			auto *const d = reinterpret_cast<RomDataViewPrivate*>(GetWindowLongPtr(hWnd, GWLP_ROMDATAVIEW_D));
 			if (!d) {
@@ -2610,7 +2601,10 @@ INT_PTR CALLBACK RomDataViewPrivate::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam
 				break;
 			}
 
-			d->WndProc_WM_NOTIFY(hWnd, reinterpret_cast<NMHDR*>(lParam));
+			INT_PTR ret = d->WndProc_WM_NOTIFY(hWnd, reinterpret_cast<NMHDR*>(lParam));
+			if (ret != FALSE) {
+				return ret;
+			}
 			break;
 		}
 
@@ -2632,7 +2626,10 @@ INT_PTR CALLBACK RomDataViewPrivate::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam
 				break;
 			}
 
-			d->WndProc_WM_PAINT(hWnd);
+			INT_PTR ret = d->WndProc_WM_PAINT(hWnd);
+			if (ret != FALSE) {
+				return ret;
+			}
 			break;
 		}
 
@@ -2775,18 +2772,52 @@ INT_PTR CALLBACK RomDataViewPrivate::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam
 			break;
 
 		/** New messages from the RP_ShellPropSheetExt / RomDataView split. **/
+		// NOTE: Custom messages do NOT call DefWindowProc().
 
-		case WM_ROMDATAVIEW_SETFILENAMEA:
-		case WM_ROMDATAVIEW_SETFILENAMEW:
-			// TODO
-			break;
+		case WM_ROMDATAVIEW_SETFILENAMEA: {
+			// TODO: Reinitialize the window if a RomData object was already loaded.
+			auto* const d = reinterpret_cast<RomDataViewPrivate*>(GetWindowLongPtr(hWnd, GWLP_ROMDATAVIEW_D));
+			if (!d) {
+				// No RomDataViewPrivate. Can't do anything...
+				return FALSE;
+			}
 
-		case WM_ROMDATAVIEW_ANIMATION_CTRL:
+#ifdef UNICODE
+			// TODO: Convert from ANSI to Unicode.
+#else /* !UNICODE */
+			d->tfilename.assign(reinterpret_cast<LPCTSTR>(lParam));
+#endif /* UNICODE */
+
+			// Initialize the control.
+			d->initControl();
+			return TRUE;
+		}
+
+		case WM_ROMDATAVIEW_SETFILENAMEW: {
+			// TODO: Reinitialize the window if a RomData object was already loaded.
+			auto* const d = reinterpret_cast<RomDataViewPrivate*>(GetWindowLongPtr(hWnd, GWLP_ROMDATAVIEW_D));
+			if (!d) {
+				// No RomDataViewPrivate. Can't do anything...
+				return FALSE;
+			}
+
+#ifdef UNICODE
+			d->tfilename.assign(reinterpret_cast<LPCTSTR>(lParam));
+#else /* !UNICODE */
+			// TODO: Convert from Unicode to ANSI.
+#endif /* UNICODE */
+
+			// Initialize the control.
+			d->initControl();
+			return TRUE;
+		}
+
+		case WM_ROMDATAVIEW_ANIMATION_CTRL: {
 			// Start/stop animations.
 			auto *const d = reinterpret_cast<RomDataViewPrivate*>(GetWindowLongPtr(hWnd, GWLP_ROMDATAVIEW_D));
 			if (!d) {
 				// No RomDataViewPrivate. Can't do anything...
-				break;
+				return FALSE;
 			}
 
 			if (wParam) {
@@ -2806,55 +2837,14 @@ INT_PTR CALLBACK RomDataViewPrivate::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam
 					ShowWindow(d->hBtnOptions, SW_HIDE);
 				}
 			}
-			break;
+			return TRUE;
+		}
 
 		default:
 			break;
 	}
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
-}
-
-
-//
-//   FUNCTION: FilePropPageCallbackProc
-//
-//   PURPOSE: Specifies an application-defined callback function that a property
-//            sheet calls when a page is created and when it is about to be 
-//            destroyed. An application can use this function to perform 
-//            initialization and cleanup operations for the page.
-//
-UINT CALLBACK RomDataViewPrivate::CallbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp)
-{
-	((void)hWnd);	// TODO: Validate this?
-
-	switch (uMsg) {
-		case PSPCB_CREATE: {
-			// Must return true to enable the page to be created.
-			return true;
-		}
-
-		case PSPCB_RELEASE: {
-			// When the callback function receives the PSPCB_RELEASE notification, 
-			// the ppsp parameter of the PropSheetPageProc contains a pointer to 
-			// the PROPSHEETPAGE structure. The lParam member of the PROPSHEETPAGE 
-			// structure contains the extension pointer which can be used to 
-			// release the object.
-
-			// Release the property sheet extension object. This is called even 
-			// if the property page was never actually displayed.
-			auto *const pExt = reinterpret_cast<RomDataView*>(ppsp->lParam);
-			if (pExt) {
-				pExt->Release();
-			}
-			break;
-		}
-
-		default:
-			break;
-	}
-
-	return false;
 }
 
 /**
@@ -3057,14 +3047,14 @@ void RomDataViewRegister(void)
 		nullptr,			// hCursor
 		nullptr,			// hbrBackground
 		nullptr,			// lpszMenuName
-		WC_MESSAGEWIDGET,		// lpszClassName
+		WC_ROMDATAVIEW,			// lpszClassName
 		nullptr				// hIconSm
 	};
 
 	atom_romDataView = RegisterClassEx(&wndClass);
 }
 
-void RomDataViewRegister(void)
+void RomDataViewUnregister(void)
 {
 	if (atom_romDataView != 0) {
 		UnregisterClass(MAKEINTATOM(atom_romDataView), HINST_THISCOMPONENT);

@@ -74,12 +74,10 @@ public:
 	 * @param hWnd RomDataView control
 	 * @param tfilename
 	 */
-	explicit RomDataViewPrivate(HWND hWnd, const TCHAR *tfilename);
+	explicit RomDataViewPrivate(HWND hWnd, LPCTSTR tfilename);
 
 private:
 	RP_DISABLE_COPY(RomDataViewPrivate)
-private:
-	RP_ShellPropSheetExt *const q_ptr;
 
 public:
 	// GetWindowLongPtr() offsets
@@ -90,7 +88,7 @@ public:
 	static const TCHAR TAB_PTR_PROP[];
 
 public:
-	HWND hWnd;			// RomDataView control
+	HWND hWndThis;			// RomDataView control
 
 	std::tstring tfilename;		// ROM filename
 	LibRpBase::RomDataPtr romData;	// ROM data (Not opened until the properties tab is shown.)
@@ -202,6 +200,14 @@ public:
 	 * doesn't touch the dialog at all.
 	 */
 	void loadImages(void);
+
+private:
+	/**
+	 * Map a dialog RECT without using a dialog.
+	 * @param hWnd
+	 * @param lpRect
+	 */
+	void MapDialogRect_nondlg(_In_ HWND hWnd, _Inout_ LPRECT lpRect);
 
 private:
 	/**
@@ -390,10 +396,16 @@ public:
 	 */
 	void createOptionsButton(void);
 
+	/**
+	 * Initialize the control.
+	 * tfilename must have been set to the ROM filename.
+	 */
+	void initControl(void);
+
 private:
 	// Internal functions used by the callback functions
 	INT_PTR WndProc_WM_NOTIFY(HWND hWnd, NMHDR *pHdr);
-	INT_PTR WndProc_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam);
+	void WndProc_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam);
 	INT_PTR WndProc_WM_PAINT(HWND hWnd);
 
 public:

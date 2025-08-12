@@ -366,7 +366,26 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			}
 
 			// Create a new RomDataView control.
-			// TODO
+			RECT rect_hDlg;
+			GetWindowRect(hDlg, &rect_hDlg);
+			MapWindowPoints(HWND_DESKTOP, hDlg, (LPPOINT)&rect_hDlg, 2);
+
+			RomDataViewRegister();
+			POINT ptRomDataView = {rect_hDlg.left, rect_hDlg.top};
+			const SIZE szRomDataView = {
+				rect_hDlg.right - rect_hDlg.left,
+				rect_hDlg.bottom - rect_hDlg.top
+			};
+
+			DWORD dwExStyleRTL = LibWin32UI::isSystemRTL();
+			d->hRomDataView = CreateWindowEx(dwExStyleRTL,
+				WC_ROMDATAVIEW, nullptr,
+				WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+				ptRomDataView.x, ptRomDataView.y,
+				szRomDataView.cx, szRomDataView.cy,
+				hDlg, nullptr, nullptr, nullptr);
+			SetWindowFont(d->hRomDataView, GetWindowFont(hDlg), FALSE);
+			RomDataView_SetFileName(d->hRomDataView, d->tfilename);
 
 			// Continue normal processing.
 			break;

@@ -50,7 +50,7 @@ SET(${PROJECT_NAME}_SRCS
 	RpImageWin32.cpp
 	RP_ShellPropSheetExt.cpp
 	RP_ShellPropSheetExt_Register.cpp
-	#RomDataView.cpp
+	RomDataView.cpp
 	#RomDataView_ops.cpp
 	RP_ThumbnailProvider.cpp
 	RP_ThumbnailProvider_Register.cpp
