@@ -9,9 +9,6 @@
 #include "gsvt.h"
 #include "common.h"
 
-// librpthreads
-#include "librpthreads/pthread_once.h"
-
 // C includes
 #include <assert.h>
 #include <errno.h>
@@ -25,6 +22,9 @@
 #include "libwin32common/rp_versionhelpers.h"
 #include <winternl.h>
 #include <tchar.h>
+
+// Custom pthread_once() for Windows.
+#include "pthread_once_win32.h"
 
 #ifdef _MSC_VER
 typedef struct _OBJECT_NAME_INFORMATION {

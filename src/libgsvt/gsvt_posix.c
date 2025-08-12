@@ -9,8 +9,8 @@
 #include "gsvt.h"
 #include "common.h"
 
-// librpthreads
-#include "librpthreads/pthread_once.h"
+// pthreads, for pthread_once()
+#include <pthread.h>
 
 // C includes
 #include <assert.h>
