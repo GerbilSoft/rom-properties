@@ -1,8 +1,8 @@
 # Internationalization support code.
-PROJECT(i18n LANGUAGES C)
+PROJECT(i18n LANGUAGES CXX)
 
 # NOTE: This subdirectory is always built, even if NLS is disabled,
-# since config.libi18n.h is included by i18n.h.
+# since config.libi18n.h is included by i18n.hpp.
 IF(ENABLE_NLS)
 	# Find gettext.
 	INCLUDE(CheckGettext)
@@ -34,7 +34,7 @@ IF(NOT ENABLE_NLS)
 ENDIF(NOT ENABLE_NLS)
 
 FOREACH(_target ${TARGETS})
-	ADD_LIBRARY(${_target} STATIC i18n.c i18n.h)
+	ADD_LIBRARY(${_target} STATIC i18n.cpp i18n.hpp)
 	INCLUDE(SetMSVCDebugPath)
 	SET_MSVC_DEBUG_PATH(${_target})
 	# Exclude from ALL builds; enable PIC.

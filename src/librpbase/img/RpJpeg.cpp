@@ -12,9 +12,6 @@
 #include "RpJpeg.hpp"
 #include "librpfile/IRpFile.hpp"
 
-// libi18n
-#include "libi18n/i18n.h"
-
 // Other rom-properties libraries
 using namespace LibRpFile;
 using namespace LibRpTexture;

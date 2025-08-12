@@ -8,9 +8,8 @@
 
 #include "stdafx.h"
 #include "Achievements.hpp"
-#include "libi18n/i18n.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "librpbase/crypto/Hash.hpp"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"

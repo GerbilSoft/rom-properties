@@ -22,9 +22,6 @@ using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
 
-// libi18n
-#include "libi18n/i18n.h"
-
 // C++ STL classes
 using std::set;
 using std::string;

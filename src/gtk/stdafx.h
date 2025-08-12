@@ -81,7 +81,7 @@
 #endif /* !GLIB_CHECK_VERSION(2, 53, 1) && !_WIN32 && __GNUC__ >= 4 */
 
 // libi18n
-#include "libi18n/i18n.h"
+#include "libi18n/i18n.hpp"
 
 // librpbase common headers
 #include "common.h"

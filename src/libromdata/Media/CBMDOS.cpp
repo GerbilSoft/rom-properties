@@ -22,7 +22,6 @@
 #include "cbmdos_structs.h"
 
 // Other rom-properties libraries
-#include "libi18n/i18n.h"
 #include "librptexture/decoder/ImageDecoder_Linear_Gray.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;

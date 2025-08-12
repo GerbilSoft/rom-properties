@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * Ext2AttrData.c: Ext2 file system attribute data                         *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,7 +10,7 @@
 #include "Ext2AttrData.h"
 
 #include "common.h"
-#include "libi18n/i18n.h"
+#include "libi18n/i18n.hpp"
 
 // C includes
 #include <assert.h>

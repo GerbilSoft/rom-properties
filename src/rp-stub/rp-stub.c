@@ -15,7 +15,7 @@
 #include "config.version.h"
 #include "git.h"
 
-#include "libi18n/i18n.h"
+#include "libi18n/i18n.hpp"
 #include "librptext/libc.h"	// for strlcat()
 #include "libunixcommon/dll-search.h"
 #include "stdboolx.h"

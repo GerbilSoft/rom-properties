@@ -22,7 +22,6 @@
 #include "data/GLenumStrings.hpp"
 
 // Other rom-properties libraries
-#include "libi18n/i18n.h"
 using namespace LibRpFile;
 using LibRpBase::RomFields;
 

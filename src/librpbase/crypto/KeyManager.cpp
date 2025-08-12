@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * KeyManager.cpp: Encryption key manager.                                 *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,6 @@
 
 #include "KeyManager.hpp"
 #include "config/ConfReader_p.hpp"
-#include "libi18n/i18n.h"
 
 // C++ STL classes
 using std::array;

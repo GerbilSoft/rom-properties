@@ -15,7 +15,6 @@
 #include "godot_stex_structs.h"
 
 // Other rom-properties libraries
-#include "libi18n/i18n.h"
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/MemFile.hpp"
 using namespace LibRpBase;

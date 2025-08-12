@@ -15,7 +15,7 @@
 #ifdef RP_OS_SCSI_SUPPORTED
 
 // Other rom-properties libraries
-#include "libi18n/i18n.h"
+#include "libi18n/i18n.hpp"
 #include "librpfile/RpFile.hpp"
 #include "librptext/conversion.hpp"
 using namespace LibRpText;

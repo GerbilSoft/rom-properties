@@ -79,7 +79,7 @@ static inline QString U82Q(const char *str, rp_qsizetype len = -1)
 }
 
 // Helper macro for using C_() with U82Q().
-// NOTE: Must include i18n.h before using this macro!
+// NOTE: Must include i18n.hpp before using this macro!
 #define Q_(msgid)				U82Q(_(msgid))
 #define QC_(msgctxt, msgid)			U82Q(C_(msgctxt, msgid))
 #define QN_(msgid1, msgid2, n)			U82Q(N_(msgid1, msgid2, n))

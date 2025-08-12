@@ -9,8 +9,6 @@
 #include "stdafx.h"
 #include "RomFields.hpp"
 
-#include "libi18n/i18n.h"
-
 // C++ STL classes
 using std::string;
 using std::unique_ptr;

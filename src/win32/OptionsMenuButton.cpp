@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * OptionsMenuButton.cpp: Options menu button WC_BUTTON superclass.        *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,6 @@
 #include "res/resource.h"
 
 // Other rom-properties libraries
-#include "libi18n/i18n.h"
 #include "librpbase/RomData.hpp"
 #include "librptext/wchar.hpp"
 using LibRpBase::RomData;

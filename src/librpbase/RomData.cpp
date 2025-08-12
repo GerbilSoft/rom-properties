@@ -11,7 +11,6 @@
 #include "RomData_p.hpp"
 
 // Other rom-properties libraries
-#include "libi18n/i18n.h"
 #include "libcachecommon/CacheKeys.hpp"
 #include "librpfile/FileSystem.hpp"
 using namespace LibRpFile;

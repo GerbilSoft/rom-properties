@@ -10,8 +10,6 @@
 #include "FileFormat.hpp"
 #include "FileFormat_p.hpp"
 
-#include "libi18n/i18n.h"
-
 // Other rom-properties libraries
 using namespace LibRpFile;
 

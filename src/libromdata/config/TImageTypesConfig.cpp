@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * TImageTypesConfig.cpp: Image Types editor template.                     *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,9 +16,6 @@
 
 // librpbase
 #include "librpbase/RomData.hpp"	// for IMG_* constants
-
-// libi18n
-#include "libi18n/i18n.h"
 
 // C includes (C++ namespace)
 #include <cassert>

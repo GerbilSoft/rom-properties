@@ -9,7 +9,7 @@
 #include "FstPrint.hpp"
 
 // Other rom-properties libraries
-#include "libi18n/i18n.h"
+#include "libi18n/i18n.hpp"
 #include "librpbase/disc/IFst.hpp"
 #include "librptext/conversion.hpp"
 using namespace LibRpBase;

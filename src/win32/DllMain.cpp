@@ -51,7 +51,6 @@ static ULONG_PTR gdipToken = 0;
 // MSVC: Exception handling for /DELAYLOAD.
 #  include "libwin32common/DelayLoadHelper.h"
 // DelayLoad test implementation.
-#  include "libi18n/i18n.h"
 DELAYLOAD_TEST_FUNCTION_IMPL1(libintl_textdomain, nullptr);
 #endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
 

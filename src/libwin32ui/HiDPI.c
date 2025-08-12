@@ -37,7 +37,7 @@ typedef enum MONITOR_DPI_TYPE {
 #  define DPI_ENUMS_DECLARED
 #endif /* !DPI_ENUMS_DECLARED */
 
-/** DPI functions. **/
+/** DPI functions **/
 
 // Windows 10 v1607
 typedef UINT (WINAPI *pfnGetDpiForWindow_t)(_In_ HWND hWnd);
@@ -49,7 +49,7 @@ typedef HRESULT (WINAPI *pfnGetDpiForMonitor_t)(
 	_Out_ UINT *dpiX,
 	_Out_ UINT *dpiY);
 
-// pthread_once() control variable.
+// pthread_once() control variable
 static pthread_once_t hidpi_once_control = PTHREAD_ONCE_INIT;
 
 // Function pointers.
@@ -72,7 +72,7 @@ static DPIQueryType dpiQueryType = DPIQT_GetDeviceCaps;
 
 /**
  * Initialize the DPI function pointers.
- * Called by pthread_once();
+ * Called by pthread_once().
  */
 static void rp_init_DPIQueryType(void)
 {

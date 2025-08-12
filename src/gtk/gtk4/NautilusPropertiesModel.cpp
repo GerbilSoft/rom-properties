@@ -14,8 +14,6 @@
 #include "NautilusPropertiesModel.hpp"
 #include "RomDataFormat.hpp"
 
-#include "libi18n/i18n.h"
-
 // Other rom-properties libraries
 #include "librpbase/RomData.hpp"
 using namespace LibRpBase;

@@ -10,9 +10,6 @@
 #include "Qoi.hpp"
 #include "FileFormat_p.hpp"
 
-// Other rom-properties libraries
-#include "libi18n/i18n.h"
-
 #define QOI_IMPLEMENTATION 1
 #define QOI_NO_STDIO 1
 #include "decoder/qoi.h"

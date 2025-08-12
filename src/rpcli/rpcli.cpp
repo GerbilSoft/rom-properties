@@ -23,7 +23,7 @@
 #include "librpbyteswap/byteswap_rp.h"
 
 // librpbase
-#include "libi18n/i18n.h"
+#include "libi18n/i18n.hpp"
 #include "librpbase/RomData.hpp"
 #include "librpbase/SystemRegion.hpp"
 #include "librpbase/img/RpPng.hpp"
@@ -113,7 +113,6 @@ static int DelayLoad_test_ImageTypesConfig_className(void) {
 
 #  ifdef ENABLE_NLS
 // DelayLoad: libi18n
-#    include "libi18n/i18n.h"
 DELAYLOAD_TEST_FUNCTION_IMPL1(libintl_textdomain, nullptr);
 #  endif /* ENABLE_NLS */
 #endif /* _MSC_VER */

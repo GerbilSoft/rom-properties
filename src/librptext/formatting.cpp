@@ -15,7 +15,7 @@
 #endif /* _WIN32 && !HAVE_STRUCT_LCONV_WCHAR_T */
 
 // Other rom-properties libraries
-#include "libi18n/i18n.h"
+#include "libi18n/i18n.hpp"
 
 // C includes
 #ifdef HAVE_NL_LANGINFO

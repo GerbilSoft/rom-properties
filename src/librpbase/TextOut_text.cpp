@@ -21,9 +21,6 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
-// libi18n
-#include "libi18n/i18n.h"
-
 // librpbase
 #include "RomData.hpp"
 #include "RomFields.hpp"

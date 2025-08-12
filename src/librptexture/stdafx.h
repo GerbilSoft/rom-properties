@@ -43,6 +43,9 @@
 
 #endif /* __cplusplus */
 
+// libi18n
+#include "libi18n/i18n.hpp"
+
 // librpbase common headers
 #include "common.h"
 #include "ctypex.h"

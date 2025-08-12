@@ -220,7 +220,7 @@ static inline std::string T2U8(const std::tstring &tcs)
 #endif /* UNICODE */
 
 // Helper macro for using C_() with U82T_c().
-// NOTE: Must include i18n.h before using this macro!
+// NOTE: Must include i18n.hpp before using this macro!
 #define T_(msgid)				U82T_c(_(msgid))
 #define TC_(msgctxt, msgid)			U82T_c(C_(msgctxt, msgid))
 #define TN_(msgid1, msgid2, n)			U82T_c(N_(msgid1, msgid2, n))

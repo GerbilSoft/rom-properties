@@ -9,7 +9,7 @@
 #pragma once
 
 #include <gtk/gtk.h>
-#include "libi18n/i18n.h"
+#include "libi18n/i18n.hpp"
 
 #if defined(ENABLE_NLS) && ENABLE_NLS
 

@@ -12,7 +12,7 @@ using LibRpBase::IFst;
 using LibRomData::GcnFst;
 
 // i18n
-#include "libi18n/i18n.h"
+#include "libi18n/i18n.hpp"
 
 // libgsvt for VT handling
 #include "gsvtpp.hpp"

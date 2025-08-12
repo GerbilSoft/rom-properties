@@ -18,7 +18,6 @@
 #include "librpbase/Achievements.hpp"
 #include "librpbase/disc/PartitionFile.hpp"
 #include "librpbase/disc/SparseDiscReader.hpp"
-#include "libi18n/i18n.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;

@@ -72,6 +72,9 @@ namespace std {
 
 #endif /* __cplusplus */
 
+// libi18n
+#include "libi18n/i18n.hpp"
+
 // MSVC intrinsics
 #if defined(_MSC_VER) && _MSC_VER >= 1400
 #  include <intrin.h>

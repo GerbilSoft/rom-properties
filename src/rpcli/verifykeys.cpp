@@ -20,7 +20,7 @@
 #include "gsvtpp.hpp"
 
 // Other rom-properties libraries
-#include "libi18n/i18n.h"
+#include "libi18n/i18n.hpp"
 
 // libromdata
 #include "libromdata/crypto/KeyStoreUI.hpp"
