@@ -73,15 +73,12 @@ class RP_ShellPropSheetExt_Private
 public:
 	/**
 	 * RP_ShellPropSheetExt_Private constructor
-	 * @param q
 	 * @param tfilename
 	 */
-	explicit RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q, const TCHAR *tfilename);
+	explicit RP_ShellPropSheetExt_Private(const TCHAR *tfilename);
 
 private:
 	RP_DISABLE_COPY(RP_ShellPropSheetExt_Private)
-private:
-	RP_ShellPropSheetExt *const q_ptr;
 
 public:
 	// Property for "tab pointer".

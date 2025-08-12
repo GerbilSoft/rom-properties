@@ -68,9 +68,8 @@ const TCHAR RP_ShellPropSheetExt_Private::TAB_PTR_PROP[] = _T("RP_ShellPropSheet
  * @param q
  * @param tfilename
  */
-RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q, const TCHAR *tfilename)
-	: q_ptr(q)
-	, hDlgSheet(nullptr)
+RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(const TCHAR *tfilename)
+	: hDlgSheet(nullptr)
 	, tfilename(tfilename)
 	, fontHandler(nullptr)
 	, lblSysInfo(nullptr)
@@ -2238,7 +2237,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 
 	// Save the filename in the private class for later.
 	if (!d_ptr) {
-		d_ptr = new RP_ShellPropSheetExt_Private(this, tfilename);
+		d_ptr = new RP_ShellPropSheetExt_Private(tfilename);
 	}
 
 	// Make sure the Dark Mode function pointers are initialized.
