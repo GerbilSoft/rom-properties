@@ -269,7 +269,6 @@ FOREACH(_target ${TARGETS})
 
 	# TODO: More public/private library stuff.
 	TARGET_LINK_LIBRARIES(${_target} PUBLIC rpbyteswap${_target_suffix} rpfile${_target_suffix} rptext${_target_suffix})
-	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpthreads${_target_suffix})
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpcpuid)	# for CPU dispatch
 
 	# Include paths:

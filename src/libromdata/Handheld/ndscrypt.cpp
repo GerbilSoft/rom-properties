@@ -23,7 +23,7 @@
 #include <cerrno>
 #include <cstdint>
 
-// librpbase, librpfile, librpthreads
+// librpbase, librpfile
 #include "librpbase/crypto/Hash.hpp"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"

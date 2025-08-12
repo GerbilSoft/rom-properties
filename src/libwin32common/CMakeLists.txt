@@ -78,7 +78,6 @@ FOREACH(_target ${TARGETS})
 		UNSET(_target_suffix)
 	ENDIF()
 
-	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpthreads${_target_suffix})
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE rptext${_target_suffix})
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE uuid ole32 oleaut32 advapi32 shell32)
 	# for DefSubclassProc and related

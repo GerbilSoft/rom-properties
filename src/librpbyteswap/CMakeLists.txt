@@ -112,8 +112,6 @@ FOREACH(_target ${TARGETS})
 
 	# rpcpuid is needed for CPU identification.
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpcpuid)
-	# rpthreads is needed for atomic functions.
-	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpthreads${_target_suffix})
 
 	# Include paths:
 	# - Public: Current source and binary directories.
