@@ -13,7 +13,6 @@
 // Other rom-properties libraries
 #include "librpfile/FileSystem.hpp"
 using namespace LibRpFile;
-using LibRpThreads::MutexLocker;
 
 // OS-specific includes
 #ifdef _WIN32
@@ -120,11 +119,11 @@ int ConfReader::load(bool force)
 		}
 	}
 
-	// loadKeys() mutex.
+	// loadKeys() mutex
 	// NOTE: This may result in the configuration being loaded
 	// twice in some cases, but that's better than the configuration
 	// being loaded twice at the same time and causing collisions.
-	MutexLocker mtxLocker(d->mtxLoad);
+	std::lock_guard<std::mutex> mtxLocker(d->mtxLoad);
 
 	if (d->conf_filename.empty()) {
 		// Get the configuration filename.

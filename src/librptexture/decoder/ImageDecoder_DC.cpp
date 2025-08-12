@@ -17,11 +17,9 @@
 using namespace LibRpTexture::PixelConversion;
 
 // C++ STL classes
+#include <mutex>
 using std::array;
 using std::unique_ptr;
-
-// One-time initialization.
-#include "librpthreads/pthread_once.h"
 
 namespace LibRpTexture { namespace ImageDecoder {
 
@@ -34,14 +32,14 @@ namespace LibRpTexture { namespace ImageDecoder {
 static constexpr size_t DC_TMAP_SIZE = 4096;
 static unique_ptr<array<unsigned int, DC_TMAP_SIZE> > dc_tmap;
 
-// pthread_once() control variable.
-static pthread_once_t dc_tmap_once_control = PTHREAD_ONCE_INIT;
+// std::call_once() control variable
+static std::once_flag dc_tmap_once_flag;
 
 /**
  * Initialize the Dreamcast twiddle map.
  * This initializes dc_tmap[].
  *
- * This function MUST be called using pthread_once().
+ * This function MUST be called using std::call_once().
  */
 static void initDreamcastTwiddleMap_int(void)
 {
@@ -62,7 +60,7 @@ static void initDreamcastTwiddleMap_int(void)
  */
 static FORCEINLINE void initDreamcastTwiddleMap(void)
 {
-	pthread_once(&dc_tmap_once_control, initDreamcastTwiddleMap_int);
+	std::call_once(dc_tmap_once_flag, initDreamcastTwiddleMap_int);
 }
 
 /**

@@ -19,9 +19,6 @@
 typedef void *HMODULE;
 #endif /* !_WIN32 */
 
-// pthread_once_inl() needs its own type.
-typedef int pthread_once_inl_t;
-
 #ifdef HAVE_LZ4
 #  if defined(USE_INTERNAL_LZ4) && !defined(USE_INTERNAL_LZ4_DLL)
      // Using a statically linked copy of LZ4.
@@ -56,6 +53,9 @@ typedef void *lzo_voidp;
 #  define LZO_E_ERROR (-1)
 #endif /* HAVE_LZO */
 
+// C++ STL classes
+#include <mutex>
+
 namespace LibRomData {
 
 class CisoPspDlopen {
@@ -67,10 +67,10 @@ private:
 	// dlopen()'d modules
 
 #ifdef LZ4_SHARED_LINKAGE
-	pthread_once_inl_t m_once_lz4;
+	std::once_flag m_once_lz4;
 #endif /* LZ4_SHARED_LINKAGE */
 #ifdef LZO_SHARED_LINKAGE
-	pthread_once_inl_t m_once_lzo;
+	std::once_flag m_once_lzo;
 #endif /* LZO_SHARED_LINKAGE */
 
 #ifdef LZ4_SHARED_LINKAGE
@@ -93,7 +93,7 @@ private:
 private:
 	/**
 	 * Initialize the LZ4 function pointers.
-	 * (Internal version, called using pthread_once_inl().)
+	 * (Internal version, called using std::call_once().)
 	 */
 	void init_pfn_LZ4_int(void);
 
@@ -163,7 +163,7 @@ public:
 private:
 	/**
 	 * Initialize the LZO function pointers.
-	 * (Internal version, called using pthread_once_inl().)
+	 * (Internal version, called using std::call_once().)
 	 */
 	void init_pfn_LZO_int(void);
 

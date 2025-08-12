@@ -109,11 +109,14 @@ the directory above the top-level source directory.
 
 The Windows version requires one of the following compilers: (minimum versions)
 * Microsoft Visual C++ 2015 with the Windows 7 SDK
-* gcc-4.8 with MinGW-w64
+* gcc-13 with MinGW-w64
   * The MinGW build is currently somewhat broken, so MSVC is preferred.
     (The property page icon doesn't show up sometimes for Nintendo DS
      ROMs, and XP theming doesn't work because MinGW-w64 doesn't support
      isolation awareness for COM components.)
+  * Additionally, due to the use of C++11 threading functionality, the
+    MinGW-w64 build now requires gcc-13 or later, which no longer supports
+    Windows XP.
 
 You will also need to install [CMake](https://cmake.org/download/), since the
 project uses the CMake build system.

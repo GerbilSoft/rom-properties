@@ -35,12 +35,6 @@ public:
 
 	// 96x96 icon for the About tab.
 	HICON hIcon96;
-
-	/**
-	 * Get the property sheet icons.
-	 * NOTE: This function should be called with pthread_once().
-	 */
-	void getPropSheetIcons(void);
 };
 
 /** PropSheetIconPrivate **/

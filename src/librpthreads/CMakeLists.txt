@@ -17,7 +17,6 @@ SET(${PROJECT_NAME}_SRCS dummy.cpp)
 SET(${PROJECT_NAME}_H
 	Atomics.h
 	Semaphore.hpp
-	Mutex.hpp
 	pthread_once.h
 	)
 IF(CMAKE_USE_WIN32_THREADS_INIT)

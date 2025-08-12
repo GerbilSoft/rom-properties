@@ -9,10 +9,8 @@
 #include "CacheDir.hpp"
 
 // C++ STL classes
+#include <mutex>
 using std::string;
-
-// librpthreads
-#include "librpthreads/pthread_once.h"
 
 // OS-specific userdirs
 #ifdef _WIN32
@@ -28,14 +26,14 @@ using std::string;
 namespace LibCacheCommon {
 
 /** Configuration directories. **/
-// pthread_once() control variable.
-static pthread_once_t cache_dir_once_control = PTHREAD_ONCE_INIT;
+// std::call_once() control variable.
+static std::once_flag cache_dir_once_flag;
 // User's cache directory.
 static string cache_dir;
 
 /**
  * Initialize the cache directory.
- * Called by pthread_once().
+ * Called by std::call_once().
  */
 static void initCacheDirectory(void)
 {
@@ -66,7 +64,7 @@ static void initCacheDirectory(void)
  */
 const std::string &getCacheDirectory(void)
 {
-	pthread_once(&cache_dir_once_control, initCacheDirectory);
+	std::call_once(cache_dir_once_flag, initCacheDirectory);
 	return cache_dir;
 }
 

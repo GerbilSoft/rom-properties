@@ -9,9 +9,6 @@
 #include "stdafx.h"
 #include "../FileSystem.hpp"
 
-// librpthreads
-#include "librpthreads/pthread_once.h"
-
 // C includes
 #include <sys/stat.h>
 #include <sys/utime.h>
@@ -20,6 +17,7 @@
 #include "d_type.h"
 
 // C++ STL classes
+#include <mutex>
 using std::string;
 using std::unique_ptr;
 using std::wstring;
@@ -558,8 +556,8 @@ bool is_symlink(const wchar_t *filename)
 	return is_symlink_int(tfilename.c_str());
 }
 
-// GetFinalPathnameByHandle() lookup.
-static pthread_once_t once_gfpbh = PTHREAD_ONCE_INIT;
+// GetFinalPathnameByHandle() lookup
+static std::once_flag once_gfpbh;
 typedef DWORD (WINAPI *pfnGetFinalPathNameByHandleA_t)(
 	_In_  HANDLE hFile,
 	_Out_ LPSTR lpszFilePath,
@@ -605,7 +603,7 @@ static void LookupGetFinalPathnameByHandle(void)
  */
 static tstring resolve_symlink_int(const TCHAR *tfilename)
 {
-	pthread_once(&once_gfpbh, LookupGetFinalPathnameByHandle);
+	std::call_once(once_gfpbh, LookupGetFinalPathnameByHandle);
 	if (!pfnGetFinalPathnameByHandle) {
 		// GetFinalPathnameByHandle() not available.
 		return {};

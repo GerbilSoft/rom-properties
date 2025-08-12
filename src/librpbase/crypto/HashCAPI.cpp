@@ -35,7 +35,7 @@ using std::array;
 // MSVC: Exception handling for /DELAYLOAD.
 #  include "libwin32common/DelayLoadHelper.h"
 // Only checking for DelayLoad once.
-#  include "librpthreads/pthread_once.h"
+#  include <mutex>
 #endif /* _MSC_VER */
 
 namespace LibRpBase {
@@ -65,12 +65,12 @@ public:
 	} ctx;
 
 #ifdef CHECK_DELAYLOAD
-	static pthread_once_t delay_load_check;
+	static std::once_flag delay_load_check;
 	static bool has_zlib;
 
 	/**
 	 * DelayLoad check function for zlib.
-	 * NOTE: Call this function using pthread_once().
+	 * NOTE: Call this function using std::call_once().
 	 */
 	static void delayload_check_once(void);
 #endif /* CHECK_DELAYLOAD */
@@ -79,7 +79,7 @@ public:
 /** HashPrivate **/
 
 #ifdef CHECK_DELAYLOAD
-pthread_once_t HashPrivate::delay_load_check = PTHREAD_ONCE_INIT;
+std::once_flag HashPrivate::delay_load_check;
 bool HashPrivate::has_zlib = false;
 #endif /* CHECK_DELAYLOAD */
 
@@ -128,7 +128,7 @@ HashPrivate::~HashPrivate()
 #ifdef CHECK_DELAYLOAD
 /**
  * DelayLoad check function for zlib.
- * NOTE: Call this function using pthread_once().
+ * NOTE: Call this function using std::call_once().
  */
 void HashPrivate::delayload_check_once(void)
 {
@@ -147,7 +147,7 @@ Hash::Hash(Algorithm algorithm)
 
 	if (algorithm == Algorithm::CRC32) {
 #ifdef CHECK_DELAYLOAD
-		d_ptr->delayload_check_once();
+		std::call_once(d_ptr->delay_load_check, d_ptr->delayload_check_once);
 #else /* CHECK_DELAYLOAD */
 		// Not checking for DelayLoad, but we need to ensure that the
 		// CRC table is initialized anyway.

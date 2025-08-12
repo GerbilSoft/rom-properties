@@ -65,7 +65,7 @@ following platforms and file browsers:
 
 The following platforms are still compatible, but may not receive as much support:
 * KDE 4.x
-* Windows XP, Windows Server 2003, Windows Vista
+* Windows XP SP3, Windows Server 2003 SP2, Windows Vista
 
 On Windows Vista and later, you will need the MSVC 2015-2022 runtime:
 * 32-bit: https://aka.ms/vs/17/release/VC_redist.x86.exe

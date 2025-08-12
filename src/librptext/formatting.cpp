@@ -16,7 +16,6 @@
 
 // Other rom-properties libraries
 #include "libi18n/i18n.h"
-#include "librpthreads/pthread_once.h"
 
 // C includes
 #ifdef HAVE_NL_LANGINFO
@@ -30,8 +29,9 @@
 #include <cstring>
 #include <cwctype>
 
-// C++ includes and STL classes
+// C++ STL classes
 #include <iomanip>
+#include <mutex>
 #include <sstream>
 #include <string>
 using std::ostringstream;
@@ -43,7 +43,7 @@ using std::string;
 namespace LibRpText {
 
 // Localized decimal point
-static pthread_once_t lc_decimal_once_control = PTHREAD_ONCE_INIT;
+static std::once_flag lc_decimal_once_flag;
 static bool is_C_locale;
 static char lc_decimal[8];
 
@@ -91,7 +91,7 @@ static inline CONSTEXPR_MULTILINE int calc_frac_part_decimal(T val, T divisor)
 
 /**
  * Initialize the localized decimal point.
- * Called by pthread_once().
+ * Called by std::call_once().
  */
 static void initLocalizedDecimalPoint(void)
 {
@@ -295,7 +295,7 @@ string formatFileSize(off64_t size, BinaryUnitDialect dialect)
 		}
 
 		// Ensure the localized decimal point is initialized.
-		pthread_once(&lc_decimal_once_control, initLocalizedDecimalPoint);
+		std::call_once(lc_decimal_once_flag, initLocalizedDecimalPoint);
 
 		// Append the fractional part using the required number of digits.
 		s_value << lc_decimal;
@@ -402,7 +402,7 @@ std::string formatFrequency(uint32_t frequency)
 		const int frac_digits = 3;
 
 		// Ensure the localized decimal point is initialized.
-		pthread_once(&lc_decimal_once_control, initLocalizedDecimalPoint);
+		std::call_once(lc_decimal_once_flag, initLocalizedDecimalPoint);
 
 		// Append the fractional part using the required number of digits.
 		s_value << lc_decimal;

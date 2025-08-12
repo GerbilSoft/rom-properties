@@ -19,14 +19,12 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 
-// librpthreads
-#include "librpthreads/pthread_once.h"
-
 // librptexture
 #include "librptexture/FileFormatFactory.hpp"
 using namespace LibRpTexture;
 
 // C++ STL classes
+#include <mutex>
 using std::array;
 using std::shared_ptr;
 using std::string;
@@ -194,11 +192,11 @@ static RomDataPtr RomData_ctor(const IRpFilePtr &file)
 
 #ifdef ROMDATAFACTORY_USE_FILE_EXTENSIONS
 vector<ExtInfo> vec_exts;
-pthread_once_t once_exts = PTHREAD_ONCE_INIT;
+std::once_flag once_exts;
 #endif /* ROMDATAFACTORY_USE_FILE_EXTENSIONS */
 #ifdef ROMDATAFACTORY_USE_MIME_TYPES
 vector<const char*> vec_mimeTypes;
-pthread_once_t once_mimeTypes = PTHREAD_ONCE_INIT;
+std::once_flag once_mimeTypes;
 #endif /* ROMDATAFACTORY_USE_MIME_TYPES */
 
 #define ATTR_NONE		RomDataFactory::RDA_NONE
@@ -1119,7 +1117,7 @@ namespace Private {
  * Initialize the vector of supported file extensions.
  * Used for Win32 COM registration.
  *
- * Internal function; must be called using pthread_once().
+ * Internal function; must be called using std::call_once().
  *
  * NOTE: The return value is a struct that includes a flag
  * indicating if the file type handler supports thumbnails.
@@ -1206,7 +1204,7 @@ static void init_supportedFileExtensions(void)
  */
 const vector<ExtInfo> &supportedFileExtensions(void)
 {
-	pthread_once(&Private::once_exts, Private::init_supportedFileExtensions);
+	std::call_once(Private::once_exts, Private::init_supportedFileExtensions);
 	return Private::vec_exts;
 }
 #endif /* ROMDATAFACTORY_USE_FILE_EXTENSIONS */
@@ -1218,7 +1216,7 @@ namespace Private {
  * Initialize the vector of supported MIME types.
  * Used for KFileMetaData.
  *
- * Internal function; must be called using pthread_once().
+ * Internal function; must be called using std::call_once().
  */
 static void init_supportedMimeTypes(void)
 {
@@ -1277,7 +1275,7 @@ static void init_supportedMimeTypes(void)
  */
 const vector<const char*> &supportedMimeTypes(void)
 {
-	pthread_once(&Private::once_mimeTypes, Private::init_supportedMimeTypes);
+	std::call_once(Private::once_mimeTypes, Private::init_supportedMimeTypes);
 	return Private::vec_mimeTypes;
 }
 #endif /* ROMDATAFACTORY_USE_MIME_TYPES */

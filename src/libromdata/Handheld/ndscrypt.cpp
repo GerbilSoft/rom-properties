@@ -27,20 +27,18 @@
 #include "librpbase/crypto/Hash.hpp"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
-#include "librpthreads/Mutex.hpp"
 using namespace LibRpFile;
 using LibRpBase::Hash;
-using LibRpThreads::Mutex;
-using LibRpThreads::MutexLocker;
 
 // C++ STL classes
+#include <mutex>
 using std::array;
 using std::string;
 using std::unique_ptr;
 
 // Blowfish data.
 // This is loaded from ~/.config/rom-properties/nds-blowfish.bin.
-static Mutex blowfish_mutex;
+static std::mutex blowfish_mutex;
 static constexpr uint8_t blowfish_md5[3][16] = {
 	// nds-blowfish
 	{0xC0,0x8C,0x5A,0xFD,0x9C,0x6D,0x95,0x30,
@@ -80,7 +78,7 @@ int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 		return 0;
 	}
 
-	MutexLocker mutexLocker(blowfish_mutex);
+	std::lock_guard<std::mutex> mutexLocker(blowfish_mutex);
 	// Verify again after the mutex is locked.
 	if (blowfish_data[bfkey] != nullptr) {
 		// Blowfish data was already loaded.

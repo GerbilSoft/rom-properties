@@ -10,13 +10,11 @@
 #include "SystemRegion.hpp"
 #include "ctypex.h"
 
-// librpthreads
-#include "librpthreads/pthread_once.h"
-
 // C includes (C++ namespace)
 #include <clocale>
 
 // C++ STL classes
+#include <mutex>
 using std::array;
 using std::string;
 #ifdef _WIN32
@@ -37,8 +35,8 @@ namespace LibRpBase { namespace SystemRegion {
 static uint32_t cc = 0;
 static uint32_t lc = 0;
 
-// pthread_once() control variable.
-static pthread_once_t system_region_once_control = PTHREAD_ONCE_INIT;
+// std::call_once() control variable
+static std::once_flag system_region_once_flag;
 
 struct LanguageOffTbl_t {
 	uint32_t lc;
@@ -221,7 +219,7 @@ static int getSystemRegion_LC_MESSAGES(const char *locale)
 #ifdef _WIN32
 /**
  * Get the system region information.
- * Called by pthread_once().
+ * Called by std::call_once().
  * (Windows version)
  *
  * Country code will be stored in 'cc'.
@@ -311,7 +309,7 @@ static void getSystemRegion(void)
 
 /**
  * Get the system region information.
- * Called by pthread_once().
+ * Called by std::call_once().
  * (Unix/Linux version)
  *
  * Country code will be stored in 'cc'.
@@ -337,7 +335,7 @@ static inline void getSystemRegion(void)
  */
 uint32_t getCountryCode(void)
 {
-	pthread_once(&system_region_once_control, getSystemRegion);
+	std::call_once(system_region_once_flag, getSystemRegion);
 	return cc;
 }
 
@@ -353,7 +351,7 @@ uint32_t getCountryCode(void)
  */
 uint32_t getLanguageCode(void)
 {
-	pthread_once(&system_region_once_control, getSystemRegion);
+	std::call_once(system_region_once_flag, getSystemRegion);
 	return lc;
 }
 

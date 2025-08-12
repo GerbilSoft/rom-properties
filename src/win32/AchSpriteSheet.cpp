@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (GTK+)                             *
+ * ROM Properties Page shell extension. (Win32)                            *
  * AchSpriteSheet.hpp: Achievement sprite sheets loader.                   *
  *                                                                         *
  * Copyright (c) 2020-2023 by David Korth.                                 *

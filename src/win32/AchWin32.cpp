@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE4/KF5)                         *
+ * ROM Properties Page shell extension. (Win32)                            *
  * AchWin32.hpp: Win32 notifications for achievements.                     *
  *                                                                         *
- * Copyright (c) 2020-2024 by David Korth.                                 *
+ * Copyright (c) 2020-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,13 +16,13 @@
 // Other rom-properties libraries
 #include "librpbase/Achievements.hpp"
 #include "librptext/wchar.hpp"
-#include "librpthreads/pthread_once.h"
 using namespace LibRpBase;
 
 // ROM icon
 #include "config/PropSheetIcon.hpp"
 
 // C++ STL classes
+#include <mutex>
 using std::string;
 using std::tstring;
 using std::unordered_map;
@@ -76,7 +76,7 @@ public:
 private:
 	/**
 	 * Register the window class.
-	 * NOTE: Must be called from pthread_once().
+	 * NOTE: Must be called from std::call_once().
 	 */
 	static void registerWindowClass(void);
 
@@ -99,7 +99,7 @@ private:
 public:
 	// Window class (registered once)
 	ATOM atomWindowClass;
-	pthread_once_t once_control;
+	std::once_flag once_flag;
 
 	// NOTE: Windows Explorer appears to create a new thread per
 	// properties dialog, and the thread (and this window) disappears
@@ -119,7 +119,6 @@ AchWin32 AchWin32Private::instance;
 AchWin32Private::AchWin32Private()
 	: hasRegistered(false)
 	, atomWindowClass(0)
-	, once_control(PTHREAD_ONCE_INIT)
 {
 	// NOTE: Cannot register with the Achievements class here because the
 	// static Achievements instance might not be fully initialized yet.
@@ -186,7 +185,7 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 		return 0;
 	} else {
 		// No notification window. We'll need to create it.
-		pthread_once(&once_control, registerWindowClass);
+		std::call_once(once_flag, registerWindowClass);
 		hNotifyWnd = CreateWindow(
 			MAKEINTATOM(atomWindowClass),	// lpClassName
 			_T("RpAchNotifyWnd"),		// lpWindowName
@@ -308,7 +307,7 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 
 /**
  * Register the window class.
- * NOTE: Must be called from pthread_once().
+ * NOTE: Must be called from std::call_once().
  */
 void AchWin32Private::registerWindowClass(void)
 {

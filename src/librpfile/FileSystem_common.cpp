@@ -18,26 +18,24 @@
 #  define OS_NAMESPACE LibUnixCommon
 #endif
 
-// librpthreads
-#include "librpthreads/pthread_once.h"
-
 // libcachecommon
 #include "libcachecommon/CacheDir.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+#include <mutex>
 using std::string;
 
 namespace LibRpFile { namespace FileSystem {
 
 /** Configuration directories. **/
-// pthread_once() control variable.
-static pthread_once_t cfgdir_once_control = PTHREAD_ONCE_INIT;
+// std::call_once() control variable.
+static std::once_flag cfgdir_once_flag;
 // User's configuration directory.
 static string config_dir;
 
 /**
  * Initialize the configuration directory paths.
- * Called by pthread_once().
+ * Called by std::call_once().
  */
 static void initConfigDirectories(void)
 {
@@ -82,7 +80,7 @@ const string &getCacheDirectory(void)
 const string &getConfigDirectory(void)
 {
 	// TODO: Handle errors.
-	pthread_once(&cfgdir_once_control, initConfigDirectories);
+	std::call_once(cfgdir_once_flag, initConfigDirectories);
 	return config_dir;
 }
 

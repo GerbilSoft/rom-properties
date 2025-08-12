@@ -9,15 +9,6 @@
 #include "stdafx.h"
 #include "CisoPspDlopen.hpp"
 
-#include "config.librpthreads.h"
-#include "librpthreads/Atomics.h"
-#ifdef _WIN32
-#  include "libwin32common/RpWin32_sdk.h"
-#  define sched_yield() SwitchToThread()
-#endif
-
-static constexpr pthread_once_inl_t PTHREAD_ONCE_INL_INIT = 0;
-
 #ifdef _WIN32
 // rp_LoadLibrary()
 // NOTE: Delay-load is not supported with MinGW, but we still need
@@ -30,13 +21,11 @@ namespace LibRomData {
 CisoPspDlopen::CisoPspDlopen()
 {
 #ifdef LZ4_SHARED_LINKAGE
-	m_once_lz4 = PTHREAD_ONCE_INL_INIT;
 	m_liblz4 = nullptr;
 	m_pfn_LZ4_decompress_safe = nullptr;
 #endif /* LZ4_SHARED_LINKAGE */
 
 #ifdef LZO_SHARED_LINKAGE
-	m_once_lzo = PTHREAD_ONCE_INL_INIT;
 	m_liblzo2 = nullptr;
 	m_pfn_lzo1x_decompress_safe = nullptr;
 #elif defined(HAVE_LZO)
@@ -58,41 +47,10 @@ CisoPspDlopen::~CisoPspDlopen()
 #endif /* LZO_SHARED_LINKAGE */
 }
 
-// NOTE: Cannot use pthread_once() with a member function,
-// so we'll reimplement pthread_once() here.
-#define pthread_once_inl(once_control, init_routine) do { \
-	if (*(once_control) != 1) { \
-		bool run = true; \
-		while (run) { \
-			/* Check if once_control is 0. If it is, set it to 2. */ \
-			/* NOTE: ATOMIC_CMPXCHG() returns the initial value,  */ \
-			/* so it will return 0 if once_control was 0, though  */ \
-			/* once_control will now be 2.                        */ \
-			switch (ATOMIC_CMPXCHG(once_control, 0, 2)) { \
-				case 0: \
-					/* NOTE: pthread_once() doesn't have a way to */ \
-					/* indicate that initialization failed.       */ \
-					init_routine(); \
-					ATOMIC_EXCHANGE(once_control, 1); \
-					run = false; \
-					break; \
-				case 1: \
-					/* The initializer has already been executed. */ \
-					run = false; \
-					break; \
-				default: \
-					/* The initializer is being processed by another thread. */ \
-					sched_yield(); \
-					break; \
-			} \
-		} \
-	} \
-} while (0)
-
 #ifdef LZ4_SHARED_LINKAGE
 /**
  * Initialize the LZ4 function pointers.
- * (Internal version, called using pthread_once_inl().)
+ * (Internal version, called using std::call_once().)
  */
 void CisoPspDlopen::init_pfn_LZ4_int(void)
 {
@@ -130,7 +88,7 @@ void CisoPspDlopen::init_pfn_LZ4_int(void)
 int CisoPspDlopen::init_pfn_LZ4(void)
 {
 	// TODO: Better error code.
-	pthread_once_inl(&m_once_lz4, init_pfn_LZ4_int);
+	std::call_once(m_once_lz4, &CisoPspDlopen::init_pfn_LZ4_int, this);
 	return (m_liblz4 != nullptr) ? 0 : -EIO;
 }
 #endif /* LZ4_SHARED_LINKAGE */
@@ -138,7 +96,7 @@ int CisoPspDlopen::init_pfn_LZ4(void)
 #ifdef LZO_SHARED_LINKAGE
 /**
  * Initialize the LZO function pointers.
- * (Internal version, called using pthread_once_inl().)
+ * (Internal version, called using std::call_once().)
  */
 void CisoPspDlopen::init_pfn_LZO_int(void)
 {
@@ -197,7 +155,7 @@ void CisoPspDlopen::init_pfn_LZO_int(void)
 int CisoPspDlopen::init_pfn_LZO(void)
 {
 	// TODO: Better error code.
-	pthread_once_inl(&m_once_lzo, init_pfn_LZO_int);
+	std::call_once(m_once_lzo, &CisoPspDlopen::init_pfn_LZO_int, this);
 	return (m_liblzo2 != nullptr) ? 0 : -EIO;
 }
 #elif defined(HAVE_LZO)
