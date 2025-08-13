@@ -27,7 +27,7 @@ using std::unique_ptr;
 // Image format libraries
 #include <zlib.h>		// get_crc_table()
 #include <png.h>
-#include "APNG_dlopen.h"	// for libpng_has_APNG()
+#include "APNG_dlopen.hpp"	// for libpng_has_APNG()
 
 #if PNG_LIBPNG_VER < 10209 || \
     (PNG_LIBPNG_VER == 10209 && \
@@ -829,13 +829,7 @@ bool libpng_has_APNG(void)
 	}
 #endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
-	const bool APNG_is_supported = (APNG_ref() == 0);
-	if (APNG_is_supported) {
-		// APNG is supported.
-		// Unreference it to prevent leaks.
-		APNG_unref();
-	}
-
+	const bool APNG_is_supported = (APNG_load() == 0);
 	return APNG_is_supported;
 }
 

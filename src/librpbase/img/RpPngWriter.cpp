@@ -18,7 +18,7 @@ using namespace LibRpFile;
 using namespace LibRpTexture;
 
 // APNG
-#include "APNG_dlopen.h"
+#include "APNG_dlopen.hpp"
 
 // libpng
 #include <zlib.h>	// get_crc_table()
@@ -479,8 +479,8 @@ RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, const IconAnim
 #endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
 	if (iconAnimData->seq_count > 1) {
-		// Load APNG.
-		int ret = APNG_ref();
+		// Make sure APNG is loaded.
+		int ret = APNG_load();
 		if (ret != 0) {
 			// Error loading APNG.
 			lastError = ENOTSUP;
@@ -548,10 +548,6 @@ RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, const IconAnim
 RpPngWriterPrivate::~RpPngWriterPrivate()
 {
 	this->close();
-
-	if (imageTag == ImageTag::IconAnimData) {
-		APNG_unref();
-	}
 }
 
 /**

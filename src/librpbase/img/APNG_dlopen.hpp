@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase)                        *
- * APNG_dlopen.h: APNG dlopen()'d function pointers.                       *
+ * APNG_dlopen.hpp: APNG dlopen()'d function pointers.                     *
  *                                                                         *
- * Copyright (c) 2014-2023 by David Korth.                                 *
+ * Copyright (c) 2014-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,26 +17,17 @@ extern "C" {
 #endif
 
 /**
- * Load APNG and increment the reference counter.
+ * Ensure APNG symbols are loaded.
  *
  * NOTE: On Windows, if libpng is set for delay-load, the caller
  * *must* ensure that it's loaded before calling this function!
  * Otherwise, this function will fail.
  *
+ * NOTE 2: APNG is automatically unloaded when this library is unloaded.
+ *
  * @return 0 on success; non-zero on error.
  */
-extern int RP_C_API APNG_ref(void);
-
-/**
- * Decrement the APNG reference counter.
- */
-extern void RP_C_API APNG_unref(void);
-
-/**
- * Force the APNG library to be unloaded.
- * This decrements the reference count to 0.
- */
-extern void APNG_force_unload(void);
+extern int RP_C_API APNG_load(void);
 
 #ifndef USE_INTERNAL_PNG
 /* PNG/APNG macros that might not be present if the system libpng *

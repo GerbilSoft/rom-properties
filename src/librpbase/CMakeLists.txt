@@ -40,7 +40,7 @@ SET(${PROJECT_NAME}_SRCS
 	img/RpImageLoader.cpp
 	img/RpPng.cpp
 	img/RpPngWriter.cpp
-	img/APNG_dlopen.c
+	img/APNG_dlopen.cpp
 	img/IconAnimHelper.cpp
 	disc/IDiscReader.cpp
 	disc/DiscReader.cpp
@@ -68,7 +68,7 @@ SET(${PROJECT_NAME}_H
 	timeconv.h
 	img/RpPng.hpp
 	img/RpPngWriter.hpp
-	img/APNG_dlopen.h
+	img/APNG_dlopen.hpp
 	disc/IDiscReader.hpp
 	disc/DiscReader.hpp
 	disc/IPartition.hpp
