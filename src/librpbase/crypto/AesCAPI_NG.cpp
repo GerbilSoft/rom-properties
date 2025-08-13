@@ -13,8 +13,8 @@
 #include "libwin32common/RpWin32_sdk.h"
 #include "tcharx.h"
 
-// librpthreads
-#include "librpthreads/Atomics.h"
+// MSVC intrinsics
+#include <intrin.h>
 
 // References:
 // - https://docs.microsoft.com/en-us/windows/win32/seccng/encrypting-data-with-cng
@@ -36,64 +36,64 @@ namespace LibRpBase {
 
 class AesCAPI_NG_Private
 {
-	public:
-		AesCAPI_NG_Private();
-		~AesCAPI_NG_Private();
+public:
+	AesCAPI_NG_Private();
+	~AesCAPI_NG_Private();
 
-	private:
-		RP_DISABLE_COPY(AesCAPI_NG_Private)
+private:
+	RP_DISABLE_COPY(AesCAPI_NG_Private)
 
-	public:
-		// Reference counter.
-		static volatile int ref_cnt;
+public:
+	// Reference counter
+	static volatile long ref_cnt;
 
-		/**
-		 * Load bcrypt.dll and associated function pointers.
-		 * @return 0 on success; non-zero on error.
-		 */
-		static int load_bcrypt(void);
+	/**
+	 * Load bcrypt.dll and associated function pointers.
+	 * @return 0 on success; non-zero on error.
+	 */
+	static int load_bcrypt(void);
 
-		/** bcrypt.dll handle and function pointers. **/
-		static HMODULE hBcryptDll;
-		static DECL_FUNCPTR(BCryptOpenAlgorithmProvider);
-		static DECL_FUNCPTR(BCryptGetProperty);
-		static DECL_FUNCPTR(BCryptSetProperty);
-		static DECL_FUNCPTR(BCryptCloseAlgorithmProvider);
-		static DECL_FUNCPTR(BCryptGenerateSymmetricKey);
-		static DECL_FUNCPTR(BCryptDecrypt);
-		static DECL_FUNCPTR(BCryptDestroyKey);
-		static DECL_FUNCPTR(BCryptEncrypt);
+	/** bcrypt.dll handle and function pointers. **/
+	static HMODULE hBcryptDll;
+	static DECL_FUNCPTR(BCryptOpenAlgorithmProvider);
+	static DECL_FUNCPTR(BCryptGetProperty);
+	static DECL_FUNCPTR(BCryptSetProperty);
+	static DECL_FUNCPTR(BCryptCloseAlgorithmProvider);
+	static DECL_FUNCPTR(BCryptGenerateSymmetricKey);
+	static DECL_FUNCPTR(BCryptDecrypt);
+	static DECL_FUNCPTR(BCryptDestroyKey);
+	static DECL_FUNCPTR(BCryptEncrypt);
 
-	public:
-		// NOTE: While the provider is shared in AesCAPI,
-		// it can't be shared here because properties like
-		// chaining mode and IV are set on the algorithm
-		// handle, not the key.
-		BCRYPT_ALG_HANDLE hAesAlg;
-		BCRYPT_KEY_HANDLE hKey;
+public:
+	// NOTE: While the provider is shared in AesCAPI,
+	// it can't be shared here because properties like
+	// chaining mode and IV are set on the algorithm
+	// handle, not the key.
+	BCRYPT_ALG_HANDLE hAesAlg;
+	BCRYPT_KEY_HANDLE hKey;
 
-		// Key object.
-		uint8_t *pbKeyObject;
-		ULONG cbKeyObject;
+	// Key object
+	uint8_t *pbKeyObject;
+	ULONG cbKeyObject;
 
-		// Key data
-		// If the cipher mode is changed, the key
-		// has to be reinitialized.
-		array<uint8_t, 32> key;
-		unsigned int key_len;
+	// Key data
+	// If the cipher mode is changed, the key
+	// has to be reinitialized.
+	array<uint8_t, 32> key;
+	unsigned int key_len;
 
-		// Chaining mode
-		IAesCipher::ChainingMode chainingMode;
+	// Chaining mode
+	IAesCipher::ChainingMode chainingMode;
 
-		// CBC: Initialization vector
-		// CTR: Counter
-		array<uint8_t, 16> iv;
+	// CBC: Initialization vector
+	// CTR: Counter
+	array<uint8_t, 16> iv;
 };
 
 /** AesCAPI_NG_Private **/
 
-// Reference counter.
-volatile int AesCAPI_NG_Private::ref_cnt = 0;
+// Reference counter
+volatile long AesCAPI_NG_Private::ref_cnt = 0;
 
 /** bcrypt.dll handle and function pointers. **/
 HMODULE AesCAPI_NG_Private::hBcryptDll = nullptr;
@@ -120,9 +120,12 @@ AesCAPI_NG_Private::AesCAPI_NG_Private()
 
 	// Increment the reference counter.
 	assert(ref_cnt >= 0);
-	if (ATOMIC_INC_FETCH(&ref_cnt) == 1) {
+	if (_InterlockedIncrement(&ref_cnt) == 1) {
 		// First AesCAPI_NG reference.
 		// Attempt to load bcrypt.dll.
+		// FIXME: It's possible that if two threads try using AesCAPI_NG
+		// at exactly the same time, one will get the second reference
+		// *before* bcrypt is loaded...
 		if (load_bcrypt() != 0 || !hBcryptDll) {
 			// Error loading bcrypt.dll.
 			// NOTE: Not resetting the reference count here.
@@ -165,7 +168,7 @@ AesCAPI_NG_Private::~AesCAPI_NG_Private()
 	free(pbKeyObject);
 
 	assert(ref_cnt > 0);
-	if (ATOMIC_DEC_FETCH(&ref_cnt) == 0) {
+	if (_InterlockedDecrement(&ref_cnt) == 0) {
 		// Unload bcrypt.dll.
 		// TODO: Clear the function pointers?
 		if (hBcryptDll) {
