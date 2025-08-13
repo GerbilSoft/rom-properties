@@ -13,9 +13,6 @@
 #include "libwin32common/RpWin32_sdk.h"
 #include "tcharx.h"
 
-// MSVC intrinsics
-#include <intrin.h>
-
 // References:
 // - https://docs.microsoft.com/en-us/windows/win32/seccng/encrypting-data-with-cng
 #include <bcrypt.h>
@@ -24,13 +21,15 @@
 // Function pointer macro.
 #define DECL_FUNCPTR(f) __typeof__(f) * p##f
 #define DEF_FUNCPTR(f) __typeof__(f) * AesCAPI_NG_Private::p##f = nullptr
-#define LOAD_FUNCPTR(f) AesCAPI_NG_Private::p##f = (__typeof__(f)*)GetProcAddress(hBcryptDll, #f)
+#define LOAD_FUNCPTR(f) AesCAPI_NG_Private::p##f = (__typeof__(f)*)GetProcAddress(hBcrypt_dll.get(), #f)
 
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define AesCAPI_NGPrivate AesCAPI_NG_Private
 
 // C++ STL classes
+#include <mutex>
 using std::array;
+using std::unique_ptr;
 
 namespace LibRpBase {
 
@@ -44,17 +43,31 @@ private:
 	RP_DISABLE_COPY(AesCAPI_NG_Private)
 
 public:
-	// Reference counter
-	static volatile long ref_cnt;
-
 	/**
 	 * Load bcrypt.dll and associated function pointers.
-	 * @return 0 on success; non-zero on error.
+	 * Called by std::call_once().
+	 *
+	 * Check if hBcrypt_dll is nullptr afterwards.
 	 */
-	static int load_bcrypt(void);
+	static void load_bcrypt(void);
 
-	/** bcrypt.dll handle and function pointers. **/
-	static HMODULE hBcryptDll;
+	/** bcrypt.dll handle **/
+	class HMODULE_deleter
+	{
+	public:
+		typedef HMODULE pointer;
+
+		void operator()(HMODULE hModule)
+		{
+			if (hModule) {
+				FreeLibrary(hModule);
+			}
+		}
+	};
+	static unique_ptr<HMODULE, HMODULE_deleter> hBcrypt_dll;
+	static std::once_flag bcrypt_once_flag;
+
+	/** bcrypt.dll function pointers **/
 	static DECL_FUNCPTR(BCryptOpenAlgorithmProvider);
 	static DECL_FUNCPTR(BCryptGetProperty);
 	static DECL_FUNCPTR(BCryptSetProperty);
@@ -92,11 +105,11 @@ public:
 
 /** AesCAPI_NG_Private **/
 
-// Reference counter
-volatile long AesCAPI_NG_Private::ref_cnt = 0;
+/** bcrypt.dll handle **/
+unique_ptr<HMODULE, AesCAPI_NG_Private::HMODULE_deleter> AesCAPI_NG_Private::hBcrypt_dll;
+std::once_flag AesCAPI_NG_Private::bcrypt_once_flag;
 
-/** bcrypt.dll handle and function pointers. **/
-HMODULE AesCAPI_NG_Private::hBcryptDll = nullptr;
+/** bcrypt.dll function pointers **/
 DEF_FUNCPTR(BCryptOpenAlgorithmProvider);
 DEF_FUNCPTR(BCryptGetProperty);
 DEF_FUNCPTR(BCryptSetProperty);
@@ -118,20 +131,11 @@ AesCAPI_NG_Private::AesCAPI_NG_Private()
 	key.fill(0);
 	iv.fill(0);
 
-	// Increment the reference counter.
-	assert(ref_cnt >= 0);
-	if (_InterlockedIncrement(&ref_cnt) == 1) {
-		// First AesCAPI_NG reference.
-		// Attempt to load bcrypt.dll.
-		// FIXME: It's possible that if two threads try using AesCAPI_NG
-		// at exactly the same time, one will get the second reference
-		// *before* bcrypt is loaded...
-		if (load_bcrypt() != 0 || !hBcryptDll) {
-			// Error loading bcrypt.dll.
-			// NOTE: Not resetting the reference count here.
-			// It will be decremented in the destructor.
-			return;
-		}
+	// Attempt to load bcrypt.dll.
+	std::call_once(bcrypt_once_flag, load_bcrypt);
+	if (!hBcrypt_dll) {
+		// Error loading bcrypt.dll.
+		return;
 	}
 
 	BCRYPT_ALG_HANDLE hAesAlg;
@@ -156,7 +160,7 @@ AesCAPI_NG_Private::AesCAPI_NG_Private()
 
 AesCAPI_NG_Private::~AesCAPI_NG_Private()
 {
-	if (hBcryptDll) {
+	if (hBcrypt_dll) {
 		if (hKey) {
 			pBCryptDestroyKey(hKey);
 		}
@@ -166,34 +170,21 @@ AesCAPI_NG_Private::~AesCAPI_NG_Private()
 	}
 
 	free(pbKeyObject);
-
-	assert(ref_cnt > 0);
-	if (_InterlockedDecrement(&ref_cnt) == 0) {
-		// Unload bcrypt.dll.
-		// TODO: Clear the function pointers?
-		if (hBcryptDll) {
-			FreeLibrary(hBcryptDll);
-			hBcryptDll = nullptr;
-		}
-	}
 }
 
-/**
+/*
  * Load bcrypt.dll and associated function pointers.
- * @return 0 on success; non-zero on error.
+ * Called by std::call_once().
+ *
+ * Check if hBcrypt_dll is nullptr afterwards.
  */
-int AesCAPI_NG_Private::load_bcrypt(void)
+void AesCAPI_NG_Private::load_bcrypt(void)
 {
-	if (hBcryptDll) {
-		// bcrypt.dll has already been loaded.
-		return 0;
-	}
-
 	// Attempt to load bcrypt.dll.
-	hBcryptDll = LoadLibraryEx(_T("bcrypt.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
-	if (!hBcryptDll) {
+	hBcrypt_dll.reset(LoadLibraryEx(_T("bcrypt.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
+	if (!hBcrypt_dll) {
 		// bcrypt.dll not found.
-		return -ENOENT;
+		return;
 	}
 
 	// Load the function pointers.
@@ -226,12 +217,11 @@ int AesCAPI_NG_Private::load_bcrypt(void)
 		AesCAPI_NG_Private::pBCryptDestroyKey = nullptr;
 		AesCAPI_NG_Private::pBCryptEncrypt = nullptr;
 
-		FreeLibrary(hBcryptDll);
-		return -ENOENT;
+		hBcrypt_dll.reset();
+		return;
 	}
 
 	// bcrypt.dll has been loaded.
-	return 0;
 }
 
 /** AesCAPI_NG **/
@@ -255,7 +245,7 @@ AesCAPI_NG::~AesCAPI_NG()
  */
 bool AesCAPI_NG::isUsable(void)
 {
-	if (AesCAPI_NG_Private::hBcryptDll) {
+	if (AesCAPI_NG_Private::hBcrypt_dll) {
 		// bcrypt.dll is loaded.
 		return true;
 	}
@@ -264,10 +254,10 @@ bool AesCAPI_NG::isUsable(void)
 	// so assume it works as long as bcrypt.dll is present and
 	// BCryptOpenAlgorithmProvider exists.
 	bool bRet = false;
-	HMODULE hBcryptDll = LoadLibraryEx(_T("bcrypt.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
-	if (hBcryptDll) {
-		bRet = (GetProcAddress(hBcryptDll, "BCryptOpenAlgorithmProvider") != nullptr);
-		FreeLibrary(hBcryptDll);
+	HMODULE hBcrypt_dll = LoadLibraryEx(_T("bcrypt.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+	if (hBcrypt_dll) {
+		bRet = (GetProcAddress(hBcrypt_dll, "BCryptOpenAlgorithmProvider") != nullptr);
+		FreeLibrary(hBcrypt_dll);
 	}
 	return bRet;
 }
@@ -288,7 +278,7 @@ const char *AesCAPI_NG::name(void) const
 bool AesCAPI_NG::isInit(void) const
 {
 	RP_D(const AesCAPI_NG);
-	return (d->hBcryptDll != nullptr &&
+	return (d->hBcrypt_dll != nullptr &&
 		d->hAesAlg != nullptr);
 }
 
@@ -308,7 +298,7 @@ int AesCAPI_NG::setKey(const uint8_t *RESTRICT pKey, size_t size)
 	if (!pKey) {
 		// No key specified.
 		return -EINVAL;
-	} else if (!d->hBcryptDll || !d->hAesAlg) {
+	} else if (!d->hBcrypt_dll || !d->hAesAlg) {
 		// Algorithm is not available.
 		return -EBADF;
 	}
@@ -384,7 +374,7 @@ int AesCAPI_NG::setKey(const uint8_t *RESTRICT pKey, size_t size)
 int AesCAPI_NG::setChainingMode(ChainingMode mode)
 {
 	RP_D(AesCAPI_NG);
-	if (!d->hBcryptDll || !d->hAesAlg) {
+	if (!d->hBcrypt_dll || !d->hAesAlg) {
 		// Algorithm is not available.
 		return -EBADF;
 	} else if (d->chainingMode == mode) {
@@ -438,7 +428,7 @@ int AesCAPI_NG::setIV(const uint8_t *RESTRICT pIV, size_t size)
 	RP_D(AesCAPI_NG);
 	if (!pIV || size != 16) {
 		return -EINVAL;
-	} else if (!d->hBcryptDll || !d->hAesAlg) {
+	} else if (!d->hBcrypt_dll || !d->hAesAlg) {
 		// Algorithm is not available.
 		return -EBADF;
 	} else if (d->chainingMode < ChainingMode::CBC || d->chainingMode >= ChainingMode::Max) {
@@ -482,7 +472,7 @@ int AesCAPI_NG::setIV(const uint8_t *RESTRICT pIV, size_t size)
 size_t AesCAPI_NG::decrypt(uint8_t *RESTRICT pData, size_t size)
 {
 	RP_D(AesCAPI_NG);
-	if (!d->hBcryptDll || !d->hAesAlg || !d->hKey) {
+	if (!d->hBcrypt_dll || !d->hAesAlg || !d->hKey) {
 		// Algorithm is not available,
 		// or the key hasn't been set.
 		return 0;
