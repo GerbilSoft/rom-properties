@@ -14,24 +14,7 @@ ENDIF(WIN32)
 
 # Threading implementation.
 SET(${PROJECT_NAME}_SRCS dummy.cpp)
-SET(${PROJECT_NAME}_H
-	Atomics.h
-	Semaphore.hpp
-	)
-IF(CMAKE_USE_WIN32_THREADS_INIT)
-	SET(HAVE_WIN32_THREADS 1)
-ELSEIF(CMAKE_USE_PTHREADS_INIT)
-	SET(HAVE_PTHREADS 1)
-
-	# Check for sched_yield().
-	# If not found, pthread_yield() will be used instead.
-	CHECK_SYMBOL_EXISTS(sched_yield "sched.h" HAVE_SCHED_YIELD)
-ELSE()
-	MESSAGE(FATAL_ERROR "No threading model is supported on this system.")
-ENDIF()
-
-# Write the config.h file.
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.lib${PROJECT_NAME}.h")
+SET(${PROJECT_NAME}_H Semaphore.hpp)
 
 ######################
 # Build the library. #
