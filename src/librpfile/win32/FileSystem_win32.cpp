@@ -496,15 +496,15 @@ static bool is_symlink_int(const TCHAR *tfilename)
 		// Cannot find the file.
 		return false;
 	}
-	FindClose(hFind);
 
+	bool ret = false;
 	if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
 		// This is a reparse point.
-		return (findFileData.dwReserved0 == IO_REPARSE_TAG_SYMLINK);
+		ret = (findFileData.dwReserved0 == IO_REPARSE_TAG_SYMLINK);
 	}
 
-	// Not a reparse point.
-	return false;
+	FindClose(hFind);
+	return ret;
 }
 
 /**
@@ -837,12 +837,10 @@ static int get_file_size_and_mtime_int(const tstring &tfilename, off64_t *pFileS
 		return (err != 0 ? -err : -EIO);
 	}
 
-	// We don't need the Find handle anymore.
-	FindClose(hFind);
-
 	// Make sure this is not a directory.
 	if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 		// It's a directory.
+		FindClose(hFind);
 		return -EISDIR;
 	}
 
@@ -856,6 +854,7 @@ static int get_file_size_and_mtime_int(const tstring &tfilename, off64_t *pFileS
 	*pMtime = FileTimeToUnixTime(&ffd.ftLastWriteTime);
 
 	// We're done here.
+	FindClose(hFind);
 	return 0;
 }
 

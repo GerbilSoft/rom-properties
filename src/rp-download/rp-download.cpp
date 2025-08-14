@@ -148,12 +148,10 @@ static int get_file_size_and_mtime(const TCHAR *filename, off64_t *pFileSize, ti
 		return (err != 0 ? -err : -EIO);
 	}
 
-	// We don't need the Find handle anymore.
-	FindClose(hFind);
-
 	// Make sure this is not a directory.
 	if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 		// It's a directory.
+		FindClose(hFind);
 		return -EISDIR;
 	}
 
@@ -165,6 +163,7 @@ static int get_file_size_and_mtime(const TCHAR *filename, off64_t *pFileSize, ti
 
 	// Convert mtime from FILETIME.
 	*pMtime = FileTimeToUnixTime(&ffd.ftLastWriteTime);
+	FindClose(hFind);
 #elif defined(HAVE_STATX)
 	// Linux or UNIX system with statx()
 	struct statx sbx;
