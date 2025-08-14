@@ -418,25 +418,16 @@ static int get_mtime_int(const tstring &tfilename, time_t *pMtime)
 #if _USE_32BIT_TIME_T
 #  error 32-bit time_t is not supported. Get a newer compiler.
 #endif
-	// Use GetFileTime() instead of _stati64().
-	HANDLE hFile = CreateFile(tfilename.c_str(),
-		GENERIC_READ, FILE_SHARE_READ, nullptr,
-		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-	if (!hFile || hFile == INVALID_HANDLE_VALUE) {
-		// Error opening the file.
-		return -w32err_to_posix(GetLastError());
-	}
-
-	FILETIME mtime;
-	BOOL bRet = GetFileTime(hFile, nullptr, nullptr, &mtime);
-	CloseHandle(hFile);
-	if (!bRet) {
-		// Error getting the file time.
+	WIN32_FIND_DATA findFileData;
+	HANDLE hFind = FindFirstFile(tfilename.c_str(), &findFileData);
+	if (!hFind || hFind == INVALID_HANDLE_VALUE) {
+		// Cannot find the file???
 		return -w32err_to_posix(GetLastError());
 	}
 
 	// Convert to Unix timestamp.
-	*pMtime = FileTimeToUnixTime(&mtime);
+	*pMtime = FileTimeToUnixTime(&findFileData.ftLastWriteTime);
+	FindClose(hFind);
 	return 0;
 }
 
