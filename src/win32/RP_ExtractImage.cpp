@@ -291,16 +291,17 @@ IFACEMETHODIMP RP_ExtractImage::GetDateStamp(_Out_ FILETIME *pDateStamp)
 		return E_UNEXPECTED;
 	}
 
-	// Open the file and get the last write time.
 	// NOTE: LibRpBase::FileSystem::get_mtime() exists,
 	// but its resolution is seconds, less than FILETIME.
-	WIN32_FILE_ATTRIBUTE_DATA fileAttrData;
-	if (!GetFileAttributesEx(d->olefilename.c_str(), GetFileExInfoStandard, &fileAttrData)) {
-		// Unable to get file attributes.
+	WIN32_FIND_DATA findFileData;
+	HANDLE hFind = FindFirstFile(d->olefilename.c_str(), &findFileData);
+	if (!hFind || hFind == INVALID_HANDLE_VALUE) {
+		// Cannot find the file???
 		// TODO: Return STG_E_FILENOTFOUND?
 		return E_FAIL;
 	}
 
-	*pDateStamp = fileAttrData.ftLastWriteTime;
-	return S_OK; 
+	*pDateStamp = findFileData.ftLastWriteTime;
+	FindClose(hFind);
+	return S_OK;
 }
