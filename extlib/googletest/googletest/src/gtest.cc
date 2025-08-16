@@ -3254,7 +3254,8 @@ bool ShouldUseColor(bool stdout_is_tty) {
         String::CStringEquals(term, "rxvt-unicode") ||
         String::CStringEquals(term, "rxvt-unicode-256color") ||
         String::CStringEquals(term, "linux") ||
-        String::CStringEquals(term, "cygwin");
+        String::CStringEquals(term, "cygwin") ||
+        String::CStringEquals(term, "hurd");
     return stdout_is_tty && term_supports_color;
 #endif  // GTEST_OS_WINDOWS
   }

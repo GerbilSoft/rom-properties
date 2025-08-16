@@ -264,6 +264,10 @@ ELSE(GSound_FOUND)
 	ENDIF(LibCanberra_FOUND)
 ENDIF(GSound_FOUND)
 
+# Check for Wayland.
+INCLUDE(CheckIncludeFile)
+CHECK_INCLUDE_FILE("wayland-version.h" HAVE_WAYLAND_VERSION_H)
+
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.gtk.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.gtk.h")
 

@@ -42,7 +42,7 @@ ELSE()
 	# TODO: Verify cross-compile functionality.
 	# TODO: ARM/ARM64 is untested.
 	STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
-	IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
+	IF(arch MATCHES "^(i.|x)86(-at386)?$|^x86_64$|^amd64$")
 		IF(CMAKE_CL_64 OR ("${CMAKE_SIZEOF_VOID_P}" EQUAL 8))
 			SET(CPU_amd64 1)
 			SET(WIN32_MANIFEST_PROCESSOR_ARCHITECTURE "amd64")

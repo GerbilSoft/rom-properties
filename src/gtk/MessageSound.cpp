@@ -11,11 +11,14 @@
 #include "MessageSound.hpp"
 
 #include <gdk/gdkdisplay.h>
-#if GTK_CHECK_VERSION(4, 0, 0)
-#  include <gdk/wayland/gdkwayland.h>
-#elif GTK_CHECK_VERSION(3, 7, 8)
-#  include <gdk/gdkwayland.h>
-#endif
+
+#ifdef HAVE_WAYLAND_VERSION_H
+#  if GTK_CHECK_VERSION(4, 0, 0)
+#    include <gdk/wayland/gdkwayland.h>
+#  elif GTK_CHECK_VERSION(3, 7, 8)
+#    include <gdk/gdkwayland.h>
+#  endif
+#endif /* HAVE_WAYLAND_VERSION_H */
 
 #if defined(HAVE_GSOUND)
 #  include <gsound.h>
@@ -102,12 +105,12 @@ void play(GtkMessageType notificationType, const char *message, GtkWidget *paren
 	}
 
 	// Verify that this is an X11 display before attempting to set the attribute.
-#if GTK_CHECK_VERSION(3, 7, 8)
+#if defined(HAVE_WAYLAND_VERSION_H) && GTK_CHECK_VERSION(3, 7, 8)
 	if (GDK_IS_WAYLAND_DISPLAY(display)) {
 		// Wayland. Cannot be X11.
 		name = nullptr;
 	} else
-#endif /* GTK_CHECK_VERSION(3, 7, 8) */
+#endif /* HAVE_WAYLAND_VERSION_H && GTK_CHECK_VERSION(3, 7, 8) */
 	{
 		// Assuming X11.
 		name = gdk_display_get_name(display);

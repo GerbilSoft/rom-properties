@@ -87,11 +87,12 @@ static void check_TERM_variable(void)
 	struct match_whole_t {
 		char term[8];
 	};
-	static const struct match_whole_t match_whole[4] = {
+	static const struct match_whole_t match_whole[5] = {
 		{"color"},
 		{"ansi"},
 		{"cygwin"},
 		{"linux"},
+		{"hurd"},
 	};
 	for (const struct match_whole_t *p = match_whole;
 	     p != &match_whole[ARRAY_SIZE(match_whole)]; p++)
