@@ -161,8 +161,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 		}
 
 		QLabel *const lblImageType = new QLabel(U82Q(imageTypeName(i)), q);
-		lblImageType->setObjectName(QLatin1String(
-			fmt::format(FSTR("lblImageType{:d}"), i).c_str()));
+		lblImageType->setObjectName(QString::fromLatin1("lblImageType%1").arg(i));
 
 		lblImageType->setAlignment(Qt::AlignTop|Qt::AlignHCenter);
 		lblImageType->setStyleSheet(cssImageType);
@@ -175,8 +174,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	const unsigned int sysCount = ImageTypesConfig::sysCount();
 	for (unsigned int sys = 0; sys < sysCount; sys++) {
 		QLabel *const lblSysName = new QLabel(U82Q(sysName(sys)), q);
-		lblSysName->setObjectName(QLatin1String(
-			fmt::format(FSTR("lblSysName{:d}"), sys).c_str()));
+		lblSysName->setObjectName(QString::fromLatin1("lblSysName%1").arg(sys));
 
 		lblSysName->setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
 		lblSysName->setStyleSheet(cssSysName);
@@ -206,8 +204,7 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	// Create the ComboBox.
 	Q_Q(ImageTypesTab);
 	QComboBox *const cbo = new QComboBox(q);
-	const string cbo_name = fmt::format(FSTR("cbo{:0>4X}"), cbid);
-	cbo->setObjectName(QLatin1String(cbo_name.c_str()));
+	cbo->setObjectName(QLatin1String(fmt::format(FSTR("cbo{:0>4X}"), cbid).c_str()));
 	ui.gridImageTypes->addWidget(cbo, sys+1, imageType+1);
 	sysData.cboImageType[imageType] = cbo;
 

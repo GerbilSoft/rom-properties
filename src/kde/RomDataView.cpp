@@ -936,7 +936,6 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 	if (tabCount > 1) {
 		tabs.resize(tabCount);
 		ui.tabWidget->show();
-		string tab_name;
 		for (int i = 0; i < tabCount; i++) {
 			// Create a tab.
 			const char *const name = pFields->tabName(i);
@@ -947,18 +946,15 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 
 			auto &tab = tabs[i];
 			QWidget *const widget = new QWidget(q);
-			tab_name = fmt::format(FSTR("tab{:d}"), i);
-			widget->setObjectName(QLatin1String(tab_name.c_str()));
+			widget->setObjectName(QString::fromLatin1("tab%1").arg(i));
 
 			// Layouts.
 			// NOTE: We shouldn't zero out the QVBoxLayout margins here.
 			// Otherwise, we end up with no margins.
 			tab.vbox = new QVBoxLayout(widget);
-			tab_name = fmt::format(FSTR("vboxTab{:d}"), i);
-			tab.vbox->setObjectName(QLatin1String(tab_name.c_str()));
+			tab.vbox->setObjectName(QString::fromLatin1("vboxTab%1").arg(i));
 			tab.form = new QFormLayout();
-			tab_name = fmt::format(FSTR("formTab{:d}"), i);
-			tab.form->setObjectName(QLatin1String(tab_name.c_str()));
+			tab.form->setObjectName(QString::fromLatin1("formTab%1").arg(i));
 			tab.vbox->addLayout(tab.form, 1);
 
 			// Add the tab.
