@@ -149,27 +149,30 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 			qs_source_filename = localUrl.toLocalFile();
 		}
 
+		// Modification time and file size
 		// FIXME: Local files only. Figure out how to handle this for remote.
+		int64_t mtime = 0;
+		off64_t szFile = -1;
 		if (!qs_source_filename.isEmpty()) {
 			const QFileInfo fi_src(qs_source_filename);
+			mtime = fi_src.lastModified().toMSecsSinceEpoch() / 1000;
+			szFile = fi_src.size();
+		}
 
-			// Modification time
-			const int64_t mtime = fi_src.lastModified().toMSecsSinceEpoch() / 1000;
-			if (mtime > 0) {
-				kv.emplace_back("Thumb::MTime", fmt::to_string(mtime));
-			}
-
-			// File size
-			const off64_t szFile = fi_src.size();
-			if (szFile > 0) {
-				kv.emplace_back("Thumb::Size", fmt::to_string(szFile));
-			}
+		// Modification time
+		if (mtime > 0) {
+			kv.emplace_back("Thumb::MTime", fmt::to_string(mtime));
 		}
 
 		// MIME type
 		const char *const mimeType = romData->mimeType();
 		if (mimeType) {
 			kv.emplace_back("Thumb::Mimetype", mimeType);
+		}
+
+		// File size
+		if (szFile > 0) {
+			kv.emplace_back("Thumb::Size", fmt::to_string(szFile));
 		}
 
 		// Original image dimensions
