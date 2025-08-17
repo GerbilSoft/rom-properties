@@ -47,7 +47,7 @@ extern "C" {
 #  define __kernel_entry
 #endif
 
-__kernel_entry NTSYSCALLAPI NTSTATUS NtWriteFile(
+__kernel_entry NTSTATUS NTAPI NtWriteFile(
 	HANDLE           FileHandle,
 	HANDLE           Event,
 	PIO_APC_ROUTINE  ApcRoutine,
@@ -60,7 +60,7 @@ __kernel_entry NTSYSCALLAPI NTSTATUS NtWriteFile(
 );
 
 typedef const OBJECT_ATTRIBUTES *PCOBJECT_ATTRIBUTES;
-__kernel_entry NTSYSCALLAPI NTSTATUS NtDeleteFile(
+__kernel_entry NTSTATUS NTAPI NtDeleteFile(
 	PCOBJECT_ATTRIBUTES ObjectAttributes
 );
 
