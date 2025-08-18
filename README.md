@@ -406,6 +406,7 @@ is currently always enabled, so Windows builds are always GPL-3+ at the moment.
 [This list is incomplete; if you think you should be listed here, file an issue.]
 
 * @Tpot-SSL: Assistance with the game.com implementation.
+* Pixy: Original "Happy Wii U" icon for Wii U firmware images. (License: CC-BY-4.0)
 
 ### Websites
 
