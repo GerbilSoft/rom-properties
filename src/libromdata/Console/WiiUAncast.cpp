@@ -14,6 +14,7 @@
 #include "../res/img/happy-wii-u.h"
 
 // Other rom-properties libraries
+#include "librpbase/Achievements.hpp"
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
@@ -639,6 +640,53 @@ int WiiUAncast::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImag
 		d->ancastType,	// romType
 		d->img_icon,	// imgCache
 		d->loadIcon);	// func
+}
+
+/**
+ * Check for "viewed" achievements.
+ *
+ * @return Number of achievements unlocked.
+ */
+int WiiUAncast::checkViewedAchievements(void) const
+{
+	RP_D(const WiiUAncast);
+	if (!d->isValid) {
+		// Not valid.
+		return 0;
+	}
+
+	Achievements *const pAch = Achievements::instance();
+
+	// Get the important fields, depending on signature type.
+	unsigned int target_device = 0;
+	unsigned int console_type = 0;
+	switch (be32_to_cpu(d->ancastHeader.sigCommon.sig_type)) {
+		default:
+			break;
+
+		case WIIU_ANCAST_SIGTYPE_ECDSA: {
+			const WiiU_Ancast_Header_PPC_t *const ppc = &d->ancastHeader.ppc;
+			target_device = be32_to_cpu(ppc->target_device);
+			console_type = be32_to_cpu(ppc->console_type);
+			break;
+		}
+
+		case WIIU_ANCAST_SIGTYPE_RSA2048: {
+			const WiiU_Ancast_Header_ARM_t *const arm = &d->ancastHeader.arm;
+			target_device = be32_to_cpu(arm->target_device);
+			console_type = be32_to_cpu(arm->console_type);
+			break;
+		}
+	}
+
+	int ret = 0;
+	if (console_type == WIIU_ANCAST_CONSOLE_TYPE_DEVEL) {
+		// Debug encryption.
+		pAch->unlock(Achievements::ID::ViewedDebugCryptedFile);
+		ret++;
+	}
+
+	return ret;
 }
 
 } // namespace LibRomData
