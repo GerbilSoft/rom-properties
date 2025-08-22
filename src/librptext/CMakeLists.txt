@@ -14,6 +14,9 @@ IF(NOT WIN32)
 	IF(NOT Iconv_IS_BUILT_IN)
 		SET(HAVE_ICONV_LIBICONV 1)
 	ENDIF(NOT Iconv_IS_BUILT_IN)
+
+	# for std::call_once() [pthread_once()]
+	FIND_PACKAGE(Threads REQUIRED)
 ENDIF(NOT WIN32)
 
 # ZLIB and libpng are checked in the top-level CMakeLists.txt.
@@ -174,6 +177,11 @@ FOREACH(_target ${TARGETS})
 	IF(HAVE_WCWIDTH)
 		TARGET_COMPILE_DEFINITIONS(${_target} PUBLIC _XOPEN_SOURCE)
 	ENDIF(HAVE_WCWIDTH)
+
+	IF(CMAKE_THREAD_LIBS_INIT)
+		# for std::call_once() [pthread_once()]
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+	ENDIF(CMAKE_THREAD_LIBS_INIT)
 
 	# Other libraries
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpbyteswap${_target_suffix})

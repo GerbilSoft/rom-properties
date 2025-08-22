@@ -7,6 +7,9 @@ IF(NOT WIN32)
 		INCLUDE(CheckNettle2or3)
 		CHECK_NETTLE_2_OR_3()
 	ENDIF(ENABLE_DECRYPTION)
+
+	# for std::call_once() [pthread_once()]
+	FIND_PACKAGE(Threads REQUIRED)
 ENDIF(NOT WIN32)
 
 # ZLIB and libpng are checked in the top-level CMakeLists.txt.
@@ -242,6 +245,11 @@ FOREACH(_target ${TARGETS})
 		rptexture${_target_suffix} cachecommon${_target_suffix})
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpcpuid)	# for CPU dispatch
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE inih)
+
+	IF(CMAKE_THREAD_LIBS_INIT)
+		# for std::call_once() [pthread_once()]
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+	ENDIF(CMAKE_THREAD_LIBS_INIT)
 
 	IF(ZLIB_FOUND)
 		TARGET_LINK_LIBRARIES(${_target} PRIVATE ${ZLIB_LIBRARIES})

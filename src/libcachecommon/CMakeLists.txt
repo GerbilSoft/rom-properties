@@ -1,6 +1,11 @@
 # Common cache management functions used by both Cache Manager and rp-download.
 PROJECT(cachecommon LANGUAGES CXX)
 
+# for std::call_once() [pthread_once()]
+IF(NOT WIN32)
+	FIND_PACKAGE(Threads REQUIRED)
+ENDIF(NOT WIN32)
+
 SET(${PROJECT_NAME}_SRCS
 	CacheKeys.cpp
 	CacheDir.cpp
@@ -64,6 +69,11 @@ FOREACH(_target ${TARGETS})
 	ELSE(WIN32)
 		TARGET_LINK_LIBRARIES(${_target} PRIVATE ${_target_suffix})
 	ENDIF(WIN32)
+
+	IF(CMAKE_THREAD_LIBS_INIT)
+		# for std::call_once() [pthread_once()]
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+	ENDIF(CMAKE_THREAD_LIBS_INIT)
 ENDFOREACH(_target)
 UNSET(_target_suffix)
 

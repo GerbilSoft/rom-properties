@@ -1,6 +1,11 @@
 # rom-properties texture decoding library
 PROJECT(rptexture LANGUAGES CXX)
 
+# for std::call_once() [pthread_once()]
+IF(NOT WIN32)
+	FIND_PACKAGE(Threads REQUIRED)
+ENDIF(NOT WIN32)
+
 # OpenMP (TODO: AUTO/ON/OFF?)
 OPTION(ENABLE_OPENMP "Enable OpenMP support if available." ON)
 IF(ENABLE_OPENMP)
@@ -12,8 +17,7 @@ IF(ENABLE_OPENMP)
 			# library names. This breaks on Ubuntu 16.04,
 			# which uses CMake 3.5.
 			# NOTE: FIND_LIBRARY(gomp) doesn't work...
-			FIND_PACKAGE(Threads REQUIRED)
-			SET(OpenMP_CXX_LIB_NAMES -lgomp ${CMAKE_THREAD_LIBS_INIT})
+			SET(OpenMP_CXX_LIB_NAMES -lgomp)
 		ENDIF(NOT MSVC AND NOT OpenMP_CXX_LIB_NAMES)
 	ENDIF(OpenMP_FOUND)
 ENDIF(ENABLE_OPENMP)
@@ -270,6 +274,10 @@ FOREACH(_target ${TARGETS})
 	# TODO: More public/private library stuff.
 	TARGET_LINK_LIBRARIES(${_target} PUBLIC rpbyteswap${_target_suffix} rpfile${_target_suffix} rptext${_target_suffix})
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpcpuid)	# for CPU dispatch
+	IF(CMAKE_THREAD_LIBS_INIT)
+		# for std::call_once() [pthread_once()]
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+	ENDIF(CMAKE_THREAD_LIBS_INIT)
 
 	# Include paths:
 	# - Public: Current source and binary directories.
