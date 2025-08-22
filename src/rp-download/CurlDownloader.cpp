@@ -61,6 +61,7 @@ static std::once_flag curl_once_flag;
 DEF_STATIC_FUNCPTR(curl_slist_append);
 DEF_STATIC_FUNCPTR(curl_slist_free_all);
 DEF_STATIC_FUNCPTR(curl_getdate);
+DEF_STATIC_FUNCPTR(curl_version_info);
 
 DEF_STATIC_FUNCPTR(curl_easy_init);
 DEF_STATIC_FUNCPTR(curl_easy_setopt);
@@ -102,6 +103,7 @@ static void init_curl_once(void)
 	LOAD_FUNCPTR(curl_slist_append);
 	LOAD_FUNCPTR(curl_slist_free_all);
 	LOAD_FUNCPTR(curl_getdate);
+	LOAD_FUNCPTR(curl_version_info);
 
 	LOAD_FUNCPTR(curl_easy_init);
 	LOAD_FUNCPTR(curl_easy_setopt);
@@ -314,12 +316,15 @@ int CurlDownloader::download(void)
 
 	if (m_if_modified_since >= 0) {
 		// Add an "If-Modified-Since" header.
-		// TODO: Check cURL version at runtime.
-#if LIBCURL_VERSION_NUM >= 0x073B00
-		pcurl_easy_setopt(curl, CURLOPT_TIMEVALUE_LARGE, static_cast<curl_off_t>(m_if_modified_since));
-#else /* LIBCURL_VERSION_NUM < 0x073B00 */
-		pcurl_easy_setopt(curl, CURLOPT_TIMEVALUE, static_cast<long>(m_if_modified_since));
-#endif /* LIBCURL_VERSION_NUM >= 0x073B00 */
+
+		// Check the cURL version.
+		const curl_version_info_data *const verinfo = pcurl_version_info(CURLVERSION_FIRST);
+		if (verinfo && verinfo->version_num >= CURL_VERSION_BITS(7, 59, 0)) {
+			static_assert(sizeof(curl_off_t) == 8, "sizeof(curl_off_t) != 8");
+			pcurl_easy_setopt(curl, CURLOPT_TIMEVALUE_LARGE, static_cast<curl_off_t>(m_if_modified_since));
+		} else {
+			pcurl_easy_setopt(curl, CURLOPT_TIMEVALUE, static_cast<long>(m_if_modified_since));
+		}
 		pcurl_easy_setopt(curl, CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE);
 	}
 

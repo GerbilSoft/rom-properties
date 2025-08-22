@@ -14,6 +14,10 @@ extern "C" {
 
 // Definitions are current as of cURL v8.15.0 [2025/07/16]
 
+/** curl/system.h **/
+
+typedef off64_t curl_off_t;
+
 /** curl/curl.h **/
 
 /* Compile-time deprecation macros. */
@@ -1525,6 +1529,144 @@ typedef enum {
    CURLINFO_HTTP_CODE */
 #define CURLINFO_HTTP_CODE CURLINFO_RESPONSE_CODE
 
+/****************************************************************************
+ * Structures for querying information about the curl library at runtime.
+ */
+
+typedef enum {
+  CURLVERSION_FIRST,    /* 7.10 */
+  CURLVERSION_SECOND,   /* 7.11.1 */
+  CURLVERSION_THIRD,    /* 7.12.0 */
+  CURLVERSION_FOURTH,   /* 7.16.1 */
+  CURLVERSION_FIFTH,    /* 7.57.0 */
+  CURLVERSION_SIXTH,    /* 7.66.0 */
+  CURLVERSION_SEVENTH,  /* 7.70.0 */
+  CURLVERSION_EIGHTH,   /* 7.72.0 */
+  CURLVERSION_NINTH,    /* 7.75.0 */
+  CURLVERSION_TENTH,    /* 7.77.0 */
+  CURLVERSION_ELEVENTH, /* 7.87.0 */
+  CURLVERSION_TWELFTH,  /* 8.8.0 */
+  CURLVERSION_LAST /* never actually use this */
+} CURLversion;
+
+/* The 'CURLVERSION_NOW' is the symbolic name meant to be used by
+   basically all programs ever that want to get version information. It is
+   meant to be a built-in version number for what kind of struct the caller
+   expects. If the struct ever changes, we redefine the NOW to another enum
+   from above. */
+#define CURLVERSION_NOW CURLVERSION_TWELFTH
+
+struct curl_version_info_data {
+  CURLversion age;          /* age of the returned struct */
+  const char *version;      /* LIBCURL_VERSION */
+  unsigned int version_num; /* LIBCURL_VERSION_NUM */
+  const char *host;         /* OS/host/cpu/machine when configured */
+  int features;             /* bitmask, see defines below */
+  const char *ssl_version;  /* human readable string */
+  long ssl_version_num;     /* not used anymore, always 0 */
+  const char *libz_version; /* human readable string */
+  /* protocols is terminated by an entry with a NULL protoname */
+  const char * const *protocols;
+
+  /* The fields below this were added in CURLVERSION_SECOND */
+  const char *ares;
+  int ares_num;
+
+  /* This field was added in CURLVERSION_THIRD */
+  const char *libidn;
+
+  /* These field were added in CURLVERSION_FOURTH */
+
+  /* Same as '_libiconv_version' if built with HAVE_ICONV */
+  int iconv_ver_num;
+
+  const char *libssh_version; /* human readable string */
+
+  /* These fields were added in CURLVERSION_FIFTH */
+  unsigned int brotli_ver_num; /* Numeric Brotli version
+                                  (MAJOR << 24) | (MINOR << 12) | PATCH */
+  const char *brotli_version; /* human readable string. */
+
+  /* These fields were added in CURLVERSION_SIXTH */
+  unsigned int nghttp2_ver_num; /* Numeric nghttp2 version
+                                   (MAJOR << 16) | (MINOR << 8) | PATCH */
+  const char *nghttp2_version; /* human readable string. */
+  const char *quic_version;    /* human readable quic (+ HTTP/3) library +
+                                  version or NULL */
+
+  /* These fields were added in CURLVERSION_SEVENTH */
+  const char *cainfo;          /* the built-in default CURLOPT_CAINFO, might
+                                  be NULL */
+  const char *capath;          /* the built-in default CURLOPT_CAPATH, might
+                                  be NULL */
+
+  /* These fields were added in CURLVERSION_EIGHTH */
+  unsigned int zstd_ver_num; /* Numeric Zstd version
+                                  (MAJOR << 24) | (MINOR << 12) | PATCH */
+  const char *zstd_version; /* human readable string. */
+
+  /* These fields were added in CURLVERSION_NINTH */
+  const char *hyper_version; /* human readable string. */
+
+  /* These fields were added in CURLVERSION_TENTH */
+  const char *gsasl_version; /* human readable string. */
+
+  /* These fields were added in CURLVERSION_ELEVENTH */
+  /* feature_names is terminated by an entry with a NULL feature name */
+  const char * const *feature_names;
+
+  /* These fields were added in CURLVERSION_TWELFTH */
+  const char *rtmp_version; /* human readable string. */
+};
+typedef struct curl_version_info_data curl_version_info_data;
+
+#define CURL_VERSION_IPV6         (1<<0)  /* IPv6-enabled */
+#define CURL_VERSION_KERBEROS4    (1<<1)  /* Kerberos V4 auth is supported
+                                             (deprecated) */
+#define CURL_VERSION_SSL          (1<<2)  /* SSL options are present */
+#define CURL_VERSION_LIBZ         (1<<3)  /* libz features are present */
+#define CURL_VERSION_NTLM         (1<<4)  /* NTLM auth is supported */
+#define CURL_VERSION_GSSNEGOTIATE (1<<5)  /* Negotiate auth is supported
+                                             (deprecated) */
+#define CURL_VERSION_DEBUG        (1<<6)  /* Built with debug capabilities */
+#define CURL_VERSION_ASYNCHDNS    (1<<7)  /* Asynchronous DNS resolves */
+#define CURL_VERSION_SPNEGO       (1<<8)  /* SPNEGO auth is supported */
+#define CURL_VERSION_LARGEFILE    (1<<9)  /* Supports files larger than 2GB */
+#define CURL_VERSION_IDN          (1<<10) /* Internationized Domain Names are
+                                             supported */
+#define CURL_VERSION_SSPI         (1<<11) /* Built against Windows SSPI */
+#define CURL_VERSION_CONV         (1<<12) /* Character conversions supported */
+#define CURL_VERSION_CURLDEBUG    (1<<13) /* Debug memory tracking supported */
+#define CURL_VERSION_TLSAUTH_SRP  (1<<14) /* TLS-SRP auth is supported */
+#define CURL_VERSION_NTLM_WB      (1<<15) /* NTLM delegation to winbind helper
+                                             is supported */
+#define CURL_VERSION_HTTP2        (1<<16) /* HTTP2 support built-in */
+#define CURL_VERSION_GSSAPI       (1<<17) /* Built against a GSS-API library */
+#define CURL_VERSION_KERBEROS5    (1<<18) /* Kerberos V5 auth is supported */
+#define CURL_VERSION_UNIX_SOCKETS (1<<19) /* Unix domain sockets support */
+#define CURL_VERSION_PSL          (1<<20) /* Mozilla's Public Suffix List, used
+                                             for cookie domain verification */
+#define CURL_VERSION_HTTPS_PROXY  (1<<21) /* HTTPS-proxy support built-in */
+#define CURL_VERSION_MULTI_SSL    (1<<22) /* Multiple SSL backends available */
+#define CURL_VERSION_BROTLI       (1<<23) /* Brotli features are present. */
+#define CURL_VERSION_ALTSVC       (1<<24) /* Alt-Svc handling built-in */
+#define CURL_VERSION_HTTP3        (1<<25) /* HTTP3 support built-in */
+#define CURL_VERSION_ZSTD         (1<<26) /* zstd features are present */
+#define CURL_VERSION_UNICODE      (1<<27) /* Unicode support on Windows */
+#define CURL_VERSION_HSTS         (1<<28) /* HSTS is supported */
+#define CURL_VERSION_GSASL        (1<<29) /* libgsasl is supported */
+#define CURL_VERSION_THREADSAFE   (1<<30) /* libcurl API is thread-safe */
+
+/*
+ * NAME curl_version_info()
+ *
+ * DESCRIPTION
+ *
+ * This function returns a pointer to a static copy of the version info
+ * struct. See above.
+ */
+CURL_EXTERN curl_version_info_data *curl_version_info(CURLversion);
+
 /** curl/easy.h **/
 
 CURL_EXTERN CURL *curl_easy_init(void);
@@ -1546,6 +1688,12 @@ CURL_EXTERN void curl_easy_cleanup(CURL *curl);
  * is completed.
  */
 CURL_EXTERN CURLcode curl_easy_getinfo(CURL *curl, CURLINFO info, ...);
+
+/** curl/curlver.h **/
+
+#define CURL_VERSION_BITS(x,y,z) ((x)<<16|(y)<<8|(z))
+#define CURL_AT_LEAST_VERSION(x,y,z) \
+  (LIBCURL_VERSION_NUM >= CURL_VERSION_BITS(x, y, z))
 
 #ifdef __cplusplus
 }
