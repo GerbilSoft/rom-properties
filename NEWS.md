@@ -56,6 +56,8 @@
   * PalmOS_Tbmp: Fix a crash on Windows when decoding a compressed icon.
     * Fixes #457: Palm OS file causes explorer.exe crash (Windows 11)
       * Reported by @ldroberts02.
+  * Linux: The i386 version of rp-download was broken because the seccomp
+    syscall whitelist was missing `getuid32()`.
 
 * Other changes:
   * rpcli: Added more colorization for warning messages.
