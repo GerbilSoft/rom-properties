@@ -336,8 +336,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	}
 
 	if (verbose) {
-		_ftprintf(stderr, _T("User-Agent: %s\nURL: %s\n"),
-			downloader->userAgent().c_str(), full_url.c_str());
+		_ftprintf(stderr, _T("Downloader class: %s\nUser-Agent: %s\nURL: %s\n"),
+			downloader->name(), downloader->userAgent().c_str(), full_url.c_str());
 	}
 
 	// Make sure we have a valid cache directory.
