@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * WinInetDownloader.cpp: WinInet-based file downloader.                   *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,12 +17,26 @@
 
 // C++ STL classes
 using std::string;
+using std::unique_ptr;
 using std::wstring;
 
 // Windows includes
 #include <wininet.h>
 
 namespace RpDownload {
+
+class HINTERNET_deleter
+{
+public:
+	typedef HINTERNET pointer;
+
+	void operator()(HINTERNET hInternet)
+	{
+		if (hInternet) {
+			InternetCloseHandle(hInternet);
+		}
+	}
+};
 
 WinInetDownloader::WinInetDownloader(const TCHAR *url)
 	: super(url)
@@ -49,12 +63,13 @@ int WinInetDownloader::download(void)
 
 	// Open up an Internet connection.
 	// This doesn't actually connect to anything yet.
-	HINTERNET hConnection = InternetOpen(
-		m_userAgent.c_str(),		// lpszAgent
-		INTERNET_OPEN_TYPE_PRECONFIG,	// dwAccessType
-		nullptr,			// lpszProxy
-		nullptr,			// lpszProxyBypass
-		0);				// dwFlags
+	unique_ptr<HINTERNET, HINTERNET_deleter> hConnection(
+		InternetOpen(
+			m_userAgent.c_str(),		// lpszAgent
+			INTERNET_OPEN_TYPE_PRECONFIG,	// dwAccessType
+			nullptr,			// lpszProxy
+			nullptr,			// lpszProxyBypass
+			0));				// dwFlags
 	if (!hConnection) {
 		// Error opening a WinInet instance.
 		const int err = w32err_to_posix(GetLastError());
@@ -103,28 +118,28 @@ int WinInetDownloader::download(void)
 	}
 
 	// Request the URL.
-	HINTERNET hURL = InternetOpenUrl(
-		hConnection,	// hInternet
-		m_url.c_str(),	// lpszUrl (Latin-1 characters only!)
-		!req_headers.empty() ? req_headers.data() : nullptr,	// lpszHeaders
-		static_cast<DWORD>(req_headers.size()),			// dwHeaderLength
-		dwFlags,	// dwFlags
-		reinterpret_cast<DWORD_PTR>(this));	// dwContext
-	if (!hURL) {
+	unique_ptr<HINTERNET, HINTERNET_deleter> hUrl(
+		InternetOpenUrl(
+			hConnection.get(),	// hInternet
+			m_url.c_str(),		// lpszUrl (Latin-1 characters only!)
+			!req_headers.empty() ? req_headers.data() : nullptr,	// lpszHeaders
+			static_cast<DWORD>(req_headers.size()),			// dwHeaderLength
+			dwFlags,	// dwFlags
+			reinterpret_cast<DWORD_PTR>(this)));	// dwContext
+	if (!hUrl) {
 		// Error opening the URL.
 		// TODO: Is InternetGetLastResponseInfo() usable here?
 		int err = w32err_to_posix(GetLastError());
 		if (err == 0) {
 			err = EIO;
 		}
-		InternetCloseHandle(hConnection);
 		return -err;
 	}
 
 	// Check if we got an HTTP response code.
 	DWORD dwHttpStatusCode = 0;
 	DWORD dwBufferLength = static_cast<DWORD>(sizeof(dwHttpStatusCode));
-	if (HttpQueryInfo(hURL,			// hRequest
+	if (HttpQueryInfo(hUrl.get(),		// hRequest
 		HTTP_QUERY_STATUS_CODE |
 		HTTP_QUERY_FLAG_NUMBER,		// dwInfoLevel
 		&dwHttpStatusCode,		// lpBuffer
@@ -137,8 +152,6 @@ int WinInetDownloader::download(void)
 			// We're only accepting HTTP 200.
 			if (dwHttpStatusCode != 200) {
 				// Unexpected status code.
-				InternetCloseHandle(hURL);
-				InternetCloseHandle(hConnection);
 				return static_cast<int>(dwHttpStatusCode);
 			}
 		}
@@ -147,7 +160,7 @@ int WinInetDownloader::download(void)
 	// Get mtime if it's available.
 	SYSTEMTIME st_mtime;
 	dwBufferLength = static_cast<DWORD>(sizeof(st_mtime));
-	if (HttpQueryInfo(hURL,			// hRequest
+	if (HttpQueryInfo(hUrl.get(),		// hRequest
 		HTTP_QUERY_LAST_MODIFIED | 
 		HTTP_QUERY_FLAG_SYSTEMTIME,	// dwInfoLevel
 		&st_mtime,			// lpBuffer
@@ -165,7 +178,7 @@ int WinInetDownloader::download(void)
 	// Get Content-Length.
 	DWORD dwContentLength = 0;
 	dwBufferLength = static_cast<DWORD>(sizeof(dwContentLength));
-	if (HttpQueryInfo(hURL,			// hRequest
+	if (HttpQueryInfo(hUrl.get(),		// hRequest
 		HTTP_QUERY_CONTENT_LENGTH |
 		HTTP_QUERY_FLAG_NUMBER,		// dwInfoLevel
 		&dwContentLength,		// lpBuffer
@@ -178,13 +191,9 @@ int WinInetDownloader::download(void)
 			// Check if it's 0 or >= max size.
 			if (dwContentLength == 0) {
 				// Zero-length file. Not valid.
-				InternetCloseHandle(hURL);
-				InternetCloseHandle(hConnection);
 				return -ENOENT;	// handling as if it doesn't exist
 			} else if (dwContentLength > m_maxSize) {
 				// File is too big.
-				InternetCloseHandle(hURL);
-				InternetCloseHandle(hConnection);
 				return -ENOSPC;	// or -ENOMEM?
 			}
 		}
@@ -213,7 +222,7 @@ int WinInetDownloader::download(void)
 		m_data.resize(prev_size + cur_increment);
 
 		DWORD dwNumberOfBytesRead;
-		if (InternetReadFile(hURL, &m_data[prev_size], cur_increment, &dwNumberOfBytesRead)) {
+		if (InternetReadFile(hUrl.get(), &m_data[prev_size], cur_increment, &dwNumberOfBytesRead)) {
 			// Successful read.
 			if (dwNumberOfBytesRead == 0) {
 				// EOF.
@@ -232,8 +241,6 @@ int WinInetDownloader::download(void)
 					// Out of memory.
 					m_data.clear();
 					m_data.shrink_to_fit();
-					InternetCloseHandle(hURL);
-					InternetCloseHandle(hConnection);
 					return -ENOSPC;
 				}
 			}
@@ -243,8 +250,6 @@ int WinInetDownloader::download(void)
 			if (err == 0) {
 				err = EIO;
 			}
-			InternetCloseHandle(hURL);
-			InternetCloseHandle(hConnection);
 			m_data.clear();
 			m_data.shrink_to_fit();
 			return -err;
@@ -255,8 +260,6 @@ int WinInetDownloader::download(void)
 	} while (!done);
 
 	// Finished downloading the file.
-	InternetCloseHandle(hURL);
-	InternetCloseHandle(hConnection);
 	// Return an error if no data was received.
 	// TODO: Check `done`?
 	return (m_data.empty() ? -ENOENT : 0);
