@@ -9,6 +9,10 @@
 #include "stdafx.h"
 #include "DownloaderFactory.hpp"
 
+#ifdef _WIN32
+#  include "libwin32common/rp_versionhelpers.h"
+#endif /* _WIN32 */
+
 // IDownloader implementations
 #include "CurlDownloader.hpp"
 #ifdef _WIN32
@@ -28,17 +32,39 @@ namespace RpDownload { namespace DownloaderFactory {
  */
 IDownloader *create(void)
 {
-	// TODO: Verify that cURL was loaded.
+	IDownloader *downloader = nullptr;
 
 #ifndef _WIN32
 	// Non-Windows: Use cURL.
-	return new CurlDownloader();
+	downloader = new CurlDownloader();
 #else /* _WIN32 */
 	// Windows: Use WinInet for modern Windows; cURL for Windows XP/2003.
-	// FIXME: Testing purposes: Use cURL regardless.
-	//return new WinInetDownloader();
-	return new CurlDownloader();
+
+	if (!IsWindowsVistaOrGreater()) {
+		// Windows XP/2003 or earlier: Try cURL first.
+		downloader = new CurlDownloader();
+		if (downloader->isUsable()) {
+			return downloader;
+		}
+
+		// cURL is not usable. Fall back to WinInet, even though it
+		// might have issues with modern Internet security protocols
+		// on Windows XP/2003.
+		delete downloader;
+		downloader = nullptr;
+	}
+
+	// Windows Vista or later: Use WinInet.
+	downloader = new WinInetDownloader();
 #endif
+
+	if (!downloader->isUsable()) {
+		// IDownloader object is not usable...
+		delete downloader;
+		downloader = nullptr;
+	}
+
+	return downloader;
 }
 
 /**
@@ -66,6 +92,12 @@ IDownloader *create(Implementation implementation)
 			downloader = new WinInetDownloader();
 			break;
 #endif /* _WIN32 */
+	}
+
+	if (!downloader->isUsable()) {
+		// IDownloader object is not usable...
+		delete downloader;
+		downloader = nullptr;
 	}
 
 	return downloader;
