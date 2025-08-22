@@ -5,7 +5,6 @@ add-apt-repository --remove "deb http://apt.postgresql.org/pub/repos/apt/ jammy-
 
 apt-get update
 apt-get -y install \
-	libcurl4-openssl-dev \
 	zlib1g-dev \
 	libpng-dev \
 	libjpeg-dev \
