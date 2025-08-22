@@ -1359,6 +1359,27 @@ typedef enum {
   CURL_TIMECOND_LAST = 4
 } curl_TimeCond;
 
+/*
+ * NAME curl_global_init()
+ *
+ * DESCRIPTION
+ *
+ * curl_global_init() should be invoked exactly once for each application that
+ * uses libcurl and before any call of other libcurl functions.
+
+ * This function is thread-safe if CURL_VERSION_THREADSAFE is set in the
+ * curl_version_info_data.features flag (fetch by curl_version_info()).
+
+ */
+CURL_EXTERN CURLcode curl_global_init(long flags);
+
+#define CURL_GLOBAL_SSL (1<<0) /* no purpose since 7.57.0 */
+#define CURL_GLOBAL_WIN32 (1<<1)
+#define CURL_GLOBAL_ALL (CURL_GLOBAL_SSL|CURL_GLOBAL_WIN32)
+#define CURL_GLOBAL_NOTHING 0
+#define CURL_GLOBAL_DEFAULT CURL_GLOBAL_ALL
+#define CURL_GLOBAL_ACK_EINTR (1<<2)
+
 struct curl_slist;
 
 /*

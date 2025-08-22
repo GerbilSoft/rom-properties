@@ -54,18 +54,19 @@ static unique_ptr<HMODULE, HMODULE_deleter> libcurl_dll;
 static std::once_flag curl_once_flag;
 
 // Function pointer macro
+#define DEF_STATIC_FUNCPTR(f) static __typeof__(f) * p##f = nullptr
 #define DEF_FUNCPTR(f) __typeof__(f) * p##f = nullptr
 #define LOAD_FUNCPTR(f) p##f = (__typeof__(f)*)dlsym(libcurl_dll.get(), #f)
 
-DEF_FUNCPTR(curl_slist_append);
-DEF_FUNCPTR(curl_slist_free_all);
-DEF_FUNCPTR(curl_getdate);
+DEF_STATIC_FUNCPTR(curl_slist_append);
+DEF_STATIC_FUNCPTR(curl_slist_free_all);
+DEF_STATIC_FUNCPTR(curl_getdate);
 
-DEF_FUNCPTR(curl_easy_init);
-DEF_FUNCPTR(curl_easy_setopt);
-DEF_FUNCPTR(curl_easy_perform);
-DEF_FUNCPTR(curl_easy_cleanup);
-DEF_FUNCPTR(curl_easy_getinfo);
+DEF_STATIC_FUNCPTR(curl_easy_init);
+DEF_STATIC_FUNCPTR(curl_easy_setopt);
+DEF_STATIC_FUNCPTR(curl_easy_perform);
+DEF_STATIC_FUNCPTR(curl_easy_cleanup);
+DEF_STATIC_FUNCPTR(curl_easy_getinfo);
 
 /**
  * Initialize libcurl.
@@ -93,7 +94,11 @@ static void init_curl_once(void)
 		return;
 	}
 
+	// curl_global_init() is only needed once.
+	DEF_FUNCPTR(curl_global_init);
+
 	// Load all of the function pointers.
+	LOAD_FUNCPTR(curl_global_init);
 	LOAD_FUNCPTR(curl_slist_append);
 	LOAD_FUNCPTR(curl_slist_free_all);
 	LOAD_FUNCPTR(curl_getdate);
@@ -104,7 +109,8 @@ static void init_curl_once(void)
 	LOAD_FUNCPTR(curl_easy_cleanup);
 	LOAD_FUNCPTR(curl_easy_getinfo);
 
-	if (!pcurl_slist_append ||
+	if (!pcurl_global_init ||
+	    !pcurl_slist_append ||
 	    !pcurl_slist_free_all ||
 	    !pcurl_getdate ||
 	    !pcurl_easy_init ||
@@ -114,6 +120,14 @@ static void init_curl_once(void)
 	    !pcurl_easy_getinfo)
 	{
 		// At least one symbol is missing.
+		libcurl_dll.reset();
+		return;
+	}
+
+	// Initialize cURL.
+	CURLcode ret = pcurl_global_init(CURL_GLOBAL_ALL);
+	if (ret != CURLE_OK) {
+		// Something failed...
 		libcurl_dll.reset();
 	}
 }
