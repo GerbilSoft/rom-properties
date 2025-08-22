@@ -9,6 +9,9 @@
 #include "stdafx.h"
 #include "CurlDownloader.hpp"
 
+// C includes
+#include "ctypex.h"
+
 // C++ STL classes
 #include <mutex>
 using std::string;
@@ -379,9 +382,38 @@ int CurlDownloader::download(void)
 	pcurl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
 
 #ifdef _WIN32
-	// FIXME: cURL SSL verification doesn't work on Wine.
-	// Need to verify if it's broken on Windows, too.
-	pcurl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+	// On Windows, Allow passing through some cURL environment variables:
+	// - CURL_CA_BUNDLE: CA certificate bundle (since it might not use the system cert store)
+	// - CURL_INSECURE: If not empty or 0, disable certificate verification entirely.
+	LPCTSTR curl_ca_bundle = _tgetenv(_T("CURL_CA_BUNDLE"));
+	if (curl_ca_bundle) {
+		pcurl_easy_setopt(curl, CURLOPT_CAINFO, T2U8(curl_ca_bundle).c_str());
+	} else {
+		// Set the default CA bundle path.
+		TCHAR path[MAX_PATH + 32];
+		SetLastError(ERROR_SUCCESS);	// required for XP
+		DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT, path, _countof(path));
+		if (dwResult == 0 || dwResult >= _countof(path) || GetLastError() != ERROR_SUCCESS) {
+			// Cannot get the DLL filename.
+			// TODO: Windows XP doesn't SetLastError() if the
+			// filename is too big for the buffer.
+		} else {
+			// Got the DLL filename.
+			// NULL out the filename portion, then append "curl-ca-bundle.crt".
+			TCHAR *const last_slash = _tcsrchr(path, _T('\\'));
+			if (last_slash && last_slash < &path[MAX_PATH]) {
+				_tcscpy(&last_slash[1], _T("curl-ca-bundle.crt"));
+				pcurl_easy_setopt(curl, CURLOPT_CAINFO, T2U8(path).c_str());
+			}
+		}
+	}
+
+	LPCTSTR curl_insecure = _tgetenv(_T("CURL_INSECURE"));
+	if (curl_insecure) {
+		if (curl_insecure[0] != _T('\0') && isdigit_ascii(curl_insecure[0]) && _tcscmp(curl_insecure, _T("0")) != 0) {
+			pcurl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+		}
+	}
 #endif /* _WIN32 */
 
 	// Set the User-Agent.
