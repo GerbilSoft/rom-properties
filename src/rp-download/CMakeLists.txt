@@ -36,12 +36,14 @@ SET(${PROJECT_NAME}_SRCS
 	rp-download.cpp
 	rp-download_secure.c
 	IDownloader.cpp
+	DownloaderFactory.cpp
 	http-status.cpp
 	CacheKeyVerify.cpp
 	)
 SET(${PROJECT_NAME}_H
 	rp-download_secure.h
 	IDownloader.hpp
+	DownloaderFactory.hpp
 	http-status.hpp
 	CacheKeyVerify.hpp
 	)
