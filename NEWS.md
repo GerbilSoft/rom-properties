@@ -69,6 +69,10 @@
   * Windows: Files marked as "offline" (e.g. not synchronized with a cloud backup
     provider) will now be considered to be on a "slow" file system, and won't be
     thumbnailed if the option to thumbnail network file systems is unchecked.
+  * Windows: On Windows XP and Server 2003, if libcurl.dll is present in the same
+    directory as rp-download.exe, it will be used instead of WinInet. This allows
+    rom-properties to access servers with more up-to-date security protocols,
+    which isn't normally supported by these older versions of Windows.
 
 ## v2.5.1 (released 2025/05/10)
 
