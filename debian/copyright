@@ -253,17 +253,22 @@ Copyright:
  2017-2024, David Korth <gerbilsoft@gerbilsoft.com>
 License: GPL-2+
 
-Files: src/librptexture/fileformat/qoi.h
-Copyright:
- Copyright (c) 2021, Dominic Szablewski - https://phoboslab.org
-License: MIT
-
 Files:
  src/libromdata/res/img/happy-wii-u.*
 Copyright:
  Original icons: Copyright (c) 2025 by Vixy.
  Modified icons for rom-properties: Copyright (c) 2025 by David Korth.
 License: CC-BY-4.0
+
+Files: src/librptexture/fileformat/qoi.h
+Copyright:
+ Copyright (c) 2021, Dominic Szablewski - https://phoboslab.org
+License: MIT
+
+Files: src/rp-download/curl-mini.h
+Copyright:
+ Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
+License: curl
 
 License: BSD-2-clause
  All rights reserved.
@@ -1050,3 +1055,27 @@ License: BSL-1.0
  FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  DEALINGS IN THE SOFTWARE.
+
+License: curl
+ COPYRIGHT AND PERMISSION NOTICE
+ 
+ Copyright (c) 1996 - 2025, Daniel Stenberg, <daniel@haxx.se>, and many
+ contributors, see the THANKS file.
+ 
+ All rights reserved.
+ 
+ Permission to use, copy, modify, and distribute this software for any purpose
+ with or without fee is hereby granted, provided that the above copyright
+ notice and this permission notice appear in all copies.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF THIRD PARTY RIGHTS. IN
+ NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
+ OR OTHER DEALINGS IN THE SOFTWARE.
+ 
+ Except as contained in this notice, the name of a copyright holder shall not
+ be used in advertising or otherwise to promote the sale, use or other dealings
+ in this Software without prior written authorization of the copyright holder.
