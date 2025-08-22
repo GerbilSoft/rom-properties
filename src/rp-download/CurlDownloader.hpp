@@ -46,6 +46,12 @@ protected:
 
 public:
 	/**
+	 * Is this IDownloader object usable?
+	 * @return True if it's usable; false if it's not.
+	 */
+	bool isUsable(void) const final;
+
+	/**
 	 * Download the file.
 	 * @return 0 on success; negative POSIX error code, positive HTTP status code on error.
 	 */

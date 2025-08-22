@@ -276,6 +276,15 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 }
 
 /**
+ * Is this IDownloader object usable?
+ * @return True if it's usable; false if it's not.
+ */
+bool CurlDownloader::isUsable(void) const
+{
+	return ((bool)libcurl_dll);
+}
+
+/**
  * Download the file.
  * @return 0 on success; negative POSIX error code, positive HTTP status code on error.
  */
