@@ -276,6 +276,15 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 }
 
 /**
+ * Get the name of the IDownloader implementation.
+ * @return Name
+ */
+const TCHAR *CurlDownloader::name(void) const
+{
+	return _T("CurlDownloader");
+}
+
+/**
  * Is this IDownloader object usable?
  * @return True if it's usable; false if it's not.
  */

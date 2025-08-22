@@ -47,6 +47,15 @@ WinInetDownloader::WinInetDownloader(const tstring &url)
 {}
 
 /**
+ * Get the name of the IDownloader implementation.
+ * @return Name
+ */
+const TCHAR *WinInetDownloader::name(void) const
+{
+	return _T("WinInetDownloader");
+}
+
+/**
  * Is this IDownloader object usable?
  * @return True if it's usable; false if it's not.
  */

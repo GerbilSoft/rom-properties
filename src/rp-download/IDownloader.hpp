@@ -132,6 +132,12 @@ public:
 
 public:
 	/**
+	 * Get the name of the IDownloader implementation.
+	 * @return Name
+	 */
+	virtual const TCHAR *name(void) const = 0;
+
+	/**
 	 * Is this IDownloader object usable?
 	 * @return True if it's usable; false if it's not.
 	 */
