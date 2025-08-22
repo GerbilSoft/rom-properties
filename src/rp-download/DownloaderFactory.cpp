@@ -58,7 +58,7 @@ IDownloader *create(void)
 	downloader = new WinInetDownloader();
 #endif
 
-	if (!downloader->isUsable()) {
+	if (!downloader || !downloader->isUsable()) {
 		// IDownloader object is not usable...
 		delete downloader;
 		downloader = nullptr;
@@ -94,7 +94,7 @@ IDownloader *create(Implementation implementation)
 #endif /* _WIN32 */
 	}
 
-	if (!downloader->isUsable()) {
+	if (!downloader || !downloader->isUsable()) {
 		// IDownloader object is not usable...
 		delete downloader;
 		downloader = nullptr;
