@@ -1718,16 +1718,16 @@ INSTANTIATE_TEST_SUITE_P(TGA, ImageDecoderTest,
 		TGA_IMAGE_TEST("conformance/ctc24", "RGB888"),
 		TGA_IMAGE_TEST("conformance/ubw8", "8bpp grayscale"),
 		TGA_IMAGE_TEST("conformance/ucm8", "8bpp with RGB555 palette"),
-		//TGA_IMAGE_TEST("conformance/utc16", "ARGB1555"),
+		TGA_IMAGE_TEST("conformance/utc16", "ARGB1555"),
 		TGA_IMAGE_TEST("conformance/utc24", "RGB888"),
-		//TGA_IMAGE_TEST("conformance/utc32", "ARGB8888"),
+		TGA_IMAGE_TEST("conformance/utc32", "ARGB8888"),
 
 		// Test images from tga-go
 		// https://github.com/ftrvxmtrx/tga
 		// FIXME: Some incorrect alpha values...
 		// NOTE: The rgb24/rgb32 colormap images use .1.png; others use .0.png.
-		//ImageDecoderTest_mode("TGA/tga-go/ctc16.tga.gz", "TGA/tga-go/color.png", "ARGB1555"),
-		//ImageDecoderTest_mode("TGA/tga-go/ctc32.tga.gz", "TGA/tga-go/ctc32-TODO.png", "ARGB8888"),
+		ImageDecoderTest_mode("TGA/tga-go/ctc16.tga.gz", "TGA/tga-go/color.png", "ARGB1555"),
+		ImageDecoderTest_mode("TGA/tga-go/ctc32.tga.gz", "TGA/tga-go/color.png", "ARGB8888"),
 		ImageDecoderTest_mode("TGA/tga-go/monochrome8_bottom_left_rle.tga.gz", "TGA/tga-go/monochrome8.png", "8bpp grayscale"),
 		ImageDecoderTest_mode("TGA/tga-go/monochrome8_bottom_left.tga.gz", "TGA/tga-go/monochrome8.png", "8bpp grayscale"),
 		//ImageDecoderTest_mode("TGA/tga-go/monochrome16_top_left_rle.tga.gz", "TGA/tga-go/monochrome16.png", "IA8"),
