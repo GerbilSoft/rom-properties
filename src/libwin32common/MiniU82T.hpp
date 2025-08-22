@@ -41,4 +41,16 @@ static inline std::string A2U8(const std::string &astr)
 	return A2U8(astr.data(), static_cast<int>(astr.size()));
 }
 
+#ifdef _UNICODE
+static inline std::string T2U8(const std::wstring &wstr)
+{
+	return W2U8(wstr.data(), static_cast<int>(wstr.size()));
+}
+#else /* !_UNICODE */
+static inline std::string T2U8(const std::string &str)
+{
+	return A2U8(str.data(), static_cast<int>(str.size()));
+}
+#endif /* _UNICODE */
+
 }

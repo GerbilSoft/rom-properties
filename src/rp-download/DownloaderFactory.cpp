@@ -10,9 +10,7 @@
 #include "DownloaderFactory.hpp"
 
 // IDownloader implementations
-#ifndef _WIN32
-#  include "CurlDownloader.hpp"
-#endif /* !_WIN32 */
+#include "CurlDownloader.hpp"
 #ifdef _WIN32
 #  include "WinInetDownloader.hpp"
 #endif /* _WIN32 */
@@ -30,12 +28,16 @@ namespace RpDownload { namespace DownloaderFactory {
  */
 IDownloader *create(void)
 {
+	// TODO: Verify that cURL was loaded.
+
 #ifndef _WIN32
 	// Non-Windows: Use cURL.
 	return new CurlDownloader();
 #else /* _WIN32 */
-	// Windows: Use WinInet.
-	return new WinInetDownloader();
+	// Windows: Use WinInet for modern Windows; cURL for Windows XP/2003.
+	// FIXME: Testing purposes: Use cURL regardless.
+	//return new WinInetDownloader();
+	return new CurlDownloader();
 #endif
 }
 
@@ -55,11 +57,11 @@ IDownloader *create(Implementation implementation)
 		default:
 			break;
 
-#ifndef _WIN32
 		case Implementation::cURL:
 			downloader = new CurlDownloader();
 			break;
-#else /* _WIN32 */
+
+#ifdef _WIN32
 		case Implementation::WinInet:
 			downloader = new WinInetDownloader();
 			break;

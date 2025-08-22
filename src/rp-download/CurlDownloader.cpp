@@ -2,28 +2,141 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * CurlDownloader.cpp: libcurl-based file downloader.                      *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "CurlDownloader.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+#include <mutex>
 using std::string;
+using std::unique_ptr;
+using std::tstring;
 
-// cURL for network access.
-#include <curl/curl.h>
+// We're opening libcurl dynamically, so we need to define all
+// cURL function prototypes and definitions here.
+#include "curl-mini.h"
+
+#ifndef _WIN32
+// Unix dlopen()
+#  include <dlfcn.h>
+typedef void *HMODULE;
+// T2U8() is a no-op.
+#  define T2U8(str) (str)
+#else /* _WIN32 */
+// Windows LoadLibrary()
+#  include "libwin32common/RpWin32_sdk.h"
+#  include "libwin32common/MiniU82T.hpp"
+#  include "tcharx.h"
+#  define dlsym(handle, symbol)	((void*)GetProcAddress(handle, symbol))
+#  define dlclose(handle)	FreeLibrary(handle)
+using LibWin32Common::T2U8;
+#endif /* _WIN32 */
+
 
 namespace RpDownload {
 
+class HMODULE_deleter
+{
+public:
+	typedef HMODULE pointer;
+
+	void operator()(HMODULE hModule)
+	{
+		if (hModule) {
+			dlclose(hModule);
+		}
+	}
+};
+static unique_ptr<HMODULE, HMODULE_deleter> libcurl_dll;
+static std::once_flag curl_once_flag;
+
+// Function pointer macro
+#define DEF_FUNCPTR(f) __typeof__(f) * p##f = nullptr
+#define LOAD_FUNCPTR(f) p##f = (__typeof__(f)*)dlsym(libcurl_dll.get(), #f)
+
+DEF_FUNCPTR(curl_slist_append);
+DEF_FUNCPTR(curl_slist_free_all);
+DEF_FUNCPTR(curl_getdate);
+
+DEF_FUNCPTR(curl_easy_init);
+DEF_FUNCPTR(curl_easy_setopt);
+DEF_FUNCPTR(curl_easy_perform);
+DEF_FUNCPTR(curl_easy_cleanup);
+DEF_FUNCPTR(curl_easy_getinfo);
+
+/**
+ * Initialize libcurl.
+ * Called by std::call_once().
+ *
+ * Check if libcurl_dll is nullptr afterwards.
+ */
+static void init_curl_once(void)
+{
+	// Open libcurl.
+#ifdef _WIN32
+	libcurl_dll.reset(LoadLibraryEx(_T("libcurl.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32 | LOAD_LIBRARY_SEARCH_APPLICATION_DIR));
+#else /* !_WIN32 */
+	// TODO: Consistently use either RTLD_NOW or RTLD_LAZY.
+	// Maybe make it a CMake option?
+	// TODO: Check for ABI version 3 too?
+	// Version 4 was introduced with cURL v7.16.0 (October 2006),
+	// but Debian arbitrarily kept it at version 3.
+	// Reference: https://daniel.haxx.se/blog/2024/10/30/eighteen-years-of-abi-stability/
+	libcurl_dll.reset(dlopen("libcurl.so.4", RTLD_LOCAL | RTLD_NOW));
+#endif /* _WIN32 */
+
+	if (!libcurl_dll) {
+		// Could not open libcurl.
+		return;
+	}
+
+	// Load all of the function pointers.
+	LOAD_FUNCPTR(curl_slist_append);
+	LOAD_FUNCPTR(curl_slist_free_all);
+	LOAD_FUNCPTR(curl_getdate);
+
+	LOAD_FUNCPTR(curl_easy_init);
+	LOAD_FUNCPTR(curl_easy_setopt);
+	LOAD_FUNCPTR(curl_easy_perform);
+	LOAD_FUNCPTR(curl_easy_cleanup);
+	LOAD_FUNCPTR(curl_easy_getinfo);
+
+	if (!pcurl_slist_append ||
+	    !pcurl_slist_free_all ||
+	    !pcurl_getdate ||
+	    !pcurl_easy_init ||
+	    !pcurl_easy_setopt ||
+	    !pcurl_easy_perform ||
+	    !pcurl_easy_cleanup ||
+	    !pcurl_easy_getinfo)
+	{
+		// At least one symbol is missing.
+		libcurl_dll.reset();
+	}
+}
+
+CurlDownloader::CurlDownloader()
+{
+	std::call_once(curl_once_flag, init_curl_once);
+	// FIXME: Set a flag if initialization fails.
+}
+
 CurlDownloader::CurlDownloader(const TCHAR *url)
 	: super(url)
-{}
+{
+	std::call_once(curl_once_flag, init_curl_once);
+	// FIXME: Set a flag if initialization fails.
+}
 
 CurlDownloader::CurlDownloader(const tstring &url)
 	: super(url)
-{}
+{
+	std::call_once(curl_once_flag, init_curl_once);
+	// FIXME: Set a flag if initialization fails.
+}
 
 /**
  * Internal cURL data write function.
@@ -139,7 +252,7 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 		mtime_str[val_len] = 0;
 
 		// Parse the modification time.
-		curlDL->m_mtime = curl_getdate(mtime_str, nullptr);
+		curlDL->m_mtime = pcurl_getdate(mtime_str, nullptr);
 	}
 
 	// Continue processing.
@@ -162,7 +275,7 @@ int CurlDownloader::download(void)
 	m_mtime = -1;
 
 	// Initialize cURL.
-	CURL *curl = curl_easy_init();
+	CURL *curl = pcurl_easy_init();
 	if (!curl) {
 		// Could not initialize cURL.
 		return -ENOMEM;	// TODO: Better error?
@@ -174,71 +287,78 @@ int CurlDownloader::download(void)
 	// TODO: Send a HEAD request first?
 
 	// Set options for curl's "easy" mode.
-	curl_easy_setopt(curl, CURLOPT_URL, m_url.c_str());
-	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, true);
+	pcurl_easy_setopt(curl, CURLOPT_URL, T2U8(m_url).c_str());
+	pcurl_easy_setopt(curl, CURLOPT_NOPROGRESS, true);
 	// Fail on HTTP errors. (>= 400)
-	curl_easy_setopt(curl, CURLOPT_FAILONERROR, true);
+	pcurl_easy_setopt(curl, CURLOPT_FAILONERROR, true);
 	// Redirection is required for https://amiibo.life/nfc/%08X-%08X
-	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, true);
-	curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 8L);
+	pcurl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, true);
+	pcurl_easy_setopt(curl, CURLOPT_MAXREDIRS, 8L);
 	// Request file modification time.
 	// NOTE: Probably not needed for http...
-	curl_easy_setopt(curl, CURLOPT_FILETIME, 1L);
+	pcurl_easy_setopt(curl, CURLOPT_FILETIME, 1L);
 
 	if (m_if_modified_since >= 0) {
 		// Add an "If-Modified-Since" header.
+		// TODO: Check cURL version at runtime.
 #if LIBCURL_VERSION_NUM >= 0x073B00
-		curl_easy_setopt(curl, CURLOPT_TIMEVALUE_LARGE, static_cast<curl_off_t>(m_if_modified_since));
+		pcurl_easy_setopt(curl, CURLOPT_TIMEVALUE_LARGE, static_cast<curl_off_t>(m_if_modified_since));
 #else /* LIBCURL_VERSION_NUM < 0x073B00 */
-		curl_easy_setopt(curl, CURLOPT_TIMEVALUE, static_cast<long>(m_if_modified_since));
+		pcurl_easy_setopt(curl, CURLOPT_TIMEVALUE, static_cast<long>(m_if_modified_since));
 #endif /* LIBCURL_VERSION_NUM >= 0x073B00 */
-		curl_easy_setopt(curl, CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE);
+		pcurl_easy_setopt(curl, CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE);
 	}
 
 	// Custom headers
 	struct curl_slist *req_headers = nullptr;
 	if (!m_reqMimeType.empty()) {
 		// Add the "Accept:" header.
-		tstring accept_header = _T("Accept: ");
-		accept_header += m_reqMimeType;
+		string accept_header = "Accept: ";
+		accept_header += T2U8(m_reqMimeType);
 
-		req_headers = curl_slist_append(req_headers, accept_header.c_str());
+		req_headers = pcurl_slist_append(req_headers, accept_header.c_str());
 		
 	}
 
 	if (req_headers) {
-		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, req_headers);
+		pcurl_easy_setopt(curl, CURLOPT_HTTPHEADER, req_headers);
 	}
 
 	// Header and data functions.
-	curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, parse_header);
-	curl_easy_setopt(curl, CURLOPT_HEADERDATA, this);
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
+	pcurl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, parse_header);
+	pcurl_easy_setopt(curl, CURLOPT_HEADERDATA, this);
+	pcurl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+	pcurl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
 
 	// Don't use signals. We're running as a plugin, so using
 	// signals might interfere.
-	curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
+	pcurl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
 
 	// Set timeouts to ensure we don't take forever.
 	// TODO: User configuration?
 	// - Connect timeout: 2 seconds.
 	// - Total timeout: 10 seconds.
-	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 2);
-	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
+	pcurl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 2);
+	pcurl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
+
+#ifdef _WIN32
+	// FIXME: cURL SSL verification doesn't work on Wine.
+	// Need to verify if it's broken on Windows, too.
+	pcurl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+#endif /* _WIN32 */
 
 	// Set the User-Agent.
-	curl_easy_setopt(curl, CURLOPT_USERAGENT, m_userAgent.c_str());
+	pcurl_easy_setopt(curl, CURLOPT_USERAGENT, T2U8(m_userAgent).c_str());
 
 	// Download the file.
 	int ret;
-	CURLcode res = curl_easy_perform(curl);
+	CURLcode res = pcurl_easy_perform(curl);
 	switch (res) {
 		case CURLE_OK:
 			// If the file is empty, check for a 304.
 			if (m_data.empty() && m_if_modified_since >= 0) {
 				long unmet = 0;
-				if (!curl_easy_getinfo(curl, CURLINFO_CONDITION_UNMET, &unmet) && unmet) {
+				if (!pcurl_easy_getinfo(curl, CURLINFO_CONDITION_UNMET, &unmet) && unmet) {
 					// HTTP 304 Not Modified
 					ret = 304;
 					break;
@@ -259,7 +379,7 @@ int CurlDownloader::download(void)
 			// Check if we have an HTTP response code.
 			// NOTE: GameTDB sometimes returns nothing instead of 404...
 			long response_code = 0;
-			curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
+			pcurl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
 			if (response_code <= 0) {
 				// No HTTP response code.
 				// TODO: Return a cURL error code and/or message...
@@ -269,8 +389,8 @@ int CurlDownloader::download(void)
 			break;
 	}
 
-	curl_slist_free_all(req_headers);
-	curl_easy_cleanup(curl);
+	pcurl_slist_free_all(req_headers);
+	pcurl_easy_cleanup(curl);
 	if (ret != 0) {
 		return ret;
 	}

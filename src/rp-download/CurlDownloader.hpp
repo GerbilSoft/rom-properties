@@ -15,7 +15,7 @@ namespace RpDownload {
 class CurlDownloader final : public IDownloader
 {
 public:
-	CurlDownloader() = default;
+	CurlDownloader();
 	explicit CurlDownloader(const TCHAR *url);
 	explicit CurlDownloader(const std::tstring &url);
 

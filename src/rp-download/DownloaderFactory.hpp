@@ -27,9 +27,7 @@ namespace DownloaderFactory
 IDownloader *create(void);
 
 enum class Implementation {
-#ifndef _WIN32
 	cURL,
-#endif /* !_WIN32 */
 #ifdef _WIN32
 	WinInet,
 #endif /* _WIN32 */
