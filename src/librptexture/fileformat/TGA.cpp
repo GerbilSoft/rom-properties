@@ -350,13 +350,43 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 			ImageDecoder::PixelFormat px_fmt;
 			switch (tgaHeader.cmap.bpp) {
 				case 15:	px_fmt = ImageDecoder::PixelFormat::RGB555; break;
-				case 16:
+				case 16: {
+					// ARGB1555
+					// TODO: Verify that it's ARGB1555 and not RGB565.
 					// FIXME: Is ARGB1555 supported? We have some 16bpp cmap test images
 					// that are expecting the high bit to be ignored.
-					px_fmt = ImageDecoder::PixelFormat::RGB555;
+					switch (alphaType) {
+						default:
+						case TGA_ALPHATYPE_NONE:
+						case TGA_ALPHATYPE_UNDEFINED_IGNORE:
+						case TGA_ALPHATYPE_UNDEFINED_RETAIN:
+							px_fmt = ImageDecoder::PixelFormat::RGB555;
+							break;
+
+						case TGA_ALPHATYPE_PRESENT:
+						case TGA_ALPHATYPE_PREMULTIPLIED:
+							px_fmt = ImageDecoder::PixelFormat::ARGB1555;
+							break;
+					}
 					break;
+				}
 				case 24:	px_fmt = ImageDecoder::PixelFormat::RGB888; break;
-				case 32:	px_fmt = ImageDecoder::PixelFormat::ARGB8888; break;
+				case 32: {
+					switch (alphaType) {
+						default:
+						case TGA_ALPHATYPE_NONE:
+						case TGA_ALPHATYPE_UNDEFINED_IGNORE:
+						case TGA_ALPHATYPE_UNDEFINED_RETAIN:
+							px_fmt = ImageDecoder::PixelFormat::xRGB8888;
+							break;
+
+						case TGA_ALPHATYPE_PRESENT:
+						case TGA_ALPHATYPE_PREMULTIPLIED:
+							px_fmt = ImageDecoder::PixelFormat::ARGB8888;
+							break;
+					}
+					break;
+				}
 				default:	px_fmt = ImageDecoder::PixelFormat::Unknown; break;
 			}
 			assert(px_fmt != ImageDecoder::PixelFormat::Unknown);
@@ -381,14 +411,29 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 						reinterpret_cast<const uint16_t*>(img_data.get()), img_siz);
 					break;
 
-				case 16:
+				case 16: {
 					// ARGB1555
 					// TODO: Verify that it's ARGB1555 and not RGB565.
-					imgtmp = ImageDecoder::fromLinear16(
-						ImageDecoder::PixelFormat::ARGB1555,
+					ImageDecoder::PixelFormat px_fmt;
+					switch (alphaType) {
+						default:
+						case TGA_ALPHATYPE_NONE:
+						case TGA_ALPHATYPE_UNDEFINED_IGNORE:
+						case TGA_ALPHATYPE_UNDEFINED_RETAIN:
+							px_fmt = ImageDecoder::PixelFormat::RGB555;
+							break;
+
+						case TGA_ALPHATYPE_PRESENT:
+						case TGA_ALPHATYPE_PREMULTIPLIED:
+							px_fmt = ImageDecoder::PixelFormat::ARGB1555;
+							break;
+					}
+
+					imgtmp = ImageDecoder::fromLinear16(px_fmt,
 						tgaHeader.img.width, tgaHeader.img.height,
 						reinterpret_cast<const uint16_t*>(img_data.get()), img_siz);
 					break;
+				}
 
 				case 24:
 					// RGB888
@@ -398,13 +443,28 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 						img_data.get(), img_siz);
 					break;
 
-				case 32:
+				case 32: {
 					// ARGB8888
-					imgtmp = ImageDecoder::fromLinear32(
-						ImageDecoder::PixelFormat::ARGB8888,
+					ImageDecoder::PixelFormat px_fmt;
+					switch (alphaType) {
+						default:
+						case TGA_ALPHATYPE_NONE:
+						case TGA_ALPHATYPE_UNDEFINED_IGNORE:
+						case TGA_ALPHATYPE_UNDEFINED_RETAIN:
+							px_fmt = ImageDecoder::PixelFormat::xRGB8888;
+							break;
+
+						case TGA_ALPHATYPE_PRESENT:
+						case TGA_ALPHATYPE_PREMULTIPLIED:
+							px_fmt = ImageDecoder::PixelFormat::ARGB8888;
+							break;
+					}
+
+					imgtmp = ImageDecoder::fromLinear32(px_fmt,
 						tgaHeader.img.width, tgaHeader.img.height,
 						reinterpret_cast<const uint32_t*>(img_data.get()), img_siz);
 					break;
+				}
 
 				default:
 					assert(!"Unsupported truecolor TGA bpp.");
