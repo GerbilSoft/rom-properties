@@ -56,6 +56,8 @@
   * PalmOS_Tbmp: Fix a crash on Windows when decoding a compressed icon.
     * Fixes #457: Palm OS file causes explorer.exe crash (Windows 11)
       * Reported by @ldroberts02.
+  * TGA: Fix handling of "undefined" alpha channels.
+  * TGA: Show the image ID field.
 
 * Other changes:
   * rpcli: Added more colorization for warning messages.
