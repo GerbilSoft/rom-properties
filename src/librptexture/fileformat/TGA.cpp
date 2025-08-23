@@ -71,6 +71,9 @@ public:
 	// Alpha channel type
 	TGA_AlphaType_e alphaType;
 
+	// Image ID (if present)
+	string image_id;
+
 	// Decoded image
 	rp_image_ptr img;
 
@@ -640,6 +643,20 @@ TGA::TGA(const IRpFilePtr &file)
 		return;
 	}
 
+	if (d->tgaHeader.id_length > 0) {
+		// Read the image ID. (located immediately after the .tga header)
+		unique_ptr<char[]> image_id(new char[d->tgaHeader.id_length]);
+		size = d->file->read(image_id.get(), d->tgaHeader.id_length);
+		if (size != d->tgaHeader.id_length) {
+			// Seek and/or read error.
+			d->file.reset();
+		}
+
+		// Assuming ASCII (Latin-1) encoding.
+		// NOTE: Not necessarily NULL-terminated.
+		d->image_id = latin1_to_utf8(image_id.get(), d->tgaHeader.id_length);
+	}
+
 	// Assume alpha may be present unless the TGA2 extension area says otherwise.
 	// (...except for 8-bit grayscale)
 	if (unlikely(((d->tgaHeader.image_type & ~TGA_IMAGETYPE_RLE_FLAG) == TGA_IMAGETYPE_GRAYSCALE) && d->tgaHeader.img.bpp == 8)) {
@@ -831,10 +848,15 @@ int TGA::getFields(RomFields *fields) const
 	}
 
 	const int initial_count = fields->count();
-	fields->reserve(initial_count + 13);	// Maximum of 13 fields.
+	fields->reserve(initial_count + 14);	// Maximum of 14 fields.
 
-	// TGA header.
+	// TGA header
 	const TGA_Header *const tgaHeader = &d->tgaHeader;
+
+	// Image ID (if present)
+	if (!d->image_id.empty()) {
+		fields->addField_string(C_("TGA", "Image ID"), d->image_id);
+	}
 
 	// Orientation
 	// Uses KTX1 format for display.
