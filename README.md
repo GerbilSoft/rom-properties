@@ -66,6 +66,11 @@ following platforms and file browsers:
 The following platforms are still compatible, but may not receive as much support:
 * KDE 4.x
 * Windows XP SP3, Windows Server 2003 SP2, Windows Vista
+  * Note that WinInet in older versions of Windows does not support the
+    newer encryption algorithms used by the online database hosts.
+    To work around this, you will need to download an older version of
+    cURL and a certificate bundle. This is available on the Releases
+    page.
 
 On Windows Vista and later, you will need the MSVC 2015-2022 runtime:
 * 32-bit: https://aka.ms/vs/17/release/VC_redist.x86.exe
