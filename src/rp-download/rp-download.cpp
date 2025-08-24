@@ -16,7 +16,7 @@
 #include "librpfile/FileSystem.hpp"
 using namespace LibRpFile;
 
-// C includes.
+// C includes
 #ifndef _WIN32
 #  include <fcntl.h>
 #  include <sys/stat.h>
@@ -33,12 +33,12 @@ using namespace LibRpFile;
 #  define S_ISDIR(mode) __S_ISTYPE((mode), S_IFDIR)
 #endif /* !S_ISTYPE */
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cerrno>
 #include <cstdarg>
 #include <cstdio>
 
-// C++ includes.
+// C++ includes
 #include <memory>
 using std::string;
 using std::tstring;
@@ -55,12 +55,9 @@ using std::unique_ptr;
 #include "libcachecommon/CacheDir.hpp"
 #include "libcachecommon/CacheKeys.hpp"
 
-// TODO: IDownloaderFactory?
-#ifdef _WIN32
-#  include "WinInetDownloader.hpp"
-#else
-#  include "CurlDownloader.hpp"
-#endif
+// IDownloader
+#include "IDownloader.hpp"
+#include "DownloaderFactory.hpp"
 #include "SetFileOriginInfo.hpp"
 using namespace RpDownload;
 
@@ -330,16 +327,17 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			return EXIT_FAILURE;
 	}
 
-	// TODO: IDownloaderFactory?
-#ifdef _WIN32
-	WinInetDownloader downloader;
-#else /* !_WIN32 */
-	CurlDownloader downloader;
-#endif /* _WIN32 */
+	// IDownloader
+	unique_ptr<IDownloader> downloader(DownloaderFactory::create());
+	assert((bool)downloader);
+	if (!downloader) {
+		SHOW_ERROR(_T("Could not instantiate an IDownloader object."));
+		return EXIT_FAILURE;
+	}
 
 	if (verbose) {
-		_ftprintf(stderr, _T("User-Agent: %s\nURL: %s\n"),
-			downloader.userAgent().c_str(), full_url.c_str());
+		_ftprintf(stderr, _T("Downloader class: %s\nUser-Agent: %s\nURL: %s\n"),
+			downloader->name(), downloader->userAgent().c_str(), full_url.c_str());
 	}
 
 	// Make sure we have a valid cache directory.
@@ -429,22 +427,22 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 	// Attempt to download the file.
 	// TODO: Configure this somewhere?
-	downloader.setMaxSize(4*1024*1024);
+	downloader->setMaxSize(4*1024*1024);
 
 	if (check_newer && filemtime >= 0) {
 		// Only download if the file on the server is newer than
 		// what's in our cache directory.
-		downloader.setIfModifiedSince(filemtime);
+		downloader->setIfModifiedSince(filemtime);
 	}
 
 	// Set the MIME type, if available.
 	const TCHAR *mimeType = getMimeType(cache_key);
 	if (mimeType) {
-		downloader.setRequestedMimeType(mimeType);
+		downloader->setRequestedMimeType(mimeType);
 	}
 
-	downloader.setUrl(full_url);
-	ret = downloader.download();
+	downloader->setUrl(full_url);
+	ret = downloader->download();
 	if (ret != 0) {
 		// Error downloading the file.
 		if (ret < 0) {
@@ -478,7 +476,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		return EXIT_FAILURE;
 	}
 
-	if (downloader.dataSize() <= 0) {
+	if (downloader->dataSize() <= 0) {
 		// No data downloaded...
 		SHOW_ERROR(_T("Error downloading file: 0 bytes received"));
 		return EXIT_FAILURE;
@@ -493,12 +491,12 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 	// Write the file to the cache.
 	// TODO: Verify the size.
-	const size_t dataSize = downloader.dataSize();
-	size_t size = fwrite(downloader.data(), 1, dataSize, f_out);
+	const size_t dataSize = downloader->dataSize();
+	size_t size = fwrite(downloader->data(), 1, dataSize, f_out);
 	fflush(f_out);
 
 	// Save the file origin information.
-	setFileOriginInfo(f_out, full_url.c_str(), downloader.mtime());
+	setFileOriginInfo(f_out, full_url.c_str(), downloader->mtime());
 	fclose(f_out);
 
 	// Success.

@@ -95,6 +95,7 @@ int rp_download_do_security_options(void)
 		SCMP_SYS(rt_sigprocmask),	// Ubuntu 20.04: __GI_getaddrinfo() ->
 						// gaih_inet() ->
 						// _nss_myhostname_gethostbyname4_r()
+		SCMP_SYS(getuid32),	// Ubuntu 16.04: RAND_status() -> RAND_poll() [i386 only]
 
 		// libnss_resolve.so (systemd-resolved)
 		SCMP_SYS(geteuid),

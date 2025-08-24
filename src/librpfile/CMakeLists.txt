@@ -1,6 +1,11 @@
 # rom-properties file handling library
 PROJECT(rpfile LANGUAGES CXX)
 
+# for std::call_once() [pthread_once()]
+IF(NOT WIN32)
+	FIND_PACKAGE(Threads REQUIRED)
+ENDIF(NOT WIN32)
+
 # Check for C library functions.
 IF(NOT WIN32)
 	# Check for statx().
@@ -206,6 +211,11 @@ FOREACH(_target ${TARGETS})
 	IF(MSVC)
 		TARGET_LINK_LIBRARIES(${_target} PRIVATE delayimp)
 	ENDIF(MSVC)
+
+	IF(CMAKE_THREAD_LIBS_INIT)
+		# for std::call_once() [pthread_once()]
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+	ENDIF(CMAKE_THREAD_LIBS_INIT)
 
 	# Other libraries
 	IF(ZLIB_FOUND)

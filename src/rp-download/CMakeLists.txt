@@ -23,6 +23,9 @@ IF(NOT WIN32)
 	SET(CMAKE_REQUIRED_DEFINITIONS "-D_GNU_SOURCE=1")
 	CHECK_SYMBOL_EXISTS(statx "sys/stat.h" HAVE_STATX)
 	UNSET(CMAKE_REQUIRED_DEFINITIONS)
+
+	# for std::call_once() [pthread_once()]
+	FIND_PACKAGE(Threads REQUIRED)
 ENDIF(NOT WIN32)
 
 IF(APPLE)
@@ -36,19 +39,24 @@ SET(${PROJECT_NAME}_SRCS
 	rp-download.cpp
 	rp-download_secure.c
 	IDownloader.cpp
+	DownloaderFactory.cpp
+	CurlDownloader.cpp
 	http-status.cpp
 	CacheKeyVerify.cpp
 	)
 SET(${PROJECT_NAME}_H
 	rp-download_secure.h
 	IDownloader.hpp
+	DownloaderFactory.hpp
+	CurlDownloader.hpp
+	curl-mini.h
 	http-status.hpp
 	CacheKeyVerify.hpp
 	)
 
 # Determine which IDownloader backend to use.
 IF(WIN32)
-	# Windows: Use WinInet.
+	# Windows: Build WinInet in addition to cURL.
 	SET(${PROJECT_NAME}_OS_SRCS
 		WinInetDownloader.cpp
 		SetFileOriginInfo_win32.cpp
@@ -63,16 +71,10 @@ IF(WIN32)
 ELSEIF(EMSCRIPTEN)
 	# TODO: wasm downloader module?
 ELSEIF(UNIX)
-	# Non-Windows platforms: Use cURL.
-	FIND_PACKAGE(CURL REQUIRED)
-	INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIRS})
-	SET(${PROJECT_NAME}_OS_SRCS
-		CurlDownloader.cpp
-		SetFileOriginInfo_posix.cpp
-		)
-	SET(${PROJECT_NAME}_OS_H
-		CurlDownloader.hpp
-		)
+	SET(${PROJECT_NAME}_OS_SRCS SetFileOriginInfo_posix.cpp)
+	IF(NOT APPLE)
+		SET(${PROJECT_NAME}_OS_SRCS ${${PROJECT_NAME}_OS_SRCS} dlopen-notes.c)
+	ENDIF(NOT APPLE)
 ELSE()
 	MESSAGE(FATAL_ERROR "No IDownloader backend available!")
 ENDIF()
@@ -122,12 +124,21 @@ IF(WIN32)
 	ADD_DELAYLOAD_FLAGS(${PROJECT_NAME} shell32.dll ole32.dll)
 ELSE(WIN32)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE unixcommon inih)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${CURL_LIBRARIES})
 ENDIF(WIN32)
+
+IF(CMAKE_THREAD_LIBS_INIT)
+	# for std::call_once() [pthread_once()]
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+ENDIF(CMAKE_THREAD_LIBS_INIT)
 
 IF(APPLE)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${CORESERVICES_LIBRARY})
 ENDIF(APPLE)
+
+# Link in libdl if it's required for dlopen().
+IF(CMAKE_DL_LIBS)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${CMAKE_DL_LIBS})
+ENDIF(CMAKE_DL_LIBS)
 
 # Make sure git_version.h is created before compiling this target.
 IF(TARGET git_version)

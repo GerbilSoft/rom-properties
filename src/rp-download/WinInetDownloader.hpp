@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * WinInetDownloader.hpp: WinInet-based file downloader.                   *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,6 +24,18 @@ private:
 	RP_DISABLE_COPY(WinInetDownloader)
 
 public:
+	/**
+	 * Get the name of the IDownloader implementation.
+	 * @return Name
+	 */
+	const TCHAR *name(void) const final;
+
+	/**
+	 * Is this IDownloader object usable?
+	 * @return True if it's usable; false if it's not.
+	 */
+	bool isUsable(void) const final;
+
 	/**
 	 * Download the file.
 	 * @return 0 on success; negative POSIX error code, positive HTTP status code on error.

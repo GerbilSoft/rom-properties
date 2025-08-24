@@ -132,6 +132,18 @@ public:
 
 public:
 	/**
+	 * Get the name of the IDownloader implementation.
+	 * @return Name
+	 */
+	virtual const TCHAR *name(void) const = 0;
+
+	/**
+	 * Is this IDownloader object usable?
+	 * @return True if it's usable; false if it's not.
+	 */
+	virtual bool isUsable(void) const = 0;
+
+	/**
 	 * Download the file.
 	 * @return 0 on success; negative POSIX error code, positive HTTP status code on error.
 	 */

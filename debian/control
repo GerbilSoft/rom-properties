@@ -10,7 +10,6 @@ Build-Depends:
  lsb-release,
  zlib1g-dev,
  libpng-dev,
- libcurl4-openssl-dev | libcurl4-gnutls-dev | libcurl4-nss-dev | libcurl-dev,
  libjpeg-dev,
  nettle-dev,
  libpugixml-dev,
@@ -154,7 +153,7 @@ Description: ROM Properties Page shell extension (Tracker metadata extractor mod
 
 Package: rom-properties-utils
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, libcurl4
 Recommends: rom-properties-lang
 Conflicts: rom-properties-stub
 Replaces: rom-properties-stub

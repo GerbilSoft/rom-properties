@@ -1,6 +1,11 @@
 # Virtual Terminal emulation for older Windows versions.
 PROJECT(gsvt LANGUAGES C CXX)
 
+# for std::call_once() [pthread_once()]
+IF(NOT WIN32)
+	FIND_PACKAGE(Threads REQUIRED)
+ENDIF(NOT WIN32)
+
 ######################
 # Build the library. #
 ######################
@@ -31,6 +36,11 @@ SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES
 	EXCLUDE_FROM_ALL TRUE
 	POSITION_INDEPENDENT_CODE TRUE
 	)
+
+IF(CMAKE_THREAD_LIBS_INIT)
+	# for std::call_once() [pthread_once()]
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+ENDIF(CMAKE_THREAD_LIBS_INIT)
 
 # Include paths:
 # - Public: Current source and binary directories.
