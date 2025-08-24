@@ -399,6 +399,7 @@ ICOPrivate::IconBitmapHeader_data ICOPrivate::getIconBitmapHeaderData(const Icon
 	// Determine pixel format based on bitcount.
 	// TODO: Other bitcounts?
 	if (data.bitcount == 1) {
+		// tr: Abbreviation of "Monochrome".
 		snprintf(data.pixel_format, sizeof(data.pixel_format), "%s", C_("ICO|PixelFormat", "Mono"));
 	} else if (data.bitcount <= 8) {
 		snprintf(data.pixel_format, sizeof(data.pixel_format), "CI%u", data.bitcount);
