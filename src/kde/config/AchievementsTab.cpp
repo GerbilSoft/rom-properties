@@ -15,6 +15,9 @@
 #include "librpbase/Achievements.hpp"
 using LibRpBase::Achievements;
 
+// C++ STL classes
+using std::array;
+
 #include "ui_AchievementsTab.h"
 class AchievementsTabPrivate
 {
@@ -75,10 +78,16 @@ void AchievementsTab::reset(void)
 	QTreeWidget *const treeWidget = d->ui.treeWidget;
 	treeWidget->clear();
 
-	// TODO: Ideal icon size?
-	// Using 32x32 for now.
+	// Use QIcon with all icon sizes.
+	const array<AchSpriteSheet, 4> achSpriteSheets = {{
+		AchSpriteSheet(64),
+		AchSpriteSheet(32),
+		AchSpriteSheet(24),
+		AchSpriteSheet(16),
+	}};
+
+	// Assuming 32x32 logical device pixels for display.
 	static constexpr int iconSize = 32;
-	const AchSpriteSheet achSpriteSheet(iconSize);
 	treeWidget->setIconSize(QSize(iconSize, iconSize));
 
 	const Achievements *const pAch = Achievements::instance();
@@ -88,8 +97,11 @@ void AchievementsTab::reset(void)
 		const time_t timestamp = pAch->isUnlocked(id);
 		const bool unlocked = (timestamp != -1);
 
-		// Get the icon.
-		QPixmap icon = achSpriteSheet.getIcon(id, !unlocked);
+		// Create an icon.
+		QIcon icon;
+		for (const AchSpriteSheet &achSpriteSheet : achSpriteSheets) {
+			icon.addPixmap(achSpriteSheet.getIcon(id, !unlocked));
+		}
 
 		// Get the name and description.
 		QString s_ach = U82Q(pAch->getName(id)) + QChar(L'\n');
