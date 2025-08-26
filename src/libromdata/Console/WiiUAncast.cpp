@@ -681,8 +681,13 @@ int WiiUAncast::checkViewedAchievements(void) const
 
 	int ret = 0;
 	if (console_type == WIIU_ANCAST_CONSOLE_TYPE_DEVEL) {
-		// Debug encryption.
+		// Debug encryption
 		pAch->unlock(Achievements::ID::ViewedDebugCryptedFile);
+		ret++;
+	}
+	if (target_device == WIIU_ANCAST_TARGET_DEVICE_ARM_SD) {
+		// sdboot
+		pAch->unlock(Achievements::ID::ViewedWiiUsdbootImage);
 		ret++;
 	}
 

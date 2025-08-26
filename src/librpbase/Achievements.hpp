@@ -65,6 +65,9 @@ class Achievements
 			// CD-i disc image
 			ViewedCDiDiscImage		= 4,
 
+			// Wii U sdboot image
+			ViewedWiiUsdbootImage		= 5,
+
 			Max
 		};
 

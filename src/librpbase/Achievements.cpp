@@ -80,7 +80,7 @@ public:
 					// AT_BITFIELD: Number of bits. (up to 64)
 					//              All bits must be 1 to unlock.
 	};
-	static const array<AchInfo_t, 5> achInfo;
+	static const array<AchInfo_t, 6> achInfo;
 
 	// C++14 adds support for enum classes as unordered_map keys.
 	// C++11 needs an explicit hash functor.
@@ -193,7 +193,7 @@ public:
 /** AchievementsPrivate **/
 
 // Achievement information.
-const array<AchievementsPrivate::AchInfo_t, 5> AchievementsPrivate::achInfo = {{
+const array<AchievementsPrivate::AchInfo_t, 6> AchievementsPrivate::achInfo = {{
 	{
 		NOP_C_("Achievements", "You are now a developer!"),
 		NOP_C_("Achievements", "Viewed a debug-encrypted file."),
@@ -217,6 +217,11 @@ const array<AchievementsPrivate::AchInfo_t, 5> AchievementsPrivate::achInfo = {{
 	{
 		NOP_C_("Achievements", "Link, mah boi..."),
 		NOP_C_("Achievements", "Viewed a CD-i disc image."),
+		AT_COUNT, 1
+	},
+	{
+		NOP_C_("Achievements", "Paid The Beak"),
+		NOP_C_("Achievements", "Viewed a Wii U sdboot firmware image."),
 		AT_COUNT, 1
 	},
 }};
