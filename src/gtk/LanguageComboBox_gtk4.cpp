@@ -82,6 +82,8 @@ rp_language_combo_box_re_create_GtkDropDown(struct _RpLanguageComboBox *widget)
 {
 	// (Re-)Create the GtkDropDown widget.
 	// NOTE: GtkDropDown takes ownership of widget->listStore.
+	// NOTE: Need to take an extra reference for some reason...
+	g_object_ref(widget->listStore);
 	widget->dropDown = gtk_drop_down_new(G_LIST_MODEL(widget->listStore), nullptr);
 
 	// Create the GtkSignalListItemFactory
@@ -106,8 +108,6 @@ rp_language_combo_box_init_gtkX(struct _RpLanguageComboBox *widget)
 	// NOTE: GtkDropDown takes ownership, so we'll take our own ref.
 	widget->listStore = g_list_store_new(RP_TYPE_LANGUAGE_COMBO_BOX_ITEM);
 	g_object_ref_sink(widget->listStore);
-	// NOTE: Need to take a second reference for some reason...
-	g_object_ref(widget->listStore);
 
 	// Create the GtkDropDown.
 	rp_language_combo_box_re_create_GtkDropDown(widget);
@@ -147,7 +147,7 @@ rp_language_combo_box_rebuild_icons(struct _RpLanguageComboBox *widget)
 	if (widget->dropDown) {
 		// Remove the dropdown so we can rebuild it.
 		// Otherwise, the icons might not show up properly.
-		gtk_box_remove(GTK_BOX(widget), widget->dropDown);
+		gtk_widget_unparent(widget->dropDown);
 		widget->dropDown = nullptr;
 	}
 

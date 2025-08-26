@@ -135,12 +135,17 @@ rp_language_combo_box_dispose(GObject *object)
 
 #ifdef USE_GTK_DROP_DOWN
 	if (widget->dropDown) {
-		gtk_drop_down_set_factory(GTK_DROP_DOWN(widget->dropDown), nullptr);
+		gtk_widget_unparent(widget->dropDown);
+		widget->dropDown = nullptr;
 	}
 #endif /* USE_GTK_DROP_DOWN */
 
 	if (widget->listStore) {
+#ifdef USE_GTK_DROP_DOWN
+		// FIXME: GListStore has an extra reference because reasons.
 		g_object_unref(widget->listStore);
+#endif /* USE_GTK_DROP_DOWN */
+		g_clear_object(&widget->listStore);
 	}
 
 	// Call the superclass dispose() function.
