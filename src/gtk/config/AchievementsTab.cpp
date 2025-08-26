@@ -62,6 +62,9 @@ struct _RpAchievementsTab {
 	GtkListStore	*listStore;
 	GtkWidget	*treeView;
 #endif /* USE_GTK_COLUMN_VIEW */
+
+	// Have we done the initial reset?
+	bool have_done_initial_reset;
 };
 
 // Interface initialization
@@ -70,6 +73,10 @@ static gboolean	rp_achievements_tab_has_defaults			(RpAchievementsTab	*tab);
 static void	rp_achievements_tab_reset				(RpAchievementsTab	*tab);
 static void	rp_achievements_tab_save				(RpAchievementsTab	*tab,
 									 GKeyFile		*keyFile);
+
+static void	rp_achievements_tab_map_signal_handler			(RpAchievementsTab	*tab,
+									 gpointer		 user_data);
+
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
@@ -280,6 +287,9 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 	gtk_widget_show_all(scrolledWindow);
 #endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
+	// Initial reset will be done the first time the tab is mapped.
+	// (Needed in order to get the correct DPI.)
+	g_signal_connect(tab, "map", G_CALLBACK(rp_achievements_tab_map_signal_handler), nullptr);
 	// Load the achievements.
 	rp_achievements_tab_reset(tab);
 }
@@ -312,8 +322,36 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 
 	// Load the Achievements icon sprite sheet.
 	// NOTE: Assuming 32x32 icons for now.
-	// TODO: Check DPI and adjust on DPI changes?
-	static constexpr gint iconSize = 32;
+	// TODO:
+	// - Adjust on scale factor changes?
+	// - Multi-monitor handling.
+	// - Fractional scaling, if GTK ever implements it...
+#if GTK_CHECK_VERSION(3, 98, 0)
+	GtkNative *const native = gtk_widget_get_native(GTK_WIDGET(tab));
+	if (!native) {
+		// Not mapped yet...
+		return;
+	}
+	GdkSurface *const surface = gtk_native_get_surface(native);
+	GdkMonitor *const monitor = gdk_display_get_monitor_at_surface(gdk_display_get_default(), surface);
+	const gint scale_factor = gdk_monitor_get_scale_factor(monitor);
+#elif GTK_CHECK_VERSION(3, 21, 2)
+	GdkWindow *const window = gtk_widget_get_window(GTK_WIDGET(tab));
+	if (!window) {
+		// Not mapped yet...
+		return;
+	}
+	GdkMonitor *const monitor = gdk_display_get_monitor_at_window(gdk_display_get_default(), window);
+	const gint scale_factor = gdk_monitor_get_scale_factor(monitor);
+#elif GTK_CHECK_VERSION(3, 9, 8)
+	const gint scale_factor = gdk_screen_get_monitor_scale_factor(gdk_screen_get_default());
+#else
+	// Can't get the scaling factor on this version...
+	// TODO: Get X11 DPI?
+	static constexpr gint scale_factor = 1;
+#endif
+	const gint iconSize = 32 * scale_factor;
+
 	AchSpriteSheet achSpriteSheet(iconSize);
 
 	// Pango 1.49.0 [2021/08/22] added percentage sizes.
@@ -334,6 +372,11 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 		// Get the achievement icon.
 		PIMGTYPE icon = achSpriteSheet.getIcon(id, !unlocked);
 		assert(icon != nullptr);
+
+#ifdef RP_GTK_USE_CAIRO
+		// Set the Cairo surface scale factor.
+		cairo_surface_set_device_scale(icon, scale_factor, scale_factor);
+#endif /* RP_GTK_USE_CAIRO */
 
 		// Get the name and description.
 		gchar *const s_ach_name = g_markup_escape_text(pAch->getName(id), -1);
@@ -388,4 +431,16 @@ rp_achievements_tab_save(RpAchievementsTab *tab, GKeyFile *keyFile)
 	// Not implemented.
 	g_return_if_fail(RP_IS_ACHIEVEMENTS_TAB(tab));
 	g_return_if_fail(keyFile != nullptr);
+}
+
+/**
+ * AchievementsTab is being mapped onto the screen.
+ * @param tab RpAchievementsTab
+ * @param user_data User data
+ */
+static void
+rp_achievements_tab_map_signal_handler(RpAchievementsTab *tab, gpointer user_data)
+{
+	rp_achievements_tab_reset(tab);
+	tab->have_done_initial_reset = true;
 }
