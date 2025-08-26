@@ -239,6 +239,7 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 				if (pixbuf) {
 					// TODO: Ideal icon size?
 					// Using 32x32 for now.
+					// FIXME: Proper high-DPI handling on GTK3.
 					static constexpr int icon_sz = 32;
 					// NOTE: GtkCellRendererPixbuf can't scale the
 					// pixbuf itself...
