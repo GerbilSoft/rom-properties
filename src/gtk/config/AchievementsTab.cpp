@@ -344,7 +344,8 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 	GdkMonitor *const monitor = gdk_display_get_monitor_at_window(gdk_display_get_default(), window);
 	const gint scale_factor = gdk_monitor_get_scale_factor(monitor);
 #elif GTK_CHECK_VERSION(3, 9, 8)
-	const gint scale_factor = gdk_screen_get_monitor_scale_factor(gdk_screen_get_default());
+	// TODO: Get the monitor number the window is on.
+	const gint scale_factor = gdk_screen_get_monitor_scale_factor(gdk_screen_get_default(), 0);
 #else
 	// Can't get the scaling factor on this version...
 	// TODO: Get X11 DPI?
