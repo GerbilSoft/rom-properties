@@ -237,12 +237,38 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 			if (icon) {
 				PIMGTYPE pixbuf = rp_image_to_PIMGTYPE(icon);
 				if (pixbuf) {
-					// TODO: Ideal icon size?
-					// Using 32x32 for now.
-					// FIXME: Proper high-DPI handling on GTK3.
+					// TODO: Ideal icon size? Using 32x32 for now.
 					static constexpr int icon_sz = 32;
-					// NOTE: GtkCellRendererPixbuf can't scale the
-					// pixbuf itself...
+
+#if RP_GTK_USE_CAIRO
+					// NOTE: Assuming square icons.
+					int icon_w = icon->width();
+					int icon_h = icon->height();
+					if (icon_w > icon_sz || icon_h > icon_sz) {
+						// Instead of scaling icons down, set a device pixel ratio.
+						// This allows for higher-resolution display on high-DPI screens.
+						const float scale_x = static_cast<float>(icon_w) / static_cast<float>(icon_sz);
+						const float scale_y = static_cast<float>(icon_h) / static_cast<float>(icon_sz);
+						cairo_surface_set_device_scale(pixbuf, scale_x, scale_y);
+					} else if (icon_w > 0 && icon_h > 0) {
+						// Scale up using integer scaling, then set a device pixel ratio.
+						while (icon_w < icon_sz) {
+							icon_w += icon->width();
+							icon_h += icon->height();
+						}
+						PIMGTYPE scaled = PIMGTYPE_scale(pixbuf, icon_w, icon_h, true);
+						if (scaled) {
+							PIMGTYPE_unref(pixbuf);
+							pixbuf = scaled;
+
+							const float scale_x = static_cast<float>(icon_w) / static_cast<float>(icon_sz);
+							const float scale_y = static_cast<float>(icon_h) / static_cast<float>(icon_sz);
+							cairo_surface_set_device_scale(pixbuf, scale_x, scale_y);
+						}
+					}
+#else /* RP_GTK_USE_CAIRO */
+					// Cannot use device scale factor with GdkPixbuf.
+					// Resize the icon manually.
 					if (!PIMGTYPE_size_check(pixbuf, icon_sz, icon_sz)) {
 						// TODO: Use nearest-neighbor if upscaling.
 						// Also, preserve the aspect ratio.
@@ -252,6 +278,8 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 							pixbuf = scaled;
 						}
 					}
+#endif /* RP_GTK_USE_CAIRO */
+
 					gtk_list_store_set(listStore, &treeIter, 0, pixbuf, -1);
 					PIMGTYPE_unref(pixbuf);
 				}
