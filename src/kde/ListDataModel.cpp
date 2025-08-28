@@ -171,39 +171,36 @@ void ListDataModelPrivate::updateIconPixmaps(void)
 	icons.clear();
 	icons.reserve(icons_rp.size());
 
-	for (const auto &img : icons_rp) {
-		if (!img) {
+	for (const auto &icon : icons_rp) {
+		if (!icon) {
 			icons.emplace_back();
 			continue;
 		}
 
-		QPixmap pixmap = QPixmap::fromImage(rpToQImage(img));
+		QPixmap pixmap = QPixmap::fromImage(rpToQImage(icon));
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 		// NOTE: Assuming square pixmaps.
-		if (img->width() > iconSize.width()) {
+		int icon_w = icon->width();
+		int icon_h = icon->height();
+		if (icon_w > iconSize.width() || icon_h > iconSize.height()) {
 			// Instead of scaling icons down, set a device pixel ratio.
 			// This allows for higher-resolution display on high-DPI screens.
-			pixmap.setDevicePixelRatio(static_cast<qreal>(img->width()) / static_cast<qreal>(iconSize.width()));
-		} else {
+			pixmap.setDevicePixelRatio(static_cast<qreal>(icon_w) / static_cast<qreal>(iconSize.width()));
+		} else if (icon_w > 0 && icon_h > 0) {
 			// Scale up using integer scaling, then set a device pixel ratio.
-			int w = img->width();
-			int h = img->height();
-			if (w <= 0) {
-				continue;
+			while (icon_w < iconSize.width()) {
+				icon_w += icon->width();
+				icon_h += icon->height();
 			}
-			while (w < iconSize.width()) {
-				w += img->width();
-				h += img->height();
-			}
-			pixmap = pixmap.scaled(w, h, Qt::KeepAspectRatio, Qt::FastTransformation);
+			pixmap = pixmap.scaled(icon_w, icon_h, Qt::KeepAspectRatio, Qt::FastTransformation);
 			
-			pixmap.setDevicePixelRatio(static_cast<qreal>(w) / static_cast<qreal>(iconSize.width()));
+			pixmap.setDevicePixelRatio(static_cast<qreal>(icon_w) / static_cast<qreal>(iconSize.width()));
 		}
 #else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 		// Do we need to resize the icon?
-		if (img->width() != iconSize.width() ||
-		    img->height() != iconSize.height())
+		if (icon->width() != iconSize.width() ||
+		    icon->height() != iconSize.height())
 		{
 			// Resize is needed.
 			pixmap = pixmap.scaled(iconSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
