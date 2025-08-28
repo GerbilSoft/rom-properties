@@ -79,6 +79,7 @@ void AchievementsTab::reset(void)
 	treeWidget->clear();
 
 	// Use QIcon with all icon sizes.
+	// FIXME: array breaks on gcc5 due to deleted copy constructor?
 	const array<AchSpriteSheet, 4> achSpriteSheets = {{
 		AchSpriteSheet(64),
 		AchSpriteSheet(32),
