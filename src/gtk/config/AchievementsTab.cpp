@@ -334,7 +334,7 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 	}
 	GdkSurface *const surface = gtk_native_get_surface(native);
 	GdkMonitor *const monitor = gdk_display_get_monitor_at_surface(gdk_display_get_default(), surface);
-	const gint scale_factor = gdk_monitor_get_scale_factor(monitor);
+	gint scale_factor = gdk_monitor_get_scale_factor(monitor);
 #elif GTK_CHECK_VERSION(3, 21, 2)
 	GdkWindow *const window = gtk_widget_get_window(GTK_WIDGET(tab));
 	if (!window) {
@@ -342,15 +342,22 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 		return;
 	}
 	GdkMonitor *const monitor = gdk_display_get_monitor_at_window(gdk_display_get_default(), window);
-	const gint scale_factor = gdk_monitor_get_scale_factor(monitor);
+	gint scale_factor = gdk_monitor_get_scale_factor(monitor);
 #elif GTK_CHECK_VERSION(3, 9, 8)
 	// TODO: Get the monitor number the window is on.
-	const gint scale_factor = gdk_screen_get_monitor_scale_factor(gdk_screen_get_default(), 0);
+	gint scale_factor = gdk_screen_get_monitor_scale_factor(gdk_screen_get_default(), 0);
 #else
 	// Can't get the scaling factor on this version...
 	// TODO: Get X11 DPI?
-	static constexpr gint scale_factor = 1;
+	gint scale_factor = 1;
 #endif
+
+	// NOTE: Only a scale factor of 1 or 2 is supported here.
+	if (scale_factor < 1) {
+		scale_factor = 1;
+	} else if (scale_factor > 2) {
+		scale_factor = 2;
+	}
 	const gint iconSize = 32 * scale_factor;
 
 	AchSpriteSheet achSpriteSheet(iconSize);
