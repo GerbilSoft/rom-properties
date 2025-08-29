@@ -297,7 +297,10 @@ tstring IDownloader::getOSRelease(void)
 
 	// Version number
 	TCHAR buf[32];
-	if (osvi.dwMajorVersion == 10 && osvi.dwBuildNumber >= 20000) {
+	// Windows 11 21H1 is build 22000.
+	// Windows Server 2022 (based on Win10) is build 20348.
+	// Some Win11 preview builds are probably between those...
+	if (osvi.dwMajorVersion == 10 && osvi.dwBuildNumber >= 21000) {
 		// Windows 11
 		osvi.dwMajorVersion = 11;
 	}
