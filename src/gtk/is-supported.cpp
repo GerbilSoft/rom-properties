@@ -19,35 +19,6 @@ using namespace LibRpFile;
 using namespace LibRomData;
 
 /**
- * Attempt to open a RomData object from the specified filename.
- * @param filename Filename (must be a filename, NOT a URI!)
- * @return RomData object if supported; nullptr if not.
- */
-static RomDataPtr rp_gtk_open_filename(const char *filename)
-{
-	// TODO: Check file extensions and/or MIME types?
-
-	// Local file:
-	// - If this is a diretory: Call RomDataFactory::create() with the pathname.
-	// - If this is a file: Create an RpFile first.
-	if (likely(!FileSystem::is_directory(filename))) {
-		// File: Open the file and call RomDataFactory::create() with the opened file.
-		IRpFilePtr file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
-		if (file->isOpen()) {
-			return RomDataFactory::create(file);
-		}
-	} else {
-		// Directory: Call RomDataFactory::create() with the filename.
-		// (NOTE: Local filenames only!)
-		return RomDataFactory::create(filename);
-	}
-
-	// Unable to open the file.
-	return {};
-}
-
-
-/**
  * Attempt to open a RomData object from the specified GVfs URI.
  * @param uri URI from e.g. nautilus_file_info_get_uri() [UTF-8]
  * @return RomData object if supported; nullptr if not.
@@ -57,24 +28,25 @@ RomDataPtr rp_gtk_open_uri(const char *uri)
 	g_return_val_if_fail(uri != nullptr && uri[0] != '\0', nullptr);
 
 	// TODO: Check file extensions and/or MIME types?
-	RomDataPtr romData;
 
 	// Check if the URI maps to a local file.
 	gchar *const filename = g_filename_from_uri(uri, nullptr, nullptr);
 	if (filename) {
-		romData = rp_gtk_open_filename(filename);
+		RomDataPtr romData = RomDataFactory::create(filename);
 		g_free(filename);
+		return romData;
+	}
+
+	// This might be a plain filename and not a URI.
+	RomDataPtr romData;
+	if (access(uri, R_OK) == 0) {
+		// It's a plain filename.
+		romData = RomDataFactory::create(uri);
 	} else {
-		// This might be a plain filename and not a URI.
-		if (access(uri, R_OK) == 0) {
-			// It's a plain filename.
-			romData = rp_gtk_open_filename(uri);
-		} else {
-			// Not a local file. Use RpFileGio.
-			IRpFilePtr file = std::make_shared<RpFileGio>(uri);
-			if (file->isOpen()) {
-				romData = RomDataFactory::create(file);
-			}
+		// Not a local file. Use RpFileGio.
+		IRpFilePtr file = std::make_shared<RpFileGio>(uri);
+		if (file->isOpen()) {
+			romData = RomDataFactory::create(file);
 		}
 	}
 
