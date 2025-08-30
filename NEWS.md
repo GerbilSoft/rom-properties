@@ -65,7 +65,8 @@
   * rpcli: Added more colorization for warning messages.
   * rpcli: Refactored console handling into a separate library, libgsvt.
   * IsoPartition: Implemented readdir(). Not currently used by anything, though.
-  * KDE (KF5, KF6): Improved image quality for RFT_LISTDATA fields with icons.
+  * GTK3, GTK4, KF5, KF6: Improved image quality when displaying icons in
+    list views, e.g. RFT_LISTDATA fields and the Achievements tab in rp-config.
   * KDE (KF5, KF6): RomThumbnailCreator now only has MIME types that can actually
     be thumbnailed, which may reduce processing time slightly.
   * Windows: Files marked as "offline" (e.g. not synchronized with a cloud backup
