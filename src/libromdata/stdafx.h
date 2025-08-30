@@ -107,7 +107,6 @@ namespace std {
 // librptexture C++ headers
 #include "librptexture/img/rp_image.hpp"
 #include "librptexture/ImageSizeCalc.hpp"
-#include "librptexture/decoder/PixelConversion.hpp"
 
 // librptext C++ headers
 #include "librptext/conversion.hpp"
