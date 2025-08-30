@@ -329,11 +329,12 @@ static inline constexpr uint32_t ARGB8332_to_ARGB32(uint16_t px16)
  * @param px16 RG88 pixel
  * @return ARGB32 pixel
  */
-static inline constexpr uint32_t RG88_to_ARGB32(uint16_t px16)
+// FIXME: __swab16() is not constexpr on MSVC 2022.
+static inline CONSTEXPR_NO_MSVC uint32_t RG88_to_ARGB32(uint16_t px16)
 {
 	// RG88:     RRRRRRRR GGGGGGGG
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	return 0xFF000000 | (static_cast<uint32_t>(px16) << 8);
+	return 0xFF000000 | (static_cast<uint32_t>(le16_to_cpu(px16)) << 8);
 }
 
 /**
@@ -346,7 +347,7 @@ static inline CONSTEXPR_NO_MSVC uint32_t GR88_to_ARGB32(uint16_t px16)
 {
 	// GR88:     GGGGGGGG RRRRRRRR
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	return 0xFF000000 | (static_cast<uint32_t>(__swab16(px16)) << 8);
+	return 0xFF000000 | (static_cast<uint32_t>(be16_to_cpu(px16)) << 8);
 }
 
 /** GameCube-specific 16-bit RGB **/
