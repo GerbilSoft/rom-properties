@@ -220,6 +220,9 @@ Header - Public functions */
 
 #include <string.h>
 
+// rom-properties: Byte order
+#include "librpbyteswap/byteorder.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -591,14 +594,25 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 			index[QOI_COLOR_HASH(px) & (64 - 1)] = px;
 		}
 
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
 		// rom-properties NOTE: Swapped R/B
 		pixels[px_pos + 0] = px.rgba.b;
 		pixels[px_pos + 1] = px.rgba.g;
 		pixels[px_pos + 2] = px.rgba.r;
-		
+
 		if (channels == 4) {
 			pixels[px_pos + 3] = px.rgba.a;
 		}
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+		// rom-properties NOTE: Swapped R/B
+		pixels[px_pos + 3] = px.rgba.b;
+		pixels[px_pos + 2] = px.rgba.g;
+		pixels[px_pos + 1] = px.rgba.r;
+
+		if (channels == 4) {
+			pixels[px_pos + 0] = px.rgba.a;
+		}
+#endif
 	}
 
 	return pixels;
