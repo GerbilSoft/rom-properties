@@ -744,11 +744,17 @@ int rp_image::swizzle_cpp(const char *swz_spec)
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 	// Channel indexes
-	// FIXME: Reverse for big-endian?
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	static constexpr unsigned int SWZ_CH_B = 0U;
 	static constexpr unsigned int SWZ_CH_G = 1U;
 	static constexpr unsigned int SWZ_CH_R = 2U;
 	static constexpr unsigned int SWZ_CH_A = 3U;
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+	static constexpr unsigned int SWZ_CH_B = 3U;
+	static constexpr unsigned int SWZ_CH_G = 2U;
+	static constexpr unsigned int SWZ_CH_R = 1U;
+	static constexpr unsigned int SWZ_CH_A = 0U;
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 	uint32_t *bits = static_cast<uint32_t*>(backend->data());
 	const unsigned int stride_diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
