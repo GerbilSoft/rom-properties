@@ -269,6 +269,7 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 #else /* RP_GTK_USE_CAIRO */
 					// Cannot use device scale factor with GdkPixbuf.
 					// Resize the icon manually.
+					// TODO: Get the X11 dpi?
 					if (!PIMGTYPE_size_check(pixbuf, icon_sz, icon_sz)) {
 						// TODO: Use nearest-neighbor if upscaling.
 						// Also, preserve the aspect ratio.
