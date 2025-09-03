@@ -39,15 +39,35 @@ extern int DelayLoad_test_PugiXML(void);
 
 /** PugiXML macros **/
 
-#define FIRST_CHILD_ELEMENT_NS(var, parent_elem, child_elem_name, namespace) \
+// NOTE: I'm not sure which ones are asmv3, asmv2, or asmv1.
+// For completeness, we'll check all of them, starting with *no* namespace.
+
+#define FIRST_CHILD_ELEMENT_ASMVx(var, parent_elem, child_elem_name) \
 	xml_node var = parent_elem.child(child_elem_name); \
 	if (!var) { \
-		var = parent_elem.child(namespace ":" child_elem_name); \
+		var = parent_elem.child("asmv3:" child_elem_name); \
+		if (!var) { \
+			var = parent_elem.child("asmv2:" child_elem_name); \
+			if (!var) { \
+				var = parent_elem.child("asmv1:" child_elem_name); \
+			} \
+		} \
 	} \
 do { } while (0)
 
-#define FIRST_CHILD_ELEMENT(var, parent_elem, child_elem_name) \
-	FIRST_CHILD_ELEMENT_NS(var, parent_elem, child_elem_name, "asmv3")
+#define FIRST_CHILD_ELEMENT_WSx(var, parent_elem, child_elem_name) \
+	xml_node var = parent_elem.child(child_elem_name); \
+	if (!var) { \
+		var = parent_elem.child("ws2:" child_elem_name); \
+		if (!var) { \
+			var = parent_elem.child("ws1:" child_elem_name); \
+		} \
+	} \
+do { } while (0)
+
+#define FIRST_CHILD_ELEMENT_NO_NS(var, parent_elem, child_elem_name) \
+	xml_node var = parent_elem.child(child_elem_name); \
+do { } while (0)
 
 #define ADD_ATTR(elem, attr_name, desc) do { \
 	xml_attribute attr = elem.attribute(attr_name); \
@@ -57,7 +77,7 @@ do { } while (0)
 } while (0)
 
 #define ADD_TEXT(parent_elem, child_elem_name, desc) do { \
-	FIRST_CHILD_ELEMENT(child_elem, parent_elem, child_elem_name); \
+	FIRST_CHILD_ELEMENT_ASMVx(child_elem, parent_elem, child_elem_name); \
 	if (child_elem) { \
 		xml_text text = child_elem.text(); \
 		if (text) { \
@@ -227,7 +247,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	}
 
 	// Assembly identity
-	FIRST_CHILD_ELEMENT(assemblyIdentity, assembly, "assemblyIdentity");
+	FIRST_CHILD_ELEMENT_ASMVx(assemblyIdentity, assembly, "assemblyIdentity");
 	if (assemblyIdentity) {
 		ADD_ATTR(assemblyIdentity, "type", C_("EXE|Manifest", "Type"));
 		ADD_ATTR(assemblyIdentity, "name", C_("EXE|Manifest", "Name"));
@@ -244,13 +264,13 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	// Trust info
 	// TODO: Fine-grained permissions?
 	// Reference: https://docs.microsoft.com/en-us/visualstudio/deployment/trustinfo-element-clickonce-application
-	FIRST_CHILD_ELEMENT_NS(trustInfo, assembly, "trustInfo", "asmv2");
+	FIRST_CHILD_ELEMENT_ASMVx(trustInfo, assembly, "trustInfo");
 	if (trustInfo) {
-		FIRST_CHILD_ELEMENT_NS(security, trustInfo, "security", "asmv2");
+		FIRST_CHILD_ELEMENT_ASMVx(security, trustInfo, "security");
 		if (security) {
-			FIRST_CHILD_ELEMENT_NS(requestedPrivileges, security, "requestedPrivileges", "asmv2");
+			FIRST_CHILD_ELEMENT_ASMVx(requestedPrivileges, security, "requestedPrivileges");
 			if (requestedPrivileges) {
-				FIRST_CHILD_ELEMENT_NS(requestedExecutionLevel, requestedPrivileges, "requestedExecutionLevel", "asmv2");
+				FIRST_CHILD_ELEMENT_ASMVx(requestedExecutionLevel, requestedPrivileges, "requestedExecutionLevel");
 				if (requestedExecutionLevel) {
 					ADD_ATTR(requestedExecutionLevel, "level", C_("EXE|Manifest", "Execution Level"));
 					ADD_ATTR(requestedExecutionLevel, "uiAccess", C_("EXE|Manifest", "UI Access"));
@@ -270,9 +290,10 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		magicFutureSetting			= (1U << 4),
 		printerDriverIsolation			= (1U << 5),
 		ultraHighResolutionScrollingAware	= (1U << 6),
+		longPathAware				= (1U << 7),
 	};
 
-	static const array<const char*, 7> WindowsSettings_names = {{
+	static const array<const char*, 8> WindowsSettings_names = {{
 		NOP_C_("EXE|Manifest|WinSettings", "Auto Elevate"),
 		NOP_C_("EXE|Manifest|WinSettings", "Disable Theming"),
 		NOP_C_("EXE|Manifest|WinSettings", "Disable Window Filter"),
@@ -280,13 +301,21 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		NOP_C_("EXE|Manifest|WinSettings", "Magic Future Setting"),
 		NOP_C_("EXE|Manifest|WinSettings", "Printer Driver Isolation"),
 		NOP_C_("EXE|Manifest|WinSettings", "Ultra High-Res Scroll"),
+		NOP_C_("EXE|Manifest|WinSettings", "Long Path Aware"),
 	}};
 
 	// Windows settings
-	// NOTE: application and windowsSettings may be
-	// prefixed with asmv3.
 	#define ADD_SETTING(settings, parent_elem, setting_name) do { \
-		FIRST_CHILD_ELEMENT(child_elem, parent_elem, #setting_name); \
+		FIRST_CHILD_ELEMENT_NO_NS(child_elem, parent_elem, #setting_name); \
+		if (child_elem) { \
+			xml_text text = child_elem.text(); \
+			if (text && !strcasecmp(text.get(), "true")) { \
+				settings |= static_cast<uint32_t>(WindowsSettings::setting_name); \
+			} \
+		} \
+	} while (0)
+	#define ADD_SETTING_WSx(settings, parent_elem, setting_name) do { \
+		FIRST_CHILD_ELEMENT_WSx(child_elem, parent_elem, #setting_name); \
 		if (child_elem) { \
 			xml_text text = child_elem.text(); \
 			if (text && !strcasecmp(text.get(), "true")) { \
@@ -295,9 +324,9 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		} \
 	} while (0)
 
-	FIRST_CHILD_ELEMENT(application, assembly, "application");
+	FIRST_CHILD_ELEMENT_ASMVx(application, assembly, "application");
 	if (application) {
-		FIRST_CHILD_ELEMENT(windowsSettings, application, "windowsSettings");
+		FIRST_CHILD_ELEMENT_ASMVx(windowsSettings, application, "windowsSettings");
 		if (windowsSettings) {
 			// Use a bitfield for most Windows settings.
 			// DPI awareness is weird and will be handled differently.
@@ -309,6 +338,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 			ADD_SETTING(settings, windowsSettings, magicFutureSetting);
 			ADD_SETTING(settings, windowsSettings, printerDriverIsolation);
 			ADD_SETTING(settings, windowsSettings, ultraHighResolutionScrollingAware);
+			ADD_SETTING_WSx(settings, windowsSettings, longPathAware);
 
 			// Show the bitfield.
 			vector<string> *const v_WindowsSettings_names = RomFields::strArrayToVector_i18n(
@@ -345,19 +375,17 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		LongPathAware	= (1U << 5),
 	};
 
-	// NOTE: OS names aren't translatable, but "Long Path Aware" is.
 	static const array<const char*, 6> OS_Compatibility_names = {{
 		"Windows Vista",
 		"Windows 7",
 		"Windows 8",
 		"Windows 8.1",
 		"Windows 10",
-		NOP_C_("EXE|Manifest|OSCompatibility", "Long Path Aware"),
 	}};
 
-	FIRST_CHILD_ELEMENT_NS(compatibility, assembly, "compatibility", "asmv1");
+	FIRST_CHILD_ELEMENT_ASMVx(compatibility, assembly, "compatibility");
 	if (compatibility) {
-		FIRST_CHILD_ELEMENT_NS(application, compatibility, "application", "asmv1");
+		FIRST_CHILD_ELEMENT_ASMVx(application, compatibility, "application");
 		if (application) {
 			// Use a bitfield for these settings.
 			uint32_t compat = 0;
@@ -399,8 +427,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 			}
 
 			// Show the bitfield.
-			vector<string> *const v_OS_Compatibility_names = RomFields::strArrayToVector_i18n(
-				"EXE|Manifest|OSCompatibility", OS_Compatibility_names);
+			vector<string> *const v_OS_Compatibility_names = RomFields::strArrayToVector(OS_Compatibility_names);
 			fields.addField_bitfield(C_("EXE|Manifest", "Compatibility"),
 				v_OS_Compatibility_names, 2, compat);
 		}
@@ -439,18 +466,22 @@ bool EXEPrivate::doesExeRequireAdministrator(void) const
 	}
 
 	// Trust info.
-	FIRST_CHILD_ELEMENT_NS(trustInfo, assembly, "trustInfo", "asmv2");
-	if (!trustInfo)
+	FIRST_CHILD_ELEMENT_ASMVx(trustInfo, assembly, "trustInfo");
+	if (!trustInfo) {
 		return false;
-	FIRST_CHILD_ELEMENT_NS(security, trustInfo, "security", "asmv2");
-	if (!security)
+	}
+	FIRST_CHILD_ELEMENT_ASMVx(security, trustInfo, "security");
+	if (!security) {
 		return false;
-	FIRST_CHILD_ELEMENT_NS(requestedPrivileges, security, "requestedPrivileges", "asmv2");
-	if (!requestedPrivileges)
+	}
+	FIRST_CHILD_ELEMENT_ASMVx(requestedPrivileges, security, "requestedPrivileges");
+	if (!requestedPrivileges) {
 		return false;
-	FIRST_CHILD_ELEMENT_NS(requestedExecutionLevel, requestedPrivileges, "requestedExecutionLevel", "asmv2");
-	if (!requestedExecutionLevel)
+	}
+	FIRST_CHILD_ELEMENT_ASMVx(requestedExecutionLevel, requestedPrivileges, "requestedExecutionLevel");
+	if (!requestedExecutionLevel) {
 		return false;
+	}
 
 	xml_attribute attr = requestedExecutionLevel.attribute("level");
 	if (!attr) {
