@@ -21,7 +21,7 @@
 		</security>
 	</trustInfo>
 
-	<!-- Operating system compatibility. -->
+	<!-- Operating system compatibility -->
 	<compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
 		<application>
 			<!-- Windows 10 and Windows 11 -->
@@ -34,8 +34,18 @@
 			<supportedOS Id="{35138b9a-5d96-4fbd-8e2d-a2440225f93a}"/>
 			<!-- Windows Vista -->
 			<supportedOS Id="{e2011457-1546-43c5-a5fe-008deee3d3f0}"/> 
-			<!-- Enable long paths (>260 chars) on Windows 10 Anniversary Update. (1607) -->
-			<longPathAware xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">true</longPathAware>
 		</application>
 	</compatibility>
+
+	<asmv3:application>
+		<asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">
+			<!-- Mark this program as DPI-aware on Windows Vista and later. -->
+			<!-- TODO: Windows 8 per-monitor DPI awareness. -->
+			<dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true</dpiAware>
+			<dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">system</dpiAwareness>
+
+			<!-- Enable long paths (>260 chars) on Windows 10 Anniversary Update. (1607) -->
+			<ws2:longPathAware xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">true</ws2:longPathAware>
+		</asmv3:windowsSettings>
+	</asmv3:application>
 </assembly>
