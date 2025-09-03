@@ -279,6 +279,80 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		}
 	}
 
+	// Operating system compatibility.
+	// References:
+	// - https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests
+	// - https://docs.microsoft.com/en-us/windows/win32/sysinfo/targeting-your-application-at-windows-8-1
+	enum class OS_Compatibility {
+		WinVista	= (1U << 0),
+		Win7		= (1U << 1),
+		Win8		= (1U << 2),
+		Win81		= (1U << 3),
+		Win10		= (1U << 4),
+
+		// Not specifically OS-compatibility, but
+		// present in the same section.
+		LongPathAware	= (1U << 5),
+	};
+
+	static const array<const char*, 6> OS_Compatibility_names = {{
+		"Windows Vista",
+		"Windows 7",
+		"Windows 8",
+		"Windows 8.1",
+		"Windows 10",
+	}};
+
+	FIRST_CHILD_ELEMENT_ASMVx(compatibility, assembly, "compatibility");
+	if (compatibility) {
+		FIRST_CHILD_ELEMENT_ASMVx(application, compatibility, "application");
+		if (application) {
+			// Use a bitfield for these settings.
+			uint32_t compat = 0;
+
+			// Go through all "supportedOS" elements.
+			// TODO: Check for asmv1 prefixes?
+			for (xml_node supportedOS = application.child("supportedOS");
+			     supportedOS; supportedOS = supportedOS.next_sibling())
+			{
+				const char *const Id = supportedOS.attribute("Id").value();
+				if (!Id || Id[0] == 0) {
+					continue;
+				}
+
+				// Check for supported OSes.
+				if (!strcasecmp(Id, "{e2011457-1546-43c5-a5fe-008deee3d3f0}")) {
+					compat |= static_cast<uint32_t>(OS_Compatibility::WinVista);
+				} else if (!strcasecmp(Id, "{35138b9a-5d96-4fbd-8e2d-a2440225f93a}")) {
+					compat |= static_cast<uint32_t>(OS_Compatibility::Win7);
+				} else if (!strcasecmp(Id, "{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}")) {
+					compat |= static_cast<uint32_t>(OS_Compatibility::Win8);
+				} else if (!strcasecmp(Id, "{1f676c76-80e1-4239-95bb-83d0f6d0da78}")) {
+					compat |= static_cast<uint32_t>(OS_Compatibility::Win81);
+				} else if (!strcasecmp(Id, "{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}")) {
+					// NOTE: Also used for Windows 11.
+					// Reference: https://stackoverflow.com/questions/68240304/whats-the-supportedos-guid-for-windows-11
+					compat |= static_cast<uint32_t>(OS_Compatibility::Win10);
+				}
+			}
+
+			// Check for long path awareness.
+			xml_node const longPathAware = application.child("longPathAware");
+			if (longPathAware) {
+				xml_text text = longPathAware.text();
+				if (text && !strcasecmp(text.get(), "true")) {
+					// Long path aware.
+					compat |= static_cast<uint32_t>(OS_Compatibility::LongPathAware);
+				}
+			}
+
+			// Show the bitfield.
+			vector<string> *const v_OS_Compatibility_names = RomFields::strArrayToVector(OS_Compatibility_names);
+			fields.addField_bitfield(C_("EXE|Manifest", "Compatibility"),
+				v_OS_Compatibility_names, 2, compat);
+		}
+	}
+
 	// windowsSettings bitfield
 	// Reference: https://docs.microsoft.com/en-us/windows/win32/sbscs/manifest-file-schema
 	// TODO: Ordering.
@@ -356,80 +430,6 @@ int EXEPrivate::addFields_PE_Manifest(void)
 
 			// activeCodePage (Win10/1903)
 			ADD_TEXT(windowsSettings, "activeCodePage", C_("EXE|Manifest", "Active Code Page"));
-		}
-	}
-
-	// Operating system compatibility.
-	// References:
-	// - https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests
-	// - https://docs.microsoft.com/en-us/windows/win32/sysinfo/targeting-your-application-at-windows-8-1
-	enum class OS_Compatibility {
-		WinVista	= (1U << 0),
-		Win7		= (1U << 1),
-		Win8		= (1U << 2),
-		Win81		= (1U << 3),
-		Win10		= (1U << 4),
-
-		// Not specifically OS-compatibility, but
-		// present in the same section.
-		LongPathAware	= (1U << 5),
-	};
-
-	static const array<const char*, 6> OS_Compatibility_names = {{
-		"Windows Vista",
-		"Windows 7",
-		"Windows 8",
-		"Windows 8.1",
-		"Windows 10",
-	}};
-
-	FIRST_CHILD_ELEMENT_ASMVx(compatibility, assembly, "compatibility");
-	if (compatibility) {
-		FIRST_CHILD_ELEMENT_ASMVx(application, compatibility, "application");
-		if (application) {
-			// Use a bitfield for these settings.
-			uint32_t compat = 0;
-
-			// Go through all "supportedOS" elements.
-			// TODO: Check for asmv1 prefixes?
-			for (xml_node supportedOS = application.child("supportedOS");
-			     supportedOS; supportedOS = supportedOS.next_sibling())
-			{
-				const char *const Id = supportedOS.attribute("Id").value();
-				if (!Id || Id[0] == 0) {
-					continue;
-				}
-
-				// Check for supported OSes.
-				if (!strcasecmp(Id, "{e2011457-1546-43c5-a5fe-008deee3d3f0}")) {
-					compat |= static_cast<uint32_t>(OS_Compatibility::WinVista);
-				} else if (!strcasecmp(Id, "{35138b9a-5d96-4fbd-8e2d-a2440225f93a}")) {
-					compat |= static_cast<uint32_t>(OS_Compatibility::Win7);
-				} else if (!strcasecmp(Id, "{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}")) {
-					compat |= static_cast<uint32_t>(OS_Compatibility::Win8);
-				} else if (!strcasecmp(Id, "{1f676c76-80e1-4239-95bb-83d0f6d0da78}")) {
-					compat |= static_cast<uint32_t>(OS_Compatibility::Win81);
-				} else if (!strcasecmp(Id, "{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}")) {
-					// NOTE: Also used for Windows 11.
-					// Reference: https://stackoverflow.com/questions/68240304/whats-the-supportedos-guid-for-windows-11
-					compat |= static_cast<uint32_t>(OS_Compatibility::Win10);
-				}
-			}
-
-			// Check for long path awareness.
-			xml_node const longPathAware = application.child("longPathAware");
-			if (longPathAware) {
-				xml_text text = longPathAware.text();
-				if (text && !strcasecmp(text.get(), "true")) {
-					// Long path aware.
-					compat |= static_cast<uint32_t>(OS_Compatibility::LongPathAware);
-				}
-			}
-
-			// Show the bitfield.
-			vector<string> *const v_OS_Compatibility_names = RomFields::strArrayToVector(OS_Compatibility_names);
-			fields.addField_bitfield(C_("EXE|Manifest", "Compatibility"),
-				v_OS_Compatibility_names, 2, compat);
 		}
 	}
 
