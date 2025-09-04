@@ -60,6 +60,7 @@
   * TGA: Show the image ID field.
   * Linux: The i386 version of rp-download was broken because the seccomp
     syscall whitelist was missing `getuid32()`.
+  * Windows, EXE: longPathAware should be in windowsSettings, not compatibility.
 
 * Other changes:
   * rpcli: Added more colorization for warning messages.
