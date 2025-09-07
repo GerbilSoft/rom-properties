@@ -73,7 +73,7 @@ extern "C" {
 
 
 /* Version number: (major<<16) + (minor<<8) + subminor */
-#define LIBINTL_VERSION 0x001900
+#define LIBINTL_VERSION 0x001A00
 /* rom-properties: LIBINTL_SHLIB_EXPORTED is already dllimport, so don't dllimport it again. */
 extern LIBINTL_SHLIB_EXPORTED /*__declspec (dllimport)*/ int libintl_version;
 
