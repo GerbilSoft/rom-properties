@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpthreads)                     *
+ * ROM Properties Page shell extension. (libromdata)                       *
  * Semaphore.hpp: System-specific semaphore implementation.                *
  *                                                                         *
  * Copyright (c) 2016-2025 by David Korth.                                 *
@@ -21,7 +21,7 @@
 #  include "SemaphorePosix.cpp"
 #endif
 
-namespace LibRpThreads {
+namespace LibRomData {
 
 /**
  * Automatic semaphore locker/unlocker class.
@@ -50,4 +50,4 @@ private:
 	Semaphore &m_sem;
 };
 
-}
+} // namespace LibRomData

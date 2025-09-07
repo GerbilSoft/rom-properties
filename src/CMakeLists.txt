@@ -142,7 +142,6 @@ ENDIF()
 # Source Code subdirectories.
 ADD_SUBDIRECTORY(librpsecure)
 ADD_SUBDIRECTORY(libi18n)
-ADD_SUBDIRECTORY(librpthreads)
 ADD_SUBDIRECTORY(libcachecommon)
 ADD_SUBDIRECTORY(librpcpuid)
 ADD_SUBDIRECTORY(librpbyteswap)

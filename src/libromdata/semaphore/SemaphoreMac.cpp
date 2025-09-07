@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpthreads)                     *
+ * ROM Properties Page shell extension. (libromdata)                       *
  * SemaphoreMac.cpp: Mac OS X semaphore implementation.                    *
  *                                                                         *
  * Copyright (c) 2016-2025 by David Korth.                                 *
@@ -18,7 +18,7 @@
 // - https://developer.apple.com/library/content/documentation/Darwin/Conceptual/KernelProgramming/synchronization/synchronization.html
 // - https://gist.github.com/kazupon/3843288
 
-namespace LibRpThreads {
+namespace LibRomData {
 
 class Semaphore
 {
@@ -111,4 +111,4 @@ inline int Semaphore::release(void)
 	return semaphore_signal(m_sem);
 }
 
-}
+} // namespace LibRomData

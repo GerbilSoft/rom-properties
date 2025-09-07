@@ -1,10 +1,16 @@
 # RomData subclasses and factory class.
 PROJECT(romdata LANGUAGES CXX)
 
-# for std::call_once() [pthread_once()]
-IF(NOT WIN32)
+# Find the system threading library.
+# NOTE: If using Windows, always assume we're using Windows threads.
+# CMake attempts to find pthreads, which causes conflicts if building
+# with MSYS2/MinGW-w64.
+IF(WIN32)
+	SET(CMAKE_USE_WIN32_THREADS_INIT 1)
+	SET(Threads_FOUND TRUE)
+ELSE(WIN32)
 	FIND_PACKAGE(Threads REQUIRED)
-ENDIF(NOT WIN32)
+ENDIF(WIN32)
 
 IF(ENABLE_NETWORKING AND NOT WIN32)
 	INCLUDE(CheckSymbolExists)
@@ -157,6 +163,7 @@ SET(${PROJECT_NAME}_H
 	CopierFormats.h
 	iso_structs.h
 	nintendo_system_id.h
+	semaphore/Semaphore.hpp
 
 	Console/Atari7800.hpp
 	Console/CBMCart.hpp
@@ -563,7 +570,7 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 	# manually. Otherwise, the .a libraries get linked in to the
 	# UI frontend plugins.
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpbyteswap-dll rptexture-dll rpfile-dll rpbase-dll rptext-dll)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpthreads-dll cachecommon-dll)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE cachecommon-dll)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpuid)	# for CPU dispatch
 
 	IF(CMAKE_THREAD_LIBS_INIT)
@@ -582,8 +589,6 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../librpbase>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../librptext>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../librptext>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../librpthreads>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../librpthreads>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../libcachecommon>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../libcachecommon>
 		)
@@ -620,7 +625,7 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 	ENDIF()
 ELSE()
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC rpbyteswap rptexture rpfile rpbase rptext)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC rpthreads cachecommon)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC cachecommon)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpuid)	# for CPU dispatch
 	IF(ENABLE_NLS)
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC i18n)

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CacheManager.hpp: Local cache manager.                                  *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,15 +10,12 @@
 
 #include "common.h"
 
-// librpthreads
-namespace LibRpThreads {
-	class Semaphore;
-}
-
 // C++ includes.
 #include <string>
 
 namespace LibRomData {
+
+class Semaphore;
 
 class CacheManager
 {
@@ -127,7 +124,7 @@ protected:
 	std::string m_proxyUrl;
 
 	// Semaphore used to limit the number of simultaneous downloads.
-	static LibRpThreads::Semaphore m_dlsem;
+	static Semaphore m_dlsem;
 };
 
 }

@@ -41,10 +41,6 @@ SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES
 	POSITION_INDEPENDENT_CODE TRUE
 	)
 
-# rpthreads is needed for atomic functions.
-# FIXME: Not using it in the static rpcpuid library right now.
-#TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpthreads)
-
 # Include paths:
 # - Public: Current source and binary directories.
 # - Private: Parent source and binary directories,

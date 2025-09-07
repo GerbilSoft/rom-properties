@@ -1,21 +1,18 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpthreads)                     *
- * SemaphoreWin32.cpp: Win32 semaphore implementation.                     *
+ * ROM Properties Page shell extension. (libromdata)                       *
+ * SemaphorePosix.cpp: POSIX semaphore implementation.                     *
  *                                                                         *
  * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef WIN32_LEAN_AND_MEAN
-#  define WIN32_LEAN_AND_MEAN 1
-#endif
-#include <windows.h>
+#include <semaphore.h>
 
-// C includes (C++ namespace)
+// C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
 
-namespace LibRpThreads {
+namespace LibRomData {
 
 class Semaphore
 {
@@ -52,7 +49,8 @@ public:
 	inline int release(void);
 
 private:
-	HANDLE m_sem;
+	sem_t m_sem;
+	bool m_isInit;
 };
 
 /**
@@ -60,10 +58,13 @@ private:
  * @param count Number of times the semaphore can be obtained before blocking.
  */
 inline Semaphore::Semaphore(int count)
+	: m_isInit(false)
 {
-	m_sem = CreateSemaphore(nullptr, count, count, nullptr);
-	assert(m_sem != nullptr);
-	if (!m_sem) {
+	int ret = sem_init(&m_sem, 0, count);
+	assert(ret == 0);
+	if (ret == 0) {
+		m_isInit = true;
+	} else {
 		// FIXME: Do something if an error occurred here...
 	}
 }
@@ -74,8 +75,9 @@ inline Semaphore::Semaphore(int count)
  */
 inline Semaphore::~Semaphore()
 {
-	if (m_sem) {
-		CloseHandle(m_sem);
+	if (m_isInit) {
+		// TODO: Error checking.
+		sem_destroy(&m_sem);
 	}
 }
 
@@ -87,15 +89,11 @@ inline Semaphore::~Semaphore()
  */
 inline int Semaphore::obtain(void)
 {
-	if (!m_sem)
+	if (!m_isInit)
 		return -EBADF;
 
-	DWORD dwWaitResult = WaitForSingleObject(m_sem, INFINITE);
-	if (dwWaitResult == WAIT_OBJECT_0)
-		return 0;
-
 	// TODO: What error to return?
-	return -1;
+	return sem_wait(&m_sem);
 }
 
 /**
@@ -104,15 +102,11 @@ inline int Semaphore::obtain(void)
  */
 inline int Semaphore::release(void)
 {
-	if (!m_sem)
+	if (!m_isInit)
 		return -EBADF;
 
-	BOOL bRet = ReleaseSemaphore(m_sem, 1, nullptr);
-	if (bRet != 0)
-		return 0;
-
 	// TODO: What error to return?
-	return -1;
+	return sem_post(&m_sem);
 }
 
-}
+} // namespace LibRomData
