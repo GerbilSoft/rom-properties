@@ -1,4 +1,4 @@
-rom-properties (2.6-1ppa2~bionic1) xenial; urgency=medium
+rom-properties (2.6-1ppa2~bionic2) bionic; urgency=medium
 
   * Build for Ubuntu 18.04 "Bionic" Beaver.
 
