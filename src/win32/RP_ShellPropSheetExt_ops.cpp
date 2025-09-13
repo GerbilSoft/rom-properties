@@ -457,7 +457,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			EmptyClipboard();
 			HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE, (ts_out.size() + 1) * sizeof(TCHAR));
 			if (hglbCopy) {
-				LPTSTR lpszCopy = static_cast<LPTSTR>(GlobalLock(hglbCopy));
+				LPTSTR const lpszCopy = static_cast<LPTSTR>(GlobalLock(hglbCopy));
 				if (lpszCopy) {
 					memcpy(lpszCopy, ts_out.data(), ts_out.size() * sizeof(TCHAR));
 					lpszCopy[ts_out.size()] = _T('\0');
