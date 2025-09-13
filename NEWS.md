@@ -1,6 +1,6 @@
 # Changes
 
-## v2.6 (released 2025/??/??)
+## v2.6 (released 2025/09/13)
 
 * New parsers:
   * ICO: Windows icons and cursors. Supports most icons and cursors designed
