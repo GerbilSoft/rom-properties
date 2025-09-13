@@ -8,6 +8,7 @@ Build-Depends:
  dpkg-dev (>= 1.17.17),
  extra-cmake-modules (>= 0.0.11),
  lsb-release,
+ xvfb,
  zlib1g-dev,
  libpng-dev,
  libjpeg-dev,

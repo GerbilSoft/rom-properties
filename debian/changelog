@@ -1,3 +1,15 @@
+rom-properties (2.6-1ppa1~xenial2) xenial; urgency=medium
+
+  * xvfb is needed for UI tests on Launchpad.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 13 Sep 2025 17:22:29 -0400
+
+rom-properties (2.6-1ppa1~xenial1) xenial; urgency=medium
+
+  * 2.6 release.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 13 Sep 2025 16:14:32 -0400
+
 rom-properties (2.5.1-1ppa1~xenial2) xenial; urgency=medium
 
   * Explicitly specify the Tracker API version.
