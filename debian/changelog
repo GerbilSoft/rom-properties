@@ -1,3 +1,9 @@
+rom-properties (2.6-1ppa1~xenial3) xenial; urgency=medium
+
+  * Add missing syscalls for GUI tests for seccomp on 32-bit.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 13 Sep 2025 17:53:20 -0400
+
 rom-properties (2.6-1ppa1~xenial2) xenial; urgency=medium
 
   * xvfb is needed for UI tests on Launchpad.

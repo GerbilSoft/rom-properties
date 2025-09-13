@@ -133,6 +133,11 @@ static constexpr int16_t syscall_wl_qt[] = {
 	SCMP_SYS(getegid), SCMP_SYS(getgid),
 	SCMP_SYS(getresuid), SCMP_SYS(getresgid),
 
+	// On 32-bit systems, we need access to 32-bit UID functions.
+	SCMP_SYS(geteuid32), SCMP_SYS(getuid32),
+	SCMP_SYS(getegid32), SCMP_SYS(getgid32),
+	SCMP_SYS(getresuid32), SCMP_SYS(getresgid32),
+
 	// Other syscalls required by Qt
 	// TODO: Only enable these syscalls for Qt tests?
 	SCMP_SYS(readlink),
@@ -148,9 +153,9 @@ static constexpr int16_t syscall_wl_qt[] = {
 	SCMP_SYS(sendmsg),
 	// Needed on Xubuntu 16.04 by both Qt4 and Qt5 for some reason
 	// (Possibly the "minimal" QPA plugin wasn't that minimal?)
-	SCMP_SYS(fstatfs),	// Qt4 only
+	SCMP_SYS(fstatfs), SCMP_SYS(fstatfs64),
 	SCMP_SYS(sysinfo),	// Qt4 only
-	SCMP_SYS(statfs),
+	SCMP_SYS(statfs), SCMP_SYS(statfs64),
 	SCMP_SYS(getpeername),
 	SCMP_SYS(writev),
 	SCMP_SYS(recvfrom),
@@ -159,6 +164,11 @@ static constexpr int16_t syscall_wl_qt[] = {
 	SCMP_SYS(shmctl), SCMP_SYS(shmdt),
 	SCMP_SYS(getsockopt),	// Qt4 only
 	SCMP_SYS(pipe2),	// Qt4 only
+
+	// Needed with xvfb-run on Kubuntu 16.04.
+	SCMP_SYS(uname),
+	SCMP_SYS(socketcall),
+	SCMP_SYS(time),
 };
 
 // for GTK tests
@@ -178,13 +188,17 @@ static constexpr int16_t syscall_wl_gtk[] = {
 	// NOTE: Ordering here is based mostly on GTK3.
 	// GTK2 and GTK4 are similar, but in a different order.
 	// Not that it matters at all...
-	SCMP_SYS(getresuid),
+	SCMP_SYS(getresuid), SCMP_SYS(getresgid),
 	SCMP_SYS(geteuid), SCMP_SYS(getuid),
 	SCMP_SYS(getegid), SCMP_SYS(getgid),
 	SCMP_SYS(getpeername),
 
+	// On 32-bit systems, we need access to 32-bit UID functions.
+	SCMP_SYS(geteuid32), SCMP_SYS(getuid32),
+	SCMP_SYS(getegid32), SCMP_SYS(getgid32),
+	SCMP_SYS(getresuid32), SCMP_SYS(getresgid32),
+
 	// Additional syscalls needed for initialization.
-	SCMP_SYS(getresgid),
 	SCMP_SYS(socket),
 	SCMP_SYS(prctl),	// for __pthread_setname_np()
 	SCMP_SYS(readlink),	// GTK4 needs this
@@ -210,7 +224,7 @@ static constexpr int16_t syscall_wl_gtk[] = {
 	// GTK4
 	SCMP_SYS(getrandom),
 	SCMP_SYS(setsockopt),
-	SCMP_SYS(fstatfs),
+	SCMP_SYS(fstatfs), SCMP_SYS(fstatfs64),
 
 	// GTK2
 	SCMP_SYS(writev),
@@ -220,7 +234,7 @@ static constexpr int16_t syscall_wl_gtk[] = {
 	SCMP_SYS(sched_setaffinity),
 	SCMP_SYS(sysinfo),
 	SCMP_SYS(ftruncate),	// FIXME: Is this actually needed? Stub it?
-	SCMP_SYS(statfs),
+	SCMP_SYS(statfs), SCMP_SYS(statfs64),
 	SCMP_SYS(inotify_init1), SCMP_SYS(inotify_add_watch),
 	// GTK3 on AppVeyor (using Xvfb-run)
 	SCMP_SYS(pipe2),
@@ -235,6 +249,11 @@ static constexpr int16_t syscall_wl_gtk[] = {
 	SCMP_SYS(flock),	// FIXME: Is this actually needed? Stub it?
 	SCMP_SYS(rename),	// FIXME: Is this actually needed? Stub it?
 	//SCMP_SYS(unlink),	// Not used if rename() works...
+
+	// Needed with xvfb-run on Kubuntu 16.04.
+	SCMP_SYS(uname),
+	SCMP_SYS(socketcall),
+	SCMP_SYS(time),
 };
 
 #endif /* HAVE_SECCOMP */
