@@ -187,6 +187,7 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetPriority(_Out_ int *pPriority)
 	const Config *const config = Config::instance();
 	if (!config->getBoolConfigOption(Config::BoolConfig::Options_ShowDangerousPermissionsOverlayIcon)) {
 		// Overlay icon is disabled.
+		*pPriority = 100;
 		return S_FALSE;
 	}
 

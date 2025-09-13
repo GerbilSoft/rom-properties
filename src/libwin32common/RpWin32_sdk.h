@@ -153,6 +153,11 @@ static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
 #  define _Check_return_
 #endif
 
+// MinGW-w64 13.0.0 doesn't have these.
+#ifndef __control_entrypoint
+#  define __control_entrypoint(type)
+#endif
+
 // Current image instance.
 // This is filled in by the linker.
 // Reference: https://devblogs.microsoft.com/oldnewthing/20041025-00/?p=37483

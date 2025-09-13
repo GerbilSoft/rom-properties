@@ -458,10 +458,12 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE, (ts_out.size() + 1) * sizeof(TCHAR));
 			if (hglbCopy) {
 				LPTSTR lpszCopy = static_cast<LPTSTR>(GlobalLock(hglbCopy));
-				memcpy(lpszCopy, ts_out.data(), ts_out.size() * sizeof(TCHAR));
-				lpszCopy[ts_out.size()] = _T('\0');
-				GlobalUnlock(hglbCopy);
-				SetClipboardData(CF_UNICODETEXT, hglbCopy);
+				if (lpszCopy) {
+					memcpy(lpszCopy, ts_out.data(), ts_out.size() * sizeof(TCHAR));
+					lpszCopy[ts_out.size()] = _T('\0');
+					GlobalUnlock(hglbCopy);
+					SetClipboardData(CF_UNICODETEXT, hglbCopy);
+				}
 			}
 			CloseClipboard();
 		}

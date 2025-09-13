@@ -275,7 +275,7 @@ int WiiSettingTxt::loadFieldData(void)
 
 	// Add the fields from setting.txt directly.
 	// TODO: Can we do any sort of useful parsing?
-	d->fields.reserve(d->setting_txt.size());
+	d->fields.reserve(static_cast<int>(d->setting_txt.size()));
 	for (const auto &p : d->setting_txt) {
 		d->fields.addField_string(p.first.c_str(), p.second);
 	}

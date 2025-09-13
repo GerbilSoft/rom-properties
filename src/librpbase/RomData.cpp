@@ -436,7 +436,7 @@ time_t RomDataPrivate::pvd_time_to_unix_time(const char pvd_time[16], int8_t tz_
 	// NOTE: Restricting to [-52, +52] as per the Linux kernel's isofs module.
 	// TODO: Return the timezone offset separately.
 	if (-52 <= tz_offset && tz_offset <= 52) {
-		unixtime -= (static_cast<int>(tz_offset) * (15*60));
+		unixtime -= (static_cast<time_t>(tz_offset) * (15*60));
 	}
 	return unixtime;
 }

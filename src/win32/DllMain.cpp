@@ -94,6 +94,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
  * Can the DLL be unloaded?
  * @return S_OK if it can; S_FALSE if it can't.
  */
+__control_entrypoint(DllExport)
 STDAPI DllCanUnloadNow(void)
 {
 	if (LibWin32Common::ComBase_isReferenced()) {

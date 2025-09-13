@@ -95,7 +95,7 @@ tstring formatDateTime(time_t date_time, unsigned int flags)
 			0, &st, nullptr, buf, _countof(buf));
 		if (!ret) {
 			// Error!
-			return 0;
+			return {};
 		}
 
 		// Add to the tstring.

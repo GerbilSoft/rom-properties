@@ -240,10 +240,10 @@ void MessageWidgetPrivate::paint(void)
 			GetWindowText(hWnd, tbuf, _countof(tbuf));
 			DrawText(hDC, tbuf, len, &textRect, 0);
 		} else {
-			TCHAR *const tmbuf = static_cast<TCHAR*>(malloc((len+1) * sizeof(TCHAR)));
+			TCHAR *const tmbuf = new TCHAR[len + 1];
 			GetWindowText(hWnd, tmbuf, len+1);
 			DrawText(hDC, tmbuf, len, &textRect, 0);
-			free(tmbuf);
+			delete[] tmbuf;
 		}
 	} else {
 		// Only updating the Close button.
