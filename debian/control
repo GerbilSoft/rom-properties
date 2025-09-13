@@ -15,8 +15,6 @@ Build-Depends:
  nettle-dev,
  libpugixml-dev,
  libseccomp-dev,
- libqt4-dev,
- kdelibs5-dev,
  qtbase5-dev,
  qttools5-dev-tools,
  libkf5kio-dev | kio-dev,
@@ -24,17 +22,17 @@ Build-Depends:
  libkf5filemetadata-dev,
  libkf5crash-dev,
  libglib2.0-dev,
- libgtk2.0-dev,
- libgdk-pixbuf2.0-dev,
- libthunarx-2-dev,
  libgtk-3-dev,
  libcairo2-dev,
  libnautilus-extension-dev,
+ libcaja-extension-dev,
  libnemo-extension-dev,
  gettext,
+ libzstd-dev,
  liblz4-dev,
  liblzo2-dev,
- libgsound-dev
+ libgsound-dev,
+ libfmt-dev
 Standards-Version: 3.9.8
 Homepage: https://github.com/GerbilSoft/rom-properties
 Vcs-Git: https://github.com/GerbilSoft/rom-properties
@@ -42,7 +40,7 @@ Vcs-Browser: https://github.com/GerbilSoft/rom-properties
 
 Package: rom-properties-all
 Architecture: any
-Depends: ${misc:Depends}, libromdata7, rom-properties-kde4, rom-properties-kf5, rom-properties-xfce, rom-properties-gtk3, rom-properties-cli, rom-properties-tracker, rom-properties-utils, rom-properties-lang, rom-properties-thumbnailer-dbus
+Depends: ${misc:Depends}, libromdata7, rom-properties-kf5, rom-properties-gtk3, rom-properties-cli, rom-properties-tracker, rom-properties-utils, rom-properties-lang, rom-properties-thumbnailer-dbus
 Description: ROM Properties Page shell extension (meta package)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
@@ -60,17 +58,6 @@ Description: ROM Properties Page shell extension (shared library)
  .
  This package contains the shared library containing common functionality
  used by all the UI frontends.
-
-Package: rom-properties-kde4
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata7, rom-properties-utils, rom-properties-xdg
-Recommends: rom-properties-lang
-Description: ROM Properties Page shell extension (KDE4 UI frontend)
- This shell extension provides thumbnailing and property page functionality
- for ROM images, disc images, and save files for various game consoles,
- including Nintendo GameCube and Wii.
- .
- This package contains the KDE4 UI frontend.
 
 Package: rom-properties-kio-servicemenus
 Architecture: all
@@ -96,20 +83,6 @@ Description: ROM Properties Page shell extension (KF5 UI frontend)
  including Nintendo GameCube and Wii.
  .
  This package contains the KDE Frameworks 5 UI frontend.
-
-Package: rom-properties-xfce
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata7, rom-properties-utils, rom-properties-xdg, rom-properties-thumbnailer-dbus
-Recommends: rom-properties-lang, rom-properties-tracker
-Description: ROM Properties Page shell extension (GTK2 XFCE UI frontend)
- This shell extension provides thumbnailing and property page functionality
- for ROM images, disc images, and save files for various game consoles,
- including Nintendo GameCube and Wii.
- .
- This package contains the XFCE (GTK+ 2.x) version.
- .
- The thumbnailer-dbus package is required for thumbnailing on
- some XFCE versions.
 
 Package: rom-properties-gtk3
 Architecture: any
