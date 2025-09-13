@@ -387,8 +387,8 @@ int Amiibo::loadFieldData(void)
 		fmt::format(FSTR("{:0>8X}-{:0>8X}"), char_id, amiibo_id),
 		RomFields::STRF_MONOSPACE);
 
-	// tr: amiibo type.
-	static const array<const char*, 4> amiibo_type_tbl = {{
+	// tr: amiibo type
+	static const array<const char*, 5> amiibo_type_tbl = {{
 		// tr: NFP_TYPE_FIGURINE == standard amiibo
 		NOP_C_("Amiibo|Type", "Figurine"),
 		// tr: NFP_TYPE_CARD == amiibo card
@@ -397,6 +397,8 @@ int Amiibo::loadFieldData(void)
 		NOP_C_("Amiibo|Type", "Yarn"),
 		// tr: NFP_TYPE_BAND == Power-Up Band
 		NOP_C_("Amiibo|Type", "Power-Up Band"),
+		// tr: NFP_TYPE_WOODEN_BLOCK = wooden blocks
+		NOP_C_("Amiibo|Type", "Wooden Block"),
 	}};
 	const char *const amiibo_type_title = C_("Amiibo", "amiibo Type");
 	if ((char_id & 0xFF) < amiibo_type_tbl.size()) {
