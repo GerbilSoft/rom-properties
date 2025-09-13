@@ -13,25 +13,23 @@ video game ROM and disc images.
 
 ###### no vibes, no bevis
 
-## v2.5.1
+## v2.6
 
-![KDE Dolphin showing J2ME packages.](doc/img/rp-v2.5-kde6.J2ME.png)
+![KDE Dolphin showing NES ROM images.](doc/img/rp-v2.6-kde6.NES.png)
 
-v2.5.1 is a bugfix release with no significant new features.
+Major additions in v2.6 include:
 
-Major additions in v2.5 include:
+* Windows icon parsing (thumbnailing is not enabled for ICO, CUR, or
+  EXE files due to OS-level conflicts, but it's used for CD-ROM images)
 
-* J2ME packages
+* ISO: AUTORUN.INF parsing, including icons.
 
-* Quite OK Image Format
+* Wii U: Firmware binaries, using custom icons to indicate retail
+  vs. dev and NAND boot vs. sdboot.
 
-* Extracted Wii U packages
+* Wii: SETTING.TXT files.
 
-* Extracted Xbox Disc file systems
-
-* Wim images: Support for unstaged images.
-
-* Ports of some x86 SSE optimizations to ARM NEON.
+* NES: Title screen thumbnailing.
 
 * Lots and lots of tiny bug fixes and improvements.
 
@@ -41,7 +39,7 @@ language, check out the [Crowdin project](https://crowdin.com/project/rom-proper
 Crowdin project page, file an issue here on GitHub with the requested
 language.)
 
-See [`NEWS.md`](NEWS.md) for a full list of changes in v2.5.1.
+See [`NEWS.md`](NEWS.md) for a full list of changes in v2.6.
 
 ## Feedback
 
@@ -126,7 +124,7 @@ button.
 | Microsoft Xbox 360 (XEX)  |       Yes      |    Yes   |       Icon      |        No       |
 | Microsoft Xbox 360 (STFS) |       Yes      |    Yes   |       Icon      |        No       |
 | Microsoft Xbox Game Discs |       Yes      |    Yes   |       Icon      |        No       |
-| NES                       |       Yes      |    No    |       N/A       |        No       |
+| NES                       |       Yes      |    No    |       N/A       |      Title      |
 | Super NES                 |       Yes      |    Yes   |       N/A       |      Title      |
 | Nintendo 64               |       Yes      |    Yes   |       N/A       |        No       |
 | Nintendo GameCube Discs   |       Yes      |    Yes   |      Banner     |   Disc, Covers  |
@@ -134,9 +132,11 @@ button.
 | Nintendo GameCube Saves   |       Yes      |    Yes   |       Icon      |       N/A       |
 | Nintendo Wii Banners      |       Yes      |    Yes   |        No       |        No       |
 | Nintendo Wii Discs        |       Yes      |    Yes   |        No       |   Disc, Covers  |
-| Nintendo Wii WADs         |       Yes      |    Yes   |       Yes*      |  Title, Covers  |
+| Nintendo Wii WADs         |       Yes      |    Yes   |       Yes¹      |  Title, Covers  |
 | Nintendo Wii Saves        |       Yes      |    Yes   |       Yes       |       N/A       |
+| Nintendo Wii SETTING.TXT  |       Yes      |    No    |        No       |       N/A       |
 | Nintendo Wii U (Disc)     |       Yes      |    No    |        No       |   Disc, Covers  |
+| Nintendo Wii U (Firmware) |       Yes      |    No    |       Yes²      |       N/A       |
 | Nintendo Wii U (NUS)      |       Yes      |    Yes   |       Icon      |   Disc, Covers  |
 | Sega 8-bit (SMS, GG)      |       Yes      |    Yes   |       N/A       |        No       |
 | Sega Mega Drive           |       Yes      |    Yes   |       N/A       |      Title      |
@@ -148,8 +148,9 @@ button.
 | Sony PlayStation Saves    |       Yes      |    Yes   |       Icon      |       N/A       |
 | Sony PlayStation 2 Discs  |       Yes      |    Yes   |       N/A       |      Covers     |
 
-* Internal images are only present in Wii DLC WADs.
 * Sega Mega Drive includes Sega CD, 32X, and Pico.
+* 1: Internal images are only present in Wii DLC WADs.
+* 2: Custom icons based on the specific firmware type.
 
 ### Handhelds
 
@@ -193,6 +194,10 @@ button.
 | TrueVision TGA           |       Yes      |    Yes   |      Image      |       N/A      |
 | Valve VTF                |       Yes      |    Yes   |      Image      |       N/A      |
 | Valve VTF3 (PS3)         |       Yes      |    Yes   |      Image      |       N/A      |
+| Windows icons/cursors    |       Yes      |    Yes   |      Image¹     |       N/A      |
+
+* 1: Icon thumbnailing is disabled for ICO, CUR, and EXE files to prevent
+  conflicts with system icon handling.
 
 #### Texture Codecs
 
@@ -237,7 +242,7 @@ button.
 |             System             | Properties Tab | Metadata | Internal Images | External Scans |
 |:------------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | Commodore DOS Disk Images      |       Yes      |   Yes    |       GEOS*     |       N/A      |
-| ISO-9660 Disc Images           |       Yes      |   Yes    |        No       |       N/A      |
+| ISO-9660 Disc Images           |       Yes      |   Yes    |       Icon      |       N/A      |
 | Windows Image (.wim)           |       Yes      |    No    |       N/A       |       N/A      |
 
 * Commodore DOS currently includes the 2040, 3040, 4040, 8050, 8250, 1540/1541,
@@ -256,7 +261,10 @@ button.
 | Mach-O Binaries                |       Yes      |    No    |       N/A       |       N/A      |
 | Nintendo amiibo                |       Yes      |    No    |       N/A       |      Media     |
 | Nintendo Badge Arcade          |       Yes      |   Yes    |      Image      |       N/A      |
-| Windows/DOS Executables        |       Yes      |   Yes    |        No       |       N/A      |
+| Windows/DOS Executables        |       Yes      |   Yes    |       Icon¹     |       N/A      |
+
+* 1: Icon thumbnailing is disabled for ICO, CUR, and EXE files to prevent
+  conflicts with system icon handling.
 
 General notes for all formats:
 * Internal image refers to artwork contained within the ROM and/or disc image.
@@ -269,7 +277,7 @@ General notes for all formats:
   * "No" indicates no database is currently available for this system.
   * Anything else indicates what types of images are available.
   * For amiibo, "media" refers to the amiibo object, which may be a figurine,
-    a card, or a plush.
+    a card, a plush, or a wooden block.
 * Windows executables may contain multiple icon sizes. Support for Windows icons
   will be added once support for multiple image sizes is added.
 * Sega 8-bit only supports ROM images with a "TMR SEGA" header.
