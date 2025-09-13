@@ -124,6 +124,7 @@ C:0x0006:Bowser Jr.
 C:0x0007:Wario
 C:0x0008:Donkey Kong
 CV:0x0008:0x00:Donkey Kong
+CV:0x0008:0x01:Donkey Kong and Pauline
 # NOTE: Cannot distinguish between regular and dark
 # variants in amiibo mode.
 CV:0x0008:0xFF:Turbo Charge Donkey Kong
@@ -161,6 +162,10 @@ C:0x0105:Daruk
 C:0x0106:Urbosa
 C:0x0107:Mipha
 C:0x0108:Revali
+C:0x0109:Riju
+C:0x010A:Sidon
+C:0x010B:Tulin
+C:0x010C:Yunobo
 
 # The Legend of Zelda [enemies] (character series == 0x014)
 C:0x0140:Guardian
@@ -977,6 +982,9 @@ C:0x3480:Mega Man
 # Street Fighter (character series == 0x34C)
 C:0x34C0:Ryu
 C:0x34C1:Ken
+C:0x34C2:Luke
+C:0x34C3:Jamie
+C:0x34C4:Kimberly
 
 # Monster Hunter (character series == 0x350)
 C:0x3500:One-Eyed Rathalos and Rider
@@ -1100,6 +1108,8 @@ AS:0x16:Diablo
 AS:0x17:Jikkyou Powerful Pro Baseball
 AS:0x18:Monster Hunter
 AS:0x19:Yu-Gi-Oh!
+AS:0x1A:Donkey Kong Bananza
+AS:0x1C:My Mario Wooden Blocks
 AS:0xFF:Super Nintendo World
 
 ### amiibo IDs (A) [p.22]
@@ -2084,7 +2094,7 @@ A:0x0413:0:0:E.M.M.I.
 # The Legend of Zelda: Skyward Sword Series [0x414]
 A:0x0414:0:0:Zelda & Loftwing
 
-# The Legend of Zelda: Tears of the Kingdom Series [0x0418]
+# The Legend of Zelda: Tears of the Kingdom Series (Wave 1) [0x0418-0x041A]
 A:0x0418:0:5:Link (Tears of the Kingdom)
 A:0x0419:0:5:Zelda (Tears of the Kingdom)
 A:0x041A:0:5:Ganondorf (Tears of the Kingdom)
@@ -2115,6 +2125,26 @@ A:0x042B:0:2:Palico "Felyne Malzeno X"
 A:0x042C:0:2:Palamute "Canyne Malzeno X"
 A:0x042D:0:2:Malzeno
 
+# Donkey Kong Bananza [0x042F]
+A:0x042F:1:0:Donkey Kong and Pauline
+
 # Xenoblade Chronicles 3 [0x043D-0x043E]
 A:0x043D:1:0:Noah
 A:0x043E:2:0:Mio
+
+# My Mario Wooden Blocks [0x043F-0x0442]
+A:0x043F:1:0:Mario
+A:0x0440:2:0:Luigi
+A:0x0441:3:0:Peach
+A:0x0442:4:0:Yoshi
+
+# The Legend of Zelda: Tears of the Kingdom Series (Wave 2) [0x04A3-0x04A6]
+A:0x04A3:0:6:Riju
+A:0x04A4:0:6:Sidon
+A:0x04A5:0:6:Tulin
+A:0x04A6:0:6:Yunobo
+
+# Street Fighter 6 [0x04AA,0x04AC,0x04AE]
+A:0x04AA:0:0:Luke
+A:0x04AC:0:0:Jamie
+A:0x04AE:0:0:Kimberly
