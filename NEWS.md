@@ -77,9 +77,13 @@
     directory as rp-download.exe, it will be used instead of WinInet. This allows
     rom-properties to access servers with more up-to-date security protocols,
     which isn't normally supported by these older versions of Windows.
-  * Linux Fix build issue that resulted in the KDE4 UI being enabled if Qt4
+  * Linux: Fix build issue that resulted in the KDE4 UI being enabled if Qt4
     is installed, even if the KDE4 libraries are not.
     * Fixes #455: CMake wanted to create a KDE 4 version and errors during build
+      * Reported by @Techokami.
+  * Linux: Fix build issue that resulted in an undefined reference to
+    `zlibng_version` on systems that install zlib-ng systemwide.
+    * Fixes #454: Undefined reference to 'zlibng_version'
       * Reported by @Techokami.
 
 ## v2.5.1 (released 2025/05/10)

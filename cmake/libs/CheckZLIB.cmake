@@ -1,9 +1,6 @@
 # Check for zlib.
 # If zlib isn't found, extlib/zlib/ will be used instead.
 
-# Enable ZLIB const qualifiers.
-SET(ZLIB_DEFINITIONS -DZLIB_CONST)
-
 IF(NOT USE_INTERNAL_ZLIB)
 	IF(ZLIB_LIBRARY MATCHES "^zlib$" OR ZLIB_LIBRARY MATCHES "^zlibstatic$")
 		# Internal zlib was previously in use.
@@ -18,6 +15,11 @@ IF(NOT USE_INTERNAL_ZLIB)
 	IF(ZLIB_FOUND)
 		# Found system ZLIB.
 		SET(HAVE_ZLIB 1)
+
+		# ZLIB options:
+		# - Enable const qualifiers.
+		# - Use ZLIB_COMPAT functions for zlib-ng.
+		SET(ZLIB_DEFINITIONS -DZLIB_CONST -DZLIB_COMPAT)
 	ELSE()
 		# System ZLIB was not found.
 		MESSAGE(STATUS "Using the internal copy of zlib-ng since a system version was not found.")
