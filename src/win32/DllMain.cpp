@@ -168,7 +168,7 @@ _Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, 
 		IClassFactory *pCF = nullptr;
 
 #define CHECK_CLSID(klass) \
-		if (IsEqualIID(rclsid, CLSID_##klass)) { \
+		if (IsEqualCLSID(rclsid, CLSID_##klass)) { \
 			/* Create a new class factory for this CLSID. */ \
 			pCF = new RP_ClassFactory<klass>(); \
 			if (pCF) { \
@@ -189,12 +189,12 @@ _Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, 
 		else CHECK_CLSID(RP_ContextMenu)
 		else CHECK_CLSID(RP_XAttrView)
 
-		// Unable to find a matching interface.
+		// Unable to find a matching class.
 		*ppv = nullptr;
 		return hr;
 
 	got_pCF:
-		// Found a matching interface.
+		// Found a matching class.
 		hr = pCF->QueryInterface(riid, ppv);
 		pCF->Release();
 	} catch (const std::bad_alloc&) {
