@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2025-08-24 09:53-0400\n"
-"PO-Revision-Date: 2025-09-14 11:10\n"
+"PO-Revision-Date: 2025-09-14 12:22\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -29,14 +29,14 @@ msgstr "C&rédits"
 #: ../src/gtk/config/AboutTab.cpp:292
 msgctxt "AboutTab"
 msgid "&Libraries"
-msgstr ""
+msgstr "&Librairies"
 
 #: ../build/src/kde/kf5/ui_AboutTab.h:278
 #: ../build/src/kde/kf6/ui_AboutTab.h:278
 #: ../src/gtk/config/AboutTab.cpp:295
 msgctxt "AboutTab"
 msgid "&Support"
-msgstr ""
+msgstr "&Support"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:51
 #: ../build/src/kde/kf6/ui_AchievementsTab.h:51
@@ -44,7 +44,7 @@ msgstr ""
 #: ../src/win32/config/AchievementsTab.cpp:557
 msgctxt "AchievementsTab"
 msgid "Unlock Time"
-msgstr ""
+msgstr "Temps de Déverrouillage"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:52
 #: ../build/src/kde/kf6/ui_AchievementsTab.h:52
@@ -67,14 +67,14 @@ msgstr "Icône"
 msgctxt "CacheTab"
 msgid "If any image type settings were changed, you will need to\n"
 "clear the system thumbnail cache."
-msgstr ""
+msgstr "Si un quelconque paramètre de type d'image a été changé, vous devrez effacer le Cache Système des Miniatures."
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:100
 #: ../build/src/kde/kf6/ui_CacheTab.h:100
 #: ../src/gtk/config/CacheTab.cpp:161
 msgctxt "CacheTab"
 msgid "Clear the System Thumbnail Cache"
-msgstr ""
+msgstr "Effacer le Cache Système des Miniatures"
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:101
 #: ../build/src/kde/kf6/ui_CacheTab.h:101
@@ -82,14 +82,15 @@ msgstr ""
 msgctxt "CacheTab"
 msgid "ROM Properties Page maintains its own download cache for external images.\n"
 "Clearing this cache will force external images to be redownloaded."
-msgstr ""
+msgstr "La Page des Propriétés des ROM maintient son propre cache de téléchargements pour les images externes.\n"
+"Effacer ce cache va forcer les images externes à être téléchargées à nouveau."
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:103
 #: ../build/src/kde/kf6/ui_CacheTab.h:103
 #: ../src/gtk/config/CacheTab.cpp:171
 msgctxt "CacheTab"
 msgid "Clear the ROM Properties Page Download Cache"
-msgstr ""
+msgstr "Effacer le Cache de la Page des Propriétés des ROM"
 
 #. tr: Dialog title.
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:90
@@ -98,21 +99,21 @@ msgstr ""
 #: ../src/win32/config/ConfigDialog.cpp:247
 msgctxt "ConfigDialog"
 msgid "ROM Properties Page configuration"
-msgstr ""
+msgstr "Page de configuration des Propriétés des ROM"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:91
 #: ../build/src/kde/kf6/ui_ConfigDialog.h:92
 #: ../src/gtk/config/ConfigDialog.cpp:242
 msgctxt "ConfigDialog"
 msgid "&Image Types"
-msgstr ""
+msgstr "&Type d'Image"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:92
 #: ../build/src/kde/kf6/ui_ConfigDialog.h:93
 #: ../src/gtk/config/ConfigDialog.cpp:243
 msgctxt "ConfigDialog"
 msgid "&Systems"
-msgstr ""
+msgstr "&Systèmes"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:93
 #: ../build/src/kde/kf6/ui_ConfigDialog.h:94
@@ -126,7 +127,7 @@ msgstr "&Options"
 #: ../src/gtk/config/ConfigDialog.cpp:245
 msgctxt "ConfigDialog"
 msgid "Thumbnail Cache"
-msgstr ""
+msgstr "Cache des Miniatures"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:95
 #: ../build/src/kde/kf6/ui_ConfigDialog.h:96
@@ -147,14 +148,14 @@ msgstr "À propo&s"
 #: ../src/gtk/xattr/DosAttrView.c:131
 msgctxt "DosAttrView"
 msgid "&Read-only"
-msgstr ""
+msgstr "&Lecture seule"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:101
 #: ../build/src/kde/kf6/ui_DosAttrView.h:101
 #: ../src/gtk/xattr/DosAttrView.c:133
 msgctxt "DosAttrView"
 msgid "&Hidden"
-msgstr ""
+msgstr "&Caché"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:102
 #: ../build/src/kde/kf6/ui_DosAttrView.h:102
@@ -175,7 +176,7 @@ msgstr "&Système"
 #: ../src/gtk/xattr/DosAttrView.c:159
 msgctxt "DosAttrView"
 msgid "&Compressed"
-msgstr ""
+msgstr "&Compressé"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:105
 #: ../build/src/kde/kf6/ui_DosAttrView.h:105
@@ -223,7 +224,7 @@ msgstr "&Téléchargements"
 #: ../src/gtk/config/OptionsTab.cpp:143
 msgctxt "OptionsTab"
 msgid "E&xternal Image Downloads"
-msgstr ""
+msgstr "Téléchargement d'Images Externe"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:186
 #: ../build/src/kde/kf6/ui_OptionsTab.h:186
@@ -231,7 +232,7 @@ msgstr ""
 msgctxt "OptionsTab"
 msgid "When using an unlimited\n"
 "network connection:"
-msgstr ""
+msgstr "Lors de l'usage d'un réseau non limité :"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:188
 #: ../build/src/kde/kf5/ui_OptionsTab.h:194
@@ -240,7 +241,7 @@ msgstr ""
 #: ../src/gtk/config/OptionsTab.cpp:155 ../src/win32/config/OptionsTab.cpp:432
 msgctxt "OptionsTab"
 msgid "Don't download any images"
-msgstr ""
+msgstr "Ne pas télécharger d'images"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:189
 #: ../build/src/kde/kf5/ui_OptionsTab.h:195
@@ -249,7 +250,7 @@ msgstr ""
 #: ../src/gtk/config/OptionsTab.cpp:156 ../src/win32/config/OptionsTab.cpp:433
 msgctxt "OptionsTab"
 msgid "Download normal-resolution images"
-msgstr ""
+msgstr "Télécharger des images en définition normale"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:190
 #: ../build/src/kde/kf5/ui_OptionsTab.h:196
@@ -258,7 +259,7 @@ msgstr ""
 #: ../src/gtk/config/OptionsTab.cpp:157 ../src/win32/config/OptionsTab.cpp:434
 msgctxt "OptionsTab"
 msgid "Download high-resolution images"
-msgstr ""
+msgstr "Télécharger des images en haute définition"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:192
 #: ../build/src/kde/kf6/ui_OptionsTab.h:192
@@ -266,14 +267,14 @@ msgstr ""
 msgctxt "OptionsTab"
 msgid "When using a metered\n"
 "network connection:"
-msgstr ""
+msgstr "Lors de l'usage d'un réseau limité :"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:198
 #: ../build/src/kde/kf6/ui_OptionsTab.h:198
 #: ../src/gtk/config/OptionsTab.cpp:227
 msgctxt "OptionsTab"
 msgid "Always use the internal icon (if present) for small sizes."
-msgstr ""
+msgstr "Toujours utiliser des icônes internes (si présentes) pour les tailles petites."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:199
 #: ../build/src/kde/kf6/ui_OptionsTab.h:199
@@ -281,14 +282,15 @@ msgstr ""
 msgctxt "OptionsTab"
 msgid "Store cached file origin information using extended attributes.\n"
 "This helps to identify where cached files were downloaded from."
-msgstr ""
+msgstr "Enregistrer l'origine du fichier en cache en utilisant des attributs étendus.\n"
+"Cela aide à identifier d'où les fichiers en cache ont été téléchargés."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:201
 #: ../build/src/kde/kf6/ui_OptionsTab.h:201
 #: ../src/gtk/config/OptionsTab.cpp:237
 msgctxt "OptionsTab"
 msgid "Language for PAL titles on GameTDB:"
-msgstr ""
+msgstr "Langue des titres PAL sur GameTDB :"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:202
 #: ../build/src/kde/kf6/ui_OptionsTab.h:202
@@ -302,7 +304,7 @@ msgstr "&Options"
 msgctxt "OptionsTab"
 msgid "Show a security overlay icon for ROM images with\n"
 "\"dangerous\" permissions."
-msgstr ""
+msgstr "Afficher un contour de sécurité pour les images de ROM avec des permissions \"dangereuses\"."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:205
 #: ../build/src/kde/kf6/ui_OptionsTab.h:205
@@ -310,7 +312,7 @@ msgstr ""
 msgctxt "OptionsTab"
 msgid "Enable thumbnailing and metadata extraction on network\n"
 "file systems. This may slow down file browsing."
-msgstr ""
+msgstr "Activer l'extraction des miniatures et des métadonnées sur les systèmes de fichier en réseau. Cela peut ralentir l'exploration des fichiers."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:207
 #: ../build/src/kde/kf6/ui_OptionsTab.h:207
@@ -318,20 +320,20 @@ msgstr ""
 msgctxt "OptionsTab"
 msgid "Enable thumbnailing and metadata extraction of directory-based\n"
 "packages, e.g. for Wii U. This may slow down file browsing."
-msgstr ""
+msgstr "Activer l'extraction des miniatures et des métadonnées des paquets basés sur des répertoires, comme pour la Wii U. Cela peut ralentir l'exploration des fichiers."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:209
 #: ../build/src/kde/kf6/ui_OptionsTab.h:209
 #: ../src/gtk/config/OptionsTab.cpp:274
 msgctxt "OptionsTab"
 msgid "Show the Extended Attributes tab."
-msgstr ""
+msgstr "Afficher l'onglet des Attributs Étendus."
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:124
 #: ../build/src/kde/kf6/ui_SystemsTab.h:124
 msgctxt "SystemsTab"
 msgid "&Game Boy Title Screens"
-msgstr ""
+msgstr "&Écrans d'Accueil Game Boy"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:125
 #: ../build/src/kde/kf6/ui_SystemsTab.h:125
@@ -391,34 +393,34 @@ msgstr "Game Boy &Color :"
 msgctxt "SystemsTab"
 msgid "Select the Game Boy model to use for title screens for different types of\n"
 "Game Boy ROM images."
-msgstr ""
+msgstr "Sélectionnez le modèle de Game Boy à utiliser pour les écrans d'accueils pour les différents types d'images de ROM Game Boy."
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:119
 #: ../build/src/kde/kf6/ui_XAttrView.h:119
 #: ../src/gtk/xattr/XAttrView.cpp:71
 msgctxt "XAttrView"
 msgid "Ext2 Attributes"
-msgstr ""
+msgstr "Attributs Ext2"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:120
 #: ../build/src/kde/kf6/ui_XAttrView.h:120
 #: ../src/gtk/xattr/XAttrView.cpp:79
 msgctxt "XAttrView"
 msgid "XFS Attributes"
-msgstr ""
+msgstr "Attributs XFS"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:121
 #: ../build/src/kde/kf6/ui_XAttrView.h:121
 #: ../src/gtk/xattr/XAttrView.cpp:87
 msgctxt "XAttrView"
 msgid "MS-DOS Attributes"
-msgstr ""
+msgstr "Attributs MS-DOS"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:122
 #: ../build/src/kde/kf6/ui_XAttrView.h:122
 msgctxt "XAttrView"
 msgid "E&xtended Attributes"
-msgstr ""
+msgstr "Attributs Étendus"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:124
 #: ../build/src/kde/kf6/ui_XAttrView.h:124
@@ -426,7 +428,7 @@ msgstr ""
 #: ../src/gtk/xattr/XAttrView_gtk4.cpp:136
 msgctxt "XAttrView"
 msgid "Value"
-msgstr ""
+msgstr "Valeur"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:125
 #: ../build/src/kde/kf6/ui_XAttrView.h:125
@@ -434,20 +436,20 @@ msgstr ""
 #: ../src/gtk/xattr/XAttrView_gtk4.cpp:135
 msgctxt "XAttrView"
 msgid "Name"
-msgstr ""
+msgstr "Nom"
 
 #: ../build/src/kde/kf5/ui_XfsAttrView.h:85
 #: ../build/src/kde/kf6/ui_XfsAttrView.h:85
 #: ../src/gtk/xattr/XfsAttrView.c:169
 msgctxt "XfsAttrView"
 msgid "Project ID:"
-msgstr ""
+msgstr "ID du projet :"
 
 #: ../src/gtk/AchGDBus.cpp:201 ../src/kde/AchQtDBus.cpp:192
 #: ../src/win32/AchWin32.cpp:284
 msgctxt "Achievements"
 msgid "Achievement Unlocked"
-msgstr ""
+msgstr "Succès Débloqué"
 
 #. tr: Uses Pango's HTML subset for formatting.
 #: ../src/gtk/config/AboutTab.cpp:459
@@ -461,7 +463,7 @@ msgstr ""
 #, c++-format
 msgctxt "AboutTab"
 msgid "Version {:s}"
-msgstr ""
+msgstr "Version {:s}"
 
 #: ../src/gtk/config/AboutTab.cpp:485 ../src/kde/config/AboutTab.cpp:216
 #: ../src/win32/config/AboutTab.cpp:1002
@@ -475,7 +477,7 @@ msgstr "GNU GPL v2"
 #, c++-format
 msgctxt "AboutTab|Credits"
 msgid "This program is licensed under the {:s} or later."
-msgstr ""
+msgstr "Ce programme est sous licence {:s} ou ultérieure."
 
 #: ../src/gtk/config/AboutTab.cpp:509 ../src/kde/config/AboutTab.cpp:240
 #: ../src/win32/config/AboutTab.cpp:1020
@@ -501,7 +503,7 @@ msgstr "Traducteurs :"
 #, c++-format
 msgctxt "AboutTab|Credits"
 msgid " ({:s})"
-msgstr ""
+msgstr " ({:s})"
 
 #. tr: Using an internal copy of a library.
 #: ../src/gtk/config/AboutTab.cpp:569 ../src/kde/config/AboutTab.cpp:296
@@ -509,7 +511,7 @@ msgstr ""
 #, c++-format
 msgctxt "AboutTab|Libraries"
 msgid "Internal copy of {:s}."
-msgstr ""
+msgstr "Copie interne de {:s}."
 
 #. tr: Compiled with a specific version of an external library.
 #: ../src/gtk/config/AboutTab.cpp:571 ../src/kde/config/AboutTab.cpp:298
@@ -517,7 +519,7 @@ msgstr ""
 #, c++-format
 msgctxt "AboutTab|Libraries"
 msgid "Compiled with {:s}."
-msgstr ""
+msgstr "Compilé avec {:s}."
 
 #. tr: Using an external library, e.g. libpcre.so
 #: ../src/gtk/config/AboutTab.cpp:573 ../src/kde/config/AboutTab.cpp:300
@@ -525,7 +527,7 @@ msgstr ""
 #, c++-format
 msgctxt "AboutTab|Libraries"
 msgid "Using {:s}."
-msgstr ""
+msgstr "Utilise {:s}."
 
 #. tr: License: (libraries with only a single license)
 #: ../src/gtk/config/AboutTab.cpp:575 ../src/kde/config/AboutTab.cpp:302
@@ -547,25 +549,25 @@ msgstr "Licences : {:s}"
 #: ../src/win32/config/AboutTab.cpp:1184
 msgctxt "AboutTab|Libraries"
 msgid "APNG patch:"
-msgstr ""
+msgstr "Correctif APNG :"
 
 #: ../src/gtk/config/AboutTab.cpp:803 ../src/kde/config/AboutTab.cpp:554
 #: ../src/win32/config/AboutTab.cpp:1266
 msgctxt "AboutTab|Support"
 msgid "For technical support, you can visit the following websites:"
-msgstr ""
+msgstr "Pour un support technique, vous pouvez visiter les sites Web suivants :"
 
 #: ../src/gtk/config/AboutTab.cpp:820 ../src/kde/config/AboutTab.cpp:571
 #: ../src/win32/config/AboutTab.cpp:1282
 msgctxt "AboutTab|Support"
 msgid "You can also email the developer directly:"
-msgstr ""
+msgstr "Vous pouvez également envoyer un courriel au développeur directement :"
 
 #: ../src/gtk/config/AboutTab.cpp:846 ../src/kde/config/AboutTab.cpp:599
 #: ../src/win32/config/AboutTab.cpp:585
 msgctxt "AboutTab"
 msgid "Checking for updates..."
-msgstr ""
+msgstr "Recherche de mises à jour..."
 
 #. tr: Error message template. (GTK version, with C++20 formatting)
 #: ../src/gtk/config/AboutTab.cpp:866 ../src/gtk/config/CacheTab.cpp:466
@@ -580,119 +582,119 @@ msgstr "<b>ERREUR :</b> {:s}"
 #, c++-format
 msgctxt "AboutTab"
 msgid "Latest version: {:s}"
-msgstr ""
+msgstr "Dernière version : {:s}"
 
 #: ../src/gtk/config/AboutTab.cpp:899 ../src/kde/config/AboutTab.cpp:716
 msgctxt "AboutTab"
 msgid "<b>New version available!</b>"
-msgstr ""
+msgstr "<b>Nouvelle version disponible !</b>"
 
 #: ../src/gtk/config/AboutTab.cpp:902 ../src/kde/config/AboutTab.cpp:719
 #: ../src/win32/config/AboutTab.cpp:694
 msgctxt "AboutTab"
 msgid "Download at GitHub"
-msgstr ""
+msgstr "Télécharger sur GitHub"
 
 #: ../src/gtk/config/CacheCleaner.cpp:259
 #: ../src/gtk/config/CacheCleaner.cpp:317 ../src/kde/config/CacheCleaner.cpp:46
 #: ../src/kde/config/CacheCleaner.cpp:104
 msgctxt "CacheCleaner"
 msgid "Invalid cache directory specified."
-msgstr ""
+msgstr "Le répertoire de cache spécifié est invalide."
 
 #: ../src/gtk/config/CacheCleaner.cpp:266 ../src/kde/config/CacheCleaner.cpp:53
 msgctxt "CacheCleaner"
 msgid "Unable to get the XDG cache directory."
-msgstr ""
+msgstr "Impossible d'obtenir le répertoire de cache XDG."
 
 #: ../src/gtk/config/CacheCleaner.cpp:274 ../src/kde/config/CacheCleaner.cpp:61
 msgctxt "CacheCleaner"
 msgid "Thumbnails cache directory does not exist."
-msgstr ""
+msgstr "Le répertoire de cache des miniatures n'existe pas."
 
 #: ../src/gtk/config/CacheCleaner.cpp:283 ../src/kde/config/CacheCleaner.cpp:70
 #: ../src/win32/config/CacheTab.cpp:578
 msgctxt "CacheCleaner"
 msgid "Unable to get the rom-properties cache directory."
-msgstr ""
+msgstr "Impossible de récupérer le répertoire de cache de rom-properties."
 
 #: ../src/gtk/config/CacheCleaner.cpp:320
 #: ../src/kde/config/CacheCleaner.cpp:107
 msgctxt "CacheCleaner"
 msgid "System thumbnail cache has unexpected files. Not clearing it."
-msgstr ""
+msgstr "Le cache des miniatures du système contient des fichiers inattendus. Il ne sera pas vidé."
 
 #: ../src/gtk/config/CacheCleaner.cpp:323
 #: ../src/kde/config/CacheCleaner.cpp:110 ../src/win32/config/CacheTab.cpp:633
 msgctxt "CacheCleaner"
 msgid "rom-properties cache has unexpected files. Not clearing it."
-msgstr ""
+msgstr "Le cache de rom-properties a des fichiers inattendus. Il ne sera pas vidé."
 
 #: ../src/gtk/config/CacheTab.cpp:364 ../src/gtk/config/CacheTab.cpp:489
 #: ../src/gtk/config/CacheTab.cpp:535 ../src/kde/config/CacheTab.cpp:143
 #: ../src/kde/config/CacheTab.cpp:269 ../src/kde/config/CacheTab.cpp:311
 msgctxt "CacheTab"
 msgid "Invalid cache directory specified."
-msgstr ""
+msgstr "Le répertoire de cache spécifié est invalide."
 
 #: ../src/gtk/config/CacheTab.cpp:367 ../src/kde/config/CacheTab.cpp:146
 msgctxt "CacheTab"
 msgid "Clearing the system thumbnail cache..."
-msgstr ""
+msgstr "Nettoyage du cache des miniatures du système..."
 
 #: ../src/gtk/config/CacheTab.cpp:370 ../src/kde/config/CacheTab.cpp:149
 msgctxt "CacheTab"
 msgid "Clearing the ROM Properties Page cache..."
-msgstr ""
+msgstr "Nettoyage du cache de la Page des Propriétés des ROM..."
 
 #: ../src/gtk/config/CacheTab.cpp:492 ../src/kde/config/CacheTab.cpp:272
 msgctxt "CacheTab"
 msgid "System thumbnail cache is empty. Nothing to do."
-msgstr ""
+msgstr "Le cache des miniatures du système est vide. Rien à faire."
 
 #: ../src/gtk/config/CacheTab.cpp:495 ../src/kde/config/CacheTab.cpp:275
 #: ../src/win32/config/CacheTab.cpp:615 ../src/win32/config/CacheTab.cpp:646
 msgctxt "CacheTab"
 msgid "rom-properties cache is empty. Nothing to do."
-msgstr ""
+msgstr "Le cache de rom-properties est vide. Rien à faire."
 
 #: ../src/gtk/config/CacheTab.cpp:522 ../src/kde/config/CacheTab.cpp:299
 #: ../src/win32/config/CacheTab.cpp:717
 #, c++-format
 msgctxt "CacheTab"
 msgid "Unable to delete {0:Ld} file(s) and/or {1:Ld} dir(s)."
-msgstr ""
+msgstr "Impossible de supprimer le(s) fichier(s) {0:Ld} et/ou le(s) répertoire(s) {1:Ld}."
 
 #: ../src/gtk/config/CacheTab.cpp:539 ../src/kde/config/CacheTab.cpp:315
 #: ../src/win32/config/CacheTab.cpp:540
 msgctxt "CacheTab"
 msgid "System thumbnail cache cleared successfully."
-msgstr ""
+msgstr "Le cache des miniatures du système a été effacé avec succès."
 
 #: ../src/gtk/config/CacheTab.cpp:543 ../src/kde/config/CacheTab.cpp:319
 #: ../src/win32/config/CacheTab.cpp:722
 msgctxt "CacheTab"
 msgid "rom-properties cache cleared successfully."
-msgstr ""
+msgstr "Le cache de rom-properties a été effacé avec succès."
 
 #: ../src/gtk/config/ConfigDialog.cpp:248 ../src/kde/config/ConfigDialog.cpp:79
 msgctxt "ConfigDialog"
 msgid "&Key Manager"
-msgstr ""
+msgstr "&Gestionnaire des Clés"
 
 #. tr: "Reset" button.
 #: ../src/gtk/config/ConfigDialog.cpp:305
 #: ../src/win32/config/ConfigDialog.cpp:293
 msgctxt "ConfigDialog"
 msgid "&Reset"
-msgstr ""
+msgstr "&Réinitialiser"
 
 #. tr: "Defaults" button.
 #: ../src/gtk/config/ConfigDialog.cpp:306
 #: ../src/win32/config/ConfigDialog.cpp:310
 msgctxt "ConfigDialog"
 msgid "Defaults"
-msgstr ""
+msgstr "Valeurs par défaut"
 
 #. tr: Don't use this image type for this particular system.
 #: ../src/gtk/config/ImageTypesTab.cpp:315
@@ -710,7 +712,9 @@ msgctxt "ImageTypesTab"
 msgid "GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
 "are provided by <a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
 "amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</a>, the Unofficial amiibo Database."
-msgstr ""
+msgstr "Les images externes de la GameCube, la Wii, la Wii U, la Nintendo DS et la Nintendo 3DS\n"
+"sont fournies par <a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
+"Les images amiibo sont fournies par <a href=\"https://amiibo.life/\">amiibo.life</a>, la base de données amiibo non officielle."
 
 #. tr: Wii keys.bin dialog title
 #: ../src/gtk/config/KeyManagerTab.cpp:476
@@ -718,7 +722,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1799
 msgctxt "KeyManagerTab"
 msgid "Select Wii keys.bin File"
-msgstr ""
+msgstr "Sélectionner le fichier keys.bin de la Wii"
 
 #. tr: Wii U otp.bin dialog title
 #: ../src/gtk/config/KeyManagerTab.cpp:478
@@ -726,7 +730,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1801
 msgctxt "KeyManagerTab"
 msgid "Select Wii U otp.bin File"
-msgstr ""
+msgstr "Sélectionner le fichier otp.bin de la Wii U"
 
 #. tr: Nintendo 3DS boot9.bin dialog title
 #: ../src/gtk/config/KeyManagerTab.cpp:480
@@ -734,7 +738,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1803
 msgctxt "KeyManagerTab"
 msgid "Select 3DS boot9.bin File"
-msgstr ""
+msgstr "Sélectionner le fichier boot9.bin de la 3DS"
 
 #. tr: Nintendo 3DS aeskeydb.bin dialog title
 #: ../src/gtk/config/KeyManagerTab.cpp:482
@@ -742,7 +746,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1805
 msgctxt "KeyManagerTab"
 msgid "Select 3DS aeskeydb.bin File"
-msgstr ""
+msgstr "Sélectionner le fichier aeskeydb.bin de la 3DS"
 
 #. tr: Wii keys.bin file filter (RP format)
 #: ../src/gtk/config/KeyManagerTab.cpp:487
@@ -750,7 +754,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1810
 msgctxt "KeyManagerTab"
 msgid "keys.bin|keys.bin|-|Binary Files|*.bin|-|All Files|*|-"
-msgstr ""
+msgstr "keys.bin|keys.bin|-|Fichiers binaires|*.bin|-|Tous les fichiers|*|-"
 
 #. tr: Wii U otp.bin file filter (RP format)
 #: ../src/gtk/config/KeyManagerTab.cpp:489
@@ -758,7 +762,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1812
 msgctxt "KeyManagerTab"
 msgid "otp.bin|otp.bin|-|Binary Files|*.bin|-|All Files|*|-"
-msgstr ""
+msgstr "otp.bin|otp.bin|-|Fichiers binaires|*.bin|-|Tous les fichiers|*|-"
 
 #. tr: Nintendo 3DS boot9.bin file filter (RP format)
 #: ../src/gtk/config/KeyManagerTab.cpp:491
@@ -766,7 +770,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1814
 msgctxt "KeyManagerTab"
 msgid "boot9.bin|boot9.bin|-|Binary Files|*.bin|-|All Files|*|-"
-msgstr ""
+msgstr "boot9.bin|boot9.bin|-|Fichiers binaires|*.bin|-|Tous les fichiers|*|-"
 
 #. tr: Nintendo 3DS aeskeydb.bin file filter (RP format)
 #: ../src/gtk/config/KeyManagerTab.cpp:493
@@ -774,7 +778,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1816
 msgctxt "KeyManagerTab"
 msgid "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|-|All Files|*|-"
-msgstr ""
+msgstr "aeskeydb.bin|aeskeydb.bin|-|Fichiers binaires|*.bin|-|Tous les fichiers|*|-"
 
 #: ../src/gtk/config/KeyManagerTab.cpp:551
 #: ../src/kde/config/KeyManagerTab.cpp:144
@@ -782,7 +786,8 @@ msgstr ""
 msgctxt "KeyManagerTab"
 msgid "An invalid parameter was passed to the key importer.\n"
 "THIS IS A BUG; please report this to the developers!"
-msgstr ""
+msgstr "Un paramètre invalide a été passé à l'importateur de clés.\n"
+"CET EST UN BUG ; veuillez le signaler aux développeurs !"
 
 #: ../src/gtk/config/KeyManagerTab.cpp:558
 #: ../src/kde/config/KeyManagerTab.cpp:152
@@ -790,7 +795,8 @@ msgstr ""
 msgctxt "KeyManagerTab"
 msgid "An unknown key ID was passed to the key importer.\n"
 "THIS IS A BUG; please report this to the developers!"
-msgstr ""
+msgstr "Un ID de clé inconnu a été passé à l'importateur de clés.\n"
+"CET EST UN BUG ; veuillez le signaler aux développeurs !"
 
 #: ../src/gtk/config/KeyManagerTab.cpp:567
 #: ../src/kde/config/KeyManagerTab.cpp:162
@@ -798,7 +804,7 @@ msgstr ""
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while opening '{0:s}': {1:s}"
-msgstr ""
+msgstr "Une erreur est survenue lors de l'ouverture de «{0:s}» : {1:s}"
 
 #: ../src/gtk/config/KeyManagerTab.cpp:572
 #: ../src/kde/config/KeyManagerTab.cpp:168
@@ -806,7 +812,7 @@ msgstr ""
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while opening '{:s}'."
-msgstr ""
+msgstr "Une erreur est survenue lors de l'ouverture de «{:s}»."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:583
 #: ../src/kde/config/KeyManagerTab.cpp:180
@@ -814,7 +820,7 @@ msgstr ""
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while reading '{0:s}': {1:s}"
-msgstr ""
+msgstr "Une erreur est survenue lors de la lecture de «{0:s}» : {1:s}"
 
 #: ../src/gtk/config/KeyManagerTab.cpp:588
 #: ../src/kde/config/KeyManagerTab.cpp:186
@@ -822,7 +828,7 @@ msgstr ""
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while reading '{:s}'."
-msgstr ""
+msgstr "Une erreur est survenue lors de la lecture de «{:s}»."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:597
 #: ../src/kde/config/KeyManagerTab.cpp:196
@@ -830,7 +836,7 @@ msgstr ""
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "The file '{0:s}' is not a valid {1:s} file."
-msgstr ""
+msgstr "Le fichier «{0:s}» n'est pas un fichier {1:s} valide."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:605
 #: ../src/kde/config/KeyManagerTab.cpp:205
@@ -838,7 +844,7 @@ msgstr ""
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "No keys were imported from '{:s}'."
-msgstr ""
+msgstr "Aucune clé n'a été importée à partir de «{:s}»."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:615
 #: ../src/kde/config/KeyManagerTab.cpp:216
@@ -847,8 +853,8 @@ msgstr ""
 msgctxt "KeyManagerTab"
 msgid "{0:Ld} key was imported from '{1:s}'."
 msgid_plural "{0:Ld} keys were imported from '{1:s}'."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "La clé {0:Ld} a été importée à partir de «{1:s}»."
+msgstr[1] "Les clés {0:Ld} ont été importées à partir de «{1:s}»."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:633
 #: ../src/kde/config/KeyManagerTab.cpp:235
@@ -857,8 +863,8 @@ msgstr[1] ""
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key already exists in the Key Manager."
 msgid_plural "{:Ld} keys already exist in the Key Manager."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "La clé {:Ld} existe déjà dans le gestionnaire de clés."
+msgstr[1] "Les clés {:Ld} existent déjà dans le gestionnaire de clés."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:642
 #: ../src/kde/config/KeyManagerTab.cpp:244
@@ -867,8 +873,8 @@ msgstr[1] ""
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key was not imported because it is incorrect."
 msgid_plural "{:Ld} keys were not imported because they are incorrect."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "La clé {:Ld} n'a pas été importée car elle est incorrecte."
+msgstr[1] "Les clés {:Ld} n'ont pas été importées car elles sont incorrectes."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:651
 #: ../src/kde/config/KeyManagerTab.cpp:253
