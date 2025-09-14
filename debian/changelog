@@ -1,3 +1,9 @@
+rom-properties (2.6-1ppa2~focal2) focal; urgency=medium
+
+  * ICO.cpp: Fix a format truncation warning.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 13 Sep 2025 20:45:40 -0400
+
 rom-properties (2.6-1ppa2~focal1) focal; urgency=medium
 
   * Build for Ubuntu 20.04 "Focal" Fossa.
