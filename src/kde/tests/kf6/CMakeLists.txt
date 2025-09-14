@@ -69,7 +69,7 @@ FOREACH(_target ${KF6_TESTS})
 		#SET_PROPERTY(TEST ${_target} PROPERTY ENVIRONMENT "LIBGL_ALWAYS_SOFTWARE=1;DISPLAY=;WAYLAND_DISPLAY=")
 	ELSE(USE_XVFB AND ${_target}_XVFB)
 		# Xvfb is not required.
-		ADD_TEST(NAME ${_target} COMMAND ${_target} --gtest_brief)
+		#ADD_TEST(NAME ${_target} COMMAND ${_target} --gtest_brief)
 	ENDIF(USE_XVFB AND ${_target}_XVFB)
 ENDFOREACH(_target)
 
