@@ -1,3 +1,14 @@
+rom-properties (2.6-1ppa2~plucky1) plucky; urgency=medium
+
+  * Build for Ubuntu 25.04 "Plucky" Puffin.
+
+    * Enable KF6 builds.
+    * Tracker API version increased to 3L.
+
+  * PPA version bumped to ensure it updates from previous versions.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 13 Sep 2025 22:46:23 -0400
+
 rom-properties (2.6-1ppa2~noble3) noble; urgency=medium
 
   * Fix incorrect libromdata dependency for rom-properties-gtk4.
