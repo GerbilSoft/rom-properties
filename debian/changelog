@@ -1,3 +1,15 @@
+rom-properties (2.6-1ppa2~jammy1) jammy; urgency=medium
+
+  * Build for Ubuntu 22.04 "Jammy" Jellyfish.
+
+    PPA version bumped to ensure it updates from previous versions.
+
+  * KF5 5.92.0 supports JSON plugin loading, but not ThumbnailCreator.
+    Also, rp-convert-to-png.desktop is no longer installed in kservices5.
+    It's now installed in /usr/share/kio/servicemenus/ .
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 13 Sep 2025 21:10:57 -0400
+
 rom-properties (2.6-1ppa2~focal2) focal; urgency=medium
 
   * ICO.cpp: Fix a format truncation warning.
