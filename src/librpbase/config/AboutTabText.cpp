@@ -147,7 +147,7 @@ const CreditsData_t *getCreditsData(void)
  */
 static const array<SupportSite_t, 3+1> supportSites = {{
 	{"GitHub: GerbilSoft/rom-properties", "https://github.com/GerbilSoft/rom-properties"},
-	{"Sonic Retro", "https://forums.sonicretro.org/index.php?showtopic=35692"},
+	{"Sonic Retro", "https://forums.sonicretro.org/threads/rom-properties-page-shell-extension.35692/"},
 
 	{nullptr, nullptr}
 }};
