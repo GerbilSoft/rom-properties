@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2025-08-24 09:53-0400\n"
-"PO-Revision-Date: 2025-09-14 12:22\n"
+"PO-Revision-Date: 2025-09-14 16:31\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -883,8 +883,8 @@ msgstr[1] "Les clés {:Ld} n'ont pas été importées car elles sont incorrectes
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key was not imported because it isn't used by rom-properties."
 msgid_plural "{:Ld} keys were not imported because they aren't used by rom-properties."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "La clé {:Ld} n'a pas été importée car elle n'est pas utilisée par rom-properties."
+msgstr[1] "Les clés {:Ld} n'ont pas été importées car elles ne sont pas utilisées par rom-properties."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:660
 #: ../src/kde/config/KeyManagerTab.cpp:262
@@ -893,8 +893,8 @@ msgstr[1] ""
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key was not imported because it is encrypted and the master key isn't available."
 msgid_plural "{:Ld} keys were not imported because they are encrypted and the master key isn't available."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "La clé {:Ld} n'a pas été importée car elle est chiffrée et la clé principale n'est pas disponible."
+msgstr[1] "Les clés {:Ld} n'ont pas été importées car elles sont chiffrées et la clé principale n'est pas disponible."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:669
 #: ../src/kde/config/KeyManagerTab.cpp:271
@@ -903,8 +903,8 @@ msgstr[1] ""
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key has been imported and verified as correct."
 msgid_plural "{:Ld} keys have been imported and verified as correct."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "La clé {:Ld} a été importée et vérifiée comme correcte."
+msgstr[1] "Les clés {:Ld} ont été importées et vérifiées comme correctes."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:678
 #: ../src/kde/config/KeyManagerTab.cpp:280
@@ -913,8 +913,8 @@ msgstr[1] ""
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key has been imported without verification."
 msgid_plural "{:Ld} keys have been imported without verification."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "La clé {:Ld} a été importée sans vérification."
+msgstr[1] "Les clés {:Ld} ont été importées sans vérification."
 
 #. tr: Column 0: Key Name.
 #. tr: Column 0: Key Name
@@ -924,7 +924,7 @@ msgstr[1] ""
 #: ../src/win32/config/KeyManagerTab.cpp:368
 msgctxt "KeyManagerTab"
 msgid "Key Name"
-msgstr ""
+msgstr "Nom de la Clé"
 
 #. tr: Column 1: Value.
 #. tr: Column 1: Value
@@ -934,7 +934,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:377
 msgctxt "KeyManagerTab"
 msgid "Value"
-msgstr ""
+msgstr "Valeur"
 
 #. tr: Column 2: Verification status.
 #. tr: Column 2: Verification status
@@ -944,7 +944,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:383
 msgctxt "KeyManagerTab"
 msgid "Valid?"
-msgstr ""
+msgstr "Valide ?"
 
 #: ../src/gtk/config/OptionsTab.cpp:119
 msgctxt "OptionsTab"
@@ -960,21 +960,21 @@ msgstr "Options"
 #: ../src/gtk/config/SystemsTab.cpp:95
 msgctxt "SystemsTab"
 msgid "Game Boy Title Screens"
-msgstr ""
+msgstr "Écrans d'Accueil Game Boy"
 
 #: ../src/gtk/config/UpdateChecker.cpp:160
 #: ../src/kde/config/UpdateChecker.cpp:60
 #: ../src/win32/config/UpdateChecker.cpp:72
 msgctxt "UpdateChecker"
 msgid "Failed to download version file."
-msgstr ""
+msgstr "Échec du téléchargement du fichier de version."
 
 #: ../src/gtk/config/UpdateChecker.cpp:170
 #: ../src/kde/config/UpdateChecker.cpp:69
 #: ../src/win32/config/UpdateChecker.cpp:81
 msgctxt "UpdateChecker"
 msgid "Failed to open version file."
-msgstr ""
+msgstr "Échec de l'ouverture du fichier de version."
 
 #: ../src/gtk/config/UpdateChecker.cpp:181
 #: ../src/gtk/config/UpdateChecker.cpp:194
@@ -988,22 +988,22 @@ msgstr ""
 #: ../src/win32/config/UpdateChecker.cpp:131
 msgctxt "UpdateChecker"
 msgid "Version file is invalid."
-msgstr ""
+msgstr "Le fichier de version est invalide."
 
 #: ../src/gtk/gtk3/NautilusExtraInterfaces.c:132
 msgctxt "NautilusExtraInterfaces"
 msgid "Property page extension"
-msgstr ""
+msgstr "Extension de la page de propriété"
 
 #: ../src/gtk/gtk3/NautilusExtraInterfaces.c:134
 msgctxt "NautilusExtraInterfaces"
 msgid "Menu extension"
-msgstr ""
+msgstr "Extension du menu"
 
 #: ../src/gtk/gtk3/NautilusExtraInterfaces.c:141
 msgctxt "NautilusExtraInterfaces"
 msgid "ROM Properties Page"
-msgstr ""
+msgstr "Page des Propriétés de la ROM"
 
 #: ../src/gtk/gtk3/NautilusMenuProvider.c:194
 #: ../src/gtk/gtk3/ThunarMenuProvider.c:183 ../src/win32/RP_ContextMenu.cpp:482
@@ -1016,8 +1016,8 @@ msgstr "Convertir en PNG"
 msgctxt "ServiceMenu"
 msgid "Convert the selected texture file to PNG format."
 msgid_plural "Convert the selected texture files to PNG format."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Convertir le fichier de texture sélectionné au format PNG."
+msgstr[1] "Convertir les fichiers de texture sélectionnés en format PNG."
 
 #. tr: Tab title.
 #. tr: RomDataView tab title
@@ -1029,7 +1029,7 @@ msgstr[1] ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:2277
 msgctxt "RomDataView"
 msgid "ROM Properties"
-msgstr ""
+msgstr "Propriétés de la ROM"
 
 #. tr: Invalid date/time.
 #. tr: Invalid date/time
@@ -1039,7 +1039,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1288
 msgctxt "RomDataView"
 msgid "Unknown"
-msgstr ""
+msgstr "Inconnu"
 
 #. tr: No age ratings data.
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:142
@@ -1055,7 +1055,7 @@ msgstr "ERREUR"
 #: ../src/win32/RP_ShellPropSheetExt.cpp:228
 msgctxt "RomDataView"
 msgid "(unknown system)"
-msgstr ""
+msgstr "(système inconnu)"
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:211
 #: ../src/gtk/RomDataView.cpp:669 ../src/kde/RomDataView.cpp:142
@@ -1063,7 +1063,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:231
 msgctxt "RomDataView"
 msgid "(unknown filetype)"
-msgstr ""
+msgstr "(type de fichier inconnu)"
 
 #. tr: {0:s} == system name, {1:s} == file type
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:219
@@ -1075,31 +1075,31 @@ msgstr ""
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:220
 msgctxt "RomDataView"
 msgid "File Type"
-msgstr ""
+msgstr "Type de Fichier"
 
 #: ../src/gtk/OptionsMenuButton.cpp:146 ../src/kde/OptionsMenuButton.cpp:25
 #: ../src/win32/OptionsMenuButton.cpp:34
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Export to Text..."
-msgstr ""
+msgstr "Exporter en Texte..."
 
 #: ../src/gtk/OptionsMenuButton.cpp:147 ../src/kde/OptionsMenuButton.cpp:26
 #: ../src/win32/OptionsMenuButton.cpp:35
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Export to JSON..."
-msgstr ""
+msgstr "Exporter en JSON..."
 
 #: ../src/gtk/OptionsMenuButton.cpp:148 ../src/kde/OptionsMenuButton.cpp:27
 #: ../src/win32/OptionsMenuButton.cpp:36
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Copy as Text"
-msgstr ""
+msgstr "Copier en Texte"
 
 #: ../src/gtk/OptionsMenuButton.cpp:149 ../src/kde/OptionsMenuButton.cpp:28
 #: ../src/win32/OptionsMenuButton.cpp:37
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Copy as JSON"
-msgstr ""
+msgstr "Copier en JSON"
 
 #. tr: "Options" button.
 #: ../src/gtk/OptionsMenuButton.cpp:208 ../src/kde/OptionsMenuButton.cpp:40
@@ -1182,7 +1182,7 @@ msgstr "{:s} :"
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1509
 msgctxt "RomData"
 msgid "Unknown"
-msgstr ""
+msgstr "Inconnu"
 
 #: ../src/gtk/RomDataView_ops.cpp:312 ../src/gtk/RomDataView_ops.cpp:421
 #: ../src/kde/RomDataView_ops.cpp:196 ../src/kde/RomDataView_ops.cpp:266
@@ -1191,40 +1191,40 @@ msgstr ""
 #, c++-format
 msgctxt "RomDataView"
 msgid "File: '{:s}'"
-msgstr ""
+msgstr "Fichier : «{:s}»"
 
 #: ../src/gtk/RomDataView_ops.cpp:441 ../src/kde/RomDataView_ops.cpp:216
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:322
 msgctxt "RomDataView"
 msgid "Export to Text File"
-msgstr ""
+msgstr "Exporter en Fichier Texte"
 
 #. tr: "Text Files" filter (RP format)
 #: ../src/gtk/RomDataView_ops.cpp:443 ../src/kde/RomDataView_ops.cpp:218
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:324
 msgctxt "RomDataView"
 msgid "Text Files|*.txt|text/plain|All Files|*|-"
-msgstr ""
+msgstr "Fichiers Texte|*.txt|text/plain|Tous les Fichiers|*|-"
 
 #: ../src/gtk/RomDataView_ops.cpp:448 ../src/kde/RomDataView_ops.cpp:223
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:328
 msgctxt "RomDataView"
 msgid "Export to JSON File"
-msgstr ""
+msgstr "Exporter en Fichier JSON"
 
 #. tr: "JSON Files" filter (RP format)
 #: ../src/gtk/RomDataView_ops.cpp:450 ../src/kde/RomDataView_ops.cpp:225
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:330
 msgctxt "RomDataView"
 msgid "JSON Files|*.json|application/json|All Files|*|-"
-msgstr ""
+msgstr "Fichiers JSON|*.json|application/json|Tous les Fichiers|*|-"
 
 #. tr: "All Files" filter (RP format)
 #: ../src/gtk/RomDataView_ops.cpp:544 ../src/kde/RomDataView_ops.cpp:323
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:495
 msgctxt "RomData"
 msgid "All Files|*|-"
-msgstr ""
+msgstr "Tous les Fichiers|*|-"
 
 #. tr: format string for Ext2 attribute checkbox labels (%c == lsattr character)
 #: ../src/gtk/xattr/Ext2AttrView.cpp:176
@@ -1237,18 +1237,18 @@ msgstr "%c : %s"
 #, c++-format
 msgctxt "Ext2AttrView"
 msgid "Compression: {:s}"
-msgstr ""
+msgstr "Compression : {:s}"
 
 #: ../src/gtk/xattr/Ext2AttrView.cpp:372 ../src/kde/xattr/Ext2AttrView.cpp:174
 #, c++-format
 msgctxt "Ext2AttrView"
 msgid "Compression: {:s}:{:d}"
-msgstr ""
+msgstr "Compression : {:s}:{:d}"
 
 #: ../src/gtk/xattr/XAttrView.cpp:95
 msgctxt "XAttrView"
 msgid "Extended Attributes"
-msgstr ""
+msgstr "Attributs Étendus"
 
 #. tr: Uses Qt's HTML subset for formatting.
 #: ../src/kde/config/AboutTab.cpp:192
@@ -1273,17 +1273,17 @@ msgstr "%1 : %2"
 #: ../src/kde/xattr/XAttrViewPropertiesDialogPlugin.cpp:83
 msgctxt "XAttrView"
 msgid "xattrs"
-msgstr ""
+msgstr "xattrs"
 
 #: ../src/libromdata/Audio/ADX.cpp:262
 msgctxt "ADX|Format"
 msgid "Fixed Coefficient ADPCM"
-msgstr ""
+msgstr "Coefficient d'ADPCM Fixe"
 
 #: ../src/libromdata/Audio/ADX.cpp:269
 msgctxt "ADX|Format"
 msgid "ADX with Exponential Scale"
-msgstr ""
+msgstr "ADX à Échelle Exponentielle"
 
 #: ../src/libromdata/Audio/ADX.cpp:285
 msgctxt "RomData|Audio"
@@ -1294,13 +1294,13 @@ msgstr "Format"
 #: ../src/libromdata/Audio/BRSTM.cpp:347
 msgctxt "RomData|Audio"
 msgid "Channels"
-msgstr ""
+msgstr "Canaux"
 
 #: ../src/libromdata/Audio/ADX.cpp:295 ../src/libromdata/Audio/BCSTM.cpp:487
 #: ../src/libromdata/Audio/BRSTM.cpp:354
 msgctxt "RomData|Audio"
 msgid "Sample Rate"
-msgstr ""
+msgstr "Fréquence d'Échantillonnage"
 
 #: ../src/libromdata/Audio/ADX.cpp:296 ../src/libromdata/Audio/ADX.cpp:307
 #: ../src/libromdata/Audio/BCSTM.cpp:488 ../src/libromdata/Audio/BRSTM.cpp:355
@@ -1308,18 +1308,18 @@ msgstr ""
 #, c++-format
 msgctxt "RomData"
 msgid "{:Ld} Hz"
-msgstr ""
+msgstr "{:Ld} Hz"
 
 #: ../src/libromdata/Audio/ADX.cpp:299 ../src/libromdata/Audio/BCSTM.cpp:493
 #: ../src/libromdata/Audio/BRSTM.cpp:358
 msgctxt "RomData|Audio"
 msgid "Length"
-msgstr ""
+msgstr "Durée"
 
 #: ../src/libromdata/Audio/ADX.cpp:306
 msgctxt "ADX"
 msgid "High-Pass Cutoff"
-msgstr ""
+msgstr "Coupure de Passe-Haut"
 
 #. tr: Debugging is enabled.
 #: ../src/libromdata/Audio/ADX.cpp:311 ../src/libromdata/Audio/BCSTM.cpp:499
@@ -1346,22 +1346,22 @@ msgstr "Non"
 #: ../src/libromdata/Audio/ADX.cpp:315
 msgctxt "ADX"
 msgid "Encrypted"
-msgstr ""
+msgstr "Chiffré"
 
 #: ../src/libromdata/Audio/ADX.cpp:321
 msgctxt "ADX"
 msgid "Looping"
-msgstr ""
+msgstr "Bouclage"
 
 #: ../src/libromdata/Audio/ADX.cpp:324
 msgctxt "ADX"
 msgid "Loop Start"
-msgstr ""
+msgstr "Début de la boucle"
 
 #: ../src/libromdata/Audio/ADX.cpp:326
 msgctxt "ADX"
 msgid "Loop End"
-msgstr ""
+msgstr "Fin de la boucle"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:406 ../src/libromdata/Audio/BRSTM.cpp:319
 #: ../src/libromdata/Audio/SAP.cpp:613 ../src/libromdata/Audio/SID.cpp:217
@@ -1404,25 +1404,25 @@ msgstr "Type"
 #, c++-format
 msgctxt "RomData"
 msgid "Unknown ({:d})"
-msgstr ""
+msgstr "Inconnu ({:d})"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:419 ../src/libromdata/Audio/BRSTM.cpp:326
 #: ../src/libromdata/Other/Lua.cpp:686
 msgctxt "RomData"
 msgid "Endianness"
-msgstr ""
+msgstr "Boutisme"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:421 ../src/libromdata/Audio/BRSTM.cpp:328
 #: ../src/libromdata/Other/Lua.cpp:676
 msgctxt "RomData"
 msgid "Big-Endian"
-msgstr ""
+msgstr "Gros-Boutisme"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:422 ../src/libromdata/Audio/BRSTM.cpp:329
 #: ../src/libromdata/Other/Lua.cpp:679
 msgctxt "RomData"
 msgid "Little-Endian"
-msgstr ""
+msgstr "Petit-Boutisme"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:470
 msgctxt "BCSTM|Codec"
