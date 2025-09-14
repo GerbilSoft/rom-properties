@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2025-08-24 09:53-0400\n"
-"PO-Revision-Date: 2025-08-24 14:18\n"
+"PO-Revision-Date: 2025-09-14 11:10\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -182,7 +182,7 @@ msgstr ""
 #: ../src/gtk/xattr/DosAttrView.c:161
 msgctxt "DosAttrView"
 msgid "&Encrypted"
-msgstr ""
+msgstr "&Chiffré"
 
 #: ../build/src/kde/kf5/ui_Ext2AttrView.h:89
 #: ../build/src/kde/kf6/ui_Ext2AttrView.h:89
@@ -199,7 +199,10 @@ msgid "Select the image types you would like to use for each system as its thumb
 "Internal images are contained within the ROM file.\n"
 "External images are downloaded from an external image database.\n\n"
 "1 = highest priority; 2 = second highest priority; No = ignore"
-msgstr ""
+msgstr "Sélectionnez le type d'images que vous voudriez utiliser pour chaque système pour ses images de miniature.\n"
+"Les images internes sont contenues dans le fichier ROM.\n"
+"Les images externes sont téléchargées depuis une base de donnée externe.\n\n"
+"1 = plus haute priorité ; 2 seconde plus haute priorité ; No = ignorer"
 
 #: ../build/src/kde/kf5/ui_KeyManagerTab.h:90
 #: ../build/src/kde/kf6/ui_KeyManagerTab.h:90
