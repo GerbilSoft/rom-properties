@@ -180,7 +180,7 @@ public:
 		int height;
 		unsigned int bitcount;
 		bool isPNG;
-		char pixel_format[7];
+		char pixel_format[11];
 	};
 
 	/**
