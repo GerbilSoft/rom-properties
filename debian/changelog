@@ -1,3 +1,9 @@
+rom-properties (2.6-1ppa2~jammy2) jammy; urgency=medium
+
+  * rom-properties-kf5.install: Forgot to remove a few .desktop files.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 13 Sep 2025 21:37:28 -0400
+
 rom-properties (2.6-1ppa2~jammy1) jammy; urgency=medium
 
   * Build for Ubuntu 22.04 "Jammy" Jellyfish.
