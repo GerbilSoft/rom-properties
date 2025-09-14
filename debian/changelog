@@ -1,3 +1,9 @@
+rom-properties (2.6-1ppa2~noble3) noble; urgency=medium
+
+  * Fix incorrect libromdata dependency for rom-properties-gtk4.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 13 Sep 2025 22:45:02 -0400
+
 rom-properties (2.6-1ppa2~noble2) noble; urgency=medium
 
   * Forgot to add rom-properties-gtk4.* to the repository...
