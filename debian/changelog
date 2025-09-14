@@ -1,3 +1,14 @@
+rom-properties (2.6-1ppa2~noble1) noble; urgency=medium
+
+  * Build for Ubuntu 24.04 "Noble" Numbat.
+
+    * Enable GTK4 builds. (Nautilus 43)
+    * KF5 5.115.0 supports ThumbnailCreator.
+
+  * PPA version bumped to ensure it updates from previous versions.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 13 Sep 2025 21:54:35 -0400
+
 rom-properties (2.6-1ppa2~jammy2) jammy; urgency=medium
 
   * rom-properties-kf5.install: Forgot to remove a few .desktop files.
