@@ -387,6 +387,11 @@ On Windows, the following bundled components are also used:
 While the use of gettext can be disabled with -DENABLE_NLS=OFF, libwin32darkmode
 is currently always enabled, so Windows builds are always GPL-3+ at the moment.
 
+The original version of the "Happy Wii U" icon used for Wii U firmware binaries
+was provided by Vixy under CC-BY licensing. The original icon was modified to
+fit in a 48x48 icon frame and to provide additional information, e.g. retail
+vs. development (green), and to show an SD card for sdboot.
+
 ## Credits
 
 ### Developers
