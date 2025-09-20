@@ -228,6 +228,12 @@ public:
 	const Xbox360_XDBF *initXDBF(void);
 
 	/**
+	 * Get the title ID.
+	 * @return Title ID, or empty string on error.
+	 */
+	string getTitleID(void) const;
+
+	/**
 	 * Get the publisher.
 	 * @return Publisher
 	 */
@@ -1294,6 +1300,41 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 }
 
 /**
+ * Get the title ID.
+ * @return Title ID, or empty string on error.
+ */
+string Xbox360_XEX_Private::getTitleID(void) const
+{
+	if (!isExecutionIDLoaded) {
+		const_cast<Xbox360_XEX_Private*>(this)->getXdbfResInfo();
+		if (!isExecutionIDLoaded) {
+			// Can't get the title ID...
+			return {};
+		}
+	}
+
+	// FIXME: Verify behavior on big-endian.
+	// TODO: Consolidate implementations into a shared function.
+	string tid_str;
+	if (isupper_ascii(executionID.title_id.a)) {
+		tid_str += (char)executionID.title_id.a;
+	} else {
+		tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)executionID.title_id.a);
+	}
+	if (isupper_ascii(executionID.title_id.b)) {
+		tid_str += (char)executionID.title_id.b;
+	} else {
+		tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)executionID.title_id.b);
+	}
+
+	// tr: Xbox 360 title ID (32-bit hex, then two letters followed by a 4-digit decimal number)
+	return fmt::format(FRUN(C_("Xbox360_XEX", "{0:0>8X} ({1:s}-{2:0>4d})")),
+		be32_to_cpu(executionID.title_id.u32),
+		tid_str.c_str(),
+		be16_to_cpu(executionID.title_id.u16));
+}
+
+/**
  * Get the publisher.
  * @return Publisher
  */
@@ -1855,27 +1896,16 @@ int Xbox360_XEX::loadFieldData(void)
 	d->getXdbfResInfo();
 	if (d->isExecutionIDLoaded) {
 		// Title ID
-		// FIXME: Verify behavior on big-endian.
-		// TODO: Consolidate implementations into a shared function.
-		string tid_str;
-		if (isupper_ascii(d->executionID.title_id.a)) {
-			tid_str += (char)d->executionID.title_id.a;
+		const char *const s_titleID_desc = C_("Xbox360_XEX", "Title ID");
+		const string s_titleID = d->getTitleID();
+		if (!s_titleID.empty()) {
+			d->fields.addField_string(s_titleID_desc,
+				s_titleID, RomFields::STRF_MONOSPACE);
 		} else {
-			tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)d->executionID.title_id.a);
+			// Title ID is zero.
+			d->fields.addField_string(s_titleID_desc,
+				fmt::format(FSTR("{:0>8X}"), 0));
 		}
-		if (isupper_ascii(d->executionID.title_id.b)) {
-			tid_str += (char)d->executionID.title_id.b;
-		} else {
-			tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)d->executionID.title_id.b);
-		}
-
-		d->fields.addField_string(C_("Xbox360_XEX", "Title ID"),
-			// tr: Xbox 360 title ID (32-bit hex, then two letters followed by a 4-digit decimal number)
-			fmt::format(FRUN(C_("Xbox360_XEX", "{0:0>8X} ({1:s}-{2:0>4d})")),
-				be32_to_cpu(d->executionID.title_id.u32),
-				tid_str.c_str(),
-				be16_to_cpu(d->executionID.title_id.u16)),
-			RomFields::STRF_MONOSPACE);
 
 		// Publisher
 		const string publisher = d->getPublisher();
@@ -2011,7 +2041,7 @@ int Xbox360_XEX::loadMetaData(void)
 		return 0;
 	}
 
-	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
+	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
 
 	// NOTE: RomMetaData ignores empty strings, so we don't need to
 	// check for them here.
@@ -2021,6 +2051,18 @@ int Xbox360_XEX::loadMetaData(void)
 
 	// Publisher
 	d->metaData.addMetaData_string(Property::Publisher, d->getPublisher());
+
+	/** Custom properties! **/
+
+	// Title ID (as Game ID)
+	d->metaData.addMetaData_string(Property::GameID, d->getTitleID());
+
+	// Media ID (as Title ID) (FIXME: Make a separate "Media ID" property?)
+	d->metaData.addMetaData_string(Property::TitleID,
+		d->formatMediaID(
+			(d->xexType != Xbox360_XEX_Private::XexType::XEX1
+				? d->secInfo.xex2.xgd2_media_id
+				: d->secInfo.xex1.xgd2_media_id)));
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());

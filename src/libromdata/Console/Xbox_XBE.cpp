@@ -101,6 +101,13 @@ public:
 	 */
 	const EXE *initEXE(void);
 
+public:
+	/**
+	 * Get the title ID.
+	 * @return Title ID, or empty string on error.
+	 */
+	string getTitleID(void) const;
+
 	/**
 	 * Get the publisher.
 	 * @return Publisher.
@@ -346,6 +353,40 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 
 	// EXE loaded.
 	return this->pe_exe.get();
+}
+
+/**
+ * Get the title ID.
+ * @return Title ID, or empty string on error.
+ */
+string Xbox_XBE_Private::getTitleID(void) const
+{
+	if (unlikely(xbeCertificate.title_id.u32 == 0)) {
+		// No title ID...
+		return {};
+	}
+
+	// FIXME: Verify behavior on big-endian.
+	// TODO: Consolidate implementations into a shared function.
+	string tid_str;
+	if (isupper_ascii(xbeCertificate.title_id.a)) {
+		tid_str += xbeCertificate.title_id.a;
+	} else {
+		tid_str += fmt::format(FSTR("\\x{:0>2X}"),
+			static_cast<uint8_t>(xbeCertificate.title_id.a));
+	}
+	if (isupper_ascii(xbeCertificate.title_id.b)) {
+		tid_str += xbeCertificate.title_id.b;
+	} else {
+		tid_str += fmt::format(FSTR("\\x{:0>2X}"),
+			static_cast<uint8_t>(xbeCertificate.title_id.b));
+	}
+
+	// tr: Xbox title ID (32-bit hex, then two letters followed by a 3-digit decimal number)
+	return fmt::format(FRUN(C_("Xbox_XBE", "{0:0>8X} ({1:s}-{2:0>3d})")),
+		le32_to_cpu(xbeCertificate.title_id.u32),
+		tid_str.c_str(),
+		le16_to_cpu(xbeCertificate.title_id.u16));
 }
 
 /**
@@ -692,35 +733,15 @@ int Xbox_XBE::loadFieldData(void)
 	}
 
 	// Title ID
-	const char *const s_title_id_desc = C_("Xbox_XBE", "Title ID");
-	if (likely(xbeCertificate->title_id.u32 != 0)) {
-		// FIXME: Verify behavior on big-endian.
-		// TODO: Consolidate implementations into a shared function.
-		string tid_str;
-		if (isupper_ascii(xbeCertificate->title_id.a)) {
-			tid_str += xbeCertificate->title_id.a;
-		} else {
-			tid_str += fmt::format(FSTR("\\x{:0>2X}"),
-				static_cast<uint8_t>(xbeCertificate->title_id.a));
-		}
-		if (isupper_ascii(xbeCertificate->title_id.b)) {
-			tid_str += xbeCertificate->title_id.b;
-		} else {
-			tid_str += fmt::format(FSTR("\\x{:0>2X}"),
-				static_cast<uint8_t>(xbeCertificate->title_id.b));
-		}
-
-		d->fields.addField_string(s_title_id_desc,
-			// tr: Xbox title ID (32-bit hex, then two letters followed by a 3-digit decimal number)
-			fmt::format(FRUN(C_("Xbox_XBE", "{0:0>8X} ({1:s}-{2:0>3d})")),
-				le32_to_cpu(xbeCertificate->title_id.u32),
-				tid_str.c_str(),
-				le16_to_cpu(xbeCertificate->title_id.u16)),
-			RomFields::STRF_MONOSPACE);
+	const char *const s_titleID_desc = C_("Xbox_XBE", "Title ID");
+	const string s_titleID = d->getTitleID();
+	if (!s_titleID.empty()) {
+		d->fields.addField_string(s_titleID_desc,
+			s_titleID, RomFields::STRF_MONOSPACE);
 	} else {
 		// Title ID is zero.
-		d->fields.addField_string(s_title_id_desc,
-			fmt::format(FSTR("{:0>8X}"), le32_to_cpu(xbeCertificate->title_id.u32)));
+		d->fields.addField_string(s_titleID_desc,
+			fmt::format(FSTR("{:0>8X}"), 0));
 	}
 
 	// Publisher
@@ -848,7 +869,7 @@ int Xbox_XBE::loadMetaData(void)
 	}
 
 	const XBE_Certificate *const xbeCertificate = &d->xbeCertificate;
-	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 	// Title
 	d->metaData.addMetaData_string(Property::Title,
@@ -856,6 +877,11 @@ int Xbox_XBE::loadMetaData(void)
 
 	// Publisher
 	d->metaData.addMetaData_string(Property::Publisher, d->getPublisher());
+
+	/** Custom properties! **/
+
+	// Title ID (as Game ID)
+	d->metaData.addMetaData_string(Property::GameID, d->getTitleID());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
