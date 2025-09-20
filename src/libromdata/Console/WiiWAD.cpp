@@ -944,9 +944,9 @@ int WiiWAD::loadFieldData(void)
 	// Game ID
 	// NOTE: Only displayed if TID lo is all alphanumeric characters.
 	// TODO: Only for certain TID hi?
-	const string s_game_id = d->getGameID();
-	if (!s_game_id.empty()) {
-		d->fields.addField_string(C_("RomData", "Game ID"), s_game_id);
+	const string s_gameID = d->getGameID();
+	if (!s_gameID.empty()) {
+		d->fields.addField_string(C_("RomData", "Game ID"), s_gameID);
 	}
 
 	// Title version

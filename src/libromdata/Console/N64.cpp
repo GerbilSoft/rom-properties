@@ -412,8 +412,8 @@ int N64::loadMetaData(void)
 
 	// Game ID
 	// NOTE: Not showing "____" here, even though it's shown in the field data.
-	const string s_game_id = d->getGameID();
-	if (s_game_id != "____") {
+	const string s_gameID = d->getGameID();
+	if (s_gameID != "____") {
 		d->metaData.addMetaData_string(Property::GameID, d->getGameID());
 	}
 
