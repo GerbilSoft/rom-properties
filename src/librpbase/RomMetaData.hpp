@@ -24,7 +24,9 @@
 namespace LibRpBase {
 
 // Properties.
-// This matches KFileMetaData::Property.
+// Most of the lower properties match KFileMetaData::Property, but a lot
+// of the later KFileMetaData properties aren't useful for us, so we're
+// using a custom mapping.
 enum class Property : int8_t {
 	Invalid = -1,
 	FirstProperty = 0,
@@ -66,36 +68,11 @@ enum class Property : int8_t {
 	FrameRate,	// integer: number of frames per second
 
 	// Images
-	Manufacturer,			// string
-	Model,				// string
-	ImageDateTime,			// FIXME
-	ImageOrientation,		// FIXME
-	PhotoFlash,			// FIXME
-	PhotoPixelXDimension,		// FIXME
-	PhotoPixelYDimension,		// FIXME
-	PhotoDateTimeOriginal,		// FIXME
-	PhotoFocalLength,		// FIXME
-	PhotoFocalLengthIn35mmFilm,	// FIXME
-	PhotoExposureTime,		// FIXME
-	PhotoFNumber,			// FIXME
-	PhotoApertureValue,		// FIXME
-	PhotoExposureBiasValue,		// FIXME
-	PhotoWhiteBalance,		// FIXME
-	PhotoMeteringMode,		// FIXME
-	PhotoISOSpeedRatings,		// FIXME
-	PhotoSaturation,		// FIXME
-	PhotoSharpness,			// FIXME
-	PhotoGpsLatitude,		// FIXME
-	PhotoGpsLongitude,		// FIXME
-	PhotoGpsAltitude,		// FIXME
-
-	// Translations
-	TranslationUnitsTotal,			// FIXME
-	TranslationUnitsWithTranslation,	// FIXME
-	TranslationUnitsWithDraftTranslation,	// FIXME
-	TranslationLastAuthor,			// FIXME
-	TranslationLastUpDate,			// FIXME
-	TranslationTemplateDate,		// FIXME
+	Manufacturer,		// string
+	Model,			// string
+	ImageDateTime,		// FIXME
+	ImageOrientation,	// FIXME
+	PhotoFlash,		// FIXME
 
 	// Origin
 	OriginUrl,		// string: origin URL
@@ -120,12 +97,6 @@ enum class Property : int8_t {
 	// Added in KF5 5.48
 	Rating,			// integer: [0,100]
 	Lyrics,			// string
-
-	// Replay gain (KF5 5.51)
-	ReplayGainAlbumPeak,	// double: dB
-	ReplayGainAlbumGain,	// double: dB
-	ReplayGainTrackPeak,	// double: dB
-	ReplayGainTrackGain,	// double: dB
 
 	// Added in KF5 5.53
 	Description,		// string

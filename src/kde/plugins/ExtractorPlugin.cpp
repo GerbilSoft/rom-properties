@@ -29,12 +29,14 @@
 #include "RpQUrl.hpp"
 
 // Other rom-properties libraries
+#include "librpbase/RomMetaData.hpp"
 #include "libromdata/RomDataFactory.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRomData;
 
 // C++ STL classes
+using std::array;
 using std::string;
 using std::vector;
 
@@ -51,9 +53,92 @@ using namespace KFileMetaData::Property;
 
 namespace RomPropertiesKDE {
 
+// Mqpping of LibRpBase::Property to KFileMetaData::Property.
+
+// LibRpBase::Property used to be identical to LibRpBase::Property,
+// but a lot of the properties don't make sense for rom-properties, and
+// we want to be able to add custom properties for certain systems, too.
+
+// - Index: RomMetaData::Property
+// - Value: KFileMetaData::Property (as uint8_t)
+static array<uint8_t, static_cast<size_t>(LibRpBase::Property::PropertyCount)> kfmd_PropIdxMap = {{
+	KFileMetaData::Property::Empty,
+
+	// Audio
+	KFileMetaData::Property::BitRate,		// integer: kbit/sec
+	KFileMetaData::Property::Channels,		// integer: channels
+	KFileMetaData::Property::Duration,		// integer: duration, in milliseconds
+	KFileMetaData::Property::Genre,			// string
+	KFileMetaData::Property::SampleRate,		// integer: Hz
+	KFileMetaData::Property::TrackNumber,		// unsigned integer: track number
+	KFileMetaData::Property::ReleaseYear,		// unsigned integer: year
+	KFileMetaData::Property::Comment,		// string: comment
+	KFileMetaData::Property::Artist,		// string: artist
+	KFileMetaData::Property::Album,			// string: album
+	KFileMetaData::Property::AlbumArtist,		// string: album artist
+	KFileMetaData::Property::Composer,		// string: composer
+	KFileMetaData::Property::Lyricist,		// string: lyricist
+
+	// Document
+	KFileMetaData::Property::Author,		// string: author
+	KFileMetaData::Property::Title,			// string: title
+	KFileMetaData::Property::Subject,		// string: subject
+	KFileMetaData::Property::Generator,		// string: application used to create this file
+	KFileMetaData::Property::PageCount,		// integer: page count
+	KFileMetaData::Property::WordCount,		// integer: word count
+	KFileMetaData::Property::LineCount,		// integer: line count
+	KFileMetaData::Property::Language,		// string: language
+	KFileMetaData::Property::Copyright,		// string: copyright
+	KFileMetaData::Property::Publisher,		// string: publisher
+	KFileMetaData::Property::CreationDate,		// timestamp: creation date
+	KFileMetaData::Property::Keywords,		// FIXME: What's the type?
+
+	// Media
+	KFileMetaData::Property::Width,			// integer: width, in pixels
+	KFileMetaData::Property::Height,		// integer: height, in pixels
+	KFileMetaData::Property::AspectRatio,		// FIXME: Float?
+	KFileMetaData::Property::FrameRate,		// integer: number of frames per second
+
+	// Images
+	KFileMetaData::Property::Manufacturer,		// string
+	KFileMetaData::Property::Model,			// string
+	KFileMetaData::Property::ImageDateTime,		// FIXME
+	KFileMetaData::Property::ImageOrientation,	// FIXME
+	KFileMetaData::Property::PhotoFlash,		// FIXME
+
+	// Origin
+	KFileMetaData::Property::OriginUrl,		// string: origin URL
+	KFileMetaData::Property::OriginEmailSubject,	// string: subject of origin email
+	KFileMetaData::Property::OriginEmailSender,	// string: sender of origin email
+	KFileMetaData::Property::OriginEmailMessageId,	// string: message ID of origin email
+
+	// Audio
+	KFileMetaData::Property::DiscNumber,		// integer: disc number of multi-disc set
+	KFileMetaData::Property::Location,		// string: location where audio was recorded
+	KFileMetaData::Property::Performer,		// string: (lead) performer
+	KFileMetaData::Property::Ensemble,		// string: ensemble
+	KFileMetaData::Property::Arranger,		// string: arranger
+	KFileMetaData::Property::Conductor,		// string: conductor
+	KFileMetaData::Property::Opus,			// string: opus
+
+	// Other
+	KFileMetaData::Property::Label,			// string: label
+	KFileMetaData::Property::Compilation,		// string: compilation
+	KFileMetaData::Property::License,		// string: license information
+
+	// Added in KF5 5.48
+	KFileMetaData::Property::Rating,		// integer: [0,100]
+	KFileMetaData::Property::Lyrics,		// string
+
+	// Added in KF5 5.53
+	KFileMetaData::Property::Description,		// string
+}};
+
 ExtractorPlugin::ExtractorPlugin(QObject *parent)
 	: super(parent)
-{ }
+{
+	assert(kfmd_PropIdxMap[kfmd_PropIdxMap.size()-1] != 0);
+}
 
 QStringList ExtractorPlugin::mimetypes(void) const
 {
@@ -98,13 +183,14 @@ void ExtractorPlugin::extract_properties(KFileMetaData::ExtractionResult *result
 					default:
 						break;
 				}
-				result->add(static_cast<KFileMetaData::Property::Property>(prop.name), ivalue);
+				result->add(static_cast<KFileMetaData::Property::Property>(
+					kfmd_PropIdxMap[static_cast<size_t>(prop.name)]), ivalue);
 				break;
 			}
 
 			case PropertyType::UnsignedInteger: {
-				result->add(static_cast<KFileMetaData::Property::Property>(prop.name),
-					prop.data.uvalue);
+				result->add(static_cast<KFileMetaData::Property::Property>(
+					kfmd_PropIdxMap[static_cast<size_t>(prop.name)]), prop.data.uvalue);
 				break;
 			}
 
@@ -121,7 +207,8 @@ void ExtractorPlugin::extract_properties(KFileMetaData::ExtractionResult *result
 #endif /* KCOREADDONS_VERSION < QT_VERSION_CHECK(5, 53, 0) */
 
 				if (prop.data.str && prop.data.str[0] != '\0') {
-					result->add(static_cast<KFileMetaData::Property::Property>(prop_name), U82Q(prop.data.str));
+					result->add(static_cast<KFileMetaData::Property::Property>(
+					kfmd_PropIdxMap[static_cast<size_t>(prop_name)]), U82Q(prop.data.str));
 				}
 				break;
 			}
@@ -131,8 +218,8 @@ void ExtractorPlugin::extract_properties(KFileMetaData::ExtractionResult *result
 				// NOTE: Some properties might need the full QDateTime.
 				// CreationDate seems to work fine with just QDate.
 				const QDateTime dateTime = unixTimeToQDateTime(prop.data.timestamp, true);
-				result->add(static_cast<KFileMetaData::Property::Property>(prop.name),
-					dateTime.date());
+				result->add(static_cast<KFileMetaData::Property::Property>(
+					kfmd_PropIdxMap[static_cast<size_t>(prop.name)]), dateTime.date());
 				break;
 			}
 

@@ -98,31 +98,6 @@ const array<PropertyType, static_cast<size_t>(Property::PropertyCount)> RomMetaD
 	PropertyType::Timestamp, // ImageDateTime
 	PropertyType::Invalid,	// ImageOrientation (FIXME)
 	PropertyType::Invalid,	// PhotoFlash (FIXME)
-	PropertyType::Invalid,	// PhotoPixelXDimension (FIXME)
-	PropertyType::Invalid,	// PhotoPixelYDimension (FIXME)
-	PropertyType::Timestamp, // PhotoDateTimeOriginal
-	PropertyType::Invalid,	// PhotoFocalLength (FIXME)
-	PropertyType::Invalid,	// PhotoFocalLengthIn35mmFilm (FIXME)
-	PropertyType::Invalid,	// PhotoExposureTime (FIXME)
-	PropertyType::Invalid,	// PhotoFNumber (FIXME)
-	PropertyType::Invalid,	// PhotoApertureValue (FIXME)
-	PropertyType::Invalid,	// PhotoExposureBiasValue (FIXME)
-	PropertyType::Invalid,	// PhotoWhiteBalance (FIXME)
-	PropertyType::Invalid,	// PhotoMeteringMode (FIXME)
-	PropertyType::Invalid,	// PhotoISOSpeedRatings (FIXME)
-	PropertyType::Invalid,	// PhotoSaturation (FIXME)
-	PropertyType::Invalid,	// PhotoSharpness (FIXME)
-	PropertyType::Invalid,	// PhotoGpsLatitude (FIXME)
-	PropertyType::Invalid,	// PhotoGpsLongitude (FIXME)
-	PropertyType::Invalid,	// PhotoGpsAltitude (FIXME)
-
-	// Translations
-	PropertyType::Invalid,	// TranslationUnitsTotal (FIXME)
-	PropertyType::Invalid,	// TranslationUnitsWithTranslation (FIXME)
-	PropertyType::Invalid,	// TranslationUnitsWithDraftTranslation (FIXME)
-	PropertyType::Invalid,	// TranslationLastAuthor (FIXME)
-	PropertyType::Invalid,	// TranslationLastUpDate (FIXME)
-	PropertyType::Invalid,	// TranslationTemplateDate (FIXME)
 
 	// Origin
 	PropertyType::String,	// OriginUrl
@@ -148,20 +123,13 @@ const array<PropertyType, static_cast<size_t>(Property::PropertyCount)> RomMetaD
 	PropertyType::Integer,	// Rating
 	PropertyType::String,	// Lyrics
 
-	// Replay gain (KF5 5.51)
-	PropertyType::Double,	// ReplayGainAlbumPeak
-	PropertyType::Double,	// ReplayGainAlbumGain
-	PropertyType::Double,	// ReplayGainTrackPeak
-	PropertyType::Double,	// ReplayGainTrackGain
-
 	// Added in KF5 5.53
 	PropertyType::String,	// Description
 };
 
 RomMetaDataPrivate::RomMetaDataPrivate()
 {
-	static_assert(ARRAY_SIZE(RomMetaDataPrivate::PropertyTypeMap) == static_cast<size_t>(Property::PropertyCount),
-		      "PropertyTypeMap needs to be updated!");
+	assert(RomMetaDataPrivate::PropertyTypeMap[RomMetaDataPrivate::PropertyTypeMap.size()-1] != PropertyType::Invalid);
 	map_metaData.fill(Property::Invalid);
 }
 

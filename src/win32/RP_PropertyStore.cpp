@@ -16,7 +16,6 @@
 #include <propvarutil.h>
 
 // librpbase, librpfile, libromdata
-#include "librpbase/RomMetaData.hpp"
 using LibRpFile::IRpFilePtr;
 using namespace LibRpBase;
 using namespace LibRomData;
@@ -46,7 +45,7 @@ const CLSID CLSID_RP_PropertyStore =
  *   - pkey: PROPERTYKEY (if nullptr, not implemented)
  *   - vtype: Expected variant type.
  */
-const array<RP_PropertyStore_Private::MetaDataConv, 79> RP_PropertyStore_Private::metaDataConv = {{
+const array<RP_PropertyStore_Private::MetaDataConv, static_cast<size_t>(Property::PropertyCount)> RP_PropertyStore_Private::metaDataConv = {{
 	{nullptr, VT_EMPTY},			// Empty
 
 	// Audio
@@ -90,31 +89,6 @@ const array<RP_PropertyStore_Private::MetaDataConv, 79> RP_PropertyStore_Private
 	{&PKEY_Photo_DateTaken, VT_DATE},	// ImageDateTime
 	{&PKEY_Photo_Orientation, VT_UI2},	// ImageOrientation
 	{&PKEY_Photo_Flash, VT_UI1},		// PhotoFlash
-	{nullptr, VT_EMPTY},			// PhotoPixelXDimension
-	{nullptr, VT_EMPTY},			// PhotoPixelYDimension
-	{nullptr, VT_EMPTY},			// PhotoDateTimeOriginal
-	{nullptr, VT_EMPTY},			// PhotoFocalLength
-	{nullptr, VT_EMPTY},			// PhotoFocalLengthIn35mmFilm
-	{nullptr, VT_EMPTY},			// PhotoExposureTime
-	{nullptr, VT_EMPTY},			// PhotoFNumber
-	{nullptr, VT_EMPTY},			// PhotoApertureValue
-	{nullptr, VT_EMPTY},			// PhotoExposureBiasValue
-	{nullptr, VT_EMPTY},			// PhotoWhiteBalance
-	{nullptr, VT_EMPTY},			// PhotoMeteringMode
-	{nullptr, VT_EMPTY},			// PhotoISOSpeedRatings
-	{nullptr, VT_EMPTY},			// PhotoSaturation
-	{nullptr, VT_EMPTY},			// PhotoSharpness
-	{nullptr, VT_EMPTY},			// PhotoGpsLatitude
-	{nullptr, VT_EMPTY},			// PhotoGpsLongitude
-	{nullptr, VT_EMPTY},			// PhotoGpsAltitude
-
-	// Translations
-	{nullptr, VT_EMPTY},			// TranslationUnitsTotal
-	{nullptr, VT_EMPTY},			// TranslationUnitsWithTranslation
-	{nullptr, VT_EMPTY},			// TranslationUnitsWithDraftTranslation
-	{nullptr, VT_EMPTY},			// TranslationLastAuthor
-	{nullptr, VT_EMPTY},			// TranslationLastUpDate
-	{nullptr, VT_EMPTY},			// TranslationTemplateDate
 
 	// Origin
 	{nullptr, VT_EMPTY},			// OriginUrl
@@ -140,12 +114,6 @@ const array<RP_PropertyStore_Private::MetaDataConv, 79> RP_PropertyStore_Private
 	{&PKEY_Rating, VT_UI4},			// Rating: [0,100]; convert to [1,99] for Windows.
 	{&PKEY_Music_Lyrics, VT_BSTR},		// Lyrics
 
-	// Replay gain (KF5 5.51)
-	{nullptr, VT_R8},			// ReplayGainAlbumPeak
-	{nullptr, VT_R8},			// ReplayGainAlbumGain
-	{nullptr, VT_R8},			// ReplayGainTrackPeak
-	{nullptr, VT_R8},			// ReplayGainTrackGain
-
 	// Added in KF5 5.53
 	{&PKEY_FileDescription, VT_BSTR},	// Description
 }};
@@ -170,7 +138,9 @@ RP_PropertyStore_Private::RP_PropertyStore_Private()
 	: file(nullptr)
 	, pstream(nullptr)
 	, grfMode(0)
-{}
+{
+	assert(metaDataConv[metaDataConv.size()-1].pkey != nullptr);
+}
 
 RP_PropertyStore_Private::~RP_PropertyStore_Private()
 {

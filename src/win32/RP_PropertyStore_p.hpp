@@ -12,6 +12,7 @@
 
 // librpbase, librpfile
 #include "librpbase/RomData.hpp"
+#include "librpbase/RomMetaData.hpp"
 #include "librpfile/IRpFile.hpp"
 
 // Workaround for RP_D() expecting the no-underscore naming convention.
@@ -64,7 +65,7 @@ public:
 		const PROPERTYKEY *pkey;
 		LONG vtype;
 	};
-	static const std::array<MetaDataConv, 79> metaDataConv;
+	static const std::array<MetaDataConv, static_cast<size_t>(LibRpBase::Property::PropertyCount)> metaDataConv;
 
 public:
 	/**

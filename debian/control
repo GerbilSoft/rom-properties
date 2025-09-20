@@ -42,7 +42,7 @@ Vcs-Browser: https://github.com/GerbilSoft/rom-properties
 
 Package: rom-properties-all
 Architecture: any
-Depends: ${misc:Depends}, libromdata7, rom-properties-kde4, rom-properties-kf5, rom-properties-xfce, rom-properties-gtk3, rom-properties-cli, rom-properties-tracker, rom-properties-utils, rom-properties-lang, rom-properties-thumbnailer-dbus
+Depends: ${misc:Depends}, libromdata8, rom-properties-kde4, rom-properties-kf5, rom-properties-xfce, rom-properties-gtk3, rom-properties-cli, rom-properties-tracker, rom-properties-utils, rom-properties-lang, rom-properties-thumbnailer-dbus
 Description: ROM Properties Page shell extension (meta package)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
@@ -50,7 +50,7 @@ Description: ROM Properties Page shell extension (meta package)
  .
  This is a meta-package that installs all rom-properties packages.
 
-Package: libromdata7
+Package: libromdata8
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, rom-properties-data, liblz4-1, liblzo2-2
 Description: ROM Properties Page shell extension (shared library)
@@ -63,7 +63,7 @@ Description: ROM Properties Page shell extension (shared library)
 
 Package: rom-properties-kde4
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata7, rom-properties-utils, rom-properties-xdg
+Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata8, rom-properties-utils, rom-properties-xdg
 Recommends: rom-properties-lang
 Description: ROM Properties Page shell extension (KDE4 UI frontend)
  This shell extension provides thumbnailing and property page functionality
@@ -74,7 +74,7 @@ Description: ROM Properties Page shell extension (KDE4 UI frontend)
 
 Package: rom-properties-kio-servicemenus
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata7, rom-properties-utils
+Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata8, rom-properties-utils
 Conflicts: rom-properties-kf5 (<< 2.3)
 Replaces: rom-properties-kf5 (<< 2.3)
 Description: ROM Properties Page shell extension (KF5/KF6 service menus)
@@ -86,7 +86,7 @@ Description: ROM Properties Page shell extension (KF5/KF6 service menus)
 
 Package: rom-properties-kf5
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata7, rom-properties-utils, rom-properties-xdg, rom-properties-kio-servicemenus
+Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata8, rom-properties-utils, rom-properties-xdg, rom-properties-kio-servicemenus
 Recommends: rom-properties-lang
 Conflicts: rom-properties-kde5
 Replaces: rom-properties-kde5
@@ -99,7 +99,7 @@ Description: ROM Properties Page shell extension (KF5 UI frontend)
 
 Package: rom-properties-xfce
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata7, rom-properties-utils, rom-properties-xdg, rom-properties-thumbnailer-dbus
+Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata8, rom-properties-utils, rom-properties-xdg, rom-properties-thumbnailer-dbus
 Recommends: rom-properties-lang, rom-properties-tracker
 Description: ROM Properties Page shell extension (GTK2 XFCE UI frontend)
  This shell extension provides thumbnailing and property page functionality
@@ -113,7 +113,7 @@ Description: ROM Properties Page shell extension (GTK2 XFCE UI frontend)
 
 Package: rom-properties-gtk3
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata7, rom-properties-utils, rom-properties-xdg, rom-properties-thumbnailer-dbus
+Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata8, rom-properties-utils, rom-properties-xdg, rom-properties-thumbnailer-dbus
 Recommends: rom-properties-lang, rom-properties-tracker
 Conflicts: rom-properties-gnome, rom-properties-mate, rom-properties-cinnamon, rom-properties-gtk3-common
 Replaces: rom-properties-gnome, rom-properties-mate, rom-properties-cinnamon, rom-properties-gtk3-common
@@ -132,7 +132,7 @@ Description: ROM Properties Page shell extension (GTK3 UI frontend)
 
 Package: rom-properties-cli
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata7
+Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata8
 Recommends: rom-properties-lang
 Description: ROM Properties Page shell extension (command line version)
  This shell extension provides thumbnailing and property page functionality
@@ -143,7 +143,7 @@ Description: ROM Properties Page shell extension (command line version)
 
 Package: rom-properties-tracker
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata7
+Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata8
 Description: ROM Properties Page shell extension (Tracker metadata extractor module)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
