@@ -8,6 +8,12 @@
             <typeInfo type="String" isViewable="true"/>
             <labelInfo label="Game ID"/>
         </propertyDescription>
+        <propertyDescription name="com.gerbilsoft.rom-properties.TitleID" formatID="{0217A595-C88B-41BF-A58C-5DA4483DEEE2}" propID="2">
+            <description>Game ID</description>
+            <searchInfo inInvertedIndex="false" isColumn="true" maxSize="64"/>
+            <typeInfo type="String" isViewable="true"/>
+            <labelInfo label="Title ID"/>
+        </propertyDescription>
         <propertyDescription name="com.gerbilsoft.rom-properties.OSVersion" formatID="{655CA042-FF37-4564-8AC9-321F9C5F2A8D}" propID="2">
             <description>OS Version</description>
             <searchInfo inInvertedIndex="false" isColumn="true" maxSize="32"/>
