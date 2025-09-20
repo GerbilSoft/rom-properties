@@ -2422,6 +2422,9 @@ int Nintendo3DS::loadMetaData(void)
 	}
 
 	// Title ID
+	// If using NCSD, use the Media ID.
+	// If using CIA/TMD, use the TMD Title ID.
+	// Otherwise, use the primary NCCH Title ID.
 	uint32_t tid_hi = 0, tid_lo = 0;
 	if (d->romType == Nintendo3DSPrivate::RomType::CCI &&
 	    d->headers_loaded & Nintendo3DSPrivate::HEADER_NCSD)
