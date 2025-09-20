@@ -14,6 +14,12 @@
             <typeInfo type="String" isViewable="true"/>
             <labelInfo label="Title ID"/>
         </propertyDescription>
+        <propertyDescription name="com.gerbilsoft.rom-properties.MediaID" formatID="{53E92DAB-99E2-4897-B78B-FEE59832A323}" propID="2">
+            <description>Media ID</description>
+            <searchInfo inInvertedIndex="false" isColumn="true" maxSize="64"/>
+            <typeInfo type="String" isViewable="true"/>
+            <labelInfo label="Media ID"/>
+        </propertyDescription>
         <propertyDescription name="com.gerbilsoft.rom-properties.OSVersion" formatID="{655CA042-FF37-4564-8AC9-321F9C5F2A8D}" propID="2">
             <description>OS Version</description>
             <searchInfo inInvertedIndex="false" isColumn="true" maxSize="32"/>

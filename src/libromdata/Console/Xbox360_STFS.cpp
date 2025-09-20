@@ -1219,8 +1219,8 @@ int Xbox360_STFS::loadMetaData(void)
 	// Title ID (as Game ID)
 	d->metaData.addMetaData_string(Property::GameID, d->getTitleID());
 
-	// Media ID (as Title ID) (FIXME: Make a separate "Media ID" property?)
-	d->metaData.addMetaData_string(Property::TitleID,
+	// Media ID
+	d->metaData.addMetaData_string(Property::MediaID,
 		fmt::format(FSTR("{:0>8X}"), be32_to_cpu(stfsMetadata->media_id)));
 
 	// Finished reading the metadata.

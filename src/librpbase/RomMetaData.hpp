@@ -104,6 +104,7 @@ enum class Property : int8_t {
 	/** Custom properties! **/
 	GameID,			// string
 	TitleID,		// string
+	MediaID,		// string
 	OSVersion,		// string
 	EncryptionKey,		// string
 

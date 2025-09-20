@@ -2069,8 +2069,8 @@ int Xbox360_XEX::loadMetaData(void)
 	// Title ID (as Game ID)
 	d->metaData.addMetaData_string(Property::GameID, d->getTitleID());
 
-	// Media ID (as Title ID) (FIXME: Make a separate "Media ID" property?)
-	d->metaData.addMetaData_string(Property::TitleID,
+	// Media ID
+	d->metaData.addMetaData_string(Property::MediaID,
 		d->formatMediaID(
 			(d->xexType != Xbox360_XEX_Private::XexType::XEX1
 				? d->secInfo.xex2.xgd2_media_id
