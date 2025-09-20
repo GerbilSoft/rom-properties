@@ -186,7 +186,7 @@ public:
 	int addGameInfo(void);
 
 	/**
-	 * Get the encryption status of a partition.
+	 * Get the encryption status of a partition. (Wii only)
 	 *
 	 * This is used to check if the encryption keys are available
 	 * for a partition, or if not, why not.
@@ -195,6 +195,19 @@ public:
 	 * @return nullptr if partition is readable; error message if not.
 	 */
 	const char *wii_getCryptoStatus(const WiiPartition *partition);
+
+	/**
+	 * Get the required IOS version. (Wii only)
+	 * @return IOS version, or empty string on error.
+	 */
+	string wii_getIOSVersion(void) const;
+
+	/**
+	 * Get the encryption key name for a WiiPartition.
+	 * @param partition WiiPartition
+	 * @return Encryption key name, or nullptr on error.
+	 */
+	const char *wii_getEncryptionKeyName(const WiiPartition *partition);
 };
 
 ROMDATA_IMPL(GameCube)
@@ -647,6 +660,64 @@ const char *GameCubePrivate::wii_getCryptoStatus(const WiiPartition *partition)
 		err = C_("RomData", "Unknown error. (THIS IS A BUG!)");
 	}
 	return err;
+}
+
+/**
+ * Get the required IOS version. (Wii only)
+ * @return IOS version, or empty string on error.
+ */
+string GameCubePrivate::wii_getIOSVersion(void) const
+{
+	assert((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_WII);
+	assert(gamePartition != nullptr);
+	if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_WII || !gamePartition) {
+		return {};
+	}
+
+	const RVL_TMD_Header *const tmdHeader = gamePartition->tmdHeader();
+	assert(tmdHeader != nullptr);
+	if (!tmdHeader) {
+		return {};
+	}
+
+	const uint32_t ios_lo = be32_to_cpu(tmdHeader->sys_version.lo);
+	if (tmdHeader->sys_version.hi == cpu_to_be32(0x00000001) &&
+	    ios_lo > 2 && ios_lo < 0x300)
+	{
+		// Standard IOS slot.
+		return fmt::format(FSTR("IOS{:d}"), ios_lo);
+	} else if (tmdHeader->sys_version.id != 0) {
+		// Non-standard IOS slot.
+		// Print the full title ID.
+		return fmt::format(FSTR("{:0>8X}-{:0>8X}"),
+			be32_to_cpu(tmdHeader->sys_version.hi),
+			be32_to_cpu(tmdHeader->sys_version.lo));
+	}
+
+	// No IOS version...
+	return {};
+}
+
+/**
+ * Get the encryption key name for a WiiPartition.
+ * @param partition WiiPartition
+ * @return Encryption key name, or nullptr on error.
+ */
+const char *GameCubePrivate::wii_getEncryptionKeyName(const WiiPartition *partition)
+{
+	WiiTicket::EncryptionKeys encKey;
+	if (isNASOSFormatDiscImage()) {
+		// NASOS disc image.
+		// If this would normally be an encrypted image, use encKeyReal().
+		encKey = (discHeader.disc_noCrypto == 0
+			? partition->encKeyReal()
+			: partition->encKey());
+	} else {
+		// Other disc image. Use encKey().
+		encKey = partition->encKey();
+	}
+
+	return WiiTicket::encKeyName_static(encKey);
 }
 
 /** GameCube **/
@@ -1438,21 +1509,9 @@ int GameCube::loadFieldData(void)
 
 			// Required IOS version
 			// TODO: Is this the best place for it?
-			const char *const ios_version_title = C_("Wii", "IOS Version");
-			const uint32_t ios_lo = be32_to_cpu(tmdHeader->sys_version.lo);
-			if (tmdHeader->sys_version.hi == cpu_to_be32(0x00000001) &&
-			    ios_lo > 2 && ios_lo < 0x300)
-			{
-				// Standard IOS slot.
-				d->fields.addField_string(ios_version_title,
-					fmt::format(FSTR("IOS{:d}"), ios_lo));
-			} else if (tmdHeader->sys_version.id != 0) {
-				// Non-standard IOS slot.
-				// Print the full title ID.
-				d->fields.addField_string(ios_version_title,
-					fmt::format(FSTR("{:0>8X}-{:0>8X}"),
-						be32_to_cpu(tmdHeader->sys_version.hi),
-						be32_to_cpu(tmdHeader->sys_version.lo)));
+			const string s_ios_version = d->wii_getIOSVersion();
+			if (!s_ios_version.empty()) {
+				d->fields.addField_string(C_("Wii", "IOS Version"), s_ios_version);
 			}
 		}
 	}
@@ -1659,7 +1718,7 @@ int GameCube::loadFieldData(void)
 				RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_IS_UTC);
 		}
 
-		// Partition table.
+		// Partition table
 		auto *const vv_partitions = new RomFields::ListData_t();
 		vv_partitions->resize(d->wiiPtbl.size());
 
@@ -1711,19 +1770,7 @@ int GameCube::loadFieldData(void)
 			data_row.push_back(std::move(s_ptype));
 
 			// Encryption key
-			WiiTicket::EncryptionKeys encKey;
-			if (d->isNASOSFormatDiscImage()) {
-				// NASOS disc image.
-				// If this would normally be an encrypted image, use encKeyReal().
-				encKey = (d->discHeader.disc_noCrypto == 0
-					? entry.partition->encKeyReal()
-					: entry.partition->encKey());
-			} else {
-				// Other disc image. Use encKey().
-				encKey = entry.partition->encKey();
-			}
-
-			const char *s_key_name = WiiTicket::encKeyName_static(encKey);
+			const char *s_key_name = d->wii_getEncryptionKeyName(entry.partition.get());
 			if (!s_key_name) {
 				// tr: EncryptionKeys::Unknown
 				s_key_name = C_("RomData", "Unknown");
@@ -1868,7 +1915,18 @@ int GameCube::loadMetaData(void)
 	}
 	d->metaData.addMetaData_string(Property::GameID, latin1_to_utf8(id6, 6));
 
-	// TODO: For Wii games, IOS version.
+	// IOS version
+	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) == GameCubePrivate::DISC_SYSTEM_WII) {
+		d->metaData.addMetaData_string(Property::IOSVersion, d->wii_getIOSVersion());
+	}
+
+	// Encryption key (game partition only)
+	if (d->gamePartition) {
+		const char *s_key_name = d->wii_getEncryptionKeyName(d->gamePartition);
+		if (s_key_name) {
+			d->metaData.addMetaData_string(Property::EncryptionKey, s_key_name);
+		}
+	}
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
