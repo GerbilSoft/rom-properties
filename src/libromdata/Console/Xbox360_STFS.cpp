@@ -51,7 +51,7 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const array<const char*, 2+1> exts;
+	static const array<const char*, 3+1> exts;
 	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
@@ -172,8 +172,8 @@ ROMDATA_IMPL_IMG_TYPES(Xbox360_STFS)
 /** Xbox360_STFS_Private **/
 
 /* RomDataInfo */
-const array<const char*, 2+1> Xbox360_STFS_Private::exts = {{
-	//".stfs",	// FIXME: Not actually used...
+const array<const char*, 3+1> Xbox360_STFS_Private::exts = {{
+	".stfs",	// FIXME: Not actually used...
 	".fxs",		// Fallout
 	".exs",		// Skyrim
 
