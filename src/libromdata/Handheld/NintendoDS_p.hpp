@@ -107,6 +107,12 @@ public:
 	NDS_SecureArea secArea;
 
 	/**
+	 * Get the game ID, with unprintable characters replaced with '_'.
+	 * @return Game ID
+	 */
+	inline std::string getGameID(void) const;
+
+	/**
 	 * Load the icon/title data.
 	 * @return 0 on success; negative POSIX error code on error.
 	 */

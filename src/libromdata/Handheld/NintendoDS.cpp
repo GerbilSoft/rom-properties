@@ -77,6 +77,23 @@ NintendoDSPrivate::NintendoDSPrivate(const IRpFilePtr &file, bool cia)
 }
 
 /**
+ * Get the game ID, with unprintable characters replaced with '_'.
+ * @return Game ID
+ */
+inline string NintendoDSPrivate::getGameID(void) const
+{
+	// Replace any non-printable characters with underscores.
+	string id6;
+	id6.resize(6, '_');
+	for (size_t i = 0; i < 6; i++) {
+		if (ISPRINT(romHeader.id6[i])) {
+			id6[i] = romHeader.id6[i];
+		}
+	}
+	return id6;
+}
+
+/**
  * Load the icon/title data.
  * @return 0 on success; negative POSIX error code on error.
  */
@@ -682,8 +699,7 @@ int NintendoDS::loadFieldData(void)
 	}
 
 	// Game ID
-	d->fields.addField_string(C_("RomData", "Game ID"),
-		latin1_to_utf8(romHeader->id6, ARRAY_SIZE_I(romHeader->id6)));
+	d->fields.addField_string(C_("RomData", "Game ID"), d->getGameID());
 
 	// Publisher
 	const char *const publisher_title = C_("RomData", "Publisher");
@@ -990,7 +1006,7 @@ int NintendoDS::loadMetaData(void)
 
 	// ROM header is read in the constructor.
 	const NDS_RomHeader *const romHeader = &d->romHeader;
-	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 	// Title
 	bool has_full_title = false;
@@ -1035,6 +1051,13 @@ int NintendoDS::loadMetaData(void)
 					static_cast<unsigned int>(romHeader->company[0]),
 					static_cast<unsigned int>(romHeader->company[1])));
 		}
+	}
+
+	/** Custom properties! **/
+	const string s_gameID = d->getGameID();
+	// NOTE: Only showing the game ID if the first four characters are printable.
+	if (s_gameID.compare(0, 4, "____") != 0) {
+		d->metaData.addMetaData_string(Property::GameID, s_gameID);
 	}
 
 	// Finished reading the metadata.
