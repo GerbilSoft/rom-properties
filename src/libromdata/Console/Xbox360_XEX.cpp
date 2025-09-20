@@ -202,6 +202,12 @@ public:
 	 */
 	Xbox360_Version_t getMinKernelVersion(void);
 
+	/**
+	 * Get the encryption key name.
+	 * @return Encryption key name, or nullptr on error.
+	 */
+	const char *getEncryptionKeyName(void) const;
+
 public:
 	// CBC reader for encrypted PE executables.
 	// Also used for unencrypted executables.
@@ -1185,6 +1191,37 @@ Xbox360_Version_t Xbox360_XEX_Private::getMinKernelVersion(void)
 	return rver;
 }
 
+const char *Xbox360_XEX_Private::getEncryptionKeyName(void) const
+{
+	if (fileFormatInfo.encryption_type == cpu_to_be16(XEX2_ENCRYPTION_TYPE_NONE)) {
+		// No encryption.
+		return C_("Xbox360_XEX|EncKey", "None");
+	}
+
+	const char *s_ret = nullptr;
+	switch (keyInUse) {
+		default:
+		case -1:
+			// FIXME: xextool can detect the encryption keys for
+			// delta patches. Figure out how to do that here.
+			if (!(xex2Header.module_flags & XEX2_MODULE_FLAG_PATCH_DELTA)) {
+				s_ret = C_("RomData", "Unknown");
+			} else {
+				s_ret = C_("Xbox360_XEX|EncKey", "Cannot Determine");
+			}
+			break;
+
+		case 0:
+			s_ret = C_("Xbox360_XEX|EncKey", "Retail");
+			break;
+		case 1:
+			s_ret = C_("Xbox360_XEX|EncKey", "Debug");
+			break;
+	}
+
+	return s_ret;
+}
+
 /**
  * Initialize the EXE object.
  * @return EXE object on success; nullptr on error.
@@ -1928,31 +1965,10 @@ int Xbox360_XEX::loadFieldData(void)
 	// Loaded by initPeReader(), which is called by initXDBF().
 
 	// Encryption key
-	const char *s_encryption_key;
-	if (d->fileFormatInfo.encryption_type == cpu_to_be16(XEX2_ENCRYPTION_TYPE_NONE)) {
-		// No encryption.
-		s_encryption_key = C_("Xbox360_XEX|EncKey", "None");
-	} else {
-		switch (d->keyInUse) {
-			default:
-			case -1:
-				// FIXME: xextool can detect the encryption keys for
-				// delta patches. Figure out how to do that here.
-				if (!(d->xex2Header.module_flags & XEX2_MODULE_FLAG_PATCH_DELTA)) {
-					s_encryption_key = C_("RomData", "Unknown");
-				} else {
-					s_encryption_key = C_("Xbox360_XEX|EncKey", "Cannot Determine");
-				}
-				break;
-			case 0:
-				s_encryption_key = C_("Xbox360_XEX|EncKey", "Retail");
-				break;
-			case 1:
-				s_encryption_key = C_("Xbox360_XEX|EncKey", "Debug");
-				break;
-		}
+	const char *const s_encryptionKeyName = d->getEncryptionKeyName();
+	if (s_encryptionKeyName) {
+		d->fields.addField_string(C_("RomData", "Encryption Key"), s_encryptionKeyName);
 	}
-	d->fields.addField_string(C_("RomData", "Encryption Key"), s_encryption_key);
 
 	// Compression
 	static const array<const char*, 4> compression_tbl = {{
@@ -2041,7 +2057,7 @@ int Xbox360_XEX::loadMetaData(void)
 		return 0;
 	}
 
-	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
+	d->metaData.reserve(6);	// Maximum of 6 metadata properties.
 
 	// NOTE: RomMetaData ignores empty strings, so we don't need to
 	// check for them here.
@@ -2075,6 +2091,9 @@ int Xbox360_XEX::loadMetaData(void)
 			(d->xexType != Xbox360_XEX_Private::XexType::XEX1
 				? d->secInfo.xex2.xgd2_media_id
 				: d->secInfo.xex1.xgd2_media_id)));
+
+	// Encryption key
+	d->metaData.addMetaData_string(Property::EncryptionKey, d->getEncryptionKeyName());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
