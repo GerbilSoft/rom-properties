@@ -52,6 +52,17 @@ public:
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
 	int loadCmdGroupHeader(void);
+
+	/**
+	 * Get the Title ID.
+	 * @return Title ID
+	 */
+	inline string getTitleID(void) const
+	{
+		return fmt::format(FSTR("{:0>8X}-{:0>8X}"),
+			be32_to_cpu(tmdHeader.title_id.hi),
+			be32_to_cpu(tmdHeader.title_id.lo));
+	}
 };
 
 ROMDATA_IMPL(WiiTMD)
@@ -332,10 +343,7 @@ int WiiTMD::loadFieldData(void)
 
 	// Title ID
 	d->fields.addField_string(C_("Nintendo", "Title ID"),
-		fmt::format(FSTR("{:0>8X}-{:0>8X}"),
-			be32_to_cpu(tmdHeader->title_id.hi),
-			be32_to_cpu(tmdHeader->title_id.lo)),
-		RomFields::STRF_MONOSPACE);
+		d->getTitleID(), RomFields::STRF_MONOSPACE);
 
 	// Issuer
 	d->fields.addField_string(C_("Nintendo", "Issuer"),
@@ -473,13 +481,16 @@ int WiiTMD::loadMetaData(void)
 
 	// TMD header is read in the constructor.
 	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
-	d->metaData.reserve(1);	// Maximum of 1 metadata property.
+	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 
 	// Title ID (using as Title)
-	d->metaData.addMetaData_string(Property::Title,
-		fmt::format(FSTR("{:0>8X}-{:0>8X}"),
-			be32_to_cpu(tmdHeader->title_id.hi),
-			be32_to_cpu(tmdHeader->title_id.lo)));
+	const string s_titleID = d->getTitleID();
+	d->metaData.addMetaData_string(Property::Title, s_titleID);
+
+	/** Custom properties! */
+
+	// Title ID
+	d->metaData.addMetaData_string(Property::TitleID, s_titleID);
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());

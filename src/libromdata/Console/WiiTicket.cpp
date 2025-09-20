@@ -23,6 +23,7 @@ using namespace LibRpText;
 
 // C++ STL classes
 using std::array;
+using std::string;
 using std::unique_ptr;
 
 namespace LibRomData {
@@ -53,6 +54,17 @@ public:
 	WiiTicket::EncryptionKeys encKey;
 
 public:
+	/**
+	 * Get the Title ID.
+	 * @return Title ID
+	 */
+	inline string getTitleID(void) const
+	{
+		return fmt::format(FSTR("{:0>8X}-{:0>8X}"),
+			be32_to_cpu(ticket.v0.title_id.hi),
+			be32_to_cpu(ticket.v0.title_id.lo));
+	}
+
 	/**
 	 * Determine which encryption key is in use.
 	 * Result is stored in this->encKey.
@@ -485,10 +497,7 @@ int WiiTicket::loadFieldData(void)
 
 	// Title ID
 	d->fields.addField_string(C_("Nintendo", "Title ID"),
-		fmt::format(FSTR("{:0>8X}-{:0>8X}"),
-			be32_to_cpu(ticket->title_id.hi),
-			be32_to_cpu(ticket->title_id.lo)),
-		RomFields::STRF_MONOSPACE);
+		d->getTitleID(), RomFields::STRF_MONOSPACE);
 
 	// Issuer
 	d->fields.addField_string(C_("Nintendo", "Issuer"),
@@ -542,14 +551,19 @@ int WiiTicket::loadMetaData(void)
 
 	// Ticket is read in the constructor.
 	const RVL_Ticket *const ticket = &d->ticket.v0;
-	d->metaData.reserve(1);	// Maximum of 1 metadata property.
+	d->metaData.reserve(3);	// Maximum of 3 metadata property.
 
 	// Title ID (using as Title)
-	d->metaData.addMetaData_string(Property::Title,
-       		fmt::format(FSTR("{:0>8X}-{:0>8X}"),
-			be32_to_cpu(ticket->title_id.hi),
-			be32_to_cpu(ticket->title_id.lo)));
+	const string s_titleID = d->getTitleID();
+	d->metaData.addMetaData_string(Property::Title, s_titleID);
 
+	/** Custom properties! */
+
+	// Title ID
+	d->metaData.addMetaData_string(Property::TitleID, s_titleID);
+
+	// Encryption key
+	d->metaData.addMetaData_string(Property::EncryptionKey, encKeyName());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
