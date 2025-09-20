@@ -98,6 +98,29 @@ WiiWADPrivate::WiiWADPrivate(const IRpFilePtr &file)
 }
 
 /**
+ * Get the game ID.
+ * @return Game ID, or empty string if not valid.
+ */
+inline string WiiWADPrivate::getGameID(void) const
+{
+	// NOTE: Only displayed if TID lo is all alphanumeric characters.
+	// TODO: Only for certain TID hi?
+	if (!isalnum_ascii(tmdHeader.title_id.u8[4]) ||
+	    !isalnum_ascii(tmdHeader.title_id.u8[5]) ||
+	    !isalnum_ascii(tmdHeader.title_id.u8[6]) ||
+	    !isalnum_ascii(tmdHeader.title_id.u8[7]))
+	{
+		// Not a valid game ID.
+		return {};
+	}
+
+	string id4;
+	id4.resize(4, '\0');
+	memcpy(&id4[0], &tmdHeader.title_id.u8[4], 4);
+	return id4;
+}
+
+/**
  * Get the game information string from the banner.
  * @return Game information string, or empty string on error.
  */
@@ -140,6 +163,36 @@ string WiiWADPrivate::getGameInfo(void)
 	// Unable to decrypt the IMET header.
 	return {};
 #endif /* ENABLE_DECRYPTION */
+}
+
+/**
+ * Get the required IOS version. (Wii only)
+ * @return IOS version, or empty string on error.
+ */
+string WiiWADPrivate::wii_getIOSVersion(void) const
+{
+	const uint16_t sysID = be16_to_cpu(tmdHeader.title_id.sysID);
+	assert(sysID <= NINTENDO_SYSID_RVL);
+	if (sysID > NINTENDO_SYSID_RVL) {
+		return {};
+	}
+
+	const uint32_t ios_lo = be32_to_cpu(tmdHeader.sys_version.lo);
+	if (tmdHeader.sys_version.hi == cpu_to_be32(0x00000001) &&
+		ios_lo > 2 && ios_lo < 0x300)
+	{
+		// Standard IOS slot.
+		return fmt::format(FSTR("IOS{:d}"), ios_lo);
+	} else if (tmdHeader.sys_version.id != 0) {
+		// Non-standard IOS slot.
+		// Print the full title ID.
+		return fmt::format(FSTR("{:0>8X}-{:0>8X}"),
+			be32_to_cpu(tmdHeader.sys_version.hi),
+			be32_to_cpu(tmdHeader.sys_version.lo));
+	}
+
+	// No IOS version...
+	return {};
 }
 
 #ifdef ENABLE_DECRYPTION
@@ -891,17 +944,9 @@ int WiiWAD::loadFieldData(void)
 	// Game ID
 	// NOTE: Only displayed if TID lo is all alphanumeric characters.
 	// TODO: Only for certain TID hi?
-	if (isalnum_ascii(tmdHeader->title_id.u8[4]) &&
-	    isalnum_ascii(tmdHeader->title_id.u8[5]) &&
-	    isalnum_ascii(tmdHeader->title_id.u8[6]) &&
-	    isalnum_ascii(tmdHeader->title_id.u8[7]))
-	{
-		// Print the game ID.
-		// TODO: Is the publisher code available anywhere?
-		char id4[5];
-		memcpy(id4, &tmdHeader->title_id.u8[4], 4);
-		id4[4] = '\0';
-		d->fields.addField_string(C_("RomData", "Game ID"), id4);
+	const string s_game_id = d->getGameID();
+	if (!s_game_id.empty()) {
+		d->fields.addField_string(C_("RomData", "Game ID"), s_game_id);
 	}
 
 	// Title version
@@ -982,23 +1027,11 @@ int WiiWAD::loadFieldData(void)
 				fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), gcnRegion));
 		}
 
-		// Required IOS version.
+		// Required IOS version
 		if (sysID <= NINTENDO_SYSID_RVL) {
-			const char *const ios_version_title = C_("Wii", "IOS Version");
-			const uint32_t ios_lo = be32_to_cpu(tmdHeader->sys_version.lo);
-			if (tmdHeader->sys_version.hi == cpu_to_be32(0x00000001) &&
-			    ios_lo > 2 && ios_lo < 0x300)
-			{
-				// Standard IOS slot.
-				d->fields.addField_string(ios_version_title,
-					fmt::format(FSTR("IOS{:d}"), ios_lo));
-			} else if (tmdHeader->sys_version.id != 0) {
-				// Non-standard IOS slot.
-				// Print the full title ID.
-				d->fields.addField_string(ios_version_title,
-					fmt::format(FSTR("{:0>8X}-{:0>8X}"),
-						be32_to_cpu(tmdHeader->sys_version.hi),
-						be32_to_cpu(tmdHeader->sys_version.lo)));
+			const string s_ios_version = d->wii_getIOSVersion();
+			if (!s_ios_version.empty()) {
+				d->fields.addField_string(C_("Wii", "IOS Version"), s_ios_version);
 			}
 		}
 
@@ -1165,27 +1198,42 @@ int WiiWAD::loadMetaData(void)
 	}
 #endif /* ENABLE_DECRYPTION */
 
+	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
+
 	// TODO: Game title from WIBN if it's available.
 
-	// NOTE: We can only get the title if the encryption key is valid.
-	// If we can't get the title, don't bother creating RomMetaData.
+	// Title (first line of game info)
 	// TODO: Use WiiCommon for multi-language strings?
 	string gameInfo = d->getGameInfo();
-	if (gameInfo.empty()) {
-		return -EIO;
-	}
-	const size_t nl_pos = gameInfo.find('\n');
-	if (nl_pos != string::npos) {
-		gameInfo.resize(nl_pos);
-	}
-	if (gameInfo.empty()) {
-		return -EIO;
+	if (!gameInfo.empty()) {
+		const size_t nl_pos = gameInfo.find('\n');
+		if (nl_pos != string::npos) {
+			gameInfo.resize(nl_pos);
+		}
+		if (!gameInfo.empty()) {
+			d->metaData.addMetaData_string(Property::Title, gameInfo);
+		}
 	}
 
-	d->metaData.reserve(1);	// Maximum of 1 metadata property.
+	// Custom properties!
 
-	// Title. (first line of game info)
-	d->metaData.addMetaData_string(Property::Title, gameInfo);
+	// Game ID
+	d->metaData.addMetaData_string(Property::GameID, d->getGameID());
+
+	// Required IOS version
+	const uint16_t sysID = be16_to_cpu(d->tmdHeader.title_id.sysID);
+	if (sysID <= NINTENDO_SYSID_RVL) {
+		const string s_ios_version = d->wii_getIOSVersion();
+		if (!s_ios_version.empty()) {
+			d->metaData.addMetaData_string(Property::OSVersion, s_ios_version);
+		}
+	}
+
+	// Encryption key
+	const char *const s_key_name = (d->wiiTicket) ? d->wiiTicket->encKeyName() : nullptr;
+	if (s_key_name) {
+		d->metaData.addMetaData_string(Property::EncryptionKey, s_key_name);
+	}
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
