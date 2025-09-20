@@ -670,7 +670,8 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 
 	if (tid_desc) {
 		fields.addField_string(tid_desc,
-			fmt::format(FSTR("{:0>8X}-{:0>8X}"), tid_hi, tid_lo));
+			fmt::format(FSTR("{:0>8X}-{:0>8X}"), tid_hi, tid_lo),
+			RomFields::STRF_MONOSPACE);
 	}
 
 	if (!ncch_header) {
@@ -683,14 +684,15 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		const uint32_t pid_lo = le32_to_cpu(ncch_header->program_id.lo);
 		const uint32_t pid_hi = le32_to_cpu(ncch_header->program_id.hi);
 		fields.addField_string(C_("Nintendo3DS", "Program ID"),
-			fmt::format(FSTR("{:0>8X}-{:0>8X}"), pid_hi, pid_lo));
+			fmt::format(FSTR("{:0>8X}-{:0>8X}"), pid_hi, pid_lo),
+			RomFields::STRF_MONOSPACE);
 	}
 
 	// Product code
 	fields.addField_string(C_("Nintendo", "Product Code"),
 		latin1_to_utf8(ncch_header->product_code, sizeof(ncch_header->product_code)));
 
-	// Content type.
+	// Content type
 	// This is normally shown in the CIA content table.
 	if (showContentType) {
 		const char *const content_type = ncch->contentType();
@@ -707,7 +709,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		}
 #endif /* ENABLE_DECRYPTION */
 
-		// Encryption.
+		// Encryption
 		const char *const s_encryption = C_("Nintendo3DS", "Encryption");
 		const char *const s_unknown = C_("RomData", "Unknown");
 		NCCHReader::CryptoType cryptoType = {nullptr, false, 0, false};
@@ -727,7 +729,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		}
 	}
 
-	// Logo.
+	// Logo
 	// NOTE: All known official logo binaries are 8 KB.
 	// The original and new "Homebrew" logos are also 8 KB.
 	uint32_t crc = 0;

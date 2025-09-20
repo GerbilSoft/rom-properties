@@ -1090,7 +1090,8 @@ int Xbox360_STFS::loadFieldData(void)
 
 	// Title ID
 	// TODO: Consolidate implementations into a shared function.
-	d->fields.addField_string(C_("Xbox360_XEX", "Title ID"), d->getTitleID());
+	d->fields.addField_string(C_("Xbox360_XEX", "Title ID"),
+		d->getTitleID(), RomFields::STRF_MONOSPACE);
 
 	// Version and base version
 	// TODO: What indicates the update version?

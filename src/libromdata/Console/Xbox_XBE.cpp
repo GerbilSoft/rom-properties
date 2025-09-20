@@ -741,7 +741,7 @@ int Xbox_XBE::loadFieldData(void)
 	} else {
 		// Title ID is zero.
 		d->fields.addField_string(s_titleID_desc,
-			fmt::format(FSTR("{:0>8X}"), 0));
+			fmt::format(FSTR("{:0>8X}"), 0), RomFields::STRF_MONOSPACE);
 	}
 
 	// Publisher

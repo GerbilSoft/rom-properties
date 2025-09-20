@@ -822,7 +822,8 @@ int NintendoDS::loadFieldData(void)
 	d->fields.addTab("DSi");
 
 	// Title ID
-	d->fields.addField_string(C_("Nintendo", "Title ID"), d->dsi_getTitleID());
+	d->fields.addField_string(C_("Nintendo", "Title ID"),
+		d->dsi_getTitleID(), RomFields::STRF_MONOSPACE);
 
 	// DSi filetype
 	struct dsi_filetype_tbl_t{
