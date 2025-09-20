@@ -243,7 +243,11 @@ rp_image_ptr rp_image::squared(void) const
 
 		// Clear the bottom rows.
 		// NOTE: Last row may not be the full stride.
-		memset(dest, 0, ImageSizeCalc::T_calcImageSize(addToBottom-1, dest_stride) + sq_img->row_bytes());
+		size_t szToClear = sq_img->row_bytes();
+		if (addToBottom > 1) {
+			szToClear += ImageSizeCalc::T_calcImageSize(dest_stride, addToBottom - 1);
+		}
+		memset(dest, 0, szToClear);
 	} else /*if (width < height)*/ {
 		// Image is taller. Add columns to the left and right.
 
