@@ -1925,7 +1925,7 @@ int GameCube::loadMetaData(void)
 
 	// IOS version
 	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) == GameCubePrivate::DISC_SYSTEM_WII) {
-		d->metaData.addMetaData_string(Property::IOSVersion, d->wii_getIOSVersion());
+		d->metaData.addMetaData_string(Property::OSVersion, d->wii_getIOSVersion());
 	}
 
 	// Encryption key (game partition only)

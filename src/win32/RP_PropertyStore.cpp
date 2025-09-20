@@ -122,7 +122,7 @@ const array<RP_PropertyStore_Private::MetaDataConv, static_cast<size_t>(Property
 	// Custom properties!
 	{&PKEY_RomProperties_GameID, VT_BSTR},			// Game ID
 	{&PKEY_RomProperties_SerialNumber, VT_BSTR},		// Serial Number
-	{&PKEY_RomProperties_IOSVersion, VT_BSTR},		// IOS Version (Wii only)
+	{&PKEY_RomProperties_OSVersion, VT_BSTR},		// OS Version
 	{&PKEY_RomProperties_EncryptionKey, VT_BSTR},		// Encryption Key
 }};
 
