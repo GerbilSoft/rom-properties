@@ -137,7 +137,8 @@ static array<uint8_t, static_cast<size_t>(LibRpBase::Property::PropertyCount)> k
 ExtractorPlugin::ExtractorPlugin(QObject *parent)
 	: super(parent)
 {
-	assert(kfmd_PropIdxMap[kfmd_PropIdxMap.size()-1] != 0);
+	assert(kfmd_PropIdxMap.size() >= (static_cast<size_t>(LibRpBase::Property::LastKFMDProperty) + 1));
+	assert(kfmd_PropIdxMap[static_cast<size_t>(LibRpBase::Property::LastKFMDProperty)] != 0);
 }
 
 QStringList ExtractorPlugin::mimetypes(void) const
