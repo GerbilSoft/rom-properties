@@ -55,6 +55,12 @@ public:
 
 public:
 	/**
+	 * Get the game ID, with unprintable characters replaced with '_'.
+	 * @return Game ID
+	 */
+	inline string getGameID(void) const;
+
+	/**
 	 * Get the publisher.
 	 * @return Publisher, or "Unknown (xxx)" if unknown.
 	 */
@@ -95,6 +101,24 @@ GameBoyAdvancePrivate::GameBoyAdvancePrivate(const IRpFilePtr &file)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
+}
+
+/**
+ * Get the game ID, with unprintable characters replaced with '_'.
+ * @return Game ID
+ */
+inline string GameBoyAdvancePrivate::getGameID(void) const
+{
+	// Replace any non-printable characters with underscores.
+	// (Action Replay has ID6 "\0\0\0\001".)
+	string id6;
+	id6.resize(6, '_');
+	for (size_t i = 0; i < 6; i++) {
+		if (ISPRINT(romHeader.id6[i])) {
+			id6[i] = romHeader.id6[i];
+		}
+	}
+	return id6;
 }
 
 /**
@@ -349,16 +373,7 @@ int GameBoyAdvance::loadFieldData(void)
 		cpN_to_utf8(437, romHeader->title, sizeof(romHeader->title)));
 
 	// Game ID
-	// Replace any non-printable characters with underscores.
-	// (Action Replay has ID6 "\0\0\0\001".)
-	char id6[7];
-	for (unsigned int i = 0; i < 6; i++) {
-		id6[i] = (ISPRINT(romHeader->id6[i])
-			? romHeader->id6[i]
-			: '_');
-	}
-	id6[6] = 0;
-	d->fields.addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6, 6));
+	d->fields.addField_string(C_("RomData", "Game ID"), d->getGameID());
 
 	// Publisher
 	d->fields.addField_string(C_("RomData", "Publisher"), d->getPublisher());
@@ -451,6 +466,14 @@ int GameBoyAdvance::loadMetaData(void)
 
 	// Publisher
 	d->metaData.addMetaData_string(Property::Publisher, d->getPublisher());
+
+	/** Custom properties! **/
+
+	// NOTE: Only showing the game ID if the first four characters are printable.
+	const string s_gameID = d->getGameID();
+	if (s_gameID.compare(0, 4, "    ") != 0 && s_gameID.compare(0, 4, "____") != 0) {
+		d->metaData.addMetaData_string(Property::GameID, s_gameID);
+	}
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
