@@ -1723,8 +1723,7 @@ int Xbox360_XEX::loadFieldData(void)
 		}
 	}
 
-	// tr: Minimum kernel version (i.e. dashboard)
-	//const char *const s_minver = C_("Xbox360_XEX", "Min. Kernel");
+	// Minimum kernel version (i.e. dashboard)
 	const Xbox360_Version_t minver = d->getMinKernelVersion();
 	string s_minver;
 	if (minver.u32 != 0) {
@@ -1740,6 +1739,7 @@ int Xbox360_XEX::loadFieldData(void)
 		// Indicate that an XEX1 kernel is needed.
 		s_minver += " (XEX1)";
 	}
+	// tr: Minimum kernel version (i.e. dashboard)
 	d->fields.addField_string(C_("Xbox360_XEX", "Min. Kernel"), s_minver);
 
 	// Module flags
@@ -2053,6 +2053,18 @@ int Xbox360_XEX::loadMetaData(void)
 	d->metaData.addMetaData_string(Property::Publisher, d->getPublisher());
 
 	/** Custom properties! **/
+
+	// Minimum kernel version (i.e. dashboard) (as OS Version)
+	const Xbox360_Version_t minver = d->getMinKernelVersion();
+	string s_minver;
+	if (minver.u32 != 0) {
+		d->metaData.addMetaData_string(Property::OSVersion,
+			fmt::format(FSTR("{:d}.{:d}.{:d}.{:d}"),
+				static_cast<unsigned int>(minver.major),
+				static_cast<unsigned int>(minver.minor),
+				static_cast<unsigned int>(minver.build),
+				static_cast<unsigned int>(minver.qfe)));
+	}
 
 	// Title ID (as Game ID)
 	d->metaData.addMetaData_string(Property::GameID, d->getTitleID());
