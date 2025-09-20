@@ -2050,20 +2050,17 @@ int Xbox360_XEX::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Make sure the XDBF section is loaded.
+	// The XDBF section is needed for the title.
 	const Xbox360_XDBF *const xdbf = d->initXDBF();
-	if (!xdbf) {
-		// Unable to load the XDBF section.
-		return 0;
-	}
-
 	d->metaData.reserve(6);	// Maximum of 6 metadata properties.
 
 	// NOTE: RomMetaData ignores empty strings, so we don't need to
 	// check for them here.
 
 	// Title
-	d->metaData.addMetaData_string(Property::Title, xdbf->getString(Property::Title));
+	if (xdbf) {
+		d->metaData.addMetaData_string(Property::Title, xdbf->getString(Property::Title));
+	}
 
 	// Publisher
 	d->metaData.addMetaData_string(Property::Publisher, d->getPublisher());
