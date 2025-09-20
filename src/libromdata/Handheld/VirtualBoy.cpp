@@ -244,13 +244,14 @@ int VirtualBoy::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// File size constraints:
-	// - Must be at least 16 KB.
+	// - Must be at least 4 KB.
 	// - Cannot be larger than 16 MB.
 	// - Must be a power of two.
 	// NOTE: The only retail ROMs were 512 KB, 1 MB, and 2 MB,
 	// but the system supports up to 16 MB, and some homebrew
 	// is less than 512 KB.
-	if (info->szFile < 16*1024 ||
+	// NOTE: "Lights Out (by Guy Perfect v.Final).vb" is 4 KB.
+	if (info->szFile <  4*1024 ||
 	    info->szFile > 16*1024*1024 ||
 	    ((info->szFile & (info->szFile - 1)) != 0))
 	{
