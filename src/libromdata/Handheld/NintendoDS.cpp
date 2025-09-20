@@ -656,7 +656,7 @@ int NintendoDS::loadFieldData(void)
 	const bool hasDSi = !!(romHeader->unitcode & NintendoDSPrivate::DS_HW_DSi);
 	if (hasDSi) {
 		// DSi-enhanced or DSi-exclusive.
-		d->fields.reserve(10+7);
+		d->fields.reserve(10+8);
 	} else {
 		// NDS only.
 		d->fields.reserve(10);
