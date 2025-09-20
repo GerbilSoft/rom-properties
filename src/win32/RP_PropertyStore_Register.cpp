@@ -39,7 +39,6 @@ tstring RP_PropertyStore_Private::GetPreviewDetailsString()
 		_T("System.Image.Dimensions;")
 		_T("System.Media.Duration;")
 		_T("System.Media.SampleRate;");
-		_T("com.gerbilsoft.rom-properties.GameID;");
 	tstring s_previewDetails(PreviewDetails, _countof(PreviewDetails)-1);
 
 	RegKey hkcr_All(HKEY_CLASSES_ROOT, _T("*"), KEY_READ, false);
@@ -82,8 +81,7 @@ std::tstring RP_PropertyStore_Private::GetInfoTipString()
 		_T("System.Media.Copyright;")
 		_T("System.Image.Dimensions;")
 		_T("System.Media.Duration;")
-		_T("System.Media.SampleRate;")
-		_T("com.gerbilsoft.rom-properties.GameID");
+		_T("System.Media.SampleRate");
 
 	RegKey hkcr_All(HKEY_CLASSES_ROOT, _T("*"), KEY_READ, false);
 	if (!hkcr_All.isOpen()) {
