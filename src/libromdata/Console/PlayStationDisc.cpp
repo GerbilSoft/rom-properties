@@ -890,11 +890,37 @@ int PlayStationDisc::loadMetaData(void)
 		return -EIO;
 	}
 
-	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
+	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
 
 	// Add the PVD metadata.
 	// TODO: PlayStationDisc-specific metadata?
 	ISO::addMetaData_PVD(&d->metaData, &d->pvd);
+
+	/** Custom properties! **/
+
+	// Game ID
+	if (!d->boot_filename.empty()) {
+		// Game ID format: SLUS-20718
+		// Boot filename format: SLUS_207.18
+		string gameID = d->boot_filename;
+		std::transform(gameID.begin(), gameID.end(), gameID.begin(),
+			[](char c) noexcept -> char { return std::toupper(c); });
+		size_t pos = gameID.find('_');
+		if (pos != string::npos) {
+			gameID[pos] = '-';
+		} else if (gameID.size() <= 4) {
+			// Too short to be a game ID.
+			return -ENOENT;
+		}
+
+		// Remove the dot.
+		pos = gameID.rfind('.');
+		if (pos != string::npos) {
+			gameID.erase(pos, 1);
+		}
+
+		d->metaData.addMetaData_string(Property::GameID, gameID);
+	}
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
