@@ -408,7 +408,7 @@ int N64::loadMetaData(void)
 		cp1252_sjis_to_utf8(romHeader->title, sizeof(romHeader->title)),
 		RomMetaData::STRF_TRIM_END);
 
-	// Custom properties!
+	/** Custom properties! **/
 
 	// Game ID
 	// NOTE: Not showing "____" here, even though it's shown in the field data.

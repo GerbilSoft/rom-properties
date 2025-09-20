@@ -126,7 +126,7 @@ const array<PropertyType, static_cast<size_t>(Property::PropertyCount)> RomMetaD
 	// Added in KF5 5.53
 	PropertyType::String,	// Description
 
-	// Custom properties!
+	/** Custom properties! **/
 	PropertyType::String,	// Game ID
 	PropertyType::String,	// OS Version
 	PropertyType::String,	// Encryption Key

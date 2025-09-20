@@ -1215,7 +1215,7 @@ int WiiWAD::loadMetaData(void)
 		}
 	}
 
-	// Custom properties!
+	/** Custom properties! **/
 
 	// Game ID
 	d->metaData.addMetaData_string(Property::GameID, d->getGameID());

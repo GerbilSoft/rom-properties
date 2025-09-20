@@ -101,7 +101,7 @@ enum class Property : int8_t {
 	// Added in KF5 5.53
 	Description,		// string
 
-	// Custom properties!
+	/** Custom properties! **/
 	GameID,			// string
 	OSVersion,		// string
 	EncryptionKey,		// string

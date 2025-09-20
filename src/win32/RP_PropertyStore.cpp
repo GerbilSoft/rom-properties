@@ -119,7 +119,7 @@ const array<RP_PropertyStore_Private::MetaDataConv, static_cast<size_t>(Property
 	// Added in KF5 5.53
 	{&PKEY_FileDescription, VT_BSTR},	// Description
 
-	// Custom properties!
+	/** Custom properties! **/
 	{&PKEY_RomProperties_GameID, VT_BSTR},			// Game ID
 	{&PKEY_RomProperties_OSVersion, VT_BSTR},		// OS Version
 	{&PKEY_RomProperties_EncryptionKey, VT_BSTR},		// Encryption Key
