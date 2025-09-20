@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCom.hpp: Tiger game.com ROM reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -709,17 +709,17 @@ int GameCom::loadFieldData(void)
 	const Gcom_RomHeader *const romHeader = &d->romHeader;
 	d->fields.reserve(3);	// Maximum of 3 fields.
 
-	// Game title.
+	// Title
 	d->fields.addField_string(C_("RomData", "Title"),
 		latin1_to_utf8(romHeader->title, sizeof(romHeader->title)),
 		RomFields::STRF_TRIM_END);
 
-	// Game ID.
+	// Game ID
 	d->fields.addField_string_numeric(C_("RomData", "Game ID"),
 		le16_to_cpu(romHeader->game_id),
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
-	// Entry point.
+	// Entry point
 	d->fields.addField_string_numeric(C_("RomData", "Entry Point"),
 		le16_to_cpu(romHeader->entry_point),
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
@@ -749,12 +749,19 @@ int GameCom::loadMetaData(void)
 
 	// game.com ROM header
 	const Gcom_RomHeader *const romHeader = &d->romHeader;
-	d->metaData.reserve(1);	// Maximum of 1 metadata property.
+	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 
 	// Game title
 	d->metaData.addMetaData_string(Property::Title,
 		latin1_to_utf8(romHeader->title, sizeof(romHeader->title)),
 		RomMetaData::STRF_TRIM_END);
+
+	/** Custom properties! **/
+
+	// Game ID
+	char buf[16];
+	snprintf(buf, sizeof(buf), "0x%04X", le16_to_cpu(romHeader->game_id));
+	d->metaData.addMetaData_string(Property::GameID, buf);
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
