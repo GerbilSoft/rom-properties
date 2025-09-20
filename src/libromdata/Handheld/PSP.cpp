@@ -92,6 +92,13 @@ public:
 	 * @return RomData* on success; nullptr on error.
 	 */
 	RomDataPtr openBootExe(void);
+
+public:
+	/**
+	 * Get the game ID.
+	 * @return Game ID
+	 */
+	string getGameID(void) const;
 };
 
 ROMDATA_IMPL(PSP)
@@ -241,6 +248,43 @@ RomDataPtr PSPPrivate::openBootExe(void)
 
 	// Unable to open the default executable.
 	return nullptr;
+}
+
+/**
+ * Get the game ID.
+ * @return Game ID
+ */
+string PSPPrivate::getGameID(void) const
+{
+	// Game ID is stored in UMD_DATA.BIN.
+	// FIXME: Figure out what the remaining fields are.
+	// - '|'-terminated fields.
+	// - Field 0: Game ID
+	// - Field 1: Encryption key?
+	// - Field 2: Revision?
+	// - Field 3: Age rating?
+
+	const IRpFilePtr f_umdDataBin = isoPartition->open("/UMD_DATA.BIN");
+	if (!f_umdDataBin) {
+		return {};
+	}
+
+	// Read up to 128 bytes.
+	char buf[129];
+	size_t size = f_umdDataBin->read(buf, sizeof(buf)-1);
+	if (size == 0 || size >= sizeof(buf)-1) {
+		return {};
+	}
+	buf[size] = 0;
+
+	// Find the first '|'.
+	const char *const p = static_cast<const char*>(memchr(buf, '|', sizeof(buf)));
+	if (!p) {
+		return {};
+	}
+
+	// Game ID field on UMD Video discs is the video title.
+	return latin1_to_utf8(buf, static_cast<int>(p - buf));
 }
 
 /** PSP **/
@@ -501,31 +545,15 @@ int PSP::loadFieldData(void)
 	d->fields.reserve(6);	// Maximum of 6 fields.
 	d->fields.setTabName(0, (unlikely(d->discType == PSPPrivate::DiscType::UmdVideo) ? "UMD" : "PSP"));
 
-	// Show UMD_DATA.BIN fields.
-	// FIXME: Figure out what the fields are.
-	// - '|'-terminated fields.
-	// - Field 0: Game ID
-	// - Field 1: Encryption key?
-	// - Field 2: Revision?
-	// - Field 3: Age rating?
-	const IRpFilePtr f_umdDataBin = d->isoPartition->open("/UMD_DATA.BIN");
-	if (f_umdDataBin) {
-		// Read up to 128 bytes.
-		char buf[129];
-		size_t size = f_umdDataBin->read(buf, sizeof(buf)-1);
-		buf[size] = 0;
-
-		// Find the first '|'.
-		const char *p = static_cast<const char*>(memchr(buf, '|', sizeof(buf)));
-		if (p) {
-			// Game ID field on UMD Video discs is the video title.
-			const char *const gameID_title =
-				(unlikely(d->discType == PSPPrivate::DiscType::UmdVideo)
-					? C_("RomData", "Video Title")
-					: C_("RomData", "Game ID"));
-			d->fields.addField_string(gameID_title,
-				latin1_to_utf8(buf, static_cast<int>(p - buf)));
-		}
+	// Game ID
+	const string s_gameID = d->getGameID();
+	if (!s_gameID.empty()) {
+		// Game ID field on UMD Video discs is the video title.
+		const char *const gameID_title =
+			(unlikely(d->discType == PSPPrivate::DiscType::UmdVideo)
+				? C_("RomData", "Video Title")
+				: C_("RomData", "Game ID"));
+		d->fields.addField_string(gameID_title, s_gameID);
 	}
 
 	// TODO: Add fields from PARAM.SFO.
@@ -656,23 +684,19 @@ int PSP::loadMetaData(void)
 	// - Field 1: Encryption key?
 	// - Field 2: Revision?
 	// - Field 3: Age rating?
-	const IRpFilePtr f_umdDataBin(d->isoPartition->open("/UMD_DATA.BIN"));
-	if (f_umdDataBin) {
-		// Read up to 128 bytes.
-		char buf[129];
-		size_t size = f_umdDataBin->read(buf, sizeof(buf)-1);
-		buf[size] = 0;
 
-		// Find the first '|'.
-		const char *p = static_cast<const char*>(memchr(buf, '|', sizeof(buf)));
-		if (p) {
-			// Game ID field on UMD Video discs is the video title.
-			d->metaData.addMetaData_string(Property::Title,
-				latin1_to_utf8(buf, static_cast<int>(p - buf)));
-		}
-	}
+	// NOTE: Using the game ID for titles...
+	const string s_gameID = d->getGameID();
+	d->metaData.addMetaData_string(Property::Title, s_gameID);
 
 	// TODO: More PSP-specific metadata?
+
+	/** Custom properties! **/
+
+	// Game ID
+	if (d->discType != PSPPrivate::DiscType::UmdVideo) {
+		d->metaData.addMetaData_string(Property::GameID, s_gameID);
+	}
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
