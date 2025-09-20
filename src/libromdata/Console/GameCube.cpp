@@ -194,7 +194,13 @@ public:
 	 * @param partition Partition to check.
 	 * @return nullptr if partition is readable; error message if not.
 	 */
-	const char *wii_getCryptoStatus(const WiiPartition *partition);
+	const char *wii_getCryptoStatus(const WiiPartition *partition) const;
+
+	/**
+	 * Get the game ID, with unprintable characters replaced with '_'.
+	 * @return Game ID
+	 */
+	inline string getGameID(void) const;
 
 	/**
 	 * Get the required IOS version. (Wii only)
@@ -207,7 +213,7 @@ public:
 	 * @param partition WiiPartition
 	 * @return Encryption key name, or nullptr on error.
 	 */
-	const char *wii_getEncryptionKeyName(const WiiPartition *partition);
+	const char *wii_getEncryptionKeyName(const WiiPartition *partition) const;
 };
 
 ROMDATA_IMPL(GameCube)
@@ -638,7 +644,7 @@ int GameCubePrivate::addGameInfo(void)
  * @param partition Partition to check.
  * @return nullptr if partition is readable; error message if not.
  */
-const char *GameCubePrivate::wii_getCryptoStatus(const WiiPartition *partition)
+const char *GameCubePrivate::wii_getCryptoStatus(const WiiPartition *partition) const
 {
 	const KeyManager::VerifyResult res = partition->verifyResult();
 	if (res == KeyManager::VerifyResult::KeyNotFound) {
@@ -660,6 +666,24 @@ const char *GameCubePrivate::wii_getCryptoStatus(const WiiPartition *partition)
 		err = C_("RomData", "Unknown error. (THIS IS A BUG!)");
 	}
 	return err;
+}
+
+/**
+ * Get the game ID, with unprintable characters replaced with '_'.
+ * @return Game ID
+ */
+inline string GameCubePrivate::getGameID(void) const
+{
+	// Replace any non-printable characters with underscores.
+	// (GameCube NDDEMO has ID6 "00\0E01".)
+	string id6;
+	id6.resize(6, '_');
+	for (size_t i = 0; i < 6; i++) {
+		if (ISPRINT(discHeader.id6[i])) {
+			id6[i] = discHeader.id6[i];
+		}
+	}
+	return id6;
 }
 
 /**
@@ -703,7 +727,7 @@ string GameCubePrivate::wii_getIOSVersion(void) const
  * @param partition WiiPartition
  * @return Encryption key name, or nullptr on error.
  */
-const char *GameCubePrivate::wii_getEncryptionKeyName(const WiiPartition *partition)
+const char *GameCubePrivate::wii_getEncryptionKeyName(const WiiPartition *partition) const
 {
 	WiiTicket::EncryptionKeys encKey;
 	if (isNASOSFormatDiscImage()) {
@@ -1397,15 +1421,7 @@ int GameCube::loadFieldData(void)
 		}
 
 		// Game ID
-		// Replace any non-printable characters with underscores.
-		// (GameCube NDDEMO has ID6 "00\0E01".)
-		char id6[7];
-		for (unsigned int i = 0; i < 6; i++) {
-			id6[i] = (ISPRINT(d->discHeader.id6[i])
-				? d->discHeader.id6[i]
-				: '_');
-		}
-		d->fields.addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6, 6));
+		d->fields.addField_string(C_("RomData", "Game ID"), d->getGameID());
 
 		// Publisher
 		d->fields.addField_string(C_("RomData", "Publisher"), d->getPublisher());
@@ -1905,15 +1921,7 @@ int GameCube::loadMetaData(void)
 	// Custom properties!
 
 	// Game ID
-	// Replace any non-printable characters with underscores.
-	// (GameCube NDDEMO has ID6 "00\0E01".)
-	char id6[7];
-	for (unsigned int i = 0; i < 6; i++) {
-		id6[i] = (ISPRINT(d->discHeader.id6[i])
-			? d->discHeader.id6[i]
-			: '_');
-	}
-	d->metaData.addMetaData_string(Property::GameID, latin1_to_utf8(id6, 6));
+	d->metaData.addMetaData_string(Property::GameID, d->getGameID());
 
 	// IOS version
 	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) == GameCubePrivate::DISC_SYSTEM_WII) {
