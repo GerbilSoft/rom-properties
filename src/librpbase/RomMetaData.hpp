@@ -101,9 +101,15 @@ enum class Property : int8_t {
 	// Added in KF5 5.53
 	Description,		// string
 
+	// Custom properties!
+	GameID,			// string
+	SerialNumber,		// string
+	IOSVersion,		// string (Wii only)
+
 	// TODO: More fields.
 	PropertyCount,
 	LastProperty = PropertyCount-1,
+	LastKFMDProperty = Description,
 };
 
 // Property types.

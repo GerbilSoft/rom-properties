@@ -1824,7 +1824,7 @@ int GameCube::loadMetaData(void)
 		// Unable to load opening.bnr.
 		// Use the disc header.
 
-		// Title.
+		// Title
 		// TODO: Use opening.bnr title for GameCube instead?
 		// TODO: Is Shift-JIS actually permissible here?
 		switch (d->gcnRegion) {
@@ -1849,11 +1849,26 @@ int GameCube::loadMetaData(void)
 				break;
 		}
 
-		// Publisher.
+		// Publisher
 		d->metaData.addMetaData_string(Property::Publisher, d->getPublisher());
 	}
 
 	// TODO: Disc number?
+
+	// Custom properties!
+
+	// Game ID
+	// Replace any non-printable characters with underscores.
+	// (GameCube NDDEMO has ID6 "00\0E01".)
+	char id6[7];
+	for (unsigned int i = 0; i < 6; i++) {
+		id6[i] = (ISPRINT(d->discHeader.id6[i])
+			? d->discHeader.id6[i]
+			: '_');
+	}
+	d->metaData.addMetaData_string(Property::GameID, latin1_to_utf8(id6, 6));
+
+	// TODO: For Wii games, IOS version.
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());

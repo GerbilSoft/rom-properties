@@ -11,9 +11,11 @@
 #include "RP_PropertyStore.hpp"
 #include "RpImageWin32.hpp"
 
-// Windows: Property keys and variants.
+// Windows: Property keys and variants
 #include <propkey.h>
 #include <propvarutil.h>
+// Custom properties
+#include "RP_PropertyStore_GUIDs.h"
 
 // librpbase, librpfile, libromdata
 using LibRpFile::IRpFilePtr;
@@ -116,6 +118,11 @@ const array<RP_PropertyStore_Private::MetaDataConv, static_cast<size_t>(Property
 
 	// Added in KF5 5.53
 	{&PKEY_FileDescription, VT_BSTR},	// Description
+
+	// Custom properties!
+	{&PKEY_RomProperties_GameID, VT_BSTR},			// Game ID
+	{&PKEY_RomProperties_SerialNumber, VT_BSTR},		// Serial Number
+	{&PKEY_RomProperties_IOSVersion, VT_BSTR},		// IOS Version (Wii only)
 }};
 
 // Win32 SDK doesn't have this.

@@ -125,6 +125,11 @@ const array<PropertyType, static_cast<size_t>(Property::PropertyCount)> RomMetaD
 
 	// Added in KF5 5.53
 	PropertyType::String,	// Description
+
+	// Custom properties!
+	PropertyType::String,	// Game ID
+	PropertyType::String,	// Serial Number
+	PropertyType::String,	// IOS Version (Wii only)
 };
 
 RomMetaDataPrivate::RomMetaDataPrivate()
@@ -442,6 +447,11 @@ int RomMetaData::addMetaData_metaData(const RomMetaData *other)
 		if (pSrc.name <= Property::FirstProperty ||
 		    pSrc.name >= Property::PropertyCount)
 		{
+			continue;
+		}
+
+		// FIXME: Custom properties in KFMD?
+		if (pSrc.name > Property::LastKFMDProperty) {
 			continue;
 		}
 

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ROM Properties Page Shell Extension: Custom properties -->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.microsoft.com/windows/2006/propertydescription" schemaVersion="1.0">
+    <propertyDescriptionList publisher="GerbilSoft" product="ROM Properties Page">
+        <propertyDescription name="com.gerbilsoft.rom-properties.GameID" formatID="{B608E986-B892-422A-9BE9-7C3D4427E78F}" propID="2">
+            <description>Game ID</description>
+            <searchInfo inInvertedIndex="false" isColumn="true" maxSize="128"/>
+            <typeInfo type="String" isViewable="false"/>
+            <labelInfo label="Game ID"/>
+        </propertyDescription>
+        <propertyDescription name="com.gerbilsoft.rom-properties.SerialNumber" formatID="{4A3DAD67-24F1-4478-8E27-040718603784}" propID="2">
+            <description>Serial Number</description>
+            <searchInfo inInvertedIndex="false" isColumn="true" maxSize="128"/>
+            <typeInfo type="String" isViewable="false"/>
+            <labelInfo label="Serial Number"/>
+        </propertyDescription>
+        <propertyDescription name="com.gerbilsoft.rom-properties.IOSVersion" formatID="{655CA042-FF37-4564-8AC9-321F9C5F2A8D}" propID="2">
+            <description>IOS Version (Wii only)</description>
+            <searchInfo inInvertedIndex="false" isColumn="true" maxSize="32"/>
+            <typeInfo type="String" isViewable="false"/>
+            <labelInfo label="IOS Version"/>
+        </propertyDescription>
+    </propertyDescriptionList>
+</schema>
