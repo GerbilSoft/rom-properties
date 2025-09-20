@@ -1188,7 +1188,7 @@ int Xbox360_STFS::loadMetaData(void)
 	}
 
 	const STFS_Package_Metadata *const stfsMetadata = &d->stfsMetadata;
-	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
+	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
 
 	// Display name and/or title
 	// TODO: Which one to prefer?
