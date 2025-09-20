@@ -94,6 +94,22 @@ inline string NintendoDSPrivate::getGameID(void) const
 }
 
 /**
+ * Get the title ID. (DSi only)
+ * @return Title ID, or empty string on error.
+ */
+std::string NintendoDSPrivate::dsi_getTitleID(void) const
+{
+	assert(romHeader.unitcode & 0x02);
+	if (!(romHeader.unitcode & 0x02)) {
+		return {};
+	}
+
+	return fmt::format(FSTR("{:0>8X}-{:0>8X}"),
+		le32_to_cpu(romHeader.dsi.title_id.hi),
+		le32_to_cpu(romHeader.dsi.title_id.lo));
+}
+
+/**
  * Load the icon/title data.
  * @return 0 on success; negative POSIX error code on error.
  */
@@ -806,10 +822,7 @@ int NintendoDS::loadFieldData(void)
 	d->fields.addTab("DSi");
 
 	// Title ID
-	const uint32_t tid_hi = le32_to_cpu(romHeader->dsi.title_id.hi);
-	d->fields.addField_string(C_("Nintendo", "Title ID"),
-		fmt::format(FSTR("{:0>8X}-{:0>8X}"),
-			tid_hi, le32_to_cpu(romHeader->dsi.title_id.lo)));
+	d->fields.addField_string(C_("Nintendo", "Title ID"), d->dsi_getTitleID());
 
 	// DSi filetype
 	struct dsi_filetype_tbl_t{
@@ -853,6 +866,7 @@ int NintendoDS::loadFieldData(void)
 	}
 
 	// Key index. Determined by title ID.
+	const uint32_t tid_hi = le32_to_cpu(romHeader->dsi.title_id.hi);
 	int key_idx;
 	if (tid_hi & 0x00000010) {
 		// System application.
@@ -1054,10 +1068,17 @@ int NintendoDS::loadMetaData(void)
 	}
 
 	/** Custom properties! **/
+
+	// Game ID
 	const string s_gameID = d->getGameID();
 	// NOTE: Only showing the game ID if the first four characters are printable.
 	if (s_gameID.compare(0, 4, "____") != 0) {
 		d->metaData.addMetaData_string(Property::GameID, s_gameID);
+	}
+
+	// Title ID (DSi only)
+	if (d->isDSi()) {
+		d->metaData.addMetaData_string(Property::TitleID, d->dsi_getTitleID());
 	}
 
 	// Finished reading the metadata.

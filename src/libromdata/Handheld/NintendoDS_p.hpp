@@ -107,10 +107,25 @@ public:
 	NDS_SecureArea secArea;
 
 	/**
+	 * Is this a DSi-enhanced (or DSi-exclusive) title?
+	 * @return True if it is; false if it isn't.
+	 */
+	inline bool isDSi(void) const
+	{
+		return !!(romHeader.unitcode & 0x02);
+	}
+
+	/**
 	 * Get the game ID, with unprintable characters replaced with '_'.
 	 * @return Game ID
 	 */
 	inline std::string getGameID(void) const;
+
+	/**
+	 * Get the title ID. (DSi only)
+	 * @return Title ID, or empty string on error.
+	 */
+	std::string dsi_getTitleID(void) const;
 
 	/**
 	 * Load the icon/title data.
