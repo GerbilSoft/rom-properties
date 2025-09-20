@@ -111,6 +111,12 @@ public:
 	LibRpBase::KeyManager::VerifyResult key_status;
 
 	/**
+	 * Get the title ID.
+	 * @return Title ID, or empty string on error.
+	 */
+	std::string getTitleID(void) const;
+
+	/**
 	 * Get the game ID.
 	 * @return Game ID, or empty string if not valid.
 	 */

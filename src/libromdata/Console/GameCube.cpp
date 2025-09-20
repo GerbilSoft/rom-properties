@@ -203,6 +203,12 @@ public:
 	inline string getGameID(void) const;
 
 	/**
+	 * Get the title ID. (Wii only)
+	 * @return Title ID, or empty string on error.
+	 */
+	string wii_getTitleID(void) const;
+
+	/**
 	 * Get the required IOS version. (Wii only)
 	 * @return IOS version, or empty string on error.
 	 */
@@ -684,6 +690,31 @@ inline string GameCubePrivate::getGameID(void) const
 		}
 	}
 	return id6;
+}
+
+/**
+ * Get the title ID. (Wii only)
+ * @return Title ID, or empty string on error.
+ */
+string GameCubePrivate::wii_getTitleID(void) const
+{
+	assert((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_WII);
+	assert(gamePartition != nullptr);
+	if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_WII || !gamePartition) {
+		return {};
+	}
+
+	const RVL_TMD_Header *const tmdHeader = gamePartition->tmdHeader();
+	assert(tmdHeader != nullptr);
+	if (!tmdHeader) {
+		return {};
+	}
+
+	// TID Lo is usually the same as the game ID,
+	// except for some diagnostics discs.
+	return fmt::format(FSTR("{:0>8X}-{:0>8X}"),
+		be32_to_cpu(tmdHeader->title_id.hi),
+		be32_to_cpu(tmdHeader->title_id.lo));
 }
 
 /**
@@ -1508,12 +1539,10 @@ int GameCube::loadFieldData(void)
 		const RVL_TMD_Header *const tmdHeader = d->gamePartition->tmdHeader();
 		if (tmdHeader) {
 			// Title ID
-			// TID Lo is usually the same as the game ID,
-			// except for some diagnostics discs.
-			d->fields.addField_string(C_("Nintendo", "Title ID"),
-				fmt::format(FSTR("{:0>8X}-{:0>8X}"),
-					be32_to_cpu(tmdHeader->title_id.hi),
-					be32_to_cpu(tmdHeader->title_id.lo)));
+			const string s_titleID = d->wii_getTitleID();
+			if (!s_titleID.empty()) {
+				d->fields.addField_string(C_("Nintendo", "Title ID"), s_titleID);
+			}
 
 			// Access rights
 			vector<string> *const v_access_rights_hdr = new vector<string>({
@@ -1922,6 +1951,12 @@ int GameCube::loadMetaData(void)
 
 	// Game ID
 	d->metaData.addMetaData_string(Property::GameID, d->getGameID());
+
+	// Title ID
+	const string s_titleID = d->wii_getTitleID();
+	if (!s_titleID.empty()) {
+		d->metaData.addMetaData_string(Property::TitleID, s_titleID);
+	}
 
 	// IOS version
 	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) == GameCubePrivate::DISC_SYSTEM_WII) {

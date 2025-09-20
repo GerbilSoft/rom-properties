@@ -98,6 +98,18 @@ WiiWADPrivate::WiiWADPrivate(const IRpFilePtr &file)
 }
 
 /**
+ * Get the title ID.
+ * @return Title ID, or empty string on error.
+ */
+std::string WiiWADPrivate::getTitleID(void) const
+{
+	// TODO: Make sure the ticket title ID matches the TMD title ID.
+	return fmt::format(FSTR("{:0>8X}-{:0>8X}"),
+		be32_to_cpu(tmdHeader.title_id.hi),
+		be32_to_cpu(tmdHeader.title_id.lo));
+}
+
+/**
  * Get the game ID.
  * @return Game ID, or empty string if not valid.
  */
@@ -935,11 +947,10 @@ int WiiWAD::loadFieldData(void)
 	}
 
 	// Title ID
-	// TODO: Make sure the ticket title ID matches the TMD title ID.
-	d->fields.addField_string(C_("Nintendo", "Title ID"),
-		fmt::format(FSTR("{:0>8X}-{:0>8X}"),
-			be32_to_cpu(tmdHeader->title_id.hi),
-			be32_to_cpu(tmdHeader->title_id.lo)));
+	const string s_titleID = d->getTitleID();
+	if (!s_titleID.empty()) {
+		d->fields.addField_string(C_("Nintendo", "Title ID"), s_titleID);
+	}
 
 	// Game ID
 	// NOTE: Only displayed if TID lo is all alphanumeric characters.
@@ -1216,6 +1227,9 @@ int WiiWAD::loadMetaData(void)
 	}
 
 	/** Custom properties! **/
+
+	// Title ID
+	d->metaData.addMetaData_string(Property::TitleID, d->getTitleID());
 
 	// Game ID
 	d->metaData.addMetaData_string(Property::GameID, d->getGameID());
