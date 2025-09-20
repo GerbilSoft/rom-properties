@@ -12,13 +12,19 @@
             <description>Serial Number</description>
             <searchInfo inInvertedIndex="false" isColumn="true" maxSize="128"/>
             <typeInfo type="String" isViewable="true"/>
-            <labelInfo label="Serial Number"/>
+            <labelInfo label="Serial number"/>
         </propertyDescription>
         <propertyDescription name="com.gerbilsoft.rom-properties.IOSVersion" formatID="{655CA042-FF37-4564-8AC9-321F9C5F2A8D}" propID="2">
             <description>IOS Version (Wii only)</description>
             <searchInfo inInvertedIndex="false" isColumn="true" maxSize="32"/>
             <typeInfo type="String" isViewable="true"/>
-            <labelInfo label="IOS Version"/>
+            <labelInfo label="IOS version"/>
+        </propertyDescription>
+        <propertyDescription name="com.gerbilsoft.rom-properties.EncryptionKey" formatID="{F31225FA-B303-454E-8389-69C1B8CA38C6}" propID="2">
+            <description>Encryption Key</description>
+            <searchInfo inInvertedIndex="false" isColumn="true" maxSize="32"/>
+            <typeInfo type="String" isViewable="true"/>
+            <labelInfo label="Encryption key"/>
         </propertyDescription>
     </propertyDescriptionList>
 </schema>

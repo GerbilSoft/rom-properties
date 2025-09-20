@@ -105,6 +105,7 @@ enum class Property : int8_t {
 	GameID,			// string
 	SerialNumber,		// string
 	IOSVersion,		// string (Wii only)
+	EncryptionKey,		// string
 
 	// TODO: More fields.
 	PropertyCount,

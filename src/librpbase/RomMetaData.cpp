@@ -130,6 +130,7 @@ const array<PropertyType, static_cast<size_t>(Property::PropertyCount)> RomMetaD
 	PropertyType::String,	// Game ID
 	PropertyType::String,	// Serial Number
 	PropertyType::String,	// IOS Version (Wii only)
+	PropertyType::String,	// Encryption Key
 };
 
 RomMetaDataPrivate::RomMetaDataPrivate()
