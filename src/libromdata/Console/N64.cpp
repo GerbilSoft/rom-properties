@@ -117,7 +117,7 @@ inline string N64Private::getGameID(void) const
 {
 	string id4;
 	id4.resize(4, '_');
-	for (size_t i = 0; i < 6; i++) {
+	for (size_t i = 0; i < 4; i++) {
 		if (ISPRINT(romHeader.id4[i])) {
 			id4[i] = romHeader.id4[i];
 		}
