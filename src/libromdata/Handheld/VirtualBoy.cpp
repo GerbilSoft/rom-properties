@@ -80,6 +80,12 @@ public:
 
 public:
 	/**
+	 * Get the title, with trailing NULLs and spaces trimmed.
+	 * @return Title
+	 */
+	string getTitle(void) const;
+
+	/**
 	 * Get the game ID, with unprintable characters replaced with '_'.
 	 * @return Game ID
 	 */
@@ -118,6 +124,32 @@ VirtualBoyPrivate::VirtualBoyPrivate(const IRpFilePtr &file)
 {
 	// Clear the ROM footer struct.
 	memset(&romFooter, 0, sizeof(romFooter));
+}
+
+/**
+ * Get the title, with trailing NULLs and spaces trimmed.
+ * @return Title
+ */
+string VirtualBoyPrivate::getTitle(void) const
+{
+	// Last character in the title field is always NULL, so skip it.
+	string title = cp1252_sjis_to_utf8(romFooter.title, sizeof(romFooter.title) - 1);
+
+	// Trim remaining spaces or NULLs.
+	size_t size = title.size();
+	while (size > 0) {
+		size_t lastpos = size - 1;
+		if (title[lastpos] == '\0' || title[lastpos] == ' ') {
+			// Trim it.
+			size--;
+		} else {
+			// We're done here.
+			break;
+		}
+	}
+
+	title.resize(size);
+	return title;
 }
 
 /**
@@ -342,8 +374,7 @@ int VirtualBoy::loadFieldData(void)
 	d->fields.reserve(5);	// Maximum of 5 fields.
 
 	// Title
-	d->fields.addField_string(C_("RomData", "Title"),
-		cp1252_sjis_to_utf8(romFooter->title, sizeof(romFooter->title)));
+	d->fields.addField_string(C_("RomData", "Title"), d->getTitle());
 
 	// Game ID
 	d->fields.addField_string(C_("RomData", "Game ID"), d->getGameID());
@@ -425,8 +456,7 @@ int VirtualBoy::loadMetaData(void)
 	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 	// Title
-	d->metaData.addMetaData_string(Property::Title,
-		cp1252_sjis_to_utf8(romFooter->title, sizeof(romFooter->title)));
+	d->metaData.addMetaData_string(Property::Title, d->getTitle());
 
 	// Publisher (aka manufacturer)
 	// Look up the publisher.
