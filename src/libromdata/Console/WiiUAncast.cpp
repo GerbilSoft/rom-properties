@@ -473,7 +473,7 @@ int WiiUAncast::loadFieldData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid) {
+	} else if (!d->isValid || (int)d->ancastType < 0) {
 		// Firmware binary isn't valid.
 		return -EIO;
 	}
@@ -620,6 +620,70 @@ int WiiUAncast::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the metadata hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int WiiUAncast::loadMetaData(void)
+{
+	RP_D(WiiUAncast);
+	if (!d->metaData.empty()) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || (int)d->ancastType < 0) {
+		// Unknown file type.
+		return -EIO;
+	}
+
+	const WiiU_Ancast_Header_SigCommon_t *const sigCommon = &d->ancastHeader.sigCommon;
+	d->metaData.reserve(1);	// Maximum of 1 metadata property.
+
+	// Get the important fields, depending on signature type.
+	unsigned int console_type = 0;
+	switch (be32_to_cpu(sigCommon->sig_type)) {
+		default:
+			break;
+
+		case WIIU_ANCAST_SIGTYPE_ECDSA: {
+			const WiiU_Ancast_Header_PPC_t *const ppc = &d->ancastHeader.ppc;
+			console_type = be32_to_cpu(ppc->console_type);
+			break;
+		}
+
+		case WIIU_ANCAST_SIGTYPE_RSA2048: {
+			const WiiU_Ancast_Header_ARM_t *const arm = &d->ancastHeader.arm;
+			console_type = be32_to_cpu(arm->console_type);
+			break;
+		}
+	}
+
+	/** Custom properties! **/
+
+	// Console type (as Encryption key)
+	const char *s_console_type;
+	switch (console_type) {
+		default:
+			s_console_type = nullptr;
+			break;
+		case WIIU_ANCAST_CONSOLE_TYPE_DEVEL:
+			s_console_type = "Debug";
+			break;
+		case WIIU_ANCAST_CONSOLE_TYPE_PROD:
+			s_console_type = "Retail";
+			break;
+	}
+	if (s_console_type) {
+		d->metaData.addMetaData_string(Property::EncryptionKey, s_console_type);
+	}
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData.count());
 }
 
 /**
