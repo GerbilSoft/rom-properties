@@ -612,6 +612,13 @@ STDAPI DllRegisterServer(void)
 		lResult = RegisterCLSID(p.rclsid, p.description);
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
+#ifdef HAVE_RP_PROPERTYSTORE_DEPS
+	// Unregister the Property Description Schema first before re-registering.
+	lResult = RP_PropertyStore::UnregisterPropertyDescriptionSchema();
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_PropertyStore::RegisterPropertyDescriptionSchema();
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+#endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 #ifdef ENABLE_OVERLAY_ICON_HANDLER
 	lResult = RP_ShellIconOverlayIdentifer::RegisterShellIconOverlayIdentifier();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
@@ -738,6 +745,10 @@ STDAPI DllUnregisterServer(void)
 		lResult = UnregisterCLSID(p.rclsid);
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
+#ifdef HAVE_RP_PROPERTYSTORE_DEPS
+	lResult = RP_PropertyStore::UnregisterPropertyDescriptionSchema();
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+#endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 #ifdef ENABLE_OVERLAY_ICON_HANDLER
 	lResult = RP_ShellIconOverlayIdentifer::UnregisterShellIconOverlayIdentifier();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
