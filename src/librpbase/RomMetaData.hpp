@@ -107,6 +107,7 @@ enum class Property : int8_t {
 	MediaID,		// string
 	OSVersion,		// string
 	EncryptionKey,		// string
+	PixelFormat,		// string
 
 	// TODO: More fields.
 	PropertyCount,

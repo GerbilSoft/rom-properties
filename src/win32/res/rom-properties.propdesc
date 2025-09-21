@@ -32,5 +32,11 @@
             <typeInfo type="String" isViewable="true" groupingRange="discrete"/>
             <labelInfo label="Encryption key" invitationText=""/>
         </propertyDescription>
+        <propertyDescription name="com.gerbilsoft.rom-properties.PixelFormat" formatID="{2A10A29D-05B8-43FF-B9AB-2917C24f9707}" propID="2">
+            <description>Pixel Format</description>
+            <searchInfo inInvertedIndex="false" isColumn="true" maxSize="48"/>
+            <typeInfo type="String" isViewable="true" groupingRange="discrete"/>
+            <labelInfo label="Pixel format" invitationText=""/>
+        </propertyDescription>
     </propertyDescriptionList>
 </schema>

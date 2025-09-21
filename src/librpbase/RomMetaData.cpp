@@ -132,6 +132,7 @@ const array<PropertyType, static_cast<size_t>(Property::PropertyCount)> RomMetaD
 	PropertyType::String,	// Media ID
 	PropertyType::String,	// OS Version
 	PropertyType::String,	// Encryption Key
+	PropertyType::String,	// Pixel Format
 };
 
 RomMetaDataPrivate::RomMetaDataPrivate()
