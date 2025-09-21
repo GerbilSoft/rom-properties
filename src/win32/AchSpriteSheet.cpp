@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * AchSpriteSheet.hpp: Achievement sprite sheets loader.                   *
  *                                                                         *
- * Copyright (c) 2020-2023 by David Korth.                                 *
+ * Copyright (c) 2020-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -40,16 +40,16 @@ LPCTSTR AchSpriteSheet::getResourceID(int width, int height, bool gray) const
 	UINT resourceID;
 	switch (width) {
 		case 16:
-			resourceID = (gray ? IDP_ACH_GRAY_16x16 : IDP_ACH_16x16);
+			resourceID = (gray ? IDPNG_ACH_GRAY_16x16 : IDPNG_ACH_16x16);
 			break;
 		case 24:
-			resourceID = (gray ? IDP_ACH_GRAY_24x24 : IDP_ACH_24x24);
+			resourceID = (gray ? IDPNG_ACH_GRAY_24x24 : IDPNG_ACH_24x24);
 			break;
 		case 32:
-			resourceID = (gray ? IDP_ACH_GRAY_32x32 : IDP_ACH_32x32);
+			resourceID = (gray ? IDPNG_ACH_GRAY_32x32 : IDPNG_ACH_32x32);
 			break;
 		case 64:
-			resourceID = (gray ? IDP_ACH_GRAY_64x64 : IDP_ACH_64x64);
+			resourceID = (gray ? IDPNG_ACH_GRAY_64x64 : IDPNG_ACH_64x64);
 			break;
 		default:
 			assert(!"Invalid icon size.");

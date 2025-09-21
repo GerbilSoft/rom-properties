@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * FlagSpriteSheet.hpp: Flag sprite sheets loader.                         *
  *                                                                         *
- * Copyright (c) 2020-2023 by David Korth.                                 *
+ * Copyright (c) 2020-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -43,13 +43,13 @@ LPCTSTR FlagSpriteSheet::getResourceID(int width, int height, bool gray) const
 	UINT resourceID;
 	switch (width) {
 		case 16:
-			resourceID = IDP_FLAGS_16x16;
+			resourceID = IDPNG_FLAGS_16x16;
 			break;
 		case 24:
-			resourceID = IDP_FLAGS_24x24;
+			resourceID = IDPNG_FLAGS_24x24;
 			break;
 		case 32:
-			resourceID = IDP_FLAGS_32x32;
+			resourceID = IDPNG_FLAGS_32x32;
 			break;
 		default:
 			assert(!"Invalid icon size.");

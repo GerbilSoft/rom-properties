@@ -29,21 +29,26 @@ IDI_KEY_VALID	ICON	"res/dialog-ok-apply.ico"
 
 /** PNG images **/
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-IDP_FLAGS_16x16	RT_PNG	"../../res/flags/flags-16x16.png"
-IDP_FLAGS_24x24	RT_PNG	"../../res/flags/flags-24x24.png"
-IDP_FLAGS_32x32	RT_PNG	"../../res/flags/flags-32x32.png"
+IDPNG_FLAGS_16x16	RT_PNG	"../../res/flags/flags-16x16.png"
+IDPNG_FLAGS_24x24	RT_PNG	"../../res/flags/flags-24x24.png"
+IDPNG_FLAGS_32x32	RT_PNG	"../../res/flags/flags-32x32.png"
 
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-IDP_ACH_16x16	RT_PNG	"../../res/ach/ach-16x16.png"
-IDP_ACH_24x24	RT_PNG	"../../res/ach/ach-24x24.png"
-IDP_ACH_32x32	RT_PNG	"../../res/ach/ach-32x32.png"
-IDP_ACH_64x64	RT_PNG	"../../res/ach/ach-64x64.png"
+IDPNG_ACH_16x16		RT_PNG	"../../res/ach/ach-16x16.png"
+IDPNG_ACH_24x24		RT_PNG	"../../res/ach/ach-24x24.png"
+IDPNG_ACH_32x32		RT_PNG	"../../res/ach/ach-32x32.png"
+IDPNG_ACH_64x64		RT_PNG	"../../res/ach/ach-64x64.png"
 
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-IDP_ACH_GRAY_16x16	RT_PNG	"../../res/ach/ach-gray-16x16.png"
-IDP_ACH_GRAY_24x24	RT_PNG	"../../res/ach/ach-gray-24x24.png"
-IDP_ACH_GRAY_32x32	RT_PNG	"../../res/ach/ach-gray-32x32.png"
-IDP_ACH_GRAY_64x64	RT_PNG	"../../res/ach/ach-gray-64x64.png"
+IDPNG_ACH_GRAY_16x16	RT_PNG	"../../res/ach/ach-gray-16x16.png"
+IDPNG_ACH_GRAY_24x24	RT_PNG	"../../res/ach/ach-gray-24x24.png"
+IDPNG_ACH_GRAY_32x32	RT_PNG	"../../res/ach/ach-gray-32x32.png"
+IDPNG_ACH_GRAY_64x64	RT_PNG	"../../res/ach/ach-gray-64x64.png"
+
+/** Property description schemas **/
+// https://learn.microsoft.com/en-us/windows/win32/properties/propdesc-schema-entry
+// TODO: Localization?
+IDPROP_ROM_PROPERTIES_PROPDESC	RT_PROPDESC	"rom-properties.propdesc"
 
 // TODO: The git version gets cut off on Windows 7, since it uses
 // a ListView instead of separate ListBox and Edit controls like
