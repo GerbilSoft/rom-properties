@@ -312,7 +312,7 @@ int RpTextureWrapper::loadMetaData(void)
 		return -EIO;
 	}
 
-	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 	// Dimensions
 	int dimensions[3];
@@ -325,6 +325,11 @@ int RpTextureWrapper::loadMetaData(void)
 			d->metaData.addMetaData_integer(Property::Height, dimensions[1]);
 		}
 	}
+
+	/** Custom properties! **/
+
+	// Pixel format
+	d->metaData.addMetaData_string(Property::PixelFormat, d->texture->pixelFormat());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
