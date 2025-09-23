@@ -165,8 +165,14 @@ void ExtractorPlugin::extract_properties(KFileMetaData::ExtractionResult *result
 
 	// Process the metadata.
 	for (const RomMetaData::MetaData &prop : *metaData) {
-		// RomMetaData's property indexes match KFileMetaData.
-		// No conversion is necessary.
+		// Get the mapped property name.
+		KFileMetaData::Property::Property kfmd_Property =
+			static_cast<KFileMetaData::Property::Property>(kfmd_PropIdxMap[static_cast<size_t>(prop.name)]);
+		if (kfmd_Property == KFileMetaData::Property::Empty) {
+			// Not supported. (Custom property?)
+			continue;
+		}
+
 		switch (prop.type) {
 			case PropertyType::Integer: {
 				int ivalue = prop.data.ivalue;
