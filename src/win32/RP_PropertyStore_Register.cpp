@@ -15,7 +15,7 @@
 // libwin32common
 using LibWin32UI::RegKey;
 
-// C++ STL classes.
+// C++ STL classes
 using std::tstring;
 using std::unique_ptr;
 
@@ -277,6 +277,23 @@ LONG RP_PropertyStore::UnregisterFileType(_In_ RegKey &hkcr, _In_opt_ RegKey *pH
 	return ERROR_SUCCESS;
 }
 
+/** Property Description Schema **/
+
+class HMODULE_deleter
+{
+public:
+	typedef HMODULE pointer;
+
+	void operator()(HMODULE hModule)
+	{
+		if (hModule) {
+			FreeLibrary(hModule);
+		}
+	}
+};
+
+#define DEF_LOAD_FUNCPTR(f) __typeof__(f) * p##f = (__typeof__(f)*)GetProcAddress(hPropsys_dll.get(), #f)
+
 /**
  * Get the Property Description Schema directory.
  * @return Property Description Schema directory
@@ -304,6 +321,22 @@ tstring RP_PropertyStore_Private::GetPropertyDescriptionSchemaDirectory(void)
  */
 LONG RP_PropertyStore::RegisterPropertyDescriptionSchema(void)
 {
+	// Open PROPSYS.DLL dynamically.
+	unique_ptr<HMODULE, HMODULE_deleter> hPropsys_dll(
+		LoadLibraryEx(_T("propsys.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
+	if (!hPropsys_dll) {
+		// Don't fail if PROPSYS.DLL isn't available.
+		return ERROR_SUCCESS;
+	}
+
+	// Get PSRegisterPropertySchema().
+	DEF_LOAD_FUNCPTR(PSRegisterPropertySchema);
+	if (!pPSRegisterPropertySchema) {
+		// Function was introduced in Windows XP SP2, so we can assume
+		// that this is an older version.
+		return ERROR_SUCCESS;
+	}
+
 	// Get the property description resource.
 	// (TODO: Localize it?)
 	HRSRC hRsrc = FindResource(HINST_THISCOMPONENT, MAKEINTRESOURCE(IDPROP_ROM_PROPERTIES_PROPDESC), MAKEINTRESOURCE(RT_PROPDESC));
@@ -378,7 +411,7 @@ LONG RP_PropertyStore::RegisterPropertyDescriptionSchema(void)
 	}
 
 	// Register the Property Description Schema.
-	HRESULT hr = PSRegisterPropertySchema(tfilename.c_str());
+	HRESULT hr = pPSRegisterPropertySchema(tfilename.c_str());
 	return (hr == S_OK) ? ERROR_SUCCESS : ERROR_GEN_FAILURE;
 }
 
@@ -388,6 +421,22 @@ LONG RP_PropertyStore::RegisterPropertyDescriptionSchema(void)
  */
 LONG RP_PropertyStore::UnregisterPropertyDescriptionSchema(void)
 {
+	// Open PROPSYS.DLL dynamically.
+	unique_ptr<HMODULE, HMODULE_deleter> hPropsys_dll(
+		LoadLibraryEx(_T("propsys.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
+	if (!hPropsys_dll) {
+		// Don't fail if PROPSYS.DLL isn't available.
+		return ERROR_SUCCESS;
+	}
+
+	// Get PSUnregisterPropertySchema().
+	DEF_LOAD_FUNCPTR(PSUnregisterPropertySchema);
+	if (!pPSUnregisterPropertySchema) {
+		// Function was introduced in Windows XP SP2, so we can assume
+		// that this is an older version.
+		return ERROR_SUCCESS;
+	}
+
 	// Get the Windows directory.
 	const tstring tdir = RP_PropertyStore_Private::GetPropertyDescriptionSchemaDirectory();
 	if (tdir.empty()) {
@@ -399,7 +448,7 @@ LONG RP_PropertyStore::UnregisterPropertyDescriptionSchema(void)
 	const tstring tfilename = tdir + _T("\\rom-properties.propdesc");
 	if (GetFileAttributes(tfilename.c_str()) != INVALID_FILE_ATTRIBUTES) {
 		// Unregister the Property Description Schema.
-		HRESULT hr = PSUnregisterPropertySchema(tfilename.c_str());
+		HRESULT hr = pPSUnregisterPropertySchema(tfilename.c_str());
 		if (hr != S_OK) {
 			return ERROR_GEN_FAILURE;
 		}
