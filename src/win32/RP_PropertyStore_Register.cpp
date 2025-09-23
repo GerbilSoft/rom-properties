@@ -399,7 +399,7 @@ LONG RP_PropertyStore::UnregisterPropertyDescriptionSchema(void)
 	const tstring tfilename = tdir + _T("\\rom-properties.propdesc");
 	if (GetFileAttributes(tfilename.c_str()) != INVALID_FILE_ATTRIBUTES) {
 		// Unregister the Property Description Schema.
-		HRESULT hr = PSRegisterPropertySchema(tfilename.c_str());
+		HRESULT hr = PSUnregisterPropertySchema(tfilename.c_str());
 		if (hr != S_OK) {
 			return ERROR_GEN_FAILURE;
 		}
