@@ -106,6 +106,7 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}-notify_SRCS}
 	NautilusPropertyPageProvider.cpp
 	NautilusMenuProvider.c
+	NautilusInfoProvider.cpp
 	NautilusExtraInterfaces.c
 	ThunarPropertyPageProvider.cpp
 	ThunarMenuProvider.c
@@ -120,6 +121,7 @@ SET(${PROJECT_NAME}_H
 	../plugin-helper.h
 	NautilusPropertyPageProvider.hpp
 	NautilusMenuProvider.h
+	NautilusInfoProvider.hpp
 	NautilusExtraInterfaces.h
 	ThunarPropertyPageProvider.hpp
 	ThunarMenuProvider.h

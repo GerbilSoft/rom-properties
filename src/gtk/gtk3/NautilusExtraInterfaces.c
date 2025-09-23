@@ -28,6 +28,7 @@ PFN_NEMO_NAME_AND_DESC_PROVIDER_GET_TYPE	pfn_nemo_name_and_desc_provider_get_typ
 // Actual plugin types are needed to determine the name and description.
 #  include "NautilusPropertyPageProvider.hpp"
 #  include "NautilusMenuProvider.h"
+#  include "NautilusInfoProvider.hpp"
 #endif /* HAVE_NEMO_INTERFACES */
 
 /** rom-properties functions **/
@@ -132,6 +133,8 @@ rp_nemo_name_and_desc_provider_get_name_and_desc(NemoNameAndDescProvider *provid
 		s_plugin_desc = C_("NautilusExtraInterfaces", "Property page extension");
 	} else if (RP_IS_NAUTILUS_MENU_PROVIDER(provider)) {
 		s_plugin_desc = C_("NautilusExtraInterfaces", "Menu extension");
+	} else if (RP_IS_NAUTILUS_INFO_PROVIDER(provider)) {
+		s_plugin_desc = C_("NautilusExtraInterfaces", "Info provider extension");
 	} else {
 		assert(!"Not a supported GObject class!");
 	}

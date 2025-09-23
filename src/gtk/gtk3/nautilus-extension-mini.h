@@ -21,8 +21,8 @@ G_BEGIN_DECLS
 struct _NautilusPropertyPageProviderInterface {
 	GTypeInterface g_iface;
 
-	GList *(*get_pages) (NautilusPropertyPageProvider *provider,
-	                     GList                        *files);
+	GList *(*get_pages)	(NautilusPropertyPageProvider *provider,
+				 GList                        *files);
 };
 typedef struct _NautilusPropertyPageProviderInterface NautilusPropertyPageProviderInterface;
 
@@ -30,13 +30,26 @@ typedef struct _NautilusPropertyPageProviderInterface NautilusPropertyPageProvid
 struct _NautilusMenuProviderInterface {
 	GTypeInterface g_iface;
 
-	GList *(*get_file_items)       (NautilusMenuProvider *provider,
-					GtkWidget            *window,
-					GList                *files);
-	GList *(*get_background_items) (NautilusMenuProvider *provider,
-					GtkWidget            *window,
-					NautilusFileInfo     *current_folder);
+	GList *(*get_file_items)	(NautilusMenuProvider *provider,
+					 GtkWidget            *window,
+					 GList                *files);
+	GList *(*get_background_items)	(NautilusMenuProvider *provider,
+					 GtkWidget            *window,
+					 NautilusFileInfo     *current_folder);
 };
 typedef struct _NautilusMenuProviderInterface NautilusMenuProviderInterface;
+
+struct _NautilusInfoProviderInterface
+{
+	GTypeInterface g_iface;
+
+	NautilusOperationResult (*update_file_info)	(NautilusInfoProvider     *provider,
+							 NautilusFileInfo         *file,
+							 GClosure                 *update_complete,
+							 NautilusOperationHandle **handle);
+	void                    (*cancel_update)	(NautilusInfoProvider     *provider,
+							 NautilusOperationHandle  *handle);
+};
+typedef struct _NautilusInfoProviderInterface NautilusInfoProviderInterface;
 
 G_END_DECLS

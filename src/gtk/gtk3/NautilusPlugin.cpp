@@ -12,29 +12,33 @@
 #include "NautilusPlugin.hpp"
 
 #include "AchGDBus.hpp"
-#include "NautilusMenuProvider.h"
 #include "NautilusPropertyPageProvider.hpp"
+#include "NautilusMenuProvider.h"
 #include "NautilusExtraInterfaces.h"
+#include "NautilusInfoProvider.hpp"
 #include "plugin-helper.h"
 
-static GType type_list[2];
+static GType type_list[3];
 
 // C includes (C++ namespace)
 #include <cassert>
 
 // Function pointers
 static void *libextension_so;
-PFN_NAUTILUS_FILE_INFO_GET_TYPE			pfn_nautilus_file_info_get_type;
-PFN_NAUTILUS_FILE_INFO_GET_MIME_TYPE		pfn_nautilus_file_info_get_mime_type;
-PFN_NAUTILUS_FILE_INFO_GET_URI			pfn_nautilus_file_info_get_uri;
-PFN_NAUTILUS_FILE_INFO_GET_URI_SCHEME		pfn_nautilus_file_info_get_uri_scheme;
-PFN_NAUTILUS_FILE_INFO_LIST_COPY		pfn_nautilus_file_info_list_copy;
-PFN_NAUTILUS_FILE_INFO_LIST_FREE		pfn_nautilus_file_info_list_free;
-PFN_NAUTILUS_MENU_ITEM_GET_TYPE			pfn_nautilus_menu_item_get_type;
-PFN_NAUTILUS_MENU_ITEM_NEW			pfn_nautilus_menu_item_new;
-PFN_NAUTILUS_MENU_PROVIDER_GET_TYPE		pfn_nautilus_menu_provider_get_type;
-PFN_NAUTILUS_PROPERTY_PAGE_PROVIDER_GET_TYPE	pfn_nautilus_property_page_provider_get_type;
-PFN_NAUTILUS_PROPERTY_PAGE_NEW			pfn_nautilus_property_page_new;
+PFN_NAUTILUS_FILE_INFO_GET_TYPE				pfn_nautilus_file_info_get_type;
+PFN_NAUTILUS_FILE_INFO_GET_URI				pfn_nautilus_file_info_get_uri;
+PFN_NAUTILUS_FILE_INFO_GET_URI_SCHEME			pfn_nautilus_file_info_get_uri_scheme;
+PFN_NAUTILUS_FILE_INFO_GET_MIME_TYPE			pfn_nautilus_file_info_get_mime_type;
+PFN_NAUTILUS_FILE_INFO_ADD_EMBLEM			pfn_nautilus_file_info_add_emblem;
+PFN_NAUTILUS_FILE_INFO_LIST_COPY			pfn_nautilus_file_info_list_copy;
+PFN_NAUTILUS_FILE_INFO_LIST_FREE			pfn_nautilus_file_info_list_free;
+PFN_NAUTILUS_MENU_ITEM_GET_TYPE				pfn_nautilus_menu_item_get_type;
+PFN_NAUTILUS_MENU_ITEM_NEW				pfn_nautilus_menu_item_new;
+PFN_NAUTILUS_MENU_PROVIDER_GET_TYPE			pfn_nautilus_menu_provider_get_type;
+PFN_NAUTILUS_PROPERTY_PAGE_PROVIDER_GET_TYPE		pfn_nautilus_property_page_provider_get_type;
+PFN_NAUTILUS_PROPERTY_PAGE_NEW				pfn_nautilus_property_page_new;
+PFN_NAUTILUS_INFO_PROVIDER_GET_TYPE			pfn_nautilus_info_provider_get_type;
+PFN_NAUTILUS_INFO_PROVIDER_UPDATE_COMPLETE_INVOKE	pfn_nautilus_info_provider_update_complete_invoke;
 
 static void
 rp_nautilus_register_types(GTypeModule *g_module)
@@ -44,10 +48,12 @@ rp_nautilus_register_types(GTypeModule *g_module)
 	// functions as static, so we're using wrapper functions here.
 	rp_nautilus_property_page_provider_register_type_ext(g_module);
 	rp_nautilus_menu_provider_register_type_ext(g_module);
+	rp_nautilus_info_provider_register_type_ext(g_module);
 
 	/* Setup the plugin provider type list */
 	type_list[0] = RP_TYPE_NAUTILUS_PROPERTY_PAGE_PROVIDER;
 	type_list[1] = RP_TYPE_NAUTILUS_MENU_PROVIDER;
+	type_list[2] = RP_TYPE_NAUTILUS_INFO_PROVIDER;
 
 #ifdef ENABLE_ACHIEVEMENTS
 	// Register AchGDBus.
@@ -77,17 +83,20 @@ rp_nautilus_register_types(GTypeModule *g_module)
 	} \
 \
 	/* Load symbols. */ \
-	DLSYM(nautilus_file_info_get_type,		prefix##_file_info_get_type); \
-	DLSYM(nautilus_file_info_get_mime_type,		prefix##_file_info_get_mime_type); \
-	DLSYM(nautilus_file_info_get_uri,		prefix##_file_info_get_uri); \
-	DLSYM(nautilus_file_info_get_uri_scheme,	prefix##_file_info_get_uri_scheme); \
-	DLSYM(nautilus_file_info_list_copy,		prefix##_file_info_list_copy); \
-	DLSYM(nautilus_file_info_list_free,		prefix##_file_info_list_free); \
-	DLSYM(nautilus_menu_item_get_type,		prefix##_menu_item_get_type); \
-	DLSYM(nautilus_menu_item_new,			prefix##_menu_item_new); \
-	DLSYM(nautilus_menu_provider_get_type,		prefix##_menu_provider_get_type); \
-	DLSYM(nautilus_property_page_provider_get_type,	prefix##_property_page_provider_get_type); \
-	DLSYM(nautilus_property_page_new,		prefix##_property_page_new); \
+	DLSYM(nautilus_file_info_get_type,			prefix##_file_info_get_type); \
+	DLSYM(nautilus_file_info_get_uri,			prefix##_file_info_get_uri); \
+	DLSYM(nautilus_file_info_get_uri_scheme,		prefix##_file_info_get_uri_scheme); \
+	DLSYM(nautilus_file_info_get_mime_type,			prefix##_file_info_get_mime_type); \
+	DLSYM(nautilus_file_info_add_emblem,			prefix##_file_info_add_emblem); \
+	DLSYM(nautilus_file_info_list_copy,			prefix##_file_info_list_copy); \
+	DLSYM(nautilus_file_info_list_free,			prefix##_file_info_list_free); \
+	DLSYM(nautilus_menu_item_get_type,			prefix##_menu_item_get_type); \
+	DLSYM(nautilus_menu_item_new,				prefix##_menu_item_new); \
+	DLSYM(nautilus_menu_provider_get_type,			prefix##_menu_provider_get_type); \
+	DLSYM(nautilus_property_page_provider_get_type,		prefix##_property_page_provider_get_type); \
+	DLSYM(nautilus_property_page_new,			prefix##_property_page_new); \
+	DLSYM(nautilus_info_provider_get_type,			prefix##_info_provider_get_type); \
+	DLSYM(nautilus_info_provider_update_complete_invoke,	prefix##_info_provider_update_complete_invoke); \
 } while (0)
 
 extern "C" G_MODULE_EXPORT void
