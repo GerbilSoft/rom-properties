@@ -68,8 +68,8 @@ typedef enum {
 
 // Function pointer typedefs
 typedef GType (*PFN_NAUTILUS_FILE_INFO_GET_TYPE)(void);
-typedef char* (*PFN_NAUTILUS_FILE_INFO_GET_URI)(NautilusFileInfo *file);
-typedef char* (*PFN_NAUTILUS_FILE_INFO_GET_URI_SCHEME)(NautilusFileInfo *file);
+typedef char* (*PFN_NAUTILUS_FILE_INFO_GET_URI)(NautilusFileInfo *file_info);
+typedef char* (*PFN_NAUTILUS_FILE_INFO_GET_URI_SCHEME)(NautilusFileInfo *file_info);
 typedef gchar* (*PFN_NAUTILUS_FILE_INFO_GET_MIME_TYPE)(NautilusFileInfo *file_info);
 typedef void (*PFN_NAUTILUS_FILE_INFO_ADD_EMBLEM)(NautilusFileInfo *file_info, const char *emblem_name);
 typedef void (*PFN_NAUTILUS_FILE_INFO_ADD_STIRNG_ATTRIBUTE)(NautilusFileInfo *file_info, const char *attribute_name, const char *value);
@@ -117,8 +117,8 @@ extern PFN_NAUTILUS_COLUMN_PROVIDER_GET_COLUMNS			pfn_nautilus_column_provider_g
 
 // Function pointer macros
 #define nautilus_file_info_get_type()				(pfn_nautilus_file_info_get_type ())
-#define nautilus_file_info_get_uri(file)			(pfn_nautilus_file_info_get_uri(file))
-#define nautilus_file_info_get_uri_scheme(file)			(pfn_nautilus_file_info_get_uri_scheme(file))
+#define nautilus_file_info_get_uri(file_info)			(pfn_nautilus_file_info_get_uri(file_info))
+#define nautilus_file_info_get_uri_scheme(file_info)		(pfn_nautilus_file_info_get_uri_scheme(file_info))
 #define nautilus_file_info_get_mime_type(file_info)		(pfn_nautilus_file_info_get_mime_type(file_info))
 #define nautilus_file_info_add_emblem(file_info, emblem_name)	(pfn_nautilus_file_info_add_emblem((file_info), (emblem_name)))
 #define nautilus_file_info_add_string_attribute(file_info, attribute_name, value) \
