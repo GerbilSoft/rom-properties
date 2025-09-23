@@ -39,11 +39,11 @@ typedef struct _NautilusPropertyPageProvider NautilusPropertyPageProvider;
 struct _NautilusPropertyPage;
 typedef struct _NautilusPropertyPage NautilusPropertyPage;
 
-struct _NautilusInfoProvider;
-typedef struct _NautilusInfoProvider NautilusInfoProvider;
-
 struct _NautilusOperationHandle;
 typedef struct _NautilusOperationHandle NautilusOperationHandle;
+
+struct _NautilusInfoProvider;
+typedef struct _NautilusInfoProvider NautilusInfoProvider;
 
 struct _NautilusColumn;
 typedef struct _NautilusColumn NautilusColumn;
