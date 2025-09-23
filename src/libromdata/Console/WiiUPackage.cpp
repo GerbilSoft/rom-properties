@@ -883,19 +883,22 @@ int WiiUPackage::loadMetaData(void)
 		return -EIO;
 	}
 
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
+
+	// NOTE: Adding custom properties from the ticket first, since it
+	// sets the Title to the Title ID. This will be overwritten with
+	// the actual Title if decryption is available and the XMLs are usable.
+	d->metaData.addMetaData_metaData(d->ticket->metaData());
+
 #ifdef ENABLE_XML
 	// Check if the decryption keys were loaded.
 	const KeyManager::VerifyResult verifyResult = d->ticket->verifyResult();
 	if (verifyResult == KeyManager::VerifyResult::OK) {
 		// Decryption keys were loaded. We can add XML fields.
 		// Parse the Wii U System XMLs.
-		d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 		d->addMetaData_System_XMLs();
 	}
 #endif /* ENABLE_XML */
-
-	// No ticket/TMD metadata; the only thing it sets is the
-	// "Title" property, which is the Title ID.
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
