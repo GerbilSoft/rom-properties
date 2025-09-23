@@ -12,12 +12,14 @@
 #include "NautilusPlugin.hpp"
 
 #include "AchGDBus.hpp"
+#include "plugin-helper.h"
+
 #include "NautilusPropertyPageProvider.hpp"
 #include "NautilusMenuProvider.h"
-#include "NautilusExtraInterfaces.h"
 #include "NautilusInfoProvider.hpp"
 #include "NautilusColumnProvider.h"
-#include "plugin-helper.h"
+
+#include "NautilusExtraInterfaces.h"
 
 static GType type_list[4];
 

@@ -13,8 +13,9 @@
 
 #include "AchGDBus.hpp"
 #include "plugin-helper.h"
-#include "ThunarMenuProvider.h"
+
 #include "ThunarPropertyPageProvider.hpp"
+#include "ThunarMenuProvider.h"
 
 // Thunar version is based on GTK+ version.
 #if GTK_CHECK_VERSION(3, 0, 0)
