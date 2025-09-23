@@ -170,6 +170,10 @@ IFACEMETHODIMP RP_ColumnProvider::GetItemData(_In_ LPCSHCOLUMNID pscid, _In_ LPC
 
 	// Get the custom metadata properties.
 	const RomMetaData *const metaData = d->romData->metaData();
+	if (!metaData || metaData->empty()) {
+		// No metadata properties.
+		return S_FALSE;
+	}
 	// The file doesn't need to stay open after retrieving the metadata properties.
 	d->romData->close();
 
