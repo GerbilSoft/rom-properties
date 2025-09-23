@@ -54,9 +54,9 @@ static const array<SHCOLUMNINFO_NoSCID, 6> coldata_t = {{
 	{VT_BSTR, LVCFMT_LEFT, 20, SHCOLSTATE_TYPE_STR, _T("Game ID"), _T("Game ID")},
 	{VT_BSTR, LVCFMT_LEFT, 20, SHCOLSTATE_TYPE_STR, _T("Title ID"), _T("Title ID")},
 	{VT_BSTR, LVCFMT_LEFT, 20, SHCOLSTATE_TYPE_STR, _T("Media ID"), _T("Media ID")},
-	{VT_BSTR, LVCFMT_LEFT, 20, SHCOLSTATE_TYPE_STR, _T("OS version"), _T("OS Version")},
-	{VT_BSTR, LVCFMT_LEFT, 20, SHCOLSTATE_TYPE_STR, _T("Encryption key"), _T("Encryption Key")},
-	{VT_BSTR, LVCFMT_LEFT, 20, SHCOLSTATE_TYPE_STR, _T("Pixel format"), _T("Pixel Format")},
+	{VT_BSTR, LVCFMT_LEFT, 20, SHCOLSTATE_TYPE_STR, _T("OS Version"), _T("OS Version")},
+	{VT_BSTR, LVCFMT_LEFT, 20, SHCOLSTATE_TYPE_STR, _T("Encryption Key"), _T("Encryption Key")},
+	{VT_BSTR, LVCFMT_LEFT, 20, SHCOLSTATE_TYPE_STR, _T("Pixel Format"), _T("Pixel Format")},
 }};
 
 // Property keys
