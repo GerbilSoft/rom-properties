@@ -16,9 +16,10 @@
 #include "NautilusMenuProvider.h"
 #include "NautilusExtraInterfaces.h"
 #include "NautilusInfoProvider.hpp"
+#include "NautilusColumnProvider.h"
 #include "plugin-helper.h"
 
-static GType type_list[3];
+static GType type_list[4];
 
 // C includes (C++ namespace)
 #include <cassert>
@@ -40,6 +41,10 @@ PFN_NAUTILUS_PROPERTY_PAGE_PROVIDER_GET_TYPE		pfn_nautilus_property_page_provide
 PFN_NAUTILUS_PROPERTY_PAGE_NEW				pfn_nautilus_property_page_new;
 PFN_NAUTILUS_INFO_PROVIDER_GET_TYPE			pfn_nautilus_info_provider_get_type;
 PFN_NAUTILUS_INFO_PROVIDER_UPDATE_COMPLETE_INVOKE	pfn_nautilus_info_provider_update_complete_invoke;
+PFN_NAUTILUS_COLUMN_GET_TYPE				pfn_nautilus_column_get_type;
+PFN_NAUTILUS_COLUMN_NEW					pfn_nautilus_column_new;
+PFN_NAUTILUS_COLUMN_PROVIDER_GET_TYPE			pfn_nautilus_column_provider_get_type;
+PFN_NAUTILUS_COLUMN_PROVIDER_GET_COLUMNS		pfn_nautilus_column_provider_get_columns;
 
 static void
 rp_nautilus_register_types(GTypeModule *g_module)
@@ -50,11 +55,13 @@ rp_nautilus_register_types(GTypeModule *g_module)
 	rp_nautilus_property_page_provider_register_type_ext(g_module);
 	rp_nautilus_menu_provider_register_type_ext(g_module);
 	rp_nautilus_info_provider_register_type_ext(g_module);
+	rp_nautilus_column_provider_register_type_ext(g_module);
 
 	/* Setup the plugin provider type list */
 	type_list[0] = RP_TYPE_NAUTILUS_PROPERTY_PAGE_PROVIDER;
 	type_list[1] = RP_TYPE_NAUTILUS_MENU_PROVIDER;
 	type_list[2] = RP_TYPE_NAUTILUS_INFO_PROVIDER;
+	type_list[3] = RP_TYPE_NAUTILUS_COLUMN_PROVIDER;
 
 #ifdef ENABLE_ACHIEVEMENTS
 	// Register AchGDBus.
@@ -99,6 +106,10 @@ rp_nautilus_register_types(GTypeModule *g_module)
 	DLSYM(nautilus_property_page_new,			prefix##_property_page_new); \
 	DLSYM(nautilus_info_provider_get_type,			prefix##_info_provider_get_type); \
 	DLSYM(nautilus_info_provider_update_complete_invoke,	prefix##_info_provider_update_complete_invoke); \
+	DLSYM(nautilus_column_new,				prefix##_column_new); \
+	DLSYM(nautilus_column_get_type,				prefix##_column_get_type); \
+	DLSYM(nautilus_column_provider_get_type,		prefix##_column_provider_get_type); \
+	DLSYM(nautilus_column_provider_get_columns,		prefix##_column_provider_get_columns); \
 } while (0)
 
 extern "C" G_MODULE_EXPORT void

@@ -107,6 +107,7 @@ SET(${PROJECT_NAME}_SRCS
 	NautilusPropertyPageProvider.cpp
 	NautilusMenuProvider.c
 	NautilusInfoProvider.cpp
+	NautilusColumnProvider.c
 	NautilusExtraInterfaces.c
 	ThunarPropertyPageProvider.cpp
 	ThunarMenuProvider.c
@@ -122,6 +123,7 @@ SET(${PROJECT_NAME}_H
 	NautilusPropertyPageProvider.hpp
 	NautilusMenuProvider.h
 	NautilusInfoProvider.hpp
+	NautilusColumnProvider.h
 	NautilusExtraInterfaces.h
 	ThunarPropertyPageProvider.hpp
 	ThunarMenuProvider.h

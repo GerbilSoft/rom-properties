@@ -52,4 +52,12 @@ struct _NautilusInfoProviderInterface
 };
 typedef struct _NautilusInfoProviderInterface NautilusInfoProviderInterface;
 
+struct _NautilusColumnProviderInterface
+{
+	GTypeInterface g_iface;
+
+	GList *(*get_columns) (NautilusColumnProvider *provider);
+};
+typedef struct _NautilusColumnProviderInterface NautilusColumnProviderInterface;
+
 G_END_DECLS
