@@ -90,6 +90,8 @@ SET(${PROJECT_NAME}_SRCS
 	NautilusPropertiesModelProvider.cpp
 	NautilusPropertiesModel.cpp
 	../gtk3/NautilusMenuProvider.c
+	../gtk3/NautilusInfoProvider.cpp
+	../gtk3/NautilusColumnProvider.c
 	../gtk3/MenuProviderCommon.c
 	dlopen-notes.c
 
@@ -106,6 +108,8 @@ SET(${PROJECT_NAME}_H
 	NautilusPropertiesModelProvider.hpp
 	NautilusPropertiesModel.hpp
 	../gtk3/NautilusMenuProvider.h
+	../gtk3/NautilusInfoProvider.hpp
+	../gtk3/NautilusColumnProvider.h
 	nautilus-extension-mini.h
 	../gtk3/MenuProviderCommon.h
 

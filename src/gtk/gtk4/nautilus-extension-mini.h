@@ -34,4 +34,25 @@ struct _NautilusMenuProviderInterface {
 };
 typedef struct _NautilusMenuProviderInterface NautilusMenuProviderInterface;
 
+struct _NautilusInfoProviderInterface
+{
+	GTypeInterface g_iface;
+
+	NautilusOperationResult (*update_file_info)	(NautilusInfoProvider     *provider,
+							 NautilusFileInfo         *file,
+							 GClosure                 *update_complete,
+							 NautilusOperationHandle **handle);
+	void                    (*cancel_update)	(NautilusInfoProvider     *provider,
+							 NautilusOperationHandle  *handle);
+};
+typedef struct _NautilusInfoProviderInterface NautilusInfoProviderInterface;
+
+struct _NautilusColumnProviderInterface
+{
+	GTypeInterface g_iface;
+
+	GList *(*get_columns) (NautilusColumnProvider *provider);
+};
+typedef struct _NautilusColumnProviderInterface NautilusColumnProviderInterface;
+
 G_END_DECLS
