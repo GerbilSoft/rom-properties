@@ -26,16 +26,16 @@ extern const CLSID CLSID_RP_ColumnProvider;
 class RP_ColumnProvider_Private
 {
 public:
-	RP_ColumnProvider_Private();
-	~RP_ColumnProvider_Private();
+	RP_ColumnProvider_Private() = default;
+	~RP_ColumnProvider_Private() = default;
 
 private:
 	RP_DISABLE_COPY(RP_ColumnProvider_Private)
 
 public:
 	// RomData object
-	//LibRpBase::RomDataPtr romData;
-	//std::tstring filename;
+	LibRpBase::RomDataPtr romData;
+	std::tstring tfilename;
 
 public:
 	/**

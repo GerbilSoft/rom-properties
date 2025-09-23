@@ -19,6 +19,7 @@
 #include "librpbase/config/Config.hpp"
 #include "librpbase/RomMetaData.hpp"
 #include "librpfile/FileSystem.hpp"
+#include "libromdata/RomDataFactory.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRomData;
@@ -139,22 +140,58 @@ IFACEMETHODIMP RP_ColumnProvider::GetColumnInfo(_In_ DWORD dwIndex, _Out_ SHCOLU
 IFACEMETHODIMP RP_ColumnProvider::GetItemData(_In_ LPCSHCOLUMNID pscid, _In_ LPCSHCOLUMNDATA pscd, _Out_ VARIANT *pvarData)
 {
 	// Map the specified property key to a Property enum value.
-	Property prop = Property::Invalid;
+	Property name = Property::Invalid;
 	for (size_t i = 0; i < colpkey_t.size(); i++) {
 		if (!memcmp(pscid, colpkey_t[i], sizeof(SHCOLUMNID))) {
 			// Found a match!
-			prop = static_cast<Property>(static_cast<int>(Property::GameID) + static_cast<int>(i));
+			name = static_cast<Property>(static_cast<int>(Property::GameID) + static_cast<int>(i));
 			break;
 		}
 	}
 
-	if (prop <= Property::Empty) {
+	if (name <= Property::Empty) {
 		// Invalid property.
 		return S_FALSE;
 	}
 
-	// FIXME: Load the ROM file (and/or cached?) and get the property.
-	// For now, dummy values.
-	InitVariantFromString(L"Testing 1 2 3", pvarData);
+	// Check if we have a cached RomData object and if the filename matches.
+	RP_D(RP_ColumnProvider);
+	if (d->tfilename != pscd->wszFile) {
+		// Cache doesn't match. Open the new file.
+		// NOTE: If d->romData is nullptr after this, this will be considered a "negative" cache.
+		d->romData = RomDataFactory::create(pscd->wszFile, RomDataFactory::RDA_HAS_METADATA);
+		d->tfilename = pscd->wszFile;
+	}
+
+	if (!d->romData) {
+		// Not a supported RomData object.
+		return S_FALSE;
+	}
+
+	// Get the custom metadata properties.
+	const RomMetaData *const metaData = d->romData->metaData();
+	// The file doesn't need to stay open after retrieving the metadata properties.
+	d->romData->close();
+
+	const RomMetaData::MetaData *const prop = metaData->get(name);
+	if (!prop) {
+		// Property not found.
+		return S_FALSE;
+	}
+
+	// NOTE: Assuming it's a string.
+	assert(prop->type == PropertyType::String);
+	if (prop->type != PropertyType::String) {
+		// Not supported right now...
+		return S_FALSE;
+	}
+
+	if (!prop->data.str || prop->data.str[0] == '\0') {
+		// Empty string...
+		// NOTE: Shouldn't happen.
+		return S_FALSE;
+	}
+
+	InitVariantFromString(U82T_c(prop->data.str), pvarData);
 	return S_OK;
 }
