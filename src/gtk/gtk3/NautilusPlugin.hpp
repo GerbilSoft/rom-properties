@@ -71,10 +71,11 @@ typedef GType (*PFN_NAUTILUS_FILE_INFO_GET_TYPE)(void);
 typedef char* (*PFN_NAUTILUS_FILE_INFO_GET_URI)(NautilusFileInfo *file);
 typedef char* (*PFN_NAUTILUS_FILE_INFO_GET_URI_SCHEME)(NautilusFileInfo *file);
 typedef gchar* (*PFN_NAUTILUS_FILE_INFO_GET_MIME_TYPE)(NautilusFileInfo *file_info);
-typedef GList* (*PFN_NAUTILUS_FILE_INFO_LIST_COPY)(GList *files);
-typedef void (*PFN_NAUTILUS_FILE_INFO_LIST_FREE)(GList *files);
 typedef void (*PFN_NAUTILUS_FILE_INFO_ADD_EMBLEM)(NautilusFileInfo *file_info, const char *emblem_name);
 typedef void (*PFN_NAUTILUS_FILE_INFO_ADD_STIRNG_ATTRIBUTE)(NautilusFileInfo *file_info, const char *attribute_name, const char *value);
+
+typedef GList* (*PFN_NAUTILUS_FILE_INFO_LIST_COPY)(GList *files);
+typedef void (*PFN_NAUTILUS_FILE_INFO_LIST_FREE)(GList *files);
 
 typedef GType (*PFN_NAUTILUS_MENU_PROVIDER_GET_TYPE)(void);
 
