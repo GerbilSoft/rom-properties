@@ -228,12 +228,20 @@ public:
 	bool empty(void) const;
 
 	/**
-	 * Get a metadata property.
+	 * Get a metadata property, by index.
 	 * @param idx Metadata index
 	 * @return Metadata property, or nullptr if the index is invalid.
 	 */
 	RP_LIBROMDATA_PUBLIC
 	const MetaData *at(int idx) const;
+
+	/**
+	 * Get a metadata property, by name.
+	 * @param name Metadata property name
+	 * @return Metadata property, or nullptr if the property isn't set.
+	 */
+	RP_LIBROMDATA_PUBLIC
+	const MetaData *get(Property name) const;
 
 	/**
 	 * Get a const iterator pointing to the beginning of the RomMetaData.
