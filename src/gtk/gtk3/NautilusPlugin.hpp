@@ -68,6 +68,7 @@ typedef gchar* (*PFN_NAUTILUS_FILE_INFO_GET_MIME_TYPE)(NautilusFileInfo *file_in
 typedef GList* (*PFN_NAUTILUS_FILE_INFO_LIST_COPY)(GList *files);
 typedef void (*PFN_NAUTILUS_FILE_INFO_LIST_FREE)(GList *files);
 typedef void (*PFN_NAUTILUS_FILE_INFO_ADD_EMBLEM)(NautilusFileInfo *file_info, const char *emblem_name);
+typedef void (*PFN_NAUTILUS_FILE_INFO_ADD_STIRNG_ATTRIBUTE)(NautilusFileInfo *file_info, const char *attribute_name, const char *value);
 
 typedef GType (*PFN_NAUTILUS_MENU_PROVIDER_GET_TYPE)(void);
 
@@ -86,6 +87,7 @@ extern PFN_NAUTILUS_FILE_INFO_GET_URI				pfn_nautilus_file_info_get_uri;
 extern PFN_NAUTILUS_FILE_INFO_GET_URI_SCHEME			pfn_nautilus_file_info_get_uri_scheme;
 extern PFN_NAUTILUS_FILE_INFO_GET_MIME_TYPE			pfn_nautilus_file_info_get_mime_type;
 extern PFN_NAUTILUS_FILE_INFO_ADD_EMBLEM			pfn_nautilus_file_info_add_emblem;
+extern PFN_NAUTILUS_FILE_INFO_ADD_STIRNG_ATTRIBUTE		pfn_nautilus_file_info_add_string_attribute;
 extern PFN_NAUTILUS_FILE_INFO_LIST_COPY				pfn_nautilus_file_info_list_copy;
 extern PFN_NAUTILUS_FILE_INFO_LIST_FREE				pfn_nautilus_file_info_list_free;
 extern PFN_NAUTILUS_MENU_ITEM_GET_TYPE				pfn_nautilus_menu_item_get_type;
@@ -102,6 +104,8 @@ extern PFN_NAUTILUS_INFO_PROVIDER_UPDATE_COMPLETE_INVOKE	pfn_nautilus_info_provi
 #define nautilus_file_info_get_uri_scheme(file)			(pfn_nautilus_file_info_get_uri_scheme(file))
 #define nautilus_file_info_get_mime_type(file_info)		(pfn_nautilus_file_info_get_mime_type(file_info))
 #define nautilus_file_info_add_emblem(file_info, emblem_name)	(pfn_nautilus_file_info_add_emblem((file_info), (emblem_name)))
+#define nautilus_file_info_add_string_attribute(file_info, attribute_name, value) \
+	(pfn_nautilus_file_info_add_string_attribute((file_info), (attribute_name), (value)))
 #define nautilus_file_info_list_copy(files)			(pfn_nautilus_file_info_list_copy(files))
 #define nautilus_file_info_list_free(files)			(pfn_nautilus_file_info_list_free(files))
 #define nautilus_menu_item_get_type()				(pfn_nautilus_menu_item_get_type ())

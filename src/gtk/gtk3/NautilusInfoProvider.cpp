@@ -16,7 +16,11 @@
 #include "is-supported.hpp"
 
 // librpbase
+#include "librpbase/RomMetaData.hpp"
 using namespace LibRpBase;
+
+// C++ STL classes
+using std::array;
 
 // nautilus-extension.h mini replacement
 #if GTK_CHECK_VERSION(4, 0, 0)
@@ -130,7 +134,37 @@ rp_nautilus_info_provider_update_file_info(
 		return NAUTILUS_OPERATION_FAILED;
 	}
 
-	// TODO: Custom metadata properties.
+	// Check for custom metadata propreties.
+	// NOTE: Only strings are supported.
+	static constexpr size_t custom_property_count = static_cast<size_t>(Property::PropertyCount) - static_cast<size_t>(Property::GameID);
+	static const array<const char*, custom_property_count> nautilus_prop_names = {{
+		"rp-game-id",
+		"rp-title-id",
+		"rp-media-id",
+		"rp-os-version",
+		"rp-encryption-key",
+		"rp-pixel-format",
+	}};
+
+	// Custom metadata property names start at Prpoerty::GameID.
+	const RomMetaData *const metaData = romData->metaData();
+	if (metaData && !metaData->empty()) {
+		for (const RomMetaData::MetaData &prop : *metaData) {
+			if (prop.name < Property::GameID) {
+				continue;
+			}
+
+			// Only strings are accepted for now.
+			assert(prop.type == PropertyType::String);
+			if (prop.type != PropertyType::String) {
+				continue;
+			}
+
+			// Add the property.
+			const size_t index = static_cast<size_t>(prop.name) - static_cast<size_t>(Property::GameID);
+			nautilus_file_info_add_string_attribute(file, nautilus_prop_names[index], prop.data.str);
+		}
+	}
 
 	const Config *const config = Config::instance();
 	if (config->getBoolConfigOption(Config::BoolConfig::Options_ShowDangerousPermissionsOverlayIcon)) {

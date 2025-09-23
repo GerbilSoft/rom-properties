@@ -30,6 +30,7 @@ PFN_NAUTILUS_FILE_INFO_GET_URI				pfn_nautilus_file_info_get_uri;
 PFN_NAUTILUS_FILE_INFO_GET_URI_SCHEME			pfn_nautilus_file_info_get_uri_scheme;
 PFN_NAUTILUS_FILE_INFO_GET_MIME_TYPE			pfn_nautilus_file_info_get_mime_type;
 PFN_NAUTILUS_FILE_INFO_ADD_EMBLEM			pfn_nautilus_file_info_add_emblem;
+PFN_NAUTILUS_FILE_INFO_ADD_STIRNG_ATTRIBUTE		pfn_nautilus_file_info_add_string_attribute;
 PFN_NAUTILUS_FILE_INFO_LIST_COPY			pfn_nautilus_file_info_list_copy;
 PFN_NAUTILUS_FILE_INFO_LIST_FREE			pfn_nautilus_file_info_list_free;
 PFN_NAUTILUS_MENU_ITEM_GET_TYPE				pfn_nautilus_menu_item_get_type;
@@ -88,6 +89,7 @@ rp_nautilus_register_types(GTypeModule *g_module)
 	DLSYM(nautilus_file_info_get_uri_scheme,		prefix##_file_info_get_uri_scheme); \
 	DLSYM(nautilus_file_info_get_mime_type,			prefix##_file_info_get_mime_type); \
 	DLSYM(nautilus_file_info_add_emblem,			prefix##_file_info_add_emblem); \
+	DLSYM(nautilus_file_info_add_string_attribute,		prefix##_file_info_add_string_attribute); \
 	DLSYM(nautilus_file_info_list_copy,			prefix##_file_info_list_copy); \
 	DLSYM(nautilus_file_info_list_free,			prefix##_file_info_list_free); \
 	DLSYM(nautilus_menu_item_get_type,			prefix##_menu_item_get_type); \
