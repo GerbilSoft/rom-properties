@@ -12,7 +12,11 @@
 #include "NautilusInfoProvider.hpp"
 #include "NautilusExtraInterfaces.h"
 
-#include "../RomDataView.hpp"
+// rp_gtk_open_uri()
+#include "is-supported.hpp"
+
+// librpbase
+using namespace LibRpBase;
 
 // nautilus-extension.h mini replacement
 #if GTK_CHECK_VERSION(4, 0, 0)
@@ -70,7 +74,6 @@ void
 rp_nautilus_info_provider_register_type_ext(GTypeModule *g_module)
 {
 	rp_nautilus_info_provider_register_type(G_TYPE_MODULE(g_module));
-	printf("info provider initialized!\n");
 
 #ifdef HAVE_EXTRA_INTERFACES
 	// Add extra fork-specific interfaces.
@@ -114,8 +117,30 @@ rp_nautilus_info_provider_update_file_info(
 	g_return_val_if_fail(NAUTILUS_IS_FILE_INFO(file), NAUTILUS_OPERATION_FAILED);
 	g_return_val_if_fail(handle != nullptr, NAUTILUS_OPERATION_FAILED);
 
-	// Just adding an emblem for now.
-	nautilus_file_info_add_emblem(file, "package-installed-updated");
+	// Attempt to open the URI.
+	gchar *const uri = nautilus_file_info_get_uri(file);
+	if (G_UNLIKELY(uri == nullptr)) {
+		// No URI...
+		return NAUTILUS_OPERATION_FAILED;
+	}
+	const RomDataPtr romData = rp_gtk_open_uri(uri);
+	g_free(uri);
+	if (G_UNLIKELY(!romData)) {
+		// Unable to open the URI as a RomData object.
+		return NAUTILUS_OPERATION_FAILED;
+	}
+
+	// TODO: Custom metadata properties.
+
+	const Config *const config = Config::instance();
+	if (config->getBoolConfigOption(Config::BoolConfig::Options_ShowDangerousPermissionsOverlayIcon)) {
+		// Overlay icon is enabled.
+		// Does this RomData object have "dangerous" permissions?
+		if (romData->hasDangerousPermissions()) {
+			// Add the "security-medium" emblem.
+			nautilus_file_info_add_emblem(file, "security-medium");
+		}
+	}
 
 	// NOTE: The closure is only used if we're checking asynchronously.
 	// If we decide to cehck asynchronously, *handle needs to be set to

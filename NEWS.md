@@ -9,6 +9,9 @@
     supported file formats.
     * Fixes #462: Add Windows Explorer file information column integration for Wii file formats
       * Requested by @DeadlyFoez.
+  * GNOME Nautilus (and Caja and Nemo): An emblem is now shown for files with
+    potentially dangerous permissions.
+    * See issue #168: Icon overlay for "dangerous" ROM permissions (GNOME, Windows)
 
 ## v2.6 (released 2025/09/13)
 
