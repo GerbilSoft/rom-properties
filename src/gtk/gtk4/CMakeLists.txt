@@ -90,6 +90,8 @@ SET(${PROJECT_NAME}_SRCS
 	NautilusPropertiesModelProvider.cpp
 	NautilusPropertiesModel.cpp
 	../gtk3/NautilusMenuProvider.c
+	../gtk3/NautilusInfoProvider.cpp
+	../gtk3/NautilusColumnProvider.c
 	../gtk3/MenuProviderCommon.c
 	dlopen-notes.c
 
@@ -106,6 +108,8 @@ SET(${PROJECT_NAME}_H
 	NautilusPropertiesModelProvider.hpp
 	NautilusPropertiesModel.hpp
 	../gtk3/NautilusMenuProvider.h
+	../gtk3/NautilusInfoProvider.hpp
+	../gtk3/NautilusColumnProvider.h
 	nautilus-extension-mini.h
 	../gtk3/MenuProviderCommon.h
 
@@ -161,7 +165,7 @@ IF(CMAKE_DL_LIBS)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME}_LIB PRIVATE ${CMAKE_DL_LIBS})
 ENDIF(CMAKE_DL_LIBS)
 
-TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME}_LIB PRIVATE RP_UI_GTK4)
+TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME}_LIB PUBLIC RP_UI_GTK4)
 
 # PugiXML headers are needed for AboutTab.
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}_LIB PRIVATE ${pugixml_INCLUDE_DIR})

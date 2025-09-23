@@ -10,11 +10,12 @@
 #include "stdafx.h"
 #include "RP_PropertyStore.hpp"
 #include "RP_PropertyStore_p.hpp"
+#include "res/resource.h"
 
 // libwin32common
 using LibWin32UI::RegKey;
 
-// C++ STL classes.
+// C++ STL classes
 using std::tstring;
 using std::unique_ptr;
 
@@ -24,7 +25,7 @@ using std::unique_ptr;
  * Get the PreviewDetails string.
  * @return PreviewDetails string.
  */
-tstring RP_PropertyStore_Private::GetPreviewDetailsString()
+tstring RP_PropertyStore_Private::GetPreviewDetailsString(void)
 {
 	// PreviewDetails.
 	// NOTE: Default properties should go *after* these.
@@ -67,7 +68,7 @@ tstring RP_PropertyStore_Private::GetPreviewDetailsString()
  * Get the InfoTip string.
  * @return InfoTip string.
  */
-std::tstring RP_PropertyStore_Private::GetInfoTipString()
+std::tstring RP_PropertyStore_Private::GetInfoTipString(void)
 {
 	// InfoTip.
 	// NOTE: Default properties should go *before* these.
@@ -117,7 +118,7 @@ std::tstring RP_PropertyStore_Private::GetInfoTipString()
  * Get the FullDetails string.
  * @return FullDetails string.
  */
-std::tstring RP_PropertyStore_Private::GetFullDetailsString()
+std::tstring RP_PropertyStore_Private::GetFullDetailsString(void)
 {
 	// FIXME: FullDetails will show empty properties if
 	// they're listed here but aren't set by RP_PropertyStore.
@@ -188,7 +189,7 @@ LONG RP_PropertyStore::RegisterFileType(_In_ RegKey &hkcr, _In_opt_ RegKey *pHkl
 		}
 		hklm_PropertyHandlers.close();
 
-		// Register our GUID as the property sheet handler.
+		// Register our GUID as the property store handler.
 		// TODO: Fallbacks?
 		lResult = hklmph_ext.write(nullptr, CLSID_RP_PropertyStore_String);
 		if (lResult != ERROR_SUCCESS) return lResult;
@@ -273,5 +274,188 @@ LONG RP_PropertyStore::UnregisterFileType(_In_ RegKey &hkcr, _In_opt_ RegKey *pH
 	}
 
 	// We're done here.
+	return ERROR_SUCCESS;
+}
+
+/** Property Description Schema **/
+
+class HMODULE_deleter
+{
+public:
+	typedef HMODULE pointer;
+
+	void operator()(HMODULE hModule)
+	{
+		if (hModule) {
+			FreeLibrary(hModule);
+		}
+	}
+};
+
+#define DEF_LOAD_FUNCPTR(f) __typeof__(f) * p##f = (__typeof__(f)*)GetProcAddress(hPropsys_dll.get(), #f)
+
+/**
+ * Get the Property Description Schema directory.
+ * @return Property Description Schema directory
+ */
+tstring RP_PropertyStore_Private::GetPropertyDescriptionSchemaDirectory(void)
+{
+	// The .propdesc file will be installed in "C:\\Windows\\PropDesc\\".
+	// Normally, it's installed in "C:\\Program Files\\[program]\\", but
+	// we aren't currently installing rom-properties there.
+	TCHAR path[MAX_PATH];
+	UINT len = GetWindowsDirectory(path, _countof(path));
+	if (len == 0 || len >= (_countof(path)-1)) {
+		// Cannot fit the Windows directory into the buffer?
+		return {};
+	}
+
+	tstring tfilename = path;
+	tfilename += _T("\\PropDesc");
+	return tfilename;
+}
+
+/**
+ * Register the Property Description Schema.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_PropertyStore::RegisterPropertyDescriptionSchema(void)
+{
+	// Open PROPSYS.DLL dynamically.
+	unique_ptr<HMODULE, HMODULE_deleter> hPropsys_dll(
+		LoadLibraryEx(_T("propsys.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
+	if (!hPropsys_dll) {
+		// Don't fail if PROPSYS.DLL isn't available.
+		return ERROR_SUCCESS;
+	}
+
+	// Get PSRegisterPropertySchema().
+	DEF_LOAD_FUNCPTR(PSRegisterPropertySchema);
+	if (!pPSRegisterPropertySchema) {
+		// Function was introduced in Windows XP SP2, so we can assume
+		// that this is an older version.
+		return ERROR_SUCCESS;
+	}
+
+	// Get the property description resource.
+	// (TODO: Localize it?)
+	HRSRC hRsrc = FindResource(HINST_THISCOMPONENT, MAKEINTRESOURCE(IDPROP_ROM_PROPERTIES_PROPDESC), MAKEINTRESOURCE(RT_PROPDESC));
+	if (!hRsrc) {
+		return GetLastError();
+	}
+	const DWORD rsrcSize = SizeofResource(HINST_THISCOMPONENT, hRsrc);
+	if (rsrcSize <= 0) {
+		return GetLastError();
+	}
+	HGLOBAL hGlobal  = LoadResource(HINST_THISCOMPONENT, hRsrc);
+	if (!hGlobal) {
+		return GetLastError();
+	}
+	const char *const rsrcData = static_cast<const char*>(LockResource(hGlobal));
+	if (!rsrcData) {
+		DWORD dwErr = GetLastError();
+		FreeResource(hGlobal);
+		return dwErr;
+	}
+
+	// Get the Windows directory.
+	const tstring tdir = RP_PropertyStore_Private::GetPropertyDescriptionSchemaDirectory();
+	if (tdir.empty()) {
+		// Assume a pathname length was out of range.
+		return ERROR_FILENAME_EXCED_RANGE;
+	}
+
+	// Make sure the Property Description Schema subdirectory exists.
+	// NOTE: Not doing a recursive mkdir().
+	BOOL bRet = CreateDirectory(tdir.c_str(), nullptr);
+	if (!bRet) {
+		// ERROR_ALREADY_EXISTS is allowed.
+		// All other errors are not.
+		DWORD dwErr = GetLastError();
+		FreeResource(hGlobal);
+		if (dwErr != ERROR_ALREADY_EXISTS) {
+			return dwErr;
+		}
+	}
+
+	// Open the .propdesc file for writing.
+	const tstring tfilename = tdir + _T("\\rom-properties.propdesc");
+	HANDLE hFile = CreateFile(
+		tfilename.c_str(),		// lpFileName
+		GENERIC_READ | GENERIC_WRITE,	// dwDesiredAccess
+		0,				// dwShareMode
+		nullptr,			// lpSecurityAttributes
+		CREATE_ALWAYS,			// dwCreationDisposition
+		FILE_ATTRIBUTE_NORMAL,		// dwFlagsAndAttributes
+		nullptr);			// hTemplateFile
+	if (!hFile || hFile == INVALID_HANDLE_VALUE) {
+		// Could not create the file?
+		DWORD dwErr = GetLastError();
+		FreeResource(hGlobal);
+		return dwErr;
+	}
+
+	// Write the data.
+	DWORD numberOfBytesWritten = 0;
+	SetLastError(0);
+	bRet = WriteFile(hFile, rsrcData, rsrcSize, &numberOfBytesWritten, nullptr);
+	CloseHandle(hFile);
+	if (!bRet || numberOfBytesWritten != rsrcSize) {
+		// Short write and/or write error?
+		DWORD dwErr = GetLastError();
+		if (dwErr == 0) {
+			dwErr = ERROR_INVALID_FUNCTION;
+		}
+		DeleteFile(tfilename.c_str());
+		return dwErr;
+	}
+
+	// Register the Property Description Schema.
+	HRESULT hr = pPSRegisterPropertySchema(tfilename.c_str());
+	return (hr == S_OK) ? ERROR_SUCCESS : ERROR_GEN_FAILURE;
+}
+
+/**
+ * Unregister the Property Description Schema.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_PropertyStore::UnregisterPropertyDescriptionSchema(void)
+{
+	// Open PROPSYS.DLL dynamically.
+	unique_ptr<HMODULE, HMODULE_deleter> hPropsys_dll(
+		LoadLibraryEx(_T("propsys.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
+	if (!hPropsys_dll) {
+		// Don't fail if PROPSYS.DLL isn't available.
+		return ERROR_SUCCESS;
+	}
+
+	// Get PSUnregisterPropertySchema().
+	DEF_LOAD_FUNCPTR(PSUnregisterPropertySchema);
+	if (!pPSUnregisterPropertySchema) {
+		// Function was introduced in Windows XP SP2, so we can assume
+		// that this is an older version.
+		return ERROR_SUCCESS;
+	}
+
+	// Get the Windows directory.
+	const tstring tdir = RP_PropertyStore_Private::GetPropertyDescriptionSchemaDirectory();
+	if (tdir.empty()) {
+		// Assume a pathname length was out of range.
+		return ERROR_FILENAME_EXCED_RANGE;
+	}
+
+	// Check if the .propdesc file exists.
+	const tstring tfilename = tdir + _T("\\rom-properties.propdesc");
+	if (GetFileAttributes(tfilename.c_str()) != INVALID_FILE_ATTRIBUTES) {
+		// Unregister the Property Description Schema.
+		HRESULT hr = pPSUnregisterPropertySchema(tfilename.c_str());
+		if (hr != S_OK) {
+			return ERROR_GEN_FAILURE;
+		}
+		DeleteFile(tfilename.c_str());
+	}
+
+	// Attempt to rmdir() the directory. (Ignore failures.)
+	RemoveDirectory(tdir.c_str());
 	return ERROR_SUCCESS;
 }

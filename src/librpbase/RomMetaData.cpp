@@ -38,7 +38,7 @@ public:
 	// Mapping of Property to metaData indexes.
 	// Index == Property
 	// Value == metaData index (-1 for none)
-	array<Property, static_cast<size_t>(Property::PropertyCount)> map_metaData;
+	array<int8_t, static_cast<size_t>(Property::PropertyCount)> map_metaData;
 
 	// Property type mapping
 	static const array<PropertyType, static_cast<size_t>(Property::PropertyCount)> PropertyTypeMap;
@@ -125,12 +125,20 @@ const array<PropertyType, static_cast<size_t>(Property::PropertyCount)> RomMetaD
 
 	// Added in KF5 5.53
 	PropertyType::String,	// Description
+
+	/** Custom properties! **/
+	PropertyType::String,	// Game ID
+	PropertyType::String,	// Title ID
+	PropertyType::String,	// Media ID
+	PropertyType::String,	// OS Version
+	PropertyType::String,	// Encryption Key
+	PropertyType::String,	// Pixel Format
 };
 
 RomMetaDataPrivate::RomMetaDataPrivate()
 {
 	assert(RomMetaDataPrivate::PropertyTypeMap[RomMetaDataPrivate::PropertyTypeMap.size()-1] != PropertyType::Invalid);
-	map_metaData.fill(Property::Invalid);
+	map_metaData.fill(-1);
 }
 
 /**
@@ -150,9 +158,9 @@ RomMetaData::MetaData *RomMetaDataPrivate::addProperty(Property name)
 
 	// Check if this metadata property was already added.
 	RomMetaData::MetaData *pMetaData;
-	if (map_metaData[static_cast<size_t>(name)] > Property::Invalid) {
+	if (map_metaData[static_cast<size_t>(name)] > -1) {
 		// Already added. Overwrite it.
-		pMetaData = &metaData[static_cast<size_t>(map_metaData[static_cast<size_t>(name)])];
+		pMetaData = &metaData[map_metaData[static_cast<size_t>(name)]];
 		// If a string is present, delete it.
 		if (pMetaData->type == PropertyType::String) {
 			free(const_cast<char*>(pMetaData->data.str));
@@ -169,7 +177,7 @@ RomMetaData::MetaData *RomMetaDataPrivate::addProperty(Property name)
 		metaData.emplace_back(name, static_cast<PropertyType>(PropertyTypeMap[static_cast<size_t>(name)]));
 		const size_t idx = metaData.size() - 1;
 		pMetaData = &metaData[idx];
-		map_metaData[static_cast<int>(name)] = static_cast<Property>(idx);
+		map_metaData[static_cast<int>(name)] = idx;
 	}
 
 	return pMetaData;
@@ -366,16 +374,34 @@ bool RomMetaData::empty(void) const
 }
 
 /**
- * Get a metadata property.
+ * Get a metadata property, by index.
  * @param idx Metadata index
  * @return Metadata property, or nullptr if the index is invalid.
  */
 const RomMetaData::MetaData *RomMetaData::at(int idx) const
 {
 	RP_D(const RomMetaData);
-	if (idx < 0 || idx >= static_cast<int>(d->metaData.size()))
+	if (idx < 0 || idx >= static_cast<int>(d->metaData.size())) {
 		return nullptr;
+	}
 	return &d->metaData[idx];
+}
+
+/**
+ * Get a metadata property, by name.
+ * @param name Metadata property name
+ * @return Metadata property, or nullptr if the property isn't set.
+ */
+RP_LIBROMDATA_PUBLIC
+const RomMetaData::MetaData *RomMetaData::get(Property name) const
+{
+	RP_D(const RomMetaData);
+	assert(name >= Property::FirstProperty);
+	assert(name <= Property::LastProperty);
+	if (name < Property::FirstProperty || name > Property::LastProperty) {
+		return nullptr;
+	}
+	return &d->metaData[d->map_metaData[static_cast<size_t>(name)]];
 }
 
 /**
@@ -510,7 +536,7 @@ int RomMetaData::addMetaData_integer(Property name, int value)
 	}
 
 	pMetaData->data.ivalue = value;
-	return static_cast<int>(d->map_metaData[static_cast<size_t>(name)]);
+	return d->map_metaData[static_cast<size_t>(name)];
 }
 
 /**
@@ -540,7 +566,7 @@ int RomMetaData::addMetaData_uint(Property name, unsigned int value)
 	}
 
 	pMetaData->data.uvalue = value;
-	return static_cast<int>(d->map_metaData[static_cast<size_t>(name)]);
+	return d->map_metaData[static_cast<size_t>(name)];
 }
 
 /**
@@ -590,7 +616,7 @@ int RomMetaData::addMetaData_string(Property name, const char *str, unsigned int
 	}
 
 	pMetaData->data.str = nstr;
-	return static_cast<int>(d->map_metaData[static_cast<size_t>(name)]);
+	return d->map_metaData[static_cast<size_t>(name)];
 }
 
 /**
@@ -620,7 +646,7 @@ int RomMetaData::addMetaData_timestamp(Property name, time_t timestamp)
 	}
 
 	pMetaData->data.timestamp = timestamp;
-	return static_cast<int>(d->map_metaData[static_cast<size_t>(name)]);
+	return d->map_metaData[static_cast<size_t>(name)];
 }
 
 /**
@@ -650,7 +676,7 @@ int RomMetaData::addMetaData_double(Property name, double dvalue)
 	}
 
 	pMetaData->data.dvalue = dvalue;
-	return static_cast<int>(d->map_metaData[static_cast<size_t>(name)]);
+	return d->map_metaData[static_cast<size_t>(name)];
 }
 
 } // namespace LibRpBase

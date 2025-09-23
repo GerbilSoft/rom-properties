@@ -137,7 +137,8 @@ static array<uint8_t, static_cast<size_t>(LibRpBase::Property::PropertyCount)> k
 ExtractorPlugin::ExtractorPlugin(QObject *parent)
 	: super(parent)
 {
-	assert(kfmd_PropIdxMap[kfmd_PropIdxMap.size()-1] != 0);
+	assert(kfmd_PropIdxMap.size() >= (static_cast<size_t>(LibRpBase::Property::LastKFMDProperty) + 1));
+	assert(kfmd_PropIdxMap[static_cast<size_t>(LibRpBase::Property::LastKFMDProperty)] != 0);
 }
 
 QStringList ExtractorPlugin::mimetypes(void) const
@@ -164,8 +165,14 @@ void ExtractorPlugin::extract_properties(KFileMetaData::ExtractionResult *result
 
 	// Process the metadata.
 	for (const RomMetaData::MetaData &prop : *metaData) {
-		// RomMetaData's property indexes match KFileMetaData.
-		// No conversion is necessary.
+		// Get the mapped property name.
+		KFileMetaData::Property::Property kfmd_Property =
+			static_cast<KFileMetaData::Property::Property>(kfmd_PropIdxMap[static_cast<size_t>(prop.name)]);
+		if (kfmd_Property == KFileMetaData::Property::Empty) {
+			// Not supported. (Custom property?)
+			continue;
+		}
+
 		switch (prop.type) {
 			case PropertyType::Integer: {
 				int ivalue = prop.data.ivalue;

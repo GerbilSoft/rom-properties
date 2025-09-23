@@ -48,6 +48,19 @@ public:
 	FILETYPE_HANDLER_HKLM_DECL(RP_PropertyStore)
 
 public:
+	/**
+	 * Register the Property Description Schema.
+	 * @return ERROR_SUCCESS on success; Win32 error code on error.
+	 */
+	static LONG RegisterPropertyDescriptionSchema(void);
+
+	/**
+	 * Unregister the Property Description Schema.
+	 * @return ERROR_SUCCESS on success; Win32 error code on error.
+	 */
+	static LONG UnregisterPropertyDescriptionSchema(void);
+
+public:
 	// IUnknown
 	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
 

@@ -101,9 +101,18 @@ enum class Property : int8_t {
 	// Added in KF5 5.53
 	Description,		// string
 
+	/** Custom properties! **/
+	GameID,			// string
+	TitleID,		// string
+	MediaID,		// string
+	OSVersion,		// string
+	EncryptionKey,		// string
+	PixelFormat,		// string
+
 	// TODO: More fields.
 	PropertyCount,
 	LastProperty = PropertyCount-1,
+	LastKFMDProperty = Description,
 };
 
 // Property types.
@@ -219,12 +228,20 @@ public:
 	bool empty(void) const;
 
 	/**
-	 * Get a metadata property.
+	 * Get a metadata property, by index.
 	 * @param idx Metadata index
 	 * @return Metadata property, or nullptr if the index is invalid.
 	 */
 	RP_LIBROMDATA_PUBLIC
 	const MetaData *at(int idx) const;
+
+	/**
+	 * Get a metadata property, by name.
+	 * @param name Metadata property name
+	 * @return Metadata property, or nullptr if the property isn't set.
+	 */
+	RP_LIBROMDATA_PUBLIC
+	const MetaData *get(Property name) const;
 
 	/**
 	 * Get a const iterator pointing to the beginning of the RomMetaData.

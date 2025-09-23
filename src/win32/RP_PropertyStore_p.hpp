@@ -72,17 +72,24 @@ public:
 	 * Get the PreviewDetails string.
 	 * @return PreviewDetails string.
 	 */
-	static std::tstring GetPreviewDetailsString();
+	static std::tstring GetPreviewDetailsString(void);
 
 	/**
 	 * Get the InfoTip string.
 	 * @return InfoTip string.
 	 */
-	static std::tstring GetInfoTipString();
+	static std::tstring GetInfoTipString(void);
 
 	/**
 	 * Get the FullDetails string.
 	 * @return FullDetails string.
 	 */
-	static std::tstring GetFullDetailsString();
+	static std::tstring GetFullDetailsString(void);
+
+public:
+	/**
+	 * Get the Property Description Schema directory.
+	 * @return Property Description Schema directory
+	 */
+	static std::tstring GetPropertyDescriptionSchemaDirectory(void);
 };

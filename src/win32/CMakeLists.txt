@@ -60,6 +60,8 @@ SET(${PROJECT_NAME}_SRCS
 	RP_ContextMenu_Register.cpp
 	RP_XAttrView.cpp
 	RP_XAttrView_Register.cpp
+	RP_ColumnProvider.cpp
+	RP_ColumnProvider_Register.cpp
 	CreateThumbnail.cpp
 	DragImageLabel.cpp
 	FontHandler.cpp
@@ -101,6 +103,8 @@ SET(${PROJECT_NAME}_H
 	RP_ContextMenu_p.hpp
 	RP_XAttrView.hpp
 	RP_XAttrView_p.hpp
+	RP_ColumnProvider.hpp
+	RP_ColumnProvider_p.hpp
 	CreateThumbnail.hpp
 	DragImageLabel.hpp
 	FontHandler.hpp
@@ -142,11 +146,16 @@ IF(HAVE_RP_PROPERTYSTORE_DEPS)
 	SET(${PROJECT_NAME}-PropKey_SRCS
 		RP_PropertyStore.cpp
 		RP_PropertyStore_Register.cpp
+		RP_PropertyStore_GUIDs.c
 		)
 	SET(${PROJECT_NAME}-PropKey_H
 		RP_PropertyStore.hpp
 		RP_PropertyStore_p.hpp
+		RP_PropertyStore_GUIDs.h
 		)
+
+	# Disable PCH for the IPropertyStore GUIDs file.
+	SET_SOURCE_FILES_PROPERTIES(RP_PropertyStore_GUIDs.c PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 ENDIF(HAVE_RP_PROPERTYSTORE_DEPS)
 
 IF(ENABLE_DECRYPTION)

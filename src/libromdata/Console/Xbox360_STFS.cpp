@@ -51,7 +51,7 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const array<const char*, 2+1> exts;
+	static const array<const char*, 3+1> exts;
 	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
@@ -164,6 +164,12 @@ public:
 	 * @return Title
 	 */
 	string getTitle(void) const;
+
+	/**
+	 * Get the title ID.
+	 * @return Title ID, or empty string on error.
+	 */
+	string getTitleID(void) const;
 };
 
 ROMDATA_IMPL(Xbox360_STFS)
@@ -172,8 +178,8 @@ ROMDATA_IMPL_IMG_TYPES(Xbox360_STFS)
 /** Xbox360_STFS_Private **/
 
 /* RomDataInfo */
-const array<const char*, 2+1> Xbox360_STFS_Private::exts = {{
-	//".stfs",	// FIXME: Not actually used...
+const array<const char*, 3+1> Xbox360_STFS_Private::exts = {{
+	".stfs",	// FIXME: Not actually used...
 	".fxs",		// Fallout
 	".exs",		// Skyrim
 
@@ -619,6 +625,33 @@ string Xbox360_STFS_Private::getTitle(void) const
 #endif
 }
 
+/**
+ * Get the title ID.
+ * @return Title ID, or empty string on error.
+ */
+string Xbox360_STFS_Private::getTitleID(void) const
+{
+	// FIXME: Verify behavior on big-endian.
+	// TODO: Consolidate implementations into a shared function.
+	string tid_str;
+	if (isupper_ascii(stfsMetadata.title_id.a)) {
+		tid_str += (char)stfsMetadata.title_id.a;
+	} else {
+		tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)stfsMetadata.title_id.a);
+	}
+	if (isupper_ascii(stfsMetadata.title_id.b)) {
+		tid_str += (char)stfsMetadata.title_id.b;
+	} else {
+		tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)stfsMetadata.title_id.b);
+	}
+
+	// tr: Xbox 360 title ID (32-bit hex, then two letters followed by a 4-digit decimal number)
+	return fmt::format(FRUN(C_("Xbox360_XEX", "{0:0>8X} ({1:s}-{2:0>4d})")),
+		be32_to_cpu(stfsMetadata.title_id.u32),
+		tid_str.c_str(),
+		be16_to_cpu(stfsMetadata.title_id.u16));
+}
+
 /** Xbox360_STFS **/
 
 /**
@@ -1051,32 +1084,14 @@ int Xbox360_STFS::loadFieldData(void)
 	}
 
 	// Media ID
-	d->fields.addField_string(C_("Xbox360_STFS", "Media ID"),
+	d->fields.addField_string(C_("Xbox360_XEX", "Media ID"),
 		fmt::format(FSTR("{:0>8X}"), be32_to_cpu(stfsMetadata->media_id)),
 		RomFields::STRF_MONOSPACE);
 
 	// Title ID
-	// FIXME: Verify behavior on big-endian.
 	// TODO: Consolidate implementations into a shared function.
-	string tid_str;
-	if (isupper_ascii(stfsMetadata->title_id.a)) {
-		tid_str += stfsMetadata->title_id.a;
-	} else {
-		tid_str += fmt::format(FSTR("\\x{:0>2X}"), static_cast<uint8_t>(stfsMetadata->title_id.a));
-	}
-	if (isupper_ascii(stfsMetadata->title_id.b)) {
-		tid_str += stfsMetadata->title_id.b;
-	} else {
-		tid_str += fmt::format(FSTR("\\x{:0>2X}"), static_cast<uint8_t>(stfsMetadata->title_id.b));
-	}
-
 	d->fields.addField_string(C_("Xbox360_XEX", "Title ID"),
-		// tr: Xbox 360 title ID (32-bit hex, then two letters followed by a 4-digit decimal number)
-		fmt::format(FRUN(C_("Xbox360_XEX", "{0:0>8X} ({1:s}-{2:0>4d})")),
-			be32_to_cpu(stfsMetadata->title_id.u32),
-			tid_str.c_str(),
-			be16_to_cpu(stfsMetadata->title_id.u16)),
-		RomFields::STRF_MONOSPACE);
+		d->getTitleID(), RomFields::STRF_MONOSPACE);
 
 	// Version and base version
 	// TODO: What indicates the update version?
@@ -1174,7 +1189,7 @@ int Xbox360_STFS::loadMetaData(void)
 	}
 
 	const STFS_Package_Metadata *const stfsMetadata = &d->stfsMetadata;
-	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
+	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
 
 	// Display name and/or title
 	// TODO: Which one to prefer?
@@ -1195,6 +1210,19 @@ int Xbox360_STFS::loadMetaData(void)
 			utf16be_to_utf8(stfsMetadata->publisher_name,
 				ARRAY_SIZE(stfsMetadata->publisher_name)));
 	}
+
+	/** Custom properties! **/
+
+	// NOTE: Instead of forwarding to the XEX2, we'll use the IDs from
+	// the STFS packages, since the XEX2 usually has a zero Media ID.
+	// Title ID should be the same in both.
+
+	// Title ID (as Game ID)
+	d->metaData.addMetaData_string(Property::GameID, d->getTitleID());
+
+	// Media ID
+	d->metaData.addMetaData_string(Property::MediaID,
+		fmt::format(FSTR("{:0>8X}"), be32_to_cpu(stfsMetadata->media_id)));
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());

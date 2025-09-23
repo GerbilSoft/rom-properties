@@ -13,17 +13,22 @@
 
 /** PNG images **/
 #define RT_PNG					0x4E50	/* 'PN', byteswapped */
-#define IDP_FLAGS_16x16				301
-#define IDP_FLAGS_24x24				302
-#define IDP_FLAGS_32x32				303
-#define IDP_ACH_16x16				311
-#define IDP_ACH_24x24				312
-#define IDP_ACH_32x32				313
-#define IDP_ACH_64x64				314
-#define IDP_ACH_GRAY_16x16			321
-#define IDP_ACH_GRAY_24x24			322
-#define IDP_ACH_GRAY_32x32			323
-#define IDP_ACH_GRAY_64x64			324
+#define IDPNG_FLAGS_16x16			301
+#define IDPNG_FLAGS_24x24			302
+#define IDPNG_FLAGS_32x32			303
+#define IDPNG_ACH_16x16				311
+#define IDPNG_ACH_24x24				312
+#define IDPNG_ACH_32x32				313
+#define IDPNG_ACH_64x64				314
+#define IDPNG_ACH_GRAY_16x16			321
+#define IDPNG_ACH_GRAY_24x24			322
+#define IDPNG_ACH_GRAY_32x32			323
+#define IDPNG_ACH_GRAY_64x64			324
+
+/** Property description schemas **/
+// https://learn.microsoft.com/en-us/windows/win32/properties/propdesc-schema-entry
+#define RT_PROPDESC				0x5250	/* 'PR', byteswapped */
+#define IDPROP_ROM_PROPERTIES_PROPDESC		301
 
 // Menus
 #define IDR_ECKS_BAWKS				38727

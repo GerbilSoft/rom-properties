@@ -111,10 +111,28 @@ public:
 	LibRpBase::KeyManager::VerifyResult key_status;
 
 	/**
+	 * Get the title ID.
+	 * @return Title ID, or empty string on error.
+	 */
+	std::string getTitleID(void) const;
+
+	/**
+	 * Get the game ID.
+	 * @return Game ID, or empty string if not valid.
+	 */
+	inline std::string getGameID(void) const;
+
+	/**
 	 * Get the game information string from the banner.
 	 * @return Game information string, or empty string on error.
 	 */
 	std::string getGameInfo(void);
+
+	/**
+	 * Get the required IOS version. (Wii only)
+	 * @return IOS version, or empty string on error.
+	 */
+	std::string wii_getIOSVersion(void) const;
 
 #ifdef ENABLE_DECRYPTION
 	/**

@@ -77,7 +77,20 @@ public:
 		// - Hyphen ('-')
 		return (isupper_ascii(c) || isdigit_ascii(c) || c == ' ' || c == '-');
 	}
-	
+
+public:
+	/**
+	 * Get the title, with trailing NULLs and spaces trimmed.
+	 * @return Title
+	 */
+	string getTitle(void) const;
+
+	/**
+	 * Get the game ID, with unprintable characters replaced with '_'.
+	 * @return Game ID
+	 */
+	inline string getGameID(void) const;
+
 public:
 	// ROM footer
 	VB_RomFooter romFooter;
@@ -111,6 +124,45 @@ VirtualBoyPrivate::VirtualBoyPrivate(const IRpFilePtr &file)
 {
 	// Clear the ROM footer struct.
 	memset(&romFooter, 0, sizeof(romFooter));
+}
+
+/**
+ * Get the title, with trailing NULLs and spaces trimmed.
+ * @return Title
+ */
+string VirtualBoyPrivate::getTitle(void) const
+{
+	// Last character in the title field is always NULL, so skip it.
+	string title = cp1252_sjis_to_utf8(romFooter.title, sizeof(romFooter.title) - 1);
+
+	// Trim remaining spaces or NULLs.
+	size_t size = title.size();
+	while (size > 0) {
+		size_t lastpos = size - 1;
+		if (title[lastpos] == '\0' || title[lastpos] == ' ') {
+			// Trim it.
+			size--;
+		} else {
+			// We're done here.
+			break;
+		}
+	}
+
+	title.resize(size);
+	return title;
+}
+
+/**
+ * Get the game ID, with unprintable characters replaced with '_'.
+ * @return Game ID
+ */
+inline string VirtualBoyPrivate::getGameID(void) const
+{
+	// NOTE: Game ID and Publisher ID characters were verified in the
+	// public class constructor.
+	string id6(romFooter.gameid, sizeof(romFooter.gameid));
+	id6.append(romFooter.publisher, sizeof(romFooter.publisher));
+	return id6;
 }
 
 /** VirtualBoy **/
@@ -176,7 +228,7 @@ VirtualBoy::VirtualBoy(const IRpFilePtr &file)
 	d->isPAL = (d->romFooter.gameid[3] == 'P');
 }
 
-/** ROM detection functions. **/
+/** ROM detection functions **/
 
 /**
  * Is a ROM image supported by this class?
@@ -187,17 +239,19 @@ int VirtualBoy::isRomSupported_static(const DetectInfo *info)
 {
 	assert(info != nullptr);
 	assert(info->header.pData != nullptr);
-	if (!info || !info->header.pData)
+	if (!info || !info->header.pData) {
 		return -1;
+	}
 
 	// File size constraints:
-	// - Must be at least 16 KB.
+	// - Must be at least 4 KB.
 	// - Cannot be larger than 16 MB.
 	// - Must be a power of two.
 	// NOTE: The only retail ROMs were 512 KB, 1 MB, and 2 MB,
 	// but the system supports up to 16 MB, and some homebrew
 	// is less than 512 KB.
-	if (info->szFile < 16*1024 ||
+	// NOTE: "Lights Out (by Guy Perfect v.Final).vb" is 4 KB.
+	if (info->szFile <  4*1024 ||
 	    info->szFile > 16*1024*1024 ||
 	    ((info->szFile & (info->szFile - 1)) != 0))
 	{
@@ -207,13 +261,15 @@ int VirtualBoy::isRomSupported_static(const DetectInfo *info)
 
 	// Virtual Boy footer is located at
 	// 0x220 before the end of the file.
-	if (info->szFile < 0x220)
+	if (info->szFile < 0x220) {
 		return -1;
+	}
 	const uint32_t footer_addr_expected = static_cast<uint32_t>(info->szFile - 0x220);
-	if (info->header.addr > footer_addr_expected)
+	if (info->header.addr > footer_addr_expected) {
 		return -1;
-	else if (info->header.addr + info->header.size < footer_addr_expected + 0x20)
+	} else if (info->header.addr + info->header.size < footer_addr_expected + 0x20) {
 		return -1;
+	}
 
 	// Determine the offset.
 	const unsigned int offset = footer_addr_expected - info->header.addr;
@@ -235,7 +291,12 @@ int VirtualBoy::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Make sure the title is valid JIS X 0201.
-	for (int i = ARRAY_SIZE(romFooter->title)-2-1; i >= 0; i--) {
+	for (size_t i = 0; i < ARRAY_SIZE(romFooter->title); i++) {
+		if (romFooter->title[i] == '\0') {
+			// End of title.
+			break;
+		}
+
 		if (!VirtualBoyPrivate::isJISX0201(romFooter->title[i])) {
 			// Invalid title character.
 			return -1;
@@ -314,13 +375,10 @@ int VirtualBoy::loadFieldData(void)
 	d->fields.reserve(5);	// Maximum of 5 fields.
 
 	// Title
-	d->fields.addField_string(C_("RomData", "Title"),
-		cp1252_sjis_to_utf8(romFooter->title, sizeof(romFooter->title)));
+	d->fields.addField_string(C_("RomData", "Title"), d->getTitle());
 
 	// Game ID
-	string id6(romFooter->gameid, sizeof(romFooter->gameid));
-	id6.append(romFooter->publisher, sizeof(romFooter->publisher));
-	d->fields.addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6));
+	d->fields.addField_string(C_("RomData", "Game ID"), d->getGameID());
 
 	// Look up the publisher.
 	const char *const s_publisher_title = C_("RomData", "Publisher");
@@ -396,11 +454,10 @@ int VirtualBoy::loadMetaData(void)
 
 	// Virtual Boy ROM footer, excluding the vector table.
 	const VB_RomFooter *const romFooter = &d->romFooter;
-	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 	// Title
-	d->metaData.addMetaData_string(Property::Title,
-		cp1252_sjis_to_utf8(romFooter->title, sizeof(romFooter->title)));
+	d->metaData.addMetaData_string(Property::Title, d->getTitle());
 
 	// Publisher (aka manufacturer)
 	// Look up the publisher.
@@ -425,6 +482,11 @@ int VirtualBoy::loadMetaData(void)
 		}
 		d->metaData.addMetaData_string(Property::Publisher, s_publisher);
 	}
+
+	/** Custom properties! **/
+
+	// Game ID
+	d->metaData.addMetaData_string(Property::GameID, d->getGameID());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());

@@ -54,6 +54,16 @@ public:
 public:
 	// ROM header
 	NGPC_RomHeader romHeader;
+
+public:
+	/**
+	 * Get the product ID.
+	 * @return Product ID
+	 */
+	inline string getProductID(void) const
+	{
+		return fmt::format(FSTR("NEOP{:0>2X}{:0>2X}"), romHeader.id_code[1], romHeader.id_code[0]);
+	}
 };
 
 ROMDATA_IMPL(NGPC)
@@ -309,8 +319,7 @@ int NGPC::loadFieldData(void)
 		RomFields::STRF_TRIM_END);
 
 	// Product ID
-	d->fields.addField_string(C_("RomData", "Product ID"),
-		fmt::format(FSTR("NEOP{:0>2X}{:0>2X}"), romHeader->id_code[1], romHeader->id_code[0]));
+	d->fields.addField_string(C_("RomData", "Product ID"), d->getProductID());
 
 	// Revision
 	d->fields.addField_string_numeric(C_("RomData", "Revision"),
@@ -374,13 +383,18 @@ int NGPC::loadMetaData(void)
 
 	// ROM header is read in the constructor.
 	const NGPC_RomHeader *const romHeader = &d->romHeader;
-	d->metaData.reserve(1);	// Maximum of 1 metadata property.
+	d->metaData.reserve(2);	// Maximum of 2 metadata property.
 
 	// Title
 	// NOTE: It's listed as ASCII. We'll use Latin-1.
 	d->metaData.addMetaData_string(Property::Title,
 		latin1_to_utf8(romHeader->title, sizeof(romHeader->title)),
 		RomMetaData::STRF_TRIM_END);
+
+	/** Custom properties! **/
+
+	// Product ID (Game ID)
+	d->metaData.addMetaData_string(Property::GameID, d->getProductID());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ROM Properties Page Shell Extension: Custom properties -->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.microsoft.com/windows/2006/propertydescription" schemaVersion="1.0">
+    <propertyDescriptionList publisher="GerbilSoft" product="ROM Properties Page">
+        <propertyDescription name="com.gerbilsoft.rom-properties.GameID" formatID="{B608E986-B892-422A-9BE9-7C3D4427E78F}" propID="2">
+            <description>Game ID</description>
+            <searchInfo inInvertedIndex="false" isColumn="true" maxSize="128"/>
+            <typeInfo type="String" isViewable="true" groupingRange="discrete"/>
+            <labelInfo label="Game ID" invitationText=""/>
+        </propertyDescription>
+        <propertyDescription name="com.gerbilsoft.rom-properties.TitleID" formatID="{0217A595-C88B-41BF-A58C-5DA4483DEEE2}" propID="2">
+            <description>Title ID</description>
+            <searchInfo inInvertedIndex="false" isColumn="true" maxSize="64"/>
+            <typeInfo type="String" isViewable="true" groupingRange="discrete"/>
+            <labelInfo label="Title ID" invitationText=""/>
+        </propertyDescription>
+        <propertyDescription name="com.gerbilsoft.rom-properties.MediaID" formatID="{53E92DAB-99E2-4897-B78B-FEE59832A323}" propID="2">
+            <description>Media ID</description>
+            <searchInfo inInvertedIndex="false" isColumn="true" maxSize="64"/>
+            <typeInfo type="String" isViewable="true" groupingRange="discrete"/>
+            <labelInfo label="Media ID" invitationText=""/>
+        </propertyDescription>
+        <propertyDescription name="com.gerbilsoft.rom-properties.OSVersion" formatID="{655CA042-FF37-4564-8AC9-321F9C5F2A8D}" propID="2">
+            <description>OS Version</description>
+            <searchInfo inInvertedIndex="false" isColumn="true" maxSize="32"/>
+            <typeInfo type="String" isViewable="true" groupingRange="discrete"/>
+            <labelInfo label="OS version" invitationText=""/>
+        </propertyDescription>
+        <propertyDescription name="com.gerbilsoft.rom-properties.EncryptionKey" formatID="{F31225FA-B303-454E-8389-69C1B8CA38C6}" propID="2">
+            <description>Encryption Key</description>
+            <searchInfo inInvertedIndex="false" isColumn="true" maxSize="32"/>
+            <typeInfo type="String" isViewable="true" groupingRange="discrete"/>
+            <labelInfo label="Encryption key" invitationText=""/>
+        </propertyDescription>
+        <propertyDescription name="com.gerbilsoft.rom-properties.PixelFormat" formatID="{2A10A29D-05B8-43FF-B9AB-2917C24f9707}" propID="2">
+            <description>Pixel Format</description>
+            <searchInfo inInvertedIndex="false" isColumn="true" maxSize="48"/>
+            <typeInfo type="String" isViewable="true" groupingRange="discrete"/>
+            <labelInfo label="Pixel format" invitationText=""/>
+        </propertyDescription>
+    </propertyDescriptionList>
+</schema>

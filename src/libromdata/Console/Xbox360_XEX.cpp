@@ -202,6 +202,12 @@ public:
 	 */
 	Xbox360_Version_t getMinKernelVersion(void);
 
+	/**
+	 * Get the encryption key name.
+	 * @return Encryption key name, or nullptr on error.
+	 */
+	const char *getEncryptionKeyName(void) const;
+
 public:
 	// CBC reader for encrypted PE executables.
 	// Also used for unencrypted executables.
@@ -226,6 +232,12 @@ public:
 	 * @return Xbox360_XDBF object on success; nullptr on error.
 	 */
 	const Xbox360_XDBF *initXDBF(void);
+
+	/**
+	 * Get the title ID.
+	 * @return Title ID, or empty string on error.
+	 */
+	string getTitleID(void) const;
 
 	/**
 	 * Get the publisher.
@@ -1179,6 +1191,37 @@ Xbox360_Version_t Xbox360_XEX_Private::getMinKernelVersion(void)
 	return rver;
 }
 
+const char *Xbox360_XEX_Private::getEncryptionKeyName(void) const
+{
+	if (fileFormatInfo.encryption_type == cpu_to_be16(XEX2_ENCRYPTION_TYPE_NONE)) {
+		// No encryption.
+		return C_("Xbox360_XEX|EncKey", "None");
+	}
+
+	const char *s_ret = nullptr;
+	switch (keyInUse) {
+		default:
+		case -1:
+			// FIXME: xextool can detect the encryption keys for
+			// delta patches. Figure out how to do that here.
+			if (!(xex2Header.module_flags & XEX2_MODULE_FLAG_PATCH_DELTA)) {
+				s_ret = C_("RomData", "Unknown");
+			} else {
+				s_ret = C_("Xbox360_XEX|EncKey", "Cannot Determine");
+			}
+			break;
+
+		case 0:
+			s_ret = C_("Xbox360_XEX|EncKey", "Retail");
+			break;
+		case 1:
+			s_ret = C_("Xbox360_XEX|EncKey", "Debug");
+			break;
+	}
+
+	return s_ret;
+}
+
 /**
  * Initialize the EXE object.
  * @return EXE object on success; nullptr on error.
@@ -1291,6 +1334,41 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 	}
 
 	return pe_xdbf.get();
+}
+
+/**
+ * Get the title ID.
+ * @return Title ID, or empty string on error.
+ */
+string Xbox360_XEX_Private::getTitleID(void) const
+{
+	if (!isExecutionIDLoaded) {
+		const_cast<Xbox360_XEX_Private*>(this)->getXdbfResInfo();
+		if (!isExecutionIDLoaded) {
+			// Can't get the title ID...
+			return {};
+		}
+	}
+
+	// FIXME: Verify behavior on big-endian.
+	// TODO: Consolidate implementations into a shared function.
+	string tid_str;
+	if (isupper_ascii(executionID.title_id.a)) {
+		tid_str += (char)executionID.title_id.a;
+	} else {
+		tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)executionID.title_id.a);
+	}
+	if (isupper_ascii(executionID.title_id.b)) {
+		tid_str += (char)executionID.title_id.b;
+	} else {
+		tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)executionID.title_id.b);
+	}
+
+	// tr: Xbox 360 title ID (32-bit hex, then two letters followed by a 4-digit decimal number)
+	return fmt::format(FRUN(C_("Xbox360_XEX", "{0:0>8X} ({1:s}-{2:0>4d})")),
+		be32_to_cpu(executionID.title_id.u32),
+		tid_str.c_str(),
+		be16_to_cpu(executionID.title_id.u16));
 }
 
 /**
@@ -1682,8 +1760,7 @@ int Xbox360_XEX::loadFieldData(void)
 		}
 	}
 
-	// tr: Minimum kernel version (i.e. dashboard)
-	//const char *const s_minver = C_("Xbox360_XEX", "Min. Kernel");
+	// Minimum kernel version (i.e. dashboard)
 	const Xbox360_Version_t minver = d->getMinKernelVersion();
 	string s_minver;
 	if (minver.u32 != 0) {
@@ -1699,6 +1776,7 @@ int Xbox360_XEX::loadFieldData(void)
 		// Indicate that an XEX1 kernel is needed.
 		s_minver += " (XEX1)";
 	}
+	// tr: Minimum kernel version (i.e. dashboard)
 	d->fields.addField_string(C_("Xbox360_XEX", "Min. Kernel"), s_minver);
 
 	// Module flags
@@ -1855,27 +1933,16 @@ int Xbox360_XEX::loadFieldData(void)
 	d->getXdbfResInfo();
 	if (d->isExecutionIDLoaded) {
 		// Title ID
-		// FIXME: Verify behavior on big-endian.
-		// TODO: Consolidate implementations into a shared function.
-		string tid_str;
-		if (isupper_ascii(d->executionID.title_id.a)) {
-			tid_str += (char)d->executionID.title_id.a;
+		const char *const s_titleID_desc = C_("Xbox360_XEX", "Title ID");
+		const string s_titleID = d->getTitleID();
+		if (!s_titleID.empty()) {
+			d->fields.addField_string(s_titleID_desc,
+				s_titleID, RomFields::STRF_MONOSPACE);
 		} else {
-			tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)d->executionID.title_id.a);
+			// Title ID is zero.
+			d->fields.addField_string(s_titleID_desc,
+				fmt::format(FSTR("{:0>8X}"), 0), RomFields::STRF_MONOSPACE);
 		}
-		if (isupper_ascii(d->executionID.title_id.b)) {
-			tid_str += (char)d->executionID.title_id.b;
-		} else {
-			tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)d->executionID.title_id.b);
-		}
-
-		d->fields.addField_string(C_("Xbox360_XEX", "Title ID"),
-			// tr: Xbox 360 title ID (32-bit hex, then two letters followed by a 4-digit decimal number)
-			fmt::format(FRUN(C_("Xbox360_XEX", "{0:0>8X} ({1:s}-{2:0>4d})")),
-				be32_to_cpu(d->executionID.title_id.u32),
-				tid_str.c_str(),
-				be16_to_cpu(d->executionID.title_id.u16)),
-			RomFields::STRF_MONOSPACE);
 
 		// Publisher
 		const string publisher = d->getPublisher();
@@ -1898,31 +1965,10 @@ int Xbox360_XEX::loadFieldData(void)
 	// Loaded by initPeReader(), which is called by initXDBF().
 
 	// Encryption key
-	const char *s_encryption_key;
-	if (d->fileFormatInfo.encryption_type == cpu_to_be16(XEX2_ENCRYPTION_TYPE_NONE)) {
-		// No encryption.
-		s_encryption_key = C_("Xbox360_XEX|EncKey", "None");
-	} else {
-		switch (d->keyInUse) {
-			default:
-			case -1:
-				// FIXME: xextool can detect the encryption keys for
-				// delta patches. Figure out how to do that here.
-				if (!(d->xex2Header.module_flags & XEX2_MODULE_FLAG_PATCH_DELTA)) {
-					s_encryption_key = C_("RomData", "Unknown");
-				} else {
-					s_encryption_key = C_("Xbox360_XEX|EncKey", "Cannot Determine");
-				}
-				break;
-			case 0:
-				s_encryption_key = C_("Xbox360_XEX|EncKey", "Retail");
-				break;
-			case 1:
-				s_encryption_key = C_("Xbox360_XEX|EncKey", "Debug");
-				break;
-		}
+	const char *const s_encryptionKeyName = d->getEncryptionKeyName();
+	if (s_encryptionKeyName) {
+		d->fields.addField_string(C_("RomData", "Encryption Key"), s_encryptionKeyName);
 	}
-	d->fields.addField_string(C_("RomData", "Encryption Key"), s_encryption_key);
 
 	// Compression
 	static const array<const char*, 4> compression_tbl = {{
@@ -2004,23 +2050,47 @@ int Xbox360_XEX::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Make sure the XDBF section is loaded.
+	// The XDBF section is needed for the title.
 	const Xbox360_XDBF *const xdbf = d->initXDBF();
-	if (!xdbf) {
-		// Unable to load the XDBF section.
-		return 0;
-	}
-
-	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
+	d->metaData.reserve(6);	// Maximum of 6 metadata properties.
 
 	// NOTE: RomMetaData ignores empty strings, so we don't need to
 	// check for them here.
 
 	// Title
-	d->metaData.addMetaData_string(Property::Title, xdbf->getString(Property::Title));
+	if (xdbf) {
+		d->metaData.addMetaData_string(Property::Title, xdbf->getString(Property::Title));
+	}
 
 	// Publisher
 	d->metaData.addMetaData_string(Property::Publisher, d->getPublisher());
+
+	/** Custom properties! **/
+
+	// Minimum kernel version (i.e. dashboard) (as OS Version)
+	const Xbox360_Version_t minver = d->getMinKernelVersion();
+	string s_minver;
+	if (minver.u32 != 0) {
+		d->metaData.addMetaData_string(Property::OSVersion,
+			fmt::format(FSTR("{:d}.{:d}.{:d}.{:d}"),
+				static_cast<unsigned int>(minver.major),
+				static_cast<unsigned int>(minver.minor),
+				static_cast<unsigned int>(minver.build),
+				static_cast<unsigned int>(minver.qfe)));
+	}
+
+	// Title ID (as Game ID)
+	d->metaData.addMetaData_string(Property::GameID, d->getTitleID());
+
+	// Media ID
+	d->metaData.addMetaData_string(Property::MediaID,
+		d->formatMediaID(
+			(d->xexType != Xbox360_XEX_Private::XexType::XEX1
+				? d->secInfo.xex2.xgd2_media_id
+				: d->secInfo.xex1.xgd2_media_id)));
+
+	// Encryption key
+	d->metaData.addMetaData_string(Property::EncryptionKey, d->getEncryptionKeyName());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());

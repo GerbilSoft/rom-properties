@@ -1,5 +1,18 @@
 # Changes
 
+## v2.7 (released 2025/??/??)
+
+* New features:
+  * Windows, GNOME Nautilus (and Caja and Nemo): In Details view, rom-properties
+    now provides columns for a few properties. Specifically, "Game ID", "Title ID",
+    "Media ID", "OS Version", "Encryption Key", and "Pixel Format" are now available
+    as columns for supported file formats.
+    * Fixes #462: Add Windows Explorer file information column integration for Wii file formats
+      * Requested by @DeadlyFoez.
+  * GNOME Nautilus (and Caja and Nemo): An emblem is now shown for files with
+    potentially dangerous permissions.
+    * See issue #168: Icon overlay for "dangerous" ROM permissions (GNOME, Windows)
+
 ## v2.6 (released 2025/09/13)
 
 * New parsers:

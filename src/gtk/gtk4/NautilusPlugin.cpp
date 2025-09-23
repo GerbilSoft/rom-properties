@@ -11,12 +11,15 @@
 
 #include "NautilusPlugin.hpp"
 
-#include "../gtk3/NautilusMenuProvider.h"
 #include "AchGDBus.hpp"
 #include "plugin-helper.h"
-#include "NautilusPropertiesModelProvider.hpp"
 
-static GType type_list[2];
+#include "NautilusPropertiesModelProvider.hpp"
+#include "../gtk3/NautilusMenuProvider.h"
+#include "../gtk3/NautilusInfoProvider.hpp"
+#include "../gtk3/NautilusColumnProvider.h"
+
+static GType type_list[4];
 
 // C includes (C++ namespace)
 #include <cassert>
@@ -27,6 +30,8 @@ PFN_NAUTILUS_FILE_INFO_GET_TYPE				pfn_nautilus_file_info_get_type;
 PFN_NAUTILUS_FILE_INFO_GET_MIME_TYPE			pfn_nautilus_file_info_get_mime_type;
 PFN_NAUTILUS_FILE_INFO_GET_URI				pfn_nautilus_file_info_get_uri;
 PFN_NAUTILUS_FILE_INFO_GET_URI_SCHEME			pfn_nautilus_file_info_get_uri_scheme;
+PFN_NAUTILUS_FILE_INFO_ADD_EMBLEM			pfn_nautilus_file_info_add_emblem;
+PFN_NAUTILUS_FILE_INFO_ADD_STIRNG_ATTRIBUTE		pfn_nautilus_file_info_add_string_attribute;
 PFN_NAUTILUS_FILE_INFO_LIST_COPY			pfn_nautilus_file_info_list_copy;
 PFN_NAUTILUS_FILE_INFO_LIST_FREE			pfn_nautilus_file_info_list_free;
 PFN_NAUTILUS_MENU_ITEM_GET_TYPE				pfn_nautilus_menu_item_get_type;
@@ -37,6 +42,12 @@ PFN_NAUTILUS_PROPERTIES_MODEL_GET_TYPE			pfn_nautilus_properties_model_get_type;
 PFN_NAUTILUS_PROPERTIES_MODEL_NEW			pfn_nautilus_properties_model_new;
 PFN_NAUTILUS_PROPERTIES_ITEM_GET_TYPE			pfn_nautilus_properties_item_get_type;
 PFN_NAUTILUS_PROPERTIES_ITEM_NEW			pfn_nautilus_properties_item_new;
+PFN_NAUTILUS_INFO_PROVIDER_GET_TYPE			pfn_nautilus_info_provider_get_type;
+PFN_NAUTILUS_INFO_PROVIDER_UPDATE_COMPLETE_INVOKE	pfn_nautilus_info_provider_update_complete_invoke;
+PFN_NAUTILUS_COLUMN_GET_TYPE				pfn_nautilus_column_get_type;
+PFN_NAUTILUS_COLUMN_NEW					pfn_nautilus_column_new;
+PFN_NAUTILUS_COLUMN_PROVIDER_GET_TYPE			pfn_nautilus_column_provider_get_type;
+PFN_NAUTILUS_COLUMN_PROVIDER_GET_COLUMNS		pfn_nautilus_column_provider_get_columns;
 
 static void
 rp_nautilus_register_types(GTypeModule *module)
@@ -46,10 +57,14 @@ rp_nautilus_register_types(GTypeModule *module)
 	// functions as static, so we're using wrapper functions here.
 	rp_nautilus_properties_model_provider_register_type_ext(module);
 	rp_nautilus_menu_provider_register_type_ext(module);
+	rp_nautilus_info_provider_register_type_ext(module);
+	rp_nautilus_column_provider_register_type_ext(module);
 
 	/* Setup the plugin provider type list */
 	type_list[0] = RP_TYPE_NAUTILUS_PROPERTIES_MODEL_PROVIDER;
 	type_list[1] = RP_TYPE_NAUTILUS_MENU_PROVIDER;
+	type_list[2] = RP_TYPE_NAUTILUS_INFO_PROVIDER;
+	type_list[3] = RP_TYPE_NAUTILUS_COLUMN_PROVIDER;
 
 #ifdef ENABLE_ACHIEVEMENTS
 	// Register AchGDBus.
@@ -58,6 +73,8 @@ rp_nautilus_register_types(GTypeModule *module)
 }
 
 /** Per-frontend initialization functions **/
+
+#define NAUTILUS_DLSYM(prefix, symsuffix) DLSYM(nautilus##_##symsuffix, prefix##_##symsuffix)
 
 #define NAUTILUS_MODULE_INITIALIZE_FUNC_INT(prefix) do { \
 	CHECK_UID(); \
@@ -78,21 +95,29 @@ rp_nautilus_register_types(GTypeModule *module)
 		return; \
 	} \
 \
-	/* Load symbols. */ \
-	DLSYM(nautilus_file_info_get_type,			prefix##_file_info_get_type); \
-	DLSYM(nautilus_file_info_get_mime_type,			prefix##_file_info_get_mime_type); \
-	DLSYM(nautilus_file_info_get_uri,			prefix##_file_info_get_uri); \
-	DLSYM(nautilus_file_info_get_uri_scheme,		prefix##_file_info_get_uri_scheme); \
-	DLSYM(nautilus_file_info_list_copy,			prefix##_file_info_list_copy); \
-	DLSYM(nautilus_file_info_list_free,			prefix##_file_info_list_free); \
-	DLSYM(nautilus_menu_item_get_type,			prefix##_menu_item_get_type); \
-	DLSYM(nautilus_menu_item_new,				prefix##_menu_item_new); \
-	DLSYM(nautilus_menu_provider_get_type,			prefix##_menu_provider_get_type); \
-	DLSYM(nautilus_properties_model_provider_get_type,	prefix##_properties_model_provider_get_type); \
-	DLSYM(nautilus_properties_model_get_type,		prefix##_properties_model_get_type); \
-	DLSYM(nautilus_properties_model_new,			prefix##_properties_model_new); \
-	DLSYM(nautilus_properties_item_get_type,		prefix##_properties_item_get_type); \
-	DLSYM(nautilus_properties_item_new,			prefix##_properties_item_new); \
+	/* Load symbols */ \
+	NAUTILUS_DLSYM(prefix, file_info_get_type); \
+	NAUTILUS_DLSYM(prefix, file_info_get_mime_type); \
+	NAUTILUS_DLSYM(prefix, file_info_get_uri); \
+	NAUTILUS_DLSYM(prefix, file_info_get_uri_scheme); \
+	NAUTILUS_DLSYM(prefix, file_info_add_emblem); \
+	NAUTILUS_DLSYM(prefix, file_info_add_string_attribute); \
+	NAUTILUS_DLSYM(prefix, file_info_list_copy); \
+	NAUTILUS_DLSYM(prefix, file_info_list_free); \
+	NAUTILUS_DLSYM(prefix, menu_item_get_type); \
+	NAUTILUS_DLSYM(prefix, menu_item_new); \
+	NAUTILUS_DLSYM(prefix, menu_provider_get_type); \
+	NAUTILUS_DLSYM(prefix, properties_model_provider_get_type); \
+	NAUTILUS_DLSYM(prefix, properties_model_get_type); \
+	NAUTILUS_DLSYM(prefix, properties_model_new); \
+	NAUTILUS_DLSYM(prefix, properties_item_get_type); \
+	NAUTILUS_DLSYM(prefix, properties_item_new); \
+	NAUTILUS_DLSYM(prefix, info_provider_get_type); \
+	NAUTILUS_DLSYM(prefix, info_provider_update_complete_invoke); \
+	NAUTILUS_DLSYM(prefix, column_new); \
+	NAUTILUS_DLSYM(prefix, column_get_type); \
+	NAUTILUS_DLSYM(prefix, column_provider_get_type); \
+	NAUTILUS_DLSYM(prefix, column_provider_get_columns); \
 } while (0)
 
 extern "C" G_MODULE_EXPORT void

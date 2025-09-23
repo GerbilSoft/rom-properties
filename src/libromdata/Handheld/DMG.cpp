@@ -1389,11 +1389,9 @@ int DMG::loadMetaData(void)
 
 	// DMG ROM header
 	//const DMG_RomHeader *const romHeader = &d->romHeader;
-	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
+	d->metaData.reserve(3);	// Maximum of 2 metadata properties.
 
 	// Title
-	// NOTE: We don't actually need the game ID right now,
-	// but the function retrieves both at the same time.
 	// TODO: Remove STRF_TRIM_END, since we're doing that ourselves?
 	string s_title, s_gameID;
 	d->getTitleAndGameID(s_title, s_gameID);
@@ -1404,6 +1402,11 @@ int DMG::loadMetaData(void)
 
 	// Publisher
 	d->metaData.addMetaData_string(Property::Publisher, d->getPublisher());
+
+	/** Custom properties! **/
+
+	// Game ID
+	d->metaData.addMetaData_string(Property::GameID, s_gameID);
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());

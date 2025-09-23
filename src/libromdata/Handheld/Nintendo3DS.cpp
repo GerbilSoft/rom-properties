@@ -637,7 +637,7 @@ uint32_t Nintendo3DSPrivate::getSMDHRegionCode(void)
  */
 void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 {
-	// Title ID.
+	// Title ID
 	// If using NCSD, use the Media ID.
 	// If using CIA/TMD, use the TMD Title ID.
 	// Otherwise, use the primary NCCH Title ID.
@@ -645,7 +645,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	// The program ID will also be retrieved from the NCCH header
 	// and will be printed if it doesn't match the title ID.
 
-	// NCCH header.
+	// NCCH header
 	const NCCHReaderConstPtr &ncch = loadNCCH();
 	const N3DS_NCCH_Header_NoSig_t *const ncch_header =
 		(ncch && ncch->isOpen() ? ncch->ncchHeader() : nullptr);
@@ -670,7 +670,8 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 
 	if (tid_desc) {
 		fields.addField_string(tid_desc,
-			fmt::format(FSTR("{:0>8X}-{:0>8X}"), tid_hi, tid_lo));
+			fmt::format(FSTR("{:0>8X}-{:0>8X}"), tid_hi, tid_lo),
+			RomFields::STRF_MONOSPACE);
 	}
 
 	if (!ncch_header) {
@@ -683,14 +684,15 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		const uint32_t pid_lo = le32_to_cpu(ncch_header->program_id.lo);
 		const uint32_t pid_hi = le32_to_cpu(ncch_header->program_id.hi);
 		fields.addField_string(C_("Nintendo3DS", "Program ID"),
-			fmt::format(FSTR("{:0>8X}-{:0>8X}"), pid_hi, pid_lo));
+			fmt::format(FSTR("{:0>8X}-{:0>8X}"), pid_hi, pid_lo),
+			RomFields::STRF_MONOSPACE);
 	}
 
-	// Product code.
+	// Product code
 	fields.addField_string(C_("Nintendo", "Product Code"),
 		latin1_to_utf8(ncch_header->product_code, sizeof(ncch_header->product_code)));
 
-	// Content type.
+	// Content type
 	// This is normally shown in the CIA content table.
 	if (showContentType) {
 		const char *const content_type = ncch->contentType();
@@ -707,7 +709,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		}
 #endif /* ENABLE_DECRYPTION */
 
-		// Encryption.
+		// Encryption
 		const char *const s_encryption = C_("Nintendo3DS", "Encryption");
 		const char *const s_unknown = C_("RomData", "Unknown");
 		NCCHReader::CryptoType cryptoType = {nullptr, false, 0, false};
@@ -727,7 +729,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		}
 	}
 
-	// Logo.
+	// Logo
 	// NOTE: All known official logo binaries are 8 KB.
 	// The original and new "Homebrew" logos are also 8 KB.
 	uint32_t crc = 0;
@@ -1455,7 +1457,7 @@ const char *Nintendo3DS::systemName(unsigned int type) const
 	// 3DS system offset is OR'd with type.
 	type &= SYSNAME_TYPE_MASK;
 
-	// Product code.
+	// Product code
 	// Used to determine if it's *New* Nintendo 3DS exclusive.
 	// (KTR instead of CTR)
 	const NCCHReaderConstPtr &ncch = const_cast<Nintendo3DSPrivate*>(d)->loadNCCH();
@@ -2404,6 +2406,53 @@ int Nintendo3DS::loadMetaData(void)
 	if (ret == 0 && (bool)d->mainContent) {
 		// Add the metadata.
 		d->metaData.addMetaData_metaData(d->mainContent->metaData());
+	}
+
+	/** Custom properties! **/
+
+	// TODO: Reserve additional properties?
+
+	// NCCH header (needed for Title ID)
+	const NCCHReaderConstPtr &ncch = d->loadNCCH();
+	const N3DS_NCCH_Header_NoSig_t *const ncch_header =
+		(ncch && ncch->isOpen() ? ncch->ncchHeader() : nullptr);
+
+	// Game ID (product code)
+	if (ncch_header) {
+		d->metaData.addMetaData_string(Property::GameID,
+			latin1_to_utf8(ncch_header->product_code, sizeof(ncch_header->product_code)));
+	}
+
+	// Title ID
+	// If using NCSD, use the Media ID.
+	// If using CIA/TMD, use the TMD Title ID.
+	// Otherwise, use the primary NCCH Title ID.
+	uint32_t tid_hi = 0, tid_lo = 0;
+	if (d->romType == Nintendo3DSPrivate::RomType::CCI &&
+	    d->headers_loaded & Nintendo3DSPrivate::HEADER_NCSD)
+	{
+		tid_lo = le32_to_cpu(d->mxh.ncsd_header.media_id.lo);
+		tid_hi = le32_to_cpu(d->mxh.ncsd_header.media_id.hi);
+	} else if ((d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD) || d->loadTicketAndTMD() == 0) {
+		tid_hi = be32_to_cpu(d->mxh.tmd_header.title_id.hi);
+		tid_lo = be32_to_cpu(d->mxh.tmd_header.title_id.lo);
+	} else if (ncch_header) {
+		tid_lo = le32_to_cpu(ncch_header->title_id.lo);
+		tid_hi = le32_to_cpu(ncch_header->title_id.hi);
+	}
+
+	if (tid_hi != 0 && tid_lo != 0) {
+		d->metaData.addMetaData_string(Property::TitleID,
+			fmt::format(FSTR("{:0>8X}-{:0>8X}"), tid_hi, tid_lo));
+	}
+
+	// Encryption key
+	// NOTE: Only showing Retail vs. Debug.
+	if (ncch) {
+		d->metaData.addMetaData_string(Property::EncryptionKey,
+			ncch->isDebug()
+				? C_("Nintendo3DS", "Debug")
+				: C_("Nintendo3DS", "Retail"));
 	}
 
 	// Finished reading the metadata.

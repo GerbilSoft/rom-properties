@@ -66,6 +66,19 @@ public:
 	{
 		return (x >> 16) | (x << 16);
 	}
+
+public:
+	/**
+	 * Get the game ID, with unprintable characters replaced with '_'.
+	 * @return Game ID
+	 */
+	inline string getGameID(void) const;
+
+	/**
+	 * Get the OS version.
+	 * @return OS version, or empty string if not recognized.
+	 */
+	string getOSVersion(void) const;
 };
 
 ROMDATA_IMPL(N64)
@@ -94,6 +107,43 @@ N64Private::N64Private(const IRpFilePtr &file)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
+}
+
+/**
+ * Get the game ID, with unprintable characters replaced with '_'.
+ * @return Game ID
+ */
+inline string N64Private::getGameID(void) const
+{
+	string id4;
+	id4.resize(4, '_');
+	for (size_t i = 0; i < 4; i++) {
+		if (ISPRINT(romHeader.id4[i])) {
+			id4[i] = romHeader.id4[i];
+		}
+	}
+	return id4;
+}
+
+/**
+ * Get the OS version.
+ * @return OS version, or empty string if not recognized.
+ */
+string N64Private::getOSVersion(void) const
+{
+	// TODO: isalpha_ascii(), or isupper_ascii()?
+	if (romHeader.os_version[0] == 0x00 &&
+	    romHeader.os_version[1] == 0x00 &&
+	    isalpha_ascii(romHeader.os_version[3]))
+	{
+		return fmt::format(FSTR("OS{:d}.{:d}{:c}"),
+			romHeader.os_version[2] / 10,
+			romHeader.os_version[2] % 10,
+			romHeader.os_version[3]);
+	}
+
+	// Unrecognized Release field.
+	return {};
 }
 
 /** N64 **/
@@ -284,16 +334,7 @@ int N64::loadFieldData(void)
 		RomFields::STRF_TRIM_END);
 
 	// Game ID
-	// Replace any non-printable characters with underscores.
-	char id4[5];
-	for (int i = 0; i < 4; i++) {
-		id4[i] = (ISPRINT(romHeader->id4[i])
-			? romHeader->id4[i]
-			: '_');
-	}
-	id4[4] = 0;
-	d->fields.addField_string(C_("N64", "Game ID"),
-		latin1_to_utf8(id4, 4));
+	d->fields.addField_string(C_("N64", "Game ID"), d->getGameID());
 
 	// Revision
 	d->fields.addField_string_numeric(C_("RomData", "Revision"),
@@ -304,17 +345,10 @@ int N64::loadFieldData(void)
 		romHeader->entrypoint, RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 
 	// OS version
-	// TODO: isalpha_ascii(), or isupper_ascii()?
 	const char *const os_version_title = C_("RomData", "OS Version");
-	if (romHeader->os_version[0] == 0x00 &&
-	    romHeader->os_version[1] == 0x00 &&
-	    isalpha_ascii(romHeader->os_version[3]))
-	{
-		d->fields.addField_string(os_version_title,
-			fmt::format(FSTR("OS{:d}.{:d}{:c}"),
-				romHeader->os_version[2] / 10,
-				romHeader->os_version[2] % 10,
-				romHeader->os_version[3]));
+	const string s_os_version = d->getOSVersion();
+	if (!s_os_version.empty()) {
+		d->fields.addField_string(os_version_title, s_os_version);
 	} else {
 		// Unrecognized Release field.
 		d->fields.addField_string_hexdump(os_version_title,
@@ -366,13 +400,25 @@ int N64::loadMetaData(void)
 	// ROM file header is read and byteswapped in the constructor.
 	// TODO: Indicate the byteswapping format?
 	const N64_RomHeader *const romHeader = &d->romHeader;
-	d->metaData.reserve(1);	// Maximum of 1 metadata property.
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 	// Title
 	// TODO: Space elimination.
 	d->metaData.addMetaData_string(Property::Title,
 		cp1252_sjis_to_utf8(romHeader->title, sizeof(romHeader->title)),
 		RomMetaData::STRF_TRIM_END);
+
+	/** Custom properties! **/
+
+	// Game ID
+	// NOTE: Not showing "____" here, even though it's shown in the field data.
+	const string s_gameID = d->getGameID();
+	if (s_gameID != "____") {
+		d->metaData.addMetaData_string(Property::GameID, d->getGameID());
+	}
+
+	// OS Version
+	d->metaData.addMetaData_string(Property::OSVersion, d->getOSVersion());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());

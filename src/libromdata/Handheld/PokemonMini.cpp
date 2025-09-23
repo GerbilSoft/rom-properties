@@ -40,6 +40,19 @@ public:
 public:
 	// ROM header
 	PokemonMini_RomHeader romHeader;
+
+public:
+	/**
+	 * Get the title.
+	 * @return Title
+	 */
+	string getTitle(void) const;
+
+	/**
+	 * Get the game ID, with unprintable characters replaced with '_'.
+	 * @return Game ID
+	 */
+	inline string getGameID(void) const;
 };
 
 ROMDATA_IMPL(PokemonMini)
@@ -68,6 +81,39 @@ PokemonMiniPrivate::PokemonMiniPrivate(const IRpFilePtr &file)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
+}
+
+/**
+ * Get the title.
+ * @return Title
+ */
+string PokemonMiniPrivate::getTitle(void) const
+{
+	if (romHeader.game_id[3] == 'J') {
+		// Japanese title. Assume it's Shift-JIS.
+		// TODO: Also Korea?
+		return cp1252_sjis_to_utf8(romHeader.title, sizeof(romHeader.title));
+	} else {
+		// Assume other regions are cp1252.
+		return cp1252_to_utf8(romHeader.title, sizeof(romHeader.title));
+	}
+}
+
+/**
+ * Get the game ID, with unprintable characters replaced with '_'.
+ * @return Game ID
+ */
+inline string PokemonMiniPrivate::getGameID(void) const
+{
+	// Replace any non-printable characters with underscores.
+	string id4;
+	id4.resize(4, '_');
+	for (size_t i = 0; i < 4; i++) {
+		if (ISPRINT(romHeader.game_id[i])) {
+			id4[i] = romHeader.game_id[i];
+		}
+	}
+	return id4;
 }
 
 /** PokemonMini **/
@@ -210,28 +256,11 @@ int PokemonMini::loadFieldData(void)
 	const PokemonMini_RomHeader *const romHeader = &d->romHeader;
 	d->fields.reserve(3);	// Maximum of 3 fields.
 
-	// Title.
-	string title;
-	if (romHeader->game_id[3] == 'J') {
-		// Japanese title. Assume it's Shift-JIS.
-		// TODO: Also Korea?
-		title = cp1252_sjis_to_utf8(romHeader->title, sizeof(romHeader->title));
-	} else {
-		// Assume other regions are cp1252.
-		title = cp1252_to_utf8(romHeader->title, sizeof(romHeader->title));
-	}
-	d->fields.addField_string(C_("RomData", "Title"), title, RomFields::STRF_TRIM_END);
+	// Title
+	d->fields.addField_string(C_("RomData", "Title"), d->getTitle(), RomFields::STRF_TRIM_END);
 
-	// Game ID.
-	// Replace any non-printable characters with underscores.
-	char id4[5];
-	for (unsigned int i = 0; i < 4; i++) {
-		id4[i] = (ISPRINT(romHeader->game_id[i])
-			? romHeader->game_id[i]
-			: '_');
-	}
-	id4[4] = 0;
-	d->fields.addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id4, 4));
+	// Game ID
+	d->fields.addField_string(C_("RomData", "Game ID"), d->getGameID());
 
 	// Vector table.
 	static const array<const char*, PokemonMini_IRQ_MAX> vectors_names = {{
@@ -359,19 +388,15 @@ int PokemonMini::loadMetaData(void)
 
 	// Pokémon Mini ROM header.
 	const PokemonMini_RomHeader *const romHeader = &d->romHeader;
-	d->metaData.reserve(1);	// Maximum of 1 metadata property.
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 	// Title
-	string title;
-	if (romHeader->game_id[3] == 'J') {
-		// Japanese title. Assume it's Shift-JIS.
-		// TODO: Also Korea?
-		title = cp1252_sjis_to_utf8(romHeader->title, sizeof(romHeader->title));
-	} else {
-		// Assume other regions are cp1252.
-		title = cp1252_to_utf8(romHeader->title, sizeof(romHeader->title));
-	}
-	d->metaData.addMetaData_string(Property::Title, title, RomMetaData::STRF_TRIM_END);
+	d->metaData.addMetaData_string(Property::Title, d->getTitle(), RomMetaData::STRF_TRIM_END);
+
+	/** Custom properties! **/
+
+	// Game ID
+	d->metaData.addMetaData_string(Property::GameID, d->getGameID());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());

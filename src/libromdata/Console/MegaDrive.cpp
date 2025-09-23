@@ -1492,7 +1492,7 @@ int MegaDrive::loadMetaData(void)
 	// MD ROM header
 	// TODO: Lock-on support?
 	const MD_RomHeader *const romHeader = &d->romHeader;
-	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 	// Title
 	// TODO: Domestic vs. export; space elimination?
@@ -1509,6 +1509,31 @@ int MegaDrive::loadMetaData(void)
 	// Publisher
 	// TODO: Don't show if the publisher is unknown?
 	d->metaData.addMetaData_string(Property::Publisher, d->getPublisher(romHeader));
+
+	/** Custom properties! **/
+
+	const bool isEarlyRomHeader = d->checkIfEarlyRomHeader(romHeader);
+	const bool isHeaderOffByOne = d->checkIfHeaderOffByOne(romHeader);
+
+	// Game ID (serial number)
+
+	// Some fields vary depending on if this is a standard ROM header
+	// or an 'early' ROM header.
+	const char *s_serial_number;
+	if (unlikely(isEarlyRomHeader)) {
+		// 'Early' ROM header.
+		s_serial_number = romHeader->early.serial_number;
+	} else if (unlikely(isHeaderOffByOne)) {
+		// Copyright header size is off by one.
+		s_serial_number = romHeader->target_earth.serial_number;
+	} else {
+		// Standard ROM header
+		s_serial_number = romHeader->serial_number;
+	}
+
+	d->metaData.addMetaData_string(Property::GameID,
+		cp1252_to_utf8(s_serial_number, sizeof(romHeader->serial_number)),
+			RomFields::STRF_TRIM_END);
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
