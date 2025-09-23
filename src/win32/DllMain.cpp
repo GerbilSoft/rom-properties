@@ -32,6 +32,7 @@
 #include "RP_ShellIconOverlayIdentifier.hpp"
 #include "RP_ContextMenu.hpp"
 #include "RP_XAttrView.hpp"
+#include "RP_ColumnProvider.hpp"
 
 #include "AchWin32.hpp"
 #include "LanguageComboBox.hpp"
@@ -188,6 +189,7 @@ _Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, 
 #endif /* ENABLE_OVERLAY_ICON_HANDLER */
 		else CHECK_CLSID(RP_ContextMenu)
 		else CHECK_CLSID(RP_XAttrView)
+		else CHECK_CLSID(RP_ColumnProvider)
 
 		// Unable to find a matching class.
 		*ppv = nullptr;

@@ -32,6 +32,7 @@
 #include "RP_ShellIconOverlayIdentifier.hpp"
 #include "RP_ContextMenu.hpp"
 #include "RP_XAttrView.hpp"
+#include "RP_ColumnProvider.hpp"
 
 // libwin32common
 using LibWin32UI::RegKey;
@@ -109,6 +110,7 @@ static LONG RegisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory::
 
 #ifdef HAVE_RP_PROPERTYSTORE_DEPS
 	// Register the property store handler.
+	// TODO: Register for all files?
 	if (extInfo.attrs & RomDataFactory::RDA_HAS_METADATA) {
 		lResult = RP_PropertyStore::RegisterFileType(hkcr, pHklm, t_ext.c_str());
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
@@ -593,6 +595,7 @@ static const CLSID_tbl_t CLSID_tbl[] = {
 #endif /* ENABLE_OVERLAY_ICON_HANDLER */
 	{__uuidof(RP_ContextMenu),		_T("ROM Properties Page - Context Menu")},
 	{__uuidof(RP_XAttrView),		_T("ROM Properties Page - Extended Attribute viewer")},
+	{__uuidof(RP_ColumnProvider),		_T("ROM Properties Page - Column Provider")},
 };
 
 /**
@@ -685,6 +688,13 @@ STDAPI DllRegisterServer(void)
 	// Register RP_XAttrView for all file types.
 	// TODO: Also for drives?
 	lResult = RP_XAttrView::RegisterFileType(hkcr, _T("*"));
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+
+	// Register RP_ColumnProvider for "Folder".
+	// It doesn't work for anything else, contrary to almost all documentation...
+	// NOTE: "Folder" == file folder; "Directory" == *all* folders.
+	// Reference: https://web.archive.org/web/20071213223408/https://www.codeproject.com/KB/shell/shellextguide8.aspx
+	lResult = RP_ColumnProvider::RegisterFileType(hkcr, _T("Folder"));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	/** Fixes for previous versions **/
@@ -810,6 +820,13 @@ STDAPI DllUnregisterServer(void)
 	// Unregister RP_XAttrView for all file types.
 	// TODO: Also for drives, if we add registration for it.
 	lResult = RP_XAttrView::UnregisterFileType(hkcr, _T("*"));
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+
+	// Unregister RP_ColumnProvider for "Folder".
+	// It doesn't work for anything else, contrary to almost all documentation...
+	// NOTE: "Folder" == file folder; "Directory" == *all* folders.
+	// Reference: https://web.archive.org/web/20071213223408/https://www.codeproject.com/KB/shell/shellextguide8.aspx
+	lResult = RP_ColumnProvider::UnregisterFileType(hkcr, _T("Folder"));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Remove the ProgID.

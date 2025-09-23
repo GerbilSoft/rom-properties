@@ -60,6 +60,8 @@ SET(${PROJECT_NAME}_SRCS
 	RP_ContextMenu_Register.cpp
 	RP_XAttrView.cpp
 	RP_XAttrView_Register.cpp
+	RP_ColumnProvider.cpp
+	RP_ColumnProvider_Register.cpp
 	CreateThumbnail.cpp
 	DragImageLabel.cpp
 	FontHandler.cpp
@@ -101,6 +103,7 @@ SET(${PROJECT_NAME}_H
 	RP_ContextMenu_p.hpp
 	RP_XAttrView.hpp
 	RP_XAttrView_p.hpp
+	RP_ColumnProvider.hpp
 	CreateThumbnail.hpp
 	DragImageLabel.hpp
 	FontHandler.hpp
