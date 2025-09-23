@@ -106,20 +106,22 @@ thunar_extension_initialize(ThunarxProviderPlugin *plugin)
 		return;
 	}
 
-	// Load symbols.
-	DLSYM(thunarx_file_info_get_type,		thunarx_file_info_get_type);
-	DLSYM(thunarx_file_info_get_mime_type,		thunarx_file_info_get_mime_type);
-	DLSYM(thunarx_file_info_get_uri,		thunarx_file_info_get_uri);
-	DLSYM(thunarx_file_info_get_uri_scheme,		thunarx_file_info_get_uri_scheme);
-	DLSYM(thunarx_file_info_list_copy,		thunarx_file_info_list_copy);
-	DLSYM(thunarx_file_info_list_free,		thunarx_file_info_list_free);
+#define THUNARX_DLSYM(sym) DLSYM(sym, sym)
+
+	// Load symbols
+	THUNARX_DLSYM(thunarx_file_info_get_type);
+	THUNARX_DLSYM(thunarx_file_info_get_mime_type);
+	THUNARX_DLSYM(thunarx_file_info_get_uri);
+	THUNARX_DLSYM(thunarx_file_info_get_uri_scheme);
+	THUNARX_DLSYM(thunarx_file_info_list_copy);
+	THUNARX_DLSYM(thunarx_file_info_list_free);
 #if GTK_CHECK_VERSION(3, 0, 0)
-	DLSYM(thunarx_menu_item_get_type,		thunarx_menu_item_get_type);
-	DLSYM(thunarx_menu_item_new,			thunarx_menu_item_new);
+	THUNARX_DLSYM(thunarx_menu_item_get_type);
+	THUNARX_DLSYM(thunarx_menu_item_new);
 #endif /* GTK_CHECK_VERSION(3, 0, 0) */
-	DLSYM(thunarx_menu_provider_get_type,		thunarx_menu_provider_get_type);
-	DLSYM(thunarx_property_page_provider_get_type,	thunarx_property_page_provider_get_type);
-	DLSYM(thunarx_property_page_new,		thunarx_property_page_new);
+	THUNARX_DLSYM(thunarx_menu_provider_get_type);
+	THUNARX_DLSYM(thunarx_property_page_provider_get_type);
+	THUNARX_DLSYM(thunarx_property_page_new);
 
 	// Symbols loaded. Register our types.
 	rp_thunar_register_types(plugin);

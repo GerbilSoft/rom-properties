@@ -73,6 +73,8 @@ rp_nautilus_register_types(GTypeModule *g_module)
 
 /** Per-frontend initialization functions **/
 
+#define NAUTILUS_DLSYM(prefix, symsuffix) DLSYM(nautilus##_##symsuffix, prefix##_##symsuffix)
+
 #define NAUTILUS_MODULE_INITIALIZE_FUNC_INT(prefix) do { \
 	CHECK_UID(); \
 	SHOW_INIT_MESSAGE(); \
@@ -92,26 +94,26 @@ rp_nautilus_register_types(GTypeModule *g_module)
 		return; \
 	} \
 \
-	/* Load symbols. */ \
-	DLSYM(nautilus_file_info_get_type,			prefix##_file_info_get_type); \
-	DLSYM(nautilus_file_info_get_uri,			prefix##_file_info_get_uri); \
-	DLSYM(nautilus_file_info_get_uri_scheme,		prefix##_file_info_get_uri_scheme); \
-	DLSYM(nautilus_file_info_get_mime_type,			prefix##_file_info_get_mime_type); \
-	DLSYM(nautilus_file_info_add_emblem,			prefix##_file_info_add_emblem); \
-	DLSYM(nautilus_file_info_add_string_attribute,		prefix##_file_info_add_string_attribute); \
-	DLSYM(nautilus_file_info_list_copy,			prefix##_file_info_list_copy); \
-	DLSYM(nautilus_file_info_list_free,			prefix##_file_info_list_free); \
-	DLSYM(nautilus_menu_item_get_type,			prefix##_menu_item_get_type); \
-	DLSYM(nautilus_menu_item_new,				prefix##_menu_item_new); \
-	DLSYM(nautilus_menu_provider_get_type,			prefix##_menu_provider_get_type); \
-	DLSYM(nautilus_property_page_provider_get_type,		prefix##_property_page_provider_get_type); \
-	DLSYM(nautilus_property_page_new,			prefix##_property_page_new); \
-	DLSYM(nautilus_info_provider_get_type,			prefix##_info_provider_get_type); \
-	DLSYM(nautilus_info_provider_update_complete_invoke,	prefix##_info_provider_update_complete_invoke); \
-	DLSYM(nautilus_column_new,				prefix##_column_new); \
-	DLSYM(nautilus_column_get_type,				prefix##_column_get_type); \
-	DLSYM(nautilus_column_provider_get_type,		prefix##_column_provider_get_type); \
-	DLSYM(nautilus_column_provider_get_columns,		prefix##_column_provider_get_columns); \
+	/* Load symbols */ \
+	NAUTILUS_DLSYM(prefix, file_info_get_type); \
+	NAUTILUS_DLSYM(prefix, file_info_get_uri); \
+	NAUTILUS_DLSYM(prefix, file_info_get_uri_scheme); \
+	NAUTILUS_DLSYM(prefix, file_info_get_mime_type); \
+	NAUTILUS_DLSYM(prefix, file_info_add_emblem); \
+	NAUTILUS_DLSYM(prefix, file_info_add_string_attribute); \
+	NAUTILUS_DLSYM(prefix, file_info_list_copy); \
+	NAUTILUS_DLSYM(prefix, file_info_list_free); \
+	NAUTILUS_DLSYM(prefix, menu_item_get_type); \
+	NAUTILUS_DLSYM(prefix, menu_item_new); \
+	NAUTILUS_DLSYM(prefix, menu_provider_get_type); \
+	NAUTILUS_DLSYM(prefix, property_page_provider_get_type); \
+	NAUTILUS_DLSYM(prefix, property_page_new); \
+	NAUTILUS_DLSYM(prefix, info_provider_get_type); \
+	NAUTILUS_DLSYM(prefix, info_provider_update_complete_invoke); \
+	NAUTILUS_DLSYM(prefix, column_new); \
+	NAUTILUS_DLSYM(prefix, column_get_type); \
+	NAUTILUS_DLSYM(prefix, column_provider_get_type); \
+	NAUTILUS_DLSYM(prefix, column_provider_get_columns); \
 } while (0)
 
 extern "C" G_MODULE_EXPORT void
