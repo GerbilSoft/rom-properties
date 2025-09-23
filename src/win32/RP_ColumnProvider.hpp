@@ -41,34 +41,11 @@ private:
 	typedef LibWin32Common::ComBase<IColumnProvider> super;
 	RP_DISABLE_COPY(RP_ColumnProvider)
 private:
-	//friend class RP_ColumnProvider_Private;
-	//RP_ColumnProvider_Private *const d_ptr;
+	friend class RP_ColumnProvider_Private;
+	RP_ColumnProvider_Private *const d_ptr;
 
 public:
 	FILETYPE_HANDLER_DECL(RP_ColumnProvider)
-
-private:
-	/**
-	 * Register the file type handler.
-	 *
-	 * Internal version; this only registers for a single Classes key.
-	 * Called by the public version multiple times if a ProgID is registered.
-	 *
-	 * @param hkey_Assoc File association key to register under.
-	 * @return ERROR_SUCCESS on success; Win32 error code on error.
-	 */
-	static LONG RegisterFileType_int(LibWin32UI::RegKey &hkey_Assoc);
-
-	/**
-	 * Unregister the file type handler.
-	 *
-	 * Internal version; this only unregisters for a single Classes key.
-	 * Called by the public version multiple times if a ProgID is registered.
-	 *
-	 * @param hkey_Assoc File association key to unregister under.
-	 * @return ERROR_SUCCESS on success; Win32 error code on error.
-	 */
-	static LONG UnregisterFileType_int(LibWin32UI::RegKey &hkey_Assoc);
 
 public:
 	// IUnknown
@@ -77,7 +54,6 @@ public:
 	// IColumnProvider
 	IFACEMETHODIMP Initialize(LPCSHCOLUMNINIT psci) final;
 	IFACEMETHODIMP GetColumnInfo(_In_ DWORD dwIndex, _Out_ SHCOLUMNINFO *psci) final;
-	//STDMETHOD(GetItemData)(THIS_ LPCSHCOLUMNID pscid, LPCSHCOLUMNDATA pscd, __out VARIANT *pvarData) PURE;
 	IFACEMETHODIMP GetItemData(_In_ LPCSHCOLUMNID pscid, _In_ LPCSHCOLUMNDATA pscd, _Out_ VARIANT *pvarData) final;
 };
 

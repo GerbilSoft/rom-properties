@@ -9,7 +9,7 @@
 
 #include "stdafx.h"
 #include "RP_ColumnProvider.hpp"
-//#include "RP_ColumnProvider_p.hpp"
+#include "RP_ColumnProvider_p.hpp"
 
 // libwin32common
 using LibWin32UI::RegKey;
@@ -31,7 +31,7 @@ extern const TCHAR RP_ProgID[];
  * @param hkey_Assoc File association key to register under.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ColumnProvider/*_Private*/::RegisterFileType_int(RegKey &hkey_Assoc)
+LONG RP_ColumnProvider_Private::RegisterFileType_int(RegKey &hkey_Assoc)
 {
 	// Register as a column handler for this file association.
 
@@ -63,7 +63,7 @@ LONG RP_ColumnProvider::RegisterFileType(_In_ RegKey &hkcr, _In_ LPCTSTR ext)
 	}
 
 	// Register the main association.
-	LONG lResult = /*RP_ColumnProvider_Private::*/ RegisterFileType_int(hkcr_ext);
+	LONG lResult = RP_ColumnProvider_Private::RegisterFileType_int(hkcr_ext);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
@@ -83,7 +83,7 @@ LONG RP_ColumnProvider::RegisterFileType(_In_ RegKey &hkcr, _In_ LPCTSTR ext)
 			}
 			return lResult;
 		}
-		lResult = /*RP_ColumnProvider_Private::*/RegisterFileType_int(hkcr_ProgID);
+		lResult = RP_ColumnProvider_Private::RegisterFileType_int(hkcr_ProgID);
 	}
 
 	// File type handler registered.
@@ -99,7 +99,7 @@ LONG RP_ColumnProvider::RegisterFileType(_In_ RegKey &hkcr, _In_ LPCTSTR ext)
  * @param hkey_Assoc File association key to unregister under.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ColumnProvider/*_Private*/::UnregisterFileType_int(RegKey &hkey_Assoc)
+LONG RP_ColumnProvider_Private::UnregisterFileType_int(RegKey &hkey_Assoc)
 {
 	// Unregister as a property sheet handler for this file association.
 
@@ -174,7 +174,7 @@ LONG RP_ColumnProvider::UnregisterFileType(_In_ RegKey &hkcr, _In_opt_ LPCTSTR e
 	}
 
 	// Unregister the main association.
-	LONG lResult = /*RP_ColumnProvider_Private::*/UnregisterFileType_int(hkcr_ext);
+	LONG lResult = RP_ColumnProvider_Private::UnregisterFileType_int(hkcr_ext);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
@@ -194,7 +194,7 @@ LONG RP_ColumnProvider::UnregisterFileType(_In_ RegKey &hkcr, _In_opt_ LPCTSTR e
 			}
 			return lResult;
 		}
-		lResult = /*RP_ColumnProvider_Private::*/UnregisterFileType_int(hkcr_ProgID);
+		lResult = RP_ColumnProvider_Private::UnregisterFileType_int(hkcr_ProgID);
 	}
 
 	// File type handler unregistered.

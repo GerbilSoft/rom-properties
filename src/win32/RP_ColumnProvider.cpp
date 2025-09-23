@@ -33,7 +33,7 @@ const CLSID CLSID_RP_ColumnProvider =
 	{0x126621f9, 0x01e7, 0x45da, {0xbc, 0x4f, 0xcb, 0xdf, 0xab, 0x9c, 0x0e, 0x0a}};
 
 /** RP_ColumnProvider_Private **/
-//#include "RP_ColumnProvider_p.hpp"
+#include "RP_ColumnProvider_p.hpp"
 
 // We're handling all custom metadata properties as columns.
 // NOTE: Using custom structs because we have to use a pointer
@@ -71,12 +71,12 @@ static const array<const PROPERTYKEY*, 6> colpkey_t = {{
 /** RP_ColumnProvider **/
 
 RP_ColumnProvider::RP_ColumnProvider()
-	//: d_ptr(new RP_ColumnProvider_Private())
+	: d_ptr(new RP_ColumnProvider_Private())
 {}
 
 RP_ColumnProvider::~RP_ColumnProvider()
 {
-	//delete d_ptr;
+	delete d_ptr;
 }
 
 /** IUnknown **/

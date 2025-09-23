@@ -104,6 +104,7 @@ SET(${PROJECT_NAME}_H
 	RP_XAttrView.hpp
 	RP_XAttrView_p.hpp
 	RP_ColumnProvider.hpp
+	RP_ColumnProvider_p.hpp
 	CreateThumbnail.hpp
 	DragImageLabel.hpp
 	FontHandler.hpp
