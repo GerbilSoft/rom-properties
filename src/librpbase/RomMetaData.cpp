@@ -471,11 +471,6 @@ int RomMetaData::addMetaData_metaData(const RomMetaData *other)
 			continue;
 		}
 
-		// FIXME: Custom properties in KFMD?
-		if (pSrc.name > Property::LastKFMDProperty) {
-			continue;
-		}
-
 		// TODO: Make use of the MetaData copy constructor?
 		MetaData *const pDest = d->addProperty(pSrc.name);
 		assert(pDest != nullptr);
