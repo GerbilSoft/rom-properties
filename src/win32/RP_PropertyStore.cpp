@@ -126,7 +126,7 @@ const array<RP_PropertyStore_Private::MetaDataConv, static_cast<size_t>(Property
 	{&PKEY_RomProperties_OSVersion, VT_BSTR},		// OS Version
 	{&PKEY_RomProperties_EncryptionKey, VT_BSTR},		// Encryption Key
 	{&PKEY_RomProperties_PixelFormat, VT_BSTR},		// Pixel Format
-	{&PKEY_RomProperties_Region, VT_BSTR},			// Region
+	{&PKEY_RomProperties_RegionCode, VT_BSTR},		// Region Code
 }};
 
 // Win32 SDK doesn't have this.

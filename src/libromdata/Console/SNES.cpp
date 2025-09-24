@@ -1555,7 +1555,7 @@ int SNES::loadFieldData(void)
 
 	switch (d->romType) {
 		case SNESPrivate::RomType::SNES: {
-			// Region
+			// Region code
 			// NOTE: Not listed for BS-X because BS-X is Japan only.
 			const char *const region_title = C_("RomData", "Region Code");
 			const char *const region_lkup = d->getRegion();
@@ -1723,8 +1723,8 @@ int SNES::loadMetaData(void)
 	// Game ID
 	d->metaData.addMetaData_string(Property::GameID, d->getGameID());
 
-	// Region
-	d->metaData.addMetaData_string(Property::Region, d->getRegion());
+	// Region code
+	d->metaData.addMetaData_string(Property::RegionCode, d->getRegion());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());

@@ -1995,7 +1995,7 @@ int GameCube::loadMetaData(void)
 	}
 
 	// Region code
-	d->metaData.addMetaData_string(Property::Region, d->getRegionCode());
+	d->metaData.addMetaData_string(Property::RegionCode, d->getRegionCode());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());

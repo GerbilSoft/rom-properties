@@ -111,7 +111,7 @@ rp_nautilus_column_provider_get_columns(NautilusColumnProvider *provider)
 		{"rp-os-version",	"OS Version"},
 		{"rp-encryption-key",	"Encryption Key"},
 		{"rp-pixel-format",	"Pixel Format"},
-		{"rp-region",		"Region"},
+		{"rp-region-code",	"Region Code"},
 	};
 
 	GList *list = NULL;

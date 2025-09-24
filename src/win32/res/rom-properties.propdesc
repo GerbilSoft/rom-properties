@@ -38,11 +38,11 @@
             <typeInfo type="String" isViewable="true" groupingRange="discrete"/>
             <labelInfo label="Pixel format" invitationText=""/>
         </propertyDescription>
-        <propertyDescription name="com.gerbilsoft.rom-properties.PixelFormat" formatID="{452F1DD9-62FD-46A6-AA2E-146822946842}" propID="2">
+        <propertyDescription name="com.gerbilsoft.rom-properties.RegionCode" formatID="{452F1DD9-62FD-46A6-AA2E-146822946842}" propID="2">
             <description>Region code for region-locked systems</description>
             <searchInfo inInvertedIndex="false" isColumn="true" maxSize="48"/>
             <typeInfo type="String" isViewable="true" groupingRange="discrete"/>
-            <labelInfo label="Region" invitationText=""/>
+            <labelInfo label="Region code" invitationText=""/>
         </propertyDescription>
     </propertyDescriptionList>
 </schema>
