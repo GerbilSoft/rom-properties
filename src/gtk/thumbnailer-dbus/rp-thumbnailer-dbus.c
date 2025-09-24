@@ -130,8 +130,6 @@ G_DEFINE_TYPE_EXTENDED(RpThumbnailer, rp_thumbnailer,
 static void
 rp_thumbnailer_class_init(RpThumbnailerClass *klass)
 {
-	rp_thumbnailer_parent_class = g_type_class_peek_parent(klass);
-
 	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->dispose = rp_thumbnailer_dispose;
 	gobject_class->finalize = rp_thumbnailer_finalize;
