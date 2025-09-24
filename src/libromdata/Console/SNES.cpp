@@ -116,6 +116,12 @@ public:
 	 */
 	string getGameID(bool doFake = false) const;
 
+	/**
+	 * Get the region code.
+	 * @return Region code, or nullptr on error.
+	 */
+	const char *getRegion(void) const;
+
 public:
 	/**
 	 * Add Nintendo Power fields.
@@ -787,6 +793,41 @@ string SNESPrivate::getGameID(bool doFake) const
 	}
 
 	return gameID;
+}
+
+/**
+ * Get the region code.
+ * @return Region code, or nullptr on error.
+ */
+const char *SNESPrivate::getRegion(void) const
+{
+	static const array<const char*, 0x15> RegionCode_str_tbl = {{
+		NOP_C_("Region", "Japan"),
+		NOP_C_("Region", "North America"),
+		NOP_C_("Region", "Europe"),
+		NOP_C_("Region", "Scandinavia"),
+		nullptr,
+		nullptr,
+		NOP_C_("Region", "France"),
+		NOP_C_("Region", "Netherlands"),
+		NOP_C_("Region", "Spain"),
+		NOP_C_("Region", "Germany"),
+		NOP_C_("Region", "Italy"),
+		NOP_C_("Region", "China"),
+		nullptr,
+		NOP_C_("Region", "South Korea"),
+		NOP_C_("Region", "All"),
+		NOP_C_("Region", "Canada"),
+		NOP_C_("Region", "Brazil"),
+		NOP_C_("Region", "Australia"),
+		NOP_C_("Region", "Other"),
+		NOP_C_("Region", "Other"),
+		NOP_C_("Region", "Other"),
+	}};
+
+	return (romHeader.snes.destination_code < RegionCode_str_tbl.size())
+		? RegionCode_str_tbl[romHeader.snes.destination_code]
+		: nullptr;
 }
 
 /**
@@ -1512,38 +1553,12 @@ int SNES::loadFieldData(void)
 		d->fields.addField_string(C_("SNES", "Cartridge HW"), cart_hw);
 	}
 
-	// Region
-	// NOTE: Not listed for BS-X because BS-X is Japan only.
-	static const array<const char*, 0x15> RegionCode_str_tbl = {{
-		NOP_C_("Region", "Japan"),
-		NOP_C_("Region", "North America"),
-		NOP_C_("Region", "Europe"),
-		NOP_C_("Region", "Scandinavia"),
-		nullptr, nullptr,
-		NOP_C_("Region", "France"),
-		NOP_C_("Region", "Netherlands"),
-		NOP_C_("Region", "Spain"),
-		NOP_C_("Region", "Germany"),
-		NOP_C_("Region", "Italy"),
-		NOP_C_("Region", "China"),
-		nullptr,
-		NOP_C_("Region", "South Korea"),
-		NOP_C_("Region", "All"),
-		NOP_C_("Region", "Canada"),
-		NOP_C_("Region", "Brazil"),
-		NOP_C_("Region", "Australia"),
-		NOP_C_("Region", "Other"),
-		NOP_C_("Region", "Other"),
-		NOP_C_("Region", "Other"),
-	}};
-	const char *const region_lkup = (romHeader->snes.destination_code < RegionCode_str_tbl.size())
-					? RegionCode_str_tbl[romHeader->snes.destination_code]
-					: nullptr;
-
 	switch (d->romType) {
 		case SNESPrivate::RomType::SNES: {
 			// Region
+			// NOTE: Not listed for BS-X because BS-X is Japan only.
 			const char *const region_title = C_("RomData", "Region Code");
+			const char *const region_lkup = d->getRegion();
 			if (region_lkup) {
 				d->fields.addField_string(region_title,
 					pgettext_expr("Region", region_lkup));
@@ -1692,7 +1707,7 @@ int SNES::loadMetaData(void)
 
 	// ROM header is read in the constructor.
 	//const SNES_RomHeader *const romHeader = &d->romHeader;
-	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 	// Title
 	const string s_title = d->getRomTitle();
@@ -1707,6 +1722,9 @@ int SNES::loadMetaData(void)
 
 	// Game ID
 	d->metaData.addMetaData_string(Property::GameID, d->getGameID());
+
+	// Region
+	d->metaData.addMetaData_string(Property::Region, d->getRegion());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
