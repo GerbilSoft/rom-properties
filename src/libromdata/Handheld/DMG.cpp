@@ -102,6 +102,7 @@ private:
 public:
 	/**
 	 * Get the system ID for the specified ROM header.
+	 * @param pRomHeader ROM header
 	 * @return System ID (DMG_System bitfield)
 	 */
 	static uint32_t systemID(const DMG_RomHeader *pRomHeader);
@@ -194,6 +195,22 @@ public:
 	 * @return Publisher, or "Unknown (xxx)" if unknown.
 	 */
 	string getPublisher(void) const;
+
+	/**
+	 * Get the region code for the specified ROM header.
+	 * @param pRomHeader ROM header
+	 * @return Region code, or nullptr if invalid.
+	 */
+	static const char *getRegionCode(const DMG_RomHeader *pRomHeader);
+
+	/**
+	 * Get the region code for the main ROM header.
+	 * @return Region code, or nullptr if invalid.
+	 */
+	inline const char *getRegionCode(void) const
+	{
+		return getRegionCode(&romHeader);
+	}
 
 	/**
 	 * Get the user's specified Title Screen Mode for this ROM image.
@@ -566,6 +583,26 @@ string DMGPrivate::getPublisher(void) const
 }
 
 /**
+ * Get the region code for the specified ROM header.
+ * @param pRomHeader ROM header
+ * @return Region code, or nullptr if invalid.
+ */
+const char *DMGPrivate::getRegionCode(const DMG_RomHeader *pRomHeader)
+{
+	switch (pRomHeader->region) {
+		case 0:
+			return C_("Region|DMG", "Japanese");
+		case 1:
+			return C_("Region|DMG", "Non-Japanese");
+		default:
+			break;
+	}
+
+	// Invalid value.
+	return {};
+}
+
+/**
  * Get the user's specified Title Screen Mode for this ROM image.
  * @param cfg_rom	[out] Title Screen Mode based on the ROM type only
  * @param cfg_ts	[out] Title Screen Mode for this ROM type as specified by the user.
@@ -735,21 +772,13 @@ void DMGPrivate::addFields_romHeader(const DMG_RomHeader *pRomHeader)
 
 	// Region Code
 	const char *const region_code_title = C_("RomData", "Region Code");
-	switch (pRomHeader->region) {
-		case 0:
-			fields.addField_string(region_code_title,
-				C_("Region|DMG", "Japanese"));
-			break;
-		case 1:
-			fields.addField_string(region_code_title,
-				C_("Region|DMG", "Non-Japanese"));
-			break;
-		default:
-			// Invalid value.
-			fields.addField_string(region_code_title,
-				fmt::format(FRUN(C_("DMG", "0x{:0>2X} (INVALID)")), pRomHeader->region),
-					RomFields::STRF_WARNING);
-			break;
+	const char *const s_region_code = getRegionCode(pRomHeader);
+	if (s_region_code) {
+		fields.addField_string(region_code_title, s_region_code);
+	} else {
+		fields.addField_string(region_code_title,
+			fmt::format(FRUN(C_("DMG", "0x{:0>2X} (INVALID)")), pRomHeader->region),
+				RomFields::STRF_WARNING);
 	}
 
 	// Revision
@@ -1389,7 +1418,7 @@ int DMG::loadMetaData(void)
 
 	// DMG ROM header
 	//const DMG_RomHeader *const romHeader = &d->romHeader;
-	d->metaData.reserve(3);	// Maximum of 2 metadata properties.
+	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
 
 	// Title
 	// TODO: Remove STRF_TRIM_END, since we're doing that ourselves?
@@ -1407,6 +1436,9 @@ int DMG::loadMetaData(void)
 
 	// Game ID
 	d->metaData.addMetaData_string(Property::GameID, s_gameID);
+
+	// Region code
+	d->metaData.addMetaData_string(Property::RegionCode, d->getRegionCode());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
