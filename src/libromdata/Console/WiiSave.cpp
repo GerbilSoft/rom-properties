@@ -429,9 +429,8 @@ int WiiSave::loadFieldData(void)
 	const bool isSvValid = (svHeader->savegame_id.id != 0);
 	const bool isBkValid = (!memcmp(bkHeader->full_magic, d->bk_header_magic.data(), d->bk_header_magic.size()));
 
-	// Savegame header
+	// Savegame ID (Title ID)
 	if (isSvValid) {
-		// Savegame ID (title ID)
 		d->fields.addField_string(C_("WiiSave", "Savegame ID"),
 			fmt::format(FSTR("{:0>8X}-{:0>8X}"),
 				be32_to_cpu(svHeader->savegame_id.hi),
@@ -502,6 +501,66 @@ int WiiSave::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the metadata hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int WiiSave::loadMetaData(void)
+{
+	RP_D(WiiSave);
+	if (!d->metaData.empty()) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown file type.
+		return -EIO;
+	}
+
+	// Wii save and backup headers.
+	const Wii_SaveGame_Header_t *const svHeader = &d->svHeader;
+	const Wii_Bk_Header_t *const bkHeader = &d->bkHeader;
+	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
+
+	// Check if the headers are valid.
+	// TODO: Do this in the constructor instead?
+	const bool isSvValid = (svHeader->savegame_id.id != 0);
+	const bool isBkValid = (!memcmp(bkHeader->full_magic, d->bk_header_magic.data(), d->bk_header_magic.size()));
+
+	/** Custom properties! **/
+
+	// Savegame ID (Title ID)
+	if (isSvValid) {
+		d->metaData.addMetaData_string(Property::TitleID,
+			fmt::format(FSTR("{:0>8X}-{:0>8X}"),
+				be32_to_cpu(svHeader->savegame_id.hi),
+				be32_to_cpu(svHeader->savegame_id.lo)));
+
+	}
+
+	// Game ID
+	// NOTE: Uses the ID from the Bk header.
+	// TODO: Check if it matches the savegame header?
+	if (isBkValid) {
+		if (isalnum_ascii(bkHeader->id4[0]) &&
+		    isalnum_ascii(bkHeader->id4[1]) &&
+		    isalnum_ascii(bkHeader->id4[2]) &&
+		    isalnum_ascii(bkHeader->id4[3]))
+		{
+			// Print the game ID.
+			// TODO: Is the publisher code available anywhere?
+			d->metaData.addMetaData_string(Property::GameID,
+				latin1_to_utf8(bkHeader->id4, sizeof(bkHeader->id4)));
+		}
+	}
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

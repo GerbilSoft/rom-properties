@@ -122,6 +122,12 @@ public:
 	rp_image_const_ptr loadBanner(void);
 
 	/**
+	 * Get the game ID, with unprintable characters replaced with '_'.
+	 * @return Game ID
+	 */
+	inline string getGameID(void) const;
+
+	/**
 	 * Get the comment from the save file.
 	 * @return Comment, or empty string on error.
 	 */
@@ -587,6 +593,24 @@ rp_image_const_ptr GameCubeSavePrivate::loadBanner(void)
 }
 
 /**
+ * Get the game ID, with unprintable characters replaced with '_'.
+ * @return Game ID
+ */
+inline string GameCubeSavePrivate::getGameID(void) const
+{
+	// Replace any non-printable characters with underscores.
+	// (GameCube NDDEMO has ID6 "00\0E01".)
+	string id6;
+	id6.resize(6, '_');
+	for (size_t i = 0; i < 6; i++) {
+		if (ISPRINT(direntry.id6[i])) {
+			id6[i] = direntry.id6[i];
+		}
+	}
+	return id6;
+}
+
+/**
  * Get the comment from the save file.
  * @return Comment, or empty string on error.
  */
@@ -977,16 +1001,7 @@ int GameCubeSave::loadFieldData(void)
 	d->fields.reserve(8);	// Maximum of 8 fields.
 
 	// Game ID
-	// Replace any non-printable characters with underscores.
-	// (NDDEMO has ID6 "00\0E01".)
-	char id6[7];
-	for (int i = 0; i < 6; i++) {
-		id6[i] = (ISPRINT(direntry->id6[i])
-			? direntry->id6[i]
-			: '_');
-	}
-	id6[6] = 0;
-	d->fields.addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6, 6));
+	d->fields.addField_string(C_("RomData", "Game ID"), d->getGameID());
 
 	// Look up the publisher.
 	const char *publisher = NintendoPublishers::lookup(direntry->company);
@@ -1055,7 +1070,7 @@ int GameCubeSave::loadMetaData(void)
 
 	// Save file header is read and byteswapped in the constructor.
 	const card_direntry *const direntry = &d->direntry;
-	d->metaData.reserve(3);	// Maximum of 4 metadata properties.
+	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
 
 	// Look up the publisher.
 	const char *publisher = NintendoPublishers::lookup(direntry->company);
@@ -1074,6 +1089,11 @@ int GameCubeSave::loadMetaData(void)
 	// TODO: Adjust for local timezone, since it's UTC.
 	d->metaData.addMetaData_timestamp(Property::CreationDate,
 		static_cast<time_t>(direntry->lastmodified) + GC_UNIX_TIME_DIFF);
+
+	/** Custom properties! **/
+
+	// Game ID
+	d->metaData.addMetaData_string(Property::GameID, d->getGameID());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());

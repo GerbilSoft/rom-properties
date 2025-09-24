@@ -695,7 +695,8 @@ int iQuePlayer::loadMetaData(void)
 		return -EIO;
 	}
 
-	d->metaData.reserve(1);	// Maximum of 1 metadata property.
+	const iQuePlayer_BbContentMetaDataHead *const bbContentMetaDataHead = &d->bbContentMetaDataHead;
+	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 
 	// Get the title and ISBN.
 	// TODO: Trim trailing newlines?
@@ -712,6 +713,12 @@ int iQuePlayer::loadMetaData(void)
 			d->metaData.addMetaData_string(Property::ISBN, rom_isbn);
 		}*/
 	}
+
+	/** Custom properties! **/
+
+	// Content ID (as Title ID)
+	d->metaData.addMetaData_string(Property::TitleID,
+		fmt::format(FSTR("{:0>8X}"), be32_to_cpu(bbContentMetaDataHead->content_id)));
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());

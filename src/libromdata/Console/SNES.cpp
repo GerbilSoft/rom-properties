@@ -1704,6 +1704,11 @@ int SNES::loadMetaData(void)
 	// Publisher
 	d->metaData.addMetaData_string(Property::Publisher, d->getPublisher());
 
+	/** Custom properties! **/
+
+	// Game ID
+	d->metaData.addMetaData_string(Property::GameID, d->getGameID());
+
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
 }

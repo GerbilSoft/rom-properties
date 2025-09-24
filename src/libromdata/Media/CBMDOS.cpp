@@ -1450,13 +1450,47 @@ int CBMDOS::loadMetaData(void)
 		return -EIO;
 	}
 
-	// ROM header is read in the constructor.
-	//const auto *diskHeader = &d->diskHeader;
-	d->metaData.reserve(1);	// Maximum of 1 metadata property.
+	// Disk header is read in the constructor.
+	const auto *diskHeader = &d->diskHeader;
+	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 
 	// Title (disk name)
 	// TODO: Specify a codepage?
 	d->metaData.addMetaData_string(Property::Title, d->getDiskName());
+
+	/** Custom properties! **/
+
+	// DOS Type (as OS Version) [NOTE: Always unshifted]
+	const char *dos_type;
+	switch (d->diskType) {
+		case CBMDOSPrivate::DiskType::D64:
+		case CBMDOSPrivate::DiskType::D71:
+		case CBMDOSPrivate::DiskType::D67:
+		case CBMDOSPrivate::DiskType::G64:
+		case CBMDOSPrivate::DiskType::G71:
+			// C1541, C1571, C2040
+			dos_type = diskHeader->c1541.dos_type;
+			break;
+
+		case CBMDOSPrivate::DiskType::D80:
+		case CBMDOSPrivate::DiskType::D82:
+			// C8050/C8250
+			dos_type = diskHeader->c8050.dos_type;
+			break;
+
+		case CBMDOSPrivate::DiskType::D81:
+			// C1581
+			dos_type = diskHeader->c1581.dos_type;
+			break;
+
+		default:
+			assert(!"Unsupported CBM disk type?");
+			return 0;
+	}
+
+	// DOS Type (NOTE: Always unshifted)
+	d->metaData.addMetaData_string(Property::OSVersion,
+		cpN_to_utf8(CP_RP_PETSCII_Unshifted, dos_type, sizeof(diskHeader->c1541.dos_type)));
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());

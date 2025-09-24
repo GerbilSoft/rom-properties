@@ -48,6 +48,12 @@ public:
 	} romHeader;
 
 	/**
+	 * Get the product code.
+	 * @return Product code
+	 */
+	string getProductCode(void) const;
+
+	/**
 	 * Get an SDSC string field.
 	 * @param ptr SDSC string pointer.
 	 * @return SDSC string on success; empty string on error.
@@ -107,6 +113,44 @@ Sega8BitPrivate::Sega8BitPrivate(const IRpFilePtr &file)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
+}
+
+/**
+ * Get the product code.
+ * @return Product code
+ */
+string Sega8BitPrivate::getProductCode(void) const
+{
+	const Sega8_RomHeader *const tmr = &romHeader.tmr;
+
+	// BCD conversion buffer
+	// TODO: Use an std::string directly to eliminate a copy?
+	char bcdbuf[8];
+
+	// Product code (little-endian BCD)
+	char *p = bcdbuf;
+	if (tmr->product_code[2] & 0xF0) {
+		// Fifth digit is present.
+		const uint8_t digit = (tmr->product_code[2] >> 4) & 0xF;
+		if (digit < 10) {
+			*p++ = ('0' + digit);
+		} else {
+			p[0] = '1';
+			p[1] = ('0' + digit - 10);
+			p += 2;
+		}
+	}
+
+	// Convert the product code to BCD.
+	// NOTE: Little-endian BCD; first byte is the *second* set of digits.
+	// TODO: Check for invalid BCD digits?
+	p[0] = ('0' + ((tmr->product_code[1] >> 4) & 0xF));
+	p[1] = ('0' +  (tmr->product_code[1] & 0xF));
+	p[2] = ('0' + ((tmr->product_code[0] >> 4) & 0xF));
+	p[3] = ('0' +  (tmr->product_code[0] & 0xF));
+	p[4] = 0;
+
+	return bcdbuf;
 }
 
 /**
@@ -383,34 +427,11 @@ int Sega8Bit::loadFieldData(void)
 	const Sega8_RomHeader *const tmr = &d->romHeader.tmr;
 	d->fields.reserve(11);	// Maximum of 11 fields.
 
-	// BCD conversion buffer
-	char bcdbuf[16];
-
-	// Product code (little-endian BCD)
-	char *p = bcdbuf;
-	if (tmr->product_code[2] & 0xF0) {
-		// Fifth digit is present.
-		const uint8_t digit = (tmr->product_code[2] >> 4) & 0xF;
-		if (digit < 10) {
-			*p++ = ('0' + digit);
-		} else {
-			p[0] = '1';
-			p[1] = ('0' + digit - 10);
-			p += 2;
-		}
-	}
-
-	// Convert the product code to BCD.
-	// NOTE: Little-endian BCD; first byte is the *second* set of digits.
-	// TODO: Check for invalid BCD digits?
-	p[0] = ('0' + ((tmr->product_code[1] >> 4) & 0xF));
-	p[1] = ('0' +  (tmr->product_code[1] & 0xF));
-	p[2] = ('0' + ((tmr->product_code[0] >> 4) & 0xF));
-	p[3] = ('0' +  (tmr->product_code[0] & 0xF));
-	p[4] = 0;
-	d->fields.addField_string(C_("Sega8Bit", "Product Code"), bcdbuf);
+	// Product code
+	d->fields.addField_string(C_("Sega8Bit", "Product Code"), d->getProductCode());
 
 	// Version
+	char bcdbuf[8];
 	const uint8_t digit = tmr->product_code[2] & 0xF;
 	if (digit < 10) {
 		bcdbuf[0] = ('0' + digit);
@@ -499,7 +520,7 @@ int Sega8Bit::loadFieldData(void)
 
 		// Version number: Stored as two BCD values, major.minor
 		// TODO: Verify BCD.
-		p = bcdbuf;
+		char *p = bcdbuf;
 		if (sdsc->version[0] > 9) {
 			*p++ = ('0' + (sdsc->version[0] >> 4));
 		}
@@ -560,7 +581,7 @@ int Sega8Bit::loadMetaData(void)
 	    static_cast<uint32_t>(le16_to_cpu(d->romHeader.codemasters.checksum_compl)))
 	{
 		// Codemasters checksums match.
-		d->metaData.reserve(1);	// Maximum of 1 metadata property.
+		d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 		const Sega8_Codemasters_RomHeader *const codemasters = &d->romHeader.codemasters;
 
 		// Build time.
@@ -569,7 +590,7 @@ int Sega8Bit::loadMetaData(void)
 		d->metaData.addMetaData_timestamp(Property::CreationDate, ctime);
 	} else if (d->romHeader.sdsc.magic == cpu_to_be32(SDSC_MAGIC)) {
 		// SDSC header is present.
-		d->metaData.reserve(4);	// Maximum of 4 metadata properties.
+		d->metaData.reserve(5);	// Maximum of 5 metadata properties.
 		const Sega8_SDSC_RomHeader *const sdsc = &d->romHeader.sdsc;
 
 		// Build date
@@ -594,6 +615,11 @@ int Sega8Bit::loadMetaData(void)
 			d->metaData.addMetaData_string(Property::Description, str);
 		}
 	}
+
+	/** Custom properties! **/
+
+	// Product code (as Game ID)
+	d->metaData.addMetaData_string(Property::GameID, d->getProductCode());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
