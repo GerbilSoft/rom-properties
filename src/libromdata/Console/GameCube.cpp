@@ -203,6 +203,12 @@ public:
 	inline string getGameID(void) const;
 
 	/**
+	 * Get the region code.
+	 * @return Region code, or empty string on error.
+	 */
+	string getRegionCode(void) const;
+
+	/**
 	 * Get the title ID. (Wii only)
 	 * @return Title ID, or empty string on error.
 	 */
@@ -690,6 +696,58 @@ inline string GameCubePrivate::getGameID(void) const
 		}
 	}
 	return id6;
+}
+
+/**
+ * Get the region code.
+ * @return Region code, or empty string on error.
+ */
+string GameCubePrivate::getRegionCode(void) const
+{
+	if (!hasRegionCode) {
+		// No region code loaded...
+		return {};
+	}
+
+	bool isDefault = true;	// assuming the ID4 represents the disc region if nothing else says otherwise
+	const char *region;
+	if ((discType & GameCubePrivate::DISC_SYSTEM_MASK) != DISC_SYSTEM_WII) {
+		// GameCube: Only 0 (JPN), 1 (USA), and 2 (EUR) are valid.
+		// 3 (ALL) is valid only when using certain debugging hardware.
+		if (gcnRegion <= GCN_REGION_EUR) {
+			region = GameCubeRegions::gcnRegionToString(gcnRegion, discHeader.id4[3], &isDefault);
+		} else if (gcnRegion == GCN_REGION_ALL) {
+			region = C_("GameCube", "Region-Free (debug)");
+		} else {
+			// Not valid.
+			region = nullptr;
+		}
+	} else {
+		// Wii: All region codes are valid.
+		region = GameCubeRegions::gcnRegionToString(gcnRegion, discHeader.id4[3], &isDefault);
+	}
+
+	if (region) {
+		// Append the GCN region name (USA/JPN/EUR/KOR) if
+		// the ID4 value differs.
+		const char *suffix = nullptr;
+		if (!isDefault) {
+			suffix = GameCubeRegions::gcnRegionToAbbrevString(gcnRegion);
+		}
+
+		string s_region;
+		if (suffix) {
+			// tr: {0:s} == full region name, {1:s} == abbreviation
+			s_region = fmt::format(FRUN(C_("Wii", "{0:s} ({1:s})")), region, suffix);
+		} else {
+			s_region = region;
+		}
+
+		return s_region;
+	}
+
+	// Invalid region code.
+	return fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>8X})")), gcnRegion);
 }
 
 /**
@@ -1477,45 +1535,9 @@ int GameCube::loadFieldData(void)
 	// bi2.bin and/or RVL_RegionSetting is loaded in the constructor,
 	// and the region code is stored in d->gcnRegion.
 	if (d->hasRegionCode) {
-		bool isDefault = true;	// assuming the ID4 represents the disc region if nothing else says otherwise
-		const char *region;
-		if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) != GameCubePrivate::DISC_SYSTEM_WII) {
-			// GameCube: Only 0 (JPN), 1 (USA), and 2 (EUR) are valid.
-			// 3 (ALL) is valid only when using certain debugging hardware.
-			if (d->gcnRegion <= GCN_REGION_EUR) {
-				region = GameCubeRegions::gcnRegionToString(d->gcnRegion, discHeader->id4[3], &isDefault);
-			} else if (d->gcnRegion == GCN_REGION_ALL) {
-				region = C_("GameCube", "Region-Free (with certain debugging hardware)");
-			} else {
-				// Not valid.
-				region = nullptr;
-			}
-		} else {
-			// Wii: All region codes are valid.
-			region = GameCubeRegions::gcnRegionToString(d->gcnRegion, discHeader->id4[3], &isDefault);
-		}
-		const char *const region_code_title = C_("RomData", "Region Code");
-		if (region) {
-			// Append the GCN region name (USA/JPN/EUR/KOR) if
-			// the ID4 value differs.
-			const char *suffix = nullptr;
-			if (!isDefault) {
-				suffix = GameCubeRegions::gcnRegionToAbbrevString(d->gcnRegion);
-			}
-
-			string s_region;
-			if (suffix) {
-				// tr: {0:s} == full region name, {1:s} == abbreviation
-				s_region = fmt::format(FRUN(C_("Wii", "{0:s} ({1:s})")), region, suffix);
-			} else {
-				s_region = region;
-			}
-
-			d->fields.addField_string(region_code_title, s_region);
-		} else {
-			// Invalid region code.
-			d->fields.addField_string(region_code_title,
-				fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>8X})")), d->gcnRegion));
+		string s_region = d->getRegionCode();
+		if (!s_region.empty()) {
+			d->fields.addField_string(C_("RomData", "Region Code"), s_region);
 		}
 
 		if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) != GameCubePrivate::DISC_SYSTEM_WII) {
@@ -1971,6 +1993,9 @@ int GameCube::loadMetaData(void)
 			d->metaData.addMetaData_string(Property::EncryptionKey, s_key_name);
 		}
 	}
+
+	// Region code
+	d->metaData.addMetaData_string(Property::Region, d->getRegionCode());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
