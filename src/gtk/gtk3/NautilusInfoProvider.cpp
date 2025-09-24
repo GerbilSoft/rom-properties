@@ -307,7 +307,17 @@ rp_nautilus_info_provider_cancel_update(
 	NautilusInfoProvider     *provider,
 	NautilusOperationHandle  *handle)
 {
-	// Not doing anything here...
-	RP_UNUSED(provider);
-	RP_UNUSED(handle);
+	g_return_if_fail(RP_IS_NAUTILUS_INFO_PROVIDER(provider));
+	RpNautilusInfoProvider *const rpp = reinterpret_cast<RpNautilusInfoProvider*>(provider);
+
+	// Check if the specified handle is in the GQueue.
+	gboolean res = g_queue_remove(&rpp->request_queue, handle);
+	if (res) {
+		// Handle was in the queue and has been removed.
+		// Unreference the objects.
+		struct request_info *const req = reinterpret_cast<struct request_info*>(handle);
+		g_object_unref(req->file_info);
+		g_closure_unref(req->update_complete);
+		g_free(req);
+	}
 }
