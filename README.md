@@ -110,6 +110,30 @@ so you may want to place the DLLs in a common location.
 To uninstall the plugin, run install.exe again, then click the "Uninstall"
 button.
 
+## Current Desktop Environment Feature Support
+
+* ✅ = supported
+* ❌ = not implemented (yet)
+* ⛔ = OS or DE does not support this feature
+
+|       Feature       | Windows XP | Windows Vista/7/8/10/11 | KDE | GNOME | XFCE |
+|:--------------------|:----------:|:-----------------------:|:---:|:-----:|:----:|
+| Properties tab      |     ✅      |             ✅           |  ✅  |   ✅   |  ✅   |
+| XAttrs tab          |     ✅      |             ✅           |  ✅  |   ✅   |  ✅   |
+| Thumbnails          |     ✅      |             ✅           |  ✅  |   ✅¹  |  ✅   |
+| "Dangerous" overlay |     ❌      |             ❌           |  ✅  |   ✅   |  ⛔²  |
+| Metadata            |     ✅      |             ✅           |  ✅  |   ✅   |  ✅   |
+| Columns             |     ✅      |             ✅           |  ⛔³ |   ✅   |  ⛔²  |
+| Context menu⁴       |     ✅      |             ✅           |  ✅  |   ✅   |  ✅   |
+
+* 1: GNOME uses sandboxing when it runs thumbnailing software, which may
+  interfere with rom-properties.
+* 2: ThunarX's plugin infrastructure does not have any interfaces for adding custom
+  file attributes, such as overlays and metadata, or to display custom columns.
+* 3: KDE has a fixed set of metadata properties and does not have any mechanism
+  to extend it, outside of updates to KFileMetaData.
+* 4: Context menu entry for supported texture formats to convert the texture to PNG.
+
 ## Current File Support Level
 
 ### Game Consoles

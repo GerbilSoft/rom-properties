@@ -250,14 +250,16 @@ rp_nautilus_info_provider_process(RpNautilusInfoProvider *provider)
 	// Check for custom metadata propreties.
 	// NOTE: Only strings are supported.
 	static constexpr size_t custom_property_count = static_cast<size_t>(Property::PropertyCount) - static_cast<size_t>(Property::GameID);
-	static const array<const char*, custom_property_count> nautilus_prop_names = {{
+	static constexpr array<const char*, custom_property_count> nautilus_prop_names = {{
 		"rp-game-id",
 		"rp-title-id",
 		"rp-media-id",
 		"rp-os-version",
 		"rp-encryption-key",
 		"rp-pixel-format",
+		"rp-region",
 	}};
+	static_assert(nautilus_prop_names[custom_property_count - 1] != nullptr, "nautilus_prop_names[] is out of sync!");
 
 	// Custom metadata property names start at Prpoerty::GameID.
 	const RomMetaData *const metaData = romData->metaData();
