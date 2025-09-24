@@ -1908,7 +1908,7 @@ int GameCube::loadMetaData(void)
 
 	// Disc header is read in the constructor.
 	const GCN_DiscHeader *const discHeader = &d->discHeader;
-	d->metaData.reserve(6);	// Maximum of 6 metadata properties.
+	d->metaData.reserve(7);	// Maximum of 7 metadata properties.
 
 	// Add opening.bnr metadata if it's available.
 	bool addedBnrMetaData = false;
