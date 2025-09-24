@@ -224,7 +224,7 @@ static const array<RomDataFns, 40> romDataFns_magic = {{
 	GetRomDataFns_addr(WiiBNR, ATTR_HAS_METADATA, 64, 'IMET'),	// common
 	GetRomDataFns_addr(WiiBNR, ATTR_HAS_METADATA, 128, 'IMET'),	// seen in some homebrew
 	GetRomDataFns_addr(WiiSettingTxt, 0, 0, 0xBBA6AC92),
-	GetRomDataFns_addr(WiiU, ATTR_HAS_THUMBNAIL | ATTR_SUPPORTS_DEVICES, 0, 'WUP-'),
+	GetRomDataFns_addr(WiiU, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES, 0, 'WUP-'),
 	GetRomDataFns_addr(WiiWIBN, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'WIBN'),
 	GetRomDataFns_addr(Xbox_XBE, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XBEH'),
 	GetRomDataFns_addr(Xbox360_XDBF, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XDBF'),

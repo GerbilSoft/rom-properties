@@ -380,13 +380,47 @@ int WiiU::loadFieldData(void)
 	}};
 	d->fields.addField_string(C_("RomData", "OS Version"), s_os_version.data());
 
-	// Region
+	// Region code
 	// TODO: Compare against list of regions and show the fancy name.
 	d->fields.addField_string(C_("RomData", "Region Code"),
 		latin1_to_utf8(discHeader->region, sizeof(discHeader->region)));
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the metadata hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int WiiU::loadMetaData(void)
+{
+	RP_D(WiiU);
+	if (!d->metaData.empty()) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Disc image isn't valid.
+		return -EIO;
+	}
+
+	// Disc header is read in the constructor.
+	const WiiU_DiscHeader *const discHeader = &d->discHeader;
+	d->metaData.reserve(3);	// Maximum of 1 metadata property.
+
+	/** Custom properties! **/
+
+	// Region code
+	// TODO: Compare against list of regions and show the fancy name.
+	d->metaData.addMetaData_string(Property::RegionCode,
+		latin1_to_utf8(discHeader->region, sizeof(discHeader->region)));
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData.count());
 }
 
 /**
