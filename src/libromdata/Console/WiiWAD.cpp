@@ -1210,7 +1210,7 @@ int WiiWAD::loadMetaData(void)
 	}
 #endif /* ENABLE_DECRYPTION */
 
-	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
+	d->metaData.reserve(5);	// Maximum of 5 metadata properties.
 
 	// TODO: Game title from WIBN if it's available.
 
