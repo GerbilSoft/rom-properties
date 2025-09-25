@@ -653,8 +653,7 @@ int NintendoDS::loadFieldData(void)
 
 	// ROM header is read in the constructor.
 	const NDS_RomHeader *const romHeader = &d->romHeader;
-	const bool hasDSi = !!(romHeader->unitcode & NintendoDSPrivate::DS_HW_DSi);
-	if (hasDSi) {
+	if (d->isDSi()) {
 		// DSi-enhanced or DSi-exclusive.
 		d->fields.reserve(10+8);
 	} else {
@@ -1165,7 +1164,7 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) 
 		return -ENOENT;
 	}
 
-	if (d->romHeader.unitcode & NintendoDSPrivate::DS_HW_DSi) {
+	if (d->isDSi()) {
 		// Check for DSi SRLs that aren't cartridge dumps.
 		// TODO: Does GameTDB have DSiWare covers?
 		const uint16_t dsi_filetype = le16_to_cpu(d->romHeader.dsi.title_id.catID);
@@ -1240,7 +1239,7 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) 
 	// Determine the GameTDB language code(s).
 	const vector<uint16_t> tdb_lc = d->ndsRegionToGameTDB(
 		romHeader->nds_region,
-		(romHeader->unitcode & NintendoDSPrivate::DS_HW_DSi)
+		(d->isDSi())
 			? le32_to_cpu(romHeader->dsi.region_code)
 			: 0, /* not a DSi-enhanced/exclusive ROM */
 		romHeader->id4[3]);
