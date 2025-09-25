@@ -684,16 +684,16 @@ int Nintendo3DS_SMDH::loadMetaData(void)
 	// For multi-region titles, region will be formatted as: "JUECKT"
 	// (Australia is ignored...)
 	const uint32_t n3ds_region_code = le32_to_cpu(smdhHeader->settings.region_code);
-	const char *l10n_region = nullptr;
+	const char *i18n_region = nullptr;
 	for (size_t i = 0; i < d->n3ds_region_bitfield_names.size(); i++) {
 		if (n3ds_region_code == (1U << i)) {
-			l10n_region = d->n3ds_region_bitfield_names[i];
+			i18n_region = d->n3ds_region_bitfield_names[i];
 			break;
 		}
 	}
 
-	if (l10n_region) {
-		d->metaData.addMetaData_string(Property::RegionCode, pgettext_expr("Region", l10n_region));
+	if (i18n_region) {
+		d->metaData.addMetaData_string(Property::RegionCode, pgettext_expr("Region", i18n_region));
 	} else {
 		// Multi-region
 		static const char all_n3ds_regions[] = "JUEACKT";

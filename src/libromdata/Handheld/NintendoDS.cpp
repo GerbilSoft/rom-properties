@@ -1091,16 +1091,16 @@ int NintendoDS::loadMetaData(void)
 		// Check for an individual DSi region.
 		const uint32_t dsi_region_code = le32_to_cpu(romHeader->dsi.region_code) & 0x3F;
 
-		const char *l10n_region = nullptr;
+		const char *i18n_region = nullptr;
 		for (size_t i = 0; i < d->dsi_region_bitfield_names.size(); i++) {
 			if (dsi_region_code == (1U << i)) {
-				l10n_region = d->dsi_region_bitfield_names[i];
+				i18n_region = d->dsi_region_bitfield_names[i];
 				break;
 			}
 		}
 
-		if (l10n_region) {
-			d->metaData.addMetaData_string(Property::RegionCode, pgettext_expr("Region", l10n_region));
+		if (i18n_region) {
+			d->metaData.addMetaData_string(Property::RegionCode, pgettext_expr("Region", i18n_region));
 		} else {
 			// Multi-region
 			static const char all_dsi_regions[] = "JUEACK";
