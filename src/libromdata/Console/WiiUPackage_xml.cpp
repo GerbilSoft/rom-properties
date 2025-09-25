@@ -36,6 +36,17 @@ using std::vector;
 
 namespace LibRomData {
 
+// Wii U region code bitfield names
+const array<const char*, 7> WiiUPackagePrivate::wiiu_region_bitfield_names = {{
+	NOP_C_("Region", "Japan"),
+	NOP_C_("Region", "USA"),
+	NOP_C_("Region", "Europe"),
+	nullptr,	//NOP_C_("Region", "Australia"),	// NOTE: Not actually used?
+	NOP_C_("Region", "China"),
+	NOP_C_("Region", "South Korea"),
+	NOP_C_("Region", "Taiwan"),
+}};
+
 #if defined(_MSC_VER) && defined(XML_IS_DLL)
 /**
  * Check if PugiXML can be delay-loaded.
@@ -445,15 +456,6 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		// Maps directly to the region field.
 		const uint32_t region_code = parseHexBinary32(metaRootNode, "region");
 
-		static const array<const char*, 7> wiiu_region_bitfield_names = {{
-			NOP_C_("Region", "Japan"),
-			NOP_C_("Region", "USA"),
-			NOP_C_("Region", "Europe"),
-			nullptr,	//NOP_C_("Region", "Australia"),	// NOTE: Not actually used?
-			NOP_C_("Region", "China"),
-			NOP_C_("Region", "South Korea"),
-			NOP_C_("Region", "Taiwan"),
-		}};
 		vector<string> *const v_wiiu_region_bitfield_names = RomFields::strArrayToVector_i18n(
 			"Region", wiiu_region_bitfield_names);
 		fields.addField_bitfield(C_("RomData", "Region Code"),
@@ -615,6 +617,43 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
 	xml_text publisher = metaRootNode.child(nodeName.c_str()).text();
 	if (publisher) {
 		metaData.addMetaData_string(Property::Publisher, publisher.get());
+	}
+
+	/** Custom properties! **/
+
+	// Product code (as Game ID)
+	metaData.addMetaData_string(Property::GameID, metaRootNode.child("product_code").text().as_string(nullptr));
+
+	// Region code
+	// For multi-region titles, region will be formatted as: "JUECKT"
+	// (Australia is ignored...)
+	const uint32_t region_code = 0x1E;//parseHexBinary32(metaRootNode, "region");
+	const char *i18n_region = nullptr;
+	for (size_t i = 0; i < wiiu_region_bitfield_names.size(); i++) {
+		if (region_code == (1U << i)) {
+			i18n_region = wiiu_region_bitfield_names[i];
+			break;
+		}
+	}
+
+	if (i18n_region) {
+		metaData.addMetaData_string(Property::RegionCode, pgettext_expr("Region", i18n_region));
+	} else {
+		// Multi-region
+		static const char all_n3ds_regions[] = "JUECKT";
+		string s_region_code;
+		s_region_code.resize(sizeof(all_n3ds_regions)-1, '-');
+		for (size_t i = 0; i < wiiu_region_bitfield_names.size(); i++) {
+			size_t chr_pos = i;
+			if (chr_pos >= 3) {
+				chr_pos--;
+			}
+
+			if (region_code & (1U << i)) {
+				s_region_code[chr_pos] = all_n3ds_regions[chr_pos];
+			}
+		}
+		metaData.addMetaData_string(Property::RegionCode, s_region_code);
 	}
 
 	// System XML files read successfully.

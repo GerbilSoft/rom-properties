@@ -62,6 +62,12 @@ public:
 	static const std::array<const char*, 1+1> mimeTypes;
 	static const LibRpBase::RomDataInfo romDataInfo;
 
+#ifdef ENABLE_XML
+public:
+	// Wii U region code bitfield names
+	static const std::array<const char*, 7> wiiu_region_bitfield_names;
+#endif /* ENABLE_XML */
+
 public:
 	// Package type
 	enum class PackageType {

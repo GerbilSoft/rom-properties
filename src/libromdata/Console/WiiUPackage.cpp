@@ -883,7 +883,7 @@ int WiiUPackage::loadMetaData(void)
 		return -EIO;
 	}
 
-	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
+	d->metaData.reserve(5);	// Maximum of 5 metadata properties.
 
 	// NOTE: Adding custom properties from the ticket first, since it
 	// sets the Title to the Title ID. This will be overwritten with
