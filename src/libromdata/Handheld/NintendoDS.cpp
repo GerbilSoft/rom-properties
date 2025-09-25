@@ -67,7 +67,7 @@ const array<const char*, 6> NintendoDSPrivate::dsi_region_bitfield_names = {{
 	NOP_C_("Region", "Japan"),
 	NOP_C_("Region", "USA"),
 	NOP_C_("Region", "Europe"),
-	NOP_C_("Region", "Australia"),
+	nullptr,	//NOP_C_("Region", "Australia"),	// NOTE: Not actually used?
 	NOP_C_("Region", "China"),
 	NOP_C_("Region", "South Korea"),
 }};
@@ -1086,11 +1086,12 @@ int NintendoDS::loadMetaData(void)
 	// Region code
 	// Uses the DSi region if present.
 	// Otherwise, uses the NDS region.
-	// For multi-region titles, region will be formatted as: "JUEACK"
+	// For multi-region titles, region will be formatted as: "JUECK"
 	if (d->isDSi()) {
 		// Check for an individual DSi region.
 		const uint32_t dsi_region_code = le32_to_cpu(romHeader->dsi.region_code) & 0x3F;
 
+		// (Australia is ignored...)
 		const char *i18n_region = nullptr;
 		for (size_t i = 0; i < d->dsi_region_bitfield_names.size(); i++) {
 			if (dsi_region_code == (1U << i)) {
@@ -1099,16 +1100,31 @@ int NintendoDS::loadMetaData(void)
 			}
 		}
 
+		// Special-case check for Europe+Australia.
+		if (dsi_region_code == (DSi_REGION_EUROPE | DSi_REGION_AUSTRALIA)) {
+			i18n_region = d->dsi_region_bitfield_names[2];
+		}
+
 		if (i18n_region) {
 			d->metaData.addMetaData_string(Property::RegionCode, pgettext_expr("Region", i18n_region));
 		} else {
 			// Multi-region
-			static const char all_dsi_regions[] = "JUEACK";
+			static const char all_dsi_regions[] = "JUECK";
 			string s_region_code;
 			s_region_code.resize(sizeof(all_dsi_regions)-1, '-');
 			for (size_t i = 0; i < sizeof(all_dsi_regions); i++) {
+				if (i == 3) {
+					// Skip Australia.
+					continue;
+				}
+
+				size_t chr_pos = i;
+				if (chr_pos >= 4) {
+					chr_pos--;
+				}
+
 				if (dsi_region_code & (1U << i)) {
-					s_region_code[i] = all_dsi_regions[i];
+					s_region_code[chr_pos] = all_dsi_regions[chr_pos];
 				}
 			}
 			d->metaData.addMetaData_string(Property::RegionCode, s_region_code);
