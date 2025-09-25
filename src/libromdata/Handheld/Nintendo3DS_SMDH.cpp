@@ -696,12 +696,17 @@ int Nintendo3DS_SMDH::loadMetaData(void)
 		d->metaData.addMetaData_string(Property::RegionCode, pgettext_expr("Region", i18n_region));
 	} else {
 		// Multi-region
-		static const char all_n3ds_regions[] = "JUEACKT";
+		static const char all_n3ds_regions[] = "JUECKT";
 		string s_region_code;
 		s_region_code.resize(sizeof(all_n3ds_regions)-1, '-');
-		for (size_t i = 0; i < sizeof(all_n3ds_regions); i++) {
+		for (size_t i = 0; i < d->n3ds_region_bitfield_names.size(); i++) {
+			size_t chr_pos = i;
+			if (chr_pos >= 3) {
+				chr_pos--;
+			}
+
 			if (n3ds_region_code & (1U << i)) {
-				s_region_code[i] = all_n3ds_regions[i];
+				s_region_code[chr_pos] = all_n3ds_regions[chr_pos];
 			}
 		}
 		d->metaData.addMetaData_string(Property::RegionCode, s_region_code);
