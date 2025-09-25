@@ -779,10 +779,10 @@ int NintendoDS::loadFieldData(void)
 	// Only used for region locking on Chinese iQue DS consoles.
 	// Not displayed for DSiWare wrapped in 3DS CIA packages.
 	uint32_t nds_region = 0;
-	if (romHeader->nds_region & 0x80) {
+	if (romHeader->nds_region & NDS_REGION_CHINA) {
 		nds_region |= NintendoDSPrivate::NDS_REGION_CHINA;
 	}
-	if (romHeader->nds_region & 0x40) {
+	if (romHeader->nds_region & NDS_REGION_SKOREA) {
 		nds_region |= NintendoDSPrivate::NDS_REGION_SKOREA;
 	}
 	if (nds_region == 0) {
@@ -1080,6 +1080,71 @@ int NintendoDS::loadMetaData(void)
 	if (d->isDSi()) {
 		d->metaData.addMetaData_string(Property::TitleID, d->dsi_getTitleID());
 	}
+
+	// Region code
+	// Uses the DSi region if present.
+	// Otherwise, uses the NDS region.
+	// For multi-region titles, region will be formatted as: "JUEACK"
+	string s_region_code;
+	if (d->isDSi()) {
+		// Check for an individual DSi region.
+		const uint32_t dsi_region_code = le32_to_cpu(romHeader->dsi.region_code) & 0x3F;
+		switch (dsi_region_code) {
+			case DSi_REGION_JAPAN:
+				s_region_code = C_("Region", "Japan");
+				break;
+			case DSi_REGION_USA:
+				s_region_code = C_("Region", "USA");
+				break;
+			case DSi_REGION_EUROPE:
+				s_region_code = C_("Region", "Europe");
+				break;
+			case DSi_REGION_AUSTRALIA:
+				s_region_code = C_("Region", "Australia");
+				break;
+			case DSi_REGION_CHINA:
+				s_region_code = C_("Region", "China");
+				break;
+			case DSi_REGION_SKOREA:
+				s_region_code = C_("Region", "South Korea");
+				break;
+
+			case 0x3F:
+				s_region_code = C_("Region", "Region-Free");
+				break;
+
+			default:
+				// Multi-region
+				static const char all_dsi_regions[] = "JUEACK";
+				s_region_code.resize(6, '-');
+				for (size_t i = 0; i < 6; i++) {
+					if (dsi_region_code & (1U << i)) {
+						s_region_code[i] = all_dsi_regions[i];
+					}
+				}
+				break;
+		}
+	} else {
+		// Check for NDS regions.
+		switch (romHeader->nds_region & 0xC0) {
+			case NDS_REGION_CHINA:
+				s_region_code = C_("Region", "China");
+				break;
+			case NDS_REGION_SKOREA:
+				s_region_code = C_("Region", "South Korea");
+				break;
+
+			case NDS_REGION_CHINA | NDS_REGION_SKOREA:
+				// China *and* South Korea? Not valid...
+				break;
+
+			default:
+				s_region_code = C_("Region", "Region-Free");
+				break;
+		}
+	}
+
+	d->metaData.addMetaData_string(Property::RegionCode, s_region_code);
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());

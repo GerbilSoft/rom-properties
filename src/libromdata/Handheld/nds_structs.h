@@ -43,7 +43,7 @@ typedef struct _NDS_RomHeader {
 	uint8_t device_capacity;
 	uint8_t reserved1[7];
 	uint8_t reserved2_dsi;
-	uint8_t nds_region;	// 0x00 == normal, 0x80 == China, 0x40 == Korea
+	uint8_t nds_region;	// NDS region code (See NDS_Region_e)
 	uint8_t rom_version;
 	uint8_t autostart;
 
@@ -116,7 +116,7 @@ typedef struct _NDS_RomHeader {
 		uint8_t unknown;		// Usually 0x03, but System Menu has 0xFC, System Settings has 0x00.
 
 		// 0x1B0
-		uint32_t region_code;		// DSi region code. (See DSi_Region.)
+		uint32_t region_code;		// DSi region code (See DSi_Region_e)
 		uint32_t access_control;	// ???
 		uint32_t arm7_scfg_mask;
 		uint8_t reserved1[3];		// Unknown flags. (always 0)
@@ -192,7 +192,16 @@ typedef struct _NDS_RomHeader {
 ASSERT_STRUCT(NDS_RomHeader, 4096);
 
 /**
- * Nintendo DSi region code.
+ * Nintendo DS: Region code
+ */
+typedef enum {
+	NDS_REGION_ALL		= 0,
+	NDS_REGION_SKOREA	= 0x40,
+	NDS_REGION_CHINA	= 0x80,
+} NDS_Region_e;
+
+/**
+ * Nintendo DSi: Region code
  */
 typedef enum {
 	DSi_REGION_JAPAN	= (1U << 0),
@@ -201,7 +210,7 @@ typedef enum {
 	DSi_REGION_AUSTRALIA	= (1U << 3),
 	DSi_REGION_CHINA	= (1U << 4),
 	DSi_REGION_SKOREA	= (1U << 5),
-} DSi_Region;
+} DSi_Region_e;
 
 /**
  * Nintendo DSi access control. (0x1B4)
