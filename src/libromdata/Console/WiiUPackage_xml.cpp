@@ -627,7 +627,7 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
 	// Region code
 	// For multi-region titles, region will be formatted as: "JUECKT"
 	// (Australia is ignored...)
-	const uint32_t region_code = 0x1E;//parseHexBinary32(metaRootNode, "region");
+	const uint32_t region_code = parseHexBinary32(metaRootNode, "region");
 	const char *i18n_region = nullptr;
 	for (size_t i = 0; i < wiiu_region_bitfield_names.size(); i++) {
 		if (region_code == (1U << i)) {
