@@ -698,7 +698,7 @@ int Nintendo3DS_SMDH::loadMetaData(void)
 		// Multi-region
 		static const char all_n3ds_regions[] = "JUEACKT";
 		string s_region_code;
-		s_region_code.resize(sizeof(all_n3ds_regions), '-');
+		s_region_code.resize(sizeof(all_n3ds_regions)-1, '-');
 		for (size_t i = 0; i < sizeof(all_n3ds_regions); i++) {
 			if (n3ds_region_code & (1U << i)) {
 				s_region_code[i] = all_n3ds_regions[i];

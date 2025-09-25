@@ -1105,7 +1105,7 @@ int NintendoDS::loadMetaData(void)
 			// Multi-region
 			static const char all_dsi_regions[] = "JUEACK";
 			string s_region_code;
-			s_region_code.resize(sizeof(all_dsi_regions), '-');
+			s_region_code.resize(sizeof(all_dsi_regions)-1, '-');
 			for (size_t i = 0; i < sizeof(all_dsi_regions); i++) {
 				if (dsi_region_code & (1U << i)) {
 					s_region_code[i] = all_dsi_regions[i];
