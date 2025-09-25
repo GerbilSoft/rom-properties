@@ -636,6 +636,12 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
 		}
 	}
 
+	// Special-case check for Europe+Australia.
+	// TODO: Constants for Wii U? (Same values as Nintendo 3DS...)
+	if (region_code == (4 | 8)) {
+		i18n_region = wiiu_region_bitfield_names[2];
+	}
+
 	if (i18n_region) {
 		metaData.addMetaData_string(Property::RegionCode, pgettext_expr("Region", i18n_region));
 	} else {

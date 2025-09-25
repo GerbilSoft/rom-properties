@@ -692,6 +692,11 @@ int Nintendo3DS_SMDH::loadMetaData(void)
 		}
 	}
 
+	// Special-case check for Europe+Australia.
+	if (n3ds_region_code == (N3DS_REGION_EUROPE | N3DS_REGION_AUSTRALIA)) {
+		i18n_region = d->n3ds_region_bitfield_names[2];
+	}
+
 	if (i18n_region) {
 		d->metaData.addMetaData_string(Property::RegionCode, pgettext_expr("Region", i18n_region));
 	} else {
