@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiCommon.cpp: Nintendo Wii common functions.                           *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,7 +19,7 @@ using namespace LibRpText;
 // C++ STL classes
 using std::string;
 
-namespace LibRomData {
+namespace LibRomData { namespace WiiCommon {
 
 /**
  * Get a multi-language string map from a Wii banner.
@@ -28,7 +28,7 @@ namespace LibRomData {
  * @param id4_region	[in] ID4 region
  * @return Allocated RomFields::StringMultiMap_t, or nullptr on error.
  */
-RomFields::StringMultiMap_t *WiiCommon::getWiiBannerStrings(
+RomFields::StringMultiMap_t *getWiiBannerStrings(
 	const Wii_IMET_t *pImet, uint32_t gcnRegion, char id4_region)
 {
 	assert(pImet != nullptr);
@@ -121,7 +121,7 @@ RomFields::StringMultiMap_t *WiiCommon::getWiiBannerStrings(
  * @param id4_region	[in] ID4 region
  * @return String, or empty string on error.
  */
-string WiiCommon::getWiiBannerStringForSysLC(
+string getWiiBannerStringForSysLC(
 	const Wii_IMET_t *pImet, uint32_t gcnRegion, char id4_region)
 {
 	assert(pImet != nullptr);
@@ -173,4 +173,4 @@ string WiiCommon::getWiiBannerStringForSysLC(
 	return info;
 }
 
-}
+} }

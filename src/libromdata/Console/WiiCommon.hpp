@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiCommon.hpp: Nintendo Wii common functions.                           *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,36 +17,26 @@
 // C++ STL classes
 #include <string>
 
-namespace LibRomData {
+namespace LibRomData { namespace WiiCommon {
 
-class WiiCommon
-{
-private:
-	explicit WiiCommon() = default;
-	~WiiCommon() = default;
-private:
-	RP_DISABLE_COPY(WiiCommon)
+/**
+ * Get a multi-language string map from a Wii banner.
+ * @param pImet		[in] Wii_IMET_t
+ * @param gcnRegion	[in] GameCube region code.
+ * @param id4_region	[in] ID4 region.
+ * @return Allocated RomFields::StringMultiMap_t, or nullptr on error.
+ */
+LibRpBase::RomFields::StringMultiMap_t *getWiiBannerStrings(
+	const Wii_IMET_t *pImet, uint32_t gcnRegion, char id4_region);
 
-public:
-	/**
-	 * Get a multi-language string map from a Wii banner.
-	 * @param pImet		[in] Wii_IMET_t
-	 * @param gcnRegion	[in] GameCube region code.
-	 * @param id4_region	[in] ID4 region.
-	 * @return Allocated RomFields::StringMultiMap_t, or nullptr on error.
-	 */
-	static LibRpBase::RomFields::StringMultiMap_t *getWiiBannerStrings(
-		const Wii_IMET_t *pImet, uint32_t gcnRegion, char id4_region);
+/**
+ * Get a single string from a Wii banner that most closely matches the system language.
+ * @param pImet		[in] Wii_IMET_t
+ * @param gcnRegion	[in] GameCube region code
+ * @param id4_region	[in] ID4 region
+ * @return String, or empty string on error.
+ */
+std::string getWiiBannerStringForSysLC(
+	const Wii_IMET_t *pImet, uint32_t gcnRegion, char id4_region);
 
-	/**
-	 * Get a single string from a Wii banner that most closely matches the system language.
-	 * @param pImet		[in] Wii_IMET_t
-	 * @param gcnRegion	[in] GameCube region code
-	 * @param id4_region	[in] ID4 region
-	 * @return String, or empty string on error.
-	 */
-	static std::string getWiiBannerStringForSysLC(
-		const Wii_IMET_t *pImet, uint32_t gcnRegion, char id4_region);
-};
-
-}
+} }
