@@ -705,8 +705,13 @@ int Nintendo3DS_SMDH::loadMetaData(void)
 		string s_region_code;
 		s_region_code.resize(sizeof(all_n3ds_regions)-1, '-');
 		for (size_t i = 0; i < d->n3ds_region_bitfield_names.size(); i++) {
+			if (i == 3) {
+				// Skip Australia.
+				continue;
+			}
+
 			size_t chr_pos = i;
-			if (chr_pos >= 3) {
+			if (chr_pos >= 4) {
 				chr_pos--;
 			}
 
