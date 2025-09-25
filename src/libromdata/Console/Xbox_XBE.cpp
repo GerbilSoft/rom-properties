@@ -811,7 +811,7 @@ int Xbox_XBE::loadFieldData(void)
 		NOP_C_("Xbox_XBE|InitFlags", "Limit RAM to 64 MB"),
 		NOP_C_("Xbox_XBE|InitFlags", "Don't Setup HDD"),
 	}};
-	vector<string> *const v_init_flags = RomFields::strArrayToVector_i18n("Region", init_flags_tbl);
+	vector<string> *const v_init_flags = RomFields::strArrayToVector_i18n("Xbox_XBE|InitFlags", init_flags_tbl);
 	d->fields.addField_bitfield(C_("Xbox_XBE", "Init Flags"),
 		v_init_flags, 2, init_flags);
 
