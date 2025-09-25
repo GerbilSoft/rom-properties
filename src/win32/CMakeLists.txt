@@ -42,26 +42,18 @@ SET(${PROJECT_NAME}_SRCS
 	DllMain.cpp
 	DllRegisterServer.cpp
 	RP_ExtractIcon.cpp
-	RP_ExtractIcon_Register.cpp
 	RP_ExtractIcon_Fallback.cpp
 	RP_ExtractImage.cpp
-	RP_ExtractImage_Register.cpp
 	RP_ExtractImage_Fallback.cpp
 	RpImageWin32.cpp
 	RP_ShellPropSheetExt.cpp
 	RP_ShellPropSheetExt_ops.cpp
-	RP_ShellPropSheetExt_Register.cpp
 	RP_ThumbnailProvider.cpp
-	RP_ThumbnailProvider_Register.cpp
 	RP_ThumbnailProvider_Fallback.cpp
 	RP_ShellIconOverlayIdentifier.cpp
-	RP_ShellIconOverlayIdentifier_Register.cpp
 	RP_ContextMenu.cpp
-	RP_ContextMenu_Register.cpp
 	RP_XAttrView.cpp
-	RP_XAttrView_Register.cpp
 	RP_ColumnProvider.cpp
-	RP_ColumnProvider_Register.cpp
 	CreateThumbnail.cpp
 	DragImageLabel.cpp
 	FontHandler.cpp
@@ -84,6 +76,16 @@ SET(${PROJECT_NAME}_SRCS
 	config/AboutTab.cpp
 	file/RpFile_IStream.cpp
 	file/RpFile_windres.cpp
+	)
+SET(${PROJECT_NAME}_REGISTER_SRCS
+	RP_ExtractIcon_Register.cpp
+	RP_ExtractImage_Register.cpp
+	RP_ShellPropSheetExt_Register.cpp
+	RP_ThumbnailProvider_Register.cpp
+	RP_ShellIconOverlayIdentifier_Register.cpp
+	RP_ContextMenu_Register.cpp
+	RP_XAttrView_Register.cpp
+	RP_ColumnProvider_Register.cpp
 	)
 SET(${PROJECT_NAME}_H
 	RP_ExtractIcon.hpp
@@ -145,8 +147,10 @@ SET(${PROJECT_NAME}_RC
 IF(HAVE_RP_PROPERTYSTORE_DEPS)
 	SET(${PROJECT_NAME}-PropKey_SRCS
 		RP_PropertyStore.cpp
-		RP_PropertyStore_Register.cpp
 		RP_PropertyStore_GUIDs.c
+		)
+	SET(${PROJECT_NAME}_REGISTER_SRCS
+		RP_PropertyStore_Register.cpp
 		)
 	SET(${PROJECT_NAME}-PropKey_H
 		RP_PropertyStore.hpp
@@ -229,6 +233,7 @@ ENDIF(RP_LIBROMDATA_IS_DLL AND MSVC)
 ADD_LIBRARY(${PROJECT_NAME} SHARED
 	${${PROJECT_NAME}-DELAYLOAD_SRC} ${${PROJECT_NAME}-DELAYLOAD_H}
 	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
+	${${PROJECT_NAME}_REGISTER_SRCS}
 	${${PROJECT_NAME}-PropKey_SRCS} ${${PROJECT_NAME}-PropKey_H}
 	${${PROJECT_NAME}_CRYPTO_SRCS} ${${PROJECT_NAME}_CRYPTO_H}
 	${${PROJECT_NAME}_ACH_SRC} ${${PROJECT_NAME}_ACH_H}
