@@ -5,8 +5,8 @@
 * New features:
   * Windows, GNOME Nautilus (and Caja and Nemo): In Details view, rom-properties
     now provides columns for a few properties. Specifically, "Game ID", "Title ID",
-    "Media ID", "OS Version", "Encryption Key", and "Pixel Format" are now available
-    as columns for supported file formats.
+    "Media ID", "OS Version", "Encryption Key", "Pixel Format", and "Region Code"
+    are now available as columns for supported file formats.
     * Fixes #462: Add Windows Explorer file information column integration for Wii file formats
       * Requested by @DeadlyFoez.
   * GNOME Nautilus (and Caja and Nemo): An emblem is now shown for files with
