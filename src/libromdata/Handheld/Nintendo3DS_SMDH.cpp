@@ -46,6 +46,10 @@ public:
 	static const RomDataInfo romDataInfo;
 
 public:
+	// 3DS region code bitfield names
+	static const array<const char*, 7> n3ds_region_bitfield_names;
+
+public:
 	// Internal images
 	// 0 == 24x24; 1 == 48x48
 	array<rp_image_ptr, 2> img_icon;
@@ -105,6 +109,17 @@ const array<const char*, 2+1> Nintendo3DS_SMDH_Private::mimeTypes = {{
 const RomDataInfo Nintendo3DS_SMDH_Private::romDataInfo = {
 	"Nintendo3DS", exts.data(), mimeTypes.data()
 };
+
+// 3DS region code bitfield names
+const array<const char*, 7> Nintendo3DS_SMDH_Private::n3ds_region_bitfield_names = {{
+	NOP_C_("Region", "Japan"),
+	NOP_C_("Region", "USA"),
+	NOP_C_("Region", "Europe"),
+	NOP_C_("Region", "Australia"),
+	NOP_C_("Region", "China"),
+	NOP_C_("Region", "South Korea"),
+	NOP_C_("Region", "Taiwan"),
+}};
 
 Nintendo3DS_SMDH_Private::Nintendo3DS_SMDH_Private(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
@@ -528,18 +543,9 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 		d->fields.addField_string(s_publisher_title, s_unknown);
 	}
 
-	// Region code.
+	// Region code
 	// Maps directly to the SMDH field.
-	static const array<const char*, 7> n3ds_region_bitfield_names = {{
-		NOP_C_("Region", "Japan"),
-		NOP_C_("Region", "USA"),
-		NOP_C_("Region", "Europe"),
-		NOP_C_("Region", "Australia"),
-		NOP_C_("Region", "China"),
-		NOP_C_("Region", "South Korea"),
-		NOP_C_("Region", "Taiwan"),
-	}};
-	vector<string> *const v_n3ds_region_bitfield_names = RomFields::strArrayToVector_i18n("Region", n3ds_region_bitfield_names);
+	vector<string> *const v_n3ds_region_bitfield_names = RomFields::strArrayToVector_i18n("Region", d->n3ds_region_bitfield_names);
 	d->fields.addField_bitfield(C_("RomData", "Region Code"),
 		v_n3ds_region_bitfield_names, 3, le32_to_cpu(smdhHeader->settings.region_code));
 
@@ -645,7 +651,7 @@ int Nintendo3DS_SMDH::loadMetaData(void)
 		return 0;
 	}
 
-	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
+	d->metaData.reserve(3);	// Maximum of 2 metadata properties.
 
 	// Title
 	// NOTE: Preferring Full Title. If not found, using Title.
@@ -670,6 +676,35 @@ int Nintendo3DS_SMDH::loadMetaData(void)
 			utf16le_to_utf8(
 				smdhHeader->titles[langID].publisher,
 				ARRAY_SIZE(smdhHeader->titles[langID].publisher)));
+	}
+
+	/** Custom properties! **/
+
+	// Region code
+	// For multi-region titles, region will be formatted as: "JUECKT"
+	// (Australia is ignored...)
+	const uint32_t n3ds_region_code = le32_to_cpu(smdhHeader->settings.region_code);
+	const char *l10n_region = nullptr;
+	for (size_t i = 0; i < d->n3ds_region_bitfield_names.size(); i++) {
+		if (n3ds_region_code == (1U << i)) {
+			l10n_region = d->n3ds_region_bitfield_names[i];
+			break;
+		}
+	}
+
+	if (l10n_region) {
+		d->metaData.addMetaData_string(Property::RegionCode, pgettext_expr("Region", l10n_region));
+	} else {
+		// Multi-region
+		static const char all_n3ds_regions[] = "JUEACKT";
+		string s_region_code;
+		s_region_code.resize(sizeof(all_n3ds_regions), '-');
+		for (size_t i = 0; i < sizeof(all_n3ds_regions); i++) {
+			if (n3ds_region_code & (1U << i)) {
+				s_region_code[i] = all_n3ds_regions[i];
+			}
+		}
+		d->metaData.addMetaData_string(Property::RegionCode, s_region_code);
 	}
 
 	// Finished reading the metadata.
