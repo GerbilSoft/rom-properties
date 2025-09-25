@@ -115,7 +115,7 @@ const array<const char*, 7> Nintendo3DS_SMDH_Private::n3ds_region_bitfield_names
 	NOP_C_("Region", "Japan"),
 	NOP_C_("Region", "USA"),
 	NOP_C_("Region", "Europe"),
-	NOP_C_("Region", "Australia"),
+	nullptr,	//NOP_C_("Region", "Australia"),	// NOTE: Not actually used?
 	NOP_C_("Region", "China"),
 	NOP_C_("Region", "South Korea"),
 	NOP_C_("Region", "Taiwan"),
