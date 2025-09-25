@@ -54,6 +54,18 @@ public:
 	string getProductCode(void) const;
 
 	/**
+	 * Get the system ID from the TMR header.
+	 * @return System ID, or nullptr if not available.
+	 */
+	const char *getSystemID(void) const;
+
+	/**
+	 * Get the region code from the TMR header.
+	 * @return Region code, or nullptr if not available.
+	 */
+	const char *getRegionCode(void) const;
+
+	/**
 	 * Get an SDSC string field.
 	 * @param ptr SDSC string pointer.
 	 * @return SDSC string on success; empty string on error.
@@ -151,6 +163,51 @@ string Sega8BitPrivate::getProductCode(void) const
 	p[4] = 0;
 
 	return bcdbuf;
+}
+
+/**
+ * Get the system ID from the TMR header.
+ * @return System ID, or nullptr if not available.
+ */
+const char *Sega8BitPrivate::getSystemID(void) const
+{
+	switch ((romHeader.tmr.region_and_size >> 4) & 0xF) {
+		case Sega8_SMS_Japan:
+		case Sega8_SMS_Export:
+			return C_("Sega8Bit|SysID", "Sega Master System");
+		case Sega8_GG_Japan:
+		case Sega8_GG_Export:
+		case Sega8_GG_International:
+			return C_("Sega8Bit|SysID", "Game Gear");
+		default:
+			break;
+	}
+
+	return nullptr;
+}
+
+/**
+ * Get the region code from the TMR header.
+ * @return Region code, or nullptr if not available.
+ */
+const char *Sega8BitPrivate::getRegionCode(void) const
+{
+	switch ((romHeader.tmr.region_and_size >> 4) & 0xF) {
+		case Sega8_SMS_Japan:
+		case Sega8_GG_Japan:
+			return  C_("Region", "Japan");
+		case Sega8_SMS_Export:
+		case Sega8_GG_Export:
+			// tr: Any region that isn't Japan. (used for Sega 8-bit)
+			return C_("Region", "Export");
+		case Sega8_GG_International:
+			// tr: Effectively region-free.
+			return C_("Region", "Worldwide");
+		default:
+			break;
+	}
+
+	return nullptr;
 }
 
 /**
@@ -444,40 +501,12 @@ int Sega8Bit::loadFieldData(void)
 	d->fields.addField_string(C_("RomData", "Version"), bcdbuf);
 
 	// Region code and system ID
-	const char *sysID;
-	const char *region;
-	switch ((tmr->region_and_size >> 4) & 0xF) {
-		case Sega8_SMS_Japan:
-			sysID = C_("Sega8Bit|SysID", "Sega Master System");
-			region = C_("Region", "Japan");
-			break;
-		case Sega8_SMS_Export:
-			sysID = C_("Sega8Bit|SysID", "Sega Master System");
-			// tr: Any region that isn't Japan. (used for Sega 8-bit)
-			region = C_("Region", "Export");
-			break;
-		case Sega8_GG_Japan:
-			sysID = C_("Sega8Bit|SysID", "Game Gear");
-			region = C_("Region", "Japan");
-			break;
-		case Sega8_GG_Export:
-			sysID = C_("Sega8Bit|SysID", "Game Gear");
-			// tr: Any region that isn't Japan. (used for Sega 8-bit)
-			region = C_("Region", "Export");
-			break;
-		case Sega8_GG_International:
-			sysID = C_("Sega8Bit|SysID", "Game Gear");
-			// tr: Effectively region-free.
-			region = C_("Region", "Worldwide");
-			break;
-		default:
-			sysID = nullptr;
-			region = nullptr;
-	}
+	const char *s_system_ID = d->getSystemID();
+	const char *s_region_code = d->getRegionCode();
 	d->fields.addField_string(C_("Sega8Bit", "System"),
-		(sysID ? sysID : C_("RomData", "Unknown")));
+		(s_system_ID ? s_system_ID : C_("RomData", "Unknown")));
 	d->fields.addField_string(C_("RomData", "Region Code"),
-		(region ? region : C_("RomData", "Unknown")));
+		(s_region_code ? s_region_code : C_("RomData", "Unknown")));
 
 	// Checksum
 	d->fields.addField_string_numeric(C_("RomData", "Checksum"),
@@ -581,7 +610,7 @@ int Sega8Bit::loadMetaData(void)
 	    static_cast<uint32_t>(le16_to_cpu(d->romHeader.codemasters.checksum_compl)))
 	{
 		// Codemasters checksums match.
-		d->metaData.reserve(2);	// Maximum of 2 metadata properties.
+		d->metaData.reserve(1+2);	// Maximum of 1+2 metadata properties.
 		const Sega8_Codemasters_RomHeader *const codemasters = &d->romHeader.codemasters;
 
 		// Build time.
@@ -590,7 +619,7 @@ int Sega8Bit::loadMetaData(void)
 		d->metaData.addMetaData_timestamp(Property::CreationDate, ctime);
 	} else if (d->romHeader.sdsc.magic == cpu_to_be32(SDSC_MAGIC)) {
 		// SDSC header is present.
-		d->metaData.reserve(5);	// Maximum of 5 metadata properties.
+		d->metaData.reserve(4+2);	// Maximum of 4+2 metadata properties.
 		const Sega8_SDSC_RomHeader *const sdsc = &d->romHeader.sdsc;
 
 		// Build date
@@ -614,12 +643,18 @@ int Sega8Bit::loadMetaData(void)
 		if (!str.empty()) {
 			d->metaData.addMetaData_string(Property::Description, str);
 		}
+	} else {
+		// No extra headers.
+		d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 	}
 
 	/** Custom properties! **/
 
 	// Product code (as Game ID)
 	d->metaData.addMetaData_string(Property::GameID, d->getProductCode());
+
+	// Region code
+	d->metaData.addMetaData_string(Property::RegionCode, d->getRegionCode());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
