@@ -1087,7 +1087,6 @@ int NintendoDS::loadMetaData(void)
 	// Uses the DSi region if present.
 	// Otherwise, uses the NDS region.
 	// For multi-region titles, region will be formatted as: "JUEACK"
-	string s_region_code;
 	if (d->isDSi()) {
 		// Check for an individual DSi region.
 		const uint32_t dsi_region_code = le32_to_cpu(romHeader->dsi.region_code) & 0x3F;
@@ -1101,19 +1100,22 @@ int NintendoDS::loadMetaData(void)
 		}
 
 		if (l10n_region) {
-			s_region_code = pgettext_expr("Region", l10n_region);
+			d->metaData.addMetaData_string(Property::RegionCode, pgettext_expr("Region", l10n_region));
 		} else {
 			// Multi-region
 			static const char all_dsi_regions[] = "JUEACK";
-			s_region_code.resize(6, '-');
-			for (size_t i = 0; i < 6; i++) {
+			string s_region_code;
+			s_region_code.resize(sizeof(all_dsi_regions), '-');
+			for (size_t i = 0; i < sizeof(all_dsi_regions); i++) {
 				if (dsi_region_code & (1U << i)) {
 					s_region_code[i] = all_dsi_regions[i];
 				}
 			}
+			d->metaData.addMetaData_string(Property::RegionCode, s_region_code);
 		}
 	} else {
 		// Check for NDS regions.
+		const char *s_region_code;
 		switch (romHeader->nds_region & 0xC0) {
 			case NDS_REGION_CHINA:
 				s_region_code = C_("Region", "China");
@@ -1124,15 +1126,15 @@ int NintendoDS::loadMetaData(void)
 
 			case NDS_REGION_CHINA | NDS_REGION_SKOREA:
 				// China *and* South Korea? Not valid...
+				s_region_code = nullptr;
 				break;
 
 			default:
 				s_region_code = C_("Region", "Region-Free");
 				break;
 		}
+		d->metaData.addMetaData_string(Property::RegionCode, s_region_code);
 	}
-
-	d->metaData.addMetaData_string(Property::RegionCode, s_region_code);
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
