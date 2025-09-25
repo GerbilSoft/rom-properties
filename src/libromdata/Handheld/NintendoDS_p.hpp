@@ -12,6 +12,7 @@
 #include "nds_structs.h"
 
 // C++ includes
+#include <array>
 #include <memory>
 #include <vector>
 
@@ -232,6 +233,10 @@ public:
 	 * @return DSi flags string vector.
 	 */
 	static LibRpBase::RomFields::ListData_t *getDSiFlagsStringVector(void);
+
+public:
+	// DSi region code bitfield names
+	static const std::array<const char*, 6> dsi_region_bitfield_names;
 };
 
 } // namespace LibRomData

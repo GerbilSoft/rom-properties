@@ -62,6 +62,16 @@ const RomDataInfo NintendoDSPrivate::romDataInfo = {
 	"NintendoDS", exts.data(), mimeTypes.data()
 };
 
+// DSi region code bitfield names
+const array<const char*, 6> NintendoDSPrivate::dsi_region_bitfield_names = {{
+	NOP_C_("Region", "Japan"),
+	NOP_C_("Region", "USA"),
+	NOP_C_("Region", "Europe"),
+	NOP_C_("Region", "Australia"),
+	NOP_C_("Region", "China"),
+	NOP_C_("Region", "South Korea"),
+}};
+
 NintendoDSPrivate::NintendoDSPrivate(const IRpFilePtr &file, bool cia)
 	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
@@ -889,15 +899,7 @@ int NintendoDS::loadFieldData(void)
 
 	// DSi Region
 	// Maps directly to the header field.
-	static const array<const char*, 6> dsi_region_bitfield_names = {{
-		NOP_C_("Region", "Japan"),
-		NOP_C_("Region", "USA"),
-		NOP_C_("Region", "Europe"),
-		NOP_C_("Region", "Australia"),
-		NOP_C_("Region", "China"),
-		NOP_C_("Region", "South Korea"),
-	}};
-	vector<string> *const v_dsi_region_bitfield_names = RomFields::strArrayToVector_i18n("Region", dsi_region_bitfield_names);
+	vector<string> *const v_dsi_region_bitfield_names = RomFields::strArrayToVector_i18n("Region", d->dsi_region_bitfield_names);
 	d->fields.addField_bitfield(region_code_name,
 		v_dsi_region_bitfield_names, 3, le32_to_cpu(romHeader->dsi.region_code));
 
@@ -1089,40 +1091,26 @@ int NintendoDS::loadMetaData(void)
 	if (d->isDSi()) {
 		// Check for an individual DSi region.
 		const uint32_t dsi_region_code = le32_to_cpu(romHeader->dsi.region_code) & 0x3F;
-		switch (dsi_region_code) {
-			case DSi_REGION_JAPAN:
-				s_region_code = C_("Region", "Japan");
-				break;
-			case DSi_REGION_USA:
-				s_region_code = C_("Region", "USA");
-				break;
-			case DSi_REGION_EUROPE:
-				s_region_code = C_("Region", "Europe");
-				break;
-			case DSi_REGION_AUSTRALIA:
-				s_region_code = C_("Region", "Australia");
-				break;
-			case DSi_REGION_CHINA:
-				s_region_code = C_("Region", "China");
-				break;
-			case DSi_REGION_SKOREA:
-				s_region_code = C_("Region", "South Korea");
-				break;
 
-			case 0x3F:
-				s_region_code = C_("Region", "Region-Free");
+		const char *l10n_region = nullptr;
+		for (size_t i = 0; i < d->dsi_region_bitfield_names.size(); i++) {
+			if (dsi_region_code == (1U << i)) {
+				l10n_region = d->dsi_region_bitfield_names[i];
 				break;
+			}
+		}
 
-			default:
-				// Multi-region
-				static const char all_dsi_regions[] = "JUEACK";
-				s_region_code.resize(6, '-');
-				for (size_t i = 0; i < 6; i++) {
-					if (dsi_region_code & (1U << i)) {
-						s_region_code[i] = all_dsi_regions[i];
-					}
+		if (l10n_region) {
+			s_region_code = pgettext_expr("Region", l10n_region);
+		} else {
+			// Multi-region
+			static const char all_dsi_regions[] = "JUEACK";
+			s_region_code.resize(6, '-');
+			for (size_t i = 0; i < 6; i++) {
+				if (dsi_region_code & (1U << i)) {
+					s_region_code[i] = all_dsi_regions[i];
 				}
-				break;
+			}
 		}
 	} else {
 		// Check for NDS regions.
