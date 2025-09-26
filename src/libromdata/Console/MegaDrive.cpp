@@ -144,7 +144,7 @@ public:
 	 *
 	 * @param pRomHeader ROM header.
 	 */
-	static uint32_t parseRegionCodes(const MD_RomHeader *pRomHeader);
+	static unsigned int parseRegionCodes(const MD_RomHeader *pRomHeader);
 
 public:
 	/**
@@ -314,9 +314,9 @@ uint32_t MegaDrivePrivate::parseIOSupport(const char *io_support, int size)
  *
  * @param pRomHeader ROM header.
  */
-uint32_t MegaDrivePrivate::parseRegionCodes(const MD_RomHeader *pRomHeader)
+unsigned int MegaDrivePrivate::parseRegionCodes(const MD_RomHeader *pRomHeader)
 {
-	uint32_t md_region = MegaDriveRegions::parseRegionCodes(
+	unsigned int md_region = MegaDriveRegions::parseRegionCodes(
 		pRomHeader->region_codes, sizeof(pRomHeader->region_codes));
 	if (md_region != 0)
 		return md_region;
@@ -574,7 +574,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 	// Region code
 	// NOTE: bRedetectRegion is only used for S&K lock-on,
 	// so we don't need to worry about the Mega CD security program.
-	const uint32_t md_region_check = (unlikely(bRedetectRegion))
+	const unsigned int md_region_check = (unlikely(bRedetectRegion))
 		? parseRegionCodes(pRomHeader)
 		: this->md_region;
 
@@ -1543,7 +1543,7 @@ int MegaDrive::loadMetaData(void)
 	// Region code
 	// For multi-region titles, region will be formatted as: "JUE"
 	// NOTE: Handling "Asia" as if it's "Japan".
-	const uint32_t region_code = d->parseRegionCodes(romHeader);
+	const unsigned int region_code = d->parseRegionCodes(romHeader);
 	const char *i18n_region = nullptr;
 	for (size_t i = 0; i < d->region_code_bitfield_names.size(); i++) {
 		if (region_code == (1U << i)) {
