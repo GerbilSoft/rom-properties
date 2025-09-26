@@ -559,41 +559,39 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
 
 	// Load meta.xml.
 	xml_document metaXml;
+	xml_node metaRootNode;
+	xml_text shortname;
+	string s_def_lc, nodeName;
+
 	int ret = loadSystemXml(metaXml, "/meta/meta.xml", "menu");
-	if (ret != 0) {
-		return ret;
-	}
+	if (ret == 0) {
+		// meta.xml root node: "menu"
+		xml_node metaRootNode = metaXml.child("menu");
+		if (metaRootNode) {
+			// Get the system language code and see if we have a matching title.
+			// NOTE: Using the same LC for all fields once we find a matching title.
+			s_def_lc = SystemRegion::lcToString(SystemRegion::getLanguageCode());
+			nodeName = fmt::format(FSTR("shortname_{:s}"), s_def_lc);
 
-	// meta.xml root node: "menu"
-	xml_node metaRootNode = metaXml.child("menu");
-	if (!metaRootNode) {
-		// No "menu" element.
-		// TODO: Better error code.
-		return -EIO;
-	}
-
-	// Get the system language code and see if we have a matching title.
-	// NOTE: Using the same LC for all fields once we find a matching title.
-	string s_def_lc = SystemRegion::lcToString(SystemRegion::getLanguageCode());
-	string nodeName = fmt::format(FSTR("shortname_{:s}"), s_def_lc);
-
-	xml_text shortname = metaRootNode.child(nodeName.c_str()).text();
-	if (!shortname) {
-		// Not valid. Check English.
-		shortname = metaRootNode.child("shortname_en").text();
-		if (shortname) {
-			// English is valid.
-			s_def_lc = "en";
-		} else {
-			// Not valid. Check Japanese.
-			shortname = metaRootNode.child("shortname_jp");
-			if (shortname) {
-				// Japanese is valid.
-				s_def_lc = "jp";
-			} else {
-				// Not valid...
-				// Default to English anyway.
-				s_def_lc = "en";
+			shortname = metaRootNode.child(nodeName.c_str()).text();
+			if (!shortname) {
+				// Not valid. Check English.
+				shortname = metaRootNode.child("shortname_en").text();
+				if (shortname) {
+					// English is valid.
+					s_def_lc = "en";
+				} else {
+					// Not valid. Check Japanese.
+					shortname = metaRootNode.child("shortname_jp");
+					if (shortname) {
+						// Japanese is valid.
+						s_def_lc = "jp";
+					} else {
+						// Not valid...
+						// Default to English anyway.
+						s_def_lc = "en";
+					}
+				}
 			}
 		}
 	}
@@ -622,6 +620,21 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
 	const uint32_t region_code = parseHexBinary32(metaRootNode, "region") & 0x7F;
 	metaData.addMetaData_string(Property::RegionCode,
 		WiiCommon::getRegionCodeForMetadataProperty(region_code, true));
+
+	// SDK version (as OS Version)
+	xml_document appXml;
+	ret = loadSystemXml(appXml, "/code/app.xml", "app");
+	if (ret == 0) {
+		xml_node appRootNode = appXml.child("app");
+		if (appRootNode) {
+			const unsigned int sdk_version = parseUnsignedInt(appRootNode, "sdk_version");
+			if (sdk_version != 0) {
+				metaData.addMetaData_string(Property::OSVersion,
+					fmt::format(FSTR("{:d}.{:0>2d}.{:0>2d}"),
+						sdk_version / 10000, (sdk_version / 100) % 100, sdk_version % 100));
+			}
+		}
+	}
 
 	// System XML files read successfully.
 	return 0;
