@@ -892,7 +892,8 @@ int NintendoDS::loadFieldData(void)
 	// Maps directly to the header field.
 	// NOTE: Excluding the 'T' region.
 	vector<string> *const v_dsi_region_bitfield_names = RomFields::strArrayToVector_i18n(
-		"Region", WiiCommon::dsi_3ds_wiiu_region_bitfield_names);
+		"Region", WiiCommon::dsi_3ds_wiiu_region_bitfield_names.data(),
+			WiiCommon::dsi_3ds_wiiu_region_bitfield_names.size()-1);
 	d->fields.addField_bitfield(region_code_name,
 		v_dsi_region_bitfield_names, 3, le32_to_cpu(romHeader->dsi.region_code));
 
