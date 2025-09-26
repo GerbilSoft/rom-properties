@@ -16,6 +16,9 @@
 // for Wii U application types
 #include "data/WiiUData.hpp"
 
+// for dsi_3ds_wiiu_region_bitfield_names[]
+#include "WiiCommon.hpp"
+
 // Other rom-properties libraries
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -35,17 +38,6 @@ using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
-
-// Wii U region code bitfield names
-const array<const char*, 7> WiiUPackagePrivate::wiiu_region_bitfield_names = {{
-	NOP_C_("Region", "Japan"),
-	NOP_C_("Region", "USA"),
-	NOP_C_("Region", "Europe"),
-	nullptr,	//NOP_C_("Region", "Australia"),	// NOTE: Not actually used?
-	NOP_C_("Region", "China"),
-	NOP_C_("Region", "South Korea"),
-	NOP_C_("Region", "Taiwan"),
-}};
 
 #if defined(_MSC_VER) && defined(XML_IS_DLL)
 /**
@@ -457,7 +449,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		const uint32_t region_code = parseHexBinary32(metaRootNode, "region");
 
 		vector<string> *const v_wiiu_region_bitfield_names = RomFields::strArrayToVector_i18n(
-			"Region", wiiu_region_bitfield_names);
+			"Region", WiiCommon::dsi_3ds_wiiu_region_bitfield_names);
 		fields.addField_bitfield(C_("RomData", "Region Code"),
 			v_wiiu_region_bitfield_names, 3, region_code);
 
@@ -628,44 +620,8 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
 	// For multi-region titles, region will be formatted as: "JUECKT"
 	// (Australia is ignored...)
 	const uint32_t region_code = parseHexBinary32(metaRootNode, "region") & 0x7F;
-	const char *i18n_region = nullptr;
-	for (size_t i = 0; i < wiiu_region_bitfield_names.size(); i++) {
-		if (region_code == (1U << i)) {
-			i18n_region = wiiu_region_bitfield_names[i];
-			break;
-		}
-	}
-
-	// Special-case check for Europe+Australia.
-	// TODO: Constants for Wii U? (Same values as Nintendo 3DS...)
-	if (region_code == (4 | 8)) {
-		i18n_region = wiiu_region_bitfield_names[2];
-	}
-
-	if (i18n_region) {
-		metaData.addMetaData_string(Property::RegionCode, pgettext_expr("Region", i18n_region));
-	} else {
-		// Multi-region
-		static const char all_n3ds_regions[] = "JUECKT";
-		string s_region_code;
-		s_region_code.resize(sizeof(all_n3ds_regions)-1, '-');
-		for (size_t i = 0; i < wiiu_region_bitfield_names.size(); i++) {
-			if (i == 3) {
-				// Skip Australia.
-				continue;
-			}
-
-			size_t chr_pos = i;
-			if (chr_pos >= 4) {
-				chr_pos--;
-			}
-
-			if (region_code & (1U << i)) {
-				s_region_code[chr_pos] = all_n3ds_regions[chr_pos];
-			}
-		}
-		metaData.addMetaData_string(Property::RegionCode, s_region_code);
-	}
+	metaData.addMetaData_string(Property::RegionCode,
+		WiiCommon::getRegionCodeForMetadataProperty(region_code, true));
 
 	// System XML files read successfully.
 	return 0;

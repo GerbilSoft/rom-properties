@@ -17,6 +17,7 @@ using namespace LibRpBase;
 using namespace LibRpText;
 
 // C++ STL classes
+using std::array;
 using std::string;
 
 namespace LibRomData { namespace WiiCommon {
@@ -171,6 +172,86 @@ string getWiiBannerStringForSysLC(
 	}
 
 	return info;
+}
+
+// Region code bitfield names
+const array<const char*, 7> dsi_3ds_wiiu_region_bitfield_names = {{
+	NOP_C_("Region", "Japan"),
+	NOP_C_("Region", "USA"),
+	NOP_C_("Region", "Europe"),
+	nullptr,	//NOP_C_("Region", "Australia"),	// NOTE: Not actually used?
+	NOP_C_("Region", "China"),
+	NOP_C_("Region", "South Korea"),
+	NOP_C_("Region", "Taiwan"),
+}};
+
+/**
+ * Format a DSi/3DS/Wii U region code for display as a metadata property.
+ *
+ * If a single bit is set, one region will be shown.
+ *
+ * If multiple bits are set, it will be shown as "JUECKT", with '-'
+ * for bits that are not set.
+ *
+ * @param region_code Region code
+ * @param showRegionT If true, include the 'T' region.
+ * @return Region code string
+ */
+string getRegionCodeForMetadataProperty(uint32_t region_code, bool showRegionT)
+{
+	unsigned int region_count;
+
+	// "Australia" region (bit 3) is present, but skipped with formatting.
+	if (showRegionT) {
+		region_count = 7;
+		region_code &= 0x7F;
+	} else {
+		region_count = 6;
+		region_code &= 0x3F;
+	}
+
+	// For multi-region titles, region will be formatted as: "JUECKT"
+	// (Australia is ignored...)
+	const char *i18n_region = nullptr;
+	for (unsigned int i = 0; i < region_count; i++) {
+		if (region_code == (1U << i)) {
+			i18n_region = dsi_3ds_wiiu_region_bitfield_names[i];
+			break;
+		}
+	}
+
+	// Special-case check for Europe (4) + Australia (8)
+	if (region_code == (4 | 8)) {
+		i18n_region = dsi_3ds_wiiu_region_bitfield_names[2];
+	}
+
+	if (i18n_region) {
+		return pgettext_expr("Region", i18n_region);
+	}
+
+	// Multi-region
+	static const char all_display_regions[] = "JUECKT";
+	const unsigned int all_display_regions_count = region_count - 1;
+
+	string s_region_code;
+	s_region_code.resize(all_display_regions_count, '-');
+	for (unsigned int i = 0; i < region_count; i++) {
+		if (i == 3) {
+			// Skip Australia.
+			continue;
+		}
+
+		unsigned int chr_pos = i;
+		if (chr_pos >= 4) {
+			chr_pos--;
+		}
+
+		if (region_code & (1U << i)) {
+			s_region_code[chr_pos] = all_display_regions[chr_pos];
+		}
+	}
+
+	return s_region_code;
 }
 
 } }

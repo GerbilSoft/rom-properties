@@ -43,10 +43,6 @@ public:
 	static const LibRpBase::RomDataInfo romDataInfo;
 
 public:
-	// DSi region code bitfield names
-	static const std::array<const char*, 6> dsi_region_bitfield_names;
-
-public:
 	/** RomFields **/
 
 	// Hardware type (RFT_BITFIELD)

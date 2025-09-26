@@ -13,6 +13,7 @@
 #include "NintendoDS_p.hpp"
 #include "data/NintendoPublishers.hpp"
 #include "data/NintendoLanguage.hpp"
+#include "../Console/WiiCommon.hpp"
 
 // Other rom-properties libraries
 #include "librpbase/config/Config.hpp"
@@ -61,16 +62,6 @@ const array<const char*, 3+1> NintendoDSPrivate::mimeTypes = {{
 const RomDataInfo NintendoDSPrivate::romDataInfo = {
 	"NintendoDS", exts.data(), mimeTypes.data()
 };
-
-// DSi region code bitfield names
-const array<const char*, 6> NintendoDSPrivate::dsi_region_bitfield_names = {{
-	NOP_C_("Region", "Japan"),
-	NOP_C_("Region", "USA"),
-	NOP_C_("Region", "Europe"),
-	nullptr,	//NOP_C_("Region", "Australia"),	// NOTE: Not actually used?
-	NOP_C_("Region", "China"),
-	NOP_C_("Region", "South Korea"),
-}};
 
 NintendoDSPrivate::NintendoDSPrivate(const IRpFilePtr &file, bool cia)
 	: super(file, &romDataInfo)
@@ -899,7 +890,9 @@ int NintendoDS::loadFieldData(void)
 
 	// DSi Region
 	// Maps directly to the header field.
-	vector<string> *const v_dsi_region_bitfield_names = RomFields::strArrayToVector_i18n("Region", d->dsi_region_bitfield_names);
+	// NOTE: Excluding the 'T' region.
+	vector<string> *const v_dsi_region_bitfield_names = RomFields::strArrayToVector_i18n(
+		"Region", WiiCommon::dsi_3ds_wiiu_region_bitfield_names);
 	d->fields.addField_bitfield(region_code_name,
 		v_dsi_region_bitfield_names, 3, le32_to_cpu(romHeader->dsi.region_code));
 
@@ -1086,49 +1079,11 @@ int NintendoDS::loadMetaData(void)
 	// Region code
 	// Uses the DSi region if present.
 	// Otherwise, uses the NDS region.
-	// For multi-region titles, region will be formatted as: "JUECK"
 	if (d->isDSi()) {
-		// Check for an individual DSi region.
-		const uint32_t dsi_region_code = le32_to_cpu(romHeader->dsi.region_code) & 0x3F;
-
-		// (Australia is ignored...)
-		const char *i18n_region = nullptr;
-		for (size_t i = 0; i < d->dsi_region_bitfield_names.size(); i++) {
-			if (dsi_region_code == (1U << i)) {
-				i18n_region = d->dsi_region_bitfield_names[i];
-				break;
-			}
-		}
-
-		// Special-case check for Europe+Australia.
-		if (dsi_region_code == (DSi_REGION_EUROPE | DSi_REGION_AUSTRALIA)) {
-			i18n_region = d->dsi_region_bitfield_names[2];
-		}
-
-		if (i18n_region) {
-			d->metaData.addMetaData_string(Property::RegionCode, pgettext_expr("Region", i18n_region));
-		} else {
-			// Multi-region
-			static const char all_dsi_regions[] = "JUECK";
-			string s_region_code;
-			s_region_code.resize(sizeof(all_dsi_regions)-1, '-');
-			for (size_t i = 0; i < sizeof(all_dsi_regions); i++) {
-				if (i == 3) {
-					// Skip Australia.
-					continue;
-				}
-
-				size_t chr_pos = i;
-				if (chr_pos >= 4) {
-					chr_pos--;
-				}
-
-				if (dsi_region_code & (1U << i)) {
-					s_region_code[chr_pos] = all_dsi_regions[chr_pos];
-				}
-			}
-			d->metaData.addMetaData_string(Property::RegionCode, s_region_code);
-		}
+		// NOTE: No 'T' region for DSi.
+		d->metaData.addMetaData_string(Property::RegionCode,
+			WiiCommon::getRegionCodeForMetadataProperty(
+				le32_to_cpu(romHeader->dsi.region_code), false));
 	} else {
 		// Check for NDS regions.
 		const char *s_region_code;

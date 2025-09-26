@@ -15,6 +15,7 @@
 #include <cstdint>
 
 // C++ STL classes
+#include <array>
 #include <string>
 
 namespace LibRomData { namespace WiiCommon {
@@ -38,5 +39,22 @@ LibRpBase::RomFields::StringMultiMap_t *getWiiBannerStrings(
  */
 std::string getWiiBannerStringForSysLC(
 	const Wii_IMET_t *pImet, uint32_t gcnRegion, char id4_region);
+
+// Region code bitfield names
+extern const std::array<const char*, 7> dsi_3ds_wiiu_region_bitfield_names;
+
+/**
+ * Format a DSi/3DS/Wii U region code for display as a metadata property.
+ *
+ * If a single bit is set, one region will be shown.
+ *
+ * If multiple bits are set, it will be shown as "JUECKT", with '-'
+ * for bits that are not set.
+ *
+ * @param region_code Region code
+ * @param showRegionT If true, include the 'T' region.
+ * @return Region code string
+ */
+std::string getRegionCodeForMetadataProperty(uint32_t region_code, bool showRegionT);
 
 } }
