@@ -150,6 +150,7 @@ IF(HAVE_RP_PROPERTYSTORE_DEPS)
 		RP_PropertyStore_GUIDs.c
 		)
 	SET(${PROJECT_NAME}_REGISTER_SRCS
+		${${PROJECT_NAME}_REGISTER_SRCS}
 		RP_PropertyStore_Register.cpp
 		)
 	SET(${PROJECT_NAME}-PropKey_H
