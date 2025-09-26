@@ -419,9 +419,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 	if (appRootNode) {
 		const unsigned int sdk_version = parseUnsignedInt(appRootNode, "sdk_version");
 		if (sdk_version != 0) {
-			fields.addField_string(C_("WiiU", "SDK Version"),
-				fmt::format(FSTR("{:d}.{:0>2d}.{:0>2d}"),
-					sdk_version / 10000, (sdk_version / 100) % 100, sdk_version % 100));
+			fields.addField_string(C_("WiiU", "SDK Version"), formatSdkVersion(sdk_version));
 		}
 	}
 
@@ -629,9 +627,7 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
 		if (appRootNode) {
 			const unsigned int sdk_version = parseUnsignedInt(appRootNode, "sdk_version");
 			if (sdk_version != 0) {
-				metaData.addMetaData_string(Property::OSVersion,
-					fmt::format(FSTR("{:d}.{:0>2d}.{:0>2d}"),
-						sdk_version / 10000, (sdk_version / 100) % 100, sdk_version % 100));
+				metaData.addMetaData_string(Property::OSVersion, formatSdkVersion(sdk_version));
 			}
 		}
 	}

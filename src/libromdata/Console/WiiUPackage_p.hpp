@@ -9,6 +9,7 @@
 #pragma once
 
 #include "config.librpbase.h"
+#include "common.h"
 
 // RomData subclasses
 #include "WiiTicket.hpp"
@@ -31,6 +32,9 @@
 
 // TCHAR
 #include "tcharx.h"
+
+// libfmt
+#include "rp-libfmt.h"
 
 // C++ STL includes
 #include <memory>
@@ -175,6 +179,21 @@ private:
 	 * @return Language code, e.g. 'en' or 'es'.
 	 */
 	uint32_t getDefaultLC(void) const;
+
+	/**
+	 * Format an SDK version as a string.
+	 * @param sdk_versoin SDK version (as a uint32_t)
+	 * @return SDK version (as a string), or empty string if 0.
+	 */
+	static inline std::string formatSdkVersion(uint32_t sdk_version)
+	{
+		if (unlikely(sdk_version == 0)) {
+			return {};
+		}
+
+		return fmt::format(FSTR("{:d}.{:0>2d}.{:0>2d}"),
+			sdk_version / 10000, (sdk_version / 100) % 100, sdk_version % 100);
+	}
 
 public:
 	/**
