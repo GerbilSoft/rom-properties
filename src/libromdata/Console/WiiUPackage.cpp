@@ -225,9 +225,9 @@ IRpFilePtr WiiUPackagePrivate::open(const char *filename)
 		return std::make_shared<RpFile>(ts_full_filename.c_str(), RpFile::FM_OPEN_READ);
 	}
 
-	assert(fst != nullptr);
 	if (!fst) {
 		// No FST.
+		// TODO: Add support for Wii NUS packages?
 		return {};
 	}
 
