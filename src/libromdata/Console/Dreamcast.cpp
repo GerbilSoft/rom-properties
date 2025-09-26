@@ -53,6 +53,10 @@ public:
 	static const RomDataInfo romDataInfo;
 
 public:
+	// Region code bitfield names
+	static const array<const char*, 3> region_code_bitfield_names;
+
+public:
 	enum class DiscType {
 		Unknown	= -1,
 
@@ -109,6 +113,21 @@ public:
 	 * @param disc_total	[out] Total number of discs.
 	 */
 	void parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) const;
+
+public:
+	enum DCRegionCode {
+		DC_REGION_JAPAN		= (1U << 0),
+		DC_REGION_USA		= (1U << 1),
+		DC_REGION_EUROPE	= (1U << 2),
+	};
+
+	/**
+	 * Get the Dreamcast region code.
+	 * Uses enum values in `enum DCRegionCode`.
+	 *
+	 * @return Dreamcast region code
+	 */
+	unsigned int getDCRegionCode(void) const;
 };
 
 ROMDATA_IMPL(Dreamcast)
@@ -145,6 +164,13 @@ const array<const char*, 6+1> DreamcastPrivate::mimeTypes = {{
 const RomDataInfo DreamcastPrivate::romDataInfo = {
 	"Dreamcast", exts.data(), mimeTypes.data()
 };
+
+// Region code bitfield names
+const array<const char*, 3> DreamcastPrivate::region_code_bitfield_names = {{
+	NOP_C_("Region", "Japan"),
+	NOP_C_("Region", "USA"),
+	NOP_C_("Region", "Europe"),
+}};
 
 DreamcastPrivate::DreamcastPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
@@ -315,6 +341,22 @@ void DreamcastPrivate::parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) c
 			disc_total = discHeader.device_info[13] & 0x0F;
 		}
 	}
+}
+
+/**
+ * Get the Dreamcast region code.
+ * @return Dreamcast region code
+ */
+unsigned int DreamcastPrivate::getDCRegionCode(void) const
+{
+	// Note that for Dreamcast, each character is assigned to
+	// a specific position, so European games will be "  E",
+	// not "E  ".
+	unsigned int region_code;
+	region_code  = (discHeader.area_symbols[0] == 'J');
+	region_code |= (discHeader.area_symbols[1] == 'U') << 1;
+	region_code |= (discHeader.area_symbols[2] == 'E') << 2;
+	return region_code;
 }
 
 /** Dreamcast **/
@@ -669,21 +711,9 @@ int Dreamcast::loadFieldData(void)
 	}
 
 	// Region code
-	// Note that for Dreamcast, each character is assigned to
-	// a specific position, so European games will be "  E",
-	// not "E  ".
-	unsigned int region_code = 0;
-	region_code  = (discHeader->area_symbols[0] == 'J');
-	region_code |= (discHeader->area_symbols[1] == 'U') << 1;
-	region_code |= (discHeader->area_symbols[2] == 'E') << 2;
-
-	static const array<const char*, 3> region_code_bitfield_names = {{
-		NOP_C_("Region", "Japan"),
-		NOP_C_("Region", "USA"),
-		NOP_C_("Region", "Europe"),
-	}};
+	const unsigned int region_code = d->getDCRegionCode();
 	vector<string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
-		"Region", region_code_bitfield_names);
+		"Region", d->region_code_bitfield_names);
 	d->fields.addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code_bitfield_names, 0, region_code);
 
@@ -854,7 +884,7 @@ int Dreamcast::loadMetaData(void)
 
 	// Dreamcast disc header
 	const DC_IP0000_BIN_t *const discHeader = &d->discHeader;
-	d->metaData.reserve(5);	// Maximum of 5 metadata properties.
+	d->metaData.reserve(6);	// Maximum of 6 metadata properties.
 
 	// Title (TODO: Encoding?)
 	d->metaData.addMetaData_string(Property::Title,
@@ -881,6 +911,33 @@ int Dreamcast::loadMetaData(void)
 	d->metaData.addMetaData_string(Property::GameID,
 		latin1_to_utf8(discHeader->product_number, sizeof(discHeader->product_number)),
 		RomFields::STRF_TRIM_END);
+
+	// Region code
+	// For multi-region titles, region will be formatted as: "JUE"
+	const unsigned int region_code = d->getDCRegionCode();
+	const char *i18n_region = nullptr;
+	for (size_t i = 0; i < d->region_code_bitfield_names.size(); i++) {
+		if (region_code == (1U << i)) {
+			i18n_region = d->region_code_bitfield_names[i];
+			break;
+		}
+	}
+
+	if (i18n_region) {
+		d->metaData.addMetaData_string(Property::RegionCode,
+			pgettext_expr("Region", i18n_region));
+	} else {
+		// Multi-region
+		static const char all_display_regions[] = "JUE";
+		string s_region_code;
+		s_region_code.resize(sizeof(all_display_regions)-1, '-');
+		for (unsigned int i = 0; i < d->region_code_bitfield_names.size(); i++) {
+			if (region_code & (1U << i)) {
+				s_region_code[i] = all_display_regions[i];
+			}
+		}
+		d->metaData.addMetaData_string(Property::RegionCode, s_region_code);
+	}
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
