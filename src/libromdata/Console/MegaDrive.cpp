@@ -48,6 +48,9 @@ public:
 	static const array<const char*, 6+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
+	// Region code bitfield names
+	static const array<const char*, 4> region_code_bitfield_names;
+
 public:
 	/** RomFields **/
 
@@ -240,6 +243,14 @@ const array<const char*, 6+1> MegaDrivePrivate::mimeTypes = {{
 const RomDataInfo MegaDrivePrivate::romDataInfo = {
 	"MegaDrive", exts.data(), mimeTypes.data()
 };
+
+// Region code bitfield names
+const array<const char*, 4> MegaDrivePrivate::region_code_bitfield_names = {{
+	NOP_C_("Region", "Japan"),
+	NOP_C_("Region", "Asia"),
+	NOP_C_("Region", "USA"),
+	NOP_C_("Region", "Europe"),
+}};
 
 MegaDrivePrivate::MegaDrivePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
@@ -567,12 +578,6 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 		? parseRegionCodes(pRomHeader)
 		: this->md_region;
 
-	static const array<const char*, 4> region_code_bitfield_names = {{
-		NOP_C_("Region", "Japan"),
-		NOP_C_("Region", "Asia"),
-		NOP_C_("Region", "USA"),
-		NOP_C_("Region", "Europe"),
-	}};
 	vector<string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
 		"Region", region_code_bitfield_names);
 	fields.addField_bitfield(C_("RomData", "Region Code"),
@@ -1492,7 +1497,7 @@ int MegaDrive::loadMetaData(void)
 	// MD ROM header
 	// TODO: Lock-on support?
 	const MD_RomHeader *const romHeader = &d->romHeader;
-	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
+	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
 
 	// Title
 	// TODO: Domestic vs. export; space elimination?
@@ -1534,6 +1539,42 @@ int MegaDrive::loadMetaData(void)
 	d->metaData.addMetaData_string(Property::GameID,
 		cp1252_to_utf8(s_serial_number, sizeof(romHeader->serial_number)),
 			RomFields::STRF_TRIM_END);
+
+	// Region code
+	// For multi-region titles, region will be formatted as: "JUE"
+	// NOTE: Handling "Asia" as if it's "Japan".
+	const uint32_t region_code = d->parseRegionCodes(romHeader);
+	const char *i18n_region = nullptr;
+	for (size_t i = 0; i < d->region_code_bitfield_names.size(); i++) {
+		if (region_code == (1U << i)) {
+			i18n_region = d->region_code_bitfield_names[i];
+			break;
+		}
+	}
+
+	// Special-case check for Japan + Asia
+	if (region_code == (MegaDriveRegions::MD_REGION_JAPAN | MegaDriveRegions::MD_REGION_ASIA)) {
+		i18n_region = d->region_code_bitfield_names[0];
+	}
+
+	if (i18n_region) {
+		d->metaData.addMetaData_string(Property::RegionCode,
+			pgettext_expr("Region", i18n_region));
+	} else {
+		// Multi-region
+		// NOTE: Special handling for Asia. (handled as Japan)
+		char s_region_code[] = "---";
+		if (region_code & (MegaDriveRegions::MD_REGION_JAPAN | MegaDriveRegions::MD_REGION_ASIA)) {
+			s_region_code[0] = 'J';
+		}
+		if (region_code & MegaDriveRegions::MD_REGION_USA) {
+			s_region_code[1] = 'U';
+		}
+		if (region_code & MegaDriveRegions::MD_REGION_EUROPE) {
+			s_region_code[2] = 'E';
+		}
+		d->metaData.addMetaData_string(Property::RegionCode, s_region_code);
+	}
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
