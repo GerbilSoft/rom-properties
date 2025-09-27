@@ -1388,8 +1388,6 @@ int ICO::getFields(RomFields *fields) const
 		"bpp",
 		NOP_C_("ICO", "Format"),
 	}};
-	vector<string> *const v_icon_col_names = RomFields::strArrayToVector_i18n(
-		"ICO", icon_col_names);
 
 	RomFields::ListData_t *vv_text = nullptr;
 	RomFields::ListDataIcons_t *v_icons = nullptr;
@@ -1447,6 +1445,10 @@ int ICO::getFields(RomFields *fields) const
 	}
 
 	if (vv_text && v_icons) {
+		// Get the localized column names.
+		vector<string> *const v_icon_col_names = RomFields::strArrayToVector_i18n(
+			"ICO", icon_col_names);
+
 		// Add the list data.
 		RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW |
 		                              RomFields::RFT_LISTDATA_ICONS, 0);
