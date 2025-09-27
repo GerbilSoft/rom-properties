@@ -102,6 +102,7 @@ TEST_F(BitstuffTest, rand_popcount)
 		int rnd = 0;
 		for (unsigned int j = 0; j < 32; j++, rnd >>= 1) {
 			if (j == 0 || j == 15 || j == 30) {
+				// coverity[dont_call]: this isn't being used in a security-sensitive context
 				rnd = rand();
 			}
 			const unsigned int bit = (rnd & 1);
