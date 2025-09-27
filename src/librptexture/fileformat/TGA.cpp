@@ -650,6 +650,7 @@ TGA::TGA(const IRpFilePtr &file)
 		if (size != d->tgaHeader.id_length) {
 			// Seek and/or read error.
 			d->file.reset();
+			return;
 		}
 
 		// Assuming ASCII (Latin-1) encoding.
