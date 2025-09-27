@@ -950,7 +950,10 @@ rp_image_const_ptr RomData::image(ImageType imageType) const
 	assert((ret == 0 && (bool)img) ||
 	       (ret != 0 && !img));
 
-	return (ret == 0) ? img : nullptr;
+	if (ret != 0) {
+		img.reset();
+	}
+	return img;
 }
 
 /**
@@ -989,7 +992,10 @@ rp_image_const_ptr RomData::mipmap(int mipmapLevel) const
 	assert((ret == 0 && (bool)img) ||
 	       (ret != 0 && !img));
 
-	return (ret == 0) ? img : nullptr;
+	if (ret != 0) {
+		img.reset();
+	}
+	return img;
 }
 
 /**
