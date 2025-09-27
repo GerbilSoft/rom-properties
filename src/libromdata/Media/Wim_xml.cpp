@@ -37,6 +37,7 @@ namespace LibRomData {
 #if defined(_MSC_VER) && defined(XML_IS_DLL)
 /**
  * Check if PugiXML can be delay-loaded.
+ * NOTE: Implemented in EXE_delayload.cpp.
  * @return 0 on success; negative POSIX error code on error.
  */
 extern int DelayLoad_test_PugiXML(void);
@@ -176,7 +177,7 @@ int WimPrivate::addFields_XML()
 	const char *const s_unknown = C_("Wim", "(unknown)");
 	uint32_t image_index = 1;
 	for (xml_node currentimage = wim_element.child("IMAGE");
-	     currentimage; currentimage = currentimage.next_sibling())
+	     currentimage; currentimage = currentimage.next_sibling("IMAGE"))
 	{
 		assert(currentimage != nullptr);
 		if (!currentimage) {
