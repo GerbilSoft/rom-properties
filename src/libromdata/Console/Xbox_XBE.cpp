@@ -55,6 +55,10 @@ public:
 	static const RomDataInfo romDataInfo;
 
 public:
+	// Region code bitfield names
+	static const array<const char*, 4> region_code_bitfield_names;
+
+public:
 	// XBE header
 	// NOTE: **NOT** byteswapped.
 	XBE_Header xbeHeader;
@@ -113,6 +117,13 @@ public:
 	 * @return Publisher.
 	 */
 	string getPublisher(void) const;
+
+	/**
+	 * Get the region code.
+	 * Uses XBE_Region_Code_e, but MANUFACTURING is moved to bit 3.
+	 * @return Region code
+	 */
+	unsigned int getRegionCode(void) const;
 };
 
 ROMDATA_IMPL(Xbox_XBE)
@@ -135,6 +146,14 @@ const array<const char*, 1+1> Xbox_XBE_Private::mimeTypes = {{
 const RomDataInfo Xbox_XBE_Private::romDataInfo = {
 	"Xbox_XBE", exts.data(), mimeTypes.data()
 };
+
+// Region code bitfield names
+const array<const char*, 4> Xbox_XBE_Private::region_code_bitfield_names = {{
+	NOP_C_("Region", "North America"),
+	NOP_C_("Region", "Japan"),
+	NOP_C_("Region", "Rest of World"),
+	NOP_C_("Region", "Manufacturing"),
+}};
 
 Xbox_XBE_Private::Xbox_XBE_Private(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
@@ -416,6 +435,25 @@ string Xbox_XBE_Private::getPublisher(void) const
 	return fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
 		static_cast<uint8_t>(xbeCertificate.title_id.a),
 		static_cast<uint8_t>(xbeCertificate.title_id.b));
+}
+
+/**
+ * Get the region code.
+ * Uses XBE_Region_Code_e, but MANUFACTURING is moved to bit 3.
+ * @return Region code
+ */
+unsigned int Xbox_XBE_Private::getRegionCode(void) const
+{
+	const uint32_t region_code_xbx = le32_to_cpu(xbeCertificate.region_code);
+	unsigned int region_code = (region_code_xbx & 0x07);
+
+	// Relocate the MANUFACTURING bit to bit 3 to make it easier to
+	// handle the region code table.
+	if (region_code_xbx & XBE_REGION_CODE_MANUFACTURING) {
+		region_code |= (1U << 3);
+	}
+
+	return region_code;
 }
 
 /** Xbox_XBE **/
@@ -816,20 +854,9 @@ int Xbox_XBE::loadFieldData(void)
 		v_init_flags, 2, init_flags);
 
 	// Region code
-	uint32_t region_code = le32_to_cpu(xbeCertificate->region_code);
-	if (region_code & XBE_REGION_CODE_MANUFACTURING) {
-		// Relocate this bit to make it easier to handle the
-		// region code table.
-		region_code &= ~XBE_REGION_CODE_MANUFACTURING;
-		region_code |= 8;
-	}
-	static const array<const char*, 4> region_code_tbl = {{
-		NOP_C_("Region", "North America"),
-		NOP_C_("Region", "Japan"),
-		NOP_C_("Region", "Rest of World"),
-		NOP_C_("Region", "Manufacturing"),
-	}};
-	vector<string> *const v_region_code = RomFields::strArrayToVector_i18n("Region", region_code_tbl);
+	const unsigned int region_code = d->getRegionCode();
+	vector<string> *const v_region_code = RomFields::strArrayToVector_i18n(
+		"Region", d->region_code_bitfield_names);
 	d->fields.addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code, 3, region_code);
 
@@ -869,7 +896,7 @@ int Xbox_XBE::loadMetaData(void)
 	}
 
 	const XBE_Certificate *const xbeCertificate = &d->xbeCertificate;
-	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
+	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
 
 	// Title
 	d->metaData.addMetaData_string(Property::Title,
@@ -882,6 +909,35 @@ int Xbox_XBE::loadMetaData(void)
 
 	// Title ID (as Game ID)
 	d->metaData.addMetaData_string(Property::GameID, d->getTitleID());
+
+	// Region code
+	// For multi-region titles, region will be formatted as: "UJEM"
+	// NOTE: Using 'E' for "Rest of World" and 'M' for "Manufacturing".
+	// TODO: Special handling for region-free?
+	const unsigned int region_code = d->getRegionCode();
+
+	const char *i18n_region = nullptr;
+	for (size_t i = 0; i < d->region_code_bitfield_names.size(); i++) {
+		if (region_code == (1U << i)) {
+			i18n_region = d->region_code_bitfield_names[i];
+			break;
+		}
+	}
+
+	if (i18n_region) {
+		d->metaData.addMetaData_string(Property::RegionCode,
+			pgettext_expr("Region", i18n_region));
+	} else {
+		// Multi-region
+		static const char all_display_regions[] = "UJEM";
+		char s_region_code[] = "----";
+		for (size_t i = 0; i < sizeof(s_region_code)-1; i++) {
+			if (region_code & (1U << i)) {
+				s_region_code[i] = all_display_regions[i];
+			}
+		}
+		d->metaData.addMetaData_string(Property::RegionCode, s_region_code);
+	}
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
