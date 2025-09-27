@@ -410,7 +410,7 @@ int WiiU::loadMetaData(void)
 
 	// Disc header is read in the constructor.
 	const WiiU_DiscHeader *const discHeader = &d->discHeader;
-	d->metaData.reserve(3);	// Maximum of 1 metadata property.
+	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 
 	/** Custom properties! **/
 
@@ -418,6 +418,15 @@ int WiiU::loadMetaData(void)
 	// TODO: Compare against list of regions and show the fancy name.
 	d->metaData.addMetaData_string(Property::RegionCode,
 		latin1_to_utf8(discHeader->region, sizeof(discHeader->region)));
+
+	// OS version
+	// TODO: Validate the version characters.
+	const array<char, 6> s_os_version = {{
+		discHeader->os_version[0], '.',
+		discHeader->os_version[1], '.',
+		discHeader->os_version[2], '\0'
+	}};
+	d->metaData.addMetaData_string(Property::OSVersion, s_os_version.data());
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
