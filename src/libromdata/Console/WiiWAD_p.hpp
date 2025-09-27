@@ -134,6 +134,12 @@ public:
 	 */
 	std::string wii_getIOSVersion(void) const;
 
+	/**
+	 * Get the GCN-style region code. (Wii only)
+	 * @return GCN-style region code (GCN_Region_Code), or ~0U on error.
+	 */
+	unsigned int wii_getGCNRegionCode(void) const;
+
 #ifdef ENABLE_DECRYPTION
 	/**
 	 * Open the SRL if it isn't already opened.

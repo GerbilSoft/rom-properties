@@ -207,6 +207,63 @@ string WiiWADPrivate::wii_getIOSVersion(void) const
 	return {};
 }
 
+/**
+ * Get the GCN-style region code. (Wii only)
+ * @return GCN-style region code (GCN_Region_Code), or ~0U on error.
+ */
+unsigned int WiiWADPrivate::wii_getGCNRegionCode(void) const
+{
+	const uint16_t sysID = be16_to_cpu(tmdHeader.title_id.sysID);
+	assert(sysID <= NINTENDO_SYSID_RVL);
+	if (sysID > NINTENDO_SYSID_RVL) {
+		return ~0U;
+	}
+
+	const uint32_t tid_hi = be32_to_cpu(tmdHeader.title_id.hi);
+	if (tid_hi != 0x00000001) {
+		// Probably a regular title.
+		return be16_to_cpu(tmdHeader.region_code);
+	}
+
+	// tid_hi = 0x00000001: IOS and/or System Menu
+	unsigned int gcnRegion = ~0U;
+	if (tmdHeader.title_id.lo == cpu_to_be32(0x00000002)) {
+		// System Menu
+		const unsigned int title_version = be16_to_cpu(tmdHeader.title_version);
+		const char *ver = WiiSystemMenuVersion::lookup(title_version);
+		if (ver) {
+			switch (ver[3]) {
+				case 'J':
+					gcnRegion = GCN_REGION_JPN;
+					break;
+				case 'U':
+					gcnRegion = GCN_REGION_USA;
+					break;
+				case 'E':
+					gcnRegion = GCN_REGION_EUR;
+					break;
+				case 'K':
+					gcnRegion = GCN_REGION_KOR;
+					break;
+				case 'C':
+					gcnRegion = GCN_REGION_CHN;
+					break;
+				case 'T':
+					gcnRegion = GCN_REGION_TWN;
+					break;
+				default:
+					gcnRegion = ~0U;
+					break;
+			}
+		}
+	} else {
+		// IOS, BC, or MIOS. No region.
+		gcnRegion = GCN_REGION_ALL;
+	}
+
+	return gcnRegion;
+}
+
 #ifdef ENABLE_DECRYPTION
 /**
  * Open the SRL if it isn't already opened.
@@ -968,50 +1025,11 @@ int WiiWAD::loadFieldData(void)
 			title_version >> 8, title_version & 0xFF, title_version));
 
 	// Wii-specific
-	unsigned int gcnRegion = ~0U;
 	const char id4_region = (char)tmdHeader->title_id.u8[7];
-	const uint32_t tid_hi = be32_to_cpu(tmdHeader->title_id.hi);
+	unsigned int gcnRegion = ~0U;
 	if (sysID <= NINTENDO_SYSID_RVL) {
 		// Region code
-		if (tid_hi == 0x00000001) {
-			// IOS and/or System Menu.
-			if (tmdHeader->title_id.lo == cpu_to_be32(0x00000002)) {
-				// System Menu.
-				const char *ver = WiiSystemMenuVersion::lookup(title_version);
-				if (ver) {
-					switch (ver[3]) {
-						case 'J':
-							gcnRegion = GCN_REGION_JPN;
-							break;
-						case 'U':
-							gcnRegion = GCN_REGION_USA;
-							break;
-						case 'E':
-							gcnRegion = GCN_REGION_EUR;
-							break;
-						case 'K':
-							gcnRegion = GCN_REGION_KOR;
-							break;
-						case 'C':
-							gcnRegion = GCN_REGION_CHN;
-							break;
-						case 'T':
-							gcnRegion = GCN_REGION_TWN;
-							break;
-						default:
-							gcnRegion = 255;
-							break;
-					}
-				} else {
-					gcnRegion = 255;
-				}
-			} else {
-				// IOS, BC, or MIOS. No region.
-				gcnRegion = GCN_REGION_ALL;
-			}
-		} else {
-			gcnRegion = be16_to_cpu(tmdHeader->region_code);
-		}
+		gcnRegion = d->wii_getGCNRegionCode();
 
 		bool isDefault;
 		const char *const region =
@@ -1210,7 +1228,8 @@ int WiiWAD::loadMetaData(void)
 	}
 #endif /* ENABLE_DECRYPTION */
 
-	d->metaData.reserve(5);	// Maximum of 5 metadata properties.
+	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
+	d->metaData.reserve(6);	// Maximum of 6 metadata properties.
 
 	// TODO: Game title from WIBN if it's available.
 
@@ -1236,7 +1255,7 @@ int WiiWAD::loadMetaData(void)
 	d->metaData.addMetaData_string(Property::GameID, d->getGameID());
 
 	// Required IOS version
-	const uint16_t sysID = be16_to_cpu(d->tmdHeader.title_id.sysID);
+	const uint16_t sysID = be16_to_cpu(tmdHeader->title_id.sysID);
 	if (sysID <= NINTENDO_SYSID_RVL) {
 		const string s_ios_version = d->wii_getIOSVersion();
 		if (!s_ios_version.empty()) {
@@ -1249,6 +1268,16 @@ int WiiWAD::loadMetaData(void)
 	if (s_key_name) {
 		d->metaData.addMetaData_string(Property::EncryptionKey, s_key_name);
 	}
+
+	// Region code
+	// TODO: Also append the GCN region name if the ID4 value differs,
+	// similar to loadFieldData()?
+	const char id4_region = (char)tmdHeader->title_id.u8[7];
+	const unsigned int gcnRegion = d->wii_getGCNRegionCode();
+	const char *const region =
+		GameCubeRegions::gcnRegionToString(gcnRegion, id4_region);
+
+	d->metaData.addMetaData_string(Property::RegionCode, region);
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
@@ -1436,7 +1465,7 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) cons
 			return -ENOENT;
 	}
 
-	// Game ID. (GameTDB uses ID4 for WiiWare.)
+	// Game ID (GameTDB uses ID4 for WiiWare.)
 	// The ID4 cannot have non-printable characters.
 	// NOTE: Must be NULL-terminated.
 	char id4[5];
