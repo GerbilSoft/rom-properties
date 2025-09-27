@@ -310,15 +310,9 @@ string AndroidAPKPrivate::compXmlStringAt(const uint8_t *pXml, uint32_t xmlLen, 
 		return string();
 	}
 
-	// TODO: Convert from UTF-16 to UTF-8.
-	// Truncating to 7-bit ASCII for now.
-	string str;
-	str.resize(len);
-	const char *p = reinterpret_cast<const char*>(&pXml[strOff + 2]);
-	for (unsigned int i = 0; i < len; i++, p += 2) {
-		str[i] = *p;
-	}
-	return str;
+	// Convert from UTF-16LE to UTF-8.
+	// TODO: Verify that it's always UTF-16LE.
+	return utf16le_to_utf8(reinterpret_cast<const char16_t*>(&pXml[strOff + 2]), len);
 } // end of compXmlStringAt
 
 /**
