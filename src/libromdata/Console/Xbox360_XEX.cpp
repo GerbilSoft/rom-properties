@@ -65,7 +65,11 @@ public:
 	static const RomDataInfo romDataInfo;
 
 public:
-	// XEX type.
+	// Region code bitfield names
+	static const array<const char*, 7> region_code_bitfield_names;
+
+public:
+	// XEX type
 	enum class XexType {
 		Unknown = -1,
 
@@ -208,6 +212,13 @@ public:
 	 */
 	const char *getEncryptionKeyName(void) const;
 
+	/**
+	 * Get the region code bitfield.
+	 * Uses a format that matches d->region_code_bitfield_names.
+	 * @return Region code bitfield
+	 */
+	unsigned int getRegionCodeBitfield(void) const;
+
 public:
 	// CBC reader for encrypted PE executables.
 	// Also used for unencrypted executables.
@@ -277,6 +288,17 @@ const array<const char*, 2+1> Xbox360_XEX_Private::mimeTypes = {{
 const RomDataInfo Xbox360_XEX_Private::romDataInfo = {
 	"Xbox360_XEX", exts.data(), mimeTypes.data()
 };
+
+// Region code bitfield names
+const array<const char*, 7> Xbox360_XEX_Private::region_code_bitfield_names = {{
+	NOP_C_("Region", "USA"),
+	NOP_C_("Region", "Japan"),
+	NOP_C_("Region", "China"),
+	NOP_C_("Region", "Asia"),
+	NOP_C_("Region", "Europe"),
+	NOP_C_("Region", "Australia"),
+	NOP_C_("Region", "New Zealand"),
+}};
 
 #ifdef ENABLE_DECRYPTION
 // Verification key names.
@@ -1223,6 +1245,44 @@ const char *Xbox360_XEX_Private::getEncryptionKeyName(void) const
 }
 
 /**
+ * Get the region code bitfield.
+ * Uses a format that matches d->region_code_bitfield_names.
+ * @return Region code bitfield
+ */
+unsigned int Xbox360_XEX_Private::getRegionCodeBitfield(void) const
+{
+	// Convert region code to a bitfield.
+	const uint32_t region_code_xbx = be32_to_cpu(
+		(xexType != Xbox360_XEX_Private::XexType::XEX1)
+			? secInfo.xex2.region_code
+			: secInfo.xex1.region_code);
+
+	unsigned int region_code = 0;
+
+	if (region_code_xbx & XEX2_REGION_CODE_NTSC_U) {
+		region_code |= (1U << 0);
+	}
+	if (region_code_xbx & XEX2_REGION_CODE_NTSC_J_JAPAN) {
+		region_code |= (1U << 1);
+	}
+	if (region_code_xbx & XEX2_REGION_CODE_NTSC_J_CHINA) {
+		region_code |= (1U << 2);
+	}
+	if (region_code_xbx & XEX2_REGION_CODE_NTSC_J_OTHER) {
+		region_code |= (1U << 3);
+	}
+	if (region_code_xbx & XEX2_REGION_CODE_PAL_OTHER) {
+		region_code |= (1U << 4);
+	}
+	if (region_code_xbx & XEX2_REGION_CODE_PAL_AU_NZ) {
+		// TODO: Combine these bits?
+		region_code |= (1U << 5) | (1U << 6);
+	}
+
+	return region_code;
+}
+
+/**
  * Initialize the EXE object.
  * @return EXE object on success; nullptr on error.
  */
@@ -1872,43 +1932,10 @@ int Xbox360_XEX::loadFieldData(void)
 
 	// Region code
 	// TODO: Special handling for region-free?
-	static const array<const char*, 7> region_code_tbl = {{
-		NOP_C_("Region", "USA"),
-		NOP_C_("Region", "Japan"),
-		NOP_C_("Region", "China"),
-		NOP_C_("Region", "Asia"),
-		NOP_C_("Region", "Europe"),
-		NOP_C_("Region", "Australia"),
-		NOP_C_("Region", "New Zealand"),
-	}};
+	const unsigned int region_code = d->getRegionCodeBitfield();
 
-	// Convert region code to a bitfield.
-	const uint32_t region_code_xbx = be32_to_cpu(
-		(d->xexType != Xbox360_XEX_Private::XexType::XEX1
-			? d->secInfo.xex2.region_code
-			: d->secInfo.xex1.region_code));
-	uint32_t region_code = 0;
-	if (region_code_xbx & XEX2_REGION_CODE_NTSC_U) {
-		region_code |= (1U << 0);
-	}
-	if (region_code_xbx & XEX2_REGION_CODE_NTSC_J_JAPAN) {
-		region_code |= (1U << 1);
-	}
-	if (region_code_xbx & XEX2_REGION_CODE_NTSC_J_CHINA) {
-		region_code |= (1U << 2);
-	}
-	if (region_code_xbx & XEX2_REGION_CODE_NTSC_J_OTHER) {
-		region_code |= (1U << 3);
-	}
-	if (region_code_xbx & XEX2_REGION_CODE_PAL_OTHER) {
-		region_code |= (1U << 4);
-	}
-	if (region_code_xbx & XEX2_REGION_CODE_PAL_AU_NZ) {
-		// TODO: Combine these bits?
-		region_code |= (1U << 5) | (1U << 6);
-	}
-
-	vector<string> *const v_region_code = RomFields::strArrayToVector_i18n("Region", region_code_tbl);
+	vector<string> *const v_region_code = RomFields::strArrayToVector_i18n(
+		"Region", d->region_code_bitfield_names);
 	d->fields.addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code, 4, region_code);
 
@@ -2091,6 +2118,41 @@ int Xbox360_XEX::loadMetaData(void)
 
 	// Encryption key
 	d->metaData.addMetaData_string(Property::EncryptionKey, d->getEncryptionKeyName());
+
+	// Region code
+	// For multi-region titles, region will be formatted as: "UJCAESZ"
+	// NOTE: Using 'S' for auStralia and 'Z' for new Zealand.
+	// TODO: Better way to handle this?
+	// TODO: Special handling for region-free?
+	const unsigned int region_code = d->getRegionCodeBitfield();
+
+	const char *i18n_region = nullptr;
+	for (size_t i = 0; i < d->region_code_bitfield_names.size(); i++) {
+		if (region_code == (1U << i)) {
+			i18n_region = d->region_code_bitfield_names[i];
+			break;
+		}
+	}
+
+	if (i18n_region) {
+		d->metaData.addMetaData_string(Property::RegionCode,
+			pgettext_expr("Region", i18n_region));
+	} else {
+		// Multi-region
+		static const char all_display_regions[] = "UJCAESZ";
+		char s_region_code[] = "-------";
+		for (size_t i = 0; i < sizeof(s_region_code)-1; i++) {
+			if (region_code & (1U << i)) {
+				s_region_code[i] = all_display_regions[i];
+			}
+		}
+		d->metaData.addMetaData_string(Property::RegionCode, s_region_code);
+	}
+
+	vector<string> *const v_region_code = RomFields::strArrayToVector_i18n(
+		"Region", d->region_code_bitfield_names);
+	d->fields.addField_bitfield(C_("RomData", "Region Code"),
+		v_region_code, 4, region_code);
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
