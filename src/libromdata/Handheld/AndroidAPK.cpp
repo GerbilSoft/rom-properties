@@ -173,6 +173,10 @@ public:
 	static constexpr uint32_t endDocTag	= 0x00100101;
 	static constexpr uint32_t startTag	= 0x00100102;
 	static constexpr uint32_t endTag	= 0x00100103;
+
+	// AndroidManifest.xml document
+	// NOTE: Using a pointer to prevent delay-load issues.
+	unique_ptr<xml_document> manifest_xml;
 };
 
 ROMDATA_IMPL(AndroidAPK)
@@ -512,6 +516,11 @@ xml_document AndroidAPKPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, 
  */
 int AndroidAPKPrivate::loadAndroidManifestXml(void)
 {
+	if (manifest_xml) {
+		// AndroidManifest.xml is already loaded.
+		return 0;
+	}
+
 	// The .apk file must have been opened already.
 	assert(apkFile != nullptr);
 	if (!apkFile) {
@@ -528,10 +537,14 @@ int AndroidAPKPrivate::loadAndroidManifestXml(void)
 	}
 
 	xml_document xml = decompressAndroidBinaryXml(AndroidManifest_xml_buf.data(), AndroidManifest_xml_buf.size());
+	if (xml.empty()) {
+		// Empty???
+		manifest_xml.reset();
+		return -EIO;
+	}
 
-	ostringstream oss;
-	xml.print(oss);
-	printf("%s\n", oss.str().c_str());
+	manifest_xml.reset(new xml_document);
+	*manifest_xml = std::move(xml);
 	return 0;
 }
 
@@ -642,6 +655,10 @@ AndroidAPK::AndroidAPK(const IRpFilePtr &file)
 		d->file.reset();
 		return;
 	}
+
+	ostringstream oss;
+	d->manifest_xml->print(oss);
+	printf("%s\n", oss.str().c_str());
 }
 
 /**
