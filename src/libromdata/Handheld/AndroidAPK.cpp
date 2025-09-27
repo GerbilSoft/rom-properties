@@ -32,9 +32,11 @@ using namespace pugi;
 
 // C++ STL classes
 #include <limits>
+#include <stack>
 using std::array;
 using std::map;
 using std::ostringstream;
+using std::stack;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -358,8 +360,6 @@ xml_document AndroidAPKPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, 
 	// TODO: Split into a separate class to convert Android binary XML to text XML?
 	// TODO: Instead of creating text, parse directly into a PugiXML document?
 
-	ostringstream oss;
-
 	// Compressed XML file/bytes starts with 24x bytes of data,
 	// 9 32 bit words in little endian order (LSB first):
 	//   0th word is 03 00 08 00
@@ -420,10 +420,15 @@ xml_document AndroidAPKPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, 
 	//}
 	//tr.parent();
 
+	// Create a PugiXML document.
+	xml_document doc;
+	// Stack of tags currently being processed.
+	stack<xml_node> tags;
+	tags.push(doc);
+	xml_node cur_node = doc;	// current XML node
+
 	// Step through the XML tree element tags and attributes
 	uint32_t off = xmlTagOff;
-	int indent = 0;
-	int startTagLineNo = -2;
 	while (off < xmlLen) {
 		uint32_t tag0 = LEW(pXml, xmlLen, off);
 		//uint32_t tag1 = LEW(pXml, xmlLen, off+1*4);
@@ -438,14 +443,11 @@ xml_document AndroidAPKPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, 
 			//uint32_t tag8 = LEW(pXml, xmlLen, off+8*4);  // Expected to be 00000000
 			off += 9*4;  // Skip over 6+3 words of startTag data
 
-			// Print indent. (TODO: Better method.)
-			assert(indent >= 0);
-			for (int i = indent*2; i > 0; i--) {
-				oss << ' ';
-			}
-			oss << '<' << compXmlString(pXml, xmlLen, sitOff, stOff, nameSi);
+			// Create the tag.
+			xml_node xmlTag = cur_node.append_child(compXmlString(pXml, xmlLen, sitOff, stOff, nameSi));
+			tags.push(xmlTag);
+			cur_node = xmlTag;
 			//tr.addSelect(name, null);
-			startTagLineNo = lineNo;
 
 			// Look for the Attributes
 			for (uint32_t ii = 0; ii < numbAttrs; ii++) {
@@ -456,50 +458,49 @@ xml_document AndroidAPKPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, 
 				uint32_t attrResId = LEW(pXml, xmlLen, off+4*4);  // AttrValue ResourceId or dup AttrValue StrInd
 				off += 5*4;  // Skip over the 5 words of an attribute
 
-				oss << ' ' << compXmlString(pXml, xmlLen, sitOff, stOff, attrNameSi) << "=\"";
+				xml_attribute xmlAttr = xmlTag.append_attribute(compXmlString(pXml, xmlLen, sitOff, stOff, attrNameSi));
 				if (attrValueSi != -1) {
-					oss << compXmlString(pXml, xmlLen, sitOff, stOff, attrValueSi);
+					// Value is inline
+					xmlAttr.set_value(compXmlString(pXml, xmlLen, sitOff, stOff, attrValueSi));
 				} else {
-					char buf[16];
-					snprintf(buf, sizeof(buf), "%x", attrResId);
-					oss << "resourceID 0x" << buf;
+					// Value is in the resource file
+					// TODO: Get the resource.
+					char buf[48];
+					snprintf(buf, sizeof(buf), "resourceID 0x%x", attrResId);
+					xmlAttr.set_value(buf);
 				}
-				oss << '"';
 				//tr.add(attrName, attrValue);
 			}
 			// TODO: If no child elements, skip the '\n' and use />.
-			oss << '>' << '\n';
-			indent++;
 		} else if (tag0 == endTag) { // XML END TAG
-			indent--;
-			off += 6*4;  // Skip over 6 words of endTag data
-
-			// Print indent. (TODO: Better method.)
-			assert(indent >= 0);
-			for (int i = indent*2; i > 0; i--) {
-				oss << ' ';
+			// End of the current tag.
+			assert(tags.size() >= 2);
+			if (tags.size() < 2) {
+				// Less than 2 tags on the stack.
+				// The first tag is the document, so this means there is a
+				// stray end tag somewhere...
+				return {};
 			}
-
-			oss << "</" + compXmlString(pXml, xmlLen, sitOff, stOff, nameSi) << ">\n";
+			tags.pop();
+			cur_node = tags.top();
+			off += 6*4;  // Skip over 6 words of endTag data
 			//tr.parent();  // Step back up the NobTree
 		} else if (tag0 == endDocTag) {  // END OF XML DOC TAG
 			break;
 		} else {
-			char buf[16];
-			snprintf(buf, sizeof(buf), "0x%08X", tag0);
-			oss << "  Unrecognized tag code " << buf << " at offset " << off << '\n';
-			break;
+			assert(!"Unrecognized tag code!");
+			return {};
 		}
 	} // end of while loop scanning tags and attributes of XML tree
 
-	// Convert to a PugiXML document.
-	// TODO: Build a PugiXML document instead of building a string?
-	string s_xml = oss.str();
-	xml_document doc;
-	xml_parse_result result = doc.load_buffer(s_xml.data(), s_xml.size(), parse_default, encoding_utf8);
-	if (!result) {
+	assert(tags.size() == 1);
+	if (tags.size() != 1) {
+		// The tag stack is incorrect.
+		// We should only have one tag left: the root document node.
 		return {};
 	}
+
+	// XML document decompressed.
 	return doc;
 }
 
