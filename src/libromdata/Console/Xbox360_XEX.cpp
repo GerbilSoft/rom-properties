@@ -2149,11 +2149,6 @@ int Xbox360_XEX::loadMetaData(void)
 		d->metaData.addMetaData_string(Property::RegionCode, s_region_code);
 	}
 
-	vector<string> *const v_region_code = RomFields::strArrayToVector_i18n(
-		"Region", d->region_code_bitfield_names);
-	d->fields.addField_bitfield(C_("RomData", "Region Code"),
-		v_region_code, 4, region_code);
-
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
 }
