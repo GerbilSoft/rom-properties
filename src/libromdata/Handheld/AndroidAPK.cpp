@@ -25,6 +25,11 @@ using namespace LibRpText;
 using namespace LibRpFile;
 using namespace LibRpTexture;
 
+// PugiXML
+// NOTE: This file is only compiled if ENABLE_XML is defined.
+#include <pugixml.hpp>
+using namespace pugi;
+
 // C++ STL classes
 #include <limits>
 using std::array;
@@ -144,10 +149,10 @@ public:
 	 * Decompress Android binary XML.
 	 * @param pXml Android binary XML data
 	 * @param xmlLen Size of data
-	 * @return Decompressed XML, or empty string on error.
+	 * @return PugiXML document, or an empty document on error.
 	 */
 	ATTR_ACCESS_SIZE(read_only, 1, 2)
-	static string decompressAndroidBinaryXml(const uint8_t *pXml, size_t xmlLen);
+	static xml_document decompressAndroidBinaryXml(const uint8_t *pXml, size_t xmlLen);
 
 	/**
 	 * Load AndroidManifest.xml from this->apkFile.
@@ -342,9 +347,9 @@ string AndroidAPKPrivate::compXmlString(const uint8_t *pXml, uint32_t xmlLen, ui
  * Decompress Android binary XML.
  * @param pXml Android binary XML data
  * @param xmlLen Size of data
- * @return Decompressed XML, or empty string on error.
+ * @return PugiXML document, or an empty document on error.
  */
-string AndroidAPKPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, size_t xmlLen)
+xml_document AndroidAPKPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, size_t xmlLen)
 {
 	// Reference:
 	// - https://stackoverflow.com/questions/2097813/how-to-parse-the-androidmanifest-xml-file-inside-an-apk-package
@@ -475,8 +480,7 @@ string AndroidAPKPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, size_t
 				oss << ' ';
 			}
 
-			oss << "</" + compXmlString(pXml, xmlLen, sitOff, stOff, nameSi) << ">";
-			oss << "  (line " << startTagLineNo << '-' << lineNo << ')' << '\n';
+			oss << "</" + compXmlString(pXml, xmlLen, sitOff, stOff, nameSi) << ">\n";
 			//tr.parent();  // Step back up the NobTree
 		} else if (tag0 == endDocTag) {  // END OF XML DOC TAG
 			break;
@@ -488,7 +492,15 @@ string AndroidAPKPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, size_t
 		}
 	} // end of while loop scanning tags and attributes of XML tree
 
-	return oss.str();
+	// Convert to a PugiXML document.
+	// TODO: Build a PugiXML document instead of building a string?
+	string s_xml = oss.str();
+	xml_document doc;
+	xml_parse_result result = doc.load_buffer(s_xml.data(), s_xml.size(), parse_default, encoding_utf8);
+	if (!result) {
+		return {};
+	}
+	return doc;
 }
 
 /**
@@ -514,8 +526,11 @@ int AndroidAPKPrivate::loadAndroidManifestXml(void)
 		return -ENOENT;
 	}
 
-	string xml = decompressAndroidBinaryXml(AndroidManifest_xml_buf.data(), AndroidManifest_xml_buf.size());
-	printf("%s\n", xml.c_str());
+	xml_document xml = decompressAndroidBinaryXml(AndroidManifest_xml_buf.data(), AndroidManifest_xml_buf.size());
+
+	ostringstream oss;
+	xml.print(oss);
+	printf("%s\n", oss.str().c_str());
 	return 0;
 }
 
