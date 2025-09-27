@@ -655,10 +655,6 @@ AndroidAPK::AndroidAPK(const IRpFilePtr &file)
 		d->file.reset();
 		return;
 	}
-
-	ostringstream oss;
-	d->manifest_xml->print(oss);
-	printf("%s\n", oss.str().c_str());
 }
 
 /**
@@ -741,12 +737,104 @@ int AndroidAPK::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid) {
-		// ROM image isn't valid.
+	} else if (!d->isValid || !d->manifest_xml) {
+		// APK isn't valid, and/or AndroidManifest.xml could not be loaded.
 		return -EIO;
 	}
 
-	// TODO
+	d->fields.reserve(5);	// Maximum of 5 fields.
+
+	// Get fields from the XML file.
+	xml_node manifest_node = d->manifest_xml->child("manifest");
+	if (!manifest_node) {
+		// No "<manifest>" node???
+		return static_cast<int>(d->fields.count());
+	}
+
+	// Application information
+	xml_node application_node = manifest_node.child("application");
+	if (application_node) {
+		const char *const label = application_node.attribute("label").as_string(nullptr);
+		if (label && label[0] != '\0') {
+			d->fields.addField_string(C_("AndroidAPK", "Title"), label);
+		}
+
+		const char *const name = application_node.attribute("name").as_string(nullptr);
+		if (name && name[0] != '\0') {
+			d->fields.addField_string(C_("AndroidAPK", "Package Name"), name);
+		}
+
+		const char *const description = application_node.attribute("description").as_string(nullptr);
+		if (description && description[0] != '\0') {
+			d->fields.addField_string(C_("AndroidAPK", "Description"), description);
+		}
+	}
+
+	// Copied from Nintendo3DS. (TODO: Centralize it?)
+#ifdef _WIN32
+	// Windows: 6 visible rows per RFT_LISTDATA.
+	static constexpr int rows_visible = 6;
+#else /* !_WIN32 */
+	// Linux: 4 visible rows per RFT_LISTDATA.
+	static constexpr int rows_visible = 4;
+#endif /* _WIN32 */
+
+	// Features
+	// TODO: Normalize/localize feature names?
+	// TODO: How to handle "Required"?
+	xml_node feature_node = manifest_node.child("uses-feature");
+	if (feature_node) {
+		auto *const vv_features = new RomFields::ListData_t;
+		do {
+			const char *const feature = feature_node.attribute("name").as_string(nullptr);
+			if (feature && feature[0] != '\0') {
+				vector<string> v_feature;
+				v_feature.push_back(feature);
+				vv_features->push_back(std::move(v_feature));
+			}
+
+			// Next feature
+			feature_node = feature_node.next_sibling("uses-feature");
+		} while (feature_node);
+
+		if (!vv_features->empty()) {
+			RomFields::AFLD_PARAMS params(0, rows_visible);
+			params.headers = nullptr;
+			params.data.single = vv_features;
+			d->fields.addField_listData(C_("AndroidAPK", "Features"), &params);
+		} else {
+			delete vv_features;
+		}
+	}
+
+	// Permissions
+	// TODO: Normalize/localize permission names?
+	// TODO: maxSdkVersion?
+	// TODO: Also handle "uses-permission-sdk-23"?
+	xml_node permission_node = manifest_node.child("uses-permission");
+	if (permission_node) {
+		auto *const vv_permissions = new RomFields::ListData_t;
+		do {
+			const char *const permission = permission_node.attribute("name").as_string(nullptr);
+			if (permission && permission[0] != '\0') {
+				vector<string> v_permission;
+				v_permission.push_back(permission);
+				vv_permissions->push_back(std::move(v_permission));
+			}
+
+			// Next permission
+			permission_node = permission_node.next_sibling("uses-permission");
+		} while (permission_node);
+
+		if (!vv_permissions->empty()) {
+			RomFields::AFLD_PARAMS params(0, rows_visible);
+			params.headers = nullptr;
+			params.data.single = vv_permissions;
+			d->fields.addField_listData(C_("AndroidAPK", "Permissions"), &params);
+		} else {
+			delete vv_permissions;
+		}
+	}
 
 	return static_cast<int>(d->fields.count());
 }
