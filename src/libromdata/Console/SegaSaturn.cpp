@@ -46,6 +46,10 @@ public:
 	static const RomDataInfo romDataInfo;
 
 public:
+	// Region code bitfield names
+	static const array<const char*, 4> region_code_bitfield_names;
+
+public:
 	/** RomFields **/
 
 	// Peripherals (RFT_BITFIELD) [bit values]
@@ -167,6 +171,14 @@ const array<const char*, 1+1> SegaSaturnPrivate::mimeTypes = {{
 const RomDataInfo SegaSaturnPrivate::romDataInfo = {
 	"SegaSaturn", exts.data(), mimeTypes.data()
 };
+
+// Region code bitfield names
+const array<const char*, 4> SegaSaturnPrivate::region_code_bitfield_names = {{
+	NOP_C_("Region", "Japan"),
+	NOP_C_("Region", "Taiwan"),
+	NOP_C_("Region", "USA"),
+	NOP_C_("Region", "Europe"),
+}};
 
 SegaSaturnPrivate::SegaSaturnPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
@@ -536,13 +548,8 @@ int SegaSaturn::loadFieldData(void)
 	// This is similar to older Mega Drive games, but different compared
 	// to Dreamcast. The region code is parsed in the constructor, since
 	// it might be used for branding purposes later.
-	static const array<const char*, 4> region_code_bitfield_names = {{
-		NOP_C_("Region", "Japan"),
-		NOP_C_("Region", "Taiwan"),
-		NOP_C_("Region", "USA"),
-		NOP_C_("Region", "Europe"),
-	}};
-	vector<string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n("Region", region_code_bitfield_names);
+	vector<string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
+		"Region", d->region_code_bitfield_names);
 	d->fields.addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code_bitfield_names, 0, d->saturn_region);
 
@@ -621,7 +628,7 @@ int SegaSaturn::loadMetaData(void)
 
 	// Sega Saturn disc header
 	const Saturn_IP0000_BIN_t *const discHeader = &d->discHeader;
-	d->metaData.reserve(5);	// Maximum of 5 metadata properties.
+	d->metaData.reserve(6);	// Maximum of 6 metadata properties.
 
 	// Title (TODO: Encoding?)
 	d->metaData.addMetaData_string(Property::Title,
@@ -648,6 +655,33 @@ int SegaSaturn::loadMetaData(void)
 	d->metaData.addMetaData_string(Property::GameID,
 		latin1_to_utf8(discHeader->product_number, sizeof(discHeader->product_number)),
 		RomFields::STRF_TRIM_END);
+
+	// Region code
+	// NOTE: Handling Japan and Taiwan as *separate* regions.
+	// For multi-region titles, region will be formatted as: "JTUE"
+	const char *i18n_region = nullptr;
+	for (size_t i = 0; i < d->region_code_bitfield_names.size(); i++) {
+		if (d->saturn_region == (1U << i)) {
+			i18n_region = d->region_code_bitfield_names[i];
+			break;
+		}
+	}
+
+	if (i18n_region) {
+		d->metaData.addMetaData_string(Property::RegionCode,
+			pgettext_expr("Region", i18n_region));
+	} else {
+		// Multi-region
+		static const char all_display_regions[] = "JTUE";
+		string s_region_code;
+		s_region_code.resize(sizeof(all_display_regions)-1, '-');
+		for (unsigned int i = 0; i < d->region_code_bitfield_names.size(); i++) {
+			if (d->saturn_region & (1U << i)) {
+				s_region_code[i] = all_display_regions[i];
+			}
+		}
+		d->metaData.addMetaData_string(Property::RegionCode, s_region_code);
+	}
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
