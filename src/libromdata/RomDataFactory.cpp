@@ -73,6 +73,7 @@ using std::vector;
 #include "disc/xdvdfs_structs.h"
 
 // RomData subclasses: Handhelds
+#include "Handheld/AndroidAPK.hpp"
 #include "Handheld/DMG.hpp"
 #include "Handheld/GameBoyAdvance.hpp"
 #include "Handheld/GameCom.hpp"
@@ -276,7 +277,7 @@ static const array<RomDataFns, 40> romDataFns_magic = {{
  * Headers with addresses other than 0 should be
  * placed at the end of this array.
  */
-static const array<RomDataFns, 39> romDataFns_header = {{
+static const array<RomDataFns, 40> romDataFns_header = {{
 	// Consoles
 	GetRomDataFns(ColecoVision, ATTR_HAS_METADATA),
 	GetRomDataFns(Dreamcast, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
@@ -311,6 +312,7 @@ static const array<RomDataFns, 39> romDataFns_header = {{
 
 	// Other
 	GetRomDataFns(Amiibo, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(AndroidAPK, 0),					// .apk [MUST BE BEFORE J2ME] (TODO: Handle .zip files like .iso?)
 	GetRomDataFns(J2ME, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),	// .jar and .jad (TODO: Handle .zip files like .iso?)
 	GetRomDataFns(MachO, ATTR_NONE),
 	GetRomDataFns(NintendoBadge, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),

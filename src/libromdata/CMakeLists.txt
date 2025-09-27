@@ -395,6 +395,10 @@ IF(ENABLE_XML)
 		Console/WiiUPackage_xml.cpp
 		Media/Wim_xml.cpp
 		Other/EXE_manifest.cpp
+		Handheld/AndroidAPK.cpp
+		)
+	SET(${PROJECT_NAME}_H ${${PROJECT_NAME}_H}
+		Handheld/AndroidAPK.hpp
 		)
 	IF(MSVC AND (NOT USE_INTERNAL_XML OR USE_INTERNAL_XML_DLL))
 		SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} Other/EXE_delayload.cpp)
