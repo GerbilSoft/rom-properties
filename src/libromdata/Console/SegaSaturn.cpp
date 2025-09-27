@@ -259,6 +259,8 @@ unsigned int SegaSaturnPrivate::parseRegionCodes(const char *region_codes, int s
 	if (!region_codes || size <= 0)
 		return 0;
 
+	// Compatible area symbol reference:
+	// https://segaretro.org/ROM_header#Compatible_area_symbol
 	unsigned int ret = 0;
 	for (int i = 0; i < size; i++) {
 		if (region_codes[i] == 0 || ISSPACE(region_codes[i]))
@@ -268,12 +270,16 @@ unsigned int SegaSaturnPrivate::parseRegionCodes(const char *region_codes, int s
 				ret |= SATURN_REGION_JAPAN;
 				break;
 			case 'T':
+			case 'K':
 				ret |= SATURN_REGION_TAIWAN;
 				break;
 			case 'U':
+			case 'B':
 				ret |= SATURN_REGION_USA;
 				break;
 			case 'E':
+			case 'A':
+			case 'L':
 				ret |= SATURN_REGION_EUROPE;
 				break;
 			default:
