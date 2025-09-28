@@ -204,15 +204,13 @@ public:
 
 	/**
 	 * Decompress Android binary XML.
+	 * Strings that are referencing resources will be printed as "@0x12345678".
 	 * @param pXml		[in] Android binary XML data
 	 * @param xmlLen	[in] Size of XML data
-	 * @param pArsc		[in,opt] Android resource data
-	 * @param arscLen	[in,opt] Size of resource data
 	 * @return PugiXML document, or an empty document on error.
 	 */
 	ATTR_ACCESS_SIZE(read_only, 2, 3)
-	ATTR_ACCESS_SIZE(read_only, 4, 5)
-	xml_document decompressAndroidBinaryXml(const uint8_t *pXml, size_t xmlLen, const uint8_t *pArsc = nullptr, size_t arscLen = 0);
+	xml_document decompressAndroidBinaryXml(const uint8_t *pXml, size_t xmlLen);
 
 	/**
 	 * Load AndroidManifest.xml from this->apkFile.
@@ -252,6 +250,36 @@ public:
 	// - Key: Resource ID
 	// - Value: Map of language IDs to values
 	unordered_map<uint32_t, response_map_t> responseMap_i18n;
+
+public:
+	/**
+	 * Add string field data.
+	 *
+	 * If the string is in the format "@0x12345678", it will be loaded from
+	 * resource.arsc if available, with RFT_STRING_MULTI.
+	 *
+	 * @param name Field name
+	 * @param str String
+	 * @param flags Formatting flags
+	 * @return Field index, or -1 on error.
+	 */
+	int addField_string_i18n(const char *name, const char *str, unsigned int flags = 0);
+
+	/**
+	 * Add string field data.
+	 *
+	 * If the string is in the format "@0x12345678", it will be loaded from
+	 * resource.arsc if available, with RFT_STRING_MULTI.
+	 *
+	 * @param name Field name
+	 * @param str String
+	 * @param flags Formatting flags
+	 * @return Field index, or -1 on error.
+	 */
+	int addField_string_i18n(const char *name, const std::string &str, unsigned int flags = 0)
+	{
+		return addField_string_i18n(name, str.c_str(), flags);
+	}
 };
 
 ROMDATA_IMPL(AndroidAPK)
@@ -868,13 +896,12 @@ const char *AndroidAPKPrivate::getStringFromResource(uint32_t id)
 
 /**
  * Decompress Android binary XML.
+ * Strings that are referencing resources will be printed as "@0x12345678".
  * @param pXml		[in] Android binary XML data
  * @param xmlLen	[in] Size of XML data
- * @param pArsc		[in,opt] Android resource data
- * @param arscLen	[in,opt] Size of resource data
  * @return PugiXML document, or an empty document on error.
  */
-xml_document AndroidAPKPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, size_t xmlLen, const uint8_t *pArsc, size_t arscLen)
+xml_document AndroidAPKPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, size_t xmlLen)
 {
 	// Reference:
 	// - https://stackoverflow.com/questions/2097813/how-to-parse-the-androidmanifest-xml-file-inside-an-apk-package
@@ -950,10 +977,6 @@ xml_document AndroidAPKPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, 
 	tags.push(doc);
 	xml_node cur_node = doc;	// current XML node
 
-	// Load resources if they aren't loaded already.
-	// TODO: Do this elsewhere?
-	loadResourceAsrc(pArsc, arscLen);
-
 	// Step through the XML tree element tags and attributes
 	uint32_t off = xmlTagOff;
 	while (off < xmlLen) {
@@ -991,19 +1014,8 @@ xml_document AndroidAPKPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, 
 					xmlAttr.set_value(compXmlString(pXml, xmlLen, sitOff, stOff, attrValueSi));
 				} else {
 					// Value is in the resource file.
-					const char *attr_value = nullptr;
-					if (pArsc && arscLen > 0) {
-						// Get it from the resource file.
-						attr_value = getStringFromResource(attrResId);
-					}
-					if (attr_value) {
-						xmlAttr.set_value(attr_value);
-					} else {
-						// Resource not found, or no resource file...
-						char buf[48];
-						snprintf(buf, sizeof(buf), "resourceID 0x%x", attrResId);
-						xmlAttr.set_value(buf);
-					}
+					// Print the resource ID here so we can handle multi-language lookup later.
+					xmlAttr.set_value(fmt::format(FSTR("@0x{:0>8X}"), attrResId));
 				}
 				//tr.add(attrName, attrValue);
 			}
@@ -1068,24 +1080,79 @@ int AndroidAPKPrivate::loadAndroidManifestXml(void)
 		return -ENOENT;
 	}
 
-	// Load resources.arsc.
-	// NOTE: We have to load the full file due to .zip limitations.
-	// TODO: Figure out the best "max size".
-	rp::uvector<uint8_t> resources_arsc_buf = loadFileFromZip(
-		"resources.arsc", resources_arsc_FILE_SIZE_MAX);
-
 	xml_document xml = decompressAndroidBinaryXml(
-		AndroidManifest_xml_buf.data(), AndroidManifest_xml_buf.size(),
-		resources_arsc_buf.data(), resources_arsc_buf.size());
+		AndroidManifest_xml_buf.data(), AndroidManifest_xml_buf.size());
 	if (xml.empty()) {
 		// Empty???
 		manifest_xml.reset();
 		return -EIO;
 	}
 
+	// Load resources.arsc.
+	// NOTE: We have to load the full file due to .zip limitations.
+	// TODO: Figure out the best "max size".
+	rp::uvector<uint8_t> resources_arsc_buf = loadFileFromZip(
+		"resources.arsc", resources_arsc_FILE_SIZE_MAX);
+	loadResourceAsrc(resources_arsc_buf.data(), resources_arsc_buf.size());
+
 	manifest_xml.reset(new xml_document);
 	*manifest_xml = std::move(xml);
 	return 0;
+}
+
+/**
+ * Add string field data.
+ *
+ * If the string is in the format "@0x12345678", it will be loaded from
+ * resource.arsc if available, with RFT_STRING_MULTI.
+ *
+ * @param name Field name
+ * @param str String
+ * @param flags Formatting flags
+ * @return Field index, or -1 on error.
+ */
+int AndroidAPKPrivate::addField_string_i18n(const char *name, const char *str, unsigned int flags)
+{
+	// Check if the name is in the format "@0x12345678".
+	if (str[0] == '@' && str[1] == '0' && str[2] == 'x' && str[3] != '\0') {
+		// Convert from hexadecimal.
+		char *pEnd = nullptr;
+		uint32_t resource_id = strtoul(&str[3], &pEnd, 16);
+		if (resource_id != 0 && pEnd && *pEnd == '\0') {
+			// Resource ID parsed.
+			auto iter = responseMap_i18n.find(resource_id);
+			if (iter != responseMap_i18n.end()) {
+				// Add the localized strings.
+				RomFields::StringMultiMap_t *const pStringMultiMap = new RomFields::StringMultiMap_t;
+				const auto &lcmap = iter->second;
+				for (auto iter2 : lcmap) {
+					// Get the first string from the vector.
+					// TODO: What to do with the rest of the strings?
+					const auto &vec = iter2.second;
+					if (vec.empty()) {
+						continue;
+					}
+					// NOTE: Replacing `lc == 0` with 'en'.
+					uint32_t lc = iter2.first;
+					if (lc == 0) {
+						lc = 'en';
+					}
+					pStringMultiMap->emplace(lc, vec[0]);
+				}
+				if (pStringMultiMap) {
+					// TODO: def_lc?
+					fields.addField_string_multi(name, pStringMultiMap, 'en', flags);
+					return fields.count();
+				} else {
+					// No strings...?
+					delete pStringMultiMap;
+				}
+			}
+		}
+	}
+
+	// Localization failed. Add the string as-is.
+	return fields.addField_string(name, str, flags);
 }
 
 /** AndroidAPK **/
@@ -1296,17 +1363,17 @@ int AndroidAPK::loadFieldData(void)
 	if (application_node) {
 		const char *const label = application_node.attribute("label").as_string(nullptr);
 		if (label && label[0] != '\0') {
-			d->fields.addField_string(C_("AndroidAPK", "Title"), label);
+			d->addField_string_i18n(C_("AndroidAPK", "Title"), label);
 		}
 
 		const char *const name = application_node.attribute("name").as_string(nullptr);
 		if (name && name[0] != '\0') {
-			d->fields.addField_string(C_("AndroidAPK", "Package Name"), name);
+			d->addField_string_i18n(C_("AndroidAPK", "Package Name"), name);
 		}
 
 		const char *const description = application_node.attribute("description").as_string(nullptr);
 		if (description && description[0] != '\0') {
-			d->fields.addField_string(C_("AndroidAPK", "Description"), description);
+			d->addField_string_i18n(C_("AndroidAPK", "Description"), description);
 		}
 	}
 
