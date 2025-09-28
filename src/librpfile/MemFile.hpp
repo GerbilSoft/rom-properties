@@ -129,6 +129,15 @@ class RP_LIBROMDATA_PUBLIC MemFile : public IRpFile
 		 */
 		void setFilename(const std::string &filename);
 
+		/**
+		 * Get a direct pointer to the memory buffer.
+		 * @return Pointer to memory buffer
+		 */
+		const void *buffer(void) const
+		{
+			return m_buf;
+		}
+
 	protected:
 		const void *m_buf;	// Memory buffer
 		size_t m_size;		// Size of memory buffer

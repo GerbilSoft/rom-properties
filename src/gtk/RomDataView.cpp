@@ -771,10 +771,12 @@ rp_rom_data_view_init_string(RpRomDataView *page,
 	const RomFields::Field &field,
 	const char *str = nullptr)
 {
-	// String type.
+	// String type
 	GtkWidget *widget = gtk_label_new(nullptr);
 	// NOTE: No name for this GtkWidget.
 	gtk_label_set_use_underline(GTK_LABEL(widget), false);
+	// Automatically wrap long strings.
+	gtk_label_set_wrap(GTK_LABEL(widget), true);
 #if !GTK_CHECK_VERSION(4, 0, 0)
 	gtk_widget_show(widget);
 #endif /* !GTK_CHECK_VERSION(4, 0, 0) */

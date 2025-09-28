@@ -82,6 +82,7 @@ application/x-xbox360-executable	# Xbox360_XEX
 application/x-xbox360-patch		# Xbox360_XEX
 
 # Handheld
+application/vnd.android.package-archive	# AndroidAPK
 application/x-gameboy-rom		# DMG
 application/x-gameboy-color-rom		# DMG
 application/x-analogue-pocket-rom	# DMG

@@ -315,6 +315,10 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 		}
 	}
 
+	// Automatically wrap long strings.
+	lblString->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred));
+	lblString->setWordWrap(true);
+
 	// Enable strong focus so we can tab into the label.
 	lblString->setFocusPolicy(Qt::StrongFocus);
 
@@ -1267,6 +1271,7 @@ bool RomDataView::eventFilter(QObject *object, QEvent *event)
 	// Set the QTreeView height.
 	treeView->setMinimumHeight(height);
 	treeView->setMaximumHeight(height);
+	treeView->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
 
 	// Allow the event to propagate.
 	return false;

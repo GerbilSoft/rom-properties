@@ -2,6 +2,11 @@
 
 ## v2.7 (released 2025/??/??)
 
+* New parsers:
+  * AndroidAPK: Android packages. Supports retrieving basic metadata and the
+    package icon.
+    * Packages that use "adaptive icons" or .webp icons are not currently thumbnailed.
+
 * New features:
   * Windows, GNOME Nautilus (and Caja and Nemo): In Details view, rom-properties
     now provides columns for a few properties. Specifically, "Game ID", "Title ID",
