@@ -1310,19 +1310,24 @@ rp_image_const_ptr AndroidAPKPrivate::loadIcon(void)
 		icon_filename = resIcon.c_str();
 	}
 
-	// PNG data buffer
-	rp::uvector<uint8_t> png_buf;
-
 	// Attempt to load the file.
-	png_buf = loadFileFromZip(icon_filename, ICON_PNG_FILE_SIZE_MAX);
-	if (png_buf.empty()) {
+	rp::uvector<uint8_t> icon_buf = loadFileFromZip(icon_filename, ICON_PNG_FILE_SIZE_MAX);
+	if (icon_buf.size() < 8) {
 		// Unable to load the icon file.
+		return {};
+	}
+
+	// Check for an Adaptive Icon.
+	// The icon file will be a binary XML instead of a PNG image.
+	static const array<uint8_t, 4> AndroidBinaryXML_magic = {{0x03, 0x00, 0x08, 0x00}};
+	if (!memcmp(icon_buf.data(), AndroidBinaryXML_magic.data(), AndroidBinaryXML_magic.size())) {
+		// TODO: Handle adaptive icons.
 		return {};
 	}
 
 	// Create a MemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
-	MemFile f_mem(png_buf.data(), png_buf.size());
+	MemFile f_mem(icon_buf.data(), icon_buf.size());
 	this->img_icon = RpPng::load(&f_mem);
 	return this->img_icon;
 }
