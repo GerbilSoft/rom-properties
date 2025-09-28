@@ -685,7 +685,7 @@ int AndroidAPK::loadFieldData(void)
 		return -EIO;
 	}
 
-	d->fields.reserve(5);	// Maximum of 5 fields.
+	d->fields.reserve(7);	// Maximum of 7 fields.
 
 	// Get fields from the XML file.
 	xml_node manifest_node = d->manifest_xml->child("manifest");
@@ -710,6 +710,23 @@ int AndroidAPK::loadFieldData(void)
 		const char *const description = application_node.attribute("description").as_string(nullptr);
 		if (description && description[0] != '\0') {
 			d->addField_string_i18n(C_("AndroidAPK", "Description"), description);
+		}
+	}
+
+	// Version (and version code)
+	const char *const versionName = manifest_node.attribute("versionName").as_string(nullptr);
+	if (versionName && versionName[0] != '\0') {
+		d->fields.addField_string(C_("AndroidAPK", "Version"), versionName);
+	}
+	const char *const s_versionCode = manifest_node.attribute("versionCode").as_string(nullptr);
+	if (s_versionCode && s_versionCode[0] != '\0') {
+		// NOTE: versionCode might be formatted as a resource ID.
+		const char *const s_versionCode_title = C_("AndroidAPK", "Version Code");
+		const uint32_t versionCode = AndroidResourceReader::parseResourceID(s_versionCode);
+		if (versionCode != 0) {
+			d->fields.addField_string_numeric(s_versionCode_title, versionCode);
+		} else {
+			d->fields.addField_string(s_versionCode_title, s_versionCode);
 		}
 	}
 
