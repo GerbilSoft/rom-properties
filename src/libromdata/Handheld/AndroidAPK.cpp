@@ -917,7 +917,16 @@ const char *AndroidAPKPrivate::getStringFromResource(uint32_t id)
 	if (vec.empty()) {
 		return nullptr;
 	}
-	return vec[0].c_str();
+
+	// Find the first non-empty string.
+	for (const auto &str : vec) {
+		if (!str.empty()) {
+			return str.c_str();
+		}
+	}
+
+	// No non-empty strings with this ID were found...
+	return nullptr;
 }
 
 /**
@@ -1171,6 +1180,8 @@ int AndroidAPKPrivate::addField_string_i18n(const char *name, const char *str, u
 			RomFields::StringMultiMap_t *const pStringMultiMap = new RomFields::StringMultiMap_t;
 			const auto &lcmap = iter->second;
 
+			// TODO: Find the first non-empty string in each vector.
+
 			// Get the English string first and use it to de-duplicate other strings.
 			const string *s_en = nullptr;
 			uint32_t lc_dedupe = 0;
@@ -1214,6 +1225,7 @@ int AndroidAPKPrivate::addField_string_i18n(const char *name, const char *str, u
 				if (vec.empty()) {
 					continue;
 				}
+
 				const string &str = vec[0];
 				if (s_en && *s_en == str) {
 					// Matches 'en'.
@@ -1299,9 +1311,13 @@ rp_image_const_ptr AndroidAPKPrivate::loadIcon(void)
 			const unsigned int density = (iter2.first & ~DENSITY_FLAG);
 			if (density > highest_density) {
 				const auto &vec = iter2.second;
-				if (!vec.empty()) {
-					resIcon = vec[0];
-					highest_density = density;
+				// Find the first non-empty entry.
+				for (const auto &str : vec) {
+					if (!str.empty()) {
+						resIcon = str;
+						highest_density = density;
+						break;
+					}
 				}
 			}
 		}
