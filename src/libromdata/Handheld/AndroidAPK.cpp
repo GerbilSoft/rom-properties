@@ -93,6 +93,9 @@ public:
 	// Opened .apk file
 	unzFile apkFile;
 
+	// Icon
+	rp_image_ptr img_icon;
+
 public:
 	/**
 	 * Open a Zip file for reading.
@@ -224,6 +227,7 @@ public:
 	// Maximum size for various files.
 	static constexpr size_t AndroidManifest_xml_FILE_SIZE_MAX = (256U * 1024U);
 	static constexpr size_t resources_arsc_FILE_SIZE_MAX = (4096U * 1024U);
+	static constexpr size_t ICON_PNG_FILE_SIZE_MAX = (1024U * 1024U);;
 
 	// Binary XML tags
 	static constexpr uint32_t endDocTag	= 0x00100000 | RES_XML_END_NAMESPACE_TYPE;
@@ -251,7 +255,16 @@ public:
 	// - Value: Map of language IDs to values
 	unordered_map<uint32_t, response_map_t> responseMap_i18n;
 
+	static constexpr uint32_t DENSITY_FLAG = (1U << 31);
+
 public:
+	/**
+	 * Parse a resource ID from the XML.
+	 * @param str Resource ID (in format: "@0x12345678")
+	 * @return Resource ID, or 0 if not valid
+	 */
+	static uint32_t parseResourceID(const char *str);
+
 	/**
 	 * Add string field data.
 	 *
@@ -280,6 +293,13 @@ public:
 	{
 		return addField_string_i18n(name, str.c_str(), flags);
 	}
+
+public:
+	/**
+	 * Load the icon.
+	 * @return Icon, or nullptr on error.
+	 */
+	rp_image_const_ptr loadIcon(void);
 };
 
 ROMDATA_IMPL(AndroidAPK)
@@ -621,6 +641,12 @@ int AndroidAPKPrivate::processType(const uint8_t *data, size_t size, unsigned in
 			// Not supported.
 			return 0;
 		}
+	}
+
+	// For the application icon, the locale will be 0 and density non-zero.
+	if (lc == 0 && pResTableType->config.density != 0) {
+		// We'll indicate this is an icon by setting the high bit.
+		lc = DENSITY_FLAG | pResTableType->config.density;
 	}
 
 	// Key: resource_id
@@ -1101,6 +1127,26 @@ int AndroidAPKPrivate::loadAndroidManifestXml(void)
 }
 
 /**
+ * Parse a resource ID from the XML.
+ * @param str Resource ID (in format: "@0x12345678")
+ * @return Resource ID, or 0 if not valid
+ */
+uint32_t AndroidAPKPrivate::parseResourceID(const char *str)
+{
+	if (str[0] == '@' && str[1] == '0' && str[2] == 'x' && str[3] != '\0') {
+		// Convert from hexadecimal.
+		char *pEnd = nullptr;
+		uint32_t resource_id = strtoul(&str[3], &pEnd, 16);
+		if (resource_id != 0 && pEnd && *pEnd == '\0') {
+			return resource_id;
+		}
+	}
+
+	// Not valid.
+	return 0;
+}
+
+/**
  * Add string field data.
  *
  * If the string is in the format "@0x12345678", it will be loaded from
@@ -1114,45 +1160,126 @@ int AndroidAPKPrivate::loadAndroidManifestXml(void)
 int AndroidAPKPrivate::addField_string_i18n(const char *name, const char *str, unsigned int flags)
 {
 	// Check if the name is in the format "@0x12345678".
-	if (str[0] == '@' && str[1] == '0' && str[2] == 'x' && str[3] != '\0') {
-		// Convert from hexadecimal.
-		char *pEnd = nullptr;
-		uint32_t resource_id = strtoul(&str[3], &pEnd, 16);
-		if (resource_id != 0 && pEnd && *pEnd == '\0') {
-			// Resource ID parsed.
-			auto iter = responseMap_i18n.find(resource_id);
-			if (iter != responseMap_i18n.end()) {
-				// Add the localized strings.
-				RomFields::StringMultiMap_t *const pStringMultiMap = new RomFields::StringMultiMap_t;
-				const auto &lcmap = iter->second;
-				for (auto iter2 : lcmap) {
-					// Get the first string from the vector.
-					// TODO: What to do with the rest of the strings?
-					const auto &vec = iter2.second;
-					if (vec.empty()) {
-						continue;
-					}
-					// NOTE: Replacing `lc == 0` with 'en'.
-					uint32_t lc = iter2.first;
-					if (lc == 0) {
-						lc = 'en';
-					}
-					pStringMultiMap->emplace(lc, vec[0]);
+	const uint32_t resource_id = parseResourceID(str);
+	if (resource_id != 0) {
+		// Resource ID parsed.
+		auto iter = responseMap_i18n.find(resource_id);
+		if (iter != responseMap_i18n.end()) {
+			// Add the localized strings.
+			RomFields::StringMultiMap_t *const pStringMultiMap = new RomFields::StringMultiMap_t;
+			const auto &lcmap = iter->second;
+			for (auto iter2 : lcmap) {
+				// Get the first string from the vector.
+				// TODO: What to do with the rest of the strings?
+				const auto &vec = iter2.second;
+				if (vec.empty()) {
+					continue;
 				}
-				if (pStringMultiMap) {
-					// TODO: def_lc?
-					fields.addField_string_multi(name, pStringMultiMap, 'en', flags);
-					return fields.count();
-				} else {
-					// No strings...?
-					delete pStringMultiMap;
+				// NOTE: Replacing `lc == 0` with 'en'.
+				uint32_t lc = iter2.first;
+				if (lc == 0) {
+					lc = 'en';
 				}
+				pStringMultiMap->emplace(lc, vec[0]);
+			}
+			if (pStringMultiMap) {
+				// TODO: def_lc?
+				fields.addField_string_multi(name, pStringMultiMap, 'en', flags);
+				return fields.count();
+			} else {
+				// No strings...?
+				delete pStringMultiMap;
 			}
 		}
 	}
 
 	// Localization failed. Add the string as-is.
 	return fields.addField_string(name, str, flags);
+}
+
+/**
+ * Load the icon.
+ * @return Icon, or nullptr on error.
+ */
+rp_image_const_ptr AndroidAPKPrivate::loadIcon(void)
+{
+	if (img_icon) {
+		// Icon has already been loaded.
+		return img_icon;
+	} else if (!this->isValid) {
+		// Can't load the icon.
+		return {};
+	}
+
+	// Make sure the .apk file is open.
+	if (!apkFile) {
+		// Not open...
+		return {};
+	}
+
+	// Get the icon filename from the AndroidManfiest.xml file.
+	xml_node manifest_node = manifest_xml->child("manifest");
+	if (!manifest_node) {
+		// No "<manifest>" node???
+		return {};
+	}
+	xml_node application_node = manifest_node.child("application");
+	if (!application_node) {
+		return {};
+	}
+	const char *icon_filename = application_node.attribute("icon").as_string(nullptr);
+	if (!icon_filename || icon_filename[0] == '\0') {
+		return {};
+	}
+
+	// TODO: Lower density on request?
+	unsigned int highest_density = 0;
+	const uint32_t resource_id = parseResourceID(icon_filename);
+	string resIcon;	// FIXME: Copying the pointer doesn't seem to work???
+	if (resource_id != 0) {
+		// Icon filename has a resource ID.
+		// Find the icon with the highest density.
+		auto iter = responseMap_i18n.find(resource_id);
+		if (iter == responseMap_i18n.end()) {
+			return {};
+		}
+		const auto &lcmap = iter->second;
+
+		icon_filename = nullptr;
+		for (auto iter2 : lcmap) {
+			if (!(iter2.first & DENSITY_FLAG)) {
+				continue;
+			}
+
+			const unsigned int density = (iter2.first & ~DENSITY_FLAG);
+			if (density > highest_density) {
+				const auto &vec = iter2.second;
+				if (!vec.empty()) {
+					resIcon = vec[0];
+					highest_density = density;
+				}
+			}
+		}
+	}
+	if (!resIcon.empty()) {
+		icon_filename = resIcon.c_str();
+	}
+
+	// PNG data buffer
+	rp::uvector<uint8_t> png_buf;
+
+	// Attempt to load the file.
+	png_buf = loadFileFromZip(icon_filename, ICON_PNG_FILE_SIZE_MAX);
+	if (png_buf.empty()) {
+		// Unable to load the icon file.
+		return {};
+	}
+
+	// Create a MemFile and decode the image.
+	// TODO: For rpcli, shortcut to extract the PNG directly.
+	MemFile f_mem(png_buf.data(), png_buf.size());
+	this->img_icon = RpPng::load(&f_mem);
+	return this->img_icon;
 }
 
 /** AndroidAPK **/
@@ -1331,6 +1458,58 @@ const char *AndroidAPK::systemName(unsigned int type) const
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t AndroidAPK::supportedImageTypes(void) const
+{
+	return IMGBF_INT_ICON;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> AndroidAPK::supportedImageSizes_static(ImageType imageType)
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+		case IMG_INT_ICON:
+			// TODO: Get the actual image size.
+			return {{nullptr, 64, 64, 0}};
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return {};
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> AndroidAPK::supportedImageSizes(ImageType imageType) const
+{
+	ASSERT_supportedImageSizes(imageType);
+	//RP_D(const AndroidAPK);
+
+	switch (imageType) {
+		case IMG_INT_ICON:
+			// TODO: Get the actual image size.
+			return {{nullptr, 64, 64, 0}};
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return {};
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -1444,6 +1623,27 @@ int AndroidAPK::loadFieldData(void)
 	}
 
 	return static_cast<int>(d->fields.count());
+}
+
+/**
+ * Load an internal image.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Reference to rp_image_const_ptr to store the image in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int AndroidAPK::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
+{
+	ASSERT_loadInternalImage(imageType, pImage);
+	RP_D(AndroidAPK);
+
+	ROMDATA_loadInternalImage_single(
+		IMG_INT_ICON,	// ourImageType
+		d->file,	// file
+		d->isValid,	// isValid
+		0,		// romType
+		d->img_icon,	// imgCache
+		d->loadIcon);	// func
 }
 
 } // namespace LibRomData

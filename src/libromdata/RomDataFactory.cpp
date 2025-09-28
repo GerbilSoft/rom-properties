@@ -312,7 +312,7 @@ static const array<RomDataFns, 40> romDataFns_header = {{
 
 	// Other
 	GetRomDataFns(Amiibo, ATTR_HAS_THUMBNAIL),
-	GetRomDataFns(AndroidAPK, 0),					// .apk [MUST BE BEFORE J2ME] (TODO: Handle .zip files like .iso?)
+	GetRomDataFns(AndroidAPK, ATTR_HAS_THUMBNAIL),			// .apk [MUST BE BEFORE J2ME] (TODO: Handle .zip files like .iso?)
 	GetRomDataFns(J2ME, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),	// .jar and .jad (TODO: Handle .zip files like .iso?)
 	GetRomDataFns(MachO, ATTR_NONE),
 	GetRomDataFns(NintendoBadge, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
