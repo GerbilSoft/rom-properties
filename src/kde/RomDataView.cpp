@@ -1271,6 +1271,7 @@ bool RomDataView::eventFilter(QObject *object, QEvent *event)
 	// Set the QTreeView height.
 	treeView->setMinimumHeight(height);
 	treeView->setMaximumHeight(height);
+	treeView->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
 
 	// Allow the event to propagate.
 	return false;
