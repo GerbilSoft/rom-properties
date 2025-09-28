@@ -1119,7 +1119,9 @@ int AndroidAPKPrivate::loadAndroidManifestXml(void)
 	// TODO: Figure out the best "max size".
 	rp::uvector<uint8_t> resources_arsc_buf = loadFileFromZip(
 		"resources.arsc", resources_arsc_FILE_SIZE_MAX);
-	loadResourceAsrc(resources_arsc_buf.data(), resources_arsc_buf.size());
+	if (!resources_arsc_buf.empty()) {
+		loadResourceAsrc(resources_arsc_buf.data(), resources_arsc_buf.size());
+	}
 
 	manifest_xml.reset(new xml_document);
 	*manifest_xml = std::move(xml);
