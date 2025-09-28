@@ -1164,17 +1164,60 @@ int AndroidAPKPrivate::addField_string_i18n(const char *name, const char *str, u
 	if (resource_id != 0) {
 		// Resource ID parsed.
 		auto iter = responseMap_i18n.find(resource_id);
-		if (iter != responseMap_i18n.end()) {
+		if (iter != responseMap_i18n.end() && !iter->second.empty()) {
 			// Add the localized strings.
 			RomFields::StringMultiMap_t *const pStringMultiMap = new RomFields::StringMultiMap_t;
 			const auto &lcmap = iter->second;
+
+			// Get the English string first and use it to de-duplicate other strings.
+			const string *s_en = nullptr;
+			uint32_t lc_dedupe = 0;
+			auto iter_en = lcmap.find('en');
+			if (iter_en != lcmap.end()) {
+				const auto &vec = iter_en->second;
+				if (!vec.empty()) {
+					s_en = &vec[0];
+					lc_dedupe = 'en';
+					pStringMultiMap->emplace(lc_dedupe, vec[0]);
+				}
+			}
+			if (!s_en) {
+				iter_en = lcmap.find(0);
+				if (iter_en != lcmap.end()) {
+					const auto &vec = iter_en->second;
+					if (!vec.empty()) {
+						s_en = &vec[0];
+						lc_dedupe = 0;
+						pStringMultiMap->emplace('en', vec[0]);
+					}
+				}
+			}
+			if (!s_en) {
+				iter_en = lcmap.begin();
+				const auto &vec = iter_en->second;
+				if (!vec.empty()) {
+					s_en = &vec[0];
+					lc_dedupe = iter_en->first;
+					pStringMultiMap->emplace(lc_dedupe, vec[0]);
+				}
+			}
+
 			for (auto iter2 : lcmap) {
 				// Get the first string from the vector.
 				// TODO: What to do with the rest of the strings?
+				if (iter2.first == lc_dedupe) {
+					continue;
+				}
 				const auto &vec = iter2.second;
 				if (vec.empty()) {
 					continue;
 				}
+				const string &str = vec[0];
+				if (s_en && *s_en == str) {
+					// Matches 'en'.
+					continue;
+				}
+
 				// NOTE: Replacing `lc == 0` with 'en'.
 				uint32_t lc = iter2.first;
 				if (lc == 0) {
