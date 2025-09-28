@@ -149,13 +149,26 @@ public:
 	static string compXmlString(const uint8_t *pXml, uint32_t xmlLen, uint32_t sitOff, uint32_t stOff, int strInd);
 
 	/**
+	 * Get a string from Android resource data.
+	 * @param pArsc		[in] Android resource data
+	 * @param arscLen	[in] Size of resource data
+	 * @param id		[in] Resource ID
+	 * @return Pointer to string within pArsc, or nullptr if not found.
+	 */
+	ATTR_ACCESS_SIZE(read_only, 1, 2)
+	static const char *getStringFromResource(const uint8_t *pArsc, size_t arscLen, uint32_t id);
+
+	/**
 	 * Decompress Android binary XML.
-	 * @param pXml Android binary XML data
-	 * @param xmlLen Size of data
+	 * @param pXml		[in] Android binary XML data
+	 * @param xmlLen	[in] Size of XML data
+	 * @param pArsc		[in,opt] Android resource data
+	 * @param arscLen	[in,opt] Size of resource data
 	 * @return PugiXML document, or an empty document on error.
 	 */
 	ATTR_ACCESS_SIZE(read_only, 1, 2)
-	static xml_document decompressAndroidBinaryXml(const uint8_t *pXml, size_t xmlLen);
+	ATTR_ACCESS_SIZE(read_only, 3, 4)
+	static xml_document decompressAndroidBinaryXml(const uint8_t *pXml, size_t xmlLen, const uint8_t *pArsc = nullptr, size_t arscLen = 0);
 
 	/**
 	 * Load AndroidManifest.xml from this->apkFile.
@@ -168,7 +181,7 @@ public:
 public:
 	// Maximum size for various files.
 	static constexpr size_t AndroidManifest_xml_FILE_SIZE_MAX = (256U * 1024U);
-	static constexpr size_t resources_asrc_FILE_SIZE_MAX = (4096U * 1024U);
+	static constexpr size_t resources_arsc_FILE_SIZE_MAX = (4096U * 1024U);
 
 	// Binary XML tags
 	static constexpr uint32_t endDocTag	= 0x00100000 | RES_XML_END_NAMESPACE_TYPE;
@@ -345,12 +358,158 @@ string AndroidAPKPrivate::compXmlString(const uint8_t *pXml, uint32_t xmlLen, ui
 }
 
 /**
+ * Get a string from Android resource data.
+ * @param pArsc		[in] Android resource data
+ * @param arscLen	[in] Size of resource data
+ * @param id		[in] Resource ID
+ * @return Pointer to string within pArsc, or nullptr if not found.
+ */
+const char *AndroidAPKPrivate::getStringFromResource(const uint8_t *pArsc, size_t arscLen, uint32_t id)
+{
+	assert(pArsc != nullptr);
+	assert(arscLen > 0);
+	if (!pArsc || arscLen == 0) {
+		return nullptr;
+	}
+
+	// FIXME: Res_GETTYPE() subtracts 1...
+	const unsigned int res_type = (id >> 16) & 0xFF; //Res_GETTYPE(id);
+	const unsigned int res_index = Res_GETENTRY(id);
+
+	const uint8_t *p = pArsc;
+	const uint8_t *const pEnd = p + arscLen;
+
+	// Search for a chunk header with type RES_STRING_POOL_TYPE.
+	// Reference: https://android.googlesource.com/platform/frameworks/base/+/gingerbread/libs/utils/ResourceTypes.cpp
+	printf("Searching for resource ID: 0x%08X\n", id);
+	const ResStringPool_header *pStrPoolHdr = nullptr;
+	const ResTable_type *pResTblType = nullptr;
+
+	// First chunk header is RES_TABLE_TYPE and it contains the other chunks.
+	const ResTable_header *const pResTblHdr = reinterpret_cast<const ResTable_header*>(p);
+	p += pResTblHdr->header.headerSize;
+
+	// Process chunks within the main package.
+	while (p + sizeof(ResChunk_header) < pEnd) {
+		const ResChunk_header *const pHdr = reinterpret_cast<const ResChunk_header*>(p);
+		//printf("addr: 0x%08X, pHdr->type: %04X\n", (unsigned int)(p - pArsc), pHdr->type);
+		switch (pHdr->type) {
+			case RES_STRING_POOL_TYPE:
+				// Found the string pool chunk.
+				if (!pStrPoolHdr) {
+					if (p + sizeof(ResStringPool_header) >= pEnd) {
+						// Out of bounds!
+						return nullptr;
+					}
+					pStrPoolHdr = reinterpret_cast<const ResStringPool_header*>(p);
+				}
+				p += pHdr->size;
+				break;
+
+			case RES_TABLE_PACKAGE_TYPE:
+				// Package type table
+				// We don't need any actual info here, but the RES_TABLE_TYPE_TYPE chunks are next.
+				p += pHdr->headerSize;
+				break;
+
+			case RES_TABLE_TYPE_SPEC_TYPE:
+				// Skip this chunk.
+				p += pHdr->size;
+				break;
+
+			case RES_TABLE_TYPE_TYPE: {
+				// Check the type info.
+				if (!pResTblType) {
+					const ResTable_type *const pResTblType_tmp = reinterpret_cast<const ResTable_type*>(p);
+					if (pResTblType_tmp->id == res_type) {
+						// Found the correct ID.
+						// TODO: Multiple tables with the same ID - check config?
+						pResTblType = pResTblType_tmp;
+					}
+				}
+				p += pHdr->size;
+				break;
+			}
+
+			default:
+				p += pHdr->headerSize;
+				break;
+		}
+	}
+
+	if (!pStrPoolHdr || !pResTblType) {
+		printf("RES_STRING_POOL_TYPE and RES_TABLE_TYPE_TYPE not found!\n");
+		return nullptr;
+	}
+
+	printf("chunk: type == 0x%04X, headerSize == 0x%04X, size == 0x%08X\n",
+		pStrPoolHdr->header.type, pStrPoolHdr->header.headerSize, pStrPoolHdr->header.size);
+	printf("RES_STRING_POOL_TYPE: stringCount == %u, styleCount == %u, flags == %u, stringsStart == 0x%08X, stylesStart == 0x%08X\n",
+		pStrPoolHdr->stringCount, pStrPoolHdr->styleCount, pStrPoolHdr->flags, pStrPoolHdr->stringsStart, pStrPoolHdr->stylesStart);
+
+	// stringsStart is relative to the start of the chunk!
+	printf("actual stringsStart == 0x%08lX\n", pStrPoolHdr->stringsStart + (unsigned long)((const uint8_t*)pStrPoolHdr - pArsc));
+	const char *const pStrTbl = reinterpret_cast<const char*>(pStrPoolHdr) + pStrPoolHdr->stringsStart;
+
+	printf("RES_TABLE_TYPE_TYPE = id: %u, entryCount: %u, flags: %u\n", pResTblType->id, pResTblType->entryCount, pResTblType->flags);
+	printf("actual entriesStart == 0x%08lX\n", pResTblType->entriesStart + (unsigned long)((const uint8_t*)pResTblType - pArsc));
+	const uint8_t *const pResTblEntries_u8 = reinterpret_cast<const uint8_t*>(pResTblType) + pResTblType->entriesStart;
+
+	if (pResTblType->flags & ResTable_type::FLAG_SPARSE) {
+		// Sparse entries.
+		// TODO
+		return nullptr;
+	} else {
+		// Not-sparse entries.
+		// Entry table has ResTable_entry entries.
+		// TODO: Handle ResTable_entry flags?
+
+		// Get the address immediately after RES_TABLE_TYPE_TYPE, including skipping config.
+		printf("RES_TABLE_TYPE_TYPE addr: 0x%08lX\n", (unsigned long)((const uint8_t*)pResTblType - pArsc));
+		printf("RES_TABLE_TYPE_TYPE after config addr: 0x%08lX\n", (unsigned long)((const uint8_t*)pResTblType - pArsc) + pResTblType->config_size);
+		const uint32_t *const pResTbl_index_tbl = (const uint32_t*)((const uint8_t*)pResTblType + pResTblType->config_size);
+		printf("entry[0x%04X] == %08X\n", res_index, pResTbl_index_tbl[res_index]);
+		//unsigned int addr = (unsigned int)((const uint8_t*)pResTblType - pArsc);
+
+		// Get the offset of the entry.
+		//const uint32_t *const pResTblEntries_u32 = reinterpret_cast<const uint32_t*>(pResTblEntries_u8);
+		//const uint32_t entry_offset = pResTblEntries_u32[res_index];
+		//printf("entry_offset == %08X, actual addr == %08lX\n", entry_offset, entry_offset + pResTblType->entriesStart + (unsigned long)((const uint8_t*)pResTblType - pArsc));
+		const ResTable_entry *const pResTblEntries = reinterpret_cast<const ResTable_entry*>(pResTblEntries_u8);
+		const ResTable_entry *const pResTblEntry = &pResTblEntries[res_index];
+		printf("pResTblEntries[0x%04X]->key == 0x%08X\n", res_index, pResTblEntry->key.index);
+	}
+
+	// String pool offset table starts immediately after the header.
+	p = reinterpret_cast<const uint8_t*>(pStrPoolHdr);
+	const uint32_t *const pStrOffTbl = reinterpret_cast<const uint32_t*>(p + pStrPoolHdr->header.headerSize);
+	printf("pStrOffTbl == %08X\n", (unsigned int)((uint8_t*)pStrOffTbl - pArsc));
+	const unsigned int strOffTblSize = (pStrPoolHdr->stringsStart - sizeof(ResStringPool_header)) / sizeof(uint32_t);
+	printf("strOffTblSize == 0x%04X\n", strOffTblSize);
+	// FIXME: Divide by charsize;
+	const unsigned int strTblSize = (pStrPoolHdr->header.size - pStrPoolHdr->stringsStart);
+	printf("strTblSize == %u\n", strTblSize);
+
+	// Get the offset of the specified ID.
+	if (res_index > strOffTblSize) {
+		// ID is out of range?
+		return nullptr;
+	}
+
+	printf("res_index == 0x%04X, pStrOffTbl[res_index] == 0x%08X\n", id, pStrOffTbl[res_index]);
+	printf("string: %s\n", &pStrTbl[pStrOffTbl[res_index]]);
+	return nullptr;
+}
+
+/**
  * Decompress Android binary XML.
- * @param pXml Android binary XML data
- * @param xmlLen Size of data
+ * @param pXml		[in] Android binary XML data
+ * @param xmlLen	[in] Size of XML data
+ * @param pArsc		[in,opt] Android resource data
+ * @param arscLen	[in,opt] Size of resource data
  * @return PugiXML document, or an empty document on error.
  */
-xml_document AndroidAPKPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, size_t xmlLen)
+xml_document AndroidAPKPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, size_t xmlLen, const uint8_t *pArsc, size_t arscLen)
 {
 	// Reference:
 	// - https://stackoverflow.com/questions/2097813/how-to-parse-the-androidmanifest-xml-file-inside-an-apk-package
@@ -462,11 +621,20 @@ xml_document AndroidAPKPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, 
 					// Value is inline
 					xmlAttr.set_value(compXmlString(pXml, xmlLen, sitOff, stOff, attrValueSi));
 				} else {
-					// Value is in the resource file
-					// TODO: Get the resource.
-					char buf[48];
-					snprintf(buf, sizeof(buf), "resourceID 0x%x", attrResId);
-					xmlAttr.set_value(buf);
+					// Value is in the resource file.
+					const char *attr_value = nullptr;
+					if (pArsc && arscLen > 0) {
+						// Get it from the resource file.
+						attr_value = getStringFromResource(pArsc, arscLen, attrResId);
+					}
+					if (attr_value) {
+						xmlAttr.set_value(attr_value);
+					} else {
+						// Resource not found, or no resource file...
+						char buf[48];
+						snprintf(buf, sizeof(buf), "resourceID 0x%x", attrResId);
+						xmlAttr.set_value(buf);
+					}
 				}
 				//tr.add(attrName, attrValue);
 			}
@@ -531,7 +699,16 @@ int AndroidAPKPrivate::loadAndroidManifestXml(void)
 		return -ENOENT;
 	}
 
-	xml_document xml = decompressAndroidBinaryXml(AndroidManifest_xml_buf.data(), AndroidManifest_xml_buf.size());
+	// Load resources.arsc.
+	// NOTE: We have to load the full file due to .zip limitations.
+	// TODO: Figure out the best "max size".
+	rp::uvector<uint8_t> resources_arsc_buf = loadFileFromZip(
+		"resources.arsc", resources_arsc_FILE_SIZE_MAX);
+	printf("sz: %zu\n", resources_arsc_buf.size());
+
+	xml_document xml = decompressAndroidBinaryXml(
+		AndroidManifest_xml_buf.data(), AndroidManifest_xml_buf.size(),
+		resources_arsc_buf.data(), resources_arsc_buf.size());
 	if (xml.empty()) {
 		// Empty???
 		manifest_xml.reset();
