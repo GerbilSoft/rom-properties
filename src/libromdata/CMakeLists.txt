@@ -396,9 +396,11 @@ IF(ENABLE_XML)
 		Media/Wim_xml.cpp
 		Other/EXE_manifest.cpp
 		Handheld/AndroidAPK.cpp
+		Handheld/AndroidManifestXML.cpp
 		)
 	SET(${PROJECT_NAME}_H ${${PROJECT_NAME}_H}
 		Handheld/AndroidAPK.hpp
+		Handheld/AndroidManifestXML.hpp
 		Handheld/android_apk_structs.h
 		)
 	IF(MSVC AND (NOT USE_INTERNAL_XML OR USE_INTERNAL_XML_DLL))

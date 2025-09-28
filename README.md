@@ -182,6 +182,7 @@ button.
 |:-----------------------------:|:--------------:|:--------:|:---------------:|:---------------:|
 | Atari Lynx                    |       Yes      |    Yes   |       N/A       |        No       |
 | Bandai WonderSwan (Color)     |       Yes      |    Yes   |       N/A       |      Title      |
+| Google Android                |       Yes      |    Yes   |       Icon      |       N/A       |
 | J2ME                          |       Yes      |    Yes   |       Icon      |       N/A       |
 | Neo Geo Pocket (Color)        |       Yes      |    Yes   |       N/A       |      Title      |
 | Nintendo Game Boy (Color)     |       Yes      |    Yes   |       N/A       |      Title      |
@@ -200,6 +201,7 @@ button.
   retail systems.
 * The PSP parser supports both PSP game and UMD video discs, as well as
   several compressed disc formats: CISOv1, CISOv2, ZISO, JISO, and DAX.
+* The Android parser currently retrieves the largest icon available.
 
 ### Texture Formats
 

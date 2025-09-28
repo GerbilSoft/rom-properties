@@ -74,6 +74,7 @@ using std::vector;
 
 // RomData subclasses: Handhelds
 #include "Handheld/AndroidAPK.hpp"
+#include "Handheld/AndroidManifestXML.hpp"
 #include "Handheld/DMG.hpp"
 #include "Handheld/GameBoyAdvance.hpp"
 #include "Handheld/GameCom.hpp"
@@ -215,7 +216,7 @@ std::once_flag once_mimeTypes;
  *
  * TODO: Add support for multiple magic numbers per class.
  */
-static const array<RomDataFns, 40> romDataFns_magic = {{
+static const array<RomDataFns, 41> romDataFns_magic = {{
 	// Consoles
 	GetRomDataFns_addr(Atari7800, ATTR_HAS_METADATA, 4, 'RI78'),	// "ATARI7800"
 	GetRomDataFns_addr(GameCubeBNR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'BNR1'),
@@ -233,6 +234,7 @@ static const array<RomDataFns, 40> romDataFns_magic = {{
 	GetRomDataFns_addr(Xbox360_XEX, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XEX2'),
 
 	// Handhelds
+	GetRomDataFns_addr(AndroidManifestXML, 0, 0, 0x03000800),
 	GetRomDataFns_addr(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x104, 0xCEED6666),
 	GetRomDataFns_addr(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x304, 0xCEED6666),	// headered
 	GetRomDataFns_addr(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x104, 0x0110CEEF),	// Analogue Pocket

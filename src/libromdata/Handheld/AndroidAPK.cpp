@@ -32,12 +32,13 @@ using namespace LibRpTexture;
 #include <pugixml.hpp>
 using namespace pugi;
 
+// AndroidManifestXML parser
+#include "AndroidManifestXML.hpp"
+
 // C++ STL classes
 #include <limits>
 #include <stack>
 using std::array;
-using std::map;
-using std::ostringstream;
 using std::stack;
 using std::string;
 using std::unique_ptr;
@@ -113,47 +114,6 @@ public:
 	rp::uvector<uint8_t> loadFileFromZip(const char *filename, size_t max_size = std::numeric_limits<size_t>::max());
 
 	/**
-	 * Read a little-endian 32-bit word from the data.
-	 * @param pData Data.
-	 * @param dataLen Length of data. (32-bit maximum)
-	 * @param offset Offset to read from.
-	 * @return Little-endian 32-bit word.
-	 */
-	static inline uint32_t LEW(const uint8_t *pData, uint32_t dataLen, size_t offset)
-	{
-		assert(offset + 3 < dataLen);
-		if (offset + 3 >= dataLen) {
-			// Out of bounds.
-			// TODO: Fail.
-			return 0;
-		}
-
-		// TODO: Optimize with a 32-bit read?
-		return (pData[offset+3] << 24) |
-		       (pData[offset+2] << 16) |
-		       (pData[offset+1] <<  8) |
-		        pData[offset+0];
-	}
-
-	/**
-	 * Return the string stored in StringTable format at offset strOff.
-	 * This offset points to the 16-bit string length, which is followed
-	 * by that number of 16-bit (Unicode) characters.
-	 */
-	static string compXmlStringAt(const uint8_t *pXml, uint32_t xmlLen, uint32_t strOff);
-
-	/**
-	 * Compose an XML string.
-	 * @param pXml Compressed XML data.
-	 * @param xmlLen Length of pXml. (32-bit maximum)
-	 * @param sitOff StringIndexTable offset.
-	 * @param stOff StringTable offset.
-	 * @param strInd String index.
-	 * @return XML string.
-	 */
-	static string compXmlString(const uint8_t *pXml, uint32_t xmlLen, uint32_t sitOff, uint32_t stOff, int strInd);
-
-	/**
 	 * Process an Android resource string pool.
 	 * @param data Start of string pool
 	 * @param size Size of string pool
@@ -206,16 +166,6 @@ public:
 	const char *getStringFromResource(uint32_t id);
 
 	/**
-	 * Decompress Android binary XML.
-	 * Strings that are referencing resources will be printed as "@0x12345678".
-	 * @param pXml		[in] Android binary XML data
-	 * @param xmlLen	[in] Size of XML data
-	 * @return PugiXML document, or an empty document on error.
-	 */
-	ATTR_ACCESS_SIZE(read_only, 2, 3)
-	xml_document decompressAndroidBinaryXml(const uint8_t *pXml, size_t xmlLen);
-
-	/**
 	 * Load AndroidManifest.xml from this->apkFile.
 	 * this->apkFile must have already been opened.
 	 * TODO: Store it in a PugiXML document, but need to check delay-load...
@@ -229,10 +179,8 @@ public:
 	static constexpr size_t resources_arsc_FILE_SIZE_MAX = (4096U * 1024U);
 	static constexpr size_t ICON_PNG_FILE_SIZE_MAX = (1024U * 1024U);;
 
-	// Binary XML tags
-	static constexpr uint32_t endDocTag	= 0x00100000 | RES_XML_END_NAMESPACE_TYPE;
-	static constexpr uint32_t startTag	= 0x00100000 | RES_XML_START_ELEMENT_TYPE;
-	static constexpr uint32_t endTag	= 0x00100103 | RES_XML_END_ELEMENT_TYPE;
+	// Binary XML "magic"
+	static const array<uint8_t, 4> AndroidBinaryXML_magic;
 
 	// AndroidManifest.xml document
 	// NOTE: Using a pointer to prevent delay-load issues.
@@ -322,6 +270,8 @@ const RomDataInfo AndroidAPKPrivate::romDataInfo = {
 	"AndroidAPK", exts.data(), mimeTypes.data()
 };
 
+// Binary XML "magic"
+const array<uint8_t, 4> AndroidAPKPrivate::AndroidBinaryXML_magic = {{0x03, 0x00, 0x08, 0x00}};
 
 AndroidAPKPrivate::AndroidAPKPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
@@ -410,60 +360,6 @@ rp::uvector<uint8_t> AndroidAPKPrivate::loadFileFromZip(const char *filename, si
 	}
 
 	return buf;
-}
-
-/**
- * Return the string stored in StringTable format at offset strOff.
- * This offset points to the 16-bit string length, which is followed
- * by that number of 16-bit (Unicode) characters.
- */
-string AndroidAPKPrivate::compXmlStringAt(const uint8_t *pXml, uint32_t xmlLen, uint32_t strOff)
-{
-	assert(strOff + 1 < xmlLen);
-	if (strOff + 1 >= xmlLen) {
-		// Out of bounds.
-		return string();
-	}
-
-	const uint16_t len = (pXml[strOff+1] << 8) |
-			      pXml[strOff+0];
-	assert(strOff + 2 + len < xmlLen);
-	if (strOff + 2 + len >= xmlLen) {
-		// Out of bounds.
-		return string();
-	}
-
-	// Convert from UTF-16LE to UTF-8.
-	// TODO: Verify that it's always UTF-16LE.
-	return utf16le_to_utf8(reinterpret_cast<const char16_t*>(&pXml[strOff + 2]), len);
-} // end of compXmlStringAt
-
-/**
- * Compose an XML string.
- * @param pXml Compressed XML data.
- * @param xmlLen Length of pXml. (32-bit maximum)
- * @param sitOff StringIndexTable offset.
- * @param stOff StringTable offset.
- * @param strInd String index.
- * @return XML string.
- */
-string AndroidAPKPrivate::compXmlString(const uint8_t *pXml, uint32_t xmlLen, uint32_t sitOff, uint32_t stOff, int strInd)
-{
-	assert(strInd >= 0);
-	if (strInd < 0) {
-		// Invalid string index.
-		return string();
-	}
-
-	const uint32_t addr = sitOff + (strInd * 4);
-	assert(addr < xmlLen);
-	if (addr >= xmlLen) {
-		// Out of bounds.
-		return string();
-	}
-
-	uint32_t strOff = stOff + LEW(pXml, xmlLen, addr);
-	return compXmlStringAt(pXml, xmlLen, strOff);
 }
 
 static inline uint16_t read_u16(const uint8_t *&p)
@@ -930,164 +826,6 @@ const char *AndroidAPKPrivate::getStringFromResource(uint32_t id)
 }
 
 /**
- * Decompress Android binary XML.
- * Strings that are referencing resources will be printed as "@0x12345678".
- * @param pXml		[in] Android binary XML data
- * @param xmlLen	[in] Size of XML data
- * @return PugiXML document, or an empty document on error.
- */
-xml_document AndroidAPKPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, size_t xmlLen)
-{
-	// Reference:
-	// - https://stackoverflow.com/questions/2097813/how-to-parse-the-androidmanifest-xml-file-inside-an-apk-package
-	// - https://stackoverflow.com/a/4761689
-	// TODO: Test on lots of Android packages to find any issues.
-	// TODO: Split into a separate class to convert Android binary XML to text XML?
-	// TODO: Instead of creating text, parse directly into a PugiXML document?
-
-	// Compressed XML file/bytes starts with 24x bytes of data,
-	// 9 32 bit words in little endian order (LSB first):
-	//   0th word is 03 00 08 00
-	//   3rd word SEEMS TO BE:  Offset at then of StringTable
-	//   4th word is: Number of strings in string table
-	// WARNING: Sometime I indiscriminently display or refer to word in 
-	//   little endian storage format, or in integer format (ie MSB first).	
-	const uint32_t numbStrings = LEW(pXml, xmlLen, 4*4);
-
-	// StringIndexTable starts at offset 24x, an array of 32 bit LE offsets
-	// of the length/string data in the StringTable.
-	static const uint32_t sitOff = 0x24;  // Offset of start of StringIndexTable
-
-	// StringTable, each string is represented with a 16 bit little endian 
-	// character count, followed by that number of 16 bit (LE) (Unicode) chars.
-	const uint32_t stOff = sitOff + numbStrings*4;  // StringTable follows StrIndexTable
-
-	// XMLTags, The XML tag tree starts after some unknown content after the
-	// StringTable.  There is some unknown data after the StringTable, scan
-	// forward from this point to the flag for the start of an XML start tag.
-	uint32_t xmlTagOff = LEW(pXml, xmlLen, 3*4);  // Start from the offset in the 3rd word.
-	// Scan forward until we find the bytes: 0x02011000(x00100102 in normal int)
-	for (unsigned int ii = xmlTagOff; ii < xmlLen-4; ii += 4) {
-		if (LEW(pXml, xmlLen, ii) == startTag) { 
-			xmlTagOff = ii;
-			break;
-		}
-	} // end of hack, scanning for start of first start tag
-
-	// XML tags and attributes:
-	// Every XML start and end tag consists of 6 32 bit words:
-	//   0th word: 02011000 for startTag and 03011000 for endTag 
-	//   1st word: a flag?, like 38000000
-	//   2nd word: Line of where this tag appeared in the original source file
-	//   3rd word: FFFFFFFF ??
-	//   4th word: StringIndex of NameSpace name, or FFFFFFFF for default NS
-	//   5th word: StringIndex of Element Name
-	//   (Note: 01011000 in 0th word means end of XML document, endDocTag)
-
-	// Start tags (not end tags) contain 3 more words:
-	//   6th word: 14001400 meaning?? 
-	//   7th word: Number of Attributes that follow this tag(follow word 8th)
-	//   8th word: 00000000 meaning??
-
-	// Attributes consist of 5 words: 
-	//   0th word: StringIndex of Attribute Name's Namespace, or FFFFFFFF
-	//   1st word: StringIndex of Attribute Name
-	//   2nd word: StringIndex of Attribute Value, or FFFFFFF if ResourceId used
-	//   3rd word: Flags?
-	//   4th word: str ind of attr value again, or ResourceId of value
-
-	// TMP, dump string table to tr for debugging
-	//tr.addSelect("strings", null);
-	//for (int ii=0; ii<numbStrings; ii++) {
-	//  // Length of string starts at StringTable plus offset in StrIndTable
-	//  String str = compXmlString(xml, sitOff, stOff, ii);
-	//  tr.add(String.valueOf(ii), str);
-	//}
-	//tr.parent();
-
-	// Create a PugiXML document.
-	xml_document doc;
-	// Stack of tags currently being processed.
-	stack<xml_node> tags;
-	tags.push(doc);
-	xml_node cur_node = doc;	// current XML node
-
-	// Step through the XML tree element tags and attributes
-	uint32_t off = xmlTagOff;
-	while (off < xmlLen) {
-		uint32_t tag0 = LEW(pXml, xmlLen, off);
-		//uint32_t tag1 = LEW(pXml, xmlLen, off+1*4);
-		uint32_t lineNo = LEW(pXml, xmlLen, off+2*4);
-		//uint32_t tag3 = LEW(pXml, xmlLen, off+3*4);
-		uint32_t nameNsSi = LEW(pXml, xmlLen, off+4*4);
-		int nameSi = LEW(pXml, xmlLen, off+5*4);
-
-		if (tag0 == startTag) { // XML START TAG
-			uint32_t tag6 = LEW(pXml, xmlLen, off+6*4);  // Expected to be 14001400
-			uint32_t numbAttrs = LEW(pXml, xmlLen, off+7*4);  // Number of Attributes to follow
-			//uint32_t tag8 = LEW(pXml, xmlLen, off+8*4);  // Expected to be 00000000
-			off += 9*4;  // Skip over 6+3 words of startTag data
-
-			// Create the tag.
-			xml_node xmlTag = cur_node.append_child(compXmlString(pXml, xmlLen, sitOff, stOff, nameSi).c_str());
-			tags.push(xmlTag);
-			cur_node = xmlTag;
-			//tr.addSelect(name, null);
-
-			// Look for the Attributes
-			for (uint32_t ii = 0; ii < numbAttrs; ii++) {
-				uint32_t attrNameNsSi = LEW(pXml, xmlLen, off);  // AttrName Namespace Str Ind, or FFFFFFFF
-				int attrNameSi = LEW(pXml, xmlLen, off+1*4);  // AttrName String Index
-				int attrValueSi = LEW(pXml, xmlLen, off+2*4); // AttrValue Str Ind, or FFFFFFFF
-				uint32_t attrFlags = LEW(pXml, xmlLen, off+3*4);  
-				uint32_t attrResId = LEW(pXml, xmlLen, off+4*4);  // AttrValue ResourceId or dup AttrValue StrInd
-				off += 5*4;  // Skip over the 5 words of an attribute
-
-				xml_attribute xmlAttr = xmlTag.append_attribute(compXmlString(pXml, xmlLen, sitOff, stOff, attrNameSi).c_str());
-				if (attrValueSi != -1) {
-					// Value is inline
-					xmlAttr.set_value(compXmlString(pXml, xmlLen, sitOff, stOff, attrValueSi).c_str());
-				} else {
-					// Value is in the resource file.
-					// Print the resource ID here so we can handle multi-language lookup later.
-					xmlAttr.set_value(fmt::format(FSTR("@0x{:0>8X}"), attrResId).c_str());
-				}
-				//tr.add(attrName, attrValue);
-			}
-			// TODO: If no child elements, skip the '\n' and use />.
-		} else if (tag0 == endTag) { // XML END TAG
-			// End of the current tag.
-			assert(tags.size() >= 2);
-			if (tags.size() < 2) {
-				// Less than 2 tags on the stack.
-				// The first tag is the document, so this means there is a
-				// stray end tag somewhere...
-				return {};
-			}
-			tags.pop();
-			cur_node = tags.top();
-			off += 6*4;  // Skip over 6 words of endTag data
-			//tr.parent();  // Step back up the NobTree
-		} else if (tag0 == endDocTag) {  // END OF XML DOC TAG
-			break;
-		} else {
-			assert(!"Unrecognized tag code!");
-			return {};
-		}
-	} // end of while loop scanning tags and attributes of XML tree
-
-	assert(tags.size() == 1);
-	if (tags.size() != 1) {
-		// The tag stack is incorrect.
-		// We should only have one tag left: the root document node.
-		return {};
-	}
-
-	// XML document decompressed.
-	return doc;
-}
-
-/**
  * Load AndroidManifest.xml from this->apkFile.
  * this->apkFile must have already been opened.
  * TODO: Store it in a PugiXML document, but need to check delay-load...
@@ -1115,10 +853,14 @@ int AndroidAPKPrivate::loadAndroidManifestXml(void)
 		return -ENOENT;
 	}
 
-	xml_document xml = decompressAndroidBinaryXml(
-		AndroidManifest_xml_buf.data(), AndroidManifest_xml_buf.size());
-	if (xml.empty()) {
-		// Empty???
+	MemFilePtr memFile(new MemFile(AndroidManifest_xml_buf.data(), AndroidManifest_xml_buf.size()));
+	memFile->setFilename("AndroidManifest.xml");
+	AndroidManifestXML *pManifestXML = new AndroidManifestXML(memFile);
+	manifest_xml.reset(pManifestXML->takeXmlDocument());
+	delete pManifestXML;
+
+	if (!manifest_xml || manifest_xml->empty()) {
+		// No document and/or it's empty?
 		manifest_xml.reset();
 		return -EIO;
 	}
@@ -1132,8 +874,6 @@ int AndroidAPKPrivate::loadAndroidManifestXml(void)
 		loadResourceAsrc(resources_arsc_buf.data(), resources_arsc_buf.size());
 	}
 
-	manifest_xml.reset(new xml_document);
-	*manifest_xml = std::move(xml);
 	return 0;
 }
 
@@ -1339,7 +1079,6 @@ rp_image_const_ptr AndroidAPKPrivate::loadIcon(void)
 
 	// Check for an Adaptive Icon.
 	// The icon file will be a binary XML instead of a PNG image.
-	static const array<uint8_t, 4> AndroidBinaryXML_magic = {{0x03, 0x00, 0x08, 0x00}};
 	if (!memcmp(icon_buf.data(), AndroidBinaryXML_magic.data(), AndroidBinaryXML_magic.size())) {
 		// TODO: Handle adaptive icons.
 		return {};

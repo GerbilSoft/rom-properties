@@ -39,6 +39,7 @@ application/x-nintendo-ticket		# WiiTicket
 application/x-nintendo-tmd		# WiiTMD
 
 # Handheld
+application/xml				# AndroidManifestXML (too generic?)
 application/x-atari-lynx-rom		# Lynx
 application/x-nintendo-3ds-emmc		# Nintendo3DS
 application/x-nintendo-3ds-firm		# Nintendo3DSFirm
