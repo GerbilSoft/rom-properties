@@ -132,6 +132,7 @@ public:
 	static constexpr size_t AndroidManifest_xml_FILE_SIZE_MAX = (256U * 1024U);
 
 	// Binary XML tags
+	static constexpr uint32_t startDocTag	= 0x00100000 | RES_XML_START_NAMESPACE_TYPE;
 	static constexpr uint32_t endDocTag	= 0x00100000 | RES_XML_END_NAMESPACE_TYPE;
 	static constexpr uint32_t startTag	= 0x00100000 | RES_XML_START_ELEMENT_TYPE;
 	static constexpr uint32_t endTag	= 0x00100000 | RES_XML_END_ELEMENT_TYPE;
@@ -316,6 +317,7 @@ xml_document AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_t
 	stack<xml_node> tags;
 	tags.push(doc);
 	xml_node cur_node = doc;	// current XML node
+	int ns_count = 1;		// finished processing when this reaches 0
 
 	// Step through the XML tree element tags and attributes
 	uint32_t off = xmlTagOff;
@@ -396,8 +398,22 @@ xml_document AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_t
 			cur_node.text().set(
 				compXmlString(pXml, xmlLen, sitOff, stOff, tag4).c_str());
 			off += 7*4;  // Skip over 5+2 words of cdataTag data
+		} else if (tag0 == startDocTag) {
+			// Start of namespace
+			// NOTE: We're not handling namespaces, so we're only checking this in case
+			// a document has nested namespaces.
+			//uint32_t tag4 = LEW(pXml, xmlLen, off+4*4);	// namespace tag
+			ns_count++;
+			off += 6*4;	// Skip over 4+2 words of startDocTag data
 		} else if (tag0 == endDocTag) { // END OF XML DOC TAG
-			break;
+			// End of namespace
+			// NOTE: We're not handling namespaces, so we're only checking this in case
+			// a document has nested namespaces.
+			ns_count--;
+			if (ns_count == 0) {
+				break;
+			}
+			off += 6*4;	// Skip over 4+2 words of endDocTag data
 		} else {
 			assert(!"Unrecognized tag code!");
 			return {};
@@ -408,6 +424,13 @@ xml_document AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_t
 	if (tags.size() != 1) {
 		// The tag stack is incorrect.
 		// We should only have one tag left: the root document node.
+		return {};
+	}
+
+	assert(ns_count == 0);
+	if (ns_count != 0) {
+		// The namespace count is incorrect.
+		// We should have 0 namespaces remaining.
 		return {};
 	}
 
