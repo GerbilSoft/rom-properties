@@ -120,6 +120,14 @@ public:
 	static xml_document decompressAndroidBinaryXml(const uint8_t *pXml, size_t xmlLen);
 
 public:
+	/**
+	 * Parse a resource ID from the XML.
+	 * @param str Resource ID (in format: "@0x12345678")
+	 * @return Resource ID, or 0 if not valid
+	 */
+	static uint32_t parseResourceID(const char *str);
+
+public:
 	// Maximum size for various files.
 	static constexpr size_t AndroidManifest_xml_FILE_SIZE_MAX = (256U * 1024U);
 
@@ -391,6 +399,26 @@ xml_document AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_t
 	return doc;
 }
 
+/**
+ * Parse a resource ID from the XML.
+ * @param str Resource ID (in format: "@0x12345678")
+ * @return Resource ID, or 0 if not valid
+ */
+uint32_t AndroidManifestXMLPrivate::parseResourceID(const char *str)
+{
+	if (str[0] == '@' && str[1] == '0' && str[2] == 'x' && str[3] != '\0') {
+		// Convert from hexadecimal.
+		char *pEnd = nullptr;
+		uint32_t resource_id = strtoul(&str[3], &pEnd, 16);
+		if (resource_id != 0 && pEnd && *pEnd == '\0') {
+			return resource_id;
+		}
+	}
+
+	// Not valid.
+	return 0;
+}
+
 /** AndroidManifestXML **/
 
 /**
@@ -622,11 +650,16 @@ int AndroidManifestXML::loadFieldData(void)
 				v_feature.push_back(feature);
 			} else {
 				// Check if glEsVersion is set.
-				const char *const glEsVersion = feature_node.attribute("glEsVersion").as_string(nullptr);
-				if (glEsVersion && glEsVersion[0] != '\0') {
+				const char *const s_glEsVersion = feature_node.attribute("glEsVersion").as_string(nullptr);
+				if (s_glEsVersion && s_glEsVersion[0] != '\0') {
 					// NOTE: glEsVersion might be formatted as a resource ID.
-					// FIXME: Handle it as an integer.
-					v_feature.push_back(fmt::format(FSTR("OpenGL ES {:s}"), glEsVersion));
+					const uint32_t glEsVersion = d->parseResourceID(s_glEsVersion);
+					if (glEsVersion != 0) {
+						v_feature.push_back(fmt::format(FSTR("OpenGL ES {:d}.{:d}"),
+							glEsVersion >> 16, glEsVersion & 0xFFFF));
+					} else {
+						v_feature.push_back(fmt::format(FSTR("OpenGL ES {:s}"), s_glEsVersion));
+					}
 				} else {
 					v_feature.push_back(string());
 				}

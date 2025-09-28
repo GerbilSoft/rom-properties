@@ -1385,11 +1385,16 @@ int AndroidAPK::loadFieldData(void)
 				v_feature.push_back(feature);
 			} else {
 				// Check if glEsVersion is set.
-				const char *const glEsVersion = feature_node.attribute("glEsVersion").as_string(nullptr);
-				if (glEsVersion && glEsVersion[0] != '\0') {
+				const char *const s_glEsVersion = feature_node.attribute("glEsVersion").as_string(nullptr);
+				if (s_glEsVersion && s_glEsVersion[0] != '\0') {
 					// NOTE: glEsVersion might be formatted as a resource ID.
-					// FIXME: Handle it as an integer.
-					v_feature.push_back(fmt::format(FSTR("OpenGL ES {:s}"), glEsVersion));
+					const uint32_t glEsVersion = d->parseResourceID(s_glEsVersion);
+					if (glEsVersion != 0) {
+						v_feature.push_back(fmt::format(FSTR("OpenGL ES {:d}.{:d}"),
+							glEsVersion >> 16, glEsVersion & 0xFFFF));
+					} else {
+						v_feature.push_back(fmt::format(FSTR("OpenGL ES {:s}"), s_glEsVersion));
+					}
 				} else {
 					v_feature.push_back(string());
 				}
