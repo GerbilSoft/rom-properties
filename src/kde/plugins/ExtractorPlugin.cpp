@@ -87,7 +87,11 @@ static array<uint8_t, static_cast<size_t>(LibRpBase::Property::PropertyCount)> k
 	KFileMetaData::Property::PageCount,		// integer: page count
 	KFileMetaData::Property::WordCount,		// integer: word count
 	KFileMetaData::Property::LineCount,		// integer: line count
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 50, 0)
 	KFileMetaData::Property::Language,		// string: language
+#else /* KCOREADDONS_VERSION < QT_VERSION_CHECK(5, 50, 0) */
+	KFileMetaData::Property::Langauge,		// string: language
+#endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 50, 0) */
 	KFileMetaData::Property::Copyright,		// string: copyright
 	KFileMetaData::Property::Publisher,		// string: publisher
 	KFileMetaData::Property::CreationDate,		// timestamp: creation date
@@ -100,20 +104,32 @@ static array<uint8_t, static_cast<size_t>(LibRpBase::Property::PropertyCount)> k
 	KFileMetaData::Property::FrameRate,		// integer: number of frames per second
 
 	// Images
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 60, 0)
 	KFileMetaData::Property::Manufacturer,		// string
 	KFileMetaData::Property::Model,			// string
+#else /* KCOREADDONS_VERSION < QT_VERSION_CHECK(5, 60, 0) */
+	KFileMetaData::Property::ImageMake,		// string
+	KFileMetaData::Property::ImageModel,		// string
+#endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 60, 0) */
 	KFileMetaData::Property::ImageDateTime,		// FIXME
 	KFileMetaData::Property::ImageOrientation,	// FIXME
 	KFileMetaData::Property::PhotoFlash,		// FIXME
 
-	// Origin
+	// Origin (URL added in KF5 5.19; email added in KF5 5.20)
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 19, 0)
 	KFileMetaData::Property::OriginUrl,		// string: origin URL
+#endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 19, 0) */
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 20, 0)
 	KFileMetaData::Property::OriginEmailSubject,	// string: subject of origin email
 	KFileMetaData::Property::OriginEmailSender,	// string: sender of origin email
 	KFileMetaData::Property::OriginEmailMessageId,	// string: message ID of origin email
+#endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 20, 0) */
 
-	// Audio
+	// Audio (DiscNumber added in KF5 5.32; others added in KF5 5.46)
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 32, 0)
 	KFileMetaData::Property::DiscNumber,		// integer: disc number of multi-disc set
+#endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 32, 0) */
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 46, 0)
 	KFileMetaData::Property::Location,		// string: location where audio was recorded
 	KFileMetaData::Property::Performer,		// string: (lead) performer
 	KFileMetaData::Property::Ensemble,		// string: ensemble
@@ -121,17 +137,22 @@ static array<uint8_t, static_cast<size_t>(LibRpBase::Property::PropertyCount)> k
 	KFileMetaData::Property::Conductor,		// string: conductor
 	KFileMetaData::Property::Opus,			// string: opus
 
-	// Other
+	// Other (added iN KF5 5.46)
 	KFileMetaData::Property::Label,			// string: label
 	KFileMetaData::Property::Compilation,		// string: compilation
 	KFileMetaData::Property::License,		// string: license information
+#endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 46, 0) */
 
 	// Added in KF5 5.48
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 48, 0)
 	KFileMetaData::Property::Rating,		// integer: [0,100]
 	KFileMetaData::Property::Lyrics,		// string
+#endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 48, 0) */
 
 	// Added in KF5 5.53
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 53, 0)
 	KFileMetaData::Property::Description,		// string
+#endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 53, 0) */
 }};
 
 ExtractorPlugin::ExtractorPlugin(QObject *parent)
