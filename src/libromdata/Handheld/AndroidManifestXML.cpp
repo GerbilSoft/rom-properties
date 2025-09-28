@@ -346,7 +346,12 @@ xml_document AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_t
 				} else {
 					// Value is in the resource file.
 					// Print the resource ID here so we can handle multi-language lookup later.
-					xmlAttr.set_value(fmt::format(FSTR("@0x{:0>8X}"), attrResId).c_str());
+					if (attrResId == 0) {
+						// HACK: Resource ID 0 is "false".
+						xmlAttr.set_value("false");
+					} else {
+						xmlAttr.set_value(fmt::format(FSTR("@0x{:0>8X}"), attrResId).c_str());
+					}
 				}
 				//tr.add(attrName, attrValue);
 			}
@@ -603,27 +608,45 @@ int AndroidManifestXML::loadFieldData(void)
 
 	// Features
 	// TODO: Normalize/localize feature names?
-	// TODO: How to handle "Required"?
 	xml_node feature_node = manifest_node.child("uses-feature");
 	if (feature_node) {
 		auto *const vv_features = new RomFields::ListData_t;
 		do {
+			vector<string> v_feature;
+
 			const char *const feature = feature_node.attribute("name").as_string(nullptr);
 			if (feature && feature[0] != '\0') {
-				vector<string> v_feature;
 				v_feature.push_back(feature);
-				vv_features->push_back(std::move(v_feature));
+			} else {
+				v_feature.push_back(string());
 			}
+
+			const char *required = feature_node.attribute("required").as_string(nullptr);
+			if (required && required[0] != '\0') {
+				v_feature.push_back(required);
+			} else {
+				v_feature.push_back(string());
+			}
+
+			vv_features->push_back(std::move(v_feature));
 
 			// Next feature
 			feature_node = feature_node.next_sibling("uses-feature");
 		} while (feature_node);
 
 		if (!vv_features->empty()) {
+			static const array<const char*, 2> features_headers = {{
+				NOP_C_("AndroidAPK|Features", "Feature"),
+				NOP_C_("AndroidAPK|Features", "Required?"),
+			}};
+			vector<string> *const v_features_headers = RomFields::strArrayToVector_i18n(
+				"AndroidAPK|Features", features_headers);
+
 			RomFields::AFLD_PARAMS params(0, rows_visible);
-			params.headers = nullptr;
+			params.headers = v_features_headers;
 			params.data.single = vv_features;
-			d->fields.addField_listData(C_("AndroidManifestXML", "Features"), &params);
+			params.col_attrs.align_data = AFLD_ALIGN2(TXA_D, TXA_C);
+			d->fields.addField_listData(C_("AndroidAPK", "Features"), &params);
 		} else {
 			delete vv_features;
 		}
