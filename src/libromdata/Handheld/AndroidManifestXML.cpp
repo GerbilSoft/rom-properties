@@ -134,7 +134,8 @@ public:
 	// Binary XML tags
 	static constexpr uint32_t endDocTag	= 0x00100000 | RES_XML_END_NAMESPACE_TYPE;
 	static constexpr uint32_t startTag	= 0x00100000 | RES_XML_START_ELEMENT_TYPE;
-	static constexpr uint32_t endTag	= 0x00100103 | RES_XML_END_ELEMENT_TYPE;
+	static constexpr uint32_t endTag	= 0x00100000 | RES_XML_END_ELEMENT_TYPE;
+	static constexpr uint32_t cdataTag	= 0x00100000 | RES_XML_CDATA_TYPE;
 
 	// AndroidManifest.xml document
 	// NOTE: Using a pointer to prevent delay-load issues.
@@ -380,7 +381,22 @@ xml_document AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_t
 			cur_node = tags.top();
 			off += 6*4;  // Skip over 6 words of endTag data
 			//tr.parent();  // Step back up the NobTree
-		} else if (tag0 == endDocTag) {  // END OF XML DOC TAG
+		} else if (tag0 == cdataTag) { // CDATA tag
+			// Reference: https://github.com/ytsutano/axmldec/blob/master/lib/jitana/util/axml_parser.cpp
+			// CDATA has five DWORDs:
+			// - 0: line number
+			// - 1: comment
+			// - 2: text (string ID)
+			// - 3: unknown
+			// - 4: unknown
+			// NOTE: axmldec prints the CDATA as regular text, not a CDATA node.
+			uint32_t tag4 = LEW(pXml, xmlLen, off+4*4);
+			//cur_node.append_child(pugi::node_cdata).set_value(
+			//	compXmlString(pXml, xmlLen, sitOff, stOff, tag4).c_str());
+			cur_node.text().set(
+				compXmlString(pXml, xmlLen, sitOff, stOff, tag4).c_str());
+			off += 7*4;  // Skip over 5+2 words of cdataTag data
+		} else if (tag0 == endDocTag) { // END OF XML DOC TAG
 			break;
 		} else {
 			assert(!"Unrecognized tag code!");
