@@ -708,8 +708,26 @@ int AndroidAPKPrivate::loadResourceAsrc(const uint8_t *pArsc, size_t arscLen)
  */
 const char *AndroidAPKPrivate::getStringFromResource(uint32_t id)
 {
-	// TODO
-	return "";
+	assert(!responseMap.empty());
+	if (responseMap.empty()) {
+		return nullptr;
+	}
+
+	// Look up the ID.
+	auto iter = responseMap.find(id);
+	if (iter == responseMap.end()) {
+		// Resource ID not found...
+		return nullptr;
+	}
+
+	// Return the first string from the vector.
+	const vector<string> &v_str = iter->second;
+	assert(v_str.size() >= 1);
+	if (v_str.size() < 1) {
+		return nullptr;
+	}
+
+	return v_str[0].c_str();
 }
 
 /**
