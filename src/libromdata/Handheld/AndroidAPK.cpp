@@ -1029,7 +1029,7 @@ xml_document AndroidAPKPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, 
 			off += 9*4;  // Skip over 6+3 words of startTag data
 
 			// Create the tag.
-			xml_node xmlTag = cur_node.append_child(compXmlString(pXml, xmlLen, sitOff, stOff, nameSi));
+			xml_node xmlTag = cur_node.append_child(compXmlString(pXml, xmlLen, sitOff, stOff, nameSi).c_str());
 			tags.push(xmlTag);
 			cur_node = xmlTag;
 			//tr.addSelect(name, null);
@@ -1043,14 +1043,14 @@ xml_document AndroidAPKPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, 
 				uint32_t attrResId = LEW(pXml, xmlLen, off+4*4);  // AttrValue ResourceId or dup AttrValue StrInd
 				off += 5*4;  // Skip over the 5 words of an attribute
 
-				xml_attribute xmlAttr = xmlTag.append_attribute(compXmlString(pXml, xmlLen, sitOff, stOff, attrNameSi));
+				xml_attribute xmlAttr = xmlTag.append_attribute(compXmlString(pXml, xmlLen, sitOff, stOff, attrNameSi).c_str());
 				if (attrValueSi != -1) {
 					// Value is inline
-					xmlAttr.set_value(compXmlString(pXml, xmlLen, sitOff, stOff, attrValueSi));
+					xmlAttr.set_value(compXmlString(pXml, xmlLen, sitOff, stOff, attrValueSi).c_str());
 				} else {
 					// Value is in the resource file.
 					// Print the resource ID here so we can handle multi-language lookup later.
-					xmlAttr.set_value(fmt::format(FSTR("@0x{:0>8X}"), attrResId));
+					xmlAttr.set_value(fmt::format(FSTR("@0x{:0>8X}"), attrResId).c_str());
 				}
 				//tr.add(attrName, attrValue);
 			}
