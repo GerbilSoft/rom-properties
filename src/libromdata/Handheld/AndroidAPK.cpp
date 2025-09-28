@@ -197,14 +197,6 @@ public:
 
 	/**
 	 * Get a string from Android resource data.
-	 * @param id	[in] Resource ID
-	 * @param lc	[in] rom-properties language code (~0U for "first available")
-	 * @return String, or nullptr if not found.
-	 */
-	const char *getStringFromResource_i18n(uint32_t id, uint32_t lc);
-
-	/**
-	 * Get a string from Android resource data.
 	 * @param id		[in] Resource ID
 	 * @return String, or nullptr if not found.
 	 */
@@ -251,11 +243,14 @@ public:
 
 	unordered_map<uint32_t, vector<string> > entryMap;
 
+	// Response map
+	// - Key: Language ID
+	// - Value: String
 	typedef unordered_map<uint32_t, vector<string> > response_map_t;
 
 	// Response map (localized)
-	// - Key: Language code
-	// - Value: Map of resource IDs to values
+	// - Key: Resource ID
+	// - Value: Map of language IDs to values
 	unordered_map<uint32_t, response_map_t> responseMap_i18n;
 };
 
@@ -600,17 +595,6 @@ int AndroidAPKPrivate::processType(const uint8_t *data, size_t size, unsigned in
 		}
 	}
 
-	// Get the response map for this lc.
-	// TODO: Pixel density for icons.
-	response_map_t *pResponseMap;
-	auto iter_lcmap = responseMap_i18n.find(lc);
-	if (iter_lcmap != responseMap_i18n.end()) {
-		pResponseMap = &(iter_lcmap->second);
-	} else {
-		auto ret = responseMap_i18n.emplace(lc, response_map_t());
-		pResponseMap = &(ret.first->second);
-	}
-
 	// Key: resource_id
 	// Value: pResValue->data
 	unordered_map<uint32_t, uint32_t> refKeys;
@@ -676,18 +660,32 @@ int AndroidAPKPrivate::processType(const uint8_t *data, size_t size, unsigned in
 					break;
 			}
 
-			// TODO: Is there a language code associated with resources?
-			// (Might be in the "config" section...)
-			auto iter2 = pResponseMap->find(resource_id);
-			if (iter2 != pResponseMap->end()) {
-				// We have a vector<string> for this resource ID already.
-				iter2->second.push_back(std::move(data));
+			// Check if we already have a map for this resource ID.
+			response_map_t *pResponseMap;
+			auto iter2 = responseMap_i18n.find(resource_id);
+			if (iter2 != responseMap_i18n.end()) {
+				// We have a map for this resource ID already.
+				pResponseMap = &(iter2->second);
 			} else {
-				// No vector<string>. Create one.
-				vector<string> v_str;
-				v_str.push_back(std::move(data));
-				pResponseMap->emplace(resource_id, std::move(v_str));
+				// No resource map. Create one.
+				auto emp = responseMap_i18n.emplace(resource_id, response_map_t());
+				pResponseMap = &(emp.first->second);
 			}
+
+			// Check if we have a vector for this language code.
+			vector<string> *pVec;
+			auto iter3 = pResponseMap->find(lc);
+			if (iter3 != pResponseMap->end()) {
+				// We have a vector for this language code already.
+				pVec = &(iter3->second);
+			} else {
+				// No vector for this lc. Create one.
+				auto emp = pResponseMap->emplace(lc, vector<string>());
+				pVec = &(emp.first->second);
+			}
+
+			// Add the string to the vector.
+			pVec->push_back(std::move(data));
 		} else {
 			// Complex case
 			// NOTE: Original C# code didn't actually make use of this...
@@ -831,46 +829,6 @@ int AndroidAPKPrivate::loadResourceAsrc(const uint8_t *pArsc, size_t arscLen)
 
 /**
  * Get a string from Android resource data.
- * @param id	[in] Resource ID
- * @param lc	[in] rom-properties language code (~0U for "first available")
- * @return String, or nullptr if not found.
- */
-const char *AndroidAPKPrivate::getStringFromResource_i18n(uint32_t id, uint32_t lc)
-{
-	assert(!responseMap_i18n.empty());
-	if (responseMap_i18n.empty()) {
-		return nullptr;
-	}
-
-	// Find the language-specific map.
-	unordered_map<uint32_t, response_map_t>::const_iterator iter;
-	if (likely(lc != ~0U)) {
-		iter = responseMap_i18n.find(lc);
-	} else {
-		iter = responseMap_i18n.cbegin();
-	}
-	if (iter == responseMap_i18n.end()) {
-		return nullptr;
-	}
-	const auto &smap = iter->second;
-
-	// Find the resource ID in the language-specific map.
-	auto iter2 = smap.find(id);
-	if (iter2 == smap.end()) {
-		return nullptr;
-	}
-
-	// Return the first string.
-	const auto &vec = iter2->second;
-	if (vec.empty()) {
-		return nullptr;
-	}
-
-	return vec[0].c_str();
-}
-
-/**
- * Get a string from Android resource data.
  * @param id		[in] Resource ID
  * @return String, or nullptr if not found.
  */
@@ -881,20 +839,31 @@ const char *AndroidAPKPrivate::getStringFromResource(uint32_t id)
 		return nullptr;
 	}
 
+	// Get the map for the specified resource ID.
+	auto iter = responseMap_i18n.find(id);
+	if (iter == responseMap_i18n.end()) {
+		return nullptr;
+	}
+	const auto &response_map = iter->second;
+
 	// TODO: Multi-language string handling.
 	// For now, using this system:
 	// - Use 'en' if available.
 	// - Otherwise, use 0.
 	// - Otherwise, use the first available.
-	const char *str = getStringFromResource_i18n(id, 'en');
-	if (!str) {
-		str = getStringFromResource_i18n(id, 0);
-		if (!str) {
-			str = getStringFromResource_i18n(id, ~0U);
+	response_map_t::const_iterator iter2 = response_map.find('en');
+	if (iter2 == response_map.end()) {
+		iter2 = response_map.find(0);
+		if (iter2 == response_map.end()) {
+			iter2 = response_map.cbegin();
 		}
 	}
 
-	return str;
+	const auto &vec = iter2->second;
+	if (vec.empty()) {
+		return nullptr;
+	}
+	return vec[0].c_str();
 }
 
 /**
