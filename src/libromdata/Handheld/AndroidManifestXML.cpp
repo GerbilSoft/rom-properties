@@ -346,9 +346,12 @@ xml_document AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_t
 				} else {
 					// Value is in the resource file.
 					// Print the resource ID here so we can handle multi-language lookup later.
-					if (attrResId == 0) {
-						// HACK: Resource ID 0 is "false".
+					if (attrResId == 0U) {
+						// HACK: Resource ID 0U is "false".
 						xmlAttr.set_value("false");
+					} else if (attrResId == ~0U) {
+						// HACK: Resoruce ID ~0U is "true".
+						xmlAttr.set_value("true");
 					} else {
 						xmlAttr.set_value(fmt::format(FSTR("@0x{:0>8X}"), attrResId).c_str());
 					}
@@ -618,7 +621,15 @@ int AndroidManifestXML::loadFieldData(void)
 			if (feature && feature[0] != '\0') {
 				v_feature.push_back(feature);
 			} else {
-				v_feature.push_back(string());
+				// Check if glEsVersion is set.
+				const char *const glEsVersion = feature_node.attribute("glEsVersion").as_string(nullptr);
+				if (glEsVersion && glEsVersion[0] != '\0') {
+					// NOTE: glEsVersion might be formatted as a resource ID.
+					// FIXME: Handle it as an integer.
+					v_feature.push_back(fmt::format(FSTR("OpenGL ES {:s}"), glEsVersion));
+				} else {
+					v_feature.push_back(string());
+				}
 			}
 
 			const char *required = feature_node.attribute("required").as_string(nullptr);
