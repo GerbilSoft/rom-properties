@@ -1,7 +1,7 @@
 This copy of uniwidth is a modified subset of gnulib.
 
-commit 2bbbc32f1527981473ed403d87c7f3ddbb906634
-string-buffer: Enable resource leak warnings from clang.
+commit c63a0c677c1d032cde39bb84205ac3f92b1eb494
+Update to Unicode 17.0.0.
 
 The following changes have been made to the original:
 

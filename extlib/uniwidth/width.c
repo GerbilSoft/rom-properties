@@ -1,5 +1,5 @@
 /* Determine display width of Unicode character.
-   Copyright (C) 2001-2002, 2006-2024 Free Software Foundation, Inc.
+   Copyright (C) 2001-2002, 2006-2025 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2002.
 
    This file is free software: you can redistribute it and/or modify
@@ -44,8 +44,8 @@
      in the U+3130..U+318F block, and these characters are mapped to legacy
      character sets, and traditional Japanese layout matters for them.
      2) glibc does the same thing, see
-     <https://sourceware.org/bugzilla/show_bug.cgi?id=21750>
-     <https://sourceware.org/bugzilla/show_bug.cgi?id=26120>
+     <https://sourceware.org/PR21750>
+     <https://sourceware.org/PR26120>
  */
 
 // rom-properties: Remove the 'uniwidth' and 'unictype' subdirectories.
