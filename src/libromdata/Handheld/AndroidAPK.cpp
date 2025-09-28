@@ -40,6 +40,7 @@ using std::ostringstream;
 using std::stack;
 using std::string;
 using std::unique_ptr;
+using std::unordered_map;
 using std::vector;
 
 // Uninitialized vector class
@@ -149,14 +150,48 @@ public:
 	static string compXmlString(const uint8_t *pXml, uint32_t xmlLen, uint32_t sitOff, uint32_t stOff, int strInd);
 
 	/**
-	 * Get a string from Android resource data.
+	 * Process an Android resource string pool.
+	 * @param data Start of string pool
+	 * @param size Size of string pool
+	 * @return Processed string pool, or empty vector<string> on error.
+	 */
+	ATTR_ACCESS_SIZE(read_only, 1, 2)
+	static vector<string> processStringPool(const uint8_t *data, size_t size);
+
+	/**
+	 * Process RES_TABLE_TYPE_TYPE.
+	 * @param data Start of type
+	 * @param size Size of type
+	 * @param package_id Package ID
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	ATTR_ACCESS_SIZE(read_only, 2, 3)
+	int processType(const uint8_t *data, size_t size, unsigned int package_id);
+
+	/**
+	 * Process an Android resource package.
+	 * @param data Start of package
+	 * @param size Size of package
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	ATTR_ACCESS_SIZE(read_only, 2, 3)
+	int processPackage(const uint8_t *data, size_t size);
+
+	/**
+	 * Load Android resource data.
 	 * @param pArsc		[in] Android resource data
 	 * @param arscLen	[in] Size of resource data
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	ATTR_ACCESS_SIZE(read_only, 2, 3)
+	int loadResourceAsrc(const uint8_t *pArsc, size_t arscLen);
+
+	/**
+	 * Get a string from Android resource data.
 	 * @param id		[in] Resource ID
 	 * @return Pointer to string within pArsc, or nullptr if not found.
 	 */
-	ATTR_ACCESS_SIZE(read_only, 1, 2)
-	static const char *getStringFromResource(const uint8_t *pArsc, size_t arscLen, uint32_t id);
+	const char *getStringFromResource(uint32_t id);
 
 	/**
 	 * Decompress Android binary XML.
@@ -166,9 +201,9 @@ public:
 	 * @param arscLen	[in,opt] Size of resource data
 	 * @return PugiXML document, or an empty document on error.
 	 */
-	ATTR_ACCESS_SIZE(read_only, 1, 2)
-	ATTR_ACCESS_SIZE(read_only, 3, 4)
-	static xml_document decompressAndroidBinaryXml(const uint8_t *pXml, size_t xmlLen, const uint8_t *pArsc = nullptr, size_t arscLen = 0);
+	ATTR_ACCESS_SIZE(read_only, 2, 3)
+	ATTR_ACCESS_SIZE(read_only, 4, 5)
+	xml_document decompressAndroidBinaryXml(const uint8_t *pXml, size_t xmlLen, const uint8_t *pArsc = nullptr, size_t arscLen = 0);
 
 	/**
 	 * Load AndroidManifest.xml from this->apkFile.
@@ -191,6 +226,19 @@ public:
 	// AndroidManifest.xml document
 	// NOTE: Using a pointer to prevent delay-load issues.
 	unique_ptr<xml_document> manifest_xml;
+
+	// String pools from resource.arsc
+	vector<string> valueStringPool;
+	vector<string> typeStringPool;
+	vector<string> keyStringPool;
+
+	unordered_map<uint32_t, vector<string> > entryMap;
+
+	// Response map
+	// - Key: Resource ID
+	// - Value: List of values associated with the resource ID
+	// TODO: Language codes, etc.
+	unordered_map<uint32_t, vector<string> > responseMap;
 };
 
 ROMDATA_IMPL(AndroidAPK)
@@ -357,148 +405,311 @@ string AndroidAPKPrivate::compXmlString(const uint8_t *pXml, uint32_t xmlLen, ui
 	return compXmlStringAt(pXml, xmlLen, strOff);
 }
 
+static inline uint16_t read_u16(const uint8_t *&p)
+{
+	uint16_t v = p[0] | (p[1] << 8);
+	p += sizeof(v);
+	return v;
+}
+
+static inline uint32_t read_u32(const uint8_t *&p)
+{
+	uint32_t v = p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24);
+	p += sizeof(v);
+	return v;
+}
+
 /**
- * Get a string from Android resource data.
+ * Process an Android resource string pool.
+ * @param data Start of string pool
+ * @param size Size of string pool
+ * @return Processed string pool, or empty vector<string> on error.
+ */
+vector<string> AndroidAPKPrivate::processStringPool(const uint8_t *data, size_t size)
+{
+	vector<string> stringPool;
+	const uint8_t *p = data;
+
+	const ResStringPool_header *const pStringPoolHdr = reinterpret_cast<const ResStringPool_header*>(data);
+	p += sizeof(ResStringPool_header);
+
+	const bool isUTF8 = (pStringPoolHdr->flags & ResStringPool_header::UTF8_FLAG);
+
+	// Offset table
+	const uint32_t *pStrOffsetTbl = reinterpret_cast<const uint32_t*>(p);
+	p += (pStringPoolHdr->stringCount * sizeof(uint32_t));
+
+	// Load the strings.
+	// NOTE: Assuming UTF-8 for now.
+	// NOTE 2: Copying strings into a vector<string> to reduce confusion,
+	// though it would be faster and more efficient to directly reference them...
+	// TODO: Separate class that does that?
+	for (unsigned int i = 0; i < pStringPoolHdr->stringCount; i++) {
+		unsigned int pos = pStringPoolHdr->stringsStart + pStrOffsetTbl[i];
+		const uint8_t *p_u8str = data + pos;
+
+		if (isUTF8) {
+			// TODO: Why the u16len and u8len?
+			unsigned int u16len = *p_u8str++;
+			if (u16len & 0x80) {
+				// Larger than 128
+				u16len = ((u16len & 0x7F) << 8) + *p_u8str++;
+			}
+
+			unsigned int u8len = *p_u8str++;
+			if (u8len & 0x80) {
+				// Larger than 128
+				u8len = ((u8len & 0x7F) << 8) + *p_u8str++;
+			}
+
+			if (u8len > 0) {
+				stringPool.emplace_back(reinterpret_cast<const char*>(p_u8str), u8len);
+			} else {
+				stringPool.push_back(string());
+			}
+		} else {
+			unsigned int u16len = read_u16(p_u8str);
+			if (u16len & 0x8000) {
+				// Larger than 32,768
+				u16len = ((u16len & 0x7FFF) << 16) + read_u16(p_u8str);
+			}
+
+			if (u16len > 0) {
+				stringPool.emplace_back(utf16le_to_utf8(reinterpret_cast<const char16_t*>(p_u8str), u16len));
+			} else {
+				stringPool.push_back(string());
+			}
+		}
+	}
+
+	return stringPool;
+}
+
+/**
+ * Process RES_TABLE_TYPE_TYPE.
+ * @param data Start of type
+ * @param size Size of type
+ * @param package_id Package ID
+ * @return 0 on success; negative POSIX error code on error.
+ */
+ATTR_ACCESS_SIZE(read_only, 2, 3)
+int AndroidAPKPrivate::processType(const uint8_t *data, size_t size, unsigned int package_id)
+{
+	const ResTable_type *const pResTableType = reinterpret_cast<const ResTable_type*>(data);
+	const uint8_t id = pResTableType->id;
+	const unsigned int entryCount = pResTableType->entryCount;
+
+	const uint8_t *p = data + pResTableType->header.headerSize;
+
+	// Key: resource_id
+	// Value: pResValue->data
+	unordered_map<uint32_t, uint32_t> refKeys;
+	if (pResTableType->header.headerSize + (entryCount * sizeof(uint32_t)) != pResTableType->entriesStart) {
+		// Inconsistent headers!
+		assert(!"RES_TABLE_TYPE_TYPE header is inconsistent.");
+		return -EIO;
+	}
+
+	// Entry indexes
+	const int32_t *const pIndexTbl = reinterpret_cast<const int32_t*>(p);
+	p += (pResTableType->entryCount * sizeof(uint32_t));
+
+	// Get entries
+	for (unsigned int i = 0; i < entryCount; i++) {
+		if (pIndexTbl[i] == -1) {
+			continue;
+		}
+
+		uint32_t resource_id = (package_id << 24) | (id << 16) | i;
+
+		const ResTable_entry *const pEntry = reinterpret_cast<const ResTable_entry*>(p);
+		p += sizeof(ResTable_entry);
+		if (!(pEntry->flags & ResTable_entry::FLAG_COMPLEX)) {
+			// Simple case
+			const Res_value *const pResValue = reinterpret_cast<const Res_value*>(p);
+			p += sizeof(Res_value);
+			// TODO: Verify pEntry->key.index
+			const string &keyStr = keyStringPool[pEntry->key.index];
+
+			// TODO: Truncate resource_id to the low 16 bits?
+			auto iter = entryMap.find(resource_id);
+			if (iter != entryMap.end()) {
+				// We have a vector<string> for this resource ID already.
+				iter->second.push_back(keyStr);
+			} else {
+				// No vector<string>. Create one.
+				vector<string> v_str;
+				v_str.push_back(keyStr);
+				entryMap.emplace(resource_id, std::move(v_str));
+			}
+
+			// Value processing
+			string data;
+			switch (pResValue->dataType) {
+				case Res_value::TYPE_STRING:
+					data = valueStringPool[pResValue->data];
+					break;
+				case Res_value::TYPE_REFERENCE:
+					refKeys.emplace(resource_id, pResValue->data);
+					break;
+				default:
+					data = fmt::to_string(pResValue->data);
+					break;
+			}
+
+			// TODO: Is there a language code associated with resources?
+			// (Might be in the "config" section...)
+			auto iter2 = responseMap.find(resource_id);
+			if (iter2 != responseMap.end()) {
+				// We have a vector<string> for this resource ID already.
+				iter2->second.push_back(std::move(data));
+			} else {
+				// No vector<string>. Create one.
+				vector<string> v_str;
+				v_str.push_back(std::move(data));
+				responseMap.emplace(resource_id, std::move(v_str));
+			}
+		} else {
+			// Complex case
+			// NOTE: Original C# code didn't actually make use of this...
+			// FIXME: Replacing the two read_u32() with `p += (4 * 2);` fails???
+			const unsigned int entryParent = read_u32(p);
+			const unsigned int entryCount = read_u32(p);
+			p += (12 * entryCount);
+		}
+	}
+
+	// TODO: refKeys handling.
+
+	return 0;
+}
+
+/**
+ * Process an Android resource package.
+ * @param data Start of package
+ * @param size Size of package
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int AndroidAPKPrivate::processPackage(const uint8_t *data, size_t size)
+{
+	const uint8_t *const pEnd = data + size;
+	const ResTable_package *pPackage = reinterpret_cast<const ResTable_package*>(data);
+
+	// Package string pools
+	const ResStringPool_header *const pTypeStrings = reinterpret_cast<const ResStringPool_header*>(data + pPackage->typeStrings);
+	typeStringPool = processStringPool(reinterpret_cast<const uint8_t*>(pTypeStrings), size - pPackage->typeStrings);
+	const ResStringPool_header *const pKeyStrings = reinterpret_cast<const ResStringPool_header*>(data + pPackage->keyStrings);
+	keyStringPool = processStringPool(reinterpret_cast<const uint8_t*>(pKeyStrings), size - pPackage->keyStrings);
+
+	// Iterate through chunks
+	unsigned int typeSpecCount = 0;
+	unsigned int typeCount = 0;
+
+	const uint8_t *p = reinterpret_cast<const uint8_t*>(pKeyStrings) + pKeyStrings->header.size;
+
+	while (true) {
+		const ResChunk_header *const pHdr = reinterpret_cast<const ResChunk_header*>(p);
+
+		switch (pHdr->type) {
+			case RES_TABLE_TYPE_SPEC_TYPE:
+				// NOTE: processTypeSpec() in the original C# code didn't actually do anything...
+				//processTypeSpec(p, pEnd - p);
+				typeSpecCount++;
+				break;
+			case RES_TABLE_TYPE_TYPE:
+				// Process the package.
+				processType(p, pEnd - p, pPackage->id);
+				typeCount++;
+				break;
+			default:
+				// FIXME
+				break;
+		}
+
+		p += pHdr->size;
+		if (p >= pEnd) {
+			// End of buffer.
+			break;
+		}
+	}
+
+	return 0;
+}
+
+/**
+ * Load Android resource data.
  * @param pArsc		[in] Android resource data
  * @param arscLen	[in] Size of resource data
- * @param id		[in] Resource ID
- * @return Pointer to string within pArsc, or nullptr if not found.
+ * @return 0 on success; negative POSIX error code on error.
  */
-const char *AndroidAPKPrivate::getStringFromResource(const uint8_t *pArsc, size_t arscLen, uint32_t id)
+int AndroidAPKPrivate::loadResourceAsrc(const uint8_t *pArsc, size_t arscLen)
 {
 	assert(pArsc != nullptr);
 	assert(arscLen > 0);
 	if (!pArsc || arscLen == 0) {
-		return nullptr;
+		return -EINVAL;
 	}
 
-	// FIXME: Res_GETTYPE() subtracts 1...
-	const unsigned int res_type = (id >> 16) & 0xFF; //Res_GETTYPE(id);
-	const unsigned int res_index = Res_GETENTRY(id);
-
+	// Based on: https://github.com/hylander0/Iteedee.ApkReader/blob/master/Iteedee.ApkReader/ApkResourceFinder.cs
+	// TODO: Bounds checking.
 	const uint8_t *p = pArsc;
-	const uint8_t *const pEnd = p + arscLen;
+	const uint8_t *const pEnd = pArsc + arscLen;
 
-	// Search for a chunk header with type RES_STRING_POOL_TYPE.
-	// Reference: https://android.googlesource.com/platform/frameworks/base/+/gingerbread/libs/utils/ResourceTypes.cpp
-	printf("Searching for resource ID: 0x%08X\n", id);
-	const ResStringPool_header *pStrPoolHdr = nullptr;
-	const ResTable_type *pResTblType = nullptr;
+	{
+		uint16_t type = read_u16(p);
+		uint16_t headerSize = read_u16(p);
+		uint32_t size = read_u32(p);
+		uint32_t packageCount = read_u32(p);
 
-	// First chunk header is RES_TABLE_TYPE and it contains the other chunks.
-	const ResTable_header *const pResTblHdr = reinterpret_cast<const ResTable_header*>(p);
-	p += pResTblHdr->header.headerSize;
-
-	// Process chunks within the main package.
-	while (p + sizeof(ResChunk_header) < pEnd) {
-		const ResChunk_header *const pHdr = reinterpret_cast<const ResChunk_header*>(p);
-		//printf("addr: 0x%08X, pHdr->type: %04X\n", (unsigned int)(p - pArsc), pHdr->type);
-		switch (pHdr->type) {
-			case RES_STRING_POOL_TYPE:
-				// Found the string pool chunk.
-				if (!pStrPoolHdr) {
-					if (p + sizeof(ResStringPool_header) >= pEnd) {
-						// Out of bounds!
-						return nullptr;
-					}
-					pStrPoolHdr = reinterpret_cast<const ResStringPool_header*>(p);
-				}
-				p += pHdr->size;
-				break;
-
-			case RES_TABLE_PACKAGE_TYPE:
-				// Package type table
-				// We don't need any actual info here, but the RES_TABLE_TYPE_TYPE chunks are next.
-				p += pHdr->headerSize;
-				break;
-
-			case RES_TABLE_TYPE_SPEC_TYPE:
-				// Skip this chunk.
-				p += pHdr->size;
-				break;
-
-			case RES_TABLE_TYPE_TYPE: {
-				// Check the type info.
-				if (!pResTblType) {
-					const ResTable_type *const pResTblType_tmp = reinterpret_cast<const ResTable_type*>(p);
-					if (pResTblType_tmp->id == res_type) {
-						// Found the correct ID.
-						// TODO: Multiple tables with the same ID - check config?
-						pResTblType = pResTblType_tmp;
-					}
-				}
-				p += pHdr->size;
-				break;
-			}
-
-			default:
-				p += pHdr->headerSize;
-				break;
+		if (type != RES_TABLE_TYPE || size != arscLen) {
+			// Something is wrong here...
+			return -EIO;
 		}
 	}
 
-	if (!pStrPoolHdr || !pResTblType) {
-		printf("RES_STRING_POOL_TYPE and RES_TABLE_TYPE_TYPE not found!\n");
-		return nullptr;
+	unsigned int realStringPoolCount = 0;
+	unsigned int realPackageCount = 0;
+
+	while (true) {
+		const ResChunk_header *const pHdr = reinterpret_cast<const ResChunk_header*>(p);
+
+		switch (pHdr->type) {
+			case RES_STRING_POOL_TYPE:
+				// Only processing the first string pool.
+				if (realStringPoolCount == 0) {
+					valueStringPool = processStringPool(p, pHdr->size);
+				}
+				realStringPoolCount++;
+				break;
+
+			case RES_TABLE_PACKAGE_TYPE:
+				// Process the package.
+				processPackage(p, pHdr->size);
+				realPackageCount++;
+				break;
+
+			default:
+				break;
+		}
+
+		p += pHdr->size;
+		if (p >= pEnd) {
+			break;
+		}
 	}
+	
+	return 0;
+}
 
-	printf("chunk: type == 0x%04X, headerSize == 0x%04X, size == 0x%08X\n",
-		pStrPoolHdr->header.type, pStrPoolHdr->header.headerSize, pStrPoolHdr->header.size);
-	printf("RES_STRING_POOL_TYPE: stringCount == %u, styleCount == %u, flags == %u, stringsStart == 0x%08X, stylesStart == 0x%08X\n",
-		pStrPoolHdr->stringCount, pStrPoolHdr->styleCount, pStrPoolHdr->flags, pStrPoolHdr->stringsStart, pStrPoolHdr->stylesStart);
-
-	// stringsStart is relative to the start of the chunk!
-	printf("actual stringsStart == 0x%08lX\n", pStrPoolHdr->stringsStart + (unsigned long)((const uint8_t*)pStrPoolHdr - pArsc));
-	const char *const pStrTbl = reinterpret_cast<const char*>(pStrPoolHdr) + pStrPoolHdr->stringsStart;
-
-	printf("RES_TABLE_TYPE_TYPE = id: %u, entryCount: %u, flags: %u\n", pResTblType->id, pResTblType->entryCount, pResTblType->flags);
-	printf("actual entriesStart == 0x%08lX\n", pResTblType->entriesStart + (unsigned long)((const uint8_t*)pResTblType - pArsc));
-	const uint8_t *const pResTblEntries_u8 = reinterpret_cast<const uint8_t*>(pResTblType) + pResTblType->entriesStart;
-
-	if (pResTblType->flags & ResTable_type::FLAG_SPARSE) {
-		// Sparse entries.
-		// TODO
-		return nullptr;
-	} else {
-		// Not-sparse entries.
-		// Entry table has ResTable_entry entries.
-		// TODO: Handle ResTable_entry flags?
-
-		// Get the address immediately after RES_TABLE_TYPE_TYPE, including skipping config.
-		printf("RES_TABLE_TYPE_TYPE addr: 0x%08lX\n", (unsigned long)((const uint8_t*)pResTblType - pArsc));
-		printf("RES_TABLE_TYPE_TYPE after config addr: 0x%08lX\n", (unsigned long)((const uint8_t*)pResTblType - pArsc) + pResTblType->config_size);
-		const uint32_t *const pResTbl_index_tbl = (const uint32_t*)((const uint8_t*)pResTblType + pResTblType->config_size);
-		printf("entry[0x%04X] == %08X\n", res_index, pResTbl_index_tbl[res_index]);
-		//unsigned int addr = (unsigned int)((const uint8_t*)pResTblType - pArsc);
-
-		// Get the offset of the entry.
-		//const uint32_t *const pResTblEntries_u32 = reinterpret_cast<const uint32_t*>(pResTblEntries_u8);
-		//const uint32_t entry_offset = pResTblEntries_u32[res_index];
-		//printf("entry_offset == %08X, actual addr == %08lX\n", entry_offset, entry_offset + pResTblType->entriesStart + (unsigned long)((const uint8_t*)pResTblType - pArsc));
-		const ResTable_entry *const pResTblEntries = reinterpret_cast<const ResTable_entry*>(pResTblEntries_u8);
-		const ResTable_entry *const pResTblEntry = &pResTblEntries[res_index];
-		printf("pResTblEntries[0x%04X]->key == 0x%08X\n", res_index, pResTblEntry->key.index);
-	}
-
-	// String pool offset table starts immediately after the header.
-	p = reinterpret_cast<const uint8_t*>(pStrPoolHdr);
-	const uint32_t *const pStrOffTbl = reinterpret_cast<const uint32_t*>(p + pStrPoolHdr->header.headerSize);
-	printf("pStrOffTbl == %08X\n", (unsigned int)((uint8_t*)pStrOffTbl - pArsc));
-	const unsigned int strOffTblSize = (pStrPoolHdr->stringsStart - sizeof(ResStringPool_header)) / sizeof(uint32_t);
-	printf("strOffTblSize == 0x%04X\n", strOffTblSize);
-	// FIXME: Divide by charsize;
-	const unsigned int strTblSize = (pStrPoolHdr->header.size - pStrPoolHdr->stringsStart);
-	printf("strTblSize == %u\n", strTblSize);
-
-	// Get the offset of the specified ID.
-	if (res_index > strOffTblSize) {
-		// ID is out of range?
-		return nullptr;
-	}
-
-	printf("res_index == 0x%04X, pStrOffTbl[res_index] == 0x%08X\n", id, pStrOffTbl[res_index]);
-	printf("string: %s\n", &pStrTbl[pStrOffTbl[res_index]]);
-	return nullptr;
+/**
+ * Get a string from Android resource data.
+ * @param id		[in] Resource ID
+ * @return Pointer to string within pArsc, or nullptr if not found.
+ */
+const char *AndroidAPKPrivate::getStringFromResource(uint32_t id)
+{
+	// TODO
+	return "";
 }
 
 /**
@@ -585,6 +796,10 @@ xml_document AndroidAPKPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, 
 	tags.push(doc);
 	xml_node cur_node = doc;	// current XML node
 
+	// Load resources if they aren't loaded already.
+	// TODO: Do this elsewhere?
+	loadResourceAsrc(pArsc, arscLen);
+
 	// Step through the XML tree element tags and attributes
 	uint32_t off = xmlTagOff;
 	while (off < xmlLen) {
@@ -625,7 +840,7 @@ xml_document AndroidAPKPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, 
 					const char *attr_value = nullptr;
 					if (pArsc && arscLen > 0) {
 						// Get it from the resource file.
-						attr_value = getStringFromResource(pArsc, arscLen, attrResId);
+						attr_value = getStringFromResource(attrResId);
 					}
 					if (attr_value) {
 						xmlAttr.set_value(attr_value);
@@ -704,7 +919,6 @@ int AndroidAPKPrivate::loadAndroidManifestXml(void)
 	// TODO: Figure out the best "max size".
 	rp::uvector<uint8_t> resources_arsc_buf = loadFileFromZip(
 		"resources.arsc", resources_arsc_FILE_SIZE_MAX);
-	printf("sz: %zu\n", resources_arsc_buf.size());
 
 	xml_document xml = decompressAndroidBinaryXml(
 		AndroidManifest_xml_buf.data(), AndroidManifest_xml_buf.size(),
