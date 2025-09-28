@@ -315,6 +315,10 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 		}
 	}
 
+	// Automatically wrap long strings.
+	lblString->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred));
+	lblString->setWordWrap(true);
+
 	// Enable strong focus so we can tab into the label.
 	lblString->setFocusPolicy(Qt::StrongFocus);
 
