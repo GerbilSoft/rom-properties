@@ -127,6 +127,7 @@ SET(${PROJECT_NAME}_SRCS
 	data/XboxPublishers.cpp
 	data/Xbox360_STFS_ContentType.cpp
 
+	disc/AndroidResourceReader.cpp
 	disc/Cdrom2352Reader.cpp
 	disc/CdiReader.cpp
 	disc/CIAReader.cpp
@@ -348,6 +349,7 @@ SET(${PROJECT_NAME}_H
 	data/XboxPublishers_data.h
 	data/Xbox360_STFS_ContentType.hpp
 
+	disc/AndroidResourceReader.hpp
 	disc/CdiReader.hpp
 	disc/Cdrom2352Reader.hpp
 	disc/CIAReader.hpp
