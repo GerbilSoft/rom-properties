@@ -975,8 +975,7 @@ int AndroidAPKPrivate::addField_string_i18n(const char *name, const char *str, u
 			}
 			if (pStringMultiMap) {
 				// TODO: def_lc?
-				fields.addField_string_multi(name, pStringMultiMap, 'en', flags);
-				return fields.count();
+				return fields.addField_string_multi(name, pStringMultiMap, 'en', flags);
 			} else {
 				// No strings...?
 				delete pStringMultiMap;
