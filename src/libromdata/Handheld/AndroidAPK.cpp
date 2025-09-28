@@ -651,21 +651,15 @@ int AndroidAPKPrivate::loadResourceAsrc(const uint8_t *pArsc, size_t arscLen)
 	}
 
 	// Based on: https://github.com/hylander0/Iteedee.ApkReader/blob/master/Iteedee.ApkReader/ApkResourceFinder.cs
-	// TODO: Bounds checking.
 	const uint8_t *p = pArsc;
 	const uint8_t *const pEnd = pArsc + arscLen;
 
-	{
-		uint16_t type = read_u16(p);
-		uint16_t headerSize = read_u16(p);
-		uint32_t size = read_u32(p);
-		uint32_t packageCount = read_u32(p);
-
-		if (type != RES_TABLE_TYPE || size != arscLen) {
-			// Something is wrong here...
-			return -EIO;
-		}
+	const ResTable_header *const pResTableHdr = reinterpret_cast<const ResTable_header*>(p);
+	if (pResTableHdr->header.type != RES_TABLE_TYPE || pResTableHdr->header.size != arscLen) {
+		// Something is wrong here...
+		return -EIO;
 	}
+	p += pResTableHdr->header.headerSize;
 
 	unsigned int realStringPoolCount = 0;
 	unsigned int realPackageCount = 0;
