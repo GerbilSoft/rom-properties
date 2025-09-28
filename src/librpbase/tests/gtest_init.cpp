@@ -120,7 +120,10 @@ static constexpr int16_t syscall_wl_gtest_death_test[] = {
 	SCMP_SYS(getrandom),
 	SCMP_SYS(wait4),
 	SCMP_SYS(unlink),	// to remove temporary files: /tmp/gtest_captured_stream.XXXXXX
-	//SCMP_SYS(execve),	// only used if the above syscalls fail?
+
+	// Needed on Xubuntu 16.04.
+	SCMP_SYS(execve),
+	SCMP_SYS(waitpid),
 };
 
 // for Qt tests
@@ -165,7 +168,7 @@ static constexpr int16_t syscall_wl_qt[] = {
 	SCMP_SYS(getsockopt),	// Qt4 only
 	SCMP_SYS(pipe2),	// Qt4 only
 
-	// Needed with xvfb-run on Kubuntu 16.04.
+	// Needed with xvfb-run on Xubuntu 16.04.
 	SCMP_SYS(uname),
 	SCMP_SYS(socketcall),
 	SCMP_SYS(time),
