@@ -429,8 +429,12 @@ vector<string> AndroidAPKPrivate::processStringPool(const uint8_t *data, size_t 
 {
 	vector<string> stringPool;
 	const uint8_t *p = data;
+	const uint8_t *const pEnd = data + size;
 
-	const ResStringPool_header *const pStringPoolHdr = reinterpret_cast<const ResStringPool_header*>(data);
+	if (p + sizeof(ResStringPool_header) > pEnd) {
+		return {};
+	}
+	const ResStringPool_header *const pStringPoolHdr = reinterpret_cast<const ResStringPool_header*>(p);
 	p += sizeof(ResStringPool_header);
 
 	const bool isUTF8 = (pStringPoolHdr->flags & ResStringPool_header::UTF8_FLAG);
@@ -438,6 +442,9 @@ vector<string> AndroidAPKPrivate::processStringPool(const uint8_t *data, size_t 
 	// Offset table
 	const uint32_t *pStrOffsetTbl = reinterpret_cast<const uint32_t*>(p);
 	p += (pStringPoolHdr->stringCount * sizeof(uint32_t));
+	if (p >= pEnd) {
+		return {};
+	}
 
 	// Load the strings.
 	// NOTE: Assuming UTF-8 for now.
@@ -447,16 +454,25 @@ vector<string> AndroidAPKPrivate::processStringPool(const uint8_t *data, size_t 
 	for (unsigned int i = 0; i < pStringPoolHdr->stringCount; i++) {
 		unsigned int pos = pStringPoolHdr->stringsStart + pStrOffsetTbl[i];
 		const uint8_t *p_u8str = data + pos;
+		if (p_u8str >= pEnd) {
+			break;
+		}
 
 		if (isUTF8) {
 			// TODO: Why the u16len and u8len?
 			unsigned int u16len = *p_u8str++;
+			if (p_u8str >= pEnd) {
+				break;
+			}
 			if (u16len & 0x80) {
 				// Larger than 128
 				u16len = ((u16len & 0x7F) << 8) + *p_u8str++;
 			}
 
 			unsigned int u8len = *p_u8str++;
+			if (p_u8str >= pEnd) {
+				break;
+			}
 			if (u8len & 0x80) {
 				// Larger than 128
 				u8len = ((u8len & 0x7F) << 8) + *p_u8str++;
@@ -468,9 +484,15 @@ vector<string> AndroidAPKPrivate::processStringPool(const uint8_t *data, size_t 
 				stringPool.push_back(string());
 			}
 		} else {
+			if (p_u8str + 2 > pEnd) {
+				break;
+			}
 			unsigned int u16len = read_u16(p_u8str);
 			if (u16len & 0x8000) {
 				// Larger than 32,768
+				if (p_u8str + 2 > pEnd) {
+					break;
+				}
 				u16len = ((u16len & 0x7FFF) << 16) + read_u16(p_u8str);
 			}
 
@@ -495,11 +517,19 @@ vector<string> AndroidAPKPrivate::processStringPool(const uint8_t *data, size_t 
 ATTR_ACCESS_SIZE(read_only, 2, 3)
 int AndroidAPKPrivate::processType(const uint8_t *data, size_t size, unsigned int package_id)
 {
+	const uint8_t *const pEnd = data + size;
+	if (data + sizeof(ResTable_type) > pEnd) {
+		return -EIO;
+	}
 	const ResTable_type *const pResTableType = reinterpret_cast<const ResTable_type*>(data);
+
 	const uint8_t id = pResTableType->id;
 	const unsigned int entryCount = pResTableType->entryCount;
 
 	const uint8_t *p = data + pResTableType->header.headerSize;
+	if (p >= pEnd) {
+		return -EIO;
+	}
 
 	// Key: resource_id
 	// Value: pResValue->data
@@ -513,6 +543,9 @@ int AndroidAPKPrivate::processType(const uint8_t *data, size_t size, unsigned in
 	// Entry indexes
 	const int32_t *const pIndexTbl = reinterpret_cast<const int32_t*>(p);
 	p += (pResTableType->entryCount * sizeof(uint32_t));
+	if (p >= pEnd) {
+		return -EIO;
+	}
 
 	// Get entries
 	for (unsigned int i = 0; i < entryCount; i++) {
@@ -522,10 +555,16 @@ int AndroidAPKPrivate::processType(const uint8_t *data, size_t size, unsigned in
 
 		uint32_t resource_id = (package_id << 24) | (id << 16) | i;
 
+		if (p + sizeof(ResTable_entry) > pEnd) {
+			break;
+		}
 		const ResTable_entry *const pEntry = reinterpret_cast<const ResTable_entry*>(p);
 		p += sizeof(ResTable_entry);
 		if (!(pEntry->flags & ResTable_entry::FLAG_COMPLEX)) {
 			// Simple case
+			if (p + sizeof(Res_value) > pEnd) {
+				break;
+			}
 			const Res_value *const pResValue = reinterpret_cast<const Res_value*>(p);
 			p += sizeof(Res_value);
 			// TODO: Verify pEntry->key.index
@@ -593,6 +632,10 @@ int AndroidAPKPrivate::processType(const uint8_t *data, size_t size, unsigned in
 int AndroidAPKPrivate::processPackage(const uint8_t *data, size_t size)
 {
 	const uint8_t *const pEnd = data + size;
+
+	if (data + sizeof(ResTable_package) > pEnd) {
+		return -EIO;
+	}
 	const ResTable_package *pPackage = reinterpret_cast<const ResTable_package*>(data);
 
 	// Package string pools
@@ -608,6 +651,9 @@ int AndroidAPKPrivate::processPackage(const uint8_t *data, size_t size)
 	const uint8_t *p = reinterpret_cast<const uint8_t*>(pKeyStrings) + pKeyStrings->header.size;
 
 	while (true) {
+		if (p + sizeof(ResChunk_header) > pEnd) {
+			break;
+		}
 		const ResChunk_header *const pHdr = reinterpret_cast<const ResChunk_header*>(p);
 
 		switch (pHdr->type) {
@@ -627,10 +673,6 @@ int AndroidAPKPrivate::processPackage(const uint8_t *data, size_t size)
 		}
 
 		p += pHdr->size;
-		if (p >= pEnd) {
-			// End of buffer.
-			break;
-		}
 	}
 
 	return 0;
