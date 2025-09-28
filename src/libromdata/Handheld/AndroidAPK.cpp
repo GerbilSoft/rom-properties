@@ -20,7 +20,7 @@
 #include "compat/unzip.h"
 
 // Other rom-properties libraries
-#include "librpbase/img/RpPng.hpp"
+#include "librpbase/img/RpImageLoader.hpp"
 #include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -431,9 +431,9 @@ rp_image_const_ptr AndroidAPKPrivate::loadIcon(void)
 	}
 
 	// Create a MemFile and decode the image.
-	// TODO: For rpcli, shortcut to extract the PNG directly.
+	// TODO: For rpcli, shortcut to extract the PNG directly?
 	MemFile f_mem(icon_buf.data(), icon_buf.size());
-	this->img_icon = RpPng::load(&f_mem);
+	this->img_icon = RpImageLoader::load(&f_mem);
 	return this->img_icon;
 }
 

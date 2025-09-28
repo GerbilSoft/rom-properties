@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * config.librpbase.h.in: LibRpBase configuration. (source file)           *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -78,6 +78,9 @@
 #if !defined(USE_INTERNAL_MINIZIP) || defined(USE_INTERNAL_MINIZIP_DLL)
 #  define MINIZIP_IS_DLL 1
 #endif
+
+/* Define to 1 if WebP should be supported, using dlopen(). */
+#cmakedefine ENABLE_WEBP 1
 
 /** iconv **/
 

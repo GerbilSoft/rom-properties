@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.librpbase.h"
 #include "AndroidResourceReader.hpp"
 #include "../Handheld/android_apk_structs.h"
 
@@ -791,6 +792,13 @@ string AndroidResourceReader::findIconHighestDensity(uint32_t resource_id) const
 					highest_density = density;
 					break;
 				}
+#ifdef ENABLE_WEBP
+				if (str.size() > 5 && str.compare(str.size()-5, 5, ".webp") == 0) {
+					icon_filename = str;
+					highest_density = density;
+					break;
+				}
+#endif /* ENABLE_WEBP */
 			}
 		}
 	}

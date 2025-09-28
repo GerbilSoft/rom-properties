@@ -165,6 +165,11 @@ OPTION(ENABLE_ACHIEVEMENTS "Enable achievement pop-ups." ON)
 # Network support for e.g. downloads of external artwork and update checking
 OPTION(ENABLE_NETWORKING "Enable network support for e.g. downloads of external artwork and update checking" ON)
 
+# WebP using dlopen() [experimental, Linux only for now]
+IF(NOT WIN32)
+	OPTION(ENABLE_WEBP "Enable WebP support using dlopen() [experimental, Linux only for now]" OFF)
+ENDIF(NOT WIN32)
+
 # Install documentation
 OPTION(INSTALL_DOC "Install documentation." ON)
 

@@ -21,6 +21,9 @@ using namespace LibRpTexture;
 #ifdef HAVE_JPEG
 #  include "RpJpeg.hpp"
 #endif /* HAVE_JPEG */
+#ifdef ENABLE_WEBP
+#  include "RpWebP.hpp"
+#endif /* ENABLE_WEBP */
 
 // RpImageLoader isn't used by libromdata directly,
 // so use some linker hax to force linkage.
@@ -40,6 +43,11 @@ static constexpr array<uint8_t, 8> png_magic = {{0x89, 'P', 'N', 'G', '\r', '\n'
 static constexpr array<uint8_t, 4> jpeg_magic = {{'J','F','I','F'}};
 static constexpr array<uint8_t, 4> exif_magic = {{'E','x','i','f'}};
 #endif /* HAVE_JPEG */
+#ifdef ENABLE_WEBP
+static constexpr array<uint8_t, 4> riff_magic = {{'R','I','F','F'}};
+// "VP8 " and "VP8L" are both valid, so don't check the last character.
+static constexpr array<uint8_t, 7> webp_magic = {{'W','E','B','P','V','P','8'}};
+#endif /* ENABLE_WEBP */
 
 /** RpImageLoader **/
 
@@ -53,9 +61,9 @@ rp_image_ptr load(IRpFile *file)
 	file->rewind();
 
 	// Check the file header to see what kind of image this is.
-	uint8_t buf[256];
+	uint8_t buf[16];
 	size_t sz = file->read(buf, sizeof(buf));
-	if (sz >= sizeof(png_magic)) {
+	if (sz >= sizeof(buf)) {
 		// Check for PNG.
 		if (!memcmp(buf, png_magic.data(), png_magic.size())) {
 			// Found a PNG image.
@@ -73,6 +81,14 @@ rp_image_ptr load(IRpFile *file)
 			}
 		}
 #endif /* HAVE_JPEG */
+#ifdef ENABLE_WEBP
+		else if (!memcmp(buf, riff_magic.data(), riff_magic.size()) &&
+		         !memcmp(&buf[8], webp_magic.data(), webp_magic.size()))
+		{
+			// Found a WebP image.
+			return RpWebP::load(file);
+		}
+#endif /* ENABLE_WEBP */
 	}
 
 	// Unsupported image format.
