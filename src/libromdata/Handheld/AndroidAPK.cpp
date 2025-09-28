@@ -654,6 +654,9 @@ int AndroidAPKPrivate::loadResourceAsrc(const uint8_t *pArsc, size_t arscLen)
 	const uint8_t *p = pArsc;
 	const uint8_t *const pEnd = pArsc + arscLen;
 
+	if (p + sizeof(ResTable_header) > pEnd) {
+		return -EIO;
+	}
 	const ResTable_header *const pResTableHdr = reinterpret_cast<const ResTable_header*>(p);
 	if (pResTableHdr->header.type != RES_TABLE_TYPE || pResTableHdr->header.size != arscLen) {
 		// Something is wrong here...
@@ -665,6 +668,9 @@ int AndroidAPKPrivate::loadResourceAsrc(const uint8_t *pArsc, size_t arscLen)
 	unsigned int realPackageCount = 0;
 
 	while (true) {
+		if (p + sizeof(ResChunk_header) > pEnd) {
+			break;
+		}
 		const ResChunk_header *const pHdr = reinterpret_cast<const ResChunk_header*>(p);
 
 		switch (pHdr->type) {
@@ -691,7 +697,13 @@ int AndroidAPKPrivate::loadResourceAsrc(const uint8_t *pArsc, size_t arscLen)
 			break;
 		}
 	}
-	
+
+	// Verify counts.
+	assert(realStringPoolCount == 1);
+	assert(realPackageCount == pResTableHdr->packageCount);
+	if (realStringPoolCount != 1 || realPackageCount != pResTableHdr->packageCount) {
+		return -EIO;
+	}
 	return 0;
 }
 
