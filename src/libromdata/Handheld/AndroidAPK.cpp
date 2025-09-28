@@ -1412,7 +1412,9 @@ AndroidAPK::AndroidAPK(const IRpFilePtr &file)
 	int ret_dl = DelayLoad_test_PugiXML();
 	if (ret_dl != 0) {
 		// Delay load failed.
-		return ret_dl;
+		d->isValid = false;
+		d->file.reset();
+		return;
 	}
 #  endif /* XML_IS_DLL */
 #endif /* _MSC_VER */
