@@ -179,9 +179,6 @@ public:
 	static constexpr size_t resources_arsc_FILE_SIZE_MAX = (4096U * 1024U);
 	static constexpr size_t ICON_PNG_FILE_SIZE_MAX = (1024U * 1024U);;
 
-	// Binary XML "magic"
-	static const array<uint8_t, 4> AndroidBinaryXML_magic;
-
 	// AndroidManifest.xml document
 	// NOTE: Using a pointer to prevent delay-load issues.
 	unique_ptr<xml_document> manifest_xml;
@@ -270,13 +267,10 @@ const RomDataInfo AndroidAPKPrivate::romDataInfo = {
 	"AndroidAPK", exts.data(), mimeTypes.data()
 };
 
-// Binary XML "magic"
-const array<uint8_t, 4> AndroidAPKPrivate::AndroidBinaryXML_magic = {{0x03, 0x00, 0x08, 0x00}};
-
 AndroidAPKPrivate::AndroidAPKPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, apkFile(nullptr)
-{}
+{ }
 
 AndroidAPKPrivate::~AndroidAPKPrivate()
 {
@@ -1079,7 +1073,8 @@ rp_image_const_ptr AndroidAPKPrivate::loadIcon(void)
 
 	// Check for an Adaptive Icon.
 	// The icon file will be a binary XML instead of a PNG image.
-	if (!memcmp(icon_buf.data(), AndroidBinaryXML_magic.data(), AndroidBinaryXML_magic.size())) {
+	const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(icon_buf.data());
+	if (pData32[0] == cpu_to_be32(ANDROID_BINARY_XML_MAGIC)) {
 		// TODO: Handle adaptive icons.
 		return {};
 	}

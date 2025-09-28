@@ -15,6 +15,10 @@
 extern "C" {
 #endif
 
+// "Magic" number for Android binary XML files.
+// (big-endian)
+#define ANDROID_BINARY_XML_MAGIC 0x03000800
+
 // from ResourceTypes.h
 // References:
 // - https://github.com/iBotPeaches/platform_frameworks_base/blob/main/libs/androidfw/include/androidfw/ResourceTypes.h

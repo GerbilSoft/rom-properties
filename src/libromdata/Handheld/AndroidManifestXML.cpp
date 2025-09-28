@@ -128,9 +128,6 @@ public:
 	static constexpr uint32_t startTag	= 0x00100000 | RES_XML_START_ELEMENT_TYPE;
 	static constexpr uint32_t endTag	= 0x00100103 | RES_XML_END_ELEMENT_TYPE;
 
-	// Binary XML "magic"
-	static const array<uint8_t, 4> AndroidBinaryXML_magic;
-
 	// AndroidManifest.xml document
 	// NOTE: Using a pointer to prevent delay-load issues.
 	unique_ptr<xml_document> manifest_xml;
@@ -156,12 +153,9 @@ const RomDataInfo AndroidManifestXMLPrivate::romDataInfo = {
 	"AndroidManifestXML", exts.data(), mimeTypes.data()
 };
 
-// Binary XML "magic"
-const array<uint8_t, 4> AndroidManifestXMLPrivate::AndroidBinaryXML_magic = {{0x03, 0x00, 0x08, 0x00}};
-
 AndroidManifestXMLPrivate::AndroidManifestXMLPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
-{}
+{ }
 
 /**
  * Return the string stored in StringTable format at offset strOff.
@@ -516,8 +510,9 @@ int AndroidManifestXML::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
-	// The first four bytes must be 03 00 08 00.
-	if (memcmp(info->header.pData, AndroidManifestXMLPrivate::AndroidBinaryXML_magic.data(), AndroidManifestXMLPrivate::AndroidBinaryXML_magic.size()) != 0) {
+	// Check the binary XML "magic".
+	const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(info->header.pData);
+	if (pData32[0] != cpu_to_be32(ANDROID_BINARY_XML_MAGIC)) {
 		// Incorrect magic.
 		return -1;
 	}
