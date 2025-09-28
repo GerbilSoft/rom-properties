@@ -1311,9 +1311,9 @@ rp_image_const_ptr AndroidAPKPrivate::loadIcon(void)
 			const unsigned int density = (iter2.first & ~DENSITY_FLAG);
 			if (density > highest_density) {
 				const auto &vec = iter2.second;
-				// Find the first non-empty entry.
+				// Find the first non-empty entry that ends in ".png".
 				for (const auto &str : vec) {
-					if (!str.empty()) {
+					if (str.size() > 4 && str.compare(str.size()-4, 4, ".png") == 0) {
 						resIcon = str;
 						highest_density = density;
 						break;
