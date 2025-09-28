@@ -592,6 +592,12 @@ int AndroidAPKPrivate::processType(const uint8_t *data, size_t size, unsigned in
 
 		// Check the locale.
 		androidLocaleToRP(pResTableType->config.locale, lc, cc);
+
+		// Do we support this locale?
+		if (SystemRegion::getLocalizedLanguageName(lc) != nullptr) {
+			// Not supported.
+			return 0;
+		}
 	}
 
 	// Get the response map for this lc.
