@@ -324,13 +324,14 @@ xml_document AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_t
 	while (off < xmlLen) {
 		uint32_t tag0 = LEW(pXml, xmlLen, off);
 		//uint32_t tag1 = LEW(pXml, xmlLen, off+1*4);
-		uint32_t lineNo = LEW(pXml, xmlLen, off+2*4);
+		//uint32_t lineNo = LEW(pXml, xmlLen, off+2*4);
 		//uint32_t tag3 = LEW(pXml, xmlLen, off+3*4);
-		uint32_t nameNsSi = LEW(pXml, xmlLen, off+4*4);
+		//uint32_t nameNsSi = LEW(pXml, xmlLen, off+4*4);
 		int nameSi = LEW(pXml, xmlLen, off+5*4);
 
 		if (tag0 == startTag) { // XML START TAG
-			uint32_t tag6 = LEW(pXml, xmlLen, off+6*4);  // Expected to be 14001400
+			// TODO: Verify some of the tags?
+			//uint32_t tag6 = LEW(pXml, xmlLen, off+6*4);  // Expected to be 14001400
 			uint32_t numbAttrs = LEW(pXml, xmlLen, off+7*4);  // Number of Attributes to follow
 			//uint32_t tag8 = LEW(pXml, xmlLen, off+8*4);  // Expected to be 00000000
 			off += 9*4;  // Skip over 6+3 words of startTag data
@@ -343,10 +344,10 @@ xml_document AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_t
 
 			// Look for the Attributes
 			for (uint32_t ii = 0; ii < numbAttrs; ii++) {
-				uint32_t attrNameNsSi = LEW(pXml, xmlLen, off);  // AttrName Namespace Str Ind, or FFFFFFFF
+				//uint32_t attrNameNsSi = LEW(pXml, xmlLen, off);  // AttrName Namespace Str Ind, or FFFFFFFF
 				int attrNameSi = LEW(pXml, xmlLen, off+1*4);  // AttrName String Index
 				int attrValueSi = LEW(pXml, xmlLen, off+2*4); // AttrValue Str Ind, or FFFFFFFF
-				uint32_t attrFlags = LEW(pXml, xmlLen, off+3*4);  
+				//uint32_t attrFlags = LEW(pXml, xmlLen, off+3*4);  
 				uint32_t attrResId = LEW(pXml, xmlLen, off+4*4);  // AttrValue ResourceId or dup AttrValue StrInd
 				off += 5*4;  // Skip over the 5 words of an attribute
 
