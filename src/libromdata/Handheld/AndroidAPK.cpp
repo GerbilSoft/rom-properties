@@ -1404,7 +1404,8 @@ int AndroidAPK::loadFieldData(void)
 			if (required && required[0] != '\0') {
 				v_feature.push_back(required);
 			} else {
-				v_feature.push_back(string());
+				// Default value is true.
+				v_feature.push_back("true");
 			}
 
 			vv_features->push_back(std::move(v_feature));
