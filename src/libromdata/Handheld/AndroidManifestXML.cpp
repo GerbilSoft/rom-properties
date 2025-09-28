@@ -115,12 +115,13 @@ public:
 	/**
 	 * Decompress Android binary XML.
 	 * Strings that are referencing resources will be printed as "@0x12345678".
+	 * NOTE: Need to return a pointer to work around delay-load issues.
 	 * @param pXml		[in] Android binary XML data
 	 * @param xmlLen	[in] Size of XML data
-	 * @return PugiXML document, or an empty document on error.
+	 * @return Pointer to a PugiXML document, or nullptr on error.
 	 */
 	ATTR_ACCESS_SIZE(read_only, 1, 2)
-	static xml_document decompressAndroidBinaryXml(const uint8_t *pXml, size_t xmlLen);
+	static xml_document *decompressAndroidBinaryXml(const uint8_t *pXml, size_t xmlLen);
 
 public:
 	// Maximum size for various files.
@@ -233,11 +234,12 @@ static inline uint32_t read_u32(const uint8_t *&p)
 /**
  * Decompress Android binary XML.
  * Strings that are referencing resources will be printed as "@0x12345678".
+ * NOTE: Need to return a pointer to work around delay-load issues.
  * @param pXml		[in] Android binary XML data
  * @param xmlLen	[in] Size of XML data
- * @return PugiXML document, or an empty document on error.
+ * @return Pointer to a PugiXML document, or nullptr on error.
  */
-xml_document AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, size_t xmlLen)
+xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_t *pXml, size_t xmlLen)
 {
 	// Reference:
 	// - https://stackoverflow.com/questions/2097813/how-to-parse-the-androidmanifest-xml-file-inside-an-apk-package
@@ -307,11 +309,11 @@ xml_document AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_t
 	//tr.parent();
 
 	// Create a PugiXML document.
-	xml_document doc;
+	unique_ptr<xml_document> doc(new xml_document);
 	// Stack of tags currently being processed.
 	stack<xml_node> tags;
-	tags.push(doc);
-	xml_node cur_node = doc;	// current XML node
+	tags.push(*doc);
+	xml_node cur_node = *doc;	// current XML node
 	int ns_count = 1;		// finished processing when this reaches 0
 
 	// Step through the XML tree element tags and attributes
@@ -373,7 +375,7 @@ xml_document AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_t
 				// Less than 2 tags on the stack.
 				// The first tag is the document, so this means there is a
 				// stray end tag somewhere...
-				return {};
+				return nullptr;
 			}
 			tags.pop();
 			cur_node = tags.top();
@@ -420,18 +422,18 @@ xml_document AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_t
 	if (tags.size() != 1) {
 		// The tag stack is incorrect.
 		// We should only have one tag left: the root document node.
-		return {};
+		return nullptr;
 	}
 
 	assert(ns_count == 0);
 	if (ns_count != 0) {
 		// The namespace count is incorrect.
 		// We should have 0 namespaces remaining.
-		return {};
+		return nullptr;
 	}
 
 	// XML document decompressed.
-	return doc;
+	return doc.release();
 }
 
 /** AndroidManifestXML **/
@@ -504,12 +506,9 @@ AndroidManifestXML::AndroidManifestXML(const IRpFilePtr &file)
 	// Otherwise, load the file into memory.
 	MemFile *const memFile = dynamic_cast<MemFile*>(d->file.get());
 	if (memFile) {
-		xml_document xml = d->decompressAndroidBinaryXml(
+		d->manifest_xml.reset(d->decompressAndroidBinaryXml(
 			static_cast<const uint8_t*>(memFile->buffer()),
-			static_cast<size_t>(memFile->size()));
-
-		d->manifest_xml.reset(new xml_document);
-		*d->manifest_xml = std::move(xml);
+			static_cast<size_t>(memFile->size())));
 	} else {
 		const off64_t fileSize_o64 = d->file->size();
 		if (static_cast<size_t>(fileSize_o64) > d->AndroidManifest_xml_FILE_SIZE_MAX) {
@@ -527,10 +526,8 @@ AndroidManifestXML::AndroidManifestXML(const IRpFilePtr &file)
 			d->file.reset();
 			return;
 		}
-		xml_document xml = d->decompressAndroidBinaryXml(AndroidManifest_xml_buf.data(), fileSize);
 
-		d->manifest_xml.reset(new xml_document);
-		*d->manifest_xml = std::move(xml);
+		d->manifest_xml.reset(d->decompressAndroidBinaryXml(AndroidManifest_xml_buf.data(), fileSize));
 	}
 }
 
