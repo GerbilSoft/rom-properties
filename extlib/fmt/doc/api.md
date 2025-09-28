@@ -79,6 +79,8 @@ time formatting and [`fmt/std.h`](#std-api) for other standard library types.
 
 There are two ways to make a user-defined type formattable: providing a
 `format_as` function or specializing the `formatter` struct template.
+Formatting of non-void pointer types is intentionally disallowed and they
+cannot be made formattable via either extension API.
 
 Use `format_as` if you want to make your type formattable as some other
 type with the same format specifiers. The `format_as` function should
@@ -413,11 +415,11 @@ locale:
 that take `std::locale` as a parameter. The locale type is a template
 parameter to avoid the expensive `<locale>` include.
 
-::: format(const Locale&, format_string<T...>, T&&...)
+::: format(locale_ref, format_string<T...>, T&&...)
 
-::: format_to(OutputIt, const Locale&, format_string<T...>, T&&...)
+::: format_to(OutputIt, locale_ref, format_string<T...>, T&&...)
 
-::: formatted_size(const Locale&, format_string<T...>, T&&...)
+::: formatted_size(locale_ref, format_string<T...>, T&&...)
 
 <a id="legacy-checks"></a>
 ### Legacy Compile-Time Checks
@@ -547,31 +549,62 @@ fmt::print("{}", +s.bit);
 This is a known limitation of "perfect" forwarding in C++.
 
 <a id="compile-api"></a>
-## Format String Compilation
+## Compile-Time Support
 
 `fmt/compile.h` provides format string compilation and compile-time
 (`constexpr`) formatting enabled via the `FMT_COMPILE` macro or the `_cf`
 user-defined literal defined in namespace `fmt::literals`. Format strings
 marked with `FMT_COMPILE` or `_cf` are parsed, checked and converted into
 efficient formatting code at compile-time. This supports arguments of built-in
-and string types as well as user-defined types with `format` functions taking
+and string types as well as user-defined types with `format` methods taking
 the format context type as a template parameter in their `formatter`
-specializations. For example:
+specializations. For example ([run](https://www.godbolt.org/z/3c13erEoq)):
+
+    struct point {
+      double x;
+      double y;
+    };
 
     template <> struct fmt::formatter<point> {
-      constexpr auto parse(format_parse_context& ctx);
+      constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
 
       template <typename FormatContext>
-      auto format(const point& p, FormatContext& ctx) const;
+      auto format(const point& p, FormatContext& ctx) const {
+        return format_to(ctx.out(), "({}, {})"_cf, p.x, p.y);
+      }
     };
+
+    using namespace fmt::literals;
+    std::string s = fmt::format("{}"_cf, point(4, 2));
 
 Format string compilation can generate more binary code compared to the
 default API and is only recommended in places where formatting is a
 performance bottleneck.
 
-::: FMT_COMPILE
+The same APIs support formatting at compile time e.g. in `constexpr`
+and `consteval` functions. Additionally there is an experimental
+`FMT_STATIC_FORMAT` that allows formatting into a string of the exact
+required size at compile time. Compile-time formatting works with built-in
+and user-defined formatters that have `constexpr` `format` methods.
+Example:
+
+    template <> struct fmt::formatter<point> {
+      constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+      template <typename FormatContext>
+      constexpr auto format(const point& p, FormatContext& ctx) const {
+        return format_to(ctx.out(), "({}, {})"_cf, p.x, p.y);
+      }
+    };
+
+    constexpr auto s = FMT_STATIC_FORMAT("{}", point(4, 2));
+    const char* cstr = s.c_str(); // Points the static string "(4, 2)".
 
 ::: operator""_cf
+
+::: FMT_COMPILE
+
+::: FMT_STATIC_FORMAT
 
 <a id="color-api"></a>
 ## Terminal Colors and Text Styles
@@ -641,17 +674,15 @@ if an argument type doesn't match its format specification.
 
 ::: printf(string_view, const T&...)
 
-::: fprintf(std::FILE*, const S&, const T&...)
+::: fprintf(std::FILE*, string_view, const T&...)
 
-::: sprintf(const S&, const T&...)
+::: sprintf(string_view, const T&...)
 
 <a id="xchar-api"></a>
 ## Wide Strings
 
 The optional header `fmt/xchar.h` provides support for `wchar_t` and
 exotic character types.
-
-::: is_char
 
 ::: wstring_view
 
