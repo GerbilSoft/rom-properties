@@ -399,6 +399,7 @@ IF(ENABLE_XML)
 		)
 	SET(${PROJECT_NAME}_H ${${PROJECT_NAME}_H}
 		Handheld/AndroidAPK.hpp
+		Handheld/android_apk_structs.h
 		)
 	IF(MSVC AND (NOT USE_INTERNAL_XML OR USE_INTERNAL_XML_DLL))
 		SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} Other/EXE_delayload.cpp)

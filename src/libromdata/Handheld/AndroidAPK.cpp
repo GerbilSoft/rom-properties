@@ -10,6 +10,7 @@
 
 #include "config.librpbase.h"
 #include "AndroidAPK.hpp"
+#include "android_apk_structs.h"
 
 // MiniZip
 #include <zlib.h>
@@ -170,9 +171,9 @@ public:
 	static constexpr size_t resources_asrc_FILE_SIZE_MAX = (4096U * 1024U);
 
 	// Binary XML tags
-	static constexpr uint32_t endDocTag	= 0x00100101;
-	static constexpr uint32_t startTag	= 0x00100102;
-	static constexpr uint32_t endTag	= 0x00100103;
+	static constexpr uint32_t endDocTag	= 0x00100000 | RES_XML_END_NAMESPACE_TYPE;
+	static constexpr uint32_t startTag	= 0x00100000 | RES_XML_START_ELEMENT_TYPE;
+	static constexpr uint32_t endTag	= 0x00100103 | RES_XML_END_ELEMENT_TYPE;
 
 	// AndroidManifest.xml document
 	// NOTE: Using a pointer to prevent delay-load issues.
