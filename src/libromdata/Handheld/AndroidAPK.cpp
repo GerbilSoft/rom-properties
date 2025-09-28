@@ -1309,6 +1309,10 @@ rp_image_const_ptr AndroidAPKPrivate::loadIcon(void)
 	if (!resIcon.empty()) {
 		icon_filename = resIcon.c_str();
 	}
+	if (!icon_filename) {
+		// Unable to load the icon filename...
+		return {};
+	}
 
 	// Attempt to load the file.
 	rp::uvector<uint8_t> icon_buf = loadFileFromZip(icon_filename, ICON_PNG_FILE_SIZE_MAX);
