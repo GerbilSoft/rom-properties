@@ -593,23 +593,6 @@ uint32_t AndroidResourceReader::parseResourceID(const char *str)
 }
 
 /**
- * Parse an unsigned integer value from AndroidManifest.xml, as loaded by the AndroidManifestXML class.
- * @param str Unsigned integer value (as a decimal or hexadecimal string)
- * @return Unsigned integer value, or 0 if not valid
- */
-uint32_t AndroidResourceReader::parseUnsignedInteger(const char *str)
-{
-	char *pEnd = nullptr;
-	uint32_t uint_val = strtoul(str, &pEnd, 0);
-	if (uint_val != 0 && pEnd && *pEnd == '\0') {
-		return uint_val;
-	}
-
-	// Not valid.
-	return 0;
-}
-
-/**
  * Get a string from Android resource data.
  * @param id	[in] Resource ID
  * @return String, or nullptr if not found.
