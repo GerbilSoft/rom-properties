@@ -80,18 +80,16 @@ public:
 	 */
 	static inline uint32_t LEW(const uint8_t *pData, uint32_t dataLen, size_t offset)
 	{
+		assert(offset % 4 == 0);
 		assert(offset + 3 < dataLen);
-		if (offset + 3 >= dataLen) {
+		if ((offset % 4 != 0) || (offset + 3 >= dataLen)) {
 			// Out of bounds.
 			// TODO: Fail.
 			return 0;
 		}
 
-		// TODO: Optimize with a 32-bit read?
-		return (pData[offset+3] << 24) |
-		       (pData[offset+2] << 16) |
-		       (pData[offset+1] <<  8) |
-		        pData[offset+0];
+		const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(pData);
+		return le32_to_cpu(pData32[offset / 4]);
 	}
 
 	/**
