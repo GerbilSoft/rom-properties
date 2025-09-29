@@ -128,6 +128,8 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 	// Reference:
 	// - https://stackoverflow.com/questions/2097813/how-to-parse-the-androidmanifest-xml-file-inside-an-apk-package
 	// - https://stackoverflow.com/a/4761689
+	// - https://github.com/iBotPeaches/platform_frameworks_base/blob/main/libs/androidfw/include/androidfw/ResourceTypes.h
+	// - https://apktool.org/wiki/advanced/resources-arsc/
 	// TODO: Test on lots of Android packages to find any issues.
 	assert(xmlLen > (sizeof(ResXMLTree_header) + sizeof(ResStringPool_header)));
 	if (xmlLen <= (sizeof(ResXMLTree_header) + sizeof(ResStringPool_header))) {
@@ -183,37 +185,6 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 		// EOF?
 		return nullptr;
 	}
-
-	// XML tags and attributes:
-	// Every XML start and end tag consists of 6 32 bit words:
-	//   0th word: 02011000 for startTag and 03011000 for endTag 
-	//   1st word: a flag?, like 38000000
-	//   2nd word: Line of where this tag appeared in the original source file
-	//   3rd word: FFFFFFFF ??
-	//   4th word: StringIndex of NameSpace name, or FFFFFFFF for default NS
-	//   5th word: StringIndex of Element Name
-	//   (Note: 01011000 in 0th word means end of XML document, endDocTag)
-
-	// Start tags (not end tags) contain 3 more words:
-	//   6th word: 14001400 meaning?? 
-	//   7th word: Number of Attributes that follow this tag(follow word 8th)
-	//   8th word: 00000000 meaning??
-
-	// Attributes consist of 5 words: 
-	//   0th word: StringIndex of Attribute Name's Namespace, or FFFFFFFF
-	//   1st word: StringIndex of Attribute Name
-	//   2nd word: StringIndex of Attribute Value, or FFFFFFF if ResourceId used
-	//   3rd word: Flags?
-	//   4th word: str ind of attr value again, or ResourceId of value
-
-	// TMP, dump string table to tr for debugging
-	//tr.addSelect("strings", null);
-	//for (int ii=0; ii<numbStrings; ii++) {
-	//  // Length of string starts at StringTable plus offset in StrIndTable
-	//  String str = compXmlString(xml, sitOff, stOff, ii);
-	//  tr.add(String.valueOf(ii), str);
-	//}
-	//tr.parent();
 
 	// Create a PugiXML document.
 	unique_ptr<xml_document> doc(new xml_document);
