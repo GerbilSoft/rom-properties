@@ -93,24 +93,6 @@ public:
 	}
 
 	/**
-	 * Return the string stored in StringTable format at offset strOff.
-	 * This offset points to the 16-bit string length, which is followed
-	 * by that number of 16-bit (Unicode) characters.
-	 */
-	static string compXmlStringAt(const uint8_t *pXml, uint32_t xmlLen, uint32_t strOff);
-
-	/**
-	 * Compose an XML string.
-	 * @param pXml Compressed XML data.
-	 * @param xmlLen Length of pXml. (32-bit maximum)
-	 * @param sitOff StringIndexTable offset.
-	 * @param stOff StringTable offset.
-	 * @param strInd String index.
-	 * @return XML string.
-	 */
-	static string compXmlString(const uint8_t *pXml, uint32_t xmlLen, uint32_t sitOff, uint32_t stOff, int strInd);
-
-	/**
 	 * Decompress Android binary XML.
 	 * Strings that are referencing resources will be printed as "@0x12345678".
 	 * NOTE: Need to return a pointer to work around delay-load issues.
@@ -162,59 +144,6 @@ AndroidManifestXMLPrivate::AndroidManifestXMLPrivate(const IRpFilePtr &file)
 { }
 
 /**
- * Return the string stored in StringTable format at offset strOff.
- * This offset points to the 16-bit string length, which is followed
- * by that number of 16-bit (Unicode) characters.
- */
-string AndroidManifestXMLPrivate::compXmlStringAt(const uint8_t *pXml, uint32_t xmlLen, uint32_t strOff)
-{
-	assert(strOff + 1 < xmlLen);
-	if (strOff + 1 >= xmlLen) {
-		// Out of bounds.
-		return string();
-	}
-
-	const uint16_t len = (pXml[strOff+1] << 8) |
-			      pXml[strOff+0];
-	assert(strOff + 2 + len < xmlLen);
-	if (strOff + 2 + len >= xmlLen) {
-		// Out of bounds.
-		return string();
-	}
-
-	// Convert from UTF-16LE to UTF-8.
-	// TODO: Verify that it's always UTF-16LE.
-	return utf16le_to_utf8(reinterpret_cast<const char16_t*>(&pXml[strOff + 2]), len);
-} // end of compXmlStringAt
-
-/**
- * Compose an XML string.
- * @param pXml Compressed XML data.
- * @param xmlLen Length of pXml. (32-bit maximum)
- * @param sitOff StringIndexTable offset.
- * @param stOff StringTable offset.
- * @param strInd String index.
- * @return XML string.
- */
-string AndroidManifestXMLPrivate::compXmlString(const uint8_t *pXml, uint32_t xmlLen, uint32_t sitOff, uint32_t stOff, int strInd)
-{
-	assert(strInd >= 0);
-	if (strInd < 0) {
-		// Invalid string index.
-		return string();
-	}
-
-	const uint32_t addr = sitOff + (strInd * 4);
-	assert(addr < xmlLen);
-	if (addr >= xmlLen) {
-		// Out of bounds.
-		return string();
-	}
-
-	uint32_t strOff = stOff + LEW(pXml, xmlLen, addr);
-	return compXmlStringAt(pXml, xmlLen, strOff);
-}
-/**
  * Decompress Android binary XML.
  * Strings that are referencing resources will be printed as "@0x12345678".
  * NOTE: Need to return a pointer to work around delay-load issues.
@@ -229,27 +158,25 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 	// - https://stackoverflow.com/a/4761689
 	// TODO: Test on lots of Android packages to find any issues.
 
-	// Compressed XML file/bytes starts with 24x bytes of data,
-	// 9 32 bit words in little endian order (LSB first):
-	//   0th word is 03 00 08 00
-	//   3rd word SEEMS TO BE:  Offset at then of StringTable
-	//   4th word is: Number of strings in string table
-	// WARNING: Sometime I indiscriminently display or refer to word in 
-	//   little endian storage format, or in integer format (ie MSB first).	
-	const uint32_t numbStrings = LEW(pXml, xmlLen, 4*4);
-
-	// StringIndexTable starts at offset 24x, an array of 32 bit LE offsets
-	// of the length/string data in the StringTable.
-	static const uint32_t sitOff = 0x24;  // Offset of start of StringIndexTable
-
-	// StringTable, each string is represented with a 16 bit little endian 
-	// character count, followed by that number of 16 bit (LE) (Unicode) chars.
-	const uint32_t stOff = sitOff + numbStrings*4;  // StringTable follows StrIndexTable
-
 	// XMLTags, The XML tag tree starts after some unknown content after the
 	// StringTable.  There is some unknown data after the StringTable, scan
 	// forward from this point to the flag for the start of an XML start tag.
 	uint32_t xmlTagOff = LEW(pXml, xmlLen, 3*4);  // Start from the offset in the 3rd word.
+
+	// String pool accessor
+	// String pool header starts at offset 0x08.
+	const ResStringPool_header *const pStringPoolHdr = reinterpret_cast<const ResStringPool_header*>(pXml + 2*4);
+	assert(pStringPoolHdr->header.type == le16_to_cpu(RES_STRING_POOL_TYPE));
+	assert(pStringPoolHdr->header.headerSize == le16_to_cpu(sizeof(*pStringPoolHdr)));
+	if (pStringPoolHdr->header.type != le16_to_cpu(RES_STRING_POOL_TYPE) ||
+	    pStringPoolHdr->header.headerSize != le16_to_cpu(sizeof(*pStringPoolHdr)))
+	{
+		// Incorrect string pool header.
+		return nullptr;
+	}
+	AndroidResourceReader::StringPoolAccessor xmlStringPool(
+		reinterpret_cast<const uint8_t*>(pStringPoolHdr), le32_to_cpu(pStringPoolHdr->header.size));
+
 	// Scan forward until we find the bytes: 0x02011000(x00100102 in normal int)
 	for (unsigned int ii = xmlTagOff; ii < xmlLen-4; ii += 4) {
 		if (LEW(pXml, xmlLen, ii) == startTag) { 
@@ -315,7 +242,7 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 			off += 9*4;  // Skip over 6+3 words of startTag data
 
 			// Create the tag.
-			xml_node xmlTag = cur_node.append_child(compXmlString(pXml, xmlLen, sitOff, stOff, nameSi).c_str());
+			xml_node xmlTag = cur_node.append_child(xmlStringPool.getString(nameSi));
 			tags.push(xmlTag);
 			cur_node = xmlTag;
 			//tr.addSelect(name, null);
@@ -328,10 +255,10 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 				const Res_value *const value = reinterpret_cast<const Res_value*>(&pXml[off+3*4]);
 				off += 5*4;  // Skip over the 5 words of an attribute
 
-				xml_attribute xmlAttr = xmlTag.append_attribute(compXmlString(pXml, xmlLen, sitOff, stOff, attrNameSi).c_str());
+				xml_attribute xmlAttr = xmlTag.append_attribute(xmlStringPool.getString(attrNameSi).c_str());
 				if (attrValueSi != -1) {
 					// Value is inline
-					xmlAttr.set_value(compXmlString(pXml, xmlLen, sitOff, stOff, attrValueSi).c_str());
+					xmlAttr.set_value(xmlStringPool.getString(attrValueSi));
 				} else {
 					// Integer value. Determine how to handle it.
 					const uint32_t u32data = le32_to_cpu(value->data);
@@ -418,8 +345,7 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 			uint32_t tag4 = LEW(pXml, xmlLen, off+4*4);
 			//cur_node.append_child(pugi::node_cdata).set_value(
 			//	compXmlString(pXml, xmlLen, sitOff, stOff, tag4).c_str());
-			cur_node.text().set(
-				compXmlString(pXml, xmlLen, sitOff, stOff, tag4).c_str());
+			cur_node.text().set(xmlStringPool.getString(tag4).c_str());
 			off += 7*4;  // Skip over 5+2 words of cdataTag data
 		} else if (tag0 == startDocTag) {
 			// Start of namespace
