@@ -228,8 +228,6 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 	// - https://stackoverflow.com/questions/2097813/how-to-parse-the-androidmanifest-xml-file-inside-an-apk-package
 	// - https://stackoverflow.com/a/4761689
 	// TODO: Test on lots of Android packages to find any issues.
-	// TODO: Split into a separate class to convert Android binary XML to text XML?
-	// TODO: Instead of creating text, parse directly into a PugiXML document?
 
 	// Compressed XML file/bytes starts with 24x bytes of data,
 	// 9 32 bit words in little endian order (LSB first):
@@ -336,6 +334,7 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 					xmlAttr.set_value(compXmlString(pXml, xmlLen, sitOff, stOff, attrValueSi).c_str());
 				} else {
 					// Integer value. Determine how to handle it.
+					const uint32_t u32data = le32_to_cpu(value->data);
 					switch (value->dataType) {
 						case Res_value::TYPE_NULL:
 							// 0 == undefined; 1 == empty
@@ -352,7 +351,7 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 						default:
 							// Resource identifier
 							// FIXME: Most of these types aren't handled properly...
-							xmlAttr.set_value(fmt::format(FSTR("@0x{:0>8X}"), value->data).c_str());
+							xmlAttr.set_value(fmt::format(FSTR("@0x{:0>8X}"), u32data).c_str());
 							break;
 
 						case Res_value::TYPE_FLOAT: {
@@ -361,33 +360,33 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 								uint32_t u32;
 								float f;
 							} val;
-							val.u32 = value->data;
+							val.u32 = u32data;
 							xmlAttr.set_value(fmt::format(FSTR("{:f}"), val.f).c_str());
 							break;
 						}
 
 						case Res_value::TYPE_INT_DEC:
-							xmlAttr.set_value(fmt::format(FSTR("{:d}"), value->data).c_str());
+							xmlAttr.set_value(fmt::format(FSTR("{:d}"), u32data).c_str());
 							break;
 						case Res_value::TYPE_INT_HEX:
-							xmlAttr.set_value(fmt::format(FSTR("0x{:x}"), value->data).c_str());
+							xmlAttr.set_value(fmt::format(FSTR("0x{:x}"), u32data).c_str());
 							break;
 						case Res_value::TYPE_INT_BOOLEAN:
 							// FIXME: Error if not 0x00000000 or 0xFFFFFFFF?
-							xmlAttr.set_value(value->data ? "true" : "false");
+							xmlAttr.set_value(u32data ? "true" : "false");
 							break;
 
 						case Res_value::TYPE_INT_COLOR_ARGB8:
-							xmlAttr.set_value(fmt::format(FSTR("#{:0>8x}"), value->data).c_str());
+							xmlAttr.set_value(fmt::format(FSTR("#{:0>8x}"), u32data).c_str());
 							break;
 						case Res_value::TYPE_INT_COLOR_RGB8:
-							xmlAttr.set_value(fmt::format(FSTR("#{:0>6x}"), value->data).c_str());
+							xmlAttr.set_value(fmt::format(FSTR("#{:0>6x}"), u32data).c_str());
 							break;
 						case Res_value::TYPE_INT_COLOR_ARGB4:
-							xmlAttr.set_value(fmt::format(FSTR("#{:0>4x}"), value->data).c_str());
+							xmlAttr.set_value(fmt::format(FSTR("#{:0>4x}"), u32data).c_str());
 							break;
 						case Res_value::TYPE_INT_COLOR_RGB4:
-							xmlAttr.set_value(fmt::format(FSTR("#{:0>3x}"), value->data).c_str());
+							xmlAttr.set_value(fmt::format(FSTR("#{:0>3x}"), u32data).c_str());
 							break;
 					}
 				}
