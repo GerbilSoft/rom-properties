@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "config.librpbase.h"
 #include "dlopen-notes.h"
 
 // NOTE: libpng.so isn't listed here, even though it's dlopen()'d,
@@ -22,6 +23,7 @@
 // Ubuntu systems don't have the unversioned .so if the -dev package
 // isn't installed, so all tested versions are listed.
 
+#ifdef ENABLE_WEBP
 #define ELF_NOTE_DLOPEN3_THREESO0(var, feature0, description0, priority0, module0a, module0b, module0c, feature1, description1, priority1, module1, feature2, description2, priority2, module2) \
 	_ELF_NOTE_DLOPEN("[" _ELF_NOTE_DLOPEN_VA_INT(feature0, description0, priority0, module0a, module0b, module0c) "," \
 	                     _ELF_NOTE_DLOPEN_INT(feature1, description1, priority1, module1) "," \
@@ -33,3 +35,10 @@ ELF_NOTE_DLOPEN3_THREESO0( \
 	"lz4", "LZ4 decompression (for PSP CISOv2 and ZISO images)", "recommended", "liblz4.so.1", \
 	"lzo", "LZO decompression (for PSP JISO images)", "recommended", "liblzo2.so.2"
 );
+#else /* !ENABLE_WEBP */
+ELF_NOTE_DLOPEN2( \
+	romdata_dlopen, \
+	"lz4", "LZ4 decompression (for PSP CISOv2 and ZISO images)", "recommended", "liblz4.so.1", \
+	"lzo", "LZO decompression (for PSP JISO images)", "recommended", "liblzo2.so.2"
+);
+#endif /* ENABLE_WEBP */
