@@ -247,6 +247,137 @@ struct ResStringPool_ref
 	uint32_t index;
 };
 
+/** ********************************************************************
+ *  XML Tree
+ *
+ *  Binary representation of an XML document.  This is designed to
+ *  express everything in an XML document, in a form that is much
+ *  easier to parse on the device.
+ *
+ *********************************************************************** */
+
+/**
+ * XML tree header.  This appears at the front of an XML tree,
+ * describing its content.  It is followed by a flat array of
+ * ResXMLTree_node structures; the hierarchy of the XML document
+ * is described by the occurrance of RES_XML_START_ELEMENT_TYPE
+ * and corresponding RES_XML_END_ELEMENT_TYPE nodes in the array.
+ */
+struct ResXMLTree_header
+{
+	struct ResChunk_header header;
+};
+
+/**
+ * Basic XML tree node.  A single item in the XML document.  Extended info
+ * about the node can be found after header.headerSize.
+ */
+struct ResXMLTree_node
+{
+	struct ResChunk_header header;
+
+	// Line number in original source file at which this element appeared.
+	uint32_t lineNumber;
+
+	// Optional XML comment that was associated with this element; -1 if none.
+	struct ResStringPool_ref comment;
+};
+
+/**
+ * Extended XML tree node for CDATA tags -- includes the CDATA string.
+ * Appears header.headerSize bytes after a ResXMLTree_node.
+ */
+struct ResXMLTree_cdataExt
+{
+	// The raw CDATA character data.
+	struct ResStringPool_ref data;
+
+	// The typed value of the character data if this is a CDATA node.
+	struct Res_value typedData;
+};
+
+/**
+ * Extended XML tree node for namespace start/end nodes.
+ * Appears header.headerSize bytes after a ResXMLTree_node.
+ */
+struct ResXMLTree_namespaceExt
+{
+	// The prefix of the namespace.
+	struct ResStringPool_ref prefix;
+
+	// The URI of the namespace.
+	struct ResStringPool_ref uri;
+};
+
+/**
+ * Extended XML tree node for element start/end nodes.
+ * Appears header.headerSize bytes after a ResXMLTree_node.
+ */
+struct ResXMLTree_endElementExt
+{
+	// String of the full namespace of this element.
+	struct ResStringPool_ref ns;
+
+	// String name of this node if it is an ELEMENT; the raw
+	// character data if this is a CDATA node.
+	struct ResStringPool_ref name;
+};
+
+/**
+ * Extended XML tree node for start tags -- includes attribute
+ * information.
+ * Appears header.headerSize bytes after a ResXMLTree_node.
+ */
+struct ResXMLTree_attrExt
+{
+	// String of the full namespace of this element.
+	struct ResStringPool_ref ns;
+
+	// String name of this node if it is an ELEMENT; the raw
+	// character data if this is a CDATA node.
+	struct ResStringPool_ref name;
+
+	// Byte offset from the start of this structure where the attributes start.
+	uint16_t attributeStart;
+
+	// Size of the ResXMLTree_attribute structures that follow.
+	uint16_t attributeSize;
+
+	// Number of attributes associated with an ELEMENT.  These are
+	// available as an array of ResXMLTree_attribute structures
+	// immediately following this node.
+	uint16_t attributeCount;
+
+	// Index (1-based) of the "id" attribute. 0 if none.
+	uint16_t idIndex;
+
+	// Index (1-based) of the "class" attribute. 0 if none.
+	uint16_t classIndex;
+
+	// Index (1-based) of the "style" attribute. 0 if none.
+	uint16_t styleIndex;
+};
+
+struct ResXMLTree_attribute
+{
+	// Namespace of this attribute.
+	struct ResStringPool_ref ns;
+
+	// Name of this attribute.
+	struct ResStringPool_ref name;
+
+	// The original raw string value of this attribute.
+	struct ResStringPool_ref rawValue;
+
+	// Processesd typed value of this attribute.
+	struct Res_value typedValue;
+};
+
+/** ********************************************************************
+ *  RESOURCE TABLE
+ *
+ *********************************************************************** */
+
 /**
  * Header for a resource table.  Its data contains a series of
  * additional chunks:

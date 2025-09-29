@@ -72,27 +72,6 @@ public:
 
 public:
 	/**
-	 * Read a little-endian 32-bit word from the data.
-	 * @param pData Data.
-	 * @param dataLen Length of data. (32-bit maximum)
-	 * @param offset Offset to read from.
-	 * @return Little-endian 32-bit word.
-	 */
-	static inline uint32_t LEW(const uint8_t *pData, uint32_t dataLen, size_t offset)
-	{
-		assert(offset % 4 == 0);
-		assert(offset + 3 < dataLen);
-		if ((offset % 4 != 0) || (offset + 3 >= dataLen)) {
-			// Out of bounds.
-			// TODO: Fail.
-			return 0;
-		}
-
-		const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(pData);
-		return le32_to_cpu(pData32[offset / 4]);
-	}
-
-	/**
 	 * Decompress Android binary XML.
 	 * Strings that are referencing resources will be printed as "@0x12345678".
 	 * NOTE: Need to return a pointer to work around delay-load issues.
@@ -106,13 +85,6 @@ public:
 public:
 	// Maximum size for various files.
 	static constexpr size_t AndroidManifest_xml_FILE_SIZE_MAX = (256U * 1024U);
-
-	// Binary XML tags
-	static constexpr uint32_t startDocTag	= 0x00100000 | RES_XML_START_NAMESPACE_TYPE;
-	static constexpr uint32_t endDocTag	= 0x00100000 | RES_XML_END_NAMESPACE_TYPE;
-	static constexpr uint32_t startTag	= 0x00100000 | RES_XML_START_ELEMENT_TYPE;
-	static constexpr uint32_t endTag	= 0x00100000 | RES_XML_END_ELEMENT_TYPE;
-	static constexpr uint32_t cdataTag	= 0x00100000 | RES_XML_CDATA_TYPE;
 
 	// AndroidManifest.xml document
 	// NOTE: Using a pointer to prevent delay-load issues.
@@ -157,33 +129,60 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 	// - https://stackoverflow.com/questions/2097813/how-to-parse-the-androidmanifest-xml-file-inside-an-apk-package
 	// - https://stackoverflow.com/a/4761689
 	// TODO: Test on lots of Android packages to find any issues.
+	assert(xmlLen > (sizeof(ResXMLTree_header) + sizeof(ResStringPool_header)));
+	if (xmlLen <= (sizeof(ResXMLTree_header) + sizeof(ResStringPool_header))) {
+		// Not enough data...
+		return nullptr;
+	}
 
-	// XMLTags, The XML tag tree starts after some unknown content after the
-	// StringTable.  There is some unknown data after the StringTable, scan
-	// forward from this point to the flag for the start of an XML start tag.
-	uint32_t xmlTagOff = LEW(pXml, xmlLen, 3*4);  // Start from the offset in the 3rd word.
+	const uint8_t *p = pXml;
+	const uint8_t *const pEnd = pXml + xmlLen;
 
-	// String pool accessor
-	// String pool header starts at offset 0x08.
+	// Verify that the first chunk is RES_XML_TYPE.
+	const ResXMLTree_header *const pXmlHdr = reinterpret_cast<const ResXMLTree_header*>(pXml);
+	assert(pXmlHdr->header.type == cpu_to_le16(RES_XML_TYPE));
+	assert(pXmlHdr->header.headerSize == cpu_to_le16(sizeof(*pXmlHdr)));
+	assert(pXmlHdr->header.size == xmlLen);
+	if (pXmlHdr->header.type != cpu_to_le16(RES_XML_TYPE) ||
+	    pXmlHdr->header.headerSize != cpu_to_le16(sizeof(*pXmlHdr)) ||
+	    pXmlHdr->header.size != xmlLen)
+	{
+		// Incorrect XML header.
+		return nullptr;
+	}
+	p += sizeof(ResXMLTree_header);
+
+	// Next chunk should be the string pool.
 	const ResStringPool_header *const pStringPoolHdr = reinterpret_cast<const ResStringPool_header*>(pXml + 2*4);
-	assert(pStringPoolHdr->header.type == le16_to_cpu(RES_STRING_POOL_TYPE));
-	assert(pStringPoolHdr->header.headerSize == le16_to_cpu(sizeof(*pStringPoolHdr)));
-	if (pStringPoolHdr->header.type != le16_to_cpu(RES_STRING_POOL_TYPE) ||
-	    pStringPoolHdr->header.headerSize != le16_to_cpu(sizeof(*pStringPoolHdr)))
+	assert(pStringPoolHdr->header.type == cpu_to_le16(RES_STRING_POOL_TYPE));
+	assert(pStringPoolHdr->header.headerSize == cpu_to_le16(sizeof(*pStringPoolHdr)));
+	if (pStringPoolHdr->header.type != cpu_to_le16(RES_STRING_POOL_TYPE) ||
+	    pStringPoolHdr->header.headerSize != cpu_to_le16(sizeof(*pStringPoolHdr)))
 	{
 		// Incorrect string pool header.
 		return nullptr;
 	}
+	const uint32_t stringPoolSize = le32_to_cpu(pStringPoolHdr->header.size);
 	AndroidResourceReader::StringPoolAccessor xmlStringPool(
-		reinterpret_cast<const uint8_t*>(pStringPoolHdr), le32_to_cpu(pStringPoolHdr->header.size));
+		reinterpret_cast<const uint8_t*>(pStringPoolHdr), stringPoolSize);
+	p += stringPoolSize;
 
-	// Scan forward until we find the bytes: 0x02011000(x00100102 in normal int)
-	for (unsigned int ii = xmlTagOff; ii < xmlLen-4; ii += 4) {
-		if (LEW(pXml, xmlLen, ii) == startTag) { 
-			xmlTagOff = ii;
-			break;
-		}
-	} // end of hack, scanning for start of first start tag
+	// There might be an XML resource map after the string table.
+	// Parse chunks until we find the first XML start tag.
+	while (p < pEnd) {
+		const ResChunk_header *const pHdr = reinterpret_cast<const ResChunk_header*>(p);
+		if (pHdr->type == cpu_to_le16(RES_XML_FIRST_CHUNK_TYPE)) {
+			// Found the first XML tag.
+ 			break;
+ 		}
+		// Skip this chunk.
+		p += le32_to_cpu(pHdr->size);
+	}
+	assert(p < pEnd);
+	if (p >= pEnd) {
+		// EOF?
+		return nullptr;
+	}
 
 	// XML tags and attributes:
 	// Every XML start and end tag consists of 6 32 bit words:
@@ -222,38 +221,54 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 	stack<xml_node> tags;
 	tags.push(*doc);
 	xml_node cur_node = *doc;	// current XML node
-	int ns_count = 1;		// finished processing when this reaches 0
+	int ns_count = 0;
 
 	// Step through the XML tree element tags and attributes
-	uint32_t off = xmlTagOff;
-	while (off < xmlLen) {
-		uint32_t tag0 = LEW(pXml, xmlLen, off);
-		//uint32_t tag1 = LEW(pXml, xmlLen, off+1*4);
-		//uint32_t lineNo = LEW(pXml, xmlLen, off+2*4);
-		//uint32_t tag3 = LEW(pXml, xmlLen, off+3*4);
-		//uint32_t nameNsSi = LEW(pXml, xmlLen, off+4*4);
-		int nameSi = LEW(pXml, xmlLen, off+5*4);
+	while (p < pEnd) {
+		assert(p + sizeof(ResXMLTree_node) <= pEnd);
+		if (p + sizeof(ResXMLTree_node) > pEnd) {
+			break;
+		}
+		const ResXMLTree_node *const node = reinterpret_cast<const ResXMLTree_node*>(p);
+		//printf("p == 0x%08X, node size == 0x%04X\n", (unsigned int)(p - pXml), node->header.size);
+		assert(node->header.headerSize == cpu_to_le16(sizeof(ResXMLTree_node)));
+		if (node->header.headerSize != cpu_to_le16(sizeof(ResXMLTree_node))) {
+			break;
+		}
 
-		if (tag0 == startTag) { // XML START TAG
-			// TODO: Verify some of the tags?
-			//uint32_t tag6 = LEW(pXml, xmlLen, off+6*4);  // Expected to be 14001400
-			uint32_t numbAttrs = LEW(pXml, xmlLen, off+7*4);  // Number of Attributes to follow
-			//uint32_t tag8 = LEW(pXml, xmlLen, off+8*4);  // Expected to be 00000000
-			off += 9*4;  // Skip over 6+3 words of startTag data
+		// pNodeData == contents of the node
+		const uint8_t *pNodeData = p + sizeof(ResXMLTree_node);
+
+		// Make sure this node doesn't go out of bounds.
+		assert(p + node->header.size <= pEnd);
+		if (p + node->header.size > pEnd) {
+			break;
+		}
+
+		const uint16_t node_type = le16_to_cpu(node->header.type);
+		if (node_type == RES_XML_START_ELEMENT_TYPE) { // XML START TAG
+			const ResXMLTree_attrExt *const pAttrExt = reinterpret_cast<const ResXMLTree_attrExt*>(pNodeData);
+
+			// Attributes should start at 0x14 and be 0x14 bytes.
+			// (ResXMLTree_attribute struct)
+			assert(pAttrExt->attributeStart == le16_to_cpu(0x14));
+			assert(pAttrExt->attributeSize  == le16_to_cpu(0x14));
+
+			const uint32_t numbAttrs = le16_to_cpu(pAttrExt->attributeCount);
+			pNodeData += sizeof(ResXMLTree_attrExt);
 
 			// Create the tag.
-			xml_node xmlTag = cur_node.append_child(xmlStringPool.getString(nameSi));
+			xml_node xmlTag = cur_node.append_child(xmlStringPool.getString(le32_to_cpu(pAttrExt->name.index)));
 			tags.push(xmlTag);
 			cur_node = xmlTag;
 			//tr.addSelect(name, null);
 
 			// Look for the Attributes
-			for (uint32_t ii = 0; ii < numbAttrs; ii++) {
-				//uint32_t attrNameNsSi = LEW(pXml, xmlLen, off);  // AttrName Namespace Str Ind, or FFFFFFFF
-				int attrNameSi = LEW(pXml, xmlLen, off+1*4);  // AttrName String Index
-				int attrValueSi = LEW(pXml, xmlLen, off+2*4); // AttrValue Str Ind, or FFFFFFFF
-				const Res_value *const value = reinterpret_cast<const Res_value*>(&pXml[off+3*4]);
-				off += 5*4;  // Skip over the 5 words of an attribute
+			const ResXMLTree_attribute *pAttrData = reinterpret_cast<const ResXMLTree_attribute*>(pNodeData);
+			for (uint32_t ii = 0; ii < numbAttrs; ii++, pAttrData++) {
+				//uint32_t attrNameNsSi = le32_to_cpu(pAttrData->ns.index);	// AttrName Namespace Str Ind, or FFFFFFFF
+				int attrNameSi = le32_to_cpu(pAttrData->name.index);		// AttrName String Index
+				int attrValueSi = le32_to_cpu(pAttrData->rawValue.index);	// AttrValue Str Ind, or FFFFFFFF
 
 				xml_attribute xmlAttr = xmlTag.append_attribute(xmlStringPool.getString(attrNameSi).c_str());
 				if (attrValueSi != -1) {
@@ -261,8 +276,8 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 					xmlAttr.set_value(xmlStringPool.getString(attrValueSi));
 				} else {
 					// Integer value. Determine how to handle it.
-					const uint32_t u32data = le32_to_cpu(value->data);
-					switch (value->dataType) {
+					const uint32_t u32data = le32_to_cpu(pAttrData->typedValue.data);
+					switch (pAttrData->typedValue.dataType) {
 						case Res_value::TYPE_NULL:
 							// 0 == undefined; 1 == empty
 							// TODO: Handle undefined better.
@@ -320,7 +335,7 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 				//tr.add(attrName, attrValue);
 			}
 			// TODO: If no child elements, skip the '\n' and use />.
-		} else if (tag0 == endTag) { // XML END TAG
+		} else if (node_type == RES_XML_END_ELEMENT_TYPE) { // XML END TAG
 			// End of the current tag.
 			assert(tags.size() >= 2);
 			if (tags.size() < 2) {
@@ -331,42 +346,38 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 			}
 			tags.pop();
 			cur_node = tags.top();
-			off += 6*4;  // Skip over 6 words of endTag data
 			//tr.parent();  // Step back up the NobTree
-		} else if (tag0 == cdataTag) { // CDATA tag
-			// Reference: https://github.com/ytsutano/axmldec/blob/master/lib/jitana/util/axml_parser.cpp
-			// CDATA has five DWORDs:
-			// - 0: line number
-			// - 1: comment
-			// - 2: text (string ID)
-			// - 3: unknown
-			// - 4: unknown
-			// NOTE: axmldec prints the CDATA as regular text, not a CDATA node.
-			uint32_t tag4 = LEW(pXml, xmlLen, off+4*4);
+		} else if (node_type == RES_XML_CDATA_TYPE) { // CDATA tag
+			const ResXMLTree_cdataExt *const pCdataExt = reinterpret_cast<const ResXMLTree_cdataExt*>(pNodeData);
+
+			// TODO: Handle typed data?
+			const uint32_t u32data = le32_to_cpu(pCdataExt->data.index);
 			//cur_node.append_child(pugi::node_cdata).set_value(
-			//	compXmlString(pXml, xmlLen, sitOff, stOff, tag4).c_str());
-			cur_node.text().set(xmlStringPool.getString(tag4).c_str());
-			off += 7*4;  // Skip over 5+2 words of cdataTag data
-		} else if (tag0 == startDocTag) {
-			// Start of namespace
+			//	xmlStringPool.getString(u32data).c_str());
+			cur_node.text().set(xmlStringPool.getString(u32data).c_str());
+		} else if (node_type == RES_XML_START_NAMESPACE_TYPE) {
+			// Start of namespace (TODO)
+			//const ResXMLTree_namespaceExt *const pNamespaceExt = reinterpret_cast<const ResXMLTree_namespaceExt*>(pNodeData);
 			// NOTE: We're not handling namespaces, so we're only checking this in case
 			// a document has nested namespaces.
-			//uint32_t tag4 = LEW(pXml, xmlLen, off+4*4);	// namespace tag
 			ns_count++;
-			off += 6*4;	// Skip over 4+2 words of startDocTag data
-		} else if (tag0 == endDocTag) { // END OF XML DOC TAG
+		} else if (node_type == RES_XML_END_NAMESPACE_TYPE) { // END OF XML DOC TAG
 			// End of namespace
 			// NOTE: We're not handling namespaces, so we're only checking this in case
 			// a document has nested namespaces.
 			ns_count--;
-			if (ns_count == 0) {
+			assert(ns_count >= 0);
+			if (ns_count < 0) {
+				// Too many end-namespace tags...
 				break;
 			}
-			off += 6*4;	// Skip over 4+2 words of endDocTag data
 		} else {
 			assert(!"Unrecognized tag code!");
 			return {};
 		}
+
+		// Next node
+		p += node->header.size;
 	} // end of while loop scanning tags and attributes of XML tree
 
 	assert(tags.size() == 1);
