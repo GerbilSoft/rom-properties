@@ -612,7 +612,7 @@ int AndroidManifestXML::loadFieldData(void)
 
 	// NOTE: We can't get resources here, but we'll get the same fields
 	// as AndroidAPK anyway.
-	d->fields.reserve(7);	// Maximum of 7 fields.
+	d->fields.reserve(10);	// Maximum of 10 fields.
 
 	// Get fields from the XML file.
 	xml_node manifest_node = d->manifest_xml->child("manifest");
@@ -637,6 +637,39 @@ int AndroidManifestXML::loadFieldData(void)
 		const char *const description = application_node.attribute("description").as_string(nullptr);
 		if (description && description[0] != '\0') {
 			d->fields.addField_string(C_("AndroidManifestXML", "Description"), description);
+		}
+
+		const char *const appCategory = application_node.attribute("appCategory").as_string(nullptr);
+		if (appCategory && appCategory[0] != '\0') {
+			d->fields.addField_string(C_("AndroidAPK", "Category"), appCategory);
+		}
+	}
+
+	// SDK version
+	xml_node uses_sdk = manifest_node.child("uses-sdk");
+	if (uses_sdk) {
+		const char *const s_minSdkVersion = uses_sdk.attribute("minSdkVersion").as_string(nullptr);
+		if (s_minSdkVersion && s_minSdkVersion[0] != '\0') {
+			// NOTE: minSdkVersion might be formatted as a resource ID.
+			const char *const s_minSdkVersion_title = C_("AndroidAPK", "Min. SDK Version");
+			const uint32_t minSdkVersion = AndroidResourceReader::parseResourceID(s_minSdkVersion);
+			if (minSdkVersion != 0) {
+				d->fields.addField_string_numeric(s_minSdkVersion_title, minSdkVersion);
+			} else {
+				d->fields.addField_string(s_minSdkVersion_title, s_minSdkVersion);
+			}
+		}
+
+		const char *const s_targetSdkVersion = uses_sdk.attribute("targetSdkVersion").as_string(nullptr);
+		if (s_targetSdkVersion && s_targetSdkVersion[0] != '\0') {
+			// NOTE: targetSdkVersion might be formatted as a resource ID.
+			const char *const s_targetSdkVersion_title = C_("AndroidAPK", "Target SDK Version");
+			const uint32_t targetSdkVersion = AndroidResourceReader::parseResourceID(s_targetSdkVersion);
+			if (targetSdkVersion != 0) {
+				d->fields.addField_string_numeric(s_targetSdkVersion_title, targetSdkVersion);
+			} else {
+				d->fields.addField_string(s_targetSdkVersion_title, s_targetSdkVersion);
+			}
 		}
 	}
 
