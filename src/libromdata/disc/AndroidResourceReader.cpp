@@ -153,6 +153,7 @@ vector<string> AndroidResourceReaderPrivate::processStringPool(const uint8_t *da
 	const uint8_t *p = data;
 	const uint8_t *const pEnd = data + size;
 
+	assert(p + sizeof(ResStringPool_header) <= pEnd);
 	if (p + sizeof(ResStringPool_header) > pEnd) {
 		return {};
 	}
@@ -164,6 +165,7 @@ vector<string> AndroidResourceReaderPrivate::processStringPool(const uint8_t *da
 	// Offset table
 	const uint32_t *pStrOffsetTbl = reinterpret_cast<const uint32_t*>(p);
 	p += (pStringPoolHdr->stringCount * sizeof(uint32_t));
+	assert(p < pEnd);
 	if (p >= pEnd) {
 		return {};
 	}
@@ -176,6 +178,7 @@ vector<string> AndroidResourceReaderPrivate::processStringPool(const uint8_t *da
 	for (unsigned int i = 0; i < pStringPoolHdr->stringCount; i++) {
 		unsigned int pos = pStringPoolHdr->stringsStart + pStrOffsetTbl[i];
 		const uint8_t *p_u8str = data + pos;
+		assert(p_u8str < pEnd);
 		if (p_u8str >= pEnd) {
 			break;
 		}
@@ -183,6 +186,7 @@ vector<string> AndroidResourceReaderPrivate::processStringPool(const uint8_t *da
 		if (isUTF8) {
 			// TODO: Why the u16len and u8len?
 			unsigned int u16len = *p_u8str++;
+			assert(p_u8str < pEnd);
 			if (p_u8str >= pEnd) {
 				break;
 			}
@@ -192,6 +196,7 @@ vector<string> AndroidResourceReaderPrivate::processStringPool(const uint8_t *da
 			}
 
 			unsigned int u8len = *p_u8str++;
+			assert(p_u8str < pEnd);
 			if (p_u8str >= pEnd) {
 				break;
 			}
@@ -206,12 +211,14 @@ vector<string> AndroidResourceReaderPrivate::processStringPool(const uint8_t *da
 				stringPool.push_back(string());
 			}
 		} else {
+			assert(p_u8str + 2 <= pEnd);
 			if (p_u8str + 2 > pEnd) {
 				break;
 			}
 			unsigned int u16len = read_u16(p_u8str);
 			if (u16len & 0x8000) {
 				// Larger than 32,768
+				assert(p_u8str + 2 <+ pEnd);
 				if (p_u8str + 2 > pEnd) {
 					break;
 				}
@@ -276,6 +283,7 @@ ATTR_ACCESS_SIZE(read_only, 2, 3)
 int AndroidResourceReaderPrivate::processType(const uint8_t *data, size_t size, unsigned int package_id)
 {
 	const uint8_t *const pEnd = data + size;
+	assert(data + sizeof(ResTable_type) <= pEnd);
 	if (data + sizeof(ResTable_type) > pEnd) {
 		return -EIO;
 	}
@@ -285,6 +293,7 @@ int AndroidResourceReaderPrivate::processType(const uint8_t *data, size_t size, 
 	const unsigned int entryCount = pResTableType->entryCount;
 
 	const uint8_t *p = data + pResTableType->header.headerSize;
+	assert(p < pEnd);
 	if (p >= pEnd) {
 		return -EIO;
 	}
@@ -322,6 +331,7 @@ int AndroidResourceReaderPrivate::processType(const uint8_t *data, size_t size, 
 	// Entry indexes
 	const int32_t *const pIndexTbl = reinterpret_cast<const int32_t*>(p);
 	p += (pResTableType->entryCount * sizeof(uint32_t));
+	assert(p < pEnd);
 	if (p >= pEnd) {
 		return -EIO;
 	}
@@ -334,6 +344,7 @@ int AndroidResourceReaderPrivate::processType(const uint8_t *data, size_t size, 
 
 		uint32_t resource_id = (package_id << 24) | (id << 16) | i;
 
+		assert(p + sizeof(ResTable_entry) <= pEnd);
 		if (p + sizeof(ResTable_entry) > pEnd) {
 			break;
 		}
@@ -341,15 +352,19 @@ int AndroidResourceReaderPrivate::processType(const uint8_t *data, size_t size, 
 		p += sizeof(ResTable_entry);
 		if (!(pEntry->flags & ResTable_entry::FLAG_COMPLEX)) {
 			// Simple case
+			assert(p + sizeof(Res_value) <= pEnd);
 			if (p + sizeof(Res_value) > pEnd) {
 				break;
 			}
 			const Res_value *const pResValue = reinterpret_cast<const Res_value*>(p);
 			p += sizeof(Res_value);
-			// TODO: Verify pEntry->key.index
+			const uint32_t key_index = pEntry->key.index;
+			assert(key_index < keyStringPool.size());
+			if (key_index >= keyStringPool.size()) {
+				break;
+			}
 			const string &keyStr = keyStringPool[pEntry->key.index];
 
-			// TODO: Truncate resource_id to the low 16 bits?
 			auto iter = entryMap.find(resource_id);
 			if (iter != entryMap.end()) {
 				// We have a vector<string> for this resource ID already.
@@ -364,9 +379,15 @@ int AndroidResourceReaderPrivate::processType(const uint8_t *data, size_t size, 
 			// Value processing
 			string data;
 			switch (pResValue->dataType) {
-				case Res_value::TYPE_STRING:
+				case Res_value::TYPE_STRING: {
+					const uint32_t u32data = pResValue->data;
+					assert(u32data < valueStringPool.size());
+					if (u32data >= valueStringPool.size()) {
+						return -EIO;
+					}
 					data = valueStringPool[pResValue->data];
 					break;
+				}
 				case Res_value::TYPE_REFERENCE:
 					refKeys.emplace(resource_id, pResValue->data);
 					break;
@@ -426,6 +447,7 @@ int AndroidResourceReaderPrivate::processPackage(const uint8_t *data, size_t siz
 {
 	const uint8_t *const pEnd = data + size;
 
+	assert(data + sizeof(ResTable_package) <= pEnd);
 	if (data + sizeof(ResTable_package) > pEnd) {
 		return -EIO;
 	}
@@ -444,6 +466,7 @@ int AndroidResourceReaderPrivate::processPackage(const uint8_t *data, size_t siz
 	const uint8_t *p = reinterpret_cast<const uint8_t*>(pKeyStrings) + pKeyStrings->header.size;
 
 	while (true) {
+		assert(p + sizeof(ResChunk_header) <= pEnd);
 		if (p + sizeof(ResChunk_header) > pEnd) {
 			break;
 		}
@@ -489,10 +512,13 @@ int AndroidResourceReaderPrivate::loadResourceAsrc(const uint8_t *pArsc, size_t 
 	const uint8_t *p = pArsc;
 	const uint8_t *const pEnd = pArsc + arscLen;
 
+	assert(p + sizeof(ResTable_header) <= pEnd);
 	if (p + sizeof(ResTable_header) > pEnd) {
 		return -EIO;
 	}
 	const ResTable_header *const pResTableHdr = reinterpret_cast<const ResTable_header*>(p);
+	assert(pResTableHdr->header.type == RES_TABLE_TYPE);
+	assert(pResTableHdr->header.size == arscLen);
 	if (pResTableHdr->header.type != RES_TABLE_TYPE || pResTableHdr->header.size != arscLen) {
 		// Something is wrong here...
 		return -EIO;
@@ -503,6 +529,7 @@ int AndroidResourceReaderPrivate::loadResourceAsrc(const uint8_t *pArsc, size_t 
 	unsigned int realPackageCount = 0;
 
 	while (true) {
+		assert(p + sizeof(ResChunk_header) <= pEnd);
 		if (p + sizeof(ResChunk_header) > pEnd) {
 			break;
 		}
