@@ -344,8 +344,7 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 				//uint32_t attrNameNsSi = LEW(pXml, xmlLen, off);  // AttrName Namespace Str Ind, or FFFFFFFF
 				int attrNameSi = LEW(pXml, xmlLen, off+1*4);  // AttrName String Index
 				int attrValueSi = LEW(pXml, xmlLen, off+2*4); // AttrValue Str Ind, or FFFFFFFF
-				//uint32_t attrFlags = LEW(pXml, xmlLen, off+3*4);  
-				uint32_t attrResId = LEW(pXml, xmlLen, off+4*4);  // AttrValue ResourceId or dup AttrValue StrInd
+				const Res_value *const value = reinterpret_cast<const Res_value*>(&pXml[off+3*4]);
 				off += 5*4;  // Skip over the 5 words of an attribute
 
 				xml_attribute xmlAttr = xmlTag.append_attribute(compXmlString(pXml, xmlLen, sitOff, stOff, attrNameSi).c_str());
@@ -353,16 +352,60 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 					// Value is inline
 					xmlAttr.set_value(compXmlString(pXml, xmlLen, sitOff, stOff, attrValueSi).c_str());
 				} else {
-					// Value is in the resource file.
-					// Print the resource ID here so we can handle multi-language lookup later.
-					if (attrResId == 0U) {
-						// HACK: Resource ID 0U is "false".
-						xmlAttr.set_value("false");
-					} else if (attrResId == ~0U) {
-						// HACK: Resoruce ID ~0U is "true".
-						xmlAttr.set_value("true");
-					} else {
-						xmlAttr.set_value(fmt::format(FSTR("@0x{:0>8X}"), attrResId).c_str());
+					// Integer value. Determine how to handle it.
+					switch (value->dataType) {
+						case Res_value::TYPE_NULL:
+							// 0 == undefined; 1 == empty
+							// TODO: Handle undefined better.
+							break;
+
+						case Res_value::TYPE_REFERENCE:
+						case Res_value::TYPE_ATTRIBUTE:
+						case Res_value::TYPE_STRING:	// TODO?
+						case Res_value::TYPE_DIMENSION:
+						case Res_value::TYPE_FRACTION:
+						case Res_value::TYPE_DYNAMIC_REFERENCE:
+						case Res_value::TYPE_DYNAMIC_ATTRIBUTE:
+						default:
+							// Resource identifier
+							// FIXME: Most of these types aren't handled properly...
+							xmlAttr.set_value(fmt::format(FSTR("@0x{:0>8X}"), value->data).c_str());
+							break;
+
+						case Res_value::TYPE_FLOAT: {
+							// Single-precision float
+							union {
+								uint32_t u32;
+								float f;
+							} val;
+							val.u32 = value->data;
+							xmlAttr.set_value(fmt::format(FSTR("{:f}"), val.f).c_str());
+							break;
+						}
+
+						case Res_value::TYPE_INT_DEC:
+							xmlAttr.set_value(fmt::format(FSTR("{:d}"), value->data).c_str());
+							break;
+						case Res_value::TYPE_INT_HEX:
+							xmlAttr.set_value(fmt::format(FSTR("0x{:x}"), value->data).c_str());
+							break;
+						case Res_value::TYPE_INT_BOOLEAN:
+							// FIXME: Error if not 0x00000000 or 0xFFFFFFFF?
+							xmlAttr.set_value(value->data ? "true" : "false");
+							break;
+
+						case Res_value::TYPE_INT_COLOR_ARGB8:
+							xmlAttr.set_value(fmt::format(FSTR("#{:0>8x}"), value->data).c_str());
+							break;
+						case Res_value::TYPE_INT_COLOR_RGB8:
+							xmlAttr.set_value(fmt::format(FSTR("#{:0>6x}"), value->data).c_str());
+							break;
+						case Res_value::TYPE_INT_COLOR_ARGB4:
+							xmlAttr.set_value(fmt::format(FSTR("#{:0>4x}"), value->data).c_str());
+							break;
+						case Res_value::TYPE_INT_COLOR_RGB4:
+							xmlAttr.set_value(fmt::format(FSTR("#{:0>3x}"), value->data).c_str());
+							break;
 					}
 				}
 				//tr.add(attrName, attrValue);
@@ -650,26 +693,12 @@ int AndroidManifestXML::loadFieldData(void)
 	if (uses_sdk) {
 		const char *const s_minSdkVersion = uses_sdk.attribute("minSdkVersion").as_string(nullptr);
 		if (s_minSdkVersion && s_minSdkVersion[0] != '\0') {
-			// NOTE: minSdkVersion might be formatted as a resource ID.
-			const char *const s_minSdkVersion_title = C_("AndroidAPK", "Min. SDK Version");
-			const uint32_t minSdkVersion = AndroidResourceReader::parseResourceID(s_minSdkVersion);
-			if (minSdkVersion != 0) {
-				d->fields.addField_string_numeric(s_minSdkVersion_title, minSdkVersion);
-			} else {
-				d->fields.addField_string(s_minSdkVersion_title, s_minSdkVersion);
-			}
+			d->fields.addField_string(C_("AndroidAPK", "Min. SDK Version"), s_minSdkVersion);
 		}
 
 		const char *const s_targetSdkVersion = uses_sdk.attribute("targetSdkVersion").as_string(nullptr);
 		if (s_targetSdkVersion && s_targetSdkVersion[0] != '\0') {
-			// NOTE: targetSdkVersion might be formatted as a resource ID.
-			const char *const s_targetSdkVersion_title = C_("AndroidAPK", "Target SDK Version");
-			const uint32_t targetSdkVersion = AndroidResourceReader::parseResourceID(s_targetSdkVersion);
-			if (targetSdkVersion != 0) {
-				d->fields.addField_string_numeric(s_targetSdkVersion_title, targetSdkVersion);
-			} else {
-				d->fields.addField_string(s_targetSdkVersion_title, s_targetSdkVersion);
-			}
+			d->fields.addField_string(C_("AndroidAPK", "Target SDK Version"), s_targetSdkVersion);
 		}
 	}
 
@@ -680,14 +709,7 @@ int AndroidManifestXML::loadFieldData(void)
 	}
 	const char *const s_versionCode = manifest_node.attribute("versionCode").as_string(nullptr);
 	if (s_versionCode && s_versionCode[0] != '\0') {
-		// NOTE: versionCode might be formatted as a resource ID.
-		const char *const s_versionCode_title = C_("AndroidAPK", "Version Code");
-		const uint32_t versionCode = AndroidResourceReader::parseResourceID(s_versionCode);
-		if (versionCode != 0) {
-			d->fields.addField_string_numeric(s_versionCode_title, versionCode);
-		} else {
-			d->fields.addField_string(s_versionCode_title, s_versionCode);
-		}
+		d->fields.addField_string(C_("AndroidAPK", "Version Code"), s_versionCode);
 	}
 
 	// Copied from Nintendo3DS. (TODO: Centralize it?)
@@ -714,8 +736,8 @@ int AndroidManifestXML::loadFieldData(void)
 				// Check if glEsVersion is set.
 				const char *const s_glEsVersion = feature_node.attribute("glEsVersion").as_string(nullptr);
 				if (s_glEsVersion && s_glEsVersion[0] != '\0') {
-					// NOTE: glEsVersion might be formatted as a resource ID.
-					const uint32_t glEsVersion = AndroidResourceReader::parseResourceID(s_glEsVersion);
+					// Parse the string as an integer.
+					const uint32_t glEsVersion = AndroidResourceReader::parseUnsignedInteger(s_glEsVersion);
 					if (glEsVersion != 0) {
 						v_feature.push_back(fmt::format(FSTR("OpenGL ES {:d}.{:d}"),
 							glEsVersion >> 16, glEsVersion & 0xFFFF));

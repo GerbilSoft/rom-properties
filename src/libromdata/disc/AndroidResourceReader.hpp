@@ -54,6 +54,13 @@ public:
 	static uint32_t parseResourceID(const char *str);
 
 	/**
+	 * Parse an unsigned integer value from AndroidManifest.xml, as loaded by the AndroidManifestXML class.
+	 * @param str Unsigned integer value (as a decimal or hexadecimal string)
+	 * @return Unsigned integer value, or 0 if not valid
+	 */
+	static uint32_t parseUnsignedInteger(const char *str);
+
+	/**
 	 * Get a string from Android resource data.
 	 * @param id	[in] Resource ID
 	 * @return String, or nullptr if not found.

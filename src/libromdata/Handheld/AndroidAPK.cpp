@@ -723,26 +723,12 @@ int AndroidAPK::loadFieldData(void)
 	if (uses_sdk) {
 		const char *const s_minSdkVersion = uses_sdk.attribute("minSdkVersion").as_string(nullptr);
 		if (s_minSdkVersion && s_minSdkVersion[0] != '\0') {
-			// NOTE: minSdkVersion might be formatted as a resource ID.
-			const char *const s_minSdkVersion_title = C_("AndroidAPK", "Min. SDK Version");
-			const uint32_t minSdkVersion = AndroidResourceReader::parseResourceID(s_minSdkVersion);
-			if (minSdkVersion != 0) {
-				d->fields.addField_string_numeric(s_minSdkVersion_title, minSdkVersion);
-			} else {
-				d->fields.addField_string(s_minSdkVersion_title, s_minSdkVersion);
-			}
+			d->fields.addField_string(C_("AndroidAPK", "Min. SDK Version"), s_minSdkVersion);
 		}
 
 		const char *const s_targetSdkVersion = uses_sdk.attribute("targetSdkVersion").as_string(nullptr);
 		if (s_targetSdkVersion && s_targetSdkVersion[0] != '\0') {
-			// NOTE: targetSdkVersion might be formatted as a resource ID.
-			const char *const s_targetSdkVersion_title = C_("AndroidAPK", "Target SDK Version");
-			const uint32_t targetSdkVersion = AndroidResourceReader::parseResourceID(s_targetSdkVersion);
-			if (targetSdkVersion != 0) {
-				d->fields.addField_string_numeric(s_targetSdkVersion_title, targetSdkVersion);
-			} else {
-				d->fields.addField_string(s_targetSdkVersion_title, s_targetSdkVersion);
-			}
+			d->fields.addField_string(C_("AndroidAPK", "Target SDK Version"), s_targetSdkVersion);
 		}
 	}
 
@@ -753,14 +739,7 @@ int AndroidAPK::loadFieldData(void)
 	}
 	const char *const s_versionCode = manifest_node.attribute("versionCode").as_string(nullptr);
 	if (s_versionCode && s_versionCode[0] != '\0') {
-		// NOTE: versionCode might be formatted as a resource ID.
-		const char *const s_versionCode_title = C_("AndroidAPK", "Version Code");
-		const uint32_t versionCode = AndroidResourceReader::parseResourceID(s_versionCode);
-		if (versionCode != 0) {
-			d->fields.addField_string_numeric(s_versionCode_title, versionCode);
-		} else {
-			d->fields.addField_string(s_versionCode_title, s_versionCode);
-		}
+		d->fields.addField_string(C_("AndroidAPK", "Version Code"), s_versionCode);
 	}
 
 	// Copied from Nintendo3DS. (TODO: Centralize it?)
@@ -788,8 +767,8 @@ int AndroidAPK::loadFieldData(void)
 				// Check if glEsVersion is set.
 				const char *const s_glEsVersion = feature_node.attribute("glEsVersion").as_string(nullptr);
 				if (s_glEsVersion && s_glEsVersion[0] != '\0') {
-					// NOTE: glEsVersion might be formatted as a resource ID.
-					const uint32_t glEsVersion = AndroidResourceReader::parseResourceID(s_glEsVersion);
+					// Parse the string as an integer.
+					const uint32_t glEsVersion = AndroidResourceReader::parseUnsignedInteger(s_glEsVersion);
 					if (glEsVersion != 0) {
 						v_feature.push_back(fmt::format(FSTR("OpenGL ES {:d}.{:d}"),
 							glEsVersion >> 16, glEsVersion & 0xFFFF));
