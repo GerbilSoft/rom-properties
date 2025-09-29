@@ -216,21 +216,6 @@ string AndroidManifestXMLPrivate::compXmlString(const uint8_t *pXml, uint32_t xm
 	uint32_t strOff = stOff + LEW(pXml, xmlLen, addr);
 	return compXmlStringAt(pXml, xmlLen, strOff);
 }
-
-static inline uint16_t read_u16(const uint8_t *&p)
-{
-	uint16_t v = p[0] | (p[1] << 8);
-	p += sizeof(v);
-	return v;
-}
-
-static inline uint32_t read_u32(const uint8_t *&p)
-{
-	uint32_t v = p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24);
-	p += sizeof(v);
-	return v;
-}
-
 /**
  * Decompress Android binary XML.
  * Strings that are referencing resources will be printed as "@0x12345678".
