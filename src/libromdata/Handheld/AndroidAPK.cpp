@@ -694,17 +694,19 @@ int AndroidAPK::loadFieldData(void)
 		return static_cast<int>(d->fields.count());
 	}
 
+	// Package name is in the manifest tag.
+	// <application name=""> is something else.
+	const char *const package_name = manifest_node.attribute("package").as_string(nullptr);
+	if (package_name && package_name[0] != '\0') {
+		d->fields.addField_string(C_("AndroidManifestXML", "Package Name"), package_name);
+	}
+
 	// Application information
 	xml_node application_node = manifest_node.child("application");
 	if (application_node) {
 		const char *const label = application_node.attribute("label").as_string(nullptr);
 		if (label && label[0] != '\0') {
 			d->addField_string_i18n(C_("AndroidAPK", "Title"), label);
-		}
-
-		const char *const name = application_node.attribute("name").as_string(nullptr);
-		if (name && name[0] != '\0') {
-			d->addField_string_i18n(C_("AndroidAPK", "Package Name"), name);
 		}
 
 		const char *const description = application_node.attribute("description").as_string(nullptr);
