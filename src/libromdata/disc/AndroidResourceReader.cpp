@@ -145,7 +145,6 @@ AndroidResourceReader::StringPoolAccessor::StringPoolAccessor(const uint8_t *dat
 
 	const ResStringPool_header *const pStringPoolHdr = reinterpret_cast<const ResStringPool_header*>(data);
 	stringCount = le32_to_cpu(pStringPoolHdr->stringCount);
-	printf("stringCount: %u 0x%08X\n", stringCount, stringCount);
 	isUTF8 = (le32_to_cpu(pStringPoolHdr->flags) & ResStringPool_header::UTF8_FLAG);
 	pStringsStart = data + le32_to_cpu(pStringPoolHdr->stringsStart);
 
