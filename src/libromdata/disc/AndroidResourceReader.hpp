@@ -61,6 +61,23 @@ public:
 	const char *getStringFromResource(uint32_t id) const;
 
 	/**
+	 * Get a string from Android resource data.
+	 * @param s_id  [in] Resource ID (as a string in the format "@0x12345678")
+	 * @return String, or "id" if not found.
+	 */
+	const char *getStringFromResource(const char *s_id) const;
+
+	/**
+	 * Get a string from Android resource data.
+	 * @param s_id  [in] Resource ID (as a string in the format "@0x12345678")
+	 * @return String, or "id" if not found.
+	 */
+	inline const char *getStringFromResource(const std::string &s_id) const
+	{
+		return getStringFromResource(s_id.c_str());
+	}
+
+	/**
 	 * Add string field data to the specified RomFields object.
 	 *
 	 * If the string is in the format "@0x12345678", it will be loaded from

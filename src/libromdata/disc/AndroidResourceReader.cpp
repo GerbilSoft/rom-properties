@@ -681,6 +681,25 @@ const char *AndroidResourceReader::getStringFromResource(uint32_t id) const
 }
 
 /**
+ * Get a string from Android resource data.
+ * @param s_id [in] Resource ID (as a string in the format "@0x12345678")
+ * @return String, or "id" if not found.
+ */
+const char *AndroidResourceReader::getStringFromResource(const char *s_id) const
+{
+	const uint32_t id = parseResourceID(s_id);
+	if (id != 0) {
+		const char *s_ret = getStringFromResource(id);
+		if (s_ret) {
+			return s_ret;
+		}
+	}
+
+	// Either s_id is not a resource ID, or the resource was not found.
+	return s_id;
+}
+
+/**
  * Add string field data to the specified RomFields object.
  *
  * If the string is in the format "@0x12345678", it will be loaded from

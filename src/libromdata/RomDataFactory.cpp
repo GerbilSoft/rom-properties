@@ -234,7 +234,7 @@ static const array<RomDataFns, 41> romDataFns_magic = {{
 	GetRomDataFns_addr(Xbox360_XEX, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XEX2'),
 
 	// Handhelds
-	GetRomDataFns_addr(AndroidManifestXML, 0, 0, 0x03000800),
+	GetRomDataFns_addr(AndroidManifestXML, ATTR_HAS_METADATA, 0, 0x03000800),
 	GetRomDataFns_addr(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x104, 0xCEED6666),
 	GetRomDataFns_addr(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x304, 0xCEED6666),	// headered
 	GetRomDataFns_addr(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x104, 0x0110CEEF),	// Analogue Pocket
@@ -301,6 +301,8 @@ static const array<RomDataFns, 40> romDataFns_header = {{
 	GetRomDataFns(WiiWAD, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 
 	// Handhelds
+	GetRomDataFns(AndroidAPK, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),	// .apk [MUST BE BEFORE J2ME] (TODO: Handle .zip files like .iso?)
+	GetRomDataFns(J2ME, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),		// .jar and .jad (TODO: Handle .zip files like .iso?)
 	GetRomDataFns(Nintendo3DS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA),
 	GetRomDataFns(PalmOS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),	// TODO: Magic at 0x40?
 
@@ -314,8 +316,6 @@ static const array<RomDataFns, 40> romDataFns_header = {{
 
 	// Other
 	GetRomDataFns(Amiibo, ATTR_HAS_THUMBNAIL),
-	GetRomDataFns(AndroidAPK, ATTR_HAS_THUMBNAIL),			// .apk [MUST BE BEFORE J2ME] (TODO: Handle .zip files like .iso?)
-	GetRomDataFns(J2ME, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),	// .jar and .jad (TODO: Handle .zip files like .iso?)
 	GetRomDataFns(MachO, ATTR_NONE),
 	GetRomDataFns(NintendoBadge, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(Wim, ATTR_NONE),

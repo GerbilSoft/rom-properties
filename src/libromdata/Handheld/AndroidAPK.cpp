@@ -685,14 +685,14 @@ int AndroidAPK::loadFieldData(void)
 		return -EIO;
 	}
 
-	d->fields.reserve(10);	// Maximum of 10 fields.
-
 	// Get fields from the XML file.
 	xml_node manifest_node = d->manifest_xml->child("manifest");
 	if (!manifest_node) {
 		// No "<manifest>" node???
 		return static_cast<int>(d->fields.count());
 	}
+
+	d->fields.reserve(10);	// Maximum of 10 fields.
 
 	// Package name is in the manifest tag.
 	// <application name=""> is something else.
@@ -843,6 +843,71 @@ int AndroidAPK::loadFieldData(void)
 	}
 
 	return static_cast<int>(d->fields.count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the metadata hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int AndroidAPK::loadMetaData(void)
+{
+	RP_D(AndroidAPK);
+	if (!d->metaData.empty()) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || !d->manifest_xml) {
+		// APK isn't valid, and/or AndroidManifest.xml could not be loaded.
+		return -EIO;
+	}
+
+	// Get fields from the XML file.
+	xml_node manifest_node = d->manifest_xml->child("manifest");
+	if (!manifest_node) {
+		// No "<manifest>" node???
+		return static_cast<int>(d->fields.count());
+	}
+
+	// AndroidManifest.xml is read in the constructor.
+	AndroidResourceReader *const arscReader = d->arscReader.get();
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
+
+	// NOTE: Only retrieving a single language.
+	// TODO: Get the system language code and use it as def_lc?
+
+	// Package name is in the manifest tag. (as Title ID)
+	// <application name=""> is something else.
+	const char *const package_name = manifest_node.attribute("package").as_string(nullptr);
+	if (package_name && package_name[0] != '\0') {
+		d->metaData.addMetaData_string(Property::TitleID, package_name);
+	}
+
+	// Application information
+	xml_node application_node = manifest_node.child("application");
+	if (application_node) {
+		const char *const label = application_node.attribute("label").as_string(nullptr);
+		if (label && label[0] != '\0') {
+			if (arscReader) {
+				d->metaData.addMetaData_string(Property::Title, arscReader->getStringFromResource(label));
+			} else {
+				d->metaData.addMetaData_string(Property::Title, label);
+			}
+		}
+
+		const char *const description = application_node.attribute("description").as_string(nullptr);
+		if (description && description[0] != '\0') {
+			if (arscReader) {
+				d->metaData.addMetaData_string(Property::Description, arscReader->getStringFromResource(description));
+			} else {
+				d->metaData.addMetaData_string(Property::Description, description);
+			}
+		}
+	}
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

@@ -636,7 +636,7 @@ int AndroidManifestXML::loadFieldData(void)
 	}
 
 	// NOTE: We can't get resources here, but we'll get the same fields
-	// as AndroidAPK anyway.
+	// as AndroidManifestXML anyway.
 	d->fields.reserve(10);	// Maximum of 10 fields.
 
 	// Get fields from the XML file.
@@ -668,7 +668,7 @@ int AndroidManifestXML::loadFieldData(void)
 
 		const char *const appCategory = application_node.attribute("appCategory").as_string(nullptr);
 		if (appCategory && appCategory[0] != '\0') {
-			d->fields.addField_string(C_("AndroidAPK", "Category"), appCategory);
+			d->fields.addField_string(C_("AndroidManifestXML", "Category"), appCategory);
 		}
 	}
 
@@ -677,23 +677,23 @@ int AndroidManifestXML::loadFieldData(void)
 	if (uses_sdk) {
 		const char *const s_minSdkVersion = uses_sdk.attribute("minSdkVersion").as_string(nullptr);
 		if (s_minSdkVersion && s_minSdkVersion[0] != '\0') {
-			d->fields.addField_string(C_("AndroidAPK", "Min. SDK Version"), s_minSdkVersion);
+			d->fields.addField_string(C_("AndroidManifestXML", "Min. SDK Version"), s_minSdkVersion);
 		}
 
 		const char *const s_targetSdkVersion = uses_sdk.attribute("targetSdkVersion").as_string(nullptr);
 		if (s_targetSdkVersion && s_targetSdkVersion[0] != '\0') {
-			d->fields.addField_string(C_("AndroidAPK", "Target SDK Version"), s_targetSdkVersion);
+			d->fields.addField_string(C_("AndroidManifestXML", "Target SDK Version"), s_targetSdkVersion);
 		}
 	}
 
 	// Version (and version code)
 	const char *const versionName = manifest_node.attribute("versionName").as_string(nullptr);
 	if (versionName && versionName[0] != '\0') {
-		d->fields.addField_string(C_("AndroidAPK", "Version"), versionName);
+		d->fields.addField_string(C_("AndroidManifestXML", "Version"), versionName);
 	}
 	const char *const s_versionCode = manifest_node.attribute("versionCode").as_string(nullptr);
 	if (s_versionCode && s_versionCode[0] != '\0') {
-		d->fields.addField_string(C_("AndroidAPK", "Version Code"), s_versionCode);
+		d->fields.addField_string(C_("AndroidManifestXML", "Version Code"), s_versionCode);
 	}
 
 	// Copied from Nintendo3DS. (TODO: Centralize it?)
@@ -748,17 +748,17 @@ int AndroidManifestXML::loadFieldData(void)
 
 		if (!vv_features->empty()) {
 			static const array<const char*, 2> features_headers = {{
-				NOP_C_("AndroidAPK|Features", "Feature"),
-				NOP_C_("AndroidAPK|Features", "Required?"),
+				NOP_C_("AndroidManifestXML|Features", "Feature"),
+				NOP_C_("AndroidManifestXML|Features", "Required?"),
 			}};
 			vector<string> *const v_features_headers = RomFields::strArrayToVector_i18n(
-				"AndroidAPK|Features", features_headers);
+				"AndroidManifestXML|Features", features_headers);
 
 			RomFields::AFLD_PARAMS params(0, rows_visible);
 			params.headers = v_features_headers;
 			params.data.single = vv_features;
 			params.col_attrs.align_data = AFLD_ALIGN2(TXA_D, TXA_C);
-			d->fields.addField_listData(C_("AndroidAPK", "Features"), &params);
+			d->fields.addField_listData(C_("AndroidManifestXML", "Features"), &params);
 		} else {
 			delete vv_features;
 		}
@@ -794,6 +794,63 @@ int AndroidManifestXML::loadFieldData(void)
 	}
 
 	return static_cast<int>(d->fields.count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the metadata hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int AndroidManifestXML::loadMetaData(void)
+{
+	RP_D(AndroidManifestXML);
+	if (!d->metaData.empty()) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || !d->manifest_xml) {
+		// APK isn't valid, and/or AndroidManifest.xml could not be loaded.
+		return -EIO;
+	}
+
+	// Get fields from the XML file.
+	xml_node manifest_node = d->manifest_xml->child("manifest");
+	if (!manifest_node) {
+		// No "<manifest>" node???
+		return static_cast<int>(d->fields.count());
+	}
+
+	// AndroidManifest.xml is read in the constructor.
+	// NOTE: Resources are not available here, so we can't retrieve string resources.
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
+
+	// NOTE: Only retrieving a single language.
+	// TODO: Get the system language code and use it as def_lc?
+
+	// Package name is in the manifest tag. (as Title ID)
+	// <application name=""> is something else.
+	const char *const package_name = manifest_node.attribute("package").as_string(nullptr);
+	if (package_name && package_name[0] != '\0') {
+		d->metaData.addMetaData_string(Property::TitleID, package_name);
+	}
+
+	// Application information
+	xml_node application_node = manifest_node.child("application");
+	if (application_node) {
+		const char *const label = application_node.attribute("label").as_string(nullptr);
+		if (label && label[0] != '\0') {
+			d->metaData.addMetaData_string(Property::Title, label);
+		}
+
+		const char *const description = application_node.attribute("description").as_string(nullptr);
+		if (description && description[0] != '\0') {
+			d->metaData.addMetaData_string(Property::Description, description);
+		}
+	}
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData.count());
 }
 
 /**
