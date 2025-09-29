@@ -196,6 +196,10 @@ vector<string> AndroidResourceReaderPrivate::processStringPool(const uint8_t *da
 			if (u16len & 0x80) {
 				// Larger than 128
 				u16len = ((u16len & 0x7F) << 8) + *p_u8str++;
+				assert(p_u8str < pEnd);
+				if (p_u8str >= pEnd) {
+					break;
+				}
 			}
 
 			unsigned int u8len = *p_u8str++;
@@ -206,6 +210,10 @@ vector<string> AndroidResourceReaderPrivate::processStringPool(const uint8_t *da
 			if (u8len & 0x80) {
 				// Larger than 128
 				u8len = ((u8len & 0x7F) << 8) + *p_u8str++;
+				assert(p_u8str < pEnd);
+				if (p_u8str >= pEnd) {
+					break;
+				}
 			}
 
 			if (u8len > 0) {
@@ -221,7 +229,7 @@ vector<string> AndroidResourceReaderPrivate::processStringPool(const uint8_t *da
 			unsigned int u16len = read_u16(p_u8str);
 			if (u16len & 0x8000) {
 				// Larger than 32,768
-				assert(p_u8str + 2 <+ pEnd);
+				assert(p_u8str + 2 <= pEnd);
 				if (p_u8str + 2 > pEnd) {
 					break;
 				}
