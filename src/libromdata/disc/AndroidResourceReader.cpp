@@ -84,9 +84,9 @@ public:
 	size_t arscLen;
 
 	// String pools from resource.arsc
-	vector<string> valueStringPool;
-	vector<string> typeStringPool;
-	vector<string> keyStringPool;
+	AndroidResourceReader::StringPoolAccessor valueStringPool;
+	AndroidResourceReader::StringPoolAccessor typeStringPool;
+	AndroidResourceReader::StringPoolAccessor keyStringPool;
 
 	unordered_map<uint32_t, vector<string> > entryMap;
 
@@ -102,6 +102,141 @@ public:
 
 	static constexpr uint32_t DENSITY_FLAG = (1U << 31);
 };
+
+static inline uint16_t read_u16(const uint8_t *&p)
+{
+	const uint16_t *const p16 = reinterpret_cast<const uint16_t*>(p);
+	const uint16_t v = *p16;
+	p += sizeof(v);
+	return le16_to_cpu(v);
+}
+
+static inline uint32_t read_u32(const uint8_t *&p)
+{
+	const uint32_t *const p32 = reinterpret_cast<const uint32_t*>(p);
+	const uint32_t v = *p32;
+	p += sizeof(v);
+	return le32_to_cpu(v);
+}
+
+/** StringPoolAccessor **/
+
+/**
+ * String Pool accessor class
+ *
+ * NOTE: The specified memory buffer *must* remain valid while this
+ * StringPoolAccessor is open.
+ *
+ * @param data Pointer to the string pool
+ * @param size Size of the string pool
+ */
+AndroidResourceReader::StringPoolAccessor::StringPoolAccessor(const uint8_t *data, size_t size)
+	: pEnd(data + size)
+	, pStrOffsetTbl(nullptr)
+	, pStringsStart(nullptr)
+	, stringCount(0)
+	, isUTF8(false)
+{
+	assert(size > sizeof(ResStringPool_header));
+	if (size <= sizeof(ResStringPool_header)) {
+		// Too small...
+		return;
+	}
+
+	const ResStringPool_header *const pStringPoolHdr = reinterpret_cast<const ResStringPool_header*>(data);
+	stringCount = le32_to_cpu(pStringPoolHdr->stringCount);
+	printf("stringCount: %u 0x%08X\n", stringCount, stringCount);
+	isUTF8 = (le32_to_cpu(pStringPoolHdr->flags) & ResStringPool_header::UTF8_FLAG);
+	pStringsStart = data + le32_to_cpu(pStringPoolHdr->stringsStart);
+
+	// Offset table
+	pStrOffsetTbl = reinterpret_cast<const uint32_t*>(data + sizeof(ResStringPool_header));
+	assert(pStrOffsetTbl + stringCount < reinterpret_cast<const uint32_t*>(pEnd));
+	if (pStrOffsetTbl + stringCount >= reinterpret_cast<const uint32_t*>(pEnd)) {
+		stringCount = 0;
+		return;
+	}
+}
+
+/**
+ * Get a string from the string pool.
+ *
+ * NOTE: The string pool might be either UTF-8 or UTF-16LE.
+ * This function will automatically convert it to UTF-8 if necessary.
+ *
+ * @param index String index
+ * @return String, or empty string on error.
+ */
+string AndroidResourceReader::StringPoolAccessor::getString(unsigned int index)
+{
+	// TODO: Cache converted strings?
+	assert(index < stringCount);
+	if (index >= stringCount) {
+		return {};
+	}
+
+	const uint8_t *p_u8str = pStringsStart + le32_to_cpu(pStrOffsetTbl[index]);
+	assert(p_u8str < pEnd);
+	if (p_u8str >= pEnd) {
+		return {};
+	}
+
+	if (isUTF8) {
+		// TODO: Why the u16len and u8len?
+		unsigned int u16len = *p_u8str++;
+		assert(p_u8str < pEnd);
+		if (p_u8str >= pEnd) {
+			return {};
+		}
+		if (u16len & 0x80) {
+			// >= 128
+			u16len = ((u16len & 0x7F) << 8) + *p_u8str++;
+			assert(p_u8str < pEnd);
+			if (p_u8str >= pEnd) {
+				return {};
+			}
+		}
+
+		unsigned int u8len = *p_u8str++;
+		assert(p_u8str < pEnd);
+		if (p_u8str >= pEnd) {
+			return {};
+		}
+		if (u8len & 0x80) {
+			// >= 128
+			u8len = ((u8len & 0x7F) << 8) + *p_u8str++;
+			assert(p_u8str < pEnd);
+			if (p_u8str >= pEnd) {
+				return {};
+			}
+		}
+
+		if (u8len > 0) {
+			return string(reinterpret_cast<const char*>(p_u8str), u8len);
+		}
+	} else {
+		assert(p_u8str + 2 <= pEnd);
+		if (p_u8str + 2 > pEnd) {
+			return {};
+		}
+		unsigned int u16len = read_u16(p_u8str);
+		if (u16len & 0x8000) {
+			// >= 32,768
+			assert(p_u8str + 2 <= pEnd);
+			if (p_u8str + 2 > pEnd) {
+				return {};
+			}
+			u16len = ((u16len & 0x7FFF) << 16) + read_u16(p_u8str);
+		}
+
+		if (u16len > 0) {
+			return utf16le_to_utf8(reinterpret_cast<const char16_t*>(p_u8str), u16len);
+		}
+	}
+
+	// Empty string?
+	return {};
+}
 
 /** AndroidResourceReaderPrivate **/
 
@@ -125,126 +260,6 @@ AndroidResourceReaderPrivate::AndroidResourceReaderPrivate(const uint8_t *pArsc,
 		this->arscLen = 0;
 		responseMap_i18n.clear();
 	}
-}
-
-static inline uint16_t read_u16(const uint8_t *&p)
-{
-	const uint16_t *const p16 = reinterpret_cast<const uint16_t*>(p);
-	const uint16_t v = *p16;
-	p += sizeof(v);
-	return le16_to_cpu(v);
-}
-
-static inline uint32_t read_u32(const uint8_t *&p)
-{
-	const uint32_t *const p32 = reinterpret_cast<const uint32_t*>(p);
-	const uint32_t v = *p32;
-	p += sizeof(v);
-	return le32_to_cpu(v);
-}
-
-/**
- * Process an Android resource string pool.
- * @param data Start of string pool
- * @param size Size of string pool
- * @return Processed string pool, or empty vector<string> on error.
- */
-vector<string> AndroidResourceReaderPrivate::processStringPool(const uint8_t *data, size_t size)
-{
-	vector<string> stringPool;
-	const uint8_t *p = data;
-	const uint8_t *const pEnd = data + size;
-
-	assert(p + sizeof(ResStringPool_header) <= pEnd);
-	if (p + sizeof(ResStringPool_header) > pEnd) {
-		return {};
-	}
-	const ResStringPool_header *const pStringPoolHdr = reinterpret_cast<const ResStringPool_header*>(p);
-	p += sizeof(ResStringPool_header);
-
-	const bool isUTF8 = (le32_to_cpu(pStringPoolHdr->flags) & ResStringPool_header::UTF8_FLAG);
-
-	// Offset table
-	const uint32_t *pStrOffsetTbl = reinterpret_cast<const uint32_t*>(p);
-	const uint32_t stringCount = le32_to_cpu(pStringPoolHdr->stringCount);
-	p += (stringCount * sizeof(uint32_t));
-	assert(p < pEnd);
-	if (p >= pEnd) {
-		return {};
-	}
-
-	// Load the strings.
-	// NOTE: Assuming UTF-8 for now.
-	// NOTE 2: Copying strings into a vector<string> to reduce confusion,
-	// though it would be faster and more efficient to directly reference them...
-	// TODO: Separate class that does that?
-	const uint8_t *const pStringsStart = data + le32_to_cpu(pStringPoolHdr->stringsStart);
-	for (unsigned int i = 0; i < stringCount; i++) {
-		const uint8_t *p_u8str = pStringsStart + le32_to_cpu(pStrOffsetTbl[i]);
-		assert(p_u8str < pEnd);
-		if (p_u8str >= pEnd) {
-			break;
-		}
-
-		if (isUTF8) {
-			// TODO: Why the u16len and u8len?
-			unsigned int u16len = *p_u8str++;
-			assert(p_u8str < pEnd);
-			if (p_u8str >= pEnd) {
-				break;
-			}
-			if (u16len & 0x80) {
-				// Larger than 128
-				u16len = ((u16len & 0x7F) << 8) + *p_u8str++;
-				assert(p_u8str < pEnd);
-				if (p_u8str >= pEnd) {
-					break;
-				}
-			}
-
-			unsigned int u8len = *p_u8str++;
-			assert(p_u8str < pEnd);
-			if (p_u8str >= pEnd) {
-				break;
-			}
-			if (u8len & 0x80) {
-				// Larger than 128
-				u8len = ((u8len & 0x7F) << 8) + *p_u8str++;
-				assert(p_u8str < pEnd);
-				if (p_u8str >= pEnd) {
-					break;
-				}
-			}
-
-			if (u8len > 0) {
-				stringPool.emplace_back(reinterpret_cast<const char*>(p_u8str), u8len);
-			} else {
-				stringPool.push_back(string());
-			}
-		} else {
-			assert(p_u8str + 2 <= pEnd);
-			if (p_u8str + 2 > pEnd) {
-				break;
-			}
-			unsigned int u16len = read_u16(p_u8str);
-			if (u16len & 0x8000) {
-				// Larger than 32,768
-				assert(p_u8str + 2 <= pEnd);
-				if (p_u8str + 2 > pEnd) {
-					break;
-				}
-				u16len = ((u16len & 0x7FFF) << 16) + read_u16(p_u8str);
-			}
-
-			if (u16len > 0) {
-				stringPool.emplace_back(utf16le_to_utf8(reinterpret_cast<const char16_t*>(p_u8str), u16len));
-			} else {
-				stringPool.push_back(string());
-			}
-		}
-	}
-
-	return stringPool;
 }
 
 /**
@@ -376,11 +391,7 @@ int AndroidResourceReaderPrivate::processType(const uint8_t *data, size_t size, 
 			const Res_value *const pResValue = reinterpret_cast<const Res_value*>(p);
 			p += sizeof(Res_value);
 			const uint32_t key_index = le32_to_cpu(pEntry->key.index);
-			assert(key_index < keyStringPool.size());
-			if (key_index >= keyStringPool.size()) {
-				break;
-			}
-			const string &keyStr = keyStringPool[key_index];
+			const string keyStr = keyStringPool.getString(key_index);
 
 			auto iter = entryMap.find(resource_id);
 			if (iter != entryMap.end()) {
@@ -398,11 +409,7 @@ int AndroidResourceReaderPrivate::processType(const uint8_t *data, size_t size, 
 			string data;
 			switch (pResValue->dataType) {
 				case Res_value::TYPE_STRING:
-					assert(u32data < valueStringPool.size());
-					if (u32data >= valueStringPool.size()) {
-						return -EIO;
-					}
-					data = valueStringPool[u32data];
+					data = valueStringPool.getString(u32data);
 					break;
 				case Res_value::TYPE_REFERENCE:
 					refKeys.emplace(resource_id, u32data);
@@ -473,9 +480,9 @@ int AndroidResourceReaderPrivate::processPackage(const uint8_t *data, size_t siz
 
 	// Package string pools
 	const ResStringPool_header *const pTypeStrings = reinterpret_cast<const ResStringPool_header*>(data + pPackage_typeStrings);
-	typeStringPool = processStringPool(reinterpret_cast<const uint8_t*>(pTypeStrings), size - pPackage_typeStrings);
+	typeStringPool = AndroidResourceReader::StringPoolAccessor(reinterpret_cast<const uint8_t*>(pTypeStrings), size - pPackage_typeStrings);
 	const ResStringPool_header *const pKeyStrings = reinterpret_cast<const ResStringPool_header*>(data + pPackage_keyStrings);
-	keyStringPool = processStringPool(reinterpret_cast<const uint8_t*>(pKeyStrings), size - pPackage_keyStrings);
+	keyStringPool = AndroidResourceReader::StringPoolAccessor(reinterpret_cast<const uint8_t*>(pKeyStrings), size - pPackage_keyStrings);
 
 	// Iterate through chunks
 	unsigned int typeSpecCount = 0;
@@ -559,7 +566,7 @@ int AndroidResourceReaderPrivate::loadResourceAsrc(const uint8_t *pArsc, size_t 
 			case RES_STRING_POOL_TYPE:
 				// Only processing the first string pool.
 				if (realStringPoolCount == 0) {
-					valueStringPool = processStringPool(p, pHdr_size);
+					valueStringPool = AndroidResourceReader::StringPoolAccessor(p, pHdr_size);
 				}
 				realStringPoolCount++;
 				break;
@@ -690,7 +697,7 @@ const char *AndroidResourceReader::getStringFromResource(uint32_t id) const
 
 /**
  * Get a string from Android resource data.
- * @param s_id [in] Resource ID (as a string in the format "@0x12345678")
+ * @param s_id	[in] Resource ID (as a string in the format "@0x12345678")
  * @return String, or "id" if not found.
  */
 const char *AndroidResourceReader::getStringFromResource(const char *s_id) const

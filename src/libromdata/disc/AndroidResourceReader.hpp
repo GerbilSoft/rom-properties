@@ -40,6 +40,50 @@ protected:
 	AndroidResourceReaderPrivate *const d_ptr;
 
 public:
+	class StringPoolAccessor {
+	public:
+		/**
+		 * String Pool accessor class
+		 * No-argument constructor with no strings.
+		 */
+		StringPoolAccessor()
+			: pEnd(nullptr)
+			, pStrOffsetTbl(nullptr)
+			, pStringsStart(nullptr)
+			, stringCount(0)
+			, isUTF8(false)
+		{ }
+
+		/**
+		 * String Pool accessor class
+		 *
+		 * NOTE: The specified memory buffer *must* remain valid while this
+		 * StringPoolAccessor is open.
+		 *
+		 * @param data Pointer to the string pool
+		 * @param size Size of the string pool
+		 */
+		explicit StringPoolAccessor(const uint8_t *data, size_t size);
+
+		/**
+		 * Get a string from the string pool.
+		 *
+		 * NOTE: The string pool might be either UTF-8 or UTF-16LE.
+		 * This function will automatically convert it to UTF-8 if necessary.
+		 *
+		 * @param index String index
+		 * @return String, or empty string on error.
+		 */
+		std::string getString(unsigned int index);
+
+	private:
+		const uint8_t */*const*/ pEnd;	// end of string pool
+		const uint32_t *pStrOffsetTbl;
+		const uint8_t *pStringsStart;
+		uint32_t stringCount;
+		bool isUTF8;
+	};
+public:
 	/**
 	 * Is the resource data valid?
 	 * @return True if valid; false if not.
@@ -62,14 +106,14 @@ public:
 
 	/**
 	 * Get a string from Android resource data.
-	 * @param s_id  [in] Resource ID (as a string in the format "@0x12345678")
+	 * @param s_id	[in] Resource ID (as a string in the format "@0x12345678")
 	 * @return String, or "id" if not found.
 	 */
 	const char *getStringFromResource(const char *s_id) const;
 
 	/**
 	 * Get a string from Android resource data.
-	 * @param s_id  [in] Resource ID (as a string in the format "@0x12345678")
+	 * @param s_id	[in] Resource ID (as a string in the format "@0x12345678")
 	 * @return String, or "id" if not found.
 	 */
 	inline const char *getStringFromResource(const std::string &s_id) const
