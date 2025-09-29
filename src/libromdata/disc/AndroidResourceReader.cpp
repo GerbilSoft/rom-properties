@@ -465,7 +465,7 @@ int AndroidResourceReaderPrivate::processPackage(const uint8_t *data, size_t siz
 
 	const uint8_t *p = reinterpret_cast<const uint8_t*>(pKeyStrings) + pKeyStrings->header.size;
 
-	while (true) {
+	while (p != pEnd) {
 		assert(p + sizeof(ResChunk_header) <= pEnd);
 		if (p + sizeof(ResChunk_header) > pEnd) {
 			break;
@@ -489,6 +489,7 @@ int AndroidResourceReaderPrivate::processPackage(const uint8_t *data, size_t siz
 		}
 
 		p += pHdr->size;
+		assert(p <= pEnd);
 	}
 
 	return 0;
