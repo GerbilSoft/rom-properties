@@ -229,7 +229,7 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 			pNodeData += sizeof(ResXMLTree_attrExt);
 
 			// Create the tag.
-			xml_node xmlTag = cur_node.append_child(xmlStringPool.getString(le32_to_cpu(pAttrExt->name.index)));
+			xml_node xmlTag = cur_node.append_child(xmlStringPool.getString(le32_to_cpu(pAttrExt->name.index)).c_str());
 			tags.push(xmlTag);
 			cur_node = xmlTag;
 			//tr.addSelect(name, null);
@@ -244,7 +244,7 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 				xml_attribute xmlAttr = xmlTag.append_attribute(xmlStringPool.getString(attrNameSi).c_str());
 				if (attrValueSi != -1) {
 					// Value is inline
-					xmlAttr.set_value(xmlStringPool.getString(attrValueSi));
+					xmlAttr.set_value(xmlStringPool.getString(attrValueSi).c_str());
 				} else {
 					// Integer value. Determine how to handle it.
 					const uint32_t u32data = le32_to_cpu(pAttrData->typedValue.data);
