@@ -398,10 +398,12 @@ IF(ENABLE_XML)
 		Media/Wim_xml.cpp
 		Other/EXE_manifest.cpp
 		Handheld/AndroidAPK.cpp
+		Handheld/AndroidCommon.cpp
 		Handheld/AndroidManifestXML.cpp
 		)
 	SET(${PROJECT_NAME}_H ${${PROJECT_NAME}_H}
 		Handheld/AndroidAPK.hpp
+		Handheld/AndroidCommon.hpp
 		Handheld/AndroidManifestXML.hpp
 		Handheld/android_apk_structs.h
 		)

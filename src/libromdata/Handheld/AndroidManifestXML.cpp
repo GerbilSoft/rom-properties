@@ -10,6 +10,7 @@
 
 #include "config.librpbase.h"
 #include "AndroidManifestXML.hpp"
+#include "AndroidCommon.hpp"
 #include "android_apk_structs.h"
 
 // parseResourceID() from AndroidResourceReader
@@ -549,164 +550,11 @@ int AndroidManifestXML::loadFieldData(void)
 		return -EIO;
 	}
 
-	// NOTE: We can't get resources here, but we'll get the same fields
-	// as AndroidManifestXML anyway.
-	d->fields.reserve(10);	// Maximum of 10 fields.
-
 	// Get fields from the XML file.
-	xml_node manifest_node = d->manifest_xml->child("manifest");
-	if (!manifest_node) {
-		// No "<manifest>" node???
-		return static_cast<int>(d->fields.count());
-	}
+	// NOTE: No AndroidResourceReader is available...
+	AndroidCommon::loadFieldData(d->fields, *d->manifest_xml, nullptr);
 
-	// Package name is in the manifest tag.
-	// <application name=""> is something else.
-	const char *const package_name = manifest_node.attribute("package").as_string(nullptr);
-	if (package_name && package_name[0] != '\0') {
-		d->fields.addField_string(C_("AndroidManifestXML", "Package Name"), package_name);
-	}
-
-	// Application information
-	xml_node application_node = manifest_node.child("application");
-	if (application_node) {
-		const char *const label = application_node.attribute("label").as_string(nullptr);
-		if (label && label[0] != '\0') {
-			d->fields.addField_string(C_("AndroidManifestXML", "Title"), label);
-		}
-
-		const char *const description = application_node.attribute("description").as_string(nullptr);
-		if (description && description[0] != '\0') {
-			d->fields.addField_string(C_("AndroidManifestXML", "Description"), description);
-		}
-
-		const char *const appCategory = application_node.attribute("appCategory").as_string(nullptr);
-		if (appCategory && appCategory[0] != '\0') {
-			d->fields.addField_string(C_("AndroidManifestXML", "Category"), appCategory);
-		}
-	}
-
-	// SDK version
-	xml_node uses_sdk = manifest_node.child("uses-sdk");
-	if (uses_sdk) {
-		const char *const s_minSdkVersion = uses_sdk.attribute("minSdkVersion").as_string(nullptr);
-		if (s_minSdkVersion && s_minSdkVersion[0] != '\0') {
-			d->fields.addField_string(C_("AndroidManifestXML", "Min. SDK Version"), s_minSdkVersion);
-		}
-
-		const char *const s_targetSdkVersion = uses_sdk.attribute("targetSdkVersion").as_string(nullptr);
-		if (s_targetSdkVersion && s_targetSdkVersion[0] != '\0') {
-			d->fields.addField_string(C_("AndroidManifestXML", "Target SDK Version"), s_targetSdkVersion);
-		}
-	}
-
-	// Version (and version code)
-	const char *const versionName = manifest_node.attribute("versionName").as_string(nullptr);
-	if (versionName && versionName[0] != '\0') {
-		d->fields.addField_string(C_("AndroidManifestXML", "Version"), versionName);
-	}
-	const char *const s_versionCode = manifest_node.attribute("versionCode").as_string(nullptr);
-	if (s_versionCode && s_versionCode[0] != '\0') {
-		d->fields.addField_string(C_("AndroidManifestXML", "Version Code"), s_versionCode);
-	}
-
-	// Copied from Nintendo3DS. (TODO: Centralize it?)
-#ifdef _WIN32
-	// Windows: 6 visible rows per RFT_LISTDATA.
-	static constexpr int rows_visible = 6;
-#else /* !_WIN32 */
-	// Linux: 4 visible rows per RFT_LISTDATA.
-	static constexpr int rows_visible = 4;
-#endif /* _WIN32 */
-
-	// Features
-	// TODO: Normalize/localize feature names?
-	xml_node feature_node = manifest_node.child("uses-feature");
-	if (feature_node) {
-		auto *const vv_features = new RomFields::ListData_t;
-		do {
-			vector<string> v_feature;
-
-			const char *const feature = feature_node.attribute("name").as_string(nullptr);
-			if (feature && feature[0] != '\0') {
-				v_feature.push_back(feature);
-			} else {
-				// Check if glEsVersion is set.
-				uint32_t glEsVersion = feature_node.attribute("glEsVersion").as_uint();
-				if (glEsVersion != 0) {
-					v_feature.push_back(fmt::format(FSTR("OpenGL ES {:d}.{:d}"),
-						glEsVersion >> 16, glEsVersion & 0xFFFF));
-				} else {
-					const char *const s_glEsVersion = feature_node.attribute("glEsVersion").as_string(nullptr);
-					if (s_glEsVersion && s_glEsVersion[0] != '\0') {
-						v_feature.push_back(s_glEsVersion);
-					} else {
-						v_feature.push_back(string());
-					}
-				}
-			}
-
-			const char *required = feature_node.attribute("required").as_string(nullptr);
-			if (required && required[0] != '\0') {
-				v_feature.push_back(required);
-			} else {
-				// Default value is true.
-				v_feature.push_back("true");
-			}
-
-			vv_features->push_back(std::move(v_feature));
-
-			// Next feature
-			feature_node = feature_node.next_sibling("uses-feature");
-		} while (feature_node);
-
-		if (!vv_features->empty()) {
-			static const array<const char*, 2> features_headers = {{
-				NOP_C_("AndroidManifestXML|Features", "Feature"),
-				NOP_C_("AndroidManifestXML|Features", "Required?"),
-			}};
-			vector<string> *const v_features_headers = RomFields::strArrayToVector_i18n(
-				"AndroidManifestXML|Features", features_headers);
-
-			RomFields::AFLD_PARAMS params(0, rows_visible);
-			params.headers = v_features_headers;
-			params.data.single = vv_features;
-			params.col_attrs.align_data = AFLD_ALIGN2(TXA_D, TXA_C);
-			d->fields.addField_listData(C_("AndroidManifestXML", "Features"), &params);
-		} else {
-			delete vv_features;
-		}
-	}
-
-	// Permissions
-	// TODO: Normalize/localize permission names?
-	// TODO: maxSdkVersion?
-	// TODO: Also handle "uses-permission-sdk-23"?
-	xml_node permission_node = manifest_node.child("uses-permission");
-	if (permission_node) {
-		auto *const vv_permissions = new RomFields::ListData_t;
-		do {
-			const char *const permission = permission_node.attribute("name").as_string(nullptr);
-			if (permission && permission[0] != '\0') {
-				vector<string> v_permission;
-				v_permission.push_back(permission);
-				vv_permissions->push_back(std::move(v_permission));
-			}
-
-			// Next permission
-			permission_node = permission_node.next_sibling("uses-permission");
-		} while (permission_node);
-
-		if (!vv_permissions->empty()) {
-			RomFields::AFLD_PARAMS params(0, rows_visible);
-			params.headers = nullptr;
-			params.data.single = vv_permissions;
-			d->fields.addField_listData(C_("AndroidManifestXML", "Permissions"), &params);
-		} else {
-			delete vv_permissions;
-		}
-	}
-
+	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
 }
 
@@ -729,40 +577,10 @@ int AndroidManifestXML::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Get fields from the XML file.
-	xml_node manifest_node = d->manifest_xml->child("manifest");
-	if (!manifest_node) {
-		// No "<manifest>" node???
-		return static_cast<int>(d->fields.count());
-	}
+	// Get metadata from the XML file.
+	// NOTE: No AndroidResourceReader is available...
+	AndroidCommon::loadMetaData(d->metaData, *d->manifest_xml, nullptr);
 
-	// AndroidManifest.xml is read in the constructor.
-	// NOTE: Resources are not available here, so we can't retrieve string resources.
-	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
-
-	// NOTE: Only retrieving a single language.
-	// TODO: Get the system language code and use it as def_lc?
-
-	// Package name is in the manifest tag. (as Title ID)
-	// <application name=""> is something else.
-	const char *const package_name = manifest_node.attribute("package").as_string(nullptr);
-	if (package_name && package_name[0] != '\0') {
-		d->metaData.addMetaData_string(Property::TitleID, package_name);
-	}
-
-	// Application information
-	xml_node application_node = manifest_node.child("application");
-	if (application_node) {
-		const char *const label = application_node.attribute("label").as_string(nullptr);
-		if (label && label[0] != '\0') {
-			d->metaData.addMetaData_string(Property::Title, label);
-		}
-
-		const char *const description = application_node.attribute("description").as_string(nullptr);
-		if (description && description[0] != '\0') {
-			d->metaData.addMetaData_string(Property::Description, description);
-		}
-	}
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
 }
@@ -780,51 +598,7 @@ bool AndroidManifestXML::hasDangerousPermissions(void) const
 		return false;
 	}
 
-	xml_node manifest_node = d->manifest_xml->child("manifest");
-	if (!manifest_node) {
-		// No "<manifest>" node???
-		return false;
-	}
-
-	// Dangerous permissions
-	static const array<const char*, 2> dangerousPermissions = {{
-		"android.permission.ACCESS_SUPERUSER",
-		"android.permission.BIND_DEVICE_ADMIN",
-	}};
-
-	// Permissions
-	// TODO: Normalize/localize permission names?
-	// TODO: maxSdkVersion?
-	// TODO: Also handle "uses-permission-sdk-23"?
-	xml_node permission_node = manifest_node.child("uses-permission");
-	if (!permission_node) {
-		// No permissions?
-		return false;
-	}
-
-	// Search for dangerous permissions.
-	bool bDangerous = false;
-	do {
-		const char *const permission = permission_node.attribute("name").as_string(nullptr);
-		if (permission && permission[0] != '\0') {
-			// Doing a linear search.
-			// TODO: Use std::lower_bound() instead?
-			auto iter = std::find_if(dangerousPermissions.cbegin(), dangerousPermissions.cend(),
-				[permission](const char *dperm) {
-					return (!strcmp(dperm, permission));
-				});
-			if (iter != dangerousPermissions.cend()) {
-				// Found a dangerous permission.
-				bDangerous = true;
-				break;
-			}
-		}
-
-		// Next permission
-		permission_node = permission_node.next_sibling("uses-permission");
-	} while (permission_node);
-
-	return bDangerous;
+	return AndroidCommon::hasDangerousPermissions(*d->manifest_xml);
 }
 
 /**
