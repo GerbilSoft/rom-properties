@@ -171,9 +171,14 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 
 	// There might be an XML resource map after the string table.
 	// Parse chunks until we find the first XML start tag.
+	// NOTE: com.android.chrome (140.0.7339.207, 733920733) does *not* start
+	// with RES_XML_FIRST_CHUNK_TYPE / RES_XML_START_NAMESPACE_TYPE;
+	// it starts with RES_XML_START_ELEMENT_TYPE.
 	while (p < pEnd) {
 		const ResChunk_header *const pHdr = reinterpret_cast<const ResChunk_header*>(p);
-		if (pHdr->type == cpu_to_le16(RES_XML_FIRST_CHUNK_TYPE)) {
+		if (pHdr->type == cpu_to_le16(RES_XML_FIRST_CHUNK_TYPE) ||
+		    pHdr->type == cpu_to_le16(RES_XML_START_ELEMENT_TYPE))
+		{
 			// Found the first XML tag.
  			break;
  		}
