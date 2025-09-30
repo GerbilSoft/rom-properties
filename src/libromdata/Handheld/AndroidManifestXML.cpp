@@ -461,7 +461,7 @@ AndroidManifestXML::AndroidManifestXML(const IRpFilePtr &file)
 		AndroidManifest_xml_buf.resize(fileSize);
 		size_t size = d->file->seekAndRead(0, AndroidManifest_xml_buf.data(), fileSize);
 		if (size != fileSize) {
-			// Seel and/or read error.
+			// Seek and/or read error.
 			d->file.reset();
 			return;
 		}

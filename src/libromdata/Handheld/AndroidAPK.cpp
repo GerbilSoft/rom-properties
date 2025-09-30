@@ -842,6 +842,7 @@ int AndroidAPK::loadFieldData(void)
 		}
 	}
 
+	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
 }
 
@@ -868,7 +869,7 @@ int AndroidAPK::loadMetaData(void)
 	xml_node manifest_node = d->manifest_xml->child("manifest");
 	if (!manifest_node) {
 		// No "<manifest>" node???
-		return static_cast<int>(d->fields.count());
+		return static_cast<int>(d->metaData.count());
 	}
 
 	// AndroidManifest.xml is read in the constructor.
