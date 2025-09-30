@@ -18,6 +18,7 @@ namespace LibRomData {
 
 ROMDATA_DECL_BEGIN(AndroidManifestXML)
 ROMDATA_DECL_METADATA()
+ROMDATA_DECL_DANGEROUS()
 
 public:
 	/**

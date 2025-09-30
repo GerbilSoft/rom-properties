@@ -932,4 +932,64 @@ int AndroidAPK::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImag
 		d->loadIcon);	// func
 }
 
+/**
+ * Does this ROM image have "dangerous" permissions?
+ *
+ * @return True if the ROM image has "dangerous" permissions; false if not.
+ */
+bool AndroidAPK::hasDangerousPermissions(void) const
+{
+	RP_D(const AndroidAPK);
+	if (!d->isValid || !d->manifest_xml) {
+		// APK isn't valid, and/or AndroidManifest.xml could not be loaded.
+		return false;
+	}
+
+	xml_node manifest_node = d->manifest_xml->child("manifest");
+	if (!manifest_node) {
+		// No "<manifest>" node???
+		return false;
+	}
+
+	// Dangerous permissions
+	static const array<const char*, 2> dangerousPermissions = {{
+		"android.permission.ACCESS_SUPERUSER",
+		"android.permission.BIND_DEVICE_ADMIN",
+	}};
+
+	// Permissions
+	// TODO: Normalize/localize permission names?
+	// TODO: maxSdkVersion?
+	// TODO: Also handle "uses-permission-sdk-23"?
+	xml_node permission_node = manifest_node.child("uses-permission");
+	if (!permission_node) {
+		// No permissions?
+		return false;
+	}
+
+	// Search for dangerous permissions.
+	bool bDangerous = false;
+	do {
+		const char *const permission = permission_node.attribute("name").as_string(nullptr);
+		if (permission && permission[0] != '\0') {
+			// Doing a linear search.
+			// TODO: Use std::lower_bound() instead?
+			auto iter = std::find_if(dangerousPermissions.cbegin(), dangerousPermissions.cend(),
+				[permission](const char *dperm) {
+					return (!strcmp(dperm, permission));
+				});
+			if (iter != dangerousPermissions.cend()) {
+				// Found a dangerous permission.
+				bDangerous = true;
+				break;
+			}
+		}
+
+		// Next permission
+		permission_node = permission_node.next_sibling("uses-permission");
+	} while (permission_node);
+
+	return bDangerous;
+}
+
 } // namespace LibRomData
