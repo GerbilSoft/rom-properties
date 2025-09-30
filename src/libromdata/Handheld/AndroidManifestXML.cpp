@@ -144,10 +144,10 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 	const ResXMLTree_header *const pXmlHdr = reinterpret_cast<const ResXMLTree_header*>(pXml);
 	assert(pXmlHdr->header.type == cpu_to_le16(RES_XML_TYPE));
 	assert(pXmlHdr->header.headerSize == cpu_to_le16(sizeof(*pXmlHdr)));
-	assert(pXmlHdr->header.size == xmlLen);
+	assert(le32_to_cpu(pXmlHdr->header.size) == xmlLen);
 	if (pXmlHdr->header.type != cpu_to_le16(RES_XML_TYPE) ||
 	    pXmlHdr->header.headerSize != cpu_to_le16(sizeof(*pXmlHdr)) ||
-	    pXmlHdr->header.size != xmlLen)
+	    le32_to_cpu(pXmlHdr->header.size) != xmlLen)
 	{
 		// Incorrect XML header.
 		return nullptr;
@@ -216,8 +216,9 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 		const uint8_t *pNodeData = p + sizeof(ResXMLTree_node);
 
 		// Make sure this node doesn't go out of bounds.
-		assert(p + node->header.size <= pEnd);
-		if (p + node->header.size > pEnd) {
+		const uint32_t node_size = le32_to_cpu(node->header.size);
+		assert(p + node_size <= pEnd);
+		if (p + node_size > pEnd) {
 			break;
 		}
 
@@ -227,10 +228,10 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 
 			// Attributes should start at 0x14 and be 0x14 bytes.
 			// (ResXMLTree_attribute struct)
-			assert(pAttrExt->attributeStart == le16_to_cpu(0x14));
-			assert(pAttrExt->attributeSize  == le16_to_cpu(0x14));
+			assert(pAttrExt->attributeStart == cpu_to_le16(0x14));
+			assert(pAttrExt->attributeSize  == cpu_to_le16(0x14));
 
-			const uint32_t numbAttrs = le16_to_cpu(pAttrExt->attributeCount);
+			const unsigned int numbAttrs = le16_to_cpu(pAttrExt->attributeCount);
 			pNodeData += sizeof(ResXMLTree_attrExt);
 
 			// Create the tag.
@@ -352,8 +353,8 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 			return {};
 		}
 
-		// Next node
-		p += node->header.size;
+		// Next node.
+		p += node_size;
 	} // end of while loop scanning tags and attributes of XML tree
 
 	assert(tags.size() == 1);
