@@ -8,6 +8,7 @@
 
 #include "stdafx.h"
 
+#include <iostream>
 #include "config.librpbase.h"
 #include "AndroidAPK.hpp"
 #include "AndroidCommon.hpp"
@@ -291,7 +292,7 @@ int AndroidAPKPrivate::loadAndroidManifestXml(void)
 
 	MemFilePtr memFile(new MemFile(AndroidManifest_xml_buf.data(), AndroidManifest_xml_buf.size()));
 	memFile->setFilename("AndroidManifest.xml");
-	AndroidManifestXML *pManifestXML = new AndroidManifestXML(memFile);
+	AndroidManifestXML *const pManifestXML = new AndroidManifestXML(memFile);
 	manifest_xml.reset(pManifestXML->takeXmlDocument());
 	delete pManifestXML;
 
@@ -403,8 +404,57 @@ rp_image_const_ptr AndroidAPKPrivate::loadIcon(void)
 	// The icon file will be a binary XML instead of a PNG image.
 	const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(icon_buf.data());
 	if (pData32[0] == cpu_to_be32(ANDROID_BINARY_XML_MAGIC)) {
-		// TODO: Handle adaptive icons.
+		// Not supported yet due to not supporting SVG...
 		return {};
+#if 0
+		// Decode the XML.
+		MemFilePtr memFile(new MemFile(icon_buf.data(), icon_buf.size()));
+		memFile->setFilename(icon_filename);
+		AndroidManifestXML *const pIconXML = new AndroidManifestXML(memFile);
+		unique_ptr<xml_document> icon_xml(pIconXML->takeXmlDocument());
+		delete pIconXML;
+		icon_filename = nullptr;
+
+		xml_node adaptive_icon_node = icon_xml->child("adaptive-icon");
+		if (!adaptive_icon_node) {
+			// No "<adaptive-icon>" node???
+			return {};
+		}
+
+		// Get the foreground drawable if available.
+		// Otherwise, get the background drawable if available.
+		// TODO: Properly composite foreground onto background?
+		// May need to write a quick and dirty composite function...
+		xml_node foreground_node = adaptive_icon_node.child("foreground");
+		if (foreground_node) {
+			const char *const drawable = foreground_node.attribute("drawable").as_string(nullptr);
+			if (drawable && drawable[0] != '\0') {
+				resIcon = arscReader->getStringFromResource(drawable);
+				icon_filename = resIcon.c_str();
+			}
+		} else {
+			xml_node background_node = adaptive_icon_node.child("background");
+			if (background_node) {
+				const char *const drawable = background_node.attribute("drawable").as_string(nullptr);
+				if (drawable && drawable[0] != '\0') {
+					resIcon = arscReader->getStringFromResource(drawable);
+					icon_filename = resIcon.c_str();
+				}
+			}
+		}
+
+		if (!icon_filename) {
+			// No drawables...
+			return {};
+		}
+
+		// Load the drawable.
+		icon_buf = loadFileFromZip(icon_filename, ICON_PNG_FILE_SIZE_MAX);
+		if (icon_buf.size() < 8) {
+			// Unable to load the icon file.
+			return {};
+		}
+#endif
 	}
 
 	// Create a MemFile and decode the image.

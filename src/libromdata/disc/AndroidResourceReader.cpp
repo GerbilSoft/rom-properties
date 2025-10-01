@@ -859,12 +859,16 @@ string AndroidResourceReader::findIconHighestDensity(uint32_t resource_id) const
 		const int density = static_cast<int>(iter2.first & ~d->DENSITY_FLAG);
 		if (density > highest_density) {
 			const auto &vec = iter2.second;
-			// Find the first non-empty entry that ends in ".png".
+			// Find the first non-empty entry that ends in ".png" or ".webp".
+			// NOTE: Skipping ".xml" for now due to not supporting SVG.
 			for (const auto &str : vec) {
-				if (str.size() > 4 && str.compare(str.size()-4, 4, ".png") == 0) {
-					icon_filename = str;
-					highest_density = density;
-					break;
+				if (str.size() > 4) {
+					if ((str.compare(str.size()-4, 4, ".png") == 0) /*||
+					    (str.compare(str.size()-4, 4, ".xml") == 0)*/) {
+						icon_filename = str;
+						highest_density = density;
+						break;
+					}
 				}
 #ifdef ENABLE_WEBP
 				if (str.size() > 5 && str.compare(str.size()-5, 5, ".webp") == 0) {
