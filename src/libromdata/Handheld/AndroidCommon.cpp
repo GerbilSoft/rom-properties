@@ -73,9 +73,32 @@ int loadFieldData(LibRpBase::RomFields &fields, const pugi::xml_document &manife
 			addField_string_i18n(C_("AndroidAPK", "Description"), description, 0);
 		}
 
-		const char *const appCategory = application_node.attribute("appCategory").as_string(nullptr);
-		if (appCategory && appCategory[0] != '\0') {
-			fields.addField_string(C_("AndroidAPK", "Category"), appCategory);
+		// appCategory is usually an integer. (0 *is* valid here)
+		// If not specified, this is a "general" application.
+		const xml_attribute appCategory_node = application_node.attribute("appCategory");
+		if (appCategory_node) {
+			static const array<const char*, 9> app_category_tbl = {{
+				NOP_C_("Android|AppCategory", "Game"),
+				NOP_C_("Android|AppCategory", "Audio"),
+				NOP_C_("Android|AppCategory", "Video"),
+				NOP_C_("Android|AppCategory", "Image"),
+				NOP_C_("Android|AppCategory", "Social"),
+				NOP_C_("Android|AppCategory", "News"),
+				NOP_C_("Android|AppCategory", "Maps"),
+				NOP_C_("Android|AppCategory", "Productivity"),
+				NOP_C_("Android|AppCategory", "Accessibility"),
+			}};
+			const int appCategory = appCategory_node.as_int(-1);
+			if (appCategory >= 0 && appCategory < static_cast<int>(app_category_tbl.size())) {
+				fields.addField_string(C_("AndroidAPK", "Category"),
+					pgettext_expr("Android|AppCategory", app_category_tbl[appCategory]));
+			} else {
+				// Either the value is out of range, or it's not a number.
+				const char *const s_appCategory = appCategory_node.as_string(nullptr);
+				if (s_appCategory && s_appCategory[0] != '\0') {
+					fields.addField_string(C_("AndroidAPK", "Category"), s_appCategory);
+				}
+			}
 		}
 	}
 
