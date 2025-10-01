@@ -101,8 +101,12 @@ static void init_webp(void)
 		"libsharpyuv-0.dll",
 		"libsharpyuv.dll",
 	};
-	unique_ptr<HMODULE, HMODULE_deleter> libsharpyuv_dll(
-		rp_LoadLibrary("libsharpyuv-0.dll"));
+	for (auto filename : libsharpyuv_dll_filenames) {
+		libsharpyuv_dll.reset(rp_LoadLibrary(filename));
+		if (libsharpyuv_dll.get() != nullptr) {
+			break;
+		}
+	}
 	if (!libsharpyuv_dll) {
 		// Not found...
 		return;
