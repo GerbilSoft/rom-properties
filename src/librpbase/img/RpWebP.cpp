@@ -35,6 +35,7 @@ using namespace LibRpTexture;
 #endif
 
 // C++ STL classes
+#include <mutex>
 using std::unique_ptr;
 
 // libwebp declarations
@@ -78,28 +79,20 @@ public:
 
 static constexpr off64_t WEBP_MAX_FILESIZE = 2*1024*1024;
 
+#ifdef _WIN32
+static unique_ptr<HMODULE, HMODULE_deleter> libsharpyuv_dll;
+#endif /* _WIN32 */
+static unique_ptr<HMODULE, HMODULE_deleter> libwebp_so;
+static std::once_flag webp_once_flag;
+
 /**
- * Load a WebP image from an IRpFile.
- * @param file IRpFile to load from.
- * @return rp_image*, or nullptr on error.
+ * Initialize libwebp.
+ * Called by std::call_once().
+ *
+ * Check if libwebp_so is nullptr afterwards.
  */
-rp_image_ptr load(IRpFile *file)
+static void init_webp(void)
 {
-	if (!file) {
-		return {};
-	}
-
-	// Check the file size.
-	const off64_t fileSize_o64 = file->size();
-	if (fileSize_o64 <= 16 || fileSize_o64 > WEBP_MAX_FILESIZE) {
-		// File is too big (or too small?).
-		return {};
-	}
-	const size_t fileSize = static_cast<size_t>(fileSize_o64);
-
-	// dlopen() libwebp.
-	// TODO: Cache the dlopen()'d library?
-	unique_ptr<HMODULE, HMODULE_deleter> libwebp_so;
 #ifdef _WIN32
 	// NOTE: Not bundling libwebp, so we'll only check for non-debug filenames.
 
@@ -112,7 +105,7 @@ rp_image_ptr load(IRpFile *file)
 		rp_LoadLibrary("libsharpyuv-0.dll"));
 	if (!libsharpyuv_dll) {
 		// Not found...
-		return {};
+		return;
 	}
 
 	static const char libwebp_dll_filenames[4][16] = {
@@ -141,7 +134,29 @@ rp_image_ptr load(IRpFile *file)
 		}
 	}
 #endif /* !_WIN32 */
+}
 
+/**
+ * Load a WebP image from an IRpFile.
+ * @param file IRpFile to load from.
+ * @return rp_image*, or nullptr on error.
+ */
+rp_image_ptr load(IRpFile *file)
+{
+	if (!file) {
+		return {};
+	}
+
+	// Check the file size.
+	const off64_t fileSize_o64 = file->size();
+	if (fileSize_o64 <= 16 || fileSize_o64 > WEBP_MAX_FILESIZE) {
+		// File is too big (or too small?).
+		return {};
+	}
+	const size_t fileSize = static_cast<size_t>(fileSize_o64);
+
+	// Initialize libwebp.
+	std::call_once(webp_once_flag, init_webp);
 	if (!libwebp_so) {
 		// Not found...
 		return {};
