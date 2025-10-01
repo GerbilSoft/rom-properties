@@ -847,14 +847,16 @@ string AndroidResourceReader::findIconHighestDensity(uint32_t resource_id) const
 	}
 	const auto &lcmap = iter->second;
 
-	unsigned int highest_density = 0;
+	int highest_density = -1;
 	string icon_filename;	// FIXME: Using `const char*` results in an invalid string here...
 	for (auto iter2 : lcmap) {
-		if (!(iter2.first & d->DENSITY_FLAG)) {
+		// NOTE: Some packages, e.g. Magisk, don't have the density flag set.
+		// Allow this if the lc is 0.
+		if (!(iter2.first & d->DENSITY_FLAG) && iter2.first != 0) {
 			continue;
 		}
 
-		const unsigned int density = (iter2.first & ~d->DENSITY_FLAG);
+		const int density = static_cast<int>(iter2.first & ~d->DENSITY_FLAG);
 		if (density > highest_density) {
 			const auto &vec = iter2.second;
 			// Find the first non-empty entry that ends in ".png".
