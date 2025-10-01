@@ -157,6 +157,7 @@ SET(${PROJECT_NAME}_SRCS
 	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
 	img/CacheManager.cpp
 	utils/SuperMagicDrive.cpp
+	file/IRpFile_unzFile_filefuncs.cpp
 	)
 # Headers
 SET(${PROJECT_NAME}_H
@@ -390,6 +391,7 @@ SET(${PROJECT_NAME}_H
 	img/TCreateThumbnail.hpp
 	img/CacheManager.hpp
 	utils/SuperMagicDrive.hpp
+	file/IRpFile_unzFile_filefuncs.hpp
 	)
 
 IF(ENABLE_XML)

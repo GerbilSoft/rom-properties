@@ -14,6 +14,7 @@
 #include "mz_zip.h"
 #include "compat/ioapi.h"
 #include "compat/unzip.h"
+#include "../file/IRpFile_unzFile_filefuncs.hpp"
 
 // Other rom-properties libraries
 #include "librpbase/img/RpPng.hpp"
@@ -133,13 +134,6 @@ public:
 
 public:
 	/**
-	 * Open a Zip file for reading.
-	 * @param filename Zip filename.
-	 * @return Zip file, or nullptr on error.
-	 */
-	static unzFile openZip(const char *filename);
-
-	/**
 	 * Load a file from the opened .jar file.
 	 * @param filename Filename to load
 	 * @param max_size Maximum size
@@ -240,24 +234,6 @@ J2MEPrivate::~J2MEPrivate()
 	if (jarFile) {
 		unzClose(jarFile);
 	}
-}
-
-/**
- * Open a Zip file for reading.
- * @param filename Zip filename.
- * @return Zip file, or nullptr on error.
- */
-unzFile J2MEPrivate::openZip(const char *filename)
-{
-#ifdef _WIN32
-	// NOTE: MiniZip-NG 3.0.2's compatibility functions
-	// take UTF-8 on Windows, not UTF-16.
-	zlib_filefunc64_def ffunc;
-	fill_win32_filefunc64(&ffunc);
-	return unzOpen2_64(filename, &ffunc);
-#else /* !_WIN32 */
-	return unzOpen(filename);
-#endif /* _WIN32 */
 }
 
 /**
@@ -735,7 +711,7 @@ J2ME::J2ME(const IRpFilePtr &file)
 #endif /* _MSC_VER */
 
 			// Attempt to open as a .zip file first.
-			d->jarFile = d->openZip(file->filename());
+			d->jarFile = IRpFile_unzFile_filefuncs::unzOpen2_64_IRpFile(d->file);
 			if (!d->jarFile) {
 				// Cannot open as a .zip file.
 				d->isValid = false;

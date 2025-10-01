@@ -19,6 +19,7 @@
 #include "mz_zip.h"
 #include "compat/ioapi.h"
 #include "compat/unzip.h"
+#include "../file/IRpFile_unzFile_filefuncs.hpp"
 
 // Other rom-properties libraries
 #include "librpbase/img/RpImageLoader.hpp"
@@ -99,13 +100,6 @@ public:
 	rp_image_ptr img_icon;
 
 public:
-	/**
-	 * Open a Zip file for reading.
-	 * @param filename Zip filename.
-	 * @return Zip file, or nullptr on error.
-	 */
-	static unzFile openZip(const char *filename);
-
 	/**
 	 * Load a file from the opened .jar file.
 	 * @param filename Filename to load
@@ -206,24 +200,6 @@ AndroidAPKPrivate::~AndroidAPKPrivate()
 	if (apkFile) {
 		unzClose(apkFile);
 	}
-}
-
-/**
- * Open a Zip file for reading.
- * @param filename Zip filename.
- * @return Zip file, or nullptr on error.
- */
-unzFile AndroidAPKPrivate::openZip(const char *filename)
-{
-#ifdef _WIN32
-	// NOTE: MiniZip-NG 3.0.2's compatibility functions
-	// take UTF-8 on Windows, not UTF-16.
-	zlib_filefunc64_def ffunc;
-	fill_win32_filefunc64(&ffunc);
-	return unzOpen2_64(filename, &ffunc);
-#else /* !_WIN32 */
-	return unzOpen(filename);
-#endif /* _WIN32 */
 }
 
 /**
@@ -530,9 +506,8 @@ AndroidAPK::AndroidAPK(const IRpFilePtr &file)
 		return;
 	}
 
-	// Attempt to open as a .zip file first.
-	// TODO: Custom MiniZip functions to use IRpFile so we can use IStream?
-	d->apkFile = d->openZip(file->filename());
+	// Attempt to open as a .zip file.
+	d->apkFile = IRpFile_unzFile_filefuncs::unzOpen2_64_IRpFile(d->file);
 	if (!d->apkFile) {
 		// Cannot open as a .zip file.
 		d->isValid = false;
