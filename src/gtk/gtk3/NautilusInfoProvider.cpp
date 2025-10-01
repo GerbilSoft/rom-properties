@@ -258,6 +258,7 @@ rp_nautilus_info_provider_process(RpNautilusInfoProvider *provider)
 		"rp-encryption-key",
 		"rp-pixel-format",
 		"rp-region-code",
+		"rp-category",
 	}};
 	static_assert(nautilus_prop_names[custom_property_count - 1] != nullptr, "nautilus_prop_names[] is out of sync!");
 
