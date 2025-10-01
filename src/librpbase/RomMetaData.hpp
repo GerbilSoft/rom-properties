@@ -109,6 +109,7 @@ enum class Property : int8_t {
 	EncryptionKey,		// string
 	PixelFormat,		// string
 	RegionCode,		// string
+	Category,		// string
 
 	// TODO: More fields.
 	PropertyCount,
