@@ -19,8 +19,20 @@ using namespace LibRpTexture;
 // Uninitialized vector class
 #include "uvector.h"
 
-// C includes
-#include <dlfcn.h>
+#ifndef _WIN32
+// Unix dlopen()
+#  include <dlfcn.h>
+#else
+// Windows LoadLibrary()
+#  include "libwin32common/RpWin32_sdk.h"
+#  include "tcharx.h"
+#  define dlsym(handle, symbol)	((void*)GetProcAddress(handle, symbol))
+#  define dlclose(handle)	FreeLibrary(handle)
+// rp_LoadLibrary()
+// NOTE: Delay-load is not supported with MinGW, but we still need
+// access to the rp_LoadLibrary() function.
+#  include "libwin32common/DelayLoadHelper.h"
+#endif
 
 // C++ STL classes
 using std::unique_ptr;
@@ -87,19 +99,49 @@ rp_image_ptr load(IRpFile *file)
 
 	// dlopen() libwebp.
 	// TODO: Cache the dlopen()'d library?
+	unique_ptr<HMODULE, HMODULE_deleter> libwebp_so;
+#ifdef _WIN32
+	// NOTE: Not bundling libwebp, so we'll only check for non-debug filenames.
+
+	// NOTE: Need to load libsharpyuv first due to DLL path restrictions.
+	static const char libsharpyuv_dll_filenames[2][20] = {
+		"libsharpyuv-0.dll",
+		"libsharpyuv.dll",
+	};
+	unique_ptr<HMODULE, HMODULE_deleter> libsharpyuv_dll(
+		rp_LoadLibrary("libsharpyuv-0.dll"));
+	if (!libsharpyuv_dll) {
+		// Not found...
+		return {};
+	}
+
+	static const char libwebp_dll_filenames[4][16] = {
+		"libwebp-7.dll",
+		"libwebp-6.dll",
+		"libwebp-5.dll",
+		"libwebp.dll",
+	};
+	for (auto filename : libwebp_dll_filenames) {
+		libwebp_so.reset(rp_LoadLibrary(filename));
+		if (libwebp_so.get() != nullptr) {
+			break;
+		}
+	}
+#else /* !_WIN32 */
 	// NOTE: Ubuntu systems don't have an unversioned .so unless the -dev package is installed.
 	static const char libwebp_so_filenames[3][16] = {
 		"libwebp.so.7",
 		"libwebp.so.6",
 		"libwebp.so.5",
 	};
-	unique_ptr<HMODULE, HMODULE_deleter> libwebp_so;
 	for (auto filename : libwebp_so_filenames) {
 		libwebp_so.reset(dlopen(filename, RTLD_NOW | RTLD_LOCAL));
 		if (libwebp_so.get() != nullptr) {
 			break;
 		}
 	}
+#endif /* !_WIN32 */
+
 	if (!libwebp_so) {
 		// Not found...
 		return {};
