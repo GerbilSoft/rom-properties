@@ -207,7 +207,6 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 			break;
 		}
 		const ResXMLTree_node *const node = reinterpret_cast<const ResXMLTree_node*>(p);
-		//printf("p == 0x%08X, node size == 0x%04X\n", (unsigned int)(p - pXml), node->header.size);
 		assert(node->header.headerSize == cpu_to_le16(sizeof(ResXMLTree_node)));
 		if (node->header.headerSize != cpu_to_le16(sizeof(ResXMLTree_node))) {
 			break;
@@ -226,14 +225,12 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 		const uint16_t node_type = le16_to_cpu(node->header.type);
 		if (node_type == RES_XML_START_ELEMENT_TYPE) { // XML START TAG
 			const ResXMLTree_attrExt *const pAttrExt = reinterpret_cast<const ResXMLTree_attrExt*>(pNodeData);
+			pNodeData += sizeof(ResXMLTree_attrExt);
 
 			// Attributes should start at 0x14 and be 0x14 bytes.
 			// (ResXMLTree_attribute struct)
 			assert(pAttrExt->attributeStart == cpu_to_le16(0x14));
 			assert(pAttrExt->attributeSize  == cpu_to_le16(0x14));
-
-			const unsigned int numbAttrs = le16_to_cpu(pAttrExt->attributeCount);
-			pNodeData += sizeof(ResXMLTree_attrExt);
 
 			// Create the tag.
 			xml_node xmlTag = cur_node.append_child(xmlStringPool.getString(le32_to_cpu(pAttrExt->name.index)).c_str());
@@ -243,7 +240,8 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 
 			// Look for the Attributes
 			const ResXMLTree_attribute *pAttrData = reinterpret_cast<const ResXMLTree_attribute*>(pNodeData);
-			for (uint32_t ii = 0; ii < numbAttrs; ii++, pAttrData++) {
+			const ResXMLTree_attribute *const pAttrDataEnd = pAttrData + le16_to_cpu(pAttrExt->attributeCount);
+			for (; pAttrData < pAttrDataEnd; pAttrData++) {
 				//uint32_t attrNameNsSi = le32_to_cpu(pAttrData->ns.index);	// AttrName Namespace Str Ind, or FFFFFFFF
 				int attrNameSi = le32_to_cpu(pAttrData->name.index);		// AttrName String Index
 				int attrValueSi = le32_to_cpu(pAttrData->rawValue.index);	// AttrValue Str Ind, or FFFFFFFF
@@ -293,6 +291,7 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 							break;
 						case Res_value::TYPE_INT_BOOLEAN:
 							// FIXME: Error if not 0x00000000 or 0xFFFFFFFF?
+							assert(u32data == 0x00000000U || u32data == 0xFFFFFFFFU);
 							xmlAttr.set_value(u32data ? "true" : "false");
 							break;
 
