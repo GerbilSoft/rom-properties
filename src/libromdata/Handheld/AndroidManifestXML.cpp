@@ -142,7 +142,7 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 	const uint8_t *const pEnd = pXml + xmlLen;
 
 	// Verify that the first chunk is RES_XML_TYPE.
-	const ResXMLTree_header *const pXmlHdr = reinterpret_cast<const ResXMLTree_header*>(pXml);
+	const ResXMLTree_header *const pXmlHdr = reinterpret_cast<const ResXMLTree_header*>(p);
 	assert(pXmlHdr->header.type == cpu_to_le16(RES_XML_TYPE));
 	assert(pXmlHdr->header.headerSize == cpu_to_le16(sizeof(*pXmlHdr)));
 	assert(le32_to_cpu(pXmlHdr->header.size) == xmlLen);
@@ -156,7 +156,7 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 	p += sizeof(ResXMLTree_header);
 
 	// Next chunk should be the string pool.
-	const ResStringPool_header *const pStringPoolHdr = reinterpret_cast<const ResStringPool_header*>(pXml + 2*4);
+	const ResStringPool_header *const pStringPoolHdr = reinterpret_cast<const ResStringPool_header*>(p);
 	assert(pStringPoolHdr->header.type == cpu_to_le16(RES_STRING_POOL_TYPE));
 	assert(pStringPoolHdr->header.headerSize == cpu_to_le16(sizeof(*pStringPoolHdr)));
 	if (pStringPoolHdr->header.type != cpu_to_le16(RES_STRING_POOL_TYPE) ||
