@@ -26,6 +26,22 @@ using std::vector;
 
 namespace LibRomData { namespace AndroidCommon {
 
+namespace Private {
+
+static const array<const char*, 9> app_category_tbl = {{
+	NOP_C_("Android|AppCategory", "Game"),
+	NOP_C_("Android|AppCategory", "Audio"),
+	NOP_C_("Android|AppCategory", "Video"),
+	NOP_C_("Android|AppCategory", "Image"),
+	NOP_C_("Android|AppCategory", "Social"),
+	NOP_C_("Android|AppCategory", "News"),
+	NOP_C_("Android|AppCategory", "Maps"),
+	NOP_C_("Android|AppCategory", "Productivity"),
+	NOP_C_("Android|AppCategory", "Accessibility"),
+}};
+
+} // namespace Private
+
 #define addField_string_i18n(name, str, flags) do { \
 	if (arscReader) { \
 		arscReader->addField_string_i18n(&(fields), (name), (str), (flags)); \
@@ -77,26 +93,16 @@ int loadFieldData(LibRpBase::RomFields &fields, const pugi::xml_document &manife
 		// If not specified, this is a "general" application.
 		const xml_attribute appCategory_node = application_node.attribute("appCategory");
 		if (appCategory_node) {
-			static const array<const char*, 9> app_category_tbl = {{
-				NOP_C_("Android|AppCategory", "Game"),
-				NOP_C_("Android|AppCategory", "Audio"),
-				NOP_C_("Android|AppCategory", "Video"),
-				NOP_C_("Android|AppCategory", "Image"),
-				NOP_C_("Android|AppCategory", "Social"),
-				NOP_C_("Android|AppCategory", "News"),
-				NOP_C_("Android|AppCategory", "Maps"),
-				NOP_C_("Android|AppCategory", "Productivity"),
-				NOP_C_("Android|AppCategory", "Accessibility"),
-			}};
+			const char *const s_appCategory_title = C_("AndroidAPK", "Category");
 			const int appCategory = appCategory_node.as_int(-1);
-			if (appCategory >= 0 && appCategory < static_cast<int>(app_category_tbl.size())) {
-				fields.addField_string(C_("AndroidAPK", "Category"),
-					pgettext_expr("Android|AppCategory", app_category_tbl[appCategory]));
+			if (appCategory >= 0 && appCategory < static_cast<int>(Private::app_category_tbl.size())) {
+				fields.addField_string(s_appCategory_title,
+					pgettext_expr("Android|AppCategory", Private::app_category_tbl[appCategory]));
 			} else {
 				// Either the value is out of range, or it's not a number.
 				const char *const s_appCategory = appCategory_node.as_string(nullptr);
 				if (s_appCategory && s_appCategory[0] != '\0') {
-					fields.addField_string(C_("AndroidAPK", "Category"), s_appCategory);
+					fields.addField_string(s_appCategory_title, s_appCategory);
 				}
 			}
 		}
@@ -254,7 +260,7 @@ int loadMetaData(LibRpBase::RomMetaData &metaData, const pugi::xml_document &man
 
 	// AndroidManifest.xml is read in the constructor.
 	const int metaDataCount_initial = metaData.count();
-	metaData.reserve(metaDataCount_initial + 3);	// Maximum of 3 metadata properties.
+	metaData.reserve(metaDataCount_initial + 4);	// Maximum of 4 metadata properties.
 
 	// NOTE: Only retrieving a single language.
 	// TODO: Get the system language code and use it as def_lc?
@@ -277,6 +283,23 @@ int loadMetaData(LibRpBase::RomMetaData &metaData, const pugi::xml_document &man
 		const char *const description = application_node.attribute("description").as_string(nullptr);
 		if (description && description[0] != '\0') {
 			addMetaData_string_i18n(Property::Description, description, 0);
+		}
+
+		// appCategory is usually an integer. (0 *is* valid here)
+		// If not specified, this is a "general" application.
+		const xml_attribute appCategory_node = application_node.attribute("appCategory");
+		if (appCategory_node) {
+			const int appCategory = appCategory_node.as_int(-1);
+			if (appCategory >= 0 && appCategory < static_cast<int>(Private::app_category_tbl.size())) {
+				metaData.addMetaData_string(Property::Category,
+					pgettext_expr("Android|AppCategory", Private::app_category_tbl[appCategory]));
+			} else {
+				// Either the value is out of range, or it's not a number.
+				const char *const s_appCategory = appCategory_node.as_string(nullptr);
+				if (s_appCategory && s_appCategory[0] != '\0') {
+					metaData.addMetaData_string(Property::Category, s_appCategory);
+				}
+			}
 		}
 	}
 	// Finished reading the metadata.
