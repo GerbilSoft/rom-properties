@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NEResourceReader.cpp: New Executable resource reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -549,10 +549,11 @@ size_t NEResourceReader::read(void *ptr, size_t size)
 
 /**
  * Set the partition position.
- * @param pos Partition position.
+ * @param pos		[in] Partition position
+ * @param whence	[in] Where to seek from
  * @return 0 on success; -1 on error.
  */
-int NEResourceReader::seek(off64_t pos)
+int NEResourceReader::seek(off64_t pos, SeekWhence whence)
 {
 	assert((bool)m_file);
 	assert(m_file->isOpen());
@@ -564,7 +565,7 @@ int NEResourceReader::seek(off64_t pos)
 	// There isn't a separate resource "section" in
 	// NE executables, so forward all read requests
 	// to the underlying file.
-	return m_file->seek(pos);
+	return m_file->seek(pos, whence);
 }
 
 /**

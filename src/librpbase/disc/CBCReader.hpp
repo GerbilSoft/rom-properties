@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * CBCReader.hpp: AES-128-CBC data reader class.                           *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -74,10 +74,11 @@ public:
 
 	/**
 	 * Set the partition position.
-	 * @param pos Partition position.
+	 * @param pos		[in] Partition position
+	 * @param whence	[in] Where to seek from
 	 * @return 0 on success; -1 on error.
 	 */
-	int seek(off64_t pos) final;
+	int seek(off64_t pos, SeekWhence whence) final;
 
 	/**
 	 * Get the partition position.

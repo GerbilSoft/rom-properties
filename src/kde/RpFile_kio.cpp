@@ -272,10 +272,11 @@ size_t RpFileKio::write(const void *ptr, size_t size)
 
 /**
  * Set the file position.
- * @param pos File position.
+ * @param pos		[in] File position
+ * @param whence	[in] Where to seek from
  * @return 0 on success; -1 on error.
  */
-int RpFileKio::seek(off64_t pos)
+int RpFileKio::seek(off64_t pos, SeekWhence whence)
 {
 	RP_D(RpFileKio);
 	if (!d->fileJob) {
@@ -283,6 +284,7 @@ int RpFileKio::seek(off64_t pos)
 		return -1;
 	}
 
+	pos = adjust_file_pos_for_whence(pos, whence, d->pos, d->fileJob->size());
 	d->fileJob->seek(pos);
 	d->enterLoop();
 

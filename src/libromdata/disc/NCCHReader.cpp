@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NCCHReader.cpp: Nintendo 3DS NCCH reader.                               *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -435,7 +435,8 @@ int NCCHReaderPrivate::loadExHeader(void)
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
-		q->seek(prev_pos);
+		// FIXME: g++ can't resolve IRpFile::seek(off64_t) here, so explicitly specify SeekWhence::Set.
+		q->seek(prev_pos, IRpFile::SeekWhence::Set);
 		return -5;
 	}
 
@@ -468,7 +469,8 @@ int NCCHReaderPrivate::loadExHeader(void)
 	}
 	
 	// ExHeader loaded.
-	q->seek(prev_pos);
+	// FIXME: g++ can't resolve IRpFile::seek(off64_t) here, so explicitly specify SeekWhence::Set.
+	q->seek(prev_pos, IRpFile::SeekWhence::Set);
 	headers_loaded |= HEADER_EXHEADER;
 	return 0;
 }
@@ -631,10 +633,11 @@ size_t NCCHReader::read(void *ptr, size_t size)
 
 /**
  * Set the partition position.
- * @param pos Partition position.
+ * @param pos		[in] Partition position
+ * @param whence	[in] Where to seek from
  * @return 0 on success; -1 on error.
  */
-int NCCHReader::seek(off64_t pos)
+int NCCHReader::seek(off64_t pos, SeekWhence whence)
 {
 	RP_D(NCCHReader);
 	assert(isOpen());
@@ -643,16 +646,13 @@ int NCCHReader::seek(off64_t pos)
 		return -1;
 	}
 
-	// Handle out-of-range cases.
+	pos = adjust_file_pos_for_whence(pos, whence, static_cast<off64_t>(d->pos), static_cast<off64_t>(d->ncch_length));
 	if (pos < 0) {
 		// Negative is invalid.
 		m_lastError = EINVAL;
 		return -1;
-	} else if (pos >= d->ncch_length) {
-		d->pos = d->ncch_length;
-	} else {
-		d->pos = static_cast<uint32_t>(pos);
 	}
+	d->pos = static_cast<off64_t>(constrain_file_pos(pos, static_cast<off64_t>(d->ncch_length)));
 	return 0;
 }
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * DualFile.cpp: Special wrapper for handling a split file as one.         *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -156,26 +156,19 @@ size_t DualFile::write(const void *ptr, size_t size)
 
 /**
  * Set the file position.
- * @param pos File position.
+ * @param pos		[in] File position
+ * @param whence	[in] Where to seek from
  * @return 0 on success; -1 on error.
  */
-int DualFile::seek(off64_t pos)
+int DualFile::seek(off64_t pos, SeekWhence whence)
 {
 	if (!m_file[0] || !m_file[1]) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
-	// NOTE: m_pos is size_t, since it's referring to
-	// a position within a memory buffer.
-	if (pos <= 0) {
-		m_pos = 0;
-	} else if (pos >= m_fullSize) {
-		m_pos = m_fullSize;
-	} else {
-		m_pos = pos;
-	}
-
+	pos = adjust_file_pos_for_whence(pos, whence, m_pos, m_fullSize);
+	m_pos = constrain_file_pos(pos, m_fullSize);
 	return 0;
 }
 

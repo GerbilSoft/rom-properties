@@ -70,10 +70,11 @@ public:
 
 	/**
 	 * Set the disc image position.
-	 * @param pos Disc image position.
+	 * @param pos		[in] Disc image position
+	 * @param whence	[in] Where to seek from
 	 * @return 0 on success; -1 on error.
 	 */
-	int seek(off64_t pos) override;
+	int seek(off64_t pos, SeekWhence whence) override;
 
 	/**
 	 * Get the disc image position.

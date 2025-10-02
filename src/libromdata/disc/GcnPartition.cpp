@@ -72,10 +72,11 @@ size_t GcnPartition::read(void *ptr, size_t size)
 
 /**
  * Set the partition position.
- * @param pos Partition position.
+ * @param pos		[in] Partition position
+ * @param whence	[in] Where to seek from
  * @return 0 on success; -1 on error.
  */
-int GcnPartition::seek(off64_t pos)
+int GcnPartition::seek(off64_t pos, SeekWhence whence)
 {
 	assert(m_file != nullptr);
 	assert(m_file->isOpen());
@@ -84,8 +85,11 @@ int GcnPartition::seek(off64_t pos)
 		return -1;
 	}
 
-	// Use the IDiscReader directly for GCN partitions.
+	// NOTE: We have to handle `whence` here due to the partition offset.
 	RP_D(GcnPartition);
+	if (whence != SeekWhence::Set) {
+		pos = adjust_file_pos_for_whence(pos, whence, tell(), d->data_size);
+	}
 	int ret = m_file->seek(d->data_offset + pos);
 	if (ret != 0) {
 		m_lastError = m_file->lastError();

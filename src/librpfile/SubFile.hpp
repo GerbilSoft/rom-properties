@@ -86,22 +86,19 @@ public:
 
 	/**
 	 * Set the file position.
-	 * @param pos File position.
+	 * @param pos		[in] File position
+	 * @param whence	[in] Where to seek from
 	 * @return 0 on success; -1 on error.
 	 */
-	int seek(off64_t pos) final
+	int seek(off64_t pos, SeekWhence whence) final
 	{
 		if (!m_file) {
 			m_lastError = EBADF;
 			return -1;
 		}
 
-		if (pos <= 0) {
-			pos = 0;
-		} else if (pos >= m_length) {
-			pos = m_length;
-		}
-
+		pos = adjust_file_pos_for_whence(pos, whence, tell(), m_length);
+		pos = constrain_file_pos(pos, m_length);
 		return m_file->seek(pos + m_offset);
 	}
 

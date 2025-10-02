@@ -311,10 +311,11 @@ size_t WiiUH3Reader::read(void *ptr, size_t size)
 
 /**
  * Set the partition position.
- * @param pos Partition position.
+ * @param pos		[in] Partition position
+ * @param whence	[in] Where to seek from
  * @return 0 on success; -1 on error.
  */
-int WiiUH3Reader::seek(off64_t pos)
+int WiiUH3Reader::seek(off64_t pos, SeekWhence whence)
 {
 	RP_D(WiiUH3Reader);
 	assert(m_file != nullptr);
@@ -324,16 +325,13 @@ int WiiUH3Reader::seek(off64_t pos)
 		return -1;
 	}
 
-	// Handle out-of-range cases.
+	pos = adjust_file_pos_for_whence(pos, whence, d->pos_FC00, d->data_size);
 	if (pos < 0) {
 		// Negative is invalid.
 		m_lastError = EINVAL;
 		return -1;
-	} else if (pos >= d->data_size) {
-		d->pos_FC00 = d->data_size;
-	} else {
-		d->pos_FC00 = pos;
 	}
+	d->pos_FC00 = constrain_file_pos(pos, d->data_size);
 	return 0;
 }
 

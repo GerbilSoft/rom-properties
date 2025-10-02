@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpQByteArrayFile.hpp: IRpFile implementation using a QByteArray.        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -60,10 +60,11 @@ public:
 
 	/**
 	 * Set the file position.
-	 * @param pos File position.
+	 * @param pos		[in] File position
+	 * @param whence	[in] Where to seek from
 	 * @return 0 on success; -1 on error.
 	 */
-	int seek(off64_t pos) final;
+	int seek(off64_t pos, SeekWhence whence) final;
 
 	/**
 	 * Get the file position.
@@ -101,5 +102,5 @@ public:
 
 protected:
 	QByteArray m_byteArray;
-	size_t m_pos;		// Current position.
+	size_t m_pos;		// Current position
 };
