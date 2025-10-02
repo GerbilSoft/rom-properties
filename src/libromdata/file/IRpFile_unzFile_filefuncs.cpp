@@ -47,7 +47,7 @@ static void* ZCALLBACK IRpFile_open64_file_func(void *opaque, const void *filena
 
 	// Returning a copy of the pointer to IRpFilePtr, as a pointer.
 	// Can't return IRpFilePtr by itself due to using a C interface.
-	return new IRpFilePtr(*(IRpFilePtr*)filename);
+	return new IRpFilePtr(*static_cast<IRpFilePtr*>(const_cast<void*>(filename)));
 }
 
 static unsigned long ZCALLBACK IRpFile_read_file_func(void *opaque, void *stream, void *buf, unsigned long size)
