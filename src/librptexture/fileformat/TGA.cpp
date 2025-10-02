@@ -286,7 +286,7 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 		} else {
 			// Color map is present, but this is not a colormap image.
 			// Skip over the color map.
-			file->seek_cur(cmap_size);
+			file->seek(cmap_size, IRpFile::SeekWhence::Cur);
 		}
 	}
 

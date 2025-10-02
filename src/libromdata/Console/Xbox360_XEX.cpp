@@ -944,7 +944,7 @@ int Xbox360_XEX_Private::initPeReader(void)
 				if (block_size > 0) {
 					// Empty data at the end of the block.
 					// TODO: Error handling.
-					reader[rd_idx]->seek_cur(block_size);
+					reader[rd_idx]->seek(block_size, IRpFile::SeekWhence::Cur);
 				}
 
 				// Next block.

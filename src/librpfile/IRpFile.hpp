@@ -298,20 +298,6 @@ public:
 	}
 
 	/**
-	 * Seek to a relative offset. (SEEK_CUR)
-	 * @param pos Relative offset
-	 * @return 0 on success; -1 on error
-	 */
-	inline int seek_cur(off64_t offset)
-	{
-		const off64_t pos = this->tell();
-		if (pos < 0) {
-			return -1;
-		}
-		return this->seek(pos + offset);
-	}
-
-	/**
 	 * Copy data from this IRpFile to another IRpFile.
 	 * Read/write positions must be set before calling this function.
 	 * @param pDestFile	[in] Destination IRpFile.
