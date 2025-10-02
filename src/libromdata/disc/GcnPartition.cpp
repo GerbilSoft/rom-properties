@@ -77,7 +77,6 @@ size_t GcnPartition::read(void *ptr, size_t size)
  */
 int GcnPartition::seek(off64_t pos)
 {
-	RP_D(GcnPartition);
 	assert(m_file != nullptr);
 	assert(m_file->isOpen());
 	if (!m_file ||  !m_file->isOpen()) {
@@ -86,6 +85,7 @@ int GcnPartition::seek(off64_t pos)
 	}
 
 	// Use the IDiscReader directly for GCN partitions.
+	RP_D(GcnPartition);
 	int ret = m_file->seek(d->data_offset + pos);
 	if (ret != 0) {
 		m_lastError = m_file->lastError();
@@ -107,7 +107,8 @@ off64_t GcnPartition::tell(void)
 	}
 
 	// Use the IDiscReader directly for GCN partitions.
-	off64_t ret = m_file->tell();
+	RP_D(GcnPartition);
+	off64_t ret = m_file->tell() - d->data_offset;
 	if (ret < 0) {
 		m_lastError = m_file->lastError();
 	}
