@@ -387,7 +387,7 @@ int PokemonMini::loadMetaData(void)
 	}
 
 	// Pokémon Mini ROM header.
-	const PokemonMini_RomHeader *const romHeader = &d->romHeader;
+	//const PokemonMini_RomHeader *const romHeader = &d->romHeader;
 	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 	// Title
