@@ -15,6 +15,7 @@
 #include "mz.h"
 
 // librpfile
+using LibRpFile::IRpFile;
 using LibRpFile::IRpFilePtr;
 
 #ifdef _MSC_VER
@@ -76,22 +77,9 @@ static long ZCALLBACK IRpFile_seek64_file_func(void *opaque, void *stream, ZPOS6
 	RP_UNUSED(opaque);
 	IRpFilePtr &file = *(reinterpret_cast<IRpFilePtr*>(stream));
 
-	// NOTE: IRpFile doesn't support origin.
-	// Emulate it here.
-	off64_t pos = 0;
-	switch (origin) {
-		default:
-		case MZ_SEEK_SET:
-			break;
-		case MZ_SEEK_CUR:
-			pos = file->tell();
-			break;
-		case MZ_SEEK_END:
-			pos = file->size();
-			break;
-	}
-
-	return file->seek(pos + offset);
+	// MiniZip-NG's `origin` value matches IRpFile::SeekWhence.
+	// We can use a static_cast<> to convert it for file->seek().
+	return file->seek(offset, static_cast<IRpFile::SeekWhence>(origin));
 }
 
 static int ZCALLBACK IRpFile_close_file_func(void *opaque, void *stream)
