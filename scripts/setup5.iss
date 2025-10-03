@@ -27,7 +27,7 @@ DefaultDirName={pf}\rom-properties
 DefaultGroupName=ROM Properties
 LicenseFile=..\LICENSE
 PrivilegesRequired=admin
-OutputBaseFilename=SetupRomProperties
+OutputBaseFilename=SetupRomPropertiesXP
 SolidCompression=yes
 WizardStyle=modern
 
