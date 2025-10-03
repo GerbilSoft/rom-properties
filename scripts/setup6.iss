@@ -47,6 +47,16 @@ Name: "ukrainian"; MessagesFile: "compiler:Languages\Ukrainian.isl"
 [Components]
 Name: "main"; Description: "Main Files"; Types: full compact custom; Flags: fixed
 Name: "doc"; Description: "Documentation"; Types: full
+Name: "locale"; Description: "Languages"; Types: full
+Name: "locale/ar"; Description: "Arabic"; Types: full
+Name: "locale/de"; Description: "German"; Types: full
+Name: "locale/es"; Description: "Spanish"; Types: full
+Name: "locale/fr"; Description: "French"; Types: full
+Name: "locale/it"; Description: "Italian"; Types: full
+Name: "locale/pt"; Description: "Portuguese"; Types: full
+Name: "locale/ro"; Description: "Romanian"; Types: full
+Name: "locale/ru"; Description: "Russian"; Types: full
+Name: "locale/uk"; Description: "Ukrainian"; Types: full
 
 [Code]
 
@@ -261,6 +271,17 @@ Source: "..\pkg_windows\build.i386\bin\amiibo-data.bin"; DestDir: "{app}"; Compo
 ; Property Description Schemas
 ; TODO: Register the .propdesc file using PSRegisterPropertySchema().
 Source: "..\src\win32\res\rom-properties.propdesc"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+
+; Localization files
+Source: "..\pkg_windows\build.i386\locale\ar.gmo"; DestDir: "{app}\locale\ar\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/ar; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386\locale\de.gmo"; DestDir: "{app}\locale\de\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/de; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386\locale\es.gmo"; DestDir: "{app}\locale\es\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/es; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386\locale\fr.gmo"; DestDir: "{app}\locale\fr\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/fr; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386\locale\it.gmo"; DestDir: "{app}\locale\it\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/it; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386\locale\pt.gmo"; DestDir: "{app}\locale\pt\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/pt; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386\locale\ro.gmo"; DestDir: "{app}\locale\ro\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/ro; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386\locale\ru.gmo"; DestDir: "{app}\locale\ru\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/ru; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386\locale\uk.gmo"; DestDir: "{app}\locale\uk\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/uk; Flags: ignoreversion
 
 ; Documentation
 Source: "..\doc\COMPILING.md"; DestDir: "{app}\doc"; Components: doc; Flags: ignoreversion
