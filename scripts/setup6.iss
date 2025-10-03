@@ -288,7 +288,7 @@ Source: "..\pkg_windows\build.i386\locale\uk.gmo"; DestDir: "{app}\locale\uk\LC_
 ; Documentation
 Source: "..\doc\COMPILING.md"; DestDir: "{app}\doc"; Components: doc; Flags: ignoreversion
 Source: "..\doc\keys.conf.example"; DestDir: "{app}\doc"; Components: doc; Flags: ignoreversion
-Source: "..\doc\rom-properties.conf.example"; DestDir: "{app}\doc"; Components: main; Flags: ignoreversion
+Source: "..\doc\rom-properties.conf.example"; DestDir: "{app}\doc"; Components: doc; Flags: ignoreversion
 Source: "..\README.md"; DestDir: "{app}"; Components: doc; Flags: ignoreversion
 Source: "..\NEWS.md"; DestDir: "{app}"; Components: doc; Flags: ignoreversion
 
