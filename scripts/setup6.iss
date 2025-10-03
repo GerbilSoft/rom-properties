@@ -29,6 +29,7 @@ LicenseFile=..\LICENSE
 PrivilegesRequired=admin
 OutputBaseFilename=SetupRomProperties
 SolidCompression=yes
+WizardSmallImageFile=icons\w10-rom-256.png,icons\w10-rom-64.png,icons\w10-rom-48.png
 WizardStyle=modern
 
 ; Enable 64-bit mode on amd64 and arm64.

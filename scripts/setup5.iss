@@ -29,6 +29,7 @@ LicenseFile=..\LICENSE
 PrivilegesRequired=admin
 OutputBaseFilename=SetupRomPropertiesXP
 SolidCompression=yes
+WizardSmallImageFile=icons\wxp-rom-48.bmp
 WizardStyle=modern
 
 ; Enable 64-bit mode on amd64 and arm64.
