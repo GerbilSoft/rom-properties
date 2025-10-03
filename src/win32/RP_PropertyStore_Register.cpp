@@ -326,6 +326,8 @@ LONG RP_PropertyStore::RegisterPropertyDescriptionSchema(void)
 		LoadLibraryEx(_T("propsys.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
 	if (!hPropsys_dll) {
 		// Don't fail if PROPSYS.DLL isn't available.
+		// PROPSYS.DLL was only added as a system library in Windows Vista.
+		// (It was available as part of Windows Search previously.)
 		return ERROR_SUCCESS;
 	}
 
@@ -426,6 +428,8 @@ LONG RP_PropertyStore::UnregisterPropertyDescriptionSchema(void)
 		LoadLibraryEx(_T("propsys.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
 	if (!hPropsys_dll) {
 		// Don't fail if PROPSYS.DLL isn't available.
+		// PROPSYS.DLL was only added as a system library in Windows Vista.
+		// (It was available as part of Windows Search previously.)
 		return ERROR_SUCCESS;
 	}
 

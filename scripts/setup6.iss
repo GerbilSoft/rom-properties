@@ -60,6 +60,7 @@ Name: "locale/ro"; Description: "Romanian"; Types: full
 Name: "locale/ru"; Description: "Russian"; Types: full
 Name: "locale/uk"; Description: "Ukrainian"; Types: full
 
+
 [Code]
 
 function InitializeSetup(): Boolean;
@@ -71,7 +72,7 @@ begin
 
   { Check for the MSVC 2015-2022 runtime. }
   { FIXME: MsgBox() doesn't have clickable links... }
-  has_msvcrt_i386 := IsMsiProductInstalled('{65E5BD06-6392-3027-8C26-853107D3CF1A}', PackVersionComponents(14, 0, 0, 0));
+  has_msvcrt_i386  := IsMsiProductInstalled('{65E5BD06-6392-3027-8C26-853107D3CF1A}', PackVersionComponents(14, 0, 0, 0));
   has_msvcrt_amd64 := IsMsiProductInstalled('{36F68A90-239C-34DF-B58C-64B30153CE35}', PackVersionComponents(14, 0, 0, 0));
   has_msvcrt_arm64 := IsMsiProductInstalled('{DC9BAE42-810B-423A-9E25-E4073F1C7B00}', PackVersionComponents(14, 0, 0, 0));
   { TODO: Check 32-bit ARM? }
@@ -189,6 +190,77 @@ begin
   end;
 end;
 
+function PSRegisterPropertySchema(pszPath: String): HResult;
+  external 'PSRegisterPropertySchema@propsys.dll stdcall';
+function PSUnregisterPropertySchema(pszPath: String): HResult;
+  external 'PSUnregisterPropertySchema@propsys.dll stdcall';
+
+{ Register the .propdesc file. }
+function RegisterPropertySchema(): Boolean;
+var
+  propdesc_file: String;
+  hr: HResult;
+begin
+  // Call the API function
+  propdesc_file := ExpandConstant('{app}\rom-properties.propdesc');
+  hr := PSRegisterPropertySchema(propdesc_file);
+  if hr = 0 then
+  begin
+    Result := True;
+  end
+  else
+  begin
+    Log('PSRegisterPropertySchema failed: ' + IntToStr(hr));
+    Log('- HRESULT: ' + IntToStr(hr));
+    Result := False;
+  end;
+end;
+
+{ Unregister the .propdesc file. }
+function UnregisterPropertySchema(): Boolean;
+var
+  propdesc_file: String;
+  hr: HResult;
+begin
+  // Call the API function
+  propdesc_file := ExpandConstant('{app}\rom-properties.propdesc');
+  hr := PSUnregisterPropertySchema(propdesc_file);
+  if hr = 0 then
+  begin
+    Result := True;
+  end
+  else
+  begin
+    Log('PSUnregisterPropertySchema failed: ' + IntToStr(hr));
+    Log('- HRESULT: ' + IntToStr(hr));
+    Result := False;
+  end;
+end;
+
+{ Register the .propdesc file after all files are installed. }
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssPostInstall then
+  begin
+    { TODO: Error handling? }
+    Log('Registering the Property Description Schema...');
+    RegisterPropertySchema();
+    Log('Property Description Schema registered successfully.');
+  end;
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+begin
+  if CurUninstallStep = usPostUninstall then
+  begin
+    { TODO: Error handling? }
+    Log('Unregistering the Property Description Schema...');
+    UnregisterPropertySchema();
+    Log('Property Description Schema unregistered successfully.');
+  end;
+end;
+
+
 [Files]
 ; InnoSetup must be run from the pkg_windows directory, as part of package.cmd.
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
@@ -271,7 +343,6 @@ Source: "..\pkg_windows\build.arm64\bin\Release\rp-config.exe"; DestDir: "{app}"
 Source: "..\pkg_windows\build.i386\bin\amiibo-data.bin"; DestDir: "{app}"; Components: main; Flags: ignoreversion
 
 ; Property Description Schemas
-; TODO: Register the .propdesc file using PSRegisterPropertySchema().
 Source: "..\src\win32\res\rom-properties.propdesc"; DestDir: "{app}"; Components: main; Flags: ignoreversion
 
 ; Localization files
