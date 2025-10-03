@@ -45,6 +45,21 @@ Name: "ukrainian"; MessagesFile: "compiler:Languages\Ukrainian.isl"
 
 [Code]
 
+function InitializeSetup(): Boolean;
+begin
+  if GetWindowsVersion() >= $06010000 then
+  begin
+    MsgBox('This ROM Properties Page Shell Extension installer is designed for Windows XP, Windows Server 2003, and Windows Vista only.' + #13#10#13#10 +
+      'You can get the Windows 7/8/10/11 version at:' + #13#10 +
+      'https://github.com/GerbilSoft/rom-properties', mbCriticalError, MB_OK)
+    Result := False
+  end
+  else
+  begin
+    Result := True
+  end;
+end;
+
 function ShouldInstallDll_i386(): Boolean;
 begin
   case ProcessorArchitecture of
