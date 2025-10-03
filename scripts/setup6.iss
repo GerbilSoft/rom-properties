@@ -2,9 +2,11 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "ROM Properties Page Shell Extension"
-#define MyAppVersion "2.6+"
 #define MyAppPublisher "GerbilSoft"
 #define MyAppURL "https://github.com/GerbilSoft/rom-properties"
+
+#include "../pkg_windows/build.i386/src/config.version.h"
+#define MyAppVersion RP_VERSION_STRING
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.

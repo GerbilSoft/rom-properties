@@ -1,28 +1,18 @@
-/***************************************************************************
- * ROM Properties Page shell extension.                                    *
- * config.version.h.in: Version information. (source file)                 *
- *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
- * SPDX-License-Identifier: GPL-2.0-or-later                               *
- ***************************************************************************/
+#ifndef __RP_CONFIG_VERSION_H__
+#define __RP_CONFIG_VERSION_H__
 
-#pragma once
-
-/* Program version. */
 #define RP_VERSION_MAJOR @CMAKE_PROJECT_VERSION_MAJOR@
 #define RP_VERSION_MINOR @CMAKE_PROJECT_VERSION_MINOR@
 #define RP_VERSION_PATCH @CMAKE_PROJECT_VERSION_PATCH@
 #define RP_VERSION_DEVEL @CMAKE_PROJECT_VERSION_TWEAK@
 #define RP_VERSION_STRING "@VERSION_STRING@"
 
-/* Package dscription. */
 #define RP_DESCRIPTION "@DESCRIPTION@"
 
-/* Package name. */
 #define RP_PACKAGE_NAME "@PACKAGE_NAME@"
 
-/* Author. */
 #define RP_AUTHOR "@AUTHOR@"
 
-/* Installation prefix. */
 #define CMAKE_INSTALL_PREFIX "@CMAKE_INSTALL_PREFIX@"
+
+#endif
