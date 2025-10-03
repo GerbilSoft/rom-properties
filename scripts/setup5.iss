@@ -72,7 +72,7 @@ begin
   begin
     MsgBox('This ROM Properties Page Shell Extension installer is designed for Windows XP, Windows Server 2003, and Windows Vista only.' + #13#10#13#10 +
       'You can get the Windows 7/8/10/11 version at:' + #13#10 +
-      'https://github.com/GerbilSoft/rom-properties', mbCriticalError, MB_OK)
+      '• https://github.com/GerbilSoft/rom-properties', mbCriticalError, MB_OK)
     Result := False
     Exit;
   end;
