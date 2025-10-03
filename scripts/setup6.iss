@@ -44,6 +44,10 @@ Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 Name: "ukrainian"; MessagesFile: "compiler:Languages\Ukrainian.isl"
 
+[Components]
+Name: "main"; Description: "Main Files"; Types: full compact custom; Flags: fixed
+Name: "doc"; Description: "Documentation"; Types: full
+
 [Code]
 
 function InitializeSetup(): Boolean;
@@ -177,91 +181,93 @@ end;
 ; InnoSetup must be run from the pkg_windows directory, as part of package.cmd.
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
-Source: "..\pkg_windows\build.i386\bin\Release\fmt-12.dll"; DestDir: "{app}\i386"; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_i386
-Source: "..\pkg_windows\build.i386\bin\Release\libgnuintl-8.dll"; DestDir: "{app}\i386"; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_i386
-Source: "..\pkg_windows\build.i386\bin\Release\libpng16.dll"; DestDir: "{app}\i386"; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_i386
-Source: "..\pkg_windows\build.i386\bin\Release\lz4.dll"; DestDir: "{app}\i386"; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_i386
-Source: "..\pkg_windows\build.i386\bin\Release\minilzo.dll"; DestDir: "{app}\i386"; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_i386
-Source: "..\pkg_windows\build.i386\bin\Release\minizip.dll"; DestDir: "{app}\i386"; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_i386
-Source: "..\pkg_windows\build.i386\bin\Release\pugixml.dll"; DestDir: "{app}\i386"; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_i386
-Source: "..\pkg_windows\build.i386\bin\Release\zlib1.dll"; DestDir: "{app}\i386"; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_i386
-Source: "..\pkg_windows\build.i386\bin\Release\romdata-8.dll"; DestDir: "{app}\i386"; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_i386
-Source: "..\pkg_windows\build.i386\bin\Release\rom-properties.dll"; DestDir: "{app}\i386"; Flags: ignoreversion uninsrestartdelete 32bit regserver; Check: ShouldInstallDll_i386
-Source: "..\pkg_windows\build.i386\bin\Release\rp-download.exe"; DestDir: "{app}\i386"; Flags: ignoreversion 32bit; Check: ShouldInstallDll_i386
+Source: "..\pkg_windows\build.i386\bin\Release\fmt-12.dll"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_i386
+Source: "..\pkg_windows\build.i386\bin\Release\libgnuintl-8.dll"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_i386
+Source: "..\pkg_windows\build.i386\bin\Release\libpng16.dll"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_i386
+Source: "..\pkg_windows\build.i386\bin\Release\lz4.dll"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_i386
+Source: "..\pkg_windows\build.i386\bin\Release\minilzo.dll"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_i386
+Source: "..\pkg_windows\build.i386\bin\Release\minizip.dll"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_i386
+Source: "..\pkg_windows\build.i386\bin\Release\pugixml.dll"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_i386
+Source: "..\pkg_windows\build.i386\bin\Release\zlib1.dll"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_i386
+Source: "..\pkg_windows\build.i386\bin\Release\romdata-8.dll"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_i386
+Source: "..\pkg_windows\build.i386\bin\Release\rom-properties.dll"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit regserver; Check: ShouldInstallDll_i386
+Source: "..\pkg_windows\build.i386\bin\Release\rp-download.exe"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion 32bit; Check: ShouldInstallDll_i386
 
-Source: "..\pkg_windows\build.amd64\bin\Release\fmt-12.dll"; DestDir: "{app}\amd64"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_amd64
-Source: "..\pkg_windows\build.amd64\bin\Release\libgnuintl-8.dll"; DestDir: "{app}\amd64"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_amd64
-Source: "..\pkg_windows\build.amd64\bin\Release\libpng16.dll"; DestDir: "{app}\amd64"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_amd64
-Source: "..\pkg_windows\build.amd64\bin\Release\lz4.dll"; DestDir: "{app}\amd64"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_amd64
-Source: "..\pkg_windows\build.amd64\bin\Release\minilzo.dll"; DestDir: "{app}\amd64"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_amd64
-Source: "..\pkg_windows\build.amd64\bin\Release\minizip.dll"; DestDir: "{app}\amd64"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_amd64
-Source: "..\pkg_windows\build.amd64\bin\Release\pugixml.dll"; DestDir: "{app}\amd64"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_amd64
-Source: "..\pkg_windows\build.amd64\bin\Release\zlib1.dll"; DestDir: "{app}\amd64"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_amd64
-Source: "..\pkg_windows\build.amd64\bin\Release\romdata-8.dll"; DestDir: "{app}\amd64"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_amd64
-Source: "..\pkg_windows\build.amd64\bin\Release\rom-properties.dll"; DestDir: "{app}\amd64"; Flags: ignoreversion uninsrestartdelete 64bit regserver; Check: ShouldInstallDll_amd64
-Source: "..\pkg_windows\build.amd64\bin\Release\rp-download.exe"; DestDir: "{app}\amd64"; Flags: ignoreversion 64bit; Check: ShouldInstallDll_amd64
+Source: "..\pkg_windows\build.amd64\bin\Release\fmt-12.dll"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_amd64
+Source: "..\pkg_windows\build.amd64\bin\Release\libgnuintl-8.dll"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_amd64
+Source: "..\pkg_windows\build.amd64\bin\Release\libpng16.dll"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_amd64
+Source: "..\pkg_windows\build.amd64\bin\Release\lz4.dll"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_amd64
+Source: "..\pkg_windows\build.amd64\bin\Release\minilzo.dll"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_amd64
+Source: "..\pkg_windows\build.amd64\bin\Release\minizip.dll"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_amd64
+Source: "..\pkg_windows\build.amd64\bin\Release\pugixml.dll"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_amd64
+Source: "..\pkg_windows\build.amd64\bin\Release\zlib1.dll"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_amd64
+Source: "..\pkg_windows\build.amd64\bin\Release\romdata-8.dll"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_amd64
+Source: "..\pkg_windows\build.amd64\bin\Release\rom-properties.dll"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit regserver; Check: ShouldInstallDll_amd64
+Source: "..\pkg_windows\build.amd64\bin\Release\rp-download.exe"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion 64bit; Check: ShouldInstallDll_amd64
 
-Source: "..\pkg_windows\build.arm\bin\Release\fmt-12.dll"; DestDir: "{app}\arm"; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_arm
+Source: "..\pkg_windows\build.arm\bin\Release\fmt-12.dll"; DestDir: "{app}\arm"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_arm
 ; FIXME: Build libgnuintl-8.dll for Windows on ARM.
-;Source: "..\pkg_windows\build.arm\bin\Release\libgnuintl-8.dll"; DestDir: "{app}\arm"; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_arm
-Source: "..\pkg_windows\build.arm\bin\Release\libpng16.dll"; DestDir: "{app}\arm"; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_arm
-Source: "..\pkg_windows\build.arm\bin\Release\lz4.dll"; DestDir: "{app}\arm"; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_arm
-Source: "..\pkg_windows\build.arm\bin\Release\minilzo.dll"; DestDir: "{app}\arm"; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_arm
-Source: "..\pkg_windows\build.arm\bin\Release\minizip.dll"; DestDir: "{app}\arm"; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_arm
-Source: "..\pkg_windows\build.arm\bin\Release\pugixml.dll"; DestDir: "{app}\arm"; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_arm
-Source: "..\pkg_windows\build.arm\bin\Release\zlib1.dll"; DestDir: "{app}\arm"; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_arm
-Source: "..\pkg_windows\build.arm\bin\Release\romdata-8.dll"; DestDir: "{app}\arm"; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_arm
-Source: "..\pkg_windows\build.arm\bin\Release\rom-properties.dll"; DestDir: "{app}\arm"; Flags: ignoreversion uninsrestartdelete 32bit regserver; Check: ShouldInstallDll_arm
-Source: "..\pkg_windows\build.arm\bin\Release\rp-download.exe"; DestDir: "{app}\arm"; Flags: ignoreversion 32bit; Check: ShouldInstallDll_arm
+;Source: "..\pkg_windows\build.arm\bin\Release\libgnuintl-8.dll"; DestDir: "{app}\arm"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_arm
+Source: "..\pkg_windows\build.arm\bin\Release\libpng16.dll"; DestDir: "{app}\arm"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_arm
+Source: "..\pkg_windows\build.arm\bin\Release\lz4.dll"; DestDir: "{app}\arm"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_arm
+Source: "..\pkg_windows\build.arm\bin\Release\minilzo.dll"; DestDir: "{app}\arm"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_arm
+Source: "..\pkg_windows\build.arm\bin\Release\minizip.dll"; DestDir: "{app}\arm"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_arm
+Source: "..\pkg_windows\build.arm\bin\Release\pugixml.dll"; DestDir: "{app}\arm"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_arm
+Source: "..\pkg_windows\build.arm\bin\Release\zlib1.dll"; DestDir: "{app}\arm"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_arm
+Source: "..\pkg_windows\build.arm\bin\Release\romdata-8.dll"; DestDir: "{app}\arm"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit; Check: ShouldInstallDll_arm
+Source: "..\pkg_windows\build.arm\bin\Release\rom-properties.dll"; DestDir: "{app}\arm"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit regserver; Check: ShouldInstallDll_arm
+Source: "..\pkg_windows\build.arm\bin\Release\rp-download.exe"; DestDir: "{app}\arm"; Components: main; Flags: ignoreversion 32bit; Check: ShouldInstallDll_arm
 
-Source: "..\pkg_windows\build.arm64\bin\Release\fmt-12.dll"; DestDir: "{app}\arm64"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
+Source: "..\pkg_windows\build.arm64\bin\Release\fmt-12.dll"; DestDir: "{app}\arm64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
 ; FIXME: Build libgnuintl-8.dll for Windows on ARM.
-;Source: "..\pkg_windows\build.arm64\bin\Release\libgnuintl-8.dll"; DestDir: "{app}\arm64"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
-Source: "..\pkg_windows\build.arm64\bin\Release\libpng16.dll"; DestDir: "{app}\arm64"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
-Source: "..\pkg_windows\build.arm64\bin\Release\lz4.dll"; DestDir: "{app}\arm64"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
-Source: "..\pkg_windows\build.arm64\bin\Release\minilzo.dll"; DestDir: "{app}\arm64"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
-Source: "..\pkg_windows\build.arm64\bin\Release\minizip.dll"; DestDir: "{app}\arm64"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
-Source: "..\pkg_windows\build.arm64\bin\Release\pugixml.dll"; DestDir: "{app}\arm64"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
-Source: "..\pkg_windows\build.arm64\bin\Release\zlib1.dll"; DestDir: "{app}\arm64"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
-Source: "..\pkg_windows\build.arm64\bin\Release\romdata-8.dll"; DestDir: "{app}\arm64"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
-Source: "..\pkg_windows\build.arm64\bin\Release\rom-properties.dll"; DestDir: "{app}\arm64"; Flags: ignoreversion uninsrestartdelete 64bit regserver; Check: ShouldInstallDll_arm64
-Source: "..\pkg_windows\build.arm64\bin\Release\rp-download.exe"; DestDir: "{app}\arm64"; Flags: ignoreversion 64bit; Check: ShouldInstallDll_arm64
+;Source: "..\pkg_windows\build.arm64\bin\Release\libgnuintl-8.dll"; DestDir: "{app}\arm64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
+Source: "..\pkg_windows\build.arm64\bin\Release\libpng16.dll"; DestDir: "{app}\arm64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
+Source: "..\pkg_windows\build.arm64\bin\Release\lz4.dll"; DestDir: "{app}\arm64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
+Source: "..\pkg_windows\build.arm64\bin\Release\minilzo.dll"; DestDir: "{app}\arm64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
+Source: "..\pkg_windows\build.arm64\bin\Release\minizip.dll"; DestDir: "{app}\arm64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
+Source: "..\pkg_windows\build.arm64\bin\Release\pugixml.dll"; DestDir: "{app}\arm64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
+Source: "..\pkg_windows\build.arm64\bin\Release\zlib1.dll"; DestDir: "{app}\arm64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
+Source: "..\pkg_windows\build.arm64\bin\Release\romdata-8.dll"; DestDir: "{app}\arm64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
+Source: "..\pkg_windows\build.arm64\bin\Release\rom-properties.dll"; DestDir: "{app}\arm64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit regserver; Check: ShouldInstallDll_arm64
+Source: "..\pkg_windows\build.arm64\bin\Release\rp-download.exe"; DestDir: "{app}\arm64"; Components: main; Flags: ignoreversion 64bit; Check: ShouldInstallDll_arm64
 
-Source: "..\pkg_windows\build.arm64ec\bin\Release\fmt-12.dll"; DestDir: "{app}\arm64ec"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
+Source: "..\pkg_windows\build.arm64ec\bin\Release\fmt-12.dll"; DestDir: "{app}\arm64ec"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
 ; FIXME: Build libgnuintl-8.dll for Windows on ARM.
-;Source: "..\pkg_windows\build.arm64ec\bin\Release\libgnuintl-8.dll"; DestDir: "{app}\arm64ec"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
-Source: "..\pkg_windows\build.arm64ec\bin\Release\libpng16.dll"; DestDir: "{app}\arm64ec"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
-Source: "..\pkg_windows\build.arm64ec\bin\Release\lz4.dll"; DestDir: "{app}\arm64ec"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
-Source: "..\pkg_windows\build.arm64ec\bin\Release\minilzo.dll"; DestDir: "{app}\arm64ec"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
-Source: "..\pkg_windows\build.arm64ec\bin\Release\minizip.dll"; DestDir: "{app}\arm64ec"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
-Source: "..\pkg_windows\build.arm64ec\bin\Release\pugixml.dll"; DestDir: "{app}\arm64ec"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
-Source: "..\pkg_windows\build.arm64ec\bin\Release\zlib1.dll"; DestDir: "{app}\arm64ec"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
-Source: "..\pkg_windows\build.arm64ec\bin\Release\romdata-8.dll"; DestDir: "{app}\arm64ec"; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
-Source: "..\pkg_windows\build.arm64ec\bin\Release\rom-properties.dll"; DestDir: "{app}\arm64ec"; Flags: ignoreversion uninsrestartdelete 64bit regserver; Check: ShouldInstallDll_arm64
-Source: "..\pkg_windows\build.arm64ec\bin\Release\rp-download.exe"; DestDir: "{app}\arm64ec"; Flags: ignoreversion 64bit; Check: ShouldInstallDll_arm64
+;Source: "..\pkg_windows\build.arm64ec\bin\Release\libgnuintl-8.dll"; DestDir: "{app}\arm64ec"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
+Source: "..\pkg_windows\build.arm64ec\bin\Release\libpng16.dll"; DestDir: "{app}\arm64ec"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
+Source: "..\pkg_windows\build.arm64ec\bin\Release\lz4.dll"; DestDir: "{app}\arm64ec"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
+Source: "..\pkg_windows\build.arm64ec\bin\Release\minilzo.dll"; DestDir: "{app}\arm64ec"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
+Source: "..\pkg_windows\build.arm64ec\bin\Release\minizip.dll"; DestDir: "{app}\arm64ec"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
+Source: "..\pkg_windows\build.arm64ec\bin\Release\pugixml.dll"; DestDir: "{app}\arm64ec"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
+Source: "..\pkg_windows\build.arm64ec\bin\Release\zlib1.dll"; DestDir: "{app}\arm64ec"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
+Source: "..\pkg_windows\build.arm64ec\bin\Release\romdata-8.dll"; DestDir: "{app}\arm64ec"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: ShouldInstallDll_arm64
+Source: "..\pkg_windows\build.arm64ec\bin\Release\rom-properties.dll"; DestDir: "{app}\arm64ec"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit regserver; Check: ShouldInstallDll_arm64
+Source: "..\pkg_windows\build.arm64ec\bin\Release\rp-download.exe"; DestDir: "{app}\arm64ec"; Components: main; Flags: ignoreversion 64bit; Check: ShouldInstallDll_arm64
 
 ; Install rpcli.exe and rp-config.exe in the root directory using the matching system architecture.
-Source: "..\pkg_windows\build.i386\bin\Release\rpcli.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: ShouldInstallDll_i386Only
-Source: "..\pkg_windows\build.amd64\bin\Release\rpcli.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: ShouldInstallDll_amd64
-Source: "..\pkg_windows\build.arm\bin\Release\rpcli.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: ShouldInstallDll_armOnly
-Source: "..\pkg_windows\build.arm64\bin\Release\rpcli.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: ShouldInstallDll_arm64Only
+Source: "..\pkg_windows\build.i386\bin\Release\rpcli.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: ShouldInstallDll_i386Only
+Source: "..\pkg_windows\build.amd64\bin\Release\rpcli.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: ShouldInstallDll_amd64
+Source: "..\pkg_windows\build.arm\bin\Release\rpcli.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: ShouldInstallDll_armOnly
+Source: "..\pkg_windows\build.arm64\bin\Release\rpcli.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: ShouldInstallDll_arm64Only
 
-Source: "..\pkg_windows\build.i386\bin\Release\rp-config.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: ShouldInstallDll_i386Only
-Source: "..\pkg_windows\build.amd64\bin\Release\rp-config.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: ShouldInstallDll_amd64Only
-Source: "..\pkg_windows\build.arm\bin\Release\rp-config.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: ShouldInstallDll_armOnly
-Source: "..\pkg_windows\build.arm64\bin\Release\rp-config.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: ShouldInstallDll_arm64Only
+Source: "..\pkg_windows\build.i386\bin\Release\rp-config.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: ShouldInstallDll_i386Only
+Source: "..\pkg_windows\build.amd64\bin\Release\rp-config.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: ShouldInstallDll_amd64Only
+Source: "..\pkg_windows\build.arm\bin\Release\rp-config.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: ShouldInstallDll_armOnly
+Source: "..\pkg_windows\build.arm64\bin\Release\rp-config.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: ShouldInstallDll_arm64Only
 
 ; Data files
-Source: "..\pkg_windows\build.i386\bin\amiibo-data.bin"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386\bin\amiibo-data.bin"; DestDir: "{app}"; Components: main; Flags: ignoreversion
 
 ; Property Description Schemas
 ; TODO: Register the .propdesc file using PSRegisterPropertySchema().
-Source: "..\src\win32\res\rom-properties.propdesc"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\src\win32\res\rom-properties.propdesc"; DestDir: "{app}"; Components: main; Flags: ignoreversion
 
 ; Documentation
-Source: "..\doc\COMPILING.md"; DestDir: "{app}\doc"; Flags: ignoreversion
-Source: "..\doc\keys.conf.example"; DestDir: "{app}\doc"; Flags: ignoreversion
-Source: "..\doc\rom-properties.conf.example"; DestDir: "{app}\doc"; Flags: ignoreversion
-Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\NEWS.md"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\doc\COMPILING.md"; DestDir: "{app}\doc"; Components: doc; Flags: ignoreversion
+Source: "..\doc\keys.conf.example"; DestDir: "{app}\doc"; Components: doc; Flags: ignoreversion
+Source: "..\doc\rom-properties.conf.example"; DestDir: "{app}\doc"; Components: main; Flags: ignoreversion
+Source: "..\README.md"; DestDir: "{app}"; Components: doc; Flags: ignoreversion
+Source: "..\NEWS.md"; DestDir: "{app}"; Components: doc; Flags: ignoreversion
+
+; License (*always* installed)
+Source: "..\LICENSE"; DestDir: "{app}"; Components: main; Flags: ignoreversion
