@@ -46,17 +46,48 @@ Name: "ukrainian"; MessagesFile: "compiler:Languages\Ukrainian.isl"
 [Code]
 
 function InitializeSetup(): Boolean;
+  var has_msvcrt_i386: Boolean;
+  var has_msvcrt_amd64: Boolean;
 begin
+  Result := True
+
+  { The IS5 installer is for use with WinXP/2003/Vista, not 7 or later. }
   if GetWindowsVersion() >= $06010000 then
   begin
     MsgBox('This ROM Properties Page Shell Extension installer is designed for Windows XP, Windows Server 2003, and Windows Vista only.' + #13#10#13#10 +
       'You can get the Windows 7/8/10/11 version at:' + #13#10 +
       'https://github.com/GerbilSoft/rom-properties', mbCriticalError, MB_OK)
     Result := False
-  end
-  else
+    Exit;
+  end;
+
+  { Check for the MSVC 2015-2017 runtime. }
+  { NOTE: IsMsiProductInstalled() is not available in InnoSetup 5... }
+  { FIXME: MsgBox() doesn't have clickable links... }
+  has_msvcrt_i386 := FileExists(ExpandConstant('{sys}\msvcp140.dll'))
+  has_msvcrt_amd64 := FileExists(ExpandConstant('{syswow64}\msvcp140.dll'))
+  if ProcessorArchitecture = paX64 then
   begin
-    Result := True
+    if not has_msvcrt_i386 or not has_msvcrt_amd64 then
+    begin
+      MsgBox('The Microsoft C++ 2015-2017 runtime is missing.' + #13#10#13#10 +
+        'Please install both the 32-bit and 64-bit versions, available at:' + #13#10 +
+        '• https://aka.ms/vs/15/release/VC_redist.x86.exe' + #13#10 +
+        '• https://aka.ms/vs/15/release/VC_redist.x64.exe', mbCriticalError, MB_OK)
+      Result := False
+      Exit;
+    end;
+  end
+  else if ProcessorArchitecture = paX86 then
+  begin
+    if not has_msvcrt_i386 then
+    begin
+      MsgBox('The Microsoft C++ 2015-2017 runtime is missing.' + #13#10#13#10 +
+        'Please install the 32-bit version, available at:' + #13#10 +
+        '• https://aka.ms/vs/15/release/VC_redist.x86.exe', mbCriticalError, MB_OK)
+      Result := False
+      Exit;
+    end;
   end;
 end;
 

@@ -46,6 +46,56 @@ Name: "ukrainian"; MessagesFile: "compiler:Languages\Ukrainian.isl"
 
 [Code]
 
+function InitializeSetup(): Boolean;
+  var has_msvcrt_i386: Boolean;
+  var has_msvcrt_amd64: Boolean;
+  var has_msvcrt_arm64: Boolean;
+begin
+  Result := True
+
+  { Check for the MSVC 2015-2022 runtime. }
+  { FIXME: MsgBox() doesn't have clickable links... }
+  has_msvcrt_i386 := IsMsiProductInstalled('{65E5BD06-6392-3027-8C26-853107D3CF1A}', PackVersionComponents(14, 0, 0, 0));
+  has_msvcrt_amd64 := IsMsiProductInstalled('{36F68A90-239C-34DF-B58C-64B30153CE35}', PackVersionComponents(14, 0, 0, 0));
+  has_msvcrt_arm64 := IsMsiProductInstalled('{DC9BAE42-810B-423A-9E25-E4073F1C7B00}', PackVersionComponents(14, 0, 0, 0));
+  { TODO: Check 32-bit ARM? }
+  if ProcessorArchitecture = paArm64 then
+  begin
+    { TODO: Do we need the 32-bit i386 version? }
+    if not has_msvcrt_arm64 then
+    begin
+      MsgBox('The Microsoft C++ 2015-2022 runtime is missing.' + #13#10#13#10 +
+        'Please install the arm64 version, available at:' + #13#10 +
+        '• https://aka.ms/vs/17/release/vc_redist.arm64.exe', mbCriticalError, MB_OK)
+      Result := False
+      Exit;
+    end;
+  end
+  else if ProcessorArchitecture = paX64 then
+  begin
+    if not has_msvcrt_i386 or not has_msvcrt_amd64 then
+    begin
+      MsgBox('The Microsoft C++ 2015-2022 runtime is missing.' + #13#10#13#10 +
+        'Please install both the 32-bit and 64-bit versions, available at:' + #13#10 +
+        '• https://aka.ms/vs/17/release/VC_redist.x86.exe' + #13#10 +
+        '• https://aka.ms/vs/17/release/VC_redist.x64.exe', mbCriticalError, MB_OK)
+      Result := False
+      Exit;
+    end;
+  end
+  else if ProcessorArchitecture = paX86 then
+  begin
+    if not has_msvcrt_i386 then
+    begin
+      MsgBox('The Microsoft C++ 2015-2022 runtime is missing.' + #13#10#13#10 +
+        'Please install the 32-bit version, available at:' + #13#10 +
+        '• https://aka.ms/vs/17/release/VC_redist.x86.exe', mbCriticalError, MB_OK)
+      Result := False
+      Exit;
+    end;
+  end;
+end;
+
 function ShouldInstallDll_i386(): Boolean;
 begin
   case ProcessorArchitecture of
