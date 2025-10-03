@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * XDVDFSPartition.cpp: Microsoft Xbox XDVDFS partition reader.            *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -364,12 +364,12 @@ size_t XDVDFSPartition::read(void *ptr, size_t size)
 
 /**
  * Set the partition position.
- * @param pos Partition position.
+ * @param pos		[in] Partition position
+ * @param whence	[in] Where to seek from
  * @return 0 on success; -1 on error.
  */
-int XDVDFSPartition::seek(off64_t pos)
+int XDVDFSPartition::seek(off64_t pos, SeekWhence whence)
 {
-	RP_D(XDVDFSPartition);
 	assert(m_file != nullptr);
 	assert(m_file->isOpen());
 	if (!m_file ||  !m_file->isOpen()) {
@@ -377,6 +377,11 @@ int XDVDFSPartition::seek(off64_t pos)
 		return -1;
 	}
 
+	// NOTE: We have to handle `whence` here due to the partition offset.
+	RP_D(XDVDFSPartition);
+	if (whence != SeekWhence::Set) {
+		pos = adjust_file_pos_for_whence(pos, whence, tell(), d->partition_size);
+	}
 	int ret = m_file->seek(d->partition_offset + pos);
 	if (ret != 0) {
 		m_lastError = m_file->lastError();

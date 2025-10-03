@@ -24,40 +24,6 @@ IRpFile::IRpFile()
 }
 
 /**
- * Get a single character (byte) from the file
- * @return Character from file, or EOF on end of file or error.
- */
-int IRpFile::getc(void)
-{
-	uint8_t buf;
-	size_t sz = this->read(&buf, 1);
-	return (sz == 1 ? buf : EOF);
-}
-
-/**
- * Un-get a single character (byte) from the file.
- *
- * Note that this implementation doesn't actually
- * use a character buffer; it merely decrements the
- * seek pointer by 1.
- *
- * @param c Character. (ignored!)
- * @return 0 on success; non-zero on error.
- */
-int IRpFile::ungetc(int c)
-{
-	RP_UNUSED(c);	// TODO: Don't ignore this?
-
-	const off64_t pos = tell();
-	if (pos <= 0) {
-		// Cannot ungetc().
-		return -1;
-	}
-
-	return this->seek(pos-1);
-}
-
-/**
  * Copy data from this IRpFile to another IRpFile.
  * Read/write positions must be set before calling this function.
  * @param pDestFile	[in] Destination IRpFile.

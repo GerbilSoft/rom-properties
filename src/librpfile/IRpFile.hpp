@@ -143,11 +143,35 @@ public:
 	virtual size_t write(const void *ptr, size_t size) = 0;
 
 	/**
+	 * seek() `whence` values.
+	 * Matches the following definitions:
+	 * - stdio: SEEK_SET, SEEK_CUR, SEEK_END
+	 * - Win32 standard: FILE_BEGIN, FILE_CURRENT, FILE_END
+	 * - Win32 IStream: STREAM_SEEK_SET, STREAM_SEEK_CUR, STREAM_SEEK_END
+	 */
+	enum class SeekWhence {
+		Set = 0,
+		Cur = 1,
+		End = 2,
+	};
+
+	/**
+	 * Set the file position.
+	 * @param pos		[in] File position
+	 * @param whence	[in] Where to seek from
+	 * @return 0 on success; -1 on error.
+	 */
+	virtual int seek(off64_t pos, SeekWhence whence) = 0;
+
+	/**
 	 * Set the file position.
 	 * @param pos	[in] File position.
 	 * @return 0 on success; -1 on error.
 	 */
-	virtual int seek(off64_t pos) = 0;
+	inline int seek(off64_t pos)
+	{
+		return this->seek(pos, SeekWhence::Set);
+	}
 
 	/**
 	 * Seek to the beginning of the file.
@@ -220,24 +244,6 @@ public:
 	/** Convenience functions implemented for all IRpFile subclasses **/
 
 	/**
-	 * Get a single character (byte) from the file
-	 * @return Character from file, or EOF on end of file or error.
-	 */
-	int getc(void);
-
-	/**
-	 * Un-get a single character (byte) from the file.
-	 *
-	 * Note that this implementation doesn't actually
-	 * use a character buffer; it merely decrements the
-	 * seek pointer by 1.
-	 *
-	 * @param c Character. (ignored!)
-	 * @return 0 on success; non-zero on error.
-	 */
-	int ungetc(int c);
-
-	/**
 	 * Seek to the specified address, then read data.
 	 * @param pos	[in] Requested seek address.
 	 * @param ptr	[out] Output data buffer.
@@ -274,20 +280,6 @@ public:
 	}
 
 	/**
-	 * Seek to a relative offset. (SEEK_CUR)
-	 * @param pos Relative offset
-	 * @return 0 on success; -1 on error
-	 */
-	inline int seek_cur(off64_t offset)
-	{
-		const off64_t pos = this->tell();
-		if (pos < 0) {
-			return -1;
-		}
-		return this->seek(pos + offset);
-	}
-
-	/**
 	 * Copy data from this IRpFile to another IRpFile.
 	 * Read/write positions must be set before calling this function.
 	 * @param pDestFile	[in] Destination IRpFile.
@@ -298,6 +290,53 @@ public:
 	 */
 	int copyTo(IRpFile *pDestFile, off64_t size,
 		off64_t *pcbRead = nullptr, off64_t *pcbWritten = nullptr);
+
+protected:
+	/** Convenience functions for subclasses **/
+
+	/**
+	 * Adjust a file position based on `whence`.
+	 * @param pos Requested file position
+	 * @param whence
+	 * @param cur_pos Current file position
+	 * @param fileSize File size
+	 * @return Adjusted file position
+	 */
+	static inline off64_t adjust_file_pos_for_whence(off64_t pos, SeekWhence whence, off64_t cur_pos, off64_t fileSize)
+	{
+		switch (whence) {
+			default:
+			case SeekWhence::Set:
+				break;
+			case SeekWhence::Cur:
+				pos += cur_pos;
+				break;
+			case SeekWhence::End:
+				pos += fileSize;
+				break;
+		}
+
+		// TODO: Automatically constrain the file position pointer?
+		// Currently, callers will have to do it manually...
+		return pos;
+	}
+
+	/**
+	 * Constrain a file position pointer.
+	 * @param pos File position
+	 * @param fileSize File size
+	 * @return Constrained file position pointer
+	 */
+	static inline off64_t constrain_file_pos(off64_t pos, off64_t fileSize)
+	{
+		if (pos < 0) {
+			return 0;
+		} else if (pos <= fileSize) {
+			return pos;
+		} else {
+			return fileSize;
+		}
+	}
 
 protected:
 	int m_lastError;	// Last error number (errno)

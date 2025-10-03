@@ -449,10 +449,11 @@ size_t RpFile::write(const void *ptr, size_t size)
 
 /**
  * Set the file position.
- * @param pos File position.
+ * @param pos		[in] File position
+ * @param whence	[in] Where to seek from
  * @return 0 on success; -1 on error.
  */
-int RpFile::seek(off64_t pos)
+int RpFile::seek(off64_t pos, SeekWhence whence)
 {
 	RP_D(RpFile);
 	if (!d->file) {
@@ -464,20 +465,15 @@ int RpFile::seek(off64_t pos)
 		// SetFilePointerEx() *requires* sector alignment when
 		// accessing device files. Hence, we'll have to maintain
 		// our own device position.
-		if (pos < 0) {
-			d->devInfo->device_pos = 0;
-		} else if (pos <= d->devInfo->device_size) {
-			d->devInfo->device_pos = pos;
-		} else {
-			d->devInfo->device_pos = d->devInfo->device_size;
-		}
+		pos = adjust_file_pos_for_whence(pos, whence, d->devInfo->device_pos, d->devInfo->device_size);
+		d->devInfo->device_pos = constrain_file_pos(pos, d->devInfo->device_size);
 		return 0;
 	}
 
 	int ret;
 	if (d->gzfd != nullptr) {
 		errno = 0;
-		z_off_t zret = gzseek(d->gzfd, pos, SEEK_SET);
+		z_off_t zret = gzseek(d->gzfd, pos, static_cast<int>(whence));
 		if (zret >= 0) {
 			ret = 0;
 		} else {
@@ -488,7 +484,7 @@ int RpFile::seek(off64_t pos)
 			}
 		}
 	} else {
-		ret = fseeko(d->file, pos, SEEK_SET);
+		ret = fseeko(d->file, pos, static_cast<int>(whence));
 		if (ret != 0) {
 			m_lastError = errno;
 		}

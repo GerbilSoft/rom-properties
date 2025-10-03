@@ -235,10 +235,11 @@ size_t CIAReader::read(void *ptr, size_t size)
 
 /**
  * Set the partition position.
- * @param pos Partition position.
+ * @param pos		[in] Partition position
+ * @param whence	[in] Where to seek from
  * @return 0 on success; -1 on error.
  */
-int CIAReader::seek(off64_t pos)
+int CIAReader::seek(off64_t pos, SeekWhence whence)
 {
 	RP_D(CIAReader);
 	assert(m_file != nullptr);
@@ -249,7 +250,7 @@ int CIAReader::seek(off64_t pos)
 		return -1;
 	}
 
-	int ret = d->cbcReader->seek(pos);
+	int ret = d->cbcReader->seek(pos, whence);
 	if (ret != 0) {
 		m_lastError = d->cbcReader->lastError();
 	}

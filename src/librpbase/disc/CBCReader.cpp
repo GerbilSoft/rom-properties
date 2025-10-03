@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * CBCReader.hpp: AES-128-CBC data reader class.                           *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -346,10 +346,11 @@ size_t CBCReader::read(void *ptr, size_t size)
 
 /**
  * Set the partition position.
- * @param pos Partition position.
+ * @param pos		[in] Partition position
+ * @param whence	[in] Where to seek from
  * @return 0 on success; -1 on error.
  */
-int CBCReader::seek(off64_t pos)
+int CBCReader::seek(off64_t pos, SeekWhence whence)
 {
 	RP_D(CBCReader);
 	assert(m_file != nullptr);
@@ -359,16 +360,13 @@ int CBCReader::seek(off64_t pos)
 		return -1;
 	}
 
-	// Handle out-of-range cases.
+	pos = adjust_file_pos_for_whence(pos, whence, d->pos, d->length);
 	if (pos < 0) {
 		// Negative is invalid.
 		m_lastError = EINVAL;
 		return -1;
-	} else if (pos >= d->length) {
-		d->pos = d->length;
-	} else {
-		d->pos = static_cast<uint32_t>(pos);
 	}
+	d->pos = constrain_file_pos(pos, d->length);
 	return 0;
 }
 

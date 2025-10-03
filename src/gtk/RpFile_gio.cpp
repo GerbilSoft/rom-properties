@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpFile_gio.cpp: IRpFile implementation using GIO/GVfs.                  *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,8 @@
 // gio
 #include <gio/gio.h>
 
-// C++ STL classes.
+// C++ STL classes
+using std::array;
 using std::string;
 
 class RpFileGioPrivate
@@ -190,10 +191,11 @@ size_t RpFileGio::write(const void *ptr, size_t size)
 
 /**
  * Set the file position.
- * @param pos File position.
+ * @param pos		[in] File position
+ * @param whence	[in] Where to seek from
  * @return 0 on success; -1 on error.
  */
-int RpFileGio::seek(off64_t pos)
+int RpFileGio::seek(off64_t pos, SeekWhence whence)
 {
 	RP_D(RpFileGio);
 	if (!d->stream) {
@@ -201,10 +203,21 @@ int RpFileGio::seek(off64_t pos)
 		return -1;
 	}
 
+	// NOTE: GSeekType does *not* map to stdio SeekWhence values.
+	static const array<uint8_t /*GSeekType*/, 3> whenceToSeekType = {
+		G_SEEK_SET,
+		G_SEEK_CUR,
+		G_SEEK_END,
+	};
+	if ((int)whence < 0 || (int)whence > (int)whenceToSeekType.size()) {
+		// Invalid `whence`.
+		return -1;
+	}
+	const GSeekType seekType = static_cast<GSeekType>(whenceToSeekType[(int)whence]);
+
 	int ret = 0;
 	GError *err = nullptr;
-	gboolean bRet = g_seekable_seek(G_SEEKABLE(d->stream),
-		pos, G_SEEK_SET, nullptr, &err);
+	gboolean bRet = g_seekable_seek(G_SEEKABLE(d->stream), pos, seekType, nullptr, &err);
 	if (bRet < 0 || err != nullptr) {
 		// An error occurred.
 		if (err) {

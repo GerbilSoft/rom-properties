@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PEResourceReader.cpp: Portable Executable resource reader.              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -601,10 +601,11 @@ size_t PEResourceReader::read(void *ptr, size_t size)
 
 /**
  * Set the partition position.
- * @param pos Partition position.
+ * @param pos		[in] Partition position
+ * @param whence	[in] Where to seek from
  * @return 0 on success; -1 on error.
  */
-int PEResourceReader::seek(off64_t pos)
+int PEResourceReader::seek(off64_t pos, SeekWhence whence)
 {
 	RP_D(PEResourceReader);
 	assert((bool)m_file);
@@ -615,15 +616,13 @@ int PEResourceReader::seek(off64_t pos)
 	}
 
 	// Handle out-of-range cases.
+	pos = adjust_file_pos_for_whence(pos, whence, d->pos, d->rsrc_size);
 	if (pos < 0) {
 		// Negative is invalid.
 		m_lastError = EINVAL;
 		return -1;
-	} else if (pos >= static_cast<off64_t>(d->rsrc_size)) {
-		d->pos = static_cast<off64_t>(d->rsrc_size);
-	} else {
-		d->pos = pos;
 	}
+	d->pos = constrain_file_pos(pos, d->rsrc_size);
 	return 0;
 }
 

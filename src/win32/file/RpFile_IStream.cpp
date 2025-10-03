@@ -420,10 +420,11 @@ size_t RpFile_IStream::write(const void *ptr, size_t size)
 
 /**
  * Set the file position.
- * @param pos File position.
+ * @param pos		[in] File position
+ * @param whence	[in] Where to seek from
  * @return 0 on success; -1 on error.
  */
-int RpFile_IStream::seek(off64_t pos)
+int RpFile_IStream::seek(off64_t pos, SeekWhence whence)
 {
 	LARGE_INTEGER dlibMove;
 	HRESULT hr;
@@ -435,6 +436,7 @@ int RpFile_IStream::seek(off64_t pos)
 
 	if (m_pZstm) {
 		// zlib stream: Special seek handling.
+		pos = adjust_file_pos_for_whence(pos, whence, static_cast<off64_t>(m_z_filepos), static_cast<off64_t>(m_z_uncomp_sz));
 		if (pos == m_z_filepos) {
 			// No seek necessary.
 			return 0;
@@ -500,7 +502,7 @@ int RpFile_IStream::seek(off64_t pos)
 
 	// Seek in the base stream.
 	dlibMove.QuadPart = pos;
-	hr = m_pStream->Seek(dlibMove, STREAM_SEEK_SET, nullptr);
+	hr = m_pStream->Seek(dlibMove, static_cast<DWORD>(whence), nullptr);
 	if (FAILED(hr)) {
 		// TODO: Convert hr to POSIX?
 		m_lastError = EIO;

@@ -4,7 +4,7 @@
  * This class is a "null" interface that simply passes calls down to       *
  * libc's stdio functions.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -127,10 +127,11 @@ size_t DiscReader::read(void *ptr, size_t size)
 
 /**
  * Set the disc image position.
- * @param pos Disc image position.
+ * @param pos		[in] Disc image position
+ * @param whence	[in] Where to seek from
  * @return 0 on success; -1 on error.
  */
-int DiscReader::seek(off64_t pos)
+int DiscReader::seek(off64_t pos, SeekWhence whence)
 {
 	assert(m_file != nullptr);
 	if (!m_file) {
@@ -138,6 +139,10 @@ int DiscReader::seek(off64_t pos)
 		return -1;
 	}
 
+	// NOTE: We have to handle `whence` here due to the disc image offset.
+	if (whence != SeekWhence::Set) {
+		pos = adjust_file_pos_for_whence(pos, whence, tell(), m_length);
+	}
 	int ret = m_file->seek(pos + m_offset);
 	if (ret != 0) {
 		m_lastError = m_file->lastError();

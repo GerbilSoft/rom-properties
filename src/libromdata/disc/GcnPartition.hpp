@@ -54,10 +54,11 @@ public:
 
 	/**
 	 * Set the partition position.
-	 * @param pos Partition position.
+	 * @param pos		[in] Partition position
+	 * @param whence	[in] Where to seek from
 	 * @return 0 on success; -1 on error.
 	 */
-	int seek(off64_t pos) override;
+	int seek(off64_t pos, SeekWhence whence) override;
 
 	/**
 	 * Get the partition position.

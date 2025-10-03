@@ -12,6 +12,9 @@
 #include "GcnFst.hpp"
 #include "GcnPartition.hpp"
 
+// librpfile
+using LibRpFile::IRpFile;
+
 namespace LibRomData {
 
 GcnPartitionPrivate::GcnPartitionPrivate(GcnPartition *q,
@@ -135,7 +138,8 @@ int GcnPartitionPrivate::loadFst(void)
 	}
 
 	// Seek to the beginning of the FST.
-	ret = q->seek(static_cast<off64_t>(bootBlock.fst_offset) << offsetShift);
+	// FIXME: g++ can't resolve IRpFile::seek(off64_t) here, so explicitly specify SeekWhence::Set.
+	ret = q->seek(static_cast<off64_t>(bootBlock.fst_offset) << offsetShift, IRpFile::SeekWhence::Set);
 	if (ret != 0) {
 		// Seek failed.
 		return -q->m_lastError;

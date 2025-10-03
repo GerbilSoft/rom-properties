@@ -80,23 +80,11 @@ IFACEMETHODIMP IStreamWrapper::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULAR
 		return E_HANDLE;
 	}
 
-	off64_t pos;
-	switch (dwOrigin) {
-		case STREAM_SEEK_SET:
-			m_file->seek(dlibMove.QuadPart);
-			break;
-		case STREAM_SEEK_CUR:
-			pos = m_file->tell();
-			pos += dlibMove.QuadPart;
-			m_file->seek(pos);
-			break;
-		case STREAM_SEEK_END:
-			pos = m_file->size();
-			pos += dlibMove.QuadPart;
-			m_file->seek(pos);
-			break;
-		default:
-			return E_INVALIDARG;
+	// IStream's dwOrigin matches IRpFile::SeekWhence,
+	// so we can use static_cast<>.
+	int ret = m_file->seek(dlibMove.QuadPart, static_cast<IRpFile::SeekWhence>(dwOrigin));
+	if (ret != 0) {
+		return STG_E_INVALIDFUNCTION;
 	}
 
 	if (plibNewPosition) {

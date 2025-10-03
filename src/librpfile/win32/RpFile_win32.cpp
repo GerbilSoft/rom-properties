@@ -550,10 +550,11 @@ size_t RpFile::write(const void *ptr, size_t size)
 
 /**
  * Set the file position.
- * @param pos File position.
+ * @param pos		[in] File position
+ * @param whence	[in] Where to seek from
  * @return 0 on success; -1 on error.
  */
-int RpFile::seek(off64_t pos)
+int RpFile::seek(off64_t pos, SeekWhence whence)
 {
 	RP_D(RpFile);
 	if (!d->file) {
@@ -565,20 +566,15 @@ int RpFile::seek(off64_t pos)
 		// SetFilePointerEx() *requires* sector alignment when
 		// accessing device files. Hence, we'll have to maintain
 		// our own device position.
-		if (pos < 0) {
-			d->devInfo->device_pos = 0;
-		} else if (pos <= d->devInfo->device_size) {
-			d->devInfo->device_pos = pos;
-		} else {
-			d->devInfo->device_pos = d->devInfo->device_size;
-		}
+		pos = adjust_file_pos_for_whence(pos, whence, d->devInfo->device_pos, d->devInfo->device_size);
+		d->devInfo->device_pos = constrain_file_pos(pos, d->devInfo->device_size);
 		return 0;
 	}
 
 	int ret;
 	if (d->gzfd) {
 		// FIXME: Might not work with >2GB files...
-		z_off_t zret = gzseek(d->gzfd, (long)pos, SEEK_SET);
+		z_off_t zret = gzseek(d->gzfd, static_cast<long>(pos), static_cast<int>(whence));
 		if (zret >= 0) {
 			ret = 0;
 		} else {
@@ -591,7 +587,7 @@ int RpFile::seek(off64_t pos)
 	} else {
 		LARGE_INTEGER liSeekPos;
 		liSeekPos.QuadPart = pos;
-		BOOL bRet = SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_BEGIN);
+		BOOL bRet = SetFilePointerEx(d->file, liSeekPos, nullptr, static_cast<DWORD>(whence));
 		if (bRet) {
 			ret = 0;
 		} else {
@@ -807,13 +803,15 @@ int RpFile::makeWritable(void)
 		// Try reopening as read-only.
 		d->mode = (RpFile::FileMode)(d->mode & ~FM_WRITE);
 		if (d->reOpenFile() != 0) {
-			this->seek(prev_pos);
+			// FIXME: g++ can't resolve IRpFile::seek(off64_t) here, so explicitly specify SeekWhence::Set.
+			this->seek(prev_pos, IRpFile::SeekWhence::Set);
 		}
 		return -ENOTSUP;
 	}
 
 	// Restore the seek position.
-	this->seek(prev_pos);
+	// FIXME: g++ can't resolve IRpFile::seek(off64_t) here, so explicitly specify SeekWhence::Set.
+	this->seek(prev_pos, IRpFile::SeekWhence::Set);
 	return 0;
 }
 

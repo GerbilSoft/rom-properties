@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiPartition.hpp: Wii partition reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -616,12 +616,12 @@ size_t WiiPartition::read(void *ptr, size_t size)
 
 /**
  * Set the partition position.
- * @param pos Partition position.
+ * @param pos		[in] Partition position
+ * @param whence	[in] Where to seek from
  * @return 0 on success; -1 on error.
  */
-int WiiPartition::seek(off64_t pos)
+int WiiPartition::seek(off64_t pos, SeekWhence whence)
 {
-	RP_D(WiiPartition);
 	assert(m_file != nullptr);
 	assert(m_file->isOpen());
 	if (!m_file ||  !m_file->isOpen()) {
@@ -629,16 +629,14 @@ int WiiPartition::seek(off64_t pos)
 		return -1;
 	}
 
-	// Handle out-of-range cases.
+	RP_D(WiiPartition);
+	pos = adjust_file_pos_for_whence(pos, whence, d->pos_7C00, d->data_size);
 	if (pos < 0) {
 		// Negative is invalid.
 		m_lastError = EINVAL;
 		return -1;
-	} else if (pos >= d->data_size) {
-		d->pos_7C00 = d->data_size;
-	} else {
-		d->pos_7C00 = pos;
 	}
+	d->pos_7C00 = constrain_file_pos(pos, d->data_size);
 	return 0;
 }
 

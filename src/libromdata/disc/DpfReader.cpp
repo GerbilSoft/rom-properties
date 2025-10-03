@@ -363,10 +363,11 @@ size_t DpfReader::read(void *ptr, size_t size)
 
 /**
  * Set the disc image position.
- * @param pos disc image position.
+ * @param pos		[in] Disc image position
+ * @param whence	[in] Where to seek from
  * @return 0 on success; -1 on error.
  */
-int DpfReader::seek(off64_t pos)
+int DpfReader::seek(off64_t pos, SeekWhence whence)
 {
 	RP_D(DpfReader);
 	assert(m_file != nullptr);
@@ -378,16 +379,13 @@ int DpfReader::seek(off64_t pos)
 		return -1;
 	}
 
-	// Handle out-of-range cases.
+	pos = adjust_file_pos_for_whence(pos, whence, d->pos, d->disc_size);
 	if (pos < 0) {
 		// Negative is invalid.
 		m_lastError = EINVAL;
 		return -1;
-	} else if (pos >= d->disc_size) {
-		d->pos = d->disc_size;
-	} else {
-		d->pos = pos;
 	}
+	d->pos = constrain_file_pos(pos, d->disc_size);
 	return 0;
 }
 

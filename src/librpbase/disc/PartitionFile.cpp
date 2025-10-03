@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * PartitionFile.hpp: IRpFile implementation for IPartition.               *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -112,24 +112,19 @@ size_t PartitionFile::write(const void *ptr, size_t size)
 
 /**
  * Set the file position.
- * @param pos File position.
+ * @param pos		[in] File position
+ * @param whence	[in] Where to seek from
  * @return 0 on success; -1 on error.
  */
-int PartitionFile::seek(off64_t pos)
+int PartitionFile::seek(off64_t pos, SeekWhence whence)
 {
 	if (!m_partition) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
-	if (pos <= 0) {
-		m_pos = 0;
-	} else if (pos >= m_size) {
-		m_pos = m_size;
-	} else {
-		m_pos = pos;
-	}
-
+	pos = adjust_file_pos_for_whence(pos, whence, m_pos, m_size);
+	m_pos = constrain_file_pos(pos, m_size);
 	return 0;
 }
 

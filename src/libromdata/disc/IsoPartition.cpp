@@ -690,12 +690,12 @@ size_t IsoPartition::read(void *ptr, size_t size)
 
 /**
  * Set the partition position.
- * @param pos Partition position.
+ * @param pos		[in] Partition position
+ * @param whence	[in] Where to seek from
  * @return 0 on success; -1 on error.
  */
-int IsoPartition::seek(off64_t pos)
+int IsoPartition::seek(off64_t pos, SeekWhence whence)
 {
-	RP_D(IsoPartition);
 	assert(m_file != nullptr);
 	assert(m_file->isOpen());
 	if (!m_file ||  !m_file->isOpen()) {
@@ -703,6 +703,11 @@ int IsoPartition::seek(off64_t pos)
 		return -1;
 	}
 
+	// NOTE: We have to handle `whence` here due to the partition offset.
+	RP_D(IsoPartition);
+	if (whence != SeekWhence::Set) {
+		pos = adjust_file_pos_for_whence(pos, whence, tell(), d->partition_size);
+	}
 	int ret = m_file->seek(d->partition_offset + pos);
 	if (ret != 0) {
 		m_lastError = m_file->lastError();

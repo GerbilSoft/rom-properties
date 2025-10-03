@@ -251,13 +251,13 @@ int CdiReaderPrivate::parseCdiFile(void)
 
 			// Original filename (not saving the actual filename for now)
 			uint8_t filename_length;
-			q->m_file->seek_cur(4);
+			q->m_file->seek(4, IRpFile::SeekWhence::Cur);
 			size = q->m_file->read(&filename_length, sizeof(filename_length));
 			if (size != sizeof(filename_length)) {
 				q->m_lastError = EIO;
 				return -EIO;
 			}
-			q->m_file->seek_cur(filename_length + 11 + 4 + 4);
+			q->m_file->seek(filename_length + 11 + 4 + 4, IRpFile::SeekWhence::Cur);
 
 			size = q->m_file->read(&temp_value, sizeof(temp_value));
 			if (size != sizeof(temp_value)) {
@@ -266,7 +266,7 @@ int CdiReaderPrivate::parseCdiFile(void)
 			}
 			if (temp_value == cpu_to_le32(0x80000000)) {
 				// DiscJuggler 4: Skip the next 8 bytes.
-				q->m_file->seek_cur(8);
+				q->m_file->seek(8, IRpFile::SeekWhence::Cur);
 			}
 
 			// Read the lengths.
@@ -371,9 +371,9 @@ int CdiReaderPrivate::parseCdiFile(void)
 
 			// Go to the next track.
 			track_offset += static_cast<off64_t>(le32_to_cpu(lengthFields.total_length)) * static_cast<off64_t>(sectorSize);
-			q->m_file->seek_cur(29);
+			q->m_file->seek(29, IRpFile::SeekWhence::Cur);
 			if (cdiFooter.version != CdiVersion::CDI_V2) {
-				q->m_file->seek_cur(5);
+				q->m_file->seek(5, IRpFile::SeekWhence::Cur);
 				size = q->m_file->read(&temp_value, sizeof(temp_value));
 				if (size != sizeof(temp_value)) {
 					q->m_lastError = EIO;
@@ -381,15 +381,15 @@ int CdiReaderPrivate::parseCdiFile(void)
 				}
 				if (temp_value == 0xFFFFFFFF) {
 					// DiscJuggler 3.00.780+: Extra data
-					q->m_file->seek_cur(78);
+					q->m_file->seek(78, IRpFile::SeekWhence::Cur);
 				}
 			}
 		}
 
 		// Go to the next session.
-		q->m_file->seek_cur(4 + 8);
+		q->m_file->seek(4 + 8, IRpFile::SeekWhence::Cur);
 		if (cdiFooter.version != CdiVersion::CDI_V2) {
-			q->m_file->seek_cur(1);
+			q->m_file->seek(1, IRpFile::SeekWhence::Cur);
 		}
 	}
 

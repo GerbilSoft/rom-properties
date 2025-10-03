@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * MemFile.cpp: IRpFile implementation using a memory buffer.              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -115,10 +115,11 @@ size_t MemFile::write(const void *ptr, size_t size)
 
 /**
  * Set the file position.
- * @param pos File position.
+ * @param pos		[in] File position
+ * @param whence	[in] Where to seek from
  * @return 0 on success; -1 on error.
  */
-int MemFile::seek(off64_t pos)
+int MemFile::seek(off64_t pos, SeekWhence whence)
 {
 	if (!m_buf) {
 		m_lastError = EBADF;
@@ -127,14 +128,8 @@ int MemFile::seek(off64_t pos)
 
 	// NOTE: m_pos is size_t, since it's referring to
 	// a position within a memory buffer.
-	if (pos <= 0) {
-		m_pos = 0;
-	} else if (static_cast<size_t>(pos) >= m_size) {
-		m_pos = m_size;
-	} else {
-		m_pos = static_cast<size_t>(pos);
-	}
-
+	pos = adjust_file_pos_for_whence(pos, whence, static_cast<off64_t>(m_pos), static_cast<off64_t>(m_size));
+	m_pos = static_cast<size_t>(constrain_file_pos(pos, static_cast<off64_t>(m_size)));
 	return 0;
 }
 
