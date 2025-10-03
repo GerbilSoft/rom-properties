@@ -236,9 +236,9 @@ int loadFieldData(LibRpBase::RomFields &fields, const pugi::xml_document &manife
 
 #define addMetaData_string_i18n(name, str, flags) do { \
 	if (arscReader) { \
-		metaData.addMetaData_string(Property::Title, arscReader->getStringFromResource(str), (flags)); \
+		metaData.addMetaData_string((name), arscReader->getStringFromResource(str), (flags)); \
 	} else { \
-		metaData.addMetaData_string(Property::Title, (str), (flags)); \
+		metaData.addMetaData_string((name), (str), (flags)); \
 	} \
 } while (0)
 
