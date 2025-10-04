@@ -200,13 +200,12 @@ end;
   #define FileName FindGetFileName(FindHandle)
   #define file_arch "i386"
   #define file_bits "32bit"
-  #define file_check "IsX86Compatible"
   #if Copy(FileName, Len(FileName) - 18, 18) == "rom-properties.dll"
     #define do_regserver "regserver"
   #else
     #define do_regserver ""
   #endif
-  Source: "..\pkg_windows\build.{#file_arch}\bin\Release\{#FileName}"; DestDir: "{app}\{#file_arch}"; Components: main; Flags: ignoreversion uninsrestartdelete {#file_bits} {#do_regserver}; Check: {#file_check}
+  Source: "..\pkg_windows\build.{#file_arch}\bin\Release\{#FileName}"; DestDir: "{app}\{#file_arch}"; Components: main; Flags: ignoreversion uninsrestartdelete {#file_bits} {#do_regserver}
 #endsub
 #sub BuildFileList_i386
   #define FindResult
