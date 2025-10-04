@@ -616,11 +616,16 @@ STDAPI DllRegisterServer(void)
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
 #ifdef HAVE_RP_PROPERTYSTORE_DEPS
+	// NOTE: This is now handled by Inno Setup.
+	// We'll still handle this here for Debug builds, though.
+	// TODO: Add an option to force this in Release builds?
+#  ifndef NDEBUG
 	// Unregister the Property Description Schema first before re-registering.
 	lResult = RP_PropertyStore::UnregisterPropertyDescriptionSchema();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_PropertyStore::RegisterPropertyDescriptionSchema();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+#  endif /* !NDEBUG */
 #endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 #ifdef ENABLE_OVERLAY_ICON_HANDLER
 	lResult = RP_ShellIconOverlayIdentifer::RegisterShellIconOverlayIdentifier();
@@ -756,8 +761,13 @@ STDAPI DllUnregisterServer(void)
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
 #ifdef HAVE_RP_PROPERTYSTORE_DEPS
+	// NOTE: This is now handled by Inno Setup.
+	// We'll still handle this here for Debug builds, though.
+	// TODO: Add an option to force this in Release builds?
+#  ifndef NDEBUG
 	lResult = RP_PropertyStore::UnregisterPropertyDescriptionSchema();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+#  endif /* !NDEBUG */
 #endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 #ifdef ENABLE_OVERLAY_ICON_HANDLER
 	lResult = RP_ShellIconOverlayIdentifer::UnregisterShellIconOverlayIdentifier();
