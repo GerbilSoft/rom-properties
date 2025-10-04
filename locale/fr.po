@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2025-08-24 09:53-0400\n"
-"PO-Revision-Date: 2025-09-14 16:31\n"
+"PO-Revision-Date: 2025-10-04 03:46\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -67,7 +67,8 @@ msgstr "Icône"
 msgctxt "CacheTab"
 msgid "If any image type settings were changed, you will need to\n"
 "clear the system thumbnail cache."
-msgstr "Si un quelconque paramètre de type d'image a été changé, vous devrez effacer le Cache Système des Miniatures."
+msgstr "Si un quelconque paramètre de type d'image a été changé, vous devrez\n"
+"effacer le Cache Système des Miniatures."
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:100
 #: ../build/src/kde/kf6/ui_CacheTab.h:100
@@ -232,7 +233,8 @@ msgstr "Téléchargement d'Images Externe"
 msgctxt "OptionsTab"
 msgid "When using an unlimited\n"
 "network connection:"
-msgstr "Lors de l'usage d'un réseau non limité :"
+msgstr "Lors de l'usage d'un\n"
+"réseau non limité :"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:188
 #: ../build/src/kde/kf5/ui_OptionsTab.h:194
@@ -267,7 +269,8 @@ msgstr "Télécharger des images en haute définition"
 msgctxt "OptionsTab"
 msgid "When using a metered\n"
 "network connection:"
-msgstr "Lors de l'usage d'un réseau limité :"
+msgstr "Lors de l'usage d'un\n"
+"réseau limité :"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:198
 #: ../build/src/kde/kf6/ui_OptionsTab.h:198
@@ -304,7 +307,8 @@ msgstr "&Options"
 msgctxt "OptionsTab"
 msgid "Show a security overlay icon for ROM images with\n"
 "\"dangerous\" permissions."
-msgstr "Afficher un contour de sécurité pour les images de ROM avec des permissions \"dangereuses\"."
+msgstr "Afficher un contour de sécurité pour les images de ROM\n"
+"avec des permissions \"dangereuses\"."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:205
 #: ../build/src/kde/kf6/ui_OptionsTab.h:205
@@ -312,7 +316,8 @@ msgstr "Afficher un contour de sécurité pour les images de ROM avec des permis
 msgctxt "OptionsTab"
 msgid "Enable thumbnailing and metadata extraction on network\n"
 "file systems. This may slow down file browsing."
-msgstr "Activer l'extraction des miniatures et des métadonnées sur les systèmes de fichier en réseau. Cela peut ralentir l'exploration des fichiers."
+msgstr "Activer l'extraction des miniatures et des métadonnées sur les systèmes\n"
+"de fichier en réseau. Cela peut ralentir l'exploration des fichiers."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:207
 #: ../build/src/kde/kf6/ui_OptionsTab.h:207
@@ -320,7 +325,8 @@ msgstr "Activer l'extraction des miniatures et des métadonnées sur les systèm
 msgctxt "OptionsTab"
 msgid "Enable thumbnailing and metadata extraction of directory-based\n"
 "packages, e.g. for Wii U. This may slow down file browsing."
-msgstr "Activer l'extraction des miniatures et des métadonnées des paquets basés sur des répertoires, comme pour la Wii U. Cela peut ralentir l'exploration des fichiers."
+msgstr "Activer l'extraction des miniatures et des métadonnées des paquets basés sur des\n"
+"répertoires, comme pour la Wii U. Cela peut ralentir l'exploration des fichiers."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:209
 #: ../build/src/kde/kf6/ui_OptionsTab.h:209
@@ -853,8 +859,8 @@ msgstr "Aucune clé n'a été importée à partir de «{:s}»."
 msgctxt "KeyManagerTab"
 msgid "{0:Ld} key was imported from '{1:s}'."
 msgid_plural "{0:Ld} keys were imported from '{1:s}'."
-msgstr[0] "La clé {0:Ld} a été importée à partir de «{1:s}»."
-msgstr[1] "Les clés {0:Ld} ont été importées à partir de «{1:s}»."
+msgstr[0] "{0:Ld} clé a été importée à partir de «{1:s}»."
+msgstr[1] "{0:Ld} clés ont été importées à partir de «{1:s}»."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:633
 #: ../src/kde/config/KeyManagerTab.cpp:235
@@ -863,8 +869,8 @@ msgstr[1] "Les clés {0:Ld} ont été importées à partir de «{1:s}»."
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key already exists in the Key Manager."
 msgid_plural "{:Ld} keys already exist in the Key Manager."
-msgstr[0] "La clé {:Ld} existe déjà dans le gestionnaire de clés."
-msgstr[1] "Les clés {:Ld} existent déjà dans le gestionnaire de clés."
+msgstr[0] "{:Ld} clé existe déjà dans le gestionnaire de clés."
+msgstr[1] "{:Ld} clés existent déjà dans le gestionnaire de clés."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:642
 #: ../src/kde/config/KeyManagerTab.cpp:244
@@ -873,8 +879,8 @@ msgstr[1] "Les clés {:Ld} existent déjà dans le gestionnaire de clés."
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key was not imported because it is incorrect."
 msgid_plural "{:Ld} keys were not imported because they are incorrect."
-msgstr[0] "La clé {:Ld} n'a pas été importée car elle est incorrecte."
-msgstr[1] "Les clés {:Ld} n'ont pas été importées car elles sont incorrectes."
+msgstr[0] "{:Ld} clé n'a pas été importée car elle est incorrecte."
+msgstr[1] "{:Ld} clés n'ont pas été importées car elles sont incorrectes."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:651
 #: ../src/kde/config/KeyManagerTab.cpp:253
@@ -883,8 +889,8 @@ msgstr[1] "Les clés {:Ld} n'ont pas été importées car elles sont incorrectes
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key was not imported because it isn't used by rom-properties."
 msgid_plural "{:Ld} keys were not imported because they aren't used by rom-properties."
-msgstr[0] "La clé {:Ld} n'a pas été importée car elle n'est pas utilisée par rom-properties."
-msgstr[1] "Les clés {:Ld} n'ont pas été importées car elles ne sont pas utilisées par rom-properties."
+msgstr[0] "{:Ld} clé n'a pas été importée car elle n'est pas utilisée par rom-properties."
+msgstr[1] "{:Ld} clés n'ont pas été importées car elles ne sont pas utilisées par rom-properties."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:660
 #: ../src/kde/config/KeyManagerTab.cpp:262
@@ -893,8 +899,8 @@ msgstr[1] "Les clés {:Ld} n'ont pas été importées car elles ne sont pas util
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key was not imported because it is encrypted and the master key isn't available."
 msgid_plural "{:Ld} keys were not imported because they are encrypted and the master key isn't available."
-msgstr[0] "La clé {:Ld} n'a pas été importée car elle est chiffrée et la clé principale n'est pas disponible."
-msgstr[1] "Les clés {:Ld} n'ont pas été importées car elles sont chiffrées et la clé principale n'est pas disponible."
+msgstr[0] "{:Ld} clé n'a pas été importée car elle est chiffrée et la clé principale n'est pas disponible."
+msgstr[1] "{:Ld} clés n'ont pas été importées car elles sont chiffrées et la clé principale n'est pas disponible."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:669
 #: ../src/kde/config/KeyManagerTab.cpp:271
@@ -903,8 +909,8 @@ msgstr[1] "Les clés {:Ld} n'ont pas été importées car elles sont chiffrées 
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key has been imported and verified as correct."
 msgid_plural "{:Ld} keys have been imported and verified as correct."
-msgstr[0] "La clé {:Ld} a été importée et vérifiée comme correcte."
-msgstr[1] "Les clés {:Ld} ont été importées et vérifiées comme correctes."
+msgstr[0] "{:Ld} clé a été importée et vérifiée comme correcte."
+msgstr[1] "{:Ld} clés ont été importées et vérifiées comme correctes."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:678
 #: ../src/kde/config/KeyManagerTab.cpp:280
@@ -913,8 +919,8 @@ msgstr[1] "Les clés {:Ld} ont été importées et vérifiées comme correctes."
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key has been imported without verification."
 msgid_plural "{:Ld} keys have been imported without verification."
-msgstr[0] "La clé {:Ld} a été importée sans vérification."
-msgstr[1] "Les clés {:Ld} ont été importées sans vérification."
+msgstr[0] "{:Ld} clé a été importée sans vérification."
+msgstr[1] "{:Ld} clés ont été importées sans vérification."
 
 #. tr: Column 0: Key Name.
 #. tr: Column 0: Key Name
