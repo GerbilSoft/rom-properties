@@ -34,6 +34,22 @@ struct _RpNautilusColumnProvider {
 	GObject __parent__;
 };
 
+// Array of column data we provide.
+// Exported here so it can be shared with NautilusInfoProvider.
+// (Uses NULL termination.)
+const struct rp_nautilus_column_provider_column_desc_data_t rp_nautilus_column_provider_column_desc_data[] = {
+	{"rp-game-id",		"Game ID"},
+	{"rp-title-id",		"Title ID"},
+	{"rp-media-id",		"Media ID"},
+	{"rp-os-version",	"OS Version"},
+	{"rp-encryption-key",	"Encryption Key"},
+	{"rp-pixel-format",	"Pixel Format"},
+	{"rp-region-code",	"Region Code"},
+	{"rp-category",		"Category"},
+
+	{NULL,			NULL}
+};
+
 #if !GLIB_CHECK_VERSION(2, 59, 1)
 #  if defined(__GNUC__) && __GNUC__ >= 8
 /* Disable GCC 8 -Wcast-function-type warnings. (Fixed in glib-2.59.1 upstream.) */
@@ -97,27 +113,9 @@ rp_nautilus_column_provider_get_columns(NautilusColumnProvider *provider)
 
 	// Create columns.
 	// NOTE: Creating the list in reverse, since g_list_prepend() is faster than g_list_append().
-
-	// TODO: Combine this with data from NautilusInfoProvider?
-	struct coldesc {
-		const char *name;		// used for both name and attribute
-		const char *label;
-		//const char *description;	// TODO?
-	};
-	static const struct coldesc column_descriptions[] = {
-		{"rp-game-id",		"Game ID"},
-		{"rp-title-id",		"Title ID"},
-		{"rp-media-id",		"Media ID"},
-		{"rp-os-version",	"OS Version"},
-		{"rp-encryption-key",	"Encryption Key"},
-		{"rp-pixel-format",	"Pixel Format"},
-		{"rp-region-code",	"Region Code"},
-		{"rp-category",		"Category"},
-	};
-
 	GList *list = NULL;
-	for (int i = ARRAY_SIZE_I(column_descriptions)-1; i >= 0; i--) {
-		const struct coldesc *const p = &column_descriptions[i];
+	for (int i = ARRAY_SIZE_I(rp_nautilus_column_provider_column_desc_data)-2; i >= 0; i--) {
+		const struct rp_nautilus_column_provider_column_desc_data_t *const p = &rp_nautilus_column_provider_column_desc_data[i];
 		list = g_list_prepend(list, nautilus_column_new(
 			p->name,	// name
 			p->name,	// attribute

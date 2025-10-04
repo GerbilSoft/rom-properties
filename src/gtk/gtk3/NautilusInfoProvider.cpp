@@ -12,6 +12,9 @@
 #include "NautilusInfoProvider.hpp"
 #include "NautilusExtraInterfaces.h"
 
+// for rp_nautilus_column_provider_column_desc_data[]
+#include "NautilusColumnProvider.h"
+
 // rp_gtk_open_uri()
 #include "is-supported.hpp"
 
@@ -250,17 +253,21 @@ rp_nautilus_info_provider_process(RpNautilusInfoProvider *provider)
 	// Check for custom metadata propreties.
 	// NOTE: Only strings are supported.
 	static constexpr size_t custom_property_count = static_cast<size_t>(Property::PropertyCount) - static_cast<size_t>(Property::GameID);
-	static constexpr array<const char*, custom_property_count> nautilus_prop_names = {{
-		"rp-game-id",
-		"rp-title-id",
-		"rp-media-id",
-		"rp-os-version",
-		"rp-encryption-key",
-		"rp-pixel-format",
-		"rp-region-code",
-		"rp-category",
-	}};
-	static_assert(nautilus_prop_names[custom_property_count - 1] != nullptr, "nautilus_prop_names[] is out of sync!");
+#ifndef NDEBUG
+	// Sanity check (debug builds): Make sure the array is the correct size.
+	// NOTE: Don't really need to use std::call_once() for this...
+	static bool done_once = false;
+	if (!done_once) {
+		size_t actual_size = 0;
+		for (const rp_nautilus_column_provider_column_desc_data_t *p = rp_nautilus_column_provider_column_desc_data;
+		     p->name != nullptr; p++)
+		{
+			actual_size++;
+		}
+		assert(actual_size == custom_property_count);
+		done_once = true;
+	}
+#endif /* !NDEBUG */
 
 	// Custom metadata property names start at Prpoerty::GameID.
 	const RomMetaData *const metaData = romData->metaData();
@@ -278,7 +285,7 @@ rp_nautilus_info_provider_process(RpNautilusInfoProvider *provider)
 
 			// Add the property.
 			const size_t index = static_cast<size_t>(prop.name) - static_cast<size_t>(Property::GameID);
-			nautilus_file_info_add_string_attribute(req->file_info, nautilus_prop_names[index], prop.data.str);
+			nautilus_file_info_add_string_attribute(req->file_info, rp_nautilus_column_provider_column_desc_data[index].name, prop.data.str);
 		}
 	}
 
