@@ -550,7 +550,7 @@ int WiiTicket::loadMetaData(void)
 	}
 
 	// Ticket is read in the constructor.
-	const RVL_Ticket *const ticket = &d->ticket.v0;
+	//const RVL_Ticket *const ticket = &d->ticket.v0;
 	d->metaData.reserve(3);	// Maximum of 3 metadata property.
 
 	// Title ID (using as Title)

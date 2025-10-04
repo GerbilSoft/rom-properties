@@ -480,7 +480,7 @@ int WiiTMD::loadMetaData(void)
 	}
 
 	// TMD header is read in the constructor.
-	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
+	//const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
 	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 
 	// Title ID (using as Title)
