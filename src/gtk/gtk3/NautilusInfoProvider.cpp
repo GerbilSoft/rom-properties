@@ -285,7 +285,10 @@ rp_nautilus_info_provider_process(RpNautilusInfoProvider *provider)
 
 			// Add the property.
 			const size_t index = static_cast<size_t>(prop.name) - static_cast<size_t>(Property::GameID);
-			nautilus_file_info_add_string_attribute(req->file_info, rp_nautilus_column_provider_column_desc_data[index].name, prop.data.str);
+			assert(index < custom_property_count);
+			if (index < custom_property_count) {
+				nautilus_file_info_add_string_attribute(req->file_info, rp_nautilus_column_provider_column_desc_data[index].name, prop.data.str);
+			}
 		}
 	}
 
