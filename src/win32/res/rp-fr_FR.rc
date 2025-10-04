@@ -75,7 +75,7 @@ BEGIN
     CONTROL         "", IDC_OPTIONS_PALLANGUAGEFORGAMETDB, WC_LANGUAGECOMBOBOX, CBS_DROPDOWNLIST | WS_CHILD | WS_TABSTOP | WS_VISIBLE, 138, 108, 68, 128, WS_EX_LEFT
 
     GROUPBOX        "&Options", IDC_OPTIONS_GRPOPTIONS, 7, 133, 397, 90, BS_GROUPBOX, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Afficher un contour de sécurité pour les images de ROM\navec des permissions \"dangereuses\".", IDC_OPTIONS_DANGEROUSPERMISSIONS, 15, 144, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Afficher un contour de sécurité pour les images de ROM\navec des permissions ""dangereuses"".", IDC_OPTIONS_DANGEROUSPERMISSIONS, 15, 144, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Activer l'extraction des miniatures et des métadonnées sur les systèmes\nde fichier en réseau. Cela peut ralentir l'exploration des fichiers.", IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS, 15, 165, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Activer l'extraction des miniatures et des métadonnées des paquets basés sur des\nrépertoires, comme pour la Wii U. Cela peut ralentir l'exploration des fichiers.", IDC_OPTIONS_THUMBNAILDIRECTORYPACKAGES, 15, 186, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Afficher l'onglet des Attributs Étendus.", IDC_OPTIONS_SHOWXATTRVIEW, 15, 207, 381, 8, BS_MULTILINE, WS_EX_TRANSPARENT
