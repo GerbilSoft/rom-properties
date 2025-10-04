@@ -3,5 +3,3 @@ files:
     translation: /locale/%two_letters_code%.po
   - source: /src/win32/res/rp-en_US.rc
     translation: /src/win32/res/rp-%locale_with_underscore%.rc
-  - source: /src/svrplus/res-en_US.rc
-    translation: /src/svrplus/res-%locale_with_underscore%.rc

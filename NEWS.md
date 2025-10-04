@@ -17,6 +17,13 @@
   * GNOME Nautilus (and Caja and Nemo): An emblem is now shown for files with
     potentially dangerous permissions.
     * See issue #168: Icon overlay for "dangerous" ROM permissions (GNOME, Windows)
+  * Windows: Installers are now created using Inno Setup instead of the custom
+    svrplus executable. Both Inno Setup 5 and 6 are used:
+    * Inno Setup 5 is used for Windows XP, 2003, and Vista.
+    * Inno Setup 6 is used for Windows 7, 8.x, 10, and 11.
+    * The Inno Setup 6 installer will not run on Vista and older, and the
+      Inno Setup 5 installer will show an error message if run on
+      Windows 7 or later.
 
 ## v2.6 (released 2025/09/13)
 
