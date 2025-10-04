@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2025-08-24 09:53-0400\n"
-"PO-Revision-Date: 2025-10-04 03:46\n"
+"PO-Revision-Date: 2025-10-04 04:54\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -234,7 +234,7 @@ msgctxt "OptionsTab"
 msgid "When using an unlimited\n"
 "network connection:"
 msgstr "Lors de l'usage d'un\n"
-"réseau non limité :"
+"réseau non limité :"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:188
 #: ../build/src/kde/kf5/ui_OptionsTab.h:194
@@ -270,7 +270,7 @@ msgctxt "OptionsTab"
 msgid "When using a metered\n"
 "network connection:"
 msgstr "Lors de l'usage d'un\n"
-"réseau limité :"
+"réseau limité :"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:198
 #: ../build/src/kde/kf6/ui_OptionsTab.h:198
@@ -293,7 +293,7 @@ msgstr "Enregistrer l'origine du fichier en cache en utilisant des attributs ét
 #: ../src/gtk/config/OptionsTab.cpp:237
 msgctxt "OptionsTab"
 msgid "Language for PAL titles on GameTDB:"
-msgstr "Langue des titres PAL sur GameTDB :"
+msgstr "Langue des titres PAL sur GameTDB :"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:202
 #: ../build/src/kde/kf6/ui_OptionsTab.h:202
@@ -449,7 +449,7 @@ msgstr "Nom"
 #: ../src/gtk/xattr/XfsAttrView.c:169
 msgctxt "XfsAttrView"
 msgid "Project ID:"
-msgstr "ID du projet :"
+msgstr "ID du projet :"
 
 #: ../src/gtk/AchGDBus.cpp:201 ../src/kde/AchQtDBus.cpp:192
 #: ../src/win32/AchWin32.cpp:284
@@ -555,19 +555,19 @@ msgstr "Licences : {:s}"
 #: ../src/win32/config/AboutTab.cpp:1184
 msgctxt "AboutTab|Libraries"
 msgid "APNG patch:"
-msgstr "Correctif APNG :"
+msgstr "Correctif APNG :"
 
 #: ../src/gtk/config/AboutTab.cpp:803 ../src/kde/config/AboutTab.cpp:554
 #: ../src/win32/config/AboutTab.cpp:1266
 msgctxt "AboutTab|Support"
 msgid "For technical support, you can visit the following websites:"
-msgstr "Pour un support technique, vous pouvez visiter les sites Web suivants :"
+msgstr "Pour un support technique, vous pouvez visiter les sites Web suivants :"
 
 #: ../src/gtk/config/AboutTab.cpp:820 ../src/kde/config/AboutTab.cpp:571
 #: ../src/win32/config/AboutTab.cpp:1282
 msgctxt "AboutTab|Support"
 msgid "You can also email the developer directly:"
-msgstr "Vous pouvez également envoyer un courriel au développeur directement :"
+msgstr "Vous pouvez également envoyer un courriel au développeur directement :"
 
 #: ../src/gtk/config/AboutTab.cpp:846 ../src/kde/config/AboutTab.cpp:599
 #: ../src/win32/config/AboutTab.cpp:585
@@ -588,7 +588,7 @@ msgstr "<b>ERREUR :</b> {:s}"
 #, c++-format
 msgctxt "AboutTab"
 msgid "Latest version: {:s}"
-msgstr "Dernière version : {:s}"
+msgstr "Dernière version : {:s}"
 
 #: ../src/gtk/config/AboutTab.cpp:899 ../src/kde/config/AboutTab.cpp:716
 msgctxt "AboutTab"
@@ -810,7 +810,7 @@ msgstr "Un ID de clé inconnu a été passé à l'importateur de clés.\n"
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while opening '{0:s}': {1:s}"
-msgstr "Une erreur est survenue lors de l'ouverture de «{0:s}» : {1:s}"
+msgstr "Une erreur est survenue lors de l'ouverture de «{0:s}» : {1:s}"
 
 #: ../src/gtk/config/KeyManagerTab.cpp:572
 #: ../src/kde/config/KeyManagerTab.cpp:168
@@ -826,7 +826,7 @@ msgstr "Une erreur est survenue lors de l'ouverture de «{:s}»."
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while reading '{0:s}': {1:s}"
-msgstr "Une erreur est survenue lors de la lecture de «{0:s}» : {1:s}"
+msgstr "Une erreur est survenue lors de la lecture de «{0:s}» : {1:s}"
 
 #: ../src/gtk/config/KeyManagerTab.cpp:588
 #: ../src/kde/config/KeyManagerTab.cpp:186
@@ -1076,7 +1076,7 @@ msgstr "(type de fichier inconnu)"
 #, c++-format
 msgctxt "RomDataView"
 msgid "{0:s} | {1:s}"
-msgstr ""
+msgstr "{0:s} | {1:s}"
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:220
 msgctxt "RomDataView"
@@ -1121,7 +1121,8 @@ msgstr "&Options"
 msgctxt "RomDataView"
 msgid "{0:s}\n"
 "{1:s}"
-msgstr ""
+msgstr "{0:s}\n"
+"{1:s}"
 
 #. tr: Field description label.
 #: ../src/gtk/RomDataView.cpp:1468 ../src/kde/RomDataView.cpp:986
@@ -1197,7 +1198,7 @@ msgstr "Inconnu"
 #, c++-format
 msgctxt "RomDataView"
 msgid "File: '{:s}'"
-msgstr "Fichier : «{:s}»"
+msgstr "Fichier : «{:s}»"
 
 #: ../src/gtk/RomDataView_ops.cpp:441 ../src/kde/RomDataView_ops.cpp:216
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:322
@@ -1237,19 +1238,19 @@ msgstr "Tous les Fichiers|*|-"
 #, c-format
 msgctxt "Ext2AttrView"
 msgid "%c: %s"
-msgstr "%c : %s"
+msgstr "%c : %s"
 
 #: ../src/gtk/xattr/Ext2AttrView.cpp:370 ../src/kde/xattr/Ext2AttrView.cpp:172
 #, c++-format
 msgctxt "Ext2AttrView"
 msgid "Compression: {:s}"
-msgstr "Compression : {:s}"
+msgstr "Compression : {:s}"
 
 #: ../src/gtk/xattr/Ext2AttrView.cpp:372 ../src/kde/xattr/Ext2AttrView.cpp:174
 #, c++-format
 msgctxt "Ext2AttrView"
 msgid "Compression: {:s}:{:d}"
-msgstr "Compression : {:s}:{:d}"
+msgstr "Compression : {:s}:{:d}"
 
 #: ../src/gtk/xattr/XAttrView.cpp:95
 msgctxt "XAttrView"
@@ -1273,7 +1274,7 @@ msgstr "<b>ERREUR :</b> %1"
 #: ../src/kde/xattr/Ext2AttrView.cpp:89
 msgctxt "Ext2AttrView"
 msgid "%1: %2"
-msgstr "%1 : %2"
+msgstr "%1 : %2"
 
 #. tr: XAttrView tab title
 #: ../src/kde/xattr/XAttrViewPropertiesDialogPlugin.cpp:83
@@ -2840,7 +2841,7 @@ msgstr ""
 #, c++-format
 msgctxt "Wii"
 msgid "{0:s} ({1:s})"
-msgstr ""
+msgstr "{0:s} ({1:s})"
 
 #: ../src/libromdata/Console/GameCube.cpp:1400
 #: ../src/libromdata/Console/SNES.cpp:1624
@@ -4131,7 +4132,7 @@ msgstr ""
 #: ../src/libromdata/Console/SNES.cpp:901
 msgctxt "SNES|NintendoPower"
 msgid "#"
-msgstr ""
+msgstr "#"
 
 #: ../src/libromdata/Console/SNES.cpp:902
 msgctxt "SNES|NintendoPower"
@@ -4666,7 +4667,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1874
 msgctxt "Xbox360_XEX"
 msgid "{0:0>8X} ({1:s}-{2:0>4d})"
-msgstr ""
+msgstr "{0:0>8X} ({1:s}-{2:0>4d})"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1092
 msgctxt "Xbox360_XEX"
@@ -4740,7 +4741,7 @@ msgstr "Gamerscore"
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1534
 msgctxt "Xbox360_XDBF"
 msgid "Achievements"
-msgstr "&Succès"
+msgstr "Succès"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1219
 msgctxt "Xbox360_XDBF|AvatarAwards"
@@ -5026,7 +5027,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox_XBE.cpp:715
 msgctxt "Xbox_XBE"
 msgid "{0:0>8X} ({1:s}-{2:0>3d})"
-msgstr ""
+msgstr "{0:0>8X} ({1:s}-{2:0>3d})"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:731
 msgctxt "Xbox_XBE"
@@ -6673,7 +6674,7 @@ msgstr "Nom de fichier"
 #: ../src/libromdata/Media/CBMDOS.cpp:1347
 msgctxt "CBMDOS|Directory"
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: ../src/libromdata/Media/CBMDOS.cpp:1404
 msgctxt "CBMDOS"
@@ -7041,7 +7042,7 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:1125
 msgctxt "ELF|Symbol"
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: ../src/libromdata/Other/ELF.cpp:1126
 msgctxt "ELF|Symbol"
@@ -7086,7 +7087,7 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:1515
 msgctxt "ELF"
 msgid "Format"
-msgstr ""
+msgstr "Format"
 
 #: ../src/libromdata/Other/ELF.cpp:1530
 msgctxt "ELF"
@@ -8295,7 +8296,7 @@ msgstr ""
 #, c++-format
 msgctxt "NintendoBadge"
 msgid "{0:s} ({1:s})"
-msgstr ""
+msgstr "{0:s} ({1:s})"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:786
 msgctxt "NintendoBadge"
@@ -9311,7 +9312,7 @@ msgstr "Eo"
 #, c++-format
 msgctxt "LibRpText|FileSize"
 msgid "{0:s} {1:s}"
-msgstr ""
+msgstr "{0:s} {1:s}"
 
 #. tr: {0:Ld} == localized value, {1:s} == suffix (e.g. MiB)
 #: ../src/librptext/formatting.cpp:350
@@ -9349,7 +9350,7 @@ msgstr "GHz"
 #, c++-format
 msgctxt "LibRpText|Frequency"
 msgid "{0:s} {1:s}"
-msgstr ""
+msgstr "{0:s} {1:s}"
 
 #: ../src/librptexture/fileformat/DidjTex.cpp:467
 msgctxt "DidjTex"
@@ -9679,7 +9680,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/ICO.cpp:1389
 msgctxt "ICO"
 msgid "Format"
-msgstr ""
+msgstr "Format"
 
 #: ../src/librptexture/fileformat/ICO.cpp:1461
 msgctxt "ICO"
@@ -10546,7 +10547,7 @@ msgstr ""
 #: ../src/rp-stub/rp-stub.c:91
 msgctxt "rp-stub"
 msgid "Copyright (c) 2016-2025 by David Korth."
-msgstr ""
+msgstr "Copyright (c) 2016-2025 par David Korth."
 
 #: ../src/rp-stub/rp-stub.c:93
 #, c-format
