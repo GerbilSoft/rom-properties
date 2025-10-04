@@ -64,7 +64,7 @@ BEGIN
     GROUPBOX        "&Téléchargements", IDC_OPTIONS_GRPDOWNLOADS, 7, 7, 397, 121, BS_GROUPBOX, WS_EX_TRANSPARENT
     GROUPBOX        "", IDC_OPTIONS_GRPEXTIMGDL, 15, 19, 381, 47, 0, 0
     AUTOCHECKBOX    "Té&léchargement d'Images Externe", IDC_OPTIONS_CHKEXTIMGDL, 21, 19, 101, 8, 0, 0
-    RTEXT           "Lors de l'usage d'un\n réseau non limité :", IDC_OPTIONS_LBL_UNMETERED_DL, 25, 31, 145, 8, 0, 0
+    RTEXT           "Lors de l'usage d'un réseau non limité :", IDC_OPTIONS_LBL_UNMETERED_DL, 25, 31, 145, 8, 0, 0
     COMBOBOX        IDC_OPTIONS_CBO_UNMETERED_DL, 174, 29, 132, 64, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Lors de l'usage d'un réseau limité :", IDC_OPTIONS_LBL_METERED_DL, 25, 49, 145, 8, 0, 0
     COMBOBOX        IDC_OPTIONS_CBO_METERED_DL, 174, 47, 132, 64, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
