@@ -24,6 +24,7 @@
     * The Inno Setup 6 installer will not run on Vista and older, and the
       Inno Setup 5 installer will show an error message if run on
       Windows 7 or later.
+  * Added more French translations from @NoNameWasDefined.
 
 ## v2.6 (released 2025/09/13)
 
