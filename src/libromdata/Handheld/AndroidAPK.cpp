@@ -40,12 +40,9 @@ using namespace pugi;
 
 // C++ STL classes
 #include <limits>
-#include <stack>
 using std::array;
-using std::stack;
 using std::string;
 using std::unique_ptr;
-using std::unordered_map;
 using std::vector;
 
 // Uninitialized vector class
