@@ -1035,19 +1035,19 @@ int KhronosKTX::getFields(RomFields *fields) const
 	if (ktxHeader->endianness == KTX_ENDIAN_MAGIC) {
 		// Matches host-endian.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		endian_str = C_("FileFormat", "Little-Endian");
+		endian_str = C_("RomData", "Little-Endian");
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-		endian_str = C_("FileFormat", "Big-Endian");
+		endian_str = C_("RomData", "Big-Endian");
 #endif
 	} else {
 		// Does not match host-endian.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		endian_str = C_("FileFormat", "Big-Endian");
+		endian_str = C_("RomData", "Big-Endian");
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-		endian_str = C_("FileFormat", "Little-Endian");
+		endian_str = C_("RomData", "Little-Endian");
 #endif
 	}
-	fields->addField_string(C_("FileFormat", "Endianness"), endian_str);
+	fields->addField_string(C_("RomData", "Endianness"), endian_str);
 
 	// NOTE: GL field names should not be localized.
 

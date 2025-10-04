@@ -1340,16 +1340,16 @@ int PowerVR3::getFields(RomFields *fields) const
 
 	// Endianness
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-#  define HOST_ENDIAN C_("PowerVR3", "Little-Endian")
-#  define SWAP_ENDIAN C_("PowerVR3", "Big-Endian")
+#  define HOST_ENDIAN C_("RomData", "Little-Endian")
+#  define SWAP_ENDIAN C_("RomData", "Big-Endian")
 #else /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
-#  define HOST_ENDIAN C_("PowerVR3", "Big-Endian")
-#  define SWAP_ENDIAN C_("PowerVR3", "Little-Endian")
+#  define HOST_ENDIAN C_("RomData", "Big-Endian")
+#  define SWAP_ENDIAN C_("RomData", "Little-Endian")
 #endif
 	const char *const endian_str = (pvr3Header->version == PVR3_VERSION_HOST)
 		? HOST_ENDIAN
 		: SWAP_ENDIAN;
-	fields->addField_string(C_("PowerVR3", "Endianness"), endian_str);
+	fields->addField_string(C_("RomData", "Endianness"), endian_str);
 
 	// Flags
 	// NOTE: "Compressed" is listed in the PowerVR Native SDK,
