@@ -9,6 +9,8 @@ CD /D "%~dp0\.."
 :: - MSVC 2019, 2022 with v141_xp toolchain is also supported.
 :: - Windows 7 SDK
 :: - zip.exe and unzip.exe in %PATH%
+:: - Inno Setup 5 (for Windows XP/2003/Vista installation)
+:: - Inno Setup 6 (for Windows 7/8/10/11 installation)
 ::
 :: For ARM and ARM64 targets, MSVC 2019 is required.
 :: For the ARM64EC target, MSVC 2022 and CMake 3.22.0 are required.
@@ -130,6 +132,23 @@ IF "%CMAKE64_GENERATOR%" == "" (
 	PAUSE
 	EXIT /B 1
 )
+
+:: Check for Inno Setup.
+SET "ISCC5=%PrgFiles32%\Inno Setup 5\ISCC.exe"
+IF NOT EXIST "%ISCC5%" (
+	ECHO *** ERROR: Inno Setup 5 was not found.
+	ECHO Get it at: https://jrsoftware.org/isdlold.php#5
+	PAUSE
+	EXIT /B 1
+)
+SET "ISCC6=%PrgFiles32%\Inno Setup 6\ISCC.exe"
+IF NOT EXIST "%ISCC6%" (
+	ECHO *** ERROR: Inno Setup 6 was not found.
+	ECHO Get it at: https://jrsoftware.org/isdl.php
+	PAUSE
+	EXIT /B 1
+)
+
 ECHO Using the following MSVC versions for packaging:
 ECHO - i386:    MSVC %MSVC32_YEAR% (%MSVC32_VERSION%)
 ECHO - amd64:   MSVC %MSVC64_YEAR% (%MSVC64_VERSION%)
@@ -220,6 +239,9 @@ IF NOT DEFINED FOUND (
 :: TODO: Show error messages.
 CMD /C "EXIT /B 0"
 
+:: PDB files
+SET "PDB_FILES=fmt-12.pdb libpng16.pdb lz4.pdb minilzo.pdb minizip.pdb pugixml.pdb romdata-8.pdb rom-properties.pdb rpcli.pdb rp-config.pdb rp-download.pdb zlib1.pdb"
+
 :: Clear the packaging prefix.
 ECHO Clearing the pkg_windows directory...
 MKDIR pkg_windows 2>NUL
@@ -242,7 +264,11 @@ cmake ..\.. -G "Visual Studio %CMAKE32_GENERATOR%" %CMAKE32_ARCH% ^
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 cmake --build . --config Release
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-cpack -C Release
+:: Copy the .pdb files.
+MKDIR ..\pdb
+MKDIR ..\pdb\i386
+FOR %%A IN (%PDB_FILES%) DO (COPY /Y "bin\Release\%%A" ..\pdb\i386)
+@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 POPD
 
 :: Compile the amd64 version.
@@ -261,7 +287,9 @@ cmake ..\.. -G "Visual Studio %CMAKE64_GENERATOR%" %CMAKE64_ARCH% ^
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 cmake --build . --config Release
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-cpack -C Release
+MKDIR ..\pdb\amd64
+FOR %%A IN (%PDB_FILES%) DO (COPY /Y "bin\Release\%%A" ..\pdb\amd64)
+@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 POPD
 
 :: If not MSVC 2019 or later, skip ARM.
@@ -299,7 +327,9 @@ cmake ..\.. -G "Visual Studio %CMAKE64_GENERATOR%" -A arm ^
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 cmake --build . --config Release
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-cpack -C Release
+MKDIR ..\pdb\arm
+FOR %%A IN (%PDB_FILES%) DO (COPY /Y "bin\Release\%%A" ..\pdb\arm)
+@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 POPD
 
 :: Compile the arm64 version.
@@ -321,7 +351,9 @@ cmake ..\.. -G "Visual Studio %CMAKE64_GENERATOR%" -A arm64 ^
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 cmake --build . --config Release
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-cpack -C Release
+MKDIR ..\pdb\arm64
+FOR %%A IN (%PDB_FILES%) DO (COPY /Y "bin\Release\%%A" ..\pdb\arm64)
+@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 POPD
 
 IF "%MSVC64_YEAR%" == "2022" GOTO :buildARM64EC
@@ -349,114 +381,39 @@ cmake ..\.. -G "Visual Studio %CMAKE64_GENERATOR%" -A arm64ec ^
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 cmake --build . --config Release
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-cpack -C Release
+MKDIR ..\pdb\arm64ec
+FOR %%A IN (%PDB_FILES%) DO (COPY /Y "bin\Release\%%A" ..\pdb\arm64ec)
+@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 POPD
 
 :doPackage
-:: Merge the ZIP files.
-ECHO.
-ECHO Creating the distribution ZIP files...
-MKDIR combined
+:: FIXME: setup6.iss expects the arm/arm64/arm64ec DLLs to be available.
+:: Need to make them optional if not building for ARM?
+CD /D "%~dp0"
+"%ISCC5%" setup5.iss /O..
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-PUSHD combined
+"%ISCC6%" setup6.iss /O..
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-
-:: Get the basename of the 32-bit ZIP file.
-FOR %%A IN (..\build.i386\*-win32.zip) do (set ZIP_PREFIX=%%~nxA)
-SET ZIP_PREFIX=%ZIP_PREFIX:~0,-10%
-IF "%ZIP_PREFIX%" == "" (
-	ECHO *** ERROR: The 32-bit ZIP file was not found.
-	ECHO Something failed in the initial packaging process...
-	PAUSE
-	EXIT /B 1
-)
-
-:: Extract the i386 ZIP file.
-unzip ..\build.i386\*-win32.zip -x *cmake_mode_t*
-@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-
-:: Move the 32-bit EXEs to the base directory,
-:: except for rp-download.exe.
-:: NOTE: Not moving the PDBs to the base directory,
-:: since those are stored in a separate ZIP file.
-:: NOTE 2: svrplus.exe is renamed to install.exe to make it
-:: more obvious that it's the installer.
-MOVE i386\rpcli.exe .
-MOVE i386\rp-config.exe .
-MOVE i386\svrplus.exe install.exe
-
-:: Extract the amd64 ZIP file.
-:: (Only the architecture-specific directory.)
-unzip ..\build.amd64\*-win64.zip amd64/* -x *cmake_mode_t*
-@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-
-:: Remove the amd64 EXEs, except for rp-download.exe.
-:: These aren't necessary. If someone really wants an
-:: amd64 Windows build, they can build it themselves.
-DEL amd64\rpcli.exe
-DEL amd64\rp-config.exe
-DEL amd64\svrplus.exe
-
-IF NOT "%BUILD_arm%" == "1" GOTO :doCombine
-:: Extract the arm ZIP file.
-:: (Only the architecture-specific directory.)
-unzip ..\build.arm\*-win32.zip arm/* -x *cmake_mode_t*
-@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-
-:: Remove the arm EXEs, except for rp-download.exe.
-:: These aren't necessary. If someone really wants an
-:: arm Windows build, they can build it themselves.
-DEL arm\rpcli.exe
-DEL arm\rp-config.exe
-DEL arm\svrplus.exe
-
-IF NOT "%BUILD_arm64%" == "1" GOTO :doCombine
-:: Extract the arm64 ZIP file.
-:: (Only the architecture-specific directory.)
-unzip ..\build.arm64\*-win64.zip arm64/* -x *cmake_mode_t*
-@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-
-:: Remove the arm64 EXEs, except for rp-download.exe.
-:: These aren't necessary. If someone really wants an
-:: arm Windows build, they can build it themselves.
-DEL arm64\rpcli.exe
-DEL arm64\rp-config.exe
-DEL arm64\svrplus.exe
-
-IF NOT "%BUILD_arm64ec%" == "1" GOTO :doCombine
-:: Extract the arm64ec ZIP file.
-:: (Only the architecture-specific directory.)
-unzip ..\build.arm64ec\*-win64.zip arm64ec/* -x *cmake_mode_t*
-@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-
-:: Remove the arm64ec EXEs, except for rp-download.exe.
-:: These aren't necessary. If someone really wants an
-:: arm Windows build, they can build it themselves.
-:: NOTE: arm64ec rp-download.exe can *probably* be replaced
-:: with arm64, but we'll keep it for consistency.
-DEL arm64ec\rpcli.exe
-DEL arm64ec\rp-config.exe
-DEL arm64ec\svrplus.exe
 
 :doCombine
 :: Compress the debug files.
+:: TODO: Get the version number? (We're not using cpack anymore...)
+SET "ZIP_PREFIX=rom-properties"
+PUSHD ..\pkg_windows\pdb
+@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 DEL /Q "..\..\%ZIP_PREFIX%-windows.debug.zip" >NUL 2>&1
 zip "..\..\%ZIP_PREFIX%-windows.debug.zip" */*.pdb
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
+POPD
 
-:: Compress everything else.
-DEL /q "..\..\%ZIP_PREFIX%-windows.zip" >NUL 2>&1
-zip -r "..\..\%ZIP_PREFIX%-windows.zip" * -x *.pdb -x *cmake_mode_t*
-@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-
-:: Package merged.
+:: Packages created.
 ECHO.
 ECHO *** Windows packages created. ***
 ECHO.
-ECHO The following files have been created in the top-level
-ECHO source directory:
-ECHO - %ZIP_PREFIX%-windows.zip: Standard distribution.
-ECHO - %ZIP_PREFIX%-windows.debug.zip: PDB files.
+ECHO The following files have been created in the top-level source directory:
+ECHO - SetupRomProperties.exe: Installer for Windows 7/8/10/11
+ECHO - SetupRomPropertiesXP.exe: Installer for Windows XP/2003/Vista
+ECHO - %ZIP_PREFIX%-windows.debug.zip: PDB files
 ECHO.
 PAUSE
 EXIT /B 0
