@@ -28,8 +28,8 @@ STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_CAPTION | WS_VISIBLE | WS_CHILD
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    LTEXT           "Select the image types you would like to use for each system as its thumbnail image.\nInternal images are contained within the ROM file.\nExternal images are downloaded from an external image database.", IDC_IMAGETYPES_DESC1, 7, 7, 397, 30, SS_LEFT, WS_EX_LEFT
-    LTEXT           "1 = highest priority; 2 = second highest priority; No = ignore", IDC_IMAGETYPES_DESC2, 7, 37, 397, 8, SS_LEFT, WS_EX_LEFT
+    LTEXT           "Sélectionnez le type d'images que vous voudriez utiliser pour chaque système pour ses images de miniature.\nLes images internes sont contenues dans le fichier ROM.\nLes images externes sont téléchargées depuis une base de donnée externe.", IDC_IMAGETYPES_DESC1, 7, 7, 397, 30, SS_LEFT, WS_EX_LEFT
+    LTEXT           "1 = plus haute priorité ; 2 seconde plus haute priorité ; No = ignorer", IDC_IMAGETYPES_DESC2, 7, 37, 397, 8, SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_IMAGETYPES_CREDITS, "SysLink", 0x50010000, 7, 233, 397, 24, 0x00000000
 END
 
@@ -42,8 +42,8 @@ STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_T
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Game Boy Title Screens", IDC_SYSTEMS_DMGTS_GROUPBOX, 7, 7, 397, 74
-    LTEXT           "Select the Game Boy model to use for title screens for different types of Game Boy ROM images.", IDC_STATIC, 15, 18, 381, 8
+    GROUPBOX        "Écrans d'Accueil Game Boy", IDC_SYSTEMS_DMGTS_GROUPBOX, 7, 7, 397, 74
+    LTEXT           "Sélectionnez le modèle de Game Boy à utiliser pour les écrans d'accueils pour les différents types d'images de ROM Game Boy.", IDC_STATIC, 15, 18, 381, 8
     LTEXT           "Game Boy :", IDC_STATIC, 15, 30, 80, 9
     COMBOBOX        IDC_SYSTEMS_DMGTS_DMG, 77, 29, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Super Game Boy :", IDC_STATIC, 15, 45, 80, 9
@@ -63,22 +63,22 @@ FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
     GROUPBOX        "&Téléchargements", IDC_OPTIONS_GRPDOWNLOADS, 7, 7, 397, 121, BS_GROUPBOX, WS_EX_TRANSPARENT
     GROUPBOX        "", IDC_OPTIONS_GRPEXTIMGDL, 15, 19, 381, 47, 0, 0
-    AUTOCHECKBOX    "E&xternal Image Downloads", IDC_OPTIONS_CHKEXTIMGDL, 21, 19, 101, 8, 0, 0
-    RTEXT           "When using an unlimited network connection:", IDC_OPTIONS_LBL_UNMETERED_DL, 25, 31, 145, 8, 0, 0
+    AUTOCHECKBOX    "Té&léchargement d'Images Externe", IDC_OPTIONS_CHKEXTIMGDL, 21, 19, 101, 8, 0, 0
+    RTEXT           "Lors de l'usage d'un\n réseau non limité :", IDC_OPTIONS_LBL_UNMETERED_DL, 25, 31, 145, 8, 0, 0
     COMBOBOX        IDC_OPTIONS_CBO_UNMETERED_DL, 174, 29, 132, 64, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    RTEXT           "When using a metered network connection:", IDC_OPTIONS_LBL_METERED_DL, 25, 49, 145, 8, 0, 0
+    RTEXT           "Lors de l'usage d'un réseau limité :", IDC_OPTIONS_LBL_METERED_DL, 25, 49, 145, 8, 0, 0
     COMBOBOX        IDC_OPTIONS_CBO_METERED_DL, 174, 47, 132, 64, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    AUTOCHECKBOX    "Always use the internal icon (if present) for small sizes.", IDC_OPTIONS_INTICONSMALL, 15, 73, 381, 8, 0, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Store cached file origin information using extended attributes.\nThis helps to identify where cached files were downloaded from.", IDC_OPTIONS_STOREFILEORIGININFO, 15, 87, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
-    LTEXT           "Language for PAL titles on GameTDB:", IDC_STATIC, 15, 111, 120, 8, 0, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Toujours utiliser des icônes internes (si présentes) pour les tailles petites.", IDC_OPTIONS_INTICONSMALL, 15, 73, 381, 8, 0, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Enregistrer l'origine du fichier en cache en utilisant des attributs étendus.\nCela aide à identifier d'où les fichiers en cache ont été téléchargés.", IDC_OPTIONS_STOREFILEORIGININFO, 15, 87, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    LTEXT           "Langue des titres PAL sur GameTDB :", IDC_STATIC, 15, 111, 120, 8, 0, WS_EX_TRANSPARENT
     // FIXME: Determine best height. (Compare to RP_ShellPropSheetExt for multi-language.)
     CONTROL         "", IDC_OPTIONS_PALLANGUAGEFORGAMETDB, WC_LANGUAGECOMBOBOX, CBS_DROPDOWNLIST | WS_CHILD | WS_TABSTOP | WS_VISIBLE, 138, 108, 68, 128, WS_EX_LEFT
 
     GROUPBOX        "&Options", IDC_OPTIONS_GRPOPTIONS, 7, 133, 397, 90, BS_GROUPBOX, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Show a security overlay icon for ROM images with\n""dangerous"" permissions.", IDC_OPTIONS_DANGEROUSPERMISSIONS, 15, 144, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Enable thumbnailing and metadata extraction on network\nfile systems. This may slow down file browsing.", IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS, 15, 165, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Enable thumbnailing and metadata extraction of directory-based\npackages, e.g. for Wii U. This may slow down file browsing.", IDC_OPTIONS_THUMBNAILDIRECTORYPACKAGES, 15, 186, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Show the Extended Attributes tab.", IDC_OPTIONS_SHOWXATTRVIEW, 15, 207, 381, 8, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Afficher un contour de sécurité pour les images de ROM\navec des permissions \"dangereuses\".", IDC_OPTIONS_DANGEROUSPERMISSIONS, 15, 144, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Activer l'extraction des miniatures et des métadonnées sur les systèmes\nde fichier en réseau. Cela peut ralentir l'exploration des fichiers.", IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS, 15, 165, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Activer l'extraction des miniatures et des métadonnées des paquets basés sur des\nrépertoires, comme pour la Wii U. Cela peut ralentir l'exploration des fichiers.", IDC_OPTIONS_THUMBNAILDIRECTORYPACKAGES, 15, 186, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Afficher l'onglet des Attributs Étendus.", IDC_OPTIONS_SHOWXATTRVIEW, 15, 207, 381, 8, BS_MULTILINE, WS_EX_TRANSPARENT
 END
 
 /**
@@ -91,9 +91,9 @@ EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
     LTEXT           "", IDC_CACHE_DESCRIPTION, 7, 7, 397, 8, SS_LEFT, WS_EX_TRANSPARENT
-    PUSHBUTTON      "Clear the System Thumbnail Cache", IDC_CACHE_CLEAR_SYS_THUMBS, 7, 20, 398, 28, 0, WS_EX_LEFT
-    LTEXT           "ROM Properties Page maintains its own download cache for external images.\nClearing this cache will force external images to be redownloaded.", IDC_STATIC, 7, 55, 397, 17, SS_LEFT, WS_EX_TRANSPARENT
-    PUSHBUTTON      "Clear the ROM Properties Page Download Cache", IDC_CACHE_CLEAR_RP_DL, 7, 75, 398, 28, 0, WS_EX_LEFT
+    PUSHBUTTON      "Effacer le Cache Système des Miniatures", IDC_CACHE_CLEAR_SYS_THUMBS, 7, 20, 398, 28, 0, WS_EX_LEFT
+    LTEXT           "La Page des Propriétés des ROM maintient son propre cache de téléchargements pour les images externes.\nEffacer ce cache va forcer les images externes à être téléchargées à nouveau.", IDC_STATIC, 7, 55, 397, 17, SS_LEFT, WS_EX_TRANSPARENT
+    PUSHBUTTON      "Effacer le Cache de la Page des Propriétés des ROM", IDC_CACHE_CLEAR_RP_DL, 7, 75, 398, 28, 0, WS_EX_LEFT
     LTEXT           "", IDC_CACHE_STATUS, 7, 205, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 216, 397, 16, WS_EX_LEFT
 END
@@ -114,8 +114,8 @@ BEGIN
     EDITTEXT        IDC_CACHE_XP_PATH, 7, 46, 343, 14, NOT WS_VISIBLE | ES_AUTOHSCROLL, WS_EX_LEFT
     PUSHBUTTON      "Browse...", IDC_CACHE_XP_BROWSE, 355, 45, 50, 15, NOT WS_VISIBLE, WS_EX_LEFT
     PUSHBUTTON      "Find and Remove Thumbs.db Files", IDC_CACHE_XP_CLEAR_SYS_THUMBS, 7, 95, 398, 20, WS_DISABLED | BS_MULTILINE, WS_EX_LEFT
-    LTEXT           "ROM Properties Page maintains its own download cache for external images.\nClearing this cache will force external images to be redownloaded.", IDC_STATIC, 7, 125, 313, 20, SS_LEFT, WS_EX_TRANSPARENT
-    PUSHBUTTON      "Clear", IDC_CACHE_CLEAR_RP_DL, 323, 127, 82, 15, 0, WS_EX_LEFT
+    LTEXT           "La Page des Propriétés des ROM maintient son propre cache de téléchargements pour les images externes.\nEffacer ce cache va forcer les images externes à être téléchargées à nouveau.", IDC_STATIC, 7, 125, 313, 20, SS_LEFT, WS_EX_TRANSPARENT
+    PUSHBUTTON      "Effacer", IDC_CACHE_CLEAR_RP_DL, 323, 127, 82, 15, 0, WS_EX_LEFT
     LTEXT           "", IDC_CACHE_STATUS, 7, 205, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 216, 397, 16, WS_EX_LEFT
 END
@@ -162,7 +162,7 @@ EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
     CONTROL         "", IDC_ABOUT_ICON, WC_STATIC, SS_ICON, 7, 7, 16, 16, WS_EX_LEFT
-    CTEXT           "ROM Properties Page", IDC_ABOUT_LINE1, 7, 7, 398, 9, SS_CENTER, WS_EX_LEFT
+    CTEXT           "Page des Propriétés de la ROM", IDC_ABOUT_LINE1, 7, 7, 398, 9, SS_CENTER, WS_EX_LEFT
     CTEXT           "Shell Extension", IDC_ABOUT_LINE2, 7, 16, 398, 9, SS_CENTER, WS_EX_LEFT
     CTEXT           "", IDC_ABOUT_VERSION, 7, 28, 398, 32, SS_CENTER, WS_EX_LEFT
     CONTROL         "", IDC_ABOUT_UPDATE_CHECK, RICHEDIT_CLASS, ES_MULTILINE | ES_READONLY, 310, 7, 96, 64, SS_RIGHT, WS_EX_RIGHT | WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT
@@ -182,14 +182,14 @@ STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_T
 CAPTION ""
 FONT 8, "Ms Shell Dlg"
 BEGIN
-    GROUPBOX        "MS-DOS Attributes", IDC_STATIC, 5, 7, 215, 43, 0, WS_EX_LEFT
-    CHECKBOX        "&Read-only", IDC_XATTRVIEW_DOS_READONLY, 14, 17, 49, 8, 0, WS_EX_LEFT
-    CHECKBOX        "&Hidden", IDC_XATTRVIEW_DOS_HIDDEN, 63, 17, 35, 8, 0, WS_EX_LEFT
+    GROUPBOX        "Attributs MS-DOS", IDC_STATIC, 5, 7, 215, 43, 0, WS_EX_LEFT
+    CHECKBOX        "&Lecture seule", IDC_XATTRVIEW_DOS_READONLY, 14, 17, 49, 8, 0, WS_EX_LEFT
+    CHECKBOX        "&Caché", IDC_XATTRVIEW_DOS_HIDDEN, 63, 17, 35, 8, 0, WS_EX_LEFT
     CHECKBOX        "&Archive", IDC_XATTRVIEW_DOS_ARCHIVE, 105, 17, 35, 8, 0, WS_EX_LEFT
     CHECKBOX        "&Système", IDC_XATTRVIEW_DOS_SYSTEM, 147, 17, 44, 8, 0, WS_EX_LEFT
-    CHECKBOX        "&Compressed:", IDC_XATTRVIEW_NTFS_COMPRESSED, 14, 32, 55, 8, 0, WS_EX_LEFT
+    CHECKBOX        "&Compressé :", IDC_XATTRVIEW_NTFS_COMPRESSED, 14, 32, 55, 8, 0, WS_EX_LEFT
     COMBOBOX        IDC_XATTRVIEW_NTFS_COMPRESSION_ALG, 69, 30, 63, 13, CBS_DROPDOWNLIST | CBS_HASSTRINGS, WS_EX_LEFT
-    CHECKBOX        "&Encrypted", IDC_XATTRVIEW_NTFS_ENCRYPTED, 147, 32, 48, 8, 0, WS_EX_LEFT
+    CHECKBOX        "&Chiffré", IDC_XATTRVIEW_NTFS_ENCRYPTED, 147, 32, 48, 8, 0, WS_EX_LEFT
     GROUPBOX        "Alternate Data Streams", IDC_XATTRVIEW_GRPADS, 7, 57, 213, 188, 0, WS_EX_LEFT
     CONTROL         "", IDC_XATTRVIEW_LISTVIEW_ADS, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_SINGLESEL | LVS_REPORT, 14, 68, 200, 171, WS_EX_LEFT
 END

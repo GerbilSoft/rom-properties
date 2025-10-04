@@ -226,7 +226,7 @@ msgstr "&Téléchargements"
 #: ../src/gtk/config/OptionsTab.cpp:143
 msgctxt "OptionsTab"
 msgid "E&xternal Image Downloads"
-msgstr "Téléchargement d'Images Externe"
+msgstr "Té&léchargement d'Images Externe"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:186
 #: ../build/src/kde/kf6/ui_OptionsTab.h:186
@@ -481,6 +481,8 @@ msgid ""
 "<b>ROM Properties Page</b>\n"
 "Shell Extension"
 msgstr ""
+"<b>Page des Propriétés de la ROM</b>\n"
+"Shell Extension"
 
 #: ../src/gtk/config/AboutTab.cpp:461 ../src/kde/config/AboutTab.cpp:194
 #: ../src/win32/config/AboutTab.cpp:885
@@ -1321,7 +1323,7 @@ msgstr "Attributs Étendus"
 #: ../src/kde/config/AboutTab.cpp:192
 msgctxt "AboutTab"
 msgid "<b>ROM Properties Page</b><br>Shell Extension"
-msgstr ""
+msgstr "<b>Page des Propriétés de la ROM</b><br>Shell Extension"
 
 #. tr: Error message template. (Qt version, with formatting)
 #: ../src/kde/config/AboutTab.cpp:677 ../src/kde/config/CacheTab.cpp:254
