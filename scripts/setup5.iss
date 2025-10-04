@@ -196,29 +196,47 @@ end;
 ; InnoSetup must be run from the pkg_windows directory, as part of package.cmd.
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
-Source: "..\pkg_windows\build.i386\bin\Release\fmt-12.dll"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit
-Source: "..\pkg_windows\build.i386\bin\Release\libgnuintl-8.dll"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit
-Source: "..\pkg_windows\build.i386\bin\Release\libpng16.dll"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit
-Source: "..\pkg_windows\build.i386\bin\Release\lz4.dll"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit
-Source: "..\pkg_windows\build.i386\bin\Release\minilzo.dll"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit
-Source: "..\pkg_windows\build.i386\bin\Release\minizip.dll"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit
-Source: "..\pkg_windows\build.i386\bin\Release\pugixml.dll"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit
-Source: "..\pkg_windows\build.i386\bin\Release\zlib1.dll"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit
-Source: "..\pkg_windows\build.i386\bin\Release\romdata-8.dll"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit
-Source: "..\pkg_windows\build.i386\bin\Release\rom-properties.dll"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion uninsrestartdelete 32bit regserver
-Source: "..\pkg_windows\build.i386\bin\Release\rp-download.exe"; DestDir: "{app}\i386"; Components: main; Flags: ignoreversion 32bit
+; NOTE: The first execution of each macro is seemingly cached, so we
+; can't reuse the same macro for multiple architectures...
+#define FindHandle
 
-Source: "..\pkg_windows\build.amd64\bin\Release\fmt-12.dll"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: IsX64
-Source: "..\pkg_windows\build.amd64\bin\Release\libgnuintl-8.dll"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: IsX64
-Source: "..\pkg_windows\build.amd64\bin\Release\libpng16.dll"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: IsX64
-Source: "..\pkg_windows\build.amd64\bin\Release\lz4.dll"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: IsX64
-Source: "..\pkg_windows\build.amd64\bin\Release\minilzo.dll"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: IsX64
-Source: "..\pkg_windows\build.amd64\bin\Release\minizip.dll"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: IsX64
-Source: "..\pkg_windows\build.amd64\bin\Release\pugixml.dll"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: IsX64
-Source: "..\pkg_windows\build.amd64\bin\Release\zlib1.dll"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: IsX64
-Source: "..\pkg_windows\build.amd64\bin\Release\romdata-8.dll"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit; Check: IsX64
-Source: "..\pkg_windows\build.amd64\bin\Release\rom-properties.dll"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion uninsrestartdelete 64bit regserver; Check: IsX64
-Source: "..\pkg_windows\build.amd64\bin\Release\rp-download.exe"; DestDir: "{app}\amd64"; Components: main; Flags: ignoreversion 64bit; Check: IsX64
+#sub ProcessFoundFile_i386
+  #define FileName FindGetFileName(FindHandle)
+  #define file_arch "i386"
+  #define file_bits "32bit"
+  #if Copy(FileName, Len(FileName) - 18, 18) == "rom-properties.dll"
+    #define do_regserver "regserver"
+  #else
+    #define do_regserver ""
+  #endif
+  Source: "..\pkg_windows\build.{#file_arch}\bin\Release\{#FileName}"; DestDir: "{app}\{#file_arch}"; Components: main; Flags: ignoreversion uninsrestartdelete {#file_bits} {#do_regserver}
+#endsub
+#sub BuildFileList_i386
+  #define FindResult
+  #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.i386\bin\Release\*.dll", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_i386
+  #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.i386\bin\Release\*.exe", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_i386
+#endsub
+
+#sub ProcessFoundFile_amd64
+  #define FileName FindGetFileName(FindHandle)
+  #define file_arch "amd64"
+  #define file_bits "64bit"
+  #define file_check "IsX64"
+  #if Copy(FileName, Len(FileName) - 18, 18) == "rom-properties.dll"
+    #define do_regserver "regserver"
+  #else
+    #define do_regserver ""
+  #endif
+  Source: "..\pkg_windows\build.{#file_arch}\bin\Release\{#FileName}"; DestDir: "{app}\{#file_arch}"; Components: main; Flags: ignoreversion uninsrestartdelete {#file_bits} {#do_regserver}; Check: {#file_check}
+#endsub
+#sub BuildFileList_amd64
+  #define FindResult
+  #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.i386\bin\Release\*.dll", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_amd64
+  #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.i386\bin\Release\*.exe", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_amd64
+#endsub
+
+#emit BuildFileList_i386
+#emit BuildFileList_amd64
 
 ; Install rpcli.exe and rp-config.exe in the root directory using the matching system architecture.
 Source: "..\pkg_windows\build.i386\bin\Release\rpcli.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: IsX86
