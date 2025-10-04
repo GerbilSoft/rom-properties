@@ -271,3 +271,5 @@ Source: "..\NEWS.md"; DestDir: "{app}"; Components: doc; Flags: ignoreversion
 
 ; License (*always* installed)
 Source: "..\LICENSE"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+
+;#expr SaveToFile(AddBackslash(SourcePath) + "Preprocessed.iss")
