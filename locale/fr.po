@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2025-10-04 00:39-0400\n"
-"PO-Revision-Date: 2025-10-04 06:00\n"
+"PO-Revision-Date: 2025-10-05 21:16\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -10846,7 +10846,7 @@ msgstr "Succès"
 #: ../src/win32/config/CacheTab.cpp:178
 msgctxt "CacheTab"
 msgid "If any image type settings were changed, you will need to clear the system thumbnail cache."
-msgstr ""
+msgstr "Si un quelconque paramètre de type d'image a été changé, vous devrez effacer le Cache Système des Miniatures."
 
 #. tr: Windows XP or earlier. Has Thumbs.db scattered throughout the system.
 #: ../src/win32/config/CacheTab.cpp:180
