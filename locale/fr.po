@@ -10939,6 +10939,8 @@ msgid ""
 "If any image type settings were changed, you will need to clear the system "
 "thumbnail cache."
 msgstr ""
+"Si un quelconque paramètre de type d'image a été changé, vous devrez "
+"effacer le Cache Système des Miniatures."
 
 #. tr: Windows XP or earlier. Has Thumbs.db scattered throughout the system.
 #: ../src/win32/config/CacheTab.cpp:180
