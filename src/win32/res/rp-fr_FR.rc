@@ -43,13 +43,13 @@ EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Écrans d'Accueil Game Boy", IDC_SYSTEMS_DMGTS_GROUPBOX, 7, 7, 397, 74
-    LTEXT           "Sélectionnez le modèle de Game Boy à utiliser pour les écrans d'accueils pour les différents types d'images de ROM Game Boy.", IDC_STATIC, 15, 18, 381, 8
-    LTEXT           "Game Boy :", IDC_STATIC, 15, 30, 80, 9
-    COMBOBOX        IDC_SYSTEMS_DMGTS_DMG, 77, 29, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Super Game Boy :", IDC_STATIC, 15, 45, 80, 9
-    COMBOBOX        IDC_SYSTEMS_DMGTS_SGB, 77, 44, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Game Boy Color :", IDC_STATIC, 15, 60, 80, 9
-    COMBOBOX        IDC_SYSTEMS_DMGTS_CGB, 77, 59, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Sélectionnez le modèle de Game Boy à utiliser pour les écrans d'accueils pour les différents types d'images de ROM Game Boy.", IDC_STATIC, 15, 18, 381, 16
+    LTEXT           "Game Boy :", IDC_STATIC, 15, 38, 80, 9
+    COMBOBOX        IDC_SYSTEMS_DMGTS_DMG, 77, 37, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Super Game Boy :", IDC_STATIC, 15, 53, 80, 9
+    COMBOBOX        IDC_SYSTEMS_DMGTS_SGB, 77, 52, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Game Boy Color :", IDC_STATIC, 15, 68, 80, 9
+    COMBOBOX        IDC_SYSTEMS_DMGTS_CGB, 77, 67, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 /**
@@ -64,10 +64,10 @@ BEGIN
     GROUPBOX        "&Téléchargements", IDC_OPTIONS_GRPDOWNLOADS, 7, 7, 397, 121, BS_GROUPBOX, WS_EX_TRANSPARENT
     GROUPBOX        "", IDC_OPTIONS_GRPEXTIMGDL, 15, 19, 381, 47, 0, 0
     AUTOCHECKBOX    "Té&léchargement d'Images Externe", IDC_OPTIONS_CHKEXTIMGDL, 21, 19, 101, 8, 0, 0
-    RTEXT           "Lors de l'usage d'un réseau non limité :", IDC_OPTIONS_LBL_UNMETERED_DL, 25, 31, 145, 8, 0, 0
-    COMBOBOX        IDC_OPTIONS_CBO_UNMETERED_DL, 174, 29, 132, 64, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    RTEXT           "Lors de l'usage d'un réseau limité :", IDC_OPTIONS_LBL_METERED_DL, 25, 49, 145, 8, 0, 0
-    COMBOBOX        IDC_OPTIONS_CBO_METERED_DL, 174, 47, 132, 64, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Lors de l'usage d'un réseau non limité :", IDC_OPTIONS_LBL_UNMETERED_DL, 25, 31, 137, 8, 0, 0
+    COMBOBOX        IDC_OPTIONS_CBO_UNMETERED_DL, 164, 29, 132, 64, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Lors de l'usage d'un réseau limité :", IDC_OPTIONS_LBL_METERED_DL, 25, 49, 137, 8, 0, 0
+    COMBOBOX        IDC_OPTIONS_CBO_METERED_DL, 164, 47, 132, 64, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     AUTOCHECKBOX    "Toujours utiliser des icônes internes (si présentes) pour les tailles petites.", IDC_OPTIONS_INTICONSMALL, 15, 73, 381, 8, 0, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Enregistrer l'origine du fichier en cache en utilisant des attributs étendus.\nCela aide à identifier d'où les fichiers en cache ont été téléchargés.", IDC_OPTIONS_STOREFILEORIGININFO, 15, 87, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
     LTEXT           "Langue des titres PAL sur GameTDB :", IDC_STATIC, 15, 111, 120, 8, 0, WS_EX_TRANSPARENT
