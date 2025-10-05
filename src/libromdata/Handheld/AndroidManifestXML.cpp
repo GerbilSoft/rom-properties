@@ -25,6 +25,13 @@ using namespace LibRpFile;
 // PugiXML
 // NOTE: This file is only compiled if ENABLE_XML is defined.
 using namespace pugi;
+#ifdef PUGIXML_HAS_STRING_VIEW
+// PugiXML supports using std::string_view. Allow passing std::string directly.
+#  define XMLSTR(str) (str)
+#else /* !PUGIXML_HAS_STRING_VIEW */
+// PugiXML does *not* support using std::string_view. Use std::string::c_str().
+#  define XMLSTR(str) ((str).c_str())
+#endif /* PUGIXML_HAS_STRING_VIEW */
 
 // C++ STL classes
 #include <limits>
@@ -233,7 +240,7 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 			assert(pAttrExt->attributeSize  == cpu_to_le16(0x14));
 
 			// Create the tag.
-			xml_node xmlTag = cur_node.append_child(xmlStringPool.getString(le32_to_cpu(pAttrExt->name.index)).c_str());
+			xml_node xmlTag = cur_node.append_child(XMLSTR(xmlStringPool.getString(le32_to_cpu(pAttrExt->name.index))));
 			tags.push(xmlTag);
 			cur_node = xmlTag;
 			//tr.addSelect(name, null);
@@ -246,10 +253,10 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 				int attrNameSi = le32_to_cpu(pAttrData->name.index);		// AttrName String Index
 				int attrValueSi = le32_to_cpu(pAttrData->rawValue.index);	// AttrValue Str Ind, or FFFFFFFF
 
-				xml_attribute xmlAttr = xmlTag.append_attribute(xmlStringPool.getString(attrNameSi).c_str());
+				xml_attribute xmlAttr = xmlTag.append_attribute(XMLSTR(xmlStringPool.getString(attrNameSi)));
 				if (attrValueSi != -1) {
 					// Value is inline
-					xmlAttr.set_value(xmlStringPool.getString(attrValueSi).c_str());
+					xmlAttr.set_value(XMLSTR(xmlStringPool.getString(attrValueSi)));
 				} else {
 					// Integer value. Determine how to handle it.
 					const uint32_t u32data = le32_to_cpu(pAttrData->typedValue.data);
@@ -269,7 +276,7 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 						default:
 							// Resource identifier
 							// FIXME: Most of these types aren't handled properly...
-							xmlAttr.set_value(fmt::format(FSTR("@0x{:0>8X}"), u32data).c_str());
+							xmlAttr.set_value(XMLSTR(fmt::format(FSTR("@0x{:0>8X}"), u32data)));
 							break;
 
 						case Res_value::TYPE_FLOAT: {
@@ -279,15 +286,15 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 								float f;
 							} val;
 							val.u32 = u32data;
-							xmlAttr.set_value(fmt::format(FSTR("{:f}"), val.f).c_str());
+							xmlAttr.set_value(XMLSTR(fmt::format(FSTR("{:f}"), val.f)));
 							break;
 						}
 
 						case Res_value::TYPE_INT_DEC:
-							xmlAttr.set_value(fmt::format(FSTR("{:d}"), u32data).c_str());
+							xmlAttr.set_value(XMLSTR(fmt::format(FSTR("{:d}"), u32data)));
 							break;
 						case Res_value::TYPE_INT_HEX:
-							xmlAttr.set_value(fmt::format(FSTR("0x{:x}"), u32data).c_str());
+							xmlAttr.set_value(XMLSTR(fmt::format(FSTR("0x{:x}"), u32data)));
 							break;
 						case Res_value::TYPE_INT_BOOLEAN:
 							// FIXME: Error if not 0x00000000 or 0xFFFFFFFF?
@@ -296,16 +303,16 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 							break;
 
 						case Res_value::TYPE_INT_COLOR_ARGB8:
-							xmlAttr.set_value(fmt::format(FSTR("#{:0>8x}"), u32data).c_str());
+							xmlAttr.set_value(XMLSTR(fmt::format(FSTR("#{:0>8x}"), u32data)));
 							break;
 						case Res_value::TYPE_INT_COLOR_RGB8:
-							xmlAttr.set_value(fmt::format(FSTR("#{:0>6x}"), u32data).c_str());
+							xmlAttr.set_value(XMLSTR(fmt::format(FSTR("#{:0>6x}"), u32data)));
 							break;
 						case Res_value::TYPE_INT_COLOR_ARGB4:
-							xmlAttr.set_value(fmt::format(FSTR("#{:0>4x}"), u32data).c_str());
+							xmlAttr.set_value(XMLSTR(fmt::format(FSTR("#{:0>4x}"), u32data)));
 							break;
 						case Res_value::TYPE_INT_COLOR_RGB4:
-							xmlAttr.set_value(fmt::format(FSTR("#{:0>3x}"), u32data).c_str());
+							xmlAttr.set_value(XMLSTR(fmt::format(FSTR("#{:0>3x}"), u32data)));
 							break;
 					}
 				}
@@ -330,8 +337,8 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 			// TODO: Handle typed data?
 			const uint32_t u32data = le32_to_cpu(pCdataExt->data.index);
 			//cur_node.append_child(pugi::node_cdata).set_value(
-			//	xmlStringPool.getString(u32data).c_str());
-			cur_node.text().set(xmlStringPool.getString(u32data).c_str());
+			//	XMLSTR(xmlStringPool.getString(u32data)));
+			cur_node.text().set(XMLSTR(xmlStringPool.getString(u32data)));
 		} else if (node_type == RES_XML_START_NAMESPACE_TYPE) {
 			// Start of namespace (TODO)
 			//const ResXMLTree_namespaceExt *const pNamespaceExt = reinterpret_cast<const ResXMLTree_namespaceExt*>(pNodeData);
