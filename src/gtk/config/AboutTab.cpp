@@ -714,7 +714,7 @@ rp_about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 
 	if (nettle_major >= 3) {
 		if (nettle_minor >= 1) {
-			sLibraries += "Copyright (C) 2001-2022 Niels Möller.\n"
+			sLibraries += "Copyright (C) 2001-2025 Niels Möller.\n"
 				"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>\n";
 		} else {
 			sLibraries += "Copyright (C) 2001-2014 Niels Möller.\n"

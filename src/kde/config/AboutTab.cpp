@@ -466,7 +466,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	if (nettle_major >= 3) {
 		if (nettle_minor >= 1) {
-			sLibraries += "Copyright (C) 2001-2022 Niels Möller." BR
+			sLibraries += "Copyright (C) 2001-2025 Niels Möller." BR
 				"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>" BR;
 		} else {
 			sLibraries += "Copyright (C) 2001-2014 Niels Möller." BR
