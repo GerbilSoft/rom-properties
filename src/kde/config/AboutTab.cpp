@@ -339,7 +339,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	// NOTE: Can't obtain the runtime version for KF5 easily...
 	sLibraries += fmt::format(FRUN(sCompiledWith), "KDE Frameworks " KIO_VERSION_STRING);
 	sLibraries += BR
-		"Copyright (C) 1996-2022 KDE contributors." BR
+		"Copyright (C) 1996-2025 KDE contributors." BR
 		"<a href='https://www.kde.org/'>https://www.kde.org/</a>" BR;
 	sLibraries += fmt::format(FRUN(sLicense), "GNU LGPL v2.1+");
 #else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
