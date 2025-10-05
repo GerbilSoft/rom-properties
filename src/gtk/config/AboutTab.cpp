@@ -606,7 +606,7 @@ rp_about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 #endif /* GTK_CHECK_VERSION(2, 90, 7) */
 	sLibraries += "\n"
 		"Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald.\n"
-		"Copyright (C) 1995-2022 the GTK+ Team and others.\n"
+		"Copyright (C) 1995-2025 the GTK+ Team and others.\n"
 		"<a href='https://www.gtk.org/'>https://www.gtk.org/</a>\n";
 	sLibraries += fmt::format(FRUN(sLicenses), "GNU LGPL v2.1+");
 
