@@ -67,8 +67,7 @@ HRESULT WINAPI rp_QISearch(_Inout_ void *that, _In_ LPCQITAB pqit, _In_ REFIID r
 		IFACEMETHODIMP_(ULONG) AddRef(void) final \
 		{ \
 			incRpGlobalRefCount(); \
-			_InterlockedIncrement(&m_lRefCount); \
-			return static_cast<ULONG>(m_lRefCount); \
+			return static_cast<ULONG>(_InterlockedIncrement(&m_lRefCount)); \
 		} \
 		\
 		IFACEMETHODIMP_(ULONG) Release(void) final \
