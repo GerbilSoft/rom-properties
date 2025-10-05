@@ -13,7 +13,8 @@
 
 #if PNG_ARM_NEON_IMPLEMENTATION == 1
 
-#if defined(_MSC_VER) && !defined(__clang__) && defined(_M_ARM64)
+// rom-properties: Check for _M_ARM64EC
+#if defined(_MSC_VER) && !defined(__clang__) && (defined(_M_ARM64) || defined(_M_ARM64EC))
 #  include <arm64_neon.h>
 #else
 #  include <arm_neon.h>
