@@ -16,6 +16,10 @@
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 CREATEPROCESS_MANIFEST_RESOURCE_ID	RT_MANIFEST	"rp-config.exe.manifest"
 
+/** Icons **/
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+1	ICON	"w10-rom.ico"
+
 // TODO: The git version gets cut off on Windows 7, since it uses
 // a ListView instead of separate ListBox and Edit controls like
 // on Windows XP.
