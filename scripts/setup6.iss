@@ -25,6 +25,7 @@ ChangesAssociations=yes
 Compression=lzma2/max
 DefaultDirName={autopf}\rom-properties
 DefaultGroupName=ROM Properties
+DisableProgramGroupPage=yes
 LicenseFile=..\LICENSE
 PrivilegesRequired=admin
 OutputBaseFilename=SetupRomProperties
@@ -329,5 +330,10 @@ Source: "..\NEWS.md"; DestDir: "{app}"; Components: doc; Flags: ignoreversion
 
 ; License (*always* installed)
 Source: "..\LICENSE"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+
+
+[Icons]
+Name: "{autoprograms}\ROM Properties Page configuration"; Filename: "{app}\rp-config.exe"
+
 
 ;#expr SaveToFile(AddBackslash(SourcePath) + "Preprocessed.iss")
