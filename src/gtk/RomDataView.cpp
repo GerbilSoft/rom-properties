@@ -791,6 +791,7 @@ rp_rom_data_view_init_string(RpRomDataView *page,
 		// Credits text. Enable formatting and center alignment.
 		gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_CENTER);
 		GTK_WIDGET_HALIGN_CENTER(widget);
+		GTK_LABEL_XALIGN_CENTER(widget);
 		if (str) {
 			// NOTE: Pango markup does not support <br/>.
 			// It uses standard newlines for line breaks.
@@ -801,6 +802,7 @@ rp_rom_data_view_init_string(RpRomDataView *page,
 		gtk_label_set_selectable(GTK_LABEL(widget), true);
 		gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
 		GTK_WIDGET_HALIGN_LEFT(widget);
+		GTK_LABEL_XALIGN_LEFT(widget);
 		if (str) {
 			gtk_label_set_text(GTK_LABEL(widget), str);
 		}
