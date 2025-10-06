@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptext)                        *
  * utf8_strlen.cpp: UTF-8 strlen() functions                               *
  *                                                                         *
- * Copyright (c) 2022-2024 by David Korth.                                 *
+ * Copyright (c) 2022-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -51,6 +51,7 @@ size_t utf8_disp_strlen(const char *str, size_t max_len)
 				break;
 			} else {
 				assert(!"Invalid 2-byte UTF-8 sequence");
+				continue;
 			}
 		} else if ((u8str[0] & 0xF0) == 0xE0) {
 			// 3-byte UTF-8 sequence
