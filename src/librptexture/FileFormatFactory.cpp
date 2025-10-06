@@ -93,7 +93,6 @@ std::once_flag once_mimeTypes;
 
 // FileFormat subclasses that use a header at 0 and
 // definitely have a 32-bit magic number at address 0.
-// TODO: Add support for multiple magic numbers per class.
 const array<FileFormatFns, 12> FileFormatFns_magic = {{
 	GetFileFormatFns(ASTC,			P99_PROTECT({{0x13ABA15C, 0}})),	// Needs to be in multi-char constant format
 	GetFileFormatFns(DirectDrawSurface,	P99_PROTECT({{'DDS ', 0}})),
