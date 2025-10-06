@@ -124,6 +124,10 @@ static void init_webp(void)
 			break;
 		}
 	}
+	if (!libwebp_so) {
+		// Unload libsharpyuv.dll, since libwebp.dll could not be found.
+		libsharpyuv_dll.reset();
+	}
 #else /* !_WIN32 */
 	// NOTE: Ubuntu systems don't have an unversioned .so unless the -dev package is installed.
 	static const char libwebp_so_filenames[3][16] = {
