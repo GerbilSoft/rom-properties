@@ -17,6 +17,13 @@
 #include "ThunarPropertyPageProvider.hpp"
 #include "ThunarMenuProvider.h"
 
+// C includes (C++ namespace)
+#include <cassert>
+
+// C++ STL classes
+#include <array>
+using std::array;
+
 // Thunar version is based on GTK+ version.
 #if GTK_CHECK_VERSION(3, 0, 0)
 static const char LIBTHUNARX_SO_FILENAME[] = "libthunarx-3.so.0";
@@ -30,10 +37,7 @@ static constexpr int THUNARX_MINOR_VERSION = 6;
 static constexpr int THUNARX_MICRO_VERSION = 0;
 #endif
 
-static GType type_list[2];
-
-// C includes (C++ namespace)
-#include <cassert>
+static array<GType, 2> type_list;
 
 // Function pointers.
 static void *libextension_so;
@@ -146,6 +150,6 @@ extern "C" G_MODULE_EXPORT void
 thunar_extension_list_types(const GType	**types,
 			    gint	 *n_types)
 {
-	*types = type_list;
-	*n_types = G_N_ELEMENTS(type_list);
+	*types = type_list.data();
+	*n_types = static_cast<gint>(type_list.size());
 }

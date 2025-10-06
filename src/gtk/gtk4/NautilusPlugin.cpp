@@ -19,10 +19,14 @@
 #include "../gtk3/NautilusInfoProvider.hpp"
 #include "../gtk3/NautilusColumnProvider.h"
 
-static GType type_list[4];
-
 // C includes (C++ namespace)
 #include <cassert>
+
+// C++ STL classes
+#include <array>
+using std::array;
+
+static array<GType, 4> type_list;
 
 // Function pointers
 static void *libextension_so;
@@ -150,6 +154,6 @@ extern "C" G_MODULE_EXPORT void
 nautilus_module_list_types(const GType	**types,
 			   gint		 *n_types)
 {
-	*types = type_list;
-	*n_types = G_N_ELEMENTS(type_list);
+	*types = type_list.data();
+	*n_types = static_cast<int>(type_list.size());
 }
