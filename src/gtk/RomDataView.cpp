@@ -1710,13 +1710,10 @@ rp_rom_data_view_load_rom_data(RpRomDataView *page)
 	}
 
 	// Load the specified URI.
-	RomDataPtr romData = rp_gtk_open_uri(page->uri);
-	if (romData) {
-		page->cxx->romData = std::move(romData);
-		page->hasCheckedAchievements = false;
-	}
-
+	page->cxx->romData = rp_gtk_open_uri(page->uri);
 	if (page->cxx->romData) {
+		page->hasCheckedAchievements = false;
+
 		// Update the display widgets.
 		// TODO: If already mapped, check achievements again.
 		// NOTE: This will clear page->changed_idle.
