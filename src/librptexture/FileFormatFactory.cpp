@@ -148,20 +148,22 @@ FileFormatPtr create(const IRpFilePtr &file)
 	}
 
 	// Read the file's magic number.
+	// NOTE: Some Steam TGAs are less than 64 bytes.
+	// Allow a minimum of 4 bytes.
 	union {
 		uint8_t u8[64];
 		uint32_t u32[64/4];
 	} magic;
 	file->rewind();
-	size_t size = file->read(&magic, sizeof(magic));
-	if (size != sizeof(magic)) {
+	size_t magic_size = file->read(&magic, sizeof(magic));
+	if (magic_size < 4) {
 		// Read error.
 		return {};
 	}
 
 	// Special check for Khronos KTX, which has the same
 	// 32-bit magic number for two completely different versions.
-	if (magic.u32[0] == cpu_to_be32('\xABKTX')) {
+	if (magic_size > 8 && magic.u32[0] == cpu_to_be32('\xABKTX')) {
 		FileFormatPtr fileFormat;
 		if (magic.u32[1] == cpu_to_be32(' 11\xBB')) {
 			// KTX 1.1
@@ -226,7 +228,7 @@ FileFormatPtr create(const IRpFilePtr &file)
 	// test of Color Map Type 0~no 1~color map
 	// and Image Type 1 2 3 9 10 11 32 33
 	// and Color Map Entry Size 0 15 16 24 32
-	if (maybe_tga &&
+	if (maybe_tga && magic_size > sizeof(TGA_Header) &&
 	    ((magic.u32[0] & be32_to_cpu(0x00FEC400)) == 0) &&
 	    ((magic.u32[1] & be32_to_cpu(0x000000C0)) == 0))
 	{
@@ -291,7 +293,9 @@ FileFormatPtr create(const IRpFilePtr &file)
 	}
 
 	// Special case: Check for PowerVR v2.
-	if (magic.u32[0x2C/4] == 0x21525650U || magic.u32[0x2C/4] == 0x50565221U) {
+	if ( magic_size > 0x30 &&
+	    (magic.u32[0x2C/4] == 0x21525650U || magic.u32[0x2C/4] == 0x50565221U))
+	{
 		// Found a matching magic number.
 		FileFormatPtr fileFormat = std::make_shared<PowerVR3>(file);
 		if (fileFormat->isValid()) {
