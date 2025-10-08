@@ -58,7 +58,7 @@ public:
 	};
 
 	// SectorReadMode to sector size map
-	static const array<uint32_t, static_cast<uint32_t>(SectorReadMode::Max)> sectorReadModeToSizeMap;
+	static const array<uint16_t, static_cast<size_t>(SectorReadMode::Max)> sectorReadModeToSizeMap;
 	// SectorReadMode to CD-ROM mode map
 	static const array<uint8_t, static_cast<size_t>(SectorReadMode::Max)> sectorReadModeToCdromModeMap;
 
@@ -119,7 +119,7 @@ public:
 /** CdiReaderPrivate **/
 
 // SectorReadMode to sector size map
-const array<uint32_t, static_cast<size_t>(CdiReaderPrivate::SectorReadMode::Max)> CdiReaderPrivate::sectorReadModeToSizeMap = {{
+const array<uint16_t, static_cast<size_t>(CdiReaderPrivate::SectorReadMode::Max)> CdiReaderPrivate::sectorReadModeToSizeMap = {{
 	2048, 2336, 2352, 2352+16, 2352+96
 }};
 // SectorReadMode to CD-ROM mode map
@@ -338,7 +338,7 @@ int CdiReaderPrivate::parseCdiFile(void)
 			}
 
 			// Convert the sector size ID to an actual sector size.
-			const uint32_t sectorSize = sectorReadModeToSizeMap[read_mode];
+			const uint16_t sectorSize = sectorReadModeToSizeMap[read_mode];
 
 			// Check the track mode.
 			// Data tracks are saved; audio tracks are not.
