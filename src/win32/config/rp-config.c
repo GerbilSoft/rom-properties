@@ -198,6 +198,16 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	_tcscpy(&dll_filename[exe_path_len], _T("rom-properties.dll"));
 	TRY_LOAD_DLL(dll_filename);
 
+#ifdef _M_ARM64EC
+	// Windows, ARM64EC: Check the arm64 subdirectory first.
+	// If LoadlibraryEx() fails, then check the arm64ec subdirectory.
+	static const TCHAR arm64_subdir[] = _T("arm64");
+	_tcscpy(&dll_filename[exe_path_len], arm64_subdir);
+	// NOTE: -1 because _countof() includes the NULL terminator.
+	_tcscpy(&dll_filename[exe_path_len + _countof(arm64_subdir) - 1], _T("rom-properties.dll"));
+	TRY_LOAD_DLL(dll_filename);
+#endif /* _M_ARM64EC */
+
 	// Check the architecture-specific subdirectory.
 	_tcscpy(&dll_filename[exe_path_len], rp_subdir);
 	// NOTE: -1 because _countof() includes the NULL terminator.

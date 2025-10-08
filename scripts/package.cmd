@@ -240,7 +240,9 @@ IF NOT DEFINED FOUND (
 CMD /C "EXIT /B 0"
 
 :: PDB files
-SET "PDB_FILES=fmt-12.pdb libpng16.pdb lz4.pdb minilzo.pdb minizip.pdb pugixml.pdb romdata-8.pdb rom-properties.pdb rpcli.pdb rp-config.pdb rp-download.pdb zlib1.pdb"
+SET "PDB_DLL_FILES=fmt-12.pdb libpng16.pdb lz4.pdb minilzo.pdb minizip.pdb pugixml.pdb romdata-8.pdb rom-properties.pdb zlib1.pdb"
+SET "PDB_EXE_FILES=rpcli.pdb rp-config.pdb rp-download.pdb"
+SET "PDB_FILES=%PDB_DLL_FILES% %PDB_EXE_FILES%"
 
 :: Clear the packaging prefix.
 ECHO Clearing the pkg_windows directory...
@@ -334,6 +336,8 @@ POPD
 
 :: Compile the arm64 version.
 SET BUILD_arm64=1
+SET BUILD_AS_ARM64X=
+IF "%MSVC64_YEAR%" == "2022" SET BUILD_AS_ARM64X=ARM64
 ECHO.
 ECHO Compiling arm64 (64-bit) rom-properties.dll...
 MKDIR build.arm64
@@ -347,7 +351,8 @@ cmake ..\.. -G "Visual Studio %CMAKE64_GENERATOR%" -A arm64 ^
 	-DCMAKE_BUILD_TYPE=Release ^
 	-DBUILD_TESTING=OFF ^
 	-DSPLIT_DEBUG=ON ^
-	-DENABLE_NLS=OFF
+	-DENABLE_NLS=OFF ^
+	-DBUILD_AS_ARM64X=%BUILD_AS_ARM64X%
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 cmake --build . --config Release
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
@@ -364,6 +369,7 @@ GOTO :doPackage
 :buildARM64EC
 :: Compile the arm64ec version.
 SET BUILD_arm64ec=1
+SET BUILD_AS_ARM64X=ARM64EC
 ECHO.
 ECHO Compiling arm64ec (64-bit Emulation Compatible) rom-properties.dll...
 MKDIR build.arm64ec
@@ -377,12 +383,13 @@ cmake ..\.. -G "Visual Studio %CMAKE64_GENERATOR%" -A arm64ec ^
 	-DCMAKE_BUILD_TYPE=Release ^
 	-DBUILD_TESTING=OFF ^
 	-DSPLIT_DEBUG=ON ^
-	-DENABLE_NLS=OFF
+	-DENABLE_NLS=OFF ^
+	-DBUILD_AS_ARM64X=%BUILD_AS_ARM64X%
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 cmake --build . --config Release
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-MKDIR ..\pdb\arm64ec
-FOR %%A IN (%PDB_FILES%) DO (COPY /Y "bin\Release\%%A" ..\pdb\arm64ec)
+:: NOTE: Only copying PDBs for DLLs, and copying to the ARM64 directory.
+FOR %%A IN (%PDB_DLL_FILES%) DO (COPY /Y "bin\Release\%%A" ..\pdb\arm64)
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 POPD
 

@@ -250,9 +250,10 @@ end;
   #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.arm\bin\Release\*.exe", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_arm
 #endsub
 
-#sub ProcessFoundFile_arm64
+; NOTE: Installing DLLs from build.arm64ec, which is actually compiled as ARM64X. (ARM64 + ARM64EC in one DLL)
+; Installing EXEs from build.arm64 (ARM64-only)
+#sub ProcessFoundFile_arm64_dll
   #define FileName FindGetFileName(FindHandle)
-  #define file_arch "arm64"
   #define file_bits "64bit"
   #define file_check "IsArm64"
   #if Copy(FileName, Len(FileName) - 18, 18) == "rom-properties.dll"
@@ -260,37 +261,24 @@ end;
   #else
     #define do_regserver ""
   #endif
-  Source: "..\pkg_windows\build.{#file_arch}\bin\Release\{#FileName}"; DestDir: "{app}\{#file_arch}"; Components: main; Flags: ignoreversion uninsrestartdelete {#file_bits} {#do_regserver}; Check: {#file_check}
+  Source: "..\pkg_windows\build.arm64ec\bin\Release\{#FileName}"; DestDir: "{app}\arm64"; Components: main; Flags: ignoreversion uninsrestartdelete {#file_bits} {#do_regserver}; Check: {#file_check}
+#endsub
+#sub ProcessFoundFile_arm64_exe
+  #define FileName FindGetFileName(FindHandle)
+  #define file_bits "64bit"
+  #define file_check "IsArm64"
+  Source: "..\pkg_windows\build.arm64\bin\Release\{#FileName}"; DestDir: "{app}\arm64"; Components: main; Flags: ignoreversion uninsrestartdelete {#file_bits}; Check: {#file_check}
 #endsub
 #sub BuildFileList_arm64
   #define FindResult
-  #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.arm64\bin\Release\*.dll", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_arm64
-  #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.arm64\bin\Release\*.exe", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_arm64
-#endsub
-
-#sub ProcessFoundFile_arm64ec
-  #define FileName FindGetFileName(FindHandle)
-  #define file_arch "arm64ec"
-  #define file_bits "64bit"
-  #define file_check "IsArm64"
-  #if Copy(FileName, Len(FileName) - 18, 18) == "rom-properties.dll"
-    #define do_regserver "regserver"
-  #else
-    #define do_regserver ""
-  #endif
-  Source: "..\pkg_windows\build.{#file_arch}\bin\Release\{#FileName}"; DestDir: "{app}\{#file_arch}"; Components: main; Flags: ignoreversion uninsrestartdelete {#file_bits} {#do_regserver}; Check: {#file_check}
-#endsub
-#sub BuildFileList_arm64ec
-  #define FindResult
-  #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.arm64ec\bin\Release\*.dll", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_arm64ec
-  #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.arm64ec\bin\Release\*.exe", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_arm64ec
+  #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.arm64ec\bin\Release\*.dll", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_arm64_dll
+  #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.arm64\bin\Release\*.exe", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_arm64_exe
 #endsub
 
 #emit BuildFileList_i386
 #emit BuildFileList_amd64
 #emit BuildFileList_arm
 #emit BuildFileList_arm64
-#emit BuildFileList_arm64ec
 
 ; Install rpcli.exe and rp-config.exe in the root directory using the matching system architecture.
 ; NOTE: Inno Setup 6 doesn't have "IsArm32OS"...

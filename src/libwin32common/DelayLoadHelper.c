@@ -157,6 +157,35 @@ static HMODULE WINAPI rp_LoadLibrary_int(LPCSTR pszModuleName, bool bCheckWhitel
 		return hDll;
 	}
 
+#ifdef _M_ARM64EC
+	// Windows, ARM64EC: Check the arm64 subdirectory first.
+	// If LoadlibraryEx() fails, then check the arm64ec subdirectory.
+	static const TCHAR arm64_subdir[] = _T("arm64");
+	_tcscpy(&dll_fullpath[path_len], arm64_subdir);
+	path_len += _countof(arm64_subdir) - 1;
+
+	// Copy the DLL name into the fullpath.
+	// TODO: Use strcpy_s() or similar?
+	dest = &dll_fullpath[path_len];
+	for (pszDll = pszModuleName;
+	     *pszDll != 0 && dest != &dll_fullpath[_countof(dll_fullpath)];
+	     dest++, pszDll++)
+	{
+		*dest = (TCHAR)(unsigned int)*pszDll;
+	}
+	*dest = 0;
+
+	// Attempt to load the DLL.
+	hDll = LoadLibraryEx(dll_fullpath, NULL, 0);
+	if (hDll != NULL) {
+		// DLL loaded successfully.
+		return hDll;
+	}
+
+	// Reset for the architecture-specific subdirectory.
+	path_len = (unsigned int)(bs - &dll_fullpath[0] + 1);
+#endif /* _M_ARM64EC */
+
 	// Check the architecture-specific subdirectory.
 	_tcscpy(&dll_fullpath[path_len], rp_subdir);
 	path_len += _countof(rp_subdir) - 1;

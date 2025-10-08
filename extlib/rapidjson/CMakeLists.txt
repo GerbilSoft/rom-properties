@@ -22,7 +22,8 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Build all binaries in a separate directory
-SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+# rom-properties: This is done by the top-level CMakeLists.txt.
+#SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # rom-properties: Disable options.
 IF(0) # rom-properties

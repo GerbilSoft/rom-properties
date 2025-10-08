@@ -239,7 +239,46 @@ IF(INSTALL_DOC)
 	ADD_SUBDIRECTORY(doc)
 ENDIF(INSTALL_DOC)
 
+# ARM64X (Win32/MSVC only)
+IF(MSVC AND DEFINED BUILD_AS_ARM64X)
+	# References:
+	# - https://stackoverflow.com/questions/60211516/programmatically-get-all-targets-in-a-cmake-project
+	# - https://stackoverflow.com/a/60232044
+
+	# Collect all currently added targets in all subdirectories
+	#
+	# Parameters:
+	# - _result the list containing all found targets
+	# - _dir root directory to start looking from
+	function(get_all_targets _result _dir)
+		get_property(_subdirs DIRECTORY "${_dir}" PROPERTY SUBDIRECTORIES)
+		foreach(_subdir IN LISTS _subdirs)
+			get_all_targets(${_result} "${_subdir}")
+		endforeach()
+
+		get_directory_property(_sub_targets DIRECTORY "${_dir}" BUILDSYSTEM_TARGETS)
+		set(${_result} ${${_result}} ${_sub_targets} PARENT_SCOPE)
+	endfunction()
+
+	GET_ALL_TARGETS(extlib_TARGETS "${CMAKE_SOURCE_DIR}/extlib")
+	GET_ALL_TARGETS(src_TARGETS src)
+	# TODO: Skip executable targets. They will be arm64 only.
+	UNSET(ARM64X_TARGETS)
+	FOREACH(_target ${extlib_TARGETS} ${src_TARGETS})
+		GET_TARGET_PROPERTY(_type ${_target} TYPE)
+		IF(_type STREQUAL SHARED_LIBRARY OR _type STREQUAL MODULE_LIBRARY)
+			LIST(APPEND ARM64X_TARGETS ${_target})
+		ENDIF(_type STREQUAL SHARED_LIBRARY OR _type STREQUAL MODULE_LIBRARY)
+	ENDFOREACH(_target)
+	INCLUDE(cmake/platform/win32-msvc-arm64x.cmake)
+ENDIF()
+
 ### Build summary ###
+
+UNSET(TARGET_IS_ARM64X)
+IF(MSVC AND DEFINED BUILD_AS_ARM64X)
+	SET(TARGET_IS_ARM64X " (ARM64X)")
+ENDIF(MSVC AND DEFINED BUILD_AS_ARM64X)
 
 UNSET(UI_FRONTENDS)
 IF(BUILD_KDE4)
@@ -396,7 +435,7 @@ MESSAGE(STATUS "
 *** ROM Properties Page Shell Extension v${RP_DISPLAY_VERSION} ***
 
 Build Summary:
-- Target CPU architecture: ${TARGET_CPU_ARCH}
+- Target CPU architecture: ${TARGET_CPU_ARCH}${TARGET_IS_ARM64X}
 - Building these UI frontends: ${UI_FRONTENDS}
 - Building command-line frontend: ${CLI_BUILD_MSG}
 - GNOME Tracker API version: ${TRACKER_API_DISPLAY}
@@ -420,8 +459,6 @@ IF(NOT UI_FRONTENDS)
 	ENDIF(NOT BUILD_CLI)
 ENDIF(NOT UI_FRONTENDS)
 
-# TODO: Print build summary indicating what plugins will be built.
-# (Some other project had something like this...)
 # TODO: Fail if no plugins are being built.
 
 ### CPack ###

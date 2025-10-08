@@ -110,10 +110,16 @@ static void rp_i18n_init_int(void)
 
 		// Make sure the current subdirectory matches
 		// the DLL architecture.
-		if (_tcscmp(bs+1, ARCH_NAME) != 0) {
-			// Not a match.
-			i18n_is_init = false;
-			return;
+#ifdef _M_ARM64EC
+		// Windows, ARM64EC: Subdirectory could also be "arm64".
+		if (_tcsicmp(bs+1, _T("arm64")) != 0)
+#endif /* _M_ARM64EC */
+		{
+			if (_tcsicmp(bs+1, ARCH_NAME) != 0) {
+				// Not a match.
+				i18n_is_init = false;
+				return;
+			}
 		}
 
 		// Append the "locale" subdirectory.
