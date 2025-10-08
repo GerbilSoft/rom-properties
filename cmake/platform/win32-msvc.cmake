@@ -7,7 +7,8 @@
 # Subsystem and minimum Windows version:
 # - If i386: 5.01
 # - If amd64: 5.02
-# - If arm or arm64: 6.02
+# - If arm: 6.02
+# - If arm64 or arm64ec: 10.00
 # ROM Properties does NOT support ANSI Windows.
 # MSVC 2010's minimum supported target OS is XP SP2.
 # MSVC 2012 and later has a minimum subsystem value of 5.01.
@@ -26,11 +27,17 @@ IF(CPU_amd64)
 	# (There is no amd64 ANSI Windows.)
 	# Minimum target version is Windows Server 2003 / XP 64-bit.
 	SET(RP_WIN32_SUBSYSTEM_VERSION "5.02")
-ELSEIF(CPU_arm OR CPU_arm64)
-	# ARM (32-bit or 64-bit), Unicode windows only. (MSVC)
+ELSEIF(CPU_arm)
+	# ARM (32-bit), Unicode windows only. (MSVC)
 	# (There is no ARM ANSI Windows.)
 	# Minimum target version is Windows 8.
 	SET(RP_WIN32_SUBSYSTEM_VERSION "6.02")
+ELSEIF(CPU_arm64 OR CPU_arm64ec)
+	# ARM (64-bit), Unicode windows only. (MSVC)
+	# Includes both Standard and Emulation Compatible.
+	# (There is no ARM ANSI Windows.)
+	# Minimum target version is Windows 10.
+	SET(RP_WIN32_SUBSYSTEM_VERSION "10.00")
 ELSEIF(CPU_i386)
 	# i386 (32-bit), Unicode Windows only.
 	# Minimum target version is Windows XP.
