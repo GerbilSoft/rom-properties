@@ -329,6 +329,8 @@ cmake ..\.. -G "Visual Studio %CMAKE64_GENERATOR%" -A arm ^
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 cmake --build . --config Release
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
+:: Inno Setup doesn't support arm32 systems, so we'll need cpack here.
+cpack -C Release
 MKDIR ..\pdb\arm
 FOR %%A IN (%PDB_FILES%) DO (COPY /Y "bin\Release\%%A" ..\pdb\arm)
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%

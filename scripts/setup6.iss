@@ -80,10 +80,9 @@ begin
   has_msvcrt_i386  := IsMsiProductInstalled('{65E5BD06-6392-3027-8C26-853107D3CF1A}', PackVersionComponents(14, 0, 0, 0));
   has_msvcrt_amd64 := IsMsiProductInstalled('{36F68A90-239C-34DF-B58C-64B30153CE35}', PackVersionComponents(14, 0, 0, 0));
   has_msvcrt_arm64 := IsMsiProductInstalled('{DC9BAE42-810B-423A-9E25-E4073F1C7B00}', PackVersionComponents(14, 0, 0, 0));
-  { TODO: Check 32-bit ARM? }
   if ProcessorArchitecture = paArm64 then
   begin
-    { TODO: Do we need the 32-bit i386 version? }
+    { TODO: Do we need the 32-bit i386 or arm32 versions? }
     if not has_msvcrt_arm64 then
     begin
       MsgBox('The Microsoft C++ 2015-2022 runtime is missing.' + #13#10#13#10 +
@@ -114,6 +113,19 @@ begin
         '• https://aka.ms/vs/17/release/VC_redist.x86.exe', mbCriticalError, MB_OK)
       Result := False
       Exit;
+    end;
+  end;
+end;
+
+function ShouldInstallFile_arm32(): Boolean;
+begin
+  Result := False;
+  if ProcessorArchitecture = paArm64 then
+  begin
+    { Windows 11 dropped support for ARM32. Check for 10.0.21000 or later. }
+    if GetWindowsVersion() >= $0A005208 then
+    begin
+      Result := True;
     end;
   end;
 end;
@@ -236,7 +248,7 @@ end;
   #define FileName FindGetFileName(FindHandle)
   #define file_arch "arm"
   #define file_bits "32bit"
-  #define file_check "IsArm32Compatible"
+  #define file_check "ShouldInstallFile_arm32"
   #if Copy(FileName, Len(FileName) - 18, 18) == "rom-properties.dll"
     #define do_regserver "regserver"
   #else
@@ -281,15 +293,12 @@ end;
 #emit BuildFileList_arm64
 
 ; Install rpcli.exe and rp-config.exe in the root directory using the matching system architecture.
-; NOTE: Inno Setup 6 doesn't have "IsArm32OS"...
 Source: "..\pkg_windows\build.i386\bin\Release\rpcli.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: IsX86OS
 Source: "..\pkg_windows\build.amd64\bin\Release\rpcli.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: IsX64OS
-;Source: "..\pkg_windows\build.arm\bin\Release\rpcli.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: IsArm32OS
 Source: "..\pkg_windows\build.arm64\bin\Release\rpcli.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: IsArm64
 
 Source: "..\pkg_windows\build.i386\bin\Release\rp-config.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: IsX86OS
 Source: "..\pkg_windows\build.amd64\bin\Release\rp-config.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: IsX64OS
-;Source: "..\pkg_windows\build.arm\bin\Release\rp-config.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: IsArm32OS
 Source: "..\pkg_windows\build.arm64\bin\Release\rp-config.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: IsArm64
 
 ; Data files
