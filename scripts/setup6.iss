@@ -122,8 +122,8 @@ begin
   Result := False;
   if ProcessorArchitecture = paArm64 then
   begin
-    { Windows 11 dropped support for ARM32. Check for 10.0.21000 or later. }
-    if GetWindowsVersion() >= $0A005208 then
+    { Windows 11 build 25905 (or build 25399?) dropped support for ARM32. }
+    if GetWindowsVersion() >= $0A006337 then
     begin
       Result := True;
     end;
