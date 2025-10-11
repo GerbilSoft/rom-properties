@@ -631,10 +631,10 @@ void EXEPrivate::addFields_PE(void)
 				s_cpu = "CHPEv1 i386";
 				break;
 			case IMAGE_FILE_MACHINE_AMD64:
-				s_cpu = "CHPEv2 ARM64EC";
+				s_cpu = "ARM64EC";
 				break;
 			case IMAGE_FILE_MACHINE_ARM64:
-				s_cpu = "CHPEv2 ARM64X";
+				s_cpu = "ARM64X";
 				break;
 			default:
 				break;

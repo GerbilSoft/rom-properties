@@ -18,8 +18,8 @@ static const char EXEPEMachineTypes_strtbl[] =
 	"RISC-V (32-bit address space)" "\x00" "RISC-V (64-bit address sp"
 	"ace)" "\x00" "RISC-V (128-bit address space)" "\x00" "LoongArch "
 	"(32-bit)" "\x00" "LoongArch (64-bit)" "\x00" "AMD64" "\x00" "Mit"
-	"subishi M32R" "\x00" "ARM (64-bit) (emulation-compatible)" "\x00"
-	"CHPEv2 ARM64X" "\x00" "ARM (64-bit)" "\x00" "MSIL" "\x00";
+	"subishi M32R" "\x00" "ARM64EC" "\x00" "ARM64X" "\x00" "ARM64" "\x00"
+	"MSIL" "\x00";
 
 struct EXEPEMachineTypes_offtbl_t {
 	uint16_t machineType;
@@ -69,8 +69,8 @@ static const EXEPEMachineTypes_offtbl_t EXEPEMachineTypes_offtbl[] = {
 	{0x8664, 573},
 	{0x9041, 579},
 	{0xa641, 595},
-	{0xa64e, 631},
+	{0xa64e, 603},
 
-	{0xaa64, 645},
-	{0xc0ee, 658},
+	{0xaa64, 610},
+	{0xc0ee, 616},
 };

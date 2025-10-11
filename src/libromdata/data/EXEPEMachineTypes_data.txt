@@ -40,7 +40,7 @@
 0x6264|LoongArch (64-bit)
 0x8664|AMD64
 0x9041|Mitsubishi M32R
-0xA641|ARM (64-bit) (emulation-compatible)
-0xA64E|CHPEv2 ARM64X
-0xAA64|ARM (64-bit)
+0xA641|ARM64EC
+0xA64E|ARM64X
+0xAA64|ARM64
 0xC0EE|MSIL
