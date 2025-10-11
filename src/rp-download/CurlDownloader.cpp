@@ -252,7 +252,7 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 		}
 
 		// Reserve enough space for the file being downloaded.
-		vec->reserve(fileSize);
+		vec->reserve(static_cast<size_t>(fileSize));
 	}
 	else if (len >= sizeof(http_last_modified) &&
 	         !strncasecmp(ptr, http_last_modified, sizeof(http_last_modified)-1))

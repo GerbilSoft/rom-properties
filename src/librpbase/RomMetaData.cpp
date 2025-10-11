@@ -179,7 +179,9 @@ RomMetaData::MetaData *RomMetaDataPrivate::addProperty(Property name)
 		metaData.emplace_back(name, static_cast<PropertyType>(PropertyTypeMap[static_cast<size_t>(name)]));
 		const size_t idx = metaData.size() - 1;
 		pMetaData = &metaData[idx];
-		map_metaData[static_cast<int>(name)] = idx;
+		// NOTE: If this assertion fails, this property won't be mapped correctly!
+		assert(idx <= std::numeric_limits<int8_t>::max());
+		map_metaData[static_cast<int>(name)] = static_cast<int8_t>(idx);
 	}
 
 	return pMetaData;

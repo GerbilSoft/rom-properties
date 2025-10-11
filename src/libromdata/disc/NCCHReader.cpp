@@ -652,7 +652,7 @@ int NCCHReader::seek(off64_t pos, SeekWhence whence)
 		m_lastError = EINVAL;
 		return -1;
 	}
-	d->pos = static_cast<off64_t>(constrain_file_pos(pos, static_cast<off64_t>(d->ncch_length)));
+	d->pos = static_cast<uint32_t>(constrain_file_pos(pos, static_cast<off64_t>(d->ncch_length)));
 	return 0;
 }
 
@@ -682,7 +682,7 @@ off64_t NCCHReader::size(void)
 {
 	// TODO: Errors?
 	RP_D(const NCCHReader);
-	const off64_t ret = d->ncch_length - sizeof(N3DS_NCCH_Header_t);
+	const off64_t ret = static_cast<off64_t>(d->ncch_length) - sizeof(N3DS_NCCH_Header_t);
 	return (ret >= 0 ? ret : 0);
 }
 
