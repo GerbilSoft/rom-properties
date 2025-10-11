@@ -78,6 +78,13 @@
 
 #include <windows.h>
 
+// Workaround for the v141_xp toolchain on MSVC 17.14.16 failing in objbase.h:
+// error C2760: syntax error: unexpected token 'identifier', expected 'type specifier'
+// References:
+// - https://stackoverflow.com/questions/57014731/gdi-library-causes-error-c2760-syntax-error-unexpected-token-identifier-e
+// - https://stackoverflow.com/a/62349505
+typedef struct IUnknown IUnknown;
+
 #ifndef WM_DPICHANGED
 #  define WM_DPICHANGED 0x2E0
 #endif
