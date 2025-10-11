@@ -6,12 +6,13 @@ CD /D "%~dp0\.."
 :: Requires the following:
 :: - CMake 3.0.0 or later
 :: - MSVC 2015, or 2017 with 32-bit and 64-bit compilers
-:: - MSVC 2019, 2022 with v141_xp toolchain is also supported.
+:: - MSVC 2019, 2022 [17.11, 17.6] with v141_xp toolchain is also supported.
 :: - Windows 7 SDK
 :: - zip.exe and unzip.exe in %PATH%
-:: - Inno Setup 5 (for Windows XP/2003/Vista installation)
-:: - Inno Setup 6 (for Windows 7/8/10/11 installation)
+:: - Inno Setup 5 [for Windows XP/2003/Vista installation]
+:: - Inno Setup 6 [for Windows 7/8/10/11 installation]
 ::
+:: Windows 10 SDK is required for 32-bit ARM.
 :: For ARM and ARM64 targets, MSVC 2019 is required.
 :: For the ARM64EC target, MSVC 2022 and CMake 3.22.0 are required.
 ::
@@ -106,7 +107,7 @@ FOR %%I IN (Community Professional Enterprise) DO (
 	)
 )
 
-:: MSVC 2022: Use the 2017 (14.1x) compiler for 32-bit in order to maintain WinXP compatibilty.
+:: MSVC 2022 (17.6): Use the 2017 (14.1x) compiler for 32-bit in order to maintain WinXP compatibilty.
 :: NOTE: MSVC 2022 switched to 64-bit Program Files
 FOR %%I IN (Community Professional Enterprise) DO (
 	IF EXIST "%PrgFiles64%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.36.32532\bin\HostX86\x86\cl.exe" (
@@ -126,9 +127,29 @@ FOR %%I IN (Community Professional Enterprise) DO (
 	)
 )
 
+:: MSVC 2022 (17.11): Use the 2017 (14.1x) compiler for 32-bit in order to maintain WinXP compatibilty.
+:: NOTE: MSVC 2022 switched to 64-bit Program Files
+FOR %%I IN (Community Professional Enterprise) DO (
+	IF EXIST "%PrgFiles64%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.44.35207\bin\HostX86\x86\cl.exe" (
+		SET "MSVC32_DIR=%PrgFiles64%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.16.27023"
+		SET MSVC32_VERSION=14.16
+		SET MSVC32_YEAR=2022
+		SET CMAKE32_GENERATOR=17 2022
+		SET CMAKE32_TOOLSET=v141_xp
+		SET CMAKE32_ARCH=-A Win32
+
+		SET "MSVC64_DIR=%PrgFiles64%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.44.35207"
+		SET MSVC64_VERSION=14.44
+		SET MSVC64_YEAR=2022
+		SET CMAKE64_GENERATOR=17 2022
+		SET CMAKE64_TOOLSET=v143
+		SET CMAKE64_ARCH=-A x64
+	)
+)
+
 IF "%CMAKE64_GENERATOR%" == "" (
 	ECHO *** ERROR: Supported version of MSVC was not found.
-	ECHO Supported versions: 2022, 2019, 2017, 2015
+	ECHO Supported versions: 2022 [17.11, 17.6], 2019, 2017, 2015
 	PAUSE
 	EXIT /B 1
 )
@@ -306,8 +327,7 @@ GOTO :doPackage
 :: May need to use the MSVC port for ARM64EC.
 :: For now, disabling NLS on the ARM builds.
 
-:: NOTE: Since we're cross-compiling, the i386 build will be used
-:: for amiiboc.exe.
+:: NOTE: Since we're cross-compiling, the i386 build will be used for amiiboc.exe.
 :: FIXME: It's not accepting "../build.i386"; using %~dp0 instead.
 
 :: Compile the arm version.

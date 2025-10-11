@@ -15,39 +15,79 @@ ENDIF()
 
 # This function globs the linker input files that was copied into a repro_directory for each target during arm64 build. Then it passes the arm64 libs, objs and def file to the linker using /machine:arm64x to combine them with the arm64ec counterparts and create an arm64x binary.
 
-function(set_arm64_dependencies n)
-	set(ARM64_LIBS)
-	set(ARM64_OBJS)
-	set(ARM64_DEF)
-	set(REPRO_PATH "${arm64ReproDir}/${n}")
-	if(NOT EXISTS "${REPRO_PATH}")
-		set(REPRO_PATH "${arm64ReproDir}/${n}_temp")
+IF(CMAKE_VS_VERSION_BUILD_NUMBER VERSION_GREATER 17.10.99999.99999)
+	# MSVC 17.11 adds /LINKREPROFULLPATHRSP.
+
+	# This function reads in the content of the rsp file outputted from arm64 build for a target.
+	# Then passes the arm64 libs, objs and def file to the linker using /machine:arm64x to combine
+	# them with the arm64ec counterparts and create an arm64x binary.
+	function(set_arm64_dependencies n)
+		set(REPRO_FILE "${arm64ReproDir}/${n}.rsp")
+		file(STRINGS "${REPRO_FILE}" ARM64_OBJS REGEX obj\"$)
+		file(STRINGS "${REPRO_FILE}" ARM64_DEF REGEX def\"$)
+		file(STRINGS "${REPRO_FILE}" ARM64_LIBS REGEX lib\"$)
+		string(REPLACE "\"" ";" ARM64_OBJS "${ARM64_OBJS}")
+		string(REPLACE "\"" ";" ARM64_LIBS "${ARM64_LIBS}")
+		string(REPLACE "\"" ";" ARM64_DEF "${ARM64_DEF}")
+		string(REPLACE "/def:" "/defArm64Native:" ARM64_DEF "${ARM64_DEF}")
+
+		target_sources(${n} PRIVATE ${ARM64_OBJS})
+		target_link_options(${n} PRIVATE /machine:arm64x "${ARM64_DEF}" "${ARM64_LIBS}")
+	endfunction()
+
+	# During the arm64 build, create link.rsp files that containes the absolute path to the inputs passed to the linker (objs, def files, libs).
+	if(BUILD_AS_ARM64X STREQUAL "ARM64")
+		add_custom_target(mkdirs ALL COMMAND cmd /c (if not exist \"${arm64ReproDir}/\" mkdir \"${arm64ReproDir}\" ))
+		foreach (n ${ARM64X_TARGETS})
+			add_dependencies(${n} mkdirs)
+			# tell the linker to produce this special rsp file that has absolute paths to its inputs
+			target_link_options(${n} PRIVATE "/LINKREPROFULLPATHRSP:${arm64ReproDir}/${n}.rsp")
+		endforeach()
+
+	# During the ARM64EC build, modify the link step appropriately to produce an arm64x binary
+	elseif(BUILD_AS_ARM64X STREQUAL "ARM64EC")
+		foreach (n ${ARM64X_TARGETS})
+			set_arm64_dependencies(${n})
+		endforeach()
 	endif()
-	file(GLOB ARM64_OBJS "${REPRO_PATH}/*.obj")
-	file(GLOB ARM64_DEF "${REPRO_PATH}/*.def")
-	file(GLOB ARM64_LIBS "${REPRO_PATH}/*.LIB")
+ELSE(CMAKE_VS_VERSION_BUILD_NUMBER VERSION_GREATER 17.10.99999.99999)
+	# MSVC 17.10 and earlier does not have /LINKREPROFULLPATHRSP.
+	# Need to copy the files instead.
 
-	if(NOT "${ARM64_DEF}" STREQUAL "")
-		set(ARM64_DEF "/defArm64Native:${ARM64_DEF}")
+	function(set_arm64_dependencies n)
+		set(ARM64_LIBS)
+		set(ARM64_OBJS)
+		set(ARM64_DEF)
+		set(REPRO_PATH "${arm64ReproDir}/${n}")
+		if(NOT EXISTS "${REPRO_PATH}")
+			set(REPRO_PATH "${arm64ReproDir}/${n}_temp")
+		endif()
+		file(GLOB ARM64_OBJS "${REPRO_PATH}/*.obj")
+		file(GLOB ARM64_DEF "${REPRO_PATH}/*.def")
+		file(GLOB ARM64_LIBS "${REPRO_PATH}/*.LIB")
+
+		if(NOT "${ARM64_DEF}" STREQUAL "")
+			set(ARM64_DEF "/defArm64Native:${ARM64_DEF}")
+		endif()
+		target_sources(${n} PRIVATE ${ARM64_OBJS})
+		target_link_options(${n} PRIVATE /machine:arm64x "${ARM64_DEF}" "${ARM64_LIBS}")
+	endfunction()
+
+	# During the arm64 build, pass the /link_repro flag to linker so it knows to copy into a directory, all the file inputs needed by the linker for arm64 build (objs, def files, libs).
+	# extra logic added to deal with rebuilds and avoiding overwriting directories.
+	if(BUILD_AS_ARM64X STREQUAL "ARM64")
+		foreach (n ${ARM64X_TARGETS})
+			add_custom_target(mkdirs_${n} ALL COMMAND cmd /c (if exist \"${arm64ReproDir}/${n}_temp/\" rmdir /s /q \"${arm64ReproDir}/${n}_temp\") && mkdir \"${arm64ReproDir}/${n}_temp\" )
+			add_dependencies(${n} mkdirs_${n})
+			target_link_options(${n} PRIVATE "/LINKREPRO:${arm64ReproDir}/${n}_temp")
+			add_custom_target(${n}_checkRepro ALL COMMAND cmd /c if exist \"${n}_temp/*.obj\" if exist \"${n}\" rmdir /s /q \"${n}\" 2>nul && if not exist \"${n}\" ren \"${n}_temp\" \"${n}\" WORKING_DIRECTORY ${arm64ReproDir})
+			add_dependencies(${n}_checkRepro ${n})
+		endforeach()
+
+	# During the ARM64EC build, modify the link step appropriately to produce an arm64x binary
+	elseif(BUILD_AS_ARM64X STREQUAL "ARM64EC")
+		foreach (n ${ARM64X_TARGETS})
+			set_arm64_dependencies(${n})
+		endforeach()
 	endif()
-	target_sources(${n} PRIVATE ${ARM64_OBJS})
-	target_link_options(${n} PRIVATE /machine:arm64x "${ARM64_DEF}" "${ARM64_LIBS}")
-endfunction()
-
-# During the arm64 build, pass the /link_repro flag to linker so it knows to copy into a directory, all the file inputs needed by the linker for arm64 build (objs, def files, libs).
-# extra logic added to deal with rebuilds and avoiding overwriting directories.
-if(BUILD_AS_ARM64X STREQUAL "ARM64")
-	foreach (n ${ARM64X_TARGETS})
-		add_custom_target(mkdirs_${n} ALL COMMAND cmd /c (if exist \"${arm64ReproDir}/${n}_temp/\" rmdir /s /q \"${arm64ReproDir}/${n}_temp\") && mkdir \"${arm64ReproDir}/${n}_temp\" )
-		add_dependencies(${n} mkdirs_${n})
-		target_link_options(${n} PRIVATE "/LINKREPRO:${arm64ReproDir}/${n}_temp")
-		add_custom_target(${n}_checkRepro ALL COMMAND cmd /c if exist \"${n}_temp/*.obj\" if exist \"${n}\" rmdir /s /q \"${n}\" 2>nul && if not exist \"${n}\" ren \"${n}_temp\" \"${n}\" WORKING_DIRECTORY ${arm64ReproDir})
-		add_dependencies(${n}_checkRepro ${n})
-	endforeach()
-
-# During the ARM64EC build, modify the link step appropriately to produce an arm64x binary
-elseif(BUILD_AS_ARM64X STREQUAL "ARM64EC")
-	foreach (n ${ARM64X_TARGETS})
-		set_arm64_dependencies(${n})
-	endforeach()
-endif()
+ENDIF(CMAKE_VS_VERSION_BUILD_NUMBER VERSION_GREATER 17.10.99999.99999)
