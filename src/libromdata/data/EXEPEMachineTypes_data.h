@@ -4,22 +4,24 @@
 #include <stdint.h>
 
 static const char EXEPEMachineTypes_strtbl[] =
-	"\x00" "Intel i386" "\x00" "MIPS R3000 (big-endian)" "\x00" "MIPS"
-	" R3000" "\x00" "MIPS R4000" "\x00" "MIPS R10000" "\x00" "MIPS (W"
-	"CE v2)" "\x00" "DEC Alpha AXP" "\x00" "Hitachi SH3" "\x00" "Hita"
-	"chi SH3 DSP" "\x00" "Hitachi SH3E" "\x00" "Hitachi SH4" "\x00" "H"
-	"itachi SH5" "\x00" "ARM" "\x00" "ARM Thumb" "\x00" "ARM Thumb-2" "\x00"
-	"Matsushita AM33" "\x00" "PowerPC" "\x00" "PowerPC with FPU" "\x00"
-	"PowerPC (big-endian; Xenon)" "\x00" "Intel Itanium" "\x00" "MIPS"
-	"16" "\x00" "Motorola 68000" "\x00" "DEC Alpha AXP (64-bit)" "\x00"
-	"PA-RISC" "\x00" "MIPS with FPU" "\x00" "MIPS16 with FPU" "\x00" "I"
-	"nfineon TriCore" "\x00" "PowerPC (big-endian)" "\x00" "Common Ex"
-	"ecutable Format" "\x00" "EFI Byte Code" "\x00" "CHPEv1 i386" "\x00"
-	"RISC-V (32-bit address space)" "\x00" "RISC-V (64-bit address sp"
-	"ace)" "\x00" "RISC-V (128-bit address space)" "\x00" "LoongArch "
-	"(32-bit)" "\x00" "LoongArch (64-bit)" "\x00" "AMD64" "\x00" "Mit"
-	"subishi M32R" "\x00" "ARM64EC" "\x00" "ARM64X" "\x00" "ARM64" "\x00"
-	"MSIL" "\x00";
+	"\x00" "Intel i386" "\x00" "Intel i860" "\x00" "MIPS R3000 (big-e"
+	"ndian)" "\x00" "MIPS R3000" "\x00" "MIPS R4000" "\x00" "MIPS R10"
+	"000" "\x00" "MIPS (WCE v2)" "\x00" "DEC Alpha AXP" "\x00" "Hitac"
+	"hi SH3" "\x00" "Hitachi SH3 DSP" "\x00" "Hitachi SH3E" "\x00" "H"
+	"itachi SH4" "\x00" "Hitachi SH5" "\x00" "ARMv4" "\x00" "ARMv4T ("
+	"Thumb)" "\x00" "ARMv7 (Thumb-2)" "\x00" "Matsushita AM33" "\x00" "R"
+	"S/6000" "\x00" "PowerPC" "\x00" "PowerPC with FPU" "\x00" "Power"
+	"PC (64-bit) (big-endian; Xenon)" "\x00" "Intel Itanium" "\x00" "M"
+	"IPS16" "\x00" "Motorola 68000" "\x00" "DEC Alpha AXP (64-bit)" "\x00"
+	"PA-RISC" "\x00" "MIPS with FPU" "\x00" "MIPS16 with FPU" "\x00" "H"
+	"itachi SH (big-endian)" "\x00" "Infineon TriCore" "\x00" "Hitach"
+	"i SH (little-endian)" "\x00" "PowerPC (big-endian)" "\x00" "Comm"
+	"on Executable Format" "\x00" "EFI Byte Code" "\x00" "CHPEv1 i386"
+	"\x00" "RISC-V (32-bit address space)" "\x00" "RISC-V (64-bit add"
+	"ress space)" "\x00" "RISC-V (128-bit address space)" "\x00" "Loo"
+	"ngArch (32-bit)" "\x00" "LoongArch (64-bit)" "\x00" "AMD64" "\x00"
+	"Mitsubishi M32R" "\x00" "ARM64EC" "\x00" "ARM64X" "\x00" "ARM64" "\x00"
+	"Microsoft OMNI VM (omniprox.dll)" "\x00" "COM+ Execution Engine" "\x00";
 
 struct EXEPEMachineTypes_offtbl_t {
 	uint16_t machineType;
@@ -28,49 +30,54 @@ struct EXEPEMachineTypes_offtbl_t {
 
 static const EXEPEMachineTypes_offtbl_t EXEPEMachineTypes_offtbl[] = {
 	{0x014c, 1},
-	{0x0160, 12},
-	{0x0162, 36},
-	{0x0166, 47},
-	{0x0168, 58},
-	{0x0169, 70},
-	{0x0184, 84},
-	{0x01a2, 98},
-	{0x01a3, 110},
-	{0x01a4, 126},
+	{0x014d, 12},
+	{0x0160, 23},
+	{0x0162, 47},
+	{0x0166, 58},
+	{0x0168, 69},
+	{0x0169, 81},
+	{0x0184, 95},
+	{0x01a2, 109},
+	{0x01a3, 121},
 
-	{0x01a6, 139},
-	{0x01a8, 151},
-	{0x01c0, 163},
-	{0x01c2, 167},
-	{0x01c4, 177},
-	{0x01d3, 189},
-	{0x01f0, 205},
-	{0x01f1, 213},
-	{0x01f2, 230},
-	{0x0200, 258},
+	{0x01a4, 137},
+	{0x01a6, 150},
+	{0x01a8, 162},
+	{0x01c0, 174},
+	{0x01c2, 180},
+	{0x01c4, 195},
+	{0x01d3, 211},
+	{0x01df, 227},
+	{0x01f0, 235},
+	{0x01f1, 243},
 
-	{0x0266, 272},
-	{0x0268, 279},
-	{0x0284, 294},
-	{0x0290, 317},
-	{0x0366, 325},
-	{0x0466, 339},
-	{0x0520, 355},
-	{0x0601, 372},
-	{0x0cef, 393},
-	{0x0ebc, 418},
+	{0x01f2, 260},
+	{0x0200, 297},
+	{0x0266, 311},
+	{0x0268, 318},
+	{0x0284, 333},
+	{0x0290, 356},
+	{0x0366, 364},
+	{0x0466, 378},
+	{0x0500, 394},
+	{0x0520, 418},
 
-	{0x3a64, 432},
-	{0x5032, 444},
-	{0x5064, 474},
-	{0x5128, 504},
-	{0x6232, 535},
-	{0x6264, 554},
-	{0x8664, 573},
-	{0x9041, 579},
-	{0xa641, 595},
-	{0xa64e, 603},
+	{0x0550, 435},
+	{0x0601, 462},
+	{0x0cef, 483},
+	{0x0ebc, 508},
+	{0x3a64, 522},
+	{0x5032, 534},
+	{0x5064, 564},
+	{0x5128, 594},
+	{0x6232, 625},
+	{0x6264, 644},
 
-	{0xaa64, 610},
-	{0xc0ee, 616},
+	{0x8664, 663},
+	{0x9041, 669},
+	{0xa641, 685},
+	{0xa64e, 693},
+	{0xaa64, 700},
+	{0xace1, 706},
+	{0xc0ee, 739},
 };

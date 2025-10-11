@@ -3,6 +3,7 @@
 # NOTE: Must be sorted by ID!
 
 0x014C|Intel i386
+0x014D|Intel i860
 0x0160|MIPS R3000 (big-endian)
 0x0162|MIPS R3000
 0x0166|MIPS R4000
@@ -14,13 +15,14 @@
 0x01A4|Hitachi SH3E
 0x01A6|Hitachi SH4
 0x01A8|Hitachi SH5
-0x01C0|ARM
-0x01C2|ARM Thumb
-0x01C4|ARM Thumb-2
+0x01C0|ARMv4
+0x01C2|ARMv4T (Thumb)
+0x01C4|ARMv7 (Thumb-2)
 0x01D3|Matsushita AM33
+0x01DF|RS/6000
 0x01F0|PowerPC
 0x01F1|PowerPC with FPU
-0x01F2|PowerPC (big-endian; Xenon)
+0x01F2|PowerPC (64-bit) (big-endian; Xenon)
 0x0200|Intel Itanium
 0x0266|MIPS16
 0x0268|Motorola 68000
@@ -28,7 +30,9 @@
 0x0290|PA-RISC
 0x0366|MIPS with FPU
 0x0466|MIPS16 with FPU
+0x0500|Hitachi SH (big-endian)
 0x0520|Infineon TriCore
+0x0550|Hitachi SH (little-endian)
 0x0601|PowerPC (big-endian)
 0x0CEF|Common Executable Format
 0x0EBC|EFI Byte Code
@@ -43,4 +47,5 @@
 0xA641|ARM64EC
 0xA64E|ARM64X
 0xAA64|ARM64
-0xC0EE|MSIL
+0xACE1|Microsoft OMNI VM (omniprox.dll)
+0xC0EE|COM+ Execution Engine
