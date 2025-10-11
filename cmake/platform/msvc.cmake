@@ -98,7 +98,8 @@ FOREACH(FLAG_TEST "/Zc:wchar_t" "/Zc:inline")
 ENDFOREACH()
 
 # MSVC: C/C++ conformance settings
-IF(CMAKE_SYSTEM_VERSION VERSION_GREATER 9.9)
+# NOTE: Disable this if targetting Windows XP, e.g. toolset v141_xp.
+IF(CMAKE_SYSTEM_VERSION VERSION_GREATER 9.9 AND NOT (CMAKE_GENERATOR_TOOLSET MATCHES "_xp$"))
 	FOREACH(FLAG_TEST "/permissive-")
 		# CMake doesn't like certain characters in variable names.
 		STRING(REGEX REPLACE "/|:|=" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
