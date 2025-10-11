@@ -15,7 +15,14 @@
 #define DEFAULT_TEXT_DOMAIN RP_I18N_DOMAIN
 
 #ifdef _WIN32
-#  define LIBGNUINTL_DLL "libgnuintl-8.dll"
+#  if defined(_M_IX86) || defined(__i386__) || \
+      defined(_M_X64) || defined(_M_AMD64) || defined(__amd64__) || defined(__x86_64__)
+     // MinGW-w64 version (i386/amd64)
+#    define LIBGNUINTL_DLL "libgnuintl-8.dll"
+#  else
+     // MSVC version (arm/arm64/arm64ec)
+#    define LIBGNUINTL_DLL "gnuintl-8.dll"
+#  endif
 #endif /* _WIN32 */
 
 /**

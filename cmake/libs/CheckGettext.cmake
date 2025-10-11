@@ -9,34 +9,56 @@ FUNCTION(CHECK_GETTEXT)
 		# Use our own precompiled version for Windows.
 		# NOTE: DirInstallPaths sets ${TARGET_CPU_ARCH}.
 		INCLUDE(DirInstallPaths)
+		SET(gettext_ARCH_DIR ${TARGET_CPU_ARCH})
+		IF(gettext_ARCH_DIR STREQUAL arm64ec)
+			# arm64ec: Use "arm64" as the directory, since we're using ARM64X.
+			SET(gettext_ARCH_DIR arm64)
+		ENDIF(gettext_ARCH_DIR STREQUAL arm64ec)
+
 		SET(gettext_ROOT "${CMAKE_SOURCE_DIR}/extlib/gettext.win32")
-		SET(gettext_BIN "${gettext_ROOT}/bin.${TARGET_CPU_ARCH}")
-		SET(gettext_LIB "${gettext_ROOT}/lib.${TARGET_CPU_ARCH}")
-		# Use 32-bit executables on all systems.
+		#SET(gettext_BIN "${gettext_ROOT}/bin.${gettext_ARCH_DIR}")
+		SET(gettext_LIB "${gettext_ROOT}/lib.${gettext_ARCH_DIR}")
+		# Use i386 (32-bit) build-time executables on all systems.
 		SET(gettext_BIN "${gettext_ROOT}/bin.i386")
 
 		SET(Intl_INCLUDE_DIR "${gettext_ROOT}/include" CACHE INTERNAL "libintl include directory." FORCE)
 		IF(MSVC)
 			# MSVC: Link to the import library
-			SET(Intl_LIBRARY "${gettext_LIB}/libgnuintl-8.lib" CACHE INTERNAL "libintl libraries" FORCE)
+			IF(CPU_i386 OR CPU_amd64)
+				# MinGW-w64 version (i386/amd64)
+				SET(Intl_LIBRARY "${gettext_LIB}/libgnuintl-8.lib" CACHE INTERNAL "libintl libraries" FORCE)
+				SET(Intl_DLL "libgnuintl-8.dll")
+			ELSE()
+				# MSVC version (arm/arm64/arm64ec)
+				SET(Intl_LIBRARY "${gettext_LIB}/gnuintl-8.lib" CACHE INTERNAL "libintl libraries" FORCE)
+				SET(Intl_DLL "gnuintl-8.dll")
+			ENDIF()
 		ELSE(MSVC)
 			# MinGW: Link to the import library (TODO: Link to the DLL?)
-			SET(Intl_LIBRARY "${gettext_LIB}/libgnuintl.dll.a" CACHE INTERNAL "libintl libraries" FORCE)
+			IF(CPU_i386 OR CPU_amd64)
+				# MinGW-w64 version (i386/amd64)
+				SET(Intl_LIBRARY "${gettext_LIB}/libgnuintl.dll.a" CACHE INTERNAL "libintl libraries" FORCE)
+				SET(Intl_DLL "libgnuintl-8.dll")
+			ELSE()
+				# We don't have a MinGW-w64 build for this architecture yet...
+				FATAL_ERROR("No libgnuintl.dll.a for this CPU architecture!")
+			ENDIF()
 		ENDIF(MSVC)
 
 		# Executables
 		# NOTE: If cross-compiling on Linux for Windows, use the native tools.
-		IF(CMAKE_CROSSCOMPILING)
-			FIND_PROGRAM(GETTEXT_MSGFMT_EXECUTABLE msgfmt)
-			FIND_PROGRAM(GETTEXT_MSGMERGE_EXECUTABLE msgmerge)
-			FIND_PROGRAM(GETTEXT_XGETTEXT_EXECUTABLE xgettext)
-			FIND_PROGRAM(GETTEXT_MSGINIT_EXECUTABLE msginit)
-		ELSE(CMAKE_CROSSCOMPILING)
+		# On MSVC, CMAKE_CROSSCOMPLING may be set if building for arm/arm64/arm64ec.
+		IF(MSVC)
 			SET(GETTEXT_MSGFMT_EXECUTABLE "${gettext_BIN}/msgfmt.exe" CACHE INTERNAL "msgfmt executable" FORCE)
 			SET(GETTEXT_MSGMERGE_EXECUTABLE "${gettext_BIN}/msgmerge.exe" CACHE INTERNAL "msgmerge executable" FORCE)
 			SET(GETTEXT_XGETTEXT_EXECUTABLE "${gettext_BIN}/xgettext.exe" CACHE INTERNAL "xgettext executable" FORCE)
 			SET(GETTEXT_MSGINIT_EXECUTABLE "${gettext_BIN}/msginit.exe" CACHE INTERNAL "msginit executable" FORCE)
-		ENDIF(CMAKE_CROSSCOMPILING)
+		ELSE(MSVC)
+			FIND_PROGRAM(GETTEXT_MSGFMT_EXECUTABLE msgfmt)
+			FIND_PROGRAM(GETTEXT_MSGMERGE_EXECUTABLE msgmerge)
+			FIND_PROGRAM(GETTEXT_XGETTEXT_EXECUTABLE xgettext)
+			FIND_PROGRAM(GETTEXT_MSGINIT_EXECUTABLE msginit)
+		ENDIF(MSVC)
 
 		IF(NOT TARGET libgnuintl_dll_target)
 			# Destination directory.
@@ -48,15 +70,13 @@ FUNCTION(CHECK_GETTEXT)
 			ENDIF(CMAKE_CFG_INTDIR)
 
 			# Copy and install the DLL.
-			SET(LIBGNUINTL_DLL "${gettext_LIB}/libgnuintl-8.dll")
-
 			ADD_CUSTOM_TARGET(libgnuintl_dll_target ALL
 				DEPENDS libgnuintl_dll_command
 				)
 			ADD_CUSTOM_COMMAND(OUTPUT libgnuintl_dll_command
 				COMMAND ${CMAKE_COMMAND}
 				ARGS -E copy_if_different
-					"${LIBGNUINTL_DLL}" "${DLL_DESTDIR}/libgnuintl-8.dll"
+					"${gettext_LIB}/${Intl_DLL}" "${DLL_DESTDIR}/${Intl_DLL}"
 				DEPENDS libgnuintl_always_rebuild
 				)
 			ADD_CUSTOM_COMMAND(OUTPUT libgnuintl_always_rebuild
@@ -64,7 +84,7 @@ FUNCTION(CHECK_GETTEXT)
 				ARGS -E echo
 				)
 
-			INSTALL(FILES "${LIBGNUINTL_DLL}"
+			INSTALL(FILES "${gettext_LIB}/${Intl_DLL}"
 				DESTINATION "${DIR_INSTALL_DLL}"
 				COMPONENT "dll"
 				)

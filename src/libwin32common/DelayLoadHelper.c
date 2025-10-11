@@ -36,8 +36,10 @@ static const TCHAR rp_subdir[] = _T("arm64ec\\");
 static const TCHAR rp_subdir[] = _T("arm64\\");
 #elif defined(_M_IX86) || defined(__i386__)
 static const TCHAR rp_subdir[] = _T("i386\\");
+#  define USE_MINGW_DLL_NAME 1
 #elif defined(_M_X64) || defined(_M_AMD64) || defined(__amd64__) || defined(__x86_64__)
 static const TCHAR rp_subdir[] = _T("amd64\\");
+#  define USE_MINGW_DLL_NAME 1
 #elif defined(_M_IA64) || defined(__ia64__)
 static const TCHAR rp_subdir[] = _T("ia64\\");
 #elif defined(__riscv) && (__riscv_xlen == 32)
@@ -72,13 +74,17 @@ static const char *const dll_whitelist[] = {
 #ifdef RP_LIBROMDATA_IS_DLL
 	ROMDATA_PREFIX "romdata-" LIBROMDATA_SOVERSION_STR DEBUG_SUFFIX ".dll",
 #endif /* RP_LIBROMDATA_IS_DLL */
+#ifdef USE_MINGW_DLL_NAME
+	"libgnuintl-8.dll",	// MinGW-w64 version (i386/amd64)
+#else /* !USE_MINGW_DLL_NAME */
+	"gnuintl-8.dll",	// MSVC version (arm/arm64/arm64ec)
+#endif /* USE_MINGW_DLL_NAME */
 	"zlib1" DEBUG_SUFFIX ".dll",
 	"libpng16" DEBUG_SUFFIX ".dll",
 	"pugixml" PUGI_DEBUG_SUFFIX ".dll",
 	"zstd" DEBUG_SUFFIX ".dll",
 	"lz4" DEBUG_SUFFIX ".dll",
 	"minilzo" DEBUG_SUFFIX ".dll",
-	"libgnuintl-8.dll",
 	"minizip" DEBUG_SUFFIX ".dll",
 	"fmt-12" DEBUG_SUFFIX ".dll",
 };

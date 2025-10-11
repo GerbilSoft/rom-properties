@@ -139,13 +139,15 @@ IF(ENABLE_COVERAGE)
 ENDIF(ENABLE_COVERAGE)
 
 # Enable NLS (internationalization)
+STRING(TOLOWER "${_MSVC_C_ARCHITECTURE_FAMILY}" _msvc_c_arch_lower)
 IF(NOT WIN32 OR NOT MSVC)
 	OPTION(ENABLE_NLS "Enable NLS using gettext for localized messages." ON)
-ELSEIF(MSVC AND _MSVC_C_ARCHITECTURE_FAMILY MATCHES "^([iI]?[xX3]86)|([xX]64)$")
+ELSEIF(MSVC AND _msvc_c_arch_lower MATCHES "^(i?[x3]86)|x64|arm.*|aarch.*$")
 	OPTION(ENABLE_NLS "Enable NLS using gettext for localized messages." ON)
 ELSE()
 	SET(ENABLE_NLS OFF CACHE INTERNAL "Enable NLS using gettext for localized messages." FORCE)
 ENDIF()
+UNSET(_msvc_c_arch_lower)
 
 # Linux security options
 IF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
