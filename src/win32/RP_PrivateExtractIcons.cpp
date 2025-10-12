@@ -91,6 +91,17 @@ typedef enum {
 } ICO_Win1_Format_e;
 
 /**
+ * Does a 16-bit value look like a valid Windows 1.x/2.x icon format ID?
+ * @param format 16-bit value
+ * @return True if it looks like a valid Windows 1.x/2.x icon format ID; false if it doesn't.
+ */
+static inline constexpr bool isWin1xIconFormatID(uint16_t format)
+{
+	return (((format & 0x00FF) == 0x0001) || ((format & 0x00FF) == 0x0003)) &&
+	       (((format & 0xFF00) == 0x0000) || ((format & 0xFF00) == 0x0100) || ((format & 0xFF00) == 0x0200));
+}
+
+/**
  * Custom implementation of PrivateExtractIconsW().
  * (Internal function; called by the wrapper functions.)
  *
@@ -138,10 +149,9 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 		return 0;
 	}
 
-	// NOTE: This function only supports .exe/.dll.
-	// We could also handle .ico, but Windows should handle that regardless.
-	// TODO: Win1.x/2.x icons?
-	// MSDN says .ani and .bmp are also supported.
+	// This function supports .exe/.dll, and Win1.x/2.x .ico.
+	// (Win3.x .ico should always be handled by Windows regardless of architecture.)
+	// NOTE: MSDN says .ani and .bmp are also supported.
 	// Reference: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-privateextracticonsw
 
 	// Attempt to open the file first.
@@ -157,30 +167,56 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 	// TODO: Only doing one icon right now.
 	nIcons = 1;
 
+	// Icon data
+	rp::uvector<uint8_t> iconData;
+
 	// Try to load the file as .exe/.dll.
 	unique_ptr<EXE> exe(new EXE(file));
-	if (!exe->isValid()) {
-		// Not a valid EXE file.
-		return 0;
-	}
-
-	// Get the raw icon data.
-	uint32_t iconResID = 0;
-	rp::uvector<uint8_t> iconData = exe->loadIconResourceData(nIconIndex, LOWORD(cxIcon), HIWORD(cyIcon), &iconResID);
-	if (iconData.size() < sizeof(ICO_Win1_Header)) {
-		// No icon data...
+	if (exe->isValid()) {
+		// Get the raw icon data.
+		uint32_t iconResID = 0;
+		iconData = exe->loadIconResourceData(nIconIndex, LOWORD(cxIcon), HIWORD(cyIcon), &iconResID);
 		if (piconid) {
 			*piconid = iconResID;
 		}
-		return 0;
+		if (iconData.size() <= sizeof(ICO_Win1_Header)) {
+			// No icon data...
+			return 0;
+		}
+	} else {
+		// This might be a Win1.x/2.x .ico file.
+		// Sanity check: Maximum of 64 KB.
+		if (piconid) {
+			*piconid = 0;
+		}
+		static constexpr off64_t WIN1_ICO_SIZE_MAX = 64 * 1024;
+		const off64_t fileSize = file->size();
+		if (fileSize <= sizeof(ICO_Win1_Header) || fileSize > WIN1_ICO_SIZE_MAX) {
+			// File size is out of range.
+			return 0;
+		}
+
+		// Read the icon data.
+		iconData.resize(static_cast<size_t>(fileSize));
+		size_t size = file->seekAndRead(0, iconData.data(), iconData.size());
+		if (size != iconData.size()) {
+			// Seek and/or read error.
+			return 0;
+		}
+
+		// This *must* be a Win1.x/2.x icon.
+		const ICO_Win1_Header *win1 = reinterpret_cast<const ICO_Win1_Header*>(iconData.data());
+		if (!isWin1xIconFormatID(le16_to_cpu(win1->format))) {
+			// Not a Win1.x/2.x icon.
+			return 0;
+		}
 	}
+	exe.reset(nullptr);
 
 	// Check for a Win1.x/2.x icon.
 	const ICO_Win1_Header *win1 = reinterpret_cast<const ICO_Win1_Header*>(iconData.data());
 	const uint16_t win1_format = cpu_to_le16(win1->format);
-	if (((win1_format & 0xFF) == 1) || ((win1_format & 0xFF) == 3) &&
-		((win1_format & 0xFF00) == 0) || ((win1_format & 0xFF00) == 1) || ((win1_format & 0xFF00) == 2))
-	{
+	if (isWin1xIconFormatID(win1_format)) {
 		// This is a Win1.x/2.x icon.
 		// Create a BITMAPINFOHEADER and copy everything over.
 		// TODO: Need to flip bitmap/mask order?
