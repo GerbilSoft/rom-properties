@@ -448,3 +448,10 @@ IF(USE_INTERNAL_FMT)
 	SET_EXTLIB_PROPERTIES(fmt)
 	#SET_EXTLIB_PROPERTIES(fmt-header-only)
 ENDIF(USE_INTERNAL_FMT)
+
+# Detours
+# Used for handling 16-bit EXE icons on 64-bit Windows,
+# and Windows 1.x/2.x icons on all Windows systems.
+IF(WIN32)
+	ADD_SUBDIRECTORY(Detours)
+ENDIF(WIN32)
