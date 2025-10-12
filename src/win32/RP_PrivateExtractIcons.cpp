@@ -18,6 +18,7 @@
 #include "RP_PrivateExtractIcons.hpp"
 
 #include "dll-macros.h"
+#include "librpbyteswap/byteswap_rp.h"
 
 // Other rom-properties libraries.
 #include "librpfile/RpFile.hpp"
@@ -55,6 +56,39 @@ typedef UINT (WINAPI *PrivateExtractIconsA_t)(
 static int ref_count = 0;
 static PrivateExtractIconsW_t old_PrivateExtractIconsW = nullptr;
 static PrivateExtractIconsA_t old_PrivateExtractIconsA = nullptr;
+
+// Win1.x/2.x icon structs cpoied from ico_structs.h.
+// We can't include ico_structs.h here due to conflicts with the Windows SDK.
+
+/**
+ * Windows 1.0: Icon (and cursor)
+ *
+ * All fields are in little-endian.
+ */
+typedef struct _ICO_Win1_Header {
+	uint16_t format;	// [0x000] See ICO_Win1_Format_e
+	uint16_t hotX;		// [0x002] Cursor hotspot X (cursors only)
+	uint16_t hotY;		// [0x004] Cursor hotspot Y (cursors only)
+	uint16_t width;		// [0x006] Width, in pixels
+	uint16_t height;	// [0x008] Height, in pixels
+	uint16_t stride;	// [0x00A] Row stride, in bytes
+	uint16_t color;		// [0x00C] Cursor color
+} ICO_Win1_Header;
+
+/**
+ * Windows 1.0: Icon format
+ */
+typedef enum {
+	ICO_WIN1_FORMAT_MAYBE_WIN3	= 0x0000U,	// may be a Win3 icon/cursor
+
+	ICO_WIN1_FORMAT_ICON_DIB	= 0x0001U,
+	ICO_WIN1_FORMAT_ICON_DDB	= 0x0101U,
+	ICO_WIN1_FORMAT_ICON_BOTH	= 0x0201U,
+
+	ICO_WIN1_FORMAT_CURSOR_DIB	= 0x0003U,
+	ICO_WIN1_FORMAT_CURSOR_DDB	= 0x0103U,
+	ICO_WIN1_FORMAT_CURSOR_BOTH	= 0x0203U,
+} ICO_Win1_Format_e;
 
 /**
  * Custom implementation of PrivateExtractIconsW().
@@ -131,15 +165,70 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 	}
 
 	// Get the raw icon data.
-	// TODO: Win1.x/2.x executables?
 	uint32_t iconResID = 0;
 	rp::uvector<uint8_t> iconData = exe->loadIconResourceData(nIconIndex, LOWORD(cxIcon), HIWORD(cyIcon), &iconResID);
-	if (iconData.empty()) {
+	if (iconData.size() < sizeof(ICO_Win1_Header)) {
 		// No icon data...
 		if (piconid) {
 			*piconid = iconResID;
 		}
 		return 0;
+	}
+
+	// Check for a Win1.x/2.x icon.
+	const ICO_Win1_Header *win1 = reinterpret_cast<const ICO_Win1_Header*>(iconData.data());
+	const uint16_t win1_format = cpu_to_le16(win1->format);
+	if (((win1_format & 0xFF) == 1) || ((win1_format & 0xFF) == 3) &&
+		((win1_format & 0xFF00) == 0) || ((win1_format & 0xFF00) == 1) || ((win1_format & 0xFF00) == 2))
+	{
+		// This is a Win1.x/2.x icon.
+		// Need to vertically flip the icon data.
+		// NOTE: 2x height * stride because of bitmap + mask.
+		// TODO: Flip the second one if we have DIB+DDB?
+		unsigned int ico_height = le16_to_cpu(win1->height) * 2;
+		unsigned int ico_stride = le16_to_cpu(win1->stride);
+		assert(ico_height > 0);
+		assert(ico_stride > 0);
+		if (ico_height == 0 || ico_stride == 0) {
+			return 0;
+		}
+		const uint8_t *pEndSrcIco0 = &iconData[sizeof(ICO_Win1_Header) + (ico_height * ico_stride)];
+		const uint8_t *pSrc = pEndSrcIco0 - ico_stride;
+
+		rp::uvector<uint8_t> flipIcon;
+		flipIcon.resize(iconData.size());
+		memcpy(flipIcon.data(), win1, sizeof(*win1));
+		uint8_t *pDest = &flipIcon[sizeof(ICO_Win1_Header)];
+
+		for (unsigned int y = 0; y < ico_height; y++, pSrc -= ico_stride, pDest += ico_stride) {
+			memcpy(pDest, pSrc, ico_stride);
+		}
+
+		// TODO: DIB+DDB needs testing.
+#if 0
+		// Is this DIB+DDB?
+		if ((win1_format & 0xFF00) == 0x0200) {
+			// Flip the second image.
+			win1 = reinterpret_cast<const ICO_Win1_Header*>(pEndSrcIco0 - 2);
+			memcpy(pDest, pEndSrcIco0, sizeof(*win1) - 2);
+			pDest += (sizeof(*win1) - 2);
+
+			ico_height = le16_to_cpu(win1->height) * 2;
+			ico_stride = le16_to_cpu(win1->stride);
+			assert(ico_height > 0);
+			assert(ico_stride > 0);
+			if (ico_height == 0 || ico_stride == 0) {
+				return 0;
+			}
+			pSrc = pEndSrcIco0 + sizeof(*win1) - 2;
+
+			for (unsigned int y = 0; y < ico_height; y++, pSrc -= ico_stride, pDest += ico_stride) {
+				memcpy(pDest, pSrc, ico_stride);
+			}
+		}
+#endif
+
+		iconData = std::move(flipIcon);
 	}
 
 	// Create one icon for now.
