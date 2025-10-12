@@ -191,15 +191,14 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 		if (ico_height == 0 || ico_stride == 0) {
 			return 0;
 		}
-		const uint32_t biSizeImage = (ico_height * ico_stride);
+		const uint32_t biSizeImage = ico_height * ico_stride;
+		const uint32_t ico_height_2x = ico_height * 2;
 
 		rp::uvector<uint8_t> flipIcon;
 		// NOTE: biSizeImage * 2 to include the mask, plus a 2-entry palette.
 		flipIcon.resize(sizeof(BITMAPINFOHEADER) + (2 * sizeof(uint32_t)) + (biSizeImage * 2));
 		BITMAPINFOHEADER *const bih = reinterpret_cast<BITMAPINFOHEADER*>(flipIcon.data());
-		const uint8_t *pSrc = &iconData[sizeof(*win1)];
-		uint32_t *pDestPal = reinterpret_cast<uint32_t*>(&flipIcon[sizeof(*bih)]);
-		uint8_t *pDest = &flipIcon[sizeof(*bih) + (2 * sizeof(uint32_t))];
+		uint32_t *const pDestPal = reinterpret_cast<uint32_t*>(&flipIcon[sizeof(*bih)]);
 
 		// BITMAPINFOHEADER
 		bih->biSize = sizeof(*bih);
@@ -208,7 +207,7 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 		bih->biPlanes = 1;
 		bih->biBitCount = 1;
 		bih->biCompression = 0;
-		bih->biSizeImage = biSizeImage;
+		bih->biSizeImage = biSizeImage * 2;
 		bih->biXPelsPerMeter = 0;
 		bih->biYPelsPerMeter = 0;
 		bih->biClrUsed = 0;
@@ -218,21 +217,14 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 		pDestPal[0] = 0x00000000;
 		pDestPal[1] = 0x00FFFFFF;
 
-		// NOTE: biSizeImage * 2 to include the mask.
-		memcpy(pDest, pSrc, biSizeImage * 2);
-#if 0
-		const uint8_t *pEndSrcIco0 = &iconData[sizeof(ICO_Win1_Header) + (ico_height * ico_stride)];
+		// Flip the bitmap and mask.
+		const uint8_t *pEndSrcIco0 = &iconData[sizeof(ICO_Win1_Header) + (biSizeImage * 2)];
 		const uint8_t *pSrc = pEndSrcIco0 - ico_stride;
+		uint8_t *pDest = &flipIcon[sizeof(*bih) + (2 * sizeof(uint32_t))];
 
-		rp::uvector<uint8_t> flipIcon;
-		flipIcon.resize(iconData.size());
-		memcpy(flipIcon.data(), win1, sizeof(*win1));
-		uint8_t *pDest = &flipIcon[sizeof(ICO_Win1_Header)];
-
-		for (unsigned int y = 0; y < ico_height; y++, pSrc -= ico_stride, pDest += ico_stride) {
+		for (unsigned int y = 0; y < ico_height_2x; y++, pSrc -= ico_stride, pDest += ico_stride) {
 			memcpy(pDest, pSrc, ico_stride);
 		}
-#endif
 
 		// TODO: DIB+DDB needs testing.
 #if 0
