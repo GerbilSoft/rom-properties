@@ -283,7 +283,8 @@ cmake ..\.. -G "Visual Studio %CMAKE32_GENERATOR%" %CMAKE32_ARCH% ^
 	-DCMAKE_GENERATOR_TOOLSET=%CMAKE32_TOOLSET% ^
 	-DCMAKE_BUILD_TYPE=Release ^
 	-DBUILD_TESTING=OFF ^
-	-DSPLIT_DEBUG=ON
+	-DSPLIT_DEBUG=ON ^
+	-DENABLE_NLS=ON
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 cmake --build . --config Release
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
@@ -306,7 +307,8 @@ cmake ..\.. -G "Visual Studio %CMAKE64_GENERATOR%" %CMAKE64_ARCH% ^
 	-DCMAKE_SYSTEM_VERSION=10.0 ^
 	-DCMAKE_BUILD_TYPE=Release ^
 	-DBUILD_TESTING=OFF ^
-	-DSPLIT_DEBUG=ON
+	-DSPLIT_DEBUG=ON ^
+	-DENABLE_NLS=ON
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 cmake --build . --config Release
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
@@ -323,10 +325,6 @@ ECHO *** Skipping ARM builds.
 GOTO :doPackage
 
 :buildARM
-:: FIXME: Need to build gettext for ARM, ARM64, and ARM64EC.
-:: May need to use the MSVC port for ARM64EC.
-:: For now, disabling NLS on the ARM builds.
-
 :: NOTE: Since we're cross-compiling, the i386 build will be used for amiiboc.exe.
 :: FIXME: It's not accepting "../build.i386"; using %~dp0 instead.
 
@@ -345,7 +343,7 @@ cmake ..\.. -G "Visual Studio %CMAKE64_GENERATOR%" -A arm ^
 	-DCMAKE_BUILD_TYPE=Release ^
 	-DBUILD_TESTING=OFF ^
 	-DSPLIT_DEBUG=ON ^
-	-DENABLE_NLS=OFF
+	-DENABLE_NLS=ON
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 cmake --build . --config Release
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
@@ -373,7 +371,7 @@ cmake ..\.. -G "Visual Studio %CMAKE64_GENERATOR%" -A arm64 ^
 	-DCMAKE_BUILD_TYPE=Release ^
 	-DBUILD_TESTING=OFF ^
 	-DSPLIT_DEBUG=ON ^
-	-DENABLE_NLS=OFF ^
+	-DENABLE_NLS=ON ^
 	-DBUILD_AS_ARM64X=%BUILD_AS_ARM64X%
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 cmake --build . --config Release
@@ -405,7 +403,7 @@ cmake ..\.. -G "Visual Studio %CMAKE64_GENERATOR%" -A arm64ec ^
 	-DCMAKE_BUILD_TYPE=Release ^
 	-DBUILD_TESTING=OFF ^
 	-DSPLIT_DEBUG=ON ^
-	-DENABLE_NLS=OFF ^
+	-DENABLE_NLS=ON ^
 	-DBUILD_AS_ARM64X=%BUILD_AS_ARM64X%
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 cmake --build . --config Release
