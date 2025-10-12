@@ -230,6 +230,12 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 		const uint32_t biSizeImage = ico_height * ico_stride;
 		const uint32_t ico_height_2x = ico_height * 2;
 
+		// Validate the icon size. (not counting DIB+DDB)
+		if (iconData.size() < (sizeof(*win1) + (biSizeImage * 2))) {
+			// Icon data is too small...
+			return 0;
+		}
+
 		rp::uvector<uint8_t> flipIcon;
 		// NOTE: biSizeImage * 2 to include the mask, plus a 2-entry palette.
 		flipIcon.resize(sizeof(BITMAPINFOHEADER) + (2 * sizeof(uint32_t)) + (biSizeImage * 2));
