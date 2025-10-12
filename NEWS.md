@@ -25,6 +25,12 @@
       Inno Setup 5 installer will show an error message if run on
       Windows 7 or later.
   * Added more French translations from @NoNameWasDefined.
+  * Windows: The arm64 and arm64ec DLLs have been combined using Microsoft's
+    arm64x format.
+    * This fixes an issue where both arm64 and arm64ec DLLs can't be registered at
+      the same time.
+    * See #398: Installing on ARM64 shows an error that the AMD64 version of the DLL couldn't be registered
+      * Reported by @kristibektashi.
   * Windows: Add special handling for 16-bit executables and Windows 1.x/2.x icons.
     * On 64-bit Windows systems, rom-properties intercepts icon requests for these
       files and handles it instead, since Win64 does not support showing icons for
