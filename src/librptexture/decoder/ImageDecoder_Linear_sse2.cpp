@@ -45,7 +45,7 @@ using namespace LibRpTexture::PixelConversion;
 // Only use `const __m128i&` on 32-bit Windows.
 #ifndef VECTORCALL
 #  define VECTORCALL
-#  if defined(_WIN32) && (defined(_M_X86) || defined(__i386__))
+#  if defined(_WIN32) && (defined(_M_IX86) || defined(__i386__))
 #    define __M128I_ARG 	const __m128i&
 #  else
 #    define __M128I_ARG 	__m128i
