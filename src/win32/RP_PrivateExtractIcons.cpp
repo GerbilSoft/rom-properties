@@ -182,16 +182,45 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 		((win1_format & 0xFF00) == 0) || ((win1_format & 0xFF00) == 1) || ((win1_format & 0xFF00) == 2))
 	{
 		// This is a Win1.x/2.x icon.
-		// Need to vertically flip the icon data.
-		// NOTE: 2x height * stride because of bitmap + mask.
-		// TODO: Flip the second one if we have DIB+DDB?
-		unsigned int ico_height = le16_to_cpu(win1->height) * 2;
+		// Create a BITMAPINFOHEADER and copy everything over.
+		// TODO: Need to flip bitmap/mask order?
+		int ico_height = le16_to_cpu(win1->height);
 		unsigned int ico_stride = le16_to_cpu(win1->stride);
 		assert(ico_height > 0);
 		assert(ico_stride > 0);
 		if (ico_height == 0 || ico_stride == 0) {
 			return 0;
 		}
+		const uint32_t biSizeImage = (ico_height * ico_stride);
+
+		rp::uvector<uint8_t> flipIcon;
+		// NOTE: biSizeImage * 2 to include the mask, plus a 2-entry palette.
+		flipIcon.resize(sizeof(BITMAPINFOHEADER) + (2 * sizeof(uint32_t)) + (biSizeImage * 2));
+		BITMAPINFOHEADER *const bih = reinterpret_cast<BITMAPINFOHEADER*>(flipIcon.data());
+		const uint8_t *pSrc = &iconData[sizeof(*win1)];
+		uint32_t *pDestPal = reinterpret_cast<uint32_t*>(&flipIcon[sizeof(*bih)]);
+		uint8_t *pDest = &flipIcon[sizeof(*bih) + (2 * sizeof(uint32_t))];
+
+		// BITMAPINFOHEADER
+		bih->biSize = sizeof(*bih);
+		bih->biWidth = le16_to_cpu(win1->width);
+		bih->biHeight = ico_height * 2;	// double-size to include the mask
+		bih->biPlanes = 1;
+		bih->biBitCount = 1;
+		bih->biCompression = 0;
+		bih->biSizeImage = biSizeImage;
+		bih->biXPelsPerMeter = 0;
+		bih->biYPelsPerMeter = 0;
+		bih->biClrUsed = 0;
+		bih->biClrImportant = 0;
+
+		// 2-entry palette
+		pDestPal[0] = 0x00000000;
+		pDestPal[1] = 0x00FFFFFF;
+
+		// NOTE: biSizeImage * 2 to include the mask.
+		memcpy(pDest, pSrc, biSizeImage * 2);
+#if 0
 		const uint8_t *pEndSrcIco0 = &iconData[sizeof(ICO_Win1_Header) + (ico_height * ico_stride)];
 		const uint8_t *pSrc = pEndSrcIco0 - ico_stride;
 
@@ -203,6 +232,7 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 		for (unsigned int y = 0; y < ico_height; y++, pSrc -= ico_stride, pDest += ico_stride) {
 			memcpy(pDest, pSrc, ico_stride);
 		}
+#endif
 
 		// TODO: DIB+DDB needs testing.
 #if 0
