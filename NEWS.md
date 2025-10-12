@@ -26,7 +26,7 @@
       Windows 7 or later.
   * Added more French translations from @NoNameWasDefined.
   * Windows: The arm64 and arm64ec DLLs have been combined using Microsoft's
-    arm64x format.
+    ARM64X format.
     * This fixes an issue where both arm64 and arm64ec DLLs can't be registered at
       the same time.
     * See #398: Installing on ARM64 shows an error that the AMD64 version of the DLL couldn't be registered
