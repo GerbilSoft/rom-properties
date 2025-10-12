@@ -25,6 +25,16 @@
       Inno Setup 5 installer will show an error message if run on
       Windows 7 or later.
   * Added more French translations from @NoNameWasDefined.
+  * Windows: Add special handling for 16-bit executables and Windows 1.x/2.x icons.
+    * On 64-bit Windows systems, rom-properties intercepts icon requests for these
+      files and handles it instead, since Win64 does not support showing icons for
+      16-bit Windows programs.
+    * On 32-bit Windows systems, Windows does support showing icons for 16-bit
+      Windows programs, but not Windows 1.x/2.x icons. rom-properties now handles
+      this case as well.
+    * Based on [Icon16bitFix](https://github.com/otya128/Icon16bitFix/tree/master/Icon16bitFix).
+    * Note that there's currently a minor issue where the icons might not show up
+      immediately if the rom-properties shell extension hasn't been loaded yet.
 
 * Bug fixes:
   * Fix detection of small TGAs (under 64 bytes), e.g. some of the TGAs used by
