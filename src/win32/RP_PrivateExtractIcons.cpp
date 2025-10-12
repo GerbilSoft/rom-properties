@@ -21,6 +21,8 @@
 
 // Other rom-properties libraries.
 #include "librpfile/RpFile.hpp"
+#include "libromdata/Other/EXE.hpp"
+using namespace LibRomData;
 using namespace LibRpFile;
 
 // Detours
@@ -93,12 +95,18 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 		return 0;
 	}
 
+	// Zero out phicon initially.
+	if (phicon && nIcons > 0) {
+		memset(phicon, 0, sizeof(HICON) * nIcons);
+	}
+
 	if (nIcons < 0 || nIcons > 2) {
 		return 0;
 	}
 
 	// NOTE: This function only supports .exe/.dll.
 	// We could also handle .ico, but Windows should handle that regardless.
+	// TODO: Win1.x/2.x icons?
 	// MSDN says .ani and .bmp are also supported.
 	// Reference: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-privateextracticonsw
 
@@ -115,14 +123,37 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 	// TODO: Only doing one icon right now.
 	nIcons = 1;
 
-	// TODO: Get the icon from the EXE class.
+	// Try to load the file as .exe/.dll.
+	unique_ptr<EXE> exe(new EXE(file));
+	if (!exe->isValid()) {
+		// Not a valid EXE file.
+		return 0;
+	}
 
-	// TODO: Special function to get the raw icon data, which we will then use to create an HICON
-	// using CreateIconFromResourceEx().
-	// TODO: Both icons, if two are requested?
+	// Get the raw icon data.
+	// TODO: Win1.x/2.x executables?
+	uint32_t iconResID = 0;
+	rp::uvector<uint8_t> iconData = exe->loadIconResourceData(nIconIndex, LOWORD(cxIcon), HIWORD(cyIcon), &iconResID);
+	if (iconData.empty()) {
+		// No icon data...
+		if (piconid) {
+			*piconid = iconResID;
+		}
+		return 0;
+	}
 
-	// Not a supported icon file...
-	return 0;
+	// Create one icon for now.
+	// TODO: Second icon too?
+	phicon[0] = CreateIconFromResourceEx(
+		iconData.data(),			// presbits
+		static_cast<DWORD>(iconData.size()),	// dwResSize
+		TRUE,					// fIcon
+		0x00030000,				// dwVer
+		LOWORD(cxIcon),				// cxDesired
+		LOWORD(cyIcon),				// cyDesired
+		flags);					// Flags
+
+	return (phicon[0]) ? 1 : 0;
 }
 
 /**

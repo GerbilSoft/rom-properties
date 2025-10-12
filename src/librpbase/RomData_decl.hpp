@@ -20,6 +20,8 @@ namespace LibRpBase {
 // for loadInternalImage() implementation macros
 #include <cerrno>
 
+#include "dll-macros.h"
+
 /** Macros for RomData subclasses. **/
 
 /**
@@ -73,6 +75,27 @@ public: \
 	 * \
 	 * @param file Open ROM image \
 	 */ \
+	explicit klass(const LibRpFile::IRpFilePtr &file);
+
+/**
+ * Exported constructor for a RomData subclass.
+ */
+#define ROMDATA_DECL_CTOR_EXPORT(klass) \
+public: \
+	/**
+	 * Read a ROM image. \
+	 * \
+	 * A ROM image must be opened by the caller. The file handle \
+	 * will be ref()'d and must be kept open in order to load \
+	 * data from the ROM image. \
+	 * \
+	 * To close the file, either delete this object or call close(). \
+	 * \
+	 * NOTE: Check isValid() to determine if this is a valid ROM. \
+	 * \
+	 * @param file Open ROM image \
+	 */ \
+	RP_LIBROMDATA_PUBLIC \
 	explicit klass(const LibRpFile::IRpFilePtr &file);
 
 /**
@@ -141,6 +164,16 @@ ROMDATA_DECL_COMMON_FNS()
 #define ROMDATA_DECL_BEGIN_EXPORT(klass) \
 ROMDATA_DECL_BEGIN_NO_CTOR_EXPORT(klass) \
 ROMDATA_DECL_CTOR_DEFAULT(klass) \
+ROMDATA_DECL_COMMON_FNS()
+
+/**
+ * Initial declaration for a RomData subclass with an exported constructor.
+ * Declares functions common to all RomData subclasses.
+ * @param klass Class name
+ */
+#define ROMDATA_DECL_BEGIN_EXPORT_CTOR(klass) \
+ROMDATA_DECL_BEGIN_NO_CTOR(klass) \
+ROMDATA_DECL_CTOR_EXPORT(klass) \
 ROMDATA_DECL_COMMON_FNS()
 
 /**
