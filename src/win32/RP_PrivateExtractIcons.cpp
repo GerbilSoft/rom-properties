@@ -56,6 +56,7 @@ static PrivateExtractIconsA_t old_PrivateExtractIconsA = nullptr;
 
 /**
  * Custom implementation of PrivateExtractIconsW().
+ * (Internal function; called by the wrapper functions.)
  *
  * Handles .dll/.exe on 64-bit Windows in order to extract icons from
  * 16-bit Windows executables, which normally aren't handled on anything
@@ -69,8 +70,9 @@ static PrivateExtractIconsA_t old_PrivateExtractIconsA = nullptr;
  * @param piconid
  * @param nIcons
  * @param flags
+ * @return Number of icons extracted, 0 on error, or 0xFFFFFFFFU if the file was not found.
  */
-static UINT WINAPI RP_PrivateExtractIconsW(
+static UINT WINAPI RP_PrivateExtractIconsW_int(
 	_In_ LPCWSTR szFileName,
 	_In_ int nIconIndex,
 	_In_ int cxIcon,
@@ -124,6 +126,42 @@ static UINT WINAPI RP_PrivateExtractIconsW(
 }
 
 /**
+ * Custom implementation of PrivateExtractIconsW().
+ *
+ * Handles .dll/.exe on 64-bit Windows in order to extract icons from
+ * 16-bit Windows executables, which normally aren't handled on anything
+ * other than 32-bit i386 Windows.
+ *
+ * @param szFileName
+ * @param nIconIndex
+ * @param cxIcon
+ * @param cyIcon
+ * @param phicon
+ * @param piconid
+ * @param nIcons
+ * @param flags
+ * @return Number of icons extracted, 0 on error, or 0xFFFFFFFFU if the file was not found.
+ */
+static UINT WINAPI RP_PrivateExtractIconsW(
+	_In_ LPCWSTR szFileName,
+	_In_ int nIconIndex,
+	_In_ int cxIcon,
+	_In_ int cyIcon,
+	_Out_opt_ HICON *phicon,
+	_Out_opt_ UINT *piconid,
+	_In_ UINT nIcons,
+	_In_ UINT flags)
+{
+	// Try the original function first.
+	UINT uRet = old_PrivateExtractIconsW(szFileName, nIconIndex, cxIcon, cyIcon, phicon, piconid, nIcons, flags);
+	if (uRet == 0 || uRet == 0xFFFFFFFFU) {
+		// The original function failed. Call RP_PrivateExtractIconsW_int().
+		uRet = RP_PrivateExtractIconsW_int(szFileName, nIconIndex, cxIcon, cyIcon, phicon, piconid, nIcons, flags);
+	}
+	return uRet;
+}
+
+/**
  * Custom implementation of PrivateExtractIconsA().
  *
  * Handles .dll/.exe on 64-bit Windows in order to extract icons from
@@ -138,6 +176,7 @@ static UINT WINAPI RP_PrivateExtractIconsW(
  * @param piconid
  * @param nIcons
  * @param flags
+ * @return Number of icons extracted, 0 on error, or 0xFFFFFFFFU if the file was not found.
  */
 static UINT WINAPI RP_PrivateExtractIconsA(
 	_In_ LPCSTR szFileName,
@@ -149,8 +188,14 @@ static UINT WINAPI RP_PrivateExtractIconsA(
 	_In_ UINT nIcons,
 	_In_ UINT flags)
 {
-	// Convert the ANSI filename to Unicode, then call RP_PrivateExtractIconsW().
-	return RP_PrivateExtractIconsW(A2W_c(szFileName), nIconIndex, cxIcon, cyIcon, phicon, piconid, nIcons, flags);
+	// Try the original function first.
+	UINT uRet = old_PrivateExtractIconsA(szFileName, nIconIndex, cxIcon, cyIcon, phicon, piconid, nIcons, flags);
+	if (uRet == 0 || uRet == 0xFFFFFFFFU) {
+		// The original function failed.
+		// Convert the ANSI filename to Unicode, then call RP_PrivateExtractIconsW_int().
+		uRet = RP_PrivateExtractIconsW_int(A2W_c(szFileName), nIconIndex, cxIcon, cyIcon, phicon, piconid, nIcons, flags);
+	}
+	return uRet;
 }
 
 /**
