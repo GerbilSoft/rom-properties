@@ -37,7 +37,7 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.win32.h.in" "${CMAKE_CURRENT_
 # Create the manifest file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/res/${PROJECT_NAME}.dll.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/res/${PROJECT_NAME}.dll.manifest" @ONLY)
 
-# Sources and headers.
+# Sources and headers
 SET(${PROJECT_NAME}_SRCS
 	DllMain.cpp
 	DllRegisterServer.cpp
@@ -200,9 +200,16 @@ ENDIF(ENABLE_NETWORKING)
 
 IF(MSVC)
 	# Delay-load sources.
-	SET(${PROJECT_NAME}-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
-	SET(${PROJECT_NAME}-DELAYLOAD_H   ../libwin32common/DelayLoadHelper.h)
+	SET(${PROJECT_NAME}-DELAYLOAD_SRCS ../libwin32common/DelayLoadHelper.c)
+	SET(${PROJECT_NAME}-DELAYLOAD_H    ../libwin32common/DelayLoadHelper.h)
 ENDIF(MSVC)
+
+INCLUDE(CPUInstructionSetFlags)
+IF(WIN32 AND NOT CPU_i386)
+	# Provide a way to get icons for 16-bit Windows applications on 64-bit Windows.
+	SET(${PROJECT_NAME}_PEI_SRCS RP_PrivateExtractIcons.cpp)
+	SET(${PROJECT_NAME}_PEI_H    RP_PrivateExtractIcons.hpp)
+ENDIF(WIN32 AND NOT CPU_i386)
 
 #####################
 # Build the plugin. #
@@ -232,7 +239,8 @@ ENDIF(RP_LIBROMDATA_IS_DLL AND MSVC)
 # the 'lib' directory. Use SHARED instead.
 # TODO: Disable building of import libraries.
 ADD_LIBRARY(${PROJECT_NAME} SHARED
-	${${PROJECT_NAME}-DELAYLOAD_SRC} ${${PROJECT_NAME}-DELAYLOAD_H}
+	${${PROJECT_NAME}-DELAYLOAD_SRCS} ${${PROJECT_NAME}-DELAYLOAD_H}
+	${${PROJECT_NAME}_PEI_SRCS} ${${PROJECT_NAME}_PEI_H}
 	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
 	${${PROJECT_NAME}_REGISTER_SRCS}
 	${${PROJECT_NAME}-PropKey_SRCS} ${${PROJECT_NAME}-PropKey_H}
@@ -319,6 +327,11 @@ ELSEIF(MINGW)
 	# since Win64 doesn't use stdcall.
 	SET(RP_DLL_FLAGS "-Wl,--enable-stdcall-fixup ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.def")
 ENDIF()
+
+IF(WIN32 AND NOT CPU_i386)
+	# Using Microsoft's Detours library for PrivateExtractIcons.
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE Detours)
+ENDIF(WIN32 AND NOT CPU_i386)
 
 IF(RP_DLL_FLAGS)
 	GET_TARGET_PROPERTY(RP_LINK_FLAGS ${PROJECT_NAME} LINK_FLAGS)

@@ -20,6 +20,11 @@ Copyright: 2015-2019, Makman2 <makman@alice.de>
 License: GPL-3
 
 Files:
+ extlib/Detours/*
+Copyright: (c) Microsoft Corporation
+License: MIT
+
+Files:
  extlib/PowerVR/*
 Copyright: (c) Imagination Technologies Ltd.
 License: MIT

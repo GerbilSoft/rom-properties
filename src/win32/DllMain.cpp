@@ -39,6 +39,10 @@
 #include "MessageWidget.hpp"
 #include "OptionsMenuButton.hpp"
 
+#if !defined(_M_X86) && !defined(__i386__)
+#include "RP_PrivateExtractIcons.hpp"
+#endif /* !_M_X86 && !__i386__ */
+
 // rp_image backend registration
 #include "librptexture/img/GdiplusHelper.hpp"
 #include "librptexture/img/RpGdiplusBackend.hpp"
@@ -73,11 +77,22 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 			// Reference: https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-disablethreadlibrarycalls
 			DisableThreadLibraryCalls(hInstance);
 #endif /* !defined(_MSC_VER) || defined(_DLL) */
+
+#if !defined(_M_X86) && !defined(__i386__)
+			// Non-i386 platform: Enable detours so we can provide icons for
+			// 16-bit Windows applications.
+			RP_PrivateExtractIcons_DllProcessAttach();
+#endif /* !_M_X86 && !__i386__ */
 			break;
 		}
 
 		case DLL_PROCESS_DETACH:
 			// DLL is being unloaded.
+#if !defined(_M_X86) && !defined(__i386__)
+			// Non-i386 platform: Unregister the detours.
+			RP_PrivateExtractIcons_DllProcessDetach();
+#endif /* !_M_X86 && !__i386__ */
+
 			// FIXME: If any of our COM objects are still referenced,
 			// this won't unload stuff, and things might crash...
 			// Reference: https://devblogs.microsoft.com/oldnewthing/20060920-07/?p=29663

@@ -1,0 +1,13 @@
+This copy of Detours is a modified version of the original.
+
+commit 9764cebcb1a75940e68fa83d6730ffaf0f669401
+Fix context setting errors in DetourEnumerateImports API (#266)
+
+The following changes have been made to the original:
+
+- Added CMakeLists.txt.
+
+- The samples and tests directories were removed.
+
+To obtain the original Detours library, visit:
+https://github.com/microsoft/Detours
