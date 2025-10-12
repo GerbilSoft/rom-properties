@@ -226,30 +226,6 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 			memcpy(pDest, pSrc, ico_stride);
 		}
 
-		// TODO: DIB+DDB needs testing.
-#if 0
-		// Is this DIB+DDB?
-		if ((win1_format & 0xFF00) == 0x0200) {
-			// Flip the second image.
-			win1 = reinterpret_cast<const ICO_Win1_Header*>(pEndSrcIco0 - 2);
-			memcpy(pDest, pEndSrcIco0, sizeof(*win1) - 2);
-			pDest += (sizeof(*win1) - 2);
-
-			ico_height = le16_to_cpu(win1->height) * 2;
-			ico_stride = le16_to_cpu(win1->stride);
-			assert(ico_height > 0);
-			assert(ico_stride > 0);
-			if (ico_height == 0 || ico_stride == 0) {
-				return 0;
-			}
-			pSrc = pEndSrcIco0 + sizeof(*win1) - 2;
-
-			for (unsigned int y = 0; y < ico_height; y++, pSrc -= ico_stride, pDest += ico_stride) {
-				memcpy(pDest, pSrc, ico_stride);
-			}
-		}
-#endif
-
 		iconData = std::move(flipIcon);
 	}
 
