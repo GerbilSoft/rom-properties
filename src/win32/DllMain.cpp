@@ -78,20 +78,18 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 			DisableThreadLibraryCalls(hInstance);
 #endif /* !defined(_MSC_VER) || defined(_DLL) */
 
-#if !defined(_M_IX86) && !defined(__i386__)
-			// Non-i386 platform: Enable detours so we can provide icons for
-			// 16-bit Windows applications.
+			// Enable detours so we can provide icons for:
+			// - 16-bit Windows applications (only on non-i386 systems)
+			// - Windows 1.x/2.x applications and icons
 			RP_PrivateExtractIcons_DllProcessAttach();
-#endif /* !_M_IX86 && !__i386__ */
 			break;
 		}
 
 		case DLL_PROCESS_DETACH:
 			// DLL is being unloaded.
-#if !defined(_M_IX86) && !defined(__i386__)
-			// Non-i386 platform: Unregister the detours.
+
+			// Unregister the detours for Win16 icons.
 			RP_PrivateExtractIcons_DllProcessDetach();
-#endif /* !_M_IX86 && !__i386__ */
 
 			// FIXME: If any of our COM objects are still referenced,
 			// this won't unload stuff, and things might crash...

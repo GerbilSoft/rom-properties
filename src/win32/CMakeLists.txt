@@ -54,6 +54,7 @@ SET(${PROJECT_NAME}_SRCS
 	RP_ContextMenu.cpp
 	RP_XAttrView.cpp
 	RP_ColumnProvider.cpp
+	RP_PrivateExtractIcons.cpp
 	CreateThumbnail.cpp
 	DragImageLabel.cpp
 	FontHandler.cpp
@@ -107,6 +108,7 @@ SET(${PROJECT_NAME}_H
 	RP_XAttrView_p.hpp
 	RP_ColumnProvider.hpp
 	RP_ColumnProvider_p.hpp
+	RP_PrivateExtractIcons.hpp
 	CreateThumbnail.hpp
 	DragImageLabel.hpp
 	FontHandler.hpp
@@ -203,13 +205,6 @@ IF(MSVC)
 	SET(${PROJECT_NAME}-DELAYLOAD_SRCS ../libwin32common/DelayLoadHelper.c)
 	SET(${PROJECT_NAME}-DELAYLOAD_H    ../libwin32common/DelayLoadHelper.h)
 ENDIF(MSVC)
-
-INCLUDE(CPUInstructionSetFlags)
-IF(WIN32 AND NOT CPU_i386)
-	# Provide a way to get icons for 16-bit Windows applications on 64-bit Windows.
-	SET(${PROJECT_NAME}_PEI_SRCS RP_PrivateExtractIcons.cpp)
-	SET(${PROJECT_NAME}_PEI_H    RP_PrivateExtractIcons.hpp)
-ENDIF(WIN32 AND NOT CPU_i386)
 
 #####################
 # Build the plugin. #
@@ -328,10 +323,8 @@ ELSEIF(MINGW)
 	SET(RP_DLL_FLAGS "-Wl,--enable-stdcall-fixup ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.def")
 ENDIF()
 
-IF(WIN32 AND NOT CPU_i386)
-	# Using Microsoft's Detours library for PrivateExtractIcons.
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE Detours)
-ENDIF(WIN32 AND NOT CPU_i386)
+# Using Microsoft's Detours library for PrivateExtractIcons.
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE Detours)
 
 IF(RP_DLL_FLAGS)
 	GET_TARGET_PROPERTY(RP_LINK_FLAGS ${PROJECT_NAME} LINK_FLAGS)
