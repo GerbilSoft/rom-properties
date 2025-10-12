@@ -15,9 +15,6 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
-
-// Windows icon handler
-#include "librptexture/fileformat/ICO.hpp"
 using namespace LibRpTexture;
 
 // C++ STL classes
@@ -379,95 +376,6 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	params.headers = v_field_names;
 	params.data.single = vv_data;
 	fields.addField_listData("StringFileInfo", &params);
-}
-
-/**
- * Load a specific icon by index.
- * @param iconindex Icon index (positive for zero-based index; negative for resource ID)
- * @return Icon, or nullptr if not found.
- */
-rp_image_const_ptr EXEPrivate::loadSpecificIcon(int iconindex)
-{
-	if (!this->isValid || static_cast<int>(this->exeType) < 0) {
-		// Can't load the icon.
-		return {};
-	}
-
-	// Make sure the the resource reader is loaded.
-	int ret = loadResourceReader();
-	if (ret != 0 || !rsrcReader) {
-		// No resources available.
-		return {};
-	}
-
-	uint16_t type = RT_GROUP_ICON;
-	if (exeType == ExeType::NE || exeType == ExeType::COM_NE) {
-		// Windows 1.x/2.x executables don't have RT_GROUP_ICON,
-		// but do have RT_ICON. If this is Win16, check for
-		// RT_GROUP_ICON first, then try RT_ICON.
-		// NOTE: Can't simply check based on if it's a 1.x/2.x
-		// executable because some EXEs converted to 3.x will
-		// still show up as 1.x/2.x.
-		if (rsrcReader->has_resource_type(RT_GROUP_ICON)) {
-			// We have RT_GROUP_ICON.
-		} else if (rsrcReader->has_resource_type(RT_ICON)) {
-			// We have RT_ICON.
-			type = RT_ICON;
-		} else {
-			// No icons...
-			return {};
-		}
-	}
-
-	// Get the resource ID.
-	int resID;
-	if (iconindex == 0) {
-		// Default icon
-		resID = -1;
-	} else if (iconindex > 0) {
-		// Positive icon index
-		// This is a zero-based index into the RT_GROUP_ICON table.
-		resID = rsrcReader->lookup_resource_ID(RT_GROUP_ICON, iconindex);
-		if (resID < 0) {
-			// Not found.
-			return {};
-		}
-	} else {
-		// Negative icon index
-		// This is an actual resource ID.
-		resID = abs(iconindex);
-	}
-
-	// Attempt to load the default icon.
-	unique_ptr<ICO> ico(new ICO(rsrcReader, type, resID, -1));
-	if (!ico->isValid()) {
-		// Unable to load the default icon.
-		return {};
-	}
-
-	rp_image_const_ptr icon = ico->image();
-	if (iconindex == 0) {
-		// Cache the main icon.
-		img_icon = icon;
-	}
-
-	// Return the icon's image.
-	return icon;
-}
-
-/**
- * Load the icon.
- * @return Icon, or nullptr on error.
- */
-rp_image_const_ptr EXEPrivate::loadIcon(void)
-{
-	if (img_icon) {
-		// Icon has already been loaded.
-		return img_icon;
-	}
-
-	// Load icon 0.
-	return loadSpecificIcon(0);
 }
 
 /** MZ-specific **/
@@ -1428,25 +1336,6 @@ int EXE::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 		d->exeType,	// romType
 		d->img_icon,	// imgCache
 		d->loadIcon);	// func
-}
-
-/**
- * Load a specific icon by index.
- * @param iconindex Icon index (positive for zero-based index; negative for resource ID)
- * @return Icon, or nullptr if not found.
- */
-rp_image_const_ptr EXE::loadSpecificIcon(int iconindex)
-{
-	RP_D(EXE);
-	if (iconindex == 0) {
-		// Main icon. See if it's already loaded.
-		if (d->img_icon) {
-			// Icon has already been loaded.
-			return d->img_icon;
-		}
-	}
-
-	return d->loadSpecificIcon(iconindex);
 }
 
 /**
