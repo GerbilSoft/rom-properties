@@ -175,7 +175,7 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 	if (exe->isValid()) {
 		// Get the raw icon data.
 		uint32_t iconResID = 0;
-		iconData = exe->loadIconResourceData(nIconIndex, LOWORD(cxIcon), HIWORD(cyIcon), &iconResID);
+		iconData = exe->loadIconResourceData(nIconIndex, LOWORD(cxIcon), LOWORD(cyIcon), &iconResID);
 		if (piconid) {
 			*piconid = iconResID;
 		}
