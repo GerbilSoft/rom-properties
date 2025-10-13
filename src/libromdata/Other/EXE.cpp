@@ -1204,6 +1204,93 @@ int EXE::loadMetaData(void)
 		return -EIO;
 	}
 
+	d->metaData.reserve(5);	// Maximum of 5 metadata properties.
+
+	// NOTE: Doing custom properties first because the other properties require
+	// a valid VS_VERSION_INFO section.
+
+	/** Custom properties! **/
+
+	// OS version
+	switch (d->exeType) {
+		default:
+			break;
+
+		case EXEPrivate::ExeType::NE: {
+			// Get the runtime DLL and if KERNEL is imported.
+			// NOTE: We only really need hasKernel here...
+			string runtime_dll, runtime_link;
+			bool hasKernel = false;
+			int ret = d->findNERuntimeDLL(runtime_dll, runtime_link, hasKernel);
+			if (ret != 0) {
+				// Unable to get the runtime DLL.
+				// NOTE: Assuming KERNEL is present.
+				runtime_dll.clear();
+				runtime_link.clear();
+				hasKernel = true;
+			}
+
+			// Target OS
+			bool isWindows = false;
+			const char *targetOS = nullptr;
+			if (d->hdr.ne.targOS == NE_OS_UNKNOWN) {
+				// Either old OS/2 or Windows 1.x/2.x.
+				if (hasKernel) {
+					targetOS = "Windows";
+					isWindows = true;
+				} else {
+					targetOS = "Old OS/2";
+				}
+			} else if (d->hdr.ne.targOS < d->NE_TargetOSes.size()) {
+				targetOS = d->NE_TargetOSes[d->hdr.ne.targOS];
+				isWindows = (d->hdr.ne.targOS == NE_OS_WIN || d->hdr.ne.targOS == NE_OS_WIN386);
+			}
+			if (!targetOS) {
+				// Check for Phar Lap extenders.
+				if (d->hdr.ne.targOS == NE_OS_PHARLAP_286_OS2) {
+					targetOS = d->NE_TargetOSes[NE_OS_OS2];
+				} else if (d->hdr.ne.targOS == NE_OS_PHARLAP_286_WIN) {
+					targetOS = d->NE_TargetOSes[NE_OS_WIN];
+				}
+			}
+
+			if (targetOS) {
+				if (isWindows) {
+					d->metaData.addMetaData_string(Property::OSVersion, fmt::format(FSTR("{:s} {:d}.{:d}"),
+						targetOS, d->hdr.ne.expctwinver[1], d->hdr.ne.expctwinver[0]));
+				} else {
+					d->metaData.addMetaData_string(Property::OSVersion, targetOS);
+				}
+			} else {
+				d->metaData.addMetaData_string(Property::OSVersion,
+					fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), d->hdr.ne.targOS));
+			}
+			break;
+		}
+
+		case EXEPrivate::ExeType::PE:
+		case EXEPrivate::ExeType::PE32PLUS: {
+			// Using Subsystem, not the version resource.
+			// Subsystem name and version
+			uint16_t subsystem_ver_major, subsystem_ver_minor;
+			if (d->exeType == EXEPrivate::ExeType::PE) {
+				const auto &opthdr = d->hdr.pe.OptionalHeader.opt32;
+				subsystem_ver_major = le16_to_cpu(opthdr.MajorSubsystemVersion);
+				subsystem_ver_minor = le16_to_cpu(opthdr.MinorSubsystemVersion);
+			} else /*if (exeType == EXEPrivate::ExeType::PE32PLUS)*/ {
+				const auto &opthdr = d->hdr.pe.OptionalHeader.opt64;
+				subsystem_ver_major = le16_to_cpu(opthdr.MajorSubsystemVersion);
+				subsystem_ver_minor = le16_to_cpu(opthdr.MinorSubsystemVersion);
+			}
+
+			d->metaData.addMetaData_string(Property::OSVersion, d->formatPESubsystemName(
+				d->pe_subsystem, subsystem_ver_major, subsystem_ver_minor));
+			break;
+		}
+	}
+
+	/** Normal properties **/
+
 	// We can parse fields for NE (Win16) and PE (Win32) executables,
 	// if they have a resource section.
 	int ret = d->loadResourceReader();
@@ -1233,8 +1320,6 @@ int EXE::loadMetaData(void)
 		// No data...
 		return 0;
 	}
-
-	d->metaData.reserve(5);	// Maximum of 5 metadata properties.
 
 	// Simple lambda function to find a string in IResourceReader::StringTable.
 	auto findval = [](const IResourceReader::StringTable &st, const char *key) -> const char* {
@@ -1277,34 +1362,6 @@ int EXE::loadMetaData(void)
 	}
 
 	// TODO: Comments? On KDE Dolphin, "Comments" is assumed to be user-added...
-
-	/** Custom properties! **/
-
-	// OS version
-	switch (d->exeType) {
-		default:
-			break;
-
-		case EXEPrivate::ExeType::PE:
-		case EXEPrivate::ExeType::PE32PLUS: {
-			// Using Subsystem, not the version resource.
-			// Subsystem name and version
-			uint16_t subsystem_ver_major, subsystem_ver_minor;
-			if (d->exeType == EXEPrivate::ExeType::PE) {
-				const auto &opthdr = d->hdr.pe.OptionalHeader.opt32;
-				subsystem_ver_major = le16_to_cpu(opthdr.MajorSubsystemVersion);
-				subsystem_ver_minor = le16_to_cpu(opthdr.MinorSubsystemVersion);
-			} else /*if (exeType == EXEPrivate::ExeType::PE32PLUS)*/ {
-				const auto &opthdr = d->hdr.pe.OptionalHeader.opt64;
-				subsystem_ver_major = le16_to_cpu(opthdr.MajorSubsystemVersion);
-				subsystem_ver_minor = le16_to_cpu(opthdr.MinorSubsystemVersion);
-			}
-
-			d->metaData.addMetaData_string(Property::OSVersion, d->formatPESubsystemName(
-				d->pe_subsystem, subsystem_ver_major, subsystem_ver_minor));
-			break;
-		}
-	}
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
