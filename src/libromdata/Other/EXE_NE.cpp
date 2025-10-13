@@ -30,6 +30,17 @@ namespace LibRomData {
 
 /** EXEPrivate **/
 
+// NE target OSes.
+// Also used for LE.
+const array<const char*, 6> EXEPrivate::NE_TargetOSes = {{
+	nullptr,		// NE_OS_UNKNOWN
+	"IBM OS/2",		// NE_OS_OS2
+	"Windows",		// NE_OS_WIN
+	"European MS-DOS 4.x",	// NE_OS_DOS4
+	"Windows/386",		// NE_OS_WIN386 (TODO)
+	"Borland Operating System Services",	// NE_OS_BOSS
+}};
+
 /**
  * Load the resident portion of NE header.
  * @return 0 on success; negative POSIX error code on error.
@@ -326,12 +337,19 @@ void EXEPrivate::addFields_NE(void)
 	}
 
 	// Target OS
+	bool isWindows = false;
 	const char *targetOS = nullptr;
 	if (hdr.ne.targOS == NE_OS_UNKNOWN) {
 		// Either old OS/2 or Windows 1.x/2.x.
-		targetOS = (hasKernel ? "Windows 1.x/2.x" : "Old OS/2");
+		if (hasKernel) {
+			targetOS = "Windows 1.x/2.x";
+			isWindows = true;
+		} else {
+			targetOS = "Old OS/2";
+		}
 	} else if (hdr.ne.targOS < NE_TargetOSes.size()) {
 		targetOS = NE_TargetOSes[hdr.ne.targOS];
+		isWindows = (hdr.ne.targOS == NE_OS_WIN || hdr.ne.targOS == NE_OS_WIN386);
 	}
 	if (!targetOS) {
 		// Check for Phar Lap extenders.
@@ -466,7 +484,7 @@ void EXEPrivate::addFields_NE(void)
 
 	// Expected Windows version
 	// TODO: Is this used in OS/2 executables?
-	if (hdr.ne.targOS == NE_OS_WIN || hdr.ne.targOS == NE_OS_WIN386) {
+	if (isWindows) {
 		fields.addField_string(C_("EXE", "Windows Version"),
 			fmt::format(FSTR("{:d}.{:d}"), hdr.ne.expctwinver[1], hdr.ne.expctwinver[0]));
 	}

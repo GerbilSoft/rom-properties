@@ -80,17 +80,6 @@ const RomDataInfo EXEPrivate::romDataInfo = {
 	"EXE", exts.data(), mimeTypes.data()
 };
 
-// NE target OSes.
-// Also used for LE.
-const array<const char*, 6> EXEPrivate::NE_TargetOSes = {{
-	nullptr,			// NE_OS_UNKNOWN
-	"IBM OS/2",			// NE_OS_OS2
-	"Microsoft Windows",		// NE_OS_WIN
-	"European MS-DOS 4.x",		// NE_OS_DOS4
-	"Microsoft Windows (386)",	// NE_OS_WIN386 (TODO)
-	"Borland Operating System Services",	// NE_OS_BOSS
-}};
-
 EXEPrivate::EXEPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, exeType(ExeType::Unknown)
