@@ -225,10 +225,19 @@ public:
 
 	/** PE-specific **/
 
-	// PE subsystem.
+	// PE subsystem
 	uint16_t pe_subsystem;
 
-	// PE section headers.
+	/**
+	 * Format the PE subsystem name.
+	 * @param pe_subsystem PE subsystem
+	 * @param subsystem_ver_major Subsystem major version
+	 * @param subsystem_ver_minor Subsystem minor version
+	 * @return Formatted PE subsystem name
+	 */
+	static std::string formatPESubsystemName(uint16_t pe_subsystem, uint32_t subsystem_ver_major, uint32_t subsystem_ver_minor);
+
+	// PE section headers
 	rp::uvector<IMAGE_SECTION_HEADER> pe_sections;
 
 	/**

@@ -31,6 +31,32 @@ namespace LibRomData {
 /** EXEPrivate **/
 
 /**
+ * Format the PE subsystem name.
+ * @param pe_subsystem PE subsystem
+ * @param subsystem_ver_major Subsystem major version
+ * @param subsystem_ver_minor Subsystem minor version
+ * @return Formatted PE subsystem name
+ */
+std::string EXEPrivate::formatPESubsystemName(uint16_t pe_subsystem, uint32_t subsystem_ver_major, uint32_t subsystem_ver_minor)
+{
+	const char *const s_subsystem = EXEData::lookup_pe_subsystem(pe_subsystem);
+	if (s_subsystem) {
+		return fmt::format(FSTR("{:s} {:d}.{:d}"), s_subsystem,
+			subsystem_ver_major, subsystem_ver_minor);
+	}
+
+	// Not a known subsystem value...
+	const char *const s_unknown = C_("RomData", "Unknown");
+	if (pe_subsystem == IMAGE_SUBSYSTEM_UNKNOWN) {
+		return fmt::format(FSTR("{:s} {:d}.{:d}"),
+			s_unknown, subsystem_ver_major, subsystem_ver_minor);
+	} else {
+		return fmt::format(FSTR("{:s} ({:d}) {:d}.{:d}"),
+			s_unknown, pe_subsystem, subsystem_ver_major, subsystem_ver_minor);
+	}
+}
+
+/**
  * Load the PE section table.
  *
  * NOTE: If the table was read successfully, but no section
@@ -593,24 +619,19 @@ void EXEPrivate::addFields_PE(void)
 	const uint16_t pe_flags = le16_to_cpu(hdr.pe.FileHeader.Characteristics);
 
 	// Get the architecture-specific fields.
-	uint16_t os_ver_major, os_ver_minor;
 	uint16_t subsystem_ver_major, subsystem_ver_minor;
 	uint16_t dll_flags;
 	bool dotnet;
-	if (exeType == EXEPrivate::ExeType::PE) {
+	if (exeType == ExeType::PE) {
 		const auto &opthdr = hdr.pe.OptionalHeader.opt32;
-		os_ver_major = le16_to_cpu(opthdr.MajorOperatingSystemVersion);
-		os_ver_minor = le16_to_cpu(opthdr.MinorOperatingSystemVersion);
 		subsystem_ver_major = le16_to_cpu(opthdr.MajorSubsystemVersion);
 		subsystem_ver_minor = le16_to_cpu(opthdr.MinorSubsystemVersion);
 		dll_flags = le16_to_cpu(opthdr.DllCharacteristics);
 		// TODO: Check VirtualAddress, Size, or both?
 		// 'file' checks VirtualAddress.
 		dotnet = (opthdr.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
-	} else /*if (exeType == EXEPrivate::ExeType::PE32PLUS)*/ {
+	} else /*if (exeType == ExeType::PE32PLUS)*/ {
 		const auto &opthdr = hdr.pe.OptionalHeader.opt64;
-		os_ver_major = le16_to_cpu(opthdr.MajorOperatingSystemVersion);
-		os_ver_minor = le16_to_cpu(opthdr.MinorOperatingSystemVersion);
 		subsystem_ver_major = le16_to_cpu(opthdr.MajorSubsystemVersion);
 		subsystem_ver_minor = le16_to_cpu(opthdr.MinorSubsystemVersion);
 		dll_flags = le16_to_cpu(opthdr.DllCharacteristics);
@@ -655,27 +676,9 @@ void EXEPrivate::addFields_PE(void)
 	}
 	fields.addField_string(C_("EXE", "CPU"), s_cpu);
 
-	// OS version
-	fields.addField_string(C_("RomData", "OS Version"),
-		fmt::format(FSTR("{:d}.{:d}"), os_ver_major, os_ver_minor));
-
 	// Subsystem name and version
-	string subsystem_display;
-	const char *const s_subsystem = EXEData::lookup_pe_subsystem(pe_subsystem);
-	if (s_subsystem) {
-		subsystem_display = fmt::format(FSTR("{:s} {:d}.{:d}"), s_subsystem,
-			subsystem_ver_major, subsystem_ver_minor);
-	} else {
-		const char *const s_unknown = C_("RomData", "Unknown");
-		if (pe_subsystem == IMAGE_SUBSYSTEM_UNKNOWN) {
-			subsystem_display = fmt::format(FSTR("{:s} {:d}.{:d}"),
-				s_unknown, subsystem_ver_major, subsystem_ver_minor);
-		} else {
-			subsystem_display = fmt::format(FSTR("{:s} ({:d}) {:d}.{:d}"),
-				s_unknown, pe_subsystem, subsystem_ver_major, subsystem_ver_minor);
-		}
-	}
-	fields.addField_string(C_("EXE", "Subsystem"), subsystem_display);
+	fields.addField_string(C_("EXE", "Subsystem"), formatPESubsystemName(
+		pe_subsystem, subsystem_ver_major, subsystem_ver_minor));
 
 	// PE flags (characteristics)
 	// NOTE: Only important flags will be listed.

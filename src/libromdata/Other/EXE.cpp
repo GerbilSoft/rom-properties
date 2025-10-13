@@ -1128,7 +1128,7 @@ int EXE::loadFieldData(void)
 	// Maximum number of fields:
 	// - MZ: 7
 	// - NE: 10
-	// - PE: 8
+	// - PE: 7
 	//   - PE Version: +6
 	//   - PE Manifest: +12
 	d->fields.reserve(27);
@@ -1245,7 +1245,7 @@ int EXE::loadMetaData(void)
 		return 0;
 	}
 
-	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
+	d->metaData.reserve(5);	// Maximum of 5 metadata properties.
 
 	// Simple lambda function to find a string in IResourceReader::StringTable.
 	auto findval = [](const IResourceReader::StringTable &st, const char *key) -> const char* {
@@ -1288,6 +1288,34 @@ int EXE::loadMetaData(void)
 	}
 
 	// TODO: Comments? On KDE Dolphin, "Comments" is assumed to be user-added...
+
+	/** Custom properties! **/
+
+	// OS version
+	switch (d->exeType) {
+		default:
+			break;
+
+		case EXEPrivate::ExeType::PE:
+		case EXEPrivate::ExeType::PE32PLUS: {
+			// Using Subsystem, not the version resource.
+			// Subsystem name and version
+			uint16_t subsystem_ver_major, subsystem_ver_minor;
+			if (d->exeType == EXEPrivate::ExeType::PE) {
+				const auto &opthdr = d->hdr.pe.OptionalHeader.opt32;
+				subsystem_ver_major = le16_to_cpu(opthdr.MajorSubsystemVersion);
+				subsystem_ver_minor = le16_to_cpu(opthdr.MinorSubsystemVersion);
+			} else /*if (exeType == EXEPrivate::ExeType::PE32PLUS)*/ {
+				const auto &opthdr = d->hdr.pe.OptionalHeader.opt64;
+				subsystem_ver_major = le16_to_cpu(opthdr.MajorSubsystemVersion);
+				subsystem_ver_minor = le16_to_cpu(opthdr.MinorSubsystemVersion);
+			}
+
+			d->metaData.addMetaData_string(Property::OSVersion, d->formatPESubsystemName(
+				d->pe_subsystem, subsystem_ver_major, subsystem_ver_minor));
+			break;
+		}
+	}
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());
