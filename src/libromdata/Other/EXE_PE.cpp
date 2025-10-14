@@ -504,16 +504,21 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 			refDesc = fmt::format(
 				FRUN(C_("EXE|Runtime", "Microsoft Visual C++ {:s} Runtime")), "2015-2022");
 			switch (le16_to_cpu(hdr.pe.FileHeader.Machine)) {
+				default:
+					break;
 				case IMAGE_FILE_MACHINE_I386:
 					refLink = "https://aka.ms/vs/17/release/VC_redist.x86.exe";
+					break;
+				case IMAGE_FILE_MACHINE_ARMV7:
+					// No longer available from Microsoft...
+					// (It seems they're trying to bury all knowledge of 32-bit ARM.)
+					refLink = "https://rpdb.gerbilsoft.com/redist/VC_redist.arm.vs2017.exe";
 					break;
 				case IMAGE_FILE_MACHINE_AMD64:
 					refLink = "https://aka.ms/vs/17/release/VC_redist.x64.exe";
 					break;
 				case IMAGE_FILE_MACHINE_ARM64:
 					refLink = "https://aka.ms/vs/17/release/VC_redist.arm64.exe";
-					break;
-				default:
 					break;
 			}
 			break;

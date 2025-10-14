@@ -71,13 +71,14 @@ The following platforms are still compatible, but may not receive as much suppor
     page.
 
 On Windows Vista and later, you will need the MSVC 2015-2022 runtime:
-* 32-bit: https://aka.ms/vs/17/release/VC_redist.x86.exe
-* 64-bit: https://aka.ms/vs/17/release/VC_redist.x64.exe
-* ARM64: https://aka.ms/vs/17/release/vc_redist.arm64.exe
+* i386 (32-bit): https://aka.ms/vs/17/release/VC_redist.x86.exe
+* amd64 (64-bit): https://aka.ms/vs/17/release/VC_redist.x64.exe
+* arm32: https://rpdb.gerbilsoft.com/redist/VC_redist.arm.vs2017.exe
+* arm64: https://aka.ms/vs/17/release/vc_redist.arm64.exe
 
 On Windows XP/2003 and earlier, you will need the MSVC 2015-2017 runtime:
-* 32-bit: https://aka.ms/vs/15/release/VC_redist.x86.exe
-* 64-bit: https://aka.ms/vs/15/release/VC_redist.x64.exe
+* i386 (32-bit): https://aka.ms/vs/15/release/VC_redist.x86.exe
+* amd64 (64-bit): https://aka.ms/vs/15/release/VC_redist.x64.exe
 
 For instructions on compiling from source, see [`doc/COMPILING.md`](doc/COMPILING.md).
 

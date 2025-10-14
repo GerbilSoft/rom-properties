@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * exe_pe_structs.h: DOS/Windows executable structures. (PE)               *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -449,6 +449,9 @@ ASSERT_STRUCT(IMAGE_RESOURCE_DATA_ENTRY, 4*sizeof(uint32_t));
 // Machine types
 #ifndef IMAGE_FILE_MACHINE_I386
 #  define IMAGE_FILE_MACHINE_I386		0x014C	/* Intel i386 */
+#endif
+#ifndef IMAGE_FILE_MACHINE_ARMV7
+#  define IMAGE_FILE_MACHINE_ARMV7		0x01C4	/* ARMv7 (Thumb-2) */
 #endif
 #ifndef IMAGE_FILE_MACHINE_POWERPCBE
 #  define IMAGE_FILE_MACHINE_POWERPCBE		0x01F2	/* PowerPC big-endian (Xbox 360) */
