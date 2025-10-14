@@ -23,16 +23,15 @@
  * @param uri URI
  * @return TRUE if using file://; FALSE if not.
  */
-gboolean rp_is_file_uri(const gchar *uri)
+static gboolean rp_is_file_uri(const gchar *uri)
 {
-	gboolean ret = FALSE;
-	if (G_UNLIKELY(!uri))
-		return ret;
+	g_return_val_if_fail(uri != NULL, FALSE);
 
+	gboolean ret = FALSE;
 	gchar *const scheme = g_uri_parse_scheme(uri);
 	if (!g_ascii_strcasecmp(scheme, "file")) {
 		// It's file:// protocol!
-		ret = true;
+		ret = TRUE;
 	}
 
 	g_free(scheme);
