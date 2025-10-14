@@ -2138,4 +2138,36 @@ int ELF::loadFieldData(void)
 	return static_cast<int>(d->fields.count());
 }
 
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the metadata hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int ELF::loadMetaData(void)
+{
+	RP_D(ELF);
+	if (!d->metaData.empty()) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file || !d->file->isOpen()) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unsupported file.
+		return -EIO;
+	}
+
+	d->metaData.reserve(1);	// Maximum of 1 metadata property.
+
+	/** Custom properties! **/
+
+	// OS version
+	if (!d->osVersion.empty()) {
+		d->metaData.addMetaData_string(Property::OSVersion, d->osVersion);
+	}
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData.count());
+}
+
 } // namespace LibRomData
