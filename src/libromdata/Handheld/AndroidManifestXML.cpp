@@ -235,9 +235,9 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 			pNodeData += sizeof(ResXMLTree_attrExt);
 
 			// Attributes should start at 0x14 and be 0x14 bytes.
-			// (ResXMLTree_attribute struct)
-			assert(pAttrExt->attributeStart == cpu_to_le16(0x14));
-			assert(pAttrExt->attributeSize  == cpu_to_le16(0x14));
+			// (ResXMLTree_attrExt and ResXMLTree_attribute structs)
+			assert(pAttrExt->attributeStart == cpu_to_le16(sizeof(ResXMLTree_attrExt)));
+			assert(pAttrExt->attributeSize  == cpu_to_le16(sizeof(ResXMLTree_attribute)));
 
 			// Create the tag.
 			xml_node xmlTag = cur_node.append_child(XMLSTR(xmlStringPool.getString(le32_to_cpu(pAttrExt->name.index))));
