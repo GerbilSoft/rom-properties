@@ -279,7 +279,7 @@ static const array<RomDataFns, 41> romDataFns_magic = {{
  * Headers with addresses other than 0 should be
  * placed at the end of this array.
  */
-static const array<RomDataFns, 40> romDataFns_header = {{
+static const array<RomDataFns, 39> romDataFns_header = {{
 	// Consoles
 	GetRomDataFns(ColecoVision, ATTR_HAS_METADATA),
 	GetRomDataFns(Dreamcast, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
