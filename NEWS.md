@@ -39,8 +39,10 @@
       Windows programs, but not Windows 1.x/2.x icons. rom-properties now handles
       this case as well.
     * Based on [Icon16bitFix](https://github.com/otya128/Icon16bitFix/tree/master/Icon16bitFix).
-    * Note that there's currently a minor issue where the icons might not show up
-      immediately if the rom-properties shell extension hasn't been loaded yet.
+    * Note that there's currently a minor issue where icons for 16-bit applications
+      might not show up immediately if the rom-properties shell extension hasn't been
+      loaded by Windows Explorer yet. To force the extension to be loaded, view the
+      file properties of a supported file type.
 
 * Bug fixes:
   * Fix detection of small TGAs (under 64 bytes), e.g. some of the TGAs used by
