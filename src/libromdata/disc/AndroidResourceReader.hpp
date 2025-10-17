@@ -77,7 +77,7 @@ public:
 		std::string getString(unsigned int index);
 
 	private:
-		const uint8_t */*const*/ pEnd;	// end of string pool
+		const uint8_t * /*const*/ pEnd;	// end of string pool
 		const uint32_t *pStrOffsetTbl;
 		const uint8_t *pStringsStart;
 		uint32_t stringCount;
