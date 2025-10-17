@@ -45,6 +45,7 @@ struct ResChunk_header
 	// no data associated with the chunk.
 	uint32_t size;
 };
+ASSERT_STRUCT(ResChunk_header, 8);
 
 enum {
 	RES_NULL_TYPE                     = 0x0000,
@@ -222,6 +223,7 @@ struct Res_value
 
 	//void copyFrom_dtoh(const Res_value& src);
 };
+ASSERT_STRUCT(Res_value, 8);
 
 /**
  *  This is a reference to a unique entry (a ResTable_entry structure)
@@ -235,6 +237,7 @@ struct ResTable_ref
 {
 	uint32_t ident;
 };
+ASSERT_STRUCT(ResTable_ref, 4);
 
 /**
  * Reference to a string in a string pool.
@@ -246,6 +249,7 @@ struct ResStringPool_ref
 	// of the string data in the pool.
 	uint32_t index;
 };
+ASSERT_STRUCT(ResStringPool_ref, 4);
 
 /** ********************************************************************
  *  XML Tree
@@ -267,6 +271,7 @@ struct ResXMLTree_header
 {
 	struct ResChunk_header header;
 };
+ASSERT_STRUCT(ResXMLTree_header, 8);
 
 /**
  * Basic XML tree node.  A single item in the XML document.  Extended info
@@ -282,6 +287,7 @@ struct ResXMLTree_node
 	// Optional XML comment that was associated with this element; -1 if none.
 	struct ResStringPool_ref comment;
 };
+ASSERT_STRUCT(ResXMLTree_node, 16);
 
 /**
  * Extended XML tree node for CDATA tags -- includes the CDATA string.
@@ -295,6 +301,7 @@ struct ResXMLTree_cdataExt
 	// The typed value of the character data if this is a CDATA node.
 	struct Res_value typedData;
 };
+ASSERT_STRUCT(ResXMLTree_cdataExt, 12);
 
 /**
  * Extended XML tree node for namespace start/end nodes.
@@ -308,6 +315,7 @@ struct ResXMLTree_namespaceExt
 	// The URI of the namespace.
 	struct ResStringPool_ref uri;
 };
+ASSERT_STRUCT(ResXMLTree_namespaceExt, 8);
 
 /**
  * Extended XML tree node for element start/end nodes.
@@ -322,6 +330,7 @@ struct ResXMLTree_endElementExt
 	// character data if this is a CDATA node.
 	struct ResStringPool_ref name;
 };
+ASSERT_STRUCT(ResXMLTree_endElementExt, 8);
 
 /**
  * Extended XML tree node for start tags -- includes attribute
@@ -357,6 +366,7 @@ struct ResXMLTree_attrExt
 	// Index (1-based) of the "style" attribute. 0 if none.
 	uint16_t styleIndex;
 };
+ASSERT_STRUCT(ResXMLTree_attrExt, 20);
 
 struct ResXMLTree_attribute
 {
@@ -372,6 +382,7 @@ struct ResXMLTree_attribute
 	// Processesd typed value of this attribute.
 	struct Res_value typedValue;
 };
+ASSERT_STRUCT(ResXMLTree_attribute, 20);
 
 /** ********************************************************************
  *  RESOURCE TABLE
@@ -396,6 +407,7 @@ struct ResTable_header
 	// The number of ResTable_package structures.
 	uint32_t packageCount;
 };
+ASSERT_STRUCT(ResTable_header, 12);
 
 /**
  * A collection of resource data types within a package.  Followed by
@@ -432,6 +444,7 @@ struct ResTable_package
 
 	uint32_t typeIdOffset;
 };
+ASSERT_STRUCT(ResTable_package, 288);
 
 // The most specific locale can consist of:
 //
@@ -1298,6 +1311,7 @@ struct ResTable_config
 	String8 toString() const;
 #endif
 };
+ASSERT_STRUCT(ResTable_config, 52);
 
 /**
  * A specification of the resources defined by a particular type.
@@ -1336,6 +1350,7 @@ struct ResTable_typeSpec
 		SPEC_STAGED_API = 0x20000000u,
 	};
 };
+ASSERT_STRUCT(ResTable_typeSpec, 16);
 
 /**
  * A collection of resource entries for a particular resource data
@@ -1395,6 +1410,7 @@ struct ResTable_type
 	// Configuration this collection of entries is designed for. This must always be last.
 	ResTable_config config;
 };
+ASSERT_STRUCT(ResTable_type, 72);
 
 /**
  * Definition for a pool of strings.  The data of this chunk is an
@@ -1440,6 +1456,7 @@ struct ResStringPool_header
 	// Index from header of the style data.
 	uint32_t stylesStart;
 };
+ASSERT_STRUCT(ResStringPool_header, 28);
 
 /**
  * An entry in a ResTable_type with the flag `FLAG_SPARSE` set.
@@ -1455,6 +1472,7 @@ union ResTable_sparseTypeEntry {
 		uint16_t offset;
 	};
 };
+ASSERT_STRUCT(ResTable_sparseTypeEntry, 4);
 
 struct ResTable_entry
 {
@@ -1478,6 +1496,7 @@ struct ResTable_entry
 	// Reference into ResTable_package::keyStrings identifying this entry.
 	struct ResStringPool_ref key;
 };
+ASSERT_STRUCT(ResTable_entry, 8);
 
 #ifdef __cplusplus
 }
