@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * AmiiboData.hpp: Nintendo amiibo identification data.                    *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -86,7 +86,7 @@ public:
 	 * @param pWaveNo	[out,opt] Wave number within series.
 	 * @return amiibo series name, or nullptr if not found.
 	 */
-	const char *lookup_amiibo_series_data(uint32_t amiibo_id, int *pReleaseNo, int *pWaveNo) const;
+	const char *lookup_amiibo_series_data(uint32_t amiibo_id, int *pReleaseNo = nullptr, int *pWaveNo = nullptr) const;
 };
 
 }

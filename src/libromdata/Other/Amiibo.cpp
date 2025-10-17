@@ -348,7 +348,7 @@ int Amiibo::loadFieldData(void)
 		// File isn't open.
 		return -EBADF;
 	} else if (!d->isValid) {
-		// ROM image isn't valid.
+		// amiibo file isn't valid.
 		return -EIO;
 	}
 
@@ -429,7 +429,7 @@ int Amiibo::loadFieldData(void)
 		amiibo_series ? amiibo_series : C_("RomData", "Unknown"));
 
 	// amiibo name, wave number, and release number.
-	int wave_no, release_no;
+	int wave_no = 0, release_no = 0;
 	const char *const amiibo_name_title = C_("Amiibo", "amiibo Name");
 	const char *const amiibo_name = pAmiiboData->lookup_amiibo_series_data(amiibo_id, &release_no, &wave_no);
 	if (amiibo_name) {
@@ -452,6 +452,50 @@ int Amiibo::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the metadata hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int Amiibo::loadMetaData(void)
+{
+	RP_D(Amiibo);
+	if (!d->metaData.empty()) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file || !d->file->isOpen()) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// amiibo file isn't valid.
+		return -EIO;
+	}
+
+	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
+
+	// NFP data
+	const uint32_t char_id = be32_to_cpu(d->nfpData.char_id);
+	const uint32_t amiibo_id = be32_to_cpu(d->nfpData.amiibo_id.u32);
+
+	// Get the AmiiboData instance.
+	const AmiiboData *const pAmiiboData = AmiiboData::instance();
+
+	// amiibo Name (as Title)
+	const char *const amiibo_name = pAmiiboData->lookup_amiibo_series_data(amiibo_id);
+	if (amiibo_name) {
+		d->metaData.addMetaData_string(Property::Title, amiibo_name);
+	}
+
+	/** Custom properties! **/
+
+	// amiibo ID (as Title ID)
+	d->metaData.addMetaData_string(Property::TitleID,
+		fmt::format(FSTR("{:0>8X}-{:0>8X}"), char_id, amiibo_id));
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData.count());
 }
 
 /**

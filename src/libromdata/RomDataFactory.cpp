@@ -314,7 +314,7 @@ static const array<RomDataFns, 40> romDataFns_header = {{
 	GetRomDataFns(SID, ATTR_HAS_METADATA),	// PSID/RSID; maybe move to _magic[]?
 
 	// Other
-	GetRomDataFns(Amiibo, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(Amiibo, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(MachO, ATTR_NONE),
 	GetRomDataFns(NintendoBadge, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(Wim, ATTR_NONE),

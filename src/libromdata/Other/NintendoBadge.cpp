@@ -727,7 +727,7 @@ int NintendoBadge::loadFieldData(void)
 			// Name
 			d->addFields_name(&prbs->names);
 
-			// Badge ID
+			// Badge ID (NOTE: Decimal...)
 			d->fields.addField_string_numeric(C_("NintendoBadge", "Badge ID"),
 				le32_to_cpu(prbs->badge_id));
 
@@ -745,7 +745,7 @@ int NintendoBadge::loadFieldData(void)
 					prbs->mb_width, prbs->mb_height);
 			}
 
-			// Title ID
+			// Launch Title ID
 			const char *const launch_title_id_title = C_("NintendoBadge", "Launch Title ID");
 			if (prbs->title_id.id == cpu_to_le64(0xFFFFFFFFFFFFFFFFULL)) {
 				// No title ID.
@@ -799,7 +799,7 @@ int NintendoBadge::loadFieldData(void)
 			// Name
 			d->addFields_name(&cabs->names);
 
-			// Badge ID
+			// Set ID (NOTE: Decimal...)
 			d->fields.addField_string_numeric(C_("NintendoBadge", "Set ID"), cabs->set_id);
 
 			// Set name
@@ -833,9 +833,8 @@ int NintendoBadge::loadMetaData(void)
 		return -EIO;
 	}
 
-	d->metaData.reserve(1);	// Maximum of 1 metadata property.
+	d->metaData.reserve(2);	// Maximum of 1 metadata properties.
 
-	// Title
 	const N3DS_Language_ID langID = d->getLanguageID();
 	switch (d->badgeType) {
 		default:
@@ -845,15 +844,34 @@ int NintendoBadge::loadMetaData(void)
 
 		case NintendoBadgePrivate::BadgeType::PRBS: {
 			const Badge_PRBS_Header *const prbs = &d->badgeHeader.prbs;
+
+			// Title
 			d->metaData.addMetaData_string(Property::Title,
 				utf16le_to_utf8(prbs->names[langID], sizeof(prbs->names[langID])));
+
+			/** Custom properties! **/
+			// [NOTE: Not including "Launch Title ID".]
+
+			// Badge ID (NOTE: Decimal...) (as Title ID)
+			d->metaData.addMetaData_string(Property::TitleID,
+				fmt::format(FSTR("{:d}"), le32_to_cpu(prbs->badge_id)));
+
 			break;
 		}
 
 		case NintendoBadgePrivate::BadgeType::CABS: {
 			const Badge_CABS_Header *const cabs = &d->badgeHeader.cabs;
+
+			// Title
 			d->metaData.addMetaData_string(Property::Title,
 				utf16le_to_utf8(cabs->names[langID], sizeof(cabs->names[langID])));
+
+			/** Custom properties! **/
+
+			// Set ID (NOTE: Decimal...) (as Title ID)
+			d->metaData.addMetaData_string(Property::TitleID,
+				fmt::format(FSTR("{:d}"), le32_to_cpu(cabs->set_id)));
+
 			break;
 		}
 	}
