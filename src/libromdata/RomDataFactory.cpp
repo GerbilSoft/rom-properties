@@ -301,8 +301,7 @@ static const array<RomDataFns, 40> romDataFns_header = {{
 	GetRomDataFns(WiiWAD, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 
 	// Handhelds
-	GetRomDataFns(AndroidAPK, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_HAS_DPOVERLAY),	// .apk [MUST BE BEFORE J2ME] (TODO: Handle .zip files like .iso?)
-	GetRomDataFns(J2ME, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),	// .jar and .jad (TODO: Handle .zip files like .iso?)
+	GetRomDataFns(J2ME, ATTR_HAS_METADATA),	// .jad only; .jar is handled separately
 	GetRomDataFns(Nintendo3DS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA),
 	GetRomDataFns(PalmOS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),	// TODO: Magic at 0x40?
 
@@ -772,6 +771,34 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 	} else {
 		// No SparseDiscReader. Use the original file.
 		reader = file;
+	}
+
+	// Check for a .zip file. (AndroidAPK, J2ME)
+	static constexpr uint32_t zip_magic = 0x504B0304;
+	if (header.u32[0] == cpu_to_be32(zip_magic)) {
+		// This is a .zip file. Try AndroidAPK and J2ME.
+		// TODO: Open the .zip file here, check for certain files, then
+		// pass the unzFile to the RomData subclass directly?
+
+		// AndroidAPK: .apk
+		static constexpr unsigned int AndroidAPK_attrs = ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_HAS_DPOVERLAY;
+		if ((attrs & AndroidAPK_attrs) == attrs) {
+			RomDataPtr romData = std::make_shared<AndroidAPK>(reader);
+			if (romData->isValid()) {
+				// RomData subclass obtained.
+				return romData;
+			}
+		}
+
+		// J2ME: .jar
+		static constexpr unsigned int J2ME_attrs = ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA;
+		if ((attrs & J2ME_attrs) == attrs) {
+			RomDataPtr romData = std::make_shared<J2ME>(reader);
+			if (romData->isValid()) {
+				// RomData subclass obtained.
+				return romData;
+			}
+		}
 	}
 
 	// Check RomData subclasses that take a header at 0
