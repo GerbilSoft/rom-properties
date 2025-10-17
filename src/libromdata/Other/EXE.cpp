@@ -1296,7 +1296,7 @@ int EXE::loadMetaData(void)
 	int ret = d->loadResourceReader();
 	if (ret != 0 || !d->rsrcReader) {
 		// No resources available.
-		return 0;
+		return static_cast<int>(d->metaData.count());;
 	}
 
 	// Load the version resource.
@@ -1305,10 +1305,10 @@ int EXE::loadMetaData(void)
 	IResourceReader::StringFileInfo vssfi;
 	if (d->rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi, &vssfi) != 0) {
 		// Unable to load VS_VERSION_INFO.
-		return 0;
+		return static_cast<int>(d->metaData.count());;
 	} else if (vssfi.empty()) {
 		// No data...
-		return 0;
+		return static_cast<int>(d->metaData.count());;
 	}
 
 	// TODO: Show the language that most closely matches the system.
@@ -1318,7 +1318,7 @@ int EXE::loadMetaData(void)
 	const auto &st = vssfi.begin()->second;
 	if (st.empty()) {
 		// No data...
-		return 0;
+		return static_cast<int>(d->metaData.count());;
 	}
 
 	// Simple lambda function to find a string in IResourceReader::StringTable.
