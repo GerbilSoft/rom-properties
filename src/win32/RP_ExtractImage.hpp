@@ -38,7 +38,7 @@ protected:
 	~RP_ExtractImage() final;
 
 private:
-	typedef LibWin32Common::ComBase2<IPersistFile, IExtractImage> super;
+	typedef LibWin32Common::ComBase2<IPersistFile, IExtractImage2> super;
 	RP_DISABLE_COPY(RP_ExtractImage)
 private:
 	friend class RP_ExtractImage_Private;
