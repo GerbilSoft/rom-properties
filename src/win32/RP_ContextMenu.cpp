@@ -83,27 +83,26 @@ void RP_ContextMenu_Private::clear_tfilenames_vector(std::vector<LPTSTR> *tfilen
  */
 int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_filename)
 {
+	tstring output_filename;
 	const size_t source_filename_len = _tcslen(source_filename);
-	const size_t output_filename_size = (source_filename_len + 16) * sizeof(TCHAR);
-	unique_ptr<TCHAR[]> output_filename(new TCHAR[output_filename_size]);
-	_tcscpy(output_filename.get(), source_filename);
+	output_filename.reserve(source_filename_len + 4);
+	output_filename.assign(source_filename, source_filename_len);
 
 	// Find the current extension and replace it.
-	TCHAR *const dotpos = _tcsrchr(output_filename.get(), '.');
-	if (!dotpos) {
+	const size_t dotpos = output_filename.find_last_of(_T('.'));
+	if (dotpos == tstring::npos) {
 		// No file extension. Add it.
-		_tcscat_s(output_filename.get(), output_filename_size, _T(".png"));
+		output_filename += _T(".png");
 	} else {
 		// If the dot is after the last slash, we already have a file extension.
 		// Otherwise, we don't have one, and need to add it.
-		TCHAR *const slashpos = _tcsrchr(output_filename.get(), _T('\\'));
+		const size_t slashpos = output_filename.find_last_of(_T('\\'));
 		if (slashpos < dotpos) {
-			// We already have a file extension.
-			_tcscpy(dotpos, _T(".png"));
-		} else {
-			// No file extension.
-			_tcscat_s(output_filename.get(), output_filename_size, _T(".png"));
+			// We already have a file extension. Remove it first.
+			output_filename.resize(dotpos);
 		}
+		// Add the new file extension.
+		output_filename += _T(".png");
 	}
 
 	// Get the appropriate RomData class for this ROM.
@@ -130,8 +129,7 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_filename)
 	// tEXt chunks
 	RpPngWriter::kv_vector kv;
 
-	RpPngWriter pngWriter(output_filename.get(),
-		img->width(), height, img->format());
+	RpPngWriter pngWriter(output_filename.c_str(), img->width(), height, img->format());
 	if (!pngWriter.isOpen()) {
 		// Could not open the PNG writer.
 		return RPCT_ERROR_OUTPUT_FILE_FAILED;
