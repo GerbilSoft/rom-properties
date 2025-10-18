@@ -406,7 +406,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 	unique_ptr<const uint8_t*[]> row_pointers;
 	guchar *pixels;
 #ifdef RP_GTK_USE_GDKTEXTURE
-	guchar *texdata = nullptr;
+	unique_ptr<uint8_t[]> texdata;
 	size_t rowstride;
 #else /* !RP_GTK_USE_GDKTEXTURE */
 	int rowstride;
@@ -521,7 +521,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 	// We'll need to download it to a local memory buffer.
 	// FIXME: Downscaling isn't working for GdkTexture yet, so we have to use the full image size.
 	//rowstride = outParams.thumbSize.width * sizeof(uint32_t);
-	//pixels = static_cast<guchar*>(malloc(rowstride * outParams.thumbSize.height));
+	//texdata.reset(new uint8_t[rowstride * outParams.thumbSize.height]);
 	assert(outParams.fullSize.width > 0);
 	if (outParams.fullSize.width <= 0) {
 		// Invalid image width.
@@ -529,12 +529,12 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 		goto cleanup;
 	}
 	rowstride = outParams.fullSize.width * sizeof(uint32_t);
-	texdata = static_cast<guchar*>(g_malloc(rowstride * outParams.fullSize.height));
+	texdata.reset(new uint8_t[rowstride * outParams.fullSize.height]);
 	// FIXME: Using GdkTextureDownloader to convert to GDK_MEMORY_B8G8R8A8
 	// causes a heap overflow. (R8G8B8A8 works, as does B8G8R8A8_PREMULTIPLIED.)
 	// TODO: Un-premultiply the texture.
-	gdk_texture_download(outParams.retImg, texdata, rowstride);
-	pixels = texdata;
+	gdk_texture_download(outParams.retImg, texdata.get(), rowstride);
+	pixels = texdata.get();
 #elif defined(RP_GTK_USE_CAIRO)
 	pixels = cairo_image_surface_get_data(outParams.retImg);
 	rowstride = cairo_image_surface_get_stride(outParams.retImg);
@@ -559,9 +559,6 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 	static constexpr bool is_abgr = true;
 #endif
 	pwRet = pngWriter.write_IDAT(row_pointers.get(), is_abgr);
-#ifdef RP_GTK_USE_GDKTEXTURE
-	g_free(texdata);
-#endif /* RP_GTK_USE_GDKTEXTURE */
 	if (pwRet != 0) {
 		// Error writing IDAT.
 		// TODO: Unlink the PNG image.

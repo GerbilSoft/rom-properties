@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+)                             *
  * AchGDBus.cpp: GDBus notifications for achievements.                     *
  *                                                                         *
- * Copyright (c) 2020-2024 by David Korth.                                 *
+ * Copyright (c) 2020-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -104,11 +104,7 @@ int AchGDBus::notifyFunc(Achievements::ID id)
 		return -EIO;
 	}
 
-	size_t imgDataLen = 0;
-	unsigned int rowstride = 0;
-	uint8_t *pImgData;
-
-	int width, height;
+	int width = 0, height = 0;
 	PIMGTYPE_get_size(icon, &width, &height);
 	assert(width == iconSize);
 	assert(height == iconSize);
@@ -121,22 +117,22 @@ int AchGDBus::notifyFunc(Achievements::ID id)
 #if defined(RP_GTK_USE_GDKTEXTURE)
 	// GdkTexture doesn't allow direct access to pixels.
 	// We'll need to download it to a local memory buffer.
-	rowstride = iconSize * sizeof(uint32_t);
-	imgDataLen = rowstride * iconSize;
-	uint8_t *const texdata = static_cast<uint8_t*>(g_malloc(imgDataLen));
+	const unsigned int rowstride = iconSize * sizeof(uint32_t);
+	const size_t imgDataLen = rowstride * iconSize;
+	std::unique_ptr<uint8_t[]> texdata(new uint8_t[imgDataLen]);
 	// FIXME: Using GdkTextureDownloader to convert to GDK_MEMORY_B8G8R8A8
 	// causes a heap overflow. (R8G8B8A8 works, as does B8G8R8A8_PREMULTIPLIED.)
 	// TODO: Un-premultiply the texture.
-	gdk_texture_download(icon, texdata, rowstride);
-	pImgData = texdata;
+	gdk_texture_download(icon, texdata.get(), rowstride);
+	uint8_t *const pImgData = texdata.get();
 #elif defined(RP_GTK_USE_CAIRO)
-	pImgData = cairo_image_surface_get_data(icon);
-	rowstride = cairo_image_surface_get_stride(icon);
-	imgDataLen = rowstride * iconSize;
+	uint8_t *const pImgData = cairo_image_surface_get_data(icon);
+	const unsigned int rowstride = cairo_image_surface_get_stride(icon);
+	const size_t imgDataLen = rowstride * iconSize;
 #else /* GdkPixbuf */
-	pImgData = gdk_pixbuf_get_pixels(icon);
-	rowstride = gdk_pixbuf_get_rowstride(icon);
-	imgDataLen = gdk_pixbuf_get_byte_length(icon);
+	uint8_t *const pImgData = gdk_pixbuf_get_pixels(icon);
+	const unsigned int rowstride = gdk_pixbuf_get_rowstride(icon);
+	const size_t imgDataLen = gdk_pixbuf_get_byte_length(icon);
 #endif
 
 #if defined(RP_GTK_USE_GDKTEXTURE) || defined(RP_GTK_USE_CAIRO)
@@ -214,9 +210,6 @@ int AchGDBus::notifyFunc(Achievements::ID id)
 		nullptr);		// user_data
 
 	// NOTE: Not waiting for a response.
-#ifdef RP_GTK_USE_GDKTEXTURE
-	g_free(texdata);
-#endif /* RP_GTK_USE_GDKTEXTURE */
 	PIMGTYPE_unref(icon);
 	g_object_unref(proxy);
 	return 0;
