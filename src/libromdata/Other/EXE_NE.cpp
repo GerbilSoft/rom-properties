@@ -362,7 +362,15 @@ void EXEPrivate::addFields_NE(void)
 
 	const char *const targetOS_title = C_("EXE", "Target OS");
 	if (targetOS) {
-		fields.addField_string(targetOS_title, targetOS);
+		// If the Expected Windows version field is set, show "Windows X.Y".
+		// TODO: Is this also used for OS/2 executables?
+		if (isWindows && (hdr.ne.expctwinver[1] != 0 || hdr.ne.expctwinver[0] != 0)) {
+			fields.addField_string(targetOS_title, fmt::format(FSTR("Windows {:d}.{:d}"),
+				hdr.ne.expctwinver[1], hdr.ne.expctwinver[0]));
+		} else {
+			// No expected version. Use the target OS as-is.
+			fields.addField_string(targetOS_title, targetOS);
+		}
 	} else {
 		fields.addField_string(targetOS_title,
 			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), hdr.ne.targOS));
@@ -480,13 +488,6 @@ void EXEPrivate::addFields_NE(void)
 				RomFields::RFT_DATETIME_HAS_TIME |
 				RomFields::RFT_DATETIME_IS_UTC);	// no timezone
 		}
-	}
-
-	// Expected Windows version
-	// TODO: Is this used in OS/2 executables?
-	if (isWindows) {
-		fields.addField_string(C_("EXE", "Windows Version"),
-			fmt::format(FSTR("{:d}.{:d}"), hdr.ne.expctwinver[1], hdr.ne.expctwinver[0]));
 	}
 
 	// Runtime DLL

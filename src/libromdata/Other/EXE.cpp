@@ -1120,7 +1120,7 @@ int EXE::loadFieldData(void)
 	// - PE: 7
 	//   - PE Version: +6
 	//   - PE Manifest: +12
-	d->fields.reserve(27);
+	d->fields.reserve(28);
 
 	// Executable type.
 	// NOTE: Not translatable.
@@ -1236,7 +1236,7 @@ int EXE::loadMetaData(void)
 			if (d->hdr.ne.targOS == NE_OS_UNKNOWN) {
 				// Either old OS/2 or Windows 1.x/2.x.
 				if (hasKernel) {
-					targetOS = "Windows";
+					targetOS = "Windows 1.x/2.x";
 					isWindows = true;
 				} else {
 					targetOS = "Old OS/2";
@@ -1255,10 +1255,13 @@ int EXE::loadMetaData(void)
 			}
 
 			if (targetOS) {
-				if (isWindows) {
-					d->metaData.addMetaData_string(Property::OSVersion, fmt::format(FSTR("{:s} {:d}.{:d}"),
-						targetOS, d->hdr.ne.expctwinver[1], d->hdr.ne.expctwinver[0]));
+				// If the Expected Windows version field is set, show "Windows X.Y".
+				// TODO: Is this also used for OS/2 executables?
+				if (isWindows && (d->hdr.ne.expctwinver[1] != 0 || d->hdr.ne.expctwinver[0] != 0)) {
+					d->metaData.addMetaData_string(Property::OSVersion, fmt::format(FSTR("Windows {:d}.{:d}"),
+						d->hdr.ne.expctwinver[1], d->hdr.ne.expctwinver[0]));
 				} else {
+					// No expected version. Use the target OS as-is.
 					d->metaData.addMetaData_string(Property::OSVersion, targetOS);
 				}
 			} else {
