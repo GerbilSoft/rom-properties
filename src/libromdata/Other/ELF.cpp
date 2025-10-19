@@ -279,24 +279,35 @@ Elf64_Phdr ELFPrivate::readProgramHeader(const uint8_t *phbuf)
 		const Elf64_Phdr *const phdr = reinterpret_cast<const Elf64_Phdr*>(phbuf);
 		if (Elf_Header.primary.e_data == ELFDATAHOST)
 			return *phdr;
-		out.p_type = elf32_to_cpu(phdr->p_type);
-		out.p_flags = elf32_to_cpu(phdr->p_flags);
-		out.p_offset = elf64_to_cpu(phdr->p_offset);
-		out.p_vaddr = elf64_to_cpu(phdr->p_vaddr);
-		out.p_paddr = elf64_to_cpu(phdr->p_paddr);
-		out.p_filesz = elf64_to_cpu(phdr->p_filesz);
-		out.p_memsz = elf64_to_cpu(phdr->p_memsz);
-		out.p_align = elf64_to_cpu(phdr->p_align);
+		out.p_type = __swab32(phdr->p_type);
+		out.p_flags = __swab32(phdr->p_flags);
+		out.p_offset = __swab64(phdr->p_offset);
+		out.p_vaddr = __swab64(phdr->p_vaddr);
+		out.p_paddr = __swab64(phdr->p_paddr);
+		out.p_filesz = __swab64(phdr->p_filesz);
+		out.p_memsz = __swab64(phdr->p_memsz);
+		out.p_align = __swab64(phdr->p_align);
 	} else {
 		const Elf32_Phdr *const phdr = reinterpret_cast<const Elf32_Phdr*>(phbuf);
-		out.p_type = elf32_to_cpu(phdr->p_type);
-		out.p_flags = elf32_to_cpu(phdr->p_flags);
-		out.p_offset = elf32_to_cpu(phdr->p_offset);
-		out.p_vaddr = elf32_to_cpu(phdr->p_vaddr);
-		out.p_paddr = elf32_to_cpu(phdr->p_paddr);
-		out.p_filesz = elf32_to_cpu(phdr->p_filesz);
-		out.p_memsz = elf32_to_cpu(phdr->p_memsz);
-		out.p_align = elf32_to_cpu(phdr->p_align);
+		if (Elf_Header.primary.e_data == ELFDATAHOST) {
+			out.p_type = phdr->p_type;
+			out.p_flags = phdr->p_flags;
+			out.p_offset = phdr->p_offset;
+			out.p_vaddr = phdr->p_vaddr;
+			out.p_paddr = phdr->p_paddr;
+			out.p_filesz = phdr->p_filesz;
+			out.p_memsz = phdr->p_memsz;
+			out.p_align = phdr->p_align;
+		} else {
+			out.p_type = __swab32(phdr->p_type);
+			out.p_flags = __swab32(phdr->p_flags);
+			out.p_offset = __swab32(phdr->p_offset);
+			out.p_vaddr = __swab32(phdr->p_vaddr);
+			out.p_paddr = __swab32(phdr->p_paddr);
+			out.p_filesz = __swab32(phdr->p_filesz);
+			out.p_memsz = __swab32(phdr->p_memsz);
+			out.p_align = __swab32(phdr->p_align);
+		}
 	}
 
 	return out;
