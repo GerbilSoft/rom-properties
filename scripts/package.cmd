@@ -424,8 +424,8 @@ CD /D "%~dp0"
 
 :doCombine
 :: Compress the debug files.
-:: TODO: Get the version number? (We're not using cpack anymore...)
-SET "ZIP_PREFIX=rom-properties"
+SET /P PKG_VERSION=<..\pkg_windows\build.i386\version-display.txt
+SET "ZIP_PREFIX=rom-properties-%PKG_VERSION%"
 PUSHD ..\pkg_windows\pdb
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 DEL /Q "..\..\%ZIP_PREFIX%-windows.debug.zip" >NUL 2>&1
@@ -438,8 +438,8 @@ ECHO.
 ECHO *** Windows packages created. ***
 ECHO.
 ECHO The following files have been created in the top-level source directory:
-ECHO - SetupRomProperties.exe: Installer for Windows 7/8/10/11
-ECHO - SetupRomPropertiesXP.exe: Installer for Windows XP/2003/Vista
+ECHO - SetupRomProperties-%PKG_VERSION%.exe: Installer for Windows 7/8/10/11
+ECHO - SetupRomPropertiesXP-%PKG_VERSION%.exe: Installer for Windows XP/2003/Vista
 ECHO - %ZIP_PREFIX%-windows.debug.zip: PDB files
 ECHO.
 PAUSE

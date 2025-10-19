@@ -28,7 +28,7 @@ DefaultGroupName=ROM Properties
 DisableProgramGroupPage=yes
 LicenseFile=..\LICENSE
 PrivilegesRequired=admin
-OutputBaseFilename=SetupRomProperties
+OutputBaseFilename=SetupRomProperties-{#MyAppVersion}
 SolidCompression=yes
 WizardStyle=modern
 
