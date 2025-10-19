@@ -313,7 +313,7 @@ int PokemonMini::loadFieldData(void)
 
 	auto *const vv_vectors = new RomFields::ListData_t(vectors_names.size());
 	uint32_t pc = 0x2100 + offsetof(PokemonMini_RomHeader, irqs);
-	for (unsigned int i = 0; i < static_cast<unsigned int>(vectors_names.size()); i++, pc += 6) {
+	for (size_t i = 0; i < vectors_names.size(); i++, pc += 6) {
 		auto &data_row = vv_vectors->at(i);
 		data_row.reserve(3);
 
@@ -323,30 +323,30 @@ int PokemonMini::loadFieldData(void)
 		// Vector name
 		data_row.emplace_back(vectors_names[i]);
 
+		const uint8_t *const irq = romHeader->irqs[i];
+
 		// Address
 		string s_address;
-		if (!memcmp(&romHeader->irqs[i][0], vec_prefix.data(), vec_prefix.size())) {
+		if (!memcmp(irq, vec_prefix.data(), vec_prefix.size())) {
 			// Standard vector jump opcode.
-			uint32_t offset = (romHeader->irqs[i][5] << 8) | romHeader->irqs[i][4];
+			uint32_t offset = (irq[5] << 8) | irq[4];
 			offset += pc + 3 + 3 - 1;
 			s_address = fmt::format(FSTR("0x{:0>4X}"), offset);
-		} else if (romHeader->irqs[i][0] == 0xF3) {
+		} else if (irq[0] == 0xF3) {
 			// JMPW without MOV U.
 			// Seen in some homebrew.
-			uint32_t offset = (romHeader->irqs[i][2] << 8) | romHeader->irqs[i][1];
+			uint32_t offset = (irq[2] << 8) | irq[1];
 			offset += pc + 3 - 1;
 			s_address = fmt::format(FSTR("0x{:0>4X}"), offset);
-		} else if (!memcmp(&romHeader->irqs[i][0], vec_empty_ff.data(), vec_empty_ff.size()) ||
-			   !memcmp(&romHeader->irqs[i][0], vec_empty_00.data(), vec_empty_00.size())) {
+		} else if (!memcmp(irq, vec_empty_ff.data(), vec_empty_ff.size()) ||
+			   !memcmp(irq, vec_empty_00.data(), vec_empty_00.size())) {
 			// Empty vector.
 			s_address = C_("RomData|VectorTable", "None");
 		} else {
 			// Not a standard jump opcode.
 			// Show the hexdump.
 			s_address = fmt::format(FSTR("{:0>2X} {:0>2X} {:0>2X} {:0>2X} {:0>2X} {:0>2X}"),
-				romHeader->irqs[i][0], romHeader->irqs[i][1],
-				romHeader->irqs[i][2], romHeader->irqs[i][3],
-				romHeader->irqs[i][4], romHeader->irqs[i][5]);
+				irq[0], irq[1], irq[2], irq[3], irq[4], irq[5]);
 		}
 		data_row.push_back(std::move(s_address));
 	}
