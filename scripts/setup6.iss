@@ -2,7 +2,6 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "ROM Properties Page Shell Extension"
-#define MyAppPublisher "GerbilSoft"
 #define MyAppURL "https://github.com/GerbilSoft/rom-properties"
 
 #include "../pkg_windows/build.i386/src/config.version.h"
@@ -11,11 +10,12 @@
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
+AppCopyright=Copyright (c) 2016-2025 by David Korth.
 AppId={{E39AEEA4-836C-4408-8A04-4456C9A23816}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
-AppPublisher={#MyAppPublisher}
+AppPublisher=GerbilSoft
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
@@ -30,6 +30,11 @@ LicenseFile=..\LICENSE
 PrivilegesRequired=admin
 OutputBaseFilename=SetupRomProperties-{#MyAppVersion}
 SolidCompression=yes
+VersionInfoDescription=ROM Properties Setup (for Windows 7/8.x/10/11 and later)
+VersionInfoProductTextVersion={#MyAppVersion}
+VersionInfoProductVersion={#RP_VERSION_MAJOR}.{#RP_VERSION_MINOR}.{#RP_VERSION_PATCH}.{#RP_VERSION_DEVEL}
+VersionInfoTextVersion={#MyAppVersion}
+VersionInfoVersion={#RP_VERSION_MAJOR}.{#RP_VERSION_MINOR}.{#RP_VERSION_PATCH}.{#RP_VERSION_DEVEL}
 WizardStyle=modern
 
 ; Theme customization
