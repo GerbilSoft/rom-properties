@@ -1867,14 +1867,15 @@ int Xbox360_XEX::loadFieldData(void)
 			C_("Xbox360_XEX", "Xbox Game Disc only"));
 	} else {
 		// Other types.
+		// NOTE 2: Some strings are *not* localized.
 		static const array<const char*, 29> media_type_tbl = {{
 			// 0
 			NOP_C_("Xbox360_XEX", "Hard Disk"),
-			NOP_C_("Xbox360_XEX", "XGD1"),
-			NOP_C_("Xbox360_XEX", "DVD/CD"),
-			NOP_C_("Xbox360_XEX", "DVD-ROM SL"),
+			"XGD1",
+			"DVD/CD",
+			"DVD-ROM SL",
 			// 4
-			NOP_C_("Xbox360_XEX", "DVD-ROM DL"),
+			"DVD-ROM DL",
 			NOP_C_("Xbox360_XEX", "System Flash Memory"),
 			nullptr,
 			NOP_C_("Xbox360_XEX", "Memory Unit"),
@@ -1920,7 +1921,13 @@ int Xbox360_XEX::loadFieldData(void)
 			found++;
 
 			if (media_type_tbl[i]) {
-				oss << media_type_tbl[i];
+				if (i == 0 || i >= 5) {
+					// Localized string
+					oss << pgettext_expr("Xbox360_XEX", media_type_tbl[i]);
+				} else {
+					// Non-localized string
+					oss << media_type_tbl[i];
+				}
 			} else {
 				oss << i;
 			}

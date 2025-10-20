@@ -801,18 +801,19 @@ int Xbox_XBE::loadFieldData(void)
 	// Media types
 	// NOTE: Using a string instead of a bitfield because very rarely
 	// are all of these set, and in most cases, none are.
+	// NOTE 2: Some strings are *not* localized.
 	// TODO: RFT_LISTDATA?
 	static constexpr char media_type_tbl[][12] = {
 		// 0
 		NOP_C_("Xbox_XBE", "Hard Disk"),
-		NOP_C_("Xbox_XBE", "XGD1"),
-		NOP_C_("Xbox_XBE", "DVD/CD"),
-		NOP_C_("Xbox_XBE", "CD-ROM"),
+		"XGD1",
+		"DVD/CD",
+		"CD-ROM",
 		// 4
-		NOP_C_("Xbox_XBE", "DVD-ROM SL"),
-		NOP_C_("Xbox_XBE", "DVD-ROM DL"),
-		NOP_C_("Xbox_XBE", "DVD-RW SL"),
-		NOP_C_("Xbox_XBE", "DVD-RW DL"),
+		"DVD-ROM SL",
+		"DVD-ROM DL",
+		"DVD-RW SL",
+		"DVD-RW DL",
 		// 8
 		NOP_C_("Xbox_XBE", "Dongle"),
 		NOP_C_("Xbox_XBE", "Media Board"),
@@ -823,8 +824,9 @@ int Xbox_XBE::loadFieldData(void)
 	unsigned int found = 0;
 	uint32_t media_types = le32_to_cpu(xbeCertificate->allowed_media_types);
 	for (unsigned int i = 0; i < ARRAY_SIZE(media_type_tbl); i++, media_types >>= 1) {
-		if (!(media_types & 1))
+		if (!(media_types & 1)) {
 			continue;
+		}
 
 		if (found > 0) {
 			if (found % 4 == 0) {
@@ -835,7 +837,13 @@ int Xbox_XBE::loadFieldData(void)
 		}
 		found++;
 
-		oss << media_type_tbl[i];
+		if (i == 0 || i >= 8) {
+			// Localized string
+			oss << pgettext_expr("Xbox_XBE", media_type_tbl[i]);
+		} else {
+			// Non-localized string
+			oss << media_type_tbl[i];
+		}
 	}
 
 	d->fields.addField_string(C_("Xbox_XBE", "Media Types"),
