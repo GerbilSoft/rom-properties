@@ -71,20 +71,20 @@ public:
 	unordered_map<uint64_t, rp_image_ptr > map_images;
 
 public:
-	// XDBF header.
+	// XDBF header
 	XDBF_Header xdbfHeader;
 
-	// Entry table.
+	// Entry table
 	// NOTE: Data is *not* byteswapped on load.
 	rp::uvector<XDBF_Entry> entryTable;
 
 	// Data start offset within the file.
 	uint32_t data_offset;
 
-	// Cached language ID.
+	// Cached language ID
 	XDBF_Language_e m_langID;
 
-	// String table indexes.
+	// String table indexes
 	// These are indexes into entryTable that indicate
 	// where a language table entry is located.
 	// If -1, the string table is not present.
@@ -93,18 +93,18 @@ public:
 	// than 32,767 entries in the table.
 	array<int16_t, XDBF_LANGUAGE_MAX> strTblIndexes;
 
-	// String tables.
+	// String tables
 	// NOTE: These are *pointers* to rp::uvector<>.
 	array<rp::uvector<char>*, XDBF_LANGUAGE_MAX> strTbls;
 
 	// If true, this XDBF section is in an XEX executable.
 	// Some fields shouldn't be displayed.
-	bool xex;
+	const bool xex;
 
 	/**
 	 * Find a resource in the entry table.
-	 * @param namespace_id Namespace ID.
-	 * @param resource_id Resource ID.
+	 * @param namespace_id Namespace ID
+	 * @param resource_id Resource ID
 	 * @return XDBF_Entry*, or nullptr if not found.
 	 */
 	const XDBF_Entry *findResource(uint16_t namespace_id, uint64_t resource_id) const;
@@ -119,7 +119,7 @@ public:
 private:
 	/**
 	 * Load a string table. (SPA only)
-	 * @param langID Language ID.
+	 * @param langID Language ID
 	 * @return Pointer to string table on success; nullptr on error.
 	 */
 	const rp::uvector<char> *loadStringTable_SPA(XDBF_Language_e langID);
@@ -127,15 +127,15 @@ private:
 public:
 	/**
 	 * Get a string from a string table. (SPA)
-	 * @param langID Language ID.
-	 * @param string_id String ID.
+	 * @param langID Language ID
+	 * @param string_id String ID
 	 * @return String, or empty string on error.
 	 */
 	string loadString_SPA(XDBF_Language_e langID, uint16_t string_id);
 
 	/**
 	 * Get a string from the resource table. (GPD)
-	 * @param string_id String ID.
+	 * @param string_id String ID
 	 * @return String, or empty string on error.
 	 */
 	string loadString_GPD(uint16_t string_id);
@@ -313,8 +313,8 @@ Xbox360_XDBF_Private::~Xbox360_XDBF_Private()
 
 /**
  * Find a resource in the entry table.
- * @param namespace_id Namespace ID.
- * @param resource_id Resource ID.
+ * @param namespace_id Namespace ID
+ * @param resource_id Resource ID
  * @return XDBF_Entry*, or nullptr if not found.
  */
 const XDBF_Entry *Xbox360_XDBF_Private::findResource(uint16_t namespace_id, uint64_t resource_id) const
@@ -367,8 +367,9 @@ int Xbox360_XDBF_Private::initStrTblIndexes(void)
 	for (auto iter = entryTable.cbegin();
 	     iter != entryTable_cend && total < XDBF_LANGUAGE_MAX; ++iter, idx++)
 	{
-		if (iter->namespace_id != cpu_to_be16(XDBF_SPA_NAMESPACE_STRING_TABLE))
+		if (iter->namespace_id != cpu_to_be16(XDBF_SPA_NAMESPACE_STRING_TABLE)) {
 			continue;
+		}
 
 		// Found a string table.
 		const uint64_t langID_64 = be64_to_cpu(iter->resource_id);
@@ -390,7 +391,7 @@ int Xbox360_XDBF_Private::initStrTblIndexes(void)
 
 /**
  * Load a string table. (SPA only)
- * @param langID Language ID.
+ * @param langID Language ID
  * @return Pointer to string table on success; nullptr on error.
  */
 const rp::uvector<char> *Xbox360_XDBF_Private::loadStringTable_SPA(XDBF_Language_e langID)
@@ -398,8 +399,9 @@ const rp::uvector<char> *Xbox360_XDBF_Private::loadStringTable_SPA(XDBF_Language
 	assert(langID >= 0);
 	assert(langID < XDBF_LANGUAGE_MAX);
 	// TODO: Do any games have string tables with language ID XDBF_LANGUAGE_UNKNOWN?
-	if (langID <= XDBF_LANGUAGE_UNKNOWN || langID >= XDBF_LANGUAGE_MAX)
+	if (langID <= XDBF_LANGUAGE_UNKNOWN || langID >= XDBF_LANGUAGE_MAX) {
 		return nullptr;
+	}
 
 	// Is the string table already loaded?
 	if (this->strTbls[langID]) {
@@ -463,8 +465,8 @@ const rp::uvector<char> *Xbox360_XDBF_Private::loadStringTable_SPA(XDBF_Language
 
 /**
  * Get a string from a string table. (SPA)
- * @param langID Language ID.
- * @param string_id String ID.
+ * @param langID Language ID
+ * @param string_id String ID
  * @return String, or empty string on error.
  */
 string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t string_id)
@@ -527,7 +529,7 @@ string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t str
 
 /**
  * Get a string from the resource table. (GPD)
- * @param string_id String ID.
+ * @param string_id String ID
  * @return String, or empty string on error.
  */
 string Xbox360_XDBF_Private::loadString_GPD(uint16_t string_id)
