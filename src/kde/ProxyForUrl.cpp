@@ -43,7 +43,7 @@ string proxyForUrl(const char *url)
 	QString proxy;
 	const QNetworkProxy &np = proxies[0];
 	const QString hostName = np.hostName();
-	const qint16 port = np.port();
+	const quint16 port = np.port();
 	if (hostName.isEmpty() || port == 0) {
 		// No hostname or invalid port number.
 		return {};
