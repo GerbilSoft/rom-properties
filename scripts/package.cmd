@@ -10,7 +10,7 @@ CD /D "%~dp0\.."
 :: - Windows 7 SDK
 :: - zip.exe and unzip.exe in %PATH%
 :: - Inno Setup 5 [for Windows XP/2003/Vista installation]
-:: - Inno Setup 6 [for Windows 7/8/10/11 installation]
+:: - Inno Setup 6 [for Windows 7/8.x/10/11 installation]
 ::
 :: Windows 10 SDK is required for 32-bit ARM.
 :: For ARM and ARM64 targets, MSVC 2019 is required.
@@ -438,7 +438,7 @@ ECHO.
 ECHO *** Windows packages created. ***
 ECHO.
 ECHO The following files have been created in the top-level source directory:
-ECHO - SetupRomProperties-%PKG_VERSION%.exe: Installer for Windows 7/8/10/11
+ECHO - SetupRomProperties-%PKG_VERSION%.exe: Installer for Windows 7/8.x/10/11
 ECHO - SetupRomPropertiesXP-%PKG_VERSION%.exe: Installer for Windows XP/2003/Vista
 ECHO - %ZIP_PREFIX%-windows.debug.zip: PDB files
 ECHO.
