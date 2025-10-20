@@ -84,7 +84,8 @@ static uint32_t getStringTableOffset(const char *str)
 	}
 
 	// Check if the string is already in the string table.
-	auto iter = stringTableMap.find(str);
+	string entry(str);
+	auto iter = stringTableMap.find(entry);
 	if (iter != stringTableMap.end()) {
 		// Found the string.
 		return iter->second;
@@ -92,7 +93,6 @@ static uint32_t getStringTableOffset(const char *str)
 
 	// Not found. Add the string
 	const uint32_t offset = static_cast<uint32_t>(stringTable.size());
-	string entry(str);
 	stringTable.insert(stringTable.end(), entry.c_str(), entry.c_str() + entry.size() + 1);
 	stringTableMap.emplace(std::move(entry), offset);
 	return offset;
