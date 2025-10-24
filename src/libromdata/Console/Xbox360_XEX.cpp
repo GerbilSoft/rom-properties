@@ -1870,34 +1870,34 @@ int Xbox360_XEX::loadFieldData(void)
 		// NOTE 2: Some strings are *not* localized.
 		static const array<const char*, 29> media_type_tbl = {{
 			// 0
-			NOP_C_("Xbox360_XEX", "Hard Disk"),
+			NOP_C_("Xbox360_XEX|MediaType", "Hard Disk"),
 			"XGD1",
 			"DVD/CD",
 			"DVD-ROM SL",
 			// 4
 			"DVD-ROM DL",
-			NOP_C_("Xbox360_XEX", "System Flash Memory"),
+			NOP_C_("Xbox360_XEX|MediaType", "System Flash Memory"),
 			nullptr,
-			NOP_C_("Xbox360_XEX", "Memory Unit"),
+			NOP_C_("Xbox360_XEX|MediaType", "Memory Unit"),
 			// 8
-			NOP_C_("Xbox360_XEX", "USB Mass Storage Device"),
-			NOP_C_("Xbox360_XEX", "Network"),
-			NOP_C_("Xbox360_XEX", "Direct from RAM"),
-			NOP_C_("Xbox360_XEX", "RAM Drive"),
+			NOP_C_("Xbox360_XEX|MediaType", "USB Mass Storage Device"),
+			NOP_C_("Xbox360_XEX|MediaType", "Network"),
+			NOP_C_("Xbox360_XEX|MediaType", "Direct from RAM"),
+			NOP_C_("Xbox360_XEX|MediaType", "RAM Drive"),
 			// 12
-			NOP_C_("Xbox360_XEX", "Secure Virtual Optical Device"),
+			NOP_C_("Xbox360_XEX|MediaType", "Secure Virtual Optical Device"),
 			nullptr, nullptr, nullptr,
 			// 16
 			nullptr, nullptr, nullptr, nullptr,
 			// 20
 			nullptr, nullptr, nullptr, nullptr,
 			// 24
-			NOP_C_("Xbox360_XEX", "Insecure Package"),
-			NOP_C_("Xbox360_XEX", "Savegame Package"),
-			NOP_C_("Xbox360_XEX", "Locally Signed Package"),
-			NOP_C_("Xbox360_XEX", "Xbox Live Signed Package"),
+			NOP_C_("Xbox360_XEX|MediaType", "Insecure Package"),
+			NOP_C_("Xbox360_XEX|MediaType", "Savegame Package"),
+			NOP_C_("Xbox360_XEX|MediaType", "Locally Signed Package"),
+			NOP_C_("Xbox360_XEX|MediaType", "Xbox Live Signed Package"),
 			// 28
-			NOP_C_("Xbox360_XEX", "Xbox Package"),
+			NOP_C_("Xbox360_XEX|MediaType", "Xbox Package"),
 		}};
 
 		uint32_t media_types = be32_to_cpu(
@@ -1934,7 +1934,7 @@ int Xbox360_XEX::loadFieldData(void)
 		}
 
 		d->fields.addField_string(C_("Xbox360_XEX", "Media Types"),
-			found ? oss.str() : C_("Xbox360_XEX", "None"));
+			found ? oss.str() : C_("Xbox360_XEX|MediaType", "None"));
 	}
 
 	// Region code

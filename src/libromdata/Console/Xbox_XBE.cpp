@@ -805,7 +805,7 @@ int Xbox_XBE::loadFieldData(void)
 	// TODO: RFT_LISTDATA?
 	static constexpr char media_type_tbl[][12] = {
 		// 0
-		NOP_C_("Xbox_XBE", "Hard Disk"),
+		NOP_C_("Xbox_XBE|MediaType", "Hard Disk"),
 		"XGD1",
 		"DVD/CD",
 		"CD-ROM",
@@ -815,8 +815,8 @@ int Xbox_XBE::loadFieldData(void)
 		"DVD-RW SL",
 		"DVD-RW DL",
 		// 8
-		NOP_C_("Xbox_XBE", "Dongle"),
-		NOP_C_("Xbox_XBE", "Media Board"),
+		NOP_C_("Xbox_XBE|MediaType", "Dongle"),
+		NOP_C_("Xbox_XBE|MediaType", "Media Board"),
 		// TODO: Non-secure HDD
 	};
 
@@ -847,7 +847,7 @@ int Xbox_XBE::loadFieldData(void)
 	}
 
 	d->fields.addField_string(C_("Xbox_XBE", "Media Types"),
-		found ? oss.str() : C_("Xbox_XBE", "None"));
+		found ? oss.str() : C_("Xbox_XBE|MediaType", "None"));
 
 	// Initialization flags
 	const uint32_t init_flags = le32_to_cpu(xbeHeader->init_flags);
