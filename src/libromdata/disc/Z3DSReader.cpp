@@ -73,7 +73,8 @@ Z3DSReaderPrivate::Z3DSReaderPrivate(Z3DSReader *q)
 #endif /* _MSC_VER && ZSTD_IS_DLL */
 
 	// Read the Z3DS header.
-	size_t size = q->m_file->seekAndRead(0, &z3ds_header, sizeof(z3ds_header));
+	IRpFile *const file = q->m_file.get();
+	size_t size = file->seekAndRead(0, &z3ds_header, sizeof(z3ds_header));
 	if (size != sizeof(z3ds_header)) {
 		// Seek and/or read error.
 		q->m_lastError = q->m_file->lastError();
@@ -102,6 +103,12 @@ Z3DSReaderPrivate::Z3DSReaderPrivate(Z3DSReader *q)
 	// Determine the start of the ZSTD seekable stream.
 	// NOTE: Not checking other header or metadata fields right now.
 	seekable_start = z3ds_header.header_size + z3ds_header.metadata_size;
+	if (seekable_start >= file->size()) {
+		// Out of bounds.
+		q->m_lastError = EIO;
+		q->m_file.reset();
+		return;
+	}
 
 	// Open the ZSTD seekable stream.
 	seekable = ZSTD_seekable_create();
