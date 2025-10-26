@@ -63,29 +63,19 @@ using std::unique_ptr;
 
 namespace LibRpBase { namespace RpPng {
 
-#if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
-// DelayLoad test implementation.
-DELAYLOAD_FILTER_FUNCTION_IMPL(zlib_and_png)
-static int DelayLoad_test_zlib_and_png(void)
-{
-	static bool success = false;
-	if (!success) {
-		__try {
-			get_crc_table();
-			png_access_version_number();
-		} __except (DelayLoad_filter_zlib_and_png(GetExceptionCode())) {
-			return -ENOTSUP;
-		}
-		success = true;
-	}
-	return 0;
-}
-#endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
+#ifdef _MSC_VER
+// DelayLoad test implementations.
 
-#if defined(_MSC_VER) && defined(ZSTD_IS_DLL)
-// DelayLoad test implementation.
+#  ifdef ZLIB_IS_DLL
+DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
+#  endif /* ZLIB_IS_DLL */
+#  ifdef PNG_IS_DLL
+DELAYLOAD_TEST_FUNCTION_IMPL0(png_access_version_number)
+#  endif /* PNG_IS_DLL */
+#  ifdef ZSTD_IS_DLL
 DELAYLOAD_TEST_FUNCTION_IMPL1(ZSTD_freeDCtx, nullptr);
-#endif /* _MSC_VER && ZSTD_IS_DLL */
+#  endif /* ZSTD_IS_DLL */
+#endif /* _MSC_VER */
 
 /** RpPngPrivate **/
 
@@ -487,7 +477,9 @@ rp_image_ptr load(IRpFile *file)
 
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 	// Delay load verification.
-	if (DelayLoad_test_zlib_and_png() != 0) {
+	if (DelayLoad_test_get_crc_table() != 0 ||
+	    DelayLoad_test_png_access_version_number() != 0)
+	{
 		// Delay load failed.
 		return {};
 	}
@@ -807,7 +799,7 @@ const char *zlib_version_string(void)
 {
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 	// Delay load verification.
-	if (DelayLoad_test_zlib_and_png() != 0) {
+	if (DelayLoad_test_get_crc_table() != 0) {
 		// Delay load failed.
 		return "(DLL failed to load)";
 	}
@@ -829,7 +821,9 @@ bool libpng_has_APNG(void)
 {
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 	// Delay load verification.
-	if (DelayLoad_test_zlib_and_png() != 0) {
+	if (DelayLoad_test_get_crc_table() != 0 ||
+	    DelayLoad_test_png_access_version_number() != 0)
+	{
 		// Delay load failed.
 		return false;
 	}
@@ -848,7 +842,9 @@ uint32_t libpng_version_number(void)
 {
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 	// Delay load verification.
-	if (DelayLoad_test_zlib_and_png() != 0) {
+	if (DelayLoad_test_get_crc_table() != 0 ||
+	    DelayLoad_test_png_access_version_number() != 0)
+	{
 		// Delay load failed.
 		return 0;
 	}
@@ -865,7 +861,9 @@ const char *libpng_copyright_string(void)
 {
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 	// Delay load verification.
-	if (DelayLoad_test_zlib_and_png() != 0) {
+	if (DelayLoad_test_get_crc_table() != 0 ||
+	    DelayLoad_test_png_access_version_number() != 0)
+	{
 		// Delay load failed.
 		return "(DLL failed to load)";
 	}
