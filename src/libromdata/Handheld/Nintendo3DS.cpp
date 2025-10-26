@@ -50,7 +50,7 @@ ROMDATA_IMPL_IMG_SIZES(Nintendo3DS)
 /** Nintendo3DSPrivate **/
 
 /* RomDataInfo */
-const array<const char*, 10+1> Nintendo3DSPrivate::exts = {{
+const array<const char*, 17+1> Nintendo3DSPrivate::exts = {{
 	".3dsx",	// Homebrew application.
 	".3ds",		// ROM image (NOTE: Conflicts with 3DS Max.)
 	".3dz",		// ROM image (with private header for Gateway 3DS)
@@ -61,6 +61,19 @@ const array<const char*, 10+1> Nintendo3DSPrivate::exts = {{
 	".cxi",		// CTR Executable Image (NCCH)
 	".cfa",		// CTR File Archive (NCCH)
 	".csu",		// CTR System Update (CCI)
+
+	// Z3DS versions
+	// NOTE: Copy of the above list, with extensions not used by Azahar commented out.
+	".z3dsx",	// Homebrew application.
+	".z3ds",	// ROM image (NOTE: Conflicts with 3DS Max.)
+	".z3dz",	// ROM image (with private header for Gateway 3DS)
+	".zcci",	// ROM image
+	".zcia",	// CTR importable archive
+	//".zncch",	// NCCH file
+	//".zapp",	// NCCH file (NOTE: May conflict with others...)
+	".zcxi",	// CTR Executable Image (NCCH)
+	//".zcfa",	// CTR File Archive (NCCH)
+	".zcsu",	// CTR System Update (CCI)
 
 	nullptr
 }};
