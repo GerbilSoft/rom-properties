@@ -7,6 +7,11 @@
     package icon.
     * Packages that use "adaptive icons" or .webp icons are not currently thumbnailed.
 
+* New parser features:
+  * Nintendo3DS: Z3DS compressed format is now supported.
+    * Fixes #463: Add support for zcci, zcxi, z3dsx, zcia
+      * Requested by @Masamune3210.
+
 * New features:
   * Windows, GNOME Nautilus (and Caja and Nemo): In Details view, rom-properties
     now provides columns for a few properties. Specifically, "Game ID", "Title ID",
