@@ -43,6 +43,7 @@
       might not show up immediately if the rom-properties shell extension hasn't been
       loaded by Windows Explorer yet. To force the extension to be loaded, view the
       file properties of a supported file type.
+  * Windows: Localization via GNU gettext is now available on ARM and ARM64.
 
 * Bug fixes:
   * Fix detection of small TGAs (under 64 bytes), e.g. some of the TGAs used by
