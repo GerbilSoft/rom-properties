@@ -48,6 +48,11 @@ using std::string;
 #  include <pugixml.hpp>
 #endif /* ENABLE_XML */
 
+// zstd
+// NOTE: Version number is checked via RpPng, even though
+// libpng doesn't use zstd...
+#include <zstd.h>
+
 #include "ui_AboutTab.h"
 class AboutTabPrivate
 {
@@ -537,6 +542,29 @@ void AboutTabPrivate::initLibrariesTab(void)
 		"<a href='https://www.gnu.org/software/gettext/'>https://www.gnu.org/software/gettext/</a>" BR;
 	sLibraries += fmt::format(FRUN(sLicense), "GNU LGPL v2.1+");
 #endif /* HAVE_GETTEXT && LIBINTL_VERSION */
+
+	/** zstd **/
+#ifdef HAVE_ZSTD
+	const unsigned int zstd_version_number = RpPng::zstd_version_number();
+	const string zstdVersionUsing = fmt::format(FSTR("zstd {:d}.{:d}.{:d}"),
+		zstd_version_number / 10000,
+		(zstd_version_number / 100) % 100,
+		zstd_version_number % 100);
+
+	sLibraries += BR BR;
+#if defined(USE_INTERNAL_PNG) && !defined(USE_INTERNAL_ZLIB_DLL)
+	sLibraries += fmt::format(FRUN(sIntCopyOf), zstdVersionUsing);
+#else
+	sLibraries += fmt::format(FRUN(sCompiledWith), ZSTD_VERSION_STRING);
+	sLibraries += BR;
+	sLibraries += fmt::format(FRUN(sUsingDll), zstdVersionUsing);
+#endif
+
+	sLibraries += BR
+		"Copyright (c) Meta Platforms, Inc. and affiliates." BR
+		"All rights reserved." BR;
+	sLibraries += fmt::format(FRUN(sLicenses), "BSD (3-clause), GNU GPL v2");
+#endif /* HAVE_ZSTD */
 
 	// We're done building the string.
 	ui.lblLibraries->setText(U82Q(sLibraries));

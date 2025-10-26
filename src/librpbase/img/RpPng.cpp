@@ -29,6 +29,9 @@ using std::unique_ptr;
 #include <png.h>
 #include "APNG_dlopen.hpp"	// for libpng_has_APNG()
 
+// for ZSTD_versionNumber()
+#include <zstd.h>
+
 #if PNG_LIBPNG_VER < 10209 || \
     (PNG_LIBPNG_VER == 10209 && \
         (PNG_LIBPNG_VER_BUILD >= 1 && PNG_LIBPNG_VER_BUILD < 8))
@@ -54,8 +57,6 @@ using std::unique_ptr;
 #endif /* !PNGCAPI */
 
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
-// Need zlib for delay-load checks.
-#include <zlib.h>
 // MSVC: Exception handling for /DELAYLOAD.
 #include "libwin32common/DelayLoadHelper.h"
 #endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
@@ -80,6 +81,11 @@ static int DelayLoad_test_zlib_and_png(void)
 	return 0;
 }
 #endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
+
+#if defined(_MSC_VER) && defined(ZSTD_IS_DLL)
+// DelayLoad test implementation.
+DELAYLOAD_TEST_FUNCTION_IMPL1(ZSTD_freeDCtx, nullptr);
+#endif /* _MSC_VER && ZSTD_IS_DLL */
 
 /** RpPngPrivate **/
 
@@ -875,6 +881,24 @@ const char *libpng_copyright_string(void)
 	 * always returns the __STDC__ copyright notice.
 	 */
 	return png_get_copyright(nullptr);
+}
+
+/**
+ * Get the zstd version number.
+ * NOTE: libpng doesn't use zstd...
+ * @return zstd version number [ZSTD_versionNumber()]
+ */
+unsigned int zstd_version_number(void)
+{
+#if defined(_MSC_VER) && defined(ZSTD_IS_DLL)
+	// Delay load verification.
+	if (DelayLoad_test_ZSTD_freeDCtx() != 0) {
+		// Delay load failed.
+		return 0;
+	}
+#endif /* _MSC_VER && ZSTD_IS_DLL */
+
+	return ZSTD_versionNumber();
 }
 
 } }
