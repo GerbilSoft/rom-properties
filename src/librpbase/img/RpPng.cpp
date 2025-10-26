@@ -865,7 +865,7 @@ const char *libpng_copyright_string(void)
 	    DelayLoad_test_png_access_version_number() != 0)
 	{
 		// Delay load failed.
-		return "(DLL failed to load)";
+		return "(DLL failed to load)\n";
 	}
 #endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
