@@ -7,6 +7,8 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.librpbase.h"
+
 #include "Z3DSReader.hpp"
 #include "z3ds_structs.h"
 
@@ -15,9 +17,19 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 
 // zstd seekable format
+#include <zstd.h>
 #include "zstd_seekable.h"
+#ifdef _MSC_VER
+// MSVC: Exception handling for /DELAYLOAD.
+#  include "libwin32common/DelayLoadHelper.h"
+#endif /* _MSC_VER */
 
 namespace LibRomData {
+
+#if defined(_MSC_VER) && defined(ZSTD_IS_DLL)
+// DelayLoad test implementation.
+DELAYLOAD_TEST_FUNCTION_IMPL1(ZSTD_freeDCtx, nullptr);
+#endif /* _MSC_VER && ZSTD_IS_DLL */
 
 class Z3DSReaderPrivate
 {
@@ -48,6 +60,18 @@ Z3DSReaderPrivate::Z3DSReaderPrivate(Z3DSReader *q)
 	, seekable_start(0)
 	, uncompressed_pos(0)
 {
+#if defined(_MSC_VER) && defined(ZSTD_IS_DLL)
+	// Delay load verification.
+	int err = DelayLoad_test_ZSTD_freeDCtx();
+	if (err != 0) {
+		// Delay load failed.
+		// Z3DS format is not supported without zstd.
+		q->m_lastError = -err;
+		q->m_file.reset();
+		return;
+	}
+#endif /* _MSC_VER && ZSTD_IS_DLL */
+
 	// Read the Z3DS header.
 	size_t size = q->m_file->seekAndRead(0, &z3ds_header, sizeof(z3ds_header));
 	if (size != sizeof(z3ds_header)) {

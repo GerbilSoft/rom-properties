@@ -79,6 +79,20 @@
 #  define MINIZIP_IS_DLL 1
 #endif
 
+/* Define to 1 if you have zstd. */
+#cmakedefine HAVE_ZSTD 1
+
+/* Define to 1 if we're using the internal copy of zstd. */
+#cmakedefine USE_INTERNAL_ZSTD 1
+
+/* Define to 1 if we're using the internal copy of zstd as a DLL. */
+#cmakedefine USE_INTERNAL_ZSTD_DLL 1
+
+/* Define to 1 if zstd is a DLL. */
+#if !defined(USE_INTERNAL_ZSTD) || defined(USE_INTERNAL_ZSTD_DLL)
+#  define ZSTD_IS_DLL 1
+#endif
+
 /* Define to 1 if WebP should be supported, using dlopen(). */
 #cmakedefine ENABLE_WEBP 1
 
