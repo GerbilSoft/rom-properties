@@ -1,9 +1,7 @@
 This copy of inih-r61 is a modified version of the original.
 
-commit 3eda303b34610adc0554bdea08d02a25668c774c
-Bump version to 61 for release
-
-Tag: r61
+commit 8e06f6b77b5d4471bdc6d85ada81b67d37354a5c
+Bug Fix: OOB Read in ini_parse_stream() (#206)
 
 The following changes have been made to the original:
 
