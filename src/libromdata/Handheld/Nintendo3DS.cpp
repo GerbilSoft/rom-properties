@@ -14,6 +14,9 @@
 #include "Nintendo3DS_p.hpp"
 #include "n3ds_structs.h"
 
+#include "../disc/Z3DSReader.hpp"
+#include "../disc/z3ds_structs.h"
+
 // Other rom-properties libraries
 #include "librpbase/config/Config.hpp"
 #include "librpbase/crypto/Hash.hpp"
@@ -1244,6 +1247,29 @@ Nintendo3DS::Nintendo3DS(const IRpFilePtr &file)
 		return;
 	}
 
+	// Check for Z3DS format first.
+	// If it's Z3DS, replace d->file with a Z3DSReader.
+	if (Z3DSReader::isDiscSupported_static(header, sizeof(header)) >= 0) {
+		// This is a Z3DS file.
+		Z3DSReaderPtr z3ds_reader = std::make_shared<Z3DSReader>(d->file);
+		if (!z3ds_reader->isOpen()) {
+			// Could not open the Z3DS file...
+			d->file.reset();
+			return;
+		}
+
+		// Replace d->file with the Z3DSReader.
+		// The Z3DSReader still maintains a reference to d->file.
+		d->file = std::move(z3ds_reader);
+
+		// Re-read the header from the compressed ROM.
+		size_t size = d->file->read(&header, sizeof(header));
+		if (size != sizeof(header)) {
+			d->file.reset();
+			return;
+		}
+	}
+
 	// Check if this ROM image is supported.
 	const char *const filename = file->filename();
 	const DetectInfo info = {
@@ -1347,12 +1373,31 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 		return static_cast<int>(Nintendo3DSPrivate::RomType::Unknown);
 	}
 
-	// Check for CIA first. CIA doesn't have an unambiguous magic number,
+	// Check for Z3DS format.
+	if (Z3DSReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
+		// This is a Z3DS file.
+		const Z3DS_Header *const z3ds_header =
+			reinterpret_cast<const Z3DS_Header*>(info->header.pData);
+		switch (be32_to_cpu(z3ds_header->underlying_magic)) {
+			default:
+			case 'NCSD':
+				// Default to CCI if nothing else matches.
+				return static_cast<int>(Nintendo3DSPrivate::RomType::CCI);
+			case '3DSX':
+				return static_cast<int>(Nintendo3DSPrivate::RomType::_3DSX);
+			case 0x43494100:	// "CIA\x00"
+				return static_cast<int>(Nintendo3DSPrivate::RomType::CIA);
+			case 'NCCH':
+				return static_cast<int>(Nintendo3DSPrivate::RomType::NCCH);
+		}
+	}
+
+	// Check for CIA format. CIA doesn't have an unambiguous magic number,
 	// so we'll use the file extension.
 	// NOTE: The header data is usually smaller than 0x2020,
 	// so only check the important contents.
 	if (info->ext && info->header.size > offsetof(N3DS_CIA_Header_t, content_index) &&
-	    !strcasecmp(info->ext, ".cia"))
+	    (!strcasecmp(info->ext, ".cia") || !strcasecmp(info->ext, ".zcia")))
 	{
 		// Verify the header parameters.
 		const N3DS_CIA_Header_t *const cia_header =

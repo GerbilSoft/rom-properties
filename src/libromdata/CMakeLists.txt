@@ -152,6 +152,7 @@ SET(${PROJECT_NAME}_SRCS
 	disc/WiiUH3Reader.cpp
 	disc/WuxReader.cpp
 	disc/XDVDFSPartition.cpp
+	disc/Z3DSReader.cpp
 
 	config/ImageTypesConfig.cpp
 	#config/TImageTypesConfig.cpp	# NOT listed here due to template stuff.
@@ -376,7 +377,8 @@ SET(${PROJECT_NAME}_H
 	disc/WiiUFst.hpp
 	disc/WiiUH3Reader.hpp
 	disc/WuxReader.hpp
-	disc/XDVDFSPartition.cpp
+	disc/XDVDFSPartition.hpp
+	disc/Z3DSReader.hpp
 
 	disc/ciso_gcn.h
 	disc/ciso_psp_structs.h
@@ -386,6 +388,7 @@ SET(${PROJECT_NAME}_H
 	disc/nasos_gcn.h
 	disc/wux_structs.h
 	disc/xdvdfs_structs.h
+	disc/z3ds_structs.h
 
 	config/ImageTypesConfig.hpp
 	config/TImageTypesConfig.hpp
@@ -782,6 +785,11 @@ ENDIF(ENABLE_LZ4 AND LZ4_FOUND)
 IF(ENABLE_LZO AND LZO_FOUND)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${LZO_LIBRARY})
 ENDIF(ENABLE_LZO AND LZO_FOUND)
+
+IF(ENABLE_ZSTD AND ZSTD_FOUND)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE zstd_seekable_format)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARIES})
+ENDIF(ENABLE_ZSTD AND ZSTD_FOUND)
 
 # Test suite.
 IF(BUILD_TESTING)
