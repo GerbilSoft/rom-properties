@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2025-10-19 22:16-0400\n"
-"PO-Revision-Date: 2025-10-20 02:33\n"
+"POT-Creation-Date: 2025-10-20 10:02-0400\n"
+"PO-Revision-Date: 2025-10-28 21:55\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -4893,74 +4893,74 @@ msgid "Xbox Game Disc only"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1873
-msgctxt "Xbox360_XEX"
+msgctxt "Xbox360_XEX|MediaType"
 msgid "Hard Disk"
-msgstr ""
+msgstr "Disco Rigido"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1879
-msgctxt "Xbox360_XEX"
+msgctxt "Xbox360_XEX|MediaType"
 msgid "System Flash Memory"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1881
-msgctxt "Xbox360_XEX"
+msgctxt "Xbox360_XEX|MediaType"
 msgid "Memory Unit"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1883
-msgctxt "Xbox360_XEX"
+msgctxt "Xbox360_XEX|MediaType"
 msgid "USB Mass Storage Device"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1884
-msgctxt "Xbox360_XEX"
+msgctxt "Xbox360_XEX|MediaType"
 msgid "Network"
-msgstr ""
+msgstr "Rete"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1885
-msgctxt "Xbox360_XEX"
+msgctxt "Xbox360_XEX|MediaType"
 msgid "Direct from RAM"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1886
-msgctxt "Xbox360_XEX"
+msgctxt "Xbox360_XEX|MediaType"
 msgid "RAM Drive"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1888
-msgctxt "Xbox360_XEX"
+msgctxt "Xbox360_XEX|MediaType"
 msgid "Secure Virtual Optical Device"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1895
-msgctxt "Xbox360_XEX"
+msgctxt "Xbox360_XEX|MediaType"
 msgid "Insecure Package"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1896
-msgctxt "Xbox360_XEX"
+msgctxt "Xbox360_XEX|MediaType"
 msgid "Savegame Package"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1897
-msgctxt "Xbox360_XEX"
+msgctxt "Xbox360_XEX|MediaType"
 msgid "Locally Signed Package"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1898
-msgctxt "Xbox360_XEX"
+msgctxt "Xbox360_XEX|MediaType"
 msgid "Xbox Live Signed Package"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1900
-msgctxt "Xbox360_XEX"
+msgctxt "Xbox360_XEX|MediaType"
 msgid "Xbox Package"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1937
-msgctxt "Xbox360_XEX"
+msgctxt "Xbox360_XEX|MediaType"
 msgid "None"
-msgstr ""
+msgstr "Nessuno"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1960
 msgctxt "Xbox360_XEX"
@@ -5056,19 +5056,19 @@ msgid "Not set"
 msgstr "Non impostato"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:808
-msgctxt "Xbox_XBE"
+msgctxt "Xbox_XBE|MediaType"
 msgid "Hard Disk"
 msgstr "Disco Rigido"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:818
-msgctxt "Xbox_XBE"
+msgctxt "Xbox_XBE|MediaType"
 msgid "Dongle"
-msgstr "Dongle"
+msgstr ""
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:819
-msgctxt "Xbox_XBE"
+msgctxt "Xbox_XBE|MediaType"
 msgid "Media Board"
-msgstr "Media Board"
+msgstr ""
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:849
 msgctxt "Xbox_XBE"
@@ -5076,7 +5076,7 @@ msgid "Media Types"
 msgstr "Tipi di media"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:850
-msgctxt "Xbox_XBE"
+msgctxt "Xbox_XBE|MediaType"
 msgid "None"
 msgstr "Nessuno"
 
