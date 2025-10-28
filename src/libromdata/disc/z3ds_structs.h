@@ -36,6 +36,30 @@ typedef struct _Z3DS_Header {
 } Z3DS_Header;
 ASSERT_STRUCT(Z3DS_Header, 32);
 
+/**
+ * Z3DS metadata: Item header.
+ * NOTE: Metadata is *not* aligned in the file.
+ *
+ * All fields are in little-endian.
+ */
+#define Z3DS_METADATA_VERSION 0x01
+#pragma pack(1)
+typedef struct RP_PACKED _Z3DS_Metadata_Item_Header {
+	uint8_t type;		// [0x000] Type (see Z3DS_Metadata_Item_Type_e)
+	uint8_t key_len;	// [0x001] Key length (UTF-8, no NUL terminator, in bytes)
+	uint16_t value_len;	// [0x002] Value length (in bytes)
+} Z3DS_Metadata_Item_Header;
+ASSERT_STRUCT(Z3DS_Metadata_Item_Header, 4);
+#pragma pack()
+
+/**
+ * Z3DS metadata: Types
+ */
+typedef enum {
+	Z3DS_METADATA_ITEM_TYPE_END	= 0x00,	// End of metadata items
+	Z3DS_METADATA_ITEM_TYPE_BINARY	= 0x01,	// Generic binary data
+} Z3DS_Metadata_Item_Type_e;
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

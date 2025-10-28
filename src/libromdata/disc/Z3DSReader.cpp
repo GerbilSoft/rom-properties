@@ -16,6 +16,14 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 
+// C++ STL classes
+using std::pair;
+using std::string;
+using std::vector;
+
+// Uninitialized vector class
+#include "uvector.h"
+
 // zstd seekable format
 #include <zstd.h>
 #include "zstd_seekable.h"
@@ -167,7 +175,9 @@ Z3DSReaderPrivate::~Z3DSReaderPrivate()
 Z3DSReader::Z3DSReader(const IRpFilePtr &file)
 	: super(file)
 	, d_ptr(new Z3DSReaderPrivate(this))
-{}
+{
+	getZ3DSMetaData();
+}
 
 Z3DSReader::~Z3DSReader()
 {
@@ -306,6 +316,90 @@ off64_t Z3DSReader::size(void)
 		return -1;
 	}
 	return d->z3ds_header.uncompressed_size;
+}
+
+	/** Z3DSReader-specific functions **/
+
+/**
+ * Get the metadata.
+ * @return Metadata, or empty vector if not present or an error occurred.
+ */
+vector<pair<string, std::vector<uint8_t>>> Z3DSReader::getZ3DSMetaData(void)
+{
+	static constexpr unsigned int Z3DS_MAX_METADATA_SIZE = 128U * 1024U;;
+	RP_D(Z3DSReader);
+	if (!d->seekable || d->z3ds_header.metadata_size < 2 || d->z3ds_header.metadata_size > Z3DS_MAX_METADATA_SIZE) {
+		return {};
+	}
+
+	// Load the metadata.
+	rp::uvector<uint8_t> metaData;
+	metaData.resize(d->z3ds_header.metadata_size);
+	size_t size = m_file->seekAndRead(sizeof(d->z3ds_header), metaData.data(), d->z3ds_header.metadata_size);
+	if (size != d->z3ds_header.metadata_size) {
+		// Seek and/or read error.
+		return {};
+	}
+
+	const uint8_t *p = metaData.data();
+	const uint8_t *const pEnd = p + metaData.size();
+
+	// Check the metadata version.
+	if (*p++ != Z3DS_METADATA_VERSION) {
+		// Incorrect metadata version.
+		return {};
+	}
+
+	// Process metadata items until we hit one of type TYPE_END.
+	// NOTE: Reserving 5 elements, since that's what Azahar usually writes.
+	vector<pair<string, vector<uint8_t>>> items;
+	items.reserve(5);
+	while ((p + sizeof(Z3DS_Metadata_Item_Header)) < pEnd) {
+		const Z3DS_Metadata_Item_Header *const header =
+			reinterpret_cast<const Z3DS_Metadata_Item_Header*>(p);
+		if (header->type == Z3DS_METADATA_ITEM_TYPE_END) {
+			// End of metadata.
+			// NOTE: Metadata block should be 16-byte aligned.
+			break;
+		}
+		p += sizeof(Z3DS_Metadata_Item_Header);
+
+		// Check key and value length.
+		const unsigned int key_len = header->key_len;
+		const unsigned int value_len = le16_to_cpu(header->value_len);
+		if ((p + key_len + value_len) > pEnd) {
+			// Out of bounds.
+			// TODO: Return an error?
+			break;
+		}
+
+		assert(header->type == Z3DS_METADATA_ITEM_TYPE_BINARY);
+		if (header->type != Z3DS_METADATA_ITEM_TYPE_BINARY) {
+			// Only Z3DS_METADATA_ITEM_TYPE_BINARY is defined...
+			// Skip this item.
+			p += key_len;
+			p += value_len;
+			continue;
+		}
+
+		// Get the item key.
+		string key(reinterpret_cast<const char*>(p), key_len);
+		p += key_len;
+
+		// Get the item value.
+		// NOTE: Adding a NUL terminator byte for strings.
+		vector<uint8_t> value(p, p + value_len);
+		value.push_back(0);
+
+		// NOTE: Using an std::vector, not an std::unordered_map,
+		// in order to preserve ordering.
+
+		// Emplace the value.
+		items.emplace_back(std::make_pair(std::move(key), std::move(value)));
+		p += value_len;
+	}
+
+	return items;
 }
 
 }

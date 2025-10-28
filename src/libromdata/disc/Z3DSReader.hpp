@@ -17,6 +17,9 @@
 // CIAReader
 #include "CIAReader.hpp"
 
+// C++ STL classes
+#include <string>
+
 namespace LibRomData {
 
 class Z3DSReaderPrivate;
@@ -93,6 +96,15 @@ public:
 	 * @return Data size, or -1 on error.
 	 */
 	off64_t size(void) final;
+
+public:
+	/** Z3DSReader-specific functions **/
+
+	/**
+	 * Get the metadata.
+	 * @return Metadata, or empty map if not present or an error occurred.
+	 */
+	std::vector<std::pair<std::string, std::vector<uint8_t>>> getZ3DSMetaData(void);
 };
 
 typedef std::shared_ptr<Z3DSReader> Z3DSReaderPtr;

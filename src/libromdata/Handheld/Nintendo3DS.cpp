@@ -2319,11 +2319,11 @@ int Nintendo3DS::loadFieldData(void)
 		// TODO: Add more fields?
 		d->fields.addTab("ExHeader");
 
-		// Process name.
+		// Process name
 		d->fields.addField_string(C_("Nintendo3DS", "Process Name"),
 			latin1_to_utf8(ncch_exheader->sci.title, sizeof(ncch_exheader->sci.title)));
 
-		// Application type. (resource limit category)
+		// Application type (resource limit category)
 		static constexpr char appl_type_tbl[4][16] = {
 			// tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_APPLICATION
 			NOP_C_("Nintendo3DS|ApplType", "Application"),
@@ -2345,7 +2345,7 @@ int Nintendo3DS::loadFieldData(void)
 					RomFields::STRF_WARNING);
 		}
 
-		// Flags.
+		// Flags
 		static const array<const char*, 2> exheader_flags_names = {{
 			"CompressExefsCode", "SDApplication"
 		}};
@@ -2355,7 +2355,7 @@ int Nintendo3DS::loadFieldData(void)
 
 		// TODO: Figure out what "Core Version" is.
 
-		// System Mode struct.
+		// System Mode struct
 		typedef struct _ModeTbl_t {
 			char name[7];	// Mode name.
 			uint8_t mb;	// RAM allocation, in megabytes.
@@ -2429,6 +2429,51 @@ int Nintendo3DS::loadFieldData(void)
 		// there's a lot of them.
 		d->fields.addTab(C_("Nintendo3DS", "Permissions"));
 		d->addFields_permissions();
+	}
+
+	// Is this ROM in Z3DS format?
+	Z3DSReader *const z3ds = dynamic_cast<Z3DSReader*>(d->file.get());
+	if (z3ds) {
+		// This ROM is in Z3DS format. Show Z3DS metadata if it's available.
+		auto z3ds_metaData = z3ds->getZ3DSMetaData();
+		if (!z3ds_metaData.empty()) {
+			d->fields.addTab("Z3DS");
+			for (const auto &p : z3ds_metaData) {
+				// Skip empty strings.
+				// NOTE: p.second is always NUL-terminated.
+				if (p.second.empty() || (p.second.size() == 1 && p.second[0] == '\0')) {
+					// Empty string.
+					continue;
+				}
+
+				// Special handling for certain metadata entries.
+				if (p.first == "titleinfo" || p.first == "smdh") {
+					// Binary data. Skip these.
+					continue;
+				} else if (p.first == "maxframesize") {
+					// ZSTD max frame size.
+					// FIXME: fmt::format's L parameter isn't working in Thunar or Dolphin...
+					// (Missing C/C++ locale settings? Can't change them here...)
+					char *endptr = nullptr;
+					const unsigned int maxframesize = strtoul(reinterpret_cast<const char*>(p.second.data()), &endptr, 0);
+					if (maxframesize != 0 && *endptr == '\0') {
+						d->fields.addField_string(p.first.c_str(), fmt::format(FSTR("{:Ld}"), maxframesize));
+					}
+				} else if (p.first == "date") {
+					// Date the file was compressed, in ISO date format.
+					const time_t isotime = d->iso_format_time_to_unix_time(reinterpret_cast<const char*>(p.second.data()));
+					if (isotime != -1) {
+						d->fields.addField_dateTime(p.first.c_str(), isotime,
+							RomFields::RFT_DATETIME_HAS_DATE |
+							RomFields::RFT_DATETIME_HAS_TIME |
+							RomFields::RFT_DATETIME_IS_UTC);
+					}
+				} else if (p.second.size() < 260) {
+					// TODO: Ellipsis-ize long strings?
+					d->fields.addField_string(p.first.c_str(), reinterpret_cast<const char*>(p.second.data()));
+				}
+			}
+		}
 	}
 
 	// Finished reading the field data.
