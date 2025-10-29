@@ -42,6 +42,11 @@ using std::string;
 #  include <pugixml.hpp>
 #endif /* ENABLE_XML */
 
+// zstd
+// NOTE: Version number is checked via RpPng, even though
+// libpng doesn't use zstd...
+#include <zstd.h>
+
 #if GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
@@ -785,6 +790,29 @@ rp_about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 		"<a href='https://www.gnu.org/software/gettext/'>https://www.gnu.org/software/gettext/</a>\n";
 	sLibraries += fmt::format(FRUN(sLicense), "GNU LGPL v2.1+");
 #endif /* HAVE_GETTEXT && LIBINTL_VERSION */
+
+	/** zstd **/
+#ifdef HAVE_ZSTD
+	const unsigned int zstd_version_number = RpPng::zstd_version_number();
+	const string zstdVersionUsing = fmt::format(FSTR("zstd {:d}.{:d}.{:d}"),
+		zstd_version_number / 10000,
+		(zstd_version_number / 100) % 100,
+		zstd_version_number % 100);
+
+	sLibraries += "\n\n";
+#if defined(USE_INTERNAL_PNG) && !defined(USE_INTERNAL_ZLIB_DLL)
+	sLibraries += fmt::format(FRUN(sIntCopyOf), zstdVersionUsing);
+#else
+	sLibraries += fmt::format(FRUN(sCompiledWith), ZSTD_VERSION_STRING);
+	sLibraries += "\n";
+	sLibraries += fmt::format(FRUN(sUsingDll), zstdVersionUsing);
+#endif
+
+	sLibraries += "\n"
+		"Copyright (c) Meta Platforms, Inc. and affiliates.\n"
+		"All rights reserved.\n";
+	sLibraries += fmt::format(FRUN(sLicenses), "BSD (3-clause), GNU GPL v2");
+#endif /* HAVE_ZSTD */
 
 	// We're done building the string.
 	gtk_label_set_markup(lblLibraries, sLibraries.c_str());

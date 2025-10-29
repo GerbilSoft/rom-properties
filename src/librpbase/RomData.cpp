@@ -368,7 +368,7 @@ time_t RomDataPrivate::bcd_to_unix_time(const uint8_t *bcd_tm, size_t size)
 }
 
 /**
- * Convert an ISO PVD timestamp to UNIX time.
+ * Convert an ISO-9660 PVD timestamp to UNIX time.
  * @param pvd_time PVD timestamp (16-char buffer)
  * @param tz_offset PVD timezone offset
  * @return UNIX time, or -1 if invalid or not set.
@@ -400,8 +400,8 @@ time_t RomDataPrivate::pvd_time_to_unix_time(const char pvd_time[16], int8_t tz_
 	buf[16] = '\0';
 
 	struct tm pvdtime;
-	int csec;
-	char chr;
+	int csec = 0;
+	char chr = 0;
 	int ret = sscanf(buf, "%04d%02d%02d%02d%02d%02d%02d%c",
 		&pvdtime.tm_year, &pvdtime.tm_mon, &pvdtime.tm_mday,
 		&pvdtime.tm_hour, &pvdtime.tm_min, &pvdtime.tm_sec, &csec,
@@ -427,8 +427,9 @@ time_t RomDataPrivate::pvd_time_to_unix_time(const char pvd_time[16], int8_t tz_
 
 	// If conversion fails, this will return -1.
 	time_t unixtime = timegm(&pvdtime);
-	if (unixtime == -1)
+	if (unixtime == -1) {
 		return -1;
+	}
 
 	// Convert to UTC using the timezone offset.
 	// NOTE: Timezone offset is negative for west of GMT,
@@ -439,6 +440,41 @@ time_t RomDataPrivate::pvd_time_to_unix_time(const char pvd_time[16], int8_t tz_
 		unixtime -= (static_cast<time_t>(tz_offset) * (15*60));
 	}
 	return unixtime;
+}
+
+/**
+ * Convert an ISO format datestamp to Unix time.
+ * Example: "2025-10-26T15:27:41Z"
+ * @param iso_date ISO date
+ * @return Unix time, or -1 if invalid or not set.
+ */
+time_t RomDataPrivate::iso_format_time_to_unix_time(const char *iso_date)
+{
+	assert(iso_date != nullptr);
+	if (!iso_date)
+		return -1;
+
+	struct tm isotime;
+	char chr_t = 0, chr_z = 0;
+	int ret = sscanf(iso_date, "%04d-%02d-%02d%c%02d:%02d:%02d%c",
+		&isotime.tm_year, &isotime.tm_mon, &isotime.tm_mday, &chr_t,
+		&isotime.tm_hour, &isotime.tm_min, &isotime.tm_sec, &chr_z);
+	if (ret != 8 || chr_t != 'T' || chr_z != 'Z') {
+		// Some argument wasn't parsed correctly.
+		return -1;
+	}
+
+	// Adjust values for struct tm.
+	isotime.tm_year -= 1900;	// year - 1900
+	isotime.tm_mon--;		// 0 == January
+
+	// tm_wday and tm_yday are output variables.
+	isotime.tm_wday = 0;
+	isotime.tm_yday = 0;
+	isotime.tm_isdst = 0;
+
+	// If conversion fails, this will return -1.
+	return timegm(&isotime);
 }
 
 /** Functions for RomData subclasses that handle directories **/

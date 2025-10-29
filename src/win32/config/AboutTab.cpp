@@ -73,6 +73,11 @@ static constexpr int MAX_TABS = 3;
 #  include <pugixml.hpp>
 #endif
 
+// zstd
+// NOTE: Version number is checked via RpPng, even though
+// libpng doesn't use zstd...
+#include <zstd.h>
+
 // Useful RTF strings.
 #define RTF_START "{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033\n"
 #define RTF_BR "\\par\n"
@@ -1241,6 +1246,29 @@ void AboutTabPrivate::initLibrariesTab(void)
 		"https://www.gnu.org/software/gettext/" RTF_BR;
 	sLibraries += fmt::format(FRUN(sLicense), "GNU LGPL v2.1+");
 #endif /* HAVE_GETTEXT && LIBINTL_VERSION */
+
+	/** zstd **/
+#ifdef HAVE_ZSTD
+	const unsigned int zstd_version_number = RpPng::zstd_version_number();
+	const string zstdVersionUsing = fmt::format(FSTR("zstd {:d}.{:d}.{:d}"),
+		zstd_version_number / 10000,
+		(zstd_version_number / 100) % 100,
+		zstd_version_number % 100);
+
+	sLibraries += RTF_BR RTF_BR;
+#if defined(USE_INTERNAL_PNG) && !defined(USE_INTERNAL_ZLIB_DLL)
+	sLibraries += fmt::format(FRUN(sIntCopyOf), zstdVersionUsing);
+#else
+	sLibraries += fmt::format(FRUN(sCompiledWith), ZSTD_VERSION_STRING);
+	sLibraries += RTF_BR;
+	sLibraries += fmt::format(FRUN(sUsingDll), zstdVersionUsing);
+#endif
+
+	sLibraries += RTF_BR
+		"Copyright (c) Meta Platforms, Inc. and affiliates." RTF_BR
+		"All rights reserved." RTF_BR;
+	sLibraries += fmt::format(FRUN(sLicenses), "BSD (3-clause), GNU GPL v2");
+#endif /* HAVE_ZSTD */
 
 	sLibraries += '}';
 

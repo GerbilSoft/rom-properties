@@ -14,6 +14,9 @@
 #include "Nintendo3DS_p.hpp"
 #include "n3ds_structs.h"
 
+#include "../disc/Z3DSReader.hpp"
+#include "../disc/z3ds_structs.h"
+
 // Other rom-properties libraries
 #include "librpbase/config/Config.hpp"
 #include "librpbase/crypto/Hash.hpp"
@@ -47,7 +50,7 @@ ROMDATA_IMPL_IMG_SIZES(Nintendo3DS)
 /** Nintendo3DSPrivate **/
 
 /* RomDataInfo */
-const array<const char*, 10+1> Nintendo3DSPrivate::exts = {{
+const array<const char*, 17+1> Nintendo3DSPrivate::exts = {{
 	".3dsx",	// Homebrew application.
 	".3ds",		// ROM image (NOTE: Conflicts with 3DS Max.)
 	".3dz",		// ROM image (with private header for Gateway 3DS)
@@ -58,6 +61,19 @@ const array<const char*, 10+1> Nintendo3DSPrivate::exts = {{
 	".cxi",		// CTR Executable Image (NCCH)
 	".cfa",		// CTR File Archive (NCCH)
 	".csu",		// CTR System Update (CCI)
+
+	// Z3DS versions
+	// NOTE: Copy of the above list, with extensions not used by Azahar commented out.
+	".z3dsx",	// Homebrew application.
+	".z3ds",	// ROM image (NOTE: Conflicts with 3DS Max.)
+	".z3dz",	// ROM image (with private header for Gateway 3DS)
+	".zcci",	// ROM image
+	".zcia",	// CTR importable archive
+	//".zncch",	// NCCH file
+	//".zapp",	// NCCH file (NOTE: May conflict with others...)
+	".zcxi",	// CTR Executable Image (NCCH)
+	//".zcfa",	// CTR File Archive (NCCH)
+	".zcsu",	// CTR System Update (CCI)
 
 	nullptr
 }};
@@ -1244,6 +1260,29 @@ Nintendo3DS::Nintendo3DS(const IRpFilePtr &file)
 		return;
 	}
 
+	// Check for Z3DS format first.
+	// If it's Z3DS, replace d->file with a Z3DSReader.
+	if (Z3DSReader::isDiscSupported_static(header, sizeof(header)) >= 0) {
+		// This is a Z3DS file.
+		Z3DSReaderPtr z3ds_reader = std::make_shared<Z3DSReader>(d->file);
+		if (!z3ds_reader->isOpen()) {
+			// Could not open the Z3DS file...
+			d->file.reset();
+			return;
+		}
+
+		// Replace d->file with the Z3DSReader.
+		// The Z3DSReader still maintains a reference to d->file.
+		d->file = std::move(z3ds_reader);
+
+		// Re-read the header from the compressed ROM.
+		size_t size = d->file->read(&header, sizeof(header));
+		if (size != sizeof(header)) {
+			d->file.reset();
+			return;
+		}
+	}
+
 	// Check if this ROM image is supported.
 	const char *const filename = file->filename();
 	const DetectInfo info = {
@@ -1347,12 +1386,31 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 		return static_cast<int>(Nintendo3DSPrivate::RomType::Unknown);
 	}
 
-	// Check for CIA first. CIA doesn't have an unambiguous magic number,
+	// Check for Z3DS format.
+	if (Z3DSReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
+		// This is a Z3DS file.
+		const Z3DS_Header *const z3ds_header =
+			reinterpret_cast<const Z3DS_Header*>(info->header.pData);
+		switch (be32_to_cpu(z3ds_header->underlying_magic)) {
+			default:
+			case 'NCSD':
+				// Default to CCI if nothing else matches.
+				return static_cast<int>(Nintendo3DSPrivate::RomType::CCI);
+			case '3DSX':
+				return static_cast<int>(Nintendo3DSPrivate::RomType::_3DSX);
+			case 0x43494100:	// "CIA\x00"
+				return static_cast<int>(Nintendo3DSPrivate::RomType::CIA);
+			case 'NCCH':
+				return static_cast<int>(Nintendo3DSPrivate::RomType::NCCH);
+		}
+	}
+
+	// Check for CIA format. CIA doesn't have an unambiguous magic number,
 	// so we'll use the file extension.
 	// NOTE: The header data is usually smaller than 0x2020,
 	// so only check the important contents.
 	if (info->ext && info->header.size > offsetof(N3DS_CIA_Header_t, content_index) &&
-	    !strcasecmp(info->ext, ".cia"))
+	    (!strcasecmp(info->ext, ".cia") || !strcasecmp(info->ext, ".zcia")))
 	{
 		// Verify the header parameters.
 		const N3DS_CIA_Header_t *const cia_header =
@@ -2261,11 +2319,11 @@ int Nintendo3DS::loadFieldData(void)
 		// TODO: Add more fields?
 		d->fields.addTab("ExHeader");
 
-		// Process name.
+		// Process name
 		d->fields.addField_string(C_("Nintendo3DS", "Process Name"),
 			latin1_to_utf8(ncch_exheader->sci.title, sizeof(ncch_exheader->sci.title)));
 
-		// Application type. (resource limit category)
+		// Application type (resource limit category)
 		static constexpr char appl_type_tbl[4][16] = {
 			// tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_APPLICATION
 			NOP_C_("Nintendo3DS|ApplType", "Application"),
@@ -2287,7 +2345,7 @@ int Nintendo3DS::loadFieldData(void)
 					RomFields::STRF_WARNING);
 		}
 
-		// Flags.
+		// Flags
 		static const array<const char*, 2> exheader_flags_names = {{
 			"CompressExefsCode", "SDApplication"
 		}};
@@ -2297,7 +2355,7 @@ int Nintendo3DS::loadFieldData(void)
 
 		// TODO: Figure out what "Core Version" is.
 
-		// System Mode struct.
+		// System Mode struct
 		typedef struct _ModeTbl_t {
 			char name[7];	// Mode name.
 			uint8_t mb;	// RAM allocation, in megabytes.
@@ -2371,6 +2429,51 @@ int Nintendo3DS::loadFieldData(void)
 		// there's a lot of them.
 		d->fields.addTab(C_("Nintendo3DS", "Permissions"));
 		d->addFields_permissions();
+	}
+
+	// Is this ROM in Z3DS format?
+	Z3DSReader *const z3ds = dynamic_cast<Z3DSReader*>(d->file.get());
+	if (z3ds) {
+		// This ROM is in Z3DS format. Show Z3DS metadata if it's available.
+		auto z3ds_metaData = z3ds->getZ3DSMetaData();
+		if (!z3ds_metaData.empty()) {
+			d->fields.addTab("Z3DS");
+			for (const auto &p : z3ds_metaData) {
+				// Skip empty strings.
+				// NOTE: p.second is always NUL-terminated.
+				if (p.second.empty() || (p.second.size() == 1 && p.second[0] == '\0')) {
+					// Empty string.
+					continue;
+				}
+
+				// Special handling for certain metadata entries.
+				if (p.first == "titleinfo" || p.first == "smdh") {
+					// Binary data. Skip these.
+					continue;
+				} else if (p.first == "maxframesize") {
+					// ZSTD max frame size.
+					// FIXME: fmt::format's L parameter isn't working in Thunar or Dolphin...
+					// (Missing C/C++ locale settings? Can't change them here...)
+					char *endptr = nullptr;
+					const unsigned int maxframesize = strtoul(reinterpret_cast<const char*>(p.second.data()), &endptr, 0);
+					if (maxframesize != 0 && *endptr == '\0') {
+						d->fields.addField_string(p.first.c_str(), fmt::format(FSTR("{:Ld}"), maxframesize));
+					}
+				} else if (p.first == "date") {
+					// Date the file was compressed, in ISO date format.
+					const time_t isotime = d->iso_format_time_to_unix_time(reinterpret_cast<const char*>(p.second.data()));
+					if (isotime != -1) {
+						d->fields.addField_dateTime(p.first.c_str(), isotime,
+							RomFields::RFT_DATETIME_HAS_DATE |
+							RomFields::RFT_DATETIME_HAS_TIME |
+							RomFields::RFT_DATETIME_IS_UTC);
+					}
+				} else if (p.second.size() < 260) {
+					// TODO: Ellipsis-ize long strings?
+					d->fields.addField_string(p.first.c_str(), reinterpret_cast<const char*>(p.second.data()));
+				}
+			}
+		}
 	}
 
 	// Finished reading the field data.

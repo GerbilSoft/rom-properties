@@ -52,6 +52,7 @@ static LONG WINAPI DelayLoad_filter_##fn(DWORD exceptioncode) { \
  * Creates a test function named DelayLoad_test_##fn, which should
  * be called prior to using the DLL.
  * @param fn Function name. Must take 0 arguments.
+ * @return 0 on success; negative POSIX error code on error.
  */
 #define DELAYLOAD_TEST_FUNCTION_IMPL0(fn) \
 DELAYLOAD_FILTER_FUNCTION_IMPL(fn) \
@@ -69,11 +70,12 @@ static int DelayLoad_test_##fn(void) { \
 }
 
 /**
- * DELAYLOAD_TEST_FUNCTION_IMPL2(): Implementation of the DelayLoad test function.
+ * DELAYLOAD_TEST_FUNCTION_IMPL1(): Implementation of the DelayLoad test function.
  * Creates a test function named DelayLoad_test_##fn, which should
  * be called prior to using the DLL.
  * @param fn Function name. Must take 1 argument.
  * @param arg0
+ * @return 0 on success; negative POSIX error code on error.
  */
 #define DELAYLOAD_TEST_FUNCTION_IMPL1(fn, arg0) \
 DELAYLOAD_FILTER_FUNCTION_IMPL(fn) \
@@ -97,6 +99,7 @@ static int DelayLoad_test_##fn(void) { \
  * @param fn Function name. Must take 2 arguments.
  * @param arg0
  * @param arg1
+ * @return 0 on success; negative POSIX error code on error.
  */
 #define DELAYLOAD_TEST_FUNCTION_IMPL2(fn, arg0, arg1) \
 DELAYLOAD_FILTER_FUNCTION_IMPL(fn) \

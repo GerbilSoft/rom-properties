@@ -165,12 +165,20 @@ public:
 	static time_t bcd_to_unix_time(const uint8_t *bcd_tm, size_t size);
 
 	/**
-	 * Convert an ISO PVD timestamp to UNIX time.
+	 * Convert an ISO-9660 PVD timestamp to Unix time.
 	 * @param pvd_time PVD timestamp (16-char buffer)
 	 * @param tz_offset PVD timezone offset
-	 * @return UNIX time, or -1 if invalid or not set.
+	 * @return Unix time, or -1 if invalid or not set.
 	 */
 	static time_t pvd_time_to_unix_time(const char pvd_time[16], int8_t tz_offset);
+
+	/**
+	 * Convert an ISO format datestamp to Unix time.
+	 * Example: "2025-10-26T15:27:41Z"
+	 * @param iso_date ISO date
+	 * @return Unix time, or -1 if invalid or not set.
+	 */
+	static time_t iso_format_time_to_unix_time(const char *iso_date);
 
 	/** Functions for RomData subclasses that handle directories **/
 

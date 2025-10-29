@@ -740,8 +740,12 @@
     <generic-icon name="application-x-executable"/>
     <alias type="application/x-ctr-3dsx"/>
     <glob pattern="*.3dsx"/>
+    <glob pattern="*.z3dsx"/>
     <magic priority="50">
       <match value="3DSX" type="string" offset="0"/>
+      <match value="Z3DS" type="string" offset="0">
+        <match value="3DSX" type="string" offset="4"/>
+      </match>
     </magic>
   </mime-type>
   <mime-type type="application/x-nintendo-3ds-rom">
@@ -755,9 +759,16 @@
     <glob pattern="*.3dz"/>
     <glob pattern="*.cci"/>
     <glob pattern="*.csu"/>
+    <glob pattern="*.z3ds"/>
+    <glob pattern="*.z3dz"/>
+    <glob pattern="*.zcci"/>
+    <glob pattern="*.zcsu"/>
     <magic priority="50">
       <match value="NCSD" type="string" offset="256">
         <match value="\x00\x00\x00\x00\x00\x00\x00\x00" type="string" offset="272"/>
+      </match>
+      <match value="Z3DS" type="string" offset="0">
+        <match value="NCSD" type="string" offset="4"/>
       </match>
     </magic>
   </mime-type>
@@ -780,6 +791,12 @@
     <generic-icon name="package-x-generic"/>
     <alias type="application/x-ctr-cia"/>
     <glob pattern="*.cia"/>
+    <glob pattern="*.zcia"/>
+    <magic priority="50">
+      <match value="Z3DS" type="string" offset="0">
+        <match value="CIA\x00" type="string" offset="4"/>
+      </match>
+    </magic>
   </mime-type>
   <mime-type type="application/x-nintendo-3ds-ncch">
     <comment>Nintendo 3DS NCCH container</comment>
@@ -788,6 +805,9 @@
     <glob pattern="*.ncch"/>
     <magic priority="50">
       <match value="NCCH" type="string" offset="256"/>
+      <match value="Z3DS" type="string" offset="0">
+        <match value="NCCH" type="string" offset="4"/>
+      </match>
     </magic>
   </mime-type>
   <mime-type type="application/x-nintendo-3ds-cxi">
@@ -799,6 +819,12 @@
     <!-- NOTE: CXI is a specific type of NCCH. -->
     <alias type="application/x-ctr-cxi"/>
     <glob pattern="*.cxi"/>
+    <glob pattern="*.zcxi"/>
+    <magic priority="60">
+      <match value="Z3DS" type="string" offset="0">
+        <match value="NCCH" type="string" offset="4"/>
+      </match>
+    </magic>
   </mime-type>
 
   <!-- Nintendo3DS_SMDH -->

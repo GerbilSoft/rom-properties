@@ -174,4 +174,12 @@ uint32_t libpng_version_number(void);
 RP_LIBROMDATA_PUBLIC
 const char *libpng_copyright_string(void);
 
+/**
+ * Get the zstd version number.
+ * NOTE: libpng doesn't use zstd...
+ * @return zstd version number [ZSTD_versionNumber()]
+ */
+RP_LIBROMDATA_PUBLIC
+unsigned int zstd_version_number(void);
+
 } }
