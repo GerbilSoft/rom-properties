@@ -48,6 +48,8 @@
 * Bug fixes:
   * Fix detection of small TGAs (under 64 bytes), e.g. some of the TGAs used by
     Steam for its user interface.
+  * Fix a crash that could occur with certain corrupted NASOS disc images,
+    and possibly other sparse disc formats.
 
 ## v2.6 (released 2025/09/13)
 

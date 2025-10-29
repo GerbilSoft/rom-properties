@@ -66,7 +66,7 @@ size_t SparseDiscReader::read(void *ptr, size_t size)
 	if (!m_file || d->disc_size <= 0 || d->pos < 0 || d->block_size == 0) {
 		// Disc image wasn't initialized properly.
 		m_lastError = EBADF;
-		return -1;
+		return 0;
 	}
 
 	uint8_t *ptr8 = static_cast<uint8_t*>(ptr);
