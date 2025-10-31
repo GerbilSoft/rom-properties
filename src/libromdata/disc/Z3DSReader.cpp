@@ -175,9 +175,7 @@ Z3DSReaderPrivate::~Z3DSReaderPrivate()
 Z3DSReader::Z3DSReader(const IRpFilePtr &file)
 	: super(file)
 	, d_ptr(new Z3DSReaderPrivate(this))
-{
-	getZ3DSMetaData();
-}
+{}
 
 Z3DSReader::~Z3DSReader()
 {
