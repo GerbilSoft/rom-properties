@@ -55,6 +55,8 @@
     Steam for its user interface.
   * Fix a crash that could occur with certain corrupted NASOS disc images,
     and possibly other sparse disc formats.
+  * ImageDecoder_ETC1: Fix a crash that could occur with a specially-corrupted
+    GodotSTEX v3 ETC2_RG11 texture.
 
 ## v2.6 (released 2025/09/13)
 

@@ -613,22 +613,22 @@ static void decodeBlock_ETC_RGB(array<uint32_t, 4*4> &tileBuf, const etc1_block 
 rp_image_ptr fromETC1(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
-	// Verify parameters.
-	assert(img_buf != nullptr);
-	assert(width > 0);
-	assert(height > 0);
-	assert(img_siz >= (static_cast<size_t>(width) * static_cast<size_t>(height) / 2));
-	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) / 2))
-	{
-		return nullptr;
-	}
-
 	// ETC1 uses 4x4 tiles, but some container formats allow
 	// the last tile to be cut off, so round up for the
 	// physical tile size.
 	const int physWidth = ALIGN_BYTES(4, width);
 	const int physHeight = ALIGN_BYTES(4, height);
+
+	// Verify parameters.
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight) / 2));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight) / 2))
+	{
+		return nullptr;
+	}
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
@@ -679,22 +679,22 @@ rp_image_ptr fromETC1(int width, int height,
 rp_image_ptr fromETC2_RGB(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
-	// Verify parameters.
-	assert(img_buf != nullptr);
-	assert(width > 0);
-	assert(height > 0);
-	assert(img_siz >= (static_cast<size_t>(width) * static_cast<size_t>(height) / 2));
-	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) / 2))
-	{
-		return nullptr;
-	}
-
 	// ETC2 uses 4x4 tiles, but some container formats allow
 	// the last tile to be cut off, so round up for the
 	// physical tile size.
 	const int physWidth = ALIGN_BYTES(4, width);
 	const int physHeight = ALIGN_BYTES(4, height);
+
+	// Verify parameters.
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight) / 2));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight) / 2))
+	{
+		return nullptr;
+	}
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
@@ -788,22 +788,22 @@ static void decodeBlock_EAC(array<uint32_t, 4*4> &tileBuf, const etc2_alpha *alp
 rp_image_ptr fromETC2_RGBA(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
-	// Verify parameters.
-	assert(img_buf != nullptr);
-	assert(width > 0);
-	assert(height > 0);
-	assert(img_siz >= (static_cast<size_t>(width) * static_cast<size_t>(height)));
-	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height)))
-	{
-		return nullptr;
-	}
-
 	// ETC2 uses 4x4 tiles, but some container formats allow
 	// the last tile to be cut off, so round up for the
 	// physical tile size.
 	const int physWidth = ALIGN_BYTES(4, width);
 	const int physHeight = ALIGN_BYTES(4, height);
+
+	// Verify parameters.
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight)));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight)))
+	{
+		return nullptr;
+	}
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
@@ -858,22 +858,22 @@ rp_image_ptr fromETC2_RGBA(int width, int height,
 rp_image_ptr fromETC2_RGB_A1(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
-	// Verify parameters.
-	assert(img_buf != nullptr);
-	assert(width > 0);
-	assert(height > 0);
-	assert(img_siz >= (static_cast<size_t>(width) * static_cast<size_t>(height) / 2));
-	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) / 2))
-	{
-		return nullptr;
-	}
-
 	// ETC2 uses 4x4 tiles, but some container formats allow
 	// the last tile to be cut off, so round up for the
 	// physical tile size.
 	const int physWidth = ALIGN_BYTES(4, width);
 	const int physHeight = ALIGN_BYTES(4, height);
+
+	// Verify parameters.
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight) / 2));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight) / 2))
+	{
+		return nullptr;
+	}
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
@@ -924,22 +924,22 @@ rp_image_ptr fromETC2_RGB_A1(int width, int height,
 rp_image_ptr fromEAC_R11(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
-	// Verify parameters.
-	assert(img_buf != nullptr);
-	assert(width > 0);
-	assert(height > 0);
-	assert(img_siz >= (static_cast<size_t>(width) * static_cast<size_t>(height) / 2));
-	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) / 2))
-	{
-		return nullptr;
-	}
-
 	// ETC2 uses 4x4 tiles, but some container formats allow
 	// the last tile to be cut off, so round up for the
 	// physical tile size.
 	const int physWidth = ALIGN_BYTES(4, width);
 	const int physHeight = ALIGN_BYTES(4, height);
+
+	// Verify parameters.
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight) / 2));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight) / 2))
+	{
+		return nullptr;
+	}
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
@@ -994,22 +994,22 @@ rp_image_ptr fromEAC_R11(int width, int height,
 rp_image_ptr fromEAC_RG11(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
-	// Verify parameters.
-	assert(img_buf != nullptr);
-	assert(width > 0);
-	assert(height > 0);
-	assert(img_siz >= (static_cast<size_t>(width) * static_cast<size_t>(height)));
-	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height)))
-	{
-		return nullptr;
-	}
-
 	// ETC2 uses 4x4 tiles, but some container formats allow
 	// the last tile to be cut off, so round up for the
 	// physical tile size.
 	const int physWidth = ALIGN_BYTES(4, width);
 	const int physHeight = ALIGN_BYTES(4, height);
+
+	// Verify parameters.
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight)));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight)))
+	{
+		return nullptr;
+	}
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
