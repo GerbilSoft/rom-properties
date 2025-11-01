@@ -11,6 +11,9 @@
 // FORCEINLINE
 #include "force_inline.h"
 
+// Alignment macros
+#include "alignment_macros.h"
+
 #ifdef __cplusplus
 #  include <cstddef>
 #else
@@ -126,36 +129,6 @@ public: \
 // NOTE: gcc only defines restrict in C, not C++,
 // so use __restrict on both gcc and MSVC.
 #define RESTRICT __restrict
-
-/**
- * Alignment macro.
- * @param a	Alignment value.
- * @param x	Byte count to align.
- */
-// FIXME: No __typeof__ in MSVC's C mode...
-#if defined(_MSC_VER) && !defined(__cplusplus)
-#  define ALIGN_BYTES(a, x)	(((x)+((a)-1)) & ~((uint64_t)((a)-1)))
-#else
-#  define ALIGN_BYTES(a, x)	(((x)+((a)-1)) & ~((__typeof__(x))((a)-1)))
-#endif
-
-/**
- * Alignment assertion macro.
- */
-#define ASSERT_ALIGNMENT(a, ptr)	assert(reinterpret_cast<uintptr_t>(ptr) % (a) == 0);
-
-/**
- * Aligned variable macro.
- * @param a Alignment value.
- * @param decl Variable declaration.
- */
-#if defined(__GNUC__)
-#  define ALIGNED_VAR(a, decl)	decl __attribute__((aligned(a)))
-#elif defined(_MSC_VER)
-#  define ALIGNED_VAR(a, decl)	__declspec(align(a)) decl
-#else
-#  error No aligned variable macro for this compiler.
-#endif
 
 // printf()-style function attribute.
 #ifndef ATTR_PRINTF

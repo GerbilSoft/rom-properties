@@ -33,14 +33,8 @@
 
 #include <errno.h>
 
-// Alignment for statically-allocated data.
-#if defined(_MSC_VER)
-#  define ALIGN_ATTR(x) __declspec(align(x))
-#elif defined(__GNUC__)
-#  define ALIGN_ATTR(x) __attribute__((aligned(x)))
-#else
-#  error Missing ALIGN_ATTR() implementation for this compiler.
-#endif
+// Alignment macros
+#include "alignment_macros.h"
 
 #if defined(HAVE_MSVC_ALIGNED_MALLOC)
 
@@ -49,7 +43,7 @@
 
 static FORCEINLINE void *aligned_malloc(size_t alignment, size_t size)
 {
-	return _aligned_malloc(size, alignment);
+	return _aligned_malloc(ALIGN_BYTES(alignment, size), alignment);
 }
 
 static FORCEINLINE void aligned_free(void *memptr)
@@ -65,7 +59,7 @@ static FORCEINLINE void aligned_free(void *memptr)
 
 static FORCEINLINE void *aligned_malloc(size_t alignment, size_t size)
 {
-	return aligned_alloc(alignment, size);
+	return aligned_alloc(alignment, ALIGN_BYTES(alignment, size));
 }
 
 static FORCEINLINE void aligned_free(void *memptr)
@@ -81,7 +75,7 @@ static FORCEINLINE void aligned_free(void *memptr)
 static FORCEINLINE void *aligned_malloc(size_t alignment, size_t size)
 {
 	void *ptr;
-	const int ret = posix_memalign(&ptr, alignment, size);
+	const int ret = posix_memalign(&ptr, alignment, ALIGN_BYTES(alignment, size));
 	if (ret != 0) {
 		// posix_memalign() returns errno instead of setting it.
 		errno = ret;
@@ -102,7 +96,7 @@ static FORCEINLINE void aligned_free(void *memptr)
 
 static FORCEINLINE void *aligned_malloc(size_t alignment, size_t size)
 {
-	return memalign(alignment, size);
+	return memalign(alignment, ALIGN_BYTES(alignment, size));
 }
 
 static FORCEINLINE void aligned_free(void *memptr)
