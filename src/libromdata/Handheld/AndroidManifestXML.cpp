@@ -238,6 +238,13 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 			// (ResXMLTree_attrExt and ResXMLTree_attribute structs)
 			assert(pAttrExt->attributeStart == cpu_to_le16(sizeof(ResXMLTree_attrExt)));
 			assert(pAttrExt->attributeSize  == cpu_to_le16(sizeof(ResXMLTree_attribute)));
+			if (pAttrExt->attributeStart != cpu_to_le16(sizeof(ResXMLTree_attrExt)) ||
+			    pAttrExt->attributeSize  != cpu_to_le16(sizeof(ResXMLTree_attribute)))
+			{
+				// Incorrect attribute start and/or size.
+				// TODO: Report an error?
+				break;
+			}
 
 			// Create the tag.
 			xml_node xmlTag = cur_node.append_child(XMLSTR(xmlStringPool.getString(le32_to_cpu(pAttrExt->name.index))));

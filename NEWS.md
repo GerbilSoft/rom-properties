@@ -57,6 +57,8 @@
     and possibly other sparse disc formats.
   * ImageDecoder_ETC1: Fix a crash that could occur with a specially-corrupted
     GodotSTEX v3 ETC2_RG11 texture.
+  * AndroidManifestXML: Fix a crash that could occur with a specially-corrupted
+    binary XML file with incorrect attribute start/size values.
 
 ## v2.6 (released 2025/09/13)
 
