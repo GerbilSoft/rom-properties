@@ -863,6 +863,11 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 		}
 	}
 
+	if (!img) {
+		// No icon...
+		return {};
+	}
+
 	// Apply the icon mask.
 	rp_image::sBIT_t sBIT;
 	img->get_sBIT(&sBIT);

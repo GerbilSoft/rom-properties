@@ -60,6 +60,7 @@
   * AndroidManifestXML: Fix a crash that could occur with a specially-corrupted
     binary XML file with incorrect attribute start/size values.
   * EXE: Fix a crash that could occur with a specially-corrupted PE import table.
+  * ICO: Fix a crash that could occur with invalid icons.
 
 ## v2.6 (released 2025/09/13)
 
