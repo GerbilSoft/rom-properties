@@ -1069,10 +1069,11 @@ int EXEPrivate::addFields_PE_Import(void)
 	// Iterator for import entries
 	const uint32_t *ilt_buf = reinterpret_cast<const uint32_t*>(dll_ilt_data.get());
 	const uint32_t *ilt_end;
-	if (is64)
+	if (is64) {
 		ilt_end = ilt_buf + dll_ilt_read/8*2;
-	else
+	} else {
 		ilt_end = ilt_buf + dll_ilt_read/4;
+	}
 	struct IltIterator {
 		unsigned dir_index; // next DLL to read
 		const uint32_t *ilt; // next ilt entry to read
@@ -1095,14 +1096,20 @@ int EXEPrivate::addFields_PE_Import(void)
 		auto &value = it.value;
 		while (ilt >= ilt_end) {
 			// read next directory entry
-			if (dir_index == peImportDir.size())
+			if (dir_index == peImportDir.size()) {
 				return false;
+			}
 			ilt = &ilt_buf[(le32_to_cpu(peImportDir[dir_index].rvaImportLookupTable) - dll_ilt_base)/4];
+			if (ilt >= ilt_end) {
+				// Corrupt import directory?
+				return false;
+			}
 			dllname = &peImportNames[dir_index];
 			dir_index++;
 			// check for NULL entry
-			if (!ilt[0] && (!is64 || !ilt[1]))
+			if (!ilt[0] && (!is64 || !ilt[1])) {
 				ilt = ilt_end;
+			}
 		}
 		// parse ILT entry
 		is_ordinal = le32_to_cpu(ilt[is64 ? 1 : 0]) & 0x80000000;
