@@ -1,13 +1,13 @@
-This copy of libfmt 12.0.0 is a modified version of the original.
+This copy of libfmt 12.1.0 is a modified version of the original.
 
-commit e424e3f2e607da02742f73db84873b8084fc714c
+commit 407c905e45ad75fc29bf0f9bb7c5c2fd3475976f
 Update version
     
-Tag: 12.0.0
+Tag: 12.1.0
 
 The following changes have been made to the original:
 
 - Removed documentation and test suites.
 
-To obtain the original libfmt-12.0.0, visit:
+To obtain the original libfmt-12.1.0, visit:
 https://github.com/fmtlib/fmt
