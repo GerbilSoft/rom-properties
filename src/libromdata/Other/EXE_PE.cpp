@@ -1100,12 +1100,12 @@ int EXEPrivate::addFields_PE_Import(void)
 				return false;
 			}
 			ilt = &ilt_buf[(le32_to_cpu(peImportDir[dir_index].rvaImportLookupTable) - dll_ilt_base)/4];
+			dir_index++;
 			if (ilt >= ilt_end) {
-				// Corrupt import directory?
-				return false;
+				// Corrupt directory entry?
+				continue;
 			}
 			dllname = &peImportNames[dir_index];
-			dir_index++;
 			// check for NULL entry
 			if (!ilt[0] && (!is64 || !ilt[1])) {
 				ilt = ilt_end;
