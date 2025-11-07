@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_DC.cpp: Image decoding functions: Dreamcast                *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -123,9 +123,9 @@ rp_image_ptr fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 	const int dest_stride_adj = (img->stride() / sizeof(uint32_t)) - img->width();
 	switch (px_format) {
-		DC_SQUARE_TWIDDLED_16(PixelFormat::ARGB1555, ARGB1555_to_ARGB32, &sBIT_1555)
-		DC_SQUARE_TWIDDLED_16(PixelFormat::RGB565,     RGB565_to_ARGB32, &sBIT_565)
-		DC_SQUARE_TWIDDLED_16(PixelFormat::ARGB4444, ARGB4444_to_ARGB32, &sBIT_4444)
+		DC_SQUARE_TWIDDLED_16(PixelFormat::ARGB1555, ARGB1555_to_ARGB32, sBIT_1555)
+		DC_SQUARE_TWIDDLED_16(PixelFormat::RGB565,     RGB565_to_ARGB32, sBIT_565)
+		DC_SQUARE_TWIDDLED_16(PixelFormat::ARGB4444, ARGB4444_to_ARGB32, sBIT_4444)
 
 		default:
 			assert(!"Invalid pixel format for this function.");
@@ -219,9 +219,9 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 
 	unique_ptr<uint32_t[]> palette(new uint32_t[pal_entry_count]);
 	switch (px_format) {
-		DC_VQ16_PALETTE(PixelFormat::ARGB1555, ARGB1555_to_ARGB32, &sBIT_1555)
-		DC_VQ16_PALETTE(PixelFormat::RGB565,     RGB565_to_ARGB32, &sBIT_565)
-		DC_VQ16_PALETTE(PixelFormat::ARGB4444, ARGB4444_to_ARGB32, &sBIT_4444)
+		DC_VQ16_PALETTE(PixelFormat::ARGB1555, ARGB1555_to_ARGB32, sBIT_1555)
+		DC_VQ16_PALETTE(PixelFormat::RGB565,     RGB565_to_ARGB32, sBIT_565)
+		DC_VQ16_PALETTE(PixelFormat::ARGB4444, ARGB4444_to_ARGB32, sBIT_4444)
 
 		default:
 			assert(!"Invalid pixel format for this function.");

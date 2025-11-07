@@ -146,7 +146,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 		}
 		// Set the sBIT metadata.
 		static const rp_image::sBIT_t sBIT_A32 = {8,8,8,0,8};
-		img->set_sBIT(&sBIT_A32);
+		img->set_sBIT(sBIT_A32);
 		return img;
 	}
 
@@ -345,7 +345,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 
 		// Set the sBIT metadata.
 		static const rp_image::sBIT_t sBIT_A32 = {8,8,8,0,8};
-		img->set_sBIT(&sBIT_A32);
+		img->set_sBIT(sBIT_A32);
 	} else {
 		// xRGB images don't have an alpha channel.
 		static const array<uint32_t, VEC_LEN_U32> or_mask_noAlpha_u32 = {{
@@ -466,10 +466,10 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 		// Set the sBIT metadata.
 		if (unlikely(px_format == PixelFormat::G16R16)) {
 			static const rp_image::sBIT_t sBIT_G16R16 = {8,8,1,0,0};
-			img->set_sBIT(&sBIT_G16R16);
+			img->set_sBIT(sBIT_G16R16);
 		} else {
 			static const rp_image::sBIT_t sBIT_x32 = {8,8,8,0,0};
-			img->set_sBIT(&sBIT_x32);
+			img->set_sBIT(sBIT_x32);
 		}
 	}
 

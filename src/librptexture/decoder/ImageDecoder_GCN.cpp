@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_GCN.cpp: Image decoding functions: GameCube                *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -91,9 +91,9 @@ rp_image_ptr fromGcn16(PixelFormat px_format,
 	static const rp_image::sBIT_t sBIT_IA8 = {8,8,8,8,8};
 
 	switch (px_format) {
-		GCN_16(PixelFormat::RGB5A3, RGB5A3_to_ARGB32, &sBIT_5A3)
-		GCN_16(PixelFormat::RGB565, RGB565_to_ARGB32, &sBIT_565)
-		GCN_16(PixelFormat::IA8,    IA8_to_ARGB32,    &sBIT_IA8)
+		GCN_16(PixelFormat::RGB5A3, RGB5A3_to_ARGB32, sBIT_5A3)
+		GCN_16(PixelFormat::RGB565, RGB565_to_ARGB32, sBIT_565)
+		GCN_16(PixelFormat::IA8,    IA8_to_ARGB32,    sBIT_IA8)
 
 		default:
 			assert(!"Invalid pixel format for this function.");
@@ -189,7 +189,7 @@ rp_image_ptr fromGcnCI8(int width, int height,
 	// We'll use 555 for RGB, and 4 for alpha.
 	// TODO: Set alpha to 0 if no translucent pixels were found.
 	static const rp_image::sBIT_t sBIT = {5,5,5,0,4};
-	img->set_sBIT(&sBIT);
+	img->set_sBIT(sBIT);
 
 	// Image has been converted.
 	return img;
@@ -267,7 +267,7 @@ rp_image_ptr fromGcnI8(int width, int height,
 	// Set the sBIT metadata.
 	// TODO: Use grayscale instead of RGB.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
-	img->set_sBIT(&sBIT);
+	img->set_sBIT(sBIT);
 
 	// Image has been converted.
 	return img;

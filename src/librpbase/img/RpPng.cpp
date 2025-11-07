@@ -234,7 +234,7 @@ static rp_image_ptr loadPng(png_structp png_ptr, png_infop info_ptr)
 
 	bool has_sBIT = false;
 	png_color_8p png_sBIT = nullptr;
-	png_color_8 png_sBIT_fake;	// if sBIT isn't found
+	rp_image::sBIT_t png_sBIT_fake;	// if sBIT isn't found
 
 #ifdef PNG_SETJMP_SUPPORTED
 	// WARNING: Do NOT initialize any C++ objects past this point!
@@ -273,7 +273,7 @@ static rp_image_ptr loadPng(png_structp png_ptr, png_infop info_ptr)
 
 #ifdef PNG_sBIT_SUPPORTED
 	// Read the sBIT chunk.
-	// TODO: Fake sBIT if the PNG doesn't have one?
+	// A fake sBIT chunk will be created if one doesn't exist.
 	has_sBIT = (png_get_sBIT(png_ptr, info_ptr, &png_sBIT) == PNG_INFO_sBIT);
 	assert(has_sBIT == (png_sBIT != nullptr));
 	if (!png_sBIT) {
@@ -451,10 +451,10 @@ static rp_image_ptr loadPng(png_structp png_ptr, png_infop info_ptr)
 	// Set the sBIT metadata.
 	// NOTE: rp_image::sBIT_t has the same format as png_color_8.
 	if (has_sBIT) {
-		img->set_sBIT(reinterpret_cast<const rp_image::sBIT_t*>(png_sBIT));
+		img->set_sBIT(*reinterpret_cast<const rp_image::sBIT_t*>(png_sBIT));
 	} else {
 		// Use the fake sBIT.
-		img->set_sBIT(reinterpret_cast<const rp_image::sBIT_t*>(&png_sBIT_fake));
+		img->set_sBIT(png_sBIT_fake);
 	}
 #endif /* PNG_sBIT_SUPPORTED */
 

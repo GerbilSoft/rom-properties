@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_GCN.cpp: Image decoding functions: Nintendo 3DS            *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -86,7 +86,7 @@ rp_image_ptr fromN3DSTiledRGB565(int width, int height,
 
 	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
-	img->set_sBIT(&sBIT);
+	img->set_sBIT(sBIT);
 
 	// Image has been converted.
 	return img;
@@ -159,7 +159,7 @@ rp_image_ptr fromN3DSTiledRGB565_A4(int width, int height,
 
 	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {5,6,5,0,4};
-	img->set_sBIT(&sBIT);
+	img->set_sBIT(sBIT);
 
 	// Image has been converted.
 	return img;

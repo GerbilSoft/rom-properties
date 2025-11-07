@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_C64.cpp: Image decoding functions: Commodore 64            *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -67,7 +67,7 @@ rp_image_ptr fromC64_MultiColor_Sprite(
 	// Set the sBIT metadata.
 	// TODO: Use grayscale instead of RGB.
 	static const rp_image::sBIT_t sBIT = {2,2,2,0,0};
-	img->set_sBIT(&sBIT);
+	img->set_sBIT(sBIT);
 
 	// Image has been converted.
 	return img;

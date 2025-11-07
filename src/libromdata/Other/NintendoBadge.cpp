@@ -322,7 +322,7 @@ rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 
 	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {5,6,5,0,4};
-	img->set_sBIT(&sBIT);
+	img->set_sBIT(sBIT);
 
 	img_badges[idx] = img;
 	return img;

@@ -3,7 +3,7 @@
  * ImageDecoder_Linear.cpp: Image decoding functions: Linear               *
  * Standard version. (C++ code only)                                       *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -92,7 +92,7 @@ rp_image_ptr fromLinearMono(int width, int height,
 	// NOTE: Setting the grayscale value, though we're
 	// not saving grayscale PNGs at the moment.
 	static const rp_image::sBIT_t sBIT = {1,1,1,1,0};
-	img->set_sBIT(&sBIT);
+	img->set_sBIT(sBIT);
 
 	// Image has been converted.
 	return img;
@@ -180,7 +180,7 @@ rp_image_ptr fromLinearGray2bpp(int width, int height,
 	// NOTE: Setting the grayscale value, though we're
 	// not saving grayscale PNGs at the moment.
 	static const rp_image::sBIT_t sBIT = {2,2,2,2,0};
-	img->set_sBIT(&sBIT);
+	img->set_sBIT(sBIT);
 
 	// Image has been converted.
 	return img;
@@ -285,7 +285,7 @@ rp_image_ptr fromLinearMono_WinIcon(int width, int height,
 	// not saving grayscale PNGs at the moment.
 	// TODO: Don't set alpha if the icon mask doesn't have any set bits?
 	static const rp_image::sBIT_t sBIT = {1,1,1,1,1};
-	img->set_sBIT(&sBIT);
+	img->set_sBIT(sBIT);
 
 	// Image has been converted.
 	return img;

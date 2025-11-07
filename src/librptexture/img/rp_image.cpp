@@ -523,26 +523,22 @@ const char *rp_image::getFormatName(Format format)
 	return format_names[(int)format];
 }
 
-/** Metadata. **/
+/** Metadata **/
 
 /**
  * Set the number of significant bits per channel.
- * @param sBIT	[in] sBIT_t struct.
+ * @param sBIT	[in] sBIT_t struct
  */
-void rp_image::set_sBIT(const sBIT_t *sBIT)
+void rp_image::set_sBIT(sBIT_t sBIT)
 {
 	RP_D(rp_image);
-	if (sBIT) {
-		d->sBIT = *sBIT;
-		d->has_sBIT = true;
-	} else {
-		d->has_sBIT = false;
-	}
+	d->sBIT = sBIT;
+	d->has_sBIT = true;
 }
 
 /**
  * Get the number of significant bits per channel.
- * @param sBIT	[out,opt] sBIT_t struct.
+ * @param sBIT	[out,opt] sBIT_t struct
  * @return 0 on success; non-zero if not set or error.
  */
 int rp_image::get_sBIT(sBIT_t *sBIT) const

@@ -913,7 +913,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 		// Update the sBIT metadata.
 		if (sBIT.alpha == 0) {
 			sBIT.alpha = 1;
-			img->set_sBIT(&sBIT);
+			img->set_sBIT(sBIT);
 		}
 	} else {
 		// CI8 needs to be converted to ARGB32.
@@ -967,7 +967,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 		// Update the sBIT metadata.
 		if (sBIT.alpha == 0) {
 			sBIT.alpha = 1;
-			img->set_sBIT(&sBIT);
+			img->set_sBIT(sBIT);
 		}
 	}
 

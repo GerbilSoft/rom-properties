@@ -587,7 +587,7 @@ rp_image_ptr load(IRpFile *file)
 		// Set the sBIT metadata.
 		// TODO: 10-bit/12-bit JPEGs?
 		static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
-		img->set_sBIT(&sBIT);
+		img->set_sBIT(sBIT);
 	} else {
 		// Grayscale image, or RGB image with libjpeg-turbo's JCS_EXT_BGRA.
 		// Decompress directly to the rp_image.
@@ -607,10 +607,10 @@ rp_image_ptr load(IRpFile *file)
 			// NOTE: Setting the grayscale value, though we're
 			// not saving grayscale PNGs at the moment.
 			static const rp_image::sBIT_t sBIT = {8,8,8,8,0};
-			img->set_sBIT(&sBIT);
+			img->set_sBIT(sBIT);
 		} else {
 			static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
-			img->set_sBIT(&sBIT);
+			img->set_sBIT(sBIT);
 		}
 	}
 

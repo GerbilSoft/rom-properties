@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_S3TC.cpp: Image decoding functions: S3TC                   *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -266,7 +266,7 @@ rp_image_ptr fromDXT1_GCN(int width, int height,
 
 	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,1};
-	img->set_sBIT(&sBIT);
+	img->set_sBIT(sBIT);
 
 	// Image has been converted.
 	return img;
@@ -343,7 +343,7 @@ static rp_image_ptr T_fromDXT1(int width, int height,
 
 	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,1};
-	img->set_sBIT(&sBIT);
+	img->set_sBIT(sBIT);
 
 	// Image has been converted.
 	return img;
@@ -491,7 +491,7 @@ rp_image_ptr fromDXT3(int width, int height,
 
 	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,4};
-	img->set_sBIT(&sBIT);
+	img->set_sBIT(sBIT);
 
 	// Image has been converted.
 	return img;
@@ -609,7 +609,7 @@ rp_image_ptr fromDXT5(int width, int height,
 
 	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
-	img->set_sBIT(&sBIT);
+	img->set_sBIT(sBIT);
 
 	// Image has been converted.
 	return img;
@@ -699,7 +699,7 @@ rp_image_ptr fromBC4(int width, int height,
 	// NOTE: We have to set '1' for the empty Green and Blue channels,
 	// since libpng complains if it's set to '0'.
 	static const rp_image::sBIT_t sBIT = {8,1,1,0,0};
-	img->set_sBIT(&sBIT);
+	img->set_sBIT(sBIT);
 
 	// Image has been converted.
 	return img;
@@ -792,7 +792,7 @@ rp_image_ptr fromBC5(int width, int height,
 	// NOTE: We have to set '1' for the empty Blue channel,
 	// since libpng complains if it's set to '0'.
 	static const rp_image::sBIT_t sBIT = {8,8,1,0,0};
-	img->set_sBIT(&sBIT);
+	img->set_sBIT(sBIT);
 
 	// Image has been converted.
 	return img;

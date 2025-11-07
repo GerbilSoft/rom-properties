@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image_ops.cpp: Image class. (operations)                             *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -77,7 +77,7 @@ rp_image_ptr rp_image::dup(void) const
 
 	// Copy sBIT if it's set.
 	if (d->has_sBIT) {
-		img->set_sBIT(&d->sBIT);
+		img->set_sBIT(d->sBIT);
 	}
 
 	return img;
@@ -150,7 +150,7 @@ rp_image_ptr rp_image::dup_ARGB32(void) const
 
 	// Copy sBIT if it's set.
 	if (d->has_sBIT) {
-		img->set_sBIT(&d->sBIT);
+		img->set_sBIT(d->sBIT);
 	}
 
 	// Converted to ARGB32.
@@ -281,7 +281,7 @@ rp_image_ptr rp_image::squared(void) const
 
 	// Copy sBIT if it's set.
 	if (d->has_sBIT) {
-		sq_img->set_sBIT(&d->sBIT);
+		sq_img->set_sBIT(d->sBIT);
 	}
 
 	return sq_img;
@@ -496,7 +496,7 @@ rp_image_ptr rp_image::resized(int width, int height, Alignment alignment, uint3
 	// Copy sBIT if it's set.
 	// TODO: Make sure alpha is at least 1?
 	if (d->has_sBIT) {
-		img->set_sBIT(&d->sBIT);
+		img->set_sBIT(d->sBIT);
 	}
 
 	// Image resized.
@@ -686,7 +686,7 @@ rp_image_ptr rp_image::flip(FlipOp op) const
 
 	// Copy sBIT if it's set.
 	if (d->has_sBIT) {
-		flipimg->set_sBIT(&d->sBIT);
+		flipimg->set_sBIT(d->sBIT);
 	}
 
 	return flipimg;

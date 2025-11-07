@@ -267,7 +267,7 @@ class rp_image
 		static const char *getFormatName(Format format);
 
 	public:
-		/** Metadata. **/
+		/** Metadata **/
 
 		// sBIT struct.
 		// This matches libpng's.
@@ -281,13 +281,13 @@ class rp_image
 
 		/**
 		 * Set the number of significant bits per channel.
-		 * @param sBIT	[in] sBIT_t struct.
+		 * @param sBIT	[in] sBIT_t struct
 		 */
-		void set_sBIT(const sBIT_t *sBIT);
+		void set_sBIT(sBIT_t sBIT);
 
 		/**
 		 * Get the number of significant bits per channel.
-		 * @param sBIT	[out] sBIT_t struct.
+		 * @param sBIT	[out] sBIT_t struct
 		 * @return 0 on success; non-zero if not set or error.
 		 */
 		RP_LIBROMDATA_PUBLIC

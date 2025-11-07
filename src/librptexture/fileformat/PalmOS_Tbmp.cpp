@@ -451,7 +451,7 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 				// NOTE: Setting the grayscale value, though we're
 				// not saving grayscale PNGs at the moment.
 				static const rp_image::sBIT_t sBIT = {4,4,4,4,0};
-				img->set_sBIT(&sBIT);
+				img->set_sBIT(sBIT);
 			}
 			break;
 		}
@@ -541,7 +541,7 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 				if (!did_tRNS) {
 					// Remove the alpha channel from the sBIT metadata.
 					static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
-					img->set_sBIT(&sBIT);
+					img->set_sBIT(sBIT);
 				}
 			}
 			break;
