@@ -168,6 +168,7 @@ struct RomDataFns {
 	// appear at specific addresses.
 	uint32_t address;
 	uint32_t size;	// Contains magic number for fast 32-bit magic checking.
+	uint32_t magic2;
 };
 
 /**
@@ -184,13 +185,25 @@ static RomDataPtr RomData_ctor(const IRpFilePtr &file)
 	{sys::isRomSupported_static, \
 	 RomData_ctor<sys>, \
 	 sys::romDataInfo_static, \
-	 (attrs), 0, 0}
+	 (attrs), 0, 0, 0}
 
 #define GetRomDataFns_addr(sys, attrs, address, size) \
 	{sys::isRomSupported_static, \
 	 RomData_ctor<sys>, \
 	 sys::romDataInfo_static, \
-	 (attrs), (address), (size)}
+	 (attrs), (address), (size), 0}
+
+#define GetRomDataFns_magic1(sys, attrs, address, magic1) \
+	{sys::isRomSupported_static, \
+	 RomData_ctor<sys>, \
+	 sys::romDataInfo_static, \
+	 (attrs), (address), (magic1), 0}
+
+#define GetRomDataFns_magic2(sys, attrs, address, magic1, magic2) \
+	{sys::isRomSupported_static, \
+	 RomData_ctor<sys>, \
+	 sys::romDataInfo_static, \
+	 (attrs), (address), (magic1), (magic2)}
 
 #ifdef ROMDATAFACTORY_USE_FILE_EXTENSIONS
 vector<ExtInfo> vec_exts;
@@ -213,47 +226,41 @@ std::once_flag once_mimeTypes;
  * definitely have a 32-bit magic number in the header.
  * - address: Address of magic number within the header.
  * - size: 32-bit magic number.
- *
- * TODO: Add support for multiple magic numbers per class.
+ * - magic2: Second 32-bit magic number, if available.
  */
-static const array<RomDataFns, 42> romDataFns_magic = {{
+static const array<RomDataFns, 34> romDataFns_magic = {{
 	// Consoles
-	GetRomDataFns_addr(Atari7800, ATTR_HAS_METADATA, 4, 'RI78'),	// "ATARI7800"
-	GetRomDataFns_addr(GameCubeBNR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'BNR1'),
-	GetRomDataFns_addr(GameCubeBNR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'BNR2'),
-	GetRomDataFns_addr(PlayStationEXE, 0, 0, 'PS-X'),
-	GetRomDataFns_addr(SufamiTurbo, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 8, 'FC-A'),	// Less common than "BAND"
-	GetRomDataFns_addr(WiiBNR, ATTR_HAS_METADATA, 64, 'IMET'),	// common
-	GetRomDataFns_addr(WiiBNR, ATTR_HAS_METADATA, 128, 'IMET'),	// seen in some homebrew
-	GetRomDataFns_addr(WiiSettingTxt, 0, 0, 0xBBA6AC92),
-	GetRomDataFns_addr(WiiU, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES, 0, 'WUP-'),
-	GetRomDataFns_addr(WiiWIBN, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'WIBN'),
-	GetRomDataFns_addr(Xbox_XBE, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XBEH'),
-	GetRomDataFns_addr(Xbox360_XDBF, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XDBF'),
-	GetRomDataFns_addr(Xbox360_XEX, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XEX1'),
-	GetRomDataFns_addr(Xbox360_XEX, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XEX2'),
+	GetRomDataFns_magic1(Atari7800, ATTR_HAS_METADATA, 4, 'RI78'),	// "ATARI7800"
+	GetRomDataFns_magic2(GameCubeBNR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'BNR1', 'BNR2'),
+	GetRomDataFns_magic1(PlayStationEXE, 0, 0, 'PS-X'),
+	GetRomDataFns_magic1(SufamiTurbo, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 8, 'FC-A'),	// Less common than "BAND"
+	GetRomDataFns_magic1(WiiBNR, ATTR_HAS_METADATA, 64, 'IMET'),	// common
+	GetRomDataFns_magic1(WiiBNR, ATTR_HAS_METADATA, 128, 'IMET'),	// seen in some homebrew
+	GetRomDataFns_magic1(WiiSettingTxt, 0, 0, 0xBBA6AC92),
+	GetRomDataFns_magic1(WiiU, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES, 0, 'WUP-'),
+	GetRomDataFns_magic1(WiiWIBN, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'WIBN'),
+	GetRomDataFns_magic1(Xbox_XBE, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XBEH'),
+	GetRomDataFns_magic1(Xbox360_XDBF, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XDBF'),
+	GetRomDataFns_magic2(Xbox360_XEX, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XEX1', 'XEX2'),
 
 	// Handhelds
-	GetRomDataFns_addr(AndroidManifestXML, ATTR_HAS_METADATA | ATTR_HAS_DPOVERLAY, 0, 0x03000800),
-	GetRomDataFns_addr(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x104, 0xCEED6666),
-	GetRomDataFns_addr(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x304, 0xCEED6666),	// headered
-	GetRomDataFns_addr(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x104, 0x0110CEEF),	// Analogue Pocket
-	GetRomDataFns_addr(GameBoyAdvance, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x04, 0x24FFAE51),
-	GetRomDataFns_addr(Lynx, ATTR_HAS_METADATA, 0, 'LYNX'),
-	GetRomDataFns_addr(NGPC, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 12, ' SNK'),
-	GetRomDataFns_addr(Nintendo3DSFirm, ATTR_NONE, 0, 'FIRM'),
-	GetRomDataFns_addr(Nintendo3DS_SMDH, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'SMDH'),
-	GetRomDataFns_addr(Nintendo3DS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA, 0, 'Z3DS'),	// Z3DS format only!
-	GetRomDataFns_addr(NintendoDS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA, 0xC0, 0x24FFAE51),
-	GetRomDataFns_addr(NintendoDS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA, 0xC0, 0xC8604FE2),
+	GetRomDataFns_magic1(AndroidManifestXML, ATTR_HAS_METADATA | ATTR_HAS_DPOVERLAY, 0, 0x03000800),
+	GetRomDataFns_magic2(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x104, 0xCEED6666, 0x0110CEEF),
+	GetRomDataFns_magic1(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x304, 0xCEED6666),	// headered
+	GetRomDataFns_magic1(GameBoyAdvance, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x04, 0x24FFAE51),
+	GetRomDataFns_magic1(Lynx, ATTR_HAS_METADATA, 0, 'LYNX'),
+	GetRomDataFns_magic1(NGPC, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 12, ' SNK'),
+	GetRomDataFns_magic1(Nintendo3DSFirm, ATTR_NONE, 0, 'FIRM'),
+	GetRomDataFns_magic1(Nintendo3DS_SMDH, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'SMDH'),
+	GetRomDataFns_magic1(Nintendo3DS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA, 0, 'Z3DS'),	// Z3DS format only!
+	GetRomDataFns_magic2(NintendoDS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA, 0xC0, 0x24FFAE51, 0xC8604FE2),
 
 	// Audio
-	GetRomDataFns_addr(BRSTM, ATTR_HAS_METADATA, 0, 'RSTM'),
-	GetRomDataFns_addr(GBS, ATTR_HAS_METADATA, 0, 0x47425301U),	// 'GBS\x01'
-	GetRomDataFns_addr(GBS, ATTR_HAS_METADATA, 0, 0x47425246U),	// 'GBRF'
-	GetRomDataFns_addr(NSF, ATTR_HAS_METADATA, 0, 'NESM'),
-	GetRomDataFns_addr(SPC, ATTR_HAS_METADATA, 0, 'SNES'),
-	GetRomDataFns_addr(VGM, ATTR_HAS_METADATA, 0, 'Vgm '),
+	GetRomDataFns_magic1(BRSTM, ATTR_HAS_METADATA, 0, 'RSTM'),
+	GetRomDataFns_magic2(GBS, ATTR_HAS_METADATA, 0, 0x47425301U, 'GBRF'),	// 'GBS\x01', 'GBRF'
+	GetRomDataFns_magic1(NSF, ATTR_HAS_METADATA, 0, 'NESM'),
+	GetRomDataFns_magic1(SPC, ATTR_HAS_METADATA, 0, 'SNES'),
+	GetRomDataFns_magic1(VGM, ATTR_HAS_METADATA, 0, 'Vgm '),
 
 	// Other
 	GetRomDataFns_addr(ELF, ATTR_NONE, 0, 0x7F454C46),		// '\177ELF'
@@ -262,17 +269,14 @@ static const array<RomDataFns, 42> romDataFns_magic = {{
 	// Consoles: Xbox 360 STFS
 	// Moved here to prevent conflicts with the Nintendo DS ROM image
 	// "Live On Card Live-R DS".
-	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'CON '),
-	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PIRS'),
-	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'LIVE'),
+	GetRomDataFns_magic2(Xbox360_STFS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'CON ', 'PIRS'),
+	GetRomDataFns_magic1(Xbox360_STFS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'LIVE'),
 
 	// Consoles: CBMCart
 	// Moved here because they're less common.
-	GetRomDataFns_addr(CBMCart, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'C64 '),
-	GetRomDataFns_addr(CBMCart, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'C128'),
-	GetRomDataFns_addr(CBMCart, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'CBM2'),
-	GetRomDataFns_addr(CBMCart, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'VIC2'),
-	GetRomDataFns_addr(CBMCart, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PLUS'),
+	GetRomDataFns_magic2(CBMCart, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'C64 ', 'C128'),
+	GetRomDataFns_magic2(CBMCart, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'CBM2', 'VIC2'),
+	GetRomDataFns_magic1(CBMCart, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PLUS'),
 }};
 
 /**
@@ -821,7 +825,7 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 		// Check the magic number.
 		// TODO: Verify alignment restrictions.
 		const uint32_t magic = be32_to_cpu(header.u32[fns.address/4]);
-		if (magic == fns.size) {
+		if (magic == fns.size || (fns.magic2 != 0 && fns.magic2 == magic)) {
 			// Found a matching magic number.
 			if (fns.isRomSupported(&info) >= 0) {
 				RomDataPtr romData = fns.newRomData(reader);

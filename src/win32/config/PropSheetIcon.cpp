@@ -55,16 +55,33 @@ PropSheetIconPrivate::PropSheetIconPrivate()
 		LPCTSTR pszIcon;
 	};
 
-	// FIXME: constexpr isn't working here for some reason...
-	static const array<IconDllData_t, 2> iconDllData = {{
+	array<IconDllData_t, 3> iconDllData = {{
+		// empty slot reserved for SHGetStockIconInfo
+		{nullptr, nullptr},
+
 		{_T("imageres.dll"), MAKEINTRESOURCE(34)},	// Vista+
 		{_T("shell32.dll"),  MAKEINTRESOURCE(13)},
 	}};
 
+	// Try SHGetStockIconInfo first.
+	// TODO: GetProcAddress()?
+	SHSTOCKICONINFO siid;
+	siid.cbSize = sizeof(siid);
+	HRESULT hr = SHGetStockIconInfo(SIID_DRIVERAM, SHGSI_ICONLOCATION, &siid);
+	if (hr == S_OK) {
+		iconDllData[0].dll_filename = siid.szPath;
+		iconDllData[0].pszIcon = MAKEINTRESOURCE(siid.iIcon);
+	}
+
 	for (const auto &p : iconDllData) {
-		HMODULE hDll = LoadLibraryEx(p.dll_filename, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
-		if (!hDll)
+		if (!p.dll_filename) {
 			continue;
+		}
+
+		HMODULE hDll = LoadLibraryEx(p.dll_filename, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+		if (!hDll) {
+			continue;
+		}
 
 		// Check for the specified icon resource.
 		HRSRC hRes = FindResource(hDll, p.pszIcon, RT_GROUP_ICON);
