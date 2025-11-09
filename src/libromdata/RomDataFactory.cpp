@@ -139,7 +139,23 @@ using std::vector;
 #  include "librptext/wchar.hpp"
 #endif /* _WIN32 */
 
+#ifdef _MSC_VER
+// MSVC: Exception handling for /DELAYLOAD.
+#  include "libwin32common/DelayLoadHelper.h"
+#endif /* _MSC_VER */
+
 namespace LibRomData { namespace RomDataFactory {
+
+#ifdef _MSC_VER
+// DelayLoad test implementations
+#  ifdef ZLIB_IS_DLL
+DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
+#  endif /* ZLIB_IS_DLL */
+#  ifdef MINIZIP_IS_DLL
+// unzClose() can safely take nullptr; it won't do anything.
+DELAYLOAD_TEST_FUNCTION_IMPL1(unzClose, nullptr);
+#  endif /* MINIZIP_IS_DLL */
+#endif /* _MSC_VER */
 
 // Test mode: Set to `true` if running in a test suite.
 bool TestMode = false;
@@ -509,6 +525,30 @@ static RomDataPtr RomData_unzFile_ctor(const IRpFilePtr &file, unzFile unzfile)
  */
 static RomDataPtr openZipFile(const IRpFilePtr &file, unsigned int attrs)
 {
+#ifdef _MSC_VER
+	// Delay load verification.
+	// TODO: zlib/minizip checks are only needed if unzFile == nullptr?
+#  ifdef ZLIB_IS_DLL
+	// Only if zlib is a DLL.
+	if (DelayLoad_test_get_crc_table() != 0) {
+		// Delay load failed.
+		return {};
+	}
+#  else /* !ZLIB_IS_DLL */
+	// zlib isn't in a DLL, but we need to ensure that the
+	// CRC table is initialized anyway.
+	get_crc_table();
+#  endif /* ZLIB_IS_DLL */
+
+#  ifdef MINIZIP_IS_DLL
+	// Only if MiniZip is a DLL.
+	if (DelayLoad_test_unzClose() != 0) {
+		// Delay load failed.
+		return {};
+	}
+#  endif /* MINIZIP_IS_DLL */
+#endif /* _MSC_VER */
+
 	// Open the .zip file here.
 	unzFile unzfile = IRpFile_unzFile_filefuncs::unzOpen2_64_IRpFile(file);
 	if (!unzfile) {
