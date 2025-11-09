@@ -13,43 +13,7 @@
 
 namespace LibRomData {
 
-ROMDATA_DECL_BEGIN_NO_CTOR(J2ME)
-
-public:
-	/**
-	 * Read a J2ME .jar or .jad file.
-	 *
-	 * A ROM file must be opened by the caller. The file handle
-	 * will be ref()'d and must be kept open in order to load
-	 * data from the ROM.
-	 *
-	 * To close the file, either delete this object or call close().
-	 *
-	 * NOTE: Check isValid() to determine if this is a valid ROM.
-	 *
-	 * @param file Open ROM file.
-	 */
-	J2ME(const LibRpFile::IRpFilePtr &file)
-		: J2ME(file, nullptr)
-	{}
-
-	/**
-	 * Read a J2ME .jar or .jad file.
-	 *
-	 * A ROM file must be opened by the caller. The file handle
-	 * will be ref()'d and must be kept open in order to load
-	 * data from the ROM.
-	 *
-	 * To close the file, either delete this object or call close().
-	 *
-	 * NOTE: Check isValid() to determine if this is a valid ROM.
-	 *
-	 * @param file Open ROM file.
-	 * @param jarFile .jar file opened with MiniZip. (this object takes ownership)
-	 */
-	J2ME(const LibRpFile::IRpFilePtr &file, unzFile jarFile);
-
-ROMDATA_DECL_COMMON_FNS()
+ROMDATA_DECL_BEGIN_UNZFILE(J2ME)
 ROMDATA_DECL_CLOSE()
 ROMDATA_DECL_METADATA()
 ROMDATA_DECL_IMGSUPPORT()

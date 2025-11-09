@@ -634,11 +634,11 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
  *
  * NOTE: Check isValid() to determine if this is a valid ROM.
  *
- * @param file Open ROM file.
- * @param jarFile .jar file opened with MiniZip. (this object takes ownership)
+ * @param file Open ROM file
+ * @param unzfile .zip file opened with MiniZip. (this object takes ownership)
  */
-J2ME::J2ME(const IRpFilePtr &file, unzFile jarFile)
-	: super(new J2MEPrivate(file, jarFile))
+J2ME::J2ME(const IRpFilePtr &file, unzFile unzfile)
+	: super(new J2MEPrivate(file, unzfile))
 {
 	RP_D(J2ME);
 

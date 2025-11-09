@@ -474,11 +474,11 @@ rp_image_const_ptr AndroidAPKPrivate::loadIcon(void)
  *
  * NOTE: Check isValid() to determine if this is a valid ROM.
  *
- * @param file Open ROM file.
- * @param apkFile .apk file opened with MiniZip. (this object takes ownership)
+ * @param file Open ROM file
+ * @param unzfile .zip file opened with MiniZip. (this object takes ownership)
  */
-AndroidAPK::AndroidAPK(const IRpFilePtr &file, unzFile apkFile)
-	: super(new AndroidAPKPrivate(file, apkFile))
+AndroidAPK::AndroidAPK(const IRpFilePtr &file, unzFile unzfile)
+	: super(new AndroidAPKPrivate(file, unzfile))
 {
 	// This class handles application packages.
 	RP_D(AndroidAPK);
