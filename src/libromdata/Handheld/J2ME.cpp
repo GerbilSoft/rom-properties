@@ -56,7 +56,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL1(unzClose, nullptr);
 class J2MEPrivate final : public RomDataPrivate
 {
 public:
-	explicit J2MEPrivate(const IRpFilePtr &file);
+	explicit J2MEPrivate(const IRpFilePtr &file, unzFile jarFile);
 	~J2MEPrivate() override;
 
 private:
@@ -223,10 +223,10 @@ const array<const char*, static_cast<size_t>(J2MEPrivate::manifest_tag_t::Manife
 	"Digest-Algorithms",
 }};
 
-J2MEPrivate::J2MEPrivate(const IRpFilePtr &file)
+J2MEPrivate::J2MEPrivate(const IRpFilePtr &file, unzFile jarFile)
 	: super(file, &romDataInfo)
 	, jfileType(JFileType::Unknown)
-	, jarFile(nullptr)
+	, jarFile(jarFile)
 {}
 
 J2MEPrivate::~J2MEPrivate()
@@ -635,14 +635,21 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
  * NOTE: Check isValid() to determine if this is a valid ROM.
  *
  * @param file Open ROM file.
+ * @param jarFile .jar file opened with MiniZip. (this object takes ownership)
  */
-J2ME::J2ME(const IRpFilePtr &file)
-	: super(new J2MEPrivate(file))
+J2ME::J2ME(const IRpFilePtr &file, unzFile jarFile)
+	: super(new J2MEPrivate(file, jarFile))
 {
 	RP_D(J2ME);
 
 	if (!d->file) {
 		// Could not ref() the file handle.
+		// NOTE: Delay-Load handling is *not* needed here because
+		// if apkFile is not nullptr, MiniZip was already used.
+		if (d->jarFile) {
+			unzClose(d->jarFile);
+			d->jarFile = nullptr;
+		}
 		return;
 	}
 
@@ -668,6 +675,10 @@ J2ME::J2ME(const IRpFilePtr &file)
 	d->isValid = (static_cast<int>(d->jfileType) >= 0);
 
 	if (!d->isValid) {
+		if (d->jarFile) {
+			unzClose(d->jarFile);
+			d->jarFile = nullptr;
+		}
 		d->file.reset();
 		return;
 	}
@@ -677,12 +688,17 @@ J2ME::J2ME(const IRpFilePtr &file)
 			// Not supported.
 			assert(!"Unsupported J2ME file type.");
 			d->isValid = false;
+			if (d->jarFile) {
+				unzClose(d->jarFile);
+				d->jarFile = nullptr;
+			}
 			d->file.reset();
 			return;
 
 		case J2MEPrivate::JFileType::JAR:
 #ifdef _MSC_VER
 			// Delay load verification.
+			// TODO: zlib/minizip checks are only needed if unzFile == nullptr?
 #  ifdef ZLIB_IS_DLL
 			// Only if zlib is a DLL.
 			if (DelayLoad_test_get_crc_table() != 0) {
@@ -710,13 +726,15 @@ J2ME::J2ME(const IRpFilePtr &file)
 #  endif /* MINIZIP_IS_DLL */
 #endif /* _MSC_VER */
 
-			// Attempt to open as a .zip file first.
-			d->jarFile = IRpFile_unzFile_filefuncs::unzOpen2_64_IRpFile(d->file);
+			// Attempt to open as a .zip file first. (only if jarFile is nullptr)
 			if (!d->jarFile) {
-				// Cannot open as a .zip file.
-				d->isValid = false;
-				d->file.reset();
-				return;
+				d->jarFile = IRpFile_unzFile_filefuncs::unzOpen2_64_IRpFile(d->file);
+				if (!d->jarFile) {
+					// Cannot open as a .zip file.
+					d->isValid = false;
+					d->file.reset();
+					return;
+				}
 			}
 
 			// Load MANIFEST.MF.
@@ -734,6 +752,12 @@ J2ME::J2ME(const IRpFilePtr &file)
 			break;
 
 		case J2MEPrivate::JFileType::JAD:
+			// No unzFile here...
+			if (d->jarFile) {
+				unzClose(d->jarFile);
+				d->jarFile = nullptr;
+			}
+
 			// Sanity check: Verify the JAD file size.
 			if (file->size() > static_cast<off64_t>(J2MEPrivate::MANIFEST_MF_FILE_SIZE_MAX)) {
 				// File is too big.
@@ -780,7 +804,6 @@ J2ME::J2ME(const IRpFilePtr &file)
 			unzClose(d->jarFile);
 			d->jarFile = nullptr;
 		}
-		d->isValid = false;
 		d->file.reset();
 		return;
 	}

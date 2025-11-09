@@ -13,6 +13,9 @@
 #include "RomDataFactory.hpp"
 #include "RomData_p.hpp"	// for RomDataInfo
 
+// for .zip files
+#include "file/IRpFile_unzFile_filefuncs.hpp"
+
 // librpbase, librpfile
 #include "librpfile/DualFile.hpp"
 #include "librpfile/RelatedFile.hpp"
@@ -173,7 +176,7 @@ struct RomDataFns {
 
 /**
  * Templated function to construct a new RomData subclass.
- * @param klass Class name.
+ * @param klass Class name
  */
 template<typename klass>
 static RomDataPtr RomData_ctor(const IRpFilePtr &file)
@@ -399,7 +402,7 @@ struct IDiscReaderFns {
 
 /**
  * Templated function to construct a new IDiscReader subclass.
- * @param klass Class name.
+ * @param klass Class name
  */
 template<typename klass>
 static IDiscReaderPtr IDiscReader_ctor(const IRpFilePtr &file)
@@ -488,10 +491,79 @@ static RomDataPtr openDreamcastVMSandVMI(const IRpFilePtr &file)
 }
 
 /**
+ * Templated function to construct a new RomData subclass with an unzFile.
+ * @param klass Class name
+ * @param unzfile unzFile
+ */
+template<typename klass>
+static RomDataPtr RomData_unzFile_ctor(const IRpFilePtr &file, unzFile unzfile)
+{
+	return std::make_shared<klass>(file, unzfile);
+}
+
+/**
+ * Attempt to open a supported Zip file.
+ * @param file	[in] IRpFilePtr
+ * @param attrs	[in] RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
+ * @return RomDataPtr, or nullptr if not supported.
+ */
+static RomDataPtr openZipFile(const IRpFilePtr &file, unsigned int attrs)
+{
+	// Open the .zip file here.
+	unzFile unzfile = IRpFile_unzFile_filefuncs::unzOpen2_64_IRpFile(file);
+	if (!unzfile) {
+		// Unable to open the .zip file...
+		return {};
+	}
+
+	// Check for the required metadata file(s).
+	// NOTE: If the required file is found, that RomData subclass will be
+	// used without checking any other readers, since the subclass will
+	// automatically take ownership of the unzFile.
+	// FIXME: Both APK and JAR use case-sensitive filenames...
+
+	typedef RomDataPtr (*pfnNewRomData_unzFile_t)(const IRpFilePtr &file, unzFile unzfile);
+	struct ZipDetectTbl_t {
+		pfnNewRomData_unzFile_t newRomData;
+		const char *filename;	// Filname to search for within the .zip file.
+		unsigned int attrs;
+	};
+#define GetRomDataFns_unzFile(sys, filename, attrs) \
+	{RomData_unzFile_ctor<sys>, (filename), (attrs)}
+
+	// TODO: Add Neo Geo ROM set detection?
+	static const array<ZipDetectTbl_t, 2> zipDetectTbl = {{
+		GetRomDataFns_unzFile(AndroidAPK, "AndroidManifest.xml", ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_HAS_DPOVERLAY),
+		GetRomDataFns_unzFile(J2ME, "META-INF/MANIFEST.MF", ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
+	}};
+
+	for (const auto &p : zipDetectTbl) {
+		if ((attrs & p.attrs) != attrs) {
+			// Incorrect attributes.
+			continue;
+		}
+
+		// Check for the file within the .zip file.
+		int ret = unzLocateFile(unzfile, p.filename, nullptr);
+		if (ret == UNZ_OK) {
+			RomDataPtr romData = p.newRomData(file, unzfile);
+			if (romData->isValid()) {
+				// RomData subclass obtained.
+				return romData;
+			}
+			// Not valid...
+			return {};
+		}
+	}
+
+	return {};
+}
+
+/**
  * Attempt to open an IDiscReader for this file.
  * @param file		[in] IRpFilePtr
  * @param magic0	[in] First 32-bit value from the file (original format from the file)
- * @return IDiscReader*, or nullptr if not applicable.
+ * @return IDiscReaderPtr, or nullptr if not applicable.
  */
 static IDiscReaderPtr openIDiscReader(const IRpFilePtr &file, uint32_t magic0)
 {
@@ -759,6 +831,13 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 		}
 	}
 
+	// Check for a .zip file. (AndroidAPK, J2ME)
+	static constexpr uint32_t zip_magic = 0x504B0304;	// 'PK\x03\x04'
+	if (header.u32[0] == cpu_to_be32(zip_magic)) {
+		// This is a .zip file.
+		return Private::openZipFile(file, attrs);
+	}
+
 	// The actual file reader we're using.
 	// If a sparse disc image format is detected, this will be
 	// a SparseDiscReader. Otherwise, it'll be the same as `file`.
@@ -776,34 +855,6 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 	} else {
 		// No SparseDiscReader. Use the original file.
 		reader = file;
-	}
-
-	// Check for a .zip file. (AndroidAPK, J2ME)
-	static constexpr uint32_t zip_magic = 0x504B0304;
-	if (header.u32[0] == cpu_to_be32(zip_magic)) {
-		// This is a .zip file. Try AndroidAPK and J2ME.
-		// TODO: Open the .zip file here, check for certain files, then
-		// pass the unzFile to the RomData subclass directly?
-
-		// AndroidAPK: .apk
-		static constexpr unsigned int AndroidAPK_attrs = ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_HAS_DPOVERLAY;
-		if ((attrs & AndroidAPK_attrs) == attrs) {
-			RomDataPtr romData = std::make_shared<AndroidAPK>(reader);
-			if (romData->isValid()) {
-				// RomData subclass obtained.
-				return romData;
-			}
-		}
-
-		// J2ME: .jar
-		static constexpr unsigned int J2ME_attrs = ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA;
-		if ((attrs & J2ME_attrs) == attrs) {
-			RomDataPtr romData = std::make_shared<J2ME>(reader);
-			if (romData->isValid()) {
-				// RomData subclass obtained.
-				return romData;
-			}
-		}
 	}
 
 	// Check RomData subclasses that take a header at 0

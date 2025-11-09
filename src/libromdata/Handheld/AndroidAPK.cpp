@@ -77,7 +77,7 @@ extern int DelayLoad_test_PugiXML(void);
 class AndroidAPKPrivate final : public RomDataPrivate
 {
 public:
-	explicit AndroidAPKPrivate(const IRpFilePtr &file);
+	explicit AndroidAPKPrivate(const IRpFilePtr &file, unzFile apkFile);
 	~AndroidAPKPrivate() override;
 
 private:
@@ -188,10 +188,10 @@ const RomDataInfo AndroidAPKPrivate::romDataInfo = {
 	"AndroidAPK", exts.data(), mimeTypes.data()
 };
 
-AndroidAPKPrivate::AndroidAPKPrivate(const IRpFilePtr &file)
+AndroidAPKPrivate::AndroidAPKPrivate(const IRpFilePtr &file, unzFile apkFile)
 	: super(file, &romDataInfo)
-	, apkFile(nullptr)
-{ }
+	, apkFile(apkFile)
+{}
 
 AndroidAPKPrivate::~AndroidAPKPrivate()
 {
@@ -464,7 +464,7 @@ rp_image_const_ptr AndroidAPKPrivate::loadIcon(void)
 /** AndroidAPK **/
 
 /**
- * Read a AndroidAPK .jar or .jad file.
+ * Read an AndroidAPK .apk file.
  *
  * A ROM file must be opened by the caller. The file handle
  * will be ref()'d and must be kept open in order to load
@@ -475,9 +475,10 @@ rp_image_const_ptr AndroidAPKPrivate::loadIcon(void)
  * NOTE: Check isValid() to determine if this is a valid ROM.
  *
  * @param file Open ROM file.
+ * @param apkFile .apk file opened with MiniZip. (this object takes ownership)
  */
-AndroidAPK::AndroidAPK(const IRpFilePtr &file)
-	: super(new AndroidAPKPrivate(file))
+AndroidAPK::AndroidAPK(const IRpFilePtr &file, unzFile apkFile)
+	: super(new AndroidAPKPrivate(file, apkFile))
 {
 	// This class handles application packages.
 	RP_D(AndroidAPK);
@@ -486,11 +487,18 @@ AndroidAPK::AndroidAPK(const IRpFilePtr &file)
 
 	if (!d->file) {
 		// Could not ref() the file handle.
+		// NOTE: Delay-Load handling is *not* needed here because
+		// if apkFile is not nullptr, MiniZip was already used.
+		if (d->apkFile) {
+			unzClose(d->apkFile);
+			d->apkFile = nullptr;
+		}
 		return;
 	}
 
 #ifdef _MSC_VER
 	// Delay load verification.
+	// TODO: zlib/minizip checks are only needed if unzFile == nullptr?
 #  ifdef ZLIB_IS_DLL
 	// Only if zlib is a DLL.
 	if (DelayLoad_test_get_crc_table() != 0) {
@@ -522,6 +530,10 @@ AndroidAPK::AndroidAPK(const IRpFilePtr &file)
 	if (ret_dl != 0) {
 		// Delay load failed.
 		d->isValid = false;
+		if (d->apkFile) {
+			unzClose(d->apkFile);
+			d->apkFile = nullptr;
+		}
 		d->file.reset();
 		return;
 	}
@@ -536,6 +548,10 @@ AndroidAPK::AndroidAPK(const IRpFilePtr &file)
 	size_t size = d->file->read(header, sizeof(header));
 	if (size < 32) {
 		d->file.reset();
+		if (d->apkFile) {
+			unzClose(d->apkFile);
+			d->apkFile = nullptr;
+		}
 		return;
 	}
 
@@ -549,23 +565,33 @@ AndroidAPK::AndroidAPK(const IRpFilePtr &file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
+		if (d->apkFile) {
+			unzClose(d->apkFile);
+			d->apkFile = nullptr;
+		}
 		d->file.reset();
 		return;
 	}
 
-	// Attempt to open as a .zip file.
-	d->apkFile = IRpFile_unzFile_filefuncs::unzOpen2_64_IRpFile(d->file);
+	// Attempt to open as a .zip file. (only if apkFile is nullptr)
 	if (!d->apkFile) {
-		// Cannot open as a .zip file.
-		d->isValid = false;
-		d->file.reset();
-		return;
+		d->apkFile = IRpFile_unzFile_filefuncs::unzOpen2_64_IRpFile(d->file);
+		if (!d->apkFile) {
+			// Cannot open as a .zip file.
+			d->isValid = false;
+			d->file.reset();
+			return;
+		}
 	}
 
 	// Attempt to load AndroidManifest.xml.
 	if (d->loadAndroidManifestXml() != 0) {
 		// Failed to load AndroidManifest.xml.
 		d->isValid = false;
+		if (d->apkFile) {
+			unzClose(d->apkFile);
+			d->apkFile = nullptr;
+		}
 		d->file.reset();
 		return;
 	}
