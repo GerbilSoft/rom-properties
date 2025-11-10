@@ -569,6 +569,10 @@ int AndroidResourceReaderPrivate::loadResourceAsrc(const uint8_t *pArsc, size_t 
 		const ResChunk_header *const pHdr = reinterpret_cast<const ResChunk_header*>(p);
 
 		const uint32_t pHdr_size = le32_to_cpu(pHdr->size);
+		if (p + pHdr_size > pEnd) {
+			// Out of range??? (Probably corrupted...)
+			break;
+		}
 		switch (le16_to_cpu(pHdr->type)) {
 			case RES_STRING_POOL_TYPE:
 				// Only processing the first string pool.
