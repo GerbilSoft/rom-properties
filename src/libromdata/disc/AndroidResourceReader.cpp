@@ -838,12 +838,12 @@ string AndroidResourceReader::findIconHighestDensity(uint32_t resource_id) const
 	assert(!d->responseMap_i18n.empty());
 	if (d->responseMap_i18n.empty()) {
 		// No resources.
-		return nullptr;
+		return {};
 	}
 
 	auto iter = d->responseMap_i18n.find(resource_id);
 	if (iter == d->responseMap_i18n.end()) {
-		return nullptr;
+		return {};
 	}
 	const auto &lcmap = iter->second;
 
