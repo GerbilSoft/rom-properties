@@ -53,14 +53,12 @@
 * Bug fixes:
   * Fix detection of small TGAs (under 64 bytes), e.g. some of the TGAs used by
     Steam for its user interface.
-  * Fix a crash that could occur with certain corrupted NASOS disc images,
-    and possibly other sparse disc formats.
-  * ImageDecoder_ETC1: Fix a crash that could occur with a specially-corrupted
-    GodotSTEX v3 ETC2_RG11 texture.
-  * AndroidManifestXML: Fix a crash that could occur with a specially-corrupted
-    binary XML file with incorrect attribute start/size values.
-  * EXE: Fix a crash that could occur with a specially-corrupted PE import table.
-  * ICO: Fix a crash that could occur with invalid icons.
+  * Fix crashes that could occur with specially-corrupted files:
+    * NASOS disc images
+    * GodotSTEX v3 ETC2_RG11
+    * EXE (corrupted PE import tables)
+    * ICO (invalid icons)
+    * DAX (compressed data size larger than the block size)
 
 ## v2.6 (released 2025/09/13)
 
