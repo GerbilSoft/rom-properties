@@ -712,8 +712,9 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 	// Get the physical address first.
 	const uint32_t indexEntry = d->indexEntries[blockIdx];
 	uint32_t z_block_size = d->getBlockCompressedSize(blockIdx);
-	if (z_block_size == 0) {
-		// Unable to get the block's compressed size...
+	if (z_block_size == 0 || z_block_size > d->blockCache.size()) {
+		// Unable to get the block's compressed size,
+		// or the compressed size is "too big"...
 		m_lastError = EIO;
 		return 0;
 	}
