@@ -58,7 +58,7 @@
     * GodotSTEX v3 ETC2_RG11
     * EXE (corrupted PE import tables)
     * ICO (invalid icons)
-    * DAX (compressed data size larger than the block size)
+    * CisoPspReader (compressed data size larger than the block size)
 
 ## v2.6 (released 2025/09/13)
 
