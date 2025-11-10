@@ -479,8 +479,16 @@ int AndroidResourceReaderPrivate::processPackage(const uint8_t *data, size_t siz
 
 	// Package string pools
 	const ResStringPool_header *const pTypeStrings = reinterpret_cast<const ResStringPool_header*>(data + pPackage_typeStrings);
+	if (pPackage_typeStrings > size) {
+		// Out of range...
+		return -EIO;
+	}
 	typeStringPool = AndroidResourceReader::StringPoolAccessor(reinterpret_cast<const uint8_t*>(pTypeStrings), size - pPackage_typeStrings);
 	const ResStringPool_header *const pKeyStrings = reinterpret_cast<const ResStringPool_header*>(data + pPackage_keyStrings);
+	if (pPackage_keyStrings > size) {
+		// Out of range...
+		return -EIO;
+	}
 	keyStringPool = AndroidResourceReader::StringPoolAccessor(reinterpret_cast<const uint8_t*>(pKeyStrings), size - pPackage_keyStrings);
 
 	// Iterate through chunks
