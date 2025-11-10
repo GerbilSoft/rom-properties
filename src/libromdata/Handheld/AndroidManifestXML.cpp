@@ -190,8 +190,14 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 			// Found the first XML tag.
  			break;
  		}
+
 		// Skip this chunk.
-		p += le32_to_cpu(pHdr->size);
+		const size_t chunk_size = le32_to_cpu(pHdr->size);
+		assert(pHdr->size >= sizeof(ResChunk_header));
+		if (pHdr->size < sizeof(ResChunk_header)) {
+			// Corrupted chunk?
+			return nullptr;
+		}
 	}
 	assert(p < pEnd);
 	if (p >= pEnd) {
@@ -224,8 +230,9 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 
 		// Make sure this node doesn't go out of bounds.
 		const uint32_t node_size = le32_to_cpu(node->header.size);
+		assert(node_size >= sizeof(ResXMLTree_node));
 		assert(p + node_size <= pEnd);
-		if (p + node_size > pEnd) {
+		if (node_size < sizeof(ResXMLTree_node) || p + node_size > pEnd) {
 			break;
 		}
 
