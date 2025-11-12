@@ -1096,12 +1096,12 @@ int EXEPrivate::addFields_PE_Import(void)
 		auto &value = it.value;
 		while (ilt >= ilt_end) {
 			// read next directory entry
-			if (dir_index == peImportDir.size()) {
+			if (dir_index >= peImportDir.size()) {
 				return false;
 			}
 			ilt = &ilt_buf[(le32_to_cpu(peImportDir[dir_index].rvaImportLookupTable) - dll_ilt_base)/4];
 			dir_index++;
-			if (ilt >= ilt_end) {
+			if (ilt >= ilt_end || dir_index >= peImportDir.size()) {
 				// Corrupt directory entry?
 				continue;
 			}
