@@ -1139,7 +1139,7 @@ rp_image_ptr SegaPVRPrivate::svr_unswizzle_16(const rp_image_const_ptr &img_swz)
 	if (!img_swz || !img_swz->isValid() ||
 	    img_swz->format() != rp_image::Format::ARGB32)
 	{
-		return nullptr;
+		return {};
 	}
 
 	const int width = img_swz->width();
@@ -1150,13 +1150,13 @@ rp_image_ptr SegaPVRPrivate::svr_unswizzle_16(const rp_image_const_ptr &img_swz)
 	assert(height % 4 == 0);
 	if (width % 4 != 0 || height % 4 != 0) {
 		// Unable to unswizzle this texture.
-		return nullptr;
+		return {};
 	}
 
 	rp_image_ptr img = std::make_shared<rp_image>(width, height, img_swz->format());
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 
 	// Strides must be equal to the image width.
@@ -1165,10 +1165,11 @@ rp_image_ptr SegaPVRPrivate::svr_unswizzle_16(const rp_image_const_ptr &img_swz)
 	if (img_swz->stride() / static_cast<int>(sizeof(uint32_t)) != width ||
 	    img->stride() / static_cast<int>(sizeof(uint32_t)) != width)
 	{
-		return nullptr;
+		return {};
 	}
 
-	const uint32_t *src_pixels = static_cast<const uint32_t*>(img_swz->bits());
+	const uint32_t *const src_pixels = static_cast<const uint32_t*>(img_swz->bits());
+	const int max_pixel_count = static_cast<int>(img_swz->data_len() / sizeof(uint32_t));
 	for (int y = 0; y < height; y++) {
 		const bool oddRow = (y & 1);
 		const int num1 = (y / 4) & 1;
@@ -1193,8 +1194,16 @@ rp_image_ptr SegaPVRPrivate::svr_unswizzle_16(const rp_image_const_ptr &img_swz)
 			const int num6 = ((x / 16) * 32);
 
 			const int xx = x + num1 * tileMatrix[num2];
+			assert(xx < width);
+			if (xx >= width) {
+				return {};
+			}
 
 			const int i = interlaceMatrix[num4] + num5 + num6 + num7;
+			assert(i < max_pixel_count);
+			if (i >= max_pixel_count) {
+				return {};
+			}
 
 			destLine[xx] = src_pixels[i];
 		}
