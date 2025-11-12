@@ -59,6 +59,7 @@
     * EXE (corrupted PE import tables)
     * ICO (invalid icons)
     * CisoPspReader (compressed data size larger than the block size)
+    * SegaPVR (SVR unswizzling)
 
 ## v2.6 (released 2025/09/13)
 
