@@ -1180,7 +1180,12 @@ int EXEPrivate::addFields_PE_Import(void)
 			row.emplace_back(ent+2);
 			row.push_back(fmt::to_string(hint));
 		}
-		row.push_back(*(it.dllname));
+		if (it.dllname) {
+			row.push_back(*(it.dllname));
+		} else {
+			// No DLL name?
+			row.push_back(string());
+		}
 	}
 
 	// Sort the list data by (module, name, hint).
