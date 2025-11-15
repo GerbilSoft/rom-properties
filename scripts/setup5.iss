@@ -133,7 +133,7 @@ end;
   #else
     #define do_regserver ""
   #endif
-  Source: "..\pkg_windows\build.{#file_arch}\bin\Release\{#FileName}"; DestDir: "{app}\{#MyAppVersion}\{#file_arch}"; Components: main; Flags: ignoreversion uninsrestartdelete {#file_bits} {#do_regserver}
+  Source: "..\pkg_windows\build.{#file_arch}\bin\Release\{#FileName}"; DestDir: "{app}\{#file_arch}"; Components: main; Flags: ignoreversion uninsrestartdelete {#file_bits} {#do_regserver}
 #endsub
 #sub BuildFileList_i386
   #define FindResult
@@ -151,7 +151,7 @@ end;
   #else
     #define do_regserver ""
   #endif
-  Source: "..\pkg_windows\build.{#file_arch}\bin\Release\{#FileName}"; DestDir: "{app}\{#MyAppVersion}\{#file_arch}"; Components: main; Flags: ignoreversion uninsrestartdelete {#file_bits} {#do_regserver}; Check: {#file_check}
+  Source: "..\pkg_windows\build.{#file_arch}\bin\Release\{#FileName}"; DestDir: "{app}\{#file_arch}"; Components: main; Flags: ignoreversion uninsrestartdelete {#file_bits} {#do_regserver}; Check: {#file_check}
 #endsub
 #sub BuildFileList_amd64
   #define FindResult
@@ -163,42 +163,42 @@ end;
 #emit BuildFileList_amd64
 
 ; Install rpcli.exe and rp-config.exe in the root directory using the matching system architecture.
-Source: "..\pkg_windows\build.i386\bin\Release\rpcli.exe"; DestDir: "{app}\{#MyAppVersion}"; Components: main; Flags: ignoreversion; Check: IsX86
-Source: "..\pkg_windows\build.amd64\bin\Release\rpcli.exe"; DestDir: "{app}\{#MyAppVersion}"; Components: main; Flags: ignoreversion; Check: IsX64
+Source: "..\pkg_windows\build.i386\bin\Release\rpcli.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: IsX86
+Source: "..\pkg_windows\build.amd64\bin\Release\rpcli.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: IsX64
 
-Source: "..\pkg_windows\build.i386\bin\Release\rp-config.exe"; DestDir: "{app}\{#MyAppVersion}"; Components: main; Flags: ignoreversion; Check: IsX86
-Source: "..\pkg_windows\build.amd64\bin\Release\rp-config.exe"; DestDir: "{app}\{#MyAppVersion}"; Components: main; Flags: ignoreversion; Check: IsX64
+Source: "..\pkg_windows\build.i386\bin\Release\rp-config.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: IsX86
+Source: "..\pkg_windows\build.amd64\bin\Release\rp-config.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: IsX64
 
 ; Data files
-Source: "..\pkg_windows\build.i386\bin\amiibo-data.bin"; DestDir: "{app}\{#MyAppVersion}"; Components: main; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386\bin\amiibo-data.bin"; DestDir: "{app}"; Components: main; Flags: ignoreversion
 
 ; Property Description Schemas
-Source: "..\src\win32\res\rom-properties.propdesc"; DestDir: "{app}\{#MyAppVersion}"; Components: main; Flags: ignoreversion
+Source: "..\src\win32\res\rom-properties.propdesc"; DestDir: "{app}"; Components: main; Flags: ignoreversion
 
 ; Localization files
-Source: "..\pkg_windows\build.i386\locale\ar.gmo"; DestDir: "{app}\{#MyAppVersion}\locale\ar\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/ar; Flags: ignoreversion
-Source: "..\pkg_windows\build.i386\locale\de.gmo"; DestDir: "{app}\{#MyAppVersion}\locale\de\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/de; Flags: ignoreversion
-Source: "..\pkg_windows\build.i386\locale\es.gmo"; DestDir: "{app}\{#MyAppVersion}\locale\es\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/es; Flags: ignoreversion
-Source: "..\pkg_windows\build.i386\locale\fr.gmo"; DestDir: "{app}\{#MyAppVersion}\locale\fr\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/fr; Flags: ignoreversion
-Source: "..\pkg_windows\build.i386\locale\it.gmo"; DestDir: "{app}\{#MyAppVersion}\locale\it\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/it; Flags: ignoreversion
-Source: "..\pkg_windows\build.i386\locale\pt.gmo"; DestDir: "{app}\{#MyAppVersion}\locale\pt\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/pt; Flags: ignoreversion
-Source: "..\pkg_windows\build.i386\locale\ro.gmo"; DestDir: "{app}\{#MyAppVersion}\locale\ro\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/ro; Flags: ignoreversion
-Source: "..\pkg_windows\build.i386\locale\ru.gmo"; DestDir: "{app}\{#MyAppVersion}\locale\ru\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/ru; Flags: ignoreversion
-Source: "..\pkg_windows\build.i386\locale\uk.gmo"; DestDir: "{app}\{#MyAppVersion}\locale\uk\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/uk; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386\locale\ar.gmo"; DestDir: "{app}\locale\ar\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/ar; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386\locale\de.gmo"; DestDir: "{app}\locale\de\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/de; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386\locale\es.gmo"; DestDir: "{app}\locale\es\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/es; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386\locale\fr.gmo"; DestDir: "{app}\locale\fr\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/fr; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386\locale\it.gmo"; DestDir: "{app}\locale\it\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/it; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386\locale\pt.gmo"; DestDir: "{app}\locale\pt\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/pt; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386\locale\ro.gmo"; DestDir: "{app}\locale\ro\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/ro; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386\locale\ru.gmo"; DestDir: "{app}\locale\ru\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/ru; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386\locale\uk.gmo"; DestDir: "{app}\locale\uk\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/uk; Flags: ignoreversion
 
 ; Documentation
-Source: "..\doc\COMPILING.md"; DestDir: "{app}\{#MyAppVersion}\doc"; Components: doc; Flags: ignoreversion
-Source: "..\doc\keys.conf.example"; DestDir: "{app}\{#MyAppVersion}\doc"; Components: doc; Flags: ignoreversion
-Source: "..\doc\rom-properties.conf.example"; DestDir: "{app}\{#MyAppVersion}\doc"; Components: doc; Flags: ignoreversion
-Source: "..\README.md"; DestDir: "{app}\{#MyAppVersion}"; Components: doc; Flags: ignoreversion
-Source: "..\NEWS.md"; DestDir: "{app}\{#MyAppVersion}"; Components: doc; Flags: ignoreversion
+Source: "..\doc\COMPILING.md"; DestDir: "{app}\doc"; Components: doc; Flags: ignoreversion
+Source: "..\doc\keys.conf.example"; DestDir: "{app}\doc"; Components: doc; Flags: ignoreversion
+Source: "..\doc\rom-properties.conf.example"; DestDir: "{app}\doc"; Components: doc; Flags: ignoreversion
+Source: "..\README.md"; DestDir: "{app}"; Components: doc; Flags: ignoreversion
+Source: "..\NEWS.md"; DestDir: "{app}"; Components: doc; Flags: ignoreversion
 
 ; License (*always* installed)
-Source: "..\LICENSE"; DestDir: "{app}\{#MyAppVersion}"; Components: main; Flags: ignoreversion
+Source: "..\LICENSE"; DestDir: "{app}"; Components: main; Flags: ignoreversion
 
 
 [Icons]
-Name: "{commonprograms}\ROM Properties Page configuration"; Filename: "{app}\{#MyAppVersion}\rp-config.exe"
+Name: "{commonprograms}\ROM Properties Page configuration"; Filename: "{app}\rp-config.exe"
 
 
 ;#expr SaveToFile(AddBackslash(SourcePath) + "Preprocessed.iss")
