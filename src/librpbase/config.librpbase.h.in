@@ -93,9 +93,6 @@
 #  define ZSTD_IS_DLL 1
 #endif
 
-/* Define to 1 if WebP should be supported, using dlopen(). */
-#cmakedefine ENABLE_WEBP 1
-
 /** iconv **/
 
 /* Define to 1 if you have iconv() in either libc or libiconv. */
