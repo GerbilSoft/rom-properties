@@ -345,6 +345,11 @@ ENDIF(RP_DLL_FLAGS)
 
 INCLUDE(DirInstallPaths)
 
+# Debugging: Copy the .propdesc file to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}.
+FILE(COPY "${CMAKE_CURRENT_SOURCE_DIR}/res/rom-properties.propdesc"
+     DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+     )
+
 # NOTE: Don't install libraries.
 # That installs the import library, which isn't used
 # for shell extensions.
