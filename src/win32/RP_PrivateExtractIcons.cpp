@@ -145,6 +145,10 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 		memset(phicon, 0, sizeof(HICON) * nIcons);
 	}
 
+	// TODO: nIcons might actually be for sequential icons, not just multiple sizes.
+	// e.g. if nIconIndex == 1 and nIcons = 4, extract icons 1, 2, 3, and 4,
+	// or icon 1 with two sizes, and icon 2 with two sizes.
+	// Need to figure out if that's actually needed...
 	if (nIcons < 0 || nIcons > 2) {
 		return 0;
 	}
@@ -164,24 +168,31 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 	// NOTE: cxIcon/cyIcon are packed using MAKELONG().
 	// If two sizes are specified, and nIcons is 2, return 2 icons.
 	// Otherwise, for a single icon, only use LOWORD().
-	// TODO: Only doing one icon right now.
-	nIcons = 1;
 
 	// Icon data
-	rp::uvector<uint8_t> iconData;
+	rp::uvector<uint8_t> iconData[2];
 
 	// Try to load the file as .exe/.dll.
 	unique_ptr<EXE> exe(new EXE(file));
 	if (exe->isValid()) {
 		// Get the raw icon data.
 		uint32_t iconResID = 0;
-		iconData = exe->loadIconResourceData(nIconIndex, LOWORD(cxIcon), LOWORD(cyIcon), &iconResID);
+		iconData[0] = exe->loadIconResourceData(nIconIndex, LOWORD(cxIcon), LOWORD(cyIcon), &iconResID);
 		if (piconid) {
 			*piconid = iconResID;
 		}
-		if (iconData.size() <= sizeof(ICO_Win1_Header)) {
+		if (iconData[0].size() <= sizeof(ICO_Win1_Header)) {
 			// No icon data...
 			return 0;
+		}
+
+		// Second icon
+		if (nIcons >= 2) {
+			iconData[1] = exe->loadIconResourceData(nIconIndex, HIWORD(cxIcon), HIWORD(cyIcon));
+			if (iconData[1].size() <= sizeof(ICO_Win1_Header)) {
+				// No icon data. Ignore the second icon.
+				iconData[1].clear();
+			}
 		}
 	} else {
 		// This might be a Win1.x/2.x .ico file.
@@ -197,15 +208,15 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 		}
 
 		// Read the icon data.
-		iconData.resize(static_cast<size_t>(fileSize));
-		size_t size = file->seekAndRead(0, iconData.data(), iconData.size());
-		if (size != iconData.size()) {
+		iconData[0].resize(static_cast<size_t>(fileSize));
+		size_t size = file->seekAndRead(0, iconData[0].data(), iconData[0].size());
+		if (size != iconData[0].size()) {
 			// Seek and/or read error.
 			return 0;
 		}
 
 		// This *must* be a Win1.x/2.x icon.
-		const ICO_Win1_Header *win1 = reinterpret_cast<const ICO_Win1_Header*>(iconData.data());
+		const ICO_Win1_Header *win1 = reinterpret_cast<const ICO_Win1_Header*>(iconData[0].data());
 		if (!isWin1xIconFormatID(le16_to_cpu(win1->format))) {
 			// Not a Win1.x/2.x icon.
 			return 0;
@@ -214,10 +225,13 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 	exe.reset(nullptr);
 
 	// Check for a Win1.x/2.x icon.
-	const ICO_Win1_Header *win1 = reinterpret_cast<const ICO_Win1_Header*>(iconData.data());
+	const ICO_Win1_Header *win1 = reinterpret_cast<const ICO_Win1_Header*>(iconData[0].data());
 	const uint16_t win1_format = cpu_to_le16(win1->format);
 	if (isWin1xIconFormatID(win1_format)) {
 		// This is a Win1.x/2.x icon.
+		// TODO: Support returning 2 icons for Win1.x/2.x if it's DIB+DDB?
+		nIcons = 1;
+
 		// Create a BITMAPINFOHEADER and copy everything over.
 		// TODO: Need to flip bitmap/mask order?
 		int ico_height = le16_to_cpu(win1->height);
@@ -231,7 +245,7 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 		const uint32_t ico_height_2x = ico_height * 2;
 
 		// Validate the icon size. (not counting DIB+DDB)
-		if (iconData.size() < (sizeof(*win1) + (biSizeImage * 2))) {
+		if (iconData[0].size() < (sizeof(*win1) + (biSizeImage * 2))) {
 			// Icon data is too small...
 			return 0;
 		}
@@ -260,7 +274,7 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 		pDestPal[1] = 0x00FFFFFF;
 
 		// Flip the bitmap and mask.
-		const uint8_t *pEndSrcIco0 = &iconData[sizeof(ICO_Win1_Header) + (biSizeImage * 2)];
+		const uint8_t *pEndSrcIco0 = &iconData[0][sizeof(ICO_Win1_Header) + (biSizeImage * 2)];
 		const uint8_t *pSrc = pEndSrcIco0 - ico_stride;
 		uint8_t *pDest = &flipIcon[sizeof(*bih) + (2 * sizeof(uint32_t))];
 
@@ -268,21 +282,41 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 			memcpy(pDest, pSrc, ico_stride);
 		}
 
-		iconData = std::move(flipIcon);
+		iconData[0] = std::move(flipIcon);
 	}
 
-	// Create one icon for now.
-	// TODO: Second icon too?
+	// Create the first icon.
+	UINT ret = 0;
 	phicon[0] = CreateIconFromResourceEx(
-		iconData.data(),			// presbits
-		static_cast<DWORD>(iconData.size()),	// dwResSize
+		iconData[0].data(),			// presbits
+		static_cast<DWORD>(iconData[0].size()),	// dwResSize
 		TRUE,					// fIcon
 		0x00030000,				// dwVer
 		LOWORD(cxIcon),				// cxDesired
 		LOWORD(cyIcon),				// cyDesired
 		flags);					// Flags
+	if (!phicon[0]) {
+		// Unable to create an icon...
+		return 0;
+	}
+	ret++;
 
-	return (phicon[0]) ? 1 : 0;
+	// Create the second icon?
+	if (nIcons >= 2 && !iconData[1].empty()) {
+		phicon[1] = CreateIconFromResourceEx(
+			iconData[1].data(),			// presbits
+			static_cast<DWORD>(iconData[1].size()),	// dwResSize
+			TRUE,					// fIcon
+			0x00030000,				// dwVer
+			HIWORD(cxIcon),				// cxDesired
+			HIWORD(cyIcon),				// cyDesired
+			flags);					// Flags
+		if (phicon[1]) {
+			ret++;
+		}
+	}
+
+	return ret;
 }
 
 /**
