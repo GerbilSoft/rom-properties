@@ -35,7 +35,7 @@ VersionInfoProductTextVersion={#MyAppVersion}
 VersionInfoProductVersion={#RP_VERSION_MAJOR}.{#RP_VERSION_MINOR}.{#RP_VERSION_PATCH}.{#RP_VERSION_DEVEL}
 VersionInfoTextVersion={#MyAppVersion}
 VersionInfoVersion={#RP_VERSION_MAJOR}.{#RP_VERSION_MINOR}.{#RP_VERSION_PATCH}.{#RP_VERSION_DEVEL}
-WizardStyle=modern
+WizardStyle=modern dynamic
 
 ; Theme customization
 SetupIconFile=icons\msiexec.ico
