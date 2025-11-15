@@ -88,8 +88,8 @@ public:
 
 public:
 	/**
-	 * Get the Property Description Schema directory.
-	 * @return Property Description Schema directory
+	 * Get the Property Description Schema filename.
+	 * @return Property Description Schema filename
 	 */
-	static std::tstring GetPropertyDescriptionSchemaDirectory(void);
+	static std::tstring GetPropertyDescriptionSchemaFilename(void);
 };

@@ -295,24 +295,58 @@ public:
 #define DEF_LOAD_FUNCPTR(f) __typeof__(f) * p##f = (__typeof__(f)*)GetProcAddress(hPropsys_dll.get(), #f)
 
 /**
- * Get the Property Description Schema directory.
- * @return Property Description Schema directory
+ * Get the Property Description Schema filename.
+ * @return Property Description Schema filename
  */
-tstring RP_PropertyStore_Private::GetPropertyDescriptionSchemaDirectory(void)
+tstring RP_PropertyStore_Private::GetPropertyDescriptionSchemaFilename(void)
 {
-	// The .propdesc file will be installed in "C:\\Windows\\PropDesc\\".
-	// Normally, it's installed in "C:\\Program Files\\[program]\\", but
-	// we aren't currently installing rom-properties there.
-	TCHAR path[MAX_PATH];
-	UINT len = GetWindowsDirectory(path, _countof(path));
-	if (len == 0 || len >= (_countof(path)-1)) {
-		// Cannot fit the Windows directory into the buffer?
+	// The .propdesc file should be located in either the DLL's directory
+	// or the DLL's parent directory.
+	TCHAR szDllFilename[MAX_PATH];
+
+	SetLastError(ERROR_SUCCESS);	// required for XP
+	DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT,
+		szDllFilename, _countof(szDllFilename));
+	if (dwResult == 0 || dwResult >= _countof(szDllFilename) || GetLastError() != ERROR_SUCCESS) {
+		// Cannot get the DLL filename.
+		// TODO: Windows XP doesn't SetLastError() if the
+		// filename is too big for the buffer.
 		return {};
 	}
 
-	tstring tfilename = path;
-	tfilename += _T("\\PropDesc");
-	return tfilename;
+	// Remove the filename portion.
+	tstring tfilename = szDllFilename;
+	size_t last_bslash = tfilename.find_last_of(_T('\\'));
+	if (last_bslash == tstring::npos) {
+		// No backslash?
+		return {};
+	}
+	tfilename.resize(last_bslash);
+
+	// Check if the .propdesc file is in the current directory.
+	const size_t orig_len = tfilename.size();
+	tfilename += _T("\\rom-properties.propdesc");
+	if (GetFileAttributes(tfilename.c_str()) != INVALID_FILE_ATTRIBUTES) {
+		// Found the .propdesc file.
+		return tfilename;
+	}
+
+	// Check if the .propdesc file is in the parent directory.
+	tfilename.resize(orig_len);
+	last_bslash = tfilename.find_last_of(_T('\\'));
+	if (last_bslash == tstring::npos) {
+		// No backslash?
+		return {};
+	}
+	tfilename.resize(last_bslash);
+	tfilename += _T("\\rom-properties.propdesc");
+	if (GetFileAttributes(tfilename.c_str()) != INVALID_FILE_ATTRIBUTES) {
+		// Found the .propdesc file.
+		return tfilename;
+	}
+
+	// .propdesc file not found in either the current directory or the parent directory.
+	return {};
 }
 
 /**
@@ -339,77 +373,11 @@ LONG RP_PropertyStore::RegisterPropertyDescriptionSchema(void)
 		return ERROR_SUCCESS;
 	}
 
-	// Get the property description resource.
-	// (TODO: Localize it?)
-	HRSRC hRsrc = FindResource(HINST_THISCOMPONENT, MAKEINTRESOURCE(IDPROP_ROM_PROPERTIES_PROPDESC), MAKEINTRESOURCE(RT_PROPDESC));
-	if (!hRsrc) {
-		return GetLastError();
-	}
-	const DWORD rsrcSize = SizeofResource(HINST_THISCOMPONENT, hRsrc);
-	if (rsrcSize <= 0) {
-		return GetLastError();
-	}
-	HGLOBAL hGlobal  = LoadResource(HINST_THISCOMPONENT, hRsrc);
-	if (!hGlobal) {
-		return GetLastError();
-	}
-	const char *const rsrcData = static_cast<const char*>(LockResource(hGlobal));
-	if (!rsrcData) {
-		DWORD dwErr = GetLastError();
-		FreeResource(hGlobal);
-		return dwErr;
-	}
-
-	// Get the Windows directory.
-	const tstring tdir = RP_PropertyStore_Private::GetPropertyDescriptionSchemaDirectory();
-	if (tdir.empty()) {
-		// Assume a pathname length was out of range.
-		return ERROR_FILENAME_EXCED_RANGE;
-	}
-
-	// Make sure the Property Description Schema subdirectory exists.
-	// NOTE: Not doing a recursive mkdir().
-	BOOL bRet = CreateDirectory(tdir.c_str(), nullptr);
-	if (!bRet) {
-		// ERROR_ALREADY_EXISTS is allowed.
-		// All other errors are not.
-		DWORD dwErr = GetLastError();
-		FreeResource(hGlobal);
-		if (dwErr != ERROR_ALREADY_EXISTS) {
-			return dwErr;
-		}
-	}
-
-	// Open the .propdesc file for writing.
-	const tstring tfilename = tdir + _T("\\rom-properties.propdesc");
-	HANDLE hFile = CreateFile(
-		tfilename.c_str(),		// lpFileName
-		GENERIC_READ | GENERIC_WRITE,	// dwDesiredAccess
-		0,				// dwShareMode
-		nullptr,			// lpSecurityAttributes
-		CREATE_ALWAYS,			// dwCreationDisposition
-		FILE_ATTRIBUTE_NORMAL,		// dwFlagsAndAttributes
-		nullptr);			// hTemplateFile
-	if (!hFile || hFile == INVALID_HANDLE_VALUE) {
-		// Could not create the file?
-		DWORD dwErr = GetLastError();
-		FreeResource(hGlobal);
-		return dwErr;
-	}
-
-	// Write the data.
-	DWORD numberOfBytesWritten = 0;
-	SetLastError(0);
-	bRet = WriteFile(hFile, rsrcData, rsrcSize, &numberOfBytesWritten, nullptr);
-	CloseHandle(hFile);
-	if (!bRet || numberOfBytesWritten != rsrcSize) {
-		// Short write and/or write error?
-		DWORD dwErr = GetLastError();
-		if (dwErr == 0) {
-			dwErr = ERROR_INVALID_FUNCTION;
-		}
-		DeleteFile(tfilename.c_str());
-		return dwErr;
+	// Get the property schema filename.
+	const tstring tfilename = RP_PropertyStore_Private::GetPropertyDescriptionSchemaFilename();
+	if (tfilename.empty()) {
+		// Property schema file was not found?
+		return ERROR_FILE_NOT_FOUND;
 	}
 
 	// Register the Property Description Schema.
@@ -441,25 +409,14 @@ LONG RP_PropertyStore::UnregisterPropertyDescriptionSchema(void)
 		return ERROR_SUCCESS;
 	}
 
-	// Get the Windows directory.
-	const tstring tdir = RP_PropertyStore_Private::GetPropertyDescriptionSchemaDirectory();
-	if (tdir.empty()) {
-		// Assume a pathname length was out of range.
-		return ERROR_FILENAME_EXCED_RANGE;
+	// Get the property schema filename.
+	const tstring tfilename = RP_PropertyStore_Private::GetPropertyDescriptionSchemaFilename();
+	if (tfilename.empty()) {
+		// Property schema file was not found?
+		return ERROR_FILE_NOT_FOUND;
 	}
 
-	// Check if the .propdesc file exists.
-	const tstring tfilename = tdir + _T("\\rom-properties.propdesc");
-	if (GetFileAttributes(tfilename.c_str()) != INVALID_FILE_ATTRIBUTES) {
-		// Unregister the Property Description Schema.
-		HRESULT hr = pPSUnregisterPropertySchema(tfilename.c_str());
-		if (hr != S_OK) {
-			return ERROR_GEN_FAILURE;
-		}
-		DeleteFile(tfilename.c_str());
-	}
-
-	// Attempt to rmdir() the directory. (Ignore failures.)
-	RemoveDirectory(tdir.c_str());
-	return ERROR_SUCCESS;
+	// Unregister the Property Description Schema.
+	HRESULT hr = pPSUnregisterPropertySchema(tfilename.c_str());
+	return (hr == S_OK) ? ERROR_SUCCESS : ERROR_GEN_FAILURE;
 }
