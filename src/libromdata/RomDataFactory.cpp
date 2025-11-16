@@ -517,6 +517,21 @@ static RomDataPtr RomData_unzFile_ctor(const IRpFilePtr &file, unzFile unzfile)
 	return std::make_shared<klass>(file, unzfile);
 }
 
+typedef RomDataPtr (*pfnNewRomData_unzFile_t)(const IRpFilePtr &file, unzFile unzfile);
+struct ZipDetectTbl_t {
+	pfnNewRomData_unzFile_t newRomData;
+	pfnRomDataInfo_t romDataInfo;
+	const char *filename;	// Filname to search for within the .zip file.
+	unsigned int attrs;
+};
+#define GetRomDataFns_unzFile(sys, filename, attrs) \
+	{RomData_unzFile_ctor<sys>, sys::romDataInfo_static, (filename), (attrs)}
+
+static const array<ZipDetectTbl_t, 2> zipDetectTbl = {{
+	GetRomDataFns_unzFile(AndroidAPK,	"AndroidManifest.xml",		ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_HAS_DPOVERLAY),
+	GetRomDataFns_unzFile(J2ME,		"META-INF/MANIFEST.MF",		ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
+}};
+
 /**
  * Attempt to open a supported Zip file.
  * @param file	[in] IRpFilePtr
@@ -561,22 +576,6 @@ static RomDataPtr openZipFile(const IRpFilePtr &file, unsigned int attrs)
 	// used without checking any other readers, since the subclass will
 	// automatically take ownership of the unzFile.
 	// FIXME: Both APK and JAR use case-sensitive filenames...
-
-	typedef RomDataPtr (*pfnNewRomData_unzFile_t)(const IRpFilePtr &file, unzFile unzfile);
-	struct ZipDetectTbl_t {
-		pfnNewRomData_unzFile_t newRomData;
-		const char *filename;	// Filname to search for within the .zip file.
-		unsigned int attrs;
-	};
-#define GetRomDataFns_unzFile(sys, filename, attrs) \
-	{RomData_unzFile_ctor<sys>, (filename), (attrs)}
-
-	// TODO: Add Neo Geo ROM set detection?
-	static const array<ZipDetectTbl_t, 2> zipDetectTbl = {{
-		GetRomDataFns_unzFile(AndroidAPK, "AndroidManifest.xml", ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_HAS_DPOVERLAY),
-		GetRomDataFns_unzFile(J2ME, "META-INF/MANIFEST.MF", ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
-	}};
-
 	for (const auto &p : zipDetectTbl) {
 		if ((attrs & p.attrs) != attrs) {
 			// Incorrect attributes.
@@ -1263,7 +1262,8 @@ static void init_supportedFileExtensions(void)
 	static constexpr size_t reserve_size =
 		(romDataFns_magic.size() +
 		 romDataFns_header.size() +
-		 romDataFns_footer.size()) * 2;
+		 romDataFns_footer.size() +
+		 zipDetectTbl.size()) * 2;
 	vec_exts.reserve(reserve_size);
 #ifdef HAVE_UNORDERED_MAP_RESERVE
 	map_exts.reserve(reserve_size);
@@ -1273,8 +1273,9 @@ static void init_supportedFileExtensions(void)
 		const RomDataFns *fns = tblptr.tbl;
 		for (size_t i = tblptr.size; i > 0; i--, fns++) {
 			const char *const *sys_exts = fns->romDataInfo()->exts;
-			if (!sys_exts)
+			if (!sys_exts) {
 				continue;
+			}
 
 			for (; *sys_exts != nullptr; sys_exts++) {
 				auto iter = map_exts.find(*sys_exts);
@@ -1287,6 +1288,27 @@ static void init_supportedFileExtensions(void)
 					map_exts[*sys_exts] = fns->attrs;
 					vec_exts.emplace_back(*sys_exts, fns->attrs);
 				}
+			}
+		}
+	}
+
+	// .zip files
+	for (const auto &fns : zipDetectTbl) {
+		const char *const *sys_exts = fns.romDataInfo()->exts;
+		if (!sys_exts) {
+			continue;
+		}
+
+		for (; *sys_exts != nullptr; sys_exts++) {
+			auto iter = map_exts.find(*sys_exts);
+			if (iter != map_exts.end()) {
+				// We already had this extension.
+				// Update its attributes.
+				iter->second |= fns.attrs;
+			} else {
+				// First time encountering this extension.
+				map_exts[*sys_exts] = fns.attrs;
+				vec_exts.emplace_back(*sys_exts, fns.attrs);
 			}
 		}
 	}
@@ -1358,7 +1380,8 @@ static void init_supportedMimeTypes(void)
 	static constexpr size_t reserve_size =
 		(romDataFns_magic.size() +
 		 romDataFns_header.size() +
-		 romDataFns_footer.size()) * 2;
+		 romDataFns_footer.size() +
+		 zipDetectTbl.size()) * 2;
 	vec_mimeTypes.reserve(reserve_size);
 #ifdef HAVE_UNORDERED_SET_RESERVE
 	set_mimeTypes.reserve(reserve_size);
@@ -1368,8 +1391,9 @@ static void init_supportedMimeTypes(void)
 		const RomDataFns *fns = tblptr.tbl;
 		for (size_t i = tblptr.size; i > 0; i--, fns++) {
 			const char *const *sys_mimeTypes = fns->romDataInfo()->mimeTypes;
-			if (!sys_mimeTypes)
+			if (!sys_mimeTypes) {
 				continue;
+			}
 
 			for (; *sys_mimeTypes != nullptr; sys_mimeTypes++) {
 				auto iter = set_mimeTypes.find(*sys_mimeTypes);
@@ -1377,6 +1401,22 @@ static void init_supportedMimeTypes(void)
 					set_mimeTypes.insert(*sys_mimeTypes);
 					vec_mimeTypes.push_back(*sys_mimeTypes);
 				}
+			}
+		}
+	}
+
+	// .zip files
+	for (const auto &fns : zipDetectTbl) {
+		const char *const *sys_mimeTypes = fns.romDataInfo()->mimeTypes;
+		if (!sys_mimeTypes) {
+			continue;
+		}
+
+		for (; *sys_mimeTypes != nullptr; sys_mimeTypes++) {
+			auto iter = set_mimeTypes.find(*sys_mimeTypes);
+			if (iter == set_mimeTypes.end()) {
+				set_mimeTypes.insert(*sys_mimeTypes);
+				vec_mimeTypes.push_back(*sys_mimeTypes);
 			}
 		}
 	}
