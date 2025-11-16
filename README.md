@@ -13,23 +13,37 @@ video game ROM and disc images.
 
 ###### no vibes, no bevis
 
-## v2.6
+## v2.7
 
-![KDE Dolphin showing NES ROM images.](doc/img/rp-v2.6-kde6.NES.png)
+![Windows Explorer showing Android APK packages and a 16-bit Windows application.](rp-v2.7-win10.APK.Win16.png)
 
-Major additions in v2.6 include:
+Major additions in v2.7 include:
 
-* Windows icon parsing (thumbnailing is not enabled for ICO, CUR, or
-  EXE files due to OS-level conflicts, but it's used for CD-ROM images)
+* Android packages. Supports thumbnailing packages that use PNG icons.
+  WebP icons are also supported if libwebp is installed.
+  * Packages that use "adaptive icons" are not currently thumbnalied.
 
-* ISO: AUTORUN.INF parsing, including icons.
+* Nintendo 3DS: Z3DS compressed format is now supported.
 
-* Wii U: Firmware binaries, using custom icons to indicate retail
-  vs. dev and NAND boot vs. sdboot.
+* Windows and GNOME Nautilus (and Caja and Nemo): In Details view,
+  rom-properties now provides columns for some properties, including
+  "Game ID" and "Title ID".
 
-* Wii: SETTING.TXT files.
+* GNOME Nautilus (and Caja and Nemo): An emblem is now shown for files
+  with potentially dangerous permissions.
 
-* NES: Title screen thumbnailing.
+* Windows-specific changes:
+  * Installers are now created using Inno Setup instead of the
+    custom svrplus executable. Both Inno Setup 5 and 6 are used:
+    * Inno Setup 5 is used for Windows XP, 2003, and Vista.
+    * Inno Setup 6 is used for Windows 7, 8.x, 10, and 11.
+  * The arm64 and arm64ec DLLs have been combined using Microsoft's
+    ARM64X format.
+  * Add special handling for 16-bit executables and Windows 1.x/2.x
+    icons. This is implemented using Microsoft's Detours library, and
+    currently only works once rom-properties.dll is loaded in the Explorer
+    process. (View the "ROM Properties" tab of a supported file to load it.)
+  * Localization via GNU gettext is now available on ARM and ARM64.
 
 * Lots and lots of tiny bug fixes and improvements.
 
@@ -128,7 +142,7 @@ button.
 | Context menu⁴       |     ✅      |             ✅           |  ✅  |   ✅   |  ✅   |
 
 * 1: GNOME uses sandboxing when it runs thumbnailing software, which may
-  interfere with rom-properties.
+  prevent rom-properties from downloading images from online databases.
 * 2: ThunarX's plugin infrastructure does not have any interfaces for adding custom
   file attributes, such as overlays and metadata, or to display custom columns.
 * 3: KDE has a fixed set of metadata properties and does not have any mechanism
@@ -183,6 +197,7 @@ button.
 |:-----------------------------:|:--------------:|:--------:|:---------------:|:---------------:|
 | Atari Lynx                    |       Yes      |    Yes   |       N/A       |        No       |
 | Bandai WonderSwan (Color)     |       Yes      |    Yes   |       N/A       |      Title      |
+| Google Android                |       Yes      |    Yes   |       Icon      |       N/A       |
 | J2ME                          |       Yes      |    Yes   |       Icon      |       N/A       |
 | Neo Geo Pocket (Color)        |       Yes      |    Yes   |       N/A       |      Title      |
 | Nintendo Game Boy (Color)     |       Yes      |    Yes   |       N/A       |      Title      |
@@ -201,6 +216,7 @@ button.
   retail systems.
 * The PSP parser supports both PSP game and UMD video discs, as well as
   several compressed disc formats: CISOv1, CISOv2, ZISO, JISO, and DAX.
+* The Android parser currently retrieves the largest icon available.
 
 ### Texture Formats
 
@@ -223,6 +239,8 @@ button.
 
 * 1: Icon thumbnailing is disabled for ICO, CUR, and EXE files to prevent
   conflicts with system icon handling.
+  * ...with an exception for thumbnailing 16-bit Windows executables on
+    64-bit Windows by hooking the PrivateExtractIcons() functions.
 
 #### Texture Codecs
 
@@ -443,6 +461,7 @@ vs. development (green), and to show an SD card for sdboot.
 * Motwera: Arabic
 * Chipsum: Arabic
 * spencerchris8080: Spanish
+* @NoNameWasDefined: French
 
 ### Other Contributions
 

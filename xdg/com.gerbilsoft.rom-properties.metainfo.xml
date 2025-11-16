@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright 2016-2022 David Korth <gerbilsoft@gerbilsoft.com> -->
+<!-- Copyright 2016-2025 David Korth <gerbilsoft@gerbilsoft.com> -->
+<!-- SPDX-License-Identifier: GPL-2.0-or-later -->
 
 <component type="addon">
 	<id>com.gerbilsoft.rom-properties</id>
@@ -40,6 +41,7 @@
 	<icon type="stock">media-flash</icon>
 	<translation type="gettext">rom-properties</translation>
 	<releases>
+		<release version="2.7" date="2025-11-16"/>
 		<release version="2.6" date="2025-09-13"/>
 		<release version="2.5.1" date="2025-05-10"/>
 		<release version="2.5" date="2025-04-19"/>

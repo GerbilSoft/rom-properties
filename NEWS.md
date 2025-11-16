@@ -1,6 +1,6 @@
 # Changes
 
-## v2.7 (released 2025/??/??)
+## v2.7 (released 2025/11/16)
 
 * New parsers:
   * AndroidAPK: Android packages. Supports retrieving basic metadata and the
