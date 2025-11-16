@@ -53,6 +53,8 @@
 * Bug fixes:
   * Fix detection of small TGAs (under 64 bytes), e.g. some of the TGAs used by
     Steam for its user interface.
+  * Work around MSVC 2022 i386 (17.14.20, 19.44.35220.0) using an incorrect
+    size for IMAGE_LOAD_CONFIG_DIRECTORY in the DataDirectory.
   * Fix crashes that could occur with specially-corrupted files:
     * NASOS disc images
     * GodotSTEX v3 ETC2_RG11
