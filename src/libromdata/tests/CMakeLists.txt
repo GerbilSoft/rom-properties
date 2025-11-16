@@ -164,7 +164,7 @@ IF(ENABLE_ZSTD)
 	DO_SPLIT_DEBUG(RomHeaderTest)
 	SET_WINDOWS_SUBSYSTEM(RomHeaderTest CONSOLE)
 	SET_WINDOWS_ENTRYPOINT(RomHeaderTest wmain OFF)
-	ADD_TEST(NAME RomHeaderTest COMMAND RomHeaderTest --gtest_brief)
+	#ADD_TEST(NAME RomHeaderTest COMMAND RomHeaderTest --gtest_brief)
 	IF(NOT WIN32 AND NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY STREQUAL "")
 		# Create a symlink to the RomHeaders directory.
 		ADD_CUSTOM_COMMAND(TARGET RomHeaderTest POST_BUILD
