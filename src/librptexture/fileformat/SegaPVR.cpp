@@ -381,10 +381,10 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 		return img;
 	} else if (!file || !file->isOpen()) {
 		// File isn't open.
-		return nullptr;
+		return {};
 	} else if (pvrType != PVRType::PVR && pvrType != PVRType::SVR) {
 		// Wrong PVR type for this function.
-		return nullptr;
+		return {};
 	}
 
 	// Sanity check: Maximum image dimensions of 32768x32768.
@@ -396,12 +396,12 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 	    pvrHeader.height == 0 || pvrHeader.height > 32768)
 	{
 		// Invalid image dimensions.
-		return nullptr;
+		return {};
 	}
 
 	// Sanity check: PVR files shouldn't be more than 16 MB.
 	if (file->size() > 16*1024*1024) {
-		return nullptr;
+		return {};
 	}
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
@@ -439,19 +439,19 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 					bpp = 2;
 					break;
 				default:
-					return nullptr;
+					return {};
 			}
 
 			// Make sure this is in fact a square textuer.
 			assert(pvrHeader.width == pvrHeader.height);
 			if (pvrHeader.width != pvrHeader.height) {
-				return nullptr;
+				return {};
 			}
 
 			// Make sure the texture width is a power of two.
 			assert(isPow2(pvrHeader.width));
 			if (!isPow2(pvrHeader.width)) {
-				return nullptr;
+				return {};
 			}
 
 			// Get the log2 of the texture width.
@@ -492,7 +492,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 
 				default:
 					// TODO
-					return nullptr;
+					return {};
 			}
 			break;
 
@@ -550,7 +550,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 					break;
 				default:
 					assert(!"Unsupported pixel format for SVR.");
-					return nullptr;
+					return {};
 			}
 			svr_pal_buf.resize(pal_siz);
 			mipmap_size = pal_siz;
@@ -577,7 +577,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 					break;
 				default:
 					assert(!"Unsupported pixel format for SVR.");
-					return nullptr;
+					return {};
 			}
 			svr_pal_buf.resize(pal_siz);
 			mipmap_size = pal_siz;
@@ -587,7 +587,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 
 		default:
 			// TODO: Other formats.
-			return nullptr;
+			return {};
 	}
 
 	if ((pvrDataStart + mipmap_size + expected_size) > file_sz) {
@@ -599,21 +599,15 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 			assert(!"PVR Small VQ file is too small.");
 		}
 #endif /* _DEBUG */
-		return nullptr;
-	}
-
-	int ret = file->seek(pvrDataStart + mipmap_size);
-	if (ret != 0) {
-		// Seek error.
-		return nullptr;
+		return {};
 	}
 
 	// Read the texture data.
 	auto buf = aligned_uptr<uint8_t>(16, expected_size);
-	size_t size = file->read(buf.get(), expected_size);
+	size_t size = file->seekAndRead((pvrDataStart + mipmap_size), buf.get(), expected_size);
 	if (size != expected_size) {
-		// Read error.
-		return nullptr;
+		// Seek and/or read error.
+		return {};
 	}
 
 	// Determine the pixel format.
@@ -640,7 +634,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 			break;
 		default:
 			// Unsupported pixel format.
-			return nullptr;
+			return {};
 	}
 
 	switch (pvrHeader.pvr.img_data_type) {
@@ -751,14 +745,14 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 			assert(!svr_pal_buf.empty());
 			if (svr_pal_buf.empty()) {
 				// Invalid palette buffer size.
-				return nullptr;
+				return {};
 			}
 
 			// Palette is located immediately after the PVR header.
 			size = file->seekAndRead(pvrDataStart, svr_pal_buf.data(), svr_pal_buf.size());
 			if (size != svr_pal_buf.size()) {
 				// Seek and/or read error.
-				return nullptr;
+				return {};
 			}
 
 			// FIXME: Puyo Tools has palette bit swapping in
@@ -789,14 +783,14 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 			assert(!svr_pal_buf.empty());
 			if (svr_pal_buf.empty()) {
 				// Invalid palette buffer size.
-				return nullptr;
+				return {};
 			}
 
 			// Palette is located immediately after the PVR header.
 			size = file->seekAndRead(pvrDataStart, svr_pal_buf.data(), svr_pal_buf.size());
 			if (size != svr_pal_buf.size()) {
 				// Seek and/or read error.
-				return nullptr;
+				return {};
 			}
 
 			// NOTE: Bits 3 and 4 in each image data byte is swapped.
@@ -851,7 +845,7 @@ rp_image_const_ptr SegaPVRPrivate::loadGvrImage(void)
 		return img;
 	} else if (!this->file || this->pvrType != PVRType::GVR) {
 		// Can't load the image.
-		return nullptr;
+		return {};
 	}
 
 	// Sanity check: Maximum image dimensions of 32768x32768.
@@ -863,12 +857,12 @@ rp_image_const_ptr SegaPVRPrivate::loadGvrImage(void)
 	    pvrHeader.height == 0 || pvrHeader.height > 32768)
 	{
 		// Invalid image dimensions.
-		return nullptr;
+		return {};
 	}
 
 	// Sanity check: GVR files shouldn't be more than 16 MB.
 	if (file->size() > 16*1024*1024) {
-		return nullptr;
+		return {};
 	}
 	const unsigned int file_sz = static_cast<unsigned int>(file->size());
 
@@ -905,26 +899,20 @@ rp_image_const_ptr SegaPVRPrivate::loadGvrImage(void)
 			break;
 
 		default:
-			return nullptr;
+			return {};
 	}
 
 	if ((expected_size + pvrDataStart) > file_sz) {
 		// File is too small.
-		return nullptr;
-	}
-
-	int ret = file->seek(pvrDataStart);
-	if (ret != 0) {
-		// Seek error.
-		return nullptr;
+		return {};
 	}
 
 	// Read the texture data.
 	auto buf = aligned_uptr<uint8_t>(16, expected_size);
-	size_t size = file->read(buf.get(), expected_size);
+	size_t size = file->seekAndRead(pvrDataStart, buf.get(), expected_size);
 	if (size != expected_size) {
-		// Read error.
-		return nullptr;
+		// Seek and/or read error.
+		return {};
 	}
 
 	switch (pvrHeader.gvr.img_data_type) {
@@ -1039,7 +1027,7 @@ rp_image_ptr SegaPVRPrivate::svr_unswizzle_4or8(const rp_image_const_ptr &img_sw
 	if (!img_swz || !img_swz->isValid() ||
 	    img_swz->format() != rp_image::Format::CI8)
 	{
-		return nullptr;
+		return {};
 	}
 
 	const int width = img_swz->width();
@@ -1050,20 +1038,20 @@ rp_image_ptr SegaPVRPrivate::svr_unswizzle_4or8(const rp_image_const_ptr &img_sw
 	assert(height % 4 == 0);
 	if (width % 4 != 0 || height % 4 != 0) {
 		// Unable to unswizzle this texture.
-		return nullptr;
+		return {};
 	}
 
 	rp_image_ptr img = std::make_shared<rp_image>(width, height, img_swz->format());
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 
 	// Strides must be equal to the image width.
 	assert(img_swz->stride() == width);
 	assert(img->stride() == width);
 	if (img_swz->stride() != width || img->stride() != width) {
-		return nullptr;
+		return {};
 	}
 
 	// Copy the palette.
