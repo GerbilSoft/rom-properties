@@ -551,7 +551,7 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 	vector<uint8_t> &vec = xexFile_tmp->vector();
 	vec.resize(filesize);
 
-	const unsigned int block_count = static_cast<unsigned int>(filesize / STFS_BLOCK_SIZE);
+	const unsigned int block_count = filesize / STFS_BLOCK_SIZE;
 	int32_t blockNumber = startingBlockNumber;
 	uint8_t *pVec = vec.data();
 	for (unsigned int p = 0; p < block_count; p++, blockNumber++, pVec += STFS_BLOCK_SIZE) {
@@ -560,7 +560,7 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 		this->file->seekAndRead(offset, pVec, STFS_BLOCK_SIZE);
 	}
 
-	const unsigned int partial_block_size = static_cast<unsigned int>(filesize % STFS_BLOCK_SIZE);
+	const unsigned int partial_block_size = filesize % STFS_BLOCK_SIZE;
 	if (partial_block_size != 0) {
 		// Not a multiple of the block size?
 		// Read the partial block.

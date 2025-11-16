@@ -364,9 +364,9 @@ int PEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const ch
 	}
 
 	// Check the key name.
-	const unsigned int key_len = static_cast<unsigned int>(u16_strlen(key));
+	const size_t key_len = u16_strlen(key);
 	// DWORD alignment: Make sure we end on a multiple of 4 bytes.
-	unsigned int keyData_len = (key_len+1) * sizeof(char16_t);
+	size_t keyData_len = (key_len+1) * sizeof(char16_t);
 	keyData_len = ALIGN_BYTES(4, keyData_len + sizeof_fields) - sizeof_fields;
 	unique_ptr<char16_t[]> keyData(new char16_t[keyData_len/sizeof(char16_t)]);
 	size = file->read(keyData.get(), keyData_len);
@@ -379,7 +379,7 @@ int PEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const ch
 	// NOTE: Win32 is always UTF-16LE, so we have to
 	// adjust for endianness.
 	const char16_t *pKeyData = keyData.get();
-	for (unsigned int i = key_len; i > 0; i--, pKeyData++, key++) {
+	for (size_t i = key_len; i > 0; i--, pKeyData++, key++) {
 		if (le16_to_cpu(*pKeyData) != *key) {
 			// Key mismatch.
 			return -EIO;

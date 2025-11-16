@@ -757,9 +757,9 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 			if (crc32Hash.isUsable()) {
 				// Calculate the CRC32.
 				const size_t szFile = static_cast<size_t>(szFile64);
-				unique_ptr<uint8_t[]> buf(new uint8_t[static_cast<unsigned int>(szFile)]);
-				size_t size = f_logo->read(buf.get(), static_cast<unsigned int>(szFile));
-				if (size == static_cast<unsigned int>(szFile)) {
+				unique_ptr<uint8_t[]> buf(new uint8_t[szFile]);
+				size_t size = f_logo->read(buf.get(), szFile);
+				if (size == szFile) {
 					crc32Hash.process(buf.get(), szFile);
 					crc = crc32Hash.getHash32();
 				}

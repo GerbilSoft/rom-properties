@@ -125,10 +125,11 @@ void Ext2AttrViewPrivate::updateFlagsString(void)
 	}};
 	static_assert(flags_array.size() == EXT2_ATTR_CHECKBOX_MAX, "flags_array[] and checkBoxes[] are out of sync!");
 
-	// NOTE: Need to use `unsigned int` because `size_t` results in an ambiguous overload error.
-	for (unsigned int i = 0; i < static_cast<unsigned int>(flags_array.size()); i++) {
+	for (size_t i = 0; i < flags_array.size(); i++) {
 		if (flags & (1U << flags_array[i].bit)) {
-			str[i] = QLatin1Char(flags_array[i].chr);
+			// NOTE: Need to use `unsigned int` in QString::operator[] because
+			// `size_t` results in an ambiguous overload error. (KDE4/KF5; KF6 works fine...)
+			str[static_cast<unsigned int>(i)] = QLatin1Char(flags_array[i].chr);
 		}
 	}
 

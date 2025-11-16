@@ -312,10 +312,10 @@ int NEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const ch
 
 	// Check the key name.
 	// NOTE: NE uses SBCS/MBCS/DBCS, so the length is in bytes.
-	const unsigned int key_len = static_cast<unsigned int>(strlen(key));
+	const size_t key_len = strlen(key);
 	// DWORD alignment: Make sure we end on a multiple of 4 bytes.
 	// NOTE: sizeof_fields == 4, so it's already WORD-aligned.
-	unsigned int keyData_len = key_len + 1;
+	size_t keyData_len = key_len + 1;
 	keyData_len = ALIGN_BYTES(4, keyData_len);
 	unique_ptr<char[]> keyData(new char[keyData_len]);
 	size = file->read(keyData.get(), keyData_len);

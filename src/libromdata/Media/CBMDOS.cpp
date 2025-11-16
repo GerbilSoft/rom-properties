@@ -1348,7 +1348,7 @@ int CBMDOS::loadFieldData(void)
 	}};
 	vector<string> *const v_dir_headers = RomFields::strArrayToVector_i18n("CBMDOS|Directory", dir_headers);
 
-	RomFields::AFLD_PARAMS params(has_icons ? static_cast<unsigned int>(RomFields::RFT_LISTDATA_ICONS) : 0U, 8);
+	RomFields::AFLD_PARAMS params(has_icons ? RomFields::RFT_LISTDATA_ICONS : 0U, 8);
 	params.headers = v_dir_headers;
 	params.data.single = vv_dir;
 	params.col_attrs.align_headers	= AFLD_ALIGN3(TXA_D, TXA_D, TXA_D);

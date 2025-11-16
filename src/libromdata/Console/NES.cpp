@@ -1374,10 +1374,10 @@ int NES::loadFieldData(void)
 		if (mapper_name) {
 			// tr: Print the mapper ID followed by the mapper name.
 			s_mapper = fmt::format(FRUN(C_("NES|Mapper", "{0:d} - {1:s}")),
-				static_cast<unsigned int>(mapper), mapper_name);
+				mapper, mapper_name);
 		} else {
 			// tr: Print only the mapper ID.
-			s_mapper = fmt::to_string(static_cast<unsigned int>(mapper));
+			s_mapper = fmt::to_string(mapper);
 		}
 		d->fields.addField_string(mapper_title, s_mapper);
 	} else {
@@ -1401,10 +1401,10 @@ int NES::loadFieldData(void)
 		if (submapper_name) {
 			// tr: Print the submapper ID followed by the submapper name.
 			s_submapper = fmt::format(FRUN(C_("NES|Mapper", "{0:d} - {1:s}")),
-				static_cast<unsigned int>(submapper), submapper_name);
+				submapper, submapper_name);
 		} else {
 			// tr: Print only the submapper ID.
-			s_submapper = fmt::to_string(static_cast<unsigned int>(submapper));
+			s_submapper = fmt::to_string(submapper);
 		}
 		d->fields.addField_string(C_("NES", "Submapper"), s_submapper);
 	}
@@ -1784,7 +1784,7 @@ int NES::loadFieldData(void)
 					footer_mapper, footer_mapper_tbl[footer_mapper]);
 			} else {
 				// tr: Print only the mapper ID.
-				s_footer_mapper = fmt::to_string(static_cast<unsigned int>(footer_mapper));
+				s_footer_mapper = fmt::to_string(footer_mapper);
 			}
 			d->fields.addField_string(C_("NES", "Board Type"), s_footer_mapper);
 

@@ -399,7 +399,7 @@ GdiReader::GdiReader(const IRpFilePtr &file)
 	}
 
 	// Read the GDI and parse the track information.
-	const unsigned int gdisize = static_cast<unsigned int>(fileSize);
+	const size_t gdisize = static_cast<unsigned int>(fileSize);
 	unique_ptr<char[]> gdibuf(new char[gdisize+1]);
 	m_file->rewind();
 	size_t size = m_file->read(gdibuf.get(), gdisize);

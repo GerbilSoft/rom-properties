@@ -2167,10 +2167,12 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) co
 	}
 	id6[6] = 0;
 
+	const unsigned int disc_number = discHeader->disc_number;
+
 	// External images with multiple discs must be handled differently.
 	const bool isDisc2 =
 		(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX) &&
-		 discHeader->disc_number > 0;
+		(disc_number > 0);
 
 	// ExtURLs
 	// TODO: If multiple image sizes are added, add the
@@ -2193,7 +2195,7 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) co
 		// Disc 2 (or 3, or 4...)
 		// Request the disc 2 image first.
 		const string discName = fmt::format(FSTR("{:s}{:d}"),
-			imageTypeName, static_cast<unsigned int>(discHeader->disc_number) + 1);
+			imageTypeName, disc_number + 1);
 
 		for (const uint16_t lc : tdb_lc) {
 			const string lc_str = SystemRegion::lcToStringUpper(lc);

@@ -736,11 +736,10 @@ void DMGPrivate::addFields_romHeader(const DMG_RomHeader *pRomHeader)
 			const int banks = rom_size / 16;
 			fields.addField_string(rom_size_title,
 				fmt::format(FRUN(NC_("DMG", "{0:d} KiB ({1:d} bank)", "{0:d} KiB ({1:d} banks)", banks)),
-					static_cast<unsigned int>(rom_size),
-					static_cast<unsigned int>(banks)));
+					rom_size, banks));
 		} else {
 			fields.addField_string(rom_size_title,
-				fmt::format(FRUN(C_("DMG", "{:d} KiB")), static_cast<unsigned int>(rom_size)));
+				fmt::format(FRUN(C_("DMG", "{:d} KiB")), rom_size));
 		}
 	}
 
@@ -759,11 +758,10 @@ void DMGPrivate::addFields_romHeader(const DMG_RomHeader *pRomHeader)
 				const int banks = ram_size / 8;
 				fields.addField_string(ram_size_title,
 					fmt::format(FRUN(NC_("DMG", "{0:d} KiB ({1:d} bank)", "{0:d} KiB ({1:d} banks)", banks)),
-						static_cast<unsigned int>(ram_size),
-						static_cast<unsigned int>(banks)));
+						ram_size, banks));
 			} else {
 				fields.addField_string(ram_size_title,
-					fmt::format(FRUN(C_("DMG", "{:d} KiB")), static_cast<unsigned int>(ram_size)));
+					fmt::format(FRUN(C_("DMG", "{:d} KiB")), ram_size));
 			}
 		}
 	} else {

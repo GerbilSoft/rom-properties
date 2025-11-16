@@ -157,10 +157,11 @@ public:
 					assert(bitfieldDesc.names != nullptr);
 					if (bitfieldDesc.names) {
 						Value names_array(kArrayType);	// names
-						unsigned int count = static_cast<unsigned int>(bitfieldDesc.names->size());
+						size_t count = bitfieldDesc.names->size();
 						assert(count <= 32);
-						if (count > 32)
+						if (count > 32) {
 							count = 32;
+						}
 						for (const auto &name : *(bitfieldDesc.names)) {;
 							if (name.empty())
 								continue;
@@ -272,8 +273,7 @@ public:
 					}
 
 					Value data_array(kArrayType);	// data
-					const unsigned int age_ratings_max = static_cast<unsigned int>(age_ratings->size());
-					for (unsigned int j = 0; j < age_ratings_max; j++) {
+					for (size_t j = 0; j < age_ratings->size(); j++) {
 						const uint16_t rating = age_ratings->at(j);
 						if (!(rating & RomFields::AGEBF_ACTIVE))
 							continue;
@@ -285,7 +285,7 @@ public:
 						} else {
 							// Invalid age rating.
 							// Use the numeric index.
-							rating_obj.AddMember("name", j, allocator);
+							rating_obj.AddMember("name", static_cast<unsigned int>(j), allocator);
 						}
 
 						const string s_age_rating = RomFields::ageRatingDecode(static_cast<RomFields::AgeRatingsCountry>(j), rating);

@@ -1083,13 +1083,13 @@ DirectDrawSurface::DirectDrawSurface(const IRpFilePtr &file)
 	{
 		const bool isXbox = (pSrcHeader->ddspf.dwFourCC == le32_to_cpu(DDPF_FOURCC_XBOX));
 		// Verify the size.
-		unsigned int headerSize;
-		if (!isXbox) {
+		size_t headerSize;
+		if (likely(!isXbox)) {
 			// DX10 texture.
-			headerSize = static_cast<unsigned int>(4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10));
+			headerSize = 4 + sizeof(DDS_HEADER) + sizeof(DDS_HEADER_DXT10);
 		} else {
 			// Xbox One texture.
-			headerSize = static_cast<unsigned int>(4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10)+sizeof(DDS_HEADER_XBOX));
+			headerSize = 4 + sizeof(DDS_HEADER) + sizeof(DDS_HEADER_DXT10) + sizeof(DDS_HEADER_XBOX);
 		}
 		if (size < headerSize) {
 			// Extra headers weren't read.

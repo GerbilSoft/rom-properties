@@ -376,7 +376,7 @@ int ELFPrivate::checkProgramHeaders(void)
 				// Sanity check: Interpreter must be 256 characters or less.
 				// NOTE: Interpreter should be NULL-terminated.
 				if (phdr.p_filesz <= 256) {
-					unsigned int len = static_cast<unsigned int>(phdr.p_filesz);
+					size_t len = static_cast<size_t>(phdr.p_filesz);
 					char buf[256];
 					const off64_t prevoff = file->tell();
 					size = file->seekAndRead(phdr.p_offset, buf, len);
@@ -557,7 +557,7 @@ int ELFPrivate::checkSectionHeaders(void)
 
 		// Get the note address and size.
 		const off64_t int_addr = shdr.sh_offset;
-		const unsigned int int_size = static_cast<unsigned int>(shdr.sh_size);
+		const size_t int_size = static_cast<size_t>(shdr.sh_size);
 
 		uint8_t buf[256];
 		const off64_t prevoff = file->tell();
@@ -811,7 +811,7 @@ int ELFPrivate::addPtDynamicFields(void)
 
 	// Read the header.
 	rp::uvector<uint8_t> pt_dyn_buf;
-	pt_dyn_buf.resize(static_cast<unsigned int>(pt_dynamic.p_filesz));
+	pt_dyn_buf.resize(static_cast<size_t>(pt_dynamic.p_filesz));
 	size_t size = file->seekAndRead(pt_dynamic.p_offset, pt_dyn_buf.data(), pt_dyn_buf.size());
 	if (size != pt_dyn_buf.size()) {
 		// Read error.

@@ -242,7 +242,7 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 	}
 
 	// Image data starts immediately after the TGA header.
-	const unsigned int img_data_offset = static_cast<unsigned int>(sizeof(tgaHeader) + tgaHeader.id_length);
+	const off64_t img_data_offset = sizeof(tgaHeader) + tgaHeader.id_length;
 	if (file->seek(img_data_offset) != 0) {
 		// Seek error.
 		return nullptr;

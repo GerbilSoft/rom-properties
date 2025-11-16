@@ -481,7 +481,7 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 	string str;
 	str.reserve(64);
 	unsigned int ratings_count = 0;
-	for (unsigned int i = 0; i < static_cast<unsigned int>(age_ratings->size()); i++) {
+	for (size_t i = 0; i < age_ratings->size(); i++) {
 		const uint16_t rating = age_ratings->at(i);
 		if (!(rating & RomFields::AGEBF_ACTIVE))
 			continue;
@@ -505,7 +505,7 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 			str += fmt::to_string(i);
 		}
 		str += '=';
-		str += ageRatingDecode((AgeRatingsCountry)i, rating);
+		str += ageRatingDecode(static_cast<AgeRatingsCountry>(i), rating);
 		ratings_count++;
 	}
 
