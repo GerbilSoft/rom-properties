@@ -1278,6 +1278,7 @@ int EXEPrivate::loadPEImageLoadConfigDirectory(void)
 		};
 
 		ilcd.reset(new ImageLoadConfigDirectory);
+		memset(ilcd.get(), 0, sizeof(ImageLoadConfigDirectory));
 		size_t sz_read = file->seekAndRead(paddr, &ilcd->ilcd32, size);
 		if (sz_read != size) {
 			ilcd.reset();
@@ -1285,7 +1286,17 @@ int EXEPrivate::loadPEImageLoadConfigDirectory(void)
 		}
 
 		// Verify the size of the loaded ILCD.
+		// FIXME: MSVC 2022 i386 (17.14.20, 19.44.35220.0) has section size 64,
+		// but the ILCD size is 160...
+#if 0
 		if (size != le32_to_cpu(ilcd->ilcd32.Size)) {
+			ilcd.reset();
+			return -EIO;
+		}
+#endif
+
+		// Make sure the size in the struct doesn't exceed the actual memory size.
+		if (le32_to_cpu(ilcd->ilcd32.Size) > sizeof(IMAGE_LOAD_CONFIG_DIRECTORY32)) {
 			ilcd.reset();
 			return -EIO;
 		}
@@ -1314,6 +1325,7 @@ int EXEPrivate::loadPEImageLoadConfigDirectory(void)
 		};
 
 		ilcd.reset(new ImageLoadConfigDirectory);
+		memset(ilcd.get(), 0, sizeof(ImageLoadConfigDirectory));
 		size_t sz_read = file->seekAndRead(paddr, &ilcd->ilcd64, size);
 		if (sz_read != size) {
 			ilcd.reset();
@@ -1321,7 +1333,16 @@ int EXEPrivate::loadPEImageLoadConfigDirectory(void)
 		}
 
 		// Verify the size of the loaded ILCD.
+		// NOTE: Ignoring this due to the MSVC 2022 i386 issue.
+#if 0
 		if (size != le32_to_cpu(ilcd->ilcd64.Size)) {
+			ilcd.reset();
+			return -EIO;
+		}
+#endif
+
+		// Make sure the size in the struct doesn't exceed the actual memory size.
+		if (le32_to_cpu(ilcd->ilcd64.Size) > sizeof(IMAGE_LOAD_CONFIG_DIRECTORY64)) {
 			ilcd.reset();
 			return -EIO;
 		}
