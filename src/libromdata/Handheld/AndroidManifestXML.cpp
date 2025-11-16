@@ -198,6 +198,7 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 			// Corrupted chunk?
 			return nullptr;
 		}
+		p += chunk_size;
 	}
 	assert(p < pEnd);
 	if (p >= pEnd) {
