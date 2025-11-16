@@ -4,8 +4,8 @@
 
 * New parsers:
   * AndroidAPK: Android packages. Supports retrieving basic metadata and the
-    package icon.
-    * Packages that use "adaptive icons" or .webp icons are not currently thumbnailed.
+    package icon. WebP icons can be thumbnailed if libwebp is installed.
+    * Packages that use "adaptive icons" are not currently thumbnailed.
 
 * New parser features:
   * Nintendo3DS: Z3DS compressed format is now supported.
