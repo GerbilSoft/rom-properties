@@ -1,3 +1,9 @@
+rom-properties (2.7-1ppa2~questing2) questing; urgency=medium
+
+  * libgdk-pixbuf2.0-dev -> libgdk-pixbuf-2.0-dev
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 16 Nov 2025 20:15:58 -0500
+
 rom-properties (2.7-1ppa2~questing1) questing; urgency=medium
 
   * Build for Ubuntu 25.10 "Questing" Quokka.
