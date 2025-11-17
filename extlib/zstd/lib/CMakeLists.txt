@@ -4,6 +4,13 @@ PROJECT(zstd VERSION 1.5.7 LANGUAGES C ASM)
 # rom-properties: Enable multithreading.
 SET(ZSTD_MULTITHREAD ON)
 
+# rom-properties: Hide symbols if building as a static library.
+IF(BUILD_STATIC_LIBS)
+	# Set CMake hidden visibility options.
+	SET(CMAKE_C_VISIBILITY_PRESET "hidden")
+	SET(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
+ENDIF(BUILD_STATIC_LIBS)
+
 ADD_DEFINITIONS(-DXXH_NAMESPACE=ZSTD_)
 
 # Always build with high optimizations.
@@ -141,6 +148,11 @@ IF(BUILD_STATIC_LIBS)
 	ADD_LIBRARY(zstdstatic STATIC ${ZSTD_FILES})
 	TARGET_INCLUDE_DIRECTORIES(zstdstatic
 		PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+		)
+	# rom-properties: Make sure symbols are hidden.
+	TARGET_COMPILE_DEFINITIONS(zstdstatic
+		PRIVATE "-DZSTDLIB_VISIBLE=__attribute__ ((visibility (\"hidden\")))"
+		        "-DZSTDERRORLIB_VISIBLE=__attribute__ ((visibility (\"hidden\")))"
 		)
 	DO_SPLIT_DEBUG(zstdstatic)
 ENDIF(BUILD_STATIC_LIBS)
