@@ -1,5 +1,10 @@
 # zstd seekable_format
+# Custom CMakeLists.txt file for rom-properties.
 PROJECT(zstd_seekable_format LANGUAGES C)
+
+# Set CMake hidden visibility options.
+SET(CMAKE_C_VISIBILITY_PRESET "hidden")
+SET(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 
 ADD_LIBRARY(zstd_seekable_format STATIC
 	zstd_seekable.h
