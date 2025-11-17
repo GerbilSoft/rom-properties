@@ -153,6 +153,7 @@ IF(BUILD_STATIC_LIBS)
 	TARGET_COMPILE_DEFINITIONS(zstdstatic
 		PRIVATE "-DZSTDLIB_VISIBLE=__attribute__ ((visibility (\"hidden\")))"
 		        "-DZSTDERRORLIB_VISIBLE=__attribute__ ((visibility (\"hidden\")))"
+		        "-DZSTD_NO_TRACE=1"
 		)
 	DO_SPLIT_DEBUG(zstdstatic)
 ENDIF(BUILD_STATIC_LIBS)
