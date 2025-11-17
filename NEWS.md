@@ -1,5 +1,12 @@
 # Changes
 
+## v2.7.1 (released 2025/??/??)
+
+* Bug fixes:
+  * EXE_PE: Fix regression that causes the Imports tab to show the wrong
+    DLL names for imports.
+    * Affects: v2.7
+
 ## v2.7 (released 2025/11/16)
 
 * New parsers:
