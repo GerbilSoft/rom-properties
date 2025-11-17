@@ -314,46 +314,6 @@ T rp_byte_swap_32_array_sse2
 T rp_byte_swap_32_array_ssse3
 T rp_i18n_init
 T xfsAttrCheckboxInfo
-T ZSTD_seekable_create
-T ZSTD_seekable_decompress
-T ZSTD_seekable_decompressFrame
-T ZSTD_seekable_free
-T ZSTD_seekable_getFrameCompressedOffset
-T ZSTD_seekable_getFrameCompressedSize
-T ZSTD_seekable_getFrameDecompressedOffset
-T ZSTD_seekable_getFrameDecompressedSize
-T ZSTD_seekable_getNumFrames
-T ZSTD_seekable_initAdvanced
-T ZSTD_seekable_initBuff
-T ZSTD_seekable_initFile
-T ZSTD_seekable_offsetToFrameIndex
-T ZSTD_seekTable_create_fromSeekable
-T ZSTD_seekTable_free
-T ZSTD_seekTable_getFrameCompressedOffset
-T ZSTD_seekTable_getFrameCompressedSize
-T ZSTD_seekTable_getFrameDecompressedOffset
-T ZSTD_seekTable_getFrameDecompressedSize
-T ZSTD_seekTable_getNumFrames
-T ZSTD_seekTable_offsetToFrameIndex
-T ZSTD_XXH32
-T ZSTD_XXH32_canonicalFromHash
-T ZSTD_XXH32_copyState
-T ZSTD_XXH32_createState
-T ZSTD_XXH32_digest
-T ZSTD_XXH32_freeState
-T ZSTD_XXH32_hashFromCanonical
-T ZSTD_XXH32_reset
-T ZSTD_XXH32_update
-T ZSTD_XXH64
-T ZSTD_XXH64_canonicalFromHash
-T ZSTD_XXH64_copyState
-T ZSTD_XXH64_createState
-T ZSTD_XXH64_digest
-T ZSTD_XXH64_freeState
-T ZSTD_XXH64_hashFromCanonical
-T ZSTD_XXH64_reset
-T ZSTD_XXH64_update
-T ZSTD_XXH_versionNumber
 V typeinfo for LibRomData::KeyStoreUI
 V typeinfo for LibRpBase::Config
 V typeinfo for LibRpBase::ConfReader
