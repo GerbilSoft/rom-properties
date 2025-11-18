@@ -1201,11 +1201,13 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 	if (unlikely(xgaa_count == 0)) {
 		// No entries...
 		return 8;
-	} else if (xgaa_count > XGAA_MAX_COUNT) {
+	}
+	if (xgaa_count > XGAA_MAX_COUNT) {
 		// Too many entries.
 		// Reduce it to XGAA_MAX_COUNT.
 		xgaa_count = XGAA_MAX_COUNT;
-	} else if (xgaa_count > ((length - sizeof(XDBF_XGAA_Header)) / sizeof(XDBF_XGAA_Entry))) {
+	}
+	if (xgaa_count > ((length - sizeof(XDBF_XGAA_Header)) / sizeof(XDBF_XGAA_Entry))) {
 		// Entry count is too high.
 		xgaa_count = ((length - sizeof(XDBF_XGAA_Header)) / sizeof(XDBF_XGAA_Entry));
 	}
@@ -1436,8 +1438,9 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 		// but shouldn't be more than sizeof(buf).
 		assert(length >= sizeof(*pGPD));
 		assert(length <= XACH_GPD_BUF_LEN);
-		if (length < sizeof(*pGPD) || length > XACH_GPD_BUF_LEN)
+		if (length < sizeof(*pGPD) || length > XACH_GPD_BUF_LEN) {
 			continue;
+		}
 
 		// Read the achievement.
 		size_t size = file->seekAndRead(addr, buf.get(), length);
