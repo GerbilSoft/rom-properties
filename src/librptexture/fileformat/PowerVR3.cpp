@@ -914,7 +914,7 @@ int PowerVR3Private::loadPvr3Metadata(void)
  */
 void PowerVR3Private::legacyPowerVRPixelFormatToPVR3(PowerVR_Legacy_Pixel_Format_e pixel_format)
 {
-	if (static_cast<size_t>(pixel_format) > fmtLkup_tbl_legacy.size()) {
+	if (static_cast<size_t>(pixel_format) >= fmtLkup_tbl_legacy.size()) {
 		// Out of range.
 		pvr3Header.pixel_format = 0;
 		pvr3Header.channel_depth = 0;
