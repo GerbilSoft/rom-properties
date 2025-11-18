@@ -789,12 +789,7 @@ int RpPngWriterPrivate::write_IDAT(void)
 	}
 
 	// Allocate the row pointers.
-	const png_byte **row_pointers = static_cast<const png_byte**>(
-		png_malloc(png_ptr, sizeof(const png_byte*) * cache.height));
-	if (!row_pointers) {
-		lastError = ENOMEM;
-		return -lastError;
-	}
+	unique_ptr<const png_byte*[]> row_pointers(new const png_byte*[cache.height]);
 
 	// Initialize the row pointers array.
 	const rp_image *const img = std::get<rp_image_const_ptr>(data).get();
@@ -803,10 +798,7 @@ int RpPngWriterPrivate::write_IDAT(void)
 	}
 
 	// Write the image data.
-	int ret = write_IDAT(row_pointers);
-	// Free the row pointers.
-	png_free(png_ptr, row_pointers);
-	return ret;
+	return write_IDAT(row_pointers.get());
 }
 
 /**
@@ -845,7 +837,7 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
 	}
 
 	// Row pointers. (NOTE: Allocated after IHDR is written.)
-	const png_byte **row_pointers = nullptr;
+	unique_ptr<const png_byte*[]> row_pointers;
 
 	// Using the cached width/height from the first image.
 	// TODO: Handle animated images where the different frames
@@ -855,7 +847,6 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
 	// WARNING: Do NOT initialize any C++ objects past this point!
 	if (setjmp(png_jmpbuf(png_ptr))) {
 		// PNG read failed.
-		png_free(png_ptr, row_pointers);
 		return -EIO;
 	}
 #endif /* PNG_SETJMP_SUPPORTED */
@@ -882,12 +873,7 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
 	}
 
 	// Allocate the row pointers.
-	row_pointers = static_cast<const png_byte**>(
-		png_malloc(png_ptr, sizeof(const png_byte*) * cache.height));
-	if (!row_pointers) {
-		lastError = ENOMEM;
-		return -lastError;
-	}
+	row_pointers.reset(new const png_byte*[cache.height]);
 
 	// Write the images.
 	const IconAnimData *const iconAnimData = std::get<IconAnimDataConstPtr>(data).get();
@@ -903,7 +889,7 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
 		}
 
 		// Frame header.
-		png_write_frame_head(png_ptr, info_ptr, (png_bytepp)row_pointers,
+		png_write_frame_head(png_ptr, info_ptr, (png_bytepp)row_pointers.get(),
 				cache.width, cache.height, 0, 0,	// width, height, x offset, y offset
 				iconAnimData->delays[i].numer,
 				iconAnimData->delays[i].denom,
@@ -912,14 +898,11 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
 
 		// Write the image data.
 		// TODO: Individual palette for CI8?
-		png_write_image(png_ptr, (png_bytepp)row_pointers);
+		png_write_image(png_ptr, (png_bytepp)row_pointers.get());
 
 		// Frame tail.
 		png_write_frame_tail(png_ptr, info_ptr);
 	}
-
-	png_free(png_ptr, row_pointers);
-	row_pointers = nullptr;
 
 	// Finished writing.
 	png_write_end(png_ptr, info_ptr);

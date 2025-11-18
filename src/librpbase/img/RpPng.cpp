@@ -228,8 +228,8 @@ static void Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
  */
 static rp_image_ptr loadPng(png_structp png_ptr, png_infop info_ptr)
 {
-	// Row pointers. (NOTE: Allocated after IHDR is read.)
-	const png_byte **row_pointers = nullptr;
+	// Row pointers (NOTE: Allocated after IHDR is read.)
+	unique_ptr<const png_byte*[]> row_pointers;
 	rp_image_ptr img;
 
 	bool has_sBIT = false;
@@ -241,7 +241,6 @@ static rp_image_ptr loadPng(png_structp png_ptr, png_infop info_ptr)
 	if (setjmp(png_jmpbuf(png_ptr))) {
 		// PNG read failed.
 		// FIXME: This is crashing in MSVC 2022 (17.6.5) release builds on Windows 10.
-		png_free(png_ptr, row_pointers);
 		return {};
 	}
 #endif
@@ -425,11 +424,7 @@ static rp_image_ptr loadPng(png_structp png_ptr, png_infop info_ptr)
 	}
 
 	// Allocate the row pointers.
-	row_pointers = static_cast<const png_byte**>(
-		png_malloc(png_ptr, sizeof(const png_byte*) * height));
-	if (!row_pointers) {
-		return {};
-	}
+	row_pointers.reset(new const png_byte*[height]);
 
 	// Initialize the row pointers array.
 	const png_byte *pb = static_cast<const png_byte*>(img->bits());
@@ -439,8 +434,7 @@ static rp_image_ptr loadPng(png_structp png_ptr, png_infop info_ptr)
 	}
 
 	// Read the image.
-	png_read_image(png_ptr, const_cast<png_byte**>(row_pointers));
-	png_free(png_ptr, row_pointers);
+	png_read_image(png_ptr, const_cast<png_byte**>(row_pointers.get()));
 
 	// If CI8, read the palette.
 	if (fmt == rp_image::Format::CI8) {
