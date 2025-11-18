@@ -425,7 +425,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	// TODO: Optimizations.
 	st.clear();
 	int tblPos = 0;
-	while (tblPos < strTblData_len) {
+	while ((tblPos + static_cast<int>(sizeof_fields)) < strTblData_len) {
 		// wLength, wValueLength
 		memcpy(fields.data(), &strTblData[tblPos], sizeof_fields);
 
@@ -437,6 +437,13 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 		const uint16_t wValueLength = le16_to_cpu(fields[1]);
 		if (wValueLength >= wLength || wLength > (strTblData_len - tblPos)) {
 			// Not valid.
+			return -EIO;
+		}
+
+		// String bounds check
+		assert((tblPos + static_cast<int>(sizeof_fields) + wLength + wValueLength) <= strTblData_len);
+		if ((tblPos + static_cast<int>(sizeof_fields) + wLength + wValueLength) > strTblData_len) {
+			// Out of bounds.
 			return -EIO;
 		}
 
