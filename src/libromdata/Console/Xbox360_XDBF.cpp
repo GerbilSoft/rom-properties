@@ -993,7 +993,8 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 		// Too many entries.
 		// Reduce it to XACH_MAX_COUNT.
 		xach_count = XACH_MAX_COUNT;
-	} else if (xach_count > ((length - sizeof(XDBF_XACH_Header)) / sizeof(XDBF_XACH_Entry_SPA))) {
+	}
+	if (xach_count > ((length - sizeof(XDBF_XACH_Header)) / sizeof(XDBF_XACH_Entry_SPA))) {
 		// Entry count is too high.
 		xach_count = ((length - sizeof(XDBF_XACH_Header)) / sizeof(XDBF_XACH_Entry_SPA));
 	}
