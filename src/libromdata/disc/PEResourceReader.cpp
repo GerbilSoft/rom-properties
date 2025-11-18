@@ -492,19 +492,12 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 			return -EIO;
 		}
 
-		// String bounds check
-		assert((tblPos + static_cast<int>(sizeof_fields) + wLength + wValueLength) <= strTblData_len);
-		if ((tblPos + static_cast<int>(sizeof_fields) + wLength + wValueLength) > strTblData_len) {
-			// Out of bounds.
-			return -EIO;
-		}
-
 		// Key length, in bytes: wLength - wValueLength - sizeof_fields
 		// Last Unicode character must be NULL.
 		tblPos += sizeof_fields;
 		const int key_len = ((wLength - wValueLength - sizeof_fields) / sizeof(char16_t)) - 1;
-		if (key_len <= 0) {
-			// Invalid key length.
+		if (key_len <= 0 || (tblPos + (key_len * static_cast<int>(sizeof(char16_t))) > strTblData_len)) {
+			// Invalid key length and/or out of bounds.
 			return -EIO;
 		}
 		const char16_t *key = reinterpret_cast<const char16_t*>(&strTblData[tblPos]);
@@ -518,15 +511,23 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 		tblPos  = ALIGN_BYTES(4, tblPos);
 
 		// Value must be NULL-terminated.
-		const char16_t *value = reinterpret_cast<const char16_t*>(&strTblData[tblPos]);
+		const char16_t *value;
 		const int value_len = (wValueLength / 2) - 1;
 		if (value_len <= 0) {
 			// Empty value.
 			static constexpr char16_t u16_empty[1] = {0};
 			value = u16_empty;
-		} else if (value[value_len] != cpu_to_le16(0)) {
-			// Not NULL-terminated.
-			return -EIO;
+		} else {
+			// String bounds check
+			if (tblPos + (key_len * static_cast<int>(sizeof(char16_t))) > strTblData_len) {
+				// Out of bounds.
+				return -EIO;
+			}
+			value = reinterpret_cast<const char16_t*>(&strTblData[tblPos]);
+			if (value[value_len] != cpu_to_le16(0)) {
+				// Not NULL-terminated.
+				return -EIO;
+			}
 		}
 
 		// NOTE: Only converting the value from DOS to UNIX line endings.
