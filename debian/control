@@ -127,7 +127,7 @@ Description: ROM Properties Page shell extension (Tracker metadata extractor mod
 
 Package: rom-properties-utils
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libcurl4
+Depends: ${shlibs:Depends}, ${misc:Depends}, libcurl3
 Recommends: rom-properties-lang
 Conflicts: rom-properties-stub
 Replaces: rom-properties-stub
