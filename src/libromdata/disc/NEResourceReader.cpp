@@ -445,8 +445,8 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 		tblPos += static_cast<int>(fields.size() * sizeof(uint16_t));
 		const int key_len = (wLength - wValueLength - sizeof_fields) - 1;
 		assert(key_len > 0);
-		assert((tblPos + key_len) <= strTblData_len);
-		if (key_len <= 0 || (tblPos + key_len) > strTblData_len) {
+		assert((tblPos + key_len + 1) <= strTblData_len);
+		if (key_len <= 0 || (tblPos + key_len + 1) > strTblData_len) {
 			// Invalid key length and/or out of bounds.
 			return -EIO;
 		}
@@ -469,8 +469,8 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 			value = str_empty;
 		} else {
 			// String bounds check
-			assert((value_len * static_cast<int>(sizeof(char16_t))) <= strTblData_len);
-			if (tblPos + (value_len * static_cast<int>(sizeof(char16_t))) > strTblData_len) {
+			assert((tblPos + value_len + 1) <= strTblData_len);
+			if ((tblPos + value_len + 1) > strTblData_len) {
 				// Out of bounds.
 				return -EIO;
 			}
