@@ -499,7 +499,7 @@ string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t str
 	// Search for the specified string.
 	const char *p = vec->data() + sizeof(XDBF_XSTR_Header);
 	const char *const p_end = p + vec->size() - sizeof(XDBF_XSTR_Header);
-	while (p < p_end) {
+	while (p + sizeof(XDBF_XSTR_Entry_Header) < p_end) {
 		// TODO: Verify alignment.
 		const XDBF_XSTR_Entry_Header *const hdr =
 			reinterpret_cast<const XDBF_XSTR_Entry_Header*>(p);
