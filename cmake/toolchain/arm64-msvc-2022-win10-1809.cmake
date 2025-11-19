@@ -16,7 +16,7 @@ FOREACH(_msvc_edition Enterprise Professional Community)
 	ENDIF()
 ENDFOREACH(_msvc_edition)
 # TODO: Allow different Host architectures?
-SET(MSVC_HOST_BIN_DIR "${MSVC_HOST_BIN_DIR}/VC/Tools/MSVC/14.36.32532/bin/Hostx64/arm64")
+SET(MSVC_HOST_BIN_DIR "${MSVC_HOST_BIN_DIR}/VC/Tools/MSVC/14.44.35207/bin/Hostx64/arm64")
 
 # which compilers to use for C and C++
 SET(CMAKE_C_COMPILER	"${MSVC_HOST_BIN_DIR}/cl.exe")
