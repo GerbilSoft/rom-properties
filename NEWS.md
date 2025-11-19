@@ -6,6 +6,11 @@
   * EXE_PE: Fix regression that causes the Imports tab to show the wrong
     DLL names for imports.
     * Affects: v2.7
+  * Fix more crash bugs and a few memory leaks (found using aflplusplus with -fsanitize=address):
+    * PowerVR
+    * Xbox360_XDBF
+    * PEResourceReader / NEResourceReader
+    * RpPng::loadPng()
 
 ## v2.7 (released 2025/11/16)
 
