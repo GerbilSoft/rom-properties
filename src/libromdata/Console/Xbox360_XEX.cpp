@@ -169,10 +169,9 @@ public:
 	 * at the beginning of the data (low byte == 0xFF).
 	 *
 	 * @param header_id	[in] Optional header ID.
-	 * @param pVec		[out] rp::uvector<uint8_t>&
-	 * @return Number of bytes read on success; 0 on error.
+	 * @return rp::uvector<uint8_t> (empty on error)
 	 */
-	size_t getOptHdrData(uint32_t header_id, rp::uvector<uint8_t> &pVec);
+	rp::uvector<uint8_t> getOptHdrData(uint32_t header_id);
 
 	/**
 	 * Get the resource information.
@@ -425,27 +424,26 @@ size_t Xbox360_XEX_Private::getOptHdrData(uint32_t header_id, uint32_t *pOut32)
  * at the beginning of the data (low byte == 0xFF).
  *
  * @param header_id	[in] Optional header ID.
- * @param pVec		[out] rp::uvector<uint8_t>&
- * @return Number of bytes read on success; 0 on error.
+ * @return rp::uvector<uint8_t> (empty on error)
  */
-size_t Xbox360_XEX_Private::getOptHdrData(uint32_t header_id, rp::uvector<uint8_t> &pVec)
+rp::uvector<uint8_t> Xbox360_XEX_Private::getOptHdrData(uint32_t header_id)
 {
 	assert((header_id & 0xFF) > 0x01);
 	if ((header_id & 0xFF) <= 0x01) {
 		// Not supported by this function.
-		return 0;
+		return {};
 	}
 
 	if (static_cast<int>(xexType) < 0) {
 		// Invalid XEX type.
-		return 0;
+		return {};
 	}
 
 	// Get the entry.
 	const XEX2_Optional_Header_Tbl *const entry = getOptHdrTblEntry(header_id);
 	if (!entry) {
 		// Not found.
-		return 0;
+		return {};
 	}
 
 	size_t size;
@@ -459,7 +457,7 @@ size_t Xbox360_XEX_Private::getOptHdrData(uint32_t header_id, rp::uvector<uint8_
 		size_t sz_read = file->seekAndRead(offset, &dwSize, sizeof(dwSize));
 		if (sz_read != sizeof(dwSize)) {
 			// Seek and/or read error.
-			return 0;
+			return {};
 		}
 		size = be32_to_cpu(dwSize);
 	}
@@ -469,19 +467,19 @@ size_t Xbox360_XEX_Private::getOptHdrData(uint32_t header_id, rp::uvector<uint8_
 	assert(size <= MAX_HEADER_SIZE);
 	if (size > MAX_HEADER_SIZE) {
 		// Invalid header size.
-		pVec.clear();
-		return 0;
+		return {};
 	}
 
 	// Read the data.
 	// NOTE: This includes the size value for 0xFF structs.
-	pVec.resize(size);
-	size_t sz_read = file->seekAndRead(offset, pVec.data(), size);
+	rp::uvector<uint8_t> vec;
+	vec.resize(size);
+	size_t sz_read = file->seekAndRead(offset, vec.data(), size);
 	if (sz_read != size) {
 		// Seek and/or read error.
-		return 0;
+		return {};
 	}
-	return size;
+	return vec;
 }
 
 /**
@@ -504,8 +502,8 @@ const XEX2_Resource_Info *Xbox360_XEX_Private::getXdbfResInfo(const char *resour
 	// Note that this is loaded even if we don't need the title ID,
 	// since other functions may need the execution ID.
 	if (!isExecutionIDLoaded) {
-		size_t size = getOptHdrData(XEX2_OPTHDR_EXECUTION_ID, u8_data);
-		if (size != sizeof(XEX2_Execution_ID)) {
+		u8_data = getOptHdrData(XEX2_OPTHDR_EXECUTION_ID);
+		if (u8_data.size() != sizeof(XEX2_Execution_ID)) {
 			// Unable to read the execution ID...
 			// Can't get the title ID.
 			return nullptr;
@@ -537,15 +535,15 @@ const XEX2_Resource_Info *Xbox360_XEX_Private::getXdbfResInfo(const char *resour
 	}
 
 	// Get the resource information.
-	size_t size = getOptHdrData(XEX2_OPTHDR_RESOURCE_INFO, u8_data);
-	if (size < sizeof(uint32_t) + sizeof(XEX2_Resource_Info)) {
+	u8_data = getOptHdrData(XEX2_OPTHDR_RESOURCE_INFO);
+	if (u8_data.size() < sizeof(uint32_t) + sizeof(XEX2_Resource_Info)) {
 		// No resource information.
 		return nullptr;
 	}
 
 	// Search the resource table for the specified resource ID.
 	const unsigned int res_count = static_cast<unsigned int>(
-		(size - sizeof(uint32_t)) / sizeof(XEX2_Resource_Info));
+		(u8_data.size() - sizeof(uint32_t)) / sizeof(XEX2_Resource_Info));
 	if (res_count == 0) {
 		// No resource information...
 		return nullptr;
@@ -612,9 +610,8 @@ int Xbox360_XEX_Private::initPeReader(void)
 	}
 
 	// Get the file format info.
-	rp::uvector<uint8_t> u8_ffi;
-	size_t size = getOptHdrData(XEX2_OPTHDR_FILE_FORMAT_INFO, u8_ffi);
-	if (size < sizeof(fileFormatInfo)) {
+	rp::uvector<uint8_t> u8_ffi = getOptHdrData(XEX2_OPTHDR_FILE_FORMAT_INFO);
+	if (u8_ffi.size() < sizeof(fileFormatInfo)) {
 		// Seek and/or read error.
 		return -EIO;
 	}
@@ -856,7 +853,7 @@ int Xbox360_XEX_Private::initPeReader(void)
 			// Based on: https://github.com/xenia-project/xenia/blob/5f764fc752c82674981a9f402f1bbd96b399112a/src/xenia/cpu/xex_module.cc
 			while (lzx_blocks[lzx_idx].block_size != 0) {
 				// Read the next block header.
-				size = reader[rd_idx]->read(&lzx_blocks[!lzx_idx], sizeof(lzx_blocks[!lzx_idx]));
+				size_t size = reader[rd_idx]->read(&lzx_blocks[!lzx_idx], sizeof(lzx_blocks[!lzx_idx]));
 				if (size != sizeof(lzx_blocks[!lzx_idx])) {
 					// Seek and/or read error.
 					int err = reader[rd_idx]->lastError();
@@ -1175,9 +1172,8 @@ Xbox360_Version_t Xbox360_XEX_Private::getMinKernelVersion(void)
 
 	// Minimum kernel version is determined by checking the
 	// import libraries and taking the maximum version.
-	rp::uvector<uint8_t> u8_implib;
-	size_t size = getOptHdrData(XEX2_OPTHDR_IMPORT_LIBRARIES, u8_implib);
-	if (size < sizeof(XEX2_Import_Libraries_Header) + (sizeof(XEX2_Import_Library_Entry) * 2)) {
+	rp::uvector<uint8_t> u8_implib = getOptHdrData(XEX2_OPTHDR_IMPORT_LIBRARIES);
+	if (u8_implib.size() < sizeof(XEX2_Import_Libraries_Header) + (sizeof(XEX2_Import_Library_Entry) * 2)) {
 		// Too small...
 		return rver;
 	}
@@ -1802,17 +1798,19 @@ int Xbox360_XEX::loadFieldData(void)
 		pe_xdbf->addFields_strings(&d->fields);
 	}
 
-	// Original executable name
+	// General data buffer for loading optional headers.
 	rp::uvector<uint8_t> u8_data;
-	size_t size = d->getOptHdrData(XEX2_OPTHDR_ORIGINAL_PE_NAME, u8_data);
-	if (size > sizeof(uint32_t)) {
+
+	// Original executable name
+	u8_data = d->getOptHdrData(XEX2_OPTHDR_ORIGINAL_PE_NAME);
+	if (u8_data.size() > sizeof(uint32_t)) {
 		// Sanity check: Must be less than 260 bytes. (PATH_MAX)
-		assert(size <= 260+sizeof(uint32_t));
-		if (size <= 260+sizeof(uint32_t)) {
+		assert(u8_data.size() <= 260+sizeof(uint32_t));
+		if (u8_data.size() <= 260+sizeof(uint32_t)) {
 			// Got the filename.
 			// NOTE: May or may not be NULL-terminated.
 			// TODO: What encoding? Assuming cp1252...
-			int len = static_cast<int>(size - sizeof(uint32_t));
+			int len = static_cast<int>(u8_data.size() - sizeof(uint32_t));
 			d->fields.addField_string(C_("Xbox360_XEX", "PE Filename"),
 				cp1252_to_utf8(reinterpret_cast<const char*>(
 					u8_data.data() + sizeof(uint32_t)), len),
@@ -1955,8 +1953,8 @@ int Xbox360_XEX::loadFieldData(void)
 		RomFields::STRF_MONOSPACE);
 
 	// Disc Profile ID
-	size = d->getOptHdrData(XEX2_OPTHDR_DISC_PROFILE_ID, u8_data);
-	if (size == 16) {
+	u8_data = d->getOptHdrData(XEX2_OPTHDR_DISC_PROFILE_ID);
+	if (u8_data.size() == 16) {
 		d->fields.addField_string(C_("Xbox360_XEX", "Disc Profile ID"),
 			d->formatMediaID(u8_data.data()),
 			RomFields::STRF_MONOSPACE);
@@ -2026,8 +2024,8 @@ int Xbox360_XEX::loadFieldData(void)
 	// Nintendo's systems. For Xbox 360, we'll need to convert the format.
 	// NOTE: The actual game ratings field is 64 bytes, but only the first
 	// 14 bytes are actually used.
-	size = d->getOptHdrData(XEX2_OPTHDR_GAME_RATINGS, u8_data);
-	if (size >= sizeof(XEX2_Game_Ratings)) {
+	u8_data = d->getOptHdrData(XEX2_OPTHDR_GAME_RATINGS);
+	if (u8_data.size() >= sizeof(XEX2_Game_Ratings)) {
 		const XEX2_Game_Ratings *const pLdGameRatings =
 			reinterpret_cast<const XEX2_Game_Ratings*>(u8_data.data());
 
