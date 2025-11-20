@@ -477,6 +477,78 @@ int delete_file(const char *filename)
 }
 
 /**
+ * Convert Win32 attributes to d_type.
+ * @param dwAttrs Win32 attributes (NOTE: Can't use DWORD here)
+ * @return d_type, or DT_UNKNOWN on error.
+ */
+uint8_t win32_attrs_to_d_type(uint32_t dwAttrs)
+{
+	if (dwAttrs == INVALID_FILE_ATTRIBUTES)
+		return DT_UNKNOWN;
+
+	uint8_t d_type;
+
+	if (dwAttrs & FILE_ATTRIBUTE_DIRECTORY) {
+		d_type = DT_DIR;
+	} else if (dwAttrs & FILE_ATTRIBUTE_REPARSE_POINT) {
+		// TODO: Check WIN32_FIND_DATA::dwReserved0 for IO_REPARSE_TAG_SYMLINK.
+		d_type = DT_LNK;
+	} else if (dwAttrs & FILE_ATTRIBUTE_DEVICE) {
+		// TODO: Is this correct?
+		d_type = DT_CHR;
+	} else {
+		d_type = DT_REG;
+	}
+
+	return d_type;
+}
+
+/**
+ * Get a file's d_type.
+ * @tparam CharType Character type (char for UTF-8; wchar_t for Windows UTF-16)
+ * @param filename Filename
+ * @param deref If true, dereference symbolic links (lstat)
+ * @return File's d_type, or DT_UNKNOWN if not available.
+ */
+template<typename CharType>
+static uint8_t T_get_file_d_type(const CharType *filename, bool deref)
+{
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
+		return DT_UNKNOWN;
+	}
+
+	// TODO: Handle dereferencing.
+	RP_UNUSED(deref);
+
+	const tstring tfilename = makeWinPath(filename);
+	return win32_attrs_to_d_type(GetFileAttributes(tfilename.c_str()));
+}
+
+/**
+ * Get a file's d_type.
+ * @param filename Filename (UTF-8)
+ * @param deref If true, dereference symbolic links (lstat)
+ * @return File d_type
+ */
+uint8_t get_file_d_type(const char *filename, bool deref)
+{
+	return T_get_file_d_type(filename, deref);
+}
+
+/**
+ * Get a file's d_type.
+ * @param filename Filename (UTF-16)
+ * @param deref If true, dereference symbolic links (lstat)
+ * @return File d_type
+ */
+uint8_t get_file_d_type(const wchar_t *filename, bool deref)
+{
+	return T_get_file_d_type(filename, deref);
+}
+
+/**
  * Check if the specified file is a symbolic link.
  * Internal function; has common code for after filename parsing.
  *
@@ -880,78 +952,6 @@ int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, time_t *pM
 int get_file_size_and_mtime(const wchar_t *filename, off64_t *pFileSize, time_t *pMtime)
 {
 	return get_file_size_and_mtime_int(makeWinPath(filename), pFileSize, pMtime);
-}
-
-/**
- * Convert Win32 attributes to d_type.
- * @param dwAttrs Win32 attributes (NOTE: Can't use DWORD here)
- * @return d_type, or DT_UNKNOWN on error.
- */
-uint8_t win32_attrs_to_d_type(uint32_t dwAttrs)
-{
-	if (dwAttrs == INVALID_FILE_ATTRIBUTES)
-		return DT_UNKNOWN;
-
-	uint8_t d_type;
-
-	if (dwAttrs & FILE_ATTRIBUTE_DIRECTORY) {
-		d_type = DT_DIR;
-	} else if (dwAttrs & FILE_ATTRIBUTE_REPARSE_POINT) {
-		// TODO: Check WIN32_FIND_DATA::dwReserved0 for IO_REPARSE_TAG_SYMLINK.
-		d_type = DT_LNK;
-	} else if (dwAttrs & FILE_ATTRIBUTE_DEVICE) {
-		// TODO: Is this correct?
-		d_type = DT_CHR;
-	} else {
-		d_type = DT_REG;
-	}
-
-	return d_type;
-}
-
-/**
- * Get a file's d_type.
- * @tparam CharType Character type (char for UTF-8; wchar_t for Windows UTF-16)
- * @param filename Filename
- * @param deref If true, dereference symbolic links (lstat)
- * @return File's d_type, or DT_UNKNOWN if not available.
- */
-template<typename CharType>
-static uint8_t T_get_file_d_type(const CharType *filename, bool deref)
-{
-	assert(filename != nullptr);
-	assert(filename[0] != '\0');
-	if (unlikely(!filename || filename[0] == '\0')) {
-		return DT_UNKNOWN;
-	}
-
-	// TODO: Handle dereferencing.
-	RP_UNUSED(deref);
-
-	const tstring tfilename = makeWinPath(filename);
-	return win32_attrs_to_d_type(GetFileAttributes(tfilename.c_str()));
-}
-
-/**
- * Get a file's d_type.
- * @param filename Filename (UTF-8)
- * @param deref If true, dereference symbolic links (lstat)
- * @return File d_type
- */
-uint8_t get_file_d_type(const char *filename, bool deref)
-{
-	return T_get_file_d_type(filename, deref);
-}
-
-/**
- * Get a file's d_type.
- * @param filename Filename (UTF-16)
- * @param deref If true, dereference symbolic links (lstat)
- * @return File d_type
- */
-uint8_t get_file_d_type(const wchar_t *filename, bool deref)
-{
-	return T_get_file_d_type(filename, deref);
 }
 
 } }

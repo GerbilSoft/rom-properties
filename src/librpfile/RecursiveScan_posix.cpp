@@ -81,7 +81,7 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 
 			case DT_LNK:
 				// Symbolic link. Dereference it and check again.
-				d_type = FileSystem::get_file_d_type(fullpath.c_str(), true);
+				d_type = FileSystem::get_file_d_type(fullpath.c_str(), false);
 				switch (d_type) {
 					default:
 						// Not supported.
@@ -102,8 +102,8 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 				break;
 
 			case DT_UNKNOWN:
-				// Unknown. Use stat().
-				d_type = FileSystem::get_file_d_type(fullpath.c_str(), false);
+				// Unknown. Use lstat().
+				d_type = FileSystem::get_file_d_type(fullpath.c_str(), true);
 				switch (d_type) {
 					default:
 						// Not supported.
@@ -118,7 +118,7 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 
 					case DT_LNK:
 						// Symbolic link. Dereference it and check again.
-						d_type = FileSystem::get_file_d_type(fullpath.c_str(), true);
+						d_type = FileSystem::get_file_d_type(fullpath.c_str(), false);
 						switch (d_type) {
 							default:
 								// Not supported.

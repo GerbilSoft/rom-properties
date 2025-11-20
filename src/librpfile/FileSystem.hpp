@@ -244,10 +244,39 @@ static inline const wchar_t *file_ext(const std::wstring &filename)
 RP_LIBROMDATA_PUBLIC
 std::string replace_ext(const char *filename, const char *ext);
 
+#ifdef _WIN32
+/**
+ * Convert Win32 attributes to d_type.
+ * @param dwAttrs Win32 attributes (NOTE: Can't use DWORD here)
+ * @return d_type, or DT_UNKNOWN on error.
+ */
+uint8_t win32_attrs_to_d_type(uint32_t dwAttrs);
+#endif /* _WIN32 */
+
+/**
+ * Get a file's d_type.
+ * @param filename Filename (UTF-8)
+ * @param no_deref If true, don't resolve symlinks (i.e. lstat)
+ * @return d_type
+ */
+RP_LIBROMDATA_PUBLIC
+uint8_t get_file_d_type(const char *filename, bool no_deref = false);
+
+#ifdef _WIN32
+/**
+ * Get a file's d_type.
+ * @param filename Filename (UTF-16)
+ * @param no_deref If true, don't resolve symlinks (i.e. lstat)
+ * @return d_type
+ */
+RP_LIBROMDATA_PUBLIC
+uint8_t get_file_d_type(const wchar_t *filename, bool no_deref = false);
+#endif /* _WIN32 */
+
 /**
  * Check if the specified file is a symbolic link.
  *
- * Symbolic links are NOT resolved; otherwise wouldn't check
+ * Symbolic links are NOT resolved; otherwise, this wouldn't check
  * if the specified file was a symlink itself.
  *
  * @param filename Filename (UTF-8)
@@ -446,35 +475,6 @@ static inline int get_file_size_and_mtime(const std::wstring &filename, off64_t 
 {
 	return get_file_size_and_mtime(filename.c_str(), pFileSize, pMtime);
 }
-#endif /* _WIN32 */
-
-#ifdef _WIN32
-/**
- * Convert Win32 attributes to d_type.
- * @param dwAttrs Win32 attributes (NOTE: Can't use DWORD here)
- * @return d_type, or DT_UNKNOWN on error.
- */
-uint8_t win32_attrs_to_d_type(uint32_t dwAttrs);
-#endif /* _WIN32 */
-
-/**
- * Get a file's d_type.
- * @param filename Filename (UTF-8)
- * @param deref If true, dereference symbolic links (lstat)
- * @return File d_type
- */
-RP_LIBROMDATA_PUBLIC
-uint8_t get_file_d_type(const char *filename, bool deref = false);
-
-#ifdef _WIN32
-/**
- * Get a file's d_type.
- * @param filename Filename (UTF-16)
- * @param deref If true, dereference symbolic links (lstat)
- * @return File d_type
- */
-RP_LIBROMDATA_PUBLIC
-uint8_t get_file_d_type(const wchar_t *filename, bool deref = false);
 #endif /* _WIN32 */
 
 } }

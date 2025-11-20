@@ -223,6 +223,51 @@ int delete_file(const char *filename)
 }
 
 /**
+ * Get a file's d_type.
+ * @param filename Filename
+ * @param no_deref If true, don't resolve symlinks (i.e. lstat)
+ * @return File d_type
+ */
+uint8_t get_file_d_type(const char *filename, bool no_deref)
+{
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
+		return DT_UNKNOWN;
+	}
+
+	unsigned int mode;
+
+#ifdef HAVE_STATX
+	struct statx sbx;
+	const int flags = (no_deref) ? AT_SYMLINK_NOFOLLOW : 0;
+	int ret = statx(AT_FDCWD, filename, flags, STATX_TYPE, &sbx);
+	if (ret != 0 || !(sbx.stx_mask & STATX_TYPE)) {
+		// statx() failed and/or did not return the file type.
+		return DT_UNKNOWN;
+	}
+	mode = sbx.stx_mode;
+#else /* !HAVE_STATX */
+	struct stat sb;
+	int ret;
+	if (no_deref) {
+		ret = lstat(filename, &sb);
+	} else {
+		ret = stat(filename, &sb);
+	}
+	if (ret != 0) {
+		// [l]stat() failed.
+		return DT_UNKNOWN;
+	}
+	mode = sb.st_mode;
+#endif /* HAVE_STATX */
+
+	// The type bits in struct stat's mode match the
+	// DT_* enumeration values.
+	return IFTODT(mode);
+}
+
+/**
  * Check if the specified file is a symbolic link.
  *
  * Symbolic links are NOT resolved; otherwise wouldn't check
@@ -233,30 +278,7 @@ int delete_file(const char *filename)
  */
 bool is_symlink(const char *filename)
 {
-	assert(filename != nullptr);
-	assert(filename[0] != '\0');
-	if (unlikely(!filename || filename[0] == '\0')) {
-		return false;
-	}
-
-#ifdef HAVE_STATX
-	struct statx sbx;
-	int ret = statx(AT_FDCWD, filename, AT_SYMLINK_NOFOLLOW, STATX_TYPE, &sbx);
-	if (ret != 0 || !(sbx.stx_mask & STATX_TYPE)) {
-		// statx() failed and/or did not return the file type.
-		// Assume this is not a symlink.
-		return false;
-	}
-	return !!S_ISLNK(sbx.stx_mode);
-#else /* !HAVE_STATX */
-	struct stat sb;
-	if (lstat(filename, &sb) != 0) {
-		// lstat() failed.
-		// Assume this is not a symlink.
-		return false;
-	}
-	return !!S_ISLNK(sb.st_mode);
-#endif /* HAVE_STATX */
+	return (get_file_d_type(filename, true) == DT_LNK);
 }
 
 /**
@@ -470,48 +492,6 @@ int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, time_t *pM
 #endif /* HAVE_STATX */
 
 	return 0;
-}
-
-/**
- * Get a file's d_type.
- * @param filename Filename
- * @param deref If true, dereference symbolic links (lstat)
- * @return File d_type
- */
-uint8_t get_file_d_type(const char *filename, bool deref)
-{
-	assert(filename != nullptr);
-	assert(filename[0] != '\0');
-	if (unlikely(!filename || filename[0] == '\0')) {
-		return DT_UNKNOWN;
-	}
-
-	unsigned int mode;
-
-#ifdef HAVE_STATX
-	struct statx sbx;
-	const int dirfd = (unlikely(deref))
-		?  AT_FDCWD				// dereference symlinks
-		: (AT_FDCWD | AT_SYMLINK_NOFOLLOW);	// don't dereference symlinks
-	int ret = statx(dirfd, filename, 0, STATX_TYPE, &sbx);
-	if (ret != 0 || !(sbx.stx_mask & STATX_TYPE)) {
-		// statx() failed and/or did not return the file type.
-		return DT_UNKNOWN;
-	}
-	mode = sbx.stx_mode;
-#else /* !HAVE_STATX */
-	struct stat sb;
-	int ret = (unlikely(deref) ? stat(filename, &sb) : lstat(filename, &sb));
-	if (ret != 0) {
-		// stat() failed.
-		return DT_UNKNOWN;
-	}
-	mode = sb.st_mode;
-#endif /* HAVE_STATX */
-
-	// The type bits in struct stat's mode match the
-	// DT_* enumeration values.
-	return IFTODT(mode);
 }
 
 } }
