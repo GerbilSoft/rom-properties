@@ -318,30 +318,7 @@ string resolve_symlink(const char *filename)
  */
 bool is_directory(const char *filename)
 {
-	assert(filename != nullptr);
-	assert(filename[0] != '\0');
-	if (unlikely(!filename || filename[0] == '\0')) {
-		return false;
-	}
-
-#ifdef HAVE_STATX
-	struct statx sbx;
-	int ret = statx(AT_FDCWD, filename, 0, STATX_TYPE, &sbx);
-	if (ret != 0 || !(sbx.stx_mask & STATX_TYPE)) {
-		// statx() failed and/or did not return the file type.
-		// Assume this is not a directory.
-		return false;
-	}
-	return !!S_ISDIR(sbx.stx_mode);
-#else /* !HAVE_STATX */
-	struct stat sb;
-	if (stat(filename, &sb) != 0) {
-		// stat() failed.
-		// Assume this is not a directory.
-		return false;
-	}
-	return !!S_ISDIR(sb.st_mode);
-#endif /* HAVE_STATX */
+	return (get_file_d_type(filename, false) == DT_DIR);
 }
 
 /**
