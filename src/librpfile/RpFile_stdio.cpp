@@ -7,21 +7,21 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "config.librpfile.h"
 
 #ifdef _WIN32
-# error RpFile_stdio is not supported on Windows, use RpFile_win32.
+#  error RpFile_stdio is not supported on Windows, use RpFile_win32.
 #endif /* _WIN32 */
 
 #include "RpFile.hpp"
 #include "RpFile_p.hpp"
 
+// librpfile
+#include "FileSystem.hpp"
+
 // librpbyteswap
 #include "librpbyteswap/byteswap_rp.h"
 
 // C includes
-#include <fcntl.h>	// AT_EMPTY_PATH, FD_CLOEXEC
-#include <sys/stat.h>	// stat(), statx()
 #include <unistd.h>	// ftruncate()
 
 // C++ STL classes
@@ -122,27 +122,8 @@ int RpFilePrivate::reOpenFile(void)
 	// about that...
 
 	// Check if this is a device.
-	bool hasFileMode = false;
-	uint8_t fileType = 0;
-#ifdef HAVE_STATX
-	struct statx sbx;
-	int ret = statx(AT_FDCWD, filename.c_str(), 0, STATX_TYPE, &sbx);
-	if (ret == 0 && (sbx.stx_mask & STATX_TYPE)) {
-		// statx() succeeded.
-		hasFileMode = true;
-		fileType = IFTODT(sbx.stx_mode);
-	}
-#else /* !HAVE_STATX */
-	struct stat sb;
-	if (!stat(filename.c_str(), &sb)) {
-		// fstat() succeeded.
-		hasFileMode = true;
-		fileType = IFTODT(sb.st_mode);
-	}
-#endif /* HAVE_STATX */
-
-	// Did we get the file mode from statx() or stat()?
-	if (hasFileMode) {
+	uint8_t fileType = FileSystem::get_file_d_type(filename.c_str());
+	if (fileType != DT_UNKNOWN) {
 		q->m_lastError = 0;
 		switch (fileType) {
 			case DT_DIR:
