@@ -8,14 +8,18 @@
 
 #include "stdafx.h"
 #include "config.librpfile.h"
+
 #include "XAttrReader.hpp"
 #include "XAttrReader_p.hpp"
+
+// librpfile
+#include "FileSystem.hpp"
 
 // librpbyteswap
 #include "librpbyteswap/byteswap_rp.h"
 
-#include <fcntl.h>	// AT_FDCWD
-#include <sys/stat.h>	// stat(), statx()
+#include <dirent.h>	// d_type
+#include <fcntl.h>	// open(), O_RDONLY, O_NONBLOCK
 #include <sys/ioctl.h>
 #include <unistd.h>
 
@@ -120,35 +124,8 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	, zLevel(0)
 {
 	// Make sure this is a regular file or a directory.
-	mode_t mode;
-
-#ifdef HAVE_STATX
-	struct statx sbx;
-	int ret = statx(AT_FDCWD, filename, 0, STATX_TYPE, &sbx);
-	if (ret != 0 || !(sbx.stx_mask & STATX_TYPE)) {
-		// An error occurred.
-		lastError = -errno;
-		if (lastError == 0) {
-			lastError = -ENOTSUP;
-		}
-		return;
-	}
-	mode = sbx.stx_mode;
-#else /* !HAVE_STATX */
-	struct stat sb;
-	errno = 0;
-	if (stat(filename, &sb) != 0) {
-		// stat() failed.
-		lastError = -errno;
-		if (lastError == 0) {
-			lastError = -ENOTSUP;
-		}
-		return;
-	}
-	mode = sb.st_mode;
-#endif /* HAVE_STATX */
-
-	if (!S_ISREG(mode) && !S_ISDIR(mode)) {
+	uint8_t d_type = FileSystem::get_file_d_type(filename);
+	if (d_type != DT_REG && d_type != DT_DIR) {
 		// This is neither a regular file nor a directory.
 		lastError = -ENOTSUP;
 		return;
