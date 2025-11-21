@@ -15,7 +15,7 @@ video game ROM and disc images.
 
 ## v2.7
 
-![Windows Explorer showing Android APK packages and a 16-bit Windows application.](rp-v2.7-win10.APK.Win16.png)
+![Windows Explorer showing Android APK packages and a 16-bit Windows application.](doc/img/rp-v2.7-win10.APK.Win16.png)
 
 Major additions in v2.7 include:
 
