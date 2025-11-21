@@ -11,6 +11,8 @@
     * Xbox360_XDBF
     * PEResourceReader / NEResourceReader
     * RpPng::loadPng()
+    * ICO
+    * AndroidManifestXML
 
 ## v2.7 (released 2025/11/16)
 
