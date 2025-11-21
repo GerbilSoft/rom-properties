@@ -53,6 +53,7 @@ Description: ROM Properties Page shell extension (meta package)
 Package: libromdata8
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, rom-properties-data, liblz4-1, liblzo2-2
+Recommends: libwebp5
 Description: ROM Properties Page shell extension (shared library)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
