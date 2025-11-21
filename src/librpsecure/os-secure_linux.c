@@ -105,13 +105,13 @@ int rp_secure_enable(rp_secure_param_t param)
 		SCMP_SYS(rt_sigaction),
 		SCMP_SYS(rt_sigprocmask),
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) || defined(__SANITIZE_ADDRESS__)
 		// abort() [called by assert()]
 		SCMP_SYS(getpid),
 		SCMP_SYS(gettid),
 		SCMP_SYS(tgkill),
 		SCMP_SYS(uname),	// needed on some systems
-#endif /* !NDEBUG */
+#endif /* !defined(NDEBUG) || defined(__SANITIZE_ADDRESS__) */
 
 #ifdef GCOV
 		SCMP_SYS(getpid),	// gcov uses getpid() in gcov_open() if GCOV_LOCKED
