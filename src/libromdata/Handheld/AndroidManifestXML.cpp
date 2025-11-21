@@ -263,6 +263,11 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 			// Look for the Attributes
 			const ResXMLTree_attribute *pAttrData = reinterpret_cast<const ResXMLTree_attribute*>(pNodeData);
 			const ResXMLTree_attribute *const pAttrDataEnd = pAttrData + le16_to_cpu(pAttrExt->attributeCount);
+			assert(reinterpret_cast<const uint8_t*>(pAttrDataEnd) <= pEnd);
+			if (reinterpret_cast<const uint8_t*>(pAttrDataEnd) > pEnd) {
+				// Attribute data end is out of range?
+				break;
+			}
 			for (; pAttrData < pAttrDataEnd; pAttrData++) {
 				//uint32_t attrNameNsSi = le32_to_cpu(pAttrData->ns.index);	// AttrName Namespace Str Ind, or FFFFFFFF
 				int attrNameSi = le32_to_cpu(pAttrData->name.index);		// AttrName String Index
