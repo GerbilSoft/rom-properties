@@ -725,7 +725,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 	stride = ALIGN_BYTES(4, stride);
 
 	// Mask row is 1bpp and must also be 32-bit aligned.
-	unsigned int mask_stride = ALIGN_BYTES(4, width / 8);
+	unsigned int mask_stride = ALIGN_BYTES(4, ((width / 8) + ((width % 8) > 0)));
 
 	// Icon file (this->file for .ico; IResourceReader::open() for .exe/.dll)
 	IRpFilePtr f_icon;
