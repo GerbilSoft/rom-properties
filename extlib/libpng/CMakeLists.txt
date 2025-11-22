@@ -19,7 +19,7 @@
 
 set(PNGLIB_MAJOR 1)
 set(PNGLIB_MINOR 6)
-set(PNGLIB_REVISION 50)
+set(PNGLIB_REVISION 51)
 set(PNGLIB_SUBREVISION 0)
 #set(PNGLIB_SUBREVISION "git")
 set(PNGLIB_VERSION ${PNGLIB_MAJOR}.${PNGLIB_MINOR}.${PNGLIB_REVISION})
@@ -385,10 +385,6 @@ if(PNG_HARDWARE_OPTIMIZATIONS)
 
       check_c_source_compiles("
         #include <riscv_vector.h>
-        #include <asm/hwcap.h>
-        #ifndef COMPAT_HWCAP_ISA_V /* added in linux-6.5 */
-        #error \"COMPAT_HWCAP_ISA_V is not available\"
-        #endif
         int main() {
           const float src[] = { 0.0f, 0.0f, 0.0f, 0.0f };
           uint64_t ptr[2] = {0x0908060504020100, 0xFFFFFFFF0E0D0C0A};
