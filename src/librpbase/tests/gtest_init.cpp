@@ -332,13 +332,17 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// RpGdiplusBackend will be set up by tests that use it.
 #endif /* _WIN32 */
 
-#ifdef __GLIBC__
-	// Reduce /etc/localtime stat() calls.
-	// References:
-	// - https://lwn.net/Articles/944499/
-	// - https://gitlab.com/procps-ng/procps/-/merge_requests/119
-	setenv("TZ", ":/etc/localtime", 0);
-#endif /* __GLIBC__ */
+	/** Set up the test environment. **/
+
+	// NOTE: The environment variables need to be static char[]
+	// because POSIX putenv() takes `char*` and the buffer becomes
+	// part of the environment.
+
+	// Run all test with TZ=UTC to prevent issues with files
+	// that have built-in timestamps, e.g. EXE.
+	static TCHAR tz_env[] = _T("TZ=UTC");
+	_tputenv(tz_env);
+	tzset();
 
 	// Set the C and C++ locales.
 	// NOTE: The variable needs to be static char[] because
@@ -358,7 +362,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 #ifdef __APPLE__
 	// Mac OS X also requires setting LC_CTYPE="UTF-8".
-	putenv("LC_CTYPE=UTF-8");
+	static TCHAR lc_ctype_utf8_env[] = _T("LC_CTYPE=UTF-8");
+	_tputenv(lc_ctype_utf8_env);
 #endif /* __APPLE__ */
 
 	// NOTE: MinGW-w64 12.0.0 doesn't like setting the C++ locale to "".
