@@ -80,8 +80,8 @@ inline ::std::ostream& operator<<(::std::ostream& os, const RomHeaderTest_mode& 
 
 // Maximum file size for files within the .tar archives.
 static constexpr uint64_t MAX_BIN_FILESIZE  =  8U*1024U*1024U;	// 8 MB (for MD lock-on and some WonderSwan titles)
-static constexpr uint64_t MAX_TXT_FILESIZE  = 32U*1024U;	// 32 KB
-static constexpr uint64_t MAX_JSON_FILESIZE = 32U*1024U;	// 32 KB
+static constexpr uint64_t MAX_TXT_FILESIZE  = 64U*1024U;	// 64 KB
+static constexpr uint64_t MAX_JSON_FILESIZE = 64U*1024U;	// 64 KB
 
 class RomHeaderTest : public ::testing::TestWithParam<RomHeaderTest_mode>
 {
@@ -690,6 +690,13 @@ INSTANTIATE_TEST_SUITE_P(DirectDrawSurface, RomHeaderTest,
 		"Other/DirectDrawSurface.bin.tar.zst",
 		"Other/DirectDrawSurface.txt.tar.zst",
 		"Other/DirectDrawSurface.json.tar.zst"))
+	, RomHeaderTest::test_case_suffix_generator);
+
+INSTANTIATE_TEST_SUITE_P(EXE_Notepad, RomHeaderTest,
+	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
+		"Other/EXE_Notepad.bin.tar.zst",
+		"Other/EXE_Notepad.txt.tar.zst",
+		"Other/EXE_Notepad.json.tar.zst"))
 	, RomHeaderTest::test_case_suffix_generator);
 
 } }
