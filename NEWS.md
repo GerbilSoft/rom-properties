@@ -6,6 +6,9 @@
   * EXE_PE: Fix regression that causes the Imports tab to show the wrong
     DLL names for imports.
     * Affects: v2.7
+  * Windows 32-bit (i386): Fix a possible crash when handling certain
+    UTF-8 strings from Windows EXEs and possibly other file types.
+    * Affects: v2.6 - v2.7
   * Fix more crash bugs and a few memory leaks (found using aflplusplus with -fsanitize=address):
     * PowerVR
     * Xbox360_XDBF
