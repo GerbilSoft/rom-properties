@@ -26,6 +26,7 @@ using namespace LibRpFile;
 
 // C++ STL classes
 using std::array;
+using std::map;
 using std::string;
 using std::vector;
 
@@ -168,8 +169,12 @@ public:
 	// NOTE: *Not* byteswapped.
 	rp::uvector<IconBitmapHeader_t> iconBitmapHeaders;
 
-	// Decoded image
-	rp_image_ptr img;
+	// Decoded image(s)
+	// NOTE: Using `map` instead of `unordered_map` because
+	// we're not expecting too many images here...
+	// - Key: Image index
+	// - Value: Image
+	map<int, rp_image_ptr> img_map;
 
 public:
 	/**
@@ -580,6 +585,13 @@ rp_image_const_ptr ICOPrivate::loadImage_Win1(int idx)
 		addr += ((ico0_height * ico0_stride) * 2);
 	}
 
+	// Check if this image was already decoded.
+	auto iter = img_map.find(idx);
+	if (iter != img_map.end()) {
+		// Image was already decoded.
+		return iter->second;
+	}
+
 	const ICO_Win1_Header *const pIcoHeaderWin1 = &icoHeader.win1[idx];
 	const int width = le16_to_cpu(pIcoHeaderWin1->width);
 	const int height = le16_to_cpu(pIcoHeaderWin1->height);
@@ -618,9 +630,9 @@ rp_image_const_ptr ICOPrivate::loadImage_Win1(int idx)
 	// Convert the icon.
 	const uint8_t *const p_mask_data = icon_data.data();
 	const uint8_t *const p_icon_data = p_mask_data + icon_size;
-	img = ImageDecoder::fromLinearMono_WinIcon(width, height,
+	img_map[idx] = ImageDecoder::fromLinearMono_WinIcon(width, height,
 		p_icon_data, icon_size, p_mask_data, icon_size, stride);
-	return img;
+	return img_map[idx];
 }
 
 /**
@@ -640,6 +652,13 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 	if (idx < 0 || idx >= static_cast<int>(iconBitmapHeaders.size())) {
 		// Index is out of range.
 		return {};
+	}
+
+	// Check if this image was already decoded.
+	auto iter = img_map.find(idx);
+	if (iter != img_map.end()) {
+		// Image was already decoded.
+		return iter->second;
 	}
 
 	const IconBitmapHeader_t *const pIconHeader = &iconBitmapHeaders[idx];
@@ -814,6 +833,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 		icon_data = mask_data + mask_size;
 	}
 
+	rp_image_ptr img;
 	switch (bitcount) {
 		default:
 			// Not supported yet...
@@ -979,6 +999,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 		}
 	}
 
+	img_map[idx] = img;
 	return img;
 }
 
@@ -997,12 +1018,20 @@ rp_image_const_ptr ICOPrivate::loadImage_WinVista_PNG(int idx)
 		const auto &res = *(dir.res);
 		const GRPICONDIRENTRY *pBestIcon;
 		if (idx < 0 && dir.bestIcon_idx >= 0) {
-			pBestIcon = &res.iconDirectory[dir.bestIcon_idx];
-		} else if (idx < static_cast<int>(res.iconDirectory.size())) {
+			idx = dir.bestIcon_idx;
+		}
+		if (idx >= 0 && idx < static_cast<int>(res.iconDirectory.size())) {
 			pBestIcon = &res.iconDirectory[idx];
 		} else {
 			// Invalid index.
 			return {};
+		}
+
+		// Check if this image was already decoded.
+		auto iter = img_map.find(idx);
+		if (iter != img_map.end()) {
+			// Image was already decoded.
+			return iter->second;
 		}
 
 		f_png = res.resReader->open(dir.rt, le16_to_cpu(pBestIcon->nID), res.lang);
@@ -1011,12 +1040,20 @@ rp_image_const_ptr ICOPrivate::loadImage_WinVista_PNG(int idx)
 		const auto &ico = *(dir.ico);
 		const ICONDIRENTRY *pBestIcon;
 		if (idx < 0 && dir.bestIcon_idx >= 0) {
-			pBestIcon = &ico.iconDirectory[dir.bestIcon_idx];
-		} else if (idx < static_cast<int>(ico.iconDirectory.size())) {
+			idx = dir.bestIcon_idx;
+		}
+		if (idx >= 0 && idx < static_cast<int>(ico.iconDirectory.size())) {
 			pBestIcon = &ico.iconDirectory[idx];
 		} else {
 			// Invalid index.
 			return {};
+		}
+
+		// Check if this image was already decoded.
+		auto iter = img_map.find(idx);
+		if (iter != img_map.end()) {
+			// Image was already decoded.
+			return iter->second;
 		}
 
 		// NOTE: PartitionFile only supports IDiscReader, so we'll need to
@@ -1025,8 +1062,8 @@ rp_image_const_ptr ICOPrivate::loadImage_WinVista_PNG(int idx)
 		f_png = std::make_shared<PartitionFile>(discReader, pBestIcon->dwImageOffset, pBestIcon->dwBytesInRes);
 	}
 
-	img = RpPng::load(f_png);
-	return img;
+	img_map[idx] = RpPng::load(f_png);
+	return img_map[idx];
 }
 
 /**
