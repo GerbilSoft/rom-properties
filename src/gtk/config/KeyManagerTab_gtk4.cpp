@@ -408,28 +408,39 @@ void keyStore_key_changed_signal_handler(RpKeyStoreGTK *keyStore, int sectIdx, i
 
 	assert(sectIdx >= 0);
 	assert(sectIdx <= static_cast<int>(tab->vSectionListStore->size()));
-	if (sectIdx < 0 || sectIdx >= static_cast<int>(tab->vSectionListStore->size()))
+	if (sectIdx < 0 || sectIdx >= static_cast<int>(tab->vSectionListStore->size())) {
 		return;
+	}
 
 	GListStore *const listStore = tab->vSectionListStore->at(sectIdx);
 	assert(keyIdx >= 0);
 	assert(keyIdx < static_cast<int>(g_list_model_get_n_items(G_LIST_MODEL(listStore))));
-	if (keyIdx < 0 || keyIdx >= static_cast<int>(g_list_model_get_n_items(G_LIST_MODEL(listStore))))
+	if (keyIdx < 0 || keyIdx >= static_cast<int>(g_list_model_get_n_items(G_LIST_MODEL(listStore)))) {
 		return;
+	}
 
 	RpKeyStoreItem *const ksitem = RP_KEY_STORE_ITEM(g_list_model_get_item(G_LIST_MODEL(listStore), keyIdx));
 	assert(ksitem != nullptr);
-	if (!ksitem)
+	if (!ksitem) {
 		return;
+	}
 
 	const KeyStoreUI::Key *const key = keyStoreUI->getKey(sectIdx, keyIdx);
 	assert(key != nullptr);
-	if (!key)
+	if (!key) {
+		// NOTE: g_list_model_get_item() takes a reference on the item object.
+		// Drop the reference here to prevent a memory leak.
+		g_object_unref(item);
 		return;
+	}
 
 	printf("individual key update: sect %d, key %d -> %s\n", sectIdx, keyIdx, key->value.c_str());
 	rp_key_store_item_set_value(ksitem, key->value.c_str());
 	rp_key_store_item_set_status(ksitem, static_cast<uint8_t>(key->status));
+
+	// NOTE: g_list_model_get_item() takes a reference on the item object.
+	// Drop the reference here to prevent a memory leak.
+	g_object_unref(item);
 }
 
 /**

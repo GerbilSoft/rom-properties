@@ -9,6 +9,8 @@
   * Windows 32-bit (i386): Fix a possible crash when handling certain
     UTF-8 strings from Windows EXEs and possibly other file types.
     * Affects: v2.6 - v2.7
+  * GTK4: Fix some memory leaks due to incorrect reference handling when
+    using GListStore item objects.
   * Fix more crash bugs and a few memory leaks (found using aflplusplus with -fsanitize=address):
     * PowerVR
     * Xbox360_XDBF

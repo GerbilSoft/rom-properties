@@ -519,6 +519,9 @@ rp_rom_data_view_update_multi_RFT_LISTDATA_MULTI(RpRomDataView *page, uint32_t u
 			for (int i = 0; i < n_items && iter_listData != pListData_cend; i++, ++iter_listData) {
 				RpListDataItem *const item = RP_LIST_DATA_ITEM(g_list_model_get_item(G_LIST_MODEL(listStore), i));
 				assert(item != nullptr);
+				if (!item) {
+					continue;
+				}
 
 				int col = 0;
 				unsigned int is_timestamp = listDataDesc.col_attrs.is_timestamp;
@@ -541,6 +544,10 @@ rp_rom_data_view_update_multi_RFT_LISTDATA_MULTI(RpRomDataView *page, uint32_t u
 					is_timestamp >>= 1;
 					col++;
 				}
+
+				// NOTE: g_list_model_get_item() takes a reference on the item object.
+				// Drop the reference here to prevent a memory leak.
+				g_object_unref(item);
 			}
 
 			// NOTE: ListDataItem doesn't emit any signals if the text is changed.

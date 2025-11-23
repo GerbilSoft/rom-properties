@@ -159,8 +159,9 @@ rp_language_combo_box_rebuild_icons(struct _RpLanguageComboBox *widget)
 		RpLanguageComboBoxItem *const item =
 			RP_LANGUAGE_COMBO_BOX_ITEM(g_list_model_get_item(G_LIST_MODEL(widget->listStore), i));
 		assert(item != nullptr);
-		if (!item)
+		if (!item) {
 			continue;
+		}
 
 		const uint32_t lc = rp_language_combo_box_item_get_lc(item);
 		PIMGTYPE icon = flagSpriteSheet.getIcon(lc, widget->forcePAL);
@@ -172,6 +173,10 @@ rp_language_combo_box_rebuild_icons(struct _RpLanguageComboBox *widget)
 			// No icon. Clear it.
 			rp_language_combo_box_item_set_icon(item, nullptr);
 		}
+
+		// NOTE: g_list_model_get_item() takes a reference on the item object.
+		// Drop the reference here to prevent a memory leak.
+		g_object_unref(item);
 	}
 
 	// (Re-)Create the GtkDropDown widget.
@@ -254,13 +259,18 @@ rp_language_combo_box_get_lcs(RpLanguageComboBox *widget)
 		RpLanguageComboBoxItem *const item =
 			RP_LANGUAGE_COMBO_BOX_ITEM(g_list_model_get_item(G_LIST_MODEL(widget->listStore), i));
 		assert(item != nullptr);
-		if (!item)
+		if (!item) {
 			continue;
+		}
 
 		const uint32_t lc = rp_language_combo_box_item_get_lc(item);
 		if (lc != 0) {
 			*p++ = lc;
 		}
+
+		// NOTE: g_list_model_get_item() takes a reference on the item object.
+		// Drop the reference here to prevent a memory leak.
+		g_object_unref(item);
 	}
 
 	// Last entry is 0.
@@ -330,8 +340,9 @@ rp_language_combo_box_set_selected_lc(RpLanguageComboBox *widget, uint32_t lc)
 			RpLanguageComboBoxItem *const item =
 				RP_LANGUAGE_COMBO_BOX_ITEM(g_list_model_get_item(G_LIST_MODEL(widget->listStore), i));
 			assert(item != nullptr);
-			if (!item)
+			if (!item) {
 				continue;
+			}
 
 			const uint32_t check_lc = rp_language_combo_box_item_get_lc(item);
 			if (lc == check_lc) {
@@ -340,6 +351,10 @@ rp_language_combo_box_set_selected_lc(RpLanguageComboBox *widget, uint32_t lc)
 				bRet = true;
 				break;
 			}
+
+			// NOTE: g_list_model_get_item() takes a reference on the item object.
+			// Drop the reference here to prevent a memory leak.
+			g_object_unref(item);
 		}
 	}
 
