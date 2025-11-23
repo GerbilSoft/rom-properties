@@ -36,55 +36,55 @@ namespace RomPropertiesGTK { namespace Tests {
 
 class SortFuncsTest_gtk4 : public ::testing::Test
 {
-	protected:
-		SortFuncsTest_gtk4()
-			: listStore(nullptr)
-			, sortProxy(nullptr)
-		{}
+protected:
+	SortFuncsTest_gtk4()
+		: listStore(nullptr)
+		, sortProxy(nullptr)
+	{}
 
-		~SortFuncsTest_gtk4() override
-		{
-			// GtkSortListModel takes ownership of listStore,
-			// so listStore will get unref()'d when sortProxy does.
-			g_clear_object(&sortProxy);
-		}
+	~SortFuncsTest_gtk4() override
+	{
+		// GtkSortListModel takes ownership of listStore,
+		// so listStore will get unref()'d when sortProxy does.
+		g_clear_object(&sortProxy);
+	}
 
-	public:
-		void SetUp() override;
-		void TearDown() override;
+public:
+	void SetUp() override;
+	void TearDown() override;
 
-	protected:
-		GListStore *listStore;		// List data
-		GtkSortListModel *sortProxy;	// Sort proxy
+protected:
+	GListStore *listStore;		// List data
+	GtkSortListModel *sortProxy;	// Sort proxy
 
-	public:
-		// Sorting order (function pointers) [ascending order]
-		static constexpr array<GCompareDataFunc, 4> sort_funcs_asc = {{
-			// Column 0: Greek alphabet, standard sort
-			rp_sort_RFT_LISTDATA_standard,
-			// Column 1: Greek alphabet, case-insensitive sort
-			rp_sort_RFT_LISTDATA_nocase,
-			// Column 2: Numbers, standard sort
-			rp_sort_RFT_LISTDATA_standard,
-			// Column 3: Numbers, numeric sort
-			rp_sort_RFT_LISTDATA_numeric,
-		}};
+public:
+	// Sorting order (function pointers) [ascending order]
+	static constexpr array<GCompareDataFunc, 4> sort_funcs_asc = {{
+		// Column 0: Greek alphabet, standard sort
+		rp_sort_RFT_LISTDATA_standard,
+		// Column 1: Greek alphabet, case-insensitive sort
+		rp_sort_RFT_LISTDATA_nocase,
+		// Column 2: Numbers, standard sort
+		rp_sort_RFT_LISTDATA_standard,
+		// Column 3: Numbers, numeric sort
+		rp_sort_RFT_LISTDATA_numeric,
+	}};
 
-		static gint rp_sort_RFT_LISTDATA_standard_DESC(gconstpointer a, gconstpointer b, gpointer userdata);
-		static gint rp_sort_RFT_LISTDATA_nocase_DESC(gconstpointer a, gconstpointer b, gpointer userdata);
-		static gint rp_sort_RFT_LISTDATA_numeric_DESC(gconstpointer a, gconstpointer b, gpointer userdata);
+	static gint rp_sort_RFT_LISTDATA_standard_DESC(gconstpointer a, gconstpointer b, gpointer userdata);
+	static gint rp_sort_RFT_LISTDATA_nocase_DESC(gconstpointer a, gconstpointer b, gpointer userdata);
+	static gint rp_sort_RFT_LISTDATA_numeric_DESC(gconstpointer a, gconstpointer b, gpointer userdata);
 
-		// Sorting order (function pointers) [descending order]
-		static constexpr array<GCompareDataFunc, 4> sort_funcs_desc = {{
-			// Column 0: Greek alphabet, standard sort
-			rp_sort_RFT_LISTDATA_standard_DESC,
-			// Column 1: Greek alphabet, case-insensitive sort
-			rp_sort_RFT_LISTDATA_nocase_DESC,
-			// Column 2: Numbers, standard sort
-			rp_sort_RFT_LISTDATA_standard_DESC,
-			// Column 3: Numbers, numeric sort
-			rp_sort_RFT_LISTDATA_numeric_DESC,
-		}};
+	// Sorting order (function pointers) [descending order]
+	static constexpr array<GCompareDataFunc, 4> sort_funcs_desc = {{
+		// Column 0: Greek alphabet, standard sort
+		rp_sort_RFT_LISTDATA_standard_DESC,
+		// Column 1: Greek alphabet, case-insensitive sort
+		rp_sort_RFT_LISTDATA_nocase_DESC,
+		// Column 2: Numbers, standard sort
+		rp_sort_RFT_LISTDATA_standard_DESC,
+		// Column 3: Numbers, numeric sort
+		rp_sort_RFT_LISTDATA_numeric_DESC,
+	}};
 };
 
 gint SortFuncsTest_gtk4::rp_sort_RFT_LISTDATA_standard_DESC(gconstpointer a, gconstpointer b, gpointer userdata)
@@ -145,7 +145,6 @@ TEST_F(SortFuncsTest_gtk4, ascendingSort)
 	for (int col = 0; col < columnCount; col++) {
 		GtkCustomSorter *const sorter = gtk_custom_sorter_new(sort_funcs_asc[col], GINT_TO_POINTER(col), nullptr);
 		gtk_sort_list_model_set_sorter(GTK_SORT_LIST_MODEL(sortProxy), GTK_SORTER(sorter));
-		//g_object_unref(sorter);
 
 		int row;
 		for (row = 0; row < rowCount; row++) {
@@ -158,8 +157,14 @@ TEST_F(SortFuncsTest_gtk4, ascendingSort)
 			// Get the string from this column.
 			const char *str = rp_list_data_item_get_column_text(item, col);
 			EXPECT_STREQ(sorted_strings_asc[col][row], str) << "sorting column " << col << ", checking row " << row;
+
+			// NOTE: g_list_model_get_item() takes a reference on the item object.
+			// Drop the reference here to prevent a memory leak.
+			g_object_unref(item);
 		};
 
+		gtk_sort_list_model_set_sorter(GTK_SORT_LIST_MODEL(sortProxy), nullptr);
+		g_object_unref(sorter);
 		ASSERT_EQ(rowCount, row) << "Row count does not match the number of rows received";
 	}
 }
@@ -177,7 +182,6 @@ TEST_F(SortFuncsTest_gtk4, descendingSort)
 	for (int col = 0; col < columnCount; col++) {
 		GtkCustomSorter *const sorter = gtk_custom_sorter_new(sort_funcs_desc[col], GINT_TO_POINTER(col), nullptr);
 		gtk_sort_list_model_set_sorter(GTK_SORT_LIST_MODEL(sortProxy), GTK_SORTER(sorter));
-		g_object_unref(sorter);
 
 		int row;
 		for (row = 0; row < rowCount; row++) {
@@ -191,8 +195,14 @@ TEST_F(SortFuncsTest_gtk4, descendingSort)
 			const char *str = rp_list_data_item_get_column_text(item, col);
 			const int drow = ARRAY_SIZE(sorted_strings_asc[row]) - row - 1;
 			EXPECT_STREQ(sorted_strings_asc[col][drow], str) << "sorting column " << col << ", checking row " << row;
+
+			// NOTE: g_list_model_get_item() takes a reference on the item object.
+			// Drop the reference here to prevent a memory leak.
+			g_object_unref(item);
 		};
 
+		gtk_sort_list_model_set_sorter(GTK_SORT_LIST_MODEL(sortProxy), nullptr);
+		g_object_unref(sorter);
 		ASSERT_EQ(rowCount, row) << "Row count does not match the number of rows received";
 	}
 }
