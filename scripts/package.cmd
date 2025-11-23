@@ -4,10 +4,14 @@ CD /D "%~dp0\.."
 
 :: Packaging script for rom-properties, Windows version.
 :: Requires the following:
-:: - CMake 3.0.0 or later
-:: - MSVC 2015, or 2017 with 32-bit and 64-bit compilers
-:: - MSVC 2019, 2022 [17.11, 17.6] with v141_xp toolchain is also supported.
+:: - CMake 3.10.0 or later
+:: - MSVC 2026 with v141_xp toolchain, i386, amd64, arm64, and arm64ec compilers
+::   - MSVC 2022 [v143] arm compiler must also be installed.
+:: - MSVC 2022 with v141_xp toolchain, i386, amd64, arm, arm64, and arm64ec compilers
+:: - MSVC 2019 with v141_xp toolchain
 :: - Windows 7 SDK
+:: - Windows 10 or 11 SDK [latest preferred] for i386, amd64, arm64, and arm64ec
+:: - Windows 10 SDK 10.0.19041.0 for 32-bit ARM
 :: - zip.exe and unzip.exe in %PATH%
 :: - Inno Setup 5 [for Windows XP/2003/Vista installation]
 :: - Inno Setup 6 [for Windows 7/8.x/10/11 installation]
@@ -107,7 +111,7 @@ FOR %%I IN (Community Professional Enterprise) DO (
 	)
 )
 
-:: MSVC 2022 (17.6): Use the 2017 (14.1x) compiler for 32-bit in order to maintain WinXP compatibilty.
+:: MSVC 2022 [17.6]: Use the 2017 [14.1x] compiler for 32-bit in order to maintain WinXP compatibilty.
 :: NOTE: MSVC 2022 switched to 64-bit Program Files
 FOR %%I IN (Community Professional Enterprise) DO (
 	IF EXIST "%PrgFiles64%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.36.32532\bin\HostX86\x86\cl.exe" (
@@ -127,7 +131,7 @@ FOR %%I IN (Community Professional Enterprise) DO (
 	)
 )
 
-:: MSVC 2022 (17.11): Use the 2017 (14.1x) compiler for 32-bit in order to maintain WinXP compatibilty.
+:: MSVC 2022 [17.11]: Use the 2017 [14.1x] compiler for 32-bit in order to maintain WinXP compatibilty.
 :: NOTE: MSVC 2022 switched to 64-bit Program Files
 FOR %%I IN (Community Professional Enterprise) DO (
 	IF EXIST "%PrgFiles64%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.44.35207\bin\HostX86\x86\cl.exe" (
@@ -147,11 +151,52 @@ FOR %%I IN (Community Professional Enterprise) DO (
 	)
 )
 
+:: MSVC 2026 [18.0]: Use the 2017 [14.1x] compiler for 32-bit in order to maintain WinXP compatibilty.
+:: Use MSVC 2022 v143 for 32-bit ARM, since MSVC 2026 no longer supports it.
+:: NOTE: MSVC 2022 switched to 64-bit Program Files
+echo check 2026
+FOR %%I IN (Community Professional Enterprise) DO (
+    echo a
+	IF EXIST "%PrgFiles64%\Microsoft Visual Studio\18\%%I\VC\Tools\MSVC\14.50.35717\bin\HostX86\x86\cl.exe" (
+	    echo b
+		SET "MSVC32_DIR=%PrgFiles64%\Microsoft Visual Studio\18\%%I\VC\Tools\MSVC\14.16.27023"
+		SET MSVC32_VERSION=14.16
+		SET MSVC32_YEAR=2026
+		SET CMAKE32_GENERATOR=18 2026
+		SET CMAKE32_TOOLSET=v141_xp
+		SET CMAKE32_ARCH=-A Win32
+
+		SET "MSVC64_DIR=%PrgFiles64%\Microsoft Visual Studio\18\%%I\VC\Tools\MSVC\14.50.35717"
+		SET MSVC64_VERSION=14.50
+		SET MSVC64_YEAR=2026
+		SET CMAKE64_GENERATOR=18 2026
+		SET CMAKE64_TOOLSET=v145
+		SET CMAKE64_ARCH=-A x64
+
+		SET "MSVC_ARM32_DIR=%PrgFiles64%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.44.35207"
+		SET MSVC_ARM32_VERSION=14.44
+		SET MSVC_ARM32_YEAR=2022
+		SET CMAKE_ARM32_GENERATOR=17 2022
+		SET CMAKE_ARM32_TOOLSET=v143
+		SET CMAKE_ARM32_ARCH=-A arm
+	)
+)
+
 IF "%CMAKE64_GENERATOR%" == "" (
 	ECHO *** ERROR: Supported version of MSVC was not found.
-	ECHO Supported versions: 2022 [17.11, 17.6], 2019, 2017, 2015
+	ECHO Supported versions: 2026 [18.0], 2022 [17.11, 17.6], 2019, 2017, 2015
 	PAUSE
 	EXIT /B 1
+)
+
+:: If an ARM32 override isn't specified, copy from amd64.
+IF "%MSVC_ARM32_DIR%" == "" (
+	SET "MSVC_ARM32_DIR=%MSVC64_DIR%"
+	SET "MSVC_ARM32_VERSION=%MSVC64_VERSION%"
+	SET "MSVC_ARM32_YEAR=%MSVC64_YEAR%"
+	SET "CMAKE_ARM32_GENERATOR=%CMAKE64_GENERATOR%"
+	SET "CMAKE_ARM32_TOOLSET=%CMAKE64_TOOLSET%"
+	SET "CMAKE_ARM32_ARCH=%CMAKE64_ARCH%"
 )
 
 :: Check for Inno Setup.
@@ -173,19 +218,23 @@ IF NOT EXIST "%ISCC6%" (
 ECHO Using the following MSVC versions for packaging:
 ECHO - i386:    MSVC %MSVC32_YEAR% (%MSVC32_VERSION%)
 ECHO - amd64:   MSVC %MSVC64_YEAR% (%MSVC64_VERSION%)
-SET MSG_ARM=not building; requires MSVC 2019 or later
+SET MSG_ARM=not building; requires MSVC 2019 or MSVC 2022
 SET MSG_ARM64EC=not building; requires MSVC 2022 or later
-IF "%MSVC64_YEAR%" == "2019" SET MSG_ARM=MSVC %MSVC64_YEAR% (%MSVC64_VERSION%)
-IF "%MSVC64_YEAR%" == "2022" SET MSG_ARM=MSVC %MSVC64_YEAR% (%MSVC64_VERSION%)
+IF "%MSVC_ARM32_YEAR%" == "2019" SET MSG_ARM=MSVC %MSVC_ARM32_YEAR% (%MSVC_ARM32_VERSION%)
+IF "%MSVC_ARM32_YEAR%" == "2022" SET MSG_ARM=MSVC %MSVC_ARM32_YEAR% (%MSVC_ARM32_VERSION%)
+IF "%MSVC64_YEAR%" == "2019" SET MSG_ARM64=MSVC %MSVC64_YEAR% (%MSVC64_VERSION%)
+IF "%MSVC64_YEAR%" == "2022" SET MSG_ARM64=MSVC %MSVC64_YEAR% (%MSVC64_VERSION%)
+IF "%MSVC64_YEAR%" == "2026" SET MSG_ARM64=MSVC %MSVC64_YEAR% (%MSVC64_VERSION%)
 IF "%MSVC64_YEAR%" == "2022" SET MSG_ARM64EC=MSVC %MSVC64_YEAR% (%MSVC64_VERSION%)
+IF "%MSVC64_YEAR%" == "2026" SET MSG_ARM64EC=MSVC %MSVC64_YEAR% (%MSVC64_VERSION%)
 ECHO - arm:     %MSG_ARM%
-ECHO - arm64:   %MSG_ARM%
+ECHO - arm64:   %MSG_ARM64%
 ECHO - arm64ec: %MSG_ARM64EC%
 ECHO.
 
 :: MSVC 2017+ uses a different directory layout.
 SET MSVC_CL=
-FOR %%I IN (2017 2019 2022) DO (
+FOR %%I IN (2017 2019 2022 2026) DO (
 	IF "%MSVC64_YEAR%" == "%%I" (
 		SET "MSVC_CL=%MSVC32_DIR%\bin\HostX86\x86\cl.exe"
 		SET "MSVC_CL64_CROSS=%MSVC64_DIR%\bin\HostX86\x64\cl.exe"
@@ -207,7 +256,7 @@ IF NOT EXIST "%MSVC_CL%" (
 )
 
 :: Check for the 64-bit compiler.
-:: (either cross-compiler and native compiler)
+:: [either cross-compiler and native compiler]
 IF NOT EXIST "%MSVC_CL64_CROSS%" (
 	IF NOT EXIST "%MSVC_CL64_NATIVE%" (
 		ECHO *** ERROR: 64-bit cl.exe was not found.
@@ -217,7 +266,7 @@ IF NOT EXIST "%MSVC_CL64_CROSS%" (
 	)
 )
 
-:: Check for the Windows 7 SDK. (either v7.1A or v7.0A)
+:: Check for the Windows 7 SDK. [either v7.1A or v7.0A]
 IF NOT EXIST "%PrgFiles32%\Microsoft SDKs\Windows\v7.1A\Include\Windows.h" (
 	IF NOT EXIST "%PrgFiles32%\Microsoft SDKs\Windows\v7.0A\Include\Windows.h" (
 		ECHO *** ERROR: Windows 7 SDK was not found.
@@ -318,9 +367,9 @@ FOR %%A IN (%PDB_FILES%) DO (COPY /Y "bin\Release\%%A" ..\pdb\amd64)
 POPD
 
 :: If not MSVC 2019 or later, skip ARM.
-IF "%MSVC64_YEAR%" == "2019" GOTO :buildARM
-IF "%MSVC64_YEAR%" == "2022" GOTO :buildARM
-ECHO *** WARNING: MSVC 2019 or later is required for ARM builds.
+IF "%MSVC_ARM32_YEAR%" == "2019" GOTO :buildARM
+IF "%MSVC_ARM32_YEAR%" == "2022" GOTO :buildARM
+ECHO *** WARNING: MSVC 2019 or MSVC 2022 is required for ARM builds.
 ECHO *** Skipping ARM builds.
 GOTO :doPackage
 
@@ -336,8 +385,8 @@ MKDIR build.arm
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 PUSHD build.arm
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-cmake ..\.. -G "Visual Studio %CMAKE64_GENERATOR%" -A arm ^
-	-DCMAKE_TOOLCHAIN_FILE=../../cmake/toolchain/arm-msvc-%MSVC64_YEAR%-win10-1809.cmake ^
+cmake ..\.. -G "Visual Studio %CMAKE_ARM32_GENERATOR%" %CMAKE_ARM32_ARCH% ^
+	-DCMAKE_TOOLCHAIN_FILE=../../cmake/toolchain/arm-msvc-%MSVC_ARM32_YEAR%-win10-1809.cmake ^
 	-DCMAKE_SYSTEM_VERSION=10.0 ^
 	-DIMPORT_EXECUTABLES=%~dp0..\pkg_windows\build.i386 ^
 	-DCMAKE_BUILD_TYPE=Release ^
@@ -358,6 +407,7 @@ POPD
 SET BUILD_arm64=1
 SET BUILD_AS_ARM64X=
 IF "%MSVC64_YEAR%" == "2022" SET BUILD_AS_ARM64X=ARM64
+IF "%MSVC64_YEAR%" == "2026" SET BUILD_AS_ARM64X=ARM64
 ECHO.
 ECHO Compiling arm64 (64-bit) rom-properties.dll...
 MKDIR build.arm64
@@ -382,6 +432,7 @@ FOR %%A IN (%PDB_FILES%) DO (COPY /Y "bin\Release\%%A" ..\pdb\arm64)
 POPD
 
 IF "%MSVC64_YEAR%" == "2022" GOTO :buildARM64EC
+IF "%MSVC64_YEAR%" == "2026" GOTO :buildARM64EC
 ECHO *** WARNING: MSVC 2022 or later is required for ARM64EC builds.
 ECHO *** Skipping ARM64EC builds.
 GOTO :doPackage
