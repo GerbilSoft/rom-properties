@@ -804,7 +804,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	const ULONG_PTR gdipToken = GdiplusHelper::InitGDIPlus();
 	assert(gdipToken != 0);
 	if (gdipToken == 0) {
-		Gsvt::StdErr.textColorSet8(6, true);	// red
+		Gsvt::StdErr.textColorSet8(1, true);	// red
 		Gsvt::StdErr.fputs(C_("rpcli", "*** ERROR: GDI+ initialization failed."));
 		Gsvt::StdErr.textColorReset();
 		Gsvt::StdErr.newline();
