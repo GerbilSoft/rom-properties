@@ -85,14 +85,7 @@ protected:
 
 	inline void deleteRomDataView(void)
 	{
-#if GTK_CHECK_VERSION(3, 98, 4)
 		g_clear_object(&m_romDataView);
-#else /* !GTK_CHECK_VERSION(3, 98, 4) */
-		if (m_romDataView) {
-			gtk_widget_destroy(m_romDataView);
-			m_romDataView = nullptr;
-		}
-#endif /* GTK_CHECK_VERSION(3, 98, 4) */
 	}
 
 #ifndef USE_GTK_GRID
@@ -269,9 +262,7 @@ TEST_F(RomDataViewTest, NoRomData)
 	// Create a RomDataView.
 	// TODO: Set description format type properly.
 	m_romDataView = rp_rom_data_view_new_with_romData("", nullptr, RP_DFT_GNOME);
-#if GTK_CHECK_VERSION(3, 98, 4)
 	g_object_ref_sink(m_romDataView);
-#endif /* GTK_CHECK_VERSION(3, 98, 4) */
 
 	// NOTE: For efficiency reasons, GTK RomDataView uses g_idle_add()
 	// to schedule its display update. Force it to run here.
@@ -320,9 +311,7 @@ TEST_F(RomDataViewTest, RFT_STRING)
 	// Create a RomDataView.
 	// TODO: Set description format type properly.
 	m_romDataView = rp_rom_data_view_new_with_romData("", m_romData, RP_DFT_GNOME);
-#if GTK_CHECK_VERSION(3, 98, 4)
 	g_object_ref_sink(m_romDataView);
-#endif /* GTK_CHECK_VERSION(3, 98, 4) */
 
 	// NOTE: For efficiency reasons, GTK RomDataView uses g_idle_add()
 	// to schedule its display update. Force it to run here.
@@ -370,9 +359,7 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_non_sparse)
 	// Create a RomDataView.
 	// TODO: Set description format type properly.
 	m_romDataView = rp_rom_data_view_new_with_romData("", m_romData, RP_DFT_GNOME);
-#if GTK_CHECK_VERSION(3, 98, 4)
 	g_object_ref_sink(m_romDataView);
-#endif /* GTK_CHECK_VERSION(3, 98, 4) */
 
 	// NOTE: For efficiency reasons, GTK RomDataView uses g_idle_add()
 	// to schedule its display update. Force it to run here.
@@ -496,9 +483,7 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_sparse)
 	// Create a RomDataView.
 	// TODO: Set description format type properly.
 	m_romDataView = rp_rom_data_view_new_with_romData("", m_romData, RP_DFT_GNOME);
-#if GTK_CHECK_VERSION(3, 98, 4)
 	g_object_ref_sink(m_romDataView);
-#endif /* GTK_CHECK_VERSION(3, 98, 4) */
 
 	// NOTE: For efficiency reasons, GTK RomDataView uses g_idle_add()
 	// to schedule its display update. Force it to run here.
@@ -630,9 +615,7 @@ TEST_F(RomDataViewTest, RFT_DATETIME)
 	// Create a RomDataView.
 	// TODO: Set description format type properly.
 	m_romDataView = rp_rom_data_view_new_with_romData("", m_romData, RP_DFT_GNOME);
-#if GTK_CHECK_VERSION(3, 98, 4)
 	g_object_ref_sink(m_romDataView);
-#endif /* GTK_CHECK_VERSION(3, 98, 4) */
 
 	// NOTE: For efficiency reasons, GTK RomDataView uses g_idle_add()
 	// to schedule its display update. Force it to run here.
