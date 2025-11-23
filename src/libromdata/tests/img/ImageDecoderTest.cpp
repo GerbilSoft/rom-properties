@@ -2058,6 +2058,28 @@ INSTANTIATE_TEST_SUITE_P(Qoi, ImageDecoderTest,
 		QOI_IMAGE_TEST("rgb-reference", "RGB888"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
+// ICO tests
+// FIXME: The NT 3.x Notepad icons have two 32x32 4-bit color images?
+// FIXME: Win3.x icon formats.
+#define ICO_IMAGE_TEST(file, format) ImageDecoderTest_mode( \
+			"ICO/" file ".ico.gz", \
+			"ICO/" file ".png", (format))
+INSTANTIATE_TEST_SUITE_P(ICO, ImageDecoderTest,
+	::testing::Values(
+		ICO_IMAGE_TEST("notepad-1.01-1", "1bpp"),
+		ICO_IMAGE_TEST("notepad-3.0-1", "Win3.x (TODO)"),
+		ICO_IMAGE_TEST("notepad-3.1-1", "Win3.x (TODO)"),
+		ICO_IMAGE_TEST("notepad-4.00.950-1", "Win3.x (TODO)"),
+		ICO_IMAGE_TEST("notepad-4.00.950-2", "Win3.x (TODO)"),
+		ICO_IMAGE_TEST("notepad-4.10.1998-2", "Win3.x (TODO)"),
+		ICO_IMAGE_TEST("notepad-nt11-25h2-i386-300", "Win3.x (TODO)"),
+		ICO_IMAGE_TEST("notepad-nt11-25h2-i386-301", "Win3.x (TODO)"),
+		ICO_IMAGE_TEST("notepad-nt11-25h2-i386-302", "Win3.x (TODO)"),
+		ICO_IMAGE_TEST("notepad-nt35-i386-1", "Win3.x (TODO)"),
+		ICO_IMAGE_TEST("notepad-nt51-i386-2", "Win3.x (TODO)"),
+		ICO_IMAGE_TEST("notepad-nt61-i386-2", "Win3.x (TODO)"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
 // TODO: NPOT tests for compressed formats. (partial block sizes)
 
 } }
