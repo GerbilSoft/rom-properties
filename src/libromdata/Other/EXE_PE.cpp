@@ -1117,8 +1117,21 @@ int EXEPrivate::addFields_PE_Import(void)
 		// advance ILT pointer
 		ilt += is64 ? 2 : 1;
 		// check for NULL entry
-		if (!ilt[0] && (!is64 || !ilt[1]))
-			ilt = ilt_end;
+		if (is64) {
+			// 64-bit: need to check two 32-bit values
+			if (ilt + 1 > ilt_end) {
+				ilt = ilt_end;
+			} else if (!ilt[0] && !ilt[1]) {
+				ilt = ilt_end;
+			}
+		} else {
+			// 32-bit: need to check one 32-bit value
+			if (ilt > ilt_end) {
+				ilt = ilt_end;
+			} else if (!ilt[0]) {
+				ilt = ilt_end;
+			}
+		}
 		return true;
 	};
 
