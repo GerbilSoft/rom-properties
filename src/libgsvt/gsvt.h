@@ -102,6 +102,17 @@ void gsvt_newline(gsvt_console *vt);
 
 /** Color functions (NOPs if the console doesn't support color) **/
 
+enum AnsiColor8 {
+	ANSI_COLOR_8_BLACK	= 0,
+	ANSI_COLOR_8_RED	= 1,
+	ANSI_COLOR_8_GREEN	= 2,
+	ANSI_COLOR_8_YELLOW	= 3,
+	ANSI_COLOR_8_BLUE	= 4,
+	ANSI_COLOR_8_MAGENTA	= 5,
+	ANSI_COLOR_8_CYAN	= 6,
+	ANSI_COLOR_8_WHITE	= 7,
+};
+
 /**
  * Set the text color.
  * @param vt
