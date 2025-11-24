@@ -465,6 +465,9 @@ void IDownloader::createUserAgent(void)
 #elif defined(__MIPS__) || defined(__mips__) || defined(_M_MIPS)
 #  define CPU "MIPS"
 #  define MAC_CPU "MIPS"
+#elif defined(__sparc__) || defined(__sparc)
+#  define CPU "SPARC"
+#  define MAC_CPU "SPARC"
 #else
 #  error Unknown CPU, please update this
 #endif
