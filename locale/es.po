@@ -8600,8 +8600,8 @@ msgstr "¡Ahora estás jugando con PODER!"
 
 #: ../src/librpbase/Achievements.cpp:204
 msgctxt "Achievements"
-msgid "Viewed a non-x86/x64 Windows PE executable."
-msgstr "Has visto un ejecutable de Windows PE no x86/x64."
+msgid "Viewed a non-x86/x64/ARM Windows PE executable."
+msgstr "Has visto un ejecutable de Windows PE no x86/x64/ARM."
 
 #: ../src/librpbase/Achievements.cpp:208
 msgctxt "Achievements"

@@ -201,7 +201,7 @@ const array<AchievementsPrivate::AchInfo_t, 6> AchievementsPrivate::achInfo = {{
 	},
 	{
 		NOP_C_("Achievements", "Now you're playing with POWER!"),
-		NOP_C_("Achievements", "Viewed a non-x86/x64 Windows PE executable."),
+		NOP_C_("Achievements", "Viewed a non-x86/x64/ARM Windows PE executable."),
 		AT_COUNT, 1
 	},
 	{
