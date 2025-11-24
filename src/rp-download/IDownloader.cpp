@@ -456,6 +456,12 @@ void IDownloader::createUserAgent(void)
 #elif defined(__riscv) && (__riscv_xlen == 64)
 #  define CPU "riscv64"
 #  define MAC_CPU "riscv64"
+#elif defined(__ia64__) || defined(__ia64) || defined(__itanium__) || defined(_M_IA64)
+#  define CPU "ia64"
+#  define MAC_CPU "ia64"
+#elif defined(__alpha__) || defined(__alpha) || defined(_M_ALPHA)
+#  define CPU "Alpha"
+#  define MAC_CPU "Alpha"
 #else
 #  error Unknown CPU, please update this
 #endif
