@@ -27,7 +27,9 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
 
 // Architecture-specific subdirectory.
-#if defined(_M_ARM) || defined(__arm__) || \
+#if defined(_M_ALPHA) || defined(__alpha__) || defined(__alpha)
+static const TCHAR rp_subdir[] = _T("alpha\\");
+#elif defined(_M_ARM) || defined(__arm__) || \
       defined(_M_ARMT) || defined(__thumb__)
 static const TCHAR rp_subdir[] = _T("arm\\");
 #elif defined(_M_ARM64EC)
@@ -42,6 +44,8 @@ static const TCHAR rp_subdir[] = _T("amd64\\");
 #  define USE_MINGW_DLL_NAME 1
 #elif defined(_M_IA64) || defined(__ia64__)
 static const TCHAR rp_subdir[] = _T("ia64\\");
+#elif defined(_M_MIPS) || defined(__mips__) || defined(__MIPS__)
+static const TCHAR rp_subdir[] = _T("mips\\");
 #elif defined(__riscv) && (__riscv_xlen == 32)
 // TODO: MSVC riscv32 preprocessor macro, if one ever gets defined.
 static const TCHAR rp_subdir[] = _T("riscv32\\");
