@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2025-10-20 10:02-0400\n"
-"PO-Revision-Date: 2025-10-28 21:55\n"
+"PO-Revision-Date: 2025-11-25 02:54\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -8522,8 +8522,8 @@ msgstr "¡Ahora estás jugando con PODER!"
 
 #: ../src/librpbase/Achievements.cpp:204
 msgctxt "Achievements"
-msgid "Viewed a non-x86/x64 Windows PE executable."
-msgstr "Has visto un ejecutable de Windows PE no x86/x64."
+msgid "Viewed a non-x86/x64/ARM Windows PE executable."
+msgstr "Has visto un ejecutable de Windows PE no x86/x64/ARM."
 
 #: ../src/librpbase/Achievements.cpp:208
 msgctxt "Achievements"
