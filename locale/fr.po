@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2025-10-20 10:02-0400\n"
-"PO-Revision-Date: 2025-10-28 21:55\n"
+"PO-Revision-Date: 2025-11-25 02:53\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -8510,7 +8510,7 @@ msgstr ""
 
 #: ../src/librpbase/Achievements.cpp:204
 msgctxt "Achievements"
-msgid "Viewed a non-x86/x64 Windows PE executable."
+msgid "Viewed a non-x86/x64/ARM Windows PE executable."
 msgstr ""
 
 #: ../src/librpbase/Achievements.cpp:208
