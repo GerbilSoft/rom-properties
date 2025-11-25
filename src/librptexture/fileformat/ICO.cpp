@@ -363,7 +363,7 @@ ICOPrivate::IconBitmapHeader_data ICOPrivate::getIconBitmapHeaderData(const Icon
 		case BITMAPV3INFOHEADER_SIZE:
 		case BITMAPV4HEADER_SIZE:
 		case BITMAPV5HEADER_SIZE:
-			if (le32_to_cpu(pHeader->bih.biPlanes) > 1) {
+			if (le16_to_cpu(pHeader->bih.biPlanes) > 1) {
 				// Cannot handle planar bitmaps.
 				break;
 			}
@@ -707,14 +707,14 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 
 	// Only supporting 16-color images for now.
 	// TODO: Handle BI_BITFIELDS?
-	if (le32_to_cpu(bih->biPlanes) > 1) {
+	if (le16_to_cpu(bih->biPlanes) > 1) {
 		// Cannot handle planar bitmaps.
 		return {};
 	}
 
 	// Row must be 32-bit aligned.
 	// FIXME: Including for 24-bit images?
-	const unsigned int bitcount = le32_to_cpu(bih->biBitCount);
+	const unsigned int bitcount = le16_to_cpu(bih->biBitCount);
 	unsigned int stride = width;
 	switch (bitcount) {
 		default:
@@ -781,7 +781,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 			// Invalid index.
 			return {};
 		}
-		
+
 		f_icon = this->file;
 		addr = le32_to_cpu(pBestIcon->dwImageOffset) + header_size;
 	}
@@ -1059,7 +1059,8 @@ rp_image_const_ptr ICOPrivate::loadImage_WinVista_PNG(int idx)
 		// NOTE: PartitionFile only supports IDiscReader, so we'll need to
 		// create a dummy DiscReader object.
 		IDiscReaderPtr discReader = std::make_shared<DiscReader>(file, 0, file->size());
-		f_png = std::make_shared<PartitionFile>(discReader, pBestIcon->dwImageOffset, pBestIcon->dwBytesInRes);
+		f_png = std::make_shared<PartitionFile>(discReader,
+			le32_to_cpu(pBestIcon->dwImageOffset), le32_to_cpu(pBestIcon->dwBytesInRes));
 	}
 
 	img_map[idx] = RpPng::load(f_png);
@@ -1325,7 +1326,8 @@ void ICO::init(bool res)
 			}
 
 			const ICOPrivate::IconBitmapHeader_t *const pIconHeader = &d->iconBitmapHeaders[d->dir.bestIcon_idx];
-			switch (pIconHeader->size) {
+			const unsigned int header_size = le32_to_cpu(pIconHeader->size);
+			switch (header_size) {
 				default:
 					// Not supported...
 					d->file.reset();
