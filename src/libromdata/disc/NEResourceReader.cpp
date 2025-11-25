@@ -273,7 +273,7 @@ int NEResourceReaderPrivate::loadResTbl(void)
 			// NOTE: Wine shifts both addr and len; all documentation
 			// I can find says only addr is shifted, but then the len
 			// value is too small...
-			entry.addr = le32_to_cpu(nameInfo->rnOffset) << rscAlignShift;
+			entry.addr = le16_to_cpu(nameInfo->rnOffset) << rscAlignShift;
 			entry.len = le16_to_cpu(nameInfo->rnLength) << rscAlignShift;
 			entriesRead++;
 		}

@@ -190,8 +190,8 @@ int EXEPrivate::loadNEResourceTable(void)
 
 	// FIXME: NEResourceReader should be able to just take ne_resource_table.
 	// NE resource table offset is relative to the start of the NE header.
-	const uint32_t ResTableOffset = le16_to_cpu(mz.e_lfanew) + le16_to_cpu(hdr.ne.ResTableOffset);
-	if (ResTableOffset < le16_to_cpu(mz.e_lfanew)) {
+	const uint32_t ResTableOffset = le32_to_cpu(mz.e_lfanew) + le16_to_cpu(hdr.ne.ResTableOffset);
+	if (ResTableOffset < le32_to_cpu(mz.e_lfanew)) {
 		// Offse overflow
 		return -EIO;
 	}
