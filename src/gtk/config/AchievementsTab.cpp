@@ -12,6 +12,9 @@
 
 #include "../AchSpriteSheet.hpp"
 
+// for rom_data_format_RFT_LISTDATA_text_as_achievements()
+#include "../RomDataFormat.hpp"
+
 #include "gtk-compat.h"
 #include "RpGtk.h"
 
@@ -362,14 +365,6 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 
 	AchSpriteSheet achSpriteSheet(iconSize);
 
-	// Pango 1.49.0 [2021/08/22] added percentage sizes.
-	// For older versions, we'll need to use 'smaller' instead.
-	// Note that compared to the KDE version, 'smaller' is slightly
-	// big, and 'smaller'+'smaller' is too small.
-	const char *const span_start_line2 = (pango_version() >= PANGO_VERSION_ENCODE(1,49,0))
-		? "\n<span size='75%'>"
-		: "\n<span size='smaller'>";
-
 	const Achievements *const pAch = Achievements::instance();
 	for (int i = 0; i < (int)Achievements::ID::Max; i++) {
 		// Is the achievement unlocked?
@@ -387,15 +382,8 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 #endif /* RP_GTK_USE_CAIRO */
 
 		// Get the name and description.
-		gchar *const s_ach_name = g_markup_escape_text(pAch->getName(id), -1);
-		gchar *const s_ach_desc_unlocked = g_markup_escape_text(pAch->getDescUnlocked(id), -1);
-		string s_ach = s_ach_name;
-		s_ach += span_start_line2;
-		// TODO: Locked description?
-		s_ach += s_ach_desc_unlocked;
-		s_ach += "</span>";
-		g_free(s_ach_name);
-		g_free(s_ach_desc_unlocked);
+		string s_ach = fmt::format(FSTR("{:s}\n{:s}"), pAch->getName(id), pAch->getDescUnlocked(id));
+		s_ach = rom_data_format_RFT_LISTDATA_text_as_achievements(s_ach);
 
 		// Add the list item.
 #ifdef USE_GTK_COLUMN_VIEW

@@ -36,4 +36,25 @@ G_END_DECLS
 std::string
 rom_data_format_dimensions(const int dimensions[3]);
 
+/**
+ * Format multi-line text for Achievements display using Pango markup.
+ * Used for AchievementsTab and Achievements-like RFT_LISTDATA fields.
+ * @param text Multi-line text
+ * @return Text formatted for Achievements display using Pango markup.
+ */
+std::string
+rom_data_format_RFT_LISTDATA_text_as_achievements(const char *text);
+
+/**
+ * Format multi-line text for Achievements display using Pango markup.
+ * Used for AchievementsTab and Achievements-like RFT_LISTDATA fields.
+ * @param text Multi-line text
+ * @return Text formatted for Achievements display using Pango markup.
+ */
+static inline std::string
+rom_data_format_RFT_LISTDATA_text_as_achievements(const std::string &text)
+{
+	return rom_data_format_RFT_LISTDATA_text_as_achievements(text.c_str());
+}
+
 #endif /* __cplusplus */

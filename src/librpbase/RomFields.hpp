@@ -121,6 +121,12 @@ public:
 		// NOTE: This changes the structure of the
 		// data field!
 		RFT_LISTDATA_MULTI	= (1U << 3),
+
+		// For multi-line entries, format like achievements:
+		// Lines after the first line should be printed using small text.
+		// FIXME: For libromdata.so.9, remove this flag and make it
+		// a per-column attribute.
+		RFT_LISTDATA_ACHIEVEMENTS_SO8	= (1U << 4),
 	};
 
 	// Display flags for RFT_DATETIME

@@ -19,6 +19,7 @@ typedef enum {
 	PROP_CHECKED,
 	PROP_COLUMN_COUNT,
 	PROP_COLUMN_TEXT,
+	PROP_COLUMN_IS_ACHIEVEMENT,
 
 	PROP_LAST
 } RpAchievementPropID;
@@ -50,6 +51,7 @@ struct _RpListDataItem {
 	RpListDataItemCol0Type col0_type;
 	gboolean	 checked;
 	GPtrArray	*text;
+	GArray		*is_achievement;
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -96,6 +98,14 @@ rp_list_data_item_class_init(RpListDataItemClass *klass)
 		G_TYPE_PTR_ARRAY,
 		(GParamFlags)(G_PARAM_READABLE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
 
+	// Technically read/write, but callers should use the
+	// convenience functions to edit individual strings
+	// instead of getting the GArray object pointer.
+	props[PROP_COLUMN_IS_ACHIEVEMENT] = g_param_spec_boxed(
+		"column-is-achievement", "Column Is Achievement", "Array of gboolean indicating if a column should be rendered as an achievement",
+		G_TYPE_ARRAY,
+		(GParamFlags)(G_PARAM_READABLE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY));
+
 	// Install the properties.
 	g_object_class_install_properties(gobject_class, PROP_LAST, props);
 }
@@ -122,6 +132,10 @@ rp_list_data_item_new(int column_count, RpListDataItemCol0Type col0_type)
 		g_ptr_array_add(item->text, NULL);
 	}
 
+	// Allocate the is_achievmeent array.
+	item->is_achievement = g_array_new(false, true, sizeof(gboolean));
+	g_array_set_size(item->is_achievement, column_count);
+
 	return item;
 }
 
@@ -146,6 +160,10 @@ rp_list_data_item_set_property(GObject		*object,
 
 		case PROP_COLUMN_TEXT:
 			rp_list_data_item_set_column_text_array(item, (GPtrArray*)g_value_get_boxed(value));
+			break;
+
+		case PROP_COLUMN_IS_ACHIEVEMENT:
+			rp_list_data_item_set_column_is_achievement_array(item, (GArray*)g_value_get_boxed(value));
 			break;
 
 		// TODO: Handling read-only properties?
@@ -189,6 +207,10 @@ rp_list_data_item_get_property(GObject		*object,
 			g_value_set_boxed(value, item->text);
 			break;
 
+		case PROP_COLUMN_IS_ACHIEVEMENT:
+			g_value_set_boxed(value, item->is_achievement);
+			break;
+
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 			break;
@@ -204,6 +226,7 @@ rp_list_data_item_dispose(GObject *object)
 
 	g_clear_pointer(&item->icon, PIMGTYPE_unref);
 	g_clear_pointer(&item->text, g_ptr_array_unref);
+	g_clear_pointer(&item->is_achievement, g_array_unref);
 
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(rp_list_data_item_parent_class)->dispose(object);
@@ -336,4 +359,57 @@ rp_list_data_item_get_column_text(RpListDataItem *item, int column)
 
 	// String is owned by this object.
 	return item->text->pdata[column];
+}
+
+void
+rp_list_data_item_set_column_is_achievement_array(RpListDataItem *item, GArray *is_achievement)
+{
+	g_return_if_fail(RP_IS_LIST_DATA_ITEM(item));
+
+	if (item->is_achievement == is_achievement) {
+		// Same array...
+		return;
+	}
+
+	// FIXME: Verify column count?
+	if (item->is_achievement) {
+		g_array_unref(item->is_achievement);
+	}
+
+	if (is_achievement) {
+		item->is_achievement = g_array_ref(is_achievement);
+	} else {
+		item->is_achievement = NULL;
+	}
+
+	g_object_notify_by_pspec(G_OBJECT(item), props[PROP_COLUMN_TEXT]);
+}
+
+GArray*
+rp_list_data_item_get_column_is_achievement_array(RpListDataItem *item)
+{
+	g_return_val_if_fail(RP_IS_LIST_DATA_ITEM(item), NULL);
+	return item->is_achievement;
+}
+
+void
+rp_list_data_item_set_column_is_achievement(RpListDataItem *item, int column, gboolean is_achievement)
+{
+	g_return_if_fail(RP_IS_LIST_DATA_ITEM(item));
+	g_return_if_fail(column >= 0 && column < (int)item->is_achievement->len);
+
+	if (item->is_achievement->data[column] != is_achievement) {
+		item->is_achievement->data[column] = is_achievement;
+		// TODO: Signal that only a single column has changed?
+		g_object_notify_by_pspec(G_OBJECT(item), props[PROP_COLUMN_IS_ACHIEVEMENT]);
+	}
+}
+
+gboolean
+rp_list_data_item_get_column_is_achievement(RpListDataItem *item, int column)
+{
+	g_return_val_if_fail(RP_IS_LIST_DATA_ITEM(item), false);
+	g_return_val_if_fail(column >= 0 && column < (int)item->is_achievement->len, false);
+
+	return item->is_achievement->data[column];
 }

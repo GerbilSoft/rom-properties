@@ -1114,7 +1114,8 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 	// Add the list data.
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW |
 	                              RomFields::RFT_LISTDATA_ICONS |
-				      RomFields::RFT_LISTDATA_MULTI, 0);
+				      RomFields::RFT_LISTDATA_MULTI |
+				      RomFields::RFT_LISTDATA_ACHIEVEMENTS_SO8, 0);
 	params.headers = v_xach_col_names;
 	params.data.multi = mvv_xach;
 	params.def_lc = getDefaultLC();
@@ -1183,7 +1184,7 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 		return 6;
 	}
 
-	// XGAA header.
+	// XGAA header
 	const XDBF_XGAA_Header *const hdr =
 		reinterpret_cast<const XDBF_XGAA_Header*>(xgaa_buf.get());
 	// Validate the header.
@@ -1226,7 +1227,7 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 	vector<string> *const v_xgaa_col_names = RomFields::strArrayToVector_i18n(
 		"Xbox360_XDBF|AvatarAwards", xgaa_col_names);
 
-	// Vectors.
+	// Vectors
 	array<RomFields::ListData_t*, XDBF_LANGUAGE_MAX> pvv_xgaa;
 	pvv_xgaa[XDBF_LANGUAGE_UNKNOWN] = nullptr;
 	for (int langID = XDBF_LANGUAGE_ENGLISH; langID < XDBF_LANGUAGE_MAX; langID++) {
@@ -1242,7 +1243,7 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 		// Icon
 		*icon_iter = loadImage(be32_to_cpu(p->image_id));
 
-		// Avatar award IDs.
+		// Avatar award IDs
 		const uint16_t name_id = be16_to_cpu(p->name_id);
 		const uint16_t locked_desc_id = be16_to_cpu(p->locked_desc_id);
 		const uint16_t unlocked_desc_id = be16_to_cpu(p->unlocked_desc_id);
@@ -1262,14 +1263,14 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 			// Avatar award ID
 			data_row.push_back(s_avatar_award_id);
 
-			// Title.
+			// Title
 			string desc = loadString_SPA((XDBF_Language_e)langID, name_id);
 			if (desc.empty() && langID != XDBF_LANGUAGE_ENGLISH) {
 				// String not found in this language. Try English.
 				desc = loadString_SPA(XDBF_LANGUAGE_ENGLISH, name_id);
 			}
 
-			// Description.
+			// Description
 			// If we don't have a locked ID, use the unlocked ID.
 			// (TODO: This may be a hidden achievement.)
 			const uint16_t desc_id = (locked_desc_id != 0xFFFF)
@@ -1291,7 +1292,6 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 				}
 			}
 
-			// TODO: Formatting value indicating that the first line should be bold.
 			data_row.push_back(std::move(desc));
 		}
 	}

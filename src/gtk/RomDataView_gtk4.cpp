@@ -98,27 +98,37 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 
 	GtkWidget *const widget = gtk_list_item_get_child(list_item);
 	assert(widget != nullptr);
-	if (!widget)
+	if (!widget) {
 		return;
+	}
 
 	// user_data is the column number.
 	// If has_icon is set, column 0 is the icon; text starts at column 1.
 	// Otherwise, text starts at column 0.
 	RpListDataItem *const item = RP_LIST_DATA_ITEM(gtk_list_item_get_item(list_item));
 	assert(item != nullptr);
-	if (!item)
+	if (!item) {
 		return;
+	}
 
+	// TODO: For libromdata.so.9, make "is_achievements" a per-column attribute?
 	const int column = GPOINTER_TO_INT(user_data);
 	switch (rp_list_data_item_get_col0_type(item)) {
 		default:
 			assert(!"Unsupported col0_type!");
 			return;
 
-		case RP_LIST_DATA_ITEM_COL0_TYPE_TEXT:
+		case RP_LIST_DATA_ITEM_COL0_TYPE_TEXT: {
 			// No icon or checkbox.
-			gtk_label_set_markup(GTK_LABEL(widget), rp_list_data_item_get_column_text(item, column));
+			const bool is_achievements = rp_list_data_item_get_column_is_achievement(item, column);
+			const char *text = rp_list_data_item_get_column_text(item, column);
+			if (unlikely(is_achievements)) {
+				gtk_label_set_markup(GTK_LABEL(widget), text);
+			} else {
+				gtk_label_set_text(GTK_LABEL(widget), text);
+			}
 			break;
+		}
 
 		case RP_LIST_DATA_ITEM_COL0_TYPE_CHECKBOX:
 			// Column 0 is a checkbox.
@@ -131,7 +141,13 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 				g_object_set_qdata(G_OBJECT(widget), RFT_BITFIELD_value_quark, GUINT_TO_POINTER((guint)checked));
 				gtk_check_button_set_active(GTK_CHECK_BUTTON(widget), rp_list_data_item_get_checked(item));
 			} else {
-				gtk_label_set_markup(GTK_LABEL(widget), rp_list_data_item_get_column_text(item, column-1));
+				const bool is_achievements = rp_list_data_item_get_column_is_achievement(item, column-1);
+				const char *text = rp_list_data_item_get_column_text(item, column-1);
+				if (unlikely(is_achievements)) {
+					gtk_label_set_markup(GTK_LABEL(widget), text);
+				} else {
+					gtk_label_set_text(GTK_LABEL(widget), text);
+				}
 			}
 			break;
 
@@ -140,7 +156,13 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 			if (column == 0) {
 				gtk_picture_set_paintable(GTK_PICTURE(widget), GDK_PAINTABLE(rp_list_data_item_get_icon(item)));
 			} else {
-				gtk_label_set_markup(GTK_LABEL(widget), rp_list_data_item_get_column_text(item, column-1));
+				const bool is_achievements = rp_list_data_item_get_column_is_achievement(item, column-1);
+				const char *text = rp_list_data_item_get_column_text(item, column-1);
+				if (unlikely(is_achievements)) {
+					gtk_label_set_markup(GTK_LABEL(widget), text);
+				} else {
+					gtk_label_set_text(GTK_LABEL(widget), text);
+				}
 			}
 			break;
 	}
@@ -354,6 +376,8 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 	}
 
 	// Add the row data.
+	// TODO: For libromdata.so.9, make "is_achievements" a per-column attribute?
+	const bool is_achievements = !!(field.flags & RomFields::RFT_LISTDATA_ACHIEVEMENTS_SO8);
 	uint32_t checkboxes = 0;
 	if (hasCheckboxes) {
 		checkboxes = field.data.list_data.mxd.checkboxes;
@@ -404,7 +428,14 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 						(likely(str != nullptr) ? str : C_("RomData", "Unknown")));
 					g_free(str);
 				} else {
-					rp_list_data_item_set_column_text(item, col, str.c_str());
+					// TODO: For libromdata.so.9, make "is_achievements" a per-column attribute?
+					rp_list_data_item_set_column_is_achievement(item, col, is_achievements);
+					if (unlikely(is_achievements)) {
+						string fmt_text = rom_data_format_RFT_LISTDATA_text_as_achievements(str);
+						rp_list_data_item_set_column_text(item, col, fmt_text.c_str());
+					} else {
+						rp_list_data_item_set_column_text(item, col, str.c_str());
+					}
 				}
 
 				is_timestamp >>= 1;
@@ -511,6 +542,8 @@ rp_rom_data_view_update_multi_RFT_LISTDATA_MULTI(RpRomDataView *page, uint32_t u
 		assert(pListData != nullptr);
 		if (pListData != nullptr) {
 			const auto &listDataDesc = pField->desc.list_data;
+			// TODO: For libromdata.so.9, make "is_achievements" a per-column attribute?
+			const bool is_achievements = !!(pField->flags & RomFields::RFT_LISTDATA_ACHIEVEMENTS_SO8);
 
 			// Update the list.
 			auto iter_listData = pListData->cbegin();
@@ -537,7 +570,14 @@ rp_rom_data_view_update_multi_RFT_LISTDATA_MULTI(RpRomDataView *page, uint32_t u
 							(likely(str != nullptr) ? str : C_("RomData", "Unknown")));
 						g_free(str);
 					} else {
-						rp_list_data_item_set_column_text(item, col, str.c_str());
+						// TODO: For libromdata.so.9, make "is_achievements" a per-column attribute?
+						rp_list_data_item_set_column_is_achievement(item, col, is_achievements);
+						if (unlikely(is_achievements)) {
+							string fmt_text = rom_data_format_RFT_LISTDATA_text_as_achievements(str);
+							rp_list_data_item_set_column_text(item, col, fmt_text.c_str());
+						} else {
+							rp_list_data_item_set_column_text(item, col, str.c_str());
+						}
 					}
 
 					// Next column

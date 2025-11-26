@@ -43,4 +43,10 @@ GPtrArray*	rp_list_data_item_get_column_text_array	(RpListDataItem *item);
 void		rp_list_data_item_set_column_text	(RpListDataItem *item, int column, const char *text);
 const char*	rp_list_data_item_get_column_text	(RpListDataItem *item, int column);	// owned by this object
 
+void		rp_list_data_item_set_column_is_achievement_array	(RpListDataItem *item, GArray *is_achievement);
+GArray*		rp_list_data_item_get_column_is_achievement_array	(RpListDataItem *item);
+
+void		rp_list_data_item_set_column_is_achievement	(RpListDataItem *item, int column, gboolean is_achievement);
+gboolean	rp_list_data_item_get_column_is_achievement	(RpListDataItem *item, int column);	// owned by this object
+
 G_END_DECLS

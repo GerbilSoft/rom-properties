@@ -34,6 +34,7 @@ using std::string;
 // Data models
 #include "ListDataModel.hpp"
 #include "ListDataSortProxyModel.hpp"
+#include "config/AchievementsItemDelegate.hpp"
 
 /** RomDataViewPrivate **/
 
@@ -552,6 +553,13 @@ QTreeView *RomDataViewPrivate::initListData(QLabel *lblDesc,
 		const QSize iconSize(32, 32);
 		treeView->setIconSize(iconSize);
 		listModel->setIconSize(iconSize);
+	}
+
+	// If RFT_LISTDATA_ACHIEVEMENTS_SO8 is set, use AchievementsItemDelegate
+	// to render the entry like an Achievement.
+	// TODO: For libromdata.so.9, make this a per-column attribute?
+	if (field.flags & RomFields::RFT_LISTDATA_ACHIEVEMENTS_SO8) {
+		treeView->setItemDelegate(new AchievementsItemDelegate(q));
 	}
 
 	// Add the field data to the ListDataModel.
