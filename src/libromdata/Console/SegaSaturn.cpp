@@ -199,47 +199,38 @@ uint32_t SegaSaturnPrivate::parsePeripherals(const char *peripherals, int size)
 {
 	assert(peripherals != nullptr);
 	assert(size > 0);
-	if (!peripherals || size <= 0)
+	if (!peripherals || size <= 0) {
 		return 0;
+	}
 
-	// TODO: Sort by character and use bsearch()?
-	#define SATURN_IO_SUPPORT_ENTRY(entry) {SATURN_IO_##entry, SATURN_IOBIT_##entry}
-	struct saturn_io_tbl_t {
-		char io_chr;	// Character in the Peripherals field
-		uint8_t io_bit;	// Bit number in the returned bitfield
-	};
-	static const array<saturn_io_tbl_t, 17> saturn_io_tbl = {{
-		{' ', 0},	// quick exit for empty entries
-		SATURN_IO_SUPPORT_ENTRY(CONTROL_PAD),
-		SATURN_IO_SUPPORT_ENTRY(ANALOG_CONTROLLER),
-		SATURN_IO_SUPPORT_ENTRY(MOUSE),
-		SATURN_IO_SUPPORT_ENTRY(KEYBOARD),
-		SATURN_IO_SUPPORT_ENTRY(STEERING),
-		SATURN_IO_SUPPORT_ENTRY(MULTITAP),
-		SATURN_IO_SUPPORT_ENTRY(LIGHT_GUN),
-		SATURN_IO_SUPPORT_ENTRY(RAM_CARTRIDGE),
-		SATURN_IO_SUPPORT_ENTRY(3D_CONTROLLER),
+	// Array mapping Saturn device characters to Saturn_Peripherals_Bitfield values.
+	// NOTE: Only 32 entries; starts at 0x40, ends at 0x5F.
+	// Index: Character
+	// Value: Bitfield value, or -1 if not applicable.
+	static constexpr array<int8_t, 0x20> saturn_io_chr_map = {{
+		// 0x40 ['@','A'-'O']
+		-1, SATURN_IOBIT_ANALOG_CONTROLLER, -1, SATURN_IOBIT_LINK_CABLE,
+		SATURN_IOBIT_LINK_CABLE, SATURN_IOBIT_3D_CONTROLLER, SATURN_IOBIT_FDD, SATURN_IOBIT_LIGHT_GUN,
+		-1, -1, SATURN_IOBIT_CONTROL_PAD, SATURN_IOBIT_KEYBOARD,
+		-1, SATURN_IOBIT_MOUSE, -1, -1,
 
-		// TODO: Are these actually the same thing?
-		{SATURN_IO_LINK_CABLE_JPN, SATURN_IOBIT_LINK_CABLE},
-		{SATURN_IO_LINK_CABLE_USA, SATURN_IOBIT_LINK_CABLE},
-
-		SATURN_IO_SUPPORT_ENTRY(NETLINK),
-		SATURN_IO_SUPPORT_ENTRY(PACHINKO),
-		SATURN_IO_SUPPORT_ENTRY(FDD),
-		SATURN_IO_SUPPORT_ENTRY(ROM_CARTRIDGE),
-		SATURN_IO_SUPPORT_ENTRY(MPEG_CARD),
+		// 0x50 ['P'-'Z']
+		SATURN_IOBIT_MPEG_CARD, SATURN_IOBIT_PACHINKO, SATURN_IOBIT_ROM_CARTRIDGE, SATURN_IOBIT_STEERING,
+		SATURN_IOBIT_MULTITAP, -1, -1, SATURN_IOBIT_RAM_CARTRIDGE,
+		SATURN_IOBIT_NETLINK, -1, -1, -1,
+		-1, -1, -1, -1,
 	}};
 
 	uint32_t ret = 0;
 	for (int i = size-1; i >= 0; i--) {
-		const char io_chr = peripherals[i];
-		auto iter = std::find_if(saturn_io_tbl.cbegin(), saturn_io_tbl.cend(),
-			[io_chr](const saturn_io_tbl_t &p) noexcept -> bool {
-				return (p.io_chr == io_chr);
-			});
-		if (iter != saturn_io_tbl.cend()) {
-			ret |= (1U << iter->io_bit);
+		const uint8_t io_chr = static_cast<uint8_t>(peripherals[i]);
+		if (io_chr < 0x40 || io_chr > 0x5F) {
+			continue;
+		}
+
+		const int8_t io_bit = saturn_io_chr_map[io_chr - 0x40];
+		if (io_bit >= 0) {
+			ret |= (1U << io_bit);
 		}
 	}
 
