@@ -422,9 +422,10 @@ void EXEPrivate::addFields_MZ(void)
 
 	// Min/Max allocated memory
 	if (mz.e_maxalloc != 0) {
-		fields.addField_string(C_("EXE", "Min. Memory"), formatFileSize(le16_to_cpu(mz.e_minalloc) * 16));
+		const uint16_t e_minalloc = le16_to_cpu(mz.e_minalloc);
+		fields.addField_string(C_("EXE", "Min. Memory"), formatFileSize(e_minalloc * 16));
 		fields.addField_string(C_("EXE", "Max. Memory"),
-			mz.e_maxalloc == 0xFFFF ? C_("EXE", "All") : formatFileSize(le16_to_cpu(mz.e_maxalloc) * 16));
+			mz.e_maxalloc == cpu_to_le16(0xFFFF) ? C_("EXE", "All") : formatFileSize(e_minalloc * 16));
 	} else {
 		/* NOTE: A "high" load means the program it at the end of the allocated
 		 * area, with extra pragraphs being between PSP and the program.
