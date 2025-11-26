@@ -534,17 +534,15 @@ string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t str
  */
 string Xbox360_XDBF_Private::loadString_GPD(uint16_t string_id)
 {
-	string ret;
-
 	if (entryTable.empty()) {
 		// Entry table isn't loaded...
-		return ret;
+		return {};
 	}
 
 	// Can we load the string?
 	if (!file || !isValid) {
 		// Can't load the string.
-		return ret;
+		return {};
 	}
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
@@ -559,6 +557,7 @@ string Xbox360_XDBF_Private::loadString_GPD(uint16_t string_id)
 
 	// GPD doesn't have string tables.
 	// Instead, each string is its own entry in the main resource table.
+	string s_ret;
 	for (const XDBF_Entry &p : entryTable) {
 		if (p.namespace_id != cpu_to_be16(XDBF_GPD_NAMESPACE_STRING)) {
 			// Not a string.
@@ -595,11 +594,11 @@ string Xbox360_XDBF_Private::loadString_GPD(uint16_t string_id)
 		}
 
 		// Convert from UTF-16BE and DOS line endings.
-		ret = dos2unix(utf16be_to_utf8(sbuf.get(), length / 2));
+		s_ret = dos2unix(utf16be_to_utf8(sbuf.get(), length / 2));
 		break;
 	}
 
-	return ret;
+	return s_ret;
 }
 
 /**
