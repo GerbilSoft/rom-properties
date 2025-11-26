@@ -290,7 +290,7 @@ IF(BUILD_XFCE OR BUILD_GTK3 OR BUILD_GTK4)
 			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>		# src
 		)
 	TARGET_LINK_LIBRARIES(rom-properties-glib PUBLIC glibresources)
-	TARGET_LINK_LIBRARIES(rom-properties-glib PRIVATE Pango::pango)
+	TARGET_LINK_LIBRARIES(rom-properties-glib PUBLIC Pango::pango)
 	TARGET_LINK_LIBRARIES(rom-properties-glib PUBLIC GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
 	TARGET_LINK_LIBRARIES(rom-properties-glib PRIVATE romdata)		# for config.librpbase.h
 
