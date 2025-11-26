@@ -2,6 +2,13 @@
 
 ## v2.7.1 (released 2025/??/??)
 
+* New features:
+  * Achievements lists, e.g. for Xbox 360 games, now use the same formatting
+    as the Achievements tab in rp-config. The first line uses the default font
+    size, and the following lines use a smaller font size.
+    * Currently only implemented for GTK and KDE. A Windows implementation
+      will be added later.
+
 * Bug fixes:
   * EXE_PE: Fix regression that causes the Imports tab to show the wrong
     DLL names for imports.
