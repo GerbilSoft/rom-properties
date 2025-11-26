@@ -1932,7 +1932,7 @@ int Xbox360_XEX::loadFieldData(void)
 		}
 
 		d->fields.addField_string(C_("Xbox360_XEX", "Media Types"),
-			found ? oss.str() : C_("Xbox360_XEX|MediaType", "None"));
+			found ? oss.str().c_str() : C_("Xbox360_XEX|MediaType", "None"));
 	}
 
 	// Region code
