@@ -30,7 +30,7 @@ LDSHARED=$(CC)
 LDSHAREDFLAGS=-shared
 LDVERSIONSCRIPT=
 
-VER=2.2.5
+VER=2.3.1
 VER1=2
 
 STATICLIB=$(LIBNAME1).a
@@ -103,6 +103,7 @@ OBJZ = \
 	trees.o \
 	uncompr.o \
 	zutil.o \
+	arch/generic/crc32_chorba_c.o \
 	cpu_features.o \
 	$(ARCH_STATIC_OBJS)
 
@@ -143,6 +144,7 @@ PIC_OBJZ = \
 	trees.lo \
 	uncompr.lo \
 	zutil.lo \
+	arch/generic/crc32_chorba_c.lo \
 	cpu_features.lo \
 	$(ARCH_SHARED_OBJS)
 
