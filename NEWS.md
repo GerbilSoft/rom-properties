@@ -18,6 +18,7 @@
     * Affects: v2.6 - v2.7
   * GTK4: Fix some memory leaks due to incorrect reference handling when
     using GListStore item objects.
+  * ICO, EXE: Fix detection issues on big-endian systems.
   * Fix more crash bugs and a few memory leaks (found using aflplusplus with -fsanitize=address):
     * PowerVR
     * Xbox360_XDBF
