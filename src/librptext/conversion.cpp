@@ -76,8 +76,9 @@ size_t u16_strlen(const char16_t *wcs)
 size_t u16_strnlen(const char16_t *wcs, size_t maxlen)
 {
 	size_t len = 0;
-	while (*wcs++ && len < maxlen)
+	while (len < maxlen && *wcs++) {
 		len++;
+	}
 	return len;
 }
 
