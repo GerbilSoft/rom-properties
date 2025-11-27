@@ -601,8 +601,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win1(int idx)
 	const size_t icon_size = static_cast<size_t>(height) * stride;
 
 	// Load the icon data.
-	rp::uvector<uint8_t> icon_data;
-	icon_data.resize(icon_size * 2);
+	auto icon_data = aligned_uptr<uint8_t>(16, icon_size * 2);
 
 	// Is this from a file or a resource?
 	size_t size;
@@ -616,10 +615,10 @@ rp_image_const_ptr ICOPrivate::loadImage_Win1(int idx)
 		}
 
 		// Read from the resource.
-		size = f_icon->seekAndRead(addr, icon_data.data(), icon_size * 2);
+		size = f_icon->seekAndRead(addr, icon_data.get(), icon_size * 2);
 	} else {
 		// Read from the file.
-		size = file->seekAndRead(addr, icon_data.data(), icon_size * 2);
+		size = file->seekAndRead(addr, icon_data.get(), icon_size * 2);
 	}
 
 	if (size != icon_size * 2) {
@@ -628,7 +627,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win1(int idx)
 	}
 
 	// Convert the icon.
-	const uint8_t *const p_mask_data = icon_data.data();
+	const uint8_t *const p_mask_data = icon_data.get();
 	const uint8_t *const p_icon_data = p_mask_data + icon_size;
 	img_map[idx] = ImageDecoder::fromLinearMono_WinIcon(width, height,
 		p_icon_data, icon_size, p_mask_data, icon_size, stride);
@@ -788,6 +787,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 
 	// For 8bpp or less, a color table is present.
 	// NOTE: Need to manually set the alpha channel to 0xFF.
+	// TODO: Aligned buffer?
 	rp::uvector<uint32_t> pal_data;
 	if (bitcount <= 8) {
 		const unsigned int palette_count = (1U << bitcount);
@@ -812,9 +812,8 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 	unsigned int mask_size = mask_stride * half_height;
 
 	size_t biSizeImage = icon_size + mask_size;
-	rp::uvector<uint8_t> img_data;
-	img_data.resize(biSizeImage);
-	size_t size = f_icon->seekAndRead(addr, img_data.data(), biSizeImage);
+	auto img_data = aligned_uptr<uint8_t>(16, biSizeImage);
+	size_t size = f_icon->seekAndRead(addr, img_data.get(), biSizeImage);
 	if (size != biSizeImage) {
 		// Seek and/or read error.
 		return {};
@@ -824,12 +823,12 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 	// TODO: Apply the mask.
 	const uint8_t *icon_data, *mask_data;
 	if (is_upside_down) {
-		icon_data = img_data.data();
+		icon_data = img_data.get();
 		mask_data = icon_data + icon_size;
 	} else {
 		// TODO: Need to test this. Might not be correct.
 		// I don't have any right-side up icons...
-		mask_data = img_data.data();
+		mask_data = img_data.get();
 		icon_data = mask_data + mask_size;
 	}
 
