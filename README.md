@@ -84,11 +84,11 @@ The following platforms are still compatible, but may not receive as much suppor
     cURL and a certificate bundle. This is available on the Releases
     page.
 
-On Windows Vista and later, you will need the MSVC 2015-2022 runtime:
-* i386 (32-bit): https://aka.ms/vs/17/release/VC_redist.x86.exe
-* amd64 (64-bit): https://aka.ms/vs/17/release/VC_redist.x64.exe
+On Windows Vista and later, you will need the MSVC 2015-2026 runtime:
+* i386 (32-bit): https://aka.ms/vs/18/release/VC_redist.x86.exe
+* amd64 (64-bit): https://aka.ms/vs/18/release/VC_redist.x64.exe
 * arm32: https://rpdb.gerbilsoft.com/redist/VC_redist.arm.vs2017.exe
-* arm64: https://aka.ms/vs/17/release/vc_redist.arm64.exe
+* arm64: https://aka.ms/vs/18/release/vc_redist.arm64.exe
 
 On Windows XP/2003 and earlier, you will need the MSVC 2015-2017 runtime:
 * i386 (32-bit): https://aka.ms/vs/15/release/VC_redist.x86.exe
