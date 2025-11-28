@@ -586,6 +586,7 @@ static RomDataPtr openZipFile(const IRpFilePtr &file, unsigned int attrs)
 		int ret = unzLocateFile(unzfile, p.filename, nullptr);
 		if (ret == UNZ_OK) {
 			RomDataPtr romData = p.newRomData(file, unzfile);
+			unzfile = nullptr;
 			if (romData->isValid()) {
 				// RomData subclass obtained.
 				return romData;
@@ -595,6 +596,12 @@ static RomDataPtr openZipFile(const IRpFilePtr &file, unsigned int attrs)
 		}
 	}
 
+	// Close the unzFile if it's still open for some reason.
+	// (e.g. none of the attrs match, or none of the required files
+	// were found in the Zip file)
+	if (unzfile) {
+		unzClose(unzfile);
+	}
 	return {};
 }
 
