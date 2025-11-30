@@ -154,11 +154,8 @@ FOR %%I IN (Community Professional Enterprise) DO (
 :: MSVC 2026 [18.0]: Use the 2017 [14.1x] compiler for 32-bit in order to maintain WinXP compatibilty.
 :: Use MSVC 2022 v143 for 32-bit ARM, since MSVC 2026 no longer supports it.
 :: NOTE: MSVC 2022 switched to 64-bit Program Files
-echo check 2026
 FOR %%I IN (Community Professional Enterprise) DO (
-    echo a
 	IF EXIST "%PrgFiles64%\Microsoft Visual Studio\18\%%I\VC\Tools\MSVC\14.50.35717\bin\HostX86\x86\cl.exe" (
-	    echo b
 		SET "MSVC32_DIR=%PrgFiles64%\Microsoft Visual Studio\18\%%I\VC\Tools\MSVC\14.16.27023"
 		SET MSVC32_VERSION=14.16
 		SET MSVC32_YEAR=2026
