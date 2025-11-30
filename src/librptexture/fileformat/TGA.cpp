@@ -312,7 +312,7 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 			return nullptr;
 		}
 
-		const size_t rle_size = static_cast<size_t>(fileSize) - img_data_offset - cmap_size;
+		const size_t rle_size = static_cast<size_t>(fileSize - img_data_offset - cmap_size);
 		unique_ptr<uint8_t[]> rle_data(new uint8_t[rle_size]);
 		size_t size = file->read(rle_data.get(), rle_size);
 		if (size != rle_size) {

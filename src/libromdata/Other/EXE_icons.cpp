@@ -288,7 +288,7 @@ rp::uvector<uint8_t> EXEPrivate::loadIconResourceData(int iconindex, int width, 
 	}
 
 	rp::uvector<uint8_t> iconData;
-	iconData.resize(iconSize);
+	iconData.resize(static_cast<size_t>(iconSize));
 	size_t size = f_rtIcon->read(iconData.data(), iconData.size());
 	if (size != iconData.size()) {
 		// Read error.
