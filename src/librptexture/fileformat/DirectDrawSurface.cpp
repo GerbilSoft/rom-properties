@@ -1083,13 +1083,13 @@ DirectDrawSurface::DirectDrawSurface(const IRpFilePtr &file)
 	{
 		const bool isXbox = (pSrcHeader->ddspf.dwFourCC == le32_to_cpu(DDPF_FOURCC_XBOX));
 		// Verify the size.
-		size_t headerSize;
+		unsigned int headerSize;
 		if (likely(!isXbox)) {
 			// DX10 texture.
-			headerSize = 4 + sizeof(DDS_HEADER) + sizeof(DDS_HEADER_DXT10);
+			headerSize = static_cast<unsigned int>(4 + sizeof(DDS_HEADER) + sizeof(DDS_HEADER_DXT10));
 		} else {
 			// Xbox One texture.
-			headerSize = 4 + sizeof(DDS_HEADER) + sizeof(DDS_HEADER_DXT10) + sizeof(DDS_HEADER_XBOX);
+			headerSize = static_cast<unsigned int>(4 + sizeof(DDS_HEADER) + sizeof(DDS_HEADER_DXT10) + sizeof(DDS_HEADER_XBOX));
 		}
 		if (size < headerSize) {
 			// Extra headers weren't read.
@@ -1138,7 +1138,7 @@ DirectDrawSurface::DirectDrawSurface(const IRpFilePtr &file)
 		d->texDataStartAddr = headerSize;
 	} else {
 		// No DXT10 header.
-		d->texDataStartAddr = 4+sizeof(DDS_HEADER);
+		d->texDataStartAddr = static_cast<unsigned int>(4+sizeof(DDS_HEADER));
 	}
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
