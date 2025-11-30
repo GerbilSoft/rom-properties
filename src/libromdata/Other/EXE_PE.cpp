@@ -502,7 +502,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		if (!strcasecmp(dll_name, "vcruntime140.dll")) {
 			// TODO: If host OS is Windows XP or earlier, limit it to 2017?
 			refDesc = fmt::format(
-				FRUN(C_("EXE|Runtime", "Microsoft Visual C++ {:s} Runtime")), "2015-2022");
+				FRUN(C_("EXE|Runtime", "Microsoft Visual C++ {:s} Runtime")), "2015-2026");
 			switch (le16_to_cpu(hdr.pe.FileHeader.Machine)) {
 				default:
 					break;
@@ -524,7 +524,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 			break;
 		} else if (!strcasecmp(dll_name, "vcruntime140d.dll")) {
 			refDesc = fmt::format(
-				FRUN(C_("EXE|Runtime", "Microsoft Visual C++ {:s} Debug Runtime")), "2015-2022");
+				FRUN(C_("EXE|Runtime", "Microsoft Visual C++ {:s} Debug Runtime")), "2015-2026");
 			break;
 		}
 
