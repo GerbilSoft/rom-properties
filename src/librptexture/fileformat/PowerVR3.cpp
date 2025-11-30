@@ -1370,8 +1370,7 @@ int PowerVR3::getFields(RomFields *fields) const
 	static_assert(pvr3_colorspace_tbl.size() == PVR3_COLOR_SPACE_MAX, "pvr3_colorspace_tbl[] needs to be updated!");
 	if (pvr3Header->color_space < pvr3_colorspace_tbl.size()) {
 		fields->addField_string(C_("PowerVR3", "Color Space"),
-			pgettext_expr("PowerVR3|ColorSpace",
-				pvr3_colorspace_tbl[pvr3Header->color_space]));
+			pgettext_expr("PowerVR3|ColorSpace", pvr3_colorspace_tbl[pvr3Header->color_space]));
 	} else {
 		fields->addField_string_numeric(C_("PowerVR3", "Color Space"),
 			pvr3Header->color_space);
@@ -1394,12 +1393,12 @@ int PowerVR3::getFields(RomFields *fields) const
 		NOP_C_("PowerVR3|ChannelType", "Float"),
 	}};
 	static_assert(pvr3_chtype_tbl.size() == PVR3_CHTYPE_MAX, "pvr3_chtype_tbl[] needs to be updated!");
+	const char *const s_channel_type_title = C_("PowerVR3", "Channel Type");
 	if (pvr3Header->channel_type < pvr3_chtype_tbl.size()) {
-		fields->addField_string(C_("PowerVR3", "Channel Type"),
-			pvr3_chtype_tbl[pvr3Header->channel_type]);
-			//pgettext_expr("PowerVR3|ChannelType", pvr3_chtype_tbl[pvr3Header->channel_type]));
+		fields->addField_string(s_channel_type_title,
+			pgettext_expr("PowerVR3|ChannelType", pvr3_chtype_tbl[pvr3Header->channel_type]));
 	} else {
-		fields->addField_string_numeric(C_("PowerVR3", "Channel Type"),
+		fields->addField_string_numeric(s_channel_type_title,
 			pvr3Header->channel_type);
 	}
 
