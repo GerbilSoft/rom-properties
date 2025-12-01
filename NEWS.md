@@ -9,6 +9,10 @@
     * Currently only implemented for GTK and KDE. A Windows implementation
       will be added later.
 
+* Other changes:
+  * Windows: The ARM64 version has been rolled back to plain ARM64 for now.
+    The ARM64X version was crashing on Windows 11 for some unknown reason.
+
 * Bug fixes:
   * EXE_PE: Fix regression that causes the Imports tab to show the wrong
     DLL names for imports.

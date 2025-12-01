@@ -197,8 +197,8 @@ end;
   #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.arm\bin\Release\*.exe", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_arm
 #endsub
 
-; NOTE: Installing DLLs from build.arm64ec, which is actually compiled as ARM64X. (ARM64 + ARM64EC in one DLL)
-; Installing EXEs from build.arm64 (ARM64-only)
+; FIXME: The ARM64X build isn't working. Maybe try forwarder DLLs instead?
+; Installing DLLs and EXEs from build.arm64 (ARM64-only)
 #sub ProcessFoundFile_arm64_dll
   #define FileName FindGetFileName(FindHandle)
   #define file_bits "64bit"
@@ -208,7 +208,7 @@ end;
   #else
     #define do_regserver ""
   #endif
-  Source: "..\pkg_windows\build.arm64ec\bin\Release\{#FileName}"; DestDir: "{app}\arm64"; Components: main; Flags: ignoreversion uninsrestartdelete {#file_bits} {#do_regserver}; Check: {#file_check}
+  Source: "..\pkg_windows\build.arm64\bin\Release\{#FileName}"; DestDir: "{app}\arm64"; Components: main; Flags: ignoreversion uninsrestartdelete {#file_bits} {#do_regserver}; Check: {#file_check}
 #endsub
 #sub ProcessFoundFile_arm64_exe
   #define FileName FindGetFileName(FindHandle)
@@ -218,7 +218,7 @@ end;
 #endsub
 #sub BuildFileList_arm64
   #define FindResult
-  #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.arm64ec\bin\Release\*.dll", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_arm64_dll
+  #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.arm64\bin\Release\*.dll", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_arm64_dll
   #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.arm64\bin\Release\*.exe", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_arm64_exe
 #endsub
 
