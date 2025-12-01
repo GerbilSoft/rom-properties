@@ -37,8 +37,9 @@ Major additions in v2.7 include:
     custom svrplus executable. Both Inno Setup 5 and 6 are used:
     * Inno Setup 5 is used for Windows XP, 2003, and Vista.
     * Inno Setup 6 is used for Windows 7, 8.x, 10, and 11.
-  * The arm64 and arm64ec DLLs have been combined using Microsoft's
-    ARM64X format.
+  * ~~The arm64 and arm64ec DLLs have been combined using Microsoft's
+    ARM64X format.~~ This isn't working properly; it will be reverted
+    to ARM64-only for v2.7.1.
   * Add special handling for 16-bit executables and Windows 1.x/2.x
     icons. This is implemented using Microsoft's Detours library, and
     currently only works once rom-properties.dll is loaded in the Explorer
