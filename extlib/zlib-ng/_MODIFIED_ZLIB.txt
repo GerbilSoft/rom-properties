@@ -1,9 +1,9 @@
-This copy of zlib-ng 2.3.1 is a modified version of the original.
+This copy of zlib-ng 2.3.2 is a modified version of the original.
 
-commit 68c83bf42055a4313c16ae1073dd50cd72bbfb69
-2.3.1 Release
+commit 6d9f3dc072369dc719a5fbe71d4e086a96a680bd
+2.3.2 Hotfix Release
     
-Tag: 2.3.1
+Tag: 2.3.2
 
 The following changes have been made to the original:
 
