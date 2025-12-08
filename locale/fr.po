@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2025-10-20 10:02-0400\n"
-"PO-Revision-Date: 2025-12-08 08:41\n"
+"PO-Revision-Date: 2025-12-08 10:58\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -1721,7 +1721,7 @@ msgstr "Volume"
 #: ../src/libromdata/Audio/VGM.cpp:423
 msgctxt "RomData|Audio"
 msgid "Duration"
-msgstr ""
+msgstr "Durée"
 
 #: ../src/libromdata/Audio/PSF.cpp:618
 msgctxt "PSF"
@@ -1883,7 +1883,7 @@ msgstr "#"
 #: ../src/libromdata/Audio/SNDH.cpp:928 ../src/libromdata/Audio/SNDH.cpp:931
 msgctxt "SNDH|SubtuneList"
 msgid "Name"
-msgstr ""
+msgstr "Nom"
 
 #: ../src/libromdata/Audio/SNDH.cpp:945
 msgctxt "SNDH"
