@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2025-10-20 10:02-0400\n"
-"PO-Revision-Date: 2025-12-08 10:58\n"
+"PO-Revision-Date: 2025-12-08 18:29\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -455,7 +455,7 @@ msgstr "ID du projet :"
 #: ../src/win32/AchWin32.cpp:284
 msgctxt "Achievements"
 msgid "Achievement Unlocked"
-msgstr "Succès Débloqué"
+msgstr "Succès débloqué"
 
 #. tr: Uses Pango's HTML subset for formatting.
 #: ../src/gtk/config/AboutTab.cpp:459
@@ -2815,7 +2815,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1785
 msgctxt "RomData"
 msgid "Unknown error. (THIS IS A BUG!)"
-msgstr "Erreur inconnue. (CECI EST UN BUG!)"
+msgstr "Erreur inconnue. (C'EST UN BUG !)"
 
 #: ../src/libromdata/Console/GameCube.cpp:720
 msgctxt "GameCube"
