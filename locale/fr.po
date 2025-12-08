@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2025-10-20 10:02-0400\n"
-"PO-Revision-Date: 2025-11-25 02:53\n"
+"PO-Revision-Date: 2025-12-08 08:41\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -1455,12 +1455,12 @@ msgstr "Petit-Boutisme"
 #: ../src/libromdata/Audio/BCSTM.cpp:470
 msgctxt "BCSTM|Codec"
 msgid "Signed 8-bit PCM"
-msgstr ""
+msgstr "PCM 8-bit signé"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:471
 msgctxt "BCSTM|Codec"
 msgid "Signed 16-bit PCM"
-msgstr ""
+msgstr "PCM 16-bit signé"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:474
 msgctxt "BCSTM"
@@ -1496,17 +1496,17 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:773
 msgctxt "RomData"
 msgid "Version"
-msgstr ""
+msgstr "Version"
 
 #: ../src/libromdata/Audio/BRSTM.cpp:333
 msgctxt "BRSTM|Codec"
 msgid "Signed 8-bit PCM"
-msgstr ""
+msgstr "PCM 8-bit signé"
 
 #: ../src/libromdata/Audio/BRSTM.cpp:334
 msgctxt "BRSTM|Codec"
 msgid "Signed 16-bit PCM"
-msgstr ""
+msgstr "PCM 16-bit signé"
 
 #: ../src/libromdata/Audio/BRSTM.cpp:337
 msgctxt "BRSTM"
@@ -1527,13 +1527,13 @@ msgstr ""
 #: ../src/libromdata/Audio/PSF.cpp:545
 msgctxt "RomData|Audio"
 msgid "Title"
-msgstr ""
+msgstr "Titre"
 
 #: ../src/libromdata/Audio/GBS.cpp:247 ../src/libromdata/Audio/NSF.cpp:215
 #: ../src/libromdata/Audio/SNDH.cpp:811 ../src/libromdata/Audio/VGM.cpp:404
 msgctxt "RomData|Audio"
 msgid "Composer"
-msgstr ""
+msgstr "Compositeur"
 
 #: ../src/libromdata/Audio/GBS.cpp:253 ../src/libromdata/Audio/NSF.cpp:221
 #: ../src/libromdata/Audio/PSF.cpp:576 ../src/libromdata/Audio/SID.cpp:238
@@ -1544,7 +1544,7 @@ msgstr ""
 #: ../src/libromdata/Audio/GBS.cpp:258 ../src/libromdata/Audio/NSF.cpp:226
 msgctxt "RomData|Audio"
 msgid "Track Count"
-msgstr ""
+msgstr "Nombre de pistes"
 
 #: ../src/libromdata/Audio/GBS.cpp:262 ../src/libromdata/Audio/NSF.cpp:230
 msgctxt "RomData|Audio"
@@ -1654,7 +1654,7 @@ msgstr "Capcom QSound"
 #: ../src/libromdata/Audio/PSF.cpp:526
 msgctxt "PSF"
 msgid "System"
-msgstr ""
+msgstr "Système"
 
 #: ../src/libromdata/Audio/PSF.cpp:532 ../src/libromdata/Audio/SPC.cpp:878
 #: ../src/libromdata/Console/DreamcastSave.cpp:1390
@@ -1681,7 +1681,7 @@ msgstr ""
 #, c++-format
 msgctxt "RomData"
 msgid "Unknown (0x{:0>2X})"
-msgstr ""
+msgstr "Inconnu (0x{:0>2X})"
 
 #: ../src/libromdata/Audio/PSF.cpp:551 ../src/libromdata/Audio/SPC.cpp:789
 msgctxt "RomData|Audio"
@@ -1691,7 +1691,7 @@ msgstr "Artiste"
 #: ../src/libromdata/Audio/PSF.cpp:557
 msgctxt "PSF"
 msgid "Game"
-msgstr ""
+msgstr "Jeu"
 
 #: ../src/libromdata/Audio/PSF.cpp:564 ../src/libromdata/Audio/VGM.cpp:405
 #: ../src/libromdata/Console/Dreamcast.cpp:697
@@ -1731,12 +1731,12 @@ msgstr ""
 #: ../src/libromdata/Audio/PSF.cpp:624
 msgctxt "RomData|Audio"
 msgid "Comment"
-msgstr ""
+msgstr "Commentaire"
 
 #: ../src/libromdata/Audio/SAP.cpp:576 ../src/libromdata/Audio/SID.cpp:232
 msgctxt "RomData|Audio"
 msgid "Author"
-msgstr ""
+msgstr "Auteur"
 
 #: ../src/libromdata/Audio/SAP.cpp:581 ../src/libromdata/Audio/SNDH.cpp:805
 msgctxt "RomData|Audio"
@@ -1816,7 +1816,7 @@ msgstr ""
 #: ../src/libromdata/Audio/SID.cpp:226
 msgctxt "RomData|Audio"
 msgid "Name"
-msgstr ""
+msgstr "Nom"
 
 #: ../src/libromdata/Audio/SID.cpp:243
 msgctxt "SID"
@@ -1918,12 +1918,12 @@ msgstr ""
 #: ../src/libromdata/Audio/SPC.cpp:847
 msgctxt "RomData|Audio"
 msgid "Comments"
-msgstr ""
+msgstr "Commentaires"
 
 #: ../src/libromdata/Audio/SPC.cpp:860
 msgctxt "SPC|Emulator"
 msgid "Unknown"
-msgstr ""
+msgstr "Inconnu"
 
 #: ../src/libromdata/Audio/SPC.cpp:873
 msgctxt "SPC"
@@ -1953,17 +1953,17 @@ msgstr ""
 #: ../src/libromdata/Audio/VGM.cpp:401
 msgctxt "RomData|Audio"
 msgid "Track Name"
-msgstr ""
+msgstr "Nom de la piste"
 
 #: ../src/libromdata/Audio/VGM.cpp:402
 msgctxt "VGM"
 msgid "Game Name"
-msgstr ""
+msgstr "Nom du jeu"
 
 #: ../src/libromdata/Audio/VGM.cpp:403
 msgctxt "VGM"
 msgid "System Name"
-msgstr ""
+msgstr "Nom du système"
 
 #: ../src/libromdata/Audio/VGM.cpp:406
 msgctxt "VGM"
@@ -2298,7 +2298,7 @@ msgstr ""
 #: ../src/libromdata/Console/Atari7800.cpp:228
 msgctxt "Atari7800|ControllerType"
 msgid "Joystick (2600)"
-msgstr ""
+msgstr "Joystick (2600)"
 
 #: ../src/libromdata/Console/Atari7800.cpp:229
 msgctxt "Atari7800|ControllerType"
@@ -2308,7 +2308,7 @@ msgstr ""
 #: ../src/libromdata/Console/Atari7800.cpp:230
 msgctxt "Atari7800|ControllerType"
 msgid "Keyboard (2600)"
-msgstr ""
+msgstr "Clavier (2600)"
 
 #: ../src/libromdata/Console/Atari7800.cpp:231
 msgctxt "Atari7800|ControllerType"
@@ -2355,7 +2355,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:415
 msgctxt "Region"
 msgid "Japan"
-msgstr ""
+msgstr "Japon"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:171
 #: ../src/libromdata/Console/GameCubeRegions.cpp:118
@@ -2382,7 +2382,7 @@ msgstr "Europe"
 #: ../src/libromdata/Console/Dreamcast.cpp:673
 msgctxt "Dreamcast"
 msgid "Dreamcast"
-msgstr ""
+msgstr "Dreamcast"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:681
 #: ../src/libromdata/Console/GameCube.cpp:1516
@@ -2406,7 +2406,7 @@ msgstr ""
 #: ../src/libromdata/Media/ISO.cpp:579
 msgctxt "RomData"
 msgid "Publisher"
-msgstr ""
+msgstr "Éditeur"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:686
 msgctxt "Dreamcast"
@@ -2465,7 +2465,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/DMG.cpp:798
 msgctxt "RomData"
 msgid "Checksum"
-msgstr ""
+msgstr "Somme de contrôle"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:736
 #, c++-format
