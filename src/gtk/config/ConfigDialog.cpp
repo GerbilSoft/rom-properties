@@ -499,25 +499,27 @@ rp_config_dialog_apply(RpConfigDialog *dialog)
 		}
 	}
 
+	bool ok = true;
+
 	// Commit the changes.
 	// NOTE: g_key_file_save_to_file() was added in glib-2.40.
 	// We'll use g_key_file_to_data() instead.
 	gsize length = 0;
 	gchar *const keyFileData = g_key_file_to_data(keyFile, &length, nullptr);
 	g_key_file_unref(keyFile);
-	if (!keyFileData) {
-		// Failed to get the key file data.
-		return;
-	}
-	FILE *f_conf = fopen(filename, "w");
-	if (!f_conf) {
-		// Failed to open the configuration file for writing.
+	if (keyFileData) {
+		// TODO: Better error handling.
+		// TODO: g_file_set_contents_full() with G_FILE_SET_CONTENTS_DURABLE? [requires glib-2.66]
+		gboolean bRet = g_file_set_contents(filename, keyFileData, length, nullptr);
 		g_free(keyFileData);
-		return;
+		if (!bRet) {
+			// Saving failed for some reason...
+			ok = false;
+		}
+	} else {
+		// Saving failed for some reason...
+		ok = false;
 	}
-	fwrite(keyFileData, 1, length, f_conf);
-	fclose(f_conf);
-	g_free(keyFileData);
 
 #ifdef ENABLE_DECRYPTION
 	// KeyManager needs to save to keys.conf.
@@ -546,25 +548,28 @@ rp_config_dialog_apply(RpConfigDialog *dialog)
 		gsize length = 0;
 		gchar *const keyFileData = g_key_file_to_data(keyFile, &length, nullptr);
 		g_key_file_unref(keyFile);
-		if (!keyFileData) {
-			// Failed to get the key file data.
-			return;
-		}
-		FILE *f_conf = fopen(filename, "w");
-		if (!f_conf) {
-			// Failed to open the configuration file for writing.
+		if (keyFileData) {
+			// TODO: Better error handling.
+			// TODO: g_file_set_contents_full() with G_FILE_SET_CONTENTS_DURABLE? [requires glib-2.66]
+			gboolean bRet = g_file_set_contents(filename, keyFileData, length, nullptr);
 			g_free(keyFileData);
-			return;
+			if (!bRet) {
+				// Saving failed for some reason...
+				ok = false;
+			}
+		} else {
+			// Saving failed for some reason...
+			ok = false;
 		}
-		fwrite(keyFileData, 1, length, f_conf);
-		fclose(f_conf);
-		g_free(keyFileData);
 	}
 #endif /* ENABLE_DECRYPTION */
 
-	// Disable the "Apply" and "Reset" buttons.
-	gtk_widget_set_sensitive(dialog->btnApply, FALSE);
-	gtk_widget_set_sensitive(dialog->btnReset, FALSE);
+	// TODO: Show an actual error message if saving failed.
+	if (ok) {
+		// Disable the "Apply" and "Reset" buttons.
+		gtk_widget_set_sensitive(dialog->btnApply, FALSE);
+		gtk_widget_set_sensitive(dialog->btnReset, FALSE);
+	}
 }
 
 /**
