@@ -135,7 +135,7 @@ public:
 	{
 		// Wrapper for RomData::pvd_time_to_unix_time(),
 		// which doesn't take an ISO_PVD_DateTime_t struct.
-		return RomDataPrivate::pvd_time_to_unix_time(pvd_time->full, pvd_time->tz_offset);
+		return RomDataPrivate::pvd_time_to_unix_time(&pvd_time->notz, pvd_time->tz_offset);
 	}
 
 	/**
@@ -147,7 +147,7 @@ public:
 	{
 		// Wrapper for RomData::pvd_time_to_unix_time(),
 		// which doesn't take an HSFS_PVD_DateTime_t struct.
-		return RomDataPrivate::pvd_time_to_unix_time(pvd_time->full, 0);
+		return RomDataPrivate::pvd_time_to_unix_time(&pvd_time->notz, 0);
 	}
 
 	/**

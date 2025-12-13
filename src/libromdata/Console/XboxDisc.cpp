@@ -702,7 +702,7 @@ int XboxDisc::isRomSupported_static(
 
 	// Get the creation time.
 	const time_t btime = RomDataPrivate::pvd_time_to_unix_time(
-		pvd->btime.full, pvd->btime.tz_offset);
+		&pvd->btime.notz, pvd->btime.tz_offset);
 	if (btime == -1) {
 		// Invalid creation time.
 		return static_cast<int>(XboxDiscPrivate::DiscType::Unknown);

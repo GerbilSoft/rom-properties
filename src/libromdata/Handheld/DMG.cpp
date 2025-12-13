@@ -1559,7 +1559,7 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 		}
 
 		char pbcode[3];
-		if (!DMGSpecialCases::get_publisher_code(pbcode, romHeader)) {
+		if (!DMGSpecialCases::get_publisher_code(&pbcode, romHeader)) {
 			img_filename += '-';
 			img_filename += pbcode;
 		}

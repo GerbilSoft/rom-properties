@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DMGSpecialCases.hpp: Game Boy special cases for RPDB images.            *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2025 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,11 +14,11 @@ namespace LibRomData { namespace DMGSpecialCases {
 
 /**
  * Get the publisher code as a string.
- * @param pbcode	[out] Output buffer (Must be at least 3 bytes)
+ * @param pbcode	[out] Output buffer (Must be 3 bytes)
  * @param romHeader	[in] ROM header
  * @return 0 on success; non-zero on error.
  */
-int get_publisher_code(char pbcode[3], const struct _DMG_RomHeader *romHeader);
+int get_publisher_code(char (*pbcode)[3], const struct _DMG_RomHeader *romHeader);
 
 /**
  * Check if a DMG ROM image needs a checksum appended to its

@@ -92,6 +92,7 @@ ASSERT_STRUCT(uint32_lsb_msb_t, 8);
 typedef struct RP_PACKED _ISO_PVD_DateTime_t {
 	union {
 		char full[17];
+		char notz[16];
 		struct {
 			char year[4];		// Year, from 1 to 9999.
 			char month[2];		// Month, from 1 to 12.

@@ -143,11 +143,11 @@ static const char cgbSpecialCases[][8] = {
 
 /**
  * Get the publisher code as a string.
- * @param pbcode	[out] Output buffer (Must be at least 3 bytes)
+ * @param pbcode	[out] Output buffer (Must be 3 bytes)
  * @param romHeader	[in] ROM header
  * @return 0 on success; non-zero on error.
  */
-int get_publisher_code(char pbcode[3], const DMG_RomHeader *romHeader)
+int get_publisher_code(char (*pbcode)[3], const DMG_RomHeader *romHeader)
 {
 	// TODO: Consolidate with DMG's code.
 	if (romHeader->old_publisher_code == 0x33) {
@@ -157,17 +157,17 @@ int get_publisher_code(char pbcode[3], const DMG_RomHeader *romHeader)
 		{
 			// NULL publisher code. Use 00.
 			// NOTE: memcpy() here is optimized by gcc, but *not* MSVC. (due to len=3)
-			pbcode[0] = '0';
-			pbcode[1] = '0';
-			pbcode[2] = '\0';
+			(*pbcode)[0] = '0';
+			(*pbcode)[1] = '0';
+			(*pbcode)[2] = '\0';
 		} else {
-			pbcode[0] = romHeader->new_publisher_code[0];
-			pbcode[1] = romHeader->new_publisher_code[1];
-			pbcode[2] = '\0';
+			(*pbcode)[0] = romHeader->new_publisher_code[0];
+			(*pbcode)[1] = romHeader->new_publisher_code[1];
+			(*pbcode)[2] = '\0';
 		}
 	} else {
 		// Old publisher code.
-		snprintf(pbcode, 3, "%02X", romHeader->old_publisher_code);
+		snprintf(*pbcode, 3, "%02X", romHeader->old_publisher_code);
 	}
 
 	return 0;
@@ -201,7 +201,7 @@ bool is_rpdb_checksum_needed_TitleBased(const DMG_RomHeader *romHeader)
 	// If an ID6 is present, caller must use the ID6 function.
 	// TODO: Do the ID6 check here instead?
 	char pbcode[3];
-	get_publisher_code(pbcode, romHeader);
+	get_publisher_code(&pbcode, romHeader);
 	const uint8_t flags = get_lookup_flags(romHeader);
 	assert(flags < dmgSpecialCases_dispatch_tbl.size());
 	if (flags >= dmgSpecialCases_dispatch_tbl.size())

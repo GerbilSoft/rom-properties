@@ -170,7 +170,7 @@ public:
 	 * @param tz_offset PVD timezone offset
 	 * @return Unix time, or -1 if invalid or not set.
 	 */
-	static time_t pvd_time_to_unix_time(const char pvd_time[16], int8_t tz_offset);
+	static time_t pvd_time_to_unix_time(const char (*pvd_time)[16], int8_t tz_offset);
 
 	/**
 	 * Convert an ISO format datestamp to Unix time.

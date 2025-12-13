@@ -373,7 +373,7 @@ time_t RomDataPrivate::bcd_to_unix_time(const uint8_t *bcd_tm, size_t size)
  * @param tz_offset PVD timezone offset
  * @return UNIX time, or -1 if invalid or not set.
  */
-time_t RomDataPrivate::pvd_time_to_unix_time(const char pvd_time[16], int8_t tz_offset)
+time_t RomDataPrivate::pvd_time_to_unix_time(const char (*pvd_time)[16], int8_t tz_offset)
 {
 	// TODO: Verify tz_offset range? [-48, +52]
 	assert(pvd_time != nullptr);

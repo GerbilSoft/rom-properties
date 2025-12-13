@@ -28,6 +28,7 @@ extern "C" {
  */
 typedef union _HSFS_PVD_DateTime_t {
 	char full[16];
+	char notz[16];	// for compatibility with ISO_PVD_DateTime_t
 	struct {
 		char year[4];		// Year, from 1 to 9999.
 		char month[2];		// Month, from 1 to 12.
