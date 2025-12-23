@@ -583,11 +583,17 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		if (!strcasecmp(dll_name, "msvcrt.dll")) {
 			// NOTE: Conflict between MSVC 6.0 and the "system" MSVCRT.
 			// TODO: Other heuristics to figure this out. (Check for msvcp60.dll?)
-			refDesc = C_("EXE|Runtime", "Microsoft System C++ Runtime");
+			refDesc = C_("EXE|Runtime", "Microsoft System C Runtime (MSVCRT)");
 			break;
 		} else if (!strcasecmp(dll_name, "msvcrtd.dll")) {
 			refDesc = fmt::format(
 				FRUN(C_("EXE|Runtime", "Microsoft Visual C++ {:s} Debug Runtime")), "6.0");
+			break;
+		}
+
+		// Check for CRTDLL.DLL.
+		if (!strcasecmp(dll_name, "crtdll.dll")) {
+			refDesc = C_("EXE|Runtime", "Microsoft Windows NT System C Runtime (CRTDLL)");
 			break;
 		}
 

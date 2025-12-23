@@ -12,6 +12,9 @@
 * Other changes:
   * Windows: The ARM64 version has been rolled back to plain ARM64 for now.
     The ARM64X version was crashing on Windows 11 for some unknown reason.
+  * EXE_PE: Check for CRTDLL.DLL.
+    * Fixes #468: Detect windows' crtdll.dll runtime
+      * Reported by @edo9300.
 
 * Bug fixes:
   * EXE_PE: Fix regression that causes the Imports tab to show the wrong
