@@ -1013,7 +1013,7 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 
 			// Read the header data.
 			info.header.addr = fns.address;
-			info.header.size = static_cast<uint32_t>(reader->seekAndRead(0, header.u8, fns.size));
+			info.header.size = static_cast<uint32_t>(reader->seekAndRead(info.header.addr, header.u8, fns.size));
 			if (info.header.size != fns.size) {
 				continue;
 			}
