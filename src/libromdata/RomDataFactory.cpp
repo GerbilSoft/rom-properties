@@ -225,12 +225,12 @@ static RomDataPtr RomData_ctor(const IRpFilePtr &file)
 	 (attrs), (address), (magic1), (magic2)}
 
 #ifdef ROMDATAFACTORY_USE_FILE_EXTENSIONS
-vector<ExtInfo> vec_exts;
-std::once_flag once_exts;
+static vector<ExtInfo> vec_exts;
+static std::once_flag once_exts;
 #endif /* ROMDATAFACTORY_USE_FILE_EXTENSIONS */
 #ifdef ROMDATAFACTORY_USE_MIME_TYPES
-vector<const char*> vec_mimeTypes;
-std::once_flag once_mimeTypes;
+static vector<const char*> vec_mimeTypes;
+static std::once_flag once_mimeTypes;
 #endif /* ROMDATAFACTORY_USE_MIME_TYPES */
 
 #define ATTR_NONE		RomDataFactory::RDA_NONE
@@ -837,10 +837,9 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 		uint8_t u8[4096+256];
 		uint32_t u32[(4096+256)/4];
 	} header;
-	file->rewind();
 	info.header.addr = 0;
 	info.header.pData = header.u8;
-	info.header.size = static_cast<uint32_t>(file->read(header.u8, sizeof(header.u8)));
+	info.header.size = static_cast<uint32_t>(file->seekAndRead(0, header.u8, sizeof(header.u8)));
 	if (info.header.size == 0) {
 		// Read error.
 		return {};
@@ -891,8 +890,7 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 	IRpFilePtr reader(Private::openIDiscReader(file, header.u32[0]));
 	if (reader) {
 		// SparseDiscReader obtained. Re-read the header.
-		reader->rewind();
-		info.header.size = static_cast<uint32_t>(reader->read(header.u8, sizeof(header.u8)));
+		info.header.size = static_cast<uint32_t>(reader->seekAndRead(0, header.u8, sizeof(header.u8)));
 		if (info.header.size == 0) {
 			// Read error.
 			return {};
@@ -1003,22 +1001,22 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 			// read the whole 4096+256 bytes for these.
 			assert(fns.size != 0);
 			assert(fns.size <= sizeof(header));
-			if (fns.size == 0 || fns.size > sizeof(header))
+			if (fns.size == 0 || fns.size > sizeof(header)) {
 				continue;
+			}
 
 			// Make sure the file is big enough to
 			// have this header.
-			if ((static_cast<off64_t>(fns.address) + fns.size) > info.szFile)
+			if ((static_cast<off64_t>(fns.address) + fns.size) > info.szFile) {
 				continue;
+			}
 
 			// Read the header data.
 			info.header.addr = fns.address;
-			int ret = reader->seek(info.header.addr);
-			if (ret != 0)
+			info.header.size = static_cast<uint32_t>(reader->seekAndRead(0, header.u8, fns.size));
+			if (info.header.size != fns.size) {
 				continue;
-			info.header.size = static_cast<uint32_t>(reader->read(header.u8, fns.size));
-			if (info.header.size != fns.size)
-				continue;
+			}
 		}
 
 		if (fns.isRomSupported(&info) >= 0) {
