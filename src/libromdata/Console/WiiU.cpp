@@ -200,11 +200,18 @@ int WiiU::isRomSupported_static(const DetectInfo *info)
 	if (wiiu_header->hyphen1 != '-' ||
 	    wiiu_header->hyphen2 != '-' ||
 	    wiiu_header->hyphen3 != '-' ||
-	    wiiu_header->hyphen4 != '-' ||
-	    wiiu_header->hyphen5 != '-')
+	    wiiu_header->hyphen4 != '-')
 	{
-		// Missing hyphen.
+		// Missing hyphens.
 		return -1;
+	}
+	if (wiiu_header->hyphen5 != '-') {
+		// Fifth hyphen is missing.
+		// NOTE: Joysound Trial (JPN) discs have all spaces in the update version section.
+		if (memcmp(wiiu_header->os_update_full, "        ", 8) != 0) {
+			// Not an empty update section.
+			return -1;
+		}
 	}
 
 	// Check for GCN/Wii magic numbers.
@@ -373,17 +380,21 @@ int WiiU::loadFieldData(void)
 
 	// OS version
 	// TODO: Validate the version characters.
-	const array<char, 6> s_os_version = {{
-		discHeader->os_version[0], '.',
-		discHeader->os_version[1], '.',
-		discHeader->os_version[2], '\0'
-	}};
-	d->fields.addField_string(C_("RomData", "OS Version"), s_os_version.data());
+	if (discHeader->os_version[0] != ' ') {
+		const array<char, 6> s_os_version = {{
+			discHeader->os_version[0], '.',
+			discHeader->os_version[1], '.',
+			discHeader->os_version[2], '\0'
+		}};
+		d->fields.addField_string(C_("RomData", "OS Version"), s_os_version.data());
+	}
 
 	// Region code
 	// TODO: Compare against list of regions and show the fancy name.
-	d->fields.addField_string(C_("RomData", "Region Code"),
-		latin1_to_utf8(discHeader->region, sizeof(discHeader->region)));
+	if (discHeader->region[0] != ' ') {
+		d->fields.addField_string(C_("RomData", "Region Code"),
+			latin1_to_utf8(discHeader->region, sizeof(discHeader->region)));
+	}
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());
@@ -416,17 +427,21 @@ int WiiU::loadMetaData(void)
 
 	// Region code
 	// TODO: Compare against list of regions and show the fancy name.
-	d->metaData.addMetaData_string(Property::RegionCode,
-		latin1_to_utf8(discHeader->region, sizeof(discHeader->region)));
+	if (discHeader->region[0] != ' ') {
+		d->metaData.addMetaData_string(Property::RegionCode,
+			latin1_to_utf8(discHeader->region, sizeof(discHeader->region)));
+	}
 
 	// OS version
 	// TODO: Validate the version characters.
-	const array<char, 6> s_os_version = {{
-		discHeader->os_version[0], '.',
-		discHeader->os_version[1], '.',
-		discHeader->os_version[2], '\0'
-	}};
-	d->metaData.addMetaData_string(Property::OSVersion, s_os_version.data());
+	if (discHeader->os_version[0] != ' ') {
+		const array<char, 6> s_os_version = {{
+			discHeader->os_version[0], '.',
+			discHeader->os_version[1], '.',
+			discHeader->os_version[2], '\0'
+		}};
+		d->metaData.addMetaData_string(Property::OSVersion, s_os_version.data());
+	}
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData.count());

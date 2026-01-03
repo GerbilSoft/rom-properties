@@ -28,23 +28,28 @@ extern "C" {
 #define WIIU_MAGIC 'WUP-'
 typedef struct _WiiU_DiscHeader {
 	union RP_PACKED {
-		uint32_t magic;		// 'WUP-'
-		char id[10];		// "WUP-P-xxxx"
+		uint32_t magic;		// [0x000] 'WUP-'
+		char id[10];		// [0x000] "WUP-P-xxxx"
 		struct RP_PACKED {
-			char wup[3];	// "WUP"
-			char hyphen1;	// '-'
-			char p;		// 'P'
-			char hyphen2;	// '-'
-			char id4[4];	// "xxxx"
+			char wup[3];	// [0x000] "WUP"
+			char hyphen1;	// [0x003] '-'
+			char p;		// [0x004] 'P'
+			char hyphen2;	// [0x005] '-'
+			char id4[4];	// [0x006] "xxxx"
 		};
 	};
-	char hyphen3;
-	char version[2];	// Version number, in ASCII. (e.g. "00")
-	char hyphen4;
-	char os_version[3];	// Required OS version, in ASCII. (e.g. "551")
-	char region[3];		// Region code, in ASCII. ("USA", "EUR") (TODO: Is this the enforced region?)
-	char hyphen5;
-	char disc_number;	// Disc number, in ASCII. (TODO: Verify?)
+	char hyphen3;		// [0x00A]
+	char version[2];	// [0x00B] Version number, in ASCII (e.g. "00")
+	char hyphen4;		// [0x00D]
+	union {
+		struct {
+			char os_version[3];	// [0x00E] Required OS version, in ASCII (e.g. "551")
+			char region[3];		// [0x011] Region code, in ASCII ("USA", "EUR") (TODO: Is this the enforced region?)
+			char hyphen5;		// [0x014]
+			char disc_number;	// [0x015] Disc number, in ASCII (TODO: Verify?)
+		};
+		char os_update_full[8];		// [0x00E] Full OS update field
+	};
 } WiiU_DiscHeader;
 ASSERT_STRUCT(WiiU_DiscHeader, 22);
 #pragma pack()
