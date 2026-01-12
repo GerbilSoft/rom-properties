@@ -30,6 +30,17 @@ ENDIF(ENABLE_WERROR)
 SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} /wd4005 /wd4091 /wd4355 /wd4503 /wd4800 /we4013 /we4024 /we4047 /we4477")
 SET(RP_CXX_FLAGS_COMMON "${RP_C_FLAGS_COMMON}")
 ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS)
+
+# FIXME: std::lock_guard() can break across different MSVCP140.dll versions due to
+# std::mutex's constructor being marked as constexpr starting with MSVC 2022 v17.10.
+# Usually not an issue, unless some program includes its own copy of MSVCP140.dll
+# earlier than MSVC 2022 v17.10 (v14.40).
+# Define _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR to work around this.
+# References:
+# - https://stackoverflow.com/questions/78598141/first-stdmutexlock-crashes-in-application-built-with-latest-visual-studio
+# - https://github.com/microsoft/STL/wiki/VS-2022-Changelog#vs-2022-1710
+SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} -D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR")
+
 # NOTE: /TSAWARE is automatically set for Windows 2000 and later. (as of at least Visual Studio .NET 2003)
 # NOTE 2: /TSAWARE is not applicable for DLLs.
 SET(RP_EXE_LINKER_FLAGS_COMMON "/NOLOGO /DYNAMICBASE /NXCOMPAT /LARGEADDRESSAWARE")

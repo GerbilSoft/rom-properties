@@ -33,6 +33,10 @@
     * RpPng::loadPng()
     * ICO
     * AndroidManifestXML
+  * Windows: Fix a crash introduced with MSVC 2022 v17.10 that shows up
+    when using an older version of MSVCP140.dll.
+    * Fixes #472: Error caused by version 2.7 | Error causado por la versión 2.7
+      * Reported by @ctuais.
 
 ## v2.7 (released 2025/11/16)
 
