@@ -15,6 +15,9 @@
   * EXE_PE: Check for CRTDLL.DLL.
     * Fixes #468: Detect windows' crtdll.dll runtime
       * Reported by @edo9300.
+  * keys.conf.example: Add iQue NetCard keys.
+    * Fixes #470: Add missing keys to `keys.conf.example`
+      * Reported by @RuiNtD.
 
 * Bug fixes:
   * EXE_PE: Fix regression that causes the Imports tab to show the wrong

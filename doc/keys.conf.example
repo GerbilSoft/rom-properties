@@ -30,6 +30,16 @@ rvl-sd-aes=
 rvl-sd-iv=
 rvl-sd-md5=
 
+######## iQue NetCard ########
+
+# iQue NetCard production common key
+# NOTE: NetCard was never released, so this wasn't used...
+ique-nc-prod=
+
+# iQue NetCard development common key
+# NOTE: Matches rvt-korean.
+ique-nc-devel=
+
 ######## Nintendo Wii U ########
 
 # Wii U common key
