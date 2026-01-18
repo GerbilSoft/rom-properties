@@ -33,12 +33,20 @@ IF(ENABLE_DECRYPTION)
 ENDIF(ENABLE_DECRYPTION)
 
 # GcnFstPrint (Not a test, but a useful program.)
+IF(WIN32)
+	SET(GcnFstPrint_RC disc/GcnFstPrint.rc)
+	CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/disc/GcnFstPrint.exe.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/disc/GcnFstPrint.exe.manifest" @ONLY)
+ENDIF(WIN32)
 ADD_EXECUTABLE(GcnFstPrint
 	disc/FstPrint.cpp
 	disc/GcnFstPrint.cpp
 
 	disc/FstPrint.hpp
+
+	${GcnFstPrint_RC}
 	)
+# Include path: Add the top-level binary directory for git_version.h.
+TARGET_INCLUDE_DIRECTORIES(GcnFstPrint PRIVATE $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>)
 TARGET_LINK_LIBRARIES(GcnFstPrint PRIVATE rpsecure romdata)
 TARGET_LINK_LIBRARIES(GcnFstPrint PRIVATE gsvt)
 IF(ENABLE_NLS)
@@ -81,12 +89,20 @@ IF(NOT WIN32 AND NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY STREQUAL "")
 ENDIF(NOT WIN32 AND NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY STREQUAL "")
 
 # WiiUFstPrint (Not a test, but a useful program.)
+IF(WIN32)
+	SET(WiiUFstPrint_RC disc/WiiUFstPrint.rc)
+	CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/disc/WiiUFstPrint.exe.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/disc/WiiUFstPrint.exe.manifest" @ONLY)
+ENDIF(WIN32)
 ADD_EXECUTABLE(WiiUFstPrint
 	disc/FstPrint.cpp
 	disc/WiiUFstPrint.cpp
 
 	disc/FstPrint.hpp
+
+	${WiiUFstPrint_RC}
 	)
+# Include path: Add the top-level binary directory for git_version.h.
+TARGET_INCLUDE_DIRECTORIES(WiiUFstPrint PRIVATE $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>)
 TARGET_LINK_LIBRARIES(WiiUFstPrint PRIVATE rpsecure romdata)
 TARGET_LINK_LIBRARIES(WiiUFstPrint PRIVATE gsvt)
 IF(ENABLE_NLS)
