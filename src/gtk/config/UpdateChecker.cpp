@@ -173,10 +173,11 @@ rp_update_checker_thread_run(RpUpdateChecker *updChecker)
 	}
 
 	// Read the first line, which should contain a 4-decimal version number.
-	char buf[256];
-	char *fgret = fgets(buf, sizeof(buf), f);
+	char buf[64+1];
+	char *fgret = fgets(buf, sizeof(buf)-1, f);
 	fclose(f);
-	if (fgret == buf && ISSPACE(buf[0])) {
+	fgret[sizeof(fgret)-1] = '\0';
+	if (!fgret || ISSPACE(buf[0])) {
 		g_signal_emit(updChecker, signals[SIGNAL_ERROR], 0,
 			C_("UpdateChecker", "Version file is invalid."));
 		g_signal_emit(updChecker, signals[SIGNAL_FINISHED], 0);
