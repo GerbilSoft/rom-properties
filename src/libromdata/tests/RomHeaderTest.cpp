@@ -618,6 +618,13 @@ INSTANTIATE_TEST_SUITE_P(SufamiTurbo, RomHeaderTest,
 		"Console/SufamiTurbo.json.tar.zst"))
 	, RomHeaderTest::test_case_suffix_generator);
 
+INSTANTIATE_TEST_SUITE_P(Xbox360_XDBF_GPD, RomHeaderTest,
+	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
+		"Console/Xbox360_XDBF_GPD.bin.tar.zst",
+		"Console/Xbox360_XDBF_GPD.txt.tar.zst",
+		"Console/Xbox360_XDBF_GPD.json.tar.zst"))
+	, RomHeaderTest::test_case_suffix_generator);
+
 /* Handheld */
 
 INSTANTIATE_TEST_SUITE_P(AtariLynx, RomHeaderTest,
