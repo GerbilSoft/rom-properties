@@ -42,6 +42,7 @@ static const char CTX_VERB_A[] = "rp-convert-to-png";
 static const wchar_t CTX_VERB_W[] = L"rp-convert-to-png";
 
 #define IDM_RP_CONVERT_TO_PNG 0
+#define IDM_RP_MAX 1
 
 /** RP_ContextMenu_Private **/
 #include "RP_ContextMenu_p.hpp"
@@ -472,6 +473,12 @@ IFACEMETHODIMP RP_ContextMenu::QueryContextMenu(_In_ HMENU hMenu, _In_ UINT inde
 		return MAKE_HRESULT(SEVERITY_SUCCESS, 0, USHORT(0));
 	}
 
+	// Reference: https://devblogs.microsoft.com/oldnewthing/20041006-00/?p=37643
+	if ((int)(idCmdLast - idCmdFirst + 1) < IDM_RP_MAX) {
+		// Not enough space to add the context menu entry...
+		return MAKE_HRESULT(SEVERITY_SUCCESS, 0, USHORT(0));
+	}
+
 	// Get the icon used for PNG files.
 	RP_D(RP_ContextMenu);
 	HBITMAP hbmPng = d->getPngIcon();
@@ -491,7 +498,7 @@ IFACEMETHODIMP RP_ContextMenu::QueryContextMenu(_In_ HMENU hMenu, _In_ UINT inde
 	mii.hbmpItem = hbmPng;
 	mii.fState = MFS_ENABLED;
 
-	if (!InsertMenuItem(hMenu, indexMenu, TRUE, &mii)) {
+	if (!InsertMenuItem(hMenu, indexMenu + IDM_RP_CONVERT_TO_PNG, TRUE, &mii)) {
 		return HRESULT_FROM_WIN32(GetLastError());
 	}
 	return MAKE_HRESULT(SEVERITY_SUCCESS, 0, USHORT(IDM_RP_CONVERT_TO_PNG + 1));
@@ -500,22 +507,23 @@ IFACEMETHODIMP RP_ContextMenu::QueryContextMenu(_In_ HMENU hMenu, _In_ UINT inde
 IFACEMETHODIMP RP_ContextMenu::InvokeCommand(_In_ CMINVOKECOMMANDINFO *pici)
 {
 	// Check for a matching "Convert to PNG" verb.
+	// Reference: https://devblogs.microsoft.com/oldnewthing/20041006-00/?p=37643
 	bool isConvertToPNG = false;
-	if (pici->cbSize == sizeof(CMINVOKECOMMANDINFOEX) && (pici->fMask & CMIC_MASK_UNICODE)) {
+	if (pici->cbSize >= sizeof(CMINVOKECOMMANDINFOEX) && (pici->fMask & CMIC_MASK_UNICODE)) {
 		// Unicode version
-		CMINVOKECOMMANDINFOEX *const piciex = reinterpret_cast<CMINVOKECOMMANDINFOEX*>(pici);
-		if (HIWORD(piciex->lpVerbW)) {
+		CMINVOKECOMMANDINFOEX *const piciEx = reinterpret_cast<CMINVOKECOMMANDINFOEX*>(pici);
+		if (HIWORD(piciEx->lpVerbW)) {
 			// Verb is specified
-			isConvertToPNG = !wcscmp(piciex->lpVerbW, CTX_VERB_W);
+			isConvertToPNG = (CompareStringW(LOCALE_INVARIANT, NORM_IGNORECASE, piciEx->lpVerbW, -1, CTX_VERB_W, -1) == CSTR_EQUAL);
 		} else {
 			// Offset is specified
-			isConvertToPNG = (LOWORD(pici->lpVerb) == IDM_RP_CONVERT_TO_PNG);
+			isConvertToPNG = (LOWORD(piciEx->lpVerbW) == IDM_RP_CONVERT_TO_PNG);
 		}
 	} else {
 		// ANSI version
 		if (HIWORD(pici->lpVerb)) {
 			// Verb is specified
-			isConvertToPNG = !strcmp(pici->lpVerb, CTX_VERB_A);
+			isConvertToPNG = (CompareStringA(LOCALE_INVARIANT, NORM_IGNORECASE, pici->lpVerb, -1, CTX_VERB_A, -1) == CSTR_EQUAL);
 		} else {
 			// Offset is specified
 			isConvertToPNG = (LOWORD(pici->lpVerb) == IDM_RP_CONVERT_TO_PNG);
@@ -553,6 +561,8 @@ IFACEMETHODIMP RP_ContextMenu::GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT u
 	// NOTE: Using snprintf()/swprintf() because strncpy()
 	// clears the buffer, which can be slow.
 	RP_UNUSED(pReserved);
+	// TODO: Proper command validation.
+	// Reference: https://devblogs.microsoft.com/oldnewthing/20041006-00/?p=37643
 
 	RP_D(const RP_ContextMenu);
 	if (idCmd == IDM_RP_CONVERT_TO_PNG) {
