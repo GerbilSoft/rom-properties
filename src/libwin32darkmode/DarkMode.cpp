@@ -207,6 +207,12 @@ int InitDarkModePFNs(void)
 	    _RefreshImmersiveColorPolicyState && _IsDarkModeAllowedForWindow)
 	{
 		// Dark mode is supported.
+
+		// TODO: Use _ShouldSystemUseDarkMode() if available
+		// instead of _ShouldAppsUseDarkMode()? ("Apps" refers to
+		// e.g. UWP, and on Win11 it's reportedly always true.)
+		_ShouldSystemUseDarkMode = reinterpret_cast<fnShouldSystemUseDarkMode>(GetProcAddress(hUxtheme, "138"));
+
 		g_darkModeSupported = true;
 		UpdateDarkModeEnabled();
 		return 0;
