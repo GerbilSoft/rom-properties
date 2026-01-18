@@ -86,16 +86,21 @@ RP_ColumnProvider::~RP_ColumnProvider()
 
 IFACEMETHODIMP RP_ColumnProvider::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
 {
+	// FIXME: MinGW-w64 build is failing because uuidof() emulation
+	// isn't detecting IID_IColumnProvider...
 #ifdef _MSC_VER
 #  pragma warning(push)
 #  pragma warning(disable: 4365 4838)
-#endif /* _MSC_VER */
 	static const QITAB rgqit[] = {
 		QITABENT(RP_ColumnProvider, IColumnProvider),
 		{ 0, 0 }
 	};
-#ifdef _MSC_VER
 #  pragma warning(pop)
+#else /* !_MSC_VER */
+	static const QITAB rgqit[] = {
+		{ &IID_IColumnProvider, OFFSETOFCLASS(IColumnProvider, RP_ColumnProvider) },
+		{ 0, 0 }
+	};
 #endif /* _MSC_VER */
 	return LibWin32Common::rp_QISearch(this, rgqit, riid, ppvObj);
 }
