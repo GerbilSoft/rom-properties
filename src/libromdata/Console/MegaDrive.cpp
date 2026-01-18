@@ -1501,7 +1501,7 @@ int MegaDrive::loadMetaData(void)
 
 	// Title
 	// TODO: Domestic vs. export; space elimination?
-	// Check domestic first. If empty, check overseas.
+	// Check export first. If epmty. check domestic. (Swap depending on system region?)
 	string s_title = cp1252_sjis_to_utf8(romHeader->title_export, sizeof(romHeader->title_export));
 	trimEnd(s_title);
 	if (s_title.empty()) {
