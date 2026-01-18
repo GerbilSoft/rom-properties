@@ -1,6 +1,6 @@
 # CMakeLists.txt - CMake lists for libpng
 #
-# Copyright (c) 2018-2025 Cosmin Truta
+# Copyright (c) 2018-2026 Cosmin Truta
 # Copyright (c) 2007-2018 Glenn Randers-Pehrson
 # Originally written by Christian Ehrlicher, 2007
 #
@@ -19,7 +19,7 @@
 
 set(PNGLIB_MAJOR 1)
 set(PNGLIB_MINOR 6)
-set(PNGLIB_REVISION 53)
+set(PNGLIB_REVISION 54)
 set(PNGLIB_SUBREVISION 0)
 #set(PNGLIB_SUBREVISION "git")
 set(PNGLIB_VERSION ${PNGLIB_MAJOR}.${PNGLIB_MINOR}.${PNGLIB_REVISION})
@@ -983,6 +983,13 @@ if(PNG_TESTS AND PNG_SHARED)
                    FILES ${PNGSTEST_FILES})
     endforeach()
   endforeach()
+
+  # Regression test:
+  # Use stride_extra > 32767 to trigger row_bytes > 65535 for linear images.
+  png_add_test(NAME pngstest-large-stride
+               COMMAND pngstest
+               OPTIONS --stride-extra 33000 --tmpfile "large-stride-" --log
+               FILES "${CMAKE_CURRENT_SOURCE_DIR}/contrib/testpngs/rgb-alpha-16-linear.png")
 
   add_executable(pngunknown ${pngunknown_sources})
   target_link_libraries(pngunknown

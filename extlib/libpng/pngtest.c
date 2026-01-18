@@ -50,7 +50,7 @@
 #define STDERR stdout
 
 /* Generate a compiler error if there is an old png.h in the search path. */
-typedef png_libpng_version_1_6_53 Your_png_h_is_not_version_1_6_53;
+typedef png_libpng_version_1_6_54 Your_png_h_is_not_version_1_6_54;
 
 /* Ensure that all version numbers in png.h are consistent with one another. */
 #if (PNG_LIBPNG_VER != PNG_LIBPNG_VER_MAJOR * 10000 + \
@@ -501,8 +501,8 @@ pngtest_error(png_structp png_ptr, png_const_charp message)
  */
 typedef struct memory_information
 {
-   png_alloc_size_t          size;
-   png_voidp                 pointer;
+   png_alloc_size_t size;
+   png_voidp pointer;
    struct memory_information *next;
 } memory_information;
 typedef memory_information *memory_infop;
@@ -640,10 +640,10 @@ chunk used in ImageMagick to store "virtual page" size).  */
 typedef struct user_chunk_info_def
 {
    png_const_infop info_ptr;
-   png_uint_32     vpAg_width, vpAg_height;
-   png_byte        vpAg_units;
-   png_byte        sTER_mode;
-   int             location[2];
+   png_uint_32 vpAg_width, vpAg_height;
+   png_byte vpAg_units;
+   png_byte sTER_mode;
+   int location[2];
 } user_chunk_info;
 
 /* Used for location and order; zero means nothing. */
@@ -1449,7 +1449,7 @@ test_one_file(const char *inname, const char *outname)
       {
          png_byte is_hidden;
          pngtest_debug2("Handling acTL chunks (frames %ld, plays %ld)",
-                    num_frames, num_plays);
+                        num_frames, num_plays);
          png_set_acTL(write_ptr, write_info_ptr, num_frames, num_plays);
          is_hidden = png_get_first_frame_is_hidden(read_ptr, read_info_ptr);
          png_set_first_frame_is_hidden(write_ptr, write_info_ptr, is_hidden);
@@ -1581,7 +1581,8 @@ test_one_file(const char *inname, const char *outname)
             for (y = 0; y < pass_height; y++)
             {
 #ifndef SINGLE_ROWBUF_ALLOC
-               pngtest_debug2("Allocating row buffer (pass %d, y = %u)...", pass, y);
+               pngtest_debug2("Allocating row buffer (pass %d, y = %u)...",
+                              pass, y);
 
                row_buf = (png_bytep)png_malloc(read_ptr,
                   png_get_rowbytes(read_ptr, read_info_ptr));
