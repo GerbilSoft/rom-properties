@@ -40,6 +40,8 @@ static LRESULT CALLBACK ListView_DarkMode_SubclassProc(
 	WPARAM wParam, LPARAM lParam,
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
+	((void)uIdSubclass);
+
 	switch (uMsg) {
 		case WM_NOTIFY:
 			if (reinterpret_cast<LPNMHDR>(lParam)->code == NM_CUSTOMDRAW) {
