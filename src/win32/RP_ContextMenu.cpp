@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ContextMenu.hpp: IContextMenu implementation.                        *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -561,10 +561,30 @@ IFACEMETHODIMP RP_ContextMenu::GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT u
 	// NOTE: Using snprintf()/swprintf() because strncpy()
 	// clears the buffer, which can be slow.
 	RP_UNUSED(pReserved);
-	// TODO: Proper command validation.
+	// TODO: Improve command validation to reduce boilerplate?
 	// Reference: https://devblogs.microsoft.com/oldnewthing/20041006-00/?p=37643
 
-	RP_D(const RP_ContextMenu);
+	if (!IS_INTRESOURCE(idCmd)) {
+		// Convert the string to a command ID.
+		if (uType & GCS_UNICODE) {
+			// Unicode string
+			LPCWSTR lpszVerbW = reinterpret_cast<LPCWSTR>(idCmd);
+			if (CompareStringW(LOCALE_INVARIANT, NORM_IGNORECASE, lpszVerbW, -1, CTX_VERB_W, -1) == CSTR_EQUAL) {
+				idCmd = IDM_RP_CONVERT_TO_PNG;
+			} else {
+				idCmd = 0;
+			}
+		} else {
+			// ANSI string
+			LPCSTR lpszVerbA = reinterpret_cast<LPCSTR>(idCmd);
+			if (CompareStringA(LOCALE_INVARIANT, NORM_IGNORECASE, lpszVerbA, -1, CTX_VERB_A, -1) == CSTR_EQUAL) {
+				idCmd = IDM_RP_CONVERT_TO_PNG;
+			} else {
+				idCmd = 0;
+			}
+		}
+	}
+
 	if (idCmd == IDM_RP_CONVERT_TO_PNG) {
 		switch (uType) {
 			case GCS_VERBA:
@@ -589,6 +609,7 @@ IFACEMETHODIMP RP_ContextMenu::GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT u
 		}
 
 		// GCS_HELPTEXT(A|W)
+		RP_D(const RP_ContextMenu);
 		const int nc = d->tfilenames ? static_cast<int>(d->tfilenames->size()) : 0;
 		const char *const msg = NC_("ServiceMenu",
 			"Convert the selected texture file to PNG format.",
