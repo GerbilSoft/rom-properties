@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * config.win32.h.in: Win32 configuration. (source file)                   *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,6 +20,9 @@
 
 /* Define to 1 if you have the `std::ofstream::open(const wchar_t*, ios_base::openmode)` function. */
 #cmakedefine HAVE_OFSTREAM_CTOR_WCHAR_T 1
+
+/* Define to 1 if you have the `InitVariantFromString` function. */
+#cmakedefine HAVE_INITVARIANTFROMSTRING 1
 
 /* Define to 1 if achievements are enabled. */
 #cmakedefine ENABLE_ACHIEVEMENTS 1

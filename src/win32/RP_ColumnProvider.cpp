@@ -2,12 +2,13 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ColumnProvider.cpp: IColumnProvider implementation.                  *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
 #include "stdafx.h"
+#include "config.win32.h"
 #include "RP_ColumnProvider.hpp"
 #include "RpImageWin32.hpp"
 
@@ -136,6 +137,19 @@ IFACEMETHODIMP RP_ColumnProvider::GetColumnInfo(_In_ DWORD dwIndex, _Out_ SHCOLU
 
 	return S_OK;
 }
+
+#ifndef HAVE_INITVARIANTFROMSTRING
+static inline HRESULT InitVariantFromString(_In_ PCWSTR lpszString, _Out_ VARIANT *pOutVar)
+{
+	pOutVar->vt = VT_BSTR;
+	pOutVar->bstrVal = SysAllocString(lpszString);
+	HRESULT hr =  (pOutVar->bstrVal != nullptr) ? S_OK : (lpszString ? E_OUTOFMEMORY : E_INVALIDARG);
+	if (FAILED(hr)) {
+		VariantInit(pOutVar);
+	}
+	return hr;
+}
+#endif /* HAVE_INITVARIANTFROMSTRING */
 
 IFACEMETHODIMP RP_ColumnProvider::GetItemData(_In_ LPCSHCOLUMNID pscid, _In_ LPCSHCOLUMNDATA pscd, _Out_ VARIANT *pvarData)
 {

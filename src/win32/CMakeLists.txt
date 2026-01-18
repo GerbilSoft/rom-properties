@@ -10,6 +10,7 @@ CHECK_INCLUDE_FILES("thumbcache.h" HAVE_THUMBCACHE_H)
 # Property key symbols and functions for RP_PropertyStore
 CHECK_SYMBOL_EXISTS(PKEY_Subject "windows.h;propvarutil.h;propkey.h" HAVE_PKEY_SUBJECT)
 CHECK_CXX_SYMBOL_EXISTS(InitPropVariantFromUInt16 "windows.h;propvarutil.h" HAVE_INITPROPVARIANTFROMUINT16)
+CHECK_CXX_SYMBOL_EXISTS(InitVariantFromString "windows.h;propvarutil.h" HAVE_INITVARIANTFROMSTRING)
 IF(HAVE_PKEY_SUBJECT AND HAVE_INITPROPVARIANTFROMUINT16)
 	SET(HAVE_RP_PROPERTYSTORE_DEPS 1)
 ELSE()
