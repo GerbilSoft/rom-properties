@@ -545,11 +545,6 @@ string Xbox360_XDBF_Private::loadString_GPD(uint16_t string_id)
 		return {};
 	}
 
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-	// Byteswap the ID to make it easier to find things.
-	string_id = cpu_to_be16(string_id);
-#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
-
 	// TODO: Optimize by creating an unordered_map of IDs to strings?
 	// Might not be a good optimization if we don't have that many strings...
 
@@ -557,6 +552,8 @@ string Xbox360_XDBF_Private::loadString_GPD(uint16_t string_id)
 
 	// GPD doesn't have string tables.
 	// Instead, each string is its own entry in the main resource table.
+	// Because of this, string IDs are 64-bit.
+	const uint64_t string_id64 = cpu_to_be64(string_id);
 	string s_ret;
 	for (const XDBF_Entry &p : entryTable) {
 		if (p.namespace_id != cpu_to_be16(XDBF_GPD_NAMESPACE_STRING)) {
@@ -565,7 +562,7 @@ string Xbox360_XDBF_Private::loadString_GPD(uint16_t string_id)
 		}
 
 		// Check for a matching resource ID.
-		if (p.resource_id != string_id) {
+		if (p.resource_id != string_id64) {
 			// Not a match. Skip this entry.
 			continue;
 		}
@@ -577,8 +574,9 @@ string Xbox360_XDBF_Private::loadString_GPD(uint16_t string_id)
 		assert(length > 2);
 		assert(length <= 4096);
 		assert(length % 2 == 0);
-		if (length < 2 || length > 4096 || length % 2 != 0)
+		if (length < 2 || length > 4096 || length % 2 != 0) {
 			continue;
+		}
 
 		// Length includes the NULL terminator, so remove it.
 		// NOTE: Some GPD files only have one NULL byte if the string

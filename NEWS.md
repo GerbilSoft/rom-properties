@@ -1,6 +1,6 @@
 # Changes
 
-## v2.7.1 (released 2025/??/??)
+## v2.7.1 (released 2026/??/??)
 
 * New features:
   * Achievements lists, e.g. for Xbox 360 games, now use the same formatting
@@ -40,6 +40,10 @@
     when using an older version of MSVCP140.dll.
     * Fixes #472: Error caused by version 2.7 | Error causado por la versión 2.7
       * Reported by @ctuais.
+  * Xbox360_XDBF: Fix title retrieval for GPD files.
+    * Affects: v2.0 - v2.7
+    * Fixes #475: 360 GPD achievement files all show with Title: Unknown
+      * Reported by @Masamune3210.
 
 ## v2.7 (released 2025/11/16)
 
