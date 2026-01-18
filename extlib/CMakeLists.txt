@@ -488,8 +488,8 @@ ENDIF(USE_INTERNAL_FMT)
 # Detours
 # Used for handling 16-bit EXE icons on 64-bit Windows,
 # and Windows 1.x/2.x icons on all Windows systems.
-IF(WIN32)
+IF(WIN32 AND MSVC)
 	SET(SKIP_INSTALL_LIBRARIES ON)
 	SET(SKIP_INSTALL_ALL ON)
 	ADD_SUBDIRECTORY(Detours)
-ENDIF(WIN32)
+ENDIF(WIN32 AND MSVC)
