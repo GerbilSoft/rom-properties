@@ -75,22 +75,49 @@ unsigned int WINAPI UpdateChecker::ThreadProc(LPVOID lpParameter)
 	}
 
 	// Read the version file.
-	FILE *f = fopen(cache_filename.c_str(), "r");
-	if (!f) {
+	HANDLE hVersionFile = CreateFile(
+		U82T_s(cache_filename),			// lpFileName
+		GENERIC_READ,				// dwDesiredAccess
+		FILE_SHARE_READ | FILE_SHARE_WRITE,	// dwShareMode
+		nullptr,				// lpSecurityAttributes
+		OPEN_EXISTING,				// dwCreationDisposition
+		FILE_ATTRIBUTE_NORMAL,			// dwFileAttributes
+		nullptr);				// hTemplateFile
+	if (!hVersionFile || hVersionFile == INVALID_HANDLE_VALUE) {
 		// TODO: Error code?
 		updChecker->m_errorMessage = C_("UpdateChecker", "Failed to open version file.");
 		SendMessage(updChecker->m_hWnd, WM_UPD_ERROR, 0, 0);
 		return 3;
 	}
 
-	// Read the first line, which should contain a 4-decimal version number.
-	char buf[256];
-	char *fgret = fgets(buf, sizeof(buf), f);
-	fclose(f);
-	if (fgret == buf && ISSPACE(buf[0])) {
+	// Read up to 64 bytes, which should contain a 4-decimal version number.
+	char buf[64+1];
+	DWORD bytesRead = 0;
+	BOOL bRet = ReadFile(hVersionFile, buf, sizeof(buf)-1, &bytesRead, nullptr);
+	CloseHandle(hVersionFile);
+	if (!bRet || bytesRead == 0 || bytesRead > sizeof(buf)-1 || ISSPACE(buf[0])) {
+		// Read error?
 		updChecker->m_errorMessage = C_("UpdateChecker", "Version file is invalid.");
 		SendMessage(updChecker->m_hWnd, WM_UPD_ERROR, 0, 0);
 		return 4;
+	}
+
+	// Find the newline.
+	char *const p_end = &buf[bytesRead];
+	*p_end = '\0';
+	bool found_nl = false;
+	for (char *p = buf; p < p_end; p++) {
+		if (*p == '\n' || *p == '\r') {
+			found_nl = true;
+			*p = '\0';
+			break;
+		}
+	}
+	if (!found_nl) {
+		// No newline...
+		updChecker->m_errorMessage = C_("UpdateChecker", "Version file is invalid.");
+		SendMessage(updChecker->m_hWnd, WM_UPD_ERROR, 0, 0);
+		return 4;	// same error code because other versions use fgets()
 	}
 
 	// Split into 4 elements using strtok_r(), and
