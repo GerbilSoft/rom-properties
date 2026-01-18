@@ -1,6 +1,6 @@
 # Changes
 
-## v2.7.1 (released 2026/??/??)
+## v2.7.1 (released 2026/01/18)
 
 * New features:
   * Achievements lists, e.g. for Xbox 360 games, now use the same formatting

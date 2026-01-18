@@ -13,9 +13,11 @@ video game ROM and disc images.
 
 ###### no vibes, no bevis
 
-## v2.7
+## v2.7.1
 
 ![Windows Explorer showing Android APK packages and a 16-bit Windows application.](doc/img/rp-v2.7-win10.APK.Win16.png)
+
+v2.7.1 is a bugfix release, mostly for issues on Windows for ARM systems.
 
 Major additions in v2.7 include:
 

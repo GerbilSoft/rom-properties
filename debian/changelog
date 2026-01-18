@@ -1,3 +1,9 @@
+rom-properties (2.7.1-1ppa1~xenial1) xenial; urgency=medium
+
+  * 2.7.1 release.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 18 Jan 2026 17:40:43 -0500
+
 rom-properties (2.7-1ppa1~xenial1) xenial; urgency=medium
 
   * 2.7 release.
