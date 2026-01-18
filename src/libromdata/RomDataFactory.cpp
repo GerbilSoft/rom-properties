@@ -1319,12 +1319,13 @@ static void init_supportedFileExtensions(void)
 	}
 
 	// Get file extensions from FileFormatFactory.
-	static constexpr unsigned int FFF_ATTRS = ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA;
 	const vector<const char*> &vec_exts_fileFormat = FileFormatFactory::supportedFileExtensions();
 	for (const char *ext : vec_exts_fileFormat) {
 		// Explicitly prevent thumbnailing of ".ico" and ".cur" on Windows.
 		const bool block_thumbnail = !strcmp(ext, ".ico") || !strcmp(ext, ".cur");
-		unsigned int attrs = (unlikely(block_thumbnail)) ? ATTR_HAS_METADATA : FFF_ATTRS;
+		const unsigned int attrs = (unlikely(block_thumbnail))
+			? ATTR_HAS_METADATA
+			: ATTR_HAS_METADATA | ATTR_HAS_THUMBNAIL;
 
 		auto iter = map_exts.find(ext);
 		if (iter != map_exts.end()) {
