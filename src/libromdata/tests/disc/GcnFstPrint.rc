@@ -14,7 +14,7 @@
 
 /** Manifest **/
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-CREATEPROCESS_MANIFEST_RESOURCE_ID	RT_MANIFEST	"disc\\GcnFstPrint.exe.manifest"
+CREATEPROCESS_MANIFEST_RESOURCE_ID	RT_MANIFEST	"disc/GcnFstPrint.exe.manifest"
 
 // TODO: The git version gets cut off on Windows 7, since it uses
 // a ListView instead of separate ListBox and Edit controls like
