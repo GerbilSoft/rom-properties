@@ -1,3 +1,14 @@
+rom-properties (2.7.1-1ppa2~questing1) questing; urgency=medium
+
+  * Build for Ubuntu 25.10 "Questing" Quokka.
+
+    * Enable KF6 builds.
+    * Tracker API version increased to 3L.
+
+  * PPA version bumped to ensure it updates from previous versions.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 18 Nov 2026 22:33:44 -0500
+
 rom-properties (2.7.1-1ppa2~noble1) noble; urgency=medium
 
   * Build for Ubuntu 24.04 "Noble" Numbat.
