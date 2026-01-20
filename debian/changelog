@@ -1,3 +1,9 @@
+rom-properties (2.7.1-1ppa2~questing2) questing; urgency=medium
+
+  * libcurl4, not libcurl3, is used in Ubuntu 21.04 and later.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Tue, 20 Jan 2026 18:12:49 -0500
+
 rom-properties (2.7.1-1ppa2~questing1) questing; urgency=medium
 
   * Build for Ubuntu 25.10 "Questing" Quokka.
@@ -7,7 +13,7 @@ rom-properties (2.7.1-1ppa2~questing1) questing; urgency=medium
 
   * PPA version bumped to ensure it updates from previous versions.
 
- -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 18 Nov 2026 22:33:44 -0500
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 18 Jan 2026 22:33:44 -0500
 
 rom-properties (2.7.1-1ppa2~noble1) noble; urgency=medium
 
