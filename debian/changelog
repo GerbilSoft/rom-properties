@@ -1,3 +1,9 @@
+rom-properties (2.7.1-1ppa2~noble2) noble; urgency=medium
+
+  * libcurl4, not libcurl3, is used in Ubuntu 21.04 and later.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Tue, 20 Jan 2026 18:28:56 -0500
+
 rom-properties (2.7.1-1ppa2~noble1) noble; urgency=medium
 
   * Build for Ubuntu 24.04 "Noble" Numbat.
