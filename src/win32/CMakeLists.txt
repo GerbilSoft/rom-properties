@@ -5,17 +5,26 @@ PROJECT(rom-properties LANGUAGES C CXX)
 INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckSymbolExists)
 INCLUDE(CheckCXXSymbolExists)
+
 # IThumbnailProvider
 CHECK_INCLUDE_FILES("thumbcache.h" HAVE_THUMBCACHE_H)
+
 # Property key symbols and functions for RP_PropertyStore
-CHECK_SYMBOL_EXISTS(PKEY_Subject "windows.h;propvarutil.h;propkey.h" HAVE_PKEY_SUBJECT)
+SET(CMAKE_REQUIRED_LIBRARIES uuid)
+CHECK_CXX_SYMBOL_EXISTS(PKEY_Subject "windows.h;propvarutil.h;propkey.h" HAVE_PKEY_SUBJECT)
+SET(CMAKE_REQUIRED_LIBRARIES propsys)
 CHECK_CXX_SYMBOL_EXISTS(InitPropVariantFromUInt16 "windows.h;propvarutil.h" HAVE_INITPROPVARIANTFROMUINT16)
-CHECK_CXX_SYMBOL_EXISTS(InitVariantFromString "windows.h;propvarutil.h" HAVE_INITVARIANTFROMSTRING)
 IF(HAVE_PKEY_SUBJECT AND HAVE_INITPROPVARIANTFROMUINT16)
 	SET(HAVE_RP_PROPERTYSTORE_DEPS 1)
 ELSE()
 	MESSAGE(WARNING "Windows SDK is missing required IPropertyStore symbols.\nIPropertyStore functionality will not be available.")
 ENDIF()
+
+# InitVariantFromString requires oleaut32.lib, which is "automatically"
+# pulled in on MSVC for i386/amd64, but not for ARM.
+SET(CMAKE_REQUIRED_LIBRARIES oleaut32)
+CHECK_CXX_SYMBOL_EXISTS(InitVariantFromString "windows.h;propvarutil.h" HAVE_INITVARIANTFROMSTRING)
+UNSET(CMAKE_REQUIRED_LIBRARIES)
 
 # Check for std::ofstream::open(const wchar_t*, ios_base::openmode).
 CHECK_CXX_SOURCE_COMPILES("
