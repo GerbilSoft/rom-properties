@@ -196,18 +196,11 @@ void print_sixel_icon_banner(const RomDataPtr &romData)
 		return;
 	}
 
-	// TESTING: Get the character cell size.
+	// Get the character cell size.
 	int cell_w = 0, cell_h = 0;
 	int ret = tty_get_cell_size(&cell_w, &cell_h);
 	if (ret != 0 || cell_w <= 0 || cell_h <= 0) {
 		// Unable to get the character cell size...
-		return;
-	}
-
-	sixel_output_t *output = nullptr;
-	SIXELSTATUS status = sixel_output_new(&output, sixel_write, stdout, nullptr);
-	if (SIXEL_FAILED(status)) {
-		// Failed to initialize sixel output.
 		return;
 	}
 
@@ -228,6 +221,17 @@ void print_sixel_icon_banner(const RomDataPtr &romData)
 		if (banner) {
 			max_height = std::max(max_height, banner->height());
 		}
+	}
+	if (!icon && !banner) {
+		// No images...
+		return;
+	}
+
+	sixel_output_t *output = nullptr;
+	SIXELSTATUS status = sixel_output_new(&output, sixel_write, stdout, nullptr);
+	if (SIXEL_FAILED(status)) {
+		// Failed to initialize sixel output.
+		return;
 	}
 
 	// Determine how many rows are needed.
