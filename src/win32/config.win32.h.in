@@ -22,12 +22,7 @@
 #cmakedefine HAVE_OFSTREAM_CTOR_WCHAR_T 1
 
 /* Define to 1 if you have the `InitVariantFromString` function. */
-/* FIXME: This is not being detected properly on MSVC/ARM... */
-#ifdef _MSC_VER
-#  define HAVE_INITVARIANTFROMSTRING 1
-#else /* !_MSC_VER */
 #cmakedefine HAVE_INITVARIANTFROMSTRING 1
-#endif /* _MSC_VER */
 
 /* Define to 1 if achievements are enabled. */
 #cmakedefine ENABLE_ACHIEVEMENTS 1
