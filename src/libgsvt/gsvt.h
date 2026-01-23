@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libgsvt)                          *
  * gsvt.h: Virtual Terminal wrapper functions.                             *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -56,6 +56,15 @@ bool gsvt_is_console(const gsvt_console *vt);
  * @return True if it does; false if it doesn't.
  */
 bool gsvt_supports_ansi(const gsvt_console *vt);
+
+/**
+ * Get the size of a single character cell on the terminal.
+ * NOTE: Both stdin and stdout must be a tty for this function to succeed.
+ * @param pWidth	[out] Character width
+ * @param pHeight	[out] Character height
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int gsvt_get_cell_size(int *pWidth, int *pHeight);
 
 /** stdio wrapper functions **/
 

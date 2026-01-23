@@ -20,6 +20,9 @@
 #include <string.h>
 #include "ctypex.h"
 
+// Terminal I/O
+#include <termios.h>
+
 struct _gsvt_console {
 	FILE *stream;		// File handle, e.g. stdout or stderr
 	bool is_console;	// True if this is a real console and not redirected to a file
@@ -33,6 +36,10 @@ gsvt_console *gsvt_stdout = &__gsvt_stdout;
 gsvt_console *gsvt_stderr = &__gsvt_stderr;
 
 static bool is_color_TERM = false;
+
+// Cached cell size (if TTY) [-1 if not initialized; 0 if not a TTY]
+static int cell_size_w = -1;
+static int cell_size_h = -1;
 
 /** Basic functions **/
 
@@ -192,6 +199,105 @@ bool gsvt_is_console(const gsvt_console *vt)
 bool gsvt_supports_ansi(const gsvt_console *vt)
 {
 	return vt->supports_ansi;
+}
+
+/**
+ * Get the size of a single character cell on the terminal.
+ * NOTE: Both stdin and stdout must be a tty for this function to succeed.
+ * @param pWidth	[out] Character width
+ * @param pHeight	[out] Character height
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int gsvt_get_cell_size(int *pWidth, int *pHeight)
+{
+	static const char query_cmd[] = "\x1B[16t";
+
+	// Is the cell size cached already?
+	if (cell_size_w >= 0) {
+		// Cell size is cached.
+		*pWidth = cell_size_w;
+		*pHeight = cell_size_h;
+		return (likely(cell_size_w > 0)) ? 0 : -ENOTTY;
+	}
+
+	// Both stdin and stdout must be actual consoles and support ANSI.
+	if (!__gsvt_stdout.is_console || !__gsvt_stdout.supports_ansi ||
+	    !__gsvt_stderr.is_console || !__gsvt_stderr.supports_ansi)
+	{
+		// Not an actual console and/or does not support ANSI.
+		cell_size_w = 0;
+		cell_size_h = 0;
+		*pWidth = 0;
+		*pHeight = 0;
+		return -ENOTTY;
+	}
+
+	// Adjust TTY handling for the query.
+	struct termios term, initial_term;
+	fflush(stdin);
+	tcgetattr(STDIN_FILENO, &initial_term);
+	term = initial_term;
+	term.c_lflag &= ~ICANON;
+	term.c_lflag &= ~ECHO;
+	tcsetattr(STDIN_FILENO, TCSANOW, &term);
+
+	fwrite(query_cmd, 1, sizeof(query_cmd)-1, stdout);
+	fflush(stdout);
+
+	// Wait 300ms for a response from the terminal.
+	// Reference: https://stackoverflow.com/questions/16026858/reading-the-device-status-report-ansi-escape-sequence-reply
+	fd_set readset;
+	struct timeval time;
+	FD_ZERO(&readset);
+	FD_SET(STDIN_FILENO, &readset);
+	time.tv_sec = 0;
+	time.tv_usec = 300000;
+
+	errno = 0;
+	if (select(STDIN_FILENO + 1, &readset, NULL, NULL, &time) != 1) {
+		// Failed to select() the data...
+		int err = -errno;
+		if (err == 0) {
+			err = -EIO;
+		}
+		tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
+		return err;
+	}
+
+	// Data should be in the format: "\x1B[6;_;_t"
+	// - Param 1: height
+	// - Param 2: width
+	// Keep reading until we find a lowercase letter.
+	char buf[16];
+	size_t n = 0;
+	for (; n < sizeof(buf); n++) {
+		buf[n] = getc(stdin);
+		if (islower_ascii(buf[n])) {
+			n++;
+			if (n < sizeof(buf)) {
+				buf[n] = '\0';
+			}
+			break;
+		}
+	}
+	if (n >= sizeof(buf) || buf[n] != '\0') {
+		// Not a valid sequence?
+		return -EIO;
+	}
+
+	// Use sscanf() to verify the string.
+	int start_code = 0;
+	char end_code = '\0';
+	int s = sscanf(buf, "\x1B[%d;%d;%d%c", &start_code, pHeight, pWidth, &end_code);
+	if (s != 4 || start_code != 6 || end_code != 't') {
+		// Not valid...
+		tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
+		return -EIO;
+	}
+
+	// Retrieved the width and height.
+	tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
+	return 0;
 }
 
 /** stdio wrapper functions **/

@@ -10,6 +10,9 @@
 #include "rp_sixel.hpp"
 #include "ctypex.h"
 
+// libgsvt for VT handling
+#include "gsvt.h"
+
 // libsixel
 #include <sixel.h>
 
@@ -19,9 +22,6 @@ using namespace LibRpBase;
 // librptexture
 #include "librptexture/img/rp_image.hpp"
 using namespace LibRpTexture;
-
-// Terminal I/O
-#include <termios.h>
 
 static int sixel_write(char *data, int size, void *priv)
 {
@@ -107,87 +107,6 @@ static bool tty_supports_sixel(FILE *f)
 	return !!isatty(fileno(f));
 }
 
-// TODO: Move to libgsvt?
-
-/**
- * Get the size of a single character cell on the terminal.
- * stdin/stdout must be TTY.
- * @param pWidth	[out] Character width
- * @param pHeight	[out] Character height
- * @return 0 on success; negative POSIX error code on error.
- */
-int tty_get_cell_size(int *pWidth, int *pHeight)
-{
-	static const char query_cmd[] = "\x1B[16t";
-
-	// Adjust TTY handling for the query.
-	struct termios term, initial_term;
-	fflush(stdin);
-	tcgetattr(STDIN_FILENO, &initial_term);
-	term = initial_term;
-	term.c_lflag &= ~ICANON;
-	term.c_lflag &= ~ECHO;
-	tcsetattr(STDIN_FILENO, TCSANOW, &term);
-
-	fwrite(query_cmd, 1, sizeof(query_cmd)-1, stdout);
-	fflush(stdout);
-
-	// Wait 300ms for a response from the terminal.
-	// Reference: https://stackoverflow.com/questions/16026858/reading-the-device-status-report-ansi-escape-sequence-reply
-	fd_set readset;
-	struct timeval time;
-	FD_ZERO(&readset);
-	FD_SET(STDIN_FILENO, &readset);
-	time.tv_sec = 0;
-	time.tv_usec = 300000;
-
-	errno = 0;
-	if (select(STDIN_FILENO + 1, &readset, nullptr, nullptr, &time) != 1) {
-		// Failed to select() the data...
-		int err = -errno;
-		if (err == 0) {
-			err = -EIO;
-		}
-		tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
-		return err;
-	}
-
-	// Data should be in the format: "\x1B[6;_;_t"
-	// - Param 1: height
-	// - Param 2: width
-	// Keep reading until we find a lowercase letter.
-	char buf[16];
-	size_t n = 0;
-	for (; n < sizeof(buf); n++) {
-		buf[n] = getc(stdin);
-		if (islower_ascii(buf[n])) {
-			n++;
-			if (n < sizeof(buf)) {
-				buf[n] = '\0';
-			}
-			break;
-		}
-	}
-	if (n >= sizeof(buf) || buf[n] != '\0') {
-		// Not a valid sequence?
-		return -EIO;
-	}
-
-	// Use sscanf() to verify the string.
-	int start_code = 0;
-	char end_code = '\0';
-	int s = sscanf(buf, "\x1B[%d;%d;%d%c", &start_code, pHeight, pWidth, &end_code);
-	if (s != 4 || start_code != 6 || end_code != 't') {
-		// Not valid...
-		tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
-		return -EIO;
-	}
-
-	// Retrieved the width and height.
-	tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
-	return 0;
-}
-
 void print_sixel_icon_banner(const RomDataPtr &romData)
 {
 	// Make sure the terminal supports sixel.
@@ -197,9 +116,9 @@ void print_sixel_icon_banner(const RomDataPtr &romData)
 	}
 
 	// Get the character cell size.
-	int cell_w = 0, cell_h = 0;
-	int ret = tty_get_cell_size(&cell_w, &cell_h);
-	if (ret != 0 || cell_w <= 0 || cell_h <= 0) {
+	int cell_size_w = 0, cell_size_h = 0;
+	int ret = gsvt_get_cell_size(&cell_size_w, &cell_size_h);
+	if (ret != 0 || cell_size_w <= 0 || cell_size_h <= 0) {
 		// Unable to get the character cell size...
 		return;
 	}
@@ -235,8 +154,8 @@ void print_sixel_icon_banner(const RomDataPtr &romData)
 	}
 
 	// Determine how many rows are needed.
-	int rows = max_height / cell_h;
-	if (max_height % cell_h != 0) {
+	int rows = max_height / cell_size_h;
+	if (max_height % cell_size_h != 0) {
 		rows++;
 	}
 	for (int i = 0; i < rows; i++) {
@@ -249,8 +168,8 @@ void print_sixel_icon_banner(const RomDataPtr &romData)
 	if (icon) {
 		print_sixel_image(output, icon);
 		const int icon_width = icon->width() + 8;
-		int icon_cols = icon_width / cell_w;
-		if (icon_width % cell_w != 0) {
+		int icon_cols = icon_width / cell_size_w;
+		if (icon_width % cell_size_w != 0) {
 			icon_cols++;
 		}
 		cur_col += icon_cols;
@@ -260,8 +179,8 @@ void print_sixel_icon_banner(const RomDataPtr &romData)
 	if (banner) {
 		print_sixel_image(output, banner);
 		const int icon_width = icon->width() + 8;
-		int icon_cols = icon_width / cell_w;
-		if (icon_width % cell_w != 0) {
+		int icon_cols = icon_width / cell_size_w;
+		if (icon_width % cell_size_w != 0) {
 			icon_cols++;
 		}
 		cur_col += icon_cols;
