@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.rpcli.h"
 #include "rpcli_secure.h"
 
 // librpsecure
@@ -85,6 +86,16 @@ int rpcli_do_security_options(void)
 		//SCMP_SYS(geteuid), SCMP_SYS(getuid),
 		//SCMP_SYS(socket),	// ???
 		//SCMP_SYS(socketcall),	// FIXME: Enhanced filtering? [cURL+GnuTLS only?]
+
+#ifdef ENABLE_SIXEL
+		// select() [used for libsixel]
+		SCMP_SYS(select),
+		SCMP_SYS(_newselect),
+		SCMP_SYS(pselect6),
+#if defined(__SNR_pselect6_time64) || defined(__NR_pselect6_time64)
+		SCMP_SYS(pselect6_time64),
+#endif /* __SNR_futex_time64 || __NR_futex_time64 */
+#endif /* ENABLE_SIXEL */
 
 		-1	// End of whitelist
 	};
