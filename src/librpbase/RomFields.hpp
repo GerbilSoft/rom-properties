@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomFields.hpp: ROM fields class.                                        *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -45,6 +45,10 @@ namespace LibRpBase {
 #define COLSORT_STD	(LibRpBase::RomFields::ColSorting::COLSORT_STANDARD)
 #define COLSORT_NC	(LibRpBase::RomFields::ColSorting::COLSORT_NOCASE)
 #define COLSORT_NUM	(LibRpBase::RomFields::ColSorting::COLSORT_NUMERIC)
+
+// Text format macros
+#define COLTEXTFMT_DEFAULT	(LibRpBase::RomFields::ColTextFormat::COLTEXTFORMAT_DEFAULT)
+#define COLTEXTFMT_ACHIEVEMENT	(LibRpBase::RomFields::ColTextFormat::COLTEXTFORMAT_ACHIEVEMENT)
 
 // RFT_LISTDATA macros for both text alignment and column sizing.
 // - # indicates number of columns.
@@ -121,12 +125,6 @@ public:
 		// NOTE: This changes the structure of the
 		// data field!
 		RFT_LISTDATA_MULTI	= (1U << 3),
-
-		// For multi-line entries, format like achievements:
-		// Lines after the first line should be printed using small text.
-		// FIXME: For libromdata.so.9, remove this flag and make it
-		// a per-column attribute.
-		RFT_LISTDATA_ACHIEVEMENTS_SO8	= (1U << 4),
 	};
 
 	// Display flags for RFT_DATETIME
@@ -229,6 +227,15 @@ public:
 		COLSORTORDER_DESCENDING	= 1U,
 	};
 
+	// Text formatting
+	enum ColTextFormat : uint8_t {
+		COLTEXTFORMAT_DEFAULT		= 0U,	// Default formatting
+		COLTEXTFORMAT_ACHIEVEMENT	= 1U,	// Achievement-style formatting
+
+		COLTEXTFORMAT_BITS		= 2U,
+		COLTEXTFORMAT_MASK		= 3U,
+	};
+
 	// RFT_LISTDATA per-column attributes
 	// Up to 8 columns can be specified using
 	// two bits each, with the two LSBs indicating
@@ -239,6 +246,7 @@ public:
 		uint16_t align_data;	// Data alignment
 		uint16_t sizing;	// Column sizing
 		uint16_t sorting;	// Column sorting
+		uint16_t text_format;	// Text formatting
 
 		int8_t   sort_col;	// Default sort column (-1 for none)
 		ColSortOrder sort_dir;	// Sort order
@@ -257,6 +265,7 @@ public:
 			align_data >>= TXA_BITS;
 			sizing >>= COLSZ_BITS;
 			sorting >>= COLSORT_BITS;
+			text_format >>= COLTEXTFORMAT_BITS;
 		}
 	};
 
@@ -763,6 +772,7 @@ public:
 			col_attrs.align_data = 0;
 			col_attrs.sizing = 0;
 			col_attrs.sorting = 0;
+			col_attrs.text_format = 0;
 			col_attrs.sort_col = -1;
 			col_attrs.sort_dir = COLSORTORDER_ASCENDING;
 			col_attrs.is_timestamp = 0;
@@ -781,6 +791,7 @@ public:
 			col_attrs.align_data = 0;
 			col_attrs.sizing = 0;
 			col_attrs.sorting = 0;
+			col_attrs.text_format = 0;
 			col_attrs.sort_col = -1;
 			col_attrs.sort_dir = COLSORTORDER_ASCENDING;
 			col_attrs.is_timestamp = 0;

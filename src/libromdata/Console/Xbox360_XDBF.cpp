@@ -3,7 +3,7 @@
  * Xbox360_XDBF.cpp: Microsoft Xbox 360 game resource reader.              *
  * Handles XDBF files and sections.                                        *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1112,8 +1112,7 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 	// Add the list data.
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW |
 	                              RomFields::RFT_LISTDATA_ICONS |
-				      RomFields::RFT_LISTDATA_MULTI |
-				      RomFields::RFT_LISTDATA_ACHIEVEMENTS_SO8, 0);
+				      RomFields::RFT_LISTDATA_MULTI, 0);
 	params.headers = v_xach_col_names;
 	params.data.multi = mvv_xach;
 	params.def_lc = getDefaultLC();
@@ -1122,6 +1121,7 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 	params.col_attrs.align_data	= AFLD_ALIGN3(TXA_L, TXA_L, TXA_C);
 	params.col_attrs.sizing		= AFLD_ALIGN3(COLSZ_R, COLSZ_S, COLSZ_R);
 	params.col_attrs.sorting	= AFLD_ALIGN3(COLSORT_NUM, COLSORT_STD, COLSORT_NUM);
+	params.col_attrs.text_format	= AFLD_ALIGN3(COLTEXTFMT_DEFAULT, COLTEXTFMT_ACHIEVEMENT, COLTEXTFMT_DEFAULT);
 	params.col_attrs.sort_col	= 0;	// ID
 	params.col_attrs.sort_dir	= RomFields::COLSORTORDER_ASCENDING;
 	params.mxd.icons = vv_icons;

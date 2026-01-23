@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * RomDataView.cpp: RomData viewer.                                        *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -555,11 +555,20 @@ QTreeView *RomDataViewPrivate::initListData(QLabel *lblDesc,
 		listModel->setIconSize(iconSize);
 	}
 
-	// If RFT_LISTDATA_ACHIEVEMENTS_SO8 is set, use AchievementsItemDelegate
-	// to render the entry like an Achievement.
-	// TODO: For libromdata.so.9, make this a per-column attribute?
-	if (field.flags & RomFields::RFT_LISTDATA_ACHIEVEMENTS_SO8) {
-		treeView->setItemDelegate(new AchievementsItemDelegate(q));
+	// Check for column text formats.
+	unsigned int text_format = listDataDesc.col_attrs.text_format;
+	for (int col = 0; text_format != 0 && col < colCount;
+	     col++, text_format >>= RomFields::ColTextFormat::COLTEXTFORMAT_BITS)
+	{
+		switch (text_format & RomFields::ColTextFormat::COLTEXTFORMAT_MASK) {
+			default:
+			case COLTEXTFMT_DEFAULT:
+				break;
+
+			case COLTEXTFMT_ACHIEVEMENT:
+				treeView->setItemDelegateForColumn(col, new AchievementsItemDelegate(q));
+				break;
+		}
 	}
 
 	// Add the field data to the ListDataModel.

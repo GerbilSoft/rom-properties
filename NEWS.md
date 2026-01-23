@@ -1,5 +1,7 @@
 # Changes
 
+## v2.8 (released 2026/??/??)
+
 ## v2.7.1 (released 2026/01/18)
 
 * New features:

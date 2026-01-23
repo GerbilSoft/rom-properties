@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RomDataView_gtk3.cpp: RomData viewer widget. (GTK2/GTK3-specific)       *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -210,8 +210,6 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 	}
 
 	// Add the row data.
-	// TODO: For libromdata.so.9, make "is_achievements" a per-column attribute?
-	const bool is_achievements = !!(field.flags & RomFields::RFT_LISTDATA_ACHIEVEMENTS_SO8);
 	uint32_t checkboxes = 0;
 	if (hasCheckboxes) {
 		checkboxes = field.data.list_data.mxd.checkboxes;
@@ -291,6 +289,7 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 
 		if (!isMulti) {
 			int col = listStore_col_start;
+			unsigned int text_format = listDataDesc.col_attrs.text_format;
 			unsigned int is_timestamp = listDataDesc.col_attrs.is_timestamp;
 			for (const string &str : data_row) {
 				if (unlikely((is_timestamp & 1) && str.size() == sizeof(int64_t))) {
@@ -304,15 +303,24 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 						(likely(str != nullptr) ? str : C_("RomData", "Unknown")), -1);
 					g_free(str);
 				} else {
-					// TODO: For libromdata.so.9, make "is_achievements" a per-column attribute?
-					if (unlikely(is_achievements)) {
-						string fmt_text = rom_data_format_RFT_LISTDATA_text_as_achievements(str);
-						gtk_list_store_set(listStore, &treeIter, col, fmt_text.c_str(), -1);
-					} else {
-						gtk_list_store_set(listStore, &treeIter, col, str.c_str(), -1);
+					switch (text_format & RomFields::ColTextFormat::COLTEXTFORMAT_MASK) {
+						default:
+						case COLTEXTFMT_DEFAULT:
+							// Default formatting
+							gtk_list_store_set(listStore, &treeIter, col, str.c_str(), -1);
+							break;
+
+						case COLTEXTFMT_ACHIEVEMENT: {
+							// Achievement formatting
+							string fmt_text = rom_data_format_RFT_LISTDATA_text_as_achievements(str);
+							gtk_list_store_set(listStore, &treeIter, col, fmt_text.c_str(), -1);
+							break;
+						}
 					}
 				}
 
+				// Next column
+				text_format >>= RomFields::ColTextFormat::COLTEXTFORMAT_BITS;
 				is_timestamp >>= 1;
 				col++;
 			}
@@ -402,8 +410,20 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 			col0_renderer = nullptr;
 		}
 
-		// TODO: For libromdata.so.9, make "is_achievements" a per-column attribute?
-		const char *const text_prop = (unlikely(is_achievements) ? "markup" : "text");
+		// Some text formats require the use of Pango markup.
+		const char *text_prop;
+		switch (col_attrs.text_format & RomFields::ColTextFormat::COLTEXTFORMAT_MASK) {
+			default:
+			case COLTEXTFMT_DEFAULT:
+				// Default formatting
+				text_prop = "text";
+				break;
+
+			case COLTEXTFMT_ACHIEVEMENT:
+				// Achievement formatting
+				text_prop = "markup";
+				break;
+		}
 
 		GtkCellRenderer *const renderer = gtk_cell_renderer_text_new();
 		gtk_tree_view_column_pack_start(column, renderer, TRUE);
@@ -567,9 +587,7 @@ rp_rom_data_view_update_multi_RFT_LISTDATA_MULTI(RpRomDataView *page, uint32_t u
 				listStore_col_start = 0;
 			}
 
-			// TODO: For libromdata.so.9, make "is_achievements" a per-column attribute?
 			const auto &listDataDesc = pField->desc.list_data;
-			const bool is_achievements = !!(pField->flags & RomFields::RFT_LISTDATA_ACHIEVEMENTS_SO8);
 
 			// Update the list.
 			GtkTreeIter treeIter;
@@ -580,6 +598,7 @@ rp_rom_data_view_update_multi_RFT_LISTDATA_MULTI(RpRomDataView *page, uint32_t u
 			while (ok && iter_listData != pListData_cend) {
 				// TODO: Verify GtkListStore column count?
 				int col = listStore_col_start;
+				unsigned int text_format = listDataDesc.col_attrs.text_format;
 				unsigned int is_timestamp = listDataDesc.col_attrs.is_timestamp;
 				for (const string &str : *iter_listData) {
 					if (unlikely((is_timestamp & 1) && str.size() == sizeof(int64_t))) {
@@ -593,16 +612,24 @@ rp_rom_data_view_update_multi_RFT_LISTDATA_MULTI(RpRomDataView *page, uint32_t u
 							(likely(str != nullptr) ? str : C_("RomData", "Unknown")), -1);
 						g_free(str);
 					} else {
-						// TODO: For libromdata.so.9, make "is_achievements" a per-column attribute?
-						if (unlikely(is_achievements)) {
-							string fmt_text = rom_data_format_RFT_LISTDATA_text_as_achievements(str);
-							gtk_list_store_set(listStore, &treeIter, col, fmt_text.c_str(), -1);
-						} else {
-							gtk_list_store_set(listStore, &treeIter, col, str.c_str(), -1);
+						switch (text_format & RomFields::ColTextFormat::COLTEXTFORMAT_MASK) {
+							default:
+							case COLTEXTFMT_DEFAULT:
+								// Default formatting
+								gtk_list_store_set(listStore, &treeIter, col, str.c_str(), -1);
+								break;
+
+							case COLTEXTFMT_ACHIEVEMENT: {
+								// Achievement formatting
+								string fmt_text = rom_data_format_RFT_LISTDATA_text_as_achievements(str);
+								gtk_list_store_set(listStore, &treeIter, col, fmt_text.c_str(), -1);
+								break;
+							}
 						}
 					}
 
 					// Next column
+					text_format >>= RomFields::ColTextFormat::COLTEXTFORMAT_BITS;
 					is_timestamp >>= 1;
 					col++;
 				}
