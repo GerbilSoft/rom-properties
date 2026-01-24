@@ -294,13 +294,13 @@ bool gsvt_supports_ansi(const gsvt_console *vt)
 
 /**
  * Send a terminal query command and retrieve a response string.
- * Response string should be a numeric list and end with a single lowercase letter.
  * @param cmd Query command
  * @param buf Response buffer
  * @param size Size of buf
+ * @param endchr Expected end character (Windows only!)
  * @return 0 on success; negative POSIX error code on error.
  */
-int gsvt_query_tty(const char *cmd, TCHAR *buf, size_t size)
+int gsvt_query_tty(const char *cmd, TCHAR *buf, size_t size, TCHAR endchr)
 {
 	// Both stdin and stdout must be actual consoles, and stdout must support ANSI.
 	if (!__gsvt_stdout.is_console || !__gsvt_stdin.is_console ||
@@ -369,7 +369,7 @@ int gsvt_query_tty(const char *cmd, TCHAR *buf, size_t size)
 			return -EIO;
 		}
 
-		if (islower_ascii(buf[n])) {
+		if (buf[n] == endchr) {
 			n++;
 			if (n < size) {
 				buf[n] = _T('\0');

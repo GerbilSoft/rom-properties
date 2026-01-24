@@ -207,10 +207,14 @@ bool gsvt_supports_ansi(const gsvt_console *vt)
  * @param cmd Query command
  * @param buf Response buffer
  * @param size Size of buf
+ * @param endchr Expected end character (Windows only!)
  * @return 0 on success; negative POSIX error code on error.
  */
-int gsvt_query_tty(const char *cmd, char *buf, size_t size)
+int gsvt_query_tty(const char *cmd, char *buf, size_t size, TCHAR endchr)
 {
+	// endchr is not used on the POSIX version.
+	RP_UNUSED(endchr);
+
 	// Both stdin and stdout must be actual consoles, and stdout must support ANSI.
 	if (!__gsvt_stdout.is_console    || !__gsvt_stdin.is_console ||
 	    !__gsvt_stdout.supports_ansi)

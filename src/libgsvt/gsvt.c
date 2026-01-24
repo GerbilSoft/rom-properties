@@ -41,9 +41,24 @@ static void gsvt_check_graphics_protocol_support(void)
 
 	// Query both Kitty protocol support and the device attributes.
 	// Reference: https://sw.kovidgoyal.net/kitty/graphics-protocol/#querying-support-and-available-transmission-mediums
+	//
+	// NOTE: On Windows, there doesn't seem to be a straight-forward way to
+	// do a non-blocking read with ReadConsole() [and ReadConsoleInput() isn't
+	// working properly for tty commands], so we have to specify an end char
+	// to expect. We'll expect 'c' for Device Attributes, since any terminal
+	// that supports Kitty also supports Device Attributes.
+	//
 	TCHAR buf[128];
 	buf[0] = _T('\0');
-	int ret = gsvt_query_tty("\x1B_Gi=31,s=1,v=1,a=q,t=d,f=24;AAAA\x1B\\\x1B[c", buf, ARRAY_SIZE(buf));
+#ifdef _WIN32
+	// NOTE: Neither the Windows command prompt nor Windows Terminal currently
+	// support Kitty, and attempting to query Kitty on the Windows command prompt
+	// results in weird garbage appearing. Disable Kitty checks on Windows for now.
+	// TODO: Do any Windows terminal emulators support Kitty?
+	int ret = gsvt_query_tty("\x1B[c", buf, ARRAY_SIZE(buf), _T('c'));
+#else /* !_WIN32 */
+	int ret = gsvt_query_tty("\x1B_Gi=31,s=1,v=1,a=q,t=d,f=24;AAAA\x1B\\\x1B[c", buf, ARRAY_SIZE(buf), _T('c'));
+#endif /* _WIN32 */
 	if (ret != 0) {
 		// Error querying protocol support.
 		return;
@@ -161,7 +176,7 @@ int gsvt_get_cell_size(int *pWidth, int *pHeight)
 	// Attempt to get the cell size.
 	TCHAR buf[16];
 	buf[0] = '\0';
-	int ret = gsvt_query_tty("\x1B[16t", buf, sizeof(buf));
+	int ret = gsvt_query_tty("\x1B[16t", buf, sizeof(buf), _T('t'));
 	if (ret != 0) {
 		// Error retrieving the cell size.
 		// Assume the cell size is not available.

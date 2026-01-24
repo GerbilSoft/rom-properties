@@ -19,10 +19,11 @@ extern "C" {
  * @param cmd Query command
  * @param buf Response buffer
  * @param size Size of buf
+ * @param endchr Expected end character (Windows only!)
  * @return 0 on success; negative POSIX error code on error.
  */
 ATTR_ACCESS_SIZE(read_write, 2, 3)
-int gsvt_query_tty(const char *cmd, TCHAR *buf, size_t size);
+int gsvt_query_tty(const char *cmd, TCHAR *buf, size_t size, TCHAR endchr);
 
 #ifdef __cplusplus
 }
