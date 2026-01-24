@@ -45,6 +45,9 @@ typedef NTSTATUS (WINAPI *pfnNtQueryObject_t)(
 	_Out_opt_ PULONG returnLength
 	);
 
+#ifndef ENABLE_PROCESSED_OUTPUT
+#  define ENABLE_PROCESSED_OUTPUT 0x1
+#endif /* ENABLE_PROCESSED_OUTPUT */
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #  define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4
 #endif /* !ENABLE_VIRTUAL_TERMINAL_PROCESSING */
@@ -200,7 +203,7 @@ static void gsvt_init_win32(gsvt_console *vt, FILE *f, DWORD fd)
 	vt->is_real_console = true;
 
 	// Does it support ANSI escape sequences?
-	dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+	dwMode |= (ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 	if (SetConsoleMode(hStd, dwMode)) {
 		// ANSI escape sequences enabled.
 		vt->supports_ansi = true;
