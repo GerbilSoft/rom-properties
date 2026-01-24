@@ -17,6 +17,10 @@
 
 #include "ctypex.h"
 
+// Is Sixel supported? (cached)
+// -1 = not checked; 0 = not supported; 1 = supported
+static int8_t sixel_supported = -1;
+
 // Cached cell size (if TTY) [-1 if not initialized; 0 if not a TTY]
 static int cell_size_w = -1;
 static int cell_size_h = -1;
@@ -28,7 +32,10 @@ static int cell_size_h = -1;
  */
 bool gsvt_supports_sixel(void)
 {
-	// TODO: Cache this.
+	if (sixel_supported >= 0) {
+		return !!sixel_supported;
+	}
+	sixel_supported = 0;
 
 	// Query the device attributes.
 	TCHAR buf[32];
@@ -49,7 +56,6 @@ bool gsvt_supports_sixel(void)
 	// semicolon-separated list of numeric values.
 	// TODO: Combine common code in gsvt_win32.c for parsing numeric lists?
 	const TCHAR *const p_end = &buf[sizeof(buf)];
-	bool has_sixel = false;
 	int num = -1;
 	for (const TCHAR *p = &buf[3]; p < p_end; p++) {
 		TCHAR chr = *p;
@@ -64,7 +70,7 @@ bool gsvt_supports_sixel(void)
 		} else if (chr == _T(';')) {
 			// If the value is 4, then Sixel is supported.
 			if (num == 4) {
-				has_sixel = true;
+				sixel_supported = 1;
 			}
 			num = -1;
 		} else if (chr == _T('c')) {
@@ -72,16 +78,17 @@ bool gsvt_supports_sixel(void)
 			// Check the final value.
 			// If the value is 4, then Sixel is supported.
 			if (num == 4) {
-				has_sixel = true;
+				sixel_supported = 1;
 			}
 			break;
 		} else {
 			// Invalid character...
+			sixel_supported = 0;
 			return false;
 		}
 	}
 
-	return has_sixel;
+	return !!sixel_supported;
 }
 
 /**
