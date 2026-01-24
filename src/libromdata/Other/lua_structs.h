@@ -30,10 +30,11 @@ extern "C" {
  * 5.0: 14+Number
  * 5.1: 12
  * 5.2: 18
- * 5.3: 17+Integer+Number (the biggest one)
+ * 5.3: 17+Integer+Number
  * 5.4: 15+Integer+Number
+ * 5.5: 16+int+Instruction+Integer+Number (the biggest one)
  */
-#define LUA_HEADERSIZE (17+8+8)
+#define LUA_HEADERSIZE (16+8+8+8+8)
 
 /**
  * Lua binary chunk header.
@@ -188,6 +189,25 @@ typedef struct _Lua5_4_Header {
 	/* followed by test number 370.5 */
 } Lua5_4_Header;
 ASSERT_STRUCT(Lua5_4_Header, 15);
+
+/**
+ * Lua 5.5 binary chunk header.
+ */
+typedef struct _Lua5_5_Header {
+	Lua_Header header;
+	uint8_t format; /* 0 = official format */
+	char tail[6]; /* LUA_TAIL */
+	/* uint8_t int_size;
+	 * followed by test int -0x5678
+	 * uint8_t Instruction_size;
+	 * followed by test instruction 0x12345678
+	 * uint8_t Integer_size;
+	 * followed by test integer -0x5678
+	 * uint8_t Number_size;
+	 * followed by test number -370.5
+	 */
+} Lua5_5_Header;
+ASSERT_STRUCT(Lua5_5_Header, 12);
 
 #ifdef __cplusplus
 }
