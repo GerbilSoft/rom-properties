@@ -2,6 +2,9 @@
 
 ## v2.8 (released 2026/??/??)
 
+* New parser features:
+  * Lua: Support for Lua 5.5 bytecode format.
+
 ## v2.7.1 (released 2026/01/18)
 
 * New features:
