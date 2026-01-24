@@ -16,6 +16,7 @@
 // C includes
 #include <assert.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -250,27 +251,50 @@ int gsvt_query_tty(const char *cmd, char *buf, size_t size)
 		return err;
 	}
 
-	// Data should be in the format: "\x1B[6;_;_t"
-	// - Param 1: height
-	// - Param 2: width
-	// Keep reading until we find a lowercase letter.
+	// Different queries have different response formats, so we shouldn't
+	// check the format. Instead, keep read()'ing until we run out of data.
+	const int oldflags = fcntl(STDIN_FILENO, F_GETFL, 0);
+	if (oldflags == -1) {
+		// Unable to query flags...
+		int err = -errno;
+		if (err == 0) {
+			err = -EIO;
+		}
+		tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
+		return err;
+	}
+	if (fcntl(STDIN_FILENO, F_SETFL, (oldflags | O_NONBLOCK)) < 0) {
+		// Unable to set flags...
+		int err = -errno;
+		if (err == 0) {
+			err = -EIO;
+		}
+		tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
+		return err;
+	}
+
 	size_t n = 0;
 	for (; n < size; n++) {
-		int chr = getc(stdin);
-		if (chr < 0) {
-			// EOF?
-			// Assume the cell size is not available.
-			tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
-			return -EIO;
-		}
-
-		buf[n] = (char)chr;
-		if (islower_ascii(buf[n])) {
-			n++;
-			if (n < size) {
+		char chr;
+		errno = 0;
+		ssize_t size = read(STDIN_FILENO, &chr, sizeof(chr));
+		if (size == 1) {
+			// Read one character.
+			buf[n] = chr;
+		} else if (size <= 0) {
+			// Check for an error.
+			int err = errno;
+			if (err == EAGAIN || err == EWOULDBLOCK) {
+				// Out of data.
+				// NOTE: EAGAIN *could* mean we still have data, but the syscall was interrupted...
 				buf[n] = '\0';
+				break;
+			} else {
+				// Some other error occurred...
+				fcntl(STDIN_FILENO, F_SETFL, oldflags);
+				tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
+				return -err;
 			}
-			break;
 		}
 	}
 
@@ -279,7 +303,9 @@ int gsvt_query_tty(const char *cmd, char *buf, size_t size)
 		// Not a valid sequence?
 		ret = -EIO;
 	}
+	fcntl(STDIN_FILENO, F_SETFL, oldflags);
 	tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
+	fflush(stdin);
 	return ret;
 }
 

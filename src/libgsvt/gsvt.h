@@ -63,11 +63,18 @@ bool gsvt_is_console(const gsvt_console *vt);
 bool gsvt_supports_ansi(const gsvt_console *vt);
 
 /**
- * Does the terminal support Sixel?
+ * Does the terminal support the Sixel graphics protocol?
  * NOTE: Both stdin and stdout must be a tty for this function to succeed.
  * @return True if it does; false if it doesn't.
  */
 bool gsvt_supports_sixel(void);
+
+/**
+ * Does the terminal support the Kitty graphics protocol?
+ * NOTE: Both stdin and stdout must be a tty for this function to succeed.
+ * @return True if it does; false if it doesn't.
+ */
+bool gsvt_supports_kitty(void);
 
 /**
  * Get the size of a single character cell on the terminal.

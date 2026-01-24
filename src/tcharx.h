@@ -44,6 +44,7 @@
 #endif /* __cplusplus && !tstring */
 
 #ifdef _UNICODE
+#  define _tmemchr(s, c, n)	wmemchr((s), (c), (n))
 #  define _tmemcmp(s1, s2, n)	wmemcmp((s1), (s2), (n))
 
 /**
@@ -61,6 +62,7 @@ static inline int _tmemcmp_inline(const TCHAR *s1, const TCHAR *s2, size_t n)
 
 #else /* !_UNICODE */
 #  define sntprintf snprintf
+#  define _tmemchr(s, c, n)		memchr((s), (c), (n))
 #  define _tmemcmp(s1, s2, n)		memcmp((s1), (s2), (n))
 #  define _tmemcmp_inline(s1, s2, n)	memcmp((s1), (s2), (n))
 #endif /* _UNICODE */
@@ -115,6 +117,7 @@ typedef char TCHAR;
 #define _tcslen(s)			strlen(s)
 #define _tcsncmp(s1, s2, n)		strncmp((s1), (s2), (n))
 #define _tcsrchr(s, c)			strrchr((s), (c))
+#define _tmemchr(s, c, n)		memchr((s), (c), (n))
 #define _tmemcmp(s1, s2, n)		memcmp((s1), (s2), (n))
 #define _tmemcmp_inline(s1, s2, n)	memcmp((s1), (s2), (n))
 

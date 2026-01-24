@@ -17,78 +17,128 @@
 
 #include "ctypex.h"
 
-// Is Sixel supported? (cached)
-// -1 = not checked; 0 = not supported; 1 = supported
-static int8_t sixel_supported = -1;
+// Are Sixel or Kitty supported?
+static bool checked_graphics = false;
+static bool supports_sixel = false;
+static bool supports_kitty = false;
 
 // Cached cell size (if TTY) [-1 if not initialized; 0 if not a TTY]
 static int cell_size_w = -1;
 static int cell_size_h = -1;
 
 /**
- * Does the terminal support Sixel?
+ * Check for Sixel and Kitty graphics protocol support.
+ */
+static void gsvt_check_graphics_protocol_support(void)
+{
+	if (checked_graphics) {
+		// Should not happen...
+		return;
+	}
+	supports_sixel = false;
+	supports_kitty = false;
+	checked_graphics = true;
+
+	// Query both Kitty protocol support and the device attributes.
+	// Reference: https://sw.kovidgoyal.net/kitty/graphics-protocol/#querying-support-and-available-transmission-mediums
+	TCHAR buf[128];
+	buf[0] = _T('\0');
+	int ret = gsvt_query_tty("\x1B_Gi=31,s=1,v=1,a=q,t=d,f=24;AAAA\x1B\\\x1B[c", buf, ARRAY_SIZE(buf));
+	if (ret != 0) {
+		// Error querying protocol support.
+		return;
+	}
+
+	// If Kitty is supported, the Kitty protocol data will start with "\x1B_G" and end with "\x1B\\".
+	// If Sixel is supported, the device attributes will start with "\x1B[?" and end with 'c'.
+
+	const TCHAR *const p_end = &buf[ARRAY_SIZE(buf)];
+	const TCHAR *p = buf;
+	do {
+		p = _tmemchr(p, _T('\x1B'), (p_end - p));
+		if (!p) {
+			// No more escape sequences.
+			break;
+		}
+
+		// Check if this is a Kitty or device attributes response.
+		p++;
+		if (p[0] == _T('_') && p[1] == _T('G')) {
+			// It's a Kitty response.
+			// Kitty is supported.
+
+			// The response ends with "\x1B\\".
+			p += 2;
+			p = _tmemchr(p, _T('\x1B'), (p_end - p));
+			if (!p || p[1] != _T('\\')) {
+				// End of response not found...
+				break;
+			}
+
+			supports_kitty = true;
+			p++;
+		} else if (p[0] == _T('[') && p[1] == _T('?')) {
+			// Device Attributes repsonse.
+			// Parse the Device Attributes list and check for Sixel.
+			int num = -1;
+			for (p += 2; p < p_end; p++) {
+				TCHAR chr = *p;
+				if (isdigit_ascii(chr)) {
+					// This is a digit.
+					if (num < 0) {
+						num = (chr & 0x0F);
+					} else {
+						num *= 10;
+						num += (chr & 0x0F);
+					}
+				} else if (chr == _T(';')) {
+					// If the value is 4, then Sixel is supported.
+					if (num == 4) {
+						supports_sixel = true;
+					}
+					num = -1;
+				} else if (chr == _T('c')) {
+					// End of list.
+					// Check the final value.
+					// If the value is 4, then Sixel is supported.
+					if (num == 4) {
+						supports_sixel = true;
+					}
+					break;
+				} else {
+					// Invalid character...
+					supports_sixel = false;
+					break;
+				}
+			}
+		}
+	} while (p && p < p_end);
+}
+
+/**
+ * Does the terminal support the Sixel graphics protocol?
  * NOTE: Both stdin and stdout must be a tty for this function to succeed.
  * @return True if it does; false if it doesn't.
  */
 bool gsvt_supports_sixel(void)
 {
-	if (sixel_supported >= 0) {
-		return !!sixel_supported;
+	if (!checked_graphics) {
+		gsvt_check_graphics_protocol_support();
 	}
-	sixel_supported = 0;
+	return supports_sixel;
+}
 
-	// Query the device attributes.
-	TCHAR buf[32];
-	buf[0] = _T('\0');
-	int ret = gsvt_query_tty("\x1B[c", buf, sizeof(buf));
-	if (ret != 0) {
-		// Error retrieving device attributes.
-		return false;
+/**
+ * Does the terminal support the Kitty graphics protocol?
+ * NOTE: Both stdin and stdout must be a tty for this function to succeed.
+ * @return True if it does; false if it doesn't.
+ */
+bool gsvt_supports_kitty(void)
+{
+	if (!checked_graphics) {
+		gsvt_check_graphics_protocol_support();
 	}
-
-	// Returned string should start with "\x1B[?" and end with 'c'.
-	if (_tmemcmp_inline(buf, _T("\x1B[?"), 3) != 0) {
-		// Incorrect prefix.
-		return false;
-	}
-
-	// In between the prefix and ending character, there should be a
-	// semicolon-separated list of numeric values.
-	// TODO: Combine common code in gsvt_win32.c for parsing numeric lists?
-	const TCHAR *const p_end = &buf[sizeof(buf)];
-	int num = -1;
-	for (const TCHAR *p = &buf[3]; p < p_end; p++) {
-		TCHAR chr = *p;
-		if (isdigit_ascii(chr)) {
-			// This is a digit.
-			if (num < 0) {
-				num = (chr & 0x0F);
-			} else {
-				num *= 10;
-				num += (chr & 0x0F);
-			}
-		} else if (chr == _T(';')) {
-			// If the value is 4, then Sixel is supported.
-			if (num == 4) {
-				sixel_supported = 1;
-			}
-			num = -1;
-		} else if (chr == _T('c')) {
-			// End of list.
-			// Check the final value.
-			// If the value is 4, then Sixel is supported.
-			if (num == 4) {
-				sixel_supported = 1;
-			}
-			break;
-		} else {
-			// Invalid character...
-			sixel_supported = 0;
-			return false;
-		}
-	}
-
-	return !!sixel_supported;
+	return supports_kitty;
 }
 
 /**
