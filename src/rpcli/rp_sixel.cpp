@@ -13,8 +13,25 @@
 // libgsvt for VT handling
 #include "gsvt.h"
 
-// libsixel
-#include <sixel.h>
+// We're opening libsixel dynamically, so we need to define all
+// libsixel function prototypes and definitions here.
+#include "sixel-mini.h"
+
+#ifndef _WIN32
+// Unix dlopen()
+#  include <dlfcn.h>
+typedef void *HMODULE;
+// T2U8() is a no-op.
+#  define T2U8(str) (str)
+#else /* _WIN32 */
+// Windows LoadLibrary()
+#  include "libwin32common/RpWin32_sdk.h"
+#  include "libwin32common/MiniU82T.hpp"
+#  include "tcharx.h"
+#  define dlsym(handle, symbol)	((void*)GetProcAddress(handle, symbol))
+#  define dlclose(handle)	FreeLibrary(handle)
+using LibWin32Common::T2U8;
+#endif /* _WIN32 */
 
 // librpbase
 using namespace LibRpBase;
@@ -22,6 +39,99 @@ using namespace LibRpBase;
 // librptexture
 #include "librptexture/img/rp_image.hpp"
 using namespace LibRpTexture;
+
+// C++ STL classes
+#include <mutex>
+using std::unique_ptr;
+
+namespace SixelDll {
+
+class HMODULE_deleter
+{
+public:
+	typedef HMODULE pointer;
+
+	void operator()(HMODULE hModule)
+	{
+		if (hModule) {
+			dlclose(hModule);
+		}
+	}
+};
+static unique_ptr<HMODULE, HMODULE_deleter> libsixel_dll;
+static std::once_flag sixel_once_flag;
+
+// Function pointer macro
+#define DEF_STATIC_FUNCPTR(f) static __typeof__(f) * p##f = nullptr
+#define DEF_FUNCPTR(f) __typeof__(f) * p##f = nullptr
+#define LOAD_FUNCPTR(f) p##f = (__typeof__(f)*)dlsym(libsixel_dll.get(), #f)
+
+DEF_STATIC_FUNCPTR(sixel_output_new);
+DEF_STATIC_FUNCPTR(sixel_output_destroy);
+
+DEF_STATIC_FUNCPTR(sixel_dither_new);
+DEF_STATIC_FUNCPTR(sixel_dither_destroy);
+DEF_STATIC_FUNCPTR(sixel_dither_initialize);
+DEF_STATIC_FUNCPTR(sixel_dither_set_palette);
+DEF_STATIC_FUNCPTR(sixel_dither_set_pixelformat);
+
+DEF_STATIC_FUNCPTR(sixel_encode);
+
+/**
+ * Initialize libsixel.
+ * Called by std::call_once().
+ *
+ * Check if libsixel_dll is nullptr afterwards.
+ */
+static void init_sixel_once(void)
+{
+	// Open libsixel.
+#ifdef _WIN32
+	// TODO: Also check arch-specific subdirectory?
+	libsixel_dll.reset(LoadLibraryEx(_T("libsixel-1.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32 | LOAD_LIBRARY_SEARCH_APPLICATION_DIR));
+#else /* !_WIN32 */
+	// TODO: Consistently use either RTLD_NOW or RTLD_LAZY.
+	// Maybe make it a CMake option?
+	// TODO: Check for ABI version 3 too?
+	// Version 4 was introduced with cURL v7.16.0 (October 2006),
+	// but Debian arbitrarily kept it at version 3.
+	// Reference: https://daniel.haxx.se/blog/2024/10/30/eighteen-years-of-abi-stability/
+	libsixel_dll.reset(dlopen("libsixel.so.1", RTLD_LOCAL | RTLD_NOW));
+#endif /* _WIN32 */
+
+	if (!libsixel_dll) {
+		// Could not open libcurl.
+		return;
+	}
+
+	// Load all of the function pointers.
+	LOAD_FUNCPTR(sixel_output_new);
+	LOAD_FUNCPTR(sixel_output_destroy);
+
+	LOAD_FUNCPTR(sixel_dither_new);
+	LOAD_FUNCPTR(sixel_dither_destroy);
+	LOAD_FUNCPTR(sixel_dither_initialize);
+	LOAD_FUNCPTR(sixel_dither_set_palette);
+	LOAD_FUNCPTR(sixel_dither_set_pixelformat);
+
+	LOAD_FUNCPTR(sixel_encode);
+
+	if (!psixel_output_new ||
+	    !psixel_output_destroy ||
+	    !psixel_dither_new ||
+	    !psixel_dither_destroy ||
+	    !psixel_dither_initialize ||
+	    !psixel_dither_set_palette ||
+	    !psixel_dither_set_pixelformat ||
+	    !psixel_encode)
+	{
+		// At least one symbol is missing.
+		libsixel_dll.reset();
+		return;
+	}
+}
+
+}
 
 static int sixel_write(char *data, int size, void *priv)
 {
@@ -46,7 +156,7 @@ static int print_sixel_image(sixel_output_t *output, const rp_image_const_ptr &i
 			const argb32_t *palette = reinterpret_cast<const argb32_t*>(image->palette());
 			unsigned int palette_len = image->palette_len();
 
-			status = sixel_dither_new(&dither, palette_len, nullptr);
+			status = SixelDll::psixel_dither_new(&dither, palette_len, nullptr);
 			if (SIXEL_FAILED(status)) {
 				return -EIO;
 			}
@@ -68,31 +178,31 @@ static int print_sixel_image(sixel_output_t *output, const rp_image_const_ptr &i
 				}
 			}
 
-			sixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_PAL8);
-			sixel_dither_set_palette(dither, rgb_palette);
+			SixelDll::psixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_PAL8);
+			SixelDll::psixel_dither_set_palette(dither, rgb_palette);
 			break;
 		}
 		case rp_image::Format::ARGB32:
 			// FIXME: High Color mode (ncolors == -1) isn't working.
 			// sixel_dither_initialize() seems to work decently enough, though.
 			// from libsixel-1.10.3's encoder.c, load_image_callback_for_palette()
-			status = sixel_dither_new(&dither, 256, nullptr);
+			status = SixelDll::psixel_dither_new(&dither, 256, nullptr);
 			if (SIXEL_FAILED(status)) {
 				// Failed to allocate a High Color dither.
 				return -EIO;
 			}
-			status = sixel_dither_initialize(dither,
+			status = SixelDll::psixel_dither_initialize(dither,
 				(uint8_t*)image->bits(), width, height,
 				SIXEL_PIXELFORMAT_BGRA8888,
 				SIXEL_LARGE_NORM, SIXEL_REP_CENTER_BOX, SIXEL_QUALITY_HIGH);
 
-			sixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_BGRA8888);
+			SixelDll::psixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_BGRA8888);
 			break;
 	}
 
 	// FIXME: Handle stride?
-	sixel_encode((uint8_t*)image->bits(), width, height, 0, dither, output);
-	sixel_dither_destroy(dither);
+	SixelDll::psixel_encode((uint8_t*)image->bits(), width, height, 0, dither, output);
+	SixelDll::psixel_dither_destroy(dither);
 	return 0;
 }
 
@@ -101,6 +211,13 @@ void print_sixel_icon_banner(const RomDataPtr &romData)
 	// Make sure the terminal supports sixel.
 	if (!gsvt_supports_sixel()) {
 		// Sixel is not supported.
+		return;
+	}
+
+	// Load libsixel.
+	std::call_once(SixelDll::sixel_once_flag, SixelDll::init_sixel_once);
+	if (!SixelDll::libsixel_dll) {
+		// libsixel could not be loaded...
 		return;
 	}
 
@@ -136,7 +253,7 @@ void print_sixel_icon_banner(const RomDataPtr &romData)
 	}
 
 	sixel_output_t *output = nullptr;
-	SIXELSTATUS status = sixel_output_new(&output, sixel_write, stdout, nullptr);
+	SIXELSTATUS status = SixelDll::psixel_output_new(&output, sixel_write, stdout, nullptr);
 	if (SIXEL_FAILED(status)) {
 		// Failed to initialize sixel output.
 		return;
@@ -178,5 +295,5 @@ void print_sixel_icon_banner(const RomDataPtr &romData)
 	printf("\x1B[%dE", rows);
 	fflush(stdout);
 
-	sixel_output_destroy(output);
+	SixelDll::psixel_output_destroy(output);
 }

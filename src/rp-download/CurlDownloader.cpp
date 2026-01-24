@@ -311,6 +311,11 @@ int CurlDownloader::download(void)
 	m_data.clear();
 	m_mtime = -1;
 
+	if (!libcurl_dll) {
+		// libcurl.dll was not loaded...
+		return -ENOTSUP;
+	}
+
 	// Initialize cURL.
 	CURL *curl = pcurl_easy_init();
 	if (!curl) {

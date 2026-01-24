@@ -3,7 +3,7 @@
  * rpcli.cpp: Command-line interface for properties.                       *
  *                                                                         *
  * Copyright (c) 2016-2018 by Egor.                                        *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -50,10 +50,8 @@ using namespace LibRomData;
 #endif /* _WIN32 */
 using namespace LibRpTexture;
 
-#ifdef ENABLE_SIXEL
 // Sixel
 #include "rp_sixel.hpp"
-#endif /* ENABLE_SIXEL */
 
 #ifdef ENABLE_DECRYPTION
 #  include "verifykeys.hpp"
@@ -335,13 +333,12 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			cout << JSONROMOutput(romData.get(), flags) << '\n';
 #endif /* _WIN32 */
 		} else {
-#ifdef ENABLE_SIXEL
 			// If this is a tty and ANSI is supported,
 			// print the icon/banner using libsixel.
+			// TODO: Make sixel output optional?
 			if (gsvt_supports_sixel()) {
 				print_sixel_icon_banner(romData);
 			}
-#endif /* ENABLE_SIXEL */
 
 #ifdef _WIN32
 			// Windows: Use gsvt_fwrite() for faster console output where applicable.

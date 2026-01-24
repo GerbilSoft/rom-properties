@@ -10,14 +10,13 @@ SET(${PROJECT_NAME}_SRCS
 SET(${PROJECT_NAME}_H
 	device.hpp
 	rpcli_secure.h
+	sixel-mini.h
 	)
 
 # Sixel (TODO: Check for libsixel)
 # EXPERIMENTAL: sixel output isn't fully implemented yet.
-IF(ENABLE_SIXEL)
-	SET(${PROJECT_NAME}_SIXEL_SRCS rp_sixel.cpp)
-	SET(${PROJECT_NAME}_SIXEL_H    rp_sixel.hpp)
-ENDIF(ENABLE_SIXEL)
+SET(${PROJECT_NAME}_SIXEL_SRCS rp_sixel.cpp)
+SET(${PROJECT_NAME}_SIXEL_H    rp_sixel.hpp)
 
 # Check for system security functionality.
 IF(WIN32)
@@ -106,10 +105,6 @@ TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 	)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpsecure romdata)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE gsvt)
-IF(ENABLE_SIXEL)
-	# FIXME: Use FIND_PACKAGE() and include a copy for Windows?
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE sixel)
-ENDIF(ENABLE_SIXEL)
 
 IF(Fmt_FOUND)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${Fmt_LIBRARY})
