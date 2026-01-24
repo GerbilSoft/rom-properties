@@ -151,7 +151,6 @@ void print_sixel_icon_banner(const RomDataPtr &romData)
 		putchar('\n');
 	}
 	printf("\x1B[%dA\x1B[s", rows);	// move up `rows` rows, save cursor position
-	fflush(stdout);
 
 	int cur_col = 0;
 	if (icon) {
@@ -163,7 +162,6 @@ void print_sixel_icon_banner(const RomDataPtr &romData)
 		}
 		cur_col += icon_cols;
 		printf("\x1B[u\x1B[%dC", cur_col);	// restore cursor position; move right `cur_col` columns
-		fflush(stdout);
 	}
 	if (banner) {
 		print_sixel_image(output, banner);
@@ -174,7 +172,6 @@ void print_sixel_icon_banner(const RomDataPtr &romData)
 		}
 		cur_col += icon_cols;
 		printf("\x1B[u\x1B[%dC", cur_col);	// restore cursor position; move right `cur_col` columns
-		fflush(stdout);
 	}
 
 	// Move back down to after the icon/banner.
