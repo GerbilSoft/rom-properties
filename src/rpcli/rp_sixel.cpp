@@ -150,7 +150,7 @@ static int print_sixel_image(sixel_output_t *output, const rp_image_const_ptr &i
 		default:
 			// Unsupported...
 			assert(!"Invalid icon format.");
-			sixel_output_destroy(output);
+			SixelDll::psixel_output_destroy(output);
 			return -EIO;
 		case rp_image::Format::CI8: {
 			const argb32_t *palette = reinterpret_cast<const argb32_t*>(image->palette());
