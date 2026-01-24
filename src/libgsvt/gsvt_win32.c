@@ -305,6 +305,7 @@ bool gsvt_supports_ansi(const gsvt_console *vt)
 int gsvt_get_cell_size(int *pWidth, int *pHeight)
 {
 	static const TCHAR query_cmd[] = _T("\x1B[16t");
+	static const char  query_cmd_A[]  = "\x1B[16t";
 
 	// Is the cell size cached already?
 	if (cell_size_w >= 0) {
@@ -346,7 +347,13 @@ int gsvt_get_cell_size(int *pWidth, int *pHeight)
 		// TODO: GetLastError()
 		return -EIO;
 	}
-	WriteConsoleW(__gsvt_stdout.hConsole, query_cmd, _countof(query_cmd)-1, NULL, NULL);
+	if (__gsvt_stdout.is_real_console) {
+		// This is a real Windows console.
+		WriteConsoleW(__gsvt_stdout.hConsole, query_cmd, _countof(query_cmd)-1, NULL, NULL);
+	} else {
+		// Not a real console. Use fwrite().
+		return fwrite(query_cmd_A, 1, sizeof(query_cmd_A)-1, __gsvt_stdout.stream);
+	}
 
 	// Wait 100ms for a response from the terminal.
 	DWORD dwRet = WaitForSingleObject(__gsvt_stdin.hConsole, 100);
@@ -367,9 +374,22 @@ int gsvt_get_cell_size(int *pWidth, int *pHeight)
 	TCHAR buf[16];
 	size_t n = 0;
 	for (; n < _countof(buf); n++) {
-		DWORD nNumberOfCharsRead = 0;
-		BOOL bRet = ReadConsole(__gsvt_stdin.hConsole, &buf[n], 1, &nNumberOfCharsRead, NULL);
-		if (!bRet || nNumberOfCharsRead != 1) {
+		bool is_err = false;
+		if (__gsvt_stdin.is_real_console) {
+			// This is a real Windows console.
+			DWORD nNumberOfCharsRead = 0;
+			BOOL bRet = ReadConsole(__gsvt_stdin.hConsole, &buf[n], 1, &nNumberOfCharsRead, NULL);
+			is_err = (!bRet || nNumberOfCharsRead != 1);
+		} else {
+			// Not a real console. Use getc().
+			int chr = _gettc(__gsvt_stdin.stream);
+			if (chr < 0) {
+				// EOF?
+				is_err = true;
+			}
+			buf[n] = (TCHAR)chr;
+		}
+		if (is_err) {
 			// I/O error...
 			// Assume the cell size is not available.
 			cell_size_w = 0;
