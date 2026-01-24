@@ -237,21 +237,20 @@ int gsvt_get_cell_size(int *pWidth, int *pHeight)
 	fflush(stdin);
 	tcgetattr(STDIN_FILENO, &initial_term);
 	term = initial_term;
-	term.c_lflag &= ~ICANON;
-	term.c_lflag &= ~ECHO;
+	term.c_lflag &= ~(ICANON | ECHO);
 	tcsetattr(STDIN_FILENO, TCSANOW, &term);
 
 	fwrite(query_cmd, 1, sizeof(query_cmd)-1, stdout);
 	fflush(stdout);
 
-	// Wait 300ms for a response from the terminal.
+	// Wait 100ms for a response from the terminal.
 	// Reference: https://stackoverflow.com/questions/16026858/reading-the-device-status-report-ansi-escape-sequence-reply
 	fd_set readset;
 	struct timeval time;
 	FD_ZERO(&readset);
 	FD_SET(STDIN_FILENO, &readset);
 	time.tv_sec = 0;
-	time.tv_usec = 300000;
+	time.tv_usec = 100000;
 
 	errno = 0;
 	if (select(STDIN_FILENO + 1, &readset, NULL, NULL, &time) != 1) {
@@ -261,6 +260,10 @@ int gsvt_get_cell_size(int *pWidth, int *pHeight)
 			err = -EIO;
 		}
 		tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
+
+		// Assume the cell size is not available.
+		cell_size_w = 0;
+		cell_size_h = 0;
 		return err;
 	}
 
@@ -282,6 +285,10 @@ int gsvt_get_cell_size(int *pWidth, int *pHeight)
 	}
 	if (n >= sizeof(buf) || buf[n] != '\0') {
 		// Not a valid sequence?
+		// Assume the cell size is not available.
+		cell_size_w = 0;
+		cell_size_h = 0;
+		tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
 		return -EIO;
 	}
 
@@ -289,15 +296,19 @@ int gsvt_get_cell_size(int *pWidth, int *pHeight)
 	int start_code = 0;
 	char end_code = '\0';
 	int s = sscanf(buf, "\x1B[%d;%d;%d%c", &start_code, pHeight, pWidth, &end_code);
+
+	int ret = 0;
 	if (s != 4 || start_code != 6 || end_code != 't') {
 		// Not valid...
-		tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
-		return -EIO;
+		// Assume the cell size is not available.
+		cell_size_w = 0;
+		cell_size_h = 0;
+		ret = -EIO;
 	}
 
 	// Retrieved the width and height.
 	tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
-	return 0;
+	return ret;
 }
 
 /** stdio wrapper functions **/
