@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension.                                    *
  * tcharx.h: TCHAR support for Windows and Linux.                          *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -93,6 +93,9 @@ typedef char TCHAR;
 #define _vtprintf vprintf
 #define _vftprintf vfprintf
 #define _vsprintf vsprintf
+
+#define _tscanf scanf
+#define _stscanf sscanf
 
 // stdlib.h
 #define _tcscmp(s1, s2)			strcmp((s1), (s2))

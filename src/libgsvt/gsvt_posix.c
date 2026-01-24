@@ -2,11 +2,12 @@
  * ROM Properties Page shell extension. (libgsvt)                          *
  * gsvt_posix.c: Virtual Terminal wrapper functions. (POSIX version)       *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "gsvt.h"
+#include "gsvt_p.h"
 #include "common.h"
 
 // pthreads, for pthread_once()
@@ -38,10 +39,6 @@ gsvt_console *gsvt_stdout = &__gsvt_stdout;
 gsvt_console *gsvt_stderr = &__gsvt_stderr;
 
 static bool is_color_TERM = false;
-
-// Cached cell size (if TTY) [-1 if not initialized; 0 if not a TTY]
-static int cell_size_w = -1;
-static int cell_size_h = -1;
 
 /** Basic functions **/
 
@@ -212,8 +209,7 @@ bool gsvt_supports_ansi(const gsvt_console *vt)
  * @param size Size of buf
  * @return 0 on success; negative POSIX error code on error.
  */
-ATTR_ACCESS_SIZE(read_write, 2, 3)
-static int gsvt_query_tty(const char *cmd, char *buf, size_t size)
+int gsvt_query_tty(const char *cmd, char *buf, size_t size)
 {
 	// Both stdin and stdout must be actual consoles, and stdout must support ANSI.
 	if (!__gsvt_stdout.is_console    || !__gsvt_stdin.is_console ||
@@ -284,116 +280,6 @@ static int gsvt_query_tty(const char *cmd, char *buf, size_t size)
 		ret = -EIO;
 	}
 	tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
-	return ret;
-}
-
-/**
- * Does the terminal support Sixel?
- * NOTE: Both stdin and stdout must be a tty for this function to succeed.
- * @return True if it does; false if it doesn't.
- */
-bool gsvt_supports_sixel(void)
-{
-	// TODO: Cache this.
-
-	// Query the device attributes.
-	char buf[32];
-	buf[0] = '\0';
-	int ret = gsvt_query_tty("\x1B[c", buf, sizeof(buf));
-	if (ret != 0) {
-		// Error retrieving device attributes.
-		return false;
-	}
-
-	// Returned string should start with "\x1B[?" and end with 'c'.
-	if (memcmp(buf, "\x1B[?", 3) != 0) {
-		// Incorrect prefix.
-		return false;
-	}
-
-	// In between the prefix and ending character, there should be a
-	// semicolon-separated list of numeric values.
-	// TODO: Combine common code in gsvt_win32.c for parsing numeric lists?
-	const char *const p_end = &buf[sizeof(buf)];
-	bool has_sixel = false;
-	int num = -1;
-	for (const char *p = &buf[3]; p < p_end; p++) {
-		char chr = *p;
-		if (isdigit_ascii(chr)) {
-			// This is a digit.
-			if (num < 0) {
-				num = (chr & 0x0F);
-			} else {
-				num *= 10;
-				num += (chr & 0x0F);
-			}
-		} else if (chr == ';') {
-			// If the value is 4, then Sixel is supported.
-			if (num == 4) {
-				has_sixel = true;
-			}
-			num = -1;
-		} else if (chr == 'c') {
-			// End of list.
-			// Check the final value.
-			// If the value is 4, then Sixel is supported.
-			if (num == 4) {
-				has_sixel = true;
-			}
-			break;
-		} else {
-			// Invalid character...
-			return false;
-		}
-	}
-
-	return has_sixel;
-}
-
-/**
- * Get the size of a single character cell on the terminal.
- * NOTE: Both stdin and stdout must be a tty for this function to succeed.
- * @param pWidth	[out] Character width
- * @param pHeight	[out] Character height
- * @return 0 on success; negative POSIX error code on error.
- */
-int gsvt_get_cell_size(int *pWidth, int *pHeight)
-{
-	// Is the cell size cached already?
-	if (cell_size_w >= 0) {
-		// Cell size is cached.
-		*pWidth = cell_size_w;
-		*pHeight = cell_size_h;
-		return (likely(cell_size_w > 0)) ? 0 : -ENOTTY;
-	}
-
-	// Attempt to get the cell size.
-	char buf[16];
-	buf[0] = '\0';
-	int ret = gsvt_query_tty("\x1B[16t", buf, sizeof(buf));
-	if (ret != 0) {
-		// Error retrieving the cell size.
-		// Assume the cell size is not available.
-		cell_size_w = 0;
-		cell_size_h = 0;
-		return ret;
-	}
-
-	// Use sscanf() to verify the string.
-	int start_code = 0;
-	char end_code = '\0';
-	int s = sscanf(buf, "\x1B[%d;%d;%d%c", &start_code, pHeight, pWidth, &end_code);
-
-	ret = 0;
-	if (s != 4 || start_code != 6 || end_code != 't') {
-		// Not valid...
-		// Assume the cell size is not available.
-		cell_size_w = 0;
-		cell_size_h = 0;
-		ret = -EIO;
-	}
-
-	// Retrieved the width and height.
 	return ret;
 }
 

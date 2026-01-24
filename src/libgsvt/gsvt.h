@@ -13,6 +13,8 @@
 #include <stdint.h>
 #include "stdboolx.h"
 
+#include "tcharx.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

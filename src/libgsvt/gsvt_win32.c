@@ -2,11 +2,12 @@
  * ROM Properties Page shell extension. (libgsvt)                          *
  * gsvt_win32.c: Virtual Terminal wrapper functions. (Win32 version)       *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "gsvt.h"
+#include "gsvt_p.h"
 #include "common.h"
 
 // C includes
@@ -89,10 +90,6 @@ gsvt_console *gsvt_stderr = &__gsvt_stderr;
 static const uint8_t gsvt_win32_color_map[8] = {
 	0, 4, 2, 6, 1, 5, 3, 7
 };
-
-// Cached cell size (if TTY) [-1 if not initialized; 0 if not a TTY]
-static int cell_size_w = -1;
-static int cell_size_h = -1;
 
 /** Basic functions **/
 
@@ -388,53 +385,6 @@ static int gsvt_query_tty(const char *cmd, TCHAR *buf, size_t size)
 		ret = -EIO;
 	}
 	SetConsoleMode(__gsvt_stdin.hConsole, dwOrigMode);
-	return ret;
-}
-
-/**
- * Get the size of a single character cell on the terminal.
- * NOTE: Both stdin and stdout must be a tty for this function to succeed.
- * @param pWidth	[out] Character width
- * @param pHeight	[out] Character height
- * @return 0 on success; negative POSIX error code on error.
- */
-int gsvt_get_cell_size(int *pWidth, int *pHeight)
-{
-	// Is the cell size cached already?
-	if (cell_size_w >= 0) {
-		// Cell size is cached.
-		*pWidth = cell_size_w;
-		*pHeight = cell_size_h;
-		return (likely(cell_size_w > 0)) ? 0 : -ENOTTY;
-	}
-
-	// Attempt to get the cell size.
-	TCHAR buf[16];
-	buf[0] = '\0';
-	int ret = gsvt_query_tty("\x1B[16t", buf, sizeof(buf));
-	if (ret != 0) {
-		// Error retrieving the cell size.
-		// Assume the cell size is not available.
-		cell_size_w = 0;
-		cell_size_h = 0;
-		return ret;
-	}
-
-	// Use sscanf() to verify the string.
-	int start_code = 0;
-	TCHAR end_code = _T('\0');
-	int s = swscanf(buf, _T("\x1B[%d;%d;%d%c"), &start_code, pHeight, pWidth, &end_code);
-
-	ret = 0;
-	if (s != 4 || start_code != 6 || end_code != _T('t')) {
-		// Not valid...
-		// Assume the cell size is not available.
-		cell_size_w = 0;
-		cell_size_h = 0;
-		ret = -EIO;
-	}
-
-	// Retrieved the width and height.
 	return ret;
 }
 
