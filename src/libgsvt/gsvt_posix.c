@@ -205,33 +205,21 @@ bool gsvt_supports_ansi(const gsvt_console *vt)
 }
 
 /**
- * Get the size of a single character cell on the terminal.
- * NOTE: Both stdin and stdout must be a tty for this function to succeed.
- * @param pWidth	[out] Character width
- * @param pHeight	[out] Character height
+ * Send a terminal query command and retrieve a response string.
+ * Response string should be a numeric list and end with a single lowercase letter.
+ * @param cmd Query command
+ * @param buf Response buffer
+ * @param size Size of buf
  * @return 0 on success; negative POSIX error code on error.
  */
-int gsvt_get_cell_size(int *pWidth, int *pHeight)
+ATTR_ACCESS_SIZE(read_write, 2, 3)
+static int gsvt_query_tty(const char *cmd, char *buf, size_t size)
 {
-	static const char query_cmd[] = "\x1B[16t";
-
-	// Is the cell size cached already?
-	if (cell_size_w >= 0) {
-		// Cell size is cached.
-		*pWidth = cell_size_w;
-		*pHeight = cell_size_h;
-		return (likely(cell_size_w > 0)) ? 0 : -ENOTTY;
-	}
-
 	// Both stdin and stdout must be actual consoles, and stdout must support ANSI.
 	if (!__gsvt_stdout.is_console    || !__gsvt_stdin.is_console ||
 	    !__gsvt_stdout.supports_ansi)
 	{
 		// Not an actual console and/or does not support ANSI.
-		cell_size_w = 0;
-		cell_size_h = 0;
-		*pWidth = 0;
-		*pHeight = 0;
 		return -ENOTTY;
 	}
 
@@ -243,7 +231,7 @@ int gsvt_get_cell_size(int *pWidth, int *pHeight)
 	term.c_lflag &= ~(ICANON | ECHO);
 	tcsetattr(STDIN_FILENO, TCSANOW, &term);
 
-	fwrite(query_cmd, 1, sizeof(query_cmd)-1, stdout);
+	fputs(cmd, stdout);
 	fflush(stdout);
 
 	// Wait 100ms for a response from the terminal.
@@ -263,10 +251,6 @@ int gsvt_get_cell_size(int *pWidth, int *pHeight)
 			err = -EIO;
 		}
 		tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
-
-		// Assume the cell size is not available.
-		cell_size_w = 0;
-		cell_size_h = 0;
 		return err;
 	}
 
@@ -274,15 +258,12 @@ int gsvt_get_cell_size(int *pWidth, int *pHeight)
 	// - Param 1: height
 	// - Param 2: width
 	// Keep reading until we find a lowercase letter.
-	char buf[16];
 	size_t n = 0;
-	for (; n < sizeof(buf); n++) {
+	for (; n < size; n++) {
 		int chr = getc(stdin);
 		if (chr < 0) {
 			// EOF?
 			// Assume the cell size is not available.
-			cell_size_w = 0;
-			cell_size_h = 0;
 			tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
 			return -EIO;
 		}
@@ -290,19 +271,49 @@ int gsvt_get_cell_size(int *pWidth, int *pHeight)
 		buf[n] = (char)chr;
 		if (islower_ascii(buf[n])) {
 			n++;
-			if (n < sizeof(buf)) {
+			if (n < size) {
 				buf[n] = '\0';
 			}
 			break;
 		}
 	}
-	if (n >= sizeof(buf) || buf[n] != '\0') {
+
+	int ret = 0;
+	if (n >= size || buf[n] != '\0') {
 		// Not a valid sequence?
+		ret = -EIO;
+	}
+	tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
+	return ret;
+}
+
+/**
+ * Get the size of a single character cell on the terminal.
+ * NOTE: Both stdin and stdout must be a tty for this function to succeed.
+ * @param pWidth	[out] Character width
+ * @param pHeight	[out] Character height
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int gsvt_get_cell_size(int *pWidth, int *pHeight)
+{
+	// Is the cell size cached already?
+	if (cell_size_w >= 0) {
+		// Cell size is cached.
+		*pWidth = cell_size_w;
+		*pHeight = cell_size_h;
+		return (likely(cell_size_w > 0)) ? 0 : -ENOTTY;
+	}
+
+	// Attempt to get the cell size.
+	char buf[16];
+	buf[0] = '\0';
+	int ret = gsvt_query_tty("\x1B[16t", buf, sizeof(buf));
+	if (ret != 0) {
+		// Error retrieving the cell size.
 		// Assume the cell size is not available.
 		cell_size_w = 0;
 		cell_size_h = 0;
-		tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
-		return -EIO;
+		return ret;
 	}
 
 	// Use sscanf() to verify the string.
@@ -310,7 +321,7 @@ int gsvt_get_cell_size(int *pWidth, int *pHeight)
 	char end_code = '\0';
 	int s = sscanf(buf, "\x1B[%d;%d;%d%c", &start_code, pHeight, pWidth, &end_code);
 
-	int ret = 0;
+	ret = 0;
 	if (s != 4 || start_code != 6 || end_code != 't') {
 		// Not valid...
 		// Assume the cell size is not available.
@@ -320,7 +331,6 @@ int gsvt_get_cell_size(int *pWidth, int *pHeight)
 	}
 
 	// Retrieved the width and height.
-	tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
 	return ret;
 }
 
