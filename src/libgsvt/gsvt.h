@@ -8,11 +8,14 @@
 
 #pragma once
 
+#include "common.h"
+
 // C includes
 #include <stddef.h>
 #include <stdint.h>
 #include "stdboolx.h"
 
+// TCHAR
 #include "tcharx.h"
 
 #ifdef __cplusplus
@@ -73,6 +76,8 @@ bool gsvt_supports_sixel(void);
  * @param pHeight	[out] Character height
  * @return 0 on success; negative POSIX error code on error.
  */
+ATTR_ACCESS(write_only, 1)
+ATTR_ACCESS(write_only, 2)
 int gsvt_get_cell_size(int *pWidth, int *pHeight);
 
 /** stdio wrapper functions **/

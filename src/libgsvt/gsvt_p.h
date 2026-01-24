@@ -9,8 +9,6 @@
 #pragma once
 
 #include "gsvt.h"
-#include "common.h"
-#include "tcharx.h"
 
 #ifdef __cplusplus
 extern "C" {
