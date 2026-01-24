@@ -96,21 +96,10 @@ static int print_sixel_image(sixel_output_t *output, const rp_image_const_ptr &i
 	return 0;
 }
 
-static bool tty_supports_sixel(FILE *f)
-{
-	// TODO: Check that the terminal supports sixel.
-	// To check, send "\x1B[c", then check input for "\x1B[".
-	// Ignore question marks; terminate on 'c'.
-	// If any value (separated by semicolons) is 4, sixels are supported.
-	// For now, only checking if output is a tty.
-	// TODO: libgsvt / Windows handling?
-	return !!isatty(fileno(f));
-}
-
 void print_sixel_icon_banner(const RomDataPtr &romData)
 {
 	// Make sure the terminal supports sixel.
-	if (!tty_supports_sixel(stdout)) {
+	if (!gsvt_supports_sixel()) {
 		// Sixel is not supported.
 		return;
 	}
