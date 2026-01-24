@@ -39,6 +39,13 @@ static void gsvt_check_graphics_protocol_support(void)
 	supports_kitty = false;
 	checked_graphics = true;
 
+#ifdef _WIN32
+	// FIXME: The terminal querying stuff is causing random spaces to show up...
+	// We should just assume that Sixel support is present if using Windows Terminal.
+	// TODO: Test this? Verify the Windows Terminal version? (v1.22 and later)
+	// TODO: Maybe the query commands work properly on Windows Terminal...
+	supports_sixel = (_tgetenv(_T("WT_SESSION")) != NULL);
+#else /* !_WIN32 */
 	// Query both Kitty protocol support and the device attributes.
 	// Reference: https://sw.kovidgoyal.net/kitty/graphics-protocol/#querying-support-and-available-transmission-mediums
 	//
@@ -50,15 +57,7 @@ static void gsvt_check_graphics_protocol_support(void)
 	//
 	TCHAR buf[128];
 	buf[0] = _T('\0');
-#ifdef _WIN32
-	// NOTE: Neither the Windows command prompt nor Windows Terminal currently
-	// support Kitty, and attempting to query Kitty on the Windows command prompt
-	// results in weird garbage appearing. Disable Kitty checks on Windows for now.
-	// TODO: Do any Windows terminal emulators support Kitty?
-	int ret = gsvt_query_tty("\x1B[c", buf, ARRAY_SIZE(buf), _T('c'));
-#else /* !_WIN32 */
 	int ret = gsvt_query_tty("\x1B_Gi=31,s=1,v=1,a=q,t=d,f=24;AAAA\x1B\\\x1B[c", buf, ARRAY_SIZE(buf), _T('c'));
-#endif /* _WIN32 */
 	if (ret != 0) {
 		// Error querying protocol support.
 		return;
@@ -128,6 +127,7 @@ static void gsvt_check_graphics_protocol_support(void)
 			}
 		}
 	} while (p && p < p_end);
+#endif /* _WIN32 */
 }
 
 /**
