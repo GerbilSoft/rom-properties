@@ -23,11 +23,12 @@ ENDIF(NOT CMAKE_SYSTEM_VERSION)
 # - C4024: 'function': different types for formal and actual parameter n
 # - C4047: 'function': 'parameter' differs in levels of indirection from 'argument'
 # - C4477: 'function' : format string 'string' requires an argument of type 'type', but variadic argument number has type 'type'
+# - C4133: 'expression': incompatible types - from 'type1' to 'type2' [e.g. passing char* to a TCHAR* function or vice-versa]
 SET(RP_C_FLAGS_COMMON "/nologo /W3")
 IF(ENABLE_WERROR)
 	SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} /WX")
 ENDIF(ENABLE_WERROR)
-SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} /wd4005 /wd4091 /wd4355 /wd4503 /wd4800 /we4013 /we4024 /we4047 /we4477")
+SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} /wd4005 /wd4091 /wd4355 /wd4503 /wd4800 /we4013 /we4024 /we4047 /we4477 /we4133")
 SET(RP_CXX_FLAGS_COMMON "${RP_C_FLAGS_COMMON}")
 ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS)
 
