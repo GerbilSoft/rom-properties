@@ -282,12 +282,12 @@ void print_sixel_icon_banner(const RomDataPtr &romData)
 	}
 	if (banner) {
 		print_sixel_image(output, banner);
-		const int icon_width = icon->width() + 8;
-		int icon_cols = icon_width / cell_size_w;
-		if (icon_width % cell_size_w != 0) {
-			icon_cols++;
+		const int banner_width = banner->width() + 8;
+		int banner_cols = banner_width / cell_size_w;
+		if (banner_width % cell_size_w != 0) {
+			banner_cols++;
 		}
-		cur_col += icon_cols;
+		cur_col += banner_cols;
 		printf("\x1B[u\x1B[%dC", cur_col);	// restore cursor position; move right `cur_col` columns
 	}
 
