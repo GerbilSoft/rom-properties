@@ -29,9 +29,11 @@ struct _gsvt_console {
 	bool supports_ansi;	// True if the console supports ANSI escape sequences
 };
 
+static gsvt_console __gsvt_stdin;
 static gsvt_console __gsvt_stdout;
 static gsvt_console __gsvt_stderr;
 
+//gsvt_console *gsvt_stdin  = &__gsvt_stdin;
 gsvt_console *gsvt_stdout = &__gsvt_stdout;
 gsvt_console *gsvt_stderr = &__gsvt_stderr;
 
@@ -148,6 +150,7 @@ static void gsvt_init_int(void)
 {
 	// Initialize the gsvt_console variables using stdout/stderr.
 	check_TERM_variable();
+	gsvt_init_posix(&__gsvt_stdin,  stdin);
 	gsvt_init_posix(&__gsvt_stdout, stdout);
 	gsvt_init_posix(&__gsvt_stderr, stderr);
 }
