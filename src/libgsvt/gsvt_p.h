@@ -16,7 +16,6 @@ extern "C" {
 
 /**
  * Send a terminal query command and retrieve a response string.
- * Response string should be a numeric list and end with a single lowercase letter.
  * @param cmd Query command
  * @param buf Response buffer
  * @param size Size of buf
