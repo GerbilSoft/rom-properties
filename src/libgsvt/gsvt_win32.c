@@ -333,7 +333,7 @@ static int gsvt_query_tty(const char *cmd, TCHAR *buf, size_t size)
 		WriteConsoleA(__gsvt_stdout.hConsole, cmd, sizeof(cmd)-1, NULL, NULL);
 	} else {
 		// Not a real console. Use fwrite().
-		return fwrite(cmd, 1, sizeof(cmd)-1, __gsvt_stdout.stream);
+		fwrite(cmd, 1, sizeof(cmd)-1, __gsvt_stdout.stream);
 	}
 
 	// Wait 100ms for a response from the terminal.
