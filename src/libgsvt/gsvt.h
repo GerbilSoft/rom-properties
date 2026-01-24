@@ -58,6 +58,13 @@ bool gsvt_is_console(const gsvt_console *vt);
 bool gsvt_supports_ansi(const gsvt_console *vt);
 
 /**
+ * Does the terminal support Sixel?
+ * NOTE: Both stdin and stdout must be a tty for this function to succeed.
+ * @return True if it does; false if it doesn't.
+ */
+bool gsvt_supports_sixel(void);
+
+/**
  * Get the size of a single character cell on the terminal.
  * NOTE: Both stdin and stdout must be a tty for this function to succeed.
  * @param pWidth	[out] Character width

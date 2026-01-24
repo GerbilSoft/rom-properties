@@ -288,6 +288,69 @@ static int gsvt_query_tty(const char *cmd, char *buf, size_t size)
 }
 
 /**
+ * Does the terminal support Sixel?
+ * NOTE: Both stdin and stdout must be a tty for this function to succeed.
+ * @return True if it does; false if it doesn't.
+ */
+bool gsvt_supports_sixel(void)
+{
+	// TODO: Cache this.
+
+	// Query the device attributes.
+	char buf[32];
+	buf[0] = '\0';
+	int ret = gsvt_query_tty("\x1B[c", buf, sizeof(buf));
+	if (ret != 0) {
+		// Error retrieving device attributes.
+		return false;
+	}
+
+	// Returned string should start with "\x1B[?" and end with 'c'.
+	if (memcmp(buf, "\x1B[?", 3) != 0) {
+		// Incorrect prefix.
+		return false;
+	}
+
+	// In between the prefix and ending character, there should be a
+	// semicolon-separated list of numeric values.
+	// TODO: Combine common code in gsvt_win32.c for parsing numeric lists?
+	const char *const p_end = &buf[sizeof(buf)];
+	bool has_sixel = false;
+	int num = -1;
+	for (const char *p = &buf[3]; p < p_end; p++) {
+		char chr = *p;
+		if (isdigit_ascii(chr)) {
+			// This is a digit.
+			if (num < 0) {
+				num = (chr & 0x0F);
+			} else {
+				num *= 10;
+				num += (chr & 0x0F);
+			}
+		} else if (chr == ';') {
+			// If the value is 4, then Sixel is supported.
+			if (num == 4) {
+				has_sixel = true;
+			}
+			num = -1;
+		} else if (chr == 'c') {
+			// End of list.
+			// Check the final value.
+			// If the value is 4, then Sixel is supported.
+			if (num == 4) {
+				has_sixel = true;
+			}
+			break;
+		} else {
+			// Invalid character...
+			return false;
+		}
+	}
+
+	return has_sixel;
+}
+
+/**
  * Get the size of a single character cell on the terminal.
  * NOTE: Both stdin and stdout must be a tty for this function to succeed.
  * @param pWidth	[out] Character width

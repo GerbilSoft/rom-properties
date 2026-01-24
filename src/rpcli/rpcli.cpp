@@ -338,8 +338,7 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 #ifdef ENABLE_SIXEL
 			// If this is a tty and ANSI is supported,
 			// print the icon/banner using libsixel.
-			// TODO: Also check if Sixel is supported on the terminal.
-			if (Gsvt::StdOut.isConsole() && Gsvt::StdOut.supportsAnsi()) {
+			if (gsvt_supports_sixel()) {
 				print_sixel_icon_banner(romData);
 			}
 #endif /* ENABLE_SIXEL */
