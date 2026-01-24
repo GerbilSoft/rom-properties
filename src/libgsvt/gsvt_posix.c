@@ -220,9 +220,9 @@ int gsvt_get_cell_size(int *pWidth, int *pHeight)
 		return (likely(cell_size_w > 0)) ? 0 : -ENOTTY;
 	}
 
-	// Both stdin and stdout must be actual consoles and support ANSI.
-	if (!__gsvt_stdout.is_console || !__gsvt_stdout.supports_ansi ||
-	    !__gsvt_stderr.is_console || !__gsvt_stderr.supports_ansi)
+	// Both stdin and stdout must be actual consoles, and stdout must support ANSI.
+	if (!__gsvt_stdout.is_console    || !__gsvt_stdin.is_console ||
+	    !__gsvt_stdout.supports_ansi)
 	{
 		// Not an actual console and/or does not support ANSI.
 		cell_size_w = 0;
@@ -274,7 +274,17 @@ int gsvt_get_cell_size(int *pWidth, int *pHeight)
 	char buf[16];
 	size_t n = 0;
 	for (; n < sizeof(buf); n++) {
-		buf[n] = getc(stdin);
+		int chr = getc(stdin);
+		if (chr < 0) {
+			// EOF?
+			// Assume the cell size is not available.
+			cell_size_w = 0;
+			cell_size_h = 0;
+			tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
+			return -EIO;
+		}
+
+		buf[n] = (char)chr;
 		if (islower_ascii(buf[n])) {
 			n++;
 			if (n < sizeof(buf)) {
