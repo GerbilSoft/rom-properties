@@ -300,8 +300,7 @@ bool gsvt_supports_ansi(const gsvt_console *vt)
  * @param size Size of buf
  * @return 0 on success; negative POSIX error code on error.
  */
-ATTR_ACCESS_SIZE(read_write, 2, 3)
-static int gsvt_query_tty(const char *cmd, TCHAR *buf, size_t size)
+int gsvt_query_tty(const char *cmd, TCHAR *buf, size_t size)
 {
 	// Both stdin and stdout must be actual consoles, and stdout must support ANSI.
 	if (!__gsvt_stdout.is_console || !__gsvt_stdin.is_console ||
