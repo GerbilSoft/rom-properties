@@ -335,6 +335,15 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			cout << JSONROMOutput(romData.get(), flags) << '\n';
 #endif /* _WIN32 */
 		} else {
+#ifdef ENABLE_SIXEL
+			// If this is a tty and ANSI is supported,
+			// print the icon/banner using libsixel.
+			// TODO: Also check if Sixel is supported on the terminal.
+			if (Gsvt::StdOut.isConsole() && Gsvt::StdOut.supportsAnsi()) {
+				print_sixel_icon_banner(romData);
+			}
+#endif /* ENABLE_SIXEL */
+
 #ifdef _WIN32
 			// Windows: Use gsvt_fwrite() for faster console output where applicable.
 			// FIXME: gsvt_cout wrapper.
@@ -344,12 +353,6 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			// TODO: Error checking.
 			Gsvt::StdOut.fputs(str);
 #else /* !_WIN32 */
-#ifdef ENABLE_SIXEL
-			// If this is a tty, print the icon/banner using libsixel.
-			if (Gsvt::StdOut.isConsole()) {
-				print_sixel_icon_banner(romData);
-			}
-#endif /* ENABLE_SIXEL */
 			// Not Windows: Write directly to cout.
 			// FIXME: gsvt_cout wrapper.
 			cout << ROMOutput(romData.get(), lc, flags) << '\n';

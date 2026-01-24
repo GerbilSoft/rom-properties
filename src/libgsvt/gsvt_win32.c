@@ -77,9 +77,11 @@ struct _gsvt_console {
 	HANDLE hConsole;	// Console handle, or NULL if not a real console.
 };
 
+static gsvt_console __gsvt_stdin;
 static gsvt_console __gsvt_stdout;
 static gsvt_console __gsvt_stderr;
 
+//gsvt_console *gsvt_stdin  = &__gsvt_stdin;
 gsvt_console *gsvt_stdout = &__gsvt_stdout;
 gsvt_console *gsvt_stderr = &__gsvt_stderr;
 
@@ -87,6 +89,10 @@ gsvt_console *gsvt_stderr = &__gsvt_stderr;
 static const uint8_t gsvt_win32_color_map[8] = {
 	0, 4, 2, 6, 1, 5, 3, 7
 };
+
+// Cached cell size (if TTY) [-1 if not initialized; 0 if not a TTY]
+static int cell_size_w = -1;
+static int cell_size_h = -1;
 
 /** Basic functions **/
 
@@ -234,7 +240,8 @@ static void gsvt_init_int(void)
 		SetConsoleOutputCP(CP_UTF8);
 	}
 
-	// Initialize the gsvt_console variables using stdout/stderr.
+	// Initialize the gsvt_console variables.
+	gsvt_init_win32(&__gsvt_stdin,  stdin,  STD_INPUT_HANDLE);
 	gsvt_init_win32(&__gsvt_stdout, stdout, STD_OUTPUT_HANDLE);
 	gsvt_init_win32(&__gsvt_stderr, stderr, STD_ERROR_HANDLE);
 }
@@ -286,6 +293,123 @@ bool gsvt_is_console(const gsvt_console *vt)
 bool gsvt_supports_ansi(const gsvt_console *vt)
 {
 	return vt->supports_ansi;
+}
+
+/**
+ * Get the size of a single character cell on the terminal.
+ * NOTE: Both stdin and stdout must be a tty for this function to succeed.
+ * @param pWidth	[out] Character width
+ * @param pHeight	[out] Character height
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int gsvt_get_cell_size(int *pWidth, int *pHeight)
+{
+	static const TCHAR query_cmd[] = _T("\x1B[16t");
+
+	// Is the cell size cached already?
+	if (cell_size_w >= 0) {
+		// Cell size is cached.
+		*pWidth = cell_size_w;
+		*pHeight = cell_size_h;
+		return (likely(cell_size_w > 0)) ? 0 : -ENOTTY;
+	}
+
+	// Both stdin and stdout must be actual consoles, and stdout must support ANSI.
+	if (!__gsvt_stdout.is_console || !__gsvt_stdin.is_console ||
+	    !__gsvt_stdout.supports_ansi)
+	{
+		// Not an actual console and/or does not support ANSI.
+		cell_size_w = 0;
+		cell_size_h = 0;
+		*pWidth = 0;
+		*pHeight = 0;
+		return -ENOTTY;
+	}
+
+	// Adjust TTY handling for the query.
+	DWORD dwOrigMode = 0;
+	if (!GetConsoleMode(__gsvt_stdin.hConsole, &dwOrigMode)) {
+		// Error getting the console mode.
+		// Assume the cell size is not available.
+		cell_size_w = 0;
+		cell_size_h = 0;
+		// TODO: GetLastError()
+		return -EIO;
+	}
+	DWORD dwMode = dwOrigMode;
+	dwMode &= ~(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT);
+	if (!SetConsoleMode(__gsvt_stdin.hConsole, dwMode)) {
+		// Error setting the console mode.
+		// Assume the cell size is not available.
+		cell_size_w = 0;
+		cell_size_h = 0;
+		// TODO: GetLastError()
+		return -EIO;
+	}
+	WriteConsoleW(__gsvt_stdout.hConsole, query_cmd, _countof(query_cmd)-1, NULL, NULL);
+
+	// Wait 100ms for a response from the terminal.
+	DWORD dwRet = WaitForSingleObject(__gsvt_stdin.hConsole, 100);
+	if (dwRet != WAIT_OBJECT_0) {
+		// No response...
+		// Assume the cell size is not available.
+		cell_size_w = 0;
+		cell_size_h = 0;
+		SetConsoleMode(__gsvt_stdin.hConsole, dwOrigMode);
+		// TODO: GetLastError()
+		return -EIO;
+	}
+
+	// Data should be in the format: "\x1B[6;_;_t"
+	// - Param 1: height
+	// - Param 2: width
+	// Keep reading until we find a lowercase letter.
+	TCHAR buf[16];
+	size_t n = 0;
+	for (; n < _countof(buf); n++) {
+		DWORD nNumberOfCharsRead = 0;
+		BOOL bRet = ReadConsole(__gsvt_stdin.hConsole, &buf[n], 1, &nNumberOfCharsRead, NULL);
+		if (!bRet || nNumberOfCharsRead != 1) {
+			// I/O error...
+			// Assume the cell size is not available.
+			cell_size_w = 0;
+			cell_size_h = 0;
+			SetConsoleMode(__gsvt_stdin.hConsole, dwOrigMode);
+			// TODO: GetLastError()
+			return -EIO;
+		}
+
+		if (islower_ascii(buf[n])) {
+			n++;
+			if (n < _countof(buf)) {
+				buf[n] = _T('\0');
+			}
+			break;
+		}
+	}
+	if (n >= _countof(buf) || buf[n] != _T('\0')) {
+		// Not a valid sequence?
+		SetConsoleMode(__gsvt_stdin.hConsole, dwOrigMode);
+		return -EIO;
+	}
+
+	// Use sscanf() to verify the string.
+	int start_code = 0;
+	TCHAR end_code = _T('\0');
+	int s = swscanf(buf, _T("\x1B[%d;%d;%d%c"), &start_code, pHeight, pWidth, &end_code);
+
+	int ret = 0;
+	if (s != 4 || start_code != 6 || end_code != _T('t')) {
+		// Not valid...
+		// Assume the cell size is not available.
+		cell_size_w = 0;
+		cell_size_h = 0;
+		ret = -EIO;
+	}
+
+	// Retrieved the width and height.
+	SetConsoleMode(__gsvt_stdin.hConsole, dwOrigMode);
+	return ret;
 }
 
 /** stdio wrapper functions **/
