@@ -456,6 +456,11 @@ static int print_kitty_image_data_base64(rp_image_const_ptr image_src)
 	return 0;
 }
 
+/**
+ * Print an image using the Kitty graphics protocol.
+ * @param image rp_image
+ * @return 0 on success; negative POSIX error code on error.
+ */
 static int print_kitty_image(const rp_image_const_ptr &image)
 {
 	if (!image->isValid()) {
@@ -463,14 +468,53 @@ static int print_kitty_image(const rp_image_const_ptr &image)
 	}
 
 	// Print the Kitty header.
-	printf("\x1B_Gf=32,s=%d,v=%d,a=T;", image->width(), image->height());
+	printf("\x1B_Ga=T,q=2,f=32,s=%d,v=%d;", image->width(), image->height());
 
 	// Print the image data.
-	// TODO: Animated images?
 	print_kitty_image_data_base64(image);
 
 	// End of data.
 	fwrite("\x1B\\", 1, 2, stdout);
+	return 0;
+}
+
+/**
+ * Print an animated image using the Kitty graphics protocol.
+ * @param iconAnimData IconAnimData
+ * @return 0 on success; negative POSIX error code on error.
+ */
+static int print_kitty_animated_image(const IconAnimDataConstPtr &iconAnimData)
+{
+	// Print all of the animated icon frames.
+	// Using image numbers, which are unique per animation but not per session.
+	// NOTE: The frame grap is specified per frame, not as a separate sequence,
+	// so we have to go by the sequence. This may result in frames being sent
+	// multiple times.
+
+	// Last image number. ("I=?")
+	// NOTE: Using image number instead of image ID to prevent conflicts
+	// with other programs that may have printed images.
+	// NOTE 2: Must start at 1. Image number 0 won't animate for some reason.
+	static int image_number = 1;
+
+	bool first = true;
+	for (int i = 0; i < iconAnimData->seq_count; i++) {
+		const rp_image_ptr &frame = iconAnimData->frames[iconAnimData->seq_index[i]];
+		const int ms = iconAnimData->delays[i].ms;
+		// FIXME: Handle invalid (empty) frame delays?
+		if (frame && frame->isValid()) {
+			printf("\x1B_Ga=%c,q=2,f=32,s=%d,v=%d,I=%d,z=%d;", (first ? 'T' : 'f'), frame->width(), frame->height(), image_number, ms);
+			first = false;
+			print_kitty_image_data_base64(frame);
+			fwrite("\x1B\\", 1, 2, stdout);
+		}
+	}
+
+	// Start the animation.
+	printf("\x1B_Ga=a,I=%d,s=3,v=1\x1B\\", image_number);
+
+	// Increment the image number for the next invocation.
+	image_number++;
 	return 0;
 }
 
@@ -525,7 +569,20 @@ static void print_kitty_icon_banner_int(const RomDataPtr &romData)
 
 	int cur_col = 0;
 	if (icon) {
-		print_kitty_image(icon);
+		// Do we have an animated icon?
+		bool ok = false;
+		if (romData->imgpf(RomData::IMG_INT_ICON) & RomData::IMGPF_ICON_ANIMATED) {
+			// Try to load the animated icon.
+			IconAnimDataConstPtr iconAnimData = romData->iconAnimData();
+			if (iconAnimData) {
+				print_kitty_animated_image(iconAnimData);
+				ok = true;
+			}
+		}
+		if (!ok) {
+			// No animated icon. Print the regular icon.
+			print_kitty_image(icon);
+		}
 		const int icon_width = icon->width() + 8;
 		int icon_cols = icon_width / cell_size_w;
 		if (icon_width % cell_size_w != 0) {
