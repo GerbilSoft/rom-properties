@@ -294,6 +294,31 @@ static void print_sixel_icon_banner_int(const RomDataPtr &romData)
 }
 
 /**
+ * Encode 3 source bytes as 4 base64 bytes.
+ * @param dest	[out] Destination buffer
+ * @param src	[in] Source buffer
+ */
+static inline void encode_base64_3to4(char *dest, const uint8_t *src)
+{
+	static const array<char, 64> base64_encoding_table = {{
+		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+		'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+		'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+		'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+		'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+		'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+		'w', 'x', 'y', 'z', '0', '1', '2', '3',
+		'4', '5', '6', '7', '8', '9', '+', '/'
+	}};
+
+	const uint32_t data = (src[0] << 16) | (src[1] << 8) | src[2];
+	dest[0] = base64_encoding_table[(data >> (3*6)) & 0x3F];
+	dest[1] = base64_encoding_table[(data >> (2*6)) & 0x3F];
+	dest[2] = base64_encoding_table[(data >> (1*6)) & 0x3F];
+	dest[3] = base64_encoding_table[(data >> (0*6)) & 0x3F];
+}
+
+/**
  * Print an rp_image in base64 format for the Kitty graphics protocol.
  *
  * This function only prints the base64 data.
@@ -350,17 +375,6 @@ static int print_kitty_image_data_base64(rp_image_const_ptr image_src)
 		linebuf_size += rem;
 	}
 
-	static const array<char, 64> base64_encoding_table = {{
-		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-		'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-		'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-		'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
-		'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-		'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-		'w', 'x', 'y', 'z', '0', '1', '2', '3',
-		'4', '5', '6', '7', '8', '9', '+', '/'
-	}};
-
 	unique_ptr<char[]> linebuf(new char[linebuf_size]);
 	const uint8_t *bits = static_cast<const uint8_t*>(image->bits());
 	const size_t row_bytes = static_cast<size_t>(image->row_bytes());
@@ -381,22 +395,14 @@ static int print_kitty_image_data_base64(rp_image_const_ptr image_src)
 				tmpbuf[tmpbuf_size] = *bits;
 			}
 
-			uint32_t data = (tmpbuf[0] << 16) | (tmpbuf[1] << 8) | tmpbuf[2];
-			p[0] = base64_encoding_table[(data >> (3*6)) & 0x3F];
-			p[1] = base64_encoding_table[(data >> (2*6)) & 0x3F];
-			p[2] = base64_encoding_table[(data >> (1*6)) & 0x3F];
-			p[3] = base64_encoding_table[(data >> (0*6)) & 0x3F];
+			encode_base64_3to4(p, tmpbuf);
 			p += 4;
 			tmpbuf_size = 0;
 		}
 
 		// Encode the line.
 		for (; n >= 3; n -= 3, bits += 3, p += 4) {
-			uint32_t data = (bits[0] << 16) | (bits[1] << 8) | bits[2];
-			p[0] = base64_encoding_table[(data >> (3*6)) & 0x3F];
-			p[1] = base64_encoding_table[(data >> (2*6)) & 0x3F];
-			p[2] = base64_encoding_table[(data >> (1*6)) & 0x3F];
-			p[3] = base64_encoding_table[(data >> (0*6)) & 0x3F];
+			encode_base64_3to4(p, bits);
 		}
 
 		if (n > 0) {
@@ -426,11 +432,7 @@ static int print_kitty_image_data_base64(rp_image_const_ptr image_src)
 		}
 
 		char *p = linebuf.get();
-		uint32_t data = (tmpbuf[0] << 16) | (tmpbuf[1] << 8) | tmpbuf[2];
-		p[0] = base64_encoding_table[(data >> (3*6)) & 0x3F];
-		p[1] = base64_encoding_table[(data >> (2*6)) & 0x3F];
-		p[2] = base64_encoding_table[(data >> (1*6)) & 0x3F];
-		p[3] = base64_encoding_table[(data >> (0*6)) & 0x3F];
+		encode_base64_3to4(p, tmpbuf);
 		p[4] = '\0';
 
 		// Number of bytes to overwrite depends on number of source bytes remaining:
