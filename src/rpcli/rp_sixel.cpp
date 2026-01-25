@@ -293,7 +293,17 @@ static void print_sixel_icon_banner_int(const RomDataPtr &romData)
 	SixelDll::psixel_output_destroy(output);
 }
 
-static int print_kitty_image(rp_image_const_ptr image_src)
+/**
+ * Print an rp_image in base64 format for the Kitty graphics protocol.
+ *
+ * This function only prints the base64 data.
+ * The appropriate Kitty control codes must have been sent prior to
+ * calling this function.
+ *
+ * @param image_src Image
+ * @return 0 on success; negative POSIX error code on error.
+ */
+static int print_kitty_image_data_base64(rp_image_const_ptr image_src)
 {
 	// Kitty requires R/B to be swapped.
 	rp_image_ptr image = image_src->dup_ARGB32();
@@ -328,9 +338,6 @@ static int print_kitty_image(rp_image_const_ptr image_src)
 	const int width = image->width();
 	const int height = image->height();
 
-	// Print the Kitty header.
-	printf("\x1B_Gf=32,s=%d,v=%d,a=T;", width, height);
-
 	// Allocate a line buffer for base64 conversion.
 	// 3 input bytes == 4 output bytes
 	// NOTE: Console output must be printed in 4 KB chunks.
@@ -343,8 +350,6 @@ static int print_kitty_image(rp_image_const_ptr image_src)
 		linebuf_size += rem;
 	}
 
-	unique_ptr<char[]> linebuf(new char[linebuf_size]);
-
 	static const array<char, 64> base64_encoding_table = {{
 		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
 		'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
@@ -356,6 +361,7 @@ static int print_kitty_image(rp_image_const_ptr image_src)
 		'4', '5', '6', '7', '8', '9', '+', '/'
 	}};
 
+	unique_ptr<char[]> linebuf(new char[linebuf_size]);
 	const uint8_t *bits = static_cast<const uint8_t*>(image->bits());
 	const size_t row_bytes = static_cast<size_t>(image->row_bytes());
 	const size_t stride_adj = (static_cast<size_t>(image->stride()) - row_bytes);
@@ -413,6 +419,22 @@ static int print_kitty_image(rp_image_const_ptr image_src)
 			linebuf_used -= bytes_to_print;
 		}
 	}
+
+	return 0;
+}
+
+static int print_kitty_image(const rp_image_const_ptr &image)
+{
+	if (!image->isValid()) {
+		return -EINVAL;
+	}
+
+	// Print the Kitty header.
+	printf("\x1B_Gf=32,s=%d,v=%d,a=T;", image->width(), image->height());
+
+	// Print the image data.
+	// TODO: Animated images?
+	print_kitty_image_data_base64(image);
 
 	// End of data.
 	fwrite("\x1B\\", 1, 2, stdout);
