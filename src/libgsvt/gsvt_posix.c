@@ -281,7 +281,7 @@ int gsvt_query_tty(const char *cmd, char *buf, size_t size, TCHAR endchr)
 		char chr;
 		errno = 0;
 		ssize_t size = read(STDIN_FILENO, &chr, sizeof(chr));
-		if (size == 1) {
+		if (size == sizeof(chr)) {
 			// Read one character.
 			buf[n] = chr;
 		} else /*if (size <= 0)*/ {
@@ -293,14 +293,13 @@ int gsvt_query_tty(const char *cmd, char *buf, size_t size, TCHAR endchr)
 				// Check if there's any more data by using select().
 				time.tv_sec = 0;
 				time.tv_usec = 10000;
-				errno = 0;
 				if (select(STDIN_FILENO + 1, &readset, NULL, NULL, &time) != 1) {
 					// No more data available.
 					buf[n] = '\0';
 					break;
 				}
 				size = read(STDIN_FILENO, &chr, sizeof(chr));
-				if (size == 1) {
+				if (size == sizeof(chr)) {
 					// Read one character.
 					buf[n] = chr;
 				} else /*if (size <= 0)*/ {
