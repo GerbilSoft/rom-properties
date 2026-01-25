@@ -365,11 +365,33 @@ static int print_kitty_image_data_base64(rp_image_const_ptr image_src)
 	const uint8_t *bits = static_cast<const uint8_t*>(image->bits());
 	const size_t row_bytes = static_cast<size_t>(image->row_bytes());
 	const size_t stride_adj = (static_cast<size_t>(image->stride()) - row_bytes);
+
+	// Temporary buffer for source lines that aren't multiples of 3 bytes.
+	uint8_t tmpbuf[3];
+	uint8_t tmpbuf_size = 0;
+
 	for (int y = height; y > 0; y--, bits += stride_adj) {
 		// Process 3 input bytes at a time.
-		size_t n;
+		size_t n = row_bytes;
 		char *p = linebuf.get();
-		for (n = row_bytes; n >= 3; n -= 3, bits += 3, p += 4) {
+
+		if (tmpbuf_size > 0) {
+			// Need to encode bytes from the end of the previous line.
+			for (; tmpbuf_size < 3; tmpbuf_size++, bits++, n--) {
+				tmpbuf[tmpbuf_size] = *bits;
+			}
+
+			uint32_t data = (tmpbuf[0] << 16) | (tmpbuf[1] << 8) | tmpbuf[2];
+			p[0] = base64_encoding_table[(data >> (3*6)) & 0x3F];
+			p[1] = base64_encoding_table[(data >> (2*6)) & 0x3F];
+			p[2] = base64_encoding_table[(data >> (1*6)) & 0x3F];
+			p[3] = base64_encoding_table[(data >> (0*6)) & 0x3F];
+			p += 4;
+			tmpbuf_size = 0;
+		}
+
+		// Encode the line.
+		for (; n >= 3; n -= 3, bits += 3, p += 4) {
 			uint32_t data = (bits[0] << 16) | (bits[1] << 8) | bits[2];
 			p[0] = base64_encoding_table[(data >> (3*6)) & 0x3F];
 			p[1] = base64_encoding_table[(data >> (2*6)) & 0x3F];
@@ -378,34 +400,10 @@ static int print_kitty_image_data_base64(rp_image_const_ptr image_src)
 		}
 
 		if (n > 0) {
-			// Encode the remaining bytes using equal signs to indicate
-			// that some bytes are missing.
-			uint32_t data = 0;
-			for (size_t o = n; o > 0; o--, bits++) {
-				data <<= 8;
-				data |= *bits;
-			}
-			data <<= ((3 - n) * 8);
-
-			p[0] = base64_encoding_table[(data >> (3*6)) & 0x3F];
-			p[1] = base64_encoding_table[(data >> (2*6)) & 0x3F];
-			p[2] = base64_encoding_table[(data >> (1*6)) & 0x3F];
-			p[3] = base64_encoding_table[(data >> (0*6)) & 0x3F];
-
-			// Number of bytes to overwrite depends on number of source bytes remaining:
-			// - n = 1: overwrite 2, 3
-			// - n = 2: overwrite    3
-			switch (n) {
-				default:
-					break;
-				case 1:
-					p[2] = '=';
-					// fall-through
-				case 2:
-					p[3] = '=';
-					break;
-			}
-			p += 4;
+			// Need to encode the remaining bytes at the beginning of the next line.
+			memcpy(tmpbuf, bits, n);
+			tmpbuf_size = static_cast<uint8_t>(n);
+			bits += n;
 		}
 
 		// Write the encoded data in 4 KB chunks.
@@ -418,6 +416,39 @@ static int print_kitty_image_data_base64(rp_image_const_ptr image_src)
 			p += bytes_to_print;
 			linebuf_used -= bytes_to_print;
 		}
+	}
+
+	if (tmpbuf_size > 0) {
+		// Encode the remaining bytes using equal signs to indicate
+		// that some bytes are missing.
+		for (uint8_t n = tmpbuf_size; n < 3; n++) {
+			tmpbuf[n] = 0;
+		}
+
+		char *p = linebuf.get();
+		uint32_t data = (tmpbuf[0] << 16) | (tmpbuf[1] << 8) | tmpbuf[2];
+		p[0] = base64_encoding_table[(data >> (3*6)) & 0x3F];
+		p[1] = base64_encoding_table[(data >> (2*6)) & 0x3F];
+		p[2] = base64_encoding_table[(data >> (1*6)) & 0x3F];
+		p[3] = base64_encoding_table[(data >> (0*6)) & 0x3F];
+		p[4] = '\0';
+
+		// Number of bytes to overwrite depends on number of source bytes remaining:
+		// - n = 1: overwrite 2, 3
+		// - n = 2: overwrite    3
+		switch (tmpbuf_size) {
+			default:
+				break;
+			case 1:
+				p[2] = '=';
+				// fall-through
+			case 2:
+				p[3] = '=';
+				break;
+		}
+
+		// Write the last 4 bytes.
+		fwrite(p, 1, 4, stdout);
 	}
 
 	return 0;
