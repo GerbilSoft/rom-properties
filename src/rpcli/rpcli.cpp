@@ -836,7 +836,12 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			case _T('C'):
 				// Force-enable ANSI escape sequences, even if it's not supported by the
 				// console or we're redirected to a file.
-				// TODO: Document this, and provide an option to force-disable ANSI.
+				// TODO: Provide an option to force-disable ANSI.
+				// NOTE: If the console doesn't normally support ANSI, disable Sixels,
+				// because we can't query a not-a-terminal.
+				if (!Gsvt::StdOut.supportsAnsi()) {
+					doSixel = false;
+				}
 				Gsvt::StdOut.forceColorOn();
 				Gsvt::StdErr.forceColorOn();
 				flags |= OF_Text_UseAnsiColor;
