@@ -365,7 +365,6 @@ static int print_kitty_image(rp_image_const_ptr image_src)
 		char *p = linebuf.get();
 		for (n = row_bytes; n >= 3; n -= 3, bits += 3, p += 4) {
 			uint32_t data = (bits[0] << 16) | (bits[1] << 8) | bits[2];
-			//printf("data: %08X, bits: %02X %02X %02X\n", data, bits[0], bits[1], bits[2]);
 			p[0] = base64_encoding_table[(data >> (3*6)) & 0x3F];
 			p[1] = base64_encoding_table[(data >> (2*6)) & 0x3F];
 			p[2] = base64_encoding_table[(data >> (1*6)) & 0x3F];
