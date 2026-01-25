@@ -245,7 +245,7 @@ int gsvt_query_tty(const char *cmd, char *buf, size_t size, TCHAR endchr)
 
 	errno = 0;
 	if (select(STDIN_FILENO + 1, &readset, NULL, NULL, &time) != 1) {
-		// Failed to select() the data...
+		// No data available?
 		int err = -errno;
 		if (err == 0) {
 			err = -EIO;
@@ -284,14 +284,30 @@ int gsvt_query_tty(const char *cmd, char *buf, size_t size, TCHAR endchr)
 		if (size == 1) {
 			// Read one character.
 			buf[n] = chr;
-		} else if (size <= 0) {
+		} else /*if (size <= 0)*/ {
 			// Check for an error.
 			int err = errno;
 			if (err == EAGAIN || err == EWOULDBLOCK) {
 				// Out of data.
 				// NOTE: EAGAIN *could* mean we still have data, but the syscall was interrupted...
-				buf[n] = '\0';
-				break;
+				// Check if there's any more data by using select().
+				time.tv_sec = 0;
+				time.tv_usec = 10000;
+				errno = 0;
+				if (select(STDIN_FILENO + 1, &readset, NULL, NULL, &time) != 1) {
+					// No more data available.
+					buf[n] = '\0';
+					break;
+				}
+				size = read(STDIN_FILENO, &chr, sizeof(chr));
+				if (size == 1) {
+					// Read one character.
+					buf[n] = chr;
+				} else /*if (size <= 0)*/ {
+					// No more data...
+					buf[n] = '\0';
+					break;
+				}
 			} else {
 				// Some other error occurred...
 				fcntl(STDIN_FILENO, F_SETFL, oldflags);
