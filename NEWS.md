@@ -2,6 +2,16 @@
 
 ## v2.8 (released 2026/??/??)
 
+* New features:
+  * rpcli can now display the icon and banner of specified files using the
+    Kitty and/or Sixel protocols, depending on what's available on your
+    terminal emulator. This includes animated icons when using the Kitty
+    protocol.
+    * Sixel protocol support requires a copy of libsixel to be installed.
+      (Not currently included in the Windows build.)
+    * Sixel *should* work on Windows Terminal, but this has not been
+      tested yet.
+
 ## v2.7.1 (released 2026/01/18)
 
 * New features:
