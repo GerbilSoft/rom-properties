@@ -338,7 +338,7 @@ static void DoFile(const TCHAR *filename, bool json, bool doSixel,
 		} else {
 			// If this is a tty and ANSI is supported,
 			// print the icon/banner using libsixel.
-			if (doSixel && gsvt_supports_sixel()) {
+			if (doSixel && (gsvt_supports_kitty() || gsvt_supports_sixel())) {
 				print_sixel_icon_banner(romData);
 			}
 
