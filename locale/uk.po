@@ -26,7 +26,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.7.1\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-01-28 22:57-0500\n"
+"POT-Creation-Date: 2026-01-28 23:28-0500\n"
 "PO-Revision-Date: 2018-04-13 04:36+0200\n"
 "Last-Translator: Egor <egor@opensrc.club>\n"
 "Language-Team: none\n"
@@ -9922,9 +9922,9 @@ msgctxt "PowerVR3|ColorSpace"
 msgid "Linear RGB"
 msgstr ""
 
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1372
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1375
-msgctxt "PowerVR3"
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1370
+#: ../src/librptexture/fileformat/Qoi.cpp:279
+msgctxt "RomData"
 msgid "Color Space"
 msgstr ""
 
@@ -10022,11 +10022,6 @@ msgstr ""
 #: ../src/librptexture/fileformat/Qoi.cpp:275
 msgctxt "Qoi|Colorspace"
 msgid "all channels linear"
-msgstr ""
-
-#: ../src/librptexture/fileformat/Qoi.cpp:279
-msgctxt "Qoi"
-msgid "Colorspace"
 msgstr ""
 
 #: ../src/librptexture/fileformat/SegaPVR.cpp:1503

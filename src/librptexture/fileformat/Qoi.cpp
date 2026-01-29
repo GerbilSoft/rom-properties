@@ -276,7 +276,7 @@ int Qoi::getFields(RomFields *fields) const
 			break;
 	}
 	if (colorspace) {
-		fields->addField_string(C_("Qoi", "Colorspace"), colorspace);
+		fields->addField_string(C_("RomData", "Color Space"), colorspace);
 	}
 
 	// Finished reading the field data.

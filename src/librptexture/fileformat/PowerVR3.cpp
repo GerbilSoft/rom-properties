@@ -1367,13 +1367,13 @@ int PowerVR3::getFields(RomFields *fields) const
 		NOP_C_("PowerVR3|ColorSpace", "Linear RGB"),
 		"sRGB",	// Not translatable
 	}};
+	const char *const color_space_title = C_("RomData", "Color Space");
 	static_assert(pvr3_colorspace_tbl.size() == PVR3_COLOR_SPACE_MAX, "pvr3_colorspace_tbl[] needs to be updated!");
 	if (pvr3Header->color_space < pvr3_colorspace_tbl.size()) {
-		fields->addField_string(C_("PowerVR3", "Color Space"),
+		fields->addField_string(color_space_title,
 			pgettext_expr("PowerVR3|ColorSpace", pvr3_colorspace_tbl[pvr3Header->color_space]));
 	} else {
-		fields->addField_string_numeric(C_("PowerVR3", "Color Space"),
-			pvr3Header->color_space);
+		fields->addField_string_numeric(color_space_title, pvr3Header->color_space);
 	}
 
 	// Channel type
