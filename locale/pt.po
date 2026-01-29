@@ -10297,7 +10297,7 @@ msgstr "Teste alfa, geração de mipmaps"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:814
 msgctxt "ValveVTF|Flags"
-msgid "No depth Buffer"
+msgid "No Depth Buffer"
 msgstr "Sem buffer de profundidade"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:816

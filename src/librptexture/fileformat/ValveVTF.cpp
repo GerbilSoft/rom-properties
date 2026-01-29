@@ -811,7 +811,7 @@ int ValveVTF::getFields(RomFields *fields) const
 		NOP_C_("ValveVTF|Flags", "Premult Color by 1/mipmap"),
 		NOP_C_("ValveVTF|Flags", "Normal to DuDv"),
 		NOP_C_("ValveVTF|Flags", "Alpha Test Mipmap Gen"),
-		NOP_C_("ValveVTF|Flags", "No depth Buffer"),
+		NOP_C_("ValveVTF|Flags", "No Depth Buffer"),
 		// 0x1000000-0x8000000
 		NOP_C_("ValveVTF|Flags", "Nice Filtered"),
 		NOP_C_("ValveVTF|Flags", "Clamp U"),

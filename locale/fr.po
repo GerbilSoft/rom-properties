@@ -10269,7 +10269,7 @@ msgstr ""
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:814
 msgctxt "ValveVTF|Flags"
-msgid "No depth Buffer"
+msgid "No Depth Buffer"
 msgstr ""
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:816
