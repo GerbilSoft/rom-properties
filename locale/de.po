@@ -10695,7 +10695,7 @@ msgstr ""
 
 #: ../src/rp-stub/rp-stub.c:91
 msgctxt "rp-stub"
-msgid "Copyright (c) 2016-2025 by David Korth."
+msgid "Copyright (c) 2016-2026 by David Korth."
 msgstr ""
 
 #: ../src/rp-stub/rp-stub.c:93
