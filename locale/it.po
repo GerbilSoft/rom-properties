@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-01-18 17:43-0500\n"
-"PO-Revision-Date: 2026-01-19 02:29\n"
+"POT-Creation-Date: 2026-01-28 23:28-0500\n"
+"PO-Revision-Date: 2026-01-29 05:12\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -1054,7 +1054,7 @@ msgstr "ROM Properties"
 #. tr: Invalid date/time.
 #. tr: Invalid date/time
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:126
-#: ../src/gtk/RomDataView.cpp:966 ../src/kde/RomDataView.cpp:707
+#: ../src/gtk/RomDataView.cpp:966 ../src/kde/RomDataView.cpp:716
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1280
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1288
 msgctxt "RomDataView"
@@ -1063,7 +1063,7 @@ msgstr "Sconosciuto"
 
 #. tr: No age ratings data.
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:142
-#: ../src/gtk/RomDataView.cpp:986 ../src/kde/RomDataView.cpp:736
+#: ../src/gtk/RomDataView.cpp:986 ../src/kde/RomDataView.cpp:745
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1310
 msgctxt "RomDataView"
 msgid "ERROR"
@@ -1138,7 +1138,7 @@ msgid "{0:s}\n"
 msgstr ""
 
 #. tr: Field description label.
-#: ../src/gtk/RomDataView.cpp:1472 ../src/kde/RomDataView.cpp:998
+#: ../src/gtk/RomDataView.cpp:1472 ../src/kde/RomDataView.cpp:1007
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1719
 #, c++-format
 msgctxt "RomDataView"
@@ -1146,8 +1146,8 @@ msgid "{:s}:"
 msgstr ""
 
 #. tr: EncryptionKeys::Unknown
-#: ../src/gtk/RomDataView_gtk3.cpp:304 ../src/gtk/RomDataView_gtk3.cpp:593
-#: ../src/gtk/RomDataView_gtk4.cpp:428 ../src/gtk/RomDataView_gtk4.cpp:570
+#: ../src/gtk/RomDataView_gtk3.cpp:303 ../src/gtk/RomDataView_gtk3.cpp:612
+#: ../src/gtk/RomDataView_gtk4.cpp:426 ../src/gtk/RomDataView_gtk4.cpp:578
 #: ../src/kde/ListDataModel.cpp:257 ../src/libromdata/Audio/ADX.cpp:282
 #: ../src/libromdata/Console/GameCube.cpp:1844
 #: ../src/libromdata/Console/GameCubeSave.cpp:1009
@@ -2262,16 +2262,20 @@ msgstr "File WAD Wii"
 #: ../src/libromdata/Console/SegaSaturn.cpp:517
 #: ../src/libromdata/Console/SNES.cpp:1487
 #: ../src/libromdata/Console/SufamiTurbo.cpp:344
+#: ../src/libromdata/Console/WiiUPackage_xml.cpp:370
+#: ../src/libromdata/Console/WiiWIBN.cpp:454
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1052
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:906
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1361
 #: ../src/libromdata/Console/Xbox_XBE.cpp:748
+#: ../src/libromdata/Handheld/AndroidCommon.cpp:84
 #: ../src/libromdata/Handheld/DMG.cpp:663
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:372
 #: ../src/libromdata/Handheld/GameCom.cpp:713
 #: ../src/libromdata/Handheld/Lynx.cpp:202
 #: ../src/libromdata/Handheld/NGPC.cpp:317
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:385
+#: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:507
 #: ../src/libromdata/Handheld/NintendoDS.cpp:700
 #: ../src/libromdata/Handheld/PalmOS.cpp:620
 #: ../src/libromdata/Handheld/PokemonMini.cpp:260
@@ -4456,12 +4460,6 @@ msgctxt "RomData"
 msgid "XML parsing is disabled in this build."
 msgstr "L'analisi XML è disabilitata in questa build."
 
-#: ../src/libromdata/Console/WiiUPackage_xml.cpp:370
-#: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:507
-msgctxt "Nintendo"
-msgid "Title"
-msgstr "Titolo"
-
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:371
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:508
 #: ../src/libromdata/Handheld/NintendoDS_BNR.cpp:647
@@ -4638,11 +4636,6 @@ msgstr "Si è verificato un errore sconosciuto durante l'estrazione dell'SRL."
 msgctxt "WiiWAD"
 msgid "SRL extraction is not supported in NoCrypto builds."
 msgstr "L'estrazione di SRL non è supportata nelle build di NoCrypto."
-
-#: ../src/libromdata/Console/WiiWIBN.cpp:454
-msgctxt "WiiWIBN"
-msgid "Title"
-msgstr "Titolo"
 
 #: ../src/libromdata/Console/WiiWIBN.cpp:462
 msgctxt "WiiWIBN"
@@ -5602,11 +5595,6 @@ msgstr ""
 msgctxt "AndroidManifestXML"
 msgid "Package Name"
 msgstr ""
-
-#: ../src/libromdata/Handheld/AndroidCommon.cpp:84
-msgctxt "AndroidAPK"
-msgid "Title"
-msgstr "Titolo"
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:89
 msgctxt "AndroidAPK"
@@ -9878,9 +9866,9 @@ msgctxt "PowerVR3|ColorSpace"
 msgid "Linear RGB"
 msgstr ""
 
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1372
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1375
-msgctxt "PowerVR3"
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1370
+#: ../src/librptexture/fileformat/Qoi.cpp:279
+msgctxt "RomData"
 msgid "Color Space"
 msgstr ""
 
@@ -9977,11 +9965,6 @@ msgstr ""
 #: ../src/librptexture/fileformat/Qoi.cpp:275
 msgctxt "Qoi|Colorspace"
 msgid "all channels linear"
-msgstr ""
-
-#: ../src/librptexture/fileformat/Qoi.cpp:279
-msgctxt "Qoi"
-msgid "Colorspace"
 msgstr ""
 
 #: ../src/librptexture/fileformat/SegaPVR.cpp:1503
@@ -10616,7 +10599,7 @@ msgstr ""
 
 #: ../src/rp-stub/rp-stub.c:91
 msgctxt "rp-stub"
-msgid "Copyright (c) 2016-2025 by David Korth."
+msgid "Copyright (c) 2016-2026 by David Korth."
 msgstr ""
 
 #: ../src/rp-stub/rp-stub.c:93
