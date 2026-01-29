@@ -46,6 +46,8 @@
 #if defined(HAVE_ICONV)
 char *mz_os_utf8_string_create(const char *string, int32_t encoding) {
     iconv_t cd;
+    /// up to CP2147483647
+    char string_encoding[13];
     const char *from_encoding = NULL;
     size_t result = 0;
     size_t string_length = 0;
@@ -59,8 +61,6 @@ char *mz_os_utf8_string_create(const char *string, int32_t encoding) {
     if (encoding == MZ_ENCODING_UTF8)
         from_encoding = "UTF-8";
     else {
-        /// up to CP2147483647
-        char string_encoding[13];
         snprintf(string_encoding, sizeof(string_encoding), "CP%03" PRId32, encoding);
         from_encoding = string_encoding;
     }
@@ -289,7 +289,7 @@ int32_t mz_os_close_dir(DIR *dir) {
     return MZ_OK;
 }
 
-int32_t mz_os_is_dir_separator(const char c) {
+int32_t mz_os_is_dir_separator(char c) {
 #if MZ_PRESERVE_NATIVE_STRUCTURE
     // While not strictly adhering to 4.4.17.1,
     // this preserves UNIX filesystem structure.
@@ -324,12 +324,19 @@ int32_t mz_os_is_symlink(const char *path) {
 }
 
 int32_t mz_os_make_symlink(const char *path, const char *target_path) {
+#if defined(NO_SYMLINK)
+    return MZ_SUPPORT_ERROR;
+#else	
     if (symlink(target_path, path) != 0)
         return MZ_INTERNAL_ERROR;
     return MZ_OK;
+#endif
 }
 
 int32_t mz_os_read_symlink(const char *path, char *target_path, int32_t max_target_path) {
+#if defined(NO_READLINK)
+    return MZ_SUPPORT_ERROR;
+#else
     size_t length = 0;
 
     length = (size_t)readlink(path, target_path, max_target_path - 1);
@@ -337,6 +344,34 @@ int32_t mz_os_read_symlink(const char *path, char *target_path, int32_t max_targ
         return MZ_EXIST_ERROR;
 
     target_path[length] = 0;
+    return MZ_OK;
+#endif
+}
+
+int32_t mz_os_get_temp_path(char *path, int32_t max_path, const char *prefix) {
+    const char *tmp_dir = NULL;
+    int32_t result = 0;
+
+    if (!path || max_path <= 0)
+        return MZ_PARAM_ERROR;
+
+    tmp_dir = getenv("TMPDIR");
+    if (!tmp_dir)
+        tmp_dir = getenv("TMP");
+    if (!tmp_dir)
+        tmp_dir = getenv("TEMP");
+    if (!tmp_dir)
+        tmp_dir = "/tmp";
+
+    /* Build template path for mktemp: <tmp_dir>/<prefix>XXXXXX */
+    result = snprintf(path, max_path, "%s/%sXXXXXX", tmp_dir, prefix ? prefix : "");
+    if (result < 0 || result >= max_path)
+        return MZ_BUF_ERROR;
+
+    /* mktemp replaces XXXXXX with unique characters */
+    if (!mktemp(path))
+        return MZ_INTERNAL_ERROR;
+
     return MZ_OK;
 }
 

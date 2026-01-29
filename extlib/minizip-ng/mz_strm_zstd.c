@@ -308,6 +308,14 @@ int32_t mz_stream_zstd_set_prop_int64(void *stream, int32_t prop, int64_t value)
     case MZ_STREAM_PROP_TOTAL_IN_MAX:
         zstd->max_total_in = value;
         return MZ_OK;
+    case MZ_STREAM_PROP_COMPRESS_THREADS:
+        if (zstd->zcstream) {
+            size_t rv = ZSTD_CCtx_setParameter(zstd->zcstream, ZSTD_c_nbWorkers, (int)value);
+            if (rv == (size_t)value) {
+                return MZ_OK;
+            }
+        }
+        return MZ_PARAM_ERROR;
     }
     return MZ_EXIST_ERROR;
 }

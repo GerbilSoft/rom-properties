@@ -27,7 +27,7 @@
 
 #ifndef ZLIB_VERNUM
 /* No zlib */
-typedef uint32_t z_crc_t;
+typedef unsigned int z_crc_t;
 #elif (ZLIB_VERNUM & 0xf != 0xf) && (ZLIB_VERNUM < 0x1270)
 /* Define z_crc_t in zlib 1.2.6 and less */
 typedef unsigned long z_crc_t;

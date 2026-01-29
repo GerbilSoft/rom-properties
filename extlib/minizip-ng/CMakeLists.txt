@@ -8,7 +8,7 @@
 #cmake_minimum_required(VERSION 3.13)
 
 # Library version
-set(VERSION "4.0.10")
+set(VERSION "4.1.0")
 # API version
 set(SOVERSION "4")
 
@@ -45,6 +45,16 @@ IF(0)
 option(MZ_COMPAT "Enables compatibility layer" ON)
 # Compression library options
 option(MZ_ZLIB "Enables ZLIB compression" ON)
+
+# Controls to select either zlib-ng or zlib
+set(MZ_ZLIB_FLAVOR "auto" CACHE STRING "Select the preferred zlib flavor - auto searches for zlib-ng then zlib")
+set(MZ_ZLIB_FLAVORS "auto" "zlib-ng" "zlib")
+set_property(CACHE MZ_ZLIB_FLAVOR PROPERTY STRINGS ${MZ_ZLIB_FLAVORS})
+
+if(NOT MZ_ZLIB_FLAVOR IN_LIST MZ_ZLIB_FLAVORS)
+    message(FATAL_ERROR "MZ_ZLIB_FLAVOR must be one of ${MZ_ZLIB_FLAVORS}")
+endif()
+
 option(MZ_BZIP2 "Enables BZIP2 compression" ON)
 option(MZ_LZMA "Enables LZMA & XZ compression" ON)
 option(MZ_ZSTD "Enables ZSTD compression" ON)
@@ -167,6 +177,17 @@ if(NOT HAVE_FSEEKO)
     list(APPEND STDLIB_DEF -DNO_FSEEKO)
 endif()
 
+# Check for fseeko symlink
+check_function_exists(symlink HAVE_SYMLINK)
+if(NOT HAVE_SYMLINK)
+    list(APPEND STDLIB_DEF -DNO_SYMLINK)
+endif()
+# Check for fseeko readlink
+check_function_exists(readlink HAVE_READLINK)
+if(NOT HAVE_READLINK)
+    list(APPEND STDLIB_DEF -DNO_READLINK)
+endif()
+
 # rom-properties
 if(MSVC)
    set(CMAKE_REQUIRED_FLAGS "${OLD_CMAKE_REQUIRED_FLAGS}")
@@ -196,18 +217,22 @@ if(MZ_ZLIB)
     IF(0)
     # Check if zlib is present
     if(NOT MZ_FORCE_FETCH_LIBS)
-        find_package(ZLIBNG QUIET)
-        find_package(ZLIB QUIET)
+        if (MZ_ZLIB_FLAVOR STREQUAL "zlib-ng" OR MZ_ZLIB_FLAVOR STREQUAL "auto")
+            find_package(ZLIB-NG QUIET)
+        endif()
+        if (MZ_ZLIB_FLAVOR STREQUAL "zlib" OR MZ_ZLIB_FLAVOR STREQUAL "auto")
+            find_package(ZLIB QUIET)
+        endif()
         set(ZLIB_VERSION ${ZLIB_VERSION_STRING})
     endif()
     ENDIF(0) # rom-properties
 
-    if(ZLIBNG_FOUND AND NOT MZ_FORCE_FETCH_LIBS)
-        message(STATUS "Using ZLIBNG")
+    if(ZLIB-NG_FOUND AND NOT MZ_FORCE_FETCH_LIBS)
+        message(STATUS "Using ZLIB-NG")
 
-        list(APPEND MINIZIP_INC ${ZLIBNG_INCLUDE_DIRS})
-        list(APPEND MINIZIP_LIB ${ZLIBNG_LIBRARIES})
-        list(APPEND MINIZIP_LBD ${ZLIBNG_LIBRARY_DIRS})
+        list(APPEND MINIZIP_INC ${ZLIB-NG_INCLUDE_DIRS})
+        list(APPEND MINIZIP_LIB ${ZLIB-NG_LIBRARIES})
+        list(APPEND MINIZIP_LBD ${ZLIB-NG_LIBRARY_DIRS})
 
         set(PC_PRIVATE_DEPS "zlib-ng")
         set(ZLIB_COMPAT OFF)
@@ -239,7 +264,7 @@ if(MZ_ZLIB)
         endif()
 
         if(EXISTS "${ZLIB_BINARY_DIR}/zlib-ng.h")
-            message(STATUS "ZLIB repository detected as ZLIBNG")
+            message(STATUS "ZLIB repository detected as ZLIB-NG")
             set(ZLIB_COMPAT OFF)
         else()
             set(ZLIB_COMPAT ON)
@@ -255,8 +280,8 @@ if(MZ_ZLIB)
         if(ZLIB_COMPAT)
             list(APPEND MINIZIP_DEF -DZLIB_COMPAT)
         endif()
-        if(ZLIBNG_FOUND OR NOT ZLIB_COMPAT)
-            list(APPEND MINIZIP_DEP_PKG ZLIBNG)
+        if(ZLIB-NG_FOUND OR NOT ZLIB_COMPAT)
+            list(APPEND MINIZIP_DEP_PKG ZLIB-NG)
         elseif(ZLIB_FOUND)
             list(APPEND MINIZIP_DEP_PKG ZLIB)
         endif()
@@ -498,6 +523,11 @@ else()
     list(APPEND STDLIB_DEF -D_POSIX_C_SOURCE=200809L -D_BSD_SOURCE -D_DEFAULT_SOURCE)
     list(APPEND MINIZIP_SRC mz_os_posix.c mz_strm_os_posix.c)
 
+    if(APPLE)
+        # Despite being part of POSIX 2008, macOS thinks that O_NOFOLLOW is still a non-standard extension
+        list(APPEND STDLIB_DEF -D_DARWIN_C_SOURCE)
+    endif()
+
     if(MZ_PKCRYPT OR MZ_WZAES)
         if(MZ_OPENSSL)
             list(APPEND MINIZIP_DEP_PKG OpenSSL)
@@ -649,11 +679,11 @@ endif()
 if(MZ_COMPAT)
     set(SOVERSION "1")
 
-    list(APPEND MINIZIP_SRC 
+    list(APPEND MINIZIP_SRC
         compat/ioapi.c
         compat/unzip.c
         compat/zip.c)
-    list(APPEND MINIZIP_HDR 
+    list(APPEND MINIZIP_HDR
         compat/ioapi.h
         compat/unzip.h
         compat/zip.h)

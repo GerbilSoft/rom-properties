@@ -69,6 +69,7 @@ cmake --build build
 |:--------------------|:---------------------------------------------------------------|:-------------:|
 | MZ_COMPAT           | Enables compatibility layer                                    |      ON       |
 | MZ_ZLIB             | Enables ZLIB compression                                       |      ON       |
+| MZ_ZLIB_FLAVOR      | Select ZLIB implementation (auto, zlib-ng, zlib)               |      auto     |
 | MZ_BZIP2            | Enables BZIP2 compression                                      |      ON       |
 | MZ_LZMA             | Enables LZMA & XZ compression                                  |      ON       |
 | MZ_ZSTD             | Enables ZSTD compression                                       |      ON       |
@@ -110,4 +111,4 @@ Thanks go out to all the people who have taken the time to contribute code revie
 
 Thanks to [Gilles Vollant](https://www.winimage.com/zLibDll/minizip.html) on which this work is originally based on.
 
-The [ZIP format](https://github.com/zlib-ng/minizip-ng/blob/master/doc/zip/appnote.txt) was defined by Phil Katz of PKWARE.
+The [ZIP format](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT) was defined by Phil Katz of PKWARE.
