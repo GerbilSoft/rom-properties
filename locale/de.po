@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-01-28 23:28-0500\n"
-"PO-Revision-Date: 2026-01-29 05:12\n"
+"POT-Creation-Date: 2026-01-29 00:31-0500\n"
+"PO-Revision-Date: 2026-01-29 06:37\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -4579,7 +4579,7 @@ msgstr "Nintendo DS SRL-Dateien|*.nds;*.srl|application/x-nintendo-ds-rom;applic
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:100
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:72
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:93
-#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:599
+#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:618
 msgctxt "RomData"
 msgid "ROM operation ID is invalid for this object."
 msgstr "ROM-Operation-ID ist für dieses Objekt ungültig."
@@ -6505,77 +6505,69 @@ msgctxt "NintendoDS"
 msgid "ROM image untrimmed successfully."
 msgstr "ROM-Image erfolgreich ungekürzt."
 
-#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:390
+#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:393
 msgctxt "NintendoDS"
 msgid "Secure area cannot be adjusted in this ROM."
 msgstr "Der sichere Bereich kann in diesem ROM nicht angepasst werden."
 
-#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:430
+#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:433
 #, c++-format
 msgctxt "RomData"
 msgid "Could not open '{0:s}': {1:s}"
 msgstr " '{0:s}' konnte nicht geöffnet werden: {1:s}"
 
-#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:438
+#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:441
 #, c++-format
 msgctxt "NintendoDS"
 msgid "File '{0:s}' has the wrong size. (should be {1:Ld} bytes)"
 msgstr "Die Datei '{0:s}' hat die falsche Größe. (sollte {1:Ld} Bytes sein)"
 
-#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:444
+#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:447
 #, c++-format
 msgctxt "NintendoDS"
 msgid "File '{:s}' has the wrong MD5 hash."
 msgstr "Die Datei '{:s}' hat den falschen MD5-Hash."
 
-#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:471
+#. tr: {:s} == "NDS" or "DSi"
+#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:475
+#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:516
+#, c++-format
 msgctxt "NintendoDS"
-msgid "Could not read the NDS Secure Area."
-msgstr "Fehler beim Lesen der NDS Secure Area."
+msgid "Could not read the {:s} Secure Area."
+msgstr "Fehler beim Lesen der {:s} Secure Area."
 
-#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:483
-msgctxt "NintendoDS"
-msgid "Encrypting the NDS Secure Area failed."
-msgstr "Verschlüsseln der NDS Secure Area fehlgeschlagen."
-
-#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:484
-msgctxt "NintendoDS"
-msgid "Decrypting the NDS Secure Area failed."
-msgstr "Entschlüsseln der NDS Secure Area fehlgeschlagen."
-
-#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:505
-msgctxt "NintendoDS"
-msgid "Could not read the DSi Secure Area."
-msgstr "Fehler beim Lesen der DSi Secure Area."
-
-#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:518
-msgctxt "NintendoDS"
-msgid "Encrypting the DSi Secure Area failed."
-msgstr "Verschlüsseln der DSi Secure Area fehlgeschlagen."
-
-#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:519
-msgctxt "NintendoDS"
-msgid "Decrypting the DSi Secure Area failed."
-msgstr "Entschlüsseln der DSi Secure Area fehlgeschlagen."
-
+#. tr: {:s} == "NDS" or "DSi"
+#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:490
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:532
+#, c++-format
 msgctxt "NintendoDS"
-msgid "Could not write the updated DSi Secure Area."
-msgstr "Fehler beim Schreiben der aktualisierten DSi Secure Area."
+msgid "Encrypting the {:s} Secure Area failed."
+msgstr "Verschlüsseln der {:s} Secure Area fehlgeschlagen."
 
-#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:548
+#. tr: {:s} == "NDS" or "DSi"
+#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:493
+#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:535
+#, c++-format
 msgctxt "NintendoDS"
-msgid "Could not write the updated NDS Secure Area."
-msgstr "Fehler beim Schreiben der aktualisierten NDS Secure Area."
+msgid "Decrypting the {:s} Secure Area failed."
+msgstr "Entschlüsseln der {:s} Secure Area fehlgeschlagen."
 
-#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:581
+#. tr: {:s} == "NDS" or "DSi"
+#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:550
+#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:567
+#, c++-format
+msgctxt "NintendoDS"
+msgid "Could not write the updated {:s} Secure Area."
+msgstr "Fehler beim Schreiben der aktualisierten {:s} Secure Area."
+
+#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:600
 msgctxt "NintendoDS"
 msgid "Secure Area encrypted successfully."
 msgid_plural "Secure Areas encrypted successfully."
 msgstr[0] "Secure Area erfolgreich verschlüsselt."
 msgstr[1] "Secure Areas erfolgreich verschlüsselt."
 
-#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:583
+#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:602
 msgctxt "NintendoDS"
 msgid "Secure Area decrypted successfully."
 msgid_plural "Secure Areas decrypted successfully."
@@ -10205,7 +10197,7 @@ msgstr ""
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:814
 msgctxt "ValveVTF|Flags"
-msgid "No depth Buffer"
+msgid "No Depth Buffer"
 msgstr ""
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:816
