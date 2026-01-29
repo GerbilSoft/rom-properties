@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-01-29 00:31-0500\n"
-"PO-Revision-Date: 2026-01-29 06:37\n"
+"PO-Revision-Date: 2026-01-29 08:25\n"
 "Last-Translator: \n"
 "Language-Team: English, United Kingdom\n"
 "Language: en_GB\n"
@@ -10200,7 +10200,7 @@ msgstr "Alpha Test Mipmap Gen"
 #: ../src/librptexture/fileformat/ValveVTF.cpp:814
 msgctxt "ValveVTF|Flags"
 msgid "No Depth Buffer"
-msgstr ""
+msgstr "No Depth Buffer"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:816
 msgctxt "ValveVTF|Flags"
