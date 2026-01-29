@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.7.1\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-01-18 17:43-0500\n"
+"POT-Creation-Date: 2026-01-28 22:57-0500\n"
 "PO-Revision-Date: 2023-07-17 19:58\n"
 "Last-Translator: Null Magic\n"
 "Language-Team: \n"
@@ -1077,7 +1077,7 @@ msgstr "Propriedades de ROM"
 #. tr: Invalid date/time.
 #. tr: Invalid date/time
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:126
-#: ../src/gtk/RomDataView.cpp:966 ../src/kde/RomDataView.cpp:707
+#: ../src/gtk/RomDataView.cpp:966 ../src/kde/RomDataView.cpp:716
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1280
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1288
 msgctxt "RomDataView"
@@ -1086,7 +1086,7 @@ msgstr "ERRO"
 
 #. tr: No age ratings data.
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:142
-#: ../src/gtk/RomDataView.cpp:986 ../src/kde/RomDataView.cpp:736
+#: ../src/gtk/RomDataView.cpp:986 ../src/kde/RomDataView.cpp:745
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1310
 msgctxt "RomDataView"
 msgid "ERROR"
@@ -1164,7 +1164,7 @@ msgstr ""
 "{1:s}"
 
 #. tr: Field description label.
-#: ../src/gtk/RomDataView.cpp:1472 ../src/kde/RomDataView.cpp:998
+#: ../src/gtk/RomDataView.cpp:1472 ../src/kde/RomDataView.cpp:1007
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1719
 #, c++-format
 msgctxt "RomDataView"
@@ -1172,8 +1172,8 @@ msgid "{:s}:"
 msgstr "{:s}:"
 
 #. tr: EncryptionKeys::Unknown
-#: ../src/gtk/RomDataView_gtk3.cpp:304 ../src/gtk/RomDataView_gtk3.cpp:593
-#: ../src/gtk/RomDataView_gtk4.cpp:428 ../src/gtk/RomDataView_gtk4.cpp:570
+#: ../src/gtk/RomDataView_gtk3.cpp:303 ../src/gtk/RomDataView_gtk3.cpp:612
+#: ../src/gtk/RomDataView_gtk4.cpp:426 ../src/gtk/RomDataView_gtk4.cpp:578
 #: ../src/kde/ListDataModel.cpp:257 ../src/libromdata/Audio/ADX.cpp:282
 #: ../src/libromdata/Console/GameCube.cpp:1844
 #: ../src/libromdata/Console/GameCubeSave.cpp:1009
@@ -2312,16 +2312,20 @@ msgstr ""
 #: ../src/libromdata/Console/SegaSaturn.cpp:517
 #: ../src/libromdata/Console/SNES.cpp:1487
 #: ../src/libromdata/Console/SufamiTurbo.cpp:344
+#: ../src/libromdata/Console/WiiUPackage_xml.cpp:370
+#: ../src/libromdata/Console/WiiWIBN.cpp:454
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1052
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:906
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1361
 #: ../src/libromdata/Console/Xbox_XBE.cpp:748
+#: ../src/libromdata/Handheld/AndroidCommon.cpp:84
 #: ../src/libromdata/Handheld/DMG.cpp:663
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:372
 #: ../src/libromdata/Handheld/GameCom.cpp:713
 #: ../src/libromdata/Handheld/Lynx.cpp:202
 #: ../src/libromdata/Handheld/NGPC.cpp:317
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:385
+#: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:507
 #: ../src/libromdata/Handheld/NintendoDS.cpp:700
 #: ../src/libromdata/Handheld/PalmOS.cpp:620
 #: ../src/libromdata/Handheld/PokemonMini.cpp:260
@@ -4515,12 +4519,6 @@ msgctxt "RomData"
 msgid "XML parsing is disabled in this build."
 msgstr ""
 
-#: ../src/libromdata/Console/WiiUPackage_xml.cpp:370
-#: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:507
-msgctxt "Nintendo"
-msgid "Title"
-msgstr "Nome"
-
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:371
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:508
 #: ../src/libromdata/Handheld/NintendoDS_BNR.cpp:647
@@ -4699,12 +4697,6 @@ msgstr ""
 msgctxt "WiiWAD"
 msgid "SRL extraction is not supported in NoCrypto builds."
 msgstr "Esta compilação não possui descodificação."
-
-#: ../src/libromdata/Console/WiiWIBN.cpp:454
-#, fuzzy
-msgctxt "WiiWIBN"
-msgid "Title"
-msgstr "Nome"
 
 #: ../src/libromdata/Console/WiiWIBN.cpp:462
 msgctxt "WiiWIBN"
@@ -5674,11 +5666,6 @@ msgstr ""
 msgctxt "AndroidManifestXML"
 msgid "Package Name"
 msgstr ""
-
-#: ../src/libromdata/Handheld/AndroidCommon.cpp:84
-msgctxt "AndroidAPK"
-msgid "Title"
-msgstr "Nome"
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:89
 msgctxt "AndroidAPK"

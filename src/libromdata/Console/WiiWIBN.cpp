@@ -451,7 +451,7 @@ int WiiWIBN::loadFieldData(void)
 	// TODO: Combine title and subtitle into one field?
 
 	// Title
-	d->fields.addField_string(C_("WiiWIBN", "Title"),
+	d->fields.addField_string(C_("RomData", "Title"),
 		utf16be_to_utf8(wibnHeader->gameTitle, ARRAY_SIZE_I(wibnHeader->gameTitle)));
 
 	// Subtitle

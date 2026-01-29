@@ -81,7 +81,7 @@ int loadFieldData(LibRpBase::RomFields &fields, const pugi::xml_document &manife
 	if (application_node) {
 		const char *const label = application_node.attribute("label").as_string(nullptr);
 		if (label && label[0] != '\0') {
-			addField_string_i18n(C_("AndroidAPK", "Title"), label, 0);
+			addField_string_i18n(C_("RomData", "Title"), label, 0);
 		}
 
 		const char *const description = application_node.attribute("description").as_string(nullptr);

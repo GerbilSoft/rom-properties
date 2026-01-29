@@ -367,7 +367,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 		}
 
 		// NOTE: Using the same descriptions as Nintendo3DS.
-		const char *const s_title_title = C_("Nintendo", "Title");
+		const char *const s_title_title = C_("RomData", "Title");
 		const char *const s_full_title_title = C_("Nintendo", "Full Title");
 		const char *const s_publisher_title = C_("RomData", "Publisher");
 		const char *const s_unknown = C_("RomData", "Unknown");
