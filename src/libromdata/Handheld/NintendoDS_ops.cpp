@@ -376,19 +376,22 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 #ifdef ENABLE_DECRYPTION
 		case 1: {
 			// Encrypt/Decrypt ROM.
-			bool doEncrypt;
-			if (d->secArea == NintendoDSPrivate::NDS_SECAREA_DECRYPTED) {
-				// Encrypt the secure area.
-				doEncrypt = true;
-			} else if (d->secArea == NintendoDSPrivate::NDS_SECAREA_ENCRYPTED) {
-				// Decrypt the secure area.
-				doEncrypt = false;
-			} else {
-				// Cannot perform this ROM operation.
-				ret = -ENOTSUP;
-				pParams->status = ret;
-				pParams->msg = C_("NintendoDS", "Secure area cannot be adjusted in this ROM.");
-				break;
+			bool doEncrypt = false;
+			switch (d->secArea) {
+				case NintendoDSPrivate::NDS_SECAREA_DECRYPTED:
+					// Encrypt the secure area.
+					doEncrypt = true;
+					break;
+				case NintendoDSPrivate::NDS_SECAREA_ENCRYPTED:
+					// Decrypt the secure area.
+					doEncrypt = false;
+					break;
+				default:
+					// Cannot perform this ROM operation.
+					ret = -ENOTSUP;
+					pParams->status = ret;
+					pParams->msg = C_("NintendoDS", "Secure area cannot be adjusted in this ROM.");
+					break;
 			}
 
 #ifdef ENABLE_DSi_SECURE_AREA
@@ -468,20 +471,27 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 					ret = -EIO;
 				}
 				pParams->status = ret;
-				pParams->msg = C_("NintendoDS", "Could not read the NDS Secure Area.");
+				// tr: {:s} == "NDS" or "DSi"
+				pParams->msg = fmt::format(FRUN(C_("NintendoDS", "Could not read the {:s} Secure Area.")), "NDS");
 				break;
 			}
 
 			// Run the actual encryption/decryption.
-			ret = doEncrypt
-				? ndscrypt_encrypt_secure_area(ndsbuf->data(), ndsbuf->size(), NDSCRYPT_BF_NDS)
-				: ndscrypt_decrypt_secure_area(ndsbuf->data(), ndsbuf->size(), NDSCRYPT_BF_NDS);
+			if (doEncrypt) {
+				ret = ndscrypt_encrypt_secure_area(ndsbuf->data(), ndsbuf->size(), NDSCRYPT_BF_NDS);
+			} else {
+				ret = ndscrypt_decrypt_secure_area(ndsbuf->data(), ndsbuf->size(), NDSCRYPT_BF_NDS);
+			}
 			if (ret != 0) {
 				// Error encrypting/decrypting.
 				pParams->status = -EIO;
-				pParams->msg = doEncrypt
-					? C_("NintendoDS", "Encrypting the NDS Secure Area failed.")
-					: C_("NintendoDS", "Decrypting the NDS Secure Area failed.");
+				if (doEncrypt) {
+					// tr: {:s} == "NDS" or "DSi"
+					pParams->msg = fmt::format(FRUN(C_("NintendoDS", "Encrypting the {:s} Secure Area failed.")), "NDS");
+				} else {
+					// tr: {:s} == "NDS" or "DSi"
+					pParams->msg = fmt::format(FRUN(C_("NintendoDS", "Decrypting the {:s} Secure Area failed.")), "NDS");
+				}
 				break;
 			}
 
@@ -502,21 +512,28 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 						ret = -EIO;
 					}
 					pParams->status = ret;
-					pParams->msg = C_("NintendoDS", "Could not read the DSi Secure Area.");
+					// tr: {:s} == "NDS" or "DSi"
+					pParams->msg = fmt::format(FRUN(C_("NintendoDS", "Could not read the {:s} Secure Area.")), "DSi");
 					break;
 				}
 
 				// Run the actual encryption/decryption.
 				// TODO: DSi development cartridge detection.
-				ret = doEncrypt
-					? ndscrypt_encrypt_secure_area(dsibuf->data(), dsibuf->size(), NDSCRYPT_BF_DSi)
-					: ndscrypt_decrypt_secure_area(dsibuf->data(), dsibuf->size(), NDSCRYPT_BF_DSi);
+				if (doEncrypt) {
+					ret = ndscrypt_encrypt_secure_area(dsibuf->data(), dsibuf->size(), NDSCRYPT_BF_DSi);
+				} else {
+					ret = ndscrypt_decrypt_secure_area(dsibuf->data(), dsibuf->size(), NDSCRYPT_BF_DSi);
+				}
 				if (ret != 0) {
 					// Error encrypting/decrypting.
 					pParams->status = -EIO;
-					pParams->msg = doEncrypt
-						? C_("NintendoDS", "Encrypting the DSi Secure Area failed.")
-						: C_("NintendoDS", "Decrypting the DSi Secure Area failed.");
+					if (doEncrypt) {
+						// tr: {:s} == "NDS" or "DSi"
+						pParams->msg = fmt::format(FRUN(C_("NintendoDS", "Encrypting the {:s} Secure Area failed.")), "DSi");
+					} else {
+						// tr: {:s} == "NDS" or "DSi"
+						pParams->msg = fmt::format(FRUN(C_("NintendoDS", "Decrypting the {:s} Secure Area failed.")), "DSi");
+					}
 					break;
 				}
 
@@ -529,7 +546,8 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 						ret = -EIO;
 					}
 					pParams->status = ret;
-					pParams->msg = C_("NintendoDS", "Could not write the updated DSi Secure Area.");
+					// tr: {:s} == "NDS" or "DSi"
+					pParams->msg = fmt::format(FRUN(C_("NintendoDS", "Could not write the updated {:s} Secure Area.")), "DSi");
 					break;
 				}
 			}
@@ -545,7 +563,8 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 					ret = -EIO;
 				}
 				pParams->status = ret;
-				pParams->msg = C_("NintendoDS", "Could not write the updated NDS Secure Area.");
+				// tr: {:s} == "NDS" or "DSi"
+				pParams->msg = fmt::format(FRUN(C_("NintendoDS", "Could not write the updated {:s} Secure Area.")), "NDS");
 				break;
 			}
 
