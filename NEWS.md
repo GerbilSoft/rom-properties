@@ -4,6 +4,8 @@
 
 * Bug fixes:
   * Windows: Fix potential UI language misdetection in some cases.
+    * This only seemed to affect rp-config, or at least no bug reports
+      were filed for anything regarding language selection...
   * Linux (and Windows debugging): Check the LANG variable first for the
     system language, then LC_MESSAGES and LC_ALL.
 
