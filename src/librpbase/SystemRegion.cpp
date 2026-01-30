@@ -83,7 +83,7 @@ static const array<LanguageOffTbl_t, 14> languages_offtbl = {{
 }};
 
 /**
- * Get the LC_MESSAGES or LC_ALL environment variable.
+ * Get the LANG, LC_MESSAGES, or LC_ALL environment variable.
  * @return Value, or nullptr if not found.
  */
 static const char *get_LC_MESSAGES(void)
@@ -92,22 +92,26 @@ static const char *get_LC_MESSAGES(void)
 	// TODO: On Windows startup in main() functions, get LC_ALL/LC_MESSAGES vars if msvc doesn't?
 
 	// Environment variables override the system defaults.
-	const char *locale = getenv("LC_MESSAGES");
+	const char *locale = getenv("LANG");
+	if (!locale || locale[0] == '\0') {
+		locale = getenv("LC_MESAGES");
+	}
 	if (!locale || locale[0] == '\0') {
 		locale = getenv("LC_ALL");
 	}
 #ifndef _WIN32
-	// NOTE: MSVCRT doesn't support LC_MESSAGES.
+	// NOTE: MSVCRT returns huge opaque lists.
+	// glibc usually returns a locale.
 	if (!locale || locale[0] == '\0') {
 		locale = setlocale(LC_MESSAGES, nullptr);
 	}
-#endif /* _WIN32 */
 	if (!locale || locale[0] == '\0') {
 		locale = setlocale(LC_ALL, nullptr);
 	}
+#endif /* _WIN32 */
 
 	if (!locale || locale[0] == '\0') {
-		// Unable to get the LC_MESSAGES or LC_ALL variables.
+		// Unable to get the LANG, LC_MESSAGES, or LC_ALL variables.
 		return nullptr;
 	}
 

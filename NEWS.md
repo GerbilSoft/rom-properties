@@ -2,6 +2,11 @@
 
 ## v2.8 (released 2026/??/??)
 
+* Bug fixes:
+  * Windows: Fix potential UI language misdetection in some cases.
+  * Linux (and Windows debugging): Check the LANG variable first for the
+    system language, then LC_MESSAGES and LC_ALL.
+
 ## v2.7.1 (released 2026/01/18)
 
 * New features:
