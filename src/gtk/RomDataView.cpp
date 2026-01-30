@@ -71,6 +71,10 @@ static void	rp_rom_data_view_finalize	(GObject	*object);
 static void	rp_rom_data_view_desc_format_type_changed(RpRomDataView *page,
 						 RpDescFormatType desc_format_type);
 
+static void	rp_rom_data_view_adjust_image_height	(RpDragImage	*image,
+							 int		 img_w,
+							 int		 img_h,
+							 int		 imgStdHeight);
 static void	rp_rom_data_view_init_header_row(RpRomDataView	*page);
 static gboolean	rp_rom_data_view_update_display	(RpRomDataView	*page);
 static gboolean	rp_rom_data_view_load_rom_data	(RpRomDataView	*page);
@@ -639,6 +643,31 @@ rp_rom_data_view_is_showing_data(RpRomDataView *page)
 	return (bool)page->cxx->romData;
 }
 
+/**
+ * Adjust the height for an image based on the "standard" height.
+ * Used by initHeaderRow().
+ *
+ * @param image DragImage
+ * @param img_w rp_image width
+ * @param img_h rp_image width
+ * @param imgStdHeight "Standard" height (usually 32px at 96dpi)
+ */
+static void
+rp_rom_data_view_adjust_image_height(RpDragImage *image, int img_w, int img_h, int imgStdHeight)
+{
+	assert(img_w > 0);
+	assert(img_h > 0);
+
+	if (img_h != imgStdHeight) {
+		// Need to scale the image to match the aspect ratio.
+		const int img_scaled_w = rintf((float)imgStdHeight * ((float)img_w / (float)img_h));
+		gtk_widget_set_size_request(GTK_WIDGET(image), img_scaled_w, imgStdHeight);
+	} else {
+		// Use the original image size.
+		gtk_widget_set_size_request(GTK_WIDGET(image), img_w, img_h);
+	}
+}
+
 static void
 rp_rom_data_view_init_header_row(RpRomDataView *page)
 {
@@ -687,16 +716,8 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 		const rp_image_const_ptr img = romData->image(RomData::IMG_INT_BANNER);
 		ok = rp_drag_image_set_rp_image(RP_DRAG_IMAGE(page->imgBanner), img);
 		if (ok) {
-			const int banner_w = img->width();
-			const int banner_h = img->height();
-			if (banner_h != imgStdHeight) {
-				// Need to scale the banner image to match the aspect ratio.
-				const int banner_scaled_w = rintf((float)imgStdHeight * ((float)banner_w / (float)banner_h));
-				gtk_widget_set_size_request(page->imgBanner, banner_scaled_w, imgStdHeight);
-			} else {
-				// Use the original banner size.
-				gtk_widget_set_size_request(page->imgBanner, banner_w, banner_h);
-			}
+			// Adjust the banner size.
+			rp_rom_data_view_adjust_image_height(RP_DRAG_IMAGE(page->imgBanner), img->width(), img->height(), imgStdHeight);
 		}
 	}
 	gtk_widget_set_visible(page->imgBanner, ok);
@@ -736,16 +757,8 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 			}
 
 			if (ok) {
-				assert(icon_w > 0);
-				assert(icon_h > 0);
-				if (icon_h != imgStdHeight) {
-					// Need to scale the icon image to match the aspect ratio.
-					const int icon_scaled_w = rintf((float)imgStdHeight * ((float)icon_w / (float)icon_h));
-					gtk_widget_set_size_request(page->imgIcon, icon_scaled_w, imgStdHeight);
-				} else {
-					// Use the original icon size.
-					gtk_widget_set_size_request(page->imgIcon, icon_w, icon_h);
-				}
+				// Adjust the icon size.
+				rp_rom_data_view_adjust_image_height(RP_DRAG_IMAGE(page->imgBanner), icon_w, icon_h, imgStdHeight);
 			}
 		}
 	}

@@ -191,6 +191,15 @@ public:
 
 public:
 	/**
+	 * Adjust the height for an image based on the "standard" height.
+	 * Used by loadImages().
+	 *
+	 * @param label DragImageLabel
+	 * @param imgStdHeight "Standard" height (usually 32px at 96dpi)
+	 */
+	static void adjustImageHeight(DragImageLabel *label, int imgStdHeight);
+
+	/**
 	 * Load the banner and icon as HBITMAPs.
 	 *
 	 * This function should bee called on startup and if

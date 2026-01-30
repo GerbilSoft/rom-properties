@@ -119,6 +119,16 @@ public:
 
 public:
 	/**
+	 * Adjust the height for an image based on the "standard" height.
+	 * Used by initHeaderRow().
+	 *
+	 * @param label DragImageLabel
+	 * @param imgSize rp_image size
+	 * @param imgStdHeight "Standard" height (usually 32px at 96dpi)
+	 */
+	static void adjustImageHeight(DragImageLabel *label, QSize imgSize, int imgStdHeight);
+
+	/**
 	 * Initialize the header row widgets.
 	 * The widgets must have already been created by ui.setupUi().
 	 */

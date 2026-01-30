@@ -94,6 +94,31 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 }
 
 /**
+ * Adjust the height for an image based on the "standard" height.
+ * Used by loadImages().
+ *
+ * @param label DragImageLabel
+ * @param imgStdHeight "Standard" height (usually 32px at 96dpi)
+ */
+void RP_ShellPropSheetExt_Private::adjustImageHeight(DragImageLabel *label, int imgStdHeight)
+{
+	const SIZE labelSize = {label->width(), label->height()};
+	if (labelSize.cy != imgStdHeight) {
+		// Need to scale the label to match the aspect ratio.
+		const SIZE labelScaledSize = {
+			static_cast<LONG>(rintf(
+				static_cast<float>(imgStdHeight) * (static_cast<float>(labelSize.cx) /
+				static_cast<float>(labelSize.cy)))),
+			imgStdHeight
+		};
+		label->setRequiredSize(labelScaledSize);
+	} else {
+		// Use the original size.
+		label->setRequiredSize(labelSize);
+	}
+}
+
+/**
  * Load the banner and icon as HBITMAPs.
  *
  * This function should be called on startup and if
@@ -124,21 +149,7 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 
 			ok = lblBanner->setRpImage(banner);
 			if (ok) {
-				// Adjust the banner size.
-				const SIZE bannerSize = {banner->width(), banner->height()};
-				if (bannerSize.cy != imgStdHeight) {
-					// Need to scale the banner label to match the aspect ratio.
-					const SIZE bannerScaledSize = {
-						static_cast<LONG>(rintf(
-							static_cast<float>(imgStdHeight) * (static_cast<float>(bannerSize.cx) /
-							static_cast<float>(bannerSize.cy)))),
-						imgStdHeight
-					};
-					lblBanner->setRequiredSize(bannerScaledSize);
-				} else {
-					// Use the original banner size.
-					lblBanner->setRequiredSize(bannerSize);
-				}
+				adjustImageHeight(lblBanner.get(), imgStdHeight);
 			}
 		}
 	}
@@ -167,21 +178,7 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 			}
 
 			if (ok) {
-				// Adjust the icon size.
-				const SIZE iconSize = {icon->width(), icon->height()};
-				if (iconSize.cy != imgStdHeight) {
-					// Need to scale the icon label to match the aspect ratio.
-					const SIZE iconScaledSize = {
-						static_cast<LONG>(rintf(
-							static_cast<float>(imgStdHeight) * (static_cast<float>(iconSize.cx) /
-							static_cast<float>(iconSize.cy)))),
-						imgStdHeight
-					};
-					lblIcon->setRequiredSize(iconScaledSize);
-				} else {
-					// Use the original icon size.
-					lblIcon->setRequiredSize(iconSize);
-				}
+				adjustImageHeight(lblIcon.get(), imgStdHeight);
 			}
 		}
 	}

@@ -116,6 +116,35 @@ void RomDataViewPrivate::createOptionsButton(void)
 }
 
 /**
+ * Adjust the height for an image based on the "standard" height.
+ * Used by initHeaderRow().
+ *
+ * @param label DragImageLabel
+ * @param imgSize rp_image size
+ * @param imgStdHeight "Standard" height (usually 32px at 96dpi)
+ */
+void RomDataViewPrivate::adjustImageHeight(DragImageLabel *label, QSize imgSize, int imgStdHeight)
+{
+	assert(imgSize.width() > 0);
+	assert(imgSize.height() > 0);
+
+	if (imgSize.height() != imgStdHeight) {
+		// Need to scale the banner label to match the aspect ratio.
+		const QSize labelScaledSize(rintf(
+			static_cast<float>(imgStdHeight) * (static_cast<float>(imgSize.width()) / static_cast<float>(imgSize.height()))),
+			imgStdHeight);
+		label->setMinimumSize(labelScaledSize);
+		label->setMaximumSize(labelScaledSize);
+		label->setScaledContents(true);
+	} else {
+		// Use the original banner size.
+		label->setMinimumSize(imgSize);
+		label->setMaximumSize(imgSize);
+		label->setScaledContents(false);
+	}
+}
+
+/**
  * Initialize the header row widgets.
  * The widgets must have already been created by ui.setupUi().
  */
@@ -163,21 +192,7 @@ void RomDataViewPrivate::initHeaderRow(void)
 			ok = ui.lblBanner->setRpImage(img);
 			if (ok) {
 				// Adjust the banner size.
-				const QSize bannerSize(img->width(), img->height());
-				if (bannerSize.height() != imgStdHeight) {
-					// Need to scale the banner label to match the aspect ratio.
-					const QSize bannerScaledSize(rintf(
-						static_cast<float>(imgStdHeight) * (static_cast<float>(bannerSize.width()) / static_cast<float>(bannerSize.height()))),
-						imgStdHeight);
-					ui.lblBanner->setMinimumSize(bannerScaledSize);
-					ui.lblBanner->setMaximumSize(bannerScaledSize);
-					ui.lblBanner->setScaledContents(true);
-				} else {
-					// Use the original banner size.
-					ui.lblBanner->setMinimumSize(bannerSize);
-					ui.lblBanner->setMaximumSize(bannerSize);
-					ui.lblBanner->setScaledContents(false);
-				}
+				adjustImageHeight(ui.lblBanner, QSize(img->width(), img->height()), imgStdHeight);
 			}
 		}
 	}
@@ -219,20 +234,8 @@ void RomDataViewPrivate::initHeaderRow(void)
 			}
 
 			if (ok) {
-				if (iconSize.height() != imgStdHeight) {
-					// Need to scale the icon label to match the aspect ratio.
-					const QSize iconScaledSize(rintf(
-						static_cast<float>(imgStdHeight) * (static_cast<float>(iconSize.width()) / static_cast<float>(iconSize.height()))),
-						imgStdHeight);
-					ui.lblIcon->setMinimumSize(iconScaledSize);
-					ui.lblIcon->setMaximumSize(iconScaledSize);
-					ui.lblIcon->setScaledContents(true);
-				} else {
-					// Use the original icon size.
-					ui.lblIcon->setMinimumSize(iconSize);
-					ui.lblIcon->setMaximumSize(iconSize);
-					ui.lblIcon->setScaledContents(false);
-				}
+				// Adjust the icon size.
+				adjustImageHeight(ui.lblIcon, iconSize, imgStdHeight);
 			}
 		}
 	}
