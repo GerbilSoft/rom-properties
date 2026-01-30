@@ -2739,7 +2739,7 @@ msgstr "The VMI file was not found."
 #: ../src/libromdata/Console/DreamcastSave.cpp:1326
 msgctxt "DreamcastSave"
 msgid "Unrecognized VMS/VMI combination."
-msgstr "Unrecognized VMS/VMI combination."
+msgstr "Unrecognised VMS/VMI combination."
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1333
 msgctxt "DreamcastSave"
@@ -9947,7 +9947,7 @@ msgstr "Linear RGB"
 #: ../src/librptexture/fileformat/Qoi.cpp:279
 msgctxt "RomData"
 msgid "Color Space"
-msgstr "Color Space"
+msgstr "Colour Space"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1381
 msgctxt "PowerVR3|ChannelType"
