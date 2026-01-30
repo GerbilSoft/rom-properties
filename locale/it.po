@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-01-29 00:31-0500\n"
-"PO-Revision-Date: 2026-01-29 06:37\n"
+"PO-Revision-Date: 2026-01-30 22:45\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -3283,7 +3283,7 @@ msgstr "Activator"
 #: ../src/libromdata/Console/MegaDrive.cpp:485
 msgctxt "MegaDrive|I/O"
 msgid "Mega Mouse"
-msgstr "Mega Mouse"
+msgstr "Sega Mouse"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:505
 msgctxt "MegaDrive|I/O"
