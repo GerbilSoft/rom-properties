@@ -4752,7 +4752,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:168
 msgctxt "WiiWAD"
 msgid "SRL extraction is not supported in NoCrypto builds."
-msgstr "Расшифрование не поддерживается в этой сборке."
+msgstr ""
 
 #: ../src/libromdata/Console/WiiWIBN.cpp:462
 msgctxt "WiiWIBN"
