@@ -377,7 +377,8 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 
 	// Field height.
 	int field_cy = size.cy;
-	if (lf_count > 0) {
+	const bool isMultiline = (lf_count > 0);
+	if (isMultiline) {
 		// Multiple lines.
 		// NOTE: Only add 5/8 of field_cy per line.
 		// FIXME: 5/8 needs adjustment...
@@ -464,11 +465,15 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 			// Create a read-only EDIT control.
 			// The STATIC control doesn't allow the user
 			// to highlight and copy data.
-			DWORD dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS |
-			                ES_READONLY | ES_AUTOHSCROLL;
-			if (lf_count > 0) {
-				// Multiple lines.
-				dwStyle |= ES_MULTILINE;
+			DWORD dwStyle;
+			if (isMultiline) {
+				// Multiple lines
+				dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS |
+				          ES_READONLY | ES_AUTOHSCROLL | ES_MULTILINE;
+			} else {
+				// Single line
+				dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS |
+				          ES_READONLY | ES_AUTOHSCROLL;
 			}
 
 			hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
@@ -481,7 +486,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 			// initial selection. (DLGC_HASSETSEL)
 			// Reference: http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
 			// TODO: Error handling?
-			SUBCLASSPROC proc = (dwStyle & ES_MULTILINE)
+			SUBCLASSPROC proc = (isMultiline)
 				? LibWin32UI::MultiLineEditProc
 				: LibWin32UI::SingleLineEditProc;
 			SetWindowSubclass(hDlgItem, proc,
@@ -516,12 +521,14 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 		// The STATIC control doesn't allow the user
 		// to highlight and copy data.
 		DWORD dwStyle;
-		if (lf_count > 0) {
-			// Multiple lines.
-			dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS | ES_READONLY | ES_AUTOHSCROLL | ES_MULTILINE;
+		if (isMultiline) {
+			// Multiple lines
+			dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS |
+			          ES_READONLY | ES_AUTOHSCROLL | ES_MULTILINE;
 		} else {
-			// Single line.
-			dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS | ES_READONLY | ES_AUTOHSCROLL;
+			// Single line
+			dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS |
+			          ES_READONLY | ES_AUTOHSCROLL;
 		}
 		hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
 			WC_EDIT, str_nl.c_str(), dwStyle,
@@ -544,7 +551,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 		// initial selection. (DLGC_HASSETSEL)
 		// Reference:  http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
 		// TODO: Error handling?
-		SUBCLASSPROC proc = (dwStyle & ES_MULTILINE)
+		SUBCLASSPROC proc = (isMultiline)
 			? LibWin32UI::MultiLineEditProc
 			: LibWin32UI::SingleLineEditProc;
 		SetWindowSubclass(hDlgItem, proc,
