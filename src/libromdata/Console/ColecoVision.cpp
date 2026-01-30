@@ -448,7 +448,7 @@ int ColecoVision::loadFieldData(void)
 	// TODO: Various table addresses?
 
 	// Entry point
-	d->fields.addField_string_numeric(C_("ColecoVision", "Entry Point"),
+	d->fields.addField_string_numeric(C_("RomData", "Entry Point"),
 		le16_to_cpu(romHeader->entry_point), RomFields::Base::Hex, 4,
 		RomFields::STRF_MONOSPACE);
 
@@ -456,7 +456,7 @@ int ColecoVision::loadFieldData(void)
 	d->addField_z80vec(C_("ColecoVision", "IRQ Vector"), 0x801E, romHeader->irq_int_vect);
 
 	// NMI vector
-	d->addField_z80vec(C_("ColecoVision", "IRQ Vector"), 0x8021, romHeader->nmi_int_vect);
+	d->addField_z80vec(C_("ColecoVision", "NMI Vector"), 0x8021, romHeader->nmi_int_vect);
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields.count());

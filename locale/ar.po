@@ -2383,11 +2383,6 @@ msgctxt "ColecoVision"
 msgid "Copyright Year"
 msgstr ""
 
-#: ../src/libromdata/Console/ColecoVision.cpp:451
-msgctxt "ColecoVision"
-msgid "Entry Point"
-msgstr ""
-
 #: ../src/libromdata/Console/ColecoVision.cpp:456
 #: ../src/libromdata/Console/ColecoVision.cpp:459
 msgctxt "ColecoVision"
@@ -3415,6 +3410,7 @@ msgctxt "N64"
 msgid "Game ID"
 msgstr ""
 
+#: ../src/libromdata/Console/ColecoVision.cpp:451
 #: ../src/libromdata/Console/N64.cpp:344 ../src/libromdata/Handheld/DMG.cpp:677
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:386
 #: ../src/libromdata/Handheld/GameCom.cpp:723
