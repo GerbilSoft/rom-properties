@@ -34,7 +34,7 @@ LPVOID LoadResource_i18n(HMODULE hModule, LPCTSTR lpType, DWORD dwResId)
 	HGLOBAL hGlobal;
 
 	const uint32_t lc = SystemRegion::getLanguageCode();
-	//const uint32_t cc = SystemRegion::getCountryCode();
+	const uint32_t cc = SystemRegion::getCountryCode();
 	WORD wLanguage = 0;		// Desired language code.
 	WORD wLanguageFallback = 0;	// Fallback language.
 
@@ -55,15 +55,40 @@ LPVOID LoadResource_i18n(HMODULE hModule, LPCTSTR lpType, DWORD dwResId)
 		{'uk', MAKELANGID(LANG_UKRAINIAN, SUBLANG_DEFAULT)},
 	}};
 
-	if (lc != 0 && lc != 'en') {
-		// Search for the specified language code.
-		// NOTE: 'en' is special-cased and skips this search.
-		auto iter = std::lower_bound(lc_mappings.cbegin(), lc_mappings.cend(), lc,
-			[](const lc_mapping_t lc_mapping, uint32_t lc) {
-				return (lc_mapping.lc < lc);
-			});
-		if (iter != lc_mappings.cend() && iter->lc == lc) {
-			wLanguage = iter->wLanguage;
+	// Mappings for sub-language variants.
+	static const array<lc_mapping_t, 2> en_cc_mappings = {{
+		// TODO: Map others to en_GB?
+		{'GB', MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_UK)},
+		{'US', MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US)},
+	}};
+
+	switch (lc) {
+		case 0:
+			// No language code...
+			break;
+
+		case 'en': {
+			// Check for English sub-language codes.
+			auto iter = std::lower_bound(en_cc_mappings.cbegin(), en_cc_mappings.cend(), cc,
+				[](const lc_mapping_t cc_mapping, uint32_t cc) {
+					return (cc_mapping.lc < cc);
+				});
+			if (iter != en_cc_mappings.cend() && iter->lc == cc) {
+				wLanguage = iter->wLanguage;
+			}
+			break;
+		}
+
+		default: {
+			// Search for the specified language code.
+			auto iter = std::lower_bound(lc_mappings.cbegin(), lc_mappings.cend(), lc,
+				[](const lc_mapping_t lc_mapping, uint32_t lc) {
+					return (lc_mapping.lc < lc);
+				});
+			if (iter != lc_mappings.cend() && iter->lc == lc) {
+				wLanguage = iter->wLanguage;
+			}
+			break;
 		}
 	}
 
