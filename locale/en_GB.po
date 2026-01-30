@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-01-29 00:31-0500\n"
-"PO-Revision-Date: 2026-01-29 08:25\n"
+"PO-Revision-Date: 2026-01-30 21:04\n"
 "Last-Translator: \n"
 "Language-Team: English, United Kingdom\n"
 "Language: en_GB\n"
@@ -9859,7 +9859,7 @@ msgstr "Linear RGB"
 #: ../src/librptexture/fileformat/Qoi.cpp:279
 msgctxt "RomData"
 msgid "Color Space"
-msgstr "Color Space"
+msgstr "Colour Space"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1381
 msgctxt "PowerVR3|ChannelType"
