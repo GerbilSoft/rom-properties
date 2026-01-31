@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image_p.hpp: Image class. (Private class)                            *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,41 +18,52 @@ namespace LibRpTexture {
 class rp_image_backend;
 class rp_image_private
 {
-	public:
-		/**
-		 * Create an rp_image_private.
-		 *
-		 * If an rp_image_backend has been registered, that backend
-		 * will be used; otherwise, the defaul tbackend will be used.
-		 *
-		 * @param width Image width.
-		 * @param height Image height.
-		 * @param format Image format.
-		 */
-		rp_image_private(int width, int height, rp_image::Format format);
+public:
+	/**
+	 * Create an rp_image_private.
+	 *
+	 * If an rp_image_backend has been registered, that backend
+	 * will be used; otherwise, the defaul tbackend will be used.
+	 *
+	 * @param width Image width.
+	 * @param height Image height.
+	 * @param format Image format.
+	 */
+	rp_image_private(int width, int height, rp_image::Format format);
 
-		/**
-		 * Create an rp_image_private using the specified rp_image_backend.
-		 *
-		 * NOTE: This rp_image will take ownership of the rp_image_backend.
-		 *
-		 * @param backend rp_image_backend.
-		 */
-		explicit rp_image_private(rp_image_backend *backend);
+	/**
+	 * Create an rp_image_private using the specified rp_image_backend.
+	 *
+	 * NOTE: This rp_image will take ownership of the rp_image_backend.
+	 *
+	 * @param backend rp_image_backend.
+	 */
+	explicit rp_image_private(rp_image_backend *backend);
 
-	private:
-		RP_DISABLE_COPY(rp_image_private)
+private:
+	RP_DISABLE_COPY(rp_image_private)
 
-	public:
-		static rp_image::rp_image_backend_creator_fn backend_fn;
+public:
+	static rp_image::rp_image_backend_creator_fn backend_fn;
 
-	public:
-		// Image backend
-		std::unique_ptr<rp_image_backend> backend;
+	/**
+	 * Swap R/B channels.
+	 *
+	 * Called by rp_image::swizzle_cpp().
+	 * Don't call this function directly; rp_image::swizzle()
+	 * uses CPU-optimized versions if available.
+	 *
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int swap_RB_channels(void);
 
-		// Metadata
-		bool has_sBIT;
-		rp_image::sBIT_t sBIT;
+public:
+	// Image backend
+	std::unique_ptr<rp_image_backend> backend;
+
+	// Metadata
+	bool has_sBIT;
+	rp_image::sBIT_t sBIT;
 };
 
 }

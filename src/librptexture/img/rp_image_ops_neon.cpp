@@ -3,7 +3,7 @@
  * rp_image_ops.cpp: Image class. (operations)                             *
  * NEON-optimized version.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,6 +25,7 @@ using std::array;
 static constexpr size_t VEC_LEN_U32 = 4;
 typedef uint8x16_t uint8xVTBL_t;
 typedef uint32x4_t uint32xVTBL_t;
+#define vdupVTBL_n_u32 vdupq_n_u32
 #define vld1VTBL_u8  vld1q_u8
 #define vld1VTBL_u32 vld1q_u32
 #define vst1VTBL_u8  vst1q_u8
@@ -35,6 +36,7 @@ typedef uint32x4_t uint32xVTBL_t;
 static constexpr size_t VEC_LEN_U32 = 2;
 typedef uint8x8_t uint8xVTBL_t;
 typedef uint32x2_t uint32xVTBL_t;
+#define vdupVTBL_n_u32 vdup_n_u32
 #define vld1VTBL_u8  vld1_u8
 #define vld1VTBL_u32 vld1_u32
 #define vst1VTBL_u8  vst1_u8
@@ -97,6 +99,8 @@ int rp_image::swizzle_neon(const char *swz_spec)
 	// This can be used for [rgba0].
 	// For 1, we'll need a separate "por" mask.
 	// N.B.: For vtbl, an out-of-range index (e.g. 0xFF) will return 0, i.e. "zero the byte".
+	// NOTE: Using 0xF0 because the pshufb_mask_u32 builder adds 0x04, 0x08, and 0x0C
+	// to the register indexes.
 	u8_32 pshufb_mask_vals;
 	u8_32 por_mask_vals;
 #define SET_MASK_VALS(n, shuf, por) do { \
@@ -110,8 +114,8 @@ int rp_image::swizzle_neon(const char *swz_spec)
 			case 'g':	SET_MASK_VALS((n),    1, 0x00);	break; \
 			case 'r':	SET_MASK_VALS((n),    2, 0x00);	break; \
 			case 'a':	SET_MASK_VALS((n),    3, 0x00);	break; \
-			case '0':	SET_MASK_VALS((n), 0xFF, 0x00);	break; \
-			case '1':	SET_MASK_VALS((n), 0xFF, 0xFF);	break; \
+			case '0':	SET_MASK_VALS((n), 0xF0, 0x00);	break; \
+			case '1':	SET_MASK_VALS((n), 0xF0, 0xFF);	break; \
 			default: \
 				assert(!"Invalid swizzle value."); \
 				SET_MASK_VALS((n), 0xFF, 0x00); \
@@ -132,17 +136,9 @@ int rp_image::swizzle_neon(const char *swz_spec)
 		pshufb_mask_vals.u32 + 0x0C0C0C0C
 #endif /* RP_CPU_ARM64 */
 	}};
-	const array<uint32_t, VEC_LEN_U32> por_mask_u32 = {{
-		por_mask_vals.u32,
-		por_mask_vals.u32,
-#ifdef RP_CPU_ARM64
-		por_mask_vals.u32,
-		por_mask_vals.u32
-#endif /* RP_CPU_ARM64 */
-	}};
 
 	uint32xVTBL_t shuf_mask = vld1VTBL_u32(pshufb_mask_u32.data());
-	uint32xVTBL_t or_mask = vld1VTBL_u32(por_mask_u32.data());
+	uint32xVTBL_t or_mask = vdupVTBL_n_u32(por_mask_vals.u32);
 
 	// Channel indexes
 	static constexpr unsigned int SWZ_CH_B = 0U;

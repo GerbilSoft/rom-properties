@@ -3,7 +3,7 @@
  * rpcli.cpp: Command-line interface for properties.                       *
  *                                                                         *
  * Copyright (c) 2016-2018 by Egor.                                        *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -50,10 +50,8 @@ using namespace LibRomData;
 #endif /* _WIN32 */
 using namespace LibRpTexture;
 
-#ifdef ENABLE_SIXEL
 // Sixel
 #include "rp_sixel.hpp"
-#endif /* ENABLE_SIXEL */
 
 #ifdef ENABLE_DECRYPTION
 #  include "verifykeys.hpp"
@@ -258,13 +256,16 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 
 /**
  * Shows info about file
- * @param filename ROM filename
- * @param json Is program running in json mode?
- * @param extract Vector of image extraction parameters
- * @param lc Language code (0 for default)
- * @param flags ROMOutput flags (see OutputFlags)
+ * @param filename	[in] ROM filename
+ * @param json		[in] Is program running in json mode?
+ * @param doSixel	[in] Should Sixel/Kitty graphics be printed?
+ *               	     (for text output in supported terminals only)
+ * @param extract	[in] Vector of image extraction parameters
+ * @param lc		[in] Language code (0 for default)
+ * @param flags		[in] ROMOutput flags (see OutputFlags)
  */
-static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> &extract,
+static void DoFile(const TCHAR *filename, bool json, bool doSixel,
+	const vector<ExtractParam> &extract,
 	uint32_t lc = 0, unsigned int flags = 0)
 {
 	RomDataPtr romData;
@@ -335,6 +336,12 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			cout << JSONROMOutput(romData.get(), flags) << '\n';
 #endif /* _WIN32 */
 		} else {
+			// If this is a tty and ANSI is supported,
+			// print the icon/banner using libsixel.
+			if (doSixel && (gsvt_supports_kitty() || gsvt_supports_sixel())) {
+				print_sixel_icon_banner(romData);
+			}
+
 #ifdef _WIN32
 			// Windows: Use gsvt_fwrite() for faster console output where applicable.
 			// FIXME: gsvt_cout wrapper.
@@ -344,12 +351,6 @@ static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam> 
 			// TODO: Error checking.
 			Gsvt::StdOut.fputs(str);
 #else /* !_WIN32 */
-#ifdef ENABLE_SIXEL
-			// If this is a tty, print the icon/banner using libsixel.
-			if (Gsvt::StdOut.isConsole()) {
-				print_sixel_icon_banner(romData);
-			}
-#endif /* ENABLE_SIXEL */
 			// Not Windows: Write directly to cout.
 			// FIXME: gsvt_cout wrapper.
 			cout << ROMOutput(romData.get(), lc, flags) << '\n';
@@ -602,9 +603,9 @@ static void ShowUsage(void)
 {
 	// TODO: Use argv[0] instead of hard-coding 'rpcli'?
 #ifdef ENABLE_DECRYPTION	
-	const char *const s_usage = C_("rpcli", "Usage: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...");
+	const char *const s_usage = C_("rpcli", "Usage: rpcli [-cCdjkpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...");
 #else /* !ENABLE_DECRYPTION */
-	const char *const s_usage = C_("rpcli", "Usage: rpcli [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...");
+	const char *const s_usage = C_("rpcli", "Usage: rpcli [-cCdjpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...");
 #endif /* ENABLE_DECRYPTION */
 	Gsvt::StdErr.fputs(s_usage);
 	Gsvt::StdErr.newline();
@@ -616,16 +617,18 @@ static void ShowUsage(void)
 
 	// Normal commands
 #ifdef ENABLE_DECRYPTION
-	static const array<cmd_t, 9> cmds = {{
+	static const array<cmd_t, 11> cmds = {{
 		{"  -k:  ", NOP_C_("rpcli", "Verify encryption keys in keys.conf.")},
 #else /* !ENABLE_DECRYPTION */
-	static const array<cmd_t, 8> cmds = {{
+	static const array<cmd_t, 10> cmds = {{
 #endif /* ENABLE_DECRYPTION */
 		{"  -c:  ", NOP_C_("rpcli", "Print system region information.")},
-		{"  -p:  ", NOP_C_("rpcli", "Print system path information.")},
+		{"  -C:  ", NOP_C_("rpcli", "Force-enable ANSI escape sequences.")},
 		{"  -d:  ", NOP_C_("rpcli", "Skip ListData fields with more than 10 items. [text only]")},
 		{"  -j:  ", NOP_C_("rpcli", "Use JSON output format.")},
 		{"  -l:  ", NOP_C_("rpcli", "Retrieve the specified language from the ROM image.")},
+		{"  -p:  ", NOP_C_("rpcli", "Print system path information.")},
+		{"  -S:  ", NOP_C_("rpcli", "Disable Sixel/Kitty graphics. (only for terminal output)")},
 		{"  -xN: ", NOP_C_("rpcli", "Extract image N to outfile in PNG format.")},
 		{"  -mN: ", NOP_C_("rpcli", "Extract mipmap level N to outfile in PNG format.")},
 		{"  -a:  ", NOP_C_("rpcli", "Extract the animated icon to outfile in APNG format.")},
@@ -769,6 +772,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	unsigned int flags = 0;	// OutputFlags
 	// DoFile parameters
 	bool json = false;
+	bool doSixel = true;
 	vector<ExtractParam> extract;
 
 	// TODO: Add a command line option to override color output.
@@ -824,13 +828,28 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	for (int i = 1; i < argc; i++){
 		if (argv[i][0] == _T('-')){
 			switch (argv[i][1]) {
+			case _T('c'):
+				// Print the system region information.
+				PrintSystemRegion();
+				break;
+
 			case _T('C'):
 				// Force-enable ANSI escape sequences, even if it's not supported by the
 				// console or we're redirected to a file.
-				// TODO: Document this, and provide an option to force-disable ANSI.
+				// TODO: Provide an option to force-disable ANSI.
+				// NOTE: If the console doesn't normally support ANSI, disable Sixels,
+				// because we can't query a not-a-terminal.
+				if (!Gsvt::StdOut.supportsAnsi()) {
+					doSixel = false;
+				}
 				Gsvt::StdOut.forceColorOn();
 				Gsvt::StdErr.forceColorOn();
 				flags |= OF_Text_UseAnsiColor;
+				break;
+
+			case _T('d'):
+				// Skip RFT_LISTDATA with more than 10 items. (Text only)
+				flags |= LibRpBase::OF_SkipListDataMoreThan10;
 				break;
 
 #ifdef ENABLE_DECRYPTION
@@ -845,15 +864,11 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			}
 #endif /* ENABLE_DECRYPTION */
 
-			case _T('c'):
-				// Print the system region information.
-				PrintSystemRegion();
+			case _T('K'): {
+				// Skip internal images. (NOTE: Not documented.)
+				flags |= LibRpBase::OF_SkipInternalImages;
 				break;
-
-			case _T('p'):
-				// Print pathnames.
-				PrintPathnames();
-				break;
+			}
 
 			case _T('l'): {
 				// Language code.
@@ -900,17 +915,15 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				break;
 			}
 
-			case _T('K'): {
-				// Skip internal images. (NOTE: Not documented.)
-				flags |= LibRpBase::OF_SkipInternalImages;
+			case _T('p'):
+				// Print pathnames.
+				PrintPathnames();
 				break;
-			}
 
-			case _T('d'): {
-				// Skip RFT_LISTDATA with more than 10 items. (Text only)
-				flags |= LibRpBase::OF_SkipListDataMoreThan10;
+			case _T('S'):
+				// Disable Sixel/Kitty graphics output.
+				doSixel = false;
 				break;
-			}
 
 			case _T('x'): {
 				const TCHAR *const ts_imgType = argv[i] + 2;
@@ -1044,7 +1057,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #endif /* RP_OS_SCSI_SUPPORTED */
 			{
 				// Regular file.
-				DoFile(argv[i], json, extract, lc, flags);
+				DoFile(argv[i], json, doSixel, extract, lc, flags);
 			}
 
 #ifdef RP_OS_SCSI_SUPPORTED

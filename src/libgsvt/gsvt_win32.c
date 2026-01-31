@@ -2,11 +2,12 @@
  * ROM Properties Page shell extension. (libgsvt)                          *
  * gsvt_win32.c: Virtual Terminal wrapper functions. (Win32 version)       *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "gsvt.h"
+#include "gsvt_p.h"
 #include "common.h"
 
 // C includes
@@ -44,6 +45,9 @@ typedef NTSTATUS (WINAPI *pfnNtQueryObject_t)(
 	_Out_opt_ PULONG returnLength
 	);
 
+#ifndef ENABLE_PROCESSED_OUTPUT
+#  define ENABLE_PROCESSED_OUTPUT 0x1
+#endif /* ENABLE_PROCESSED_OUTPUT */
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #  define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4
 #endif /* !ENABLE_VIRTUAL_TERMINAL_PROCESSING */
@@ -77,9 +81,11 @@ struct _gsvt_console {
 	HANDLE hConsole;	// Console handle, or NULL if not a real console.
 };
 
+static gsvt_console __gsvt_stdin;
 static gsvt_console __gsvt_stdout;
 static gsvt_console __gsvt_stderr;
 
+//gsvt_console *gsvt_stdin  = &__gsvt_stdin;
 gsvt_console *gsvt_stdout = &__gsvt_stdout;
 gsvt_console *gsvt_stderr = &__gsvt_stderr;
 
@@ -197,7 +203,7 @@ static void gsvt_init_win32(gsvt_console *vt, FILE *f, DWORD fd)
 	vt->is_real_console = true;
 
 	// Does it support ANSI escape sequences?
-	dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+	dwMode |= (ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 	if (SetConsoleMode(hStd, dwMode)) {
 		// ANSI escape sequences enabled.
 		vt->supports_ansi = true;
@@ -234,7 +240,8 @@ static void gsvt_init_int(void)
 		SetConsoleOutputCP(CP_UTF8);
 	}
 
-	// Initialize the gsvt_console variables using stdout/stderr.
+	// Initialize the gsvt_console variables.
+	gsvt_init_win32(&__gsvt_stdin,  stdin,  STD_INPUT_HANDLE);
 	gsvt_init_win32(&__gsvt_stdout, stdout, STD_OUTPUT_HANDLE);
 	gsvt_init_win32(&__gsvt_stderr, stderr, STD_ERROR_HANDLE);
 }
@@ -286,6 +293,101 @@ bool gsvt_is_console(const gsvt_console *vt)
 bool gsvt_supports_ansi(const gsvt_console *vt)
 {
 	return vt->supports_ansi;
+}
+
+/**
+ * Send a terminal query command and retrieve a response string.
+ * @param cmd Query command
+ * @param buf Response buffer
+ * @param size Size of buf
+ * @param endchr Expected end character (Windows only!)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int gsvt_query_tty(const char *cmd, TCHAR *buf, size_t size, TCHAR endchr)
+{
+	// Both stdin and stdout must be actual consoles, and stdout must support ANSI.
+	if (!__gsvt_stdout.is_console || !__gsvt_stdin.is_console ||
+	    !__gsvt_stdout.supports_ansi)
+	{
+		// Not an actual console and/or does not support ANSI.
+		return -ENOTTY;
+	}
+
+	// Adjust TTY handling for the query.
+	DWORD dwOrigMode = 0;
+	if (!GetConsoleMode(__gsvt_stdin.hConsole, &dwOrigMode)) {
+		// Error getting the console mode.
+		// TODO: GetLastError()
+		return -EIO;
+	}
+	DWORD dwMode = dwOrigMode;
+	dwMode &= ~(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT);
+	if (!SetConsoleMode(__gsvt_stdin.hConsole, dwMode)) {
+		// Error setting the console mode.
+		// TODO: GetLastError()
+		return -EIO;
+	}
+	if (__gsvt_stdout.is_real_console) {
+		// This is a real Windows console.
+		WriteConsoleA(__gsvt_stdout.hConsole, cmd, sizeof(cmd)-1, NULL, NULL);
+	} else {
+		// Not a real console. Use fwrite().
+		fwrite(cmd, 1, sizeof(cmd)-1, __gsvt_stdout.stream);
+	}
+
+	// Wait 100ms for a response from the terminal.
+	DWORD dwRet = WaitForSingleObject(__gsvt_stdin.hConsole, 100);
+	if (dwRet != WAIT_OBJECT_0) {
+		// No response...
+		SetConsoleMode(__gsvt_stdin.hConsole, dwOrigMode);
+		// TODO: GetLastError()
+		return -EIO;
+	}
+
+	// Data should be in the format: "\x1B[6;_;_t"
+	// - Param 1: height
+	// - Param 2: width
+	// Keep reading until we find a lowercase letter.
+	size_t n = 0;
+	for (; n < size; n++) {
+		bool is_err = false;
+		if (__gsvt_stdin.is_real_console) {
+			// This is a real Windows console.
+			DWORD nNumberOfCharsRead = 0;
+			BOOL bRet = ReadConsole(__gsvt_stdin.hConsole, &buf[n], 1, &nNumberOfCharsRead, NULL);
+			is_err = (!bRet || nNumberOfCharsRead != 1);
+		} else {
+			// Not a real console. Use getc().
+			int chr = _gettc(__gsvt_stdin.stream);
+			if (chr < 0) {
+				// EOF?
+				is_err = true;
+			}
+			buf[n] = (TCHAR)chr;
+		}
+		if (is_err) {
+			// I/O error...
+			SetConsoleMode(__gsvt_stdin.hConsole, dwOrigMode);
+			// TODO: GetLastError()
+			return -EIO;
+		}
+
+		if (buf[n] == endchr) {
+			n++;
+			if (n < size) {
+				buf[n] = _T('\0');
+			}
+			break;
+		}
+	}
+
+	int ret = 0;
+	if (n >= size || buf[n] != _T('\0')) {
+		// Not a valid sequence?
+		ret = -EIO;
+	}
+	SetConsoleMode(__gsvt_stdin.hConsole, dwOrigMode);
+	return ret;
 }
 
 /** stdio wrapper functions **/

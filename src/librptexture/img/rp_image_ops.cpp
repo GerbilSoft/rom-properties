@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image_ops.cpp: Image class. (operations)                             *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -705,6 +705,48 @@ int rp_image::shrink(int width, int height)
 }
 
 /**
+ * Swap R/B channels.
+ *
+ * Called by rp_image::swizzle_cpp().
+ * Don't call this function directly; rp_image::swizzle()
+ * uses CPU-optimized versions if available.
+ *
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int rp_image_private::swap_RB_channels(void)
+{
+	// NOTE: Not checking if backend is valid, since it should have
+	// already been checked by rp_image::swizzle_cpp().
+	argb32_t *bits = static_cast<argb32_t*>(backend->data());
+	const int width = backend->width;
+	const unsigned int stride_diff = (backend->stride / sizeof(argb32_t)) - width;
+	for (int y = backend->height; y > 0; y--) {
+		int x;
+		for (x = width; x > 1; x -= 2, bits += 2) {
+			std::swap(bits[0].r, bits[0].b);
+			std::swap(bits[1].r, bits[1].b);
+		}
+
+		if (x == 1) {
+			// Last pixel.
+			std::swap(bits->r, bits->b);
+			bits++;
+		}
+
+		// Next row.
+		bits += stride_diff;
+	}
+
+	// Swap the R/B values in sBIT, if set.
+	if (has_sBIT) {
+		// TODO: If gray is set, move its values to rgb?
+		std::swap(this->sBIT.red, this->sBIT.blue);
+	}
+
+	return 0;
+}
+
+/**
  * Swizzle the image channels.
  * Standard version using regular C++ code.
  *
@@ -733,6 +775,9 @@ int rp_image::swizzle_cpp(const char *swz_spec)
 	if (swz_ch.u32 == be32_to_cpu('rgba')) {
 		// 'rgba' == NULL swizzle. Don't bother doing anything.
 		return 0;
+	} else if (swz_ch.u32 == be32_to_cpu('bgra')) {
+		// Special case: R/B channel swapping.
+		return d->swap_RB_channels();
 	}
 
 	// NOTE: Texture uses ARGB format, but swizzle uses rgba.
@@ -761,13 +806,11 @@ int rp_image::swizzle_cpp(const char *swz_spec)
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 	uint32_t *bits = static_cast<uint32_t*>(backend->data());
-	const unsigned int stride_diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
 	const int width = backend->width;
+	const unsigned int stride_diff = (backend->stride / sizeof(uint32_t)) - width;
 	for (int y = backend->height; y > 0; y--) {
-		for (int x = width; x > 0; x--, bits++) {
-			u8_32 cur, swz;
-			cur.u32 = *bits;
-
+		int x;
+		for (x = width; x > 1; x -= 2, bits += 2) {
 #define SWIZZLE_CHANNEL(n) do { \
 				switch (swz_ch.u8[n]) { \
 					case 'b':	swz.u8[n] = cur.u8[SWZ_CH_B];	break; \
@@ -783,12 +826,34 @@ int rp_image::swizzle_cpp(const char *swz_spec)
 				} \
 			} while (0)
 
+			u8_32 cur, swz;
+
+			cur.u32 = bits[0];
 			SWIZZLE_CHANNEL(0);
 			SWIZZLE_CHANNEL(1);
 			SWIZZLE_CHANNEL(2);
 			SWIZZLE_CHANNEL(3);
+			bits[0] = swz.u32;
 
+			cur.u32 = bits[1];
+			SWIZZLE_CHANNEL(0);
+			SWIZZLE_CHANNEL(1);
+			SWIZZLE_CHANNEL(2);
+			SWIZZLE_CHANNEL(3);
+			bits[1] = swz.u32;
+		}
+
+		if (x == 1) {
+			// Last pixel.
+			u8_32 cur, swz;
+			cur.u32 = *bits;
+			SWIZZLE_CHANNEL(0);
+			SWIZZLE_CHANNEL(1);
+			SWIZZLE_CHANNEL(2);
+			SWIZZLE_CHANNEL(3);
 			*bits = swz.u32;
+
+			bits++;
 		}
 
 		// Next row.

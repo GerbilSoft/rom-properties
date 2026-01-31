@@ -134,7 +134,7 @@ Description: ROM Properties Page shell extension (GTK3 UI frontend)
 Package: rom-properties-cli
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata9
-Recommends: rom-properties-lang
+Recommends: rom-properties-lang, libsixel1
 Description: ROM Properties Page shell extension (command line version)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,

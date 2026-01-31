@@ -10366,257 +10366,267 @@ msgid "ATA {:s} failed: {:0>8X}"
 msgstr ""
 
 #. tr: {0:s} == image type name, {1:s} == output filename
-#: ../src/rpcli/rpcli.cpp:173
+#: ../src/rpcli/rpcli.cpp:171
 #, c++-format
 msgctxt "rpcli"
 msgid "Extracting {0:s} into '{1:s}'"
 msgstr ""
 
 #. tr: {0:d} == mipmap level, {1:s} == output filename
-#: ../src/rpcli/rpcli.cpp:177
+#: ../src/rpcli/rpcli.cpp:175
 #, c++-format
 msgctxt "rpcli"
 msgid "Extracting mipmap level {0:d} into '{1:s}'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:188 ../src/rpcli/rpcli.cpp:225
+#: ../src/rpcli/rpcli.cpp:186 ../src/rpcli/rpcli.cpp:223
 #, c++-format
 msgctxt "rpcli"
 msgid "Couldn't create file '{0:s}': {1:s}"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:194 ../src/rpcli/rpcli.cpp:231
+#: ../src/rpcli/rpcli.cpp:192 ../src/rpcli/rpcli.cpp:229
 msgctxt "rpcli"
 msgid "Done"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:206
+#: ../src/rpcli/rpcli.cpp:204
 #, c++-format
 msgctxt "rpcli"
 msgid "Extracting animated icon into '{:s}'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:215
+#: ../src/rpcli/rpcli.cpp:213
 msgctxt "rpcli"
 msgid "APNG is not supported, extracting only the first frame"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:243
+#: ../src/rpcli/rpcli.cpp:241
 msgctxt "rpcli"
 msgid "Animated icon not found"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:245
+#: ../src/rpcli/rpcli.cpp:243
 #, c++-format
 msgctxt "rpcli"
 msgid "Mipmap level {:d} not found"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:249
+#: ../src/rpcli/rpcli.cpp:247
 #, c++-format
 msgctxt "rpcli"
 msgid "Image '{:s}' not found"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:278
+#: ../src/rpcli/rpcli.cpp:279
 #, c++-format
 msgctxt "rpcli"
 msgid "Reading file '{:s}'..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:288 ../src/rpcli/rpcli.cpp:459
-#: ../src/rpcli/rpcli.cpp:540
+#: ../src/rpcli/rpcli.cpp:289 ../src/rpcli/rpcli.cpp:460
+#: ../src/rpcli/rpcli.cpp:541
 #, c++-format
 msgctxt "rpcli"
 msgid "Couldn't open file: {:s}"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:306
+#: ../src/rpcli/rpcli.cpp:307
 #, c++-format
 msgctxt "rpcli"
 msgid "Reading directory '{:s}'..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:318 ../src/rpcli/rpcli.cpp:491
-#: ../src/rpcli/rpcli.cpp:572
+#: ../src/rpcli/rpcli.cpp:319 ../src/rpcli/rpcli.cpp:492
+#: ../src/rpcli/rpcli.cpp:573
 msgctxt "rpcli"
 msgid "Outputting JSON data"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:364
+#: ../src/rpcli/rpcli.cpp:365
 msgctxt "rpcli"
 msgid "ROM is not supported"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:392
+#: ../src/rpcli/rpcli.cpp:393
 #, c++-format
 msgctxt "rpcli"
 msgid "System language code: {:s}"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:393 ../src/rpcli/rpcli.cpp:406
+#: ../src/rpcli/rpcli.cpp:394 ../src/rpcli/rpcli.cpp:407
 msgctxt "rpcli"
 msgid "0 (this is a bug!)"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:405
+#: ../src/rpcli/rpcli.cpp:406
 #, c++-format
 msgctxt "rpcli"
 msgid "System country code: {:s}"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:449 ../src/rpcli/rpcli.cpp:530
+#: ../src/rpcli/rpcli.cpp:450 ../src/rpcli/rpcli.cpp:531
 #, c++-format
 msgctxt "rpcli"
 msgid "Opening device file '{:s}'..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:476 ../src/rpcli/rpcli.cpp:557
+#: ../src/rpcli/rpcli.cpp:477 ../src/rpcli/rpcli.cpp:558
 msgctxt "rpcli"
 msgid "Not a device file"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:605
+#: ../src/rpcli/rpcli.cpp:606
 msgctxt "rpcli"
 msgid ""
-"Usage: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN "
-"outfile]... [-a apngoutfile] filename]..."
-msgstr ""
-
-#: ../src/rpcli/rpcli.cpp:607
-msgctxt "rpcli"
-msgid ""
-"Usage: rpcli [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a "
+"Usage: rpcli [-cCdjkpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a "
 "apngoutfile] filename]..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:620
+#: ../src/rpcli/rpcli.cpp:608
+msgctxt "rpcli"
+msgid ""
+"Usage: rpcli [-cCdjpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a "
+"apngoutfile] filename]..."
+msgstr ""
+
+#: ../src/rpcli/rpcli.cpp:621
 msgctxt "rpcli"
 msgid "Verify encryption keys in keys.conf."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:624
+#: ../src/rpcli/rpcli.cpp:625
 msgctxt "rpcli"
 msgid "Print system region information."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:625
-msgctxt "rpcli"
-msgid "Print system path information."
-msgstr ""
-
 #: ../src/rpcli/rpcli.cpp:626
 msgctxt "rpcli"
-msgid "Skip ListData fields with more than 10 items. [text only]"
+msgid "Force-enable ANSI escape sequences."
 msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:627
 msgctxt "rpcli"
-msgid "Use JSON output format."
+msgid "Skip ListData fields with more than 10 items. [text only]"
 msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:628
 msgctxt "rpcli"
-msgid "Retrieve the specified language from the ROM image."
+msgid "Use JSON output format."
 msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:629
 msgctxt "rpcli"
-msgid "Extract image N to outfile in PNG format."
+msgid "Retrieve the specified language from the ROM image."
 msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:630
 msgctxt "rpcli"
-msgid "Extract mipmap level N to outfile in PNG format."
+msgid "Print system path information."
 msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:631
 msgctxt "rpcli"
+msgid "Disable Sixel/Kitty graphics. (only for terminal output)"
+msgstr ""
+
+#: ../src/rpcli/rpcli.cpp:632
+msgctxt "rpcli"
+msgid "Extract image N to outfile in PNG format."
+msgstr ""
+
+#: ../src/rpcli/rpcli.cpp:633
+msgctxt "rpcli"
+msgid "Extract mipmap level N to outfile in PNG format."
+msgstr ""
+
+#: ../src/rpcli/rpcli.cpp:634
+msgctxt "rpcli"
 msgid "Extract the animated icon to outfile in APNG format."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:644
+#: ../src/rpcli/rpcli.cpp:647
 msgctxt "rpcli"
 msgid "Run a SCSI INQUIRY command."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:645
+#: ../src/rpcli/rpcli.cpp:648
 msgctxt "rpcli"
 msgid "Run an ATA IDENTIFY DEVICE command."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:646
+#: ../src/rpcli/rpcli.cpp:649
 msgctxt "rpcli"
 msgid "Run an ATA IDENTIFY PACKET DEVICE command."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:649
+#: ../src/rpcli/rpcli.cpp:652
 msgctxt "rpcli"
 msgid "Special options for devices:"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:659
+#: ../src/rpcli/rpcli.cpp:662
 msgctxt "rpcli"
 msgid "Examples:"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:663
+#: ../src/rpcli/rpcli.cpp:666
 msgctxt "rpcli"
 msgid "displays info about s3.gen"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:667
+#: ../src/rpcli/rpcli.cpp:670
 msgctxt "rpcli"
 msgid "extracts icon from pokeb2.nds"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:808
+#: ../src/rpcli/rpcli.cpp:812
 msgctxt "rpcli"
 msgid "*** ERROR: GDI+ initialization failed."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:891
+#: ../src/rpcli/rpcli.cpp:901
 #, c++-format
 msgctxt "rpcli"
 msgid "Warning: ignoring invalid language code '{:s}'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:927
+#: ../src/rpcli/rpcli.cpp:935
 #, c++-format
 msgctxt "rpcli"
 msgid "Warning: skipping invalid image type '{:s}'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:934
+#: ../src/rpcli/rpcli.cpp:942
 #, c++-format
 msgctxt "rpcli"
 msgid "Warning: skipping unknown image type {:d}"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:956
+#: ../src/rpcli/rpcli.cpp:964
 #, c++-format
 msgctxt "rpcli"
 msgid "Warning: skipping invalid mipmap level '{:s}'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:963
+#: ../src/rpcli/rpcli.cpp:971
 #, c++-format
 msgctxt "rpcli"
 msgid "Warning: skipping out-of-range mipmap level {:d}"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:1000
+#: ../src/rpcli/rpcli.cpp:1008
 msgctxt "rpcli"
 msgid "Warning: no inquiry request specified for '-i'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:1003
+#: ../src/rpcli/rpcli.cpp:1011
 #, c++-format
 msgctxt "rpcli"
 msgid "Warning: skipping unknown inquiry request '{:c}'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:1017
+#: ../src/rpcli/rpcli.cpp:1025
 #, c++-format
 msgctxt "rpcli"
 msgid "Warning: skipping unknown switch '{:c}'"

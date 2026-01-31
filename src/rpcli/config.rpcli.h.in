@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rpcli)                            *
  * config.rpcli.h.in: rpcli configuration. (source file)                   *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,6 +10,3 @@
 
 /* Define to 1 if decryption should be enabled. */
 #cmakedefine ENABLE_DECRYPTION 1
-
-/* Define to 1 if sixel output is eanbled. */
-#cmakedefine ENABLE_SIXEL 1

@@ -2,6 +2,16 @@
 
 ## v2.8 (released 2026/??/??)
 
+* New features:
+  * rpcli can now display the icon and banner of specified files using the
+    Kitty and/or Sixel protocols, depending on what's available on your
+    terminal emulator. This includes animated icons when using the Kitty
+    protocol.
+    * Sixel protocol support requires a copy of libsixel to be installed.
+      (Not currently included in the Windows build.)
+    * Sixel *should* work on Windows Terminal, but this has not been
+      tested yet.
+
 * Bug fixes:
   * Windows: Fix potential UI language misdetection in some cases.
     * This only seemed to affect rp-config, or at least no bug reports
@@ -10,6 +20,13 @@
       GameCube, GameCubeSave, MegaDrive, NES, and SNES.
   * Linux (and Windows debugging): Check the LANG variable first for the
     system language, then LC_MESSAGES and LC_ALL.
+  * GTK: Ensure achievements can be triggered when using `rp-stub -R`.
+  * Fixed a potential image swizzle error when using ARM NEON if the
+    swizzle specification has a '0' or '1' channel.
+
+* Other changes:
+  * Swizzling "bgra" (red/blue swap only) is now faster on systems that
+    don't have either SSSE3 (x86) or NEON (ARM).
 
 ## v2.7.1 (released 2026/01/18)
 

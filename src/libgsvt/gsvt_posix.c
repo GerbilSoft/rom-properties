@@ -2,11 +2,12 @@
  * ROM Properties Page shell extension. (libgsvt)                          *
  * gsvt_posix.c: Virtual Terminal wrapper functions. (POSIX version)       *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "gsvt.h"
+#include "gsvt_p.h"
 #include "common.h"
 
 // pthreads, for pthread_once()
@@ -15,10 +16,14 @@
 // C includes
 #include <assert.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "ctypex.h"
+
+// Terminal I/O
+#include <termios.h>
 
 struct _gsvt_console {
 	FILE *stream;		// File handle, e.g. stdout or stderr
@@ -26,9 +31,11 @@ struct _gsvt_console {
 	bool supports_ansi;	// True if the console supports ANSI escape sequences
 };
 
+static gsvt_console __gsvt_stdin;
 static gsvt_console __gsvt_stdout;
 static gsvt_console __gsvt_stderr;
 
+//gsvt_console *gsvt_stdin  = &__gsvt_stdin;
 gsvt_console *gsvt_stdout = &__gsvt_stdout;
 gsvt_console *gsvt_stderr = &__gsvt_stderr;
 
@@ -141,6 +148,7 @@ static void gsvt_init_int(void)
 {
 	// Initialize the gsvt_console variables using stdout/stderr.
 	check_TERM_variable();
+	gsvt_init_posix(&__gsvt_stdin,  stdin);
 	gsvt_init_posix(&__gsvt_stdout, stdout);
 	gsvt_init_posix(&__gsvt_stderr, stderr);
 }
@@ -192,6 +200,131 @@ bool gsvt_is_console(const gsvt_console *vt)
 bool gsvt_supports_ansi(const gsvt_console *vt)
 {
 	return vt->supports_ansi;
+}
+
+/**
+ * Send a terminal query command and retrieve a response string.
+ * @param cmd Query command
+ * @param buf Response buffer
+ * @param size Size of buf
+ * @param endchr Expected end character (Windows only!)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int gsvt_query_tty(const char *cmd, char *buf, size_t size, TCHAR endchr)
+{
+	// endchr is not used on the POSIX version.
+	RP_UNUSED(endchr);
+
+	// Both stdin and stdout must be actual consoles, and stdout must support ANSI.
+	if (!__gsvt_stdout.is_console    || !__gsvt_stdin.is_console ||
+	    !__gsvt_stdout.supports_ansi)
+	{
+		// Not an actual console and/or does not support ANSI.
+		return -ENOTTY;
+	}
+
+	// Adjust TTY handling for the query.
+	struct termios term, initial_term;
+	fflush(stdin);
+	tcgetattr(STDIN_FILENO, &initial_term);
+	term = initial_term;
+	term.c_lflag &= ~(ICANON | ECHO);
+	tcsetattr(STDIN_FILENO, TCSANOW, &term);
+
+	fputs(cmd, stdout);
+	fflush(stdout);
+
+	// Wait 100ms for a response from the terminal.
+	// Reference: https://stackoverflow.com/questions/16026858/reading-the-device-status-report-ansi-escape-sequence-reply
+	fd_set readset;
+	struct timeval time;
+	FD_ZERO(&readset);
+	FD_SET(STDIN_FILENO, &readset);
+	time.tv_sec = 0;
+	time.tv_usec = 100000;
+
+	errno = 0;
+	if (select(STDIN_FILENO + 1, &readset, NULL, NULL, &time) != 1) {
+		// No data available?
+		int err = -errno;
+		if (err == 0) {
+			err = -EIO;
+		}
+		tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
+		return err;
+	}
+
+	// Different queries have different response formats, so we shouldn't
+	// check the format. Instead, keep read()'ing until we run out of data.
+	const int oldflags = fcntl(STDIN_FILENO, F_GETFL, 0);
+	if (oldflags == -1) {
+		// Unable to query flags...
+		int err = -errno;
+		if (err == 0) {
+			err = -EIO;
+		}
+		tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
+		return err;
+	}
+	if (fcntl(STDIN_FILENO, F_SETFL, (oldflags | O_NONBLOCK)) < 0) {
+		// Unable to set flags...
+		int err = -errno;
+		if (err == 0) {
+			err = -EIO;
+		}
+		tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
+		return err;
+	}
+
+	size_t n = 0;
+	for (; n < size; n++) {
+		char chr;
+		errno = 0;
+		ssize_t size = read(STDIN_FILENO, &chr, sizeof(chr));
+		if (size == sizeof(chr)) {
+			// Read one character.
+			buf[n] = chr;
+		} else /*if (size <= 0)*/ {
+			// Check for an error.
+			int err = errno;
+			if (err == EAGAIN || err == EWOULDBLOCK) {
+				// Out of data.
+				// NOTE: EAGAIN *could* mean we still have data, but the syscall was interrupted...
+				// Check if there's any more data by using select().
+				time.tv_sec = 0;
+				time.tv_usec = 10000;
+				if (select(STDIN_FILENO + 1, &readset, NULL, NULL, &time) != 1) {
+					// No more data available.
+					buf[n] = '\0';
+					break;
+				}
+				size = read(STDIN_FILENO, &chr, sizeof(chr));
+				if (size == sizeof(chr)) {
+					// Read one character.
+					buf[n] = chr;
+				} else /*if (size <= 0)*/ {
+					// No more data...
+					buf[n] = '\0';
+					break;
+				}
+			} else {
+				// Some other error occurred...
+				fcntl(STDIN_FILENO, F_SETFL, oldflags);
+				tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
+				return -err;
+			}
+		}
+	}
+
+	int ret = 0;
+	if (n >= size || buf[n] != '\0') {
+		// Not a valid sequence?
+		ret = -EIO;
+	}
+	fcntl(STDIN_FILENO, F_SETFL, oldflags);
+	tcsetattr(STDIN_FILENO, TCSADRAIN, &initial_term);
+	fflush(stdin);
+	return ret;
 }
 
 /** stdio wrapper functions **/

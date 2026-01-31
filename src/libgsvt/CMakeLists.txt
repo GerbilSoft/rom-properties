@@ -17,10 +17,12 @@ ELSE(WIN32)
 ENDIF(WIN32)
 
 SET(${PROJECT_NAME}_SRCS
+	gsvt.c
 	gsvtpp.cpp
 	)
 SET(${PROJECT_NAME}_H
 	gsvt.h
+	gsvt_p.h
 	gsvtpp.hpp
 	)
 

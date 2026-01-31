@@ -3,7 +3,7 @@
  * rp_image_ops.cpp: Image class. (operations)                             *
  * SSE2-optimized version.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -47,9 +47,9 @@ int rp_image::apply_chroma_key_sse2(uint32_t key)
 	const unsigned int diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
 	uint32_t *img_buf = static_cast<uint32_t*>(backend->data());
 
-	// SSE2 constants.
-	const __m128i xmm_key = _mm_setr_epi32(key, key, key, key);
-	const __m128i xmm_ones = _mm_setr_epi32(0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF);
+	// SSE2 constants
+	const __m128i xmm_key = _mm_set1_epi32(key);
+	const __m128i xmm_ones = _mm_set1_epi32(0xFFFFFFFF);
 
 	for (unsigned int y = static_cast<unsigned int>(backend->height); y > 0; y--) {
 		// Process 4 pixels per iteration with SSE2.

@@ -3,7 +3,7 @@
  * rp_image_ops.cpp: Image class. (operations)                             *
  * SSSE3-optimized version.                                                *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -97,12 +97,7 @@ int rp_image::swizzle_ssse3(const char *swz_spec)
 		pshufb_mask_vals.u32 + 0x08080808,
 		pshufb_mask_vals.u32 + 0x0C0C0C0C
 	);
-	const __m128i por_mask = _mm_setr_epi32(
-		por_mask_vals.u32,
-		por_mask_vals.u32,
-		por_mask_vals.u32,
-		por_mask_vals.u32
-	);
+	const __m128i por_mask = _mm_set1_epi32(por_mask_vals.u32);
 
 	// Channel indexes
 	static constexpr unsigned int SWZ_CH_B = 0U;

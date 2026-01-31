@@ -67,9 +67,17 @@ int rp_download_do_security_options(void)
 #elif defined(__NR_openat2)
 		__NR_openat2,		// Linux 5.6
 #endif /* __SNR_openat2 || __NR_openat2 */
-		SCMP_SYS(poll), SCMP_SYS(select),
+		SCMP_SYS(poll),
 		SCMP_SYS(unlink),	// to delete expired cache files
 		SCMP_SYS(utimensat),
+
+		// select()
+		SCMP_SYS(select),
+		SCMP_SYS(_newselect),
+		SCMP_SYS(pselect6),
+#if defined(__SNR_pselect6_time64) || defined(__NR_pselect6_time64)
+		SCMP_SYS(pselect6_time64),
+#endif /* __SNR_futex_time64 || __NR_futex_time64 */
 
 		// glibc ncsd
 		// TODO: Restrict connect() to AF_UNIX.

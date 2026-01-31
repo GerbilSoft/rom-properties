@@ -10,14 +10,13 @@ SET(${PROJECT_NAME}_SRCS
 SET(${PROJECT_NAME}_H
 	device.hpp
 	rpcli_secure.h
+	sixel-mini.h
 	)
 
-# Sixel (TODO: Check forlibsixel)
+# Sixel (TODO: Check for libsixel)
 # EXPERIMENTAL: sixel output isn't fully implemented yet.
-IF(ENABLE_SIXEL AND NOT WIN32)
-	SET(${PROJECT_NAME}_SIXEL_SRCS rp_sixel.cpp)
-	SET(${PROJECT_NAME}_SIXEL_H    rp_sixel.hpp)
-ENDIF(ENABLE_SIXEL AND NOT WIN32)
+SET(${PROJECT_NAME}_SIXEL_SRCS rp_sixel.cpp)
+SET(${PROJECT_NAME}_SIXEL_H    rp_sixel.hpp)
 
 # Check for system security functionality.
 IF(WIN32)
@@ -104,15 +103,18 @@ TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpsecure romdata)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE romdata rpsecure)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpuid)	# for CPU dispatch
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE gsvt)
-IF(ENABLE_SIXEL AND NOT WIN32)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE sixel)
-ENDIF(ENABLE_SIXEL AND NOT WIN32)
 
 IF(Fmt_FOUND)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${Fmt_LIBRARY})
 ENDIF(Fmt_FOUND)
+
+# Link in libdl if it's required for dlopen().
+IF(CMAKE_DL_LIBS)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${CMAKE_DL_LIBS})
+ENDIF(CMAKE_DL_LIBS)
 
 # Make sure git_version.h is created before compiling this target.
 IF(TARGET git_version)
