@@ -9,8 +9,7 @@
     protocol.
     * Sixel protocol support requires a copy of libsixel to be installed.
       (Not currently included in the Windows build.)
-    * Sixel *should* work on Windows Terminal, but this has not been
-      tested yet.
+    * Sixel has been tested with Windows Terminal.
 
 * Bug fixes:
   * Windows: Fix potential UI language misdetection in some cases.
