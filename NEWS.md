@@ -12,6 +12,13 @@
     * Sixel *should* work on Windows Terminal, but this has not been
       tested yet.
 
+* Bug fixes:
+  * GTK: Ensure achievements can be triggered when using `rp-stub -R`.
+
+* Other changes:
+  * Swizzling "bgra" (red/blue swap only) is now faster on systems that
+    don't have either SSSE3 (x86) or NEON (ARM).
+
 ## v2.7.1 (released 2026/01/18)
 
 * New features:
