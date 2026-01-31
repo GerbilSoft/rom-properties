@@ -493,26 +493,36 @@ static int print_kitty_animated_image(const IconAnimDataConstPtr &iconAnimData)
 	static int image_number = 1;
 
 	bool first = true;
-	const rp_image *last_valid_frame = nullptr;
 	for (int i = 0; i < iconAnimData->seq_count; i++) {
-		const rp_image *this_frame = iconAnimData->frames[iconAnimData->seq_index[i]].get();
-		const int ms = iconAnimData->delays[i].ms;
+		const rp_image *const this_frame = iconAnimData->frames[iconAnimData->seq_index[i]].get();
 		if (!this_frame || !this_frame->isValid()) {
-			// Empty frame. Use the last valid frame with the current delay.
-			// Needed for e.g. Luigi's Mansion (GameCube).
-			this_frame = last_valid_frame;
+			// Empty frame.
+			continue;
 		}
 
-		if (this_frame && this_frame->isValid()) {
-			printf("\x1B_Ga=%c,q=2,f=32,s=%d,v=%d,I=%d,z=%d;",
-				(first ? 'T' : 'f'),
-				this_frame->width(), this_frame->height(),
-				image_number, ms);
-			first = false;
-			print_kitty_image_data_base64(this_frame);
-			fwrite("\x1B\\", 1, 2, stdout);
-			last_valid_frame = this_frame;
+		int ms = iconAnimData->delays[i].ms;
+
+		// Check if the following frames have NULL images.
+		for (int j = i + 1; j < iconAnimData->seq_count; j++) {
+			const rp_image *next_frame = iconAnimData->frames[iconAnimData->seq_index[j]].get();
+			if (next_frame) {
+				// Next frame is OK.
+				break;
+			}
+
+			// Found a NULL frame. Add its delay to the current frame.
+			ms += iconAnimData->delays[j].ms;
+			// Skip this frame.
+			i++;
 		}
+
+		printf("\x1B_Ga=%c,q=2,f=32,s=%d,v=%d,I=%d,z=%d;",
+			(first ? 'T' : 'f'),
+			this_frame->width(), this_frame->height(),
+			image_number, ms);
+		first = false;
+		print_kitty_image_data_base64(this_frame);
+		fwrite("\x1B\\", 1, 2, stdout);
 	}
 
 	// Start the animation.
