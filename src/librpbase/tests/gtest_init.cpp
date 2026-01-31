@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * gtest_init.cpp: Google Test initialization.                             *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -355,8 +355,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #  define T_C_LOCALE _T("C.UTF-8")
 #  define C_LOCALE "C.UTF-8"
 #endif /* _WIN32 || __APPLE__ */
+	static TCHAR lang_env[] = _T("LANG=") T_C_LOCALE;
 	static TCHAR lc_all_env[] = _T("LC_ALL=") T_C_LOCALE;
 	static TCHAR lc_messages_env[] = _T("LC_MESSAGES=") T_C_LOCALE;
+	_tputenv(lang_env);
 	_tputenv(lc_all_env);
 	_tputenv(lc_messages_env);
 
