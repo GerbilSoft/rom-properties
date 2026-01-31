@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-01-31 12:55-0500\n"
-"PO-Revision-Date: 2026-01-31 18:05\n"
+"PO-Revision-Date: 2026-01-31 19:04\n"
 "Last-Translator: \n"
 "Language-Team: English, United Kingdom\n"
 "Language: en_GB\n"
@@ -2364,7 +2364,7 @@ msgstr "IRQ Vector"
 #: ../src/libromdata/Console/ColecoVision.cpp:459
 msgctxt "ColecoVision"
 msgid "NMI Vector"
-msgstr ""
+msgstr "NMI Vector"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:170
 #: ../src/libromdata/Console/GameCubeRegions.cpp:60
@@ -10393,12 +10393,12 @@ msgstr "Not a device file"
 #: ../src/rpcli/rpcli.cpp:606
 msgctxt "rpcli"
 msgid "Usage: rpcli [-cCdjkpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."
-msgstr ""
+msgstr "Usage: rpcli [-cCdjkpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."
 
 #: ../src/rpcli/rpcli.cpp:608
 msgctxt "rpcli"
 msgid "Usage: rpcli [-cCdjpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."
-msgstr ""
+msgstr "Usage: rpcli [-cCdjpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."
 
 #: ../src/rpcli/rpcli.cpp:621
 msgctxt "rpcli"
@@ -10413,7 +10413,7 @@ msgstr "Print system region information."
 #: ../src/rpcli/rpcli.cpp:626
 msgctxt "rpcli"
 msgid "Force-enable ANSI escape sequences."
-msgstr ""
+msgstr "Force-enable ANSI escape sequences."
 
 #: ../src/rpcli/rpcli.cpp:627
 msgctxt "rpcli"
@@ -10438,7 +10438,7 @@ msgstr "Print system path information."
 #: ../src/rpcli/rpcli.cpp:631
 msgctxt "rpcli"
 msgid "Disable Sixel/Kitty graphics. (only for terminal output)"
-msgstr ""
+msgstr "Disable Sixel/Kitty graphics. (only for terminal output)"
 
 #: ../src/rpcli/rpcli.cpp:632
 msgctxt "rpcli"
