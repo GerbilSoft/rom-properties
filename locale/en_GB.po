@@ -10464,7 +10464,7 @@ msgstr "Not a device file"
 #: ../src/rpcli/rpcli.cpp:606
 #, fuzzy
 msgctxt "rpcli"
-MSGID ""
+msgid ""
 "Usage: rpcli [-cCdjkpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a "
 "apngoutfile] filename]..."
 msgstr ""
