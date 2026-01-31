@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-01-29 00:31-0500\n"
-"PO-Revision-Date: 2026-01-30 21:04\n"
+"PO-Revision-Date: 2026-01-31 00:25\n"
 "Last-Translator: \n"
 "Language-Team: English, United Kingdom\n"
 "Language: en_GB\n"
@@ -2347,11 +2347,6 @@ msgctxt "ColecoVision"
 msgid "Copyright Year"
 msgstr "Copyright Year"
 
-#: ../src/libromdata/Console/ColecoVision.cpp:451
-msgctxt "ColecoVision"
-msgid "Entry Point"
-msgstr "Entry Point"
-
 #: ../src/libromdata/Console/ColecoVision.cpp:456
 #: ../src/libromdata/Console/ColecoVision.cpp:459
 msgctxt "ColecoVision"
@@ -2673,7 +2668,7 @@ msgstr "The VMI file was not found."
 #: ../src/libromdata/Console/DreamcastSave.cpp:1326
 msgctxt "DreamcastSave"
 msgid "Unrecognized VMS/VMI combination."
-msgstr "Unrecognized VMS/VMI combination."
+msgstr "Unrecognised VMS/VMI combination."
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1333
 msgctxt "DreamcastSave"
@@ -3379,6 +3374,7 @@ msgctxt "N64"
 msgid "Game ID"
 msgstr "Game ID"
 
+#: ../src/libromdata/Console/ColecoVision.cpp:451
 #: ../src/libromdata/Console/N64.cpp:344 ../src/libromdata/Handheld/DMG.cpp:677
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:386
 #: ../src/libromdata/Handheld/GameCom.cpp:723
