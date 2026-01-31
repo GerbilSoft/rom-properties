@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-01-29 00:31-0500\n"
-"PO-Revision-Date: 2026-01-29 06:37\n"
+"PO-Revision-Date: 2026-01-31 00:25\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Language: uk_UA\n"
@@ -2339,11 +2339,6 @@ msgctxt "ColecoVision"
 msgid "Copyright Year"
 msgstr ""
 
-#: ../src/libromdata/Console/ColecoVision.cpp:451
-msgctxt "ColecoVision"
-msgid "Entry Point"
-msgstr ""
-
 #: ../src/libromdata/Console/ColecoVision.cpp:456
 #: ../src/libromdata/Console/ColecoVision.cpp:459
 msgctxt "ColecoVision"
@@ -3371,6 +3366,7 @@ msgctxt "N64"
 msgid "Game ID"
 msgstr ""
 
+#: ../src/libromdata/Console/ColecoVision.cpp:451
 #: ../src/libromdata/Console/N64.cpp:344 ../src/libromdata/Handheld/DMG.cpp:677
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:386
 #: ../src/libromdata/Handheld/GameCom.cpp:723
