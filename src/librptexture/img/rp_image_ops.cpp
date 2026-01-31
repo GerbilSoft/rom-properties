@@ -705,6 +705,48 @@ int rp_image::shrink(int width, int height)
 }
 
 /**
+ * Swap R/B channels.
+ *
+ * Called by rp_image::swizzle_cpp().
+ * Don't call this function directly; rp_image::swizzle()
+ * uses CPU-optimized versions if available.
+ *
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int rp_image_private::swap_RB_channels(void)
+{
+	// NOTE: Not checking if backend is valid, since it should have
+	// already been checked by rp_image::swizzle_cpp().
+	argb32_t *bits = static_cast<argb32_t*>(backend->data());
+	const int width = backend->width;
+	const unsigned int stride_diff = (backend->stride / sizeof(argb32_t)) - width;
+	for (int y = backend->height; y > 0; y--) {
+		int x;
+		for (x = width; x > 1; x -= 2, bits += 2) {
+			std::swap(bits[0].r, bits[0].b);
+			std::swap(bits[1].r, bits[1].b);
+		}
+
+		if (x == 1) {
+			// Last pixel.
+			std::swap(bits->r, bits->b);
+			bits++;
+		}
+
+		// Next row.
+		bits += stride_diff;
+	}
+
+	// Swap the R/B values in sBIT, if set.
+	if (has_sBIT) {
+		// TODO: If gray is set, move its values to rgb?
+		std::swap(this->sBIT.red, this->sBIT.blue);
+	}
+
+	return 0;
+}
+
+/**
  * Swizzle the image channels.
  * Standard version using regular C++ code.
  *
@@ -733,6 +775,9 @@ int rp_image::swizzle_cpp(const char *swz_spec)
 	if (swz_ch.u32 == be32_to_cpu('rgba')) {
 		// 'rgba' == NULL swizzle. Don't bother doing anything.
 		return 0;
+	} else if (swz_ch.u32 == be32_to_cpu('bgra')) {
+		// Special case: R/B channel swapping.
+		return d->swap_RB_channels();
 	}
 
 	// NOTE: Texture uses ARGB format, but swizzle uses rgba.
@@ -761,8 +806,8 @@ int rp_image::swizzle_cpp(const char *swz_spec)
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 	uint32_t *bits = static_cast<uint32_t*>(backend->data());
-	const unsigned int stride_diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
 	const int width = backend->width;
+	const unsigned int stride_diff = (backend->stride / sizeof(uint32_t)) - width;
 	for (int y = backend->height; y > 0; y--) {
 		int x;
 		for (x = width; x > 1; x -= 2, bits += 2) {
