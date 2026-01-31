@@ -222,10 +222,34 @@ Copyright:
 License: GPL-2+
 
 Files:
+ src/libromdata/res/img/happy-wii-u.*
+Copyright:
+ Original icons: Copyright (c) 2025 by Vixy.
+ Modified icons for rom-properties: Copyright (c) 2025 by David Korth.
+License: CC-BY-4.0
+
+Files:
  src/libromdata/tests/img/ImageDecoder_data/TGA/conformance/*
 Copyright:
  (C) TrueVision, Inc.
 License: TGA-2.0
+
+Files: src/librptexture/fileformat/qoi.h
+Copyright:
+ Copyright (c) 2021, Dominic Szablewski - https://phoboslab.org
+License: MIT
+
+Files:
+ src/res/flags/svg/*.svg
+ src/res/flags/*.png
+Copyright:
+ Copyright 2019 Twitter, Inc and other contributors
+License: CC-BY-4.0
+
+Files: src/rp-download/curl-mini.h
+Copyright:
+ Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
+License: curl
 
 Files:
  src/libwin32darkmode/DarkMode.?pp
@@ -250,30 +274,6 @@ Files:
 Copyright:
  Copyright (C)2021 Don HO <don.h@free.fr>
 License: GPL-3+
-
-Files:
- src/svrplus/*
-Copyright:
- 2017-2021, Egor
- 2017-2024, David Korth <gerbilsoft@gerbilsoft.com>
-License: GPL-2+
-
-Files:
- src/libromdata/res/img/happy-wii-u.*
-Copyright:
- Original icons: Copyright (c) 2025 by Vixy.
- Modified icons for rom-properties: Copyright (c) 2025 by David Korth.
-License: CC-BY-4.0
-
-Files: src/librptexture/fileformat/qoi.h
-Copyright:
- Copyright (c) 2021, Dominic Szablewski - https://phoboslab.org
-License: MIT
-
-Files: src/rp-download/curl-mini.h
-Copyright:
- Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
-License: curl
 
 License: BSD-2-clause
  All rights reserved.

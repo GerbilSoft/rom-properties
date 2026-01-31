@@ -438,6 +438,10 @@ was provided by Vixy under CC-BY licensing. The original icon was modified to
 fit in a 48x48 icon frame and to provide additional information, e.g. retail
 vs. development (green), and to show an SD card for sdboot.
 
+The flag icons used for region/language selection are based on flag icons from
+Twemoji 12.0.1. Copyright 2019 Twitter, Inc and other contributors; licensed
+under CC-BY 4.0.
+
 ## Credits
 
 ### Developers
