@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-01-29 00:31-0500\n"
-"PO-Revision-Date: 2026-01-31 00:25\n"
+"POT-Creation-Date: 2026-01-31 12:55-0500\n"
+"PO-Revision-Date: 2026-01-31 18:04\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -1054,7 +1054,7 @@ msgstr[3] ""
 #: ../src/gtk/gtk3/ThunarPropertyPageProvider.cpp:108
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:291
 #: ../src/kde/plugins/RomPropertiesDialogPlugin.cpp:124
-#: ../src/win32/RP_ShellPropSheetExt.cpp:2277
+#: ../src/win32/RP_ShellPropSheetExt.cpp:2283
 msgctxt "RomDataView"
 msgid "ROM Properties"
 msgstr ""
@@ -1062,33 +1062,33 @@ msgstr ""
 #. tr: Invalid date/time.
 #. tr: Invalid date/time
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:126
-#: ../src/gtk/RomDataView.cpp:966 ../src/kde/RomDataView.cpp:716
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1280
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1288
+#: ../src/gtk/RomDataView.cpp:979 ../src/kde/RomDataView.cpp:719
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1286
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1294
 msgctxt "RomDataView"
 msgid "Unknown"
 msgstr "Неизвестно"
 
 #. tr: No age ratings data.
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:142
-#: ../src/gtk/RomDataView.cpp:986 ../src/kde/RomDataView.cpp:745
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1310
+#: ../src/gtk/RomDataView.cpp:999 ../src/kde/RomDataView.cpp:748
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1316
 msgctxt "RomDataView"
 msgid "ERROR"
 msgstr "ОШИБКА"
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:208
-#: ../src/gtk/RomDataView.cpp:666 ../src/kde/RomDataView.cpp:140
+#: ../src/gtk/RomDataView.cpp:695 ../src/kde/RomDataView.cpp:169
 #: ../src/librpbase/TextOut_text.cpp:996
-#: ../src/win32/RP_ShellPropSheetExt.cpp:228
+#: ../src/win32/RP_ShellPropSheetExt.cpp:227
 msgctxt "RomDataView"
 msgid "(unknown system)"
 msgstr ""
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:211
-#: ../src/gtk/RomDataView.cpp:669 ../src/kde/RomDataView.cpp:143
+#: ../src/gtk/RomDataView.cpp:698 ../src/kde/RomDataView.cpp:172
 #: ../src/librpbase/TextOut_text.cpp:997
-#: ../src/win32/RP_ShellPropSheetExt.cpp:231
+#: ../src/win32/RP_ShellPropSheetExt.cpp:230
 msgctxt "RomDataView"
 msgid "(unknown filetype)"
 msgstr ""
@@ -1137,8 +1137,8 @@ msgid "&Options"
 msgstr ""
 
 #. tr: {0:s} == system name, {1:s} == file type
-#: ../src/gtk/RomDataView.cpp:674 ../src/kde/RomDataView.cpp:148
-#: ../src/win32/RP_ShellPropSheetExt.cpp:237
+#: ../src/gtk/RomDataView.cpp:703 ../src/kde/RomDataView.cpp:177
+#: ../src/win32/RP_ShellPropSheetExt.cpp:236
 #, c++-format
 msgctxt "RomDataView"
 msgid "{0:s}\n"
@@ -1146,8 +1146,8 @@ msgid "{0:s}\n"
 msgstr ""
 
 #. tr: Field description label.
-#: ../src/gtk/RomDataView.cpp:1472 ../src/kde/RomDataView.cpp:1007
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1719
+#: ../src/gtk/RomDataView.cpp:1485 ../src/kde/RomDataView.cpp:1010
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1725
 #, c++-format
 msgctxt "RomDataView"
 msgid "{:s}:"
@@ -1206,8 +1206,8 @@ msgstr ""
 #: ../src/librpbase/TextOut_text.cpp:793 ../src/librpbase/TextOut_text.cpp:803
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1305
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1297
-#: ../src/win32/RP_ShellPropSheetExt.cpp:999
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1509
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1005
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1515
 msgctxt "RomData"
 msgid "Unknown"
 msgstr "Неизвестно"
@@ -2354,10 +2354,23 @@ msgctxt "ColecoVision"
 msgid "Copyright Year"
 msgstr ""
 
+#: ../src/libromdata/Console/ColecoVision.cpp:451
+#: ../src/libromdata/Console/N64.cpp:344 ../src/libromdata/Handheld/DMG.cpp:677
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:386
+#: ../src/libromdata/Handheld/GameCom.cpp:723
+#: ../src/libromdata/Handheld/NGPC.cpp:339 ../src/libromdata/Other/ELF.cpp:2126
+msgctxt "RomData"
+msgid "Entry Point"
+msgstr "Точка входа"
+
 #: ../src/libromdata/Console/ColecoVision.cpp:456
-#: ../src/libromdata/Console/ColecoVision.cpp:459
 msgctxt "ColecoVision"
 msgid "IRQ Vector"
+msgstr ""
+
+#: ../src/libromdata/Console/ColecoVision.cpp:459
+msgctxt "ColecoVision"
+msgid "NMI Vector"
 msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:170
@@ -3380,15 +3393,6 @@ msgstr ""
 msgctxt "N64"
 msgid "Game ID"
 msgstr ""
-
-#: ../src/libromdata/Console/ColecoVision.cpp:451
-#: ../src/libromdata/Console/N64.cpp:344 ../src/libromdata/Handheld/DMG.cpp:677
-#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:386
-#: ../src/libromdata/Handheld/GameCom.cpp:723
-#: ../src/libromdata/Handheld/NGPC.cpp:339 ../src/libromdata/Other/ELF.cpp:2126
-msgctxt "RomData"
-msgid "Entry Point"
-msgstr "Точка входа"
 
 #: ../src/libromdata/Console/N64.cpp:348
 #: ../src/libromdata/Console/WiiTMD.cpp:444
@@ -4635,7 +4639,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:168
 msgctxt "WiiWAD"
 msgid "SRL extraction is not supported in NoCrypto builds."
-msgstr ""
+msgstr "Расшифрование не поддерживается в этой сборке."
 
 #: ../src/libromdata/Console/WiiWIBN.cpp:462
 msgctxt "WiiWIBN"
@@ -10294,253 +10298,263 @@ msgid "ATA {:s} failed: {:0>8X}"
 msgstr ""
 
 #. tr: {0:s} == image type name, {1:s} == output filename
-#: ../src/rpcli/rpcli.cpp:173
+#: ../src/rpcli/rpcli.cpp:171
 #, c++-format
 msgctxt "rpcli"
 msgid "Extracting {0:s} into '{1:s}'"
 msgstr "Извлекаем {0:s} в '{1:s}'"
 
 #. tr: {0:d} == mipmap level, {1:s} == output filename
-#: ../src/rpcli/rpcli.cpp:177
+#: ../src/rpcli/rpcli.cpp:175
 #, c++-format
 msgctxt "rpcli"
 msgid "Extracting mipmap level {0:d} into '{1:s}'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:188 ../src/rpcli/rpcli.cpp:225
+#: ../src/rpcli/rpcli.cpp:186 ../src/rpcli/rpcli.cpp:223
 #, c++-format
 msgctxt "rpcli"
 msgid "Couldn't create file '{0:s}': {1:s}"
 msgstr "Не удалось создать файл '{0:s}': {1:s}"
 
-#: ../src/rpcli/rpcli.cpp:194 ../src/rpcli/rpcli.cpp:231
+#: ../src/rpcli/rpcli.cpp:192 ../src/rpcli/rpcli.cpp:229
 msgctxt "rpcli"
 msgid "Done"
 msgstr "Готово"
 
-#: ../src/rpcli/rpcli.cpp:206
+#: ../src/rpcli/rpcli.cpp:204
 #, c++-format
 msgctxt "rpcli"
 msgid "Extracting animated icon into '{:s}'"
 msgstr "Извлекаем анимированную иконку в '{:s}'"
 
-#: ../src/rpcli/rpcli.cpp:215
+#: ../src/rpcli/rpcli.cpp:213
 msgctxt "rpcli"
 msgid "APNG is not supported, extracting only the first frame"
 msgstr "Нет поддержки APNG — только первый кард будет извлечён"
 
-#: ../src/rpcli/rpcli.cpp:243
+#: ../src/rpcli/rpcli.cpp:241
 msgctxt "rpcli"
 msgid "Animated icon not found"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:245
+#: ../src/rpcli/rpcli.cpp:243
 #, c++-format
 msgctxt "rpcli"
 msgid "Mipmap level {:d} not found"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:249
+#: ../src/rpcli/rpcli.cpp:247
 #, c++-format
 msgctxt "rpcli"
 msgid "Image '{:s}' not found"
 msgstr "Изображение '{:s}' не найдено"
 
-#: ../src/rpcli/rpcli.cpp:278
+#: ../src/rpcli/rpcli.cpp:279
 #, c++-format
 msgctxt "rpcli"
 msgid "Reading file '{:s}'..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:288 ../src/rpcli/rpcli.cpp:459
-#: ../src/rpcli/rpcli.cpp:540
+#: ../src/rpcli/rpcli.cpp:289 ../src/rpcli/rpcli.cpp:460
+#: ../src/rpcli/rpcli.cpp:541
 #, c++-format
 msgctxt "rpcli"
 msgid "Couldn't open file: {:s}"
 msgstr "Не удалось открыть файл: {:s}"
 
-#: ../src/rpcli/rpcli.cpp:306
+#: ../src/rpcli/rpcli.cpp:307
 #, c++-format
 msgctxt "rpcli"
 msgid "Reading directory '{:s}'..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:318 ../src/rpcli/rpcli.cpp:491
-#: ../src/rpcli/rpcli.cpp:572
+#: ../src/rpcli/rpcli.cpp:319 ../src/rpcli/rpcli.cpp:492
+#: ../src/rpcli/rpcli.cpp:573
 msgctxt "rpcli"
 msgid "Outputting JSON data"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:364
+#: ../src/rpcli/rpcli.cpp:365
 msgctxt "rpcli"
 msgid "ROM is not supported"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:392
+#: ../src/rpcli/rpcli.cpp:393
 #, c++-format
 msgctxt "rpcli"
 msgid "System language code: {:s}"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:393 ../src/rpcli/rpcli.cpp:406
+#: ../src/rpcli/rpcli.cpp:394 ../src/rpcli/rpcli.cpp:407
 msgctxt "rpcli"
 msgid "0 (this is a bug!)"
 msgstr "0 (это баг!)"
 
-#: ../src/rpcli/rpcli.cpp:405
+#: ../src/rpcli/rpcli.cpp:406
 #, c++-format
 msgctxt "rpcli"
 msgid "System country code: {:s}"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:449 ../src/rpcli/rpcli.cpp:530
+#: ../src/rpcli/rpcli.cpp:450 ../src/rpcli/rpcli.cpp:531
 #, c++-format
 msgctxt "rpcli"
 msgid "Opening device file '{:s}'..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:476 ../src/rpcli/rpcli.cpp:557
+#: ../src/rpcli/rpcli.cpp:477 ../src/rpcli/rpcli.cpp:558
 msgctxt "rpcli"
 msgid "Not a device file"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:605
+#: ../src/rpcli/rpcli.cpp:606
 msgctxt "rpcli"
-msgid "Usage: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."
+msgid "Usage: rpcli [-cCdjkpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:607
+#: ../src/rpcli/rpcli.cpp:608
 msgctxt "rpcli"
-msgid "Usage: rpcli [-c] [-p] [-j] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."
+msgid "Usage: rpcli [-cCdjpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:620
+#: ../src/rpcli/rpcli.cpp:621
 msgctxt "rpcli"
 msgid "Verify encryption keys in keys.conf."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:624
+#: ../src/rpcli/rpcli.cpp:625
 msgctxt "rpcli"
 msgid "Print system region information."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:625
-msgctxt "rpcli"
-msgid "Print system path information."
-msgstr ""
-
 #: ../src/rpcli/rpcli.cpp:626
 msgctxt "rpcli"
-msgid "Skip ListData fields with more than 10 items. [text only]"
+msgid "Force-enable ANSI escape sequences."
 msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:627
 msgctxt "rpcli"
-msgid "Use JSON output format."
+msgid "Skip ListData fields with more than 10 items. [text only]"
 msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:628
 msgctxt "rpcli"
-msgid "Retrieve the specified language from the ROM image."
+msgid "Use JSON output format."
 msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:629
 msgctxt "rpcli"
-msgid "Extract image N to outfile in PNG format."
-msgstr "Извлечь изображение N в outfile в формате PNG."
+msgid "Retrieve the specified language from the ROM image."
+msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:630
 msgctxt "rpcli"
-msgid "Extract mipmap level N to outfile in PNG format."
+msgid "Print system path information."
 msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:631
 msgctxt "rpcli"
+msgid "Disable Sixel/Kitty graphics. (only for terminal output)"
+msgstr ""
+
+#: ../src/rpcli/rpcli.cpp:632
+msgctxt "rpcli"
+msgid "Extract image N to outfile in PNG format."
+msgstr "Извлечь изображение N в outfile в формате PNG."
+
+#: ../src/rpcli/rpcli.cpp:633
+msgctxt "rpcli"
+msgid "Extract mipmap level N to outfile in PNG format."
+msgstr ""
+
+#: ../src/rpcli/rpcli.cpp:634
+msgctxt "rpcli"
 msgid "Extract the animated icon to outfile in APNG format."
 msgstr "Извлечь анимированную иконку в outfile в формате APNG."
 
-#: ../src/rpcli/rpcli.cpp:644
+#: ../src/rpcli/rpcli.cpp:647
 msgctxt "rpcli"
 msgid "Run a SCSI INQUIRY command."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:645
+#: ../src/rpcli/rpcli.cpp:648
 msgctxt "rpcli"
 msgid "Run an ATA IDENTIFY DEVICE command."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:646
+#: ../src/rpcli/rpcli.cpp:649
 msgctxt "rpcli"
 msgid "Run an ATA IDENTIFY PACKET DEVICE command."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:649
+#: ../src/rpcli/rpcli.cpp:652
 msgctxt "rpcli"
 msgid "Special options for devices:"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:659
+#: ../src/rpcli/rpcli.cpp:662
 msgctxt "rpcli"
 msgid "Examples:"
 msgstr "Примеры:"
 
-#: ../src/rpcli/rpcli.cpp:663
+#: ../src/rpcli/rpcli.cpp:666
 msgctxt "rpcli"
 msgid "displays info about s3.gen"
 msgstr "отображает информацию про s3.gen"
 
-#: ../src/rpcli/rpcli.cpp:667
+#: ../src/rpcli/rpcli.cpp:670
 msgctxt "rpcli"
 msgid "extracts icon from pokeb2.nds"
 msgstr "извлекает иконку из pokeb2.nds"
 
-#: ../src/rpcli/rpcli.cpp:808
+#: ../src/rpcli/rpcli.cpp:812
 msgctxt "rpcli"
 msgid "*** ERROR: GDI+ initialization failed."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:891
+#: ../src/rpcli/rpcli.cpp:906
 #, c++-format
 msgctxt "rpcli"
 msgid "Warning: ignoring invalid language code '{:s}'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:927
+#: ../src/rpcli/rpcli.cpp:940
 #, c++-format
 msgctxt "rpcli"
 msgid "Warning: skipping invalid image type '{:s}'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:934
+#: ../src/rpcli/rpcli.cpp:947
 #, c++-format
 msgctxt "rpcli"
 msgid "Warning: skipping unknown image type {:d}"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:956
+#: ../src/rpcli/rpcli.cpp:969
 #, c++-format
 msgctxt "rpcli"
 msgid "Warning: skipping invalid mipmap level '{:s}'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:963
+#: ../src/rpcli/rpcli.cpp:976
 #, c++-format
 msgctxt "rpcli"
 msgid "Warning: skipping out-of-range mipmap level {:d}"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:1000
+#: ../src/rpcli/rpcli.cpp:1013
 msgctxt "rpcli"
 msgid "Warning: no inquiry request specified for '-i'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:1003
+#: ../src/rpcli/rpcli.cpp:1016
 #, c++-format
 msgctxt "rpcli"
 msgid "Warning: skipping unknown inquiry request '{:c}'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:1017
+#: ../src/rpcli/rpcli.cpp:1030
 #, c++-format
 msgctxt "rpcli"
 msgid "Warning: skipping unknown switch '{:c}'"
