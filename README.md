@@ -56,7 +56,7 @@ language, check out the [Crowdin project](https://crowdin.com/project/rom-proper
 Crowdin project page, file an issue here on GitHub with the requested
 language.)
 
-See [`NEWS.md`](NEWS.md) for a full list of changes in v2.6.
+See [`NEWS.md`](NEWS.md) for a full list of changes in v2.7.1.
 
 ## Feedback
 
