@@ -544,7 +544,6 @@ class rp_image
 		 * @param swz_spec Swizzle specification: [rgba01]{4} [matches KTX2]
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		RP_LIBROMDATA_PUBLIC
 		inline int swizzle(const char *swz_spec);
 
 		/**
