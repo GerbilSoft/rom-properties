@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image_ops.cpp: Image class. (operations)                             *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -764,10 +764,8 @@ int rp_image::swizzle_cpp(const char *swz_spec)
 	const unsigned int stride_diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
 	const int width = backend->width;
 	for (int y = backend->height; y > 0; y--) {
-		for (int x = width; x > 0; x--, bits++) {
-			u8_32 cur, swz;
-			cur.u32 = *bits;
-
+		int x;
+		for (x = width; x > 1; x -= 2, bits += 2) {
 #define SWIZZLE_CHANNEL(n) do { \
 				switch (swz_ch.u8[n]) { \
 					case 'b':	swz.u8[n] = cur.u8[SWZ_CH_B];	break; \
@@ -783,12 +781,34 @@ int rp_image::swizzle_cpp(const char *swz_spec)
 				} \
 			} while (0)
 
+			u8_32 cur, swz;
+
+			cur.u32 = bits[0];
 			SWIZZLE_CHANNEL(0);
 			SWIZZLE_CHANNEL(1);
 			SWIZZLE_CHANNEL(2);
 			SWIZZLE_CHANNEL(3);
+			bits[0] = swz.u32;
 
+			cur.u32 = bits[1];
+			SWIZZLE_CHANNEL(0);
+			SWIZZLE_CHANNEL(1);
+			SWIZZLE_CHANNEL(2);
+			SWIZZLE_CHANNEL(3);
+			bits[1] = swz.u32;
+		}
+
+		if (x == 1) {
+			// Last pixel.
+			u8_32 cur, swz;
+			cur.u32 = *bits;
+			SWIZZLE_CHANNEL(0);
+			SWIZZLE_CHANNEL(1);
+			SWIZZLE_CHANNEL(2);
+			SWIZZLE_CHANNEL(3);
 			*bits = swz.u32;
+
+			bits++;
 		}
 
 		// Next row.
