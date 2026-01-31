@@ -111,6 +111,11 @@ IF(Fmt_FOUND)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${Fmt_LIBRARY})
 ENDIF(Fmt_FOUND)
 
+# Link in libdl if it's required for dlopen().
+IF(CMAKE_DL_LIBS)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${CMAKE_DL_LIBS})
+ENDIF(CMAKE_DL_LIBS)
+
 # Make sure git_version.h is created before compiling this target.
 IF(TARGET git_version)
 	ADD_DEPENDENCIES(${PROJECT_NAME} git_version)
