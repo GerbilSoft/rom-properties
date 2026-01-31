@@ -14,6 +14,8 @@
 
 * Bug fixes:
   * GTK: Ensure achievements can be triggered when using `rp-stub -R`.
+  * Fixed a potential image swizzle error when using ARM NEON if the
+    swizzle specification has a '0' or '1' channel.
 
 * Other changes:
   * Swizzling "bgra" (red/blue swap only) is now faster on systems that

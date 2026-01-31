@@ -3,7 +3,7 @@
  * rp_image_ops.cpp: Image class. (operations)                             *
  * NEON-optimized version.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -97,6 +97,8 @@ int rp_image::swizzle_neon(const char *swz_spec)
 	// This can be used for [rgba0].
 	// For 1, we'll need a separate "por" mask.
 	// N.B.: For vtbl, an out-of-range index (e.g. 0xFF) will return 0, i.e. "zero the byte".
+	// NOTE: Using 0xF0 because the pshufb_mask_u32 builder adds 0x04, 0x08, and 0x0C
+	// to the register indexes.
 	u8_32 pshufb_mask_vals;
 	u8_32 por_mask_vals;
 #define SET_MASK_VALS(n, shuf, por) do { \
@@ -110,8 +112,8 @@ int rp_image::swizzle_neon(const char *swz_spec)
 			case 'g':	SET_MASK_VALS((n),    1, 0x00);	break; \
 			case 'r':	SET_MASK_VALS((n),    2, 0x00);	break; \
 			case 'a':	SET_MASK_VALS((n),    3, 0x00);	break; \
-			case '0':	SET_MASK_VALS((n), 0xFF, 0x00);	break; \
-			case '1':	SET_MASK_VALS((n), 0xFF, 0xFF);	break; \
+			case '0':	SET_MASK_VALS((n), 0xF0, 0x00);	break; \
+			case '1':	SET_MASK_VALS((n), 0xF0, 0xFF);	break; \
 			default: \
 				assert(!"Invalid swizzle value."); \
 				SET_MASK_VALS((n), 0xFF, 0x00); \
