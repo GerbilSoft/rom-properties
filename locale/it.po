@@ -3351,7 +3351,7 @@ msgstr "Activator"
 #: ../src/libromdata/Console/MegaDrive.cpp:485
 msgctxt "MegaDrive|I/O"
 msgid "Mega Mouse"
-msgstr "Mega Mouse"
+msgstr "Sega Mouse"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:505
 msgctxt "MegaDrive|I/O"
