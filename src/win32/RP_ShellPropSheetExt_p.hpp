@@ -195,9 +195,10 @@ public:
 	 * Used by loadImages().
 	 *
 	 * @param label DragImageLabel
+	 * @param labelSize rp_image size
 	 * @param imgStdHeight "Standard" height (usually 32px at 96dpi)
 	 */
-	static void adjustImageHeight(DragImageLabel *label, int imgStdHeight);
+	static void adjustImageHeight(DragImageLabel *label, SIZE labelSize, int imgStdHeight);
 
 	/**
 	 * Load the banner and icon as HBITMAPs.

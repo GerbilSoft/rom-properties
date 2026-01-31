@@ -98,11 +98,11 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
  * Used by loadImages().
  *
  * @param label DragImageLabel
+ * @param labelSize rp_image size
  * @param imgStdHeight "Standard" height (usually 32px at 96dpi)
  */
-void RP_ShellPropSheetExt_Private::adjustImageHeight(DragImageLabel *label, int imgStdHeight)
+void RP_ShellPropSheetExt_Private::adjustImageHeight(DragImageLabel *label, SIZE labelSize, int imgStdHeight)
 {
-	const SIZE labelSize = {label->width(), label->height()};
 	if (labelSize.cy != imgStdHeight) {
 		// Need to scale the label to match the aspect ratio.
 		const SIZE labelScaledSize = {
@@ -149,6 +149,7 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 
 			ok = lblBanner->setRpImage(banner);
 			if (ok) {
+				const SIZE labelSize = {banner->width(), banner->height()};
 				adjustImageHeight(lblBanner.get(), imgStdHeight);
 			}
 		}
@@ -178,6 +179,7 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 			}
 
 			if (ok) {
+				const SIZE labelSize = {icon->width(), icon->height()};
 				adjustImageHeight(lblIcon.get(), imgStdHeight);
 			}
 		}
