@@ -338,27 +338,7 @@ static int print_kitty_image_data_base64(rp_image_const_ptr image_src)
 	}
 
 	// Swap the R/B channels.
-	{
-		argb32_t *bits = reinterpret_cast<argb32_t*>(image->bits());
-		const int strideDiff = image->row_bytes() - (image->width() * sizeof(uint32_t));
-		for (unsigned int y = (unsigned int)image->height(); y > 0; y--) {
-			unsigned int x;
-			for (x = (unsigned int)image->width(); x > 1; x -= 2) {
-				// Swap the R and B channels
-				std::swap(bits[0].r, bits[0].b);
-				std::swap(bits[1].r, bits[1].b);
-				bits += 2;
-			}
-			if (x == 1) {
-				// Last pixel
-				std::swap(bits->r, bits->b);
-				bits++;
-			}
-
-			// Next line.
-			bits += strideDiff;
-		}
-	}
+	image->swizzle("bgra");
 
 	const int width = image->width();
 	const int height = image->height();

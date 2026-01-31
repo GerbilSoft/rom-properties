@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image.hpp: Image class.                                              *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -511,6 +511,7 @@ class rp_image
 		 * @param swz_spec Swizzle specification: [rgba01]{4} [matches KTX2]
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int swizzle_cpp(const char *swz_spec);
 
 #ifdef RP_IMAGE_HAS_SSSE3
@@ -521,6 +522,7 @@ class rp_image
 		 * @param swz_spec Swizzle specification: [rgba01]{4} [matches KTX2]
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int swizzle_ssse3(const char *swz_spec);
 #endif /* RP_IMAGE_HAS_SSSE3 */
 
@@ -532,6 +534,7 @@ class rp_image
 		 * @param swz_spec Swizzle specification: [rgba01]{4} [matches KTX2]
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int swizzle_neon(const char *swz_spec);
 #endif /* RP_IMAGE_HAS_NEON */
 
@@ -541,6 +544,7 @@ class rp_image
 		 * @param swz_spec Swizzle specification: [rgba01]{4} [matches KTX2]
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		inline int swizzle(const char *swz_spec);
 
 		/**
