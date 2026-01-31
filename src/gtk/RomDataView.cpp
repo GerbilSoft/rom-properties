@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RomDataView.cpp: RomData viewer widget.                                 *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -649,7 +649,7 @@ rp_rom_data_view_is_showing_data(RpRomDataView *page)
  *
  * @param image DragImage
  * @param img_w rp_image width
- * @param img_h rp_image width
+ * @param img_h rp_image height
  * @param imgStdHeight "Standard" height (usually 32px at 96dpi)
  */
 static void
