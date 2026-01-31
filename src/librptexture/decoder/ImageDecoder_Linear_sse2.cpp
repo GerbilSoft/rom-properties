@@ -3,7 +3,7 @@
  * ImageDecoder_Linear.cpp: Image decoding functions: Linear               *
  * SSE2-optimized version.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -79,9 +79,9 @@ static inline void VECTORCALL T_RGB16_sse2(
 	const uint16_t *RESTRICT img_buf, uint32_t *RESTRICT px_dest)
 {
 	// Alpha mask.
-	const __m128i Mask32_A  = _mm_setr_epi32(0xFF000000,0xFF000000,0xFF000000,0xFF000000);
+	const __m128i Mask32_A  = _mm_set1_epi32(0xFF000000);
 	// Mask for the high byte for Green.
-	const __m128i MaskG_Hi8 = _mm_setr_epi16(0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00);
+	const __m128i MaskG_Hi8 = _mm_set1_epi16(0xFF00);
 
 	const __m128i *xmm_src = reinterpret_cast<const __m128i*>(img_buf);
 	__m128i *xmm_dest = reinterpret_cast<__m128i*>(px_dest);
@@ -155,7 +155,7 @@ static inline void VECTORCALL T_ARGB16_sse2(
 	static_assert(Abits + Rbits + Gbits + Bbits <= 16, "Total number of bits is invalid.");
 
 	// Mask for the high byte for Green and Alpha.
-	const __m128i MaskAG_Hi8 = _mm_setr_epi16(0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00);
+	const __m128i MaskAG_Hi8 = _mm_set1_epi16(0xFF00);
 
 	const __m128i *xmm_src = reinterpret_cast<const __m128i*>(img_buf);
 	__m128i *xmm_dest = reinterpret_cast<__m128i*>(px_dest);
@@ -309,38 +309,38 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 	// TODO: Only initialize what's required for the current pixel format?
 
 	// AND masks for 565 channels.
-	const __m128i Mask565_Hi5  = _mm_setr_epi16(0xF800,0xF800,0xF800,0xF800,0xF800,0xF800,0xF800,0xF800);
-	const __m128i Mask565_Mid6 = _mm_setr_epi16(0x07E0,0x07E0,0x07E0,0x07E0,0x07E0,0x07E0,0x07E0,0x07E0);
-	const __m128i Mask565_Lo5  = _mm_setr_epi16(0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F);
+	const __m128i Mask565_Hi5  = _mm_set1_epi16(0xF800);
+	const __m128i Mask565_Mid6 = _mm_set1_epi16(0x07E0);
+	const __m128i Mask565_Lo5  = _mm_set1_epi16(0x001F);
 
 	// AND masks for 555 channels.
-	const __m128i Mask555_Hi5  = _mm_setr_epi16(0x7C00,0x7C00,0x7C00,0x7C00,0x7C00,0x7C00,0x7C00,0x7C00);
-	const __m128i Mask555_Mid5 = _mm_setr_epi16(0x03E0,0x03E0,0x03E0,0x03E0,0x03E0,0x03E0,0x03E0,0x03E0);
-	const __m128i Mask555_Lo5  = _mm_setr_epi16(0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F);
+	const __m128i Mask555_Hi5  = _mm_set1_epi16(0x7C00);
+	const __m128i Mask555_Mid5 = _mm_set1_epi16(0x03E0);
+	const __m128i Mask555_Lo5  = _mm_set1_epi16(0x001F);
 
 	// AND masks for 4444 channels.
-	const __m128i Mask4444_Nyb3 = _mm_setr_epi16(0xF000,0xF000,0xF000,0xF000,0xF000,0xF000,0xF000,0xF000);
-	const __m128i Mask4444_Nyb2 = _mm_setr_epi16(0x0F00,0x0F00,0x0F00,0x0F00,0x0F00,0x0F00,0x0F00,0x0F00);
-	const __m128i Mask4444_Nyb1 = _mm_setr_epi16(0x00F0,0x00F0,0x00F0,0x00F0,0x00F0,0x00F0,0x00F0,0x00F0);
-	const __m128i Mask4444_Nyb0 = _mm_setr_epi16(0x000F,0x000F,0x000F,0x000F,0x000F,0x000F,0x000F,0x000F);
+	const __m128i Mask4444_Nyb3 = _mm_set1_epi16(0xF000);
+	const __m128i Mask4444_Nyb2 = _mm_set1_epi16(0x0F00);
+	const __m128i Mask4444_Nyb1 = _mm_set1_epi16(0x00F0);
+	const __m128i Mask4444_Nyb0 = _mm_set1_epi16(0x000F);
 
 	// AND masks for 1555 channels.
-	const __m128i Cmp1555_A     = _mm_setr_epi16(0x0080,0x0080,0x0080,0x0080,0x0080,0x0080,0x0080,0x0080);
-	const __m128i Mask1555_Hi5  = _mm_setr_epi16(0x7C00,0x7C00,0x7C00,0x7C00,0x7C00,0x7C00,0x7C00,0x7C00);
-	const __m128i Mask1555_Mid5 = _mm_setr_epi16(0x03E0,0x03E0,0x03E0,0x03E0,0x03E0,0x03E0,0x03E0,0x03E0);
-	const __m128i Mask1555_Lo5  = _mm_setr_epi16(0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F);
+	const __m128i Cmp1555_A     = _mm_set1_epi16(0x0080);
+	const __m128i Mask1555_Hi5  = _mm_set1_epi16(0x7C00);
+	const __m128i Mask1555_Mid5 = _mm_set1_epi16(0x03E0);
+	const __m128i Mask1555_Lo5  = _mm_set1_epi16(0x001F);
 
 	// AND masks for 5551 channels.
-	const __m128i Cmp5551_A     = _mm_setr_epi16(0x0101,0x0101,0x0101,0x0101,0x0101,0x0101,0x0101,0x0101);
-	const __m128i Mask5551_Hi5  = _mm_setr_epi16(0xF800,0xF800,0xF800,0xF800,0xF800,0xF800,0xF800,0xF800);
-	const __m128i Mask5551_Mid5 = _mm_setr_epi16(0x07C0,0x07C0,0x07C0,0x07C0,0x07C0,0x07C0,0x07C0,0x07C0);
-	const __m128i Mask5551_Lo5  = _mm_setr_epi16(0x003E,0x003E,0x003E,0x003E,0x003E,0x003E,0x003E,0x003E);
+	const __m128i Cmp5551_A     = _mm_set1_epi16(0x0101);
+	const __m128i Mask5551_Hi5  = _mm_set1_epi16(0xF800);
+	const __m128i Mask5551_Mid5 = _mm_set1_epi16(0x07C0);
+	const __m128i Mask5551_Lo5  = _mm_set1_epi16(0x003E);
 
-	// Alpha mask.
-	const __m128i Mask32_A  = _mm_setr_epi32(0xFF000000,0xFF000000,0xFF000000,0xFF000000);
+	// Alpha mask
+	const __m128i Mask32_A  = _mm_set1_epi32(0xFF000000);
 
-	// GR88 mask.
-	const __m128i MaskGR88  = _mm_setr_epi32(0x00FFFF00,0x00FFFF00,0x00FFFF00,0x00FFFF00);
+	// GR88 mask
+	const __m128i MaskGR88  = _mm_set1_epi32(0x00FFFF00);
 
 	// sBIT metadata.
 	static const rp_image::sBIT_t sBIT_RGB565   = {5,6,5,0,0};
