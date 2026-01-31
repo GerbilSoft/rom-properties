@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-01-31 12:55-0500\n"
-"PO-Revision-Date: 2026-01-31 18:05\n"
+"PO-Revision-Date: 2026-01-31 19:04\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese, Brazilian\n"
 "Language: pt_BR\n"
@@ -10678,7 +10678,7 @@ msgstr ""
 #, c-format
 msgctxt "rp-stub|Help"
 msgid "Usage: %s"
-msgstr ""
+msgstr "Utilização: %s"
 
 #: ../src/rp-stub/rp-stub.c:163
 msgctxt "rp-stub|Help"
