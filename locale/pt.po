@@ -10796,7 +10796,7 @@ msgid "Other options:"
 msgstr ""
 
 #: ../src/rp-stub/rp-stub.c:160
-#, fuzzy, c-format
+#, c-format
 msgctxt "rp-stub|Help"
 msgid "Usage: %s"
 msgstr "Utilização: %s"
