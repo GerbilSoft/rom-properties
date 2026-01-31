@@ -328,7 +328,7 @@ static inline void encode_base64_3to4(char *dest, const uint8_t *src)
  * @param image_src Image
  * @return 0 on success; negative POSIX error code on error.
  */
-static int print_kitty_image_data_base64(rp_image_const_ptr image_src)
+static int print_kitty_image_data_base64(const rp_image *image_src)
 {
 	// Kitty requires R/B to be swapped.
 	rp_image_ptr image = image_src->dup_ARGB32();
@@ -437,6 +437,21 @@ static int print_kitty_image_data_base64(rp_image_const_ptr image_src)
 }
 
 /**
+ * Print an rp_image in base64 format for the Kitty graphics protocol.
+ *
+ * This function only prints the base64 data.
+ * The appropriate Kitty control codes must have been sent prior to
+ * calling this function.
+ *
+ * @param image_src Image
+ * @return 0 on success; negative POSIX error code on error.
+ */
+static inline int print_kitty_image_data_base64(const rp_image_const_ptr &image_src)
+{
+	return print_kitty_image_data_base64(image_src.get());
+}
+
+/**
  * Print an image using the Kitty graphics protocol.
  * @param image rp_image
  * @return 0 on success; negative POSIX error code on error.
@@ -478,15 +493,25 @@ static int print_kitty_animated_image(const IconAnimDataConstPtr &iconAnimData)
 	static int image_number = 1;
 
 	bool first = true;
+	const rp_image *last_valid_frame = nullptr;
 	for (int i = 0; i < iconAnimData->seq_count; i++) {
-		const rp_image_ptr &frame = iconAnimData->frames[iconAnimData->seq_index[i]];
+		const rp_image *this_frame = iconAnimData->frames[iconAnimData->seq_index[i]].get();
 		const int ms = iconAnimData->delays[i].ms;
-		// FIXME: Handle invalid (empty) frame delays?
-		if (frame && frame->isValid()) {
-			printf("\x1B_Ga=%c,q=2,f=32,s=%d,v=%d,I=%d,z=%d;", (first ? 'T' : 'f'), frame->width(), frame->height(), image_number, ms);
+		if (!this_frame || !this_frame->isValid()) {
+			// Empty frame. Use the last valid frame with the current delay.
+			// Needed for e.g. Luigi's Mansion (GameCube).
+			this_frame = last_valid_frame;
+		}
+
+		if (this_frame && this_frame->isValid()) {
+			printf("\x1B_Ga=%c,q=2,f=32,s=%d,v=%d,I=%d,z=%d;",
+				(first ? 'T' : 'f'),
+				this_frame->width(), this_frame->height(),
+				image_number, ms);
 			first = false;
-			print_kitty_image_data_base64(frame);
+			print_kitty_image_data_base64(this_frame);
 			fwrite("\x1B\\", 1, 2, stdout);
+			last_valid_frame = this_frame;
 		}
 	}
 
