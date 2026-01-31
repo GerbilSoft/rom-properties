@@ -100,7 +100,7 @@ SET(${PROJECT_NAME}_SRCS
 	ISpriteSheet.cpp
 	FlagSpriteSheet.cpp
 
-	config/stub-export.c
+	config/stub-export.cpp
 	config/ConfigDialog.cpp
 	config/RpConfigTab.c
 	config/ImageTypesTab.cpp

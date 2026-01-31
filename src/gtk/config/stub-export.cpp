@@ -1,14 +1,15 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK)                              *
- * stub-export.c: Exported function for the rp-config stub.                *
+ * stub-export.cpp: Exported functions for the rp-config stub.             *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "check-uid.h"
 
+#include "AchGDBus.hpp"
 #include "ConfigDialog.hpp"
 #include "RomDataView.hpp"
 #include "xattr/XAttrView.hpp"
@@ -91,6 +92,7 @@ rp_config_app_activate(GtkApplication *app, gpointer user_data)
  * @param argv
  * @return 0 on success; non-zero on error.
  */
+extern "C"
 G_MODULE_EXPORT
 int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 {
@@ -115,6 +117,11 @@ int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 #endif /* !GLIB_CHECK_VERSION(2, 32, 0) */
 
 	CHECK_UID_RET(EXIT_FAILURE);
+
+	// Initialize achievements.
+	// NOTE: Probably not strictly needed for the config dialog...
+	AchGDBus::instance();
+
 #if GTK_CHECK_VERSION(2, 90, 2)
 	GtkApplication *const app = gtk_application_new(
 		"com.gerbilsoft.rom-properties.rp-config", G_APPLICATION_FLAGS_NONE);
@@ -192,7 +199,7 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 	GtkWidget *const dialog = gtk_dialog_new_with_buttons(
 		s_title,
 		NULL,
-		0,
+		static_cast<GtkDialogFlags>(0),
 		GTK_I18N_STR_CLOSE, GTK_RESPONSE_CLOSE,
 		NULL);
 	gtk_widget_set_name(dialog, "RomDataView-test-dialog");
@@ -334,6 +341,7 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
  * @param argv
  * @return 0 on success; non-zero on error.
  */
+extern "C"
 G_MODULE_EXPORT
 int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 {
@@ -366,6 +374,10 @@ int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 
 	CHECK_UID_RET(EXIT_FAILURE);
 	fputs("*** GTK" GTK_MAJOR_STR " rp_show_RomDataView_dialog(): Starting main loop.\n", stderr);
+
+	// Initialize achievements.
+	AchGDBus::instance();
+
 #if GTK_CHECK_VERSION(2, 90, 2)
 	app = gtk_application_new("com.gerbilsoft.rom-properties.rp-config", G_APPLICATION_FLAGS_NONE);
 	// NOTE: GApplication is supposed to set this, but KDE isn't seeing it...
