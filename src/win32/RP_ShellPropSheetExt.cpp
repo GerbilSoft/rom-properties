@@ -150,7 +150,7 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 			ok = lblBanner->setRpImage(banner);
 			if (ok) {
 				const SIZE labelSize = {banner->width(), banner->height()};
-				adjustImageHeight(lblBanner.get(), imgStdHeight);
+				adjustImageHeight(lblBanner.get(), labelSize, imgStdHeight);
 			}
 		}
 	}
@@ -180,7 +180,7 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 
 			if (ok) {
 				const SIZE labelSize = {icon->width(), icon->height()};
-				adjustImageHeight(lblIcon.get(), imgStdHeight);
+				adjustImageHeight(lblIcon.get(), labelSize, imgStdHeight);
 			}
 		}
 	}
