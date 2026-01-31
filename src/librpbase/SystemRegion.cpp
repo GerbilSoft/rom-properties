@@ -92,30 +92,27 @@ static const char *get_LC_MESSAGES(void)
 	// TODO: On Windows startup in main() functions, get LC_ALL/LC_MESSAGES vars if msvc doesn't?
 
 	// Environment variables override the system defaults.
-	const char *const lang = getenv("LANG");
-	const char *const lc_messages = getenv("LC_MESSAGES");
-	const char *const lc_all = getenv("LC_ALL");
+	const array<const char*, 3> lang_vars = {{
+		getenv("LANG"),
+		getenv("LC_MESSAGES"),
+		getenv("LC_ALL"),
+	}};
 
 	// Check if any of the environment variables are "C".
 	// If they are, assume no locale.
 	// Otherwise, precedence is LANG -> LC_MESSAGES -> LC_ALL.
-	if (lang && (lang[0] == 'C' && (lang[1] == '\0' || lang[1] == '.'))) {
-		return nullptr;
-	}
-	if (lc_messages && (lc_messages[0] == 'C' && (lc_messages[1] == '\0' || lc_messages[1] == '.'))) {
-		return nullptr;
-	}
-	if (lc_all && (lc_all[0] == 'C' && (lc_all[1] == '\0' || lc_all[1] == '.'))) {
-		return nullptr;
+	for (const char *var : lang_vars) {
+		if (var && (var[0] == 'C' && (var[1] == '\0' || var[1] == '.'))) {
+			return nullptr;
+		}
 	}
 
 	const char *locale = nullptr;
-	if (lang && lang[0] != '\0') {
-		locale = lang;
-	} else if (lc_messages && lc_messages[0] != '\0') {
-		locale = lc_messages;
-	} else if (lc_all && lc_all[0] != '\0') {
-		locale = lc_all;
+	for (const char *var : lang_vars) {
+		if (var && var[0] != '\0') {
+			locale = var;
+			break;
+		}
 	}
 
 #ifndef _WIN32
