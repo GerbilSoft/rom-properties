@@ -9,7 +9,9 @@
     protocol.
     * Sixel protocol support requires a copy of libsixel to be installed.
       (Not currently included in the Windows build.)
-    * Sixel has been tested with Windows Terminal.
+    * Sixel has been tested with KDE Konsole, xterm (with `-ti 340`), and
+      Windows Terminal.
+    * Kitty protocol has been tested with Kitty terminal and KDE Konsole.
 
 * Bug fixes:
   * Windows: Fix potential UI language misdetection in some cases.
