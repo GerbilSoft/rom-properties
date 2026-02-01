@@ -325,11 +325,19 @@ static inline void encode_base64_3to4(char *dest, const uint8_t *src)
  * The appropriate Kitty control codes must have been sent prior to
  * calling this function.
  *
- * @param image_src Image
+ * @param image_src	[in] Image source
+ * @param is_animated	[in,opt] If true, this is part of an animated image.
+ * @param anim_frame_0	[in,opt] Set to true for the first frame of an animated image.
+ * @param image_number	[in,opt] Set to the application-specific Kitty image number.
+ * @param ms		[in,opt] Animation delay, in milliseconds.
  * @return 0 on success; negative POSIX error code on error.
  */
-static int print_kitty_image_data_base64(const rp_image *image_src)
+static int print_kitty_image(const rp_image *image_src, bool is_animated = false, bool anim_frame_0 = false, int image_number = 0, int ms = 0)
 {
+	if (!image_src->isValid()) {
+		return -EINVAL;
+	}
+
 	// Kitty requires R/B to be swapped.
 	rp_image_ptr image = image_src->dup_ARGB32();
 	if (!image->isValid()) {
@@ -342,6 +350,19 @@ static int print_kitty_image_data_base64(const rp_image *image_src)
 
 	const int width = image->width();
 	const int height = image->height();
+
+	// FIXME: Chunked operation (m=1) isn't working.
+	// Kitty says it's needed for escape sequences larger than 4 KB,
+	// but it seems to be working regardless...
+
+	// Print the image header.
+	if (likely(!is_animated)) {
+		printf("\x1B_Ga=T,q=2,f=32,s=%d,v=%d;" /*,m=1;"*/, width, height);
+	} else {
+		printf("\x1B_Ga=%c,q=2,f=32,s=%d,v=%d,I=%d,z=%d;" /*,m=1;"*/,
+			(anim_frame_0 ? 'T' : 'f'),
+			width, height, image_number, ms);
+	}
 
 	// Allocate a line buffer for base64 conversion.
 	// 3 input bytes == 4 output bytes
@@ -363,6 +384,7 @@ static int print_kitty_image_data_base64(const rp_image *image_src)
 	// Temporary buffer for source lines that aren't multiples of 3 bytes.
 	uint8_t tmpbuf[3];
 	uint8_t tmpbuf_size = 0;
+	//int chunk_number = 0;	// FIXME: Not working.
 
 	for (int y = height; y > 0; y--, bits += stride_adj) {
 		// Process 3 input bytes at a time.
@@ -393,12 +415,27 @@ static int print_kitty_image_data_base64(const rp_image *image_src)
 		}
 
 		// Write the encoded data in 4 KB chunks.
-		static constexpr size_t BASE64_CHUNK_SIZE = 4096U;
+		static constexpr size_t BASE64_CHUNK_SIZE = 4096U - 32U;
 		size_t linebuf_used = static_cast<size_t>(p - linebuf.get());
 		p = linebuf.get();
 		while (linebuf_used > 0) {
 			size_t bytes_to_print = std::min(linebuf_used, BASE64_CHUNK_SIZE);
+#if 0
+			if (chunk_number > 0) {
+				// First chunk is preceded by an escape sequence indicating
+				// we're starting pixel data. Remaining chunks need an escape
+				// sequence indicating we're continuing to print.
+				const int final_chunk = !(y == 1 && linebuf_used <= BASE64_CHUNK_SIZE && tmpbuf_size == 0);
+				printf("\x1B_Gq=2,m=%d;", final_chunk);
+			}
+#endif
+
 			fwrite(p, 1, bytes_to_print, stdout);
+#if 0
+			fwrite("\x1B\\", 1, 2, stdout);
+			chunk_number++;
+#endif
+
 			p += bytes_to_print;
 			linebuf_used -= bytes_to_print;
 		}
@@ -431,7 +468,20 @@ static int print_kitty_image_data_base64(const rp_image *image_src)
 
 		// Write the last 4 bytes.
 		fwrite(p, 1, 4, stdout);
+#if 0
+		printf("\x1B_Gq=2,m=0;%s\x1B\\", p);
+		chunk_number += 2;
+#endif
 	}
+
+#if 0
+	if (chunk_number <= 1) {
+		// No chunks, or only one chunk (with m=1), were written.
+		// Need to write a dummy final chunk.
+		printf("\x1B_Gq=2,m=0;\x1B\\");
+	}
+#endif
+	fwrite("\x1B\\", 1, 2, stdout);
 
 	return 0;
 }
@@ -443,34 +493,16 @@ static int print_kitty_image_data_base64(const rp_image *image_src)
  * The appropriate Kitty control codes must have been sent prior to
  * calling this function.
  *
- * @param image_src Image
+ * @param image_src	[in] Image source
+ * @param is_animated	[in,opt] If true, this is part of an animated image.
+ * @param anim_frame_0	[in,opt] Set to true for the first frame of an animated image.
+ * @param image_number	[in,opt] Set to the application-specific Kitty image number.
+ * @param ms		[in,opt] Animation delay, in milliseconds.
  * @return 0 on success; negative POSIX error code on error.
  */
-static inline int print_kitty_image_data_base64(const rp_image_const_ptr &image_src)
+static inline int print_kitty_image(const rp_image_const_ptr &image_src, bool is_animated = false, bool anim_frame_0 = false, int image_number = 0, int ms = 0)
 {
-	return print_kitty_image_data_base64(image_src.get());
-}
-
-/**
- * Print an image using the Kitty graphics protocol.
- * @param image rp_image
- * @return 0 on success; negative POSIX error code on error.
- */
-static int print_kitty_image(const rp_image_const_ptr &image)
-{
-	if (!image->isValid()) {
-		return -EINVAL;
-	}
-
-	// Print the Kitty header.
-	printf("\x1B_Ga=T,q=2,f=32,s=%d,v=%d;", image->width(), image->height());
-
-	// Print the image data.
-	print_kitty_image_data_base64(image);
-
-	// End of data.
-	fwrite("\x1B\\", 1, 2, stdout);
-	return 0;
+	return print_kitty_image(image_src.get(), is_animated, anim_frame_0, image_number, ms);
 }
 
 /**
@@ -516,13 +548,8 @@ static int print_kitty_animated_image(const IconAnimDataConstPtr &iconAnimData)
 			i++;
 		}
 
-		printf("\x1B_Ga=%c,q=2,f=32,s=%d,v=%d,I=%d,z=%d;",
-			(first ? 'T' : 'f'),
-			this_frame->width(), this_frame->height(),
-			image_number, ms);
+		print_kitty_image(this_frame, true, first, image_number, ms);
 		first = false;
-		print_kitty_image_data_base64(this_frame);
-		fwrite("\x1B\\", 1, 2, stdout);
 	}
 
 	// Start the animation.
