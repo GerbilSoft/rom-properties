@@ -778,17 +778,7 @@ int NEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 	// Byteswap the remaining fields.
-	pVsFfi->dwFileVersionMS		= le32_to_cpu(pVsFfi->dwFileVersionMS);
-	pVsFfi->dwFileVersionLS		= le32_to_cpu(pVsFfi->dwFileVersionLS);
-	pVsFfi->dwProductVersionMS	= le32_to_cpu(pVsFfi->dwProductVersionMS);
-	pVsFfi->dwProductVersionLS	= le32_to_cpu(pVsFfi->dwProductVersionLS);
-	pVsFfi->dwFileFlagsMask		= le32_to_cpu(pVsFfi->dwFileFlagsMask);
-	pVsFfi->dwFileFlags		= le32_to_cpu(pVsFfi->dwFileFlags);
-	pVsFfi->dwFileOS		= le32_to_cpu(pVsFfi->dwFileOS);
-	pVsFfi->dwFileType		= le32_to_cpu(pVsFfi->dwFileType);
-	pVsFfi->dwFileSubtype		= le32_to_cpu(pVsFfi->dwFileSubtype);
-	pVsFfi->dwFileDateMS		= le32_to_cpu(pVsFfi->dwFileDateMS);
-	pVsFfi->dwFileDateLS		= le32_to_cpu(pVsFfi->dwFileDateLS);
+	rp_byte_swap_32_array(pVsFfi->u32, sizeof(pVsFfi->u32));
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
 	// DWORD alignment, if necessary.

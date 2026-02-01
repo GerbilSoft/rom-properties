@@ -136,20 +136,23 @@ typedef enum {
 /**
  * Version info resource (fixed-size data section)
  */
-typedef struct _VS_FIXEDFILEINFO {
-	uint32_t dwSignature;
-	uint32_t dwStrucVersion;
-	uint32_t dwFileVersionMS;
-	uint32_t dwFileVersionLS;
-	uint32_t dwProductVersionMS;
-	uint32_t dwProductVersionLS;
-	uint32_t dwFileFlagsMask;
-	uint32_t dwFileFlags;
-	uint32_t dwFileOS;
-	uint32_t dwFileType;
-	uint32_t dwFileSubtype;
-	uint32_t dwFileDateMS;
-	uint32_t dwFileDateLS;
+typedef union _VS_FIXEDFILEINFO {
+	struct {
+		uint32_t dwSignature;
+		uint32_t dwStrucVersion;
+		uint32_t dwFileVersionMS;
+		uint32_t dwFileVersionLS;
+		uint32_t dwProductVersionMS;
+		uint32_t dwProductVersionLS;
+		uint32_t dwFileFlagsMask;
+		uint32_t dwFileFlags;
+		uint32_t dwFileOS;
+		uint32_t dwFileType;
+		uint32_t dwFileSubtype;
+		uint32_t dwFileDateMS;
+		uint32_t dwFileDateLS;
+	};
+	uint32_t u32[13];
 } VS_FIXEDFILEINFO;
 ASSERT_STRUCT(VS_FIXEDFILEINFO, 13*sizeof(uint32_t));
 #endif /* VER_H */
