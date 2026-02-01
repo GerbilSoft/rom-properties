@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * IsoPartition.cpp: ISO-9660 partition reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1012,10 +1012,14 @@ IRpFilePtr IsoPartition::open(const char *filename)
 	}
 
 	// Make sure this is a regular file.
-	// TODO: What is an "associated" file?
-	if (dirEntry->flags & (ISO_FLAG_ASSOCIATED | ISO_FLAG_DIRECTORY)) {
-		// Not a regular file.
-		m_lastError = ((dirEntry->flags & ISO_FLAG_DIRECTORY) ? EISDIR : EPERM);
+	if (dirEntry->flags & ISO_FLAG_DIRECTORY) {
+		// This is a directory.
+		m_lastError = EISDIR;
+		return nullptr;
+	} else if (dirEntry->flags & ISO_FLAG_ASSOCIATED) {
+		// This is an "associated" file.
+		// Used for e.g. resource forks on Mac discs.
+		m_lastError = EPERM;
 		return nullptr;
 	}
 
