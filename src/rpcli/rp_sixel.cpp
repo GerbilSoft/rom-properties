@@ -357,7 +357,7 @@ static int print_kitty_image(const rp_image *image_src, bool is_animated = false
 
 	// Print the image header.
 	if (likely(!is_animated)) {
-		printf("\x1B_Ga=T,q=2,f=32,s=%d,v=%d;" /*,m=1;"*/, width, height);
+		printf("\x1B_Ga=T,q=2,f=32,s=%d,v=%d,m=1;", width, height);
 	} else {
 		printf("\x1B_Ga=%c,q=2,f=32,s=%d,v=%d,I=%d,z=%d;" /*,m=1;"*/,
 			(anim_frame_0 ? 'T' : 'f'),
@@ -384,7 +384,7 @@ static int print_kitty_image(const rp_image *image_src, bool is_animated = false
 	// Temporary buffer for source lines that aren't multiples of 3 bytes.
 	uint8_t tmpbuf[3];
 	uint8_t tmpbuf_size = 0;
-	//int chunk_number = 0;	// FIXME: Not working.
+	int chunk_number = 0;	// FIXME: Not working for animated images.
 
 	for (int y = height; y > 0; y--, bits += stride_adj) {
 		// Process 3 input bytes at a time.
@@ -420,21 +420,20 @@ static int print_kitty_image(const rp_image *image_src, bool is_animated = false
 		p = linebuf.get();
 		while (linebuf_used > 0) {
 			size_t bytes_to_print = std::min(linebuf_used, BASE64_CHUNK_SIZE);
-#if 0
-			if (chunk_number > 0) {
+			if (likely(!is_animated) && chunk_number > 0) {
 				// First chunk is preceded by an escape sequence indicating
 				// we're starting pixel data. Remaining chunks need an escape
 				// sequence indicating we're continuing to print.
 				const int final_chunk = !(y == 1 && linebuf_used <= BASE64_CHUNK_SIZE && tmpbuf_size == 0);
 				printf("\x1B_Gq=2,m=%d;", final_chunk);
 			}
-#endif
 
 			fwrite(p, 1, bytes_to_print, stdout);
-#if 0
-			fwrite("\x1B\\", 1, 2, stdout);
-			chunk_number++;
-#endif
+
+			if (likely(!is_animated)) {
+				fwrite("\x1B\\", 1, 2, stdout);
+				chunk_number++;
+			}
 
 			p += bytes_to_print;
 			linebuf_used -= bytes_to_print;
@@ -467,21 +466,21 @@ static int print_kitty_image(const rp_image *image_src, bool is_animated = false
 		}
 
 		// Write the last 4 bytes.
-		fwrite(p, 1, 4, stdout);
-#if 0
-		printf("\x1B_Gq=2,m=0;%s\x1B\\", p);
-		chunk_number += 2;
-#endif
+		if (likely(!is_animated)) {
+			printf("\x1B_Gq=2,m=0;%s\x1B\\", p);
+			chunk_number += 2;
+		} else {
+			fwrite(p, 1, 4, stdout);
+		}
 	}
 
-#if 0
-	if (chunk_number <= 1) {
+	if (likely(!is_animated)) {
 		// No chunks, or only one chunk (with m=1), were written.
 		// Need to write a dummy final chunk.
 		printf("\x1B_Gq=2,m=0;\x1B\\");
+	} else if (chunk_number <= 1) {
+		fwrite("\x1B\\", 1, 2, stdout);
 	}
-#endif
-	fwrite("\x1B\\", 1, 2, stdout);
 
 	return 0;
 }
