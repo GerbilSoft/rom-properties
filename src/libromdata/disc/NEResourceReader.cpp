@@ -248,7 +248,7 @@ int NEResourceReaderPrivate::loadResTbl(void)
 			/**
 			 * NOTE: If the ID doesn't have 0x8000 set, the name is a string.
 			 * The ID is the offset of the string, in bytes relative to the
-			 * beginning of the resource table. The sting is a Pascal string;
+			 * beginning of the resource table. The string is a Pascal string;
 			 * one byte indicating length, followed by the string data.
 			 * ***NOT NULL-TERMINATED!***
 			 *
