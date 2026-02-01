@@ -347,6 +347,8 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup_int(const DirData_t *pDir, const
 			}
 		}
 
+		// TODO: Skip "associated" files? (e.g. Mac resource forks)
+
 		// If using Joliet, the filename is encoded as UCS-2 (UTF-16).
 		// Use a quick-and-dirty (and not necessarily accurate) conversion to cp1252.
 		// FIXME: Proper conversion?
