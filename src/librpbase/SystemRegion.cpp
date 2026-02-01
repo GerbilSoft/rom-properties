@@ -103,7 +103,7 @@ static const char *get_LC_MESSAGES(void)
 	// Otherwise, precedence is LANG -> LC_MESSAGES -> LC_ALL.
 	for (const char *var : lang_vars) {
 		if (var && (var[0] == 'C' && (var[1] == '\0' || var[1] == '.'))) {
-			return nullptr;
+			return "C";
 		}
 	}
 
