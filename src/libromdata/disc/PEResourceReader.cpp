@@ -409,12 +409,18 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	// - String: https://docs.microsoft.com/en-us/windows/win32/menurc/string-str
 	// - StringTable: https://docs.microsoft.com/en-us/windows/win32/menurc/stringtable
 
+	struct PE_StringTable_Fields_t {
+		uint16_t wLength;
+		uint16_t wValueLength;
+		uint16_t wType;
+	};
+	ASSERT_STRUCT(PE_StringTable_Fields_t, 6);
+	PE_StringTable_Fields_t fields;
+
 	// Read fields.
 	const off64_t pos_start = file->tell();
-	array<uint16_t, 3> fields;	// wLength, wValueLength, wType
-	static constexpr size_t sizeof_fields = fields.size() * sizeof(uint16_t);
-	size_t size = file->read(fields.data(), sizeof_fields);
-	if (size != sizeof_fields) {
+	size_t size = file->read(&fields, sizeof(fields));
+	if (size != sizeof(fields)) {
 		// Read error.
 		return -EIO;
 	}
@@ -422,7 +428,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	// wLength contains the total string table length.
 	// wValueLength should be 0.
 	// wType should be 1, indicating a language ID string.
-	if (fields[1] != cpu_to_le16(0) || fields[2] != cpu_to_le16(1)) {
+	if (fields.wValueLength != cpu_to_le16(0) || fields.wType != cpu_to_le16(1)) {
 		// Not a string table.
 		return -EIO;
 	}
@@ -452,7 +458,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 
 	// Total string table size (in bytes) is wLength - (pos_strings - pos_start).
 	const off64_t pos_strings = file->tell();
-	const int strTblData_len = static_cast<int>(le16_to_cpu(fields[0])) - static_cast<int>(pos_strings - pos_start);
+	const int strTblData_len = static_cast<int>(le16_to_cpu(fields.wLength)) - static_cast<int>(pos_strings - pos_start);
 	if (strTblData_len <= 0) {
 		// Error...
 		return -EIO;
@@ -472,21 +478,21 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	// TODO: Optimizations.
 	st.clear();
 	int tblPos = 0;
-	while ((tblPos + static_cast<int>(sizeof_fields)) < strTblData_len) {
+	while ((tblPos + static_cast<int>(sizeof(fields))) < strTblData_len) {
 		// wLength, wValueLength, wType
-		memcpy(fields.data(), &strTblData[tblPos], sizeof_fields);
-		if (fields[2] != cpu_to_le16(1)) {
+		memcpy(&fields, &strTblData[tblPos], sizeof(fields));
+		if (fields.wType != cpu_to_le16(1)) {
 			// Not a string...
 			return -EIO;
 		}
 		// NOTE: wValueLength is number of *words* (aka UTF-16 characters).
 		// Hence, we're multiplying by two to get bytes.
-		const uint16_t wLength = le16_to_cpu(fields[0]);
-		if (wLength < sizeof_fields) {
+		const uint16_t wLength = le16_to_cpu(fields.wLength);
+		if (wLength < static_cast<int>(sizeof(fields))) {
 			// Invalid length.
 			return -EIO;
 		}
-		const int wValueLength = le16_to_cpu(fields[1]) * sizeof(char16_t);
+		const int wValueLength = le16_to_cpu(fields.wValueLength) * sizeof(char16_t);
 		if (wValueLength >= wLength || wLength > (strTblData_len - tblPos)) {
 			// Not valid.
 			return -EIO;
@@ -494,8 +500,8 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 
 		// Key length, in bytes: wLength - wValueLength - sizeof_fields
 		// Last Unicode character must be NULL.
-		tblPos += sizeof_fields;
-		const int key_len = ((wLength - wValueLength - sizeof_fields) / sizeof(char16_t)) - 1;
+		tblPos += static_cast<int>(sizeof(fields));
+		const int key_len = ((wLength - wValueLength - static_cast<int>(sizeof(fields))) / sizeof(char16_t)) - 1;
 		assert(key_len > 0);
 		assert(tblPos + ((key_len + 1) * static_cast<int>(sizeof(char16_t))) <= strTblData_len);
 		if (key_len <= 0 || (tblPos + ((key_len + 1) * static_cast<int>(sizeof(char16_t))) > strTblData_len)) {

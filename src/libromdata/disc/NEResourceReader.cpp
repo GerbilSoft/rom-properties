@@ -357,19 +357,24 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	// I'm guessing this is because it was originally developed for Windows NT.
 	// Reference: https://devblogs.microsoft.com/oldnewthing/20061220-15/?p=28653
 
+	struct NE_StringTable_Fields_t {
+		uint16_t wLength;
+		uint16_t wValueLength;
+	};
+	ASSERT_STRUCT(NE_StringTable_Fields_t, 4);
+	NE_StringTable_Fields_t fields;
+
 	// Read fields.
 	const off64_t pos_start = file->tell();
-	array<uint16_t, 2> fields;	// wLength, wValueLength
-	static constexpr size_t sizeof_fields = fields.size() * sizeof(uint16_t);
-	size_t size = file->read(fields.data(), sizeof_fields);
-	if (size != sizeof_fields) {
+	size_t size = file->read(&fields, sizeof(fields));
+	if (size != sizeof(fields)) {
 		// Read error.
 		return -EIO;
 	}
 
 	// wLength contains the total string table length.
 	// wValueLength should be 0.
-	if (fields[1] != cpu_to_le16(0)) {
+	if (fields.wValueLength != cpu_to_le16(0)) {
 		// Not a string table.
 		return -EIO;
 	}
@@ -407,7 +412,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 
 	// Total string table size (in bytes) is wLength - (pos_strings - pos_start).
 	const off64_t pos_strings = file->tell();
-	const int strTblData_len = static_cast<int>(le16_to_cpu(fields[0])) - static_cast<int>(pos_strings - pos_start);
+	const int strTblData_len = static_cast<int>(le16_to_cpu(fields.wLength)) - static_cast<int>(pos_strings - pos_start);
 	if (strTblData_len <= 0) {
 		// Error...
 		return -EIO;
@@ -425,16 +430,16 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	// TODO: Optimizations.
 	st.clear();
 	int tblPos = 0;
-	while ((tblPos + static_cast<int>(sizeof_fields)) < strTblData_len) {
+	while ((tblPos + static_cast<int>(sizeof(fields))) < strTblData_len) {
 		// wLength, wValueLength
-		memcpy(fields.data(), &strTblData[tblPos], sizeof_fields);
+		memcpy(&fields, &strTblData[tblPos], sizeof(fields));
 
-		const uint16_t wLength = le16_to_cpu(fields[0]);
-		if (wLength < sizeof_fields) {
+		const uint16_t wLength = le16_to_cpu(fields.wLength);
+		if (wLength < static_cast<int>(sizeof(fields))) {
 			// Invalid length.
 			return -EIO;
 		}
-		const uint16_t wValueLength = le16_to_cpu(fields[1]);
+		const uint16_t wValueLength = le16_to_cpu(fields.wValueLength);
 		if (wValueLength >= wLength || wLength > (strTblData_len - tblPos)) {
 			// Not valid.
 			return -EIO;
@@ -442,8 +447,8 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 
 		// Key length, in bytes: wLength - wValueLength - sizeof_fields
 		// Last character must be NULL.
-		tblPos += static_cast<int>(fields.size() * sizeof(uint16_t));
-		const int key_len = (wLength - wValueLength - sizeof_fields) - 1;
+		tblPos += static_cast<int>(sizeof(fields));
+		const int key_len = (wLength - wValueLength - static_cast<int>(sizeof(fields))) - 1;
 		assert(key_len > 0);
 		assert((tblPos + key_len + 1) <= strTblData_len);
 		if (key_len <= 0 || (tblPos + key_len + 1) > strTblData_len) {
