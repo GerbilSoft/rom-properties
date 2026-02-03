@@ -93,15 +93,11 @@ static void init_sixel_once(void)
 #else /* !_WIN32 */
 	// TODO: Consistently use either RTLD_NOW or RTLD_LAZY.
 	// Maybe make it a CMake option?
-	// TODO: Check for ABI version 3 too?
-	// Version 4 was introduced with cURL v7.16.0 (October 2006),
-	// but Debian arbitrarily kept it at version 3.
-	// Reference: https://daniel.haxx.se/blog/2024/10/30/eighteen-years-of-abi-stability/
 	libsixel_dll.reset(dlopen("libsixel.so.1", RTLD_LOCAL | RTLD_NOW));
 #endif /* _WIN32 */
 
 	if (!libsixel_dll) {
-		// Could not open libcurl.
+		// Could not open libsixel.
 		return;
 	}
 
