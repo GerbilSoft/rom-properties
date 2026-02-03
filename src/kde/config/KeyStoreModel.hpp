@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyStoreModel.hpp: QAbstractListModel for KeyStore.                     *
  *                                                                         *
- * Copyright (c) 2012-2024 by David Korth.                                 *
+ * Copyright (c) 2012-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,8 +17,8 @@
 class KeyStoreModelPrivate;
 class KeyStoreModel : public QAbstractItemModel
 {
-Q_OBJECT
-Q_PROPERTY(KeyStoreQt* keyStore READ keyStore WRITE setKeyStore NOTIFY keyStoreChanged)
+	Q_OBJECT
+	Q_PROPERTY(KeyStoreQt* keyStore READ keyStore WRITE setKeyStore NOTIFY keyStoreChanged)
 
 public:
 	explicit KeyStoreModel(QObject *parent = nullptr);
@@ -40,17 +40,17 @@ public:
 	};
 
 	// Qt Model/View interface.
-	int rowCount(const QModelIndex& parent = QModelIndex()) const final;
-	int columnCount(const QModelIndex& parent = QModelIndex()) const final;
+	int rowCount(const QModelIndex &parent = QModelIndex()) const final;
+	int columnCount(const QModelIndex &parent = QModelIndex()) const final;
 
-	QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const final;
-	QModelIndex parent(const QModelIndex& index) const final;
+	QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const final;
+	QModelIndex parent(const QModelIndex &index) const final;
 
 	// Custom role for "allowKanji".
 	static constexpr int AllowKanjiRole = Qt::UserRole;
 
-	QVariant data(const QModelIndex& index, int role) const final;
-	bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) final;
+	QVariant data(const QModelIndex &index, int role) const final;
+	bool setData(const QModelIndex &index, const QVariant& value, int role = Qt::EditRole) final;
 	Qt::ItemFlags flags(const QModelIndex &index) const final;
 
 	QVariant headerData(int section, Qt::Orientation orientation, int role) const final;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * DragImage.cpp: Drag & Drop image.                                       *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -32,9 +32,9 @@ using std::unique_ptr;
 // GTK4 introduces GtkPicture, which supports arbitrary images.
 // GtkImage has been relegated to icons only, and only really
 // supports square images properly.
-#if GTK_CHECK_VERSION(3,94,0)
+#if GTK_CHECK_VERSION(3, 94, 0)
 #  define USE_GTK_PICTURE 1
-#endif /* GTK_CHECK_VERSION(3,94,0) */
+#endif /* GTK_CHECK_VERSION(3, 94, 0) */
 
 static GQuark ecksbawks_quark = 0;
 
@@ -207,7 +207,7 @@ rp_drag_image_init(RpDragImage *image)
 #endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	// Pixmaps can only be updated once we have a valid size.
-	g_signal_connect(G_OBJECT(image), "map", G_CALLBACK(rp_drag_image_map_signal_handler),   nullptr);
+	g_signal_connect(G_OBJECT(image), "map", G_CALLBACK(rp_drag_image_map_signal_handler), nullptr);
 	g_signal_connect(G_OBJECT(image), "notify::width-request",  G_CALLBACK(rp_drag_image_notify_width_or_height_signal_handler), nullptr);
 	g_signal_connect(G_OBJECT(image), "notify::height-request", G_CALLBACK(rp_drag_image_notify_width_or_height_signal_handler), nullptr);
 

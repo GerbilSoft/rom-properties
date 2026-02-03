@@ -3,7 +3,7 @@
  * device.cpp: Extra functions for devices.                                *
  *                                                                         *
  * Copyright (c) 2016-2018 by Egor.                                        *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -61,14 +61,15 @@ ScsiInquiry::ScsiInquiry(RpFile *file)
 	: file(file)
 {}
 
-ostream& operator<<(ostream& os, const ScsiInquiry& si)
+ostream &operator<<(ostream &os, const ScsiInquiry& si)
 {
 	SCSI_RESP_INQUIRY_STD resp;
 	int ret = si.file->scsi_inquiry(&resp);
 	if (ret != 0) {
 		// TODO: Decode the error.
-		os << "-- " << fmt::format(FRUN(C_("rpcli", "SCSI INQUIRY failed: {:0>8X}")),
-			static_cast<unsigned int>(ret)) << '\n';
+		os << "-- "
+		   << fmt::format(FRUN(C_("rpcli", "SCSI INQUIRY failed: {:0>8X}")), static_cast<unsigned int>(ret))
+		   << '\n';
 		return os;
 	}
 
@@ -108,8 +109,8 @@ ostream& operator<<(ostream& os, const ScsiInquiry& si)
 	}};
 	os << "Peripheral device type: ";
 	const char *const pdt = pdt_tbl[resp.PeripheralDeviceType & 0x1F];
-	os << (pdt ? pdt : fmt::format(FSTR("0x{:0>2X}"),
-		static_cast<unsigned int>(resp.PeripheralDeviceType) & 0x1F)) << '\n';
+	os << (pdt ? pdt : fmt::format(FSTR("0x{:0>2X}"), static_cast<unsigned int>(resp.PeripheralDeviceType) & 0x1F))
+	   << '\n';
 
 	os << "Peripheral qualifier:   ";
 	static const array<const char*, 8> pq_tbl = {{
@@ -163,7 +164,7 @@ AtaIdentifyDevice::AtaIdentifyDevice(RpFile *file, bool packet)
 	, packet(packet)
 {}
 
-ostream& operator<<(ostream& os, const AtaIdentifyDevice& si)
+ostream &operator<<(ostream &os, const AtaIdentifyDevice& si)
 {
 	ATA_RESP_IDENTIFY_DEVICE resp;
 	int ret;
@@ -175,9 +176,11 @@ ostream& operator<<(ostream& os, const AtaIdentifyDevice& si)
 
 	if (ret != 0) {
 		// TODO: Decode the error.
-		os << "-- " << fmt::format(FRUN(C_("rpcli", "ATA {:s} failed: {:0>8X}")),
+		os << "-- "
+		   << fmt::format(FRUN(C_("rpcli", "ATA {:s} failed: {:0>8X}")),
 			(si.packet ? "IDENTIFY PACKET DEVICE" : "IDENTIFY DEVICE"),
-			static_cast<unsigned int>(ret)) << '\n';
+			static_cast<unsigned int>(ret))
+		   << '\n';
 		return os;
 	}
 

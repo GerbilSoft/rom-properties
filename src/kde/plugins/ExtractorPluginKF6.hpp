@@ -8,7 +8,7 @@
  * most of the important code is split out into libromdata.so, so the      *
  * forwarder version is unnecessary.                                       *
  *                                                                         *
- * Copyright (c) 2018-2025 by David Korth.                                 *
+ * Copyright (c) 2018-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,9 +29,9 @@ namespace RomPropertiesKDE {
 
 class ExtractorPlugin : public ::KFileMetaData::ExtractorPlugin
 {
-Q_OBJECT
-Q_INTERFACES(KFileMetaData::ExtractorPlugin)
-Q_PLUGIN_METADATA(IID "org.kde.kf5.kfilemetadata.ExtractorPlugin" FILE "../kf6/ExtractorPlugin.json")
+	Q_OBJECT
+	Q_INTERFACES(KFileMetaData::ExtractorPlugin)
+	Q_PLUGIN_METADATA(IID "org.kde.kf5.kfilemetadata.ExtractorPlugin" FILE "../kf6/ExtractorPlugin.json")
 
 public:
 	explicit ExtractorPlugin(QObject *parent = nullptr);

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * XfsAttrView.hpp: XFS file system attribute viewer widget.             *
  *                                                                         *
- * Copyright (c) 2022-2023 by David Korth.                                 *
+ * Copyright (c) 2022-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,10 +14,10 @@
 class XfsAttrViewPrivate;
 class XfsAttrView : public QWidget
 {
-Q_OBJECT
+	Q_OBJECT
 
-Q_PROPERTY(uint32_t xflags READ xflags WRITE setXFlags RESET clearXFlags)
-Q_PROPERTY(uint32_t projectId READ projectId WRITE setProjectId RESET clearProjectId)
+	Q_PROPERTY(uint32_t xflags READ xflags WRITE setXFlags RESET clearXFlags)
+	Q_PROPERTY(uint32_t projectId READ projectId WRITE setProjectId RESET clearProjectId)
 
 public:
 	explicit XfsAttrView(QWidget *parent = nullptr);

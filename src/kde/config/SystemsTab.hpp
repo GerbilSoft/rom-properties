@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * SystemsTab.hpp: Systems tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,7 +13,7 @@
 class SystemsTabPrivate;
 class SystemsTab : public ITab
 {
-Q_OBJECT
+	Q_OBJECT
 
 public:
 	explicit SystemsTab(QWidget *parent = nullptr);

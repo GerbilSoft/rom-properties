@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libgsvt)                          *
  * gsvtpp.hpp: Virtual Terminal wrapper functions. (C++ wrapper)           *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,4 +20,4 @@ Console::Console(gsvt_console *console)
 	gsvt_init();
 }
 
-}
+} // namespace Gsvt

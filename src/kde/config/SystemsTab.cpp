@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * SystemsTab.cpp: Systems tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -33,7 +33,7 @@ public:
 
 SystemsTabPrivate::SystemsTabPrivate()
 	: changed(false)
-{ }
+{}
 
 /** SystemsTab **/
 
@@ -116,9 +116,12 @@ void SystemsTab::reset(void)
  */
 void SystemsTab::loadDefaults(void)
 {
-	const Config::DMG_TitleScreen_Mode idxDMG_default = Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::DMG);
-	const Config::DMG_TitleScreen_Mode idxSGB_default = Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::SGB);
-	const Config::DMG_TitleScreen_Mode idxCGB_default = Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::CGB);
+	const Config::DMG_TitleScreen_Mode idxDMG_default =
+		Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::DMG);
+	const Config::DMG_TitleScreen_Mode idxSGB_default =
+		Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::SGB);
+	const Config::DMG_TitleScreen_Mode idxCGB_default =
+		Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::CGB);
 	bool isDefChanged = false;
 
 	Q_D(SystemsTab);

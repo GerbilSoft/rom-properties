@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * OptionsTab.cpp: Options tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -91,19 +91,26 @@ void OptionsTab::reset(void)
 	Q_D(OptionsTab);
 
 	// Downloads
-	d->ui.grpExtImgDownloads->setChecked(config->getBoolConfigOption(Config::BoolConfig::Downloads_ExtImgDownloadEnabled));
-	d->ui.chkUseIntIconForSmallSizes->setChecked(config->getBoolConfigOption(Config::BoolConfig::Downloads_UseIntIconForSmallSizes));
-	d->ui.chkStoreFileOriginInfo->setChecked(config->getBoolConfigOption(Config::BoolConfig::Downloads_StoreFileOriginInfo));
+	d->ui.grpExtImgDownloads->setChecked(
+		config->getBoolConfigOption(Config::BoolConfig::Downloads_ExtImgDownloadEnabled));
+	d->ui.chkUseIntIconForSmallSizes->setChecked(
+		config->getBoolConfigOption(Config::BoolConfig::Downloads_UseIntIconForSmallSizes));
+	d->ui.chkStoreFileOriginInfo->setChecked(
+		config->getBoolConfigOption(Config::BoolConfig::Downloads_StoreFileOriginInfo));
 
 	// Image bandwidth options
 	d->ui.cboUnmeteredConnection->setCurrentIndex(static_cast<int>(config->imgBandwidthUnmetered()));
 	d->ui.cboMeteredConnection->setCurrentIndex(static_cast<int>(config->imgBandwidthMetered()));
 
 	// Options
-	d->ui.chkShowDangerousPermissionsOverlayIcon->setChecked(config->getBoolConfigOption(Config::BoolConfig::Options_ShowDangerousPermissionsOverlayIcon));
-	d->ui.chkEnableThumbnailOnNetworkFS->setChecked(config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS));
-	d->ui.chkThumbnailDirectoryPackages->setChecked(config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages));
-	d->ui.chkShowXAttrView->setChecked(config->getBoolConfigOption(Config::BoolConfig::Options_ShowXAttrView));
+	d->ui.chkShowDangerousPermissionsOverlayIcon->setChecked(
+		config->getBoolConfigOption(Config::BoolConfig::Options_ShowDangerousPermissionsOverlayIcon));
+	d->ui.chkEnableThumbnailOnNetworkFS->setChecked(
+		config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS));
+	d->ui.chkThumbnailDirectoryPackages->setChecked(
+		config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages));
+	d->ui.chkShowXAttrView->setChecked(
+		config->getBoolConfigOption(Config::BoolConfig::Options_ShowXAttrView));
 
 	// PAL language code
 	d->ui.cboGameTDBPAL->setSelectedLC(config->palLanguageForGameTDB());

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyStoreModel.cpp: QAbstractListModel for KeyStore.                     *
  *                                                                         *
- * Copyright (c) 2012-2024 by David Korth.                                 *
+ * Copyright (c) 2012-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -78,13 +78,16 @@ public:
 // - LOWORD: Section.
 // - HIWORD: Key index. (0xFFFF for section header)
 #ifndef _WIN32
-static inline constexpr uint16_t LOWORD(uint32_t dwValue) {
+static inline constexpr uint16_t LOWORD(uint32_t dwValue)
+{
 	return (dwValue & 0xFFFF);
 }
-static inline constexpr uint16_t HIWORD(uint32_t dwValue) {
+static inline constexpr uint16_t HIWORD(uint32_t dwValue)
+{
 	return (dwValue >> 16);
 }
-static inline constexpr uint32_t MAKELONG(uint16_t wLow, uint16_t wHigh) {
+static inline constexpr uint32_t MAKELONG(uint16_t wLow, uint16_t wHigh)
+{
 	return (wLow | (wHigh << 16));
 }
 #endif /* _WIN32 */
@@ -161,7 +164,7 @@ KeyStoreModel::~KeyStoreModel()
 }
 
 
-int KeyStoreModel::rowCount(const QModelIndex& parent) const
+int KeyStoreModel::rowCount(const QModelIndex &parent) const
 {
 	Q_D(const KeyStoreModel);
 	if (!d->keyStore) {
@@ -189,7 +192,7 @@ int KeyStoreModel::rowCount(const QModelIndex& parent) const
 	}
 }
 
-int KeyStoreModel::columnCount(const QModelIndex& parent) const
+int KeyStoreModel::columnCount(const QModelIndex &parent) const
 {
 	Q_UNUSED(parent);
 	Q_D(const KeyStoreModel);
@@ -203,7 +206,7 @@ int KeyStoreModel::columnCount(const QModelIndex& parent) const
 	return static_cast<int>(Column::Max);
 }
 
-QModelIndex KeyStoreModel::index(int row, int column, const QModelIndex& parent) const
+QModelIndex KeyStoreModel::index(int row, int column, const QModelIndex &parent) const
 {
 	Q_D(const KeyStoreModel);
 	if (!d->keyStore || !hasIndex(row, column, parent))
@@ -233,7 +236,7 @@ QModelIndex KeyStoreModel::index(int row, int column, const QModelIndex& parent)
 	}
 }
 
-QModelIndex KeyStoreModel::parent(const QModelIndex& index) const
+QModelIndex KeyStoreModel::parent(const QModelIndex &index) const
 {
 	Q_D(const KeyStoreModel);
 	if (!d->keyStore || !index.isValid())
@@ -250,7 +253,7 @@ QModelIndex KeyStoreModel::parent(const QModelIndex& index) const
 	}
 }
 
-QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
+QVariant KeyStoreModel::data(const QModelIndex &index, int role) const
 {
 	Q_D(const KeyStoreModel);
 	if (!d->keyStore || !index.isValid())
@@ -374,7 +377,7 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 	return {};
 }
 
-bool KeyStoreModel::setData(const QModelIndex& index, const QVariant& value, int role)
+bool KeyStoreModel::setData(const QModelIndex &index, const QVariant& value, int role)
 {
 	Q_D(KeyStoreModel);
 	if (!d->keyStore || !index.isValid())

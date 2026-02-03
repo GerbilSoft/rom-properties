@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyManagerTab.hpp: Key Manager tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,7 +13,7 @@
 class KeyManagerTabPrivate;
 class KeyManagerTab : public ITab
 {
-Q_OBJECT
+	Q_OBJECT
 
 public:
 	explicit KeyManagerTab(QWidget *parent = nullptr);

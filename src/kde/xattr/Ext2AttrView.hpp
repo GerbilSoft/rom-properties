@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * Ext2AttrView.hpp: Ext2 file system attribute viewer widget.             *
  *                                                                         *
- * Copyright (c) 2022-2025 by David Korth.                                 *
+ * Copyright (c) 2022-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,12 +17,12 @@
 class Ext2AttrViewPrivate;
 class Ext2AttrView : public QWidget
 {
-Q_OBJECT
+	Q_OBJECT
 
-Q_PROPERTY(int flags READ flags WRITE setFlags RESET clearFlags)
-// TODO: Proper enum registration.
-//Q_PROPERTY(XAttrReader::ZAlgorithm zAlgorithm READ zAlgorithm WRITE setZAlgorithm RESET clearZAlgorithm)
-Q_PROPERTY(int zLevel READ zLevel WRITE setZLevel RESET clearZLevel)
+	Q_PROPERTY(int flags READ flags WRITE setFlags RESET clearFlags)
+	// TODO: Proper enum registration.
+	//Q_PROPERTY(XAttrReader::ZAlgorithm zAlgorithm READ zAlgorithm WRITE setZAlgorithm RESET clearZAlgorithm)
+	Q_PROPERTY(int zLevel READ zLevel WRITE setZLevel RESET clearZLevel)
 
 public:
 	explicit Ext2AttrView(QWidget *parent = nullptr);

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyStoreQt.hpp: Key store object for Qt.                                *
  *                                                                         *
- * Copyright (c) 2012-2023 by David Korth.                                 *
+ * Copyright (c) 2012-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,12 +13,12 @@
 
 class KeyStoreQt : public QObject, public LibRomData::KeyStoreUI
 {
-Q_OBJECT
+	Q_OBJECT
 
-Q_PROPERTY(int totalKeyCount READ totalKeyCount)
-// NOTE: modified() isn't a modifier, since it's only emitted
-// if d->changed becomes true.
-Q_PROPERTY(bool changed READ hasChanged)
+	Q_PROPERTY(int totalKeyCount READ totalKeyCount)
+	// NOTE: modified() isn't a modifier, since it's only emitted
+	// if d->changed becomes true.
+	Q_PROPERTY(bool changed READ hasChanged)
 
 public:
 	explicit KeyStoreQt(QObject *parent = nullptr);

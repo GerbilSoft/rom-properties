@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * DosAttrView.hpp: MS-DOS file system attribute viewer widget.            *
  *                                                                         *
- * Copyright (c) 2022-2023 by David Korth.                                 *
+ * Copyright (c) 2022-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,10 +14,10 @@
 class DosAttrViewPrivate;
 class DosAttrView : public QWidget
 {
-Q_OBJECT
+	Q_OBJECT
 
-Q_PROPERTY(unsigned int attrs READ attrs WRITE setAttrs RESET clearAttrs)
-Q_PROPERTY(unsigned int validAttrs READ validAttrs WRITE setValidAttrs RESET clearValidAttrs)
+	Q_PROPERTY(unsigned int attrs READ attrs WRITE setAttrs RESET clearAttrs)
+	Q_PROPERTY(unsigned int validAttrs READ validAttrs WRITE setValidAttrs RESET clearValidAttrs)
 
 public:
 	explicit DosAttrView(QWidget *parent = nullptr);

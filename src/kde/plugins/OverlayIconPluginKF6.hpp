@@ -8,7 +8,7 @@
  * most of the important code is split out into libromdata.so, so the      *
  * forwarder version is unnecessary.                                       *
  *                                                                         *
- * Copyright (c) 2018-2024 by David Korth.                                 *
+ * Copyright (c) 2018-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,11 +23,11 @@ namespace RomPropertiesKDE {
 
 class OverlayIconPlugin : public ::KOverlayIconPlugin
 {
-Q_OBJECT
-//Q_INTERFACES(KOverlayIconPlugin)
+	Q_OBJECT
+	//Q_INTERFACES(KOverlayIconPlugin)
 
-// NOTE: KF5 doesn't have a standard IID for KOverlayIconPlugin...
-Q_PLUGIN_METADATA(IID "com.gerbilsoft.rom-properties.KOverlayIconPlugin" FILE "../kf6/OverlayIconPlugin.json")
+	// NOTE: KF6 doesn't have a standard IID for KOverlayIconPlugin...
+	Q_PLUGIN_METADATA(IID "com.gerbilsoft.rom-properties.KOverlayIconPlugin" FILE "../kf6/OverlayIconPlugin.json")
 
 public:
 	explicit OverlayIconPlugin(QObject *parent = nullptr);

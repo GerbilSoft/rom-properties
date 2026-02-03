@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                             *
  * XAttrViewPropertiesDialogPlugin.hpp: KPropertiesDialogPlugin implementation *
  *                                                                             *
- * Copyright (c) 2016-2025 by David Korth.                                     *
+ * Copyright (c) 2016-2026 by David Korth.                                     *
  * SPDX-License-Identifier: GPL-2.0-or-later                                   *
  *******************************************************************************/
 
@@ -20,7 +20,7 @@ class XAttrView;
 
 class XAttrViewPropertiesDialogPlugin : public KPropertiesDialogPlugin
 {
-Q_OBJECT
+	Q_OBJECT
 
 public:
 	/**

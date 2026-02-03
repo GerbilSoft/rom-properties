@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpFile_kio.cpp: IRpFile implementation using KIO.                       *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -26,7 +26,8 @@ public:
 		: q_ptr(q)
 		, uri(uri)
 		, lastResult(0)
-		, pos(0) { }
+		, pos(0)
+	{}
 
 	~RpFileKioPrivate();
 
@@ -35,13 +36,13 @@ private:
 	RpFileKio *const q_ptr;
 
 public:
-	KIO::FileJob *fileJob;	// File job.
-	QUrl uri;		// KIO URI.
+	KIO::FileJob *fileJob;	// File job
+	QUrl uri;		// KIO URI
 
-	// Last read data.
+	// Last read data
 	QByteArray lastData;
 
-	// Last result.
+	// Last result
 	int lastResult;
 
 	// Current file position.
