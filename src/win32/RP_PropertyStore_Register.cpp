@@ -3,7 +3,7 @@
  * RP_PropSheet_Register.cpp: IPropertyStore implementation.               *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,6 +11,9 @@
 #include "RP_PropertyStore.hpp"
 #include "RP_PropertyStore_p.hpp"
 #include "res/resource.h"
+
+// HMODULE deleter for std::unique_ptr<>
+#include "HMODULE_deleter.hpp"
 
 // libwin32common
 using LibWin32UI::RegKey;
@@ -278,19 +281,6 @@ LONG RP_PropertyStore::UnregisterFileType(_In_ RegKey &hkcr, _In_opt_ RegKey *pH
 }
 
 /** Property Description Schema **/
-
-class HMODULE_deleter
-{
-public:
-	typedef HMODULE pointer;
-
-	void operator()(HMODULE hModule)
-	{
-		if (hModule) {
-			FreeLibrary(hModule);
-		}
-	}
-};
 
 #define DEF_LOAD_FUNCPTR(f) __typeof__(f) * p##f = (__typeof__(f)*)GetProcAddress(hPropsys_dll.get(), #f)
 

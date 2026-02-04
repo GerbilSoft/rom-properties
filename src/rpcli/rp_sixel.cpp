@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rpcli)                            *
  * rp_sixel.cpp: Sixel output for rpcli.                                   *
  *                                                                         *
- * Copyright (c) 2025 by David Korth.                                      *
+ * Copyright (c) 2025-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,27 +17,21 @@
 // libsixel function prototypes and definitions here.
 #include "sixel-mini.h"
 
+#include "tcharx.h"
 #ifndef _WIN32
-// Unix dlopen()
-#  include <dlfcn.h>
-typedef void *HMODULE;
 // T2U8() is a no-op.
 #  define T2U8(str) (str)
 #else /* _WIN32 */
-// Windows LoadLibrary()
-#  include "libwin32common/RpWin32_sdk.h"
 #  include "libwin32common/MiniU82T.hpp"
-#  include "tcharx.h"
-#  define dlsym(handle, symbol)	((void*)GetProcAddress(handle, symbol))
-#  define dlclose(handle)	FreeLibrary(handle)
 using LibWin32Common::T2U8;
 #endif /* _WIN32 */
 
-// librpbase
-using namespace LibRpBase;
+// HMODULE deleter for std::unique_ptr<>
+#include "HMODULE_deleter.hpp"
 
-// librptexture
+// librpbase, librptexture
 #include "librptexture/img/rp_image.hpp"
+using namespace LibRpBase;
 using namespace LibRpTexture;
 
 // C++ STL classes
@@ -47,18 +41,6 @@ using std::unique_ptr;
 
 namespace SixelDll {
 
-class HMODULE_deleter
-{
-public:
-	typedef HMODULE pointer;
-
-	void operator()(HMODULE hModule)
-	{
-		if (hModule) {
-			dlclose(hModule);
-		}
-	}
-};
 static unique_ptr<HMODULE, HMODULE_deleter> libsixel_dll;
 static std::once_flag sixel_once_flag;
 
