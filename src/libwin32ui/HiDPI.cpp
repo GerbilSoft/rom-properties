@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32ui)                       *
  * HiDPI.c: High DPI wrapper functions.                                    *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,6 +14,9 @@
 #ifdef HAVE_SHELLSCALINGAPI_H
 //# include <shellscalingapi.h>
 #endif
+
+// HMODULE deleter for std::unique_ptr<>
+#include "HMODULE_deleter.hpp"
 
 // C++ STL classes
 #include <mutex>
@@ -60,18 +63,6 @@ static union {
 } pfns;
 
 // shcore.dll (Windows 8.1)
-class HMODULE_deleter
-{
-public:
-	typedef HMODULE pointer;
-
-	void operator()(HMODULE hModule)
-	{
-		if (hModule) {
-			FreeLibrary(hModule);
-		}
-	}
-};
 static unique_ptr<HMODULE, HMODULE_deleter> hShcore_dll;
 
 // DPI query type.

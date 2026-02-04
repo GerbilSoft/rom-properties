@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * CurlDownloader.cpp: libcurl-based file downloader.                      *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,37 +22,19 @@ using std::tstring;
 // cURL function prototypes and definitions here.
 #include "curl-mini.h"
 
+// HMODULE deleter for std::unique_ptr<>
+#include "HMODULE_deleter.hpp"
+
+#include "tcharx.h"
 #ifndef _WIN32
-// Unix dlopen()
-#  include <dlfcn.h>
-typedef void *HMODULE;
-// T2U8() is a no-op.
 #  define T2U8(str) (str)
 #else /* _WIN32 */
-// Windows LoadLibrary()
-#  include "libwin32common/RpWin32_sdk.h"
 #  include "libwin32common/MiniU82T.hpp"
-#  include "tcharx.h"
-#  define dlsym(handle, symbol)	((void*)GetProcAddress(handle, symbol))
-#  define dlclose(handle)	FreeLibrary(handle)
 using LibWin32Common::T2U8;
 #endif /* _WIN32 */
 
-
 namespace RpDownload {
 
-class HMODULE_deleter
-{
-public:
-	typedef HMODULE pointer;
-
-	void operator()(HMODULE hModule)
-	{
-		if (hModule) {
-			dlclose(hModule);
-		}
-	}
-};
 static unique_ptr<HMODULE, HMODULE_deleter> libcurl_dll;
 static std::once_flag curl_once_flag;
 

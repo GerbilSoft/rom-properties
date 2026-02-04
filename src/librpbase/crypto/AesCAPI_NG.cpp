@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AesCAPI_NG.cpp: AES decryption class using Win32 CryptoAPI NG.          *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,6 +12,9 @@
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
 #include "tcharx.h"
+
+// HMODULE deleter for std::unique_ptr<>
+#include "HMODULE_deleter.hpp"
 
 // References:
 // - https://docs.microsoft.com/en-us/windows/win32/seccng/encrypting-data-with-cng
@@ -52,18 +55,6 @@ public:
 	static void load_bcrypt(void);
 
 	/** bcrypt.dll handle **/
-	class HMODULE_deleter
-	{
-	public:
-		typedef HMODULE pointer;
-
-		void operator()(HMODULE hModule)
-		{
-			if (hModule) {
-				FreeLibrary(hModule);
-			}
-		}
-	};
 	static unique_ptr<HMODULE, HMODULE_deleter> hBcrypt_dll;
 	static std::once_flag bcrypt_once_flag;
 
@@ -106,7 +97,7 @@ public:
 /** AesCAPI_NG_Private **/
 
 /** bcrypt.dll handle **/
-unique_ptr<HMODULE, AesCAPI_NG_Private::HMODULE_deleter> AesCAPI_NG_Private::hBcrypt_dll;
+unique_ptr<HMODULE, HMODULE_deleter> AesCAPI_NG_Private::hBcrypt_dll;
 std::once_flag AesCAPI_NG_Private::bcrypt_once_flag;
 
 /** bcrypt.dll function pointers **/

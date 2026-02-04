@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * APNG_dlopen.cpp: APNG dlopen()'d function pointers.                     *
  *                                                                         *
- * Copyright (c) 2014-2025 by David Korth.                                 *
+ * Copyright (c) 2014-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,38 +13,15 @@
 
 #if !defined(USE_INTERNAL_PNG) || defined(USE_INTERNAL_PNG_DLL)
 
-#ifndef _WIN32
-// Unix dlopen()
-#  include <dlfcn.h>
-#else
-// Windows LoadLibrary()
-#  include "libwin32common/RpWin32_sdk.h"
-#  include "tcharx.h"
-#  define dlsym(handle, symbol)	((void*)GetProcAddress(handle, symbol))
-#  define dlclose(handle)	FreeLibrary(handle)
-#endif
+// HMODULE deleter for std::unique_ptr<>
+#include "HMODULE_deleter.hpp"
+
+#include "tcharx.h"
 
 // C++ STL classes
 #include <mutex>
 using std::unique_ptr;
 
-// DLL handle.
-#ifndef _WIN32
-typedef void *HMODULE;
-#endif
-
-class HMODULE_deleter
-{
-public:
-	typedef HMODULE pointer;
-
-	void operator()(HMODULE hModule)
-	{
-		if (hModule) {
-			dlclose(hModule);
-		}
-	}
-};
 static unique_ptr<HMODULE, HMODULE_deleter> libpng_dll;
 static std::once_flag apng_once_flag;
 

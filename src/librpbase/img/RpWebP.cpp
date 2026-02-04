@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpWebP.cpp: WebP image handler.                                         *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,21 +16,14 @@
 using namespace LibRpFile;
 using namespace LibRpTexture;
 
+// HMODULE deleter for std::unique_ptr<>
+#include "HMODULE_deleter.hpp"
+
 // Uninitialized vector class
 #include "uvector.h"
 
-#ifndef _WIN32
-// Unix dlopen()
-#  include <dlfcn.h>
-#else
-// Windows LoadLibrary()
-#  include "libwin32common/RpWin32_sdk.h"
+#ifdef _WIN32
 #  include "tcharx.h"
-#  define dlsym(handle, symbol)	((void*)GetProcAddress(handle, symbol))
-#  define dlclose(handle)	FreeLibrary(handle)
-// rp_LoadLibrary()
-// NOTE: Delay-load is not supported with MinGW, but we still need
-// access to the rp_LoadLibrary() function.
 #  include "libwin32common/DelayLoadHelper.h"
 #endif
 
@@ -52,28 +45,6 @@ typedef __typeof__(WebPGetInfo) *pfn_WebPGetInfo_t;
 typedef __typeof__(WebPDecodeBGRAInto) *pfn_WebPDecodeBGRAInto_t;
 
 namespace LibRpBase { namespace RpWebP {
-
-// DLL handle
-#ifndef _WIN32
-typedef void *HMODULE;
-#endif
-
-class HMODULE_deleter
-{
-public:
-	typedef HMODULE pointer;
-
-	void operator()(HMODULE hModule)
-	{
-		if (hModule) {
-#ifdef _WIN32
-			FreeLibrary(hModule);
-#else /* !_WIN32 */
-			dlclose(hModule);
-#endif /* _WIN32 */
-		}
-	}
-};
 
 /** RpWebP **/
 
