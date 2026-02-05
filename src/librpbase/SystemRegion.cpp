@@ -93,14 +93,14 @@ static const char *get_LC_MESSAGES(void)
 
 	// Environment variables override the system defaults.
 	const array<const char*, 3> lang_vars = {{
-		getenv("LANG"),
-		getenv("LC_MESSAGES"),
 		getenv("LC_ALL"),
+		getenv("LC_MESSAGES"),
+		getenv("LANG"),
 	}};
 
 	// Check if any of the environment variables are "C".
 	// If they are, assume no locale.
-	// Otherwise, precedence is LANG -> LC_MESSAGES -> LC_ALL.
+	// Otherwise, precedence is LC_ALL -> LC_MESSAGES -> LANG.
 	for (const char *var : lang_vars) {
 		if (var && (var[0] == 'C' && (var[1] == '\0' || var[1] == '.'))) {
 			return "C";
