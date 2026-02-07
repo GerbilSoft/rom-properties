@@ -1,8 +1,5 @@
 # rom-properties: Disable cmake_minimum_required().
 #cmake_minimum_required(VERSION 3.14...3.31.0)
-#if(CMAKE_VERSION VERSION_LESS 3.12)
-#    cmake_policy(VERSION ${CMAKE_VERSION})
-#endif()
 message(STATUS "Using CMake version ${CMAKE_VERSION}")
 
 if(POLICY CMP0169)
@@ -15,10 +12,11 @@ endif()
 if(NOT DEFINED CMAKE_C_STANDARD)
     set(CMAKE_C_STANDARD 11)          # The C standard whose features are requested to build this target
 endif()
-# rom-properties: Disabled.
-#if(NOT DEFINED CMAKE_C_STANDARD_REQUIRED)
-#    set(CMAKE_C_STANDARD_REQUIRED ON) # Boolean describing whether the value of C_STANDARD is a requirement
-#endif()
+IF(0) # rom-properties: Disabled
+if(NOT DEFINED CMAKE_C_STANDARD_REQUIRED)
+    set(CMAKE_C_STANDARD_REQUIRED ON) # Boolean describing whether the value of C_STANDARD is a requirement
+endif()
+ENDIF(0) # rom-properties
 if(NOT DEFINED CMAKE_C_EXTENSIONS)
     set(CMAKE_C_EXTENSIONS OFF)       # Boolean specifying whether compiler specific extensions are requested
 endif()
@@ -51,7 +49,7 @@ include(CheckCCompilerFlag)
 include(CMakeDependentOption)
 include(CMakePackageConfigHelpers)
 include(CTest)
-IF(0) # rom-properties
+IF(0) # rom-properties: Disabled
 include(FeatureSummary)
 ENDIF(0) # rom-properties
 # dummy function for rom-properties
@@ -92,8 +90,7 @@ endif()
 
 # Make sure we use an appropriate BUILD_TYPE by default, "Release" to be exact
 # this should select the maximum generic optimisation on the current platform (i.e. -O3 for gcc/clang)
-# rom-properties: Disabled.
-IF(0)
+IF(0) # rom-properties: Disabled
 get_property(GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(NOT GENERATOR_IS_MULTI_CONFIG)
     if(NOT CMAKE_BUILD_TYPE)
@@ -134,7 +131,7 @@ Default is no prefix (empty prefix).")
 
 # Add multi-choice option
 set(WITH_SANITIZER AUTO CACHE STRING "Enable sanitizer support")
-set_property(CACHE WITH_SANITIZER PROPERTY STRINGS "Memory" "Address" "Undefined" "Thread")
+set_property(CACHE WITH_SANITIZER PROPERTY STRINGS "None" "Memory" "Address" "Undefined" "Thread")
 
 IF(0) # rom-properties
 if(BASEARCH_ARM_FOUND)
@@ -1405,7 +1402,7 @@ set(ZLIB_GZFILE_PRIVATE_HDRS
 )
 set(ZLIB_GZFILE_SRCS
     gzlib.c
-    ${CMAKE_CURRENT_BINARY_DIR}/gzread.c
+    gzread.c
     gzwrite.c
 )
 
@@ -1540,8 +1537,10 @@ if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
             if(NOT ZLIB_COMPAT)
                 add_definitions(-DHAVE_SYMVER)
             endif()
+            configure_file(${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.map.in
+                ${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.map @ONLY)
             set_target_properties(zlib-ng PROPERTIES LINK_FLAGS
-                "-Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.map\"")
+                "-Wl,--version-script,\"${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.map\"")
         endif()
     endif()
     if(MSYS)
@@ -1606,8 +1605,8 @@ configure_file(${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h.cmakein
     ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.h.in
     ${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.h @ONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gzread.c.in
-    ${CMAKE_CURRENT_BINARY_DIR}/gzread.c @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gzread_mangle.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/gzread_mangle.h @ONLY)
 
 if (NOT ZLIB_SYMBOL_PREFIX STREQUAL "")
     add_feature_info(ZLIB_SYMBOL_PREFIX ON "Publicly exported symbols have a custom prefix")
