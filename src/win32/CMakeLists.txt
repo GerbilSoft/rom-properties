@@ -41,6 +41,11 @@ IF(MSVC AND NOT HAVE_OFSTREAM_CTOR_WCHAR_T)
 	MESSAGE(FATAL_ERROR "HAVE_OFSTREAM_CTOR_WCHAR_T failed on MSVC.")
 ENDIF(MSVC AND NOT HAVE_OFSTREAM_CTOR_WCHAR_T)
 
+# FIXME: Detours library doesn't work with MinGW-w64 or ASan.
+IF(MSVC AND NOT ENABLE_SANITIZE)
+	SET(ENABLE_DETOURS ON)
+ENDIF(MSVC AND NOT ENABLE_SANITIZE)
+
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.win32.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.win32.h")
 
@@ -213,12 +218,13 @@ IF(MSVC)
 	# Delay-load sources
 	SET(${PROJECT_NAME}-DELAYLOAD_SRCS ../libwin32common/DelayLoadHelper.c)
 	SET(${PROJECT_NAME}-DELAYLOAD_H    ../libwin32common/DelayLoadHelper.h)
+ENDIF(MSVC)
 
+IF(ENABLE_DETOURS)
 	# PrivateExtractIcon reimplementation
-	# FIXME: Detours library doesn't work with MinGW-w64.
 	SET(${PROJECT_NAME}_PrivateExtractIcon_SRCS RP_PrivateExtractIcons.cpp)
 	SET(${PROJECT_NAME}_PrivateExtractIcon_H    RP_PrivateExtractIcons.hpp)
-ENDIF(MSVC)
+ENDIF(ENABLE_DETOURS)
 
 #####################
 # Build the plugin. #
@@ -338,11 +344,10 @@ ELSEIF(MINGW)
 	SET(RP_DLL_FLAGS "-Wl,--enable-stdcall-fixup ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.def")
 ENDIF()
 
-IF(MSVC)
+IF(ENABLE_DETOURS)
 	# Using Microsoft's Detours library for PrivateExtractIcons.
-	# FIXME: Detours library doesn't work with MinGW-w64.
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE Detours)
-ENDIF(MSVC)
+ENDIF(ENABLE_DETOURS)
 
 IF(RP_DLL_FLAGS)
 	GET_TARGET_PROPERTY(RP_LINK_FLAGS ${PROJECT_NAME} LINK_FLAGS)

@@ -29,3 +29,6 @@
 
 /* Define to 1 if networking is enabled. */
 #cmakedefine ENABLE_NETWORKING 1
+
+/* Define to 1 if the Detours library is enabled. */
+#cmakedefine ENABLE_DETOURS 1

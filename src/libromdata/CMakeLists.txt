@@ -494,17 +494,16 @@ IF(RP_LIBROMDATA_IS_DLL)
 	# This represents the ABI version.
 	SET(${PROJECT_NAME}_VERSION 9.0)
 	SET(${PROJECT_NAME}_SOVERSION 9)
-
-	# Delay-load sources.
-	# NOTE: Delay-load is not supported with MinGW, but we still need
-	# access to the rp_LoadLibrary() function.
-	IF(WIN32)
-		SET(${PROJECT_NAME}-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
-		SET(${PROJECT_NAME}-DELAYLOAD_H   ../libwin32common/DelayLoadHelper.h)
-	ENDIF(WIN32)
 ELSE()
 	SET(${PROJECT_NAME}_LINKAGE STATIC)
 ENDIF()
+
+# NOTE: Delay-load is not supported with MinGW, but we still need
+# access to the rp_LoadLibrary() function for e.g. CisoPspDlopen.
+IF(WIN32)
+	SET(${PROJECT_NAME}-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
+	SET(${PROJECT_NAME}-DELAYLOAD_H   ../libwin32common/DelayLoadHelper.h)
+ENDIF(WIN32)
 
 # Write the config.h file.
 INCLUDE(DirInstallPaths)

@@ -104,16 +104,11 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.version.h.in" "${CMAKE_CURREN
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/stdboolx.h.in" "${CMAKE_CURRENT_BINARY_DIR}/stdboolx.h")
 
 # Build certain libraries as shared libraries on Linux and Windows.
-STRING(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE_UCASE)
 IF(CMAKE_C_COMPILER MATCHES afl)
 	# Don't enable libromdata.so when building with afl/afl++.
 	# afl-fuzz crashes when trying to load libromdata.so for some reason.
 	MESSAGE(WARNING "Disabling libromdata.so due to afl")
-ELSEIF(CMAKE_C_FLAGS MATCHES "-fsanitize" OR CMAKE_CXX_FLAGS MATCHES "-fsanitize")
-	# Don't enable libromdata.so when using a sanitizer.
-	# The sanitizer requires typeinfo, which isn't exported for some classes.
-	MESSAGE(WARNING "Disabling libromdata.so due to -fsanitize")
-ELSEIF(CMAKE_C_FLAGS_${BUILD_TYPE_UCASE} MATCHES "-fsanitize" OR CMAKE_CXX_FLAGS_${BUILD_TYPE_UCASE} MATCHES "-fsanitize")
+ELSEIF(ENABLE_SANITIZE)
 	# Don't enable libromdata.so when using a sanitizer.
 	# The sanitizer requires typeinfo, which isn't exported for some classes.
 	MESSAGE(WARNING "Disabling libromdata.so due to -fsanitize")

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rpcli)                            *
  * rpcli_secure.c: Security options for rpcli.                             *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,6 +13,11 @@
 // librpsecure
 #include "librpsecure/os-secure.h"
 #include "librpsecure/restrict-dll.h"
+
+#ifdef _WIN32
+// Windows SDK
+#  include "libwin32common/RpWin32_sdk.h"
+#endif /* _WIN32 */
 
 /**
  * Enable security options.

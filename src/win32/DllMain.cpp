@@ -39,10 +39,9 @@
 #include "MessageWidget.hpp"
 #include "OptionsMenuButton.hpp"
 
-#ifdef _MSC_VER
-// FIXME: Detours library doesn't work with MinGW-w64.
+#ifdef ENABLE_DETOURS
 #  include "RP_PrivateExtractIcons.hpp"
-#endif /* _MSC_VER */
+#endif /* ENABLE_DETOURS */
 
 // rp_image backend registration
 #include "librptexture/img/GdiplusHelper.hpp"
@@ -79,24 +78,22 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 			DisableThreadLibraryCalls(hInstance);
 #endif /* !defined(_MSC_VER) || defined(_DLL) */
 
-#ifdef _MSC_VER
+#ifdef ENABLE_DETOURS
 			// Enable detours so we can provide icons for:
 			// - 16-bit Windows applications (only on non-i386 systems)
 			// - Windows 1.x/2.x applications and icons
-			// FIXME: Detours library doesn't work with MinGW-w64.
 			RP_PrivateExtractIcons_DllProcessAttach();
-#endif /* _MSC_VER */
+#endif /* ENABLE_DETOURS */
 			break;
 		}
 
 		case DLL_PROCESS_DETACH:
 			// DLL is being unloaded.
 
-#ifdef _MSC_VER
+#ifdef ENABLE_DETOURS
 			// Unregister the detours for Win16 icons.
-			// FIXME: Detours library doesn't work with MinGW-w64.
 			RP_PrivateExtractIcons_DllProcessDetach();
-#endif /* _MSC_VER */
+#endif /* ENABLE_DETOURS */
 
 			// FIXME: If any of our COM objects are still referenced,
 			// this won't unload stuff, and things might crash...
