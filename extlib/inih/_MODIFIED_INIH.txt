@@ -1,7 +1,7 @@
-This copy of inih-r61 is a modified version of the original.
+This copy of inih-r62 is a modified version of the original.
 
-commit 8e06f6b77b5d4471bdc6d85ada81b67d37354a5c
-Bug Fix: OOB Read in ini_parse_stream() (#206)
+commit 577ae2dee1f0d9c2d11c7f10375c1715f3d6940c
+Assert on NULL arguments (#210)
 
 The following changes have been made to the original:
 
@@ -9,5 +9,5 @@ The following changes have been made to the original:
 
 - The Meson build scripts have been removed.
 
-To obtain the original inih-r61, visit:
+To obtain the original inih-r62, visit:
 https://github.com/benhoyt/inih
