@@ -39,4 +39,4 @@ public:
 template<typename T>
 using uvector = std::vector<T, default_init_allocator<T> >;
 
-}
+} // namespace rp
