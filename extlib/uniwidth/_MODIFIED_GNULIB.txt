@@ -1,7 +1,7 @@
 This copy of uniwidth is a modified subset of gnulib.
 
-commit c63a0c677c1d032cde39bb84205ac3f92b1eb494
-Update to Unicode 17.0.0.
+commit 1672cdb6d650ad282ca3aff0d1cd45ca04d07e9e
+crypto/sha3: fix partial-buffer bug
 
 The following changes have been made to the original:
 
