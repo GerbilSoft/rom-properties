@@ -52,6 +52,7 @@ Checks: >
   performance-*,
   -performance-enum-size,
   portability-*,
+  -portability-avoid-pragma-once,
   readability-*,
   # requires C++20
   -readability-container-contains,
