@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Lua.cpp: Lua binary chunk reader.                                       *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * Copyright (c) 2016-2022 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -726,7 +726,7 @@ int Lua::loadFieldData(void)
 		d->fields.addField_string(C_("RomData", "Warning"),
 			C_("Lua", "File corrupted"), RomFields::STRF_WARNING);
 
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 } // namespace LibRomData

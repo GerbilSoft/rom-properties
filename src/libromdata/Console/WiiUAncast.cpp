@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiUAncast.cpp: Nintendo Wii U "Ancast" image reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -556,7 +556,7 @@ int WiiUAncast::loadFieldData(void)
 	if (!s_sigType) {
 		// Unknown signature type. Can't check anything else.
 		d->fields.addField_string(C_("WiiUAncast", "Signature Type"), C_("RomData", "Unknown"));
-		return static_cast<int>(d->fields.count());
+		return d->fields.count();
 	}
 
 	// Signature type
@@ -619,7 +619,7 @@ int WiiUAncast::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -683,7 +683,7 @@ int WiiUAncast::loadMetaData(void)
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 /**

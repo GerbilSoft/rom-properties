@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Atari7800.cpp: Atari 7800 ROM reader.                                   *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -252,7 +252,7 @@ int Atari7800::loadFieldData(void)
 	// TODO: Other fields.
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -286,7 +286,7 @@ int Atari7800::loadMetaData(void)
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 } // namespace LibRomData

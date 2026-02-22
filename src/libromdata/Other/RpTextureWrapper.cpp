@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RpTextureWrapper.hpp: librptexture file format wrapper.                 *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -290,7 +290,7 @@ int RpTextureWrapper::loadFieldData(void)
 	// TODO: More fields.
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -332,7 +332,7 @@ int RpTextureWrapper::loadMetaData(void)
 	d->metaData.addMetaData_string(Property::PixelFormat, d->texture->pixelFormat());
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 /**

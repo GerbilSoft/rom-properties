@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiUPackage.hpp: Wii U NUS Package reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -459,7 +459,7 @@ int ColecoVision::loadFieldData(void)
 	d->addField_z80vec(C_("ColecoVision", "NMI Vector"), 0x8021, romHeader->nmi_int_vect);
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -497,7 +497,7 @@ int ColecoVision::loadMetaData(void)
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 } // namespace LibRomData

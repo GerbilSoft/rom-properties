@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NGPC.cpp: Neo Geo Pocket (Color) ROM reader.                            *
  *                                                                         *
- * Copyright (c) 2019-2025 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -359,7 +359,7 @@ int NGPC::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -397,7 +397,7 @@ int NGPC::loadMetaData(void)
 	d->metaData.addMetaData_string(Property::GameID, d->getProductID());
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 /**

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * BCSTM.cpp: Nintendo 3DS BCSTM and Nintendo Wii U BFSTM audio reader.    *
  *                                                                         *
- * Copyright (c) 2019-2025 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -508,7 +508,7 @@ int BCSTM::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -578,7 +578,7 @@ int BCSTM::loadMetaData(void)
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 } // namespace LibRomData

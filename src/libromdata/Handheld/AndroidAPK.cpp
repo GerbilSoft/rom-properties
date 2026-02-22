@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * AndroidAPK.cpp: Android APK package reader.                             *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -738,7 +738,7 @@ int AndroidAPK::loadFieldData(void)
 	AndroidCommon::loadFieldData(d->fields, *d->manifest_xml, d->arscReader.get());
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -764,7 +764,7 @@ int AndroidAPK::loadMetaData(void)
 	AndroidCommon::loadMetaData(d->metaData, *d->manifest_xml, d->arscReader.get());
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 /**

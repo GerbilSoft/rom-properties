@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PlayStationSave.hpp: Sony PlayStation save file reader.                 *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * Copyright (c) 2017-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -502,7 +502,7 @@ int PlayStationSave::loadFieldData(void)
 	// TODO: Moar fields.
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -533,7 +533,7 @@ int PlayStationSave::loadMetaData(void)
 		cp1252_sjis_to_utf8(scHeader->title, sizeof(scHeader->title)));
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 /**

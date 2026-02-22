@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SufamiTurbo.cpp: Sufami Turbo ROM image reader.                         *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -393,7 +393,7 @@ int SufamiTurbo::loadFieldData(void)
 	// TODO: Get the Sufami Turbo game code?
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -423,7 +423,7 @@ int SufamiTurbo::loadMetaData(void)
 	d->metaData.addMetaData_string(Property::Title, d->getRomTitle());
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 /**

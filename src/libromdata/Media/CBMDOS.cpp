@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CBMDOS.cpp: Commodore DOS floppy disk image parser.                     *
  *                                                                         *
- * Copyright (c) 2019-2025 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1214,7 +1214,7 @@ int CBMDOS::loadFieldData(void)
 	if (static_cast<size_t>(d->dir_track) - 1 >= d->track_offsets.size()) {
 		// Unable to read the directory track...
 		// TODO: Show an error?
-		return static_cast<int>(d->fields.count());
+		return d->fields.count();
 	}
 
 	// Read the directory.
@@ -1428,7 +1428,7 @@ int CBMDOS::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -1493,7 +1493,7 @@ int CBMDOS::loadMetaData(void)
 		cpN_to_utf8(CP_RP_PETSCII_Unshifted, dos_type, sizeof(diskHeader->c1541.dos_type)));
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 } // namespace LibRomData

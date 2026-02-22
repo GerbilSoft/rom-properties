@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WonderSwan.cpp: Bandai WonderSwan (Color) ROM reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -640,7 +640,7 @@ int WonderSwan::loadFieldData(void)
 			? C_("WonderSwan|ROMAccessSpeed", "1 cycle")
 			: C_("WonderSwan|ROMAccessSpeed", "3 cycles"));
 
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -678,7 +678,7 @@ int WonderSwan::loadMetaData(void)
 	d->metaData.addMetaData_string(Property::GameID, d->getGameID());
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 /**

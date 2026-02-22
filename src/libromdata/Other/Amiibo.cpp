@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Amiibo.cpp: Nintendo amiibo NFC dump reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -451,7 +451,7 @@ int Amiibo::loadFieldData(void)
 	d->fields.addField_string(C_("Amiibo", "Credits"), credits, RomFields::STRF_CREDITS);
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -495,7 +495,7 @@ int Amiibo::loadMetaData(void)
 		fmt::format(FSTR("{:0>8X}-{:0>8X}"), char_id, amiibo_id));
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 /**

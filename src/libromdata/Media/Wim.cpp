@@ -3,7 +3,7 @@
  * Wim.cpp: Microsoft WIM header reader                                    *
  *                                                                         *
  * Copyright (c) 2023 by ecumber.                                          *
- * Copyright (c) 2019-2025 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -290,7 +290,7 @@ int Wim::loadFieldData(void)
 #endif /* ENABLE_XML */
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 } // namespace LibRomData

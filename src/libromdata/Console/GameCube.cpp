@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCube.cpp: Nintendo GameCube and Wii disc image reader.              *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1528,7 +1528,7 @@ int GameCube::loadFieldData(void)
 	if (!d->discReader) {
 		// Cannot read the disc contents.
 		// We're done for now.
-		return static_cast<int>(d->fields.count());
+		return d->fields.count();
 	}
 
 	// Region code
@@ -1547,7 +1547,7 @@ int GameCube::loadFieldData(void)
 			d->addGameInfo();
 
 			// Finished reading the field data.
-			return static_cast<int>(d->fields.count());
+			return d->fields.count();
 		}
 	}
 
@@ -1884,7 +1884,7 @@ int GameCube::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -1998,7 +1998,7 @@ int GameCube::loadMetaData(void)
 	d->metaData.addMetaData_string(Property::RegionCode, d->getRegionCode());
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 /**

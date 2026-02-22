@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCubeSave.hpp: Nintendo GameCube save file reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1046,7 +1046,7 @@ int GameCubeSave::loadFieldData(void)
 	d->fields.addField_string_numeric(C_("GameCubeSave", "Blocks"), direntry->length);
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -1096,7 +1096,7 @@ int GameCubeSave::loadMetaData(void)
 	d->metaData.addMetaData_string(Property::GameID, d->getGameID());
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 /**

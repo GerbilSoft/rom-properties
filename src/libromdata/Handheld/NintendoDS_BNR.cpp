@@ -3,7 +3,7 @@
  * NintendoDS_BNR.cpp: Nintendo DS icon/title data reader.                 *
  * Handles BNR files and icon/title sections.                              *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -650,7 +650,7 @@ int NintendoDS_BNR::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -705,7 +705,7 @@ int NintendoDS_BNR::loadMetaData(void)
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 /**

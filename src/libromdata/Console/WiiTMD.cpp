@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiTMD.hpp: Nintendo Wii (and Wii U) title metadata reader.             *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -457,7 +457,7 @@ int WiiTMD::loadFieldData(void)
 	// TODO: Region code, if available?
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -493,7 +493,7 @@ int WiiTMD::loadMetaData(void)
 	d->metaData.addMetaData_string(Property::TitleID, s_titleID);
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 /** TMD accessors **/

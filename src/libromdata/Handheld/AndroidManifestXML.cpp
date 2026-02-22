@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * AndroidManifestXML.hpp: Android Manifest XML reader.                    *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -581,7 +581,7 @@ int AndroidManifestXML::loadFieldData(void)
 	AndroidCommon::loadFieldData(d->fields, *d->manifest_xml, nullptr);
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -608,7 +608,7 @@ int AndroidManifestXML::loadMetaData(void)
 	AndroidCommon::loadMetaData(d->metaData, *d->manifest_xml, nullptr);
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 /**

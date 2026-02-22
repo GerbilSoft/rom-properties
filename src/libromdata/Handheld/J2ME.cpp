@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * J2ME.hpp: Java 2 Micro Edition package reader.                          *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1001,7 +1001,7 @@ int J2ME::loadFieldData(void)
 		d->fields.addField_string(J2MEPrivate::manifest_tag_names[static_cast<uint8_t>(iter->first)], iter->second);
 	}
 
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -1051,7 +1051,7 @@ int J2ME::loadMetaData(void)
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 /**

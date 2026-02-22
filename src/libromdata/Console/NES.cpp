@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NES.cpp: Nintendo Entertainment System/Famicom ROM reader.              *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * Copyright (c) 2016-2022 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -1362,7 +1362,7 @@ int NES::loadFieldData(void)
 	// Display the fields.
 	if (!romOK) {
 		// Invalid mapper.
-		return static_cast<int>(d->fields.count());
+		return d->fields.count();
 	}
 
 	const char *const mapper_title = C_("NES", "Mapper");
@@ -1802,7 +1802,7 @@ int NES::loadFieldData(void)
 	}
 
 	// TODO: More fields.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoDS.hpp: Nintendo DS(i) ROM reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -815,7 +815,7 @@ int NintendoDS::loadFieldData(void)
 			params.mxd.checkboxes = romHeader->dsi.flags;
 			d->fields.addField_listData(C_("RomData", "Flags"), &params);
 		}
-		return static_cast<int>(d->fields.count());
+		return d->fields.count();
 	}
 
 	/** DSi-specific fields. **/
@@ -992,7 +992,7 @@ int NintendoDS::loadFieldData(void)
 	d->fields.addField_listData(C_("RomData", "Flags"), &params);
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -1109,7 +1109,7 @@ int NintendoDS::loadMetaData(void)
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 /**

@@ -1831,7 +1831,7 @@ int Xbox360_XDBF::loadFieldData(void)
 	d->addFields_achievements();
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -1862,7 +1862,7 @@ int Xbox360_XDBF::loadMetaData(void)
 	d->metaData.addMetaData_string(Property::Title, getString(Property::Title));
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 /**

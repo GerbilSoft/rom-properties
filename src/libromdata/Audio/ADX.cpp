@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ADX.hpp: CRI ADX audio reader.                                          *
  *                                                                         *
- * Copyright (c) 2018-2025 by David Korth.                                 *
+ * Copyright (c) 2018-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -328,7 +328,7 @@ int ADX::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -369,7 +369,7 @@ int ADX::loadMetaData(void)
 		convSampleToMs(sample_count, sample_rate));
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 } // namespace LibRomData

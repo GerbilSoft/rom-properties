@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE.cpp: DOS/Windows executable reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1183,7 +1183,7 @@ int EXE::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -1300,7 +1300,7 @@ int EXE::loadMetaData(void)
 	int ret = d->loadResourceReader();
 	if (ret != 0 || !d->rsrcReader) {
 		// No resources available.
-		return static_cast<int>(d->metaData.count());;
+		return d->metaData.count();
 	}
 
 	// Load the version resource.
@@ -1309,10 +1309,10 @@ int EXE::loadMetaData(void)
 	IResourceReader::StringFileInfo vssfi;
 	if (d->rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi, &vssfi) != 0) {
 		// Unable to load VS_VERSION_INFO.
-		return static_cast<int>(d->metaData.count());;
+		return d->metaData.count();
 	} else if (vssfi.empty()) {
 		// No data...
-		return static_cast<int>(d->metaData.count());;
+		return d->metaData.count();
 	}
 
 	// TODO: Show the language that most closely matches the system.
@@ -1322,7 +1322,7 @@ int EXE::loadMetaData(void)
 	const auto &st = vssfi.begin()->second;
 	if (st.empty()) {
 		// No data...
-		return static_cast<int>(d->metaData.count());;
+		return d->metaData.count();
 	}
 
 	// Simple lambda function to find a string in IResourceReader::StringTable.
@@ -1368,7 +1368,7 @@ int EXE::loadMetaData(void)
 	// TODO: Comments? On KDE Dolphin, "Comments" is assumed to be user-added...
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 /**

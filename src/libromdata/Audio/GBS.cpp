@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GBS.hpp: GBS audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2024 by David Korth.                                 *
+ * Copyright (c) 2018-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -313,7 +313,7 @@ int GBS::loadFieldData(void)
 	// TODO: Timer modulo and control?
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -363,7 +363,7 @@ int GBS::loadMetaData(void)
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 } // namespace LibRomData

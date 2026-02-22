@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PokemonMini.cpp: Pokémon Mini ROM reader.                               *
  *                                                                         *
- * Copyright (c) 2019-2025 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -364,7 +364,7 @@ int PokemonMini::loadFieldData(void)
 	d->fields.addField_listData(C_("RomData", "Vector Table"), &params);
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -399,7 +399,7 @@ int PokemonMini::loadMetaData(void)
 	d->metaData.addMetaData_string(Property::GameID, d->getGameID());
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 } // namespace LibRomData

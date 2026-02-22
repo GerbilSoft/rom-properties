@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCom.hpp: Tiger game.com ROM reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -725,7 +725,7 @@ int GameCom::loadFieldData(void)
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -764,7 +764,7 @@ int GameCom::loadMetaData(void)
 	d->metaData.addMetaData_string(Property::GameID, buf);
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 /**

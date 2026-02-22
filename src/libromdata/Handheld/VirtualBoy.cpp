@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * VirtualBoy.cpp: Nintendo Virtual Boy ROM reader.                        *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -429,7 +429,7 @@ int VirtualBoy::loadFieldData(void)
 				static_cast<uint8_t>(romFooter->gameid[3])));
 	}
 
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -489,7 +489,7 @@ int VirtualBoy::loadMetaData(void)
 	d->metaData.addMetaData_string(Property::GameID, d->getGameID());
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 } // namespace LibRomData

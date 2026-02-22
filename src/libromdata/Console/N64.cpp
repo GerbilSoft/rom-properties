@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * N64.cpp: Nintendo 64 ROM image reader.                                  *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -375,7 +375,7 @@ int N64::loadFieldData(void)
 		RomFields::STRF_MONOSPACE);
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields.count());
+	return d->fields.count();
 }
 
 /**
@@ -421,7 +421,7 @@ int N64::loadMetaData(void)
 	d->metaData.addMetaData_string(Property::OSVersion, d->getOSVersion());
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->metaData.count());
+	return d->metaData.count();
 }
 
 } // namespace LibRomData
