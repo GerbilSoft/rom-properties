@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptext)                        *
  * conversion_iconv.cpp: Text encoding functions (iconv version)           *
  *                                                                         *
- * Copyright (c) 2009-2024 by David Korth.                                 *
+ * Copyright (c) 2009-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -319,9 +319,9 @@ static std::basic_string<T> T_cpN_to_unicode(const char *out_encoding, unsigned 
  */
 string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags)
 {
-	if (cp & CP_RP_BASE) {
+	if (cp & static_cast<unsigned int>(CpRp::Base)) {
 		// RP-custom code page.
-		return cpRP_to_utf8(cp, str, len);
+		return cpRP_to_utf8(static_cast<CpRp>(cp), str, len);
 	}
 
 	return T_cpN_to_unicode<char>("UTF-8", cp, str, len, flags);

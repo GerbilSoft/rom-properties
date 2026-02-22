@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptext)                        *
  * specialized.cpp: Text encoding functions (specialized conversions)      *
  *                                                                         *
- * Copyright (c) 2009-2024 by David Korth.                                 *
+ * Copyright (c) 2009-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -85,23 +85,27 @@ static string str8_to_utf8(const array<char16_t, 256>& tbl, const char *str, int
 
 /**
  * Convert 8-bit text to UTF-8 using an RP-custom code page.
- * Code page number must be CP_RP_*.
+ * Code page number must be CpRp::*.
  *
- * @param cp	[in] Code page number.
+ * @param cpRp	[in] Specialized code page number
  * @param str	[in] 8-bit text.
  * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-std::string cpRP_to_utf8(unsigned int cp, const char *str, int len)
+std::string cpRP_to_utf8(CpRp cpRp, const char *str, int len)
 {
-	assert(cp & CP_RP_BASE);
-	if (!(cp & CP_RP_BASE))
-		return {};
+	unsigned int cp = static_cast<unsigned int>(cpRp);
 
-	cp &= ~CP_RP_BASE;
-	assert(cp < CodePageTables::lkup_tbls.size());
-	if (cp >= CodePageTables::lkup_tbls.size())
+	assert(cp & static_cast<unsigned int>(CpRp::Base));
+	if (!(cp & static_cast<unsigned int>(CpRp::Base))) {
 		return {};
+	}
+
+	cp &= ~static_cast<unsigned int>(CpRp::Base);
+	assert(cp < CodePageTables::lkup_tbls.size());
+	if (cp >= CodePageTables::lkup_tbls.size()) {
+		return {};
+	}
 
 	return str8_to_utf8(*(CodePageTables::lkup_tbls[cp]), str, len);
 }

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptext)                        *
  * RP_CP_tbls.hpp: Code page lookup tables for custom code pages.          *
  *                                                                         *
- * Copyright (c) 2009-2024 by David Korth.                                 *
+ * Copyright (c) 2009-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -233,10 +233,10 @@ static constexpr std::array<char16_t, 256> petscii_shifted_lkup = {{
 
 // Lookup tables in RP_CP_* ordering.
 static const std::array<const std::array<char16_t, 256>*, 4> lkup_tbls = {{
-	&atariST_lkup,		// CP_RP_ATARIST
-	&atascii_lkup,		// CP_RP_ATASCII
-	&petscii_unshifted_lkup,	// CP_RP_PETSCII_Unshifted
-	&petscii_shifted_lkup,	// CP_RP_PETSCII_Shifted
+	&atariST_lkup,			// CpRp::AtariST
+	&atascii_lkup,			// CpRp::ATASCII
+	&petscii_unshifted_lkup,	// CpRp::PETSCII_Unshifted
+	&petscii_shifted_lkup,		// CpRp::PETSCII_Shifted
 }};
 
 } }

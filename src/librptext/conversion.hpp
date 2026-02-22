@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptext)                        *
  * conversion.hpp: Text encoding functions                                 *
  *                                                                         *
- * Copyright (c) 2009-2025 by David Korth.                                 *
+ * Copyright (c) 2009-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -130,11 +130,13 @@ static inline char16_t *u16_memchr(char16_t *wcs, char16_t c, size_t n)
 #endif
 
 // Specialized code pages
-#define CP_RP_BASE			0x10000
-#define CP_RP_ATARIST			(CP_RP_BASE | 0)
-#define CP_RP_ATASCII			(CP_RP_BASE | 1)
-#define CP_RP_PETSCII_Unshifted		(CP_RP_BASE | 2)
-#define CP_RP_PETSCII_Shifted		(CP_RP_BASE | 3)
+enum class CpRp : unsigned int {
+	Base			= 0x10000,
+	AtariST			= (Base | 0),
+	ATASCII			= (Base | 1),
+	PETSCII_Unshifted	= (Base | 2),
+	PETSCII_Shifted		= (Base | 3),
+};
 
 // Text conversion flags.
 typedef enum {
@@ -163,14 +165,15 @@ std::string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int 
 
 /**
  * Convert 8-bit text to UTF-8 using an RP-custom code page.
- * Code page number must be CP_RP_*.
+ * Code page number must be CpRp::*.
  *
- * @param cp	[in] Code page number
+ * @param cpRp	[in] Specialized code page number
  * @param str	[in] 8-bit text
  * @param len	[in] Length of str, in bytes (-1 for NULL-terminated string)
  * @return UTF-8 string
  */
-std::string cpRP_to_utf8(unsigned int cp, const char *str, int len);
+RP_LIBROMDATA_PUBLIC
+std::string cpRP_to_utf8(CpRp cp, const char *str, int len);
 
 /**
  * Convert 8-bit text to UTF-16.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptext)                        *
  * conversion_win32.cpp: Text encoding functions (Win32 version)           *
  *                                                                         *
- * Copyright (c) 2009-2023 by David Korth.                                 *
+ * Copyright (c) 2009-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -96,9 +96,9 @@ static int W32U_UTF16_to_mbs(
  */
 string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags)
 {
-	if (cp & CP_RP_BASE) {
+	if (cp & static_cast<unsigned int>(CpRp::Base)) {
 		// RP-custom code page.
-		return cpRP_to_utf8(cp, str, len);
+		return cpRP_to_utf8(static_cast<CpRp>(cp), str, len);
 	}
 
 	// Convert from `cp` to UTF-16.
