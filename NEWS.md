@@ -25,6 +25,7 @@
   * Fixed a potential image swizzle error when using ARM NEON if the
     swizzle specification has a '0' or '1' channel.
   * EXE: Fix StringFileInfo display on big-endian systems.
+  * EXE, ICO: Improve icon selection for some NT 3.x icons.
 
 * Other changes:
   * Swizzling "bgra" (red/blue swap only) is now faster on systems that
