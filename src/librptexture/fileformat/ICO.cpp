@@ -28,6 +28,7 @@ using namespace LibRpFile;
 using std::array;
 using std::map;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 // Uninitialized vector class
@@ -434,6 +435,10 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 		return -ENOENT;
 	}
 
+	// bColorCount values for disambiguation if multiple icons have the
+	// same size and bitcount. (See Notepad from NT 3.51.)
+	unique_ptr<uint8_t[]> bColorCounts(new uint8_t[count]);
+
 	if (dir.is_res) {
 		// Icon/cursor resource from a Windows executable.
 
@@ -475,6 +480,11 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 				return -EIO;
 			}
 		}
+
+		// Get the bColorCount values.
+		for (size_t i = 0; i < count; i++) {
+			bColorCounts[i] = iconDirectory[i].bColorCount;
+		}
 	} else {
 		// Standalone .ico/.cur file.
 		const size_t fullsize = count * sizeof(ICONDIRENTRY);
@@ -500,11 +510,17 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 				return -EIO;
 			}
 		}
+
+		// Get the bColorCount values.
+		for (size_t i = 0; i < count; i++) {
+			bColorCounts[i] = iconDirectory[i].bColorCount;
+		}
 	}
 
 	// Go through the icon bitmap headers and figure out the "best" one.
 	int width_best = 0, height_best = 0;
-	unsigned int bitcount_best = 0;
+	uint16_t bitcount_best = 0;
+	uint8_t bColorCount_best = 0;
 	int bestIcon_idx = -1;
 	for (unsigned int i = 0; i < count; i++) {
 		// Get the width, height, and color depth from this bitmap header.
@@ -527,6 +543,14 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 			if (data.bitcount > bitcount_best) {
 				// Color depth is higher.
 				icon_is_better = true;
+			} else if (data.bitcount == bitcount_best) {
+				// NOTE: Notepad from NT 3.51 has *two* 32x32 4bpp icons.
+				// The first one (greenish color) has bColorCount == 8.
+				// The second one (cyan color) has bColorCount == 16.
+				if (bColorCounts[i] > bColorCount_best) {
+					// Color count is higher.
+					icon_is_better = true;
+				}
 			}
 		}
 
@@ -536,6 +560,7 @@ int ICOPrivate::loadIconDirectory_Win3(void)
 			width_best = data.width;
 			height_best = data.height;
 			bitcount_best = data.bitcount;
+			bColorCount_best = bColorCounts[i];
 		}
 	}
 

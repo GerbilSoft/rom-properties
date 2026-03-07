@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE.cpp: DOS/Windows executable reader. (Icon handling)                 *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -211,6 +211,7 @@ rp::uvector<uint8_t> EXEPrivate::loadIconResourceData(int iconindex, int width, 
 		// Current icon
 		uint16_t cur_id = 0;
 		uint16_t cur_bitCount = 0;
+		uint8_t cur_bColorCount = 0;
 		int cur_w = 0, cur_h = 0;
 		for (unsigned int i = 0; i < iconCount; i++) {
 			GRPICONDIRENTRY iconDirEntry;
@@ -225,26 +226,32 @@ rp::uvector<uint8_t> EXEPrivate::loadIconResourceData(int iconindex, int width, 
 			const int new_w = (iconDirEntry.bWidth != 0) ? iconDirEntry.bWidth : 256;
 			const int new_h = (iconDirEntry.bHeight != 0) ? iconDirEntry.bHeight : 256;
 			const uint16_t new_bitCount = le16_to_cpu(iconDirEntry.wBitCount);
+			const uint8_t new_bColorCount = iconDirEntry.bColorCount;
 
 			// Going by size first. Higher bitcount is only a differentiation for identical sizes.
+			// TODO: Non-square icon handling.
+			bool icon_is_better = false;
 			if (new_w > cur_w || new_h > cur_h) {
 				// New icon is bigger.
+				// FIXME: What's the second size check for?
 				if ((cur_w == 0 && cur_h == 0) || (new_w < width && new_h < height)) {
 					// New icon is smaller than the previous icon.
-					cur_id = le16_to_cpu(iconDirEntry.nID);
-					cur_bitCount = new_bitCount;
-					cur_w = new_w;
-					cur_h = new_h;
+					icon_is_better = true;
 				}
 			} else if (new_w == cur_w && new_h == cur_h) {
 				// Size is identical.
 				// If the bit count is higher, use this icon.
 				if (new_bitCount > cur_bitCount) {
 					// New icon has a higher color depth than the previous icon.
-					cur_id = le16_to_cpu(iconDirEntry.nID);
-					cur_bitCount = new_bitCount;
-					cur_w = new_w;
-					cur_h = new_h;
+					icon_is_better = true;
+				} else if (new_bitCount == cur_bitCount) {
+					// NOTE: Notepad from NT 3.51 has *two* 32x32 4bpp icons.
+					// The first one (greenish color) has bColorCount == 8.
+					// The second one (cyan color) has bColorCount == 16.
+					if (new_bColorCount > cur_bColorCount) {
+						// Color count is higher.
+						icon_is_better = true;
+					}
 				}
 			} else if (new_w < cur_w || new_h < cur_h) {
 				// New icon is smaller.
@@ -253,11 +260,16 @@ rp::uvector<uint8_t> EXEPrivate::loadIconResourceData(int iconindex, int width, 
 				    (abs(new_h - height) < abs(cur_h - height)))
 				{
 					// New icon is closer to the requested icon size.
-					cur_id = le16_to_cpu(iconDirEntry.nID);
-					cur_bitCount = new_bitCount;
-					cur_w = new_w;
-					cur_h = new_h;
+					icon_is_better = true;
 				}
+			}
+
+			if (icon_is_better) {
+				cur_id = le16_to_cpu(iconDirEntry.nID);
+				cur_bitCount = new_bitCount;
+				cur_bColorCount = new_bColorCount;
+				cur_w = new_w;
+				cur_h = new_h;
 			}
 		}
 
