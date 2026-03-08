@@ -189,6 +189,9 @@ public:
 		char pixel_format[11];
 	};
 
+	// Temporary data for pixelFormat().
+	char pixel_format[11];
+
 	/**
 	 * Get useful data from an IconBitmapHeader_t.
 	 * @param pHeader	[in] IconBitmapHeader_t
@@ -279,6 +282,7 @@ ICOPrivate::ICOPrivate(ICO *q, const IRpFilePtr &file)
 {
 	// Clear the ICO header union.
 	memset(&icoHeader, 0, sizeof(icoHeader));
+	memset(pixel_format, 0, sizeof(pixel_format));
 
 	// Initialize the icon directory union.
 	dir.ico = new icodir_ico();
@@ -288,8 +292,9 @@ ICOPrivate::ICOPrivate(ICO *q, const IResourceReaderPtr &resReader, uint16_t typ
 	: super(q, resReader, &textureInfo)
 	, iconType(IconType::Unknown)
 {
-	// Clear the ICO header union.
+	// Clear the structs.
 	memset(&icoHeader, 0, sizeof(icoHeader));
+	memset(pixel_format, 0, sizeof(pixel_format));
 
 	// Determine the icon type here.
 	switch (type) {
@@ -1412,10 +1417,32 @@ const char *ICO::pixelFormat(void) const
 			return "1bpp";
 
 		case ICOPrivate::IconType::Icon_Win3:
-		case ICOPrivate::IconType::Cursor_Win3:
+		case ICOPrivate::IconType::Cursor_Win3: {
+			if (d->pixel_format[0] != '\0') {
+				return d->pixel_format;
+			}
+
 			// Check what the "best" icon is.
-			// TODO: Check BITMAPCOREHEADER, BITMAPINFOHEADER, or the PNG header.
-			return "Win3.x (TODO)";
+			if (d->iconBitmapHeaders.empty()) {
+				// No icon bitmap headers...
+				return C_("RomData", "Unknown");
+			}
+
+			int idx = d->dir.bestIcon_idx;
+			if (idx < 0 || idx >= static_cast<int>(d->iconBitmapHeaders.size())) {
+				// "Best" icon not determined, or is out of range.
+				// Use the first icon.
+				idx = 0;
+			}
+
+			ICOPrivate::IconBitmapHeader_data data = d->getIconBitmapHeaderData(&d->iconBitmapHeaders[idx]);
+			if (data.pixel_format[0] == '\0') {
+				return C_("RomData", "Unknown");
+			}
+
+			snprintf(const_cast<ICOPrivate*>(d)->pixel_format, sizeof(d->pixel_format), "%s", data.pixel_format);
+			return d->pixel_format;
+		}
 	}
 }
 
