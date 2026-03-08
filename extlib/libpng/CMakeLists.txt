@@ -37,9 +37,9 @@ if(POLICY CMP0074)
 endif()
 
 include(CheckCSourceCompiles)
+include(CheckLibraryExists)
 # rom-properties: Not used.
 IF(0)
-include(CheckLibraryExists)
 include(GNUInstallDirs)
 ENDIF(0) # rom-properties
 
