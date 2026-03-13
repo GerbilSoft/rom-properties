@@ -13,6 +13,9 @@
       Windows Terminal.
     * Kitty protocol has been tested with Kitty terminal and KDE Konsole.
 
+* New parser features:
+  * WiiUAncast: ARM bring-up firmware images (fw.bu.img) are now detected.
+
 * Bug fixes:
   * Windows: Fix potential UI language misdetection in some cases.
     * This only seemed to affect rp-config, or at least no bug reports

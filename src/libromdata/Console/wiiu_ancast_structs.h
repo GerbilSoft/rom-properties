@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * wiiu_ancast_structs.h: Wii U "Ancast" image structures.                 *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -105,6 +105,7 @@ ASSERT_STRUCT(WiiU_Ancast_Header_PPC_t, 0x100);
  * Wii U "Ancast" image: Signature type
  */
 typedef enum {
+	WIIU_ANCAST_SIGTYPE_NONE	= 0x00,	// None (found in bring-up images; assume it's ARM)
 	WIIU_ANCAST_SIGTYPE_ECDSA	= 0x01,	// ECDSA (PPC images)
 	WIIU_ANCAST_SIGTYPE_RSA2048	= 0x02,	// RSA-2048 (ARM images)
 } WiiU_Ancast_SigType_e;
@@ -113,6 +114,9 @@ typedef enum {
  * Wii U "Ancast" image: Target device
  */
 typedef enum {
+	// Unknown (found in "bring-up" images with no encryption)
+	WIIU_ANCAST_TARGET_DEVICE_BRING_UP	= 0x00,
+
 	// PowerPC
 	WIIU_ANCAST_TARGET_DEVICE_PPC_WIIU	= 0x11,		// Wii U image
 	WIIU_ANCAST_TARGET_DEVICE_PPC_VWII_12	= 0x12,		// "Unknown" vWii image
@@ -128,8 +132,9 @@ typedef enum {
  * Wii U "Ancast" image: Console type
  */
 typedef enum {
-	WIIU_ANCAST_CONSOLE_TYPE_DEVEL	= 1,	// Console type: Development
-	WIIU_ANCAST_CONSOLE_TYPE_PROD	= 2,	// Console type: Production
+	WIIU_ANCAST_CONSOLE_TYPE_FACTORY	= 0,	// Console type: Factory
+	WIIU_ANCAST_CONSOLE_TYPE_DEVEL		= 1,	// Console type: Development
+	WIIU_ANCAST_CONSOLE_TYPE_PROD		= 2,	// Console type: Production
 } WiiU_Console_Type_e;
 
 #ifdef __cplusplus

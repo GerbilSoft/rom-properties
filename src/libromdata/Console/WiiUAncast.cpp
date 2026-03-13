@@ -152,6 +152,7 @@ rp_image_const_ptr WiiUAncastPrivate::loadIcon(void)
 			break;
 		}
 
+		case WIIU_ANCAST_SIGTYPE_NONE:	// assuming ARM for now
 		case WIIU_ANCAST_SIGTYPE_RSA2048: {
 			const WiiU_Ancast_Header_ARM_t *const arm = &ancastHeader.arm;
 			target_device = be32_to_cpu(arm->target_device);
@@ -165,24 +166,30 @@ rp_image_const_ptr WiiUAncastPrivate::loadIcon(void)
 	// TODO: Indicate missing signature?
 	const uint8_t *png_data = nullptr;
 	size_t png_size = 0;
-	if (likely(console_type != WIIU_ANCAST_CONSOLE_TYPE_DEVEL)) {
-		// Retail (prod)
-		if (likely(target_device != WIIU_ANCAST_TARGET_DEVICE_ARM_SD)) {
-			png_data = happy_wii_u_prod_png;
-			png_size = sizeof(happy_wii_u_prod_png);
-		} else {
-			png_data = happy_wii_u_prod_sdboot_png;
-			png_size = sizeof(happy_wii_u_prod_sdboot_png);
-		}
-	} else {
-		// Debug (devel)
-		if (likely(target_device != WIIU_ANCAST_TARGET_DEVICE_ARM_SD)) {
-			png_data = happy_wii_u_devel_png;
-			png_size = sizeof(happy_wii_u_devel_png);
-		} else {
-			png_data = happy_wii_u_devel_sdboot_png;
-			png_size = sizeof(happy_wii_u_devel_sdboot_png);
-		}
+	switch (console_type) {
+		case WIIU_ANCAST_CONSOLE_TYPE_FACTORY:	// using devel icons for bring-up images for now
+		case WIIU_ANCAST_CONSOLE_TYPE_DEVEL:
+			// Debug (devel)
+			if (likely(target_device != WIIU_ANCAST_TARGET_DEVICE_ARM_SD)) {
+				png_data = happy_wii_u_devel_png;
+				png_size = sizeof(happy_wii_u_devel_png);
+			} else {
+				png_data = happy_wii_u_devel_sdboot_png;
+				png_size = sizeof(happy_wii_u_devel_sdboot_png);
+			}
+			break;
+
+		case WIIU_ANCAST_CONSOLE_TYPE_PROD:
+		default:
+			// Retail (prod)
+			if (likely(target_device != WIIU_ANCAST_TARGET_DEVICE_ARM_SD)) {
+				png_data = happy_wii_u_prod_png;
+				png_size = sizeof(happy_wii_u_prod_png);
+			} else {
+				png_data = happy_wii_u_prod_sdboot_png;
+				png_size = sizeof(happy_wii_u_prod_sdboot_png);
+			}
+			break;
 	}
 
 	// Create a MemFile and decode the image.
@@ -365,8 +372,10 @@ int WiiUAncast::isRomSupported_static(const DetectInfo *info)
 			case WIIU_ANCAST_SIGTYPE_ECDSA:
 				// ECDSA: Used by PowerPC "Ancast" images.
 				return static_cast<int>(WiiUAncastPrivate::AncastType::PowerPC);
+			case WIIU_ANCAST_SIGTYPE_NONE:
 			case WIIU_ANCAST_SIGTYPE_RSA2048:
 				// RSA-2048: Used by ARM "Ancast" images.
+				// TODO: Additional verification if it's WIIU_ANCAST_SIGTYPE_NONE.
 				return static_cast<int>(WiiUAncastPrivate::AncastType::ARM);
 		}
 	}
@@ -539,6 +548,7 @@ int WiiUAncast::loadFieldData(void)
 			break;
 		}
 
+		case WIIU_ANCAST_SIGTYPE_NONE:	// assuming ARM for now
 		case WIIU_ANCAST_SIGTYPE_RSA2048: {
 			const WiiU_Ancast_Header_ARM_t *const arm = &d->ancastHeader.arm;
 
@@ -574,7 +584,10 @@ int WiiUAncast::loadFieldData(void)
 		uint8_t id;
 		const char *desc;
 	};
-	static const array<target_device_tbl_t, 6> target_device_tbl = {{
+	static const array<target_device_tbl_t, 7> target_device_tbl = {{
+		// Bring-up image
+		{WIIU_ANCAST_TARGET_DEVICE_BRING_UP,	"Bring-Up"},
+
 		// PowerPC
 		{WIIU_ANCAST_TARGET_DEVICE_PPC_WIIU,	"Wii U"},
 		{WIIU_ANCAST_TARGET_DEVICE_PPC_VWII_12,	"vWii (variant 0x12)"},
@@ -599,20 +612,11 @@ int WiiUAncast::loadFieldData(void)
 
 	// Console type
 	const char *const s_console_type_title = C_("WiiUAncast", "Console Type");
-	const char *s_console_type;
-	switch (console_type) {
-		default:
-			s_console_type = nullptr;
-			break;
-		case WIIU_ANCAST_CONSOLE_TYPE_DEVEL:
-			s_console_type = "Debug";
-			break;
-		case WIIU_ANCAST_CONSOLE_TYPE_PROD:
-			s_console_type = "Retail";
-			break;
-	}
-	if (s_console_type) {
-		d->fields.addField_string(s_console_type_title, s_console_type);
+	static const array<const char*, 3> console_type_tbl = {{
+		"Factory", "Debug", "Retail"
+	}};
+	if (console_type < console_type_tbl.size()) {
+		d->fields.addField_string(s_console_type_title, console_type_tbl[console_type]);
 	} else {
 		d->fields.addField_string(s_console_type_title,
 			fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), console_type));
@@ -656,6 +660,7 @@ int WiiUAncast::loadMetaData(void)
 			break;
 		}
 
+		case WIIU_ANCAST_SIGTYPE_NONE:	// assuming ARM for now
 		case WIIU_ANCAST_SIGTYPE_RSA2048: {
 			const WiiU_Ancast_Header_ARM_t *const arm = &d->ancastHeader.arm;
 			console_type = be32_to_cpu(arm->console_type);
@@ -666,20 +671,11 @@ int WiiUAncast::loadMetaData(void)
 	/** Custom properties! **/
 
 	// Console type (as Encryption key)
-	const char *s_console_type;
-	switch (console_type) {
-		default:
-			s_console_type = nullptr;
-			break;
-		case WIIU_ANCAST_CONSOLE_TYPE_DEVEL:
-			s_console_type = "Debug";
-			break;
-		case WIIU_ANCAST_CONSOLE_TYPE_PROD:
-			s_console_type = "Retail";
-			break;
-	}
-	if (s_console_type) {
-		d->metaData.addMetaData_string(Property::EncryptionKey, s_console_type);
+	static const array<const char*, 3> console_type_tbl = {{
+		"Factory", "Debug", "Retail"
+	}};
+	if (console_type < console_type_tbl.size()) {
+		d->metaData.addMetaData_string(Property::EncryptionKey, console_type_tbl[console_type]);
 	}
 
 	// Finished reading the metadata.
@@ -735,6 +731,7 @@ int WiiUAncast::checkViewedAchievements(void) const
 			break;
 		}
 
+		case WIIU_ANCAST_SIGTYPE_NONE:	// assuming ARM for now
 		case WIIU_ANCAST_SIGTYPE_RSA2048: {
 			const WiiU_Ancast_Header_ARM_t *const arm = &d->ancastHeader.arm;
 			target_device = be32_to_cpu(arm->target_device);
