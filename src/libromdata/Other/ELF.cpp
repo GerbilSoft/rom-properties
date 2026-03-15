@@ -1045,6 +1045,8 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 		if (info.entsize < (Elf_Header.primary.e_class == ELFCLASS64 ? sizeof(Elf64_Sym) : sizeof(Elf32_Sym)))
 			return;
 		buf.resize(static_cast<size_t>(info.size / info.entsize * info.entsize));
+		if (buf.empty() || buf.size() < info.entsize)
+			return;
 		size_t nread = file->seekAndRead(info.offset, buf.data(), buf.size());
 		assert(nread == buf.size());
 		if (nread != buf.size())
