@@ -680,6 +680,7 @@ C:0x05C1:Metroid
 C:0x05C2:Ridley
 C:0x05C3:Dark Samus
 C:0x05C4:E.M.M.I.
+C:0x05C5:Sylux
 
 # F-Zero (character series == 0x060)
 C:0x0600:Captain Falcon
@@ -985,6 +986,29 @@ C:0x34C1:Ken
 C:0x34C2:Luke
 C:0x34C3:Jamie
 C:0x34C4:Kimberly
+C:0x34C5:Chun-Li
+C:0x34C6:Guile
+C:0x34C7:Juri
+C:0x34C8:Blanka
+C:0x34C9:Dhalsim
+C:0x34CA:E. Honda
+C:0x34CB:Dee Jay
+C:0x34CC:Manon
+C:0x34CD:Marisa
+C:0x34CE:JP
+C:0x34CF:Zangief
+C:0x34D0:Lily
+C:0x34D1:Cammy
+C:0x34D2:Rashid
+C:0x34D3:A.K.I.
+C:0x34D4:ED
+C:0x34D5:Akuma
+C:0x34D6:M. Bison
+C:0x34D8:Elena
+C:0x34D9:Sagat
+C:0x34DA:C. Viper
+C:0x34DB:Alex
+C:0x34DC:Ingrid
 
 # Monster Hunter (character series == 0x350)
 C:0x3500:One-Eyed Rathalos and Rider
@@ -1016,6 +1040,9 @@ C:0x350A:Palamute
 CV:0x350A:0x00:Palamute
 CV:0x350A:0x01:Palamute "Canyne Malzeno X"
 C:0x350B:Malzeno
+C:0x350C:Ratha
+C:0x350D:Ratha V
+C:0x350E:Rudy
 
 # Shovel Knight (character series == 0x35C)
 C:0x35C0:Shovel Knight
@@ -1074,6 +1101,7 @@ C:0x3B40:Banjo & Kazooie
 
 # Fatal Fury (character series == 0x3C8)
 C:0x3C80:Terry
+C:0x3C81:Mai
 
 # Minecraft (character series == 0x3DC)
 C:0x3DC0:Steve
@@ -1282,6 +1310,9 @@ A:0x038E:0:5:Octoling Girl
 A:0x038F:0:5:Octoling Boy
 A:0x0390:0:5:Octoling Octopus
 
+# Diablo [0x0391]
+A:0x0391:0:0:Loot Goblin
+
 # Splatoon: Wave 6 [0x0415-0x041C]
 A:0x0415:0:6:Inkling (Yellow)
 A:0x041B:0:6:Octoling (Blue)
@@ -1298,8 +1329,10 @@ A:0x0437:0:8:Marie (Alterna)
 A:0x0438:0:8:Pearl (Side Order)
 A:0x0439:0:8:Marina (Side Order)
 
-# Diablo [0x0391]
-A:0x0391:0:0:Loot Goblin
+# Metroid Prime 4: Beyond [0x043A-0x043C]
+A:0x043A:0:0:Samus & Vi-O-La
+A:0x043B:0:0:Samus
+A:0x043C:0:0:Sylux
 
 # Yarn Yoshi [0x0041-0x0043]
 A:0x0041:1:0:Green Yarn Yoshi
@@ -2148,3 +2181,71 @@ A:0x04A6:0:6:Yunobo
 A:0x04AA:0:0:Luke
 A:0x04AC:0:0:Jamie
 A:0x04AE:0:0:Kimberly
+
+# Street Fighter 6, Series 1 (Cards) [0x04A8-0x04A9,0x04AB,0x04AD,0x04AF-0x04C0]
+A:0x04A8:11:1:Ryu
+A:0x04A9:15:1:Ken
+A:0x04AB:1:1:Luke
+A:0x04AD:2:1:Jamie
+A:0x04AF:4:1:Kimberly
+A:0x04B0:16:1:Chun-Li
+A:0x04B1:14:1:Guile
+A:0x04B2:8:1:Juri
+A:0x04B3:13:1:Blanka
+A:0x04B4:18:1:Dhalsim
+A:0x04B5:12:1:E. Honda
+A:0x04B6:9:1:Dee Jay
+A:0x04B7:3:1:Manon
+A:0x04B8:5:1:Marisa
+A:0x04B9:7:1:JP
+A:0x04BA:17:1:Zangief
+A:0x04BB:6:1:Lily
+A:0x04BC:10:1:Cammy
+A:0x04BD:19:1:Rashid
+A:0x04BE:20:1:A.K.I.
+A:0x04BF:21:1:ED
+A:0x04C0:22:1:Akuma
+
+# Street Fighter 6, Series 2 (Cards) [0x04CD-0x04DB,0x04DD-0x04E1,0x04E3-0x04E8,0x04EB-0x04F3]
+A:0x04CB:41:2:Ryu
+A:0x04CC:45:2:Ken
+A:0x04CD:31:2:Luke
+A:0x04CE:32:2:Jamie
+A:0x04CF:34:2:Kimberly
+A:0x04D0:46:2:Chun-Li
+A:0x04D1:44:2:Guile
+A:0x04D2:38:2:Juri
+A:0x04D3:43:2:Blanka
+A:0x04D4:48:2:Dhalsim
+A:0x04D5:42:2:E. Honda
+A:0x04D6:39:2:Dee Jay
+A:0x04D7:33:2:Manon
+A:0x04D8:35:2:Marisa
+A:0x04D9:37:2:JP
+A:0x04DA:46:2:Zangief
+A:0x04DB:36:2:Lily
+A:0x04DD:49:2:Rashid
+A:0x04DE:50:2:A.K.I.
+A:0x04DF:51:2:Ed
+A:0x04E0:52:2:Akuma
+A:0x04E1:23:2:M. Bison
+A:0x04E3:26:2:Elena
+A:0x04E4:27:2:Sagat
+A:0x04E5:28:2:C. Viper
+A:0x04E6:29:2:Alex
+A:0x04E7:30:1:Ingrid
+A:0x04E8:24:2:Terry
+A:0x04EB:53:2:M. Bison (Alt)
+A:0x04EC:56:2:Elena (Alt)
+A:0x04ED:57:2:Sagat (Alt)
+A:0x04EE:58:2:C. Viper (Alt)
+A:0x04EF:59:2:Alex (Alt)
+A:0x04F0:60:2:Ingrid (Alt)
+A:0x04F1:54:2:Terry (Alt)
+A:0x04F2:25:2:Mai
+A:0x04F3:55:2:Mai (Alt)
+
+# Monster Hunter Stories (Wave 3) [0x04FA-0x04FC]
+A:0x04FA:10:3:Ratha
+A:0x04FB:11:3:Ratha V
+A:0x04FC:12:3:Rudy
