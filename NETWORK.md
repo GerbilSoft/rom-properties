@@ -80,6 +80,9 @@ images from the online databases:
 * Game Boy Advance: 6-character Game ID (e.g. `AXVE01`)
 * Nintendo DS: 4-character Game ID (e.g. `ATRE`)
 * Nintendo 3DS: Product ID (e.g. `CTR-P-AXCE`) and region code.
+* Nintendo Entertainment System: CRC32 of the first 8 KiB of PRG ROM, and
+  if present, CRC32 of the first 8 KiB of CHR ROM.
+* Nintendo Famicom Disk System: Game ID from the disk header.
 * amiibo: 64-bit amiibo ID (e.g. `00000000-00000002`)
 * Neo Geo Pocket (Color): Game ID (e.g. `NEOP0001`). For certain games
   with invalid IDs (e.g. homebrew), the game title is also used.
