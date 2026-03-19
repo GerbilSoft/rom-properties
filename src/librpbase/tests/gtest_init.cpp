@@ -111,6 +111,11 @@ static constexpr int16_t syscall_wl_base[] = {
 	// for posix_fadvise()
 	SCMP_SYS(fadvise64), SCMP_SYS(fadvise64_64),
 	SCMP_SYS(arm_fadvise64_64),	// CPU-specific syscall for Linux on 32-bit ARM
+
+#ifndef NDEBUG
+	// Sometimes needed by assert().
+	SCMP_SYS(writev),
+#endif /* !NDEBUG */
 };
 
 // for Google Test Death Tests when spawning a new process
