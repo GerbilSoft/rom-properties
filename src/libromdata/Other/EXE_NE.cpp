@@ -259,6 +259,12 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 		}
 
 		const uint8_t count = static_cast<uint8_t>(ne_imported_name_table[nameOffset]);
+		assert(count > 0);
+		if (count == 0) {
+			// Empty name?
+			continue;
+		}
+
 		assert(nameOffset + 1 + count <= ne_imported_name_table.size());
 		if (nameOffset + 1 + count > ne_imported_name_table.size()) {
 			// Out of range.
