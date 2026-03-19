@@ -3,7 +3,7 @@
  * EXE_NE.cpp: DOS/Windows executable reader.                              *
  * 16-bit New Executable format.                                           *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * Copyright (c) 2022 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -259,8 +259,8 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 		}
 
 		const uint8_t count = static_cast<uint8_t>(ne_imported_name_table[nameOffset]);
-		assert(nameOffset + 1 + count <= ne_imported_name_table.size());
-		if (nameOffset + 1 + count > ne_imported_name_table.size()) {
+		assert(nameOffset + 1 + count < ne_imported_name_table.size());
+		if (nameOffset + 1 + count >= ne_imported_name_table.size()) {
 			// Out of range.
 			// TODO: Return an error?
 			break;
