@@ -100,6 +100,11 @@ int rpcli_do_security_options(void)
 		SCMP_SYS(pselect6_time64),
 #endif /* __SNR_futex_time64 || __NR_futex_time64 */
 
+#ifndef NDEBUG
+		// Sometimes needed by assert().
+		SCMP_SYS(writev),
+#endif /* !NDEBUG */
+
 		-1	// End of whitelist
 	};
 	param.syscall_wl = syscall_wl;
