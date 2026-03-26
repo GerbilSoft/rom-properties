@@ -22,6 +22,7 @@
 #include "librpbyteswap/byteswap_rp.h"
 
 // C includes
+#include <fcntl.h>	// fcntl(), F_GETFD, F_SETFD
 #include <unistd.h>	// ftruncate()
 
 // C++ STL classes
