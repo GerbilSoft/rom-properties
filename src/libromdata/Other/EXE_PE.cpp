@@ -426,7 +426,7 @@ int EXEPrivate::readPEImportDir(void)
 
 		// Current DLL name from the import table.
 		const char *const dll_name = &dll_name_data[vaddr - dll_vaddr_low];
-		peImportNames.emplace_back(dll_name);
+		peImportNames.push_back(dll_name);
 	}
 	assert(peImportDir.size() == peImportNames.size());
 
@@ -963,7 +963,7 @@ int EXEPrivate::addFields_PE_Export(void)
 		// Filter out any unused ordinals.
 		if (ent.hint == -1 && ent.vaddr == 0)
 			continue;
-		vv_data->emplace_back();
+		vv_data->push_back(vector<string>());
 		auto &row = vv_data->back();
 		row.reserve(5);
 		row.push_back(ent.name);
@@ -971,17 +971,17 @@ int EXEPrivate::addFields_PE_Export(void)
 		if (ent.hint != -1) {
 			row.push_back(fmt::to_string(ent.hint));
 		} else {
-			row.emplace_back(C_("EXE|Exports", "None"));
+			row.push_back(C_("EXE|Exports", "None"));
 		}
 		if (ent.forwarder.size() != 0) {
 			row.push_back(ent.forwarder);
-			row.emplace_back();
+			row.push_back(string());
 		} else {
 			row.push_back(fmt::format(FSTR("0x{:0>8X}"), ent.vaddr));
 			if (ent.paddr) {
 				row.push_back(fmt::format(FSTR("0x{:0>8X}"), ent.paddr));
 			} else {
-				row.emplace_back(); // it's probably in the bss section
+				row.push_back(string()); // it's probably in the bss section
 			}
 		}
 	}
@@ -1194,7 +1194,7 @@ int EXEPrivate::addFields_PE_Import(void)
 	auto *const vv_data = new RomFields::ListData_t();
 	vv_data->reserve(import_count);
 	for (IltIterator it(ilt_end); iltAdvance(it); ) {
-		vv_data->emplace_back();
+		vv_data->push_back(vector<string>());
 		auto &row = vv_data->back();
 		row.reserve(3);
 		if (it.is_ordinal) {
@@ -1208,7 +1208,7 @@ int EXEPrivate::addFields_PE_Import(void)
 			const uint8_t *const ent_u8 = reinterpret_cast<const uint8_t*>(ent);
 			const uint16_t hint = ent_u8[0] | (ent_u8[1] << 8);
 			// strings
-			row.emplace_back(ent+2);
+			row.push_back(ent+2);
 			row.push_back(fmt::to_string(hint));
 		}
 		if (it.dllname) {

@@ -389,16 +389,16 @@ int AndroidResourceReaderPrivate::processType(const uint8_t *data, size_t size, 
 			const Res_value *const pResValue = reinterpret_cast<const Res_value*>(p);
 			p += sizeof(Res_value);
 			const uint32_t key_index = le32_to_cpu(pEntry->key.index);
-			const string keyStr = keyStringPool.getString(key_index);
+			string keyStr = keyStringPool.getString(key_index);
 
 			auto iter = entryMap.find(resource_id);
 			if (iter != entryMap.end()) {
 				// We have a vector<string> for this resource ID already.
-				iter->second.push_back(keyStr);
+				iter->second.push_back(std::move(keyStr));
 			} else {
 				// No vector<string>. Create one.
 				vector<string> v_str;
-				v_str.push_back(keyStr);
+				v_str.push_back(std::move(keyStr));
 				entryMap.emplace(resource_id, std::move(v_str));
 			}
 

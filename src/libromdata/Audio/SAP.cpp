@@ -681,7 +681,7 @@ int SAP::loadFieldData(void)
 			const uint32_t ms =  (duration % 1000);
 			data_row.push_back(fmt::to_string(song_num));
 			data_row.push_back(fmt::format(FSTR("{:d}:{:0>2d}.{:0>3d}"), min, sec, ms));
-			data_row.emplace_back(src_iter->second ? s_yes : s_no);
+			data_row.push_back(src_iter->second ? s_yes : s_no);
 		}
 
 		static const array<const char*, 3> song_list_hdr = {{

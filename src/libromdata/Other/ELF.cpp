@@ -960,7 +960,7 @@ int ELFPrivate::addPtDynamicFields(void)
 				if (offset >= strtab.size())
 					continue;
 				vector<string> row;
-				row.emplace_back(&strtab[offset]);
+				row.push_back(&strtab[offset]);
 				vv_data->push_back(std::move(row));
 			}
 
@@ -1085,7 +1085,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 
 			vector<string> row;
 			row.reserve(7);
-			row.emplace_back(&strtab[sym.st_name]);
+			row.push_back(&strtab[sym.st_name]);
 			static const array<const char*, 16> bindings = {{
 				"LOCAL", "GLOBAL", "WEAK",
 				"3", "4", "5", "6", "7", "8", "9",
@@ -1103,16 +1103,16 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 				"DEFAULT", "INTERNAL", "HIDDEN", "PROTECTED"
 			}};
 
-			row.emplace_back(bindings[ELF64_ST_BIND(sym.st_info)]);
-			row.emplace_back(types[ELF64_ST_TYPE(sym.st_info)]);
-			row.emplace_back(visibilities[ELF64_ST_VISIBILITY(sym.st_other)]);
+			row.push_back(bindings[ELF64_ST_BIND(sym.st_info)]);
+			row.push_back(types[ELF64_ST_TYPE(sym.st_info)]);
+			row.push_back(visibilities[ELF64_ST_VISIBILITY(sym.st_other)]);
 			// TODO: output section name if possible
 			if (sym.st_shndx == SHN_UNDEF) {
-				row.emplace_back(elf_sym_undefined);
+				row.push_back(elf_sym_undefined);
 			} else if (sym.st_shndx == SHN_ABS) {
-				row.emplace_back(elf_sym_absolute);
+				row.push_back(elf_sym_absolute);
 			} else if (sym.st_shndx == SHN_COMMON) {
-				row.emplace_back(elf_sym_common);
+				row.push_back(elf_sym_common);
 			} else {
 				row.push_back(fmt::to_string(sym.st_shndx));
 			}

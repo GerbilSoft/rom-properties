@@ -700,7 +700,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 	auto *const vv_data = new RomFields::ListData_t();
 	vv_data->reserve(ents.size());
 	for (const Entry &ent : ents) {
-		vv_data->emplace_back();
+		vv_data->push_back(vector<string>());
 		auto &row = vv_data->back();
 		row.reserve(4);
 		/* NODATA and RESIDENTNAME are from DEF files. EXPORT and PARAMS
@@ -734,7 +734,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 		if (ent.has_name) {
 			row.emplace_back(ent.name.data(), ent.name.size());
 		} else {
-			row.emplace_back(s_no_name);
+			row.push_back(s_no_name);
 		}
 		if (ent.is_movable) {
 			row.push_back(fmt::format(FRUN(s_address_mf), ent.segment, ent.offset, s_address_movable));
@@ -882,7 +882,7 @@ int EXEPrivate::addFields_NE_Import(void)
 		std::vector<string> row;
 		row.reserve(3);
 		const char *const name = EXENEEntries::lookup_ordinal(modname.c_str(), imp.second);
-		row.emplace_back(name ? name : s_no_name);
+		row.push_back(name ? name : s_no_name);
 		row.push_back(fmt::to_string(imp.second));
 		row.push_back(std::move(modname));
 		vv_data->push_back(std::move(row));
@@ -898,7 +898,7 @@ int EXEPrivate::addFields_NE_Import(void)
 		std::vector<string> row;
 		row.reserve(3);
 		row.push_back(std::move(name));
-		row.emplace_back();
+		row.push_back(string());
 		row.push_back(std::move(modname));
 		vv_data->push_back(std::move(row));
 	}

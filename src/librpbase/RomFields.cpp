@@ -709,7 +709,7 @@ void RomFields::setTabName(int tabIdx, const char *name)
 int RomFields::addTab(const char *name)
 {
 	RP_D(RomFields);
-	d->tabNames.emplace_back(name);
+	d->tabNames.push_back(name);
 	d->tabIdx = static_cast<uint8_t>(d->tabNames.size() - 1);
 	return d->tabIdx;
 }
@@ -796,9 +796,9 @@ vector<string> *RomFields::strArrayToVector(const char *const *strArray, size_t 
 		// nullptr will be handled as empty strings.
 		const char *const str = *strArray;
 		if (str) {
-			pVec->emplace_back(str);
+			pVec->push_back(str);
 		} else {
-			pVec->emplace_back();
+			pVec->push_back(string());
 		}
 	}
 
@@ -831,9 +831,9 @@ vector<string> *RomFields::strArrayToVector_i18n(const char *msgctxt, const char
 		// nullptr will be handled as empty strings.
 		const char *const str = *strArray;
 		if (str) {
-			pVec->emplace_back(pgettext_expr(msgctxt, str));
+			pVec->push_back(pgettext_expr(msgctxt, str));
 		} else {
-			pVec->emplace_back();
+			pVec->push_back(string());
 		}
 	}
 

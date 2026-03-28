@@ -3,7 +3,7 @@
  * Wim.cpp: Microsoft WIM header reader (XML parsing)                      *
  *                                                                         *
  * Copyright (c) 2023 by ecumber.                                          *
- * Copyright (c) 2019-2025 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -327,7 +327,7 @@ int WimPrivate::addFields_XML()
 		if (image.containswindowsimage == false) {
 			// No Windows image. Add empty strings to complete the row.
 			for (unsigned int i = 4; i > 0; i--) {
-				data_row.emplace_back();
+				data_row.push_back(string());
 			}
 			continue;
 		}
@@ -362,7 +362,7 @@ int WimPrivate::addFields_XML()
 				break;
 		}
 		if (archstring) {
-			data_row.emplace_back(archstring);
+			data_row.push_back(archstring);
 		} else {
 			data_row.push_back(fmt::format(FRUN(C_("RomData", "Unknown ({:d})")),
 				static_cast<int>(windowsinfo.arch)));

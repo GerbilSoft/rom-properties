@@ -383,7 +383,7 @@ forward_list<RomHeaderTest_mode> RomHeaderTest::ReadTestCasesFromDisk(const char
 	forward_list<RomHeaderTest_mode> files;
 
 	// Open the .tar files.
-	all_tar_files.emplace_front();
+	all_tar_files.push_front(tar_files_t());
 	tar_files_t *const p_tar_files = &(*(all_tar_files.begin()));
 
 	int ret = mtar_zstd_open_ro(&p_tar_files->bin_tar, bin_tar_filename);

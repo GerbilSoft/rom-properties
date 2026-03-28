@@ -173,7 +173,7 @@ void ListDataModelPrivate::updateIconPixmaps(void)
 
 	for (const auto &icon : icons_rp) {
 		if (!icon) {
-			icons.emplace_back();
+			icons.push_back(QPixmap());
 			continue;
 		}
 
@@ -271,7 +271,7 @@ vector<QString> ListDataModelPrivate::convertListDataToVector(const RomFields::L
 		// If there's fewer columns in the data row than we have allocated,
 		// add blank QStrings.
 		for (size_t i = columnCount; i < data_row.size(); i++) {
-			data.emplace_back();
+			data.push_back(QString());
 		}
 	}
 

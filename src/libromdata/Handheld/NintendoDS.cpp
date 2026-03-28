@@ -359,9 +359,7 @@ RomFields::ListData_t *NintendoDSPrivate::getDSiFlagsStringVector(void)
 	auto *const vv_dsi_flags = new RomFields::ListData_t(dsi_flags_bitfield_names.size());
 	for (int i = static_cast<int>(dsi_flags_bitfield_names.size()) - 1; i >= 0; i--) {
 		auto &data_row = vv_dsi_flags->at(i);
-		data_row.emplace_back(
-			pgettext_expr("NintendoDS|DSi_Flags",
-				dsi_flags_bitfield_names[i]));
+		data_row.push_back(pgettext_expr("NintendoDS|DSi_Flags", dsi_flags_bitfield_names[i]));
 	}
 
 	return vv_dsi_flags;
@@ -973,9 +971,7 @@ int NintendoDS::loadFieldData(void)
 	auto *const vv_dsi_perm = new RomFields::ListData_t(dsi_permissions_bitfield_names.size());
 	for (int i = static_cast<int>(dsi_permissions_bitfield_names.size()) - 1; i >= 0; i--) {
 		auto &data_row = vv_dsi_perm->at(i);
-		data_row.emplace_back(
-			pgettext_expr("NintendoDS|DSi_Permissions",
-				dsi_permissions_bitfield_names[i]));
+		data_row.push_back(pgettext_expr("NintendoDS|DSi_Permissions", dsi_permissions_bitfield_names[i]));
 	}
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, rows_visible);

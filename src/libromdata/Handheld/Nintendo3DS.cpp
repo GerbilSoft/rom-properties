@@ -1150,7 +1150,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 	auto *const vv_fs = new RomFields::ListData_t(perm_fs_access.size());
 	for (int i = static_cast<int>(perm_fs_access.size())-1; i >= 0; i--) {
 		auto &data_row = vv_fs->at(i);
-		data_row.emplace_back(perm_fs_access[i]);
+		data_row.push_back(perm_fs_access[i]);
 	}
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, rows_visible);
@@ -1183,7 +1183,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 		auto *const vv_arm9 = new RomFields::ListData_t(perm_arm9_access.size());
 		for (int i = static_cast<int>(perm_arm9_access.size())-1; i >= 0; i--) {
 			auto &data_row = vv_arm9->at(i);
-			data_row.emplace_back(perm_arm9_access[i]);
+			data_row.push_back(perm_arm9_access[i]);
 		}
 
 		params.data.single = vv_arm9;
@@ -2040,7 +2040,7 @@ int Nintendo3DS::loadFieldData(void)
 			// Partition type
 			// TODO: Use the partition ID to determine the type?
 			const char *const s_ptype = ((*pt_types)[i] ? (*pt_types)[i] : s_unknown);
-			data_row.emplace_back(s_ptype);
+			data_row.push_back(s_ptype);
 
 			if (d->romType != Nintendo3DSPrivate::RomType::eMMC) {
 				const N3DS_NCCH_Header_NoSig_t *const part_ncch_header =
@@ -2054,13 +2054,13 @@ int Nintendo3DS::loadFieldData(void)
 						if (cryptoType.name) {
 							data_row.push_back(latin1_to_utf8(cryptoType.name, -1));
 						} else {
-							data_row.emplace_back(s_unknown);
+							data_row.push_back(s_unknown);
 						}
 					} else {
 						// TODO: Show an error if this should be NoCrypto.
 						// This is detected for the main NCCH in the initial
 						// NCSD check, but not here...
-						data_row.emplace_back(fmt::format(FSTR("{:s}{:s} (0x{:0>2X})"),
+						data_row.push_back(fmt::format(FSTR("{:s}{:s} (0x{:0>2X})"),
 							(cryptoType.name ? cryptoType.name : s_unknown),
 							(cryptoType.seed ? "+Seed" : ""),
 							cryptoType.keyslot));
@@ -2085,14 +2085,14 @@ int Nintendo3DS::loadFieldData(void)
 					if (isUpdate && version == 0x8000) {
 						// Early titles have a system update with version 0x8000 (32.0.0).
 						// This is usually 1.1.0, though some might be 1.0.0.
-						data_row.emplace_back("1.x.x");
+						data_row.push_back("1.x.x");
 					} else {
 						data_row.push_back(d->n3dsVersionToString(version));
 					}
 				} else {
 					// Unable to load the NCCH header.
-					data_row.emplace_back(s_unknown);	// Encryption
-					data_row.emplace_back(s_unknown);	// Version
+					data_row.push_back(s_unknown);	// Encryption
+					data_row.push_back(s_unknown);	// Version
 				}
 			}
 
@@ -2235,12 +2235,12 @@ int Nintendo3DS::loadFieldData(void)
 						content_type = s_unknown;
 					}
 				}
-				data_row.emplace_back(content_type);
+				data_row.push_back(content_type);
 
 				// Encryption
-				data_row.emplace_back(crypto ? crypto : s_unknown);
+				data_row.push_back(crypto ? crypto : s_unknown);
 				// Version
-				data_row.emplace_back();
+				data_row.push_back(string());
 
 				// Content size
 				data_row.push_back(LibRpText::formatFileSize(be64_to_cpu(content.size)));
@@ -2250,7 +2250,7 @@ int Nintendo3DS::loadFieldData(void)
 			}
 
 			// Content type
-			data_row.emplace_back(content_type ? content_type : s_unknown);
+			data_row.push_back(content_type ? content_type : s_unknown);
 
 			// Encryption
 			NCCHReader::CryptoType cryptoType;
@@ -2273,7 +2273,7 @@ int Nintendo3DS::loadFieldData(void)
 				if (cryptoType.name) {
 					data_row.push_back(latin1_to_utf8(cryptoType.name, -1));
 				} else {
-					data_row.emplace_back(s_unknown);
+					data_row.push_back(s_unknown);
 				}
 			} else {
 				// Encrypted.

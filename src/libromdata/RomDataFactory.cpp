@@ -1432,7 +1432,7 @@ static void init_supportedMimeTypes(void)
 	for (const char *mimeType : vec_mimeTypes_fileFormat) {
 		auto iter = set_mimeTypes.find(mimeType);
 		if (iter == set_mimeTypes.end()) {
-			set_mimeTypes.emplace(mimeType);
+			set_mimeTypes.insert(mimeType);
 			vec_mimeTypes.push_back(mimeType);
 		}
 	}

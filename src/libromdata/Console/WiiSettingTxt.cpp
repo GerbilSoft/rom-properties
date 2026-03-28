@@ -105,7 +105,7 @@ int WiiSettingTxtPrivate::parse_setting_txt(void *user, const char *section, con
 
 	// Save the value in the vector.
 	// NOTE: Not using a map<> because we want to show the keys as-is.
-	d->setting_txt.push_back(std::make_pair(name, value));
+	d->setting_txt.emplace_back(name, value);
 	return 0;
 }
 

@@ -1843,7 +1843,7 @@ int GameCube::loadFieldData(void)
 				// tr: EncryptionKeys::Unknown
 				s_key_name = C_("RomData", "Unknown");
 			}
-			data_row.emplace_back(s_key_name);
+			data_row.push_back(s_key_name);
 
 			// Used size
 			const off64_t used_size = entry.partition->partition_size_used();
@@ -1851,7 +1851,7 @@ int GameCube::loadFieldData(void)
 				data_row.push_back(LibRpText::formatFileSize(used_size));
 			} else {
 				// tr: Unknown used size.
-				data_row.emplace_back(C_("Wii|Partition", "Unknown"));
+				data_row.push_back(C_("Wii|Partition", "Unknown"));
 			}
 
 			// Partition size

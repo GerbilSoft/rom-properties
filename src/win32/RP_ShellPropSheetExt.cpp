@@ -622,7 +622,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(_In_ HWND hWndTab,
 			tnames.push_back(U82T_s(name));
 		} else {
 			// Skip U82T_s() for empty strings.
-			tnames.emplace_back();
+			tnames.push_back(tstring());
 		}
 	}
 

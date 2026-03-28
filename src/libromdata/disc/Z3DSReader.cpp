@@ -393,7 +393,7 @@ vector<pair<string, std::vector<uint8_t>>> Z3DSReader::getZ3DSMetaData(void)
 		// in order to preserve ordering.
 
 		// Emplace the value.
-		items.emplace_back(std::make_pair(std::move(key), std::move(value)));
+		items.emplace_back(std::move(key), std::move(value));
 		p += value_len;
 	}
 

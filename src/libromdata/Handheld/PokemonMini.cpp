@@ -321,7 +321,7 @@ int PokemonMini::loadFieldData(void)
 		data_row.push_back(fmt::to_string(i));
 
 		// Vector name
-		data_row.emplace_back(vectors_names[i]);
+		data_row.push_back(vectors_names[i]);
 
 		const uint8_t *const irq = romHeader->irqs[i];
 

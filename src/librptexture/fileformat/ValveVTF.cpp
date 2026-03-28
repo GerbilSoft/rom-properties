@@ -833,7 +833,7 @@ int ValveVTF::getFields(RomFields *fields) const
 		const size_t j = vv_flags->size()+1;
 		vv_flags->resize(j);
 		auto &data_row = vv_flags->at(j-1);
-		data_row.emplace_back(pgettext_expr("ValveVTF|Flags", pFlagName));
+		data_row.push_back(pgettext_expr("ValveVTF|Flags", pFlagName));
 	}
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, rows_visible);
