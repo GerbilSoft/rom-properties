@@ -42,6 +42,12 @@ fnSetWindowCompositionAttribute _SetWindowCompositionAttribute = nullptr;
 fnShouldSystemUseDarkMode _ShouldSystemUseDarkMode = nullptr;
 fnSetPreferredAppMode _SetPreferredAppMode = nullptr;
 
+// UxTheme functions used by TGDarkMode.cpp, added in Windows Vista.
+fnBeginBufferedPaint _BeginBufferedPaint;
+fnBufferedPaintSetAlpha _BufferedPaintSetAlpha;
+fnEndBufferedPaint _EndBufferedPaint;
+
+
 bool g_darkModeSupported = false;
 bool g_darkModeEnabled = false;
 static DWORD g_buildNumber = 0;
@@ -199,12 +205,21 @@ int InitDarkModePFNs(void)
 	_SetWindowCompositionAttribute = reinterpret_cast<fnSetWindowCompositionAttribute>(
 		GetProcAddress(GetModuleHandle(_T("user32.dll")), "SetWindowCompositionAttribute"));
 
+	// UxTheme functions used by TGDarkMode.cpp, added in Windows Vista.
+	_BeginBufferedPaint = reinterpret_cast<fnBeginBufferedPaint>(
+		GetProcAddress(hUxtheme, "BeginBufferedPaint"));
+	_BufferedPaintSetAlpha = reinterpret_cast<fnBufferedPaintSetAlpha>(
+		GetProcAddress(hUxtheme, "BufferedPaintSetAlpha"));
+	_EndBufferedPaint = reinterpret_cast<fnEndBufferedPaint>(
+		GetProcAddress(hUxtheme, "EndBufferedPaint"));
+
 	if (_OpenNcThemeData &&
 	    // 1809 17763
 	    _ShouldAppsUseDarkMode && _AllowDarkModeForWindow &&
 	    (_AllowDarkModeForApp || _SetPreferredAppMode) &&
 	    //_FlushMenuThemes &&
-	    _RefreshImmersiveColorPolicyState && _IsDarkModeAllowedForWindow)
+	    _RefreshImmersiveColorPolicyState && _IsDarkModeAllowedForWindow &&
+	    _BeginBufferedPaint && _BufferedPaintSetAlpha && _EndBufferedPaint)
 	{
 		// Dark mode is supported.
 
@@ -232,6 +247,10 @@ int InitDarkModePFNs(void)
 	_SetWindowCompositionAttribute = nullptr;
 	_ShouldSystemUseDarkMode = nullptr;
 	_SetPreferredAppMode = nullptr;
+	// UxTheme functions used by TGDarkMode.cpp.
+	_BeginBufferedPaint = nullptr;
+	_BufferedPaintSetAlpha = nullptr;
+	_EndBufferedPaint = nullptr;
 	FreeLibrary(hUxtheme);
 	return 7;
 }
