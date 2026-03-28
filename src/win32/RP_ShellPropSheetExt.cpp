@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellPropSheetExt.cpp: IShellPropSheetExt implementation.            *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -2104,6 +2104,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		si.nMax = tab.curPt.y - 2;	// max is exclusive
 		si.nPage = dlgSize.cy;
 		si.nPos = 0;
+		si.nTrackPos = 0;
 		SetScrollInfo(tab.hDlg, SB_VERT, &si, TRUE);
 
 		// HScroll bar
