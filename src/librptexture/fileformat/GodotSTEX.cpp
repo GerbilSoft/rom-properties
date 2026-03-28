@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * GodotSTEX.cpp: Godot STEX image reader.                                 *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -484,7 +484,7 @@ int GodotSTEXPrivate::getMipmapInfo(void)
 		// Add a mipmap.
 		mipmaps.resize(mipmaps.size() + 1);
 		mipmap_data.resize(mipmap_data.size() + 1);
-		mipmap_data_t &mdata = mipmap_data[mipmap_data.size() - 1];
+		mipmap_data_t &mdata = mipmap_data.back();
 		mdata.addr = addr;
 		mdata.size = expected_size;
 		mdata.width = width;

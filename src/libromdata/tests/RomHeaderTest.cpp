@@ -5,7 +5,7 @@
  * Parses various sample ROM headers and compares them to reference        *
  * text and JSON files.                                                    *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -384,7 +384,7 @@ forward_list<RomHeaderTest_mode> RomHeaderTest::ReadTestCasesFromDisk(const char
 
 	// Open the .tar files.
 	all_tar_files.push_front(tar_files_t());
-	tar_files_t *const p_tar_files = &(*(all_tar_files.begin()));
+	tar_files_t *const p_tar_files = &all_tar_files.front();
 
 	int ret = mtar_zstd_open_ro(&p_tar_files->bin_tar, bin_tar_filename);
 	EXPECT_EQ(ret, 0) << "Could not open '" << bin_tar_filename << "', check the test directory!";

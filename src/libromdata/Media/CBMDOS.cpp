@@ -1250,7 +1250,7 @@ int CBMDOS::loadFieldData(void)
 				continue;
 
 			vv_dir->resize(vv_dir->size() + 1);
-			auto &p_list = vv_dir->at(vv_dir->size() - 1);
+			auto &p_list = vv_dir->back();
 
 			// Directory listing as seen on a C64:
 			// - # of blocks

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomFields.cpp: ROM fields class.                                        *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -893,7 +893,7 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 		// Copy the field directly into the fields vector,
 		// then adjust the tab index.
 		d->fields.push_back(field_src);
-		Field &field_dest = *(d->fields.rbegin());
+		Field &field_dest = d->fields.back();
 		field_dest.tabIdx = (tabOffset != -1 ? (field_dest.tabIdx + tabOffset) : d->tabIdx);
 	}
 
@@ -929,7 +929,7 @@ int RomFields::addField_string(const char *name, const char *str, unsigned int f
 
 	RP_D(RomFields);
 	d->fields.emplace_back(name, RomFieldType::RFT_STRING, d->tabIdx, flags);
-	Field &field = *(d->fields.rbegin());
+	Field &field = d->fields.back();
 	field.data.str = nstr;
 	return static_cast<int>(d->fields.size() - 1);
 }
@@ -1090,7 +1090,7 @@ int RomFields::addField_bitfield(const char *name,
 	// RFT_BITFIELD
 	RP_D(RomFields);
 	d->fields.emplace_back(name, RomFieldType::RFT_BITFIELD, d->tabIdx, 0);
-	Field &field = *(d->fields.rbegin());
+	Field &field = d->fields.back();
 
 	field.desc.bitfield.names = bit_names;
 	field.desc.bitfield.elemsPerRow = elemsPerRow;
@@ -1133,7 +1133,7 @@ int RomFields::addField_listData(const char *name, const AFLD_PARAMS *params)
 	// RFT_LISTDATA
 	RP_D(RomFields);
 	d->fields.emplace_back(name, RomFieldType::RFT_LISTDATA, d->tabIdx, params->flags);
-	Field &field = *(d->fields.rbegin());
+	Field &field = d->fields.back();
 
 	assert(params->rows_visible >= 0);
 	if (params->rows_visible >= 0) {
@@ -1186,7 +1186,7 @@ int RomFields::addField_dateTime(const char *name, time_t date_time, unsigned in
 	// RFT_DATETIME
 	RP_D(RomFields);
 	d->fields.emplace_back(name, RomFieldType::RFT_DATETIME, d->tabIdx, flags);
-	Field &field = *(d->fields.rbegin());
+	Field &field = d->fields.back();
 
 	field.data.date_time = date_time;
 	return static_cast<int>(d->fields.size() - 1);
@@ -1208,7 +1208,7 @@ int RomFields::addField_ageRatings(const char *name, const age_ratings_t &age_ra
 	// RFT_AGE_RATINGS
 	RP_D(RomFields);
 	d->fields.emplace_back(name, RomFieldType::RFT_AGE_RATINGS, d->tabIdx, 0);
-	Field &field = *(d->fields.rbegin());
+	Field &field = d->fields.back();
 
 	field.data.age_ratings = new age_ratings_t(age_ratings);
 	field.tabIdx = d->tabIdx;
@@ -1232,7 +1232,7 @@ int RomFields::addField_dimensions(const char *name, int dimX, int dimY, int dim
 	// RFT_DIMENSIONS
 	RP_D(RomFields);
 	d->fields.emplace_back(name, RomFieldType::RFT_DIMENSIONS, d->tabIdx, 0);
-	Field &field = *(d->fields.rbegin());
+	Field &field = d->fields.back();
 
 	field.data.dimensions[0] = dimX;
 	field.data.dimensions[1] = dimY;
@@ -1258,7 +1258,7 @@ int RomFields::addField_string_multi(const char *name, const StringMultiMap_t *s
 	// RFT_STRING_MULTI
 	RP_D(RomFields);
 	d->fields.emplace_back(name, RomFieldType::RFT_STRING_MULTI, d->tabIdx, flags);
-	Field &field = *(d->fields.rbegin());
+	Field &field = d->fields.back();
 
 	if (d->def_lc == 0) {
 		d->def_lc = def_lc;
