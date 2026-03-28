@@ -160,6 +160,14 @@ Q_DECL_EXPORT int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 	// FIXME: KAboutData::setAboutData() equivalent on KDE4.
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 
+	// NOTE: KAboutData::setAboutData() incorrectly sets the
+	// .desktop filename to "com.github.rp-config" due to how
+	// it handles the home page address.
+	// Reset it to the correct filename here.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
+	app->setDesktopFileName(QLatin1String("com.gerbilsoft.rom-properties.rp-config"));
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) */
+
 	// Initialize KCrash.
 	// FIXME: It shows bugs.kde.org as the bug reporting address, which isn't wanted...
 	//KCrash::initialize();
