@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * DragImageLabel.hpp: Drag & Drop image label.                            *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,6 +17,7 @@
 
 // C++ includes
 #include <array>
+#include <memory>
 
 // Qt includes
 #include <QtCore/QTimer>
@@ -160,19 +161,14 @@ private:
 		LibRpBase::IconAnimDataConstPtr iconAnimData;
 		std::array<QPixmap, LibRpBase::IconAnimData::MAX_FRAMES> iconFrames;
 		LibRpBase::IconAnimHelper iconAnimHelper;
-		QTimer *tmrIconAnim;
+		std::unique_ptr<QTimer> tmrIconAnim;
 		int last_frame_number;		// Last frame number.
 		bool anim_running;		// Animation is running.
 
 		anim_vars()
-			: tmrIconAnim(nullptr)
-			, last_frame_number(0)
+			: last_frame_number(0)
 			, anim_running(false)
 		{}
-		~anim_vars()
-		{
-			delete tmrIconAnim;
-		}
 	};
 	std::unique_ptr<anim_vars> m_anim;
 };

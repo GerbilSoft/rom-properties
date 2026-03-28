@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * DragImageLabel.cpp: Drag & Drop image label.                            *
  *                                                                         *
- * Copyright (c) 2019-2025 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -198,10 +198,10 @@ bool DragImageLabel::updatePixmaps(void)
 			m_anim->last_frame_number = iconAnimHelper.frameNumber();
 			// Create the animation timer.
 			if (!m_anim->tmrIconAnim) {
-				m_anim->tmrIconAnim = new QTimer(this);
+				m_anim->tmrIconAnim.reset(new QTimer(this));
 				m_anim->tmrIconAnim->setObjectName(QLatin1String("tmrIconAnim"));
 				m_anim->tmrIconAnim->setSingleShot(true);
-				QObject::connect(m_anim->tmrIconAnim, SIGNAL(timeout()),
+				QObject::connect(m_anim->tmrIconAnim.get(), SIGNAL(timeout()),
 						 this, SLOT(tmrIconAnim_timeout()));
 			}
 		}
@@ -241,7 +241,7 @@ void DragImageLabel::startAnimTimer(void)
 	}
 
 	// Sanity check: Timer should have been created already.
-	assert(m_anim->tmrIconAnim != nullptr);
+	assert((bool)m_anim->tmrIconAnim);
 
 	const IconAnimHelper &iconAnimHelper = m_anim->iconAnimHelper;
 	if (!iconAnimHelper.isAnimated()) {
