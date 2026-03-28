@@ -259,13 +259,13 @@ static void PaintControl(HWND hWnd, HDC hdc, RECT* prc, bool bDrawBorder)
 	if (bDrawBorder)
 		InflateRect(prc, 1, 1);
 
-	HPAINTBUFFER hBufferedPaint = BeginBufferedPaint(hdc, prc, BPBF_TOPDOWNDIB, nullptr, &hdcPaint);
+	HPAINTBUFFER hBufferedPaint = _BeginBufferedPaint(hdc, prc, BPBF_TOPDOWNDIB, nullptr, &hdcPaint);
 	if (hdcPaint && hBufferedPaint) {
 		RECT rc;
 		GetWindowRect(hWnd, &rc);
 
 		PatBlt(hdcPaint, 0, 0, RECTWIDTH(rc), RECTHEIGHT(rc), BLACKNESS);
-		BufferedPaintSetAlpha(hBufferedPaint, &rc, 0x00);
+		_BufferedPaintSetAlpha(hBufferedPaint, &rc, 0x00);
 
 		///
 		/// first blit white so list ctrls don't look ugly:
@@ -285,8 +285,8 @@ static void PaintControl(HWND hWnd, HDC hdc, RECT* prc, bool bDrawBorder)
 		// don't make a possible border opaque, only the inner part of the control
 		InflateRect(prc, -2, -2);
 		// Make every pixel opaque
-		BufferedPaintSetAlpha(hBufferedPaint, prc, 255);
-		EndBufferedPaint(hBufferedPaint, TRUE);
+		_BufferedPaintSetAlpha(hBufferedPaint, prc, 255);
+		_EndBufferedPaint(hBufferedPaint, TRUE);
 	}
 }
 
@@ -408,7 +408,7 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 					rcExclusion.bottom -= 2;
 
 					HDC hdcPaint = nullptr;
-					HPAINTBUFFER hBufferedPaint = BeginBufferedPaint(hdc, &rcClient, BPBF_TOPDOWNDIB, &params, &hdcPaint);
+					HPAINTBUFFER hBufferedPaint = _BeginBufferedPaint(hdc, &rcClient, BPBF_TOPDOWNDIB, &params, &hdcPaint);
 					if (hdcPaint) {
 						// now we again retrieve the font, but this time we select it into
 						// the buffered DC:
@@ -419,7 +419,7 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 						::SetBkColor(hdcPaint, g_darkBkColor);
 						::ExtTextOut(hdcPaint, 0, 0, ETO_OPAQUE, &rcClient, nullptr, 0, nullptr);
 
-						BufferedPaintSetAlpha(hBufferedPaint, &ps.rcPaint, 0x00);
+						_BufferedPaintSetAlpha(hBufferedPaint, &ps.rcPaint, 0x00);
 
 						DTTOPTS DttOpts = { sizeof(DTTOPTS) };
 						DttOpts.dwFlags = DTT_COMPOSITED | DTT_GLOWSIZE;
@@ -471,7 +471,7 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 							hFontOld = nullptr;
 						}
 
-						EndBufferedPaint(hBufferedPaint, TRUE);
+						_EndBufferedPaint(hBufferedPaint, TRUE);
 					}
 					CloseThemeData(hTheme);
 				}
@@ -484,12 +484,12 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 					HDC hdcPaint = nullptr;
 					BP_PAINTPARAMS params = { sizeof(BP_PAINTPARAMS) };
 					params.dwFlags = BPPF_ERASE;
-					HPAINTBUFFER hBufferedPaint = BeginBufferedPaint(hdc, &rcClient, BPBF_TOPDOWNDIB, &params, &hdcPaint);
+					HPAINTBUFFER hBufferedPaint = _BeginBufferedPaint(hdc, &rcClient, BPBF_TOPDOWNDIB, &params, &hdcPaint);
 					if (hdcPaint && hBufferedPaint) {
 						::SetBkColor(hdcPaint, g_darkBkColor);
 						::ExtTextOut(hdcPaint, 0, 0, ETO_OPAQUE, &rcClient, nullptr, 0, nullptr);
 
-						BufferedPaintSetAlpha(hBufferedPaint, &ps.rcPaint, 0x00);
+						_BufferedPaintSetAlpha(hBufferedPaint, &ps.rcPaint, 0x00);
 
 						LRESULT dwCheckState = SendMessage(hWnd, BM_GETCHECK, 0, 0);
 						POINT pt;
@@ -639,7 +639,7 @@ LRESULT WINAPI TGDarkMode_ButtonSubclassProc(
 							hFontOld = nullptr;
 						}
 
-						EndBufferedPaint(hBufferedPaint, TRUE);
+						_EndBufferedPaint(hBufferedPaint, TRUE);
 					}
 					CloseThemeData(hTheme);
 				}

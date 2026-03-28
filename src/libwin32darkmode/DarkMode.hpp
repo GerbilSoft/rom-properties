@@ -98,6 +98,16 @@ extern fnSetWindowCompositionAttribute _SetWindowCompositionAttribute;
 extern fnShouldSystemUseDarkMode _ShouldSystemUseDarkMode;
 extern fnSetPreferredAppMode _SetPreferredAppMode;
 
+// UxTheme functions used by TGDarkMode.cpp, added in Windows Vista.
+// TODO: Verify definition against Windows SDK.
+typedef HPAINTBUFFER (WINAPI *fnBeginBufferedPaint)(HDC hdcTarget, const RECT *prcTarget, BP_BUFFERFORMAT dwFormat, _In_ BP_PAINTPARAMS *pPaintParams, _Out_ HDC *phdc);
+typedef HRESULT (WINAPI *fnBufferedPaintSetAlpha)(HPAINTBUFFER hBufferedPaint, _In_ const RECT *prc, BYTE alpha);
+typedef HRESULT (WINAPI *fnEndBufferedPaint)(HPAINTBUFFER hBufferedPaintm, BOOL fUpdateTarget);
+
+extern fnBeginBufferedPaint _BeginBufferedPaint;
+extern fnBufferedPaintSetAlpha _BufferedPaintSetAlpha;
+extern fnEndBufferedPaint _EndBufferedPaint;
+
 extern bool g_darkModeSupported;
 extern bool g_darkModeEnabled;
 
