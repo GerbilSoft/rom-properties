@@ -2,15 +2,19 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * PropSheetIcon.cpp: Property sheet icon.                                 *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "PropSheetIcon.hpp"
 
+// HMODULE deleter for std::unique_ptr<>
+#include "HMODULE_deleter.hpp"
+
 // C++ STL classes
 using std::array;
+using std::unique_ptr;
 
 class PropSheetIconPrivate
 {
@@ -64,13 +68,20 @@ PropSheetIconPrivate::PropSheetIconPrivate()
 	}};
 
 	// Try SHGetStockIconInfo first.
-	// TODO: GetProcAddress()?
-	SHSTOCKICONINFO siid;
-	siid.cbSize = sizeof(siid);
-	HRESULT hr = SHGetStockIconInfo(SIID_DRIVERAM, SHGSI_ICONLOCATION, &siid);
-	if (hr == S_OK) {
-		iconDllData[0].dll_filename = siid.szPath;
-		iconDllData[0].pszIcon = MAKEINTRESOURCE(siid.iIcon);
+	unique_ptr<HMODULE, HMODULE_deleter> hShell32_dll(
+		LoadLibraryEx(_T("shell32.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
+	if (hShell32_dll) {
+		typedef HRESULT (STDAPICALLTYPE *pfnSHGetStockIconInfo_t)(_In_ SHSTOCKICONID siid, _In_ UINT uFlags, _Out_ SHSTOCKICONINFO *psii);
+		pfnSHGetStockIconInfo_t pfnSHGetStockIconInfo = (pfnSHGetStockIconInfo_t)GetProcAddress(hShell32_dll.get(), "SHGetStockIconInfo");
+		if (pfnSHGetStockIconInfo) {
+			SHSTOCKICONINFO siid;
+			siid.cbSize = sizeof(siid);
+			HRESULT hr = pfnSHGetStockIconInfo(SIID_DRIVERAM, SHGSI_ICONLOCATION, &siid);
+			if (hr == S_OK) {
+				iconDllData[0].dll_filename = siid.szPath;
+				iconDllData[0].pszIcon = MAKEINTRESOURCE(siid.iIcon);
+			}
+		}
 	}
 
 	for (const auto &p : iconDllData) {
