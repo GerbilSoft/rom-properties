@@ -35,7 +35,9 @@
       * Reported by @ccawley2011.
   * GTK: Fix the Options menu when using G_MENU_MODEL. (GTK3/GTK4)
     * All menu options were disabled for some reason.
-    * This broke with a "recent" GLib update. (Not sure which...)
+    * This broke when converting from snprintf() to fmt::format() - the '.'
+      was incorrectly replaced with a '-'.
+    * Affects: v2.5 - v2.7.1
 
 * Other changes:
   * Swizzling "bgra" (red/blue swap only) is now faster on systems that
