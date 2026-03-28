@@ -1,5 +1,11 @@
 # Changes
 
+## v2.7.1-xp (released 2026/03/28)
+
+* Windows XP-specific rebuild that fixes compatibility with Windows XP.
+  * Fixes #487: Installer fails on Windows XP
+    * Reported by @ccawley2011.
+
 ## v2.7.1 (released 2026/01/18)
 
 * New features:
