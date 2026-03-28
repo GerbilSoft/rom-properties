@@ -5,7 +5,7 @@
 #define MyAppURL "https://github.com/GerbilSoft/rom-properties"
 
 #include "../pkg_windows/build.i386/src/config.version.h"
-#define MyAppVersion RP_VERSION_STRING-xp
+#define MyAppVersion RP_VERSION_STRING
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
@@ -13,8 +13,8 @@
 AppCopyright=Copyright (c) 2016-2025 by David Korth.
 AppId={{E39AEEA4-836C-4408-8A04-4456C9A23816}
 AppName={#MyAppName}
-AppVersion={#MyAppVersion}
-;AppVerName={#MyAppName} {#MyAppVersion}
+AppVersion={#MyAppVersion}-xp
+;AppVerName={#MyAppName} {#MyAppVersion}-xp
 AppPublisher=GerbilSoft
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
@@ -28,12 +28,12 @@ DefaultGroupName=ROM Properties
 DisableProgramGroupPage=yes
 LicenseFile=..\LICENSE
 PrivilegesRequired=admin
-OutputBaseFilename=SetupRomPropertiesXP-{#MyAppVersion}
+OutputBaseFilename=SetupRomPropertiesXP-{#MyAppVersion}-xp
 SolidCompression=yes
 VersionInfoDescription=ROM Properties Setup (for Windows XP/2003/Vista)
-VersionInfoProductTextVersion={#MyAppVersion}
+VersionInfoProductTextVersion={#MyAppVersion}-xp
 VersionInfoProductVersion={#RP_VERSION_MAJOR}.{#RP_VERSION_MINOR}.{#RP_VERSION_PATCH}.{#RP_VERSION_DEVEL}
-VersionInfoTextVersion={#MyAppVersion}
+VersionInfoTextVersion={#MyAppVersion}-xp
 VersionInfoVersion={#RP_VERSION_MAJOR}.{#RP_VERSION_MINOR}.{#RP_VERSION_PATCH}.{#RP_VERSION_DEVEL}
 WizardSmallImageFile=icons\wxp-rom-48.bmp
 WizardStyle=modern
