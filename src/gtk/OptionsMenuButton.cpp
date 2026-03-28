@@ -556,7 +556,7 @@ rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
 
 		// Create the menu item.
 		g_menu_append(menuStdActs, pgettext_expr("RomDataView|Options", p.desc),
-			fmt::format(FSTR("{:s}-{:d}"), s_prefix, p.id).c_str());
+			fmt::format(FSTR("{:s}.{:d}"), s_prefix, p.id).c_str());
 	}
 
 	/** ROM operations. **/
@@ -580,7 +580,7 @@ rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
 			// Create the menu item.
 			const string desc = convert_accel_to_gtk(op.desc);
 			g_menu_append(menuRomOps, desc.c_str(),
-				fmt::format(FSTR("{:s}-{:d}"), s_prefix, i).c_str());
+				fmt::format(FSTR("{:s}.{:d}"), s_prefix, i).c_str());
 
 			// Next operation.
 			i++;
@@ -689,7 +689,7 @@ rp_options_menu_button_update_op(RpOptionsMenuButton *widget,
 	const string desc = convert_accel_to_gtk(op->desc);
 	g_simple_action_set_enabled(action, !!(op->flags & RomData::RomOp::ROF_ENABLED));
 	g_menu_insert(widget->menuRomOps, id, desc.c_str(),
-		fmt::format(FSTR("{:p}-{:d}"), static_cast<void*>(widget), id).c_str());
+		fmt::format(FSTR("{:p}.{:d}"), static_cast<void*>(widget), id).c_str());
 #else /* !USE_G_MENU_MODEL */
 	GtkMenuItem *menuItem = nullptr;
 	GList *l = gtk_container_get_children(GTK_CONTAINER(widget->menuOptions));
