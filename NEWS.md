@@ -30,6 +30,9 @@
   * EXE: Fix StringFileInfo display on big-endian systems.
   * EXE, ICO: Improve icon selection for some NT 3.x icons.
   * ICO: Report the correct pixel format for Win3.x icons.
+  * Windows: Fix Windows XP compatibility.
+    * Fixes #487: Installer fails on Windows XP
+      * Reported by @ccawley2011.
 
 * Other changes:
   * Swizzling "bgra" (red/blue swap only) is now faster on systems that
