@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * CacheTab.cpp: Thumbnail Cache tab for rp-config.                        *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -142,10 +142,10 @@ void CacheTabPrivate::clearCacheDir(CacheCleaner::CacheDir cacheDir)
 			assert(!"Invalid cache directory specified.");
 			q->ccCleaner_error(QC_("CacheTab", "Invalid cache directory specified."));
 			return;
-		case CacheCleaner::CD_System:
+		case CacheCleaner::CacheDir::System:
 			s_label = QC_("CacheTab", "Clearing the system thumbnail cache...");
 			break;
-		case CacheCleaner::CD_RomProperties:
+		case CacheCleaner::CacheDir::RomProperties:
 			s_label = QC_("CacheTab", "Clearing the ROM Properties Page cache...");
 			break;
 	}
@@ -208,7 +208,7 @@ void CacheTab::changeEvent(QEvent *event)
 void CacheTab::on_btnSysCache_clicked(void)
 {
 	Q_D(CacheTab);
-	d->clearCacheDir(CacheCleaner::CD_System);
+	d->clearCacheDir(CacheCleaner::CacheDir::System);
 }
 
 /**
@@ -217,7 +217,7 @@ void CacheTab::on_btnSysCache_clicked(void)
 void CacheTab::on_btnRpCache_clicked(void)
 {
 	Q_D(CacheTab);
-	d->clearCacheDir(CacheCleaner::CD_RomProperties);
+	d->clearCacheDir(CacheCleaner::CacheDir::RomProperties);
 }
 
 /** CacheCleaner slots **/
@@ -268,10 +268,10 @@ void CacheTab::ccCleaner_cacheIsEmpty(CacheCleaner::CacheDir cacheDir)
 			assert(!"Invalid cache directory specified.");
 			qs_msg = QC_("CacheTab", "Invalid cache directory specified.");
 			break;
-		case CacheCleaner::CD_System:
+		case CacheCleaner::CacheDir::System:
 			qs_msg = QC_("CacheTab", "System thumbnail cache is empty. Nothing to do.");
 			break;
-		case CacheCleaner::CD_RomProperties:
+		case CacheCleaner::CacheDir::RomProperties:
 			qs_msg = QC_("CacheTab", "rom-properties cache is empty. Nothing to do.");
 			break;
 	}
@@ -311,11 +311,11 @@ void CacheTab::ccCleaner_cacheCleared(CacheCleaner::CacheDir cacheDir, unsigned 
 			qs_msg = QC_("CacheTab", "Invalid cache directory specified.");
 			icon = QMessageBox::Warning;
 			break;
-		case CacheCleaner::CD_System:
+		case CacheCleaner::CacheDir::System:
 			qs_msg = QC_("CacheTab", "System thumbnail cache cleared successfully.");
 			icon = QMessageBox::Information;
 			break;
-		case CacheCleaner::CD_RomProperties:
+		case CacheCleaner::CacheDir::RomProperties:
 			qs_msg = QC_("CacheTab", "rom-properties cache cleared successfully.");
 			icon = QMessageBox::Information;
 			break;

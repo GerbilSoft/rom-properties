@@ -18,12 +18,12 @@ class CacheCleaner : public QObject
 	Q_PROPERTY(CacheCleaner::CacheDir cacheDir READ cacheDir WRITE setCacheDir)
 
 public:
-	enum CacheDir {
-		CD_System,
-		CD_RomProperties,
+	enum class CacheDir {
+		System,
+		RomProperties,
 	};
 
-	explicit CacheCleaner(QObject *parent = nullptr, CacheCleaner::CacheDir cacheDir = CacheDir::CD_System);
+	explicit CacheCleaner(QObject *parent = nullptr, CacheCleaner::CacheDir cacheDir = CacheDir::System);
 
 private:
 	typedef QObject super;

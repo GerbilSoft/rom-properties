@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * CacheCleaner.cpp: Cache cleaner object for CacheTab.                    *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -46,7 +46,7 @@ void CacheCleaner::run(void)
 			s_err = C_("CacheCleaner", "Invalid cache directory specified.");
 			break;
 
-		case CacheCleaner::CD_System:
+		case CacheDir::System:
 			// System thumbnails. (~/.cache/thumbnails)
 			cacheDir = LibUnixCommon::getCacheDirectory();
 			if (cacheDir.empty()) {
@@ -63,7 +63,7 @@ void CacheCleaner::run(void)
 			}
 			break;
 
-		case CacheCleaner::CD_RomProperties:
+		case CacheDir::RomProperties:
 			// rom-properties cache. (~/.cache/rom-properties)
 			cacheDir = FileSystem::getCacheDirectory();
 			if (cacheDir.empty()) {
@@ -103,10 +103,10 @@ void CacheCleaner::run(void)
 				assert(!"Invalid cache directory specified.");
 				s_err = C_("CacheCleaner", "Invalid cache directory specified.");
 				break;
-			case CacheCleaner::CD_System:
+			case CacheDir::System:
 				s_err = C_("CacheCleaner", "System thumbnail cache has unexpected files. Not clearing it.");
 				break;
-			case CacheCleaner::CD_RomProperties:
+			case CacheDir::RomProperties:
 				s_err = C_("CacheCleaner", "rom-properties cache has unexpected files. Not clearing it.");
 				break;
 		}
