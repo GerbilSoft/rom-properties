@@ -570,13 +570,13 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 
 	// Open the XEX.
 	Xbox360_XEX *const xex_tmp = new Xbox360_XEX(xexFile_tmp);
-	if (xex_tmp->isOpen()) {
-		this->xex.reset(xex_tmp);
-	} else {
+	if (!xex_tmp->isOpen()) {
 		delete xex_tmp;
+		return nullptr;
 	}
 
-	return this->xex.get();
+	this->xex.reset(xex_tmp);
+	return xex_tmp;
 }
 
 /**
