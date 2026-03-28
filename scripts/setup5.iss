@@ -5,7 +5,7 @@
 #define MyAppURL "https://github.com/GerbilSoft/rom-properties"
 
 #include "../pkg_windows/build.i386/src/config.version.h"
-#define MyAppVersion RP_VERSION_STRING
+#define MyAppVersion RP_VERSION_STRING-xp
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
