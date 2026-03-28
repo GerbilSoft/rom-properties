@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellIconOverlayIdentifier.cpp: IShellIconOverlayIdentifier          *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,8 +16,9 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRomData;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::unique_ptr;
 
 // CLSID
 const CLSID CLSID_RP_ShellIconOverlayIdentifier =
@@ -32,20 +33,12 @@ RP_ShellIconOverlayIdentifier_Private::RP_ShellIconOverlayIdentifier_Private()
 #if 0
 	: romData(nullptr)
 #endif
-	: hShell32_dll(nullptr)
-	, pfnSHGetStockIconInfo(nullptr)
+	: pfnSHGetStockIconInfo(nullptr)
 {
 	// Get SHGetStockIconInfo().
-	hShell32_dll = LoadLibraryEx(_T("shell32.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+	hShell32_dll.reset(LoadLibraryEx(_T("shell32.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
 	if (hShell32_dll) {
-		pfnSHGetStockIconInfo = (pfnSHGetStockIconInfo_t)GetProcAddress(hShell32_dll, "SHGetStockIconInfo");
-	}
-}
-
-RP_ShellIconOverlayIdentifier_Private::~RP_ShellIconOverlayIdentifier_Private()
-{
-	if (hShell32_dll) {
-		FreeLibrary(hShell32_dll);
+		pfnSHGetStockIconInfo = (pfnSHGetStockIconInfo_t)GetProcAddress(hShell32_dll.get(), "SHGetStockIconInfo");
 	}
 }
 
