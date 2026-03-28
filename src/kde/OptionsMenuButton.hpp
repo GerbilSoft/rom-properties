@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * OptionsMenuButton.hpp: Options menu button QPushButton subclass.        *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,6 +10,7 @@
 
 // librpbase
 #include "librpbase/RomData.hpp"
+#include "librpbase/OptionsMenuButton_decl.h"
 
 // NOTE: Using QT_VERSION_CHECK causes errors on moc-qt4 due to CMAKE_AUTOMOC.
 // Reference: https://bugzilla.redhat.com/show_bug.cgi?id=1396755
@@ -29,13 +30,6 @@ class QMenu;
 #ifndef RP_OMB_USE_LAMBDA_FUNCTIONS
 class QSignalMapper;
 #endif /* !RP_OMB_USE_LAMBDA_FUNCTIONS */
-
-enum StandardOptionID {
-	OPTION_EXPORT_TEXT = -1,
-	OPTION_EXPORT_JSON = -2,
-	OPTION_COPY_TEXT = -3,
-	OPTION_COPY_JSON = -4,
-};
 
 class OptionsMenuButton : public QPushButton
 {

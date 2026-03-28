@@ -2,13 +2,14 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * OptionsMenuButton.cpp: Options menu GtkMenuButton container.            *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
 #include "gtk-compat.h"
+#include "librpbase/OptionsMenuButton_decl.h"
 
 G_BEGIN_DECLS
 
@@ -23,13 +24,6 @@ G_BEGIN_DECLS
 #endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 G_DECLARE_FINAL_TYPE(RpOptionsMenuButton, rp_options_menu_button, RP, OPTIONS_MENU_BUTTON, _RpOptionsMenuButton_super)
-
-enum StandardOptionID {
-	OPTION_EXPORT_TEXT = -1,
-	OPTION_EXPORT_JSON = -2,
-	OPTION_COPY_TEXT = -3,
-	OPTION_COPY_JSON = -4,
-};
 
 GtkWidget	*rp_options_menu_button_new		(void) G_GNUC_MALLOC;
 

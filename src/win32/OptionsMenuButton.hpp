@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * OptionsMenuButton.hpp: Options menu button WC_BUTTON superclass.        *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,6 +12,7 @@
 
 // librpbase
 #include "librpbase/RomData.hpp"
+#include "librpbase/OptionsMenuButton_decl.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,13 +27,6 @@ void OptionsMenuButtonUnregister(void);
 #define WM_OMB_REINIT_MENU		(WM_USER + 1)	// lParam == RomData*
 #define WM_OMB_UPDATE_OP		(WM_USER + 2)	// wParam == id; lParam == RomData::RomOp*
 #define WM_OMB_POPUP_MENU		(WM_USER + 3)	// returns: id+IDM_OPTIONS_MENU_BASE, or 0 if none.
-
-enum StandardOptionID {
-	OPTION_EXPORT_TEXT = -1,
-	OPTION_EXPORT_JSON = -2,
-	OPTION_COPY_TEXT = -3,
-	OPTION_COPY_JSON = -4,
-};
 
 // "Options" menu item.
 #define IDM_OPTIONS_MENU_BASE		0x8000

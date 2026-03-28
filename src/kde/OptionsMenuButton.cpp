@@ -2,31 +2,20 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * OptionsMenuButton.cpp: Options menu button QPushButton subclass.        *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "OptionsMenuButton.hpp"
 
-// libromdata
+// librpbase
+#include "librpbase/OptionsMenuButton_data.inc.h"
 using LibRpBase::RomData;
 
 // C++ STL classes
 using std::array;
 using std::vector;
-
-/** Standard actions. **/
-struct option_menu_action_t {
-	const char *desc;
-	int id;
-};
-static const array<option_menu_action_t, 4> stdacts = {{
-	{NOP_C_("OptionsMenuButton|StdActs", "Export to Text..."),	OPTION_EXPORT_TEXT},
-	{NOP_C_("OptionsMenuButton|StdActs", "Export to JSON..."),	OPTION_EXPORT_JSON},
-	{NOP_C_("OptionsMenuButton|StdActs", "Copy as Text"),		OPTION_COPY_TEXT},
-	{NOP_C_("OptionsMenuButton|StdActs", "Copy as JSON"),		OPTION_COPY_JSON},
-}};
 
 OptionsMenuButton::OptionsMenuButton(QWidget *parent)
 	: super(parent)
@@ -65,7 +54,7 @@ void OptionsMenuButton::reinitMenu(const LibRpBase::RomData *romData)
 	menuOptions->clear();
 
 	// Add the standard actions.
-	for (const option_menu_action_t &p : stdacts) {
+	for (const option_menu_action_t &p : OptionsMenuButton_stdacts) {
 		QAction *const action = menuOptions->addAction(
 			qpgettext_expr("OptionsMenuButton", p.desc));
 #ifdef RP_OMB_USE_LAMBDA_FUNCTIONS

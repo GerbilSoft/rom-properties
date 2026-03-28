@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * OptionsMenuButton.cpp: Options menu button WC_BUTTON superclass.        *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,6 +13,7 @@
 // Other rom-properties libraries
 #include "librpbase/RomData.hpp"
 #include "librptext/wchar.hpp"
+#include "librpbase/OptionsMenuButton_data.inc.h"
 using LibRpBase::RomData;
 
 // libwin32ui
@@ -24,18 +25,6 @@ using std::vector;
 
 static ATOM atom_optionsMenuButton;
 static WNDPROC pfnButtonWndProc;
-
-/** Standard actions. **/
-struct option_menu_action_t {
-	const char *desc;
-	int id;
-};
-static const array<option_menu_action_t, 4> stdacts = {{
-	{NOP_C_("OptionsMenuButton|StdActs", "Export to Text..."),	OPTION_EXPORT_TEXT},
-	{NOP_C_("OptionsMenuButton|StdActs", "Export to JSON..."),	OPTION_EXPORT_JSON},
-	{NOP_C_("OptionsMenuButton|StdActs", "Copy as Text"),		OPTION_COPY_TEXT},
-	{NOP_C_("OptionsMenuButton|StdActs", "Copy as JSON"),		OPTION_COPY_JSON},
-}};
 
 class OptionsMenuButtonPrivate
 {
@@ -131,7 +120,7 @@ void OptionsMenuButtonPrivate::reinitMenu(const RomData *romData)
 	hMenuOptions = CreatePopupMenu();
 
 	// Add the standard actions.
-	for (const option_menu_action_t &p : stdacts) {
+	for (const option_menu_action_t &p : OptionsMenuButton_stdacts) {
 		AppendMenu(hMenuOptions, MF_STRING, IDM_OPTIONS_MENU_BASE + p.id,
 			tpgettext_expr("RomDataView|Options", p.desc));
 	}

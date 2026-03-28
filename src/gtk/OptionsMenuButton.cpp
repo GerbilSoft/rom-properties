@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * OptionsMenuButton.cpp: Options menu GtkMenuButton container.            *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-202 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,6 +13,7 @@
 #include "RpGtkCpp.hpp"
 
 // librpbase
+#include "librpbase/OptionsMenuButton_data.inc.h"
 using LibRpBase::RomData;
 
 // C++ STL classes
@@ -136,18 +137,6 @@ struct _RpOptionsMenuButton {
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_TYPE_EXTENDED(RpOptionsMenuButton, rp_options_menu_button,
 	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0), {});
-
-/** Standard actions. **/
-struct option_menu_action_t {
-	const char *desc;
-	int id;
-};
-static const array<option_menu_action_t, 4> stdacts = {{
-	{NOP_C_("OptionsMenuButton|StdActs", "Export to Text..."),	OPTION_EXPORT_TEXT},
-	{NOP_C_("OptionsMenuButton|StdActs", "Export to JSON..."),	OPTION_EXPORT_JSON},
-	{NOP_C_("OptionsMenuButton|StdActs", "Copy as Text"),		OPTION_COPY_TEXT},
-	{NOP_C_("OptionsMenuButton|StdActs", "Copy as JSON"),		OPTION_COPY_JSON},
-}};
 
 static void
 rp_options_menu_button_class_init(RpOptionsMenuButtonClass *klass)
@@ -556,7 +545,7 @@ rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
 
 	GMenu *const menuStdActs = g_menu_new();
 	g_menu_append_section(menuModel, nullptr, G_MENU_MODEL(menuStdActs));
-	for (const option_menu_action_t &p : stdacts) {
+	for (const option_menu_action_t &p : OptionsMenuButton_stdacts) {
 		// Create the action.
 		GSimpleAction *const action = g_simple_action_new(
 			fmt::to_string(p.id).c_str(), nullptr);
@@ -602,7 +591,7 @@ rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
 	GtkWidget *const menuOptions = gtk_menu_new();
 	gtk_widget_set_name(menuOptions, "menuOptions");
 
-	for (const option_menu_action_t &p : stdacts) {
+	for (const option_menu_action_t &p : OptionsMenuButton_stdacts) {
 		GtkWidget *const menuItem = gtk_menu_item_new_with_label(
 			pgettext_expr("RomDataView|Options", p.desc));
 		// NOTE: No name for this GtkWidget.
@@ -706,7 +695,7 @@ rp_options_menu_button_update_op(RpOptionsMenuButton *widget,
 	GList *l = gtk_container_get_children(GTK_CONTAINER(widget->menuOptions));
 
 	// Skip the standard actions and separator.
-	for (size_t i = 0; i < (stdacts.size()+1) && l != nullptr; i++) {
+	for (size_t i = 0; i < (ARRAY_SIZE(OptionsMenuButton_stdacts)+1) && l != nullptr; i++) {
 		l = l->next;
 	}
 

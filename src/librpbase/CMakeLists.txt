@@ -69,6 +69,8 @@ SET(${PROJECT_NAME}_H
 	TextOut.hpp
 	Achievements.hpp
 	timeconv.h
+	OptionsMenuButton_data.inc.h
+	OptionsMenuButton_decl.h
 	img/RpPng.hpp
 	img/RpPngWriter.hpp
 	img/APNG_dlopen.hpp
