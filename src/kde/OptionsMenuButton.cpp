@@ -60,8 +60,8 @@ void OptionsMenuButton::reinitMenu(const LibRpBase::RomData *romData)
 #ifdef RP_OMB_USE_LAMBDA_FUNCTIONS
 		// Qt5: Use a lambda function.
 		const int id = p.id;	// only capture id, not the whole reference
-		QObject::connect(action, &QAction::triggered,
-			[this, id] { emit triggered(id); });
+		QObject::connect(action, &QAction::triggered, this,
+			[this, id]() { emit triggered(id); });
 #else /* !RP_OMB_USE_LAMBDA_FUNCTIONS */
 		// Qt4: Use the QSignalMapper.
 		QObject::connect(action, SIGNAL(triggered()),
@@ -84,8 +84,8 @@ void OptionsMenuButton::reinitMenu(const LibRpBase::RomData *romData)
 			action->setEnabled(!!(op.flags & RomData::RomOp::ROF_ENABLED));
 #ifdef RP_OMB_USE_LAMBDA_FUNCTIONS
 			// Qt5: Use a lambda function.
-			QObject::connect(action, &QAction::triggered,
-				[this, i] { emit triggered(i); });
+			QObject::connect(action, &QAction::triggered, this,
+				[this, i]() { emit triggered(i); });
 #else /* !RP_OMB_USE_LAMBDA_FUNCTIONS */
 			// Qt4: Use the QSignalMapper.
 			QObject::connect(action, SIGNAL(triggered()),

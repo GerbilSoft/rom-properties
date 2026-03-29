@@ -196,7 +196,7 @@ ADD_DEFINITIONS(-DQT_USE_FAST_CONCATENATION
 
 	# Qt6
 	-DQT_LEAN_HEADERS=1
-	#-DQT_NO_CONTEXTLESS_CONNECT
+	-DQT_NO_CONTEXTLESS_CONNECT
 	)
 
 ### FIXME: The following Qt declarations are being picked up by libromdata and rpcli...

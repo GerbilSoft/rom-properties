@@ -47,12 +47,12 @@ void DragImageLabel::setEcksBawks(bool newEcksBawks)
 	// Need to initialize Ecks Bawks actions.
 	// NOTE: Only supporting Qt 5 for lambda functions.
 	QAction *const actMenu1 = new QAction(QLatin1String("ermahgerd! an ecks bawks ISO!"), this);
-	connect(actMenu1, &QAction::triggered, [](bool) {
+	connect(actMenu1, &QAction::triggered, this, [](bool) {
 		QDesktopServices::openUrl(QUrl(QLatin1String("https://twitter.com/DeaThProj/status/1684469412978458624")));
 	});
 
 	QAction *const actMenu2 = new QAction(QLatin1String("Yar, har, fiddle dee dee"), this);
-	connect(actMenu2, &QAction::triggered, [](bool) {
+	connect(actMenu2, &QAction::triggered, this, [](bool) {
 		QDesktopServices::openUrl(QUrl(QLatin1String("https://github.com/xenia-canary/xenia-canary/pull/180")));
 	});
 
