@@ -20,7 +20,7 @@ ENDIF(0)
 
 set(PNGLIB_MAJOR 1)
 set(PNGLIB_MINOR 6)
-set(PNGLIB_REVISION 56)
+set(PNGLIB_REVISION 57)
 set(PNGLIB_SUBREVISION 0)
 #set(PNGLIB_SUBREVISION "git")
 set(PNGLIB_VERSION ${PNGLIB_MAJOR}.${PNGLIB_MINOR}.${PNGLIB_REVISION})
@@ -680,6 +680,9 @@ set(pngvalid_sources
 set(pngstest_sources
     contrib/libtests/pngstest.c
 )
+set(pnggetset_sources
+    contrib/libtests/pnggetset.c
+)
 set(pngunknown_sources
     contrib/libtests/pngunknown.c
 )
@@ -883,6 +886,15 @@ if(PNG_TESTS AND PNG_SHARED)
   png_add_test(NAME pngtest-png-3
                COMMAND pngtest
                FILES "${TEST_PNG3_PNGS}")
+
+  # pnggetset test:
+  # Getter-to-setter roundtrips for various chunk types.
+  add_executable(pnggetset ${pnggetset_sources})
+  target_link_libraries(pnggetset
+                        PRIVATE png_shared)
+
+  png_add_test(NAME pnggetset
+               COMMAND pnggetset)
 
   # pngvalid tests:
   # Internal validation of standard and progressive reading,
