@@ -1,9 +1,9 @@
-This copy of libpng-1.6.57 is a modified version of the original.
+This copy of libpng-1.6.58 is a modified version of the original.
 
-commit 95ab3fdca83ea294efd3b092e9a53c5a39886444
-Release libpng version 1.6.57
+commit 3061454d980de7d53608f594194cfac722721d2a
+Release libpng version 1.6.58
     
-Tag: v1.6.57
+Tag: v1.6.58
 
 The following changes have been made to the original:
 
@@ -14,5 +14,5 @@ The following changes have been made to the original:
 - APNG support has been added via the APNG patch:
   http://sourceforge.net/projects/libpng-apng/
 
-To obtain the original libpng-1.6.57, visit:
+To obtain the original libpng-1.6.58, visit:
 http://www.libpng.org/pub/png/libpng.html
