@@ -15,6 +15,9 @@
 
 * New parser features:
   * WiiUAncast: ARM bring-up firmware images (fw.bu.img) are now detected.
+  * Amiibo: Initial support for amiibo v3.
+    * Fixes #485: amiibo v3 support
+      * Reported by @CheatFreak47.
 
 * Bug fixes:
   * Windows: Fix potential UI language misdetection in some cases.

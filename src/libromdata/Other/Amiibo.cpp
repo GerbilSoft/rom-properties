@@ -138,19 +138,20 @@ Amiibo::Amiibo(const IRpFilePtr &file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->nfpData, sizeof(d->nfpData));
 	switch (size) {
-		case NFP_FILE_NO_PW:	// Missing password bytes.
+		case NFP_FILE_NO_PW:	// Missing password bytes
 			// Zero out the password bytes.
 			memset(d->nfpData.pwd, 0, sizeof(d->nfpData.pwd));
 			memset(d->nfpData.pack, 0, sizeof(d->nfpData.pack));
 			memset(d->nfpData.rfui, 0, sizeof(d->nfpData.rfui));
 
 			// fall-through
-		case NFP_FILE_STANDARD:	// Standard dump.
+		case NFP_FILE_STANDARD:	// Standard dump
 			// Zero out the extended dump section.
 			memset(d->nfpData.extended, 0, sizeof(d->nfpData.extended));
 
 			// fall-through
-		case NFP_FILE_EXTENDED:	// Extended dump.
+		case NFP_FILE_EXTENDED:	// Extended dump
+		case NFP_V3:		// amiibo v3
 			// Size is valid.
 			d->nfpSize = static_cast<int>(size);
 			break;
@@ -194,8 +195,8 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check the file size.
-	// Three file sizes are possible.
 	switch (info->szFile) {
+		case NFP_V3:		// amiibo v3
 		case NFP_FILE_NO_PW:	// Missing password bytes.
 		case NFP_FILE_STANDARD:	// Standard dump.
 		case NFP_FILE_EXTENDED:	// Extended dump.
@@ -218,37 +219,42 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
-	// Validate the UID check bytes.
-	if (!AmiiboPrivate::verifyCheckBytes(nfpData->serial)) {
-		// Check bytes are invalid.
-		// These are read-only, so something went wrong
-		// when the tag was being dumped.
+	// FIXME: amiibo v3 is not NTAG215, so many of these checks don't apply.
+	if (info->szFile < NFP_V3) {
+		// Validate the UID check bytes.
+		if (!AmiiboPrivate::verifyCheckBytes(nfpData->serial)) {
+			// Check bytes are invalid.
+			// These are read-only, so something went wrong
+			// when the tag was being dumped.
 
-		// NOTE: Some Super Nintendo World power-up bands, e.g.
-		// the Gold Mario Power-Up Band, have incorrect check bytes.
-		// Not sure why.
-		const uint32_t char_id = be32_to_cpu(nfpData->char_id);
-		if ((char_id & 0xFF) != NFP_TYPE_BAND) {
+			// NOTE: Some Super Nintendo World power-up bands, e.g.
+			// the Gold Mario Power-Up Band, have incorrect check bytes.
+			// Not sure why.
+			const uint32_t char_id = be32_to_cpu(nfpData->char_id);
+			if ((char_id & 0xFF) != NFP_TYPE_BAND) {
+				return -1;
+			}
+		}
+
+		// Check the "must match" values.
+		static constexpr array<uint8_t, 3> lock_footer = {{0x01, 0x00, 0x0F}};
+		static_assert(sizeof(nfpData->lock_footer) == sizeof(lock_footer)+1, "lock_footer is the wrong size.");
+
+		if (nfpData->lock_header != cpu_to_be16(NFP_LOCK_HEADER) ||
+		    nfpData->cap_container != cpu_to_be32(NFP_CAP_CONTAINER) ||
+		    memcmp(nfpData->lock_footer, lock_footer.data(), lock_footer.size()) != 0 ||
+		    nfpData->cfg0 != cpu_to_be32(NFP_CFG0) ||
+		    nfpData->cfg1 != cpu_to_be32(NFP_CFG1))
+		{
+			// Not an amiibo.
 			return -1;
 		}
 	}
 
-	// Check the "must match" values.
-	static constexpr array<uint8_t, 3> lock_footer = {{0x01, 0x00, 0x0F}};
-	static_assert(sizeof(nfpData->lock_footer) == sizeof(lock_footer)+1, "lock_footer is the wrong size.");
-
-	if (nfpData->lock_header != cpu_to_be16(NFP_LOCK_HEADER) ||
-	    nfpData->cap_container != cpu_to_be32(NFP_CAP_CONTAINER) ||
-	    memcmp(nfpData->lock_footer, lock_footer.data(), lock_footer.size()) != 0 ||
-	    nfpData->cfg0 != cpu_to_be32(NFP_CFG0) ||
-	    nfpData->cfg1 != cpu_to_be32(NFP_CFG1))
-	{
-		// Not an amiibo.
-		return -1;
-	}
-
-	// Low byte of amiibo_id must be 0x02.
-	if (nfpData->amiibo_id.u8[3] != 0x02) {
+	// Low byte of amiibo_id indicates the version.
+	// Usually 0x02, except for amiibo v3.
+	const uint8_t expected_version = (unlikely(info->szFile == NFP_V3) ? 0x03 : 0x02);
+	if (nfpData->amiibo_id.u8[3] != expected_version) {
 		// Incorrect amiibo ID.
 		return -1;
 	}

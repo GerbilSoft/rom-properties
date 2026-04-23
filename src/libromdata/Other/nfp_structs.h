@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * nfp_structs.h: Nintendo amiibo data structures.                         *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,12 +23,13 @@ extern "C" {
 #endif
 
 /**
- * Amiibo binary file sizes.
+ * Amiibo binary file sizes
  */
 typedef enum {
 	NFP_FILE_STANDARD	= 540,
 	NFP_FILE_NO_PW		= 532,
 	NFP_FILE_EXTENDED	= 572,
+	NFP_V3			= 2048,	// NOTE: Not NTAG215!
 } NFP_File_Size;
 
 /**
