@@ -297,6 +297,8 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 		lblString->setTextInteractionFlags(
 			Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
 
+		lblString->setWordWrap(false);
+
 		// Replace newlines with "<br/>".
 		QString text;
 		if (str) {
@@ -308,10 +310,16 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 		lblString->setText(text);
 	} else {
 		// tr: Standard text with no formatting.
-		lblString->setTextInteractionFlags(
-			Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
 		lblString->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 		lblString->setTextFormat(Qt::PlainText);
+		lblString->setTextInteractionFlags(
+			Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+
+		// Allow the label to be shrunken horizontally.
+		// TODO: Scrolling.
+		lblString->setMinimumWidth(1);
+		lblString->setWordWrap(true);
+
 		if (str) {
 			lblString->setText(*str);
 		} else if (field.data.str) {
@@ -319,16 +327,11 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 		}
 	}
 
-	// Automatically wrap long strings.
-	lblString->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred));
-	lblString->setWordWrap(true);
+	// Expand horizontally, but use preferred size for vertical.
+	lblString->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
 	// Enable strong focus so we can tab into the label.
 	lblString->setFocusPolicy(Qt::StrongFocus);
-
-	// Allow the label to be shrunken horizontally.
-	// TODO: Scrolling.
-	lblString->setMinimumWidth(1);
 
 	// Check for any formatting options. (RFT_STRING only)
 	if (field.type == RomFields::RomFieldType::RFT_STRING) {

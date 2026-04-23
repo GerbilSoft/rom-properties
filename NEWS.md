@@ -41,6 +41,8 @@
     * This broke when converting from snprintf() to fmt::format() - the '.'
       was incorrectly replaced with a '-'.
     * Affects: v2.5 - v2.7.1
+  * KDE: Fix display of the "Credits" row for e.g. amiibo.
+    * Affects: v2.7 - v2.7.1
 
 * Other changes:
   * Swizzling "bgra" (red/blue swap only) is now faster on systems that
