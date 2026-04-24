@@ -1,5 +1,12 @@
 # Changes
 
+## v2.7.1-xp64 (released 2026/04/24)
+
+* Windows XP-specific rebuild that fixes compatibility with 64-bit
+  Windows XP and Windows Server 2003.
+  * Fixes #489: Installer fails on Windows XP x64 SP2
+    * Reported by @SnowshoeIceboot.
+
 ## v2.7.1-xp (released 2026/03/28)
 
 * Windows XP-specific rebuild that fixes compatibility with Windows XP.
