@@ -236,8 +236,10 @@ static void gsvt_init_int(void)
 	// TODO: Require Windows 10 1607 or later for ANSI escape sequences?
 	if (IsWindows10OrGreater() && old_console_output_cp == 0) {
 		old_console_output_cp = GetConsoleOutputCP();
-		atexit(gsvt_win32_restore_console_output_cp);
-		SetConsoleOutputCP(CP_UTF8);
+		if (old_console_output_cp != CP_UTF8) {
+			atexit(gsvt_win32_restore_console_output_cp);
+			SetConsoleOutputCP(CP_UTF8);
+		}
 	}
 
 	// Initialize the gsvt_console variables.
