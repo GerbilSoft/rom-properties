@@ -4,7 +4,7 @@
 #define MyAppName "ROM Properties Page Shell Extension"
 #define MyAppURL "https://github.com/GerbilSoft/rom-properties"
 
-#include "../pkg_windows/build.i386/src/config.version.h"
+#include "../pkg_windows/build.i386_xp/src/config.version.h"
 #define MyAppVersion RP_VERSION_STRING
 
 [Setup]
@@ -137,8 +137,8 @@ end;
 #endsub
 #sub BuildFileList_i386
   #define FindResult
-  #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.i386\bin\Release\*.dll", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_i386
-  #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.i386\bin\Release\*.exe", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_i386
+  #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.i386_xp\bin\Release\*.dll", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_i386
+  #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.i386_xp\bin\Release\*.exe", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_i386
 #endsub
 
 #sub ProcessFoundFile_amd64
@@ -155,36 +155,36 @@ end;
 #endsub
 #sub BuildFileList_amd64
   #define FindResult
-  #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.i386\bin\Release\*.dll", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_amd64
-  #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.i386\bin\Release\*.exe", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_amd64
+  #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.i386_xp\bin\Release\*.dll", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_amd64
+  #for {FindHandle = FindResult = FindFirst("..\pkg_windows\build.i386_xp\bin\Release\*.exe", 0); FindResult; FindResult = FindNext(FindHandle)} ProcessFoundFile_amd64
 #endsub
 
 #emit BuildFileList_i386
 #emit BuildFileList_amd64
 
 ; Install rpcli.exe and rp-config.exe in the root directory using the matching system architecture.
-Source: "..\pkg_windows\build.i386\bin\Release\rpcli.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: IsX86
-Source: "..\pkg_windows\build.amd64\bin\Release\rpcli.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: IsX64
+Source: "..\pkg_windows\build.i386_xp\bin\Release\rpcli.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: IsX86
+Source: "..\pkg_windows\build.amd64_xp\bin\Release\rpcli.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: IsX64
 
-Source: "..\pkg_windows\build.i386\bin\Release\rp-config.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: IsX86
-Source: "..\pkg_windows\build.amd64\bin\Release\rp-config.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: IsX64
+Source: "..\pkg_windows\build.i386_xp\bin\Release\rp-config.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: IsX86
+Source: "..\pkg_windows\build.amd64_xp\bin\Release\rp-config.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion; Check: IsX64
 
 ; Data files
-Source: "..\pkg_windows\build.i386\bin\amiibo-data.bin"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386_xp\bin\amiibo-data.bin"; DestDir: "{app}"; Components: main; Flags: ignoreversion
 
 ; Property Description Schemas
 Source: "..\src\win32\res\rom-properties.propdesc"; DestDir: "{app}"; Components: main; Flags: ignoreversion
 
 ; Localization files
-Source: "..\pkg_windows\build.i386\locale\ar.gmo"; DestDir: "{app}\locale\ar\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/ar; Flags: ignoreversion
-Source: "..\pkg_windows\build.i386\locale\de.gmo"; DestDir: "{app}\locale\de\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/de; Flags: ignoreversion
-Source: "..\pkg_windows\build.i386\locale\es.gmo"; DestDir: "{app}\locale\es\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/es; Flags: ignoreversion
-Source: "..\pkg_windows\build.i386\locale\fr.gmo"; DestDir: "{app}\locale\fr\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/fr; Flags: ignoreversion
-Source: "..\pkg_windows\build.i386\locale\it.gmo"; DestDir: "{app}\locale\it\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/it; Flags: ignoreversion
-Source: "..\pkg_windows\build.i386\locale\pt.gmo"; DestDir: "{app}\locale\pt\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/pt; Flags: ignoreversion
-Source: "..\pkg_windows\build.i386\locale\ro.gmo"; DestDir: "{app}\locale\ro\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/ro; Flags: ignoreversion
-Source: "..\pkg_windows\build.i386\locale\ru.gmo"; DestDir: "{app}\locale\ru\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/ru; Flags: ignoreversion
-Source: "..\pkg_windows\build.i386\locale\uk.gmo"; DestDir: "{app}\locale\uk\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/uk; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386_xp\locale\ar.gmo"; DestDir: "{app}\locale\ar\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/ar; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386_xp\locale\de.gmo"; DestDir: "{app}\locale\de\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/de; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386_xp\locale\es.gmo"; DestDir: "{app}\locale\es\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/es; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386_xp\locale\fr.gmo"; DestDir: "{app}\locale\fr\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/fr; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386_xp\locale\it.gmo"; DestDir: "{app}\locale\it\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/it; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386_xp\locale\pt.gmo"; DestDir: "{app}\locale\pt\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/pt; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386_xp\locale\ro.gmo"; DestDir: "{app}\locale\ro\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/ro; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386_xp\locale\ru.gmo"; DestDir: "{app}\locale\ru\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/ru; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386_xp\locale\uk.gmo"; DestDir: "{app}\locale\uk\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/uk; Flags: ignoreversion
 
 ; Documentation
 Source: "..\doc\COMPILING.md"; DestDir: "{app}\doc"; Components: doc; Flags: ignoreversion
