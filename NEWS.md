@@ -33,9 +33,6 @@
   * EXE: Fix StringFileInfo display on big-endian systems.
   * EXE, ICO: Improve icon selection for some NT 3.x icons.
   * ICO: Report the correct pixel format for Win3.x icons.
-  * Windows: Fix Windows XP compatibility.
-    * Fixes #487: Installer fails on Windows XP
-      * Reported by @ccawley2011.
   * GTK: Fix the Options menu when using G_MENU_MODEL. (GTK3/GTK4)
     * All menu options were disabled for some reason.
     * This broke when converting from snprintf() to fmt::format() - the '.'
@@ -47,6 +44,12 @@
 * Other changes:
   * Swizzling "bgra" (red/blue swap only) is now faster on systems that
     don't have either SSSE3 (x86) or NEON (ARM).
+
+## v2.7.1-xp (released 2026/03/28)
+
+* Windows XP-specific rebuild that fixes compatibility with Windows XP.
+  * Fixes #487: Installer fails on Windows XP
+    * Reported by @ccawley2011.
 
 ## v2.7.1 (released 2026/01/18)
 
