@@ -94,8 +94,8 @@ On Windows Vista and later, you will need the MSVC 2015-2026 runtime:
 * arm64: https://aka.ms/vs/18/release/vc_redist.arm64.exe
 
 On Windows XP/2003 and earlier, you will need the MSVC 2015-2017 runtime:
-* i386 (32-bit): https://aka.ms/vs/15/release/VC_redist.x86.exe
-* amd64 (64-bit): https://aka.ms/vs/15/release/VC_redist.x64.exe
+* i386 (32-bit): https://download.visualstudio.microsoft.com/download/pr/100349138/88b50ce70017bf10f2d56d60fcba6ab1/VC_redist.x86.exe
+* amd64 (64-bit): https://download.visualstudio.microsoft.com/download/pr/100349091/2cd2dba5748dc95950a5c42c2d2d78e4/VC_redist.x64.exe
 
 For instructions on compiling from source, see [`doc/COMPILING.md`](doc/COMPILING.md).
 
