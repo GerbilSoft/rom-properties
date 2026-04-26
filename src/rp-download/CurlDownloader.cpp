@@ -18,9 +18,6 @@ using std::string;
 using std::unique_ptr;
 using std::tstring;
 
-// for IsWindowsVistaOrGreater()
-#include "libwin32common/rp_versionhelpers.h"
-
 // We're opening libcurl dynamically, so we need to define all
 // cURL function prototypes and definitions here.
 #include "curl-mini.h"
@@ -33,6 +30,8 @@ using std::tstring;
 #  define T2U8(str) (str)
 #else /* _WIN32 */
 #  include "libwin32common/MiniU82T.hpp"
+// for IsWindowsVistaOrGreater()
+#  include "libwin32common/rp_versionhelpers.h"
 using LibWin32Common::T2U8;
 #endif /* _WIN32 */
 
