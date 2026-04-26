@@ -45,12 +45,13 @@
   * Swizzling "bgra" (red/blue swap only) is now faster on systems that
     don't have either SSSE3 (x86) or NEON (ARM).
 
-## v2.7.1-xp64 (released 2026/04/24)
+## v2.7.1-xp64 (released 2026/04/25)
 
 * Windows XP-specific rebuild that fixes compatibility with 64-bit
   Windows XP and Windows Server 2003.
   * Fixes #489: Installer fails on Windows XP x64 SP2
     * Reported by @SnowshoeIceboot.
+* Fix DLL loading for e.g. libcurl on Windows XP/2003.
 
 ## v2.7.1-xp (released 2026/03/28)
 
