@@ -18,6 +18,9 @@ using std::string;
 using std::unique_ptr;
 using std::tstring;
 
+// for IsWindowsVistaOrGreater()
+#include "libwin32common/rp_versionhelpers.h"
+
 // We're opening libcurl dynamically, so we need to define all
 // cURL function prototypes and definitions here.
 #include "curl-mini.h"
@@ -64,7 +67,12 @@ static void init_curl_once(void)
 {
 	// Open libcurl.
 #ifdef _WIN32
-	libcurl_dll.reset(LoadLibraryEx(_T("libcurl.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32 | LOAD_LIBRARY_SEARCH_APPLICATION_DIR));
+	// NOTE: LoadLibraryEx() Search flags are not supported prior to Windows Vista.
+	// Windows Vista, Server 2008 R2, and 7 require KB2533623 for proper functionality.
+	const DWORD dwFlags = IsWindowsVistaOrGreater()
+		? (LOAD_LIBRARY_SEARCH_SYSTEM32 | LOAD_LIBRARY_SEARCH_APPLICATION_DIR)
+		: 0;
+	libcurl_dll.reset(LoadLibraryEx(_T("libcurl.dll"), nullptr, dwFlags));
 #else /* !_WIN32 */
 	// TODO: Consistently use either RTLD_NOW or RTLD_LAZY.
 	// Maybe make it a CMake option?
