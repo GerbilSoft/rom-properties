@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * AboutTab.cpp: About tab for rp-config.                                  *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -33,6 +33,9 @@ using LibWin32UI::LoadDialog_i18n;
 // Win32 dark mode
 #include "libwin32darkmode/DarkMode.hpp"
 #include "libwin32darkmode/DarkModeCtrl.hpp"
+
+// for IsWindowsVistaOrGreater()
+#include "libwin32common/rp_versionhelpers.h"
 
 // C++ STL classes
 using std::array;
@@ -281,9 +284,15 @@ AboutTabPrivate::AboutTabPrivate()
 
 	// Load the RichEdit DLLs.
 	// TODO: What if this fails?
-	hRichEd20_dll = LoadLibraryEx(_T("riched20.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+
+	// NOTE: LoadLibraryEx() Search flags are not supported prior to Windows Vista.
+	// Windows Vista, Server 2008 R2, and 7 require KB2533623 for proper functionality.
+	const DWORD dwFlags = IsWindowsVistaOrGreater()
+		? LOAD_LIBRARY_SEARCH_SYSTEM32
+		: 0;
+	hRichEd20_dll = LoadLibraryEx(_T("riched20.dll"), nullptr, dwFlags);
 #ifdef MSFTEDIT_USE_41
-	hMsftEdit_dll = LoadLibraryEx(_T("msftedit.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+	hMsftEdit_dll = LoadLibraryEx(_T("msftedit.dll"), nullptr, dwFlags);
 #endif /* MSFTEDIT_USE_41 */
 }
 

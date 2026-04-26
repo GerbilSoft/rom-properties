@@ -12,6 +12,9 @@
 #include "RP_PropertyStore_p.hpp"
 #include "res/resource.h"
 
+// for IsWindowsVistaOrGreater()
+#include "libwin32common/rp_versionhelpers.h"
+
 // HMODULE deleter for std::unique_ptr<>
 #include "HMODULE_deleter.hpp"
 
@@ -346,8 +349,14 @@ tstring RP_PropertyStore_Private::GetPropertyDescriptionSchemaFilename(void)
 LONG RP_PropertyStore::RegisterPropertyDescriptionSchema(void)
 {
 	// Open PROPSYS.DLL dynamically.
+	// NOTE: LoadLibraryEx() Search flags are not supported prior to Windows Vista.
+	// Windows Vista, Server 2008 R2, and 7 require KB2533623 for proper functionality.
+	const DWORD dwFlags = IsWindowsVistaOrGreater()
+		? LOAD_LIBRARY_SEARCH_SYSTEM32
+		: 0;
 	unique_ptr<HMODULE, HMODULE_deleter> hPropsys_dll(
-		LoadLibraryEx(_T("propsys.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
+		LoadLibraryEx(_T("propsys.dll"), nullptr, dwFlags));
+
 	if (!hPropsys_dll) {
 		// Don't fail if PROPSYS.DLL isn't available.
 		// PROPSYS.DLL was only added as a system library in Windows Vista.

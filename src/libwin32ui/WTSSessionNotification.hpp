@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32ui)                                *
  * WTSSessionNotification.hpp: WTSRegisterSessionNotification() RAII wrapper class. *
  *                                                                                  *
- * Copyright (c) 2016-2025 by David Korth.                                          *
+ * Copyright (c) 2016-2026 by David Korth.                                          *
  * SPDX-License-Identifier: GPL-2.0-or-later                                        *
  ************************************************************************************/
 
@@ -13,6 +13,7 @@
 
 // Windows SDK
 #include "RpWin32_sdk.h"
+#include "rp_versionhelpers.h"
 
 namespace LibWin32UI {
 
@@ -23,8 +24,14 @@ class WTSSessionNotification
 {
 public:
 	inline WTSSessionNotification()
-		: m_hWtsApi32_dll(LoadLibraryEx(_T("wtsapi32.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32))
-	{}
+	{
+		// NOTE: LoadLibraryEx() Search flags are not supported prior to Windows Vista.
+		// Windows Vista, Server 2008 R2, and 7 require KB2533623 for proper functionality.
+		const DWORD dwFlags = IsWindowsVistaOrGreater()
+			? LOAD_LIBRARY_SEARCH_SYSTEM32
+			: 0;
+		m_hWtsApi32_dll = LoadLibraryEx(_T("wtsapi32.dll"), nullptr, dwFlags);
+	}
 
 	inline ~WTSSessionNotification() {
 		if (m_hWtsApi32_dll) {
