@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (kde/tests)                        *
  * RomDataFormatTest.cpp: RomDataFormat tests                              *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,6 +23,10 @@ using LibRpBase::RomFields;
 // for RP_KDE_UPPER
 #include "RpQtNS.hpp"
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#  include <QLibraryInfo>
+#endif /* QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) */
+
 // C++ STL classes
 using std::array;
 
@@ -30,6 +34,18 @@ namespace RomPropertiesKDE { namespace Tests {
 
 class RomDataFormatTest : public ::testing::Test
 {
+protected:
+	RomDataFormatTest()
+		: m_isQt611(false)
+	{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+		m_isQt611 = (QLibraryInfo::version() >= QVersionNumber(6, 11, 0));
+#endif /* QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) */
+	}
+
+protected:
+	// Qt 6.11 changed the C locale formats for date/time.
+	bool m_isQt611;
 };
 
 #ifndef NDEBUG
@@ -42,7 +58,8 @@ using RomDataFormatDeathTest = RomDataFormatTest;
 // so use -2 to test "before 1970/01/01 00:00:00".
 struct DateTimeTestData {
 	time_t timestamp;
-	const char *str;	// using "C" locale
+	const char *str;	// using "C" locale, prior to Qt 6.11
+	const char *str611;	// using "C" locale, Qt 6.11+
 };
 
 struct DimensionsTestData {
@@ -67,12 +84,12 @@ TEST_F(RomDataFormatDeathTest, formatDateTime_0_invalid)
 	static const unsigned int flags = RomFields::RFT_DATETIME_IS_UTC;
 
 	static const DateTimeTestData dateTimeTestData[] = {
-		{0, ""},
-		{-2, ""},
-		{1, ""},
-		{0x7FFFFFFF, ""},
+		{0,  "", ""},
+		{-2, "", ""},
+		{1,  "", ""},
+		{0x7FFFFFFF, "", ""},
 #ifdef TIME64_FOUND
-		{0x80000000, ""},
+		{0x80000000, "", ""},
 #endif /* TIME64_FOUND */
 	};
 
@@ -83,7 +100,7 @@ TEST_F(RomDataFormatDeathTest, formatDateTime_0_invalid)
 		// FIXME: With "fast", the message *does* print, but the subprocess doesn't exit properly...
 		//"RomDataFormat\\.cpp:[0-9]+: gchar\\* rom_data_format_datetime\\(time_t, unsigned int\\): Assertion `format\\[0\\] != '\\\\0'' failed\\."
 		EXPECT_DEBUG_DEATH(str = formatDateTime(test.timestamp, flags), "");
-		EXPECT_STREQ(test.str, Q2U8(str));
+		EXPECT_STREQ(m_isQt611 ? test.str611 : test.str, Q2U8(str));
 	}
 }
 
@@ -98,18 +115,18 @@ TEST_F(RomDataFormatTest, formatDateTime_1_dateOnly)
 	                                  RomFields::RFT_DATETIME_HAS_DATE;
 
 	static const DateTimeTestData dateTimeTestData[] = {
-		{0, "1 Jan 1970"},
-		{-2, "31 Dec 1969"},
-		{1, "1 Jan 1970"},
-		{0x7FFFFFFF, "19 Jan 2038"},
+		{0,   "1 Jan 1970",  "1 01 1970"},
+		{-2, "31 Dec 1969", "31 12 1969"},
+		{1,   "1 Jan 1970",  "1 01 1970"},
+		{0x7FFFFFFF, "19 Jan 2038", "19 01 2038"},
 #ifdef TIME64_FOUND
-		{0x80000000, "19 Jan 2038"},
+		{0x80000000, "19 Jan 2038", "19 01 2038"},
 #endif /* TIME64_FOUND */
 	};
 
 	for (const auto &test : dateTimeTestData) {
 		QString str = formatDateTime(test.timestamp, flags);
-		EXPECT_STREQ(test.str, Q2U8(str));
+		EXPECT_STREQ(m_isQt611 ? test.str611 : test.str, Q2U8(str));
 	}
 }
 
@@ -124,18 +141,18 @@ TEST_F(RomDataFormatTest, formatDateTime_2_timeOnly)
 	                                  RomFields::RFT_DATETIME_HAS_TIME;
 
 	static const DateTimeTestData dateTimeTestData[] = {
-		{0, "00:00:00"},
-		{-2, "23:59:58"},
-		{1, "00:00:01"},
-		{0x7FFFFFFF, "03:14:07"},
+		{0,  "00:00:00", "00:00"},
+		{-2, "23:59:58", "23:59"},
+		{1,  "00:00:01", "00:00"},
+		{0x7FFFFFFF, "03:14:07", "03:14"},
 #ifdef TIME64_FOUND
-		{0x80000000, "03:14:08"},
+		{0x80000000, "03:14:08", "03:14"},
 #endif /* TIME64_FOUND */
 	};
 
 	for (const auto &test : dateTimeTestData) {
 		QString str = formatDateTime(test.timestamp, flags);
-		EXPECT_STREQ(test.str, Q2U8(str));
+		EXPECT_STREQ(m_isQt611 ? test.str611 : test.str, Q2U8(str));
 	}
 }
 
@@ -151,18 +168,18 @@ TEST_F(RomDataFormatTest, formatDateTime_3_dateAndTime)
 	                                  RomFields::RFT_DATETIME_HAS_TIME;
 
 	static const DateTimeTestData dateTimeTestData[] = {
-		{0, "1 Jan 1970 00:00:00"},
-		{-2, "31 Dec 1969 23:59:58"},
-		{1, "1 Jan 1970 00:00:01"},
-		{0x7FFFFFFF, "19 Jan 2038 03:14:07"},
+		{0,   "1 Jan 1970 00:00:00",  "1 01 1970 00:00"},
+		{-2, "31 Dec 1969 23:59:58", "31 12 1969 23:59"},
+		{1,   "1 Jan 1970 00:00:01",  "1 01 1970 00:00"},
+		{0x7FFFFFFF, "19 Jan 2038 03:14:07", "19 01 2038 03:14"},
 #ifdef TIME64_FOUND
-		{0x80000000, "19 Jan 2038 03:14:08"},
+		{0x80000000, "19 Jan 2038 03:14:08", "19 01 2038 03:14"},
 #endif /* TIME64_FOUND */
 	};
 
 	for (const auto &test : dateTimeTestData) {
 		QString str = formatDateTime(test.timestamp, flags);
-		EXPECT_STREQ(test.str, Q2U8(str));
+		EXPECT_STREQ(m_isQt611 ? test.str611 : test.str, Q2U8(str));
 	}
 }
 
@@ -180,12 +197,12 @@ TEST_F(RomDataFormatDeathTest, formatDateTime_4_invalid)
 	                                  RomFields::RFT_DATETIME_NO_YEAR;
 
 	static const DateTimeTestData dateTimeTestData[] = {
-		{0, ""},
-		{-2, ""},
-		{1, ""},
-		{0x7FFFFFFF, ""},
+		{0,  "", ""},
+		{-2, "", ""},
+		{1,  "", ""},
+		{0x7FFFFFFF, "", ""},
 #ifdef TIME64_FOUND
-		{0x80000000, ""},
+		{0x80000000, "", ""},
 #endif /* TIME64_FOUND */
 	};
 
@@ -196,7 +213,7 @@ TEST_F(RomDataFormatDeathTest, formatDateTime_4_invalid)
 		// FIXME: With "fast", the message *does* print, but the subprocess doesn't exit properly...
 		//"RomDataFormat\\.cpp:[0-9]+: gchar\\* rom_data_format_datetime\\(time_t, unsigned int\\): Assertion `format\\[0\\] != '\\\\0'' failed\\."
 		EXPECT_DEBUG_DEATH(str = formatDateTime(test.timestamp, flags), "");
-		EXPECT_STREQ(test.str, Q2U8(str));
+		EXPECT_STREQ(m_isQt611 ? test.str611 : test.str, Q2U8(str));
 	}
 }
 
@@ -211,19 +228,20 @@ TEST_F(RomDataFormatTest, formatDateTime_5_dateOnly)
 	                                  RomFields::RFT_DATETIME_NO_YEAR |
 	                                  RomFields::RFT_DATETIME_HAS_DATE;
 
+	// NOTE: Qt 6.11 doesn't have date-only formats, so these are custom.
 	static const DateTimeTestData dateTimeTestData[] = {
-		{0, "Jan 1"},
-		{-2, "Dec 31"},
-		{1, "Jan 1"},
-		{0x7FFFFFFF, "Jan 19"},
+		{0,  "Jan 1",  "Jan 1"},
+		{-2, "Dec 31", "Dec 31"},
+		{1,  "Jan 1",  "Jan 1"},
+		{0x7FFFFFFF, "Jan 19", "Jan 19"},
 #ifdef TIME64_FOUND
-		{0x80000000, "Jan 19"},
+		{0x80000000, "Jan 19", "Jan 19"},
 #endif /* TIME64_FOUND */
 	};
 
 	for (const auto &test : dateTimeTestData) {
 		QString str = formatDateTime(test.timestamp, flags);
-		EXPECT_STREQ(test.str, Q2U8(str));
+		EXPECT_STREQ(m_isQt611 ? test.str611 : test.str, Q2U8(str));
 	}
 }
 
@@ -239,18 +257,18 @@ TEST_F(RomDataFormatTest, formatDateTime_6_timeOnly_noYear)
 	                                  RomFields::RFT_DATETIME_HAS_TIME;
 
 	static const DateTimeTestData dateTimeTestData[] = {
-		{0, "00:00:00"},
-		{-2, "23:59:58"},
-		{1, "00:00:01"},
-		{0x7FFFFFFF, "03:14:07"},
+		{0,  "00:00:00", "00:00"},
+		{-2, "23:59:58", "23:59"},
+		{1,  "00:00:01" ,"00:00"},
+		{0x7FFFFFFF, "03:14:07", "03:14"},
 #ifdef TIME64_FOUND
-		{0x80000000, "03:14:08"},
+		{0x80000000, "03:14:08", "03:14"},
 #endif /* TIME64_FOUND */
 	};
 
 	for (const auto &test : dateTimeTestData) {
 		QString str = formatDateTime(test.timestamp, flags);
-		EXPECT_STREQ(test.str, Q2U8(str));
+		EXPECT_STREQ(m_isQt611 ? test.str611 : test.str, Q2U8(str));
 	}
 }
 
@@ -266,19 +284,20 @@ TEST_F(RomDataFormatTest, formatDateTime_7_dateAndTime_noYear)
 	                                  RomFields::RFT_DATETIME_HAS_DATE |
 	                                  RomFields::RFT_DATETIME_HAS_TIME;
 
+	// NOTE: Qt 6.11 doesn't have date-only formats, so these are custom.
 	static const DateTimeTestData dateTimeTestData[] = {
-		{0, "Jan 1 00:00:00"},
-		{-2, "Dec 31 23:59:58"},
-		{1, "Jan 1 00:00:01"},
-		{0x7FFFFFFF, "Jan 19 03:14:07"},
+		{0,  "Jan 1 00:00:00",  "Jan 1 00:00:00"},
+		{-2, "Dec 31 23:59:58", "Dec 31 23:59:58"},
+		{1,  "Jan 1 00:00:01",  "Jan 1 00:00:01"},
+		{0x7FFFFFFF, "Jan 19 03:14:07", "Jan 19 03:14:07"},
 #ifdef TIME64_FOUND
-		{0x80000000, "Jan 19 03:14:08"},
+		{0x80000000, "Jan 19 03:14:08", "Jan 19 03:14:08"},
 #endif /* TIME64_FOUND */
 	};
 
 	for (const auto &test : dateTimeTestData) {
 		QString str = formatDateTime(test.timestamp, flags);
-		EXPECT_STREQ(test.str, Q2U8(str));
+		EXPECT_STREQ(m_isQt611 ? test.str611 : test.str, Q2U8(str));
 	}
 }
 

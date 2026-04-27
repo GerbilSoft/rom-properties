@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (kde/tests)                        *
  * RomDataViewTest.cpp: RomDataView tests                                  *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -37,6 +37,10 @@ using LibRpFile::VectorFilePtr;
 #include <QTabWidget>
 #include <QVBoxLayout>
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#  include <QLibraryInfo>
+#endif /* QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) */
+
 // C++ STL classes
 using std::array;
 using std::string;
@@ -52,7 +56,12 @@ protected:
 		: m_vectorFile(std::make_shared<VectorFile>(VECTOR_FILE_SIZE))
 		, m_lblDesc(nullptr)
 		, m_widgetValue(nullptr)
-	{ }
+		, m_isQt611(false)
+	{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+		m_isQt611 = (QLibraryInfo::version() >= QVersionNumber(6, 11, 0));
+#endif /* QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) */
+	}
 
 public:
 	void SetUp() override;
@@ -85,6 +94,9 @@ protected:
 		QWidget *m_widgetValue;
 		QLayout *m_layoutValue;
 	};
+
+	// Qt 6.11 changed the C locale formats for date/time.
+	bool m_isQt611;
 };
 
 void RomDataViewTest::SetUp()
@@ -397,7 +409,10 @@ TEST_F(RomDataViewTest, RFT_DATETIME)
 	// Add an RFT_DATETIME field.
 	static const char s_field_desc[] = "RFT_STRING 0";
 	static constexpr time_t time_value = 722574855;
-	static const char s_field_value[] = "24 Nov 1992 03:14:15";
+
+	const char *const s_field_value = (m_isQt611)
+		? "24 11 1992 03:14"
+		: "24 Nov 1992 03:14:15";
 
 	RomFields *const fields = m_romData->getWritableFields();
 	fields->addField_dateTime(s_field_desc, time_value,
