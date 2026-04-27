@@ -13,7 +13,7 @@
 
 // Windows SDK
 #include "RpWin32_sdk.h"
-#include "rp_versionhelpers.h"
+#include "rp_LoadLibraryEx.h"
 
 namespace LibWin32UI {
 
@@ -25,12 +25,7 @@ class WTSSessionNotification
 public:
 	inline WTSSessionNotification()
 	{
-		// NOTE: LoadLibraryEx() Search flags are not supported prior to Windows Vista.
-		// Windows Vista, Server 2008 R2, and 7 require KB2533623 for proper functionality.
-		const DWORD dwFlags = IsWindowsVistaOrGreater()
-			? LOAD_LIBRARY_SEARCH_SYSTEM32
-			: 0;
-		m_hWtsApi32_dll = LoadLibraryEx(_T("wtsapi32.dll"), nullptr, dwFlags);
+		m_hWtsApi32_dll = rp_LoadLibraryEx(_T("wtsapi32.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	}
 
 	inline ~WTSSessionNotification() {

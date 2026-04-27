@@ -9,8 +9,8 @@
 #include "stdafx.h"
 #include "PropSheetIcon.hpp"
 
-// for IsWindowsVistaOrGreater()
-#include "libwin32common/rp_versionhelpers.h"
+// for rp_LoadLibraryEx()
+#include "libwin32common/rp_LoadLibraryEx.h"
 
 // HMODULE deleter for std::unique_ptr<>
 #include "HMODULE_deleter.hpp"
@@ -71,15 +71,8 @@ PropSheetIconPrivate::PropSheetIconPrivate()
 	}};
 
 	// Try SHGetStockIconInfo first.
-
-	// NOTE: LoadLibraryEx() Search flags are not supported prior to Windows Vista.
-	// Windows Vista, Server 2008 R2, and 7 require KB2533623 for proper functionality.
-	const DWORD dwFlags = IsWindowsVistaOrGreater()
-		? LOAD_LIBRARY_SEARCH_SYSTEM32
-		: 0;
 	unique_ptr<HMODULE, HMODULE_deleter> hShell32_dll(
-		LoadLibraryEx(_T("shell32.dll"), nullptr, dwFlags));
-
+		rp_LoadLibraryEx(_T("shell32.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
 	if (hShell32_dll) {
 		typedef HRESULT (STDAPICALLTYPE *pfnSHGetStockIconInfo_t)(_In_ SHSTOCKICONID siid, _In_ UINT uFlags, _Out_ SHSTOCKICONINFO *psii);
 		pfnSHGetStockIconInfo_t pfnSHGetStockIconInfo = (pfnSHGetStockIconInfo_t)GetProcAddress(hShell32_dll.get(), "SHGetStockIconInfo");
@@ -101,7 +94,7 @@ PropSheetIconPrivate::PropSheetIconPrivate()
 
 		// NOTE: LoadLibraryEx() Search flags are not supported prior to Windows Vista.
 		// Windows Vista, Server 2008 R2, and 7 require KB2533623 for proper functionality.
-		HMODULE hDll = LoadLibraryEx(p.dll_filename, nullptr, dwFlags);
+		HMODULE hDll = LoadLibraryEx(p.dll_filename, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 		if (!hDll) {
 			continue;
 		}

@@ -25,6 +25,7 @@ SET(${PROJECT_NAME}_SRCS
 	propsys_xp.c
 	userdirs.cpp
 	MiniU82T.cpp
+	rp_LoadLibraryEx.c
 	)
 SET(${PROJECT_NAME}_H
 	RpWin32_sdk.h
@@ -34,6 +35,7 @@ SET(${PROJECT_NAME}_H
 	propsys_xp.h
 	userdirs.hpp
 	MiniU82T.hpp
+	rp_LoadLibraryEx.h
 	sdk/QITab.h
 	sdk/IListView.hpp
 	sdk/IOwnerDataCallback.hpp

@@ -16,7 +16,7 @@
 
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
-#include "libwin32common/rp_versionhelpers.h"
+#include "libwin32common/rp_LoadLibraryEx.h"
 #include "tcharx.h"
 
 // librpsecure
@@ -83,12 +83,7 @@ static const TCHAR CLSIDs[7][40] = {
  * @param dll_filename DLL filename.
  */
 #define TRY_LOAD_DLL(dll_filename) do { \
-	/* NOTE: LoadLibraryEx() Search flags are not supported prior to Windows Vista. */ \
-	/* Windows Vista, Server 2008 R2, and 7 require KB2533623 for proper functionality. */ \
-	const DWORD dwFlags = IsWindowsVistaOrGreater() \
-		? LOAD_LIBRARY_SEARCH_SYSTEM32 \
-		: 0; \
-	HMODULE hRpDll = LoadLibraryEx(dll_filename, NULL, dwFlags); \
+	HMODULE hRpDll = rp_LoadLibraryEx(dll_filename, NULL, LOAD_LIBRARY_SEARCH_SYSTEM32); \
 	if (hRpDll) { \
 		/* Find the rp_show_config_dialog() function. */ \
 		PFNRPSHOWCONFIGDIALOG pfn = (PFNRPSHOWCONFIGDIALOG)GetProcAddress(hRpDll, "rp_show_config_dialog"); \

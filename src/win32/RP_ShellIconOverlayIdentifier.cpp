@@ -20,8 +20,8 @@ using namespace LibRomData;
 using std::string;
 using std::unique_ptr;
 
-// for IsWindowsVistaOrGreater()
-#include "libwin32common/rp_versionhelpers.h"
+// for rp_LoadLibraryEx()
+#include "libwin32common/rp_LoadLibraryEx.h"
 
 // CLSID
 const CLSID CLSID_RP_ShellIconOverlayIdentifier =
@@ -39,14 +39,7 @@ RP_ShellIconOverlayIdentifier_Private::RP_ShellIconOverlayIdentifier_Private()
 	: pfnSHGetStockIconInfo(nullptr)
 {
 	// Get SHGetStockIconInfo().
-
-	// NOTE: LoadLibraryEx() Search flags are not supported prior to Windows Vista.
-	// Windows Vista, Server 2008 R2, and 7 require KB2533623 for proper functionality.
-	const DWORD dwFlags = IsWindowsVistaOrGreater()
-		? LOAD_LIBRARY_SEARCH_SYSTEM32
-		: 0;
-	hShell32_dll.reset(LoadLibraryEx(_T("shell32.dll"), nullptr, dwFlags));
-
+	hShell32_dll.reset(rp_LoadLibraryEx(_T("shell32.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
 	if (hShell32_dll) {
 		pfnSHGetStockIconInfo = (pfnSHGetStockIconInfo_t)GetProcAddress(hShell32_dll.get(), "SHGetStockIconInfo");
 	}
