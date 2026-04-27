@@ -14,19 +14,21 @@
 */
 
 #include "mz.h"
+#include "mz_config.h"
 #include "mz_strm.h"
 #include "mz_strm_os.h"
 
-#include <stdio.h> /* fopen, fread.. */
+#include <stdio.h> /* fopen, fread, ... */
 #include <errno.h>
-#include <unistd.h>  // open, close, ...
-#include <fcntl.h>   // O_NOFOLLOW, ...
+#include <sys/stat.h> /* S_IRUSR, S_IWUSR, ... */
+#include <unistd.h>   /* open, close, ... */
+#include <fcntl.h>    /* O_NOFOLLOW, ... */
 
 /***************************************************************************/
 
 #define fopen64 fopen
 #ifndef MZ_FILE32_API
-#  ifndef NO_FSEEKO
+#  if HAVE_FSEEKO
 #    define ftello64 ftello
 #    define fseeko64 fseeko
 #  elif defined(_MSC_VER) && (_MSC_VER >= 1400)

@@ -67,7 +67,7 @@ int32_t minizip_banner(void) {
 
 int32_t minizip_help(void) {
     printf(
-        "Usage: minizip [-x][-d dir|-l|-e][-o][-f][-y][-c cp][-a][-0 to -9][-b|-m|-t][-k 512][-p pwd][-s] file.zip "
+        "Usage: minizip [-x][-d dir|-l|-e][-o][-f][-y][-c cp][-a][-0 to -9][-b|-m|-t|-g][-k 512][-p pwd][-s] file.zip "
         "[files]\n\n"
         "  -x  Extract files\n"
         "  -l  List files\n"
@@ -90,7 +90,8 @@ int32_t minizip_help(void) {
         "  -b  BZIP2 compression\n"
         "  -m  LZMA compression\n"
         "  -n  XZ compression\n"
-        "  -t  ZSTD compression\n\n");
+        "  -t  ZSTD compression\n"
+        "  -g  PPMD compression\n\n");
     return MZ_OK;
 }
 
@@ -443,6 +444,28 @@ int32_t minizip_erase(const char *src_path, const char *target_path, int32_t arg
         /* Construct temporary zip name with random suffix */
         if (mz_os_get_temp_path(tmp_path, sizeof(tmp_path), "mz_") != MZ_OK)
             return MZ_INTERNAL_ERROR;
+
+#ifndef _WIN32
+        /* POSIX rename(2) returns EXDEV across mounts; fall back to a same-dir tmp when
+           TMPDIR is on a different filesystem. MoveFileExW absorbs cross-volume natively
+           on Win32, so the check is skipped there. */
+        {
+            char tmp_dir[256];
+
+            strncpy(tmp_dir, tmp_path, sizeof(tmp_dir) - 1);
+            tmp_dir[sizeof(tmp_dir) - 1] = 0;
+            mz_path_remove_filename(tmp_dir);
+
+            if (mz_os_path_same_fs(tmp_dir, src_path) != MZ_OK) {
+                int32_t result = snprintf(tmp_path, sizeof(tmp_path), "%s.mz_tmp.%llu", src_path,
+                                          (unsigned long long)mz_os_ms_time());
+                if (result < 0 || result >= (int32_t)sizeof(tmp_path))
+                    return MZ_BUF_ERROR;
+                if (mz_os_file_exists(tmp_path) == MZ_OK)
+                    return MZ_EXIST_ERROR;
+            }
+        }
+#endif
         target_path_ptr = tmp_path;
     }
 
@@ -531,11 +554,16 @@ int32_t minizip_erase(const char *src_path, const char *target_path, int32_t arg
             if (mz_os_file_exists(bak_path) == MZ_OK)
                 mz_os_unlink(bak_path);
 
-            if (mz_os_rename(src_path, bak_path) != MZ_OK)
+            err = mz_os_rename(src_path, bak_path);
+            if (err != MZ_OK) {
                 printf("Error backing up archive before replacing %s\n", bak_path);
+            } else {
+                err = mz_os_rename(tmp_path, src_path);
+                if (err != MZ_OK)
+                    printf("Error replacing archive with temp %s\n", tmp_path);
+            }
 
-            if (mz_os_rename(tmp_path, src_path) != MZ_OK)
-                printf("Error replacing archive with temp %s\n", tmp_path);
+            return err;
         }
 
         return MZ_OK;
@@ -603,6 +631,12 @@ int main(int argc, const char *argv[]) {
             } else if ((c == 'b') || (c == 'B'))
 #  ifdef HAVE_BZIP2
                 options.compress_method = MZ_COMPRESS_METHOD_BZIP2;
+#  else
+                err = MZ_SUPPORT_ERROR;
+#  endif
+            else if ((c == 'g') || (c == 'G'))
+#  ifdef HAVE_PPMD
+                options.compress_method = MZ_COMPRESS_METHOD_PPMD;
 #  else
                 err = MZ_SUPPORT_ERROR;
 #  endif

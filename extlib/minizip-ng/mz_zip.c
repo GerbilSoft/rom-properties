@@ -32,6 +32,9 @@
 #ifdef HAVE_PKCRYPT
 #  include "mz_strm_pkcrypt.h"
 #endif
+#ifdef HAVE_PPMD
+#  include "mz_strm_ppmd.h"
+#endif
 #ifdef HAVE_WZAES
 #  include "mz_strm_wzaes.h"
 #endif
@@ -41,7 +44,6 @@
 #ifdef HAVE_ZSTD
 #  include "mz_strm_zstd.h"
 #endif
-
 #include "mz_zip.h"
 
 #include <ctype.h> /* tolower */
@@ -715,8 +717,9 @@ static int32_t mz_zip_entry_write_header(void *stream, uint8_t local, mz_zip_fil
             if ((file_info->flag & MZ_ZIP_FLAG_ENCRYPTED) && (file_info->aes_version))
                 version_needed = 51;
 #endif
-#if defined(HAVE_LZMA) || defined(HAVE_LIBCOMP)
+#if defined(HAVE_LZMA) || defined(HAVE_LIBCOMP) || defined(HAVE_PPMD)
             if ((file_info->compression_method == MZ_COMPRESS_METHOD_LZMA) ||
+                (file_info->compression_method == MZ_COMPRESS_METHOD_PPMD) ||
                 (file_info->compression_method == MZ_COMPRESS_METHOD_XZ))
                 version_needed = 63;
 #endif
@@ -1705,6 +1708,9 @@ static int32_t mz_zip_entry_open_int(void *handle, uint8_t raw, int16_t compress
 #if defined(HAVE_LZMA) || defined(HAVE_LIBCOMP)
     case MZ_COMPRESS_METHOD_XZ:
 #endif
+#ifdef HAVE_PPMD
+    case MZ_COMPRESS_METHOD_PPMD:
+#endif
 #ifdef HAVE_ZSTD
     case MZ_COMPRESS_METHOD_ZSTD:
 #endif
@@ -1796,6 +1802,15 @@ static int32_t mz_zip_entry_open_int(void *handle, uint8_t raw, int16_t compress
             if (zip->compress_stream) {
                 mz_stream_set_prop_int64(zip->compress_stream, MZ_STREAM_PROP_COMPRESS_METHOD,
                                          zip->file_info.compression_method);
+            }
+        }
+#endif
+#ifdef HAVE_PPMD
+        else if (zip->file_info.compression_method == MZ_COMPRESS_METHOD_PPMD) {
+            zip->compress_stream = mz_stream_ppmd_create();
+            if (zip->compress_stream) {
+                mz_stream_set_prop_int64(zip->compress_stream, MZ_STREAM_PROP_TOTAL_IN_MAX,
+                                         zip->file_info.compressed_size);
             }
         }
 #endif
@@ -2655,24 +2670,35 @@ int32_t mz_zip_extrafield_write(void *stream, uint16_t type, uint16_t length) {
 
 /***************************************************************************/
 
+/**
+ This is mostly validating a given time struct is convertible to and from a valid dos date.
+ This does not however perform a calendar validation (like February 31).
+ */
 static int32_t mz_zip_invalid_date(const struct tm *ptm) {
 #define datevalue_in_range(min, max, value) ((min) <= (value) && (value) <= (max))
     return (!datevalue_in_range(0, 127 + 80, ptm->tm_year) || /* 1980-based year, allow 80 extra */
-            !datevalue_in_range(0, 11, ptm->tm_mon) || !datevalue_in_range(1, 31, ptm->tm_mday) ||
-            !datevalue_in_range(0, 23, ptm->tm_hour) || !datevalue_in_range(0, 59, ptm->tm_min) ||
-            !datevalue_in_range(0, 59, ptm->tm_sec));
+            !datevalue_in_range(0, 11, ptm->tm_mon) ||        /* allowing months 0-11 in a year */
+            !datevalue_in_range(1, 31, ptm->tm_mday) ||       /* allowing days 1-31 in a month */
+            !datevalue_in_range(0, 23, ptm->tm_hour) ||       /* allowing hours 0-23 in a day */
+            !datevalue_in_range(0, 59, ptm->tm_min) ||        /* allowing minutes 0-59 in an hour */
+            !datevalue_in_range(0, 59, ptm->tm_sec));         /* allowing seconds 0-59 in a minute */
 #undef datevalue_in_range
 }
 
+/**
+ Returns a year-1900 indexed time struct.
+ This may produce slightly out-of-range months, hours, minutes, seconds.
+ This may also produce invalid calendar days (like the 31st of February).
+ */
 static void mz_zip_dosdate_to_raw_tm(uint64_t dos_date, struct tm *ptm) {
     uint64_t date = (uint64_t)(dos_date >> 16);
 
-    ptm->tm_mday = (int16_t)(date & 0x1f);
-    ptm->tm_mon = (int16_t)(((date & 0x1E0) / 0x20) - 1);
-    ptm->tm_year = (int16_t)(((date & 0x0FE00) / 0x0200) + 80);
-    ptm->tm_hour = (int16_t)((dos_date & 0xF800) / 0x800);
-    ptm->tm_min = (int16_t)((dos_date & 0x7E0) / 0x20);
-    ptm->tm_sec = (int16_t)(2 * (dos_date & 0x1f));
+    ptm->tm_year = (int16_t)(((date & 0x0FE00) / 0x0200) + 80); /* result in 80..207 */
+    ptm->tm_mon = (int16_t)(((date & 0x1E0) / 0x20) - 1);       /* result in -1..14 */
+    ptm->tm_mday = (int16_t)(date & 0x1f);                      /* result in 0..31 */
+    ptm->tm_hour = (int16_t)((dos_date & 0xF800) / 0x800);      /* result in 0..31 */
+    ptm->tm_min = (int16_t)((dos_date & 0x7E0) / 0x20);         /* result in 0..63 */
+    ptm->tm_sec = (int16_t)(2 * (dos_date & 0x1f));             /* result in 0..62 */
     ptm->tm_isdst = -1;
 }
 
@@ -2697,6 +2723,7 @@ time_t mz_zip_dosdate_to_time_t(uint64_t dos_date) {
 }
 
 time_t mz_zip_tm_to_time_t(struct tm *ptm) {
+    // `ptm->tm_year` must be 1900-indexed.
     return mktime(ptm);
 }
 

@@ -553,7 +553,7 @@ int unzLocateFile(unzFile file, const char *filename, unzFileNameComparer filena
 /***************************************************************************/
 
 int unzGetFilePos(unzFile file, unz_file_pos *file_pos) {
-    unz64_file_pos file_pos64 = {0, 0};
+    unz64_file_pos file_pos64;
     int32_t err = 0;
 
     err = unzGetFilePos64(file, &file_pos64);
@@ -627,6 +627,13 @@ int unzSetOffset64(unzFile file, int64_t pos) {
     if (!compat)
         return UNZ_PARAMERROR;
     return (int)mz_zip_goto_entry(compat->handle, pos);
+}
+
+uint64_t unzGetCurrentFileZStreamPos64(unzFile file) {
+    mz_unzip_compat *compat = (mz_unzip_compat *)file;
+    if (!compat || mz_zip_entry_is_open(compat->handle) != MZ_OK)
+        return 0;
+    return (uint64_t)compat->entry_pos;
 }
 
 int unzGetLocalExtrafield(unzFile file, void *buf, unsigned int len) {

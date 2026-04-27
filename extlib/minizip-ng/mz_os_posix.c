@@ -9,6 +9,7 @@
 */
 
 #include "mz.h"
+#include "mz_config.h"
 #include "mz_strm.h"
 #include "mz_os.h"
 
@@ -164,6 +165,15 @@ int32_t mz_os_rename(const char *source_path, const char *target_path) {
     return MZ_OK;
 }
 
+int32_t mz_os_path_same_fs(const char *path_a, const char *path_b) {
+    struct stat sa, sb;
+    if (!path_a || !path_b)
+        return MZ_PARAM_ERROR;
+    if (stat(path_a, &sa) != 0 || stat(path_b, &sb) != 0)
+        return MZ_EXIST_ERROR;
+    return (sa.st_dev == sb.st_dev) ? MZ_OK : MZ_EXIST_ERROR;
+}
+
 int32_t mz_os_unlink(const char *path) {
     if (unlink(path) == -1)
         return MZ_EXIST_ERROR;
@@ -245,7 +255,7 @@ int32_t mz_os_get_file_attribs(const char *path, uint32_t *attributes) {
     int32_t err = MZ_OK;
 
     memset(&path_stat, 0, sizeof(path_stat));
-    if (lstat(path, &path_stat) == -1)
+    if (stat(path, &path_stat) == -1)
         err = MZ_INTERNAL_ERROR;
     *attributes = path_stat.st_mode;
     return err;
@@ -323,10 +333,21 @@ int32_t mz_os_is_symlink(const char *path) {
     return MZ_EXIST_ERROR;
 }
 
+int32_t mz_os_get_link_attribs(const char *path, uint32_t *attributes) {
+    struct stat path_stat;
+    int32_t err = MZ_OK;
+
+    memset(&path_stat, 0, sizeof(path_stat));
+    if (lstat(path, &path_stat) == -1)
+        err = MZ_INTERNAL_ERROR;
+    *attributes = path_stat.st_mode;
+    return err;
+}
+
 int32_t mz_os_make_symlink(const char *path, const char *target_path) {
-#if defined(NO_SYMLINK)
+#if !HAVE_SYMLINK
     return MZ_SUPPORT_ERROR;
-#else	
+#else
     if (symlink(target_path, path) != 0)
         return MZ_INTERNAL_ERROR;
     return MZ_OK;
@@ -334,7 +355,7 @@ int32_t mz_os_make_symlink(const char *path, const char *target_path) {
 }
 
 int32_t mz_os_read_symlink(const char *path, char *target_path, int32_t max_target_path) {
-#if defined(NO_READLINK)
+#if !HAVE_READLINK
     return MZ_SUPPORT_ERROR;
 #else
     size_t length = 0;
@@ -342,6 +363,8 @@ int32_t mz_os_read_symlink(const char *path, char *target_path, int32_t max_targ
     length = (size_t)readlink(path, target_path, max_target_path - 1);
     if (length == (size_t)-1)
         return MZ_EXIST_ERROR;
+    if (length >= (size_t)(max_target_path - 1))
+        return MZ_BUF_ERROR;
 
     target_path[length] = 0;
     return MZ_OK;
@@ -350,6 +373,7 @@ int32_t mz_os_read_symlink(const char *path, char *target_path, int32_t max_targ
 
 int32_t mz_os_get_temp_path(char *path, int32_t max_path, const char *prefix) {
     const char *tmp_dir = NULL;
+    char *temp_path;
     int32_t result = 0;
 
     if (!path || max_path <= 0)
@@ -363,15 +387,33 @@ int32_t mz_os_get_temp_path(char *path, int32_t max_path, const char *prefix) {
     if (!tmp_dir)
         tmp_dir = "/tmp";
 
-    /* Build template path for mktemp: <tmp_dir>/<prefix>XXXXXX */
-    result = snprintf(path, max_path, "%s/%sXXXXXX", tmp_dir, prefix ? prefix : "");
-    if (result < 0 || result >= max_path)
+    /* Construct path for mkdtemp in the form <tmp_dir>/<prefix>XXXXXX */
+    temp_path = (char *)calloc(max_path, sizeof(char));
+    if (!temp_path)
+        return MZ_MEM_ERROR;
+
+    /* mkdtemp replaces XXXXXX with unique characters */
+    result = snprintf(temp_path, max_path, "%s/%sXXXXXX", tmp_dir, prefix ? prefix : "");
+    if (result < 0 || result >= max_path) {
+        free(temp_path);
         return MZ_BUF_ERROR;
+    }
 
-    /* mktemp replaces XXXXXX with unique characters */
-    if (!mktemp(path))
+    /* Create a temporary directory. */
+    if (!mkdtemp(temp_path)) {
+        free(temp_path);
         return MZ_INTERNAL_ERROR;
+    }
 
+    /* Create a filename inside the temporary directory using current time */
+    result = snprintf(path, max_path, "%s/%" PRIu64 "x", temp_path, (uint64_t)time(NULL));
+    if (result < 0 || result >= max_path) {
+        rmdir(temp_path);
+        free(temp_path);
+        return MZ_BUF_ERROR;
+    }
+
+    free(temp_path);
     return MZ_OK;
 }
 
