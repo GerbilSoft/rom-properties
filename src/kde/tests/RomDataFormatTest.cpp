@@ -286,12 +286,12 @@ TEST_F(RomDataFormatTest, formatDateTime_7_dateAndTime_noYear)
 
 	// NOTE: Qt 6.11 doesn't have date-only formats, so these are custom.
 	static const DateTimeTestData dateTimeTestData[] = {
-		{0,  "Jan 1 00:00:00",  "Jan 1 00:00:00"},
-		{-2, "Dec 31 23:59:58", "Dec 31 23:59:58"},
-		{1,  "Jan 1 00:00:01",  "Jan 1 00:00:01"},
-		{0x7FFFFFFF, "Jan 19 03:14:07", "Jan 19 03:14:07"},
+		{0,  "Jan 1 00:00:00",  "Jan 1 00:00"},
+		{-2, "Dec 31 23:59:58", "Dec 31 23:59"},
+		{1,  "Jan 1 00:00:01",  "Jan 1 00:00"},
+		{0x7FFFFFFF, "Jan 19 03:14:07", "Jan 19 03:14"},
 #ifdef TIME64_FOUND
-		{0x80000000, "Jan 19 03:14:08", "Jan 19 03:14:08"},
+		{0x80000000, "Jan 19 03:14:08", "Jan 19 03:14"},
 #endif /* TIME64_FOUND */
 	};
 

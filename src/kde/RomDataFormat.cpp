@@ -60,7 +60,7 @@ QString formatDateTime(time_t date_time, unsigned int flags)
 			// Date and time. (No year)
 			// TODO: Localize this.
 			str = dateTime.date().toString(QLatin1String("MMM d")) + QChar(L' ') +
-			      dateTime.time().toString();
+			      locale.toString(dateTime.time(), locale.timeFormat(QLocale::ShortFormat));
 			break;
 
 		default:
