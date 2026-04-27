@@ -23,6 +23,7 @@
 #  define T2U8(str) (str)
 #else /* _WIN32 */
 #  include "libwin32common/MiniU82T.hpp"
+#  include "libwin32common/rp_LoadLibraryEx.h"
 using LibWin32Common::T2U8;
 #endif /* _WIN32 */
 
@@ -71,7 +72,7 @@ static void init_sixel_once(void)
 	// Open libsixel.
 #ifdef _WIN32
 	// TODO: Also check arch-specific subdirectory?
-	libsixel_dll.reset(LoadLibraryEx(_T("libsixel-1.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32 | LOAD_LIBRARY_SEARCH_APPLICATION_DIR));
+	libsixel_dll.reset(rp_LoadLibraryEx(_T("libsixel-1.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32 | LOAD_LIBRARY_SEARCH_APPLICATION_DIR));
 #else /* !_WIN32 */
 	// TODO: Consistently use either RTLD_NOW or RTLD_LAZY.
 	// Maybe make it a CMake option?
