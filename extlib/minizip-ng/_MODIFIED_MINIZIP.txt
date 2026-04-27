@@ -16,7 +16,7 @@ The following changes have been made to the original:
 
 - mz_os_win32.c: #define FSCTL_GET_REPARSE_POINT if it isn't defined.
 
-- Fixed a -Wformat warning.
+- Fixed some -Wformat warnings.
 
 - Some other functionality not needed by rom-properties has been disabled.
 
