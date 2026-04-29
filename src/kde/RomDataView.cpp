@@ -315,9 +315,14 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 		lblString->setTextInteractionFlags(
 			Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
 
-		// Allow the label to be shrunken horizontally.
+		// Enable wordwrap to allow the label to be shrunken horizontally.
+		// NOTE: Setting minimum width to 1 incorrectly causes labels to
+		// increase in height. The only way to "fix" this is to set the
+		// text to blank, call updateGeometry(), then set it back.
+		// This was originally done in v1.7 to allow the window to be shrunken.
+		// Enabling wordwrapping handles this more effectively.
 		// TODO: Scrolling.
-		lblString->setMinimumWidth(1);
+		//lblString->setMinimumWidth(1);
 		lblString->setWordWrap(true);
 
 		if (str) {
