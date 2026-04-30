@@ -76,12 +76,12 @@ FOREACH(_target ${TARGETS})
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
 		)
 
-	IF(USING_INTERNAL_Intl)
+	IF(USE_INTERNAL_Intl)
 		# Needs the libintl.h wrapper file.
 		TARGET_INCLUDE_DIRECTORIES(${_target}
 			PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/libintl-wrapper
 			)
-	ENDIF(USING_INTERNAL_Intl)
+	ENDIF(USE_INTERNAL_Intl)
 ENDFOREACH(_target)
 UNSET(_target_suffix)
 

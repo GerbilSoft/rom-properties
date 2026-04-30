@@ -22,7 +22,7 @@ FUNCTION(CHECK_GETTEXT)
 		# Use i386 (32-bit) build-time executables on all systems.
 		SET(gettext_BIN "${gettext_ROOT}/bin.i386")
 		SET(Intl_LIBRARY gnuintl CACHE INTERNAL "libintl library." FORCE)
-		SET(USING_INTERNAL_Intl 1 PARENT_SCOPE)
+		SET(USE_INTERNAL_Intl 1 PARENT_SCOPE)
 
 		# Executables
 		# NOTE: If cross-compiling on Linux for Windows, use the native tools.
