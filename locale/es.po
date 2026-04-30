@@ -10481,7 +10481,7 @@ msgid ""
 "Usage: rpcli [-cCdjkpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a "
 "apngoutfile] filename]..."
 msgstr ""
-"\"Uso: rpcli [-cCdjkpS] [-l lang] [[-xN archivo de salida]... [-mN archivo "
+"Uso: rpcli [-cCdjkpS] [-l lang] [[-xN archivo de salida]... [-mN archivo "
 "de salida]... [-a archivo de salida apng] nombre de archivo]..."
 
 #: ../src/rpcli/rpcli.cpp:608
@@ -10490,7 +10490,7 @@ msgid ""
 "Usage: rpcli [-cCdjpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a "
 "apngoutfile] filename]..."
 msgstr ""
-"\"Uso: rpcli [-cCdjpS] [-l lang] [[-xN archivo de salida]... [-mN archivo de "
+"Uso: rpcli [-cCdjpS] [-l lang] [[-xN archivo de salida]... [-mN archivo de "
 "salida]... [-a archivo de salida apng] nombre de archivo]..."
 
 #: ../src/rpcli/rpcli.cpp:621
