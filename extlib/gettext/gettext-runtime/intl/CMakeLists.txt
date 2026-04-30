@@ -611,6 +611,15 @@ TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} SYSTEM
 	PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/gnulib-lib>
 	)
 
+# FIXME: MSVC doesn't seem to support the `restrict` keyword when building
+# for Windows XP using v141_xp. (MSVC 2026 seems to accept it, but it isn't
+# documented...)
+IF(MSVC)
+	TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME}
+		PRIVATE	restrict=
+		)
+ENDIF(MSVC)
+
 DO_SPLIT_DEBUG(${PROJECT_NAME})
 SET_WINDOWS_SUBSYSTEM(${PROJECT_NAME} WIN32)
 #SET_WINDOWS_NO_MANIFEST(${PROJECT_NAME})

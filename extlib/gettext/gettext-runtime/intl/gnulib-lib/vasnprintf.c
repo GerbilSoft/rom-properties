@@ -7471,7 +7471,10 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
                       {
                         /* The result string is not guaranteed to be ASCII.  */
                         /* This code assumes that TCHAR_T is 'char'.  */
+                        /* rom-properties: This is breaking with MSVC 2017. (v141_xp) */
+#ifndef _MSC_VER
                         static_assert (sizeof (TCHAR_T) == 1);
+#endif /* _MSC_VER */
                         const TCHAR_T *tmpsrc;
 # if USE_SNPRINTF
                         tmpsrc = (TCHAR_T *) (result + length);
