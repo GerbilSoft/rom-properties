@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * DelayLoadHelper.c: DelayLoad helper functions and macros.               *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -38,10 +38,8 @@ static const TCHAR rp_subdir[] = _T("arm64ec\\");
 static const TCHAR rp_subdir[] = _T("arm64\\");
 #elif defined(_M_IX86) || defined(__i386__)
 static const TCHAR rp_subdir[] = _T("i386\\");
-#  define USE_MINGW_DLL_NAME 1
 #elif defined(_M_X64) || defined(_M_AMD64) || defined(__amd64__) || defined(__x86_64__)
 static const TCHAR rp_subdir[] = _T("amd64\\");
-#  define USE_MINGW_DLL_NAME 1
 #elif defined(_M_IA64) || defined(__ia64__)
 static const TCHAR rp_subdir[] = _T("ia64\\");
 #elif defined(_M_MIPS) || defined(__mips__) || defined(__MIPS__)
@@ -78,11 +76,11 @@ static const char *const dll_whitelist[] = {
 #ifdef RP_LIBROMDATA_IS_DLL
 	ROMDATA_PREFIX "romdata-" LIBROMDATA_SOVERSION_STR DEBUG_SUFFIX ".dll",
 #endif /* RP_LIBROMDATA_IS_DLL */
-#ifdef USE_MINGW_DLL_NAME
-	"libgnuintl-8.dll",	// MinGW-w64 version (i386/amd64)
-#else /* !USE_MINGW_DLL_NAME */
-	"gnuintl-8.dll",	// MSVC version (arm/arm64/arm64ec)
-#endif /* USE_MINGW_DLL_NAME */
+#ifdef _MSC_VER
+	"gnuintl-8" DEBUG_SUFFIX ".dll",	// MSVC version
+#else /* !MSC_VER */
+	"libgnuintl-8" DEBUG_SUFFIX ".dll", // MinGW-w64 version
+#endif /* _MSC_VER */
 	"zlib1" DEBUG_SUFFIX ".dll",
 	"libpng16" DEBUG_SUFFIX ".dll",
 	"pugixml" PUGI_DEBUG_SUFFIX ".dll",
