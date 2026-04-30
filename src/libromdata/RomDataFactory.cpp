@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RomDataFactory.cpp: RomData factory class.                              *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -76,8 +76,10 @@ using std::vector;
 #include "disc/xdvdfs_structs.h"
 
 // RomData subclasses: Handhelds
-#include "Handheld/AndroidAPK.hpp"
-#include "Handheld/AndroidManifestXML.hpp"
+#ifdef ENABLE_XML
+#  include "Handheld/AndroidAPK.hpp"
+#  include "Handheld/AndroidManifestXML.hpp"
+#endif /* ENABLE_XML */
 #include "Handheld/DMG.hpp"
 #include "Handheld/GameBoyAdvance.hpp"
 #include "Handheld/GameCom.hpp"
@@ -247,7 +249,12 @@ static std::once_flag once_mimeTypes;
  * - size: 32-bit magic number.
  * - magic2: Second 32-bit magic number, if available.
  */
-static const array<RomDataFns, 34> romDataFns_magic = {{
+#ifdef ENABLE_XML
+static constexpr size_t romDataFns_magic_count = 34;
+#else /* !ENABLE_XML */
+static constexpr size_t romDataFns_magic_count = 33;
+#endif /* ENABLE_XML */
+static const array<RomDataFns, romDataFns_magic_count> romDataFns_magic = {{
 	// Consoles
 	GetRomDataFns_magic1(Atari7800, ATTR_HAS_METADATA, 4, 'RI78'),	// "ATARI7800"
 	GetRomDataFns_magic2(GameCubeBNR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'BNR1', 'BNR2'),
@@ -263,7 +270,9 @@ static const array<RomDataFns, 34> romDataFns_magic = {{
 	GetRomDataFns_magic2(Xbox360_XEX, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XEX1', 'XEX2'),
 
 	// Handhelds
+#ifdef ENABLE_XML
 	GetRomDataFns_magic1(AndroidManifestXML, ATTR_HAS_METADATA | ATTR_HAS_DPOVERLAY, 0, 0x03000800),
+#endif /* ENABLE_XML */
 	GetRomDataFns_magic2(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x104, 0xCEED6666, 0x0110CEEF),
 	GetRomDataFns_magic1(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x304, 0xCEED6666),	// headered
 	GetRomDataFns_magic1(GameBoyAdvance, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x04, 0x24FFAE51),
@@ -527,8 +536,15 @@ struct ZipDetectTbl_t {
 #define GetRomDataFns_unzFile(sys, filename, attrs) \
 	{RomData_unzFile_ctor<sys>, sys::romDataInfo_static, (filename), (attrs)}
 
-static const array<ZipDetectTbl_t, 2> zipDetectTbl = {{
+#ifdef ENABLE_XML
+static constexpr size_t zipDetectTbl_count = 2;
+#else /* !ENABLE_XML */
+static constexpr size_t zipDetectTbl_count = 1;
+#endif /* ENABLE_XML */
+static const array<ZipDetectTbl_t, zipDetectTbl_count> zipDetectTbl = {{
+#ifdef ENABLE_XML
 	GetRomDataFns_unzFile(AndroidAPK,	"AndroidManifest.xml",		ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_HAS_DPOVERLAY),
+#endif /* ENABLE_XML */
 	GetRomDataFns_unzFile(J2ME,		"META-INF/MANIFEST.MF",		ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 }};
 

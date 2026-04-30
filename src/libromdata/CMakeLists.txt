@@ -152,7 +152,6 @@ SET(${PROJECT_NAME}_SRCS
 	disc/WiiUH3Reader.cpp
 	disc/WuxReader.cpp
 	disc/XDVDFSPartition.cpp
-	disc/Z3DSReader.cpp
 
 	config/ImageTypesConfig.cpp
 	#config/TImageTypesConfig.cpp	# NOT listed here due to template stuff.
@@ -378,7 +377,6 @@ SET(${PROJECT_NAME}_H
 	disc/WiiUH3Reader.hpp
 	disc/WuxReader.hpp
 	disc/XDVDFSPartition.hpp
-	disc/Z3DSReader.hpp
 
 	disc/ciso_gcn.h
 	disc/ciso_psp_structs.h
@@ -447,6 +445,12 @@ IF(NOT ${PROJECT_NAME}_NETWORKING_SRCS)
 	# Dummy implementation for unsupported systems, or if networking is disabled.
 	SET(${PROJECT_NAME}_NETWORKING_SRCS img/ExecRpDownload_dummy.cpp)
 ENDIF(NOT ${PROJECT_NAME}_NETWORKING_SRCS)
+
+# Files that require ZSTD.
+IF(HAVE_ZSTD)
+	SET(${PROJECT_NAME}_ZSTD_SRCS disc/Z3DSReader.cpp)
+	SET(${PROJECT_NAME}_ZSTD_H    disc/Z3DSReader.hpp)
+ENDIF(HAVE_ZSTD)
 
 # dlopen() notes
 IF(NOT WIN32 AND NOT APPLE)
@@ -529,8 +533,9 @@ ENDIF(WIN32)
 ADD_LIBRARY(${PROJECT_NAME} ${${PROJECT_NAME}_LINKAGE}
 	${${PROJECT_NAME}-DELAYLOAD_SRC} ${${PROJECT_NAME}-DELAYLOAD_H}
 	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
-	${${PROJECT_NAME}_NETWORKING_SRCS}
 	${${PROJECT_NAME}_CRYPTO_SRCS} ${${PROJECT_NAME}_CRYPTO_H}
+	${${PROJECT_NAME}_NETWORKING_SRCS}
+	${${PROJECT_NAME}_ZSTD_SRCS} ${${PROJECT_NAME}_ZSTD_H}
 	${${PROJECT_NAME}_DLOPEN_SRCS}
 	${${PROJECT_NAME}_MMX_SRCS}
 	${${PROJECT_NAME}_SSE2_SRCS}

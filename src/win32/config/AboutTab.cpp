@@ -76,10 +76,12 @@ static constexpr int MAX_TABS = 3;
 #  include <pugixml.hpp>
 #endif
 
+#ifdef HAVE_ZSTD
 // zstd
 // NOTE: Version number is checked via RpPng, even though
 // libpng doesn't use zstd...
-#include <zstd.h>
+#  include <zstd.h>
+#endif /* HAVE_ZSTD */
 
 // Useful RTF strings.
 #define RTF_START "{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033\n"

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CisoPspReader.cpp: PlayStation Portable CISO disc image reader.         *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -321,6 +321,7 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 	}
 #endif /* LZ4_SHARED_LINKAGE */
 
+#ifdef LZO_SHARED_LINKAGE
 	if (isLZO) {
 		// Attempt to load the LZO function pointers.
 		// NOTE: This is done in static library builds too,
@@ -331,7 +332,7 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 			return;
 		}
 	}
-
+#endif /* LZO_SHARED_LINKAGE */
 
 #if !defined(_MSC_VER) || !defined(ZLIB_IS_DLL)
 	if (isZlib) {
