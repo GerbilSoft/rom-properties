@@ -627,6 +627,13 @@ IF(MSVC)
 		)
 ENDIF(MSVC)
 
+IF(WIN32)
+	# langprefs.c uses Windows registry functions.
+	# NOTE: The library import is implicit on i386/amd64, but must be
+	# explicitly specified on ARM for some reason.
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE advapi32)
+ENDIF(WIN32)
+
 DO_SPLIT_DEBUG(${PROJECT_NAME})
 SET_WINDOWS_SUBSYSTEM(${PROJECT_NAME} WIN32)
 #SET_WINDOWS_NO_MANIFEST(${PROJECT_NAME})
