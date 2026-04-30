@@ -22,7 +22,7 @@ FUNCTION(CHECK_GETTEXT)
 		# Use i386 (32-bit) build-time executables on all systems.
 		SET(gettext_BIN "${gettext_ROOT}/bin.i386")
 		SET(Intl_LIBRARY gnuintl CACHE INTERNAL "libintl library." FORCE)
-		SET(USE_INTERNAL_Intl 1 PARENT_SCOPE)
+		SET(USE_INTERNAL_Intl 1 CACHE INTERNAL "Set to 1 if using the bundled copy of libintl." FORCE)
 
 		# Executables
 		# NOTE: If cross-compiling on Linux for Windows, use the native tools.
@@ -43,6 +43,8 @@ FUNCTION(CHECK_GETTEXT)
 		FIND_PACKAGE(Gettext REQUIRED)
 		FIND_PROGRAM(GETTEXT_XGETTEXT_EXECUTABLE xgettext)
 		FIND_PROGRAM(GETTEXT_MSGINIT_EXECUTABLE msginit)
+
+		SET(USE_INTERNAL_Intl 0 CACHE INTERNAL "Set to 1 if using the bundled copy of libintl." FORCE)
 	ENDIF(WIN32)
 	SET(HAVE_GETTEXT 1 PARENT_SCOPE)
 ENDFUNCTION(CHECK_GETTEXT)
