@@ -128,6 +128,10 @@
    We enable _GL_ATTRIBUTE_FORMAT only if these are supported too, because
    gnulib and libintl do '#define printf __printf__' when they override
    the 'printf' function.  */
+/* rom-properties: This doesn't work on MinGW-w64. */
+#if defined(_WIN32) && !defined(_MSC_VER)
+# define _GL_ATTRIBUTE_FORMAT(spec)
+#endif
 #ifndef _GL_ATTRIBUTE_FORMAT
 # if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 7) || defined __clang__
 #  define _GL_ATTRIBUTE_FORMAT(spec) __attribute__ ((__format__ spec))
@@ -225,11 +229,37 @@
 #define _GL_ATTRIBUTE_FORMAT_SCANF_SYSTEM(formatstring_parameter, first_argument) \
   _GL_ATTRIBUTE_FORMAT ((__scanf__, formatstring_parameter, first_argument))
 
+/* rom-properties: Need to copy this here for some reason... */
+#if defined __cplusplus
+# define _GL_EXTERN_C_FUNC extern "C"
+# define _GL_EXTERN_C extern "C"
+#else
+# define _GL_EXTERN_C_FUNC
+# define _GL_EXTERN_C extern
+#endif
+
 /* The definitions of _GL_FUNCDECL_RPL etc. are copied here.  */
+/* rom-properties: Copied it here */
+#define _GL_FUNCDECL_RPL(func,rettype,parameters,...) \
+  _GL_FUNCDECL_RPL_1 (rpl_##func, rettype, parameters, __VA_ARGS__)
+#define _GL_FUNCDECL_RPL_1(rpl_func,rettype,parameters,...) \
+  _GL_EXTERN_C_FUNC __VA_ARGS__ rettype rpl_func parameters
+
+#ifdef __cplusplus
+# define _GL_FUNCDECL_SYS_NAME(func) func
+#else
+# define _GL_FUNCDECL_SYS_NAME(func) (func)
+#endif
+#define _GL_FUNCDECL_SYS(func,rettype,parameters,...) \
+  _GL_EXTERN_C_FUNC __VA_ARGS__ rettype _GL_FUNCDECL_SYS_NAME (func) parameters
 
 /* The definition of _GL_ARG_NONNULL is copied here.  */
+/* rom-properties: NULLed it out here */
+#define _GL_ARG_NONNULL(x)
 
 /* The definition of _GL_WARN_ON_USE is copied here.  */
+/* rom-properties: NULLed it out here */
+#define _GL_WARN_ON_USE(x)
 
 /* Macros for stringification.  */
 #define _GL_STDIO_STRINGIZE(token) #token

@@ -52,7 +52,10 @@ char *alloca ();
 #include <string.h>
 
 /* Specifications of the libintl_*printf functions.  */
+/* rom-properties FIXME: This breaks things when building as a Windows DLL. */
+#if !defined(_WIN32) || !(BUILDING_LIBRARY && DLL_EXPORT)
 #include "libgnuintl.h"
+#endif
 
 /* Some systems, like OSF/1 4.0 and Woe32, don't have EOVERFLOW.  */
 #ifndef EOVERFLOW

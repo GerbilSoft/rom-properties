@@ -166,11 +166,37 @@ _GL_INLINE_HEADER_BEGIN
 # endif
 #endif
 
+/* rom-properties: Need to copy this here for some reason... */
+#if defined __cplusplus
+# define _GL_EXTERN_C_FUNC extern "C"
+# define _GL_EXTERN_C extern "C"
+#else
+# define _GL_EXTERN_C_FUNC
+# define _GL_EXTERN_C extern
+#endif
+
 /* The definitions of _GL_FUNCDECL_RPL etc. are copied here.  */
+/* rom-properties: Copied it here */
+#define _GL_FUNCDECL_RPL(func,rettype,parameters,...) \
+  _GL_FUNCDECL_RPL_1 (rpl_##func, rettype, parameters, __VA_ARGS__)
+#define _GL_FUNCDECL_RPL_1(rpl_func,rettype,parameters,...) \
+  _GL_EXTERN_C_FUNC __VA_ARGS__ rettype rpl_func parameters
+
+#ifdef __cplusplus
+# define _GL_FUNCDECL_SYS_NAME(func) func
+#else
+# define _GL_FUNCDECL_SYS_NAME(func) (func)
+#endif
+#define _GL_FUNCDECL_SYS(func,rettype,parameters,...) \
+  _GL_EXTERN_C_FUNC __VA_ARGS__ rettype _GL_FUNCDECL_SYS_NAME (func) parameters
 
 /* The definition of _GL_ARG_NONNULL is copied here.  */
+/* rom-properties: NULLed it out here */
+#define _GL_ARG_NONNULL(x)
 
 /* The definition of _GL_WARN_ON_USE is copied here.  */
+/* rom-properties: NULLed it out here */
+#define _GL_WARN_ON_USE(x)
 
 
 /* Make _GL_ATTRIBUTE_DEALLOC_FREE work, even though <stdlib.h> may not have

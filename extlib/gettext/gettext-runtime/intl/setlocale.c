@@ -79,7 +79,14 @@ extern void gl_locale_name_canonicalize (char *name);
 #endif
 
 /* Get _nl_msg_cat_cntr declaration.  */
+/* rom-properties FIXME: gettextP.h includes libgnuintl.h, which breaks things
+   when building as a Windows DLL. */
+#if defined(_WIN32) && (BUILDING_LIBRARY && DLL_EXPORT)
+#include "loadinfo.h"
+extern LIBINTL_SHLIB_EXPORTED int _nl_msg_cat_cntr;
+#else
 #include "gettextP.h"
+#endif
 
 #if (defined __APPLE__ && defined __MACH__) || defined _WIN32 || defined __CYGWIN__
 
@@ -903,6 +910,9 @@ setlocale_unixlike (int category, const char *locale)
 # endif
 
 # if LC_MESSAGES == 1729
+
+/* rom-properties HACK - we need this for SETLOCALE_NULL_ALL_MAX */
+#  include "gnulib-lib/setlocale_null.h"
 
 /* Like setlocale, but support also LC_MESSAGES.  */
 static char *
