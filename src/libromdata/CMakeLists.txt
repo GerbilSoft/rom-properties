@@ -687,7 +687,6 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 		RP_LibRpFile_RecursiveScan_ForceLinkage
 		RP_LibRpFile_XAttrReader_ForceLinkage
 		RP_LibRpFile_XAttrReader_impl_ForceLinkage
-		rp_LoadLibraryExW
 		)
 	IF(WIN32)
 		SET(SYMS_FORCE ${SYMS_FORCE}
@@ -697,6 +696,13 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 		IF(CPU_i386)
 			SET(SYM_PREFIX "_")
 		ENDIF(CPU_i386)
+
+		# Exported arm64ec symbols are prefixed with '#'.
+		IF(CPU_arm64ec)
+			SET(SYMS_FORCE ${SYMS_FORCE} "#rp_LoadLibraryExW")
+		ELSE(CPU_arm64ec)
+			SET(SYMS_FORCE ${SYMS_FORCE} rp_LoadLibraryExW)
+		ENDIF(CPU_arm64ec)
 	ELSE(WIN32)
 		# FIXME: Getting a missing symbol error on MSVC ARM64EC builds if these
 		# are unconditionally added to SYMS_FORCE.
