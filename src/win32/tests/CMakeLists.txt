@@ -33,8 +33,13 @@ TARGET_INCLUDE_DIRECTORIES(RomDataFormatTest_win32
 	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/../../librptext"
 		"${CMAKE_CURRENT_SOURCE_DIR}/../../libwin32common"
 		"${CMAKE_CURRENT_SOURCE_DIR}/../../libi18n"
-		"${CMAKE_SOURCE_DIR}/extlib/gettext.win32/include"
+		"${CMAKE_BINARY_DIR}/extlib/gettext/gettext-runtime/intl"
 	)
+IF(ENABLE_NLS AND USE_INTERNAL_Intl)
+	TARGET_INCLUDE_DIRECTORIES(RomDataFormatTest_win32
+		PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../libi18n/libintl-wrapper"
+		)
+ENDIF(ENABLE_NLS AND USE_INTERNAL_Intl)
 LIST(APPEND WIN32_TESTS RomDataFormatTest_win32)
 
 ### Run the tests
