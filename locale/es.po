@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-01-31 12:55-0500\n"
-"PO-Revision-Date: 2026-01-31 18:04\n"
+"PO-Revision-Date: 2026-04-30 03:16\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -10393,12 +10393,12 @@ msgstr "No es un archivo de dispositivo"
 #: ../src/rpcli/rpcli.cpp:606
 msgctxt "rpcli"
 msgid "Usage: rpcli [-cCdjkpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."
-msgstr "\"Uso: rpcli [-cCdjkpS] [-l lang] [[-xN archivo de salida]... [-mN archivo de salida]... [-a archivo de salida apng] nombre de archivo]..."
+msgstr "Uso: rpcli [-cCdjkpS] [-l lang] [[-xN archivo de salida]... [-mN archivo de salida]... [-a archivo de salida apng] nombre de archivo]..."
 
 #: ../src/rpcli/rpcli.cpp:608
 msgctxt "rpcli"
 msgid "Usage: rpcli [-cCdjpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."
-msgstr "\"Uso: rpcli [-cCdjpS] [-l lang] [[-xN archivo de salida]... [-mN archivo de salida]... [-a archivo de salida apng] nombre de archivo]..."
+msgstr "Uso: rpcli [-cCdjpS] [-l lang] [[-xN archivo de salida]... [-mN archivo de salida]... [-a archivo de salida apng] nombre de archivo]..."
 
 #: ../src/rpcli/rpcli.cpp:621
 msgctxt "rpcli"
