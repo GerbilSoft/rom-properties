@@ -14,8 +14,8 @@
 /***************************************************************************/
 
 /* MZ_VERSION */
-#define MZ_VERSION       ("4.2.0")
-#define MZ_VERSION_BUILD (0x040200)
+#define MZ_VERSION       ("4.2.1")
+#define MZ_VERSION_BUILD (0x040201)
 
 /* MZ_ERROR */
 #define MZ_OK             (0)  /* zlib */

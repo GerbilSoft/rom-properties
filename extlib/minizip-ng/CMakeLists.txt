@@ -8,7 +8,7 @@
 #cmake_minimum_required(VERSION 3.13)
 
 # Library version
-set(VERSION "4.2.0")
+set(VERSION "4.2.1")
 # API version
 set(SOVERSION "4")
 
@@ -228,7 +228,11 @@ if(MZ_ZLIB)
     if(ZLIB-NG_FOUND AND NOT MZ_FORCE_FETCH_LIBS)
         message(STATUS "Using ZLIB-NG")
 
-        list(APPEND MINIZIP_LIB_PUBLIC zlib-ng::zlib)
+        if(BUILD_SHARED_LIBS)
+            list(APPEND MINIZIP_LIB_PUBLIC zlib-ng::zlib)
+        else()
+            list(APPEND MINIZIP_LIB_PUBLIC zlib-ng::zlibstatic)
+        endif()
 
         set(PC_PRIVATE_DEPS "zlib-ng")
         set(ZLIB_COMPAT OFF)
@@ -428,10 +432,10 @@ if(MZ_ZSTD)
     if(zstd_FOUND AND NOT MZ_FORCE_FETCH_LIBS)
         message(STATUS "Using ZSTD ${zstd_VERSION}")
 
-        if(TARGET zstd::libzstd_static)
-            list(APPEND MINIZIP_LIB zstd::libzstd_static)
-        else()
+        if(BUILD_SHARED_LIBS)
             list(APPEND MINIZIP_LIB zstd::libzstd_shared)
+        else()
+            list(APPEND MINIZIP_LIB zstd::libzstd_static)
         endif()
 
         set(PC_PRIVATE_LIBS "${PC_PRIVATE_LIBS} -lzstd")
