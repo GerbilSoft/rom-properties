@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * AboutTab.cpp: About tab for rp-config.                                  *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -42,10 +42,12 @@ using std::string;
 #  include <pugixml.hpp>
 #endif /* ENABLE_XML */
 
+#ifdef HAVE_ZSTD
 // zstd
 // NOTE: Version number is checked via RpPng, even though
 // libpng doesn't use zstd...
 #include <zstd.h>
+#endif /* HAVE_ZSTD */
 
 #if GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkBoxClass superclass;

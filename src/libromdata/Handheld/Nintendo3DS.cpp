@@ -14,8 +14,10 @@
 #include "Nintendo3DS_p.hpp"
 #include "n3ds_structs.h"
 
-#include "../disc/Z3DSReader.hpp"
-#include "../disc/z3ds_structs.h"
+#ifdef HAVE_ZSTD
+#  include "../disc/Z3DSReader.hpp"
+#  include "../disc/z3ds_structs.h"
+#endif /* HAVE_ZSTD */
 
 // Other rom-properties libraries
 #include "librpbase/config/Config.hpp"
@@ -50,7 +52,7 @@ ROMDATA_IMPL_IMG_SIZES(Nintendo3DS)
 /** Nintendo3DSPrivate **/
 
 /* RomDataInfo */
-const array<const char*, 17+1> Nintendo3DSPrivate::exts = {{
+const array<const char*, Nintendo3DSPrivate::N3DS_EXT_COUNT+1> Nintendo3DSPrivate::exts = {{
 	".3dsx",	// Homebrew application.
 	".3ds",		// ROM image (NOTE: Conflicts with 3DS Max.)
 	".3dz",		// ROM image (with private header for Gateway 3DS)
@@ -62,6 +64,7 @@ const array<const char*, 17+1> Nintendo3DSPrivate::exts = {{
 	".cfa",		// CTR File Archive (NCCH)
 	".csu",		// CTR System Update (CCI)
 
+#ifdef HAVE_ZSTD
 	// Z3DS versions
 	// NOTE: Copy of the above list, with extensions not used by Azahar commented out.
 	".z3dsx",	// Homebrew application.
@@ -74,6 +77,7 @@ const array<const char*, 17+1> Nintendo3DSPrivate::exts = {{
 	".zcxi",	// CTR Executable Image (NCCH)
 	//".zcfa",	// CTR File Archive (NCCH)
 	".zcsu",	// CTR System Update (CCI)
+#endif /* HAVE_ZSTD */
 
 	nullptr
 }};
@@ -1260,6 +1264,7 @@ Nintendo3DS::Nintendo3DS(const IRpFilePtr &file)
 		return;
 	}
 
+#ifdef HAVE_ZSTD
 	// Check for Z3DS format first.
 	// If it's Z3DS, replace d->file with a Z3DSReader.
 	if (Z3DSReader::isDiscSupported_static(header, sizeof(header)) >= 0) {
@@ -1282,6 +1287,7 @@ Nintendo3DS::Nintendo3DS(const IRpFilePtr &file)
 			return;
 		}
 	}
+#endif /* HAVE_ZSTD */
 
 	// Check if this ROM image is supported.
 	const char *const filename = file->filename();
@@ -1386,6 +1392,7 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 		return static_cast<int>(Nintendo3DSPrivate::RomType::Unknown);
 	}
 
+#ifdef HAVE_ZSTD
 	// Check for Z3DS format.
 	if (Z3DSReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
 		// This is a Z3DS file.
@@ -1404,6 +1411,7 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 				return static_cast<int>(Nintendo3DSPrivate::RomType::NCCH);
 		}
 	}
+#endif /* HAVE_ZSTD */
 
 	// Check for CIA format. CIA doesn't have an unambiguous magic number,
 	// so we'll use the file extension.
@@ -2431,6 +2439,7 @@ int Nintendo3DS::loadFieldData(void)
 		d->addFields_permissions();
 	}
 
+#ifdef HAVE_ZSTD
 	// Is this ROM in Z3DS format?
 	Z3DSReader *const z3ds = dynamic_cast<Z3DSReader*>(d->file.get());
 	if (z3ds) {
@@ -2475,6 +2484,7 @@ int Nintendo3DS::loadFieldData(void)
 			}
 		}
 	}
+#endif /* HAVE_ZSTD */
 
 	// Finished reading the field data.
 	return d->fields.count();
@@ -2549,6 +2559,7 @@ int Nintendo3DS::loadMetaData(void)
 			fmt::format(FSTR("{:0>8X}-{:0>8X}"), tid_hi, tid_lo));
 	}
 
+#ifdef ENABLE_DECRYPTION
 	// Encryption key
 	// NOTE: Only showing Retail vs. Debug.
 	if (ncch) {
@@ -2557,6 +2568,7 @@ int Nintendo3DS::loadMetaData(void)
 				? C_("Nintendo3DS", "Debug")
 				: C_("Nintendo3DS", "Retail"));
 	}
+#endif /* ENABLE_DECRYPTION */
 
 	// Finished reading the metadata.
 	return d->metaData.count();

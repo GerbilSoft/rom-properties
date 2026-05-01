@@ -3,7 +3,7 @@
  * Nintendo3DS.hpp: Nintendo 3DS ROM reader. (Private class)               *
  * Handles CCI/3DS, CIA, and SMDH files.                                   *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -44,9 +44,16 @@ private:
 	typedef RomDataPrivate super;
 	RP_DISABLE_COPY(Nintendo3DSPrivate)
 
+private:
+#ifdef HAVE_ZSTD
+	static constexpr size_t N3DS_EXT_COUNT = 17;
+#else /* !HAVE_ZSTD */
+	static constexpr size_t N3DS_EXT_COUNT = 10;
+#endif /* HAVE_ZSTD */
+
 public:
 	/** RomDataInfo **/
-	static const std::array<const char*, 17+1> exts;
+	static const std::array<const char*, N3DS_EXT_COUNT+1> exts;
 	static const std::array<const char*, 10+1> mimeTypes;
 	static const LibRpBase::RomDataInfo romDataInfo;
 

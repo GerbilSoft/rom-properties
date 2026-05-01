@@ -45,8 +45,13 @@ Copyright: (c) 2009-2024, Ben Hoyt
 License: BSD-3-clause
 
 Files:
+ extlib/gettext/*
+Copyright: (c) 1995-2025 GNU gettext authors
+License: LGPL-3+
+
+Files:
  extlib/gettext.win32/*
-Copyright: (c) 1995-2023 GNU gettext authors
+Copyright: (c) 1995-2025 GNU gettext authors
 License: GPL-3+
 
 Files:

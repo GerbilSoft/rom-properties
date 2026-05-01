@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * AboutTab.hpp: About tab for rp-config.                                  *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -48,10 +48,12 @@ using std::string;
 #  include <pugixml.hpp>
 #endif /* ENABLE_XML */
 
+#ifdef HAVE_ZSTD
 // zstd
 // NOTE: Version number is checked via RpPng, even though
 // libpng doesn't use zstd...
 #include <zstd.h>
+#endif /* HAVE_ZSTD */
 
 #include "ui_AboutTab.h"
 class AboutTabPrivate

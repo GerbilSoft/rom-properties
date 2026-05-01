@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libi18n)                          *
  * i18n.hpp: Internationalization support code.                            *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,14 +15,11 @@
 #define DEFAULT_TEXT_DOMAIN RP_I18N_DOMAIN
 
 #ifdef _WIN32
-#  if defined(_M_IX86) || defined(__i386__) || \
-      defined(_M_X64) || defined(_M_AMD64) || defined(__amd64__) || defined(__x86_64__)
-     // MinGW-w64 version (i386/amd64)
-#    define LIBGNUINTL_DLL "libgnuintl-8.dll"
-#  else
-     // MSVC version (arm/arm64/arm64ec)
+#  ifdef _MSC_VER
 #    define LIBGNUINTL_DLL "gnuintl-8.dll"
-#  endif
+#  else /* !_MSC_VER */
+#    define LIBGNUINTL_DLL "libgnuintl-8.dll"
+#  endif /* _MSC_VER */
 #endif /* _WIN32 */
 
 /**

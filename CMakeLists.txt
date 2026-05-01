@@ -316,6 +316,16 @@ ELSE(BUILD_CLI)
 	SET(CLI_BUILD_MSG "No")
 ENDIF(BUILD_CLI)
 
+IF(ENABLE_NLS)
+	IF(USE_INTERNAL_Intl)
+		SET(LIBINTL_MSG "Yes (bundled)")
+	ELSE(USE_INTERNAL_Intl)
+		SET(LIBINTL_MSG "Yes (system)")
+	ENDIF(USE_INTERNAL_Intl)
+ELSE(ENABLE_NLS)
+	SET(LIBINTL_MSG "No")
+ENDIF(ENABLE_NLS)
+
 IF(RP_LIBROMDATA_IS_DLL)
 	IF(WIN32)
 		SET(LIBROMDATA_LIB_TYPE "shared library (.dll)")
@@ -398,6 +408,9 @@ ENDIF(ENABLE_LZO)
 
 
 UNSET(EXTLIB_BUILD)
+IF(USE_INTERNAL_Intl)
+	SET(EXTLIB_BUILD "${EXTLIB_BUILD}- libintl\n")
+ENDIF(USE_INTERNAL_Intl)
 IF(USE_INTERNAL_ZLIB)
 	SET(EXTLIB_BUILD "${EXTLIB_BUILD}- zlib-ng\n")
 ENDIF(USE_INTERNAL_ZLIB)
@@ -443,6 +456,7 @@ Build Summary:
 - Target CPU architecture: ${TARGET_CPU_ARCH}${TARGET_IS_ARM64X}
 - Building these UI frontends: ${UI_FRONTENDS}
 - Building command-line frontend: ${CLI_BUILD_MSG}
+- libintl: ${LIBINTL_MSG}
 - GNOME Tracker API version: ${TRACKER_API_DISPLAY}
 - libromdata is built as: ${LIBROMDATA_LIB_TYPE}
 - Security mechanism: ${SECURITY_MECHANISM}

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpPng.cpp: PNG image handler.                                           *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -30,7 +30,9 @@ using std::unique_ptr;
 #include "APNG_dlopen.hpp"	// for libpng_has_APNG()
 
 // for ZSTD_versionNumber()
-#include <zstd.h>
+#ifdef HAVE_ZSTD
+#  include <zstd.h>
+#endif /* HAVE_ZSTD */
 
 #if PNG_LIBPNG_VER < 10209 || \
     (PNG_LIBPNG_VER == 10209 && \
@@ -72,9 +74,9 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 #  ifdef PNG_IS_DLL
 DELAYLOAD_TEST_FUNCTION_IMPL0(png_access_version_number)
 #  endif /* PNG_IS_DLL */
-#  ifdef ZSTD_IS_DLL
+#  if defined(HAVE_ZSTD) && defined(ZSTD_IS_DLL)
 DELAYLOAD_TEST_FUNCTION_IMPL1(ZSTD_freeDCtx, nullptr);
-#  endif /* ZSTD_IS_DLL */
+#  endif /* HAVE_ZSTD && ZSTD_IS_DLL */
 #endif /* _MSC_VER */
 
 /** RpPngPrivate **/
@@ -882,15 +884,22 @@ const char *libpng_copyright_string(void)
  */
 unsigned int zstd_version_number(void)
 {
-#if defined(_MSC_VER) && defined(ZSTD_IS_DLL)
+#ifdef HAVE_ZSTD
+#  if defined(_MSC_VER) && defined(ZSTD_IS_DLL)
 	// Delay load verification.
 	if (DelayLoad_test_ZSTD_freeDCtx() != 0) {
 		// Delay load failed.
 		return 0;
 	}
-#endif /* _MSC_VER && ZSTD_IS_DLL */
+#  endif /* _MSC_VER && ZSTD_IS_DLL */
 
 	return ZSTD_versionNumber();
+#else /* !HAVE_ZSTD */
+	// In order to maintain a consistent API, this function will
+	// still be present even if zstd is disabled, but it will
+	// return 0.
+	return 0;
+#endif /* HAVE_ZSTD */
 }
 
 } }

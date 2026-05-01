@@ -44,6 +44,9 @@
 * Other changes:
   * Swizzling "bgra" (red/blue swap only) is now faster on systems that
     don't have either SSSE3 (x86) or NEON (ARM).
+  * GNU gettext-runtime 1.0 sources, with a custom CMakeLists.txt, are now
+    included for Windows builds. Both MinGW-w64 and MSVC builds are supported.
+    * This significantly simplifies gettext compilation for ARM Windows platforms.
 
 ## v2.7.1-xp64 (released 2026/04/25)
 
