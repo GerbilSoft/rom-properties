@@ -340,7 +340,8 @@ PlayStationTIM::PlayStationTIM(const IRpFilePtr &file)
 
 	// NOTE: The framebuffer width is always in units of 16-bit pixels.
 	// Convert it to an actual width here.
-	int width = le32_to_cpu(d->imageHeader.fb.width);
+	const int orig_16bit_width = le32_to_cpu(d->imageHeader.fb.width);
+	int width = orig_16bit_width;
 	switch (d->timHeader.flags & PS1_TIM_FLAG_BPP_MASK) {
 		case PS1_TIM_FLAG_BPP_4BPP:
 			width *= 4;
@@ -372,10 +373,17 @@ PlayStationTIM::PlayStationTIM(const IRpFilePtr &file)
 		return;
 	}
 
-	// TODO: Verify the image data size.
-
 	// Texture data start address.
 	d->texDataStartAddr = static_cast<uint32_t>(d->file->tell());
+
+	// Verify the image data size.
+	off64_t expectedImageDataSize = static_cast<off64_t>(orig_16bit_width) * static_cast<off64_t>(height) * sizeof(uint16_t);
+	expectedImageDataSize += d->texDataStartAddr;
+	if (expectedImageDataSize > d->file->size()) {
+		// File is too small...
+		d->file.reset();
+		return;
+	}
 
 	// File is valid.
 	d->isValid = true;
