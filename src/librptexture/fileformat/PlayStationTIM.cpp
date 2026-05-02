@@ -443,9 +443,25 @@ int PlayStationTIM::getFields(RomFields *fields) const
 	}
 
 	const int initial_count = fields->count();
-	//fields->reserve(initial_count + 1);	// Maximum of 1 field.
+	fields->reserve(initial_count + 3);	// Maximum of 3 fields.
 
-	// TODO: Add fields?
+	// Image position
+	// NOTE: Size is redundant; it's the same as d->dimensions[].
+	fields->addField_string(C_("PlayStationTIM", "Image Position"),
+		fmt::format(FSTR("({:d}, {:d})"),
+			le16_to_cpu(d->imageHeader.fb.x), le16_to_cpu(d->imageHeader.fb.y)));
+	
+	// CLUT position and size
+	// NOTE: Size is in units of 16-bit pixels, which works for CLUT
+	// because the CLUT always consists of 16-bit color values.
+	if (d->clutDataStartAddr != 0) {
+		fields->addField_string(C_("PlayStationTIM", "CLUT Position"),
+			fmt::format(FSTR("({:d}, {:d})"),
+				le16_to_cpu(d->clutHeader.fb.x), le16_to_cpu(d->clutHeader.fb.y)));
+
+		fields->addField_dimensions(C_("PlayStationTIM", "CLUT Size"),
+			le16_to_cpu(d->clutHeader.fb.width), le16_to_cpu(d->clutHeader.fb.height));
+	}
 
 	// Finished reading the field data.
 	return (fields->count() - initial_count);
