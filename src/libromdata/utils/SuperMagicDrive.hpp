@@ -2,11 +2,13 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SuperMagicDrive.cpp: Super Magic Drive deinterleaving function.         *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
+
+#include "config.libromdata.h"
 
 #include "common.h"
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
@@ -26,9 +28,19 @@
 #    define SMD_HAS_MMX 1
 #  endif
 #  define SMD_HAS_SSE2 1
+#elif defined(HAVE_ARM_NEON_H)
+#  if defined(RP_CPU_ARM) || defined(RP_CPU_ARM64)
+#    include "librpcpuid/cpuflags_arm.h"
+#    define SMD_HAS_NEON 1
+#  endif
 #endif
 #ifdef RP_CPU_AMD64
 #  define SMD_ALWAYS_HAS_SSE2 1
+#endif
+#ifdef HAVE_ARM_NEON_H
+#  ifdef RP_CPU_ARM64
+#    define SMD_ALWAYS_HAS_NEON 1
+#  endif
 #endif
 
 namespace LibRomData { namespace SuperMagicDrive {
@@ -74,6 +86,17 @@ void RP_LIBROMDATA_PUBLIC decodeBlock_mmx(uint8_t *RESTRICT pDest, const uint8_t
 void RP_LIBROMDATA_PUBLIC decodeBlock_sse2(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
 #endif /* SMD_HAS_SSE2 */
 
+#if SMD_HAS_NEON
+/**
+ * Decode a Super Magic Drive interleaved block.
+ * NEON-optimized version.
+ * NOTE: Pointers must be 16-byte aligned.
+ * @param pDest	[out] Destination block. (Must be 16 KB.)
+ * @param pSrc	[in] Source block. (Must be 16 KB.)
+ */
+void RP_LIBROMDATA_PUBLIC decodeBlock_neon(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
+#endif /* SMD_HAS_NEON */
+
 /** Dispatch functions. **/
 
 /**
@@ -84,24 +107,31 @@ void RP_LIBROMDATA_PUBLIC decodeBlock_sse2(uint8_t *RESTRICT pDest, const uint8_
  */
 static inline void decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc)
 {
-#ifdef SMD_ALWAYS_HAS_SSE2
+#if defined(SMD_ALWAYS_HAS_NEON)
+	return decodeBlock_neon(pDest, pSrc);
+#elif defined(SMD_ALWAYS_HAS_SSE2)
 	// amd64 always has SSE2.
 	decodeBlock_sse2(pDest, pSrc);
-#else /* SMD_ALWAYS_HAS_SSE2 */
-# ifdef SMD_HAS_SSE2
+#else
+#  ifdef SMD_HAS_SSE2
 	if (RP_CPU_x86_HasSSE2()) {
 		decodeBlock_sse2(pDest, pSrc);
 	} else
-# endif /* SMD_HAS_SSE2 */
-# ifdef SMD_HAS_MMX
+#  endif /* SMD_HAS_SSE2 */
+#  ifdef SMD_HAS_MMX
 	if (RP_CPU_x86_HasMMX()) {
 		decodeBlock_mmx(pDest, pSrc);
 	} else
-#endif /* SMD_HAS_MMX */
+#  endif /* SMD_HAS_MMX */
+#  ifdef SMD_HAS_NEON
+	if (RP_CPU_arm_HasNEON()) {
+		return decodeBlock_neon(pDest, pSrc);
+	} else
+#  endif /* SMD_HAS_NEON */
 	{
 		decodeBlock_cpp(pDest, pSrc);
 	}
-#endif /* SMD_ALWAYS_HAS_SSE2 */
+#endif
 }
 
 } }
