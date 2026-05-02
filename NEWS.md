@@ -2,6 +2,10 @@
 
 ## v2.8 (released 2026/??/??)
 
+* New parsers:
+  * PlayStationTIM: Sony PlayStation TIM textures. Supports 4-bpp, 8-bpp,
+    15-bpp, and 24-bpp format images, with 1-bit transparency.
+
 * New features:
   * rpcli can now display the icon and banner of specified files using the
     Kitty and/or Sixel protocols, depending on what's available on your
