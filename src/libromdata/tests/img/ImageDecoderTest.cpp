@@ -2087,6 +2087,8 @@ INSTANTIATE_TEST_SUITE_P(TIM, ImageDecoderTest,
 	::testing::Values(
 		TIM_IMAGE_TEST("testcard_idx4", "CI4"),
 		TIM_IMAGE_TEST("testcard_idx8", "CI8"),
+		TIM_IMAGE_TEST("testcard_idx4_noCLUT", "CI4 (no CLUT)"),
+		TIM_IMAGE_TEST("testcard_idx8_noCLUT", "CI8 (no CLUT)"),
 		TIM_IMAGE_TEST("testcard_rgb16", "BGR555_PS1"),
 		TIM_IMAGE_TEST("testcard_rgb24", "BGR888"))
 	, ImageDecoderTest::test_case_suffix_generator);
