@@ -42,7 +42,7 @@ void decodeBlock_neon(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc)
 		sb.val[1] = vld1q_u8(&pSrc_odd[ 16]);
 
 		// vst2q automatically interleaves the first and second
-		// vectors to even/odd in the destination.
+		// vectors from even/odd in the destination.
 		vst2q_u8(&pDest[ 0], sa);
 		vst2q_u8(&pDest[32], sb);
 	}
