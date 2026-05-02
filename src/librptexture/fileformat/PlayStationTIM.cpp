@@ -106,6 +106,14 @@ PlayStationTIMPrivate::PlayStationTIMPrivate(PlayStationTIM *q, const IRpFilePtr
  */
 rp_image_const_ptr PlayStationTIMPrivate::loadImage(void)
 {
+	if (img) {
+		// Image has already been loaded.
+		return img;
+	} else if (!this->file) {
+		// Can't load the image.
+		return nullptr;
+	}
+
 	if (texDataStartAddr == 0) {
 		// No texture data start address...
 		return nullptr;
