@@ -1271,6 +1271,17 @@
     </magic>
   </mime-type>
 
+  <!-- PlayStationTIM -->
+  <mime-type type="image/x-ps1-tim">
+    <comment>Sony PlayStation TIM texture file</comment>
+    <acronym>TIM</acronym>
+    <expanded-acronym>Texture Image</expanded-acronym>
+    <sub-class-of type="image/x-generic"/>
+    <glob pattern="*.tim"/>
+    <generic-icon name="image-x-generic"/>
+    <!-- FIXME: The TIM magic number isn't very useful here... -->
+  </mime-type>
+
   <!-- SegaPVR -->
   <!-- FIXME: libmirage-gbi.xml is overriding this. -->
   <mime-type type="image/x-sega-pvr">

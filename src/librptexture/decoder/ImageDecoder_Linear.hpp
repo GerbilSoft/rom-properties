@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_Linear.hpp: Image decoding functions: Linear               *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -113,7 +113,7 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
  * @param width		[in] Image width.
  * @param height	[in] Image height.
  * @param img_buf	[in] Image buffer.
- * @param img_siz	[in] Size of image data. [must be >= (w*h)*3]
+ * @param img_siz	[in] Size of image data. [must be >= (w*h)*2]
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */

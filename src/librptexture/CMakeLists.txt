@@ -52,6 +52,7 @@ SET(${PROJECT_NAME}_SRCS
 	fileformat/KhronosKTX.cpp
 	fileformat/KhronosKTX2.cpp
 	fileformat/PalmOS_Tbmp.cpp
+	fileformat/PlayStationTIM.cpp
 	fileformat/PowerVR3.cpp
 	fileformat/Qoi.cpp
 	fileformat/SegaPVR.cpp
@@ -100,6 +101,7 @@ SET(${PROJECT_NAME}_H
 	fileformat/KhronosKTX.hpp
 	fileformat/KhronosKTX2.hpp
 	fileformat/PalmOS_Tbmp.hpp
+	fileformat/PlayStationTIM.hpp
 	fileformat/PowerVR3.hpp
 	fileformat/Qoi.hpp
 	fileformat/SegaPVR.hpp
@@ -117,6 +119,7 @@ SET(${PROJECT_NAME}_H
 	fileformat/ktx_structs.h
 	fileformat/palmos_tbmp_structs.h
 	fileformat/palmos_system_palette.h
+	fileformat/ps1_tim_structs.h
 	fileformat/pvr_structs.h
 	fileformat/pvr3_structs.h
 	fileformat/vtf_structs.h

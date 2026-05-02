@@ -33,6 +33,7 @@ using std::vector;
 #include "fileformat/ICO.hpp"
 #include "fileformat/KhronosKTX.hpp"
 #include "fileformat/KhronosKTX2.hpp"
+#include "fileformat/PlayStationTIM.hpp"
 #include "fileformat/PowerVR3.hpp"
 #include "fileformat/Qoi.hpp"
 #include "fileformat/SegaPVR.hpp"
@@ -112,9 +113,10 @@ const array<FileFormatFns, 12> FileFormatFns_magic = {{
 
 // FileFormat subclasses that have special checks.
 // This array is for file extensions and MIME types only.
-const array<FileFormatFns, 3> FileFormatFns_mime = {{
+const array<FileFormatFns, 4> FileFormatFns_mime = {{
 	GetFileFormatFns(KhronosKTX,		P99_PROTECT({{0, 0}})),
 	GetFileFormatFns(KhronosKTX2,		P99_PROTECT({{0, 0}})),
+	GetFileFormatFns(PlayStationTIM,	P99_PROTECT({{0, 0}})),
 	GetFileFormatFns(TGA,			P99_PROTECT({{0, 0}})),
 }};
 
@@ -181,6 +183,7 @@ FileFormatPtr create(const IRpFilePtr &file)
 	// Check for specific file extensions.
 	// - ICO, CUR: Windows icons and cursors don't have a useful magic number.
 	// - TGA: There's no header magic number, but there *is* some information.
+	// - TIM: There's no (useful) header magic number, but there *is* some information.
 
 	// Use some heuristics to check for TGA files.
 	// Based on heuristics from `file`.
@@ -190,6 +193,7 @@ FileFormatPtr create(const IRpFilePtr &file)
 	const char *const filename = file->filename();
 	const char *const ext = FileSystem::file_ext(filename);
 	bool is_ico = false, maybe_tga = false;
+	bool is_tim = true;
 	if (!ext || ext[0] == '\0') {
 		// No extension. Check for TGA anyway.
 		maybe_tga = true;
@@ -199,6 +203,9 @@ FileFormatPtr create(const IRpFilePtr &file)
 	} else if (!strcasecmp(ext, ".ico") || !strcasecmp(ext, ".cur")) {
 		// ICO or CUR extension.
 		is_ico = true;
+	} else if (!strcasecmp(ext, ".tim")) {
+		// TIM extension.
+		is_tim = true;
 	} else if (!strcasecmp(ext, ".gz")) {
 		// Check if it's ".tga.gz".
 		const size_t filename_len = strlen(filename);
@@ -211,6 +218,9 @@ FileFormatPtr create(const IRpFilePtr &file)
 			{
 				// It's ".ico.gz" or ".cur.gz".
 				is_ico = true;
+			} else if (!strncasecmp(&filename[filename_len-7], ".tim", 4)) {
+				// It's ".tim.gz".
+				is_tim = true;
 			}
 		}
 	}
@@ -262,6 +272,15 @@ FileFormatPtr create(const IRpFilePtr &file)
 				default:
 					break;
 			}
+		}
+	}
+
+	if (is_tim) {
+		// This might be a PlayStation TIM texture.
+		FileFormatPtr fileFormat = std::make_shared<PlayStationTIM>(file);
+		if (fileFormat->isValid()) {
+			// FileFormat subclass obtained.
+			return fileFormat;
 		}
 	}
 

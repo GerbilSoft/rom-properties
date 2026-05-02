@@ -2079,6 +2079,21 @@ INSTANTIATE_TEST_SUITE_P(ICO, ImageDecoderTest,
 		ICO_IMAGE_TEST("notepad-nt61-i386-2", "ARGB"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
+// TIM tests
+#define TIM_IMAGE_TEST(file, format) ImageDecoderTest_mode( \
+			"TIM/" file ".tim.gz", \
+			"TIM/" file ".png", (format))
+INSTANTIATE_TEST_SUITE_P(TIM, ImageDecoderTest,
+	::testing::Values(
+		TIM_IMAGE_TEST("testcard_idx4", "CI4"),
+		TIM_IMAGE_TEST("testcard_idx8", "CI8"),
+		TIM_IMAGE_TEST("testcard_idx4_noCLUT", "CI4 (no CLUT)"),
+		TIM_IMAGE_TEST("testcard_idx8_noCLUT", "CI8 (no CLUT)"),
+		TIM_IMAGE_TEST("testcard_rgb16", "BGR555_PS1"),
+		TIM_IMAGE_TEST("testcard_rgb24", "BGR888"),
+		TIM_IMAGE_TEST("sceap", "CI4"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
 // TODO: NPOT tests for compressed formats. (partial block sizes)
 
 } }
