@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * IDownloader.cpp: Downloader interface.                                  *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -385,13 +385,13 @@ tstring IDownloader::getOSRelease(void)
 		return {};
 	}
 
-	// Remove leading and trailing double-quotes, if present.
+	// Remove leading and trailing double-quotes or single-quotes, if present.
 	const char *os_release = ctx.ret_value;
-	if (os_release[0] == '"') {
+	if (os_release[0] == '"' || os_release[0] == '\'') {
 		os_release++;
 	}
 	s_os_release.assign(os_release);
-	if (!s_os_release.empty() && s_os_release[s_os_release.size()-1] == '"') {
+	if (!s_os_release.empty() && (s_os_release[s_os_release.size()-1] == '"' || s_os_release[s_os_release.size()-1] == '\'')) {
 		s_os_release.resize(s_os_release.size()-1);
 	}
 #endif
