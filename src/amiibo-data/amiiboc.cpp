@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (amiibo-data)                      *
  * amiiboc.cpp: Nintendo amiibo binary data compiler.                      *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -149,6 +149,8 @@ static int set_security_options(void)
 	};
 	param.syscall_wl = syscall_wl;
 	param.threading = false;
+	param.socket_tcp_udp = false;
+	param.socket_unix = false;
 #elif defined(HAVE_PLEDGE)
 	// Promises:
 	// - stdio: General stdio functionality.
