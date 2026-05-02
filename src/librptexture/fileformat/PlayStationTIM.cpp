@@ -394,15 +394,15 @@ const char *PlayStationTIM::pixelFormat(void) const
 	// NOTE: Bit 2 isn't used, so splitting this into two tables
 	// to avoid having 8 nullptr entries.
 	static const char *const tim_format_tbl_noCLUT[] = {
-		"4-bit (no CLUT)",
-		"8-bit (no CLUT)",
+		"CI4 (no CLUT)",
+		"CI8 (no CLUT)",
 		"BGR555",
 		"BGR888",
 	};
 
 	static const char *const tim_format_tbl_CLUT[] = {
-		"4-bit",
-		"8-bit",
+		"CI4",
+		"CI8",
 		nullptr,
 		nullptr,
 	};
