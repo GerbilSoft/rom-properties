@@ -35,53 +35,16 @@ void decodeBlock_neon(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc)
 
 	// Process 64 bytes (512 bits) at a time.
 	for (; pDest < pDest_end; pDest += 64, pSrc_odd += 32, pSrc_even += 32) {
-		uint8x16x2_t src_odd;
-		uint8x16x2_t src_even;
-		uint8x16x4_t dest;
+		uint8x16x2_t sa, sb;
+		sa.val[0] = vld1q_u8(&pSrc_even[ 0]);
+		sa.val[1] = vld1q_u8(&pSrc_odd[  0]);
+		sb.val[0] = vld1q_u8(&pSrc_even[16]);
+		sb.val[1] = vld1q_u8(&pSrc_odd[ 16]);
 
-		src_odd.val[0] = vld1q_u8(&pSrc_odd[ 0]);
-		src_odd.val[1] = vld1q_u8(&pSrc_odd[16]);
-		src_even.val[0] = vld1q_u8(&pSrc_even[0]);
-		src_even.val[1] = vld1q_u8(&pSrc_even[16]);
-
-#if defined(RP_CPU_ARM64)
-		// Unpack odd/even bytes into the destination.
-		// vzip1q_u8 => _mm_unpacklo_epi8
-		// vzip2q_u8 => _mm_unpackhi_epi8
-		dest.val[0] = vzip1q_u8(src_even.val[0], src_odd.val[0]);
-		dest.val[1] = vzip2q_u8(src_even.val[0], src_odd.val[0]);
-		dest.val[2] = vzip1q_u8(src_even.val[1], src_odd.val[1]);
-		dest.val[3] = vzip2q_u8(src_even.val[1], src_odd.val[1]);
-#elif defined(RP_CPU_ARM)
-		// Unpack odd/even bytes into the destination.
-		uint8x8_t a1, b1;
-		uint8x8x2_t result;
-
-		a1 = vreinterpret_u8_u16(vget_low_u16(vreinterpretq_u16_u8(src_even.val[0])));
-		b1 = vreinterpret_u8_u16(vget_low_u16(vreinterpretq_u16_u8(src_odd.val[0])));
-		result = vzip_u8(a1, b1);
-		dest.val[0] = vcombine_u8(result.val[0], result.val[1]);
-
-		a1 = vreinterpret_u8_u16(vget_high_u16(vreinterpretq_u16_u8(src_even.val[0])));
-		b1 = vreinterpret_u8_u16(vget_high_u16(vreinterpretq_u16_u8(src_odd.val[0])));
-		result = vzip_u8(a1, b1);
-		dest.val[1] = vcombine_u8(result.val[0], result.val[1]);
-
-		a1 = vreinterpret_u8_u16(vget_low_u16(vreinterpretq_u16_u8(src_even.val[1])));
-		b1 = vreinterpret_u8_u16(vget_low_u16(vreinterpretq_u16_u8(src_odd.val[1])));
-		result = vzip_u8(a1, b1);
-		dest.val[2] = vcombine_u8(result.val[0], result.val[1]);
-
-		a1 = vreinterpret_u8_u16(vget_high_u16(vreinterpretq_u16_u8(src_even.val[1])));
-		b1 = vreinterpret_u8_u16(vget_high_u16(vreinterpretq_u16_u8(src_odd.val[1])));
-		result = vzip_u8(a1, b1);
-		dest.val[3] = vcombine_u8(result.val[0], result.val[1]);
-#endif
-
-		vst1q_u8(&pDest[ 0], dest.val[0]);
-		vst1q_u8(&pDest[16], dest.val[1]);
-		vst1q_u8(&pDest[32], dest.val[2]);
-		vst1q_u8(&pDest[48], dest.val[3]);
+		// vst2q automatically interleaves the first and second
+		// vectors to even/odd in the destination.
+		vst2q_u8(&pDest[ 0], sa);
+		vst2q_u8(&pDest[32], sb);
 	}
 }
 
