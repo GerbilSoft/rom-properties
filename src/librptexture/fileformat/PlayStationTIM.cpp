@@ -396,7 +396,7 @@ const char *PlayStationTIM::pixelFormat(void) const
 	static const char *const tim_format_tbl_noCLUT[] = {
 		"CI4 (no CLUT)",
 		"CI8 (no CLUT)",
-		"BGR555",
+		"BGR555_PS1",
 		"BGR888",
 	};
 
