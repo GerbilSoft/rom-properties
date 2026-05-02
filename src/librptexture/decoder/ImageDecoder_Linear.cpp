@@ -184,19 +184,24 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 				// For PS1 BGR555, if the color value is $0000, it's transparent.
 				const uint16_t px16 = le16_to_cpu(*pal_buf16);
 				if (px16 == 0) {
-					// Transparent color.
+					// Transparent color
 					palette[i] = 0;
 					if (tr_idx < 0) {
 						tr_idx = i;
 					}
 				} else {
-					// Non-transparent color.
+					// Non-transparent color
 					palette[i] = BGR555_to_ARGB32(px16);
 				}
 			}
 			// Set the sBIT metadata.
-			static const rp_image::sBIT_t sBIT = {5,5,5,0,0};
-			img->set_sBIT(sBIT);
+			if (tr_idx >= 0) {
+				static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
+				img->set_sBIT(sBIT);
+			} else {
+				static const rp_image::sBIT_t sBIT = {5,5,5,0,0};
+				img->set_sBIT(sBIT);
+			}
 			break;
 		}
 
@@ -509,6 +514,33 @@ rp_image_ptr fromLinearCI8(PixelFormat px_format,
 			break;
 		}
 
+		case PixelFormat::BGR555_PS1: {
+			const uint16_t *pal_buf16 = reinterpret_cast<const uint16_t*>(pal_buf);
+			for (unsigned int i = 0; i < 256; i++, pal_buf16++) {
+				// For PS1 BGR555, if the color value is $0000, it's transparent.
+				const uint16_t px16 = le16_to_cpu(*pal_buf16);
+				if (px16 == 0) {
+					// Transparent color
+					palette[i].u32 = 0;
+					if (tr_idx < 0) {
+						tr_idx = i;
+					}
+				} else {
+					// Non-transparent color
+					palette[i].u32 = BGR555_to_ARGB32(px16);
+				}
+			}
+			// Set the sBIT metadata.
+			if (tr_idx >= 0) {
+				static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
+				img->set_sBIT(sBIT);
+			} else {
+				static const rp_image::sBIT_t sBIT = {5,5,5,0,0};
+				img->set_sBIT(sBIT);
+			}
+			break;
+		}
+
 		case PixelFormat::Host_ARGB32: {
 			// Host-endian ARGB32. Use the palette directly.
 			const uint32_t *pal_buf32 = static_cast<const uint32_t*>(pal_buf);
@@ -794,25 +826,59 @@ rp_image_ptr fromLinear16_cpp(PixelFormat px_format,
 		fromLinear16_convert(BGRx4444, 4,4,4,0,4);
 		fromLinear16_convert(ARGB8332, 3,3,2,0,8);
 
-		// PlayStation 2.
+		// PlayStation 2
 		fromLinear16_convert(BGR5A3, 5,5,5,0,4);
 
-		// 15-bit RGB.
+		// 15-bit RGB
 		fromLinear16_convert(RGB555, 5,5,5,0,0);
 		fromLinear16_convert(BGR555, 5,5,5,0,0);
 
 		// IA8
 		fromLinear16_convert(IA8, 8,8,8,8,8);
 
-		// Luminance.
+		// Luminance
 		// TODO: 16-bit support. Downconverted to 8 for now.
 		fromLinear16_convert(L16, 8,8,8,8,0);
 		fromLinear16_convert(A8L8, 8,8,8,8,8);
 		fromLinear16_convert(L8A8, 8,8,8,8,8);
 
-		// RG formats.
+		// RG formats
 		fromLinear16_convert(RG88, 8,8,1,0,0);
 		fromLinear16_convert(GR88, 8,8,1,0,0);
+
+		// Special case for PS1
+		case PixelFormat::BGR555_PS1: {
+			bool has_transparent = false;
+
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
+				for (unsigned int x = (unsigned int)width; x > 0; x--) {
+					const uint16_t px16 = le16_to_cpu(*img_buf);
+					if (px16 == 0) {
+						// Transparent color
+						*px_dest = 0;
+						has_transparent = true;
+					} else {
+						// Non-transparent color
+						*px_dest = BGR555_to_ARGB32(px16);
+					}
+
+					img_buf++;
+					px_dest++;
+				}
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
+			}
+
+			// Set the sBIT metadata.
+			if (has_transparent) {
+				static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
+				img->set_sBIT(sBIT);
+			} else {
+				static const rp_image::sBIT_t sBIT = {5,5,5,0,0};
+				img->set_sBIT(sBIT);
+			}
+			break;
+		}
 
 		default:
 			assert(!"Unsupported 16-bit pixel format.");
