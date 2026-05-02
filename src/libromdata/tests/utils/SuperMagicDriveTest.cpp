@@ -298,8 +298,37 @@ TEST_F(SuperMagicDriveTest, decodeBlock_sse2_benchmark)
 }
 #endif /* SMD_HAS_SSE2 */
 
+#ifdef SMD_HAS_NEON
+/**
+ * Test the NEON-optimized SMD decoder.
+ */
+TEST_F(SuperMagicDriveTest, decodeBlock_neon_test)
+{
+	if (!RP_CPU_arm_HasNEON()) {
+		GTEST_SKIP() << "*** NEON is not supported on this CPU. Skipping test.";
+	}
+
+	SuperMagicDrive::decodeBlock_neon(align_buf.get(), m_smd_data);
+	EXPECT_EQ(0, memcmp(m_bin_data, align_buf.get(), SuperMagicDrive::SMD_BLOCK_SIZE));
+}
+
+/**
+ * Benchmark the NEON-optimized SMD decoder.
+ */
+TEST_F(SuperMagicDriveTest, decodeBlock_neon_benchmark)
+{
+	if (!RP_CPU_arm_HasNEON()) {
+		GTEST_SKIP() << "*** NEON is not supported on this CPU. Skipping test.";
+	}
+
+	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
+		SuperMagicDrive::decodeBlock_neon(align_buf.get(), m_smd_data);
+	}
+}
+#endif /* SMD_HAS_NEON */
+
 // NOTE: Add more instruction sets to the #ifdef if other optimizations are added.
-#if defined(SMD_HAS_MMX) || defined(SMD_HAS_SSE2)
+#if defined(SMD_HAS_MMX) || defined(SMD_HAS_SSE2) || defined(SMD_HAS_NEON)
 /**
  * Test the decodeBlock() dispatch function.
  */
@@ -318,7 +347,7 @@ TEST_F(SuperMagicDriveTest, decodeBlock_dispatch_benchmark)
 		SuperMagicDrive::decodeBlock(align_buf.get(), m_smd_data);
 	}
 }
-#endif /* SMD_HAS_MMX || SMD_HAS_SSE2 */
+#endif /* SMD_HAS_MMX || SMD_HAS_SSE2 || SMD_HAS_NEON */
 
 } }
 

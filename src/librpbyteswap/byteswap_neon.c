@@ -40,12 +40,15 @@ void RP_C_API rp_byte_swap_16_array_neon(uint16_t *ptr, size_t n)
 
 	// Process 16 WORDs per iteration using ARM NEON intrinsics.
 	for (; n >= 32; n -= 32, ptr += 16) {
-		uint16x8x2_t vec = vld2q_u16(ptr);
+		uint16x8x2_t vec;
+		vec.val[0] = vld1q_u16(ptr);
+		vec.val[1] = vld1q_u16(ptr + 8);
 
 		vec.val[0] = vrev16q_u8_u16(vec.val[0]);
 		vec.val[1] = vrev16q_u8_u16(vec.val[1]);
 
-		vst2q_u16(ptr, vec);
+		vst1q_u16(ptr, vec.val[0]);
+		vst1q_u16(ptr + 8, vec.val[1]);
 	}
 
 	// Process the remaining data, one WORD at a time.
@@ -76,12 +79,15 @@ void RP_C_API rp_byte_swap_32_array_neon(uint32_t *ptr, size_t n)
 
 	// Process 8 DWORDs per iteration using ARM NEON intrinsics.
 	for (; n >= 32; n -= 32, ptr += 8) {
-		uint32x4x2_t vec = vld2q_u32(ptr);
+		uint32x4x2_t vec;
+		vec.val[0] = vld1q_u32(ptr);
+		vec.val[1] = vld1q_u32(ptr + 4);
 
 		vec.val[0] = vrev32q_u8_u32(vec.val[0]);
 		vec.val[1] = vrev32q_u8_u32(vec.val[1]);
 
-		vst2q_u32(ptr, vec);
+		vst1q_u32(ptr, vec.val[0]);
+		vst1q_u32(ptr + 4, vec.val[1]);
 	}
 
 	// Process the remaining data, one DWORD at a time.

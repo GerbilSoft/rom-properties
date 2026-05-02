@@ -52,6 +52,10 @@
   * GNU gettext-runtime 1.0 sources, with a custom CMakeLists.txt, are now
     included for Windows builds. Both MinGW-w64 and MSVC builds are supported.
     * This significantly simplifies gettext compilation for ARM Windows platforms.
+  * SuperMagicDrive: Added a NEON-optimized SMD decoder.
+  * Other NEON-optimized functions: Don't use vld2/vst2 because they do
+    interleaving/de-interleaving. Since we used matched pairs, it didn't
+    actually break anything, but use vld1/vst1 to convey intent.
 
 ## v2.7.1-xp64 (released 2026/04/25)
 

@@ -255,17 +255,31 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 			unsigned int x = static_cast<unsigned int>(width);
 			for (; x > 15; x -= 16, px_dest += 16, img_buf += 16) {
 #if defined(RP_CPU_ARM64)
-				uint32x4x4_t sa = vld4q_u32(img_buf);
+				uint32x4x4_t sa;
+				sa.val[0] = vld1q_u32(img_buf);
+				sa.val[1] = vld1q_u32(img_buf + 4);
+				sa.val[2] = vld1q_u32(img_buf + 8);
+				sa.val[3] = vld1q_u32(img_buf + 12);
 
 				sa.val[0] = vqtbl1q_u8_u32(sa.val[0], shuf_mask);
 				sa.val[1] = vqtbl1q_u8_u32(sa.val[1], shuf_mask);
 				sa.val[2] = vqtbl1q_u8_u32(sa.val[2], shuf_mask);
 				sa.val[3] = vqtbl1q_u8_u32(sa.val[3], shuf_mask);
 
-				vst4q_u32(px_dest, sa);
+				vst1q_u32(px_dest, sa.val[0]);
+				vst1q_u32(px_dest + 4, sa.val[1]);
+				vst1q_u32(px_dest + 8, sa.val[2]);
+				vst1q_u32(px_dest + 12, sa.val[3]);
 #elif defined(RP_CPU_ARM)
-				uint32x2x4_t sa = vld4_u32(&img_buf[0]);
-				uint32x2x4_t sb = vld4_u32(&img_buf[8]);
+				uint32x2x4_t sa, sb;
+				sa.val[0] = vld1_u32(&img_buf[ 0]);
+				sa.val[1] = vld1_u32(&img_buf[ 2]);
+				sa.val[2] = vld1_u32(&img_buf[ 4]);
+				sa.val[3] = vld1_u32(&img_buf[ 6]);
+				sb.val[0] = vld1_u32(&img_buf[ 8]);
+				sb.val[1] = vld1_u32(&img_buf[10]);
+				sb.val[2] = vld1_u32(&img_buf[12]);
+				sb.val[3] = vld1_u32(&img_buf[14]);
 
 				sa.val[0] = vtbl1_u8_u32(sa.val[0], shuf_mask);
 				sa.val[1] = vtbl1_u8_u32(sa.val[1], shuf_mask);
@@ -276,8 +290,14 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 				sb.val[2] = vtbl1_u8_u32(sb.val[2], shuf_mask);
 				sb.val[3] = vtbl1_u8_u32(sb.val[3], shuf_mask);
 
-				vst4_u32(&px_dest[0], sa);
-				vst4_u32(&px_dest[8], sb);
+				vst1_u32(&px_dest[ 0], sa.val[0]);
+				vst1_u32(&px_dest[ 2], sa.val[1]);
+				vst1_u32(&px_dest[ 4], sa.val[2]);
+				vst1_u32(&px_dest[ 6], sa.val[3]);
+				vst1_u32(&px_dest[ 8], sb.val[0]);
+				vst1_u32(&px_dest[10], sb.val[1]);
+				vst1_u32(&px_dest[12], sb.val[2]);
+				vst1_u32(&px_dest[14], sb.val[3]);
 #endif
 			}
 
@@ -361,7 +381,11 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 			unsigned int x = static_cast<unsigned int>(width);
 			for (; x > 15; x -= 16, px_dest += 16, img_buf += 16) {
 #if defined(RP_CPU_ARM64)
-				uint32x4x4_t sa = vld4q_u32(img_buf);
+				uint32x4x4_t sa;
+				sa.val[0] = vld1q_u32(img_buf);
+				sa.val[1] = vld1q_u32(img_buf + 4);
+				sa.val[2] = vld1q_u32(img_buf + 8);
+				sa.val[3] = vld1q_u32(img_buf + 12);
 
 				sa.val[0] = vqtbl1q_u8_u32(sa.val[0], shuf_mask);
 				sa.val[1] = vqtbl1q_u8_u32(sa.val[1], shuf_mask);
@@ -373,10 +397,20 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 				sa.val[2] = vorrq_u32(sa.val[2], or_mask);
 				sa.val[3] = vorrq_u32(sa.val[3], or_mask);
 
-				vst4q_u32(px_dest, sa);
+				vst1q_u32(px_dest, sa.val[0]);
+				vst1q_u32(px_dest + 4, sa.val[1]);
+				vst1q_u32(px_dest + 8, sa.val[2]);
+				vst1q_u32(px_dest + 12, sa.val[3]);
 #elif defined(RP_CPU_ARM)
-				uint32x2x4_t sa = vld4_u32(&img_buf[0]);
-				uint32x2x4_t sb = vld4_u32(&img_buf[8]);
+				uint32x2x4_t sa, sb;
+				sa.val[0] = vld1_u32(&img_buf[ 0]);
+				sa.val[1] = vld1_u32(&img_buf[ 2]);
+				sa.val[2] = vld1_u32(&img_buf[ 4]);
+				sa.val[3] = vld1_u32(&img_buf[ 6]);
+				sb.val[0] = vld1_u32(&img_buf[ 8]);
+				sb.val[1] = vld1_u32(&img_buf[10]);
+				sb.val[2] = vld1_u32(&img_buf[12]);
+				sb.val[3] = vld1_u32(&img_buf[14]);
 
 				sa.val[0] = vtbl1_u8_u32(sa.val[0], shuf_mask);
 				sa.val[1] = vtbl1_u8_u32(sa.val[1], shuf_mask);
@@ -396,8 +430,14 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 				sb.val[2] = vorr_u32(sb.val[2], or_mask);
 				sb.val[3] = vorr_u32(sb.val[3], or_mask);
 
-				vst4_u32(&px_dest[0], sa);
-				vst4_u32(&px_dest[8], sb);
+				vst1_u32(&px_dest[ 0], sa.val[0]);
+				vst1_u32(&px_dest[ 2], sa.val[1]);
+				vst1_u32(&px_dest[ 4], sa.val[2]);
+				vst1_u32(&px_dest[ 6], sa.val[3]);
+				vst1_u32(&px_dest[ 8], sb.val[0]);
+				vst1_u32(&px_dest[10], sb.val[1]);
+				vst1_u32(&px_dest[12], sb.val[2]);
+				vst1_u32(&px_dest[14], sb.val[3]);
 #endif
 			}
 
