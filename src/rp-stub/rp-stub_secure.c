@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-stub)                          *
  * rp-stub_secure.c: Security options for rp-stub.                         *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -119,6 +119,8 @@ int rp_stub_do_security_options(bool config)
 	};
 	param.syscall_wl = syscall_wl;
 	param.threading = true;		// FIXME: Only if OpenMP is enabled?
+	param.socket_tcp_udp = false;
+	param.socket_unix = true;	// potentially needed for D-Bus
 #elif defined(HAVE_PLEDGE)
 	// Promises:
 	// - stdio: General stdio functionality.

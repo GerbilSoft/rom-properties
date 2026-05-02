@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpsecure)                      *
  * os-secure_linux.c: OS security functions. (Linux)                       *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,6 +19,11 @@
 #include <seccomp.h>
 #include <sys/prctl.h>
 #include <linux/sched.h>	// CLONE_THREAD
+
+// Socket headers for filtering socket() calls.
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <netinet/in.h>
 
 #include "seccomp-debug.h"
 #ifdef ENABLE_SECCOMP_DEBUG
@@ -126,27 +131,28 @@ int rp_secure_enable(rp_secure_param_t param)
 
 	// Whitelist the standard syscalls.
 	for (const int16_t *p = syscall_wl_std; *p != -1; p++) {
-		seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, *p, 0, NULL);
+		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, *p, 0);
 	}
 
 	// Multi-threading syscalls.
 	if (param.threading) {
 		// clone() syscall. Only allow threads.
-		const struct scmp_arg_cmp clone_params[] = {
-			SCMP_A0(SCMP_CMP_MASKED_EQ, CLONE_THREAD, CLONE_THREAD),
-		};
-		seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clone),
-			(unsigned int)(sizeof(clone_params)/sizeof(clone_params[0])), clone_params);
+		// NOTE: The raw syscall has flags as the *first* parameter.
+		// The glibc wrapper has flags as the *third* parameter.
+		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clone), 1,
+			SCMP_A0_32(SCMP_CMP_MASKED_EQ, CLONE_THREAD, CLONE_THREAD));
+
+		// clone3() syscall: Block it ince we can't filter it easily.
+		// [pthread_create() with glibc-2.34]
+#if defined(__SNR_clone3)
+		seccomp_rule_add(ctx, SCMP_ACT_ERRNO(ENOSYS), SCMP_SYS(clone3), 0);
+#elif defined(__NR_clone3)
+		seccomp_rule_add(ctx, SCMP_ACT_ERRNO(ENOSYS), __NR_clone3, 0);
+#endif /* __SNR_clone3 || __NR_clone3 */
 
 		// Other syscalls for multi-threading.
 		static const int16_t syscall_wl_threading[] = {
-			SCMP_SYS(clone),
 			SCMP_SYS(set_robust_list),
-#if defined(__SNR_clone3)
-			SCMP_SYS(clone3),	// pthread_create() with glibc-2.34
-#elif defined(__NR_clone3)
-			__NR_clone3,		// pthread_create() with glibc-2.34
-#endif /* __SNR_clone3 || __NR_clone3 */
 #if defined(__SNR_rseq)
 			SCMP_SYS(rseq),		// restartable sequences, glibc-2.35
 #elif defined(__NR_rseq)
@@ -187,6 +193,38 @@ int rp_secure_enable(rp_secure_param_t param)
 		for (const int16_t *p = syscall_wl_threading; *p != -1; p++) {
 			seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, *p, 0, NULL);
 		}
+	}
+
+	if (param.socket_tcp_udp) {
+		// Allow socket() for TCP and UDP.
+		// NOTE: The second argument (type) can have flags set.
+		// Assuming the low 10 bits are valid socket types.
+		// TODO: Only exclude SOCK_NONBLOCK and SOCK_CLOEXEC?
+		static const struct scmp_arg_cmp socket_tcp_udp_rules[4][2] = {
+			// IPv4, TCP
+			{SCMP_A0_32(SCMP_CMP_EQ, AF_INET, 0),
+			 SCMP_A1_32(SCMP_CMP_MASKED_EQ, 0x3FF, SOCK_STREAM)},
+			// IPv4, UDP
+			{SCMP_A0_32(SCMP_CMP_EQ, AF_INET, 0),
+			 SCMP_A1_32(SCMP_CMP_MASKED_EQ, 0x3FF, SOCK_DGRAM)},
+
+			// IPv6, TCP
+			{SCMP_A0_32(SCMP_CMP_EQ, AF_INET6, 0),
+			 SCMP_A1_32(SCMP_CMP_MASKED_EQ, 0x3FF, SOCK_STREAM)},
+			// IPv6, UDP
+			{SCMP_A0_32(SCMP_CMP_EQ, AF_INET6, 0),
+			 SCMP_A1_32(SCMP_CMP_MASKED_EQ, 0x3FF, SOCK_DGRAM)},
+		};
+
+		for (unsigned int i = 0; i < 4; i++) {
+			seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, SCMP_SYS(socket), 2, socket_tcp_udp_rules[i]);
+		}
+	}
+
+	if (param.socket_unix) {
+		// Allow socket() for Unix domain sockets.
+		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(socket), 1,
+			SCMP_A0_32(SCMP_CMP_EQ, AF_UNIX, 0));
 	}
 
 	// Add syscalls from the caller's whitelist.

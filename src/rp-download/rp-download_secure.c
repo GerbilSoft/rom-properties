@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * rp-download_secure.h: Security options for rp-download.                 *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -97,7 +97,7 @@ int rp_download_do_security_options(void)
 #endif /* __SNR_getrandom */
 		SCMP_SYS(getpeername), SCMP_SYS(getsockname),
 		SCMP_SYS(getsockopt), SCMP_SYS(madvise), SCMP_SYS(mprotect),
-		SCMP_SYS(setsockopt), SCMP_SYS(socket),
+		SCMP_SYS(setsockopt),
 		SCMP_SYS(socketcall),	// FIXME: Enhanced filtering? [cURL+GnuTLS only?]
 		SCMP_SYS(socketpair), SCMP_SYS(sysinfo),
 		SCMP_SYS(rt_sigprocmask),	// Ubuntu 20.04: __GI_getaddrinfo() ->
@@ -128,6 +128,8 @@ int rp_download_do_security_options(void)
 	};
 	param.syscall_wl = syscall_wl;
 	param.threading = true;		// libcurl uses multi-threading.
+	param.socket_tcp_udp = true;	// for downloading from the Internet
+	param.socket_unix = false;
 #elif defined(HAVE_PLEDGE)
 	// Promises:
 	// - stdio: General stdio functionality.

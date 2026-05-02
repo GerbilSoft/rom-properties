@@ -300,6 +300,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	syscall_wl.push_back(-1);
 	param.syscall_wl = syscall_wl.data();
 	param.threading = true;		// FIXME: Only if OpenMP is enabled?
+	param.socket_tcp_udp = false;
+	param.socket_unix = false;
 #elif defined(HAVE_PLEDGE)
 	// Promises:
 	// - stdio: General stdio functionality.

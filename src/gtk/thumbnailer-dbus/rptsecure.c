@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (D-Bus Thumbnailer)                *
  * rptsecure.c: Security options for rp-thumbnailer-dbus.                  *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -81,7 +81,7 @@ int rpt_do_security_options(void)
 		SCMP_SYS(fcntl), SCMP_SYS(fcntl64),
 		SCMP_SYS(getdents), SCMP_SYS(getdents64)	// g_file_new_for_uri() [rp_create_thumbnail()]
 		SCMP_SYS(getegid), SCMP_SYS(geteuid), SCMP_SYS(poll),
-		SCMP_SYS(recvfrom), SCMP_SYS(sendmsg), SCMP_SYS(socket),
+		SCMP_SYS(recvfrom), SCMP_SYS(sendmsg),
 		SCMP_SYS(socketcall),	// FIXME: Enhanced filtering? [cURL+GnuTLS only?]
 		SCMP_SYS(socketpair), SCMP_SYS(sysinfo),
 		SCMP_SYS(rt_sigprocmask),	// Ubuntu 20.04: __GI_getaddrinfo() ->
@@ -99,6 +99,8 @@ int rpt_do_security_options(void)
 	};
 	param.syscall_wl = syscall_wl;
 	param.threading = true;		// libcurl uses multi-threading.
+	param.socket_tcp_udp = true;	// for downloading from the Internet
+	param.socket_unix = true;	// for D-Bus
 #elif defined(HAVE_PLEDGE)
 	// Promises:
 	// - stdio: General stdio functionality.

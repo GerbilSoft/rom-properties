@@ -109,6 +109,8 @@ int rpcli_do_security_options(void)
 	};
 	param.syscall_wl = syscall_wl;
 	param.threading = true;		// FIXME: Only if OpenMP is enabled?
+	param.socket_tcp_udp = false;
+	param.socket_unix = false;
 #elif defined(HAVE_PLEDGE)
 	// Promises:
 	// - stdio: General stdio functionality.

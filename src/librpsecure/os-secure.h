@@ -57,6 +57,8 @@ typedef struct _rp_secure_param_t {
 #elif defined(HAVE_SECCOMP)
 	const int16_t *syscall_wl;	// Array of allowed syscalls. (-1 terminated)
 	bool threading;			// Set to true to enable multi-threading.
+	bool socket_tcp_udp;		// Allow socket() for TCP and UDP.
+	bool socket_unix;		// Allow socket() for Unix domain sockets.
 #elif defined(HAVE_PLEDGE)
 	const char *promises;	// pledge() promises
 #elif defined(HAVE_TAME)
