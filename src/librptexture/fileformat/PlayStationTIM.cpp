@@ -189,7 +189,7 @@ rp_image_const_ptr PlayStationTIMPrivate::loadImage(void)
 	// NOTE: fb.width is always in units of 16-bit pixels.
 	// The actual image width depends on the format.
 	uint32_t img_siz = static_cast<uint32_t>(stride) * static_cast<uint32_t>(height);
-	unique_ptr<uint8_t[]> img_buf(new uint8_t[img_siz]);
+	auto img_buf = aligned_uptr<uint8_t>(16, img_siz);
 	size_t size = file->seekAndRead(texDataStartAddr, img_buf.get(), img_siz);
 	if (size != img_siz) {
 		// Seek and/or read error.
