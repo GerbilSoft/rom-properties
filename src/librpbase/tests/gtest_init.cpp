@@ -281,6 +281,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// Add base syscalls.
 	syscall_wl.insert(syscall_wl.end(), syscall_wl_base, &syscall_wl_base[ARRAY_SIZE(syscall_wl_base)]);
 
+	// Default to no Unix domain sockets.
+	// It should be enabled if building Qt or GTK tests.
+	param.socket_unix = false;
+
 	if (rp_gtest_syscall_set & RP_GTEST_SYSCALL_SET_GTEST_DEATH_TEST) {
 		// Add Google Test death test syscalls.
 		syscall_wl.insert(syscall_wl.end(), syscall_wl_gtest_death_test, &syscall_wl_gtest_death_test[ARRAY_SIZE(syscall_wl_gtest_death_test)]);
@@ -289,11 +293,13 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	if (rp_gtest_syscall_set & RP_GTEST_SYSCALL_SET_QT) {
 		// Add Qt syscalls.
 		syscall_wl.insert(syscall_wl.end(), syscall_wl_qt, &syscall_wl_qt[ARRAY_SIZE(syscall_wl_qt)]);
+		param.socket_unix = true;
 	}
 
 	if (rp_gtest_syscall_set & RP_GTEST_SYSCALL_SET_GTK) {
 		// Add GTK syscalls.
 		syscall_wl.insert(syscall_wl.end(), syscall_wl_gtk, &syscall_wl_gtk[ARRAY_SIZE(syscall_wl_gtk)]);
+		param.socket_unix = true;
 	}
 
 	// End of syscalls.
@@ -301,7 +307,6 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	param.syscall_wl = syscall_wl.data();
 	param.threading = true;		// FIXME: Only if OpenMP is enabled?
 	param.socket_tcp_udp = false;
-	param.socket_unix = false;
 #elif defined(HAVE_PLEDGE)
 	// Promises:
 	// - stdio: General stdio functionality.
