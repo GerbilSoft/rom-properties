@@ -13,6 +13,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 #include <string.h>
 
 // libseccomp
@@ -139,8 +140,19 @@ int rp_secure_enable(rp_secure_param_t param)
 		// clone() syscall. Only allow threads.
 		// NOTE: The raw syscall has flags as the *first* parameter.
 		// The glibc wrapper has flags as the *third* parameter.
+		static const uint32_t RP_CLONE_ALLOWED_FLAGS =
+			CLONE_THREAD | CLONE_CHILD_SETTID | CLONE_CHILD_CLEARTID |
+			CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND |
+			CLONE_SYSVSEM | CLONE_SETTLS | CLONE_PARENT_SETTID;
+
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clone), 1,
-			SCMP_A0_32(SCMP_CMP_MASKED_EQ, CLONE_THREAD, CLONE_THREAD));
+			SCMP_A0_32(SCMP_CMP_MASKED_EQ, ~RP_CLONE_ALLOWED_FLAGS, 0));
+		// Ubuntu 22.04 with glibc-2.35: SIGCHLD is specified.
+		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clone), 1,
+			SCMP_A0_32(SCMP_CMP_MASKED_EQ, 0x1F, SIGCHLD));
+		// Gentoo with glibc-2.43-r1: No signal is specified.
+		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clone), 1,
+			SCMP_A0_32(SCMP_CMP_MASKED_EQ, 0x1F, 0));
 
 		// clone3() syscall: Block it ince we can't filter it easily.
 		// [pthread_create() with glibc-2.34]
