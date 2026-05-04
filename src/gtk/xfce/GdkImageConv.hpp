@@ -2,11 +2,13 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * GdkImageConv.hpp: Helper functions to convert from rp_image to GDK.     *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
+
+#include "config.gtk.h"
 
 // NOTE: GdkPixbuf doesn't natively support 8bpp. Because of this,
 // we can't simply make a GdkPixbuf rp_image backend.
@@ -20,6 +22,16 @@ namespace LibRpTexture {
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
 #  include "librpcpuid/cpuflags_x86.h"
 #  define GDKIMAGECONV_HAS_SSSE3 1
+#elif defined(HAVE_ARM_NEON_H)
+#  if defined(RP_CPU_ARM) || defined(RP_CPU_ARM64)
+#    include "librpcpuid/cpuflags_arm.h"
+#    define GDKIMAGECONV_HAS_NEON 1
+#  endif
+#endif
+#ifdef HAVE_ARM_NEON_H
+#  ifdef RP_CPU_ARM64
+#    define GDKIMAGECONV_ALWAYS_HAS_NEON 1
+#  endif
 #endif
 
 namespace GdkImageConv {
@@ -42,6 +54,16 @@ GdkPixbuf *rp_image_to_GdkPixbuf_cpp(const LibRpTexture::rp_image *img);
 GdkPixbuf *rp_image_to_GdkPixbuf_ssse3(const LibRpTexture::rp_image *img);
 #endif /* GDKIMAGECONV_HAS_SSSE3 */
 
+#ifdef GDKIMAGECONV_HAS_NEON
+/**
+ * Convert an rp_image to GdkPixbuf.
+ * NEON-optimized version.
+ * @param img	[in] rp_image.
+ * @return GdkPixbuf, or nullptr on error.
+ */
+GdkPixbuf *rp_image_to_GdkPixbuf_neon(const LibRpTexture::rp_image *img);
+#endif /* GDKIMAGECONV_HAS_NEON */
+
 /**
  * Convert an rp_image to GdkPixbuf.
  * @param img rp_image.
@@ -49,14 +71,23 @@ GdkPixbuf *rp_image_to_GdkPixbuf_ssse3(const LibRpTexture::rp_image *img);
  */
 inline GdkPixbuf *rp_image_to_GdkPixbuf(const LibRpTexture::rp_image *img)
 {
-#ifdef GDKIMAGECONV_HAS_SSSE3
+#if defined(SMD_ALWAYS_HAS_NEON)
+	return rp_image_to_GdkPixbuf_neon(img);
+#else
+#  ifdef GDKIMAGECONV_HAS_SSSE3
 	if (RP_CPU_x86_HasSSSE3()) {
 		return rp_image_to_GdkPixbuf_ssse3(img);
 	} else
-#endif /* GDKIMAGECONV_HAS_SSSE3 */
+#  endif /* GDKIMAGECONV_HAS_SSSE3 */
+#  ifdef GDKIMAGECONV_HAS_NEON
+	if (RP_CPU_arm_HasNEON()) {
+		return rp_image_to_GdkPixbuf_neon(img);
+	} else
+#  endif /* GDKIMAGECONV_HAS_NEON */
 	{
 		return rp_image_to_GdkPixbuf_cpp(img);
 	}
+#endif
 }
 
 }

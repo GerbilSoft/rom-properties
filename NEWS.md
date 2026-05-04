@@ -53,6 +53,7 @@
     included for Windows builds. Both MinGW-w64 and MSVC builds are supported.
     * This significantly simplifies gettext compilation for ARM Windows platforms.
   * SuperMagicDrive: Added a NEON-optimized SMD decoder.
+  * GdkImageConv: Added a NEON-optimized version.
   * Other NEON-optimized functions: Don't use vld2/vst2 because they do
     interleaving/de-interleaving. Since we used matched pairs, it didn't
     actually break anything, but use vld1/vst1 to convey intent.
