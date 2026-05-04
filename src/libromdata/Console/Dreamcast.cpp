@@ -76,7 +76,6 @@ public:
 	int iso_start_offset;
 
 	// Disc reader
-	// NOTE: May be GdiReader. (TODO: std::variant<> so we don't need dynamic_cast<>?)
 	IDiscReaderPtr discReader;
 
 	// ISO-9660 data track (GD data, not CD data)
