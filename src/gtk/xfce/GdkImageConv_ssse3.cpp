@@ -119,8 +119,10 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 			const unsigned int src_pal_len = img->palette_len();
 			assert(src_pal != nullptr);
 			assert(src_pal_len > 0);
-			if (!src_pal || src_pal_len == 0)
+			if (!src_pal || src_pal_len == 0) {
+				g_clear_object(&pixbuf);
 				break;
+			}
 
 			// Get the palette.
 			static constexpr unsigned int dest_pal_len = 256;
