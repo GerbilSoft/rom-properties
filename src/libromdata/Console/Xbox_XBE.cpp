@@ -73,15 +73,16 @@ public:
 
 	// Title image
 	// NOTE: May be a PNG image on some discs.
-	struct xtImage_t {
-		variant<XboxXPRPtr, rp_image_ptr> data;
-		bool isInit;
+	variant<std::monostate, XboxXPRPtr, rp_image_ptr> xtImage;
 
-		xtImage_t()
-			: isInit(false)
-		{ }
-	};
-	xtImage_t xtImage;
+	/**
+	 * Is xtImage set? (i.e. does it contain something other than std::monostate)
+	 * @return True if the variant is set; false if it isn't.
+	 */
+	inline bool isXtImageSet(void) const
+	{
+		return !std::holds_alternative<std::monostate>(xtImage);
+	}
 
 public:
 	/**
@@ -94,7 +95,7 @@ public:
 
 	/**
 	 * Initialize the title image object.
-	 * NOTE: Check xtImage's union after initializing.
+	 * NOTE: Check xtImage after initializing.
 	 * @return 0 if initialized; negative POSIX error code on error.
 	 */
 	int initXPR0_xtImage(void);
@@ -270,7 +271,7 @@ int Xbox_XBE_Private::findXbeSectionHeader(const char *name, XBE_Section_Header 
  */
 int Xbox_XBE_Private::initXPR0_xtImage(void)
 {
-	if (xtImage.isInit) {
+	if (isXtImageSet()) {
 		// Title image is already initialized.
 		return 0;
 	}
@@ -309,8 +310,7 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 		XboxXPRPtr xpr0 = std::make_shared<XboxXPR>(subFile);
 		if (xpr0->isOpen()) {
 			// XPR0 image opened.
-			xtImage.data = std::move(xpr0);
-			xtImage.isInit = true;
+			xtImage = std::move(xpr0);
 		} else {
 			// Unable to open the XPR0 image.
 			ret = -EIO;
@@ -320,8 +320,7 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 		rp_image_ptr img = RpPng::load(subFile);
 		if (img->isValid()) {
 			// PNG image opened.
-			xtImage.data = std::move(img);
-			xtImage.isInit = true;
+			xtImage = std::move(img);
 		} else {
 			// Unable to open the PNG image.
 			ret = -EIO;
@@ -537,11 +536,9 @@ void Xbox_XBE::close(void)
 		d->pe_exe->close();
 	}
 
-	if (d->xtImage.isInit) {
-		if (std::holds_alternative<XboxXPRPtr>(d->xtImage.data)) {
-			// XPR0 image
-			std::get<XboxXPRPtr>(d->xtImage.data)->close();
-		}
+	if (std::holds_alternative<XboxXPRPtr>(d->xtImage)) {
+		// XPR0 image
+		std::get<XboxXPRPtr>(d->xtImage)->close();
 	}
 
 	// Call the superclass function.
@@ -612,11 +609,11 @@ const char *Xbox_XBE::systemName(unsigned int type) const
 uint32_t Xbox_XBE::supportedImageTypes(void) const
 {
 	RP_D(const Xbox_XBE);
-	if (!d->xtImage.isInit) {
+	if (!d->isXtImageSet()) {
 		const_cast<Xbox_XBE_Private*>(d)->initXPR0_xtImage();
 	}
 
-	return (d->xtImage.isInit ? IMGBF_INT_ICON : 0);
+	return (likely(d->isXtImageSet()) ? IMGBF_INT_ICON : 0);
 }
 
 /**
@@ -634,11 +631,11 @@ vector<RomData::ImageSizeDef> Xbox_XBE::supportedImageSizes(ImageType imageType)
 	}
 
 	RP_D(const Xbox_XBE);
-	if (!d->xtImage.isInit) {
+	if (!d->isXtImageSet()) {
 		// No images yet. Try loading it.
 		const_cast<Xbox_XBE_Private*>(d)->initXPR0_xtImage();
 	}
-	if (!d->xtImage.isInit) {
+	if (!d->isXtImageSet()) {
 		// Still no images.
 		return {};
 	}
@@ -647,16 +644,19 @@ vector<RomData::ImageSizeDef> Xbox_XBE::supportedImageSizes(ImageType imageType)
 	sz_INT_ICON.name = nullptr;
 	sz_INT_ICON.index = 0;
 
-	if (std::holds_alternative<XboxXPRPtr>(d->xtImage.data)) {
+	if (std::holds_alternative<XboxXPRPtr>(d->xtImage)) {
 		// XPR0 image
-		const XboxXPR *const xpr0 = std::get<XboxXPRPtr>(d->xtImage.data).get();
+		const XboxXPR *const xpr0 = std::get<XboxXPRPtr>(d->xtImage).get();
 		sz_INT_ICON.width = xpr0->width();
 		sz_INT_ICON.height = xpr0->height();
-	} else {
+	} else if (std::holds_alternative<rp_image_ptr>(d->xtImage)) {
 		// PNG image
-		const rp_image *const png = std::get<rp_image_ptr>(d->xtImage.data).get();
+		const rp_image *const png = std::get<rp_image_ptr>(d->xtImage).get();
 		sz_INT_ICON.width = png->width();
 		sz_INT_ICON.height = png->height();
+	} else {
+		// Not recognized?
+		return {};
 	}
 
 	return {sz_INT_ICON};
@@ -681,32 +681,30 @@ uint32_t Xbox_XBE::imgpf(ImageType imageType) const
 	}
 
 	RP_D(const Xbox_XBE);
-	if (!d->xtImage.isInit) {
+	if (!d->isXtImageSet()) {
 		const_cast<Xbox_XBE_Private*>(d)->initXPR0_xtImage();
 	}
 
+	// If both dimensions of the texture are 64 or less,
+	// specify nearest-neighbor scaling.
 	uint32_t ret = 0;
-	if (d->xtImage.isInit) {
-		// If both dimensions of the texture are 64 or less,
-		// specify nearest-neighbor scaling.
-		if (std::holds_alternative<XboxXPRPtr>(d->xtImage.data)) {
-			// XPR0 image
-			const XboxXPR *const xpr0 = std::get<XboxXPRPtr>(d->xtImage.data).get();
-			if (xpr0->width() <= 64 && xpr0->height() <= 64) {
-				// 64x64 or smaller.
-				ret = IMGPF_RESCALE_NEAREST;
-			}
+	if (std::holds_alternative<XboxXPRPtr>(d->xtImage)) {
+		// XPR0 image
+		const XboxXPR *const xpr0 = std::get<XboxXPRPtr>(d->xtImage).get();
+		if (xpr0->width() <= 64 && xpr0->height() <= 64) {
+			// 64x64 or smaller.
+			ret = IMGPF_RESCALE_NEAREST;
+		}
+	} else if (std::holds_alternative<rp_image_ptr>(d->xtImage)) {
+		// PNG image
+		const rp_image *const png = std::get<rp_image_ptr>(d->xtImage).get();
+		if (png->width() <= 64 && png->height() <= 64) {
+			// 64x64 or smaller.
+			ret = IMGPF_RESCALE_NEAREST | IMGPF_INTERNAL_PNG_FORMAT;
 		} else {
-			// PNG image
-			const rp_image *const png = std::get<rp_image_ptr>(d->xtImage.data).get();
-			if (png->width() <= 64 && png->height() <= 64) {
-				// 64x64 or smaller.
-				ret = IMGPF_RESCALE_NEAREST | IMGPF_INTERNAL_PNG_FORMAT;
-			} else {
-				// Larger than 64x64.
-				// We need to set the internal PNG flag regardless.
-				ret = IMGPF_INTERNAL_PNG_FORMAT;
-			}
+			// Larger than 64x64.
+			// We need to set the internal PNG flag regardless.
+			ret = IMGPF_INTERNAL_PNG_FORMAT;
 		}
 	}
 	return ret;
@@ -968,7 +966,7 @@ int Xbox_XBE::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 		// TODO: -EIO for unsupported imageType?
 		pImage.reset();
 		return -ENOENT;
-	} else if (d->xtImage.isInit) {
+	} else if (d->isXtImageSet()) {
 		// Image has already been loaded.
 		// We'll get the actual image after this.
 	} else if (!d->file) {
@@ -981,16 +979,16 @@ int Xbox_XBE::loadInternalImage(ImageType imageType, rp_image_const_ptr &pImage)
 		return -EIO;
 	}
 
-	if (!d->xtImage.isInit) {
+	if (!d->isXtImageSet()) {
 		d->initXPR0_xtImage();
 	}
 
-	if (std::holds_alternative<XboxXPRPtr>(d->xtImage.data)) {
+	if (std::holds_alternative<XboxXPRPtr>(d->xtImage)) {
 		// XPR0 image
-		pImage = std::get<XboxXPRPtr>(d->xtImage.data)->image();
-	} else {
+		pImage = std::get<XboxXPRPtr>(d->xtImage)->image();
+	} else if (std::holds_alternative<rp_image_ptr>(d->xtImage)) {
 		// PNG image
-		pImage = std::get<rp_image_ptr>(d->xtImage.data);
+		pImage = std::get<rp_image_ptr>(d->xtImage);
 	}
 
 	return (pImage) ? 0 : -EIO;
