@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * stdafx.h: Common definitions and includes.                              *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -49,6 +49,7 @@ namespace std {
 	using mpark::variant;
 	using mpark::holds_alternative;
 	using mpark::get;
+	using mpark::monostate;
 }
 #endif /* HAVE_STD_VARIANT */
 
