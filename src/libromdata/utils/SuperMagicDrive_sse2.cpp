@@ -3,7 +3,7 @@
  * SuperMagicDrive_sse2.cpp: Super Magic Drive deinterleaving function.    *
  * SSE2-optimized version.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,7 +17,7 @@ namespace LibRomData { namespace SuperMagicDrive {
 
 /**
  * Decode a Super Magic Drive interleaved block.
- * Standard version using regular C++ code.
+ * SSE2-optimized version.
  * NOTE: Pointers must be 16-byte aligned.
  * @param pDest	[out] Destination block. (Must be 16 KB.)
  * @param pSrc	[in] Source block. (Must be 16 KB.)

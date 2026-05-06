@@ -17,7 +17,7 @@ namespace LibRomData { namespace SuperMagicDrive {
 
 /**
  * Decode a Super Magic Drive interleaved block.
- * NEON version using ARM NEON intrinsics.
+ * NEON-optimized version.
  * NOTE: Pointers must be 16-byte aligned.
  * @param pDest	[out] Destination block. (Must be 16 KB.)
  * @param pSrc	[in] Source block. (Must be 16 KB.)

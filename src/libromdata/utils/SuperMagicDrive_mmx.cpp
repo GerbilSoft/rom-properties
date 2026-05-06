@@ -1,9 +1,9 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * SuperMagicDrive_sse2.cpp: Super Magic Drive deinterleaving function.    *
+ * SuperMagicDrive_mmx.cpp: Super Magic Drive deinterleaving function.     *
  * MMX-optimized version.                                                  *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,7 +17,7 @@ namespace LibRomData { namespace SuperMagicDrive {
 
 /**
  * Decode a Super Magic Drive interleaved block.
- * Standard version using regular C++ code.
+ * MMX-optimized version.
  * @param pDest	[out] Destination block. (Must be 16 KB.)
  * @param pSrc	[in] Source block. (Must be 16 KB.)
  */
