@@ -91,12 +91,14 @@ int rp_image::swizzle_ssse3(const char *swz_spec)
 	SWIZZLE_MASK_VAL(2);
 	SWIZZLE_MASK_VAL(3);
 
-	const __m128i pshufb_mask = _mm_setr_epi32(
-		pshufb_mask_vals.u32,
-		pshufb_mask_vals.u32 + 0x04040404,
-		pshufb_mask_vals.u32 + 0x08080808,
-		pshufb_mask_vals.u32 + 0x0C0C0C0C
-	);
+	// Shuffle mask
+	// NOTE: The channel numbers are OR'd here instead of added in
+	// pshufb_mask_u32_or so we can take advantage of a vector OR
+	// instead of adding each value individually.
+	const __m128i pshufb_mask_chnum_or = _mm_setr_epi32(0, 0x04040404, 0x08080808, 0x0C0C0C0C);
+	const __m128i pshufb_mask = _mm_or_si128(
+		_mm_set1_epi32(pshufb_mask_vals.u32), pshufb_mask_chnum_or);
+
 	const __m128i por_mask = _mm_set1_epi32(por_mask_vals.u32);
 
 	// Channel indexes

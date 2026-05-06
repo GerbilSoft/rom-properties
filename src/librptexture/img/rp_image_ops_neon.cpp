@@ -30,6 +30,7 @@ typedef uint32x4_t uint32xVTBL_t;
 #define vld1VTBL_u32 vld1q_u32
 #define vst1VTBL_u8  vst1q_u8
 #define vst1VTBL_u32 vst1q_u32
+#define vorrVTBL_u32 vorrq_u32
 #define vqtbl1q_u8_u32(a, b) vreinterpretq_u32_u8(vqtbl1q_u8(vreinterpretq_u8_u32(a), vreinterpretq_u8_u32(b)))
 #elif defined(RP_CPU_ARM)
 //static constexpr size_t VEC_LEN_U8 = 8;
@@ -41,6 +42,7 @@ typedef uint32x2_t uint32xVTBL_t;
 #define vld1VTBL_u32 vld1_u32
 #define vst1VTBL_u8  vst1_u8
 #define vst1VTBL_u32 vst1_u32
+#define vorrVTBL_u32 vorr_u32
 #define vtbl1_u8_u32(a, b) vreinterpret_u32_u8(vtbl1_u8(vreinterpret_u8_u32(a), vreinterpretq_u8_u32(b)))
 #else
 #  error Unsupported CPU?
@@ -128,16 +130,23 @@ int rp_image::swizzle_neon(const char *swz_spec)
 	SWIZZLE_MASK_VAL(2);
 	SWIZZLE_MASK_VAL(3);
 
-	const array<uint32_t, VEC_LEN_U32> pshufb_mask_u32 = {{
-		pshufb_mask_vals.u32,
-		pshufb_mask_vals.u32 + 0x04040404,
+	// TODO: Compare disassembly between this and the previous method.
+	static const array<uint32_t, VEC_LEN_U32> pshufb_mask_u32_chnum_or = {{
+		0, 0x04040404,
 #ifdef RP_CPU_ARM64
-		pshufb_mask_vals.u32 + 0x08080808,
-		pshufb_mask_vals.u32 + 0x0C0C0C0C
+		0x08080808, 0x0C0C0C0C
 #endif /* RP_CPU_ARM64 */
 	}};
 
-	uint32xVTBL_t shuf_mask = vld1VTBL_u32(pshufb_mask_u32.data());
+	// Shuffle mask
+	// NOTE: The channel numbers are OR'd here instead of added in
+	// pshufb_mask_u32_or so we can take advantage of a vector OR
+	// instead of adding each value individually.
+	const uint32xVTBL_t shuf_chnum_or = vld1VTBL_u32(pshufb_mask_u32_chnum_or.data());
+	const uint32xVTBL_t shuf_mask = vorVTBL_u32(
+		vdupVTBL_n_u32(pshufb_mask_vals.u32), shuf_chnum_or);
+
+	// OR mask for '1' channels.
 	uint32xVTBL_t or_mask = vdupVTBL_n_u32(por_mask_vals.u32);
 
 	// Channel indexes
