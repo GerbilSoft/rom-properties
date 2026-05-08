@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE_p.hpp: DOS/Windows executable reader. (Private class)               *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -165,23 +165,27 @@ public:
 	 */
 	int loadNEResident(void);
 
-	// Resident portion of NE header (up to the end of entry table)
-	rp::uvector<uint8_t> ne_resident;
-	vhvc::span<const NE_Segment> ne_segment_table;
-	vhvc::span<const uint8_t> ne_resource_table;
-	vhvc::span<const char> ne_resident_name_table;
-	vhvc::span<const uint16_t> ne_modref_table;
-	vhvc::span<const char> ne_imported_name_table;
-	vhvc::span<const uint8_t> ne_entry_table;
+	// NE executables are less common nowadays, so put the NE-specific data
+	// in its own struct and only allocate it if necessary.
+	struct NE_data_t {
+		rp::uvector<uint8_t> resident;
+		vhvc::span<const NE_Segment> segment_table;
+		vhvc::span<const uint8_t> resource_table;
+		vhvc::span<const char> resident_name_table;
+		vhvc::span<const uint16_t> modref_table;
+		vhvc::span<const char> imported_name_table;
+		vhvc::span<const uint8_t> entry_table;
+
+		// Contents of the non-resident name table
+		rp::uvector<char> nonresident_name_table;
+	};
+	std::unique_ptr<NE_data_t> NE_data;
 
 	/**
 	 * Load the non-resident name table. (NE)
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
 	int loadNENonResidentNames(void);
-
-	// Contents of the non-resident name table (NE)
-	rp::uvector<char> ne_nonresident_name_table;
 
 	/**
 	 * Load the NE resource table.
