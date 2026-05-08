@@ -251,15 +251,11 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 		}
 		src_stride_adj = (stride / bytespp) - width;
 	} else {
-		// Calculate stride and make sure it's a multiple of 16.
-		// Exception: If the pixel format is PixelFormat::Host_ARGB32,
-		// we're using memcpy(), so alignment isn't required.
+		// Calculate stride.
+		// NOTE: vld1q *can* handle unaligned access, so image stride doesn't
+		// need to be a multiple of 16, but it may be slower. (Still likely
+		// to be faster than the fallback cpp decoder, though...)
 		stride = width * bytespp;
-		if (unlikely((stride % 16 != 0) && px_format != PixelFormat::Host_ARGB32)) {
-			// Unaligned stride.
-			// Use the C++ version.
-			return fromLinear32_cpp(px_format, width, height, img_buf, img_siz, stride);
-		}
 	}
 
 	// Create an rp_image.
