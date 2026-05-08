@@ -92,9 +92,7 @@ PropSheetIconPrivate::PropSheetIconPrivate()
 			continue;
 		}
 
-		// NOTE: LoadLibraryEx() Search flags are not supported prior to Windows Vista.
-		// Windows Vista, Server 2008 R2, and 7 require KB2533623 for proper functionality.
-		HMODULE hDll = LoadLibraryEx(p.dll_filename, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+		HMODULE hDll = rp_LoadLibraryEx(p.dll_filename, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 		if (!hDll) {
 			continue;
 		}
