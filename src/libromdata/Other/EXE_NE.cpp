@@ -47,7 +47,13 @@ const array<const char*, 6> EXEPrivate::NE_TargetOSes = {{
  */
 int EXEPrivate::loadNEResident(void)
 {
-	if (NE_data && !NE_data->resident.empty()) {
+	if (!std::holds_alternative<NE_data_t>(EXE_data)) {
+		// Not an NE executable.
+		return -EIO;
+	}
+	NE_data_t &NE_data = std::get<NE_data_t>(EXE_data);
+
+	if (!NE_data.resident.empty()) {
 		// Already loaded.
 		return 0;
 	} else if (!file || !file->isOpen()) {
@@ -59,11 +65,6 @@ int EXEPrivate::loadNEResident(void)
 	} else if (exeType != ExeType::NE) {
 		// Unsupported executable type.
 		return -ENOTSUP;
-	}
-
-	if (!NE_data) {
-		// Need to allocate the NE_data_t struct.
-		NE_data.reset(new NE_data_t);
 	}
 
 	// Offsets in the NE header are relative to the start of the header.
@@ -75,11 +76,11 @@ int EXEPrivate::loadNEResident(void)
 		// No resident portion?
 		return -ENOENT;
 	}
-	NE_data->resident.resize(ne_hdr_len);
-	size_t nread = file->seekAndRead(ne_hdr_addr, NE_data->resident.data(), NE_data->resident.size());
-	if (nread != NE_data->resident.size()) {
+	NE_data.resident.resize(ne_hdr_len);
+	size_t nread = file->seekAndRead(ne_hdr_addr, NE_data.resident.data(), NE_data.resident.size());
+	if (nread != NE_data.resident.size()) {
 		// Short read
-		NE_data->resident.clear();
+		NE_data.resident.clear();
 		return -EIO;
 	}
 
@@ -90,39 +91,39 @@ int EXEPrivate::loadNEResident(void)
 
 	// NOTE: For performance reasons on 64-bit, we're using uint32_t instead of size_t.
 	// It's not possible for an NE executable to be larger than 16 MB, anyway.
-	uint32_t end = static_cast<uint32_t>(NE_data->resident.size());
-	auto set_span = [this, &end](span<const uint8_t> &sp, unsigned int offset) -> bool {
+	uint32_t end = static_cast<uint32_t>(NE_data.resident.size());
+	auto set_span = [&NE_data, &end](span<const uint8_t> &sp, unsigned int offset) -> bool {
 		if (offset > end) {
 			return true;
 		}
-		sp = span<const uint8_t>(NE_data->resident.data() + offset, end - offset);
+		sp = span<const uint8_t>(NE_data.resident.data() + offset, end - offset);
 		end = offset;
 		return false;
 	};
 	// NOTE: The order of the tables in the resident part of NE header is fixed.
-	if (set_span(NE_data->entry_table,    entry_table_addr) ||
+	if (set_span(NE_data.entry_table,    entry_table_addr) ||
 	    set_span(ne_imported_name_raw,    le16_to_cpu(hdr.ne.ImportNameTable)) ||
 	    set_span(ne_modref_raw,           le16_to_cpu(hdr.ne.ModRefTable)) ||
 	    set_span(ne_resident_name_raw,    le16_to_cpu(hdr.ne.ResidNamTable)) ||
-	    set_span(NE_data->resource_table, le16_to_cpu(hdr.ne.ResTableOffset)) ||
+	    set_span(NE_data.resource_table, le16_to_cpu(hdr.ne.ResTableOffset)) ||
 	    set_span(ne_segment_raw,          le16_to_cpu(hdr.ne.SegTableOffset)) ||
 	    end < sizeof(NE_Header))
 	{
-		NE_data->resident.clear();
+		NE_data.resident.clear();
 		return -EIO;
 	}
 
 	const size_t segment_count = le16_to_cpu(hdr.ne.SegCount);
-	NE_data->segment_table = reinterpret_span_limit<const NE_Segment>(ne_segment_raw, segment_count);
-	assert(segment_count <= NE_data->segment_table.size());
+	NE_data.segment_table = reinterpret_span_limit<const NE_Segment>(ne_segment_raw, segment_count);
+	assert(segment_count <= NE_data.segment_table.size());
 
-	NE_data->resident_name_table = reinterpret_span<const char>(ne_resident_name_raw);
+	NE_data.resident_name_table = reinterpret_span<const char>(ne_resident_name_raw);
 
 	const size_t modref_count = le16_to_cpu(hdr.ne.ModRefs);
-	NE_data->modref_table = reinterpret_span_limit<const uint16_t>(ne_modref_raw, modref_count);
-	assert(modref_count <= NE_data->modref_table.size());
+	NE_data.modref_table = reinterpret_span_limit<const uint16_t>(ne_modref_raw, modref_count);
+	assert(modref_count <= NE_data.modref_table.size());
 
-	NE_data->imported_name_table = reinterpret_span<const char>(ne_imported_name_raw);
+	NE_data.imported_name_table = reinterpret_span<const char>(ne_imported_name_raw);
 
 	return 0;
 }
@@ -134,7 +135,13 @@ int EXEPrivate::loadNEResident(void)
  */
 int EXEPrivate::loadNENonResidentNames(void)
 {
-	if (NE_data && !NE_data->nonresident_name_table.empty()) {
+	if (!std::holds_alternative<NE_data_t>(EXE_data)) {
+		// Not an NE executable.
+		return -EIO;
+	}
+	NE_data_t &NE_data = std::get<NE_data_t>(EXE_data);
+
+	if (!NE_data.nonresident_name_table.empty()) {
 		// Already loaded.
 		return 0;
 	} else if (!file || !file->isOpen()) {
@@ -148,24 +155,19 @@ int EXEPrivate::loadNENonResidentNames(void)
 		return -ENOTSUP;
 	}
 
-	if (!NE_data) {
-		// Need to allocate the NE_data_t struct.
-		NE_data.reset(new NE_data_t);
-	}
-
 	const unsigned int ne_nnt_len = le16_to_cpu(hdr.ne.NoResNamesTabSiz);
 	assert(ne_nnt_len != 0);
 	if (ne_nnt_len == 0) {
 		// No non-resident name table?
 		return -ENOENT;
 	}
-	NE_data->nonresident_name_table.resize(ne_nnt_len);
+	NE_data.nonresident_name_table.resize(ne_nnt_len);
 	size_t nread = file->seekAndRead(le32_to_cpu(hdr.ne.OffStartNonResTab),
-		NE_data->nonresident_name_table.data(),
-		NE_data->nonresident_name_table.size());
-	if (nread != NE_data->nonresident_name_table.size()) {
+		NE_data.nonresident_name_table.data(),
+		NE_data.nonresident_name_table.size());
+	if (nread != NE_data.nonresident_name_table.size()) {
 		// Short read
-		NE_data->nonresident_name_table.clear();
+		NE_data.nonresident_name_table.clear();
 		return -EIO;
 	}
 
@@ -193,25 +195,28 @@ int EXEPrivate::loadNEResourceTable(void)
 		return -ENOTSUP;
 	}
 
-	// NOTE: NE_data will be initialized by loadNEResident().
 	int res = loadNEResident();
 	if (res < 0) {
 		return res;
-	} else if (!NE_data) {
-		return -ENOMEM;
 	}
 
 	// FIXME: NEResourceReader should be able to just take ne_resource_table.
 	// NE resource table offset is relative to the start of the NE header.
 	const uint32_t ResTableOffset = le32_to_cpu(mz.e_lfanew) + le16_to_cpu(hdr.ne.ResTableOffset);
 	if (ResTableOffset < le32_to_cpu(mz.e_lfanew)) {
-		// Offse overflow
+		// Offset overflow
 		return -EIO;
 	}
 
+	if (!std::holds_alternative<NE_data_t>(EXE_data)) {
+		// Not an NE executable.
+		return -EIO;
+	}
+	NE_data_t &NE_data = std::get<NE_data_t>(EXE_data);
+
 	// Load the resources using NEResourceReader.
 	rsrcReader = std::make_shared<NEResourceReader>(file, ResTableOffset,
-		static_cast<uint32_t>(NE_data->resource_table.size()));
+		static_cast<uint32_t>(NE_data.resource_table.size()));
 	if (!rsrcReader->isOpen()) {
 		// Failed to open the resource table.
 		int err = rsrcReader->lastError();
@@ -237,15 +242,18 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 	refLink.clear();
 	refHasKernel = false;
 
-	// NOTE: NE_data will be initialized by loadNEResident().
 	int res = loadNEResident();
 	if (res < 0) {
 		return res;
-	} else if (!NE_data) {
-		return -ENOMEM;
 	}
 
-	if (NE_data->modref_table.size() == 0) {
+	if (!std::holds_alternative<NE_data_t>(EXE_data)) {
+		// Not an NE executable.
+		return -EIO;
+	}
+	NE_data_t &NE_data = std::get<NE_data_t>(EXE_data);
+
+	if (NE_data.modref_table.size() == 0) {
 		// No module references.
 		return -ENOENT;
 	}
@@ -266,30 +274,30 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 	}};
 
 	// FIXME: Alignment?
-	for (const uint16_t modRef : NE_data->modref_table) {
+	for (const uint16_t modRef : NE_data.modref_table) {
 		const unsigned int nameOffset = le16_to_cpu(modRef);
-		assert(nameOffset < NE_data->imported_name_table.size());
-		if (nameOffset >= NE_data->imported_name_table.size()) {
+		assert(nameOffset < NE_data.imported_name_table.size());
+		if (nameOffset >= NE_data.imported_name_table.size()) {
 			// Out of range.
 			// TODO: Return an error?
 			break;
 		}
 
-		const uint8_t count = static_cast<uint8_t>(NE_data->imported_name_table[nameOffset]);
+		const uint8_t count = static_cast<uint8_t>(NE_data.imported_name_table[nameOffset]);
 		assert(count > 0);
 		if (count == 0) {
 			// Empty name?
 			continue;
 		}
 
-		assert(nameOffset + 1 + count <= NE_data->imported_name_table.size());
-		if (nameOffset + 1 + count > NE_data->imported_name_table.size()) {
+		assert(nameOffset + 1 + count <= NE_data.imported_name_table.size());
+		if (nameOffset + 1 + count > NE_data.imported_name_table.size()) {
 			// Out of range.
 			// TODO: Return an error?
 			break;
 		}
 
-		const char *const pDllName = &NE_data->imported_name_table[nameOffset + 1];
+		const char *const pDllName = &NE_data.imported_name_table[nameOffset + 1];
 
 		// Check the DLL name.
 		// TODO: More checks.
@@ -340,6 +348,12 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
  */
 void EXEPrivate::addFields_NE(void)
 {
+	if (!std::holds_alternative<NE_data_t>(EXE_data)) {
+		// Not an NE executable.
+		return;
+	}
+	NE_data_t &NE_data = std::get<NE_data_t>(EXE_data);
+
 	// Up to 5 tabs.
 	fields.reserveTabs(5);
 
@@ -348,7 +362,6 @@ void EXEPrivate::addFields_NE(void)
 	fields.setTabIndex(0);
 
 	// Get the runtime DLL and if KERNEL is imported.
-	// NOTE: NE_data will be initialized by a call to loadNEResident() within findNERuntimeDLL().
 	string runtime_dll, runtime_link;
 	bool hasKernel = false;
 	int ret = findNERuntimeDLL(runtime_dll, runtime_link, hasKernel);
@@ -532,10 +545,10 @@ void EXEPrivate::addFields_NE(void)
 		return true;
 	};
 	string module_name, module_desc;
-	if (loadNEResident() == 0 && get_first_string(NE_data->resident_name_table, module_name)) {
+	if (loadNEResident() == 0 && get_first_string(NE_data.resident_name_table, module_name)) {
 		fields.addField_string(C_("EXE", "Module Name"), module_name);
 	}
-	if (loadNENonResidentNames() == 0 && get_first_string(NE_data->nonresident_name_table, module_desc)) {
+	if (loadNENonResidentNames() == 0 && get_first_string(NE_data.nonresident_name_table, module_desc)) {
 		fields.addField_string(C_("EXE", "Module Description"), module_desc);
 	}
 
@@ -568,13 +581,16 @@ void EXEPrivate::addFields_NE(void)
  */
 int EXEPrivate::addFields_NE_Entry(void)
 {
+	if (!std::holds_alternative<NE_data_t>(EXE_data)) {
+		// Not an NE executable.
+		return -EIO;
+	}
+	NE_data_t &NE_data = std::get<NE_data_t>(EXE_data);
+
 	// Get the runtime DLL and if KERNEL is imported.
-	// NOTE: NE_data will be initialized by loadNEResident().
 	int res = loadNEResident();
 	if (res < 0) {
 		return res;
-	} else if (!NE_data) {
-		return -ENOMEM;
 	}
 	res = loadNENonResidentNames();
 	if (res < 0) {
@@ -592,15 +608,15 @@ int EXEPrivate::addFields_NE_Entry(void)
 		bool is_resident : 1;
 	};
 	vector<Entry> ents;
-	ents.reserve(NE_data->entry_table.size() / 4);
+	ents.reserve(NE_data.entry_table.size() / 4);
 
 	// Read entry table
-	auto p = NE_data->entry_table.begin();
-	const auto p_end = NE_data->entry_table.end();
+	auto p = NE_data.entry_table.begin();
+	const auto p_end = NE_data.entry_table.end();
 	for (int ordinal = 1;;) {
 		// Entry table consists of bundles of symbols
 		// Each bundle is starts with count and segment of the symbols
-		if (p >= NE_data->entry_table.end()) {
+		if (p >= NE_data.entry_table.end()) {
 			return -ENOENT;
 		}
 		const unsigned int bundle_count = *p++;
@@ -717,11 +733,11 @@ int EXEPrivate::addFields_NE_Entry(void)
 	};
 
 	// Read names
-	res = readNames(NE_data->resident_name_table, true);
+	res = readNames(NE_data.resident_name_table, true);
 	if (res) {
 		return res;
 	}
-	res = readNames(NE_data->nonresident_name_table, false);
+	res = readNames(NE_data.nonresident_name_table, false);
 	if (res) {
 		return res;
 	}
@@ -818,6 +834,12 @@ int EXEPrivate::addFields_NE_Entry(void)
  */
 int EXEPrivate::addFields_NE_Import(void)
 {
+	if (!std::holds_alternative<NE_data_t>(EXE_data)) {
+		// Not an NE executable.
+		return -EIO;
+	}
+	NE_data_t &NE_data = std::get<NE_data_t>(EXE_data);
+
 	if (!file || !file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
@@ -829,36 +851,33 @@ int EXEPrivate::addFields_NE_Import(void)
 		return -ENOTSUP;
 	}
 
-	// NOTE: NE_data will be initialized by loadNEResident().
 	int res = loadNEResident();
 	if (res < 0) {
 		return res;
-	} else if (!NE_data) {
-		return -ENOMEM;
 	}
 
 	// Helper funcs for reading import name table and modrefs.
-	auto get_name = [this](size_t offset, string &out) -> bool {
-		assert(offset < NE_data->imported_name_table.size());
-		if (offset >= NE_data->imported_name_table.size()) {
+	auto get_name = [&NE_data](size_t offset, string &out) -> bool {
+		assert(offset < NE_data.imported_name_table.size());
+		if (offset >= NE_data.imported_name_table.size()) {
 			return false;
 		}
-		const uint8_t count = static_cast<uint8_t>(NE_data->imported_name_table[offset]);
+		const uint8_t count = static_cast<uint8_t>(NE_data.imported_name_table[offset]);
 
-		assert(offset + 1 + count <= NE_data->imported_name_table.size());
-		if (offset + 1 + count > NE_data->imported_name_table.size()) {
+		assert(offset + 1 + count <= NE_data.imported_name_table.size());
+		if (offset + 1 + count > NE_data.imported_name_table.size()) {
 			return false;
 		}
-		out.assign(&NE_data->imported_name_table[offset+1], count);
+		out.assign(&NE_data.imported_name_table[offset+1], count);
 		return true;
 	};
-	auto get_modref = [&](size_t modref, string &out) -> bool {
+	auto get_modref = [&NE_data, get_name](size_t modref, string &out) -> bool {
 		// NOTE: modref is 1-indexed (and this is not mentioned anywhere in the docs)
-		assert(modref-1 < NE_data->modref_table.size());
-		if (modref-1 >= NE_data->modref_table.size()) {
+		assert(modref-1 < NE_data.modref_table.size());
+		if (modref-1 >= NE_data.modref_table.size()) {
 			return false;
 		}
-		return get_name(le16_to_cpu(NE_data->modref_table[modref-1]), out);
+		return get_name(le16_to_cpu(NE_data.modref_table[modref-1]), out);
 	};
 
 	/* IMPORTORDINAL
@@ -875,7 +894,7 @@ int EXEPrivate::addFields_NE_Import(void)
 	};
 	std::unordered_set<std::pair<uint16_t, uint16_t>, hash2x16> ordinal_set, name_set;
 
-	for (const auto &seg : NE_data->segment_table) {
+	for (const auto &seg : NE_data.segment_table) {
 		if (seg.offset == 0) {
 			continue; // No data
 		}

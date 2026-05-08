@@ -3,7 +3,7 @@
  * EXE_PE.cpp: DOS/Windows executable reader.                              *
  * 32-bit/64-bit Portable Executable format.                               *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * Copyright (c) 2022 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -66,7 +66,13 @@ std::string EXEPrivate::formatPESubsystemName(uint16_t pe_subsystem, uint32_t su
  */
 int EXEPrivate::loadPESectionTable(void)
 {
-	if (!pe_sections.empty()) {
+	if (!std::holds_alternative<PE_data_t>(EXE_data)) {
+		// Not a PE executable.
+		return -EIO;
+	}
+	PE_data_t &PE_data = std::get<PE_data_t>(EXE_data);
+
+	if (!PE_data.sections.empty()) {
 		// Section table is already loaded.
 		return 0;
 	} else if (!file || !file->isOpen()) {
@@ -100,22 +106,22 @@ int EXEPrivate::loadPESectionTable(void)
 		// Sanity check: Maximum of 256 sections.
 		return -ENOMEM;
 	}
-	pe_sections.resize(section_count);
+	PE_data.sections.resize(section_count);
 	uint32_t szToRead = static_cast<uint32_t>(section_count * sizeof(IMAGE_SECTION_HEADER));
-	size_t size = file->seekAndRead(section_table_start, pe_sections.data(), szToRead);
+	size_t size = file->seekAndRead(section_table_start, PE_data.sections.data(), szToRead);
 	if (size != static_cast<size_t>(szToRead)) {
 		// Seek and/or read error.
-		pe_sections.clear();
+		PE_data.sections.clear();
 		return -EIO;
 	}
 
 	// Not all sections may be in use.
 	// Find the first section header with an empty name.
 	int ret = 0;
-	for (size_t i = 0; i < pe_sections.size(); i++) {
-		if (pe_sections[i].Name[0] == 0) {
+	for (size_t i = 0; i < PE_data.sections.size(); i++) {
+		if (PE_data.sections[i].Name[0] == 0) {
 			// Found the first empty section.
-			pe_sections.resize(i);
+			PE_data.sections.resize(i);
 			break;
 		}
 	}
@@ -126,15 +132,21 @@ int EXEPrivate::loadPESectionTable(void)
 
 /**
  * Convert a PE virtual address to a physical address.
- * pe_sections must be loaded.
+ * PE_data.sections must be loaded.
  * @param vaddr Virtual address.
  * @param size Size of the virtual section.
  * @return Physical address, or 0 if not mappable.
  */
 uint32_t EXEPrivate::pe_vaddr_to_paddr(uint32_t vaddr, uint32_t size)
 {
+	if (!std::holds_alternative<PE_data_t>(EXE_data)) {
+		// Not a PE executable.
+		return 0;
+	}
+	PE_data_t &PE_data = std::get<PE_data_t>(EXE_data);
+
 	// Make sure the PE section table is loaded.
-	if (pe_sections.empty()) {
+	if (PE_data.sections.empty()) {
 		if (loadPESectionTable() != 0) {
 			// Error loading the PE section table.
 			return 0;
@@ -142,7 +154,7 @@ uint32_t EXEPrivate::pe_vaddr_to_paddr(uint32_t vaddr, uint32_t size)
 	}
 
 	// FIXME: How does XEX handle this?
-	for (const IMAGE_SECTION_HEADER &p : pe_sections) {
+	for (const IMAGE_SECTION_HEADER &p : PE_data.sections) {
 		const uint32_t sect_vaddr = le32_to_cpu(p.VirtualAddress);
 		if (sect_vaddr <= vaddr) {
 			if ((sect_vaddr + le32_to_cpu(p.SizeOfRawData)) >= (vaddr+size)) {
@@ -176,8 +188,14 @@ int EXEPrivate::loadPEResourceTypes(void)
 		return -ENOTSUP;
 	}
 
+	if (!std::holds_alternative<PE_data_t>(EXE_data)) {
+		// Not a PE executable.
+		return -EIO;
+	}
+	PE_data_t &PE_data = std::get<PE_data_t>(EXE_data);
+
 	// Make sure the section table is loaded.
-	if (pe_sections.empty()) {
+	if (PE_data.sections.empty()) {
 		int ret = loadPESectionTable();
 		if (ret != 0) {
 			// Unable to load the section table.
@@ -191,12 +209,12 @@ int EXEPrivate::loadPEResourceTypes(void)
 	// Find the .rsrc section.
 	// .rsrc is usually closer to the end of the section list,
 	// so search back to front.
-	auto iter = std::find_if(pe_sections.crbegin(), pe_sections.crend(),
+	auto iter = std::find_if(PE_data.sections.crbegin(), PE_data.sections.crend(),
 		[](const IMAGE_SECTION_HEADER &section) noexcept -> bool {
 			return !strcmp(reinterpret_cast<const char*>(section.Name), ".rsrc");
 		}
 	);
-	if (iter == pe_sections.crend()) {
+	if (iter == PE_data.sections.crend()) {
 		// No .rsrc section.
 		return -ENOENT;
 	}
@@ -340,7 +358,13 @@ int EXEPrivate::readPENullBlock(uint32_t low, uint32_t high, uint32_t minExtra,
  */
 int EXEPrivate::readPEImportDir(void)
 {
-	if (!peImportDir.empty()) {
+	if (!std::holds_alternative<PE_data_t>(EXE_data)) {
+		// Not a PE executable.
+		return -EIO;
+	}
+	PE_data_t &PE_data = std::get<PE_data_t>(EXE_data);
+
+	if (!PE_data.peImportDir.empty()) {
 		return 0;
 	}
 
@@ -409,26 +433,26 @@ int EXEPrivate::readPEImportDir(void)
 	dll_name_data[dll_size_read-1] = '\0';
 
 	// Copy to peImportDir
-	peImportDir.insert(peImportDir.begin(), pImpDirTbl, p);
+	PE_data.peImportDir.insert(PE_data.peImportDir.begin(), pImpDirTbl, p);
 
 	// Fill peImportNames
-	peImportNames.reserve(peImportDir.size());
-	for (const auto &ent : peImportDir) {
+	PE_data.peImportNames.reserve(PE_data.peImportDir.size());
+	for (const auto &ent : PE_data.peImportDir) {
 		const uint32_t vaddr = le32_to_cpu(ent.rvaModuleName);
 		assert(vaddr >= dll_vaddr_low);
 		assert(vaddr <= dll_vaddr_high);
 		if (vaddr < dll_vaddr_low || vaddr > dll_vaddr_high) {
 			// Out of bounds? This shouldn't have happened...
-			peImportDir.clear();
-			peImportNames.clear();
+			PE_data.peImportDir.clear();
+			PE_data.peImportNames.clear();
 			return -ENOENT;
 		}
 
 		// Current DLL name from the import table.
 		const char *const dll_name = &dll_name_data[vaddr - dll_vaddr_low];
-		peImportNames.push_back(dll_name);
+		PE_data.peImportNames.push_back(dll_name);
 	}
-	assert(peImportDir.size() == peImportNames.size());
+	assert(PE_data.peImportDir.size() == PE_data.peImportNames.size());
 
 	return 0;
 }
@@ -446,8 +470,15 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	const bool is64 = exeType == ExeType::PE32PLUS;
 
 	int res = readPEImportDir();
-	if (res)
+	if (res) {
 		return res;
+	}
+
+	if (!std::holds_alternative<PE_data_t>(EXE_data)) {
+		// Not a PE executable.
+		return -EIO;
+	}
+	PE_data_t &PE_data = std::get<PE_data_t>(EXE_data);
 
 	// MSVC runtime DLL version to display version table.
 	// Reference: https://matthew-brett.github.io/pydagogue/python_msvc.html
@@ -494,7 +525,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 
 	// Check all of the DLL names.
 	bool found = false;
-	for (const auto &s_dll_name : peImportNames) {
+	for (const auto &s_dll_name : PE_data.peImportNames) {
 		// Current DLL name from the import table.
 		const char *const dll_name = s_dll_name.c_str();
 
@@ -619,6 +650,12 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
  */
 void EXEPrivate::addFields_PE(void)
 {
+	if (!std::holds_alternative<PE_data_t>(EXE_data)) {
+		// Not a PE executable.
+		return;
+	}
+	PE_data_t &PE_data = std::get<PE_data_t>(EXE_data);
+
 	// Up to 6 tabs.
 	fields.reserveTabs(6);
 
@@ -689,7 +726,7 @@ void EXEPrivate::addFields_PE(void)
 
 	// Subsystem name and version
 	fields.addField_string(C_("EXE", "Subsystem"), formatPESubsystemName(
-		pe_subsystem, subsystem_ver_major, subsystem_ver_minor));
+		PE_data.pe_subsystem, subsystem_ver_major, subsystem_ver_minor));
 
 	// PE flags (characteristics)
 	// NOTE: Only important flags will be listed.
@@ -1026,8 +1063,15 @@ int EXEPrivate::addFields_PE_Import(void)
 	const bool is64 = exeType == ExeType::PE32PLUS;
 
 	int res = readPEImportDir();
-	if (res)
+	if (res) {
 		return res;
+	}
+
+	if (!std::holds_alternative<PE_data_t>(EXE_data)) {
+		// Not a PE executable.
+		return -EIO;
+	}
+	PE_data_t &PE_data = std::get<PE_data_t>(EXE_data);
 
 	unique_ptr<char[]> dll_ilt_data;
 	uint32_t dll_ilt_base;
@@ -1035,14 +1079,14 @@ int EXEPrivate::addFields_PE_Import(void)
 	// Read Import Lookup Table
 	{
 		// Find the lowest and highest ImportLookupTable RVAs
-		if (peImportDir.empty()) {
+		if (PE_data.peImportDir.empty()) {
 			// No imports...
 			return -ENOENT;
 		}
 		uint32_t dll_vaddr_low;
 		uint32_t dll_vaddr_high;
-		dll_vaddr_low = dll_vaddr_high = le32_to_cpu(peImportDir[0].rvaImportLookupTable);
-		for (const auto &ent : peImportDir) {
+		dll_vaddr_low = dll_vaddr_high = le32_to_cpu(PE_data.peImportDir[0].rvaImportLookupTable);
+		for (const auto &ent : PE_data.peImportDir) {
 			const uint32_t rvaImportLookupTable = le32_to_cpu(ent.rvaImportLookupTable);
 			if ((rvaImportLookupTable - dll_vaddr_low) & (is64?7:3)) {
 				/* Bad alignment. This check is mostly so that
@@ -1094,7 +1138,7 @@ int EXEPrivate::addFields_PE_Import(void)
 			, value(0)
 		{ }
 	};
-	auto iltAdvance = [this, ilt_buf, ilt_end, dll_ilt_base, is64](IltIterator &it) -> bool {
+	auto iltAdvance = [this, ilt_buf, ilt_end, dll_ilt_base, is64, &PE_data](IltIterator &it) -> bool {
 		auto &dir_index = it.dir_index;
 		auto &ilt = it.ilt;
 		auto &dllname = it.dllname;
@@ -1102,15 +1146,15 @@ int EXEPrivate::addFields_PE_Import(void)
 		auto &value = it.value;
 		while (ilt >= ilt_end) {
 			// read next directory entry
-			if (dir_index >= peImportDir.size()) {
+			if (dir_index >= PE_data.peImportDir.size()) {
 				return false;
 			}
-			ilt = &ilt_buf[(le32_to_cpu(peImportDir[dir_index].rvaImportLookupTable) - dll_ilt_base)/4];
-			if (ilt >= ilt_end || dir_index >= peImportDir.size()) {
+			ilt = &ilt_buf[(le32_to_cpu(PE_data.peImportDir[dir_index].rvaImportLookupTable) - dll_ilt_base)/4];
+			if (ilt >= ilt_end || dir_index >= PE_data.peImportDir.size()) {
 				// Corrupt directory entry?
 				continue;
 			}
-			dllname = &peImportNames[dir_index];
+			dllname = &PE_data.peImportNames[dir_index];
 			dir_index++;
 			// check for NULL entry
 			if (is64) {
@@ -1278,10 +1322,18 @@ int EXEPrivate::addFields_PE_Import(void)
  */
 int EXEPrivate::loadPEImageLoadConfigDirectory(void)
 {
-	if (ilcd) {
+	if (!std::holds_alternative<PE_data_t>(EXE_data)) {
+		// Not a PE executable.
+		return -EIO;
+	}
+	PE_data_t &PE_data = std::get<PE_data_t>(EXE_data);
+	auto &ilcd = PE_data.ilcd;
+
+	if (ilcd.Size != 0) {
 		// Already loaded.
 		return 0;
 	}
+	memset(&ilcd, 0, sizeof(ilcd));
 
 	if (exeType == EXEPrivate::ExeType::PE) {
 		// 32-bit version
@@ -1308,11 +1360,9 @@ int EXEPrivate::loadPEImageLoadConfigDirectory(void)
 			return -ENOENT;
 		};
 
-		ilcd.reset(new ImageLoadConfigDirectory);
-		memset(ilcd.get(), 0, sizeof(ImageLoadConfigDirectory));
-		size_t sz_read = file->seekAndRead(paddr, &ilcd->ilcd32, size);
+		size_t sz_read = file->seekAndRead(paddr, &ilcd.ilcd32, size);
 		if (sz_read != size) {
-			ilcd.reset();
+			ilcd.Size = 0;
 			return -EIO;
 		}
 
@@ -1320,15 +1370,15 @@ int EXEPrivate::loadPEImageLoadConfigDirectory(void)
 		// FIXME: MSVC 2022 i386 (17.14.20, 19.44.35220.0) has section size 64,
 		// but the ILCD size is 160...
 #if 0
-		if (size != le32_to_cpu(ilcd->ilcd32.Size)) {
-			ilcd.reset();
+		if (size != le32_to_cpu(ilcd.ilcd32.Size)) {
+			ilcd.Size = 0;
 			return -EIO;
 		}
 #endif
 
 		// Make sure the size in the struct doesn't exceed the actual memory size.
-		if (le32_to_cpu(ilcd->ilcd32.Size) > sizeof(IMAGE_LOAD_CONFIG_DIRECTORY32)) {
-			ilcd.reset();
+		if (le32_to_cpu(ilcd.ilcd32.Size) > sizeof(IMAGE_LOAD_CONFIG_DIRECTORY32)) {
+			ilcd.Size = 0;
 			return -EIO;
 		}
 	} else if (exeType == EXEPrivate::ExeType::PE32PLUS) {
@@ -1355,26 +1405,24 @@ int EXEPrivate::loadPEImageLoadConfigDirectory(void)
 			return -ENOENT;
 		};
 
-		ilcd.reset(new ImageLoadConfigDirectory);
-		memset(ilcd.get(), 0, sizeof(ImageLoadConfigDirectory));
-		size_t sz_read = file->seekAndRead(paddr, &ilcd->ilcd64, size);
+		size_t sz_read = file->seekAndRead(paddr, &ilcd.ilcd64, size);
 		if (sz_read != size) {
-			ilcd.reset();
+			ilcd.Size = 0;
 			return -EIO;
 		}
 
 		// Verify the size of the loaded ILCD.
 		// NOTE: Ignoring this due to the MSVC 2022 i386 issue.
 #if 0
-		if (size != le32_to_cpu(ilcd->ilcd64.Size)) {
-			ilcd.reset();
+		if (size != le32_to_cpu(ilcd.ilcd64.Size)) {
+			ilcd.Size = 0;
 			return -EIO;
 		}
 #endif
 
 		// Make sure the size in the struct doesn't exceed the actual memory size.
-		if (le32_to_cpu(ilcd->ilcd64.Size) > sizeof(IMAGE_LOAD_CONFIG_DIRECTORY64)) {
-			ilcd.reset();
+		if (le32_to_cpu(ilcd.ilcd64.Size) > sizeof(IMAGE_LOAD_CONFIG_DIRECTORY64)) {
+			ilcd.Size = 0;
 			return -EIO;
 		}
 	}
@@ -1388,7 +1436,14 @@ int EXEPrivate::loadPEImageLoadConfigDirectory(void)
  */
 uint64_t EXEPrivate::getHybridMetadataPointer(void)
 {
-	if (!ilcd) {
+	if (!std::holds_alternative<PE_data_t>(EXE_data)) {
+		// Not a PE executable.
+		return -EIO;
+	}
+	PE_data_t &PE_data = std::get<PE_data_t>(EXE_data);
+	auto &ilcd = PE_data.ilcd;
+
+	if (ilcd.Size == 0) {
 		// Load the ILCD.
 		if (loadPEImageLoadConfigDirectory() != 0) {
 			// Unable to load the ILCD.
@@ -1397,7 +1452,7 @@ uint64_t EXEPrivate::getHybridMetadataPointer(void)
 	}
 
 	if (exeType == EXEPrivate::ExeType::PE) {
-		const IMAGE_LOAD_CONFIG_DIRECTORY32 ilcd32 = ilcd->ilcd32;
+		const IMAGE_LOAD_CONFIG_DIRECTORY32 ilcd32 = ilcd.ilcd32;
 		if (ilcd32.Size < (offsetof(IMAGE_LOAD_CONFIG_DIRECTORY32, CHPEMetadataPointer) + sizeof(uint32_t))) {
 			// No CHPE metadata pointer.
 			return 0;
@@ -1405,7 +1460,7 @@ uint64_t EXEPrivate::getHybridMetadataPointer(void)
 
 		return le32_to_cpu(ilcd32.CHPEMetadataPointer);
 	} else if (exeType == EXEPrivate::ExeType::PE32PLUS) {
-		const IMAGE_LOAD_CONFIG_DIRECTORY64 ilcd64 = ilcd->ilcd64;
+		const IMAGE_LOAD_CONFIG_DIRECTORY64 ilcd64 = ilcd.ilcd64;
 		if (ilcd64.Size < (offsetof(IMAGE_LOAD_CONFIG_DIRECTORY64, CHPEMetadataPointer) + sizeof(uint64_t))) {
 			// No CHPE metadata pointer.
 			return 0;
@@ -1425,7 +1480,14 @@ uint64_t EXEPrivate::getHybridMetadataPointer(void)
  */
 uint16_t EXEPrivate::getDependentLoadFlags(void)
 {
-	if (!ilcd) {
+	if (!std::holds_alternative<PE_data_t>(EXE_data)) {
+		// Not a PE executable.
+		return -EIO;
+	}
+	PE_data_t &PE_data = std::get<PE_data_t>(EXE_data);
+	auto &ilcd = PE_data.ilcd;
+
+	if (ilcd.Size == 0) {
 		// Load the ILCD.
 		if (loadPEImageLoadConfigDirectory() != 0) {
 			// Unable to load the ILCD.
@@ -1434,7 +1496,7 @@ uint16_t EXEPrivate::getDependentLoadFlags(void)
 	}
 
 	if (exeType == EXEPrivate::ExeType::PE) {
-		const IMAGE_LOAD_CONFIG_DIRECTORY32 ilcd32 = ilcd->ilcd32;
+		const IMAGE_LOAD_CONFIG_DIRECTORY32 ilcd32 = ilcd.ilcd32;
 		if (ilcd32.Size < (offsetof(IMAGE_LOAD_CONFIG_DIRECTORY32, DependentLoadFlags) + sizeof(uint16_t))) {
 			// No Dependent Load Flags.
 			return 0;
@@ -1442,7 +1504,7 @@ uint16_t EXEPrivate::getDependentLoadFlags(void)
 
 		return le16_to_cpu(ilcd32.DependentLoadFlags);
 	} else if (exeType == EXEPrivate::ExeType::PE32PLUS) {
-		const IMAGE_LOAD_CONFIG_DIRECTORY64 ilcd64 = ilcd->ilcd64;
+		const IMAGE_LOAD_CONFIG_DIRECTORY64 ilcd64 = ilcd.ilcd64;
 		if (ilcd64.Size < (offsetof(IMAGE_LOAD_CONFIG_DIRECTORY64, DependentLoadFlags) + sizeof(uint16_t))) {
 			// No Dependent Load Flags.
 			return 0;

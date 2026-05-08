@@ -11,6 +11,8 @@
 #include "librpbase/config.librpbase.h"
 #include "librpbase/RomData_p.hpp"
 
+#include "libromdata/config.libromdata.h"
+
 #include "exe_mz_structs.h"
 #include "exe_pe_structs.h"
 #include "exe_ne_structs.h"
@@ -25,11 +27,28 @@ using LibRpBase::IResourceReaderPtr;
 
 #include "span.hh"
 
+#ifdef HAVE_STD_VARIANT
+#  include <variant>
+#else /* !HAVE_STD_VARIANT */
+// std::variant<> is not available on this system.
+// Use mpark variant instead.
+#  include "mpark/variant.hpp"
+namespace std {
+	using mpark::variant;
+	using mpark::holds_alternative;
+	using mpark::get;
+	using mpark::monostate;
+}
+#endif /* HAVE_STD_VARIANT */
+
 // PugiXML
 // NOTE: Cannot forward-declare the PugiXML classes...
 #ifdef ENABLE_XML
 #  include <pugixml.hpp>
 #endif /* ENABLE_XML */
+
+// C includes (C++ namespace)
+#include <cstdint>
 
 namespace LibRomData {
 
@@ -91,13 +110,49 @@ public:
 	} hdr;
 	#pragma pack()
 
-	// IMAGE_LOAD_CONFIG_DIRECTORY (PE)
-	union ImageLoadConfigDirectory {
-		uint32_t Size;
-		IMAGE_LOAD_CONFIG_DIRECTORY32 ilcd32;
-		IMAGE_LOAD_CONFIG_DIRECTORY64 ilcd64;
+	// PE-specific data
+	struct PE_data_t {
+		PE_data_t(uint16_t pe_subsystem) {
+			this->pe_subsystem = pe_subsystem;
+			ilcd.Size = 0;
+		}
+
+		// PE subsystem
+		uint16_t pe_subsystem;
+
+		// IMAGE_LOAD_CONFIG_DIRECTORY
+		union ImageLoadConfigDirectory_t {
+			uint32_t Size;
+			IMAGE_LOAD_CONFIG_DIRECTORY32 ilcd32;
+			IMAGE_LOAD_CONFIG_DIRECTORY64 ilcd64;
+		};
+		ImageLoadConfigDirectory_t ilcd;
+
+		// PE section headers
+		rp::uvector<IMAGE_SECTION_HEADER> sections;
+
+		// PE Import Directory
+		std::vector<IMAGE_IMPORT_DIRECTORY> peImportDir;
+		// PE Import DLL Names (same order as the directory)
+		std::vector<std::string> peImportNames;
 	};
-	std::unique_ptr<ImageLoadConfigDirectory> ilcd;
+
+	// NE-specific data
+	struct NE_data_t {
+		rp::uvector<uint8_t> resident;
+		vhvc::span<const NE_Segment> segment_table;
+		vhvc::span<const uint8_t> resource_table;
+		vhvc::span<const char> resident_name_table;
+		vhvc::span<const uint16_t> modref_table;
+		vhvc::span<const char> imported_name_table;
+		vhvc::span<const uint8_t> entry_table;
+
+		// Contents of the non-resident name table
+		rp::uvector<char> nonresident_name_table;
+	};
+
+	// Data for specific executable types.
+	std::variant<std::monostate, PE_data_t, NE_data_t> EXE_data;
 
 	// Resource reader
 	IResourceReaderPtr rsrcReader;
@@ -165,22 +220,6 @@ public:
 	 */
 	int loadNEResident(void);
 
-	// NE executables are less common nowadays, so put the NE-specific data
-	// in its own struct and only allocate it if necessary.
-	struct NE_data_t {
-		rp::uvector<uint8_t> resident;
-		vhvc::span<const NE_Segment> segment_table;
-		vhvc::span<const uint8_t> resource_table;
-		vhvc::span<const char> resident_name_table;
-		vhvc::span<const uint16_t> modref_table;
-		vhvc::span<const char> imported_name_table;
-		vhvc::span<const uint8_t> entry_table;
-
-		// Contents of the non-resident name table
-		rp::uvector<char> nonresident_name_table;
-	};
-	std::unique_ptr<NE_data_t> NE_data;
-
 	/**
 	 * Load the non-resident name table. (NE)
 	 * @return 0 on success; negative POSIX error code on error.
@@ -229,9 +268,6 @@ public:
 
 	/** PE-specific **/
 
-	// PE subsystem
-	uint16_t pe_subsystem;
-
 	/**
 	 * Format the PE subsystem name.
 	 * @param pe_subsystem PE subsystem
@@ -240,9 +276,6 @@ public:
 	 * @return Formatted PE subsystem name
 	 */
 	static std::string formatPESubsystemName(uint16_t pe_subsystem, uint32_t subsystem_ver_major, uint32_t subsystem_ver_minor);
-
-	// PE section headers
-	rp::uvector<IMAGE_SECTION_HEADER> pe_sections;
 
 	/**
 	 * Load the PE section table.
@@ -301,11 +334,6 @@ private:
 	int readPENullBlock(uint32_t low, uint32_t high, uint32_t minExtra,
 		uint32_t minMax, uint32_t maxExtra, std::unique_ptr<char[]> &outPtr,
 		size_t &outSize);
-
-	// PE Import Directory
-	std::vector<IMAGE_IMPORT_DIRECTORY> peImportDir;
-	// PE Import DLL Names (same order as the directory)
-	std::vector<std::string> peImportNames;
 
 	/**
 	 * Read PE Import Directory (peImportDir) and DLL names (peImportNames).

@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "config.libromdata.h"
+
 // time_r.h needs to be here due to *_r() issues on MinGW-w64.
 #include "time_r.h"
 

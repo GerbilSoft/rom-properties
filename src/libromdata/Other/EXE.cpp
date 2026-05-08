@@ -83,7 +83,6 @@ const RomDataInfo EXEPrivate::romDataInfo = {
 EXEPrivate::EXEPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, exeType(ExeType::Unknown)
-	, pe_subsystem(IMAGE_SUBSYSTEM_UNKNOWN)
 {
 	// Clear the structs.
 	memset(&mz, 0, sizeof(mz));
@@ -642,15 +641,18 @@ EXE::EXE(const IRpFilePtr &file)
 	if (d->hdr.pe.Signature == cpu_to_be32(0x50450000) /*'PE\0\0'*/) {
 		// Check if it's PE or PE32+.
 		// (.NET is checked in loadFieldData().)
+		uint16_t pe_subsystem = IMAGE_SUBSYSTEM_UNKNOWN;
 		switch (le16_to_cpu(d->hdr.pe.OptionalHeader.Magic)) {
 			case IMAGE_NT_OPTIONAL_HDR32_MAGIC:
 			case 0:	// some Win32s binaries
 				d->exeType = EXEPrivate::ExeType::PE;
-				d->pe_subsystem = le16_to_cpu(d->hdr.pe.OptionalHeader.opt32.Subsystem);
+				pe_subsystem = le16_to_cpu(d->hdr.pe.OptionalHeader.opt32.Subsystem);
+				d->EXE_data = EXEPrivate::PE_data_t(pe_subsystem);
 				break;
 			case IMAGE_NT_OPTIONAL_HDR64_MAGIC:
 				d->exeType = EXEPrivate::ExeType::PE32PLUS;
-				d->pe_subsystem = le16_to_cpu(d->hdr.pe.OptionalHeader.opt64.Subsystem);
+				pe_subsystem = le16_to_cpu(d->hdr.pe.OptionalHeader.opt64.Subsystem);
+				d->EXE_data = EXEPrivate::PE_data_t(pe_subsystem);
 				break;
 			default:
 				// Unsupported PE executable.
@@ -669,7 +671,7 @@ EXE::EXE(const IRpFilePtr &file)
 			// DLL file.
 			d->fileType = FileType::DLL;
 		} else {
-			switch (d->pe_subsystem) {
+			switch (pe_subsystem) {
 				case IMAGE_SUBSYSTEM_NATIVE:
 					// TODO: IMAGE_SUBSYSTEM_NATIVE may be either a
 					// device driver or boot-time executable.
@@ -692,6 +694,7 @@ EXE::EXE(const IRpFilePtr &file)
 		// New Executable
 		d->exeType = EXEPrivate::ExeType::NE;
 		d->mimeType = "application/x-ms-ne-executable";
+		d->EXE_data = EXEPrivate::NE_data_t();
 
 		// Check if this is a resource library.
 		// (All segment size values are 0.)
@@ -917,7 +920,13 @@ const char *EXE::systemName(unsigned int type) const
 		case EXEPrivate::ExeType::PE32PLUS: {
 			// Portable Executable.
 			// TODO: Also used by older SkyOS and BeOS, and HX for DOS.
-			switch (d->pe_subsystem) {
+			assert(std::holds_alternative<EXEPrivate::PE_data_t>(d->EXE_data));
+			if (!std::holds_alternative<EXEPrivate::PE_data_t>(d->EXE_data)) {
+				// Should have PE_data_t, but doesn't...
+				return nullptr;
+			}
+			const EXEPrivate::PE_data_t &PE_data = std::get<EXEPrivate::PE_data_t>(d->EXE_data);
+			switch (PE_data.pe_subsystem) {
 				case IMAGE_SUBSYSTEM_EFI_APPLICATION:
 				case IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER:
 				case IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER:
@@ -1287,8 +1296,13 @@ int EXE::loadMetaData(void)
 				subsystem_ver_minor = le16_to_cpu(opthdr.MinorSubsystemVersion);
 			}
 
-			d->metaData.addMetaData_string(Property::OSVersion, d->formatPESubsystemName(
-				d->pe_subsystem, subsystem_ver_major, subsystem_ver_minor));
+			assert(std::holds_alternative<EXEPrivate::PE_data_t>(d->EXE_data));
+			if (std::holds_alternative<EXEPrivate::PE_data_t>(d->EXE_data)) {
+				const EXEPrivate::PE_data_t &PE_data = std::get<EXEPrivate::PE_data_t>(d->EXE_data);
+
+				d->metaData.addMetaData_string(Property::OSVersion, d->formatPESubsystemName(
+					PE_data.pe_subsystem, subsystem_ver_major, subsystem_ver_minor));
+			}
 			break;
 		}
 	}
@@ -1449,7 +1463,14 @@ int EXE::checkViewedAchievements(void) const
 			return 0;
 	}
 
-	switch (d->pe_subsystem) {
+	assert(std::holds_alternative<EXEPrivate::PE_data_t>(d->EXE_data));
+	if (!std::holds_alternative<EXEPrivate::PE_data_t>(d->EXE_data)) {
+		// Should have PE_data_t, but doesn't...
+		return 0;
+	}
+	const EXEPrivate::PE_data_t &PE_data = std::get<EXEPrivate::PE_data_t>(d->EXE_data);
+
+	switch (PE_data.pe_subsystem) {
 		case IMAGE_SUBSYSTEM_WINDOWS_GUI:
 		case IMAGE_SUBSYSTEM_WINDOWS_CUI:
 			break;
