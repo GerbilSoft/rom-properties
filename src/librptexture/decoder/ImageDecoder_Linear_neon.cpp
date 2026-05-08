@@ -414,7 +414,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 				sb.val[2] = vtbl1_u8_u32(sb.val[2], shuf_mask);
 				sb.val[3] = vtbl1_u8_u32(sb.val[3], shuf_mask);
 
-				vst1_u32_x4(&px_dest[8], sa);
+				vst1_u32_x4(&px_dest[0], sa);
 				vst1_u32_x4(&px_dest[8], sb);
 #endif
 			}
