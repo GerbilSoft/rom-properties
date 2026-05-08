@@ -145,6 +145,10 @@ int rp_secure_enable(rp_secure_param_t param)
 			CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND |
 			CLONE_SYSVSEM | CLONE_SETTLS | CLONE_PARENT_SETTID;
 
+		// Require the CLONE_THREAD flag.
+		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clone), 1,
+			SCMP_A0_32(SCMP_CMP_MASKED_EQ, CLONE_THREAD, CLONE_THREAD));
+		// Allow the other flags.
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clone), 1,
 			SCMP_A0_32(SCMP_CMP_MASKED_EQ, ~RP_CLONE_ALLOWED_FLAGS, 0));
 		// Ubuntu 22.04 with glibc-2.35: SIGCHLD is specified.
