@@ -463,7 +463,7 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 		Gsvt::StdErr.fflush();
 
 		if (json) {
-			Gsvt::StdOut.fputs(fmt::format("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n", file->lastError()));
+			Gsvt::StdOut.fputs(fmt::format(FSTR("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n"), file->lastError()));
 			Gsvt::StdOut.fflush();
 		}
 		return;
@@ -544,7 +544,7 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 		Gsvt::StdErr.fflush();
 
 		if (json) {
-			Gsvt::StdOut.fputs(fmt::format("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n", file->lastError()));
+			Gsvt::StdOut.fputs(fmt::format(FSTR("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n"), file->lastError()));
 			Gsvt::StdOut.fflush();
 		}
 		return;
