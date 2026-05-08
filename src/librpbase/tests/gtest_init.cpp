@@ -319,6 +319,13 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #endif
 	rp_secure_enable(param);
 
+#ifdef _WIN32
+	// Suppress Windows "critical" error dialogs.
+	// This is a legacy MS-DOS holdover, e.g. the "Abort, Retry, Fail" prompt.
+	// NOTE: rp_secure_enable() sets SEM_FAILCRITICALERRORS already.
+	SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX);
+#endif /* _WIN32 */
+
 #ifdef HAVE_SECCOMP
 	// TODO: Check for std::vector::shrink_to_fit().
 	syscall_wl.clear();
