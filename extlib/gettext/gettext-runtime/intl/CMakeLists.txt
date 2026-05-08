@@ -5,9 +5,7 @@ SET(${PROJECT_NAME}_SOVERSION 8)
 
 # Remove Unicode definitions from CFLAGS.
 # GNU Gettext handles Windows Unicode by itself.
-# FIXME: Not working properly...
-STRING(REGEX REPLACE "[-/]D ?_?UNICODE" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -UUNICODE -U_UNICODE")
+REMOVE_DEFINITIONS(-DUNICODE -D_UNICODE)
 
 # localename-unsafe.c uses unary minus on an unsigned type. (line 2641)
 IF(MSVC)
