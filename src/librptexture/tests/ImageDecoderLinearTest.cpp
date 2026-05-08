@@ -411,13 +411,13 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_test)
 	// Decode the image.
 	switch (mode.bpp) {
 		case 24:
-			// 24-bit image.
+			// 24-bit image
 			m_img = ImageDecoder::fromLinear24_cpp(mode.src_pxf, 128, 128,
 				m_img_buf, m_img_buf_len, mode.stride);
 			break;
 
 		case 32:
-			// 32-bit image.
+			// 32-bit image
 			m_img = ImageDecoder::fromLinear32_cpp(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint32_t*>(m_img_buf),
 				m_img_buf_len, mode.stride);
@@ -425,7 +425,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_test)
 
 		case 15:
 		case 16:
-			// 15/16-bit image.
+			// 15/16-bit image
 			m_img = ImageDecoder::fromLinear16_cpp(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint16_t*>(m_img_buf),
 				m_img_buf_len, mode.stride);
@@ -453,7 +453,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 	// Decode the image.
 	switch (mode.bpp) {
 		case 24:
-			// 24-bit image.
+			// 24-bit image
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear24_cpp(mode.src_pxf, 128, 128,
 					m_img_buf, m_img_buf_len, mode.stride);
@@ -462,7 +462,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 			break;
 
 		case 32:
-			// 32-bit image.
+			// 32-bit image
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear32_cpp(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint32_t*>(m_img_buf),
@@ -473,7 +473,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 
 		case 15:
 		case 16:
-			// 15/16-bit image.
+			// 15/16-bit image
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear16_cpp(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint16_t*>(m_img_buf),
@@ -505,7 +505,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_test)
 	switch (mode.bpp) {
 		case 15:
 		case 16:
-			// 15/16-bit image.
+			// 15/16-bit image
 			m_img = ImageDecoder::fromLinear16_sse2(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint16_t*>(m_img_buf),
 				m_img_buf_len, mode.stride);
@@ -543,7 +543,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_benchmark)
 	switch (mode.bpp) {
 		case 15:
 		case 16:
-			// 15/16-bit image.
+			// 15/16-bit image
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear16_sse2(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint16_t*>(m_img_buf),
@@ -580,13 +580,13 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
 	// Decode the image.
 	switch (mode.bpp) {
 		case 24:
-			// 24-bit image.
+			// 24-bit image
 			m_img = ImageDecoder::fromLinear24_ssse3(mode.src_pxf, 128, 128,
 				m_img_buf, m_img_buf_len, mode.stride);
 			break;
 
 		case 32:
-			// 32-bit image.
+			// 32-bit image
 			m_img = ImageDecoder::fromLinear32_ssse3(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint32_t*>(m_img_buf),
 				m_img_buf_len, mode.stride);
@@ -623,7 +623,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_benchmark)
 	// Decode the image.
 	switch (mode.bpp) {
 		case 24:
-			// 24-bit image.
+			// 24-bit image
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear24_ssse3(mode.src_pxf, 128, 128,
 					m_img_buf, m_img_buf_len, mode.stride);
@@ -632,7 +632,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_benchmark)
 			break;
 
 		case 32:
-			// 32-bit image.
+			// 32-bit image
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear32_ssse3(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint32_t*>(m_img_buf),
@@ -668,23 +668,19 @@ TEST_P(ImageDecoderLinearTest, fromLinear_neon_test)
 
 	// Decode the image.
 	switch (mode.bpp) {
-#if 0
-		// TODO: 24-bit NEON
 		case 24:
-			// 24-bit image.
+			// 24-bit image
 			m_img = ImageDecoder::fromLinear24_neon(mode.src_pxf, 128, 128,
 				m_img_buf, m_img_buf_len, mode.stride);
 			break;
-#endif
 
 		case 32:
-			// 32-bit image.
+			// 32-bit image
 			m_img = ImageDecoder::fromLinear32_neon(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint32_t*>(m_img_buf),
 				m_img_buf_len, mode.stride);
 			break;
 
-		case 24:
 		case 15:
 		case 16:
 			// Not implemented...
@@ -715,20 +711,17 @@ TEST_P(ImageDecoderLinearTest, fromLinear_neon_benchmark)
 
 	// Decode the image.
 	switch (mode.bpp) {
-#if 0
-		// TODO: 24-bit NEON
 		case 24:
-			// 24-bit image.
+			// 24-bit image
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear24_neon(mode.src_pxf, 128, 128,
 					m_img_buf, m_img_buf_len, mode.stride);
 				m_img.reset();
 			}
 			break;
-#endif
 
 		case 32:
-			// 32-bit image.
+			// 32-bit image
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear32_neon(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint32_t*>(m_img_buf),
@@ -737,7 +730,6 @@ TEST_P(ImageDecoderLinearTest, fromLinear_neon_benchmark)
 			}
 			break;
 
-		case 24:
 		case 15:
 		case 16:
 			// Not implemented...
@@ -763,13 +755,13 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_test)
 	// Decode the image.
 	switch (mode.bpp) {
 		case 24:
-			// 24-bit image.
+			// 24-bit image
 			m_img = ImageDecoder::fromLinear24(mode.src_pxf, 128, 128,
 				m_img_buf, m_img_buf_len, mode.stride);
 			break;
 
 		case 32:
-			// 32-bit image.
+			// 32-bit image
 			m_img = ImageDecoder::fromLinear32(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint32_t*>(m_img_buf),
 				m_img_buf_len, mode.stride);
@@ -777,7 +769,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_test)
 
 		case 15:
 		case 16:
-			// 15/16-bit image.
+			// 15/16-bit image
 			m_img = ImageDecoder::fromLinear16(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint16_t*>(m_img_buf),
 				m_img_buf_len, mode.stride);
@@ -805,7 +797,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_benchmark)
 	// Decode the image.
 	switch (mode.bpp) {
 		case 24:
-			// 24-bit image.
+			// 24-bit image
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear24(mode.src_pxf, 128, 128,
 					m_img_buf, m_img_buf_len, mode.stride);
@@ -814,7 +806,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_benchmark)
 			break;
 
 		case 32:
-			// 32-bit image.
+			// 32-bit image
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear32(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint32_t*>(m_img_buf),
@@ -825,7 +817,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_benchmark)
 
 		case 15:
 		case 16:
-			// 15/16-bit image.
+			// 15/16-bit image
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear16(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint16_t*>(m_img_buf),

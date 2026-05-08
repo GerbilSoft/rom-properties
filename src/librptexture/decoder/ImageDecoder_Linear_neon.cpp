@@ -49,6 +49,148 @@ typedef uint32x2_t uint32xVTBL_t;
 #endif
 
 /**
+ * Convert a linear 24-bit RGB image to rp_image.
+ * NEON-optimized version.
+ * @param px_format	[in] 24-bit pixel format.
+ * @param width		[in] Image width.
+ * @param height	[in] Image height.
+ * @param img_buf	[in] Image buffer. (must be byte-addressable)
+ * @param img_siz	[in] Size of image data. [must be >= (w*h)*3]
+ * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
+ * @return rp_image, or nullptr on error.
+ */
+rp_image_ptr fromLinear24_neon(PixelFormat px_format,
+	int width, int height,
+	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride)
+{
+	static constexpr int bytespp = 3;
+
+	// Verify parameters.
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= (((size_t)width * (size_t)height) * bytespp));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < (((size_t)width * (size_t)height) * bytespp))
+	{
+		return nullptr;
+	}
+
+	// Stride adjustment.
+	int src_stride_adj = 0;
+	assert(stride >= 0);
+	if (stride > 0) {
+		// Set src_stride_adj to the number of bytes we need to
+		// add to the end of each line to get to the next row.
+		assert(stride >= (width * bytespp));
+		if (unlikely(stride < (width * bytespp))) {
+			// Invalid stride.
+			return nullptr;
+		}
+		// NOTE: Byte addressing, so keep it in units of bytespp.
+		src_stride_adj = stride - (width * bytespp);
+	}
+
+	// NOTE: vld1q *can* handle unaligned access, so image stride doesn't
+	// need to be a multiple of 16, but it may be slower. (Still likely
+	// to be faster than the fallback cpp decoder, though...)
+
+	// Create an rp_image.
+	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		return nullptr;
+	}
+	const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
+	argb32_t *px_dest = static_cast<argb32_t*>(img->bits());
+
+	// Planar ARGB vectors:
+	// - 0 == B
+	// - 1 == G
+	// - 2 == R
+	// - 3 == A (0xFF)
+	// NOTE: Declare the uint8x16x4_t within the loop so gcc will properly
+	// share the registers between the vld3q_u8 and the vst1q_u8_x4, so it
+	// doesn't have to copy R/G/B to a second set.
+
+	// Convert one line at a time. (24-bit -> ARGB32)
+	switch (px_format) {
+		case PixelFormat::RGB888:
+			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
+				// Convert 12 pixels at a time. (48 source bytes)
+				unsigned int x = static_cast<unsigned int>(width);
+				for (; x > 11; x -= 12) {
+					uint8x16x3_t rgb = vld3q_u8(img_buf);
+					uint8x16x4_t argb;
+					argb.val[0] = rgb.val[0];
+					argb.val[1] = rgb.val[1];
+					argb.val[2] = rgb.val[2];
+					argb.val[3] = vdupq_n_u8(0xFF);
+					vst4q_u8(reinterpret_cast<uint8_t*>(px_dest), argb);
+					img_buf += (12 * 3);
+					px_dest += 12;
+				}
+
+				// Remaining pixels
+				for (; x > 0; x--) {
+					px_dest->b = img_buf[0];
+					px_dest->g = img_buf[1];
+					px_dest->r = img_buf[2];
+					px_dest->a = 0xFF;
+					img_buf += 3;
+					px_dest++;
+				}
+
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
+			}
+			break;
+
+		case PixelFormat::BGR888:
+			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
+				// Convert 12 pixels at a time. (48 source bytes)
+				unsigned int x = static_cast<unsigned int>(width);
+				for (; x > 11; x -= 12) {
+					uint8x16x3_t rgb = vld3q_u8(img_buf);
+					uint8x16x4_t argb;
+					argb.val[0] = rgb.val[2];
+					argb.val[1] = rgb.val[1];
+					argb.val[2] = rgb.val[0];
+					argb.val[3] = vdupq_n_u8(0xFF);
+					vst4q_u8(reinterpret_cast<uint8_t*>(px_dest), argb);
+					img_buf += (12 * 3);
+					px_dest += 12;
+				}
+
+				// Remaining pixels
+				for (; x > 0; x--) {
+					px_dest->b = img_buf[2];
+					px_dest->g = img_buf[1];
+					px_dest->r = img_buf[0];
+					px_dest->a = 0xFF;
+					img_buf += 3;
+					px_dest++;
+				}
+
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
+			}
+			break;
+
+		default:
+			assert(!"Unsupported 24-bit pixel format.");
+			return nullptr;
+	}
+
+	// Set the sBIT metadata.
+	static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
+	img->set_sBIT(sBIT);
+
+	// Image has been converted.
+	return img;
+}
+
+/**
  * Convert a linear 32-bit RGB image to rp_image.
  * NEON-optimized version.
  * @param px_format	[in] 32-bit pixel format.
