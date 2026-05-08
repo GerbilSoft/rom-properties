@@ -399,10 +399,12 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// `rpcli rpcli.exe` causes a random crash halfway through printing,
 	// if we set the console output CP to UTF-8.
 	// TODO: Verify if that happens on Windows 8 or 8.1.
-	if (IsWindows10OrGreater()) {
+	if (IsWindows10OrGreater() && old_console_output_cp == 0) {
 		old_console_output_cp = GetConsoleOutputCP();
-		atexit(RestoreConsoleOutputCP);
-		SetConsoleOutputCP(CP_UTF8);
+		if (old_console_output_cp != CP_UTF8) {
+			atexit(RestoreConsoleOutputCP);
+			SetConsoleOutputCP(CP_UTF8);
+		}
 	}
 #endif /* _WIN32 */
 
