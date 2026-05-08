@@ -143,7 +143,7 @@ int rp_image::swizzle_neon(const char *swz_spec)
 	// pshufb_mask_u32_or so we can take advantage of a vector OR
 	// instead of adding each value individually.
 	const uint32xVTBL_t shuf_chnum_or = vld1VTBL_u32(pshufb_mask_u32_chnum_or.data());
-	const uint32xVTBL_t shuf_mask = vorVTBL_u32(
+	const uint32xVTBL_t shuf_mask = vorrVTBL_u32(
 		vdupVTBL_n_u32(pshufb_mask_vals.u32), shuf_chnum_or);
 
 	// OR mask for '1' channels.
