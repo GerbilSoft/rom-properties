@@ -11,7 +11,7 @@ extern "C" {
 #endif
 
 // Dark mode colors (TODO: Get from the OS?)
-static const COLORREF g_darkMainDlgBkColor = 0x000000;	// Main dialog background
+static const COLORREF g_darkMainDlgBkColor = 0x202020;	// Main dialog background
 static const COLORREF g_darkSubDlgBkColor = 0x202020;	// Sub dialog background (e.g. tabs)
 static const COLORREF g_darkBkColor = 0x202020;			// Other control background
 static const COLORREF g_darkTabBkColor = 0x303030;
