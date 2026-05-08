@@ -4,7 +4,20 @@ PROJECT(rp-config-win32 C)
 # Create the manifest file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/rp-config.exe.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/rp-config.exe.manifest" @ONLY)
 
-ADD_EXECUTABLE(rp-config WIN32 rp-config.c rp-config.rc)
+# NOTE: Cannot link to libwin32common because it pulls in libi18n,
+# which causes rp-config to link to gnuintl-8 due to setlocale()
+# being overridden.
+# Compile rp_LoadLibraryEx.c directly instead.
+SET(${PROJECT_NAME}_SRCS
+	rp-config.c
+	../../libwin32common/rp_LoadLibraryEx.c
+	rp-config.rc
+	)
+SET(${PROJECT_NAME}_H
+	../../libwin32common/rp_LoadLibraryEx.h
+	)
+
+ADD_EXECUTABLE(rp-config WIN32 ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H})
 SET_TARGET_PROPERTIES(rp-config PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(rp-config)
 SET_WINDOWS_SUBSYSTEM(rp-config WIN32)
@@ -14,13 +27,13 @@ SET_WINDOWS_NO_MANIFEST(rp-config)
 SET_WINDOWS_ENTRYPOINT(rp-config WinMain OFF)
 
 TARGET_LINK_LIBRARIES(rp-config PRIVATE rpsecure)
-TARGET_LINK_LIBRARIES(rp-config PRIVATE win32common)	# for rp_LoadLibraryExW()
 TARGET_LINK_LIBRARIES(rp-config PRIVATE advapi32)
 TARGET_INCLUDE_DIRECTORIES(rp-config
-	PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# build/src
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# build/src/win32
-		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
+	PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>			# src
+	PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../libwin32common>	# libwin32common
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>			# build/src
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>			# build/src/win32
+		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>					# build
 	)
 
 # Make sure git_version.h is created before compiling this target.

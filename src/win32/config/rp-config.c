@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * rp-config.c: Configuration stub.                                        *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,7 +23,7 @@
 #include "librpsecure/os-secure.h"
 #include "librpsecure/restrict-dll.h"
 
-// C includes.
+// C includes
 #include <locale.h>
 #include <stdlib.h>
 #include <string.h>
