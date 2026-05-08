@@ -16,7 +16,7 @@ ADD_DEFINITIONS(-DWINVER=0x0600 -D_WIN32_WINNT=0x0600 -D_WIN32_IE=0x0600)
 # Enable secure template overloads for C++.
 # References:
 # - MinGW's _mingw_secapi.h
-# - http://msdn.microsoft.com/en-us/library/ms175759%28v=VS.100%29.aspx
+# - https://learn.microsoft.com/en-us/cpp/c-runtime-library/secure-template-overloads?view=msvc-170
 ADD_DEFINITIONS(-D_CRT_SECURE_CPP_OVERLOAD_SECURE_NAMES=1)
 ADD_DEFINITIONS(-D_CRT_SECURE_CPP_OVERLOAD_SECURE_NAMES_MEMORY=1)
 ADD_DEFINITIONS(-D_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES=1)
