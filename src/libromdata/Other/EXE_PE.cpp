@@ -1138,7 +1138,7 @@ int EXEPrivate::addFields_PE_Import(void)
 			, value(0)
 		{ }
 	};
-	auto iltAdvance = [this, ilt_buf, ilt_end, dll_ilt_base, is64, &PE_data](IltIterator &it) -> bool {
+	auto iltAdvance = [&PE_data, ilt_buf, ilt_end, dll_ilt_base, is64](IltIterator &it) -> bool {
 		auto &dir_index = it.dir_index;
 		auto &ilt = it.ilt;
 		auto &dllname = it.dllname;
