@@ -38,7 +38,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 /**
  * Create an IRpFile using IStream* as the underlying storage mechanism.
  * NOTE: RpFile_IStream does NOT take ownership of the IStream*.
- * @param pStream	[in] IStream*.
+ * @param pStream	[in] IStream*
  * @param gzip		[in] If true, handle gzipped files automatically.
  */
 RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)

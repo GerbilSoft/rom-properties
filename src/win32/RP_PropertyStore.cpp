@@ -148,7 +148,6 @@ static inline HRESULT InitPropVariantFromInt8(_In_ CHAR iVal, _Out_ PROPVARIANT 
 
 RP_PropertyStore_Private::RP_PropertyStore_Private()
 	: file(nullptr)
-	, pstream(nullptr)
 	, grfMode(0)
 {
 	assert(metaDataConv[metaDataConv.size()-1].pkey != nullptr);
@@ -159,10 +158,6 @@ RP_PropertyStore_Private::~RP_PropertyStore_Private()
 	// Clear property variants.
 	for (PROPVARIANT &pv : prop_val) {
 		PropVariantClear(&pv);
-	}
-
-	if (pstream) {
-		pstream->Release();
 	}
 }
 
@@ -221,8 +216,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 	std::swap(d->file, file);
 
 	// Save the IStream and grfMode.
-	pstream->AddRef();
-	d->pstream = pstream;
+	d->pstream.Attach(pstream, true);
 	d->grfMode = grfMode;
 
 	// Attempt to create a RomData object.

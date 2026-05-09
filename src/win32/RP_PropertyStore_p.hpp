@@ -51,7 +51,7 @@ public:
 
 	// IStream* used by the IRpFile.
 	// NOTE: RpFile_IStream does NOT take ownership of the IStream*.
-	IStream *pstream;
+	IStreamPtr pstream;
 	DWORD grfMode;
 
 	/**

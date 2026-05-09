@@ -26,7 +26,7 @@ public:
 	/**
 	 * Create an IRpFile using IStream* as the underlying storage mechanism.
 	 * NOTE: RpFile_IStream does NOT take ownership of the IStream*.
-	 * @param pStream	[in] IStream*.
+	 * @param pStream	[in] IStream*
 	 * @param gzip		[in] If true, handle gzipped files automatically.
 	 */
 	explicit RpFile_IStream(IStream *pStream, bool gzip = false);
