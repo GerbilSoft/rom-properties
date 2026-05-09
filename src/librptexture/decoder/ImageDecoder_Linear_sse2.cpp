@@ -415,7 +415,7 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 			// Components are already 8-bit, so we need to
 			// expand them to DWORD and add the alpha channel.
 			const __m128i Mask32_A_xmm = _mm_set1_epi32(Mask32_A);
-			__m128i reg_zero = _mm_setzero_si128();
+			const __m128i reg_zero = _mm_setzero_si128();
 			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 				// Process 8 pixels per iteration using SSE2.
 				unsigned int x = static_cast<unsigned int>(width);
