@@ -33,6 +33,20 @@
 #  define SCMP_ACTION SCMP_ACT_KILL
 #endif /* ENABLE_SECCOMP_DEBUG */
 
+// NOTE: SCMP_CMP32() was added in libseccomp-2.4.0.
+// Debian 8 (ppc) has libseccomp-2.2.3-3~bpo8+1.
+#ifdef SCMP_A0_32
+#  define SCMP_A0_32_struct SCMP_A0_32
+#  define SCMP_A1_32_struct SCMP_A1_32
+#else /* !SCMP_A0_32 */
+#  define SCMP_A0_32(op, a, b) ((struct scmp_arg_cmp){0, (op), (uint32_t)(a), (uint32_t)(b)})
+#  define SCMP_A1_32(op, a, b) ((struct scmp_arg_cmp){1, (op), (uint32_t)(a), (uint32_t)(b)})
+
+// use these in structs
+#  define SCMP_A0_32_struct(op, a, b) {0, (op), (uint32_t)(a), (uint32_t)(b)}
+#  define SCMP_A1_32_struct(op, a, b) {1, (op), (uint32_t)(a), (uint32_t)(b)}
+#endif /* SCMP_A0_32 */
+
 /**
  * Enable OS-specific security functionality.
  * @param param OS-specific parameter.
@@ -216,20 +230,22 @@ int rp_secure_enable(rp_secure_param_t param)
 		// NOTE: The second argument (type) can have flags set.
 		// Assuming the low 10 bits are valid socket types.
 		// TODO: Only exclude SOCK_NONBLOCK and SOCK_CLOEXEC?
+		// FIXME: gcc-4.9.2-10+deb8u1 (ppc) doesn't like SCMP_Ax() in a struct:
+		// "error: initializer element is not constant"
 		static const struct scmp_arg_cmp socket_tcp_udp_rules[4][2] = {
 			// IPv4, TCP
-			{SCMP_A0_32(SCMP_CMP_EQ, AF_INET, 0),
-			 SCMP_A1_32(SCMP_CMP_MASKED_EQ, 0x3FF, SOCK_STREAM)},
+			{SCMP_A0_32_struct(SCMP_CMP_EQ, AF_INET, 0),
+			 SCMP_A1_32_struct(SCMP_CMP_MASKED_EQ, 0x3FF, SOCK_STREAM)},
 			// IPv4, UDP
-			{SCMP_A0_32(SCMP_CMP_EQ, AF_INET, 0),
-			 SCMP_A1_32(SCMP_CMP_MASKED_EQ, 0x3FF, SOCK_DGRAM)},
+			{SCMP_A0_32_struct(SCMP_CMP_EQ, AF_INET, 0),
+			 SCMP_A1_32_struct(SCMP_CMP_MASKED_EQ, 0x3FF, SOCK_DGRAM)},
 
 			// IPv6, TCP
-			{SCMP_A0_32(SCMP_CMP_EQ, AF_INET6, 0),
-			 SCMP_A1_32(SCMP_CMP_MASKED_EQ, 0x3FF, SOCK_STREAM)},
+			{SCMP_A0_32_struct(SCMP_CMP_EQ, AF_INET6, 0),
+			 SCMP_A1_32_struct(SCMP_CMP_MASKED_EQ, 0x3FF, SOCK_STREAM)},
 			// IPv6, UDP
-			{SCMP_A0_32(SCMP_CMP_EQ, AF_INET6, 0),
-			 SCMP_A1_32(SCMP_CMP_MASKED_EQ, 0x3FF, SOCK_DGRAM)},
+			{SCMP_A0_32_struct(SCMP_CMP_EQ, AF_INET6, 0),
+			 SCMP_A1_32_struct(SCMP_CMP_MASKED_EQ, 0x3FF, SOCK_DGRAM)},
 		};
 
 		for (unsigned int i = 0; i < 4; i++) {
