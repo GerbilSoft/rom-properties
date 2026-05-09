@@ -31,6 +31,7 @@ PrivilegesRequired=admin
 OutputBaseFilename=SetupRomPropertiesXP-{#MyAppVersion}
 SolidCompression=yes
 UninstallDisplayIcon={app}\rp-config.exe
+UninstallDisplayName={#MyAppName}
 VersionInfoDescription=ROM Properties Setup (for Windows XP/2003/Vista)
 VersionInfoProductTextVersion={#MyAppVersion}
 VersionInfoProductVersion={#RP_VERSION_MAJOR}.{#RP_VERSION_MINOR}.{#RP_VERSION_PATCH}.{#RP_VERSION_DEVEL}
