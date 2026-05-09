@@ -41,6 +41,7 @@ WizardStyle=modern dynamic
 ; Theme customization
 SetupIconFile=icons\msiexec.ico
 WizardSmallImageFile=icons\w10-rom-256.png,icons\w10-rom-64.png,icons\w10-rom-48.png
+WizardSmallImageFileDynamicDark=icons\w10-rom-256.png,icons\w10-rom-64.png,icons\w10-rom-48.png
 
 ; Enable 64-bit mode on amd64 and arm64.
 ArchitecturesAllowed=x86compatible or x64compatible or arm64
