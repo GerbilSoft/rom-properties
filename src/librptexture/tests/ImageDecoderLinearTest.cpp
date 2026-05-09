@@ -668,11 +668,13 @@ TEST_P(ImageDecoderLinearTest, fromLinear_neon_test)
 
 	// Decode the image.
 	switch (mode.bpp) {
+#ifdef RP_CPU_ARM64
 		case 24:
 			// 24-bit image
 			m_img = ImageDecoder::fromLinear24_neon(mode.src_pxf, 128, 128,
 				m_img_buf, m_img_buf_len, mode.stride);
 			break;
+#endif /* RP_CPU_ARM64 */
 
 		case 32:
 			// 32-bit image
@@ -681,6 +683,9 @@ TEST_P(ImageDecoderLinearTest, fromLinear_neon_test)
 				m_img_buf_len, mode.stride);
 			break;
 
+#ifndef RP_CPU_ARM64
+		case 24:
+#endif /* !RP_CPU_ARM64 */
 		case 15:
 		case 16:
 			// Not implemented...
@@ -711,6 +716,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_neon_benchmark)
 
 	// Decode the image.
 	switch (mode.bpp) {
+#ifdef RP_CPU_ARM64
 		case 24:
 			// 24-bit image
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
@@ -719,6 +725,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_neon_benchmark)
 				m_img.reset();
 			}
 			break;
+#endif /* RP_CPU_ARM64 */
 
 		case 32:
 			// 32-bit image
@@ -730,6 +737,9 @@ TEST_P(ImageDecoderLinearTest, fromLinear_neon_benchmark)
 			}
 			break;
 
+#ifndef RP_CPU_ARM64
+		case 24:
+#endif /* !RP_CPU_ARM64 */
 		case 15:
 		case 16:
 			// Not implemented...

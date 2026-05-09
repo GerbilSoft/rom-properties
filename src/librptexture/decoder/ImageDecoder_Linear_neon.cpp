@@ -3,7 +3,7 @@
  * ImageDecoder_Linear.cpp: Image decoding functions: Linear               *
  * NEON-optimized version.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -48,6 +48,7 @@ typedef uint32x2_t uint32xVTBL_t;
 #  error Unsupported CPU?
 #endif
 
+#ifdef RP_CPU_ARM64
 /**
  * Convert a linear 24-bit RGB image to rp_image.
  * NEON-optimized version.
@@ -193,6 +194,7 @@ rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 	// Image has been converted.
 	return img;
 }
+#endif /* RP_CPU_ARM64 */
 
 /**
  * Convert a linear 32-bit RGB image to rp_image.

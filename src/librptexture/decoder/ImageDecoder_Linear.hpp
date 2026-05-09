@@ -175,7 +175,7 @@ rp_image_ptr fromLinear24_ssse3(PixelFormat px_format,
 	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 #endif /* IMAGEDECODER_HAS_SSSE3 */
 
-#ifdef IMAGEDECODER_HAS_NEON
+#if defined(IMAGEDECODER_HAS_NEON) && defined(RP_CPU_ARM64)
 /**
  * Convert a linear 24-bit RGB image to rp_image.
  * NEON-optimized version.
@@ -192,7 +192,7 @@ RP_LIBROMDATA_PUBLIC
 rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
-#endif /* IMAGEDECODER_HAS_NEON */
+#endif /* IMAGEDECODER_HAS_NEON && RP_CPU_ARM64 */
 
 /**
  * Convert a linear 24-bit RGB image to rp_image.
@@ -209,23 +209,23 @@ static inline rp_image_ptr fromLinear24(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride = 0)
 {
-#ifdef IMAGEDECODER_ALWAYS_HAS_NEON
+#if defined(IMAGEDECODER_ALWAYS_HAS_NEON) && defined(RP_CPU_ARM64)
 	return fromLinear24_neon(px_format, width, height, img_buf, img_siz, stride);
-#else /* !IMAGEDECODER_ALWAYS_HAS_NEON */
+#else /* !(IMAGEDECODER_ALWAYS_HAS_NEON && RP_CPU_ARM64) */
 #  ifdef IMAGEDECODER_HAS_SSSE3
 	if (RP_CPU_x86_HasSSSE3()) {
 		return fromLinear24_ssse3(px_format, width, height, img_buf, img_siz, stride);
 	} else
 #  endif /* IMAGEDECODER_HAS_SSSE3 */
-#  ifdef IMAGEDECODER_HAS_NEON
+#  if defined(IMAGEDECODER_HAS_NEON) && defined(RP_CPU_ARM64)
 	if (RP_CPU_arm_HasNEON()) {
 		return fromLinear24_neon(px_format, width, height, img_buf, img_siz, stride);
 	} else
-#  endif /* IMAGEDECODER_HAS_NEON */
+#  endif /* IMAGEDECODER_HAS_NEON && RP_CPU_ARM64 */
 	{
 		return fromLinear24_cpp(px_format, width, height, img_buf, img_siz, stride);
 	}
-#endif /* IMAGEDECODER_ALWAYS_HAS_NEON */
+#endif /* IMAGEDECODER_ALWAYS_HAS_NEON && RP_CPU_ARM64 */
 }
 
 /** 32-bit **/
