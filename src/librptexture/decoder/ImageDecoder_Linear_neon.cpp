@@ -164,7 +164,7 @@ rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 			argb.val[2] = vqtbl1q_u8(argb.val[2], shuf_mask);
 			argb.val[2] = vorrq_u8(argb.val[2], alpha_mask);
 
-			argb.val[3] = vextq_u8(rgb.val[2], rgb.val[3], 8);
+			argb.val[3] = vextq_u8(rgb.val[2], rgb.val[3], 4);
 			argb.val[3] = vqtbl1q_u8(argb.val[3], shuf_mask);
 			argb.val[3] = vorrq_u8(argb.val[3], alpha_mask);
 
