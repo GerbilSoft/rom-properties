@@ -82,7 +82,7 @@ SET(${PROJECT_NAME}_SRCS
 	FlagSpriteSheet.cpp
 	config/ConfigDialog.cpp
 	config/PropSheetIcon.cpp
-	config/RP_EmptyVolumeCacheCallback.cpp
+	config/RP_EmptyVolumeCacheCallBack.cpp
 	config/ImageTypesTab.cpp
 	config/SystemsTab.cpp
 	config/OptionsTab.cpp
@@ -135,7 +135,7 @@ SET(${PROJECT_NAME}_H
 	FlagSpriteSheet.hpp
 	config/ConfigDialog.hpp
 	config/PropSheetIcon.hpp
-	config/RP_EmptyVolumeCacheCallback.hpp
+	config/RP_EmptyVolumeCacheCallBack.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp
 	config/SystemsTab.hpp

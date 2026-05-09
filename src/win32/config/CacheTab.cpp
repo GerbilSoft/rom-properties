@@ -27,7 +27,7 @@ using LibWin32UI::WTSSessionNotification;
 #include "libwin32darkmode/DarkModeCtrl.hpp"
 
 // IEmptyVolumeCacheCallBack implementation.
-#include "RP_EmptyVolumeCacheCallback.hpp"
+#include "RP_EmptyVolumeCacheCallBack.hpp"
 // Windows: WM_DEVICECHANGE structs.
 #include <dbt.h>
 #include <devguid.h>
@@ -474,7 +474,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	SendMessage(hProgressBar, PBM_SETPOS, 0, 0);
 
 	// Thumbnail cache callback.
-	RP_EmptyVolumeCacheCallback *const pCallback = new RP_EmptyVolumeCacheCallback(hWndPropSheet);
+	RP_EmptyVolumeCacheCallBack *const pCallback = new RP_EmptyVolumeCacheCallBack(hWndPropSheet);
 
 	// NOTE: IEmptyVolumeCache only supports Unicode strings.
 	pCallback->m_baseProgress = 0;

@@ -1,15 +1,15 @@
 /********************************************************************************
  * ROM Properties Page shell extension. (Win32)                                 *
- * RP_EmptyVolumeCacheCallback.cpp: RP_EmptyVolumeCacheCallback implementation. *
+ * RP_EmptyVolumeCacheCallBack.cpp: RP_EmptyVolumeCacheCallBack implementation. *
  *                                                                              *
  * Copyright (c) 2016-2023 by David Korth.                                      *
  * SPDX-License-Identifier: GPL-2.0-or-later                                    *
  ********************************************************************************/
 
 #include "stdafx.h"
-#include "RP_EmptyVolumeCacheCallback.hpp"
+#include "RP_EmptyVolumeCacheCallBack.hpp"
 
-RP_EmptyVolumeCacheCallback::RP_EmptyVolumeCacheCallback(HWND hProgressBar)
+RP_EmptyVolumeCacheCallBack::RP_EmptyVolumeCacheCallBack(HWND hProgressBar)
 	: m_hProgressBar(hProgressBar)
 	, m_baseProgress(0)
 {}
@@ -17,14 +17,14 @@ RP_EmptyVolumeCacheCallback::RP_EmptyVolumeCacheCallback(HWND hProgressBar)
 /** IUnknown **/
 // Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
-IFACEMETHODIMP RP_EmptyVolumeCacheCallback::QueryInterface(REFIID riid, LPVOID *ppvObj)
+IFACEMETHODIMP RP_EmptyVolumeCacheCallBack::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
 #ifdef _MSC_VER
 #  pragma warning(push)
 #  pragma warning(disable: 4365 4838)
 #endif /* _MSC_VER */
 	static const QITAB rgqit[] = {
-		QITABENT(RP_EmptyVolumeCacheCallback, IEmptyVolumeCacheCallBack),
+		QITABENT(RP_EmptyVolumeCacheCallBack, IEmptyVolumeCacheCallBack),
 		{ 0, 0 }
 	};
 #ifdef _MSC_VER
@@ -37,7 +37,7 @@ IFACEMETHODIMP RP_EmptyVolumeCacheCallback::QueryInterface(REFIID riid, LPVOID *
 // Reference: https://docs.microsoft.com/en-us/windows/win32/api/emptyvc/nn-emptyvc-iemptyvolumecachecallback
 // TODO: Needs testing on a system with lots of thumbnails.
 
-IFACEMETHODIMP RP_EmptyVolumeCacheCallback::ScanProgress(DWORDLONG dwlSpaceUsed, DWORD dwFlags, LPCWSTR pcwszStatus)
+IFACEMETHODIMP RP_EmptyVolumeCacheCallBack::ScanProgress(DWORDLONG dwlSpaceUsed, DWORD dwFlags, LPCWSTR pcwszStatus)
 {
 	RP_UNUSED(dwlSpaceUsed);
 	RP_UNUSED(dwFlags);
@@ -45,7 +45,7 @@ IFACEMETHODIMP RP_EmptyVolumeCacheCallback::ScanProgress(DWORDLONG dwlSpaceUsed,
 	return S_OK;
 }
 
-IFACEMETHODIMP RP_EmptyVolumeCacheCallback::PurgeProgress(DWORDLONG dwlSpaceFreed, DWORDLONG dwlSpaceToFree, DWORD dwFlags, LPCWSTR pcwszStatus)
+IFACEMETHODIMP RP_EmptyVolumeCacheCallBack::PurgeProgress(DWORDLONG dwlSpaceFreed, DWORDLONG dwlSpaceToFree, DWORD dwFlags, LPCWSTR pcwszStatus)
 {
 	RP_UNUSED(dwFlags);
 	RP_UNUSED(pcwszStatus);

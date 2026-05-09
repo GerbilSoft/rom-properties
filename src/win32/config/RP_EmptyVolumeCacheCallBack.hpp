@@ -1,6 +1,6 @@
 /********************************************************************************
  * ROM Properties Page shell extension. (Win32)                                 *
- * RP_EmptyVolumeCacheCallback.cpp: RP_EmptyVolumeCacheCallback implementation. *
+ * RP_EmptyVolumeCacheCallBack.cpp: RP_EmptyVolumeCacheCallBack implementation. *
  *                                                                              *
  * Copyright (c) 2016-2023 by David Korth.                                      *
  * SPDX-License-Identifier: GPL-2.0-or-later                                    *
@@ -19,14 +19,14 @@
 #include "common.h"
 #include "libwin32common/ComBase.hpp"
 
-class RP_EmptyVolumeCacheCallback final : public LibWin32Common::ComBase<IEmptyVolumeCacheCallBack>
+class RP_EmptyVolumeCacheCallBack final : public LibWin32Common::ComBase<IEmptyVolumeCacheCallBack>
 {
 public:
-	explicit RP_EmptyVolumeCacheCallback(HWND hProgressBar);
+	explicit RP_EmptyVolumeCacheCallBack(HWND hProgressBar);
 
 private:
-	typedef LibWin32Common::ComBase<RP_EmptyVolumeCacheCallback> super;
-	RP_DISABLE_COPY(RP_EmptyVolumeCacheCallback)
+	typedef LibWin32Common::ComBase<RP_EmptyVolumeCacheCallBack> super;
+	RP_DISABLE_COPY(RP_EmptyVolumeCacheCallBack)
 
 public:
 	// IUnknown
