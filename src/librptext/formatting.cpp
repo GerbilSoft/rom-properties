@@ -9,11 +9,6 @@
 #include "config.librptext.h"
 #include "formatting.hpp"
 
-#ifdef _WIN32
-// for the decimal point
-#  include "conversion.hpp"
-#endif /* _WIN32 && !HAVE_STRUCT_LCONV_WCHAR_T */
-
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
 
@@ -23,6 +18,12 @@
 #else /* !HAVE_NL_LANGINFO */
 #  include <clocale>
 #endif /* HAVE_NL_LANGINFO */
+
+// Windows: Using MultiByteToWideChar() / WideCharToMultiByte() directly
+// instead of conversion.hpp.
+#ifdef _WIN32
+#  include "libwin32common/RpWin32_sdk.h"
+#endif /* _WIN32 */
 
 // C includes (C++ namespace)
 #include <cassert>
@@ -113,16 +114,27 @@ static void initLocalizedDecimalPoint(void)
 
 #ifdef _WIN32
 	// Use localeconv(). (Windows: Convert from UTF-16 to UTF-8.)
+	bool ok = false;
 #  ifdef HAVE_STRUCT_LCONV_WCHAR_T
 	// MSVCRT: `struct lconv` has wchar_t fields.
-	const string s_dec = utf16_to_utf8(reinterpret_cast<const char16_t*>(
-		localeconv()->_W_decimal_point), -1);
+	int ret = WideCharToMultiByte(CP_UTF8, 0, localeconv()->_W_decimal_point, -1, lc_decimal, sizeof(lc_decimal), nullptr, nullptr);
+	ok = (ret > 0 && ret < sizeof(lc_decimal));
 #  else /* !HAVE_STRUCT_LCONV_WCHAR_T */
 	// MinGW v5,v6: `struct lconv` does not have wchar_t fields.
 	// NOTE: The `char` fields are ANSI.
-	const string s_dec = ansi_to_utf8(localeconv()->decimal_point, -1);
+	TCHAR wcs[8];
+	int ret = MultiByteToWideChar(CP_ACP, 0, localeconv()->decimal_point, -1, wcs, _countof(wcs));
+	if (ret > 0 && ret < _countof(wcs)) {
+		// Converted from ANSI to Unicode.
+		// Convert it from Unicode to UTF-8 now.
+		ret = WideCharToMultiByte(CP_UTF8, 0, wcs, -1, lc_decimal, sizeof(lc_decimal), nullptr, nullptr);
+		ok = (ret > 0 && ret < sizeof(lc_decimal));
+	}
 #  endif /* HAVE_STRUCT_LCONV_WCHAR_T */
-	snprintf(lc_decimal, sizeof(lc_decimal), "%s", s_dec.c_str());
+	if (!ok) {
+		// Could not get the decimal point...
+		strcpy(lc_decimal, ".");
+	}
 #else /* !_WIN32 */
 #  ifdef HAVE_NL_LANGINFO
 	// Use nl_langinfo().
@@ -136,7 +148,7 @@ static void initLocalizedDecimalPoint(void)
 	if (radix) {
 		snprintf(lc_decimal, sizeof(lc_decimal), "%s", radix);
 	} else {
-		memcpy(lc_decimal, ".", 2);
+		strcpy(lc_decimal, ".");
 	}
 #endif /* _WIN32 */
 }
