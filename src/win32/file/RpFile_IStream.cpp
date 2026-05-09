@@ -163,12 +163,6 @@ RpFile_IStream::~RpFile_IStream()
 		inflateEnd(m_pZstm);
 		free(m_pZstm);
 	}
-
-	// NOTE: RpFile_IStream does NOT take ownership of the IStream*,
-	// but it *does* take a reference.
-	if (m_pStream) {
-		m_pStream->Release();
-	}
 }
 
 /**
