@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptext)                        *
  * formatting.cpp: Text formatting functions                               *
  *                                                                         *
- * Copyright (c) 2009-2025 by David Korth.                                 *
+ * Copyright (c) 2009-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -108,33 +108,37 @@ static void initLocalizedDecimalPoint(void)
 	}
 
 	// Not using C locale. Get the localized decimal point.
-#if defined(_WIN32)
+	// NOTE: Using snprintf() because strncpy() clears the
+	// entire field and might not be NULL-terminated.
+
+#ifdef _WIN32
 	// Use localeconv(). (Windows: Convert from UTF-16 to UTF-8.)
-#  if defined(HAVE_STRUCT_LCONV_WCHAR_T)
+#  ifdef HAVE_STRUCT_LCONV_WCHAR_T
 	// MSVCRT: `struct lconv` has wchar_t fields.
 	const string s_dec = utf16_to_utf8(reinterpret_cast<const char16_t*>(
 		localeconv()->_W_decimal_point), -1);
-	strncpy(lc_decimal, s_dec.c_str(), sizeof(lc_decimal));
 #  else /* !HAVE_STRUCT_LCONV_WCHAR_T */
 	// MinGW v5,v6: `struct lconv` does not have wchar_t fields.
 	// NOTE: The `char` fields are ANSI.
 	const string s_dec = ansi_to_utf8(localeconv()->decimal_point, -1);
-	strncpy(lc_decimal, s_dec.c_str(), sizeof(lc_decimal));
 #  endif /* HAVE_STRUCT_LCONV_WCHAR_T */
-#elif defined(HAVE_NL_LANGINFO)
+	snprintf(lc_decimal, sizeof(lc_decimal), "%s", s_dec.c_str());
+#else /* !_WIN32 */
+#  ifdef HAVE_NL_LANGINFO
 	// Use nl_langinfo().
 	// Reference: https://www.gnu.org/software/libc/manual/html_node/The-Elegant-and-Fast-Way.html
 	// NOTE: RADIXCHAR is the portable version of DECIMAL_POINT.
 	const char *const radix = nl_langinfo(RADIXCHAR);
-	strncpy(lc_decimal, radix ? radix : ".", sizeof(lc_decimal));
-#else
+#  else /* !HAVE_NL_LANGINFO */
 	// Use localeconv(). (Assuming UTF-8)
 	const char *const radix = localeconv()->decimal_point;
-	strncpy(lc_decimal, radix ? radix : ".", sizeof(lc_decimal));
-#endif
-
-	// Ensure NULL-termination.
-	lc_decimal[sizeof(lc_decimal)-1] = '\0';
+#  endif /* HAVE_NL_LANGINFO */
+	if (radix) {
+		snprintf(lc_decimal, sizeof(lc_decimal), "%s", radix);
+	} else {
+		memcpy(lc_decimal, ".", 2);
+	}
+#endif /* _WIN32 */
 }
 
 /**

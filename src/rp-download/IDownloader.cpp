@@ -248,9 +248,9 @@ static int parse_os_release(void *user, const char *section, const char *name, c
 	inih_ctx *const ctx = static_cast<inih_ctx*>(user);
 	if (!strcmp(ctx->field_name, name)) {
 		// Found the field.
-		// TODO: strlcpy() or snprintf() or similar?
-		strncpy(ctx->ret_value, value, sizeof(ctx->ret_value));
-		ctx->ret_value[sizeof(ctx->ret_value)-1] = '\0';
+		// NOTE: Using snprintf() because strncpy() clears the
+		// entire field and might not be NULL-terminated.
+		snprintf(ctx->ret_value, sizeof(ctx->ret_value), "%s", value);
 		return 0;
 	}
 
