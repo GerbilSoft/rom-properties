@@ -117,9 +117,9 @@ rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 	switch (px_format) {
 		case PixelFormat::RGB888:
 			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
-				// Convert 12 pixels at a time. (48 source bytes)
+				// Convert 16 pixels at a time. (48 source bytes)
 				unsigned int x = static_cast<unsigned int>(width);
-				for (; x > 11; x -= 12) {
+				for (; x > 15; x -= 16) {
 					uint8x16x3_t rgb = vld3q_u8(img_buf);
 					uint8x16x4_t argb;
 					argb.val[0] = rgb.val[0];
@@ -127,8 +127,8 @@ rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 					argb.val[2] = rgb.val[2];
 					argb.val[3] = vdupq_n_u8(0xFF);
 					vst4q_u8_ex(reinterpret_cast<uint8_t*>(px_dest), argb, 128);
-					img_buf += (12 * 3);
-					px_dest += 12;
+					img_buf += (16 * 3);
+					px_dest += 16;
 				}
 
 				// Remaining pixels
@@ -148,9 +148,9 @@ rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 
 		case PixelFormat::BGR888:
 			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
-				// Convert 12 pixels at a time. (48 source bytes)
+				// Convert 16 pixels at a time. (48 source bytes)
 				unsigned int x = static_cast<unsigned int>(width);
-				for (; x > 11; x -= 12) {
+				for (; x > 15; x -= 16) {
 					uint8x16x3_t rgb = vld3q_u8(img_buf);
 					uint8x16x4_t argb;
 					argb.val[0] = rgb.val[2];
@@ -158,8 +158,8 @@ rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 					argb.val[2] = rgb.val[0];
 					argb.val[3] = vdupq_n_u8(0xFF);
 					vst4q_u8_ex(reinterpret_cast<uint8_t*>(px_dest), argb, 128);
-					img_buf += (12 * 3);
-					px_dest += 12;
+					img_buf += (16 * 3);
+					px_dest += 16;
 				}
 
 				// Remaining pixels
