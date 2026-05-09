@@ -13,7 +13,7 @@
 #include <assert.h>
 
 // ARM NEON intrinsics
-#include <arm_neon.h>
+#include "arm_neon_aligned.h"
 
 #define vrev16q_u8_u16(x) vreinterpretq_u16_u8(vrev16q_u8(vreinterpretq_u8_u16(x)))
 #define vrev32q_u8_u32(x) vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(x)))
