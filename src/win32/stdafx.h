@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * stdafx.h: Common definitions and includes for COM.                      *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,10 +17,6 @@
 #include "libwin32common/RpWin32_sdk.h"
 #include "libwin32common/rp_versionhelpers.h"
 #include <windows.h>
-
-#if _WIN32_WINNT < 0x0600
-#  error Windows Vista SDK or later is required.
-#endif
 
 // Typesafe inline function wrappers for some Windows headers.
 #include "libwin32common/sdk/windowsx_ts.h"
