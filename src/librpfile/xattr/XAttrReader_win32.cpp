@@ -17,6 +17,7 @@
 #include <winioctl.h>
 using namespace LibWin32Common;
 
+#if _WIN32_WINNT < _WIN32_WINNT_WIN7
 // NOTE: wofapi.h might not be available.
 // Define the WOF stuff here.
 typedef struct _WOF_EXTERNAL_INFO {
@@ -29,6 +30,7 @@ typedef struct _FILE_PROVIDER_EXTERNAL_INFO_V1 {
 	ULONG Algorithm;
 	ULONG Flags;
 } FILE_PROVIDER_EXTERNAL_INFO_V1, *PFILE_PROVIDER_EXTERNAL_INFO_V1;
+#endif /* _WIN32_WINNT < _WIN32_WINNT_WIN7 */
 
 #ifndef FSCTL_GET_EXTERNAL_BACKING
 #  define FSCTL_GET_EXTERNAL_BACKING CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 196, METHOD_BUFFERED, FILE_ANY_ACCESS)
