@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * KeyManagerTab.hpp: Key Manager tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,6 +11,13 @@
 #include "res/resource.h"
 #include "../FontHandler.hpp"
 #include "../MessageWidget.hpp"
+
+// Other rom-properties libraries
+#include "librpbase/crypto/KeyManager.hpp"
+using namespace LibRpBase;
+using namespace LibRpFile;
+using namespace LibRpText;
+using namespace LibRomData;
 
 // KeyStore
 #include "KeyStoreWin32.hpp"
@@ -32,14 +39,8 @@ using LibWin32UI::WTSSessionNotification;
 #include "libwin32darkmode/DarkModeCtrl.hpp"
 #include "libwin32darkmode/ListViewUtil.hpp"
 
-// Other rom-properties libraries
-#include "librpbase/crypto/KeyManager.hpp"
-using namespace LibRpBase;
-using namespace LibRpFile;
-using namespace LibRpText;
-
-// libromdata
-using namespace LibRomData;
+// COM smart pointer typedefs.
+_COM_SMARTPTR_TYPEDEF(IOwnerDataCallback, IID_IOwnerDataCallback);
 
 // C++ STL classes
 using std::array;
@@ -147,7 +148,7 @@ public:
 
 	// KeyStore
 	KeyStoreWin32 *keyStore;
-	KeyStore_OwnerDataCallback *keyStore_ownerDataCallback;
+	IOwnerDataCallbackPtr keyStore_ownerDataCallback;
 
 	// Font Handler
 	FontHandler fontHandler;
@@ -260,7 +261,6 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	, hWndPropSheet(nullptr)
 	, hMenuImport(nullptr)
 	, keyStore(new KeyStoreWin32(nullptr))
-	, keyStore_ownerDataCallback(nullptr)
 	, fontHandler(nullptr)
 	, hMessageWidget(nullptr)
 	, hEditBox(nullptr)
@@ -287,9 +287,6 @@ KeyManagerTabPrivate::~KeyManagerTabPrivate()
 	}
 
 	delete keyStore;
-	if (keyStore_ownerDataCallback) {
-		keyStore_ownerDataCallback->Release();
-	}
 
 	// Icons
 	if (hIconUnknown) {
@@ -395,7 +392,7 @@ void KeyManagerTabPrivate::initDialog(void)
 			ListView_QueryInterface(hListView, IID_IListView_Win7, &pListView);
 			if (pListView) {
 				// IListView obtained.
-				keyStore_ownerDataCallback = new KeyStore_OwnerDataCallback(keyStore);
+				keyStore_ownerDataCallback.Attach(new KeyStore_OwnerDataCallback(keyStore));
 				pListView->SetOwnerDataCallback(keyStore_ownerDataCallback);
 				pListView->Release();
 				hasIListView = true;
@@ -408,7 +405,7 @@ void KeyManagerTabPrivate::initDialog(void)
 			ListView_QueryInterface(hListView, IID_IListView_WinVista, &pListView);
 			if (pListView) {
 				// IListView obtained.
-				keyStore_ownerDataCallback = new KeyStore_OwnerDataCallback(keyStore);
+				keyStore_ownerDataCallback.Attach(new KeyStore_OwnerDataCallback(keyStore));
 				pListView->SetOwnerDataCallback(keyStore_ownerDataCallback);
 				pListView->Release();
 				hasIListView = true;
