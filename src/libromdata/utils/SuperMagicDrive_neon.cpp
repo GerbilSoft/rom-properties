@@ -11,7 +11,7 @@
 #include "SuperMagicDrive.hpp"
 
 // ARM NEON intrinsics
-#include <arm_neon.h>
+#include "arm_neon_aligned.h"
 
 namespace LibRomData { namespace SuperMagicDrive {
 
@@ -36,15 +36,15 @@ void decodeBlock_neon(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc)
 	// Process 64 bytes (512 bits) at a time.
 	for (; pDest < pDest_end; pDest += 64, pSrc_odd += 32, pSrc_even += 32) {
 		uint8x16x2_t sa, sb;
-		sa.val[0] = vld1q_u8(&pSrc_even[ 0]);
-		sa.val[1] = vld1q_u8(&pSrc_odd[  0]);
-		sb.val[0] = vld1q_u8(&pSrc_even[16]);
-		sb.val[1] = vld1q_u8(&pSrc_odd[ 16]);
+		sa.val[0] = vld1q_u8_ex(&pSrc_even[ 0], 128);
+		sa.val[1] = vld1q_u8_ex(&pSrc_odd[  0], 128);
+		sb.val[0] = vld1q_u8_ex(&pSrc_even[16], 128);
+		sb.val[1] = vld1q_u8_ex(&pSrc_odd[ 16], 128);
 
 		// vst2q automatically interleaves the first and second
 		// vectors from even/odd in the destination.
-		vst2q_u8(&pDest[ 0], sa);
-		vst2q_u8(&pDest[32], sb);
+		vst2q_u8_ex(&pDest[ 0], sa, 128);
+		vst2q_u8_ex(&pDest[32], sb, 128);
 	}
 }
 

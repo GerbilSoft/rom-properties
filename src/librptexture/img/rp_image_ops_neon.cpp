@@ -16,7 +16,7 @@
 using std::array;
 
 // ARM NEON intrinsics
-#include <arm_neon.h>
+#include "arm_neon_aligned.h"
 
 // NOTE: vtbl only supports 64-bit vectors on ARMv7 (32-bit).
 // TODO: Consolidate this with ImageDecoder_Linear_neon.cpp?
@@ -163,7 +163,7 @@ int rp_image::swizzle_neon(const char *swz_spec)
 		int x;
 		for (x = width; x > 15; x -= 16, bits += 16) {
 #if defined(RP_CPU_ARM64)
-			uint32x4x4_t sa = vld1q_u32_x4(bits);
+			uint32x4x4_t sa = vld1q_u32_x4_ex(bits, 128);
 
 			sa.val[0] = vqtbl1q_u8_u32(sa.val[0], shuf_mask);
 			sa.val[1] = vqtbl1q_u8_u32(sa.val[1], shuf_mask);
@@ -175,10 +175,10 @@ int rp_image::swizzle_neon(const char *swz_spec)
 			sa.val[2] = vorrq_u32(sa.val[2], or_mask);
 			sa.val[3] = vorrq_u32(sa.val[3], or_mask);
 
-			vst1q_u32_x4(bits, sa);
+			vst1q_u32_x4_ex(bits, sa, 128);
 #elif defined(RP_CPU_ARM)
-			uint32x2x4_t sa = vld1_u32_x4(&bits[0]);
-			uint32x2x4_t sb = vld1_u32_x4(&bits[8]);
+			uint32x2x4_t sa = vld1_u32_x4_ex(&bits[0], 64);
+			uint32x2x4_t sb = vld1_u32_x4_ex(&bits[8], 64);
 
 			sa.val[0] = vtbl1_u8_u32(sa.val[0], shuf_mask);
 			sa.val[1] = vtbl1_u8_u32(sa.val[1], shuf_mask);
@@ -198,8 +198,8 @@ int rp_image::swizzle_neon(const char *swz_spec)
 			sb.val[2] = vorr_u32(sb.val[2], or_mask);
 			sb.val[3] = vorr_u32(sb.val[3], or_mask);
 
-			vst1_u32_x4(&bits[0], sa);
-			vst1_u32_x4(&bits[8], sb);
+			vst1_u32_x4_ex(&bits[0], sa, 64);
+			vst1_u32_x4_ex(&bits[8], sb, 64);
 #endif
 		}
 

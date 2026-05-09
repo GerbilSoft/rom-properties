@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension.                                    *
  * alignment_macros.h: Alignment macros.                                   *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -40,4 +40,12 @@
 #  define ALIGNED_VAR(a, decl)	__declspec(align(a)) decl
 #else
 #  error No aligned variable macro for this compiler.
+#endif
+
+// Add a hint to indicate that a pointer is aligned.
+// Added in: gcc 4.7, clang 3.6
+#if defined(__GNUC__) || defined(__clang__)
+#  define HINT_ALIGNED(p, n) ((__typeof__(p))__builtin_assume_aligned((void *)(p), (n)))
+#else
+#  define HINT_ALIGNED(p, n) (p)
 #endif

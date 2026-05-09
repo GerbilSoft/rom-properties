@@ -17,7 +17,7 @@
 using namespace LibRpTexture::PixelConversion;
 
 // ARM NEON intrinsics
-#include <arm_neon.h>
+#include "arm_neon_aligned.h"
 
 // C++ STL classes
 using std::array;
@@ -126,7 +126,7 @@ rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 					argb.val[1] = rgb.val[1];
 					argb.val[2] = rgb.val[2];
 					argb.val[3] = vdupq_n_u8(0xFF);
-					vst4q_u8(reinterpret_cast<uint8_t*>(px_dest), argb);
+					vst4q_u8_ex(reinterpret_cast<uint8_t*>(px_dest), argb, 128);
 					img_buf += (12 * 3);
 					px_dest += 12;
 				}
@@ -157,7 +157,7 @@ rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 					argb.val[1] = rgb.val[1];
 					argb.val[2] = rgb.val[0];
 					argb.val[3] = vdupq_n_u8(0xFF);
-					vst4q_u8(reinterpret_cast<uint8_t*>(px_dest), argb);
+					vst4q_u8_ex(reinterpret_cast<uint8_t*>(px_dest), argb, 128);
 					img_buf += (12 * 3);
 					px_dest += 12;
 				}
@@ -400,7 +400,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 				sa.val[2] = vqtbl1q_u8_u32(sa.val[2], shuf_mask);
 				sa.val[3] = vqtbl1q_u8_u32(sa.val[3], shuf_mask);
 
-				vst1q_u32_x4(px_dest, sa);
+				vst1q_u32_x4_ex(px_dest, sa, 128);
 #elif defined(RP_CPU_ARM)
 				uint32x2x4_t sa = vld1_u32_x4(&img_buf[0]);
 				uint32x2x4_t sb = vld1_u32_x4(&img_buf[8]);
@@ -414,8 +414,8 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 				sb.val[2] = vtbl1_u8_u32(sb.val[2], shuf_mask);
 				sb.val[3] = vtbl1_u8_u32(sb.val[3], shuf_mask);
 
-				vst1_u32_x4(&px_dest[0], sa);
-				vst1_u32_x4(&px_dest[8], sb);
+				vst1_u32_x4_ex(&px_dest[0], sa, 64);
+				vst1_u32_x4_ex(&px_dest[8], sb, 64);
 #endif
 			}
 
@@ -511,7 +511,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 				sa.val[2] = vorrq_u32(sa.val[2], or_mask);
 				sa.val[3] = vorrq_u32(sa.val[3], or_mask);
 
-				vst1q_u32_x4(px_dest, sa);
+				vst1q_u32_x4_ex(px_dest, sa, 128);
 #elif defined(RP_CPU_ARM)
 				uint32x2x4_t sa = vld1_u32_x4(&img_buf[0]);
 				uint32x2x4_t sb = vld1_u32_x4(&img_buf[8]);
@@ -534,8 +534,8 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 				sb.val[2] = vorr_u32(sb.val[2], or_mask);
 				sb.val[3] = vorr_u32(sb.val[3], or_mask);
 
-				vst1_u32_x4(&px_dest[0], sa);
-				vst1_u32_x4(&px_dest[8], sb);
+				vst1_u32_x4_ex(&px_dest[0], sa, 64);
+				vst1_u32_x4_ex(&px_dest[8], sb, 64);
 #endif
 			}
 
