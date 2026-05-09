@@ -20,9 +20,6 @@ using namespace LibRomData;
 using std::string;
 using std::unique_ptr;
 
-// for rp_LoadLibraryEx()
-#include "libwin32common/rp_LoadLibraryEx.h"
-
 // CLSID
 const CLSID CLSID_RP_ShellIconOverlayIdentifier =
 	{0x02c6Af01, 0x3c99, 0x497d, {0xb3, 0xfc, 0xe3, 0x8c, 0xe5, 0x26, 0x78, 0x6b}};
@@ -38,10 +35,18 @@ RP_ShellIconOverlayIdentifier_Private::RP_ShellIconOverlayIdentifier_Private()
 #endif
 	: pfnSHGetStockIconInfo(nullptr)
 {
+	// shell32.dll might be delay-loaded to avoid a gdi32.dll penalty.
+	// Call SHGetFolderPath() with invalid parameters to load it into
+	// memory before using GetModuleHandle().
+	{
+		TCHAR szPathDummy[MAX_PATH];
+		SHGetFolderPath(nullptr, 0, nullptr, 0, szPathDummy);
+	}
+
 	// Get SHGetStockIconInfo().
-	hShell32_dll.reset(rp_LoadLibraryEx(_T("shell32.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
+	HMODULE hShell32_dll = GetModuleHandle(_T("shell32.dll"));
 	if (hShell32_dll) {
-		pfnSHGetStockIconInfo = (pfnSHGetStockIconInfo_t)GetProcAddress(hShell32_dll.get(), "SHGetStockIconInfo");
+		pfnSHGetStockIconInfo = (pfnSHGetStockIconInfo_t)GetProcAddress(hShell32_dll, "SHGetStockIconInfo");
 	}
 }
 

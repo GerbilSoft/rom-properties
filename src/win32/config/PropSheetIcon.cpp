@@ -12,9 +12,6 @@
 // for rp_LoadLibraryEx()
 #include "libwin32common/rp_LoadLibraryEx.h"
 
-// HMODULE deleter for std::unique_ptr<>
-#include "HMODULE_deleter.hpp"
-
 // C++ STL classes
 using std::array;
 using std::unique_ptr;
@@ -70,12 +67,19 @@ PropSheetIconPrivate::PropSheetIconPrivate()
 		{_T("shell32.dll"),  MAKEINTRESOURCE(13)},
 	}};
 
+	// shell32.dll might be delay-loaded to avoid a gdi32.dll penalty.
+	// Call SHGetFolderPath() with invalid parameters to load it into
+	// memory before using GetModuleHandle().
+	{
+		TCHAR szPathDummy[MAX_PATH];
+		SHGetFolderPath(nullptr, 0, nullptr, 0, szPathDummy);
+	}
+
 	// Try SHGetStockIconInfo first.
-	unique_ptr<HMODULE, HMODULE_deleter> hShell32_dll(
-		rp_LoadLibraryEx(_T("shell32.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
+	HMODULE hShell32_dll = GetModuleHandle(_T("shell32.dll"));
 	if (hShell32_dll) {
 		typedef HRESULT (STDAPICALLTYPE *pfnSHGetStockIconInfo_t)(_In_ SHSTOCKICONID siid, _In_ UINT uFlags, _Out_ SHSTOCKICONINFO *psii);
-		pfnSHGetStockIconInfo_t pfnSHGetStockIconInfo = (pfnSHGetStockIconInfo_t)GetProcAddress(hShell32_dll.get(), "SHGetStockIconInfo");
+		pfnSHGetStockIconInfo_t pfnSHGetStockIconInfo = (pfnSHGetStockIconInfo_t)GetProcAddress(hShell32_dll, "SHGetStockIconInfo");
 		if (pfnSHGetStockIconInfo) {
 			SHSTOCKICONINFO siid;
 			siid.cbSize = sizeof(siid);

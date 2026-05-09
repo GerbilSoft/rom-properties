@@ -203,8 +203,14 @@ void CacheTabPrivate::initDialog(void)
 	if (!hListView)
 		return;
 
-	// NOTE: CacheTab, DllMain, and others call SHELL32 functions
-	// directly, so we can assume SHELL32.DLL is loaded.
+	// shell32.dll might be delay-loaded to avoid a gdi32.dll penalty.
+	// Call SHGetFolderPath() with invalid parameters to load it into
+	// memory before using GetModuleHandle().
+	{
+		TCHAR szPathDummy[MAX_PATH];
+		SHGetFolderPath(nullptr, 0, nullptr, 0, szPathDummy);
+	}
+
 	HMODULE hShell32_dll = GetModuleHandle(_T("shell32.dll"));
 	assert(hShell32_dll != nullptr);
 	if (hShell32_dll) {

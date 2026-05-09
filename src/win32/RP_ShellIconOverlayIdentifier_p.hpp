@@ -18,9 +18,6 @@
 // C++ STL classes
 #include <memory>
 
-// HMODULE deleter for std::unique_ptr<>
-#include "HMODULE_deleter.hpp"
-
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define RP_ShellIconOverlayIdentifierPrivate RP_ShellIconOverlayIdentifier_Private
 
@@ -37,7 +34,6 @@ private:
 
 public:
 	// SHGetStockIconInfo() for the UAC shield icon.
-	std::unique_ptr<HMODULE, HMODULE_deleter> hShell32_dll;
 	typedef HRESULT (STDAPICALLTYPE *pfnSHGetStockIconInfo_t)(_In_ SHSTOCKICONID siid, _In_ UINT uFlags, _Out_ SHSTOCKICONINFO *psii);
 	pfnSHGetStockIconInfo_t pfnSHGetStockIconInfo;
 };

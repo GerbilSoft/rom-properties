@@ -15,6 +15,8 @@
 #include <comdef.h>
 #include <shobjidl.h>
 
+#include <shlobj.h>	// for SHGetFolderPath()
+
 // VersionHelpers
 #include "libwin32common/rp_versionhelpers.h"
 
@@ -579,6 +581,15 @@ static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, HWND hWnd,
 		// need to use GetProcAddress().
 		typedef HRESULT(STDAPICALLTYPE* pfnSHCreateItemFromParsingName_t)(
 			PCWSTR pszPath, IBindCtx* pbc, REFIID riid, void** ppv);
+
+		// shell32.dll might be delay-loaded to avoid a gdi32.dll penalty.
+		// Call SHGetFolderPath() with invalid parameters to load it into
+		// memory before using GetModuleHandle().
+		{
+			TCHAR szPathDummy[MAX_PATH];
+			SHGetFolderPath(nullptr, 0, nullptr, 0, szPathDummy);
+		}
+
 		HMODULE hShell32 = GetModuleHandle(_T("shell32.dll"));
 		assert(hShell32 != nullptr);
 		if (!hShell32) {
