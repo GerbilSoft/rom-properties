@@ -114,11 +114,11 @@ rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 	// share the registers between the vld3q_u8 and the vst1q_u8_x4, so it
 	// doesn't have to copy R/G/B to a second set.
 
-	static const array<uint8_t, 16> alpha_mask_u8 = {{
-		0,0,0,255, 0,0,0,255,
-		0,0,0,255, 0,0,0,255
+	static const array<uint32_t, 4> alpha_mask_u32 = {{
+		0xFF000000, 0xFF000000,
+		0xFF000000, 0xFF000000
 	}};
-	uint8x16_t alpha_mask = vld1q_u8(alpha_mask_u8.data());
+	uint32x4_t alpha_mask = vld1q_u32(alpha_mask_u32.data());
 	uint8x16_t shuf_mask;
 
 	// Convert one line at a time. (24-bit -> ARGB32)
@@ -152,23 +152,23 @@ rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 		for (; x > 15; x -= 16) {
 			uint8x16x3_t rgb = vld1q_u8_x3(img_buf);
 
-			uint8x16x4_t argb;
-			argb.val[0] = vqtbl1q_u8(rgb.val[0], shuf_mask);
-			argb.val[0] = vorrq_u8(argb.val[0], alpha_mask);
+			uint32x4x4_t argb;
+			argb.val[0] = vreinterpretq_u32_u8(vqtbl1q_u8(rgb.val[0], shuf_mask));
+			argb.val[0] = vorrq_u32(argb.val[0], alpha_mask);
 
-			argb.val[1] = vextq_u8(rgb.val[0], rgb.val[1], 12);
-			argb.val[1] = vqtbl1q_u8(argb.val[1], shuf_mask);
-			argb.val[1] = vorrq_u8(argb.val[1], alpha_mask);
+			argb.val[1] = vreinterpretq_u32_u8(vqtbl1q_u8(
+				vextq_u8(rgb.val[0], rgb.val[1], 12), shuf_mask));
+			argb.val[1] = vorrq_u32(argb.val[1], alpha_mask);
 
-			argb.val[2] = vextq_u8(rgb.val[1], rgb.val[2], 8);
-			argb.val[2] = vqtbl1q_u8(argb.val[2], shuf_mask);
-			argb.val[2] = vorrq_u8(argb.val[2], alpha_mask);
+			argb.val[2] = vreinterpretq_u32_u8(vqtbl1q_u8(
+				vextq_u8(rgb.val[1], rgb.val[2], 8), shuf_mask));
+			argb.val[2] = vorrq_u32(argb.val[2], alpha_mask);
 
-			argb.val[3] = vextq_u8(rgb.val[2], rgb.val[3], 4);
-			argb.val[3] = vqtbl1q_u8(argb.val[3], shuf_mask);
-			argb.val[3] = vorrq_u8(argb.val[3], alpha_mask);
+			argb.val[3] = vreinterpretq_u32_u8(vqtbl1q_u8(vextq_u8(
+				rgb.val[2], rgb.val[3], 4), shuf_mask));
+			argb.val[3] = vorrq_u32(argb.val[3], alpha_mask);
 
-			vst1q_u8_x4_ex(reinterpret_cast<uint8_t*>(px_dest), argb, 128);
+			vst1q_u32_x4_ex(reinterpret_cast<uint32_t*>(px_dest), argb, 128);
 			img_buf += (16 * 3);
 			px_dest += 16;
 		}
