@@ -25,33 +25,6 @@ using namespace LibRpTexture::PixelConversion;
 #  pragma warning(disable: 4309)
 #endif
 
-// MSVC 2013+, Clang 3.6+: Use __vectorcall for the templated functions.
-// - NOTE: Clang 3.6 (and gcc) already uses an equivalent to __vectorcall
-//   on Linux due to the standard Linux ABI.
-// Other i386: Pass __m128i by const ref.
-// Other AMD64: Pass __m128i by value.
-// MSVC 2015 on AppVeyor fails if 4 or more __m128i are passed by value on 32-bit:
-// error C2719: 'Bmask': formal parameter with requested alignment of 16 won't be aligned
-// I'm not 100% sure if it'll be aligned properly even if there's only three,
-// so for now, I'll force `const __m128i&` on 32-bit.
-#ifdef _WIN32
-#  if (defined(_MSC_VER) && _MSC_VER >= 1800) || \
-      ((defined(__clang__) && (__clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 6))))
-#    define VECTORCALL __vectorcall
-#    define __M128I_ARG 	__m128i
-#  endif
-#endif
-
-// Only use `const __m128i&` on 32-bit Windows.
-#ifndef VECTORCALL
-#  define VECTORCALL
-#  if defined(_WIN32) && (defined(_M_IX86) || defined(__i386__))
-#    define __M128I_ARG 	const __m128i&
-#  else
-#    define __M128I_ARG 	__m128i
-#  endif
-#endif
-
 namespace LibRpTexture { namespace ImageDecoder {
 
 /**
@@ -66,21 +39,26 @@ namespace LibRpTexture { namespace ImageDecoder {
  * @tparam Gbits	[in] Green bit count.
  * @tparam Bbits	[in] Blue bit count.
  * @tparam isBGR	[in] If true, this is BGR instead of RGB.
- * @param Rmask		[in] SSE2 mask for the Red channel.
- * @param Gmask		[in] SSE2 mask for the Green channel.
- * @param Bmask		[in] SSE2 mask for the Blue channel.
+ * @param Rmask16	[in] 16-bit mask for the Red channel.
+ * @param Gmask16	[in] 16-bit mask for the Green channel.
+ * @param Bmask16	[in] 16-bit mask for the Blue channel.
  * @param img_buf	[in] 16-bit image buffer.
  * @param px_dest	[out] Destination image buffer.
  */
 template<uint8_t Rshift_W, uint8_t Gshift_W, uint8_t Bshift_W,
 	uint8_t Rbits, uint8_t Gbits, uint8_t Bbits, bool isBGR>
-static inline void VECTORCALL T_RGB16_sse2(
-	__M128I_ARG Rmask, __M128I_ARG Gmask, __M128I_ARG Bmask,
+static inline void T_RGB16_sse2(
+	uint16_t Rmask16, uint16_t Gmask16, uint16_t Bmask16,
 	const uint16_t *RESTRICT img_buf, uint32_t *RESTRICT px_dest)
 {
-	// Alpha mask.
+	// Convert the 16-bit masks into 128-bit masks.
+	const __m128i Rmask = _mm_set1_epi16(Rmask16);
+	const __m128i Gmask = _mm_set1_epi16(Gmask16);
+	const __m128i Bmask = _mm_set1_epi16(Bmask16);
+
+	// Alpha mask
 	const __m128i Mask32_A  = _mm_set1_epi32(0xFF000000);
-	// Mask for the high byte for Green.
+	// Mask for the high byte for Green
 	const __m128i MaskG_Hi8 = _mm_set1_epi16(0xFF00);
 
 	const __m128i *xmm_src = reinterpret_cast<const __m128i*>(img_buf);
@@ -131,17 +109,17 @@ static inline void VECTORCALL T_RGB16_sse2(
  * @tparam Gbits	[in] Green bit count.
  * @tparam Bbits	[in] Blue bit count.
  * @tparam isBGR	[in] If true, this is BGR instead of RGB.
- * @param Amask		[in] SSE2 mask for the Alpha channel.
- * @param Rmask		[in] SSE2 mask for the Red channel.
- * @param Gmask		[in] SSE2 mask for the Green channel.
- * @param Bmask		[in] SSE2 mask for the Blue channel.
+ * @param Amask16	[in] 16-bit mask for the Alpha channel.
+ * @param Rmask16	[in] 16-bit mask for the Red channel.
+ * @param Gmask16	[in] 16-bit mask for the Green channel.
+ * @param Bmask16	[in] 16-bit mask for the Blue channel.
  * @param img_buf	[in] 16-bit image buffer.
  * @param px_dest	[out] Destination image buffer.
  */
 template<uint8_t Ashift_W, uint8_t Rshift_W, uint8_t Gshift_W, uint8_t Bshift_W,
 	uint8_t Abits, uint8_t Rbits, uint8_t Gbits, uint8_t Bbits, bool isBGR>
-static inline void VECTORCALL T_ARGB16_sse2(
-	__M128I_ARG Amask, __M128I_ARG Rmask, __M128I_ARG Gmask, __M128I_ARG Bmask,
+static inline void T_ARGB16_sse2(
+	uint16_t Amask16, uint16_t Rmask16, uint16_t Gmask16, uint16_t Bmask16,
 	const uint16_t *RESTRICT img_buf, uint32_t *RESTRICT px_dest)
 {
 	static_assert(Ashift_W <= 17, "Ashift_W is invalid.");
@@ -153,6 +131,12 @@ static inline void VECTORCALL T_ARGB16_sse2(
 	static_assert(Gbits < 16, "Gbits is invalid.");
 	static_assert(Bbits < 16, "Bbits is invalid.");
 	static_assert(Abits + Rbits + Gbits + Bbits <= 16, "Total number of bits is invalid.");
+
+	// Convert the 16-bit masks into 128-bit masks.
+	const __m128i Amask = _mm_set1_epi16(Amask16);
+	const __m128i Rmask = _mm_set1_epi16(Rmask16);
+	const __m128i Gmask = _mm_set1_epi16(Gmask16);
+	const __m128i Bmask = _mm_set1_epi16(Bmask16);
 
 	// Mask for the high byte for Green and Alpha.
 	const __m128i MaskAG_Hi8 = _mm_set1_epi16(0xFF00);
@@ -306,43 +290,41 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 	const int dest_stride_adj = (img->stride() / sizeof(uint32_t)) - img->width();
 	uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 
-	// TODO: Only initialize what's required for the current pixel format?
-
 	// AND masks for 565 channels.
-	const __m128i Mask565_Hi5  = _mm_set1_epi16(0xF800);
-	const __m128i Mask565_Mid6 = _mm_set1_epi16(0x07E0);
-	const __m128i Mask565_Lo5  = _mm_set1_epi16(0x001F);
+	static constexpr uint16_t Mask565_Hi5  = 0xF800;
+	static constexpr uint16_t Mask565_Mid6 = 0x07E0;
+	static constexpr uint16_t Mask565_Lo5  = 0x001F;
 
 	// AND masks for 555 channels.
-	const __m128i Mask555_Hi5  = _mm_set1_epi16(0x7C00);
-	const __m128i Mask555_Mid5 = _mm_set1_epi16(0x03E0);
-	const __m128i Mask555_Lo5  = _mm_set1_epi16(0x001F);
+	static constexpr uint16_t Mask555_Hi5  = 0x7C00;
+	static constexpr uint16_t Mask555_Mid5 = 0x03E0;
+	static constexpr uint16_t Mask555_Lo5  = 0x001F;
 
 	// AND masks for 4444 channels.
-	const __m128i Mask4444_Nyb3 = _mm_set1_epi16(0xF000);
-	const __m128i Mask4444_Nyb2 = _mm_set1_epi16(0x0F00);
-	const __m128i Mask4444_Nyb1 = _mm_set1_epi16(0x00F0);
-	const __m128i Mask4444_Nyb0 = _mm_set1_epi16(0x000F);
+	static constexpr uint16_t Mask4444_Nyb3 = 0xF000;
+	static constexpr uint16_t Mask4444_Nyb2 = 0x0F00;
+	static constexpr uint16_t Mask4444_Nyb1 = 0x00F0;
+	static constexpr uint16_t Mask4444_Nyb0 = 0x000F;
 
 	// AND masks for 1555 channels.
-	const __m128i Cmp1555_A     = _mm_set1_epi16(0x0080);
-	const __m128i Mask1555_Hi5  = _mm_set1_epi16(0x7C00);
-	const __m128i Mask1555_Mid5 = _mm_set1_epi16(0x03E0);
-	const __m128i Mask1555_Lo5  = _mm_set1_epi16(0x001F);
+	static constexpr uint16_t Cmp1555_A     = 0x0080;
+	static constexpr uint16_t Mask1555_Hi5  = 0x7C00;
+	static constexpr uint16_t Mask1555_Mid5 = 0x03E0;
+	static constexpr uint16_t Mask1555_Lo5  = 0x001F;
 
 	// AND masks for 5551 channels.
-	const __m128i Cmp5551_A     = _mm_set1_epi16(0x0101);
-	const __m128i Mask5551_Hi5  = _mm_set1_epi16(0xF800);
-	const __m128i Mask5551_Mid5 = _mm_set1_epi16(0x07C0);
-	const __m128i Mask5551_Lo5  = _mm_set1_epi16(0x003E);
+	static constexpr uint16_t Cmp5551_A     = 0x0101;
+	static constexpr uint16_t Mask5551_Hi5  = 0xF800;
+	static constexpr uint16_t Mask5551_Mid5 = 0x07C0;
+	static constexpr uint16_t Mask5551_Lo5  = 0x003E;
 
 	// Alpha mask
-	const __m128i Mask32_A  = _mm_set1_epi32(0xFF000000);
+	static constexpr uint32_t Mask32_A = 0xFF000000;
 
 	// GR88 mask
-	const __m128i MaskGR88  = _mm_set1_epi32(0x00FFFF00);
+	static constexpr uint32_t MaskGR88 = 0x00FFFF00;
 
-	// sBIT metadata.
+	// sBIT metadata
 	static const rp_image::sBIT_t sBIT_RGB565   = {5,6,5,0,0};
 	static const rp_image::sBIT_t sBIT_ARGB1555 = {5,5,5,0,1};
 	static const rp_image::sBIT_t sBIT_xRGB4444 = {4,4,4,0,0};
@@ -350,14 +332,14 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 	static const rp_image::sBIT_t sBIT_RGB555   = {5,5,5,0,0};
 
 	// Macro for 16-bit formats with no alpha channel.
-#define fromLinear16_convert(fmt, sBIT, Rshift_W, Gshift_W, Bshift_W, Rbits, Gbits, Bbits, isBGR, Rmask, Gmask, Bmask) \
+#define fromLinear16_convert(fmt, sBIT, Rshift_W, Gshift_W, Bshift_W, Rbits, Gbits, Bbits, isBGR, Rmask16, Gmask16, Bmask16) \
 		case PixelFormat::fmt: { \
 			for (unsigned int y = (unsigned int)height; y > 0; y--) { \
 				/* Process 8 pixels per iteration using SSE2. */ \
 				unsigned int x = (unsigned int)width; \
 				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) { \
 					T_RGB16_sse2<Rshift_W, Gshift_W, Bshift_W, Rbits, Gbits, Bbits, isBGR>( \
-						Rmask, Gmask, Bmask, img_buf, px_dest); \
+						Rmask16, Gmask16, Bmask16, img_buf, px_dest); \
 				} \
 				\
 				/* Remaining pixels. */ \
@@ -376,14 +358,14 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 		} break
 
 	// Macro for 16-bit formats with an alpha channel.
-#define fromLinear16A_convert(fmt, sBIT, Ashift_W, Rshift_W, Gshift_W, Bshift_W, Abits, Rbits, Gbits, Bbits, isBGR, Amask, Rmask, Gmask, Bmask) \
+#define fromLinear16A_convert(fmt, sBIT, Ashift_W, Rshift_W, Gshift_W, Bshift_W, Abits, Rbits, Gbits, Bbits, isBGR, Amask16, Rmask16, Gmask16, Bmask16) \
 		case PixelFormat::fmt: { \
 			for (unsigned int y = (unsigned int)height; y > 0; y--) { \
 				/* Process 8 pixels per iteration using SSE2. */ \
 				unsigned int x = (unsigned int)width; \
 				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) { \
 					T_ARGB16_sse2<Ashift_W, Rshift_W, Gshift_W, Bshift_W, Abits, Rbits, Gbits, Bbits, isBGR>( \
-						Amask, Rmask, Gmask, Bmask, img_buf, px_dest); \
+						Amask16, Rmask16, Gmask16, Bmask16, img_buf, px_dest); \
 				} \
 				\
 				/* Remaining pixels. */ \
@@ -432,6 +414,7 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 		case PixelFormat::RG88: {
 			// Components are already 8-bit, so we need to
 			// expand them to DWORD and add the alpha channel.
+			const __m128i Mask32_A_xmm = _mm_set1_epi32(Mask32_A);
 			__m128i reg_zero = _mm_setzero_si128();
 			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 				// Process 8 pixels per iteration using SSE2.
@@ -449,8 +432,8 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 					px1 = _mm_slli_epi32(px1, 8);
 
 					// Apply the alpha channel.
-					px0 = _mm_or_si128(px0, Mask32_A);
-					px1 = _mm_or_si128(px1, Mask32_A);
+					px0 = _mm_or_si128(px0, Mask32_A_xmm);
+					px1 = _mm_or_si128(px1, Mask32_A_xmm);
 
 					// Write the pixels to the destination image buffer.
 					_mm_store_si128(&xmm_dest[0], px0);
@@ -479,6 +462,8 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 		case PixelFormat::GR88: {
 			// Components are already 8-bit, so we need to
 			// expand them to DWORD and add the alpha channel.
+			const __m128i Mask32_A_xmm = _mm_set1_epi32(Mask32_A);
+			const __m128i MaskGR88_xmm = _mm_set1_epi32(MaskGR88);
 			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 				// Process 8 pixels per iteration using SSE2.
 				unsigned int x = static_cast<unsigned int>(width);
@@ -492,12 +477,12 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 
 					// Mask off the low and high bytes.
 					// Registers now contain: [00 RR GG 00]
-					px0 = _mm_and_si128(px0, MaskGR88);
-					px1 = _mm_and_si128(px1, MaskGR88);
+					px0 = _mm_and_si128(px0, MaskGR88_xmm);
+					px1 = _mm_and_si128(px1, MaskGR88_xmm);
 
 					// Apply the alpha channel.
-					px0 = _mm_or_si128(px0, Mask32_A);
-					px1 = _mm_or_si128(px1, Mask32_A);
+					px0 = _mm_or_si128(px0, Mask32_A_xmm);
+					px1 = _mm_or_si128(px1, Mask32_A_xmm);
 
 					// Write the pixels to the destination image buffer.
 					_mm_store_si128(&xmm_dest[0], px0);
