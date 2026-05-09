@@ -27,6 +27,22 @@
 // C++ STL classes
 using std::array;
 
+// SHA-256 and SHA-512 require Windows XP SP3 or later.
+// (NOTE: SDK says NTDDI_WINXPSP2.)
+#ifndef ALG_SID_SHA_256
+#  define ALG_SID_SHA_256 12
+#endif /* ALG_SID_SHA_256 */
+#ifdef ALG_SID_SHA_512
+#  define ALG_SID_SHA_512 14
+#endif /* ALG_SID_SHA_512 */
+
+#ifndef CALG_SHA_256
+#  define CALG_SHA_256 (ALG_CLASS_HASH | ALG_TYPE_ANY | ALG_SID_SHA_256)
+#endif /* CALG_SHA_256 */
+#ifndef CALG_SHA_512
+#  define CALG_SHA_512 (ALG_CLASS_HASH | ALG_TYPE_ANY | ALG_SID_SHA_512)
+#endif /* CALG_SHA_512 */
+
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 #  define CHECK_DELAYLOAD 1
 #endif
