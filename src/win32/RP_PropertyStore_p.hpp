@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_PropertyStore_p.hpp: IPropertyStore implementation. (PRIVATE CLASS)  *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -50,7 +50,7 @@ public:
 	std::vector<PROPVARIANT> prop_val;
 
 	// IStream* used by the IRpFile.
-	// NOTE: Do NOT Release() this; RpFile_IStream handles it.
+	// NOTE: RpFile_IStream does NOT take ownership of the IStream*.
 	IStream *pstream;
 	DWORD grfMode;
 

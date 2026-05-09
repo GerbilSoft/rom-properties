@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_PropertyStore.cpp: IPropertyStore implementation.                    *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -207,6 +207,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 	RP_UNUSED(grfMode);
 
 	// Create an IRpFile wrapper for the IStream.
+	// NOTE: RpFile_IStream does NOT take ownership of the IStream*.
 	IRpFilePtr file = std::make_shared<RpFile_IStream>(pstream, true);
 	if (file->lastError() != 0) {
 		// Error initializing the IRpFile.

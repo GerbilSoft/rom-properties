@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RpFile_IStream.hpp: IRpFile using an IStream*.                          *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -37,6 +37,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 
 /**
  * Create an IRpFile using IStream* as the underlying storage mechanism.
+ * NOTE: RpFile_IStream does NOT take ownership of the IStream*.
  * @param pStream	[in] IStream*.
  * @param gzip		[in] If true, handle gzipped files automatically.
  */
@@ -161,6 +162,12 @@ RpFile_IStream::~RpFile_IStream()
 		// Close zlib.
 		inflateEnd(m_pZstm);
 		free(m_pZstm);
+	}
+
+	// NOTE: RpFile_IStream does NOT take ownership of the IStream*,
+	// but it *does* take a reference.
+	if (m_pStream) {
+		m_pStream->Release();
 	}
 }
 
