@@ -29,6 +29,7 @@ DisableProgramGroupPage=yes
 LicenseFile=..\LICENSE
 PrivilegesRequired=admin
 OutputBaseFilename=SetupRomProperties-{#MyAppVersion}
+UninstallDisplayIcon={app}\rp-config.exe
 SolidCompression=yes
 VersionInfoDescription=ROM Properties Setup (for Windows 7/8.x/10/11 and later)
 VersionInfoProductTextVersion={#MyAppVersion}
