@@ -15,6 +15,9 @@
 #include <comdef.h>
 #include <shobjidl.h>
 
+// VersionHelpers
+#include "libwin32common/rp_versionhelpers.h"
+
 // C++ includes
 #include <algorithm>
 #include <memory>
@@ -292,18 +295,78 @@ int measureStringForListView(HDC hDC, const tstring &tstr, int *pNlCount)
 DWORD isSystemRTL(void)
 {
 	// Check for RTL.
+
+	// Windows 7+: Use GetLocaleInfoEx().
+	if (IsWindows7OrGreater()) {
+		HMODULE hKernel32_dll = GetModuleHandle(_T("kernel32.dll"));
+		assert(hKernel32_dll != nullptr);
+
+		typedef int (WINAPI *pfnGetLocaleInfoEx_t)(
+			_In_opt_ LPCWSTR lpLocaleName,
+			_In_ LCTYPE LCType,
+			_Out_writes_to_opt_(cchData, return) LPWSTR lpLCData,
+			_In_ int cchData
+			);
+		pfnGetLocaleInfoEx_t pfnGetLocaleInfoEx = reinterpret_cast<pfnGetLocaleInfoEx_t>(
+			GetProcAddress(hKernel32_dll, "GetLocaleInfoEx"));
+		if (pfnGetLocaleInfoEx) {
+			// LOCALE_IREADINGLAYOUT return values:
+			// - 0: left to right (e.g. English)
+			// - 1: right to left (e.g. Arabic)
+			// - 2: top to bottom with columns going right to left,
+			//      or horizontal rows going left to right (Japanese)
+			// - 3: top to bottom with columns going left to right (Mongolian)
+			// Assume RTL for 1 and LTR for everything else.
+			DWORD layoutDirection = 0;
+			if (pfnGetLocaleInfoEx(
+				LOCALE_NAME_USER_DEFAULT,
+				LOCALE_IREADINGLAYOUT | LOCALE_RETURN_NUMBER,
+				reinterpret_cast<LPWSTR>(&layoutDirection),
+				sizeof(layoutDirection) / sizeof(WCHAR)) != 0)
+			{
+				return (layoutDirection == 1) ? WS_EX_LAYOUTRTL : 0;
+			}
+		}
+	}
+
+	// Windows 2000 method
+	// FIXME: Post says Windows XP, but the documentation says Windows 2000.
+	// References:
+	// - https://stackoverflow.com/questions/33576930/defining-whether-the-current-system-locale-is-rtl-or-ltr
+	// - https://stackoverflow.com/a/46204044
+	if (IsWindows2000OrGreater()) {
+		HKL hKL = GetKeyboardLayout(GetWindowThreadProcessId(GetForegroundWindow(), nullptr));
+		DWORD lcid = MAKELCID(LOWORD(hKL), SORT_DEFAULT);
+
+		// Windows XP and higher.
+		// Unicode subset bit fields: https://msdn.microsoft.com/en-us/library/windows/desktop/dd374090(v=vs.85).aspx
+		// Bit 123: Windows 2000 and later - Layout progress, horizontal from right to left.
+		LOCALESIGNATURE localesig;
+		if(GetLocaleInfo(
+			lcid,
+			LOCALE_FONTSIGNATURE,
+			reinterpret_cast<LPTSTR>(&localesig),
+			sizeof(localesig) / sizeof(TCHAR)) != 0)
+		{
+			return ((localesig.lsUsb[3] & 0x08000000) != 0) ? WS_EX_LAYOUTRTL : 0;
+		}
+	}
+
+	// Neither the Windows 7 nor Windows 2000 methods worked.
+	// Fallback: Check for WS_EX_LAYOUTRTL on the taskbar.
 	// NOTE: Windows Explorer on Windows 7 seems to return 0 from GetProcessDefaultLayout(),
 	// even if an RTL language is in use. We'll check the taskbar layout instead.
 	// TODO: What if Explorer isn't running?
 	// References:
 	// - https://stackoverflow.com/questions/10391669/how-to-detect-if-a-windows-installation-is-rtl
 	// - https://stackoverflow.com/a/10393376
-	DWORD dwRet = 0;
 	HWND hTaskBar = FindWindow(_T("Shell_TrayWnd"), nullptr);
 	if (hTaskBar) {
-		dwRet = static_cast<DWORD>(GetWindowLongPtr(hTaskBar, GWL_EXSTYLE)) & WS_EX_LAYOUTRTL;
+		return static_cast<DWORD>(GetWindowLongPtr(hTaskBar, GWL_EXSTYLE)) & WS_EX_LAYOUTRTL;
 	}
-	return dwRet;
+
+	// No taskbar... Can't do any checks.
+	return 0;
 }
 
 /**

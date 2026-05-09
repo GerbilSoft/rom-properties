@@ -10,8 +10,8 @@ ADD_DEFINITIONS(-DSTRICT -DWIN32_LEAN_AND_MEAN -DNOMINMAX)
 # No support for ANSI Windows, i.e. Win9x.
 ADD_DEFINITIONS(-DUNICODE -D_UNICODE)
 
-# Minimum Windows version for the SDK is Windows Vista.
-ADD_DEFINITIONS(-DWINVER=0x0600 -D_WIN32_WINNT=0x0600 -D_WIN32_IE=0x0600)
+# Minimum Windows version for the SDK is Windows 7.
+ADD_DEFINITIONS(-DWINVER=0x0601 -D_WIN32_WINNT=0x0601 -D_WIN32_IE=0x0601)
 
 # Enable secure template overloads for C++.
 # References:

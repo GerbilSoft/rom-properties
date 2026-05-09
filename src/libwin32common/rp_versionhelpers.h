@@ -31,6 +31,10 @@ VERSIONHELPERAPI IsWindowsVersionOrGreater(WORD major, WORD minor, WORD servpack
             VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL));
 }
 
+VERSIONHELPERAPI IsWindows2000OrGreater(void) {
+    return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN2K), LOBYTE(_WIN32_WINNT_WIN2K), 0);
+}
+
 VERSIONHELPERAPI IsWindowsXPOrGreater(void) {
     return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WINXP), LOBYTE(_WIN32_WINNT_WINXP), 0);
 }
