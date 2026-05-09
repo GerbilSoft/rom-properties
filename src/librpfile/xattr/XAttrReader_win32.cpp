@@ -17,20 +17,22 @@
 #include <winioctl.h>
 using namespace LibWin32Common;
 
-#if _WIN32_WINNT < _WIN32_WINNT_WIN7
-// NOTE: wofapi.h might not be available.
-// Define the WOF stuff here.
-typedef struct _WOF_EXTERNAL_INFO {
+// NOTE: Newer versions of the Windows SDK (10.0.26100.0)
+// define these if _WIN32_WINNT >= _WIN32_WINNT_WIN7.
+// MinGW-w64 14.0.0 has _WIN32_WINNT >= _WIN32_WINNT_WINBLUE.
+// MSVC 2015's default SDK doesn't define it at all.
+// Use a custom prefix to prevent collisions with the SDK.
+
+typedef struct _RP_WOF_EXTERNAL_INFO {
 	ULONG Version;
 	ULONG Provider;
-} WOF_EXTERNAL_INFO, *PWOF_EXTERNAL_INFO;
+} RP_WOF_EXTERNAL_INFO, *PRP_WOF_EXTERNAL_INFO;
 
-typedef struct _FILE_PROVIDER_EXTERNAL_INFO_V1 {
+typedef struct _RP_FILE_PROVIDER_EXTERNAL_INFO_V1 {
 	ULONG Version;
 	ULONG Algorithm;
 	ULONG Flags;
-} FILE_PROVIDER_EXTERNAL_INFO_V1, *PFILE_PROVIDER_EXTERNAL_INFO_V1;
-#endif /* _WIN32_WINNT < _WIN32_WINNT_WIN7 */
+} RP_FILE_PROVIDER_EXTERNAL_INFO_V1, *PRP_FILE_PROVIDER_EXTERNAL_INFO_V1;
 
 #ifndef FSCTL_GET_EXTERNAL_BACKING
 #  define FSCTL_GET_EXTERNAL_BACKING CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 196, METHOD_BUFFERED, FILE_ANY_ACCESS)
@@ -231,8 +233,8 @@ int XAttrReaderPrivate::loadZAlgorithm(void)
 	// (Windows 10 and later)
 	if (IsWindows10OrGreater()) {
 		struct ExternalBacking {
-			WOF_EXTERNAL_INFO ExternalInfo;
-			FILE_PROVIDER_EXTERNAL_INFO_V1 ProviderInfo;
+			RP_WOF_EXTERNAL_INFO ExternalInfo;
+			RP_FILE_PROVIDER_EXTERNAL_INFO_V1 ProviderInfo;
 		};
 		ExternalBacking Buffer;
 		DWORD BytesReturned = 0;
