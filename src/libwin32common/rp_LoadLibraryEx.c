@@ -11,10 +11,7 @@
 // (For Windows 7, KB3063858 supercedes KB2533623.)
 
 #include "rp_LoadLibraryEx.h"
-
 #include "rp_versionhelpers.h"
-#include "pthread_once_win32.h"
-#include "stdboolx.h"
 
 #define LOAD_LIBRARY_SEARCH_FLAGS \
 	(LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | \
@@ -22,18 +19,6 @@
 	 LOAD_LIBRARY_SEARCH_USER_DIRS | \
 	 LOAD_LIBRARY_SEARCH_SYSTEM32 | \
 	 LOAD_LIBRARY_SEARCH_DEFAULT_DIRS)
-
-static pthread_once_t once_control = PTHREAD_ONCE_INIT;
-static bool isVistaOrLater = false;
-
-/**
- * Initialize the OS version variables.
- * Should be called using pthread_once().
- */
-static void init_os_vars(void)
-{
-	isVistaOrLater = !!IsWindowsVistaOrGreater();
-}
 
 /**
  * LoadLibraryExA() wrapper function.
@@ -48,9 +33,7 @@ static void init_os_vars(void)
  */
 HMODULE rp_LoadLibraryExA(_In_ LPCSTR lpLibFileName, _Reserved_ HANDLE hFile, _In_ DWORD dwFlags)
 {
-	pthread_once(&once_control, init_os_vars);
-
-	if (!isVistaOrLater) {
+	if (!IsWindowsVistaOrGreater()) {
 		dwFlags &= ~LOAD_LIBRARY_SEARCH_FLAGS;
 	}
 
@@ -70,9 +53,7 @@ HMODULE rp_LoadLibraryExA(_In_ LPCSTR lpLibFileName, _Reserved_ HANDLE hFile, _I
  */
 HMODULE rp_LoadLibraryExW(_In_ LPCWSTR lpLibFileName, _Reserved_ HANDLE hFile, _In_ DWORD dwFlags)
 {
-	pthread_once(&once_control, init_os_vars);
-
-	if (!isVistaOrLater) {
+	if (!IsWindowsVistaOrGreater()) {
 		dwFlags &= ~LOAD_LIBRARY_SEARCH_FLAGS;
 	}
 
