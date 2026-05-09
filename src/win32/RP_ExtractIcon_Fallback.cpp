@@ -21,6 +21,8 @@ using std::tstring;
 using std::unique_ptr;
 
 // COM smart pointer typedefs.
+_COM_SMARTPTR_TYPEDEF(IExtractIconA, IID_IExtractIconA);
+_COM_SMARTPTR_TYPEDEF(IExtractIconW, IID_IExtractIconW);
 #ifndef _MSC_VER
 // MSVC: Defined in comdefsp.h.
 _COM_SMARTPTR_TYPEDEF(IClassFactory, IID_IClassFactory);
@@ -251,21 +253,19 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 		}
 
 		// Try getting the IExtractIconW interface.
-		IExtractIconW *pExtractIconW;
+		IExtractIconWPtr pExtractIconW;
 		hr = pCF->CreateInstance(nullptr, IID_PPV_ARGS(&pExtractIconW));
-		if (SUCCEEDED(hr) && pExtractIconW) {
+		if (SUCCEEDED(hr)) {
 			// Extract the icon.
 			LONG lResult = DoExtractIconW(pExtractIconW, phiconLarge, phiconSmall, nIconSize);
-			pExtractIconW->Release();
 			return lResult;
 		} else {
 			// Try getting the IExtractIconA interface.
-			IExtractIconA *pExtractIconA;
+			IExtractIconAPtr pExtractIconA;
 			hr = pCF->CreateInstance(nullptr, IID_PPV_ARGS(&pExtractIconA));
-			if (SUCCEEDED(hr) && pExtractIconA) {
+			if (SUCCEEDED(hr)) {
 				// Extract the icon.
 				LONG lResult = DoExtractIconA(pExtractIconA, phiconLarge, phiconSmall, nIconSize);
-				pExtractIconA->Release();
 				return lResult;
 			} else {
 				// Failed to get an IExtractIcon interface from the fallback class.
