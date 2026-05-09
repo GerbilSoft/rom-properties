@@ -149,12 +149,14 @@ static __forceinline uint16x8x2_t vld1q_u16_x2(const uint16_t *src)
 	vec.val[1] = vld1q_u16(&src[8]);
 	return vec;
 }
+#define vld1q_u16_x2_ex(p, align) vld1q_u16_x2(HINT_ALIGNED((p), (align)/8))
 
 static __forceinline void vst1q_u16_x2(uint16_t *dest, uint16x8x2_t vec)
 {
 	vst1q_u16(&dest[0], vec.val[0]);
 	vst1q_u16(&dest[8], vec.val[1]);
 }
+#define vst1q_u16_x2_ex(p, a, align) vst1q_u16_x2(HINT_ALIGNED((p), (align)/8), (a))
 
 static __forceinline uint32x4x2_t vld1q_u32_x2(const uint32_t *src)
 {
@@ -163,11 +165,13 @@ static __forceinline uint32x4x2_t vld1q_u32_x2(const uint32_t *src)
 	vec.val[1] = vld1q_u32(&src[4]);
 	return vec;
 }
+#define vld1q_u32_x2_ex(p, align) vld1q_u32_x2(HINT_ALIGNED((p), (align)/8))
 
 static __forceinline void vst1q_u32_x2(uint32_t *dest, uint32x4x2_t vec)
 {
 	vst1q_u32(&dest[0], vec.val[0]);
 	vst1q_u32(&dest[4], vec.val[1]);
 }
+#define vst1q_u32_x2_ex(p, a, align) vst1q_u32_x2(HINT_ALIGNED((p), (align)/8), (a))
 
 #endif /* _MSC_VER && (_M_ARM || _M_ARMT) */
