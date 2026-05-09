@@ -24,9 +24,9 @@ extern "C" {
 void OptionsMenuButtonRegister(void);
 void OptionsMenuButtonUnregister(void);
 
-#define WM_OMB_REINIT_MENU		(WM_USER + 1)	// lParam == RomData*
-#define WM_OMB_UPDATE_OP		(WM_USER + 2)	// wParam == id; lParam == RomData::RomOp*
-#define WM_OMB_POPUP_MENU		(WM_USER + 3)	// returns: id+IDM_OPTIONS_MENU_BASE, or 0 if none.
+#define WM_OMB_REINIT_MENU		(WM_APP + 1)	// lParam == RomData*
+#define WM_OMB_UPDATE_OP		(WM_APP + 2)	// wParam == id; lParam == RomData::RomOp*
+#define WM_OMB_POPUP_MENU		(WM_APP + 3)	// returns: id+IDM_OPTIONS_MENU_BASE, or 0 if none.
 
 // "Options" menu item.
 #define IDM_OPTIONS_MENU_BASE		0x8000

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * AchWin32.hpp: Win32 notifications for achievements.                     *
  *                                                                         *
- * Copyright (c) 2020-2025 by David Korth.                                 *
+ * Copyright (c) 2020-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -52,7 +52,7 @@ public:
 	static constexpr unsigned int ACHWIN32_TIMEOUT = 10U * 1000U;
 
 	// Window message for NOTIFYICONDATA.
-	static constexpr unsigned int WM_ACHWIN32_NOTIFY = WM_USER + 69;	// nice
+	static constexpr unsigned int WM_ACHWIN32_NOTIFY = WM_APP + 69;	// nice
 
 	// Icon ID high word.
 	static constexpr DWORD ACHWIN32_NID_UID_HI = 0x19840000;

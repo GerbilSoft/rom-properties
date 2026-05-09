@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * resource.rc: Win32 resource script.                                     *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -65,12 +65,12 @@
 // The parent PropertySheet doesn't store any user data, so we can't
 // store a reference to the private class. Hence, we have to send a
 // message to all child property sheet pages instead.
-#define WM_RP_PROP_SHEET_RESET			(WM_USER + 0x1234)
-#define WM_RP_PROP_SHEET_DEFAULTS		(WM_USER + 0x1235)
+#define WM_RP_PROP_SHEET_RESET			(WM_APP + 0x1234)
+#define WM_RP_PROP_SHEET_DEFAULTS		(WM_APP + 0x1235)
 // Enable/disable the "Defaults" button.
 // We can't access the ITab objects from the PropertySheet callback function.
 // wParam: 0 == disable, 1 == enable
-#define WM_RP_PROP_SHEET_ENABLE_DEFAULTS	(WM_USER + 0x1236)
+#define WM_RP_PROP_SHEET_ENABLE_DEFAULTS	(WM_APP + 0x1236)
 #define RpPropSheet_EnableDefaults(hWnd,enable)	(void)SNDMSG(hWnd,WM_RP_PROP_SHEET_ENABLE_DEFAULTS,(WPARAM)(enable),0)
 
 // KeyStoreWin32 messages.
@@ -81,22 +81,22 @@
 
 // wParam: sectIdx
 // lParam: keyIdx
-#define WM_KEYSTORE_KEYCHANGED_SECTKEY				(WM_USER + 0x2001)
+#define WM_KEYSTORE_KEYCHANGED_SECTKEY				(WM_APP + 0x2001)
 #define KeyStore_KeyChanged_SectKey(hWnd,sectIdx,keyIdx)	(void)SNDMSG(hWnd,WM_KEYSTORE_KEYCHANGED_SECTKEY,(sectIdx),(keyIdx))
 
 // wParam: 0
 // lParam: idx
-#define WM_KEYSTORE_KEYCHANGED_IDX				(WM_USER + 0x2002)
+#define WM_KEYSTORE_KEYCHANGED_IDX				(WM_APP + 0x2002)
 #define KeyStore_KeyChanged_Idx(hWnd,idx)			(void)SNDMSG(hWnd,WM_KEYSTORE_KEYCHANGED_IDX,0,(idx))
 
 // wParam: 0
 // lParam: 0
-#define WM_KEYSTORE_ALLKEYSCHANGED				(WM_USER + 0x2003)
+#define WM_KEYSTORE_ALLKEYSCHANGED				(WM_APP + 0x2003)
 #define KeyStore_AllKeysChanged_Idx(hWnd)			(void)SNDMSG(hWnd,WM_KEYSTORE_ALLKEYSCHANGED,0,0)
 
 // wParam: 0
 // lParam: 0
-#define WM_KEYSTORE_MODIFIED					(WM_USER + 0x2004)
+#define WM_KEYSTORE_MODIFIED					(WM_APP + 0x2004)
 #define KeyStore_Modified(hWnd)					(void)SNDMSG(hWnd,WM_KEYSTORE_MODIFIED,0,0)
 
 /**** rp-config ****/

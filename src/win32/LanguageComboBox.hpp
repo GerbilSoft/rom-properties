@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * LanguageComboBox.hpp: Language ComboBoxEx superclass.                   *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,7 +20,7 @@ void LanguageComboBoxRegister(void);
 void LanguageComboBoxUnregister(void);
 
 // NOTE: ComboBoxEx uses WM_USER+1 through WM_USER+14.
-#define WM_LCB_BASE			(WM_USER + 20)
+#define WM_LCB_BASE			(WM_APP + 20)
 
 #define WM_LCB_SET_LCS			(WM_LCB_BASE + 1)	// lParam == 0-terminated uint32_t array of LCs
 //#define WM_LCB_GET_LCS			(WM_LCB_BASE + 2)	// lParam == ???? [TODO: Figure out how to implement this.]
