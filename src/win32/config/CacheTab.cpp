@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * CacheTab.cpp: Thumbnail Cache tab for rp-config.                        *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
