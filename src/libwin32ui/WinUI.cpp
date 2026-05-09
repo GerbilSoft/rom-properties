@@ -28,9 +28,26 @@ using std::tstring;
 using std::unique_ptr;
 using std::vector;
 
+// IFileDialog is usable if:
+// - Building a Unicode application
+// - Targetting Windows Vista or later
+#if defined(UNICODE) && _WIN32_WINNT >= _WIN32_WINNT_VISTA
+#  define ENABLE_FILEDIALOG 1
+#endif /* UNICODE && _WIN32_WINNT >= _WIN32_WINNT_VISTA */
+
 // COM smart pointer typedefs
+#ifdef ENABLE_FILEDIALOG
 _COM_SMARTPTR_TYPEDEF(IFileDialog, IID_IFileDialog);
+#endif /* ENABLE_FILEDIALOG */
 _COM_SMARTPTR_TYPEDEF(IShellItem, IID_IShellItem);
+
+// WinNls.h definitions for Windows 7+
+#ifndef LOCALE_IREADINGLAYOUT
+#  define LOCALE_IREADINGLAYOUT 0x00000070
+#endif /* LOCALE_IREADINGLAYOUT */
+#ifndef LOCALE_NAME_USER_DEFAULT
+#  define LOCALE_NAME_USER_DEFAULT NULL
+#endif /* LOCALE_NAME_USER_DEFAULT */
 
 namespace LibWin32UI {
 
@@ -469,7 +486,7 @@ int loadIconFromFilenameAndIndex(LPCTSTR lpszIconFilename, HICON *phiconLarge, H
 
 /** File dialogs **/
 
-#ifdef UNICODE
+#ifdef ENABLE_FILEDIALOG
 /**
  * Get a filename using IFileDialog.
  * @param ts_ret	[out] Output filename (Empty if none)
@@ -653,7 +670,7 @@ static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, HWND hWnd,
 	CoTaskMemFree(pszFilePath);
 	return S_OK;
 }
-#endif /* UNICODE */
+#endif /* ENABLE_FILEDIALOG */
 
 /**
  * Convert an RP file dialog filter to Win32.
@@ -758,7 +775,7 @@ static tstring getFileName_int(HWND hWnd, LPCTSTR dlgTitle,
 	assert(filterSpec != nullptr);
 	tstring ts_ret;
 
-#ifdef UNICODE
+#ifdef ENABLE_FILEDIALOG
 	// Try IFileDialog first. (Unicode only)
 	HRESULT hr = getFileName_int_IFileDialog(ts_ret, hWnd,
 		dlgTitle, filterSpec, origFilename, bSave);
@@ -766,7 +783,7 @@ static tstring getFileName_int(HWND hWnd, LPCTSTR dlgTitle,
 		// IFileDialog succeeded.
 		return ts_ret;
 	}
-#endif /* UNICODE */
+#endif /* ENABLE_FILEDIALOG */
 
 	// GetOpenFileName() / GetSaveFileName()
 	tstring ts_filterSpec = rpFileDialogFilterToWin32(filterSpec);
