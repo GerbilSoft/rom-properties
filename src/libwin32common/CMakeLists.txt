@@ -26,6 +26,7 @@ SET(${PROJECT_NAME}_SRCS
 	userdirs.cpp
 	MiniU82T.cpp
 	rp_LoadLibraryEx.c
+	sdk/IOwnerDataCallback_guid.c
 	)
 SET(${PROJECT_NAME}_H
 	RpWin32_sdk.h
