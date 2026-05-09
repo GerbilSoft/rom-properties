@@ -209,8 +209,7 @@ static inline rp_image_ptr fromLinear24(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride = 0)
 {
-// FIXME: The NEON 24-bit decoder is slower than the C++ version...
-#if 0//def IMAGEDECODER_ALWAYS_HAS_NEON
+#ifdef IMAGEDECODER_ALWAYS_HAS_NEON
 	return fromLinear24_neon(px_format, width, height, img_buf, img_siz, stride);
 #else /* !IMAGEDECODER_ALWAYS_HAS_NEON */
 #  ifdef IMAGEDECODER_HAS_SSSE3
@@ -218,7 +217,7 @@ static inline rp_image_ptr fromLinear24(PixelFormat px_format,
 		return fromLinear24_ssse3(px_format, width, height, img_buf, img_siz, stride);
 	} else
 #  endif /* IMAGEDECODER_HAS_SSSE3 */
-#  if 0//def IMAGEDECODER_HAS_NEON
+#  ifdef IMAGEDECODER_HAS_NEON
 	if (RP_CPU_arm_HasNEON()) {
 		return fromLinear24_neon(px_format, width, height, img_buf, img_siz, stride);
 	} else

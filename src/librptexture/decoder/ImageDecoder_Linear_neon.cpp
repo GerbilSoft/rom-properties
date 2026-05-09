@@ -113,73 +113,77 @@ rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 	// share the registers between the vld3q_u8 and the vst1q_u8_x4, so it
 	// doesn't have to copy R/G/B to a second set.
 
+	static const array<uint8_t, 16> alpha_mask_u8 = {{
+		0,0,0,255, 0,0,0,255,
+		0,0,0,255, 0,0,0,255
+	}};
+	uint8x16_t alpha_mask = vld1q_u8(alpha_mask_u8.data());
+	uint8x16_t shuf_mask;
+
 	// Convert one line at a time. (24-bit -> ARGB32)
 	switch (px_format) {
-		case PixelFormat::RGB888:
-			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
-				// Convert 16 pixels at a time. (48 source bytes)
-				unsigned int x = static_cast<unsigned int>(width);
-				for (; x > 15; x -= 16) {
-					uint8x16x3_t rgb = vld3q_u8(img_buf);
-					uint8x16x4_t argb;
-					argb.val[0] = rgb.val[0];
-					argb.val[1] = rgb.val[1];
-					argb.val[2] = rgb.val[2];
-					argb.val[3] = vdupq_n_u8(0xFF);
-					vst4q_u8_ex(reinterpret_cast<uint8_t*>(px_dest), argb, 128);
-					img_buf += (16 * 3);
-					px_dest += 16;
-				}
-
-				// Remaining pixels
-				for (; x > 0; x--) {
-					px_dest->b = img_buf[0];
-					px_dest->g = img_buf[1];
-					px_dest->r = img_buf[2];
-					px_dest->a = 0xFF;
-					img_buf += 3;
-					px_dest++;
-				}
-
-				img_buf += src_stride_adj;
-				px_dest += dest_stride_adj;
-			}
+		case PixelFormat::RGB888: {
+			static const array<uint8_t, 16> shuf_mask_u8 = {{
+				0,1,2,255, 3,4,5,255,
+				6,7,8,255, 9,10,11,255
+			}};
+			shuf_mask = vld1q_u8(shuf_mask_u8.data());
 			break;
+		}
 
-		case PixelFormat::BGR888:
-			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
-				// Convert 16 pixels at a time. (48 source bytes)
-				unsigned int x = static_cast<unsigned int>(width);
-				for (; x > 15; x -= 16) {
-					uint8x16x3_t rgb = vld3q_u8(img_buf);
-					uint8x16x4_t argb;
-					argb.val[0] = rgb.val[2];
-					argb.val[1] = rgb.val[1];
-					argb.val[2] = rgb.val[0];
-					argb.val[3] = vdupq_n_u8(0xFF);
-					vst4q_u8_ex(reinterpret_cast<uint8_t*>(px_dest), argb, 128);
-					img_buf += (16 * 3);
-					px_dest += 16;
-				}
-
-				// Remaining pixels
-				for (; x > 0; x--) {
-					px_dest->b = img_buf[2];
-					px_dest->g = img_buf[1];
-					px_dest->r = img_buf[0];
-					px_dest->a = 0xFF;
-					img_buf += 3;
-					px_dest++;
-				}
-
-				img_buf += src_stride_adj;
-				px_dest += dest_stride_adj;
-			}
+		case PixelFormat::BGR888: {
+			static const array<uint8_t, 16> shuf_mask_u8 = {{
+				2,1,0,255, 5,4,3,255,
+				8,7,6,255, 11,10,9,255
+			}};
+			shuf_mask = vld1q_u8(shuf_mask_u8.data());
 			break;
+		}
 
 		default:
 			assert(!"Unsupported 24-bit pixel format.");
 			return nullptr;
+	}
+
+	for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
+		// Convert 16 pixels at a time. (48 source bytes)
+		unsigned int x = static_cast<unsigned int>(width);
+		for (; x > 15; x -= 16) {
+			uint8x16x3_t rgb = vld1q_u8_x3(img_buf);
+
+			uint8x16x4_t argb;
+			argb.val[0] = vqtbl1q_u8(rgb.val[0], shuf_mask);
+			argb.val[0] = vorrq_u8(argb.val[0], alpha_mask);
+
+			argb.val[1] = vextq_u8(rgb.val[0], rgb.val[1], 12);
+			argb.val[1] = vqtbl1q_u8(argb.val[1], shuf_mask);
+			argb.val[1] = vorrq_u8(argb.val[1], alpha_mask);
+
+			argb.val[2] = vextq_u8(rgb.val[1], rgb.val[2], 8);
+			argb.val[2] = vqtbl1q_u8(argb.val[2], shuf_mask);
+			argb.val[2] = vorrq_u8(argb.val[2], alpha_mask);
+
+			argb.val[3] = vextq_u8(rgb.val[2], rgb.val[3], 8);
+			argb.val[3] = vqtbl1q_u8(argb.val[3], shuf_mask);
+			argb.val[3] = vorrq_u8(argb.val[3], alpha_mask);
+
+			vst1q_u8_x4_ex(reinterpret_cast<uint8_t*>(px_dest), argb, 128);
+			img_buf += (16 * 3);
+			px_dest += 16;
+		}
+
+		// Remaining pixels
+		for (; x > 0; x--) {
+			px_dest->b = img_buf[0];
+			px_dest->g = img_buf[1];
+			px_dest->r = img_buf[2];
+			px_dest->a = 0xFF;
+			img_buf += 3;
+			px_dest++;
+		}
+
+		img_buf += src_stride_adj;
+		px_dest += dest_stride_adj;
 	}
 
 	// Set the sBIT metadata.
