@@ -10,7 +10,8 @@
 
 #if !defined(_M_ARM) && !defined(__arm__) && \
     !defined(_M_ARMT) && !defined(__thumb__) && \
-    !defined(_M_ARM64) && !defined(__aarch64__)
+    !defined(_M_ARM64) && !defined(__aarch64__) && \
+    !defined(_M_ARM64EC)
 #  error arm_neon_aligned.h is for ARM systems only!
 #endif
 
