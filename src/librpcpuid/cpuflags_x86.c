@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpcpuid)                       *
  * cpuflags_x86.c: x86 CPU flags detection.                                *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,12 +14,16 @@
 // cpuid() macros
 #include "cpuid_x86.h"
 
-// librpthreads
-// FIXME: Cannot use librpthreads at the moment due to static linkage.
-//#include "librpthreads/pthread_once.h"
+// pthread_once()
+#ifdef _WIN32
+#  include "pthread_once_win32.h"
+#else /* !_WIN32 */
+#  include <pthread.h>
+#endif /* _WIN32 */
 
 uint32_t RP_CPU_Flags_x86 = 0;
 int RP_CPU_Flags_x86_IsInit = 0;	// 1 if RP_CPU_Flags_x86 has been initialized.
+static pthread_once_t cpu_once_control = PTHREAD_ONCE_INIT;
 
 /**
  * Initialize RP_CPU_Flags. (internal function)
@@ -181,11 +185,5 @@ static void RP_CPU_Flags_x86_Init_int(void)
 void RP_C_API RP_CPU_Flags_x86_Init(void)
 {
 	// FIXME: Cannot use librpthreads at the moment due to static linkage.
-	//static pthread_once_t cpu_once_control = PTHREAD_ONCE_INIT;
-	//pthread_once(&cpu_once_control, RP_CPU_Flags_x86_Init_int);
-	static uint8_t cpu_once_control = 0;
-	if (cpu_once_control == 0) {
-		RP_CPU_Flags_x86_Init_int();
-		cpu_once_control = 1;
-	}
+	pthread_once(&cpu_once_control, RP_CPU_Flags_x86_Init_int);
 }

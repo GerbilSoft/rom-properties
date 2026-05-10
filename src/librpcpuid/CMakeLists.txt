@@ -7,6 +7,11 @@ PROJECT(rpcpuid LANGUAGES C)
 # Check for C headers
 CHECK_INCLUDE_FILES("cpuid.h" HAVE_CPUID_H)
 
+# for pthread_once()
+IF(NOT WIN32)
+	FIND_PACKAGE(Threads REQUIRED)
+ENDIF(NOT WIN32)
+
 # Sources
 SET(${PROJECT_NAME}_SRCS dummy.c)
 SET(${PROJECT_NAME}_H cpu_dispatch.h)
@@ -40,6 +45,11 @@ SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES
 	EXCLUDE_FROM_ALL TRUE
 	POSITION_INDEPENDENT_CODE TRUE
 	)
+
+IF(CMAKE_THREAD_LIBS_INIT)
+	# for pthread_once()
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+ENDIF(CMAKE_THREAD_LIBS_INIT)
 
 # Include paths:
 # - Public: Current source and binary directories.
