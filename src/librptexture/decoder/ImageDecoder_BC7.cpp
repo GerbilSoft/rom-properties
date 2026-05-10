@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_BC7.cpp: Image decoding functions: BC7                     *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -89,14 +89,6 @@ static uint8_t interpolate_component(unsigned int bits, unsigned int index, uint
 {
 	assert(bits >= 2 && bits <= 4);
 	assert(index < (1U << bits));
-
-	// Shortcut for no-interpolation cases.
-	// TODO: Does this actually improve performance?
-	if (index == 0) {
-		return e0;
-	} else if (index == (1U<<bits)-1) {
-		return e1;
-	}
 
 	uint8_t weight;
 	switch (bits) {
