@@ -33,17 +33,11 @@ static void RP_CPU_Flags_x86_Init_int(void)
 {
 	unsigned int regs[4];	// %eax, %ebx, %ecx, %edx
 	unsigned int maxFunc;
+	uint8_t can_XSAVE = 0;
+
 #ifdef RP_CPU_I386
 	// i386 is not guaranteed to support FXSAVE. (required for SSE)
 	uint8_t can_FXSAVE = 0;
-#else /* !RP_CPU_I386 */
-	// amd64 *is* guaranteed to support FXSAVE.
-	static const uint8_t can_FXSAVE = 1;
-#endif /* RP_CPU_I386 */
-	uint8_t can_XSAVE = 0;
-
-	// Initialize the CPU flags variable.
-	RP_CPU_Flags_x86 = 0;
 
 	// Check if cpuid is supported.
 	if (!is_cpuid_supported()) {
@@ -52,6 +46,17 @@ static void RP_CPU_Flags_x86_Init_int(void)
 		RP_CPU_Flags_x86_IsInit = 1;
 		return;
 	}
+
+	// Initialize the CPU flags variable.
+	RP_CPU_Flags_x86 = 0;
+#else /* !RP_CPU_I386 */
+	// amd64 *is* guaranteed to support FXSAVE.
+	static const uint8_t can_FXSAVE = 1;
+
+	// Initialize the CPU flags variable.
+	// amd64 is guaranteed to support MMX, SSE, and SSE2.
+	RP_CPU_Flags_x86 = (RP_CPUFLAG_X86_MMX | RP_CPUFLAG_X86_SSE | RP_CPUFLAG_X86_SSE2);
+#endif /* RP_CPU_I386 */
 
 	// CPUID is supported.
 	// Check if the CPUID Features function (Function 1) is supported.
@@ -116,11 +121,6 @@ static void RP_CPU_Flags_x86_Init_int(void)
 #  endif /* _WIN32 */
 		}
 	}
-#else /* !RP_CPU_I386 */
-	// amd64: MMX *does* function, but use is not recommended.
-	// Use SSE or SSE2 instead on 64-bit.
-	// Also, SSE and SSE2 are always supported on amd64.
-	RP_CPU_Flags_x86 |= (RP_CPUFLAG_X86_MMX | RP_CPUFLAG_X86_SSE | RP_CPUFLAG_X86_SSE2);
 #endif /* RP_CPU_I386 */
 
 	// Check for other SSE instruction sets.
