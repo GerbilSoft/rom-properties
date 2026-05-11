@@ -184,6 +184,5 @@ static void RP_CPU_Flags_x86_Init_int(void)
  */
 void RP_C_API RP_CPU_Flags_x86_Init(void)
 {
-	// FIXME: Cannot use librpthreads at the moment due to static linkage.
 	pthread_once(&cpu_once_control, RP_CPU_Flags_x86_Init_int);
 }
