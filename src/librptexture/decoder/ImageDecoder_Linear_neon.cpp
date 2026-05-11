@@ -121,7 +121,8 @@ rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 	uint32x4_t alpha_mask = vld1q_u32(alpha_mask_u32.data());
 	uint8x16_t shuf_mask;
 
-	// Convert one line at a time. (24-bit -> ARGB32)
+	// Determine the shuffle mask based on pixel format.
+	bool isBGR;
 	switch (px_format) {
 		case PixelFormat::RGB888: {
 			static const array<uint8_t, 16> shuf_mask_u8 = {{
@@ -129,6 +130,7 @@ rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 				6,7,8,255, 9,10,11,255
 			}};
 			shuf_mask = vld1q_u8(shuf_mask_u8.data());
+			isBGR = false;
 			break;
 		}
 
@@ -138,6 +140,7 @@ rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 				8,7,6,255, 11,10,9,255
 			}};
 			shuf_mask = vld1q_u8(shuf_mask_u8.data());
+			isBGR = true;
 			break;
 		}
 
@@ -146,6 +149,7 @@ rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 			return nullptr;
 	}
 
+	// Convert one line at a time. (24-bit -> ARGB32)
 	for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 		// Convert 16 pixels at a time. (48 source bytes)
 		unsigned int x = static_cast<unsigned int>(width);
@@ -174,13 +178,24 @@ rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 		}
 
 		// Remaining pixels
-		for (; x > 0; x--) {
-			px_dest->b = img_buf[0];
-			px_dest->g = img_buf[1];
-			px_dest->r = img_buf[2];
-			px_dest->a = 0xFF;
-			img_buf += 3;
-			px_dest++;
+		if (!isBGR) {
+			for (; x > 0; x--) {
+				px_dest->b = img_buf[0];
+				px_dest->g = img_buf[1];
+				px_dest->r = img_buf[2];
+				px_dest->a = 0xFF;
+				img_buf += 3;
+				px_dest++;
+			}
+		} else {
+			for (; x > 0; x--) {
+				px_dest->b = img_buf[2];
+				px_dest->g = img_buf[1];
+				px_dest->r = img_buf[0];
+				px_dest->a = 0xFF;
+				img_buf += 3;
+				px_dest++;
+			}
 		}
 
 		img_buf += src_stride_adj;
