@@ -3,7 +3,7 @@
  * pthread_once_win32.h: pthread_once() implementation for Windows.        *
  * (Windows XP does not have InitOnceExecuteOnce().)                       *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,6 +15,9 @@
 #ifndef _WIN32
 #  error pthread_once_win32.h is for Windows only
 #endif /* !_WIN32 */
+
+// for SwitchToThread()
+#include "libwin32common/RpWin32_sdk.h"
 
 // MSVC intrinsics
 #include <intrin.h>
@@ -29,7 +32,7 @@ static inline void pthread_once(pthread_once_t *once_control, void (*init_routin
 		return;
 	}
 
-	bool run = true;
+	unsigned char run = 1;
 	while (run) {
 		// Check if once_control is 0. If it is, set it to 2.
 		// NOTE: ATOMIC_CMPXCHG() returns the initial value,
@@ -41,11 +44,11 @@ static inline void pthread_once(pthread_once_t *once_control, void (*init_routin
 				// indicate that initialization failed.
 				init_routine();
 				_InterlockedExchange(once_control, 1);
-				run = false;
+				run = 0;
 				break;
 			case 1:
 				// The initializer has already been executed.
-				run = false;
+				run = 0;
 				break;
 			default:
 				// The initializer is being processed by another thread.
