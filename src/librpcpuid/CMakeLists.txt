@@ -6,6 +6,19 @@ PROJECT(rpcpuid LANGUAGES C)
 
 # Check for C headers
 CHECK_INCLUDE_FILES("cpuid.h" HAVE_CPUID_H)
+IF(WIN32)
+	CHECK_INCLUDE_FILES("intrin.h" HAVE_INTRIN_H)
+	IF(HAVE_INTRIN_H)
+		# Check if the MSVC version of __cpuid() is present.
+		INCLUDE(CheckCSourceCompiles)
+		CHECK_C_SOURCE_COMPILES("#include <intrin.h>
+int main(void) {
+	int regs[4];
+	__cpuid(regs, 0);
+	return regs[0];
+}" HAVE_MSVC_CPUID)
+	ENDIF(HAVE_INTRIN_H)
+ENDIF(WIN32)
 
 # for pthread_once()
 IF(NOT WIN32)

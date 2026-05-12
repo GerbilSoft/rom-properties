@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpcpuid)                       *
  * cpuid_x86.h: CPUID macros for x86.                                      *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,12 +14,16 @@
 #endif
 
 #include "config.librpcpuid.h"
-#ifdef HAVE_CPUID_H
-#  include <cpuid.h>
-#endif /* HAVE_CPUID_H */
 
-#if defined(_MSC_VER) && _MSC_VER >= 1400
+// FIXME: gcc-16.1.0 / MinGW-w64 14.0.0 has both gcc's __cpuid() and the
+// MSVC __cpuid() intrinsic, which conflict with each other.
+// Prefer MSVC's intrinsics if available.
+#if defined(HAVE_MSVC_CPUID)
 #  include <intrin.h>
+#  define USING_INTRIN_H 1
+#elif defined(HAVE_CPUID_H)
+#  include <cpuid.h>
+#  define USING_CPUID_H 1
 #endif
 
 #include "force_inline.h"
@@ -88,9 +92,13 @@ static FORCEINLINE int is_cpuid_supported(void)
  */
 static FORCEINLINE void cpuid(unsigned int level, unsigned int regs[4])
 {
-#ifdef HAVE_CPUID_H
-	// Use the compiler's __cpuid() macro.
+#if defined(USING_CPUID_H)
+	// Use the compiler's __cpuid() macro. (gcc-style)
 	__cpuid(level, regs[0], regs[1], regs[2], regs[3]);
+#elif defined(HAVE_MSVC_CPUID)
+	// CPUID for MSVC 2005+
+	// Uses the __cpuid() intrinsic.
+	__cpuid((int*)regs, level);
 #elif defined(__GNUC__)
 	// CPUID macro with PIC support.
 	// See http://gcc.gnu.org/ml/gcc-patches/2007-09/msg00324.html
@@ -110,16 +118,11 @@ static FORCEINLINE void cpuid(unsigned int level, unsigned int regs[4])
 		);
 #  endif
 #elif defined(_MSC_VER)
-#  if _MSC_VER >= 1400
-	// CPUID for MSVC 2005+
-	// Uses the __cpuid() intrinsic.
-	__cpuid((int*)regs, level);
-#  else /* _MSC_VER < 1400 */
 	// CPUID for old MSVC that doesn't support intrinsics.
 	// (TODO: Check MSVC 2002 and 2003?)
-#    if defined(RP_CPU_AMD64)
-#      error Cannot use inline assembly on 64-bit MSVC.
-#    endif
+#  if defined(RP_CPU_AMD64)
+#    error Cannot use inline assembly on 64-bit MSVC.
+#  endif
 	__asm {
 		mov	eax, level
 		cpuid
@@ -128,7 +131,6 @@ static FORCEINLINE void cpuid(unsigned int level, unsigned int regs[4])
 		mov	regs[2 * TYPE int], ecx
 		mov	regs[3 * TYPE int], edx
 	}
-#  endif
 #else
 #  error Missing 'cpuid' asm implementation for this compiler.
 #endif
@@ -142,9 +144,13 @@ static FORCEINLINE void cpuid(unsigned int level, unsigned int regs[4])
  */
 static FORCEINLINE void cpuid_count(unsigned int level, unsigned int count, unsigned int regs[4])
 {
-#ifdef HAVE_CPUID_H
+#if defined(USING_CPUID_H)
 	// Use the compiler's __cpuid_count() macro.
 	__cpuid_count(level, count, regs[0], regs[1], regs[2], regs[3]);
+#elif defined(USING_INTRIN_H)
+	// CPUID for MSVC 2005+
+	// Uses the __cpuid() intrinsic.
+	__cpuidex((int*)regs, level, count);
 #elif defined(__GNUC__)
 	// CPUID macro with PIC support.
 	// See http://gcc.gnu.org/ml/gcc-patches/2007-09/msg00324.html
@@ -163,17 +169,12 @@ static FORCEINLINE void cpuid_count(unsigned int level, unsigned int count, unsi
 		: "0" (level), "2" (count)
 		);
 #  endif
-#elif defined(_MSC_VER)
-#  if _MSC_VER >= 1400
-	// CPUID for MSVC 2005+
-	// Uses the __cpuid() intrinsic.
-	__cpuidex((int*)regs, level, count);
-#  else /* _MSC_VER < 1400 */
+#elif deifned(_MSC_VER)
 	// CPUID for old MSVC that doesn't support intrinsics.
 	// (TODO: Check MSVC 2002 and 2003?)
-#    if defined(RP_CPU_AMD64)
-#      error Cannot use inline assembly on 64-bit MSVC.
-#    endif
+#  if defined(RP_CPU_AMD64)
+#    error Cannot use inline assembly on 64-bit MSVC.
+#  endif
 	__asm {
 		mov	eax, level
 		mov	ecx, count
@@ -183,7 +184,6 @@ static FORCEINLINE void cpuid_count(unsigned int level, unsigned int count, unsi
 		mov	regs[2 * TYPE int], ecx
 		mov	regs[3 * TYPE int], edx
 	}
-#  endif
 #else
 #  error Missing 'cpuid' asm implementation for this compiler.
 #endif
