@@ -53,10 +53,6 @@ using std::wstring;	// for tstring
 // Win32 dark mode
 #include "libwin32darkmode/DarkMode.hpp"
 
-// CLSID
-const CLSID CLSID_RP_ShellPropSheetExt =
-	{0x2443C158, 0xDF7C, 0x4352, {0xB4, 0x35, 0xBC, 0x9F, 0x88, 0x5F, 0xFD, 0x52}};
-
 /** RP_ShellPropSheetExt_Private **/
 
 // Property for "tab pointer".

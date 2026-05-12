@@ -23,9 +23,6 @@ _COM_SMARTPTR_TYPEDEF(IStream, __uuidof(IStream));
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define RP_ThumbnailProviderPrivate RP_ThumbnailProvider_Private
 
-// CLSID
-extern const CLSID CLSID_RP_ThumbnailProvider;
-
 namespace LibRpFile {
 	class IRpFile;
 }

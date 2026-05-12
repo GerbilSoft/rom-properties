@@ -187,7 +187,7 @@ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Outptr_ LPVOID
 		IClassFactory *pCF = nullptr;
 
 #define CHECK_CLSID(klass) \
-		if (IsEqualCLSID(rclsid, CLSID_##klass)) { \
+		if (IsEqualCLSID(rclsid, __uuidof(klass))) { \
 			/* Create a new class factory for this CLSID. */ \
 			pCF = new RP_ClassFactory<klass>(); \
 			if (pCF) { \

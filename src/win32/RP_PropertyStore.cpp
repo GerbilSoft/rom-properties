@@ -33,10 +33,6 @@ using std::array;
 using std::shared_ptr;
 using std::wstring;
 
-// CLSID
-const CLSID CLSID_RP_PropertyStore =
-	{0x4a1e3510, 0x50bd, 0x4b03, {0xa8, 0x01, 0xe4, 0xc9, 0x54, 0xf4, 0x3b, 0x96}};
-
 /** RP_PropertyStore_Private **/
 #include "RP_PropertyStore_p.hpp"
 

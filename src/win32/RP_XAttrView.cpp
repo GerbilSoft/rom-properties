@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_XAttrView.cpp: Extended attribute viewer property page.              *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -37,10 +37,6 @@ using std::tstring;
 
 // Win32 dark mode
 #include "libwin32darkmode/DarkMode.hpp"
-
-// CLSID
-const CLSID CLSID_RP_XAttrView =
-	{0xB0503F2E, 0xC4AE, 0x48DF, {0xA8,0x80, 0xE2, 0xB1, 0x22, 0xB5, 0x85, 0x71}};
 
 /** RP_XAttrView_Private **/
 

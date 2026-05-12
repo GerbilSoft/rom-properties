@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractImage.hpp: IExtractImage implementation.                      *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,11 +17,6 @@
 
 // CLSID common macros
 #include "clsid_common.hpp"
-
-// CLSID
-extern "C" {
-	extern const CLSID CLSID_RP_ExtractImage;
-}
 
 namespace LibWin32UI {
 	class RegKey;

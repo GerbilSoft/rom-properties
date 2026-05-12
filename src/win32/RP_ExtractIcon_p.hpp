@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractIcon_p.hpp: IExtractIcon implementation. (PRIVATE CLASS)      *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,9 +13,6 @@
 
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define RP_ExtractIconPrivate RP_ExtractIcon_Private
-
-// CLSID
-extern const CLSID CLSID_RP_ExtractIcon;
 
 class RP_ExtractIcon_Private
 {

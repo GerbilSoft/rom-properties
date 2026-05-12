@@ -21,9 +21,6 @@
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define RP_ShellIconOverlayIdentifierPrivate RP_ShellIconOverlayIdentifier_Private
 
-// CLSID
-extern const CLSID CLSID_RP_ShellIconOverlayIdentifier;
-
 class RP_ShellIconOverlayIdentifier_Private
 {
 public:

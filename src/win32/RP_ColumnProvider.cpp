@@ -30,10 +30,6 @@ using std::array;
 using std::shared_ptr;
 using std::wstring;
 
-// CLSID
-const CLSID CLSID_RP_ColumnProvider =
-	{0x126621f9, 0x01e7, 0x45da, {0xbc, 0x4f, 0xcb, 0xdf, 0xab, 0x9c, 0x0e, 0x0a}};
-
 /** RP_ColumnProvider_Private **/
 #include "RP_ColumnProvider_p.hpp"
 

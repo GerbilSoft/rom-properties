@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractIcon.cpp: IExtractIcon implementation.                        *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,10 +19,6 @@ using namespace LibRomData;
 
 // C++ STL classes
 using std::string;
-
-// CLSID
-const CLSID CLSID_RP_ExtractIcon =
-	{0xe51bc107, 0xe491, 0x4b29, {0xa6, 0xa3, 0x2a, 0x43, 0x09, 0x25, 0x98, 0x02}};
 
 /** RP_ExtractIcon_Private **/
 #include "RP_ExtractIcon_p.hpp"
@@ -81,7 +77,7 @@ IFACEMETHODIMP RP_ExtractIcon::GetClassID(_Out_ CLSID *pClassID)
 	if (!pClassID) {
 		return E_POINTER;
 	}
-	*pClassID = CLSID_RP_ExtractIcon;
+	*pClassID = __uuidof(RP_ExtractIcon);
 	return S_OK;
 }
 

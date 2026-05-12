@@ -26,9 +26,6 @@ _COM_SMARTPTR_TYPEDEF(IStream, __uuidof(IStream));
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define RP_PropertyStorePrivate RP_PropertyStore_Private
 
-// CLSID
-extern const CLSID CLSID_RP_PropertyStore;
-
 // C++ includes
 #include <array>
 #include <vector>

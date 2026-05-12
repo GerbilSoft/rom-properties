@@ -20,10 +20,6 @@ using namespace LibRomData;
 using std::string;
 using std::unique_ptr;
 
-// CLSID
-const CLSID CLSID_RP_ShellIconOverlayIdentifier =
-	{0x02c6Af01, 0x3c99, 0x497d, {0xb3, 0xfc, 0xe3, 0x8c, 0xe5, 0x26, 0x78, 0x6b}};
-
 /** RP_ShellIconOverlayIdentifier_Private **/
 #include "RP_ShellIconOverlayIdentifier_p.hpp"
 

@@ -23,10 +23,6 @@ using namespace LibRpTexture;
 using std::shared_ptr;
 using std::wstring;
 
-// CLSID
-const CLSID CLSID_RP_ThumbnailProvider =
-	{0x4723df58, 0x463e, 0x4590, {0x8f, 0x4a, 0x8d, 0x9d, 0xd4, 0xf4, 0x35, 0x5a}};
-
 /** RP_ThumbnailProvider_Private **/
 #include "RP_ThumbnailProvider_p.hpp"
 
