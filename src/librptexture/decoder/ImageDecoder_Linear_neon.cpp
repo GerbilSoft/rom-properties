@@ -26,9 +26,10 @@ namespace LibRpTexture { namespace ImageDecoder {
 
 #if defined(RP_CPU_ARM64)
 static constexpr size_t VEC_LEN_U8 = 16;
-static constexpr size_t VEC_LEN_U32 = 4;
+//static constexpr size_t VEC_LEN_U32 = 4;
 typedef uint8x16_t uint8xVTBL_t;
 typedef uint32x4_t uint32xVTBL_t;
+#define vdupVTBL_n_u32 vdupq_n_u32
 #define vld1VTBL_u8  vld1q_u8
 #define vld1VTBL_u32 vld1q_u32
 #define vst1VTBL_u8  vst1q_u8
@@ -36,9 +37,10 @@ typedef uint32x4_t uint32xVTBL_t;
 #define vqtbl1q_u8_u32(a, b) vreinterpretq_u32_u8(vqtbl1q_u8(vreinterpretq_u8_u32(a), (b)))
 #elif defined(RP_CPU_ARM)
 static constexpr size_t VEC_LEN_U8 = 8;
-static constexpr size_t VEC_LEN_U32 = 2;
+//static constexpr size_t VEC_LEN_U32 = 2;
 typedef uint8x8_t uint8xVTBL_t;
 typedef uint32x2_t uint32xVTBL_t;
+#define vdupVTBL_n_u32 vdup_n_u32
 #define vld1VTBL_u8  vld1_u8
 #define vld1VTBL_u32 vld1_u32
 #define vst1VTBL_u8  vst1_u8
@@ -502,13 +504,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 		img->set_sBIT(sBIT_A32);
 	} else {
 		// xRGB images don't have an alpha channel.
-		static const array<uint32_t, VEC_LEN_U32> or_mask_noAlpha_u32 = {{
-			0xFF000000, 0xFF000000,
-#ifdef RP_CPU_ARM64
-			0xFF000000, 0xFF000000
-#endif /* RP_CPU_ARM64 */
-		}};
-		uint32xVTBL_t or_mask = vld1VTBL_u32(or_mask_noAlpha_u32.data());
+		const uint32xVTBL_t or_mask = vdupVTBL_n_u32(0xFF000000);
 
 		for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 			// Process 16 pixels per iteration using NEON.
