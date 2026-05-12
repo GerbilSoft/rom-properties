@@ -159,7 +159,7 @@ static HMODULE WINAPI rp_LoadLibrary_int(LPCSTR pszModuleName, bool bCheckWhitel
 	*dest = 0;
 
 	// Attempt to load the DLL.
-	hDll = LoadLibraryEx(dll_fullpath, NULL, 0);
+	hDll = LoadLibrary(dll_fullpath);
 	if (hDll != NULL) {
 		// DLL loaded successfully.
 		return hDll;
@@ -167,7 +167,7 @@ static HMODULE WINAPI rp_LoadLibrary_int(LPCSTR pszModuleName, bool bCheckWhitel
 
 #ifdef _M_ARM64EC
 	// Windows, ARM64EC: Check the arm64 subdirectory first.
-	// If LoadlibraryEx() fails, then check the arm64ec subdirectory.
+	// If Loadlibrary() fails, then check the arm64ec subdirectory.
 	static const TCHAR arm64_subdir[] = _T("arm64");
 	_tcscpy(&dll_fullpath[path_len], arm64_subdir);
 	path_len += _countof(arm64_subdir) - 1;
@@ -184,7 +184,7 @@ static HMODULE WINAPI rp_LoadLibrary_int(LPCSTR pszModuleName, bool bCheckWhitel
 	*dest = 0;
 
 	// Attempt to load the DLL.
-	hDll = LoadLibraryEx(dll_fullpath, NULL, 0);
+	hDll = LoadLibrary(dll_fullpath);
 	if (hDll != NULL) {
 		// DLL loaded successfully.
 		return hDll;
@@ -210,7 +210,7 @@ static HMODULE WINAPI rp_LoadLibrary_int(LPCSTR pszModuleName, bool bCheckWhitel
 	*dest = 0;
 
 	// Attempt to load the DLL.
-	return LoadLibraryEx(dll_fullpath, NULL, 0);
+	return LoadLibrary(dll_fullpath);
 }
 
 /**
