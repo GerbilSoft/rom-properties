@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * cdrom_structs.h: CD-ROM data structures.                                *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -54,7 +54,7 @@ ASSERT_STRUCT(CDROM_MSF_t, 3);
  * @param msf MSF.
  * @return LBA.
  */
-static FORCEINLINE unsigned int cdrom_msf_to_lba(const CDROM_MSF_t *msf)
+static RP_FORCEINLINE unsigned int cdrom_msf_to_lba(const CDROM_MSF_t *msf)
 {
 	// NOTE: Not verifying BCD here.
 	unsigned int lba = ((msf->frame >> 4) * 10) | (msf->frame & 0x0F);

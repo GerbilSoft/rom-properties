@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbyteswap)                    *
  * byteswap_rp.h: Byteswapping functions.                                  *
  *                                                                         *
- * Copyright (c) 2008-2025 by David Korth.                                 *
+ * Copyright (c) 2008-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -300,7 +300,7 @@ void RP_C_API rp_byte_swap_32_array_neon(uint32_t *ptr, size_t n);
  * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
-static FORCEINLINE void rp_byte_swap_16_array(uint16_t *ptr, size_t n)
+static RP_FORCEINLINE void rp_byte_swap_16_array(uint16_t *ptr, size_t n)
 {
 	if (n < 16) {
 		rp_byte_swap_16_array_c(ptr, n);
@@ -346,7 +346,7 @@ static FORCEINLINE void rp_byte_swap_16_array(uint16_t *ptr, size_t n)
  * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
-static FORCEINLINE void rp_byte_swap_32_array(uint32_t *ptr, size_t n)
+static RP_FORCEINLINE void rp_byte_swap_32_array(uint32_t *ptr, size_t n)
 {
 	if (n < 16) {
 		rp_byte_swap_32_array_c(ptr, n);

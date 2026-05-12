@@ -3,7 +3,7 @@
  * un-premultiply.cpp: Un-premultiply function.                            *
  * Standard version. (C++ code only)                                       *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -70,7 +70,7 @@ const array<unsigned int, 256> rp_image::qt_inv_premul_factor = {{
  * @param px	[in] ARGB32 pixel to un-premultiply.
  * @return Un-premultiplied pixel.
  */
-static FORCEINLINE uint32_t un_premultiply_pixel(uint32_t px)
+static RP_FORCEINLINE uint32_t un_premultiply_pixel(uint32_t px)
 {
 	argb32_t rpx;
 	rpx.u32 = px;
@@ -133,7 +133,7 @@ int rp_image::un_premultiply_cpp(void)
  * @param px	[in] ARGB32 pixel to premultiply.
  * @return Premultiplied pixel.
  */
-static FORCEINLINE uint32_t premultiply_pixel_inl(uint32_t px)
+static RP_FORCEINLINE uint32_t premultiply_pixel_inl(uint32_t px)
 {
 	const unsigned int a = (px >> 24);
 	if (likely(a == 255 || a == 0))

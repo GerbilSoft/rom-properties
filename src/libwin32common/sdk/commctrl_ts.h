@@ -14,30 +14,30 @@
 #ifndef NOIMAGEAPIS
 
 #undef ImageList_AddIcon
-static FORCEINLINE int ImageList_AddIcon(_In_ HIMAGELIST himl, _In_ HICON hicon)
+static RP_FORCEINLINE int ImageList_AddIcon(_In_ HIMAGELIST himl, _In_ HICON hicon)
 {
 	return ImageList_ReplaceIcon(himl, -1, hicon);
 }
 
 #undef ImageList_RemoveAll
-static FORCEINLINE BOOL ImageList_RemoveAll(_In_ HIMAGELIST himl)
+static RP_FORCEINLINE BOOL ImageList_RemoveAll(_In_ HIMAGELIST himl)
 {
 	return ImageList_Remove(himl, -1);
 }
 
 #undef ImageList_ExtractIcon
-static FORCEINLINE HICON ImageList_ExtractIcon(_In_ HINSTANCE hi, _In_ HIMAGELIST himl, _In_ int i)
+static RP_FORCEINLINE HICON ImageList_ExtractIcon(_In_ HINSTANCE hi, _In_ HIMAGELIST himl, _In_ int i)
 {
 	((void)hi);
 	return ImageList_GetIcon(himl, i, 0);
 }
 
 #undef ImageList_LoadBitmap
-static FORCEINLINE HIMAGELIST ImageList_LoadBitmapA(_In_ HINSTANCE hi, _In_ LPCSTR lpbmp, _In_ int cx, _In_ int cGrow, _In_ COLORREF crMask)
+static RP_FORCEINLINE HIMAGELIST ImageList_LoadBitmapA(_In_ HINSTANCE hi, _In_ LPCSTR lpbmp, _In_ int cx, _In_ int cGrow, _In_ COLORREF crMask)
 {
 	return ImageList_LoadImageA(hi, lpbmp, cx, cGrow, crMask, IMAGE_BITMAP, 0);
 }
-static FORCEINLINE HIMAGELIST ImageList_LoadBitmapW(_In_ HINSTANCE hi, _In_ LPCWSTR lpbmp, _In_ int cx, _In_ int cGrow, _In_ COLORREF crMask)
+static RP_FORCEINLINE HIMAGELIST ImageList_LoadBitmapW(_In_ HINSTANCE hi, _In_ LPCWSTR lpbmp, _In_ int cx, _In_ int cGrow, _In_ COLORREF crMask)
 {
 	return ImageList_LoadImageW(hi, lpbmp, cx, cGrow, crMask, IMAGE_BITMAP, 0);
 }
@@ -54,123 +54,123 @@ static FORCEINLINE HIMAGELIST ImageList_LoadBitmapW(_In_ HINSTANCE hi, _In_ LPCW
 #ifndef NOHEADER
 
 #undef Header_GetItemCount
-static FORCEINLINE int Header_GetItemCount(_In_ HWND hwndHD)
+static RP_FORCEINLINE int Header_GetItemCount(_In_ HWND hwndHD)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_GETITEMCOUNT, 0, 0L))); }
 
 #undef Header_InsertItem
-static FORCEINLINE int Header_InsertItem(_In_ HWND hwndHD, _In_ int index, _In_ const LPHDITEM phdi)
+static RP_FORCEINLINE int Header_InsertItem(_In_ HWND hwndHD, _In_ int index, _In_ const LPHDITEM phdi)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_INSERTITEM, STATIC_CAST(WPARAM)(index), REINTERPRET_CAST(LPARAM)(phdi)))); }
 
 #undef Header_DeleteItem
-static FORCEINLINE BOOL Header_DeleteItem(_In_ HWND hwndHD, _In_ int index)
+static RP_FORCEINLINE BOOL Header_DeleteItem(_In_ HWND hwndHD, _In_ int index)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_DELETEITEM, STATIC_CAST(WPARAM)(index), 0L))); }
 
 #undef Header_GetItem
-static FORCEINLINE BOOL Header_GetItem(_In_ HWND hwndHD, _In_ int index, _Out_ LPHDITEM phdi)
+static RP_FORCEINLINE BOOL Header_GetItem(_In_ HWND hwndHD, _In_ int index, _Out_ LPHDITEM phdi)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_GETITEM, STATIC_CAST(WPARAM)(index), REINTERPRET_CAST(LPARAM)(phdi)))); }
 
 #undef Header_SetItem
-static FORCEINLINE BOOL Header_SetItem(_In_ HWND hwndHD, _In_ int index, _In_ const LPHDITEM phdi)
+static RP_FORCEINLINE BOOL Header_SetItem(_In_ HWND hwndHD, _In_ int index, _In_ const LPHDITEM phdi)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_SETITEM, STATIC_CAST(WPARAM)(index), REINTERPRET_CAST(LPARAM)(phdi)))); }
 
 #undef Header_Layout
-static FORCEINLINE BOOL Header_Layout(_In_ HWND hwndHD, _Out_ LPHDLAYOUT pLayout)
+static RP_FORCEINLINE BOOL Header_Layout(_In_ HWND hwndHD, _Out_ LPHDLAYOUT pLayout)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_LAYOUT, 0, REINTERPRET_CAST(LPARAM)(pLayout)))); }
 
 #if (_WIN32_IE >= 0x0300)
 
 #undef Header_GetItemRect
-static FORCEINLINE BOOL Header_GetItemRect(_In_ HWND hwndHD, _In_ int iItem, _Out_ LPRECT lprc)
+static RP_FORCEINLINE BOOL Header_GetItemRect(_In_ HWND hwndHD, _In_ int iItem, _Out_ LPRECT lprc)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_GETITEMRECT, STATIC_CAST(WPARAM)(iItem), REINTERPRET_CAST(LPARAM)(lprc)))); }
 
 #undef Header_SetImageList
-static FORCEINLINE HIMAGELIST Header_SetImageList(_In_ HWND hwndHD, HIMAGELIST himl)
+static RP_FORCEINLINE HIMAGELIST Header_SetImageList(_In_ HWND hwndHD, HIMAGELIST himl)
 	{ return REINTERPRET_CAST(HIMAGELIST)(SNDMSG(hwndHD, HDM_SETIMAGELIST, HDSIL_NORMAL, REINTERPRET_CAST(LPARAM)(himl))); }
 #undef Header_SetStateImageList
-static FORCEINLINE HIMAGELIST Header_SetStateImageList(_In_ HWND hwndHD, HIMAGELIST himl)
+static RP_FORCEINLINE HIMAGELIST Header_SetStateImageList(_In_ HWND hwndHD, HIMAGELIST himl)
 	{ return REINTERPRET_CAST(HIMAGELIST)(SNDMSG(hwndHD, HDM_SETIMAGELIST, HDSIL_STATE, REINTERPRET_CAST(LPARAM)(himl))); }
 
 #undef Header_GetImageList
-static FORCEINLINE HIMAGELIST Header_GetImageList(_In_ HWND hwndHD)
+static RP_FORCEINLINE HIMAGELIST Header_GetImageList(_In_ HWND hwndHD)
 	{ return REINTERPRET_CAST(HIMAGELIST)(SNDMSG(hwndHD, HDM_SETIMAGELIST, HDSIL_NORMAL, 0)); }
 #undef Header_GetStateImageList
-static FORCEINLINE HIMAGELIST Header_GetStateImageList(_In_ HWND hwndHD)
+static RP_FORCEINLINE HIMAGELIST Header_GetStateImageList(_In_ HWND hwndHD)
 	{ return REINTERPRET_CAST(HIMAGELIST)(SNDMSG(hwndHD, HDM_SETIMAGELIST, HDSIL_STATE, 0)); }
 
 #undef Header_OrderToIndex
-static FORCEINLINE int Header_OrderToIndex(_In_ HWND hwndHD, _In_ int iOrder)
+static RP_FORCEINLINE int Header_OrderToIndex(_In_ HWND hwndHD, _In_ int iOrder)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_ORDERTOINDEX, STATIC_CAST(WPARAM)(iOrder), 0))); }
 
 #undef Header_CreateDragImage
-static FORCEINLINE HIMAGELIST Header_CreateDragImage(_In_ HWND hwndHD, _In_ int iIndex)
+static RP_FORCEINLINE HIMAGELIST Header_CreateDragImage(_In_ HWND hwndHD, _In_ int iIndex)
 	{ return REINTERPRET_CAST(HIMAGELIST)(SNDMSG(hwndHD, HDM_CREATEDRAGIMAGE, STATIC_CAST(WPARAM)(iIndex), 0)); }
 
 #undef Header_GetOrderArray
-static FORCEINLINE BOOL Header_GetOrderArray(_In_ HWND hwndHD, _In_ int iCount, _In_ int *lpiArray)
+static RP_FORCEINLINE BOOL Header_GetOrderArray(_In_ HWND hwndHD, _In_ int iCount, _In_ int *lpiArray)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_GETORDERARRAY, STATIC_CAST(WPARAM)(iCount), REINTERPRET_CAST(LPARAM)(lpiArray)))); }
 
 #undef Header_SetOrderArray
-static FORCEINLINE BOOL Header_SetOrderArray(_In_ HWND hwndHD, _In_ int iCount, _In_ const int *lpiArray)
+static RP_FORCEINLINE BOOL Header_SetOrderArray(_In_ HWND hwndHD, _In_ int iCount, _In_ const int *lpiArray)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_SETORDERARRAY, STATIC_CAST(WPARAM)(iCount), REINTERPRET_CAST(LPARAM)(lpiArray)))); }
 
 #undef Header_SetHotDivider
-static FORCEINLINE int Header_SetHotDivider(_In_ HWND hwndHD, _In_ BOOL fPos, _In_ DWORD dwInputValue)
+static RP_FORCEINLINE int Header_SetHotDivider(_In_ HWND hwndHD, _In_ BOOL fPos, _In_ DWORD dwInputValue)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_SETHOTDIVIDER, STATIC_CAST(WPARAM)(fPos), STATIC_CAST(LPARAM)(dwInputValue)))); }
 #endif      // _WIN32_IE >= 0x0300
 
 #if (_WIN32_IE >= 0x0500)
 #undef Header_SetBitmapMargin
-static FORCEINLINE int Header_SetBitmapMargin(_In_ HWND hwndHD, _In_ int iWidth)
+static RP_FORCEINLINE int Header_SetBitmapMargin(_In_ HWND hwndHD, _In_ int iWidth)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_SETBITMAPMARGIN, STATIC_CAST(WPARAM)(iWidth), 0))); }
 
 #undef Header_GetBitmapMargin
-static FORCEINLINE int Header_GetBitmapMargin(_In_ HWND hwndHD)
+static RP_FORCEINLINE int Header_GetBitmapMargin(_In_ HWND hwndHD)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_GETBITMAPMARGIN, 0, 0))); }
 #endif
 
 
 #if (_WIN32_IE >= 0x0400)
 #undef Header_SetUnicodeFormat
-static FORCEINLINE BOOL Header_SetUnicodeFormat(_In_ HWND hwndHD, _In_ BOOL fUnicode)
+static RP_FORCEINLINE BOOL Header_SetUnicodeFormat(_In_ HWND hwndHD, _In_ BOOL fUnicode)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_SETUNICODEFORMAT, STATIC_CAST(WPARAM)(fUnicode), 0))); }
 
 #undef Header_GetUnicodeFormat
-static FORCEINLINE BOOL Header_GetUnicodeFormat(_In_ HWND hwndHD)
+static RP_FORCEINLINE BOOL Header_GetUnicodeFormat(_In_ HWND hwndHD)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_GETUNICODEFORMAT, 0, 0))); }
 #endif
 
 #if (_WIN32_IE >= 0x0500)
 #undef Header_SetFilterChangeTimeout
-static FORCEINLINE int Header_SetFilterChangeTimeout(_In_ HWND hwndHD, _In_ int i)
+static RP_FORCEINLINE int Header_SetFilterChangeTimeout(_In_ HWND hwndHD, _In_ int i)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_SETFILTERCHANGETIMEOUT, 0, STATIC_CAST(LPARAM)(i)))); }
 
 #undef Header_EditFilter
-static FORCEINLINE int Header_EditFilter(_In_ HWND hwndHD, _In_ int i, _In_ BOOL fDiscardChanges)
+static RP_FORCEINLINE int Header_EditFilter(_In_ HWND hwndHD, _In_ int i, _In_ BOOL fDiscardChanges)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_EDITFILTER, STATIC_CAST(WPARAM)(i), MAKELPARAM(fDiscardChanges, 0)))); }
 
 #undef Header_ClearFilter
-static FORCEINLINE int Header_ClearFilter(_In_ HWND hwndHD, _In_ int i)
+static RP_FORCEINLINE int Header_ClearFilter(_In_ HWND hwndHD, _In_ int i)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_CLEARFILTER, STATIC_CAST(WPARAM)(i), 0))); }
 #undef Header_ClearAllFilters
-static FORCEINLINE int Header_ClearAllFilters(_In_ HWND hwndHD)
+static RP_FORCEINLINE int Header_ClearAllFilters(_In_ HWND hwndHD)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_CLEARFILTER, STATIC_CAST(WPARAM)(-1), 0))); }
 #endif
 
 #if (_WIN32_WINNT >= 0x600)
 #undef Header_GetItemDropDownRect
-static FORCEINLINE BOOL Header_GetItemDropDownRect(_In_ HWND hwndHD, _In_ int iItem, _Inout_ LPRECT lpItemRect)
+static RP_FORCEINLINE BOOL Header_GetItemDropDownRect(_In_ HWND hwndHD, _In_ int iItem, _Inout_ LPRECT lpItemRect)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_GETITEMDROPDOWNRECT, STATIC_CAST(WPARAM)(iItem), REINTERPRET_CAST(LPARAM)(lpItemRect)))); }
 
 #undef Header_GetOverflowRect
-static FORCEINLINE BOOL Header_GetOverflowRect(_In_ HWND hwndHD, _Inout_ LPRECT lpItemRect)
+static RP_FORCEINLINE BOOL Header_GetOverflowRect(_In_ HWND hwndHD, _Inout_ LPRECT lpItemRect)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_GETOVERFLOWRECT, 0, REINTERPRET_CAST(LPARAM)(lpItemRect)))); }
 
 #undef Header_GetFocusedItem
-static FORCEINLINE int Header_GetFocusedItem(_In_ HWND hwndHD)
+static RP_FORCEINLINE int Header_GetFocusedItem(_In_ HWND hwndHD)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_GETFOCUSEDITEM, 0, 0))); }
 
 #undef Header_SetFocusedItem
-static FORCEINLINE BOOL Header_SetFocusedItem(_In_ HWND hwndHD, _In_ int iItem)
+static RP_FORCEINLINE BOOL Header_SetFocusedItem(_In_ HWND hwndHD, _In_ int iItem)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_SETFOCUSEDITEM, 0, STATIC_CAST(LPARAM)(iItem)))); }
 #endif // _WIN32_WINNT >= 0x600
 
@@ -181,72 +181,72 @@ static FORCEINLINE BOOL Header_SetFocusedItem(_In_ HWND hwndHD, _In_ int iItem)
 
 #if (_WIN32_IE >= 0x0400)
 #undef ListView_SetUnicodeFormat
-static FORCEINLINE BOOL ListView_SetUnicodeFormat(_In_ HWND hwnd, _In_ BOOL fUnicode)
+static RP_FORCEINLINE BOOL ListView_SetUnicodeFormat(_In_ HWND hwnd, _In_ BOOL fUnicode)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_SETUNICODEFORMAT, STATIC_CAST(WPARAM)(fUnicode), 0))); }
 
 #undef ListView_GetUnicodeFormat
-static FORCEINLINE BOOL ListView_GetUnicodeFormat(_In_ HWND hwnd)
+static RP_FORCEINLINE BOOL ListView_GetUnicodeFormat(_In_ HWND hwnd)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_GETUNICODEFORMAT, 0, 0))); }
 #endif
 
 #undef ListView_GetBkColor
-static FORCEINLINE BOOL ListView_GetBkColor(_In_ HWND hwnd)
+static RP_FORCEINLINE BOOL ListView_GetBkColor(_In_ HWND hwnd)
 	{ return STATIC_CAST(COLORREF)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_GETBKCOLOR, 0, 0L))); }
 
 #undef ListView_SetBkColor
-static FORCEINLINE BOOL ListView_SetBkColor(_In_ HWND hwnd, _In_ COLORREF clrBk)
+static RP_FORCEINLINE BOOL ListView_SetBkColor(_In_ HWND hwnd, _In_ COLORREF clrBk)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_SETBKCOLOR, 0, STATIC_CAST(LPARAM)(clrBk)))); }
 
 #undef ListView_GetImageList
-static FORCEINLINE HIMAGELIST ListView_GetImageList(_In_ HWND hwnd, _In_ int iImageList)
+static RP_FORCEINLINE HIMAGELIST ListView_GetImageList(_In_ HWND hwnd, _In_ int iImageList)
 	{ return REINTERPRET_CAST(HIMAGELIST)(SNDMSG(hwnd, LVM_GETIMAGELIST, STATIC_CAST(WPARAM)(iImageList), 0L)); }
 
 #undef ListView_SetImageList
-static FORCEINLINE HIMAGELIST ListView_SetImageList(_In_ HWND hwnd, _In_ HIMAGELIST himl, _In_ int iImageList)
+static RP_FORCEINLINE HIMAGELIST ListView_SetImageList(_In_ HWND hwnd, _In_ HIMAGELIST himl, _In_ int iImageList)
 	{ return REINTERPRET_CAST(HIMAGELIST)(SNDMSG(hwnd, LVM_SETIMAGELIST, STATIC_CAST(WPARAM)(iImageList), REINTERPRET_CAST(LPARAM)(himl))); }
 
 #undef ListView_GetItemCount
-static FORCEINLINE int ListView_GetItemCount(_In_ HWND hwnd)
+static RP_FORCEINLINE int ListView_GetItemCount(_In_ HWND hwnd)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_GETITEMCOUNT, 0, 0L))); }
 
 #undef ListView_GetItem
-static FORCEINLINE BOOL ListView_GetItem(_In_ HWND hwnd, _Out_ LVITEM *pitem)
+static RP_FORCEINLINE BOOL ListView_GetItem(_In_ HWND hwnd, _Out_ LVITEM *pitem)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_GETITEM, 0, REINTERPRET_CAST(LPARAM)(pitem)))); }
 
 #undef ListView_SetItem
-static FORCEINLINE BOOL ListView_SetItem(_In_ HWND hwnd, _In_ const LVITEM *pitem)
+static RP_FORCEINLINE BOOL ListView_SetItem(_In_ HWND hwnd, _In_ const LVITEM *pitem)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_SETITEM, 0, REINTERPRET_CAST(LPARAM)(pitem)))); }
 
 #undef ListView_InsertItem
-static FORCEINLINE BOOL ListView_InsertItem(_In_ HWND hwnd, _In_ const LVITEM *pitem)
+static RP_FORCEINLINE BOOL ListView_InsertItem(_In_ HWND hwnd, _In_ const LVITEM *pitem)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_INSERTITEM, 0, REINTERPRET_CAST(LPARAM)(pitem)))); }
 
 #undef ListView_DeleteItem
-static FORCEINLINE BOOL ListView_DeleteItem(_In_ HWND hwnd, _In_ int iItem)
+static RP_FORCEINLINE BOOL ListView_DeleteItem(_In_ HWND hwnd, _In_ int iItem)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_DELETEITEM, STATIC_CAST(WPARAM)(iItem), 0L))); }
 
 #undef ListView_DeleteAllItems
-static FORCEINLINE BOOL ListView_DeleteAllItems(_In_ HWND hwnd)
+static RP_FORCEINLINE BOOL ListView_DeleteAllItems(_In_ HWND hwnd)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_DELETEALLITEMS, 0, 0L))); }
 
 #undef ListView_GetCallbackMask
-static FORCEINLINE UINT ListView_GetCallbackMask(_In_ HWND hwnd)
+static RP_FORCEINLINE UINT ListView_GetCallbackMask(_In_ HWND hwnd)
 	{ return STATIC_CAST(UINT)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_GETCALLBACKMASK, 0, 0))); }
 
 #undef ListView_SetCallbackMask
-static FORCEINLINE BOOL ListView_SetCallbackMask(_In_ HWND hwnd, _In_ UINT mask)
+static RP_FORCEINLINE BOOL ListView_SetCallbackMask(_In_ HWND hwnd, _In_ UINT mask)
 	{ return STATIC_CAST(UINT)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_SETCALLBACKMASK, STATIC_CAST(WPARAM)(mask), 0))); }
 
 #undef ListView_GetNextItem
-static FORCEINLINE UINT ListView_GetNextItem(_In_ HWND hwnd, _In_ int iStart, _In_ UINT flags)
+static RP_FORCEINLINE UINT ListView_GetNextItem(_In_ HWND hwnd, _In_ int iStart, _In_ UINT flags)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_GETNEXTITEM, STATIC_CAST(WPARAM)(iStart), MAKELPARAM(flags, 0)))); }
 
 #undef ListView_FindItem
-static FORCEINLINE int ListView_FindItem(_In_ HWND hwnd, _In_ int iStart, _In_ const LVFINDINFO *plvfi)
+static RP_FORCEINLINE int ListView_FindItem(_In_ HWND hwnd, _In_ int iStart, _In_ const LVFINDINFO *plvfi)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_FINDITEM, STATIC_CAST(WPARAM)(iStart), REINTERPRET_CAST(LPARAM)(plvfi)))); }
 
 #undef ListView_GetItemRect
-static FORCEINLINE BOOL ListView_GetItemRect(_In_ HWND hwnd, _In_ int i, _Out_ RECT *prc, _In_ int code)
+static RP_FORCEINLINE BOOL ListView_GetItemRect(_In_ HWND hwnd, _In_ int i, _Out_ RECT *prc, _In_ int code)
 {
 	if (prc) {
 		prc->left = code;
@@ -255,35 +255,35 @@ static FORCEINLINE BOOL ListView_GetItemRect(_In_ HWND hwnd, _In_ int i, _Out_ R
 }
 
 #undef ListView_SetItemPosition
-static FORCEINLINE BOOL ListView_SetItemPosition(_In_ HWND hwndLV, _In_ int i, _In_ int x, _In_ int y)
+static RP_FORCEINLINE BOOL ListView_SetItemPosition(_In_ HWND hwndLV, _In_ int i, _In_ int x, _In_ int y)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_SETITEMPOSITION, i, MAKELPARAM(x, y)))); }
 
 #undef ListView_GetItemPosition
-static FORCEINLINE BOOL ListView_GetItemPosition(_In_ HWND hwndLV, _In_ int i, _Out_ POINT *ppt)
+static RP_FORCEINLINE BOOL ListView_GetItemPosition(_In_ HWND hwndLV, _In_ int i, _Out_ POINT *ppt)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_GETITEMPOSITION, i, REINTERPRET_CAST(LPARAM)(ppt)))); }
 
 #undef ListView_GetStringWidth
-static FORCEINLINE int ListView_GetStringWidth(_In_ HWND hwndLV, _In_ LPCTSTR psz)
+static RP_FORCEINLINE int ListView_GetStringWidth(_In_ HWND hwndLV, _In_ LPCTSTR psz)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_GETSTRINGWIDTH, 0, REINTERPRET_CAST(LPARAM)(psz)))); }
 
 #undef ListView_HitTest
-static FORCEINLINE int ListView_HitTest(_In_ HWND hwndLV, _Inout_ LV_HITTESTINFO *pinfo)
+static RP_FORCEINLINE int ListView_HitTest(_In_ HWND hwndLV, _Inout_ LV_HITTESTINFO *pinfo)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_HITTEST, 0, REINTERPRET_CAST(LPARAM)(pinfo)))); }
 
 #undef ListView_HitTestEx
-static FORCEINLINE int ListView_HitTestEx(_In_ HWND hwndLV, _Inout_ LV_HITTESTINFO *pinfo)
+static RP_FORCEINLINE int ListView_HitTestEx(_In_ HWND hwndLV, _Inout_ LV_HITTESTINFO *pinfo)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_HITTEST, STATIC_CAST(WPARAM)(-1), REINTERPRET_CAST(LPARAM)(pinfo)))); }
 
 #undef ListView_EnsureVisible
-static FORCEINLINE BOOL ListView_EnsureVisible(_In_ HWND hwndLV, _In_ int i, _In_ BOOL fPartialOK)
+static RP_FORCEINLINE BOOL ListView_EnsureVisible(_In_ HWND hwndLV, _In_ int i, _In_ BOOL fPartialOK)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_ENSUREVISIBLE, STATIC_CAST(WPARAM)(i), MAKELPARAM(fPartialOK, 0)))); }
 
 #undef ListView_Scroll
-static FORCEINLINE BOOL ListView_Scroll(_In_ HWND hwndLV, _In_ int dx, _In_ int dy)
+static RP_FORCEINLINE BOOL ListView_Scroll(_In_ HWND hwndLV, _In_ int dx, _In_ int dy)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_SCROLL, STATIC_CAST(WPARAM)(dx), STATIC_CAST(LPARAM)(dy)))); }
 
 #undef ListView_RedrawItems
-static FORCEINLINE BOOL ListView_RedrawItems(_In_ HWND hwndLV, _In_ int iFirst, _In_ int iLast)
+static RP_FORCEINLINE BOOL ListView_RedrawItems(_In_ HWND hwndLV, _In_ int iFirst, _In_ int iLast)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_REDRAWITEMS, STATIC_CAST(WPARAM)(iFirst), STATIC_CAST(LPARAM)(iLast)))); }
 
 #if 0 /* TODO */
@@ -301,28 +301,28 @@ static FORCEINLINE BOOL ListView_RedrawItems(_In_ HWND hwndLV, _In_ int iFirst, 
 #endif /* TODO */
 
 #undef ListView_SetColumn
-static FORCEINLINE BOOL ListView_SetColumn(_In_ HWND hwnd, _In_ int iCol, _In_ const LPLVCOLUMN pcol)
+static RP_FORCEINLINE BOOL ListView_SetColumn(_In_ HWND hwnd, _In_ int iCol, _In_ const LPLVCOLUMN pcol)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_SETCOLUMN, STATIC_CAST(WPARAM)(iCol), REINTERPRET_CAST(LPARAM)(pcol)))); }
 
 #undef ListView_InsertColumn
-static FORCEINLINE int ListView_InsertColumn(_In_ HWND hwnd, _In_ int iCol, _In_ const LPLVCOLUMN pcol)
+static RP_FORCEINLINE int ListView_InsertColumn(_In_ HWND hwnd, _In_ int iCol, _In_ const LPLVCOLUMN pcol)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_INSERTCOLUMN, STATIC_CAST(WPARAM)(iCol), REINTERPRET_CAST(LPARAM)(pcol)))); }
 
 #undef ListView_DeleteColumn
-static FORCEINLINE BOOL ListView_DeleteColumn(_In_ HWND hwnd, _In_ int iCol)
+static RP_FORCEINLINE BOOL ListView_DeleteColumn(_In_ HWND hwnd, _In_ int iCol)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_DELETECOLUMN, STATIC_CAST(WPARAM)(iCol), 0))); }
 
 #undef ListView_GetColumnWidth
-static FORCEINLINE int ListView_GetColumnWidth(_In_ HWND hwnd, _In_ int iCol)
+static RP_FORCEINLINE int ListView_GetColumnWidth(_In_ HWND hwnd, _In_ int iCol)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_GETCOLUMNWIDTH, STATIC_CAST(WPARAM)(iCol), 0))); }
 
 #undef ListView_SetColumnWidth
-static FORCEINLINE BOOL ListView_SetColumnWidth(_In_ HWND hwnd, _In_ int iCol, _In_ int cx)
+static RP_FORCEINLINE BOOL ListView_SetColumnWidth(_In_ HWND hwnd, _In_ int iCol, _In_ int cx)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_SETCOLUMNWIDTH, STATIC_CAST(WPARAM)(iCol), MAKELPARAM(cx, 0)))); }
 
 #if (_WIN32_IE >= 0x0300)
 #undef ListView_GetHeader
-static FORCEINLINE HWND ListView_GetHeader(_In_ HWND hwnd)
+static RP_FORCEINLINE HWND ListView_GetHeader(_In_ HWND hwnd)
 	{ return REINTERPRET_CAST(HWND)(SNDMSG(hwnd, LVM_GETHEADER, 0, 0L)); }
 #endif
 
@@ -356,11 +356,11 @@ static FORCEINLINE HWND ListView_GetHeader(_In_ HWND hwnd)
 #endif /* TODO */
 
 #undef ListView_Update
-static FORCEINLINE BOOL ListView_Update(_In_ HWND hwndLV, _In_ int iItem)
+static RP_FORCEINLINE BOOL ListView_Update(_In_ HWND hwndLV, _In_ int iItem)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_UPDATE, STATIC_CAST(WPARAM)(iItem), 0L))); }
 
 #undef ListView_SetItemState
-static FORCEINLINE BOOL ListView_SetItemState(_In_ HWND hwndLV, _In_ int iItem, _In_ UINT state, _In_ UINT mask)
+static RP_FORCEINLINE BOOL ListView_SetItemState(_In_ HWND hwndLV, _In_ int iItem, _In_ UINT state, _In_ UINT mask)
 {
 	LVITEM lvi;
 	lvi.stateMask = mask;
@@ -369,17 +369,17 @@ static FORCEINLINE BOOL ListView_SetItemState(_In_ HWND hwndLV, _In_ int iItem, 
 }
 
 #undef ListView_GetItemState
-static FORCEINLINE UINT ListView_GetItemState(_In_ HWND hwndLV, _In_ int iItem, _In_ UINT mask)
+static RP_FORCEINLINE UINT ListView_GetItemState(_In_ HWND hwndLV, _In_ int iItem, _In_ UINT mask)
 	{ return STATIC_CAST(UINT)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_GETITEMSTATE, STATIC_CAST(WPARAM)(iItem), STATIC_CAST(LPARAM)(mask)))); }
 
 #if (_WIN32_IE >= 0x0300)
 #undef ListView_GetCheckState
-static FORCEINLINE UINT ListView_GetCheckState(_In_ HWND hwndLV, _In_ int iItem)
+static RP_FORCEINLINE UINT ListView_GetCheckState(_In_ HWND hwndLV, _In_ int iItem)
 	{ return (((STATIC_CAST(UINT)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_GETITEMSTATE, STATIC_CAST(WPARAM)(iItem), LVIS_STATEIMAGEMASK)))) >> 12) - 1); }
 #endif
 
 #undef ListView_GetItemText
-static FORCEINLINE void ListView_GetItemText(_In_ HWND hwndLV, _In_ int iItem, _In_ int iSubItem, _Out_ LPTSTR pszText, _In_ int cchTextMax)
+static RP_FORCEINLINE void ListView_GetItemText(_In_ HWND hwndLV, _In_ int iItem, _In_ int iSubItem, _Out_ LPTSTR pszText, _In_ int cchTextMax)
 {
 	LVITEM lvi;
 	lvi.iSubItem = iSubItem;
@@ -389,7 +389,7 @@ static FORCEINLINE void ListView_GetItemText(_In_ HWND hwndLV, _In_ int iItem, _
 }
 
 #undef ListView_SetItemText
-static FORCEINLINE void ListView_SetItemText(_In_ HWND hwndLV, _In_ int iItem, _In_ int iSubItem, _In_ LPCTSTR pszText)
+static RP_FORCEINLINE void ListView_SetItemText(_In_ HWND hwndLV, _In_ int iItem, _In_ int iSubItem, _In_ LPCTSTR pszText)
 {
 	LVITEM lvi;
 	lvi.iSubItem = iSubItem;
@@ -398,58 +398,58 @@ static FORCEINLINE void ListView_SetItemText(_In_ HWND hwndLV, _In_ int iItem, _
 }
 
 #undef ListView_SetItemCount
-static FORCEINLINE BOOL ListView_SetItemCount(_In_ HWND hwndLV, _In_ int cItems)
+static RP_FORCEINLINE BOOL ListView_SetItemCount(_In_ HWND hwndLV, _In_ int cItems)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_SETITEMCOUNT, STATIC_CAST(WPARAM)(cItems), 0))); }
 
 #if (_WIN32_IE >= 0x0300)
 #undef ListView_SetItemCountEx
-static FORCEINLINE BOOL ListView_SetItemCountEx(_In_ HWND hwndLV, _In_ int cItems, _In_ DWORD dwFlags)
+static RP_FORCEINLINE BOOL ListView_SetItemCountEx(_In_ HWND hwndLV, _In_ int cItems, _In_ DWORD dwFlags)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_SETITEMCOUNT, STATIC_CAST(WPARAM)(cItems), STATIC_CAST(LPARAM)(dwFlags)))); }
 #endif
 
 #undef ListView_SortItems
-static FORCEINLINE BOOL ListView_SortItems(_In_ HWND hwndLV, _In_ PFNLVCOMPARE pfnCompare, _In_ LPARAM lParamSort)
+static RP_FORCEINLINE BOOL ListView_SortItems(_In_ HWND hwndLV, _In_ PFNLVCOMPARE pfnCompare, _In_ LPARAM lParamSort)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_SORTITEMS, REINTERPRET_CAST(WPARAM)(pfnCompare), lParamSort))); }
 
 #undef ListView_SetItemPosition32
-static FORCEINLINE void ListView_SetItemPosition32(_In_ HWND hwndLV, _In_ int iItem, _In_ int x, _In_ int y)
+static RP_FORCEINLINE void ListView_SetItemPosition32(_In_ HWND hwndLV, _In_ int iItem, _In_ int x, _In_ int y)
 {
 	const POINT ptNewPos = {x, y};
 	(void)SNDMSG(hwndLV, LVM_SETITEMPOSITION32, STATIC_CAST(WPARAM)(iItem), REINTERPRET_CAST(LPARAM)(&ptNewPos));
 }
 
 #undef ListView_GetSelectedCount
-static FORCEINLINE UINT ListView_GetSelectedCount(_In_ HWND hwndLV)
+static RP_FORCEINLINE UINT ListView_GetSelectedCount(_In_ HWND hwndLV)
 	{ return STATIC_CAST(UINT)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_GETSELECTEDCOUNT, 0, 0L))); }
 
 #undef ListView_GetItemSpacing
-static FORCEINLINE DWORD ListView_GetItemSpacing(_In_ HWND hwndLV, BOOL fSmall)
+static RP_FORCEINLINE DWORD ListView_GetItemSpacing(_In_ HWND hwndLV, BOOL fSmall)
 	{ return STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_GETITEMSPACING, STATIC_CAST(WPARAM)(fSmall), 0L)); }
 
 #undef ListView_GetISearchString
-static FORCEINLINE BOOL ListView_GetISearchString(_In_ HWND hwndLV, _Out_opt_ LPTSTR lpsz)
+static RP_FORCEINLINE BOOL ListView_GetISearchString(_In_ HWND hwndLV, _Out_opt_ LPTSTR lpsz)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_GETISEARCHSTRING, 0, REINTERPRET_CAST(LPARAM)(lpsz)))); }
 
 #if (_WIN32_IE >= 0x0300)
 #undef ListView_SetIconSpacing
-static FORCEINLINE DWORD ListView_SetIconSpacing(_In_ HWND hwndLV, _In_ int cx, _In_ int cy)
+static RP_FORCEINLINE DWORD ListView_SetIconSpacing(_In_ HWND hwndLV, _In_ int cx, _In_ int cy)
 	{ return STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_SETICONSPACING, 0, STATIC_CAST(LPARAM)(MAKELONG(cx, cy)))); }
 
 #undef ListView_SetExtendedListViewStyle
-static FORCEINLINE DWORD ListView_SetExtendedListViewStyle(_In_ HWND hwndLV, _In_ DWORD dwExStyle)
+static RP_FORCEINLINE DWORD ListView_SetExtendedListViewStyle(_In_ HWND hwndLV, _In_ DWORD dwExStyle)
 	{ return STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, STATIC_CAST(LPARAM)(dwExStyle))); }
 #if (_WIN32_IE >= 0x0400)
 #undef ListView_SetExtendedListViewStyleEx
-static FORCEINLINE DWORD ListView_SetExtendedListViewStyleEx(_In_ HWND hwndLV, _In_ DWORD dwExMask, _In_ DWORD dwExStyle)
+static RP_FORCEINLINE DWORD ListView_SetExtendedListViewStyleEx(_In_ HWND hwndLV, _In_ DWORD dwExMask, _In_ DWORD dwExStyle)
 	{ return STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_SETEXTENDEDLISTVIEWSTYLE, STATIC_CAST(WPARAM)(dwExMask), STATIC_CAST(LPARAM)(dwExStyle))); }
 #endif
 
 #undef ListView_GetExtendedListViewStyle
-static FORCEINLINE DWORD ListView_GetExtendedListViewStyle(_In_ HWND hwndLV)
+static RP_FORCEINLINE DWORD ListView_GetExtendedListViewStyle(_In_ HWND hwndLV)
 	{ return STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_GETEXTENDEDLISTVIEWSTYLE, 0, 0)); }
 
 #undef ListView_GetSubItemRect
-static FORCEINLINE BOOL ListView_GetSubItemRect(_In_ HWND hwndLV, _In_ int iItem, _In_ int iSubItem, _In_ int code, _Out_ LPRECT lpRect)
+static RP_FORCEINLINE BOOL ListView_GetSubItemRect(_In_ HWND hwndLV, _In_ int iItem, _In_ int iSubItem, _In_ int code, _Out_ LPRECT lpRect)
 {
 	if (lpRect) {
 		lpRect->top = iSubItem;
@@ -459,10 +459,10 @@ static FORCEINLINE BOOL ListView_GetSubItemRect(_In_ HWND hwndLV, _In_ int iItem
 }
 
 #undef ListView_SubItemHitTest
-static FORCEINLINE int ListView_SubItemHitTest(_In_ HWND hwndLV, LPLVHITTESTINFO plvhti)
+static RP_FORCEINLINE int ListView_SubItemHitTest(_In_ HWND hwndLV, LPLVHITTESTINFO plvhti)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_SUBITEMHITTEST, 0, REINTERPRET_CAST(LPARAM)(plvhti)))); }
 #undef ListView_SubItemHitTestEx
-static FORCEINLINE int ListView_SubItemHitTestEx(_In_ HWND hwndLV, LPLVHITTESTINFO plvhti)
+static RP_FORCEINLINE int ListView_SubItemHitTestEx(_In_ HWND hwndLV, LPLVHITTESTINFO plvhti)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_SUBITEMHITTEST, STATIC_CAST(WPARAM)(-1), REINTERPRET_CAST(LPARAM)(plvhti)))); }
 
 #if 0 /* TODO */
@@ -560,7 +560,7 @@ static FORCEINLINE int ListView_SubItemHitTestEx(_In_ HWND hwndLV, LPLVHITTESTIN
 #endif /* TODO */
 
 #undef ListView_GetGroupRect
-static FORCEINLINE BOOL ListView_GetGroupRect(_In_ HWND hwnd, _In_ int iGroupId, _In_ LONG type, _Inout_ RECT *prc)
+static RP_FORCEINLINE BOOL ListView_GetGroupRect(_In_ HWND hwnd, _In_ int iGroupId, _In_ LONG type, _Inout_ RECT *prc)
 {
 	if (prc) {
 		prc->top = type;
@@ -592,7 +592,7 @@ static FORCEINLINE BOOL ListView_GetGroupRect(_In_ HWND hwnd, _In_ int iGroupId,
 #endif /* TODO */
 
 #undef ListView_SetGroupState
-static FORCEINLINE LRESULT ListView_SetGroupState(_In_ HWND hwnd, _In_ UINT dwGroupId, _In_ UINT dwMask, _In_ UINT dwState)
+static RP_FORCEINLINE LRESULT ListView_SetGroupState(_In_ HWND hwnd, _In_ UINT dwGroupId, _In_ UINT dwMask, _In_ UINT dwState)
 {
 	LVGROUP lvg;
 	lvg.cbSize = sizeof(lvg);
@@ -602,7 +602,7 @@ static FORCEINLINE LRESULT ListView_SetGroupState(_In_ HWND hwnd, _In_ UINT dwGr
 	return SNDMSG(hwnd, LVM_SETGROUPINFO, STATIC_CAST(WPARAM)(dwGroupId), REINTERPRET_CAST(LPARAM)(&lvg));
 }
 #undef ListView_GetGroupState
-static FORCEINLINE UINT ListView_GetGroupState(_In_ HWND hwnd, _In_ UINT dwGroupId, _In_ UINT dwMask)
+static RP_FORCEINLINE UINT ListView_GetGroupState(_In_ HWND hwnd, _In_ UINT dwGroupId, _In_ UINT dwMask)
 	{ return STATIC_CAST(UINT)(STATIC_CAST(DWORD)(SNDMSG(hwnd, LVM_GETGROUPSTATE, STATIC_CAST(WPARAM)(dwGroupId), STATIC_CAST(LPARAM)(dwMask)))); }
 
 #if 0 /* TODO */
@@ -692,7 +692,7 @@ static FORCEINLINE UINT ListView_GetGroupState(_In_ HWND hwnd, _In_ UINT dwGroup
 #endif /* TODO */
 
 #undef ListView_GetItemIndexRect
-static FORCEINLINE BOOL ListView_GetItemIndexRect(_In_ HWND hwnd, _In_ LVITEMINDEX *plvii, _In_ LONG iSubItem, _In_ LONG code, _Inout_ LPRECT prc)
+static RP_FORCEINLINE BOOL ListView_GetItemIndexRect(_In_ HWND hwnd, _In_ LVITEMINDEX *plvii, _In_ LONG iSubItem, _In_ LONG code, _Inout_ LPRECT prc)
 {
 	if (prc) {
 		prc->top = iSubItem;
@@ -702,7 +702,7 @@ static FORCEINLINE BOOL ListView_GetItemIndexRect(_In_ HWND hwnd, _In_ LVITEMIND
 }
 
 #undef ListView_SetItemIndexState
-static FORCEINLINE HRESULT ListView_SetItemIndexState(_In_ HWND hwndLV, _In_ LVITEMINDEX *plvii, _In_ UINT state, _In_ UINT mask)
+static RP_FORCEINLINE HRESULT ListView_SetItemIndexState(_In_ HWND hwndLV, _In_ LVITEMINDEX *plvii, _In_ UINT state, _In_ UINT mask)
 {
 	LVITEM lvi;
 	lvi.stateMask = mask;
@@ -720,11 +720,11 @@ static FORCEINLINE HRESULT ListView_SetItemIndexState(_In_ HWND hwndLV, _In_ LVI
 #endif /* _WIN32_WINNT >= 0x0501 */
 
 #undef ListView_SetBkImage
-static FORCEINLINE BOOL ListView_SetBkImage(_In_ HWND hwndLV, _In_ LPLVBKIMAGE plvbki)
+static RP_FORCEINLINE BOOL ListView_SetBkImage(_In_ HWND hwndLV, _In_ LPLVBKIMAGE plvbki)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_SETBKIMAGE, 0, REINTERPRET_CAST(LPARAM)(plvbki)))); }
 
 #undef ListView_GetBkImage
-static FORCEINLINE BOOL ListView_GetBkImage(_In_ HWND hwndLV, _Inout_ LPLVBKIMAGE plvbki)
+static RP_FORCEINLINE BOOL ListView_GetBkImage(_In_ HWND hwndLV, _Inout_ LPLVBKIMAGE plvbki)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndLV, LVM_GETBKIMAGE, 0, REINTERPRET_CAST(LPARAM)(plvbki)))); }
 
 #endif /* _WIN32_IE >= 0x0400 */
@@ -749,7 +749,7 @@ static FORCEINLINE BOOL ListView_GetBkImage(_In_ HWND hwndLV, _Inout_ LPLVBKIMAG
 #endif /* TODO */
 
 #undef TreeView_GetItemRect
-static FORCEINLINE BOOL TreeView_GetItemRect(_In_ HWND hwnd, _In_ HTREEITEM hitem, _Out_ RECT *prc, _In_ BOOL fItemRect)
+static RP_FORCEINLINE BOOL TreeView_GetItemRect(_In_ HWND hwnd, _In_ HTREEITEM hitem, _Out_ RECT *prc, _In_ BOOL fItemRect)
 {
 	(*(HTREEITEM*)prc) = hitem;
 	return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, TVM_GETITEMRECT, STATIC_CAST(WPARAM)(fItemRect), REINTERPRET_CAST(LPARAM)(prc))));
@@ -866,7 +866,7 @@ static FORCEINLINE BOOL TreeView_GetItemRect(_In_ HWND hwnd, _In_ HTREEITEM hite
 
 #if (_WIN32_IE >= 0x0500)
 #undef TreeView_SetItemState
-static FORCEINLINE UINT TreeView_SetItemState(_In_ HWND hwndTV, _In_ HTREEITEM hItem, _In_ UINT state, _In_ UINT stateMask)
+static RP_FORCEINLINE UINT TreeView_SetItemState(_In_ HWND hwndTV, _In_ HTREEITEM hItem, _In_ UINT state, _In_ UINT stateMask)
 {
 	TVITEM tvi;
 	tvi.mask = TVIF_STATE;
@@ -924,7 +924,7 @@ static FORCEINLINE UINT TreeView_SetItemState(_In_ HWND hwndTV, _In_ HTREEITEM h
 #endif /* TODO */
 
 #undef TreeView_GetItemPartRect
-static FORCEINLINE BOOL TreeView_GetItemPartRect(_In_ HWND hwnd, _In_ HTREEITEM hitem, _Out_ RECT *prc, _In_ TVITEMPART partid)
+static RP_FORCEINLINE BOOL TreeView_GetItemPartRect(_In_ HWND hwnd, _In_ HTREEITEM hitem, _Out_ RECT *prc, _In_ TVITEMPART partid)
 {
 	TVGETITEMPARTRECTINFO tvgipri;
 	tvgipri.hti = hitem;
@@ -1039,19 +1039,19 @@ static FORCEINLINE BOOL TreeView_GetItemPartRect(_In_ HWND hwnd, _In_ HTREEITEM 
 #ifndef NOANIMATE
 
 #undef Animate_Open
-static FORCEINLINE BOOL Animate_Open(_In_ HWND hwnd, _In_ LPCTSTR szName)
+static RP_FORCEINLINE BOOL Animate_Open(_In_ HWND hwnd, _In_ LPCTSTR szName)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, ACM_OPEN, 0, REINTERPRET_CAST(LPARAM)(szName)))); }
 #undef Animate_OpenEx
-static FORCEINLINE BOOL Animate_OpenEx(_In_ HWND hwnd, _In_ HINSTANCE hInst, _In_ LPCTSTR szName)
+static RP_FORCEINLINE BOOL Animate_OpenEx(_In_ HWND hwnd, _In_ HINSTANCE hInst, _In_ LPCTSTR szName)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, ACM_OPEN, REINTERPRET_CAST(WPARAM)(hInst), REINTERPRET_CAST(LPARAM)(szName)))); }
 #undef Animate_Play
-static FORCEINLINE BOOL Animate_Play(_In_ HWND hwnd, _In_ UINT from, _In_ UINT to, _In_ UINT rep)
+static RP_FORCEINLINE BOOL Animate_Play(_In_ HWND hwnd, _In_ UINT from, _In_ UINT to, _In_ UINT rep)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, ACM_PLAY, STATIC_CAST(WPARAM)(rep), STATIC_CAST(LPARAM)(MAKELONG(from, to))))); }
 #undef Animate_Stop
-static FORCEINLINE BOOL Animate_Stop(_In_ HWND hwnd)
+static RP_FORCEINLINE BOOL Animate_Stop(_In_ HWND hwnd)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, ACM_STOP, 0, 0))); }
 #undef Animate_IsPlaying
-static FORCEINLINE BOOL Animate_IsPlaying(_In_ HWND hwnd)
+static RP_FORCEINLINE BOOL Animate_IsPlaying(_In_ HWND hwnd)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, ACM_ISPLAYING, 0, 0))); }
 
 #endif /* NOANIMATE */
@@ -1249,48 +1249,48 @@ static FORCEINLINE BOOL Animate_IsPlaying(_In_ HWND hwnd)
 
 #if (_WIN32_WINNT >= 0x0501)
 #undef Button_GetIdealSize
-static FORCEINLINE BOOL Button_GetIdealSize(_In_ HWND hwnd, _Out_ SIZE *pSize)
+static RP_FORCEINLINE BOOL Button_GetIdealSize(_In_ HWND hwnd, _Out_ SIZE *pSize)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, BCM_GETIDEALSIZE, 0, REINTERPRET_CAST(LPARAM)(pSize)))); }
 
 #undef Button_SetImageList
-static FORCEINLINE BOOL Button_SetImageList(_In_ HWND hwnd, _In_ PBUTTON_IMAGELIST pbuttonImageList)
+static RP_FORCEINLINE BOOL Button_SetImageList(_In_ HWND hwnd, _In_ PBUTTON_IMAGELIST pbuttonImageList)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, BCM_SETIMAGELIST, 0, REINTERPRET_CAST(LPARAM)(pbuttonImageList)))); }
 
 #undef Button_SetTextMargin
-static FORCEINLINE BOOL Button_SetTextMargin(_In_ HWND hwnd, _In_ const RECT *pmargin)
+static RP_FORCEINLINE BOOL Button_SetTextMargin(_In_ HWND hwnd, _In_ const RECT *pmargin)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, BCM_SETTEXTMARGIN, 0, REINTERPRET_CAST(LPARAM)(pmargin)))); }
 #undef Button_GetTextMargin
-static FORCEINLINE BOOL Button_GetTextMargin(_In_ HWND hwnd, _Out_ RECT *pmargin)
+static RP_FORCEINLINE BOOL Button_GetTextMargin(_In_ HWND hwnd, _Out_ RECT *pmargin)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, BCM_GETTEXTMARGIN, 0, REINTERPRET_CAST(LPARAM)(pmargin)))); }
 #endif /*_WIN32_WINNT >= 0x0501 */
 
 #if _WIN32_WINNT >= 0x0600
 #undef Button_SetDropDownState
-static FORCEINLINE BOOL Button_SetDropDownState(_In_ HWND hwnd, _In_ BOOL fDropDown)
+static RP_FORCEINLINE BOOL Button_SetDropDownState(_In_ HWND hwnd, _In_ BOOL fDropDown)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, BCM_SETDROPDOWNSTATE, STATIC_CAST(WPARAM)(fDropDown), 0))); }
 
 #undef Button_SetSplitInfo
-static FORCEINLINE BOOL Button_SetSplitInfo(_In_ HWND hwnd, _In_ const BUTTON_SPLITINFO *pInfo)
+static RP_FORCEINLINE BOOL Button_SetSplitInfo(_In_ HWND hwnd, _In_ const BUTTON_SPLITINFO *pInfo)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, BCM_SETSPLITINFO, 0, REINTERPRET_CAST(LPARAM)(pInfo)))); }
 
 #undef Button_GetSplitInfo
-static FORCEINLINE BOOL Button_GetSplitInfo(_In_ HWND hwnd, _Inout_ BUTTON_SPLITINFO *pInfo)
+static RP_FORCEINLINE BOOL Button_GetSplitInfo(_In_ HWND hwnd, _Inout_ BUTTON_SPLITINFO *pInfo)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, BCM_GETSPLITINFO, 0, REINTERPRET_CAST(LPARAM)(pInfo)))); }
 
 #undef Button_SetNote
-static FORCEINLINE BOOL Button_SetNote(_In_ HWND hwnd, _In_ PCWSTR psz)
+static RP_FORCEINLINE BOOL Button_SetNote(_In_ HWND hwnd, _In_ PCWSTR psz)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, BCM_SETNOTE, 0, REINTERPRET_CAST(LPARAM)(psz)))); }
 
 #undef Button_GetNote
-static FORCEINLINE BOOL Button_GetNote(_In_ HWND hwnd, _Out_ LPWSTR psz, _In_ int pcc)
+static RP_FORCEINLINE BOOL Button_GetNote(_In_ HWND hwnd, _Out_ LPWSTR psz, _In_ int pcc)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, BCM_GETNOTE, STATIC_CAST(WPARAM)(pcc), REINTERPRET_CAST(LPARAM)(psz)))); }
 
 #undef Button_GetNoteLength
-static FORCEINLINE LRESULT Button_GetNoteLength(_In_ HWND hwnd)
+static RP_FORCEINLINE LRESULT Button_GetNoteLength(_In_ HWND hwnd)
 	{ return STATIC_CAST(LRESULT)(SNDMSG(hwnd, BCM_GETNOTELENGTH, 0, 0)); }
 
 #undef Button_SetElevationRequiredState
-static FORCEINLINE LRESULT Button_SetElevationRequiredState(_In_ HWND hwnd, _In_ BOOL fRequired)
+static RP_FORCEINLINE LRESULT Button_SetElevationRequiredState(_In_ HWND hwnd, _In_ BOOL fRequired)
 	{ return STATIC_CAST(LRESULT)(SNDMSG(hwnd, BCM_SETSHIELD, 0, STATIC_CAST(LPARAM)(fRequired))); }
 #endif /* _WIN32_WINNT >= 0x0600 */
 
@@ -1301,20 +1301,20 @@ static FORCEINLINE LRESULT Button_SetElevationRequiredState(_In_ HWND hwnd, _In_
 
 #if (_WIN32_WINNT >= 0x0501)
 #undef Edit_SetCueBannerText
-static FORCEINLINE BOOL Edit_SetCueBannerText(_In_ HWND hwnd, _In_ LPCWSTR lpcwText)
+static RP_FORCEINLINE BOOL Edit_SetCueBannerText(_In_ HWND hwnd, _In_ LPCWSTR lpcwText)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, EM_SETCUEBANNER, 0, REINTERPRET_CAST(LPARAM)(lpcwText)))); }
 #undef Edit_SetCueBannerTextFocused
-static FORCEINLINE BOOL Edit_SetCueBannerTextFocused(_In_ HWND hwnd, _In_ LPCWSTR lpcwText, _In_ BOOL fDrawFocused)
+static RP_FORCEINLINE BOOL Edit_SetCueBannerTextFocused(_In_ HWND hwnd, _In_ LPCWSTR lpcwText, _In_ BOOL fDrawFocused)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, EM_SETCUEBANNER, STATIC_CAST(WPARAM)(fDrawFocused), REINTERPRET_CAST(LPARAM)(lpcwText)))); }
 #undef Edit_GetCueBannerText
-static FORCEINLINE BOOL Edit_GetCueBannerText(_In_ HWND hwnd, _Out_ LPWSTR lpwText, _In_ int cchText)
+static RP_FORCEINLINE BOOL Edit_GetCueBannerText(_In_ HWND hwnd, _Out_ LPWSTR lpwText, _In_ int cchText)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, EM_GETCUEBANNER, REINTERPRET_CAST(WPARAM)(lpwText), STATIC_CAST(LPARAM)(cchText)))); }
 
 #undef Edit_ShowBalloonTip
-static FORCEINLINE BOOL Edit_ShowBalloonTip(_In_ HWND hwnd, _In_ PEDITBALLOONTIP peditballoontip)
+static RP_FORCEINLINE BOOL Edit_ShowBalloonTip(_In_ HWND hwnd, _In_ PEDITBALLOONTIP peditballoontip)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, EM_SHOWBALLOONTIP, 0, REINTERPRET_CAST(LPARAM)(peditballoontip)))); }
 #undef Edit_HideBalloonTip
-static FORCEINLINE BOOL Edit_HideBalloonTip(_In_ HWND hwnd)
+static RP_FORCEINLINE BOOL Edit_HideBalloonTip(_In_ HWND hwnd)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, EM_SHOWBALLOONTIP, 0, 0))); }
 #endif /* _WIN32_WINNT >= 0x0501 */
 
@@ -1322,10 +1322,10 @@ static FORCEINLINE BOOL Edit_HideBalloonTip(_In_ HWND hwnd)
 // NOTE: Not actually used for anything.
 // Reference: https://devblogs.microsoft.com/oldnewthing/20071025-00/?p=24693
 #undef Edit_SetHilite
-static FORCEINLINE void Edit_SetHilite(_In_ HWND hwndCtl, _In_ int ichStart, _In_ int ichEnd)
+static RP_FORCEINLINE void Edit_SetHilite(_In_ HWND hwndCtl, _In_ int ichStart, _In_ int ichEnd)
 	{ (void)SNDMSG(hwndCtl, EM_SETHILITE, STATIC_CAST(WPARAM)(ichStart), STATIC_CAST(LPARAM)(ichEnd)); }
 #undef Edit_GetHilite
-static FORCEINLINE DWORD Edit_GetHilite(_In_ HWND hwndCtl)
+static RP_FORCEINLINE DWORD Edit_GetHilite(_In_ HWND hwndCtl)
 	{ return STATIC_CAST(DWORD)(SNDMSG(hwndCtl, EM_GETHILITE, 0L, 0L)); }
 #endif /* _WIN32_WINNT */
 
@@ -1335,19 +1335,19 @@ static FORCEINLINE DWORD Edit_GetHilite(_In_ HWND hwndCtl)
 #ifndef NOCOMBOBOX
 #if (_WIN32_WINNT >= 0x0501)
 #undef ComboBox_SetMinVisible
-static FORCEINLINE BOOL ComboBox_SetMinVisible(_In_ HWND hwnd, _In_ int iMinVisible)
+static RP_FORCEINLINE BOOL ComboBox_SetMinVisible(_In_ HWND hwnd, _In_ int iMinVisible)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, CB_SETMINVISIBLE, STATIC_CAST(WPARAM)(iMinVisible), 0))); }
 
 #undef ComboBox_GetMinVisible
-static FORCEINLINE int ComboBox_GetMinVisible(_In_ HWND hwnd)
+static RP_FORCEINLINE int ComboBox_GetMinVisible(_In_ HWND hwnd)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwnd, CB_GETMINVISIBLE, 0, 0))); }
 
 #undef ComboBox_SetCueBannerText
-static FORCEINLINE BOOL ComboBox_SetCueBannerText(_In_ HWND hwnd, _In_ LPCWSTR lpcwText)
+static RP_FORCEINLINE BOOL ComboBox_SetCueBannerText(_In_ HWND hwnd, _In_ LPCWSTR lpcwText)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, CB_SETCUEBANNER, 0, REINTERPRET_CAST(LPARAM)(lpcwText)))); }
 
 #undef ComboBox_GetCueBannerText
-static FORCEINLINE BOOL ComboBox_GetCueBannerText(_In_ HWND hwnd, _Out_ LPWSTR lpwText, _In_ int cchText)
+static RP_FORCEINLINE BOOL ComboBox_GetCueBannerText(_In_ HWND hwnd, _Out_ LPWSTR lpwText, _In_ int cchText)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, CB_SETCUEBANNER, REINTERPRET_CAST(WPARAM)(lpwText), STATIC_CAST(LPARAM)(cchText)))); }
 #endif /* _WIN32_WINNT >= 0x0501 */
 #endif /* NOCOMBOBOX */

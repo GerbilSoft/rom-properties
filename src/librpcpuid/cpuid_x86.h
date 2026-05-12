@@ -32,7 +32,7 @@
  * Check if CPUID is supported on this CPU.
  * @return 0 if not supported; non-zero if supported.
  */
-static FORCEINLINE int is_cpuid_supported(void)
+static RP_FORCEINLINE int is_cpuid_supported(void)
 {
 #if defined(__GNUC__) && defined(RP_CPU_I386)
 	// gcc, i386
@@ -90,7 +90,7 @@ static FORCEINLINE int is_cpuid_supported(void)
  * @param level %eax
  * @param regs Registers (%eax, %ebx, %ecx, %edx)
  */
-static FORCEINLINE void cpuid(unsigned int level, unsigned int regs[4])
+static RP_FORCEINLINE void cpuid(unsigned int level, unsigned int regs[4])
 {
 #if defined(USING_CPUID_H)
 	// Use the compiler's __cpuid() macro. (gcc-style)
@@ -142,7 +142,7 @@ static FORCEINLINE void cpuid(unsigned int level, unsigned int regs[4])
  * @param count %ecx
  * @param regs Registers (%eax, %ebx, %ecx, %edx)
  */
-static FORCEINLINE void cpuid_count(unsigned int level, unsigned int count, unsigned int regs[4])
+static RP_FORCEINLINE void cpuid_count(unsigned int level, unsigned int count, unsigned int regs[4])
 {
 #if defined(USING_CPUID_H)
 	// Use the compiler's __cpuid_count() macro.

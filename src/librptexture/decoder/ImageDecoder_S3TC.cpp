@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_S3TC.cpp: Image decoding functions: S3TC                   *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -54,7 +54,7 @@ ASSERT_STRUCT(dxt5_alpha, 8);
  * @param data dxt5_alpha.
  * @return 48-bit code value.
  */
-static FORCEINLINE uint64_t extract48(const dxt5_alpha *RESTRICT data)
+static RP_FORCEINLINE uint64_t extract48(const dxt5_alpha *RESTRICT data)
 {
 	// codes[6] starts at 0x02 within dxt5_alpha.
 	// Hence, we need to lshift it after byteswapping.

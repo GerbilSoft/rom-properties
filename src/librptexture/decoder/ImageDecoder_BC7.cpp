@@ -230,7 +230,7 @@ struct bc7_block {
 	 * NOTE: Assuming `shamt` is always less than 64.
 	 * @param shamt	[in] Shift amount
 	 */
-	FORCEINLINE void rshift128(unsigned int shamt)
+	RP_FORCEINLINE void rshift128(unsigned int shamt)
 	{
 		assert(shamt < 64);
 		if (shamt == 0) {

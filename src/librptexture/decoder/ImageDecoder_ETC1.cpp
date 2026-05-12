@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_ETC1.cpp: Image decoding functions: ETC1                   *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -109,7 +109,7 @@ ASSERT_STRUCT(etc2_rgba_block, 16);
  * @param data etc2_alpha.
  * @return 48-bit code value.
  */
-static FORCEINLINE uint64_t extract48(const etc2_alpha *RESTRICT data)
+static RP_FORCEINLINE uint64_t extract48(const etc2_alpha *RESTRICT data)
 {
 	// values[6] starts at 0x02 within etc2_alpha.
 	// Hence, we need to mask it after byteswapping.

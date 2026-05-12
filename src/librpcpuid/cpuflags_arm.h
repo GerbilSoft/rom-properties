@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpcpuid)                       *
  * cpuflags_arm.h: ARM CPU flags detection.                                *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -39,7 +39,7 @@ void RP_C_API RP_CPU_Flags_arm_Init(void);
 
 // Macro for flags that need to be tested on both i386 and amd64 CPUs.
 #define CPU_FLAG_ARM_CHECK(flag) \
-static FORCEINLINE int RP_CPU_arm_Has##flag(void) \
+static RP_FORCEINLINE int RP_CPU_arm_Has##flag(void) \
 { \
 	if (unlikely(!RP_CPU_Flags_arm_IsInit)) { \
 		RP_CPU_Flags_arm_Init(); \
@@ -50,7 +50,7 @@ static FORCEINLINE int RP_CPU_arm_Has##flag(void) \
 // Macro for flags that always exist on amd64 and only need to be tested on i386.
 #ifdef RP_CPU_ARM64
 #  define CPU_FLAG_ARM_CHECK_arm32only(flag) \
-static FORCEINLINE int RP_CPU_arm_Has##flag(void) \
+static RP_FORCEINLINE int RP_CPU_arm_Has##flag(void) \
 { \
 	return 1; \
 }

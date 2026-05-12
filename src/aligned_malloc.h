@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension.                                    *
  * aligned_malloc.h: Aligned memory allocation compatibility header.       *
  *                                                                         *
- * Copyright (c) 2015-2025 by David Korth                                  *
+ * Copyright (c) 2015-2026 by David Korth                                  *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -41,12 +41,12 @@
 // MSVC _aligned_malloc()
 #include <malloc.h>
 
-static FORCEINLINE void *aligned_malloc(size_t alignment, size_t size)
+static RP_FORCEINLINE void *aligned_malloc(size_t alignment, size_t size)
 {
 	return _aligned_malloc(ALIGN_BYTES(alignment, size), alignment);
 }
 
-static FORCEINLINE void aligned_free(void *memptr)
+static RP_FORCEINLINE void aligned_free(void *memptr)
 {
 	_aligned_free(memptr);
 }
@@ -57,12 +57,12 @@ static FORCEINLINE void aligned_free(void *memptr)
 // C11 aligned_alloc()
 #include <stdlib.h>
 
-static FORCEINLINE void *aligned_malloc(size_t alignment, size_t size)
+static RP_FORCEINLINE void *aligned_malloc(size_t alignment, size_t size)
 {
 	return aligned_alloc(alignment, ALIGN_BYTES(alignment, size));
 }
 
-static FORCEINLINE void aligned_free(void *memptr)
+static RP_FORCEINLINE void aligned_free(void *memptr)
 {
 	free(memptr);
 }
@@ -72,7 +72,7 @@ static FORCEINLINE void aligned_free(void *memptr)
 // posix_memalign()
 #include <stdlib.h>
 
-static FORCEINLINE void *aligned_malloc(size_t alignment, size_t size)
+static RP_FORCEINLINE void *aligned_malloc(size_t alignment, size_t size)
 {
 	void *ptr;
 	const int ret = posix_memalign(&ptr, alignment, ALIGN_BYTES(alignment, size));
@@ -84,7 +84,7 @@ static FORCEINLINE void *aligned_malloc(size_t alignment, size_t size)
 	return ptr;
 }
 
-static FORCEINLINE void aligned_free(void *memptr)
+static RP_FORCEINLINE void aligned_free(void *memptr)
 {
 	free(memptr);
 }
@@ -94,12 +94,12 @@ static FORCEINLINE void aligned_free(void *memptr)
 // memalign()
 #include <malloc.h>
 
-static FORCEINLINE void *aligned_malloc(size_t alignment, size_t size)
+static RP_FORCEINLINE void *aligned_malloc(size_t alignment, size_t size)
 {
 	return memalign(alignment, ALIGN_BYTES(alignment, size));
 }
 
-static FORCEINLINE void aligned_free(void *memptr)
+static RP_FORCEINLINE void aligned_free(void *memptr)
 {
 	free(memptr);
 }

@@ -3,7 +3,7 @@
  * un-premultiply_sse41.cpp: Un-premultiply function.                      *
  * SSE4.1-optimized version.                                               *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -30,7 +30,7 @@ namespace LibRpTexture {
  *
  * @param px	[in/out] argb32_t pixel to un-premultiply, in place.
  */
-static FORCEINLINE void un_premultiply_pixel_sse41(argb32_t &px)
+static RP_FORCEINLINE void un_premultiply_pixel_sse41(argb32_t &px)
 {
 	const unsigned int alpha = px.a;
 	if (alpha == 255 || alpha == 0)

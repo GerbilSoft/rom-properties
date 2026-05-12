@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_DC.cpp: Image decoding functions: Dreamcast                *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -58,7 +58,7 @@ static void initDreamcastTwiddleMap_int(void)
  * Initialize the Dreamcast twiddle map.
  * This initializes dc_tmap[].
  */
-static FORCEINLINE void initDreamcastTwiddleMap(void)
+static RP_FORCEINLINE void initDreamcastTwiddleMap(void)
 {
 	std::call_once(dc_tmap_once_flag, initDreamcastTwiddleMap_int);
 }
