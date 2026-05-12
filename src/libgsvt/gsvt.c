@@ -13,6 +13,7 @@
 // C includes
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "ctypex.h"
@@ -176,7 +177,7 @@ int gsvt_get_cell_size(int *pWidth, int *pHeight)
 	// Attempt to get the cell size.
 	TCHAR buf[16];
 	buf[0] = '\0';
-	int ret = gsvt_query_tty("\x1B[16t", buf, sizeof(buf), _T('t'));
+	int ret = gsvt_query_tty("\x1B[16t", buf, _countof(buf), _T('t'));
 	if (ret != 0) {
 		// Error retrieving the cell size.
 		// Assume the cell size is not available.
