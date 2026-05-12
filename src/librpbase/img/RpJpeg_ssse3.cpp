@@ -3,7 +3,7 @@
  * RpJpeg_ssse3.cpp: JPEG image handler.                                   *
  * SSSE3-optimized version.                                                *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -42,8 +42,8 @@ void decodeBGRtoARGB(rp_image *RESTRICT img, jpeg_decompress_struct *RESTRICT ci
 	// SSSE3-optimized version based on:
 	// - https://stackoverflow.com/questions/2973708/fast-24-bit-array-32-bit-array-conversion
 	// - https://stackoverflow.com/a/2974266
-	__m128i shuf_mask = _mm_setr_epi8(2,1,0,-1, 5,4,3,-1, 8,7,6,-1, 11,10,9,-1);
-	__m128i alpha_mask = _mm_setr_epi8(0,0,0,-1, 0,0,0,-1, 0,0,0,-1, 0,0,0,-1);
+	const __m128i shuf_mask = _mm_setr_epi8(2,1,0,-1, 5,4,3,-1, 8,7,6,-1, 11,10,9,-1);
+	const __m128i alpha_mask = _mm_set1_epi32(0xFF000000);
 	argb32_t *dest = static_cast<argb32_t*>(img->bits());
 	const int dest_stride_adj = (img->stride() - img->row_bytes()) / sizeof(argb32_t);
 	while (cinfo->output_scanline < cinfo->output_height) {

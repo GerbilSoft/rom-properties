@@ -3,7 +3,7 @@
  * ImageDecoder_Linear.cpp: Image decoding functions: Linear               *
  * SSSE3-optimized version.                                                *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -91,7 +91,7 @@ rp_image_ptr fromLinear24_ssse3(PixelFormat px_format,
 	// - https://stackoverflow.com/a/2974266
 
 	// 24-bit RGB images don't have an alpha channel.
-	__m128i alpha_mask = _mm_setr_epi8(0,0,0,-1, 0,0,0,-1, 0,0,0,-1, 0,0,0,-1);
+	const __m128i alpha_mask = _mm_set1_epi32(0xFF000000);
 
 	// Determine the byte shuffle mask.
 	__m128i shuf_mask;
@@ -424,7 +424,7 @@ rp_image_ptr fromLinear32_ssse3(PixelFormat px_format,
 		img->set_sBIT(sBIT_A32);
 	} else {
 		// Image does not have an alpha channel.
-		__m128i alpha_mask = _mm_setr_epi8(0,0,0,-1, 0,0,0,-1, 0,0,0,-1, 0,0,0,-1);
+		const __m128i alpha_mask = _mm_set1_epi32(0xFF000000);
 
 		for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 			// Process 16 pixels per iteration using SSSE3.
