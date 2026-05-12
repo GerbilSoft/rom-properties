@@ -50,8 +50,7 @@ static char lc_decimal[8];
 
 /** File size formatting **/
 
-template<typename T>
-static inline CONSTEXPR_MULTILINE int calc_frac_part_binary(T val, T mask)
+static inline CONSTEXPR_MULTILINE int calc_frac_part_binary(off64_t val, off64_t mask)
 {
 	const float f = static_cast<float>(val & (mask - 1)) / static_cast<float>(mask);
 	int frac_part = static_cast<int>(f * 1000.0f);
@@ -70,8 +69,7 @@ static inline CONSTEXPR_MULTILINE int calc_frac_part_binary(T val, T mask)
 	return frac_part;
 }
 
-template<typename T>
-static inline CONSTEXPR_MULTILINE int calc_frac_part_decimal(T val, T divisor)
+static inline CONSTEXPR_MULTILINE int calc_frac_part_decimal(off64_t val, off64_t divisor)
 {
 	const float f = static_cast<float>(val % divisor) / static_cast<float>(divisor);
 	int frac_part = static_cast<int>(f * 1000.0f);
@@ -195,7 +193,7 @@ string formatFileSize(off64_t size, BinaryUnitDialect dialect)
 				// tr: Kilobytes (decimal)
 				: NOP_C_("LibRpText|FileSize", "KB");
 			whole_part = static_cast<int>(size >> 10);
-			frac_part = calc_frac_part_binary<off64_t>(size, (1LL << 10));
+			frac_part = calc_frac_part_binary(size, (1LL << 10));
 		} else if (size < (2LL << 30)) {
 			suffix = isKiB
 				// tr: Megabytes (binary)
@@ -203,7 +201,7 @@ string formatFileSize(off64_t size, BinaryUnitDialect dialect)
 				// tr: Megabytes (decimal)
 				: NOP_C_("LibRpText|FileSize", "MB");
 			whole_part = static_cast<int>(size >> 20);
-			frac_part = calc_frac_part_binary<off64_t>(size, (1LL << 20));
+			frac_part = calc_frac_part_binary(size, (1LL << 20));
 		} else if (size < (2LL << 40)) {
 			suffix = isKiB
 				// tr: Gigabytes (binary)
@@ -211,7 +209,7 @@ string formatFileSize(off64_t size, BinaryUnitDialect dialect)
 				// tr: Gigabytes (decimal)
 				: NOP_C_("LibRpText|FileSize", "GB");
 			whole_part = static_cast<int>(size >> 30);
-			frac_part = calc_frac_part_binary<off64_t>(size, (1LL << 30));
+			frac_part = calc_frac_part_binary(size, (1LL << 30));
 		} else if (size < (2LL << 50)) {
 			suffix = isKiB
 				// tr: Terabytes (binary)
@@ -219,7 +217,7 @@ string formatFileSize(off64_t size, BinaryUnitDialect dialect)
 				// tr: Terabytes (decimal)
 				: NOP_C_("LibRpText|FileSize", "TB");
 			whole_part = static_cast<int>(size >> 40);
-			frac_part = calc_frac_part_binary<off64_t>(size, (1LL << 40));
+			frac_part = calc_frac_part_binary(size, (1LL << 40));
 		} else if (size < (2LL << 60)) {
 			suffix = isKiB
 				// tr: Petabytes (binary)
@@ -227,7 +225,7 @@ string formatFileSize(off64_t size, BinaryUnitDialect dialect)
 				// tr: Petabytes (decimal)
 				: NOP_C_("LibRpText|FileSize", "PB");
 			whole_part = static_cast<int>(size >> 50);
-			frac_part = calc_frac_part_binary<off64_t>(size, (1LL << 50));
+			frac_part = calc_frac_part_binary(size, (1LL << 50));
 		} else /*if (size < (2LL << 70))*/ {
 			suffix = isKiB
 				// tr: Exabytes (binary)
@@ -235,7 +233,7 @@ string formatFileSize(off64_t size, BinaryUnitDialect dialect)
 				// tr: Exabytes (decimal)
 				: NOP_C_("LibRpText|FileSize", "EB");
 			whole_part = static_cast<int>(size >> 60);
-			frac_part = calc_frac_part_binary<off64_t>(size, (1LL << 60));
+			frac_part = calc_frac_part_binary(size, (1LL << 60));
 		}
 	} else {
 		// Decimal KB
@@ -254,32 +252,32 @@ string formatFileSize(off64_t size, BinaryUnitDialect dialect)
 			// tr: Kilobytes (decimal)
 			suffix = NOP_C_("LibRpText|FileSize", "KB");
 			whole_part = static_cast<int>(size / 1000);
-			frac_part = calc_frac_part_decimal<off64_t>(size, (1LL * 1000));
+			frac_part = calc_frac_part_decimal(size, (1LL * 1000));
 		} else if (size < (2LL * 1000*1000*1000)) {
 			// tr: Megabytes (decimal)
 			suffix = NOP_C_("LibRpText|FileSize", "MB");
 			whole_part = static_cast<int>(size / (1000LL * 1000));
-			frac_part = calc_frac_part_decimal<off64_t>(size, (1000LL * 1000));
+			frac_part = calc_frac_part_decimal(size, (1000LL * 1000));
 		} else if (size < (2LL * 1000*1000*1000*1000)) {
 			// tr: Gigabytes (decimal)
 			suffix = NOP_C_("LibRpText|FileSize", "GB");
 			whole_part = static_cast<int>(size / (1000LL * 1000 * 1000));
-			frac_part = calc_frac_part_decimal<off64_t>(size, (1000LL * 1000 * 1000));
+			frac_part = calc_frac_part_decimal(size, (1000LL * 1000 * 1000));
 		} else if (size < (2LL * 1000*1000*1000*1000*1000)) {
 			// tr: Terabytes (decimal)
 			suffix = NOP_C_("LibRpText|FileSize", "TB");
 			whole_part = static_cast<int>(size / (1000LL * 1000 * 1000 * 1000));
-			frac_part = calc_frac_part_decimal<off64_t>(size, (1000LL * 1000 * 1000 * 1000));
+			frac_part = calc_frac_part_decimal(size, (1000LL * 1000 * 1000 * 1000));
 		} else if (size < (2LL * 1000*1000*1000*1000*1000*1000)) {
 			// tr: Petabytes (decimal)
 			suffix = NOP_C_("LibRpText|FileSize", "PB");
 			whole_part = static_cast<int>(size / (1000LL * 1000 * 1000 * 1000 * 1000));
-			frac_part = calc_frac_part_decimal<off64_t>(size, (1000LL * 1000 * 1000 * 1000 * 1000));
+			frac_part = calc_frac_part_decimal(size, (1000LL * 1000 * 1000 * 1000 * 1000));
 		} else /*if (size < (2LL * 1000*1000*1000*1000*1000*1000*1000))*/ {
 			// tr: Exabytes (decimal)
 			suffix = NOP_C_("LibRpText|FileSize", "EB");
 			whole_part = static_cast<int>(size / (1000LL * 1000 * 1000 * 1000 * 1000 * 1000));
-			frac_part = calc_frac_part_decimal<off64_t>(size, (1000LL * 1000 * 1000 * 1000 * 1000 * 1000));
+			frac_part = calc_frac_part_decimal(size, (1000LL * 1000 * 1000 * 1000 * 1000 * 1000));
 		}
 	}
 
