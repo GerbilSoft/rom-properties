@@ -113,12 +113,7 @@ rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 	// NOTE: Declare the uint8x16x4_t within the loop so gcc will properly
 	// share the registers between the vld3q_u8 and the vst1q_u8_x4, so it
 	// doesn't have to copy R/G/B to a second set.
-
-	static const array<uint32_t, 4> alpha_mask_u32 = {{
-		0xFF000000, 0xFF000000,
-		0xFF000000, 0xFF000000
-	}};
-	uint32x4_t alpha_mask = vld1q_u32(alpha_mask_u32.data());
+	const uint32x4_t alpha_mask = vdupq_n_u32(0xFF000000);
 	uint8x16_t shuf_mask;
 
 	// Determine the shuffle mask based on pixel format.
