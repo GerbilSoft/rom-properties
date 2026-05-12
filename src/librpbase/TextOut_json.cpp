@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextOut.hpp: Text output for RomData. (JSON output)                     *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -42,13 +42,14 @@ extern "C" {
 
 namespace LibRpBase {
 
-template<typename Allocator>
 class JSONFieldsOutput {
 	const RomFields& fields;
 public:
 	explicit JSONFieldsOutput(const RomFields& fields) :fields(fields) {}
 
 private:
+	typedef Document::AllocatorType Allocator;
+
 	static Value lcToValue(uint32_t lc, Allocator &allocator)
 	{
 		char s_lc[8];
@@ -369,7 +370,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	assert(fields != nullptr);
 	if (fields) {
 		Value fields_array(kArrayType);	// fields
-		JSONFieldsOutput<Document::AllocatorType>(*fields).writeToJSON(fields_array, allocator);
+		JSONFieldsOutput(*fields).writeToJSON(fields_array, allocator);
 		if (!fields_array.Empty()) {
 			document.AddMember("fields", fields_array, allocator);
 		}
