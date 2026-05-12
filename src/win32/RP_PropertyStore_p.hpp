@@ -15,6 +15,15 @@
 #include "librpbase/RomMetaData.hpp"
 #include "librpfile/IRpFile.hpp"
 
+// MinGW-w64's comdefsp.h only works properly with MSVC,
+// since it uses __uuidof().
+#ifndef _MSC_VER
+#  ifndef RP_IStreamPtr_DEFINED
+_COM_SMARTPTR_TYPEDEF(IStream, IID_IStream);
+#    define RP_IStreamPtr_DEFINED 1
+#  endif /* RP_IStreamPtr_DEFINED */
+#endif /* _MSC_VER */
+
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define RP_PropertyStorePrivate RP_PropertyStore_Private
 
