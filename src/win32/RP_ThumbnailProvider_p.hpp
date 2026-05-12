@@ -12,6 +12,9 @@
 #include "RP_ThumbnailProvider.hpp"
 #include "CreateThumbnail.hpp"
 
+// for IStreamPtr on MinGW-w64
+#include <comdefsp.h>
+
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define RP_ThumbnailProviderPrivate RP_ThumbnailProvider_Private
 
