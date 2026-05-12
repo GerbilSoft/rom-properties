@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormatFactory.cpp: FileFormat factory class.                        *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -84,12 +84,12 @@ static FileFormatPtr FileFormat_ctor(const IRpFilePtr &file)
 #define P99_PROTECT(...) __VA_ARGS__	/* Reference: https://stackoverflow.com/a/5504336 */
 
 #ifdef FILEFORMATFACTORY_USE_FILE_EXTENSIONS
-vector<const char*> vec_exts;
-std::once_flag once_exts;
+static vector<const char*> vec_exts;
+static std::once_flag once_exts;
 #endif /* FILEFORMATFACTORY_USE_FILE_EXTENSIONS */
 #ifdef FILEFORMATFACTORY_USE_MIME_TYPES
-vector<const char*> vec_mimeTypes;
-std::once_flag once_mimeTypes;
+static vector<const char*> vec_mimeTypes;
+static std::once_flag once_mimeTypes;
 #endif /* FILEFORMATFACTORY_USE_MIME_TYPES */
 
 // FileFormat subclasses that use a header at 0 and
