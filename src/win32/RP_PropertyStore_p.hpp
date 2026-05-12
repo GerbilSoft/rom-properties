@@ -15,11 +15,10 @@
 #include "librpbase/RomMetaData.hpp"
 #include "librpfile/IRpFile.hpp"
 
-// MinGW-w64's comdefsp.h only works properly with MSVC,
-// since it uses __uuidof().
+// FIXME: MinGW-w64 14.0.0's comdefsp.h has this, but it isn't working...
 #ifndef _MSC_VER
 #  ifndef RP_IStreamPtr_DEFINED
-_COM_SMARTPTR_TYPEDEF(IStream, IID_IStream);
+_COM_SMARTPTR_TYPEDEF(IStream, __uuidof(IStream));
 #    define RP_IStreamPtr_DEFINED 1
 #  endif /* RP_IStreamPtr_DEFINED */
 #endif /* _MSC_VER */
