@@ -214,9 +214,10 @@ ELSEIF((CPU_arm OR CPU_arm64) AND HAVE_ARM_NEON_H)
 		decoder/ImageDecoder_Linear_neon32.cpp
 		)
 	IF(CPU_arm64)
-		# FIXME: Make this work on arm32.
+		# FIXME: Make these work on arm32.
 		SET(${PROJECT_NAME}_NEON_SRCS
 			${${PROJECT_NAME}_NEON_SRCS}
+			decoder/ImageDecoder_Linear_neon16.cpp
 			decoder/ImageDecoder_Linear_neon24.cpp
 			)
 	ENDIF(CPU_arm64)

@@ -669,6 +669,14 @@ TEST_P(ImageDecoderLinearTest, fromLinear_neon_test)
 	// Decode the image.
 	switch (mode.bpp) {
 #ifdef RP_CPU_ARM64
+		case 15:
+		case 16:
+			// 15/16-bit image
+			m_img = ImageDecoder::fromLinear16_neon(mode.src_pxf, 128, 128,
+				reinterpret_cast<const uint16_t*>(m_img_buf),
+				m_img_buf_len, mode.stride);
+			break;
+
 		case 24:
 			// 24-bit image
 			m_img = ImageDecoder::fromLinear24_neon(mode.src_pxf, 128, 128,
@@ -684,10 +692,10 @@ TEST_P(ImageDecoderLinearTest, fromLinear_neon_test)
 			break;
 
 #ifndef RP_CPU_ARM64
-		case 24:
-#endif /* !RP_CPU_ARM64 */
 		case 15:
 		case 16:
+		case 24:
+#endif /* !RP_CPU_ARM64 */
 			// Not implemented...
 			GTEST_SKIP() << "*** NEON decoding is not implemented for " << static_cast<unsigned int>(mode.bpp) << "-bit color.";
 
@@ -717,6 +725,17 @@ TEST_P(ImageDecoderLinearTest, fromLinear_neon_benchmark)
 	// Decode the image.
 	switch (mode.bpp) {
 #ifdef RP_CPU_ARM64
+		case 15:
+		case 16:
+			// 15/16-bit image
+			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
+				m_img = ImageDecoder::fromLinear16_neon(mode.src_pxf, 128, 128,
+					reinterpret_cast<const uint16_t*>(m_img_buf),
+					m_img_buf_len, mode.stride);
+				m_img.reset();
+			}
+			break;
+
 		case 24:
 			// 24-bit image
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
@@ -738,10 +757,10 @@ TEST_P(ImageDecoderLinearTest, fromLinear_neon_benchmark)
 			break;
 
 #ifndef RP_CPU_ARM64
-		case 24:
-#endif /* !RP_CPU_ARM64 */
 		case 15:
 		case 16:
+		case 24:
+#endif /* !RP_CPU_ARM64 */
 			// Not implemented...
 			GTEST_SKIP() << "*** NEON decoding is not implemented for " << static_cast<unsigned int>(mode.bpp) << "-bit color.";
 

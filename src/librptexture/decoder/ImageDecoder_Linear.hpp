@@ -107,6 +107,25 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 #endif /* IMAGEDECODER_HAS_SSE2 */
 
+#if defined(IMAGEDECODER_HAS_NEON) && defined(RP_CPU_ARM64)
+/**
+ * Convert a linear 16-bit RGB image to rp_image.
+ * NEON-optimized version.
+ * @param px_format	[in] 16-bit pixel format.
+ * @param width		[in] Image width.
+ * @param height	[in] Image height.
+ * @param img_buf	[in] 16-bit image buffer.
+ * @param img_siz	[in] Size of image data. [must be >= (w*h)*2]
+ * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
+ * @return rp_image, or nullptr on error.
+ */
+ATTR_ACCESS_SIZE(read_only, 4, 5)
+RP_LIBROMDATA_PUBLIC
+rp_image_ptr fromLinear16_neon(PixelFormat px_format,
+	int width, int height,
+	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
+#endif /* IMAGEDECODER_HAS_NEON && RP_CPU_ARM64 */
+
 /**
  * Convert a linear 16-bit RGB image to rp_image.
  * @param px_format	[in] 16-bit pixel format.
@@ -122,19 +141,26 @@ static inline rp_image_ptr fromLinear16(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride = 0)
 {
-#ifdef IMAGEDECODER_ALWAYS_HAS_SSE2
+#if defined(IMAGEDECODER_ALWAYS_HAS_SSE2)
 	// amd64 always has SSE2.
 	return fromLinear16_sse2(px_format, width, height, img_buf, img_siz, stride);
-#else /* !IMAGEDECODER_ALWAYS_HAS_SSE2 */
+#elif defined(IMAGEDECODER_ALWAYS_HAS_NEON) && defined(RP_CPU_ARM64)
+	return fromLinear16_neon(px_format, width, height, img_buf, img_siz, stride);
+#else
 #  ifdef IMAGEDECODER_HAS_SSE2
 	if (RP_CPU_x86_HasSSE2()) {
 		return fromLinear16_sse2(px_format, width, height, img_buf, img_siz, stride);
 	} else
 #  endif /* IMAGEDECODER_HAS_SSE2 */
+#  if defined(IMAGEDECODER_HAS_NEON) && defined(RP_CPU_ARM64)
+	if (RP_CPU_arm_HasNEON()) {
+		return fromLinear16_neon(px_format, width, height, img_buf, img_siz, stride);
+	} else
+#  endif /* IMAGEDECODER_HAS_NEON && RP_CPU_AMD64 */
 	{
 		return fromLinear16_cpp(px_format, width, height, img_buf, img_siz, stride);
 	}
-#endif /* IMAGEDECODER_ALWAYS_HAS_SSE2 */
+#endif
 }
 
 /** 24-bit **/
