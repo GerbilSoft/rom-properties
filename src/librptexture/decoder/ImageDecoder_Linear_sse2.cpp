@@ -68,9 +68,10 @@ static inline void T_RGB16_sse2(
 
 	// Mask the G and B components and shift them into place.
 	__m128i sG = _mm_slli_epi16(_mm_and_si128(Gmask, *xmm_src), Gshift_W);
-	__m128i sB = (isBGR)
-		? _mm_srli_epi16(_mm_and_si128(Bmask, *xmm_src), Bshift_W)
-		: _mm_slli_epi16(_mm_and_si128(Bmask, *xmm_src), Bshift_W);
+	__m128i sB = _mm_and_si128(Bmask, *xmm_src);
+	sB = (isBGR)
+		? _mm_srli_epi16(sB, Bshift_W)
+		: _mm_slli_epi16(sB, Bshift_W);
 	sG = _mm_or_si128(sG, _mm_srli_epi16(sG, Gbits));
 	sB = _mm_or_si128(sB, _mm_srli_epi16(sB, Bbits));
 
@@ -85,9 +86,10 @@ static inline void T_RGB16_sse2(
 	}
 
 	// Mask the R component and shift it into place.
-	__m128i sR = (isBGR)
-		? _mm_slli_epi16(_mm_and_si128(Rmask, *xmm_src), Rshift_W)
-		: _mm_srli_epi16(_mm_and_si128(Rmask, *xmm_src), Rshift_W);
+	__m128i sR = _mm_and_si128(Rmask, *xmm_src);
+	sR = (isBGR)
+		? _mm_slli_epi16(sR, Rshift_W)
+		: _mm_srli_epi16(sR, Rshift_W);
 	sR = _mm_or_si128(sR, _mm_srli_epi16(sR, Rbits));
 
 	// Unpack R and GB into DWORDs.
@@ -148,9 +150,10 @@ static inline void T_ARGB16_sse2(
 
 	// Mask the G and B components and shift them into place.
 	__m128i sG = _mm_slli_epi16(_mm_and_si128(Gmask, *xmm_src), Gshift_W);
-	__m128i sB = (isBGR)
-		? _mm_srli_epi16(_mm_and_si128(Bmask, *xmm_src), Bshift_W)
-		: _mm_slli_epi16(_mm_and_si128(Bmask, *xmm_src), Bshift_W);
+	__m128i sB = _mm_and_si128(Bmask, *xmm_src);
+	sB = (isBGR)
+		? _mm_srli_epi16(sB, Bshift_W)
+		: _mm_slli_epi16(sB, Bshift_W);
 	sG = _mm_or_si128(sG, _mm_srli_epi16(sG, Gbits));
 	sB = _mm_or_si128(sB, _mm_srli_epi16(sB, Bbits));
 
@@ -165,9 +168,10 @@ static inline void T_ARGB16_sse2(
 	}
 
 	// Mask the R component and shift it into place.
-	__m128i sR = (isBGR)
-		? _mm_slli_epi16(_mm_and_si128(Rmask, *xmm_src), Rshift_W)
-		: _mm_srli_epi16(_mm_and_si128(Rmask, *xmm_src), Rshift_W);
+	__m128i sR = _mm_and_si128(Rmask, *xmm_src);
+	sR = (isBGR)
+		? _mm_slli_epi16(sR, Rshift_W)
+		: _mm_srli_epi16(sR, Rshift_W);
 	sR = _mm_or_si128(sR, _mm_srli_epi16(sR, Rbits));
 
 	// Mask the A components, shift it into place, and combine with R.
