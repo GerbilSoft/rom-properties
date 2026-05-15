@@ -79,6 +79,7 @@ SET(${PROJECT_NAME}_H
 	decoder/ImageDecoder_p.hpp
 	decoder/ImageDecoder_Linear.hpp
 	decoder/ImageDecoder_Linear_Gray.hpp
+	decoder/ImageDecoder_Linear_Masks.hpp
 	decoder/ImageDecoder_GCN.hpp
 	decoder/ImageDecoder_NDS.hpp
 	decoder/ImageDecoder_N3DS.hpp
