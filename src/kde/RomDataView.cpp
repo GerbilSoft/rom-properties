@@ -544,6 +544,8 @@ QTreeView *RomDataViewPrivate::initListData(QLabel *lblDesc,
 	}
 	treeView->setRootIsDecorated(false);
 	treeView->setAlternatingRowColors(true);
+	treeView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+	treeView->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
 
 	// DISABLED uniform row heights.
 	// Some Xbox 360 achievements take up two lines,
