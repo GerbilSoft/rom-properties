@@ -194,3 +194,12 @@ public: \
 #    define ATTR_CONST
 #  endif /* __GNUC__ */
 #endif /* ATTR_CONST */
+
+// `if constexpr` is available starting with C++17.
+#ifndef if_constexpr
+#  if defined(__cplusplus) && __cplusplus >= 201703L
+#    define if_constexpr if constexpr
+#  else
+#    define if_constexpr if
+#  endif
+#endif /* if_constexpr */

@@ -76,7 +76,7 @@ static inline void T_RGB16_sse2(
 	sB = _mm_or_si128(sB, _mm_srli_epi16(sB, Bbits));
 
 	// Combine G and B.
-	if (Gbits > 4) {
+	if_constexpr (Gbits > 4) {
 		// NOTE: G low byte has to be masked due to the shift.
 		sB = _mm_or_si128(sB, _mm_and_si128(sG, MaskG_Hi8));
 	} else {
@@ -158,7 +158,7 @@ static inline void T_ARGB16_sse2(
 	sB = _mm_or_si128(sB, _mm_srli_epi16(sB, Bbits));
 
 	// Combine G and B.
-	if (Gbits > 4) {
+	if_constexpr (Gbits > 4) {
 		// NOTE: G low byte has to be masked due to the shift.
 		sB = _mm_or_si128(sB, _mm_and_si128(sG, MaskAG_Hi8));
 	} else {
@@ -176,7 +176,7 @@ static inline void T_ARGB16_sse2(
 
 	// Mask the A components, shift it into place, and combine with R.
 	__m128i sA;
-	if (Ashift_W == 16) {
+	if_constexpr (Ashift_W == 16) {
 		// 1555 alpha handling.
 		// Using a bytewise comparison so we don't have to mask off the low byte.
 		// NOTE: This comparison is *signed*. Amask must be 0x0080, and we're
@@ -186,7 +186,7 @@ static inline void T_ARGB16_sse2(
 		sA = _mm_cmplt_epi8(*xmm_src, Amask);
 		// Combine A and R.
 		sR = _mm_or_si128(sR, sA);
-	} else if (Ashift_W == 17) {
+	} else if_constexpr (Ashift_W == 17) {
 		// 5551 alpha handling.
 		// Amask has only bit 0 set for each word.
 		// This will mask off bit 0, then compare it to the Amask value.
@@ -201,7 +201,7 @@ static inline void T_ARGB16_sse2(
 		sA = _mm_or_si128(sA, _mm_srli_epi16(sA, Abits));
 		// Combine A and R.
 		// NOTE: A low byte has to be masked due to the shift.
-		if (Abits > 4) {
+		if_constexpr (Abits > 4) {
 			// NOTE: A low byte has to be masked due to the shift.
 			sR = _mm_or_si128(sR, _mm_and_si128(sA, MaskAG_Hi8));
 		} else {

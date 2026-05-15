@@ -372,7 +372,7 @@ static void decodeBlock_ETC_RGB(array<uint32_t, 4*4> &tileBuf, const etc1_block 
 		const int sG = (etc1_src->id.G >> 3) + dG2;
 		const int sB = (etc1_src->id.B >> 3) + dB2;
 
-		if ((mode & ETC_DM_MASK12) == ETC_DM_ETC2) {
+		if_constexpr ((mode & ETC_DM_MASK12) == ETC_DM_ETC2) {
 			// ETC2 block modes are available.
 			if ((sR & ~0x1F) != 0) {
 				// 'T' mode.

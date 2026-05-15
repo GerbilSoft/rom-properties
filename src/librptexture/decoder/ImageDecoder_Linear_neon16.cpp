@@ -67,7 +67,7 @@ static inline void T_RGB16_neon(
 	uint16x8_t sG = vshlq_n_u16(vandq_u16(src, Gmask), Gshift_W);
 	uint16x8_t sB = vandq_u16(src, Bmask);
 	// FIXME: This check is needed in order to prevent shift-out-of-range errors.
-	if constexpr (Bshift_W > 0 && Bshift_W <= 15) {
+	if_constexpr (Bshift_W > 0 && Bshift_W <= 15) {
 		sB = (isBGR)
 			? vshrq_n_u16(sB, Bshift_W)
 			: vshlq_n_u16(sB, Bshift_W);
@@ -76,7 +76,7 @@ static inline void T_RGB16_neon(
 	sB = vorrq_u16(sB, vshrq_n_u16(sB, Bbits));
 
 	// Combine G and B.
-	if (Gbits > 4) {
+	if_constexpr (Gbits > 4) {
 		// NOTE: G low byte has to be masked due to the shift.
 		sB = vorrq_u16(sB, vandq_u16(sG, MaskG_Hi8));
 	} else {
@@ -88,7 +88,7 @@ static inline void T_RGB16_neon(
 	// Mask the R component and shift it into place.
 	uint16x8_t sR = vandq_u16(src, Rmask);
 	// FIXME: This check is needed in order to prevent shift-out-of-range errors.
-	if constexpr (Rshift_W > 0 && Rshift_W <= 15) {
+	if_constexpr (Rshift_W > 0 && Rshift_W <= 15) {
 		sR = (isBGR)
 			? vshlq_n_u16(sR, Rshift_W)
 			: vshrq_n_u16(sR, Rshift_W);
@@ -155,7 +155,7 @@ static inline void T_ARGB16_neon(
 	uint16x8_t sG = vshlq_n_u16(vandq_u16(Gmask, src), Gshift_W);
 	uint16x8_t sB = vandq_u16(Bmask, src);
 	// FIXME: This check is needed in order to prevent shift-out-of-range errors.
-	if constexpr (Bshift_W > 0 && Bshift_W <= 15) {
+	if_constexpr (Bshift_W > 0 && Bshift_W <= 15) {
 		sB = (isBGR)
 			? vshrq_n_u16(sB, Bshift_W)
 			: vshlq_n_u16(sB, Bshift_W);
@@ -164,7 +164,7 @@ static inline void T_ARGB16_neon(
 	sB = vorrq_u16(sB, vshrq_n_u16(sB, Bbits));
 
 	// Combine G and B.
-	if (Gbits > 4) {
+	if_constexpr (Gbits > 4) {
 		// NOTE: G low byte has to be masked due to the shift.
 		sB = vorrq_u16(sB, vandq_u16(sG, MaskAG_Hi8));
 	} else {
@@ -176,7 +176,7 @@ static inline void T_ARGB16_neon(
 	// Mask the R component and shift it into place.
 	uint16x8_t sR = vandq_u16(src, Rmask);
 	// FIXME: This check is needed in order to prevent shift-out-of-range errors.
-	if constexpr (Rshift_W > 0 && Rshift_W <= 15) {
+	if_constexpr (Rshift_W > 0 && Rshift_W <= 15) {
 		sR = (isBGR)
 			? vshlq_n_u16(sR, Rshift_W)
 			: vshrq_n_u16(sR, Rshift_W);
@@ -185,7 +185,7 @@ static inline void T_ARGB16_neon(
 
 	// Mask the A components, shift it into place, and combine with R.
 	uint16x8_t sA;
-	if (Ashift_W == 16) {
+	if_constexpr (Ashift_W == 16) {
 		// 1555 alpha handling.
 		// Using a bytewise comparison so we don't have to mask off the low byte.
 		// NOTE: This comparison is *signed*. Amask must be 0x0080, and we're
@@ -196,7 +196,7 @@ static inline void T_ARGB16_neon(
 			vreinterpretq_s8_u16(src), vreinterpretq_s8_u16(Amask)));
 		// Combine A and R.
 		sR = vorrq_u16(sR, sA);
-	} else if (Ashift_W >= 17) {
+	} else if_constexpr (Ashift_W >= 17) {
 		// 5551 alpha handling.
 		// Amask has only bit 0 set for each word.
 		// This will mask off bit 0, then compare it to the Amask value.
@@ -211,7 +211,7 @@ static inline void T_ARGB16_neon(
 		// Standard alpha handling.
 		sA = vandq_u16(Amask, src);
 		// FIXME: This check is needed in order to prevent shift-out-of-range errors.
-		if constexpr (Ashift_W > 0 && Ashift_W <= 15) {
+		if_constexpr (Ashift_W > 0 && Ashift_W <= 15) {
 			sA = vshlq_n_u16(sA, Ashift_W);
 		}
 		sA = vorrq_u16(sA, vshrq_n_u16(sA, Abits));

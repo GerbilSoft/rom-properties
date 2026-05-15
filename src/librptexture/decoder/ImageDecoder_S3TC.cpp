@@ -80,7 +80,7 @@ static inline void decode_DXTn_tile_color_palette_S3TC(argb32_t *RESTRICT pal, c
 {
 	// Convert the first two colors from RGB565.
 	uint16_t c0, c1;
-	if (flags & DXTn_PALETTE_BIG_ENDIAN) {
+	if_constexpr (flags & DXTn_PALETTE_BIG_ENDIAN) {
 		c0 = be16_to_cpu(dxt1_src->color[0]);
 		c1 = be16_to_cpu(dxt1_src->color[1]);
 	} else {
