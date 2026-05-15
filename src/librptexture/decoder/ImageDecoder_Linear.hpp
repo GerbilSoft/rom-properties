@@ -107,7 +107,7 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 #endif /* IMAGEDECODER_HAS_SSE2 */
 
-#if defined(IMAGEDECODER_HAS_NEON) && defined(RP_CPU_ARM64)
+#ifdef IMAGEDECODER_HAS_NEON
 /**
  * Convert a linear 16-bit RGB image to rp_image.
  * NEON-optimized version.
@@ -124,7 +124,7 @@ RP_LIBROMDATA_PUBLIC
 rp_image_ptr fromLinear16_neon(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
-#endif /* IMAGEDECODER_HAS_NEON && RP_CPU_ARM64 */
+#endif /* IMAGEDECODER_HAS_NEON */
 
 /**
  * Convert a linear 16-bit RGB image to rp_image.
@@ -144,7 +144,7 @@ static inline rp_image_ptr fromLinear16(PixelFormat px_format,
 #if defined(IMAGEDECODER_ALWAYS_HAS_SSE2)
 	// amd64 always has SSE2.
 	return fromLinear16_sse2(px_format, width, height, img_buf, img_siz, stride);
-#elif defined(IMAGEDECODER_ALWAYS_HAS_NEON) && defined(RP_CPU_ARM64)
+#elif defined(IMAGEDECODER_ALWAYS_HAS_NEON)
 	return fromLinear16_neon(px_format, width, height, img_buf, img_siz, stride);
 #else
 #  ifdef IMAGEDECODER_HAS_SSE2
@@ -152,11 +152,11 @@ static inline rp_image_ptr fromLinear16(PixelFormat px_format,
 		return fromLinear16_sse2(px_format, width, height, img_buf, img_siz, stride);
 	} else
 #  endif /* IMAGEDECODER_HAS_SSE2 */
-#  if defined(IMAGEDECODER_HAS_NEON) && defined(RP_CPU_ARM64)
+#  if defined(IMAGEDECODER_HAS_NEON)
 	if (RP_CPU_arm_HasNEON()) {
 		return fromLinear16_neon(px_format, width, height, img_buf, img_siz, stride);
 	} else
-#  endif /* IMAGEDECODER_HAS_NEON && RP_CPU_AMD64 */
+#  endif /* IMAGEDECODER_HAS_NEON */
 	{
 		return fromLinear16_cpp(px_format, width, height, img_buf, img_siz, stride);
 	}

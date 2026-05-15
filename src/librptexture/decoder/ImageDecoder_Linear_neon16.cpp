@@ -24,8 +24,6 @@ using std::array;
 
 namespace LibRpTexture { namespace ImageDecoder {
 
-// FIXME: arm64 only!
-
 /**
  * Templated function for 15/16-bit RGB conversion using NEON. (no alpha channel)
  * Processes 8 pixels per iteration.
@@ -97,8 +95,24 @@ static inline void T_RGB16_neon(
 
 	// Unpack R and GB into DWORDs.
 	uint32x4x2_t px;
-	px.val[0] = vorrq_u32(vreinterpretq_u32_u16(vzip1q_u16(sB, sR)), Mask32_A);
-	px.val[1] = vorrq_u32(vreinterpretq_u32_u16(vzip2q_u16(sB, sR)), Mask32_A);
+
+#if defined(RP_CPU_ARM64)
+	px.val[0] = vreinterpretq_u32_u16(vzip1q_u16(sB, sR));
+	px.val[1] = vreinterpretq_u32_u16(vzip2q_u16(sB, sR));
+#elif defined(RP_CPU_ARM)
+	uint16x4_t a1 = vget_low_u16(sB);
+	uint16x4_t b1 = vget_low_u16(sR);
+	uint16x4x2_t result = vzip_u16(a1, b1);
+	px.val[0] = vreinterpretq_u32_u16(vcombine_u16(result.val[0], result.val[1]));
+
+	a1 = vget_high_u16(sB);
+	b1 = vget_high_u16(sR);
+	result = vzip_u16(a1, b1);
+	px.val[1] = vreinterpretq_u32_u16(vcombine_u16(result.val[0], result.val[1]));
+#endif
+
+	px.val[0] = vorrq_u32(px.val[0], Mask32_A);
+	px.val[1] = vorrq_u32(px.val[1], Mask32_A);
 	vst1q_u32_x2_ex(px_dest, px, 128);
 }
 
@@ -229,8 +243,20 @@ static inline void T_ARGB16_neon(
 
 	// Unpack AR and GB into DWORDs.
 	uint32x4x2_t px;
+#if defined(RP_CPU_ARM64)
 	px.val[0] = vreinterpretq_u32_u16(vzip1q_u16(sB, sR));
 	px.val[1] = vreinterpretq_u32_u16(vzip2q_u16(sB, sR));
+#elif defined(RP_CPU_ARM)
+	uint16x4_t a1 = vget_low_u16(sB);
+	uint16x4_t b1 = vget_low_u16(sR);
+	uint16x4x2_t result = vzip_u16(a1, b1);
+	px.val[0] = vreinterpretq_u32_u16(vcombine_u16(result.val[0], result.val[1]));
+
+	a1 = vget_high_u16(sB);
+	b1 = vget_high_u16(sR);
+	result = vzip_u16(a1, b1);
+	px.val[1] = vreinterpretq_u32_u16(vcombine_u16(result.val[0], result.val[1]));
+#endif
 	vst1q_u32_x2_ex(px_dest, px, 128);
 }
 
