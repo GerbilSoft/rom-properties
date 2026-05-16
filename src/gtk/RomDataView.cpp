@@ -758,7 +758,7 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 
 			if (ok) {
 				// Adjust the icon size.
-				rp_rom_data_view_adjust_image_height(RP_DRAG_IMAGE(page->imgBanner), icon_w, icon_h, imgStdHeight);
+				rp_rom_data_view_adjust_image_height(RP_DRAG_IMAGE(page->imgIcon), icon_w, icon_h, imgStdHeight);
 			}
 		}
 	}
