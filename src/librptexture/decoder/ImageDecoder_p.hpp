@@ -41,7 +41,7 @@ static inline void BlitTile(
 	} else if_constexpr (sizeof(pixel) == sizeof(uint8_t)) {
 		assert(img->format() == rp_image::Format::CI8);
 	} else {
-		static_assert(sizeof(pixel) != sizeof(uint32_t) && sizeof(pixel) != sizeof(uint8_t), "Unsupported sizeof(pixel).");
+		static_assert(sizeof(pixel) == sizeof(uint32_t) || sizeof(pixel) == sizeof(uint8_t), "Unsupported sizeof(pixel).");
 	}
 
 	// Go to the first pixel for this tile.
