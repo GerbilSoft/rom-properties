@@ -90,11 +90,11 @@ size_t RpQByteArrayFile::write(const void *ptr, size_t size)
 	}
 
 	// Do we need to expand the QByteArray?
-	const off64_t req_size = static_cast<off64_t>(m_byteArray.size()) + size;
+	const off64_t req_size = static_cast<off64_t>(m_pos) + size;
 	if (req_size < 0) {
 		// Overflow...
 		return 0;
-	} else if (req_size > static_cast<off64_t>(QBYTEARRAYFILE_MAX_SIZE)) {
+	} else if (req_size > QBYTEARRAYFILE_MAX_SIZE) {
 		// Too much...
 		m_lastError = -ENOMEM;
 		return 0;
