@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * KeyManager.hpp: Encryption key manager.                                 *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -120,9 +120,8 @@ class KeyManager : public ConfReader
 		 * @param len	[in] Size of buf, in bytes
 		 * @return 0 on success; non-zero on error.
 		 */
-		template<typename Char>
 		ATTR_ACCESS_SIZE(write_only, 2, 3)
-		static int hexStringToBytes(const Char *str, uint8_t *buf, size_t len);
+		static int hexStringToBytes(const char *str, uint8_t *buf, size_t len);
 #endif /* ENABLE_DECRYPTION */
 };
 
