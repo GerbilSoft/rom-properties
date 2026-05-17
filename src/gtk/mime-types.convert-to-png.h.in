@@ -1,5 +1,5 @@
 /*******************************************************************************
- * ROM Properties Page shell extension. (GTK+ 3.x)                             *
+ * ROM Properties Page shell extension. (GTK+ common)                          *
  * mime-types.convert-to-png.h: MIME types for "Convert to PNG". (source file) *
  *                                                                             *
  * Copyright (c) 2022-2026 by David Korth.                                     *

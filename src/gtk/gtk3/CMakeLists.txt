@@ -132,11 +132,6 @@ SET(${PROJECT_NAME}_H
 	MenuProviderCommon.h
 	)
 
-# Process the MIME types header.
-INCLUDE(ParseMimeTypes)
-PARSE_MIME_TYPES_JSON(MIMETYPES_CONVERT_TO_PNG_C_ARRAY "\t" "${CMAKE_SOURCE_DIR}/xdg/mime.convert-to-png.types")
-CONFIGURE_FILE(mime-types.convert-to-png.h.in mime-types.convert-to-png.h @ONLY)
-
 IF(ENABLE_DECRYPTION)
 	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../config/KeyManagerTab_gtk3.cpp)
 ENDIF(ENABLE_DECRYPTION)

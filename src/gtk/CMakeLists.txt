@@ -272,6 +272,11 @@ CHECK_INCLUDE_FILE("wayland-version.h" HAVE_WAYLAND_VERSION_H)
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.gtk.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.gtk.h")
 
+# Process the MIME types header.
+INCLUDE(ParseMimeTypes)
+PARSE_MIME_TYPES_JSON(MIMETYPES_CONVERT_TO_PNG_C_ARRAY "\t" "${CMAKE_SOURCE_DIR}/xdg/mime.convert-to-png.types")
+CONFIGURE_FILE(mime-types.convert-to-png.h.in mime-types.convert-to-png.h @ONLY)
+
 IF(BUILD_XFCE OR BUILD_GTK3 OR BUILD_GTK4)
 	# GLib common library
 	ADD_LIBRARY(rom-properties-glib STATIC
