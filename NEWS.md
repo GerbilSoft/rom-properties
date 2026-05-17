@@ -45,6 +45,8 @@
     * Affects: v2.5 - v2.7.1
   * KDE: Fix display of the "Credits" row for e.g. amiibo.
     * Affects: v2.7 - v2.7.1
+  * rp-config: Fix a minor bug in the Image Types tab where clicking Defaults,
+    Reset, Defaults sometimes didn't properly set defaults.
 
 * Other changes:
   * Swizzling "bgra" (red/blue swap only) is now faster on systems that

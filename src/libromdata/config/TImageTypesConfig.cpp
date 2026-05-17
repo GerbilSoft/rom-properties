@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * TImageTypesConfig.cpp: Image Types editor template.                     *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -188,10 +188,14 @@ bool TImageTypesConfig<ComboBox>::reset_int(bool loadDefaults)
 				if (sysData.imageTypes[imageType] != nextPrio) {
 					sysData.imageTypes[imageType] = nextPrio;
 					hasChanged = true;
-
-					// NOTE: Using the actual priority value, not the ComboBox index.
-					cboImageType_setPriorityValue(sysAndImageTypeToCbid(sys, imageType), nextPrio);
 				}
+
+				// NOTE: Using the actual priority value, not the ComboBox index.
+				// FIXME: This needs to be done regardless of whether or not the priority changes.
+				// Otherwise, the priority values might not be listed correctly if the user
+				// clicks Defaults, Reset, Defaults.
+				cboImageType_setPriorityValue(sysAndImageTypeToCbid(sys, imageType), nextPrio);
+
 				const unsigned int cbid = sysAndImageTypeToCbid(sys, imageType);
 				cbid_needsReset[cbid] = false;
 				nextPrio++;
