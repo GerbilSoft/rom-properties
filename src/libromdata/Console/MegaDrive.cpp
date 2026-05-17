@@ -782,111 +782,114 @@ MegaDrive::MegaDrive(const IRpFilePtr &file)
 		0		// szFile (not needed for MegaDrive)
 	};
 	d->romType = isRomSupported_static(&info);
+	if (d->romType < 0) {
+		// Not recognized...
+		d->file.reset();
+		return;
+	}
 
 	// Mega CD security program CRC32
 	uint32_t mcd_sp_crc = 0;
 
-	if (d->romType >= 0) {
-		// Save the header for later.
-		switch (d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) {
-			case MegaDrivePrivate::ROM_FORMAT_CART_BIN:
-				d->fileType = FileType::ROM_Image;
+	// Save the header for later.
+	switch (d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) {
+		case MegaDrivePrivate::ROM_FORMAT_CART_BIN:
+			d->fileType = FileType::ROM_Image;
 
-				// MD header is at 0x100.
-				// Vector table is at 0.
-				memcpy(&d->vectors,    header,        sizeof(d->vectors));
-				memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
-				break;
+			// MD header is at 0x100.
+			// Vector table is at 0.
+			memcpy(&d->vectors,    header,        sizeof(d->vectors));
+			memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
+			break;
 
-			case MegaDrivePrivate::ROM_FORMAT_CART_SMD: {
-				// Save the SMD header.
-				// NOTE: Not actually used anywhere; disabling for now.
-				//d->pSmdHeader.reset(new SMD_Header);
-				//memcpy(d->pSmdHeader.get(), header, sizeof(SMD_Header));
+		case MegaDrivePrivate::ROM_FORMAT_CART_SMD: {
+			// Save the SMD header.
+			// NOTE: Not actually used anywhere; disabling for now.
+			//d->pSmdHeader.reset(new SMD_Header);
+			//memcpy(d->pSmdHeader.get(), header, sizeof(SMD_Header));
 
-				// First bank needs to be deinterleaved.
-				auto block = aligned_uptr<uint8_t>(16, SuperMagicDrive::SMD_BLOCK_SIZE * 2);
-				uint8_t *const smd_data = block.get();
-				uint8_t *const bin_data = smd_data + SuperMagicDrive::SMD_BLOCK_SIZE;
-				size = d->file->seekAndRead(512, smd_data, SuperMagicDrive::SMD_BLOCK_SIZE);
-				if (size != SuperMagicDrive::SMD_BLOCK_SIZE) {
-					// Short read. ROM is invalid.
-					d->romType = MegaDrivePrivate::ROM_UNKNOWN;
-					break;
-				}
-
-				// Decode the SMD block.
-				SuperMagicDrive::decodeBlock(bin_data, smd_data);
-
-				// MD header is at 0x100.
-				// Vector table is at 0.
-				d->fileType = FileType::ROM_Image;
-				memcpy(&d->vectors,    bin_data,        sizeof(d->vectors));
-				memcpy(&d->romHeader, &bin_data[0x100], sizeof(d->romHeader));
+			// First bank needs to be deinterleaved.
+			auto block = aligned_uptr<uint8_t>(16, SuperMagicDrive::SMD_BLOCK_SIZE * 2);
+			uint8_t *const smd_data = block.get();
+			uint8_t *const bin_data = smd_data + SuperMagicDrive::SMD_BLOCK_SIZE;
+			size = d->file->seekAndRead(512, smd_data, SuperMagicDrive::SMD_BLOCK_SIZE);
+			if (size != SuperMagicDrive::SMD_BLOCK_SIZE) {
+				// Short read. ROM is invalid.
+				d->romType = MegaDrivePrivate::ROM_UNKNOWN;
 				break;
 			}
 
-			case MegaDrivePrivate::ROM_FORMAT_DISC_2048:
-				d->fileType = FileType::DiscImage;
+			// Decode the SMD block.
+			SuperMagicDrive::decodeBlock(bin_data, smd_data);
 
-				// MCD System ID area is at 0.
-				// MD-style header is at 0x100.
-				// No vector table is present on the disc.
-				memcpy(&d->mcd_systemID, header, sizeof(d->mcd_systemID));
-				memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
-
-				// Calculate the security program CRC32.
-				// NOTE: The JP security program fits into the first sector,
-				// but US/EU takes up two sectors. This shouldn't be an issue,
-				// since we don't need the full program; we just need to be
-				// able to distinguish between them.
-				// NOTE: Only the first 0x4C0 bytes seem to be identical
-				// between USA and EUR, and 0x150 in JPN...
-				if (size >= (0x200 + 0x150)) {
-					Hash crc32Hash(Hash::Algorithm::CRC32);
-					if (crc32Hash.isUsable()) {
-						crc32Hash.process(&header[0x200], 0x150);
-						mcd_sp_crc = crc32Hash.getHash32();
-					}
-				}
-				break;
-
-			case MegaDrivePrivate::ROM_FORMAT_DISC_2352:
-				if (size < 0x210) {
-					// Not enough data for a 2352-byte sector disc image.
-					d->romType = MegaDrivePrivate::ROM_UNKNOWN;
-					d->file.reset();
-					return;
-				}
-				d->fileType = FileType::DiscImage;
-
-				// MCD System ID area is at 0x10.
-				// MD-style header is at 0x110.
-				// No vector table is present on the disc.
-				memcpy(&d->mcd_systemID, &header[0x10], sizeof(d->mcd_systemID));
-				memcpy(&d->romHeader, &header[0x110], sizeof(d->romHeader));
-
-				// Calculate the security program CRC32.
-				// NOTE: The JP security program fits into the first sector,
-				// but US/EU takes up two sectors. This shouldn't be an issue,
-				// since we don't need the full program; we just need to be
-				// able to distinguish between them.
-				// NOTE: Only the first 0x4C0 bytes seem to be identical
-				// between USA and EUR, and 0x150 in JPN...
-				if (size >= (0x210 + 0x150)) {
-					Hash crc32Hash(Hash::Algorithm::CRC32);
-					if (crc32Hash.isUsable()) {
-						crc32Hash.process(&header[0x210], 0x150);
-						mcd_sp_crc = crc32Hash.getHash32();
-					}
-				}
-				break;
-
-			case MegaDrivePrivate::ROM_FORMAT_UNKNOWN:
-			default:
-				d->romType = MegaDrivePrivate::ROM_UNKNOWN;
-				break;
+			// MD header is at 0x100.
+			// Vector table is at 0.
+			d->fileType = FileType::ROM_Image;
+			memcpy(&d->vectors,    bin_data,        sizeof(d->vectors));
+			memcpy(&d->romHeader, &bin_data[0x100], sizeof(d->romHeader));
+			break;
 		}
+
+		case MegaDrivePrivate::ROM_FORMAT_DISC_2048:
+			d->fileType = FileType::DiscImage;
+
+			// MCD System ID area is at 0.
+			// MD-style header is at 0x100.
+			// No vector table is present on the disc.
+			memcpy(&d->mcd_systemID, header, sizeof(d->mcd_systemID));
+			memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
+
+			// Calculate the security program CRC32.
+			// NOTE: The JP security program fits into the first sector,
+			// but US/EU takes up two sectors. This shouldn't be an issue,
+			// since we don't need the full program; we just need to be
+			// able to distinguish between them.
+			// NOTE: Only the first 0x4C0 bytes seem to be identical
+			// between USA and EUR, and 0x150 in JPN...
+			if (size >= (0x200 + 0x150)) {
+				Hash crc32Hash(Hash::Algorithm::CRC32);
+				if (crc32Hash.isUsable()) {
+					crc32Hash.process(&header[0x200], 0x150);
+					mcd_sp_crc = crc32Hash.getHash32();
+				}
+			}
+			break;
+
+		case MegaDrivePrivate::ROM_FORMAT_DISC_2352:
+			if (size < 0x210) {
+				// Not enough data for a 2352-byte sector disc image.
+				d->romType = MegaDrivePrivate::ROM_UNKNOWN;
+				d->file.reset();
+				return;
+			}
+			d->fileType = FileType::DiscImage;
+
+			// MCD System ID area is at 0x10.
+			// MD-style header is at 0x110.
+			// No vector table is present on the disc.
+			memcpy(&d->mcd_systemID, &header[0x10], sizeof(d->mcd_systemID));
+			memcpy(&d->romHeader, &header[0x110], sizeof(d->romHeader));
+
+			// Calculate the security program CRC32.
+			// NOTE: The JP security program fits into the first sector,
+			// but US/EU takes up two sectors. This shouldn't be an issue,
+			// since we don't need the full program; we just need to be
+			// able to distinguish between them.
+			// NOTE: Only the first 0x4C0 bytes seem to be identical
+			// between USA and EUR, and 0x150 in JPN...
+			if (size >= (0x210 + 0x150)) {
+				Hash crc32Hash(Hash::Algorithm::CRC32);
+				if (crc32Hash.isUsable()) {
+					crc32Hash.process(&header[0x210], 0x150);
+					mcd_sp_crc = crc32Hash.getHash32();
+				}
+			}
+			break;
+
+		case MegaDrivePrivate::ROM_FORMAT_UNKNOWN:
+		default:
+			d->romType = MegaDrivePrivate::ROM_UNKNOWN;
+			break;
 	}
 
 	d->isValid = (d->romType >= 0);
@@ -941,8 +944,9 @@ MegaDrive::MegaDrive(const IRpFilePtr &file)
 	}
 
 	// Special ROM checks. (MD only for now)
-	if (sysID != MegaDrivePrivate::ROM_SYSTEM_MD)
+	if (sysID != MegaDrivePrivate::ROM_SYSTEM_MD) {
 		return;
+	}
 
 	const bool isEarlyRomHeader = d->checkIfEarlyRomHeader(&d->romHeader);
 	const off64_t fileSize = d->file->size();
@@ -992,7 +996,7 @@ MegaDrive::MegaDrive(const IRpFilePtr &file)
 		} else {
 			// Load the header directly.
 			d->pRomHeaderLockOn.reset(new MD_RomHeader);
-			size_t size = d->file->seekAndRead((2*1024*1024)+0x100, d->pRomHeaderLockOn.get(), sizeof(MD_RomHeader));
+			size_t size = d->file->seekAndRead((2*1024*1024)+512, d->pRomHeaderLockOn.get(), sizeof(MD_RomHeader));
 			if (size != sizeof(*d->pRomHeaderLockOn)) {
 				// Error loading the ROM header.
 				d->pRomHeaderLockOn.reset();
