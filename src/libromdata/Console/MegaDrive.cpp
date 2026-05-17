@@ -996,7 +996,7 @@ MegaDrive::MegaDrive(const IRpFilePtr &file)
 		} else {
 			// Load the header directly.
 			d->pRomHeaderLockOn.reset(new MD_RomHeader);
-			size_t size = d->file->seekAndRead((2*1024*1024)+512, d->pRomHeaderLockOn.get(), sizeof(MD_RomHeader));
+			size_t size = d->file->seekAndRead((2*1024*1024)+256, d->pRomHeaderLockOn.get(), sizeof(MD_RomHeader));
 			if (size != sizeof(*d->pRomHeaderLockOn)) {
 				// Error loading the ROM header.
 				d->pRomHeaderLockOn.reset();
