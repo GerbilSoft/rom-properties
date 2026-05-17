@@ -31,6 +31,7 @@ static const char *const mime_types_convert_to_png[] = {
 	"image/x-cursor",
 	"image/x-dds",
 	"image/x-didj-texture",
+	"image/x-godot-ctex",
 	"image/x-godot-stex",
 	"image/x-icb",
 	"image/x-ico",
