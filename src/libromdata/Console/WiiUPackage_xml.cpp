@@ -426,7 +426,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 	// argstr (TODO: Better title)
 	ADD_TEXT(cosRootNode, "argstr", "argstr");
 
-	// app_type (TODO: Decode this!)
+	// app_type
 	if (appRootNode) {
 		const unsigned int app_type = parseHexBinary32(appRootNode, "app_type");
 		if (app_type != 0) {
