@@ -35,6 +35,7 @@ static const char *const mime_types_convert_to_png[] = {
 	"image/x-icb",
 	"image/x-ico",
 	"image/x-icon",
+	"image/x-ps1-tim",
 	"image/x-qoi",
 	"image/x-sega-gvr",
 	"image/x-sega-pvr",
