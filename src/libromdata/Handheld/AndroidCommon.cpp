@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * AndroidCommon.cpp: Android common functions.                            *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -324,7 +324,6 @@ bool hasDangerousPermissions(const pugi::xml_document &manifest_xml)
 	static const array<const char*, 2> dangerousPermissions = {{
 		"android.permission.ACCESS_SUPERUSER",
 		"android.permission.BIND_DEVICE_ADMIN",
-		
 	}};
 
 	// Permissions
