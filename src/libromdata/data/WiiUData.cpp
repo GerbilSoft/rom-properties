@@ -337,7 +337,7 @@ struct WiiUApplicationType {
  *
  * Reference: https://github.com/devkitPro/wut/blob/master/include/coreinit/mcp.h
  */
-static const array<WiiUApplicationType, 45> wiiu_application_types = {{
+static const array<WiiUApplicationType, 46> wiiu_application_types = {{
 	{0x0000001D, "Compat User"},
 	{0x0800000E, "Game DLC"},
 	{0x0800001B, "Game Update"},
@@ -349,8 +349,9 @@ static const array<WiiUApplicationType, 45> wiiu_application_types = {{
 	{0x10000014, "DRC Firmware"},
 	{0x10000015, "System Version"},
 	{0x1000001A, "DRC Language"},
-	{0x10000024, "In-Disc Patch"},
+	{0x10000024, "On-Disc Patch"},
 	{0x10000025, "OS Patch"},
+	{0x10000027, "On-Disc Add-On Content"},
 	{0x1800000F, "Data System"},
 	{0x18000010, "Exceptions Data"},
 	{0x1800001C, "Shared RO Data"},
