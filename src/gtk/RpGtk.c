@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RpGtk.c: glib/gtk+ wrappers for some libromdata functionality.          *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -412,4 +412,27 @@ int rpGtk_getOpenFileName(const rpGtk_getFileName_t *gfndata)
 int rpGtk_getSaveFileName(const rpGtk_getFileName_t *gfndata)
 {
 	return rpGtk_getFileName_int(gfndata, true);
+}
+
+/**
+ * Convert Win32/Qt-style accelerator notation ('&') to GTK-style ('_').
+ * @param str String with '&' accelerator
+ * @return String with '_' accelerator
+ */
+gchar *rpGtk_convert_accel_to_gtk(const gchar *str)
+{
+	assert(str != NULL);
+	if (!str) {
+		return NULL;
+	}
+
+	// GTK+ uses '_' for accelerators, not '&'.
+	gchar *s_ret = g_strdup(str);
+	for (gchar *p = s_ret; *p != '\0'; p++) {
+		if (*p == '&') {
+			*p = '_';
+			break;
+		}
+	}
+	return s_ret;
 }

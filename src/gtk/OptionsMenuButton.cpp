@@ -10,7 +10,6 @@
 #include "OptionsMenuButton.hpp"
 #include "PIMGTYPE.hpp"
 #include "RpGtk.h"
-#include "RpGtkCpp.hpp"
 
 // librpbase
 #include "librpbase/OptionsMenuButton_data.inc.h"
@@ -194,7 +193,7 @@ rp_options_menu_button_class_init(RpOptionsMenuButtonClass *klass)
 static void
 rp_options_menu_button_init(RpOptionsMenuButton *widget)
 {
-	const string s_title = convert_accel_to_gtk(C_("OptionsMenuButton", "&Options"));
+	gchar *const s_title = rpGtk_convert_accel_to_gtk(C_("OptionsMenuButton", "&Options"));
 
 	// Create the GtkMenuButton.
 #ifdef USE_GTK_MENU_BUTTON
@@ -213,14 +212,14 @@ rp_options_menu_button_init(RpOptionsMenuButton *widget)
 	rp_options_menu_button_set_direction(widget, GTK_ARROW_UP);
 
 #if GTK_CHECK_VERSION(4, 0, 0)
-	gtk_menu_button_set_label(GTK_MENU_BUTTON(widget->menuButton), s_title.c_str());
+	gtk_menu_button_set_label(GTK_MENU_BUTTON(widget->menuButton), s_title);
 	gtk_menu_button_set_use_underline(GTK_MENU_BUTTON(widget->menuButton), TRUE);
 #else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	gtk_widget_show(widget->menuButton);	// needed for GTK2/GTK3 but not GTK4
 
 	GtkWidget *const lblOptions = gtk_label_new(nullptr);
 	gtk_widget_set_name(lblOptions, "lblOptions");
-	gtk_label_set_text_with_mnemonic(GTK_LABEL(lblOptions), s_title.c_str());
+	gtk_label_set_text_with_mnemonic(GTK_LABEL(lblOptions), s_title);
 	gtk_widget_show(lblOptions);
 	GtkWidget *const hboxOptions = rp_gtk_hbox_new(4);
 	gtk_widget_set_name(hboxOptions, "hboxOptions");
@@ -231,6 +230,8 @@ rp_options_menu_button_init(RpOptionsMenuButton *widget)
 	gtk_box_pack_start(GTK_BOX(hboxOptions), widget->imgOptions, false, false, 0);
 	gtk_container_add(GTK_CONTAINER(widget->menuButton), hboxOptions);
 #endif /* GTK_CHECK_VERSION(4, 0, 0) */
+
+	g_free(s_title);
 
 	// Add the menu button to the container widget.
 #if GTK_CHECK_VERSION(4, 0, 0)
@@ -578,9 +579,9 @@ rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
 			g_action_map_add_action(G_ACTION_MAP(actionGroup), G_ACTION(action));
 
 			// Create the menu item.
-			const string desc = convert_accel_to_gtk(op.desc);
-			g_menu_append(menuRomOps, desc.c_str(),
-				fmt::format(FSTR("{:s}.{:d}"), s_prefix, i).c_str());
+			gchar *const desc = rpGtk_convert_accel_to_gtk(op.desc);
+			g_menu_append(menuRomOps, desc, fmt::format(FSTR("{:s}.{:d}"), s_prefix, i).c_str());
+			g_free(desc);
 
 			// Next operation.
 			i++;
@@ -614,8 +615,9 @@ rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
 
 		int i = 0;
 		for (const RomData::RomOp &op : ops) {
-			const string desc = convert_accel_to_gtk(op.desc);
-			menuItem = gtk_menu_item_new_with_mnemonic(desc.c_str());
+			gchar *const desc = rpGtk_convert_accel_to_gtk(op.desc);
+			menuItem = gtk_menu_item_new_with_mnemonic(desc);
+			g_free(desc);
 			// NOTE: No name for this GtkWidget.
 			gtk_widget_set_sensitive(menuItem, !!(op.flags & RomData::RomOp::ROF_ENABLED));
 			g_object_set_qdata(G_OBJECT(menuItem), menuOptions_id_quark, GINT_TO_POINTER(i));
@@ -686,10 +688,11 @@ rp_options_menu_button_update_op(RpOptionsMenuButton *widget,
 		return;
 
 	g_menu_remove(widget->menuRomOps, id);
-	const string desc = convert_accel_to_gtk(op->desc);
+	gchar *const desc = rpGtk_convert_accel_to_gtk(op->desc);
 	g_simple_action_set_enabled(action, !!(op->flags & RomData::RomOp::ROF_ENABLED));
-	g_menu_insert(widget->menuRomOps, id, desc.c_str(),
+	g_menu_insert(widget->menuRomOps, id, desc,
 		fmt::format(FSTR("{:p}.{:d}"), static_cast<void*>(widget), id).c_str());
+	g_free(desc);
 #else /* !USE_G_MENU_MODEL */
 	GtkMenuItem *menuItem = nullptr;
 	GList *l = gtk_container_get_children(GTK_CONTAINER(widget->menuOptions));
@@ -717,8 +720,9 @@ rp_options_menu_button_update_op(RpOptionsMenuButton *widget,
 		return;
 
 	// Update the menu item.
-	const string desc = convert_accel_to_gtk(op->desc);
-	gtk_menu_item_set_label(menuItem, desc.c_str());
+	gchar *const desc = rpGtk_convert_accel_to_gtk(op->desc);
+	gtk_menu_item_set_label(menuItem, desc);
+	g_free(desc);
 	gtk_widget_set_sensitive(GTK_WIDGET(menuItem), !!(op->flags & RomData::RomOp::ROF_ENABLED));
 #endif /* USE_G_MENU_MODEL */
 }

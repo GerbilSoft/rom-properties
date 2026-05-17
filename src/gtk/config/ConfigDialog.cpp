@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * ConfigDialog.hpp: Configuration dialog.                                 *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,6 @@
 
 #include "ConfigDialog.hpp"
 #include "RpGtk.h"
-#include "RpGtkCpp.hpp"
 #include "gtk-i18n.h"
 
 #include <gdk/gdkkeysyms.h>
@@ -302,15 +301,15 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	// NOTE: Using GtkButtonBox on GTK2/GTK3 for "secondary" button functionality.
 	// NOTE: GTK+ has deprecated icons on buttons, so we won't add them.
 	// TODO: Proper ordering for the Apply button?
-	const std::string s_reset    = convert_accel_to_gtk(C_("ConfigDialog", "&Reset"));
-	const std::string s_defaults = convert_accel_to_gtk(C_("ConfigDialog", "Defaults"));
+	gchar *const s_reset    = rpGtk_convert_accel_to_gtk(C_("ConfigDialog", "&Reset"));
+	gchar *const s_defaults = rpGtk_convert_accel_to_gtk(C_("ConfigDialog", "Defaults"));
 
 #if USE_GTK_DIALOG
 	// Secondary buttons
 	dialog->btnReset = gtk_dialog_add_button(GTK_DIALOG(dialog),
-		s_reset.c_str(), CONFIG_DIALOG_RESPONSE_RESET);
+		s_reset, CONFIG_DIALOG_RESPONSE_RESET);
 	dialog->btnDefaults = gtk_dialog_add_button(GTK_DIALOG(dialog),
-		s_defaults.c_str(), CONFIG_DIALOG_RESPONSE_DEFAULTS);
+		s_defaults, CONFIG_DIALOG_RESPONSE_DEFAULTS);
 
 	// GTK4 no longer has GTK_STOCK_*, so we'll have to provide it ourselves.
 	dialog->btnCancel = gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_I18N_STR_CANCEL, GTK_RESPONSE_CANCEL);
@@ -330,10 +329,10 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	gtk_widget_set_name(dialog->buttonBox, "buttonBox");
 
 	// Secondary buttons
-	dialog->btnReset = gtk_button_new_with_mnemonic(s_reset.c_str());
+	dialog->btnReset = gtk_button_new_with_mnemonic(s_reset);
 	g_object_set_qdata(G_OBJECT(dialog->btnReset), response_id_quark,
 		GINT_TO_POINTER(CONFIG_DIALOG_RESPONSE_RESET));
-	dialog->btnDefaults = gtk_button_new_with_mnemonic(s_defaults.c_str());
+	dialog->btnDefaults = gtk_button_new_with_mnemonic(s_defaults);
 	g_object_set_qdata(G_OBJECT(dialog->btnDefaults), response_id_quark,
 		GINT_TO_POINTER(CONFIG_DIALOG_RESPONSE_DEFAULTS));
 
@@ -375,6 +374,9 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	g_signal_connect(dialog->btnApply,    "clicked", G_CALLBACK(rp_config_dialog_button_handler), dialog);
 	g_signal_connect(dialog->btnOK,       "clicked", G_CALLBACK(rp_config_dialog_button_handler), dialog);
 #endif /* USE_GTK_DIALOG */
+
+	g_free(s_reset);
+	g_free(s_defaults);
 
 	// Disbale the "Apply" button initially.
 	gtk_widget_set_sensitive(dialog->btnApply, FALSE);

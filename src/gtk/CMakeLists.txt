@@ -67,7 +67,6 @@ SET(${PROJECT_NAME}_GLib_SRCS
 	RomDataFormat.cpp
 	RpFile_gio.cpp
 	is-supported.cpp
-	RpGtkCpp.cpp
 	sort_funcs_common.c
 
 	config/CacheCleaner.cpp
@@ -77,7 +76,6 @@ SET(${PROJECT_NAME}_GLib_H
 	RpFile_gio.hpp
 	is-supported.hpp
 	glib-compat.h
-	RpGtkCpp.hpp
 	sort_funcs_common.h
 
 	config/CacheCleaner.hpp

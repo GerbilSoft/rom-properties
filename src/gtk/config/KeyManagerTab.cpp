@@ -2,14 +2,13 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * KeyManagerTab.cpp: Key Manager tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "KeyManagerTab.hpp"
 #include "KeyManagerTab_p.hpp"
-#include "RpGtkCpp.hpp"
 
 // Other rom-properties libraries
 using namespace LibRpBase;
@@ -143,7 +142,7 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 	rp_key_manager_tab_create_GtkTreeView(tab);
 
 	// "Import" button.
-	const string s_import = convert_accel_to_gtk(C_("KeyManagerTab", "I&mport"));
+	gchar *const s_import = rpGtk_convert_accel_to_gtk(C_("KeyManagerTab", "I&mport"));
 #ifdef USE_GTK_MENU_BUTTON
 	tab->btnImport = gtk_menu_button_new();
 #else /* !USE_GTK_MENU_BUTTON */
@@ -152,7 +151,7 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 	gtk_widget_set_name(tab->btnImport, "btnImport");
 
 #if GTK_CHECK_VERSION(4, 0, 0) && defined(USE_GTK_MENU_BUTTON)
-	gtk_menu_button_set_label(GTK_MENU_BUTTON(tab->btnImport), s_import.c_str());
+	gtk_menu_button_set_label(GTK_MENU_BUTTON(tab->btnImport), s_import);
 	gtk_menu_button_set_use_underline(GTK_MENU_BUTTON(tab->btnImport), TRUE);
 	gtk_menu_button_set_direction(GTK_MENU_BUTTON(tab->btnImport), GTK_ARROW_UP);
 #else /* !GTK_CHECK_VERSION(4, 0, 0) || !defined(USE_GTK_MENU_BUTTON) */
@@ -161,7 +160,7 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 	// This will also be used for the non-GtkMenuButton version.
 	GtkWidget *const lblImport = gtk_label_new(nullptr);
 	gtk_widget_set_name(lblImport, "lblImport");
-	gtk_label_set_text_with_mnemonic(GTK_LABEL(lblImport), s_import.c_str());
+	gtk_label_set_text_with_mnemonic(GTK_LABEL(lblImport), s_import);
 	GtkWidget *const imgImport = gtk_image_new_from_icon_name("pan-up-symbolic", GTK_ICON_SIZE_BUTTON);
 	gtk_widget_set_name(imgImport, "imgImport");
 
@@ -175,6 +174,8 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 	gtk_container_add(GTK_CONTAINER(tab->btnImport), hboxImport);
 #  endif /* GTK_CHECK_VERSION(4, 0, 0) */
 #endif /* GTK_CHECK_VERSION(4, 0, 0) && defined(USE_GTK_MENU_BUTTON) */
+
+	g_free(s_import);
 
 #ifndef RP_USE_GTK_ALIGNMENT
 	GTK_WIDGET_HALIGN_LEFT(tab->btnImport);
