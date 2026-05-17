@@ -250,7 +250,7 @@ const array<PowerVR3Private::FmtLkup_t, 32> PowerVR3Private::fmtLkup_tbl_legacy 
 	{   'argb', 0x08080808, ImageDecoder::PixelFormat::ARGB8888, 32},	// MGL_ARGB_8888
 	{   'argb', 0x08030302, ImageDecoder::PixelFormat::ARGB8332, 16},	// MGL_ARGB_8332
 	{'\0\0\0i', 0x00000008, ImageDecoder::PixelFormat::L8,        0},	// MGL_I_8 [TODO] [may need I8?]
-	{ '\0\0ia', 0x00000808, ImageDecoder::PixelFormat::IA8,       0},	// MGL_AI_88 [TODO]
+	{ '\0\0ia', 0x00000808, ImageDecoder::PixelFormat::L8A8,      0},	// MGL_AI_88 [TODO]
 	{        0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_1_BPP [TODO]
 	{        0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_VY1UY0 [TODO]
 	{        0,          0, ImageDecoder::PixelFormat::Unknown,   0},	// MGL_Y1VY0U [TODO]

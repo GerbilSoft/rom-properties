@@ -181,7 +181,6 @@ const char *ImageDecoderLinearTest::pxfToString(ImageDecoder::PixelFormat pxf)
 
 		// GameCube-specific 16-bit
 		CASE(RGB5A3)
-		CASE(IA8)
 
 		// PlayStation 2-specific 16-bit
 		CASE(BGR5A3)

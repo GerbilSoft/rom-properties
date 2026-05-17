@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_GCN.cpp: Image decoding functions: GameCube                *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -93,7 +93,7 @@ rp_image_ptr fromGcn16(PixelFormat px_format,
 	switch (px_format) {
 		GCN_16(PixelFormat::RGB5A3, RGB5A3_to_ARGB32, sBIT_5A3)
 		GCN_16(PixelFormat::RGB565, RGB565_to_ARGB32, sBIT_565)
-		GCN_16(PixelFormat::IA8,    IA8_to_ARGB32,    sBIT_IA8)
+		GCN_16(PixelFormat::L8A8,   L8A8_to_ARGB32,   sBIT_IA8)
 
 		default:
 			assert(!"Invalid pixel format for this function.");

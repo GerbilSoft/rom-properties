@@ -926,7 +926,7 @@ rp_image_const_ptr SegaPVRPrivate::loadGvrImage(void)
 		case GVR_IMG_IA8:
 			// FIXME: Untested.
 			img = ImageDecoder::fromGcn16(
-				ImageDecoder::PixelFormat::IA8,
+				ImageDecoder::PixelFormat::L8A8,
 				pvrHeader.width, pvrHeader.height,
 				reinterpret_cast<uint16_t*>(buf.get()), expected_size);
 			break;

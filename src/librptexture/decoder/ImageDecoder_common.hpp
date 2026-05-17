@@ -72,7 +72,7 @@ enum class PixelFormat : uint8_t {
 
 	// GameCube-specific 16-bit
 	RGB5A3,		// High bit determines RGB555 or ARGB4444.
-	IA8,		// Intensity/Alpha.
+	//IA8,		// Intensity/Alpha (REMOVED; use L8A8 instead)
 
 	// PlayStation 2-specific 16-bit
 	BGR5A3,		// Like RGB5A3, but with

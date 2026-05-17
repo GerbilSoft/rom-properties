@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * PixelConversion.hpp: Pixel conversion inline functions.                 *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -385,26 +385,6 @@ static inline CONSTEXPR_MULTILINE uint32_t RGB5A3_to_ARGB32(uint16_t px16)
 	return px32;
 }
 
-/**
- * Convert an IA8 pixel to ARGB32. (GameCube/Wii)
- * NOTE: Uses a grayscale palette.
- * @param px16 IA8 pixel
- * @return ARGB32 pixel
- */
-static inline CONSTEXPR_MULTILINE uint32_t IA8_to_ARGB32(uint16_t px16)
-{
-	// FIXME: What's the component order of IA8?
-	// Assuming I=MSB, A=LSB...
-	// NOTE: This is the same as L8A8_to_ARGB32().
-
-	// IA8:    IIIIIIII AAAAAAAA
-	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	uint32_t i = (px16 & 0xFF00);
-	i |= ((i << 8) | (i >> 8));
-	i |= ((px16 & 0x00FF) << 24);
-	return i;
-}
-
 /** Nintendo 3DS-specific 16-bit RGB **/
 
 /**
@@ -699,10 +679,6 @@ static inline CONSTEXPR_MULTILINE uint32_t A8L8_to_ARGB32(uint16_t px16)
  */
 static inline CONSTEXPR_MULTILINE uint32_t L8A8_to_ARGB32(uint16_t px16)
 {
-	// FIXME: What's the component order of IA8?
-	// Assuming I=MSB, A=LSB...
-	// NOTE: This is the same as IA8_to_ARGB32().
-
 	//   L8A8: LLLLLLLL AAAAAAAA
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 	uint32_t i = (px16 & 0xFF00);

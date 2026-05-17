@@ -243,7 +243,6 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 	switch (px_format) {
 		case PixelFormat::ARGB8332:
 		case PixelFormat::RGB5A3:
-		case PixelFormat::IA8:
 		case PixelFormat::BGR555_PS1:
 		case PixelFormat::BGR5A3:
 		case PixelFormat::L16:
