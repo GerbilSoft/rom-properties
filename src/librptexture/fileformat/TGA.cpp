@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * TGA.cpp: TrueVision TGA reader.                                         *
  *                                                                         *
- * Copyright (c) 2019-2025 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -482,8 +482,9 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 					assert(alphaType < TGA_ALPHATYPE_PRESENT);
 					assert((tgaHeader.img.attr_dir & 0x0F) == 0);
 					const bool ok = ((alphaType < TGA_ALPHATYPE_PRESENT) && ((tgaHeader.img.attr_dir & 0x0F) == 0));
-					if (!ok)
+					if (!ok) {
 						break;
+					}
 
 					// Create a grayscale palette.
 					uint32_t palette[256];
@@ -503,15 +504,16 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 
 				case 16: {
 					assert(alphaType >= TGA_ALPHATYPE_PRESENT);
-					assert((tgaHeader.img.attr_dir & 0x0F) == 0);
+					assert((tgaHeader.img.attr_dir & 0x0F) == 8);
 					const bool ok = ((alphaType >= TGA_ALPHATYPE_PRESENT) && ((tgaHeader.img.attr_dir & 0x0F) == 8));
-					if (!ok)
+					if (!ok) {
 						break;
+					}
 
 					// Decode the image.
 					// TODO: Verify; handle premultiplied alpha.
 					imgtmp = ImageDecoder::fromLinear16(
-						ImageDecoder::PixelFormat::IA8,
+						ImageDecoder::PixelFormat::A8L8,
 						tgaHeader.img.width, tgaHeader.img.height,
 						reinterpret_cast<const uint16_t*>(img_data.get()), img_siz);
 					break;
@@ -814,7 +816,7 @@ const char *TGA::pixelFormat(void) const
 					break;
 				case 16:
 					if ((d->tgaHeader.img.attr_dir & 0x0F) == 8) {
-						fmt = "IA8";
+						fmt = "A8L8";
 					}
 					break;
 				default:
