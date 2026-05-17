@@ -15,7 +15,7 @@ rp_list_data_item_col0_type_get_type (void)
       static const GEnumValue values[] = {
             { RP_LIST_DATA_ITEM_COL0_TYPE_TEXT, "RP_LIST_DATA_ITEM_COL0_TYPE_TEXT", "Text only" },
             { RP_LIST_DATA_ITEM_COL0_TYPE_CHECKBOX, "RP_LIST_DATA_ITEM_COL0_TYPE_CHECKBOX", "Column 0 is a checkbox" },
-            { RP_LIST_DATA_ITEM_COL0_TYPE_ICON, "RP_LIST_DATA_ITEM_COL0_TYPE_ICON", "Column 1 is an icon" },
+            { RP_LIST_DATA_ITEM_COL0_TYPE_ICON, "RP_LIST_DATA_ITEM_COL0_TYPE_ICON", "Column 0 is an icon" },
             { RP_LIST_DATA_ITEM_COL0_TYPE_LAST, "RP_LIST_DATA_ITEM_COL0_TYPE_LAST", "last" },
             { 0, NULL, NULL }
       };

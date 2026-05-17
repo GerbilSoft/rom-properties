@@ -20,7 +20,7 @@ G_DECLARE_FINAL_TYPE(RpListDataItem, rp_list_data_item, RP, LIST_DATA_ITEM, GObj
 typedef enum {
 	RP_LIST_DATA_ITEM_COL0_TYPE_TEXT	= 0,	/*< nick="Text only" >*/
 	RP_LIST_DATA_ITEM_COL0_TYPE_CHECKBOX	= 1,	/*< nick="Column 0 is a checkbox" >*/
-	RP_LIST_DATA_ITEM_COL0_TYPE_ICON	= 2,	/*< nick="Column 1 is an icon" >*/
+	RP_LIST_DATA_ITEM_COL0_TYPE_ICON	= 2,	/*< nick="Column 0 is an icon" >*/
 
 	RP_LIST_DATA_ITEM_COL0_TYPE_LAST
 } RpListDataItemCol0Type;
