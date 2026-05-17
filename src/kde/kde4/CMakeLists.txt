@@ -205,7 +205,7 @@ INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.KPropertiesDialog.des
 # FIXME: Run kbuildsycoca4?
 
 # Service menus
-INSTALL(FILES ../servicemenus/rp-convert-to-png.desktop
+INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/../servicemenus/rp-convert-to-png.desktop"
 	DESTINATION "${KDE4_SERVICES_INSTALL_DIR}/ServiceMenus"
 	PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
 	COMPONENT "plugin")

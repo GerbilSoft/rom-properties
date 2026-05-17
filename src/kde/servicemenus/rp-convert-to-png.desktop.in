@@ -1,0 +1,22 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Service
+MimeType=@MIMETYPES_CONVERT_TO_PNG_DESKTOP@
+Actions=rpConvertToPng;
+ServiceTypes=KonqPopupMenu/Plugin
+X-KDE-ServiceTypes=KonqPopupMenu/Plugin
+
+[Desktop Action rpConvertToPng]
+TryExec=rp-stub
+# TODO:
+# - allow type overrides? for this it should always be image
+# - handle multiple filenames
+Exec=rp-stub -s 0 -an %f
+Icon=image-png
+
+Name=Convert to PNG
+Name[de]=In PNG umwandeln
+Name[fr]=Convertir en PNG
+Name[ru]=Преобразовать в PNG
+
+Comment=Convert the selected texture file(s) to PNG format (rom-properties)

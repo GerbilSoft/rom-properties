@@ -1,0 +1,15 @@
+/*******************************************************************************
+ * ROM Properties Page shell extension. (GTK+ 3.x)                             *
+ * mime-types.convert-to-png.h: MIME types for "Convert to PNG". (source file) *
+ *                                                                             *
+ * Copyright (c) 2022-2026 by David Korth.                                     *
+ * SPDX-License-Identifier: GPL-2.0-or-later                                   *
+ *******************************************************************************/
+
+#pragma once
+
+// Supported MIME types
+// NOTE: Must be sorted alphabetically for use with std::binary_search().
+static const char *const mime_types_convert_to_png[] = {
+@MIMETYPES_CONVERT_TO_PNG_C_ARRAY@
+};
