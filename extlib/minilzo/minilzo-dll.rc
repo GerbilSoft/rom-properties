@@ -34,7 +34,7 @@ BEGIN
             VALUE "CompanyName", "Markus Franz Xaver Johannes Oberhumer"
             VALUE "FileDescription", "LZO real-time data compression library"
             VALUE "FileVersion", "2.10"
-            VALUE "InternalName", "lz4.dll"
+            VALUE "InternalName", "minilzo.dll"
             VALUE "LegalCopyright", "Copyright (C) 1996-2017 Markus Franz Xaver Johannes Oberhumer"
             VALUE "OriginalFilename", "minilzo.dll"
             VALUE "ProductName", "MiniLZO"
