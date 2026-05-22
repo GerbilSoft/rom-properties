@@ -60,7 +60,7 @@ const array<const char*, (9*2)+1> EXEPrivate::exts = {{
 
 	nullptr
 }};
-const array<const char*, 5+1> EXEPrivate::mimeTypes = {{
+const array<const char*, 6+1> EXEPrivate::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-ms-dos-executable",
 	"application/x-ms-ne-executable",
@@ -73,6 +73,9 @@ const array<const char*, 5+1> EXEPrivate::mimeTypes = {{
 	// Vendor-specific MIME types, not on FreeDesktop.org.
 	// Reference: https://en.wikipedia.org/wiki/Media_type#Common_examples
 	"application/vnd.microsoft.portable-executable",
+
+	// Other unofficial MIME types.
+	"application/x-ms-dll",
 
 	nullptr
 }};
