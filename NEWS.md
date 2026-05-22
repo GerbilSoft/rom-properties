@@ -47,6 +47,9 @@
     * Affects: v2.7 - v2.7.1
   * rp-config: Fix a minor bug in the Image Types tab where clicking Defaults,
     Reset, Defaults sometimes didn't properly set defaults.
+  * EXE: Add the "application/x-ms-dll" MIME type.
+    * Pull request #492: [xdg] mime.no-thumbnail.types: Add application/x-ms-dll
+      * Submitted by @InvoxiPlayGames.
 
 * Other changes:
   * Swizzling "bgra" (red/blue swap only) is now faster on systems that
