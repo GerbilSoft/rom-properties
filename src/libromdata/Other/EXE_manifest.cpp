@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE_manifest.cpp: DOS/Windows executable reader. (PE manifest reader)   *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -356,21 +356,23 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	// windowsSettings bitfield
 	// Reference: https://docs.microsoft.com/en-us/windows/win32/sbscs/manifest-file-schema
 	// TODO: Ordering.
-	enum class WindowsSettings {
+	enum class WindowsSettings : uint32_t {
 		autoElevate				= (1U << 0),
 		disableTheming				= (1U << 1),
 		disableWindowFiltering			= (1U << 2),
-		highResolutionScrollingAware		= (1U << 3),
-		magicFutureSetting			= (1U << 4),
-		printerDriverIsolation			= (1U << 5),
-		ultraHighResolutionScrollingAware	= (1U << 6),
-		longPathAware				= (1U << 7),
+		gdiScaling				= (1U << 3),
+		highResolutionScrollingAware		= (1U << 4),
+		magicFutureSetting			= (1U << 5),
+		printerDriverIsolation			= (1U << 6),
+		ultraHighResolutionScrollingAware	= (1U << 7),
+		longPathAware				= (1U << 8),
 	};
 
-	static const array<const char*, 8> WindowsSettings_names = {{
+	static const array<const char*, 9> WindowsSettings_names = {{
 		NOP_C_("EXE|Manifest|WinSettings", "Auto Elevate"),
 		NOP_C_("EXE|Manifest|WinSettings", "Disable Theming"),
 		NOP_C_("EXE|Manifest|WinSettings", "Disable Window Filter"),
+		NOP_C_("EXE|Manifest|WinSettings", "GDI Scaling"),
 		NOP_C_("EXE|Manifest|WinSettings", "High-Res Scroll"),
 		NOP_C_("EXE|Manifest|WinSettings", "Magic Future Setting"),
 		NOP_C_("EXE|Manifest|WinSettings", "Printer Driver Isolation"),
@@ -408,6 +410,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 			ADD_SETTING(settings, windowsSettings, autoElevate);
 			ADD_SETTING(settings, windowsSettings, disableTheming);
 			ADD_SETTING(settings, windowsSettings, disableWindowFiltering);
+			ADD_SETTING(settings, windowsSettings, gdiScaling);
 			ADD_SETTING(settings, windowsSettings, highResolutionScrollingAware);
 			ADD_SETTING(settings, windowsSettings, magicFutureSetting);
 			ADD_SETTING(settings, windowsSettings, printerDriverIsolation);
@@ -430,6 +433,12 @@ int EXEPrivate::addFields_PE_Manifest(void)
 
 			// activeCodePage (Win10/1903)
 			ADD_TEXT(windowsSettings, "activeCodePage", C_("EXE|Manifest", "Active Code Page"));
+
+			// heapType (Win10/2004)
+			ADD_TEXT(windowsSettings, "heapType", C_("EXE|Manifest", "Heap Type"));
+
+			// consoleAllocationPolicy (Win11/24H2)
+			ADD_TEXT(windowsSettings, "consoleAllocationPolicy", C_("EXE|Manifest", "Console Allocation Policy"));
 		}
 	}
 
