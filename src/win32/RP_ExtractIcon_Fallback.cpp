@@ -30,25 +30,67 @@ _COM_SMARTPTR_TYPEDEF(IPersistFile,  IID_IPersistFile);
 #endif
 
 /**
- * Use IExtractIconW from a fallback icon handler.
- * @param pExtractIconA	[in] Pointer to IExtractIconW interface
+ * PrivateExtractIconsW() wrapper function for T_DoExtractIcon().
+ */
+static inline UINT PrivateExtractIcons_wrapper(
+	_In_ LPCWSTR szFileName,
+	_In_ int nIconIndex,
+	_In_ int cxIcon,
+	_In_ int cyIcon,
+	_Out_opt_ HICON *phIcon,
+	_Out_opt_ UINT *piconid,
+	_In_ UINT nIcons,
+	_In_ UINT flags)
+{
+	return PrivateExtractIconsW(szFileName, nIconIndex, cxIcon, cyIcon, phIcon, piconid, nIcons, flags);
+}
+
+/**
+ * PrivateExtractIconsA() wrapper function for T_DoExtractIcon().
+ */
+static inline UINT PrivateExtractIcons_wrapper(
+	_In_ LPCSTR szFileName,
+	_In_ int nIconIndex,
+	_In_ int cxIcon,
+	_In_ int cyIcon,
+	_Out_opt_ HICON *phIcon,
+	_Out_opt_ UINT *piconid,
+	_In_ UINT nIcons,
+	_In_ UINT flags)
+{
+	return PrivateExtractIconsA(szFileName, nIconIndex, cxIcon, cyIcon, phIcon, piconid, nIcons, flags);
+}
+
+// Type traits to determine he character type for IExtractIconW vs. IExtractIconA.
+template<typename T> struct CharTrait;
+template<> struct CharTrait<IExtractIconW> { using CharType = wchar_t; };
+template<> struct CharTrait<IExtractIconA> { using CharType = char; };
+
+/**
+ * Use IExtractIcon[WA] from a fallback icon handler.
+ * @tparam IExtractIcon_t IExtractIconW or IExtractIconA
+ * @param pExtractIcon	[in] Pointer to IExtractIcon[WA] interface
  * @param phiconLarge	[out,opt] Large icon
  * @param phiconSmall	[out,opt] Small icon
  * @param nIconSize	[in] Icon size
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractIcon_Private::DoExtractIconW(_In_ IExtractIconW *pExtractIconW,
+template<typename IExtractIcon_t>
+LONG RP_ExtractIcon_Private::T_DoExtractIcon(_In_ IExtractIcon_t *pExtractIcon,
 	_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall, UINT nIconSize)
 {
+	using CharType = typename CharTrait<IExtractIcon_t>::CharType;
+
 	// Get the IPersistFile interface.
 	IPersistFilePtr pPersistFile;
-	HRESULT hr = pExtractIconW->QueryInterface(IID_PPV_ARGS(&pPersistFile));
+	HRESULT hr = pExtractIcon->QueryInterface(IID_PPV_ARGS(&pPersistFile));
 	if (FAILED(hr)) {
 		// Failed to get the IPersistFile interface.
 		return ERROR_FILE_NOT_FOUND;
 	}
 
 	// Load the file.
+	// TODO: Verify that LPCOLESTR is still Unicode in IExtractIconA.
 	hr = pPersistFile->Load(this->olefilename.c_str(), STGM_READ);
 	if (FAILED(hr)) {
 		// Failed to load the file.
@@ -56,11 +98,11 @@ LONG RP_ExtractIcon_Private::DoExtractIconW(_In_ IExtractIconW *pExtractIconW,
 	}
 
 	// Get the icon location.
-	wchar_t szIconFileW[MAX_PATH];
+	CharType szIconFile[MAX_PATH];
 	int nIconIndex;
 	UINT wFlags;
 	// TODO: Handle S_FALSE with GIL_DEFAULTICON?
-	hr = pExtractIconW->GetIconLocation(0, szIconFileW, _countof(szIconFileW), &nIconIndex, &wFlags);
+	hr = pExtractIcon->GetIconLocation(0, szIconFile, _countof(szIconFile), &nIconIndex, &wFlags);
 	if (FAILED(hr)) {
 		// GetIconLocation() failed.
 		return ERROR_FILE_NOT_FOUND;
@@ -69,7 +111,7 @@ LONG RP_ExtractIcon_Private::DoExtractIconW(_In_ IExtractIconW *pExtractIconW,
 	if (wFlags & GIL_NOTFILENAME) {
 		// Icon is not available on disk.
 		// Use IExtractIcon::Extract().
-		hr = pExtractIconW->Extract(szIconFileW, nIconIndex, phiconLarge, phiconSmall, nIconSize);
+		hr = pExtractIcon->Extract(szIconFile, nIconIndex, phiconLarge, phiconSmall, nIconSize);
 		return (SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_FILE_NOT_FOUND);
 	} else {
 		// Icon is available on disk.
@@ -83,95 +125,7 @@ LONG RP_ExtractIcon_Private::DoExtractIconW(_In_ IExtractIconW *pExtractIconW,
 
 		// TODO: ANSI versions: Use GetProcAddress().
 		HICON hIcons[2];
-		UINT uRet = PrivateExtractIconsW(szIconFileW, nIconIndex,
-				nIconSize, nIconSize, hIcons, nullptr, 2, 0);
-		if (uRet == 0) {
-			// No icons were extracted.
-			return ERROR_FILE_NOT_FOUND;
-		}
-
-		// At least one icon was extracted.
-		if (uRet >= 1) {
-			if (phiconLarge) {
-				*phiconLarge = hIcons[0];
-			} else if (hIcons[0]) {
-				DestroyIcon(hIcons[0]);
-			}
-		} else if (phiconLarge) {
-			*phiconLarge = nullptr;
-		}
-
-		if (uRet >= 2) {
-			if (phiconSmall) {
-				*phiconSmall = hIcons[1];
-			} else if (hIcons[1]) {
-				DestroyIcon(hIcons[1]);
-			}
-		} else if (phiconSmall) {
-			*phiconSmall = nullptr;
-		}
-	}
-	return ERROR_SUCCESS;
-}
-
-/**
- * Use IExtractIconA from an old fallback icon handler.
- * @param pExtractIconA	[in] Pointer to IExtractIconA interface
- * @param phiconLarge	[out,opt] Large icon
- * @param phiconSmall	[out,opt] Small icon
- * @param nIconSize	[in] Icon size
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RP_ExtractIcon_Private::DoExtractIconA(_In_ IExtractIconA *pExtractIconA,
-	_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall, UINT nIconSize)
-{
-	// TODO: Verify that LPCOLESTR is still Unicode in IExtractIconA.
-	// TODO: Needs testing.
-
-	// Get the IPersistFile interface.
-	IPersistFilePtr pPersistFile;
-	HRESULT hr = pExtractIconA->QueryInterface(IID_PPV_ARGS(&pPersistFile));
-	if (FAILED(hr)) {
-		// Failed to get the IPersistFile interface.
-		return ERROR_FILE_NOT_FOUND;
-	}
-
-	// Load the file.
-	hr = pPersistFile->Load(this->olefilename.c_str(), STGM_READ);
-	if (FAILED(hr)) {
-		// Failed to load the file.
-		return ERROR_FILE_NOT_FOUND;
-	}
-
-	// Get the icon location.
-	char szIconFileA[MAX_PATH];
-	int nIconIndex;
-	UINT wFlags;
-	// TODO: Handle S_FALSE with GIL_DEFAULTICON?
-	hr = pExtractIconA->GetIconLocation(0, szIconFileA, _countof(szIconFileA), &nIconIndex, &wFlags);
-	if (FAILED(hr)) {
-		// GetIconLocation() failed.
-		return ERROR_FILE_NOT_FOUND;
-	}
-
-	if (wFlags & GIL_NOTFILENAME) {
-		// Icon is not available on disk.
-		// Use IExtractIcon::Extract().
-		hr = pExtractIconA->Extract(szIconFileA, nIconIndex, phiconLarge, phiconSmall, nIconSize);
-		return (SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_FILE_NOT_FOUND);
-	} else {
-		// Icon is available on disk.
-
-		// PrivateExtractIcons() is published as of Windows XP SP1,
-		// but it's "officially" private.
-		// Reference: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-privateextracticonsa
-		// TODO: Verify that hIcons[x] is NULL if only one size is found.
-		// TODO: Verify which icon is extracted.
-		// TODO: What if the size isn't found?
-
-		// TODO: ANSI versions: Use GetProcAddress().
-		HICON hIcons[2];
-		UINT uRet = PrivateExtractIconsA(szIconFileA, nIconIndex,
+		UINT uRet = PrivateExtractIcons_wrapper(szIconFile, nIconIndex,
 				nIconSize, nIconSize, hIcons, nullptr, 2, 0);
 		if (uRet == 0) {
 			// No icons were extracted.
@@ -257,7 +211,7 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 		hr = pCF->CreateInstance(nullptr, IID_PPV_ARGS(&pExtractIconW));
 		if (SUCCEEDED(hr)) {
 			// Extract the icon.
-			LONG lResult = DoExtractIconW(pExtractIconW, phiconLarge, phiconSmall, nIconSize);
+			LONG lResult = T_DoExtractIcon<IExtractIconW>(pExtractIconW, phiconLarge, phiconSmall, nIconSize);
 			return lResult;
 		} else {
 			// Try getting the IExtractIconA interface.
@@ -265,7 +219,7 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 			hr = pCF->CreateInstance(nullptr, IID_PPV_ARGS(&pExtractIconA));
 			if (SUCCEEDED(hr)) {
 				// Extract the icon.
-				LONG lResult = DoExtractIconA(pExtractIconA, phiconLarge, phiconSmall, nIconSize);
+				LONG lResult = T_DoExtractIcon<IExtractIconA>(pExtractIconA, phiconLarge, phiconSmall, nIconSize);
 				return lResult;
 			} else {
 				// Failed to get an IExtractIcon interface from the fallback class.

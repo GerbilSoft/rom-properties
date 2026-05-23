@@ -58,25 +58,16 @@ public:
 
 private:
 	/**
-	 * Use IExtractIconW from a fallback icon handler.
-	 * @param pExtractIconW	[in] Pointer to IExtractIconW interface
+	 * Use IExtractIcon[WA] from a fallback icon handler.
+	 * @tparam IExtractIcon_t IExtractIconW or IExtractIconA
+	 * @param pExtractIcon	[in] Pointer to IExtractIcon[WA] interface
 	 * @param phiconLarge	[out,opt] Large icon
 	 * @param phiconSmall	[out,opt] Small icon
 	 * @param nIconSize	[in] Icon size
 	 * @return ERROR_SUCCESS on success; Win32 error code on error.
 	 */
-	LONG DoExtractIconW(_In_ IExtractIconW *pExtractIconW,
-		_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall, UINT nIconSize);
-
-	/**
-	 * Use IExtractIconA from an old fallback icon handler.
-	 * @param pExtractIconA	[in] Pointer to IExtractIconW interface
-	 * @param phiconLarge	[out,opt] Large icon
-	 * @param phiconSmall	[out,opt] Small icon
-	 * @param nIconSize	[in] Icon size
-	 * @return ERROR_SUCCESS on success; Win32 error code on error.
-	 */
-	LONG DoExtractIconA(_In_ IExtractIconA *pExtractIconA,
+	template<typename IExtractIcon_t>
+	LONG T_DoExtractIcon(_In_ IExtractIcon_t *pExtractIcon,
 		_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall, UINT nIconSize);
 
 	/**
