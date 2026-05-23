@@ -50,6 +50,10 @@
   * EXE: Add the "application/x-ms-dll" MIME type.
     * Pull request #492: [xdg] mime.no-thumbnail.types: Add application/x-ms-dll
       * Submitted by @InvoxiPlayGames.
+  * Windows: Fix icon fallbacks for file types where DefaultIcon is quoted,
+    e.g. PowerShell scripts (.ps1).
+    * Fixes #493: ROM Properties PS1 icon extraction breaking PowerShell script icons?
+      * Reported by @Jevil7452.
 
 * Other changes:
   * Swizzling "bgra" (red/blue swap only) is now faster on systems that

@@ -436,16 +436,35 @@ static int getIconIndexFromSpec(LPCTSTR szIconSpec)
  */
 int loadIconFromFilenameAndIndex(LPCTSTR lpszIconFilename, HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize)
 {
+	if (!lpszIconFilename || lpszIconFilename[0] == '\0') {
+		return ERROR_INVALID_PARAMETER;
+	}
+
 	// DefaultIcon is set but IconHandler isn't, which means
 	// the file's icon is stored as an icon resource.
 	// TODO: Return filename+index in the main IExtractIconW handler?
 	int nIconIndex = getIconIndexFromSpec(lpszIconFilename);
 
-	// Remove the index from the filename.
-	tstring ts_filename(lpszIconFilename);
+	// NOTE: Some DefaultIcons, e.g. for .ps1, have a quoted filename.
+	// The quotes must be removed before calling PrivateExtractIcons().
+
+	// Remove the index (and leading double-quote, if present) from the filename.
+	const size_t startOffset = (lpszIconFilename[0] == _T('"')) ? 1 : 0;
+	tstring ts_filename(&lpszIconFilename[startOffset]);
 	size_t comma = ts_filename.find_last_of(_T(','));
 	if (comma != tstring::npos && comma > 0) {
 		ts_filename.resize(comma);
+	}
+	if (ts_filename.empty()) {
+		return ERROR_INVALID_PARAMETER;
+	}
+
+	// Remove the trailing double-quote, if present.
+	if (ts_filename[ts_filename.size()-1] == _T('"')) {
+		ts_filename.resize(ts_filename.size()-1);
+		if (ts_filename.empty()) {
+			return ERROR_INVALID_PARAMETER;
+		}
 	}
 
 	// PrivateExtractIcons() is published as of Windows XP SP1,
