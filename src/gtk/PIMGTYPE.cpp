@@ -243,7 +243,10 @@ rp_image_ptr rp_image_load_png_from_gresource(const char *filename)
 
 	gsize size = 0;
 	gconstpointer data = g_bytes_get_data(pBytes, &size);
-	IRpFilePtr memFile = std::make_shared<MemFile>(data, size);
+	MemFile *const memFile = new MemFile(data, size);
+	rp_image_ptr img = RpPng::load(memFile);
+	delete memFile;
 
-	return RpPng::load(memFile);
+	g_bytes_unref(pBytes);
+	return img;
 }
