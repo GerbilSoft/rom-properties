@@ -22,7 +22,7 @@ LanguageComboBox::LanguageComboBox(QWidget *parent)
 	, m_forcePAL(false)
 {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-	connect(this, &QComboBox::currentIndexChanged,
+	connect(this, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
 		this, &LanguageComboBox::this_currentIndexChanged_slot);
 #else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 	connect(this, SIGNAL(currentIndexChanged(int)),
