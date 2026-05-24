@@ -211,7 +211,7 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	// Connect the signal handler.
 	cbo->setProperty("rp-config.cbid", cbid);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-	QObject::connect(cbo, &QComboBox::currentIndexChanged,
+	QObject::connect(cbo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
 			 q, &ImageTypesTab::cboImageType_currentIndexChanged);
 #else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 	QObject::connect(cbo, SIGNAL(currentIndexChanged(int)),
