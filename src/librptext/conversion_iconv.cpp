@@ -303,11 +303,12 @@ static std::basic_string<T> T_cpN_to_unicode(const char *out_encoding, unsigned 
 			} else if_constexpr (sizeof(T) == sizeof(uint16_t)) {
 				const auto ret_end = ret.end();
 				for (auto p = ret.begin(); p != ret_end; ++p) {
-					if ((uint16_t)*p = 0x301C) {
+					const uint16_t chr = static_cast<uint16_t>(*p);
+					if (chr == 0x301C) {
 						// Found U+301C: WAVE DASH
 						// Convert to U+FF5E: FULLWIDTH TILDE
 						*p = 0xFF5E;
-					} else if ((uint16_t)*p == 0x2212) {
+					} else if (chr == 0x2212) {
 						// Found U+2212: MINUS SIGN
 						// Convert to U+FF0D: FULLWIDTH HYPHEN-MINUS
 						*p = 0xFF0D;
