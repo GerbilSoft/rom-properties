@@ -78,6 +78,7 @@ FOR %%I IN (2015.14) DO (
 		SET CMAKE64_TOOLSET=v!V!0
 		SET CMAKE64_GENERATOR=!V! !YEAR! Win64
 
+		SET "MSVC_XP_DIR=%MSVC32_DIR%"
 		SET MSVC_XP_VERSION=!V!.0
 		SET MSVC_XP_YEAR=!YEAR!
 		SET CMAKE_XP_TOOLSET=v!V!0_xp
@@ -99,6 +100,7 @@ FOR %%I IN (Community Professional Enterprise) DO (
 		SET CMAKE64_TOOLSET=v141
 		SET CMAKE64_GENERATOR=15 2017 Win64
 
+		SET "MSVC_XP_DIR=%MSVC32_DIR%"
 		SET MSVC_XP_VERSION=14.16
 		SET MSVC_XP_YEAR=2017
 		SET CMAKE_XP_TOOLSET=v141_xp
@@ -108,7 +110,7 @@ FOR %%I IN (Community Professional Enterprise) DO (
 :: MSVC 2019: Use the 2017 (14.1x) compiler for 32-bit in order to maintain WinXP compatibilty.
 FOR %%I IN (Community Professional Enterprise) DO (
 	IF EXIST "%PrgFiles32%\Microsoft Visual Studio\2019\%%I\VC\Tools\MSVC\14.29.30133\bin\HostX86\x86\cl.exe" (
-		SET "MSVC32_DIR=%PrgFiles32%\Microsoft Visual Studio\2019\%%I\VC\Tools\MSVC\14.16.27023"
+		SET "MSVC32_DIR=%PrgFiles32%\Microsoft Visual Studio\2019\%%I\VC\Tools\MSVC\14.29.30133"
 		SET MSVC32_VERSION=14.29
 		SET MSVC32_YEAR=2019
 		SET CMAKE32_TOOLSET=v142
@@ -122,6 +124,7 @@ FOR %%I IN (Community Professional Enterprise) DO (
 		SET CMAKE64_GENERATOR=16 2019
 		SET CMAKE64_ARCH=-A x64
 
+		SET "MSVC_XP_DIR=%PrgFiles32%\Microsoft Visual Studio\2019\%%I\VC\Tools\MSVC\14.16.27023"
 		SET MSVC_XP_VERSION=14.16
 		SET MSVC_XP_YEAR=2019
 		SET CMAKE_XP_TOOLSET=v141_xp
@@ -132,7 +135,7 @@ FOR %%I IN (Community Professional Enterprise) DO (
 :: NOTE: MSVC 2022 switched to 64-bit Program Files
 FOR %%I IN (Community Professional Enterprise) DO (
 	IF EXIST "%PrgFiles64%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.36.32532\bin\HostX86\x86\cl.exe" (
-		SET "MSVC32_DIR=%PrgFiles64%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.16.27023"
+		SET "MSVC32_DIR=%PrgFiles64%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.36.32532"
 		SET MSVC32_VERSION=14.36
 		SET MSVC32_YEAR=2022
 		SET CMAKE32_TOOLSET=v143
@@ -146,6 +149,7 @@ FOR %%I IN (Community Professional Enterprise) DO (
 		SET CMAKE64_GENERATOR=17 2022
 		SET CMAKE64_ARCH=-A x64
 
+		SET "MSVC_XP_DIR=%PrgFiles64%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.16.27023"
 		SET MSVC_XP_VERSION=14.16
 		SET MSVC_XP_YEAR=2022
 		SET CMAKE_XP_TOOLSET=v141_xp
@@ -156,7 +160,7 @@ FOR %%I IN (Community Professional Enterprise) DO (
 :: NOTE: MSVC 2022 switched to 64-bit Program Files
 FOR %%I IN (Community Professional Enterprise) DO (
 	IF EXIST "%PrgFiles64%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.44.35207\bin\HostX86\x86\cl.exe" (
-		SET "MSVC32_DIR=%PrgFiles64%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.16.27023"
+		SET "MSVC32_DIR=%PrgFiles64%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.44.35207"
 		SET MSVC32_VERSION=14.44
 		SET MSVC32_YEAR=2022
 		SET CMAKE32_TOOLSET=v143
@@ -170,6 +174,7 @@ FOR %%I IN (Community Professional Enterprise) DO (
 		SET CMAKE64_GENERATOR=17 2022
 		SET CMAKE64_ARCH=-A x64
 
+		SET "MSVC_XP_DIR=%PrgFiles64%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.16.27023"
 		SET MSVC_XP_VERSION=14.16
 		SET MSVC_XP_YEAR=2022
 		SET CMAKE_XP_TOOLSET=v141_xp
@@ -181,7 +186,7 @@ FOR %%I IN (Community Professional Enterprise) DO (
 :: NOTE: MSVC 2022 switched to 64-bit Program Files
 FOR %%I IN (Community Professional Enterprise) DO (
 	IF EXIST "%PrgFiles64%\Microsoft Visual Studio\18\%%I\VC\Tools\MSVC\14.51.36231\bin\HostX86\x86\cl.exe" (
-		SET "MSVC32_DIR=%PrgFiles64%\Microsoft Visual Studio\18\%%I\VC\Tools\MSVC\14.16.27023"
+		SET "MSVC32_DIR=%PrgFiles64%\Microsoft Visual Studio\18\%%I\VC\Tools\MSVC\14.51.36231"
 		SET MSVC32_VERSION=14.51
 		SET MSVC32_YEAR=2026
 		SET CMAKE32_TOOLSET=v145
@@ -202,6 +207,7 @@ FOR %%I IN (Community Professional Enterprise) DO (
 		SET CMAKE_ARM32_TOOLSET=v143
 		SET CMAKE_ARM32_ARCH=-A arm
 
+		SET "MSVC_XP_DIR=%PrgFiles64%\Microsoft Visual Studio\18\%%I\VC\Tools\MSVC\14.16.27023"
 		SET MSVC_XP_VERSION=14.16
 		SET MSVC_XP_YEAR=2026
 		SET CMAKE_XP_TOOLSET=v141_xp
@@ -292,6 +298,8 @@ IF NOT EXIST "%MSVC_CL64_CROSS%" (
 		EXIT /B 1
 	)
 )
+
+:: TODO: Check for the Windows XP 32-bit and 64-bit compilers.
 
 :: Check for the Windows 7 SDK. [either v7.1A or v7.0A]
 IF NOT EXIST "%PrgFiles32%\Microsoft SDKs\Windows\v7.1A\Include\Windows.h" (
