@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * ConfigDialog.cpp: Configuration dialog.                                 *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -145,9 +145,15 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 	d->btnDefaults->setIcon(QIcon::fromTheme(QLatin1String("document-revert")));
 
 	// Connect slots for "Apply" and "Reset".
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+	connect(d->btnApply, &QAbstractButton::clicked, this, &ConfigDialog::apply);
+	connect(d->btnReset, &QAbstractButton::clicked, this, &ConfigDialog::reset);
+	connect(d->btnDefaults, &QAbstractButton::clicked, this, &ConfigDialog::loadDefaults);
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 	connect(d->btnApply, SIGNAL(clicked()), this, SLOT(apply()));
 	connect(d->btnReset, SIGNAL(clicked()), this, SLOT(reset()));
 	connect(d->btnDefaults, SIGNAL(clicked()), this, SLOT(loadDefaults()));
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 
 	// Disable the "Apply" and "Reset" buttons until we receive a modification signal.
 	d->btnApply->setEnabled(false);
@@ -156,12 +162,21 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 	// Connect the modification signals.
 	// NOTE: Qt Designer doesn't want to let us connect
 	// signals from the QTabWidget child widgets.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+	connect(d->ui.tabImageTypes, &ITab::modified, this, &ConfigDialog::tabModified);
+	connect(d->ui.tabSystems, &ITab::modified, this, &ConfigDialog::tabModified);
+	connect(d->ui.tabOptions, &ITab::modified, this, &ConfigDialog::tabModified);
+#  ifdef ENABLE_DECRYPTION
+	connect(d->tabKeyManager, &ITab::modified, this, &ConfigDialog::tabModified);
+#  endif /* ENABLE_DECRYPTION */
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 	connect(d->ui.tabImageTypes, SIGNAL(modified()), this, SLOT(tabModified()));
 	connect(d->ui.tabSystems, SIGNAL(modified()), this, SLOT(tabModified()));
 	connect(d->ui.tabOptions, SIGNAL(modified()), this, SLOT(tabModified()));
-#ifdef ENABLE_DECRYPTION
+#  ifdef ENABLE_DECRYPTION
 	connect(d->tabKeyManager, SIGNAL(modified()), this, SLOT(tabModified()));
-#endif /* ENABLE_DECRYPTION */
+#  endif /* ENABLE_DECRYPTION */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 
 	// Make sure the "Defaults" button has the correct state.
 	on_tabWidget_currentChanged();

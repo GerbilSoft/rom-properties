@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * LanguageComboBox.cpp: Language QComboBox subclass.                      *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,8 +21,13 @@ LanguageComboBox::LanguageComboBox(QWidget *parent)
 	: super(parent)
 	, m_forcePAL(false)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+	connect(this, &QComboBox::currentIndexChanged,
+		this, &LanguageComboBox::this_currentIndexChanged_slot);
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 	connect(this, SIGNAL(currentIndexChanged(int)),
 		this, SLOT(this_currentIndexChanged_slot(int)));
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 }
 
 /**

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyManagerTab.cpp: Key Manager tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -328,7 +328,11 @@ KeyManagerTab::KeyManagerTab(QWidget *parent)
 	d->ui.btnImport->setMenu(menuImport);
 
 	// Connect KeyStore's modified() signal to our modified() signal.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+	connect(d->keyStore, &KeyStoreQt::modified, this, &KeyManagerTab::modified);
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 	connect(d->keyStore, SIGNAL(modified()), this, SIGNAL(modified()));
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 
 #ifdef HAVE_KMESSAGEWIDGET
 	// KMessageWidget

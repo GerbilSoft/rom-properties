@@ -201,8 +201,13 @@ bool DragImageLabel::updatePixmaps(void)
 				m_anim->tmrIconAnim.reset(new QTimer(this));
 				m_anim->tmrIconAnim->setObjectName(QLatin1String("tmrIconAnim"));
 				m_anim->tmrIconAnim->setSingleShot(true);
-				QObject::connect(m_anim->tmrIconAnim.get(), SIGNAL(timeout()),
-						 this, SLOT(tmrIconAnim_timeout()));
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+				connect(m_anim->tmrIconAnim.get(), &QTimer::timeout,
+					this, &DragImageLabel::tmrIconAnim_timeout);
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
+				connect(m_anim->tmrIconAnim.get(), SIGNAL(timeout()),
+					this, SLOT(tmrIconAnim_timeout()));
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 			}
 		}
 

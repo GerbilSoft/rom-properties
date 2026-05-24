@@ -108,8 +108,13 @@ void RomDataViewPrivate::createOptionsButton(void)
 	btnOptions->hide();
 
 	// Connect the OptionsMenuButton's triggered(int) signal.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+	QObject::connect(btnOptions, &OptionsMenuButton::triggered,
+			 q, &RomDataView::btnOptions_triggered);
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 	QObject::connect(btnOptions, SIGNAL(triggered(int)),
 			 q, SLOT(btnOptions_triggered(int)));
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 
 	// Initialize the menu options.
 	btnOptions->reinitMenu(romData.get());
@@ -432,8 +437,13 @@ QGridLayout *RomDataViewPrivate::initBitfield(QLabel *lblDesc,
 		// Disable user modifications.
 		// TODO: Prevent the initial mousebutton down from working;
 		// otherwise, it shows a partial check mark.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+		QObject::connect(checkBox, &QCheckBox::clicked,
+				 q, &RomDataView::bitfield_clicked_slot);
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 		QObject::connect(checkBox, SIGNAL(clicked(bool)),
 				 q, SLOT(bitfield_clicked_slot(bool)));
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 
 		gridLayout->addWidget(checkBox, row, col, 1, 1);
 		col++;
@@ -910,8 +920,13 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 		cboLanguage->setSelectedLC(lc_to_set);
 
 		// Connect the signal after everything's been initialized.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+		QObject::connect(cboLanguage, &LanguageComboBox::lcChanged,
+		                 q, &RomDataView::cboLanguage_lcChanged_slot);
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 		QObject::connect(cboLanguage, SIGNAL(lcChanged(uint32_t)),
 		                 q, SLOT(cboLanguage_lcChanged_slot(uint32_t)));
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 	}
 }
 

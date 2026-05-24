@@ -473,12 +473,21 @@ void KeyStoreModel::setKeyStore(KeyStoreQt *keyStore)
 		}
 
 		// Disconnect the KeyStore's signals.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+		disconnect(d->keyStore, &QObject::destroyed,
+			   this, &KeyStoreModel::keyStore_destroyed_slot);
+		disconnect(d->keyStore, static_cast<void (KeyStoreQt::*)(int,int)>(&KeyStoreQt::keyChanged),
+			   this, &KeyStoreModel::keyStore_keyChanged_slot);
+		disconnect(d->keyStore, &KeyStoreQt::allKeysChanged,
+			   this, &KeyStoreModel::keyStore_allKeysChanged_slot);
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 		disconnect(d->keyStore, SIGNAL(destroyed(QObject*)),
 			   this, SLOT(keyStore_destroyed_slot(QObject*)));
 		disconnect(d->keyStore, SIGNAL(keyChanged(int,int)),
 			   this, SLOT(keyStore_keyChanged_slot(int,int)));
 		disconnect(d->keyStore, SIGNAL(allKeysChanged()),
 			   this, SLOT(keyStore_allKeysChanged_slot()));
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 
 		d->keyStore = nullptr;
 
@@ -502,12 +511,21 @@ void KeyStoreModel::setKeyStore(KeyStoreQt *keyStore)
 		d->sectCount = sectCount;
 
 		// Connect the KeyStore's signals.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+		connect(d->keyStore, &QObject::destroyed,
+			this, &KeyStoreModel::keyStore_destroyed_slot);
+		connect(d->keyStore, static_cast<void (KeyStoreQt::*)(int,int)>(&KeyStoreQt::keyChanged),
+			this, &KeyStoreModel::keyStore_keyChanged_slot);
+		connect(d->keyStore, &KeyStoreQt::allKeysChanged,
+			this, &KeyStoreModel::keyStore_allKeysChanged_slot);
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 		connect(d->keyStore, SIGNAL(destroyed(QObject*)),
 			this, SLOT(keyStore_destroyed_slot(QObject*)));
 		connect(d->keyStore, SIGNAL(keyChanged(int,int)),
 			this, SLOT(keyStore_keyChanged_slot(int,int)));
 		connect(d->keyStore, SIGNAL(allKeysChanged()),
 			this, SLOT(keyStore_allKeysChanged_slot()));
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 
 		// Done adding rows.
 		if (sectCount > 0) {

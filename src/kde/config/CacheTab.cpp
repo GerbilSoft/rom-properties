@@ -69,7 +69,26 @@ CacheTabPrivate::CacheTabPrivate(CacheTab *q)
 	ccCleaner.setObjectName(QLatin1String("ccCleaner"));
 	ccCleaner.moveToThread(&thrCleaner);
 
-	// Status slots.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+	// Status slots
+	QObject::connect(&ccCleaner, &CacheCleaner::progress,
+			 q, &CacheTab::ccCleaner_progress);
+	QObject::connect(&ccCleaner, &CacheCleaner::error,
+			 q, &CacheTab::ccCleaner_error);
+	QObject::connect(&ccCleaner, &CacheCleaner::cacheIsEmpty,
+			 q, &CacheTab::ccCleaner_cacheIsEmpty);
+	QObject::connect(&ccCleaner, &CacheCleaner::cacheCleared,
+			 q, &CacheTab::ccCleaner_cacheCleared);
+	QObject::connect(&ccCleaner, &CacheCleaner::finished,
+			 q, &CacheTab::ccCleaner_finished);
+
+	// Thread signals
+	QObject::connect(&thrCleaner, &QThread::started,
+			 &ccCleaner, &CacheCleaner::run);
+	QObject::connect(&ccCleaner, &CacheCleaner::finished,
+			 &thrCleaner, &QThread::quit);
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
+	// Status slots
 	QObject::connect(&ccCleaner, SIGNAL(progress(int,int,bool)),
 			 q, SLOT(ccCleaner_progress(int,int,bool)));
 	QObject::connect(&ccCleaner, SIGNAL(error(QString)),
@@ -81,11 +100,12 @@ CacheTabPrivate::CacheTabPrivate(CacheTab *q)
 	QObject::connect(&ccCleaner, SIGNAL(finished()),
 			 q, SLOT(ccCleaner_finished()));
 
-	// Thread signals.
+	// Thread signals
 	QObject::connect(&thrCleaner, SIGNAL(started()),
 			 &ccCleaner, SLOT(run()));
 	QObject::connect(&ccCleaner, SIGNAL(finished()),
 			 &thrCleaner, SLOT(quit()));
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 }
 
 CacheTabPrivate::~CacheTabPrivate()

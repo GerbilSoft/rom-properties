@@ -135,6 +135,19 @@ AboutTabPrivate::AboutTabPrivate(AboutTab *q)
 	updChecker.setObjectName(QLatin1String("updChecker"));
 	updChecker.moveToThread(&thrUpdate);
 
+#  if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+	// Status slots
+	QObject::connect(&updChecker, &UpdateChecker::error,
+			 q, &AboutTab::updChecker_error);
+	QObject::connect(&updChecker, &UpdateChecker::retrieved,
+			 q, &AboutTab::updChecker_retrieved);
+
+	// Thread signals
+	QObject::connect(&thrUpdate, &QThread::started,
+			 &updChecker, &UpdateChecker::run);
+	QObject::connect(&updChecker, &UpdateChecker::finished,
+			 &thrUpdate, &QThread::quit);
+#  else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 	// Status slots
 	QObject::connect(&updChecker, SIGNAL(error(QString)),
 			 q, SLOT(updChecker_error(QString)));
@@ -146,6 +159,7 @@ AboutTabPrivate::AboutTabPrivate(AboutTab *q)
 			 &updChecker, SLOT(run()));
 	QObject::connect(&updChecker, SIGNAL(finished()),
 			 &thrUpdate, SLOT(quit()));
+#  endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 #endif /* ENABLE_NETWORKING */
 }
 
