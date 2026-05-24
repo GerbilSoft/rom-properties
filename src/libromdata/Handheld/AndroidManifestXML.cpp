@@ -92,7 +92,7 @@ public:
 
 public:
 	// Maximum size for various files.
-	static constexpr size_t AndroidManifest_xml_FILE_SIZE_MAX = (256U * 1024U);
+	static constexpr size_t AndroidManifest_xml_FILE_SIZE_MAX = (512U * 1024U);
 
 	// AndroidManifest.xml document
 	// NOTE: Using a pointer to prevent delay-load issues.
