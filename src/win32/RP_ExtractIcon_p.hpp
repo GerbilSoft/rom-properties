@@ -68,7 +68,7 @@ private:
 	 */
 	template<typename IExtractIcon_t>
 	LONG T_DoExtractIcon(_In_ IExtractIcon_t *pExtractIcon,
-		_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall, UINT nIconSize);
+		_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall, _In_ UINT nIconSize);
 
 	/**
 	 * Fallback icon handler function. (internal)
