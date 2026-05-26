@@ -496,7 +496,7 @@ rp_image_ptr fromLinear16_neon(PixelFormat px_format,
 
 				// Remaining pixels.
 				for (; x > 0; x--) {
-					*px_dest = RG88_to_ARGB32(*img_buf);
+					*px_dest = GR88_to_ARGB32(*img_buf);
 					img_buf++;
 					px_dest++;
 				}
