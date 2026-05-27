@@ -23,6 +23,7 @@ AppUpdatesURL={#MyAppURL}
 ; handlers for various types, so we need to tell Windows Explorer to refresh.
 ChangesAssociations=yes
 Compression=lzma2/max
+DEPCompatible=yes
 DefaultDirName={autopf}\rom-properties
 DefaultGroupName=ROM Properties
 DisableProgramGroupPage=yes
@@ -32,6 +33,7 @@ OutputBaseFilename=SetupRomProperties-{#MyAppVersion}
 UninstallDisplayIcon={app}\rp-config.exe
 UninstallDisplayName={#MyAppName}
 SolidCompression=yes
+VersionInfoCopyright=Copyright (c) 2016-2026 by David Korth.
 VersionInfoDescription=ROM Properties Setup (for Windows 7/8.x/10/11 and later)
 VersionInfoProductTextVersion={#MyAppVersion}
 VersionInfoProductVersion={#RP_VERSION_MAJOR}.{#RP_VERSION_MINOR}.{#RP_VERSION_PATCH}.{#RP_VERSION_DEVEL}
