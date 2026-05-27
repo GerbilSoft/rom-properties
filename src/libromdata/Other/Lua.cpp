@@ -55,6 +55,7 @@ public:
 		Lua5_2 = 7,
 		Lua5_3 = 8,
 		Lua5_4 = 9,
+		Lua5_5 = 10,
 		Max
 	};
 	LuaVersion luaVersion;
@@ -235,6 +236,7 @@ LuaPrivate::LuaVersion LuaPrivate::to_version(uint8_t version)
 		case 0x52:	return LuaVersion::Lua5_2;
 		case 0x53:	return LuaVersion::Lua5_3;
 		case 0x54:	return LuaVersion::Lua5_4;
+		case 0x55:	return LuaVersion::Lua5_5;
 		default:	return LuaVersion::Unknown;
 	}
 }
@@ -449,12 +451,19 @@ void LuaPrivate::parse4(uint8_t version, const uint8_t *p) {
 	}
 
 	// Lua 5.4 encodes int/size_t as varints, so it doesn't need to know their size.
+	// Lua 5.5 depends on int again, due to lua_load's "fixed buffer" option.
 	if (version < 0x54) {
 		int_size = *p++;
 		size_t_size = *p++;
+	} else if (version >= 0x55) {
+		int_size = *p++;
+		// skip over test int (-0x5678)
+		if (int_size != 8 && int_size != 4) // a check to avoid overflows
+			return;
+		p += int_size;
 	}
 
-	   instruction_size = *p++;
+	instruction_size = *p++;
 
 	if (version == 0x40) {
 		const uint8_t INSTRUCTION_bits = *p++;
@@ -471,23 +480,37 @@ void LuaPrivate::parse4(uint8_t version, const uint8_t *p) {
 		if (OP_bits != 6 || A_bits != 8 || B_bits != 9 || C_bits != 9) {
 			weird_layout = true;
 		}
+	} else if (version >= 0x55) {
+		// skip over test Instruction (0x12345678)
+		if (instruction_size != 8 && instruction_size != 4) // a check to avoid overflows
+			return;
+		p += instruction_size;
 	}
 
 	// Lua 5.3 introduced support for a separate integer type.
 	if (version >= 0x53)
-		      integer_size = *p++;
+		integer_size = *p++;
 
-	number_size = *p++;
+	// This was moved after the test lua_Integer in Lua 5.5
+	if (version < 0x55)
+		number_size = *p++;
 
 	if (version >= 0x53) {
-		// A test number for lua_Integer (0x5678)
-		endianness = detect_endianness_int("\x00\x00\x00\x00\x00\x00\x56\x78", p, number_size);
+		// A test number for lua_Integer (0x5678). Changed to -0x5678 in Lua 5.5.
+		if (version < 0x55) {
+			endianness = detect_endianness_int("\x00\x00\x00\x00\x00\x00\x56\x78", p, integer_size);
+		} else {
+			endianness = detect_endianness_int("\xFF\xFF\xFF\xFF\xFF\xFF\xA9\x88", p, integer_size);
+		}
 		if (integer_size != 8 && integer_size != 4) // a check to avoid overflows
 			return;
 		p += integer_size;
 		// Note that if this fails, we end up with endianness == -1, and so the test
 		// for lua_Number gets skipped.
 	}
+
+	if (version >= 0x55)
+		number_size = *p++;
 
 	if (version == 0x51 || version == 0x52) {
 		// Lua 5.1 and 5.2 just have a flag to specify whether lua_Number is int or float.
@@ -511,16 +534,21 @@ void LuaPrivate::parse4(uint8_t version, const uint8_t *p) {
 			ed = detect_endianness("\x00\x00\x00\x00\x01\xDF\x5E\x76",
 				"\x4B\xEF\xAF\x3B", "\x41\x7D\xF5\xE7\x68\x93\x09\xB6",
 				p, number_size, &is_integral);
-		} else {
+		} else if (version < 0x55) {
 			// This is supposed to be 370.5 cast to lua_Number
 			ed = detect_endianness("\x00\x00\x00\x00\x00\x00\x01\x72",
 				"\x43\xB9\x40\x00", "\x40\x77\x28\x00\x00\x00\x00\x00",
+				p, number_size, &is_integral);
+		} else {
+			// This is supposed to be -370.5 cast to lua_Number
+			ed = detect_endianness("\xFF\xFF\xFF\xFF\xFF\xFF\xFE\x8E",
+				"\xC3\xB9\x40\x00", "\xC0\x77\x28\x00\x00\x00\x00\x00",
 				p, number_size, &is_integral);
 		}
 		if (is_integral == IntegralType::Float && ed != endianness) {
 			is_float_swapped = true;
 		}
-		// End of header for 4.0, 5.0, 5.3, 5.4
+		// End of header for 4.0, 5.0, 5.3, 5.4, 5.5
 	}
 
 	if (version == 0x52) {
@@ -624,10 +652,10 @@ const char *Lua::systemName(unsigned int type) const
 
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"Lua::systemName() array index optimization needs to be updated.");
-	static_assert(static_cast<int>(LuaPrivate::LuaVersion::Max) == 10,
+	static_assert(static_cast<int>(LuaPrivate::LuaVersion::Max) == 11,
 		"Lua::systemName() array index optimization needs to be updated.");
 
-	static const array<array<const char*, 4>, 10> sysNames = {{
+	static const array<array<const char*, 4>, 11> sysNames = {{
 		{{"PUC Lua 2.4", "Lua 2.4", "Lua", nullptr}},
 		{{"PUC Lua 2.5/3.0", "Lua 2.5/3.0", "Lua", nullptr}},
 		{{"PUC Lua 3.1", "Lua 3.1", "Lua", nullptr}},
@@ -638,6 +666,7 @@ const char *Lua::systemName(unsigned int type) const
 		{{"PUC Lua 5.2", "Lua 5.2", "Lua", nullptr}},
 		{{"PUC Lua 5.3", "Lua 5.3", "Lua", nullptr}},
 		{{"PUC Lua 5.4", "Lua 5.4", "Lua", nullptr}},
+		{{"PUC Lua 5.5", "Lua 5.5", "Lua", nullptr}},
 	}};
 
 	const int i = (int)d->luaVersion;

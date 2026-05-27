@@ -23,6 +23,9 @@
   * Amiibo: Initial support for amiibo v3.
     * Fixes #485: amiibo v3 support
       * Reported by @CheatFreak47.
+  * Lua: Support for Lua 5.5 bytecode format.
+    * Pull request #478: [libromdata] Lua: Add support for Lua 5.5 bytecode format.
+      * Submitted by @DankRank.
 
 * Bug fixes:
   * Windows: Fix potential UI language misdetection in some cases.
