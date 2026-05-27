@@ -1576,7 +1576,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	}
 
 	// TODO: Localize POSIX error messages?
-	// TODO: Thread-safe _wcserror()?
+	// TODO: Thread-safe _tcserror()?
 	switch (iret.status) {
 		case KeyStoreUI::ImportStatus::InvalidParams:
 		default:
@@ -1614,7 +1614,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 				// tr: {0:s} == filename, {1:s} == error message
 				msg = fmt::format(FRUN(TC_("KeyManagerTab",
 					"An error occurred while reading '{0:s}': {1:s}")),
-					fileNoPath, _wcserror(iret.error_code));
+					fileNoPath, _tcserror(iret.error_code));
 			} else {
 				// tr: {:s} == filename
 				msg = fmt::format(FRUN(TC_("KeyManagerTab",

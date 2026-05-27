@@ -798,12 +798,12 @@ bool is_directory(const wchar_t *filename)
 	return (attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-static inline DWORD GetFileAttributes_ovl(LPCSTR lpFileName)
+static inline DWORD GetFileAttributes_wrapper(LPCSTR lpFileName)
 {
 	return GetFileAttributesA(lpFileName);
 }
 
-static inline DWORD GetFileAttributes_ovl(LPCTSTR lpFileName)
+static inline DWORD GetFileAttributes_wrapper(LPCWSTR lpFileName)
 {
 	return GetFileAttributesW(lpFileName);
 }
@@ -834,7 +834,7 @@ static inline bool T_isOnBadFS(const CharType *filename, bool allowNetFS)
 	}
 
 	// Also check if the file is marked as "offline".
-	DWORD dwAttrs = GetFileAttributes_ovl(filename);
+	DWORD dwAttrs = GetFileAttributes_wrapper(filename);
 	if (dwAttrs != INVALID_FILE_ATTRIBUTES) {
 		if ((dwAttrs & (FILE_ATTRIBUTE_OFFLINE | FILE_ATTRIBUTE_RECALL_ON_OPEN | FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS)) != 0) {
 			// File is offline, and/or must be recalled from a remote source on open.

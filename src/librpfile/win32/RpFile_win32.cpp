@@ -156,7 +156,12 @@ int RpFilePrivate::reOpenFile(void)
 			// or if we have to resolve the physical device name.
 			// NOTE: filename is UTF-8, but we can use it as if
 			// it's ANSI for a drive letter.
+#ifdef UNICODE
 			const UINT driveType = GetDriveType(filenameW.c_str());
+#else /* !UNICODE */
+			const char filenameA[4] = {(char)filenameW[0], ':', '\\', '\0'};
+			const UINT driveType = GetDriveType(filenameA);
+#endif /* UNICODE */
 			switch (driveType) {
 				case DRIVE_CDROM:
 					// CD-ROM works.

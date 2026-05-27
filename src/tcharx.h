@@ -26,8 +26,6 @@
 // Windows: Use the SDK tchar.h.
 #include <tchar.h>
 
-#define sntprintf swprintf
-
 // std::tstring, std::tstringstream
 #if defined(__cplusplus) && !defined(tstring)
 #  ifdef _UNICODE
@@ -44,6 +42,7 @@
 #endif /* __cplusplus && !tstring */
 
 #ifdef _UNICODE
+#  define sntprintf swprintf
 #  define _tmemchr(s, c, n)	wmemchr((s), (c), (n))
 #  define _tmemcmp(s1, s2, n)	wmemcmp((s1), (s2), (n))
 

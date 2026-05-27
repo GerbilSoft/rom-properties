@@ -118,18 +118,18 @@ HRESULT RP_ExtractImage_Private::Fallback(HBITMAP *phBmpImage)
 	}
 
 	// Check the file type.
-	const wchar_t *filetype_key;
+	LPCTSTR filetype_key;
 	const uint8_t d_type = FileSystem::get_file_d_type(olefilename.c_str());
 	switch (d_type) {
 		case DT_CHR:
 		case DT_BLK:
 			// Device (probably a drive root)
-			filetype_key = L"Drive";
+			filetype_key = _T("Drive");
 			break;
 
 		case DT_DIR:
 			// Directory
-			filetype_key = L"Directory";
+			filetype_key = _T("Directory");
 			break;
 
 		default:
