@@ -17,12 +17,25 @@
 #  include <nettle/md5.h>
 #  include <nettle/sha1.h>
 #  include <nettle/sha2.h>
+#  include <nettle/version.h>
 #endif /* ENABLE_DECRYPTION */
 
 // C++ STL classes
 using std::array;
 
 namespace LibRpBase {
+
+// On newer versions of Nettle, following version major 4, the digest functions
+// were modified to get rid of the length argument. This patch should allow
+// for cross-compatibilty.
+
+#ifdef ENABLE_DECRYPTION
+#	if NETTLE_VERSION_MAJOR >= 4
+#  		define ALGORITHM_DIGEST(func, ctx, length, digest) func((ctx), (digest))
+#	else
+#  		define ALGORITHM_DIGEST(func, ctx, length, digest) func((ctx), (length), (digest))
+#	endif /* NETTLE_VERSION_MAJOR >= 4 */
+#endif /* ENABLE_DECRYPTION */
 
 class HashPrivate
 {
@@ -222,16 +235,16 @@ int Hash::getHash(uint8_t *pHash, size_t hash_len)
 		}
 #ifdef ENABLE_DECRYPTION
 		case Algorithm::MD5:
-			md5_digest(&d->ctx.md5, hash_len, pHash);
+			ALGORITHM_DIGEST(md5_digest, &d->ctx.md5, hash_len, pHash);
 			break;
 		case Algorithm::SHA1:
-			sha1_digest(&d->ctx.sha1, hash_len, pHash);
+			ALGORITHM_DIGEST(sha1_digest, &d->ctx.sha1, hash_len, pHash);
 			break;
 		case Algorithm::SHA256:
-			sha256_digest(&d->ctx.sha256, hash_len, pHash);
+			ALGORITHM_DIGEST(sha256_digest, &d->ctx.sha256, hash_len, pHash);
 			break;
 		case Algorithm::SHA512:
-			sha512_digest(&d->ctx.sha512, hash_len, pHash);
+			ALGORITHM_DIGEST(sha512_digest, &d->ctx.sha512, hash_len, pHash);
 			break;
 #endif /* ENABLE_DECRYPTION */
 	}
