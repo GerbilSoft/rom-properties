@@ -68,6 +68,9 @@
     actually break anything, but use vld1/vst1 to convey intent.
   * Added NEON-optimized 15/16-bit linear RGB decoding.
   * Added NEON-optimized 24-bit linear RGB decoding. (ARM64 only for now)
+  * Add support for GNU Nettle 4.x.
+    * Pull request #494: Add Nettle 4 Support to HashNettle.cpp
+      * Submitted by @thequickslash.
 
 ## v2.7.1-xp64 (released 2026/04/25)
 
