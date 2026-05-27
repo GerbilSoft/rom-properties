@@ -17,25 +17,21 @@
 #  include <nettle/md5.h>
 #  include <nettle/sha1.h>
 #  include <nettle/sha2.h>
-#  include <nettle/version.h>
+#  ifdef HAVE_NETTLE_VERSION_H
+#    include <nettle/version.h>
+// nettle 4.x drops the length argument from the various digest functions.
+#    if NETTLE_VERSION_MAJOR >= 4
+#      define ALGORITHM_DIGEST(func, ctx, length, digest) func((ctx), (digest))
+#    else /* NETTLE_VERSION_MAJOR < 4 */
+#      define ALGORITHM_DIGEST(func, ctx, length, digest) func((ctx), (length), (digest))
+#    endif /* NETTLE_VERSION_MAJOR >= 4 */
+#  endif /* HAVE_NETTLE_VERSION_H */
 #endif /* ENABLE_DECRYPTION */
 
 // C++ STL classes
 using std::array;
 
 namespace LibRpBase {
-
-// On newer versions of Nettle, following version major 4, the digest functions
-// were modified to get rid of the length argument. This patch should allow
-// for cross-compatibilty.
-
-#ifdef ENABLE_DECRYPTION
-#	if NETTLE_VERSION_MAJOR >= 4
-#  		define ALGORITHM_DIGEST(func, ctx, length, digest) func((ctx), (digest))
-#	else
-#  		define ALGORITHM_DIGEST(func, ctx, length, digest) func((ctx), (length), (digest))
-#	endif /* NETTLE_VERSION_MAJOR >= 4 */
-#endif /* ENABLE_DECRYPTION */
 
 class HashPrivate
 {
