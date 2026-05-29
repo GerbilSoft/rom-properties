@@ -1,7 +1,7 @@
 /***************************************************************************
  * compiler-compat.h: Compiler compatibility header.                       *
  *                                                                         *
- * Copyright (c) 2011-2025 by David Korth.                                 *
+ * Copyright (c) 2011-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,7 +29,7 @@
 // off64_t isn't available.
 #  if defined(SIZEOF_OFF_T) && SIZEOF_OFF_T >= 8
 // off_t is at least 64-bit. Use it as off64_t.
-#    include <unistd.h>
+#    include <sys/types.h>
 typedef off_t off64_t;
 #  else /* !(defined(SIZEOF_OFF_T) && SIZEOF_OFF_T >= 8) */
 // off_t either doesn't exist or is not at least 64-bit.
