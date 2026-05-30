@@ -340,7 +340,7 @@ PlayStationTIM::PlayStationTIM(const IRpFilePtr &file)
 
 	// NOTE: The framebuffer width is always in units of 16-bit pixels.
 	// Convert it to an actual width here.
-	const int orig_16bit_width = le32_to_cpu(d->imageHeader.fb.width);
+	const int orig_16bit_width = le16_to_cpu(d->imageHeader.fb.width);
 	int width = orig_16bit_width;
 	switch (d->timHeader.flags & PS1_TIM_FLAG_BPP_MASK) {
 		case PS1_TIM_FLAG_BPP_4BPP:
@@ -363,7 +363,7 @@ PlayStationTIM::PlayStationTIM(const IRpFilePtr &file)
 	}
 
 	// Sanity check: Maximum image dimensions of 32768x32768.
-	const int height = le32_to_cpu(d->imageHeader.fb.height);
+	const int height = le16_to_cpu(d->imageHeader.fb.height);
 	assert(width > 0);
 	assert(height > 0);
 	assert(width <= 32768);
