@@ -182,7 +182,7 @@ rp_image_const_ptr PlayStationTIMPrivate::loadImage(void)
 	// TIM always uses units of 16-bit pixels for the image data.
 	// For 15-bpp, we can use the width as-is.
 	// For others, we have to round the rows to the nearest 16-bit unit.
-	const int stride = le32_to_cpu(imageHeader.fb.width) * sizeof(uint16_t);
+	const int stride = le16_to_cpu(imageHeader.fb.width) * sizeof(uint16_t);
 	const int width = this->dimensions[0];
 	const int height = this->dimensions[1];
 
