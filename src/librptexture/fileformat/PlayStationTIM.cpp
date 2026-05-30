@@ -50,7 +50,6 @@ class PlayStationTIMPrivate final : public FileFormatPrivate
 
 	public:
 		// TIM headers
-		// NOTE: ***NOT*** byteswapped!
 		PS1_TIM_Header_t timHeader;
 		PS1_TIM_CLUT_Header_t clutHeader;
 		PS1_TIM_Image_Header_t imageHeader;
@@ -124,8 +123,7 @@ rp_image_const_ptr PlayStationTIMPrivate::loadImage(void)
 	// TODO: Determine the size based on CLUT width/height?
 	// For now, hard-coding 16/256.
 	rp::uvector<uint16_t> clut_buf;
-	const uint32_t flags = le32_to_cpu(timHeader.flags);
-	if (flags & PS1_TIM_FLAG_CLP) {
+	if (timHeader.flags & PS1_TIM_FLAG_CLP) {
 		// Load the CLUT.
 		if (clutDataStartAddr == 0) {
 			// CLUT is present, but no CLUT data start address...
@@ -134,7 +132,7 @@ rp_image_const_ptr PlayStationTIMPrivate::loadImage(void)
 		}
 
 		uint32_t clut_size;	// in uint16_t units
-		switch (flags & PS1_TIM_FLAG_BPP_MASK) {
+		switch (timHeader.flags & PS1_TIM_FLAG_BPP_MASK) {
 			case PS1_TIM_FLAG_BPP_4BPP:
 				clut_size = 16;
 				break;
@@ -153,7 +151,7 @@ rp_image_const_ptr PlayStationTIMPrivate::loadImage(void)
 		}
 	} else {
 		// No CLUT. If this is 4-bpp or 8-bpp, create a grayscale CLUT.
-		switch (flags & PS1_TIM_FLAG_BPP_MASK) {
+		switch (timHeader.flags & PS1_TIM_FLAG_BPP_MASK) {
 			case PS1_TIM_FLAG_BPP_4BPP: {
 				clut_buf.resize(16);
 				uint8_t ch_8bpp = 0;
