@@ -25,6 +25,9 @@
 #    else /* NETTLE_VERSION_MAJOR < 4 */
 #      define ALGORITHM_DIGEST(func, ctx, length, digest) func((ctx), (length), (digest))
 #    endif /* NETTLE_VERSION_MAJOR >= 4 */
+#  else /* !HAVE_NETTLE_VERSION_H */
+// nettle-3.0 or earlier
+#    define ALGORITHM_DIGEST(func, ctx, length, digest) func((ctx), (length), (digest))
 #  endif /* HAVE_NETTLE_VERSION_H */
 #endif /* ENABLE_DECRYPTION */
 
