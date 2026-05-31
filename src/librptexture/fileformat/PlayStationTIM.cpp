@@ -50,6 +50,7 @@ class PlayStationTIMPrivate final : public FileFormatPrivate
 
 	public:
 		// TIM headers
+		// NOTE: timHeader.flags is byteswapped in the constructor.
 		PS1_TIM_Header_t timHeader;
 		PS1_TIM_CLUT_Header_t clutHeader;
 		PS1_TIM_Image_Header_t imageHeader;
