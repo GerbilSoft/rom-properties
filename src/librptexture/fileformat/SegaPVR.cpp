@@ -410,7 +410,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 
 	const unsigned int pvrDataStart = gbix_len + sizeof(PVR_Header);
 	uint32_t mipmap_size = 0;
-	size_t expected_size = 0;
+	off64_t expected_size = 0;
 
 	// Do we need to skip mipmap data?
 	switch (pvrHeader.pvr.img_data_type) {
@@ -483,11 +483,11 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 				case PVR_PX_RGB565:
 				case PVR_PX_ARGB4444:
 				case SVR_PX_BGR5A3:
-					expected_size = ((pvrHeader.width * pvrHeader.height) * 2);
+					expected_size = static_cast<off64_t>(pvrHeader.width) * static_cast<off64_t>(pvrHeader.height) * 2;
 					break;
 
 				case SVR_PX_BGR888_ABGR7888:
-					expected_size = ((pvrHeader.width * pvrHeader.height) * 4);
+					expected_size = static_cast<off64_t>(pvrHeader.width) * static_cast<off64_t>(pvrHeader.height) * 4;
 					break;
 
 				default:
@@ -499,7 +499,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 		case PVR_IMG_VQ:
 			// VQ images have 1024 palette entries,
 			// and the image data is 2bpp.
-			expected_size = (1024*2) + ((pvrHeader.width * pvrHeader.height) / 4);
+			expected_size = (1024*2) + ((static_cast<off64_t>(pvrHeader.width) * static_cast<off64_t>(pvrHeader.height)) / 4);
 			break;
 
 		case PVR_IMG_VQ_MIPMAP:
@@ -507,7 +507,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 			// and the image data is 2bpp.
 			// Skip the palette, since that's handled later.
 			mipmap_size += (1024*2);
-			expected_size = (pvrHeader.width * pvrHeader.height) / 4;
+			expected_size = (static_cast<off64_t>(pvrHeader.width) * static_cast<off64_t>(pvrHeader.height)) / 4;
 			break;
 
 		case PVR_IMG_SMALL_VQ: {
@@ -515,7 +515,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 			// and the image data is 2bpp.
 			const unsigned int pal_siz =
 				ImageDecoder::calcDreamcastSmallVQPaletteEntries_NoMipmaps(pvrHeader.width) * 2;
-			expected_size = pal_siz + ((pvrHeader.width * pvrHeader.height) / 4);
+			expected_size = pal_siz + ((static_cast<off64_t>(pvrHeader.width) * static_cast<off64_t>(pvrHeader.height)) / 4);
 			break;
 		}
 
@@ -527,7 +527,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 				ImageDecoder::calcDreamcastSmallVQPaletteEntries_WithMipmaps(pvrHeader.width) * 2;
 			svr_pal_buf.resize(pal_siz);
 			mipmap_size += pal_siz;
-			expected_size = ((pvrHeader.width * pvrHeader.height) / 4);
+			expected_size = (static_cast<off64_t>(pvrHeader.width) * static_cast<off64_t>(pvrHeader.height)) / 4;
 			break;
 		}
 
@@ -603,9 +603,9 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 	}
 
 	// Read the texture data.
-	auto buf = aligned_uptr<uint8_t>(16, expected_size);
-	size_t size = file->seekAndRead((pvrDataStart + mipmap_size), buf.get(), expected_size);
-	if (size != expected_size) {
+	auto buf = aligned_uptr<uint8_t>(16, static_cast<size_t>(expected_size));
+	size_t size = file->seekAndRead((pvrDataStart + mipmap_size), buf.get(), static_cast<size_t>(expected_size));
+	if (size != static_cast<size_t>(expected_size)) {
 		// Seek and/or read error.
 		return {};
 	}
