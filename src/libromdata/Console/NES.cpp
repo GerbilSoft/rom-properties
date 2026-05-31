@@ -332,15 +332,20 @@ unsigned int NESPrivate::get_prg_rom_size(void) const
 			// NES 2.0 has an alternate method for indicating PRG ROM size,
 			// so we need to check for that.
 			if (likely((header.ines.nes2.banks_hi & 0x0F) != 0x0F)) {
-				// Standard method.
+				// Standard method
 				prg_rom_size = ((header.ines.prg_banks |
 						((header.ines.nes2.banks_hi & 0x0F) << 8))
 						* INES_PRG_BANK_SIZE);
 			} else {
 				// Alternate method: [EEEE EEMM] -> 2^E * (MM*2 + 1)
 				// TODO: Verify that this works.
-				prg_rom_size = (1U << (header.ines.prg_banks >> 2)) *
-					       ((header.ines.prg_banks & 0x03) + 1);
+				if ((header.ines.prg_banks >> 2) > 24) {
+					// Sanity check: Too big???
+					prg_rom_size = 0xFFFFFFFF;
+				} else {
+					prg_rom_size = (1U << (header.ines.prg_banks >> 2)) *
+					               ((header.ines.prg_banks & 0x03) + 1);
+				}
 			}
 			break;
 		}
@@ -373,9 +378,24 @@ unsigned int NESPrivate::get_chr_rom_size(void) const
 			break;
 
 		case NESPrivate::ROM_FORMAT_NES2:
-			chr_rom_size = ((header.ines.chr_banks |
-					((header.ines.nes2.banks_hi & 0xF0) << 4))
-					* INES_CHR_BANK_SIZE);
+			// NES 2.0 has an alternate method for indicating CHR ROM size,
+			// so we need to check for that.
+			if (likely((header.ines.nes2.banks_hi & 0xF0) != 0xF0)) {
+				// Standard method
+				chr_rom_size = ((header.ines.chr_banks |
+						((header.ines.nes2.banks_hi & 0xF0) << 4))
+						* INES_CHR_BANK_SIZE);
+			} else {
+				// Alternate method: [EEEE EEMM] -> 2^E * (MM*2 + 1)
+				// TODO: Verify that this works.
+				if ((header.ines.chr_banks >> 2) > 24) {
+					// Sanity check: Too big???
+					chr_rom_size = 0xFFFFFFFF;
+				} else {
+					chr_rom_size = (1U << (header.ines.chr_banks >> 2)) *
+					               ((header.ines.chr_banks & 0x03) + 1);
+				}
+			}
 			break;
 
 		case NESPrivate::ROM_FORMAT_TNES:
@@ -937,15 +957,20 @@ int NES::isRomSupported_static(const DetectInfo *info)
 				// so we need to check for that.
 				unsigned int prg_rom_size, chr_rom_size;
 				if (likely((inesHeader->nes2.banks_hi & 0x0F) != 0x0F)) {
-					// Standard method.
+					// Standard method
 					prg_rom_size = ((inesHeader->prg_banks |
 							((inesHeader->nes2.banks_hi & 0x0F) << 8))
 							* INES_PRG_BANK_SIZE);
 				} else {
 					// Alternate method: [EEEE EEMM] -> 2^E * (MM*2 + 1)
 					// TODO: Verify that this works.
-					prg_rom_size = (1U << (inesHeader->prg_banks >> 2)) *
-						((inesHeader->prg_banks & 0x03) + 1);
+					if ((inesHeader->prg_banks >> 2) > 24) {
+						// Sanity check: Too big???
+						prg_rom_size = 0xFFFFFFFF;
+					} else {
+						prg_rom_size = (1U << (inesHeader->prg_banks >> 2)) *
+						               ((inesHeader->prg_banks & 0x03) + 1);
+					}
 				}
 				chr_rom_size = ((inesHeader->chr_banks |
 						((inesHeader->nes2.banks_hi & 0xF0) << 4))

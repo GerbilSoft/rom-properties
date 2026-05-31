@@ -894,6 +894,12 @@ int EXEPrivate::addFields_NE_Import(void)
 	};
 	std::unordered_set<std::pair<uint16_t, uint16_t>, hash2x16> ordinal_set, name_set;
 
+	const uint16_t FileAlnSzShftCnt = le16_to_cpu(hdr.ne.FileAlnSzShftCnt);
+	if (FileAlnSzShftCnt > 24) {
+		// Out of range?
+		return -EIO;
+	}
+
 	for (const auto &seg : NE_data.segment_table) {
 		if (seg.offset == 0) {
 			continue; // No data
@@ -903,7 +909,7 @@ int EXEPrivate::addFields_NE_Import(void)
 		}
 
 		// the logic for seg_size is from Wine's NE_LoadSegment
-		const size_t seg_offset = (size_t)le16_to_cpu(seg.offset) << le16_to_cpu(hdr.ne.FileAlnSzShftCnt);
+		const size_t seg_offset = static_cast<size_t>(le16_to_cpu(seg.offset)) << FileAlnSzShftCnt;
 		const size_t seg_size =
 			seg.filesz ? le16_to_cpu(seg.filesz) :
 			seg.memsz ? le16_to_cpu(seg.memsz) : 0x10000;

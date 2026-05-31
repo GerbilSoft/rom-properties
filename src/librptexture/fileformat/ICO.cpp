@@ -723,8 +723,12 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 	// Make sure width and height are valid.
 	// Height cannot be 0 or an odd number.
 	// NOTE: Negative height is allowed for "right-side up".
-	const unsigned int width = le32_to_cpu((unsigned int)(bih->biWidth));
 	const int orig_height = static_cast<int>(le32_to_cpu(bih->biHeight));
+	if (orig_height < -32768 || orig_height > 32768) {
+		// Out of range...
+		return {};
+	}
+	const int width = le32_to_cpu(bih->biWidth);
 	const unsigned int height = abs(orig_height);
 	if (width <= 0 || height == 0 || (height & 1)) {
 		// Invalid bitmap size.
@@ -744,7 +748,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 	// Row must be 32-bit aligned.
 	// FIXME: Including for 24-bit images?
 	const unsigned int bitcount = le16_to_cpu(bih->biBitCount);
-	unsigned int stride = width;
+	unsigned int stride = static_cast<unsigned int>(width);
 	switch (bitcount) {
 		default:
 			// Unsupported bitcount.
@@ -773,7 +777,8 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 	stride = ALIGN_BYTES(4, stride);
 
 	// Mask row is 1bpp and must also be 32-bit aligned.
-	unsigned int mask_stride = ALIGN_BYTES(4, ((width / 8) + ((width % 8) > 0)));
+	const unsigned int mask_stride = ALIGN_BYTES(4,
+		((static_cast<unsigned int>(width) / 8) + ((static_cast<unsigned int>(width) % 8) > 0)));
 
 	// Icon file (this->file for .ico; IResourceReader::open() for .exe/.dll)
 	IRpFilePtr f_icon;
