@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * exe_pe_structs.h: DOS/Windows executable structures. (PE)               *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -163,6 +163,7 @@ ASSERT_STRUCT(IMAGE_OPTIONAL_HEADER32, 224);
  * "Optional" 64-bit PE header
  * All fields are little-endian.
  */
+#pragma pack(4)
 typedef struct _IMAGE_OPTIONAL_HEADER64 {
 	uint16_t Magic;
 	uint8_t MajorLinkerVersion;
@@ -194,8 +195,9 @@ typedef struct _IMAGE_OPTIONAL_HEADER64 {
 	uint32_t LoaderFlags;
 	uint32_t NumberOfRvaAndSizes;
 	IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
-} IMAGE_OPTIONAL_HEADER64;
+} IMAGE_OPTIONAL_HEADER64 RP_ALIGNED(4);
 ASSERT_STRUCT(IMAGE_OPTIONAL_HEADER64, 240);
+#pragma pack()
 
 /**
  * Load Config: Code integrity

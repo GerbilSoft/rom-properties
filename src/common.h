@@ -45,6 +45,14 @@
 #  define RP_PACKED
 #endif
 
+// RP_ALIGNED struct attribute.
+// Use in conjunction with #pragma pack(n).
+#ifdef __GNUC__
+#  define RP_ALIGNED(n) __attribute__((aligned (n)))
+#else
+#  define RP_ALIGNED(n)
+#endif
+
 // static_assert() support
 #if defined(__cplusplus)
 // C++11 supports static_assert() with two arguments.

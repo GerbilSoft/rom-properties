@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * XboxXPR.cpp: Microsoft Xbox XPR0 texture reader.                        *
  *                                                                         *
- * Copyright (c) 2019-2025 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -406,7 +406,7 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 
 	// Determine the expected size based on the pixel format.
 	const auto &mode = xpr_mode_tbl[xpr0Header.pixel_format];
-	const size_t expected_size = width * height * mode.bpp / 8U;
+	const off64_t expected_size = static_cast<off64_t>(width) * static_cast<off64_t>(height) * mode.bpp / 8U;
 
 	if (expected_size > file_sz - data_offset) {
 		// File is too small.
@@ -415,8 +415,8 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 
 	// Read the image data.
 	auto buf = aligned_uptr<uint8_t>(16, expected_size);
-	size_t size = file->seekAndRead(data_offset, buf.get(), expected_size);
-	if (size != expected_size) {
+	size_t size = file->seekAndRead(data_offset, buf.get(), static_cast<size_t>(expected_size));
+	if (size != static_cast<size_t>(expected_size)) {
 		// Seek and/or read error.
 		return nullptr;
 	}

@@ -49,3 +49,9 @@
 #else
 #  define HINT_ALIGNED(p, n) (p)
 #endif
+
+/**
+ * Check if an address is aligned with the specified alignment.
+ */
+#define IS_ALIGNED_OFFSET(addr, a) (((addr) & ~(a)) == 0)
+#define IS_ALIGNED_PTR(addr, a) ((((uintptr_t)addr) & ~(a)) == 0)

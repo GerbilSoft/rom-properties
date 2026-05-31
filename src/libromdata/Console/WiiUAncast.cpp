@@ -349,7 +349,7 @@ int WiiUAncast::isRomSupported_static(const DetectInfo *info)
 		// Data0 start offset is the be32 at 0x1C.
 		const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(info->header.pData);
 		uint32_t data0_offset = be32_to_cpu(pData32[0x1C/4]);
-		if (data0_offset + sizeof(WiiU_Ancast_Header_SigCommon_t) <= info->header.size) {
+		if (data0_offset + sizeof(WiiU_Ancast_Header_SigCommon_t) <= info->header.size && IS_ALIGNED_OFFSET(data0_offset, sizeof(uint32_t))) {
 			// Check at data0_offset.
 			sigCommon = reinterpret_cast<const WiiU_Ancast_Header_SigCommon_t*>(&info->header.pData[data0_offset]);
 			if (sigCommon->magic != cpu_to_be32(WIIU_ANCAST_HEADER_MAGIC)) {
