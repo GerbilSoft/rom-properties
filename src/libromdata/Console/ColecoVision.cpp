@@ -15,7 +15,7 @@
 // Other rom-properties libraries
 using namespace LibRpBase;
 using namespace LibRpFile;
-using namespace LibRpText;
+using LibRpText::trimEnd;
 
 // C++ STL classes
 using std::array;
@@ -183,9 +183,7 @@ string ColecoVisionPrivate::getTitle(int *pOutYear) const
 
 	// Trim the lines.
 	for (auto &p : lines) {
-		while (!p.empty() && ISSPACE(p[p.size()-1])) {
-			p.resize(p.size()-1);
-		}
+		trimEnd(p);
 	}
 
 	// Combine the lines.
