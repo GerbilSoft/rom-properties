@@ -19,7 +19,6 @@
 #include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
-using namespace LibRpText;
 
 // librptexture
 #include "ImageSizeCalc.hpp"

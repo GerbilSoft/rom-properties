@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CacheManager.cpp: Local cache manager.                                  *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,7 +16,6 @@
 // Other rom-properties libraries
 #include "librpfile/RpFile.hpp"
 #include "librpfile/FileSystem.hpp"
-using namespace LibRpBase;
 using namespace LibRpFile;
 
 // libcachecommon
