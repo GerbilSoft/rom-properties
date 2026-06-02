@@ -8,7 +8,6 @@
 
 #include "stdafx.h"
 
-#include <iostream>
 #include "config.librpbase.h"
 #include "AndroidAPK.hpp"
 #include "AndroidCommon.hpp"
