@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <QtCore/QMetaType>
 #include <QtCore/QObject>
 
 class CacheCleaner : public QObject
