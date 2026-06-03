@@ -17,7 +17,6 @@
 // Other rom-properties libraries
 #include "librpbase/RomData.hpp"
 using namespace LibRpBase;
-using namespace LibRpText;
 
 // C++ STL classes
 using std::string;

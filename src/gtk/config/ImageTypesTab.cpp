@@ -21,7 +21,6 @@ using namespace LibRomData;
 
 // Other rom-properties libraries
 using LibRpBase::RomData;
-using namespace LibRpText;
 
 #if GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkBoxClass superclass;

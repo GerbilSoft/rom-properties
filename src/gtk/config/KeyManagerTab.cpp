@@ -11,8 +11,6 @@
 #include "KeyManagerTab_p.hpp"
 
 // Other rom-properties libraries
-using namespace LibRpBase;
-using namespace LibRpText;
 using LibRomData::KeyStoreUI;
 
 // C++ STL classes

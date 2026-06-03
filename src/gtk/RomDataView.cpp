@@ -25,7 +25,6 @@
 
 // Other rom-properties libraries
 using namespace LibRpBase;
-using namespace LibRpText;
 using namespace LibRpTexture;
 
 // C++ STL classes

@@ -27,7 +27,6 @@
 #include "librpbase/TextOut.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
-using namespace LibRpText;
 
 // C++ STL classes
 #include <fstream>
