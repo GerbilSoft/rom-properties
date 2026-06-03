@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * GdiplusHelper.hpp: GDI+ helper class. (Win32)                           *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,7 @@
 #error GdiplusHelper is Win32 only.
 #endif
 
-#include "common.h"
+#include "dll-macros.h"
 #include "libwin32common/RpWin32_sdk.h"
 
 namespace GdiplusHelper {
