@@ -8,7 +8,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "EXE_p.hpp"
 #include "data/EXEData.hpp"
 #include "disc/PEResourceReader.hpp"
@@ -21,6 +20,7 @@ using namespace LibRpText;
 #include "librptext/libc.h"
 
 // C++ STL classes
+#include <numeric>
 using std::array;
 using std::string;
 using std::unique_ptr;

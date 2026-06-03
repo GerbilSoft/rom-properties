@@ -6,8 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-
 #include "WiiUPackage.hpp"
 #include "WiiUPackage_p.hpp"
 #include "data/WiiUData.hpp"
@@ -22,6 +20,7 @@
 // Other rom-properties libraries
 #include "librpbase/disc/PartitionFile.hpp"
 #include "librpbase/SystemRegion.hpp"
+#include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;

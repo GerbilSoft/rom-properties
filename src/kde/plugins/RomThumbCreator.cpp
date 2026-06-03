@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomThumbCreator.cpp: Thumbnail creator.                                 *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.kde.h"
 
 #include "RomThumbCreator.hpp"
@@ -17,6 +16,7 @@
 #include "RpQUrl.hpp"
 
 // Other rom-properties libraries
+#include "librpfile/FileSystem.hpp"
 #include "libromdata/RomDataFactory.hpp"
 using LibRpBase::Config;
 using LibRpBase::RomDataPtr;

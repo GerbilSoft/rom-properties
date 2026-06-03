@@ -2,15 +2,15 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MachOData.cpp: Mach-O executable format data.                           *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "MachOData.hpp"
 #include "Other/macho_structs.h"
 
 // C++ STL classes
+#include <array>
 using std::array;
 
 namespace LibRomData { namespace MachOData {

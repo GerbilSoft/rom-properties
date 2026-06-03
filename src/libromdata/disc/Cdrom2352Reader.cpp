@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Cdrom2352Reader.hpp: CD-ROM reader for 2352-byte sector images.         *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,6 @@
  * - https://github.com/Karlson2k/libcdio-k2k/blob/master/include/cdio/sector.h
  */
 
-#include "stdafx.h"
 #include "Cdrom2352Reader.hpp"
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "cdrom_structs.h"

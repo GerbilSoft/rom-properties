@@ -6,12 +6,15 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "AboutTabText.hpp"
 #include "config.version.h"
 #include "git.h"
 
+// C includes (C++ namespace)
+#include <cassert>
+
 // C++ STL classes
+#include <array>
 using std::array;
 
 // AboutTabText isn't used by libromdata directly,

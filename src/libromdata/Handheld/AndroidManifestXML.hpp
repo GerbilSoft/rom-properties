@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * AndroidManifestXML.hpp: Android Manifest XML reader.                    *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,6 +13,8 @@
 #endif /* ENABLE_XML */
 
 #include <pugixml.hpp>
+
+#include "librpbase/RomData.hpp"
 
 namespace LibRomData {
 

@@ -2,18 +2,21 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RelatedFile.hpp: Open a related file.                                   *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "RelatedFile.hpp"
 #include "FileSystem.hpp"
 
 #include "IRpFile.hpp"
 #include "RpFile.hpp"
 
+// C includes (C++ namespace)
+#include <cassert>
+
 // C++ STL classes
+#include <algorithm>
 using std::string;
 #ifdef _WIN32
 using std::wstring;

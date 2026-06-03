@@ -2,17 +2,18 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiCommon.cpp: Nintendo Wii common functions.                           *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "WiiCommon.hpp"
 
 #include "data/NintendoLanguage.hpp"
 #include "gcn_structs.h"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librptext/conversion.hpp"
 using namespace LibRpBase;
 using namespace LibRpText;
 

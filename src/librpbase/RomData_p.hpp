@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData_p.hpp: ROM data base class. (PRIVATE CLASS)                     *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,9 +16,18 @@
 
 #include "RomData.hpp"
 
-// TODO: Remove from here and add to each RomData subclass?
+// for convenience for RomData subclasses
 #include "RomFields.hpp"
 #include "RomMetaData.hpp"
+
+// for convenience for RomData subclasses
+#include "libi18n/i18n.hpp"
+#include "librpbyteswap/byteswap_rp.h"
+#include "librptext/conversion.hpp"
+#include "librptext/formatting.hpp"
+
+// libfmt (used by RomData subclasses)
+#include "rp-libfmt.h"
 
 namespace LibRpFile {
 	class IRpFile;

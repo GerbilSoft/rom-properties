@@ -6,13 +6,19 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "CurlDownloader.hpp"
 
 // C includes
+#ifndef _MSC_VER
+#  include <strings.h>
+#endif /* _MSC_VER */
 #include "ctypex.h"
 
+// C includes (C++ namespace)
+#include <cstring>
+
 // C++ STL classes
+#include <memory>
 #include <mutex>
 using std::string;
 using std::unique_ptr;

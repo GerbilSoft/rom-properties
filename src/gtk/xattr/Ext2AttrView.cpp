@@ -2,12 +2,15 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * Ext2AttrView.cpp: Ext2 file system attribute viewer widget.             *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "Ext2AttrView.hpp"
+
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+using LibRpFile::XAttrReader;
 
 // Ext2 flags (also used for Ext3, Ext4, and other Linux file systems)
 #include "librpfile/xattr/ext2_flags.h"
@@ -15,11 +18,11 @@
 // Ext2AttrData
 #include "librpfile/xattr/Ext2AttrData.h"
 
-// librpfile
-using LibRpFile::XAttrReader;
-
 // C++ STL classes
 using std::string;
+
+// libfmt
+#include "rp-libfmt.h"
 
 /* Property identifiers */
 typedef enum {

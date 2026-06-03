@@ -6,8 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-
 #include "RomDataView.hpp"
 #include "RomDataView_p.hpp"
 #include "RomDataFormat.hpp"
@@ -24,6 +22,7 @@
 #include "MessageWidget.h"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 using namespace LibRpBase;
 using namespace LibRpTexture;
 
@@ -32,6 +31,9 @@ using std::set;
 using std::string;
 using std::unique_ptr;
 using std::vector;
+
+// libfmt
+#include "rp-libfmt.h"
 
 // References:
 // - audio-tags plugin

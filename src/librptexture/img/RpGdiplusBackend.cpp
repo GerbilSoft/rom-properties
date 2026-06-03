@@ -2,14 +2,13 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * RpGdiplusBackend.hpp: rp_image_backend using GDI+.                      *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // NOTE: This class is located in librptexture, not Win32,
 // since gtest_init.cpp uses the backend directly.
 
-#include "stdafx.h"
 #include "RpGdiplusBackend.hpp"
 #include "aligned_malloc.h"
 

@@ -6,8 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "Xbox_XBE.hpp"
+#include "RomData_p.hpp"
+
 #include "xbox_xbe_structs.h"
 #include "data/XboxPublishers.hpp"
 
@@ -25,7 +26,12 @@ using namespace LibRpTexture;
 // Other RomData subclasses
 #include "Other/EXE.hpp"
 
+// C includes
+#include "ctypex.h"
+
 // C++ STL classes
+#include <sstream>
+#include "rp-variant.hpp"
 using std::array;
 using std::ostringstream;
 using std::shared_ptr;

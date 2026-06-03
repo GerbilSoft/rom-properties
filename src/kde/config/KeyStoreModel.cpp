@@ -6,12 +6,21 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "KeyStoreModel.hpp"
 #include "KeyStoreQt.hpp"
 
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+
 // C++ STL classes
 using std::array;
+
+// Qt includes
+#include <QtGui/QFont>
+#include <QtGui/QPixmap>
+#include <QStyle>
+
+#include "RpQt.hpp"
 
 /** KeyStoreModelPrivate **/
 

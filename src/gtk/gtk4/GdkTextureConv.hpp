@@ -17,6 +17,10 @@ namespace LibRpTexture {
 	class rp_image;
 }
 
+// forward declaration
+struct _GdkTexture;
+typedef struct _GdkTexture GdkTexture;
+
 namespace GdkTextureConv {
 
 /**

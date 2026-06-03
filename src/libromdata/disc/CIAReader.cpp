@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CIAReader.cpp: Nintendo 3DS CIA reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 #include "CIAReader.hpp"
 
@@ -21,9 +20,16 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 
+// C includes (C++ namespace)
+#include <cassert>
+
 // C++ STL classes
+#include <array>
 using std::array;
 using std::string;
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRomData {
 

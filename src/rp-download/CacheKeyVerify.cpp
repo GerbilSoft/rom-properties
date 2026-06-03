@@ -2,15 +2,19 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * CacheKeyVerify.cpp: Cache key verifier.                                 *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "CacheKeyVerify.hpp"
 
 // libcachecommon
 #include "libcachecommon/CacheKeys.hpp"
+
+// C includes (C++ namespace)
+#include <cassert>
+#include <cstddef>
+#include <cstring>
 
 // C++ STL classes
 using std::tstring;

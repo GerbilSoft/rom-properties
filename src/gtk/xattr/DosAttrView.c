@@ -2,16 +2,22 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * DosAttrView.c: MS-DOS file system attribute viewer widget.              *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "DosAttrView.h"
+#include "common.h"
+
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 
 // MS-DOS and Windows attributes
 // NOTE: Does not depend on the Windows SDK.
 #include "librpfile/xattr/dos_attrs.h"
+
+// C includes
+#include "stdboolx.h"
 
 /* Property identifiers */
 typedef enum {

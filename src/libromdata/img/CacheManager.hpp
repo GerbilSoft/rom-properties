@@ -2,13 +2,14 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CacheManager.hpp: Local cache manager.                                  *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
 #include "common.h"
+#include "dll-macros.h"
 
 // C++ includes.
 #include <string>

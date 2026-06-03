@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomDataView.hpp: RomData viewer. (Private class)                        *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -31,9 +31,9 @@
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 
 // librpbase
+#include "librpbase/RomFields.hpp"
 namespace LibRpBase {
 	class RomData;
-	class RomFields;
 }
 
 // C++ includes
@@ -45,6 +45,10 @@ class OptionsMenuButton;
 
 // Data models
 class ListDataModel;
+
+// Qt includes
+#include <QFormLayout>
+#include <QTreeView>
 
 #include "ui_RomDataView.h"
 class RomDataViewPrivate

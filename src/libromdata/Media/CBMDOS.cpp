@@ -16,8 +16,8 @@
 // - http://unusedino.de/ec64/technical/formats/geos.html
 // - https://sourceforge.net/p/vice-emu/patches/122/ (for .g71)
 
-#include "stdafx.h"
 #include "CBMDOS.hpp"
+#include "RomData_p.hpp"
 
 #include "cbmdos_structs.h"
 

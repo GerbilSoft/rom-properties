@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpQUrl.cpp: QUrl utility functions                                      *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "RpQUrl.hpp"
 
 // RpFileKio
@@ -14,18 +13,23 @@
 
 // Other rom-properties libraries
 #include "librpbase/config/Config.hpp"
+#include "librpfile/FileSystem.hpp"
+#include "librpfile/RpFile.hpp"
 using LibRpBase::Config;
 using namespace LibRpFile;
 
+// C++ STL classes
+using std::string;
+
 // Qt includes
+#include <QtCore/QFileInfo>
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #  include <QtCore/QStandardPaths>
 #else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 #  include <QtGui/QDesktopServices>
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 
-// C++ STL classes
-using std::string;
+#include "RpQt.hpp"
 
 /**
  * Localize a QUrl.

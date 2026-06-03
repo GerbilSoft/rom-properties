@@ -2,16 +2,20 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * http-status.hpp: HTTP status codes.                                     *
  *                                                                         *
- * Copyright (c) 2020-2024 by David Korth.                                 *
+ * Copyright (c) 2020-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "http-status.hpp"
+
+#include "common.h"
 
 // HTTP status code messages.
 // Reference: https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
 #include "http-status-data.h"
+
+// C++ includes
+#include <algorithm>
 
 /**
  * Get a string representation for an HTTP status code.

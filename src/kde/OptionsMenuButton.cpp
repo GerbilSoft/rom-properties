@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "OptionsMenuButton.hpp"
 
 // librpbase
@@ -16,6 +15,12 @@ using LibRpBase::RomData;
 // C++ STL classes
 using std::array;
 using std::vector;
+
+// Qt includes
+#ifndef RP_OMB_USE_LAMBDA_FUNCTIONS
+#  include <QtCore/QSignalMapper>
+#endif /* RP_OMB_USE_LAMBDA_FUNCTIONS */
+#include <QMenu>
 
 OptionsMenuButton::OptionsMenuButton(QWidget *parent)
 	: super(parent)

@@ -2,13 +2,12 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
  * NautilusInfoProvider.cpp: Nautilus (and forks) Info Provider Definition *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Reference: https://github.com/xfce-mirror/thunar-archive-plugin/blob/master/thunar-archive-plugin/tap-provider.c
 
-#include "stdafx.h"
 #include "NautilusInfoProvider.hpp"
 #include "NautilusExtraInterfaces.h"
 
@@ -18,7 +17,8 @@
 // rp_gtk_open_uri()
 #include "is-supported.hpp"
 
-// librpbase
+// Other rom-properties libraries
+#include "librpbase/config/Config.hpp"
 #include "librpbase/RomMetaData.hpp"
 using namespace LibRpBase;
 

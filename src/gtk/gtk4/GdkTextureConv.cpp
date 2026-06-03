@@ -2,18 +2,26 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * GdkTextureConv.cpp: Helper functions to convert from rp_image to GDK4.  *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "GdkTextureConv.hpp"
 
+// Other rom-properties libraries
+#include "librptexture/img/rp_image.hpp"
+using namespace LibRpTexture;
+
+// C includes (C++ namespace)
+#include <cassert>
+#include <cstring>
+
 // C++ STL classes
+#include <array>
 using std::array;
 
-// librptexture
-using namespace LibRpTexture;
+// GTK
+#include <gtk/gtk.h>
 
 /**
  * Convert an rp_image to GdkPixbuf.

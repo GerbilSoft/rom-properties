@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "CacheTab.hpp"
 #include "RpConfigTab.h"
 
@@ -16,8 +15,15 @@
 #include "gtk-compat.h"
 #include "RpGtk.h"
 
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+
 // C++ STL classes
+#include <string>
 using std::string;
+
+// libfmt
+#include "rp-libfmt.h"
 
 #if GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkBoxClass superclass;

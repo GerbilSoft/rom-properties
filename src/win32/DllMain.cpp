@@ -17,7 +17,6 @@
 // - "COM in C++"
 //   - http://www.codeproject.com/Articles/338268/COM-in-C
 
-#include "stdafx.h"
 #include "config.version.h"
 #include "config.win32.h"
 

@@ -2,24 +2,29 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * AndroidResourceReader.cpp: Android resource reader.                     *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "AndroidResourceReader.hpp"
 #include "../Handheld/android_apk_structs.h"
 
 // Other rom-properties libraries
+#include "librpbyteswap/byteswap_rp.h"
 #include "librpbase/SystemRegion.hpp"
+#include "librptext/conversion.hpp"
 using namespace LibRpBase;
 using namespace LibRpText;
 
 // C++ STL classes
+#include <unordered_map>
 using std::array;
 using std::string;
 using std::unordered_map;
 using std::vector;
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRomData {
 

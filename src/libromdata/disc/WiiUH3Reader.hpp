@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "librpbase/disc/IDiscReader.hpp"
+#include "librpbase/disc/IPartition.hpp"
 #include "librpfile/IRpFile.hpp"
 
 namespace LibRomData {

@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 
 #include "WiiWAD.hpp"
@@ -18,6 +17,7 @@
 #include "WiiCommon.hpp"
 
 // Other rom-properties libraries
+#include "bitstuff.h"
 #include "librpbase/Achievements.hpp"
 #include "librpbase/SystemRegion.hpp"
 #include "librpfile/MemFile.hpp"
@@ -38,6 +38,9 @@ using namespace LibRpTexture;
 // RomData subclasses.
 #include "WiiWIBN.hpp"
 #include "Handheld/NintendoDS.hpp"
+
+// C includes
+#include "ctypex.h"
 
 // C++ STL classes
 using std::array;

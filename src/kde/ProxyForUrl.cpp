@@ -2,16 +2,18 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * ProxyForUrl.cpp: proxyForUrl() function for the KDE UI frontend.        *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "ProxyForUrl.hpp"
 #include "RpQt.hpp"
 
 // C++ STL classes
 using std::string;
+
+// Qt includes
+#include <QtCore/QUrl>
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 // KF6 removed KProtocolManager::proxyForUrl() in favor of QNetworkProxyFactory.

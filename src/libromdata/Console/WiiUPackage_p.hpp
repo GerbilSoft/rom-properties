@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiUPackage_p.hpp: Wii U NUS Package reader. (PRIVATE CLASS)            *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,6 +12,7 @@
 #include "common.h"
 
 // RomData subclasses
+#include "RomData_p.hpp"
 #include "WiiTicket.hpp"
 #include "WiiTMD.hpp"
 

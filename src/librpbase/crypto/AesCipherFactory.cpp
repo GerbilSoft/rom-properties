@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AesCipherFactory.cpp: IAesCipher factory class.                         *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "AesCipherFactory.hpp"
 
 // IAesCipher implementations.

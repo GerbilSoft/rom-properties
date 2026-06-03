@@ -6,8 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-
 #include "RomDataView.hpp"
 #include "RomDataView_p.hpp"
 #include "RomDataFormat.hpp"
@@ -15,6 +13,7 @@
 #include "gtk3/sort_funcs.h"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 using namespace LibRpBase;
 using namespace LibRpTexture;
 
@@ -23,6 +22,8 @@ using std::array;
 using std::set;
 using std::string;
 using std::vector;
+
+#include "PIMGTYPE.hpp"
 
 static void	tree_view_realize_signal_handler    (GtkTreeView	*treeView,
 						     RpRomDataView	*page);

@@ -6,8 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-
 #include "RomDataView.hpp"
 #include "RomDataView_p.hpp"
 #include "RomDataFormat.hpp"
@@ -16,14 +14,21 @@
 #include "RpQImageBackend.hpp"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/TextOut.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpTexture;
 
 // C++ STL classes
+#include <set>
 using std::set;
 using std::string;
+
+// Qt includes
+#include <QCheckBox>
+#include <QDialogButtonBox>
+#include <QHeaderView>
 
 // Custom widgets
 #include "DragImageTreeView.hpp"
@@ -34,6 +39,9 @@ using std::string;
 #include "ListDataModel.hpp"
 #include "ListDataSortProxyModel.hpp"
 #include "config/AchievementsItemDelegate.hpp"
+
+// libfmt
+#include "rp-libfmt.h"
 
 /** RomDataViewPrivate **/
 

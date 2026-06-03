@@ -8,6 +8,8 @@
 
 #pragma once
 
+// C includes
+#include <assert.h>
 #include <stdint.h>
 
 /**

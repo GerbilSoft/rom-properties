@@ -9,10 +9,10 @@
 // Reference: http://sndh.atari.org/fileformat.php
 // NOTE: The header format consists of tags that may be in any order,
 // so we don't have a structs file.
-#include "stdafx.h"
 #include "libromdata/config.libromdata.h"
 
 #include "SNDH.hpp"
+#include "RomData_p.hpp"
 
 // Other rom-properties libraries
 using namespace LibRpBase;
@@ -27,7 +27,11 @@ using namespace LibRpText;
 // for memmem() if it's not available in <string.h>
 #include "librptext/libc.h"
 
+// C includes
+#include "ctypex.h"
+
 // C++ STL classes
+#include <numeric>
 using std::array;
 using std::string;
 using std::unique_ptr;

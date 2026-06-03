@@ -2,15 +2,16 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ELFData.cpp: Executable and Linkable Format data.                       *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "ELFData.hpp"
 #include "Other/elf_structs.h"
 
 // C++ STL classes
+#include <algorithm>
+#include <array>
 using std::array;
 
 namespace LibRomData { namespace ELFData {

@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.librpbase.h"
 #include "config.kde.h"
 
@@ -14,8 +13,12 @@
 #include "UpdateChecker.hpp"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/config/AboutTabText.hpp"
 using namespace LibRpBase;
+
+// C includes
+#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -24,6 +27,7 @@ using std::string;
 // Qt includes
 #include <QtCore/QThread>
 
+// KDE includes
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 // KIO version.
 // NOTE: Only available as a compile-time constant.
@@ -32,6 +36,11 @@ using std::string;
 // kdelibs version.
 #  include <kdeversion.h>
 #endif
+
+#include "RpQt.hpp"
+
+// libfmt
+#include "rp-libfmt.h"
 
 /** Libraries **/
 

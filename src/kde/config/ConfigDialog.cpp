@@ -6,11 +6,13 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 #include "ConfigDialog.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librpbase/config/Config.hpp"
+#include "librpfile/FileSystem.hpp"
 using LibRpBase::Config;
 using namespace LibRpFile;
 
@@ -19,6 +21,11 @@ using namespace LibRpFile;
 #  include "librpbase/crypto/KeyManager.hpp"
 using LibRpBase::KeyManager;
 #endif
+
+// Qt includes
+#include <QPushButton>
+
+#include "RpQt.hpp"
 
 /** ConfigDialogPrivate **/
 

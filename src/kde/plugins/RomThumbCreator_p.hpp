@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomThumbCreator_p.hpp: Thumbnail creator. (PRIVATE CLASS)               *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,6 +19,9 @@
 
 // C++ STL classes
 #include <string>
+
+// for rpToQImage()
+#include "RpQt.hpp"
 
 // TCreateThumbnail is a templated class,
 // so we have to #include the .cpp file here.

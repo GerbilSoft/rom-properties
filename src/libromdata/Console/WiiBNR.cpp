@@ -6,8 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "WiiBNR.hpp"
+#include "RomData_p.hpp"
+
 #include "data/NintendoLanguage.hpp"
 
 #include "WiiCommon.hpp"

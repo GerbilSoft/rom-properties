@@ -2,19 +2,20 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * KeyStoreUI.cpp: Key store UI base class.                                *
  *                                                                         *
- * Copyright (c) 2012-2025 by David Korth.                                 *
+ * Copyright (c) 2012-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "KeyStoreUI.hpp"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/crypto/KeyManager.hpp"
 #include "librpbase/crypto/IAesCipher.hpp"
 #include "librpbase/crypto/AesCipherFactory.hpp"
 #include "librpbase/crypto/Hash.hpp"
 #include "librpfile/RpFile.hpp"
+#include "librptext/conversion.hpp"
 using namespace LibRpBase;
 using namespace LibRpText;
 using namespace LibRpFile;
@@ -26,7 +27,11 @@ using namespace LibRpFile;
 #include "../Console/Xbox360_XEX.hpp"
 using namespace LibRomData;
 
+// C includes
+#include "ctypex.h"
+
 // C++ STL classes
+#include <numeric>
 using std::array;
 using std::string;
 using std::u16string;

@@ -7,14 +7,19 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "rp_image.hpp"
 #include "rp_image_p.hpp"
 #include "rp_image_backend.hpp"
 
+// Other rom-properties libraries
+#include "librpbyteswap/byteswap_rp.h"
+
 // SSSE3 intrinsics
 #include <emmintrin.h>
 #include <tmmintrin.h>
+
+// C includes (C++ namespace)
+#include <cstring>
 
 // Workaround for RP_D() expecting the no-underscore, UpperCamelCase naming convention.
 #define rp_imagePrivate rp_image_private

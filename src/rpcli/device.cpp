@@ -7,7 +7,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "device.hpp"
 
 // NOTE: We can't check in CMake beacuse RP_OS_SCSI_SUPPORTED
@@ -26,9 +25,13 @@ using LibRpFile::RpFile;
 #include "librpfile/scsi/ata_protocol.h"
 
 // C++ STL classes
+#include <array>
 using std::array;
 using std::ios;
 using std::ostream;
+
+// libfmt
+#include "rp-libfmt.h"
 
 class StreamStateSaver {
 	ios &stream;	// Stream being adjusted.

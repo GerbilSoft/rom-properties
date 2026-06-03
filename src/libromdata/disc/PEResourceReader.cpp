@@ -6,17 +6,23 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "PEResourceReader.hpp"
-
 #include "../Other/exe_pe_structs.h"
 
 // Other rom-properties libraries
+#include "librpbase/disc/PartitionFile.hpp"
+#include "librpbyteswap/byteswap_rp.h"
+#include "librptext/conversion.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
+// C includes (C++ namespace)
+#include <cstring>
+
 // C++ STL classes
+#include <algorithm>
+#include <array>
 using std::array;
 using std::string;
 using std::unique_ptr;

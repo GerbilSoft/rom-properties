@@ -6,12 +6,12 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.version.h"
 #include "IDownloader.hpp"
 
 // C includes (C++ namespace)
 #include <cstdio>
+#include <cstring>
 
 // C++ includes
 #include <string>

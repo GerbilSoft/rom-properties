@@ -6,8 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "Nintendo3DSFirm.hpp"
+#include "RomData_p.hpp"
+
 #include "n3ds_firm_structs.h"
 #include "data/Nintendo3DSFirmData.hpp"
 
@@ -19,6 +20,9 @@ using namespace LibRpText;
 
 // for memmem() if it's not available in <string.h>
 #include "librptext/libc.h"
+
+// C includes
+#include "ctypex.h"
 
 // C++ STL classes
 using std::array;

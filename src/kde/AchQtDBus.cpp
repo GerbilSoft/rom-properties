@@ -2,14 +2,15 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * AchQtDBus.cpp: QtDBus notifications for achievements.                   *
  *                                                                         *
- * Copyright (c) 2020-2025 by David Korth.                                 *
+ * Copyright (c) 2020-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "AchQtDBus.hpp"
 
-// librpbase, librptexture
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librptexture/img/rp_image.hpp"
 using LibRpBase::Achievements;
 using LibRpTexture::argb32_t;
 
@@ -23,6 +24,8 @@ using LibRpTexture::argb32_t;
 
 // Achievement spritesheets
 #include "AchSpriteSheet.hpp"
+
+#include "RpQt.hpp"
 
 struct NotifyIconStruct {
 	int width;

@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 #include "libromdata/config.libromdata.h"
 
@@ -16,22 +15,27 @@
 // for .zip files
 #include "file/IRpFile_unzFile_filefuncs.hpp"
 
+// Other rom-properties libraries
 // librpbase, librpfile
 #include "librpfile/DualFile.hpp"
+#include "librpfile/FileSystem.hpp"
 #include "librpfile/RelatedFile.hpp"
+#include "librpfile/RpFile.hpp"
+#include "librptexture/FileFormatFactory.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
-
-// librptexture
-#include "librptexture/FileFormatFactory.hpp"
 using namespace LibRpTexture;
 
 // C++ STL classes
 #include <mutex>
+#include <unordered_map>
+#include <unordered_set>
 using std::array;
 using std::shared_ptr;
 using std::string;
 using std::vector;
+using std::unordered_map;
+using std::unordered_set;
 
 // RomData subclasses: Consoles
 #include "Console/Atari7800.hpp"
@@ -1278,7 +1282,7 @@ static void init_supportedFileExtensions(void)
 	// then the thumbnail handlers will be registered.
 	//
 	// The actual data is stored in the vector<ExtInfo>.
-	std::unordered_map<string, unsigned int> map_exts;
+	unordered_map<string, unsigned int> map_exts;
 
 	static constexpr size_t reserve_size =
 		(romDataFns_magic.size() +
@@ -1397,7 +1401,7 @@ static void init_supportedMimeTypes(void)
 	// that support the same MIME types, we're using
 	// an unordered_set<string>. The actual data
 	// is stored in the vector<const char*>.
-	std::unordered_set<string> set_mimeTypes;
+	unordered_set<string> set_mimeTypes;
 
 	static constexpr size_t reserve_size =
 		(romDataFns_magic.size() +

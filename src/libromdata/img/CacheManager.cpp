@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.libromdata.h"
 #include "CacheManager.hpp"
 
@@ -22,6 +21,7 @@ using namespace LibRpFile;
 #include "libcachecommon/CacheKeys.hpp"
 
 // C includes (C++ namespace)
+#include <cstring>
 #include <ctime>
 
 // C++ STL classes

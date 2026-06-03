@@ -6,8 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "BCSTM.hpp"
+#include "RomData_p.hpp"
+
 #include "bcstm_structs.h"
 
 // Other rom-properties libraries

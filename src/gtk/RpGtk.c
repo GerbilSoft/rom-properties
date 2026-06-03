@@ -6,9 +6,12 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "RpGtk.h"
 #include "gtk-i18n.h"
+
+// C includes
+#include <assert.h>
+#include <errno.h>
 
 // for bool
 #include "stdboolx.h"
@@ -100,13 +103,15 @@ static int rpFileFilterToGtkFileChooser(GtkFileChooser *fileChooser, const char 
 {
 	assert(fileChooser != NULL);
 	assert(filter != NULL && filter[0] != '\0');
-	if (!fileChooser || !filter || filter[0] == '\0')
+	if (!fileChooser || !filter || filter[0] == '\0') {
 		return -EINVAL;
+	}
 
 	// Split the string.
 	gchar **const strv = g_strsplit(filter, "|", 0);
-	if (!strv)
+	if (!strv) {
 		return -EINVAL;
+	}
 
 	int ret = 0;
 	gchar **pStrv = strv;
@@ -162,8 +167,9 @@ static int rpFileFilterToGtkFileDialog(GtkFileDialog *fileDialog, const char *fi
 {
 	assert(fileDialog != NULL);
 	assert(filter != NULL && filter[0] != '\0');
-	if (!fileDialog || !filter || filter[0] == '\0')
+	if (!fileDialog || !filter || filter[0] == '\0') {
 		return -EINVAL;
+	}
 
 	// Create a GListStore for GtkFileFilters.
 	GListStore *const listStore = g_list_store_new(GTK_TYPE_FILE_FILTER);

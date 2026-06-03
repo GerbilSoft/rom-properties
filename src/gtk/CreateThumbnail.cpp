@@ -2,23 +2,25 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CreateThumbnail.cpp: Thumbnail creator for wrapper programs.            *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.gtk.h"
 
-#include "CreateThumbnail.hpp"
 #include "check-uid.h"
+#include "CreateThumbnail.hpp"
+
 #include "RpGtk.h"
+#include "RpFile_gio.hpp"
 
 // Other rom-properties libraries
-#include "libromdata/RomDataFactory.hpp"
+#include "librpbase/config/Config.hpp"
+#include "librpbase/img/RpPngWriter.hpp"
+#include "librpbase/RomData.hpp"
 #include "librpfile/FileSystem.hpp"
-using LibRpBase::Config;
-using LibRpBase::RomDataPtr;
-using LibRpBase::RpPngWriter;
+#include "libromdata/RomDataFactory.hpp"
+using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpTexture;
 using namespace LibRomData;
@@ -35,9 +37,15 @@ using LibRomData::TCreateThumbnail;
 #  include "NetworkManager.h"
 #endif /* ENABLE_NETWORKING */
 
+// PIMGTYPE
+#include "PIMGTYPE.hpp"
+
 // C++ STL classes
 using std::string;
 using std::unique_ptr;
+
+// libfmt
+#include "rp-libfmt.h"
 
 /** CreateThumbnailPrivate **/
 

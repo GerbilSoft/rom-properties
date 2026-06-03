@@ -7,7 +7,6 @@
  ***************************************************************************/
 
 // Reference: https://doc.qt.io/qt-5/dnd.html
-#include "stdafx.h"
 #include "Ext2AttrView.hpp"
 
 // Ext2 flags (also used for Ext3, Ext4, and other Linux file systems)
@@ -16,12 +15,21 @@
 // Ext2AttrData
 #include "librpfile/xattr/Ext2AttrData.h"
 
-// librpfile
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 using LibRpFile::XAttrReader;
 
 // C++ STL classes
 using std::array;
 using std::string;
+
+// Qt includes
+#include <QCheckBox>
+
+#include "RpQt.hpp"
+
+// libfmt
+#include "rp-libfmt.h"
 
 /** Ext2AttrViewPrivate **/
 

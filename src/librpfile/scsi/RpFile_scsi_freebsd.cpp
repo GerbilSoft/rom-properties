@@ -2,15 +2,14 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_scsi_freebsd.cpp: Standard file object. (FreeBSD SCSI)           *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #if !defined(__FreeBSD__) && !defined(__DragonFly__)
-# error RpFile_scsi_freebsd.cpp is for FreeBSD and DragonFly BSD ONLY.
+#  error RpFile_scsi_freebsd.cpp is for FreeBSD and DragonFly BSD ONLY.
 #endif /* !__FreeBSD__ && !__DragonFly__ */
 
-#include "stdafx.h"
 #include "config.librpfile.h"
 
 #include "../RpFile.hpp"

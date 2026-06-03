@@ -6,9 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-
 #include "Xbox360_STFS.hpp"
+#include "RomData_p.hpp"
+
 #include "Xbox360_XEX.hpp"
 #include "xbox360_stfs_structs.h"
 #include "data/Xbox360_STFS_ContentType.hpp"
@@ -27,6 +27,9 @@ using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
 
+// C includes
+#include "ctypex.h"
+
 // C++ STL classes
 using std::array;
 using std::shared_ptr;
@@ -34,6 +37,9 @@ using std::string;
 using std::u16string;
 using std::unique_ptr;
 using std::vector;
+
+// Uninitialized vector class
+#include "uvector.h"
 
 namespace LibRomData {
 

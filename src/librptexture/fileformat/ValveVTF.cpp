@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ValveVTF.cpp: Valve VTF image reader.                                   *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,13 +11,14 @@
  * - https://developer.valvesoftware.com/wiki/Valve_Texture_Format
  */
 
-#include "stdafx.h"
 #include "ValveVTF.hpp"
 #include "FileFormat_p.hpp"
 
 #include "vtf_structs.h"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librpbase/RomFields.hpp"
 using namespace LibRpFile;
 using LibRpBase::RomFields;
 
@@ -29,9 +30,13 @@ using LibRpBase::RomFields;
 using LibRpTexture::ImageSizeCalc::OpCode;
 
 // C++ STL classes
+#include <vector>
 using std::array;
 using std::string;
 using std::vector;
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRpTexture {
 

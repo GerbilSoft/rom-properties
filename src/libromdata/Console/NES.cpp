@@ -7,8 +7,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "NES.hpp"
+#include "RomData_p.hpp"
+
 #include "data/NintendoPublishers.hpp"
 #include "data/NESMappers.hpp"
 #include "nes_structs.h"

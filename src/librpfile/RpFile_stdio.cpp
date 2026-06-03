@@ -2,11 +2,9 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_stdio.cpp: Standard file object. (stdio implementation)          *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
-
-#include "stdafx.h"
 
 #ifdef _WIN32
 #  error RpFile_stdio is not supported on Windows, use RpFile_win32.
@@ -23,6 +21,9 @@
 
 // C includes
 #include <fcntl.h>	// fcntl(), F_GETFD, F_SETFD
+#ifndef _MSC_VER
+#  include <strings.h>
+#endif /* _MSC_VER */
 #include <unistd.h>	// ftruncate()
 
 // C++ STL classes

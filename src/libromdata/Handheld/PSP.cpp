@@ -6,10 +6,10 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-
 #include "config.libromdata.h"
+
 #include "PSP.hpp"
+#include "RomData_p.hpp"
 
 // Other rom-properties libraries
 #include "librpbase/img/RpPng.hpp"

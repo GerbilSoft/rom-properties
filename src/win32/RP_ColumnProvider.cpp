@@ -7,7 +7,6 @@
  ***************************************************************************/
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
-#include "stdafx.h"
 #include "config.win32.h"
 #include "RP_ColumnProvider.hpp"
 #include "RpImageWin32.hpp"

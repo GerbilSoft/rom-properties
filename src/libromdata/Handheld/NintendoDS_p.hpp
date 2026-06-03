@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoDS.hpp: Nintendo DS(i) ROM reader. (Private class)              *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,12 +11,8 @@
 #include "common.h"
 #include "nds_structs.h"
 
-// C++ includes
-#include <array>
-#include <memory>
-#include <vector>
-
-// Icon/title data
+// RomData subclasses
+#include "RomData_p.hpp"
 #include "NintendoDS_BNR.hpp"
 
 // Other rom-properties libraries
@@ -24,6 +20,11 @@
 #include "librpbase/RomFields.hpp"
 #include "librpbase/img/IconAnimData.hpp"
 #include "librptexture/img/rp_image.hpp"
+
+// C++ includes
+#include <array>
+#include <memory>
+#include <vector>
 
 namespace LibRomData {
 

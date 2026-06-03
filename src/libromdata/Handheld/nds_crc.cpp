@@ -1,12 +1,11 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * nds_crc.hpp: Nintendo DS CRC16 function.                                *
+ * nds_crc.cpp: Nintendo DS CRC16 function.                                *
  *                                                                         *
- * Copyright (c) 2020-2024 by David Korth.                                 *
+ * Copyright (c) 2020-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "nds_crc.hpp"
 
 /**

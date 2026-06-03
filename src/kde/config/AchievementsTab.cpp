@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * AchievementsTab.cpp: Achievements tab for rp-config.                    *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "AchievementsTab.hpp"
 #include "AchievementsItemDelegate.hpp"
 #include "../AchSpriteSheet.hpp"
@@ -17,6 +16,8 @@ using LibRpBase::Achievements;
 
 // C++ STL classes
 using std::array;
+
+#include "RpQt.hpp"
 
 #include "ui_AchievementsTab.h"
 class AchievementsTabPrivate

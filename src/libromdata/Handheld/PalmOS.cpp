@@ -15,12 +15,14 @@
 // - https://www.cs.trinity.edu/~jhowland/class.files.cs3194.html/palm-docs/Constructor%20for%20Palm%20OS.pdf
 // - https://www.cs.uml.edu/~fredm/courses/91.308-spr05/files/palmdocs/uiguidelines.pdf
 
-#include "stdafx.h"
 #include "PalmOS.hpp"
+#include "RomData_p.hpp"
+
 #include "palmos_structs.h"
 #include "librptexture/fileformat/palmos_tbmp_structs.h"	// TODO: Make this unnecessary?
 
 // Other rom-properties libraries
+#include "librpfile/FileSystem.hpp"
 #include "librptext/fourCC.hpp"
 #include "librptexture/fileformat/PalmOS_Tbmp.hpp"
 using namespace LibRpBase;

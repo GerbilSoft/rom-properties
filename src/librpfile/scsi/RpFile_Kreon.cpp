@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_Kreon.cpp: Standard file object. (Kreon-specific functions)      *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.librpfile.h"
 
 #include "../RpFile.hpp"
@@ -17,7 +16,12 @@
 
 #include "scsi_protocol.h"
 
+// C includes (C++ namespace)
+#include <cstring>
+
 // C++ STL classes
+#include <algorithm>
+#include <array>
 using std::array;
 using std::vector;
 

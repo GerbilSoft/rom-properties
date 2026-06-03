@@ -6,15 +6,20 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "RomFields.hpp"
+
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librptext/conversion.hpp"
+using LibRpText::trimEnd;
 
 // C++ STL classes
 using std::string;
 using std::unique_ptr;
 using std::vector;
 
-using namespace LibRpText;
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRpBase {
 

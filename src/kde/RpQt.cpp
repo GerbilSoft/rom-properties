@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpQt.cpp: Qt wrappers for some libromdata functionality.                *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "RpQt.hpp"
 #include "RpQImageBackend.hpp"
 

@@ -6,10 +6,10 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "SystemsTab.hpp"
 
 // librpbase
+#include "librpbase/config/Config.hpp"
 using LibRpBase::Config;
 
 #include "ui_SystemsTab.h"

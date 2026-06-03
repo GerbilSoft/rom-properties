@@ -2,21 +2,22 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * UpdateChecker.cpp: Update checker object for AboutTab.                  *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "UpdateChecker.hpp"
 #include "ProxyForUrl.hpp"
 
-// librpbase
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/config/AboutTabText.hpp"
-using namespace LibRpBase;
-
-// libromdata
 #include "libromdata/img/CacheManager.hpp"
+using namespace LibRpBase;
 using LibRomData::CacheManager;
+
+// C includes
+#include "ctypex.h"
 
 // C++ STL classes
 using std::string;

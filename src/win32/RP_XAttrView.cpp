@@ -11,8 +11,6 @@
 // - https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
 // - https://docs.microsoft.com/en-us/windows/win32/ad/implementing-the-property-page-com-object
 
-#include "stdafx.h"
-
 #include "RP_XAttrView.hpp"
 #include "RP_XAttrView_p.hpp"
 #include "res/resource.h"

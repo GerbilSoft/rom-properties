@@ -6,8 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "RpTextureWrapper.hpp"
+#include "RomData_p.hpp"
 
 // Other rom-properties libraries
 #include "librptexture/FileFormatFactory.hpp"

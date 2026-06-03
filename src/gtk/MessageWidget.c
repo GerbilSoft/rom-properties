@@ -2,12 +2,15 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * MessageWidget.c: Message widget (similar to KMessageWidget)             *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "MessageWidget.h"
+#include "common.h"
+
+// C includes
+#include "stdboolx.h"
 
 /* Property identifiers */
 typedef enum {

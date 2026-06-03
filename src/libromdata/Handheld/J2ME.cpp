@@ -6,8 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "J2ME.hpp"
+#include "RomData_p.hpp"
 
 // MiniZip
 #include <zlib.h>
@@ -18,6 +18,7 @@
 
 // Other rom-properties libraries
 #include "librpbase/img/RpPng.hpp"
+#include "librpfile/FileSystem.hpp"
 #include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpText;

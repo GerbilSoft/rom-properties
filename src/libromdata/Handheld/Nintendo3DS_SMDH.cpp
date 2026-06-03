@@ -7,9 +7,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-
 #include "Nintendo3DS_SMDH.hpp"
+#include "RomData_p.hpp"
+
 #include "n3ds_structs.h"
 #include "data/NintendoLanguage.hpp"
 #include "../Console/WiiCommon.hpp"
@@ -20,6 +20,9 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
+
+// C includes
+#include "ctypex.h"
 
 // C++ STL classes
 using std::array;

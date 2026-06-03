@@ -7,7 +7,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 
 #include "Nintendo3DS.hpp"
@@ -20,10 +19,13 @@
 #endif /* HAVE_ZSTD */
 
 // Other rom-properties libraries
-#include "librpbase/config/Config.hpp"
-#include "librpbase/crypto/Hash.hpp"
+#include "bitstuff.h"
 #include "librpbase/Achievements.hpp"
 #include "librpbase/SystemRegion.hpp"
+#include "librpbase/config/Config.hpp"
+#include "librpbase/crypto/Hash.hpp"
+#include "librpbase/disc/DiscReader.hpp"
+#include "librpfile/FileSystem.hpp"
 #include "librpfile/SubFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -37,6 +39,9 @@ using namespace LibRpTexture;
 // NCCH and CIA readers.
 #include "disc/NCCHReader.hpp"
 #include "disc/CIAReader.hpp"
+
+// C includes
+#include "ctypex.h"
 
 // C++ STL classes
 using std::array;

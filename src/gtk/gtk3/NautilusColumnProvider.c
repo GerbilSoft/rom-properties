@@ -2,15 +2,19 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                           *
  * NautilusColumnProvider.c: Nautilus (and forks) Column Provider Definition *
  *                                                                           *
- * Copyright (c) 2017-2025 by David Korth.                                   *
+ * Copyright (c) 2017-2026 by David Korth.                                   *
  * SPDX-License-Identifier: GPL-2.0-or-later                                 *
  *****************************************************************************/
 
 // Reference: https://github.com/xfce-mirror/thunar-archive-plugin/blob/master/thunar-archive-plugin/tap-provider.c
 
-#include "stdafx.h"
 #include "NautilusColumnProvider.h"
 #include "NautilusExtraInterfaces.h"
+
+#include "common.h"
+
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 
 // nautilus-extension.h mini replacement
 #if GTK_CHECK_VERSION(4, 0, 0)

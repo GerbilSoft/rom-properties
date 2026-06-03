@@ -3,11 +3,10 @@
  * RecursiveScan.cpp: Recursively scan for cache files to delete.          *
  * (POSIX implementation)                                                  *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "RecursiveScan.hpp"
 #include "FileSystem.hpp"
 
@@ -15,8 +14,14 @@
 #include "d_type.h"
 
 // C includes
+#ifndef _MSC_VER
+#  include <strings.h>
+#endif /* _MSC_VER */
 #include <sys/types.h>
 #include <dirent.h>
+
+// C includes (C++ namespace)
+#include <cstring>
 
 // C++ STL classes
 using std::forward_list;

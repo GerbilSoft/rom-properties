@@ -9,7 +9,6 @@
 // References:
 // - https://github.com/unknownbrackets/maxcso/blob/master/README_CSO.md
 
-#include "stdafx.h"
 #include "config.librpbase.h"
 #include "config.libromdata.h"
 
@@ -30,6 +29,9 @@
 // Other rom-properties libraries
 using namespace LibRpBase;
 using namespace LibRpFile;
+
+// Uninitialized vector class
+#include "uvector.h"
 
 namespace LibRomData {
 

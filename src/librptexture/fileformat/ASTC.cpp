@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ASTC.hpp: ASTC image reader.                                            *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "ASTC.hpp"
 #include "FileFormat_p.hpp"
 
@@ -24,6 +23,9 @@ using LibRpBase::RomFields;
 // C++ STL classes
 using std::array;
 using std::string;
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRpTexture {
 

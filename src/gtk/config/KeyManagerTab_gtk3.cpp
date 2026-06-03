@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * KeyManagerTab_gtk3.cpp: Key Manager tab for rp-config. (GTK2/GTK3)      *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "KeyManagerTab.hpp"
 #include "KeyManagerTab_p.hpp"
 
@@ -14,6 +13,7 @@
 using LibRomData::KeyStoreUI;
 
 // C++ STL classes
+#include <array>
 using std::array;
 
 // GtkCellRendererText signal handlers

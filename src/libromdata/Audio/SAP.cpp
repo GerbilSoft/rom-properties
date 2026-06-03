@@ -9,15 +9,19 @@
 // Reference: http://asap.sourceforge.net/sap-format.html
 // NOTE: The header format is plaintext, so we don't have a structs file.
 
-#include "stdafx.h"
 #include "SAP.hpp"
+#include "RomData_p.hpp"
 
 // Other rom-properties libraries
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
+// C includes
+#include "ctypex.h"
+
 // C++ STL classes
+#include <numeric>
 using std::array;
 using std::pair;
 using std::string;

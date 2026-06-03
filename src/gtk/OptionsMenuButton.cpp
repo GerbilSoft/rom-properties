@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "OptionsMenuButton.hpp"
 #include "PIMGTYPE.hpp"
 #include "RpGtk.h"
@@ -19,6 +18,9 @@ using LibRpBase::RomData;
 using std::array;
 using std::string;
 using std::vector;
+
+// libfmt
+#include "rp-libfmt.h"
 
 // NOTE: GtkMenuButton is final in GTK4, but not GTK3.
 // As a result, RpOptionsMenuButton is now rewritten to be a

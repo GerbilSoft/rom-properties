@@ -6,8 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "XboxDisc.hpp"
+#include "RomData_p.hpp"
 
 // Other rom-properties libraries
 #include "librpfile/RpFile.hpp"
@@ -31,6 +31,10 @@ using namespace LibRpTexture;
 #include "Media/ISO.hpp"
 #include "Xbox_XBE.hpp"
 #include "Xbox360_XEX.hpp"
+
+// C includes
+#include "ctypex.h"
+#include "tcharx.h"
 
 // C++ STL classes
 using std::array;

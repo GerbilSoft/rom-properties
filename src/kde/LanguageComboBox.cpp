@@ -6,16 +6,17 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "LanguageComboBox.hpp"
-
 #include "FlagSpriteSheet.hpp"
 
-// librpbase
+// Other rom-properties libraries
+#include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
 
 // C++ STL classes
 using std::set;
+
+#include "RpQt.hpp"
 
 LanguageComboBox::LanguageComboBox(QWidget *parent)
 	: super(parent)

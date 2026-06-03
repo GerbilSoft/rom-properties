@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * stdafx.h: Common definitions and includes.                              *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -124,7 +124,3 @@
 #    endif /* GTK_CHECK_VERSION(4, 11, 3) */
 #  endif /* RP_GTK_USE_CAIRO */
 #endif /* !RP_IS_GLIB_ONLY */
-
-#ifdef __cplusplus
-#  include "RpFile_gio.hpp"
-#endif /* __cplusplus */

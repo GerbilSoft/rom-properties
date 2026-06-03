@@ -2,14 +2,13 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * DragImageTreeView.cpp: Drag & Drop QTreeView subclass.                  *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // References:
 // - https://doc.qt.io/qt-5/dnd.html
 // - https://wiki.qt.io/QList_Drag_and_Drop_Example
-#include "stdafx.h"
 #include "DragImageTreeView.hpp"
 #include "RpQByteArrayFile.hpp"
 
@@ -17,12 +16,18 @@
 #include "ListDataModel.hpp"
 
 // Other rom-properties libraries
+#include "librpbase/img/RpPngWriter.hpp"
 using namespace LibRpTexture;
 using LibRpBase::RpPngWriter;
 
 // C++ STL classes
 using std::shared_ptr;
 using std::unique_ptr;
+
+// Qt includes
+#include <QtCore/QMimeData>
+#include <QtGui/QDrag>
+#include <QtGui/QStandardItemModel>
 
 void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 {

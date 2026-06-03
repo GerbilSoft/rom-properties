@@ -6,10 +6,11 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 
 #include "WiiU.hpp"
+#include "RomData_p.hpp"
+
 #include "data/NintendoPublishers.hpp"
 #include "wiiu_structs.h"
 #include "gcn_structs.h"
@@ -21,6 +22,9 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
+
+// C includes
+#include "ctypex.h"
 
 // C++ STL classes
 using std::array;

@@ -2,12 +2,14 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IResourceReader.cpp: Interface for Windows resource readers.            *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "IResourceReader.hpp"
+
+// C includes (C++ namespace)
+#include <cassert>
 
 namespace LibRpBase {
 

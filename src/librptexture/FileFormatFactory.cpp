@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 
 #include "FileFormatFactory.hpp"
@@ -20,6 +19,7 @@ using namespace LibRpFile;
 
 // C++ STL classes
 #include <mutex>
+#include <unordered_set>
 using std::array;
 using std::string;
 using std::unordered_set;

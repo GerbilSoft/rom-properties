@@ -6,12 +6,12 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "DragImage.hpp"
 #include "PIMGTYPE.hpp"
 
 // Other rom-properties libraries
 #include "librpbase/img/IconAnimHelper.hpp"
+#include "librpbase/img/RpPngWriter.hpp"
 #include "librpfile/VectorFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -21,6 +21,9 @@ using namespace LibRpTexture;
 using std::array;
 using std::string;
 using std::unique_ptr;
+
+// libfmt
+#include "rp-libfmt.h"
 
 // GtkPopover was added in GTK 3.12.
 // GMenuModel is also implied by this, since GMenuModel

@@ -2,11 +2,19 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormat.hpp: Texture file format base class. (PRIVATE CLASS)         *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
+
+#include "aligned_malloc.h"
+
+// Other rom-properties libraries
+#include "librpbyteswap/byteswap_rp.h"
+
+// C includes (C++ namespace)
+#include <cstring>
 
 // C++ includes
 #include <array>

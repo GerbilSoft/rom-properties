@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "KeyManagerTab.hpp"
 
 #include "KeyStoreItemDelegate.hpp"
@@ -14,10 +13,16 @@
 #include "KeyStoreQt.hpp"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 using LibRomData::KeyStoreUI;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+
+// Qt includes
+#include <QtCore/QFileInfo>
+#include <QFileDialog>
+#include <QMenu>
 
 // KDE4/KF5 includes.
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
@@ -34,6 +39,11 @@ using std::string;
 #    endif
 #  endif
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
+
+#include "RpQt.hpp"
+
+// libfmt
+#include "rp-libfmt.h"
 
 #include "ui_KeyManagerTab.h"
 class KeyManagerTabPrivate

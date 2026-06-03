@@ -6,12 +6,14 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "WiiSave.hpp"
+#include "RomData_p.hpp"
+
 #include "gcn_card.h"
 #include "wii_banner.h"
 
 // Other rom-properties libraries
+#include "aligned_malloc.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -29,6 +31,9 @@ using namespace LibRpTexture;
 // WiiTicket for EncryptionKeys
 // TODO: Use for title key decryption.
 #include "../Console/WiiTicket.hpp"
+
+// C includes
+#include "ctypex.h"
 
 // C++ STL classes
 using std::array;

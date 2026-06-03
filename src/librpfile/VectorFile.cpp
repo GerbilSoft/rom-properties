@@ -6,10 +6,12 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "VectorFile.hpp"
 
-// C++ STL classes.
+// C includes (C++ namespace)
+#include <cstring>
+
+// C++ STL classes
 using std::string;
 
 namespace LibRpFile {

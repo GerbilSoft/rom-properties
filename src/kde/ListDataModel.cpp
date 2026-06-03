@@ -2,26 +2,32 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * ListDataModel.cpp: QAbstractListModel for RFT_LISTDATA.                 *
  *                                                                         *
- * Copyright (c) 2012-2025 by David Korth.                                 *
+ * Copyright (c) 2012-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "ListDataModel.hpp"
 #include "RomDataFormat.hpp"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/RomFields.hpp"
 #include "librptexture/img/rp_image.hpp"
 using namespace LibRpTexture;
 using LibRpBase::RomFields;
 
 // C++ STL classes
+#include <unordered_map>
 using std::array;
 using std::set;
 using std::string;
 using std::unordered_map;
 using std::vector;
+
+// Qt includes
+#include <QtGui/QPixmap>
+
+#include "RpQt.hpp"
 
 /** ListDataModelPrivate **/
 

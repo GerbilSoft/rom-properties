@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * NetworkStatus.c: Get network status.                                    *
  *                                                                         *
- * Copyright (c) 2022-2025 by David Korth.                                 *
+ * Copyright (c) 2022-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "NetworkStatus.h"
 
 // C includes (Win32-specific)

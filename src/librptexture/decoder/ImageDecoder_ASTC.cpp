@@ -2,11 +2,9 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_ASTC.cpp: Image decoding functions: ASTC                   *
  *                                                                         *
- * Copyright (c) 2019-2025 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
-
-#include "stdafx.h"
 
 #include "ImageDecoder_ASTC.hpp"
 #include "basisu_astc_decomp.h"
@@ -14,6 +12,9 @@
 // librptexture
 #include "img/rp_image.hpp"
 #include "ImageSizeCalc.hpp"
+
+// C includes (C++ namespace)
+#include <cstring>
 
 // C++ STL classes
 using std::array;

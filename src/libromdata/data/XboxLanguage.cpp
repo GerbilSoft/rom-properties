@@ -2,20 +2,24 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * XboxLanguage.cpp: Get the system language for Microsoft Xbox systems.   *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "XboxLanguage.hpp"
 
+// Microsoft Xbox system structs
+#include "Console/xbox360_xdbf_structs.h"
+
+// Other rom-properties libraries
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
 
-// Microsoft Xbox system structs.
-#include "Console/xbox360_xdbf_structs.h"
+// C includes (C++ namespace)
+#include <cassert>
 
 // C++ STL classes
+#include <array>
 using std::array;
 
 namespace LibRomData { namespace XboxLanguage {

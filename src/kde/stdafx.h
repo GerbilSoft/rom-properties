@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * stdafx.h: Common definitions and includes.                              *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -140,8 +140,3 @@
 
 // librptext C++ headers
 #include "librptext/conversion.hpp"
-
-#ifdef __cplusplus
-// KDE UI frontend headers
-#include "RpQt.hpp"
-#endif /* __cplusplus */

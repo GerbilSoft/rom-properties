@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NCCHReader.cpp: Nintendo 3DS NCCH reader.                               *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 
 #include "NCCHReader.hpp"
@@ -19,6 +18,13 @@
 #include "librpbase/disc/PartitionFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
+
+// C includes (C++ namespace)
+#include <cassert>
+#include <cstring>
+
+// C++ STL classes
+#include <algorithm>
 
 #include "NCCHReader_p.hpp"
 namespace LibRomData {
@@ -473,6 +479,21 @@ int NCCHReaderPrivate::loadExHeader(void)
 	q->seek(prev_pos, IRpFile::SeekWhence::Set);
 	headers_loaded |= HEADER_EXHEADER;
 	return 0;
+}
+
+/**
+ * Verify a decrypted ExeFS header.
+ * This checks for known filenames in the header.
+ * @param pExefsHeader ExeFS header.
+ * @return True if valid; false if not.
+ */
+bool NCCHReaderPrivate::verifyExefsHeader(const N3DS_ExeFS_Header_t *pExefsHeader)
+{
+	// Check the first filename.
+	// It should be ".code" for CXIs.
+	// It might be "icon" for CFAs.
+	return (!strcmp(pExefsHeader->files[0].name, ".code") ||
+		!strcmp(pExefsHeader->files[0].name, "icon"));
 }
 
 /** NCCHReader **/

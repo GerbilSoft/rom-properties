@@ -2,14 +2,15 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Nintendo3DSFirmData.cpp: Nintendo 3DS firmware data.                    *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "Nintendo3DSFirmData.hpp"
 
 // C++ STL classes
+#include <algorithm>
+#include <array>
 using std::array;
 
 namespace LibRomData { namespace Nintendo3DSFirmData {

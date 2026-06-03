@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "common.h"
+
 // Qt includes.
 #include <QSettings>
 #include <QWidget>

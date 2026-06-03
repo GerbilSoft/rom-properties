@@ -6,13 +6,14 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "ICO.hpp"
 #include "FileFormat_p.hpp"
 
 #include "ico_structs.h"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librpbase/RomFields.hpp"
 #include "librpbase/disc/DiscReader.hpp"
 #include "librpbase/disc/PartitionFile.hpp"
 #include "librpbase/img/RpPng.hpp"
@@ -25,6 +26,7 @@ using namespace LibRpFile;
 #include "decoder/ImageDecoder_Linear_Gray.hpp"
 
 // C++ STL classes
+#include <map>
 using std::array;
 using std::map;
 using std::string;
@@ -33,6 +35,9 @@ using std::vector;
 
 // Uninitialized vector class
 #include "uvector.h"
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRpTexture {
 

@@ -3,11 +3,10 @@
  * RecursiveScan.cpp: Recursively scan for cache files to delete.          *
  * (Win32 implementation)                                                  *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "RecursiveScan.hpp"
 #include "FileSystem.hpp"
 

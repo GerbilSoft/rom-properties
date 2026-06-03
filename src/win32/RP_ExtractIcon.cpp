@@ -7,7 +7,6 @@
  ***************************************************************************/
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
-#include "stdafx.h"
 #include "RP_ExtractIcon.hpp"
 #include "RpImageWin32.hpp"
 

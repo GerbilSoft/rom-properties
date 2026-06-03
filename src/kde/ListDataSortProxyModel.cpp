@@ -2,16 +2,18 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * ListDataSortProxyModel.cpp: QSortFilterProxyModel for RFT_LISTDATA.     *
  *                                                                         *
- * Copyright (c) 2012-2020 by David Korth.                                 *
+ * Copyright (c) 2012-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "ListDataSortProxyModel.hpp"
 
 // librpbase
 #include "librpbase/RomFields.hpp"
 using LibRpBase::RomFields;
+
+// for rp_qsizetype
+#include "RpQt.hpp"
 
 /**
  * Parse a QString as a number.

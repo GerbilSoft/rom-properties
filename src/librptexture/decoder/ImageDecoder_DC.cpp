@@ -7,8 +7,6 @@
  ***************************************************************************/
 
 // Reference: https://github.com/nickworonekin/puyotools/blob/548a52684fd48d936526fd91e8ead8e52aa33eb3/Libraries/VrSharp/PvrTexture/PvrDataCodec.cs
-
-#include "stdafx.h"
 #include "ImageDecoder_DC.hpp"
 
 // librptexture

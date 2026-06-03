@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RomDataFormat.hpp: Common RomData string formatting functions.          *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "RomDataFormat.hpp"
 
 // librpbase
@@ -15,6 +14,13 @@ using LibRpBase::RomFields;
 
 // C++ STL classes
 using std::tstring;
+
+// libfmt
+#include "rp-libfmt.h"
+
+// Windows SDK
+#include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/w32time.h"
 
 // Windows 10 and later
 #ifndef DATE_MONTHDAY

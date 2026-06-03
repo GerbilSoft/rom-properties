@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * ConfReader.hpp: Configuration reader base class.                        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "ConfReader.hpp"
 #include "ConfReader_p.hpp"
 

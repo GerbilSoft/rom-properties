@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * PowerVR3.cpp: PowerVR 3.0.0 texture image reader.                       *
  *                                                                         *
- * Copyright (c) 2019-2025 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,6 @@
  * - http://cdn.imgtec.com/sdk-documentation/PVR+File+Format.Specification.pdf
  */
 
-#include "stdafx.h"
 #include "config.librptexture.h"
 
 #include "PowerVR3.hpp"
@@ -20,6 +19,8 @@
 #include "pvr3_structs.h"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librpbase/RomFields.hpp"
 using namespace LibRpFile;
 using LibRpBase::RomFields;
 
@@ -33,11 +34,18 @@ using LibRpBase::RomFields;
 #include "decoder/ImageDecoder_BC7.hpp"
 #include "decoder/ImageDecoder_ASTC.hpp"
 
+// C includes
+#include "ctypex.h"
+
 // C++ STL classes
+#include <vector>
 using std::array;
 using std::string;
 using std::unique_ptr;
 using std::vector;
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRpTexture {
 

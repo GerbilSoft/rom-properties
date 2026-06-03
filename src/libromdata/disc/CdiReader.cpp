@@ -10,7 +10,6 @@
 // - https://gist.github.com/Holzhaus/ae3dacf6a2e83dd00421
 // - https://problemkaputt.de/psxspx-cdrom-disk-images-cdi-discjuggler.htm
 
-#include "stdafx.h"
 #include "CdiReader.hpp"
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 
@@ -18,6 +17,7 @@
 #include "IsoPartition.hpp"
 
 // Other rom-properties libraries
+#include "librpbase/disc/PartitionFile.hpp"
 #include "librpfile/RelatedFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;

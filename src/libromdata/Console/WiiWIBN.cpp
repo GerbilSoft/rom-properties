@@ -6,12 +6,14 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "WiiWIBN.hpp"
+#include "RomData_p.hpp"
+
 #include "gcn_card.h"
 #include "wii_banner.h"
 
 // Other rom-properties libraries
+#include "aligned_malloc.h"
 #include "librptexture/decoder/ImageDecoder_GCN.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;

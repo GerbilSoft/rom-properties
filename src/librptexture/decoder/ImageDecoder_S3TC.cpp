@@ -6,8 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-
 #include "ImageDecoder_S3TC.hpp"
 #include "ImageDecoder_p.hpp"
 

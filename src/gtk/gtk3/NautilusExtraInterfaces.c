@@ -2,15 +2,18 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                             *
  * NautilusExtraInterfaces.c: Extra interfaces in Nautilus-based file managers *
  *                                                                             *
- * Copyright (c) 2017-2024 by David Korth.                                     *
+ * Copyright (c) 2017-2026 by David Korth.                                     *
  * SPDX-License-Identifier: GPL-2.0-or-later                                   *
  *******************************************************************************/
 
-#include "stdafx.h"
 #include "config.gtk.h"
+#include "plugin-helper.h"
 #include "NautilusExtraInterfaces.h"
 
-#include "plugin-helper.h"
+#include "common.h"
+
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 
 #ifdef HAVE_CAJA_INTERFACES
 // Caja-specific function pointers

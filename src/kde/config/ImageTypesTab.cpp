@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "ImageTypesTab.hpp"
 #include "RpQt.hpp"
 
@@ -17,10 +16,17 @@
 using namespace LibRomData;
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 using LibRpBase::RomData;
 
 // C++ STL classes
 using std::string;
+
+// Qt includes
+#include <QComboBox>
+
+// libfmt
+#include "rp-libfmt.h"
 
 #include "ui_ImageTypesTab.h"
 class ImageTypesTabPrivate final : public TImageTypesConfig<QComboBox*>

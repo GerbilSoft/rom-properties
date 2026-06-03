@@ -6,16 +6,19 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "Intellivision.hpp"
+#include "RomData_p.hpp"
+
 #include "intv_structs.h"
 
-#include "ctypex.h"
-
 // Other rom-properties libraries
+#include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
+
+// C includes
+#include "ctypex.h"
 
 // C++ STL classes
 using std::array;

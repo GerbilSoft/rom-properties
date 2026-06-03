@@ -6,17 +6,23 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "SNES.hpp"
+#include "RomData_p.hpp"
+
 #include "data/NintendoPublishers.hpp"
 #include "snes_structs.h"
 #include "CopierFormats.h"
 
 // Other rom-properties libraries
+#include "bitstuff.h"
 #include "librpbase/SystemRegion.hpp"
+#include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
 using namespace LibRpText;
 using namespace LibRpFile;
+
+// C includes
+#include "ctypex.h"
 
 // C++ STL classes
 using std::array;

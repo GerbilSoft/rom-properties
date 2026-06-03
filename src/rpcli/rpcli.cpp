@@ -7,7 +7,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.rpcli.h"
 #include "config.version.h"
 #include "librpbase/config.librpbase.h"
@@ -50,9 +49,6 @@ using namespace LibRomData;
 #endif /* _WIN32 */
 using namespace LibRpTexture;
 
-// Sixel
-#include "rp_sixel.hpp"
-
 #ifdef ENABLE_DECRYPTION
 #  include "verifykeys.hpp"
 #endif /* ENABLE_DECRYPTION */
@@ -75,6 +71,7 @@ using namespace LibRpTexture;
 #include "ctypex.h"
 
 // C++ STL classes
+#include <iostream>
 #include <sstream>
 using std::array;
 using std::cout;
@@ -86,6 +83,12 @@ using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
+
+// libfmt
+#include "rp-libfmt.h"
+
+// Sixel
+#include "rp_sixel.hpp"
 
 #include "libi18n/config.libi18n.h"
 #ifdef _MSC_VER

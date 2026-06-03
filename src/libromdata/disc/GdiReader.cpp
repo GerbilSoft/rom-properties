@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "GdiReader.hpp"
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 
@@ -14,12 +13,16 @@
 #include "IsoPartition.hpp"
 
 // Other rom-properties libraries
+#include "librpbase/disc/PartitionFile.hpp"
 #include "librpfile/RelatedFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 
 // Other RomData subclasses
 #include "Media/ISO.hpp"
+
+// C includes
+#include "ctypex.h"
 
 // C++ STL classes
 #include <limits>

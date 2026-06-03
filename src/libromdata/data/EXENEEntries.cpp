@@ -2,13 +2,23 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXENEEntries.cpp: EXE NE Entry ordinal data                             *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * Copyright (c) 2022 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "EXENEEntries.hpp"
+
+// Needed for ARRAY_SIZE() in EXENEEntries_data.h
+#include "common.h"
+
+// C includes
+#ifndef _MSC_VER
+#  include <strings.h>
+#endif /* _MSC_VER */
+
+// C++ STL classes
+#include <algorithm>
 
 namespace LibRomData { namespace EXENEEntries {
 

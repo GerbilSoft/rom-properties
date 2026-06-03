@@ -2,25 +2,27 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CacheCleaner.hpp: Cache cleaner object for CacheCleaner.                *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
-
-#include "stdafx.h"
 
 #include "CacheCleaner.hpp"
 #include "rp-gtk-enums.h"
 
-// libunixcommon
-#include "libunixcommon/userdirs.hpp"
+#include "common.h"
 
-// librpfile
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RecursiveScan.hpp"
+#include "libunixcommon/userdirs.hpp"
 using namespace LibRpFile;
 
 // d_type compatibility values
 #include "d_type.h"
+
+// C includes (C++ namespace)
+#include <cassert>
 
 // C++ STL classes
 using std::forward_list;

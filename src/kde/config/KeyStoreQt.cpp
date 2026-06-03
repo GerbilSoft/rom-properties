@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyStoreQt.cpp: Key store object for Qt.                                *
  *                                                                         *
- * Copyright (c) 2012-2018 by David Korth.                                 *
+ * Copyright (c) 2012-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "KeyStoreQt.hpp"
 
 /**

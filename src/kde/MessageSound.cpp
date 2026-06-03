@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * MessageSound.cpp: Message sound effects class.                          *
  *                                                                         *
- * Copyright (c) 2018-2025 by David Korth.                                 *
+ * Copyright (c) 2018-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "MessageSound.hpp"
 
 #include <QtCore/QPluginLoader>

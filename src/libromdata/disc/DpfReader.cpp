@@ -9,18 +9,26 @@
 // NOTE: This class does NOT derive from DpfReader because
 // DPF/RPF uses byte-granularity, not block-granularity.
 
-#include "stdafx.h"
 #include "config.librpbase.h"
 
 #include "DpfReader.hpp"
 #include "dpf_structs.h"
 
 // Other rom-properties libraries
+#include "librpbyteswap/byteswap_rp.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 
+// C includes (C++ namespace)
+#include <cassert>
+#include <cstring>
+
 // C++ STL classes
+#include <algorithm>
 using std::unique_ptr;
+
+// Uninitialized vector class
+#include "uvector.h"
 
 namespace LibRomData {
 

@@ -2,29 +2,34 @@
  * ROM Properties Page shell extension. (rp-download)                         *
  * SetFileOriginInfo_posix.cpp: setFileOriginInfo() function. (POSIX version) *
  *                                                                            *
- * Copyright (c) 2016-2024 by David Korth.                                    *
+ * Copyright (c) 2016-2026 by David Korth.                                    *
  * SPDX-License-Identifier: GPL-2.0-or-later                                  *
  ******************************************************************************/
 
-#include "stdafx.h"
 #include "config.rp-download.h"
 #include "SetFileOriginInfo.hpp"
 
 #ifdef _WIN32
-# error SetFileOriginInfo_posix.cpp is for POSIX systems, not Windows.
+#  error SetFileOriginInfo_posix.cpp is for POSIX systems, not Windows.
 #endif /* _WIN32 */
 
 // libunixcommon
 #include "libunixcommon/userdirs.hpp"
 
-// INI parser.
+// INI parser
 #include "ini.h"
 
-// C includes.
+// C includes
+#ifndef _MSC_VER
+#  include <strings.h>
+#endif /* _MSC_VER */
 #include <sys/time.h>
 #include <sys/types.h>
 
-// C++ STL classes.
+// C includes (C++ namespace)
+#include <cstring>
+
+// C++ STL classes
 using std::string;
 
 // xattrs

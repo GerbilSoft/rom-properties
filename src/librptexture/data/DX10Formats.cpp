@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * DX10Formats.cpp: DirectX 10 formats.                                    *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "DX10Formats.hpp"
 #include "../fileformat/dds_structs.h"
 

@@ -6,13 +6,15 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 
 #include "PlayStationDisc.hpp"
+#include "RomData_p.hpp"
+
 #include "ps2_structs.h"
 
 // Other rom-properties libraries
+#include "librpbase/disc/DiscReader.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -31,7 +33,11 @@ using namespace LibRpText;
 // inih for SYSTEM.CNF
 #include "ini.h"
 
+// C includes
+#include "ctypex.h"
+
 // C++ STL classes
+#include <unordered_map>
 using std::array;
 using std::string;
 using std::unordered_map;

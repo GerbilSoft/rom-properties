@@ -6,11 +6,13 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "DreamcastSave.hpp"
+#include "RomData_p.hpp"
+
 #include "dc_structs.h"
 
 // Other rom-properties libraries
+#include "aligned_malloc.h"
 #include "librptexture/decoder/ImageDecoder_Linear.hpp"
 #include "librptexture/decoder/ImageDecoder_Linear_Gray.hpp"
 using namespace LibRpBase;

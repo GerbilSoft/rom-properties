@@ -2,16 +2,23 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
  * NautilusMenuProvider.c: Nautilus (and forks) Menu Provider Definition   *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Reference: https://github.com/xfce-mirror/thunar-archive-plugin/blob/master/thunar-archive-plugin/tap-provider.c
 
-#include "stdafx.h"
 #include "NautilusMenuProvider.h"
 #include "MenuProviderCommon.h"
 #include "NautilusExtraInterfaces.h"
+
+#include "common.h"
+
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+
+// C includes
+#include "stdboolx.h"
 
 #include "../RomDataView.hpp"
 

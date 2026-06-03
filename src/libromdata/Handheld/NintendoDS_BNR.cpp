@@ -7,9 +7,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-
 #include "NintendoDS_BNR.hpp"
+#include "RomData_p.hpp"
+
 #include "data/NintendoLanguage.hpp"
 #include "nds_crc.hpp"
 #include "nds_structs.h"

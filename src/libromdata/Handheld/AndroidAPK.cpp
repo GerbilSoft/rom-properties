@@ -6,10 +6,11 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-
 #include "config.librpbase.h"
+
 #include "AndroidAPK.hpp"
+#include "RomData_p.hpp"
+
 #include "AndroidCommon.hpp"
 #include "android_apk_structs.h"
 #include "../disc/AndroidResourceReader.hpp"
@@ -23,6 +24,7 @@
 
 // Other rom-properties libraries
 #include "librpbase/img/RpImageLoader.hpp"
+#include "librpfile/FileSystem.hpp"
 #include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;

@@ -7,7 +7,6 @@
  ***************************************************************************/
 
 // Reference: https://doc.qt.io/qt-5/dnd.html
-#include "stdafx.h"
 #include "XfsAttrView.hpp"
 
 // XFS flags
@@ -15,6 +14,14 @@
 
 // XfsAttrData
 #include "librpfile/xattr/XfsAttrData.h"
+
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+
+// Qt includes
+#include <QCheckBox>
+
+#include "RpQt.hpp"
 
 /** XfsAttrViewPrivate **/
 

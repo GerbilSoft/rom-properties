@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_scsi.cpp: General SCSI functions.                                *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.librpfile.h"
 
 #include "../RpFile.hpp"
@@ -22,6 +21,9 @@
 #include "scsi_protocol.h"
 #include "ata_protocol.h"
 #include "scsi_ata_cmds.h"
+
+// C includes (C++ namespace)
+#include <cstring>
 
 namespace LibRpFile {
 

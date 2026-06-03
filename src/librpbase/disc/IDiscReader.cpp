@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IDiscReader.cpp: Disc reader interface.                                 *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "IDiscReader.hpp"
 
 // Other rom-properties libraries

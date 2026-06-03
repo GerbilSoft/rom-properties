@@ -6,10 +6,11 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.librpbase.h"
 
 #include "PSF.hpp"
+#include "RomData_p.hpp"
+
 #include "psf_structs.h"
 
 // Other rom-properties libraries
@@ -17,7 +18,11 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
+// C includes
+#include "ctypex.h"
+
 // C++ STL classes
+#include <unordered_map>
 using std::array;
 using std::string;
 using std::unique_ptr;

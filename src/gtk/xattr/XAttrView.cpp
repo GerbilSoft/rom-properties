@@ -2,13 +2,15 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * XAttrView.cpp: Extended attribute viewer property page.                 *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "XAttrView.hpp"
 #include "XAttrView_p.hpp"
+
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 
 // XAttrReader
 #include "librpfile/xattr/XAttrReader.hpp"

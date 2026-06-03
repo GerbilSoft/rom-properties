@@ -7,8 +7,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "Lynx.hpp"
+#include "RomData_p.hpp"
+
 #include "lnx_structs.h"
 
 // Other rom-properties libraries
