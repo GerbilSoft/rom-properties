@@ -15,6 +15,7 @@
 
 // Other rom-properties libraries
 #include "bitstuff.h"
+#include "time_r.h"
 #include "librpbase/SystemRegion.hpp"
 #include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;

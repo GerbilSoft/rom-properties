@@ -13,6 +13,7 @@
 #include "data/EXENEEntries.hpp"
 
 // Other rom-properties libraries
+#include "time_r.h"
 using namespace LibRpBase;
 using namespace LibRpText;
 

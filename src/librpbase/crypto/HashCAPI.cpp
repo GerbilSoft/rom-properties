@@ -10,6 +10,9 @@
 
 #include "Hash.hpp"
 
+// Other rom-properties libraries
+#include "librpbyteswap/byteswap_rp.h"
+
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
 #include "libwin32common/w32err.hpp"
@@ -24,6 +27,7 @@
 #include <zlib.h>
 
 // C++ STL classes
+#include <array>
 using std::array;
 
 // SHA-256 and SHA-512 require Windows XP SP3 or later.

@@ -19,6 +19,7 @@
 #include "WiiCommon.hpp"
 
 // Other rom-properties libraries
+#include "time_r.h"
 #include "libi18n/i18n.hpp"
 #include "librpbase/Achievements.hpp"
 #include "librpbase/SystemRegion.hpp"

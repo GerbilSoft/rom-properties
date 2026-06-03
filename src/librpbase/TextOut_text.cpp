@@ -15,6 +15,7 @@
 #include "SystemRegion.hpp"
 
 // Other rom-properties libraries
+#include "time_r.h"
 #include "libi18n/i18n.hpp"
 #include "librptext/conversion.hpp"
 #include "librptext/utf8_strlen.hpp"

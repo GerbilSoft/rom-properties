@@ -28,7 +28,12 @@
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define AesCAPI_NGPrivate AesCAPI_NG_Private
 
+// C includes (C++ namespace)
+#include <cstdint>
+#include <cstring>
+
 // C++ STL classes
+#include <array>
 #include <mutex>
 using std::array;
 using std::unique_ptr;

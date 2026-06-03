@@ -16,6 +16,9 @@
 
 #include "tcharx.h"
 
+// C includes (C++ namespace)
+#include <cassert>
+
 // C++ STL classes
 #include <memory>
 #include <mutex>

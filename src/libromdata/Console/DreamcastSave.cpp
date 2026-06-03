@@ -13,6 +13,7 @@
 
 // Other rom-properties libraries
 #include "aligned_malloc.h"
+#include "time_r.h"
 #include "librptexture/decoder/ImageDecoder_Linear.hpp"
 #include "librptexture/decoder/ImageDecoder_Linear_Gray.hpp"
 using namespace LibRpBase;

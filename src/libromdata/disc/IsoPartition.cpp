@@ -10,6 +10,7 @@
 #include "iso_structs.h"
 
 // Other rom-properties libraries
+#include "time_r.h"
 #include "librpbase/disc/PartitionFile.hpp"
 #include "librptext/conversion.hpp"
 using namespace LibRpBase;

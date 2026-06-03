@@ -18,6 +18,7 @@
 #include "RomDataFactory.hpp"
 
 // Other rom-properties libraries
+#include "time_r.h"
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;

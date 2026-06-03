@@ -10,6 +10,7 @@
 #include "RomData_p.hpp"
 
 // Other rom-properties libraries
+#include "time_r.h"
 #include "libi18n/i18n.hpp"
 #include "libcachecommon/CacheKeys.hpp"
 #include "librpfile/FileSystem.hpp"

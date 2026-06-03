@@ -12,6 +12,7 @@
 #include "sega8_structs.h"
 
 // Other rom-properties libraries
+#include "time_r.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
