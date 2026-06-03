@@ -209,7 +209,9 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 #ifdef LZ4_SHARED_LINKAGE
 	bool isLZ4 = false;
 #endif /* LZ4_SHARED_LINKAGE */
+#ifdef LZO_SHARED_LINKAGE
 	bool isLZO = false;
+#endif /* LZO_SHARED_LINKAGE */
 	switch (d->cisoType) {
 		default:
 		case CisoPspReaderPrivate::CisoType::Unknown:
