@@ -11,7 +11,7 @@
 #include <dlfcn.h>
 #include <unistd.h>
 
-#include <glib.h>
+#include <gtk/gtk.h>
 #include "check-uid.h"
 
 G_BEGIN_DECLS
