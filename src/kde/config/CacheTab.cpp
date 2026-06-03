@@ -15,9 +15,7 @@
 
 // Other rom-properties libraries
 #include "librpfile/FileSystem.hpp"
-using namespace LibRpBase;
 using namespace LibRpFile;
-using namespace LibRpText;
 
 // C++ STL classes
 using std::string;

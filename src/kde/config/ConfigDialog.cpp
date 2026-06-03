@@ -11,7 +11,7 @@
 #include "ConfigDialog.hpp"
 
 // librpbase, librpfile
-using namespace LibRpBase;
+using LibRpBase::Config;
 using namespace LibRpFile;
 
 #ifdef ENABLE_DECRYPTION

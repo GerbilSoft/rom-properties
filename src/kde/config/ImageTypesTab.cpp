@@ -18,7 +18,6 @@ using namespace LibRomData;
 
 // Other rom-properties libraries
 using LibRpBase::RomData;
-using namespace LibRpText;
 
 // C++ STL classes
 using std::string;

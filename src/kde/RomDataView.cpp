@@ -19,7 +19,6 @@
 #include "librpbase/TextOut.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
-using namespace LibRpText;
 using namespace LibRpTexture;
 
 // C++ STL classes
