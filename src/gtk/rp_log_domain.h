@@ -10,6 +10,8 @@
 
 // PrecompiledHeader.cmake's FILE(GENERATE) command mangles the
 // escaped double-quotes for G_LOG_DOMAIN.
+#ifndef G_LOG_DOMAIN
+
 #if defined(RP_UI_GTK4)
 #  define G_LOG_DOMAIN "rom-properties-gtk4"
 #elif defined(RP_UI_GTK3)
@@ -20,3 +22,5 @@
 #  define RP_IS_GLIB_ONLY 1
 #  define G_LOG_DOMAIN "rom-properties-glib"
 #endif
+
+#endif /* G_LOG_DOMAIN */
