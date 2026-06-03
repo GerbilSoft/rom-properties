@@ -13,10 +13,8 @@
 #include "OptionsMenuButton.hpp"
 
 // librpbase
+#include "librpbase/RomFields.hpp"
 #include "librpbase/RomData.hpp"
-namespace LibRpBase {
-	class RomFields;
-}
 
 // C++ includes
 #include <vector>
