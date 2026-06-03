@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "rp_log_domain.h"
+
 #include <glib.h>
 #include <unistd.h>
 
