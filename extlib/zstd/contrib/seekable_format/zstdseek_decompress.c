@@ -74,6 +74,11 @@
 #endif   /* PLATFORM_POSIX_VERSION */
 
 
+#include <stdlib.h>  /* malloc, free */
+#include <stdio.h>   /* FILE* */
+#include <limits.h>  /* UNIT_MAX */
+#include <assert.h>
+
 /* ************************************************************
 * Avoid fseek()'s 2GiB barrier with MSVC, macOS, *BSD, MinGW
 ***************************************************************/
@@ -107,11 +112,6 @@
 #else
 #   define LONG_SEEK fseek
 #endif
-
-#include <stdlib.h>  /* malloc, free */
-#include <stdio.h>   /* FILE* */
-#include <limits.h>  /* UNIT_MAX */
-#include <assert.h>
 
 #define XXH_STATIC_LINKING_ONLY
 #include "xxhash.h"
