@@ -9,7 +9,7 @@
 #pragma once
 
 #include "librpfile/IRpFile.hpp"
-#include <objidl.h>
+#include <comdef.h>
 
 // FIXME: MinGW-w64 14.0.0's comdefsp.h has this, but it isn't working...
 #ifndef _MSC_VER
