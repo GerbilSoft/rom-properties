@@ -11,7 +11,6 @@
 
 // Other rom-properties libraries
 #include "librpfile/RecursiveScan.hpp"
-using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
