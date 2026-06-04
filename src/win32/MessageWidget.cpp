@@ -8,6 +8,16 @@
 
 #include "MessageWidget.hpp"
 
+// C includes
+#include "tcharx.h"
+
+// C includes (C++ namespace)
+#include <cstdint>
+#include <cstdlib>
+
+// libwin32common
+#include "libwin32common/sdk/windowsx_ts.h"
+
 static ATOM atom_messageWidget;
 
 #define IDC_CLOSE_BUTTON	0x0101

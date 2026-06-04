@@ -21,15 +21,19 @@
 
 // Other rom-properties libraries.
 #include "librpfile/RpFile.hpp"
+#include "librptext/wchar.hpp"
 #include "libromdata/Other/EXE.hpp"
 using namespace LibRomData;
 using namespace LibRpFile;
 
-// Detours
-#include "detours.h"
+// C includes
+#include "tcharx.h"
 
 // C++ STL classes
 using std::unique_ptr;
+
+// Detours
+#include "detours.h"
 
 typedef UINT (WINAPI *PrivateExtractIconsW_t)(
 	_In_ LPCWSTR szFileName,

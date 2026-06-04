@@ -11,25 +11,40 @@
 #include "../FontHandler.hpp"
 #include "../MessageWidget.hpp"
 
+// KeyStore
+#include "KeyStoreWin32.hpp"
+
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/crypto/KeyManager.hpp"
+#include "librpfile/FileSystem.hpp"
+#include "librptext/wchar.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRomData;
 
-// KeyStore
-#include "KeyStoreWin32.hpp"
+// C includes
+#include "tcharx.h"
+
+// C++ STL classes
+#include <array>
+using std::array;
+using std::locale;
+using std::string;
+using std::wstring;
 
 // IListView and other undocumented stuff.
 #include "libwin32common/sdk/IListView.hpp"
 #include "KeyStore_OwnerDataCallback.hpp"
 
-// libwin32common
+// libwin32common, libwin32ui
+#include "libwin32common/sdk/windowsx_ts.h"
 #include "libwin32common/rp_versionhelpers.h"
-
-// libwin32ui
 #include "libwin32ui/LoadResource_i18n.hpp"
+#include "libwin32ui/HiDPI.hpp"
+#include "libwin32ui/WinUI.hpp"
+#include "libwin32ui/WTSSessionNotification.hpp"
 using LibWin32UI::LoadDialog_i18n;
 using LibWin32UI::WTSSessionNotification;
 
@@ -38,14 +53,11 @@ using LibWin32UI::WTSSessionNotification;
 #include "libwin32darkmode/DarkModeCtrl.hpp"
 #include "libwin32darkmode/ListViewUtil.hpp"
 
+// libfmt
+#include "rp-libfmt.h"
+
 // COM smart pointer typedefs.
 _COM_SMARTPTR_TYPEDEF(IOwnerDataCallback, IID_IOwnerDataCallback);
-
-// C++ STL classes
-using std::array;
-using std::locale;
-using std::string;
-using std::wstring;
 
 // KeyStoreUI::ImportFileID
 static const array<LPCTSTR, 4> import_menu_actions = {{

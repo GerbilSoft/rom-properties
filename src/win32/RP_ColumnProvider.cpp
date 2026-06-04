@@ -19,6 +19,7 @@
 #include "librpbase/config/Config.hpp"
 #include "librpbase/RomMetaData.hpp"
 #include "librpfile/FileSystem.hpp"
+#include "librptext/wchar.hpp"
 #include "libromdata/RomDataFactory.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;

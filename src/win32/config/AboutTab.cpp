@@ -17,16 +17,36 @@
 #endif /* ENABLE_NETWORKING */
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/config/AboutTabText.hpp"
+#include "librptext/conversion.hpp"
+#include "librptext/wchar.hpp"
 using namespace LibRpBase;
 using namespace LibRpText;
+
+// C includes
+#include "ctypex.h"
+#include "tcharx.h"
+
+// C++ STL classes
+#include <array>
+#include <memory>
+#include <string>
+using std::array;
+using std::string;
+using std::u16string;
+using std::unique_ptr;
+using std::wstring;
 
 // Property sheet icon.
 // Extracted from imageres.dll or shell32.dll.
 #include "PropSheetIcon.hpp"
 
-// libwin32ui
+// libwin32common, libwin32ui
+#include "libwin32common/sdk/windowsx_ts.h"
 #include "libwin32ui/LoadResource_i18n.hpp"
+#include "libwin32ui/WinUI.hpp"
+#include <shellapi.h>	// for ShellExecute()
 using LibWin32UI::LoadDialog_i18n;
 
 // Win32 dark mode
@@ -36,16 +56,8 @@ using LibWin32UI::LoadDialog_i18n;
 // for rp_LoadLibraryEx()
 #include "libwin32common/rp_LoadLibraryEx.h"
 
-// C++ STL classes
-using std::array;
-using std::string;
-using std::wstring;
-using std::u16string;
-using std::unique_ptr;
-
-// Maximum number of tabs.
-// NOTE: Must be adjusted if more tabs are added!
-static constexpr int MAX_TABS = 3;
+// libfmt
+#include "rp-libfmt.h"
 
 // Windows: RichEdit control.
 #include <richedit.h>
@@ -61,6 +73,10 @@ static constexpr int MAX_TABS = 3;
 // Uncomment to enable use of RichEdit 4.1 if available.
 // Reference: https://docs.microsoft.com/en-us/archive/blogs/murrays/richedit-colors
 #define MSFTEDIT_USE_41 1
+
+// Maximum number of tabs.
+// NOTE: Must be adjusted if more tabs are added!
+static constexpr int MAX_TABS = 3;
 
 /** Libraries **/
 

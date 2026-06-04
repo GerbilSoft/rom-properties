@@ -7,13 +7,15 @@
  ***************************************************************************/
 
 #include "../FileSystem.hpp"
-
 // C includes
 #include <sys/stat.h>
 #include <sys/utime.h>
 
-// DT_* enumeration
-#include "d_type.h"
+#include "common.h"
+#include "d_type.h"	// DT_* enumeration
+
+// C includes (C++ namespace)
+#include <cassert>
 
 // C++ STL classes
 #include <mutex>

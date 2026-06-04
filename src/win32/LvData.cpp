@@ -8,14 +8,17 @@
 
 #include "LvData.hpp"
 
-// librpbase
+// Other rom-propeties libraries
 using LibRpBase::RomFields;
 
-// libwin32ui
+// libwin32common, libwin32ui
+#include "libwin32common/sdk/commctrl_ts.h"
 #include "libwin32ui/AutoGetDC.hpp"
+#include "libwin32ui/WinUI.hpp"
 using LibWin32UI::AutoGetDC;
 
-// C++ STL classes.
+// C++ STL classes
+#include <algorithm>
 using std::tstring;
 using std::vector;
 

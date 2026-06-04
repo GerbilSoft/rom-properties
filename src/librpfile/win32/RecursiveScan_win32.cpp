@@ -18,6 +18,9 @@ using std::forward_list;
 using std::pair;
 using std::tstring;
 
+// libwin32common
+#include "libwin32common/RpWin32_sdk.h"
+
 // RecursiveScan isn't used by libromdata directly,
 // so use some linker hax to force linkage.
 extern "C" {

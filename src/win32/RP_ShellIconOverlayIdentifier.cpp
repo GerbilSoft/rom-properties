@@ -10,12 +10,16 @@
 #include "RP_ShellIconOverlayIdentifier.hpp"
 #include "res/resource.h"
 
-// librpbase, librpfile, libromdata
+// Other rom-properties libraries
+#include "librpbase/config/Config.hpp"
+#include "librpfile/FileSystem.hpp"
+#include "libromdata/RomDataFactory.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRomData;
 
 // C++ STL classes
+#include <memory>
 using std::string;
 using std::unique_ptr;
 

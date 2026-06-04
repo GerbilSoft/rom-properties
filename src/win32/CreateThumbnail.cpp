@@ -29,6 +29,9 @@ using std::string;
 // Explicitly instantiate TCreateThumbnail<HBITMAP>.
 template class LibRomData::TCreateThumbnail<HBITMAP>;
 
+// libwin32ui
+#include "libwin32ui/WinUI.hpp"
+
 /** CreateThumbnail **/
 
 /**

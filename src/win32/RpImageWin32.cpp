@@ -12,9 +12,6 @@
 #include "librptexture/img/RpGdiplusBackend.hpp"
 using namespace LibRpTexture;
 
-// C++ STL classes
-using std::unique_ptr;
-
 // Gdiplus for HBITMAP conversion.
 // NOTE: Gdiplus requires min/max.
 #include <algorithm>
@@ -24,7 +21,12 @@ namespace Gdiplus {
 }
 #include <comdef.h>
 #include <gdiplus.h>
-#include "librptexture/img/GdiplusHelper.hpp"
+
+// C++ STL classes
+using std::unique_ptr;
+
+// libwin32common
+#include "libwin32common/sdk/windowsx_ts.h"
 
 namespace RpImageWin32 {
 
@@ -37,8 +39,9 @@ static HBITMAP toHBITMAP_mask(const rp_image *image)
 {
 	assert(image != nullptr);
 	assert(image->isValid());
-	if (!image || !image->isValid())
+	if (!image || !image->isValid()) {
 		return nullptr;
+	}
 
 	// References:
 	// - http://stackoverflow.com/questions/2886831/win32-c-c-load-image-from-memory-buffer
@@ -86,8 +89,9 @@ static HBITMAP toHBITMAP_mask(const rp_image *image)
 	uint8_t *pvBits;
 	HBITMAP hBitmap = CreateDIBSection(nullptr, &bmi, DIB_RGB_COLORS,
 		reinterpret_cast<void**>(&pvBits), nullptr, 0);
-	if (!hBitmap)
+	if (!hBitmap) {
 		return nullptr;
+	}
 
 	// NOTE: Windows doesn't support top-down for monochrome icons,
 	// so this is vertically flipped.

@@ -15,26 +15,34 @@
 #include "RP_XAttrView_p.hpp"
 #include "res/resource.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "librpbase/config/Config.hpp"
 #include "librpfile/xattr/XAttrReader.hpp"
+#include "librptext/wchar.hpp"
 using LibRpBase::Config;
 using LibRpFile::XAttrReader;
 
-// libwin32ui
+// C includes
+#include "ctypex.h"
+
+// C++ STL classes
+#include <array>
+using std::array;
+using std::tstring;
+
+// libwin32common, libwin32ui
+#include "libwin32common/sdk/windowsx_ts.h"
 #include "libwin32ui/LoadResource_i18n.hpp"
+#include "libwin32ui/WinUI.hpp"
+#include <shellapi.h>
 using LibWin32UI::LoadDialog_i18n;
+
+// Win32 dark mode
+#include "libwin32darkmode/DarkMode.hpp"
 
 // MS-DOS and Windows attributes
 // NOTE: Does not depend on the Windows SDK.
 #include "librpfile/xattr/dos_attrs.h"
-
-// C++ STL classes
-using std::array;
-using std::tstring;
-
-// Win32 dark mode
-#include "libwin32darkmode/DarkMode.hpp"
 
 /** RP_XAttrView_Private **/
 

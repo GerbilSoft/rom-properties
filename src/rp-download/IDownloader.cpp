@@ -31,6 +31,8 @@ using std::tstring;
 #  include "ini.h"
 #elif defined(PLATFORM_MACOSX)
 #  include <CoreServices/CoreServices.h>
+#elif defined(_WIN32)
+#  include "libwin32common/RpWin32_sdk.h"
 #endif
 
 namespace RpDownload {

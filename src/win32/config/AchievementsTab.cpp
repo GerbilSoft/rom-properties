@@ -13,17 +13,26 @@
 #include "../AchSpriteSheet.hpp"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/Achievements.hpp"
 #include "librpbase/RomFields.hpp"
 #include "librpbase/img/RpPng.hpp"
+#include "librptext/wchar.hpp"
 using namespace LibRpBase;
 
-// libwin32common
-#include "libwin32common/rp_versionhelpers.h"
+// C includes
+#include "tcharx.h"
 
-// libwin32ui
+// C++ STL classes
+using std::tstring;
+using std::unique_ptr;
+
+// libwin32common, libwin32ui
+#include "libwin32common/rp_versionhelpers.h"
 #include "libwin32ui/AutoGetDC.hpp"
+#include "libwin32ui/HiDPI.hpp"
 #include "libwin32ui/LoadResource_i18n.hpp"
+#include "libwin32ui/WinUI.hpp"
 using LibWin32UI::AutoGetDC_font;
 using LibWin32UI::LoadDialog_i18n;
 
@@ -31,10 +40,6 @@ using LibWin32UI::LoadDialog_i18n;
 #include "libwin32darkmode/DarkMode.hpp"
 #include "libwin32darkmode/DarkModeCtrl.hpp"
 #include "libwin32darkmode/ListViewUtil.hpp"
-
-// C++ STL classes
-using std::tstring;
-using std::unique_ptr;
 
 class AchievementsTabPrivate
 {

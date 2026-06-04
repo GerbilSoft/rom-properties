@@ -11,6 +11,7 @@
 #include "RpImageWin32.hpp"
 
 // Other rom-properties libraries
+#include "librpfile/IRpFile.hpp"
 using namespace LibRpFile;
 using namespace LibRpTexture;
 

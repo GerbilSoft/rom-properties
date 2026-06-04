@@ -42,12 +42,15 @@
 #  include "RP_PrivateExtractIcons.hpp"
 #endif /* ENABLE_DETOURS */
 
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+
 // rp_image backend registration
 #include "librptexture/img/GdiplusHelper.hpp"
 #include "librptexture/img/RpGdiplusBackend.hpp"
 using namespace LibRpTexture;
 
-// GDI+ token.
+// GDI+ token
 static ULONG_PTR gdipToken = 0;
 
 #include "libi18n/config.libi18n.h"

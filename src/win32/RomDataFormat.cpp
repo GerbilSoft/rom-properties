@@ -18,7 +18,7 @@ using std::tstring;
 // libfmt
 #include "rp-libfmt.h"
 
-// Windows SDK
+// libwin32common
 #include "libwin32common/RpWin32_sdk.h"
 #include "libwin32common/w32time.h"
 

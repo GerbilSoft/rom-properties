@@ -17,21 +17,27 @@
 #include "CreateThumbnail.hpp"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/img/RpPngWriter.hpp"
+#include "librpfile/FileSystem.hpp"
+#include "librptext/wchar.hpp"
 #include "librptexture/FileFormatFactory.hpp"
+#include "libromdata/RomDataFactory.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpTexture;
 using namespace LibRomData;
-
-// libwin32ui
-using LibWin32UI::RegKey;
 
 // C++ STL classes
 using std::string;
 using std::tstring;
 using std::unique_ptr;
 using std::vector;
+
+// libwin32ui
+#include "libwin32ui/WinUI.hpp"
+#include <shellapi.h>
+using LibWin32UI::RegKey;
 
 static const char CTX_VERB_A[] = "rp-convert-to-png";
 static const wchar_t CTX_VERB_W[] = L"rp-convert-to-png";

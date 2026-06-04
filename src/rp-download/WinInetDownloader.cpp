@@ -15,6 +15,7 @@
 #include "libwin32common/w32time.h"
 
 // C++ STL classes
+#include <memory>
 using std::string;
 using std::unique_ptr;
 using std::wstring;

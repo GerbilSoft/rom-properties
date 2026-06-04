@@ -8,6 +8,10 @@
 
 #pragma once
 
+// C includes (C++ namespace)
+#include <cstdint>
+
+// libwin32common
 #include "libwin32common/RpWin32_sdk.h"
 
 #ifdef __cplusplus

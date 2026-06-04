@@ -11,6 +11,7 @@
 #include "RP_ExtractImage_p.hpp"
 
 // librpbase, librpfile, libwin32common
+#include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using LibWin32UI::RegKey;

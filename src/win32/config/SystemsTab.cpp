@@ -9,20 +9,28 @@
 #include "SystemsTab.hpp"
 #include "res/resource.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librpbase/config/Config.hpp"
+#include "librpfile/FileSystem.hpp"
+#include "librptext/wchar.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 
-// libwin32ui
+// C includes
+#include "tcharx.h"
+
+// C++ STL classes
+using std::tstring;
+
+// libwin32common, libwin32ui
+#include "libwin32common/sdk/windowsx_ts.h"
 #include "libwin32ui/LoadResource_i18n.hpp"
 using LibWin32UI::LoadDialog_i18n;
 
 // Win32 dark mode
 #include "libwin32darkmode/DarkMode.hpp"
 #include "libwin32darkmode/DarkModeCtrl.hpp"
-
-// C++ STL classes
-using std::tstring;
 
 class SystemsTabPrivate
 {

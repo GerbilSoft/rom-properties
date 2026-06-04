@@ -8,13 +8,16 @@
 
 #include "UpdateChecker.hpp"
 
-// librpbase
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/config/AboutTabText.hpp"
-using namespace LibRpBase;
-
-// libromdata
+#include "librptext/wchar.hpp"
 #include "libromdata/img/CacheManager.hpp"
+using namespace LibRpBase;
 using LibRomData::CacheManager;
+
+// C includes
+#include "ctypex.h"
 
 // MSVCRT-specific
 #include <process.h>

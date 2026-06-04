@@ -14,6 +14,9 @@
 
 // C includes (C++ namespace)
 #include <cassert>
+#ifdef _WIN32
+#  include <cwctype>
+#endif /* _WIN32 */
 
 // C++ STL classes
 #include <algorithm>

@@ -17,7 +17,10 @@
  */
 
 #include "common.h"
+
+// libwin32common
 #include "libwin32common/ComBase.hpp"
+#include <emptyvc.h>	// for IEmptyVolumeCacheCallBack
 
 class RP_EmptyVolumeCacheCallBack final : public LibWin32Common::ComBase<IEmptyVolumeCacheCallBack>
 {

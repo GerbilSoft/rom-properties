@@ -11,6 +11,9 @@
 #include "RpImageWin32.hpp"
 
 // Other rom-properties libraries
+#include "librpbase/config/Config.hpp"
+#include "librpfile/FileSystem.hpp"
+#include "libromdata/RomDataFactory.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpTexture;

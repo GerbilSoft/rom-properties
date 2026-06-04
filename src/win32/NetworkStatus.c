@@ -11,6 +11,9 @@
 // C includes (Win32-specific)
 #include <tchar.h>
 
+// libwin32common
+#include "libwin32common/RpWin32_sdk.h"
+
 // from nldef.h
 typedef enum _NL_NETWORK_CONNECTIVITY_LEVEL_HINT {
 	NetworkConnectivityLevelHintUnknown = 0,

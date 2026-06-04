@@ -10,14 +10,18 @@
 #include "RP_ThumbnailProvider.hpp"
 #include "RP_ThumbnailProvider_p.hpp"
 
-// librpbase, librpfile, libwin32common
+// Other rom-properties libraries
+#include "librpfile/FileSystem.hpp"
+#include "librptext/wchar.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
-using LibWin32UI::RegKey;
 
 // C++ STL classes.
 using std::string;
 using std::wstring;
+
+// libwin32ui
+using LibWin32UI::RegKey;
 
 // COM smart pointer typedefs.
 #ifndef _MSC_VER

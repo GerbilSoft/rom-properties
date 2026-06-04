@@ -2,12 +2,15 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * FontHandler.hpp: Font handler.                                          *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
+#include "common.h"
+
+// libwin32common
 #include "libwin32common/RpWin32_sdk.h"
 
 class FontHandlerPrivate;

@@ -17,6 +17,7 @@ using LibRpBase::RomData;
 
 // libwin32ui
 #include "libwin32ui/WinUI.hpp"
+#include <commctrl.h>
 
 // C++ STL classes
 using std::array;

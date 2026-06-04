@@ -11,6 +11,9 @@
 #include "RpImageWin32.hpp"
 
 // Other rom-properties libraries
+#include "librpbase/config/Config.hpp"
+#include "librpfile/FileSystem.hpp"
+#include "libromdata/RomDataFactory.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpTexture;
@@ -18,6 +21,10 @@ using namespace LibRomData;
 
 // C++ STL classes
 using std::string;
+
+// libwin32common
+#include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/rp_versionhelpers.h"
 
 /** RP_ExtractIcon_Private **/
 #include "RP_ExtractIcon_p.hpp"

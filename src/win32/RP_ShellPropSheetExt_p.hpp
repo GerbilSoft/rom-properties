@@ -51,11 +51,12 @@ static inline constexpr uint16_t IDC_RFT_BITFIELD(uint16_t idx, int bit)
 	return 0x7000 + (idx * 32) + bit;
 }
 
-// librpbase
-namespace LibRpBase {
-	class RomData;
-	class RomFields;
-}
+// Other rom-properties libraries
+#include "librpbase/RomData.hpp"
+#include "librpbase/RomFields.hpp"
+
+// libwin32ui
+#include "libwin32ui/WTSSessionNotification.hpp"
 
 // Custom controls (pseudo-controls)
 class DragImageLabel;

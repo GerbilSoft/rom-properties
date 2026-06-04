@@ -13,6 +13,9 @@
 // librptexture
 #include "librptexture/img/rp_image.hpp"
 
+// libwin32common
+#include "libwin32common/RpWin32_sdk.h"
+
 class NOVTABLE ISpriteSheet
 {
 protected:

@@ -9,6 +9,7 @@
 #pragma once
 
 #include "libwin32common/RpWin32_sdk.h"
+#include <commctrl.h>	// for NM_LAST
 
 #ifdef __cplusplus
 extern "C" {

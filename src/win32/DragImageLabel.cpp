@@ -17,6 +17,14 @@
 using namespace LibRpBase;
 using namespace LibRpTexture;
 
+// libwin32common, libwin32ui
+#include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/sdk/windowsx_ts.h"
+#include "libwin32ui/HiDPI.hpp"
+#include "libwin32ui/WinUI.hpp"
+#include <shellapi.h>	// for ShellExecute()
+#include <uxtheme.h>	// for IsThemeActive()
+
 // Gdiplus for image drawing.
 // NOTE: Gdiplus requires min/max.
 #include <algorithm>
@@ -26,9 +34,6 @@ namespace Gdiplus {
 }
 #include <comdef.h>
 #include <gdiplus.h>
-
-// for IsThemeActive()
-#include <uxtheme.h>
 
 // C++ STL classes
 using std::unique_ptr;

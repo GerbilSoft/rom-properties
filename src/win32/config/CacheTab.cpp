@@ -10,12 +10,24 @@
 #include "res/resource.h"
 
 // Other rom-properties libraries
+#include "d_type.h"
+#include "libi18n/i18n.hpp"
+#include "librpfile/FileSystem.hpp"
 #include "librpfile/RecursiveScan.hpp"
+#include "librptext/wchar.hpp"
 using namespace LibRpFile;
 using namespace LibRpText;
 
-// libwin32ui
+// libwin32common, libwin32ui
+#include "libwin32common/sdk/windowsx_ts.h"
 #include "libwin32ui/LoadResource_i18n.hpp"
+#include "libwin32ui/RegKey.hpp"
+#include "libwin32ui/WTSSessionNotification.hpp"
+#include <combaseapi.h>		// for IID_PPV_ARGS()
+#include <commctrl.h>		// required by commoncontrols.h
+#include <commoncontrols.h>	// for IID_IImageList
+#include <comdef.h>
+#include <shellapi.h>
 using LibWin32UI::LoadDialog_i18n;
 using LibWin32UI::RegKey;
 using LibWin32UI::WTSSessionNotification;
@@ -23,6 +35,9 @@ using LibWin32UI::WTSSessionNotification;
 // Win32 dark mode
 #include "libwin32darkmode/DarkMode.hpp"
 #include "libwin32darkmode/DarkModeCtrl.hpp"
+
+// libfmt
+#include "rp-libfmt.h"
 
 // IEmptyVolumeCacheCallBack implementation.
 #include "RP_EmptyVolumeCacheCallBack.hpp"

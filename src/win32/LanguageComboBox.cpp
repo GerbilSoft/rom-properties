@@ -11,10 +11,20 @@
 
 // Other rom-properties libraries
 #include "librpbase/SystemRegion.hpp"
+#include "librptext/wchar.hpp"
 using namespace LibRpBase;
+
+// C includes
+#include "tcharx.h"
 
 // C++ STL classes
 using std::tstring;
+
+// libwin32common, libwin32ui
+#include "libwin32common/sdk/windowsx_ts.h"
+#include "libwin32common/sdk/commctrl_ts.h"
+#include "libwin32ui/HiDPI.hpp"
+#include "libwin32ui/WinUI.hpp"
 
 static ATOM atom_languageComboBox;
 static WNDPROC pfnComboBoxExWndProc;

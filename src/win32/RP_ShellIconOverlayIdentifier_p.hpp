@@ -11,12 +11,12 @@
 
 #include "RP_ShellIconOverlayIdentifier.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "librpbase/RomData.hpp"
 #include "librpfile/IRpFile.hpp"
 
-// C++ STL classes
-#include <memory>
+// Windows API
+#include <shellapi.h>
 
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define RP_ShellIconOverlayIdentifierPrivate RP_ShellIconOverlayIdentifier_Private

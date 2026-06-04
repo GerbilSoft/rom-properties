@@ -3,7 +3,7 @@
  * RP_XAttrView_p.hpp: Extended attribute viewer property page.            *
  * (Private class)                                                         *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,8 +14,14 @@ namespace LibRpFile {
 	class XAttrReader;
 }
 
-// TCHAR
+// C includes
 #include "tcharx.h"
+
+// C++ includes
+#include <memory>
+
+// libwin32ui
+#include "libwin32ui/WTSSessionNotification.hpp"
 
 /** RP_XAttrView_Private **/
 // Workaround for RP_D() expecting the no-underscore naming convention.

@@ -11,15 +11,24 @@
 #include "OptionsTab.hpp"
 #include "res/resource.h"
 
-// LanguageComboBox
-#include "LanguageComboBox.hpp"
-
-// librpbase, librpfile
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librpbase/config/Config.hpp"
 #include "librpbase/SystemRegion.hpp"
+#include "librpfile/FileSystem.hpp"
+#include "librptext/wchar.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 
-// libwin32ui
+// C includes
+#include "tcharx.h"
+
+// C++ STL classes
+using std::array;
+using std::tstring;
+
+// libwin32common, libwin32ui
+#include "libwin32common/sdk/windowsx_ts.h"
 #include "libwin32ui/LoadResource_i18n.hpp"
 using LibWin32UI::LoadDialog_i18n;
 
@@ -27,14 +36,13 @@ using LibWin32UI::LoadDialog_i18n;
 #include "libwin32darkmode/DarkMode.hpp"
 #include "libwin32darkmode/DarkModeCtrl.hpp"
 
+// LanguageComboBox
+#include "LanguageComboBox.hpp"
+
 // Netowrk status
 #ifdef ENABLE_NETWORKING
 #  include "NetworkStatus.h"
 #endif /* ENABLE_NETWORKING */
-
-// C++ STL classes
-using std::array;
-using std::tstring;
 
 class OptionsTabPrivate
 {

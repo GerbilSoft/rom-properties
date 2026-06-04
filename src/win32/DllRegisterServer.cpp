@@ -36,7 +36,8 @@
 // libwin32common
 using LibWin32UI::RegKey;
 
-// For file extensions
+// Other rom-properties libraries
+#include "librptext/wchar.hpp"
 #include "libromdata/RomDataFactory.hpp"
 #include "librptexture/FileFormatFactory.hpp"
 using namespace LibRomData;
@@ -48,6 +49,9 @@ using std::forward_list;
 using std::string;
 using std::vector;
 using std::wstring;
+
+// libfmt
+#include "rp-libfmt.h"
 
 // Program ID for COM object registration.
 extern const TCHAR RP_ProgID[];
