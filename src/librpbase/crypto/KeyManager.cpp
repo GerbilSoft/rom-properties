@@ -14,8 +14,12 @@
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
 
+// C includes
+#include "tcharx.h"
+
 // C includes (C++ namespace)
 #include <cassert>
+#include <cstring>
 
 // C++ STL classes
 #include <array>

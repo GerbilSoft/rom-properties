@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "Achievements.hpp"
+#include "time_r.h"
 
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"

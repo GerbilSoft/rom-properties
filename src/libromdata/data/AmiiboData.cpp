@@ -8,6 +8,7 @@
 
 #include "config.libromdata.h"
 #include "AmiiboData.hpp"
+#include "time_r.h"
 
 #include "byteswap_rp.h"
 #include "../../amiibo-data/amiibo_bin_structs.h"

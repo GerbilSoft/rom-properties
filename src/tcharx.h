@@ -46,6 +46,12 @@
 #  define _tmemchr(s, c, n)	wmemchr((s), (c), (n))
 #  define _tmemcmp(s1, s2, n)	wmemcmp((s1), (s2), (n))
 
+#  ifdef __cplusplus
+#    include <cstring>
+#  else /* __cplusplus */
+#    include <string.h>
+#  endif /* __cplusplus */
+
 /**
  * _tmemcmp_inline() for Windows unicode strings.
  * Neither gcc nor MSVC will inline wmemcmp(), so
