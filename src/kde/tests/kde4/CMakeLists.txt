@@ -32,10 +32,6 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" RomDataFormatTest_kde4_SRCS "${RomDataFo
 ADD_EXECUTABLE(RomDataFormatTest_kde4 ${RomDataFormatTest_kde4_SRCS})
 TARGET_LINK_LIBRARIES(RomDataFormatTest_kde4 PRIVATE rptest romdata)
 TARGET_LINK_LIBRARIES(RomDataFormatTest_kde4 PRIVATE rom-properties-kde4_LIB)
-# Include directories required for stdafx.h.
-TARGET_INCLUDE_DIRECTORIES(RomDataFormatTest_kde4
-	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/../../../librptext"
-	)
 LIST(APPEND KDE4_TESTS RomDataFormatTest_kde4)
 
 ### RomDataView tests
@@ -46,10 +42,6 @@ ADD_EXECUTABLE(RomDataViewTest_kde4 ${RomDataViewTest_kde4_SRCS})
 SET(RomDataViewTest_kde4_XVFB ON)
 TARGET_LINK_LIBRARIES(RomDataViewTest_kde4 PRIVATE rptest romdata)
 TARGET_LINK_LIBRARIES(RomDataViewTest_kde4 PRIVATE rom-properties-kde4_LIB)
-# Include directories required for stdafx.h.
-TARGET_INCLUDE_DIRECTORIES(RomDataViewTest_kde4
-	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/../../../librptext"
-	)
 LIST(APPEND KDE4_TESTS RomDataViewTest_kde4)
 
 ###### Add tests to CTest ######
