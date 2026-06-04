@@ -13,9 +13,7 @@
 #include "common.h"
 
 // C includes
-#ifndef _MSC_VER
-#  include <strings.h>
-#endif /* _MSC_VER */
+#include "tcharx.h"
 
 // C++ STL classes
 #include <algorithm>

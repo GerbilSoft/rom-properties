@@ -105,6 +105,9 @@ typedef char TCHAR;
 #define _stscanf sscanf
 
 // stdlib.h
+// NOTE: strcasecmp() and strncasecmp() are generally declared in strings.h.
+// TODO: Check for strings.h in CMake?
+#include <strings.h>
 #define _tcscmp(s1, s2)			strcmp((s1), (s2))
 #define _tcsicmp(s1, s2)		strcasecmp((s1), (s2))
 #define _tcsnicmp(s1, s2)		strncasecmp((s1), (s2), (n))

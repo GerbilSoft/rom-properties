@@ -14,11 +14,9 @@
 #include "d_type.h"
 
 // C includes
-#ifndef _MSC_VER
-#  include <strings.h>
-#endif /* _MSC_VER */
 #include <sys/types.h>
 #include <dirent.h>
+#include "tcharx.h"
 
 // C includes (C++ namespace)
 #include <cstring>

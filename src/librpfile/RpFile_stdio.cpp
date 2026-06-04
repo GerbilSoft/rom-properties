@@ -21,10 +21,8 @@
 
 // C includes
 #include <fcntl.h>	// fcntl(), F_GETFD, F_SETFD
-#ifndef _MSC_VER
-#  include <strings.h>
-#endif /* _MSC_VER */
 #include <unistd.h>	// ftruncate()
+#include "tcharx.h"
 
 // C++ STL classes
 using std::string;
