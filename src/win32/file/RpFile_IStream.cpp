@@ -11,7 +11,6 @@
 
 // Other rom-properties libraries
 #include "librpbyteswap/byteswap_rp.h"
-using namespace LibRpBase;
 
 // C++ STL classes.
 using std::string;
