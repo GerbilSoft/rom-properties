@@ -23,7 +23,7 @@ using namespace LibRpText;
 #include "libwin32ui/LoadResource_i18n.hpp"
 #include "libwin32ui/RegKey.hpp"
 #include "libwin32ui/WTSSessionNotification.hpp"
-#include <combaseapi.h>		// for IID_PPV_ARGS()
+#include <objbase.h>		// for IID_PPV_ARGS()
 #include <commctrl.h>		// required by commoncontrols.h
 #include <commoncontrols.h>	// for IID_IImageList
 #include <comdef.h>
