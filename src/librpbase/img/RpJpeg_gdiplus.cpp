@@ -25,6 +25,7 @@ namespace Gdiplus {
 	using std::min;
 	using std::max;
 }
+#include <comdef.h>
 #include <gdiplus.h>
 
 namespace LibRpBase { namespace RpJpeg {

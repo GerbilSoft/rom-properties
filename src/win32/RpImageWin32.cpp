@@ -22,6 +22,7 @@ namespace Gdiplus {
 	using std::min;
 	using std::max;
 }
+#include <comdef.h>
 #include <gdiplus.h>
 #include "librptexture/img/GdiplusHelper.hpp"
 
