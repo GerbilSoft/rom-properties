@@ -10,9 +10,6 @@
 #include "ConfigDialog.hpp"
 #include "res/resource.h"
 
-// librpbase
-using namespace LibRpBase;
-
 // Property sheet icon.
 // Extracted from imageres.dll or shell32.dll.
 #include "PropSheetIcon.hpp"
