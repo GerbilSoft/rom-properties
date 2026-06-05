@@ -46,9 +46,8 @@ int rpcli_do_security_options(void)
 		// defined in earlier versions, including Ubuntu 14.04.
 		SCMP_SYS(close),
 		SCMP_SYS(dup),		// gzdopen()
-		SCMP_SYS(fcntl),     SCMP_SYS(fcntl64),		// gcc profiling
-		SCMP_SYS(ftruncate),	// LibRpBase::RpFile::truncate() [from LibRpBase::RpPngWriterPrivate ctors]
-		SCMP_SYS(ftruncate64),
+		SCMP_SYS(fcntl), SCMP_SYS(fcntl64),		// gcc profiling
+		SCMP_SYS(ftruncate), SCMP_SYS(ftruncate64),	// LibRpBase::RpFile::truncate() [from LibRpBase::RpPngWriterPrivate ctors]
 		SCMP_SYS(futex),
 #if defined(__SNR_futex_time64) || defined(__NR_futex_time64)
 		SCMP_SYS(futex_time64),

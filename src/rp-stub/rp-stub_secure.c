@@ -91,8 +91,7 @@ int rp_stub_do_security_options(bool config)
 
 		// librpbase/libromdata
 		SCMP_SYS(dup),		// gzdopen()
-		SCMP_SYS(ftruncate),	// LibRpBase::RpFile::truncate() [from LibRpBase::RpPngWriterPrivate ctors]
-		SCMP_SYS(ftruncate64),
+		SCMP_SYS(ftruncate), SCMP_SYS(ftruncate64),	// LibRpBase::RpFile::truncate() [from LibRpBase::RpPngWriterPrivate ctors]
 		SCMP_SYS(futex),				// pthread_once()
 #if defined(__SNR_futex_time64) || defined(__NR_futex_time64)
 		SCMP_SYS(futex_time64),				// pthread_once()

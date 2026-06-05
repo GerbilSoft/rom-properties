@@ -241,7 +241,7 @@ static constexpr int16_t syscall_wl_gtk[] = {
 	// GTK3 when using Xvfb-run with DISPLAY= WAYLAND_DISPLAY=
 	SCMP_SYS(sched_setaffinity),
 	SCMP_SYS(sysinfo),
-	SCMP_SYS(ftruncate),	// FIXME: Is this actually needed? Stub it?
+	SCMP_SYS(ftruncate), SCMP_SYS(ftruncate64),	// FIXME: Is this actually needed? Stub it?
 	SCMP_SYS(statfs), SCMP_SYS(statfs64),
 	SCMP_SYS(inotify_init1), SCMP_SYS(inotify_add_watch),
 	// GTK3 on AppVeyor (using Xvfb-run)
