@@ -17,7 +17,6 @@
 
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
-#include "librptext/conversion.hpp"
 #include "librptext/utf8_strlen.hpp"
 #include "librptexture/img/rp_image.hpp"
 using namespace LibRpText;

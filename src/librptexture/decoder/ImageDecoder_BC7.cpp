@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "ImageDecoder_ASTC.hpp"
+#include "ImageDecoder_BC7.hpp"
 #include "ImageDecoder_p.hpp"
 
 // C++ STL classes

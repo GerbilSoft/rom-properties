@@ -17,7 +17,6 @@
 #include "librptexture/img/rp_image.hpp"
 
 // C++ includes
-#include <memory>
 #include <string>
 #include <vector>
 

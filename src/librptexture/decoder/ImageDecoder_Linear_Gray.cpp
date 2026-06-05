@@ -7,7 +7,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "ImageDecoder_Linear.hpp"
+#include "ImageDecoder_Linear_Gray.hpp"
 
 // librptexture
 #include "img/rp_image.hpp"

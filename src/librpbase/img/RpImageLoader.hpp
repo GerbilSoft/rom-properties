@@ -2,13 +2,13 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpImageLoader.hpp: Image loader class.                                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include "common.h"
+#include "dll-macros.h"
 
 // Other rom-properties libraries
 #include "librpfile/IRpFile.hpp"
