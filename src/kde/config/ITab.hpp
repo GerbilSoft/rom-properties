@@ -11,8 +11,8 @@
 #include "common.h"
 
 // Qt includes
+#include <QtCore/QSettings>
 #include <QWidget>
-class QSettings;
 
 class NOVTABLE ITab : public QWidget
 {

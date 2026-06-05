@@ -23,7 +23,6 @@ using LibRpBase::RomData;
 using std::string;
 
 // Qt includes
-#include <QtCore/QSettings>
 #include <QComboBox>
 
 // libfmt
