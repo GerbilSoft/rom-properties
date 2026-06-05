@@ -2,17 +2,15 @@
  * ROM Properties Page shell extension. (kde/tests)                        *
  * ListDataSortProxyModelTest.cpp: ListDataSortProxyModel test.            *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Google Test
 #include "gtest_init.hpp"
 
-// RpQImageBackend
+#include "kde_register_backends.hpp"
 #include "RpQt.hpp"
-#include "RpQImageBackend.hpp"
-using LibRpTexture::rp_image;
 
 // librpbase
 #include "RomFields.hpp"
@@ -39,8 +37,8 @@ protected:
 		, listDataModel(nullptr)
 		, proxyModel(nullptr)
 	{
-		// Register RpQImageBackend.
-		rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
+		// Register the KDE backends.
+		kde_register_backends();
 	}
 
 	~ListDataSortProxyModelTest() override

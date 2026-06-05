@@ -8,6 +8,7 @@
 
 #include "check-uid.hpp"
 
+#include "kde_register_backends.hpp"
 #include "plugins/RomThumbCreator_p.hpp"
 #include "RpQUrl.hpp"
 
@@ -55,9 +56,9 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 		return RPCT_ERROR_INVALID_FLAGS;
 	}
 
-	// Register RpQImageBackend.
+	// Register the KDE backends.
 	// TODO: Static initializer somewhere?
-	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
+	kde_register_backends();
 
 	// TODO: Check enableThumbnailOnNetworkFS
 	RomDataPtr romData;

@@ -14,25 +14,17 @@
  * - https://github.com/KDE/calligra-history/blob/5e323f11f11ec487e1ef801d61bb322944f454a5/libs/main/kodocinfopropspage.desktop
  */
 
-// RpQImageBackend
-#include "RpQImageBackend.hpp"
-using LibRpTexture::rp_image;
+#define RP_KDE_DISABLE_REGISTER_ACHQTDBUS 1
+#include "kde_register_backends.hpp"
 
 // Plugins
 #include "plugins/RomThumbnailCreator.hpp"
 
 // KDE Frameworks
-#include <kcoreaddons_version.h>
 #include <kpluginfactory.h>
 
-static void register_backends(void)
-{
-	// Register RpQImageBackend and AchQtDBus.
-	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
-}
-
 K_PLUGIN_FACTORY_WITH_JSON(RomThumbnailCreatorFactory, "RomThumbnailCreator.json",
-	register_backends();
+	kde_register_backends();
 	registerPlugin<RomThumbnailCreator>();
 )
 

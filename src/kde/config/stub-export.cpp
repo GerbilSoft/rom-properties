@@ -8,6 +8,7 @@
 
 #include "config.kde.h"
 #include "check-uid.hpp"
+#include "kde_register_backends.hpp"
 
 #include "ConfigDialog.hpp"
 
@@ -21,9 +22,6 @@ using namespace LibRpBase;
 #include "librptexture/img/rp_image.hpp"
 using namespace LibRomData;
 using namespace LibRpTexture;
-
-#include "RpQImageBackend.hpp"
-#include "AchQtDBus.hpp"
 
 // i18n
 #ifdef ENABLE_NLS
@@ -208,11 +206,8 @@ Q_DECL_EXPORT int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 	const QString applicationDisplayName = QLatin1String("RomDataView " RP_KDE_UPPER " test program");
 	QApplication *const app = initQApp(argc, argv, applicationDisplayName);
 
-	// Register RpQImageBackend and AchQtDBus.
-	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
-#if defined(ENABLE_ACHIEVEMENTS) && defined(HAVE_QtDBus_NOTIFY)
-	AchQtDBus::instance();
-#endif /* ENABLE_ACHIEVEMENTS && HAVE_QtDBus_NOTIFY */
+	// Register the KDE backends.
+	kde_register_backends();
 
 	// Parse the specified URI and localize it.
 	const QString qs_uri(QString::fromUtf8(uri));

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4)                             *
  * PluginFactoryKDE4.cpp: Plugin factory class.                            *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,32 +15,16 @@
  */
 
 #include "config.kde.h"
-
-// RpQImageBackend
-#include "RpQImageBackend.hpp"
-using LibRpTexture::rp_image;
-
-// Achievements backend
-#include "AchQtDBus.hpp"
+#include "kde_register_backends.hpp"
 
 // Plugins
 #include "../plugins/RomPropertiesDialogPlugin.hpp"
-#include "../plugins/RomThumbCreator.hpp"
 
 // KDE
 #include <kpluginfactory.h>
 
-static void register_backends(void)
-{
-	// Register RpQImageBackend and AchQtDBus.
-	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
-#if defined(ENABLE_ACHIEVEMENTS) && defined(HAVE_QtDBus_NOTIFY)
-	AchQtDBus::instance();
-#endif /* ENABLE_ACHIEVEMENTS && HAVE_QtDBus_NOTIFY */
-}
-
 K_PLUGIN_FACTORY(RomPropertiesDialogFactory,
-	register_backends();
+	kde_register_backends();
 	registerPlugin<RomPropertiesDialogPlugin>();
 )
 K_EXPORT_PLUGIN(RomPropertiesDialogFactory("rom-properties-kde4"))

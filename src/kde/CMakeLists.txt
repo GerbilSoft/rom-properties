@@ -8,6 +8,7 @@ SET(CMAKE_AUTOMOC ON)
 SET(${PROJECT_NAME}_SRCS
 	plugins/RomPropertiesDialogPlugin.cpp
 	plugins/RomThumbCreator_p.cpp
+
 	rp_create_thumbnail.cpp
 	RomDataView.cpp
 	RomDataView_ops.cpp
@@ -43,6 +44,8 @@ SET(${PROJECT_NAME}_SRCS
 SET(${PROJECT_NAME}_H
 	plugins/RomPropertiesDialogPlugin.hpp
 	plugins/RomThumbCreator_p.hpp
+	kde_register_backends.hpp
+
 	RomDataView.hpp
 	RomDataView_p.hpp
 	RpQt.hpp

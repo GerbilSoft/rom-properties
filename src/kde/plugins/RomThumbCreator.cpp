@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "config.kde.h"
+#include "kde_register_backends.hpp"
 
 #include "RomThumbCreator.hpp"
 #include "RomThumbCreator_p.hpp"
@@ -38,11 +39,8 @@ using std::string;
 extern "C" {
 	Q_DECL_EXPORT ThumbCreator *new_creator()
 	{
-		// Register RpQImageBackend and AchQtDBus.
-		rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
-#if defined(ENABLE_ACHIEVEMENTS) && defined(HAVE_QtDBus_NOTIFY)
-		AchQtDBus::instance();
-#endif /* ENABLE_ACHIEVEMENTS && HAVE_QtDBus_NOTIFY */
+		// Register the KDE backends.
+		kde_register_backends();
 
 		return new RomThumbCreator();
 	}
