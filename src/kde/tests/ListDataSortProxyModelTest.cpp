@@ -33,34 +33,34 @@ namespace RomPropertiesKDE { namespace Tests {
 
 class ListDataSortProxyModelTest : public ::testing::Test
 {
-	protected:
-		ListDataSortProxyModelTest()
-			: field(nullptr)
-			, listDataModel(nullptr)
-			, proxyModel(nullptr)
-		{
-			// Register RpQImageBackend.
-			rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
-		}
+protected:
+	ListDataSortProxyModelTest()
+		: field(nullptr)
+		, listDataModel(nullptr)
+		, proxyModel(nullptr)
+	{
+		// Register RpQImageBackend.
+		rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
+	}
 
-		~ListDataSortProxyModelTest() override
-		{
-			delete proxyModel;
-			delete listDataModel;
-			delete field;
-		}
+	~ListDataSortProxyModelTest() override
+	{
+		delete proxyModel;
+		delete listDataModel;
+		delete field;
+	}
 
-	public:
-		void SetUp() override;
-		void TearDown() override;
+public:
+	void SetUp() override;
+	void TearDown() override;
 
-	protected:
-		RomFields:: Field *field;
-		ListDataModel *listDataModel;
-		ListDataSortProxyModel *proxyModel;
+protected:
+	RomFields:: Field *field;
+	ListDataModel *listDataModel;
+	ListDataSortProxyModel *proxyModel;
 
-	public:
-		static const char *const sorted_strings_asc[4][25];
+public:
+	static const char *const sorted_strings_asc[4][25];
 };
 
 const char *const ListDataSortProxyModelTest::sorted_strings_asc[4][25] = {
