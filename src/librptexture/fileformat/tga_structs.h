@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * tga_structs.h: TrueVision TGA texture format data structures.           *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,8 +23,8 @@ extern "C" {
 
 // NOTE: 16-bit color is 15-bit RGB + 1-bit transparency.
 
-// Maximum supported TGA file size is 16 MB.
-#define TGA_MAX_SIZE (16U*1024*1024)
+// Maximum supported TGA file size is 72 MiB.
+#define TGA_MAX_SIZE (72U*1024*1024)
 
 /**
  * TrueVision TGA: Main header.
