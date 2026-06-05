@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomPropertiesDialogPlugin.cpp: KPropertiesDialogPlugin implementation   *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,7 +14,6 @@
  * - https://github.com/KDE/calligra-history/blob/5e323f11f11ec487e1ef801d61bb322944f454a5/libs/main/kodocinfopropspage.desktop
  */
 
-#include "stdafx.h"
 #include "check-uid.hpp"
 
 #include "RomPropertiesDialogPlugin.hpp"
@@ -22,6 +21,7 @@
 #include "RpQUrl.hpp"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "libromdata/RomDataFactory.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -29,6 +29,8 @@ using namespace LibRomData;
 
 // C++ STL classes
 using std::string;
+
+#include "RpQt.hpp"
 
 /**
  * Instantiate a RomDataView object for the given QUrl.

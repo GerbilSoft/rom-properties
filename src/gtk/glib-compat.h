@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * glib-compat.h: GLib compatibility functions.                            *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,6 +11,8 @@
 #include <string.h> // for strcmp()
 
 #include <glib.h>
+#include <glib-object.h>
+#include <gmodule.h>
 
 G_BEGIN_DECLS
 

@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                                    *
  ********************************************************************************/
 
-#include "stdafx.h"
 #include "RP_EmptyVolumeCacheCallBack.hpp"
 
 RP_EmptyVolumeCacheCallBack::RP_EmptyVolumeCacheCallBack(HWND hProgressBar)

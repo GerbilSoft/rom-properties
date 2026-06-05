@@ -2,26 +2,20 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpPng.hpp: PNG image handler.                                           *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include "common.h"
-#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
-
-// C++ includes
-#include <memory>
+#include "dll-macros.h"
 
 // Other rom-properties libraries
 #include "../img/IconAnimData.hpp"
 #include "librpfile/IRpFile.hpp"
 #include "librptexture/img/rp_image.hpp"
 
-namespace LibRpBase {
-
-namespace RpPng {
+namespace LibRpBase { namespace RpPng {
 
 /**
  * Load a PNG image from an IRpFile.

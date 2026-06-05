@@ -6,25 +6,25 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-
 #include "RomDataView.hpp"
 #include "RomDataView_p.hpp"
 #include "RomDataFormat.hpp"
 
-#include "AchQtDBus.hpp"
-#include "RpQImageBackend.hpp"
-
 // Other rom-properties libraries
-#include "librpbase/TextOut.hpp"
+#include "libi18n/i18n.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
-using namespace LibRpText;
 using namespace LibRpTexture;
 
 // C++ STL classes
+#include <set>
 using std::set;
 using std::string;
+
+// Qt includes
+#include <QCheckBox>
+#include <QDialogButtonBox>
+#include <QHeaderView>
 
 // Custom widgets
 #include "DragImageTreeView.hpp"
@@ -35,6 +35,9 @@ using std::string;
 #include "ListDataModel.hpp"
 #include "ListDataSortProxyModel.hpp"
 #include "config/AchievementsItemDelegate.hpp"
+
+// libfmt
+#include "rp-libfmt.h"
 
 /** RomDataViewPrivate **/
 
@@ -1374,8 +1377,9 @@ RomDataPtr RomDataView::romData(void) const
 void RomDataView::setRomData(const RomDataPtr &romData)
 {
 	Q_D(RomDataView);
-	if (d->romData == romData)
+	if (d->romData == romData) {
 		return;
+	}
 
 	const bool prevAnimTimerRunning = d->ui.lblIcon->isAnimTimerRunning();
 	if (prevAnimTimerRunning) {
@@ -1394,6 +1398,5 @@ void RomDataView::setRomData(const RomDataPtr &romData)
 		d->ui.lblIcon->startAnimTimer();
 	}
 
-	// FIXME: Not compatible with std::shared_ptr<>.
-	//emit romDataChanged(romData);
+	emit romDataChanged(romData);
 }

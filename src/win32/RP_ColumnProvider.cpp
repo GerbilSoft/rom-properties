@@ -7,7 +7,6 @@
  ***************************************************************************/
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
-#include "stdafx.h"
 #include "config.win32.h"
 #include "RP_ColumnProvider.hpp"
 #include "RpImageWin32.hpp"
@@ -20,6 +19,7 @@
 #include "librpbase/config/Config.hpp"
 #include "librpbase/RomMetaData.hpp"
 #include "librpfile/FileSystem.hpp"
+#include "librptext/wchar.hpp"
 #include "libromdata/RomDataFactory.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;

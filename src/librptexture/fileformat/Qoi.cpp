@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * Qoi.cpp: Quite OK Image Format image reader.                            *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "Qoi.hpp"
 #include "FileFormat_p.hpp"
 
@@ -15,6 +14,8 @@
 #include "decoder/qoi.h"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librpbase/RomFields.hpp"
 using namespace LibRpFile;
 using LibRpBase::RomFields;
 

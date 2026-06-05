@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.librpbase.h"
 
 #include "CacheTab.hpp"
@@ -14,16 +13,20 @@
 #include "CacheCleaner.hpp"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpfile/FileSystem.hpp"
-using namespace LibRpBase;
 using namespace LibRpFile;
-using namespace LibRpText;
 
 // C++ STL classes
 using std::string;
 
 // Qt includes
 #include <QtCore/QThread>
+
+#include "RpQt.hpp"
+
+// libfmt
+#include "rp-libfmt.h"
 
 #include "ui_CacheTab.h"
 class CacheTabPrivate

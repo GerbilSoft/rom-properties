@@ -11,8 +11,9 @@
 // - http://www.psdevwiki.com/ps3/Game_Saves#Game_Saves_PS1
 // - http://problemkaputt.de/psx-spx.htm
 
-#include "stdafx.h"
 #include "PlayStationSave.hpp"
+#include "RomData_p.hpp"
+
 #include "ps1_structs.h"
 
 // Other rom-properties libraries

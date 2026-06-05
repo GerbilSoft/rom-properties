@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * AchievementsTab.cpp: Achievements tab for rp-config.                    *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "AchievementsTab.hpp"
 #include "RpConfigTab.h"
 
@@ -15,20 +14,21 @@
 // for rom_data_format_RFT_LISTDATA_text_as_achievements()
 #include "../RomDataFormat.hpp"
 
-#include "gtk-compat.h"
-#include "RpGtk.h"
-
 #ifdef USE_GTK_COLUMN_VIEW
 #  include "AchievementItem.h"
 #endif /* USE_GTK_COLUMN_VIEW */
 
-// librpbase
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/Achievements.hpp"
 using namespace LibRpBase;
 
 // C++ STL classes
 using std::array;
 using std::string;
+
+// libfmt
+#include "rp-libfmt.h"
 
 /* Column identifiers */
 typedef enum {

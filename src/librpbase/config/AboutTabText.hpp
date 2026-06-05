@@ -2,13 +2,16 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AboutTabText.hpp: About tab for rp-config. (Common text)                *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include "common.h"
+#include "dll-macros.h"
+
+// C includes (C++ namespace)
+#include <cstdint>
 
 namespace LibRpBase { namespace AboutTabText {
 

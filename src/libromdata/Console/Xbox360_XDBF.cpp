@@ -7,8 +7,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "Xbox360_XDBF.hpp"
+#include "RomData_p.hpp"
+
 #include "xbox360_xdbf_structs.h"
 #include "data/XboxLanguage.hpp"
 
@@ -21,12 +22,16 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 
 // C++ STL classes
+#include <unordered_map>
 using std::array;
 using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
+
+// Uninitialized vector class
+#include "uvector.h"
 
 namespace LibRomData {
 

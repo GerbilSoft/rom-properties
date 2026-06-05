@@ -6,10 +6,10 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-
 #include "config.libromdata.h"
+
 #include "PSP.hpp"
+#include "RomData_p.hpp"
 
 // Other rom-properties libraries
 #include "librpbase/img/RpPng.hpp"
@@ -19,7 +19,6 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 
 // DiscReader
-#include "cdrom_structs.h"
 #include "iso_structs.h"
 #include "disc/IsoPartition.hpp"
 #include "disc/PartitionFile.hpp"

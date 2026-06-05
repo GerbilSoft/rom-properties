@@ -6,21 +6,24 @@
  * arbitrary GtkWidgets. As such, the properties returned will be more       *
  * limited than in previous versions.                                        *
  *                                                                           *
- * Copyright (c) 2017-2025 by David Korth.                                   *
+ * Copyright (c) 2017-2026 by David Korth.                                   *
  * SPDX-License-Identifier: GPL-2.0-or-later                                 *
  *****************************************************************************/
 
-#include "stdafx.h"
 #include "NautilusPropertiesModel.hpp"
 #include "RomDataFormat.hpp"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librpbase/RomFields.hpp"
 #include "librpbase/RomData.hpp"
 using namespace LibRpBase;
-using namespace LibRpText;
 
 // C++ STL classes
 using std::string;
+
+// libfmt
+#include "rp-libfmt.h"
 
 // Internal data.
 // Based on Nautilus 43's image-extension.

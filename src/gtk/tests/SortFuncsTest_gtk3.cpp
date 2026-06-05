@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (gtk/tests)                        *
  * SortFuncsTest_gtk3.cpp: sort_funcs.c test (GTK2/GTK3)                   *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,7 +10,7 @@
 #include "gtest_init.hpp"
 
 // GTK
-#include "gtk-compat.h"
+#include <gtk/gtk.h>
 
 // sort_funcs.h
 // TODO: Test the GTK4 sorting functions.

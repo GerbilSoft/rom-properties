@@ -2,14 +2,13 @@
  * ROM Properties Page shell extension. (librptext)                        *
  * fourCC.hpp: FourCC string conversion functions                          *
  *                                                                         *
- * Copyright (c) 2009-2025 by David Korth.                                 *
+ * Copyright (c) 2009-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
 #include "common.h"	// for ATTR_PRINTF()
-#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 // C includes (C++ namespace)
 #include <cstddef>	/* size_t */

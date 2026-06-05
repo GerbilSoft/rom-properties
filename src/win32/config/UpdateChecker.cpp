@@ -2,20 +2,22 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * UpdateChecker.hpp: Update checker object for AboutTab.                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "UpdateChecker.hpp"
 
-// librpbase
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/config/AboutTabText.hpp"
-using namespace LibRpBase;
-
-// libromdata
+#include "librptext/wchar.hpp"
 #include "libromdata/img/CacheManager.hpp"
+using namespace LibRpBase;
 using LibRomData::CacheManager;
+
+// C includes
+#include "ctypex.h"
 
 // MSVCRT-specific
 #include <process.h>

@@ -6,22 +6,24 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.librpfile.h"
 #include "CacheCleaner.hpp"
 
-// libunixcommon
-#include "libunixcommon/userdirs.hpp"
+#include "d_type.h"
 
-// librpfile
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RecursiveScan.hpp"
+#include "libunixcommon/userdirs.hpp"
 using namespace LibRpFile;
 
 // C++ STL classes
 using std::forward_list;
 using std::pair;
 using std::string;
+
+#include "RpQt.hpp"
 
 /** CacheCleaner **/
 

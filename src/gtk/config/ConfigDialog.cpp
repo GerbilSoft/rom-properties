@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 #include "config.gtk.h"
 
@@ -16,7 +15,9 @@
 
 #include <gdk/gdkkeysyms.h>
 
-// for e.g. Config and FileSystem
+// Other rom-properties libraries
+#include "librpbase/config/Config.hpp"
+#include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 
@@ -36,6 +37,7 @@ using LibRpBase::KeyManager;
 #endif
 
 // C++ STL classes
+#include <array>
 using std::array;
 
 // Using GtkDialog on GTK2/GTK3.

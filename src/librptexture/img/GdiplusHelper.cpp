@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * GdiplusHelper.cpp: GDI+ helper class. (Win32)                           *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "GdiplusHelper.hpp"
 
 // Gdiplus for PNG decoding.
@@ -16,7 +15,7 @@ namespace Gdiplus {
 	using std::min;
 	using std::max;
 }
-#include <olectl.h>
+#include <comdef.h>
 #include <gdiplus.h>
 
 // GdiplusHelper isn't used by libromdata directly,

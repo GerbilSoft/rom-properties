@@ -6,8 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-
 #include "RomDataView.hpp"
 #include "RomDataView_p.hpp"
 #include "RomDataFormat.hpp"
@@ -16,6 +14,7 @@
 #include "gtk4/sort_funcs.h"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 using namespace LibRpBase;
 using namespace LibRpTexture;
 

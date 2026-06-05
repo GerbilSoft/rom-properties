@@ -2,17 +2,29 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * ConfigDialog.cpp: Configuration dialog.                                 *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 #include "ConfigDialog.hpp"
 #include "res/resource.h"
 
-// librpbase
-using namespace LibRpBase;
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librptext/wchar.hpp"
+
+// rp_image backend registration
+#include "librptexture/img/GdiplusHelper.hpp"
+#include "librptexture/img/RpGdiplusBackend.hpp"
+using namespace LibRpTexture;
+
+// C includes
+#include "tcharx.h"
+
+// C++ STL classes
+#include <string>
+using std::tstring;
 
 // Property sheet icon.
 // Extracted from imageres.dll or shell32.dll.
@@ -21,8 +33,9 @@ using namespace LibRpBase;
 // Controls for registration.
 #include "LanguageComboBox.hpp"
 
-// C++ STL classes
-using std::tstring;
+// libwin32common, libwin32ui
+#include "libwin32common/sdk/windowsx_ts.h"
+#include "libwin32ui/WinUI.hpp"
 
 #include "libi18n/config.libi18n.h"
 #if defined(_MSC_VER) && defined(ENABLE_NLS)
@@ -31,11 +44,6 @@ using std::tstring;
 // DelayLoad test implementation.
 DELAYLOAD_TEST_FUNCTION_IMPL1(libintl_textdomain, nullptr);
 #endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
-
-// rp_image backend registration
-#include "librptexture/img/GdiplusHelper.hpp"
-#include "librptexture/img/RpGdiplusBackend.hpp"
-using namespace LibRpTexture;
 
 // Property sheet tabs
 #include "ImageTypesTab.hpp"

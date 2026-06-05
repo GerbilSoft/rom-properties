@@ -2,17 +2,22 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image.hpp: Image class.                                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "rp_image.hpp"
 #include "rp_image_p.hpp"
 #include "rp_image_backend.hpp"
 
+// aligned_malloc()
+#include "aligned_malloc.h"
+
 // librptexture
 #include "ImageSizeCalc.hpp"
+
+// C includes (C++ namespace)
+#include <cstring>
 
 // Workaround for RP_D() expecting the no-underscore, UpperCamelCase naming convention.
 #define rp_imagePrivate rp_image_private

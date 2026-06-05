@@ -2,17 +2,13 @@
  * ROM Properties Page shell extension. (librptext)                        *
  * formatting.hpp: Text formatting functions                               *
  *                                                                         *
- * Copyright (c) 2009-2025 by David Korth.                                 *
+ * Copyright (c) 2009-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include "common.h"
-#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
-
 // C includes (C++ namespace)
-#include <cstdarg>
 #include <cstddef>	/* size_t */
 #include <cstdint>
 

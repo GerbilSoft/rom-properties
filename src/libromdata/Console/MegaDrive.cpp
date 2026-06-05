@@ -6,8 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "MegaDrive.hpp"
+#include "RomData_p.hpp"
 
 #include "md_structs.h"
 #include "data/SegaPublishers.hpp"
@@ -16,6 +16,7 @@
 #include "utils/SuperMagicDrive.hpp"
 
 // Other rom-properties libraries
+#include "aligned_malloc.h"
 #include "librpbase/Achievements.hpp"
 #include "librpbase/crypto/Hash.hpp"
 using namespace LibRpBase;
@@ -24,6 +25,9 @@ using namespace LibRpText;
 
 // Other RomData subclasses
 #include "Media/ISO.hpp"
+
+// C includes
+#include "ctypex.h"
 
 // C++ STL classes
 using std::array;

@@ -3,22 +3,25 @@
  * XAttrView_gtk4.cpp: Extended attribute viewer property page.            *
  * (GTK4-specific)                                                         *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "XAttrView_p.hpp"
 
 // XAttrReader
 #include "librpfile/xattr/XAttrReader.hpp"
 using LibRpFile::XAttrReader;
 
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+
 #include "XAttrViewItem.h"
 #include "../sort_funcs_common.h"
 #include "../gtk4/sort_funcs.h"
 
 // C++ STL classes
+#include <array>
 using std::array;
 
 /**

@@ -8,11 +8,10 @@
  * most of the important code is split out into libromdata.so, so the      *
  * forwarder version is unnecessary.                                       *
  *                                                                         *
- * Copyright (c) 2018-2025 by David Korth.                                 *
+ * Copyright (c) 2018-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "check-uid.hpp"
 
 #include <QtCore/qglobal.h>
@@ -29,7 +28,9 @@
 #include "RpQUrl.hpp"
 
 // Other rom-properties libraries
+#include "librpbase/config/Config.hpp"
 #include "librpbase/RomMetaData.hpp"
+#include "librpfile/FileSystem.hpp"
 #include "libromdata/RomDataFactory.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -50,6 +51,8 @@ using std::vector;
 #include <kfilemetadata/properties.h>
 using KFileMetaData::ExtractionResult;
 using namespace KFileMetaData::Property;
+
+#include "RpQt.hpp"
 
 namespace RomPropertiesKDE {
 

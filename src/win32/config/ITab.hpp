@@ -9,7 +9,10 @@
 #pragma once
 
 #include "common.h"
+
+// libwin32common
 #include "libwin32common/RpWin32_sdk.h"
+#include <prsht.h>	// for HPROPSHEETPAGE
 
 class NOVTABLE ITab
 {

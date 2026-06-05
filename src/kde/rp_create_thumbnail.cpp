@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                           *
  * rp_create_thumbnail.cpp: Thumbnail creation function export for rp-stub.  *
  *                                                                           *
- * Copyright (c) 2016-2025 by David Korth.                                   *
+ * Copyright (c) 2016-2026 by David Korth.                                   *
  * SPDX-License-Identifier: GPL-2.0-or-later                                 *
  *****************************************************************************/
 
-#include "stdafx.h"
 #include "check-uid.hpp"
 
 #include "plugins/RomThumbCreator_p.hpp"
@@ -16,6 +15,7 @@
 
 // Other rom-properties libraries
 #include "libromdata/RomDataFactory.hpp"
+#include "librpbase/img/RpPngWriter.hpp"
 #include "librpfile/FileSystem.hpp"
 using LibRpBase::Config;
 using LibRpBase::RomDataPtr;
@@ -27,6 +27,12 @@ using namespace LibRomData;
 // C++ STL classes
 using std::string;
 using std::unique_ptr;
+
+// Qt includes
+#include <QtCore/QFileInfo>
+
+// libfmt
+#include "rp-libfmt.h"
 
 /**
  * Thumbnail creator function for wrapper programs. (v2)

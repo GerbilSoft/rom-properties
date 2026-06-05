@@ -28,7 +28,7 @@ namespace Gdiplus {
         using std::min;
         using std::max;
 }
-#include <olectl.h>
+#include <comdef.h>
 #include <gdiplus.h>
 
 // C includes (C++ namespace)

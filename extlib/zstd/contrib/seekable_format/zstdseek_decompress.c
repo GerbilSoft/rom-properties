@@ -74,6 +74,11 @@
 #endif   /* PLATFORM_POSIX_VERSION */
 
 
+#include <stdlib.h>  /* malloc, free */
+#include <stdio.h>   /* FILE* */
+#include <limits.h>  /* UNIT_MAX */
+#include <assert.h>
+
 /* ************************************************************
 * Avoid fseek()'s 2GiB barrier with MSVC, macOS, *BSD, MinGW
 ***************************************************************/
@@ -88,6 +93,7 @@
 #   define LONG_SEEK fseeko64
 #elif defined(_WIN32) && !defined(__DJGPP__)
 #   include <windows.h>
+#   include <io.h>
     static int LONG_SEEK(FILE* file, __int64 offset, int origin) {
         LARGE_INTEGER off;
         DWORD method;
@@ -107,11 +113,6 @@
 #else
 #   define LONG_SEEK fseek
 #endif
-
-#include <stdlib.h>  /* malloc, free */
-#include <stdio.h>   /* FILE* */
-#include <limits.h>  /* UNIT_MAX */
-#include <assert.h>
 
 #define XXH_STATIC_LINKING_ONLY
 #include "xxhash.h"

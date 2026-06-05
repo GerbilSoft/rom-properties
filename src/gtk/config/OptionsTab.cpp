@@ -2,23 +2,24 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * OptionsTab.cpp: Options tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.gtk.h"
 
 #include "OptionsTab.hpp"
 #include "RpConfigTab.h"
 
-#include "gtk-compat.h"
-#include "RpGtk.h"
+#include "common.h"
+
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librpbase/config/Config.hpp"
+#include "librpbase/SystemRegion.hpp"
+using namespace LibRpBase;
 
 #include "LanguageComboBox.hpp"
-
-// librpbase
-using namespace LibRpBase;
 
 #if GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkBoxClass superclass;

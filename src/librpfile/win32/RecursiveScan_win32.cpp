@@ -3,11 +3,10 @@
  * RecursiveScan.cpp: Recursively scan for cache files to delete.          *
  * (Win32 implementation)                                                  *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "RecursiveScan.hpp"
 #include "FileSystem.hpp"
 
@@ -18,6 +17,9 @@
 using std::forward_list;
 using std::pair;
 using std::tstring;
+
+// libwin32common
+#include "libwin32common/RpWin32_sdk.h"
 
 // RecursiveScan isn't used by libromdata directly,
 // so use some linker hax to force linkage.

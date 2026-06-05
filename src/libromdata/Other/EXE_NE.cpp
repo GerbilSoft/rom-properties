@@ -8,18 +8,20 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "EXE_p.hpp"
 #include "disc/NEResourceReader.hpp"
 #include "data/EXENEEntries.hpp"
 
 // Other rom-properties libraries
+#include "time_r.h"
 using namespace LibRpBase;
 using namespace LibRpText;
 
 // C++ STL classes
+#include <unordered_set>
 using std::array;
 using std::string;
+using std::unordered_set;
 using std::vector;
 
 using vhvc::span;
@@ -892,7 +894,7 @@ int EXEPrivate::addFields_NE_Import(void)
 			return std::hash<uint32_t>()((p.first << 16) | p.second);
 		}
 	};
-	std::unordered_set<std::pair<uint16_t, uint16_t>, hash2x16> ordinal_set, name_set;
+	unordered_set<std::pair<uint16_t, uint16_t>, hash2x16> ordinal_set, name_set;
 
 	const uint16_t FileAlnSzShftCnt = le16_to_cpu(hdr.ne.FileAlnSzShftCnt);
 	if (FileAlnSzShftCnt > 24) {

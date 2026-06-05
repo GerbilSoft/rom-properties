@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.librptexture.h"
 
 #include "GodotSTEX.hpp"
@@ -15,11 +14,12 @@
 #include "godot_stex_structs.h"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librpbase/RomFields.hpp"
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
-using namespace LibRpText;
 
 // librptexture
 #include "ImageSizeCalc.hpp"
@@ -33,11 +33,15 @@ using namespace LibRpText;
 using LibRpTexture::ImageSizeCalc::OpCode;
 
 // C++ STL classes
+#include <vector>
 using std::array;
 using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRpTexture {
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * DragImage.hpp: Drag & Drop image.                                       *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -33,18 +33,12 @@ G_END_DECLS
 
 #ifdef __cplusplus
 
-// C++ includes
-#include <memory>
-
-namespace LibRpTexture {
-	class rp_image;
-}
-
-// librpbase
+// Other rom-properties libraries
 #include "librpbase/img/IconAnimData.hpp"
+#include "librptexture/img/rp_image.hpp"
 
 /**
- * Set the rp_image for this image.
+ * Set the rp_image for this RpDragImage.
  *
  * NOTE: If animated icon data is specified, that supercedes
  * the individual rp_image.
@@ -56,7 +50,7 @@ namespace LibRpTexture {
 bool rp_drag_image_set_rp_image(RpDragImage *image, const LibRpTexture::rp_image_const_ptr &img);
 
 /**
- * Set the icon animation data for this image.
+ * Set the icon animation data for this RpDragImage.
  *
  * NOTE: If animated icon data is specified, that supercedes
  * the individual rp_image.

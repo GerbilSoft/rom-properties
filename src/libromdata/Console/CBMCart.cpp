@@ -6,8 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "CBMCart.hpp"
+#include "RomData_p.hpp"
+
 #include "cbm_cart_structs.h"
 #include "data/CBMData.hpp"
 

@@ -2,12 +2,14 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem_common.cpp: File system functions. (Common functions)        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "FileSystem.hpp"
+
+// Common definitions, including function attributes.
+#include "common.h"
 
 // OS-specific userdirs
 #ifdef _WIN32
@@ -20,6 +22,9 @@
 
 // libcachecommon
 #include "libcachecommon/CacheDir.hpp"
+
+// C includes (C++ namespace)
+#include <cstring>
 
 // C++ STL classes
 #include <mutex>

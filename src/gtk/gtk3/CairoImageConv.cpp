@@ -2,33 +2,38 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CairoImageConv.cpp: Helper functions to convert from rp_image to Cairo. *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "CairoImageConv.hpp"
 
-// C++ STL classes
-using std::array;
-
-// librptexture
+// Other rom-properties libraries
+#include "librptexture/img/rp_image.hpp"
 #include "librptexture/ImageSizeCalc.hpp"
 using namespace LibRpTexture;
+
+// C includes (C++ namespace)
+#include <cstring>
+
+// C++ STL classes
+#include <array>
+using std::array;
 
 namespace CairoImageConv {
 
 /**
  * Convert an rp_image to cairo_surface_t.
- * @param img		[in] rp_image.
+ * @param img		[in] rp_image
  * @param premultiply	[in] If true, premultiply. Needed for display; NOT needed for PNG.
  * @return GdkPixbuf, or nullptr on error.
  */
 cairo_surface_t *rp_image_to_cairo_surface_t(const rp_image *img, bool premultiply)
 {
 	assert(img != nullptr);
-	if (unlikely(!img || !img->isValid()))
+	if (unlikely(!img || !img->isValid())) {
 		return nullptr;
+	}
 
 	// NOTE: cairo_image_surface_create_for_data() doesn't do a
 	// deep copy, so we can't use it.
@@ -99,8 +104,9 @@ cairo_surface_t *rp_image_to_cairo_surface_t(const rp_image *img, bool premultip
 			assert(palette != nullptr);
 			assert(palette_len > 0);
 			assert(palette_len <= 256);
-			if (!palette || palette_len == 0 || palette_len > 256)
+			if (!palette || palette_len == 0 || palette_len > 256) {
 				break;
+			}
 
 			// Premultiply the palette.
 			std::array<uint32_t, 256> pal_prex;
@@ -161,4 +167,4 @@ cairo_surface_t *rp_image_to_cairo_surface_t(const rp_image *img, bool premultip
 	return surface;
 }
 
-} //namespace CairoImageConv
+} // namespace CairoImageConv

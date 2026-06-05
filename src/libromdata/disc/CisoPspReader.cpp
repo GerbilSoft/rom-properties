@@ -9,7 +9,6 @@
 // References:
 // - https://github.com/unknownbrackets/maxcso/blob/master/README_CSO.md
 
-#include "stdafx.h"
 #include "config.librpbase.h"
 #include "config.libromdata.h"
 
@@ -30,6 +29,9 @@
 // Other rom-properties libraries
 using namespace LibRpBase;
 using namespace LibRpFile;
+
+// Uninitialized vector class
+#include "uvector.h"
 
 namespace LibRomData {
 
@@ -209,7 +211,9 @@ CisoPspReader::CisoPspReader(const IRpFilePtr &file)
 #ifdef LZ4_SHARED_LINKAGE
 	bool isLZ4 = false;
 #endif /* LZ4_SHARED_LINKAGE */
+#ifdef LZO_SHARED_LINKAGE
 	bool isLZO = false;
+#endif /* LZO_SHARED_LINKAGE */
 	switch (d->cisoType) {
 		default:
 		case CisoPspReaderPrivate::CisoType::Unknown:

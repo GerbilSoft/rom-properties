@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (rpcli)                            *
  * verifykeys.hpp: Verify encryption keys.                                 *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * Copyright (c) 2016-2017 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.rpcli.h"
 
 #ifndef ENABLE_DECRYPTION
@@ -28,6 +27,9 @@ using namespace LibRomData;
 
 // C includes (C++ namespace)
 #include <cassert>
+
+// libfmt
+#include "rp-libfmt.h"
 
 /**
  * Simple implementation of KeyStoreUI with no signal handling.

@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "RpFile_kio.hpp"
 
 // Qt includes.
@@ -17,6 +16,8 @@
 
 // C++ STL classes.
 using std::string;
+
+#include "RpQt.hpp"
 
 class RpFileKioPrivate
 {
@@ -142,12 +143,12 @@ void RpFileKio::init(void)
 	/** Signals **/
 
 	// open(): File was opened.
-	QObject::connect(d->fileJob, &KIO::FileJob::open, [d, this]() {
+	QObject::connect(d->fileJob, &KIO::FileJob::open, this, [d, this]() {
 		// FileJob has been opened.
 		emit exitLoop();
 	});
 	// result(): An operation finished. (ONLY emitted on failure)
-	QObject::connect(d->fileJob, &KIO::FileJob::result, [d, this]() {
+	QObject::connect(d->fileJob, &KIO::FileJob::result, this, [d, this]() {
 		// Did an error occur?
 		d->lastResult = d->fileJob->error();
 		if (d->lastResult != 0) {
@@ -158,13 +159,13 @@ void RpFileKio::init(void)
 		emit exitLoop();
 	});
 	// read(): Data has been read.
-	QObject::connect(d->fileJob, &KIO::FileJob::data, [d, this](KIO::Job*, const QByteArray &data) {
+	QObject::connect(d->fileJob, &KIO::FileJob::data, this, [d, this](KIO::Job*, const QByteArray &data) {
 		d->lastData = data;
 		d->pos += data.size();
 		emit exitLoop();
 	});
 	// position(): File position has been set.
-	QObject::connect(d->fileJob, &KIO::FileJob::position, [d, this](KIO::Job*, KIO::filesize_t offset) {
+	QObject::connect(d->fileJob, &KIO::FileJob::position, this, [d, this](KIO::Job*, KIO::filesize_t offset) {
 		d->pos = offset;
 		emit exitLoop();
 	});

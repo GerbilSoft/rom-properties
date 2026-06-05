@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * PIMGTYPE.hpp: PIMGTYPE typedef and wrapper functions.                   *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -55,9 +55,6 @@ G_END_DECLS
 #ifdef __cplusplus
 // librptexture
 #include "librptexture/img/rp_image.hpp"
-
-// C++ includes
-#include <memory>
 
 /**
  * rp_image_to_PIMGTYPE wrapper function.

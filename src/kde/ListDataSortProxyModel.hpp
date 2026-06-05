@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * ListDataSortProxyModel.hpp: QSortFilterProxyModel for RFT_LISTDATA.     *
  *                                                                         *
- * Copyright (c) 2012-2024 by David Korth.                                 *
+ * Copyright (c) 2012-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,7 +14,6 @@
 // Qt includes
 #include <QSortFilterProxyModel>
 
-class ListDataSortProxyModelPrivate;
 class ListDataSortProxyModel : public QSortFilterProxyModel
 {
 	Q_OBJECT

@@ -2,25 +2,32 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData.cpp: ROM data base class.                                       *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth                                  *
+ * Copyright (c) 2016-2026 by David Korth                                  *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "RomData.hpp"
 #include "RomData_p.hpp"
 
 // Other rom-properties libraries
+#include "time_r.h"
+#include "libi18n/i18n.hpp"
 #include "libcachecommon/CacheKeys.hpp"
 #include "librpfile/FileSystem.hpp"
+#include "librpfile/RpFile.hpp"
 using namespace LibRpFile;
-using namespace LibRpText;
 using namespace LibRpTexture;
+
+// C includes
+#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
 using std::string;
 using std::vector;
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRpBase {
 

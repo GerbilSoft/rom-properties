@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * CBCReader.hpp: AES-128-CBC data reader class.                           *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.librpbase.h"
 #include "CBCReader.hpp"
 
@@ -20,7 +19,15 @@
 #include "librpfile/IRpFile.hpp"
 using namespace LibRpFile;
 
+// C includes (C++ namespace)
+#include <cassert>
 #ifdef ENABLE_DECRYPTION
+#  include <cstring>
+#endif /* ENABLE_DECRYPTION */
+
+// C++ STL classes
+#ifdef ENABLE_DECRYPTION
+#  include <array>
 using std::array;
 using std::unique_ptr;
 #endif /* ENABLE_DECRYPTION */

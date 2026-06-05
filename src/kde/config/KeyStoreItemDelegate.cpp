@@ -2,16 +2,20 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyStoreItemDelegate.cpp: KeyStore item delegate for QListView.         *
  *                                                                         *
- * Copyright (c) 2013-2025 by David Korth.                                 *
+ * Copyright (c) 2013-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // References:
 // - https://stackoverflow.com/questions/26614678/validating-user-input-in-a-qtableview
 // - https://stackoverflow.com/a/26614960
-#include "stdafx.h"
 #include "KeyStoreItemDelegate.hpp"
 #include "KeyStoreModel.hpp"
+
+// Qt includes
+#include <QtGui/QPainter>
+#include <QApplication>
+#include <QLineEdit>
 
 #if QT_VERSION > 0x050000
 // Qt5 deprecated QStyleOptionViewItemV4 in favor of

@@ -8,9 +8,11 @@
 
 #pragma once
 
-// Qt includes.
-#include <QSettings>
+#include "common.h"
+
+// Qt includes
 #include <QWidget>
+class QSettings;
 
 class NOVTABLE ITab : public QWidget
 {

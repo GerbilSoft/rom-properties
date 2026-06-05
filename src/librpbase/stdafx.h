@@ -39,19 +39,7 @@
 #include <utility>
 #include <vector>
 
-#ifdef HAVE_STD_VARIANT
-#  include <variant>
-#else /* !HAVE_STD_VARIANT */
-// std::variant<> is not available on this system.
-// Use mpark variant instead.
-#  include "mpark/variant.hpp"
-namespace std {
-	using mpark::variant;
-	using mpark::holds_alternative;
-	using mpark::get;
-	using mpark::monostate;
-}
-#endif /* HAVE_STD_VARIANT */
+#include "rp-variant.hpp"
 
 // libfmt
 #ifndef RP_NO_INCLUDE_LIBFMT_IN_STDAFX_H

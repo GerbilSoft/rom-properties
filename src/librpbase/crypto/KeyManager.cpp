@@ -6,17 +6,32 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.librpbase.h"
 
 #include "KeyManager.hpp"
 #include "config/ConfReader_p.hpp"
 
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+
+// C includes
+#include "tcharx.h"
+
+// C includes (C++ namespace)
+#include <cassert>
+#include <cstring>
+
 // C++ STL classes
+#include <array>
+#include <memory>
+#include <unordered_map>
 using std::array;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
+
+// Uninitialized vector class
+#include "uvector.h"
 
 #include "IAesCipher.hpp"
 #include "AesCipherFactory.hpp"

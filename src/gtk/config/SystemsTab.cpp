@@ -2,17 +2,18 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * SystemsTab.cpp: Systems tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "SystemsTab.hpp"
 #include "RpConfigTab.h"
 
-#include "RpGtk.h"
+#include "common.h"
 
-// librpbase
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
 
 #if GTK_CHECK_VERSION(3, 0, 0)

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * N3DSVerifyKeys.hpp: Nintendo 3DS key verification data.                 *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,8 +12,6 @@
 #ifndef ENABLE_DECRYPTION
 #  error This file should only be compiled if decryption is enabled.
 #endif /* !ENABLE_DECRYPTION */
-
-#include "common.h"
 
 // librpbyteswap
 #include "librpbyteswap/byteswap_rp.h"

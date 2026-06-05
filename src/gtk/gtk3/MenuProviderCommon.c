@@ -2,16 +2,19 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
  * MenuProviderCommon.c: Common functions for Menu Providers               *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "MenuProviderCommon.h"
 
 #include "CreateThumbnail.hpp"
 #include "img/TCreateThumbnail.hpp"
 
+#include "common.h"
+
+// C includes
+#include <stdlib.h>
 #include "tcharx.h"	// for DIR_SEP_CHR
 
 // Supported MIME types

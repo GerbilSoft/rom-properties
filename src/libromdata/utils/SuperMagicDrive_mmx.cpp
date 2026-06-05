@@ -7,10 +7,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "SuperMagicDrive.hpp"
 
-// MMX intrinsics.
+// MMX intrinsics
 #include <mmintrin.h>
 
 namespace LibRomData { namespace SuperMagicDrive {

@@ -2,26 +2,28 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_scsi_linux.cpp: Standard file object. (Linux SCSI)               *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __linux__
-# error RpFile_scsi_linux.cpp is for Linux ONLY.
+#  error RpFile_scsi_linux.cpp is for Linux ONLY.
 #endif /* __linux__ */
 
-#include "stdafx.h"
 #include "../RpFile.hpp"
 #include "../RpFile_p.hpp"
 
 #include "scsi_protocol.h"
 
-// SCSI and CD-ROM IOCTLs.
+// SCSI and CD-ROM IOCTLs
 #include <sys/ioctl.h>
 #include <scsi/sg.h>
 #include <scsi/scsi.h>
 #include <linux/cdrom.h>
 #include <linux/fs.h>
+
+// C includes (C++ namespace)
+#include <cstring>
 
 namespace LibRpFile {
 

@@ -6,12 +6,12 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-
 #include "AndroidCommon.hpp"
 #include "../disc/AndroidResourceReader.hpp"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librpbase/RomMetaData.hpp"
 using namespace LibRpBase;
 
 // PugiXML
@@ -20,9 +20,13 @@ using namespace LibRpBase;
 using namespace pugi;
 
 // C++ STL classes
+#include <algorithm>
 using std::array;
 using std::string;
 using std::vector;
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRomData { namespace AndroidCommon {
 

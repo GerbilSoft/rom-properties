@@ -6,8 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "PlayStationEXE.hpp"
+#include "RomData_p.hpp"
+
 #include "ps1_exe_structs.h"
 
 // Other rom-properties libraries

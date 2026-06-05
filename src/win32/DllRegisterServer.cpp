@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * DllRegisterServer.cpp: COM registration handler.                        *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,7 +17,6 @@
 // - "COM in C++"
 //   - http://www.codeproject.com/Articles/338268/COM-in-C
 
-#include "stdafx.h"
 #include "config.version.h"
 #include "config.win32.h"
 
@@ -37,7 +36,8 @@
 // libwin32common
 using LibWin32UI::RegKey;
 
-// For file extensions
+// Other rom-properties libraries
+#include "librptext/wchar.hpp"
 #include "libromdata/RomDataFactory.hpp"
 #include "librptexture/FileFormatFactory.hpp"
 using namespace LibRomData;
@@ -49,6 +49,9 @@ using std::forward_list;
 using std::string;
 using std::vector;
 using std::wstring;
+
+// libfmt
+#include "rp-libfmt.h"
 
 // Program ID for COM object registration.
 extern const TCHAR RP_ProgID[];

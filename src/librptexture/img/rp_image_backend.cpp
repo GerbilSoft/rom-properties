@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image_backend.cpp: Image backend and storage classes.                *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "rp_image_backend.hpp"
 
 namespace LibRpTexture {

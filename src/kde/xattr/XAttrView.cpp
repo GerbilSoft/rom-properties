@@ -2,13 +2,11 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * XAttrView.cpp: Extended attribute viewer property page.                 *
  *                                                                         *
- * Copyright (c) 2022-2025 by David Korth.                                 *
+ * Copyright (c) 2022-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Reference: https://doc.qt.io/qt-5/dnd.html
-#include "stdafx.h"
-
 #include "XAttrView.hpp"
 #include "RpQUrl.hpp"
 
@@ -19,6 +17,8 @@ using LibRpFile::XAttrReader;
 // C++ STL classes
 using std::string;
 using std::unique_ptr;
+
+#include "RpQt.hpp"
 
 /** XAttrViewPrivate **/
 

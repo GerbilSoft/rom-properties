@@ -10,9 +10,9 @@
 
 #ifdef _MSC_VER
 #  include <intrin.h>
-#  ifndef inline
+#  if !defined(inline) && !defined(__cplusplus)
 #    define inline __inline
-#  endif /* !inline */
+#  endif /* !inline && !__cplusplus */
 #endif /* _MSC_VER */
 
 #include "stdboolx.h"

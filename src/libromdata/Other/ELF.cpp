@@ -6,8 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "ELF.hpp"
+#include "RomData_p.hpp"
+
 #include "data/ELFData.hpp"
 #include "elf_structs.h"
 

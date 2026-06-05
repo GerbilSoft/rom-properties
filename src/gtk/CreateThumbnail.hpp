@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CreateThumbnail.hpp: Thumbnail creator for wrapper programs.            *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,8 +10,10 @@
 
 // GLib
 #include <glib.h>
+#include <gmodule.h>
 
-#include "common.h"
+// for RP_C_API
+#include "dll-macros.h"
 
 G_BEGIN_DECLS
 

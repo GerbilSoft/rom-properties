@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                             *
  * XAttrViewPropertiesDialogPlugin.cpp: KPropertiesDialogPlugin implementation *
  *                                                                             *
- * Copyright (c) 2016-2024 by David Korth.                                     *
+ * Copyright (c) 2016-2026 by David Korth.                                     *
  * SPDX-License-Identifier: GPL-2.0-or-later                                   *
  *******************************************************************************/
 
@@ -14,14 +14,17 @@
  * - https://github.com/KDE/calligra-history/blob/5e323f11f11ec487e1ef801d61bb322944f454a5/libs/main/kodocinfopropspage.desktop
  */
 
-#include "stdafx.h"
 #include "XAttrViewPropertiesDialogPlugin.hpp"
 
 #include "XAttrView.hpp"
 #include "check-uid.hpp"
 
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/config/Config.hpp"
 using LibRpBase::Config;
+
+#include "RpQt.hpp"
 
 /**
  * Instantiate an XAttrView object for the given KFileItem.

@@ -2,23 +2,21 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * stub-export.cpp: Exported function for the rp-config stub.              *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.kde.h"
 #include "check-uid.hpp"
 
 #include "ConfigDialog.hpp"
-#include "RomDataView.hpp"
-#include "xattr/XAttrView.hpp"
 
 // Program version
 #include "librpbase/config/AboutTabText.hpp"
 using namespace LibRpBase;
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "libromdata/RomDataFactory.hpp"
 #include "librptexture/img/rp_image.hpp"
 using namespace LibRomData;
@@ -26,25 +24,29 @@ using namespace LibRpTexture;
 
 #include "RpQImageBackend.hpp"
 #include "AchQtDBus.hpp"
-#include "RpQUrl.hpp"
 
 // i18n
 #ifdef ENABLE_NLS
 #  include "../GettextTranslator.hpp"
 #endif
 
-// Qt
-#include "RpQt.hpp"
+// C++ STL classes
+using std::string;
 
-// KDE
+// Qt includes
+#include <QtCore/QDir>
+
+// KDE includes
 #include <KAboutData>
 #include <KCrash>
 #include <KPageWidget>
 #include <KPageWidgetModel>
 #include <KPropertiesDialog>
 
-// C++ STL classes
-using std::string;
+#include "RpQt.hpp"
+
+// libfmt
+#include "rp-libfmt.h"
 
 /**
  * Initialize the QApplication.

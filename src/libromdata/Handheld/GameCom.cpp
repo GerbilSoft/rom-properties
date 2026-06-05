@@ -6,11 +6,13 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "GameCom.hpp"
+#include "RomData_p.hpp"
+
 #include "gcom_structs.h"
 
 // Other rom-properties libraries
+#include "bitstuff.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;

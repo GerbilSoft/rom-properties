@@ -7,13 +7,13 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "TextOut.hpp"
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 
-// C++ includes.
+// C++ STL classes
+#include <vector>
 using std::ostream;
 using std::string;
 using std::vector;

@@ -3,22 +3,25 @@
  * RP_ExtractIcon_Fallback.cpp: IExtractIcon implementation.               *
  * Fallback functions for unsupported files.                               *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "RP_ExtractIcon.hpp"
 #include "RP_ExtractIcon_p.hpp"
 
-// librpbase, librpfile, libwin32ui
+// Other rom-properties libraries
+#include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
-using LibWin32UI::RegKey;
 
 // C++ STL classes.
 using std::tstring;
 using std::unique_ptr;
+
+// libwin32ui
+#include "libwin32ui/WinUI.hpp"
+using LibWin32UI::RegKey;
 
 // COM smart pointer typedefs.
 _COM_SMARTPTR_TYPEDEF(IExtractIconA, IID_IExtractIconA);

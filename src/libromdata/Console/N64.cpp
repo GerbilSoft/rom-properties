@@ -6,8 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "N64.hpp"
+#include "RomData_p.hpp"
+
 #include "n64_structs.h"
 
 #include "common.h"
@@ -16,6 +17,9 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
+
+// C includes
+#include "ctypex.h"
 
 // C++ STL classes
 using std::array;

@@ -2,19 +2,20 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem_win32.cpp: File system functions. (Win32 implementation)     *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "../FileSystem.hpp"
-
 // C includes
 #include <sys/stat.h>
 #include <sys/utime.h>
 
-// DT_* enumeration
-#include "d_type.h"
+#include "common.h"
+#include "d_type.h"	// DT_* enumeration
+
+// C includes (C++ namespace)
+#include <cassert>
 
 // C++ STL classes
 #include <mutex>

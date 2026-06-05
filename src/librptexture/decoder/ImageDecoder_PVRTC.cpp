@@ -2,17 +2,18 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_PVRTC.cpp: Image decoding functions: PVRTC                 *
  *                                                                         *
- * Copyright (c) 2019-2025 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
-
-#include "stdafx.h"
 
 #include "ImageDecoder_PVRTC.hpp"
 #include "PVRTDecompress.h"
 
-// librptexture
+// rp_image_ptr
 #include "img/rp_image.hpp"
+
+// Other rom-properties libraries
+#include "bitstuff.h"
 
 // References:
 // - https://www.khronos.org/registry/OpenGL/extensions/IMG/IMG_texture_compression_pvrtc.txt

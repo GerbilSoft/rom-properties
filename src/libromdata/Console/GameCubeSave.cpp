@@ -6,18 +6,23 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "GameCubeSave.hpp"
+#include "RomData_p.hpp"
+
 #include "data/NintendoPublishers.hpp"
 #include "gcn_card.h"
 
 // Other rom-properties libraries
+#include "aligned_malloc.h"
 #include "librpbase/SystemRegion.hpp"
 #include "librptexture/decoder/ImageDecoder_GCN.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
+
+// C includes
+#include "ctypex.h"
 
 // C++ STL classes
 using std::array;

@@ -6,12 +6,12 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.version.h"
 #include "IDownloader.hpp"
 
 // C includes (C++ namespace)
 #include <cstdio>
+#include <cstring>
 
 // C++ includes
 #include <string>
@@ -31,6 +31,8 @@ using std::tstring;
 #  include "ini.h"
 #elif defined(PLATFORM_MACOSX)
 #  include <CoreServices/CoreServices.h>
+#elif defined(_WIN32)
+#  include "libwin32common/RpWin32_sdk.h"
 #endif
 
 namespace RpDownload {

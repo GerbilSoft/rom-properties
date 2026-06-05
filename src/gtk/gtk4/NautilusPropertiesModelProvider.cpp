@@ -6,11 +6,10 @@
  * arbitrary GtkWidgets. As such, the properties returned will be more       *
  * limited than in previous versions.                                        *
  *                                                                           *
- * Copyright (c) 2017-2025 by David Korth.                                   *
+ * Copyright (c) 2017-2026 by David Korth.                                   *
  * SPDX-License-Identifier: GPL-2.0-or-later                                 *
  *****************************************************************************/
 
-#include "stdafx.h"
 #include "NautilusPropertiesModelProvider.hpp"
 #include "NautilusPropertiesModel.hpp"
 

@@ -2,12 +2,15 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RpConfigTab.c: Configuration tab interface.                             *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "RpConfigTab.h"
+#include "common.h"
+
+// C includes
+#include "stdboolx.h"
 
 /* Signal identifiers */
 typedef enum {

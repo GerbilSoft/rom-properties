@@ -3,7 +3,7 @@
  * NCCHReader_p.hpp: Nintendo 3DS NCCH reader.                             *
  * Private class declaration.                                              *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -122,14 +122,7 @@ protected:
 	 * @param pExefsHeader ExeFS header.
 	 * @return True if valid; false if not.
 	 */
-	static inline bool verifyExefsHeader(const N3DS_ExeFS_Header_t *pExefsHeader)
-	{
-		// Check the first filename.
-		// It should be ".code" for CXIs.
-		// It might be "icon" for CFAs.
-		return (!strcmp(pExefsHeader->files[0].name, ".code") ||
-			!strcmp(pExefsHeader->files[0].name, "icon"));
-	}
+	static bool verifyExefsHeader(const N3DS_ExeFS_Header_t *pExefsHeader);
 
 #ifdef ENABLE_DECRYPTION
 	uint64_t tid_be;		// Title ID (for AES-CTR init)

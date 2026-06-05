@@ -6,8 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "SufamiTurbo.hpp"
+#include "RomData_p.hpp"
+
 #include "st_structs.h"
 
 // Other rom-properties libraries

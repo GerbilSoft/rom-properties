@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NASOSReader.hpp: GameCube/Wii NASOS (.iso.dec) disc image reader.       *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,7 +10,6 @@
 // - https://github.com/dolphin-emu/dolphin/blob/master/Source/Core/DiscIO/CISOBlob.cpp
 // - https://github.com/dolphin-emu/dolphin/blob/master/Source/Core/DiscIO/CISOBlob.h
 
-#include "stdafx.h"
 #include "NASOSReader.hpp"
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "nasos_gcn.h"
@@ -18,6 +17,9 @@
 // Other rom-properties libraries
 using namespace LibRpBase;
 using namespace LibRpFile;
+
+// Uninitialized vector class
+#include "uvector.h"
 
 namespace LibRomData {
 

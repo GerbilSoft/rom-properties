@@ -6,11 +6,13 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "Sega8Bit.hpp"
+#include "RomData_p.hpp"
+
 #include "sega8_structs.h"
 
 // Other rom-properties libraries
+#include "time_r.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;

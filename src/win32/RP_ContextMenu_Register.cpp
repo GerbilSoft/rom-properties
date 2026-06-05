@@ -3,20 +3,20 @@
  * RP_ContextMenu_Register.cpp: IContextMenu implementation.               *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "RP_ContextMenu.hpp"
 #include "RP_ContextMenu_p.hpp"
 
-// libwin32common
-using LibWin32UI::RegKey;
-
-// C++ STL classes.
+// C++ STL classes
+#include <memory>
 using std::tstring;
 using std::unique_ptr;
+
+// libwin32common
+using LibWin32UI::RegKey;
 
 #define CLSID_RP_ContextMenu_String	TEXT("{150715EA-6843-472C-9709-2CFA56690501}")
 

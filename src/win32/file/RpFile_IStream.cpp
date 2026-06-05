@@ -6,14 +6,12 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-
 #include "config.librpbase.h"
 #include "RpFile_IStream.hpp"
 
 // Other rom-properties libraries
 #include "librpbyteswap/byteswap_rp.h"
-using namespace LibRpBase;
+#include "librptext/wchar.hpp"
 
 // C++ STL classes.
 using std::string;

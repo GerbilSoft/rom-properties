@@ -2,15 +2,15 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ImageTypesConfig.cpp: Image Types non-templated common functions.       *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "ImageTypesConfig.hpp"
 #include "librpbase/config/Config.hpp"
 
-// librpbase
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/RomData.hpp"	// for IMG_* constants
 using namespace LibRpBase;
 
@@ -29,6 +29,9 @@ using namespace LibRpBase;
 #include "Console/WiiU.hpp"
 #include "Console/WiiUPackage.hpp"
 #include "Console/WiiWAD.hpp"
+
+// C includes (C++ namespace)
+#include <cassert>
 
 // C++ STL classes
 using std::array;

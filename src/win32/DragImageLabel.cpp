@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * DragImageLabel.cpp: Drag & Drop image label.                            *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "res/resource.h"
 
 #include "DragImageLabel.hpp"
@@ -18,6 +17,14 @@
 using namespace LibRpBase;
 using namespace LibRpTexture;
 
+// libwin32common, libwin32ui
+#include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/sdk/windowsx_ts.h"
+#include "libwin32ui/HiDPI.hpp"
+#include "libwin32ui/WinUI.hpp"
+#include <shellapi.h>	// for ShellExecute()
+#include <uxtheme.h>	// for IsThemeActive()
+
 // Gdiplus for image drawing.
 // NOTE: Gdiplus requires min/max.
 #include <algorithm>
@@ -25,10 +32,8 @@ namespace Gdiplus {
 	using std::min;
 	using std::max;
 }
+#include <comdef.h>
 #include <gdiplus.h>
-
-// for IsThemeActive()
-#include <uxtheme.h>
 
 // C++ STL classes
 using std::unique_ptr;

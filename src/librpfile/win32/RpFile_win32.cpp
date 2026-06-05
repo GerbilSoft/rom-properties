@@ -2,11 +2,9 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_win32.cpp: Standard file object. (Win32 implementation)          *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
-
-#include "stdafx.h"
 
 #include "../RpFile.hpp"
 #include "../RpFile_p.hpp"

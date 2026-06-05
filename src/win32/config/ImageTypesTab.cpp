@@ -2,36 +2,51 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * ImageTypesTab.cpp: Image type priorities tab. (Part of ConfigDialog.)   *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "ImageTypesTab.hpp"
 #include "res/resource.h"
 
-// libwin32ui
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librpbase/config/Config.hpp"
+#include "librpbase/RomData.hpp"
+#include "librpfile/FileSystem.hpp"
+#include "librptext/wchar.hpp"
+using LibRpBase::Config;
+using LibRpBase::RomData;
+using namespace LibRpFile;
+
+// C includes
+#include "tcharx.h"
+
+// C++ STL classes
+#include <string>
+#include <vector>
+using std::tstring;
+using std::vector;
+
+// libwin32common, libwin32ui
+#include "libwin32common/sdk/windowsx_ts.h"
 #include "libwin32ui/LoadResource_i18n.hpp"
+#include "libwin32ui/WinUI.hpp"
+#include <shellapi.h>	// for ShellExecute()
 using LibWin32UI::LoadDialog_i18n;
 
 // Win32 dark mode
 #include "libwin32darkmode/DarkMode.hpp"
 #include "libwin32darkmode/DarkModeCtrl.hpp"
 
-// C++ STL classes.
-using std::tstring;
-using std::vector;
+// libfmt
+#include "rp-libfmt.h"
 
 // TImageTypesConfig is a templated class,
 // so we have to #include the .cpp file here.
 #include "libromdata/config/ImageTypesConfig.hpp"
 #include "libromdata/config/TImageTypesConfig.cpp"
 using namespace LibRomData;
-
-// Other rom-properties libraries
-using LibRpBase::Config;
-using LibRpBase::RomData;
-using namespace LibRpFile;
 
 class ImageTypesTabPrivate final : public TImageTypesConfig<HWND>
 {

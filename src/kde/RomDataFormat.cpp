@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomDataFormat.hpp: Common RomData string formatting functions.          *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "RomDataFormat.hpp"
 
 // librpbase
@@ -15,6 +14,12 @@ using LibRpBase::RomFields;
 
 // C++ STL classes
 using std::string;
+
+// Qt includes
+#include <QtCore/QDateTime>
+#include <QtCore/QLocale>
+
+#include "RpQt.hpp"
 
 /**
  * Format an RFT_DATETIME.

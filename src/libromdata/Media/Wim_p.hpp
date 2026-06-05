@@ -3,7 +3,7 @@
  * Wim_p.hpp: Microsoft WIM header reader (PRIVATE CLASS)                  *
  *                                                                         *
  * Copyright (c) 2023 by ecumber.                                          *
- * Copyright (c) 2019-2025 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,6 +14,8 @@
 
 // librpfile
 #include "librpfile/IRpFile.hpp"
+
+#include "RomData_p.hpp"
 
 namespace LibRomData {
 

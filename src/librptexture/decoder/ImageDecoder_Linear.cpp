@@ -3,11 +3,10 @@
  * ImageDecoder_Linear.cpp: Image decoding functions: Linear               *
  * Standard version. (C++ code only)                                       *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "ImageDecoder_Linear.hpp"
 
 // librptexture
@@ -15,6 +14,9 @@
 #include "img/rp_image.hpp"
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
+
+// C includes (C++ namespace)
+#include <cstring>
 
 namespace LibRpTexture { namespace ImageDecoder {
 

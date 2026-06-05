@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_PrivateExtractIcons.cpp: PrivateExtractIcons() implementation.       *
  *                                                                         *
- * Copyright (c) 2025 by David Korth.                                      *
+ * Copyright (c) 2025-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,7 +14,6 @@
 // - https://github.com/otya128/Icon16bitFix (Wine license)
 // - https://github.com/microsoft/Detours (MIT license)
 
-#include "stdafx.h"
 #include "RP_PrivateExtractIcons.hpp"
 
 #include "dll-macros.h"
@@ -22,15 +21,19 @@
 
 // Other rom-properties libraries.
 #include "librpfile/RpFile.hpp"
+#include "librptext/wchar.hpp"
 #include "libromdata/Other/EXE.hpp"
 using namespace LibRomData;
 using namespace LibRpFile;
 
-// Detours
-#include "detours.h"
+// C includes
+#include "tcharx.h"
 
 // C++ STL classes
 using std::unique_ptr;
+
+// Detours
+#include "detours.h"
 
 typedef UINT (WINAPI *PrivateExtractIconsW_t)(
 	_In_ LPCWSTR szFileName,

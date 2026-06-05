@@ -2,15 +2,14 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_scsi_netbsd.cpp: Standard file object. (NetBSD/OpenBSD SCSI)     *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #if !defined(__NetBSD__) && !defined(__OpenBSD__)
-# error RpFile_scsi_netbsd.cpp is for NetBSD and OpenBSD ONLY.
+#  error RpFile_scsi_netbsd.cpp is for NetBSD and OpenBSD ONLY.
 #endif /* __linux__ */
 
-#include "stdafx.h"
 #include "../RpFile.hpp"
 #include "../RpFile_p.hpp"
 

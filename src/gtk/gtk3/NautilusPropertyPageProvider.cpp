@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                              *
  * NautilusPropertyPageProvider.cpp: Nautilus Property Page Provider Definition *
  *                                                                              *
- * Copyright (c) 2017-2025 by David Korth.                                      *
+ * Copyright (c) 2017-2026 by David Korth.                                      *
  * SPDX-License-Identifier: GPL-2.0-or-later                                    *
  ********************************************************************************/
 
@@ -15,7 +15,6 @@
  * - https://github.com/GNOME/nautilus/blob/bb433582165da10ab07337d707ea448703c3865f/src/nautilus-image-properties-page.c
  */
 
-#include "stdafx.h"
 #include "NautilusPropertyPageProvider.hpp"
 #include "NautilusExtraInterfaces.h"
 
@@ -25,8 +24,10 @@
 #include "../RomDataView.hpp"
 #include "../xattr/XAttrView.hpp"
 
-#include "librpbase/RomData.hpp"
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/config/Config.hpp"
+#include "librpbase/RomData.hpp"
 using namespace LibRpBase;
 
 // nautilus-extension.h mini replacement

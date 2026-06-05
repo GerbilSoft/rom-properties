@@ -2,12 +2,21 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * MessageWidget.cpp: Message widget. (Similar to KMessageWidget)          *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "MessageWidget.hpp"
+
+// C includes
+#include "tcharx.h"
+
+// C includes (C++ namespace)
+#include <cstdint>
+#include <cstdlib>
+
+// libwin32common
+#include "libwin32common/sdk/windowsx_ts.h"
 
 static ATOM atom_messageWidget;
 

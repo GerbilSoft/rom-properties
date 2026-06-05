@@ -1,4 +1,4 @@
-/***************************************************************************
+/**************************************************************************
  * ROM Properties Page shell extension. (Win32)                            *
  * PropSheetIcon.cpp: Property sheet icon.                                 *
  *                                                                         *
@@ -6,15 +6,22 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "PropSheetIcon.hpp"
 
-// for rp_LoadLibraryEx()
-#include "libwin32common/rp_LoadLibraryEx.h"
+// C includes
+#include "tcharx.h"
 
 // C++ STL classes
+#include <array>
+#include <memory>
 using std::array;
 using std::unique_ptr;
+
+// libwin32common
+#include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/rp_LoadLibraryEx.h"
+#include <shellapi.h>	// for SHSTOCKICONINFO and related
+#include <shlobj.h>	// for SHGetFolderPath()
 
 class PropSheetIconPrivate
 {

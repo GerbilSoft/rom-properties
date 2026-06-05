@@ -2,15 +2,20 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DMGSpecialCases.cpp: Game Boy special cases for RPDB images.            *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "DMGSpecialCases.hpp"
 #include "Handheld/dmg_structs.h"
 
+// C includes (C++ namespace)
+#include <cassert>
+#include <cstdio>
+#include <cstring>
+
 // C++ STL classes
+#include <array>
 using std::array;
 
 namespace LibRomData { namespace DMGSpecialCases {

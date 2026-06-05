@@ -6,8 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "MachO.hpp"
+#include "RomData_p.hpp"
+
 #include "data/MachOData.hpp"
 #include "macho_structs.h"
 

@@ -2,18 +2,17 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * is-supported.hpp: Check if a URI is supported.                          *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "is-supported.hpp"
 
 #include <glib.h>
+#include "RpFile_gio.hpp"
 
-// librpbase, librpfile, libromdata
+// Other rom-properties libraries
 #include "libromdata/RomDataFactory.hpp"
-#include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRomData;

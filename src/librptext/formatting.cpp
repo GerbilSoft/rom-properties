@@ -9,6 +9,8 @@
 #include "config.librptext.h"
 #include "formatting.hpp"
 
+#include "common.h"
+
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
 

@@ -7,7 +7,6 @@
  ***************************************************************************/
 
 // Reference: http://otb.manusoft.com/2013/01/using-delayload-to-specify-dependent-dll-path.htm
-#include "stdafx.h"
 #include "DelayLoadHelper.h"
 
 #include "stdboolx.h"

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE_delayload.cpp: DOS/Windows executable reader. (DelayLoad helper)    *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // NOTE: EXE_p.hpp can't be included because it includes exe_structs.h.
-#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 #if !defined(_MSC_VER) || !defined(XML_IS_DLL)
 #  error EXE_delayload.cpp should only be enabled on MSVC builds with PugiXML enabled as a DLL.

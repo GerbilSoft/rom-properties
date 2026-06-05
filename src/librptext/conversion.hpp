@@ -18,9 +18,9 @@
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 // C includes (C++ namespace)
-#include <cstdarg>
 #include <cstddef>	/* size_t */
-#include <cstdint>
+#include <cuchar>
+#include <cwchar>
 
 // C++ includes
 #include <string>

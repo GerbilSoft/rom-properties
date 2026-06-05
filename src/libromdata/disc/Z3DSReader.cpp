@@ -2,21 +2,22 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Z3DSReader.cpp: Nintendo 3DS Z3DS reader.                               *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.librpbase.h"
 
 #include "Z3DSReader.hpp"
 #include "z3ds_structs.h"
 
 // Other rom-properties libraries
+#include "librpbyteswap/byteswap_rp.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 
 // C++ STL classes
+#include <vector>
 using std::pair;
 using std::string;
 using std::vector;

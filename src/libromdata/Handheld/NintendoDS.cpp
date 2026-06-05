@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 
 #include "NintendoDS.hpp"
@@ -17,11 +16,15 @@
 
 // Other rom-properties libraries
 #include "librpbase/config/Config.hpp"
+#include "librpbase/disc/DiscReader.hpp"
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
+
+// C includes
+#include "ctypex.h"
 
 // C++ STL classes
 using std::array;

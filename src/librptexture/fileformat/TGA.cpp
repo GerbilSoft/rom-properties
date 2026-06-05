@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "TGA.hpp"
 #include "FileFormat_p.hpp"
 
@@ -16,6 +15,9 @@
 #include "time_r.h"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librpbase/RomFields.hpp"
+#include "librptext/conversion.hpp"
 using namespace LibRpFile;
 using namespace LibRpText;
 using LibRpBase::RomFields;
@@ -28,6 +30,9 @@ using LibRpBase::RomFields;
 using std::array;
 using std::string;
 using std::unique_ptr;
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRpTexture {
 

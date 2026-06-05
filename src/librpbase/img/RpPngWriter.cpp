@@ -2,17 +2,17 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpPngWriter.cpp: PNG image writer.                                      *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.librpbase.h"
 #include "RpPngWriter.hpp"
 
 // Other rom-properties libraries
 #include "librpfile/RpFile.hpp"
-#include "img/rp_image.hpp"
+#include "librptext/conversion.hpp"
+#include "librptexture/img/rp_image.hpp"
 using namespace LibRpText;
 using namespace LibRpFile;
 using namespace LibRpTexture;
@@ -71,6 +71,7 @@ using namespace LibRpTexture;
 #include <csetjmp>
 
 // C++ STL classes
+#include "rp-variant.hpp"
 using std::array;
 using std::string;
 using std::unique_ptr;

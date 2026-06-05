@@ -6,18 +6,19 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "KeyManagerTab.hpp"
 #include "KeyManagerTab_p.hpp"
 
 // Other rom-properties libraries
-using namespace LibRpBase;
-using namespace LibRpText;
 using LibRomData::KeyStoreUI;
 
 // C++ STL classes
+#include <array>
 using std::array;
 using std::string;
+
+// libfmt
+#include "rp-libfmt.h"
 
 // KeyStoreUI::ImportFileID
 static const array<const char*, 4> import_menu_actions = {{

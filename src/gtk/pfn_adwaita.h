@@ -2,13 +2,13 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * pfn_adwaita.h: libadwaita/libhandy function pointer handling.           *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include "gtk-compat.h"
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 

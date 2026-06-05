@@ -6,13 +6,14 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "XboxXPR.hpp"
 #include "FileFormat_p.hpp"
 
 #include "xbox_xpr_structs.h"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librpbase/RomFields.hpp"
 using namespace LibRpFile;
 using LibRpBase::RomFields;
 
@@ -24,6 +25,9 @@ using LibRpBase::RomFields;
 // C++ STL classes
 using std::array;
 using std::string;
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRpTexture {
 

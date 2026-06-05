@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * CtrKeyScramblerTest.cpp: CtrKeyScrambler class test.                    *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,7 +10,6 @@
 #include "gtest_init.hpp"
 
 // CtrKeyScrambler
-#include "librpbase/crypto/KeyManager.hpp"
 #include "../crypto/CtrKeyScrambler.hpp"
 
 // C includes (C++ namespace)

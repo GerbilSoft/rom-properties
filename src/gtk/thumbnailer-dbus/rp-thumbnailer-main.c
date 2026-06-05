@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GNOME)                            *
  * rp-thumbnailer-main.cpp: D-Bus thumbnailerer service: main()            *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,8 +18,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-// stdbool
 #include "stdboolx.h"
 
 // dlopen()

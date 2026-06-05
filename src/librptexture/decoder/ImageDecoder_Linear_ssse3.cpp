@@ -7,7 +7,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "ImageDecoder_Linear.hpp"
 
 // librptexture
@@ -19,6 +18,9 @@ using namespace LibRpTexture::PixelConversion;
 // SSSE3 intrinsics
 #include <emmintrin.h>
 #include <tmmintrin.h>
+
+// C includes (C++ namespace)
+#include <cstring>
 
 namespace LibRpTexture { namespace ImageDecoder {
 

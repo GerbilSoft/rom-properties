@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptext/tests)                  *
  * TextFuncsTest.cpp: Text conversion functions test                       *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -28,7 +28,6 @@ using namespace LibRpText;
 
 // C++ includes
 #include <array>
-#include <iomanip>
 #include <string>
 using std::array;
 using std::string;

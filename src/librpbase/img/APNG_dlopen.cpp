@@ -6,8 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-
 #include <png.h>
 #include "APNG_dlopen.hpp"
 
@@ -18,7 +16,11 @@
 
 #include "tcharx.h"
 
+// C includes (C++ namespace)
+#include <cassert>
+
 // C++ STL classes
+#include <memory>
 #include <mutex>
 using std::unique_ptr;
 

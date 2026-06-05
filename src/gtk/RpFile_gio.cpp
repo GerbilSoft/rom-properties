@@ -2,17 +2,17 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpFile_gio.cpp: IRpFile implementation using GIO/GVfs.                  *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "RpFile_gio.hpp"
 
 // gio
 #include <gio/gio.h>
 
 // C++ STL classes
+#include <array>
 using std::array;
 using std::string;
 

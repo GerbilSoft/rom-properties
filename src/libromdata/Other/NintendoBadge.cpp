@@ -6,14 +6,16 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "NintendoBadge.hpp"
+#include "RomData_p.hpp"
+
 #include "badge_structs.h"
 #include "Handheld/n3ds_structs.h"
 #include "data/Nintendo3DSSysTitles.hpp"
 #include "data/NintendoLanguage.hpp"
 
 // Other rom-properties libraries
+#include "aligned_malloc.h"
 #include "librptexture/decoder/ImageDecoder_N3DS.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;

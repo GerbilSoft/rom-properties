@@ -2,13 +2,25 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextOut.hpp: Text output for RomData. (User-readable text)              *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "TextOut.hpp"
+#include "time_r.h"
+
+// librpbase
+#include "RomData.hpp"
+#include "RomFields.hpp"
+#include "SystemRegion.hpp"
+
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librptext/utf8_strlen.hpp"
+#include "librptexture/img/rp_image.hpp"
+using namespace LibRpText;
+using LibRpTexture::rp_image;
 
 // C includes (C++ namespace)
 #include <cassert>
@@ -21,19 +33,8 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
-// librpbase
-#include "RomData.hpp"
-#include "RomFields.hpp"
-#include "SystemRegion.hpp"
-
-// librptext
-#include "librptext/conversion.hpp"
-#include "librptext/utf8_strlen.hpp"
-using namespace LibRpText;
-
-// librptexture
-#include "librptexture/img/rp_image.hpp"
-using LibRpTexture::rp_image;
+// libfmt
+#include "rp-libfmt.h"
 
 // TextOut_text isn't used by libromdata directly,
 // so use some linker hax to force linkage.

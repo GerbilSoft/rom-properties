@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * KeyStoreWin32.cpp: Key store object for Windows.                        *
  *                                                                         *
- * Copyright (c) 2012-2018 by David Korth.                                 *
+ * Copyright (c) 2012-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "KeyStoreWin32.hpp"
 #include "res/resource.h"
 

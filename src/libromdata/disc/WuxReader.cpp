@@ -2,14 +2,13 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WuxReader.cpp: Wii U .wux disc image reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // References:
 // - https://gbatemp.net/threads/wii-u-image-wud-compression-tool.397901/
 
-#include "stdafx.h"
 #include "WuxReader.hpp"
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "wux_structs.h"
@@ -17,6 +16,9 @@
 // Other rom-properties libraries
 using namespace LibRpBase;
 using namespace LibRpFile;
+
+// Uninitialized vector class
+#include "uvector.h"
 
 namespace LibRomData {
 

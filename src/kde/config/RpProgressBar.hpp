@@ -10,7 +10,6 @@
 
 // Qt includes
 #include <QProgressBar>
-#include <QStyle>
 
 class RpProgressBar : public QProgressBar
 {

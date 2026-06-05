@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * Config.cpp: Configuration manager.                                      *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.librpbase.h"
 
 #include "Config.hpp"
@@ -14,10 +13,15 @@
 #include "ctypex.h"
 
 // C++ STL classes
+#include <unordered_map>
 using std::array;
 using std::string;
 using std::unordered_map;
 
+// Uninitialized vector class
+#include "uvector.h"
+
+// for RomData enum values
 #include "RomData.hpp"
 
 namespace LibRpBase {

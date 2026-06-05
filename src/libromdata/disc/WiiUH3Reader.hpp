@@ -2,14 +2,13 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiUH3Reader.hpp: Wii U H3 content reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include "librpbase/config.librpbase.h"
-#include "librpbase/disc/IDiscReader.hpp"
+#include "librpbase/disc/IPartition.hpp"
 #include "librpfile/IRpFile.hpp"
 
 namespace LibRomData {

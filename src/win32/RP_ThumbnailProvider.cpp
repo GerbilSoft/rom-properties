@@ -7,12 +7,11 @@
  ***************************************************************************/
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
-#include "stdafx.h"
 #include "RP_ThumbnailProvider.hpp"
 #include "RpImageWin32.hpp"
 
 // Other rom-properties libraries
-using namespace LibRpBase;
+#include "librpfile/IRpFile.hpp"
 using namespace LibRpFile;
 using namespace LibRpTexture;
 

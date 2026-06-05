@@ -6,18 +6,27 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "IsoPartition.hpp"
 #include "iso_structs.h"
 
 // Other rom-properties libraries
+#include "time_r.h"
+#include "librpbase/disc/PartitionFile.hpp"
+#include "librptext/conversion.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
+// C includes (C++ namespace)
+#include <cstring>
+
 // C++ STL classes
+#include <unordered_map>
 using std::string;
 using std::unordered_map;
+
+// Uninitialized vector class
+#include "uvector.h"
 
 // TODO: HSFS/CDI support?
 

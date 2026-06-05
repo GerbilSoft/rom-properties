@@ -6,14 +6,17 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "Dreamcast.hpp"
+#include "RomData_p.hpp"
+
 #include "data/SegaPublishers.hpp"
 
 #include "dc_structs.h"
 #include "cdrom_structs.h"
 
 // Other rom-properties libraries
+#include "librpbase/disc/DiscReader.hpp"
+#include "librpfile/FileSystem.hpp"
 #include "librptexture/fileformat/SegaPVR.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -28,6 +31,9 @@ using namespace LibRpTexture;
 
 // Other RomData subclasses
 #include "Media/ISO.hpp"
+
+// C includes
+#include "ctypex.h"
 
 // C++ STL classes
 using std::array;

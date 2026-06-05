@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.librpbase.h"
 #include "config.gtk.h"
 
@@ -16,17 +15,22 @@
 #  include "UpdateChecker.hpp"
 #endif /* ENABLE_NETWORKING */
 
-#include "gtk-compat.h"
-#include "RpGtk.h"
-
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/config/AboutTabText.hpp"
 using namespace LibRpBase;
-using namespace LibRpText;
+
+// C includes
+#include "ctypex.h"
 
 // C++ STL classes
+#include <array>
+#include <string>
 using std::array;
 using std::string;
+
+// libfmt
+#include "rp-libfmt.h"
 
 /** Libraries **/
 

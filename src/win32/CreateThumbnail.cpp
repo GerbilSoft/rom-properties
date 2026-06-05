@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * CreateThumbnail.cpp: TCreateThumbnail<HBITMAP> implementation.          *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.win32.h"
 
 #include "CreateThumbnail.hpp"
@@ -29,6 +28,9 @@ using std::string;
 
 // Explicitly instantiate TCreateThumbnail<HBITMAP>.
 template class LibRomData::TCreateThumbnail<HBITMAP>;
+
+// libwin32ui
+#include "libwin32ui/WinUI.hpp"
 
 /** CreateThumbnail **/
 

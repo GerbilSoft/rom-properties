@@ -2,17 +2,21 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXEData.cpp: DOS/Windows executable data.                               *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "EXEData.hpp"
 
 #include "Other/exe_pe_structs.h"
 #include "Other/exe_le_structs.h"
 
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+
 // C++ STL classes
+#include <algorithm>
+#include <array>
 using std::array;
 
 namespace LibRomData { namespace EXEData {

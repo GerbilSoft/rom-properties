@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GNOME Tracker)                    *
  * tracker-mini-2.0.h: tracker-2.0 function declarations and pointers      *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,6 @@
 
 #include <glib.h>
 #include <glib-object.h>
-#include <gio/gio.h>
 
 G_BEGIN_DECLS
 

@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * KeyStoreItem.h: KeyManagerTab item (for GTK4 GtkTreeListModel)          *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "KeyStoreItem.h"
 
 /* Property identifiers */

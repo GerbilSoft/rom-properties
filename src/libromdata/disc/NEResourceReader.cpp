@@ -6,21 +6,30 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "NEResourceReader.hpp"
-
 #include "../Other/exe_ne_structs.h"
 
 // Other rom-properties libraries
+#include "librpbase/disc/PartitionFile.hpp"
+#include "librpbyteswap/byteswap_rp.h"
+#include "librptext/conversion.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
+// C includes (C++ namespace)
+#include <cstring>
+
 // C++ STL classes
+#include <algorithm>
+#include <array>
 using std::array;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
+
+// Uninitialized vector class
+#include "uvector.h"
 
 namespace LibRomData {
 

@@ -2,14 +2,17 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * CreateThumbnail.hpp: TCreateThumbnail<HBITMAP> implementation.          *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
 #include "libromdata/img/TCreateThumbnail.hpp"
+
+// libwin32common
 #include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/sdk/windowsx_ts.h"
 
 /**
  * CreateThumbnail implementation for Windows.

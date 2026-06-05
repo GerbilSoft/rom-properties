@@ -16,8 +16,8 @@
 // - http://unusedino.de/ec64/technical/formats/geos.html
 // - https://sourceforge.net/p/vice-emu/patches/122/ (for .g71)
 
-#include "stdafx.h"
 #include "CBMDOS.hpp"
+#include "RomData_p.hpp"
 
 #include "cbmdos_structs.h"
 
@@ -1045,40 +1045,35 @@ int CBMDOS::isRomSupported_static(const DetectInfo *info)
 	// NOTE: Most of the Dxx images have no magic number.
 	// Assuming this image is valid if it has the correct filesize
 	// for one of the supported disk image formats.
-	switch (info->szFile) {
-		case (683 * CBMDOS_SECTOR_SIZE) + 683:
-		case (683 * CBMDOS_SECTOR_SIZE):
-		case (768 * CBMDOS_SECTOR_SIZE) + 768:
-		case (768 * CBMDOS_SECTOR_SIZE):
-			// C1541 disk image
-			return static_cast<int>(CBMDOSPrivate::DiskType::D64);
+	struct DiskImageSizeMap_t {
+		uint32_t size;
+		CBMDOSPrivate::DiskType diskType;
+	};
 
-		case (1366 * CBMDOS_SECTOR_SIZE) + 1366:
-		case (1366 * CBMDOS_SECTOR_SIZE):
-			// C1571 disk image (double-sided)
-			return static_cast<int>(CBMDOSPrivate::DiskType::D71);
+	static const array<DiskImageSizeMap_t, 14> diskImageSizeMap = {{
+		// Disk images without error bytes
+		{(683 * CBMDOS_SECTOR_SIZE), CBMDOSPrivate::DiskType::D64},
+		{(768 * CBMDOS_SECTOR_SIZE), CBMDOSPrivate::DiskType::D64},
+		{(1366 * CBMDOS_SECTOR_SIZE), CBMDOSPrivate::DiskType::D71},
+		{(2083 * CBMDOS_SECTOR_SIZE), CBMDOSPrivate::DiskType::D80},
+		{(4166 * CBMDOS_SECTOR_SIZE), CBMDOSPrivate::DiskType::D82},
+		{(3200 * CBMDOS_SECTOR_SIZE), CBMDOSPrivate::DiskType::D81},
+		{(690 * CBMDOS_SECTOR_SIZE), CBMDOSPrivate::DiskType::D67},
+		{(775 * CBMDOS_SECTOR_SIZE), CBMDOSPrivate::DiskType::D67},
 
-		case (2083 * CBMDOS_SECTOR_SIZE):
-			// C8050 disk image (single-sided)
-			return static_cast<int>(CBMDOSPrivate::DiskType::D80);
-		case (4166 * CBMDOS_SECTOR_SIZE):
-			// C8250 disk image (double-sided)
-			return static_cast<int>(CBMDOSPrivate::DiskType::D82);
+		// Disk images *with* error bytes
+		{(683 * CBMDOS_SECTOR_SIZE) + 683, CBMDOSPrivate::DiskType::D64},
+		{(768 * CBMDOS_SECTOR_SIZE) + 768, CBMDOSPrivate::DiskType::D64},
+		{(1366 * CBMDOS_SECTOR_SIZE) + 1366, CBMDOSPrivate::DiskType::D71},
+		{(3200 * CBMDOS_SECTOR_SIZE) + 3200, CBMDOSPrivate::DiskType::D81},
+		{(690 * CBMDOS_SECTOR_SIZE) + 690, CBMDOSPrivate::DiskType::D67},
+		{(775 * CBMDOS_SECTOR_SIZE) + 775, CBMDOSPrivate::DiskType::D67},
+	}};
 
-		case (3200 * CBMDOS_SECTOR_SIZE) + 3200:
-		case (3200 * CBMDOS_SECTOR_SIZE):
-			// C1581 disk image
-			return static_cast<int>(CBMDOSPrivate::DiskType::D81);
-
-		case (690 * CBMDOS_SECTOR_SIZE) + 690:
-		case (690 * CBMDOS_SECTOR_SIZE):
-		case (775 * CBMDOS_SECTOR_SIZE) + 775:
-		case (775 * CBMDOS_SECTOR_SIZE):
-			// C2040 disk image
-			return static_cast<int>(CBMDOSPrivate::DiskType::D67);
-
-		default:
-			break;
+	for (const auto &p : diskImageSizeMap) {
+		if (p.size == info->szFile) {
+			return static_cast<int>(p.diskType);
+		}
 	}
 
 	// Check for G64/G71.

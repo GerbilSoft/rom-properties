@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "OptionsMenuButton.hpp"
 #include "res/resource.h"
 
@@ -18,6 +17,7 @@ using LibRpBase::RomData;
 
 // libwin32ui
 #include "libwin32ui/WinUI.hpp"
+#include <commctrl.h>
 
 // C++ STL classes
 using std::array;

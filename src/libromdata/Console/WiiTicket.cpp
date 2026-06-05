@@ -6,8 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "WiiTicket.hpp"
+#include "RomData_p.hpp"
+
 #include "wii_structs.h"
 
 // librpbase
@@ -15,6 +16,7 @@
 #  include "librpbase/crypto/IAesCipher.hpp"
 #  include "librpbase/crypto/AesCipherFactory.hpp"
 #endif /* ENABLE_DECRYPTION */
+#include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
 
 // Other rom-properties libraries

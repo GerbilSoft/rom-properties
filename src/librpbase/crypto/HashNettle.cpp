@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * HashNettle.cpp: Hash class. (GNU nettle implementation)                 *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "Hash.hpp"
 
 // zlib for crc32()
@@ -31,7 +30,16 @@
 #  endif /* HAVE_NETTLE_VERSION_H */
 #endif /* ENABLE_DECRYPTION */
 
+// Other rom-properties libraries
+#include "librpbyteswap/byteswap_rp.h"
+
+// C includes (C++ namespace)
+#include <cassert>
+#include <cerrno>
+#include <cstring>
+
 // C++ STL classes
+#include <array>
 using std::array;
 
 namespace LibRpBase {

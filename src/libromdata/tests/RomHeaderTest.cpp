@@ -31,7 +31,6 @@ using namespace LibRpFile;
 // C++ includes
 #include <array>
 #include <forward_list>
-#include <iostream>
 #include <memory>
 #include <sstream>
 #include <string>

@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoDS_ops.cpp: Nintendo DS(i) ROM reader. (ROM operations)         *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.librpbase.h"
 
 #include "NintendoDS.hpp"
@@ -14,6 +13,7 @@
 #include "ndscrypt.hpp"
 
 // Other rom-properties libraries
+#include "bitstuff.h"
 using namespace LibRpBase;
 using namespace LibRpText;
 

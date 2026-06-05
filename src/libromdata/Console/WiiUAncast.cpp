@@ -6,8 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "WiiUAncast.hpp"
+#include "RomData_p.hpp"
+
 #include "wiiu_ancast_structs.h"
 
 // "Happy Wii U" PNG images

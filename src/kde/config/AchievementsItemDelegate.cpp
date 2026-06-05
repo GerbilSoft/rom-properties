@@ -2,22 +2,23 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * AchievementsItemDelegate.cpp: Achievements item delegate for rp-config. *
  *                                                                         *
- * Copyright (c) 2013-2025 by David Korth.                                 *
+ * Copyright (c) 2013-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "AchievementsItemDelegate.hpp"
 
 // Qt includes
-#include <QtGui/QPainter>
-#include <QApplication>
 #include <QtGui/QFont>
 #include <QtGui/QFontMetrics>
+#include <QtGui/QPainter>
+#include <QApplication>
 #include <QStyle>
 
 // C++ STL classes
 using std::array;
+
+#include "RpQt.hpp"
 
 static constexpr size_t LINE_COUNT = 2U;
 

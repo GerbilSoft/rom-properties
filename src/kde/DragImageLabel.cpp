@@ -7,20 +7,25 @@
  ***************************************************************************/
 
 // Reference: https://doc.qt.io/qt-5/dnd.html
-#include "stdafx.h"
 #include "DragImageLabel.hpp"
 #include "RpQByteArrayFile.hpp"
 
 // Other rom-properties libraries
+#include "librpbase/img/RpPngWriter.hpp"
 using namespace LibRpBase;
 using namespace LibRpTexture;
-
-// Qt includes
-#include <QDesktopServices>
 
 // C++ STL classes
 using std::shared_ptr;
 using std::unique_ptr;
+
+// Qt includes
+#include <QtCore/QMimeData>
+#include <QtGui/QDrag>
+#include <QtGui/QMouseEvent>
+#include <QDesktopServices>
+
+#include "RpQt.hpp"
 
 DragImageLabel::DragImageLabel(const QString &text, QWidget *parent, Qt::WindowFlags f)
 	: super(text, parent, f)

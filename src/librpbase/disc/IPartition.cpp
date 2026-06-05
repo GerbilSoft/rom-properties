@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IPartition.cpp: Partition reader interface.                             *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "IPartition.hpp"
 
 // C includes (C++ namespace)

@@ -2,14 +2,18 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiSystemMenuVersion.cpp: Nintendo Wii System Menu version list.        *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "WiiSystemMenuVersion.hpp"
 
+// C includes (C++ namespace)
+#include <cstdint>
+
 // C++ STL classes
+#include <algorithm>
+#include <array>
 using std::array;
 
 namespace LibRomData { namespace WiiSystemMenuVersion {

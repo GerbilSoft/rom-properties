@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * PalmOS_Tbmp.cpp: Palm OS Tbmp texture reader.                           *
  *                                                                         *
- * Copyright (c) 2019-2025 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "PalmOS_Tbmp.hpp"
 #include "FileFormat_p.hpp"
 

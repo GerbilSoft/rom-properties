@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * KhronosKTX.cpp: Khronos KTX image reader.                               *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,6 @@
  * - https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
  */
 
-#include "stdafx.h"
 #include "config.librptexture.h"
 
 #include "KhronosKTX.hpp"
@@ -22,6 +21,8 @@
 #include "data/GLenumStrings.hpp"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librpbase/RomFields.hpp"
 using namespace LibRpFile;
 using LibRpBase::RomFields;
 
@@ -36,10 +37,15 @@ using LibRpBase::RomFields;
 #include "decoder/ImageDecoder_ASTC.hpp"
 
 // C++ STL classes
+#include <algorithm>
+#include <vector>
 using std::array;
 using std::string;
 using std::unique_ptr;
 using std::vector;
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRpTexture {
 

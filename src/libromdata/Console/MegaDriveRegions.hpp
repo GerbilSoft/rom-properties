@@ -2,13 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MegaDriveRegions.hpp: Sega Mega Drive region code detection.            *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
-
-#include "common.h"
 
 namespace LibRomData { namespace MegaDriveRegions {
 
@@ -51,4 +49,4 @@ enum class MD_BrandingRegion {
  */
 MD_BrandingRegion getBrandingRegion(unsigned int md_region);
 
-} } //namespace LibRomData::MegaDriveRegions
+} } // namespace LibRomData::MegaDriveRegions

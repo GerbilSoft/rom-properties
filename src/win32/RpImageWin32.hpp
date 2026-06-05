@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include "common.h"
+// Other rom-properties libraries
+#include "librptexture/img/rp_image.hpp"
 
 // C includes (C++ namespace)
 #include <cstdint>
@@ -16,9 +17,8 @@
 // C++ includes
 #include <memory>
 
-namespace LibRpTexture {
-	class rp_image;
-}
+// libwin32common
+#include "libwin32common/RpWin32_sdk.h"
 
 namespace RpImageWin32 {
 

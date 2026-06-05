@@ -2,17 +2,20 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GcnPartition.cpp: GameCube partition reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "GcnPartition.hpp"
 #include "GcnFst.hpp"
 
 // Other rom-properties libraries
+#include "librpbase/disc/PartitionFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
+
+// C includes (C++ namespace)
+#include <cassert>
 
 #include "GcnPartition_p.hpp"
 namespace LibRomData {

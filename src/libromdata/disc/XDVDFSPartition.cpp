@@ -2,23 +2,32 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * XDVDFSPartition.cpp: Microsoft Xbox XDVDFS partition reader.            *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "XDVDFSPartition.hpp"
 #include "xdvdfs_structs.h"
 
 // Other rom-properties libraries
+#include "librpbase/disc/PartitionFile.hpp"
 #include "librpbase/timeconv.h"
+#include "librpbyteswap/byteswap_rp.h"
+#include "librptext/conversion.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
+// C includes (C++ namespace)
+#include <cstring>
+
 // C++ STL classes
+#include <unordered_map>
 using std::string;
 using std::unordered_map;
+
+// Uninitialized vector class
+#include "uvector.h"
 
 namespace LibRomData {
 

@@ -2,15 +2,20 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * GLenumStrings.cpp: OpenGL string tables.                                *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "GLenumStrings.hpp"
 #include "fileformat/gl_defs.h"
 
-// C++ includes
+// C includes (C++ namespace)
+#include <cassert>
+#include <cstdint>
+
+// C++ STL classes
+#include <algorithm>
+#include <array>
 #include <limits>
 using std::array;
 

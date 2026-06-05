@@ -2,13 +2,15 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem_posix.cpp: File system functions. (POSIX implementation)     *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.librpfile.h"
 #include "FileSystem.hpp"
+
+// Common definitions, including function attributes.
+#include "common.h"
 
 // C includes
 #include <fcntl.h>	// AT_FDCWD
@@ -16,10 +18,14 @@
 #include <utime.h>
 #include <unistd.h>
 
+// C includes (C++ namespace)
+#include <cassert>
+
 // C++ includes
 #include <algorithm>
 
 // C++ STL classes
+#include <array>
 using std::array;
 using std::string;
 

@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpJpeg_gdiplus.cpp: JPEG image handler. (GDI+ version)                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "RpJpeg.hpp"
 
 // librpfile
@@ -26,6 +25,7 @@ namespace Gdiplus {
 	using std::min;
 	using std::max;
 }
+#include <comdef.h>
 #include <gdiplus.h>
 
 namespace LibRpBase { namespace RpJpeg {

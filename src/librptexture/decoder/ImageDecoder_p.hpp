@@ -2,20 +2,24 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_p.hpp: Image decoding functions. (PRIVATE NAMESPACE)       *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
 #include "common.h"
+#include "aligned_malloc.h"
 #include "../img/rp_image.hpp"
 
-// C includes. (C++ namespace)
+// Other rom-properties libraries
+#include "librpbyteswap/byteswap_rp.h"
+
+// C includes (C++ namespace)
 #include <cassert>
 #include <cstring>
 
-// C++ includes.
+// C++ includes
 #include <array>
 
 namespace LibRpTexture { namespace ImageDecoderPrivate {

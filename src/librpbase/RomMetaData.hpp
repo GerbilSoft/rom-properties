@@ -6,13 +6,14 @@
  * a generic list, RomMetaData stores specific properties that can be used *
  * by the desktop environment's indexer.                                   *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
 #include "common.h"
+#include "dll-macros.h"
 
 // C includes (C++ namespace)
 #include <cstdint>
@@ -20,6 +21,7 @@
 
 // C++ includes
 #include <string>
+#include <vector>
 
 namespace LibRpBase {
 

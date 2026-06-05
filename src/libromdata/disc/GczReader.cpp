@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GczReader.cpp: GameCube/Wii GCZ disc image reader.                      *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,7 +10,6 @@
 // - https://github.com/dolphin-emu/dolphin/blob/master/Source/Core/DiscIO/CompressedBlob.cpp
 // - https://github.com/dolphin-emu/dolphin/blob/master/Source/Core/DiscIO/CompressedBlob.h
 
-#include "stdafx.h"
 #include "config.librpbase.h"
 
 #include "GczReader.hpp"
@@ -27,6 +26,9 @@
 // Other rom-properties libraries
 using namespace LibRpBase;
 using namespace LibRpFile;
+
+// Uninitialized vector class
+#include "uvector.h"
 
 namespace LibRomData {
 

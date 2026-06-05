@@ -6,17 +6,23 @@
  * a generic list, RomMetaData stores specific properties that can be used *
  * by the desktop environment's indexer.                                   *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "RomMetaData.hpp"
 
 // Other rom-properties libraries
-using namespace LibRpText;
+#include "librptext/conversion.hpp"
+using LibRpText::trimEnd;
+
+// C includes (C++ namespace)
+#include <cassert>
+#include <cstring>
 
 // C++ STL classes
+#include <array>
+#include <limits>
 using std::array;
 using std::string;
 using std::vector;

@@ -6,13 +6,15 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.librpbase.h"
 
 #include "iQuePlayer.hpp"
+#include "RomData_p.hpp"
+
 #include "ique_player_structs.h"
 
 // Other rom-properties libraries
+#include "aligned_malloc.h"
 #include "librptexture/decoder/ImageDecoder_Linear.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;

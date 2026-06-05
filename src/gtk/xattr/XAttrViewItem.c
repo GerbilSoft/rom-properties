@@ -2,12 +2,12 @@
  * ROM Properties Page shell extension. (GTK4)                             *
  * XAttrViewitem.c: XAttrView item for GtkColumnView                       *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "XAttrViewItem.h"
+#include "common.h"
 
 /* Property identifiers */
 typedef enum {

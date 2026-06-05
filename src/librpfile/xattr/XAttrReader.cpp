@@ -2,13 +2,15 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * XAttrReader.cpp: Extended Attribute reader (common functions)           *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "XAttrReader.hpp"
 #include "XAttrReader_p.hpp"
+
+// C includes (C++ namespace)
+#include <cassert>
 
 // XAttrReader isn't used by libromdata directly,
 // so use some linker hax to force linkage.

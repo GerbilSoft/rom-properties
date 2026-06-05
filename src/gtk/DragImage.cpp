@@ -6,12 +6,12 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "DragImage.hpp"
 #include "PIMGTYPE.hpp"
 
 // Other rom-properties libraries
 #include "librpbase/img/IconAnimHelper.hpp"
+#include "librpbase/img/RpPngWriter.hpp"
 #include "librpfile/VectorFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -21,6 +21,9 @@ using namespace LibRpTexture;
 using std::array;
 using std::string;
 using std::unique_ptr;
+
+// libfmt
+#include "rp-libfmt.h"
 
 // GtkPopover was added in GTK 3.12.
 // GMenuModel is also implied by this, since GMenuModel
@@ -540,7 +543,7 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 }
 
 /**
- * Set the rp_image for this image.
+ * Set the rp_image for this RpDragImage.
  *
  * NOTE: If animated icon data is specified, that supercedes
  * the individual rp_image.
@@ -576,7 +579,7 @@ rp_drag_image_set_rp_image(RpDragImage *image, const rp_image_const_ptr &img)
 }
 
 /**
- * Set the icon animation data for this image.
+ * Set the icon animation data for this RpDragImage.
  *
  * NOTE: If animated icon data is specified, that supercedes
  * the individual rp_image.

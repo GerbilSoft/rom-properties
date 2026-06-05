@@ -2,17 +2,18 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * plugin-helper.h: Plugin helper macros.                                  *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
+#include "check-uid.h"
+
 #include <dlfcn.h>
 #include <unistd.h>
 
-#include <glib.h>
-#include "check-uid.h"
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 

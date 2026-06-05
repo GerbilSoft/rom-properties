@@ -6,8 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "SegaSaturn.hpp"
+#include "RomData_p.hpp"
+
 #include "data/SegaPublishers.hpp"
 #include "saturn_structs.h"
 #include "cdrom_structs.h"
@@ -22,6 +23,9 @@ using namespace LibRpText;
 
 // Other RomData subclasses
 #include "Media/ISO.hpp"
+
+// C includes
+#include "ctypex.h"
 
 // C++ STL classes
 using std::array;

@@ -2,16 +2,31 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RomDataView.cpp: RomData viewer widget. (ROM operations)                *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
-
-#include "stdafx.h"
 
 #include "RomDataView.hpp"
 #include "RomDataView_p.hpp"
 #include "RpGtk.h"
-#include "gtk-i18n.h"
+
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librpbase/TextOut.hpp"
+#include "librpfile/FileSystem.hpp"
+using namespace LibRpBase;
+using namespace LibRpFile;
+
+// C includes
+#include "tcharx.h"
+
+// C++ STL classes
+#include <fstream>
+#include <sstream>
+using std::ofstream;
+using std::ostringstream;
+using std::string;
+using std::vector;
 
 // Custom widgets
 #include "LanguageComboBox.hpp"
@@ -23,19 +38,8 @@
 #  include "MessageSound.hpp"
 #endif /* ENABLE_MESSAGESOUND */
 
-// Other rom-properties libraries
-#include "librpbase/TextOut.hpp"
-using namespace LibRpBase;
-using namespace LibRpFile;
-using namespace LibRpText;
-
-// C++ STL classes
-#include <fstream>
-#include <sstream>
-using std::ofstream;
-using std::ostringstream;
-using std::string;
-using std::vector;
+// libfmt
+#include "rp-libfmt.h"
 
 /**
  * Update a field's value.

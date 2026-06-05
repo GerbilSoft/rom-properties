@@ -2,23 +2,21 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * LanguageComboBox.cpp: Language GtkComboBox subclass                     *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "PIMGTYPE.hpp"
 
 #include "LanguageComboBox.hpp"
 #include "LanguageComboBox_p.hpp"
-
-#include "FlagSpriteSheet.hpp"
 
 #ifdef USE_GTK_DROP_DOWN
 #  include "LanguageComboBoxItem.h"
 #endif /* USE_GTK_DROP_DOWN */
 
 // C++ STL classes
+#include <string>
 using std::string;
 
 static void	rp_language_combo_box_set_property(GObject	*object,

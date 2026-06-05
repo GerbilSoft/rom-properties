@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "AchWin32.hpp"
 
 #include "AchSpriteSheet.hpp"
@@ -14,6 +13,7 @@
 #include "dll-macros.h"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/Achievements.hpp"
 #include "librptext/wchar.hpp"
 using namespace LibRpBase;
@@ -23,9 +23,17 @@ using namespace LibRpBase;
 
 // C++ STL classes
 #include <mutex>
+#include <unordered_map>
 using std::string;
 using std::tstring;
 using std::unordered_map;
+
+// libwin32common, libwin32ui
+#include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/rp_versionhelpers.h"
+#include "libwin32common/sdk/windowsx_ts.h"
+#include "libwin32ui/HiDPI.hpp"
+#include <shellapi.h>	// for NOTIFYICONDATA
 
 class AchWin32Private
 {

@@ -2,11 +2,9 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomDataView.cpp: RomData viewer. (ROM operations)                       *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
-
-#include "stdafx.h"
 
 #include "RomDataView.hpp"
 #include "RomDataView_p.hpp"
@@ -19,12 +17,11 @@
 #include "MessageSound.hpp"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/TextOut.hpp"
+#include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
-
-// Qt includes
-#include <QtGui/QClipboard>
 
 // C++ STL classes
 #include <fstream>
@@ -33,6 +30,15 @@ using std::ofstream;
 using std::ostringstream;
 using std::string;
 using std::vector;
+
+// Qt includes
+#include <QtCore/QFileInfo>
+#include <QtGui/QClipboard>
+#include <QCheckBox>
+#include <QFileDialog>
+
+// libfmt
+#include "rp-libfmt.h"
 
 /**
  * Update a field's value.

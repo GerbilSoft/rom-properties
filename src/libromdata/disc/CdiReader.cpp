@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CdiReader.cpp: DiscJuggler CDI image reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,7 +10,6 @@
 // - https://gist.github.com/Holzhaus/ae3dacf6a2e83dd00421
 // - https://problemkaputt.de/psxspx-cdrom-disk-images-cdi-discjuggler.htm
 
-#include "stdafx.h"
 #include "CdiReader.hpp"
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 
@@ -18,10 +17,9 @@
 #include "IsoPartition.hpp"
 
 // Other rom-properties libraries
-#include "librpfile/RelatedFile.hpp"
+#include "librpbase/disc/PartitionFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
-using namespace LibRpText;
 
 // Other RomData subclasses
 #include "Media/ISO.hpp"

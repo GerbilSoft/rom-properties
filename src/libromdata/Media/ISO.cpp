@@ -7,8 +7,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "ISO.hpp"
+#include "RomData_p.hpp"
 
 #include "cdrom_structs.h"
 #include "../iso_structs.h"

@@ -2,23 +2,31 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GcnFst.cpp: GameCube/Wii FST parser.                                    *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 
 #include "GcnFst.hpp"
 #include "../Console/gcn_structs.h"
 
 // Other rom-properties libraries
+#include "librpbyteswap/byteswap_rp.h"
+#include "librptext/conversion.hpp"
 using namespace LibRpBase;
 using namespace LibRpText;
 
+// C includes (C++ namespace)
+#include <cassert>
+#include <cstring>
+
 // C++ STL classes
+#include <unordered_map>
+#include <unordered_set>
 using std::string;
 using std::unordered_map;
+using std::unordered_set;
 
 namespace LibRomData {
 
@@ -266,7 +274,7 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const char *path) const
 
 	// Set of directory indexes that have already been processed.
 	// Used to prevent infinite loops if the FST has weird corruption.
-	std::unordered_set<int> idx_already;
+	unordered_set<int> idx_already;
 
 	// Skip the initial slash.
 	int idx = 1;	// Ignore the root directory.

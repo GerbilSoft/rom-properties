@@ -2,21 +2,17 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpWebP.hpp: WebP image handler.                                         *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include "common.h"
-
 // Other rom-properties libraries
 #include "librpfile/IRpFile.hpp"
 #include "librptexture/img/rp_image.hpp"
 
-namespace LibRpBase {
-
-namespace RpWebP {
+namespace LibRpBase { namespace RpWebP {
 
 /**
  * Load a WebP image from an IRpFile.

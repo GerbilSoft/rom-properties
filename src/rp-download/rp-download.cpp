@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * rp-download.cpp: Standalone cache downloader.                           *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.rp-download.h"
 
 // OS-specific security options
@@ -37,6 +36,7 @@ using namespace LibRpFile;
 #include <cerrno>
 #include <cstdarg>
 #include <cstdio>
+#include <cstring>
 
 // C++ includes
 #include <memory>

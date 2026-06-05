@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KF6)                                  *
  * ThumbnailCreatorPluginFactoryKF6.cpp: ThumbnailCreator plugin factory class *
  *                                                                             *
- * Copyright (c) 2016-2024 by David Korth.                                     *
+ * Copyright (c) 2016-2026 by David Korth.                                     *
  * SPDX-License-Identifier: GPL-2.0-or-later                                   *
  *******************************************************************************/
 
@@ -13,8 +13,6 @@
  * - https://github.com/KDE/calligra-history/blob/master/libs/main/KoDocInfoPropsFactory.cpp
  * - https://github.com/KDE/calligra-history/blob/5e323f11f11ec487e1ef801d61bb322944f454a5/libs/main/kodocinfopropspage.desktop
  */
-
-#include "stdafx.h"
 
 // RpQImageBackend
 #include "RpQImageBackend.hpp"

@@ -3,16 +3,15 @@
  * Nintendo3DS_ops.cpp: Nintendo 3DS ROM reader. (ROM operations)          *
  * Handles CCI/3DS, CIA, and SMDH files.                                   *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
-
-#include "stdafx.h"
 
 #include "Nintendo3DS.hpp"
 #include "Nintendo3DS_p.hpp"
 
 // Other rom-properties libraries
+#include "librpfile/RpFile.hpp"
 using namespace LibRpFile;
 using LibRpBase::RomData;
 

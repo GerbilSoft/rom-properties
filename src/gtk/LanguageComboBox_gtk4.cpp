@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * LanguageComboBox.cpp: Language GtkComboBox subclass (GTK2/GTK3-specific)*
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "PIMGTYPE.hpp"
 
 #include "LanguageComboBox.hpp"
@@ -15,7 +14,8 @@
 
 #include "FlagSpriteSheet.hpp"
 
-// librpbase (for SystemRegion)
+// Other rom-properties libraries
+#include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
 
 /** Signal handlers **/

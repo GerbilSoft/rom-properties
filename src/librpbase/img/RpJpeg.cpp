@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpJpeg.cpp: JPEG image handler.                                         *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.librpbase.h"
 
 #include "RpJpeg.hpp"
@@ -47,6 +46,9 @@ using namespace LibRpTexture;
 #  include "librpcpuid/cpuflags_x86.h"
 #  include "RpJpeg_ssse3.hpp"
 #endif /* RPJPEG_HAS_SSSE3 */
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRpBase { namespace RpJpeg {
 

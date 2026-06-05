@@ -6,13 +6,17 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.kde.h"
-
 #include "OptionsTab.hpp"
 
 // librpbase
+#include "librpbase/config/Config.hpp"
 using LibRpBase::Config;
+
+// Qt includes
+#include <QtCore/QSettings>
+
+#include "RpQt.hpp"
 
 #include "ui_OptionsTab.h"
 class OptionsTabPrivate

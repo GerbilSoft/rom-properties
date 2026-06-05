@@ -10,13 +10,14 @@
 // - https://qhimm-modding.fandom.com/wiki/PSX/TIM_file
 // - http://justsolve.archiveteam.org/wiki/TIM_(PlayStation_graphics)
 
-#include "stdafx.h"
 #include "PlayStationTIM.hpp"
 #include "FileFormat_p.hpp"
 
 #include "ps1_tim_structs.h"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librpbase/RomFields.hpp"
 using namespace LibRpFile;
 using LibRpBase::RomFields;
 
@@ -26,10 +27,17 @@ using LibRpBase::RomFields;
 #include "decoder/ImageDecoder_Linear.hpp"
 
 // C++ STL classes
+#include <vector>
 using std::array;
 using std::string;
 using std::unique_ptr;
 using std::vector;
+
+// Uninitialized vector class
+#include "uvector.h"
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRpTexture {
 

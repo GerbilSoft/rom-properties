@@ -7,7 +7,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "RP_PropertyStore.hpp"
 #include "RP_PropertyStore_p.hpp"
 #include "res/resource.h"

@@ -6,10 +6,11 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-
 #include "config.librpbase.h"
+
 #include "AndroidManifestXML.hpp"
+#include "RomData_p.hpp"
+
 #include "AndroidCommon.hpp"
 #include "android_apk_structs.h"
 
@@ -17,10 +18,24 @@
 #include "../disc/AndroidResourceReader.hpp"
 
 // Other rom-properties libraries
+#include "librpfile/FileSystem.hpp"
 #include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpText;
 using namespace LibRpFile;
+
+// C++ STL classes
+#include <memory>
+#include <stack>
+#include <vector>
+using std::array;
+using std::stack;
+using std::string;
+using std::unique_ptr;
+using std::vector;
+
+// Uninitialized vector class
+#include "uvector.h"
 
 // PugiXML
 // NOTE: This file is only compiled if ENABLE_XML is defined.
@@ -32,18 +47,6 @@ using namespace pugi;
 // PugiXML does *not* support using std::string_view. Use std::string::c_str().
 #  define XMLSTR(str) ((str).c_str())
 #endif /* PUGIXML_HAS_STRING_VIEW */
-
-// C++ STL classes
-#include <limits>
-#include <stack>
-using std::array;
-using std::stack;
-using std::string;
-using std::unique_ptr;
-using std::vector;
-
-// Uninitialized vector class
-#include "uvector.h"
 
 #ifdef _MSC_VER
 // MSVC: Exception handling for /DELAYLOAD.

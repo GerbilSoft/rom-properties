@@ -2,14 +2,14 @@
  * ROM Properties Page shell extension. (GTK+)                             *
  * AchGDBus.cpp: GDBus notifications for achievements.                     *
  *                                                                         *
- * Copyright (c) 2020-2025 by David Korth.                                 *
+ * Copyright (c) 2020-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "AchGDBus.hpp"
 
-// librpbase
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 using LibRpBase::Achievements;
 
 // GDBus

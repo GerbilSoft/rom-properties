@@ -2,14 +2,16 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * HashCAPI.cpp: Hash class. (Win32 CryptoAPI implementation)              *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.librpbase.h"
 
 #include "Hash.hpp"
+
+// Other rom-properties libraries
+#include "librpbyteswap/byteswap_rp.h"
 
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
@@ -25,6 +27,7 @@
 #include <zlib.h>
 
 // C++ STL classes
+#include <array>
 using std::array;
 
 // SHA-256 and SHA-512 require Windows XP SP3 or later.

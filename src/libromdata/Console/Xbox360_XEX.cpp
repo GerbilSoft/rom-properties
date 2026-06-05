@@ -6,11 +6,12 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 #include "libromdata/config.libromdata.h"
 
 #include "Xbox360_XEX.hpp"
+#include "RomData_p.hpp"
+
 #include "Xbox360_XDBF.hpp"
 #include "Other/EXE.hpp"
 #include "xbox360_xex_structs.h"
@@ -19,6 +20,7 @@
 // Other rom-properties libraries
 #include "librpbase/Achievements.hpp"
 #include "librpbase/disc/CBCReader.hpp"
+#include "librpbase/disc/PartitionFile.hpp"
 #include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -36,7 +38,12 @@ using namespace LibRpTexture;
 #  include "xenia_lzx.h"
 #endif /* ENABLE_LIBMSPACK */
 
+// C includes
+#include "ctypex.h"
+
 // C++ STL classes
+#include <sstream>
+#include <unordered_map>
 using std::array;
 using std::ostringstream;
 using std::string;

@@ -2,24 +2,28 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * UpdateChecker.hpp: Update checker object for AboutTab.                  *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "UpdateChecker.hpp"
 #include "ProxyForUrl.hpp"
 
-// librpbase
-#include "librpbase/config/AboutTabText.hpp"
-using namespace LibRpBase;
-
-// libromdata
+// Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "libromdata/img/CacheManager.hpp"
+#include "librpbase/config/AboutTabText.hpp"
 using LibRomData::CacheManager;
+using namespace LibRpBase;
 
 // C++ STL classes
 using std::string;
+
+// Qt includes
+#include <QtCore/QFile>
+#include <QtCore/QIODevice>
+
+#include "RpQt.hpp"
 
 UpdateChecker::UpdateChecker(QObject *parent)
 	: super(parent)

@@ -4,16 +4,28 @@
  * that use sparse and/or compressed blocks, e.g. CISO, WBFS, GCZ.         *
  * (PRIVATE CLASS)                                                         *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include <cstdint>
 #include "common.h"
-
 #include "cdrom_structs.h"
+
+// Other rom-properties libraries [for convenience for SparseDiscReader subclasses]
+#include "bitstuff.h"
+#include "librpbyteswap/byteswap_rp.h"
+
+// C includes (C++ namespace)
+#include <cstdint>
+
+// C includes (C++ namespace) [for convenience for SparseDiscReader subclasses]
+#include <cassert>
+#include <cstring>
+
+// C++ includes [for convenience for SparseDiscReader subclasses]
+#include <array>
 
 namespace LibRpBase {
 

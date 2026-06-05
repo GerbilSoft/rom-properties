@@ -2,15 +2,22 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * ProxyForUrl.cpp: proxyForUrl() function for the GTK UI frontend.        *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "ProxyForUrl.hpp"
+
+// C includes (C++ namespace)
+#include <cassert>
+#include <cstring>
 
 // C++ STL classes
 using std::string;
+
+// glib includes
+#include <glib.h>
+#include <gio/gio.h>
 
 /**
  * Get the proxy for the specified URL.

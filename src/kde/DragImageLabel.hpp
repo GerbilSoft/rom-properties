@@ -22,7 +22,6 @@
 // Qt includes
 #include <QtCore/QTimer>
 #include <QLabel>
-#include <QMenu>
 
 class DragImageLabel : public QLabel
 {

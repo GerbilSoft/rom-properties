@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DirectDrawSurface.hpp: DirectDraw Surface image reader.                 *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.librptexture.h"
 
 #include "DirectDrawSurface.hpp"
@@ -16,6 +15,8 @@
 #include "data/DX10Formats.hpp"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librpbase/RomFields.hpp"
 #include "librptext/fourCC.hpp"
 using namespace LibRpFile;
 using LibRpBase::RomFields;
@@ -30,9 +31,13 @@ using LibRpBase::RomFields;
 #include "decoder/ImageDecoder_ASTC.hpp"
 
 // C++ STL classes
+#include <vector>
 using std::array;
 using std::string;
 using std::vector;
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRpTexture {
 

@@ -2,15 +2,13 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * AndroidResourceReader.hpp: Android resource reader.                     *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // NOTE: This class does *not* derive from IDiscReader.
 
 #pragma once
-
-#include "../Handheld/n3ds_structs.h"
 
 // librpbase
 #include "librpbase/RomFields.hpp"

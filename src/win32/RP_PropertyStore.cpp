@@ -7,9 +7,24 @@
  ***************************************************************************/
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
-#include "stdafx.h"
 #include "RP_PropertyStore.hpp"
 #include "RpImageWin32.hpp"
+
+// Other rom-properties libraries
+#include "librptext/wchar.hpp"
+#include "libromdata/RomDataFactory.hpp"
+using LibRpFile::IRpFilePtr;
+using namespace LibRpBase;
+using namespace LibRomData;
+
+// C++ STL classes
+using std::array;
+using std::shared_ptr;
+using std::wstring;
+
+// libwin32common
+#include "libwin32common/propsys_xp.h"
+#include "libwin32common/w32time.h"
 
 // Windows: Property keys and variants
 #include <propkey.h>
@@ -17,21 +32,11 @@
 // Custom properties
 #include "RP_PropertyStore_GUIDs.h"
 
-// librpbase, librpfile, libromdata
-using LibRpFile::IRpFilePtr;
-using namespace LibRpBase;
-using namespace LibRomData;
-
-// libwin32common
-#include "libwin32common/propsys_xp.h"
-
 // RpFile_IStream
 #include "file/RpFile_IStream.hpp"
 
-// C++ STL classes
-using std::array;
-using std::shared_ptr;
-using std::wstring;
+// libfmt
+#include "rp-libfmt.h"
 
 /** RP_PropertyStore_Private **/
 #include "RP_PropertyStore_p.hpp"

@@ -2,13 +2,12 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiUH3Reader.hpp: Wii U H3 content reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // TODO: Hash validation?
 
-#include "stdafx.h"
 #include "config.librpbase.h"
 
 #include "WiiUH3Reader.hpp"
@@ -22,7 +21,13 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 
+// C includes (C++ namespace)
+#include <cassert>
+#include <cstring>
+
+// C++ STL classes
 #ifdef ENABLE_DECRYPTION
+#  include <array>
 using std::array;
 using std::unique_ptr;
 #endif /* ENABLE_DECRYPTION */

@@ -2,11 +2,10 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * WinInetDownloader.cpp: WinInet-based file downloader.                   *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "WinInetDownloader.hpp"
 
 // libwin32common
@@ -16,6 +15,7 @@
 #include "libwin32common/w32time.h"
 
 // C++ STL classes
+#include <memory>
 using std::string;
 using std::unique_ptr;
 using std::wstring;

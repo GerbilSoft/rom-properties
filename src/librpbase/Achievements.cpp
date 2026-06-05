@@ -2,21 +2,28 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * Achievements.cpp: Achievements class.                                   *
  *                                                                         *
- * Copyright (c) 2020-2025 by David Korth.                                 *
+ * Copyright (c) 2020-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "Achievements.hpp"
+#include "time_r.h"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/crypto/Hash.hpp"
+#include "librpbyteswap/byteswap_rp.h"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 
+// C includes (C++ namespace)
+#include <cassert>
+
 // C++ STL classes
+#include <array>
+#include <unordered_map>
 using std::array;
 using std::string;
 using std::unique_ptr;

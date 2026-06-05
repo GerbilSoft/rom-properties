@@ -6,9 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "rp_sixel.hpp"
-#include "ctypex.h"
 
 // libgsvt for VT handling
 #include "gsvt.h"
@@ -17,7 +15,6 @@
 // libsixel function prototypes and definitions here.
 #include "sixel-mini.h"
 
-#include "tcharx.h"
 #ifndef _WIN32
 // T2U8() is a no-op.
 #  define T2U8(str) (str)

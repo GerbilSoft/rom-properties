@@ -6,12 +6,12 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "EXE.hpp"
 
 // Other rom-properties libraries
 #include "librpbase/Achievements.hpp"
 #include "librpbase/timeconv.h"
+#include "librptext/formatting.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;

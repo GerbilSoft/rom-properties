@@ -3,11 +3,9 @@
  * RP_ShellPropSheetExt_ops.cpp: IShellPropSheetExt implementation.        *
  * (ROM operations)                                                        *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
-
-#include "stdafx.h"
 
 #include "RP_ShellPropSheetExt.hpp"
 #include "RP_ShellPropSheetExt_p.hpp"
@@ -19,7 +17,10 @@
 #include "OptionsMenuButton.hpp"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/TextOut.hpp"
+#include "librpfile/FileSystem.hpp"
+#include "librptext/wchar.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -33,6 +34,13 @@ using std::ostringstream;
 using std::string;
 using std::vector;
 using std::wstring;	// for tstring
+
+// libwin32common, libwin32ui
+#include "libwin32common/sdk/windowsx_ts.h"
+#include "libwin32ui/WinUI.hpp"
+
+// libfmt
+#include "rp-libfmt.h"
 
 /**
  * Adjust tabs for the message widget.

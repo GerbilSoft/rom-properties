@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK4)                             *
  * NautilusPlugin.hpp: Nautilus GTK4 Plugin Definition.                    *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,7 +10,7 @@
 
 #include <glib.h>
 #include <glib-object.h>
-#include <gtk/gtk.h>
+#include <gio/gio.h>	// for GListModel
 
 G_BEGIN_DECLS;
 

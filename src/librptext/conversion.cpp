@@ -2,18 +2,16 @@
  * ROM Properties Page shell extension. (librptext)                        *
  * conversion.cpp: Text encoding functions                                 *
  *                                                                         *
- * Copyright (c) 2009-2025 by David Korth.                                 *
+ * Copyright (c) 2009-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "config.librptext.h"
 #include "conversion.hpp"
 
 // Other rom-properties libraries
 #include "librpbyteswap/byteswap_rp.h"
 
 // C includes (C++ namespace)
-#include <cassert>
 #include <cstring>
 
 // C++ includes and STL classes

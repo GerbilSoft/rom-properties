@@ -2,14 +2,14 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WonderSwanPublishers.hpp: Bandai WonderSwan third-party publishers list.*
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "WonderSwanPublishers.hpp"
 
 // C++ STL classes
+#include <array>
 using std::array;
 
 namespace LibRomData { namespace WonderSwanPublishers {

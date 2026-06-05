@@ -6,12 +6,14 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "WiiTMD.hpp"
+#include "RomData_p.hpp"
+
 #include "wii_structs.h"
 #include "wiiu_structs.h"
 
 // Other rom-properties libraries
+#include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;

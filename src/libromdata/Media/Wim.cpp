@@ -7,12 +7,11 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-
 #include "Wim.hpp"
 #include "Wim_p.hpp"
 
 // Other rom-properties libraries
+#include "librpbase/RomFields.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 

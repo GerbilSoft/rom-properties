@@ -2,14 +2,13 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * PIMGTYPE.hpp: PIMGTYPE typedef and wrapper functions.                   *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "PIMGTYPE.hpp"
 
-// librpbase, librpfile, librptexture
+// Other rom-properties classes
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
@@ -18,7 +17,8 @@ using LibRpFile::MemFile;
 using LibRpTexture::rp_image_ptr;
 
 // C++ STL classes
-using std::shared_ptr;
+#include <map>
+using std::map;
 
 // glib resources
 // NOTE: glib-compile-resources doesn't have extern "C".
@@ -160,7 +160,7 @@ static cairo_status_t PIMGTYPE_CairoReadFunc(void *closure, unsigned char *data,
 }
 #else /* GdkPixbuf */
 // Mapping of data pointers to GBytes* objects for unreference.
-static std::map<const void*, GBytes*> map_gbytes_unref;
+static map<const void*, GBytes*> map_gbytes_unref;
 
 /**
  * GDestroyNotify for g_memory_input_stream_new_from_data().

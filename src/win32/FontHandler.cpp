@@ -2,22 +2,33 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * FontHandler.cpp: Font handler.                                          *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "config.librpbase.h"
 #include "FontHandler.hpp"
+#include "common.h"
 
-// libwin32common
-#include "libwin32common/w32err.hpp"
+// C includes
+#include "tcharx.h"
+
+// C includes (C++ namespace)
+#include <cassert>
 
 // C++ STL classes
+#include <array>
+#include <string>
+#include <unordered_set>
+#include <vector>
 using std::array;
 using std::tstring;
 using std::unordered_set;
 using std::vector;
+
+// libwin32common
+#include "libwin32common/sdk/windowsx_ts.h"
+#include "libwin32common/w32err.hpp"
 
 class FontHandlerPrivate
 {

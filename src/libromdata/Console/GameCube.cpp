@@ -6,8 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "GameCube.hpp"
+#include "RomData_p.hpp"
 
 #include "gcn_structs.h"
 #include "wii_structs.h"
@@ -19,9 +19,13 @@
 #include "WiiCommon.hpp"
 
 // Other rom-properties libraries
-#include "librpfile/RelatedFile.hpp"
+#include "time_r.h"
+#include "libi18n/i18n.hpp"
 #include "librpbase/Achievements.hpp"
 #include "librpbase/SystemRegion.hpp"
+#include "librpbase/disc/DiscReader.hpp"
+#include "librpfile/FileSystem.hpp"
+#include "librpfile/RelatedFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -41,6 +45,9 @@ using namespace LibRpTexture;
 
 // for strnlen() if it's not available in <string.h>
 #include "librptext/libc.h"
+
+// C includes
+#include "ctypex.h"
 
 // C++ STL classes
 using std::array;

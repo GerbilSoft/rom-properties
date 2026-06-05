@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ImageTypesConfig.hpp: Image Types non-templated common functions.       *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,11 +14,10 @@
  * libromdata and should *not* be compiled by UI frontends.
  */
 
-#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
-#include "librpbase/RomData.hpp"
+#include "dll-macros.h"
 
-// C includes. (C++ namespace)
-#include <cassert>
+// C includes (C++ namespace)
+#include <cstdint>
 
 namespace LibRomData { namespace ImageTypesConfig {
 

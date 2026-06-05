@@ -6,8 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "NGPC.hpp"
+#include "RomData_p.hpp"
+
 #include "ngpc_structs.h"
 
 // Other rom-properties libraries

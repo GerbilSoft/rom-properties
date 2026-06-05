@@ -7,8 +7,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "DMG.hpp"
+#include "RomData_p.hpp"
+
 #include "data/NintendoPublishers.hpp"
 #include "data/DMGSpecialCases.hpp"
 #include "dmg_structs.h"
@@ -23,6 +24,9 @@ using namespace LibRpFile;
 // For sections delegated to other RomData subclasses.
 #include "Audio/GBS.hpp"
 #include "Audio/gbs_structs.h"
+
+// C includes
+#include "ctypex.h"
 
 // C++ STL classes
 using std::array;

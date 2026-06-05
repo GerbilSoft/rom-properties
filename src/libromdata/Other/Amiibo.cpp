@@ -6,8 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "Amiibo.hpp"
+#include "RomData_p.hpp"
+
 #include "nfp_structs.h"
 #include "data/AmiiboData.hpp"
 

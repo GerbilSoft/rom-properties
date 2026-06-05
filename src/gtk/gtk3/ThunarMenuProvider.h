@@ -2,13 +2,15 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
  * ThunarMenuProvider.h: ThunarX Menu Provider Definition                  *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include "glib-compat.h"
+#include <glib.h>
+#include <glib-object.h>
+
 #include "ThunarPlugin.hpp"
 
 G_BEGIN_DECLS

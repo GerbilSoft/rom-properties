@@ -11,31 +11,22 @@
 // - https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
 // - https://docs.microsoft.com/en-us/windows/win32/ad/implementing-the-property-page-com-object
 
-#include "stdafx.h"
-
 #include "RP_ShellPropSheetExt.hpp"
 #include "RP_ShellPropSheetExt_p.hpp"
 #include "RomDataFormat.hpp"
 #include "RpImageWin32.hpp"
 #include "res/resource.h"
 
-// Custom controls (some are pseudo-controls)
-#include "DragImageLabel.hpp"
-#include "LanguageComboBox.hpp"
-#include "MessageWidget.hpp"
-#include "OptionsMenuButton.hpp"
-
-// libwin32ui
-#include "libwin32ui/AutoGetDC.hpp"
-using LibWin32UI::AutoGetDC_font;
-using LibWin32UI::WTSSessionNotification;
-
 // NOTE: Using "RomDataView" for the libi18n context, since that
 // matches what's used for the KDE and GTK+ frontends.
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
+#include "librpbase/RomData.hpp"
 #include "librpbase/RomFields.hpp"
 #include "librpbase/TextOut.hpp"
+#include "librptext/wchar.hpp"
+#include "libromdata/RomDataFactory.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -43,6 +34,8 @@ using namespace LibRpTexture;
 using namespace LibRomData;
 
 // C++ STL classes
+#include <numeric>
+#include <set>
 using std::array;
 using std::set;
 using std::string;
@@ -50,8 +43,25 @@ using std::unique_ptr;
 using std::vector;
 using std::wstring;	// for tstring
 
+// libwin32ui
+#include "libwin32ui/AutoGetDC.hpp"
+#include "libwin32ui/HiDPI.hpp"
+#include "libwin32ui/WinUI.hpp"
+#include <shellapi.h>
+using LibWin32UI::AutoGetDC_font;
+using LibWin32UI::WTSSessionNotification;
+
 // Win32 dark mode
 #include "libwin32darkmode/DarkMode.hpp"
+
+// Custom controls (some are pseudo-controls)
+#include "DragImageLabel.hpp"
+#include "LanguageComboBox.hpp"
+#include "MessageWidget.hpp"
+#include "OptionsMenuButton.hpp"
+
+// libfmt
+#include "rp-libfmt.h"
 
 /** RP_ShellPropSheetExt_Private **/
 
