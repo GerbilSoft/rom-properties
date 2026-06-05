@@ -19,7 +19,6 @@
 
 // C includes (C++ namespace)
 #include <cstddef>	/* size_t */
-#include <cuchar>
 #include <cwchar>
 
 // C++ includes
