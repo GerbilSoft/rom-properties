@@ -14,9 +14,6 @@
 // for rom_data_format_RFT_LISTDATA_text_as_achievements()
 #include "../RomDataFormat.hpp"
 
-#include "gtk-compat.h"
-#include "RpGtk.h"
-
 #ifdef USE_GTK_COLUMN_VIEW
 #  include "AchievementItem.h"
 #endif /* USE_GTK_COLUMN_VIEW */

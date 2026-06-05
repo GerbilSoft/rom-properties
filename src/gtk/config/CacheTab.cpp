@@ -12,8 +12,7 @@
 #include "../MessageSound.hpp"
 #include "CacheCleaner.hpp"
 
-#include "gtk-compat.h"
-#include "RpGtk.h"
+#include "common.h"
 
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"

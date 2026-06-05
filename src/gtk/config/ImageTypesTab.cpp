@@ -9,9 +9,6 @@
 #include "ImageTypesTab.hpp"
 #include "RpConfigTab.h"
 
-#include "gtk-compat.h"
-#include "RpGtk.h"
-
 // TImageTypesConfig is a templated class,
 // so we have to #include the .cpp file here.
 #include "libromdata/config/ImageTypesConfig.hpp"

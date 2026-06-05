@@ -2,13 +2,13 @@
  * ROM Properties Page shell extension. (GTK4)                             *
  * sort_funcs.h: GCompareDataFunc sort functions.                          *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include <gtk/gtk.h>
+#include <glib.h>
 
 G_BEGIN_DECLS
 

@@ -19,7 +19,6 @@
 // Custom widgets
 #include "DragImage.hpp"
 #include "LanguageComboBox.hpp"
-#include "MessageWidget.h"
 
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"

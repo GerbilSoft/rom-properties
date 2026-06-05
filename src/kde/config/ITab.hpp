@@ -10,9 +10,9 @@
 
 #include "common.h"
 
-// Qt includes.
-#include <QSettings>
+// Qt includes
 #include <QWidget>
+class QSettings;
 
 class NOVTABLE ITab : public QWidget
 {

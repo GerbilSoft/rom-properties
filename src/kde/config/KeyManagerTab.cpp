@@ -21,6 +21,7 @@ using std::string;
 
 // Qt includes
 #include <QtCore/QFileInfo>
+#include <QtCore/QSettings>
 #include <QFileDialog>
 #include <QMenu>
 

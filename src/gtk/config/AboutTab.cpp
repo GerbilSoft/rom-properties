@@ -15,9 +15,6 @@
 #  include "UpdateChecker.hpp"
 #endif /* ENABLE_NETWORKING */
 
-#include "gtk-compat.h"
-#include "RpGtk.h"
-
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
 #include "librpbase/config/AboutTabText.hpp"

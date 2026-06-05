@@ -12,6 +12,8 @@
 // C includes
 #include "stdboolx.h"
 
+#include "gtk-compat.h"
+
 /* Property identifiers */
 typedef enum {
 	PROP_0,

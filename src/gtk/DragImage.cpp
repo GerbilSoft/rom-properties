@@ -543,7 +543,7 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 }
 
 /**
- * Set the rp_image for this image.
+ * Set the rp_image for this RpDragImage.
  *
  * NOTE: If animated icon data is specified, that supercedes
  * the individual rp_image.
@@ -579,7 +579,7 @@ rp_drag_image_set_rp_image(RpDragImage *image, const rp_image_const_ptr &img)
 }
 
 /**
- * Set the icon animation data for this image.
+ * Set the icon animation data for this RpDragImage.
  *
  * NOTE: If animated icon data is specified, that supercedes
  * the individual rp_image.

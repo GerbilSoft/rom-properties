@@ -2,13 +2,15 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                           *
  * ThunarPropertyPageProvider.hpp: ThunarX Property Page Provider Definition *
  *                                                                           *
- * Copyright (c) 2017-2022 by David Korth.                                   *
+ * Copyright (c) 2017-2026 by David Korth.                                   *
  * SPDX-License-Identifier: GPL-2.0-or-later                                 *
  *****************************************************************************/
 
 #pragma once
 
-#include "glib-compat.h"
+#include <glib.h>
+#include <glib-object.h>
+
 #include "ThunarPlugin.hpp"
 
 G_BEGIN_DECLS

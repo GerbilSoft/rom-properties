@@ -13,6 +13,9 @@
 #include "librpbase/config/Config.hpp"
 using LibRpBase::Config;
 
+// Qt includes
+#include <QtCore/QSettings>
+
 #include "RpQt.hpp"
 
 #include "ui_OptionsTab.h"

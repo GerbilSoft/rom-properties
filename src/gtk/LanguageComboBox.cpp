@@ -11,13 +11,12 @@
 #include "LanguageComboBox.hpp"
 #include "LanguageComboBox_p.hpp"
 
-#include "FlagSpriteSheet.hpp"
-
 #ifdef USE_GTK_DROP_DOWN
 #  include "LanguageComboBoxItem.h"
 #endif /* USE_GTK_DROP_DOWN */
 
 // C++ STL classes
+#include <string>
 using std::string;
 
 static void	rp_language_combo_box_set_property(GObject	*object,

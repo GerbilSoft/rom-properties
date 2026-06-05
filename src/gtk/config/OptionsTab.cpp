@@ -12,8 +12,6 @@
 #include "RpConfigTab.h"
 
 #include "common.h"
-#include "gtk-compat.h"
-#include "RpGtk.h"
 
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"

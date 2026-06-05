@@ -11,10 +11,6 @@
 #include "RomThumbCreator.hpp"
 #include "RomThumbCreator_p.hpp"
 
-#include "AchQtDBus.hpp"
-#include "RpQImageBackend.hpp"
-#include "RpQUrl.hpp"
-
 // Other rom-properties libraries
 #include "librpfile/FileSystem.hpp"
 #include "libromdata/RomDataFactory.hpp"
@@ -26,6 +22,12 @@ using namespace LibRpFile;
 
 // C++ STL classes
 using std::string;
+
+#include "RpQUrl.hpp"
+
+// Required by the factory method in order to register things.
+#include "AchQtDBus.hpp"
+#include "RpQImageBackend.hpp"
 
 /**
  * Factory method for ThumbCreator. (KDE4/KF5 only; dropped in KF6)

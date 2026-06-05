@@ -7,7 +7,6 @@
  ***************************************************************************/
 
 #include "OptionsMenuButton.hpp"
-#include "PIMGTYPE.hpp"
 #include "RpGtk.h"
 
 // librpbase

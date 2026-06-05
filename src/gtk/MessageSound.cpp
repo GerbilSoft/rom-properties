@@ -8,6 +8,7 @@
 
 #include "config.gtk.h"
 #include "MessageSound.hpp"
+#include "common.h"
 
 #include <gdk/gdkdisplay.h>
 

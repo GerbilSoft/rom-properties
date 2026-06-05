@@ -2,14 +2,15 @@
  * ROM Properties Page shell extension. (D-Bus Thumbnailer)                *
  * rp-thumbnailer-dbus.h: D-Bus thumbnailer service.                       *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include "glib-compat.h"
-#include <gio/gio.h>
+#include <glib.h>
+#include <glib-object.h>
+#include <gio/gio.h>	// for GDBusConnection
 
 G_BEGIN_DECLS
 

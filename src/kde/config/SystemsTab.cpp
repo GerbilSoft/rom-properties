@@ -12,6 +12,9 @@
 #include "librpbase/config/Config.hpp"
 using LibRpBase::Config;
 
+// Qt includes
+#include <QtCore/QSettings>
+
 #include "ui_SystemsTab.h"
 class SystemsTabPrivate
 {

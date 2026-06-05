@@ -11,10 +11,6 @@
 #include "RomThumbnailCreator.hpp"
 #include "RomThumbCreator_p.hpp"
 
-#include "AchQtDBus.hpp"
-#include "RpQImageBackend.hpp"
-#include "RpQUrl.hpp"
-
 // Other rom-properties libraries
 #include "librpfile/FileSystem.hpp"
 #include "libromdata/RomDataFactory.hpp"
@@ -25,6 +21,8 @@ using namespace LibRpFile;
 
 // C++ STL classes
 using std::string;
+
+#include "RpQUrl.hpp"
 
 /** RomThumbnailCreator (KF5 5.100 and later) **/
 

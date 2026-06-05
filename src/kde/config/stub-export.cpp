@@ -10,8 +10,6 @@
 #include "check-uid.hpp"
 
 #include "ConfigDialog.hpp"
-#include "RomDataView.hpp"
-#include "xattr/XAttrView.hpp"
 
 // Program version
 #include "librpbase/config/AboutTabText.hpp"
@@ -26,7 +24,6 @@ using namespace LibRpTexture;
 
 #include "RpQImageBackend.hpp"
 #include "AchQtDBus.hpp"
-#include "RpQUrl.hpp"
 
 // i18n
 #ifdef ENABLE_NLS

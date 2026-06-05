@@ -20,8 +20,6 @@
 // C includes
 #include "stdboolx.h"
 
-#include "../RomDataView.hpp"
-
 // nautilus-extension.h mini replacement
 #if GTK_CHECK_VERSION(4, 0, 0)
 #  include "../gtk4/NautilusPlugin.hpp"

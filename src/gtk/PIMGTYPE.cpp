@@ -8,7 +8,7 @@
 
 #include "PIMGTYPE.hpp"
 
-// librpbase, librpfile, librptexture
+// Other rom-properties classes
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
@@ -19,7 +19,6 @@ using LibRpTexture::rp_image_ptr;
 // C++ STL classes
 #include <map>
 using std::map;
-using std::shared_ptr;
 
 // glib resources
 // NOTE: glib-compile-resources doesn't have extern "C".

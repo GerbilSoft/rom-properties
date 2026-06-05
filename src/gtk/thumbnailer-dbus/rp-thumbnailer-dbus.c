@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (D-Bus Thumbnailer)                *
  * rp-thumbnailer-dbus.c: D-Bus thumbnailer service.                       *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,10 +17,9 @@
 #include <glib-object.h>
 #include "SpecializedThumbnailer1.h"
 
-// C includes.
-#include <stdbool.h>
-#include <stdio.h>
+// C includes
 #include <string.h>
+#include "stdboolx.h"
 
 // from tumbler-utils.h
 #define g_dbus_async_return_val_if_fail(expr, invocation, val) \

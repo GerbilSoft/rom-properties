@@ -9,19 +9,9 @@
 #include "RomDataView.hpp"
 #include "RomDataView_p.hpp"
 #include "RpGtk.h"
-#include "gtk-i18n.h"
-
-// Custom widgets
-#include "LanguageComboBox.hpp"
-#include "MessageWidget.h"
-#include "OptionsMenuButton.hpp"
-
-// ENABLE_MESSAGESOUND is set by CMakeLists.txt.
-#ifdef ENABLE_MESSAGESOUND
-#  include "MessageSound.hpp"
-#endif /* ENABLE_MESSAGESOUND */
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/TextOut.hpp"
 #include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
@@ -37,6 +27,16 @@ using std::ofstream;
 using std::ostringstream;
 using std::string;
 using std::vector;
+
+// Custom widgets
+#include "LanguageComboBox.hpp"
+#include "MessageWidget.h"
+#include "OptionsMenuButton.hpp"
+
+// ENABLE_MESSAGESOUND is set by CMakeLists.txt.
+#ifdef ENABLE_MESSAGESOUND
+#  include "MessageSound.hpp"
+#endif /* ENABLE_MESSAGESOUND */
 
 // libfmt
 #include "rp-libfmt.h"

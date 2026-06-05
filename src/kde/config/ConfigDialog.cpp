@@ -23,6 +23,7 @@ using LibRpBase::KeyManager;
 #endif
 
 // Qt includes
+#include <QtCore/QSettings>
 #include <QPushButton>
 
 #include "RpQt.hpp"
