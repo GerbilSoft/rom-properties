@@ -1377,8 +1377,9 @@ RomDataPtr RomDataView::romData(void) const
 void RomDataView::setRomData(const RomDataPtr &romData)
 {
 	Q_D(RomDataView);
-	if (d->romData == romData)
+	if (d->romData == romData) {
 		return;
+	}
 
 	const bool prevAnimTimerRunning = d->ui.lblIcon->isAnimTimerRunning();
 	if (prevAnimTimerRunning) {
@@ -1397,6 +1398,5 @@ void RomDataView::setRomData(const RomDataPtr &romData)
 		d->ui.lblIcon->startAnimTimer();
 	}
 
-	// FIXME: Not compatible with std::shared_ptr<>.
-	//emit romDataChanged(romData);
+	emit romDataChanged(romData);
 }

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomDataView.hpp: RomData viewer.                                        *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,7 @@
 #include <QWidget>
 
 #include "librpbase/RomData.hpp"
-//Q_DECLARE_METATYPE(LibRpBase::RomData*)
+Q_DECLARE_METATYPE(LibRpBase::RomDataPtr)
 
 class RomDataViewPrivate;
 class RomDataView : public QWidget
@@ -104,15 +104,12 @@ public slots:
 	 */
 	void setRomData(const LibRpBase::RomDataPtr &romData);
 
-#if 0
-/* FIXME: Not compatible with std::shared_ptr<>. */
 signals:
 	/**
 	 * The RomData object has been changed.
 	 * @param romData New RomData object
 	 */
-	void romDataChanged(LibRpBase::RomData *romData);
-#endif
+	void romDataChanged(const LibRpBase::RomDataPtr &romData);
 
 private slots:
 	/**
