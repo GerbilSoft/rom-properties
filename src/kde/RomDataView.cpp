@@ -10,12 +10,8 @@
 #include "RomDataView_p.hpp"
 #include "RomDataFormat.hpp"
 
-#include "AchQtDBus.hpp"
-#include "RpQImageBackend.hpp"
-
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
-#include "librpbase/TextOut.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpTexture;
