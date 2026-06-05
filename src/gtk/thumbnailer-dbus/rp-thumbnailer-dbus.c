@@ -14,7 +14,7 @@
 #include "rp-thumbnailer-dbus.h"
 #include "common.h"
 
-#include <glib-object.h>
+#include "glib-compat.h"	// needed for G_SOURCE_FUNC()
 #include "SpecializedThumbnailer1.h"
 
 // C includes
