@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CisoPspDlopen.cpp: PlayStation Portable CISO dlopen() handler.          *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,12 +12,9 @@
 
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
-#  define dlsym(handle, symbol)	GetProcAddress((handle), (symbol))
-#  define dlclose(handle)	FreeLibrary(handle)
 #else /* !_WIN32 */
-#  include <dlfcn.h>	// for dlopen()
 typedef void *HMODULE;
-#endif /* !_WIN32 */
+#endif /* _WIN32 */
 
 #ifdef HAVE_LZ4
 #  if defined(USE_INTERNAL_LZ4) && !defined(USE_INTERNAL_LZ4_DLL)

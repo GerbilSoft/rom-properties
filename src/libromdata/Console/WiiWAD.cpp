@@ -28,8 +28,6 @@ using namespace LibRpTexture;
 
 // Decryption
 #ifdef ENABLE_DECRYPTION
-#  include "librpbase/crypto/AesCipherFactory.hpp"
-#  include "librpbase/crypto/IAesCipher.hpp"
 #  include "librpbase/disc/CBCReader.hpp"
 // For sections delegated to other RomData subclasses.
 #  include "librpbase/disc/PartitionFile.hpp"

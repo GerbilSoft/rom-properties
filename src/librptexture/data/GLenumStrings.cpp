@@ -11,6 +11,7 @@
 
 // C includes (C++ namespace)
 #include <cassert>
+#include <cstdint>
 
 // C++ STL classes
 #include <algorithm>

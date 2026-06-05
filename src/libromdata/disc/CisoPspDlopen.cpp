@@ -9,6 +9,13 @@
 #include "CisoPspDlopen.hpp"
 
 #ifdef _WIN32
+#  define dlsym(handle, symbol)	GetProcAddress((handle), (symbol))
+#  define dlclose(handle)	FreeLibrary(handle)
+#else /* !_WIN32 */
+#  include <dlfcn.h>	// for dlopen()
+#endif /* !_WIN32 */
+
+#ifdef _WIN32
 // rp_LoadLibrary()
 // NOTE: Delay-load is not supported with MinGW, but we still need
 // access to the rp_LoadLibrary() function.

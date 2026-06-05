@@ -30,6 +30,9 @@ using namespace LibRpBase;
 #include "Console/WiiUPackage.hpp"
 #include "Console/WiiWAD.hpp"
 
+// C includes (C++ namespace)
+#include <cassert>
+
 // C++ STL classes
 using std::array;
 

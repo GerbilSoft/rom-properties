@@ -23,9 +23,6 @@ using namespace LibRpText;
 using std::array;
 using std::string;
 
-// Uninitialized vector class
-#include "uvector.h"
-
 namespace LibRomData {
 
 class WiiBNRPrivate final : public RomDataPrivate

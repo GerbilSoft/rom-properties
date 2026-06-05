@@ -7,7 +7,6 @@
  ***************************************************************************/
 
 #include "GameCubeRegions.hpp"
-#include "RomData_p.hpp"
 
 #include "gcn_structs.h"
 

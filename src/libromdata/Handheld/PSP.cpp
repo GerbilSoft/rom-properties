@@ -19,7 +19,6 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 
 // DiscReader
-#include "cdrom_structs.h"
 #include "iso_structs.h"
 #include "disc/IsoPartition.hpp"
 #include "disc/PartitionFile.hpp"

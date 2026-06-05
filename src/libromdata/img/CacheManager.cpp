@@ -13,7 +13,6 @@
 #include "semaphore/Semaphore.hpp"
 
 // Other rom-properties libraries
-#include "librpfile/RpFile.hpp"
 #include "librpfile/FileSystem.hpp"
 using namespace LibRpFile;
 

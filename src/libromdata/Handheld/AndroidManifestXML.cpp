@@ -26,7 +26,6 @@ using namespace LibRpFile;
 
 // C++ STL classes
 #include <memory>
-#include <limits>
 #include <stack>
 #include <vector>
 using std::array;

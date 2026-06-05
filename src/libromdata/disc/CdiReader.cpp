@@ -18,7 +18,6 @@
 
 // Other rom-properties libraries
 #include "librpbase/disc/PartitionFile.hpp"
-#include "librpfile/RelatedFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 

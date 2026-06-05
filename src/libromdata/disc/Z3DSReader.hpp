@@ -8,14 +8,8 @@
 
 #pragma once
 
-#include "z3ds_structs.h"
-
 // librpbase
 #include "librpbase/disc/IDiscReader.hpp"
-#include "librpbase/crypto/KeyManager.hpp"
-
-// CIAReader
-#include "CIAReader.hpp"
 
 // C++ STL classes
 #include <string>
