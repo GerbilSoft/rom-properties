@@ -21,6 +21,7 @@ using std::unique_ptr;
 
 // Qt includes
 #include <QtCore/QMimeData>
+#include <QtGui/QAction>
 #include <QtGui/QDrag>
 #include <QtGui/QMouseEvent>
 #include <QDesktopServices>
