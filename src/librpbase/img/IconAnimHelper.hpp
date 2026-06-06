@@ -43,8 +43,9 @@ class IconAnimHelper
 		 */
 		void setIconAnimData(const IconAnimDataConstPtr &iconAnimData)
 		{
-			// TODO: Don't do anything if the pointers match?
-			m_iconAnimData = iconAnimData;
+			if (m_iconAnimData.get() != iconAnimData.get()) {
+				m_iconAnimData = iconAnimData;
+			}
 			reset();
 		}
 
