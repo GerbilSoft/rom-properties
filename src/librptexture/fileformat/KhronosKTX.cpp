@@ -51,60 +51,60 @@ namespace LibRpTexture {
 
 class KhronosKTXPrivate final : public FileFormatPrivate
 {
-	public:
-		KhronosKTXPrivate(KhronosKTX *q, const IRpFilePtr &file);
+public:
+	KhronosKTXPrivate(KhronosKTX *q, const IRpFilePtr &file);
 
-	private:
-		typedef FileFormatPrivate super;
-		RP_DISABLE_COPY(KhronosKTXPrivate)
+private:
+	typedef FileFormatPrivate super;
+	RP_DISABLE_COPY(KhronosKTXPrivate)
 
-	public:
-		/** TextureInfo **/
-		static const array<const char*, 1+1> exts;
-		static const array<const char*, 1+1> mimeTypes;
-		static const TextureInfo textureInfo;
+public:
+	/** TextureInfo **/
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
+	static const TextureInfo textureInfo;
 
-	public:
-		// KTX header
-		KTX_Header ktxHeader;
+public:
+	// KTX header
+	KTX_Header ktxHeader;
 
-		// Is byteswapping needed?
-		// (KTX file has the opposite endianness.)
-		bool isByteswapNeeded;
+	// Is byteswapping needed?
+	// (KTX file has the opposite endianness.)
+	bool isByteswapNeeded;
 
-		// Is HFlip/VFlip needed?
-		// Some textures may be stored upside-down due to
-		// the way GL texture coordinates are interpreted.
-		// Default without KTXorientation is HFlip=false, VFlip=true
-		rp_image::FlipOp flipOp;
+	// Is HFlip/VFlip needed?
+	// Some textures may be stored upside-down due to
+	// the way GL texture coordinates are interpreted.
+	// Default without KTXorientation is HFlip=false, VFlip=true
+	rp_image::FlipOp flipOp;
 
-		// Texture data start address
-		unsigned int texDataStartAddr;
+	// Texture data start address
+	unsigned int texDataStartAddr;
 
-		// Decoded mipmaps
-		// Mipmap 0 is the full image.
-		vector<rp_image_ptr> mipmaps;
+	// Decoded mipmaps
+	// Mipmap 0 is the full image.
+	vector<rp_image_ptr> mipmaps;
 
-		// Invalid pixel format message
-		mutable string invalid_pixel_format;
+	// Invalid pixel format message
+	mutable string invalid_pixel_format;
 
-		// Key/Value data
-		// NOTE: Stored as vector<vector<string> > instead of
-		// vector<pair<string, string> > for compatibility with
-		// RFT_LISTDATA.
-		RomFields::ListData_t kv_data;
+	// Key/Value data
+	// NOTE: Stored as vector<vector<string> > instead of
+	// vector<pair<string, string> > for compatibility with
+	// RFT_LISTDATA.
+	RomFields::ListData_t kv_data;
 
-		/**
-		 * Load the image.
-		 * @param mip Mipmap number. (0 == full image)
-		 * @return Image, or nullptr on error.
-		 */
-		rp_image_const_ptr loadImage(int mip);
+	/**
+	 * Load the image.
+	 * @param mip Mipmap number (0 == full image)
+	 * @return Image, or nullptr on error.
+	 */
+	rp_image_const_ptr loadImage(int mip);
 
-		/**
-		 * Load key/value data.
-		 */
-		void loadKeyValueData(void);
+	/**
+	 * Load key/value data.
+	 */
+	void loadKeyValueData(void);
 };
 
 FILEFORMAT_IMPL(KhronosKTX)
@@ -139,7 +139,7 @@ KhronosKTXPrivate::KhronosKTXPrivate(KhronosKTX *q, const IRpFilePtr &file)
 
 /**
  * Load the image.
- * @param mip Mipmap number. (0 == full image)
+ * @param mip Mipmap number (0 == full image)
  * @return Image, or nullptr on error.
  */
 rp_image_const_ptr KhronosKTXPrivate::loadImage(int mip)
@@ -1146,7 +1146,7 @@ rp_image_const_ptr KhronosKTX::image(void) const
 /**
  * Get the image for the specified mipmap.
  * Mipmap 0 is the largest image.
- * @param mip Mipmap number.
+ * @param mip Mipmap number
  * @return Image, or nullptr on error.
  */
 rp_image_const_ptr KhronosKTX::mipmap(int mip) const

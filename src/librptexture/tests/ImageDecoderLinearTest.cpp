@@ -3,7 +3,7 @@
  * ImageDecoderLinearTest.cpp: Linear image decoding tests.                *
  * Includes CPU optimization tests where available.                        *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -77,66 +77,66 @@ struct ImageDecoderLinearTest_mode
 
 class ImageDecoderLinearTest : public ::testing::TestWithParam<ImageDecoderLinearTest_mode>
 {
-	protected:
-		ImageDecoderLinearTest()
-			: ::testing::TestWithParam<ImageDecoderLinearTest_mode>()
-			, m_img_buf(nullptr)
-			, m_img_buf_len(0)
-		{
+protected:
+	ImageDecoderLinearTest()
+		: ::testing::TestWithParam<ImageDecoderLinearTest_mode>()
+		, m_img_buf(nullptr)
+		, m_img_buf_len(0)
+	{
 #ifdef _WIN32
-			// Register RpGdiplusBackend.
-			// TODO: Static initializer somewhere?
-			rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
+		// Register RpGdiplusBackend.
+		// TODO: Static initializer somewhere?
+		rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
 #endif /* _WIN32 */
-		}
+	}
 
-		~ImageDecoderLinearTest() override
-		{
-			aligned_free(m_img_buf);
-		}
+	~ImageDecoderLinearTest() override
+	{
+		aligned_free(m_img_buf);
+	}
 
-		void SetUp(void) final;
-		void TearDown(void) final;
+	void SetUp(void) final;
+	void TearDown(void) final;
 
-	public:
-		/**
-		 * Validate the pixels of an rp_image.
-		 * All pixels should match dest_pixel.
-		 * @param img		[in] rp_image.
-		 * @param dest_pixel	[in] dest_pixel.
-		 */
-		static void Validate_RpImage(
-			const rp_image *img,
-			const uint32_t dest_pixel);
+public:
+	/**
+	 * Validate the pixels of an rp_image.
+	 * All pixels should match dest_pixel.
+	 * @param img		[in] rp_image.
+	 * @param dest_pixel	[in] dest_pixel.
+	 */
+	static void Validate_RpImage(
+		const rp_image *img,
+		const uint32_t dest_pixel);
 
-		// Number of iterations for benchmarks.
-		static constexpr unsigned int BENCHMARK_ITERATIONS = 100000U;
+	// Number of iterations for benchmarks.
+	static constexpr unsigned int BENCHMARK_ITERATIONS = 100000U;
 
-	public:
-		// Temporary image buffer
-		// 128x128 24-bit or 32-bit image data.
-		// FIXME: Use an aligned Allocator with rp::uvector<>.
-		//rp::uvector<uint8_t> m_img_buf;
-		uint8_t *m_img_buf;
-		size_t m_img_buf_len;
+public:
+	// Temporary image buffer
+	// 128x128 24-bit or 32-bit image data.
+	// FIXME: Use an aligned Allocator with rp::uvector<>.
+	//rp::uvector<uint8_t> m_img_buf;
+	uint8_t *m_img_buf;
+	size_t m_img_buf_len;
 
-		// Image
-		rp_image_ptr m_img;
+	// Image
+	rp_image_ptr m_img;
 
-	public:
-		/**
-		 * Convert ImageDecoder::PixelFormat to string.
-		 * @param pxf ImageDecoder::PixelFormat
-		 * @return String. ("Unknown" on error)
-		 */
-		static const char *pxfToString(ImageDecoder::PixelFormat pxf);
+public:
+	/**
+	 * Convert ImageDecoder::PixelFormat to string.
+	 * @param pxf ImageDecoder::PixelFormat
+	 * @return String. ("Unknown" on error)
+	 */
+	static const char *pxfToString(ImageDecoder::PixelFormat pxf);
 
-		/**
-		 * Test case suffix generator.
-		 * @param info Test parameter information.
-		 * @return Test case suffix.
-		 */
-		static string test_case_suffix_generator(const ::testing::TestParamInfo<ImageDecoderLinearTest_mode> &info);
+	/**
+	 * Test case suffix generator.
+	 * @param info Test parameter information.
+	 * @return Test case suffix.
+	 */
+	static string test_case_suffix_generator(const ::testing::TestParamInfo<ImageDecoderLinearTest_mode> &info);
 };
 
 /**

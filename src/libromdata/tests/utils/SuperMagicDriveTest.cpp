@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * SuperMagicDriveTest.cpp: SuperMagicDrive class test.                    *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -31,57 +31,57 @@ namespace LibRomData { namespace Tests {
 
 class SuperMagicDriveTest : public ::testing::Test
 {
-	protected:
-		SuperMagicDriveTest()
-			: align_buf(aligned_uptr<uint8_t>(16, 8))
-		{
-			// Dummy align_buf initialization to
-			// prevent compiler errors.
-		}
+protected:
+	SuperMagicDriveTest()
+		: align_buf(aligned_uptr<uint8_t>(16, 8))
+	{
+		// Dummy align_buf initialization to
+		// prevent compiler errors.
+	}
 
-	public:
-		// Output block size (+64 for zlib)
-		static constexpr unsigned int OUT_BLOCK_UNZ_SIZE = SuperMagicDrive::SMD_BLOCK_SIZE+64;
+public:
+	// Output block size (+64 for zlib)
+	static constexpr unsigned int OUT_BLOCK_UNZ_SIZE = SuperMagicDrive::SMD_BLOCK_SIZE+64;
 
-		// 16 KB plain binary data block
-		static const array<uint8_t, 11811> bin_data_gz;
+	// 16 KB plain binary data block
+	static const array<uint8_t, 11811> bin_data_gz;
 
-		// Number of iterations for benchmarks
-		static constexpr unsigned int BENCHMARK_ITERATIONS = 100000;
+	// Number of iterations for benchmarks
+	static constexpr unsigned int BENCHMARK_ITERATIONS = 100000;
 
-		// 16 KB SMD-interleaved data block
-		static const array<uint8_t, 403> smd_data_gz;
+	// 16 KB SMD-interleaved data block
+	static const array<uint8_t, 403> smd_data_gz;
 
-	public:
-		// Uncompressed data buffers
-		static uint8_t *m_bin_data;
-		static uint8_t *m_smd_data;
+public:
+	// Uncompressed data buffers
+	static uint8_t *m_bin_data;
+	static uint8_t *m_smd_data;
 
-	private:
-		/**
-		 * Decompress a data block.
-		 * @param pOut		[out] Output buffer. (Must be 16 KB.)
-		 * @param out_len	[in] Output buffer length.
-		 * @param pIn		[in] Input array.
-		 * @param in_len	[in] Input length.
-		 * @return 0 on success; non-zero on error.
-		 */
-		static int decompress(uint8_t *RESTRICT pOut, unsigned int out_len, const uint8_t *RESTRICT pIn, unsigned int in_len);
+private:
+	/**
+	 * Decompress a data block.
+	 * @param pOut		[out] Output buffer. (Must be 16 KB.)
+	 * @param out_len	[in] Output buffer length.
+	 * @param pIn		[in] Input array.
+	 * @param in_len	[in] Input length.
+	 * @return 0 on success; non-zero on error.
+	 */
+	static int decompress(uint8_t *RESTRICT pOut, unsigned int out_len, const uint8_t *RESTRICT pIn, unsigned int in_len);
 
-	public:
-		/**
-		 * Decompress the data blocks.
-		 * @return 0 on success; non-zero on error.
-		 */
-		static int decompress(void);
+public:
+	/**
+	 * Decompress the data blocks.
+	 * @return 0 on success; non-zero on error.
+	 */
+	static int decompress(void);
 
-	public:
-		void SetUp(void) final;
-		void TearDown(void) final;
+public:
+	void SetUp(void) final;
+	void TearDown(void) final;
 
-	public:
-		// Temporary aligned memory buffer.
-		UNIQUE_PTR_ALIGNED(uint8_t) align_buf;
+public:
+	// Temporary aligned memory buffer
+	UNIQUE_PTR_ALIGNED(uint8_t) align_buf;
 };
 
 // Test data is in SuperMagicDriveTest_data.hpp.

@@ -28,58 +28,58 @@ namespace LibRpTexture {
 
 class rp_image_backend_default final : public rp_image_backend
 {
- 	public:
-		rp_image_backend_default(int width, int height, rp_image::Format format);
-		~rp_image_backend_default() final;
+public:
+	rp_image_backend_default(int width, int height, rp_image::Format format);
+	~rp_image_backend_default() final;
 
-	private:
-		typedef rp_image_backend super;
-		RP_DISABLE_COPY(rp_image_backend_default)
+private:
+	typedef rp_image_backend super;
+	RP_DISABLE_COPY(rp_image_backend_default)
 
-	public:
-		void *data(void) final
-		{
-			return m_data;
-		}
+public:
+	void *data(void) final
+	{
+		return m_data;
+	}
 
-		const void *data(void) const final
-		{
-			return m_data;
-		}
+	const void *data(void) const final
+	{
+		return m_data;
+	}
 
-		size_t data_len(void) const final
-		{
-			return static_cast<size_t>(m_data_len);
-		}
+	size_t data_len(void) const final
+	{
+		return static_cast<size_t>(m_data_len);
+	}
 
-		uint32_t *palette(void) final
-		{
-			return m_palette;
-		}
+	uint32_t *palette(void) final
+	{
+		return m_palette;
+	}
 
-		const uint32_t *palette(void) const final
-		{
-			return m_palette;
-		}
+	const uint32_t *palette(void) const final
+	{
+		return m_palette;
+	}
 
-		unsigned int palette_len(void) const final
-		{
-			return m_palette_len;
-		}
+	unsigned int palette_len(void) const final
+	{
+		return m_palette_len;
+	}
 
-	public:
-		/**
-		 * Shrink image dimensions.
-		 * @param width New width.
-		 * @param height New height.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int shrink(int width, int height) final;
+public:
+	/**
+	 * Shrink image dimensions.
+	 * @param width New width
+	 * @param height New height
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int shrink(int width, int height) final;
 
-	private:
-		void *m_data;
-		uint32_t *m_palette;
-		unsigned int m_data_len, m_palette_len;
+private:
+	void *m_data;
+	uint32_t *m_palette;
+	unsigned int m_data_len, m_palette_len;
 };
 
 rp_image_backend_default::rp_image_backend_default(int width, int height, rp_image::Format format)
@@ -150,8 +150,8 @@ rp_image_backend_default::~rp_image_backend_default()
 
 /**
  * Shrink image dimensions.
- * @param width New width.
- * @param height New height.
+ * @param width New width
+ * @param height New height
  * @return 0 on success; negative POSIX error code on error.
  */
 int rp_image_backend_default::shrink(int width, int height)
@@ -187,9 +187,9 @@ rp_image::rp_image_backend_creator_fn rp_image_private::backend_fn = nullptr;
  * If an rp_image_backend has been registered, that backend
  * will be used; otherwise, the defaul tbackend will be used.
  *
- * @param width Image width.
- * @param height Image height.
- * @param format Image format.
+ * @param width Image width
+ * @param height Image height
+ * @param format Image format
  */
 rp_image_private::rp_image_private(int width, int height, rp_image::Format format)
 	: has_sBIT(false)
@@ -218,7 +218,7 @@ rp_image_private::rp_image_private(int width, int height, rp_image::Format forma
  *
  * NOTE: This rp_image will take ownership of the rp_image_backend.
  *
- * @param backend rp_image_backend.
+ * @param backend rp_image_backend
  */
 rp_image_private::rp_image_private(rp_image_backend *backend)
 	: backend(backend)
@@ -237,9 +237,9 @@ rp_image_private::rp_image_private(rp_image_backend *backend)
  * If an rp_image_backend has been registered, that backend
  * will be used; otherwise, the defaul tbackend will be used.
  *
- * @param width Image width.
- * @param height Image height.
- * @param format Image format.
+ * @param width Image width
+ * @param height Image height
+ * @param format Image format
  */
 rp_image::rp_image(int width, int height, rp_image::Format format)
 	: d_ptr(new rp_image_private(width, height, format))
@@ -265,7 +265,7 @@ rp_image::~rp_image()
 
 /**
  * Set the image backend creator function.
- * @param backend Image backend creator function.
+ * @param backend Image backend creator function
  */
 void rp_image::setBackendCreatorFn(rp_image_backend_creator_fn backend_fn)
 {
@@ -283,7 +283,7 @@ rp_image::rp_image_backend_creator_fn rp_image::backendCreatorFn(void)
 
 /**
  * Get this image's backend object.
- * @return Image backend object.
+ * @return Image backend object
  */
 const rp_image_backend *rp_image::backend(void) const
 {

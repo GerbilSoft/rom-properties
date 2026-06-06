@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * AesCipherTest.cpp: AesCipher class test.                                *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -86,51 +86,50 @@ inline ::std::ostream& operator<<(::std::ostream& os, const AesCipherTest_mode& 
 
 class AesCipherTest : public ::testing::TestWithParam<AesCipherTest_mode>
 {
-	protected:
-		AesCipherTest()
-			: m_cipher(nullptr) { }
+protected:
+	AesCipherTest()
+		: m_cipher(nullptr)
+	{}
 
-		void SetUp(void) final;
-		void TearDown(void) final;
+	void SetUp(void) final;
+	void TearDown(void) final;
 
-	public:
-		IAesCipher *m_cipher;
+public:
+	IAesCipher *m_cipher;
 
-		// AES-256 encryption key.
-		// AES-128 and AES-192 use the first
-		// 16 and 24 bytes of this key.
-		static const array<uint8_t, 32> aes_key;
+	// AES-256 encryption key
+	// AES-128 and AES-192 use the first
+	// 16 and 24 bytes of this key.
+	static const array<uint8_t, 32> aes_key;
 
-		// IV for AES-CBC.
-		static const array<uint8_t, 16> aes_iv;
+	// IV for AES-CBC
+	static const array<uint8_t, 16> aes_iv;
 
-		// Test string.
-		static const char test_string[64];
+	// Test string
+	static const char test_string[64];
 
-		/**
-		 * Compare two byte arrays.
-		 * The byte arrays are converted to hexdumps and then
-		 * compared using EXPECT_EQ().
-		 * @param expected	[in] Expected data.
-		 * @param actual	[in] Actual data.
-		 * @param size		[in] Size of both arrays.
-		 * @param data_type	[in] Data type.
-		 */
-		void CompareByteArrays(
-			const uint8_t *expected,
-			const uint8_t *actual,
-			size_t size,
-			const char *data_type);
+	/**
+	 * Compare two byte arrays.
+	 * The byte arrays are converted to hexdumps and then
+	 * compared using EXPECT_EQ().
+	 * @param expected	[in] Expected data
+	 * @param actual	[in] Actual data
+	 * @param size		[in] Size of both arrays
+	 * @param data_type	[in] Data type
+	 */
+	void CompareByteArrays(
+		const uint8_t *expected, const uint8_t *actual,
+		size_t size, const char *data_type);
 
-	public:
-		/** Test case parameters. **/
+public:
+	/** Test case parameters **/
 
-		/**
-		 * Test case suffix generator.
-		 * @param info Test parameter information.
-		 * @return Test case suffix.
-		 */
-		static string test_case_suffix_generator(const ::testing::TestParamInfo<AesCipherTest_mode> &info);
+	/**
+	 * Test case suffix generator.
+	 * @param info Test parameter information.
+	 * @return Test case suffix.
+	 */
+	static string test_case_suffix_generator(const ::testing::TestParamInfo<AesCipherTest_mode> &info);
 };
 
 // AES-256 encryption key.
@@ -157,16 +156,14 @@ const char AesCipherTest::test_string[64] =
  * Compare two byte arrays.
  * The byte arrays are converted to hexdumps and then
  * compared using EXPECT_EQ().
- * @param expected	[in] Expected data.
- * @param actual	[in] Actual data.
- * @param size		[in] Size of both arrays.
- * @param data_type	[in] Data type.
+ * @param expected	[in] Expected data
+ * @param actual	[in] Actual data
+ * @param size		[in] Size of both arrays
+ * @param data_type	[in] Data type
  */
 void AesCipherTest::CompareByteArrays(
-	const uint8_t *expected,
-	const uint8_t *actual,
-	size_t size,
-	const char *data_type)
+	const uint8_t *expected, const uint8_t *actual,
+	size_t size, const char *data_type)
 {
 	// Output format: (assume ~64 bytes per line)
 	// 0000: 01 23 45 67 89 AB CD EF  01 23 45 67 89 AB CD EF

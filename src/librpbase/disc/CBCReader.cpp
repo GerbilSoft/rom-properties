@@ -36,26 +36,26 @@ namespace LibRpBase {
 
 class CBCReaderPrivate
 {
-	public:
-		CBCReaderPrivate(CBCReader *q, off64_t offset, off64_t length, const uint8_t *key, const uint8_t *iv);
+public:
+	CBCReaderPrivate(CBCReader *q, off64_t offset, off64_t length, const uint8_t *key, const uint8_t *iv);
 
-	private:
-		RP_DISABLE_COPY(CBCReaderPrivate)
+private:
+	RP_DISABLE_COPY(CBCReaderPrivate)
 
-	public:
-		const off64_t offset;		// Encrypted data start offset, in bytes.
-		const off64_t length;		// Encrypted data length, in bytes.
+public:
+	const off64_t offset;		// Encrypted data start offset, in bytes.
+	const off64_t length;		// Encrypted data length, in bytes.
 
-		// Current read position within the encrypted data.
-		// pos = 0 indicates the beginning of the content.
-		off64_t pos;
+	// Current read position within the encrypted data.
+	// pos = 0 indicates the beginning of the content.
+	off64_t pos;
 
 #ifdef ENABLE_DECRYPTION
-		// Encryption cipher
-		unique_ptr<IAesCipher> cipher;
-		array<uint8_t, 16> key;
-		array<uint8_t, 16> iv;
-		bool usesIV;
+	// Encryption cipher
+	unique_ptr<IAesCipher> cipher;
+	array<uint8_t, 16> key;
+	array<uint8_t, 16> iv;
+	bool usesIV;
 #endif /* ENABLE_DECRYPTION */
 };
 

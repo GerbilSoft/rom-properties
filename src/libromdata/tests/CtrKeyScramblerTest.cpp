@@ -63,26 +63,26 @@ struct CtrKeyScramblerTest_mode
 
 class CtrKeyScramblerTest : public ::testing::TestWithParam<CtrKeyScramblerTest_mode>
 {
-	protected:
-		CtrKeyScramblerTest() = default;
+protected:
+	CtrKeyScramblerTest() = default;
 
-	public:
-		// TODO: Split into a separate file, since this is
-		// also implemented by AesCipherTest.
-		/**
-		 * Compare two byte arrays.
-		 * The byte arrays are converted to hexdumps and then
-		 * compared using EXPECT_EQ().
-		 * @param expected	[in] Expected data.
-		 * @param actual	[in] Actual data.
-		 * @param size		[in] Size of both arrays.
-		 * @param data_type	[in] Data type.
-		 */
-		void CompareByteArrays(
-			const uint8_t *expected,
-			const uint8_t *actual,
-			size_t size,
-			const char *data_type);
+public:
+	// TODO: Split into a separate file, since this is
+	// also implemented by AesCipherTest.
+	/**
+	 * Compare two byte arrays.
+	 * The byte arrays are converted to hexdumps and then
+	 * compared using EXPECT_EQ().
+	 * @param expected	[in] Expected data.
+	 * @param actual	[in] Actual data.
+	 * @param size		[in] Size of both arrays.
+	 * @param data_type	[in] Data type.
+	 */
+	void CompareByteArrays(
+		const uint8_t *expected,
+		const uint8_t *actual,
+		size_t size,
+		const char *data_type);
 };
 
 /**

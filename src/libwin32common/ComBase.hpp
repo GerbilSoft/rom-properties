@@ -52,39 +52,39 @@ HRESULT WINAPI rp_QISearch(_Inout_ void *that, _In_ LPCQITAB pqit, _In_ REFIID r
 
 #define RP_COMBASE_IMPL(name) \
 { \
-	protected: \
-		/* References of this object */ \
-		volatile long m_lRefCount; \
+protected: \
+	/* References of this object */ \
+	volatile long m_lRefCount; \
+\
+public: \
+	name() : m_lRefCount(1) \
+	{ \
+		incRpGlobalRefCount(); \
+	} \
+	virtual ~name() \
+	{ \
+		assert(m_lRefCount == 0); \
+	} \
+\
+public: \
+	/** IUnknown **/ \
+	IFACEMETHODIMP_(ULONG) AddRef(void) final \
+	{ \
+		incRpGlobalRefCount(); \
+		return static_cast<ULONG>(_InterlockedIncrement(&m_lRefCount)); \
+	} \
 	\
-	public: \
-		name() : m_lRefCount(1) \
-		{ \
-			incRpGlobalRefCount(); \
+	IFACEMETHODIMP_(ULONG) Release(void) final \
+	{ \
+		assert(m_lRefCount > 0); \
+		long lRefCount = _InterlockedDecrement(&m_lRefCount); \
+		if (lRefCount == 0) { \
+			/* No more references */ \
+			delete this; \
 		} \
-		virtual ~name() \
-		{ \
-			assert(m_lRefCount == 0); \
-		} \
-	\
-	public: \
-		/** IUnknown **/ \
-		IFACEMETHODIMP_(ULONG) AddRef(void) final \
-		{ \
-			incRpGlobalRefCount(); \
-			return static_cast<ULONG>(_InterlockedIncrement(&m_lRefCount)); \
-		} \
-		\
-		IFACEMETHODIMP_(ULONG) Release(void) final \
-		{ \
-			assert(m_lRefCount > 0); \
-			long lRefCount = _InterlockedDecrement(&m_lRefCount); \
-			if (lRefCount == 0) { \
-				/* No more references */ \
-				delete this; \
-			} \
-			decRpGlobalRefCount(); \
-			return static_cast<ULONG>(lRefCount); \
-		} \
+		decRpGlobalRefCount(); \
+		return static_cast<ULONG>(lRefCount); \
+	} \
 }
 
 template<class I>

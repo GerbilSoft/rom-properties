@@ -31,34 +31,34 @@ namespace LibRpTexture {
 
 class ASTCPrivate final : public FileFormatPrivate
 {
-	public:
-		ASTCPrivate(ASTC *q, const IRpFilePtr &file);
+public:
+	ASTCPrivate(ASTC *q, const IRpFilePtr &file);
 
-	private:
-		typedef FileFormatPrivate super;
-		RP_DISABLE_COPY(ASTCPrivate)
+private:
+	typedef FileFormatPrivate super;
+	RP_DISABLE_COPY(ASTCPrivate)
 
-	public:
-		/** TextureInfo **/
-		static const array<const char*, 2+1> exts;
-		static const array<const char*, 1+1> mimeTypes;
-		static const TextureInfo textureInfo;
+public:
+	/** TextureInfo **/
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
+	static const TextureInfo textureInfo;
 
-	public:
-		// ASTC header
-		ASTC_Header astcHeader;
+public:
+	// ASTC header
+	ASTC_Header astcHeader;
 
-		// Decoded image
-		rp_image_ptr img;
+	// Decoded image
+	rp_image_ptr img;
 
-		// Pixel format message
-		mutable string pixel_format;
+	// Pixel format message
+	mutable string pixel_format;
 
-		/**
-		 * Load the image.
-		 * @return Image, or nullptr on error.
-		 */
-		rp_image_const_ptr loadImage(void);
+	/**
+	 * Load the image.
+	 * @return Image, or nullptr on error.
+	 */
+	rp_image_const_ptr loadImage(void);
 };
 
 FILEFORMAT_IMPL(ASTC)

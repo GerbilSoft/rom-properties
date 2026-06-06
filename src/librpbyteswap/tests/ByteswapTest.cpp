@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbyteswap/tests)              *
  * ByteswapTest.cpp: Byteswap functions test.                              *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,44 +29,44 @@ namespace LibRpByteswap { namespace Tests {
 
 class ByteswapTest : public ::testing::Test
 {
-	protected:
-		ByteswapTest()
-			: align_buf(aligned_uptr<uint8_t>(16, 8))
-		{
-			// Dummy align_buf initialization to
-			// prevent compiler errors.
-		}
+protected:
+	ByteswapTest()
+		: align_buf(aligned_uptr<uint8_t>(16, 8))
+	{
+		// Dummy align_buf initialization to
+		// prevent compiler errors.
+	}
 
-	public:
-		// Test array size
-		static constexpr unsigned int TEST_ARRAY_SIZE = 1024U;
+public:
+	// Test array size
+	static constexpr unsigned int TEST_ARRAY_SIZE = 1024U;
 
-		/**
-		 * Original test data
-		 */
-		static const array<uint8_t, TEST_ARRAY_SIZE> bswap_orig;
+	/**
+	 * Original test data
+	 */
+	static const array<uint8_t, TEST_ARRAY_SIZE> bswap_orig;
 
-		/**
-		 * 16-bit byteswapped test data
-		 */
-		static const array<uint8_t, TEST_ARRAY_SIZE> bswap_16b;
+	/**
+	 * 16-bit byteswapped test data
+	 */
+	static const array<uint8_t, TEST_ARRAY_SIZE> bswap_16b;
 
-		/**
-		 * 32-bit byteswapped test data
-		 */
-		static const array<uint8_t, TEST_ARRAY_SIZE> bswap_32b;
+	/**
+	 * 32-bit byteswapped test data
+	 */
+	static const array<uint8_t, TEST_ARRAY_SIZE> bswap_32b;
 
-		// Number of iterations for benchmarks.
-		static constexpr unsigned int BENCHMARK_ITERATIONS = 100000U;
+	// Number of iterations for benchmarks
+	static constexpr unsigned int BENCHMARK_ITERATIONS = 100000U;
 
-	public:
-		void SetUp(void) final;
-		void TearDown(void) final;
+public:
+	void SetUp(void) final;
+	void TearDown(void) final;
 
-	public:
-		// Temporary aligned memory buffer.
-		static constexpr unsigned int ALIGN_BUF_SIZE = TEST_ARRAY_SIZE * 16U;
-		UNIQUE_PTR_ALIGNED(uint8_t) align_buf;
+public:
+	// Temporary aligned memory buffer
+	static constexpr unsigned int ALIGN_BUF_SIZE = TEST_ARRAY_SIZE * 16U;
+	UNIQUE_PTR_ALIGNED(uint8_t) align_buf;
 };
 
 // Test data is in ByteswapTest_data.hpp.

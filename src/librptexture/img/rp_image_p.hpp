@@ -25,9 +25,9 @@ public:
 	 * If an rp_image_backend has been registered, that backend
 	 * will be used; otherwise, the defaul tbackend will be used.
 	 *
-	 * @param width Image width.
-	 * @param height Image height.
-	 * @param format Image format.
+	 * @param width Image width
+	 * @param height Image height
+	 * @param format Image format
 	 */
 	rp_image_private(int width, int height, rp_image::Format format);
 
@@ -36,7 +36,7 @@ public:
 	 *
 	 * NOTE: This rp_image will take ownership of the rp_image_backend.
 	 *
-	 * @param backend rp_image_backend.
+	 * @param backend rp_image_backend
 	 */
 	explicit rp_image_private(rp_image_backend *backend);
 

@@ -96,7 +96,7 @@ public:
 
 	/**
 	 * Load the image.
-	 * @param mip Mipmap number. (0 == full image)
+	 * @param mip Mipmap number (0 == full image)
 	 * @return Image, or nullptr on error.
 	 */
 	rp_image_const_ptr loadImage(int mip);
@@ -689,7 +689,7 @@ unsigned int DirectDrawSurfacePrivate::calcExpectedSize(int width, int height, i
 
 /**
  * Load the image.
- * @param mip Mipmap number. (0 == full image)
+ * @param mip Mipmap number (0 == full image)
  * @return Image, or nullptr on error.
  */
 rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(int mip)
@@ -1492,7 +1492,7 @@ rp_image_const_ptr DirectDrawSurface::image(void) const
 /**
  * Get the image for the specified mipmap.
  * Mipmap 0 is the largest image.
- * @param mip Mipmap number.
+ * @param mip Mipmap number
  * @return Image, or nullptr on error.
  */
 rp_image_const_ptr DirectDrawSurface::mipmap(int mip) const

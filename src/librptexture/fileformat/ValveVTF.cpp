@@ -42,71 +42,71 @@ namespace LibRpTexture {
 
 class ValveVTFPrivate final : public FileFormatPrivate
 {
-	public:
-		ValveVTFPrivate(ValveVTF *q, const IRpFilePtr &file);
+public:
+	ValveVTFPrivate(ValveVTF *q, const IRpFilePtr &file);
 
-	private:
-		typedef FileFormatPrivate super;
-		RP_DISABLE_COPY(ValveVTFPrivate)
+private:
+	typedef FileFormatPrivate super;
+	RP_DISABLE_COPY(ValveVTFPrivate)
 
-	public:
-		/** TextureInfo **/
-		static const array<const char*, 1+1> exts;
-		static const array<const char*, 2+1> mimeTypes;
-		static const TextureInfo textureInfo;
+public:
+	/** TextureInfo **/
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 2+1> mimeTypes;
+	static const TextureInfo textureInfo;
 
-	public:
-		// VTF header
-		VTFHEADER vtfHeader;
+public:
+	// VTF header
+	VTFHEADER vtfHeader;
 
-		// Texture data start address
-		uint32_t texDataStartAddr;
+	// Texture data start address
+	uint32_t texDataStartAddr;
 
-		// Decoded mipmaps
-		// Mipmap 0 is the full image.
-		vector<rp_image_ptr > mipmaps;
+	// Decoded mipmaps
+	// Mipmap 0 is the full image.
+	vector<rp_image_ptr > mipmaps;
 
-		// Mipmap sizes and start addresses.
-		struct mipmap_data_t {
-			uint32_t addr;		// start address
-			uint32_t size;		// in bytes
-			uint16_t width;		// width
-			uint16_t height;	// height
+	// Mipmap sizes and start addresses.
+	struct mipmap_data_t {
+		uint32_t addr;		// start address
+		uint32_t size;		// in bytes
+		uint16_t width;		// width
+		uint16_t height;	// height
 
-			uint16_t row_width;	// Row width. (must be a power of 2)
-		};
-		vector<mipmap_data_t> mipmap_data;
+		uint16_t row_width;	// Row width (must be a power of 2)
+	};
+	vector<mipmap_data_t> mipmap_data;
 
-		// Invalid pixel format message
-		mutable string invalid_pixel_format;
+	// Invalid pixel format message
+	mutable string invalid_pixel_format;
 
-	public:
-		// Image format table
-		static const array<const char*, VTF_IMAGE_FORMAT_MAX> img_format_tbl;
+public:
+	// Image format table
+	static const array<const char*, VTF_IMAGE_FORMAT_MAX> img_format_tbl;
 
-		// ImageSizeCalc opcode table
-		static const array<ImageSizeCalc::OpCode, VTF_IMAGE_FORMAT_MAX> op_tbl;
+	// ImageSizeCalc opcode table
+	static const array<ImageSizeCalc::OpCode, VTF_IMAGE_FORMAT_MAX> op_tbl;
 
-	public:
-		/**
-		 * Get the minimum block size for the specified format.
-		 * @param format VTF image format.
-		 * @return Minimum block size, or 0 if invalid.
-		 */
-		static unsigned int getMinBlockSize(VTF_IMAGE_FORMAT format);
+public:
+	/**
+	 * Get the minimum block size for the specified format.
+	 * @param format VTF image format.
+	 * @return Minimum block size, or 0 if invalid.
+	 */
+	static unsigned int getMinBlockSize(VTF_IMAGE_FORMAT format);
 
-		/**
-		 * Get mipmap information.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int getMipmapInfo(void);
+	/**
+	 * Get mipmap information.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int getMipmapInfo(void);
 
-		/**
-		 * Load the image.
-		 * @param mip Mipmap number. (0 == full image)
-		 * @return Image, or nullptr on error.
-		 */
-		rp_image_const_ptr loadImage(int mip);
+	/**
+	 * Load the image.
+	 * @param mip Mipmap number (0 == full image)
+	 * @return Image, or nullptr on error.
+	 */
+	rp_image_const_ptr loadImage(int mip);
 };
 
 FILEFORMAT_IMPL(ValveVTF)
@@ -346,7 +346,7 @@ int ValveVTFPrivate::getMipmapInfo(void)
 
 /**
  * Load the image.
- * @param mip Mipmap number. (0 == full image)
+ * @param mip Mipmap number (0 == full image)
  * @return Image, or nullptr on error.
  */
 rp_image_const_ptr ValveVTFPrivate::loadImage(int mip)
@@ -922,7 +922,7 @@ rp_image_const_ptr ValveVTF::image(void) const
 /**
  * Get the image for the specified mipmap.
  * Mipmap 0 is the largest image.
- * @param mip Mipmap number.
+ * @param mip Mipmap number
  * @return Image, or nullptr on error.
  */
 rp_image_const_ptr ValveVTF::mipmap(int mip) const

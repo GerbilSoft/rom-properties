@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * RpPngFormatTest.cpp: RpPng format test.                                 *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -154,143 +154,143 @@ static constexpr off64_t MAX_BMP_IMAGE_FILESIZE = 2*1024*1024;
 
 class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 {
-	protected:
-		RpPngFormatTest()
-			: ::testing::TestWithParam<RpPngFormatTest_mode>()
-			, m_gzBmp(nullptr)
-		{ }
+protected:
+	RpPngFormatTest()
+		: ::testing::TestWithParam<RpPngFormatTest_mode>()
+		, m_gzBmp(nullptr)
+	{}
 
-		void SetUp(void) final;
-		void TearDown(void) final;
+	void SetUp(void) final;
+	void TearDown(void) final;
 
-	public:
-		/**
-		 * Load and verify an IHDR chunk.
-		 * @param ihdr Destination IHDR chunk.
-		 * @param ihdr_src Source IHDR chunk.
-		 */
-		static void Load_Verify_IHDR(PNG_IHDR_t *ihdr, const uint8_t *ihdr_src);
+public:
+	/**
+	 * Load and verify an IHDR chunk.
+	 * @param ihdr Destination IHDR chunk (data only)
+	 * @param ihdr_src Source IHDR chunk (full chunk)
+	 */
+	static void Load_Verify_IHDR(PNG_IHDR_t *ihdr, const uint8_t *ihdr_src);
 
-		/**
-		 * Load and verify the headers from a bitmap file.
-		 * @param pBfh Destination BITMAPFILEHEADER.
-		 * @param pBih Destination BITMAPINFOHEADER.
-		 * @param bmp_buf Bitmap buffer.
-		 */
-		static void Load_Verify_BMP_headers(
-			BITMAPFILEHEADER *pBfh,
-			BITMAPINFOHEADER *pBih,
-			const rp::uvector<uint8_t> &bmp_buf);
+	/**
+	 * Load and verify the headers from a bitmap file.
+	 * @param pBfh Destination BITMAPFILEHEADER
+	 * @param pBih Destination BITMAPINFOHEADER
+	 * @param bmp_buf Bitmap buffer
+	 */
+	static void Load_Verify_BMP_headers(
+		BITMAPFILEHEADER *pBfh,
+		BITMAPINFOHEADER *pBih,
+		const rp::uvector<uint8_t> &bmp_buf);
 
-		/**
-		 * Compare an ARGB32 rp_image to a 24-bit RGB bitmap.
-		 * @param img rp_image
-		 * @param pBits Bitmap image data.
-		 */
-		static void Compare_ARGB32_BMP24(
-			const rp_image *img,
-			const uint8_t *pBits);
+	/**
+	 * Compare an ARGB32 rp_image to a 24-bit RGB bitmap.
+	 * @param img rp_image
+	 * @param pBits Bitmap image data
+	 */
+	static void Compare_ARGB32_BMP24(
+		const rp_image *img,
+		const uint8_t *pBits);
 
-		/**
-		 * Compare an ARGB32 rp_image to an ARGB32 bitmap.
-		 * @param img rp_image
-		 * @param pBits Bitmap image data.
-		 */
-		static void Compare_ARGB32_BMP32(
-			const rp_image *img,
-			const uint8_t *pBits);
+	/**
+	 * Compare an ARGB32 rp_image to an ARGB32 bitmap.
+	 * @param img rp_image
+	 * @param pBits Bitmap image data.
+	 */
+	static void Compare_ARGB32_BMP32(
+		const rp_image *img,
+		const uint8_t *pBits);
 
-		/**
-		 * Compare an rp_image's palette to a BMP palette.
-		 * @param img rp_image.
-		 * @param pBmpPalette Bitmap palette.
-		 * @param pBmpAlpha BMP tRNS chunk from the test parameter. (If nullptr, no tRNS.)
-		 * @param bmpColorTableSize BMP color table size. (256 for CI8, 2 for monochrome.)
-		 * @param biClrUsed Number of used colors. (If negative, check all 256 colors.)
-		 */
-		static void Compare_Palettes(
-			const rp_image *img,
-			const uint32_t *pBmpPalette,
-			const tRNS_CI8_t *pBmpAlpha = nullptr,
-			unsigned int bmpColorTableSize = 256U,
-			int biClrUsed = -1);
+	/**
+	 * Compare an rp_image's palette to a BMP palette.
+	 * @param img rp_image
+	 * @param pBmpPalette Bitmap palette
+	 * @param pBmpAlpha BMP tRNS chunk from the test parameter (If nullptr, no tRNS)
+	 * @param bmpColorTableSize BMP color table size (256 for CI8, 2 for monochrome)
+	 * @param biClrUsed Number of used colors (If negative, check all 256 colors)
+	 */
+	static void Compare_Palettes(
+		const rp_image *img,
+		const uint32_t *pBmpPalette,
+		const tRNS_CI8_t *pBmpAlpha = nullptr,
+		unsigned int bmpColorTableSize = 256U,
+		int biClrUsed = -1);
 
-		/**
-		 * Compare a CI8 rp_image to an 8-bit CI8 bitmap.
-		 * @param img rp_image
-		 * @param pBits Bitmap image data.
-		 * @param pBmpPalette Bitmap palette.
-		 * @param pBmpAlpha BMP tRNS chunk from the test parameter. (If nullptr, no tRNS.)
-		 * @param biClrUsed Number of used colors. (If negative, check the entire palette.)
-		 */
-		static void Compare_CI8_BMP8(
-			const rp_image *img,
-			const uint8_t *pBits,
-			const uint32_t *pBmpPalette,
-			const tRNS_CI8_t *pBmpAlpha = nullptr,
-			int biClrUsed = -1);
+	/**
+	 * Compare a CI8 rp_image to an 8-bit CI8 bitmap.
+	 * @param img rp_image
+	 * @param pBits Bitmap image data
+	 * @param pBmpPalette Bitmap palette
+	 * @param pBmpAlpha BMP tRNS chunk from the test parameter (If nullptr, no tRNS)
+	 * @param biClrUsed Number of used colors (If negative, check the entire palette)
+	 */
+	static void Compare_CI8_BMP8(
+		const rp_image *img,
+		const uint8_t *pBits,
+		const uint32_t *pBmpPalette,
+		const tRNS_CI8_t *pBmpAlpha = nullptr,
+		int biClrUsed = -1);
 
-		/**
-		 * Compare an ARGB32 rp_image to an 8-bit CI8 bitmap.
-		 * NOTE: This should only happen if GDI+ decoded
-		 * a grayscale image to ARGB32, which seems to happen
-		 * on wine-1.9.18 and AppVeyor for some reason.
-		 * @param img rp_image
-		 * @param pBits Bitmap image data.
-		 * @param pBmpPalette Bitmap palette.
-		 */
-		static void Compare_ARGB32_BMP8(
-			const rp_image *img,
-			const uint8_t *pBits,
-			const uint32_t *pBmpPalette);
+	/**
+	 * Compare an ARGB32 rp_image to an 8-bit CI8 bitmap.
+	 * NOTE: This should only happen if GDI+ decoded
+	 * a grayscale image to ARGB32, which seems to happen
+	 * on wine-1.9.18 and AppVeyor for some reason.
+	 * @param img rp_image
+	 * @param pBits Bitmap image data
+	 * @param pBmpPalette Bitmap palette
+	 */
+	static void Compare_ARGB32_BMP8(
+		const rp_image *img,
+		const uint8_t *pBits,
+		const uint32_t *pBmpPalette);
 
-		/**
-		 * Compare a CI8 rp_image to an ARGB32 bitmap.
-		 * wine-1.9.18 loads xterm-256color.CI8.tRNS.png as CI8
-		 * instead of as ARGB32 for some reason.
-		 * @param img rp_image
-		 * @param pBits Bitmap image data.
-		 */
-		static void Compare_CI8_BMP32(
-			const rp_image *img,
-			const uint8_t *pBits);
+	/**
+	 * Compare a CI8 rp_image to an ARGB32 bitmap.
+	 * wine-1.9.18 loads xterm-256color.CI8.tRNS.png as CI8
+	 * instead of as ARGB32 for some reason.
+	 * @param img rp_image
+	 * @param pBits Bitmap image data
+	 */
+	static void Compare_CI8_BMP32(
+		const rp_image *img,
+		const uint8_t *pBits);
 
-		/**
-		 * Compare a CI8 rp_image to a monochrome bitmap.
-		 * @param img rp_image
-		 * @param pBits Bitmap image data.
-		 * @param pBmpPalette Bitmap palette.
-		 * @param pBmpAlpha BMP tRNS chunk from the test parameter. (If nullptr, no tRNS.)
-		 * @param biClrUsed Number of used colors. (If negative, check the entire palette.)
-		 */
-		static void Compare_CI8_BMP1(
-			const rp_image *img,
-			const uint8_t *pBits,
-			const uint32_t *pBmpPalette,
-			const tRNS_CI8_t *pBmpAlpha = nullptr,
-			int biClrUsed = -1);
+	/**
+	 * Compare a CI8 rp_image to a monochrome bitmap.
+	 * @param img rp_image
+	 * @param pBits Bitmap image data
+	 * @param pBmpPalette Bitmap palette
+	 * @param pBmpAlpha BMP tRNS chunk from the test parameter (If nullptr, no tRNS)
+	 * @param biClrUsed Number of used colors (If negative, check the entire palette)
+	 */
+	static void Compare_CI8_BMP1(
+		const rp_image *img,
+		const uint8_t *pBits,
+		const uint32_t *pBmpPalette,
+		const tRNS_CI8_t *pBmpAlpha = nullptr,
+		int biClrUsed = -1);
 
-	public:
-		// Image buffers.
-		rp::uvector<uint8_t> m_png_buf;
-		rp::uvector<uint8_t> m_bmp_buf;
+public:
+	// Image buffers
+	rp::uvector<uint8_t> m_png_buf;
+	rp::uvector<uint8_t> m_bmp_buf;
 
-		// gzip file handle for .bmp.gz.
-		// Placed here so it can be freed by TearDown() if necessary.
-		gzFile m_gzBmp;
+	// gzip file handle for .bmp.gz.
+	// Placed here so it can be freed by TearDown() if necessary.
+	gzFile m_gzBmp;
 
-		// Loaded image.
-		rp_image_ptr m_img;
+	// Loaded image
+	rp_image_ptr m_img;
 
-	public:
-		/** Test case parameters. **/
+public:
+	/** Test case parameters **/
 
-		/**
-		 * Test case suffix generator.
-		 * @param info Test parameter information.
-		 * @return Test case suffix.
-		 */
-		static string test_case_suffix_generator(const ::testing::TestParamInfo<RpPngFormatTest_mode> &info);
+	/**
+	 * Test case suffix generator.
+	 * @param info Test parameter information.
+	 * @return Test case suffix.
+	 */
+	static string test_case_suffix_generator(const ::testing::TestParamInfo<RpPngFormatTest_mode> &info);
 };
 
 /**
@@ -380,8 +380,8 @@ void RpPngFormatTest::TearDown(void)
 
 /**
  * Load and verify an IHDR chunk.
- * @param ihdr Destination IHDR chunk. (data only)
- * @param ihdr_src Source IHDR chunk. (full chunk)
+ * @param ihdr Destination IHDR chunk (data only)
+ * @param ihdr_src Source IHDR chunk (full chunk)
  */
 void RpPngFormatTest::Load_Verify_IHDR(PNG_IHDR_t *ihdr, const uint8_t *ihdr_src)
 {
@@ -427,9 +427,9 @@ void RpPngFormatTest::Load_Verify_IHDR(PNG_IHDR_t *ihdr, const uint8_t *ihdr_src
 
 /**
  * Load and verify the headers from a bitmap file.
- * @param pBfh Destination BITMAPFILEHEADER.
- * @param pBih Destination BITMAPINFOHEADER.
- * @param bmp_buf Bitmap buffer.
+ * @param pBfh Destination BITMAPFILEHEADER
+ * @param pBih Destination BITMAPINFOHEADER
+ * @param bmp_buf Bitmap buffer
  */
 void RpPngFormatTest::Load_Verify_BMP_headers(
 	BITMAPFILEHEADER *pBfh,
@@ -509,9 +509,7 @@ void RpPngFormatTest::Load_Verify_BMP_headers(
 /**
  * Compare an ARGB32 rp_image to a 24-bit RGB bitmap.
  * @param img rp_image
- * @param pBfh BITMAPFILEHEADER
- * @param pBih BITMAPINFOHEADER
- * @param pBits Bitmap image data.
+ * @param pBits Bitmap image data
  */
 void RpPngFormatTest::Compare_ARGB32_BMP24(
 	const rp_image *img,
@@ -545,11 +543,11 @@ void RpPngFormatTest::Compare_ARGB32_BMP24(
 }
 
 /**
- * Compare an ARGB32 rp_image to a 32-bit RGB bitmap.
+ * Compare a CI8 rp_image to an ARGB32 bitmap.
+ * wine-1.9.18 loads xterm-256color.CI8.tRNS.png as CI8
+ * instead of as ARGB32 for some reason.
  * @param img rp_image
- * @param pBfh BITMAPFILEHEADER
- * @param pBih BITMAPINFOHEADER
- * @param pBits Bitmap image data.
+ * @param pBits Bitmap image data
  */
 void RpPngFormatTest::Compare_ARGB32_BMP32(
 	const rp_image *img,
@@ -580,11 +578,11 @@ void RpPngFormatTest::Compare_ARGB32_BMP32(
 
 /**
  * Compare an rp_image's palette to a BMP palette.
- * @param img rp_image.
- * @param pBmpPalette Bitmap palette.
- * @param pBmpAlpha BMP tRNS chunk from the test parameter. (If nullptr, no tRNS.)
- * @param bmpColorTableSize BMP color table size. (256 for CI8, 2 for monochrome.)
- * @param biClrUsed Number of used colors. (If negative, check all 256 colors.)
+ * @param img rp_image
+ * @param pBmpPalette Bitmap palette
+ * @param pBmpAlpha BMP tRNS chunk from the test parameter (If nullptr, no tRNS)
+ * @param bmpColorTableSize BMP color table size (256 for CI8, 2 for monochrome)
+ * @param biClrUsed Number of used colors (If negative, check all 256 colors)
  */
 void RpPngFormatTest::Compare_Palettes(
 	const rp_image *img,
@@ -640,10 +638,10 @@ void RpPngFormatTest::Compare_Palettes(
 /**
  * Compare a CI8 rp_image to an 8-bit CI8 bitmap.
  * @param img rp_image
- * @param pBits Bitmap image data.
- * @param pBmpPalette Bitmap palette.
- * @param pBmpAlpha BMP tRNS chunk from the test parameter. (If nullptr, no tRNS.)
- * @param biClrUsed Number of used colors. (If negative, check the entire palette.)
+ * @param pBits Bitmap image data
+ * @param pBmpPalette Bitmap palette
+ * @param pBmpAlpha BMP tRNS chunk from the test parameter (If nullptr, no tRNS)
+ * @param biClrUsed Number of used colors (If negative, check the entire palette)
  */
 void RpPngFormatTest::Compare_CI8_BMP8(
 	const rp_image *img,
@@ -699,7 +697,7 @@ void RpPngFormatTest::Compare_CI8_BMP8(
  * a grayscale image to ARGB32, which seems to happen
  * on wine-1.9.18 and AppVeyor for some reason.
  * @param img rp_image
- * @param pBits Bitmap image data.
+ * @param pBits Bitmap image data
  * @param pBmpPalette Bitmap palette.
  */
 void RpPngFormatTest::Compare_ARGB32_BMP8(
@@ -795,10 +793,10 @@ void RpPngFormatTest::Compare_CI8_BMP32(
 /**
  * Compare a CI8 rp_image to a monochrome bitmap.
  * @param img rp_image
- * @param pBits Bitmap image data.
- * @param pBmpPalette Bitmap palette.
- * @param pBmpAlpha BMP tRNS chunk from the test parameter. (If nullptr, no tRNS.)
- * @param biClrUsed Number of used colors. (If negative, check the entire palette.)
+ * @param pBits Bitmap image data
+ * @param pBmpPalette Bitmap palette
+ * @param pBmpAlpha BMP tRNS chunk from the test parameter (If nullptr, no tRNS)
+ * @param biClrUsed Number of used colors (If negative, check the entire palette)
  */
 void RpPngFormatTest::Compare_CI8_BMP1(
 	const rp_image *img,

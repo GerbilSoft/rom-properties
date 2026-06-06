@@ -138,78 +138,78 @@ static constexpr off64_t MAX_PNG_IMAGE_FILESIZE =  2U*1024U*1024U;
 
 class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 {
-	protected:
-		ImageDecoderTest()
-			: ::testing::TestWithParam<ImageDecoderTest_mode>()
-			, m_gzDds(nullptr)
-		{
+protected:
+	ImageDecoderTest()
+		: ::testing::TestWithParam<ImageDecoderTest_mode>()
+		, m_gzDds(nullptr)
+	{
 #ifdef _WIN32
-			// Register RpGdiplusBackend.
-			// TODO: Static initializer somewhere?
-			rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
+		// Register RpGdiplusBackend.
+		// TODO: Static initializer somewhere?
+		rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
 #endif /* _WIN32 */
-		}
+	}
 
-		void SetUp(void) final;
-		void TearDown(void) final;
+	void SetUp(void) final;
+	void TearDown(void) final;
 
-	public:
-		/**
-		 * Compare two rp_image objects.
-		 * If either rp_image is CI8, a copy of the image
-		 * will be created in ARGB32 for comparison purposes.
-		 * @param pImgExpected	[in] Expected image data.
-		 * @param pImgActual	[in] Actual image data.
-		 */
-		static void Compare_RpImage(
-			const rp_image *pImgExpected,
-			const rp_image *pImgActual);
+public:
+	/**
+	 * Compare two rp_image objects.
+	 * If either rp_image is CI8, a copy of the image
+	 * will be created in ARGB32 for comparison purposes.
+	 * @param pImgExpected	[in] Expected image data.
+	 * @param pImgActual	[in] Actual image data.
+	 */
+	static void Compare_RpImage(
+		const rp_image *pImgExpected,
+		const rp_image *pImgActual);
 
-		// Number of iterations for benchmarks.
-		static constexpr unsigned int BENCHMARK_ITERATIONS = 1000;
-		static constexpr unsigned int BENCHMARK_ITERATIONS_BC7 = 100;
+	// Number of iterations for benchmarks.
+	static constexpr unsigned int BENCHMARK_ITERATIONS = 1000;
+	static constexpr unsigned int BENCHMARK_ITERATIONS_BC7 = 100;
 
-	public:
-		// Image buffers.
-		rp::uvector<uint8_t> m_dds_buf;
-		rp::uvector<uint8_t> m_png_buf;
+public:
+	// Image buffers
+	rp::uvector<uint8_t> m_dds_buf;
+	rp::uvector<uint8_t> m_png_buf;
 
-		// gzip file handle for .dds.gz.
-		// Placed here so it can be freed by TearDown() if necessary.
-		gzFile m_gzDds;
+	// gzip file handle for .dds.gz.
+	// Placed here so it can be freed by TearDown() if necessary.
+	gzFile m_gzDds;
 
-		// RomData class pointer for .dds.gz.
-		// Placed here so it can be freed by TearDown() if necessary.
-		// The underlying MemFile is here as well, since we can't
-		// delete it before deleting the RomData object.
-		MemFilePtr m_f_dds;
-		RomDataPtr m_romData;
+	// RomData class pointer for .dds.gz.
+	// Placed here so it can be freed by TearDown() if necessary.
+	// The underlying MemFile is here as well, since we can't
+	// delete it before deleting the RomData object.
+	MemFilePtr m_f_dds;
+	RomDataPtr m_romData;
 
-	public:
-		/** Test case parameters. **/
+public:
+	/** Test case parameters **/
 
-		/**
-		 * Test case suffix generator.
-		 * @param info Test parameter information.
-		 * @return Test case suffix.
-		 */
-		static string test_case_suffix_generator(const ::testing::TestParamInfo<ImageDecoderTest_mode> &info);
+	/**
+	 * Test case suffix generator.
+	 * @param info Test parameter information.
+	 * @return Test case suffix.
+	 */
+	static string test_case_suffix_generator(const ::testing::TestParamInfo<ImageDecoderTest_mode> &info);
 
-		/**
-		 * Replace slashes with backslashes on Windows.
-		 * @param path Pathname.
-		 */
-		static inline void replace_slashes(string &path);
+	/**
+	 * Replace slashes with backslashes on Windows.
+	 * @param path Pathname.
+	 */
+	static inline void replace_slashes(string &path);
 
-		/**
-		 * Internal test function.
-		 */
-		void decodeTest_internal(void);
+	/**
+	 * Internal test function.
+	 */
+	void decodeTest_internal(void);
 
-		/**
-		 * Internal benchmark function.
-		 */
-		void decodeBenchmark_internal(void);
+	/**
+	 * Internal benchmark function.
+	 */
+	void decodeBenchmark_internal(void);
 };
 
 /**

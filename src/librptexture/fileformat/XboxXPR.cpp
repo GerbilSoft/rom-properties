@@ -33,143 +33,143 @@ namespace LibRpTexture {
 
 class XboxXPRPrivate final : public FileFormatPrivate
 {
-	public:
-		XboxXPRPrivate(XboxXPR *q, const IRpFilePtr &file);
+public:
+	XboxXPRPrivate(XboxXPR *q, const IRpFilePtr &file);
 
-	private:
-		typedef FileFormatPrivate super;
-		RP_DISABLE_COPY(XboxXPRPrivate)
+private:
+	typedef FileFormatPrivate super;
+	RP_DISABLE_COPY(XboxXPRPrivate)
 
-	public:
-		/** TextureInfo **/
-		static const array<const char*, 2+1> exts;
-		static const array<const char*, 1+1> mimeTypes;
-		static const TextureInfo textureInfo;
+public:
+	/** TextureInfo **/
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
+	static const TextureInfo textureInfo;
 
-	public:
-		enum class XPRType {
-			Unknown = -1,
+public:
+	enum class XPRType {
+		Unknown = -1,
 
-			XPR0	= 0,	// XPR0
-			XPR1	= 1,	// XPR1 (archive)
-			XPR2	= 2,	// XPR2 (archive)
+		XPR0	= 0,	// XPR0
+		XPR1	= 1,	// XPR1 (archive)
+		XPR2	= 2,	// XPR2 (archive)
 
-			Max
-		};
-		XPRType xprType;
+		Max
+	};
+	XPRType xprType;
 
-		// XPR0 header
-		Xbox_XPR0_Header xpr0Header;
+	// XPR0 header
+	Xbox_XPR0_Header xpr0Header;
 
-		// Decoded image
-		rp_image_ptr img;
+	// Decoded image
+	rp_image_ptr img;
 
-		// Invalid pixel format message
-		mutable string invalid_pixel_format;
+	// Invalid pixel format message
+	mutable string invalid_pixel_format;
 
-		/**
-		 * Generate swizzle masks for unswizzling ARGB textures.
-		 * Based on Cxbx-Reloaded's unswizzling code:
-		 * https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
-		 * Original license: LGPLv2 (GPLv2 for contributions after 2012/01/13)
-		 *
-		 * This should be pretty straightforward.
-		 * It creates a bit pattern like ..zyxzyxzyx from ..xxx, ..yyy and ..zzz
-		 * If there are no bits left from any component it will pack the other masks
-		 * more tighly (Example: zzxzxzyx = Fewer x than z and even fewer y)
-		 *
-		 * rom-properties modification: Removed depth, since we're only
-		 * handling 2D textures.
-		 *
-		 * @param width
-		 * @param height
-		 * @param mask_x
-		 * @param mask_y
-		 */
-		static void generate_swizzle_masks(
-			unsigned int width, unsigned int height,
-			uint32_t *mask_x, uint32_t *mask_y);
+	/**
+	 * Generate swizzle masks for unswizzling ARGB textures.
+	 * Based on Cxbx-Reloaded's unswizzling code:
+	 * https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
+	 * Original license: LGPLv2 (GPLv2 for contributions after 2012/01/13)
+	 *
+	 * This should be pretty straightforward.
+	 * It creates a bit pattern like ..zyxzyxzyx from ..xxx, ..yyy and ..zzz
+	 * If there are no bits left from any component it will pack the other masks
+	 * more tighly (Example: zzxzxzyx = Fewer x than z and even fewer y)
+	 *
+	 * rom-properties modification: Removed depth, since we're only
+	 * handling 2D textures.
+	 *
+	 * @param width
+	 * @param height
+	 * @param mask_x
+	 * @param mask_y
+	 */
+	static void generate_swizzle_masks(
+		unsigned int width, unsigned int height,
+		uint32_t *mask_x, uint32_t *mask_y);
 
-		/**
-		 * This fills a pattern with a value if your value has bits abcd and your
-		 * pattern is 11010100100 this will return: 0a0b0c00d00
-		 *
-		 * Based on Cxbx-Reloaded's unswizzling code:
-		 * https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
-		 * Original license: LGPLv2 (GPLv2 for contributions after 2012/01/13)
-		 *
-		 * @param pattern
-		 * @param value
-		 * @return
-		 */
-		static CONSTEXPR_MULTILINE uint32_t fill_pattern(uint32_t pattern, uint32_t value)
-		{
-			uint32_t result = 0;
-			uint32_t bit = 1;
-			while(value) {
-				if (pattern & bit) {
-					/* Copy bit to result */
-					result |= value & 1 ? bit : 0;
-					value >>= 1;
-				}
-				bit <<= 1;
+	/**
+	 * This fills a pattern with a value if your value has bits abcd and your
+	 * pattern is 11010100100 this will return: 0a0b0c00d00
+	 *
+	 * Based on Cxbx-Reloaded's unswizzling code:
+	 * https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
+	 * Original license: LGPLv2 (GPLv2 for contributions after 2012/01/13)
+	 *
+	 * @param pattern
+	 * @param value
+	 * @return
+	 */
+	static CONSTEXPR_MULTILINE uint32_t fill_pattern(uint32_t pattern, uint32_t value)
+	{
+		uint32_t result = 0;
+		uint32_t bit = 1;
+		while(value) {
+			if (pattern & bit) {
+				/* Copy bit to result */
+				result |= value & 1 ? bit : 0;
+				value >>= 1;
 			}
-			return result;
+			bit <<= 1;
 		}
+		return result;
+	}
 
-		/**
-		 * Get a swizzled texture offset.
-		 * Based on Cxbx-Reloaded's unswizzling code:
-		 * https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
-		 * Original license: LGPLv2 (GPLv2 for contributions after 2012/01/13)
-		 *
-		 * rom-properties modification: Removed depth, since we're only
-		 * handling 2D textures.
-		 *
-		 * @param x
-		 * @param y
-		 * @param mask_x
-		 * @param mask_y
-		 * @param bytes_per_pixel
-		 * @return
-		 */
-		static inline CONSTEXPR_MULTILINE unsigned int get_swizzled_offset(
-			unsigned int x, unsigned int y,
-			uint32_t mask_x, uint32_t mask_y,
-			unsigned int bytes_per_pixel)
-		{
-			return bytes_per_pixel * (fill_pattern(mask_x, x)
-			                       |  fill_pattern(mask_y, y));
-		}
+	/**
+	 * Get a swizzled texture offset.
+	 * Based on Cxbx-Reloaded's unswizzling code:
+	 * https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
+	 * Original license: LGPLv2 (GPLv2 for contributions after 2012/01/13)
+	 *
+	 * rom-properties modification: Removed depth, since we're only
+	 * handling 2D textures.
+	 *
+	 * @param x
+	 * @param y
+	 * @param mask_x
+	 * @param mask_y
+	 * @param bytes_per_pixel
+	 * @return
+	 */
+	static inline CONSTEXPR_MULTILINE unsigned int get_swizzled_offset(
+		unsigned int x, unsigned int y,
+		uint32_t mask_x, uint32_t mask_y,
+		unsigned int bytes_per_pixel)
+	{
+		return bytes_per_pixel * (fill_pattern(mask_x, x)
+		                       |  fill_pattern(mask_y, y));
+	}
 
-		/**
-		 * Unswizzle an ARGB texture.
-		 * Based on Cxbx-Reloaded's unswizzling code:
-		 * https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
-		 * Original license: LGPLv2 (GPLv2 for contributions after 2012/01/13)
-		 *
-		 * rom-properties modification: Removed depth, since we're only
-		 * handling 2D textures. Also removed slice_pitch, since we don't
-		 * have any slices here.
-		 *
-		 * @param src_buf
-		 * @param width
-		 * @param height
-		 * @param dst_buf
-		 * @param row_pitch
-		 * @param slice_pitch
-		 * @param bytes_per_pixel
-		 */
-		static void unswizzle_box(const uint8_t *src_buf,
-			unsigned int width, unsigned int height,
-			uint8_t *dst_buf, unsigned int row_pitch,
-			unsigned int bytes_per_pixel);
+	/**
+	 * Unswizzle an ARGB texture.
+	 * Based on Cxbx-Reloaded's unswizzling code:
+	 * https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
+	 * Original license: LGPLv2 (GPLv2 for contributions after 2012/01/13)
+	 *
+	 * rom-properties modification: Removed depth, since we're only
+	 * handling 2D textures. Also removed slice_pitch, since we don't
+	 * have any slices here.
+	 *
+	 * @param src_buf
+	 * @param width
+	 * @param height
+	 * @param dst_buf
+	 * @param row_pitch
+	 * @param slice_pitch
+	 * @param bytes_per_pixel
+	 */
+	static void unswizzle_box(const uint8_t *src_buf,
+		unsigned int width, unsigned int height,
+		uint8_t *dst_buf, unsigned int row_pitch,
+		unsigned int bytes_per_pixel);
 
-		/**
-		 * Load the XboxXPR image.
-		 * @return Image, or nullptr on error.
-		 */
-		rp_image_const_ptr loadXboxXPR0Image(void);
+	/**
+	 * Load the XboxXPR image.
+	 * @return Image, or nullptr on error.
+	 */
+	rp_image_const_ptr loadXboxXPR0Image(void);
 };
 
 FILEFORMAT_IMPL(XboxXPR)

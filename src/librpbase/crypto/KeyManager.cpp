@@ -40,63 +40,62 @@ namespace LibRpBase {
 
 class KeyManagerPrivate : public ConfReaderPrivate
 {
-	public:
-		KeyManagerPrivate();
+public:
+	KeyManagerPrivate();
 
-	private:
-		typedef ConfReaderPrivate super;
-		RP_DISABLE_COPY(KeyManagerPrivate)
+private:
+	typedef ConfReaderPrivate super;
+	RP_DISABLE_COPY(KeyManagerPrivate)
 
 #ifdef ENABLE_DECRYPTION
-	public:
-		// Static KeyManager instance.
-		// TODO: Q_GLOBAL_STATIC() equivalent, though we
-		// may need special initialization if the compiler
-		// doesn't support thread-safe statics.
-		static KeyManager instance;
+public:
+	// Static KeyManager instance.
+	// TODO: Q_GLOBAL_STATIC() equivalent, though we
+	// may need special initialization if the compiler
+	// doesn't support thread-safe statics.
+	static KeyManager instance;
 #endif /* ENABLE_DECRYPTION */
 
-	public:
-		/**
-		 * Reset the configuration to the default values.
-		 */
-		void reset(void) final;
+public:
+	/**
+	 * Reset the configuration to the default values.
+	 */
+	void reset(void) final;
 
-		/**
-		 * Process a configuration line.
-		 * Virtual function; must be reimplemented by subclasses.
-		 *
-		 * @param section Section.
-		 * @param name Key.
-		 * @param value Value.
-		 * @return 1 on success; 0 on error.
-		 */
-		int processConfigLine(const char *section,
-			const char *name, const char *value) final;
+	/**
+	 * Process a configuration line.
+	 * Virtual function; must be reimplemented by subclasses.
+	 *
+	 * @param section Section
+	 * @param name Key
+	 * @param value Value
+	 * @return 1 on success; 0 on error.
+	 */
+	int processConfigLine(const char *section, const char *name, const char *value) final;
 
-	public:
+public:
 #ifdef ENABLE_DECRYPTION
-		// Encryption key data.
-		// Managed as a single block in order to reduce
-		// memory allocations.
-		rp::uvector<uint8_t> vKeys;
+	// Encryption key data.
+	// Managed as a single block in order to reduce
+	// memory allocations.
+	rp::uvector<uint8_t> vKeys;
 
-		/**
-		 * Map of key names to vKeys indexes.
-		 * - Key: Key name.
-		 * - Value: vKeys information.
-		 *   - High byte: Key length.
-		 *   - Low 3 bytes: Key index.
-		 */
-		unordered_map<string, uint32_t> mapKeyNames;
+	/**
+	 * Map of key names to vKeys indexes.
+	 * - Key: Key name
+	 * - Value: vKeys information
+	 *   - High byte: Key length
+	 *   - Low 3 bytes: Key index
+	 */
+	unordered_map<string, uint32_t> mapKeyNames;
 
-		/**
-		 * Map of invalid key names to errors.
-		 * These are stored for better error reporting.
-		 * - Key: Key name
-		 * - Value: Verification result
-		 */
-		unordered_map<string, KeyManager::VerifyResult> mapInvalidKeyNames;
+	/**
+	 * Map of invalid key names to errors.
+	 * These are stored for better error reporting.
+	 * - Key: Key name
+	 * - Value: Verification result
+	 */
+	unordered_map<string, KeyManager::VerifyResult> mapInvalidKeyNames;
 #endif /* ENABLE_DECRYPTION */
 };
 
@@ -147,9 +146,9 @@ void KeyManagerPrivate::reset(void)
  * Process a configuration line.
  * Virtual function; must be reimplemented by subclasses.
  *
- * @param section Section.
- * @param name Key.
- * @param value Value.
+ * @param section Section
+ * @param name Key
+ * @param value Value
  * @return 1 on success; 0 on error.
  */
 int KeyManagerPrivate::processConfigLine(const char *section, const char *name, const char *value)
@@ -240,7 +239,7 @@ KeyManager::KeyManager()
 
 /**
  * Get a description for a VerifyResult.
- * @param res VerifyResult.
+ * @param res VerifyResult
  * @return Description, or nullptr if invalid.
  */
 const char *KeyManager::verifyResultToString(VerifyResult res)
@@ -280,7 +279,7 @@ const char *KeyManager::verifyResultToString(VerifyResult res)
 #ifdef ENABLE_DECRYPTION
 /**
  * Get the KeyManager instance.
- * @return KeyManager instance.
+ * @return KeyManager instance
  */
 KeyManager *KeyManager::instance(void)
 {
@@ -290,8 +289,8 @@ KeyManager *KeyManager::instance(void)
 
 /**
  * Get an encryption key.
- * @param keyName	[in]  Encryption key name.
- * @param pKeyData	[out] Key data struct.
+ * @param keyName	[in]  Encryption key name
+ * @param pKeyData	[out,opt] Key data struct (If nullptr, key will be checked but not loaded.)
  * @return VerifyResult.
  */
 KeyManager::VerifyResult KeyManager::get(const char *keyName, KeyData_t *pKeyData) const
@@ -357,10 +356,10 @@ KeyManager::VerifyResult KeyManager::get(const char *keyName, KeyData_t *pKeyDat
  * If the key is valid, pKeyData will be populated
  * with the key information, similar to get().
  *
- * @param keyName	[in] Encryption key name.
- * @param pKeyData	[out] Key data struct.
- * @param pVerifyData	[in] Verification data block.
- * @param verifyLen	[in] Length of pVerifyData. (Must be 16.)
+ * @param keyName	[in] Encryption key name
+ * @param pKeyData	[out,opt] Key data struct (If nullptr, key will be checked but not loaded)
+ * @param pVerifyData	[in] Verification data block
+ * @param verifyLen	[in] Length of pVerifyData (Must be 16)
  * @return VerifyResult.
  */
 KeyManager::VerifyResult KeyManager::getAndVerify(const char *keyName, KeyData_t *pKeyData,

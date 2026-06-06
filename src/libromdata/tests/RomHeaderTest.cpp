@@ -84,50 +84,50 @@ static constexpr uint64_t MAX_JSON_FILESIZE = 64U*1024U;	// 64 KB
 
 class RomHeaderTest : public ::testing::TestWithParam<RomHeaderTest_mode>
 {
-	protected:
-		RomHeaderTest()
-			: ::testing::TestWithParam<RomHeaderTest_mode>()
-		{}
+protected:
+	RomHeaderTest()
+		: ::testing::TestWithParam<RomHeaderTest_mode>()
+	{}
 
-	public:
-		// Opened .tar files.
-		// These are opened by ReadTestCasesFromDisk().
-		static forward_list<tar_files_t> all_tar_files;
+public:
+	// Opened .tar files.
+	// These are opened by ReadTestCasesFromDisk().
+	static forward_list<tar_files_t> all_tar_files;
 
-	protected:
-		// Last read file.
-		// NOTE: Not storing the source .tar filename.
-		// There shouldn't be any conflicts, though...
-		static string last_bin_filename;
-		static rp::uvector<uint8_t> last_bin_data;
-		static rp::uvector<uint8_t> last_txt_data;
-		static rp::uvector<uint8_t> last_json_data;
+protected:
+	// Last read file.
+	// NOTE: Not storing the source .tar filename.
+	// There shouldn't be any conflicts, though...
+	static string last_bin_filename;
+	static rp::uvector<uint8_t> last_bin_data;
+	static rp::uvector<uint8_t> last_txt_data;
+	static rp::uvector<uint8_t> last_json_data;
 
-		/**
-		 * Read the next set of files from the .tar files.
-		 * @param RomHeaderTest_mode
-		 * @return 0 on success; non-zero on error.
-		 */
-		int read_next_files(const RomHeaderTest_mode &mode);
+	/**
+	 * Read the next set of files from the .tar files.
+	 * @param RomHeaderTest_mode
+	 * @return 0 on success; non-zero on error.
+	 */
+	int read_next_files(const RomHeaderTest_mode &mode);
 
-	public:
-		/** Test case parameters **/
+public:
+	/** Test case parameters **/
 
-		/**
-		 * Open the .tar files and create the test case list.
-		 * @param bin_tar_filename .tar file contianing the header files
-		 * @param txt_tar_filename .tar file containing the text files
-		 * @param json_tar_filename .tar file containing the JSON files
-		 * @return Header filenames
-		 */
-		static forward_list<RomHeaderTest_mode> ReadTestCasesFromDisk(const char *bin_tar_filename, const char *txt_tar_filename, const char *json_tar_filename);
+	/**
+	 * Open the .tar files and create the test case list.
+	 * @param bin_tar_filename .tar file contianing the header files
+	 * @param txt_tar_filename .tar file containing the text files
+	 * @param json_tar_filename .tar file containing the JSON files
+	 * @return Header filenames
+	 */
+	static forward_list<RomHeaderTest_mode> ReadTestCasesFromDisk(const char *bin_tar_filename, const char *txt_tar_filename, const char *json_tar_filename);
 
-		/**
-		 * Test case suffix generator.
-		 * @param info Test parameter information.
-		 * @return Test case suffix.
-		 */
-		static string test_case_suffix_generator(const ::testing::TestParamInfo<RomHeaderTest_mode> &info);
+	/**
+	 * Test case suffix generator.
+	 * @param info Test parameter information.
+	 * @return Test case suffix.
+	 */
+	static string test_case_suffix_generator(const ::testing::TestParamInfo<RomHeaderTest_mode> &info);
 };
 
 // Opened .tar files.

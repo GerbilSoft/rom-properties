@@ -43,38 +43,38 @@ namespace LibRpTexture {
 
 class PlayStationTIMPrivate final : public FileFormatPrivate
 {
-	public:
-		PlayStationTIMPrivate(PlayStationTIM *q, const IRpFilePtr &file);
+public:
+	PlayStationTIMPrivate(PlayStationTIM *q, const IRpFilePtr &file);
 
-	private:
-		typedef FileFormatPrivate super;
-		RP_DISABLE_COPY(PlayStationTIMPrivate)
+private:
+	typedef FileFormatPrivate super;
+	RP_DISABLE_COPY(PlayStationTIMPrivate)
 
-	public:
-		/** TextureInfo **/
-		static const array<const char*, 1+1> exts;
-		static const array<const char*, 1+1> mimeTypes;
-		static const TextureInfo textureInfo;
+public:
+	/** TextureInfo **/
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
+	static const TextureInfo textureInfo;
 
-	public:
-		// TIM headers
-		// NOTE: timHeader.flags is byteswapped in the constructor.
-		PS1_TIM_Header_t timHeader;
-		PS1_TIM_CLUT_Header_t clutHeader;
-		PS1_TIM_Image_Header_t imageHeader;
+public:
+	// TIM headers
+	// NOTE: timHeader.flags is byteswapped in the constructor.
+	PS1_TIM_Header_t timHeader;
+	PS1_TIM_CLUT_Header_t clutHeader;
+	PS1_TIM_Image_Header_t imageHeader;
 
-		// CLUT and texture (image) data start addresses.
-		uint32_t clutDataStartAddr;
-		uint32_t texDataStartAddr;
+	// CLUT and texture (image) data start addresses.
+	uint32_t clutDataStartAddr;
+	uint32_t texDataStartAddr;
 
-		// Decoded image
-		rp_image_ptr img;
+	// Decoded image
+	rp_image_ptr img;
 
-		/**
-		 * Load the image.
-		 * @return Image, or nullptr on error.
-		 */
-		rp_image_const_ptr loadImage(void);
+	/**
+	 * Load the image.
+	 * @return Image, or nullptr on error.
+	 */
+	rp_image_const_ptr loadImage(void);
 };
 
 FILEFORMAT_IMPL(PlayStationTIM)

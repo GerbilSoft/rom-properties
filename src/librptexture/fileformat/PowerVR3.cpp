@@ -1459,7 +1459,7 @@ rp_image_const_ptr PowerVR3::image(void) const
 /**
  * Get the image for the specified mipmap.
  * Mipmap 0 is the largest image.
- * @param mip Mipmap number.
+ * @param mip Mipmap number
  * @return Image, or nullptr on error.
  */
 rp_image_const_ptr PowerVR3::mipmap(int mip) const

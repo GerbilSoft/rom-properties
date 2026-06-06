@@ -32,32 +32,32 @@ namespace LibRpBase {
 
 class AesCAPIPrivate
 {
-	public:
-		AesCAPIPrivate();
-		~AesCAPIPrivate();
+public:
+	AesCAPIPrivate();
+	~AesCAPIPrivate();
 
-	private:
-		RP_DISABLE_COPY(AesCAPIPrivate)
+private:
+	RP_DISABLE_COPY(AesCAPIPrivate)
 
-	public:
-		// CryptoAPI provider.
-		HCRYPTPROV hProvider;
-		// CryptoAPI key.
-		HCRYPTKEY hKey;
+public:
+	// CryptoAPI provider
+	HCRYPTPROV hProvider;
+	// CryptoAPI key
+	HCRYPTKEY hKey;
 
-		// Chaining mode.
-		IAesCipher::ChainingMode chainingMode;
+	// Chaining mode
+	IAesCipher::ChainingMode chainingMode;
 
-		// Counter for CTR mode.
-		uint8_t ctr[16];
+	// Counter for CTR mode
+	uint8_t ctr[16];
 
-		/**
-		 * Set the chaining mode on a key.
-		 * @param hKey HCRYPTKEY.
-		 * @param mode Chaining mode.
-		 * @return 0 on success; non-zero on error.
-		 */
-		static int setChainingMode(HCRYPTKEY hKey, IAesCipher::ChainingMode mode);
+	/**
+	 * Set the chaining mode on a key.
+	 * @param hKey HCRYPTKEY
+	 * @param mode Chaining mode
+	 * @return 0 on success; non-zero on error.
+	 */
+	static int setChainingMode(HCRYPTKEY hKey, IAesCipher::ChainingMode mode);
 };
 
 /** AesCAPIPrivate **/
@@ -97,8 +97,8 @@ AesCAPIPrivate::~AesCAPIPrivate()
 
 /**
  * Set the chaining mode on a key.
- * @param hKey HCRYPTKEY.
- * @param mode Chaining mode.
+ * @param hKey HCRYPTKEY
+ * @param mode Chaining mode
  * @return 0 on success; non-zero on error.
  */
 int AesCAPIPrivate::setChainingMode(HCRYPTKEY hKey, IAesCipher::ChainingMode mode)
@@ -138,7 +138,7 @@ AesCAPI::~AesCAPI()
 
 /**
  * Get the name of the AesCipher implementation.
- * @return Name.
+ * @return Name
  */
 const char *AesCAPI::name(void) const
 {
@@ -157,8 +157,8 @@ bool AesCAPI::isInit(void) const
 
 /**
  * Set the encryption key.
- * @param pKey	[in] Key data.
- * @param size	[in] Size of pKey, in bytes.
+ * @param pKey	[in] Key data
+ * @param size	[in] Size of pKey, in bytes
  * @return 0 on success; negative POSIX error code on error.
  */
 int AesCAPI::setKey(const uint8_t *RESTRICT pKey, size_t size)
@@ -241,7 +241,7 @@ int AesCAPI::setKey(const uint8_t *RESTRICT pKey, size_t size)
  * Note that the IV/counter must be set *after* setting
  * the chaining mode; otherwise, setIV() will fail.
  *
- * @param mode Cipher chaining mode.
+ * @param mode Cipher chaining mode
  * @return 0 on success; negative POSIX error code on error.
  */
 int AesCAPI::setChainingMode(ChainingMode mode)
@@ -267,8 +267,8 @@ int AesCAPI::setChainingMode(ChainingMode mode)
 
 /**
  * Set the IV (CBC mode) or counter (CTR mode).
- * @param pIV	[in] IV/counter data.
- * @param size	[in] Size of pIV, in bytes.
+ * @param pIV	[in] IV/counter data
+ * @param size	[in] Size of pIV, in bytes
  * @return 0 on success; negative POSIX error code on error.
  */
 int AesCAPI::setIV(const uint8_t *RESTRICT pIV, size_t size)
@@ -306,8 +306,8 @@ int AesCAPI::setIV(const uint8_t *RESTRICT pIV, size_t size)
  * Decrypt a block of data.
  * Key and IV/counter must be set before calling this function.
  *
- * @param pData	[in/out] Data block.
- * @param size	[in] Length of data block. (Must be a multiple of 16.)
+ * @param pData	[in/out] Data block
+ * @param size	[in] Length of data block (Must be a multiple of 16)
  * @return Number of bytes decrypted on success; 0 on error.
  */
 size_t AesCAPI::decrypt(uint8_t *RESTRICT pData, size_t size)

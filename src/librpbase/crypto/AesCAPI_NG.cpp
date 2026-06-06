@@ -259,7 +259,7 @@ bool AesCAPI_NG::isUsable(void)
 
 /**
  * Get the name of the AesCipher implementation.
- * @return Name.
+ * @return Name
  */
 const char *AesCAPI_NG::name(void) const
 {
@@ -279,8 +279,8 @@ bool AesCAPI_NG::isInit(void) const
 
 /**
  * Set the encryption key.
- * @param pKey	[in] Key data.
- * @param size	[in] Size of pKey, in bytes.
+ * @param pKey	[in] Key data
+ * @param size	[in] Size of pKey, in bytes
  * @return 0 on success; negative POSIX error code on error.
  */
 int AesCAPI_NG::setKey(const uint8_t *RESTRICT pKey, size_t size)
@@ -363,7 +363,7 @@ int AesCAPI_NG::setKey(const uint8_t *RESTRICT pKey, size_t size)
  * Note that the IV/counter must be set *after* setting
  * the chaining mode; otherwise, setIV() will fail.
  *
- * @param mode Cipher chaining mode.
+ * @param mode Cipher chaining mode
  * @return 0 on success; negative POSIX error code on error.
  */
 int AesCAPI_NG::setChainingMode(ChainingMode mode)
@@ -414,8 +414,8 @@ int AesCAPI_NG::setChainingMode(ChainingMode mode)
 
 /**
  * Set the IV (CBC mode) or counter (CTR mode).
- * @param pIV	[in] IV/counter data.
- * @param size	[in] Size of pIV, in bytes.
+ * @param pIV	[in] IV/counter data
+ * @param size	[in] Size of pIV, in bytes
  * @return 0 on success; negative POSIX error code on error.
  */
 int AesCAPI_NG::setIV(const uint8_t *RESTRICT pIV, size_t size)
@@ -460,8 +460,8 @@ int AesCAPI_NG::setIV(const uint8_t *RESTRICT pIV, size_t size)
  * Decrypt a block of data.
  * Key and IV/counter must be set before calling this function.
  *
- * @param pData	[in/out] Data block.
- * @param size	[in] Length of data block. (Must be a multiple of 16.)
+ * @param pData	[in/out] Data block
+ * @param size	[in] Length of data block (Must be a multiple of 16)
  * @return Number of bytes decrypted on success; 0 on error.
  */
 size_t AesCAPI_NG::decrypt(uint8_t *RESTRICT pData, size_t size)

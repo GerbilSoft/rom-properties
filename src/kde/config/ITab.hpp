@@ -28,7 +28,7 @@ private:
 	typedef QWidget super;
 	Q_DISABLE_COPY(ITab)
 
-	public:
+public:
 	/**
 	 * Does this tab have defaults available?
 	 * If so, the "Defaults" button will be enabled.

@@ -22,8 +22,8 @@ namespace LibRomData { namespace Tests {
 
 class NintendoSystemIDTest : public ::testing::Test
 {
-	protected:
-		NintendoSystemIDTest() = default;
+protected:
+	NintendoSystemIDTest() = default;
 };
 
 /**

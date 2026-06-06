@@ -32,48 +32,48 @@ namespace LibRpBase {
 
 class AesNettlePrivate
 {
-	public:
-		AesNettlePrivate();
-		~AesNettlePrivate() = default;
+public:
+	AesNettlePrivate();
+	~AesNettlePrivate() = default;
 
-	private:
-		RP_DISABLE_COPY(AesNettlePrivate)
+private:
+	RP_DISABLE_COPY(AesNettlePrivate)
 
-	public:
-		// AES context.
+public:
+	// AES context.
 #ifdef HAVE_NETTLE_3
-		union {
-			struct aes128_ctx aes128;
-			struct aes192_ctx aes192;
-			struct aes256_ctx aes256;
-		} ctx;
+	union {
+		struct aes128_ctx aes128;
+		struct aes192_ctx aes192;
+		struct aes256_ctx aes256;
+	} ctx;
 #else /* !HAVE_NETTLE_3 */
-		struct aes_ctx ctx;
+	struct aes_ctx ctx;
 #endif /* HAVE_NETTLE_3 */
 
-		// Encryption key
-		// Stored here because we need to
-		// use decryption for ECB and CBC,
-		// but encryption when using CTR.
-		array<uint8_t, 32> key;
-		int key_len;
+	// Encryption key
+	// Stored here because we need to
+	// use decryption for ECB and CBC,
+	// but encryption when using CTR.
+	array<uint8_t, 32> key;
+	int key_len;
 
-		// CBC: Initialization vector
-		// CTR: Counter
-		array<uint8_t, 16> iv;
+	// CBC: Initialization vector
+	// CTR: Counter
+	array<uint8_t, 16> iv;
 
-		IAesCipher::ChainingMode chainingMode;
+	IAesCipher::ChainingMode chainingMode;
 
-		// Has the key been changed since the last operation?
-		bool key_changed;
+	// Has the key been changed since the last operation?
+	bool key_changed;
 
 #ifdef HAVE_NETTLE_3
-		// Cipher functions.
-		nettle_cipher_func *decrypt_fn;
-		nettle_cipher_func *encrypt_fn;
-		// Set Key functions.
-		nettle_set_key_func *setkey_dec_fn;
-		nettle_set_key_func *setkey_enc_fn;
+	// Cipher functions
+	nettle_cipher_func *decrypt_fn;
+	nettle_cipher_func *encrypt_fn;
+	// Set Key functions
+	nettle_set_key_func *setkey_dec_fn;
+	nettle_set_key_func *setkey_enc_fn;
 #endif /* HAVE_NETTLE_3 */
 };
 
@@ -109,7 +109,7 @@ AesNettle::~AesNettle()
 
 /**
  * Get the name of the AesCipher implementation.
- * @return Name.
+ * @return Name
  */
 const char *AesNettle::name(void) const
 {
@@ -133,8 +133,8 @@ bool AesNettle::isInit(void) const
 
 /**
  * Set the encryption key.
- * @param pKey	[in] Key data.
- * @param size	[in] Size of pKey, in bytes.
+ * @param pKey	[in] Key data
+ * @param size	[in] Size of pKey, in bytes
  * @return 0 on success; negative POSIX error code on error.
  */
 int AesNettle::setKey(const uint8_t *RESTRICT pKey, size_t size)
@@ -186,7 +186,7 @@ int AesNettle::setKey(const uint8_t *RESTRICT pKey, size_t size)
  * Note that the IV/counter must be set *after* setting
  * the chaining mode; otherwise, setIV() will fail.
  *
- * @param mode Cipher chaining mode.
+ * @param mode Cipher chaining mode
  * @return 0 on success; negative POSIX error code on error.
  */
 int AesNettle::setChainingMode(ChainingMode mode)
@@ -205,8 +205,8 @@ int AesNettle::setChainingMode(ChainingMode mode)
 
 /**
  * Set the IV (CBC mode) or counter (CTR mode).
- * @param pIV	[in] IV/counter data.
- * @param size	[in] Size of pIV, in bytes.
+ * @param pIV	[in] IV/counter data
+ * @param size	[in] Size of pIV, in bytes
  * @return 0 on success; negative POSIX error code on error.
  */
 int AesNettle::setIV(const uint8_t *RESTRICT pIV, size_t size)
@@ -227,8 +227,8 @@ int AesNettle::setIV(const uint8_t *RESTRICT pIV, size_t size)
 
 /**
  * Decrypt a block of data.
- * @param pData	[in/out] Data block.
- * @param size	[in] Length of data block. (Must be a multiple of 16.)
+ * @param pData	[in/out] Data block
+ * @param size	[in] Length of data block (Must be a multiple of 16)
  * @return Number of bytes decrypted on success; 0 on error.
  */
 size_t AesNettle::decrypt(uint8_t *RESTRICT pData, size_t size)
@@ -321,8 +321,8 @@ size_t AesNettle::decrypt(uint8_t *RESTRICT pData, size_t size)
 
 /**
  * Get the nettle compile-time version.
- * @param pMajor	[out] Pointer to store major version.
- * @param pMinor	[out] Pointer to store minor version.
+ * @param pMajor	[out] Pointer to store major version
+ * @param pMinor	[out] Pointer to store minor version
  * @return 0 on success; non-zero on error.
  */
 int AesNettle::get_nettle_compile_time_version(int *pMajor, int *pMinor)
@@ -343,8 +343,8 @@ int AesNettle::get_nettle_compile_time_version(int *pMajor, int *pMinor)
 
 /**
  * Get the nettle runtime version.
- * @param pMajor	[out] Pointer to store major version.
- * @param pMinor	[out] Pointer to store minor version.
+ * @param pMajor	[out] Pointer to store major version
+ * @param pMinor	[out] Pointer to store minor version
  * @return 0 on success; non-zero on error.
  */
 int AesNettle::get_nettle_runtime_version(int *pMajor, int *pMinor)

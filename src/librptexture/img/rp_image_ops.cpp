@@ -697,8 +697,8 @@ rp_image_ptr rp_image::flip(FlipOp op) const
 
 /**
  * Shrink image dimensions.
- * @param width New width.
- * @param height New height.
+ * @param width New width
+ * @param height New height
  * @return 0 on success; negative POSIX error code on error.
  */
 int rp_image::shrink(int width, int height)

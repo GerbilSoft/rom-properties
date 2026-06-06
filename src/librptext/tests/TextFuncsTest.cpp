@@ -43,153 +43,153 @@ namespace LibRpBase { namespace Tests {
 
 class TextFuncsTest : public ::testing::Test
 {
-	protected:
-		TextFuncsTest() = default;
+protected:
+	TextFuncsTest() = default;
 
-	public:
-		// NOTE: 8-bit test strings are unsigned in order to prevent
-		// narrowing conversion warnings from appearing.
-		// char16_t is defined as unsigned, so this isn't a problem
-		// for 16-bit strings.
+public:
+	// NOTE: 8-bit test strings are unsigned in order to prevent
+	// narrowing conversion warnings from appearing.
+	// char16_t is defined as unsigned, so this isn't a problem
+	// for 16-bit strings.
 
-		/**
-		 * cp1252 test string.
-		 * Contains all possible cp1252 characters.
-		 */
-		static const array<uint8_t, 250> cp1252_data;
+	/**
+	 * cp1252 test string.
+	 * Contains all possible cp1252 characters.
+	 */
+	static const array<uint8_t, 250> cp1252_data;
 
-		/**
-		 * cp1252 to UTF-8 test string.
-		 * Contains the expected result from:
-		 * - cp1252_to_utf8(cp1252_data, ARRAY_SIZE_I(cp1252_data))
-		 * - cp1252_sjis_to_utf8(cp1252_data, ARRAY_SIZE_I(cp1252_data))
-		 */
-		static const array<uint8_t, 388> cp1252_utf8_data;
+	/**
+	 * cp1252 to UTF-8 test string.
+	 * Contains the expected result from:
+	 * - cp1252_to_utf8(cp1252_data, ARRAY_SIZE_I(cp1252_data))
+	 * - cp1252_sjis_to_utf8(cp1252_data, ARRAY_SIZE_I(cp1252_data))
+	 */
+	static const array<uint8_t, 388> cp1252_utf8_data;
 
-		/**
-		 * cp1252 to UTF-16 test string.
-		 * Contains the expected result from:
-		 * - cp1252_to_utf16(cp1252_data, sizeof(cp1252_data))
-		 */
-		static const array<char16_t, 250> cp1252_utf16_data;
+	/**
+	 * cp1252 to UTF-16 test string.
+	 * Contains the expected result from:
+	 * - cp1252_to_utf16(cp1252_data, sizeof(cp1252_data))
+	 */
+	static const array<char16_t, 250> cp1252_utf16_data;
 
-		/**
-		 * Shift-JIS test string.
-		 *
-		 * TODO: Get a longer test string.
-		 * This string is from the JP Pokemon Colosseum (GCN) save file,
-		 * plus a wave dash character (8160).
-		 */
-		static const array<uint8_t, 36> sjis_data;
+	/**
+	 * Shift-JIS test string.
+	 *
+	 * TODO: Get a longer test string.
+	 * This string is from the JP Pokemon Colosseum (GCN) save file,
+	 * plus a wave dash character (8160).
+	 */
+	static const array<uint8_t, 36> sjis_data;
 
-		/**
-		 * Shift-JIS to UTF-8 test string.
-		 * Contains the expected result from:
-		 * - cp1252_sjis_to_utf8(sjis_data, ARRAY_SIZE_I(sjis_data))
-		 */
-		static const array<uint8_t, 53> sjis_utf8_data;
+	/**
+	 * Shift-JIS to UTF-8 test string.
+	 * Contains the expected result from:
+	 * - cp1252_sjis_to_utf8(sjis_data, ARRAY_SIZE_I(sjis_data))
+	 */
+	static const array<uint8_t, 53> sjis_utf8_data;
 
-		/**
-		 * Shift-JIS test string with a cp1252 copyright symbol. (0xA9)
-		 * This string is incorrectly detected as Shift-JIS because
-		 * all bytes are valid.
-		 */
-		static const array<uint8_t, 16> sjis_copyright_in;
+	/**
+	 * Shift-JIS test string with a cp1252 copyright symbol. (0xA9)
+	 * This string is incorrectly detected as Shift-JIS because
+	 * all bytes are valid.
+	 */
+	static const array<uint8_t, 16> sjis_copyright_in;
 
-		/**
-		 * UTF-8 result from:
-		 * - cp1252_sjis_to_utf8(sjis_copyright_in, sizeof(sjis_copyright_in))
-		 */
-		static const array<uint8_t, 18> sjis_copyright_out_utf8;
+	/**
+	 * UTF-8 result from:
+	 * - cp1252_sjis_to_utf8(sjis_copyright_in, sizeof(sjis_copyright_in))
+	 */
+	static const array<uint8_t, 18> sjis_copyright_out_utf8;
 
-		/**
-		 * UTF-8 test string.
-		 * Contains Latin-1, BMP, and SMP characters.
-		 *
-		 * This contains the same string as
-		 * utf16le_data[] and utf16be_data[].
-		 */
-		static const array<uint8_t, 325> utf8_data;
+	/**
+	 * UTF-8 test string.
+	 * Contains Latin-1, BMP, and SMP characters.
+	 *
+	 * This contains the same string as
+	 * utf16le_data[] and utf16be_data[].
+	 */
+	static const array<uint8_t, 325> utf8_data;
 
-		/**
-		 * UTF-16LE test string.
-		 * Contains Latin-1, BMP, and SMP characters.
-		 *
-		 * This contains the same string as
-		 * utf8_data[] and utf16be_data[].
-		 *
-		 * NOTE: This is encoded as uint8_t to prevent
-		 * byteswapping issues.
-		 */
-		static const array<uint8_t, 558> utf16le_data;
+	/**
+	 * UTF-16LE test string.
+	 * Contains Latin-1, BMP, and SMP characters.
+	 *
+	 * This contains the same string as
+	 * utf8_data[] and utf16be_data[].
+	 *
+	 * NOTE: This is encoded as uint8_t to prevent
+	 * byteswapping issues.
+	 */
+	static const array<uint8_t, 558> utf16le_data;
 
-		/**
-		 * UTF-16BE test string.
-		 * Contains Latin-1, BMP, and SMP characters.
-		 *
-		 * This contains the same string as
-		 * utf8_data[] and utf16le_data[].
-		 *
-		 * NOTE: This is encoded as uint8_t to prevent
-		 * byteswapping issues.
-		 */
-		static const array<uint8_t, 558> utf16be_data;
+	/**
+	 * UTF-16BE test string.
+	 * Contains Latin-1, BMP, and SMP characters.
+	 *
+	 * This contains the same string as
+	 * utf8_data[] and utf16le_data[].
+	 *
+	 * NOTE: This is encoded as uint8_t to prevent
+	 * byteswapping issues.
+	 */
+	static const array<uint8_t, 558> utf16be_data;
 
-		// Host-endian UTF-16 data for functions
-		// that convert to/from host-endian UTF-16.
+	// Host-endian UTF-16 data for functions
+	// that convert to/from host-endian UTF-16.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		#define utf16_data utf16le_data
+	#define utf16_data utf16le_data
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-		#define utf16_data utf16be_data
+	#define utf16_data utf16be_data
 #endif
 
-		/**
-		 * Latin-1 to UTF-8 test string.
-		 * Contains the expected result from:
-		 * - latin1_to_utf8(cp1252_data, ARRAY_SIZE_I(cp1252_data))
-		 *
-		 * This includes the C1 control codes, as per the Unicode Latin-1 Supplement:
-		 * https://en.wikipedia.org/wiki/Latin-1_Supplement_(Unicode_block)
-		 */
-		static const array<uint8_t, 371+1> latin1_utf8_data;
+	/**
+	 * Latin-1 to UTF-8 test string.
+	 * Contains the expected result from:
+	 * - latin1_to_utf8(cp1252_data, ARRAY_SIZE_I(cp1252_data))
+	 *
+	 * This includes the C1 control codes, as per the Unicode Latin-1 Supplement:
+	 * https://en.wikipedia.org/wiki/Latin-1_Supplement_(Unicode_block)
+	 */
+	static const array<uint8_t, 371+1> latin1_utf8_data;
 
-		/**
-		 * Latin-1 to UTF-16 test string.
-		 * Contains the expected result from:
-		 * - latin1_to_utf16(cp1252_data, ARRAY_SIZE_I(cp1252_data))
-		 *
-		 * This includes the C1 control codes, as per the Unicode Latin-1 Supplement:
-		 * https://en.wikipedia.org/wiki/Latin-1_Supplement_(Unicode_block)
-		 */
-		static const array<char16_t, 249+1> latin1_utf16_data;
+	/**
+	 * Latin-1 to UTF-16 test string.
+	 * Contains the expected result from:
+	 * - latin1_to_utf16(cp1252_data, ARRAY_SIZE_I(cp1252_data))
+	 *
+	 * This includes the C1 control codes, as per the Unicode Latin-1 Supplement:
+	 * https://en.wikipedia.org/wiki/Latin-1_Supplement_(Unicode_block)
+	 */
+	static const array<char16_t, 249+1> latin1_utf16_data;
 
-		/** Specialized code page functions. **/
+	/** Specialized code page functions. **/
 
-		/**
-		 * Atari ST to UTF-8 test string.
-		 * Contains all Atari ST characters that can be converted to Unicode.
-		 */
-		static const array<uint8_t, 236+1> atariST_data;
+	/**
+	 * Atari ST to UTF-8 test string.
+	 * Contains all Atari ST characters that can be converted to Unicode.
+	 */
+	static const array<uint8_t, 236+1> atariST_data;
 
-		/**
-		 * Atari ST to UTF-16 test string.
-		 * Contains the expected result from:
-		 * - utf8_to_utf16(cpRP_to_utf8(CpRp::AtariST, atariST_data, ARRAY_SIZE_I(atariST_data)))
-		 */
-		static const array<char16_t, 236+1> atariST_utf16_data;
+	/**
+	 * Atari ST to UTF-16 test string.
+	 * Contains the expected result from:
+	 * - utf8_to_utf16(cpRP_to_utf8(CpRp::AtariST, atariST_data, ARRAY_SIZE_I(atariST_data)))
+	 */
+	static const array<char16_t, 236+1> atariST_utf16_data;
 
-		/**
-		 * Atari ATASCII to UTF-8 test string.
-		 * Contains all Atari ATASCII characters that can be converted to Unicode.
-		 */
-		static const array<uint8_t, 229+1> atascii_data;
+	/**
+	 * Atari ATASCII to UTF-8 test string.
+	 * Contains all Atari ATASCII characters that can be converted to Unicode.
+	 */
+	static const array<uint8_t, 229+1> atascii_data;
 
-		/**
-		 * Atari ATASCII to UTF-16 test string.
-		 * Contains the expected result from:
-		 * - utf8_to_utf16(cpRP_to_utf8(CpRp::ATASCII, atascii_data, ARRAY_SIZE_I(atascii_data)-1))
-		 */
-		static const array<char16_t, 229+1> atascii_utf16_data;
+	/**
+	 * Atari ATASCII to UTF-16 test string.
+	 * Contains the expected result from:
+	 * - utf8_to_utf16(cpRP_to_utf8(CpRp::ATASCII, atascii_data, ARRAY_SIZE_I(atascii_data)-1))
+	 */
+	static const array<char16_t, 229+1> atascii_utf16_data;
 };
 
 // Test strings are located in TextFuncsTest_data.hpp.

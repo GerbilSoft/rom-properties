@@ -36,25 +36,25 @@ namespace RomPropertiesGTK { namespace Tests {
 
 class SortFuncsTest_gtk3 : public ::testing::Test
 {
-	protected:
-		SortFuncsTest_gtk3()
-			: listStore(nullptr)
-			, sortProxy(nullptr)
-		{ }
+protected:
+	SortFuncsTest_gtk3()
+		: listStore(nullptr)
+		, sortProxy(nullptr)
+	{ }
 
-		~SortFuncsTest_gtk3() override
-		{
-			g_clear_object(&sortProxy);
-			g_clear_object(&listStore);
-		}
+	~SortFuncsTest_gtk3() override
+	{
+		g_clear_object(&sortProxy);
+		g_clear_object(&listStore);
+	}
 
-	public:
-		void SetUp() override;
-		void TearDown() override;
+public:
+	void SetUp() override;
+	void TearDown() override;
 
-	protected:
-		GtkListStore *listStore;	// List data
-		GtkTreeModel *sortProxy;	// Sort proxy
+protected:
+	GtkListStore *listStore;	// List data
+	GtkTreeModel *sortProxy;	// Sort proxy
 };
 
 void SortFuncsTest_gtk3::SetUp()

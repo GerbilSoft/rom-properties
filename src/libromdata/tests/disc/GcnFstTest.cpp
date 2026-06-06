@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * GcnFstTest.cpp: GameCube/Wii FST test.                                  *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -107,63 +107,62 @@ static constexpr uint64_t MAX_GCN_FST_TXT_FILESIZE = 1536UL*1024UL;	// 1.5 MB
 
 class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 {
-	protected:
-		GcnFstTest()
-			: ::testing::TestWithParam<GcnFstTest_mode>()
-			, m_fst(nullptr)
-		{ }
+protected:
+	GcnFstTest()
+		: ::testing::TestWithParam<GcnFstTest_mode>()
+		, m_fst(nullptr)
+	{}
 
-		void SetUp(void) final;
-		void TearDown(void) final;
+	void SetUp(void) final;
+	void TearDown(void) final;
 
-		/**
-		 * Open a Zip file for reading.
-		 * @param filename Zip filename.
-		 * @return Zip file, or nullptr on error.
-		 */
-		static unzFile openZip(const char *filename);
+	/**
+	 * Open a Zip file for reading.
+	 * @param filename Zip filename.
+	 * @return Zip file, or nullptr on error.
+	 */
+	static unzFile openZip(const char *filename);
 
-		/**
-		 * Get a file from a Zip file.
-		 * @param zip_filename	[in] Zip filename.
-		 * @param int_filename	[in] Internal filename.
-		 * @param buf		[out] uvector buffer for the data.
-		 * @param max_filesize	[in,opt] Maximum file size. (default is MAX_GCN_FST_BIN_FILESIZE)
-		 * @return Number of bytes read, or negative on error.
-		 */
-		static int getFileFromZip(const char *zip_filename,
-			const char *int_filename,
-			rp::uvector<uint8_t>& buf,
-			uint64_t max_filesize = MAX_GCN_FST_BIN_FILESIZE);
+	/**
+	 * Get a file from a Zip file.
+	 * @param zip_filename	[in] Zip filename.
+	 * @param int_filename	[in] Internal filename.
+	 * @param buf		[out] uvector buffer for the data.
+	 * @param max_filesize	[in,opt] Maximum file size. (default is MAX_GCN_FST_BIN_FILESIZE)
+	 * @return Number of bytes read, or negative on error.
+	 */
+	static int getFileFromZip(const char *zip_filename,
+		const char *int_filename,
+		rp::uvector<uint8_t>& buf,
+		uint64_t max_filesize = MAX_GCN_FST_BIN_FILESIZE);
 
-	public:
-		// FST data.
-		rp::uvector<uint8_t> m_fst_buf;
-		IFst *m_fst;
+public:
+	// FST data
+	rp::uvector<uint8_t> m_fst_buf;
+	IFst *m_fst;
 
-		/**
-		 * Recursively check a subdirectory for duplicate filenames.
-		 * @param subdir Subdirectory path.
-		 */
-		void checkNoDuplicateFilenames(const char *subdir);
+	/**
+	 * Recursively check a subdirectory for duplicate filenames.
+	 * @param subdir Subdirectory path.
+	 */
+	void checkNoDuplicateFilenames(const char *subdir);
 
-	public:
-		/** Test case parameters. **/
+public:
+	/** Test case parameters **/
 
-		/**
-		 
-		 * Get the list of FST files from a Zip file.
-		 * @param offsetShift File offset shift. (0 == GCN, 2 == Wii)
-		 * @return FST files.
-		 */
-		static vector<GcnFstTest_mode> ReadTestCasesFromDisk(uint8_t offsetShift);
+	/**
+	 * Get the list of FST files from a Zip file.
+	 * @param offsetShift File offset shift. (0 == GCN, 2 == Wii)
+	 * @return FST files.
+	 */
+	static vector<GcnFstTest_mode> ReadTestCasesFromDisk(uint8_t offsetShift);
 
-		/**
-		 * Test case suffix generator.
-		 * @param info Test parameter information.
-		 * @return Test case suffix.
-		 */
-		static string test_case_suffix_generator(const ::testing::TestParamInfo<GcnFstTest_mode> &info);
+	/**
+	 * Test case suffix generator.
+	 * @param info Test parameter information.
+	 * @return Test case suffix.
+	 */
+	static string test_case_suffix_generator(const ::testing::TestParamInfo<GcnFstTest_mode> &info);
 };
 
 /**

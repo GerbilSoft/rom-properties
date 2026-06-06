@@ -40,101 +40,101 @@ namespace LibRpTexture {
 
 class SegaPVRPrivate final : public FileFormatPrivate
 {
-	public:
-		SegaPVRPrivate(SegaPVR *q, const IRpFilePtr &file);
+public:
+	SegaPVRPrivate(SegaPVR *q, const IRpFilePtr &file);
 
-	private:
-		typedef FileFormatPrivate super;
-		RP_DISABLE_COPY(SegaPVRPrivate)
+private:
+	typedef FileFormatPrivate super;
+	RP_DISABLE_COPY(SegaPVRPrivate)
 
-	public:
-		/** TextureInfo **/
-		static const array<const char*, 3+1> exts;
-		static const array<const char*, 4+1> mimeTypes;
-		static const TextureInfo textureInfo;
+public:
+	/** TextureInfo **/
+	static const array<const char*, 3+1> exts;
+	static const array<const char*, 4+1> mimeTypes;
+	static const TextureInfo textureInfo;
 
-	public:
-		enum class PVRType {
-			Unknown = -1,
+public:
+	enum class PVRType {
+		Unknown = -1,
 
-			PVR	= 0,	// Dreamcast PVR
-			GVR	= 1,	// GameCube GVR
-			SVR	= 2,	// PlayStation 2 SVR
-			PVRX	= 3,	// Xbox PVRX (TODO)
+		PVR	= 0,	// Dreamcast PVR
+		GVR	= 1,	// GameCube GVR
+		SVR	= 2,	// PlayStation 2 SVR
+		PVRX	= 3,	// Xbox PVRX (TODO)
 
-			Max
-		};
-		PVRType pvrType;
+		Max
+	};
+	PVRType pvrType;
 
-	public:
-		// PVR header
-		PVR_Header pvrHeader;
+public:
+	// PVR header
+	PVR_Header pvrHeader;
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		static inline void byteswap_pvr(PVR_Header *pvr) {
-			RP_UNUSED(pvr);
-		}
-		static inline void byteswap_gvr(PVR_Header *gvr);
+	static inline void byteswap_pvr(PVR_Header *pvr) {
+		RP_UNUSED(pvr);
+	}
+	static inline void byteswap_gvr(PVR_Header *gvr);
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-		static inline void byteswap_pvr(PVR_Header *pvr);
-		static inline void byteswap_gvr(PVR_Header *gvr) {
-			RP_UNUSED(gvr);
-		}
+	static inline void byteswap_pvr(PVR_Header *pvr);
+	static inline void byteswap_gvr(PVR_Header *gvr) {
+		RP_UNUSED(gvr);
+	}
 #endif
 
-		// Global Index
-		// gbix_len is 0 if it's not present.
-		// Otherwise, may be 16 (common) or 12 (uncommon).
-		unsigned int gbix_len;
-		uint32_t gbix;
+	// Global Index
+	// gbix_len is 0 if it's not present.
+	// Otherwise, may be 16 (common) or 12 (uncommon).
+	unsigned int gbix_len;
+	uint32_t gbix;
 
-		// Decoded image
-		rp_image_ptr img;
+	// Decoded image
+	rp_image_ptr img;
 
-		// Invalid pixel format message
-		mutable string invalid_pixel_format;
+	// Invalid pixel format message
+	mutable string invalid_pixel_format;
 
-	public:
-		/**
-		 * Get the pixel format name.
-		 * @return Pixel format name, or nullptr if unknown.
-		 */
-		const char *pixelFormatName(void) const;
+public:
+	/**
+	 * Get the pixel format name.
+	 * @return Pixel format name, or nullptr if unknown.
+	 */
+	const char *pixelFormatName(void) const;
 
-		/**
-		 * Get the image data type name.
-		 * @return Image data type name, or nullptr if unknown.
-		 */
-		const char *imageDataTypeName(void) const;
+	/**
+	 * Get the image data type name.
+	 * @return Image data type name, or nullptr if unknown.
+	 */
+	const char *imageDataTypeName(void) const;
 
-	public:
-		/**
-		 * Load the PVR/SVR image.
-		 * @return Image, or nullptr on error.
-		 */
-		rp_image_const_ptr loadPvrImage(void);
+public:
+	/**
+	 * Load the PVR/SVR image.
+	 * @return Image, or nullptr on error.
+	 */
+	rp_image_const_ptr loadPvrImage(void);
 
-		/**
-		 * Load the GVR image.
-		 * @return Image, or nullptr on error.
-		 */
-		rp_image_const_ptr loadGvrImage(void);
+	/**
+	 * Load the GVR image.
+	 * @return Image, or nullptr on error.
+	 */
+	rp_image_const_ptr loadGvrImage(void);
 
-		/**
-		 * Unswizzle a 4-bit or 8-bit SVR texture.
-		 * All 4-bit and 8-bit SVR textures >=128x128 are swizzled.
-		 * @param img_swz Swizzled 4-bit or 8-bit SVR texture.
-		 * @return Unswizzled 4-bit or 8-bit SVR texture, or nullptr on error.
-		 */
-		static rp_image_ptr svr_unswizzle_4or8(const rp_image_const_ptr &img_swz);
+	/**
+	 * Unswizzle a 4-bit or 8-bit SVR texture.
+	 * All 4-bit and 8-bit SVR textures >=128x128 are swizzled.
+	 * @param img_swz Swizzled 4-bit or 8-bit SVR texture.
+	 * @return Unswizzled 4-bit or 8-bit SVR texture, or nullptr on error.
+	 */
+	static rp_image_ptr svr_unswizzle_4or8(const rp_image_const_ptr &img_swz);
 
-		/**
-		 * Unswizzle a 16-bit SVR texture.
-		 * NOTE: The rp_image must have been converted to ARGB32 format.
-		 * @param img_swz Swizzled 16-bit SVR texture.
-		 * @return Unswizzled 16-bit SVR texture, or nullptr on error.
-		 */
-		static rp_image_ptr svr_unswizzle_16(const rp_image_const_ptr &img_swz);
+	/**
+	 * Unswizzle a 16-bit SVR texture.
+	 * NOTE: The rp_image must have been converted to ARGB32 format.
+	 * @param img_swz Swizzled 16-bit SVR texture.
+	 * @return Unswizzled 16-bit SVR texture, or nullptr on error.
+	 */
+	static rp_image_ptr svr_unswizzle_16(const rp_image_const_ptr &img_swz);
 };
 
 FILEFORMAT_IMPL(SegaPVR)
@@ -1541,7 +1541,7 @@ rp_image_const_ptr SegaPVR::image(void) const
 /**
  * Get the image for the specified mipmap.
  * Mipmap 0 is the largest image.
- * @param mip Mipmap number.
+ * @param mip Mipmap number
  * @return Image, or nullptr on error.
  */
 rp_image_const_ptr SegaPVR::mipmap(int mip) const

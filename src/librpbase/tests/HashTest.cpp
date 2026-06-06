@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * HashTest.cpp: Hash class test.                                          *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -45,37 +45,33 @@ struct HashTest_mode
 
 class HashTest : public ::testing::TestWithParam<HashTest_mode>
 {
-	public:
-		/**
-		 * Compare two byte arrays.
-		 * The byte arrays are converted to hexdumps and then
-		 * compared using EXPECT_EQ().
-		 * @param expected	[in] Expected data.
-		 * @param actual	[in] Actual data.
-		 * @param size		[in] Size of both arrays.
-		 * @param data_type	[in] Data type.
-		 */
-		void CompareByteArrays(
-			const uint8_t *expected,
-			const uint8_t *actual,
-			size_t size,
-			const char *data_type);
+public:
+	/**
+	 * Compare two byte arrays.
+	 * The byte arrays are converted to hexdumps and then
+	 * compared using EXPECT_EQ().
+	 * @param expected	[in] Expected data
+	 * @param actual	[in] Actual data
+	 * @param size		[in] Size of both arrays
+	 * @param data_type	[in] Data type
+	 */
+	void CompareByteArrays(
+		const uint8_t *expected, const uint8_t *actual,
+		size_t size, const char *data_type);
 };
 
 /**
  * Compare two byte arrays.
  * The byte arrays are converted to hexdumps and then
  * compared using EXPECT_EQ().
- * @param expected	[in] Expected data.
- * @param actual	[in] Actual data.
- * @param size		[in] Size of both arrays.
- * @param data_type	[in] Data type.
+ * @param expected	[in] Expected data
+ * @param actual	[in] Actual data
+ * @param size		[in] Size of both arrays
+ * @param data_type	[in] Data type
  */
 void HashTest::CompareByteArrays(
-	const uint8_t *expected,
-	const uint8_t *actual,
-	size_t size,
-	const char *data_type)
+	const uint8_t *expected, const uint8_t *actual,
+	size_t size, const char *data_type)
 {
 	// Output format: (assume ~64 bytes per line)
 	// 0000: 01 23 45 67 89 AB CD EF  01 23 45 67 89 AB CD EF

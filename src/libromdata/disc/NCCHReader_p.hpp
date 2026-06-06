@@ -48,7 +48,7 @@ private:
 protected:
 	NCCHReader *const q_ptr;
 
-	public:
+public:
 	// NCCH offsets
 	const off64_t ncch_offset;	// NCCH start offset, in bytes.
 	const uint32_t ncch_length;	// NCCH length, in bytes.

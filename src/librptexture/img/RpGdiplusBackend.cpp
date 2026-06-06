@@ -28,9 +28,9 @@ namespace LibRpTexture {
  * This will create an internal Gdiplus::Bitmap
  * with the specified parameters.
  *
- * @param width Image width.
- * @param height Image height.
- * @param format Image format.
+ * @param width Image width
+ * @param height Image height
+ * @param format Image format
  */
 RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format format)
 	: super(width, height, format)
@@ -102,7 +102,7 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
  *
  * NOTE: This RpGdiplusBackend will take ownership of the Gdiplus::Bitmap.
  *
- * @param pGdipBmp Gdiplus::Bitmap.
+ * @param pGdipBmp Gdiplus::Bitmap
  */
 RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 	: super(0, 0, rp_image::Format::None)
@@ -291,8 +291,8 @@ unsigned int RpGdiplusBackend::palette_len(void) const
 
 /**
  * Shrink image dimensions.
- * @param width New width.
- * @param height New height.
+ * @param width New width
+ * @param height New height
  * @return 0 on success; negative POSIX error code on error.
  */
 int RpGdiplusBackend::shrink(int width, int height)
@@ -517,7 +517,7 @@ Gdiplus::Bitmap *RpGdiplusBackend::dup_ARGB32(void) const
  * WARNING: This *may* invalidate pointers
  * previously returned by data().
  *
- * @param bgColor Background color for images with alpha transparency. (ARGB32 format)
+ * @param bgColor Background color for images with alpha transparency (ARGB32 format)
  * @return HBITMAP, or nullptr on error.
  */
 HBITMAP RpGdiplusBackend::toHBITMAP(Gdiplus::ARGB bgColor)
@@ -536,8 +536,8 @@ HBITMAP RpGdiplusBackend::toHBITMAP(Gdiplus::ARGB bgColor)
  * WARNING: This *may* invalidate pointers
  * previously returned by data().
  *
- * @param image		[in] rp_image.
- * @param bgColor	[in] Background color for images with alpha transparency. (ARGB32 format)
+ * @param image		[in] rp_image
+ * @param bgColor	[in] Background color for images with alpha transparency (ARGB32 format)
  * @param size		[in] If non-zero, resize the image to this size.
  * @param nearest	[in] If true, use nearest-neighbor scaling.
  * @return HBITMAP, or nullptr on error.
@@ -800,8 +800,8 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha(SIZE size, bool nearest)
 /**
  * Convert a locked ARGB32 GDI+ bitmap to an HBITMAP.
  * Alpha transparency is preserved.
- * @param pBmpData Gdiplus::BitmapData.
- * @return HBITMAP.
+ * @param pBmpData Gdiplus::BitmapData
+ * @return HBITMAP
  */
 HBITMAP RpGdiplusBackend::convBmpData_ARGB32(const Gdiplus::BitmapData *pBmpData)
 {
@@ -857,8 +857,8 @@ HBITMAP RpGdiplusBackend::convBmpData_ARGB32(const Gdiplus::BitmapData *pBmpData
 /**
  * Convert a locked CI8 GDI+ bitmap to an HBITMAP.
  * Alpha transparency is preserved.
- * @param pBmpData Gdiplus::BitmapData.
- * @return HBITMAP.
+ * @param pBmpData Gdiplus::BitmapData
+ * @return HBITMAP
  */
 HBITMAP RpGdiplusBackend::convBmpData_CI8(const Gdiplus::BitmapData *pBmpData)
 {

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture/tests)               *
  * UnPremutiplyTest.cpp: Test un_premultiply().                            *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -36,28 +36,28 @@ namespace LibRpTexture { namespace Tests {
 
 class UnPremultiplyTest : public ::testing::Test
 {
-	protected:
-		UnPremultiplyTest()
-			: m_img(std::make_shared<rp_image>(512, 512, rp_image::Format::ARGB32))
-		{
+protected:
+	UnPremultiplyTest()
+		: m_img(std::make_shared<rp_image>(512, 512, rp_image::Format::ARGB32))
+	{
 #ifdef _WIN32
-			// Register RpGdiplusBackend.
-			// TODO: Static initializer somewhere?
-			rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
+		// Register RpGdiplusBackend.
+		// TODO: Static initializer somewhere?
+		rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
 #endif /* _WIN32 */
 
-			// Initialize the image with non-zero data.
-			size_t sz = ImageSizeCalc::T_calcImageSize(m_img->row_bytes(), (m_img->height() - 1));
-			sz += (m_img->width() * sizeof(uint32_t));
-			memset(m_img->bits(), 0x55, sz);
-		}
+		// Initialize the image with non-zero data.
+		size_t sz = ImageSizeCalc::T_calcImageSize(m_img->row_bytes(), (m_img->height() - 1));
+		sz += (m_img->width() * sizeof(uint32_t));
+		memset(m_img->bits(), 0x55, sz);
+	}
 
-	public:
-		// Number of iterations for benchmarks
-		static constexpr unsigned int BENCHMARK_ITERATIONS = 1000U;
+public:
+	// Number of iterations for benchmarks
+	static constexpr unsigned int BENCHMARK_ITERATIONS = 1000U;
 
-		// Image
-		rp_image_ptr m_img;
+	// Image
+	rp_image_ptr m_img;
 };
 
 // TODO: Add actual tests to verify that un-premultiply works.

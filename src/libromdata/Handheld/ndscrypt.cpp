@@ -146,40 +146,40 @@ int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 // Encryption context.
 class NDSCrypt
 {
-	public:
-		explicit NDSCrypt(uint32_t gamecode);
+public:
+	explicit NDSCrypt(uint32_t gamecode);
 
-	private:
-		static uint32_t lookup(const uint32_t *magic, uint32_t v);
+private:
+	static uint32_t lookup(const uint32_t *magic, uint32_t v);
 
-		static void encrypt(const uint32_t *magic, uint32_t *arg1, uint32_t *arg2);
-		static void decrypt(const uint32_t *magic, uint32_t *arg1, uint32_t *arg2);
+	static void encrypt(const uint32_t *magic, uint32_t *arg1, uint32_t *arg2);
+	static void decrypt(const uint32_t *magic, uint32_t *arg1, uint32_t *arg2);
 
-		static void encrypt(const uint32_t *magic, uint64_t &cmd);
-		static void decrypt(const uint32_t *magic, uint64_t &cmd);
+	static void encrypt(const uint32_t *magic, uint64_t &cmd);
+	static void decrypt(const uint32_t *magic, uint64_t &cmd);
 
-		static void update_hashtable(uint32_t* magic, const uint8_t arg1[8]);
-		static void init2(uint32_t *magic, uint32_t a[3]);
-		void init1(BlowfishKey bfkey);
+	static void update_hashtable(uint32_t* magic, const uint8_t arg1[8]);
+	static void init2(uint32_t *magic, uint32_t a[3]);
+	void init1(BlowfishKey bfkey);
 
-	public:
-		void init0(BlowfishKey bfkey);
-		int decrypt_arm9(uint8_t *data, BlowfishKey bfkey);
-		int encrypt_arm9(uint8_t *data, BlowfishKey bfkey);
+public:
+	void init0(BlowfishKey bfkey);
+	int decrypt_arm9(uint8_t *data, BlowfishKey bfkey);
+	int encrypt_arm9(uint8_t *data, BlowfishKey bfkey);
 
-		inline const uint32_t *card_hash(void) const
-		{
-			return m_card_hash;
-		}
+	inline const uint32_t *card_hash(void) const
+	{
+		return m_card_hash;
+	}
 
-	private:
-		uint32_t m_gamecode;
+private:
+	uint32_t m_gamecode;
 
-		uint32_t m_card_hash[NDS_BLOWFISH_SIZE/sizeof(uint32_t)];
-		uint32_t m_global3_x00, m_global3_x04;	// RTC value
-		uint32_t m_global3_rand1;
-		uint32_t m_global3_rand3;
-		uint32_t m_keycode[3];
+	uint32_t m_card_hash[NDS_BLOWFISH_SIZE/sizeof(uint32_t)];
+	uint32_t m_global3_x00, m_global3_x04;	// RTC value
+	uint32_t m_global3_rand1;
+	uint32_t m_global3_rand3;
+	uint32_t m_keycode[3];
 };
 
 NDSCrypt::NDSCrypt(uint32_t gamecode)

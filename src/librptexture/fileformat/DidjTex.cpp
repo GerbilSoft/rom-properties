@@ -47,44 +47,44 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 
 class DidjTexPrivate final : public FileFormatPrivate
 {
-	public:
-		DidjTexPrivate(DidjTex *q, const IRpFilePtr &file);
+public:
+	DidjTexPrivate(DidjTex *q, const IRpFilePtr &file);
 
-	private:
-		typedef FileFormatPrivate super;
-		RP_DISABLE_COPY(DidjTexPrivate)
+private:
+	typedef FileFormatPrivate super;
+	RP_DISABLE_COPY(DidjTexPrivate)
 
-	public:
-		/** TextureInfo **/
-		static const array<const char*, 2+1> exts;
-		static const array<const char*, 1+1> mimeTypes;
-		static const TextureInfo textureInfo;
+public:
+	/** TextureInfo **/
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
+	static const TextureInfo textureInfo;
 
-	public:
-		enum class TexType {
-			Unknown		= -1,
+public:
+	enum class TexType {
+		Unknown		= -1,
 
-			TEX		= 0,	// .tex
-			TEXS		= 1,	// .texs (multiple .tex, concatenated)
+		TEX		= 0,	// .tex
+		TEXS		= 1,	// .texs (multiple .tex, concatenated)
 
-			Max
-		};
-		TexType texType;
+		Max
+	};
+	TexType texType;
 
-		// .tex header
-		Didj_Tex_Header texHeader;
+	// .tex header
+	Didj_Tex_Header texHeader;
 
-		// Decoded image
-		rp_image_ptr img;
+	// Decoded image
+	rp_image_ptr img;
 
-		// Invalid pixel format message
-		mutable string invalid_pixel_format;
+	// Invalid pixel format message
+	mutable string invalid_pixel_format;
 
-		/**
-		 * Load the DidjTex image.
-		 * @return Image, or nullptr on error.
-		 */
-		rp_image_const_ptr loadDidjTexImage(void);
+	/**
+	 * Load the DidjTex image.
+	 * @return Image, or nullptr on error.
+	 */
+	rp_image_const_ptr loadDidjTexImage(void);
 };
 
 FILEFORMAT_IMPL(DidjTex)

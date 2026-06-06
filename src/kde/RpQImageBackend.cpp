@@ -147,8 +147,8 @@ unsigned int RpQImageBackend::palette_len(void) const
 
 /**
  * Shrink image dimensions.
- * @param width New width.
- * @param height New height.
+ * @param width New width
+ * @param height New height
  * @return 0 on success; negative POSIX error code on error.
  */
 int RpQImageBackend::shrink(int width, int height)

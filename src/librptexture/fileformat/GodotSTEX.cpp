@@ -47,72 +47,72 @@ namespace LibRpTexture {
 
 class GodotSTEXPrivate final : public FileFormatPrivate
 {
-	public:
-		GodotSTEXPrivate(GodotSTEX *q, const IRpFilePtr &file);
+public:
+	GodotSTEXPrivate(GodotSTEX *q, const IRpFilePtr &file);
 
-	private:
-		typedef FileFormatPrivate super;
-		RP_DISABLE_COPY(GodotSTEXPrivate)
+private:
+	typedef FileFormatPrivate super;
+	RP_DISABLE_COPY(GodotSTEXPrivate)
 
-	public:
-		/** TextureInfo **/
-		static const array<const char*, 2+1> exts;
-		static const array<const char*, 2+1> mimeTypes;
-		static const TextureInfo textureInfo;
+public:
+	/** TextureInfo **/
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 2+1> mimeTypes;
+	static const TextureInfo textureInfo;
 
-	public:
-		// Godot STEX header
-		union {
-			uint32_t magic;		// [0x000] 'GDST' (v3) or 'GST2' (v4)
-			STEX3_Header v3;
-			STEX4_Header v4;
-		} stexHeader;
-		unsigned int stexVersion;	// 3 or 4 (TODO: romType equivalent)
-		STEX_Format_e pixelFormat;	// flags are NOT included here
-		uint32_t format_flags;		// format flags
+public:
+	// Godot STEX header
+	union {
+		uint32_t magic;		// [0x000] 'GDST' (v3) or 'GST2' (v4)
+		STEX3_Header v3;
+		STEX4_Header v4;
+	} stexHeader;
+	unsigned int stexVersion;	// 3 or 4 (TODO: romType equivalent)
+	STEX_Format_e pixelFormat;	// flags are NOT included here
+	uint32_t format_flags;		// format flags
 
-		// Embedded file header (PNG/WebP)
-		bool hasEmbeddedFile;
-		STEX_Embed_Header embedHeader;
+	// Embedded file header (PNG/WebP)
+	bool hasEmbeddedFile;
+	STEX_Embed_Header embedHeader;
 
-		// Decoded mipmaps
-		// Mipmap 0 is the full image.
-		vector<rp_image_ptr > mipmaps;
+	// Decoded mipmaps
+	// Mipmap 0 is the full image.
+	vector<rp_image_ptr > mipmaps;
 
-		// Mipmap sizes and start addresses.
-		struct mipmap_data_t {
-			uint32_t addr;		// start address
-			uint32_t size;		// in bytes
-			uint16_t width;		// width
-			uint16_t height;	// height
-		};
-		vector<mipmap_data_t> mipmap_data;
+	// Mipmap sizes and start addresses.
+	struct mipmap_data_t {
+		uint32_t addr;		// start address
+		uint32_t size;		// in bytes
+		uint16_t width;		// width
+		uint16_t height;	// height
+	};
+	vector<mipmap_data_t> mipmap_data;
 
-		// Invalid pixel format message
-		mutable string invalid_pixel_format;
+	// Invalid pixel format message
+	mutable string invalid_pixel_format;
 
-	public:
-		// Image format tables
-		static const array<const char*, 0x26> img_format_tbl_v3;
-		static const array<const char*, 0x27> img_format_tbl_v4;
+public:
+	// Image format tables
+	static const array<const char*, 0x26> img_format_tbl_v3;
+	static const array<const char*, 0x27> img_format_tbl_v4;
 
-		// ImageSizeCalc opcode tables
-		static const array<ImageSizeCalc::OpCode, 0x26> op_tbl_v3;
-		static const array<ImageSizeCalc::OpCode, 0x27> op_tbl_v4;
+	// ImageSizeCalc opcode tables
+	static const array<ImageSizeCalc::OpCode, 0x26> op_tbl_v3;
+	static const array<ImageSizeCalc::OpCode, 0x27> op_tbl_v4;
 
-	public:
-		/**
-		 * Get mipmap information.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int getMipmapInfo(void);
+public:
+	/**
+	 * Get mipmap information.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int getMipmapInfo(void);
 
-		/**
-		 * Load the image.
-		 * @param mip Mipmap number. (0 == full image)
-		 * @return Image, or nullptr on error.
-		 */
-		rp_image_const_ptr loadImage(int mip);
+	/**
+	 * Load the image.
+	 * @param mip Mipmap number (0 == full image)
+	 * @return Image, or nullptr on error.
+	 */
+	rp_image_const_ptr loadImage(int mip);
 };
 
 FILEFORMAT_IMPL(GodotSTEX)
@@ -501,7 +501,7 @@ int GodotSTEXPrivate::getMipmapInfo(void)
 
 /**
  * Load the image.
- * @param mip Mipmap number. (0 == full image)
+ * @param mip Mipmap number (0 == full image)
  * @return Image, or nullptr on error.
  */
 rp_image_const_ptr GodotSTEXPrivate::loadImage(int mip)
@@ -1268,7 +1268,7 @@ rp_image_const_ptr GodotSTEX::image(void) const
 /**
  * Get the image for the specified mipmap.
  * Mipmap 0 is the largest image.
- * @param mip Mipmap number.
+ * @param mip Mipmap number
  * @return Image, or nullptr on error.
  */
 rp_image_const_ptr GodotSTEX::mipmap(int mip) const
