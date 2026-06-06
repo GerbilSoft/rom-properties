@@ -39,7 +39,7 @@ protected:
 
 public:
 	// Test array size
-	static constexpr unsigned int TEST_ARRAY_SIZE = 1024U;
+	static constexpr size_t TEST_ARRAY_SIZE = 1024U;
 
 	/**
 	 * Original test data
@@ -65,7 +65,7 @@ public:
 
 public:
 	// Temporary aligned memory buffer
-	static constexpr unsigned int ALIGN_BUF_SIZE = TEST_ARRAY_SIZE * 16U;
+	static constexpr size_t ALIGN_BUF_SIZE = TEST_ARRAY_SIZE * 16U;
 	UNIQUE_PTR_ALIGNED(uint8_t) align_buf;
 };
 
@@ -88,7 +88,7 @@ void ByteswapTest::SetUp(void)
 	ASSERT_TRUE(align_buf != nullptr);
 
 	uint8_t *ptr = align_buf.get();
-	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
+	for (size_t i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
 		memcpy(ptr, bswap_orig.data(), TEST_ARRAY_SIZE);
 		ptr += TEST_ARRAY_SIZE;
 	}
@@ -177,7 +177,7 @@ TEST_F(ByteswapTest, rp_byte_swap_16_array_##opt##_unalign##unalign##_test) \
 	} \
 	rp_byte_swap_16_array_##opt(reinterpret_cast<uint16_t*>(align_buf.get() + (unalign)), ALIGN_BUF_SIZE - (unalign)); \
 	const uint8_t *ptr = align_buf.get(); \
-	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) { \
+	for (size_t i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) { \
 		EXPECT_EQ(0, memcmp(ptr + (unalign), bswap_16b.data() + (unalign), TEST_ARRAY_SIZE - (unalign))); \
 		ptr += TEST_ARRAY_SIZE; \
 	} \
@@ -222,7 +222,7 @@ TEST_F(ByteswapTest, rp_byte_swap_16_array_##opt##_unDWORD_test) \
 	} \
 	rp_byte_swap_16_array_##opt(reinterpret_cast<uint16_t*>(&align_buf.get()[2]), ALIGN_BUF_SIZE-6); \
 	const uint8_t *ptr = &align_buf.get()[2]; \
-	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 6; i--) { \
+	for (size_t i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 6; i--) { \
 		EXPECT_EQ(0, memcmp(ptr, &bswap_16b[2], TEST_ARRAY_SIZE-6)); \
 		ptr += TEST_ARRAY_SIZE; \
 	} \
@@ -267,7 +267,7 @@ TEST_F(ByteswapTest, rp_byte_swap_32_array_##opt##_unalign##unalign##_test) \
 	} \
 	rp_byte_swap_32_array_##opt(reinterpret_cast<uint32_t*>(align_buf.get() + (unalign)), ALIGN_BUF_SIZE - (unalign)); \
 	const uint8_t *ptr = align_buf.get(); \
-	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) { \
+	for (size_t i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) { \
 		EXPECT_EQ(0, memcmp(ptr + (unalign), bswap_32b.data() + (unalign), TEST_ARRAY_SIZE - (unalign))); \
 		ptr += TEST_ARRAY_SIZE; \
 	} \
@@ -312,7 +312,7 @@ TEST_F(ByteswapTest, rp_byte_swap_32_array_##opt##_unQWORD_test) \
 	} \
 	rp_byte_swap_32_array_##opt(reinterpret_cast<uint32_t*>(&align_buf.get()[4]), ALIGN_BUF_SIZE-8); \
 	const uint8_t *ptr = &align_buf.get()[4]; \
-	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 8; i--) { \
+	for (size_t i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 8; i--) { \
 		EXPECT_EQ(0, memcmp(ptr, &bswap_32b[4], TEST_ARRAY_SIZE-8)); \
 		ptr += TEST_ARRAY_SIZE; \
 	} \
