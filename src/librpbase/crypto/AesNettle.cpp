@@ -242,6 +242,7 @@ size_t AesNettle::decrypt(uint8_t *RESTRICT pData, size_t size)
 	RP_D(AesNettle);
 
 #ifdef HAVE_NETTLE_3
+	assert(d->decrypt_fn != nullptr);
 	if (!d->decrypt_fn) {
 		// No decryption function set...
 		return 0;
