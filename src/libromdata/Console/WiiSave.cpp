@@ -256,13 +256,10 @@ WiiSave::WiiSave(const IRpFilePtr &file)
 			bkHeaderAddr - sizeof(Wii_SaveGame_Header_t));
 		if (ptFile->isOpen()) {
 			// Open the WiiWIBN.
-			WiiWIBN *const wibn = new WiiWIBN(ptFile);
+			unique_ptr<WiiWIBN> wibn(new WiiWIBN(ptFile));
 			if (wibn->isOpen()) {
 				// Opened successfully.
-				d->wibnData.reset(wibn);
-			} else {
-				// Unable to open the WiiWIBN.
-				delete wibn;
+				d->wibnData = std::move(wibn);
 			}
 		}
 	}

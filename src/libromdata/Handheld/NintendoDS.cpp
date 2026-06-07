@@ -28,7 +28,7 @@ using namespace LibRpTexture;
 
 // C++ STL classes
 using std::array;
-using std::shared_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -141,15 +141,14 @@ int NintendoDSPrivate::loadIconTitleData(void)
 		return -discReader->lastError();
 	}
 	// Read the icon/title data.
-	NintendoDS_BNR *const bnrFile = new NintendoDS_BNR(discReader);
+	unique_ptr<NintendoDS_BNR> bnrFile(new NintendoDS_BNR(discReader));
 	if (!bnrFile->isValid()) {
 		// Failed to open the NintendoDS_BNR.
-		delete bnrFile;
 		return -EIO;
 	}
 
 	// Save the banner file.
-	this->nds_icon_title.reset(bnrFile);
+	this->nds_icon_title = std::move(bnrFile);
 	return 0;
 }
 

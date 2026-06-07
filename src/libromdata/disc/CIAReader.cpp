@@ -27,6 +27,7 @@ using namespace LibRpFile;
 #include <array>
 using std::array;
 using std::string;
+using std::unique_ptr;
 
 // libfmt
 #include "rp-libfmt.h"
@@ -142,7 +143,7 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 	}
 
 	// Create a cipher to decrypt the title key.
-	IAesCipher *const cipher = AesCipherFactory::create();
+	unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
 
 	// Initialize parameters for title key decryption.
 	// TODO: Error checking.
@@ -165,7 +166,6 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 	array<uint8_t, 16> title_key;
 	memcpy(title_key.data(), ticket->title_key, title_key.size());
 	cipher->decrypt(title_key.data(), title_key.size());
-	delete cipher;
 
 	// Data area: IV is the TMD content index.
 	cia_iv.fill(0);

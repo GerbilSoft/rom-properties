@@ -1310,21 +1310,17 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 	if (!lzx_peHeader.empty()) {
 		IRpFilePtr peFile_tmp = std::make_shared<MemFile>(lzx_peHeader.data(), lzx_peHeader.size());
 		if (peFile_tmp->isOpen()) {
-			EXE *const pe_exe_tmp = new EXE(peFile_tmp);
+			unique_ptr<EXE> pe_exe_tmp(new EXE(peFile_tmp));
 			if (pe_exe_tmp->isOpen()) {
-				pe_exe.reset(pe_exe_tmp);
-			} else {
-				delete pe_exe_tmp;
+				pe_exe = std::move(pe_exe_tmp);
 			}
 		}
 	} else
 #endif /* ENABLE_LIBMSPACK */
 	{
-		EXE *const pe_exe_tmp = new EXE(peReader);
+		unique_ptr<EXE> pe_exe_tmp(new EXE(peReader));
 		if (pe_exe_tmp->isOpen()) {
-			pe_exe.reset(pe_exe_tmp);
-		} else {
-			delete pe_exe_tmp;
+			pe_exe = std::move(pe_exe_tmp);
 		}
 	}
 
@@ -1388,11 +1384,9 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 	}
 	if (peFile_tmp->isOpen()) {
 		// FIXME: XEX1 XDBF is either encrypted or garbage...
-		Xbox360_XDBF *const pe_xdbf_tmp = new Xbox360_XDBF(peFile_tmp, true);
+		unique_ptr<Xbox360_XDBF> pe_xdbf_tmp(new Xbox360_XDBF(peFile_tmp, true));
 		if (pe_xdbf_tmp->isOpen()) {
-			pe_xdbf.reset(pe_xdbf_tmp);
-		} else {
-			delete pe_xdbf_tmp;
+			pe_xdbf = std::move(pe_xdbf_tmp);
 		}
 	}
 

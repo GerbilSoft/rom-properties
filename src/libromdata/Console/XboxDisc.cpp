@@ -336,38 +336,32 @@ RomData *XboxDiscPrivate::openDefaultExe(ExeType *pExeType)
 	// Try to open default.xex.
 	IRpFilePtr f_defaultExe(this->open("/default.xex"));
 	if (f_defaultExe) {
-		RomData *const xexData = new Xbox360_XEX(f_defaultExe);
+		unique_ptr<RomData> xexData(new Xbox360_XEX(f_defaultExe));
 		if (xexData->isValid()) {
 			// default.xex is open and valid.
-			defaultExeData.reset(xexData);
+			defaultExeData = std::move(xexData);
 			exeType = ExeType::XEX;
 			if (pExeType) {
 				*pExeType = ExeType::XEX;
 			}
-			return xexData;
+			return defaultExeData.get();
 		}
-
-		// Not actually an XEX.
-		delete xexData;
 	}
 
 	// Try to open default.xbe.
 	// TODO: What about discs that have both?
 	f_defaultExe = this->open("/default.xbe");
 	if (f_defaultExe) {
-		RomData *const xbeData = new Xbox_XBE(f_defaultExe);
+		unique_ptr<RomData> xbeData(new Xbox_XBE(f_defaultExe));
 		if (xbeData->isValid()) {
 			// default.xbe is open and valid.
-			defaultExeData.reset(xbeData);
+			defaultExeData = std::move(xbeData);
 			exeType = ExeType::XBE;
 			if (pExeType) {
 				*pExeType = ExeType::XBE;
 			}
-			return xbeData;
+			return defaultExeData.release();
 		}
-
-		// Not actually an XBE.
-		delete xbeData;
 	}
 
 	// Unable to open the default executable.

@@ -365,13 +365,10 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 	shared_ptr<SubFile> subFile = std::make_shared<SubFile>(this->file,
 		exe_address, fileSize - exe_address);
 	if (subFile->isOpen()) {
-		EXE *const pe_exe_tmp = new EXE(subFile);
+		unique_ptr<EXE> pe_exe_tmp(new EXE(subFile));
 		if (pe_exe_tmp->isOpen()) {
 			// EXE opened.
-			this->pe_exe.reset(pe_exe_tmp);
-		} else {
-			// Failed to open the EXE.
-			delete pe_exe_tmp;
+			this->pe_exe = std::move(pe_exe_tmp);
 		}
 	}
 

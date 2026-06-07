@@ -425,7 +425,7 @@ Gdiplus::Status RpGdiplusBackend::unlock(void)
  */
 Gdiplus::Bitmap *RpGdiplusBackend::dup_ARGB32(void) const
 {
-	Gdiplus::Bitmap *pBmp = nullptr;
+	unique_ptr<Gdiplus::Bitmap> pBmp;
 	Gdiplus::Status status;
 
 	switch (this->format) {
@@ -433,7 +433,7 @@ Gdiplus::Bitmap *RpGdiplusBackend::dup_ARGB32(void) const
 			// FIXME: Since adding custom stride, Bitmap::Clone() seems to
 			// automatically replace CI8 color 8 with white.
 			// Hence, we have to manually copy the image for CI8.
-			pBmp = new Gdiplus::Bitmap(this->width, this->height, PixelFormat32bppARGB);
+			pBmp.reset(new Gdiplus::Bitmap(this->width, this->height, PixelFormat32bppARGB));
 
 			const Gdiplus::Rect bmpDestRect(0, 0, this->width, this->height);
 			Gdiplus::BitmapData bmpDestData;
@@ -441,7 +441,6 @@ Gdiplus::Bitmap *RpGdiplusBackend::dup_ARGB32(void) const
 				PixelFormat32bppARGB, &bmpDestData);
 			assert(status == Gdiplus::Status::Ok);
 			if (status != Gdiplus::Status::Ok) {
-				delete pBmp;
 				return nullptr;
 			}
 
@@ -450,7 +449,6 @@ Gdiplus::Bitmap *RpGdiplusBackend::dup_ARGB32(void) const
 			assert(this->stride > 0);
 			if (this->stride <= 0) {
 				pBmp->UnlockBits(&bmpDestData);
-				delete pBmp;
 				return nullptr;
 			}
 
@@ -481,7 +479,6 @@ Gdiplus::Bitmap *RpGdiplusBackend::dup_ARGB32(void) const
 			status = pBmp->UnlockBits(&bmpDestData);
 			assert(status == Gdiplus::Status::Ok);
 			if (status != Gdiplus::Status::Ok) {
-				delete pBmp;
 				return nullptr;
 			}
 			break;
@@ -494,11 +491,10 @@ Gdiplus::Bitmap *RpGdiplusBackend::dup_ARGB32(void) const
 				return nullptr;
 			}
 
-			pBmp = m_pGdipBmp->Clone(0, 0, this->width, this->height, PixelFormat32bppARGB);
+			pBmp.reset(m_pGdipBmp->Clone(0, 0, this->width, this->height, PixelFormat32bppARGB));
 			status = const_cast<RpGdiplusBackend*>(this)->lock();
 			assert(status == Gdiplus::Status::Ok);
 			if (status != Gdiplus::Status::Ok) {
-				delete pBmp;
 				return nullptr;
 			}
 			break;
@@ -507,7 +503,7 @@ Gdiplus::Bitmap *RpGdiplusBackend::dup_ARGB32(void) const
 			assert(!"Unsupported rp_image::Format.");
 	}
 
-	return pBmp;
+	return pBmp.release();
 }
 
 /**

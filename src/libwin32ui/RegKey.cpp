@@ -589,20 +589,16 @@ LONG RegKey::RegisterFileType(LPCTSTR fileType, RegKey **pHkey_Assoc)
 	// otherwise, we only need write access.
 	const REGSAM samDesired = (pHkey_Assoc ? KEY_READ | KEY_WRITE : KEY_WRITE);
 
-	RegKey *pHkcr_fileType = new RegKey(HKEY_CLASSES_ROOT, fileType, samDesired, true);
+	unique_ptr<RegKey> pHkcr_fileType(new RegKey(HKEY_CLASSES_ROOT, fileType, samDesired, true));
 	if (!pHkcr_fileType->isOpen()) {
 		// Error opening the key.
 		LONG lResult = pHkcr_fileType->lOpenRes();
-		delete pHkcr_fileType;
 		return lResult;
 	}
 
 	if (pHkey_Assoc) {
 		// Return the RegKey.
-		*pHkey_Assoc = pHkcr_fileType;
-	} else {
-		// We're done using the RegKey.
-		delete pHkcr_fileType;
+		*pHkey_Assoc = pHkcr_fileType.release();
 	}
 
 	return ERROR_SUCCESS;

@@ -186,14 +186,13 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 		// TODO: Have WiiTicket use dynamic_cast<> to determine if this is a MemFile?
 		memFile->setFilename("title.tik");
 
-		WiiTicket *const wiiTicket = new WiiTicket(memFile);
+		unique_ptr<WiiTicket> wiiTicket(new WiiTicket(memFile));
 		if (!wiiTicket->isValid()) {
 			// Not a valid ticket?
-			delete wiiTicket;
 			// TODO: Better verifyResult value?
 			return verifyResult;
 		}
-		this->wiiTicket.reset(wiiTicket);
+		this->wiiTicket = std::move(wiiTicket);
 	}
 
 	// Get the encryption key in use.

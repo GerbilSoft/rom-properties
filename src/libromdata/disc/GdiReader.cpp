@@ -313,7 +313,7 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	}
 
 	// Open the related file.
-	IRpFile *const file = FileSystem::openRelatedFile_rawptr(filename.c_str(), basename.c_str(), ext.c_str());
+	unique_ptr<IRpFile> file(FileSystem::openRelatedFile_rawptr(filename.c_str(), basename.c_str(), ext.c_str()));
 	if (!file) {
 		// Unable to open the file.
 		// TODO: Return the actual error.
@@ -324,20 +324,18 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	const off64_t fileSize = file->size();
 	if (fileSize <= 0) {
 		// Empty or invalid file...
-		delete file;
 		return -EIO;
 	}
 
 	// Is the file a multiple of the sector size?
 	if (fileSize % blockRange.sectorSize != 0) {
 		// Not a multiple of the sector size.
-		delete file;
 		return -EIO;
 	}
 
 	// File opened.
 	blockRange.blockEnd = blockRange.blockStart + static_cast<unsigned int>(fileSize / blockRange.sectorSize) - 1;
-	blockRange.file = file;
+	blockRange.file = file.release();
 	return 0;
 }
 

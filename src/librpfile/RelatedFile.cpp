@@ -21,6 +21,7 @@
 // C++ STL classes
 #include <algorithm>
 using std::string;
+using std::unique_ptr;
 #ifdef _WIN32
 using std::wstring;
 #endif /* _WIN32 */
@@ -89,20 +90,18 @@ IRpFile *openRelatedFile_rawptr(const char *filename, const char *basename, cons
 
 	// Attempt to open the related file.
 	string s_rel_filename = s_dir + s_basename + s_ext;
-	IRpFile *test_file = new RpFile(s_rel_filename, RpFile::FM_OPEN_READ);
+	unique_ptr<IRpFile> test_file(new RpFile(s_rel_filename, RpFile::FM_OPEN_READ));
 	if (!test_file->isOpen()) {
 		// Error opening the related file.
-		delete test_file;
 
 		// Try again with a lowercase extension.
 		std::transform(s_ext.begin(), s_ext.end(), s_ext.begin(),
 			[](char c) noexcept -> char { return std::tolower(c); });
 		s_rel_filename.replace(s_rel_filename.size() - s_ext.size(), s_ext.size(), s_ext);
-		test_file = new RpFile(s_rel_filename, RpFile::FM_OPEN_READ);
+		test_file.reset(new RpFile(s_rel_filename, RpFile::FM_OPEN_READ));
 		if (!test_file->isOpen()) {
 			// Still can't open the related file.
-			delete test_file;
-			test_file = nullptr;
+			test_file.reset();
 		}
 	}
 
@@ -116,7 +115,7 @@ IRpFile *openRelatedFile_rawptr(const char *filename, const char *basename, cons
 		}
 	}
 
-	return test_file;
+	return test_file.release();
 }
 
 /**
@@ -202,20 +201,18 @@ IRpFile *openRelatedFile_rawptr(const wchar_t *filenameW, const wchar_t *basenam
 
 	// Attempt to open the related file.
 	wstring ws_rel_filename = ws_dir + ws_basename + ws_ext;
-	IRpFile *test_file = new RpFile(ws_rel_filename, RpFile::FM_OPEN_READ);
+	unique_ptr<IRpFile> test_file(new RpFile(ws_rel_filename, RpFile::FM_OPEN_READ));
 	if (!test_file->isOpen()) {
 		// Error opening the related file.
-		delete test_file;
 
 		// Try again with a lowercase extension.
 		std::transform(ws_ext.begin(), ws_ext.end(), ws_ext.begin(),
 			[](wchar_t c) noexcept -> wchar_t { return std::towlower(c); });
 		ws_rel_filename.replace(ws_rel_filename.size() - ws_ext.size(), ws_ext.size(), ws_ext);
-		test_file = new RpFile(ws_rel_filename, RpFile::FM_OPEN_READ);
+		test_file.reset(new RpFile(ws_rel_filename, RpFile::FM_OPEN_READ));
 		if (!test_file->isOpen()) {
 			// Still can't open the related file.
-			delete test_file;
-			test_file = nullptr;
+			test_file.reset();
 		}
 	}
 
@@ -229,7 +226,7 @@ IRpFile *openRelatedFile_rawptr(const wchar_t *filenameW, const wchar_t *basenam
 		}
 	}
 
-	return test_file;
+	return test_file.release();
 }
 
 /**

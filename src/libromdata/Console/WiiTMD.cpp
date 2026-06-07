@@ -117,15 +117,14 @@ int WiiTMDPrivate::loadCmdGroupHeader(void)
 		return -EINVAL;
 	}
 
-	WUP_CMD_GroupHeader *const grpHdr = new WUP_CMD_GroupHeader;
-	size_t size = file->seekAndRead(sizeof(RVL_TMD_Header), grpHdr, sizeof(*grpHdr));
-	if (size != sizeof(*grpHdr)) {
+	unique_ptr<WUP_CMD_GroupHeader> grpHdr(new WUP_CMD_GroupHeader);
+	size_t size = file->seekAndRead(sizeof(RVL_TMD_Header), grpHdr.get(), sizeof(WUP_CMD_GroupHeader));
+	if (size != sizeof(WUP_CMD_GroupHeader)) {
 		// Seek and/or read error.
-		delete grpHdr;
 		return -EIO;
 	}
 
-	this->cmdGroupHeader.reset(grpHdr);
+	this->cmdGroupHeader = std::move(grpHdr);
 	return 0;
 }
 

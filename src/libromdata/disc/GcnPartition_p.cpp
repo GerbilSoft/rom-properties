@@ -17,6 +17,9 @@ using LibRpFile::IRpFile;
 // C includes (C++ namespace)
 #include <cstring>
 
+// C++ STL classes
+using std::unique_ptr;
+
 namespace LibRomData {
 
 GcnPartitionPrivate::GcnPartitionPrivate(GcnPartition *q,
@@ -160,15 +163,14 @@ int GcnPartitionPrivate::loadFst(void)
 	}
 
 	// Create the GcnFst.
-	GcnFst *const gcnFst = new GcnFst(fstData, fstData_len, offsetShift);
+	unique_ptr<GcnFst> gcnFst(new GcnFst(fstData, fstData_len, offsetShift));
 	delete[] fstData;	// TODO: Eliminate the extra copy?
 	if (gcnFst->hasErrors()) {
 		// FST has errors.
-		delete gcnFst;
 		q->m_lastError = EIO;
 		return -EIO;
 	}
-	this->fst.reset(gcnFst);
+	this->fst = std::move(gcnFst);
 	return 0;
 }
 

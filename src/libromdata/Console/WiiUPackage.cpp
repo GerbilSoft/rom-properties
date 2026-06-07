@@ -374,7 +374,7 @@ void WiiUPackage::init(void)
 
 	// Open the ticket.
 	// NOTE: May not be present in extracted packages.
-	WiiTicket *ticket = nullptr;
+	unique_ptr<WiiTicket> ticket;
 	int ticketFormatVersion = -1;
 
 	tstring s_path(d->path);
@@ -387,7 +387,7 @@ void WiiUPackage::init(void)
 	s_path += _T("title.tik");
 	IRpFilePtr subfile = std::make_shared<RpFile>(s_path, RpFile::FM_OPEN_READ);
 	if (subfile->isOpen()) {
-		ticket = new WiiTicket(subfile);
+		ticket.reset(new WiiTicket(subfile));
 		if (ticket->isValid()) {
 			// Check the ticket version.
 			// Wii U titles are generally v1.
@@ -395,12 +395,10 @@ void WiiUPackage::init(void)
 			ticketFormatVersion = ticket->ticketFormatVersion();
 			if (ticketFormatVersion != 0 && ticketFormatVersion != 1) {
 				// Not v0 or v1.
-				delete ticket;
-				ticket = nullptr;
+				ticket.reset();
 			}
 		} else {
-			delete ticket;
-			ticket = nullptr;
+			ticket.reset();
 		}
 	}
 	subfile.reset();
@@ -410,11 +408,11 @@ void WiiUPackage::init(void)
 		d->isValid = false;
 		return;
 	}
-	d->ticket.reset(ticket);
+	d->ticket = std::move(ticket);
 
 	// Open the TMD.
 	// NOTE: May not be present in extracted packages.
-	WiiTMD *tmd = nullptr;
+	unique_ptr<WiiTMD> tmd;
 	int tmdFormatVersion = -1;
 
 	s_path.resize(orig_path_size);
@@ -425,7 +423,7 @@ void WiiUPackage::init(void)
 	s_path += _T("title.tmd");
 	subfile = std::make_shared<RpFile>(s_path, RpFile::FM_OPEN_READ);
 	if (subfile->isOpen()) {
-		tmd = new WiiTMD(subfile);
+		tmd.reset(new WiiTMD(subfile));
 		if (tmd->isValid()) {
 			// Check the TMD version.
 			// Wii U titles are generally v1.
@@ -433,12 +431,10 @@ void WiiUPackage::init(void)
 			tmdFormatVersion = tmd->tmdFormatVersion();
 			if (tmdFormatVersion != 0 && tmdFormatVersion != 1) {
 				// Not v0 or v1.
-				delete tmd;
-				tmd = nullptr;
+				tmd.reset();
 			}
 		} else {
-			delete tmd;
-			tmd = nullptr;
+			tmd.reset();
 		}
 	}
 	subfile.reset();
@@ -448,7 +444,7 @@ void WiiUPackage::init(void)
 		d->isValid = false;
 		return;
 	}
-	d->tmd.reset(tmd);
+	d->tmd = std::move(tmd);
 
 	if (d->packageType != WiiUPackagePrivate::PackageType::NUS) {
 		// Only NUS format needs decryption.
@@ -462,7 +458,7 @@ void WiiUPackage::init(void)
 
 #if ENABLE_DECRYPTION
 	// Decrypt the title key.
-	int ret = ticket->decryptTitleKey(d->title_key, sizeof(d->title_key));
+	int ret = d->ticket->decryptTitleKey(d->title_key, sizeof(d->title_key));
 	if (ret != 0) {
 		// Failed to decrypt the title key.
 		// TODO: verifyResult
@@ -479,7 +475,7 @@ void WiiUPackage::init(void)
 
 	// Read the contents table for group 0.
 	// TODO: Multiple groups?
-	d->contentsTable = tmd->contentsTableV1(0);
+	d->contentsTable = d->tmd->contentsTableV1(0);
 	if (d->contentsTable.empty()) {
 		// No contents?
 		return;
@@ -523,14 +519,13 @@ void WiiUPackage::init(void)
 	}
 
 	// Create the WiiUFst.
-	WiiUFst *const fst = new WiiUFst(fst_buf.get(), static_cast<uint32_t>(fst_size));
+	unique_ptr<WiiUFst> fst(new WiiUFst(fst_buf.get(), static_cast<uint32_t>(fst_size)));
 	if (!fst->isOpen()) {
 		// FST is invalid?
 		// NOTE: boot1 does not have an FST.
-		delete fst;
 		return;
 	}
-	d->fst.reset(fst);
+	d->fst = std::move(fst);
 
 	// FST loaded.
 }

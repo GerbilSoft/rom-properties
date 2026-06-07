@@ -441,13 +441,12 @@ const rp::uvector<char> *Xbox360_XDBF_Private::loadStringTable_SPA(XDBF_Language
 		// Size is out of range.
 		return nullptr;
 	}
-	rp::uvector<char> *vec = new rp::uvector<char>(str_tbl_sz);
+	unique_ptr<rp::uvector<char>> vec(new rp::uvector<char>(str_tbl_sz));
 
 	const unsigned int str_tbl_addr = be32_to_cpu(entry->offset) + this->data_offset;
 	size_t size = file->seekAndRead(str_tbl_addr, vec->data(), str_tbl_sz);
 	if (size != str_tbl_sz) {
 		// Seek and/or read error.
-		delete vec;
 		return nullptr;
 	}
 
@@ -459,13 +458,12 @@ const rp::uvector<char> *Xbox360_XDBF_Private::loadStringTable_SPA(XDBF_Language
 	{
 		// Magic is invalid.
 		// TODO: Report an error?
-		delete vec;
 		return nullptr;
 	}
 
 	// String table loaded successfully.
-	this->strTbls[langID] = vec;
-	return vec;
+	this->strTbls[langID] = vec.release();
+	return this->strTbls[langID];
 }
 
 /**
