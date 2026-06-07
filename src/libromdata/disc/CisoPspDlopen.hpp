@@ -46,6 +46,7 @@ typedef void *lzo_voidp;
 #endif /* HAVE_LZO */
 
 // C++ STL classes
+#include <memory>
 #include <mutex>
 
 namespace LibRomData {
@@ -53,7 +54,6 @@ namespace LibRomData {
 class CisoPspDlopen {
 public:
 	CisoPspDlopen();
-	~CisoPspDlopen();
 
 private:
 	// dlopen()'d modules
@@ -66,14 +66,14 @@ private:
 #endif /* LZO_SHARED_LINKAGE */
 
 #ifdef LZ4_SHARED_LINKAGE
-	HMODULE m_liblz4;
+	std::unique_ptr<HMODULE, HMODULE_deleter> m_liblz4;
 
 	typedef __typeof__(::LZ4_decompress_safe) *pfn_LZ4_decompress_safe_t;
 	pfn_LZ4_decompress_safe_t m_pfn_LZ4_decompress_safe;
 #endif /* LZ4_SHARED_LINKAGE */
 
 #ifdef LZO_SHARED_LINKAGE
-	HMODULE m_liblzo2;
+	std::unique_ptr<HMODULE, HMODULE_deleter> m_liblzo2;
 
 	typedef __typeof__(::lzo1x_decompress_safe) *pfn_lzo1x_decompress_safe_t;
 	pfn_lzo1x_decompress_safe_t m_pfn_lzo1x_decompress_safe;
@@ -102,7 +102,7 @@ public:
 	 */
 	inline bool is_LZ4_loaded(void) const
 	{
-		return (m_liblz4 != nullptr);
+		return ((bool)m_liblz4);
 	}
 
 	inline int LZ4_decompress_safe(const char* src, char* dst, int compressedSize, int dstCapacity)
@@ -172,7 +172,7 @@ public:
 	 */
 	inline bool is_LZO_loaded(void) const
 	{
-		return (m_liblzo2 != nullptr);
+		return ((bool)m_liblzo2);
 	}
 
 	inline int lzo1x_decompress_safe(const lzo_bytep src, lzo_uint  src_len,

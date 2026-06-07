@@ -32,20 +32,6 @@ CisoPspDlopen::CisoPspDlopen()
 #endif /* LZO_SHARED_LINKAGE */
 }
 
-CisoPspDlopen::~CisoPspDlopen()
-{
-#ifdef LZ4_SHARED_LINKAGE
-	if (m_liblz4) {
-		dlclose(m_liblz4);
-	}
-#endif /* LZ4_SHARED_LINKAGE */
-#ifdef LZO_SHARED_LINKAGE
-	if (m_liblzo2) {
-		dlclose(m_liblzo2);
-	}
-#endif /* LZO_SHARED_LINKAGE */
-}
-
 #ifdef LZ4_SHARED_LINKAGE
 /**
  * Initialize the LZ4 function pointers.
@@ -77,7 +63,7 @@ void CisoPspDlopen::init_pfn_LZ4_int(void)
 	}
 
 	// Function pointers loaded.
-	m_liblz4 = lib;
+	m_liblz4.reset(lib);
 }
 
 /**
@@ -88,7 +74,7 @@ int CisoPspDlopen::init_pfn_LZ4(void)
 {
 	// TODO: Better error code.
 	std::call_once(m_once_lz4, &CisoPspDlopen::init_pfn_LZ4_int, this);
-	return (m_liblz4 != nullptr) ? 0 : -EIO;
+	return ((bool)m_liblz4) ? 0 : -EIO;
 }
 #endif /* LZ4_SHARED_LINKAGE */
 
@@ -144,7 +130,7 @@ void CisoPspDlopen::init_pfn_LZO_int(void)
 	}
 
 	// Function pointers loaded.
-	m_liblzo2 = lib;
+	m_liblzo2.reset(lib);
 }
 
 /**
@@ -155,7 +141,7 @@ int CisoPspDlopen::init_pfn_LZO(void)
 {
 	// TODO: Better error code.
 	std::call_once(m_once_lzo, &CisoPspDlopen::init_pfn_LZO_int, this);
-	return (m_liblzo2 != nullptr) ? 0 : -EIO;
+	return ((bool)m_liblzo2) ? 0 : -EIO;
 }
 #elif defined(HAVE_LZO)
 /**
