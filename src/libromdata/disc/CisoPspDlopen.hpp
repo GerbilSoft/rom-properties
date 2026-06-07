@@ -9,12 +9,7 @@
 #pragma once
 
 #include "config.libromdata.h"
-
-#ifdef _WIN32
-#  include "libwin32common/RpWin32_sdk.h"
-#else /* !_WIN32 */
-typedef void *HMODULE;
-#endif /* _WIN32 */
+#include "HMODULE_deleter.hpp"
 
 #ifdef HAVE_LZ4
 #  if defined(USE_INTERNAL_LZ4) && !defined(USE_INTERNAL_LZ4_DLL)
