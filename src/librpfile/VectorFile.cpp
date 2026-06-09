@@ -11,9 +11,6 @@
 // C includes (C++ namespace)
 #include <cstring>
 
-// C++ STL classes
-using std::string;
-
 namespace LibRpFile {
 
 // 128 MB *should* be a reasonable maximum...

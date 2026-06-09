@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_p.hpp: Standard file object. (PRIVATE CLASS)                     *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,6 +17,7 @@
 
 // C++ includes
 #include <memory>
+#include <string>
 
 // zlib for transparent gzip decompression.
 #include <zlib.h>

@@ -11,9 +11,6 @@
 // C includes (C++ namespace)
 #include <cassert>
 
-// C++ STL classes
-using std::string;
-
 namespace LibRpFile {
 
 /**
