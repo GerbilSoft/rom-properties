@@ -11,6 +11,9 @@
 #include "rp_image_p.hpp"
 #include "rp_image_backend.hpp"
 
+// Other rom-properties libraries
+#include "librpbyteswap/byteswap_rp.h"
+
 // C++ STL classes
 using std::array;
 
