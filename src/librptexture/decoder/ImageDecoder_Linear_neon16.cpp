@@ -10,6 +10,8 @@
 #include "ImageDecoder_Linear.hpp"
 #include "ImageDecoder_Linear_Masks.hpp"
 
+#include "force_inline.h"
+
 // librptexture
 #include "ImageSizeCalc.hpp"
 #include "img/rp_image.hpp"
@@ -26,6 +28,30 @@ namespace LibRpTexture { namespace ImageDecoder {
 
 // for common masks
 using namespace Masks;
+
+#ifdef RP_CPU_ARM
+/**
+ * vzip1q_u16() for 32-bit ARM
+ */
+static RP_FORCEINLINE uint32x4_t vzip1q_u16(uint16x8_t a, uint16x8_t b)
+{
+	uint16x4_t a1 = vget_low_u16(a);
+	uint16x4_t b1 = vget_low_u16(b);
+	uint16x4x2_t result = vzip_u16(a1, b1);
+	return vreinterpretq_u32_u16(vcombine_u16(result.val[0], result.val[1]));
+}
+
+/**
+ * vzip2q_u16() for 32-bit ARM
+ */
+static RP_FORCEINLINE uint32x4_t vzip2q_u16(uint16x8_t a, uint16x8_t b)
+{
+	uint16x4_t a1 = vget_high_u16(a);
+	uint16x4_t b1 = vget_high_u16(b);
+	uint16x4x2_t result = vzip_u16(a1, b1);
+	return vreinterpretq_u32_u16(vcombine_u16(result.val[0], result.val[1]));
+}
+#endif /* RP_CPU_ARM */
 
 /**
  * Templated function for 15/16-bit RGB conversion using NEON. (no alpha channel)
@@ -99,20 +125,8 @@ static inline void T_RGB16_neon(
 	// Unpack R and GB into DWORDs.
 	uint32x4x2_t px;
 
-#if defined(RP_CPU_ARM64)
 	px.val[0] = vreinterpretq_u32_u16(vzip1q_u16(sB, sR));
 	px.val[1] = vreinterpretq_u32_u16(vzip2q_u16(sB, sR));
-#elif defined(RP_CPU_ARM)
-	uint16x4_t a1 = vget_low_u16(sB);
-	uint16x4_t b1 = vget_low_u16(sR);
-	uint16x4x2_t result = vzip_u16(a1, b1);
-	px.val[0] = vreinterpretq_u32_u16(vcombine_u16(result.val[0], result.val[1]));
-
-	a1 = vget_high_u16(sB);
-	b1 = vget_high_u16(sR);
-	result = vzip_u16(a1, b1);
-	px.val[1] = vreinterpretq_u32_u16(vcombine_u16(result.val[0], result.val[1]));
-#endif
 
 	px.val[0] = vorrq_u32(px.val[0], Mask32_A);
 	px.val[1] = vorrq_u32(px.val[1], Mask32_A);
@@ -246,20 +260,8 @@ static inline void T_ARGB16_neon(
 
 	// Unpack AR and GB into DWORDs.
 	uint32x4x2_t px;
-#if defined(RP_CPU_ARM64)
 	px.val[0] = vreinterpretq_u32_u16(vzip1q_u16(sB, sR));
 	px.val[1] = vreinterpretq_u32_u16(vzip2q_u16(sB, sR));
-#elif defined(RP_CPU_ARM)
-	uint16x4_t a1 = vget_low_u16(sB);
-	uint16x4_t b1 = vget_low_u16(sR);
-	uint16x4x2_t result = vzip_u16(a1, b1);
-	px.val[0] = vreinterpretq_u32_u16(vcombine_u16(result.val[0], result.val[1]));
-
-	a1 = vget_high_u16(sB);
-	b1 = vget_high_u16(sR);
-	result = vzip_u16(a1, b1);
-	px.val[1] = vreinterpretq_u32_u16(vcombine_u16(result.val[0], result.val[1]));
-#endif
 	vst1q_u32_x2_ex(px_dest, px, 128);
 }
 
