@@ -295,7 +295,7 @@ IRpFilePtr XboxDiscPrivate::open(const char *filename)
 	});
 #endif /* _WIN32 */
 
-	IRpFilePtr f = std::make_shared<RpFile>(ts_full_filename, RpFile::FM_OPEN_READ);
+	IRpFilePtr f;// = std::make_shared<RpFile>(ts_full_filename, RpFile::FM_OPEN_READ);
 	if (f && f->isOpen()) {
 		return f;
 	}
