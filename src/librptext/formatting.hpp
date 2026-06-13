@@ -19,22 +19,23 @@
 
 namespace LibRpText {
 
-/** File size formatting **/
+/** User Setting Query Function **/
 
-enum class BinaryUnitDialect {
-	DefaultBinaryDialect = -1,
+enum class UserSetting {
+	Unknown = -1,
 
-	IECBinaryDialect,
-	JEDECBinaryDialect,
-	MetricBinaryDialect,
+	BinaryUnitDialect,
+
+	Max
 };
 
 /**
- * User setting query function for BinaryUnitDialect.
+ * User setting query function for LibRpText.
  * @param user_data	[in] User data from registerNotifyFunction()
- * @return BinaryUnitDialect on success; DefaultBinaryDialect on error.
+ * @param setting	[in] User setting to retrieve
+ * @return User setting on success; -1 on error.
  */
-typedef BinaryUnitDialect (*UserSettingQuery_t)(void *user_data);
+typedef int (*UserSettingQuery_t)(void *user_data, UserSetting setting);
 
 /**
  * Set the user setting query function.
@@ -56,6 +57,16 @@ void setUserSettingQueryFunction(UserSettingQuery_t func, void *user_data);
  */
 RP_LIBROMDATA_PUBLIC
 void clearUserSettingQuery(UserSettingQuery_t func, void *user_data);
+
+/** File size formatting **/
+
+enum class BinaryUnitDialect {
+	DefaultBinaryDialect = -1,
+
+	IECBinaryDialect,
+	JEDECBinaryDialect,
+	MetricBinaryDialect,
+};
 
 /**
  * Format a file size.

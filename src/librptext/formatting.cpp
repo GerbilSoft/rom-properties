@@ -204,7 +204,10 @@ string formatFileSize(off64_t size, BinaryUnitDialect dialect)
 		// If the UI frontend has registered a user setting query function,
 		// call it to get the default dialect.
 		if (userSettingQueryFunc) {
-			dialect = static_cast<BinaryUnitDialect>(userSettingQueryFunc(usq_user_data));
+			int val = userSettingQueryFunc(usq_user_data, UserSetting::BinaryUnitDialect);
+			if (val >= 0) {
+				dialect = static_cast<BinaryUnitDialect>(val);
+			}
 		} else {
 			// No UI frontend function was registered.
 			// Use IEC as the default.

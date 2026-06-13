@@ -30,21 +30,26 @@ using LibRpTexture::rp_image;
 #  include <QtCore/QStandardPaths>
 
 /**
- * Get the BinaryUnitDialect from KDE Globals.
- * Added in KCoreAddons v5.245.0.
- * @param user_data
- * @return BinaryUnitDialect
+ * User setting query function for LibRpText.
+ * @param user_data	[in] User data from registerNotifyFunction()
+ * @param setting	[in] User setting to retrieve
+ * @return User setting on success; -1 on error.
  */
-static LibRpText::BinaryUnitDialect getBinaryUnitDialect(void *user_data)
+static int getBinaryUnitDialect(void *user_data, LibRpText::UserSetting setting)
 {
+	RP_UNUSED(user_data);
+	if (setting != LibRpText::UserSetting::BinaryUnitDialect) {
+		// Not a supported setting value.
+		return -1;
+	}
+
 	// from KFormatPrivate::formatByteSize()
 	// NOTE: KFormat::BinaryUnitDialect maps directly to LibRpText::BinaryUnitDialect.
 	static constexpr LibRpText::BinaryUnitDialect fallbackDialect = LibRpText::BinaryUnitDialect::IECBinaryDialect;
-	RP_UNUSED(user_data);
 
 	const QString kdeglobals = QStandardPaths::locate(QStandardPaths::GenericConfigLocation, QLatin1String("kdeglobals"));
 	QSettings settings(kdeglobals, QSettings::IniFormat);
-	return static_cast<LibRpText::BinaryUnitDialect>(settings.value("Locale/BinaryUnitDialect", static_cast<int>(fallbackDialect)).toInt());
+	return settings.value("Locale/BinaryUnitDialect", static_cast<int>(fallbackDialect)).toInt();
 }
 #endif /* QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) */
 
