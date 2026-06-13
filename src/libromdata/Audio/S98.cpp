@@ -294,9 +294,9 @@ int S98::loadFieldData(void)
 	const S98_Header *const s98Header = &d->s98Header;
 
 	// S98 fields:
-	// - 1 regular field.
-	// - 11 fields in the "[TAG]" section.
-	d->fields.reserve(1+11);
+	// - 4 regular fields.
+	// - 12 fields in the "[S98]" section.
+	d->fields.reserve(4+12);
 
 	// Version
 	const bool isV3 = (s98Header->version == '3');

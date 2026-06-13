@@ -444,8 +444,8 @@ int PSF::loadFieldData(void)
 
 	// PSF fields:
 	// - 1 regular field.
-	// - 11 fields in the "[TAG]" section.
-	d->fields.reserve(1+11);
+	// - 12 fields in the "[TAG]" section.
+	d->fields.reserve(1+12);
 
 	// System
 	const char *sys_name = nullptr;
