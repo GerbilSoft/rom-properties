@@ -8,6 +8,9 @@
 
 #pragma once
 
+// librpbase
+#include "librpbase/RomFields.hpp"
+
 // C includes (C++ namespace)
 #include <cstdint>
 
@@ -32,5 +35,14 @@ enum class PSFTagStyle {
  * @param style Style of PSF tags
  */
 std::unordered_map<std::string, std::string> parseTags(const char *pData, size_t size, PSFTagStyle style = PSFTagStyle::PSF);
+
+/**
+ * Add PSF tags to RomFields.
+ * @param fields RomFields
+ * @param tags PSF tags [parsed using parseTags()]
+ * @param psfby Key for "psfby" field
+ * @return Number of fields added
+ */
+int addTagsToRomFields(LibRpBase::RomFields *fields, const std::unordered_map<std::string, std::string> &tags, const char *psfby = "psfby");
 
 } }

@@ -12,7 +12,9 @@
 #include "s98_structs.h"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librptext/conversion.hpp"
+using namespace LibRpBase;
 using namespace LibRpText;
 
 // C includes (C++ namespace)
@@ -143,6 +145,116 @@ unordered_map<string, string> parseTags(const char *pData, size_t size, PSFTagSt
 	}
 
 	return kv;
+}
+
+/**
+ * Add PSF tags to RomFields.
+ * @param fields RomFields
+ * @param tags PSF tags [parsed using parseTags()]
+ * @param psfby Key for "psfby" field
+ * @return Number of fields added
+ */
+int addTagsToRomFields(RomFields *fields, const unordered_map<string, string> &tags, const char *psfby)
+{
+	if (tags.empty()) {
+		// No tags...
+		return 0;
+	}
+
+	const int prev_count = fields->count();
+
+	// Title
+	auto iter = tags.find("title");
+	if (iter != tags.end()) {
+		fields->addField_string(C_("RomData|Audio", "Title"), iter->second);
+	}
+
+	// Artist
+	iter = tags.find("artist");
+	if (iter != tags.end()) {
+		fields->addField_string(C_("RomData|Audio", "Artist"), iter->second);
+	}
+
+	// Game
+	iter = tags.find("game");
+	if (iter != tags.end()) {
+		fields->addField_string(C_("PSF", "Game"), iter->second);
+	}
+
+	// Release Date
+	// NOTE: The tag is "year", but it may be YYYY-MM-DD.
+	iter = tags.find("year");
+	if (iter != tags.end()) {
+		fields->addField_string(C_("RomData", "Release Date"), iter->second);
+	}
+
+	// Genre
+	iter = tags.find("genre");
+	if (iter != tags.end()) {
+		fields->addField_string(C_("RomData|Audio", "Genre"), iter->second);
+	}
+
+	// Copyright
+	iter = tags.find("copyright");
+	if (iter != tags.end()) {
+		fields->addField_string(C_("RomData|Audio", "Copyright"), iter->second);
+	}
+
+	// Ripped By
+	// NOTE: The tag varies based on PSF version.
+	const char *const ripped_by_title = C_("PSF", "Ripped By");
+	iter = tags.find(psfby);
+	if (iter != tags.end()) {
+		fields->addField_string(ripped_by_title, iter->second);
+	} else {
+		// Try "psfby" if the system-specific one isn't there.
+		iter = tags.find("psfby");
+		if (iter != tags.end()) {
+			fields->addField_string(ripped_by_title, iter->second);
+		}
+	}
+
+	// Volume (floating-point number)
+	iter = tags.find("volume");
+	if (iter != tags.end()) {
+		fields->addField_string(C_("PSF", "Volume"), iter->second);
+	}
+
+	// Duration
+	//
+	// Possible formats:
+	// - seconds.decimal
+	// - minutes:seconds.decimal
+	// - hours:minutes:seconds.decimal
+	//
+	// Decimal may be omitted.
+	// Commas are also accepted.
+	iter = tags.find("length");
+	if (iter != tags.end()) {
+		fields->addField_string(C_("RomData|Audio", "Duration"), iter->second);
+	}
+
+	// Fadeout duration
+	// Same format as duration.
+	iter = tags.find("fade");
+	if (iter != tags.end()) {
+		fields->addField_string(C_("PSF", "Fadeout Duration"), iter->second);
+	}
+
+	// Comment
+	iter = tags.find("comment");
+	if (iter != tags.end()) {
+		fields->addField_string(C_("RomData|Audio", "Comment"), iter->second);
+	}
+
+	// System (S98-only, but will add it if present in PSF anyway)
+	iter = tags.find("system");
+	if (iter != tags.end()) {
+		fields->addField_string(C_("S98", "System"), iter->second);
+	}
+
+	// Done adding tags.
+	return fields->count() - prev_count;
 }
 
 } }
