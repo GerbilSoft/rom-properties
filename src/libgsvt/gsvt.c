@@ -59,15 +59,16 @@ static void gsvt_check_graphics_protocol_support(void)
 	TCHAR buf[128];
 	buf[0] = _T('\0');
 	int ret = gsvt_query_tty("\x1B_Gi=31,s=1,v=1,a=q,t=d,f=24;AAAA\x1B\\\x1B[c", buf, ARRAY_SIZE(buf), _T('c'));
-	if (ret != 0) {
+	if (ret != 0 || buf[0] == _T('\0')) {
 		// Error querying protocol support.
 		return;
 	}
+	buf[ARRAY_SIZE(buf)-1] = _T('\0');
 
 	// If Kitty is supported, the Kitty protocol data will start with "\x1B_G" and end with "\x1B\\".
 	// If Sixel is supported, the device attributes will start with "\x1B[?" and end with 'c'.
 
-	const TCHAR *const p_end = &buf[ARRAY_SIZE(buf)];
+	const TCHAR *const p_end = &buf[_tcslen(buf) + 1];
 	const TCHAR *p = buf;
 	do {
 		p = _tmemchr(p, _T('\x1B'), (p_end - p));
