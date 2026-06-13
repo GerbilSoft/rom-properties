@@ -142,26 +142,21 @@ PSFPrivate::PSFPrivate(const IRpFilePtr &file)
  */
 unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 {
-	unordered_map<string, string> kv;
-
 	// Read the tag magic first.
 	char tag_magic[sizeof(PSF_TAG_MAGIC)-1];
 	size_t size = file->seekAndRead(tag_addr, tag_magic, sizeof(tag_magic));
 	if (size != sizeof(tag_magic)) {
 		// Seek and/or read error.
-		return kv;
+		return {};
 	}
-
-#ifdef HAVE_UNORDERED_MAP_RESERVE
-	kv.reserve(11);
-#endif /* HAVE_UNORDERED_MAP_RESERVE */
 
 	// Read the rest of the file.
 	// NOTE: Maximum of 16 KB.
+	static constexpr off64_t TAG_SIZE_MAX = 16384;
 	const off64_t data_len = file->size() - tag_addr - sizeof(tag_magic);
-	if (data_len <= 0) {
-		// Not enough data...
-		return kv;
+	if (data_len <= 0 || data_len > TAG_SIZE_MAX) {
+		// Not enough data, or too *much* data...
+		return {};
 	}
 
 	// NOTE: Values may be encoded as either cp1252/sjis or UTF-8.
@@ -173,10 +168,18 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 	size = file->read(tag_data.get(), data_len_sz);
 	if (size != data_len_sz) {
 		// Read error.
-		return kv;
+		return {};
 	}
 
+	unordered_map<string, string> kv;
+#ifdef HAVE_UNORDERED_MAP_RESERVE
+	kv.reserve(11);
+#endif /* HAVE_UNORDERED_MAP_RESERVE */
+
+	// If the tag data contains a non-empty "utf8" tag,
+	// the text is encoded in UTF-8. Otherwise, it's cp1252.
 	bool isUtf8 = false;
+
 	const char *start = tag_data.get();
 	const char *const endptr = start + data_len;
 	for (const char *p = start; p < endptr; p++) {
