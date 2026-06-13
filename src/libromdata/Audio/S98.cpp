@@ -411,4 +411,45 @@ int S98::loadFieldData(void)
 	return d->fields.count();
 }
 
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the metadata hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int S98::loadMetaData(void)
+{
+	RP_D(S98);
+	if (!d->metaData.empty()) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown file type.
+		return -EIO;
+	}
+
+	// PSF header
+	const S98_Header *const s98Header = &d->s98Header;
+	d->metaData.reserve(8);	// Maximum of 8 metadata properties.
+
+	// Attempt to parse the tags before doing anything else.
+	const bool isV3 = (s98Header->version == '3');
+	if (!isV3 || s98Header->tag_offset == 0) {
+		// No tags in this file.
+		return d->metaData.count();
+	}
+
+	// Tags (v3 only)
+	unordered_map<string, string> tags = d->parseTags(le32_to_cpu(s98Header->tag_offset));
+	if (!tags.empty()) {
+		// Add the tags to the metadata properties.
+		PSFTagParser::addTagsToRomMetaData(&d->metaData, tags, "s98by");
+	}
+
+	// Finished reading the metadata.
+	return d->metaData.count();
+}
+
 } // namespace LibRomData

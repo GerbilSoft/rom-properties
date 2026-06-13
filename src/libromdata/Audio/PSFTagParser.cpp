@@ -17,6 +17,9 @@
 using namespace LibRpBase;
 using namespace LibRpText;
 
+// C includes
+#include "ctypex.h"
+
 // C includes (C++ namespace)
 #include <cstring>
 
@@ -152,7 +155,7 @@ unordered_map<string, string> parseTags(const char *pData, size_t size, PSFTagSt
  * @param fields RomFields
  * @param tags PSF tags [parsed using parseTags()]
  * @param psfby Key for "psfby" field
- * @return Number of fields added
+ * @return Number of fields added.
  */
 int addTagsToRomFields(RomFields *fields, const unordered_map<string, string> &tags, const char *psfby)
 {
@@ -255,6 +258,252 @@ int addTagsToRomFields(RomFields *fields, const unordered_map<string, string> &t
 
 	// Done adding tags.
 	return fields->count() - prev_count;
+}
+
+/**
+ * Convert a PSF length string to milliseconds.
+ * @param str PSF length string.
+ * @return Milliseconds.
+ */
+static unsigned int lengthToMs(const char *str)
+{
+	/**
+	 * Possible formats:
+	 * - seconds.decimal
+	 * - minutes:seconds.decimal
+	 * - hours:minutes:seconds.decimal
+	 *
+	 * Decimal may be omitted.
+	 * Commas are also accepted.
+	 */
+
+	// TODO: Verify 'frac' length.
+	// All fractional portions observed thus far are
+	// three digits (milliseconds).
+	unsigned int hour, min, sec, frac;
+
+	// Check the 'frac' length.
+	unsigned int frac_adj = 0;
+	const char *dp = strchr(str, '.');
+	if (!dp) {
+		dp = strchr(str, ',');
+	}
+	if (dp) {
+		// Found the decimal point.
+		// Count how many digits are after it.
+		unsigned int digit_count = 0;
+		dp++;
+		for (; *dp != '\0'; dp++) {
+			if (isdigit_ascii(*dp)) {
+				// Found a digit.
+				digit_count++;
+			} else {
+				// Not a digit.
+				break;
+			}
+		}
+		switch (digit_count) {
+			case 0:
+				// No digits.
+				frac_adj = 0;
+				break;
+			case 1:
+				// One digit. (tenths)
+				frac_adj = 100;
+				break;
+			case 2:
+				// Two digits. (hundredths)
+				frac_adj = 10;
+				break;
+			case 3:
+				// Three digits. (thousandths)
+				frac_adj = 1;
+				break;
+			default:
+				// Too many digits...
+				// TODO: Mask these digits somehow.
+				frac_adj = 1;
+				break;
+		}
+	}
+
+	// hours:minutes:seconds.decimal
+	int s = sscanf(str, "%u:%u:%u.%u", &hour, &min, &sec, &frac);
+	if (s != 4) {
+		s = sscanf(str, "%u:%u:%u,%u", &hour, &min, &sec, &frac);
+	}
+	if (s == 4) {
+		// Format matched.
+		return (hour * 60 * 60 * 1000) +
+		       (min * 60 * 1000) +
+		       (sec * 1000) +
+		       (frac * frac_adj);
+	}
+
+	// hours:minutes:seconds
+	s = sscanf(str, "%u:%u:%u", &hour, &min, &sec);
+	if (s == 3) {
+		// Format matched.
+		return (hour * 60 * 60 * 1000) +
+		       (min * 60 * 1000) +
+		       (sec * 1000);
+	}
+
+	// minutes:seconds.decimal
+	s = sscanf(str, "%u:%u.%u", &min, &sec, &frac);
+	if (s != 3) {
+		s = sscanf(str, "%u:%u,%u", &min, &sec, &frac);
+	}
+	if (s == 3) {
+		// Format matched.
+		return (min * 60 * 1000) +
+		       (sec * 1000) +
+		       (frac * frac_adj);
+	}
+
+	// minutes:seconds
+	s = sscanf(str, "%u:%u", &min, &sec);
+	if (s == 2) {
+		// Format matched.
+		return (min * 60 * 1000) +
+		       (sec * 1000);
+	}
+
+	// seconds.decimal
+	s = sscanf(str, "%u.%u", &sec, &frac);
+	if (s != 2) {
+		s = sscanf(str, "%u,%u", &sec, &frac);
+	}
+	if (s == 2) {
+		// Format matched.
+		return (min * 60 * 1000) +
+		       (sec * 1000) +
+		       (frac * frac_adj);
+	}
+
+	// seconds
+	s = sscanf(str, "%u", &sec);
+	if (s == 1) {
+		// Format matched.
+		return sec;
+	}
+
+	// No matches.
+	return 0;
+}
+
+/**
+ * Add PSF tags to RomMetaData.
+ * @param metaData RomMetaData
+ * @param tags PSF tags [parsed using parseTags()]
+ * @param psfby Key for "psfby" field
+ * @return Number of metadata properties added.
+ */
+int addTagsToRomMetaData(LibRpBase::RomMetaData *metaData, const std::unordered_map<std::string, std::string> &tags, const char *psfby)
+{
+	if (tags.empty()) {
+		// No tags...
+		return 0;
+	}
+
+	const int prev_count = metaData->count();
+
+	// Title
+	auto iter = tags.find("title");
+	if (iter != tags.end()) {
+		metaData->addMetaData_string(Property::Title, iter->second);
+	}
+
+	// Artist
+	iter = tags.find("artist");
+	if (iter != tags.end()) {
+		metaData->addMetaData_string(Property::Artist, iter->second);
+	}
+
+	// Game
+	iter = tags.find("game");
+	if (iter != tags.end()) {
+		// NOTE: Not exactly "album"...
+		metaData->addMetaData_string(Property::Album, iter->second);
+	}
+
+	// Release Date
+	// NOTE: The tag is "year", but it may be YYYY-MM-DD.
+	iter = tags.find("year");
+	if (iter != tags.end()) {
+		// Parse the release date.
+		// NOTE: Only year is supported.
+		int year;
+		char chr;
+		int s = sscanf(iter->second.c_str(), "%04d%c", &year, &chr);
+		if (s == 1 || (s == 2 && (chr == '-' || chr == '/'))) {
+			// Year seems to be valid.
+			// Make sure the number is acceptable:
+			// - No negatives.
+			// - Four-digit only. (lol Y10K)
+			if (year >= 0 && year < 10000) {
+				metaData->addMetaData_uint(Property::ReleaseYear, (unsigned int)year);
+			}
+		}
+	}
+
+	// Genre
+	iter = tags.find("genre");
+	if (iter != tags.end()) {
+		metaData->addMetaData_string(Property::Genre, iter->second);
+	}
+
+	// Copyright
+	iter = tags.find("copyright");
+	if (iter != tags.end()) {
+		metaData->addMetaData_string(Property::Copyright, iter->second);
+	}
+
+#if 0
+	// FIXME: No property for this...
+	// Ripped By
+	// NOTE: The tag varies based on PSF version.
+	const char *const ripped_by_tag = d->getRippedByTagName(psfHeader->version);
+	iter = tags.find(ripped_by_tag);
+	if (iter != tags.end()) {
+		// FIXME: No property for this...
+		metaData->addMetaData_string(Property::RippedBy, iter->second);
+	} else {
+		// Try "psfby" if the system-specific one isn't there.
+		iter = tags.find("psfby");
+		if (iter != tags.end()) {
+			// FIXME: No property for this...
+			metaData->addMetaData_string(Property::RippedBy, iter->second);
+		}
+	}
+#endif
+
+	// Duration
+	//
+	// Possible formats:
+	// - seconds.decimal
+	// - minutes:seconds.decimal
+	// - hours:minutes:seconds.decimal
+	//
+	// Decimal may be omitted.
+	// Commas are also accepted.
+	iter = tags.find("length");
+	if (iter != tags.end()) {
+		// Convert the length string to milliseconds.
+		const unsigned int ms = lengthToMs(iter->second.c_str());
+		metaData->addMetaData_integer(Property::Duration, ms);
+	}
+
+	// Comment
+	iter = tags.find("comment");
+	if (iter != tags.end()) {
+		// NOTE: Property::Comment is assumed to be user-added
+		// on KDE Dolphin 18.08.1. Use Property::Description.
+		metaData->addMetaData_string(Property::Description, iter->second);
+	}
+
+	// Done adding tags.
+	return metaData->count() - prev_count;
 }
 
 } }

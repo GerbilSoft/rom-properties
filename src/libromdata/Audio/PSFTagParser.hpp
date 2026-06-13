@@ -10,6 +10,7 @@
 
 // librpbase
 #include "librpbase/RomFields.hpp"
+#include "librpbase/RomMetaData.hpp"
 
 // C includes (C++ namespace)
 #include <cstdint>
@@ -41,8 +42,17 @@ std::unordered_map<std::string, std::string> parseTags(const char *pData, size_t
  * @param fields RomFields
  * @param tags PSF tags [parsed using parseTags()]
  * @param psfby Key for "psfby" field
- * @return Number of fields added
+ * @return Number of fields added.
  */
 int addTagsToRomFields(LibRpBase::RomFields *fields, const std::unordered_map<std::string, std::string> &tags, const char *psfby = "psfby");
+
+/**
+ * Add PSF tags to RomMetaData.
+ * @param metaData RomMetaData
+ * @param tags PSF tags [parsed using parseTags()]
+ * @param psfby Key for "psfby" field
+ * @return Number of metadata properties added.
+ */
+int addTagsToRomMetaData(LibRpBase::RomMetaData *metaData, const std::unordered_map<std::string, std::string> &tags, const char *psfby = "psfby");
 
 } }
