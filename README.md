@@ -223,22 +223,23 @@ button.
 
 ### Texture Formats
 
-|      Texture Format      | Properties Tab | Metadata | Internal Images | External Scans |
-|:------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
-| ASTC container           |       Yes      |    Yes   |      Image      |       N/A      |
-| Godot 3,4 .stex          |       Yes      |    Yes   |      Image      |       N/A      |
-| Leapster Didj .tex       |       Yes      |    Yes   |      Image      |       N/A      |
-| Khronos KTX              |       Yes      |    Yes   |      Image      |       N/A      |
-| Khronos KTX2             |       Yes      |    Yes   |      Image      |       N/A      |
-| Microsoft DirectDraw DDS |       Yes      |    Yes   |      Image      |       N/A      |
-| Microsoft Xbox XPR       |       Yes      |    Yes   |      Image      |       N/A      |
-| PowerVR 3.0.0            |       Yes      |    Yes   |      Image      |       N/A      |
-| Quite OK Image Format    |       Yes      |    Yes   |      Image      |       N/A      |
-| Sega PVR/GVR/SVR         |       Yes      |    Yes   |      Image      |       N/A      |
-| TrueVision TGA           |       Yes      |    Yes   |      Image      |       N/A      |
-| Valve VTF                |       Yes      |    Yes   |      Image      |       N/A      |
-| Valve VTF3 (PS3)         |       Yes      |    Yes   |      Image      |       N/A      |
-| Windows icons/cursors    |       Yes      |    Yes   |      Image¹     |       N/A      |
+|      Texture Format      | Properties Tab | Metadata |
+|:------------------------:|:--------------:|:--------:|
+| ASTC container           |       Yes      |    Yes   |
+| Godot 3,4 .stex          |       Yes      |    Yes   |
+| Leapster Didj .tex       |       Yes      |    Yes   |
+| Khronos KTX              |       Yes      |    Yes   |
+| Khronos KTX2             |       Yes      |    Yes   |
+| Microsoft DirectDraw DDS |       Yes      |    Yes   |
+| Microsoft Xbox XPR       |       Yes      |    Yes   |
+| PowerVR 3.0.0            |       Yes      |    Yes   |
+| Quite OK Image Format    |       Yes      |    Yes   |
+| Sega PVR/GVR/SVR         |       Yes      |    Yes   |
+| Sony PlayStation TIM|    |       Yes      |    Yes   |
+| TrueVision TGA           |       Yes      |    Yes   |
+| Valve VTF                |       Yes      |    Yes   |
+| Valve VTF3 (PS3)         |       Yes      |    Yes   |
+| Windows icons/cursors¹   |       Yes      |    Yes   |
 
 * 1: Icon thumbnailing is disabled for ICO, CUR, and EXE files to prevent
   conflicts with system icon handling.
@@ -280,6 +281,7 @@ button.
 | Nintendo Wii BRSTM            |       Yes      |    Yes   |       N/A       |       N/A      |
 | Nintendo Wii U BFSTM          |       Yes      |    Yes   |       N/A       |       N/A      |
 | Portable Sound Format         |       Yes      |    Yes   |       N/A       |       N/A      |
+| S98 Format                    |       Yes      |    Yes   |       N/A       |       N/A      |
 | Super NES SPC Format          |       Yes      |    Yes   |       N/A       |       N/A      |
 | Video Game Music              |       Yes      |    Yes   |       N/A       |       N/A      |
 
