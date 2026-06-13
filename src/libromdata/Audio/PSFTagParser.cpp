@@ -459,24 +459,19 @@ int addTagsToRomMetaData(LibRpBase::RomMetaData *metaData, const std::unordered_
 		metaData->addMetaData_string(Property::Copyright, iter->second);
 	}
 
-#if 0
-	// FIXME: No property for this...
 	// Ripped By
 	// NOTE: The tag varies based on PSF version.
-	const char *const ripped_by_tag = d->getRippedByTagName(psfHeader->version);
-	iter = tags.find(ripped_by_tag);
+	// NOTE: This is a Custom Property, since KDE doesn't have "Ripped By".
+	iter = tags.find(psfby);
 	if (iter != tags.end()) {
-		// FIXME: No property for this...
 		metaData->addMetaData_string(Property::RippedBy, iter->second);
 	} else {
 		// Try "psfby" if the system-specific one isn't there.
 		iter = tags.find("psfby");
 		if (iter != tags.end()) {
-			// FIXME: No property for this...
 			metaData->addMetaData_string(Property::RippedBy, iter->second);
 		}
 	}
-#endif
 
 	// Duration
 	//

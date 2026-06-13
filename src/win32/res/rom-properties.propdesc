@@ -44,5 +44,11 @@
             <typeInfo type="String" isViewable="true" groupingRange="discrete"/>
             <labelInfo label="Region code" invitationText=""/>
         </propertyDescription>
+        <propertyDescription name="com.gerbilsoft.rom-properties.RippedBy" formatID="{4C8763C6-3259-43AD-867E-91B550EF66C3}" propID="2">
+            <description>Name of the person or group who ripped this audio file</description>
+            <searchInfo inInvertedIndex="false" isColumn="true" maxSize="128"/>
+            <typeInfo type="String" isViewable="true" groupingRange="discrete"/>
+            <labelInfo label="Ripped by" invitationText=""/>
+        </propertyDescription>
     </propertyDescriptionList>
 </schema>

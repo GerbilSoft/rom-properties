@@ -432,7 +432,7 @@ int S98::loadMetaData(void)
 
 	// PSF header
 	const S98_Header *const s98Header = &d->s98Header;
-	d->metaData.reserve(8);	// Maximum of 8 metadata properties.
+	d->metaData.reserve(9);	// Maximum of 9 metadata properties.
 
 	// Attempt to parse the tags before doing anything else.
 	const bool isV3 = (s98Header->version == '3');

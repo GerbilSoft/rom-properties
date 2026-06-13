@@ -365,7 +365,7 @@ int PSF::loadMetaData(void)
 
 	// PSF header
 	const PSF_Header *const psfHeader = &d->psfHeader;
-	d->metaData.reserve(8);	// Maximum of 8 metadata properties.
+	d->metaData.reserve(9);	// Maximum of 9 metadata properties.
 
 	// Attempt to parse the tags before doing anything else.
 	const off64_t tag_addr = (off64_t)sizeof(*psfHeader) +
