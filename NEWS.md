@@ -6,6 +6,8 @@
   * PlayStationTIM: Sony PlayStation TIM textures. Supports 4-bpp, 8-bpp,
     15-bpp, and 24-bpp format images, with 1-bit transparency.
     * Fixes #114: Add support for PlayStation TIM texture files.
+  * S98: PC-98 audio logs. Supports all versions, though v2 device info
+    and tags have not been implemented yet.
 
 * New features:
   * rpcli can now display the icon and banner of specified files using the
@@ -26,6 +28,7 @@
   * Lua: Support for Lua 5.5 bytecode format.
     * Pull request #478: [libromdata] Lua: Add support for Lua 5.5 bytecode format.
       * Submitted by @DankRank.
+  * PSF, S98: Add a "Ripped By" custom property.
 
 * Bug fixes:
   * Windows: Fix potential UI language misdetection in some cases.

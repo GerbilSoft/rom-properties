@@ -112,6 +112,7 @@ enum class Property : int8_t {
 	PixelFormat,		// string
 	RegionCode,		// string
 	Category,		// string
+	RippedBy,		// string
 
 	// TODO: More fields.
 	PropertyCount,

@@ -50,6 +50,7 @@ const struct rp_nautilus_column_provider_column_desc_data_t rp_nautilus_column_p
 	{"rp-pixel-format",	"Pixel Format"},
 	{"rp-region-code",	"Region Code"},
 	{"rp-category",		"Category"},
+	{"rp-ripped-by",	"Ripped By"},
 
 	{NULL,			NULL}
 };

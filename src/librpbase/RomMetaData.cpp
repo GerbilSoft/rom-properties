@@ -141,6 +141,7 @@ const array<PropertyType, static_cast<size_t>(Property::PropertyCount)> RomMetaD
 	PropertyType::String,	// Pixel Format
 	PropertyType::String,	// Region Code
 	PropertyType::String,	// Category
+	PropertyType::String,	// Ripped By
 };
 
 RomMetaDataPrivate::RomMetaDataPrivate()

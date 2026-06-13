@@ -1,0 +1,180 @@
+S98V3仕様書 2006/05/15版
+
+S98はOPNA/OPNを発祥とした音源ログフォーマットです。
+
+[HEADER FORMAT]
+
+0000 3BYTE	MAGIC 'S98'
+0003 1BYTE	FORMAT VERSION '3''
+0004 DWORD(LE)	TIMER INFO	sync numerator. If value is 0, default time is 10.
+0008 DWORD(LE)	TIMER INFO2	sync denominator. If value is 0, default time is 1000.
+000C DWORD(LE)	COMPRESSING	The value is 0 always.
+0010 DWORD(LE)	FILE OFFSET	TO TAG If value is 0, no title exist.
+0014 DWORD(LE)	FILE OFFSET	TO DUMP DATA
+0018 DWORD(LE)	FILE OFFSET	TO LOOP POINT DUMP DATA
+001C DWORD(LE)	DEVICE COUNT	If value is 0, default type is OPNA, clock is 7987200Hz
+0020 DWORD(LE)	DEVICE INFO * count
+
+ V1で利用された実績の無いCOMPRESSINGフラグは廃止されました。
+
+ DEVICE COUNTは64が上限です。
+ 1以上の値の場合0x20以降にDEVICE INFOがずらずらと羅列されます。
+ S98V1との互換も考慮し、 DEVICE COUNTが0の場合はデバイスはOPNA1つになります。
+
+
+[DEVICE INFO]
+
+0000 DWORD(LE)	DEVICE TYPE
+0004 DWORD(LE)	CLOCK(Hz)
+0008 DWORD(LE)	PAN
+000C-000F RESERVE
+
+ DEVICE TYPEとPANは後述。
+
+ CLOCKは外部入力クロックです。
+ YM2149は非AY-3-8910互換クロックモードでの値です。
+
+
+[DEVICE TYPE]
+
+NONE           = 0
+PSG(YM2149)    = 1
+OPN(YM2203)    = 2
+OPN2(YM2612)   = 3
+OPNA(YM2608)   = 4
+OPM(YM2151)    = 5
+OPLL(YM2413)   = 6
+OPL(YM3526)    = 7
+OPL2(YM3812)   = 8
+OPL3(YMF262)   = 9
+PSG(AY-3-8910) = 15
+DCSG(SN76489)  = 16
+
+ NONEの時はデータが有っても無視します。
+
+
+[PAN]
+
+ モノラルデバイス専用。(PSG/OPN/OPLL/OPL/OPL2/DCSG)
+ チップを2つ以上使用してパンを実現する用途を想定。
+ 2ビットでL/Rを表現し、ビットを立てるとミュート。
+
+(PSG)
+0:ch1 L
+1:ch1 R
+2:ch2 L
+3:ch2 R
+4:ch3 L
+5:ch4 R
+
+(OPN)
+bit5までPSGと同じ
+6:FM L
+7:FM R
+
+(OPLL/OPL/DCSG)
+0:L
+1:R
+
+
+[TAG]
+
+ 基本的にPSFタグに準拠する。
+ *ファイルの最後に追加。
+ *タグ書式はタグ名=値で記述。
+ *タグ名は大文字/小文字を区別しない。
+ *ライン終了は0x0a。
+ *タグ終了には0x00を入れることを推奨。
+
+ PSFタグと異なる仕様
+ *タグ識別子は"[S98]"。
+ *文字コードはマルチバイト(日本環境ならSJIS)とUTF-8が利用可能。
+ *タグ識別子直後にBOM(EF BB BF)が存在すればUTF-8になり、それ以外はマルチバイトになる。
+
+ 以下はサンプル
+
+[S98]
+"title=Opening" 0x0a
+"artist=Yuzo Koshiro" 0x0a
+"game=Sorcerian" 0x0a
+"year=1987" 0x0a
+"genre=game" 0x0a
+"comment=This is sample data." 0x0a
+"copyright=Nihon Falcom" 0x0a
+"s98by=foo" 0x0a
+"system=PC-8801" 0x0a
+
+ タグ名は何を設定しても問題は無いが、
+ 上記タグを基本タグとして定義する。
+
+
+[DUMP DATA FORMAT]
+
+00 aa dd  DEVICE1(normal)
+01 aa dd  DEVICE1(extend)
+02 aa dd  DEVICE2(normal)
+03 aa dd  DEVICE2(extend)
+...
+FF        1SYNC
+FE vv     nSYNC
+FD        END/LOOP
+
+ 1SYNCでの経過時間はヘッダのTIMER INFO/TIMER INFO2(sec)の値になる。
+
+ DEVICE INFOで定義された順番でDEVICE1,DEVICE2...と割り当たり、
+ 各デバイスにnormal/extendの2つのコマンドが割り当てられる。
+
+ normal/extendの使い分け
+
+PSG/OPN/OPM/OPLL/OPL/OPL2	normalのみ
+OPNA/OPN2/OPL3			normal/extend
+DCSG				normalのみ
+				レジスタ0で指定、GG拡張はレジスタ1を指定する。
+
+ FEコマンドで指定するvvは7bit目を継続フラグとした可変長のリトルエンディアン値である。
+ 以下のコードで求められる。
+
+int getvv(byte *p)
+{
+    int s = 0, n = 0;
+    p--
+    do
+    {
+        n |= (*(++p) & 0x7f) << s;
+        s += 7;
+    }
+    while (*p & 0x80);
+    return n + 2;
+}
+
+
+[CONTACT]
+
+項目追加等の意見が有りましたらメールなり私が見ていそうな2chの板等でどうぞ。
+
+
+[HISTORY]
+
+2006/05/16
+FEコマンドのパラメータについての説明を追加。
+DEVICE COUNTが0の場合の補足説明を追加。
+DEVICE TYPEがNONE時の挙動の説明を追加。
+DEVICE TYPEがAY-3-8910を追加。
+CLOCK指定YM2149の場合の例外を記述。
+SYNCコマンドでの経過時間についての記述を追加。
+
+2006/01/13
+DEVICE TYPE : スペルミス修正(YM2610->YM2612)
+
+2005/10/08
+TAG   : 基本タグ名について記述追加
+
+2005/08/05
+DEVICE: OPL2とOPL3を追加定義
+        118ボードやSB16(98)用に一応リザーブ
+TAG   : 文字コードについて補足を追加。
+
+2005/07/18
+TAG : 文字コードの関して記述追加。
+PAN : ビットの意味について詳細を追加。
+

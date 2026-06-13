@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (Win32)                            *
- * RP_PropertyStore_GUIDs.c: Custom property GUID definitions.             *
+ * RP_PropertyStore_GUIDs.h: Custom property GUID definitions.             *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,3 +23,4 @@ DEFINE_PROPERTYKEY(PKEY_RomProperties_OSVersion,	0x655ca042, 0xff37, 0x4564, 0x8
 DEFINE_PROPERTYKEY(PKEY_RomProperties_EncryptionKey,	0xf31225fa, 0xb303, 0x454e, 0x83,0x89, 0x69, 0xc1, 0xb8, 0xca, 0x38, 0xc6, 2);
 DEFINE_PROPERTYKEY(PKEY_RomProperties_PixelFormat,	0x2a10a29d, 0x05b8, 0x43ff, 0xb9,0xab, 0x29, 0x17, 0xc2, 0x4f, 0x97, 0x07, 2);
 DEFINE_PROPERTYKEY(PKEY_RomProperties_RegionCode,	0x452f1dd9, 0x62fd, 0x46a6, 0xaa,0x2e, 0x14, 0x68, 0x22, 0x94, 0x68, 0x42, 2);
+DEFINE_PROPERTYKEY(PKEY_RomProperties_RippedBy,		0x4c8763c6, 0x3259, 0x43ad, 0x86,0x7e, 0x91, 0xb5, 0x50, 0xef, 0x66, 0xc3, 2);
