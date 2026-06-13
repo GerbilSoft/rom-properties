@@ -831,6 +831,11 @@ int VGM::loadFieldData(void)
 		SOUND_CHIP(ga20, "GA20", true);
 	}
 
+	if (vgm_version >= 0x0172) {
+		// Mikey [1.72]
+		SOUND_CHIP(mikey, "Mikey", false);
+	}
+
 	// Finished reading the field data.
 	return d->fields.count();
 }

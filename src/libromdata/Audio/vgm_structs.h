@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * vgm_structs.h: VGM audio data structures.                               *
  *                                                                         *
- * Copyright (c) 2018-2025 by David Korth.                                 *
+ * Copyright (c) 2018-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -153,7 +153,9 @@ typedef struct _VGM_Header {
 	uint32_t x1_010_clk;		// [0x0D8] X1-010 clock rate. (Typ: 16,000,000)
 	uint32_t c352_clk;		// [0x0DC] C352 clock rate. (Typ: 24,192,000)
 	uint32_t ga20_clk;		// [0x0E0] GA20 clock rate. (Typ: 3,579,545)
-	uint8_t reserved_171_b[4];	// [0x0E4]
+
+	/** VGM 1.72 **/
+	uint32_t mikey_clk;		// [0x0E4] Mikey (Atari Lynx) clock rate. (Typ: 16,000,000)
 } VGM_Header;
 ASSERT_STRUCT(VGM_Header, 232);
 
