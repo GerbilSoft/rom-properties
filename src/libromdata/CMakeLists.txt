@@ -87,6 +87,7 @@ SET(${PROJECT_NAME}_SRCS
 	Audio/GBS.cpp
 	Audio/NSF.cpp
 	Audio/PSF.cpp
+	Audio/S98.cpp
 	Audio/SAP.cpp
 	Audio/SNDH.cpp
 	Audio/SID.cpp
@@ -277,6 +278,7 @@ SET(${PROJECT_NAME}_H
 	Audio/GBS.hpp
 	Audio/NSF.hpp
 	Audio/PSF.hpp
+	Audio/S98.hpp
 	Audio/SAP.hpp
 	Audio/SNDH.hpp
 	Audio/SID.hpp
@@ -289,6 +291,7 @@ SET(${PROJECT_NAME}_H
 	Audio/gbs_structs.h
 	Audio/nsf_structs.h
 	Audio/psf_structs.h
+	Audio/s98_structs.h
 	Audio/sid_structs.h
 	Audio/spc_structs.h
 	Audio/vgm_structs.h

@@ -102,6 +102,21 @@
     </magic>
   </mime-type>
 
+  <!-- S98 -->
+  <mime-type type="audio/x-sap">
+    <comment>S98 audio</comment>
+    <acronym>S98</acronym>
+    <expanded-acronym>S98</expanded-acronym>
+    <generic-icon name="audio-x-generic"/>
+    <glob pattern="*.s98"/>
+    <magic priority="50">
+      <match value="S983" type="string" offset="0"/>
+      <match value="S982" type="string" offset="0"/>
+      <match value="S981" type="string" offset="0"/>
+      <match value="S980" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- SAP -->
   <mime-type type="audio/x-sap">
     <comment>Atari 8-bit audio</comment>

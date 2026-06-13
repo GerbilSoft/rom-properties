@@ -108,6 +108,7 @@ using std::unordered_set;
 #include "Audio/GBS.hpp"
 #include "Audio/NSF.hpp"
 #include "Audio/PSF.hpp"
+#include "Audio/S98.hpp"
 #include "Audio/SAP.hpp"
 #include "Audio/SNDH.hpp"
 #include "Audio/SID.hpp"
@@ -254,9 +255,9 @@ static std::once_flag once_mimeTypes;
  * - magic2: Second 32-bit magic number, if available.
  */
 #ifdef ENABLE_XML
-static constexpr size_t romDataFns_magic_count = 34;
+static constexpr size_t romDataFns_magic_count = 36;
 #else /* !ENABLE_XML */
-static constexpr size_t romDataFns_magic_count = 33;
+static constexpr size_t romDataFns_magic_count = 35;
 #endif /* ENABLE_XML */
 static const array<RomDataFns, romDataFns_magic_count> romDataFns_magic = {{
 	// Consoles
@@ -291,6 +292,8 @@ static const array<RomDataFns, romDataFns_magic_count> romDataFns_magic = {{
 	GetRomDataFns_magic1(BRSTM, ATTR_HAS_METADATA, 0, 'RSTM'),
 	GetRomDataFns_magic2(GBS, ATTR_HAS_METADATA, 0, 0x47425301U, 'GBRF'),	// 'GBS\x01', 'GBRF'
 	GetRomDataFns_magic1(NSF, ATTR_HAS_METADATA, 0, 'NESM'),
+	GetRomDataFns_magic2(S98, ATTR_HAS_METADATA, 0, 'S983', 'S982'),
+	GetRomDataFns_magic2(S98, ATTR_HAS_METADATA, 0, 'S981', 'S980'),
 	GetRomDataFns_magic1(SPC, ATTR_HAS_METADATA, 0, 'SNES'),
 	GetRomDataFns_magic1(VGM, ATTR_HAS_METADATA, 0, 'Vgm '),
 
