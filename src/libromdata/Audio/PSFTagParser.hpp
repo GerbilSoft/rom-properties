@@ -22,6 +22,7 @@ namespace LibRomData { namespace PSFTagParser {
  */
 enum class PSFTagStyle {
 	PSF,	// Standard PSF tags
+	S98,	// S98 tags: UTF-8 is indicated by a UTF-8 BOM after the magic number
 };
 
 /**

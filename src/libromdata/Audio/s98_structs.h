@@ -25,7 +25,7 @@ extern "C" {
  * All fields are little-endian.
  */
 #define S98_MAGIC "S98"
-#define S98_TAG_MAGIC "[TAG]"
+#define S98_TAG_MAGIC "[S98]"
 #define S98_TIMER_INFO_DEFAULT 10U
 #define S98_TIMER_INFO2_DEFAULT 1000U
 typedef struct _S98_Header {

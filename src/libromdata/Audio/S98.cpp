@@ -11,6 +11,7 @@
 #include "S98.hpp"
 #include "RomData_p.hpp"
 
+#include "PSFTagParser.hpp"
 #include "s98_structs.h"
 
 #include "common.h"
@@ -62,6 +63,13 @@ public:
 	// Device info
 	// NOTE: **NOT** byteswapped in memory.
 	rp::uvector<S98_Device_Info_t> vDeviceInfo;
+
+	/**
+	 * Parse the tag section.
+	 * @param tag_addr Tag section starting address.
+	 * @return Map containing key/value entries.
+	 */
+	unordered_map<string, string> parseTags(off64_t tag_addr);
 };
 
 ROMDATA_IMPL(S98)
@@ -90,6 +98,38 @@ S98Private::S98Private(const IRpFilePtr &file)
 {
 	// Clear the S98 header struct.
 	memset(&s98Header, 0, sizeof(s98Header));
+}
+
+/**
+ * Parse the tag section.
+ * @param tag_addr Tag section starting address.
+ * @return Map containing key/value entries.
+ */
+unordered_map<string, string> S98Private::parseTags(off64_t tag_addr)
+{
+	// Load the tag section.
+	// NOTE: Maximum of 16 KB.
+	static constexpr off64_t TAG_SIZE_MAX = 16384;
+	off64_t data_len = file->size() - tag_addr;
+	if (data_len <= 0) {
+		// Not enough data.
+		return {};
+	} else if (data_len > TAG_SIZE_MAX) {
+		// S98 tags aren't necessarily stored at the end of the file,
+		// so just truncate the data length.
+		data_len = TAG_SIZE_MAX;
+	}
+
+	const size_t data_len_sz = static_cast<size_t>(data_len);
+	unique_ptr<char[]> tag_data(new char[data_len_sz]);
+	size_t size = file->seekAndRead(tag_addr, tag_data.get(), data_len_sz);
+	if (size != data_len_sz) {
+		// Read error.
+		return {};
+	}
+
+	// Parse the tags.
+	return PSFTagParser::parseTags(tag_data.get(), data_len_sz, PSFTagParser::PSFTagStyle::S98);
 }
 
 /** S98 **/
@@ -272,6 +312,95 @@ int S98::loadFieldData(void)
 		: S98_TIMER_INFO2_DEFAULT;
 	d->fields.addField_string(C_("S98", "Timer Info"),
 		fmt::format(FSTR("{:d}/{:d}"), timer_info, timer_info2));
+
+	// Tags (v3 only)
+	if (isV3 && s98Header->tag_offset != 0) {
+		unordered_map<string, string> tags = d->parseTags(le32_to_cpu(s98Header->tag_offset));
+
+		if (!tags.empty()) {
+			// Title
+			auto iter = tags.find("title");
+			if (iter != tags.end()) {
+				d->fields.addField_string(C_("RomData|Audio", "Title"), iter->second);
+			}
+
+			// Artist
+			iter = tags.find("artist");
+			if (iter != tags.end()) {
+				d->fields.addField_string(C_("RomData|Audio", "Artist"), iter->second);
+			}
+
+			// Game
+			iter = tags.find("game");
+			if (iter != tags.end()) {
+				d->fields.addField_string(C_("PSF", "Game"), iter->second);
+			}
+
+			// Release Date
+			// NOTE: The tag is "year", but it may be YYYY-MM-DD.
+			iter = tags.find("year");
+			if (iter != tags.end()) {
+				d->fields.addField_string(C_("RomData", "Release Date"), iter->second);
+			}
+
+			// Genre
+			iter = tags.find("genre");
+			if (iter != tags.end()) {
+				d->fields.addField_string(C_("RomData|Audio", "Genre"), iter->second);
+			}
+
+			// Copyright
+			iter = tags.find("copyright");
+			if (iter != tags.end()) {
+				d->fields.addField_string(C_("RomData|Audio", "Copyright"), iter->second);
+			}
+
+			// Ripped By
+			iter = tags.find("s98by");
+			if (iter != tags.end()) {
+				d->fields.addField_string(C_("PSF", "Ripped By"), iter->second);
+			}
+
+			// Volume (floating-point number)
+			iter = tags.find("volume");
+			if (iter != tags.end()) {
+				d->fields.addField_string(C_("PSF", "Volume"), iter->second);
+			}
+
+			// Duration
+			//
+			// Possible formats:
+			// - seconds.decimal
+			// - minutes:seconds.decimal
+			// - hours:minutes:seconds.decimal
+			//
+			// Decimal may be omitted.
+			// Commas are also accepted.
+			iter = tags.find("length");
+			if (iter != tags.end()) {
+				d->fields.addField_string(C_("RomData|Audio", "Duration"), iter->second);
+			}
+
+			// Fadeout duration
+			// Same format as duration.
+			iter = tags.find("fade");
+			if (iter != tags.end()) {
+				d->fields.addField_string(C_("PSF", "Fadeout Duration"), iter->second);
+			}
+
+			// Comment
+			iter = tags.find("comment");
+			if (iter != tags.end()) {
+				d->fields.addField_string(C_("RomData|Audio", "Comment"), iter->second);
+			}
+
+			// System (unique to S98)
+			iter = tags.find("system");
+			if (iter != tags.end()) {
+				d->fields.addField_string(C_("S98", "System"), iter->second);
+			}
+		}
+	}
 
 	// Device info
 	if (!d->vDeviceInfo.empty()) {

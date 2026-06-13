@@ -9,6 +9,7 @@
 #include "PSFTagParser.hpp"
 
 #include "psf_structs.h"
+#include "s98_structs.h"
 
 // Other rom-properties libraries
 #include "librptext/conversion.hpp"
@@ -44,6 +45,10 @@ unordered_map<string, string> parseTags(const char *pData, size_t size, PSFTagSt
 			magicNumber = PSF_TAG_MAGIC;
 			magicSize = sizeof(PSF_TAG_MAGIC) - 1;
 			break;
+		case PSFTagStyle::S98:
+			magicNumber = S98_TAG_MAGIC;
+			magicSize = sizeof(S98_TAG_MAGIC) - 1;
+			break;
 	}
 	if (p + magicSize >= pEnd) {
 		// Out of bounds?
@@ -55,15 +60,36 @@ unordered_map<string, string> parseTags(const char *pData, size_t size, PSFTagSt
 	}
 	p += magicSize;
 
+	// Older files may have tags encoded in cp1252 or Shift-JIS.
+	bool isUtf8 = false;
+
+	if (style == PSFTagStyle::S98) {
+		// S98: Check for a UTF-8 BOM.
+		if (p + 3 >= pEnd) {
+			// Not enough data...
+			return {};
+		}
+
+		const uint8_t *const up = reinterpret_cast<const uint8_t*>(p);
+		if (up[0] == 0xEFU && up[1] == 0xBBU && up[2] == 0xBFU) {
+			// Found a UTF-8 BOM.
+			isUtf8 = true;
+			p += 3;
+		}
+	}
+
 	unordered_map<string, string> kv;
 #ifdef HAVE_UNORDERED_MAP_RESERVE
 	kv.reserve(11);
 #endif /* HAVE_UNORDERED_MAP_RESERVE */
 
-	// Older files may have tags encoded in cp1252 or Shift-JIS.
-	bool isUtf8 = false;
-
 	for (; p < pEnd; p++) {
+		if (*p == '\0') {
+			// NULL byte. End of data for S98.
+			// Not usually seen for PSF, but we'll handle it there too.
+			break;
+		}
+
 		// Find the next newline.
 		const char *nl = static_cast<const char*>(memchr(p, '\n', pEnd - p));
 		if (!nl) {
