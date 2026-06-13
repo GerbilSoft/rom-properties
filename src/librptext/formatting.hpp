@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "dll-macros.h"
+
 // C includes (C++ namespace)
 #include <cstddef>	/* size_t */
 #include <cstdint>
@@ -26,6 +28,34 @@ enum class BinaryUnitDialect {
 	JEDECBinaryDialect,
 	MetricBinaryDialect,
 };
+
+/**
+ * User setting query function for BinaryUnitDialect.
+ * @param user_data	[in] User data from registerNotifyFunction()
+ * @return BinaryUnitDialect on success; DefaultBinaryDialect on error.
+ */
+typedef BinaryUnitDialect (*UserSettingQuery_t)(void *user_data);
+
+/**
+ * Set the user setting query function.
+ * This is used for the UI frontends.
+ * @param func Notification function
+ * @param user_data User data
+ */
+RP_LIBROMDATA_PUBLIC
+void setUserSettingQueryFunction(UserSettingQuery_t func, void *user_data);
+
+/**
+ * Unregister a user setting query function if set.
+ *
+ * If both func and user_data match the existing values,
+ * then both are cleared.
+ *
+ * @param func Notification function
+ * @param user_data User data
+ */
+RP_LIBROMDATA_PUBLIC
+void clearUserSettingQuery(UserSettingQuery_t func, void *user_data);
 
 /**
  * Format a file size.

@@ -45,6 +45,39 @@ using std::string;
 
 namespace LibRpText {
 
+// User Setting Query function
+static UserSettingQuery_t userSettingQueryFunc;
+static void *usq_user_data;
+
+/**
+ * Set the user setting query function.
+ * This is used for the UI frontends.
+ * @param func Notification function
+ * @param user_data User data
+ */
+void setUserSettingQueryFunction(UserSettingQuery_t func, void *user_data)
+{
+	userSettingQueryFunc = func;
+	usq_user_data = user_data;
+}
+
+/**
+ * Unregister a user setting query function if set.
+ *
+ * If both func and user_data match the existing values,
+ * then both are cleared.
+ *
+ * @param func Notification function
+ * @param user_data User data
+ */
+void clearUserSettingQuery(UserSettingQuery_t func, void *user_data)
+{
+	if (userSettingQueryFunc == func && usq_user_data == user_data) {
+		userSettingQueryFunc = nullptr;
+		usq_user_data = nullptr;
+	}
+}
+
 // Localized decimal point
 static std::once_flag lc_decimal_once_flag;
 static bool is_C_locale;
@@ -167,10 +200,16 @@ string formatFileSize(off64_t size, BinaryUnitDialect dialect)
 	int whole_part, frac_part;
 	bool needs_pgettext = true;
 
-	// TODO: Have the UI frontend set the "default" dialect, e.g. using kdeglobals on KDE.
-	static constexpr BinaryUnitDialect defaultDialect = BinaryUnitDialect::IECBinaryDialect;
 	if (dialect == BinaryUnitDialect::DefaultBinaryDialect) {
-		dialect = defaultDialect;
+		// If the UI frontend has registered a user setting query function,
+		// call it to get the default dialect.
+		if (userSettingQueryFunc) {
+			dialect = static_cast<BinaryUnitDialect>(userSettingQueryFunc(usq_user_data));
+		} else {
+			// No UI frontend function was registered.
+			// Use IEC as the default.
+			dialect = BinaryUnitDialect::IECBinaryDialect;
+		}
 	}
 
 	if (likely(dialect != BinaryUnitDialect::MetricBinaryDialect)) {
