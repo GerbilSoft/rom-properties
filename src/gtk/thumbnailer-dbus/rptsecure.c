@@ -107,10 +107,11 @@ int rpt_do_security_options(void)
 	// - wpath: Write to ~/.cache/rom-properties/
 	// - cpath: Create ~/.cache/rom-properties/ if it doesn't exist.
 	// - getpw: Get user's home directory if HOME is empty.
-	param.promises = "stdio rpath wpath cpath getpw";
+	// - unix: UNIX domain sockets. (for D-Bus)
+	param.promises = "stdio rpath wpath cpath getpw unix";
 #elif defined(HAVE_TAME)
 	// NOTE: stdio includes fattr, e.g. utimes().
-	param.tame_flags = TAME_STDIO | TAME_RPATH | TAME_WPATH | TAME_CPATH | TAME_GETPW;
+	param.tame_flags = TAME_STDIO | TAME_RPATH | TAME_WPATH | TAME_CPATH | TAME_GETPW | TAME_UNIX;
 #else
 	param.dummy = 0;
 #endif

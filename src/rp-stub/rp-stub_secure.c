@@ -127,10 +127,11 @@ int rp_stub_do_security_options(bool config)
 	// - wpath: Write to the specified file.
 	// - cpath: Create the specified file if it doesn't exist. (TODO: Dirs only?)
 	// - getpw: Get user's home directory if HOME is empty.
-	param.promises = "stdio rpath wpath cpath getpw";
+	// - unix: UNIX domain sockets. (for D-Bus)
+	param.promises = "stdio rpath wpath cpath getpw unix";
 #elif defined(HAVE_TAME)
 	// NOTE: stdio includes fattr, e.g. utimes().
-	param.tame_flags = TAME_STDIO | TAME_RPATH | TAME_WPATH | TAME_CPATH | TAME_GETPW;
+	param.tame_flags = TAME_STDIO | TAME_RPATH | TAME_WPATH | TAME_CPATH | TAME_GETPW | TAME_UNIX;
 #else
 	param.dummy = 0;
 #endif

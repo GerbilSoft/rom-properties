@@ -311,9 +311,18 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// Promises:
 	// - stdio: General stdio functionality.
 	// - rpath: Read test cases.
-	param.promises = "stdio rpath";
+	// - unix: UNIX domain sockets. (only if building Qt or GTK tests)
+	if (rp_gtest_syscall_set & (RP_GTEST_SYSCALL_SET_QT | RP_GTEST_SYSCALL_SET_GTK)) {
+		param.promises = "stdio rpath unix";
+	} else {
+		param.promises = "stdio rpath";
+	}
 #elif defined(HAVE_TAME)
-	param.tame_flags = TAME_STDIO | TAME_RPATH;
+	if (rp_gtest_syscall_set & (RP_GTEST_SYSCALL_SET_QT | RP_GTEST_SYSCALL_SET_GTK)) {
+		param.tame_flags = TAME_STDIO | TAME_RPATH | TAME_UNIX;
+	} else {
+		param.tame_flags = TAME_STDIO | TAME_RPATH;
+	}
 #else
 	param.dummy = 0;
 #endif
