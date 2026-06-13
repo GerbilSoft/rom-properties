@@ -87,6 +87,7 @@ SET(${PROJECT_NAME}_SRCS
 	Audio/GBS.cpp
 	Audio/NSF.cpp
 	Audio/PSF.cpp
+	Audio/PSFTagParser.cpp
 	Audio/S98.cpp
 	Audio/SAP.cpp
 	Audio/SNDH.cpp
@@ -278,6 +279,7 @@ SET(${PROJECT_NAME}_H
 	Audio/GBS.hpp
 	Audio/NSF.hpp
 	Audio/PSF.hpp
+	Audio/PSFTagParser.hpp
 	Audio/S98.hpp
 	Audio/SAP.hpp
 	Audio/SNDH.hpp

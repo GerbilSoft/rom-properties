@@ -11,6 +11,7 @@
 #include "PSF.hpp"
 #include "RomData_p.hpp"
 
+#include "PSFTagParser.hpp"
 #include "psf_structs.h"
 
 // Other rom-properties libraries
@@ -142,98 +143,25 @@ PSFPrivate::PSFPrivate(const IRpFilePtr &file)
  */
 unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 {
-	// Read the tag magic first.
-	char tag_magic[sizeof(PSF_TAG_MAGIC)-1];
-	size_t size = file->seekAndRead(tag_addr, tag_magic, sizeof(tag_magic));
-	if (size != sizeof(tag_magic)) {
-		// Seek and/or read error.
-		return {};
-	}
-
-	// Read the rest of the file.
+	// Load the tag section.
 	// NOTE: Maximum of 16 KB.
 	static constexpr off64_t TAG_SIZE_MAX = 16384;
-	const off64_t data_len = file->size() - tag_addr - sizeof(tag_magic);
+	const off64_t data_len = file->size() - tag_addr;
 	if (data_len <= 0 || data_len > TAG_SIZE_MAX) {
 		// Not enough data, or too *much* data...
 		return {};
 	}
 
-	// NOTE: Values may be encoded as either cp1252/sjis or UTF-8.
-	// Since we won't be able to determine this until we're finished
-	// decoding variables, we'll have to do character conversion
-	// *after* kv is populated.
 	const size_t data_len_sz = static_cast<size_t>(data_len);
 	unique_ptr<char[]> tag_data(new char[data_len_sz]);
-	size = file->read(tag_data.get(), data_len_sz);
+	size_t size = file->seekAndRead(tag_addr, tag_data.get(), data_len_sz);
 	if (size != data_len_sz) {
 		// Read error.
 		return {};
 	}
 
-	unordered_map<string, string> kv;
-#ifdef HAVE_UNORDERED_MAP_RESERVE
-	kv.reserve(11);
-#endif /* HAVE_UNORDERED_MAP_RESERVE */
-
-	// If the tag data contains a non-empty "utf8" tag,
-	// the text is encoded in UTF-8. Otherwise, it's cp1252.
-	bool isUtf8 = false;
-
-	const char *start = tag_data.get();
-	const char *const endptr = start + data_len;
-	for (const char *p = start; p < endptr; p++) {
-		// Find the next newline.
-		const char *nl = static_cast<const char*>(memchr(p, '\n', endptr-p));
-		if (!nl) {
-			// No newline. Assume this is the end of the tag section,
-			// and read up to the end.
-			nl = endptr;
-		}
-		if (p == nl) {
-			// Empty line.
-			continue;
-		}
-
-		// Find the equals sign.
-		const char *eq = static_cast<const char*>(memchr(p, '=', nl-p));
-		if (eq) {
-			// Found the equals sign.
-			const int k_len = static_cast<int>(eq - p);
-			const int v_len = static_cast<int>(nl - eq - 1);
-			if (k_len > 0 && v_len > 0) {
-				// Key and value are valid.
-				// NOTE: Key is case-insensitive, so convert to lowercase.
-				// NOTE: Key *must* be ASCII.
-				string s_key(p, k_len);
-				std::transform(s_key.begin(), s_key.end(), s_key.begin(),
-					[](unsigned char c) noexcept -> char { return std::tolower(c); });
-				const bool is_utf8 = (s_key == "utf8");
-				string s_value(eq+1, v_len);
-				kv.emplace(std::move(s_key), std::move(s_value));
-
-				// Check for UTF-8.
-				// NOTE: The v_len check is redundant...
-				if (is_utf8 && v_len > 0) {
-					// "utf8" key with non-empty value.
-					// This is UTF-8.
-					isUtf8 = true;
-				}
-			}
-		}
-
-		// Next line.
-		p = nl;
-	}
-
-	// If we're not using UTF-8, convert the values.
-	if (!isUtf8) {
-		for (auto &p : kv) {
-			p.second = cp1252_sjis_to_utf8(p.second);
-		}
-	}
-
-	return kv;
+	// Parse the tags.
+	return PSFTagParser::parseTags(tag_data.get(), data_len_sz, PSFTagParser::PSFTagStyle::PSF);
 }
 
 /**
