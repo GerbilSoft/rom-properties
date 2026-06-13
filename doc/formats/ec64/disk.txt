@@ -1,0 +1,790 @@
+
+*** Disk File Layout (D64, D71, D81)
+*** Document revision: 1.3
+*** Last updated: March 11, 2004
+*** Source: Joe Forster/STA (internal rev 0.10)
+
+Introduction
+------------
+
+  This document describes how Commodore drives lay out  files  when  saving
+them onto the disk. It does not describe how the Commodore disk or the  BAM
+is laid out or how you  can  manage  it,  you  can  read  that  in  another
+document. The description also covers  GEOS,  which  uses  its  own  layout
+scheme for saving files onto disks. Note that Commodore 1541, 1571 and 1581
+drives all use the same scheme, but with different parameters.
+
+  The Pascal source below was verified against real disks written  by  real
+drives and proved to lay out files exactly the same way as Commodore drives
+and GEOS do. It has been translated into C, as well. These  algorithms  may
+be too complicated for your particular needs  because  they  take  so  many
+parameters into account. Feel free to strip off whatever you don't need.
+
+  Please, note that,  while  the  algorithms  simulate  the  real  behavior
+exactly, the reason for this behavior is not always  fully  known.  As  you
+will find below, sometimes we can only assume  the  reason.  If  you  think
+these assumptions are incorrect then, please, tell us. We'll be  more  than
+happy to discuss and, possibly, include it.
+
+
+
+
+Finding the first block
+-----------------------
+
+  Commodore drives, as most floppy drives,  have  a  relatively  slow  head
+movement. To speed up data access, it's certainly a good idea  to  put  the
+directory into the center of the disk so that, when moving  the  head  from
+the directory area to the actual file  data  and  back,  head  movement  is
+minimized. On Commodore disks, the directory is on the central track:  this
+is track 18 on 1541 disks, track 18 and track 53 (the flip  side  of  track
+18) on double-sided 1571 disks, and track 40 on 1581 disks.
+
+  When trying to find a free sector for the first block of  the  file,  the
+drive first searches on the track just "below" the  directory  track,  then
+the track just "above" the directory track, then 2 below,  2  above,  etc.,
+moving away from the directory track. This assures that the first block  of
+the file will be as close to the directory track as possible.  Again,  this
+minimizes head movement.
+
+  When a track is found, that contains one or more free sectors,  then  the
+drive simply grabs the first free  sector  on  that  track,  starting  with
+sector zero and going upwards, and allocates it for the first block of  the
+file.
+
+  If there are no free sectors left then you get the  '72,DISK  FULL,00,00'
+error message. If a track is found, whose "number of free sectors"  counter
+in the BAM is not zero, but the sector  allocation  bitmap  shows  no  free
+sectors then the BAM is damaged. It is highly recommended  that  you  check
+the BAM prior to saving files onto the disk, and refuse to do  anything  if
+you find such inconsistensies. The BAM should be repaired, for example with
+a validate, first.
+
+
+
+
+Finding the next block
+----------------------
+
+  There's another algorithm for finding successive sectors for the file. It
+is executed each time whenever a new sector is needed to  hold  file  data.
+The algorithm makes use of  an  interesting  parameter,  the  "interleave".
+Because transferring data to  the  host  machine  is  so  slow,  the  drive
+shouldn't lay out data of the same file sequentially onto  sectors  of  the
+same track. If it wrote the first block of data onto sector zero  and  then
+second block onto sector one etc. then, while it is sending data read  from
+sector zero to the host machine, the disk would keep  spinning  and  sector
+one would leave the read/write head. As soon as the data transmission ends,
+the drive would try to read sector one, to get the next block of data,  and
+it would find that it has to wait about half a revolution for sector one to
+appear again under the read/write head. Therefore, data shouldn't  be  laid
+out sequentially but, rather, there should be  "holes"  between  successive
+blocks of the same file. Of course, this doesn't mean holes  with  no  data
+inside. It only means that data is laid out e.g.  onto  each  even  sector:
+sector zero, then sector two, four etc. Then  the  drive  will  have  time,
+while sector one, three and five is under the read/write head, to send  the
+contents of sector zero, two and four to the host machine. When the end  of
+the track is reached, you start again with odd sectors - after all, a track
+is an endless circle - and fill in the holes you made by using every second
+sector only.
+
+  The distance of successive blocks is what we call "interleave".  On  some
+disks, physical sectors are laid out in a non-sequential manner,  that's  a
+"hard" interleave. Commodore drives  do  lay  out  physical  sectors  in  a
+sequential manner but they put data onto them in  a  non-sequential  order,
+that's a "soft" interleave. In the example above,  we  were  using  a  soft
+interleave of two, that is, the distance between two successive  blocks  of
+the same file was two sectors.
+
+  The optimal interleave for a disk highly depends on how fast data can  be
+transmitted to  the  host  machine.  For  a  high  transmission  rate,  the
+interleave can be smaller because not much time is needed to  transfer  the
+contents of the current sector, therefore successive sectors may be  closer
+to each other. For  a  low  transmission  rate,  such  as  the  default  of
+Commodore drives, a higher interleave is needed. In particular, 1541 drives
+are using an interleave of 10 sectors, 1571 drives use 6 sectors  and  1581
+drives use 1 sector, by default. The reason for the  latter  is  that  1581
+drives contain a track cache, they can read in a whole track  of  data  and
+then transmit data right from the  memory  to  the  host  machine,  without
+having to actually access the disk. In this case, there's no real need  for
+an interleave, sectors may be laid out  in  a  sequential  manner  -  which
+corresponds with  an  interleave  value  of  one  -  without  any  possible
+performance penalty.
+
+  So, when the drive finished writing the current block of a file and there
+still are free sectors left on the current track, it tries to continue with
+the sector that is an "interleave" number of sectors away from the  current
+one. It adds the interleave to the current sector number. If  it  runs  off
+the current track - the sector number becomes invalid - then  it  subtracts
+the number of sectors on the track, which will correct the result.  If  the
+corrected result is not sector zero then it subtracts one  more.  This  is,
+most probably, some kind of an  empirical  optimization,  because  the  gap
+between the last and first sector on a track is always a  bit  longer  than
+the other gaps.
+
+  If the sector, the drive arrived at this way, is free then it already has
+the sector it needs. If it's used, however, then the drive keeps  searching
+for free sectors, starting from this sector, at steps of one.  It  searches
+towards the end of the track, then wraps back  to  sector  zero  and  moves
+further upwards. As the BAM stated that there are still free sectors on the
+current track, it shouldn't arrive back at the sector it started  from.  If
+it does then the BAM is damaged.
+
+  If the current track is already full then the drive moves one track  away
+from the directory track but keeps the sector number used on  the  previous
+track. If there are some free sectors on this  new  track  then  the  drive
+tries to find a free sector, using the method  described  in  the  previous
+paragraphs, including adding the interleave to the sector number first. The
+reason for this, most probably, is that sectors of the same  sector  number
+are at about the same angle on all tracks.  Therefore,  when  you  finished
+writing sector zero on a track and move to an adjacent track  then  you'll,
+probably, read sector one as  the  first  sector  that  arrives  under  the
+read/write head on  that  track.  This  means,  you  can  keep  adding  the
+interleave, as if you were still on the same track.
+
+  If, while moving away from the directory track, the  algorithm  runs  off
+the disk, it tries again on the other half of the disk. If it  stepped  off
+track one downwards then it tries again  with  the  track  just  above  the
+directory track, going upwards. If it stepped off the highest track upwards
+then it tries again with the track just below the  directory  track,  going
+downwards. Therefore, at least, two tries should be made:  on  the  current
+half of the disk and the other half. For  some  unknown  reason,  Commodore
+1541 drives do three tries, which the algorithm below follows. When jumping
+to the other half of the disk, the sector number is zeroed. The reason  for
+this, probably, is that moving the read/write head to such a great distance
+takes away so much time that there's no telling which sector it  will  read
+first, arriving at the destination track, so there's no point  keeping  the
+previous sector number.
+
+  An extra feature of the algorithms below is that you can also  save  file
+data onto free sectors of the directory track. The directory track will  be
+used only if all other parts of the disk are completely  full.  Apart  from
+this, everything above applies to the directory track, as well.
+
+  It's worth mentioning that this "finding the  next  block"  algorithm  is
+used also for finding the next block for the directory, when extending  it.
+The only difference is that, in this case, a lower interleave of 3  sectors
+is used by 1541 and 1571 drives, by default, because no  data  transmission
+to the host machine is involved while processing the directory  data.  1581
+drives, as usual, use an interleave of 1 sector.
+
+
+
+---------------------------------------------------------------------------
+
+
+GEOS
+----
+
+  GEOS works quite differently from  the  original  drive  DOS.  It  starts
+saving files on track one and goes upwards  until  it  fills  up  the  last
+track. On its way, of course, it skips the directory tracks.  Actually,  it
+uses the same algorithm for finding the first and the next  sectors  for  a
+file and even for extending the directory, too.
+
+  Because it has a built-in fast loader, it uses  an  interleave  different
+from the original: 8 sectors for 1541 disks. As tests  show,  it  uses  the
+original interleave of 6 sectors for 1571  disks  and  1  sector  for  1581
+disks, perhaps, because these drives  are  fast  enough  anyway.  The  same
+applies for extending the directory which is, again, handled  by  the  same
+algorithm, probably, because directory data has to be  transferred  to  the
+host machine as it is processed by the GEOS disk  driver  rather  than  the
+drive itself.
+
+  GEOS also introduces some kind of a "sector skewing".  Unlike  on  normal
+Commodore disks, sectors of the same sector number but on different  tracks
+are not at the same angle on the disk. As you  move  away  from  a  certain
+track, sector zero  also  slides  away  in  one  direction.  The  distance,
+measured by the difference in the sector number, of sectors  at  about  the
+same angle on adjacent tracks is the "skew" value. Again, if  this  applies
+to physical sectors than that's  a  "hard"  skew.  For  logical  sectors  -
+successive blocks of the same file -, that's a "soft" skew. The skew  value
+used by GEOS is  computed  by  a  relatively  complicated  formula:  "track
+distance" * 2 + 4 + "interleave".
+
+  When stepping onto a new track, GEOS tries to save the next block of file
+data onto the sector whose sector number is equal  to  the  result  of  the
+above formula. (Strangely enough, the result is not  added  to  the  sector
+number but rather assigned to, so it might not  be  a  sector  skew,  after
+all.) If this sector is already used then, similarly to the original  drive
+DOS, GEOS goes through  the  track  sequentially,  at  steps  of  one,  and
+searches for the first free sector after this one.
+
+
+
+---------------------------------------------------------------------------
+
+
+Pascal source
+-------------
+
+{=== Start of Pascal source ==============================================}
+
+{--- Global variables ---}
+
+var
+{When True, this is a GEOS-formatted disk, therefore, files have to be
+  saved the GEOS way onto it}
+  GEOSFormat,
+{When True, free sectors on the directory track are also allowed to hold
+  file data if the disk otherwise gets full}
+  CopyToDirTrack: Boolean;
+{Track number of current block of file}
+  Track,
+{Sector number of current block of file}
+  Sector,
+{Track number of first track (may be above one for subdirectories on 1581
+  disks)}
+  FirstTrack,
+{Track number of last track plus one (may be below the physical end of
+  disk for subdirectories on 1581 disks)}
+  LastTrack,
+{Track number of physically last track plus one}
+  MaxTrack,
+{Track number of directory track}
+  DirTrack,
+{Track number of secondary directory track (for 1571 disks); 255 (a
+  non-existent track), if not available}
+  DirTrack2,
+{Soft interleave}
+  Interleave: Byte;
+
+{--- Support routines ---}
+
+{Determine if there's, at least, one free sector on a track
+  Input : Track: the track to check
+  Output: when True, there's, at least, one free sector on the track}
+function IsTrackFree(Track: Byte): Boolean;
+
+{Determine if a sector is free
+  Input : Track: the track number of sector to check
+          Sector: the sector number of sector to check
+  Output: when True, the sector is free; otherwise used}
+function IsSectorFree(Track, Sector: Byte): Boolean;
+
+{Determine the number of sectors (or the highest valid sector number
+  plus one) for a track
+  Input : Track: track number
+  Output: the number of sectors on the track}
+function SectorNum(Track: Byte): Byte;
+
+{--- Implementation of algorithms ---}
+
+{Prototype for NextCopyBlock}
+function NextCopyBlock: Boolean;
+
+{Find a sector for the first block of the file, using variables Track and
+  Sector
+  Output: when True, a sector was found; otherwise no more sectors left}
+function FirstCopyBlock: Boolean;
+var
+  Found: Boolean;
+  MaxSector,
+  Distance: Byte;
+begin
+{We found no free sector yet}
+  Found := False;
+{If this is a GEOS-formatted disk then use the other routine, from track
+  one upwards}
+  if GEOSFormat then
+  begin
+    Track := 1;
+    Sector := 0;
+    Found := NextCopyBlock;
+  end
+  else
+  begin
+{If it's a normal disk then we start off with tracks just besides the
+  directory track}
+    Distance := 1;
+{Search until we find a free block or moved too far from the directory
+  track}
+    while not Found and (Distance < 128) do
+    begin
+{Check the track below the directory track first}
+      Track := DirTrack - Distance;
+{If the track is inside the valid range then check if there's a free
+  sector on it}
+      if (Track >= FirstTrack) and (Track < LastTrack) then
+        Found := IsTrackFree(Track);
+      if not Found then
+      begin
+{If no luck then check the track above the directory track}
+        Track := DirTrack + Distance;
+{If the track is inside the valid range then check if there's a free
+  sector on it}
+        if Track < LastTrack then Found := IsTrackFree(Track);
+      end;
+{If no luck either then move one track away from the directory track and
+  try again}
+      if not Found then Inc(Distance);
+    end;
+{If the whole disk is full and we're allowed to use the directory track
+  for file data then try there, too}
+    if not Found and CopyToDirTrack then
+    begin
+      Track := DirTrack;
+      Found := IsTrackFree(Track);
+    end;
+{If we finally found a track with, at least, one free sector then search
+  for a free sector in it}
+    if Found then
+    begin
+{Determine how many sectors there are on that track}
+      MaxSector := SectorNum(Track);
+{Start off with sector zero}
+      Sector := 0;
+      repeat
+{Check if the current sector is free}
+        Found := IsSectorFree(Track, Sector);
+{If it isn't then go on to the next sector}
+        if not Found then Inc(Sector);
+{Repeat the check until we find a free sector or run off the track}
+      until Found or (Sector >= MaxSector);
+    end;
+  end;
+{Return the search result}
+  FirstCopyBlock := Found;
+end;
+
+{-------------------------------------------------------------------------}
+
+{Find a sector for the next block of the file, using variables Track and
+  Sector
+  Output: when True, a sector was found; otherwise no more sectors left}
+function NextCopyBlock: Boolean;
+var
+  Found: Boolean;
+  Tries,
+  MaxSector,
+  CurSector,
+  CurTrack: Byte;
+begin
+  if (Track = 0) or (Track >= MaxTrack) then
+  begin
+{If we somehow already ran off the disk then there are no more free
+  sectors left}
+    NextCopyBlock := False;
+  end
+  else
+  begin
+{Set the number of tries to three}
+    Tries := 3;
+{We found no free sector yet}
+    Found := False;
+{Remember the current track number}
+    CurTrack := Track;
+{Keep trying until we find a free sector or run out of tries}
+    while not Found and (Tries > 0) do
+    begin
+{Get the number of sectors on the current track}
+      MaxSector := SectorNum(Track);
+{If there's, at least, one free sector on the track then get searching}
+      if IsTrackFree(Track) then
+      begin
+{If this is a non-GEOS disk or we're still on the same track of a
+  GEOS-formatted disk then...}
+        if (Track = CurTrack) or not GEOSFormat then
+        begin
+{Move away an "interleave" number of sectors}
+          Inc(Sector, Interleave);
+{Empirical GEOS optimization, get one sector backwards if over track 25}
+          if GEOSFormat and (Track >= 25) then Dec(Sector);
+        end
+        else
+        begin
+{For a different track of a GEOS-formatted disk, use sector skew}
+          Sector := (Track - CurTrack) shl 1 + 4 + Interleave;
+        end;
+{If we ran off the track then correct the result}
+        while Sector >= MaxSector do
+        begin
+{Subtract the number of sectors on the track}
+          Dec(Sector, MaxSector);
+{Empirical optimization, get one sector backwards if beyond sector zero}
+          if (Sector > 0) and not GEOSFormat then Dec(Sector);
+        end;
+{Remember the sector we finally arrived at}
+        CurSector := Sector;
+        repeat
+{Check if the current sector is free}
+          Found := IsSectorFree(Track, Sector);
+{If it isn't then go to the next sector}
+          if not Found then Inc(Sector);
+{If we ran off the track then wrap around to sector zero}
+          if Sector >= MaxSector then Sector := 0;
+{Keep searching until we find a free sector or arrive back at the
+  original sector}
+        until Found or (Sector = CurSector);
+      end
+      else
+      begin
+{If the current track is used up completely then...}
+        if GEOSFormat then
+        begin
+{Move one track upwards on a GEOS-formatted disk}
+          Inc(Track);
+{Skip the directory tracks on the way}
+          if (Track = DirTrack) or (Track = DirTrack2) then Inc(Track);
+{If we ran off the disk then there are no more tries}
+          if Track = LastTrack then Tries := 0;
+        end
+        else
+        begin
+{If we already tried the directory track then there are no more tries}
+          if Track = DirTrack then
+          begin
+            Tries := 0;
+          end
+          else
+          begin
+            if Track < DirTrack then
+            begin
+{If we're below the directory track then move one track downwards}
+              Dec(Track);
+              if Track < FirstTrack then
+              begin
+{If we ran off the disk then step back to the track just above the
+  directory track and zero the sector number}
+                Track := DirTrack + 1;
+                Sector := 0;
+{If there are no tracks available above the directory track then there
+  are no tries left; otherwise just decrease the number of tries}
+                if Track < LastTrack then Dec(Tries) else Tries := 0;
+              end;
+            end
+            else
+            begin
+{If we're above the directory track then move one track upwards}
+              Inc(Track);
+{Skip the secondary directory track on the way}
+              if Track = DirTrack2 then Inc(Track);
+              if Track = LastTrack then
+              begin
+{If we ran off the disk then step back to the track just below the
+  directory track and zero the sector number}
+                Track := DirTrack - 1;
+                Sector := 0;
+{If there are no tracks available below the directory track then there
+  are no tries left; otherwise just decrease the number of tries}
+                if Track >= FirstTrack then Dec(Tries) else Tries := 0;
+              end;
+            end;
+          end;
+        end;
+      end;
+      if not Found and (Tries = 0) and (Track <> DirTrack) and
+        CopyToDirTrack then
+      begin
+{If we haven't found any free sector, ran out of tries and haven't tried
+  the directory track yet, although it's declared as available for file
+  data, then give the directory track an extra try}
+        Track := DirTrack;
+        Inc(Tries);
+      end;
+    end;
+{Return the search result}
+    NextCopyBlock := Found;
+  end;
+end;
+
+{=== End of Pascal source ================================================}
+
+
+
+---------------------------------------------------------------------------
+
+
+C source
+--------
+
+/* === Start of C source =============================================== */
+
+/* Type definitions */
+
+#define byte unsigned char
+#define boolean unsigned char
+#define true (0 == 0)
+#define false (0 == 1)
+
+/* --- Global variables --- */
+
+boolean
+/* When true, this is a GEOS-formatted disk, therefore, files have to be
+   saved the GEOS way onto it */
+  GEOSFormat,
+/* When true, free sectors on the directory track are also allowed to hold
+   file data if the disk otherwise gets full */
+  CopyToDirTrack;
+byte
+/* Track number of current block of file */
+  Track,
+/* Sector number of current block of file */
+  Sector,
+/* Track number of first track (may be above one for subdirectories on 1581
+   disks) */
+  FirstTrack,
+/* Track number of last track plus one (may be below the physical end of
+   disk for subdirectories on 1581 disks) */
+  LastTrack,
+/* Track number of physically last track plus one */
+  MaxTrack,
+/* Track number of directory track */
+  DirTrack,
+/* Track number of secondary directory track (for 1571 disks); 255 (a
+   non-existent track), if not available */
+  DirTrack2,
+/* Soft interleave */
+  Interleave;
+
+/* --- Support routines --- */
+
+/* Determine if there's, at least, one free sector on a track
+   Input : Track: the track to check
+   Output: when true, there's, at least, one free sector on the track */
+boolean IsTrackFree(byte Track);
+
+/* Determine if a sector is free
+   Input : Track: the track number of sector to check
+           Sector: the sector number of sector to check
+  Output: when true, the sector is free; otherwise used */
+boolean IsSectorFree(byte Track, byte Sector);
+
+/* Determine the number of sectors (or the highest valid sector number
+   plus one) for a track
+   Input : Track: track number
+   Output: the number of sectors on the track */
+byte SectorNum(byte Track);
+
+/* --- Implementation of algorithms --- */
+
+/* Prototype for NextCopyBlock() */
+boolean NextCopyBlock();
+
+/* Find a sector for the first block of the file, using variables Track and
+   Sector
+   Output: when true, a sector was found; otherwise no more sectors left */
+boolean FirstCopyBlock()
+{
+  boolean Found;
+  byte MaxSector,
+    Distance;
+/* We found no free sector yet */
+  Found = false;
+/* If this is a GEOS-formatted disk then use the other routine, from track
+   one upwards */
+  if (GEOSFormat)
+  {
+    Track = 1;
+    Sector = 0;
+    Found = NextCopyBlock();
+  }
+  else
+  {
+/* If it's a normal disk then we start off with tracks just besides the
+   directory track */
+    Distance = 1;
+/* Search until we find a free block or moved too far from the directory
+   track */
+    while (!Found && (Distance < 128))
+    {
+/* Check the track below the directory track first */
+      Track = DirTrack - Distance;
+/* If the track is inside the valid range then check if there's a free
+   sector on it */
+      if ((Track >= FirstTrack) && (Track < LastTrack))
+        Found = IsTrackFree(Track);
+      if (!Found)
+      {
+/* If no luck then check the track above the directory track */
+        Track = DirTrack + Distance;
+/* If the track is inside the valid range then check if there's a free
+   sector on it */
+        if (Track < LastTrack) Found = IsTrackFree(Track);
+      }
+/* If no luck either then move one track away from the directory track and
+  try again */
+      if (!Found) Distance++;
+    }
+/* If the whole disk is full and we're allowed to use the directory track
+   for file data then try there, too */
+    if (!Found && CopyToDirTrack)
+    {
+      Track = DirTrack;
+      Found = IsTrackFree(Track);
+    }
+/* If we finally found a track with, at least, one free sector then search
+   for a free sector in it */
+    if (Found)
+    {
+/* Determine how many sectors there are on that track */
+      MaxSector = SectorNum(Track);
+/* Start off with sector zero */
+      Sector = 0;
+      do
+      {
+/* Check if the current sector is free */
+        Found = IsSectorFree(Track, Sector);
+/* If it isn't then go on to the next sector */
+        if (!Found) Sector++;
+/* Repeat the check until we find a free sector or run off the track */
+      } while (!Found && (Sector < MaxSector));
+    }
+  }
+/* Return the search result */
+  return(Found);
+}
+
+/* --------------------------------------------------------------------- */
+
+/* Find a sector for the next block of the file, using variables Track and
+   Sector
+   Output: when true, a sector was found; otherwise no more sectors left */
+boolean NextCopyBlock()
+{
+  boolean Found;
+  byte Tries,
+    MaxSector,
+    CurSector,
+    CurTrack;
+  if ((Track == 0) || (Track >= MaxTrack))
+  {
+/* If we somehow already ran off the disk then there are no more free
+   sectors left */
+    return(false);
+  }
+  else
+  {
+/* Set the number of tries to three */
+    Tries = 3;
+/* We found no free sector yet */
+    Found = false;
+/* Remember the current track number */
+    CurTrack = Track;
+/* Keep trying until we find a free sector or run out of tries */
+    while (!Found && (Tries > 0))
+    {
+/* Get the number of sectors on the current track */
+      MaxSector = SectorNum(Track);
+/* If there's, at least, one free sector on the track then get searching */
+      if (IsTrackFree(Track))
+      {
+/* If this is a non-GEOS disk or we're still on the same track of a
+  GEOS-formatted disk then... */
+        if ((Track == CurTrack) || !GEOSFormat)
+        {
+/* Move away an "interleave" number of sectors */
+          Sector += Interleave;
+/* Empirical GEOS optimization, get one sector backwards if over track 25 */
+          if (GEOSFormat && (Track >= 25)) Sector--;
+        }
+        else
+        {
+/* For a different track of a GEOS-formatted disk, use sector skew */
+          Sector = ((Track - CurTrack) << 1) + 4 + Interleave;
+        }
+/* If we ran off the track then correct the result */
+        while (Sector >= MaxSector)
+        {
+/* Subtract the number of sectors on the track */
+          Sector -= MaxSector;
+/* Empirical optimization, get one sector backwards if beyond sector zero */
+          if ((Sector > 0) && !GEOSFormat) Sector--;
+        }
+/* Remember the sector we finally arrived at */
+        CurSector = Sector;
+        do
+        {
+/* Check if the current sector is free */
+          Found = IsSectorFree(Track, Sector);
+/* If it isn't then go to the next sector */
+          if (!Found) Sector++;
+/* If we ran off the track then wrap around to sector zero */
+          if (Sector >= MaxSector) Sector = 0;
+/* Keep searching until we find a free sector or arrive back at the
+  original sector */
+        } while (!Found && (Sector != CurSector));
+      }
+      else
+      {
+/* If the current track is used up completely then... */
+        if (GEOSFormat)
+        {
+/* Move one track upwards on a GEOS-formatted disk */
+          Track++;
+/* Skip the directory tracks on the way */
+          if ((Track == DirTrack) || (Track == DirTrack2)) Track++;
+/* If we ran off the disk then there are no more tries */
+          if (Track == LastTrack) Tries = 0;
+        }
+        else
+        {
+/* If we already tried the directory track then there are no more tries */
+          if (Track == DirTrack)
+          {
+            Tries = 0;
+          }
+          else
+          {
+            if (Track < DirTrack)
+            {
+/* If we're below the directory track then move one track downwards */
+              Track--;
+              if (Track < FirstTrack)
+              {
+/* If we ran off the disk then step back to the track just above the
+  directory track and zero the sector number */
+                Track = DirTrack + 1;
+                Sector = 0;
+/* If there are no tracks available above the directory track then there
+  are no tries left; otherwise just decrease the number of tries */
+                if (Track < LastTrack) Tries--; else Tries = 0;
+              }
+            }
+            else
+            {
+/* If we're above the directory track then move one track upwards */
+              Track++;
+/* Skip the secondary directory track on the way */
+              if (Track == DirTrack2) Track++;
+              if (Track == LastTrack)
+              {
+/* If we ran off the disk then step back to the track just below the
+  directory track and zero the sector number */
+                Track = DirTrack - 1;
+                Sector = 0;
+/* If there are no tracks available below the directory track then there
+  are no tries left; otherwise just decrease the number of tries */
+                if (Track >= FirstTrack) Tries--; else Tries = 0;
+              }
+            }
+          }
+        }
+      }
+      if (!Found && (Tries == 0) && (Track != DirTrack) && CopyToDirTrack)
+      {
+/* If we haven't found any free sector, ran out of tries and haven't tried
+  the directory track yet, although it's declared as available for file
+  data, then give the directory track an extra try */
+        Track = DirTrack;
+        Tries++;
+      }
+    }
+/* Return the search result */
+    return(Found);
+  }
+}
+
+/* === End of C source ================================================= */
+
+History:
+  2000-05-05    0.01    Initial internal release
+  2000-05-08    0.02    New: Translated the Pascal source to C
+                        New: Separated text into numbered sections
+                        Mod: Changed wording to make it more understandable
+  2000-06-29    0.03    Fix: Fixed a couple of typos
+  2000-07-28    0.04    Mod: Changed some wording again
+  2000-11-05    0.05    Fix: Fixed some syntactical errors in the C source
+  2001-02-22    0.10    Fix: Fixed some typos
+                        Fix: Bytes, booleans are unsigned chars in C source
+

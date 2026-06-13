@@ -1,0 +1,456 @@
+
+*** G64 (raw GCR binary representation of a 1541 diskette)
+*** Document revision: 1.6
+*** Last updated: March 25, 2004
+*** Contributors/sources: Markus Brenner,
+                          Immers/Neufeld "Inside Commodore DOS",
+                          Wolfgang Moser
+
+  This format was defined in 1998 as a cooperative effort  between  several
+emulator people,  mainly  Per  Hakan  Sundell,  author  of  the  CCS64  C64
+emulator, Andreas Boose of the VICE CBM emulator team and Joe  Forster/STA,
+the author of Star Commander. It was the first real cooperative attempt  to
+create a format for the emulator community which removed almost all of  the
+drawbacks of the other existing image formats, primarily D64.
+
+  The intention behind G64 is not to replace the widely used D64 format, as
+D64 works fine with the vast majority of disks in existence. It is intended
+for those small percentage of programs which demand to work with  the  1541
+drive in a non-standard way, such as reading or writing data  in  a  custom
+format. The best example is with speeder software such as Action  Cartridge
+in "warp save" mode or Vorpal which  write  track/sector  data  in  another
+format other than standard GCR. The other obvious example is copy-protected
+software which looks for some specific data on a track, like the  disk  ID,
+which is not stored in a standard D64 image.
+
+  G64 has a deceptively simply layout for what it is capable of  doing.  We
+have a signature, version byte, some predefined size values, and  a  series
+of offsets to the track data and speed zones. It is what's contained in the
+track data areas and speed zones which is  really  at  the  heart  of  this
+format.
+
+  Each track data area is simply the raw stream of GCR data, just what  the
+read head would see when a diskette is rotating past it. How the data  gets
+interpreted is up to the program trying to access  the  disk.  Because  the
+data is stored in such a low-level manner, just about anything can be done.
+Most of the time I would suspect the data in the track  would  be  standard
+sectors, with SYNC, GAP, header, data and checksums. The arrangement of the
+data when it is in a standard GCR sector layout is covered at  the  end  of
+this document.
+
+  Since it is a flexible format in both track count and  track  byte  size,
+there is no "standard" file size. However, given a few  constants  like  42
+tracks with no halftracks, a track size of 7928 bytes and no  speed  offset
+entries, the typical file size will be approximately 333744 bytes.
+
+  Below is a dump of the header, broken down into its various parts.  After
+that will be an explanation of the  track  offset  and  speed  zone  offset
+areas, as they demand much more explanation.
+
+
+Addr  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F        ASCII
+----  -----------------------------------------------   ----------------
+0000: 47 43 52 2D 31 35 34 31 00 54 F8 1E .. .. .. ..   GCR-1541תTרת....
+
+  Bytes: $0000-0007: File signature "GCR-1541"
+               0008: G64 version (presently only $00 defined)
+               0009: Number of tracks in image (usually $54, decimal 84)
+          000A-000B: Size of each stored track in bytes (usually  7928,  or
+                     $1EF8 in LO/HI format.
+
+  An obvious question here is "why are  there  84  tracks  defined  when  a
+normal D64 disk only has 35 tracks?" By  definition,  this  image  includes
+*all* the tracks that a real 1541 can access, which is at  most  42  tracks
+and 42 half tracks. Even though using more than 35 tracks is  not  typical,
+it was important to define this format from the start with what the 1541 is
+capable of doing, and not just what it typically does. Some 1541 drives may
+have problems reading past track 40, and pushing the  head  past  track  42
+might be somewhat hazardous to the health of the  drive  as  it  could  get
+stuck.
+
+  At first, the defined track size value of 7928 bytes may seem  to  be  an
+arbitrary value, but it is not. It is determined by the fastest write speed
+possible (speed zone 0), coupled with the average  rotation  speed  of  the
+disk (300 rpm). After some math, the answer that actually comes up is  7692
+bytes. Why the discrepency between the actual size of 7692 and the  defined
+size of 7928? Simply put, not all drives rotate at 300  rpm.  Some  can  be
+faster or slower, so a upper safety margin of +3% was built added, in  case
+some disks rotate slower and can  write  more  data.  After  applying  this
+safety factor, and some rounding-up, 7928 bytes per track was arrived at.
+
+  Also note that this upper limit of  7928  bytes  per  track  really  only
+applies to 1541 (and compatible) disks. If  this  format  were  applied  to
+another disk type with more sectors per track  (like  the  SFD1001  or  the
+8050), this value would be higher.
+
+  In my investigation using MNIB (a utility by Markus Brenner  that  allows
+you to nibble a 1541 diskette to  the  PC  in  G64  format)  on  a  cleanly
+formatted 1541 disk (using the built-in 1541 format  command),  I  saw  the
+following numbers, compared with the defaults that MNIB uses:
+
+    Track Range  Avg Size       Tail Gap        MNIB
+                 (bytes)   (even/odd sectors)   Size
+    -----------  --------  ------------------   ----
+       1-17       ~7720           9/9           7692
+      18-24       ~7165           9/19          7142
+      25-30       ~6690           9/13          6666
+      31-         ~6270           9/10          6250
+
+  Note that  the  first  size  number  (7720)  is  larger  than  previously
+mentioned track size of 7692.. why? Likely the drive that I used to  create
+and nibble the clean disk was rotating a little bit  slower  than  300  RPM
+(~299 RPM), so more data than normal was stored on each track. I calculated
+the percentage difference between my numbers and the established  benchmark
+of 7692, multiplied all my numbers by  this  factor,  and  arrived  at  the
+following chart:
+
+    Track Range   Size         Tail Gap        MNIB
+                 (bytes)  (even/odd sectors)   Size
+    -----------  -------  ------------------   ----
+       1-17       7692           9/9           7692
+      18-24       7139           9/19          7142
+      25-30       6666           9/13          6666
+      31-         6247           9/10          6250
+
+  See how close the real numbers come to what MNIB uses?  I  can  attribute
+the differences of a few bytes to  my  own  rounding  errors.  Therefore  I
+conclude that the numbers MNIB uses can be taken as the standard  that  all
+1541-compatible G64 tracks should be created with.
+
+  All of the  above  calculations  are  shown  here  to  establish  a  safe
+benchmark to create G64 images in the event that someday we can  copy  them
+back to a real 1541 disk. If the G64 track size was  too  large,  it  might
+happen that the track cannot be written back out. By using the  above  MNIB
+track size numbers, this problem should be alleviated.
+
+
+  Below is a dump of the first section of a G64 file, showing  the  offsets
+to the data portion for each track and half-track entry.
+
+      00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F        ASCII
+      -----------------------------------------------   ----------------
+0000: .. .. .. .. .. .. .. .. .. .. .. .. AC 02 00 00   ............¬תתת
+0010: 00 00 00 00 A6 21 00 00 00 00 00 00 A0 40 00 00   תתתת¦!תתתתתת @תת
+0020: 00 00 00 00 9A 5F 00 00 00 00 00 00 94 7E 00 00   תתתת_תתתתתת”~תת
+0030: 00 00 00 00 8E 9D 00 00 00 00 00 00 88 BC 00 00   תתתתתתתתתתˆ¼תת
+0040: 00 00 00 00 82 DB 00 00 00 00 00 00 7C FA 00 00   תתתת‚Ûתתתתתת|תתת
+0050: 00 00 00 00 76 19 01 00 00 00 00 00 70 38 01 00   תתתתvתתתתתתתp8תת
+0060: 00 00 00 00 6A 57 01 00 00 00 00 00 64 76 01 00   תתתתjWתתתתתתdvתת
+0070: 00 00 00 00 5E 95 01 00 00 00 00 00 58 B4 01 00   תתתת^•תתתתתתX´תת
+0080: 00 00 00 00 52 D3 01 00 00 00 00 00 4C F2 01 00   תתתתR׃תתתתתתLעתת
+0090: 00 00 00 00 46 11 02 00 00 00 00 00 40 30 02 00   תתתתFתתתתתתת@0תת
+00A0: 00 00 00 00 3A 4F 02 00 00 00 00 00 34 6E 02 00   תתתת:Oתתתתתת4nתת
+00B0: 00 00 00 00 2E 8D 02 00 00 00 00 00 28 AC 02 00   תתתת.תתתתתת(¬תת
+00C0: 00 00 00 00 22 CB 02 00 00 00 00 00 1C EA 02 00   תתתת"ֻתתתתתתתךתת
+00D0: 00 00 00 00 16 09 03 00 00 00 00 00 10 28 03 00   תתתתתתתתתתתתת(תת
+00E0: 00 00 00 00 0A 47 03 00 00 00 00 00 04 66 03 00   תתתתתGתתתתתתתfתת
+00F0: 00 00 00 00 FE 84 03 00 00 00 00 00 F8 A3 03 00   תתתת‏„תתתתתתר£תת
+0100: 00 00 00 00 F2 C2 03 00 00 00 00 00 EC E1 03 00   תתתתעֲתתתתתתלבתת
+0110: 00 00 00 00 E6 00 04 00 00 00 00 00 E0 1F 04 00   תתתתזתתתתתתתאתתת
+0120: 00 00 00 00 DA 3E 04 00 00 00 00 00 D4 5D 04 00   תתתתÚ>תתתתתתװ]תת
+0130: 00 00 00 00 CE 7C 04 00 00 00 00 00 C8 9B 04 00   תתתת־|תתתתתתָ›תת
+0140: 00 00 00 00 C2 BA 04 00 00 00 00 00 BC D9 04 00   תתתתֲ÷תתתתתת¼Ùתת
+0150: 00 00 00 00 B6 F8 04 00 00 00 00 00 .. .. .. ..   תתתת¶רתתתתת.....
+
+  Bytes: $000C-000F: Offset  to  stored  track  1.0  ($000002AC,  in  LO/HI
+                     format, see below for more)
+          0010-0013: Offset to stored track 1.5 ($00000000)
+          0014-0017: Offset to stored track 2.0 ($000021A6)
+             ...
+          0154-0157: Offset to stored track 42.0 ($0004F8B6)
+          0158-015B: Offset to stored track 42.5 ($00000000)
+
+  The track offsets rquire some explanation. When one is set to all 0's, no
+track data exists for this entry. If there is a value, it  is  an  absolute
+reference into the file (starting from the beginning of the file).
+
+  If an image stored here only contains 35 tracks  (e.g.  a  standard  1541
+disk), then all the offset values for track 35.5 and higher will be set  to
+0. This can be used to detect the maximum track count when converting to  a
+D64 image. Since D64's cannot hold over 40 tracks, and typically only  have
+35, some information will be lost when converting a G64.
+
+  From the track 1.0 entry we see it is set for $000002AC.  Going  to  that
+file offset, here is what we see...
+
+      00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F        ASCII
+      -----------------------------------------------   ----------------
+02A0: .. .. .. .. .. .. .. .. .. .. .. .. 0C 1E FF FF   ............תתתת
+02B0: FF FF FF 52 54 B5 29 4B 7A 5E 95 55 55 55 55 55   תתתRTµ)Kz^•UUUUU
+02C0: 55 55 55 55 55 55 FF FF FF FF FF 55 D4 A5 29 4A   UUUUUUתתתתתUװ¥)J
+02D0: 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52   R”¥)JR”¥)JR”¥)JR
+
+  Bytes: $02AC-02AD: Actual size of stored track (7692 or $1E0C,  in  LO/HI
+                     format)
+          02AE-02AE+$1E0C: Track data
+
+  Following the track data is filler bytes. In this  case,  there  are  368
+bytes of unused space. This space can contain anything, but for the sake of
+those wishing to compress these images for storage, they should all be  set
+to the same value. In the sample I used, these are all set to $FF.
+
+  Below is a dump of the end of the track 1.0 data area.  Note  the  actual
+track data ends at address $20B9, with the rest of the block being  unused,
+and set to $FF.
+
+      00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F        ASCII
+      -----------------------------------------------   ----------------
+1FE0: 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52   R”¥)JR”¥)JR”¥)JR
+1FF0: 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94   ”¥)JR”¥)JR”¥)JR”
+2000: A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5   ¥)JR”¥)JR”¥)JR”¥
+2010: 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29   )JR”¥)JR”¥)JR”¥)
+2020: 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A   JR”¥)JR”¥)JR”¥)J
+2030: 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55   UUUUUUUUUUUUUUUU
+2040: 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55   UUUUUUUUUUUUUUUU
+2050: 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55   UUUUUUUUUUUUUUUU
+2060: 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55   UUUUUUUUUUUUUUUU
+2070: 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55   UUUUUUUUUUUUUUUU
+2080: 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55   UUUUUUUUUUUUUUUU
+2090: 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55   UUUUUUUUUUUUUUUU
+20A0: 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55   UUUUUUUUUUUUUUUU
+20B0: 55 55 55 55 55 55 55 55 55 55 FF FF FF FF FF FF   UUUUUUUUUUתתתתתת
+20C0: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF   תתתתתתתתתתתתתתתת
+20D0: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF   תתתתתתתתתתתתתתתת
+20E0: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF   תתתתתתתתתתתתתתתת
+20F0: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF   תתתתתתתתתתתתתתתת
+2100: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF   תתתתתתתתתתתתתתתת
+2110: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF   תתתתתתתתתתתתתתתת
+2120: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF   תתתתתתתתתתתתתתתת
+2130: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF   תתתתתתתתתתתתתתתת
+2140: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF   תתתתתתתתתתתתתתתת
+2150: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF   תתתתתתתתתתתתתתתת
+2160: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF   תתתתתתתתתתתתתתתת
+2170: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF   תתתתתתתתתתתתתתתת
+2180: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF   תתתתתתתתתתתתתתתת
+2190: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF   תתתתתתתתתתתתתתתת
+21A0: FF FF FF FF FF FF .. .. .. .. .. .. .. .. .. ..   תתתתתת..........
+
+
+  Now we can look at the speed zone area. Below is a dump of the speed zone
+offsets.
+
+      00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F        ASCII
+      -----------------------------------------------   ----------------
+0150: .. .. .. .. .. .. .. .. .. .. .. .. 03 00 00 00   ............תתתת
+0160: 00 00 00 00 03 00 00 00 00 00 00 00 03 00 00 00   תתתתתתתתתתתתתתתת
+0170: 00 00 00 00 03 00 00 00 00 00 00 00 03 00 00 00   תתתתתתתתתתתתתתתת
+0180: 00 00 00 00 03 00 00 00 00 00 00 00 03 00 00 00   תתתתתתתתתתתתתתתת
+0190: 00 00 00 00 03 00 00 00 00 00 00 00 03 00 00 00   תתתתתתתתתתתתתתתת
+01A0: 00 00 00 00 03 00 00 00 00 00 00 00 03 00 00 00   תתתתתתתתתתתתתתתת
+01B0: 00 00 00 00 03 00 00 00 00 00 00 00 03 00 00 00   תתתתתתתתתתתתתתתת
+01C0: 00 00 00 00 03 00 00 00 00 00 00 00 03 00 00 00   תתתתתתתתתתתתתתתת
+01D0: 00 00 00 00 03 00 00 00 00 00 00 00 03 00 00 00   תתתתתתתתתתתתתתתת
+01E0: 00 00 00 00 02 00 00 00 00 00 00 00 02 00 00 00   תתתתתתתתתתתתתתתת
+01F0: 00 00 00 00 02 00 00 00 00 00 00 00 02 00 00 00   תתתתתתתתתתתתתתתת
+0200: 00 00 00 00 02 00 00 00 00 00 00 00 02 00 00 00   תתתתתתתתתתתתתתתת
+0210: 00 00 00 00 02 00 00 00 00 00 00 00 01 00 00 00   תתתתתתתתתתתתתתתת
+0220: 00 00 00 00 01 00 00 00 00 00 00 00 01 00 00 00   תתתתתתתתתתתתתתתת
+0230: 00 00 00 00 01 00 00 00 00 00 00 00 01 00 00 00   תתתתתתתתתתתתתתתת
+0240: 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+0250: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+0260: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+0270: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+0280: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+0290: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+02A0: 00 00 00 00 00 00 00 00 00 00 00 00 .. .. .. ..   תתתתתתתתתתתת....
+
+  Bytes: $015C-015F: Speed zone entry for track 1 ($03,  in  LO/HI  format,
+                     see below for more)
+          0160-0163: Speed zone entry for track 1.5 ($03)
+             ...
+          02A4-02A7: Speed zone entry for track 42 ($00)
+          02A8-02AB: Speed zone entry for track 42.5 ($00)
+
+  Starting at $02AC is the first track entry (from above, it is  the  first
+entry for track 1.0)
+
+  The speed offset entries can be a little more complex. The 1541 has  four
+speed zones defined, which means the drive can write data at four  distinct
+speeds. On a normal 1541 disk, these zones are as follows:
+
+        Track Range  Storage in Bytes    Speed Zone
+        -----------  ----------------    ----------
+           1-17           7820               3  (slowest writing speed)
+          18-24           7170               2
+          25-30           6300               1
+          31-4x           6020               0  (fastest writing speed)
+
+
+  Note that you can, through custom programming of  the  1541,  change  the
+speed zone of any track to something different (change the 3 to  a  0)  and
+write data differently.
+
+  From the above speed zone sample, all the zones  use  4-byte  entries  in
+lo-hi format. If the value of the entry is less than 4, then  there  is  no
+speed offset block for the track and the value  is  applied  to  the  whole
+track. If the value is greater than 4 then we have an  actual  file  offset
+referencing a speed zone block for the track.
+
+  In the above example shown, there were no offsets defined,  so  no  speed
+zone block dump can be shown. However, I can define what should  be  there.
+You will have a block of data, 1982 bytes long. Each  byte  is  encoded  to
+represent the speed of 4 bytes in the track offset area, and is broken down
+as follows:
+
+  Speed entry $FF:  in binary %11111111
+                               ֳÙֳÙֳÙֳÙ
+                               ³ ³ ³ ³
+                               ³ ³ ³ ְִ 4'th byte speed (binary 11, 3 dec)
+                               ³ ³ ְִִִ 3'rd byte speed (binary 11, 3 dec)
+                               ³ ְִִִִִ 2'nd byte speed (binary 11, 3 dec)
+                               ְִִִִִִִ 1'st byte speed (binary 11, 3 dec)
+
+  It was very smart thinking to allow for two speed zone settings,  one  in
+the offset block and another defining the speed on a per-byte basis. If you
+are working with a normal disk, where each track  is  one  constant  speed,
+then you don't need the extra blocks  of  information  hanging  around  the
+image, wasting space.
+
+
+  What may not be obvious is the flexibility of this format to  add  tracks
+and speed offset zones at will. If a program decides to write a  track  out
+with varying speeds, and no speed offset exist, a new block will be created
+by appending it to the end of the image, and the offset  pointer  for  that
+track set to point to the new block. If a track has no offset yet,  meaning
+it doesn't exist (like a half-track), and one needs to be added,  the  same
+procedure applies. The location of the actual track or speed zone  data  is
+not important, meaning they do not have to be in any particular order since
+they are all referenced by the offsets at the beginning of the image.
+
+
+
+
+Analysing the GCR data stream
+-----------------------------
+
+  Since the information stored in the track data area is in GCR format,  it
+is not as simple to analyse as a normal 256-byte sector would be. Here is a
+dump of a portion of the GCR data, and what to look for...
+
+      00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F        ASCII
+      -----------------------------------------------   ----------------
+0000: 0C 1E FF FF FF FF FF 52 54 B5 29 4B 7A 5E 95 55   תתתתתתתRTµ)Kz^•U
+0010: 55 55 55 55 55 55 55 55 55 55 FF FF FF FF FF 55   UUUUUUUUUUתתתתתU
+0020: D4 A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94   װ¥)JR”¥)JR”¥)JR”
+0030: A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5   ¥)JR”¥)JR”¥)JR”¥
+0040: 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29   )JR”¥)JR”¥)JR”¥)
+0050: 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A   JR”¥)JR”¥)JR”¥)J
+0060: 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52   R”¥)JR”¥)JR”¥)JR
+0070: 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94   ”¥)JR”¥)JR”¥)JR”
+0080: A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5   ¥)JR”¥)JR”¥)JR”¥
+0090: 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29   )JR”¥)JR”¥)JR”¥)
+00A0: 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A   JR”¥)JR”¥)JR”¥)J
+00B0: 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52   R”¥)JR”¥)JR”¥)JR
+00C0: 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94   ”¥)JR”¥)JR”¥)JR”
+00D0: A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5   ¥)JR”¥)JR”¥)JR”¥
+00E0: 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29   )JR”¥)JR”¥)JR”¥)
+00F0: 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A   JR”¥)JR”¥)JR”¥)J
+0100: 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52   R”¥)JR”¥)JR”¥)JR
+0110: 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94   ”¥)JR”¥)JR”¥)JR”
+0120: A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5   ¥)JR”¥)JR”¥)JR”¥
+0130: 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29   )JR”¥)JR”¥)JR”¥)
+0140: 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A   JR”¥)JR”¥)JR”¥)J
+0150: 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52   R”¥)JR”¥)JR”¥)JR
+0160: 94 A5 29 4A 55 55 55 55 55 55 FF FF FF FF FF 52   ”¥)JUUUUUUתתתתתR
+0170: 54 A5 2D 4B 7A 5E 95 55 55 55 55 55 55 55 55 55   T¥-Kz^•UUUUUUUUU
+0180: 55 55 FF FF FF FF FF 55 D4 A5 29 4A 52 94 A5 29   UUתתתתתUװ¥)JR”¥)
+0190: 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A   JR”¥)JR”¥)JR”¥)J
+01A0: 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52   R”¥)JR”¥)JR”¥)JR
+01B0: 94 A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94   ”¥)JR”¥)JR”¥)JR”
+01C0: A5 29 4A 52 94 A5 29 4A 52 94 A5 29 4A 52 94 A5   ¥)JR”¥)JR”¥)JR”¥
+
+  We need to establish a "marker" by which one can start to  interpret  the
+data. Always look for a group of at least 10 1-bits (two 'F's in a row  and
+a bit more), as they establish the SYNC mark. The 1541 actually writes  out
+a SYNC mark of 40 'on' bits (10 'F's in a row). Note  that  there  are  *2*
+groups of SYNC marks quite close together, one for the  sector  header  and
+one for the sector data. In the above example, there is 2 groups of "FF  FF
+FF FF FF". The first one is the header SYNC and the second one is the  data
+SYNC.
+
+  An important point here: some documentation refers to  the  minimum  SYNC
+mark as being at least 12 bits wide, and claims that one of  that  size  is
+still not entirely reliable. Thus Commodore chose to use 40  bits  for  the
+SYNC mark, making it impossible for the drive read electronics to miss.
+
+  If the GCR data is not in the standard sector layout, then anything  goes
+for interpreting the data. If no standard SYNC  mark  can  be  found,  then
+there is no simple way to extract any useful data.
+
+
+  Here's the layout of a standard low-level pattern on a 1541 disk. Use the
+above sample to follow along.
+
+   1. Header sync       FF FF FF FF FF (40 'on' bits, not GCR)
+   2. Header info       52 54 B5 29 4B 7A 5E 95 55 55 (10 GCR bytes)
+   3. Header gap        55 55 55 55 55 55 55 55 55 (9 bytes, never read)
+   4. Data sync         FF FF FF FF FF (40 'on' bits, not GCR)
+   5. Data block        55...4A (325 GCR bytes)
+   6. Inter-sector gap  55 55 55 55...55 55 (4 to 12 bytes, never read)
+   1. Header sync       (SYNC for the next sector)
+
+
+  The 10 byte header info (#2) is GCR encoded and must be decoded  to  it's
+normal 8 bytes to be understood. Once decoded, its breakdown is as follows:
+
+   Byte    $00 - header block ID ($08)
+            01 - header block checksum (EOR of $02-$05)
+            02 - Sector
+            03 - Track
+            04 - Format ID byte #2
+            05 - Format ID byte #1
+         06-07 - $0F ("off" bytes)
+
+
+  The "header gap" (#3) is 8 bytes on an early model 1540/1541, but 9 bytes
+on a later model 1541 and 4040. The 1541 doesn't read the header  gap,  but
+simply waits it out to write out the  sector  data.  When  sector  data  is
+written, the SYNC mark is re-written as well.
+
+  There is some controversy over the header gap (#3). Most people assume it
+to be 9 bytes of '0x55' characters, but the  early  1540/1541  drives  used
+only 8. This caused an write incompatability with the existing  4040  disks
+of the day. In 1541 ROM revision 901225-3 this error was fixed, and now all
+drives use a value of 9 '0x55' characters for the  gap.  The  book  "Inside
+Commodore DOS" by Immers/Neufeld documents  the  write  incompatibilty  and
+what corruption happens at a low level when writing to a disk with a header
+gap of 8 bytes on a disk that normally expects a gap of 9 bytes.
+
+
+  The 325 byte data block (#5) is GCR encoded and must be  decoded  to  its
+normal 260 bytes to be understood. For comparison, ZipCode Sixpack  uses  a
+326 byte GCR sector (why?), but the last byte (when properly rearranged) is
+not used. The data block is made up of the following:
+
+  Byte    $00 - data block ID ($07)
+       01-100 - 256 bytes data
+          101 - data block checksum (EOR of $01-100)
+      102-103 - $00 ("off" bytes, to make the sector size a multiple of 5)
+
+
+  The inter-sector gap (#6)  can  vary  from  4  to  19  bytes  in  length,
+depending on the track being read and the manufacturer  of  the  drive.  In
+tests that the author conducted on a real 1541 disk, gap sizes of 8  to  19
+bytes were seen.
+
+
+  The most reliable way to read G64 track data is to read it as  bits,  not
+bytes as there is no way to be sure that all the data is byte-aligned. This
+simulates the way a 1541 drive reads data as well as the  head  only  reads
+bits as well. The starting location of the track data is know, as  well  as
+the track size so the boundaries of the track limits (start  and  end)  are
+obtainable.
+
+  What follows is a very simply  point-form  list  of  how  to  read  data,
+finding sync marks, header blocks and sector blocks.
+
+    1. Search for SYNC (at least 10 or more 1 bits)
+    2. Check for header id after SYNC (GCR 0x52)
+    3. If header, read the remaining 9 header bytes
+    4. Decode header and get sector value
+    5. Search for SYNC again
+    6. Check for data id after SYNC (GCR 0x55).
+    7. If data, read and store with previous header.
+    8. Have we finished reading the track... stop
+    9. Start over
+

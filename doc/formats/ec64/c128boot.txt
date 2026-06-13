@@ -1,0 +1,57 @@
+
+*** C128 Auto-boot sector layout
+*** Document revision: 1.1
+*** Last updated: March 11, 2004
+*** Contributors/sources: unknown
+
+  The C128 has the ability to auto-boot a floppy disk that is in the  drive
+when the system is powered up, but only if track  1  sector  0  contains  a
+specific signature. Below is  a  dump  of  an  auto-boot  sector  with  its
+signature.
+
+      00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F       ASCII
+      -----------------------------------------------  ----------------
+0000: 43 42 4D 00 0C 00 02 00 00 A5 D7 C9 80 F0 03 20  CBMתתתתתת¥׳ֹ€נתת
+0010: 5F FF A9 05 8D 06 D5 A9 4E 8D 00 FF 4C 00 0C 00  _ת©תתױ©NתתLתתת
+0020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  תתתתתתתתתתתתתתתת
+0030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  תתתתתתתתתתתתתתתת
+0040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  תתתתתתתתתתתתתתתת
+0050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  תתתתתתתתתתתתתתתת
+0060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  תתתתתתתתתתתתתתתת
+0070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  תתתתתתתתתתתתתתתת
+0080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  תתתתתתתתתתתתתתתת
+0090: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  תתתתתתתתתתתתתתתת
+00A0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  תתתתתתתתתתתתתתתת
+00B0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  תתתתתתתתתתתתתתתת
+00C0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  תתתתתתתתתתתתתתתת
+00D0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  תתתתתתתתתתתתתתתת
+00E0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  תתתתתתתתתתתתתתתת
+00F0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  תתתתתתתתתתתתתתתת
+
+   Bytes 00-02: Auto-boot signature 'CBM'
+         03-04: ???
+         05-06: ???
+         07-08: ???
+         09-1E: Boot code
+         1F-FF: ???
+
+Below is a disassembly of the machine code contained from 09-1E.
+
+org = $0c00
+
+      lda $d7
+      cmp #$80
+      beq skip1
+      jsr $ff5f
+skip1 lda #$05
+      sta $d506
+      lda #$4e
+      sta $ff00
+      jmp $0c00
+.end
+
+  The only document I have found which attempts to explain  the  layout  of
+the C128 boot sector doesn't fit at all for the above sector layout.  I  am
+therefore not yet sure of all the details in the above sector.  Anyone  who
+has more info can contact me so I can update this document.
+

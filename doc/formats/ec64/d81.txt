@@ -1,0 +1,538 @@
+
+*** D81 (Electronic form of a physical 1581 disk)
+*** Document revision: 1.2
+*** Last updated: March 11, 2004
+*** Contributors/sources: unknown
+
+  Like D64 and D71, this is a byte for byte copy of a physical  1581  disk.
+It consists of 80 tracks, 40 sectors each (0 to 39) for a  size  of  819200
+bytes, or 3200 sectors. If the error byte block is attached, this makes  the
+file size 822400 bytes.
+
+  There are three sectors on the directory track used  for  disk  internals
+(header and BAM), leaving 37 sectors for filename  entries,  thus  allowing
+for 296 files (37 * 8) to be stored at the root level of the disk.
+
+  The actual physical layout on the disk is quite different from  what  the
+user sees, but this is unimportant to  the  scope  of  this  document.  One
+important difference from the D64 and D71 is all the sector interleaves  is
+now 1 for both files and directory storage (rather than 3 for directory and
+10 for file on a D64/D71) . This is due to the built-in  buffering  in  the
+1581. When reading a sector, the whole track will be  buffered  in  memory,
+and any sectors being modified will be done in memory. Once it  has  to  be
+written, the whole track will be written out in one step.
+
+
+  The track range and offsets into the D81 files are as follows:
+
+  Track #Sect #SectorsIn D81 Offset  |  Track #Sect #SectorsIn D81 Offset
+  ----- ----- ---------- ----------  |  ----- ----- ---------- ----------
+    1     40       0       $00000    |    41     40    1600       $64000
+    2     40      40       $02800    |    42     40    1640       $66800
+    3     40      80       $05000    |    43     40    1680       $69000
+    4     40     120       $07800    |    44     40    1720       $6B800
+    5     40     160       $0A000    |    45     40    1760       $6E000
+    6     40     200       $0C800    |    46     40    1800       $70800
+    7     40     240       $0F000    |    47     40    1840       $73000
+    8     40     280       $11800    |    48     40    1880       $75800
+    9     40     320       $14000    |    49     40    1920       $78000
+   10     40     360       $16800    |    50     40    1960       $7A800
+   11     40     400       $19000    |    51     40    2000       $7D000
+   12     40     440       $1B800    |    52     40    2040       $7F800
+   13     40     480       $1E000    |    53     40    2080       $82000
+   14     40     520       $20800    |    54     40    2120       $84800
+   15     40     560       $23000    |    55     40    2160       $87000
+   16     40     600       $25800    |    56     40    2200       $89800
+   17     40     640       $28000    |    57     40    2240       $8C000
+   18     40     680       $2A800    |    58     40    2280       $8E800
+   19     40     720       $2D000    |    59     40    2320       $91000
+   20     40     760       $2F800    |    60     40    2360       $93800
+   21     40     800       $32000    |    61     40    2400       $96000
+   22     40     840       $34800    |    62     40    2440       $98800
+   23     40     880       $37000    |    63     40    2480       $9B000
+   24     40     920       $39800    |    64     40    2520       $9D800
+   25     40     960       $3C000    |    65     40    2560       $A0000
+   26     40    1000       $3E800    |    66     40    2600       $A2B00
+   27     40    1040       $41000    |    67     40    2640       $A5000
+   28     40    1080       $43800    |    68     40    2680       $A7800
+   29     40    1120       $46000    |    69     40    2720       $AA000
+   30     40    1160       $48800    |    70     40    2760       $AC800
+   31     40    1200       $4B000    |    71     40    2800       $AF000
+   32     40    1240       $4D800    |    72     40    2840       $B1800
+   33     40    1280       $50000    |    73     40    2880       $B4000
+   34     40    1320       $52800    |    74     40    2920       $B6800
+   35     40    1360       $55000    |    75     40    2960       $B9000
+   36     40    1400       $57800    |    76     40    3000       $BB800
+   37     40    1440       $5A000    |    77     40    3040       $BE000
+   38     40    1480       $5C800    |    78     40    3080       $C0800
+   39     40    1520       $5F000    |    79     40    3120       $C3000
+   40     40    1560       $61800    |    80     40    3160       $C5800
+
+
+  The header sector is stored at 40/0, and contains the disk name,  ID  and
+DOS version bytes, but the BAM is no longer contained here (like the D64).
+
+    00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F        ASCII
+    -----------------------------------------------   ----------------
+00: 28 03 44 00 31 35 38 31 20 55 54 49 4C 49 54 59   (.Dת1581תUTILITY
+10: 20 56 30 31 A0 A0 47 42 A0 33 44 A0 A0 00 00 00   תV01  GB 3D  תתת
+20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+A0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+B0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+C0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+D0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+E0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+F0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+
+  Bytes:$00-01: Track/Sector location of the first directory sector (should
+                be set to 40/3 but it doesn't matter, and don't trust  what
+                is there, always go to 40/3 for first directory entry)
+            02: Disk DOS version type (see note below)
+                  $44 ('D')=1581
+            03: $00
+         04-13: 16 character Disk Name (padded with $A0)
+         14-15: $A0
+         16-17: Disk ID
+            18: $A0
+            19: DOS Version ("3")
+            1A: Disk version ("D")
+         1B-1C: $A0
+         1D-FF: Unused (usually $00)
+
+  The following might be set if the disk is a GEOS  format  (this  info  is
+  based on the D64 layout, and might not prove to be true)
+
+         AB-AC: Border sector (GEOS only, else set to $00)
+         AD-BC: GEOS ID string ("geos FORMAT V1.x" GEOS only, else $00)
+         BD-FF: Unused (usually $00)
+
+Note: If the DOS version byte is changed to anything other than a  $44  (or
+$00), then we have what is called "soft write protection". Any  attempt  to
+write to the disk will return the "DOS Version" error code 73. The drive is
+simply telling you that it thinks the disk format version is incompatible.
+
+  The BAM is located on 40/1 (for side 0, tracks 1-40) and 40/2  (for  side
+1, tracks 41-80). Each entry takes up six bytes, one for the "free  sector"
+count and five for the allocation bitmap.
+
+    00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F        ASCII
+    -----------------------------------------------   ----------------
+00: 28 02 44 BB 47 42 C0 00 00 00 00 00 00 00 00 00   (.D»GBְתתתתתתתתת
+10: 28 FF FF FF FF FF 28 FF FF FF FF FF 28 FF FF FF   (תתתתת(תתתתת(תתת
+20: FF FF 28 FF FF FF FF FF 28 FF FF FF FF FF 28 FF   תת(תתתתת(תתתתת(ת
+30: FF FF FF FF 28 FF FF FF FF FF 28 FF FF FF FF FF   תתתת(תתתתת(תתתתת
+40: 28 FF FF FF FF FF 28 FF FF FF FF FF 28 FF FF FF   (תתתתת(תתתתת(תתת
+50: FF FF 28 FF FF FF FF FF 28 FF FF FF FF FF 28 FF   תת(תתתתת(תתתתת(ת
+60: FF FF FF FF 28 FF FF FF FF FF 28 FF FF FF FF FF   תתתת(תתתתת(תתתתת
+70: 28 FF FF FF FF FF 28 FF FF FF FF FF 28 FF FF FF   (תתתתת(תתתתת(תתת
+80: FF FF 28 FF FF FF FF FF 28 FF FF FF FF FF 28 FF   תת(תתתתת(תתתתת(ת
+90: FF FF FF FF 28 FF FF FF FF FF 28 FF FF FF FF FF   תתתת(תתתתת(תתתתת
+A0: 28 FF FF FF FF FF 28 FF FF FF FF FF 28 FF FF FF   (תתתתת(תתתתת(תתת
+B0: FF FF 28 FF FF FF FF FF 28 FF FF FF FF FF 28 FF   תת(תתתתת(תתתתת(ת
+C0: FF FF FF FF 28 FF FF FF FF FF 28 FF FF FF FF FF   תתתת(תתתתת(תתתתת
+D0: 28 FF FF FF FF FF 28 FF FF FF FF FF 28 FF FF FF   (תתתתת(תתתתת(תתת
+E0: FF FF 28 FF FF FF FF FF 28 FF FF FF FF FF 28 FF   תת(תתתתת(תתתתת(ת
+F0: FF FF FF FF 28 FF FF FF FF FF 24 F0 FF 2D FF FE   תתתת(תתתתת$נת-ת‏
+
+    Bytes:$00-01: Track/sector of next bam sector (40/2)
+              02: Version # ('D')
+              03: One's complement of version# ($BB)
+           04-05: Disk ID bytes (same as 40/0 Disk ID)
+              06: I/O byte
+                   bit 7 set   - Verify on
+                   bit 7 clear - Verify off
+                   bit 6 set   - Check header CRC
+                   bit 6 clear - Don't check header CRC
+              07: Auto-boot-loader flag (see section at end of document)
+           08-0F: Reserved for future (set to $00)
+           10-15: BAM entry for track 1 (track 41, side 1)
+           16-1B: BAM entry for track 2 (track 42, side 1)
+            ...
+           46-4B: BAM entry for track 10 (track 50, side 1)
+            ...
+           82-87: BAM entry for track 20 (track 60, side 1)
+            ...
+           BE-C3: BAM entry for track 30 (track 70, side 1)
+            ...
+           FA-FF: BAM entry for track 40 (track 80, side 1)
+
+  The BAM entries require some explanation, so lets look at  the  track  40
+entry at bytes $FA-FF ($24 $F0 $FF $2D $FF $FE). The first byte ($24, or 36
+decimal) is the number of free sectors on that track. The next  five  bytes
+represent the bitmap of which sectors are used/free. Since it is five bytes
+(8 bits/byte) we have  40  bits  of  storage.  Since  this  format  has  40
+sectors/track, the whole five bytes are used.
+
+F0: .. .. .. .. .. .. .. .. .. .. 24 F0 FF 2D FF FE   תתתת(תתתתת$נת-ת‏
+
+  The last five bytes of any BAM entry must be viewed in binary to make any
+sense. We will once again use track 40 as our reference:
+
+     F0=11110000, FF=11111111, 2D=00101101, FF=11111111, FE=11111110
+
+In order to make any sense from the binary notation, flip the bits around.
+
+                      111111 11112222 22222233 33333333
+   Sector  01234567 89012345 67890123 45678901 23456789
+           -------------------------- -------- --------
+           00001111 11111111 10110100 11111111 01111111
+
+Note that if a bit is on (1), the sector is free. Therefore, track  40  has
+sectors 0-3, 17, 20, 22, 23 and 32 used, all the rest are free.
+
+The second BAM (for side 1) contains the entries for tracks 41-80.
+
+    00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F        ASCII
+    -----------------------------------------------   ----------------
+00: 00 FF 44 BB 47 42 C0 00 00 00 00 00 00 00 00 00   (.D»GBְתתתתתתתתת
+10: 28 FF FF FF FF FF 28 FF FF FF FF FF 28 FF FF FF   (תתתתת(תתתתת(תתת
+20: FF FF 28 FF FF FF FF FF 28 FF FF FF FF FF 28 FF   תת(תתתתת(תתתתת(ת
+30: FF FF FF FF 28 FF FF FF FF FF 28 FF FF FF FF FF   תתתת(תתתתת(תתתתת
+40: 28 FF FF FF FF FF 28 FF FF FF FF FF 28 FF FF FF   (תתתתת(תתתתת(תתת
+50: FF FF 28 FF FF FF FF FF 28 FF FF FF FF FF 28 FF   תת(תתתתת(תתתתת(ת
+60: FF FF FF FF 28 FF FF FF FF FF 28 FF FF FF FF FF   תתתת(תתתתת(תתתתת
+70: 28 FF FF FF FF FF 28 FF FF FF FF FF 28 FF FF FF   (תתתתת(תתתתת(תתת
+80: FF FF 28 FF FF FF FF FF 28 FF FF FF FF FF 28 FF   תת(תתתתת(תתתתת(ת
+90: FF FF FF FF 28 FF FF FF FF FF 28 FF FF FF FF FF   תתתת(תתתתת(תתתתת
+A0: 28 FF FF FF FF FF 28 FF FF FF FF FF 28 FF FF FF   (תתתתת(תתתתת(תתת
+B0: FF FF 28 FF FF FF FF FF 28 FF FF FF FF FF 28 FF   תת(תתתתת(תתתתת(ת
+C0: FF FF FF FF 28 FF FF FF FF FF 28 FF FF FF FF FF   תתתת(תתתתת(תתתתת
+D0: 28 FF FF FF FF FF 28 FF FF FF FF FF 28 FF FF FF   (תתתתת(תתתתת(תתת
+E0: FF FF 28 FF FF FF FF FF 28 FF FF FF FF FF 28 FF   תת(תתתתת(תתתתת(ת
+F0: FF FF FF FF 28 FF FF FF FF FF 28 FF FF FF FF FF   תתתת(תתתתת(תתתתת
+
+  It is laid out exactly as the side 0 BAM except for one  difference.  The
+track/sector reference for the  next  sector  should  be  set  to  $00/$FF,
+indicating there is no next sector.
+
+
+  The directory track should be contained totally on track 40. Sectors 3-39
+contain the entries and sector 1 and 2 contain the BAM (Block  Availability
+Map). Sector 0 holds the disk name and ID. The first  directory  sector  is
+always 40/3, even though the t/s pointer at 40/0 (first  two  bytes)  might
+point somewhere else. It goes linearly up the  sector  count,  3-4-5-6-etc.
+Each sector holds up to eight entries.
+
+  The first two bytes of the sector ($28/$04) indicate the location of  the
+next track/sector of the directory (40/4). If the track is set to $00, then
+it is the last sector of the directory. It is possible,  however  unlikely,
+that the directory may *not* be competely on  track  40.  Just  follow  the
+chain anyhow.
+
+  When the directory is done (track=$00), the sector should contain an $FF,
+meaning the whole sector is allocated. Theactual value  doesn't  matter  as
+all the entries will be returned anyways. Each  directory  sector  has  the
+following layout:
+
+    00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F        ASCII
+    -----------------------------------------------   ----------------
+00: 28 04 81 2B 00 53 43 52 45 45 4E 20 20 33 A0 A0   (.+תSCREENתת3  
+10: A0 A0 A0 A0 A0 00 00 00 00 00 00 00 00 00 02 00        תתתתתתתתת.ת
+20: 00 00 81 2B 01 53 43 52 45 45 4E 20 20 34 A0 A0   תת+.SCREENתת4  
+30: A0 A0 A0 A0 A0 00 00 00 00 00 00 00 00 00 03 00        תתתתתתתתת.ת
+40: 00 00 81 2B 02 53 43 52 45 45 4E 20 20 35 A0 A0   תת+.SCREENתת5  
+50: A0 A0 A0 A0 A0 00 00 00 00 00 00 00 00 00 07 00        תתתתתתתתת.ת
+60: 00 00 81 2B 08 53 43 52 45 45 4E 20 20 36 A0 A0   תת+.SCREENתת6  
+70: A0 A0 A0 A0 A0 00 00 00 00 00 00 00 00 00 08 00        תתתתתתתתת.ת
+80: 00 00 81 2B 14 53 43 52 45 45 4E 20 20 37 A0 A0   תת+.SCREENתת7  
+90: A0 A0 A0 A0 A0 00 00 00 00 00 00 00 00 00 07 00        תתתתתתתתת.ת
+A0: 00 00 81 24 00 53 43 52 45 45 4E 20 20 38 A0 A0   תת$תSCREENתת8  
+B0: A0 A0 A0 A0 A0 00 00 00 00 00 00 00 00 00 0B 00        תתתתתתתתת.ת
+C0: 00 00 82 24 04 46 49 4C 45 34 32 39 33 36 39 30   תת‚$.FILE4293690
+D0: A0 A0 A0 A0 A0 00 00 00 00 00 00 00 00 00 07 00        תתתתתתתתת.ת
+E0: 00 00 82 24 06 46 49 4C 45 32 35 37 38 38 31 35   תת‚$.FILE2578815
+F0: A0 A0 A0 A0 A0 00 00 00 00 00 00 00 00 00 05 00        תתתתתתתתת.ת
+
+  Bytes: $00-1F: First directory entry
+          00-01: Track/Sector location of next directory sector
+             02: File type.
+                 Bit 0-3: The actual filetype
+                          000 (0) - DEL ($00)
+                          001 (1) - SEQ ($81)
+                          010 (2) - PRG ($82)
+                          011 (3) - USR ($83)
+                          100 (4) - REL ($84)
+                          101 (5) - CBM ($85, partition or sub-directory)
+                          Values 6-15 are illegal, but if used will produce
+                          very strange results.
+                 Bit   4: Not used
+                 Bit   5: Used only during SAVE-@ replacement
+                 Bit   6: Locked flag (Set produces ">" locked files)
+                 Bit   7: Closed flag  (Not  set  produces  "*", or "splat"
+                          files)
+                 Typical values for this location are:
+                   $00 - Scratched (deleted file entry)
+                    80 - DEL
+                    81 - SEQ
+                    82 - PRG
+                    83 - USR
+                    84 - REL
+                    85 - CBM
+          03-04: Track/sector location of first sector of file or partition
+          05-14: 16 character filename (in PETASCII, padded with $A0)
+          15-16: Track/Sector location of first  SUPER  SIDE  SECTOR  block
+                 (REL file only)
+             17: REL file record length (REL file only)
+          18-1D: Unused (except with GEOS disks)
+          1C-1D: (Used during an @SAVE or @OPEN, holds the new t/s link)
+          1E-1F: File or partition size in  sectors,  low/high  byte  order
+                 ($1E+$1F*256). The  approx.  file  size  in  bytes  is  <=
+                 #sectors * 254
+          20-3F: Second dir entry. From now on the first two bytes of  each
+                 entry in this  sector  should  be  $00/$00,  as  they  are
+                 unused.
+          40-5F: Third dir entry
+          60-7F: Fourth dir entry
+          80-9F: Fifth dir entry
+          A0-BF: Sixth dir entry
+          C0-DF: Seventh dir entry
+          E0-FF: Eighth dir entry
+
+
+---------------------------------------------------------------------------
+
+*** REL files
+
+
+  The REL filetype requires some extra explaining. It was designed to  make
+access to data *anywhere* on the disk  very  fast.  Take  a  look  at  this
+directory entry...
+
+00: 00 FF 84 27 00 41 44 44 49 54 49 4F 4E 41 4C 20   תת„'תADDITIONALת
+10: 49 4E 46 4F A0 27 02 FE 00 00 00 00 00 00 D2 0B   INFO '...תתתתתׂ.
+
+  The third byte ($84) indicates this entry is a  REL  file  and  that  the
+three normally empty entries at offset $15, $16 and $17  are  now  used  as
+they are explained above. It's  the  track/sector  chain  that  this  entry
+points to, called the SUPER SIDE SECTOR, which is of interest here (in this
+case, 39/2). The SUPER SIDE SECTOR is very different from the  D64  format.
+If you check the D64 entry for a REL file and do the calculations, you will
+find that the maximum file size of the REL file is 720 data  sectors.  With
+the new SUPER SIDE SECTOR, you can  now  have  126  groups  of  these  SIDE
+SECTORS chains,  allowing  for  file  sizes  up  to  (theoretically)  90720
+sectors, or about 22.15 Megabytes.
+
+Here is a dump of the beginning of the SUPER SIDE SECTOR...
+
+00: 27 01 FE 27 01 15 09 03 0F 38 16 4A 1C 00 00 00   '.‏'.....8.J.תתת
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   תתתתתתתתתתתתתתתת
+
+  Bytes:$00-01: Track/sector of first side sector in group 0
+            02: Always $FE
+         03-04: Track/sector of first side sector in group 0 (again)
+         ...
+         FD-FE: Track/sector of first side sector in group 125
+            FF: Unused (likely $00)
+
+
+The side sector layout is the same as the D64/1571.
+
+    00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F
+    -----------------------------------------------
+00: 12 0A 00 FE 15 09 12 0A 0F 0B 0C 0C 09 0D 06 0E
+10: 15 07 15 08 15 0A 15 0B 15 0C 15 0D 15 0E 15 0F
+20: 15 10 15 11 15 12 15 13 15 14 15 15 15 16 15 17
+30: 15 18 15 19 15 1A 15 1B 15 1C 15 1D 15 1E 15 1F
+40: 15 20 15 21 15 22 15 23 15 24 15 25 15 26 15 27
+50: 14 00 14 01 14 02 14 03 14 04 14 05 14 06 14 07
+60: 14 08 14 09 14 0A 14 0B 14 0C 14 0D 14 0E 14 0F
+70: 14 10 14 11 14 12 14 13 14 14 14 15 14 16 14 17
+80: 14 18 14 19 14 1A 14 1B 14 1C 14 1D 14 1E 14 1F
+90: 14 20 14 21 14 22 14 23 14 24 14 25 14 26 14 27
+A0: 13 00 13 01 13 02 13 03 13 04 13 05 13 06 13 07
+B0: 13 08 13 09 13 0A 13 0B 13 0C 13 0D 13 0E 13 0F
+C0: 13 10 13 11 13 12 13 13 13 14 13 15 13 16 13 17
+D0: 13 18 13 19 13 1A 13 1B 13 1C 13 1D 13 1E 13 1F
+E0: 13 20 13 21 13 22 13 23 13 24 13 25 13 26 13 27
+F0: 12 00 12 01 12 02 12 03 12 04 12 05 12 06 12 07
+
+  Bytes:   $00: Track location of next side-sector ($00 if last sector)
+            01: Sector location of next side-sector
+            02: Side-sector block number (first sector is $00, the next  is
+                $01, then $02, etc)
+            03: REL file RECORD size (from directory entry)
+         04-0F: Track/sector locations of the six other side-sectors.  Note
+                the first entry is this very sector we  have  listed  here.
+                The next is the next t/s listed at  the  beginning  of  the
+                sector. All of this information must be correct. If one  of
+                these chains is $00/$00, then we have no more side sectors.
+                Also, all of these (up to six) side sectors must  have  the
+                same values in this range.
+         10-FF: T/S chains of *each* sector of the data  portion.  When  we
+                get a $00/$00, we are at the end of the file.
+
+---------------------------------------------------------------------------
+
+*** 1581 Partitions and Sub-directories
+
+  At the beginning of this document it was stated that the  1581  can  hold
+296 entries "at the root level". The 1581 also has the ability to partition
+areas  of  the  disk.  Under  the  right  conditions   these   can   become
+sub-directories,  acting  as  a  small  diskette,  complete  with  its  own
+directory and BAM. When you are inside of a sub-directory, no  other  files
+except those in that directory are visible, or can be affected.
+
+  To the 1581, this file will show up as a "CBM" filetype in  a  directory.
+All this does is tell the disk that a file, starting  at  X/Y  track/sector
+and Z sectors large exists. Doing a validate will not harm these  files  as
+they have a directory entry, and are fully allocated in the BAM.
+
+  There are two main uses for partitions.  One  is  to  simply  allocate  a
+section of the disk to be used for direct-access reads/writes, and lock  it
+away  from  being  overwritten  after  a  VALIDATE.  The  second  is  as  a
+sub-directory, basically a small "disk within a disk".
+
+  In order to use a partition as a sub-directory, it  must  adhere  to  the
+following four rules:
+
+  1. If must start on sector 0
+  2. It's size must be in multiples of 40 sectors
+  3. It must be a minimum of 120 sectors long (3 tracks)
+  4. If must not start on or cross  track  40,  which  limits  the  biggest
+     directory to 1600 sectors (tracks 1-39).
+
+This is a dump of a sub-directory entry:
+
+00: 00 FF 85 29 00 50 41 52 54 49 54 49 4F 4E 20 31   תת…)תPARTITIONת1
+10: A0 A0 A0 A0 A0 00 00 00 00 00 00 00 00 00 40 06        תתתתתתתתת@.
+
+  It is a partition starting on track 41/0, extends for 1600  sectors,  and
+has been formatted as a  sub-directory.  Note  that  when  a  partition  is
+created, the area being allocated is not touched in any way. If you want it
+set up as a sub-directory, you must issue the FORMAT command to the 1581 to
+create the central directory and BAM. Also note  that  from  the  directory
+entry you can't tell whether it is a sub-directory or  not,  just  that  it
+fits the sub-directory parameters.
+
+  The BAM track for the sub-directory exists on  the  first  track  of  the
+partition, and has the same layout as the disk BAM on track 40. The biggest
+difference is the "disk name" is what what given  when  the  partition  was
+formatted rather than what the actual disk name is. Also,  except  for  the
+free sectors in the partition area, all other sectors in the  BAM  will  be
+allocated.
+
+  If the partition size doesn't match the above rules for a  sub-directory,
+it will simply exist as a "protected" area of the disk, and can't be used a
+sub-directory. Either way, it still shows up as a "CBM" type in a directory
+listing. Below is a dump of a 10-sector partition starting  on  track  5/1,
+which does not qualify as a sub-directory...
+
+00: 00 00 85 05 01 53 4D 41 4C 4C 50 41 52 54 20 32   תת…..SMALLPARTת2
+10: A0 A0 A0 A0 A0 00 00 00 00 00 00 00 00 00 0A 00        תתתתתתתתתתת
+
+  The master BAM shows the entry for this partition on track 5...
+
+00: 28 02 44 BB 43 44 C0 00 00 00 00 00 00 00 00 00   (.D»CDְתתתתתתתתת
+10: 23 C1 FF FF FF FF 28 FF FF FF FF FF 28 FF FF FF   #ֱתתתת(תתתתת(תתת
+20: FF FF 28 FF FF FF FF FF 1E 01 F8 FF FF FF 28 FF   תת(תתתתת..רתתת(ת
+                            ^^^^^^^^^^^^^^^^^
+
+  The breakdown of the BAM  shows  the  allocation  for  this  track,  with
+sectors 1-10 allocated, as it should be.
+
+  10000000 00011111 11111111 11111111 11111111
+  ^          ^          ^          ^         ^
+  0          10         20         30        39
+
+  Partitions and sub-directories  share  one  very  important  trait.  When
+created, the sub-directory entry simply has the starting  track/sector  and
+the size of the partition in  sectors.  Partitions  are  created  linearly,
+meaning if one starts on 30/1 and is of size 15 sectors,  then  the  sector
+range from 1 through 15 on track 30 will be allocated. If a partition  size
+crosses a track boundary, the allocation will continue on  the  next  track
+starting on sector 0, and going up.
+
+  The section allocated will *not* have a track/sector chain  like  a  file
+would, but rather is dependant on the directory entry to keep it from being
+overwritten. You can store whatever you want to in the allocated area.
+
+
+---------------------------------------------------------------------------
+
+*** AUTO-BOOT LOADER
+
+  If byte $07 in the BAM is set, then when the drive is  reset  (and  other
+circumstances) it will look for a USR file called "COPYRIGHT CBM 86".  This
+file will then be loaded into the drive RAM and executed.
+
+  The format for this auto-loader file is fairly basic. It  starts  with  a
+two-byte load address, a size byte, program data, and  a  checksum  at  the
+end.
+
+    Bytes:      00-01: Load address, low/high format
+                   02: Size of program (SZ) (smaller than 256 bytes)
+         03-(03+SZ-1): Program data
+                03+SZ: Checksum byte
+
+---------------------------------------------------------------------------
+
+Overall Good/Bad of D81 Files:
+
+  Good
+  ----
+  * Supports *all* filenames, even those with $00's in them
+
+  * Filenames padded with the standard $A0 character
+
+  * Supports GEOS files
+
+  * Supports REL files
+
+  * Allows directory customization
+
+  * Because it is a random-access  device,  it  supports  fast-loaders  and
+    random sector access
+
+  * Cluster slack-space loss is minimized since the file is a larger  fixed
+    size
+
+  * Has a label (description) field
+
+  * With  the  inclusion  of  error  bytes,  you  have  support  for  basic
+    copy-protection
+
+  * Files on a disk can easily be re-written, as  long  as  there  is  free
+    blocks
+
+
+
+  Bad
+  ---
+  * Most emulators don't support D81's yet
+
+  * The format doesn't contain *all* the info from the 1581 disk (no sector
+    header info like  ID  bytes,  checksums).  This  renders  some  of  the
+    original special-loaders and copy-protection useless.
+
+  * You don't *really* know the file size of the  contained  C64  files  in
+    bytes, only blocks
+
+  * It can't store C64s FRZ files (due to FRZ files needing a special  flag
+    that a D81 can't store)
+
+  * Directory limited to 296 files maximum
+
+  * It is not an expandable filesize, like LNX or T64, but the directory is
+    large enough not to worry about this limitation
+
+  * Unless most of the space on a D81 disk is used, you do end up with lost
+    space
+
+  * Cannot have loadable files with the same names
+
+  * Has no recognizeable file signature (unlike most  other  formats).  The
+    only reliable way to know if a file is a D81 is by its size
+
+  * It is too easy for people to muck up the standard layout
+
+  * It is much more difficult to support  fully,  as  you  really  need  to
+    emulate the 1581 DOS (sector interleave, REL support, GEOS interleave)
+
