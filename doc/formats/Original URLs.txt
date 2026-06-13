@@ -1,0 +1,2 @@
+s98spec2.txt: https://www.purose.net/befis/download/kmp/old/s98spec2.txt
+s98spec3.txt: https://vgmrips.net/mirror/s98spec3.txt
