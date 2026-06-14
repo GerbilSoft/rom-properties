@@ -106,10 +106,16 @@ begin
   begin
     if not has_msvcrt_i386 or not has_msvcrt_amd64 then
     begin
-      MsgBox('The Microsoft C++ 2015-2026 runtime is missing.' + #13#10#13#10 +
-        'Please install both the 32-bit and 64-bit versions, available at:' + #13#10 +
-        '• https://aka.ms/vs/18/release/VC_redist.x86.exe' + #13#10 +
-        '• https://aka.ms/vs/18/release/VC_redist.x64.exe', mbCriticalError, MB_OK)
+      if GetWindowsVersion() >= $0A000000 then
+        MsgBox('The Microsoft C++ 2015-2026 runtime is missing.' + #13#10#13#10 +
+          'Please install both the 32-bit and 64-bit versions, available at:' + #13#10 +
+          '• https://aka.ms/vs/18/release/VC_redist.x86.exe' + #13#10 +
+          '• https://aka.ms/vs/18/release/VC_redist.x64.exe', mbCriticalError, MB_OK)
+      else
+        MsgBox('The Microsoft C++ 2015-2022 runtime is missing.' + #13#10#13#10 +
+          'Please install both the 32-bit and 64-bit versions, available at:' + #13#10 +
+          '• https://aka.ms/vs/17/release/VC_redist.x86.exe' + #13#10 +
+          '• https://aka.ms/vs/17/release/VC_redist.x64.exe', mbCriticalError, MB_OK);
       Result := False
       Exit;
     end;
@@ -118,9 +124,14 @@ begin
   begin
     if not has_msvcrt_i386 then
     begin
-      MsgBox('The Microsoft C++ 2015-2026 runtime is missing.' + #13#10#13#10 +
-        'Please install the 32-bit version, available at:' + #13#10 +
-        '• https://aka.ms/vs/18/release/VC_redist.x86.exe', mbCriticalError, MB_OK)
+      if GetWindowsVersion() >= $0A000000 then
+        MsgBox('The Microsoft C++ 2015-2026 runtime is missing.' + #13#10#13#10 +
+          'Please install the 32-bit version, available at:' + #13#10 +
+          '• https://aka.ms/vs/18/release/VC_redist.x86.exe', mbCriticalError, MB_OK)
+      else
+        MsgBox('The Microsoft C++ 2015-2022 runtime is missing.' + #13#10#13#10 +
+          'Please install the 32-bit version, available at:' + #13#10 +
+          '• https://aka.ms/vs/17/release/VC_redist.x86.exe', mbCriticalError, MB_OK);
       Result := False
       Exit;
     end;
