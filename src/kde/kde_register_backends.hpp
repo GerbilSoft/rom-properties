@@ -17,10 +17,10 @@
 #include "RpQImageBackend.hpp"
 using LibRpTexture::rp_image;
 
-#ifndef RP_KDE_DISABLE_REGISTER_ACHQTDBUS
+#if !defined(RP_KDE_DISABLE_REGISTER_ACHQTDBUS) && defined(ENABLE_ACHIEVEMENTS) && defined(HAVE_QtDBus_NOTIFY)
 // Achievements backend
 #include "AchQtDBus.hpp"
-#endif /* !RP_KDE_DISABLE_REGISTER_ACHQTDBUS */
+#endif /* !RP_KDE_DISABLE_REGISTER_ACHQTDBUS && ENABLE_ACHIEVEMENTS && HAVE_QtDBus_NOTIFY */
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 // LibRpText for Binary Unit BinaryUnitDialect
