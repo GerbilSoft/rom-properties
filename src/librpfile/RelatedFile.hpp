@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RelatedFile.hpp: Open a related file.                                   *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,9 +23,9 @@ namespace LibRpFile { namespace FileSystem {
  * If the primary file is a symlink, the related file may
  * be located in the original file's directory.
  *
- * @param filename	[in] Primary filename. (UTF-8)
- * @param basename	[in,opt] New basename. (UTF-8) If nullptr, uses the existing basename.
- * @param ext		[in] New extension, including leading dot. (UTF-8)
+ * @param filename	[in] Primary filename (UTF-8)
+ * @param basename	[in,opt] New basename (UTF-8) If nullptr, uses the existing basename.
+ * @param ext		[in] New extension, including leading dot (UTF-8)
  * @return IRpFile*, or nullptr if not found.
  */
 LibRpFile::IRpFile *openRelatedFile_rawptr(const char *filename, const char *basename, const char *ext);
@@ -40,14 +40,14 @@ LibRpFile::IRpFile *openRelatedFile_rawptr(const char *filename, const char *bas
  * If the primary file is a symlink, the related file may
  * be located in the original file's directory.
  *
- * @param filename	[in] Primary filename. (UTF-8)
- * @param basename	[in,opt] New basename. (UTF-8) If nullptr, uses the existing basename.
- * @param ext		[in] New extension, including leading dot. (UTF-8)
+ * @param filename	[in] Primary filename (UTF-8)
+ * @param basename	[in,opt] New basename (UTF-8) If nullptr, uses the existing basename.
+ * @param ext		[in] New extension, including leading dot (UTF-8)
  * @return IRpFilePtr, or nullptr if not found.
  */
 LibRpFile::IRpFilePtr openRelatedFile(const char *filename, const char *basename, const char *ext);
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_UNICODE)
 /**
  * Attempt to open a related file. (read-only)
  * RAW POINTER VERSION; use with caution.
@@ -59,9 +59,9 @@ LibRpFile::IRpFilePtr openRelatedFile(const char *filename, const char *basename
  * If the primary file is a symlink, the related file may
  * be located in the original file's directory.
  *
- * @param filename	[in] Primary filename. (UTF-16)
- * @param basename	[in,opt] New basename. (UTF-16) If nullptr, uses the existing basename.
- * @param ext		[in] New extension, including leading dot. (UTF-16)
+ * @param filename	[in] Primary filename (UTF-16)
+ * @param basename	[in,opt] New basename (UTF-16) If nullptr, uses the existing basename.
+ * @param ext		[in] New extension, including leading dot (UTF-16)
  * @return IRpFile*, or nullptr if not found.
  */
 LibRpFile::IRpFile *openRelatedFile_rawptr(const wchar_t *filenameW, const wchar_t *basenameW, const wchar_t *extW);
@@ -76,12 +76,12 @@ LibRpFile::IRpFile *openRelatedFile_rawptr(const wchar_t *filenameW, const wchar
  * If the primary file is a symlink, the related file may
  * be located in the original file's directory.
  *
- * @param filename	[in] Primary filename. (UTF-16)
- * @param basename	[in,opt] New basename. (UTF-16) If nullptr, uses the existing basename.
- * @param ext		[in] New extension, including leading dot. (UTF-16)
+ * @param filename	[in] Primary filename (UTF-16)
+ * @param basename	[in,opt] New basename (UTF-16) If nullptr, uses the existing basename.
+ * @param ext		[in] New extension, including leading dot (UTF-16)
  * @return IRpFilePtr, or nullptr if not found.
  */
 LibRpFile::IRpFilePtr openRelatedFile(const wchar_t *filenameW, const wchar_t *basenameW, const wchar_t *extW);
-#endif /* _WIN32 */
+#endif /* _WIN32 && _UNICODE */
 
 } }
