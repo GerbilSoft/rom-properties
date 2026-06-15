@@ -125,7 +125,7 @@ public:
 	 * @param type Cartridge type byte
 	 * @return dmg_cart_type struct
 	 */
-	static constexpr dmg_cart_type CartType(uint8_t type)
+	static CONSTEXPR_MULTILINE dmg_cart_type CartType(uint8_t type)
 	{
 		// Check for low cartridge types.
 		if (type < dmg_cart_types_start.size()) {
@@ -147,7 +147,7 @@ public:
 	 * @param type ROM size value.
 	 * @return ROM size, in kilobytes. (-1 on error)
 	 */
-	static constexpr int RomSize(uint8_t type)
+	static CONSTEXPR_MULTILINE int RomSize(uint8_t type)
 	{
 		constexpr array<uint16_t, 8> rom_size = {{32, 64, 128, 256, 512, 1024, 2048, 4096}};
 		constexpr array<uint16_t, 4> rom_size_52 = {{1152, 1280, 1536}};
