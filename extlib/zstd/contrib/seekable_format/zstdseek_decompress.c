@@ -172,7 +172,7 @@ static int ZSTD_seekable_read_buff(void* opaque, void* buffer, size_t n)
 static int ZSTD_seekable_seek_buff(void* opaque, long long offset, int origin)
 {
     buffWrapper_t* const buff = (buffWrapper_t*) opaque;
-    unsigned long long newOffset;
+    unsigned long long newOffset = 0;
     assert(buff != NULL);
     switch (origin) {
     case SEEK_SET:
