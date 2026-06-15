@@ -55,14 +55,14 @@ public:
 	/** RomFields **/
 
 	// System. (RFT_BITFIELD)
-	enum DMG_System {
+	enum DMG_System : uint8_t {
 		DMG_SYSTEM_DMG		= (1U << 0),
 		DMG_SYSTEM_SGB		= (1U << 1),
 		DMG_SYSTEM_CGB		= (1U << 2),
 	};
 
 	// Cartridge hardware features. (RFT_BITFIELD)
-	enum DMG_Feature {
+	enum DMG_Feature : uint8_t  {
 		DMG_FEATURE_RAM		= (1U << 0),
 		DMG_FEATURE_BATTERY	= (1U << 1),
 		DMG_FEATURE_TIMER	= (1U << 2),
@@ -125,14 +125,39 @@ public:
 	 * @param type Cartridge type byte
 	 * @return dmg_cart_type struct
 	 */
-	static dmg_cart_type CartType(uint8_t type);
+	static constexpr dmg_cart_type CartType(uint8_t type)
+	{
+		// Check for low cartridge types.
+		if (type < dmg_cart_types_start.size()) {
+			return dmg_cart_types_start[type];
+		}
+
+		// Check for high cartridge types. (closer to 0xFF)
+		constexpr uint8_t end_offset = static_cast<uint8_t>(0x100U - dmg_cart_types_end.size());
+		if (type >= end_offset) {
+			return dmg_cart_types_end[type-end_offset];
+		}
+
+		// Not recognized.
+		return {DMG_Hardware::Unknown, 0};
+	}
 
 	/**
 	 * Convert the ROM size value to an actual size.
 	 * @param type ROM size value.
 	 * @return ROM size, in kilobytes. (-1 on error)
 	 */
-	static int RomSize(uint8_t type);
+	static constexpr int RomSize(uint8_t type)
+	{
+		constexpr array<uint16_t, 8> rom_size = {{32, 64, 128, 256, 512, 1024, 2048, 4096}};
+		constexpr array<uint16_t, 4> rom_size_52 = {{1152, 1280, 1536}};
+		if (type < rom_size.size()) {
+			return rom_size[type];
+		} else if (type >= 0x52 && type < 0x52+rom_size_52.size()) {
+			return rom_size_52[type-0x52];
+		}
+		return -1;
+	}
 
 public:
 	// DMG RAM size array
@@ -367,45 +392,6 @@ uint32_t DMGPrivate::systemID(const DMG_RomHeader *pRomHeader)
 
 	assert(ret != 0);
 	return ret;
-}
-
-/**
- * Get a dmg_cart_type struct describing a cartridge type byte.
- * @param type Cartridge type byte.
- * @return dmg_cart_type struct.
- */
-DMGPrivate::dmg_cart_type DMGPrivate::CartType(uint8_t type)
-{
-	// Check for low cartridge types.
-	if (type < dmg_cart_types_start.size()) {
-		return dmg_cart_types_start[type];
-	}
-
-	// Check for high cartridge types. (closer to 0xFF)
-	static constexpr uint8_t end_offset = static_cast<uint8_t>(0x100U - dmg_cart_types_end.size());
-	if (type >= end_offset) {
-		return dmg_cart_types_end[type-end_offset];
-	}
-
-	// Not recognized.
-	return {DMG_Hardware::Unknown, 0};
-}
-
-/**
- * Convert the ROM size value to an actual size.
- * @param type ROM size value.
- * @return ROM size, in kilobytes. (-1 on error)
- */
-int DMGPrivate::RomSize(uint8_t type)
-{
-	constexpr array<uint16_t, 8> rom_size = {{32, 64, 128, 256, 512, 1024, 2048, 4096}};
-	constexpr array<uint16_t, 4> rom_size_52 = {{1152, 1280, 1536}};
-	if (type < rom_size.size()) {
-		return rom_size[type];
-	} else if (type >= 0x52 && type < 0x52+rom_size_52.size()) {
-		return rom_size_52[type-0x52];
-	}
-	return -1;
 }
 
 /**
