@@ -25,7 +25,7 @@ namespace LibWin32UI {
 class RP_PropertyStore_Private;
 
 class UUID_ATTR("{4A1E3510-50BD-4B03-A801-E4C954F43B96}")
-RP_PropertyStore final : public LibWin32Common::ComBase3<IInitializeWithStream, IPropertyStore, IPropertyStoreCapabilities>
+RP_PropertyStore final : public LibWin32Common::ComBase<IInitializeWithStream, IPropertyStore, IPropertyStoreCapabilities>
 {
 public:
 	RP_PropertyStore();
@@ -33,7 +33,7 @@ protected:
 	~RP_PropertyStore() final;
 
 private:
-	typedef LibWin32Common::ComBase3<IInitializeWithStream, IPropertyStore, IPropertyStoreCapabilities> super;
+	typedef LibWin32Common::ComBase<IInitializeWithStream, IPropertyStore, IPropertyStoreCapabilities> super;
 	RP_DISABLE_COPY(RP_PropertyStore)
 private:
 	friend class RP_PropertyStore_Private;

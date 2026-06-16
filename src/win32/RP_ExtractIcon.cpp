@@ -99,7 +99,19 @@ IFACEMETHODIMP RP_ExtractIcon::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 	// fallbacks for unsupported files. Hence, we'll
 	// return S_OK even if the file can't be opened or
 	// the file is not supported.
-	RP_UNUSED(dwMode);	// TODO
+
+	// Verify that READ or READWRITE is set.
+	switch (dwMode & (STGM_READ | STGM_READWRITE | STGM_WRITE)) {
+		case STGM_READ:
+		case STGM_READWRITE:
+			break;
+
+		case STGM_WRITE:
+		default:
+			// Write-only, or an invalid value.
+			// TODO: Better return value?
+			return STG_E_READFAULT;
+	}
 
 	if (unlikely(!pszFileName)) {
 		return E_POINTER;

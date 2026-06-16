@@ -31,7 +31,7 @@ namespace LibWin32UI {
 class RP_XAttrView_Private;
 
 class UUID_ATTR("{B0503F2E-C4AE-48DF-A880-E2B122B58571}")
-RP_XAttrView final : public LibWin32Common::ComBase2<IShellExtInit, IShellPropSheetExt>
+RP_XAttrView final : public LibWin32Common::ComBase<IShellExtInit, IShellPropSheetExt>
 {
 public:
 	RP_XAttrView();
@@ -39,7 +39,7 @@ protected:
 	~RP_XAttrView() final;
 
 private:
-	typedef LibWin32Common::ComBase2<IShellExtInit, IShellPropSheetExt> super;
+	typedef LibWin32Common::ComBase<IShellExtInit, IShellPropSheetExt> super;
 	RP_DISABLE_COPY(RP_XAttrView)
 private:
 	friend class RP_XAttrView_Private;

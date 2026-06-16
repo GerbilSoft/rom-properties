@@ -31,7 +31,7 @@ namespace LibWin32UI {
 class RP_ThumbnailProvider_Private;
 
 class UUID_ATTR("{4723DF58-463E-4590-8F4A-8D9DD4F4355A}")
-RP_ThumbnailProvider final : public LibWin32Common::ComBase2<IInitializeWithStream, IThumbnailProvider>
+RP_ThumbnailProvider final : public LibWin32Common::ComBase<IInitializeWithStream, IThumbnailProvider>
 {
 public:
 	RP_ThumbnailProvider();
@@ -39,7 +39,7 @@ protected:
 	~RP_ThumbnailProvider() final;
 
 private:
-	typedef LibWin32Common::ComBase2<IInitializeWithStream, IThumbnailProvider> super;
+	typedef LibWin32Common::ComBase<IInitializeWithStream, IThumbnailProvider> super;
 	RP_DISABLE_COPY(RP_ThumbnailProvider)
 private:
 	friend class RP_ThumbnailProvider_Private;

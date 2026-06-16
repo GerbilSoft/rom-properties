@@ -25,7 +25,7 @@ namespace LibWin32UI {
 class RP_ContextMenu_Private;
 
 class UUID_ATTR("{150715EA-6843-472C-9709-2CFA56690501}")
-RP_ContextMenu final : public LibWin32Common::ComBase2<IShellExtInit, IContextMenu>
+RP_ContextMenu final : public LibWin32Common::ComBase<IShellExtInit, IContextMenu>
 {
 public:
 	RP_ContextMenu();
@@ -33,7 +33,7 @@ protected:
 	~RP_ContextMenu() final;
 
 private:
-	typedef LibWin32Common::ComBase2<IPersistFile, IContextMenu> super;
+	typedef LibWin32Common::ComBase<IPersistFile, IContextMenu> super;
 	RP_DISABLE_COPY(RP_ContextMenu)
 private:
 	friend class RP_ContextMenu_Private;

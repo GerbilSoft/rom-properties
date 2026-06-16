@@ -25,7 +25,7 @@ namespace LibWin32UI {
 class RP_ExtractImage_Private;
 
 class UUID_ATTR("{84573BC0-9502-42F8-8066-CC527D0779E5}")
-RP_ExtractImage final : public LibWin32Common::ComBase2<IPersistFile, IExtractImage2>
+RP_ExtractImage final : public LibWin32Common::ComBase<IPersistFile, IExtractImage2>
 {
 public:
 	RP_ExtractImage();
@@ -33,7 +33,7 @@ protected:
 	~RP_ExtractImage() final;
 
 private:
-	typedef LibWin32Common::ComBase2<IPersistFile, IExtractImage2> super;
+	typedef LibWin32Common::ComBase<IPersistFile, IExtractImage2> super;
 	RP_DISABLE_COPY(RP_ExtractImage)
 private:
 	friend class RP_ExtractImage_Private;
