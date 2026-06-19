@@ -294,9 +294,15 @@ IF(USE_INTERNAL_XML)
 	SET(PUGIXML_WCHAR_MODE OFF)
 	SET(PUGIXML_COMPACT OFF)
 
-	INCLUDE(CheckIncludeFiles)
-	CHECK_INCLUDE_FILES(charconv HAVE_CHARCONV LANGUAGE CXX)
-	SET(PUGIXML_CHARCONV_FLOAT ${HAVE_CHARCONV})
+	# FIXME: Broken on MSVC v141_xp:
+	#  pugixml.cpp
+	# extlib\pugixml\src\pugixml.cpp(4825): error C2280: 'std::to_chars_result std::to_chars(char *const ,char *const ,const double,const std::chars_format,const int) noexcept':
+	# attempting to reference a deleted function
+	IF(NOT MSVC)
+		INCLUDE(CheckIncludeFiles)
+		CHECK_INCLUDE_FILES(charconv HAVE_CHARCONV LANGUAGE CXX)
+		SET(PUGIXML_CHARCONV_FLOAT ${HAVE_CHARCONV})
+	ENDIF(NOT MSVC)
 
 	# Disable functionality we don't need.
 	SET(PUGIXML_NO_XPATH ON)
