@@ -1,0 +1,13 @@
+This copy of fmtlib 12.2.0 is a modified version of the original.
+
+commit 1be298e1bd68957e4cd352e1f676f00e07dcfb57
+Update version
+    
+Tag: 12.2.0
+
+The following changes have been made to the original:
+
+- Removed documentation and test suites.
+
+To obtain the original fmtlib-12.2.0, visit:
+https://github.com/fmtlib/fmt

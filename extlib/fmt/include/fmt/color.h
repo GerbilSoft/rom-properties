@@ -1,6 +1,6 @@
 // Formatting library for C++ - color support
 //
-// Copyright (c) 2018 - present, Victor Zverovich and fmt contributors
+// Copyright (c) 2018 - present, Victor Zverovich and {fmt} contributors
 // All rights reserved.
 //
 // For the license information refer to format.h.
@@ -155,7 +155,7 @@ enum class color : uint32_t {
   white_smoke = 0xF5F5F5,              // rgb(245,245,245)
   yellow = 0xFFFF00,                   // rgb(255,255,0)
   yellow_green = 0x9ACD32              // rgb(154,205,50)
-};                                     // enum class color
+};  // enum class color
 
 enum class terminal_color : uint8_t {
   black = 30,
@@ -316,9 +316,16 @@ class text_style {
   FMT_CONSTEXPR auto has_background() const noexcept -> bool {
     return (style_ & (1ULL << 51)) != 0;
   }
+#ifdef _MSC_VER
+#  pragma warning(push)
+#  pragma warning(disable: 4800)
+#endif /* _MSC_VER */
   FMT_CONSTEXPR auto has_emphasis() const noexcept -> bool {
     return (style_ >> 54) != 0;
   }
+#ifdef _MSC_VER
+#  pragma warning(pop)
+#endif /* _MSC_VER */
   FMT_CONSTEXPR auto get_foreground() const noexcept -> detail::color_type {
     FMT_ASSERT(has_foreground(), "no foreground specified for this style");
     return style_ & 0x3FFFFFF;
@@ -439,17 +446,10 @@ template <typename Char> struct ansi_color_escape {
     out[2] = static_cast<Char>('0' + c % 10);
     out[3] = static_cast<Char>(delimiter);
   }
-#ifdef _MSC_VER
-#  pragma warning(push)
-#  pragma warning(disable: 4800)
-#endif /* _MSC_VER */
   static FMT_CONSTEXPR auto has_emphasis(emphasis em, emphasis mask) noexcept
       -> bool {
     return static_cast<uint8_t>(em) & static_cast<uint8_t>(mask);
   }
-#ifdef _MSC_VER
-#  pragma warning(pop)
-#endif /* _MSC_VER */
 };
 
 template <typename Char>
@@ -478,7 +478,7 @@ template <typename Char> inline void reset_color(buffer<Char>& buffer) {
 template <typename T> struct styled_arg : view {
   const T& value;
   text_style style;
-  styled_arg(const T& v, text_style s) : value(v), style(s) {}
+  FMT_CONSTEXPR styled_arg(const T& v, text_style s) : value(v), style(s) {}
 };
 
 template <typename Char>
@@ -533,6 +533,42 @@ void print(FILE* f, text_style ts, format_string<T...> fmt, T&&... args) {
 template <typename... T>
 void print(text_style ts, format_string<T...> fmt, T&&... args) {
   return print(stdout, ts, fmt, std::forward<T>(args)...);
+}
+
+inline void vprintln(FILE* f, text_style ts, string_view fmt,
+                     format_args args) {
+  auto buf = memory_buffer();
+  detail::vformat_to(buf, ts, fmt, args);
+  buf.push_back('\n');
+  print(f, FMT_STRING("{}"), string_view(buf.begin(), buf.size()));
+}
+
+/**
+ * Formats a string and prints it to the specified file stream followed by a
+ * newline, using ANSI escape sequences to specify text formatting.
+ *
+ * **Example**:
+ *
+ *     fmt::println(fmt::emphasis::bold | fg(fmt::color::red),
+ *                  "Elapsed time: {0:.2f} seconds", 1.23);
+ */
+template <typename... T>
+void println(FILE* f, text_style ts, format_string<T...> fmt, T&&... args) {
+  vprintln(f, ts, fmt.str, vargs<T...>{{args...}});
+}
+
+/**
+ * Formats a string and prints it to stdout followed by a newline, using ANSI
+ * escape sequences to specify text formatting.
+ *
+ * **Example**:
+ *
+ *     fmt::println(fmt::emphasis::bold | fg(fmt::color::red),
+ *                  "Elapsed time: {0:.2f} seconds", 1.23);
+ */
+template <typename... T>
+void println(text_style ts, format_string<T...> fmt, T&&... args) {
+  return println(stdout, ts, fmt, std::forward<T>(args)...);
 }
 
 inline auto vformat(text_style ts, string_view fmt, format_args args)
@@ -590,8 +626,8 @@ inline auto format_to(OutputIt out, text_style ts, format_string<T...> fmt,
 template <typename T, typename Char>
 struct formatter<detail::styled_arg<T>, Char> : formatter<T, Char> {
   template <typename FormatContext>
-  auto format(const detail::styled_arg<T>& arg, FormatContext& ctx) const
-      -> decltype(ctx.out()) {
+  FMT_CONSTEXPR auto format(const detail::styled_arg<T>& arg,
+                            FormatContext& ctx) const -> decltype(ctx.out()) {
     const auto& ts = arg.style;
     auto out = ctx.out();
 
