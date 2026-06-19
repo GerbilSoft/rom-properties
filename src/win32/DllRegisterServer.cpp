@@ -625,7 +625,7 @@ STDAPI DllRegisterServer(void)
 	//if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 #endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 #ifdef ENABLE_OVERLAY_ICON_HANDLER
-	lResult = RP_ShellIconOverlayIdentifer::RegisterShellIconOverlayIdentifier();
+	lResult = RP_ShellIconOverlayIdentifier::RegisterShellIconOverlayIdentifier();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 #endif /* ENABLE_OVERLAY_ICON_HANDLER */
 
@@ -763,7 +763,7 @@ STDAPI DllUnregisterServer(void)
 	//if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 #endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 #ifdef ENABLE_OVERLAY_ICON_HANDLER
-	lResult = RP_ShellIconOverlayIdentifer::UnregisterShellIconOverlayIdentifier();
+	lResult = RP_ShellIconOverlayIdentifier::UnregisterShellIconOverlayIdentifier();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 #endif /* ENABLE_OVERLAY_ICON_HANDLER */
 
