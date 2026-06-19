@@ -1,0 +1,14 @@
+This copy of pugixml 1.16 is a modified version of the original.
+
+commit c8033ce9d039e7f9d134877c363397b3cfe20816
+scripts: Remove VS2013/2015 libraries from NuGet builds
+
+Tag: 1.16
+
+The following changes have been made to the original:
+
+- CMakeLists.txt has been edited to disable OPTION() commands.
+
+To obtain the original pugixml-1.16, visit:
+- https://pugixml.org/
+- https://github.com/zeux/pugixml
