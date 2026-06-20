@@ -470,7 +470,7 @@ rp_image_ptr fromLinear16_neon(PixelFormat px_format,
 			// Components are already 8-bit, so we need to
 			// expand them to DWORD and add the alpha channel.
 			const uint32x4_t Mask32_A_vec = vdupq_n_u32(Mask32_A);
-			const uint16x8_t MaskGR88_vec = vdupq_n_u32(MaskGR88);
+			const uint32x4_t MaskGR88_vec = vdupq_n_u32(MaskGR88);
 			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 				// Process 8 pixels per iteration using NEON.
 				unsigned int x = static_cast<unsigned int>(width);
@@ -484,12 +484,12 @@ rp_image_ptr fromLinear16_neon(PixelFormat px_format,
 
 					// Mask off the low and high bytes.
 					// Registers now contain: [00 RR GG 00]
-					px.val[0] = vandq_u16(px.val[0], MaskGR88_vec);
-					px.val[1] = vandq_u16(px.val[1], MaskGR88_vec);
+					px.val[0] = vandq_u32(px.val[0], MaskGR88_vec);
+					px.val[1] = vandq_u32(px.val[1], MaskGR88_vec);
 
 					// Apply the alpha channel.
-					px.val[0] = vorrq_u16(px.val[0], Mask32_A_vec);
-					px.val[1] = vorrq_u16(px.val[1], Mask32_A_vec);
+					px.val[0] = vorrq_u32(px.val[0], Mask32_A_vec);
+					px.val[1] = vorrq_u32(px.val[1], Mask32_A_vec);
 
 					// Write the pixels to the destination image buffer.
 					vst1q_u32_x2_ex(px_dest, px, 128);
