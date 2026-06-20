@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-06-20 12:55-0400\n"
-"PO-Revision-Date: 2026-06-20 17:32\n"
+"PO-Revision-Date: 2026-06-20 21:30\n"
 "Last-Translator: \n"
 "Language-Team: Romanian\n"
 "Language: ro_RO\n"
@@ -1652,7 +1652,7 @@ msgstr ""
 #: ../src/libromdata/Audio/PSFTagParser.cpp:256
 msgctxt "S98"
 msgid "System"
-msgstr "&Sistem"
+msgstr "Sistem"
 
 #: ../src/libromdata/Audio/S98.cpp:304
 msgctxt "S98"
