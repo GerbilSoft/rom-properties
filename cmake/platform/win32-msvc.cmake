@@ -21,12 +21,28 @@
 # NOTE: MS_ENH_RSA_AES_PROV is only available starting with
 # Windows XP. Because we're actually using some XP-specific
 # functionality now, the minimum version is now Windows XP.
+
+# BIG NOTE: If using MSVC 2012 (1700) or later, and the toolset doesn't
+# end in "_xp", minimum subsystem should be "6.00", since the resulting
+# executables will not run on Windows XP.
+SET(SUPPORTS_XP TRUE)
+IF(MSVC_VERSION GREATER 1699)
+	IF(NOT CMAKE_GENERATOR_TOOLSET MATCHES "_xp$")
+		SET(SUPPORTS_XP FALSE)
+	ENDIF(NOT CMAKE_GENERATOR_TOOLSET MATCHES "_xp$")
+ENDIF(MSVC_VERSION GREATER 1699)
+
 INCLUDE(CPUInstructionSetFlags)
 IF(CPU_amd64)
 	# amd64 (64-bit), Unicode Windows only. (MSVC)
 	# (There is no amd64 ANSI Windows.)
 	# Minimum target version is Windows Server 2003 / XP 64-bit.
-	SET(RP_WIN32_SUBSYSTEM_VERSION "5.02")
+	IF(SUPPORTS_XP)
+		SET(RP_WIN32_SUBSYSTEM_VERSION "5.02")
+	ELSE(SUPPORTS_XP)
+		# No XP support with this toolset.
+		SET(RP_WIN32_SUBSYSTEM_VERSION "6.00")
+	ENDIF(SUPPORTS_XP)
 ELSEIF(CPU_arm)
 	# ARM (32-bit), Unicode windows only. (MSVC)
 	# (There is no ARM ANSI Windows.)
@@ -41,7 +57,12 @@ ELSEIF(CPU_arm64 OR CPU_arm64ec)
 ELSEIF(CPU_i386)
 	# i386 (32-bit), Unicode Windows only.
 	# Minimum target version is Windows XP.
-	SET(RP_WIN32_SUBSYSTEM_VERSION "5.01")
+	IF(SUPPORTS_XP)
+		SET(RP_WIN32_SUBSYSTEM_VERSION "5.01")
+	ELSE(SUPPORTS_XP)
+		# No XP support with this toolset.
+		SET(RP_WIN32_SUBSYSTEM_VERSION "6.00")
+	ENDIF(SUPPORTS_XP)
 ELSE()
 	MESSAGE(FATAL_ERROR "Unsupported CPU.")
 ENDIF()
