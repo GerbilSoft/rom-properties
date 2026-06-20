@@ -13,40 +13,33 @@ video game ROM and disc images.
 
 ###### no vibes, no bevis
 
-## v2.7.1
+## v2.8
 
-![Windows Explorer showing Android APK packages and a 16-bit Windows application.](doc/img/rp-v2.7-win10.APK.Win16.png)
+![rom-properties (rpcli) showing graphics in KDE Konsole using the Kitty protocol.](doc/img/rp-v2.8-konsole-rpcli-kitty.png)
 
-v2.7.1 is a bugfix release, mostly for issues on Windows for ARM systems.
+Major additions in v2.8 include:
 
-Major additions in v2.7 include:
+* PlayStation TIM textures.
 
-* Android packages. Supports thumbnailing packages that use PNG icons.
-  WebP icons are also supported if libwebp is installed.
-  * Packages that use "adaptive icons" are not currently thumbnalied.
+* S98 audio files.
 
-* Nintendo 3DS: Z3DS compressed format is now supported.
+* rpcli supports displaying icons and banners using the Sixel and/or
+  Kitty protocols when using a terminal that supports it.
 
-* Windows and GNOME Nautilus (and Caja and Nemo): In Details view,
-  rom-properties now provides columns for some properties, including
-  "Game ID" and "Title ID".
+* Improvements for Wii U firmware files, amiibo, and Lua bytecode.
 
-* GNOME Nautilus (and Caja and Nemo): An emblem is now shown for files
-  with potentially dangerous permissions.
+* Numerous improvements for Windows icon handling, including a fix for
+  NT 3.x EXEs that have two 16-color icons, one of which is actually an
+  8-color icon.
+
+* Added more ARM NEON optimizations, including linear RGB decoding and
+  Super Magic Drive decoding.
 
 * Windows-specific changes:
-  * Installers are now created using Inno Setup instead of the
-    custom svrplus executable. Both Inno Setup 5 and 6 are used:
-    * Inno Setup 5 is used for Windows XP, 2003, and Vista.
-    * Inno Setup 6 is used for Windows 7, 8.x, 10, and 11.
-  * ~~The arm64 and arm64ec DLLs have been combined using Microsoft's
-    ARM64X format.~~ This isn't working properly; it will be reverted
-    to ARM64-only for v2.7.1.
-  * Add special handling for 16-bit executables and Windows 1.x/2.x
-    icons. This is implemented using Microsoft's Detours library, and
-    currently only works once rom-properties.dll is loaded in the Explorer
-    process. (View the "ROM Properties" tab of a supported file to load it.)
-  * Localization via GNU gettext is now available on ARM and ARM64.
+  * Fix fallback icons for files where the registered DefaultIcon has
+    double-quotes, e.g. PowerShell .ps1 scripts.
+  * GNU gettext is now built as part of rom-properties, which simplifies
+    upgrades.
 
 * Lots and lots of tiny bug fixes and improvements.
 
@@ -56,7 +49,7 @@ language, check out the [Crowdin project](https://crowdin.com/project/rom-proper
 Crowdin project page, file an issue here on GitHub with the requested
 language.)
 
-See [`NEWS.md`](NEWS.md) for a full list of changes in v2.7.1.
+See [`NEWS.md`](NEWS.md) for a full list of changes in v2.8.
 
 ## Feedback
 

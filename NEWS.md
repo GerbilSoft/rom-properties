@@ -1,6 +1,6 @@
 # Changes
 
-## v2.8 (released 2026/??/??)
+## v2.8 (released 2026/06/20)
 
 * New parsers:
   * PlayStationTIM: Sony PlayStation TIM textures. Supports 4-bpp, 8-bpp,
