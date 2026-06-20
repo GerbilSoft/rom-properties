@@ -62,10 +62,21 @@ public:
 	{
 		incRpGlobalRefCount();
 	}
+
+protected:
 	virtual ~ComBase()
 	{
 		assert(m_lRefCount == 0);
 	}
+
+public:
+	// Disable copying.
+	ComBase(const ComBase&) = delete;
+	ComBase& operator=(const ComBase&) = delete;
+
+	// Disable moving.
+	ComBase(ComBase&&) = delete;
+	ComBase& operator=(ComBase&&) = delete;
 
 public:
 	// IUnknown
