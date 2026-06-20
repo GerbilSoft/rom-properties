@@ -11,21 +11,22 @@ set "OPTFEAT=-DENABLE_EXTRA_SECURITY=%OPTEN% -DENABLE_JPEG=%OPTEN% -DENABLE_XML=
 
 :: FIXME: Get multiple compilers working again.
 :: For now, it's MSVC only for the Windows build.
-goto :msvc2015
+goto :msvc2017
 
-if "%compiler%" == "msvc2015" goto :msvc2015
+if "%compiler%" == "msvc2017" goto :msvc2017
 if "%compiler%" == "mingw-w64" goto :mingw-w64
 echo *** ERROR: Unsupported compiler '%compiler%'.
 exit /b 1
 
-:msvc2015
+:msvc2017
 set PreferredToolArchitecture=x64
-set "CMAKE_GENERATOR=Visual Studio 14 2015"
-set CMAKE_GENERATOR_TOOLSET=v140_xp
-if "%platform%" == "x64" set "CMAKE_GENERATOR=%CMAKE_GENERATOR% Win64"
+set "CMAKE_GENERATOR=Visual Studio 15 2017"
+set CMAKE_GENERATOR_TOOLSET=v141_xp
+set CMAKE_ARCH=Win32
+if "%platform%" == "x64" set CMAKE_ARCH=x64
 mkdir build
 cd build
-cmake .. -G "%CMAKE_GENERATOR%" -DCMAKE_GENERATOR_TOOLSET=%CMAKE_GENERATOR_TOOLSET% -DBUILD_TESTING=ON -DENABLE_LTO=OFF -DENABLE_PCH=ON %OPTFEAT%
+cmake .. -G "%CMAKE_GENERATOR%" -A "%CMAKE_ARCH%" -DCMAKE_GENERATOR_TOOLSET=%CMAKE_GENERATOR_TOOLSET% -DBUILD_TESTING=ON -DENABLE_LTO=OFF -DENABLE_PCH=ON %OPTFEAT%
 exit /b %ERRORLEVEL%
 
 :mingw-w64
