@@ -11,7 +11,7 @@ rom-properties (2.8-1ppa2~jammy1) jammy; urgency=medium
   * libwebp SO version: 7
   * libcurl SO version: 4
 
- -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 20 Jun 2026 18:44:37 -0400
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 20 Jun 2026 19:25:41 -0400
 
 rom-properties (2.8-1ppa2~focal1) focal; urgency=medium
 
