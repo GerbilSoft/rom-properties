@@ -9,5 +9,10 @@ The following changes have been made to the original:
 
 - Removed documentation and test suites.
 
+- Disable some CMake stuff that breaks on Ubuntu 16.04 (CMake 3.5.1).
+
+- Backported some fixes from fmt/main:
+  - Fix fallback uint128 bitwise not
+
 To obtain the original fmtlib-12.2.0, visit:
 https://github.com/fmtlib/fmt
