@@ -3,7 +3,7 @@ version: '2.7.1.{build}'
 
 # Build worker image (VM template)
 image:
-  - Visual Studio 2015
+  - Visual Studio 2017
   - Ubuntu2204
 configuration:
   - Debug
