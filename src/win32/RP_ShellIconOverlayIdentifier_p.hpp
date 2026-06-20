@@ -15,6 +15,13 @@
 #include "librpbase/RomData.hpp"
 #include "librpfile/IRpFile.hpp"
 
+// C includes
+#include "tcharx.h"
+
+// C++ STL classes
+#include <mutex>
+#include <string>
+
 // Windows API
 #include <shellapi.h>
 
@@ -23,14 +30,19 @@
 
 class RP_ShellIconOverlayIdentifier_Private
 {
-public:
-	RP_ShellIconOverlayIdentifier_Private();
-
 private:
 	RP_DISABLE_COPY(RP_ShellIconOverlayIdentifier_Private)
 
 public:
-	// SHGetStockIconInfo() for the UAC shield icon.
-	typedef HRESULT (STDAPICALLTYPE *pfnSHGetStockIconInfo_t)(_In_ SHSTOCKICONID siid, _In_ UINT uFlags, _Out_ SHSTOCKICONINFO *psii);
-	pfnSHGetStockIconInfo_t pfnSHGetStockIconInfo;
+	// UAC shield icon variables
+	static std::once_flag uac_once_flag;
+	static std::tstring uac_shield_filename;
+	static int uac_shield_index;
+
+	/**
+	 * Initialize the UAC shield icon variables.
+	 *
+	 * Internal function; must be called using std::call_once().
+	 */
+	static void initUacShieldIconVars(void);
 };

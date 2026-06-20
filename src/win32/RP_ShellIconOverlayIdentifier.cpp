@@ -21,18 +21,26 @@ using namespace LibRomData;
 // C++ STL classes
 #include <memory>
 using std::string;
+using std::tstring;
 using std::unique_ptr;
 
 /** RP_ShellIconOverlayIdentifier_Private **/
 #include "RP_ShellIconOverlayIdentifier_p.hpp"
 
 // FIXME: Crashing when scrolling through %TEMP%...
+// FIXME: regsvr32 doesn't force Explorer to reload overlay handlers... (Explorer needs to be restarted!)
 
-RP_ShellIconOverlayIdentifier_Private::RP_ShellIconOverlayIdentifier_Private()
-#if 0
-	: romData(nullptr)
-#endif
-	: pfnSHGetStockIconInfo(nullptr)
+// UAC shield icon variables
+std::once_flag RP_ShellIconOverlayIdentifier_Private::uac_once_flag;
+tstring RP_ShellIconOverlayIdentifier_Private::uac_shield_filename;
+int RP_ShellIconOverlayIdentifier_Private::uac_shield_index = 0;
+
+/**
+ * Initialize the UAC shield icon variables.
+ *
+ * Internal function; must be called using std::call_once().
+ */
+void RP_ShellIconOverlayIdentifier_Private::initUacShieldIconVars(void)
 {
 	// shell32.dll might be delay-loaded to avoid a gdi32.dll penalty.
 	// Call SHGetFolderPath() with invalid parameters to load it into
@@ -45,20 +53,51 @@ RP_ShellIconOverlayIdentifier_Private::RP_ShellIconOverlayIdentifier_Private()
 	// Get SHGetStockIconInfo().
 	HMODULE hShell32_dll = GetModuleHandle(_T("shell32.dll"));
 	if (hShell32_dll) {
-		pfnSHGetStockIconInfo = (pfnSHGetStockIconInfo_t)GetProcAddress(hShell32_dll, "SHGetStockIconInfo");
+		typedef HRESULT (STDAPICALLTYPE *pfnSHGetStockIconInfo_t)(_In_ SHSTOCKICONID siid, _In_ UINT uFlags, _Out_ SHSTOCKICONINFO *psii);
+		pfnSHGetStockIconInfo_t pfnSHGetStockIconInfo =
+			reinterpret_cast<pfnSHGetStockIconInfo_t>(
+				GetProcAddress(hShell32_dll, "SHGetStockIconInfo"));
+		if (pfnSHGetStockIconInfo) {
+			// SHGetStockIconInfo() is available.
+			// FIXME: Icon size is a bit too large in some cases.
+			SHSTOCKICONINFO sii;
+			sii.cbSize = sizeof(sii);
+			HRESULT hr = pfnSHGetStockIconInfo(SIID_SHIELD, SHGSI_ICONLOCATION, &sii);
+			if (SUCCEEDED(hr)) {
+				// Copy the returned filename and index.
+				uac_shield_filename.assign(sii.szPath);
+				uac_shield_index = sii.iIcon;
+			}
+		}
+	}
+
+	if (uac_shield_filename.empty()) {
+		// SHGetStockIconInfo() either failed or is not available.
+		// Use our own shield icon.
+		// Based on Windows 7's shield icon from imageres.dll.
+		// FIXME: Windows XP requires the overlay icon to be the
+		// same size as the regular icon, but with transparency.
+
+#if 0
+		// [TODO: Removed; rework this when needed.]
+		TCHAR szDllFilename[MAX_PATH];
+		SetLastError(ERROR_SUCCESS);	// required for XP
+		DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT,
+			szDllFilename, _countof(szDllFilename));
+		if (dwResult == 0 || dwResult >= _countof(szDllFilename) || GetLastError() != ERROR_SUCCESS) {
+			// Cannot get the DLL filename.
+			// TODO: Windows XP doesn't SetLastError() if the
+			// filename is too big for the buffer.
+		} else {
+			// Copy the returned filename and our known IDI_SHIELD icon index.
+			uac_shield_filename.assign(szDllFilename);
+			uac_shield_index = -IDI_SHIELD;
+		}
+#endif
 	}
 }
 
 /** RP_PropertyStore **/
-
-RP_ShellIconOverlayIdentifier::RP_ShellIconOverlayIdentifier()
-	: d_ptr(new RP_ShellIconOverlayIdentifier_Private())
-{}
-
-RP_ShellIconOverlayIdentifier::~RP_ShellIconOverlayIdentifier()
-{
-	delete d_ptr;
-}
 
 /** IUnknown **/
 // Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
@@ -95,6 +134,7 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::IsMemberOf(_In_ PCWSTR pwszPath, D
 	}
 
 	// Don't check the file if it's "slow", unavailable, or a directory.
+	// TODO: Allow directories for e.g. Wii U NUS packages?
 	if (dwAttrib & (SFGAO_ISSLOW | SFGAO_GHOSTED | SFGAO_FOLDER)) {
 		// Don't bother checking this file.
 		return S_FALSE;
@@ -126,53 +166,25 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetOverlayInfo(_Out_writes_(cchMax
 		return E_INVALIDARG;
 	}
 
+	// Initialize the UAC shield icon variables.
+	using d = RP_ShellIconOverlayIdentifier_Private;
+	std::call_once(d::uac_once_flag, d::initUacShieldIconVars);
+
 	// Get the "dangerous" permissions overlay.
 	HRESULT hr;
 
-	RP_D(const RP_ShellIconOverlayIdentifier);
-	if (d->pfnSHGetStockIconInfo) {
-		// SHGetStockIconInfo() is available.
-		// FIXME: Icon size is a bit too large in some cases.
-		SHSTOCKICONINFO sii;
-		sii.cbSize = sizeof(sii);
-		hr = d->pfnSHGetStockIconInfo(SIID_SHIELD, SHGSI_ICONLOCATION, &sii);
-		if (SUCCEEDED(hr)) {
-			// Copy the returned filename and index.
-			wcscpy_s(pwszIconFile, cchMax, sii.szPath);
-			*pIndex = sii.iIcon;
-			*pdwFlags = ISIOI_ICONFILE | ISIOI_ICONINDEX;
-		} else {
-			// Unable to get the filename.
-			pwszIconFile[0] = L'\0';
-			*pIndex = 0;
-			*pdwFlags = 0;
-		}
+	if (!d::uac_shield_filename.empty()) {
+		// We have a valid UAC shield icon.
+		wcscpy_s(pwszIconFile, cchMax, d::uac_shield_filename.c_str());
+		*pIndex = d::uac_shield_index;
+		*pdwFlags = ISIOI_ICONFILE | ISIOI_ICONINDEX;
+		hr = S_OK;
 	} else {
-		// Use our own shield icon.
-		// Based on Windows 7's shield icon from imageres.dll.
-		// FIXME: Windows XP requires the overlay icon to be the
-		// same size as the regular icon, but with transparency.
+		// No icon was loaded...
+		pwszIconFile[0] = _T('\0');
+		*pIndex = 0;
+		*pdwFlags = 0;
 		hr = E_FAIL;
-#if 0
-		// [TODO: Removed; rework this when needed.]
-		TCHAR szDllFilename[MAX_PATH];
-		SetLastError(ERROR_SUCCESS);	// required for XP
-		DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT,
-			szDllFilename, _countof(szDllFilename));
-		if (dwResult == 0 || dwResult >= _countof(szDllFilename) || GetLastError() != ERROR_SUCCESS) {
-			// Cannot get the DLL filename.
-			// TODO: Windows XP doesn't SetLastError() if the
-			// filename is too big for the buffer.
-			hr = E_FAIL;
-		} else {
-			wcscpy_s(pwszIconFile, cchMax, szDllFilename);
-			*pIndex = -IDI_SHIELD;
-			*pdwFlags = ISIOI_ICONFILE | ISIOI_ICONINDEX;
-
-			// Assume we're successful.
-			hr = S_OK;
-		}
-#endif
 	}
 
 	return hr;

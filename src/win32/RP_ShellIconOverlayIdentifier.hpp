@@ -28,16 +28,16 @@ class UUID_ATTR("{02C6AF01-3C99-497D-B3FC-E38CE526786B}")
 RP_ShellIconOverlayIdentifier final : public LibWin32Common::ComBase<IShellIconOverlayIdentifier>
 {
 public:
-	RP_ShellIconOverlayIdentifier();
+	RP_ShellIconOverlayIdentifier() = default;
 protected:
-	~RP_ShellIconOverlayIdentifier() final;
+	~RP_ShellIconOverlayIdentifier() final = default;
 
 private:
 	typedef LibWin32Common::ComBase<IShellIconOverlayIdentifier> super;
 	RP_DISABLE_COPY(RP_ShellIconOverlayIdentifier)
 private:
 	friend class RP_ShellIconOverlayIdentifier_Private;
-	RP_ShellIconOverlayIdentifier_Private *const d_ptr;
+	//RP_ShellIconOverlayIdentifier_Private *const d_ptr;
 
 public:
 	/**
