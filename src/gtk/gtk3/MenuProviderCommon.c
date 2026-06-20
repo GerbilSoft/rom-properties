@@ -15,6 +15,7 @@
 
 // C includes
 #include <stdlib.h>
+#include <string.h>
 #include "tcharx.h"	// for DIR_SEP_CHR
 
 // Supported MIME types

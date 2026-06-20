@@ -17,6 +17,9 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRomData;
 
+// C includes
+#include <unistd.h>
+
 /**
  * Attempt to open a RomData object from the specified GVfs URI.
  * @param uri URI from e.g. nautilus_file_info_get_uri() [UTF-8]
