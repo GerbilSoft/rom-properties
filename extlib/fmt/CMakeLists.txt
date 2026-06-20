@@ -59,6 +59,8 @@ project(FMT CXX)
 # Compilers GCC>=14, Clang>=16 or MSVC >= 17.4
 # Source: https://cmake.org/cmake/help/latest/manual/cmake-cxxmodules.7.html
 set(FMT_USE_CMAKE_MODULES FALSE)
+# rom-properties: Disable this - it confuses CMake 3.5.1 (Ubuntu 16.04) and we aren't using C++ modules.
+IF(0) # rom-properties
 if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.28 AND CMAKE_CXX_STANDARD
                                                  GREATER_EQUAL 20)
   if (CMAKE_GENERATOR STREQUAL "Ninja")
@@ -79,6 +81,7 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.28 AND CMAKE_CXX_STANDARD
     set(FMT_USE_CMAKE_MODULES TRUE)
   endif ()
 endif ()
+ENDIF(0) # rom-properties
 
 # rom-properties: Disable these options.
 # They will be set in extlib/CMakeLists.txt.
