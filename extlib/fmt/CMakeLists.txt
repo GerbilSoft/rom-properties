@@ -1,7 +1,8 @@
 # rom-properties: Allow CMake 3.5. (for Debian 8 ppc testing)
 #cmake_minimum_required(VERSION 3.8...3.28)
 cmake_minimum_required(VERSION 3.5...3.28)
-include_guard(GLOBAL)
+# rom-properties: Disabled - include_guard() was added in CMake 3.10; Ubuntu 16.04 has CMake 3.5.1.
+#include_guard(GLOBAL)
 
 # Fallback for using newer policies on CMake <3.12.
 if (${CMAKE_VERSION} VERSION_LESS 3.12)
