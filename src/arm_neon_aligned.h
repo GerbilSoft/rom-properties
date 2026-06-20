@@ -140,8 +140,10 @@
 #endif /* _MSC_VER */
 
 /** MSVC for 32-bit ARM is missing some _x2/_x4 intrinsics. **/
+/** gcc 7.x is also missing these intrinsics. **/
 
-#if defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARMT))
+#if (defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARMT))) || \
+    (defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8)
 
 static __forceinline uint32x2x2_t vld1_u32_x2(const uint32_t *src)
 {
@@ -150,6 +152,9 @@ static __forceinline uint32x2x2_t vld1_u32_x2(const uint32_t *src)
 	vec.val[1] = vld1_u32(&src[2]);
 	return vec;
 }
+#ifdef vld1_u32_x2_ex
+#  undef vld1_u32_x2_ex
+#endif
 #define vld1_u32_x2_ex(p, align) vld1_u32_x2(HINT_ALIGNED((p), (align)/8))
 
 static __forceinline void vst1_u32_x2(uint32_t *dest, uint32x2x2_t vec)
@@ -157,6 +162,9 @@ static __forceinline void vst1_u32_x2(uint32_t *dest, uint32x2x2_t vec)
 	vst1_u32(&dest[0], vec.val[0]);
 	vst1_u32(&dest[2], vec.val[1]);
 }
+#ifdef vst1_u32_x2_ex
+#  undef vst1_u32_x2_ex
+#endif
 #define vst1_u32_x2_ex(p, a, align) vst1_u32_x2(HINT_ALIGNED((p), (align)/8), (a))
 
 static __forceinline uint32x2x4_t vld1_u32_x4(const uint32_t *src)
@@ -168,6 +176,9 @@ static __forceinline uint32x2x4_t vld1_u32_x4(const uint32_t *src)
 	vec.val[3] = vld1_u32(&src[6]);
 	return vec;
 }
+#ifdef vld1_u32_x4_ex
+#  undef vld1_u32_x4_ex
+#endif
 #define vld1_u32_x4_ex(p, align) vld1_u32_x4(HINT_ALIGNED((p), (align)/8))
 
 static __forceinline void vst1_u32_x4(uint32_t *dest, uint32x2x4_t vec)
@@ -177,6 +188,9 @@ static __forceinline void vst1_u32_x4(uint32_t *dest, uint32x2x4_t vec)
 	vst1_u32(&dest[4], vec.val[2]);
 	vst1_u32(&dest[6], vec.val[3]);
 }
+#ifdef vst1_u32_x4_ex
+#  undef vst1_u32_x4_ex
+#endif
 #define vst1_u32_x4_ex(p, a, align) vst1_u32_x4(HINT_ALIGNED((p), (align)/8), (a))
 
 static __forceinline uint16x8x2_t vld1q_u16_x2(const uint16_t *src)
@@ -186,6 +200,9 @@ static __forceinline uint16x8x2_t vld1q_u16_x2(const uint16_t *src)
 	vec.val[1] = vld1q_u16(&src[8]);
 	return vec;
 }
+#ifdef vld1q_u16_x2_ex
+#  undef vld1q_u16_x2_ex
+#endif
 #define vld1q_u16_x2_ex(p, align) vld1q_u16_x2(HINT_ALIGNED((p), (align)/8))
 
 static __forceinline void vst1q_u16_x2(uint16_t *dest, uint16x8x2_t vec)
@@ -193,6 +210,9 @@ static __forceinline void vst1q_u16_x2(uint16_t *dest, uint16x8x2_t vec)
 	vst1q_u16(&dest[0], vec.val[0]);
 	vst1q_u16(&dest[8], vec.val[1]);
 }
+#ifdef vst1q_u16_x2_ex
+#  undef vst1q_u16_x2_ex
+#endif
 #define vst1q_u16_x2_ex(p, a, align) vst1q_u16_x2(HINT_ALIGNED((p), (align)/8), (a))
 
 static __forceinline uint32x4x2_t vld1q_u32_x2(const uint32_t *src)
@@ -202,6 +222,9 @@ static __forceinline uint32x4x2_t vld1q_u32_x2(const uint32_t *src)
 	vec.val[1] = vld1q_u32(&src[4]);
 	return vec;
 }
+#ifdef vld1q_u32_x2_ex
+#  undef vld1q_u32_x2_ex
+#endif
 #define vld1q_u32_x2_ex(p, align) vld1q_u32_x2(HINT_ALIGNED((p), (align)/8))
 
 static __forceinline void vst1q_u32_x2(uint32_t *dest, uint32x4x2_t vec)
@@ -209,6 +232,9 @@ static __forceinline void vst1q_u32_x2(uint32_t *dest, uint32x4x2_t vec)
 	vst1q_u32(&dest[0], vec.val[0]);
 	vst1q_u32(&dest[4], vec.val[1]);
 }
+#ifdef vst1q_u32_x2_ex
+#  undef vst1q_u32_x2_ex
+#endif
 #define vst1q_u32_x2_ex(p, a, align) vst1q_u32_x2(HINT_ALIGNED((p), (align)/8), (a))
 
-#endif /* _MSC_VER && (_M_ARM || _M_ARMT) */
+#endif /* (_MSC_VER && (_M_ARM || _M_ARMT)) || (__GNUC__ && !__clang__ && __GNUC__ < 8) */
