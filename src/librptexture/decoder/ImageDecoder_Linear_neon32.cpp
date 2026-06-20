@@ -18,6 +18,9 @@ using namespace LibRpTexture::PixelConversion;
 // ARM NEON intrinsics
 #include "arm_neon_aligned.h"
 
+// C includes (C++ namespace)
+#include <cstring>
+
 // C++ STL classes
 using std::array;
 
