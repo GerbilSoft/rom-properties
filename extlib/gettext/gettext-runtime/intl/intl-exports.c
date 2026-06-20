@@ -29,9 +29,9 @@
  /* Export x without redefining x.  This code was found by compiling a  \
     snippet:                                                            \
       extern __declspec(dllexport) int x; int x = 42;  */               \
- asm (".section .drectve\n");                                           \
- asm (".ascii \" -export:" #x ",data\"\n");                             \
- asm (".data\n");                                                       \
+ __asm (".section .drectve\n");                                         \
+ __asm (".ascii \" -export:" #x ",data\"\n");                           \
+ __asm (".data\n");                                                     \
  /* Allocate a pseudo-variable IMP(x).  */                              \
  extern int x;                                                          \
  void * IMP(x) = &x;
