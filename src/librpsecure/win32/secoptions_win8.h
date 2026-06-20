@@ -136,21 +136,8 @@ typedef struct _PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY {
 
 #ifndef _WIN32_WINNT_WIN10
 // Windows 10
-#define ProcessControlFlowGuardPolicy	ProcessReserved1Policy
 #define ProcessFontDisablePolicy	((PROCESS_MITIGATION_POLICY)(ProcessSignaturePolicy+1))
 #define ProcessImageLoadPolicy		((PROCESS_MITIGATION_POLICY)(ProcessSignaturePolicy+2))
-
-typedef struct _PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY {
-	union {
-		DWORD Flags;
-		struct {
-			DWORD EnableControlFlowGuard : 1;
-			DWORD EnableExportSuppression : 1;
-			DWORD StrictMode : 1;
-			DWORD ReservedFlags : 29;
-		} DUMMYSTRUCTNAME;
-	} DUMMYUNIONNAME;
-} PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY, *PPROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY;
 
 typedef struct _PROCESS_MITIGATION_FONT_DISABLE_POLICY {
 	union {
@@ -175,3 +162,19 @@ typedef struct _PROCESS_MITIGATION_IMAGE_LOAD_POLICY {
 	} DUMMYUNIONNAME;
 } PROCESS_MITIGATION_IMAGE_LOAD_POLICY, *PPROCESS_MITIGATION_IMAGE_LOAD_POLICY;
 #endif /* !_WIN32_WINNT_WIN10 */
+
+// Windows 10 SDK 10.0.10240.0 doesn't have Control Flow Guard for some reason.
+#ifndef ProcessControlFlowGuardPolicy
+#define ProcessControlFlowGuardPolicy	ProcessReserved1Policy
+typedef struct _PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY {
+	union {
+		DWORD Flags;
+		struct {
+			DWORD EnableControlFlowGuard : 1;
+			DWORD EnableExportSuppression : 1;
+			DWORD StrictMode : 1;
+			DWORD ReservedFlags : 29;
+		} DUMMYSTRUCTNAME;
+	} DUMMYUNIONNAME;
+} PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY, *PPROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY;
+#endif /* !ProcessControlFlowGuardPolicy */
