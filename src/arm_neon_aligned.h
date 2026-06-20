@@ -139,11 +139,21 @@
 
 #endif /* _MSC_VER */
 
-/** MSVC for 32-bit ARM is missing some _x2/_x4 intrinsics. **/
-/** gcc 7.x is also missing these intrinsics. **/
+// Some compilers are missing the _xN intrinsics:
+// - MSVC (arm): All versions (no longer supported in MSVC 2026)
+// - gcc (arm): requires 14.x or later
+// - gcc (arm64): requires 8.x or later
+#if defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARMT))
+#  define RP_ARM_MISSING_xN 1
+#elif defined(__GNUC__) && !defined(__clang__)
+#  if defined(__aarch64__) && __GNUC__ < 8
+#    define RP_ARM_MISSING_xN 1
+#  elif defined(__arm__) && __GNUC__ < 14
+#    define RP_ARM_MISSING_xN 1
+#  endif
+#endif
 
-#if (defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARMT))) || \
-    (defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8)
+#ifdef RP_ARM_MISSING_xN
 
 static __forceinline uint32x2x2_t vld1_u32_x2(const uint32_t *src)
 {
@@ -237,4 +247,4 @@ static __forceinline void vst1q_u32_x2(uint32_t *dest, uint32x4x2_t vec)
 #endif
 #define vst1q_u32_x2_ex(p, a, align) vst1q_u32_x2(HINT_ALIGNED((p), (align)/8), (a))
 
-#endif /* (_MSC_VER && (_M_ARM || _M_ARMT)) || (__GNUC__ && !__clang__ && __GNUC__ < 8) */
+#endif /* RP_ARM_MISSING_xN */
