@@ -51,6 +51,7 @@ FOREACH(_target ${KDE4_TESTS})
 	SET_WINDOWS_SUBSYSTEM(${_target} CONSOLE)
 	SET_WINDOWS_ENTRYPOINT(${_target} wmain OFF)
 
+	IF(0) # disabled for Launchpad
 	IF(USE_XVFB AND ${_target}_XVFB)
 		# Use Xvfb for this test.
 		ADD_TEST(NAME ${_target} COMMAND ${XVFB_RUN} -a $<TARGET_FILE:${_target}> --gtest_brief)
@@ -59,6 +60,7 @@ FOREACH(_target ${KDE4_TESTS})
 		# Xvfb is not required.
 		ADD_TEST(NAME ${_target} COMMAND ${_target} --gtest_brief)
 	ENDIF(USE_XVFB AND ${_target}_XVFB)
+	ENDIF(0) # disabled for Launchpad
 ENDFOREACH(_target)
 
 ENDIF(BUILD_KDE4)
