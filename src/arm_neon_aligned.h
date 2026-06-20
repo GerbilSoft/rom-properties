@@ -256,4 +256,30 @@ static RP_ARM_FORCEINLINE void vst1q_u32_x2(uint32_t *dest, uint32x4x2_t vec)
 #endif
 #define vst1q_u32_x2_ex(p, a, align) vst1q_u32_x2(HINT_ALIGNED((p), (align)/8), (a))
 
+static RP_ARM_FORCEINLINE uint32x4x4_t vld1q_u32_x4(const uint32_t *src)
+{
+	uint32x4x4_t vec;
+	vec.val[0] = vld1q_u32(&src[ 0]);
+	vec.val[1] = vld1q_u32(&src[ 4]);
+	vec.val[2] = vld1q_u32(&src[ 8]);
+	vec.val[3] = vld1q_u32(&src[12]);
+	return vec;
+}
+#ifdef vld1q_u32_x4_ex
+#  undef vld1q_u32_x4_ex
+#endif
+#define vld1q_u32_x4_ex(p, align) vld1q_u32_x4(HINT_ALIGNED((p), (align)/8))
+
+static RP_ARM_FORCEINLINE void vst1q_u32_x4(uint32_t *dest, uint32x4x4_t vec)
+{
+	vst1q_u32(&dest[ 0], vec.val[0]);
+	vst1q_u32(&dest[ 4], vec.val[1]);
+	vst1q_u32(&dest[ 8], vec.val[2]);
+	vst1q_u32(&dest[12], vec.val[3]);
+}
+#ifdef vst1q_u32_x4_ex
+#  undef vst1q_u32_x4_ex
+#endif
+#define vst1q_u32_x4_ex(p, a, align) vst1q_u32_x4(HINT_ALIGNED((p), (align)/8), (a))
+
 #endif /* RP_ARM_MISSING_xN */
