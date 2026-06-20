@@ -25,6 +25,11 @@ using namespace LibRpBase;
 // C++ STL classes
 using std::array;
 
+// for compatibility with older glib:
+// - g_clear_handle_id()
+// - G_SOURCE_FUNC()
+#include "glib-compat.h"
+
 // nautilus-extension.h mini replacement
 #if GTK_CHECK_VERSION(4, 0, 0)
 #  include "../gtk4/NautilusPlugin.hpp"
