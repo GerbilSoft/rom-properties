@@ -1,3 +1,18 @@
+rom-properties (2.8-1ppa2~focal1) focal; urgency=medium
+
+  * Build for Ubuntu 20.04 "Focal" Fossa.
+
+    * Disable GTK+ 2.x builds. (XFCE)
+    * Disable KDE 4.x builds.
+    * Enable system libzstd.
+    * Enable system fmt.
+    * Tracker API version increased to 3.
+    * libwebp SO version: 6
+
+  * PPA version bumped to ensure it updates from previous versions.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 20 Jun 2026 18:44:37 -0400
+
 rom-properties (2.8-1ppa2~bionic1) bionic; urgency=medium
 
   * Build for Ubuntu 18.04 "Bionic" Beaver.
