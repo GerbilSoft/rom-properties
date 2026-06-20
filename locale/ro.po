@@ -100,7 +100,7 @@ msgstr "Tip imagine"
 #: ../src/gtk/config/ConfigDialog.cpp:244
 msgctxt "ConfigDialog"
 msgid "&Systems"
-msgstr "&Sistem"
+msgstr "&Sisteme"
 
 #: ../build/src/kde/kf6/ui_ConfigDialog.h:94
 #: ../src/gtk/config/ConfigDialog.cpp:245
@@ -1675,7 +1675,7 @@ msgstr ""
 #: ../src/libromdata/Audio/PSFTagParser.cpp:256
 msgctxt "S98"
 msgid "System"
-msgstr "&Sistem"
+msgstr "Sistem"
 
 #: ../src/libromdata/Audio/S98.cpp:304
 msgctxt "S98"
