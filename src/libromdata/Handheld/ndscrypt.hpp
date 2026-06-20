@@ -2,12 +2,15 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ndscrypt.hpp: Nintendo DS encryption.                                   *
  *                                                                         *
- * Copyright (c) 2020-2024 by David Korth.                                 *
+ * Copyright (c) 2020-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
+#include "common.h"	// for ATTR_ACCESS_SIZE()
+
+// C includes
 #include <stddef.h>
 #include <stdint.h>
 
