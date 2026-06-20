@@ -22,6 +22,15 @@
 
 #ifndef _MSC_VER
 
+// We want to force inlining here, even if building for debug.
+#if defined(__GNUC__)
+#  define RP_ARM_FORCEINLINE inline __attribute__((always_inline))
+#elif defined(_MSC_VER)
+#  define RP_ARM_FORCEINLINE __forceinline
+#else
+#  define RP_ARM_FORCEINLINE inline
+#endif
+
 // for HINT_ALIGNED()
 #include "alignment_macros.h"
 
@@ -155,7 +164,7 @@
 
 #ifdef RP_ARM_MISSING_xN
 
-static __forceinline uint32x2x2_t vld1_u32_x2(const uint32_t *src)
+static RP_ARM_FORCEINLINE uint32x2x2_t vld1_u32_x2(const uint32_t *src)
 {
 	uint32x2x2_t vec;
 	vec.val[0] = vld1_u32(&src[0]);
@@ -167,7 +176,7 @@ static __forceinline uint32x2x2_t vld1_u32_x2(const uint32_t *src)
 #endif
 #define vld1_u32_x2_ex(p, align) vld1_u32_x2(HINT_ALIGNED((p), (align)/8))
 
-static __forceinline void vst1_u32_x2(uint32_t *dest, uint32x2x2_t vec)
+static RP_ARM_FORCEINLINE void vst1_u32_x2(uint32_t *dest, uint32x2x2_t vec)
 {
 	vst1_u32(&dest[0], vec.val[0]);
 	vst1_u32(&dest[2], vec.val[1]);
@@ -177,7 +186,7 @@ static __forceinline void vst1_u32_x2(uint32_t *dest, uint32x2x2_t vec)
 #endif
 #define vst1_u32_x2_ex(p, a, align) vst1_u32_x2(HINT_ALIGNED((p), (align)/8), (a))
 
-static __forceinline uint32x2x4_t vld1_u32_x4(const uint32_t *src)
+static RP_ARM_FORCEINLINE uint32x2x4_t vld1_u32_x4(const uint32_t *src)
 {
 	uint32x2x4_t vec;
 	vec.val[0] = vld1_u32(&src[0]);
@@ -191,7 +200,7 @@ static __forceinline uint32x2x4_t vld1_u32_x4(const uint32_t *src)
 #endif
 #define vld1_u32_x4_ex(p, align) vld1_u32_x4(HINT_ALIGNED((p), (align)/8))
 
-static __forceinline void vst1_u32_x4(uint32_t *dest, uint32x2x4_t vec)
+static RP_ARM_FORCEINLINE void vst1_u32_x4(uint32_t *dest, uint32x2x4_t vec)
 {
 	vst1_u32(&dest[0], vec.val[0]);
 	vst1_u32(&dest[2], vec.val[1]);
@@ -203,7 +212,7 @@ static __forceinline void vst1_u32_x4(uint32_t *dest, uint32x2x4_t vec)
 #endif
 #define vst1_u32_x4_ex(p, a, align) vst1_u32_x4(HINT_ALIGNED((p), (align)/8), (a))
 
-static __forceinline uint16x8x2_t vld1q_u16_x2(const uint16_t *src)
+static RP_ARM_FORCEINLINE uint16x8x2_t vld1q_u16_x2(const uint16_t *src)
 {
 	uint16x8x2_t vec;
 	vec.val[0] = vld1q_u16(&src[0]);
@@ -215,7 +224,7 @@ static __forceinline uint16x8x2_t vld1q_u16_x2(const uint16_t *src)
 #endif
 #define vld1q_u16_x2_ex(p, align) vld1q_u16_x2(HINT_ALIGNED((p), (align)/8))
 
-static __forceinline void vst1q_u16_x2(uint16_t *dest, uint16x8x2_t vec)
+static RP_ARM_FORCEINLINE void vst1q_u16_x2(uint16_t *dest, uint16x8x2_t vec)
 {
 	vst1q_u16(&dest[0], vec.val[0]);
 	vst1q_u16(&dest[8], vec.val[1]);
@@ -225,7 +234,7 @@ static __forceinline void vst1q_u16_x2(uint16_t *dest, uint16x8x2_t vec)
 #endif
 #define vst1q_u16_x2_ex(p, a, align) vst1q_u16_x2(HINT_ALIGNED((p), (align)/8), (a))
 
-static __forceinline uint32x4x2_t vld1q_u32_x2(const uint32_t *src)
+static RP_ARM_FORCEINLINE uint32x4x2_t vld1q_u32_x2(const uint32_t *src)
 {
 	uint32x4x2_t vec;
 	vec.val[0] = vld1q_u32(&src[0]);
@@ -237,7 +246,7 @@ static __forceinline uint32x4x2_t vld1q_u32_x2(const uint32_t *src)
 #endif
 #define vld1q_u32_x2_ex(p, align) vld1q_u32_x2(HINT_ALIGNED((p), (align)/8))
 
-static __forceinline void vst1q_u32_x2(uint32_t *dest, uint32x4x2_t vec)
+static RP_ARM_FORCEINLINE void vst1q_u32_x2(uint32_t *dest, uint32x4x2_t vec)
 {
 	vst1q_u32(&dest[0], vec.val[0]);
 	vst1q_u32(&dest[4], vec.val[1]);
