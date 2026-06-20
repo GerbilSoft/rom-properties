@@ -14,6 +14,9 @@
 // Other rom-properties libraries
 #include "librpbyteswap/byteswap_rp.h"
 
+// C includes (C++ namespace)
+#include <cstring>
+
 // C++ STL classes
 using std::array;
 
