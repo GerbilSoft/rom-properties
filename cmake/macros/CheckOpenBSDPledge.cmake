@@ -9,7 +9,7 @@
 MACRO(CHECK_OPENBSD_PLEDGE)
 	CHECK_SYMBOL_EXISTS(pledge "unistd.h" HAVE_PLEDGE)
 	IF(NOT HAVE_PLEDGE)
-		CHECK_SYMBOL_EXISTS(pledge "sys/tame.h" HAVE_TAME)
+		CHECK_SYMBOL_EXISTS(tame "sys/tame.h" HAVE_TAME)
 	ENDIF(NOT HAVE_PLEDGE)
 	IF(HAVE_PLEDGE)
 		# pledge() has a different syntax in OpenBSD 6.3 and later:
