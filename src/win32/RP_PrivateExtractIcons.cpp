@@ -218,7 +218,8 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 			return 0;
 		}
 
-		// This *must* be a Win1.x/2.x icon.
+		// Since we're processing a .ico file, we only want to handle
+		// Win1.x/2.x icons. (Win3.x icons are always handled by Windows.)
 		const ICO_Win1_Header *win1 = reinterpret_cast<const ICO_Win1_Header*>(iconData[0].data());
 		if (!isWin1xIconFormatID(le16_to_cpu(win1->format))) {
 			// Not a Win1.x/2.x icon.
@@ -229,8 +230,7 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 
 	// Check for a Win1.x/2.x icon.
 	const ICO_Win1_Header *win1 = reinterpret_cast<const ICO_Win1_Header*>(iconData[0].data());
-	const uint16_t win1_format = cpu_to_le16(win1->format);
-	if (isWin1xIconFormatID(win1_format)) {
+	if (isWin1xIconFormatID(le16_to_cpu(win1->format))) {
 		// This is a Win1.x/2.x icon.
 		// TODO: Support returning 2 icons for Win1.x/2.x if it's DIB+DDB?
 		nIcons = 1;
