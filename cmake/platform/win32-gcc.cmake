@@ -45,11 +45,6 @@ SET(RP_EXE_LINKER_FLAGS_WIN32 "")
 SET(RP_SHARED_LINKER_FLAGS_WIN32 "")
 SET(RP_MODULE_LINKER_FLAGS_WIN32 "")
 
-# Release build: Prefer static libraries.
-IF(CMAKE_BUILD_TYPE MATCHES ^release)
-	SET(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
-ENDIF(CMAKE_BUILD_TYPE MATCHES ^release)
-
 # Test for common LDFLAGS.
 # NOTE: CHECK_C_COMPILER_FLAG() doesn't seem to work, even with
 # CMAKE_TRY_COMPILE_TARGET_TYPE. Check `ld --help` for the various
