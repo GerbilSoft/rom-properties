@@ -507,7 +507,9 @@ if (FMT_INSTALL)
     ${PROJECT_SOURCE_DIR}/support/cmake/fmt-config.cmake.in ${project_config}
     INSTALL_DESTINATION ${FMT_CMAKE_DIR})
 
-  set(INSTALL_TARGETS fmt fmt-header-only fmt-c)
+  # rom-properties: Only install the regular fmt library.
+  #set(INSTALL_TARGETS fmt fmt-header-only fmt-c)
+  set(INSTALL_TARGETS fmt)
 
   if (FMT_MODULE)
     list(APPEND INSTALL_TARGETS fmt-module)
