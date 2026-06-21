@@ -294,15 +294,14 @@ IF(USE_INTERNAL_XML)
 	SET(PUGIXML_WCHAR_MODE OFF)
 	SET(PUGIXML_COMPACT OFF)
 
-	# FIXME: Broken on MSVC v141_xp:
-	#  pugixml.cpp
-	# extlib\pugixml\src\pugixml.cpp(4825): error C2280: 'std::to_chars_result std::to_chars(char *const ,char *const ,const double,const std::chars_format,const int) noexcept':
-	# attempting to reference a deleted function
-	IF(NOT MSVC)
+	# NOTE: MSVC's charconv is not fully implemented in MSVC 2017,
+	# so we can't enable pugixml's charconv float conversion unless
+	# we're using MSVC 2019 or later.
+	IF((NOT MSVC) OR (MSVC_VERSION GREATER 1919))
 		INCLUDE(CheckIncludeFiles)
 		CHECK_INCLUDE_FILES(charconv HAVE_CHARCONV LANGUAGE CXX)
 		SET(PUGIXML_CHARCONV_FLOAT ${HAVE_CHARCONV})
-	ENDIF(NOT MSVC)
+	ENDIF((NOT MSVC) OR (MSVC_VERSION GREATER 1919))
 
 	# Disable functionality we don't need.
 	SET(PUGIXML_NO_XPATH ON)
