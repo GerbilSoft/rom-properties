@@ -8,7 +8,7 @@
 
 #include "dlopen-notes.h"
 
-ELF_NOTE_DLOPEN8( \
+ELF_NOTE_DLOPEN9( \
 	tracker_dlopen, \
 	"localsearch-3.0", "Support for the GNOME LocalSearch 3.0 API", "recommended", "libtinysparql-3.0.so.0", \
 	"localsearch-3.0", "Support for the GNOME LocalSearch 3.0 API", "recommended", "libtracker-extract.so", \
@@ -17,5 +17,6 @@ ELF_NOTE_DLOPEN8( \
 	"tracker-2.0", "Support for the GNOME Tracker 2.0 API", "recommended", "libtracker-sparql-2.0.so.0", \
 	"tracker-2.0", "Support for the GNOME Tracker 2.0 API", "recommended", "libtracker-extract.so.0", \
 	"tracker-1.0", "Support for the GNOME Tracker 1.0 API", "recommended", "libtracker-sparql-1.0.so.0", \
-	"tracker-1.0", "Support for the GNOME Tracker 1.0 API", "recommended", "libtracker-extract.so.0" \
+	"tracker-1.0", "Support for the GNOME Tracker 1.0 API", "recommended", "libtracker-extract.so.0", \
+	"libblkid", "Required for some Tracker functionality", "recommended", "libblkid.so.1" \
 );

@@ -144,7 +144,7 @@ Description: ROM Properties Page shell extension (command line version)
 
 Package: rom-properties-tracker
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata9
+Depends: ${shlibs:Depends}, ${misc:Depends}, libblkid1, libromdata9
 Description: ROM Properties Page shell extension (Tracker metadata extractor module)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
