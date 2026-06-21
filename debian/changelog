@@ -1,3 +1,9 @@
+rom-properties (2.8-1ppa2~noble2) noble; urgency=medium
+
+  * Forgot to add the rom-properties-gtk4 Debian package files.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 20 Jun 2026 21:03:50 -0400
+
 rom-properties (2.8-1ppa2~noble1) noble; urgency=medium
 
   * Build for Ubuntu 24.04 "Noble" Numbat.
