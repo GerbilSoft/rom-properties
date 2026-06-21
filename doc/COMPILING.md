@@ -108,7 +108,7 @@ the directory above the top-level source directory.
 ## Windows
 
 The Windows version requires one of the following compilers: (minimum versions)
-* Microsoft Visual C++ 2015 with the Windows 7 SDK
+* Microsoft Visual C++ 2017 with the Windows 7 SDK
 * gcc-13 with MinGW-w64
   * The MinGW build is currently somewhat broken, so MSVC is preferred.
     (The property page icon doesn't show up sometimes for Nintendo DS
@@ -124,27 +124,21 @@ project uses the CMake build system.
 Clone the repository, then open an MSVC or MinGW command prompt and run the
 following commands from your rom-properties repository directory:
 
-MSVC 2015-2017:
 ```
 mkdir build
 cd build
-cmake .. -G "Visual Studio 15 2017 Win64"
+cmake .. -G "Visual Studio 15 2017" -A x64
 cmake --build . --config Release
 ```
 
-Leave out "Win64" to build a 32-bit version.
+Replace `15 2017` with `16 2019`, `17 2022`, or `18 2026` to match
+the vesion of Visual Studio you have installed.
 
-MSVC 2019 or later:
-```
-mkdir build
-cd build
-cmake .. -G "Visual Studio 16 2019" -A "x64"
-cmake --build . --config Release
-```
-
-Replace "Visual Studio 16 2019" with the version of Visual Studio you have
-installed. Replace "x64" with "Win32" to build a 32-bit version, or "arm",
-"arm64", or "arm64ec" for the various Windows on ARM ABIs.
+The `-A` parameter indicates the target CPU:
+* `-A Win32` for 32-bit (i386)
+* `-A x64` for 64-bit (amd64)
+* `-A arm` for 32-bit ARM
+* `-A arm64` for 64-bit ARM
 
 After building, you will need to run `regsvr32 rom-properties.dll` from
 the `build\bin\Release` directory as Administrator.
