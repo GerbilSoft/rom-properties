@@ -1,3 +1,17 @@
+rom-properties (2.8-1ppa2~resolute1) resolute; urgency=medium
+
+  * Build for Ubuntu 26.04 "Resolute" Raccoon.
+
+    * Enable KF6 builds.
+    * Tracker API version increased to 3L.
+
+  * PPA version bumped to ensure it updates from previous versions.
+
+  * libwebp SO version: 7
+  * libcurl SO version: 4
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 20 Jun 2026 20:51:45 -0400
+
 rom-properties (2.8-1ppa2~noble1) noble; urgency=medium
 
   * Build for Ubuntu 24.04 "Noble" Numbat.
