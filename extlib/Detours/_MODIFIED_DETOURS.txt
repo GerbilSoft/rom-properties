@@ -1,7 +1,7 @@
 This copy of Detours is a modified version of the original.
 
-commit 9764cebcb1a75940e68fa83d6730ffaf0f669401
-Fix context setting errors in DetourEnumerateImports API (#266)
+commit d644ce94e8c7f7f5a31591577c78134ea3ac1fae
+Remove windows-2019 from build matrix. (#375)
 
 The following changes have been made to the original:
 
