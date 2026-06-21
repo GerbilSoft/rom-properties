@@ -297,6 +297,7 @@ IF(USE_INTERNAL_XML)
 	# NOTE: MSVC's charconv is not fully implemented in MSVC 2017,
 	# so we can't enable pugixml's charconv float conversion unless
 	# we're using MSVC 2019 or later.
+	SET(PUGIXML_CHARCONV_FLOAT OFF)
 	IF((NOT MSVC) OR (MSVC_VERSION GREATER 1919))
 		INCLUDE(CheckIncludeFiles)
 		CHECK_INCLUDE_FILES(charconv HAVE_CHARCONV LANGUAGE CXX)
