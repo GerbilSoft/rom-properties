@@ -124,6 +124,7 @@ using std::unordered_set;
 #include "Other/Amiibo.hpp"
 #include "Other/ELF.hpp"
 #include "Other/EXE.hpp"
+#include "Other/GMS.hpp"
 #include "Other/MachO.hpp"
 #include "Other/NintendoBadge.hpp"
 #include "Other/RpTextureWrapper.hpp"
@@ -319,7 +320,7 @@ static const array<RomDataFns, romDataFns_magic_count> romDataFns_magic = {{
  * Headers with addresses other than 0 should be
  * placed at the end of this array.
  */
-static const array<RomDataFns, 39> romDataFns_header = {{
+static const array<RomDataFns, 40> romDataFns_header = {{
 	// Consoles
 	GetRomDataFns(ColecoVision, ATTR_HAS_METADATA),
 	GetRomDataFns(Dreamcast, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
@@ -356,6 +357,7 @@ static const array<RomDataFns, 39> romDataFns_header = {{
 	// Other
 	GetRomDataFns(Amiibo, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(MachO, ATTR_NONE),
+	GetRomDataFns(GMS, ATTR_NONE),
 	GetRomDataFns(NintendoBadge, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(Wim, ATTR_NONE),
 

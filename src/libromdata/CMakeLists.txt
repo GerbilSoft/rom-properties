@@ -105,6 +105,7 @@ SET(${PROJECT_NAME}_SRCS
 	Other/EXE_NE.cpp
 	Other/EXE_PE.cpp
 	Other/EXE_icons.cpp
+	Other/GMS.cpp
 	Other/MachO.cpp
 	Other/NintendoBadge.cpp
 	Other/RpTextureWrapper.cpp
