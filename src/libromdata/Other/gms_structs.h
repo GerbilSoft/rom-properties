@@ -16,15 +16,15 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 // IFF section header
 typedef struct _iff_sect_hdr {
-    uint32_t magic;
-    uint32_t length;
+	uint32_t magic;
+	uint32_t length;
 } iff_sect_hdr_t;
-// "FORM" magic
+// IFF "FORM" magic
 #define FORM_HDR 0x4D524F46
+
+#pragma pack(1)
 
 // GameMaker general information header
 // for ease of file parsing, the "count" value was removed
@@ -54,6 +54,7 @@ typedef struct RP_PACKED _YYHeader {
     uint8_t md5[0x10];
     int64_t datetimeUTC;
 } YYHeader;
+ASSERT_STRUCT(YYHeader, 0x64);
 
 // Version v10
 typedef struct RP_PACKED _YYHeader_000A {
@@ -81,6 +82,7 @@ typedef struct RP_PACKED _YYHeader_000A {
     // 0xA
     uint32_t pDisplayName;
 } YYHeader_000A;
+ASSERT_STRUCT(YYHeader_000A, 0x68);
 
 // Version v11
 typedef struct RP_PACKED _YYHeader_000B {
@@ -110,6 +112,7 @@ typedef struct RP_PACKED _YYHeader_000B {
     // 0xB
     int64_t Licensed;
 } YYHeader_000B;
+ASSERT_STRUCT(YYHeader_000B, 0x70);
 
 // Version v12
 typedef struct RP_PACKED _YYHeader_000C {
@@ -141,6 +144,7 @@ typedef struct RP_PACKED _YYHeader_000C {
     // 0xC
     int64_t functionClasses;
 } YYHeader_000C;
+ASSERT_STRUCT(YYHeader_000C, 0x78);
 
 // Version v13
 typedef struct RP_PACKED _YYHeader_000D {
@@ -174,6 +178,7 @@ typedef struct RP_PACKED _YYHeader_000D {
     // 0xD
     int steamAppId;
 } YYHeader_000D;
+ASSERT_STRUCT(YYHeader_000D, 0x7C);
 
 // Version v14+
 typedef struct RP_PACKED _YYHeader_000E {
@@ -209,15 +214,17 @@ typedef struct RP_PACKED _YYHeader_000E {
     // 0xE
     int debuggerServerPort;
 } YYHeader_000E;
+ASSERT_STRUCT(YYHeader_000E, 0x80);
+
+#pragma pack()
 
 // Footer of the YYHeader for GMS2 titles
 typedef struct RP_PACKED _YYGMS2HeaderData {
-    float GameSpeed;
-    int AllowStatistics;
-    uint8_t GameGUID[0x10];
+	float GameSpeed;
+	int AllowStatistics;
+	uint8_t GameGUID[0x10];
 } YYGMS2HeaderData;
-
-#pragma pack()
+ASSERT_STRUCT(YYGMS2HeaderData, 0x18);
 
 #ifdef __cplusplus
 }

@@ -1,13 +1,13 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * GM.cpp: GameMaker IFF/"data.win" header reader                          *
+ * GameMaker.cpp: GameMaker IFF/"data.win" header reader                   *
  *                                                                         *
  * Copyright (c) 2016-2026 by David Korth.                                 *
  * Copyright (c) 2026 by Emma / InvoxiPlayGames.                           *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "GMS.hpp"
+#include "GameMaker.hpp"
 #include "RomData_p.hpp"
 
 #include "gms_structs.h"
@@ -26,14 +26,14 @@ using std::vector;
 
 namespace LibRomData {
 
-class GMSPrivate final : public RomDataPrivate
+class GameMakerPrivate final : public RomDataPrivate
 {
 public:
-	explicit GMSPrivate(const IRpFilePtr &file);
+	explicit GameMakerPrivate(const IRpFilePtr &file);
 
 private:
 	typedef RomDataPrivate super;
-	RP_DISABLE_COPY(GMSPrivate)
+	RP_DISABLE_COPY(GameMakerPrivate)
 
 	int readNullTerminatedString(uint32_t offset, std::string &str);
 
@@ -67,9 +67,9 @@ public:
     std::string displayName;
 };
 
-ROMDATA_IMPL(GMS)
+ROMDATA_IMPL(GameMaker)
 
-const array<const char*, 6+1> GMSPrivate::exts = {{
+const array<const char*, 6+1> GameMakerPrivate::exts = {{
 	".win",
 	".ios",
     ".unx",
@@ -79,16 +79,16 @@ const array<const char*, 6+1> GMSPrivate::exts = {{
 	nullptr
 }};
 
-const array<const char*, 1+1> GMSPrivate::mimeTypes = {{
+const array<const char*, 1+1> GameMakerPrivate::mimeTypes = {{
 	"application/x-iff",
 	nullptr
 }};
 
-const RomDataInfo GMSPrivate::romDataInfo = {
+const RomDataInfo GameMakerPrivate::romDataInfo = {
 	"GameMaker", exts.data(), mimeTypes.data()
 };
 
-int GMSPrivate::readNullTerminatedString(uint32_t offset, std::string &str)
+int GameMakerPrivate::readNullTerminatedString(uint32_t offset, std::string &str)
 {
 	if (offset == 0)
 		return 0;
@@ -106,7 +106,7 @@ int GMSPrivate::readNullTerminatedString(uint32_t offset, std::string &str)
 	return 0;
 }
 
-GMSPrivate::GMSPrivate(const IRpFilePtr &file)
+GameMakerPrivate::GameMakerPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
 	isBigEndian = false;
@@ -128,7 +128,7 @@ typedef enum _GMSFileType {
  * @param info DetectInfo containing ROM detection information.
  * @return Class-specific system ID (>= 0) if supported; -1 if not.
  */
-int GMS::isRomSupported_static(const DetectInfo *info)
+int GameMaker::isRomSupported_static(const DetectInfo *info)
 {
 	assert(info != nullptr);
 	assert(info->header.pData != nullptr);
@@ -185,10 +185,10 @@ int GMS::isRomSupported_static(const DetectInfo *info)
  *
  * @param file Open ROM image.
  */
-GMS::GMS(const IRpFilePtr &file)
-	: super(new GMSPrivate(file))
+GameMaker::GameMaker(const IRpFilePtr &file)
+	: super(new GameMakerPrivate(file))
 {
-	RP_D(GMS);
+	RP_D(GameMaker);
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -429,9 +429,9 @@ GMS::GMS(const IRpFilePtr &file)
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const char *GMS::systemName(unsigned int type) const
+const char *GameMaker::systemName(unsigned int type) const
 {
-	RP_D(const GMS);
+	RP_D(const GameMaker);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
@@ -459,9 +459,9 @@ const char *GMS::systemName(unsigned int type) const
 		return sysNames_studio1[type & SYSNAME_TYPE_MASK];
 }
 
-int GMS::loadFieldData(void)
+int GameMaker::loadFieldData(void)
 {
-	RP_D(GMS);
+	RP_D(GameMaker);
     if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
@@ -476,58 +476,57 @@ int GMS::loadFieldData(void)
 	// general info fields
     d->fields.addTab("Info");
 	{
-	    static const char *const endianness_flags[] = {
-			NOP_C_("GameMaker", "Little Endian"),
-			NOP_C_("GameMaker", "Big Endian")
-		};
-		std::vector<std::string> *const v_endianness_flags =
-		    RomFields::strArrayToVector_i18n("GameMaker", endianness_flags, ARRAY_SIZE(endianness_flags));
-	    d->fields.addField_bitfield(C_("GameMaker", "Endianness"), v_endianness_flags, 3, d->isBigEndian ? 2 : 1);
-		// TODO: better way to say we're big endian
+		if (d->gameName.length() != 0) {
+			d->fields.addField_string(
+				C_("GameMaker", "Game Name"), d->gameName.c_str(), RomFields::STRF_TRIM_END);
+		}
 
-	    d->fields.addField_string_numeric(C_("GameMaker", "File Version"), d->dataVersion);
+		if (d->dataVersion >= 0xA) {
+			if (d->displayName.length() != 0) {
+				d->fields.addField_string(C_("GameMaker", "Display Name"), d->displayName.c_str(),
+					RomFields::STRF_TRIM_END);
+			}
+		}
 
-		if (d->projectName.length() != 0)
+	    d->fields.addField_string_numeric(C_("GameMaker", "Format Version"), d->dataVersion);
+
+		if (d->projectName.length() != 0) {
 		    d->fields.addField_string(
 			    C_("GameMaker", "Project Name"), d->projectName.c_str(), RomFields::STRF_TRIM_END);
+		}
 
-	    if (d->projectConfig.length() != 0)
-		    d->fields.addField_string(
-			    C_("GameMaker", "Project Config"), d->projectConfig.c_str(), RomFields::STRF_TRIM_END);
+	    if (d->projectConfig.length() != 0) {
+			d->fields.addField_string(
+				C_("GameMaker", "Project Config"), d->projectConfig.c_str(), RomFields::STRF_TRIM_END);
+		}
 
-	    if (d->gameName.length() != 0)
-		    d->fields.addField_string(
-			    C_("GameMaker", "Game Name"), d->gameName.c_str(), RomFields::STRF_TRIM_END);
+	    std::string versionNum = std::format("{}.{}.{}.{}", d->header.v9.MajorVersion, d->header.v9.MinorVersion,
+		    d->header.v9.ReleaseVersion, d->header.v9.BuildVersion);
+	    d->fields.addField_string(C_("GameMaker", "IDE Version"), versionNum, 0);
 
-	    char versionNum[32];
-	    snprintf(versionNum, sizeof(versionNum), "%i.%i.%i.%i", d->header.v9.MajorVersion,
-		    d->header.v9.MinorVersion, d->header.v9.ReleaseVersion, d->header.v9.BuildVersion);
-	    d->fields.addField_string(C_("GameMaker", "IDE Version"), versionNum, RomFields::STRF_TRIM_END);
+		d->fields.addField_dimensions(C_("GameMaker", "Resolution"), d->header.v9.xscreensize, d->header.v9.yscreensize);
 
-		char resolution[32];
-	    snprintf(resolution, sizeof(resolution), "%i x %i", d->header.v9.xscreensize, d->header.v9.yscreensize);
-		d->fields.addField_string(C_("GameMaker", "Resolution"), resolution, RomFields::STRF_TRIM_END);
-
-		// TODO: change these to match the specific IDE version as it can change
 		static const char *const screen_flags[] = {
-			NOP_C_("GameMaker", "Fullscreen"),
-			NOP_C_("GameMaker", "VSync"),
-			NOP_C_("GameMaker", "Software Vertex Processing"),
-			NOP_C_("GameMaker", "Interpolate Pixels"),
-			NOP_C_("GameMaker", "Keep Aspect Ratio"),
-			NOP_C_("GameMaker", "Show Cursor"),
-			NOP_C_("GameMaker", "Resizable Window"),
-			NOP_C_("GameMaker", "Allow Fullscreen Switch"),
-			NOP_C_("GameMaker", "Allow Dock in Fullscreen (Mac)"),
-			NOP_C_("GameMaker", "Free IDE"),
-			NOP_C_("GameMaker", "Standard IDE"),
-			NOP_C_("GameMaker", "Pro IDE"),
-			NOP_C_("GameMaker", "Steam Workshop"),
-			NOP_C_("GameMaker", "Use Roaming AppData"),
-			NOP_C_("GameMaker", "Borderless Fullscreen"),
-			NOP_C_("GameMaker", "JavaScript Enabled"),
-			NOP_C_("GameMaker", "Show Hobby Splash"),
-			NOP_C_("GameMaker", "Is IDE Build"),
+			NOP_C_("GameMaker|ScreenFlags", "Fullscreen"),
+			NOP_C_("GameMaker|ScreenFlags", "VSync"),
+			NOP_C_("GameMaker|ScreenFlags", "SW Vertexes"),
+			NOP_C_("GameMaker|ScreenFlags", "Anti-Aliasing"),
+			NOP_C_("GameMaker|ScreenFlags", "Keep Aspect Ratio"),
+			NOP_C_("GameMaker|ScreenFlags", "Show Cursor"),
+			NOP_C_("GameMaker|ScreenFlags", "Resizable"),
+			NOP_C_("GameMaker|ScreenFlags", "Allow FS Switch"),
+			NOP_C_("GameMaker|ScreenFlags", "Allow Dock in FS"),
+			NOP_C_("GameMaker|ScreenFlags", "Free IDE"),
+			NOP_C_("GameMaker|ScreenFlags", "Standard IDE"),
+			NOP_C_("GameMaker|ScreenFlags", "Pro IDE"),
+			NOP_C_("GameMaker|ScreenFlags", "Steam Workshop"),
+			NOP_C_("GameMaker|ScreenFlags", "Roaming AppData"),
+			NOP_C_("GameMaker|ScreenFlags", "Borderless FS"),
+			NOP_C_("GameMaker|ScreenFlags", "JS Enabled"),
+			// TODO: change these to match the specific IDE version as it can change
+			NOP_C_("GameMaker|ScreenFlags", "Is IDE Build"), // prev "Show Hobby Splash"
+			NOP_C_("GameMaker|ScreenFlags", "Transparent BG"), // prev "Is IDE Build"
+			NOP_C_("GameMaker|ScreenFlags", "D3D Swap Discard"),
 		};
 		std::vector<std::string> *const v_screen_flags =
 			RomFields::strArrayToVector_i18n("GameMaker", screen_flags, ARRAY_SIZE(screen_flags));
@@ -538,116 +537,127 @@ int GMS::loadFieldData(void)
 		    RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME |
 			    RomFields::RFT_DATETIME_IS_UTC);
 
-		if (d->dataVersion >= 0xA) {
-		    if (d->displayName.length() != 0)
-			    d->fields.addField_string(
-				    C_("GameMaker", "Display Name"), d->displayName.c_str(), RomFields::STRF_TRIM_END);
-		}
 		if (d->dataVersion >= 0xB) {
-			//licensed?
+			// license data? never referenced by the runner, always seen as 0
 		}
+
 		if (d->dataVersion >= 0xC) {
 			// reference: https://github.com/UnderminersTeam/UndertaleModTool/blob/1e1991722f509292c6f58bf9ce7f9748968cf647/UndertaleModLib/Models/UndertaleGeneralInfo.cs#L118
 
-			static const char *const function_classes_1[] = {
-				NOP_C_("GameMaker", "Internet"),
-				NOP_C_("GameMaker", "Joystick"),
-				NOP_C_("GameMaker", "Gamepad"),
-				NOP_C_("GameMaker", "Immersion"),
-				NOP_C_("GameMaker", "Screengrab"),
-				NOP_C_("GameMaker", "Math"),
-				NOP_C_("GameMaker", "Action"),
-				NOP_C_("GameMaker", "MatrixD3D"),
-				NOP_C_("GameMaker", "D3DModel"),
-				NOP_C_("GameMaker", "DataStructures"),
-				NOP_C_("GameMaker", "File"),
-				NOP_C_("GameMaker", "INI"),
-				NOP_C_("GameMaker", "Filename"),
-				NOP_C_("GameMaker", "Directory"),
-				NOP_C_("GameMaker", "Environment"),
+			static const char *const function_classes[] = {
+				NOP_C_("GameMaker|FunctionClass", "Internet"),
+				NOP_C_("GameMaker|FunctionClass", "Joystick"),
+				NOP_C_("GameMaker|FunctionClass", "Gamepad"),
+				NOP_C_("GameMaker|FunctionClass", "Immersion"),
+				NOP_C_("GameMaker|FunctionClass", "Screengrab"),
+				NOP_C_("GameMaker|FunctionClass", "Math"),
+				NOP_C_("GameMaker|FunctionClass", "Action"),
+				NOP_C_("GameMaker|FunctionClass", "MatrixD3D"),
+				NOP_C_("GameMaker|FunctionClass", "D3DModel"),
+				NOP_C_("GameMaker|FunctionClass", "DataStructures"),
+				NOP_C_("GameMaker|FunctionClass", "File"),
+				NOP_C_("GameMaker|FunctionClass", "INI"),
+				NOP_C_("GameMaker|FunctionClass", "Filename"),
+				NOP_C_("GameMaker|FunctionClass", "Directory"),
+				NOP_C_("GameMaker|FunctionClass", "Environment"),
 				nullptr,
-				NOP_C_("GameMaker", "HTTP"),
-				NOP_C_("GameMaker", "Encoding"),
-				NOP_C_("GameMaker", "UIDialog"),
-				NOP_C_("GameMaker", "MotionPlanning"),
-				NOP_C_("GameMaker", "ShapeCollision"),
-				NOP_C_("GameMaker", "Instance"),
-				NOP_C_("GameMaker", "Room"),
-				NOP_C_("GameMaker", "Game"),
-				NOP_C_("GameMaker", "Display"),
-				NOP_C_("GameMaker", "Device"),
-				NOP_C_("GameMaker", "Window"),
-				NOP_C_("GameMaker", "DrawColor"),
-				NOP_C_("GameMaker", "Texture"),
-				NOP_C_("GameMaker", "Layer"),
-				NOP_C_("GameMaker", "String"),
-				NOP_C_("GameMaker", "Tiles")
+				NOP_C_("GameMaker|FunctionClass", "HTTP"),
+				NOP_C_("GameMaker|FunctionClass", "Encoding"),
+				NOP_C_("GameMaker|FunctionClass", "UIDialog"),
+				NOP_C_("GameMaker|FunctionClass", "MotionPlanning"),
+				NOP_C_("GameMaker|FunctionClass", "ShapeCollision"),
+				NOP_C_("GameMaker|FunctionClass", "Instance"),
+				NOP_C_("GameMaker|FunctionClass", "Room"),
+				NOP_C_("GameMaker|FunctionClass", "Game"),
+				NOP_C_("GameMaker|FunctionClass", "Display"),
+				NOP_C_("GameMaker|FunctionClass", "Device"),
+				NOP_C_("GameMaker|FunctionClass", "Window"),
+				NOP_C_("GameMaker|FunctionClass", "DrawColor"),
+				NOP_C_("GameMaker|FunctionClass", "Texture"),
+				NOP_C_("GameMaker|FunctionClass", "Layer"),
+				NOP_C_("GameMaker|FunctionClass", "String"),
+				NOP_C_("GameMaker|FunctionClass", "Tiles"),
+				NOP_C_("GameMaker|FunctionClass", "Surface"),
+				NOP_C_("GameMaker|FunctionClass", "Skeleton"),
+				NOP_C_("GameMaker|FunctionClass", "IO"),
+				NOP_C_("GameMaker|FunctionClass", "Variables"),
+				NOP_C_("GameMaker|FunctionClass", "Array"),
+				NOP_C_("GameMaker|FunctionClass", "ExternalCall"),
+				NOP_C_("GameMaker|FunctionClass", "Notification"),
+				NOP_C_("GameMaker|FunctionClass", "Date"),
+				NOP_C_("GameMaker|FunctionClass", "Particle"),
+				NOP_C_("GameMaker|FunctionClass", "Sprite"),
+				NOP_C_("GameMaker|FunctionClass", "Clickable"),
+				NOP_C_("GameMaker|FunctionClass", "LegacySound"),
+				NOP_C_("GameMaker|FunctionClass", "Audio"),
+				NOP_C_("GameMaker|FunctionClass", "Event"),
+				nullptr,
+				NOP_C_("GameMaker|FunctionClass", "FreeType"),
+				NOP_C_("GameMaker|FunctionClass", "Analytics"),
+				nullptr,
+				nullptr,
+				NOP_C_("GameMaker|FunctionClass", "Achievement"),
+				NOP_C_("GameMaker|FunctionClass", "CloudSaving"),
+				NOP_C_("GameMaker|FunctionClass", "Ads"),
+				NOP_C_("GameMaker|FunctionClass", "OS"),
+				NOP_C_("GameMaker|FunctionClass", "IAP"),
+				NOP_C_("GameMaker|FunctionClass", "Facebook"),
+				NOP_C_("GameMaker|FunctionClass", "Physics"),
+				NOP_C_("GameMaker|FunctionClass", "FlashAA"),
+				NOP_C_("GameMaker|FunctionClass", "Console"),
+				NOP_C_("GameMaker|FunctionClass", "Buffer"),
+				NOP_C_("GameMaker|FunctionClass", "Steam"),
+				NOP_C_("GameMaker|FunctionClass", "Shaders")
 			};
-			std::vector<std::string> *const v_function_classes_1 = RomFields::strArrayToVector_i18n(
-				"GameMaker", function_classes_1, ARRAY_SIZE(function_classes_1));
 
-			static const char *const function_classes_2[] = {
-				NOP_C_("GameMaker", "Surface"),
-				NOP_C_("GameMaker", "Skeleton"),
-				NOP_C_("GameMaker", "IO"),
-				NOP_C_("GameMaker", "Variables"),
-				NOP_C_("GameMaker", "Array"),
-				NOP_C_("GameMaker", "ExternalCall"),
-				NOP_C_("GameMaker", "Notification"),
-				NOP_C_("GameMaker", "Date"),
-				NOP_C_("GameMaker", "Particle"),
-				NOP_C_("GameMaker", "Sprite"),
-				NOP_C_("GameMaker", "Clickable"),
-				NOP_C_("GameMaker", "LegacySound"),
-				NOP_C_("GameMaker", "Audio"),
-				NOP_C_("GameMaker", "Event"),
-				nullptr,
-				NOP_C_("GameMaker", "FreeType"),
-				NOP_C_("GameMaker", "Analytics"),
-				nullptr,
-				nullptr,
-				NOP_C_("GameMaker", "Achievement"),
-				NOP_C_("GameMaker", "CloudSaving"),
-				NOP_C_("GameMaker", "Ads"),
-				NOP_C_("GameMaker", "OS"),
-				NOP_C_("GameMaker", "IAP"),
-				NOP_C_("GameMaker", "Facebook"),
-				NOP_C_("GameMaker", "Physics"),
-				NOP_C_("GameMaker", "FlashAA"),
-				NOP_C_("GameMaker", "Console"),
-				NOP_C_("GameMaker", "Buffer"),
-				NOP_C_("GameMaker", "Steam"),
-				NOP_C_("GameMaker", "Shaders")
-			};
-			std::vector<std::string> *const v_function_classes_2 = RomFields::strArrayToVector_i18n(
-				"GameMaker", function_classes_2, ARRAY_SIZE(function_classes_2));
+			// Copied from Nintendo3DS. (TODO: Centralize it?)
+#ifdef _WIN32
+			// Windows: 6 visible rows per RFT_LISTDATA.
+			static constexpr int rows_visible = 6;
+#else  /* !_WIN32 */
+			// Linux: 4 visible rows per RFT_LISTDATA.
+			static constexpr int rows_visible = 4;
+#endif /* _WIN32 */
 
-			if (d->isBigEndian) {
-				// TODO: is this correct?
-				d->fields.addField_bitfield(C_("GameMaker", "Function Classes (1)"),
-					v_function_classes_1, 3, d->header.v12.functionClasses >> 32);
-				d->fields.addField_bitfield(C_("GameMaker", "Function Classes (2)"),
-					v_function_classes_2, 3, d->header.v12.functionClasses & 0xFFFFFFFF);
+			auto *const vv_fn_classes = new RomFields::ListData_t;
+			for (int i = 0; i < ARRAY_SIZE(function_classes); i++) {
+				if (function_classes[i] != nullptr && d->header.v12.functionClasses & ((uint64_t)1 << i)) {
+					vector<string> v_fn_class;
+					v_fn_class.push_back(function_classes[i]);
+					vv_fn_classes->push_back(v_fn_class);
+				}
+			}
+
+			if (!vv_fn_classes->empty()) {
+				RomFields::AFLD_PARAMS params(0, rows_visible);
+				params.headers = nullptr;
+				params.data.single = vv_fn_classes;
+				d->fields.addField_listData(C_("GameMaker", "Function Classes"), &params);
 			} else {
-				d->fields.addField_bitfield(C_("GameMaker", "Function Classes (1)"),
-					v_function_classes_1, 3, d->header.v12.functionClasses & 0xFFFFFFFF);
-				d->fields.addField_bitfield(C_("GameMaker", "Function Classes (2)"),
-					v_function_classes_2, 3, d->header.v12.functionClasses >> 32);
+				delete vv_fn_classes;
 			}
 		}
+
 		if (d->dataVersion >= 0xD) {
-			if (d->header.v13.steamAppId != 0 && d->header.v13.steamAppId != 0xFFFFFFFF)
-				d->fields.addField_string_numeric(
-					C_("GameMaker", "Steam App ID"), -d->header.v13.steamAppId);
+			if (d->header.v13.steamAppId != 0 && d->header.v13.steamAppId != -1) {
+				uint32_t appId = (uint32_t)d->header.v13.steamAppId;
+				if (d->header.v9.MajorVersion < 2) { // TODO: double check when they changed this
+					appId ^= 0xFFFFFFFF;
+					appId++;
+				}
+				d->fields.addField_string_numeric(C_("GameMaker", "Steam App ID"), appId);
+			}
 		}
 		if (d->dataVersion >= 0xE) {
-			if (d->header.v14.debuggerServerPort != 0)
+			if (d->header.v14.debuggerServerPort > 0 && d->header.v14.debuggerServerPort <= 65535) {
 				d->fields.addField_string_numeric(
 					C_("GameMaker", "Debugger Port"), d->header.v14.debuggerServerPort);
+			}
 		}
 
 		if (d->hasGms2Header) {
-			d->fields.addField_string_numeric(C_("GameMaker", "Game Speed"), d->gms2Header.GameSpeed);
+			// loss of precision on the float - but the float will never usually be anything that isn't a full number anyway
+			d->fields.addField_string_numeric(C_("GameMaker", "Game Speed"), (uint32_t)d->gms2Header.GameSpeed);
 
 			static const char *const stats_flags[] = {NOP_C_("GameMaker", "Allow Statistics")};
 			std::vector<std::string> *const v_stats_flags =
