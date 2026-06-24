@@ -288,10 +288,10 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 		d->header.v9.guid3 = be32_to_cpu(d->header.v9.guid3);
 		d->header.v9.guid4 = be32_to_cpu(d->header.v9.guid4);
 		d->header.v9.pGameName = be32_to_cpu(d->header.v9.pGameName);
-		d->header.v9.MajorVersion = be32_to_cpu(d->header.v9.MajorVersion);
-		d->header.v9.MinorVersion = be32_to_cpu(d->header.v9.MinorVersion);
-		d->header.v9.ReleaseVersion = be32_to_cpu(d->header.v9.ReleaseVersion);
-		d->header.v9.BuildVersion = be32_to_cpu(d->header.v9.BuildVersion);
+		d->header.v9.Version.Major = be32_to_cpu(d->header.v9.Version.Major);
+		d->header.v9.Version.Minor = be32_to_cpu(d->header.v9.Version.Minor);
+		d->header.v9.Version.Release = be32_to_cpu(d->header.v9.Version.Release);
+		d->header.v9.Version.Build = be32_to_cpu(d->header.v9.Version.Build);
 		d->header.v9.xscreensize = be32_to_cpu(d->header.v9.xscreensize);
 		d->header.v9.yscreensize = be32_to_cpu(d->header.v9.yscreensize);
 		d->header.v9.screenflags = be32_to_cpu(d->header.v9.screenflags);
@@ -319,10 +319,10 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 		d->header.v9.guid3 = le32_to_cpu(d->header.v9.guid3);
 		d->header.v9.guid4 = le32_to_cpu(d->header.v9.guid4);
 		d->header.v9.pGameName = le32_to_cpu(d->header.v9.pGameName);
-		d->header.v9.MajorVersion = le32_to_cpu(d->header.v9.MajorVersion);
-		d->header.v9.MinorVersion = le32_to_cpu(d->header.v9.MinorVersion);
-		d->header.v9.ReleaseVersion = le32_to_cpu(d->header.v9.ReleaseVersion);
-		d->header.v9.BuildVersion = le32_to_cpu(d->header.v9.BuildVersion);
+		d->header.v9.Version.Major = le32_to_cpu(d->header.v9.Version.Major);
+		d->header.v9.Version.Minor = le32_to_cpu(d->header.v9.Version.Minor);
+		d->header.v9.Version.Release = le32_to_cpu(d->header.v9.Version.Release);
+		d->header.v9.Version.Build = le32_to_cpu(d->header.v9.Version.Build);
 		d->header.v9.xscreensize = le32_to_cpu(d->header.v9.xscreensize);
 		d->header.v9.yscreensize = le32_to_cpu(d->header.v9.yscreensize);
 		d->header.v9.screenflags = le32_to_cpu(d->header.v9.screenflags);
@@ -363,7 +363,7 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 	}
 
 	// load the GMS2 header information
-	if (d->dataVersion >= 0xE && d->header.v9.MajorVersion >= 2) {
+	if (d->dataVersion >= 0xE && d->header.v9.Version.Major >= 2) {
 		d->hasGms2Header = true;
 		// license blob
 		size = d->file->read(d->gms2License, sizeof(d->gms2License));
@@ -499,9 +499,11 @@ int GameMaker::loadFieldData(void)
 			d->fields.addField_string(
 				C_("GameMaker", "Project Config"), d->projectConfig.c_str(), RomFields::STRF_TRIM_END);
 		}
-
-	    std::string versionNum = std::format("{}.{}.{}.{}", d->header.v9.MajorVersion, d->header.v9.MinorVersion,
-		    d->header.v9.ReleaseVersion, d->header.v9.BuildVersion);
+		
+		// HACK: to make GCC happy with the packed structures, make a copy of the Version struct
+		const YYVersion version = d->header.v9.Version;
+		std::string versionNum =
+			std::format("{}.{}.{}.{}", version.Major, version.Minor, version.Release, version.Build);
 	    d->fields.addField_string(C_("GameMaker", "IDE Version"), versionNum, 0);
 
 		d->fields.addField_dimensions(C_("GameMaker", "Resolution"), d->header.v9.xscreensize, d->header.v9.yscreensize);
@@ -620,11 +622,11 @@ int GameMaker::loadFieldData(void)
 #endif /* _WIN32 */
 
 			auto *const vv_fn_classes = new RomFields::ListData_t;
-			for (int i = 0; i < ARRAY_SIZE(function_classes); i++) {
+			for (size_t i = 0; i < ARRAY_SIZE(function_classes); i++) {
 				if (function_classes[i] != nullptr && d->header.v12.functionClasses & ((uint64_t)1 << i)) {
 					vector<string> v_fn_class;
 					v_fn_class.push_back(function_classes[i]);
-					vv_fn_classes->push_back(v_fn_class);
+					vv_fn_classes->push_back(std::move(v_fn_class));
 				}
 			}
 
@@ -641,7 +643,9 @@ int GameMaker::loadFieldData(void)
 		if (d->dataVersion >= 0xD) {
 			if (d->header.v13.steamAppId != 0 && d->header.v13.steamAppId != -1) {
 				uint32_t appId = (uint32_t)d->header.v13.steamAppId;
-				if (d->header.v9.MajorVersion < 2) { // TODO: double check when they changed this
+				// HACK: if it's a negative number then bitflip it
+				//  GMS1 and early GMS2 store it as a negative integer
+				if (appId & 0x80000000) { 
 					appId ^= 0xFFFFFFFF;
 					appId++;
 				}

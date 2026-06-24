@@ -24,10 +24,18 @@ typedef struct _iff_sect_hdr {
 // IFF "FORM" magic
 #define FORM_HDR 0x4D524F46
 
+typedef struct _YYVersion {
+	int Major;
+	int Minor;
+	int Release;
+	int Build;
+} YYVersion;
+
 #pragma pack(1)
 
 // GameMaker general information header
 // for ease of file parsing, the "count" value was removed
+// for a HACK to make GCC happy, MajorVersion etc was turned into the YYVersion struct
 #define GEN7_HDR 0x374E4547
 #define GEN8_HDR 0x384E4547 // only one actually used by the runner
 #define GENL_HDR 0x4C4E4547
@@ -43,10 +51,7 @@ typedef struct RP_PACKED _YYHeader {
     int guid3;
     int guid4;
     uint32_t pGameName;
-    int MajorVersion;
-    int MinorVersion;
-    int ReleaseVersion;
-    int BuildVersion;
+    YYVersion Version;
     int xscreensize;
     int yscreensize;
     int screenflags;
@@ -69,10 +74,7 @@ typedef struct RP_PACKED _YYHeader_000A {
     int guid3;
     int guid4;
     uint32_t pGameName;
-    int MajorVersion;
-    int MinorVersion;
-    int ReleaseVersion;
-    int BuildVersion;
+    YYVersion Version;
     int xscreensize;
     int yscreensize;
     int screenflags;
@@ -97,10 +99,7 @@ typedef struct RP_PACKED _YYHeader_000B {
     int guid3;
     int guid4;
     uint32_t pGameName;
-    int MajorVersion;
-    int MinorVersion;
-    int ReleaseVersion;
-    int BuildVersion;
+    YYVersion Version;
     int xscreensize;
     int yscreensize;
     int screenflags;
@@ -127,10 +126,7 @@ typedef struct RP_PACKED _YYHeader_000C {
     int guid3;
     int guid4;
     uint32_t pGameName;
-    int MajorVersion;
-    int MinorVersion;
-    int ReleaseVersion;
-    int BuildVersion;
+    YYVersion Version;
     int xscreensize;
     int yscreensize;
     int screenflags;
@@ -159,10 +155,7 @@ typedef struct RP_PACKED _YYHeader_000D {
     int guid3;
     int guid4;
     uint32_t pGameName;
-    int MajorVersion;
-    int MinorVersion;
-    int ReleaseVersion;
-    int BuildVersion;
+    YYVersion Version;
     int xscreensize;
     int yscreensize;
     int screenflags;
@@ -193,10 +186,7 @@ typedef struct RP_PACKED _YYHeader_000E {
     int guid3;
     int guid4;
     uint32_t pGameName;
-    int MajorVersion;
-    int MinorVersion;
-    int ReleaseVersion;
-    int BuildVersion;
+    YYVersion Version;
     int xscreensize;
     int yscreensize;
     int screenflags;
