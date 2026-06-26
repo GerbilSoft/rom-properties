@@ -25,6 +25,7 @@ using LibRpBase::RomFields;
 using LibRpTexture::ImageDecoder::PixelFormat;
 
 // C++ STL classes
+#include <mutex>
 using std::array;
 using std::unique_ptr;
 
@@ -56,6 +57,18 @@ public:
 
 	// Decoded image
 	rp_image_ptr img;
+
+public:
+	// PalmOS 4-bit grayscale palette
+	static constexpr size_t palette_4bpp_size = 16U;
+	static array<uint32_t, palette_4bpp_size> palette_4bpp;
+	static std::once_flag palette_4bpp_once_control;
+
+	/**
+	 * Initialize the PalmOS 4-bit grayscale palette.
+	 * Called by std::call_once().
+	 */
+	static void init_palette_4bpp(void);
 
 public:
 	/**
@@ -111,12 +124,28 @@ const TextureInfo PalmOS_Tbmp_Private::textureInfo = {
 	exts.data(), mimeTypes.data()
 };
 
+// PalmOS 4-bit grayscale palette
+array<uint32_t, 16> PalmOS_Tbmp_Private::palette_4bpp;
+std::once_flag PalmOS_Tbmp_Private::palette_4bpp_once_control;
+
 PalmOS_Tbmp_Private::PalmOS_Tbmp_Private(PalmOS_Tbmp *q, const IRpFilePtr &file, uint32_t bitmapTypeAddr)
 	: super(q, file, &textureInfo)
 	, bitmapTypeAddr(bitmapTypeAddr)
 {
 	// Clear the structs and arrays.
 	memset(&bitmapType, 0, sizeof(bitmapType));
+}
+
+/**
+ * Initialize the PalmOS 4-bit grayscale palette.
+ * Called by std::call_once().
+ */
+void PalmOS_Tbmp_Private::init_palette_4bpp(void)
+{
+	uint32_t gray = 0xFFFFFFFFU;
+	for (unsigned int i = 0; i < palette_4bpp_size; i++, gray -= 0x111111U) {
+		palette_4bpp[i] = gray;
+	}
 }
 
 /**
@@ -435,16 +464,12 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 			// 4-bpp grayscale
 			// NOTE: Using a function intended for 16-color images,
 			// so we'll have to provide our own palette.
-			uint32_t palette[16];
-			uint32_t gray = 0xFFFFFFFFU;
-			for (unsigned int i = 0; i < ARRAY_SIZE(palette); i++, gray -= 0x111111U) {
-				palette[i] = gray;
-			}
+			std::call_once(palette_4bpp_once_control, init_palette_4bpp);
 
 			img = ImageDecoder::fromLinearCI4(PixelFormat::Host_ARGB32, true,
 					width, height,
 					icon_data.get(), icon_data_len,
-					palette, sizeof(palette), rowBytes);
+					palette_4bpp.data(), palette_4bpp.size() * sizeof(uint32_t), rowBytes);
 			if (img) {
 				// Set the sBIT metadata.
 				// NOTE: Setting the grayscale value, though we're
