@@ -27,8 +27,9 @@ namespace LibRpTexture { namespace ImageDecoder {
  *
  * Supports textures up to 4096x4096.
  */
-static constexpr size_t DC_TMAP_SIZE = 4096;
-static unique_ptr<array<unsigned int, DC_TMAP_SIZE> > dc_tmap;
+static constexpr size_t DC_TMAP_SIZE = 4096U;
+typedef array<unsigned int, DC_TMAP_SIZE> dc_tmap_t;
+static unique_ptr<dc_tmap_t> dc_tmap;
 
 // std::call_once() control variable
 static std::once_flag dc_tmap_once_flag;
@@ -39,9 +40,9 @@ static std::once_flag dc_tmap_once_flag;
  *
  * This function MUST be called using std::call_once().
  */
-static void initDreamcastTwiddleMap_int(void)
+static void initDreamcastTwiddleMap(void)
 {
-	dc_tmap.reset(new array<unsigned int, DC_TMAP_SIZE>);
+	dc_tmap.reset(new dc_tmap_t);
 	unsigned int *const p_tmap = dc_tmap->data();
 
 	for (unsigned int i = 0; i < DC_TMAP_SIZE; i++) {
@@ -50,15 +51,6 @@ static void initDreamcastTwiddleMap_int(void)
 			p_tmap[i] |= ((i & k) << j);
 		}
 	}
-}
-
-/**
- * Initialize the Dreamcast twiddle map.
- * This initializes dc_tmap[].
- */
-static RP_FORCEINLINE void initDreamcastTwiddleMap(void)
-{
-	std::call_once(dc_tmap_once_flag, initDreamcastTwiddleMap_int);
 }
 
 /**
@@ -79,17 +71,17 @@ rp_image_ptr fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	assert(width > 0);
 	assert(height > 0);
 	assert(width == height);
-	assert(width <= 4096);
+	assert(width <= (int)DC_TMAP_SIZE);
 	assert(img_siz >= (static_cast<size_t>(width) * static_cast<size_t>(height) * 2));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    width != height || width > 4096 ||
+	    width != height || width > (int)DC_TMAP_SIZE ||
 	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) * 2))
 	{
 		return nullptr;
 	}
 
 	// Initialize the twiddle map.
-	initDreamcastTwiddleMap();
+	std::call_once(dc_tmap_once_flag, initDreamcastTwiddleMap);
 	const unsigned int *const p_tmap = dc_tmap->data();
 
 	// Create an rp_image.
@@ -159,11 +151,11 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 	assert(width > 0);
 	assert(height > 0);
 	assert(width == height);
-	assert(width <= 4096);
+	assert(width <= (int)DC_TMAP_SIZE);
 	assert(img_siz > 0);
 	assert(pal_siz > 0);
 	if (!img_buf || !pal_buf || width <= 0 || height <= 0 ||
-	    width != height || width > 4096 ||
+	    width != height || width > (int)DC_TMAP_SIZE ||
 	    img_siz == 0 || pal_siz == 0)
 	{
 		return nullptr;
@@ -190,7 +182,7 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 	}
 
 	// Initialize the twiddle map.
-	initDreamcastTwiddleMap();
+	std::call_once(dc_tmap_once_flag, initDreamcastTwiddleMap);
 	const unsigned int *const p_tmap = dc_tmap->data();
 
 	// Create an rp_image.
