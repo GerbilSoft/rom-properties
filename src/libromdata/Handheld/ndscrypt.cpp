@@ -189,6 +189,7 @@ NDSCrypt::NDSCrypt(uint32_t gamecode)
 	, m_global3_rand1(0)
 	, m_global3_rand3(0)
 {
+	memset(m_card_hash, 0, sizeof(m_card_hash));
 	memset(m_keycode, 0, sizeof(m_keycode));
 }
 
