@@ -224,6 +224,8 @@ IF(UNIX AND NOT APPLE)
 			MESSAGE(STATUS "Checking if the system supports DT_RELR - no, needs binutils-2.38 or later")
 		ENDIF(_ld_out MATCHES "-z pack-relative-relocs")
 		SET(HAVE_DT_RELR ${TMP_HAVE_DT_RELR} CACHE INTERNAL "System supports DT_RELR")
+		UNSET(TMP_DT_RELR_RUN CACHE)
+		UNSET(TMP_DT_RELR_COMPILE CACHE)
 		UNSET(TMP_HAVE_DT_RELR)
 	ENDIF(NOT DEFINED HAVE_DT_RELR)
 
