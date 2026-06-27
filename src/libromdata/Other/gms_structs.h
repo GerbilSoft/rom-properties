@@ -216,6 +216,8 @@ typedef struct RP_PACKED _YYGMS2HeaderData {
 } YYGMS2HeaderData;
 ASSERT_STRUCT(YYGMS2HeaderData, 0x18);
 
+#define CODE_HDR 0x45444F43
+
 #ifdef __cplusplus
 }
 #endif

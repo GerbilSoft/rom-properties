@@ -301,7 +301,8 @@ static const array<RomDataFns, romDataFns_magic_count> romDataFns_magic = {{
 	// Other
 	GetRomDataFns_addr(ELF, ATTR_NONE, 0, 0x7F454C46),		// '\177ELF'
 	GetRomDataFns_addr(Lua, ATTR_NONE, 0, 0x1B4C7561),		// '\033Lua'
-	GetRomDataFns_magic2(GameMaker, ATTR_NONE, 0x8, 'GEN8', '8NEG'), // set as this instead of 'FORM' @ 0x0 to avoid conflicts
+	GetRomDataFns_magic2(GameMaker, ATTR_HAS_METADATA, 0x8, 'GEN8',
+		'8NEG'), // set as this instead of 'FORM' @ 0x0 to avoid conflicts
 
 	// Consoles: Xbox 360 STFS
 	// Moved here to prevent conflicts with the Nintendo DS ROM image

@@ -65,6 +65,8 @@ public:
     std::string projectConfig;
     std::string gameName;
     std::string displayName;
+
+	bool hasCodeSegment;
 };
 
 ROMDATA_IMPL(GameMaker)
@@ -115,6 +117,7 @@ GameMakerPrivate::GameMakerPrivate(const IRpFilePtr &file)
 	hasGms2Header = false;
 	memset(&gms2License, 0, sizeof(gms2License));
 	memset(&gms2Header, 0, sizeof(gms2Header));
+	hasCodeSegment = false;
 }
 
 typedef enum _GMSFileType {
@@ -414,6 +417,40 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 		}
 	}
 
+	// run over every file segment
+	iff_sect_hdr_t *iff_hdr = reinterpret_cast<iff_sect_hdr_t *>(iffheader_bytes);
+	if (d->file->seek(sizeof(iff_sect_hdr_t) * 2, RpFile::SeekWhence::Set) != 0) {
+		d->isValid = false;
+		d->file.reset();
+		return;
+	}
+	uint32_t file_len = d->isBigEndian ? be32_to_cpu(iff_hdr[0].length) : le32_to_cpu(iff_hdr[0].length);
+	file_len += sizeof(iff_sect_hdr_t);
+	// skip over the GEN8 header
+	uint32_t post_gen8_offset = d->isBigEndian ? be32_to_cpu(iff_hdr[1].length) : le32_to_cpu(iff_hdr[1].length);
+	if (d->file->seek(post_gen8_offset, RpFile::SeekWhence::Cur) != 0) {
+		d->isValid = false;
+		d->file.reset();
+		return;
+	}
+
+	while (d->file->tell() < file_len) {
+		iff_sect_hdr_t sect_hdr;
+		// doubles as making sure every section of the file is telling the truth about its size?
+		if (d->file->read(&sect_hdr, sizeof(iff_sect_hdr_t)) != sizeof(iff_sect_hdr_t)) {
+			d->isValid = false;
+			d->file.reset();
+			return;
+		}
+		uint32_t host_magic = d->isBigEndian ? be32_to_cpu(sect_hdr.magic) : le32_to_cpu(sect_hdr.magic);
+		uint32_t host_len = d->isBigEndian ? be32_to_cpu(sect_hdr.length) : le32_to_cpu(sect_hdr.length);
+
+		// has a non-zero length code segment - not YYC
+		if (host_magic == CODE_HDR && host_len > 0)
+			d->hasCodeSegment = true;
+
+		d->file->seek(host_len, RpFile::SeekWhence::Cur);
+	}
 
     if (!d->isValid) {
         d->file.reset();
@@ -459,6 +496,33 @@ const char *GameMaker::systemName(unsigned int type) const
 		return sysNames_studio1[type & SYSNAME_TYPE_MASK];
 }
 
+int GameMaker::loadMetaData(void)
+{
+	RP_D(GameMaker);
+	if (!d->metaData.empty()) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		return -EBADF;
+	} else if (!d->isValid) {
+		return -EIO;
+	}
+
+	d->metaData.reserve(3); // Maximum of 3 metadata properties.
+
+	if (d->displayName.length() != 0) {
+		d->metaData.addMetaData_string(Property::Title, d->displayName, RomMetaData::STRF_TRIM_END);
+	} else if (d->gameName.length() != 0) {
+		d->metaData.addMetaData_string(Property::Title, d->gameName, RomMetaData::STRF_TRIM_END);
+	}
+
+	d->metaData.addMetaData_timestamp(Property::CreationDate, d->header.v9.datetimeUTC);
+
+	d->metaData.addMetaData_string(Property::Generator, d->hasGms2Header ? "GameMaker" : "GameMaker:Studio");
+
+	return d->metaData.count();
+}
+
 int GameMaker::loadFieldData(void)
 {
 	RP_D(GameMaker);
@@ -476,19 +540,19 @@ int GameMaker::loadFieldData(void)
 	// general info fields
     d->fields.addTab("Info");
 	{
+		if (d->displayName.length() != 0) {
+			d->fields.addField_string(C_("GameMaker", "Display Name"), d->displayName.c_str(),
+				RomFields::STRF_TRIM_END);
+		}
+
 		if (d->gameName.length() != 0) {
 			d->fields.addField_string(
 				C_("GameMaker", "Game Name"), d->gameName.c_str(), RomFields::STRF_TRIM_END);
 		}
 
-		if (d->dataVersion >= 0xA) {
-			if (d->displayName.length() != 0) {
-				d->fields.addField_string(C_("GameMaker", "Display Name"), d->displayName.c_str(),
-					RomFields::STRF_TRIM_END);
-			}
-		}
-
 	    d->fields.addField_string_numeric(C_("GameMaker", "Format Version"), d->dataVersion);
+
+		d->fields.addField_string(C_("GameMaker", "Runtime"), d->hasCodeSegment ? "VM" : "YYC", 0);
 
 		if (d->projectName.length() != 0) {
 		    d->fields.addField_string(
@@ -503,10 +567,15 @@ int GameMaker::loadFieldData(void)
 		// HACK: to make GCC happy with the packed structures, make a copy of the Version struct
 		const YYVersion version = d->header.v9.Version;
 		std::string versionNum =
-			std::format("{}.{}.{}.{}", version.Major, version.Minor, version.Release, version.Build);
+			fmt::format("{}.{}.{}.{}", version.Major, version.Minor, version.Release, version.Build);
 	    d->fields.addField_string(C_("GameMaker", "IDE Version"), versionNum, 0);
 
-		d->fields.addField_dimensions(C_("GameMaker", "Resolution"), d->header.v9.xscreensize, d->header.v9.yscreensize);
+		d->fields.addField_dimensions(
+		    C_("GameMaker", "Resolution"), d->header.v9.xscreensize, d->header.v9.yscreensize);
+
+	    d->fields.addField_dateTime(C_("GameMaker", "Build Timestamp"), d->header.v9.datetimeUTC,
+		    RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME |
+			    RomFields::RFT_DATETIME_IS_UTC);
 
 		static const char *const screen_flags[] = {
 			NOP_C_("GameMaker|ScreenFlags", "Fullscreen"),
@@ -534,10 +603,6 @@ int GameMaker::loadFieldData(void)
 			RomFields::strArrayToVector_i18n("GameMaker", screen_flags, ARRAY_SIZE(screen_flags));
 		d->fields.addField_bitfield(
 			C_("GameMaker", "Screen Flags"), v_screen_flags, 3, d->header.v9.screenflags);
-
-		d->fields.addField_dateTime(C_("GameMaker", "Build Timestamp"), d->header.v9.datetimeUTC,
-		    RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME |
-			    RomFields::RFT_DATETIME_IS_UTC);
 
 		if (d->dataVersion >= 0xB) {
 			// license data? never referenced by the runner, always seen as 0
@@ -666,7 +731,6 @@ int GameMaker::loadFieldData(void)
 			static const char *const stats_flags[] = {NOP_C_("GameMaker", "Allow Statistics")};
 			std::vector<std::string> *const v_stats_flags =
 				RomFields::strArrayToVector_i18n("GameMaker", stats_flags, ARRAY_SIZE(stats_flags));
-
 			d->fields.addField_bitfield(C_("GameMaker", "Statistics"), v_stats_flags, 3, d->gms2Header.AllowStatistics);
 		}
 
