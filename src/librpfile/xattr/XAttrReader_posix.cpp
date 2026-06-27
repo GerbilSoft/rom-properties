@@ -492,7 +492,7 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 #elif defined(__APPLE__)
 			valuelen = fgetxattr(fd, name, value.data(), valuelen, 0, 0);
 #elif defined(HAVE_SYS_EXTATTR_H)
-			valuelen = extattr_get_fd(fd, attrnamespace, name.c_str(), nullptr, 0);
+			valuelen = extattr_get_fd(fd, attrnamespace, name.c_str(), value.data(), valuelen);
 #endif
 
 			if (valuelen > 0 && value.size() == 0) {
