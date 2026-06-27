@@ -61,10 +61,10 @@ SED="${SED-sed}"
 GIT="${GIT-git}"
 
 # Initialize
-working_dir=`pwd`
+working_dir=$(pwd)
 
 # Who am I?
-self=`basename "$0"`
+self=$(basename "$0")
 
 # Defaults
 ifndef_symbol="GIT_VERSION_H"
@@ -72,10 +72,10 @@ outfile="-"
 print_example=false
 keep_if_no_repo=no
 quiet=false
-srcdir=`pwd`
+srcdir=$(pwd)
 
 # Parse command line parameter, affecting defaults
-while [ "x$1" != "x" ]
+while [ "$1" != "" ]
 do
     case "$1" in
         -x|--example)
@@ -84,10 +84,10 @@ do
         -o|--output)
             if shift; then
                 outfile="$1"
-                if [ "x$outfile" = "x-" ]; then
+                if [ "$outfile" = "-" ]; then
                     : # keep default ifndef_symbol
                 else
-                    ifndef_symbol=`basename "$outfile" | $SED 's|\.|_|g; s|[^A-Za-z0-9_]||g' | tr a-z A-Z`
+                    ifndef_symbol=$(basename "$outfile" | $SED 's|\.|_|g; s|[^A-Za-z0-9_]||g' | tr a-z A-Z)
                 fi
             else
                 echo "$self: Fatal: \"$1\" option requires parameter." >&2
@@ -128,7 +128,7 @@ done
 
 # If not printing to stdout, redirect stdout to output file?
 rename_new_output=false
-if [ "x$outfile" = "x-" ]
+if [ "$outfile" = "-" ]
 then
     : # keep using stdout
 else
@@ -136,7 +136,7 @@ else
 fi
 
 # Done with creating output files, so we can change to source dir
-abs_srcdir=`cd "$srcdir" && pwd`
+abs_srcdir=$(cd "$srcdir" && pwd)
 cd "$srcdir"
 
 # Write program header
@@ -156,17 +156,17 @@ EOF
 
 # Detect git tool (should work with old and new git versions)
 git_found=yes
-if [ "x$GIT" = "xgit" ] && [ "x`which $GIT 2>/dev/null`" = "x" ]; then
+if [ "$GIT" = "git" ] && [ "$(which $GIT 2>/dev/null)" = "" ]; then
     git_found="'$GIT' not found"
-    break
+    exit 1
 fi
 # If git_found=yes, we can now use $() substitutions (as git does). Hooray!
 
 # Determine git specific defines
 unset git_errors ||:
-if [ "x$git_found" = "xyes" ]; then
-    git_version=`$GIT --version`
-    if [ "x$git_version" = "x" ]; then
+if [ "$git_found" = "yes" ]; then
+    git_version=$($GIT --version)
+    if [ "$git_version" = "" ]; then
         git_errors="${git_errors+${git_errors}; }error running '$GIT --version'"
     fi
 fi
@@ -177,36 +177,36 @@ git_repo_dir="$($GIT rev-parse --git-dir 2> /dev/null || true)"
 abs_repo_dir="$(cd "$git_repo_dir" && pwd)"
 # Only accept the found git repo iff it is in our top srcdir, as determined
 # by comparing absolute pathnames created by running pwd in the respective dir.
-if [ "x$git_repo_dir" != "x" ] && [ "x${abs_repo_dir}" = "x${abs_srcdir}/.git" ]; then
+if [ "$git_repo_dir" != "" ] && [ "${abs_repo_dir}" = "${abs_srcdir}/.git" ]; then
     git_repo=yes
-    if [ "x$git_found" = "xyes" ]; then
+    if [ "$git_found" = "yes" ]; then
         # git-1.4 and probably earlier understand "git-rev-parse HEAD"
-        git_shaid=`$GIT rev-parse HEAD | $SED -n 's/^\(.\{8\}\).*/\1/p'`
-        if [ "x$git_shaid" = "x" ]; then
+        git_shaid=$($GIT rev-parse HEAD | $SED -n 's/^\(.\{8\}\).*/\1/p')
+        if [ "$git_shaid" = "" ]; then
             git_errors="${git_errors+${git_errors}; }error running '$GIT rev-parse HEAD'"
         fi
         # git-1.4 and probably earlier understand "git-symbolic-ref HEAD"
-        git_branch=`$GIT symbolic-ref HEAD | $SED -n 's|^refs/heads/||p'`
-        if [ "x$git_branch" = "x" ]; then
+        git_branch=$($GIT symbolic-ref HEAD | $SED -n 's|^refs/heads/||p')
+        if [ "$git_branch" = "" ]; then
             # This happens, is OK, and "(no branch)" is what "git branch" prints.
             git_branch="(no branch)"
         fi
         git_dirty=yes
         # git-1.4 does not understand "git-diff-files --quiet"
         # git-1.4 does not understand "git-diff-index --cached --quiet HEAD"
-        if [ "x$($GIT diff-files)" = "x" ] && [ "x$($GIT diff-index --cached HEAD)" = "x" ]; then
+        if [ "$($GIT diff-files)" = "" ] && [ "$($GIT diff-index --cached HEAD)" = "" ]; then
             git_dirty=no
         fi
 
 	# dkorth changes [2013/07/21 10:18 AM EDT]
 	# Get the current git description.
 	# (String will be empty if no description is available or if git is too old.)
-	git_describe=`$GIT describe --abbrev=8`
+	git_describe=$($GIT describe --abbrev=8)
     fi
 fi
 
 # Write git specific defines
-if [ "x$git_errors" = "x" ]; then
+if [ "$git_errors" = "" ]; then
     echo "/* No errors occured while running git */"
     echo "#undef GIT_ERRORS"
 else
@@ -215,7 +215,7 @@ else
 fi
 echo ""
 
-if [ "x$git_found" = "xyes" ]; then
+if [ "$git_found" = "yes" ]; then
     echo "/* git utilities found */"
     echo "#undef GIT_NOT_FOUND"
     echo "#define GIT_VERSION \"${git_version}\""
@@ -240,14 +240,14 @@ cat<<EOF
 EOF
 fi
 
-if [ "x$git_repo" = "xno" ]; then
+if [ "$git_repo" = "no" ]; then
     echo "/* No git repo found, probably building from dist tarball */"
     echo "#undef GIT_REPO"
 else
     echo "/* git repo found */"
     echo "#define GIT_REPO 1"
     echo ""
-    if [ "x$git_found" = "xyes" ]; then
+    if [ "$git_found" = "yes" ]; then
         echo "/* Git SHA ID of last commit */"
         echo "#define GIT_SHAID \"${git_shaid}\""
         echo ""
@@ -256,7 +256,7 @@ else
         echo "#define GIT_BRANCH \"$git_branch\""
         echo ""
 
-        if [ "x$git_describe" = "x" ]; then
+        if [ "$git_describe" = "" ]; then
             echo "/* git-describe: no description available (no tag?) */"
             echo "#undef GIT_DESCRIBE"
         else
@@ -267,7 +267,7 @@ else
 
         # Any uncommitted changes we should know about?
         # Or technically: Are the working tree or index dirty?
-        if [ "x$git_dirty" = "xno" ]; then
+        if [ "$git_dirty" = "no" ]; then
             echo "/* SHA-ID uniquely defines the state of this code */"
             echo "#undef GIT_DIRTY"
         else
@@ -351,10 +351,9 @@ fi
 cd "$working_dir"
 
 # If necessary, overwrite outdated output file with new one
-if [ "x$outfile" != "x-" ]
-then
+if [ "$outfile" != "-" ]; then
     if [ -f "$outfile" ]; then
-        if [ "x$keep_if_no_repo" = "xyes" ] && [ "x$git_repo" = "xno" ]; then
+        if [ "$keep_if_no_repo" = "yes" ] && [ "$git_repo" = "no" ]; then
             "$quiet" || echo "$self: Not a git repo, keeping existing $outfile" >&2
             rm -f "$outfile.new"
         elif cmp "$outfile" "$outfile.new" > /dev/null; then
