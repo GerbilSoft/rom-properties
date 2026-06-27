@@ -419,7 +419,7 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 
 	// run over every file segment
 	iff_sect_hdr_t *iff_hdr = reinterpret_cast<iff_sect_hdr_t *>(iffheader_bytes);
-	if (d->file->seek(sizeof(iff_sect_hdr_t) * 2, RpFile::SeekWhence::Set) != 0) {
+	if (d->file->seek(sizeof(iff_sect_hdr_t) * 2, IRpFile::SeekWhence::Set) != 0) {
 		d->isValid = false;
 		d->file.reset();
 		return;
@@ -428,7 +428,7 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 	file_len += sizeof(iff_sect_hdr_t);
 	// skip over the GEN8 header
 	uint32_t post_gen8_offset = d->isBigEndian ? be32_to_cpu(iff_hdr[1].length) : le32_to_cpu(iff_hdr[1].length);
-	if (d->file->seek(post_gen8_offset, RpFile::SeekWhence::Cur) != 0) {
+	if (d->file->seek(post_gen8_offset, IRpFile::SeekWhence::Cur) != 0) {
 		d->isValid = false;
 		d->file.reset();
 		return;
@@ -449,7 +449,7 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 		if (host_magic == CODE_HDR && host_len > 0)
 			d->hasCodeSegment = true;
 
-		d->file->seek(host_len, RpFile::SeekWhence::Cur);
+		d->file->seek(host_len, IRpFile::SeekWhence::Cur);
 	}
 
     if (!d->isValid) {
