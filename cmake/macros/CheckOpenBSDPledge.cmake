@@ -5,8 +5,7 @@
 # - HAVE_TAME: tame() is available. (OpenBSD 5.8)
 # - HAVE_PLEDGE: pledge() is available, (OpenBSD 5.9+)
 # - HAVE_PLEDGE_EXECPROMISES: pledge() with execpromises is available. (OpenBSD 6.3+)
-
-MACRO(CHECK_OPENBSD_PLEDGE)
+FUNCTION(CHECK_OPENBSD_PLEDGE)
 	CHECK_SYMBOL_EXISTS(pledge "unistd.h" HAVE_PLEDGE)
 	IF(NOT HAVE_PLEDGE)
 		CHECK_SYMBOL_EXISTS(tame "sys/tame.h" HAVE_TAME)
@@ -22,4 +21,4 @@ int main(void)
 	pledge(\"\", \"\");
 }" HAVE_PLEDGE_EXECPROMISES)
 	ENDIF(HAVE_PLEDGE)
-ENDMACRO(CHECK_OPENBSD_PLEDGE)
+ENDFUNCTION(CHECK_OPENBSD_PLEDGE)
