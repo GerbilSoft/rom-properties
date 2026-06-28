@@ -77,7 +77,7 @@ public:
 	 * Is this character a slash or backslash?
 	 * @return True if it is; false if it isn't.
 	 */
-	static inline bool is_slash(char c)
+	static inline constexpr bool is_slash(char c)
 	{
 		return (c == '/') || (c == '\\');
 	}
