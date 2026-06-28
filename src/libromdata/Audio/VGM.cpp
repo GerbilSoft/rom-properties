@@ -669,7 +669,7 @@ int VGM::loadFieldData(void)
 						chip_name = chip_name_tbl[lkup];
 					}
 				}
-				if (!chip_name) {
+				if (!chip_name || chip_name[0] == '\0') {
 					// TODO: Print the type ID?
 					chip_name = "AYxxxx";
 				}
