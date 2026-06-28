@@ -163,8 +163,9 @@ int NSF::isRomSupported_static(const DetectInfo *info)
 const char *NSF::systemName(unsigned int type) const
 {
 	RP_D(const NSF);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// NSF has the same name worldwide, so we can
 	// ignore the region selection.

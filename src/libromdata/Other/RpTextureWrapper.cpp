@@ -154,8 +154,9 @@ int RpTextureWrapper::isRomSupported_static(const DetectInfo *info)
 const char *RpTextureWrapper::systemName(unsigned int type) const
 {
 	RP_D(const RpTextureWrapper);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// TODO: Short names and whatnot from FileFormat.
 	return d->texture->textureFormatName();

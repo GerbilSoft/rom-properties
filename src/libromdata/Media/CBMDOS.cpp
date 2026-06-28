@@ -1100,8 +1100,9 @@ int CBMDOS::isRomSupported_static(const DetectInfo *info)
 const char *CBMDOS::systemName(unsigned int type) const
 {
 	RP_D(const CBMDOS);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// CBMDOS has the same name worldwide, so we can
 	// ignore the region selection.

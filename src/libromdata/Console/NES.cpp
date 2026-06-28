@@ -1101,8 +1101,9 @@ int NES::isRomSupported_static(const DetectInfo *info)
 const char *NES::systemName(unsigned int type) const
 {
 	RP_D(const NES);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// TODO: Regional variant, e.g. Famicom.
 	static_assert(SYSNAME_TYPE_MASK == 3,

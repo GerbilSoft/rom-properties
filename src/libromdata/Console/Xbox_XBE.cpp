@@ -589,8 +589,9 @@ int Xbox_XBE::isRomSupported_static(const DetectInfo *info)
 const char *Xbox_XBE::systemName(unsigned int type) const
 {
 	RP_D(const Xbox_XBE);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// Xbox 360 has the same name worldwide, so we can
 	// ignore the region selection.

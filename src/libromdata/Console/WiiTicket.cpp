@@ -447,8 +447,9 @@ int WiiTicket::isRomSupported_static(const DetectInfo *info)
 const char *WiiTicket::systemName(unsigned int type) const
 {
 	RP_D(const WiiTicket);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// Wii has the same name worldwide, so we can
 	// ignore the region selection.

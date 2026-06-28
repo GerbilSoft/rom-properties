@@ -490,8 +490,9 @@ int NintendoDS::isRomSupported_static(const DetectInfo *info)
 const char *NintendoDS::systemName(unsigned int type) const
 {
 	RP_D(const NintendoDS);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// NDS/DSi are mostly the same worldwide, except for China.
 	static_assert(SYSNAME_TYPE_MASK == 3,

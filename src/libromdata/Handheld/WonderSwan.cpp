@@ -408,8 +408,9 @@ int WonderSwan::isRomSupported_static(const DetectInfo *info)
 const char *WonderSwan::systemName(unsigned int type) const
 {
 	RP_D(const WonderSwan);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// WonderSwan has the same name worldwide, so we can
 	// ignore the region selection.

@@ -301,8 +301,9 @@ int VGM::isRomSupported_static(const DetectInfo *info)
 const char *VGM::systemName(unsigned int type) const
 {
 	RP_D(const VGM);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// VGM has the same name worldwide, so we can
 	// ignore the region selection.

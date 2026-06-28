@@ -448,8 +448,9 @@ int Sega8Bit::isRomSupported_static(const DetectInfo *info)
 const char *Sega8Bit::systemName(unsigned int type) const
 {
 	RP_D(const Sega8Bit);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// TODO: Region-specific variants.
 	static_assert(SYSNAME_TYPE_MASK == 3,

@@ -169,8 +169,9 @@ int Nintendo3DSFirm::isRomSupported_static(const DetectInfo *info)
 const char *Nintendo3DSFirm::systemName(unsigned int type) const
 {
 	RP_D(const Nintendo3DSFirm);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// Nintendo 3DS has the same name worldwide, so we can
 	// ignore the region selection.

@@ -478,8 +478,9 @@ int SegaSaturn::isRomSupported_static(const DetectInfo *info)
 const char *SegaSaturn::systemName(unsigned int type) const
 {
 	RP_D(const SegaSaturn);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// Sega Saturn has the same name worldwide, so we can
 	// ignore the region selection.

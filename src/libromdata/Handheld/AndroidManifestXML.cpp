@@ -545,8 +545,9 @@ int AndroidManifestXML::isRomSupported_static(const DetectInfo *info)
 const char *AndroidManifestXML::systemName(unsigned int type) const
 {
 	RP_D(const AndroidManifestXML);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// AndroidManifestXML has the same name worldwide, so we can
 	// ignore the region selection.

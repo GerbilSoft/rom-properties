@@ -255,8 +255,9 @@ int S98::isRomSupported_static(const DetectInfo *info)
 const char *S98::systemName(unsigned int type) const
 {
 	RP_D(const S98);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// S98 has the same name worldwide, so we can
 	// ignore the region selection.

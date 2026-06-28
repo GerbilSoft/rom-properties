@@ -396,8 +396,9 @@ int ColecoVision::isRomSupported_static(const DetectInfo *info)
 const char *ColecoVision::systemName(unsigned int type) const
 {
 	RP_D(const ColecoVision);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// ColecoVision has the same name worldwide, so we can
 	// ignore the region selection.

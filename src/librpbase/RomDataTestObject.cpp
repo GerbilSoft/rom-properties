@@ -109,8 +109,9 @@ int RomDataTestObject::isRomSupported_static(const DetectInfo *info)
 const char *RomDataTestObject::systemName(unsigned int type) const
 {
 	RP_D(const RomDataTestObject);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// GBA has the same name worldwide, so we can
 	// ignore the region selection.

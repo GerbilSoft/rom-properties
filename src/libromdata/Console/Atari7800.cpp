@@ -158,8 +158,9 @@ int Atari7800::isRomSupported_static(const DetectInfo *info)
 const char *Atari7800::systemName(unsigned int type) const
 {
 	RP_D(const Atari7800);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// Atari 7800 has the same name worldwide, so we can
 	// ignore the region selection.

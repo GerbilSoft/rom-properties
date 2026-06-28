@@ -160,8 +160,9 @@ int Lynx::isRomSupported_static(const DetectInfo *info)
 const char *Lynx::systemName(unsigned int type) const
 {
 	RP_D(const Lynx);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// Lynx has the same name worldwide, so we can
 	// ignore the region selection.

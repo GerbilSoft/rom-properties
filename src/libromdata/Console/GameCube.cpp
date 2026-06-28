@@ -1351,8 +1351,9 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 const char *GameCube::systemName(unsigned int type) const
 {
 	RP_D(const GameCube);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// GCN, Wii, and Triforce have the same name worldwide, so we can
 	// ignore the region selection.

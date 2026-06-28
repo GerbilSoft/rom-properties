@@ -418,8 +418,9 @@ int MachO::isRomSupported_static(const DetectInfo *info)
 const char *MachO::systemName(unsigned int type) const
 {
 	RP_D(const MachO);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// Mach-O has the same name worldwide, so we can
 	// ignore the region selection.

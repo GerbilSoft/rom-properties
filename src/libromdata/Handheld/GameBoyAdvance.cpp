@@ -278,8 +278,9 @@ int GameBoyAdvance::isRomSupported_static(const DetectInfo *info)
 const char *GameBoyAdvance::systemName(unsigned int type) const
 {
 	RP_D(const GameBoyAdvance);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// GBA has the same name worldwide, so we can
 	// ignore the region selection.

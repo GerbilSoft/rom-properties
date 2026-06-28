@@ -620,8 +620,9 @@ int WiiUPackage::isDirSupported_static(const wchar_t *path)
 const char *WiiUPackage::systemName(unsigned int type) const
 {
 	RP_D(const WiiUPackage);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// WiiUPackage has the same name worldwide, so we can
 	// ignore the region selection.

@@ -292,8 +292,9 @@ int WiiTMD::isRomSupported_static(const DetectInfo *info)
 const char *WiiTMD::systemName(unsigned int type) const
 {
 	RP_D(const WiiTMD);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// GBA has the same name worldwide, so we can
 	// ignore the region selection.

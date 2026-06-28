@@ -1028,8 +1028,9 @@ int DMG::isRomSupported_static(const DetectInfo *info)
 const char *DMG::systemName(unsigned int type) const
 {
 	RP_D(const DMG);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// GB/GBC have the same names worldwide, so we can
 	// ignore the region selection.

@@ -859,8 +859,9 @@ int XboxDisc::isDirSupported_static(const wchar_t *path)
 const char *XboxDisc::systemName(unsigned int type) const
 {
 	RP_D(const XboxDisc);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// XboxDisc has the same name worldwide, so we can
 	// ignore the region selection.

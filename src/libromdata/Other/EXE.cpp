@@ -832,8 +832,9 @@ int EXE::isRomSupported_static(const DetectInfo *info)
 const char *EXE::systemName(unsigned int type) const
 {
 	RP_D(const EXE);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// EXE has the same name worldwide, so we can
 	// ignore the region selection.

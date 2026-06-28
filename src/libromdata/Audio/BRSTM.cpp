@@ -273,8 +273,9 @@ int BRSTM::isRomSupported_static(const DetectInfo *info)
 const char *BRSTM::systemName(unsigned int type) const
 {
 	RP_D(const BRSTM);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// BRSTM has the same name worldwide, so we can
 	// ignore the region selection.

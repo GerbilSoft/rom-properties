@@ -530,8 +530,9 @@ int SAP::isRomSupported_static(const DetectInfo *info)
 const char *SAP::systemName(unsigned int type) const
 {
 	RP_D(const SAP);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// SAP has the same name worldwide, so we can
 	// ignore the region selection.

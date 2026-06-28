@@ -649,8 +649,9 @@ int AndroidAPK::isRomSupported_static(const DetectInfo *info)
 const char *AndroidAPK::systemName(unsigned int type) const
 {
 	RP_D(const AndroidAPK);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// AndroidAPK has the same name worldwide, so we can
 	// ignore the region selection.

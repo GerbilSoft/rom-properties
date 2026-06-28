@@ -1071,8 +1071,9 @@ int ISO::isRomSupported_static(const DetectInfo *info)
 const char *ISO::systemName(unsigned int type) const
 {
 	RP_D(const ISO);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// ISO-9660 has the same name worldwide, so we can
 	// ignore the region selection.

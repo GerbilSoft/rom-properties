@@ -211,8 +211,9 @@ int NGPC::isRomSupported_static(const DetectInfo *info)
 const char *NGPC::systemName(unsigned int type) const
 {
 	RP_D(const NGPC);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// NGPC has the same name worldwide, so we can
 	// ignore the region selection.

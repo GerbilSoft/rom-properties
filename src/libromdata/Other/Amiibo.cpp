@@ -272,8 +272,9 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 const char *Amiibo::systemName(unsigned int type) const
 {
 	RP_D(const Amiibo);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// The "correct" name is "Nintendo Figurine Platform".
 	// It's unknown whether or not Nintendo will release

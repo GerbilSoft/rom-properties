@@ -291,8 +291,9 @@ int N64::isRomSupported_static(const DetectInfo *info)
 const char *N64::systemName(unsigned int type) const
 {
 	RP_D(const N64);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// N64 has the same name worldwide, so we can
 	// ignore the region selection.

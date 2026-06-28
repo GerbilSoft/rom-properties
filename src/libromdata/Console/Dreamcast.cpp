@@ -590,8 +590,9 @@ int Dreamcast::isRomSupported_static(const DetectInfo *info)
 const char *Dreamcast::systemName(unsigned int type) const
 {
 	RP_D(const Dreamcast);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// Dreamcast has the same name worldwide, so we can
 	// ignore the region selection.

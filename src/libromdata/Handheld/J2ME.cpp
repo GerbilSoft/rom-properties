@@ -872,8 +872,9 @@ int J2ME::isRomSupported_static(const DetectInfo *info)
 const char *J2ME::systemName(unsigned int type) const
 {
 	RP_D(const J2ME);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// J2ME has the same name worldwide, so we can
 	// ignore the region selection.

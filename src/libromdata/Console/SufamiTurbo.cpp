@@ -240,8 +240,9 @@ int SufamiTurbo::isRomSupported_static(const DetectInfo *info)
 const char *SufamiTurbo::systemName(unsigned int type) const
 {
 	RP_D(const SufamiTurbo);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"SufamiTurbo::systemName() array index optimization needs to be updated.");

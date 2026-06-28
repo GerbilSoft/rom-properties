@@ -1248,8 +1248,9 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 const char *MegaDrive::systemName(unsigned int type) const
 {
 	RP_D(const MegaDrive);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// FIXME: Lots of system names and regions to check.
 	// Also, games can be region-free, so we need to check

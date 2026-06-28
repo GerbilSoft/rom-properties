@@ -1464,8 +1464,9 @@ int ELF::isRomSupported_static(const DetectInfo *info)
 const char *ELF::systemName(unsigned int type) const
 {
 	RP_D(const ELF);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// ELF has the sam names worldwide, so we can
 	// ignore the region selection.
