@@ -384,6 +384,22 @@ std::string formatFileSizeKiB(unsigned int size, BinaryUnitDialect dialect)
 {
 	// Localize the number.
 	// FIXME: If using C locale, don't do localization.
+
+	if (dialect == BinaryUnitDialect::DefaultBinaryDialect) {
+		// If the UI frontend has registered a user setting query function,
+		// call it to get the default dialect.
+		if (userSettingQueryFunc) {
+			int val = userSettingQueryFunc(usq_user_data, UserSetting::BinaryUnitDialect);
+			if (val >= 0) {
+				dialect = static_cast<BinaryUnitDialect>(val);
+			}
+		} else {
+			// No UI frontend function was registered.
+			// Use IEC as the default.
+			dialect = BinaryUnitDialect::IECBinaryDialect;
+		}
+	}
+
 	if (likely(dialect != BinaryUnitDialect::MetricBinaryDialect)) {
 		size /= 1024;
 	} else {

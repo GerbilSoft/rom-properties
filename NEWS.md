@@ -1,5 +1,15 @@
 # Changes
 
+## v2.9 (released 2026/??/??)
+
+* New parser features:
+  * GodotSTEX: Add (untested) support for ASTC_6x6 textures.
+    * Support for ASTC_6x6 will be added in Godot 4.6.
+
+* Other changes:
+  * KDE Frameworks 6: Also use the file size unit dialect specified in
+    System Settings when explicitly formatting kilobytes.
+
 ## v2.8 (released 2026/06/20)
 
 * New parsers:
@@ -77,6 +87,8 @@
   * Add support for GNU Nettle 4.x.
     * Pull request #494: Add Nettle 4 Support to HashNettle.cpp
       * Submitted by @thequickslash.
+  * KDE Frameworks 6: Use the file size unit dialect specified in System Settings
+    when formatting file sizes.
 
 ## v2.7.1-xp64 (released 2026/04/25)
 
