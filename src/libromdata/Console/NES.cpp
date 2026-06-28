@@ -1956,10 +1956,10 @@ int NES::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 
 	// NOTE: If this system doesn't have mappers, '-1' will be used.
 	const char *ps_mapper = nullptr;
-	char s_mapper[16];
+	string s_mapper;
 	if (likely(!isFDS)) {
-		snprintf(s_mapper, sizeof(s_mapper), "%d", d->get_iNES_mapper_number());
-		ps_mapper = s_mapper;
+		s_mapper = fmt::to_string(d->get_iNES_mapper_number());
+		ps_mapper = s_mapper.c_str();
 	}
 
 	// Add the URLs.
