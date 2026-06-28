@@ -107,6 +107,15 @@ public:
 	bool isExecutionIDLoaded;
 	XEX2_Execution_ID executionID;
 
+	// Encryption key in use.
+	// If fileFormatInfo indicates the PE is encrypted:
+	// - -1: Unknown
+	// -  0: Retail (may be either XEX1 or XEX2)
+	// -  1: Debug
+	// NOTE: We can't use EncryptionKeys because the debug key
+	// is all zeroes, so we're not handling it here.
+	int keyInUse;
+
 	// Resource information. (XEX2_OPTHDR_RESOURCE_INFO)
 	// Initialized by getXdbfResInfo().
 	// NOTE: These structs **ARE** byteswapped.
@@ -118,15 +127,6 @@ public:
 	// Initialized by initPeReader().
 	// NOTE: This struct **IS** byteswapped.
 	XEX2_File_Format_Info fileFormatInfo;
-
-	// Encryption key in use.
-	// If fileFormatInfo indicates the PE is encrypted:
-	// - -1: Unknown
-	// -  0: Retail (may be either XEX1 or XEX2)
-	// -  1: Debug
-	// NOTE: We can't use EncryptionKeys because the debug key
-	// is all zeroes, so we're not handling it here.
-	int keyInUse;
 
 	// Basic compression: Data segments.
 	struct BasicZDataSeg_t {

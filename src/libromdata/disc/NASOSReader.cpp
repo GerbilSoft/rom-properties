@@ -50,15 +50,15 @@ public:
 	};
 	DiscType discType;
 
-	// Block map
-	// Values are absolute block addresses, possibly with a shift amount.
-	// Special value: 0xFFFFFFFF == empty block
-	rp::uvector<uint32_t> blockMap;
-
 	// Block address shift
 	// - GCML: 0
 	// - WIIx: 8
 	uint8_t blockMapShift;
+
+	// Block map
+	// Values are absolute block addresses, possibly with a shift amount.
+	// Special value: 0xFFFFFFFF == empty block
+	rp::uvector<uint32_t> blockMap;
 };
 
 /** NASOSReaderPrivate **/

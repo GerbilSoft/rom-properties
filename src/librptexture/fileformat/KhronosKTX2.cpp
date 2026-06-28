@@ -71,12 +71,6 @@ public:
 	// KTX2 header
 	KTX2_Header ktx2Header;
 
-	// Is HFlip/VFlip needed?
-	// Some textures may be stored upside-down due to
-	// the way GL texture coordinates are interpreted.
-	// Default without KTXorientation is HFlip=false, VFlip=true
-	rp_image::FlipOp flipOp;
-
 	// Mipmap offsets
 	rp::uvector<KTX2_Mipmap_Index> mipmap_data;
 
@@ -99,6 +93,12 @@ public:
 	// to each channel, 0 is 0, and 1 is 1.
 	// If byte 0 is a literal \0, no KTXswizzle tag was found.
 	char ktx_swizzle[4];
+
+	// Is HFlip/VFlip needed?
+	// Some textures may be stored upside-down due to
+	// the way GL texture coordinates are interpreted.
+	// Default without KTXorientation is HFlip=false, VFlip=true
+	rp_image::FlipOp flipOp;
 
 	/**
 	 * Load the image.

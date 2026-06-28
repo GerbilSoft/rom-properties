@@ -66,28 +66,23 @@ public:
 	};
 	XDBFType xdbfType;
 
-	// Internal icon
-	// Points to an rp_image within map_images.
-	rp_image_const_ptr img_icon;
-
-	// Loaded images.
-	// - Key: resource_id
-	// - Value: rp_image*
-	unordered_map<uint64_t, rp_image_ptr > map_images;
-
 public:
 	// XDBF header
 	XDBF_Header xdbfHeader;
+
+	// Data start offset within the file.
+	uint32_t data_offset;
 
 	// Entry table
 	// NOTE: Data is *not* byteswapped on load.
 	rp::uvector<XDBF_Entry> entryTable;
 
-	// Data start offset within the file.
-	uint32_t data_offset;
-
 	// Cached language ID
 	XDBF_Language_e m_langID;
+
+	// If true, this XDBF section is in an XEX executable.
+	// Some fields shouldn't be displayed.
+	const bool xex;
 
 	// String table indexes
 	// These are indexes into entryTable that indicate
@@ -102,10 +97,17 @@ public:
 	// NOTE: These are *pointers* to rp::uvector<>.
 	array<rp::uvector<char>*, XDBF_LANGUAGE_MAX> strTbls;
 
-	// If true, this XDBF section is in an XEX executable.
-	// Some fields shouldn't be displayed.
-	const bool xex;
+public:
+	// Internal icon
+	// Points to an rp_image within map_images.
+	rp_image_const_ptr img_icon;
 
+	// Loaded images.
+	// - Key: resource_id
+	// - Value: rp_image*
+	unordered_map<uint64_t, rp_image_ptr > map_images;
+
+public:
 	/**
 	 * Find a resource in the entry table.
 	 * @param namespace_id Namespace ID

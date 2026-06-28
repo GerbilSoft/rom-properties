@@ -72,8 +72,11 @@ public:
 	uint32_t format_flags;		// format flags
 
 	// Embedded file header (PNG/WebP)
-	bool hasEmbeddedFile;
 	STEX_Embed_Header embedHeader;
+	inline bool hasEmbeddedFile(void) const
+	{
+		return (embedHeader.size != 0);
+	}
 
 	// Decoded mipmaps
 	// Mipmap 0 is the full image.
@@ -330,7 +333,6 @@ GodotSTEXPrivate::GodotSTEXPrivate(GodotSTEX *q, const IRpFilePtr &file)
 	, stexVersion(0)
 	, pixelFormat(static_cast<STEX_Format_e>(~0U))
 	, format_flags(~0U)
-	, hasEmbeddedFile(false)
 {
 	static_assert(GodotSTEXPrivate::img_format_tbl_v3.size() == STEX3_FORMAT_MAX,
 		"GodotSTEXPrivate::img_format_tbl_v3[] is not the correct size.");
@@ -435,7 +437,7 @@ int GodotSTEXPrivate::getMipmapInfo(void)
 	unsigned int width = dimensions[0];
 	unsigned int height = (dimensions[1] > 0 ? dimensions[1] : 1);
 
-	if (hasEmbeddedFile) {
+	if (hasEmbeddedFile()) {
 		// Lossless (PNG/WebP) or lossy (WebP).
 		// We'll use the size from the embedded file header.
 		// TODO: Verify the embedded image's dimensions?
@@ -599,7 +601,7 @@ rp_image_const_ptr GodotSTEXPrivate::loadImage(int mip)
 	}
 
 	// TODO: Support WebP images, and maybe Basis Universal.
-	if (hasEmbeddedFile) {
+	if (hasEmbeddedFile()) {
 		// If it's PNG, load it.
 		if (embedHeader.fourCC != cpu_to_be32(STEX_FourCC_PNG)) {
 			// Not PNG.
@@ -992,7 +994,6 @@ GodotSTEX::GodotSTEX(const IRpFilePtr &file)
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 			d->embedHeader.size = le32_to_cpu(d->embedHeader.size);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-			d->hasEmbeddedFile = true;
 		}
 	} else if (d->stexHeader.magic == cpu_to_be32(STEX4_MAGIC)) {
 		// Godot 4 texture
@@ -1017,7 +1018,6 @@ GodotSTEX::GodotSTEX(const IRpFilePtr &file)
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 				d->embedHeader.size = le32_to_cpu(d->embedHeader.size);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-				d->hasEmbeddedFile = true;
 				break;
 			default:
 				break;
@@ -1165,7 +1165,7 @@ const char *GodotSTEX::pixelFormat(void) const
 		case 3:
 			// Godot 3: Pixel format is always L8 (0) if an embedded
 			// PNG or WebP image is present.
-			if (d->hasEmbeddedFile) {
+			if (d->hasEmbeddedFile()) {
 				return nullptr;
 			}
 			if (d->pixelFormat >= 0 && d->pixelFormat < static_cast<int>(d->img_format_tbl_v3.size())) {
@@ -1221,7 +1221,7 @@ int GodotSTEX::getFields(RomFields *fields) const
 		case 3: {
 			// Embedded data format (if present)
 			const char *data_format = nullptr;
-			if (d->hasEmbeddedFile) {
+			if (d->hasEmbeddedFile()) {
 				switch (be32_to_cpu(d->embedHeader.fourCC)) {
 					case STEX_FourCC_PNG:
 						data_format = "PNG";

@@ -81,13 +81,6 @@ public:
 	// to get the actual sector size.
 	CdromSectorInfo cdromSectorInfo;
 
-	// Sector offset
-	// Usually 0 (for 2048) or 16 (for 2352 or 2448).
-	// NOTE: If SparseDiscReader is used, this will almost
-	// always be 0. Query SparseDiscReader to get the
-	// actual sector information.
-	unsigned int sector_offset;
-
 	// Joliet level
 	enum class JolietSVDType : uint8_t {
 		None		= 0,
@@ -96,6 +89,13 @@ public:
 		UCS2_Level3	= 3,	// NOTE: UCS-2 BE
 	};
 	JolietSVDType jolietSVDType;
+
+	// Sector offset
+	// Usually 0 (for 2048) or 16 (for 2352 or 2448).
+	// NOTE: If SparseDiscReader is used, this will almost
+	// always be 0. Query SparseDiscReader to get the
+	// actual sector information.
+	unsigned int sector_offset;
 
 public:
 	// El Torito boot catalog LBA. (present if non-zero)

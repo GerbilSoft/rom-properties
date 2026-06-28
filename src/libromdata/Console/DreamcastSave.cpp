@@ -104,6 +104,9 @@ public:
 	// Directory entry
 	DC_VMS_DirEnt vms_dirent;
 
+	// Is this a VMS game file?
+	bool isGameFile;
+
 	// Creation time. Converted from binary or BCD,
 	// depending on if we loaded a VMI or DCI.
 	// If the original value is invalid, this will
@@ -112,9 +115,6 @@ public:
 
 	// Time conversion functions
 	static time_t vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm);
-
-	// Is this a VMS game file?
-	bool isGameFile;
 
 	/**
 	 * Check a Dreamcast VMS field for invalid characters.
@@ -233,8 +233,8 @@ DreamcastSavePrivate::DreamcastSavePrivate(const IRpFilePtr &file)
 	, vmi_file(nullptr)
 	, data_area_offset(0)
 	, vms_header_offset(0)
-	, ctime(-1)
 	, isGameFile(false)
+	, ctime(-1)
 {
 	// Clear the various structs.
 	memset(&vms_header, 0, sizeof(vms_header));

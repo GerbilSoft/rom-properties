@@ -25,7 +25,7 @@ class WiiPartition final : public GcnPartition
 {
 public:
 	// Bitfield enum indicating the encryption type.
-	enum CryptoMethod {
+	enum CryptoMethod : uint8_t {
 		CM_ENCRYPTED = 0,	// Data is encrypted.
 		CM_UNENCRYPTED = 1,	// Data is not encrypted.
 		CM_MASK_ENCRYPTED = 1,

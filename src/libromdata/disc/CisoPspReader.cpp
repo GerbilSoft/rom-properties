@@ -79,6 +79,9 @@ public:
 	rp::uvector<uint8_t> blockCache;
 	uint32_t blockCacheIdx;
 
+	uint8_t index_shift;		// Index shift value (CISO/ZISO only)
+	bool isDaxWithoutNCTable;	// Convenience variable
+
 	// Decompression buffer
 	// (Same size as blockCache.)
 	rp::uvector<uint8_t> z_buffer;
@@ -86,9 +89,6 @@ public:
 	// DAX: Size and NC area tables
 	rp::uvector<uint16_t> daxSizeTable;
 	std::vector<uint8_t> daxNCTable;	// 0 = compressed; 1 = not compressed
-
-	uint8_t index_shift;		// Index shift value (CISO/ZISO only)
-	bool isDaxWithoutNCTable;	// Convenience variable
 
 	/**
 	 * Get the compressed size of a block.

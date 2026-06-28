@@ -76,21 +76,21 @@ public:
 	RVL_Ticket ticket;
 	RVL_TMD_Header tmdHeader;
 
-	// WiiTicket
-	std::unique_ptr<WiiTicket> wiiTicket;
-
 	// Data offset and size
 	uint32_t data_offset;
 	uint32_t data_size;
 
+	// TMD contents table
+	uint32_t imetContentOffset;	// relative to start of data area
+	rp::uvector<RVL_Content_Entry> tmdContentsTbl;
+	const RVL_Content_Entry *pIMETContent;
+
+	// WiiTicket
+	std::unique_ptr<WiiTicket> wiiTicket;
+
 	// Name (BroadOn WADs only)
 	// FIXME: This is the same "meta" section as Nintendo WADs...
 	std::string wadName;
-
-	// TMD contents table
-	rp::uvector<RVL_Content_Entry> tmdContentsTbl;
-	const RVL_Content_Entry *pIMETContent;
-	uint32_t imetContentOffset;	// relative to start of data area
 
 #ifdef ENABLE_DECRYPTION
 	// CBC reader for the main data area

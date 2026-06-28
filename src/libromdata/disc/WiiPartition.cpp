@@ -65,10 +65,6 @@ public:
 	// update partition of debug-signed discs.
 	static const array<uint8_t, 32> incr_vals;
 
-	// Decrypted read position. (0x7C00 bytes out of 0x8000)
-	// NOTE: Actual read position if ((cryptoMethod & CM_MASK_SECTOR) == CM_32K).
-	off64_t pos_7C00;
-
 	// Sector size and offset values
 	static constexpr unsigned int SECTOR_SIZE_ENCRYPTED = 0x8000U;
 	static constexpr unsigned int SECTOR_SIZE_DECRYPTED = 0x7C00U;
@@ -96,6 +92,10 @@ public:
 	ASSERT_STRUCT(EncSector_t, SECTOR_SIZE_ENCRYPTED);
 	static_assert(offsetof(EncSector_t, hashes.H2) + (7*20) + 4 == 0x3D0, "IV location is wrong");
 	EncSector_t sector_buf;	// Decrypted sector data.
+
+	// Decrypted read position. (0x7C00 bytes out of 0x8000)
+	// NOTE: Actual read position if ((cryptoMethod & CM_MASK_SECTOR) == CM_32K).
+	off64_t pos_7C00;
 
 	/**
 	 * Read and decrypt a sector.
@@ -143,8 +143,8 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 	, encKey(WiiTicket::EncryptionKeys::Unknown)
 	, encKeyReal(WiiTicket::EncryptionKeys::Unknown)
 	, cryptoMethod(cryptoMethod)
-	, pos_7C00(-1)
 	, sector_num(~0)
+	, pos_7C00(-1)
 {
 	// Clear data set by GcnPartition in case the
 	// partition headers can't be read.
