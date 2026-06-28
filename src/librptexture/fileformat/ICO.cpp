@@ -396,15 +396,24 @@ ICOPrivate::IconBitmapHeader_data ICOPrivate::getIconBitmapHeaderData(const Icon
 
 	// Determine pixel format based on bitcount.
 	// TODO: Other bitcounts?
-	if (data.bitcount == 1) {
-		// tr: Abbreviation of "Monochrome".
-		snprintf(data.pixel_format, sizeof(data.pixel_format), "%s", C_("ICO|PixelFormat", "Mono"));
-	} else if (data.bitcount <= 8) {
-		snprintf(data.pixel_format, sizeof(data.pixel_format), "CI%u", data.bitcount);
-	} else if (data.bitcount == 24) {
-		strcpy(data.pixel_format, "RGB");
-	} else if (data.bitcount == 32) {
-		strcpy(data.pixel_format, "ARGB");
+	switch (data.bitcount) {
+		case 1:
+			// tr: Abbreviation of "Monochrome".
+			snprintf(data.pixel_format, sizeof(data.pixel_format), "%s", C_("ICO|PixelFormat", "Mono"));
+			break;
+		case 8:
+			snprintf(data.pixel_format, sizeof(data.pixel_format), "CI%u", data.bitcount);
+			break;
+		case 24:
+			strcpy(data.pixel_format, "RGB");
+			break;
+		case 32:
+			strcpy(data.pixel_format, "ARGB");
+			break;
+		default:
+			// Invalid bitcount?
+			snprintf(data.pixel_format, sizeof(data.pixel_format), "%u-bit", data.bitcount);
+			break;
 	}
 
 	return data;
