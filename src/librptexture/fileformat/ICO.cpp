@@ -755,7 +755,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 	unsigned int stride = static_cast<unsigned int>(width);
 	switch (bitcount) {
 		default:
-			// Unsupported bitcount.
+			assert(!"Unsupported ICO bitcount!");
 			return {};
 		case 1:
 			stride /= 8;
@@ -766,16 +766,14 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 		case 4:
 			stride /= 2;
 			break;
+
 		case 8:
 			break;
+
 		case 16:
-			stride *= 2;
-			break;
 		case 24:
-			stride *= 3;
-			break;
 		case 32:
-			stride *= 4;
+			stride *= (bitcount / 8);
 			break;
 	}
 	stride = ALIGN_BYTES(4, stride);
