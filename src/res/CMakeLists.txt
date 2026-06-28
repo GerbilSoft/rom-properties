@@ -3,12 +3,17 @@ PROJECT(res)
 
 IF(BUILD_XFCE OR BUILD_GTK3 OR BUILD_GTK4)
 
-# GTK+ resource compilation.
+# GCR_CMake modules for gresources compilation
+LIST(APPEND CMAKE_MODULE_PATH
+	"${CMAKE_SOURCE_DIR}/cmake/macros/GCR_CMake/macros"
+	)
+
+# GTK+ resource compilation
 FIND_PACKAGE(GLib2 ${GLIB_MIN_VERSION})
 FIND_PACKAGE(GIO ${GLIB_MIN_VERSION})
 IF(GLib2_FOUND AND GIO_FOUND)
 
-# GLib resources.
+# GLib resources
 INCLUDE(GlibCompileResourcesSupport)
 SET(RESOURCE_LIST
 	flags/flags-16x16.png

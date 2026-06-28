@@ -39,8 +39,7 @@ function(COMPILE_GRESOURCES output xml_out)
     # C_PREFIX   Specifies the prefix used for the C identifiers in the code generated
     #            when EMBED_C or EMBED_H are specified for TYPE.
     # SOURCE_DIR Overrides the resources base directory to search for resources.
-    #            Normally this is set to the source directory with that CMake
-    #            was invoked (CMAKE_CURRENT_SOURCE_DIR).
+    #            By default this is set to CMAKE_CURRENT_LIST_DIR.
     # TARGET     Overrides the name of the output file/-s. Normally the output
     #            names from the glib-compile-resources tool are taken.
     set(CG_ONEVALUEARGS TYPE PREFIX C_PREFIX SOURCE_DIR TARGET)
@@ -135,18 +134,26 @@ function(COMPILE_GRESOURCES output xml_out)
         message(FATAL_ERROR ${CG_ERRMSG})
     endif()
 
+    # If source directory is not set, default to working directory.
+    if (CG_ARG_SOURCE_DIR)
+        get_filename_component(CG_ARG_SOURCE_DIR "${CG_ARG_SOURCE_DIR}"
+                               REALPATH BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+    else()
+        set(CG_ARG_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+    endif()
+
     # Extract all dependencies for targets from resource list.
     foreach(res ${CG_ARG_RESOURCES})
         if (NOT(("${res}" STREQUAL "COMPRESS") OR
                 ("${res}" STREQUAL "STRIPBLANKS") OR
                 ("${res}" STREQUAL "TOPIXDATA")))
 
-            list(APPEND CG_RESOURCES_DEPENDENCIES "${res}")
+            list(APPEND CG_RESOURCES_DEPENDENCIES "${CG_ARG_SOURCE_DIR}/${res}")
         endif()
     endforeach()
 
     # Construct .gresource.xml path.
-    set(CG_XML_FILE_PATH "${CMAKE_CURRENT_BINARY_DIR}/.gresource.xml")
+    set(CG_XML_FILE_PATH "${CMAKE_CURRENT_BINARY_DIR}/resources.gresource.xml")
 
     # Generate gresources XML target.
     list(APPEND CG_CMAKE_SCRIPT_ARGS "-D")
@@ -159,7 +166,7 @@ function(COMPILE_GRESOURCES output xml_out)
         list(APPEND CG_CMAKE_SCRIPT_ARGS "-D")
         list(APPEND CG_CMAKE_SCRIPT_ARGS "GXML_NO_COMPRESS_ALL=ON")
     endif()
-    if(CG_ARG_STRPIBLANKS_ALL)
+    if(CG_ARG_STRIPBLANKS_ALL)
         list(APPEND CG_CMAKE_SCRIPT_ARGS "-D")
         list(APPEND CG_CMAKE_SCRIPT_ARGS "GXML_STRIPBLANKS_ALL=ON")
     endif()
@@ -198,13 +205,7 @@ function(COMPILE_GRESOURCES output xml_out)
     # Create target manually if not set (to make sure glib-compile-resources
     # doesn't change behaviour with it's naming standards).
     if (NOT CG_ARG_TARGET)
-        set(CG_ARG_TARGET "${CMAKE_CURRENT_BINARY_DIR}/resources")
-        set(CG_ARG_TARGET "${CG_ARG_TARGET}.${CG_TARGET_FILE_ENDING}")
-    endif()
-
-    # Create source directory automatically if not set.
-    if (NOT CG_ARG_SOURCE_DIR)
-        set(CG_ARG_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+        set(CG_ARG_TARGET "${CMAKE_CURRENT_BINARY_DIR}/resources.${CG_TARGET_FILE_ENDING}")
     endif()
 
     # Add compilation target for resources.

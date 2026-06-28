@@ -42,11 +42,6 @@ LIST(APPEND CMAKE_MODULE_PATH
 	"${CMAKE_SOURCE_DIR}/cmake/macros"
 	"${CMAKE_SOURCE_DIR}/cmake/libs"
 	)
-IF(UNIX AND NOT APPLE)
-	LIST(APPEND CMAKE_MODULE_PATH
-		"${CMAKE_SOURCE_DIR}/cmake/macros/GCR_CMake"
-		)
-ENDIF(UNIX AND NOT APPLE)
 
 # Put all the binaries and libraries into a single directory.
 # NOTE: CACHE INTERNAL is required in order to get this to work
