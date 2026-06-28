@@ -907,6 +907,27 @@ rp_image_const_ptr GodotSTEXPrivate::loadImage(int mip)
 					buf.get(), mdata.size, 8, 8);
 				break;
 #endif /* ENABLE_ASTC */
+
+			// added in Godot 4.5
+			case STEX4_FORMAT_R16:
+			case STEX4_FORMAT_RG16:
+			case STEX4_FORMAT_RGB16:
+			case STEX4_FORMAT_RGBA16:
+			case STEX4_FORMAT_R16I:
+			case STEX4_FORMAT_RG16I:
+			case STEX4_FORMAT_RGB16I:
+			case STEX4_FORMAT_RGBA16I:
+				// TODO
+				break;
+
+#ifdef ENABLE_ASTC
+			// added in Godot 4.6
+			case STEX4_FORMAT_ASTC_6x6:
+				img = ImageDecoder::fromASTC(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size, 6, 6);
+				break;
+#endif /* ENABLE_ASTC */
 		}
 	} else {
 		assert(!"Unsupported stexVersion value.");
