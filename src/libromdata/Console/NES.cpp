@@ -115,7 +115,7 @@ public:
 
 	// CRC32s for external images
 	// 0 == PRG ROM; 1 == CHR ROM (if present)
-	uint32_t rom_8k_crc32[2];
+	array<uint32_t, 2> rom_8k_crc32;
 
 	/**
 	 * Convert an FDS BCD datestamp to Unix time.
@@ -246,7 +246,7 @@ NESPrivate::NESPrivate(const IRpFilePtr &file)
 	memset(&footer, 0, sizeof(footer));
 
 	// Clear the CRC32s.
-	memset(rom_8k_crc32, 0, sizeof(rom_8k_crc32));
+	rom_8k_crc32.fill(0);
 }
 
 /**
