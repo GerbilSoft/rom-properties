@@ -1,14 +1,6 @@
 # KDE 4.x UI frontend
 PROJECT(rom-properties-kde4 LANGUAGES CXX)
 
-# Enable the "new" automoc policy for KDE4.
-# Otherwise, CMake complains because the old policy doesn't run
-# automoc on generated sources, e.g. from uic or rcc.
-# NOTE: Only on Qt4; CMake doesn't show this for Qt5/Qt6.
-IF(POLICY CMP0071)
-	CMAKE_POLICY(SET CMP0071 NEW)
-ENDIF(POLICY CMP0071)
-
 # Find Qt4 and KDE4.
 INCLUDE(RP_FindQt4andKDE4)
 FIND_QT4_AND_KDE4()

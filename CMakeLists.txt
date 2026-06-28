@@ -1,37 +1,5 @@
 # ROM Properties Page Shell Extension
-CMAKE_MINIMUM_REQUIRED(VERSION 3.5...3.10)
-
-# CMP0048: Set VERSION variables based on the project version specified in PROJECT().
-# Introduced in CMake 3.0.
-IF(POLICY CMP0048)
-	CMAKE_POLICY(SET CMP0048 NEW)
-ENDIF(POLICY CMP0048)
-
-# CMP0063: Honor visibility properties for all target types,
-# including static libraries and executables.
-# Introduced in CMake 3.3.
-IF(POLICY CMP0063)
-	CMAKE_POLICY(SET CMP0063 NEW)
-ENDIF(POLICY CMP0063)
-
-# CMP0151: Use -isystem for AUTOMOC include directories.
-# clang complains about `using namespace` statements in the
-# generated moc_*.cpp files:
-# In file included from src/kde/kf5/kfilemetadata_rom-properties-kf5_autogen/mocs_compilation.cpp:2:
-# src/kde/kf5/kfilemetadata_rom-properties-kf5_autogen/BKZOEHIFDQ/moc_ExtractorPluginKF5.cpp:1082:17:
-#     warning: using namespace directive in global context in header [-Wheader-hygiene]
-#  1082 | using namespace RomPropertiesKF5;
-#       |                 ^
-# Introduced in CMake 3.27.
-IF(POLICY CMP0151)
-	CMAKE_POLICY(SET CMP0151 NEW)
-ENDIF(POLICY CMP0151)
-
-# CMP0177: Normalize INSTALL() destination paths.
-# Introduced in CMake 3.31.
-IF(POLICY CMP0177)
-	CMAKE_POLICY(SET CMP0177 NEW)
-ENDIF(POLICY CMP0177)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.5...4.0)
 
 # Read the project version.
 CONFIGURE_FILE(version.txt version.txt.tmp)
