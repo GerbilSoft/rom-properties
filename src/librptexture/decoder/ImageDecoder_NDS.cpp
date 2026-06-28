@@ -42,20 +42,20 @@ rp_image_ptr fromNDS_CI4(int width, int height,
 	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) / 2) ||
 	    pal_siz < 16*2)
 	{
-		return nullptr;
+		return {};
 	}
 
 	// NDS CI4 uses 8x8 tiles.
 	assert(width % 8 == 0);
 	assert(height % 8 == 0);
 	if (width % 8 != 0 || height % 8 != 0)
-		return nullptr;
+		return {};
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 
 	// Convert the palette.
@@ -63,7 +63,7 @@ rp_image_ptr fromNDS_CI4(int width, int height,
 	assert(img->palette_len() >= 16);
 	if (img->palette_len() < 16) {
 		// Not enough colors...
-		return nullptr;
+		return {};
 	}
 
 	// NOTE: rp_image initializes the palette to 0,

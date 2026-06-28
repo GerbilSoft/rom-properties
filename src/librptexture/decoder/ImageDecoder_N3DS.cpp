@@ -47,20 +47,20 @@ rp_image_ptr fromN3DSTiledRGB565(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) * 2))
 	{
-		return nullptr;
+		return {};
 	}
 
 	// N3DS tiled images use 8x8 tiles.
 	assert(width % 8 == 0);
 	assert(height % 8 == 0);
 	if (width % 8 != 0 || height % 8 != 0)
-		return nullptr;
+		return {};
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 
 	// Calculate the total number of tiles.
@@ -116,14 +116,14 @@ rp_image_ptr fromN3DSTiledRGB565_A4(int width, int height,
 	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) * 2) ||
 	    alpha_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) / 2))
 	{
-		return nullptr;
+		return {};
 	}
 
 	// N3DS tiled images use 8x8 tiles.
 	assert(width % 8 == 0);
 	assert(height % 8 == 0);
 	if (width % 8 != 0 || height % 8 != 0)
-		return nullptr;
+		return {};
 
 	// Calculate the total number of tiles.
 	const unsigned int tilesX = static_cast<unsigned int>(width / 8);
@@ -133,7 +133,7 @@ rp_image_ptr fromN3DSTiledRGB565_A4(int width, int height,
 	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 
 	// Temporary tile buffer.

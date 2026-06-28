@@ -661,7 +661,7 @@ rp_image_ptr fromBC7(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight)))
 	{
-		return nullptr;
+		return {};
 	}
 
 	// Calculate the total number of tiles.
@@ -673,7 +673,7 @@ rp_image_ptr fromBC7(int width, int height,
 	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 
 	// sBIT metadata.
@@ -710,7 +710,7 @@ rp_image_ptr fromBC7(int width, int height,
 				break;
 #else /* !_OPENMP */
 				// Not using OpenMP, so return immediately.
-				return nullptr;
+				return {};
 #endif /* _OPENMP */
 			}
 
@@ -722,7 +722,7 @@ rp_image_ptr fromBC7(int width, int height,
 #ifdef _OPENMP
 	if (bErr) {
 		// A decoding error occurred.
-		return nullptr;
+		return {};
 	}
 #endif /* _OPENMP */
 

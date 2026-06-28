@@ -56,7 +56,7 @@ rp_image_ptr fromASTC(int width, int height,
 
 	// TODO: Validate combinations.
 	if (!ImageSizeCalc::validateBlockSizeASTC(block_x, block_y)) {
-		return nullptr;
+		return {};
 	}
 
 	// Get the expected size.
@@ -65,7 +65,7 @@ rp_image_ptr fromASTC(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < expected_size_in)
 	{
-		return nullptr;
+		return {};
 	}
 
 	// Align the image size.
@@ -78,7 +78,7 @@ rp_image_ptr fromASTC(int width, int height,
 	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 
 	// Basis Universal's ASTC decoder handles one block at a time,
@@ -125,7 +125,7 @@ rp_image_ptr fromASTC(int width, int height,
 				break;
 #else /* !_OPENMP */
 				// Not using OpenMP, so return immediately.
-				return nullptr;
+				return {};
 #endif /* _OPENMP */
 			}
 
@@ -149,7 +149,7 @@ rp_image_ptr fromASTC(int width, int height,
 #ifdef _OPENMP
 	if (bErr) {
 		// A decompression error occurred.
-		return nullptr;
+		return {};
 	}
 #endif /* _OPENMP */
 

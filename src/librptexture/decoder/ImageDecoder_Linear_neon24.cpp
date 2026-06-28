@@ -48,7 +48,7 @@ rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < (((size_t)width * (size_t)height) * bytespp))
 	{
-		return nullptr;
+		return {};
 	}
 
 	// Stride adjustment.
@@ -60,7 +60,7 @@ rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 		assert(stride >= (width * bytespp));
 		if (unlikely(stride < (width * bytespp))) {
 			// Invalid stride.
-			return nullptr;
+			return {};
 		}
 		// NOTE: Byte addressing, so keep it in units of bytespp.
 		src_stride_adj = stride - (width * bytespp);
@@ -74,7 +74,7 @@ rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 	const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
 	argb32_t *px_dest = static_cast<argb32_t*>(img->bits());
@@ -115,7 +115,7 @@ rp_image_ptr fromLinear24_neon(PixelFormat px_format,
 
 		default:
 			assert(!"Unsupported 24-bit pixel format.");
-			return nullptr;
+			return {};
 	}
 
 	// Convert one line at a time. (24-bit -> ARGB32)

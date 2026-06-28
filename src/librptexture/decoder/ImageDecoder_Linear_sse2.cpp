@@ -261,7 +261,7 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) * bytespp))
 	{
-		return nullptr;
+		return {};
 	}
 
 	// Stride adjustment.
@@ -274,7 +274,7 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 		assert(stride >= (width * bytespp));
 		if (unlikely(stride % bytespp != 0 || stride < (width * bytespp))) {
 			// Invalid stride.
-			return nullptr;
+			return {};
 		}
 		src_stride_adj = (stride / bytespp) - width;
 	}
@@ -290,7 +290,7 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 
 	const int dest_stride_adj = (img->stride() / sizeof(uint32_t)) - img->width();
@@ -474,7 +474,7 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 
 		default:
 			assert(!"Pixel format not supported.");
-			return nullptr;
+			return {};
 	}
 
 	// Image has been converted.

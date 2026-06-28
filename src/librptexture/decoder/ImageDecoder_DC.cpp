@@ -77,7 +77,7 @@ rp_image_ptr fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	    width != height || width > (int)DC_TMAP_SIZE ||
 	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) * 2))
 	{
-		return nullptr;
+		return {};
 	}
 
 	// Initialize the twiddle map.
@@ -88,7 +88,7 @@ rp_image_ptr fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 
 	// Convert one line at a time. (16-bit -> ARGB32)
@@ -119,7 +119,7 @@ rp_image_ptr fromDreamcastSquareTwiddled16(PixelFormat px_format,
 
 		default:
 			assert(!"Invalid pixel format for this function.");
-			return nullptr;
+			return {};
 	}
 
 	// Image has been converted.
@@ -158,7 +158,7 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 	    width != height || width > (int)DC_TMAP_SIZE ||
 	    img_siz == 0 || pal_siz == 0)
 	{
-		return nullptr;
+		return {};
 	}
 
 	// Determine the number of palette entries.
@@ -178,7 +178,7 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 	{
 		// Palette isn't large enough,
 		// or palette isn't an even multiple.
-		return nullptr;
+		return {};
 	}
 
 	// Initialize the twiddle map.
@@ -189,7 +189,7 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 
 	// Convert the palette.
@@ -215,7 +215,7 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 
 		default:
 			assert(!"Invalid pixel format for this function.");
-			return nullptr;
+			return {};
 	}
 
 	// Convert one line at a time. (16-bit -> ARGB32)
@@ -229,7 +229,7 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 		assert(srcIdx < (unsigned int)img_siz);
 		if (srcIdx >= static_cast<unsigned int>(img_siz)) {
 			// Out of bounds.
-			return nullptr;
+			return {};
 		}
 
 		// Palette index.
@@ -243,7 +243,7 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 				// Palette index is out of bounds.
 				// NOTE: This can only happen with SmallVQ,
 				// since VQ always has 1024 palette entries.
-				return nullptr;
+				return {};
 			}
 		}
 

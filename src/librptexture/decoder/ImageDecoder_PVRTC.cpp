@@ -50,14 +50,16 @@ rp_image_ptr fromPVRTC(int width, int height,
 		// PVRTC 2bpp
 		assert(width >= 16);
 		assert(height >= 8);
-		if (width < 16 || height < 8)
-			return nullptr;
+		if (width < 16 || height < 8) {
+			return {};
+		}
 	} else {
 		// PVRTC 4bpp
 		assert(width >= 8);
 		assert(height >= 8);
-		if (width < 8 || height < 8)
-			return nullptr;
+		if (width < 8 || height < 8) {
+			return {};
+		}
 	}
 	int physWidth = width, physHeight = height;
 	if (!isPow2(physWidth)) {
@@ -75,14 +77,14 @@ rp_image_ptr fromPVRTC(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < expected_size_in)
 	{
-		return nullptr;
+		return {};
 	}
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 
 	// Use the PowerVR Native SDK to decompress the texture.
@@ -93,7 +95,7 @@ rp_image_ptr fromPVRTC(int width, int height,
 	assert(size == expected_size_in);
 	if (size != expected_size_in) {
 		// Read error...
-		return nullptr;
+		return {};
 	}
 
 	// TODO: If !has_alpha, make sure the alpha channel is all 0xFF.
@@ -142,13 +144,15 @@ rp_image_ptr fromPVRTCII(int width, int height,
 	if ((mode & PVRTC_BPP_MASK) == PVRTC_2BPP) {
 		// PVRTC-II 2bpp
 		assert(height >= 16);
-		if (width < 16 || height < 8)
-			return nullptr;
+		if (width < 16 || height < 8) {
+			return {};
+		}
 	} else {
 		// PVRTC-II 4bpp
 		assert(height >= 8);
-		if (width < 8 || height < 8)
-			return nullptr;
+		if (width < 8 || height < 8) {
+			return {};
+		}
 	}
 	// TODO: PVRTC-II NPOT support.
 	int physWidth = width, physHeight = height;
@@ -167,14 +171,14 @@ rp_image_ptr fromPVRTCII(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < expected_size_in)
 	{
-		return nullptr;
+		return {};
 	}
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 
 	// Use the PowerVR Native SDK to decompress the texture.
@@ -185,7 +189,7 @@ rp_image_ptr fromPVRTCII(int width, int height,
 	assert(size == expected_size_in);
 	if (size != expected_size_in) {
 		// Read error...
-		return nullptr;
+		return {};
 	}
 
 	// TODO: If !has_alpha, make sure the alpha channel is all 0xFF.

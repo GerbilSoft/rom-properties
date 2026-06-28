@@ -90,7 +90,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < ImageSizeCalc::T_calcImageSize(width, height, bytespp))
 	{
-		return nullptr;
+		return {};
 	}
 
 	if (px_format == PixelFormat::BGR888_ABGR7888) {
@@ -109,7 +109,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 		assert(stride >= (width * bytespp));
 		if (unlikely(stride % bytespp != 0 || stride < (width * bytespp))) {
 			// Invalid stride.
-			return nullptr;
+			return {};
 		}
 		src_stride_adj = (stride / bytespp) - width;
 	} else {
@@ -124,7 +124,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 
 	if (px_format == PixelFormat::Host_ARGB32) {
@@ -162,7 +162,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 	switch (px_format) {
 		case PixelFormat::Host_ARGB32:
 			assert(!"ARGB32 is handled separately.");
-			return nullptr;
+			return {};
 		case PixelFormat::Host_xRGB32: {
 			// TODO: Only apply the alpha mask instead of shuffling.
 			static const array<uint8_t, VEC_LEN_U8> shuf_mask_Host_xRGB32 = {{
@@ -245,7 +245,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 
 		default:
 			assert(!"Main pixels: Unsupported 32-bit pixel format.");
-			return nullptr;
+			return {};
 	}
 
 	if (has_alpha) {
@@ -335,7 +335,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 
 				default:
 					assert(!"Remaining pixels: Unsupported 32-bit alpha pixel format.");
-					return nullptr;
+					return {};
 			} }
 
 			// Next line.
@@ -449,7 +449,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 
 				default:
 					assert(!"Unsupported 32-bit no-alpha pixel format.");
-					return nullptr;
+					return {};
 			} }
 
 			// Next line.

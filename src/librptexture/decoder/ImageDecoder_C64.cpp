@@ -24,14 +24,14 @@ rp_image_ptr fromC64_MultiColor_Sprite(
 	assert(img_buf != nullptr);
 	assert(img_siz >= 12*21/4);
 	if (!img_buf || img_siz < 12*21/4) {
-		return nullptr;
+		return {};
 	}
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(24, 21, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 
 	// Set up a grayscale palette.

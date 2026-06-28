@@ -626,14 +626,14 @@ rp_image_ptr fromETC1(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight) / 2))
 	{
-		return nullptr;
+		return {};
 	}
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 
 	const etc1_block *etc1_src = reinterpret_cast<const etc1_block*>(img_buf);
@@ -692,14 +692,14 @@ rp_image_ptr fromETC2_RGB(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight) / 2))
 	{
-		return nullptr;
+		return {};
 	}
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 
 	const etc1_block *etc1_src = reinterpret_cast<const etc1_block*>(img_buf);
@@ -801,14 +801,14 @@ rp_image_ptr fromETC2_RGBA(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight)))
 	{
-		return nullptr;
+		return {};
 	}
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 
 	const etc2_rgba_block *etc2_src = reinterpret_cast<const etc2_rgba_block*>(img_buf);
@@ -871,14 +871,14 @@ rp_image_ptr fromETC2_RGB_A1(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight) / 2))
 	{
-		return nullptr;
+		return {};
 	}
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 
 	const etc1_block *etc1_src = reinterpret_cast<const etc1_block*>(img_buf);
@@ -937,14 +937,14 @@ rp_image_ptr fromEAC_R11(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight) / 2))
 	{
-		return nullptr;
+		return {};
 	}
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 
 	const etc2_alpha *eac_block = reinterpret_cast<const etc2_alpha*>(img_buf);
@@ -1007,14 +1007,14 @@ rp_image_ptr fromEAC_RG11(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight)))
 	{
-		return nullptr;
+		return {};
 	}
 
 	// Create an rp_image.
 	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		return {};
 	}
 
 	const etc2_alpha *eac_block = reinterpret_cast<const etc2_alpha*>(img_buf);
