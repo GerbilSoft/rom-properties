@@ -11,6 +11,14 @@ MACRO(FIND_QT5_AND_KF5)
 	SET(QT_MAJOR_VERSION 5)
 	SET(QT_NO_CREATE_VERSIONLESS_TARGETS TRUE)
 
+	# FIXME: AppVeyor's Ubuntu 22.04 image has cmake-3.29.7,
+	# which marks more properties of IMPORTED targets as read-only.
+	# This breaks with KF5 5.92.0.
+	# (Ubuntu 22.04 comes with cmake-3.22.1.)
+	IF(POLICY CMP0160)
+		CMAKE_POLICY(SET CMP0160 OLD)
+	ENDIF(POLICY CMP0160)
+
 	# FIXME: Search for Qt5 first instead of ECM?
 
 	# Find KF5 Extra CMake Modules.
