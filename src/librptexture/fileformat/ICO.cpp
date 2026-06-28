@@ -842,11 +842,6 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 		}
 		// TODO: 32-bit alignment?
 		addr += palette_size;
-
-		// Convert to host-endian and set the A channel to 0xFF.
-		for (uint32_t &p : pal_data) {
-			p = le32_to_cpu(p) | 0xFF000000U;
-		}
 	}
 
 	// Calculate the icon, mask, and total image size.
@@ -891,9 +886,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 
 		case 4:
 			// 16-color
-			// NOTE: fromLinearCI4() doesn't support Host_xRGB32,
-			// and we're setting the alpha channel to 0xFF ourselves.
-			img = ImageDecoder::fromLinearCI4(ImageDecoder::PixelFormat::Host_ARGB32, true,
+			img = ImageDecoder::fromLinearCI4(ImageDecoder::PixelFormat::xRGB8888, true,
 				width, half_height,
 				icon_data, icon_size,
 				pal_data.data(), pal_data.size() * sizeof(uint32_t),
@@ -902,7 +895,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 
 		case 8:
 			// 256-color
-			img = ImageDecoder::fromLinearCI8(ImageDecoder::PixelFormat::Host_xRGB32,
+			img = ImageDecoder::fromLinearCI8(ImageDecoder::PixelFormat::xRGB8888,
 				width, half_height,
 				icon_data, icon_size,
 				pal_data.data(), pal_data.size() * sizeof(uint32_t),

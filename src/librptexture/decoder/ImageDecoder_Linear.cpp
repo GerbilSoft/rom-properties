@@ -51,19 +51,27 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 		return nullptr;
 	}
 
-	// Handle BGR888_ABGR7888 palette pixel format for SVR.
-	if (px_format == PixelFormat::BGR888_ABGR7888) {
-		// 32-bit palette required.
-		assert(pal_siz >= 16*4);
-		if (pal_siz < 16*4) {
-			return nullptr;
-		}
-	} else {
-		// 16-bit palette required.
-		assert(pal_siz >= 16*2);
-		if (pal_siz < 16*2) {
-			return nullptr;
-		}
+	// Verify palette size.
+	// TODO: Table to map PixelFormat to bpp?
+	switch (px_format) {
+		case PixelFormat::BGR888_ABGR7888:
+		case PixelFormat::Host_ARGB32:
+		case PixelFormat::Swap_ARGB32:
+		case PixelFormat::Host_xRGB32:
+		case PixelFormat::Swap_xRGB32:
+			// 32-bit palette required.
+			assert(pal_siz >= 16*4);
+			if (pal_siz < 16*4) {
+				return nullptr;
+			}
+			break;
+
+		default:
+			// 16-bit palette required.
+			assert(pal_siz >= 16*2);
+			if (pal_siz < 16*2) {
+				return nullptr;
+			}
 	}
 
 	// CI4 width must be a multiple of two.
@@ -102,6 +110,49 @@ rp_image_ptr fromLinearCI4(PixelFormat px_format, bool msn_left,
 		case PixelFormat::Host_ARGB32: {
 			// Use the palette directly.
 			memcpy(palette, pal_buf, 16 * sizeof(uint32_t));
+
+			// Set the sBIT metadata.
+			static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
+			img->set_sBIT(sBIT);
+			break;
+		}
+
+		case PixelFormat::Host_xRGB32: {
+			// Need to force the alpha channel to 0xFF.
+			const uint32_t *pal_buf32 = reinterpret_cast<const uint32_t*>(pal_buf);
+			for (unsigned int i = 0; i < 16; i++, pal_buf32++) {
+				palette[i] = (*pal_buf32) | 0xFF000000;
+			}
+
+			// Set the sBIT metadata.
+			static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
+			img->set_sBIT(sBIT);
+			break;
+		}
+
+		case PixelFormat::Swap_ARGB32: {
+			// Need to byteswap the palette.
+			const uint32_t *pal_buf32 = reinterpret_cast<const uint32_t*>(pal_buf);
+			for (unsigned int i = 0; i < 16; i++, pal_buf32++) {
+				palette[i] = __swab32(*pal_buf32);
+				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
+					// Found the transparent color.
+					tr_idx = static_cast<int>(i);
+				}
+			}
+
+			// Set the sBIT metadata.
+			static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
+			img->set_sBIT(sBIT);
+			break;
+		}
+
+		case PixelFormat::Swap_xRGB32: {
+			// Need to byteswap the palette and force the alpha channel to 0xFF.
+			const uint32_t *pal_buf32 = reinterpret_cast<const uint32_t*>(pal_buf);
+			for (unsigned int i = 0; i < 16; i++, pal_buf32++) {
+				palette[i] = __swab32(*pal_buf32) | 0xFF000000;
+			}
 
 			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
