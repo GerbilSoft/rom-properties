@@ -1955,16 +1955,18 @@ int NES::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 	}
 
 	// NOTE: If this system doesn't have mappers, '-1' will be used.
+	const char *ps_mapper = nullptr;
 	char s_mapper[16];
 	if (likely(!isFDS)) {
 		snprintf(s_mapper, sizeof(s_mapper), "%d", d->get_iNES_mapper_number());
+		ps_mapper = s_mapper;
 	}
 
 	// Add the URLs.
 	extURLs.resize(1);
 	ExtURL &extURL = extURLs[0];
-	extURL.url = d->getURL_RPDB(sys, imageTypeName, likely(!isFDS) ? s_mapper : nullptr, s_filename.c_str(), ext);
-	extURL.cache_key = d->getCacheKey_RPDB(sys, imageTypeName, likely(!isFDS) ? s_mapper : nullptr, s_filename.c_str(), ext);
+	extURL.url = d->getURL_RPDB(sys, imageTypeName, ps_mapper, s_filename.c_str(), ext);
+	extURL.cache_key = d->getCacheKey_RPDB(sys, imageTypeName, ps_mapper, s_filename.c_str(), ext);
 	extURL.width = sizeDefs[0].width;
 	extURL.height = sizeDefs[0].height;
 	extURL.high_res = (sizeDefs[0].index >= 2);
