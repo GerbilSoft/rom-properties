@@ -348,18 +348,18 @@ int S98::loadFieldData(void)
 			// TODO: Don't allow >OPM for v2 and earlier?
 
 			// Chip IDs
-			static const array<const char*, 10> chipID_tbl = {{
-				nullptr, "PSG", "OPN", "OPN2",
+			static const char chipID_tbl[10][8] = {
+				"", "PSG", "OPN", "OPN2",
 				"OPNA", "OPM", "OPLL", "OPL",
 				"OPL2", "OPL3",
-			}};
+			};
 
 			// Chip Models
-			static const array<const char*, 10> chipModel_tbl = {{
-				nullptr, "YM2149", "YM2203", "YM2612",
+			static const char chipModel_tbl[10][8] = {
+				"", "YM2149", "YM2203", "YM2612",
 				"YM2608", "YM2151", "YM2413", "YM3526",
 				"YM3812", "YMF262",
-			}};
+			};
 
 			const char *chipID, *chipModel;
 			if (type <= 9) {
