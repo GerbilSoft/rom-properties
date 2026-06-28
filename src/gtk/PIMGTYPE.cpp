@@ -185,7 +185,7 @@ static void gbytes_destroy_notify(gpointer data)
  */
 PIMGTYPE PIMGTYPE_load_png_from_gresource(const char *filename)
 {
-	GBytes *const pBytes = g_resource_lookup_data(_get_resource(), filename,
+	GBytes *const pBytes = g_resource_lookup_data(resources_get_resource(), filename,
 		G_RESOURCE_LOOKUP_FLAGS_NONE, nullptr);
 	if (!pBytes) {
 		// Not found.
@@ -234,7 +234,7 @@ PIMGTYPE PIMGTYPE_load_png_from_gresource(const char *filename)
  */
 rp_image_ptr rp_image_load_png_from_gresource(const char *filename)
 {
-	GBytes *const pBytes = g_resource_lookup_data(_get_resource(), filename,
+	GBytes *const pBytes = g_resource_lookup_data(resources_get_resource(), filename,
 		G_RESOURCE_LOOKUP_FLAGS_NONE, nullptr);
 	if (!pBytes) {
 		// Not found.
