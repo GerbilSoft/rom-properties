@@ -401,6 +401,7 @@ ICOPrivate::IconBitmapHeader_data ICOPrivate::getIconBitmapHeaderData(const Icon
 			// tr: Abbreviation of "Monochrome".
 			snprintf(data.pixel_format, sizeof(data.pixel_format), "%s", C_("ICO|PixelFormat", "Mono"));
 			break;
+		case 4:
 		case 8:
 			snprintf(data.pixel_format, sizeof(data.pixel_format), "CI%u", data.bitcount);
 			break;
