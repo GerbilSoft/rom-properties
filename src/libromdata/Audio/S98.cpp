@@ -377,10 +377,10 @@ int S98::loadFieldData(void)
 			}
 
 			// Check for errors.
-			if (unlikely(!chipID)) {
+			if (unlikely(!chipID || chipID[0] == '\0')) {
 				chipID = C_("S98", "(none)");
 			}
-			if (unlikely(!chipModel)) {
+			if (unlikely(!chipModel || chipModel[0] == '\0')) {
 				chipModel = C_("S98", "(none)");
 			}
 
