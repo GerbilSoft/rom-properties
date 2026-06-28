@@ -94,13 +94,22 @@ public:
 public:
 	// Image format tables
 	static const array<const char*, 0x26> img_format_tbl_v3;
-	static const array<const char*, 0x27> img_format_tbl_v4;
+	static const array<const char*, 0x31> img_format_tbl_v4;
 
 	// ImageSizeCalc opcode tables
 	static const array<ImageSizeCalc::OpCode, 0x26> op_tbl_v3;
-	static const array<ImageSizeCalc::OpCode, 0x27> op_tbl_v4;
+	static const array<ImageSizeCalc::OpCode, 0x31> op_tbl_v4;
 
 public:
+	/**
+	 * Get the expected size for our image format.
+	 * Adjust width/height for mipmaps, if necessary.
+	 * @param width
+	 * @param height
+	 * @return Expected size
+	 */
+	unsigned int getExpectedSize(int width, int height) const;
+
 	/**
 	 * Get mipmap information.
 	 * @return 0 on success; negative POSIX error code on error.
@@ -168,7 +177,7 @@ const array<const char*, 0x26> GodotSTEXPrivate::img_format_tbl_v3 = {{
 }};
 
 // Image format table (STEX v4)
-const array<const char*, 0x27> GodotSTEXPrivate::img_format_tbl_v4 = {{
+const array<const char*, 0x31> GodotSTEXPrivate::img_format_tbl_v4 = {{
 	// 0x00
 	"L8", "LA8", "R8", "RG8",
 	"RGB8", "RGBA8", "RGBA4444", "RGB565",
@@ -187,7 +196,14 @@ const array<const char*, 0x27> GodotSTEXPrivate::img_format_tbl_v4 = {{
 
 	// 0x20
 	"ETC2_RGB8A1", "ETC2_RA_AS_RG", "DXT5_RA_AS_RG", "ASTC_4x4",
-	"ASTC_4x4_HDR", "ASTC_8x8", "ASTC_8x8_HDR",
+	"ASTC_4x4_HDR", "ASTC_8x8", "ASTC_8x8_HDR", "R16",
+
+	// 0x28
+	"RG16", "RGB16", "RGBA16", "R16I",
+	"RG16I", "RGB16I", "RGBA16I", "ASTC_6x6",
+
+	// 0x30
+	"ASTC_6x6_HDR",
 }};
 
 // ImageSizeCalc opcode table (STEX v3)
@@ -244,7 +260,7 @@ const array<ImageSizeCalc::OpCode, 0x26> GodotSTEXPrivate::op_tbl_v3 = {{
 }};
 
 // ImageSizeCalc opcode table (STEX v3)
-const array<ImageSizeCalc::OpCode, 0x27> GodotSTEXPrivate::op_tbl_v4 = {{
+const array<ImageSizeCalc::OpCode, 0x31> GodotSTEXPrivate::op_tbl_v4 = {{
 	// 0x00
 	OpCode::None,		// STEX_FORMAT_L8
 	OpCode::Multiply2,	// STEX_FORMAT_LA8
@@ -293,6 +309,20 @@ const array<ImageSizeCalc::OpCode, 0x27> GodotSTEXPrivate::op_tbl_v4 = {{
 	OpCode::None,		// STEX4_FORMAT_ASTC_4x4_HDR	// 4x4 == 8bpp
 	OpCode::Align8Divide4,	// STEX4_FORMAT_ASTC_8x8	// 8x8 == 2bpp
 	OpCode::Align8Divide4,	// STEX4_FORMAT_ASTC_8x8_HDR	// 8x8 == 2bpp
+	OpCode::Multiply2,	// STEX4_FORMAT_R16		// TODO: Verify?
+
+	// 0x28
+	OpCode::Multiply4,	// STEX4_FORMAT_RG16		// TODO: Verify?
+	OpCode::Multiply6,	// STEX4_FORMAT_RGB16		// TODO: Verify?
+	OpCode::Multiply8,	// STEX4_FORMAT_RGBA16		// TODO: Verify?
+	OpCode::Multiply2,	// STEX4_FORMAT_R16I		// TODO: Verify?
+	OpCode::Multiply4,	// STEX4_FORMAT_RG16I		// TODO: Verify?
+	OpCode::Multiply6,	// STEX4_FORMAT_RGB16I		// TODO: Verify?
+	OpCode::Multiply8,	// STEX4_FORMAT_RGBA16I		// TODO: Verify?
+	OpCode::None,		// STEX4_FORMAT_ASTC_6x6	// 6x6 = 3.56bpp; use calcImageSizeASTC().
+
+	// 0x30
+	OpCode::None,		// STEX4_FORMAT_ASTC_6x6_HDR	// 6x6 = 3.56bpp; use calcImageSizeASTC().
 }};
 
 GodotSTEXPrivate::GodotSTEXPrivate(GodotSTEX *q, const IRpFilePtr &file)
@@ -315,6 +345,42 @@ GodotSTEXPrivate::GodotSTEXPrivate(GodotSTEX *q, const IRpFilePtr &file)
 	// Clear the structs and arrays.
 	memset(&stexHeader, 0, sizeof(stexHeader));
 	memset(&embedHeader, 0, sizeof(embedHeader));
+}
+
+/**
+ * Get the expected size for our image format.
+ * Adjust width/height for mipmaps, if necessary.
+ * @param width
+ * @param height
+ * @return Expected size
+ */
+unsigned int GodotSTEXPrivate::getExpectedSize(int width, int height) const
+{
+	unsigned int expected_size = 0;
+
+	switch (stexVersion) {
+		default:
+			assert(!"Invalid STEX version.");
+			break;
+
+		case 3: {
+			expected_size = ImageSizeCalc::calcImageSize_tbl(
+				op_tbl_v3.data(), op_tbl_v3.size(), pixelFormat, width, height);
+			break;
+		}
+		case 4: {
+			if (unlikely(pixelFormat == STEX4_FORMAT_ASTC_6x6 || pixelFormat == STEX4_FORMAT_ASTC_6x6_HDR)) {
+				// Use calcImageSizeASTC().
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 6, 6);
+			} else {
+				expected_size = ImageSizeCalc::calcImageSize_tbl(
+					op_tbl_v4.data(), op_tbl_v4.size(), pixelFormat, width, height);
+			}
+			break;
+		}
+	}
+
+	return expected_size;
 }
 
 /**
@@ -405,23 +471,7 @@ int GodotSTEXPrivate::getMipmapInfo(void)
 		return 0;
 	}
 
-	const ImageSizeCalc::OpCode *op_tbl;
-	size_t op_tbl_sz;
-	switch (stexVersion) {
-		default:
-			assert(!"Invalid STEX version.");
-			return -EIO;
-		case 3:
-			op_tbl = op_tbl_v3.data();
-			op_tbl_sz = op_tbl_v3.size();
-			break;
-		case 4:
-			op_tbl = op_tbl_v4.data();
-			op_tbl_sz = op_tbl_v4.size();
-			break;
-	}
-	unsigned int expected_size = ImageSizeCalc::calcImageSize_tbl(
-		op_tbl, op_tbl_sz, pixelFormat, width, height);
+	unsigned int expected_size = getExpectedSize(width, height);
 	if (expected_size == 0 || expected_size + addr > file_sz) {
 		// Invalid image size.
 		mipmaps.clear();
@@ -479,7 +529,7 @@ int GodotSTEXPrivate::getMipmapInfo(void)
 			break;
 		}
 
-		expected_size = calcImageSize_tbl(op_tbl, op_tbl_sz, pixelFormat, width, height);
+		expected_size = getExpectedSize(width, height);
 		if (expected_size == 0 || expected_size + addr > file_sz) {
 			// Invalid image size.
 			break;
