@@ -260,7 +260,7 @@ rp_image_ptr iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t
 	if (DelayLoad_test_get_crc_table() != 0) {
 		// Delay load failed.
 		// Can't decompress the thumbnail image.
-		return nullptr;
+		return {};
 	}
 #else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
 	// zlib isn't in a DLL, but we need to ensure that the
@@ -273,7 +273,7 @@ rp_image_ptr iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t
 	size_t size = file->seekAndRead(address, z_buf.get(), z_size);
 	if (size != z_size) {
 		// Seek and/or read error.
-		return nullptr;
+		return {};
 	}
 
 	// Decompress the thumbnail image.
@@ -287,7 +287,7 @@ rp_image_ptr iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t
 	int ret = inflateInit2(&strm, -15);
 	if (ret != Z_OK) {
 		// Error initializing zlib.
-		return nullptr;
+		return {};
 	}
 
 	strm.avail_in = static_cast<uInt>(z_size);
@@ -300,7 +300,7 @@ rp_image_ptr iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t
 	inflateEnd(&strm);
 	if (ret != Z_OK && ret != Z_STREAM_END) {
 		// Error decompressing.
-		return nullptr;
+		return {};
 	}
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
@@ -327,7 +327,7 @@ rp_image_const_ptr iQuePlayerPrivate::loadThumbnailImage(void)
 		return img_thumbnail;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the banner.
-		return nullptr;
+		return {};
 	}
 
 	// Get the thumbnail address and size.
@@ -335,7 +335,7 @@ rp_image_const_ptr iQuePlayerPrivate::loadThumbnailImage(void)
 	const size_t z_thumb_size = be16_to_cpu(contentDesc.thumb_image_size);
 	if (z_thumb_size > 0x4000) {
 		// Out of range.
-		return nullptr;
+		return {};
 	}
 
 	// Load the image.
@@ -357,7 +357,7 @@ rp_image_const_ptr iQuePlayerPrivate::loadTitleImage(void)
 		return img_title;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the banner.
-		return nullptr;
+		return {};
 	}
 
 	// Get the thumbnail address and size.
@@ -365,7 +365,7 @@ rp_image_const_ptr iQuePlayerPrivate::loadTitleImage(void)
 	const size_t z_title_size = be16_to_cpu(contentDesc.title_image_size);
 	if (z_title_size > 0x10000) {
 		// Out of range.
-		return nullptr;
+		return {};
 	}
 
 	// Load the image.
@@ -522,8 +522,9 @@ int iQuePlayer::isRomSupported_static(const DetectInfo *info)
 const char *iQuePlayer::systemName(unsigned int type) const
 {
 	RP_D(const iQuePlayer);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// iQue was only released in China, so we can
 	// ignore the region selection.

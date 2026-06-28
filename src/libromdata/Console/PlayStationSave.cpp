@@ -134,7 +134,7 @@ rp_image_const_ptr PlayStationSavePrivate::loadIcon(void)
 
 	if (static_cast<int>(saveType) < 0) {
 		// Invalid save type...
-		return nullptr;
+		return {};
 	}
 
 	// Determine how many frames need to be decoded.
@@ -144,7 +144,7 @@ rp_image_const_ptr PlayStationSavePrivate::loadIcon(void)
 		case PS1_SC_ICON_NONE:
 		default:
 			// No frames.
-			return nullptr;
+			return {};
 
 		case PS1_SC_ICON_STATIC:
 		case PS1_SC_ICON_ALT_STATIC:
@@ -369,8 +369,9 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 const char *PlayStationSave::systemName(unsigned int type) const
 {
 	RP_D(const PlayStationSave);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// PlayStation has the same name worldwide, so we can
 	// ignore the region selection.
@@ -590,17 +591,17 @@ IconAnimDataConstPtr PlayStationSave::iconAnimData(void) const
 		// Load the icon.
 		if (!const_cast<PlayStationSavePrivate*>(d)->loadIcon()) {
 			// Error loading the icon.
-			return nullptr;
+			return {};
 		}
 		if (!d->iconAnimData) {
 			// Still no icon...
-			return nullptr;
+			return {};
 		}
 	}
 
 	if (d->iconAnimData->count <= 1) {
 		// Not an animated icon.
-		return nullptr;
+		return {};
 	}
 
 	// Return the icon animation data.

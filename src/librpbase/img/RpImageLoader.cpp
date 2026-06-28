@@ -85,7 +85,7 @@ rp_image_ptr load(IRpFile *file)
 	}
 
 	// Unsupported image format.
-	return nullptr;
+	return {};
 }
 
 } }

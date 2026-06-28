@@ -120,12 +120,12 @@ rp_image_const_ptr PlayStationTIMPrivate::loadImage(void)
 		return img;
 	} else if (!this->file) {
 		// Can't load the image.
-		return nullptr;
+		return {};
 	}
 
 	if (texDataStartAddr == 0) {
 		// No texture data start address...
-		return nullptr;
+		return {};
 	}
 
 	// CLUT buffer
@@ -137,7 +137,7 @@ rp_image_const_ptr PlayStationTIMPrivate::loadImage(void)
 		if (clutDataStartAddr == 0) {
 			// CLUT is present, but no CLUT data start address...
 			// TODO: Process it anyway, but with grayscale like no-CLUT images?
-			return nullptr;
+			return {};
 		}
 
 		uint32_t clut_size;	// in uint16_t units
@@ -150,13 +150,13 @@ rp_image_const_ptr PlayStationTIMPrivate::loadImage(void)
 				break;
 			default:
 				assert(!"CLUT is not applicable for this color depth! (15-bpp or 24-bpp)");
-				return nullptr;
+				return {};
 		}
 		clut_buf.resize(clut_size);
 		size_t size = file->seekAndRead(clutDataStartAddr, clut_buf.data(), clut_size * sizeof(uint16_t));
 		if (size != (clut_size * sizeof(uint16_t))) {
 			// Seek and/or read error.
-			return nullptr;
+			return {};
 		}
 	} else {
 		// No CLUT. If this is 4-bpp or 8-bpp, create a grayscale CLUT.
@@ -202,7 +202,7 @@ rp_image_const_ptr PlayStationTIMPrivate::loadImage(void)
 	size_t size = file->seekAndRead(texDataStartAddr, img_buf.get(), img_siz);
 	if (size != img_siz) {
 		// Seek and/or read error.
-		return nullptr;
+		return {};
 	}
 
 	// Process the image.
@@ -238,7 +238,7 @@ rp_image_const_ptr PlayStationTIMPrivate::loadImage(void)
 
 		default:
 			assert(!"Invalid BPP???");
-			return nullptr;
+			return {};
 	}
 
 	img = imgtmp;
@@ -498,7 +498,7 @@ rp_image_const_ptr PlayStationTIM::image(void) const
 	RP_D(const PlayStationTIM);
 	if (!d->isValid) {
 		// Unknown file type.
-		return nullptr;
+		return {};
 	}
 
 	// Load the image.

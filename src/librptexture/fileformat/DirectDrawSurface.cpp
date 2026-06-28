@@ -698,7 +698,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(int mip)
 	assert(mip < static_cast<int>(mipmaps.size()));
 	if (mip < 0 || mip >= static_cast<int>(mipmaps.size())) {
 		// Invalid mipmap number.
-		return nullptr;
+		return {};
 	}
 
 	if (!mipmaps.empty() && mipmaps[mip] != nullptr) {
@@ -706,7 +706,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(int mip)
 		return mipmaps[mip];
 	} else if (!this->isValid || !this->file) {
 		// Can't load the image.
-		return nullptr;
+		return {};
 	}
 
 	// Sanity check: Maximum image dimensions of 32768x32768.
@@ -718,7 +718,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(int mip)
 	    ddsHeader.dwHeight == 0 || ddsHeader.dwHeight > 32768)
 	{
 		// Invalid image dimensions.
-		return nullptr;
+		return {};
 	}
 
 	// Texture cannot start inside of the DDS header.
@@ -727,12 +727,12 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(int mip)
 	assert(texDataStartAddr >= sizeof(ddsHeader));
 	if (texDataStartAddr < sizeof(ddsHeader)) {
 		// Invalid texture data start address.
-		return nullptr;
+		return {};
 	}
 
 	if (file->size() > 128*1024*1024) {
 		// Sanity check: DDS files shouldn't be more than 128 MB.
-		return nullptr;
+		return {};
 	}
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
@@ -748,7 +748,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(int mip)
 	assert(expected_size != 0);
 	if (expected_size == 0) {
 		// Could not calculate the expected size.
-		return nullptr;
+		return {};
 	}
 
 	for (int adjmip = 1; adjmip <= mip; adjmip++) {
@@ -759,7 +759,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(int mip)
 		assert(height > 0);
 		if (width <= 0 || height <= 0) {
 			// Mipmap size calculation error...
-			return nullptr;
+			return {};
 		}
 
 		start_addr += expected_size;
@@ -770,7 +770,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(int mip)
 	int ret = file->seek(start_addr);
 	if (ret != 0) {
 		// Seek error.
-		return nullptr;
+		return {};
 	}
 
 	// TODO: Handle DX10 alpha processing.
@@ -790,7 +790,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(int mip)
 		// Verify file size.
 		if (expected_size >= file_sz + start_addr) {
 			// File is too small.
-			return nullptr;
+			return {};
 		}
 
 		// Read the texture data.
@@ -798,7 +798,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(int mip)
 		size_t size = file->read(buf.get(), expected_size);
 		if (size != expected_size) {
 			// Read error.
-			return nullptr;
+			return {};
 		}
 
 		// TODO: Handle typeless, signed, sRGB, float.
@@ -949,13 +949,13 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(int mip)
 		assert(bytespp != 0);
 		if (pxf_uncomp == ImageDecoder::PixelFormat::Unknown || bytespp == 0) {
 			// Pixel format wasn't updated...
-			return nullptr;
+			return {};
 		}
 
 		// Verify file size.
 		if (expected_size >= file_sz + start_addr) {
 			// File is too small.
-			return nullptr;
+			return {};
 		}
 
 		// Read the texture data.
@@ -963,7 +963,7 @@ rp_image_const_ptr DirectDrawSurfacePrivate::loadImage(int mip)
 		size_t size = file->read(buf.get(), expected_size);
 		if (size != expected_size) {
 			// Read error.
-			return nullptr;
+			return {};
 		}
 
 		switch (bytespp) {
@@ -1257,8 +1257,9 @@ int DirectDrawSurface::isRomSupported_static(const DetectInfo *info)
 const char *DirectDrawSurface::pixelFormat(void) const
 {
 	RP_D(const DirectDrawSurface);
-	if (!d->isValid)
+	if (!d->isValid) {
 		return nullptr;
+	}
 
 	if (!d->pixel_format.empty()) {
 		// We already determined the pixel format.
@@ -1500,7 +1501,7 @@ rp_image_const_ptr DirectDrawSurface::mipmap(int mip) const
 	RP_D(const DirectDrawSurface);
 	if (!d->isValid) {
 		// Unknown file type.
-		return nullptr;
+		return {};
 	}
 
 	// Load the image at the specified mipmap level.

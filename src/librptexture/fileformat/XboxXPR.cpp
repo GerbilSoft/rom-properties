@@ -287,13 +287,13 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 		return img;
 	} else if (!this->file) {
 		// Can't load the image.
-		return nullptr;
+		return {};
 	}
 
 	// Sanity check: XPR0 files shouldn't be more than 16 MB.
 	assert(file->size() <= 16*1024*1024);
 	if (file->size() > 16*1024*1024) {
-		return nullptr;
+		return {};
 	}
 
 	// XPR0 textures are always square and encoded using DXT1.
@@ -313,7 +313,7 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 	assert(height > 0);
 	if (width == 0 || height == 0) {
 		// Invalid image dimensions.
-		return nullptr;
+		return {};
 	}
 
 	// Mode table
@@ -405,7 +405,7 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 
 	if (xpr0Header.pixel_format >= xpr_mode_tbl.size()) {
 		// Invalid pixel format.
-		return nullptr;
+		return {};
 	}
 
 	// Determine the expected size based on the pixel format.
@@ -414,7 +414,7 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 
 	if (expected_size > file_sz - data_offset) {
 		// File is too small.
-		return nullptr;
+		return {};
 	}
 
 	// Read the image data.
@@ -422,7 +422,7 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 	size_t size = file->seekAndRead(data_offset, buf.get(), static_cast<size_t>(expected_size));
 	if (size != static_cast<size_t>(expected_size)) {
 		// Seek and/or read error.
-		return nullptr;
+		return {};
 	}
 
 	if (mode.dxtn != 0) {
@@ -443,7 +443,7 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 				break;
 			default:
 				assert(!"Unsupported DXTn format.");
-				return nullptr;
+				return {};
 		}
 	} else {
 		switch (mode.bpp) {
@@ -465,13 +465,13 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 			case 0:
 			default:
 				assert(!"Unsupported bpp value.");
-				return nullptr;
+				return {};
 		}
 	}
 
 	if (!img) {
 		// Unable to decode the image.
-		return nullptr;
+		return {};
 	}
 
 	if (mode.swizzled) {
@@ -731,7 +731,7 @@ rp_image_const_ptr XboxXPR::image(void) const
 	RP_D(const XboxXPR);
 	if (!d->isValid || static_cast<int>(d->xprType) < 0) {
 		// Unknown file type.
-		return nullptr;
+		return {};
 	}
 
 	// Load the image.

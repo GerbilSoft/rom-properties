@@ -1517,8 +1517,9 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 const char *Nintendo3DS::systemName(unsigned int type) const
 {
 	RP_D(const Nintendo3DS);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// Nintendo 3DS has the same name worldwide, so we can
 	// ignore the region selection.
@@ -2653,7 +2654,7 @@ IconAnimDataConstPtr Nintendo3DS::iconAnimData(void) const
 	if (d->mainContent) {
 		return d->mainContent->iconAnimData();
 	}
-	return nullptr;
+	return {};
 }
 
 /**

@@ -980,7 +980,7 @@ rp_image_const_ptr RomData::image(ImageType imageType) const
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
 	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
 		// ImageType is out of range.
-		return nullptr;
+		return {};
 	}
 	// TODO: Check supportedImageTypes()?
 
@@ -1016,7 +1016,7 @@ rp_image_const_ptr RomData::mipmap(int mipmapLevel) const
 {
 	assert(mipmapLevel >= 0);
 	if (mipmapLevel < 0) {
-		return nullptr;
+		return {};
 	}
 
 	// TODO: Check supportedImageTypes()?
@@ -1119,7 +1119,7 @@ const char *RomData::getImageTypeName(ImageType imageType) {
 IconAnimDataConstPtr RomData::iconAnimData(void) const
 {
 	// No animated icon by default.
-	return nullptr;
+	return {};
 }
 
 /**

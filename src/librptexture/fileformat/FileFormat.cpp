@@ -194,7 +194,7 @@ rp_image_const_ptr FileFormat::mipmap(int mip) const
 	if (mip == 0) {
 		return image();
 	}
-	return nullptr;
+	return {};
 }
 
 }

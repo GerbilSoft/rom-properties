@@ -127,7 +127,7 @@ rp_image_const_ptr Nintendo3DS_SMDH_Private::loadIcon(int idx)
 	assert(idx == 0 || idx == 1);
 	if (idx != 0 && idx != 1) {
 		// Invalid icon index.
-		return nullptr;
+		return {};
 	}
 
 	if (img_icon[idx]) {
@@ -135,13 +135,13 @@ rp_image_const_ptr Nintendo3DS_SMDH_Private::loadIcon(int idx)
 		return img_icon[idx];
 	} else if (!file || !isValid) {
 		// Can't load the icon.
-		return nullptr;
+		return {};
 	}
 
 	// Make sure the SMDH section is loaded.
 	if (smdh.header.magic != cpu_to_be32(N3DS_SMDH_HEADER_MAGIC)) {
 		// Not loaded. Cannot load an icon.
-		return nullptr;
+		return {};
 	}
 
 	// Convert the icon to rp_image.
@@ -167,7 +167,7 @@ rp_image_const_ptr Nintendo3DS_SMDH_Private::loadIcon(int idx)
 		default:
 			// Invalid icon index.
 			assert(!"Invalid 3DS icon index.");
-			return nullptr;
+			return {};
 	}
 
 	return img_icon[idx];
@@ -332,8 +332,9 @@ int Nintendo3DS_SMDH::isRomSupported_static(const DetectInfo *info)
 const char *Nintendo3DS_SMDH::systemName(unsigned int type) const
 {
 	RP_D(const Nintendo3DS_SMDH);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"Nintendo3DS_SMDH::systemName() array index optimization needs to be updated.");

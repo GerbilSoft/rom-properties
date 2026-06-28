@@ -259,12 +259,12 @@ RomDataPtr PlayStationDiscPrivate::openBootExe(void)
 
 	if (!isoPartition || !isoPartition->isOpen()) {
 		// ISO partition is not open.
-		return nullptr;
+		return {};
 	}
 
 	if (boot_filename.empty()) {
 		// No boot filename...
-		return nullptr;
+		return {};
 	}
 
 	// Open the boot file.
@@ -272,7 +272,7 @@ RomDataPtr PlayStationDiscPrivate::openBootExe(void)
 	const IRpFilePtr f_bootExe(isoPartition->open(boot_filename.c_str()));
 	if (!f_bootExe) {
 		// Unable to open the default executable.
-		return nullptr;
+		return {};
 	}
 
 	RomDataPtr exeData;
@@ -307,7 +307,7 @@ RomDataPtr PlayStationDiscPrivate::openBootExe(void)
 	}
 
 	// Unable to open the executable.
-	return nullptr;
+	return {};
 }
 
 /** PlayStationDisc **/
@@ -574,8 +574,9 @@ int PlayStationDisc::isRomSupported_static(
 const char *PlayStationDisc::systemName(unsigned int type) const
 {
 	RP_D(const PlayStationDisc);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// PlayStationDisc has the same name worldwide, so we can
 	// ignore the region selection.

@@ -230,7 +230,7 @@ PIMGTYPE PIMGTYPE_load_png_from_gresource(const char *filename)
  * Load a PNG image from our glibresources.
  * This version returns rp_image.
  * @param filename Filename within glibresources.
- * @return rp_imgae_ptr, or nullptr if not found.
+ * @return rp_image_ptr, or nullptr if not found.
  */
 rp_image_ptr rp_image_load_png_from_gresource(const char *filename)
 {
@@ -238,7 +238,7 @@ rp_image_ptr rp_image_load_png_from_gresource(const char *filename)
 		G_RESOURCE_LOOKUP_FLAGS_NONE, nullptr);
 	if (!pBytes) {
 		// Not found.
-		return nullptr;
+		return {};
 	}
 
 	gsize size = 0;

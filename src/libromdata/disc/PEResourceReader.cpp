@@ -723,7 +723,7 @@ IRpFilePtr PEResourceReader::open(uint16_t type, int id, int lang)
 		// Get the first ID for this type.
 		const PEResourceReaderPrivate::rsrc_dir_t *type_dir = d->getTypeDir(type);
 		if (!type_dir || type_dir->empty())
-			return nullptr;
+			return {};
 		id = type_dir->at(0).id;
 	}
 
@@ -731,7 +731,7 @@ IRpFilePtr PEResourceReader::open(uint16_t type, int id, int lang)
 	const PEResourceReaderPrivate::rsrc_dir_t *type_id_dir =
 		d->getTypeIdDir(type, static_cast<uint16_t>(id));
 	if (!type_id_dir || type_id_dir->empty())
-		return nullptr;
+		return {};
 
 	const PEResourceReaderPrivate::ResDirEntry *dirEntry = nullptr;
 	if (lang == -1) {
@@ -747,7 +747,7 @@ IRpFilePtr PEResourceReader::open(uint16_t type, int id, int lang)
 
 		if (iter == type_id_dir->cend()) {
 			// Not found.
-			return nullptr;
+			return {};
 		}
 
 		// Found the language ID.
@@ -758,7 +758,7 @@ IRpFilePtr PEResourceReader::open(uint16_t type, int id, int lang)
 	assert(!(dirEntry->addr & 0x80000000));
 	if (dirEntry->addr & 0x80000000) {
 		// This is a subdirectory.
-		return nullptr;
+		return {};
 	}
 
 	// Get the IMAGE_RESOURCE_DATA_ENTRY.
@@ -767,7 +767,7 @@ IRpFilePtr PEResourceReader::open(uint16_t type, int id, int lang)
 	if (size != sizeof(irdata)) {
 		// Seek and/or read error.
 		m_lastError = m_file->lastError();
-		return nullptr;
+		return {};
 	}
 
 	// NOTE: OffsetToData is an RVA, not relative to the physical address.

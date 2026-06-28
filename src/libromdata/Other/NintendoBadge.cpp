@@ -161,7 +161,7 @@ rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 	assert(idx >= 0 || static_cast<size_t>(idx) < img_badges.size());
 	if (idx < 0 || static_cast<size_t>(idx) >= img_badges.size()) {
 		// Invalid image index.
-		return nullptr;
+		return {};
 	}
 
 	if (img_badges[idx]) {
@@ -169,7 +169,7 @@ rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 		return img_badges[idx];
 	} else if (!this->file) {
 		// Can't load the image.
-		return nullptr;
+		return {};
 	}
 
 	// Badge sizes.
@@ -194,7 +194,7 @@ rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 				    badgeHeader.prbs.mb_height > 16)
 				{
 					// Mega Badge is too mega for us.
-					return nullptr;
+					return {};
 				}
 			}
 
@@ -219,7 +219,7 @@ rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 				assert(megaBadge);
 				if (!megaBadge) {
 					// Not a Mega Badge.
-					return nullptr;
+					return {};
 				}
 				// Mega Badge tiles start at 0x4300.
 				doMegaBadge = true;
@@ -239,7 +239,7 @@ rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 			assert(idx == 0);
 			if (idx != 0) {
 				// Invalid index.
-				return nullptr;
+				return {};
 			}
 			start_addr = 0x2080;
 			badge_rgb_sz = badge64_rgb_sz;
@@ -249,7 +249,7 @@ rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 
 		default:
 			assert(!"Unknown badge type. (Should not get here!)");
-			return nullptr;
+			return {};
 	}
 
 	// TODO: Multiple internal image sizes.
@@ -263,7 +263,7 @@ rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 		size_t size = file->seekAndRead(start_addr, badgeData.get(), badge_sz);
 		if (size != badge_sz) {
 			// Seek and/or read error.
-			return nullptr;
+			return {};
 		}
 
 		// Convert to rp_image.
@@ -302,7 +302,7 @@ rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 				size_t size = file->seekAndRead(start_addr, badgeData.get(), badge_sz);
 				if (size != badge_sz) {
 					// Seek and/or read error.
-					return nullptr;
+					return {};
 				}
 
 				const rp_image_ptr mb_img = ImageDecoder::fromN3DSTiledRGB565_A4(
@@ -580,8 +580,9 @@ int NintendoBadge::isRomSupported_static(const DetectInfo *info)
 const char *NintendoBadge::systemName(unsigned int type) const
 {
 	RP_D(const NintendoBadge);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// Nintendo Badge Arcade has the same name worldwide, so we can
 	// ignore the region selection.

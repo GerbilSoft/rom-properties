@@ -134,7 +134,7 @@ rp_image_const_ptr WiiUAncastPrivate::loadIcon(void)
 		return img_icon;
 	} else if (!this->isValid || static_cast<int>(this->ancastType) < 0) {
 		// Can't load the icon.
-		return nullptr;
+		return {};
 	}
 
 	// Determine the target device and console type,
@@ -393,8 +393,9 @@ int WiiUAncast::isRomSupported_static(const DetectInfo *info)
 const char *WiiUAncast::systemName(unsigned int type) const
 {
 	RP_D(const WiiUAncast);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// WiiUAncast has the same name worldwide, so we can
 	// ignore the region selection.

@@ -296,7 +296,7 @@ rp_image_const_ptr ASTC::image(void) const
 	RP_D(const ASTC);
 	if (!d->isValid) {
 		// Unknown file type.
-		return nullptr;
+		return {};
 	}
 
 	// Load the image.

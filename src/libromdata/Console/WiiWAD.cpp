@@ -697,8 +697,9 @@ int WiiWAD::isRomSupported_static(const DetectInfo *info)
 const char *WiiWAD::systemName(unsigned int type) const
 {
 	RP_D(const WiiWAD);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// Wii has the same name worldwide, so we can
 	// ignore the region selection.
@@ -1332,7 +1333,7 @@ IconAnimDataConstPtr WiiWAD::iconAnimData(void) const
 #endif /* ENABLE_DECRYPTION */
 
 	// No main content object.
-	return nullptr;
+	return {};
 }
 
 /**

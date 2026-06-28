@@ -1003,14 +1003,14 @@ IRpFilePtr IsoPartition::open(const char *filename)
 	assert(m_file->isOpen());
 	if (!m_file ||  !m_file->isOpen()) {
 		m_lastError = EBADF;
-		return nullptr;
+		return {};
 	}
 
 	assert(filename != nullptr);
 	if (!filename || filename[0] == 0) {
 		// No filename.
 		m_lastError = EINVAL;
-		return nullptr;
+		return {};
 	}
 
 	// TODO: File reference counter.
@@ -1019,19 +1019,19 @@ IRpFilePtr IsoPartition::open(const char *filename)
 	if (!dirEntry) {
 		// Not found.
 		m_lastError = ENOENT;
-		return nullptr;
+		return {};
 	}
 
 	// Make sure this is a regular file.
 	if (dirEntry->flags & ISO_FLAG_DIRECTORY) {
 		// This is a directory.
 		m_lastError = EISDIR;
-		return nullptr;
+		return {};
 	} else if (dirEntry->flags & ISO_FLAG_ASSOCIATED) {
 		// This is an "associated" file.
 		// Used for e.g. resource forks on Mac discs.
 		m_lastError = EPERM;
-		return nullptr;
+		return {};
 	}
 
 	// Block size.
@@ -1045,7 +1045,7 @@ IRpFilePtr IsoPartition::open(const char *filename)
 	{
 		// File is out of bounds.
 		m_lastError = EIO;
-		return nullptr;
+		return {};
 	}
 
 	// Create the PartitionFile.

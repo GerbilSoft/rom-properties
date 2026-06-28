@@ -731,13 +731,13 @@ rp_image_const_ptr Xbox360_XDBF_Private::loadImage(uint64_t image_id)
 
 	if (entryTable.empty()) {
 		// Entry table isn't loaded...
-		return nullptr;
+		return {};
 	}
 
 	// Can we load the image?
 	if (!file || !isValid) {
 		// Can't load the image.
-		return nullptr;
+		return {};
 	}
 
 	// Icons are stored in PNG format.
@@ -746,7 +746,7 @@ rp_image_const_ptr Xbox360_XDBF_Private::loadImage(uint64_t image_id)
 	const XDBF_Entry *const entry = findResource(XDBF_SPA_NAMESPACE_IMAGE, image_id);
 	if (!entry) {
 		// Not found...
-		return nullptr;
+		return {};
 	}
 
 	// Load the image.
@@ -759,14 +759,14 @@ rp_image_const_ptr Xbox360_XDBF_Private::loadImage(uint64_t image_id)
 	assert(length <= 1024*1024);
 	if (length < 16 || length > 1024*1024) {
 		// Size is out of range.
-		return nullptr;
+		return {};
 	}
 
 	unique_ptr<uint8_t[]> png_buf(new uint8_t[length]);
 	size_t size = file->seekAndRead(addr, png_buf.get(), length);
 	if (size != length) {
 		// Seek and/or read error.
-		return nullptr;
+		return {};
 	}
 
 	// Create a MemFile and decode the image.
@@ -793,13 +793,13 @@ rp_image_const_ptr Xbox360_XDBF_Private::loadIcon(void)
 		return img_icon;
 	} else if (!file || !isValid) {
 		// Can't load the icon.
-		return nullptr;
+		return {};
 	}
 
 	// Make sure the entry table is loaded.
 	if (entryTable.empty()) {
 		// Not loaded. Cannot load an icon.
-		return nullptr;
+		return {};
 	}
 
 	// Get the icon.
@@ -1711,8 +1711,9 @@ int Xbox360_XDBF::isRomSupported_static(const DetectInfo *info)
 const char *Xbox360_XDBF::systemName(unsigned int type) const
 {
 	RP_D(const Xbox360_XDBF);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// Xbox 360 has the same name worldwide, so we can
 	// ignore the region selection.

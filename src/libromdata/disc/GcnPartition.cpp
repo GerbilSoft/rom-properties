@@ -267,14 +267,14 @@ IRpFilePtr GcnPartition::open(const char *filename)
 		if (d->loadFst() != 0) {
 			// FST load failed.
 			m_lastError = EIO;
-			return nullptr;
+			return {};
 		}
 	}
 
 	if (!filename) {
 		// No filename.
 		m_lastError = EINVAL;
-		return nullptr;
+		return {};
 	}
 
 	// Find the file in the FST.
@@ -283,14 +283,14 @@ IRpFilePtr GcnPartition::open(const char *filename)
 	if (ret != 0) {
 		// File not found.
 		m_lastError = ENOENT;
-		return nullptr;
+		return {};
 	}
 
 	// Make sure this is a regular file.
 	if (dirent.type != DT_REG) {
 		// Not a regular file.
 		m_lastError = (dirent.type == DT_DIR ? EISDIR : EPERM);
-		return nullptr;
+		return {};
 	}
 
 	// Make sure the file is in bounds.
@@ -299,7 +299,7 @@ IRpFilePtr GcnPartition::open(const char *filename)
 	{
 		// File is out of bounds.
 		m_lastError = EIO;
-		return nullptr;
+		return {};
 	}
 
 	// Create the PartitionFile.

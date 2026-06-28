@@ -128,7 +128,7 @@ rp_image_const_ptr DidjTexPrivate::loadDidjTexImage(void)
 		return img;
 	} else if (!this->file) {
 		// Can't load the image.
-		return nullptr;
+		return {};
 	}
 
 	// Sanity checks:
@@ -139,7 +139,7 @@ rp_image_const_ptr DidjTexPrivate::loadDidjTexImage(void)
 	assert(file->size() <= 1L*1024*1024);
 	assert(uncompr_size <= 4U*1024*1024);
 	if (file->size() > 1L*1024*1024 || uncompr_size > 4U*1024*1024) {
-		return nullptr;
+		return {};
 	}
 
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
@@ -147,7 +147,7 @@ rp_image_const_ptr DidjTexPrivate::loadDidjTexImage(void)
 	if (DelayLoad_test_get_crc_table() != 0) {
 		// Delay load failed.
 		// Can't decompress the thumbnail image.
-		return nullptr;
+		return {};
 	}
 #else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
 	// zlib isn't in a DLL, but we need to ensure that the
@@ -162,7 +162,7 @@ rp_image_const_ptr DidjTexPrivate::loadDidjTexImage(void)
 	size_t size = file->seekAndRead(sizeof(texHeader), compr_data.get(), compr_size);
 	if (size != compr_size) {
 		// Seek and/or read error.
-		return nullptr;
+		return {};
 	}
 
 	// Decompress the data.
@@ -173,7 +173,7 @@ rp_image_const_ptr DidjTexPrivate::loadDidjTexImage(void)
 	int ret = inflateInit(&strm);
 	if (ret != Z_OK) {
 		// Error initializing inflate.
-		return nullptr;
+		return {};
 	}
 
 	strm.avail_in = compr_size;
@@ -191,7 +191,7 @@ rp_image_const_ptr DidjTexPrivate::loadDidjTexImage(void)
 			default:
 				// Error decompressing...
 				inflateEnd(&strm);
-				return nullptr;
+				return {};
 		}
 	} while (strm.avail_out > 0 && ret != Z_STREAM_END);
 
@@ -201,7 +201,7 @@ rp_image_const_ptr DidjTexPrivate::loadDidjTexImage(void)
 	if (strm.avail_out != 0 || ret != Z_STREAM_END) {
 		// Error decompressing...
 		inflateEnd(&strm);
-		return nullptr;
+		return {};
 	}
 
 	// Finished decompressing.
@@ -218,7 +218,7 @@ rp_image_const_ptr DidjTexPrivate::loadDidjTexImage(void)
 			assert(img_siz == uncompr_size);
 			if (img_siz != uncompr_size) {
 				// Incorrect size.
-				return nullptr;
+				return {};
 			}
 
 			imgtmp = ImageDecoder::fromLinear16(
@@ -233,7 +233,7 @@ rp_image_const_ptr DidjTexPrivate::loadDidjTexImage(void)
 			assert(img_siz == uncompr_size);
 			if (img_siz != uncompr_size) {
 				// Incorrect size.
-				return nullptr;
+				return {};
 			}
 
 			imgtmp = ImageDecoder::fromLinear16(
@@ -249,7 +249,7 @@ rp_image_const_ptr DidjTexPrivate::loadDidjTexImage(void)
 			assert(pal_siz + img_siz == uncompr_size);
 			if (pal_siz + img_siz != uncompr_size) {
 				// Incorrect size.
-				return nullptr;
+				return {};
 			}
 
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
@@ -267,7 +267,7 @@ rp_image_const_ptr DidjTexPrivate::loadDidjTexImage(void)
 			assert(pal_siz + img_siz == uncompr_size);
 			if (pal_siz + img_siz != uncompr_size) {
 				// Incorrect size.
-				return nullptr;
+				return {};
 			}
 
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
@@ -285,7 +285,7 @@ rp_image_const_ptr DidjTexPrivate::loadDidjTexImage(void)
 			assert(pal_siz + img_siz == uncompr_size);
 			if (pal_siz + img_siz != uncompr_size) {
 				// Incorrect size.
-				return nullptr;
+				return {};
 			}
 
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
@@ -303,7 +303,7 @@ rp_image_const_ptr DidjTexPrivate::loadDidjTexImage(void)
 			assert(pal_siz + img_siz == uncompr_size);
 			if (pal_siz + img_siz != uncompr_size) {
 				// Incorrect size.
-				return nullptr;
+				return {};
 			}
 
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
@@ -316,7 +316,7 @@ rp_image_const_ptr DidjTexPrivate::loadDidjTexImage(void)
 
 		default:
 			assert(!"Format not supported.");
-			return nullptr;
+			return {};
 	}
 
 	img = imgtmp;

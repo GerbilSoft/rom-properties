@@ -361,7 +361,7 @@ rp_image_const_ptr ValveVTFPrivate::loadImage(int mip)
 		assert(mipmaps.size() == mipmap_data.size());
 		if (ret != 0 || mipmap_data.empty()) {
 			// Error getting the mipmap info.
-			return nullptr;
+			return {};
 		}
 	}
 
@@ -369,7 +369,7 @@ rp_image_const_ptr ValveVTFPrivate::loadImage(int mip)
 	assert(mip < static_cast<int>(mipmaps.size()));
 	if (mip < 0 || mip >= static_cast<int>(mipmaps.size())) {
 		// Invalid mipmap number.
-		return nullptr;
+		return {};
 	}
 
 	if (!mipmaps.empty() && mipmaps[mip] != nullptr) {
@@ -377,7 +377,7 @@ rp_image_const_ptr ValveVTFPrivate::loadImage(int mip)
 		return mipmaps[mip];
 	} else if (!this->isValid || !this->file) {
 		// Can't load the image.
-		return nullptr;
+		return {};
 	}
 
 	// Sanity check: Maximum image dimensions of 32768x32768.
@@ -389,12 +389,12 @@ rp_image_const_ptr ValveVTFPrivate::loadImage(int mip)
 	    vtfHeader.height > 32768)
 	{
 		// Invalid image dimensions.
-		return nullptr;
+		return {};
 	}
 
 	if (file->size() > 128*1024*1024) {
 		// Sanity check: VTF files shouldn't be more than 128 MB.
-		return nullptr;
+		return {};
 	}
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
@@ -406,14 +406,14 @@ rp_image_const_ptr ValveVTFPrivate::loadImage(int mip)
 	// Verify file size.
 	if (mdata.addr + mdata.size > file_sz) {
 		// File is too small.
-		return nullptr;
+		return {};
 	}
 
 	// Texture cannot start inside of the VTF header.
 	assert(mdata.addr >= sizeof(vtfHeader));
 	if (mdata.addr < sizeof(vtfHeader)) {
 		// Invalid texture data start address.
-		return nullptr;
+		return {};
 	}
 
 	// Read the texture data.
@@ -421,7 +421,7 @@ rp_image_const_ptr ValveVTFPrivate::loadImage(int mip)
 	size_t size = file->seekAndRead(mdata.addr, buf.get(), mdata.size);
 	if (size != mdata.size) {
 		// Read error.
-		return nullptr;
+		return {};
 	}
 
 	// FIXME: Smaller mipmaps have read errors if encoded with e.g. DXTn,
@@ -726,8 +726,9 @@ ValveVTF::ValveVTF(const IRpFilePtr &file)
 const char *ValveVTF::pixelFormat(void) const
 {
 	RP_D(const ValveVTF);
-	if (!d->isValid)
+	if (!d->isValid) {
 		return nullptr;
+	}
 
 	const int fmt = d->vtfHeader.highResImageFormat;
 
@@ -930,7 +931,7 @@ rp_image_const_ptr ValveVTF::mipmap(int mip) const
 	RP_D(const ValveVTF);
 	if (!d->isValid) {
 		// Unknown file type.
-		return nullptr;
+		return {};
 	}
 
 	// Load the image.

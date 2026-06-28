@@ -463,7 +463,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon(void)
 		return iconAnimData->frames[0];
 	} else if (!this->isValid || !this->file) {
 		// Can't load the icon.
-		return nullptr;
+		return {};
 	}
 
 	if (loaded_headers & DC_IS_ICONDATA_VMS) {
@@ -471,14 +471,14 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon(void)
 		return loadIcon_ICONDATA_VMS();
 	} else if (!(loaded_headers & DC_HAVE_VMS)) {
 		// No VMS header. Cannot load the icon.
-		return nullptr;
+		return {};
 	}
 
 	// Check the icon count.
 	uint16_t icon_count = vms_header.icon_count;
 	if (icon_count == 0) {
 		// No icon.
-		return nullptr;
+		return {};
 	} else if (icon_count > 3) {
 		// VMU files have a maximum of 3 frames.
 		// Truncate the frame count.
@@ -496,7 +496,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon(void)
 	}
 	if (static_cast<off64_t>(sz_reserved) > this->file->size()) {
 		// File is NOT big enough.
-		return nullptr;
+		return {};
 	}
 
 	// Temporary icon buffer
@@ -507,7 +507,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon(void)
 					buf->palette.u16, sizeof(buf->palette.u16));
 	if (size != sizeof(buf->palette.u16)) {
 		// Seek and/or read error.
-		return nullptr;
+		return {};
 	}
 
 	if (this->saveType == SaveType::DCI) {
@@ -580,12 +580,12 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 		return iconAnimData->frames[0];
 	} else if (!this->isValid || !this->file) {
 		// Can't load the icon.
-		return nullptr;
+		return {};
 	}
 
 	if (!(loaded_headers & DC_IS_ICONDATA_VMS)) {
 		// Not ICONDATA_VMS.
-		return nullptr;
+		return {};
 	}
 
 	// NOTE: We need to set up iconAnimData in order to ensure
@@ -610,7 +610,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 						buf->palette.u16, sizeof(buf->palette.u16));
 		if (size != sizeof(buf->palette.u16)) {
 			// Seek and/or read error.
-			return nullptr;
+			return {};
 		}
 
 		if (this->saveType == SaveType::DCI) {
@@ -622,7 +622,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 		size = file->read(buf->icon_color.u8, sizeof(buf->icon_color.u8));
 		if (size != sizeof(buf->icon_color.u8)) {
 			// Read error.
-			return nullptr;
+			return {};
 		}
 
 		if (this->saveType == SaveType::DCI) {
@@ -649,7 +649,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 					buf->icon_mono.u8, sizeof(buf->icon_mono.u8));
 	if (size != sizeof(buf->icon_mono.u8)) {
 		// Seek and/or read error.
-		return nullptr;
+		return {};
 	}
 
 	if (this->saveType == SaveType::DCI) {
@@ -696,12 +696,12 @@ rp_image_const_ptr DreamcastSavePrivate::loadBanner(void)
 		return img_banner;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the banner.
-		return nullptr;
+		return {};
 	}
 
 	if (!(loaded_headers & DC_HAVE_VMS)) {
 		// No VMS header. Cannot load the banner.
-		return nullptr;
+		return {};
 	}
 
 	// Determine the eyecatch size.
@@ -709,7 +709,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadBanner(void)
 	    vms_header.eyecatch_type > DC_VMS_EYECATCH_CI4)
 	{
 		// No eyecatch.
-		return nullptr;
+		return {};
 	}
 
 	const unsigned int eyecatch_size = eyecatch_sizes[vms_header.eyecatch_type];
@@ -722,7 +722,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadBanner(void)
 		(vms_header.icon_count * DC_VMS_ICON_DATA_SIZE);
 	if (static_cast<off64_t>(sz_icons) + eyecatch_size > file->size()) {
 		// File is NOT big enough.
-		return nullptr;
+		return {};
 	}
 
 	// Load the eyecatch data.
@@ -731,7 +731,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadBanner(void)
 	size_t size = file->read(data.get(), eyecatch_size);
 	if (size != eyecatch_size) {
 		// Error loading the eyecatch data.
-		return nullptr;
+		return {};
 	}
 
 	if (this->saveType == SaveType::DCI) {
@@ -1110,8 +1110,9 @@ int DreamcastSave::isRomSupported_static(const DetectInfo *info)
 const char *DreamcastSave::systemName(unsigned int type) const
 {
 	RP_D(const DreamcastSave);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// Dreamcast has the same name worldwide, so we can
 	// ignore the region selection.
@@ -1601,11 +1602,11 @@ IconAnimDataConstPtr DreamcastSave::iconAnimData(void) const
 		// Load the icon.
 		if (!const_cast<DreamcastSavePrivate*>(d)->loadIcon()) {
 			// Error loading the icon.
-			return nullptr;
+			return {};
 		}
 		if (!d->iconAnimData) {
 			// Still no icon...
-			return nullptr;
+			return {};
 		}
 	}
 
@@ -1613,7 +1614,7 @@ IconAnimDataConstPtr DreamcastSave::iconAnimData(void) const
 	    d->iconAnimData->seq_count <= 1)
 	{
 		// Not an animated icon.
-		return nullptr;
+		return {};
 	}
 
 	// Return the icon animation data.

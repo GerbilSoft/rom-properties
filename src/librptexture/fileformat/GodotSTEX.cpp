@@ -561,14 +561,14 @@ rp_image_const_ptr GodotSTEXPrivate::loadImage(int mip)
 	assert(ret == 0);
 	assert(!mipmap_data.empty());
 	if (ret != 0 || mipmap_data.empty()) {
-		return nullptr;
+		return {};
 	}
 
 	assert(mip >= 0);
 	assert(mip < (int)mipmaps.size());
 	if (mip < 0 || mip >= (int)mipmaps.size()) {
 		// Invalid mipmap number.
-		return nullptr;
+		return {};
 	}
 
 	if (!mipmaps.empty() && mipmaps[mip] != nullptr) {
@@ -576,7 +576,7 @@ rp_image_const_ptr GodotSTEXPrivate::loadImage(int mip)
 		return mipmaps[mip];
 	} else if (!this->isValid || !this->file) {
 		// Can't load the image.
-		return nullptr;
+		return {};
 	}
 
 	const mipmap_data_t &mdata = mipmap_data[mip];
@@ -590,12 +590,12 @@ rp_image_const_ptr GodotSTEXPrivate::loadImage(int mip)
 	    rescale_dimensions[1] > 32768)
 	{
 		// Invalid rescale dimensions.
-		return nullptr;
+		return {};
 	}
 
 	if (file->size() > 128*1024*1024) {
 		// Sanity check: STEX files shouldn't be more than 128 MB.
-		return nullptr;
+		return {};
 	}
 
 	// TODO: Support WebP images, and maybe Basis Universal.
@@ -603,11 +603,11 @@ rp_image_const_ptr GodotSTEXPrivate::loadImage(int mip)
 		// If it's PNG, load it.
 		if (embedHeader.fourCC != cpu_to_be32(STEX_FourCC_PNG)) {
 			// Not PNG.
-			return nullptr;
+			return {};
 		}
 		if (stexVersion == 4 && stexHeader.v4.data_format != STEX4_DATA_FORMAT_PNG) {
 			// FourCC is PNG, but the data format isn't...
-			return nullptr;
+			return {};
 		}
 
 		// Load the PNG data.
@@ -615,7 +615,7 @@ rp_image_const_ptr GodotSTEXPrivate::loadImage(int mip)
 		size_t size = file->seekAndRead(mdata.addr, buf.get(), mdata.size);
 		if (size != mdata.size) {
 			// Seek and/or read error.
-			return nullptr;
+			return {};
 		}
 
 		// FIXME: Move RpPng to librptexture.
@@ -631,7 +631,7 @@ rp_image_const_ptr GodotSTEXPrivate::loadImage(int mip)
 	ret = file->seek(mdata.addr);
 	if (ret != 0) {
 		// Seek error.
-		return nullptr;
+		return {};
 	}
 
 	// Read the texture data.
@@ -639,7 +639,7 @@ rp_image_const_ptr GodotSTEXPrivate::loadImage(int mip)
 	size_t size = file->read(buf.get(), mdata.size);
 	if (size != mdata.size) {
 		// Read error.
-		return nullptr;
+		return {};
 	}
 
 	// Decode the image.
@@ -1154,8 +1154,9 @@ GodotSTEX::GodotSTEX(const IRpFilePtr &file)
 const char *GodotSTEX::pixelFormat(void) const
 {
 	RP_D(const GodotSTEX);
-	if (!d->isValid)
+	if (!d->isValid) {
 		return nullptr;
+	}
 
 	switch (d->stexVersion) {
 		default:
@@ -1347,7 +1348,7 @@ rp_image_const_ptr GodotSTEX::mipmap(int mip) const
 	RP_D(const GodotSTEX);
 	if (!d->isValid) {
 		// Unknown file type.
-		return nullptr;
+		return {};
 	}
 
 	// Load the image.

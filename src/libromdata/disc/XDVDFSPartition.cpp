@@ -542,7 +542,7 @@ IRpFilePtr XDVDFSPartition::open(const char *filename)
 		// No filename and/or does not start with a slash.
 		// TODO: Prepend a slash like GcnFst, or remove slash prepending from GcnFst?
 		m_lastError = EINVAL;
-		return nullptr;
+		return {};
 	}
 
 	// Remove leading slashes.
@@ -551,7 +551,7 @@ IRpFilePtr XDVDFSPartition::open(const char *filename)
 	}
 	if (filename[0] == 0) {
 		// Nothing but slashes...
-		return nullptr;
+		return {};
 	}
 
 	// TODO: Handle subdirectories.
@@ -561,7 +561,7 @@ IRpFilePtr XDVDFSPartition::open(const char *filename)
 	if (!dirTable) {
 		// Directory not found.
 		// getDirectory() has already set m_lastError.
-		return nullptr;
+		return {};
 	}
 
 	// Find the file in the root directory.
@@ -569,7 +569,7 @@ IRpFilePtr XDVDFSPartition::open(const char *filename)
 	if (!dirEntry) {
 		// File not found.
 		// getDirEntry() has already set m_lastError.
-		return nullptr;
+		return {};
 	}
 
 	// Make sure this is a regular file.
@@ -577,7 +577,7 @@ IRpFilePtr XDVDFSPartition::open(const char *filename)
 	if (dirEntry->attributes & XDVDFS_ATTR_DIRECTORY) {
 		// Not a regular file.
 		m_lastError = EISDIR;
-		return nullptr;
+		return {};
 	}
 
 	const uint32_t file_size = le32_to_cpu(dirEntry->file_size);

@@ -38,7 +38,7 @@ namespace LibRpBase { namespace RpJpeg {
 rp_image_ptr load(IRpFile *file)
 {
 	if (!file)
-		return nullptr;
+		return {};
 
 	// Rewind the file.
 	file->rewind();
@@ -49,7 +49,7 @@ rp_image_ptr load(IRpFile *file)
 	stream->Release();
 	if (!pGdipBmp) {
 		// Could not load the image.
-		return nullptr;
+		return {};
 	}
 
 	// Create an rp_image using the GDI+ bitmap.

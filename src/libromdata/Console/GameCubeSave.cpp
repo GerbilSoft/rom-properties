@@ -877,8 +877,9 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 const char *GameCubeSave::systemName(unsigned int type) const
 {
 	RP_D(const GameCubeSave);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// GameCube has the same name worldwide, so we can
 	// ignore the region selection.
@@ -1180,11 +1181,11 @@ IconAnimDataConstPtr GameCubeSave::iconAnimData(void) const
 		// Load the icon.
 		if (!const_cast<GameCubeSavePrivate*>(d)->loadIcon()) {
 			// Error loading the icon.
-			return nullptr;
+			return {};
 		}
 		if (!d->iconAnimData) {
 			// Still no icon...
-			return nullptr;
+			return {};
 		}
 	}
 
@@ -1192,7 +1193,7 @@ IconAnimDataConstPtr GameCubeSave::iconAnimData(void) const
 	    d->iconAnimData->seq_count <= 1)
 	{
 		// Not an animated icon.
-		return nullptr;
+		return {};
 	}
 
 	// Return the icon animation data.

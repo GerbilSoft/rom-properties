@@ -999,22 +999,22 @@ IRpFilePtr NCCHReader::open(int section, const char *filename)
 	assert(filename != nullptr);
 	if (!isOpen()) {
 		m_lastError = EBADF;
-		return nullptr;
+		return {};
 	} else if (section != N3DS_NCCH_SECTION_EXEFS) {
 		// Only ExeFS is currently supported.
 		m_lastError = ENOTSUP;
-		return nullptr;
+		return {};
 	} else if (!filename) {
 		// Invalid filename.
 		m_lastError = EINVAL;
-		return nullptr;
+		return {};
 	}
 
 	// Get the ExeFS header.
 	const N3DS_ExeFS_Header_t *const exefs_header = exefsHeader();
 	if (!exefs_header) {
 		// Unable to get the ExeFS header.
-		return nullptr;
+		return {};
 	}
 
 	const N3DS_ExeFS_File_Header_t *file_header = nullptr;
@@ -1028,7 +1028,7 @@ IRpFilePtr NCCHReader::open(int section, const char *filename)
 	if (!file_header) {
 		// File not found.
 		m_lastError = ENOENT;
-		return nullptr;
+		return {};
 	}
 
 	// Get the file offset.
@@ -1038,7 +1038,7 @@ IRpFilePtr NCCHReader::open(int section, const char *filename)
 	if (offset >= d->ncch_length || (offset + size) > d->ncch_length) {
 		// File offset/size is out of bounds.
 		m_lastError = EIO;	// TODO: Better error code?
-		return nullptr;
+		return {};
 	}
 
 	// TODO: Reference count opened PartitionFiles and
@@ -1065,7 +1065,7 @@ IRpFilePtr NCCHReader::openLogo(void)
 	assert(isOpen());
 	if (!isOpen()) {
 		m_lastError = EBADF;
-		return nullptr;
+		return {};
 	}
 
 	// Check if the dedicated logo section is present.

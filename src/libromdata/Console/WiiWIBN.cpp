@@ -118,7 +118,7 @@ rp_image_const_ptr WiiWIBNPrivate::loadIcon(void)
 		return iconAnimData->frames[0];
 	} else if (!this->isValid || !this->file) {
 		// Can't load the icon.
-		return nullptr;
+		return {};
 	}
 
 	// Icon starts after the header and banner.
@@ -131,12 +131,12 @@ rp_image_const_ptr WiiWIBNPrivate::loadIcon(void)
 	assert(icondata.get() != nullptr);
 	if (!icondata.get()) {
 		// Memory allocation failed somehow...
-		return nullptr;
+		return {};
 	}
 	size_t size = file->seekAndRead(iconstartaddr, icondata.get(), iconsizetotal);
 	if (size < BANNER_WIBN_ICON_SIZE) {
 		// Unable to read *any* icons.
-		return nullptr;
+		return {};
 	}
 
 	// Number of icons read
@@ -220,7 +220,7 @@ rp_image_const_ptr WiiWIBNPrivate::loadBanner(void)
 		return img_banner;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the banner.
-		return nullptr;
+		return {};
 	}
 
 	// Banner is located after the WIBN header,
@@ -229,7 +229,7 @@ rp_image_const_ptr WiiWIBNPrivate::loadBanner(void)
 	size_t size = file->seekAndRead(sizeof(wibnHeader), bannerbuf.get(), BANNER_WIBN_IMAGE_SIZE);
 	if (size != BANNER_WIBN_IMAGE_SIZE) {
 		// Seek and/or read error.
-		return nullptr;
+		return {};
 	}
 
 	// Convert the banner from GCN RGB5A3 format to ARGB32.
@@ -333,8 +333,9 @@ int WiiWIBN::isRomSupported_static(const DetectInfo *info)
 const char *WiiWIBN::systemName(unsigned int type) const
 {
 	RP_D(const WiiWIBN);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// Wii has the same name worldwide, so we can
 	// ignore the region selection.
@@ -585,11 +586,11 @@ IconAnimDataConstPtr WiiWIBN::iconAnimData(void) const
 		// Load the icon.
 		if (!const_cast<WiiWIBNPrivate*>(d)->loadIcon()) {
 			// Error loading the icon.
-			return nullptr;
+			return {};
 		}
 		if (!d->iconAnimData) {
 			// Still no icon...
-			return nullptr;
+			return {};
 		}
 	}
 
@@ -597,7 +598,7 @@ IconAnimDataConstPtr WiiWIBN::iconAnimData(void) const
 	    d->iconAnimData->seq_count <= 1)
 	{
 		// Not an animated icon.
-		return nullptr;
+		return {};
 	}
 
 	// Return the icon animation data.

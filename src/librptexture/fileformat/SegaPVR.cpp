@@ -1549,12 +1549,12 @@ rp_image_const_ptr SegaPVR::mipmap(int mip) const
 	RP_D(const SegaPVR);
 	if (!d->isValid) {
 		// Unknown file type.
-		return nullptr;
+		return {};
 	}
 
 	// FIXME: Support decoding mipmaps.
 	if (mip != 0) {
-		return nullptr;
+		return {};
 	}
 
 	// Load the image.
@@ -1570,7 +1570,7 @@ rp_image_const_ptr SegaPVR::mipmap(int mip) const
 	}
 
 	// Not supported...
-	return nullptr;
+	return {};
 }
 
 } // namespace LibRpTexture

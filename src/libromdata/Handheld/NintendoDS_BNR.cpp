@@ -486,8 +486,9 @@ int NintendoDS_BNR::isRomSupported_static(const DetectInfo *info)
 const char *NintendoDS_BNR::systemName(unsigned int type) const
 {
 	RP_D(const NintendoDS_BNR);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// NDS/DSi are mostly the same worldwide, except for China.
 	// NOTE: We don't have region information here.
@@ -743,17 +744,17 @@ IconAnimDataConstPtr NintendoDS_BNR::iconAnimData(void) const
 		// Load the icon.
 		if (!const_cast<NintendoDS_BNR_Private*>(d)->loadIcon()) {
 			// Error loading the icon.
-			return nullptr;
+			return {};
 		}
 		if (!d->iconAnimData) {
 			// Still no icon...
-			return nullptr;
+			return {};
 		}
 	}
 
 	if (d->iconAnimData->count <= 1) {
 		// Not an animated icon.
-		return nullptr;
+		return {};
 	}
 
 	// Return the icon animation data.

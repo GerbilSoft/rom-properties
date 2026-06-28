@@ -133,10 +133,10 @@ rp_image_const_ptr GameComPrivate::loadIcon(void)
 		return img_icon;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the icon.
-		return nullptr;
+		return {};
 	} else if (!(romHeader.flags & GCOM_FLAG_HAS_ICON)) {
 		// ROM doesn't have an icon.
-		return nullptr;
+		return {};
 	}
 
 	if (romHeader.flags & GCOM_FLAG_ICON_RLE) {
@@ -150,7 +150,7 @@ rp_image_const_ptr GameComPrivate::loadIcon(void)
 	    romHeader.icon.y > (GCOM_ICON_BANK_H - GCOM_ICON_H))
 	{
 		// Icon is out of range.
-		return nullptr;
+		return {};
 	}
 
 	const off64_t fileSize = this->file->size();
@@ -173,7 +173,7 @@ rp_image_const_ptr GameComPrivate::loadIcon(void)
 		// and it's over the 1 MB mark, forget it.
 		if (bank_offset > (fileSize * 2) && bank_offset > 1048576) {
 			// Completely out of range.
-			return nullptr;
+			return {};
 		}
 		// Get the lowest power of two size and mask the bank number.
 		const unsigned int lz = (1U << uilog2(static_cast<unsigned int>(fileSize)));
@@ -194,7 +194,7 @@ rp_image_const_ptr GameComPrivate::loadIcon(void)
 	icon_file_offset += ((romHeader.icon.x * GCOM_ICON_BANK_W) / 4);
 	if (icon_file_offset + icon_data_len > fileSize) {
 		// Out of range.
-		return nullptr;
+		return {};
 	}
 
 	// Create the icon.
@@ -205,7 +205,7 @@ rp_image_const_ptr GameComPrivate::loadIcon(void)
 	assert(palette != nullptr);
 	assert(tmp_icon->palette_len() >= 4);
 	if (!palette || tmp_icon->palette_len() < 4) {
-		return nullptr;
+		return {};
 	}
 	memcpy(palette, gcom_palette.data(), sizeof(gcom_palette));
 
@@ -216,7 +216,7 @@ rp_image_const_ptr GameComPrivate::loadIcon(void)
 	size_t size = file->seekAndRead(icon_file_offset, icon_data.get(), icon_data_len);
 	if (size != icon_data_len) {
 		// Short read.
-		return nullptr;
+		return {};
 	}
 
 	// NOTE: The image is vertically mirrored and rotated 270 degrees.
@@ -396,7 +396,7 @@ rp_image_const_ptr GameComPrivate::loadIconRLE(void)
 		// and it's over the 1 MB mark, forget it.
 		if (bank_offset > (fileSize * 2) && bank_offset > 1048576) {
 			// Completely out of range.
-			return nullptr;
+			return {};
 		}
 		// Get the lowest power of two size and mask the bank number.
 		const unsigned int lz = (1U << uilog2(static_cast<unsigned int>(fileSize)));
@@ -417,7 +417,7 @@ rp_image_const_ptr GameComPrivate::loadIconRLE(void)
 	size_t size = file->seekAndRead(icon_file_offset, icon_rle_data.get(), icon_rle_data_max_len);
 	if (size == 0) {
 		// No data...
-		return nullptr;
+		return {};
 	} else if (size < icon_rle_data_max_len) {
 		// Zero out the remaining area.
 		memset(&icon_rle_data[size], 0, icon_rle_data_max_len - size);
@@ -429,7 +429,7 @@ rp_image_const_ptr GameComPrivate::loadIconRLE(void)
 	ssize_t ssize = rle_decompress(icon_data.get(), icon_data_len, icon_rle_data.get(), icon_rle_data_max_len);
 	if (ssize != icon_data_len) {
 		// Decompression failed.
-		return nullptr;
+		return {};
 	}
 
 	// Create the icon.
@@ -440,7 +440,7 @@ rp_image_const_ptr GameComPrivate::loadIconRLE(void)
 	assert(palette != nullptr);
 	assert(tmp_icon->palette_len() >= 4);
 	if (!palette || tmp_icon->palette_len() < 4) {
-		return nullptr;
+		return {};
 	}
 	memcpy(palette, gcom_palette.data(), sizeof(gcom_palette));
 
@@ -583,8 +583,9 @@ int GameCom::isRomSupported_static(const DetectInfo *info)
 const char *GameCom::systemName(unsigned int type) const
 {
 	RP_D(const GameCom);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// game.com has the same name worldwide, so we can
 	// ignore the region selection.

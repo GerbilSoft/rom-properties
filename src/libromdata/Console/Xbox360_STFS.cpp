@@ -225,19 +225,19 @@ rp_image_const_ptr Xbox360_STFS_Private::loadIcon(void)
 		return img_icon;
 	} else if (!this->isValid || static_cast<int>(this->stfsType) < 0) {
 		// Can't load the icon.
-		return nullptr;
+		return {};
 	}
 
 	// Make sure the STFS metadata and thumbnails are loaded.
 	int ret = loadHeader(STFS_PRESENT_METADATA);
 	if (ret != 0) {
 		// Not loaded and unable to load.
-		return nullptr;
+		return {};
 	}
 	ret = loadHeader(STFS_PRESENT_THUMBNAILS);
 	if (ret != 0) {
 		// Not loaded and unable to load.
-		return nullptr;
+		return {};
 	}
 
 	// TODO: Option to select title or regular thumbnail.
@@ -836,8 +836,9 @@ int Xbox360_STFS::isRomSupported_static(const DetectInfo *info)
 const char *Xbox360_STFS::systemName(unsigned int type) const
 {
 	RP_D(const Xbox360_STFS);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// Xbox 360 has the same name worldwide, so we can
 	// ignore the region selection.

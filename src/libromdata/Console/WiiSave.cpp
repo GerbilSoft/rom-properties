@@ -332,8 +332,9 @@ int WiiSave::isRomSupported_static(const DetectInfo *info)
 const char *WiiSave::systemName(unsigned int type) const
 {
 	RP_D(const WiiSave);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// Wii has the same name worldwide, so we can
 	// ignore the region selection.
@@ -608,7 +609,7 @@ IconAnimDataConstPtr WiiSave::iconAnimData(void) const
 #endif /* ENABLE_DECRYPTION */
 
 	// No WiiWIBN object.
-	return nullptr;
+	return {};
 }
 
 } // namespace LibRomData

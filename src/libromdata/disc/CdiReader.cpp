@@ -694,7 +694,7 @@ IsoPartitionPtr CdiReader::openIsoPartition(int trackNumber)
 	unsigned int lba_start, lba_size, pregap_length;
 	if (d->getTrackLBAInfo(trackNumber, lba_start, lba_size, pregap_length) != 0) {
 		// Unable to get track LBA info.
-		return nullptr;
+		return {};
 	}
 
 	// Logical block size is 2048.
@@ -715,7 +715,7 @@ ISOPtr CdiReader::openIsoRomData(int trackNumber)
 	unsigned int lba_start, lba_size, pregap_length;
 	if (d->getTrackLBAInfo(trackNumber, lba_start, lba_size, pregap_length) != 0) {
 		// Unable to get track LBA info.
-		return nullptr;
+		return {};
 	}
 
 	PartitionFilePtr isoFile = std::make_shared<PartitionFile>(this->shared_from_this(),
@@ -730,7 +730,7 @@ ISOPtr CdiReader::openIsoRomData(int trackNumber)
 	}
 
 	// Unable to open the ISO object.
-	return nullptr;
+	return {};
 }
 
 } // namespace LibRomData

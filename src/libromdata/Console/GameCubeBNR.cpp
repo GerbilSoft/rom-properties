@@ -165,7 +165,7 @@ rp_image_const_ptr GameCubeBNRPrivate::loadBanner(void)
 		return img_banner;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the banner.
-		return nullptr;
+		return {};
 	}
 
 	// Banner is located at 0x0020.
@@ -173,7 +173,7 @@ rp_image_const_ptr GameCubeBNRPrivate::loadBanner(void)
 	size_t size = file->seekAndRead(offsetof(gcn_banner_bnr1_t, banner), bannerbuf.get(), GCN_BANNER_IMAGE_SIZE);
 	if (size != GCN_BANNER_IMAGE_SIZE) {
 		// Seek and/or read error.
-		return nullptr;
+		return {};
 	}
 
 	// Convert the banner from GCN RGB5A3 format to ARGB32.
@@ -503,8 +503,9 @@ int GameCubeBNR::isRomSupported_static(const DetectInfo *info)
 const char *GameCubeBNR::systemName(unsigned int type) const
 {
 	RP_D(const GameCubeBNR);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
 		return nullptr;
+	}
 
 	// GameCube has the same name worldwide, so we can
 	// ignore the region selection.

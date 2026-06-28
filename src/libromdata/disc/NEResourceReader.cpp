@@ -691,11 +691,11 @@ IRpFilePtr NEResourceReader::open(uint16_t type, int id, int lang)
 	// Get the directory for the specified type.
 	auto iter_dir = d->res_types.find(type);
 	if (iter_dir == d->res_types.end()) {
-		return nullptr;
+		return {};
 	}
 	auto &dir = iter_dir->second;
 	if (dir.empty()) {
-		return nullptr;
+		return {};
 	}
 	
 	const NEResourceReaderPrivate::ResTblEntry *entry = nullptr;
@@ -714,7 +714,7 @@ IRpFilePtr NEResourceReader::open(uint16_t type, int id, int lang)
 			entry = &(*iter);
 		} else {
 			// ID not found.
-			return nullptr;
+			return {};
 		}
 	}
 

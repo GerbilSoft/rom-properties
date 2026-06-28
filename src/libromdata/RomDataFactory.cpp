@@ -825,7 +825,7 @@ RomDataPtr checkISO(const IRpFilePtr &file)
 	}
 
 	// Still not an ISO...
-	return nullptr;
+	return {};
 }
 
 } // namespace Private
