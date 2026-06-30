@@ -101,6 +101,9 @@ using std::unordered_set;
 #include "Handheld/VirtualBoy.hpp"
 #include "Handheld/WonderSwan.hpp"
 
+// RomData subclasses: Common
+#include "Common/ParamSFO.hpp"
+
 // RomData subclasses: Audio
 #include "Audio/ADX.hpp"
 #include "Audio/BCSTM.hpp"
@@ -319,7 +322,7 @@ static const array<RomDataFns, romDataFns_magic_count> romDataFns_magic = {{
  * Headers with addresses other than 0 should be
  * placed at the end of this array.
  */
-static const array<RomDataFns, 39> romDataFns_header = {{
+static const array<RomDataFns, 40> romDataFns_header = {{
 	// Consoles
 	GetRomDataFns(ColecoVision, ATTR_HAS_METADATA),
 	GetRomDataFns(Dreamcast, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
@@ -344,6 +347,9 @@ static const array<RomDataFns, 39> romDataFns_header = {{
 	GetRomDataFns(J2ME, ATTR_HAS_METADATA),	// .jad only; .jar is handled separately
 	GetRomDataFns(Nintendo3DS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA),
 	GetRomDataFns(PalmOS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),	// TODO: Magic at 0x40?
+
+	// Common
+	GetRomDataFns(ParamSFO, ATTR_NONE),
 
 	// Audio
 	GetRomDataFns(ADX, ATTR_HAS_METADATA),

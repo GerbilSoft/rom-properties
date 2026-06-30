@@ -24,6 +24,7 @@ using namespace LibRpTexture;
 #include "disc/PartitionFile.hpp"
 
 // Other RomData subclasses
+#include "Common/ParamSFO.hpp"
 #include "Media/ISO.hpp"
 #include "Other/ELF.hpp"
 
@@ -86,11 +87,20 @@ public:
 	// Boot executable (EBOOT.BIN)
 	RomDataPtr bootExeData;
 
+	// PARAM.SFO
+	std::shared_ptr<ParamSFO> paramSfoData;
+
 	/**
 	 * Open the boot executable.
 	 * @return RomData* on success; nullptr on error.
 	 */
 	RomDataPtr openBootExe(void);
+
+	/**
+	 * Open the PARAM.SFO
+	 * @return RomData* on success; nullptr on error.
+	 */
+	std::shared_ptr<ParamSFO> openParamSfo(void);
 
 public:
 	/**
@@ -247,6 +257,42 @@ RomDataPtr PSPPrivate::openBootExe(void)
 
 	// Unable to open the default executable.
 	return {};;
+}
+
+/**
+ * Open the PARAM.SFO.
+ * @return RomData* on success; nullptr on error.
+ */
+std::shared_ptr<ParamSFO> PSPPrivate::openParamSfo(void)
+{
+	// FIXME: Returning `const RomDataPtr &` would be better,
+	// but the compiler is complaining that the nullptrs end up
+	// returning a reference to a local temporary object.
+
+	if (paramSfoData) {
+		// The PARAM.SFO is already open.
+		return paramSfoData;
+	}
+
+	if (!isoPartition || !isoPartition->isOpen()) {
+		// ISO partition is not open.
+		return nullptr;
+	}
+
+	// Open the PARAM.SFO
+	// TODO: Do video UMDs have PARAM.SFO?
+	const IRpFilePtr f_paramFile(isoPartition->open("/PSP_GAME/PARAM.SFO"));
+	if (f_paramFile) {
+		std::shared_ptr<ParamSFO> sfoData = std::make_shared<ParamSFO>(f_paramFile);
+		if (sfoData->isOpen() && sfoData->isValid()) {
+			// Boot executable is open and valid.
+			paramSfoData = sfoData;
+			return sfoData;
+		}
+	}
+
+	// Unable to open the PARAM.SFO
+	return nullptr;
 }
 
 /**
@@ -556,7 +602,34 @@ int PSP::loadFieldData(void)
 		d->fields.addField_string(gameID_title, s_gameID);
 	}
 
-	// TODO: Add fields from PARAM.SFO.
+	// Get metadata from the PARAM.SFO.
+	const std::shared_ptr<ParamSFO> paramSfo = const_cast<PSPPrivate *>(d)->openParamSfo();
+	if (paramSfo) {
+		// Add game-specific metadata.
+		if (d->discType == PSPPrivate::DiscType::PspGame)
+		{
+			if (paramSfo->getKeyValueType("TITLE") == ParamSFO::SFOValueType::UTF8) {
+				d->fields.addField_string(
+					C_("RomData", "Title"), paramSfo->getStringValue("TITLE"));
+			}
+			// TODO: localised languages
+
+			if (paramSfo->getKeyValueType("APP_VER") == ParamSFO::SFOValueType::UTF8) {
+				d->fields.addField_string(
+					C_("RomData", "Version"), paramSfo->getStringValue("APP_VER"));
+			}
+
+			if (paramSfo->getKeyValueType("PSP_SYSTEM_VER") == ParamSFO::SFOValueType::UTF8) {
+				d->fields.addField_string(C_("PSP", "OS Version"), paramSfo->getStringValue("PSP_SYSTEM_VER"));
+			}
+		}
+
+		// Add a PARAM.SFO tab.
+		const RomFields *const sfoFields = paramSfo->fields();
+		if (sfoFields) {
+			d->fields.addFields_romFields(paramSfo->fields(), RomFields::TabOffset_AddTabs);
+		}
+	}
 
 	// Show a tab for the boot file.
 	RomDataPtr bootExeData = d->openBootExe();
@@ -685,9 +758,17 @@ int PSP::loadMetaData(void)
 	// - Field 2: Revision?
 	// - Field 3: Age rating?
 
-	// NOTE: Using the game ID for titles...
 	const string s_gameID = d->getGameID();
-	d->metaData.addMetaData_string(Property::Title, s_gameID);
+
+	// Try to get title from the PARAM.SFO
+	const std::shared_ptr<ParamSFO> paramSfo = const_cast<PSPPrivate *>(d)->openParamSfo();
+	if (paramSfo && paramSfo->getKeyValueType("TITLE") == ParamSFO::SFOValueType::UTF8) {
+		const string s_gameTitle = paramSfo->getStringValue("TITLE");
+		d->metaData.addMetaData_string(Property::Title, s_gameTitle);
+	} else {
+		// fall back to using the Game ID for a title
+		d->metaData.addMetaData_string(Property::Title, s_gameID);
+	}
 
 	// TODO: More PSP-specific metadata?
 

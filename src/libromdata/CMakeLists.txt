@@ -81,6 +81,8 @@ SET(${PROJECT_NAME}_SRCS
 	Handheld/WonderSwan.cpp
 	Handheld/nds_crc.cpp
 
+	Common/ParamSFO.cpp
+
 	Audio/ADX.cpp
 	Audio/BCSTM.cpp
 	Audio/BRSTM.cpp
