@@ -2146,7 +2146,7 @@ int Xbox360_XEX::loadMetaData(void)
 			pgettext_expr("Region", i18n_region));
 	} else {
 		// Multi-region
-		static const char all_display_regions[] = "UJCAESZ";
+		static constexpr char all_display_regions[] = "UJCAESZ";
 		char s_region_code[] = "-------";
 		for (size_t i = 0; i < sizeof(s_region_code)-1; i++) {
 			if (region_code & (1U << i)) {

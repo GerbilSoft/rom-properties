@@ -934,7 +934,7 @@ int Dreamcast::loadMetaData(void)
 			pgettext_expr("Region", i18n_region));
 	} else {
 		// Multi-region
-		static const char all_display_regions[] = "JUE";
+		static constexpr char all_display_regions[] = "JUE";
 		char s_region_code[] = "---";
 		for (unsigned int i = 0; i < d->region_code_bitfield_names.size(); i++) {
 			if (region_code & (1U << i)) {

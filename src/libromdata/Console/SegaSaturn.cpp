@@ -674,10 +674,9 @@ int SegaSaturn::loadMetaData(void)
 			pgettext_expr("Region", i18n_region));
 	} else {
 		// Multi-region
-		static const char all_display_regions[] = "JTUE";
-		string s_region_code;
-		s_region_code.resize(sizeof(all_display_regions)-1, '-');
-		for (unsigned int i = 0; i < d->region_code_bitfield_names.size(); i++) {
+		static constexpr char all_display_regions[] = "JTUE";
+		char s_region_code[] = "----";
+		for (unsigned int i = 0; i < sizeof(s_region_code); i++) {
 			if (d->saturn_region & (1U << i)) {
 				s_region_code[i] = all_display_regions[i];
 			}

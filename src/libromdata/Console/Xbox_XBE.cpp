@@ -939,7 +939,7 @@ int Xbox_XBE::loadMetaData(void)
 			pgettext_expr("Region", i18n_region));
 	} else {
 		// Multi-region
-		static const char all_display_regions[] = "UJEM";
+		static constexpr char all_display_regions[] = "UJEM";
 		char s_region_code[] = "----";
 		for (size_t i = 0; i < sizeof(s_region_code)-1; i++) {
 			if (region_code & (1U << i)) {
