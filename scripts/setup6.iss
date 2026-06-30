@@ -92,7 +92,7 @@ begin
   has_msvcrt_arm64 := IsMsiProductInstalled('{DC9BAE42-810B-423A-9E25-E4073F1C7B00}', PackVersionComponents(14, 0, 0, 0));
   if ProcessorArchitecture = paArm64 then
   begin
-    { TODO: Do we need the 32-bit i386 or arm32 versions? }
+    { TODO: Do we need the arm32 version? }
     if not has_msvcrt_i386 or not has_msvcrt_arm64 then
     begin
       MsgBox('The Microsoft Visual C++ 2015-2026 runtime is missing.' + #13#10#13#10 +
