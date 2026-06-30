@@ -222,7 +222,7 @@ ParamSFO::SFOValueType ParamSFO::getKeyValueType(std::string key)
 {
 	RP_D(ParamSFO);
 
-	if (!d->keyLookup.contains(key)) {
+	if (d->keyLookup.find(key) == d->keyLookup.end()) {
 		return SFOValueType::None;
 	}
 
@@ -242,7 +242,7 @@ const std::string ParamSFO::getStringValue(std::string key)
 	// TODO: Can we error out of this function?
 
 	RP_D(ParamSFO);
-	if (d->cachedStringValues.contains(key)) {
+	if (d->cachedStringValues.find(key) != d->cachedStringValues.end()) {
 		// We already fetched a string value for that key.
 		return d->cachedStringValues[key];
 	} else if (!d->file) {
@@ -251,7 +251,7 @@ const std::string ParamSFO::getStringValue(std::string key)
 	} else if (!d->isValid) {
 		// File isn't valid
 		return string();
-	} else if (!d->keyLookup.contains(key)) {
+	} else if (d->keyLookup.find(key) == d->keyLookup.end()) {
 		// We don't have this key
 		return string();
 	}
@@ -279,7 +279,7 @@ uint32_t ParamSFO::getIntValue(std::string key)
 {
 	// TODO: Can we error out of this function?
 	RP_D(ParamSFO);
-	if (d->cachedIntValues.contains(key)) {
+	if (d->cachedIntValues.find(key) != d->cachedIntValues.end()) {
 		// We already fetched a string value for that key.
 		return d->cachedIntValues[key];
 	} else if (!d->file) {
@@ -288,7 +288,7 @@ uint32_t ParamSFO::getIntValue(std::string key)
 	} else if (!d->isValid) {
 		// File isn't valid
 		return 0;
-	} else if (!d->keyLookup.contains(key)) {
+	} else if (d->keyLookup.find(key) == d->keyLookup.end()) {
 		// We don't have this key
 		return 0;
 	}
