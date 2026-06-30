@@ -50,7 +50,7 @@ public:
 	psf_header_t fileHeader;
 
 	// PSF key data.
-	rp::uvector<psf_key_t> keys;
+	vector<psf_key_t> keys;
 	unordered_map<std::string, psf_key_t> keyLookup;
 
 	// Key/value lookup cache.
