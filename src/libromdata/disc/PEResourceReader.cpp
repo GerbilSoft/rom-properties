@@ -808,9 +808,9 @@ int PEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 	}
 
 	// Read the version header.
-	static constexpr array<char16_t, 16> vsvi = {{'V','S','_','V','E','R','S','I','O','N','_','I','N','F','O',0}};
+	static constexpr char16_t vsvi[] = u"VS_VERSION_INFO";
 	uint16_t len, valueLen;
-	int ret = PEResourceReaderPrivate::load_VS_VERSION_INFO_header(f_ver.get(), vsvi.data(), 0, &len, &valueLen);
+	int ret = PEResourceReaderPrivate::load_VS_VERSION_INFO_header(f_ver.get(), vsvi, 0, &len, &valueLen);
 	if (ret != 0) {
 		// Header is incorrect.
 		return ret;
@@ -850,8 +850,8 @@ int PEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 	alignFileDWORD(f_ver.get());
 
 	// Read the StringFileInfo section header.
-	static constexpr array<char16_t, 15> vssfi = {{'S','t','r','i','n','g','F','i','l','e','I','n','f','o',0}};
-	ret = PEResourceReaderPrivate::load_VS_VERSION_INFO_header(f_ver.get(), vssfi.data(), 1, &len, &valueLen);
+	static constexpr char16_t vssfi[] = u"StringFileInfo";
+	ret = PEResourceReaderPrivate::load_VS_VERSION_INFO_header(f_ver.get(), vssfi, 1, &len, &valueLen);
 	if (ret != 0) {
 		// No StringFileInfo section.
 		return 0;
