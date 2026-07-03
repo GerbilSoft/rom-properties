@@ -43,28 +43,28 @@ public:
 	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
-    // ROM header
-    bool isBigEndian;
-    int dataVersion;
-    union {
-        YYHeader v9;
-        YYHeader_000A v10;
-        YYHeader_000B v11;
-        YYHeader_000C v12;
-        YYHeader_000D v13;
-        YYHeader_000E v14;
-    } header;
-    vector<int> roomOrder;
+	// ROM header
+	bool isBigEndian;
+	int dataVersion;
+	union {
+		YYHeader v9;
+		YYHeader_000A v10;
+		YYHeader_000B v11;
+		YYHeader_000C v12;
+		YYHeader_000D v13;
+		YYHeader_000E v14;
+	} header;
+	vector<int> roomOrder;
 
 	bool hasGms2Header;
-    uint8_t gms2License[0x28];
-    YYGMS2HeaderData gms2Header;
+	uint8_t gms2License[0x28];
+	YYGMS2HeaderData gms2Header;
 
 	// parsed information
-    std::string projectName;
-    std::string projectConfig;
-    std::string gameName;
-    std::string displayName;
+	std::string projectName;
+	std::string projectConfig;
+	std::string gameName;
+	std::string displayName;
 
 	bool hasCodeSegment;
 };
@@ -74,10 +74,10 @@ ROMDATA_IMPL(GameMaker)
 const array<const char*, 6+1> GameMakerPrivate::exts = {{
 	".win",
 	".ios",
-    ".unx",
-    ".droid",
-    ".3ds",
-    ".symbian",
+	".unx",
+	".droid",
+	".3ds",
+	".symbian",
 	nullptr
 }};
 
@@ -92,11 +92,13 @@ const RomDataInfo GameMakerPrivate::romDataInfo = {
 
 int GameMakerPrivate::readNullTerminatedString(uint32_t offset, std::string &str)
 {
-	if (offset == 0)
+	if (offset == 0) {
 		return 0;
+	}
 
-	if (file->seek(offset) != 0)
+	if (file->seek(offset) != 0) {
 		return -1; // failed to seek
+	}
 	// really bad, loop a read of a single byte til we reach a NULL
 	char c = 0;
 	do {
@@ -143,36 +145,38 @@ int GameMaker::isRomSupported_static(const DetectInfo *info)
 		return GMSFileType_Invalid;
 	}
 
-    bool isBigEndian = false;
+	bool isBigEndian = false;
 
-    // Check the IFF container header to make sure it's a FORM header
+	// Check the IFF container header to make sure it's a FORM header
 	const iff_sect_hdr_t *const formheader =
 		reinterpret_cast<const iff_sect_hdr_t*>(info->header.pData);
-    if (be32_to_cpu(formheader->magic) == FORM_HDR) {
-        isBigEndian = true;
-    } else if (le32_to_cpu(formheader->magic) != FORM_HDR) {
-        return GMSFileType_Invalid; // not a valid file
-    }
-    // Validate the length
-    uint32_t formLength = isBigEndian ? be32_to_cpu(formheader->length) : le32_to_cpu(formheader->length);
-    if (formLength < (sizeof(iff_sect_hdr_t) + sizeof(YYHeader))) {
-        return GMSFileType_Invalid; // not a valid length
-    }
+	if (be32_to_cpu(formheader->magic) == FORM_HDR) {
+		isBigEndian = true;
+	} else if (le32_to_cpu(formheader->magic) != FORM_HDR) {
+		return GMSFileType_Invalid; // not a valid file
+	}
+	// Validate the length
+	uint32_t formLength = isBigEndian ? be32_to_cpu(formheader->length) : le32_to_cpu(formheader->length);
+	if (formLength < (sizeof(iff_sect_hdr_t) + sizeof(YYHeader))) {
+		return GMSFileType_Invalid; // not a valid length
+	}
 
-    // Check the data after the FORM header to make sure the first value is the GEN8 info header
+	// Check the data after the FORM header to make sure the first value is the GEN8 info header
 	const iff_sect_hdr_t *const infoheader =
 		reinterpret_cast<const iff_sect_hdr_t*>(info->header.pData + sizeof(iff_sect_hdr_t));
 	if (isBigEndian == false &&
-        le32_to_cpu(infoheader->magic) == GEN8_HDR &&
-        le32_to_cpu(infoheader->length) >= sizeof(YYHeader)) {
-        return GMSFileType_LE; // little endian
-    } else if (isBigEndian &&
-                be32_to_cpu(infoheader->magic) == GEN8_HDR &&
-                be32_to_cpu(infoheader->length) >= sizeof(YYHeader)) {
-        return GMSFileType_BE;
+	    le32_to_cpu(infoheader->magic) == GEN8_HDR &&
+	    le32_to_cpu(infoheader->length) >= sizeof(YYHeader))
+	{
+		return GMSFileType_LE; // little endian
+	} else if (isBigEndian &&
+		   be32_to_cpu(infoheader->magic) == GEN8_HDR &&
+		   be32_to_cpu(infoheader->length) >= sizeof(YYHeader))
+	{
+		return GMSFileType_BE;
 	} else {
 		return GMSFileType_Invalid;
-    }
+	}
 }
 
 /**
