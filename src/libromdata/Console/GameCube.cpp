@@ -341,15 +341,11 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		return -EIO;
 	}
 
-	// Assuming a maximum of 128 partitions per table.
-	// (This is a rather high estimate.)
-	RVL_VolumeGroupTable vgtbl;
-	array<RVL_PartitionTableEntry, 1024> pt;
-
 	// Read the volume group table.
 	// References:
 	// - https://wiibrew.org/wiki/Wii_Disc#Partitions_information
-	// - http://blog.delroth.net/2011/06/reading-wii-discs-with-python/
+	// - https://blog.delroth.net/2011/06/reading-wii-discs-with-python/
+	RVL_VolumeGroupTable vgtbl;
 	size_t size = discReader->seekAndRead(RVL_VolumeGroupTable_ADDRESS, &vgtbl, sizeof(vgtbl));
 	if (size != sizeof(vgtbl)) {
 		// Could not read the volume group table.
@@ -376,8 +372,13 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	}
 
 	// Process each volume group.
-	for (unsigned int i = 0; i < 4; i++) {
+	for (unsigned int i = 0; i < static_cast<unsigned int>(ARRAY_SIZE(vgtbl.vg)); i++) {
+		// Allowing a maximum of 128 partitions per partition table.
+		// (This is a rather high estimate.)
+		array<RVL_PartitionTableEntry, 128> pt;
+
 		unsigned int count = be32_to_cpu(vgtbl.vg[i].count);
+		assert(count <= pt.size());
 		if (count == 0) {
 			continue;
 		} else if (count > pt.size()) {
