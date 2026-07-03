@@ -212,18 +212,18 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 		return;
 	}
 
-	// Read the IFF header (2 to get FORM container and GEN8 header)
-	uint8_t iffheader_bytes[sizeof(iff_sect_hdr_t) * 2];
+	// Read the IFF header.
+	array<iff_sect_hdr_t, 2> iffheader;
 	d->file->rewind();
-	size_t size = d->file->read(iffheader_bytes, sizeof(iffheader_bytes));
-	if (size != sizeof(iffheader_bytes)) {
+	size_t size = d->file->read(&iffheader, sizeof(iffheader));
+	if (size != sizeof(iffheader)) {
 		d->file.reset();
 		return;
 	}
 
 	// Check if this file is supported.
 	const DetectInfo info = {
-		{0, sizeof(iffheader_bytes), iffheader_bytes},
+		{0, sizeof(iffheader), reinterpret_cast<const uint8_t*>(&iffheader)},
 		nullptr,
 		0
 	};
@@ -441,16 +441,15 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 	}
 
 	// run over every file segment
-	iff_sect_hdr_t *iff_hdr = reinterpret_cast<iff_sect_hdr_t *>(iffheader_bytes);
-	if (d->file->seek(sizeof(iff_sect_hdr_t) * 2, IRpFile::SeekWhence::Set) != 0) {
+	if (d->file->seek(sizeof(iffheader), IRpFile::SeekWhence::Set) != 0) {
 		d->isValid = false;
 		d->file.reset();
 		return;
 	}
-	uint32_t file_len = isBigEndian ? be32_to_cpu(iff_hdr[0].length) : le32_to_cpu(iff_hdr[0].length);
+	uint32_t file_len = isBigEndian ? be32_to_cpu(iffheader[0].length) : le32_to_cpu(iffheader[0].length);
 	file_len += sizeof(iff_sect_hdr_t);
 	// skip over the GEN8 header
-	uint32_t post_gen8_offset = isBigEndian ? be32_to_cpu(iff_hdr[1].length) : le32_to_cpu(iff_hdr[1].length);
+	uint32_t post_gen8_offset = isBigEndian ? be32_to_cpu(iffheader[1].length) : le32_to_cpu(iffheader[1].length);
 	if (d->file->seek(post_gen8_offset, IRpFile::SeekWhence::Cur) != 0) {
 		d->isValid = false;
 		d->file.reset();
