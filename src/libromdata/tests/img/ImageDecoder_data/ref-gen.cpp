@@ -12,8 +12,9 @@ static int gen_ref_image(int components, const QString &path)
 {
 	assert(components >= 1);
 	assert(components <= 4);
-	if (components < 1 || components > 4)
-		return EXIT_FAILURE;;
+	if (components < 1 || components > 4) {
+		return EXIT_FAILURE;
+	}
 
 	QImage img(256, 256, QImage::Format_ARGB32);
 	// Top Left: R

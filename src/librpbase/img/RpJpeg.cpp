@@ -323,7 +323,7 @@ rp_image_ptr load(IRpFile *file)
 	{
 		// Image size is either invalid or too big.
 		jpeg_destroy_decompress(&cinfo);
-		return {};;
+		return {};
 	}
 
 	/** Step 4: Set parameters for decompression. **/
@@ -372,7 +372,7 @@ rp_image_ptr load(IRpFile *file)
 			if (cinfo.output_components != 1) {
 				// Only 8-bit grayscale is supported.
 				jpeg_destroy_decompress(&cinfo);
-				return {};;
+				return {};
 			}
 
 			// Create the image.
@@ -381,7 +381,7 @@ rp_image_ptr load(IRpFile *file)
 				// Could not allocate the image.
 				delete img;
 				jpeg_destroy_decompress(&cinfo);
-				return {};;
+				return {};
 			}
 
 			// Create a grayscale palette.
@@ -391,7 +391,7 @@ rp_image_ptr load(IRpFile *file)
 				// No palette...
 				delete img;
 				jpeg_destroy_decompress(&cinfo);
-				return {};;
+				return {};
 			}
 
 			const unsigned int img_palette_len = img->palette_len();
@@ -422,7 +422,7 @@ rp_image_ptr load(IRpFile *file)
 			if (cinfo.output_components != 3) {
 				// Only 24-bit RGB/YCbCr is supported.
 				jpeg_destroy_decompress(&cinfo);
-				return {};;
+				return {};
 			}
 
 			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
@@ -430,7 +430,7 @@ rp_image_ptr load(IRpFile *file)
 				// Could not allocate the image.
 				delete img;
 				jpeg_destroy_decompress(&cinfo);
-				return {};;
+				return {};
 			}
 			break;
 		}
@@ -443,7 +443,7 @@ rp_image_ptr load(IRpFile *file)
 			if (cinfo.output_components != 4) {
 				// Only 4-component CMYK/YCCK is supported.
 				jpeg_destroy_decompress(&cinfo);
-				return {};;
+				return {};
 			}
 
 			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
@@ -451,7 +451,7 @@ rp_image_ptr load(IRpFile *file)
 				// Could not allocate the image.
 				delete img;
 				jpeg_destroy_decompress(&cinfo);
-				return {};;
+				return {};
 			}
 			break;
 
@@ -462,7 +462,7 @@ rp_image_ptr load(IRpFile *file)
 			if (cinfo.output_components != 4) {
 				// Only 32-bit BGRA is supported.
 				jpeg_destroy_decompress(&cinfo);
-				return {};;
+				return {};
 			}
 
 			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
@@ -470,7 +470,7 @@ rp_image_ptr load(IRpFile *file)
 				// Could not allocate the image.
 				delete img;
 				jpeg_destroy_decompress(&cinfo);
-				return {};;
+				return {};
 			}
 			break;
 		}
@@ -479,7 +479,7 @@ rp_image_ptr load(IRpFile *file)
 			// Unsupported colorspace.
 			assert(!"Unsupported JPEG colorspace. (Step 5)");
 			jpeg_destroy_decompress(&cinfo);
-			return {};;
+			return {};
 	}
 
 	/** Step 6: while (scan lines remain to be read) jpeg_read_scanlines(...); */
@@ -583,7 +583,7 @@ rp_image_ptr load(IRpFile *file)
 				delete img;
 				jpeg_finish_decompress(&cinfo);
 				jpeg_destroy_decompress(&cinfo);
-				return {};;
+				return {};
 		}
 
 		// Set the sBIT metadata.

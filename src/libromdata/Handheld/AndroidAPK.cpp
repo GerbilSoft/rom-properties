@@ -119,7 +119,7 @@ public:
 	// Maximum size for various files.
 	static constexpr size_t AndroidManifest_xml_FILE_SIZE_MAX = (256U * 1024U);
 	static constexpr size_t resources_arsc_FILE_SIZE_MAX = (4096U * 1024U);
-	static constexpr size_t ICON_PNG_FILE_SIZE_MAX = (1024U * 1024U);;
+	static constexpr size_t ICON_PNG_FILE_SIZE_MAX = (1024U * 1024U);
 
 	// AndroidManifest.xml document
 	// NOTE: Using a pointer to prevent delay-load issues.

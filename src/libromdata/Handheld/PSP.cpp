@@ -164,7 +164,7 @@ rp_image_const_ptr PSPPrivate::loadIcon(void)
 		return img_icon;
 	} else if (!this->isValid || !this->isoPartition) {
 		// Can't load the icon.
-		return {};;
+		return {};
 	}
 
 	// Icon is located on disc as a regular PNG image.
@@ -175,7 +175,7 @@ rp_image_const_ptr PSPPrivate::loadIcon(void)
 	const IRpFilePtr f_icon(isoPartition->open(icon_filename));
 	if (!f_icon) {
 		// Unable to open the icon file.
-		return {};;
+		return {};
 	}
 
 	// Decode the image.
@@ -195,7 +195,7 @@ rp_image_const_ptr PSPPrivate::loadBanner(void)
 		return img_banner;
 	} else if (!this->isValid || !this->isoPartition) {
 		// Can't load the banner.
-		return {};;
+		return {};
 	}
 
 	// Banner is located on disc as a regular PNG image.
@@ -206,7 +206,7 @@ rp_image_const_ptr PSPPrivate::loadBanner(void)
 	const IRpFilePtr f_banner(isoPartition->open(banner_filename));
 	if (!f_banner) {
 		// Unable to open the banner file.
-		return {};;
+		return {};
 	}
 
 	// Decode the image.
@@ -232,7 +232,7 @@ RomDataPtr PSPPrivate::openBootExe(void)
 
 	if (!isoPartition || !isoPartition->isOpen()) {
 		// ISO partition is not open.
-		return {};;
+		return {};
 	}
 
 	// Open the boot file.
@@ -249,7 +249,7 @@ RomDataPtr PSPPrivate::openBootExe(void)
 	}
 
 	// Unable to open the default executable.
-	return {};;
+	return {};
 }
 
 /**

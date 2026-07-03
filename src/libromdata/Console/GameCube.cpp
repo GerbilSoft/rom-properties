@@ -588,7 +588,7 @@ int GameCubePrivate::loadOpeningBnr(void)
 	}
 
 	// GameCubeBNR subclass is open.
-	opening_bnr.romData = std::move(romData);;
+	opening_bnr.romData = std::move(romData);
 	return 0;
 }
 

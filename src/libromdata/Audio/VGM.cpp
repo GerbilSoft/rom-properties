@@ -927,7 +927,7 @@ int VGM::loadMetaData(void)
 	}
 
 	// Finished reading the metadata.
-	return d->metaData.count();;
+	return d->metaData.count();
 }
 
 } // namespace LibRomData

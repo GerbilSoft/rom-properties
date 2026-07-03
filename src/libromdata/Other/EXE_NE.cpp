@@ -615,7 +615,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 	// Read entry table
 	auto p = NE_data.entry_table.begin();
 	const auto p_end = NE_data.entry_table.end();
-	for (int ordinal = 1;;) {
+	for (int ordinal = 1; ; ) {
 		// Entry table consists of bundles of symbols
 		// Each bundle is starts with count and segment of the symbols
 		if (p >= NE_data.entry_table.end()) {

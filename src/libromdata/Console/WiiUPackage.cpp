@@ -751,7 +751,7 @@ vector<RomData::ImageSizeDef> WiiUPackage::supportedImageSizes(ImageType imageTy
 		RP_D(const WiiUPackage);
 		if (d->tmd && d->tmd->tmdFormatVersion() >= 1) {
 			// Wii U packages have an icon.
-			return {{nullptr, 128, 128, 0}};;
+			return {{nullptr, 128, 128, 0}};
 		} else {
 			// Not a Wii U (v1) TMD.
 			return {};

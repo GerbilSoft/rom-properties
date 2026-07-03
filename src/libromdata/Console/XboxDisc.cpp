@@ -315,7 +315,7 @@ IRpFilePtr XboxDiscPrivate::open(const char *filename)
 	std::transform(toupper_iter, ts_full_filename.end(), toupper_iter, [](TCHAR c) {
 		return TOUPPER(c);
 	});
-	return std::make_shared<RpFile>(ts_full_filename, RpFile::FM_OPEN_READ);;
+	return std::make_shared<RpFile>(ts_full_filename, RpFile::FM_OPEN_READ);
 }
 
 /**

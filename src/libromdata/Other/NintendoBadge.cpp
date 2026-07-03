@@ -347,7 +347,7 @@ N3DS_Language_ID NintendoBadgePrivate::getLanguageID(void) const
 		langID = N3DS_LANG_ENGLISH;
 	}
 
-	const badge_names_t *names = nullptr;;
+	const badge_names_t *names = nullptr;
 	switch (this->badgeType) {
 		default:
 			assert(!"Unknown badge type. (Should not get here!)");

@@ -325,7 +325,7 @@ off64_t Z3DSReader::size(void)
  */
 vector<pair<string, std::vector<uint8_t>>> Z3DSReader::getZ3DSMetaData(void)
 {
-	static constexpr unsigned int Z3DS_MAX_METADATA_SIZE = 128U * 1024U;;
+	static constexpr unsigned int Z3DS_MAX_METADATA_SIZE = 128U * 1024U;
 	RP_D(Z3DSReader);
 	if (!d->seekable || d->z3ds_header.metadata_size < 2 || d->z3ds_header.metadata_size > Z3DS_MAX_METADATA_SIZE) {
 		return {};

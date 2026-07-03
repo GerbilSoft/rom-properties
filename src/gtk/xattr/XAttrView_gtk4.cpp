@@ -140,7 +140,7 @@ rp_xattr_view_init_posix_xattrs_widgets(struct _RpXAttrView *widget, GtkScrolled
 	}};
 
 	// Create the columns.
-	GtkColumnViewColumn *sortingColumn = nullptr;;
+	GtkColumnViewColumn *sortingColumn = nullptr;
 	for (int i = 0; i < 2; i++) {
 		GtkListItemFactory *const factory = gtk_signal_list_item_factory_new();
 		g_signal_connect(factory, "setup", G_CALLBACK(setup_listitem_cb), GINT_TO_POINTER(i));

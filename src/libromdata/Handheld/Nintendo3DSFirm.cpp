@@ -239,7 +239,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 		Hash crc32Hash(Hash::Algorithm::CRC32);
 		if (crc32Hash.isUsable() && firmBuf) {
 			crc32Hash.process(firmBuf.get(), szFile);
-			const uint32_t crc = crc32Hash.getHash32();;
+			const uint32_t crc = crc32Hash.getHash32();
 			firmBin = Nintendo3DSFirmData::lookup_firmBin(crc);
 			if (firmBin != nullptr) {
 				// Official firmware binary.
