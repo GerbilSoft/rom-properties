@@ -562,7 +562,7 @@ int GameMaker::loadFieldData(void)
 			RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME |
 				RomFields::RFT_DATETIME_IS_UTC);
 
-		static const char *const screen_flags[] = {
+		static const array<const char*, 19> screen_flags = {{
 			NOP_C_("GameMaker|ScreenFlags", "Fullscreen"),
 			NOP_C_("GameMaker|ScreenFlags", "VSync"),
 			NOP_C_("GameMaker|ScreenFlags", "SW Vertexes"),
@@ -583,9 +583,9 @@ int GameMaker::loadFieldData(void)
 			NOP_C_("GameMaker|ScreenFlags", "Is IDE Build"), // prev "Show Hobby Splash"
 			NOP_C_("GameMaker|ScreenFlags", "Transparent BG"), // prev "Is IDE Build"
 			NOP_C_("GameMaker|ScreenFlags", "D3D Swap Discard"),
-		};
+		}};
 		std::vector<std::string> *const v_screen_flags =
-			RomFields::strArrayToVector_i18n("GameMaker", screen_flags, ARRAY_SIZE(screen_flags));
+			RomFields::strArrayToVector_i18n("GameMaker", screen_flags);
 		d->fields.addField_bitfield(
 			C_("GameMaker", "Screen Flags"), v_screen_flags, 3, d->header.screenflags);
 
@@ -596,7 +596,7 @@ int GameMaker::loadFieldData(void)
 		if (d->dataVersion >= 12) {
 			// reference: https://github.com/UnderminersTeam/UndertaleModTool/blob/1e1991722f509292c6f58bf9ce7f9748968cf647/UndertaleModLib/Models/UndertaleGeneralInfo.cs#L118
 
-			static const char *const function_classes[] = {
+			static const array<const char*, 63> function_classes = {{
 				NOP_C_("GameMaker|FunctionClass", "Internet"),
 				NOP_C_("GameMaker|FunctionClass", "Joystick"),
 				NOP_C_("GameMaker|FunctionClass", "Gamepad"),
@@ -660,7 +660,7 @@ int GameMaker::loadFieldData(void)
 				NOP_C_("GameMaker|FunctionClass", "Buffer"),
 				NOP_C_("GameMaker|FunctionClass", "Steam"),
 				NOP_C_("GameMaker|FunctionClass", "Shaders")
-			};
+			}};
 
 			// Copied from Nintendo3DS. (TODO: Centralize it?)
 #ifdef _WIN32
@@ -672,7 +672,7 @@ int GameMaker::loadFieldData(void)
 #endif /* _WIN32 */
 
 			auto *const vv_fn_classes = new RomFields::ListData_t;
-			for (size_t i = 0; i < ARRAY_SIZE(function_classes); i++) {
+			for (size_t i = 0; i < function_classes.size(); i++) {
 				if (function_classes[i] != nullptr && d->header.v12.functionClasses & ((uint64_t)1 << i)) {
 					vector<string> v_fn_class;
 					v_fn_class.push_back(function_classes[i]);
@@ -713,9 +713,11 @@ int GameMaker::loadFieldData(void)
 			// loss of precision on the float - but the float will never usually be anything that isn't a full number anyway
 			d->fields.addField_string_numeric(C_("GameMaker", "Game Speed"), (uint32_t)d->gms2Header.GameSpeed);
 
-			static const char *const stats_flags[] = {NOP_C_("GameMaker", "Allow Statistics")};
+			static const array<const char*, 1> stats_flags = {{
+				NOP_C_("GameMaker", "Allow Statistics")
+			}};
 			std::vector<std::string> *const v_stats_flags =
-				RomFields::strArrayToVector_i18n("GameMaker", stats_flags, ARRAY_SIZE(stats_flags));
+				RomFields::strArrayToVector_i18n("GameMaker", stats_flags);
 			d->fields.addField_bitfield(C_("GameMaker", "Statistics"), v_stats_flags, 3, d->gms2Header.AllowStatistics);
 		}
 
