@@ -35,7 +35,7 @@ private:
 	typedef RomDataPrivate super;
 	RP_DISABLE_COPY(GameMakerPrivate)
 
-	int readNullTerminatedString(uint32_t offset, std::string &str);
+	int readNullTerminatedString(uint32_t offset, string &str);
 
 public:
 	/** RomDataInfo **/
@@ -54,10 +54,10 @@ public:
 	YYGMS2HeaderData gms2Header;
 
 	// parsed information
-	std::string projectName;
-	std::string projectConfig;
-	std::string gameName;
-	std::string displayName;
+	string projectName;
+	string projectConfig;
+	string gameName;
+	string displayName;
 
 	bool hasCodeSegment;
 };
@@ -83,7 +83,7 @@ const RomDataInfo GameMakerPrivate::romDataInfo = {
 	"GameMaker", exts.data(), mimeTypes.data()
 };
 
-int GameMakerPrivate::readNullTerminatedString(uint32_t offset, std::string &str)
+int GameMakerPrivate::readNullTerminatedString(uint32_t offset, string &str)
 {
 	if (offset == 0) {
 		return 0;
@@ -551,7 +551,7 @@ int GameMaker::loadFieldData(void)
 		
 		// HACK: to make GCC happy with the packed structures, make a copy of the Version struct
 		const YYVersion version = d->header.Version;
-		std::string versionNum =
+		string versionNum =
 			fmt::format(FSTR("{}.{}.{}.{}"), version.Major, version.Minor, version.Release, version.Build);
 		d->fields.addField_string(C_("GameMaker", "IDE Version"), versionNum, 0);
 
@@ -584,7 +584,7 @@ int GameMaker::loadFieldData(void)
 			NOP_C_("GameMaker|ScreenFlags", "Transparent BG"), // prev "Is IDE Build"
 			NOP_C_("GameMaker|ScreenFlags", "D3D Swap Discard"),
 		}};
-		std::vector<std::string> *const v_screen_flags =
+		vector<string> *const v_screen_flags =
 			RomFields::strArrayToVector_i18n("GameMaker", screen_flags);
 		d->fields.addField_bitfield(
 			C_("GameMaker", "Screen Flags"), v_screen_flags, 3, d->header.screenflags);
@@ -716,7 +716,7 @@ int GameMaker::loadFieldData(void)
 			static const array<const char*, 1> stats_flags = {{
 				NOP_C_("GameMaker", "Allow Statistics")
 			}};
-			std::vector<std::string> *const v_stats_flags =
+			vector<string> *const v_stats_flags =
 				RomFields::strArrayToVector_i18n("GameMaker", stats_flags);
 			d->fields.addField_bitfield(C_("GameMaker", "Statistics"), v_stats_flags, 3, d->gms2Header.AllowStatistics);
 		}
