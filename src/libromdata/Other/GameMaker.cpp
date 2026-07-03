@@ -252,25 +252,25 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 	// TODO: clean this up! remove duplicated code
 	off64_t file_pos_adj = 0;
 	if (d->dataVersion < 10) {
-		file_pos_adj = -(sizeof(d->header) - YYHEADER_SIZE_COMMON);
+		file_pos_adj = -(static_cast<off64_t>(sizeof(d->header)) - YYHEADER_SIZE_COMMON);
 	} else {
 		switch (d->dataVersion) {
 			case 10:
-				file_pos_adj = -(sizeof(d->header) - YYHEADER_SIZE_V10);
+				file_pos_adj = -(static_cast<off64_t>(sizeof(d->header)) - YYHEADER_SIZE_V10);
 				break;
 			case 11:
-				file_pos_adj = -(sizeof(d->header) - YYHEADER_SIZE_V11);
+				file_pos_adj = -(static_cast<off64_t>(sizeof(d->header)) - YYHEADER_SIZE_V11);
 				break;
 			case 12:
-				file_pos_adj = -(sizeof(d->header) - YYHEADER_SIZE_V12);
+				file_pos_adj = -(sstatic_cast<off64_t>(izeof(d->header)) - YYHEADER_SIZE_V12);
 				break;
 			case 13:
-				file_pos_adj = -(sizeof(d->header) - YYHEADER_SIZE_V13);
+				file_pos_adj = -(static_cast<off64_t>(sizeof(d->header)) - YYHEADER_SIZE_V13);
 				break;
 			case 14:
 			default:
-				file_pos_adj = -(sizeof(d->header) - YYHEADER_SIZE_V14);
-				assert(file_pos_adj == 0);
+				file_pos_adj = -(static_cast<off64_t>(sizeof(d->header)) - YYHEADER_SIZE_V14);
+				static_assert(static_cast<off64_t>(sizeof(d->header)) - YYHEADER_SIZE_V14 == 0, "header size needs to be adjusted!");
 				break;
 		}
 	}
