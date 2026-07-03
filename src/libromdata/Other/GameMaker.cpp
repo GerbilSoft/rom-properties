@@ -708,14 +708,8 @@ int GameMaker::loadFieldData(void)
 
 		if (d->dataVersion >= 13) {
 			if (d->header.v13.steamAppId != 0 && d->header.v13.steamAppId != -1) {
-				uint32_t appId = (uint32_t)d->header.v13.steamAppId;
-				// HACK: if it's a negative number then bitflip it
-				//  GMS1 and early GMS2 store it as a negative integer
-				if (appId & 0x80000000) { 
-					appId ^= 0xFFFFFFFF;
-					appId++;
-				}
-				d->fields.addField_string_numeric(C_("GameMaker", "Steam App ID"), appId);
+				// NOTE: GMS1 and early GMS2 store the Steam app ID as a negative number.
+				d->fields.addField_string_numeric(C_("GameMaker", "Steam App ID"), abs(d->header.v13.steamAppId));
 			}
 		}
 		if (d->dataVersion >= 14) {
