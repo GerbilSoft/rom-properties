@@ -209,7 +209,7 @@ WiiSave::WiiSave(const IRpFilePtr &file)
 	assert(keyManager != nullptr);
 
 	// Key verification data
-	KeyManager::KeyData_t keyData[2];
+	array<KeyManager::KeyData_t, 2> keyData;
 	for (size_t i = 0; i < d->key_idx.size(); i++) {
 		const char *const keyName = WiiTicket::encryptionKeyName_static(static_cast<int>(d->key_idx[i]));
 		const uint8_t *const verifyData = WiiTicket::encryptionVerifyData_static(static_cast<int>(d->key_idx[i]));
