@@ -145,14 +145,17 @@ int GameMaker::isRomSupported_static(const DetectInfo *info)
 		return GMSFileType_Invalid;
 	}
 
+	// NOTE: Little-endian files have "big-endian" fourCCs.
 	bool isBigEndian = false;
 
 	// Check the IFF container header to make sure it's a FORM header
 	const iff_sect_hdr_t *const formheader =
 		reinterpret_cast<const iff_sect_hdr_t*>(info->header.pData);
-	if (be32_to_cpu(formheader->magic) == FORM_HDR) {
+	if (formheader->magic == cpu_to_le32(FORM_HDR)) {
 		isBigEndian = true;
-	} else if (le32_to_cpu(formheader->magic) != FORM_HDR) {
+	} else if (formheader->magic == cpu_to_be32(FORM_HDR)) {
+		isBigEndian = false;
+	} else {
 		return GMSFileType_Invalid; // not a valid file
 	}
 	// Validate the length
@@ -165,12 +168,12 @@ int GameMaker::isRomSupported_static(const DetectInfo *info)
 	const iff_sect_hdr_t *const infoheader =
 		reinterpret_cast<const iff_sect_hdr_t*>(info->header.pData + sizeof(iff_sect_hdr_t));
 	if (isBigEndian == false &&
-	    le32_to_cpu(infoheader->magic) == GEN8_HDR &&
+	    infoheader->magic == cpu_to_be32(GEN8_HDR) &&
 	    le32_to_cpu(infoheader->length) >= sizeof(YYHeader))
 	{
 		return GMSFileType_LE; // little endian
 	} else if (isBigEndian &&
-		   be32_to_cpu(infoheader->magic) == GEN8_HDR &&
+		   infoheader->magic == cpu_to_le32(GEN8_HDR) &&
 		   be32_to_cpu(infoheader->length) >= sizeof(YYHeader))
 	{
 		return GMSFileType_BE;
@@ -439,6 +442,7 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 		return;
 	}
 
+	// TODO: Limit this?
 	while (d->file->tell() < file_len) {
 		iff_sect_hdr_t sect_hdr;
 		// doubles as making sure every section of the file is telling the truth about its size?
@@ -447,12 +451,14 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 			d->file.reset();
 			return;
 		}
-		uint32_t host_magic = d->isBigEndian ? be32_to_cpu(sect_hdr.magic) : le32_to_cpu(sect_hdr.magic);
+		// NOTE: Little-endian files have "big-endian" fourCCs.
+		uint32_t host_magic_expected = d->isBigEndian ? cpu_to_le32(CODE_HDR) : cpu_to_be32(CODE_HDR);
 		uint32_t host_len = d->isBigEndian ? be32_to_cpu(sect_hdr.length) : le32_to_cpu(sect_hdr.length);
 
 		// has a non-zero length code segment - not YYC
-		if (host_magic == CODE_HDR && host_len > 0)
+		if (sect_hdr.magic == host_magic_expected && host_len > 0) {
 			d->hasCodeSegment = true;
+		}
 
 		d->file->seek(host_len, IRpFile::SeekWhence::Cur);
 	}

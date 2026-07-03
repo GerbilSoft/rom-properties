@@ -22,7 +22,7 @@ typedef struct _iff_sect_hdr {
 	uint32_t length;
 } iff_sect_hdr_t;
 // IFF "FORM" magic
-#define FORM_HDR 0x4D524F46
+#define FORM_HDR 'FORM'
 
 typedef struct _YYVersion {
 	int Major;
@@ -36,9 +36,9 @@ typedef struct _YYVersion {
 // GameMaker general information header
 // for ease of file parsing, the "count" value was removed
 // for a HACK to make GCC happy, MajorVersion etc was turned into the YYVersion struct
-#define GEN7_HDR 0x374E4547
-#define GEN8_HDR 0x384E4547 // only one actually used by the runner
-#define GENL_HDR 0x4C4E4547
+#define GEN7_HDR 'GEN7'
+#define GEN8_HDR 'GEN8' // only one actually used by the runner
+#define GENL_HDR 'GENL'
 typedef struct RP_PACKED _YYHeader {
     int debug;
     uint32_t pName;
@@ -216,7 +216,7 @@ typedef struct RP_PACKED _YYGMS2HeaderData {
 } YYGMS2HeaderData;
 ASSERT_STRUCT(YYGMS2HeaderData, 0x18);
 
-#define CODE_HDR 0x45444F43
+#define CODE_HDR 'CODE'
 
 #ifdef __cplusplus
 }
