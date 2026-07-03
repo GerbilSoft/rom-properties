@@ -671,6 +671,8 @@ int GameMaker::loadFieldData(void)
 			static constexpr int rows_visible = 4;
 #endif /* _WIN32 */
 
+			// FIXME: Use checkboxes. RFT_LISTDATA has a 32-bit checkbox field,
+			// so this will need to be extended at some point.
 			auto *const vv_fn_classes = new RomFields::ListData_t;
 			for (size_t i = 0; i < function_classes.size(); i++) {
 				if (function_classes[i] != nullptr && d->header.v12.functionClasses & ((uint64_t)1 << i)) {
