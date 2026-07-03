@@ -497,33 +497,6 @@ const char *GameMaker::systemName(unsigned int type) const
 		return sysNames_studio1[type & SYSNAME_TYPE_MASK];
 }
 
-int GameMaker::loadMetaData(void)
-{
-	RP_D(GameMaker);
-	if (!d->metaData.empty()) {
-		// Metadata *has* been loaded...
-		return 0;
-	} else if (!d->file) {
-		return -EBADF;
-	} else if (!d->isValid) {
-		return -EIO;
-	}
-
-	d->metaData.reserve(3); // Maximum of 3 metadata properties.
-
-	if (d->displayName.length() != 0) {
-		d->metaData.addMetaData_string(Property::Title, d->displayName, RomMetaData::STRF_TRIM_END);
-	} else if (d->gameName.length() != 0) {
-		d->metaData.addMetaData_string(Property::Title, d->gameName, RomMetaData::STRF_TRIM_END);
-	}
-
-	d->metaData.addMetaData_timestamp(Property::CreationDate, d->header.v9.datetimeUTC);
-
-	d->metaData.addMetaData_string(Property::Generator, d->hasGms2Header ? "GameMaker" : "GameMaker:Studio");
-
-	return d->metaData.count();
-}
-
 int GameMaker::loadFieldData(void)
 {
 	RP_D(GameMaker);
@@ -739,6 +712,33 @@ int GameMaker::loadFieldData(void)
 	}
 
 	return 0;
+}
+
+int GameMaker::loadMetaData(void)
+{
+	RP_D(GameMaker);
+	if (!d->metaData.empty()) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		return -EBADF;
+	} else if (!d->isValid) {
+		return -EIO;
+	}
+
+	d->metaData.reserve(3); // Maximum of 3 metadata properties.
+
+	if (d->displayName.length() != 0) {
+		d->metaData.addMetaData_string(Property::Title, d->displayName, RomMetaData::STRF_TRIM_END);
+	} else if (d->gameName.length() != 0) {
+		d->metaData.addMetaData_string(Property::Title, d->gameName, RomMetaData::STRF_TRIM_END);
+	}
+
+	d->metaData.addMetaData_timestamp(Property::CreationDate, d->header.v9.datetimeUTC);
+
+	d->metaData.addMetaData_string(Property::Generator, d->hasGms2Header ? "GameMaker" : "GameMaker:Studio");
+
+	return d->metaData.count();
 }
 
 }
