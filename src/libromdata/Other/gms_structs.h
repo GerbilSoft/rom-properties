@@ -33,180 +33,76 @@ typedef struct _YYVersion {
 
 #pragma pack(1)
 
-// GameMaker general information header
-// for ease of file parsing, the "count" value was removed
-// for a HACK to make GCC happy, MajorVersion etc was turned into the YYVersion struct
+/**
+ * GameMaker general information header
+ * For ease of file parsing, the "count" value was removed.
+ * For a HACK to make GCC happy, MajorVersion etc was turned into the YYVersion struct
+ *
+ * Pointers are absolute offsets into the file.
+ *
+ * Endianness depends on the overall file endianness,
+ * which is determined by the "FORM" magic.
+ */
 #define GEN7_HDR 'GEN7'
 #define GEN8_HDR 'GEN8' // only one actually used by the runner
 #define GENL_HDR 'GENL'
 typedef struct RP_PACKED _YYHeader {
-    int debug;
-    uint32_t pName;
-    uint32_t pConfig;
-    int roomMaxId;
-    int roomMaxTileId;
-    int id;
-    int buildNumber;
-    int revisionNumber;
-    int guid3;
-    int guid4;
-    uint32_t pGameName;
-    YYVersion Version;
-    int xscreensize;
-    int yscreensize;
-    int screenflags;
-    int crc;
-    uint8_t md5[0x10];
-    int64_t datetimeUTC;
+	// Common fields for all versions
+	int infoHeader;			// [0x000] Bits 8-15 contain the file format version
+	uint32_t pName;			// [0x004] Pointer to project name
+	uint32_t pConfig;		// [0x008] Pointer to project config
+	int roomMaxId;			// [0x00C]
+	int roomMaxTileId;		// [0x010]
+	int id;				// [0x014]
+	int buildNumber;		// [0x018]
+	int revisionNumber;		// [0x01C]
+	int guid3;			// [0x020]
+	int guid4;			// [0x024]
+	uint32_t pGameName;		// [0x028] Pointer to game name
+	YYVersion Version;		// [0x02C] GameMaker IDE version
+	int xscreensize;		// [0x03C] Screen size (width)
+	int yscreensize;		// [0x040] Screen size (height)
+	int screenflags;		// [0x044] Screen flags
+	int crc;			// [0x048] CRC32 (FIXME: Should be unsigned?)
+	uint8_t md5[0x10];		// [0x04C] MD5
+	int64_t datetimeUTC;		// [0x05C] Build time (Unix timestamp)
+
+	// v10 [0x000A] (starts at 0x064)
+	struct {
+		uint32_t pDisplayName;		// [0x064] Pointer to display name
+	} v10;
+
+	// v11 [0x000B] (starts at 0x068)
+	struct {
+		int64_t Licensed;		// [0x068]
+	} v11;
+
+	// v12 [0x000C] (starts at 0x070)
+	struct {
+		int64_t functionClasses;	// [0x070] Function classes used by this game
+	} v12;
+
+	// v13 [0x000D] (starts at 0x078)
+	struct {
+		int steamAppId;			// [0x078] Steam app ID
+	} v13;
+
+	// v14 [0x000E] (starts at 0x07C)
+	struct {
+		int debuggerServerPort;		// [0x07C]
+	} v14;
 } YYHeader;
-ASSERT_STRUCT(YYHeader, 0x64);
-
-// Version v10
-typedef struct RP_PACKED _YYHeader_000A {
-    int debug;
-    uint32_t pName;
-    uint32_t pConfig;
-    int roomMaxId;
-    int roomMaxTileId;
-    int id;
-    int buildNumber;
-    int revisionNumber;
-    int guid3;
-    int guid4;
-    uint32_t pGameName;
-    YYVersion Version;
-    int xscreensize;
-    int yscreensize;
-    int screenflags;
-    int crc;
-    uint8_t md5[0x10];
-    int64_t datetimeUTC;
-    // 0xA
-    uint32_t pDisplayName;
-} YYHeader_000A;
-ASSERT_STRUCT(YYHeader_000A, 0x68);
-
-// Version v11
-typedef struct RP_PACKED _YYHeader_000B {
-    int debug;
-    uint32_t pName;
-    uint32_t pConfig;
-    int roomMaxId;
-    int roomMaxTileId;
-    int id;
-    int buildNumber;
-    int revisionNumber;
-    int guid3;
-    int guid4;
-    uint32_t pGameName;
-    YYVersion Version;
-    int xscreensize;
-    int yscreensize;
-    int screenflags;
-    int crc;
-    uint8_t md5[0x10];
-    int64_t datetimeUTC;
-    // 0xA
-    uint32_t pDisplayName;
-    // 0xB
-    int64_t Licensed;
-} YYHeader_000B;
-ASSERT_STRUCT(YYHeader_000B, 0x70);
-
-// Version v12
-typedef struct RP_PACKED _YYHeader_000C {
-    int debug;
-    uint32_t pName;
-    uint32_t pConfig;
-    int roomMaxId;
-    int roomMaxTileId;
-    int id;
-    int buildNumber;
-    int revisionNumber;
-    int guid3;
-    int guid4;
-    uint32_t pGameName;
-    YYVersion Version;
-    int xscreensize;
-    int yscreensize;
-    int screenflags;
-    int crc;
-    uint8_t md5[0x10];
-    int64_t datetimeUTC;
-    // 0xA
-    uint32_t pDisplayName;
-    // 0xB
-    int64_t Licensed;
-    // 0xC
-    int64_t functionClasses;
-} YYHeader_000C;
-ASSERT_STRUCT(YYHeader_000C, 0x78);
-
-// Version v13
-typedef struct RP_PACKED _YYHeader_000D {
-    int debug;
-    uint32_t pName;
-    uint32_t pConfig;
-    int roomMaxId;
-    int roomMaxTileId;
-    int id;
-    int buildNumber;
-    int revisionNumber;
-    int guid3;
-    int guid4;
-    uint32_t pGameName;
-    YYVersion Version;
-    int xscreensize;
-    int yscreensize;
-    int screenflags;
-    int crc;
-    uint8_t md5[0x10];
-    int64_t datetimeUTC;
-    // 0xA
-    uint32_t pDisplayName;
-    // 0xB
-    int64_t Licensed;
-    // 0xC
-    int64_t functionClasses;
-    // 0xD
-    int steamAppId;
-} YYHeader_000D;
-ASSERT_STRUCT(YYHeader_000D, 0x7C);
-
-// Version v14+
-typedef struct RP_PACKED _YYHeader_000E {
-    int debug;
-    uint32_t pName;
-    uint32_t pConfig;
-    int roomMaxId;
-    int roomMaxTileId;
-    int id;
-    int buildNumber;
-    int revisionNumber;
-    int guid3;
-    int guid4;
-    uint32_t pGameName;
-    YYVersion Version;
-    int xscreensize;
-    int yscreensize;
-    int screenflags;
-    int crc;
-    uint8_t md5[0x10];
-    int64_t datetimeUTC;
-    // 0xA
-    uint32_t pDisplayName;
-    // 0xB
-    int64_t Licensed;
-    // 0xC
-    int64_t functionClasses;
-    // 0xD
-    int steamAppId;
-    // 0xE
-    int debuggerServerPort;
-} YYHeader_000E;
-ASSERT_STRUCT(YYHeader_000E, 0x80);
+ASSERT_STRUCT(YYHeader, 0x64+0x04+0x08+0x08+0x04+0x04);
 
 #pragma pack()
+
+// Struct sizes
+#define YYHEADER_SIZE_COMMON (0x64)
+#define YYHEADER_SIZE_V10 (0x64+0x04)
+#define YYHEADER_SIZE_V11 (0x64+0x04+0x08)
+#define YYHEADER_SIZE_V12 (0x64+0x04+0x08+0x08)
+#define YYHEADER_SIZE_V13 (0x64+0x04+0x08+0x08+0x04)
+#define YYHEADER_SIZE_V14 (0x64+0x04+0x08+0x08+0x04+0x04)
 
 // Footer of the YYHeader for GMS2 titles
 typedef struct RP_PACKED _YYGMS2HeaderData {

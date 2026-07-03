@@ -46,14 +46,7 @@ public:
 	// ROM header
 	bool isBigEndian;
 	int dataVersion;
-	union {
-		YYHeader v9;
-		YYHeader_000A v10;
-		YYHeader_000B v11;
-		YYHeader_000C v12;
-		YYHeader_000D v13;
-		YYHeader_000E v14;
-	} header;
+	YYHeader header;
 	vector<int> roomOrder;
 
 	bool hasGms2Header;
@@ -228,127 +221,130 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 		d->isValid = false;
 	}
 
-	// Read out the start of the info header
-	int infoHeaderInt = 0;
-	size = d->file->read(&infoHeaderInt, sizeof(infoHeaderInt));
-	if (size != sizeof(infoHeaderInt)) {
+	// Read the header, assuming the entire header is present.
+	// File pointer will be adjusted afterwards, if necessary.
+	size = d->file->read(&d->header, sizeof(d->header));
+	if (size != sizeof(d->header)) {
 		d->isValid = false;
 		d->file.reset();
 		return;
 	}
-	infoHeaderInt = d->isBigEndian ? be32_to_cpu(infoHeaderInt) : le32_to_cpu(infoHeaderInt);
 
-	// Get the version of the file
-	d->dataVersion = (infoHeaderInt >> 8) & 0xFF;
-	d->header.v9.debug = infoHeaderInt;
+	// Get the file format version.
+	d->header.infoHeader = d->isBigEndian ? be32_to_cpu(d->header.infoHeader) : le32_to_cpu(d->header.infoHeader);
+	d->dataVersion = (d->header.infoHeader >> 8) & 0xFF;
+
 	// TODO: clean this up! remove duplicated code
-	if (d->dataVersion < 0xA) {
-		size = d->file->read(&d->header.v9.pName, sizeof(YYHeader) - 4);
-		if (size != sizeof(YYHeader) - 4) {
-			d->isValid = false;
-			d->file.reset();
-			return;
+	off64_t file_pos_adj = 0;
+	if (d->dataVersion < 10) {
+		file_pos_adj = -(sizeof(d->header) - YYHEADER_SIZE_COMMON);
+	} else {
+		switch (d->dataVersion) {
+			case 10:
+				file_pos_adj = -(sizeof(d->header) - YYHEADER_SIZE_V10);
+				break;
+			case 11:
+				file_pos_adj = -(sizeof(d->header) - YYHEADER_SIZE_V11);
+				break;
+			case 12:
+				file_pos_adj = -(sizeof(d->header) - YYHEADER_SIZE_V12);
+				break;
+			case 13:
+				file_pos_adj = -(sizeof(d->header) - YYHEADER_SIZE_V13);
+				break;
+			case 14:
+			default:
+				file_pos_adj = -(sizeof(d->header) - YYHEADER_SIZE_V14);
+				assert(file_pos_adj == 0);
+				break;
 		}
-	} else if (d->dataVersion == 0xA) {
-		size = d->file->read(&d->header.v10.pName, sizeof(YYHeader_000A) - 4);
-		if (size != sizeof(YYHeader_000A) - 4) {
-			d->isValid = false;
-			d->file.reset();
-			return;
-		}
-	} else if (d->dataVersion == 0xB) {
-		size = d->file->read(&d->header.v11.pName, sizeof(YYHeader_000B) - 4);
-		if (size != sizeof(YYHeader_000B) - 4) {
-			d->isValid = false;
-			d->file.reset();
-			return;
-		}
-	} else if (d->dataVersion == 0xC) {
-		size = d->file->read(&d->header.v12.pName, sizeof(YYHeader_000C) - 4);
-		if (size != sizeof(YYHeader_000C) - 4) {
-			d->isValid = false;
-			d->file.reset();
-			return;
-		}
-	} else if (d->dataVersion == 0xD) {
-		size = d->file->read(&d->header.v13.pName, sizeof(YYHeader_000D) - 4);
-		if (size != sizeof(YYHeader_000D) - 4) {
-			d->isValid = false;
-			d->file.reset();
-			return;
-		}
-	} else if (d->dataVersion >= 0xE) {
-		size = d->file->read(&d->header.v14.pName, sizeof(YYHeader_000E) - 4);
-		if (size != sizeof(YYHeader_000E) - 4) {
+	}
+
+	if (file_pos_adj != 0) {
+		int ret = d->file->seek(file_pos_adj, IRpFile::SeekWhence::Cur);
+		if (ret != 0) {
 			d->isValid = false;
 			d->file.reset();
 			return;
 		}
 	}
 
-	// Byteswap the header if necessary
+	// Byteswap the header, if necessary.
+	// NOTE: d->header.infoHeader has already been byteswapped.
 	if (d->isBigEndian) {
-		//d->header.v9.debug = be32_to_cpu(d->header.v9.debug);
-		d->header.v9.pName = be32_to_cpu(d->header.v9.pName);
-		d->header.v9.pConfig = be32_to_cpu(d->header.v9.pConfig);
-		d->header.v9.roomMaxId = be32_to_cpu(d->header.v9.roomMaxId);
-		d->header.v9.roomMaxTileId = be32_to_cpu(d->header.v9.roomMaxTileId);
-		d->header.v9.id = be32_to_cpu(d->header.v9.id);
-		d->header.v9.buildNumber = be32_to_cpu(d->header.v9.buildNumber);
-		d->header.v9.revisionNumber = be32_to_cpu(d->header.v9.revisionNumber);
-		d->header.v9.guid3 = be32_to_cpu(d->header.v9.guid3);
-		d->header.v9.guid4 = be32_to_cpu(d->header.v9.guid4);
-		d->header.v9.pGameName = be32_to_cpu(d->header.v9.pGameName);
-		d->header.v9.Version.Major = be32_to_cpu(d->header.v9.Version.Major);
-		d->header.v9.Version.Minor = be32_to_cpu(d->header.v9.Version.Minor);
-		d->header.v9.Version.Release = be32_to_cpu(d->header.v9.Version.Release);
-		d->header.v9.Version.Build = be32_to_cpu(d->header.v9.Version.Build);
-		d->header.v9.xscreensize = be32_to_cpu(d->header.v9.xscreensize);
-		d->header.v9.yscreensize = be32_to_cpu(d->header.v9.yscreensize);
-		d->header.v9.screenflags = be32_to_cpu(d->header.v9.screenflags);
-		d->header.v9.crc = be32_to_cpu(d->header.v9.crc);
-		d->header.v9.datetimeUTC = be64_to_cpu(d->header.v9.datetimeUTC);
-		if (d->dataVersion >= 0xA)
-			d->header.v10.pDisplayName = be32_to_cpu(d->header.v10.pDisplayName);
-		if (d->dataVersion >= 0xB)
-			d->header.v11.Licensed = be64_to_cpu(d->header.v11.Licensed);
-		if (d->dataVersion >= 0xC)
-			d->header.v12.functionClasses = be64_to_cpu(d->header.v12.functionClasses);
-		if (d->dataVersion >= 0xD)
-			d->header.v13.steamAppId = be32_to_cpu(d->header.v13.steamAppId);
-		if (d->dataVersion >= 0xE)
-			d->header.v14.debuggerServerPort = be32_to_cpu(d->header.v14.debuggerServerPort);
+#if SYS_BYTEORDER != SYS_BIG_ENDIAN
+		d->header.pName			= be32_to_cpu(d->header.pName);
+		d->header.pConfig		= be32_to_cpu(d->header.pConfig);
+		d->header.roomMaxId		= be32_to_cpu(d->header.roomMaxId);
+		d->header.roomMaxTileId		= be32_to_cpu(d->header.roomMaxTileId);
+		d->header.id			= be32_to_cpu(d->header.id);
+		d->header.buildNumber		= be32_to_cpu(d->header.buildNumber);
+		d->header.revisionNumber	= be32_to_cpu(d->header.revisionNumber);
+		d->header.guid3			= be32_to_cpu(d->header.guid3);
+		d->header.guid4			= be32_to_cpu(d->header.guid4);
+		d->header.pGameName		= be32_to_cpu(d->header.pGameName);
+		d->header.Version.Major		= be32_to_cpu(d->header.Version.Major);
+		d->header.Version.Minor		= be32_to_cpu(d->header.Version.Minor);
+		d->header.Version.Release	= be32_to_cpu(d->header.Version.Release);
+		d->header.Version.Build		= be32_to_cpu(d->header.Version.Build);
+		d->header.xscreensize		= be32_to_cpu(d->header.xscreensize);
+		d->header.yscreensize		= be32_to_cpu(d->header.yscreensize);
+		d->header.screenflags		= be32_to_cpu(d->header.screenflags);
+		d->header.crc			= be32_to_cpu(d->header.crc);
+		d->header.datetimeUTC		= be64_to_cpu(d->header.datetimeUTC);
+		if (d->dataVersion >= 10) {
+			d->header.v10.pDisplayName		= be32_to_cpu(d->header.v10.pDisplayName);
+		}
+		if (d->dataVersion >= 11) {
+			d->header.v11.Licensed			= be64_to_cpu(d->header.v11.Licensed);
+		}
+		if (d->dataVersion >= 12) {
+			d->header.v12.functionClasses		= be64_to_cpu(d->header.v12.functionClasses);
+		}
+		if (d->dataVersion >= 13) {
+			d->header.v13.steamAppId		= be32_to_cpu(d->header.v13.steamAppId);
+		}
+		if (d->dataVersion >= 14) {
+			d->header.v14.debuggerServerPort	= be32_to_cpu(d->header.v14.debuggerServerPort);
+		}
+#endif /* SYS_BYTEORDER != SYS_BIG_ENDIAN */
 	} else {
-		//d->header.v9.debug = be32_to_cpu(d->header.v9.debug);
-		d->header.v9.pName = le32_to_cpu(d->header.v9.pName);
-		d->header.v9.pConfig = le32_to_cpu(d->header.v9.pConfig);
-		d->header.v9.roomMaxId = le32_to_cpu(d->header.v9.roomMaxId);
-		d->header.v9.roomMaxTileId = le32_to_cpu(d->header.v9.roomMaxTileId);
-		d->header.v9.id = le32_to_cpu(d->header.v9.id);
-		d->header.v9.buildNumber = le32_to_cpu(d->header.v9.buildNumber);
-		d->header.v9.revisionNumber = le32_to_cpu(d->header.v9.revisionNumber);
-		d->header.v9.guid3 = le32_to_cpu(d->header.v9.guid3);
-		d->header.v9.guid4 = le32_to_cpu(d->header.v9.guid4);
-		d->header.v9.pGameName = le32_to_cpu(d->header.v9.pGameName);
-		d->header.v9.Version.Major = le32_to_cpu(d->header.v9.Version.Major);
-		d->header.v9.Version.Minor = le32_to_cpu(d->header.v9.Version.Minor);
-		d->header.v9.Version.Release = le32_to_cpu(d->header.v9.Version.Release);
-		d->header.v9.Version.Build = le32_to_cpu(d->header.v9.Version.Build);
-		d->header.v9.xscreensize = le32_to_cpu(d->header.v9.xscreensize);
-		d->header.v9.yscreensize = le32_to_cpu(d->header.v9.yscreensize);
-		d->header.v9.screenflags = le32_to_cpu(d->header.v9.screenflags);
-		d->header.v9.crc = le32_to_cpu(d->header.v9.crc);
-		d->header.v9.datetimeUTC = le64_to_cpu(d->header.v9.datetimeUTC);
-		if (d->dataVersion >= 0xA)
-			d->header.v10.pDisplayName = le32_to_cpu(d->header.v10.pDisplayName);
-		if (d->dataVersion >= 0xB)
-			d->header.v11.Licensed = le64_to_cpu(d->header.v11.Licensed);
-		if (d->dataVersion >= 0xC)
-			d->header.v12.functionClasses = le64_to_cpu(d->header.v12.functionClasses);
-		if (d->dataVersion >= 0xD)
-			d->header.v13.steamAppId = le32_to_cpu(d->header.v13.steamAppId);
-		if (d->dataVersion >= 0xE)
-			d->header.v14.debuggerServerPort = le32_to_cpu(d->header.v14.debuggerServerPort);
+#if SYS_BYTEORDER != SYS_LIL_ENDIAN
+		d->header.pName			= le32_to_cpu(d->header.pName);
+		d->header.pConfig		= le32_to_cpu(d->header.pConfig);
+		d->header.roomMaxId		= le32_to_cpu(d->header.roomMaxId);
+		d->header.roomMaxTileId		= le32_to_cpu(d->header.roomMaxTileId);
+		d->header.id			= le32_to_cpu(d->header.id);
+		d->header.buildNumber		= le32_to_cpu(d->header.buildNumber);
+		d->header.revisionNumber	= le32_to_cpu(d->header.revisionNumber);
+		d->header.guid3			= le32_to_cpu(d->header.guid3);
+		d->header.guid4			= le32_to_cpu(d->header.guid4);
+		d->header.pGameName		= le32_to_cpu(d->header.pGameName);
+		d->header.Version.Major		= le32_to_cpu(d->header.Version.Major);
+		d->header.Version.Minor		= le32_to_cpu(d->header.Version.Minor);
+		d->header.Version.Release	= le32_to_cpu(d->header.Version.Release);
+		d->header.Version.Build		= le32_to_cpu(d->header.Version.Build);
+		d->header.xscreensize		= le32_to_cpu(d->header.xscreensize);
+		d->header.yscreensize		= le32_to_cpu(d->header.yscreensize);
+		d->header.screenflags		= le32_to_cpu(d->header.screenflags);
+		d->header.crc			= le32_to_cpu(d->header.crc);
+		d->header.datetimeUTC		= le64_to_cpu(d->header.datetimeUTC);
+		if (d->dataVersion >= 10) {
+			d->header.v10.pDisplayName		= le32_to_cpu(d->header.v10.pDisplayName);
+		}
+		if (d->dataVersion >= 11) {
+			d->header.v11.Licensed			= le64_to_cpu(d->header.v11.Licensed);
+		}
+		if (d->dataVersion >= 12) {
+			d->header.v12.functionClasses		= le64_to_cpu(d->header.v12.functionClasses);
+		}
+		if (d->dataVersion >= 13) {
+			d->header.v13.steamAppId		= le32_to_cpu(d->header.v13.steamAppId);
+		}
+		if (d->dataVersion >= 14) {
+			d->header.v14.debuggerServerPort	= le32_to_cpu(d->header.v14.debuggerServerPort);
+		}
+#endif /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
 	}
 	
 	// load room order from the file
@@ -374,7 +370,7 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 	}
 
 	// load the GMS2 header information
-	if (d->dataVersion >= 0xE && d->header.v9.Version.Major >= 2) {
+	if (d->dataVersion >= 14 && d->header.Version.Major >= 2) {
 		d->hasGms2Header = true;
 		// license blob
 		size = d->file->read(d->gms2License, sizeof(d->gms2License));
@@ -392,27 +388,31 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 		}
 		// endian swap the GMS2 header
 		if (d->isBigEndian) {
-			d->gms2Header.AllowStatistics = be32_to_cpu(d->gms2Header.AllowStatistics);
-			d->gms2Header.GameSpeed = bef32_to_cpu(d->gms2Header.GameSpeed);
+#if SYS_BYTEORDER != SYS_BIG_ENDIAN
+			d->gms2Header.AllowStatistics	= be32_to_cpu(d->gms2Header.AllowStatistics);
+			d->gms2Header.GameSpeed		= bef32_to_cpu(d->gms2Header.GameSpeed);
+#endif /* SYS_BYTEORDER != SYS_BIG_ENDIAN */
 		} else {
-			d->gms2Header.AllowStatistics = le32_to_cpu(d->gms2Header.AllowStatistics);
-			d->gms2Header.GameSpeed = lef32_to_cpu(d->gms2Header.GameSpeed);
+#if SYS_BYTEORDER != SYS_LIL_ENDIAN
+			d->gms2Header.AllowStatistics	= le32_to_cpu(d->gms2Header.AllowStatistics);
+			d->gms2Header.GameSpeed		= lef32_to_cpu(d->gms2Header.GameSpeed);
+#endif /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
 		}
 		// TODO: endian swap the GUID
 	}
 
 	// read the strings, really badly
-	if (d->readNullTerminatedString(d->header.v9.pName, d->projectName) != 0) {
+	if (d->readNullTerminatedString(d->header.pName, d->projectName) != 0) {
 		d->isValid = false;
 		d->file.reset();
 		return;
 	}
-	if (d->readNullTerminatedString(d->header.v9.pConfig, d->projectConfig) != 0) {
+	if (d->readNullTerminatedString(d->header.pConfig, d->projectConfig) != 0) {
 		d->isValid = false;
 		d->file.reset();
 		return;
 	}
-	if (d->readNullTerminatedString(d->header.v9.pGameName, d->gameName) != 0) {
+	if (d->readNullTerminatedString(d->header.pGameName, d->gameName) != 0) {
 		d->isValid = false;
 		d->file.reset();
 		return;
@@ -468,8 +468,8 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 		return;
 	}
 
-    d->fileType = FileType::ResourceFile;
-    d->mimeType = "application/x-iff";
+	d->fileType = FileType::ResourceFile;
+	d->mimeType = "application/x-iff";
 }
 
 /**
@@ -501,10 +501,11 @@ const char *GameMaker::systemName(unsigned int type) const
 		nullptr
 	};
 
-	if (d->hasGms2Header)
+	if (d->hasGms2Header) {
 		return sysNames_studio2[type & SYSNAME_TYPE_MASK];
-	else
+	} else {
 		return sysNames_studio1[type & SYSNAME_TYPE_MASK];
+	}
 }
 
 int GameMaker::loadFieldData(void)
@@ -549,15 +550,15 @@ int GameMaker::loadFieldData(void)
 		}
 		
 		// HACK: to make GCC happy with the packed structures, make a copy of the Version struct
-		const YYVersion version = d->header.v9.Version;
+		const YYVersion version = d->header.Version;
 		std::string versionNum =
-			fmt::format("{}.{}.{}.{}", version.Major, version.Minor, version.Release, version.Build);
+			fmt::format(FSTR("{}.{}.{}.{}"), version.Major, version.Minor, version.Release, version.Build);
 		d->fields.addField_string(C_("GameMaker", "IDE Version"), versionNum, 0);
 
 		d->fields.addField_dimensions(
-			C_("GameMaker", "Resolution"), d->header.v9.xscreensize, d->header.v9.yscreensize);
+			C_("GameMaker", "Resolution"), d->header.xscreensize, d->header.yscreensize);
 
-		d->fields.addField_dateTime(C_("GameMaker", "Build Timestamp"), d->header.v9.datetimeUTC,
+		d->fields.addField_dateTime(C_("GameMaker", "Build Timestamp"), d->header.datetimeUTC,
 			RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME |
 				RomFields::RFT_DATETIME_IS_UTC);
 
@@ -586,13 +587,13 @@ int GameMaker::loadFieldData(void)
 		std::vector<std::string> *const v_screen_flags =
 			RomFields::strArrayToVector_i18n("GameMaker", screen_flags, ARRAY_SIZE(screen_flags));
 		d->fields.addField_bitfield(
-			C_("GameMaker", "Screen Flags"), v_screen_flags, 3, d->header.v9.screenflags);
+			C_("GameMaker", "Screen Flags"), v_screen_flags, 3, d->header.screenflags);
 
-		if (d->dataVersion >= 0xB) {
+		if (d->dataVersion >= 11) {
 			// license data? never referenced by the runner, always seen as 0
 		}
 
-		if (d->dataVersion >= 0xC) {
+		if (d->dataVersion >= 12) {
 			// reference: https://github.com/UnderminersTeam/UndertaleModTool/blob/1e1991722f509292c6f58bf9ce7f9748968cf647/UndertaleModLib/Models/UndertaleGeneralInfo.cs#L118
 
 			static const char *const function_classes[] = {
@@ -689,7 +690,7 @@ int GameMaker::loadFieldData(void)
 			}
 		}
 
-		if (d->dataVersion >= 0xD) {
+		if (d->dataVersion >= 13) {
 			if (d->header.v13.steamAppId != 0 && d->header.v13.steamAppId != -1) {
 				uint32_t appId = (uint32_t)d->header.v13.steamAppId;
 				// HACK: if it's a negative number then bitflip it
@@ -701,7 +702,7 @@ int GameMaker::loadFieldData(void)
 				d->fields.addField_string_numeric(C_("GameMaker", "Steam App ID"), appId);
 			}
 		}
-		if (d->dataVersion >= 0xE) {
+		if (d->dataVersion >= 14) {
 			if (d->header.v14.debuggerServerPort > 0 && d->header.v14.debuggerServerPort <= 65535) {
 				d->fields.addField_string_numeric(
 					C_("GameMaker", "Debugger Port"), d->header.v14.debuggerServerPort);
@@ -745,7 +746,7 @@ int GameMaker::loadMetaData(void)
 		d->metaData.addMetaData_string(Property::Title, d->gameName, RomMetaData::STRF_TRIM_END);
 	}
 
-	d->metaData.addMetaData_timestamp(Property::CreationDate, d->header.v9.datetimeUTC);
+	d->metaData.addMetaData_timestamp(Property::CreationDate, d->header.datetimeUTC);
 
 	d->metaData.addMetaData_string(Property::Generator, d->hasGms2Header ? "GameMaker" : "GameMaker:Studio");
 
