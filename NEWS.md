@@ -1,5 +1,12 @@
 # Changes
 
+## v2.9 (released 2026/??/??)
+
+* New parsers:
+  * GameMaker: Game Maker Studio data.win parser.
+    * Pull request #496: Add support for GameMaker IFF/"data.win" files
+      * Submitted by @InvoxiPlayGames.
+
 ## v2.8 (released 2026/06/20)
 
 * New parsers:
