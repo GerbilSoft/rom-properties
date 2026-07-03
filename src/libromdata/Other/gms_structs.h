@@ -62,7 +62,7 @@ typedef struct RP_PACKED _YYHeader {
 	YYVersion Version;		// [0x02C] GameMaker IDE version
 	int xscreensize;		// [0x03C] Screen size (width)
 	int yscreensize;		// [0x040] Screen size (height)
-	int screenflags;		// [0x044] Screen flags
+	int screenflags;		// [0x044] Screen flags (see YYHeader_Screen_Flags_e)
 	int crc;			// [0x048] CRC32 (FIXME: Should be unsigned?)
 	uint8_t md5[0x10];		// [0x04C] MD5
 	int64_t datetimeUTC;		// [0x05C] Build time (Unix timestamp)
@@ -95,6 +95,32 @@ typedef struct RP_PACKED _YYHeader {
 ASSERT_STRUCT(YYHeader, 0x64+0x04+0x08+0x08+0x04+0x04);
 
 #pragma pack()
+
+/**
+ * Screen flags
+ */
+typedef enum {
+	YYHEADER_SCREEN_FLAG_FULLSCREEN		= (1U <<  0),
+	YYHEADER_SCREEN_FLAG_VSYNC		= (1U <<  1),
+	YYHEADER_SCREEN_FLAG_SW_VERTEXES	= (1U <<  2),
+	YYHEADER_SCREEN_FLAG_ANTI_ALIASING	= (1U <<  3),
+	YYHEADER_SCREEN_FLAG_KEEP_ASPECT_RATIO	= (1U <<  4),
+	YYHEADER_SCREEN_FLAG_SHOW_CURSOR	= (1U <<  5),
+	YYHEADER_SCREEN_FLAG_RESIZABLE		= (1U <<  6),
+	YYHEADER_SCREEN_FLAG_ALLOW_FS_SWITCH	= (1U <<  7),
+	YYHEADER_SCREEN_FLAG_ALLOW_DOCK_IN_FS	= (1U <<  8),
+	YYHEADER_SCREEN_FLAG_FREE_IDE		= (1U <<  9),
+	YYHEADER_SCREEN_FLAG_STANDARD_IDE	= (1U << 10),
+	YYHEADER_SCREEN_FLAG_PRO_IDE		= (1U << 11),
+	YYHEADER_SCREEN_FLAG_STEAM_WORKSHOP	= (1U << 12),
+	YYHEADER_SCREEN_FLAG_ROAMING_APPDATA	= (1U << 13),
+	YYHEADER_SCREEN_FLAG_BORDERLESS_FS	= (1U << 14),
+	YYHEADER_SCREEN_FLAG_JS_ENABLED		= (1U << 15),
+	// TODO: change these to match the specific IDE version as it can change
+	YYHEADER_SCREEN_FLAG_IS_IDE_BUILD	= (1U << 16),	// prev "Show Hobby Splash"
+	YYHEADER_SCREEN_FLAG_TRANSPARNET_BG	= (1U << 17),	// prev "Is IDE Build"
+	YYHEADER_SCREEN_FLAG_D3D_SWAP_DISCARD	= (1U << 18),
+} YYHeader_Screen_Flags_e;
 
 // Struct sizes
 #define YYHEADER_SIZE_COMMON (0x64)
