@@ -711,7 +711,8 @@ int GameMaker::loadFieldData(void)
 		d->fields.addField_string_numeric(C_("GameMaker", "Room Count"), (uint32_t)d->roomOrder.size());
 	}
 
-	return 0;
+	// Finished reading the field data.
+	return d->fields.count();
 }
 
 int GameMaker::loadMetaData(void)
