@@ -43,8 +43,24 @@ public:
 	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
+public:
+	// GMS file type
+	enum class GMSFileType {
+		Unknown = -1,
+
+		LE = 0,
+		BE = 1,
+
+		Max
+	};
+	GMSFileType gmsFileType;
+
+	inline bool isBigEndian(void) const
+	{
+		return (gmsFileType == GMSFileType::BE);
+	}
+
 	// ROM header
-	bool isBigEndian;
 	int dataVersion;
 	YYHeader header;
 	vector<int> roomOrder;
@@ -106,7 +122,6 @@ int GameMakerPrivate::readNullTerminatedString(uint32_t offset, string &str)
 GameMakerPrivate::GameMakerPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
-	isBigEndian = false;
 	dataVersion = 0;
 	memset(&header, 0, sizeof(header));
 	hasGms2Header = false;
@@ -114,12 +129,6 @@ GameMakerPrivate::GameMakerPrivate(const IRpFilePtr &file)
 	memset(&gms2Header, 0, sizeof(gms2Header));
 	hasCodeSegment = false;
 }
-
-typedef enum _GMSFileType {
-    GMSFileType_Invalid = -1,
-    GMSFileType_LE = 0,
-    GMSFileType_BE = 1
-} GMSFileType;
 
 /**
  * Is a ROM image supported by this class?
@@ -135,7 +144,7 @@ int GameMaker::isRomSupported_static(const DetectInfo *info)
 	    info->header.addr != 0 ||
 	    info->header.size < (sizeof(iff_sect_hdr_t) * 2))
 	{
-		return GMSFileType_Invalid;
+		return static_cast<int>(GameMakerPrivate::GMSFileType::Unknown);
 	}
 
 	// NOTE: Little-endian files have "big-endian" fourCCs.
@@ -149,12 +158,13 @@ int GameMaker::isRomSupported_static(const DetectInfo *info)
 	} else if (formheader->magic == cpu_to_be32(FORM_HDR)) {
 		isBigEndian = false;
 	} else {
-		return GMSFileType_Invalid; // not a valid file
+		return static_cast<int>(GameMakerPrivate::GMSFileType::Unknown); // not a valid file
 	}
 	// Validate the length
 	uint32_t formLength = isBigEndian ? be32_to_cpu(formheader->length) : le32_to_cpu(formheader->length);
 	if (formLength < (sizeof(iff_sect_hdr_t) + sizeof(YYHeader))) {
-		return GMSFileType_Invalid; // not a valid length
+		// Length is too small.
+		return static_cast<int>(GameMakerPrivate::GMSFileType::Unknown);
 	}
 
 	// Check the data after the FORM header to make sure the first value is the GEN8 info header
@@ -164,15 +174,18 @@ int GameMaker::isRomSupported_static(const DetectInfo *info)
 	    infoheader->magic == cpu_to_be32(GEN8_HDR) &&
 	    le32_to_cpu(infoheader->length) >= sizeof(YYHeader))
 	{
-		return GMSFileType_LE; // little endian
+		// Little-endian
+		return static_cast<int>(GameMakerPrivate::GMSFileType::LE);
 	} else if (isBigEndian &&
 		   infoheader->magic == cpu_to_le32(GEN8_HDR) &&
 		   be32_to_cpu(infoheader->length) >= sizeof(YYHeader))
 	{
-		return GMSFileType_BE;
-	} else {
-		return GMSFileType_Invalid;
+		// Big-endian
+		return static_cast<int>(GameMakerPrivate::GMSFileType::BE);
 	}
+
+	// Not valid...
+	return static_cast<int>(GameMakerPrivate::GMSFileType::Unknown);
 }
 
 /**
@@ -213,12 +226,11 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 		nullptr,
 		0
 	};
-	int romSupport = isRomSupported_static(&info);
-	if (romSupport >= 0) {
-		d->isValid = true;
-		d->isBigEndian = romSupport == GMSFileType_BE;
-	} else {
-		d->isValid = false;
+	d->gmsFileType = static_cast<GameMakerPrivate::GMSFileType>(isRomSupported_static(&info));
+	d->isValid = ((int)d->gmsFileType >= 0);
+	if (!d->isValid) {
+		d->file.reset();
+		return;
 	}
 
 	// Read the header, assuming the entire header is present.
@@ -230,8 +242,10 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 		return;
 	}
 
+	const bool isBigEndian = d->isBigEndian();
+
 	// Get the file format version.
-	d->header.infoHeader = d->isBigEndian ? be32_to_cpu(d->header.infoHeader) : le32_to_cpu(d->header.infoHeader);
+	d->header.infoHeader = isBigEndian ? be32_to_cpu(d->header.infoHeader) : le32_to_cpu(d->header.infoHeader);
 	d->dataVersion = (d->header.infoHeader >> 8) & 0xFF;
 
 	// TODO: clean this up! remove duplicated code
@@ -271,7 +285,7 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 
 	// Byteswap the header, if necessary.
 	// NOTE: d->header.infoHeader has already been byteswapped.
-	if (d->isBigEndian) {
+	if (isBigEndian) {
 #if SYS_BYTEORDER != SYS_BIG_ENDIAN
 		d->header.pName			= be32_to_cpu(d->header.pName);
 		d->header.pConfig		= be32_to_cpu(d->header.pConfig);
@@ -355,7 +369,7 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 		d->file.reset();
 		return;
 	}
-	roomOrderLength = d->isBigEndian ? be32_to_cpu(roomOrderLength) : le32_to_cpu(roomOrderLength);
+	roomOrderLength = isBigEndian ? be32_to_cpu(roomOrderLength) : le32_to_cpu(roomOrderLength);
 
 	for (int i = 0; i < roomOrderLength; i++) {
 		int roomId = 0;
@@ -365,7 +379,7 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 			d->file.reset();
 			return;
 		}
-		roomId = d->isBigEndian ? be32_to_cpu(roomId) : le32_to_cpu(roomId);
+		roomId = isBigEndian ? be32_to_cpu(roomId) : le32_to_cpu(roomId);
 		d->roomOrder.push_back(roomId);
 	}
 
@@ -387,7 +401,7 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 			return;
 		}
 		// endian swap the GMS2 header
-		if (d->isBigEndian) {
+		if (isBigEndian) {
 #if SYS_BYTEORDER != SYS_BIG_ENDIAN
 			d->gms2Header.AllowStatistics	= be32_to_cpu(d->gms2Header.AllowStatistics);
 			d->gms2Header.GameSpeed		= bef32_to_cpu(d->gms2Header.GameSpeed);
@@ -432,10 +446,10 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 		d->file.reset();
 		return;
 	}
-	uint32_t file_len = d->isBigEndian ? be32_to_cpu(iff_hdr[0].length) : le32_to_cpu(iff_hdr[0].length);
+	uint32_t file_len = isBigEndian ? be32_to_cpu(iff_hdr[0].length) : le32_to_cpu(iff_hdr[0].length);
 	file_len += sizeof(iff_sect_hdr_t);
 	// skip over the GEN8 header
-	uint32_t post_gen8_offset = d->isBigEndian ? be32_to_cpu(iff_hdr[1].length) : le32_to_cpu(iff_hdr[1].length);
+	uint32_t post_gen8_offset = isBigEndian ? be32_to_cpu(iff_hdr[1].length) : le32_to_cpu(iff_hdr[1].length);
 	if (d->file->seek(post_gen8_offset, IRpFile::SeekWhence::Cur) != 0) {
 		d->isValid = false;
 		d->file.reset();
@@ -452,8 +466,8 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 			return;
 		}
 		// NOTE: Little-endian files have "big-endian" fourCCs.
-		uint32_t host_magic_expected = d->isBigEndian ? cpu_to_le32(CODE_HDR) : cpu_to_be32(CODE_HDR);
-		uint32_t host_len = d->isBigEndian ? be32_to_cpu(sect_hdr.length) : le32_to_cpu(sect_hdr.length);
+		uint32_t host_magic_expected = isBigEndian ? cpu_to_le32(CODE_HDR) : cpu_to_be32(CODE_HDR);
+		uint32_t host_len = isBigEndian ? be32_to_cpu(sect_hdr.length) : le32_to_cpu(sect_hdr.length);
 
 		// has a non-zero length code segment - not YYC
 		if (sect_hdr.magic == host_magic_expected && host_len > 0) {
