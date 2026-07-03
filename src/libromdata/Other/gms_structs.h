@@ -200,7 +200,7 @@ typedef enum {
 #define YYHEADER_SIZE_V14 (0x64+0x04+0x08+0x08+0x04+0x04)
 
 // Footer of the YYHeader for GMS2 titles
-typedef struct RP_PACKED _YYGMS2HeaderData {
+typedef struct _YYGMS2HeaderData {
 	float GameSpeed;
 	int AllowStatistics;
 	uint8_t GameGUID[0x10];

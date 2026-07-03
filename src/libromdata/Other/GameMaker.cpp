@@ -66,6 +66,8 @@ public:
 	vector<int> roomOrder;
 
 	bool hasGms2Header;
+	bool hasCodeSegment;
+
 	uint8_t gms2License[0x28];
 	YYGMS2HeaderData gms2Header;
 
@@ -74,8 +76,6 @@ public:
 	string projectConfig;
 	string gameName;
 	string displayName;
-
-	bool hasCodeSegment;
 };
 
 ROMDATA_IMPL(GameMaker)
@@ -99,6 +99,18 @@ const RomDataInfo GameMakerPrivate::romDataInfo = {
 	"GameMaker", exts.data(), mimeTypes.data()
 };
 
+GameMakerPrivate::GameMakerPrivate(const IRpFilePtr &file)
+	: super(file, &romDataInfo)
+	, dataVersion(0)
+	, hasGms2Header(false)
+	, hasCodeSegment(false)
+{
+	// Clear the various structs.
+	memset(&header, 0, sizeof(header));
+	memset(&gms2License, 0, sizeof(gms2License));
+	memset(&gms2Header, 0, sizeof(gms2Header));
+}
+
 int GameMakerPrivate::readNullTerminatedString(uint32_t offset, string &str)
 {
 	if (offset == 0) {
@@ -117,17 +129,6 @@ int GameMakerPrivate::readNullTerminatedString(uint32_t offset, string &str)
 			str.push_back(c);
 	} while (c != 0);
 	return 0;
-}
-
-GameMakerPrivate::GameMakerPrivate(const IRpFilePtr &file)
-	: super(file, &romDataInfo)
-{
-	dataVersion = 0;
-	memset(&header, 0, sizeof(header));
-	hasGms2Header = false;
-	memset(&gms2License, 0, sizeof(gms2License));
-	memset(&gms2Header, 0, sizeof(gms2Header));
-	hasCodeSegment = false;
 }
 
 /**
