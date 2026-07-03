@@ -132,10 +132,13 @@ const char *const PSPPrivate::mimeTypes[] = {
 	"application/x-cso",		// technically a different format...
 	"application/x-compressed-iso",	// KDE detects CISO as this
 	"application/x-psp-dax-image",
-	"application/x-psp-jiso-image",
+#ifdef HAVE_LZ4
 	"application/x-psp-ziso-image",
+#endif /* HAVE_LZ4 */
+#ifdef HAVE_LZO
+	"application/x-psp-jiso-image",
+#endif /* HAVE_LZO */
 
-	// TODO: PSP?
 	nullptr
 };
 const RomDataInfo PSPPrivate::romDataInfo = {
