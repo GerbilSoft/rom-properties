@@ -145,6 +145,9 @@ public:
 	enum StringFormat {
 		// Trim spaces from the end of strings.
 		STRF_TRIM_END	= (1U << 3),
+
+		// Numeric formatting: Use lowercase letters for hexadecimal.
+		STRF_HEX_LOWER	= (1U << 4),
 	};
 
 	// ROM metadata struct.
@@ -355,6 +358,28 @@ public:
 		}
 		return addMetaData_string(name, str.c_str(), flags);
 	}
+
+	// NOTE: This is the same as RomFields::Base.
+	enum class Base {
+		Dec,	// Decimal (Base 10)
+		Hex,	// Hexadecimal (Base 16)
+		Oct,	// Octal (Base 8)
+	};
+
+	/**
+	 * Add a string metadata property using a numeric value.
+	 *
+	 * If a metadata property with the same name already exists,
+	 * it will be overwritten.
+	 *
+	 * @param name Property name
+	 * @param val Numeric value
+	 * @param base Base (If not decimal, a prefix will be added.)
+	 * @param digits Number of leading digits (0 for none)
+	 * @param flags Formatting flags
+	 * @return Field index, or -1 on error.
+	 */
+	int addMetaData_string_numeric(Property name, uint32_t val, Base base = Base::Dec, int digits = 0, unsigned int flags = 0);
 
 	/**
 	 * Add a timestamp metadata property.

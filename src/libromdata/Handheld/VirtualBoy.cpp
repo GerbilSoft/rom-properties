@@ -458,7 +458,7 @@ int VirtualBoy::loadMetaData(void)
 
 	// Virtual Boy ROM footer, excluding the vector table.
 	const VB_RomFooter *const romFooter = &d->romFooter;
-	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
+	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
 
 	// Title
 	d->metaData.addMetaData_string(Property::Title, d->getTitle());
@@ -491,6 +491,10 @@ int VirtualBoy::loadMetaData(void)
 
 	// Game ID
 	d->metaData.addMetaData_string(Property::GameID, d->getGameID());
+
+	// Revision (as Version)
+	d->metaData.addMetaData_string_numeric(Property::Version,
+		d->romFooter.version, RomMetaData::Base::Dec, 2);
 
 	// Finished reading the metadata.
 	return d->metaData.count();

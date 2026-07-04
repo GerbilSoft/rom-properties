@@ -461,7 +461,7 @@ int GameBoyAdvance::loadMetaData(void)
 
 	// ROM header is read in the constructor.
 	const GBA_RomHeader *const romHeader = &d->romHeader;
-	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
+	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
 
 	// Title
 	d->metaData.addMetaData_string(Property::Title,
@@ -478,6 +478,10 @@ int GameBoyAdvance::loadMetaData(void)
 	if (s_gameID.compare(0, 4, "    ") != 0 && s_gameID.compare(0, 4, "____") != 0) {
 		d->metaData.addMetaData_string(Property::GameID, s_gameID);
 	}
+
+	// Revision (as Version)
+	d->metaData.addMetaData_string_numeric(Property::Version,
+		d->romHeader.rom_version, RomMetaData::Base::Dec, 2);
 
 	// Finished reading the metadata.
 	return d->metaData.count();

@@ -1405,8 +1405,8 @@ int DMG::loadMetaData(void)
 	}
 
 	// DMG ROM header
-	//const DMG_RomHeader *const romHeader = &d->romHeader;
-	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
+	const DMG_RomHeader *const romHeader = &d->romHeader;
+	d->metaData.reserve(5);	// Maximum of 5 metadata properties.
 
 	// Title
 	// TODO: Remove STRF_TRIM_END, since we're doing that ourselves?
@@ -1427,6 +1427,10 @@ int DMG::loadMetaData(void)
 
 	// Region code
 	d->metaData.addMetaData_string(Property::RegionCode, d->getRegionCode());
+
+	// Revision (as Version)
+	d->metaData.addMetaData_string_numeric(Property::Version,
+		d->romHeader.version, RomMetaData::Base::Dec, 2);
 
 	// Finished reading the metadata.
 	return d->metaData.count();

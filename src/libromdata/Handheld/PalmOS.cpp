@@ -688,12 +688,20 @@ int PalmOS::loadMetaData(void)
 
 	// TODO: Text encoding?
 	const PalmOS_PRC_Header_t *const prcHeader = &d->prcHeader;
-	d->metaData.reserve(1);	// Maximum of 1 metadata property.
+	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 
 	// Title
 	d->metaData.addMetaData_string(Property::Title,
 		latin1_to_utf8(prcHeader->name, sizeof(prcHeader->name)),
 		RomMetaData::STRF_TRIM_END);
+
+	/** Custom properties! **/
+
+	// Version
+	const string s_tver = d->load_string(PalmOS_PRC_ResType_ApplicationVersion, 1000);
+	if (!s_tver.empty()) {
+		d->metaData.addMetaData_string(Property::Version, s_tver);
+	}
 
 	// Finished reading the metadata.
 	return d->metaData.count();

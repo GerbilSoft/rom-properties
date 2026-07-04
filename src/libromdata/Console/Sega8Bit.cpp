@@ -56,6 +56,12 @@ public:
 	string getProductCode(void) const;
 
 	/**
+	 * Get the version.
+	 * @return Version
+	 */
+	string getVersion(void) const;
+
+	/**
 	 * Get the system ID from the TMR header.
 	 * @return System ID, or nullptr if not available.
 	 */
@@ -66,6 +72,21 @@ public:
 	 * @return Region code, or nullptr if not available.
 	 */
 	const char *getRegionCode(void) const;
+
+	/**
+	 * Is an SDSC header present?
+	 * @return True if an SDSC header is present; false if not.
+	 */
+	inline bool isSdscHeaderPresent(void) const
+	{
+		return (romHeader.sdsc.magic == cpu_to_be32(SDSC_MAGIC));
+	}
+
+	/**
+	 * Get the SDSC version.
+	 * @return SDSC version, or empty if no SDSC header is present.
+	 */
+	string getSdscVersion(void) const;
 
 	/**
 	 * Get an SDSC string field.
@@ -162,7 +183,32 @@ string Sega8BitPrivate::getProductCode(void) const
 	p[1] = ('0' +  (tmr->product_code[1] & 0xF));
 	p[2] = ('0' + ((tmr->product_code[0] >> 4) & 0xF));
 	p[3] = ('0' +  (tmr->product_code[0] & 0xF));
-	p[4] = 0;
+	p[4] = '\0';
+
+	return bcdbuf;
+}
+
+/**
+ * Get the version.
+ * @return Version
+ */
+string Sega8BitPrivate::getVersion(void) const
+{
+	const Sega8_RomHeader *const tmr = &romHeader.tmr;
+
+	// BCD conversion buffer
+	// TODO: Use an std::string directly to eliminate a copy?
+	char bcdbuf[3];
+
+	const uint8_t digit = tmr->product_code[2] & 0xF;
+	if (digit < 10) {
+		bcdbuf[0] = ('0' + digit);
+		bcdbuf[1] = '\0';
+	} else {
+		bcdbuf[0] = '1';
+		bcdbuf[1] = ('0' + digit - 10);
+		bcdbuf[2] = '\0';
+	}
 
 	return bcdbuf;
 }
@@ -210,6 +256,38 @@ const char *Sega8BitPrivate::getRegionCode(void) const
 	}
 
 	return nullptr;
+}
+
+/**
+ * Get the SDSC version.
+ * @return SDSC version, or empty if no SDSC header is present.
+ */
+string Sega8BitPrivate::getSdscVersion(void) const
+{
+	if (!isSdscHeaderPresent()) {
+		// Not SDSC.
+		return {};
+	}
+
+	const Sega8_SDSC_RomHeader *sdsc = &romHeader.sdsc;
+
+	// BCD conversion buffer
+	// TODO: Use an std::string directly to eliminate a copy?
+	char bcdbuf[8];
+
+	// Version number: Stored as two BCD values, major.minor
+	// TODO: Verify BCD.
+	char *p = bcdbuf;
+	if (sdsc->version[0] > 9) {
+		*p++ = ('0' + (sdsc->version[0] >> 4));
+	}
+	p[0] = ('0' + (sdsc->version[0] & 0x0F));
+	p[1] = '.';
+	p[2] = ('0' + (sdsc->version[1] >> 4));
+	p[3] = ('0' + (sdsc->version[1] & 0x0F));
+	p[4] = '\0';
+
+	return bcdbuf;
 }
 
 /**
@@ -490,17 +568,7 @@ int Sega8Bit::loadFieldData(void)
 	d->fields.addField_string(C_("Sega8Bit", "Product Code"), d->getProductCode());
 
 	// Version
-	char bcdbuf[8];
-	const uint8_t digit = tmr->product_code[2] & 0xF;
-	if (digit < 10) {
-		bcdbuf[0] = ('0' + digit);
-		bcdbuf[1] = 0;
-	} else {
-		bcdbuf[0] = '1';
-		bcdbuf[1] = ('0' + digit - 10);
-		bcdbuf[2] = 0;
-	}
-	d->fields.addField_string(C_("RomData", "Version"), bcdbuf);
+	d->fields.addField_string(C_("RomData", "Version"), d->getVersion());
 
 	// Region code and system ID
 	const char *s_system_ID = d->getSystemID();
@@ -544,13 +612,14 @@ int Sega8Bit::loadFieldData(void)
 		d->fields.addField_string_numeric(C_("Sega8Bit", "CM Checksum 2"),
 			le16_to_cpu(codemasters->checksum_compl),
 			RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
-	} else if (d->romHeader.sdsc.magic == cpu_to_be32(SDSC_MAGIC)) {
+	} else if (d->isSdscHeaderPresent()) {
 		// SDSC header magic
 		const Sega8_SDSC_RomHeader *sdsc = &d->romHeader.sdsc;
 		d->fields.addField_string(C_("Sega8Bit", "Extra Header"), "SDSC");
 
 		// Version number: Stored as two BCD values, major.minor
 		// TODO: Verify BCD.
+		char bcdbuf[8];
 		char *p = bcdbuf;
 		if (sdsc->version[0] > 9) {
 			*p++ = ('0' + (sdsc->version[0] >> 4));
@@ -612,16 +681,16 @@ int Sega8Bit::loadMetaData(void)
 	    static_cast<uint32_t>(le16_to_cpu(d->romHeader.codemasters.checksum_compl)))
 	{
 		// Codemasters checksums match.
-		d->metaData.reserve(1+2);	// Maximum of 1+2 metadata properties.
+		d->metaData.reserve(1+3);	// Maximum of 1+3 metadata properties.
 		const Sega8_Codemasters_RomHeader *const codemasters = &d->romHeader.codemasters;
 
 		// Build time.
 		// NOTE: CreationDate is currently handled as QDate on KDE.
 		time_t ctime = d->codemasters_timestamp_to_unix_time(&codemasters->timestamp);
 		d->metaData.addMetaData_timestamp(Property::CreationDate, ctime);
-	} else if (d->romHeader.sdsc.magic == cpu_to_be32(SDSC_MAGIC)) {
+	} else if (d->isSdscHeaderPresent()) {
 		// SDSC header is present.
-		d->metaData.reserve(4+2);	// Maximum of 4+2 metadata properties.
+		d->metaData.reserve(4+3);	// Maximum of 4+3 metadata properties.
 		const Sega8_SDSC_RomHeader *const sdsc = &d->romHeader.sdsc;
 
 		// Build date
@@ -647,7 +716,7 @@ int Sega8Bit::loadMetaData(void)
 		}
 	} else {
 		// No extra headers.
-		d->metaData.reserve(2);	// Maximum of 2 metadata properties.
+		d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 	}
 
 	/** Custom properties! **/
@@ -657,6 +726,16 @@ int Sega8Bit::loadMetaData(void)
 
 	// Region code
 	d->metaData.addMetaData_string(Property::RegionCode, d->getRegionCode());
+
+	// Version (prefer SDSC version if available)
+	string s_version;
+	if (d->isSdscHeaderPresent()) {
+		s_version = d->getSdscVersion();
+	}
+	if (s_version.empty()) {
+		s_version = d->getVersion();
+	}
+	d->metaData.addMetaData_string(Property::Version, s_version);
 
 	// Finished reading the metadata.
 	return d->metaData.count();

@@ -1193,7 +1193,7 @@ int Xbox360_STFS::loadMetaData(void)
 	}
 
 	const STFS_Package_Metadata *const stfsMetadata = &d->stfsMetadata;
-	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
+	d->metaData.reserve(5);	// Maximum of 5 metadata properties.
 
 	// Display name and/or title
 	// TODO: Which one to prefer?
@@ -1227,6 +1227,16 @@ int Xbox360_STFS::loadMetaData(void)
 	// Media ID
 	d->metaData.addMetaData_string(Property::MediaID,
 		fmt::format(FSTR("{:0>8X}"), be32_to_cpu(stfsMetadata->media_id)));
+
+	// Version
+	Xbox360_Version_t ver;
+	ver.u32 = be32_to_cpu(stfsMetadata->version.u32);
+	d->metaData.addMetaData_string(Property::Version,
+		fmt::format(FSTR("{:d}.{:d}.{:d}.{:d}"),
+			static_cast<unsigned int>(ver.major),
+			static_cast<unsigned int>(ver.minor),
+			static_cast<unsigned int>(ver.build),
+			static_cast<unsigned int>(ver.qfe)));
 
 	// Finished reading the metadata.
 	return d->metaData.count();

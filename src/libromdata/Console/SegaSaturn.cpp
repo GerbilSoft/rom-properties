@@ -629,7 +629,7 @@ int SegaSaturn::loadMetaData(void)
 
 	// Sega Saturn disc header
 	const Saturn_IP0000_BIN_t *const discHeader = &d->discHeader;
-	d->metaData.reserve(6);	// Maximum of 6 metadata properties.
+	d->metaData.reserve(7);	// Maximum of 7 metadata properties.
 
 	// Title (TODO: Encoding?)
 	d->metaData.addMetaData_string(Property::Title,
@@ -683,6 +683,11 @@ int SegaSaturn::loadMetaData(void)
 		}
 		d->metaData.addMetaData_string(Property::RegionCode, s_region_code);
 	}
+
+	// Product version (as Version)
+	d->metaData.addMetaData_string(Property::Version,
+		latin1_to_utf8(discHeader->product_version, sizeof(discHeader->product_version)),
+		RomFields::STRF_TRIM_END);
 
 	// Finished reading the metadata.
 	return d->metaData.count();

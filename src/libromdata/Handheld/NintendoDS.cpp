@@ -1014,7 +1014,7 @@ int NintendoDS::loadMetaData(void)
 
 	// ROM header is read in the constructor.
 	const NDS_RomHeader *const romHeader = &d->romHeader;
-	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
+	d->metaData.reserve(6);	// Maximum of 6 metadata properties.
 
 	// Title
 	bool has_full_title = false;
@@ -1105,6 +1105,10 @@ int NintendoDS::loadMetaData(void)
 		}
 		d->metaData.addMetaData_string(Property::RegionCode, s_region_code);
 	}
+
+	// Revision (as Version)
+	d->metaData.addMetaData_string_numeric(Property::Version,
+		d->romHeader.rom_version, RomMetaData::Base::Dec, 2);
 
 	// Finished reading the metadata.
 	return d->metaData.count();

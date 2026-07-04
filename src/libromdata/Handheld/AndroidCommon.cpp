@@ -264,7 +264,7 @@ int loadMetaData(LibRpBase::RomMetaData &metaData, const pugi::xml_document &man
 
 	// AndroidManifest.xml is read in the constructor.
 	const int metaDataCount_initial = metaData.count();
-	metaData.reserve(metaDataCount_initial + 4);	// Maximum of 4 metadata properties.
+	metaData.reserve(metaDataCount_initial + 5);	// Maximum of 5 metadata properties.
 
 	// NOTE: Only retrieving a single language.
 	// TODO: Get the system language code and use it as def_lc?
@@ -306,6 +306,15 @@ int loadMetaData(LibRpBase::RomMetaData &metaData, const pugi::xml_document &man
 			}
 		}
 	}
+
+	/** Custom properties! **/
+
+	// Version (TODO: also version code?)
+	const char *const versionName = manifest_node.attribute("versionName").as_string(nullptr);
+	if (versionName && versionName[0] != '\0') {
+		metaData.addMetaData_string(Property::Version, versionName);
+	}
+
 	// Finished reading the metadata.
 	return static_cast<int>(metaData.count()) - metaDataCount_initial;
 }

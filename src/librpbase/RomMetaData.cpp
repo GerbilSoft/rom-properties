@@ -27,6 +27,9 @@ using std::array;
 using std::string;
 using std::vector;
 
+// libfmt
+#include "rp-libfmt.h"
+
 namespace LibRpBase {
 
 class RomMetaDataPrivate
@@ -631,6 +634,42 @@ int RomMetaData::addMetaData_string(Property name, const char *str, unsigned int
 
 	pMetaData->data.str = nstr;
 	return d->map_metaData[static_cast<size_t>(name)];
+}
+
+/**
+ * Add a string metadata property using a numeric value.
+ *
+ * If a metadata property with the same name already exists,
+ * it will be overwritten.
+ *
+ * @param name Property name
+ * @param val Numeric value
+ * @param base Base (If not decimal, a prefix will be added.)
+ * @param digits Number of leading digits (0 for none)
+ * @param flags Formatting flags
+ * @return Field index, or -1 on error.
+ */
+int RomMetaData::addMetaData_string_numeric(Property name, uint32_t val, Base base, int digits, unsigned int flags)
+{
+	string s;
+	switch (base) {
+		case Base::Dec:
+		default:
+			s = fmt::format(FSTR("{:0>{}d}"), val, digits);
+			break;
+		case Base::Hex:
+			if (unlikely(flags & STRF_HEX_LOWER)) {
+				s = fmt::format(FSTR("0x{:0>{}x}"), val, digits);
+			} else {
+				s = fmt::format(FSTR("0x{:0>{}X}"), val, digits);
+			}
+			break;
+		case Base::Oct:
+			s = fmt::format(FSTR("0{:0>{}o}"), val, digits);
+			break;
+	}
+
+	return addMetaData_string(name, s, flags);
 }
 
 /**
