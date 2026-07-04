@@ -258,9 +258,9 @@ static std::once_flag once_mimeTypes;
  * - magic2: Second 32-bit magic number, if available.
  */
 #ifdef ENABLE_XML
-static constexpr size_t romDataFns_magic_count = 36;
+static constexpr size_t romDataFns_magic_count = 37;
 #else /* !ENABLE_XML */
-static constexpr size_t romDataFns_magic_count = 35;
+static constexpr size_t romDataFns_magic_count = 36;
 #endif /* ENABLE_XML */
 static const array<RomDataFns, romDataFns_magic_count> romDataFns_magic = {{
 	// Consoles
@@ -290,6 +290,9 @@ static const array<RomDataFns, romDataFns_magic_count> romDataFns_magic = {{
 	GetRomDataFns_magic1(Nintendo3DS_SMDH, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'SMDH'),
 	GetRomDataFns_magic1(Nintendo3DS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA, 0, 'Z3DS'),	// Z3DS format only!
 	GetRomDataFns_magic2(NintendoDS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA, 0xC0, 0x24FFAE51, 0xC8604FE2),
+
+	// Common
+	GetRomDataFns_magic1(ParamSFO, ATTR_HAS_METADATA, 0, 0x00505346),	// '\0PSF'
 
 	// Audio
 	GetRomDataFns_magic1(BRSTM, ATTR_HAS_METADATA, 0, 'RSTM'),
@@ -322,7 +325,7 @@ static const array<RomDataFns, romDataFns_magic_count> romDataFns_magic = {{
  * Headers with addresses other than 0 should be
  * placed at the end of this array.
  */
-static const array<RomDataFns, 40> romDataFns_header = {{
+static const array<RomDataFns, 39> romDataFns_header = {{
 	// Consoles
 	GetRomDataFns(ColecoVision, ATTR_HAS_METADATA),
 	GetRomDataFns(Dreamcast, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
@@ -347,9 +350,6 @@ static const array<RomDataFns, 40> romDataFns_header = {{
 	GetRomDataFns(J2ME, ATTR_HAS_METADATA),	// .jad only; .jar is handled separately
 	GetRomDataFns(Nintendo3DS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA),
 	GetRomDataFns(PalmOS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),	// TODO: Magic at 0x40?
-
-	// Common
-	GetRomDataFns(ParamSFO, ATTR_HAS_METADATA),
 
 	// Audio
 	GetRomDataFns(ADX, ATTR_HAS_METADATA),
