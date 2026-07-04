@@ -521,12 +521,12 @@ int ParamSFO::loadMetaData(void)
 
 	// Version
 	// Prefer APP_VER if it's available; otherwise, use DISC_VERSION.
-	string version = getStringValue("APP_VER");
-	if (version.empty()) {
-		version = getStringValue("DISC_VERSION");
+	string s_version = getStringValue("APP_VER");
+	if (s_version.empty()) {
+		s_version = getStringValue("DISC_VERSION");
 	}
-	if (!version.empty()) {
-		d->metaData.addMetaData_string(Property::Version, version);
+	if (!s_version.empty()) {
+		d->metaData.addMetaData_string(Property::Version, s_version);
 	}
 
 	// Finished reading the metadata.
