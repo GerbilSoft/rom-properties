@@ -158,6 +158,8 @@ typedef enum {
 	YYHEADER_FUNCTION_CLASS_Layer		= (1ULL << 29),
 	YYHEADER_FUNCTION_CLASS_String		= (1ULL << 30),
 	YYHEADER_FUNCTION_CLASS_Tiles		= (1ULL << 31),
+#if 0
+	// FIXME: `enum` is `int`; need C23 to specify int64_t instead.
 	YYHEADER_FUNCTION_CLASS_Surface		= (1ULL << 32),
 	YYHEADER_FUNCTION_CLASS_Skeleton	= (1ULL << 33),
 	YYHEADER_FUNCTION_CLASS_IO		= (1ULL << 34),
@@ -189,6 +191,7 @@ typedef enum {
 	YYHEADER_FUNCTION_CLASS_Buffer		= (1ULL << 60),
 	YYHEADER_FUNCTION_CLASS_Steam		= (1ULL << 61),
 	YYHEADER_FUNCTION_CLASS_Shaders		= (1ULL << 62),
+#endif
 } YYHeader_Function_Classes_e;
 
 // Struct sizes
