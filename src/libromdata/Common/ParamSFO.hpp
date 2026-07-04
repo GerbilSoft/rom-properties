@@ -14,6 +14,7 @@
 namespace LibRomData {
 
 ROMDATA_DECL_BEGIN(ParamSFO)
+ROMDATA_DECL_METADATA()
 
 public:
 	enum class SFOValueType {

@@ -19,6 +19,9 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
+// C includes
+#include "ctypex.h"
+
 // C++ STL classes
 #include <unordered_map>
 using std::array;
@@ -42,8 +45,8 @@ private:
 
 public:
 	/** RomDataInfo **/
-	static const array<const char *, 1 + 1> exts;
-	static const array<const char *, 1 + 1> mimeTypes;
+	static const array<const char*, 1+1> exts;
+	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 	// PSF header.
@@ -62,11 +65,19 @@ public:
 
 ROMDATA_IMPL(ParamSFO)
 
-const array<const char *, 1 + 1> ParamSFOPrivate::exts = {{".sfo", nullptr}};
+const array<const char*, 1+1> ParamSFOPrivate::exts = {{
+	".sfo",
 
-const array<const char *, 1 + 1> ParamSFOPrivate::mimeTypes = {{// Unofficial MIME type.
+	nullptr
+}};
+
+const array<const char*, 1+1> ParamSFOPrivate::mimeTypes = {{
+	// Unofficial MIME type.
 	// TODO: Get this upstreamed on FreeDesktop.org.
-	"application/x-playstation-sfo", nullptr}};
+	"application/x-playstation-sfo",
+
+	nullptr
+}};
 
 const RomDataInfo ParamSFOPrivate::romDataInfo = {"PARAM.SFO", exts.data(), mimeTypes.data()};
 
@@ -418,6 +429,98 @@ int ParamSFO::loadFieldData(void)
 	}
 
 	return 0;
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the metadata hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int ParamSFO::loadMetaData(void)
+{
+	RP_D(ParamSFO);
+	if (!d->metaData.empty()) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown disc image type.
+		return -EIO;
+	}
+
+	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
+
+	/**
+	 * Example PSP param.sfo file:
+	 * |     Key      |    Value    |
+	 * |--------------|-------------|
+	 * |TITLE         |Sonic Rivals™|
+	 * |REGION        |0x00008000   |
+	 * |PSP_SYSTEM_VER|2.81         |
+	 * |PARENTAL_LEVEL|0x00000003   |
+	 * |DISC_VERSION  |1.01         |
+	 * |DISC_TOTAL    |0x00000001   |
+	 * |DISC_NUMBER   |0x00000001   |
+	 * |CATEGORY      |UG           |
+	 * |DISC_ID       |ULES00622    |
+	 * |BOOTABLE      |0x00000001   |
+	 */
+	// TODO: Check PS2, PS3, PS Vita, PS4, PS5?
+
+	const string title = getStringValue("TITLE");
+	if (!title.empty()) {
+		d->metaData.addMetaData_string(Property::Title, title);
+	}
+
+	// TODO: Variants for other consoles?
+	const string pspSystemVer = getStringValue("PSP_SYSTEM_VER");
+	if (!pspSystemVer.empty()) {
+		d->metaData.addMetaData_string(Property::OSVersion, pspSystemVer);
+	}
+
+	// TODO: Figure out the PARENTAL_LEVEL field.
+	// TODO: Add a metadata property for revision / disc version.
+
+	const uint32_t discTotal = getIntValue("DISC_TOTAL");
+	if (discTotal > 1) {
+		// Multiple discs!
+		const uint32_t discNumber = getIntValue("DISC_NUMBER");
+		if (discNumber >= 1) {
+			d->metaData.addMetaData_integer(Property::DiscNumber, discNumber);
+		}
+	}
+
+	// TODO: Figure out the CATEGORY field.
+	// TODO: Figure out the BOOTABLE field.
+
+	/** Custom properties! **/
+
+	// Game ID
+	string gameID = getStringValue("DISC_ID");
+	if (!gameID.empty()) {
+		// Add a '-' between the last letter and the first number.
+		string gameID_dash;
+		gameID_dash.reserve(gameID.size() + 1);
+		for (size_t i = 0; i < gameID.size(); i++) {
+			if (isalpha_ascii(gameID[i])) {
+				// Still a letter.
+				gameID_dash += gameID[i];
+			} else {
+				// Not a letter.
+				// Add a dash and then the rest of the game ID.
+				gameID_dash += '-';
+				gameID_dash += gameID.substr(i);
+				break;
+			}
+		}
+
+		d->metaData.addMetaData_string(Property::GameID, gameID_dash);
+	}
+
+	// Finished reading the metadata.
+	return d->metaData.count();
 }
 
 } //namespace LibRomData

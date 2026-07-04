@@ -349,7 +349,7 @@ static const array<RomDataFns, 40> romDataFns_header = {{
 	GetRomDataFns(PalmOS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),	// TODO: Magic at 0x40?
 
 	// Common
-	GetRomDataFns(ParamSFO, ATTR_NONE),
+	GetRomDataFns(ParamSFO, ATTR_HAS_METADATA),
 
 	// Audio
 	GetRomDataFns(ADX, ATTR_HAS_METADATA),

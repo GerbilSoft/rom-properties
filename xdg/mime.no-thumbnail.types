@@ -24,6 +24,9 @@ audio/x-sndh				# SNDH
 audio/x-spc				# SPC
 audio/x-vgm				# VGM
 
+# Common
+application/x-playstation-sfo		# ParamSFO
+
 # Console
 application/x-atari-7800-rom		# Atari7800
 application/x-colecovision-rom		# ColecoVision

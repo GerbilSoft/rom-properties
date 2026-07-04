@@ -167,6 +167,20 @@
     </magic>
   </mime-type>
 
+  <!-- *** Common *** -->
+
+  <!-- ParamSFO -->
+  <mime-type type="application/x-playstation-sfo">
+    <comment>PlayStation System File Object</comment>
+    <acronym>SFO</acronym>
+    <expanded-acronym>System File Object</expanded-acronym>
+    <generic-icon name="application-x-m4"/>
+    <glob pattern="*.sfo"/>
+    <magic priority="50">
+      <match value="0x00505346" type="big32" offset="0"/> <!-- "\0PSF" -->
+    </magic>
+  </mime-type>
+
   <!-- *** Console *** -->
 
   <!-- CBMCart -->
