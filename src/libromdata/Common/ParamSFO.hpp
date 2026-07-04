@@ -42,4 +42,6 @@ public:
 
 ROMDATA_DECL_END()
 
+typedef std::shared_ptr<ParamSFO> ParamSFOPtr;
+
 } //namespace LibRomData
