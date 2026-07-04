@@ -181,10 +181,11 @@ ParamSFO::ParamSFO(const IRpFilePtr &file)
 	d->fileHeader.numKeys = le32_to_cpu(d->fileHeader.numKeys);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
-	// Sanity check: Maximum of 16,384 keys.
+	// Sanity check: Must have at least 1 key, and a maximum of 16,384 keys.
 	// (Probably too many...)
+	assert(d->fileHeader.numKeys >= 1);
 	assert(d->fileHeader.numKeys <= 16384);
-	if (d->fileHeader.numKeys > 16384) {
+	if (d->fileHeader.numKeys < 1 || d->fileHeader.numKeys > 16384) {
 		d->isValid = false;
 		d->file.reset();
 		return;
