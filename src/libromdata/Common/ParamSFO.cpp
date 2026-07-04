@@ -519,6 +519,16 @@ int ParamSFO::loadMetaData(void)
 		d->metaData.addMetaData_string(Property::GameID, gameID_dash);
 	}
 
+	// Version
+	// Prefer APP_VER if it's available; otherwise, use DISC_VERSION.
+	string version = getStringValue("APP_VER");
+	if (version.empty()) {
+		version = getStringValue("DISC_VERSION");
+	}
+	if (!version.empty()) {
+		d->metaData.addMetaData_string(Property::Version, version);
+	}
+
 	// Finished reading the metadata.
 	return d->metaData.count();
 }
