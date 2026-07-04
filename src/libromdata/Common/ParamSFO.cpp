@@ -43,6 +43,10 @@ private:
 	typedef RomDataPrivate super;
 	RP_DISABLE_COPY(ParamSFOPrivate);
 
+public:
+	// Maximum string length (TODO: Better maximum?)
+	static constexpr int MAX_STRING_LENGTH = 1024;
+
 	/**
 	 * Read a NULL-terminated string.
 	 * @param offset	[in] Offset in the file
@@ -120,9 +124,8 @@ int ParamSFOPrivate::readNullTerminatedString(uint32_t offset, string &str)
 		return -ENOENT;
 	}
 
-	// Read a string. (Maximum size of 1,024 bytes)
-	// TODO: Better maximum?
-	char buf[1024];
+	// Read a string.
+	char buf[MAX_STRING_LENGTH];
 	size_t size = file->seekAndRead(offset, buf, sizeof(buf));
 	if (size == 0) {
 		// Seek and/or read error.
@@ -352,8 +355,14 @@ string ParamSFO::getStringValue(const char *key)
 		// Empty string, or string only consists of a NULL terminator.
 		return {};
 	}
+	// Limit data length to 1,024.
+	assert(psfKey.dataLength <= ParamSFOPrivate::MAX_STRING_LENGTH);
+	int dataLength = psfKey.dataLength;
+	if (dataLength > ParamSFOPrivate::MAX_STRING_LENGTH) {
+		dataLength = ParamSFOPrivate::MAX_STRING_LENGTH;
+	}
 
-	if (d->readString(d->fileHeader.dataOffset + psfKey.dataOffset, psfKey.dataLength - 1, value) != 0) {
+	if (d->readString(d->fileHeader.dataOffset + psfKey.dataOffset, dataLength - 1, value) != 0) {
 		// Failed to read the value.
 		return {};
 	}
