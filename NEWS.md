@@ -1,5 +1,16 @@
 # Changes
 
+## v2.9 (released 2026/??/??)
+
+* New parsers:
+  * ParamSFO: PlayStation System File Object files. Used by PSP, PS3,
+    PS Vita, and PS4 games.
+
+* New parser features:
+  * PSP: Parse the PARAM.SFO file.
+  * Add a "Version" custom property and handle it in all RomData subclasses
+    that have a "Version" or "Revision" field.
+
 ## v2.8 (released 2026/06/20)
 
 * New parsers:
