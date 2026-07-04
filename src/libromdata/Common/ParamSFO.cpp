@@ -181,6 +181,15 @@ ParamSFO::ParamSFO(const IRpFilePtr &file)
 	d->fileHeader.numKeys = le32_to_cpu(d->fileHeader.numKeys);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
+	// Sanity check: Maximum of 16,384 keys.
+	// (Probably too many...)
+	assert(d->fileHeader.numKeys <= 16384);
+	if (d->fileHeader.numKeys > 16384) {
+		d->isValid = false;
+		d->file.reset();
+		return;
+	}
+
 	// Read the key table.
 	d->keys.resize(d->fileHeader.numKeys);
 	size = d->file->read(d->keys.data(), d->keys.size() * sizeof(psf_key_t));
