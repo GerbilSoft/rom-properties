@@ -350,7 +350,7 @@ int VGM::loadFieldData(void)
 
 	// Version number (BCD)
 	const unsigned int vgm_version = le32_to_cpu(vgmHeader->version);
-	d->fields.addField_string(C_("VGM", "VGM Version"),
+	d->fields.addField_string(C_("RomData", "Format Version"),
 		fmt::format(FSTR("{:x}.{:0>2x}"), vgm_version >> 8, vgm_version & 0xFF));
 
 	// VGM data offset

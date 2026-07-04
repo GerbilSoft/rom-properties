@@ -219,7 +219,7 @@ int SID::loadFieldData(void)
 
 	// Version.
 	// TODO: Check for PSIDv2NG?
-	d->fields.addField_string_numeric(C_("RomData", "Version"),
+	d->fields.addField_string_numeric(C_("RomData", "Format Version"),
 		be16_to_cpu(sidHeader->version));
 
 	// Name.
