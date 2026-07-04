@@ -604,18 +604,22 @@ int PSP::loadFieldData(void)
 	const ParamSFOPtr paramSfo = const_cast<PSPPrivate *>(d)->openParamSfo();
 	if (paramSfo) {
 		// Add game-specific metadata.
-		if (d->discType == PSPPrivate::DiscType::PspGame)
-		{
+		if (d->discType == PSPPrivate::DiscType::PspGame) {
 			if (paramSfo->getKeyValueType("TITLE") == ParamSFO::SFOValueType::UTF8) {
 				d->fields.addField_string(
 					C_("RomData", "Title"), paramSfo->getStringValue("TITLE"));
 			}
 			// TODO: localised languages
 
+			// FIXME: APP_VER vs. DISC_VERSION?
+			// Preferring APP_VER if it exists; otherwise, DISC_VERSION.
+			string s_version;
 			if (paramSfo->getKeyValueType("APP_VER") == ParamSFO::SFOValueType::UTF8) {
-				d->fields.addField_string(
-					C_("RomData", "Version"), paramSfo->getStringValue("APP_VER"));
+				s_version = paramSfo->getStringValue("APP_VER");
+			} else if (paramSfo->getKeyValueType("DISC_VERSION") == ParamSFO::SFOValueType::UTF8) {
+				s_version = paramSfo->getStringValue("DISC_VERSION");
 			}
+			d->fields.addField_string(C_("RomData", "Version"), s_version);
 
 			if (paramSfo->getKeyValueType("PSP_SYSTEM_VER") == ParamSFO::SFOValueType::UTF8) {
 				d->fields.addField_string(C_("PSP", "OS Version"), paramSfo->getStringValue("PSP_SYSTEM_VER"));
