@@ -39,4 +39,4 @@ public:
 
 ROMDATA_DECL_END()
 
-}
+} // namespace LibRomData

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXEData.hpp: DOS/Windows executable data.                               *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -35,4 +35,4 @@ const char *lookup_le_cpu(uint16_t cpu);
  */
 const char *lookup_pe_subsystem(uint16_t subsystem);
 
-} }
+} } // namespace LibRomData::EXEData

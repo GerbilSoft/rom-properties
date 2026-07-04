@@ -437,4 +437,4 @@ vector<uint16_t> gcnRegionToGameTDB(unsigned int gcnRegion, char idRegion)
 	return ret;
 }
 
-} } //namespace LibRomData::GameCubeRegions
+} } // namespace LibRomData::GameCubeRegions

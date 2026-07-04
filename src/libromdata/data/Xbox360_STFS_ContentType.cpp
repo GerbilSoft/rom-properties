@@ -83,4 +83,4 @@ const char *lookup(uint32_t contentType)
 	return pgettext_expr("Xbox360_STFS|ContentType", pContentType->contentType);
 }
 
-} }
+} } // namespace LibRomData::Xbox360_STFS_ContentType

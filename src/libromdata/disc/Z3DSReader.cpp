@@ -401,4 +401,4 @@ vector<pair<string, std::vector<uint8_t>>> Z3DSReader::getZ3DSMetaData(void)
 	return items;
 }
 
-}
+} // namespace LibRomData

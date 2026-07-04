@@ -728,4 +728,4 @@ const char *AmiiboData::lookup_amiibo_series_data(uint32_t amiibo_id, int *pRele
 	return d->strTbl_lookup(le32_to_cpu(pAmiibo->name));
 }
 
-}
+} // namespace LibRomData

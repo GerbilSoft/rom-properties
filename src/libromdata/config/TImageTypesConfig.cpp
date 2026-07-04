@@ -398,4 +398,4 @@ bool TImageTypesConfig<ComboBox>::cboImageType_priorityValueChanged(unsigned int
 	return true;
 }
 
-}
+} // namespace LibRomData

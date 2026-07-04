@@ -152,4 +152,4 @@ unzFile unzOpen2_64_IRpFile(const LibRpFile::IRpFilePtr &file)
 	return unzOpen2_64((void*)&file, const_cast<zlib_filefunc64_def*>(&IRpFile_filefunc_def));
 }
 
-} }
+} } // namespace LibRomData::IRpFile_unzFile_filefuncs

@@ -401,4 +401,4 @@ off64_t WiiUH3Reader::partition_size_used(void) const
 	return d->partition_size;
 }
 
-}
+} // namespace LibRomData

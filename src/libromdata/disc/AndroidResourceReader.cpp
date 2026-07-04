@@ -897,4 +897,4 @@ string AndroidResourceReader::findIconHighestDensity(uint32_t resource_id) const
 	return icon_filename;
 }
 
-}
+} // namespace LibRomData

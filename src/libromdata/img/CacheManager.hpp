@@ -128,4 +128,4 @@ protected:
 	static Semaphore m_dlsem;
 };
 
-}
+} // namespace LibRomData

@@ -498,4 +498,4 @@ bool EXEPrivate::doesExeRequireAdministrator(void) const
 	return (!strcasecmp(attr.value(), "requireAdministrator"));
 }
 
-}
+} // namespace LibRomData

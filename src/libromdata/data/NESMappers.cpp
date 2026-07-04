@@ -629,4 +629,4 @@ const char *lookup_ines_mirroring(int mapper, int submapper, bool vert, bool fou
 	}
 }
 
-} }
+} } // namespace LibRomData::NESMappers

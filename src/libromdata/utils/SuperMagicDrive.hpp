@@ -134,4 +134,4 @@ static inline void decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT 
 #endif
 }
 
-} }
+} } // namespace LibRomData::SuperMagicDrive

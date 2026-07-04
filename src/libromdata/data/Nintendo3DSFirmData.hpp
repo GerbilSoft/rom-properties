@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Nintendo3DSFirmData.hpp: Nintendo 3DS firmware data.                    *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -33,4 +33,4 @@ struct FirmBin_t {
  */
 const FirmBin_t *lookup_firmBin(uint32_t crc);
 
-} }
+} } // namespace LibRomData::Nintendo3DSFirmData

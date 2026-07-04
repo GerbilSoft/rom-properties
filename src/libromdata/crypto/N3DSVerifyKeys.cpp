@@ -588,4 +588,4 @@ const uint8_t *encryptionVerifyData_static(int keyIdx)
 	return Private::EncryptionKeyVerifyData[keyIdx];
 }
 
-} }
+} } // namespace LibRomData::N3DSVerifyKeys

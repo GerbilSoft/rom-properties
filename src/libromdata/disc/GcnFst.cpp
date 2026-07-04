@@ -633,4 +633,4 @@ off64_t GcnFst::totalUsedSize(void) const
 	return total_size;
 }
 
-}
+} // namespace LibRomData

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SID.hpp: SID audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2023 by David Korth.                                 *
+ * Copyright (c) 2018-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,4 +16,4 @@ ROMDATA_DECL_BEGIN(SID)
 ROMDATA_DECL_METADATA()
 ROMDATA_DECL_END()
 
-}
+} // namespace LibRomData

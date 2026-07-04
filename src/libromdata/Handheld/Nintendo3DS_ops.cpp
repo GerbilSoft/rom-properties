@@ -157,4 +157,4 @@ out:
 	return pParams->status;
 }
 
-}
+} // namespace LibRomData

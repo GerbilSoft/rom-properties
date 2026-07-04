@@ -100,6 +100,6 @@ uint32_t getXbox360LanguageCode(int langID)
 	}
 
 	return langID_to_lc[langID];
-} }
-
 }
+
+} } // namespace LibRomData::XboxLanguage

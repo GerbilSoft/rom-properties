@@ -78,4 +78,4 @@ const char *lookup(unsigned int version)
 	return pVer->str;
 }
 
-} }
+} } // namespace LibRomData::WiiSystemMenuVersion

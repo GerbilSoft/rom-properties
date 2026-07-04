@@ -759,4 +759,4 @@ Nintendo_TitleID_BE_t WiiPartition::titleID(void) const
 	return d->partitionHeader.ticket.title_id;
 }
 
-}
+} // namespace LibRomData

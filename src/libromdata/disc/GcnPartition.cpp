@@ -309,4 +309,4 @@ IRpFilePtr GcnPartition::open(const char *filename)
 	return std::make_shared<PartitionFile>(this->shared_from_this(), dirent.offset, dirent.size);
 }
 
-}
+} // namespace LibRomData

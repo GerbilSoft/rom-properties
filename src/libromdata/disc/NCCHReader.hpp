@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NCCHReader.hpp: Nintendo 3DS NCCH reader.                               *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -207,4 +207,4 @@ public:
 typedef std::shared_ptr<NCCHReader> NCCHReaderPtr;
 typedef std::shared_ptr<NCCHReader> NCCHReaderConstPtr;
 
-}
+} // namespace LibRomData

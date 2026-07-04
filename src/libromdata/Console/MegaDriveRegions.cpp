@@ -282,4 +282,4 @@ MD_BrandingRegion getBrandingRegion(unsigned int md_region)
 	return MD_BrandingRegion::Japan;
 }
 
-} } //namespace LibRomData::MegaDriveRegions
+} } // namespace LibRomData::MegaDriveRegions

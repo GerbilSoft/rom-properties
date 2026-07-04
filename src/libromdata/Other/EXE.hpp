@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE.hpp: DOS/Windows executable reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -43,4 +43,4 @@ public:
 ROMDATA_DECL_VIEWED_ACHIEVEMENTS()
 ROMDATA_DECL_END()
 
-}
+} // namespace LibRomData

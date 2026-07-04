@@ -126,4 +126,4 @@ const char *lookup_pe_subsystem(uint16_t subsystem)
 	return (name) ? pgettext_expr("EXE|Subsystem", name) : nullptr;
 }
 
-} }
+} } // namespace LibRomData::EXEData

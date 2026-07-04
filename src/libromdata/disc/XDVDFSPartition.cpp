@@ -612,4 +612,4 @@ time_t XDVDFSPartition::xdvdfsTimestamp(void) const
 	return WindowsTimeToUnixTime(d->xdvdfsHeader.timestamp);
 }
 
-}
+} // namespace LibRomData

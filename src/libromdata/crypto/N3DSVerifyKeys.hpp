@@ -157,4 +157,4 @@ const char *encryptionKeyName_static(int keyIdx);
  */
 const uint8_t *encryptionVerifyData_static(int keyIdx);
 
-} }
+} } // namespace LibRomData::N3DSVerifyKeys

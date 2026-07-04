@@ -408,4 +408,4 @@ const char *lookup_application_type(uint32_t app_type)
 	return nullptr;
 }
 
-} }
+} } // namespace LibRomData::WiiUData

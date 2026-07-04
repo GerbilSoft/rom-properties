@@ -454,4 +454,4 @@ off64_t WbfsReader::getPhysBlockAddr(uint32_t blockIdx) const
 	return (static_cast<off64_t>(physBlockIdx) * d->block_size);
 }
 
-}
+} // namespace LibRomData

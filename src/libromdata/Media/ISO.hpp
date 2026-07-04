@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ISO.hpp: ISO-9660 disc image parser.                                    *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -47,4 +47,4 @@ ROMDATA_DECL_END()
 
 typedef std::shared_ptr<ISO> ISOPtr;
 
-}
+} // namespace LibRomData

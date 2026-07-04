@@ -160,4 +160,4 @@ public:
 
 typedef std::shared_ptr<AndroidResourceReader> AndroidResourceReaderPtr;
 
-}
+} // namespace LibRomData

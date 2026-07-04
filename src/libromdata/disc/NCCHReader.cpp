@@ -1081,4 +1081,4 @@ IRpFilePtr NCCHReader::openLogo(void)
 	return this->open(N3DS_NCCH_SECTION_EXEFS, "logo");
 }
 
-}
+} // namespace LibRomData

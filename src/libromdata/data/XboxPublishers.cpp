@@ -88,4 +88,4 @@ const char *lookup(const char *code)
 	return (likely(offset != 0) ? &XboxPublishers_strtbl[offset] : nullptr);
 }
 
-} }
+} } // namespace LibRomData::XboxPublishers

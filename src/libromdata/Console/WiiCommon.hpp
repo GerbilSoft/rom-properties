@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiCommon.hpp: Nintendo Wii common functions.                           *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -57,4 +57,4 @@ extern const std::array<const char*, 7> dsi_3ds_wiiu_region_bitfield_names;
  */
 std::string getRegionCodeForMetadataProperty(uint32_t region_code, bool showRegionT);
 
-} }
+} } // namespace LibRomData::WiiCommon

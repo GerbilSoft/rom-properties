@@ -65,4 +65,4 @@ const char *lookup_Plus4_cart_type(uint16_t type)
 	return (likely(offset != 0) ? &CBM_Plus4_cart_type_strtbl[offset] : nullptr);
 }
 
-} }
+} } // namespace LibRomData::CBMData

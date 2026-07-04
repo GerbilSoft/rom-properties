@@ -60,4 +60,4 @@ const char *lookup_ordinal(const char *modname, uint16_t ordinal)
 	return (likely(it2->offset != 0) ? &EXENEEntries_strtbl[it2->offset] : nullptr);
 }
 
-} }
+} } // namespace LibRomData::EXENEEntries

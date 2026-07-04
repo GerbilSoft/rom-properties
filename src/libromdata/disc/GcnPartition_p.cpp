@@ -174,4 +174,4 @@ int GcnPartitionPrivate::loadFst(void)
 	return 0;
 }
 
-}
+} // namespace LibRomData

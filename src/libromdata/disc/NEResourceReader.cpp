@@ -869,4 +869,4 @@ bool NEResourceReader::has_resource_type(int type)
 	return (d->res_types.find(type) != d->res_types.end());
 }
 
-}
+} // namespace LibRomData

@@ -1655,4 +1655,4 @@ KeyStoreUI::ImportReturn KeyStoreUI::importKeysFromBin(ImportFileID fileID, cons
 }
 #endif /* _WIN32 */
 
-}
+} // namespace LibRomData

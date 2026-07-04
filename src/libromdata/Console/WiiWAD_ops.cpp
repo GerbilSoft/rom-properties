@@ -170,4 +170,4 @@ out:
 #endif /* ENABLE_DECRYPTION */
 }
 
-}
+} // namespace LibRomData

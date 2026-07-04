@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * IRpFile_unzFile_filefuncs.hpp: IRpFile filefuncs for MiniZip-NG.        *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -33,4 +33,4 @@ void fill_IRpFile_filefunc64(zlib_filefunc64_def *pzlib_filefunc_def);
  */
 unzFile unzOpen2_64_IRpFile(const LibRpFile::IRpFilePtr &file);
 
-} }
+} } // namespace LibRomData::IRpFile_unzFile_filefuncs

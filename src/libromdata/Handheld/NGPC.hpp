@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NGPC.hpp: Neo Geo Pocket (Color) ROM reader.                            *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,4 +19,4 @@ ROMDATA_DECL_IMGPF()
 ROMDATA_DECL_IMGEXT()
 ROMDATA_DECL_END()
 
-}
+} // namespace LibRomData

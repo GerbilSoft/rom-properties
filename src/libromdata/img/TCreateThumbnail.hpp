@@ -278,5 +278,6 @@ protected:
 	}
 };
 
-}
+} // namespace LibRomData
+
 #endif /* __cplusplus */

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GczReader.hpp: GameCube/Wii GCZ disc image reader.                      *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -78,4 +78,4 @@ protected:
 	int readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size) final;
 };
 
-}
+} // namespace LibRomData

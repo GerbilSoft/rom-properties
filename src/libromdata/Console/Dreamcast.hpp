@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Dreamcast.hpp: Sega Dreamcast disc image reader.                        *
  *                                                                         *
- * Copyright (c) 2016-2013 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,4 +19,4 @@ ROMDATA_DECL_IMGSUPPORT()
 ROMDATA_DECL_IMGINT()
 ROMDATA_DECL_END()
 
-}
+} // namespace LibRomData

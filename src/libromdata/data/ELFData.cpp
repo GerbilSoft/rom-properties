@@ -112,4 +112,4 @@ const char *lookup_osabi(uint8_t osabi)
 	return nullptr;
 }
 
-} }
+} } // namespace LibRomData::ELFData

@@ -255,4 +255,4 @@ string getRegionCodeForMetadataProperty(uint32_t region_code, bool showRegionT)
 	return s_region_code;
 }
 
-} }
+} } // namespace LibRomData::WiiCommon

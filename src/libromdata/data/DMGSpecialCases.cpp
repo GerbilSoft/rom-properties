@@ -285,4 +285,4 @@ bool is_rpdb_checksum_needed_ID6(const char *id6)
 	return false;
 }
 
-} }
+} } // namespace LibRomData::DMGSpecialCases

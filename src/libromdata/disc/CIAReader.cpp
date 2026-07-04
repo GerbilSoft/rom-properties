@@ -304,4 +304,4 @@ off64_t CIAReader::size(void)
 	return ret;
 }
 
-}
+} // namespace LibRomData

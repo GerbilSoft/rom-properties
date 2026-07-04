@@ -281,4 +281,4 @@ uint32_t getNDSLanguageCode(int langID, int maxID)
 	return langID_to_lc[langID];
 }
 
-} }
+} } // namespace LibRomData::NintendoLanguage

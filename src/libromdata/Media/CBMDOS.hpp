@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CBMDOS.hpp: Commodore DOS floppy disk image parser.                     *
  *                                                                         *
- * Copyright (c) 2019-2024 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,4 +16,4 @@ ROMDATA_DECL_BEGIN(CBMDOS)
 ROMDATA_DECL_METADATA()
 ROMDATA_DECL_END()
 
-}
+} // namespace LibRomData

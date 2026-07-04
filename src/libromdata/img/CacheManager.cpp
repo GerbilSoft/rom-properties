@@ -178,4 +178,4 @@ string CacheManager::findInCache(const char *cache_key)
 	return cache_filename;
 }
 
-}
+} // namespace LibRomData

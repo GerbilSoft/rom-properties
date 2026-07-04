@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NEResourceReader.hpp: New Executable resource reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -136,4 +136,4 @@ public:
 	bool has_resource_type(int type) final;
 };
 
-}
+} // namespace LibRomData

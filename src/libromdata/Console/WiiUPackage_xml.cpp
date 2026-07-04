@@ -684,4 +684,4 @@ string WiiUPackagePrivate::getProductCodeAndApplType_xml(uint32_t *pApplType)
 	return (product_code) ? product_code : string();
 }
 
-}
+} // namespace LibRomData

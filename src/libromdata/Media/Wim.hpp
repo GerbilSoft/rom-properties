@@ -3,7 +3,7 @@
  * Wim.hpp: Microsoft WIM header reader                                    *
  *                                                                         *
  * Copyright (c) 2023 by ecumber.                                          *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,4 +16,4 @@ namespace LibRomData {
 ROMDATA_DECL_BEGIN(Wim)
 ROMDATA_DECL_END()
 
-}
+} // namespace LibRomData

@@ -765,4 +765,4 @@ int GameMaker::loadMetaData(void)
 	return d->metaData.count();
 }
 
-}
+} // namespace LibRomData

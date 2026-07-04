@@ -90,4 +90,4 @@ public:
 
 typedef std::shared_ptr<WiiUH3Reader> WiiUH3ReaderPtr;
 
-}
+} // namespace LibRomData

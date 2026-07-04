@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DMGSpecialCases.hpp: Game Boy special cases for RPDB images.            *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -43,4 +43,4 @@ bool is_rpdb_checksum_needed_TitleBased(const struct _DMG_RomHeader *romHeader);
  */
 bool is_rpdb_checksum_needed_ID6(const char *id6);
 
-} }
+} } // namespace LibRomData::DMGSpecialCases

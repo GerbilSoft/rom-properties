@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiUData.hpp: Nintendo Wii U data.                                      *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -37,4 +37,4 @@ uint32_t lookup_disc_publisher(const char *id4);
  */
 const char *lookup_application_type(uint32_t app_type);
 
-} }
+} } // namespace LibRomData::WiiUData

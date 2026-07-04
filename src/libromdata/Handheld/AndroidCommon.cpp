@@ -365,4 +365,4 @@ bool hasDangerousPermissions(const pugi::xml_document &manifest_xml)
 	return bDangerous;
 }
 
-} }
+} } // namespace LibRomData::AndroidCommon

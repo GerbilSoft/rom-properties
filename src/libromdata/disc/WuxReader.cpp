@@ -205,4 +205,4 @@ off64_t WuxReader::getPhysBlockAddr(uint32_t blockIdx) const
 	return d->dataOffset + (static_cast<off64_t>(physBlockIdx) * d->block_size);
 }
 
-}
+} // namespace LibRomData

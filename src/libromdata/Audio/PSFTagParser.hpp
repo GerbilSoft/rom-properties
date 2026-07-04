@@ -55,4 +55,4 @@ int addTagsToRomFields(LibRpBase::RomFields *fields, const std::unordered_map<st
  */
 int addTagsToRomMetaData(LibRpBase::RomMetaData *metaData, const std::unordered_map<std::string, std::string> &tags, const char *psfby = "psfby");
 
-} }
+} } // namespace LibRomData::PSFTagParser

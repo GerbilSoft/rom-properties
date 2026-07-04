@@ -25,4 +25,4 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
 	return -ENOSYS;
 }
 
-}
+} // namespace LibRomData

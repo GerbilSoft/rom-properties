@@ -140,4 +140,4 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
 	return 0;
 }
 
-}
+} // namespace LibRomData

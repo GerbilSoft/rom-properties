@@ -1032,4 +1032,4 @@ int EXEPrivate::addFields_NE_Import(void)
 	return 0;
 }
 
-}
+} // namespace LibRomData

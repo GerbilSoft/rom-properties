@@ -31,4 +31,4 @@ const char *lookup(unsigned int code)
 	return (likely(offset != 0) ? &SegaTCode_strtbl[offset] : nullptr);
 }
 
-} }
+} } // namespace LibRomData::SegaPublishers

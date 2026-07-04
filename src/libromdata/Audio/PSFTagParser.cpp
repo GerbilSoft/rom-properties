@@ -501,4 +501,4 @@ int addTagsToRomMetaData(LibRpBase::RomMetaData *metaData, const std::unordered_
 	return metaData->count() - prev_count;
 }
 
-} }
+} } // namespace LibRomData::PSFTagParser

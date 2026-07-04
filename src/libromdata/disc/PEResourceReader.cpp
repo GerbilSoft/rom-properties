@@ -915,4 +915,4 @@ bool PEResourceReader::has_resource_type(int type)
 	return (d->getTypeDir(type) != nullptr);
 }
 
-}
+} // namespace LibRomData

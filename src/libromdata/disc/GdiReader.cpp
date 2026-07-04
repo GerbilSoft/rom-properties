@@ -733,4 +733,4 @@ ISOPtr GdiReader::openIsoRomData(int trackNumber)
 	return {};
 }
 
-}
+} // namespace LibRomData

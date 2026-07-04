@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiWAD.hpp: Nintendo Wii WAD file reader.                               *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,4 +24,4 @@ ROMDATA_DECL_ROMOPS()
 ROMDATA_DECL_VIEWED_ACHIEVEMENTS()
 ROMDATA_DECL_END()
 
-}
+} // namespace LibRomData

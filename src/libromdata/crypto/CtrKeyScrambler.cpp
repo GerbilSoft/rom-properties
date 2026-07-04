@@ -177,4 +177,4 @@ int CtrScramble(u128_t &keyNormal, u128_t keyX, u128_t keyY)
 		*(reinterpret_cast<const u128_t*>(keyData.key)));
 }
 
-} }
+} } // namespace LibRomData::CtrKeyScrambler

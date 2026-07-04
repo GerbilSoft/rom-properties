@@ -1530,4 +1530,4 @@ uint16_t EXEPrivate::getDependentLoadFlags(void)
 	return 0;
 }
 
-}
+} // namespace LibRomData

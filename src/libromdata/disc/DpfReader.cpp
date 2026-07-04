@@ -435,4 +435,4 @@ off64_t DpfReader::size(void)
 	return d->disc_size;
 }
 
-}
+} // namespace LibRomData

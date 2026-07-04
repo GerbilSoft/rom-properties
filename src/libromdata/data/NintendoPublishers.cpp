@@ -120,4 +120,4 @@ const char *lookup_fds(uint8_t code)
 	return (likely(offset != 0) ? &NintendoPublishers_FDS_strtbl[offset] : nullptr);
 }
 
-} }
+} } // namespace LibRomData::NintendoPublishers

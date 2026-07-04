@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PalmOS.hpp: Palm OS application reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,4 +19,4 @@ ROMDATA_DECL_IMGPF()
 ROMDATA_DECL_IMGINT()
 ROMDATA_DECL_END()
 
-}
+} // namespace LibRomData

@@ -516,4 +516,4 @@ int GczReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 	return static_cast<int>(size);
 }
 
-}
+} // namespace LibRomData

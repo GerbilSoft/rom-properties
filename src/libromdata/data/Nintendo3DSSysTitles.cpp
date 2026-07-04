@@ -147,4 +147,4 @@ const char *lookup_sys_title(uint32_t tid_hi, uint32_t tid_lo, const char **pReg
 	return nullptr;
 }
 
-} }
+} } // namespace LibRomData::Nintendo3DSSysTitles

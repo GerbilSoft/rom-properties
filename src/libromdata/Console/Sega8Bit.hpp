@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Sega8Bit.hpp: Sega 8-bit (SMS/GG) ROM reader.                           *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,4 +16,4 @@ ROMDATA_DECL_BEGIN(Sega8Bit)
 ROMDATA_DECL_METADATA()
 ROMDATA_DECL_END()
 
-}
+} // namespace LibRomData

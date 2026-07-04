@@ -212,4 +212,4 @@ off64_t NASOSReader::getPhysBlockAddr(uint32_t blockIdx) const
 	return static_cast<off64_t>(physBlockAddr) << d->blockMapShift;
 }
 
-}
+} // namespace LibRomData

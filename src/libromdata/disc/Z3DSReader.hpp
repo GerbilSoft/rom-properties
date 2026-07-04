@@ -105,4 +105,4 @@ public:
 typedef std::shared_ptr<Z3DSReader> Z3DSReaderPtr;
 typedef std::shared_ptr<Z3DSReader> Z3DSReaderConstPtr;
 
-}
+} // namespace LibRomData

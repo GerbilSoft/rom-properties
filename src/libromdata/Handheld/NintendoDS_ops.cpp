@@ -622,4 +622,4 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 	return ret;
 }
 
-}
+} // namespace LibRomData

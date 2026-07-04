@@ -212,4 +212,4 @@ off64_t CisoGcnReader::getPhysBlockAddr(uint32_t blockIdx) const
 	      (static_cast<off64_t>(physBlockIdx) * d->block_size);
 }
 
-}
+} // namespace LibRomData

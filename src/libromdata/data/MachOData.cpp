@@ -289,4 +289,4 @@ const char *lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
 	return s_cpu_subtype;
 }
 
-} }
+} } // namespace LibRomData::MachOData

@@ -1479,4 +1479,4 @@ const vector<const char*> &supportedMimeTypes(void)
 }
 #endif /* ROMDATAFACTORY_USE_MIME_TYPES */
 
-} }
+} } // namespace LibRomData::RomDataFactory

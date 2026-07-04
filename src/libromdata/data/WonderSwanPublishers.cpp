@@ -130,4 +130,4 @@ const char *lookup_code(uint8_t id)
 	return (code[0] != '\0' ? code : nullptr);
 }
 
-} }
+} } // namespace LibRomData::WonderSwanPublishers

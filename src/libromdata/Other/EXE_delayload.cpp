@@ -71,4 +71,4 @@ int DelayLoad_test_PugiXML(void)
 	return 0;
 }
 
-}
+} // namespace LibRomData

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CBMCart.hpp: Commodore ROM cartridge reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,4 +18,4 @@ ROMDATA_DECL_IMGSUPPORT()
 ROMDATA_DECL_IMGEXT()
 ROMDATA_DECL_END()
 
-}
+} // namespace LibRomData

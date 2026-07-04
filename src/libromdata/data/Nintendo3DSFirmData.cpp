@@ -90,4 +90,4 @@ const FirmBin_t *lookup_firmBin(const uint32_t crc)
 	return &(*pFirmBin);
 }
 
-} }
+} } // namespace LibRomData::Nintendo3DSFirmData

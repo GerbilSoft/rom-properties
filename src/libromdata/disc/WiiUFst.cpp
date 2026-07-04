@@ -677,4 +677,4 @@ off64_t WiiUFst::totalUsedSize(void) const
 	return total_size;
 }
 
-}
+} // namespace LibRomData

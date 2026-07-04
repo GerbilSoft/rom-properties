@@ -17,4 +17,4 @@ ROMDATA_DECL_BEGIN(GameMaker)
 ROMDATA_DECL_METADATA()
 ROMDATA_DECL_END()
 
-}
+} // namespace LibRomData

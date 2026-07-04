@@ -211,4 +211,4 @@ RP_LIBROMDATA_PUBLIC
 const std::vector<const char*> &supportedMimeTypes(void);
 #endif /* ROMDATAFACTORY_USE_MIME_TYPES */
 
-} }
+} } // namespace LibRomData::RomDataFactory

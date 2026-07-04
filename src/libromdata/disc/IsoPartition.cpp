@@ -1091,4 +1091,4 @@ time_t IsoPartition::get_mtime(const char *filename)
 	return d->parseTimestamp(&dirEntry->mtime);
 }
 
-}
+} // namespace LibRomData
