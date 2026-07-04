@@ -907,7 +907,7 @@ int Dreamcast::loadMetaData(void)
 	uint8_t disc_num, disc_total;
 	d->parseDiscNumber(disc_num, disc_total);
 	if (disc_num != 0 && disc_total > 1) {
-		d->metaData.addMetaData_integer(Property::DiscNumber, disc_num);
+		d->metaData.addMetaData_uint(Property::DiscNumber, disc_num);
 	}
 
 	/** Custom properties! **/

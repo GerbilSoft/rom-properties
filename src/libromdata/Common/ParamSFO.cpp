@@ -488,7 +488,7 @@ int ParamSFO::loadMetaData(void)
 		// Multiple discs!
 		const uint32_t discNumber = getIntValue("DISC_NUMBER");
 		if (discNumber >= 1) {
-			d->metaData.addMetaData_integer(Property::DiscNumber, discNumber);
+			d->metaData.addMetaData_uint(Property::DiscNumber, discNumber);
 		}
 	}
 
