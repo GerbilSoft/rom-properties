@@ -43,7 +43,21 @@ private:
 	typedef RomDataPrivate super;
 	RP_DISABLE_COPY(ParamSFOPrivate);
 
+	/**
+	 * Read a NULL-terminated string.
+	 * @param offset	[in] Offset in the file
+	 * @param str 		[out] NULL-terminated string
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
 	int readNullTerminatedString(uint32_t offset, string &str);
+
+	/**
+	 * Read a string with an explicit length.
+	 * @param offset	[in] Offset in the file
+	 * @param length	[in] String length
+	 * @param str 		[out] NULL-terminated string
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
 	int readString(uint32_t offset, size_t length, string &str);
 
 public:
@@ -82,45 +96,79 @@ const array<const char*, 1+1> ParamSFOPrivate::mimeTypes = {{
 	nullptr
 }};
 
-const RomDataInfo ParamSFOPrivate::romDataInfo = {"PARAM.SFO", exts.data(), mimeTypes.data()};
-
-int ParamSFOPrivate::readNullTerminatedString(uint32_t offset, string &str)
-{
-	if (offset == 0)
-		return 0;
-
-	if (file->seek(offset) != 0)
-		return -1; // failed to seek
-	// really bad, loop a read of a single byte til we reach a NULL
-	char c = 0;
-	do {
-		if (file->read(&c, sizeof(c)) != sizeof(c))
-			return -2; // failed to read
-		if (c != 0)
-			str.push_back(c);
-	} while (c != 0);
-	return 1;
-}
-
-int ParamSFOPrivate::readString(uint32_t offset, size_t length, string &str)
-{
-	if (offset == 0)
-		return 0;
-
-	// resize the string buffer
-	str.resize(length);
-
-	if (file->seekAndRead(offset, str.data(), length) != length)
-		return -1; // failed
-
-	return 1;
-}
+const RomDataInfo ParamSFOPrivate::romDataInfo = {
+	"PARAM.SFO", exts.data(), mimeTypes.data()
+};
 
 ParamSFOPrivate::ParamSFOPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
 	memset(&fileHeader, 0, sizeof(fileHeader));
 	isBigEndian = false;
+}
+
+/**
+ * Read a NULL-terminated string.
+ * @param offset	[in] Offset in the file
+ * @param str 		[out] NULL-terminated string
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int ParamSFOPrivate::readNullTerminatedString(uint32_t offset, string &str)
+{
+	str.clear();
+	if (offset == 0) {
+		return -ENOENT;
+	}
+
+	// Read a string. (Maximum size of 1,024 bytes)
+	// TODO: Better maximum?
+	char buf[1024];
+	size_t size = file->seekAndRead(offset, buf, sizeof(buf));
+	if (size == 0) {
+		// Seek and/or read error.
+		return -EIO;
+	} else if (size > sizeof(buf)) {
+		size = sizeof(buf);
+	}
+
+	// Ensure NULL termination.
+	buf[size-1] = '\0';
+
+	// Find the first NULL terminator.
+	const char *pNull = static_cast<const char*>(memchr(buf, '\0', sizeof(buf)));
+	if (pNull) {
+		str.assign(buf, pNull - buf);
+	} else {
+		// Shouldn't happen...
+		str.assign(buf, sizeof(buf));
+	}
+
+	return 0;
+}
+
+/**
+ * Read a string with an explicit length.
+ * @param offset	[in] Offset in the file
+ * @param length	[in] String length
+ * @param str 		[out] NULL-terminated string
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int ParamSFOPrivate::readString(uint32_t offset, size_t length, string &str)
+{
+	str.clear();
+	if (offset == 0) {
+		return -ENOENT;
+	}
+
+	// Read directly into the string buffer.
+	str.resize(length);
+	if (file->seekAndRead(offset, str.data(), length) != length) {
+		// Seek and/or read error.
+		str.clear();
+		return -EIO;
+	}
+
+	return 0;
 }
 
 int ParamSFO::isRomSupported_static(const DetectInfo *info)
@@ -227,7 +275,7 @@ ParamSFO::ParamSFO(const IRpFilePtr &file)
 	for (psf_key_t key : d->keys) {
 		// Read the name of the key.
 		string keyName;
-		if (!d->readNullTerminatedString(d->fileHeader.keyOffset + key.keyNameOffset, keyName)) {
+		if (d->readNullTerminatedString(d->fileHeader.keyOffset + key.keyNameOffset, keyName) != 0) {
 			d->keys.clear();
 			d->isValid = false;
 			d->file.reset();
@@ -298,14 +346,14 @@ string ParamSFO::getStringValue(const char *key)
 		return {};
 	}
 
-	std::string value;
+	string value;
 	// HACK: We take 1 off the data length to trim null terminators.
 	if (psfKey.dataLength <= 1) {
 		// Empty string, or string only consists of a NULL terminator.
 		return {};
 	}
 
-	if (!d->readString(d->fileHeader.dataOffset + psfKey.dataOffset, psfKey.dataLength - 1, value)) {
+	if (d->readString(d->fileHeader.dataOffset + psfKey.dataOffset, psfKey.dataLength - 1, value) != 0) {
 		// Failed to read the value.
 		return {};
 	}
