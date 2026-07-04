@@ -262,7 +262,7 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 				file_pos_adj = -(static_cast<off64_t>(sizeof(d->header)) - YYHEADER_SIZE_V11);
 				break;
 			case 12:
-				file_pos_adj = -(static_cast<off64_t>(izeof(d->header)) - YYHEADER_SIZE_V12);
+				file_pos_adj = -(static_cast<off64_t>(sizeof(d->header)) - YYHEADER_SIZE_V12);
 				break;
 			case 13:
 				file_pos_adj = -(static_cast<off64_t>(sizeof(d->header)) - YYHEADER_SIZE_V13);
