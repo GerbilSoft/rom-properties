@@ -412,7 +412,9 @@ const RomMetaData::MetaData *RomMetaData::get(Property name) const
 	if (name < Property::FirstProperty || name > Property::LastProperty) {
 		return nullptr;
 	}
-	return &d->metaData[d->map_metaData[static_cast<size_t>(name)]];
+
+	int8_t index = d->map_metaData[static_cast<size_t>(name)];
+	return (index >= 0) ? &d->metaData[index] : nullptr;
 }
 
 /**
