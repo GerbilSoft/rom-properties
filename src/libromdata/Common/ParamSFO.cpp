@@ -29,6 +29,9 @@ using std::string;
 using std::vector;
 using std::unordered_map;
 
+// Uninitialized vector class
+#include "uvector.h"
+
 namespace LibRomData {
 
 class ParamSFOPrivate final : public RomDataPrivate
@@ -53,7 +56,7 @@ public:
 	psf_header_t fileHeader;
 
 	// PSF key data.
-	vector<psf_key_t> keys;
+	rp::uvector<psf_key_t> keys;
 	unordered_map<string, psf_key_t> keyLookup;
 
 	// Key/value lookup cache.
@@ -180,15 +183,16 @@ ParamSFO::ParamSFO(const IRpFilePtr &file)
 
 	// Read the key table.
 	d->keys.resize(d->fileHeader.numKeys);
-	for (int i = 0; i < d->fileHeader.numKeys; i++) {
-		psf_key_t key;
-		size = d->file->read(&key, sizeof(psf_key_t));
-		if (size != sizeof(psf_key_t)) {
-			d->isValid = false;
-			d->file.reset();
-			return;
-		}
+	size = d->file->read(d->keys.data(), d->keys.size() * sizeof(psf_key_t));
+	if (size != d->keys.size() * sizeof(psf_key_t)) {
+		d->keys.clear();
+		d->isValid = false;
+		d->file.reset();
+		return;
+	}
 
+	// Validate the keys.
+	for (psf_key_t &key : d->keys) {
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 		// Byteswap the key.
 		key.keyNameOffset = le16_to_cpu(key.keyNameOffset);
@@ -201,12 +205,11 @@ ParamSFO::ParamSFO(const IRpFilePtr &file)
 		// Ensure it's a data format we know.
 		assert(key.valueType == kPSF_Int32 || key.valueType == kPSF_UTF8);
 		if (key.valueType != kPSF_Int32 && key.valueType != kPSF_UTF8) {
+			d->keys.clear();
 			d->isValid = false;
 			d->file.reset();
 			return;
 		}
-
-		d->keys[i] = key;
 	}
 
 	// Read the key names.
@@ -215,6 +218,7 @@ ParamSFO::ParamSFO(const IRpFilePtr &file)
 		// Read the name of the key.
 		string keyName;
 		if (!d->readNullTerminatedString(d->fileHeader.keyOffset + key.keyNameOffset, keyName)) {
+			d->keys.clear();
 			d->isValid = false;
 			d->file.reset();
 			return;
