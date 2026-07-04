@@ -349,7 +349,6 @@ string ParamSFO::getStringValue(const char *key)
 		return {};
 	}
 
-	string value;
 	// HACK: We take 1 off the data length to trim null terminators.
 	if (psfKey.dataLength <= 1) {
 		// Empty string, or string only consists of a NULL terminator.
@@ -362,6 +361,7 @@ string ParamSFO::getStringValue(const char *key)
 		dataLength = ParamSFOPrivate::MAX_STRING_LENGTH;
 	}
 
+	string value;
 	if (d->readString(d->fileHeader.dataOffset + psfKey.dataOffset, dataLength - 1, value) != 0) {
 		// Failed to read the value.
 		return {};
