@@ -21,10 +21,23 @@ public:
 		UTF8,
 		Int32
 	};
-	SFOValueType getKeyValueType(std::string key);
+	SFOValueType getKeyValueType(const char *key);
+	inline SFOValueType getKeyValueType(const std::string &key)
+	{
+		return getKeyValueType(key.c_str());
+	}
 
-	const std::string getStringValue(std::string key);
-	uint32_t getIntValue(std::string key);
+	std::string getStringValue(const char *key);
+	inline std::string getStringValue(const std::string &key)
+	{
+		return getStringValue(key.c_str());
+	}
+
+	uint32_t getIntValue(const char *key);
+	inline uint32_t getIntValue(const std::string &key)
+	{
+		return getIntValue(key.c_str());
+	}
 
 ROMDATA_DECL_END()
 

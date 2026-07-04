@@ -20,10 +20,10 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C++ STL classes
+#include <unordered_map>
 using std::array;
 using std::string;
 using std::vector;
-#include <unordered_map>
 using std::unordered_map;
 
 namespace LibRomData {
@@ -37,8 +37,8 @@ private:
 	typedef RomDataPrivate super;
 	RP_DISABLE_COPY(ParamSFOPrivate);
 
-	int readNullTerminatedString(uint32_t offset, std::string &str);
-	int readString(uint32_t offset, size_t length, std::string &str);
+	int readNullTerminatedString(uint32_t offset, string &str);
+	int readString(uint32_t offset, size_t length, string &str);
 
 public:
 	/** RomDataInfo **/
@@ -51,11 +51,11 @@ public:
 
 	// PSF key data.
 	vector<psf_key_t> keys;
-	unordered_map<std::string, psf_key_t> keyLookup;
+	unordered_map<string, psf_key_t> keyLookup;
 
 	// Key/value lookup cache.
-	unordered_map<std::string, std::string> cachedStringValues;
-	unordered_map<std::string, uint32_t> cachedIntValues;
+	unordered_map<string, string> cachedStringValues;
+	unordered_map<string, uint32_t> cachedIntValues;
 
 	bool isBigEndian;
 };
@@ -70,7 +70,7 @@ const array<const char *, 1 + 1> ParamSFOPrivate::mimeTypes = {{// Unofficial MI
 
 const RomDataInfo ParamSFOPrivate::romDataInfo = {"PARAM.SFO", exts.data(), mimeTypes.data()};
 
-int ParamSFOPrivate::readNullTerminatedString(uint32_t offset, std::string &str)
+int ParamSFOPrivate::readNullTerminatedString(uint32_t offset, string &str)
 {
 	if (offset == 0)
 		return 0;
@@ -88,7 +88,7 @@ int ParamSFOPrivate::readNullTerminatedString(uint32_t offset, std::string &str)
 	return 1;
 }
 
-int ParamSFOPrivate::readString(uint32_t offset, size_t length, std::string &str)
+int ParamSFOPrivate::readString(uint32_t offset, size_t length, string &str)
 {
 	if (offset == 0)
 		return 0;
@@ -165,7 +165,7 @@ ParamSFO::ParamSFO(const IRpFilePtr &file)
 	d->fileHeader.keyOffset = le32_to_cpu(d->fileHeader.keyOffset);
 	d->fileHeader.dataOffset = le32_to_cpu(d->fileHeader.dataOffset);
 	d->fileHeader.numKeys = le32_to_cpu(d->fileHeader.numKeys);
-#endif
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
 	// Read the key table.
 	d->keys.resize(d->fileHeader.numKeys);
@@ -185,7 +185,7 @@ ParamSFO::ParamSFO(const IRpFilePtr &file)
 		key.dataLength = le32_to_cpu(key.dataLength);
 		key.dataMax = le32_to_cpu(key.dataMax);
 		key.dataOffset = le32_to_cpu(key.dataOffset);
-#endif
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
 		// Ensure it's a data format we know.
 		assert(key.valueType == kPSF_Int32 || key.valueType == kPSF_UTF8);
@@ -202,7 +202,7 @@ ParamSFO::ParamSFO(const IRpFilePtr &file)
 	d->keyLookup.reserve(d->keys.size());
 	for (psf_key_t key : d->keys) {
 		// Read the name of the key.
-		std::string keyName;
+		string keyName;
 		if (!d->readNullTerminatedString(d->fileHeader.keyOffset + key.keyNameOffset, keyName)) {
 			d->isValid = false;
 			d->file.reset();
@@ -218,90 +218,109 @@ ParamSFO::ParamSFO(const IRpFilePtr &file)
 	d->mimeType = "application/x-playstation-sfo";
 }
 
-ParamSFO::SFOValueType ParamSFO::getKeyValueType(std::string key)
+ParamSFO::SFOValueType ParamSFO::getKeyValueType(const char *key)
 {
 	RP_D(ParamSFO);
 
-	if (d->keyLookup.find(key) == d->keyLookup.end()) {
+	auto iter = d->keyLookup.find(key);
+	if (iter == d->keyLookup.end()) {
+		// We don't have this key.
 		return SFOValueType::None;
 	}
 
-	psf_key_t *psfKey = &d->keyLookup[key];
-
-	if (psfKey->valueType == kPSF_UTF8) {
-		return SFOValueType::UTF8;
-	} else if (psfKey->valueType == kPSF_Int32) {
-		return SFOValueType::Int32;
-	} else {
-		return SFOValueType::None;
+	const psf_key_t &psfKey = iter->second;
+	switch (psfKey.valueType) {
+		case kPSF_UTF8:
+			return SFOValueType::UTF8;
+		case kPSF_Int32:
+			return SFOValueType::Int32;
+		default:
+			return SFOValueType::None;
 	}
 }
 
-const std::string ParamSFO::getStringValue(std::string key)
+string ParamSFO::getStringValue(const char *key)
 {
 	// TODO: Can we error out of this function?
-
 	RP_D(ParamSFO);
-	if (d->cachedStringValues.find(key) != d->cachedStringValues.end()) {
-		// We already fetched a string value for that key.
-		return d->cachedStringValues[key];
-	} else if (!d->file) {
-		// File isn't open.
-		return string();
-	} else if (!d->isValid) {
-		// File isn't valid
-		return string();
-	} else if (d->keyLookup.find(key) == d->keyLookup.end()) {
-		// We don't have this key
-		return string();
+
+	// Did we look up this key already?
+	{
+		auto iter = d->cachedStringValues.find(key);
+		if (iter != d->cachedStringValues.end()) {
+			// We already fetched a string value for this key.
+			return iter->second;
+		}
 	}
 
-	psf_key_t *psfKey = &d->keyLookup[key];
-	if (psfKey->valueType != kPSF_UTF8) {
-		// Not a UTF8 key.
-		return string();
+	if (!d->file) {
+		// File isn't open.
+		return {};
+	} else if (!d->isValid) {
+		// File isn't valid
+		return {};
+	}
+
+	auto iter = d->keyLookup.find(key);
+	if (iter == d->keyLookup.end()) {
+		// We don't have this key.
+		return {};
+	}
+
+	const psf_key_t &psfKey = iter->second;
+	if (psfKey.valueType != kPSF_UTF8) {
+		// Not a UTF-8 string key.
+		return {};
 	}
 
 	std::string value;
 	// HACK: We take 1 off the data length to trim null terminators.
-	if (!d->readString(d->fileHeader.dataOffset + psfKey->dataOffset, psfKey->dataLength - 1, value)) {
+	if (!d->readString(d->fileHeader.dataOffset + psfKey.dataOffset, psfKey.dataLength - 1, value)) {
 		// Failed to read the value.
-		return string();
+		return {};
 	}
 
 	// Cache the value for later.
 	d->cachedStringValues[key] = value;
-
 	return value;
 }
 
-uint32_t ParamSFO::getIntValue(std::string key)
+uint32_t ParamSFO::getIntValue(const char *key)
 {
 	// TODO: Can we error out of this function?
 	RP_D(ParamSFO);
-	if (d->cachedIntValues.find(key) != d->cachedIntValues.end()) {
-		// We already fetched a string value for that key.
-		return d->cachedIntValues[key];
-	} else if (!d->file) {
+
+	// Did we look up this key already?
+	{
+		auto iter = d->cachedIntValues.find(key);
+		if (iter != d->cachedIntValues.end()) {
+			// We already fetched a uint32_t value for this key.
+			return iter->second;
+		}
+	}
+
+	if (!d->file) {
 		// File isn't open.
 		return 0;
 	} else if (!d->isValid) {
 		// File isn't valid
 		return 0;
-	} else if (d->keyLookup.find(key) == d->keyLookup.end()) {
-		// We don't have this key
+	}
+
+	auto iter = d->keyLookup.find(key);
+	if (iter == d->keyLookup.end()) {
+		// We don't have this key.
 		return 0;
 	}
 
-	psf_key_t *psfKey = &d->keyLookup[key];
-	if (psfKey->valueType != kPSF_Int32) {
+	const psf_key_t &psfKey = iter->second;
+	if (psfKey.valueType != kPSF_Int32) {
 		// Not an Int32 key.
 		return 0;
 	}
 
 	uint32_t value = 0;
-	if (d->file->seekAndRead(d->fileHeader.dataOffset + psfKey->dataOffset, &value, sizeof(uint32_t)) !=
-		sizeof(uint32_t)) {
+	if (d->file->seekAndRead(d->fileHeader.dataOffset + psfKey.dataOffset, &value, sizeof(uint32_t)) != sizeof(uint32_t)) {
 		// Failed to read the value.
 		return 0;
 	}
@@ -309,10 +328,9 @@ uint32_t ParamSFO::getIntValue(std::string key)
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 	// Byteswap the value
 	value = le32_to_cpu(value);
-#endif
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
 	d->cachedIntValues[key] = value;
-
 	return value;
 }
 
@@ -324,10 +342,16 @@ uint32_t ParamSFO::getIntValue(std::string key)
 const char *ParamSFO::systemName(unsigned int type) const
 {
 	RP_D(const ParamSFO);
+	if (!d->isValid || !isSystemNameTypeValid(type)) {
+		return nullptr;
+	}
 
-	static_assert(SYSNAME_TYPE_MASK == 3, "ParamSFO::systemName() array index optimization needs to be updated.");
+	static_assert(SYSNAME_TYPE_MASK == 3,
+		"ParamSFO::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[4] = {"Sony PlayStation PARAM.SFO", "PARAM.SFO", "SFO", nullptr};
+	static const array<const char*, 4> sysNames = {{
+		"Sony PlayStation PARAM.SFO", "PARAM.SFO", "SFO", nullptr
+	}};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
