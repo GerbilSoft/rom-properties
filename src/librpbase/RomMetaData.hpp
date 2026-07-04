@@ -113,6 +113,7 @@ enum class Property : int8_t {
 	RegionCode,		// string
 	Category,		// string
 	RippedBy,		// string
+	Version,		// string
 
 	// TODO: More fields.
 	PropertyCount,
