@@ -48,7 +48,7 @@
 // RP_ALIGNED struct attribute.
 // Use in conjunction with #pragma pack(n).
 #ifdef __GNUC__
-#  define RP_ALIGNED(n) __attribute__((aligned (n)))
+#  define RP_ALIGNED(n) __attribute__((aligned(n)))
 #else
 #  define RP_ALIGNED(n)
 #endif
@@ -72,11 +72,9 @@
  * Also defines a constant of form StructName_SIZE
  */
 #if defined(HAVE_STATIC_ASSERT_CXX)
-#  define ASSERT_STRUCT(st,sz) /*enum { st##_SIZE = (sz), };*/ \
-	static_assert(sizeof(st)==(sz),#st " is not " #sz " bytes.")
+#  define ASSERT_STRUCT(st, sz) static_assert(sizeof(st) == (sz), #st " is not " #sz " bytes.")
 #elif defined(HAVE_STATIC_ASSERT_C)
-#  define ASSERT_STRUCT(st,sz) /*enum { st##_SIZE = (sz), };*/ \
-	_Static_assert(sizeof(st)==(sz),#st " is not " #sz " bytes.")
+#  define ASSERT_STRUCT(st, sz) _Static_assert(sizeof(st) == (sz), #st " is not " #sz " bytes.")
 #else
 #  define ASSERT_STRUCT(st, sz)
 #endif
@@ -86,11 +84,9 @@
  * Also defines a constant of form StructName_MemberName_OFFSET
  */
 #if defined(HAVE_STATIC_ASSERT_CXX)
-#  define ASSERT_STRUCT_OFFSET(st,mb,of) /*enum { st##_##mb##_OFFSET = (of), };*/ \
-	static_assert(offsetof(st,mb)==(of),#mb " is not at offset " #of " in struct " #st ".")
+#  define ASSERT_STRUCT_OFFSET(st, mb, of) static_assert(offsetof(st, mb) == (of), #mb " is not at offset " #of " in struct " #st ".")
 #elif defined(HAVE_STATIC_ASSERT_C)
-#  define ASSERT_STRUCT_OFFSET(st,mb,of) /*enum { st##_##mb##_OFFSET = (of), };*/ \
-	_Static_assert(offsetof(st,mb)==(of),#mb " is not at offset " #of " in struct " #st ".")
+#  define ASSERT_STRUCT_OFFSET(st, mb, of) _Static_assert(offsetof(st, mb) == (of), #mb " is not at offset " #of " in struct " #st ".")
 #else
 #  define ASSERT_STRUCT_OFFSET(st, mb, of)
 #endif
