@@ -124,6 +124,7 @@ using std::unordered_set;
 #include "Other/Amiibo.hpp"
 #include "Other/ELF.hpp"
 #include "Other/EXE.hpp"
+#include "Other/GameMaker.hpp"
 #include "Other/MachO.hpp"
 #include "Other/NintendoBadge.hpp"
 #include "Other/RpTextureWrapper.hpp"
@@ -255,7 +256,7 @@ static std::once_flag once_mimeTypes;
  * - magic2: Second 32-bit magic number, if available.
  */
 #ifdef ENABLE_XML
-static constexpr size_t romDataFns_magic_count = 36;
+static constexpr size_t romDataFns_magic_count = 37;
 #else /* !ENABLE_XML */
 static constexpr size_t romDataFns_magic_count = 35;
 #endif /* ENABLE_XML */
@@ -300,6 +301,8 @@ static const array<RomDataFns, romDataFns_magic_count> romDataFns_magic = {{
 	// Other
 	GetRomDataFns_addr(ELF, ATTR_NONE, 0, 0x7F454C46),		// '\177ELF'
 	GetRomDataFns_addr(Lua, ATTR_NONE, 0, 0x1B4C7561),		// '\033Lua'
+	GetRomDataFns_magic2(GameMaker, ATTR_HAS_METADATA, 0x8, 'GEN8',
+		'8NEG'), // set as this instead of 'FORM' @ 0x0 to avoid conflicts
 
 	// Consoles: Xbox 360 STFS
 	// Moved here to prevent conflicts with the Nintendo DS ROM image

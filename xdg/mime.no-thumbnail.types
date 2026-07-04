@@ -86,6 +86,7 @@ application/x-mach-core			# MachO
 application/x-mach-bundle		# MachO
 application/x-mach-fat-binary		# MachO
 application/x-ms-wim			# Wim
+application/x-iff				# IFF files (used by GameMaker)
 
 # Texture
 # Formats listed here are widely supported by Linux desktop
