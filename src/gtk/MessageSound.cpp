@@ -144,4 +144,4 @@ void play(GtkMessageType notificationType, const char *message, GtkWidget *paren
 #endif
 }
 
-} //namespace MessageSound
+} // namespace MessageSound

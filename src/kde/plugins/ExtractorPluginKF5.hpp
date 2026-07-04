@@ -52,4 +52,4 @@ public:
 	void extract(KFileMetaData::ExtractionResult *result) final;
 };
 
-} //namespace RomPropertiesKDE
+} // namespace RomPropertiesKDE

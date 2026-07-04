@@ -179,4 +179,4 @@ public:
 typedef std::shared_ptr<FileFormat> FileFormatPtr;
 typedef std::shared_ptr<const FileFormat> FileFormatConstPtr;
 
-} //namespace LibRpTexture
+} // namespace LibRpTexture

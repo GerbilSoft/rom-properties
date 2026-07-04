@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * SetFileOriginInfo.hpp: setFileOriginInfo() function.                    *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,4 +29,4 @@ namespace RpDownload {
  */
 int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime);
 
-} //namespace RpDownload
+} // namespace RpDownload

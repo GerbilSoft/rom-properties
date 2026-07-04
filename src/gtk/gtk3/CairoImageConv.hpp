@@ -47,4 +47,4 @@ static inline cairo_surface_t *rp_image_to_cairo_surface_t(const LibRpTexture::r
 	return rp_image_to_cairo_surface_t(img.get(), premultiply);
 }
 
-} //namespace CairoImageConv
+} // namespace CairoImageConv

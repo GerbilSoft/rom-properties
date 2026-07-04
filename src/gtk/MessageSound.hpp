@@ -20,4 +20,4 @@ namespace MessageSound {
  */
 void play(GtkMessageType notificationType, const char *message = nullptr, GtkWidget *parent = nullptr);
 
-} //namespace MessageSound
+} // namespace MessageSound

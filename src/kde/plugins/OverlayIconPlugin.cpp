@@ -80,4 +80,4 @@ QStringList OverlayIconPlugin::getOverlays(const QUrl &item)
 	return sl;
 }
 
-} //namespace RomPropertiesKDE
+} // namespace RomPropertiesKDE

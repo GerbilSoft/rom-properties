@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32ui)                       *
  * LoadResource_i18n.hpp: LoadResource() for the specified locale.         *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -45,4 +45,4 @@ static inline HMENU LoadMenu_i18n(HMODULE hModule, DWORD dwResId)
 	return (lpcMenuTemplate ? LoadMenuIndirect(lpcMenuTemplate) : nullptr);
 }
 
-} //namespace LibWin32UI
+} // namespace LibWin32UI

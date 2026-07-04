@@ -187,4 +187,4 @@ protected:
 	bool m_inProgress;		// Set when downloading
 };
 
-} //namespace RpDownload
+} // namespace RpDownload

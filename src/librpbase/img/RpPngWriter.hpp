@@ -311,4 +311,4 @@ public:
 	int write_IDAT(void);
 };
 
-} //namespace LibRpBase
+} // namespace LibRpBase

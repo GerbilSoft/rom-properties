@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libcachecommon)                   *
  * CacheKeys.cpp: Cache key handling functions.                            *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -152,4 +152,4 @@ static inline std::wstring urlencode(const std::wstring &url)
 }
 #endif /* _WIN32 */
 
-} //namespace LibCacheCommon
+} // namespace LibCacheCommon

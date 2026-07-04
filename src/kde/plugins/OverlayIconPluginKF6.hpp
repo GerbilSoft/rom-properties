@@ -40,4 +40,4 @@ public:
 	QStringList getOverlays(const QUrl &item) final;
 };
 
-} //namespace RomPropertiesKDE
+} // namespace RomPropertiesKDE

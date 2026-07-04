@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32ui)                       *
  * AutoGetDC.hpp: GetDC() RAII wrapper class.                              *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -92,4 +92,4 @@ private:
 	HFONT m_hFontOrig;
 };
 
-} //namespace LibWin32UI
+} // namespace LibWin32UI

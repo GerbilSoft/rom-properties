@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32ui)                       *
  * RegKey.hpp: Registry key wrapper.                                       *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -755,4 +755,4 @@ LONG RegKey::UnregisterComObject(REFCLSID rclsid, LPCTSTR progID)
 	return ERROR_SUCCESS;
 }
 
-} //namespace LibWin32UI
+} // namespace LibWin32UI

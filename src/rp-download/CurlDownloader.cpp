@@ -466,4 +466,4 @@ int CurlDownloader::download(void)
 	return 0;
 }
 
-} //namespace RpDownload
+} // namespace RpDownload

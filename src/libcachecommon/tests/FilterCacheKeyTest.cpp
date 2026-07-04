@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libcachecommon/tests)             *
  * FilterCacheKeyTest.cpp: CacheManager::filterCacheKey() test.            *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -367,7 +367,7 @@ TEST_F(FilterCacheKeyTest, filterCacheKey_invalid_UTF8)
 
 // TODO: Invalid UTF-16 sequence test for Windows.
 
-} } //namespace LibCacheCommon::Tests
+} } // namespace LibCacheCommon::Tests
 
 #ifdef HAVE_SECCOMP
 const unsigned int rp_gtest_syscall_set = 0;

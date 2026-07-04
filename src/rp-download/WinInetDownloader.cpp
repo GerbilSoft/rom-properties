@@ -284,4 +284,4 @@ int WinInetDownloader::download(void)
 	return (m_data.empty() ? -ENOENT : 0);
 }
 
-} //namespace RpDownload
+} // namespace RpDownload

@@ -62,4 +62,4 @@ void play(QMessageBox::Icon notificationType, const QString &message, QWidget *p
 #endif
 }
 
-} //namespace MessageSound
+} // namespace MessageSound

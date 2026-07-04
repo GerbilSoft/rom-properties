@@ -540,4 +540,4 @@ void IDownloader::createUserAgent(void)
 #endif
 }
 
-} //namespace RpDownload
+} // namespace RpDownload

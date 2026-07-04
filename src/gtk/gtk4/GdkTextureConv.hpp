@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * GdkTextureConv.hpp: Helper functions to convert from rp_image to GDK4.  *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -30,4 +30,4 @@ namespace GdkTextureConv {
  */
 GdkTexture *rp_image_to_GdkTexture(const LibRpTexture::rp_image *img);
 
-} //namespace GdkTextureConv
+} // namespace GdkTextureConv
