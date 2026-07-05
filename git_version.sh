@@ -158,7 +158,9 @@ EOF
 git_found=yes
 if [ "$GIT" = "git" ] && [ "$(which $GIT 2>/dev/null)" = "" ]; then
     git_found="'$GIT' not found"
-    exit 1
+    # Allow the build to proceed even if git is missing.
+    #exit 1
+    exit 0
 fi
 # If git_found=yes, we can now use $() substitutions (as git does). Hooray!
 
