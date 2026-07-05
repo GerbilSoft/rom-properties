@@ -35,6 +35,16 @@ private:
 	typedef RomDataPrivate super;
 	RP_DISABLE_COPY(GameMakerPrivate)
 
+public:
+	// Maximum string length (TODO: Better maximum?)
+	static constexpr int MAX_STRING_LENGTH = 1024;
+
+	/**
+	 * Read a NULL-terminated string.
+	 * @param offset	[in] Offset in the file
+	 * @param str 		[out] NULL-terminated string
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
 	int readNullTerminatedString(uint32_t offset, string &str);
 
 public:
@@ -111,23 +121,41 @@ GameMakerPrivate::GameMakerPrivate(const IRpFilePtr &file)
 	memset(&gms2Header, 0, sizeof(gms2Header));
 }
 
+/**
+ * Read a NULL-terminated string.
+ * @param offset	[in] Offset in the file
+ * @param str 		[out] NULL-terminated string
+ * @return 0 on success; negative POSIX error code on error.
+ */
 int GameMakerPrivate::readNullTerminatedString(uint32_t offset, string &str)
 {
+	str.clear();
 	if (offset == 0) {
-		return 0;
+		return -ENOENT;
 	}
 
-	if (file->seek(offset) != 0) {
-		return -1; // failed to seek
+	// Read a string.
+	char buf[MAX_STRING_LENGTH];
+	size_t size = file->seekAndRead(offset, buf, sizeof(buf));
+	if (size == 0) {
+		// Seek and/or read error.
+		return -EIO;
+	} else if (size > sizeof(buf)) {
+		size = sizeof(buf);
 	}
-	// really bad, loop a read of a single byte til we reach a NULL
-	char c = 0;
-	do {
-		if (file->read(&c, sizeof(c)) != sizeof(c))
-			return -2; // failed to read
-		if (c != 0)
-			str.push_back(c);
-	} while (c != 0);
+
+	// Ensure NULL termination.
+	buf[size-1] = '\0';
+
+	// Find the first NULL terminator.
+	const char *pNull = static_cast<const char*>(memchr(buf, '\0', sizeof(buf)));
+	if (pNull) {
+		str.assign(buf, pNull - buf);
+	} else {
+		// Shouldn't happen...
+		str.assign(buf, sizeof(buf));
+	}
+
 	return 0;
 }
 
