@@ -897,6 +897,9 @@ int PlayStationDisc::loadMetaData(void)
 		return -EIO;
 	}
 
+	// Maximum of 5 metadata properties:
+	// - 2: ISO PVD
+	// - 2: PS1/PS2
 	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
 
 	// Add the PVD metadata.
@@ -927,6 +930,14 @@ int PlayStationDisc::loadMetaData(void)
 		}
 
 		d->metaData.addMetaData_string(Property::GameID, gameID);
+	}
+
+	// Version (PS2 only)
+	if (d->consoleType == PlayStationDiscPrivate::ConsoleType::PS2) {
+		auto iter = d->system_cnf.find("VER");
+		if (iter != d->system_cnf.end() && !iter->second.empty()) {
+			d->metaData.addMetaData_string(Property::Version, iter->second);
+		}
 	}
 
 	// Finished reading the metadata.

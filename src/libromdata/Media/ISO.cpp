@@ -831,8 +831,8 @@ rp_image_const_ptr ISOPrivate::loadIcon(void)
 	// - Positive: Zero-based index
 	// - Negative: Resource ID
 	int iconindex = 0;	// default is "first icon"
-	size_t dotpos = icon_filename.find_last_of('.');
-	size_t commapos = icon_filename.find_last_of(',');
+	size_t dotpos = icon_filename.rfind('.');
+	size_t commapos = icon_filename.rfind(',');
 	if (commapos < (icon_filename.size()-1) && dotpos < commapos) {
 		// Found an icon index.
 		char *endptr = nullptr;

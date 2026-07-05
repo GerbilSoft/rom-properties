@@ -385,7 +385,7 @@ int NGPC::loadMetaData(void)
 
 	// ROM header is read in the constructor.
 	const NGPC_RomHeader *const romHeader = &d->romHeader;
-	d->metaData.reserve(2);	// Maximum of 2 metadata property.
+	d->metaData.reserve(3);	// Maximum of 3 metadata property.
 
 	// Title
 	// NOTE: It's listed as ASCII. We'll use Latin-1.
@@ -397,6 +397,10 @@ int NGPC::loadMetaData(void)
 
 	// Product ID (Game ID)
 	d->metaData.addMetaData_string(Property::GameID, d->getProductID());
+
+	// Revision (as Version)
+	d->metaData.addMetaData_string_numeric(Property::Version,
+		d->romHeader.version, RomMetaData::Base::Dec, 2);
 
 	// Finished reading the metadata.
 	return d->metaData.count();

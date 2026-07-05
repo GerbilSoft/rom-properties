@@ -101,6 +101,9 @@ using std::unordered_set;
 #include "Handheld/VirtualBoy.hpp"
 #include "Handheld/WonderSwan.hpp"
 
+// RomData subclasses: Common
+#include "Common/ParamSFO.hpp"
+
 // RomData subclasses: Audio
 #include "Audio/ADX.hpp"
 #include "Audio/BCSTM.hpp"
@@ -256,9 +259,9 @@ static std::once_flag once_mimeTypes;
  * - magic2: Second 32-bit magic number, if available.
  */
 #ifdef ENABLE_XML
-static constexpr size_t romDataFns_magic_count = 37;
+static constexpr size_t romDataFns_magic_count = 38;
 #else /* !ENABLE_XML */
-static constexpr size_t romDataFns_magic_count = 35;
+static constexpr size_t romDataFns_magic_count = 37;
 #endif /* ENABLE_XML */
 static const array<RomDataFns, romDataFns_magic_count> romDataFns_magic = {{
 	// Consoles
@@ -288,6 +291,9 @@ static const array<RomDataFns, romDataFns_magic_count> romDataFns_magic = {{
 	GetRomDataFns_magic1(Nintendo3DS_SMDH, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'SMDH'),
 	GetRomDataFns_magic1(Nintendo3DS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA, 0, 'Z3DS'),	// Z3DS format only!
 	GetRomDataFns_magic2(NintendoDS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA, 0xC0, 0x24FFAE51, 0xC8604FE2),
+
+	// Common
+	GetRomDataFns_magic1(ParamSFO, ATTR_HAS_METADATA, 0, 0x00505346),	// '\0PSF'
 
 	// Audio
 	GetRomDataFns_magic1(BRSTM, ATTR_HAS_METADATA, 0, 'RSTM'),

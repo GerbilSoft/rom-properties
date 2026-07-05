@@ -121,15 +121,16 @@ const array<RP_PropertyStore_Private::MetaDataConv, static_cast<size_t>(Property
 	{&PKEY_FileDescription, VT_BSTR},	// Description
 
 	/** Custom properties! **/
-	{&PKEY_RomProperties_GameID, VT_BSTR},			// Game ID
-	{&PKEY_RomProperties_TitleID, VT_BSTR},			// Title ID
-	{&PKEY_RomProperties_MediaID, VT_BSTR},			// Media ID
-	{&PKEY_RomProperties_OSVersion, VT_BSTR},		// OS Version
-	{&PKEY_RomProperties_EncryptionKey, VT_BSTR},		// Encryption Key
-	{&PKEY_RomProperties_PixelFormat, VT_BSTR},		// Pixel Format
-	{&PKEY_RomProperties_RegionCode, VT_BSTR},		// Region Code
-	{&PKEY_Category, VT_BSTR},				// Category
-	{&PKEY_RomProperties_RippedBy, VT_BSTR},		// Ripped By
+	{&PKEY_RomProperties_GameID, VT_BSTR},		// Game ID
+	{&PKEY_RomProperties_TitleID, VT_BSTR},		// Title ID
+	{&PKEY_RomProperties_MediaID, VT_BSTR},		// Media ID
+	{&PKEY_RomProperties_OSVersion, VT_BSTR},	// OS Version
+	{&PKEY_RomProperties_EncryptionKey, VT_BSTR},	// Encryption Key
+	{&PKEY_RomProperties_PixelFormat, VT_BSTR},	// Pixel Format
+	{&PKEY_RomProperties_RegionCode, VT_BSTR},	// Region Code
+	{&PKEY_Category, VT_BSTR},			// Category
+	{&PKEY_RomProperties_RippedBy, VT_BSTR},	// Ripped By
+	{&PKEY_FileVersion, VT_BSTR},			// Version
 }};
 
 // Win32 SDK doesn't have this.

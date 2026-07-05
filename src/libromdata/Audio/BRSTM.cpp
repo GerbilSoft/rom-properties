@@ -321,7 +321,7 @@ int BRSTM::loadFieldData(void)
 	d->fields.addField_string(C_("RomData", "Type"), "BRSTM");
 
 	// Version
-	d->fields.addField_string(C_("RomData", "Version"),
+	d->fields.addField_string(C_("RomData", "Format Version"),
 		fmt::format(FSTR("{:d}.{:d}"), brstmHeader->version_major, brstmHeader->version_minor));
 
 	// Endianness

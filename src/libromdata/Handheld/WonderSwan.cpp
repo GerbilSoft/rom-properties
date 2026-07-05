@@ -667,7 +667,7 @@ int WonderSwan::loadMetaData(void)
 
 	// WonderSwan ROM footer
 	const WS_RomFooter *const romFooter = &d->romFooter;
-	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 	// Publisher
 	const char *const publisher = WonderSwanPublishers::lookup_name(romFooter->publisher);
@@ -679,6 +679,9 @@ int WonderSwan::loadMetaData(void)
 
 	// Game ID
 	d->metaData.addMetaData_string(Property::GameID, d->getGameID());
+
+	// Revision (as Version)
+	d->metaData.addMetaData_string_numeric(Property::Version, d->romFooter.revision);
 
 	// Finished reading the metadata.
 	return d->metaData.count();

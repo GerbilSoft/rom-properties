@@ -21,6 +21,8 @@ ENDIF(ENABLE_NETWORKING AND NOT WIN32)
 SET(${PROJECT_NAME}_SRCS
 	RomDataFactory.cpp
 
+	Common/ParamSFO.cpp
+
 	Console/Atari7800.cpp
 	Console/CBMCart.cpp
 	Console/ColecoVision.cpp
@@ -170,6 +172,10 @@ SET(${PROJECT_NAME}_H
 	iso_structs.h
 	nintendo_system_id.h
 	semaphore/Semaphore.hpp
+
+	Common/ParamSFO.hpp
+
+	Common/paramsfo_structs.h
 
 	Console/Atari7800.hpp
 	Console/CBMCart.hpp

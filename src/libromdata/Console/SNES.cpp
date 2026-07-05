@@ -1715,7 +1715,7 @@ int SNES::loadMetaData(void)
 
 	// ROM header is read in the constructor.
 	//const SNES_RomHeader *const romHeader = &d->romHeader;
-	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
+	d->metaData.reserve(5);	// Maximum of 3 metadata properties.
 
 	// Title
 	const string s_title = d->getRomTitle();
@@ -1733,6 +1733,10 @@ int SNES::loadMetaData(void)
 
 	// Region code
 	d->metaData.addMetaData_string(Property::RegionCode, d->getRegion());
+
+	// Revision (as Version)
+	d->metaData.addMetaData_string_numeric(Property::Version,
+		d->romHeader.snes.version, RomMetaData::Base::Dec, 2);
 
 	// Finished reading the metadata.
 	return d->metaData.count();

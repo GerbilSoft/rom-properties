@@ -24,6 +24,7 @@ using namespace LibRpTexture;
 #include "disc/PartitionFile.hpp"
 
 // Other RomData subclasses
+#include "Common/ParamSFO.hpp"
 #include "Media/ISO.hpp"
 #include "Other/ELF.hpp"
 
@@ -83,14 +84,21 @@ public:
 
 	// TODO: PIC1.PNG? (wallpaper)
 
-	// Boot executable (EBOOT.BIN)
-	RomDataPtr bootExeData;
+	// Files
+	RomDataPtr bootExeData;		// Boot executable (EBOOT.BIN)
+	ParamSFOPtr paramSfoData;	// PARAM.SFO
 
 	/**
 	 * Open the boot executable.
 	 * @return RomData* on success; nullptr on error.
 	 */
 	RomDataPtr openBootExe(void);
+
+	/**
+	 * Open the PARAM.SFO
+	 * @return RomData* on success; nullptr on error.
+	 */
+	ParamSFOPtr openParamSfo(void);
 
 public:
 	/**
@@ -249,6 +257,42 @@ RomDataPtr PSPPrivate::openBootExe(void)
 	}
 
 	// Unable to open the default executable.
+	return {};
+}
+
+/**
+ * Open the PARAM.SFO.
+ * @return RomData* on success; nullptr on error.
+ */
+ParamSFOPtr PSPPrivate::openParamSfo(void)
+{
+	// FIXME: Returning `const RomDataPtr &` would be better,
+	// but the compiler is complaining that the nullptrs end up
+	// returning a reference to a local temporary object.
+
+	if (paramSfoData) {
+		// The PARAM.SFO is already open.
+		return paramSfoData;
+	}
+
+	if (!isoPartition || !isoPartition->isOpen()) {
+		// ISO partition is not open.
+		return {};
+	}
+
+	// Open the PARAM.SFO
+	// TODO: Do video UMDs have PARAM.SFO?
+	const IRpFilePtr f_paramFile(isoPartition->open("/PSP_GAME/PARAM.SFO"));
+	if (f_paramFile) {
+		ParamSFOPtr sfoData = std::make_shared<ParamSFO>(f_paramFile);
+		if (sfoData->isOpen() && sfoData->isValid()) {
+			// Boot executable is open and valid.
+			paramSfoData = sfoData;
+			return sfoData;
+		}
+	}
+
+	// Unable to open the PARAM.SFO
 	return {};
 }
 
@@ -549,6 +593,7 @@ int PSP::loadFieldData(void)
 	d->fields.setTabName(0, (unlikely(d->discType == PSPPrivate::DiscType::UmdVideo) ? "UMD" : "PSP"));
 
 	// Game ID
+	// TODO: Use the version from PARAM.SFO, if available?
 	const string s_gameID = d->getGameID();
 	if (!s_gameID.empty()) {
 		// Game ID field on UMD Video discs is the video title.
@@ -559,7 +604,38 @@ int PSP::loadFieldData(void)
 		d->fields.addField_string(gameID_title, s_gameID);
 	}
 
-	// TODO: Add fields from PARAM.SFO.
+	// Get metadata from the PARAM.SFO.
+	const ParamSFOPtr paramSfo = const_cast<PSPPrivate *>(d)->openParamSfo();
+	if (paramSfo) {
+		// Add game-specific metadata.
+		if (d->discType == PSPPrivate::DiscType::PspGame) {
+			if (paramSfo->getKeyValueType("TITLE") == ParamSFO::SFOValueType::UTF8) {
+				d->fields.addField_string(
+					C_("RomData", "Title"), paramSfo->getStringValue("TITLE"));
+			}
+			// TODO: localised languages
+
+			// FIXME: APP_VER vs. DISC_VERSION?
+			// Preferring APP_VER if it exists; otherwise, DISC_VERSION.
+			string s_version;
+			if (paramSfo->getKeyValueType("APP_VER") == ParamSFO::SFOValueType::UTF8) {
+				s_version = paramSfo->getStringValue("APP_VER");
+			} else if (paramSfo->getKeyValueType("DISC_VERSION") == ParamSFO::SFOValueType::UTF8) {
+				s_version = paramSfo->getStringValue("DISC_VERSION");
+			}
+			d->fields.addField_string(C_("RomData", "Version"), s_version);
+
+			if (paramSfo->getKeyValueType("PSP_SYSTEM_VER") == ParamSFO::SFOValueType::UTF8) {
+				d->fields.addField_string(C_("PSP", "OS Version"), paramSfo->getStringValue("PSP_SYSTEM_VER"));
+			}
+		}
+
+		// Add a PARAM.SFO tab.
+		const RomFields *const sfoFields = paramSfo->fields();
+		if (sfoFields) {
+			d->fields.addFields_romFields(paramSfo->fields(), RomFields::TabOffset_AddTabs);
+		}
+	}
 
 	// Show a tab for the boot file.
 	RomDataPtr bootExeData = d->openBootExe();
@@ -672,25 +748,51 @@ int PSP::loadMetaData(void)
 		return -EIO;
 	}
 
-	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
+	// Maximum of 4 metadata properties:
+	// - 2: ISO PVD
+	// - 2: PSP
+	d->metaData.reserve(2+2);
 
-	// Add the PVD metadata.
-	ISO::addMetaData_PVD(&d->metaData, &d->pvd);
-
-	// Add the disc ID and/or title from UMD_DATA.BIN.
-	// The PVD title is useless in most cases.
-	// TODO: Split this into a separate function?
-	// Show UMD_DATA.BIN fields.
-	// FIXME: Figure out what the fields are.
+	// UMD_DATA.BIN fields: (FIXME: Figure out what the fields are.)
 	// - '|'-terminated fields.
 	// - Field 0: Game ID
 	// - Field 1: Encryption key?
 	// - Field 2: Revision?
 	// - Field 3: Age rating?
 
-	// NOTE: Using the game ID for titles...
-	const string s_gameID = d->getGameID();
-	d->metaData.addMetaData_string(Property::Title, s_gameID);
+	// Add the PVD metadata.
+	ISO::addMetaData_PVD(&d->metaData, &d->pvd);
+
+	// Get metadata from PARAM.SFO.
+	// If it has the game title, we'll use it.
+	// Otherwise, we'll use the disc ID and/or title from UMD_DATA.BIN.
+	ParamSFOPtr paramSfo = const_cast<PSPPrivate*>(d)->openParamSfo();
+	if (paramSfo) {
+		// Add all of the metadata from PARAM.SFO.
+		d->metaData.addMetaData_metaData(paramSfo->metaData());
+	}
+
+	// Did we get a game ID from the PARAM.SFO file?
+	string s_gameID;
+	const RomMetaData::MetaData *const md_gameID = d->metaData.get(Property::GameID);
+	if (md_gameID && md_gameID->type == PropertyType::String && md_gameID->data.str != nullptr) {
+		// We have a game ID. Use it instead of the UMD_DATA.BIN version.
+		s_gameID = md_gameID->data.str;
+	} else {
+		// No game ID. Use the ID from UMD_DATA.BIN.
+		// (The PVD title is useless in most cases.)
+		if (d->discType != PSPPrivate::DiscType::UmdVideo) {
+			s_gameID = d->getGameID();
+		}
+	}
+
+	// Did we get a title?
+	if (!d->metaData.get(Property::Title)) {
+		// No title. Fall back to using the game ID as the title.
+		if (!s_gameID.empty()) {
+			d->metaData.addMetaData_string(Property::Title, s_gameID);
+		}
+	}
 
 	// TODO: More PSP-specific metadata?
 

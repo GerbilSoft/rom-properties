@@ -405,7 +405,7 @@ int N64::loadMetaData(void)
 	// ROM file header is read and byteswapped in the constructor.
 	// TODO: Indicate the byteswapping format?
 	const N64_RomHeader *const romHeader = &d->romHeader;
-	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
+	d->metaData.reserve(4);	// Maximum of 3 metadata properties.
 
 	// Title
 	// TODO: Space elimination.
@@ -424,6 +424,10 @@ int N64::loadMetaData(void)
 
 	// OS Version
 	d->metaData.addMetaData_string(Property::OSVersion, d->getOSVersion());
+
+	// Revision (as Version)
+	d->metaData.addMetaData_string_numeric(Property::Version,
+		romHeader->revision, RomMetaData::Base::Dec, 2);
 
 	// Finished reading the metadata.
 	return d->metaData.count();

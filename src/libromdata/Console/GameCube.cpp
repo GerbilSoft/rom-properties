@@ -1917,7 +1917,7 @@ int GameCube::loadMetaData(void)
 
 	// Disc header is read in the constructor.
 	const GCN_DiscHeader *const discHeader = &d->discHeader;
-	d->metaData.reserve(7);	// Maximum of 7 metadata properties.
+	d->metaData.reserve(8);	// Maximum of 8 metadata properties.
 
 	// Add opening.bnr metadata if it's available.
 	bool addedBnrMetaData = false;
@@ -2005,6 +2005,10 @@ int GameCube::loadMetaData(void)
 
 	// Region code
 	d->metaData.addMetaData_string(Property::RegionCode, d->getRegionCode());
+
+	// Revision (as Version)
+	d->metaData.addMetaData_string_numeric(Property::Version,
+		discHeader->revision, RomMetaData::Base::Dec, 2);
 
 	// Finished reading the metadata.
 	return d->metaData.count();

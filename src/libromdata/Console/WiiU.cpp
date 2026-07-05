@@ -426,7 +426,7 @@ int WiiU::loadMetaData(void)
 
 	// Disc header is read in the constructor.
 	const WiiU_DiscHeader *const discHeader = &d->discHeader;
-	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 	/** Custom properties! **/
 
@@ -447,6 +447,11 @@ int WiiU::loadMetaData(void)
 		}};
 		d->metaData.addMetaData_string(Property::OSVersion, s_os_version.data());
 	}
+
+	// Game version (as Version)
+	// TODO: Validate the version characters.
+	d->metaData.addMetaData_string(Property::Version,
+		latin1_to_utf8(discHeader->version, sizeof(discHeader->version)));
 
 	// Finished reading the metadata.
 	return d->metaData.count();

@@ -6,14 +6,24 @@
   * GameMaker: Game Maker Studio data.win parser.
     * Pull request #496: Add support for GameMaker IFF/"data.win" files
       * Submitted by @InvoxiPlayGames.
+  * ParamSFO: PlayStation System File Object files. Used by PSP, PS3,
+    PS Vita, and PS4 games.
 
 * New parser features:
   * GodotSTEX: Add (untested) support for ASTC_6x6 textures.
     * Support for ASTC_6x6 will be added in Godot 4.6.
+  * PSP: Parse the PARAM.SFO file.
+  * Add a "Version" custom property and handle it in all RomData subclasses
+    that have a "Version" or "Revision" field.
 
 * Other changes:
   * KDE Frameworks 6: Also use the file size unit dialect specified in
     System Settings when explicitly formatting kilobytes.
+
+* Bug fixes:
+  * Dreamcast and SegaSaturn incorrectly added DiscNumber as integer.
+    They should be uint. The end result is these properties didn't
+    show up correctly.
 
 ## v2.8 (released 2026/06/20)
 
