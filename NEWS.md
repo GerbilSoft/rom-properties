@@ -2,12 +2,14 @@
 
 ## v2.9 (released 2026/??/??)
 
-* New parser features:
-  * GodotSTEX: Add (untested) support for ASTC_6x6 textures.
-    * Support for ASTC_6x6 will be added in Godot 4.6.
+* New parsers:
   * GameMaker: Game Maker Studio data.win parser.
     * Pull request #496: Add support for GameMaker IFF/"data.win" files
       * Submitted by @InvoxiPlayGames.
+
+* New parser features:
+  * GodotSTEX: Add (untested) support for ASTC_6x6 textures.
+    * Support for ASTC_6x6 will be added in Godot 4.6.
 
 * Other changes:
   * KDE Frameworks 6: Also use the file size unit dialect specified in
