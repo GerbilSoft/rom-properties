@@ -153,8 +153,8 @@ std::string replace_ext(const char *filename, const char *ext)
 	}
 
 	string s_ret = filename;
-	const size_t dotpos = s_ret.find_last_of('.');
-	const size_t slashpos = s_ret.find_last_of(DIR_SEP_CHR);
+	const size_t dotpos = s_ret.rfind('.');
+	const size_t slashpos = s_ret.rfind(DIR_SEP_CHR);
 	if (dotpos == string::npos ||
 	    dotpos >= s_ret.size()-1 ||
 	    (slashpos != string::npos && dotpos <= slashpos))

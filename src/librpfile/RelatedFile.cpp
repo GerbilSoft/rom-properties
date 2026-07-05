@@ -86,7 +86,7 @@ IRpFile *T_openRelatedFile_rawptr(const CharType *filename, const CharType *base
 
 	// Get the directory portion of the filename.
 	ct_string s_dir = filename;
-	const size_t slash_pos = s_dir.find_last_of(DIR_SEP_CHR);
+	const size_t slash_pos = s_dir.rfind(DIR_SEP_CHR);
 	if (slash_pos != string::npos) {
 		s_dir.resize(slash_pos+1);
 	} else {
@@ -103,7 +103,7 @@ IRpFile *T_openRelatedFile_rawptr(const CharType *filename, const CharType *base
 		s_basename = &filename[slash_pos+1];
 
 		// Check for any dots.
-		const size_t dot_pos = s_basename.find_last_of('.');
+		const size_t dot_pos = s_basename.rfind('.');
 		if (dot_pos != string::npos) {
 			// Remove the extension.
 			s_basename.resize(dot_pos);

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32ui)                       *
  * WinUI.hpp: Windows UI common functions.                                 *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -451,7 +451,7 @@ int loadIconFromFilenameAndIndex(LPCTSTR lpszIconFilename, HICON *phiconLarge, H
 	// Remove the index (and leading double-quote, if present) from the filename.
 	const size_t startOffset = (lpszIconFilename[0] == _T('"')) ? 1 : 0;
 	tstring ts_filename(&lpszIconFilename[startOffset]);
-	size_t comma = ts_filename.find_last_of(_T(','));
+	size_t comma = ts_filename.rfind(_T(','));
 	if (comma != tstring::npos && comma > 0) {
 		ts_filename.resize(comma);
 	}

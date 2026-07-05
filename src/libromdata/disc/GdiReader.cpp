@@ -303,7 +303,7 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	// Separate the file extension.
 	string basename = blockRange.filename;
 	string ext;
-	const size_t dotpos = basename.find_last_of('.');
+	const size_t dotpos = basename.rfind('.');
 	if (dotpos != string::npos) {
 		ext = basename.substr(dotpos);
 		basename.resize(dotpos);

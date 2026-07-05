@@ -308,7 +308,7 @@ tstring RP_PropertyStore_Private::GetPropertyDescriptionSchemaFilename(void)
 
 	// Remove the filename portion.
 	tstring tfilename = szDllFilename;
-	size_t last_bslash = tfilename.find_last_of(_T('\\'));
+	size_t last_bslash = tfilename.rfind(_T('\\'));
 	if (last_bslash == tstring::npos) {
 		// No backslash?
 		return {};
@@ -325,7 +325,7 @@ tstring RP_PropertyStore_Private::GetPropertyDescriptionSchemaFilename(void)
 
 	// Check if the .propdesc file is in the parent directory.
 	tfilename.resize(orig_len);
-	last_bslash = tfilename.find_last_of(_T('\\'));
+	last_bslash = tfilename.rfind(_T('\\'));
 	if (last_bslash == tstring::npos) {
 		// No backslash?
 		return {};
