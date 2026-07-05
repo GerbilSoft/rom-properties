@@ -314,80 +314,43 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 
 	// Byteswap the header, if necessary.
 	// NOTE: d->header.infoHeader has already been byteswapped.
-	if (isBigEndian) {
-#if SYS_BYTEORDER != SYS_BIG_ENDIAN
-		d->header.pName			= be32_to_cpu(d->header.pName);
-		d->header.pConfig		= be32_to_cpu(d->header.pConfig);
-		d->header.roomMaxId		= be32_to_cpu(d->header.roomMaxId);
-		d->header.roomMaxTileId		= be32_to_cpu(d->header.roomMaxTileId);
-		d->header.id			= be32_to_cpu(d->header.id);
-		d->header.buildNumber		= be32_to_cpu(d->header.buildNumber);
-		d->header.revisionNumber	= be32_to_cpu(d->header.revisionNumber);
-		d->header.guid3			= be32_to_cpu(d->header.guid3);
-		d->header.guid4			= be32_to_cpu(d->header.guid4);
-		d->header.pGameName		= be32_to_cpu(d->header.pGameName);
-		d->header.Version.Major		= be32_to_cpu(d->header.Version.Major);
-		d->header.Version.Minor		= be32_to_cpu(d->header.Version.Minor);
-		d->header.Version.Release	= be32_to_cpu(d->header.Version.Release);
-		d->header.Version.Build		= be32_to_cpu(d->header.Version.Build);
-		d->header.xscreensize		= be32_to_cpu(d->header.xscreensize);
-		d->header.yscreensize		= be32_to_cpu(d->header.yscreensize);
-		d->header.screenflags		= be32_to_cpu(d->header.screenflags);
-		d->header.crc			= be32_to_cpu(d->header.crc);
-		d->header.datetimeUTC		= be64_to_cpu(d->header.datetimeUTC);
+	if (( isBigEndian && SYS_BYTEORDER == SYS_LIL_ENDIAN) ||
+	    (!isBigEndian && SYS_BYTEORDER == SYS_BIG_ENDIAN))
+	{
+		d->header.pName			= __swab32(d->header.pName);
+		d->header.pConfig		= __swab32(d->header.pConfig);
+		d->header.roomMaxId		= __swab32(d->header.roomMaxId);
+		d->header.roomMaxTileId		= __swab32(d->header.roomMaxTileId);
+		d->header.id			= __swab32(d->header.id);
+		d->header.buildNumber		= __swab32(d->header.buildNumber);
+		d->header.revisionNumber	= __swab32(d->header.revisionNumber);
+		d->header.guid3			= __swab32(d->header.guid3);
+		d->header.guid4			= __swab32(d->header.guid4);
+		d->header.pGameName		= __swab32(d->header.pGameName);
+		d->header.Version.Major		= __swab32(d->header.Version.Major);
+		d->header.Version.Minor		= __swab32(d->header.Version.Minor);
+		d->header.Version.Release	= __swab32(d->header.Version.Release);
+		d->header.Version.Build		= __swab32(d->header.Version.Build);
+		d->header.xscreensize		= __swab32(d->header.xscreensize);
+		d->header.yscreensize		= __swab32(d->header.yscreensize);
+		d->header.screenflags		= __swab32(d->header.screenflags);
+		d->header.crc			= __swab32(d->header.crc);
+		d->header.datetimeUTC		= __swab64(d->header.datetimeUTC);
 		if (d->dataVersion >= 10) {
-			d->header.v10.pDisplayName		= be32_to_cpu(d->header.v10.pDisplayName);
+			d->header.v10.pDisplayName		= __swab32(d->header.v10.pDisplayName);
 		}
 		if (d->dataVersion >= 11) {
-			d->header.v11.Licensed			= be64_to_cpu(d->header.v11.Licensed);
+			d->header.v11.Licensed			= __swab64(d->header.v11.Licensed);
 		}
 		if (d->dataVersion >= 12) {
-			d->header.v12.functionClasses		= be64_to_cpu(d->header.v12.functionClasses);
+			d->header.v12.functionClasses		= __swab64(d->header.v12.functionClasses);
 		}
 		if (d->dataVersion >= 13) {
-			d->header.v13.steamAppId		= be32_to_cpu(d->header.v13.steamAppId);
+			d->header.v13.steamAppId		= __swab32(d->header.v13.steamAppId);
 		}
 		if (d->dataVersion >= 14) {
-			d->header.v14.debuggerServerPort	= be32_to_cpu(d->header.v14.debuggerServerPort);
+			d->header.v14.debuggerServerPort	= __swab32(d->header.v14.debuggerServerPort);
 		}
-#endif /* SYS_BYTEORDER != SYS_BIG_ENDIAN */
-	} else {
-#if SYS_BYTEORDER != SYS_LIL_ENDIAN
-		d->header.pName			= le32_to_cpu(d->header.pName);
-		d->header.pConfig		= le32_to_cpu(d->header.pConfig);
-		d->header.roomMaxId		= le32_to_cpu(d->header.roomMaxId);
-		d->header.roomMaxTileId		= le32_to_cpu(d->header.roomMaxTileId);
-		d->header.id			= le32_to_cpu(d->header.id);
-		d->header.buildNumber		= le32_to_cpu(d->header.buildNumber);
-		d->header.revisionNumber	= le32_to_cpu(d->header.revisionNumber);
-		d->header.guid3			= le32_to_cpu(d->header.guid3);
-		d->header.guid4			= le32_to_cpu(d->header.guid4);
-		d->header.pGameName		= le32_to_cpu(d->header.pGameName);
-		d->header.Version.Major		= le32_to_cpu(d->header.Version.Major);
-		d->header.Version.Minor		= le32_to_cpu(d->header.Version.Minor);
-		d->header.Version.Release	= le32_to_cpu(d->header.Version.Release);
-		d->header.Version.Build		= le32_to_cpu(d->header.Version.Build);
-		d->header.xscreensize		= le32_to_cpu(d->header.xscreensize);
-		d->header.yscreensize		= le32_to_cpu(d->header.yscreensize);
-		d->header.screenflags		= le32_to_cpu(d->header.screenflags);
-		d->header.crc			= le32_to_cpu(d->header.crc);
-		d->header.datetimeUTC		= le64_to_cpu(d->header.datetimeUTC);
-		if (d->dataVersion >= 10) {
-			d->header.v10.pDisplayName		= le32_to_cpu(d->header.v10.pDisplayName);
-		}
-		if (d->dataVersion >= 11) {
-			d->header.v11.Licensed			= le64_to_cpu(d->header.v11.Licensed);
-		}
-		if (d->dataVersion >= 12) {
-			d->header.v12.functionClasses		= le64_to_cpu(d->header.v12.functionClasses);
-		}
-		if (d->dataVersion >= 13) {
-			d->header.v13.steamAppId		= le32_to_cpu(d->header.v13.steamAppId);
-		}
-		if (d->dataVersion >= 14) {
-			d->header.v14.debuggerServerPort	= le32_to_cpu(d->header.v14.debuggerServerPort);
-		}
-#endif /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
 	}
 	
 	// load room order from the file
