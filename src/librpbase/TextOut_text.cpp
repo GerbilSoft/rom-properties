@@ -351,7 +351,12 @@ static string formatDateTime(time_t timestamp, RomFields::DateTimeFlags dtflags)
 
 	struct tm tm_struct;
 	if (dtflags & RomFields::RFT_DATETIME_IS_UTC) {
-		tm_struct = fmt::gmtime(timestamp);
+		try {
+			tm_struct = fmt::gmtime(timestamp);
+		} catch (const fmt::format_error&) {
+			// fmt::gmtime() failed.
+			return {};
+		}
 	} else {
 		tzset();
 		if (!localtime_r(&timestamp, &tm_struct)) {

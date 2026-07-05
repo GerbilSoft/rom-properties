@@ -24,6 +24,8 @@
   * Dreamcast and SegaSaturn incorrectly added DiscNumber as integer.
     They should be uint. The end result is these properties didn't
     show up correctly.
+  * Fix a potential crash if an out-of-range timestamp is parsed.
+    * Affects: v2.5 - v2.8
 
 ## v2.8 (released 2026/06/20)
 
