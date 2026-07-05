@@ -264,8 +264,8 @@ ParamSFO::ParamSFO(const IRpFilePtr &file)
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
 		// Ensure it's a data format we know.
-		assert(key.valueType == kPSF_Int32 || key.valueType == kPSF_UTF8);
-		if (key.valueType != kPSF_Int32 && key.valueType != kPSF_UTF8) {
+		assert(key.valueType == kPSF_Int32 || key.valueType == kPSF_UTF8 || key.valueType == kPSF_UTF8S);
+		if (key.valueType != kPSF_Int32 && key.valueType != kPSF_UTF8 && key.valueType != kPSF_UTF8S) {
 			d->keys.clear();
 			d->isValid = false;
 			d->file.reset();
@@ -305,14 +305,23 @@ ParamSFO::SFOValueType ParamSFO::getKeyValueType(const char *key)
 	}
 
 	const psf_key_t &psfKey = iter->second;
+
+	ParamSFO::SFOValueType ret;
 	switch (psfKey.valueType) {
+		case kPSF_UTF8S:
 		case kPSF_UTF8:
-			return SFOValueType::UTF8;
+			ret = SFOValueType::UTF8;
+			break;
+
 		case kPSF_Int32:
-			return SFOValueType::Int32;
+			ret = SFOValueType::Int32;
+			break;
+
 		default:
-			return SFOValueType::None;
+			ret = SFOValueType::None;
+			break;
 	}
+	return ret;
 }
 
 string ParamSFO::getStringValue(const char *key)
@@ -344,7 +353,8 @@ string ParamSFO::getStringValue(const char *key)
 	}
 
 	const psf_key_t &psfKey = iter->second;
-	if (psfKey.valueType != kPSF_UTF8) {
+	assert(psfKey.valueType == kPSF_UTF8 || psfKey.valueType == kPSF_UTF8S);
+	if (psfKey.valueType != kPSF_UTF8 && psfKey.valueType != kPSF_UTF8S) {
 		// Not a UTF-8 string key.
 		return {};
 	}
@@ -366,11 +376,11 @@ string ParamSFO::getStringValue(const char *key)
 		return {};
 	}
 
-	// String should be NULL-terminated, so we'll need to find
-	// the first NULL byte and terminate the string there.
+	// kPSF_UTF8: String should be NULL-terminated, so we'll need to
+	// find the first NULL byte and terminate the string there.
 	// NOTE: Some strings have a larger data length than they should...
 	// Assassin's Creed - Bloodlines (Europe) (PSP) (PSN).iso: PSP_SYSTEM_VER == "5.50\0\x95"
-	if (!value.empty()) {
+	if (psfKey.valueType == kPSF_UTF8 && !value.empty()) {
 		size_t null_pos = value.find('\0');
 		if (null_pos != string::npos) {
 			value.resize(null_pos);
