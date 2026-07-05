@@ -400,16 +400,22 @@ GameMaker::GameMaker(const IRpFilePtr &file)
 	}
 	roomOrderLength = isBigEndian ? be32_to_cpu(roomOrderLength) : le32_to_cpu(roomOrderLength);
 
-	for (int i = 0; i < roomOrderLength; i++) {
-		int roomId = 0;
-		size = d->file->read(&roomId, sizeof(roomId));
-		if (size != sizeof(roomId)) {
-			d->isValid = false;
-			d->file.reset();
-			return;
+	d->roomOrder.resize(roomOrderLength);
+	const size_t roomOrderTotalSize = roomOrderLength * sizeof(int);
+	size = d->file->read(d->roomOrder.data(), roomOrderLength * sizeof(int));
+	if (size != roomOrderTotalSize) {
+		d->roomOrder.clear();
+		d->isValid = false;
+		d->file.reset();
+	}
+
+	// Byteswap the room IDs, if necessary.
+	if (( isBigEndian && SYS_BYTEORDER == SYS_LIL_ENDIAN) ||
+	    (!isBigEndian && SYS_BYTEORDER == SYS_BIG_ENDIAN))
+	{
+		for (int &roomId : d->roomOrder) {
+			roomId = __swab32(roomId);
 		}
-		roomId = isBigEndian ? be32_to_cpu(roomId) : le32_to_cpu(roomId);
-		d->roomOrder.push_back(roomId);
 	}
 
 	// load the GMS2 header information
