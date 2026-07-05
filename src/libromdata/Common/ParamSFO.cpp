@@ -349,9 +349,8 @@ string ParamSFO::getStringValue(const char *key)
 		return {};
 	}
 
-	// HACK: We take 1 off the data length to trim null terminators.
-	if (psfKey.dataLength <= 1) {
-		// Empty string, or string only consists of a NULL terminator.
+	if (psfKey.dataLength <= 0) {
+		// Empty string, or negative length?
 		return {};
 	}
 	// Limit data length to 1,024.
@@ -362,9 +361,20 @@ string ParamSFO::getStringValue(const char *key)
 	}
 
 	string value;
-	if (d->readString(d->fileHeader.dataOffset + psfKey.dataOffset, dataLength - 1, value) != 0) {
+	if (d->readString(d->fileHeader.dataOffset + psfKey.dataOffset, dataLength, value) != 0) {
 		// Failed to read the value.
 		return {};
+	}
+
+	// String should be NULL-terminated, so we'll need to find
+	// the first NULL byte and terminate the string there.
+	// NOTE: Some strings have a larger data length than they should...
+	// Assassin's Creed - Bloodlines (Europe) (PSP) (PSN).iso: PSP_SYSTEM_VER == "5.50\0\x95"
+	if (!value.empty()) {
+		size_t null_pos = value.find('\0');
+		if (null_pos != string::npos) {
+			value.resize(null_pos);
+		}
 	}
 
 	// Cache the value for later.
@@ -403,6 +413,13 @@ uint32_t ParamSFO::getIntValue(const char *key)
 	const psf_key_t &psfKey = iter->second;
 	if (psfKey.valueType != kPSF_Int32) {
 		// Not an Int32 key.
+		return 0;
+	}
+
+	// Verify the int size. (Must be 4)
+	assert(psfKey.dataLength == sizeof(uint32_t));
+	if (psfKey.dataLength != sizeof(uint32_t)) {
+		// Size is incorrect.
 		return 0;
 	}
 
