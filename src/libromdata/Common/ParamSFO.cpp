@@ -598,7 +598,7 @@ int ParamSFO::loadMetaData(void)
 		return -EIO;
 	}
 
-	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
+	d->metaData.reserve(5);	// Maximum of 5 metadata properties.
 
 	/**
 	 * Example PSP param.sfo file:
@@ -659,6 +659,28 @@ int ParamSFO::loadMetaData(void)
 		}
 
 		d->metaData.addMetaData_string(Property::GameID, gameID_dash);
+	}
+
+	// Title ID
+	string titleID = getStringValue("TITLE_ID");
+	if (!titleID.empty()) {
+		// Add a '-' between the last letter and the first number.
+		string titleID_dash;
+		titleID_dash.reserve(titleID.size() + 1);
+		for (size_t i = 0; i < titleID.size(); i++) {
+			if (isalpha_ascii(titleID[i])) {
+				// Still a letter.
+				titleID_dash += titleID[i];
+			} else {
+				// Not a letter.
+				// Add a dash and then the rest of the game ID.
+				titleID_dash += '-';
+				titleID_dash += titleID.substr(i);
+				break;
+			}
+		}
+
+		d->metaData.addMetaData_string(Property::TitleID, titleID_dash);
 	}
 
 	// OS Version
