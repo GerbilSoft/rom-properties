@@ -302,7 +302,7 @@ int S98::loadFieldData(void)
 	// Version
 	const bool isV3 = (s98Header->version == '3');
 	const char sVersion[2] = {s98Header->version, '\0'};
-	d->fields.addField_string(C_("S98", "Format Version"), sVersion);
+	d->fields.addField_string(C_("RomData", "Format Version"), sVersion);
 
 	// Timer info
 	const uint32_t timer_info = (s98Header->timer_info != 0)

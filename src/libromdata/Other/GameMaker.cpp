@@ -546,7 +546,7 @@ int GameMaker::loadFieldData(void)
 				C_("GameMaker", "Game Name"), d->gameName.c_str(), RomFields::STRF_TRIM_END);
 		}
 
-		d->fields.addField_string_numeric(C_("GameMaker", "Format Version"), d->dataVersion);
+		d->fields.addField_string_numeric(C_("RomData", "Format Version"), d->dataVersion);
 
 		d->fields.addField_string(C_("GameMaker", "Runtime"), d->hasCodeSegment ? "VM" : "YYC", 0);
 
@@ -559,7 +559,7 @@ int GameMaker::loadFieldData(void)
 			d->fields.addField_string(
 				C_("GameMaker", "Project Config"), d->projectConfig.c_str(), RomFields::STRF_TRIM_END);
 		}
-		
+
 		// HACK: to make GCC happy with the packed structures, make a copy of the Version struct
 		const YYVersion version = d->header.Version;
 		string versionNum =
