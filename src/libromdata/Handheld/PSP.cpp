@@ -626,7 +626,7 @@ int PSP::loadFieldData(void)
 			d->fields.addField_string(C_("RomData", "Version"), s_version);
 
 			if (paramSfo->getKeyValueType("PSP_SYSTEM_VER") == ParamSFO::SFOValueType::UTF8) {
-				d->fields.addField_string(C_("PSP", "OS Version"), paramSfo->getStringValue("PSP_SYSTEM_VER"));
+				d->fields.addField_string(C_("RomData", "OS Version"), paramSfo->getStringValue("PSP_SYSTEM_VER"));
 			}
 		}
 
