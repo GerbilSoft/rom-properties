@@ -80,6 +80,17 @@ public:
 	// Key/value lookup cache.
 	unordered_map<string, string> cachedStringValues;
 	unordered_map<string, uint32_t> cachedIntValues;
+
+public:
+	ParamSFO::SFOValueType getKeyValueType(const char *key) const;
+	std::string getStringValue(const char *key);
+	uint32_t getIntValue(const char *key);
+
+	/**
+	 * Get the minimum OS version.
+	 * @return Minimum OS version, or empty string if not found.
+	 */
+	string getMinimumOSVersion(void);
 };
 
 ROMDATA_IMPL(ParamSFO)
@@ -171,22 +182,195 @@ int ParamSFOPrivate::readString(uint32_t offset, size_t length, string &str)
 	return 0;
 }
 
-int ParamSFO::isRomSupported_static(const DetectInfo *info)
+ParamSFO::SFOValueType ParamSFOPrivate::getKeyValueType(const char *key) const
 {
-	assert(info != nullptr);
-	assert(info->header.pData != nullptr);
-	assert(info->header.addr == 0);
-	if (!info || !info->header.pData || info->header.addr != 0 || info->header.size < sizeof(psf_header_t)) {
-		return -1;
+	auto iter = keyLookup.find(key);
+	if (iter == keyLookup.end()) {
+		// We don't have this key.
+		return ParamSFO::SFOValueType::None;
 	}
 
-	const psf_header_t *const psfheader = reinterpret_cast<const psf_header_t *>(info->header.pData);
+	const psf_key_t &psfKey = iter->second;
 
-	if (psfheader->magic != be32_to_cpu(PSF_MAGIC) || psfheader->version != be32_to_cpu(PSF_VERSION)) {
-		return -1;
+	ParamSFO::SFOValueType ret;
+	switch (psfKey.valueType) {
+		case kPSF_UTF8S:
+		case kPSF_UTF8:
+			ret = ParamSFO::SFOValueType::UTF8;
+			break;
+
+		case kPSF_Int32:
+			ret = ParamSFO::SFOValueType::Int32;
+			break;
+
+		default:
+			ret = ParamSFO::SFOValueType::None;
+			break;
+	}
+	return ret;
+}
+
+string ParamSFOPrivate::getStringValue(const char *key)
+{
+	// Did we look up this key already?
+	{
+		auto iter = cachedStringValues.find(key);
+		if (iter != cachedStringValues.end()) {
+			// We already fetched a string value for this key.
+			return iter->second;
+		}
 	}
 
-	return 0;
+	if (!file) {
+		// File isn't open.
+		return {};
+	} else if (!isValid) {
+		// File isn't valid
+		return {};
+	}
+
+	auto iter = keyLookup.find(key);
+	if (iter == keyLookup.end()) {
+		// We don't have this key.
+		return {};
+	}
+
+	const psf_key_t &psfKey = iter->second;
+	assert(psfKey.valueType == kPSF_UTF8 || psfKey.valueType == kPSF_UTF8S);
+	if (psfKey.valueType != kPSF_UTF8 && psfKey.valueType != kPSF_UTF8S) {
+		// Not a UTF-8 string key.
+		return {};
+	}
+
+	if (psfKey.dataLength <= 0) {
+		// Empty string, or negative length?
+		return {};
+	}
+	// Limit data length to 1,024.
+	assert(psfKey.dataLength <= ParamSFOPrivate::MAX_STRING_LENGTH);
+	int dataLength = psfKey.dataLength;
+	if (dataLength > ParamSFOPrivate::MAX_STRING_LENGTH) {
+		dataLength = ParamSFOPrivate::MAX_STRING_LENGTH;
+	}
+
+	string value;
+	if (readString(fileHeader.dataOffset + psfKey.dataOffset, dataLength, value) != 0) {
+		// Failed to read the value.
+		return {};
+	}
+
+	// kPSF_UTF8: String should be NULL-terminated, so we'll need to
+	// find the first NULL byte and terminate the string there.
+	// NOTE: Some strings have a larger data length than they should...
+	// Assassin's Creed - Bloodlines (Europe) (PSP) (PSN).iso: PSP_SYSTEM_VER == "5.50\0\x95"
+	if (psfKey.valueType == kPSF_UTF8 && !value.empty()) {
+		size_t null_pos = value.find('\0');
+		if (null_pos != string::npos) {
+			value.resize(null_pos);
+		}
+	}
+
+	// Cache the value for later.
+	cachedStringValues.emplace(key, std::move(value));
+	return value;
+}
+
+uint32_t ParamSFOPrivate::getIntValue(const char *key)
+{
+	// TODO: Can we error out of this function?
+
+	// Did we look up this key already?
+	{
+		auto iter = cachedIntValues.find(key);
+		if (iter != cachedIntValues.end()) {
+			// We already fetched a uint32_t value for this key.
+			return iter->second;
+		}
+	}
+
+	if (!file) {
+		// File isn't open.
+		return 0;
+	} else if (!isValid) {
+		// File isn't valid
+		return 0;
+	}
+
+	auto iter = keyLookup.find(key);
+	if (iter == keyLookup.end()) {
+		// We don't have this key.
+		return 0;
+	}
+
+	const psf_key_t &psfKey = iter->second;
+	if (psfKey.valueType != kPSF_Int32) {
+		// Not an Int32 key.
+		return 0;
+	}
+
+	// Verify the int size. (Must be 4)
+	assert(psfKey.dataLength == sizeof(uint32_t));
+	if (psfKey.dataLength != sizeof(uint32_t)) {
+		// Size is incorrect.
+		return 0;
+	}
+
+	uint32_t value = 0;
+	if (file->seekAndRead(fileHeader.dataOffset + psfKey.dataOffset, &value, sizeof(uint32_t)) != sizeof(uint32_t)) {
+		// Failed to read the value.
+		return 0;
+	}
+
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+	// Byteswap the value
+	value = le32_to_cpu(value);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+
+	cachedIntValues.emplace(key, value);
+	return value;
+}
+
+/**
+ * Get the minimum OS version.
+ * @return Minimum OS version, or empty string if not found.
+ */
+string ParamSFOPrivate::getMinimumOSVersion(void)
+{
+	// Check for PSP.
+	string s_systemVer = getStringValue("PSP_SYSTEM_VER");
+	if (!s_systemVer.empty()) {
+		return s_systemVer;
+	}
+
+	// Check for PS3.
+	s_systemVer = getStringValue("PS3_SYSTEM_VER");
+	if (!s_systemVer.empty()) {
+		// TODO: Reformat the system version?
+		// The standard format is "XX.YYYY", e.g. "03.4100", but usually
+		// we don't want to show a leading 0 for major or trailing 0s for minor.
+		return s_systemVer;
+	}
+
+	// Check for PSP2_SYSTEM_VER (PS Vita) and/or SYSTEM_VER (PS4).
+	// These are stored as uint32_t, not strings.
+	// TODO: SYSTEM_ROOT_VER - preferred over SYSTEM_VER or not? Skipping for now...
+	// TODO: PSP2_SYSTEM_ROOT_VER - preferred over PSP2_SYSTEM_VER or not? Skipping for now...
+	// TODO: Verify that PSP2_SYSTEM_VER uses the same format as SYSTEM_VER.
+	uint32_t u_systemVer = getIntValue("PSP2_SYSTEM_VER");
+	if (u_systemVer == 0) {
+		// PSP2_SYSTEM_VER not found. Try SYSTEM_VER.
+		u_systemVer = getIntValue("SYSTEM_VER");
+	}
+	if (u_systemVer >= 0x10000) {
+		// For PS4 at least, only the HIWORD is relevant.
+		// Also, the value is in BCD, so print it as hex.
+		// FIXME: "EB0035-CUSA42526_00-DEGROIDPS4EE0000-A0102-V0100-PARAM.SFO" has 0x10508000...
+		u_systemVer >>= 16;
+		return fmt::format(FSTR("{:X}.{:0>2X}"), (u_systemVer >> 8) & 0xFF, u_systemVer & 0xFF);
+	}
+
+	// Minimum OS version is not available...
+	return {};
 }
 
 ParamSFO::ParamSFO(const IRpFilePtr &file)
@@ -291,158 +475,22 @@ ParamSFO::ParamSFO(const IRpFilePtr &file)
 	d->mimeType = "application/x-playstation-sfo";
 }
 
-ParamSFO::SFOValueType ParamSFO::getKeyValueType(const char *key)
+int ParamSFO::isRomSupported_static(const DetectInfo *info)
 {
-	RP_D(ParamSFO);
-
-	auto iter = d->keyLookup.find(key);
-	if (iter == d->keyLookup.end()) {
-		// We don't have this key.
-		return SFOValueType::None;
+	assert(info != nullptr);
+	assert(info->header.pData != nullptr);
+	assert(info->header.addr == 0);
+	if (!info || !info->header.pData || info->header.addr != 0 || info->header.size < sizeof(psf_header_t)) {
+		return -1;
 	}
 
-	const psf_key_t &psfKey = iter->second;
+	const psf_header_t *const psfheader = reinterpret_cast<const psf_header_t *>(info->header.pData);
 
-	ParamSFO::SFOValueType ret;
-	switch (psfKey.valueType) {
-		case kPSF_UTF8S:
-		case kPSF_UTF8:
-			ret = SFOValueType::UTF8;
-			break;
-
-		case kPSF_Int32:
-			ret = SFOValueType::Int32;
-			break;
-
-		default:
-			ret = SFOValueType::None;
-			break;
-	}
-	return ret;
-}
-
-string ParamSFO::getStringValue(const char *key)
-{
-	// TODO: Can we error out of this function?
-	RP_D(ParamSFO);
-
-	// Did we look up this key already?
-	{
-		auto iter = d->cachedStringValues.find(key);
-		if (iter != d->cachedStringValues.end()) {
-			// We already fetched a string value for this key.
-			return iter->second;
-		}
+	if (psfheader->magic != be32_to_cpu(PSF_MAGIC) || psfheader->version != be32_to_cpu(PSF_VERSION)) {
+		return -1;
 	}
 
-	if (!d->file) {
-		// File isn't open.
-		return {};
-	} else if (!d->isValid) {
-		// File isn't valid
-		return {};
-	}
-
-	auto iter = d->keyLookup.find(key);
-	if (iter == d->keyLookup.end()) {
-		// We don't have this key.
-		return {};
-	}
-
-	const psf_key_t &psfKey = iter->second;
-	assert(psfKey.valueType == kPSF_UTF8 || psfKey.valueType == kPSF_UTF8S);
-	if (psfKey.valueType != kPSF_UTF8 && psfKey.valueType != kPSF_UTF8S) {
-		// Not a UTF-8 string key.
-		return {};
-	}
-
-	if (psfKey.dataLength <= 0) {
-		// Empty string, or negative length?
-		return {};
-	}
-	// Limit data length to 1,024.
-	assert(psfKey.dataLength <= ParamSFOPrivate::MAX_STRING_LENGTH);
-	int dataLength = psfKey.dataLength;
-	if (dataLength > ParamSFOPrivate::MAX_STRING_LENGTH) {
-		dataLength = ParamSFOPrivate::MAX_STRING_LENGTH;
-	}
-
-	string value;
-	if (d->readString(d->fileHeader.dataOffset + psfKey.dataOffset, dataLength, value) != 0) {
-		// Failed to read the value.
-		return {};
-	}
-
-	// kPSF_UTF8: String should be NULL-terminated, so we'll need to
-	// find the first NULL byte and terminate the string there.
-	// NOTE: Some strings have a larger data length than they should...
-	// Assassin's Creed - Bloodlines (Europe) (PSP) (PSN).iso: PSP_SYSTEM_VER == "5.50\0\x95"
-	if (psfKey.valueType == kPSF_UTF8 && !value.empty()) {
-		size_t null_pos = value.find('\0');
-		if (null_pos != string::npos) {
-			value.resize(null_pos);
-		}
-	}
-
-	// Cache the value for later.
-	d->cachedStringValues.emplace(key, std::move(value));
-	return value;
-}
-
-uint32_t ParamSFO::getIntValue(const char *key)
-{
-	// TODO: Can we error out of this function?
-	RP_D(ParamSFO);
-
-	// Did we look up this key already?
-	{
-		auto iter = d->cachedIntValues.find(key);
-		if (iter != d->cachedIntValues.end()) {
-			// We already fetched a uint32_t value for this key.
-			return iter->second;
-		}
-	}
-
-	if (!d->file) {
-		// File isn't open.
-		return 0;
-	} else if (!d->isValid) {
-		// File isn't valid
-		return 0;
-	}
-
-	auto iter = d->keyLookup.find(key);
-	if (iter == d->keyLookup.end()) {
-		// We don't have this key.
-		return 0;
-	}
-
-	const psf_key_t &psfKey = iter->second;
-	if (psfKey.valueType != kPSF_Int32) {
-		// Not an Int32 key.
-		return 0;
-	}
-
-	// Verify the int size. (Must be 4)
-	assert(psfKey.dataLength == sizeof(uint32_t));
-	if (psfKey.dataLength != sizeof(uint32_t)) {
-		// Size is incorrect.
-		return 0;
-	}
-
-	uint32_t value = 0;
-	if (d->file->seekAndRead(d->fileHeader.dataOffset + psfKey.dataOffset, &value, sizeof(uint32_t)) != sizeof(uint32_t)) {
-		// Failed to read the value.
-		return 0;
-	}
-
-#if SYS_BYTEORDER == SYS_BIG_ENDIAN
-	// Byteswap the value
-	value = le32_to_cpu(value);
-#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-
-	d->cachedIntValues.emplace(key, value);
-	return value;
+	return 0;
 }
 
 /**
@@ -574,39 +622,6 @@ int ParamSFO::loadMetaData(void)
 		d->metaData.addMetaData_string(Property::Title, title);
 	}
 
-	// Check the OS version.
-	string s_systemVer = getStringValue("PSP_SYSTEM_VER");
-	if (!s_systemVer.empty()) {
-		d->metaData.addMetaData_string(Property::OSVersion, s_systemVer);
-	} else {
-		// Check for PS3_SYSTEM_VER. (PS3)
-		s_systemVer = getStringValue("PS3_SYSTEM_VER");
-		if (!s_systemVer.empty()) {
-			// TODO: Reformat the system version?
-			// The standard format is "XX.YYYY", e.g. "03.4100", but usually
-			// we don't want to show a leading 0 for major or trailing 0s for minor.
-			d->metaData.addMetaData_string(Property::OSVersion, s_systemVer);
-		} else {
-			// Check for PSP2_SYSTEM_VER (PS Vita) and/or SYSTEM_VER (PS4).
-			// TODO: SYSTEM_ROOT_VER - preferred over SYSTEM_VER or not? Skipping for now...
-			// TODO: PSP2_SYSTEM_ROOT_VER - preferred over PSP2_SYSTEM_VER or not? Skipping for now...
-			// TODO: Verify that PSP2_SYSTEM_VER uses the same format as SYSTEM_VER.
-			uint32_t u_systemVer = getIntValue("PSP2_SYSTEM_VER");
-			if (u_systemVer == 0) {
-				// PSP2_SYSTEM_VER not found. Try SYSTEM_VER.
-				u_systemVer = getIntValue("SYSTEM_VER");
-			}
-			if (u_systemVer >= 0x10000) {
-				// For PS4 at least, only the HIWORD is relevant.
-				// Also, the value is in BCD, so print it as hex.
-				// FIXME: "EB0035-CUSA42526_00-DEGROIDPS4EE0000-A0102-V0100-PARAM.SFO" has 0x10508000...
-				u_systemVer >>= 16;
-				d->metaData.addMetaData_string(Property::OSVersion,
-					fmt::format(FSTR("{:X}.{:0>2X}"), (u_systemVer >> 8) & 0xFF, u_systemVer & 0xFF));
-			}
-		}
-	}
-
 	// TODO: Figure out the PARENTAL_LEVEL field.
 	// TODO: Add a metadata property for revision / disc version.
 
@@ -646,6 +661,12 @@ int ParamSFO::loadMetaData(void)
 		d->metaData.addMetaData_string(Property::GameID, gameID_dash);
 	}
 
+	// OS Version
+	string s_osVersion = d->getMinimumOSVersion();
+	if (!s_osVersion.empty()) {
+		d->metaData.addMetaData_string(Property::OSVersion, s_osVersion);
+	}
+
 	// Version
 	// Prefer APP_VER if it's available; otherwise, use DISC_VERSION.
 	string s_version = getStringValue("APP_VER");
@@ -658,6 +679,24 @@ int ParamSFO::loadMetaData(void)
 
 	// Finished reading the metadata.
 	return d->metaData.count();
+}
+
+ParamSFO::SFOValueType ParamSFO::getKeyValueType(const char *key) const
+{
+	RP_D(const ParamSFO);
+	return d->getKeyValueType(key);
+}
+
+std::string ParamSFO::getStringValue(const char *key)
+{
+	RP_D(ParamSFO);
+	return d->getStringValue(key);
+}
+
+uint32_t ParamSFO::getIntValue(const char *key)
+{
+	RP_D(ParamSFO);
+	return d->getIntValue(key);
 }
 
 } //namespace LibRomData

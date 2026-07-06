@@ -22,8 +22,8 @@ public:
 		UTF8,
 		Int32
 	};
-	SFOValueType getKeyValueType(const char *key);
-	inline SFOValueType getKeyValueType(const std::string &key)
+	SFOValueType getKeyValueType(const char *key) const;
+	inline SFOValueType getKeyValueType(const std::string &key) const
 	{
 		return getKeyValueType(key.c_str());
 	}
