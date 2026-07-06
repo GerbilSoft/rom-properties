@@ -70,7 +70,7 @@ public:
 	static const array<const char*, 1+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
-	// PSF header.
+	// PSF header
 	psf_header_t fileHeader;
 
 	// PSF key data.
@@ -80,8 +80,6 @@ public:
 	// Key/value lookup cache.
 	unordered_map<string, string> cachedStringValues;
 	unordered_map<string, uint32_t> cachedIntValues;
-
-	bool isBigEndian;
 };
 
 ROMDATA_IMPL(ParamSFO)
@@ -108,7 +106,6 @@ ParamSFOPrivate::ParamSFOPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
 	memset(&fileHeader, 0, sizeof(fileHeader));
-	isBigEndian = false;
 }
 
 /**
