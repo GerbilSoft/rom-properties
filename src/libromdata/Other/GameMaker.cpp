@@ -536,12 +536,12 @@ int GameMaker::loadFieldData(void)
 	// general info fields
 	d->fields.addTab("Info");
 	{
-		if (d->displayName.length() != 0) {
+		if (!d->displayName.empty()) {
 			d->fields.addField_string(C_("GameMaker", "Display Name"), d->displayName.c_str(),
 				RomFields::STRF_TRIM_END);
 		}
 
-		if (d->gameName.length() != 0) {
+		if (!d->gameName.empty()) {
 			d->fields.addField_string(
 				C_("GameMaker", "Game Name"), d->gameName.c_str(), RomFields::STRF_TRIM_END);
 		}
@@ -550,12 +550,12 @@ int GameMaker::loadFieldData(void)
 
 		d->fields.addField_string(C_("GameMaker", "Runtime"), d->hasCodeSegment ? "VM" : "YYC", 0);
 
-		if (d->projectName.length() != 0) {
+		if (!d->projectName.empty()) {
 		    d->fields.addField_string(
 			    C_("GameMaker", "Project Name"), d->projectName.c_str(), RomFields::STRF_TRIM_END);
 		}
 
-		if (d->projectConfig.length() != 0) {
+		if (!d->projectConfig.empty()) {
 			d->fields.addField_string(
 				C_("GameMaker", "Project Config"), d->projectConfig.c_str(), RomFields::STRF_TRIM_END);
 		}
@@ -749,9 +749,9 @@ int GameMaker::loadMetaData(void)
 
 	d->metaData.reserve(3); // Maximum of 3 metadata properties.
 
-	if (d->displayName.length() != 0) {
+	if (!d->displayName.empty()) {
 		d->metaData.addMetaData_string(Property::Title, d->displayName, RomMetaData::STRF_TRIM_END);
-	} else if (d->gameName.length() != 0) {
+	} else if (!d->gameName.empty()) {
 		d->metaData.addMetaData_string(Property::Title, d->gameName, RomMetaData::STRF_TRIM_END);
 	}
 
