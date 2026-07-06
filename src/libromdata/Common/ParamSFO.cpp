@@ -83,7 +83,7 @@ public:
 
 public:
 	ParamSFO::SFOValueType getKeyValueType(const char *key) const;
-	std::string getStringValue(const char *key);
+	string getStringValue(const char *key);
 	uint32_t getIntValue(const char *key);
 
 	/**
@@ -271,7 +271,7 @@ string ParamSFOPrivate::getStringValue(const char *key)
 	}
 
 	// Cache the value for later.
-	cachedStringValues.emplace(key, std::move(value));
+	cachedStringValues.emplace(key, value);
 	return value;
 }
 
@@ -687,7 +687,7 @@ ParamSFO::SFOValueType ParamSFO::getKeyValueType(const char *key) const
 	return d->getKeyValueType(key);
 }
 
-std::string ParamSFO::getStringValue(const char *key)
+string ParamSFO::getStringValue(const char *key)
 {
 	RP_D(ParamSFO);
 	return d->getStringValue(key);
