@@ -574,21 +574,36 @@ int ParamSFO::loadMetaData(void)
 		d->metaData.addMetaData_string(Property::Title, title);
 	}
 
-	// TODO: Variants for other consoles?
-	const string pspSystemVer = getStringValue("PSP_SYSTEM_VER");
-	if (!pspSystemVer.empty()) {
-		d->metaData.addMetaData_string(Property::OSVersion, pspSystemVer);
+	// Check the OS version.
+	string s_systemVer = getStringValue("PSP_SYSTEM_VER");
+	if (!s_systemVer.empty()) {
+		d->metaData.addMetaData_string(Property::OSVersion, s_systemVer);
 	} else {
-		// PS4: Check for SYSTEM_VER.
-		// TODO: SYSTEM_ROOT_VER - preferred over SYSTEM_VER or not? Skipping for now...
-		uint32_t ps4SystemVer = getIntValue("SYSTEM_VER");
-		if (ps4SystemVer >= 0x10000) {
-			// For PS4 at least, only the HIWORD is relevant.
-			// Also, the value is in BCD, so print it as hex.
-			// FIXME: "EB0035-CUSA42526_00-DEGROIDPS4EE0000-A0102-V0100-PARAM.SFO" has 0x10508000...
-			ps4SystemVer >>= 16;
-			d->metaData.addMetaData_string(Property::OSVersion,
-				fmt::format(FSTR("{:X}.{:0>2X}"), (ps4SystemVer >> 8) & 0xFF, ps4SystemVer & 0xFF));
+		// Check for PS3_SYSTEM_VER. (PS3)
+		s_systemVer = getStringValue("PS3_SYSTEM_VER");
+		if (!s_systemVer.empty()) {
+			// TODO: Reformat the system version?
+			// The standard format is "XX.YYYY", e.g. "03.4100", but usually
+			// we don't want to show a leading 0 for major or trailing 0s for minor.
+			d->metaData.addMetaData_string(Property::OSVersion, s_systemVer);
+		} else {
+			// Check for PSP2_SYSTEM_VER (PS Vita) and/or SYSTEM_VER (PS4).
+			// TODO: SYSTEM_ROOT_VER - preferred over SYSTEM_VER or not? Skipping for now...
+			// TODO: PSP2_SYSTEM_ROOT_VER - preferred over PSP2_SYSTEM_VER or not? Skipping for now...
+			// TODO: Verify that PSP2_SYSTEM_VER uses the same format as SYSTEM_VER.
+			uint32_t u_systemVer = getIntValue("PSP2_SYSTEM_VER");
+			if (u_systemVer == 0) {
+				// PSP2_SYSTEM_VER not found. Try SYSTEM_VER.
+				u_systemVer = getIntValue("SYSTEM_VER");
+			}
+			if (u_systemVer >= 0x10000) {
+				// For PS4 at least, only the HIWORD is relevant.
+				// Also, the value is in BCD, so print it as hex.
+				// FIXME: "EB0035-CUSA42526_00-DEGROIDPS4EE0000-A0102-V0100-PARAM.SFO" has 0x10508000...
+				u_systemVer >>= 16;
+				d->metaData.addMetaData_string(Property::OSVersion,
+					fmt::format(FSTR("{:X}.{:0>2X}"), (u_systemVer >> 8) & 0xFF, u_systemVer & 0xFF));
+			}
 		}
 	}
 
