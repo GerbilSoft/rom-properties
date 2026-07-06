@@ -282,7 +282,7 @@ ParamSFO::ParamSFO(const IRpFilePtr &file)
 			return;
 		}
 
-		d->keyLookup[keyName] = key;
+		d->keyLookup.emplace(std::move(keyName), key);
 	}
 
 	d->isValid = true;
@@ -385,7 +385,7 @@ string ParamSFO::getStringValue(const char *key)
 	}
 
 	// Cache the value for later.
-	d->cachedStringValues[key] = value;
+	d->cachedStringValues.emplace(key, std::move(value));
 	return value;
 }
 
@@ -441,7 +441,7 @@ uint32_t ParamSFO::getIntValue(const char *key)
 	value = le32_to_cpu(value);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
-	d->cachedIntValues[key] = value;
+	d->cachedIntValues.emplace(key, value);
 	return value;
 }
 
