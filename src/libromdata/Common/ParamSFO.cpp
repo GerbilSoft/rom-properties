@@ -578,6 +578,18 @@ int ParamSFO::loadMetaData(void)
 	const string pspSystemVer = getStringValue("PSP_SYSTEM_VER");
 	if (!pspSystemVer.empty()) {
 		d->metaData.addMetaData_string(Property::OSVersion, pspSystemVer);
+	} else {
+		// PS4: Check for SYSTEM_VER.
+		// TODO: SYSTEM_ROOT_VER - preferred over SYSTEM_VER or not? Skipping for now...
+		uint32_t ps4SystemVer = getIntValue("SYSTEM_VER");
+		if (ps4SystemVer >= 0x10000) {
+			// For PS4 at least, only the HIWORD is relevant.
+			// Also, the value is in BCD, so print it as hex.
+			// FIXME: "EB0035-CUSA42526_00-DEGROIDPS4EE0000-A0102-V0100-PARAM.SFO" has 0x10508000...
+			ps4SystemVer >>= 16;
+			d->metaData.addMetaData_string(Property::OSVersion,
+				fmt::format(FSTR("{:X}.{:0>2X}"), (ps4SystemVer >> 8) & 0xFF, ps4SystemVer & 0xFF));
+		}
 	}
 
 	// TODO: Figure out the PARENTAL_LEVEL field.
