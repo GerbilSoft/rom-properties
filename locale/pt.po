@@ -2084,7 +2084,7 @@ msgstr "Valor"
 #: ../src/libromdata/Common/ParamSFO.cpp:528
 msgctxt "SFO"
 msgid "Values"
-msgstr "Valores0"
+msgstr "Valores"
 
 #. tr: IMG_INT_ICON
 #: ../src/libromdata/config/ImageTypesConfig.cpp:97
