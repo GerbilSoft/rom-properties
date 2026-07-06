@@ -598,7 +598,7 @@ int ParamSFO::loadMetaData(void)
 		return -EIO;
 	}
 
-	d->metaData.reserve(5);	// Maximum of 5 metadata properties.
+	d->metaData.reserve(6);	// Maximum of 6 metadata properties.
 
 	/**
 	 * Example PSP param.sfo file:
@@ -617,6 +617,7 @@ int ParamSFO::loadMetaData(void)
 	 */
 	// TODO: Check PS2, PS3, PS Vita, PS4, PS5?
 
+	// Title
 	const string title = getStringValue("TITLE");
 	if (!title.empty()) {
 		d->metaData.addMetaData_string(Property::Title, title);
@@ -625,6 +626,13 @@ int ParamSFO::loadMetaData(void)
 	// TODO: Figure out the PARENTAL_LEVEL field.
 	// TODO: Add a metadata property for revision / disc version.
 
+	// Publisher
+	const string publisher = getStringValue("PROVIDER");
+	if (!publisher.empty()) {
+		d->metaData.addMetaData_string(Property::Publisher, publisher);
+	}
+
+	// Disc number (if multi-disc)
 	const uint32_t discTotal = getIntValue("DISC_TOTAL");
 	if (discTotal > 1) {
 		// Multiple discs!
