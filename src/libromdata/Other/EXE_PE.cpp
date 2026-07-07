@@ -877,45 +877,36 @@ int EXEPrivate::addFields_PE_Export(void)
 	};
 
 	// Export Address Table
+	// NOTE: rvaExpAddrTbl might not be 32-bit aligned!
 	const uint32_t rvaExpAddrTbl = le32_to_cpu(pExpDirTbl->AddressOfFunctions);
-	if (!IS_ALIGNED_OFFSET(rvaExpAddrTbl, 4)) {
-		// Not aligned???
-		return -ENOENT;
-	}
 	uint32_t szExpAddrTbl = le32_to_cpu(pExpDirTbl->NumberOfFunctions);
 	// Ignore ordinals greater than 65535
 	szExpAddrTbl = std::min(65536-ordinalBase, szExpAddrTbl);
-	const uint32_t *expAddrTbl = reinterpret_cast<const uint32_t*>(
+	const uint32_t *expAddrTbl = static_cast<const uint32_t*>(
 		checkBounds(rvaExpAddrTbl, szExpAddrTbl*sizeof(uint32_t)));
 	if (!expAddrTbl) {
 		return -ENOENT;
 	}
 
 	// Export Name Table
+	// NOTE: rvaExpNameTbl might not be 32-bit aligned!
 	const uint32_t rvaExpNameTbl = le32_to_cpu(pExpDirTbl->AddressOfNames);
-	if (!IS_ALIGNED_OFFSET(rvaExpNameTbl, 4)) {
-		// Not aligned???
-		return -ENOENT;
-	}
 	const uint32_t szExpNameTbl = le32_to_cpu(pExpDirTbl->NumberOfNames);
 	static constexpr uint32_t szExpNameTbl_MAX = 16U * 1024U * 1024U;
 	assert(szExpNameTbl <= szExpNameTbl_MAX);
 	if (szExpNameTbl > szExpNameTbl_MAX) {
 		return -ENOMEM;
 	}
-	const uint32_t *const expNameTbl = reinterpret_cast<const uint32_t*>(
+	const uint32_t *const expNameTbl = static_cast<const uint32_t*>(
 		checkBounds(rvaExpNameTbl, szExpNameTbl*sizeof(uint32_t)));
 	if (!expNameTbl) {
 		return -ENOENT;
 	}
 
 	// Export Ordinal Table
+	// NOTE: rvaExpOrdTbl might not be 16-bit aligned!
 	const uint32_t rvaExpOrdTbl = le32_to_cpu(pExpDirTbl->AddressOfNameOrdinals);
-	if (!IS_ALIGNED_OFFSET(rvaExpOrdTbl, 4)) {
-		// Not aligned???
-		return -ENOENT;
-	}
-	const uint16_t *const expOrdTbl = reinterpret_cast<const uint16_t*>(
+	const uint16_t *const expOrdTbl = static_cast<const uint16_t*>(
 		checkBounds(rvaExpOrdTbl, szExpNameTbl*sizeof(uint16_t)));
 	if (!expOrdTbl) {
 		return -ENOENT;

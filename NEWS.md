@@ -26,6 +26,9 @@
     show up correctly.
   * Fix a potential crash if an out-of-range timestamp is parsed.
     * Affects: v2.5 - v2.8
+  * Revert an incorrect ubsan fix that broke the PE Exports tab.
+    * Fixes #498: Exports table disappeared from win32 shell ext page
+      * Reported by @ksharperd.
 
 ## v2.8 (released 2026/06/20)
 
