@@ -590,7 +590,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	// Sanity check: Must be at least 8 characters.
 	const string &cacheDir = FileSystem::getCacheDirectory();
 	const size_t bscount = std::count_if(cacheDir.cbegin(), cacheDir.cend(),
-		[](TCHAR chr) noexcept -> bool { return (chr == L'\\'); });
+		[](TCHAR chr) noexcept -> bool { return (chr == _T('\\')); });
 
 	if (cacheDir.size() < 8 || bscount < 6) {
 		const string s_err = fmt::format(FRUN(C_("CacheTab", "ERROR: {:s}")),

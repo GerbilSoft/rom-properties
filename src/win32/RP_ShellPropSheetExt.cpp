@@ -364,7 +364,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 				for (const auto &p : *pStr_multi) {
 					// Count the number of newlines.
 					int tmp_lf_count = std::accumulate(p.second.cbegin(), p.second.cend(), 0,
-						[](int sum, char chr) -> int {
+						[](int sum, char chr) noexcept -> int {
 							if (chr == '\n')
 								sum++;
 							return sum;

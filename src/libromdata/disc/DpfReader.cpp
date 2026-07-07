@@ -179,7 +179,7 @@ DpfReader::DpfReader(const IRpFilePtr &file)
 	// Make sure entries are sorted by virtual address.
 	// TODO: Remove zero-length entries?
 	std::sort(d->entries.begin(), d->entries.end(),
-		[](const RpfEntry &a, const RpfEntry &b) {
+		[](const RpfEntry &a, const RpfEntry &b) noexcept -> bool {
 			return (a.virt_offset < b.virt_offset);
 		});
 

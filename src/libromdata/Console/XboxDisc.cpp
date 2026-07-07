@@ -290,7 +290,7 @@ IRpFilePtr XboxDiscPrivate::open(const char *filename)
 #ifdef _WIN32
 	// Replace all slashes with backslashes.
 	const auto start_iter = ts_full_filename.begin() + old_sz;
-	std::transform(start_iter, ts_full_filename.end(), start_iter, [](TCHAR c) {
+	std::transform(start_iter, ts_full_filename.end(), start_iter, [](TCHAR c) noexcept -> bool {
 		return (c == '/') ? DIR_SEP_CHR : c;
 	});
 #endif /* _WIN32 */
@@ -312,7 +312,7 @@ IRpFilePtr XboxDiscPrivate::open(const char *filename)
 
 	// Make the whole thing uppercase.
 	const auto toupper_iter = ts_full_filename.begin() + old_sz + 1;
-	std::transform(toupper_iter, ts_full_filename.end(), toupper_iter, [](TCHAR c) {
+	std::transform(toupper_iter, ts_full_filename.end(), toupper_iter, [](TCHAR c) noexcept -> TCHAR {
 		return TOUPPER(c);
 	});
 	return std::make_shared<RpFile>(ts_full_filename, RpFile::FM_OPEN_READ);

@@ -113,7 +113,7 @@ Wim::Wim(const IRpFilePtr &file)
 	d->wimHeader.bootable_index	= le32_to_cpu(d->wimHeader.bootable_index);
 
 	// Byteswap WIM_File_Resource objects.
-	auto do_wfr_byteswap = [](WIM_File_Resource &wfr) {
+	auto do_wfr_byteswap = [](WIM_File_Resource &wfr) noexcept -> void {
 		wfr.size          = le64_to_cpu(wfr.size);
 		wfr.offset_of_xml = le64_to_cpu(wfr.offset_of_xml);
 		//wfr.not_important = le64_to_cpu(wfr.not_important);
