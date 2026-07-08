@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright 2016-2025 David Korth <gerbilsoft@gerbilsoft.com> -->
-<!-- SPDX-License-Identifier: GPL-2.0-or-later -->
+<!-- Copyright 2016-2026 David Korth <gerbilsoft@gerbilsoft.com> -->
+<!-- SPDX-License-Identifier: FSFAP -->
 
 <component type="addon">
 	<id>com.gerbilsoft.rom-properties</id>

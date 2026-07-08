@@ -1,11 +1,11 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Source: https://github.com/GerbilSoft/rom-properties
 Upstream-Name: ROM Properties Page shell extension
-Upstream-Contact: https://github.com/GerbilSoft/rom-properties
+Upstream-Contact: David Korth <gerbilsoft@gerbilsoft.com>
+Source: https://github.com/GerbilSoft/rom-properties
 Files-Excluded:
 
 Files: *
-Copyright: 2016-2021, David Korth <gerbilsoft@gerbilsoft.com>
+Copyright: 2016-2026, David Korth <gerbilsoft@gerbilsoft.com>
 License: GPL-2+
 
 Files:
@@ -279,6 +279,12 @@ Files:
 Copyright:
  Copyright (C)2021 Don HO <don.h@free.fr>
 License: GPL-3+
+
+Files:
+ xdg/com.gerbilsoft.rom-properties.metainfo.xml
+Copyright:
+ Copyright 2016-2026 David Korth <gerbilsoft@gerbilsoft.com>
+License: FSFAP
 
 License: BSD-2-clause
  All rights reserved.
@@ -1089,3 +1095,25 @@ License: curl
  Except as contained in this notice, the name of a copyright holder shall not
  be used in advertising or otherwise to promote the sale, use or other dealings
  in this Software without prior written authorization of the copyright holder.
+
+License: FSFAP
+ Copying and distribution of this file, with or without modification,
+ are permitted in any medium without royalty provided the copyright
+ notice and this notice are preserved.  This file is offered as-is,
+ without warranty of any kind.
+
+License: Apache-2
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ .
+     http://www.apache.org/licenses/LICENSE-2.0
+ .
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ .
+ On Debian-based systems the full text of the Apache version 2.0 license
+ can be found in `/usr/share/common-licenses/Apache-2.0'.
