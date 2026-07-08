@@ -868,7 +868,7 @@ int EXEPrivate::addFields_PE_Export(void)
 	// the export directory.
 	const uint32_t rvaMin = dataDir.VirtualAddress;
 	const uint32_t rvaMax = dataDir.VirtualAddress + dataDir.Size;
-	auto checkBounds = [&](uint32_t rva, uint32_t size) -> void * {
+	auto checkBounds = [rvaMin, rvaMax, &expDirTbl](uint32_t rva, uint32_t size) -> void* {
 		if (rva < rvaMin || rva > rvaMax)
 			return nullptr;
 		if (rva+size < rvaMin || rva+size > rvaMax)
