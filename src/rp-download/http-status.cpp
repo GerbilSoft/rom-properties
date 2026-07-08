@@ -28,7 +28,7 @@ const TCHAR *http_status_string(int code)
 	static const HttpStatusMsg_t *const p_http_status_offtbl =
 		&http_status_offtbl[ARRAY_SIZE(http_status_offtbl)];
 	auto pHttp = std::lower_bound(http_status_offtbl, p_http_status_offtbl, code,
-		[](const HttpStatusMsg_t &msg, int code) noexcept -> bool {
+		[](HttpStatusMsg_t msg, int code) noexcept -> bool {
 			return (msg.code < code);
 		});
 	if (pHttp == p_http_status_offtbl || pHttp->code != code) {

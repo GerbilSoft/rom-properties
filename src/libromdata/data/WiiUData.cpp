@@ -301,7 +301,7 @@ uint32_t lookup_disc_publisher(const char *id4)
 
 	// Do a binary search.
 	auto pPubNoRegion = std::lower_bound(disc_publishers_noregion.cbegin(), disc_publishers_noregion.cend(), id4_u32,
-		[](const WiiUDiscPublisher &pub, const uint32_t id4_u32) noexcept -> bool {
+		[](WiiUDiscPublisher pub, const uint32_t id4_u32) noexcept -> bool {
 			return (pub.id4 < id4_u32);
 		});
 	if (pPubNoRegion != disc_publishers_noregion.cend() && pPubNoRegion->id4 == id4_u32) {
@@ -315,7 +315,7 @@ uint32_t lookup_disc_publisher(const char *id4)
 
 	// Do a binary search.
 	auto pPubRegion = std::lower_bound(disc_publishers_region.cbegin(), disc_publishers_region.cend(), id4_u32,
-		[](const WiiUDiscPublisher &pub, uint32_t id4_u32) noexcept -> bool {
+		[](WiiUDiscPublisher pub, uint32_t id4_u32) noexcept -> bool {
 			return (pub.id4 < id4_u32);
 		});
 	if (pPubRegion != disc_publishers_region.cend() && pPubRegion->id4 == id4_u32) {

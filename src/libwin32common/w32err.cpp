@@ -24,12 +24,12 @@
 #  define ERROR_DISK_RESOURCES_EXHAUSTED 314
 #endif
 
-typedef struct _errmap {
+typedef struct _errmap_t {
         uint16_t w32;	// Win32 error code.
         uint16_t posix;	// POSIX error code.
-} errmap;
+} errmap_t;
 
-static const errmap w32_to_posix[] = {
+static const errmap_t w32_to_posix[] = {
 	{ERROR_SUCCESS,			0         },  // 0
 	{ERROR_INVALID_FUNCTION,	EINVAL    },  // 1
 	{ERROR_FILE_NOT_FOUND,		ENOENT    },  // 2
@@ -127,10 +127,10 @@ int w32err_to_posix(DWORD w32err)
 	}
 
 	// Check the error code table.
-	static const errmap *const p_w32_to_posix_end =
+	static const errmap_t *const p_w32_to_posix_end =
 		&w32_to_posix[_countof(w32_to_posix)];
 	auto pErr = std::lower_bound(w32_to_posix, p_w32_to_posix_end, w32err,
-		[](const errmap &err, DWORD w32err) noexcept -> bool {
+		[](errmap_t err, DWORD w32err) noexcept -> bool {
 			return (err.w32 < w32err);
 		});
 	if (pErr != p_w32_to_posix_end && pErr->w32 == w32err) {

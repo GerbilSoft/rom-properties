@@ -52,7 +52,7 @@ const char *lookup_ordinal(const char *modname, uint16_t ordinal)
 
 	const OrdinalName *const pOrdinals_end = &it->table[it->count];
 	auto it2 = std::lower_bound(it->table, pOrdinals_end, ordinal,
-		[](const OrdinalName &lhs, uint16_t rhs) noexcept -> bool {
+		[](OrdinalName lhs, uint16_t rhs) noexcept -> bool {
 			return (lhs.ordinal < rhs);
 		});
 	if (it2 == pOrdinals_end || it2->ordinal != ordinal)

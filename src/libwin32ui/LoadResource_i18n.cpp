@@ -70,7 +70,7 @@ LPVOID LoadResource_i18n(HMODULE hModule, LPCTSTR lpType, DWORD dwResId)
 		case 'en': {
 			// Check for English sub-language codes.
 			auto iter = std::lower_bound(en_cc_mappings.cbegin(), en_cc_mappings.cend(), cc,
-				[](const lc_mapping_t cc_mapping, uint32_t cc) {
+				[](lc_mapping_t cc_mapping, uint32_t cc) noexcept -> bool {
 					return (cc_mapping.lc < cc);
 				});
 			if (iter != en_cc_mappings.cend() && iter->lc == cc) {
@@ -82,7 +82,7 @@ LPVOID LoadResource_i18n(HMODULE hModule, LPCTSTR lpType, DWORD dwResId)
 		default: {
 			// Search for the specified language code.
 			auto iter = std::lower_bound(lc_mappings.cbegin(), lc_mappings.cend(), lc,
-				[](const lc_mapping_t lc_mapping, uint32_t lc) {
+				[](lc_mapping_t lc_mapping, uint32_t lc) noexcept -> bool {
 					return (lc_mapping.lc < lc);
 				});
 			if (iter != lc_mappings.cend() && iter->lc == lc) {

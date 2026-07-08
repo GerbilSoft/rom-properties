@@ -83,7 +83,7 @@ const char *lookup_pe_cpu(uint16_t cpu)
 	// Do a binary search.
 	static const auto *const p_EXEPEMachineTypes_offtbl_end = &EXEPEMachineTypes_offtbl[ARRAY_SIZE(EXEPEMachineTypes_offtbl)];
 	auto pPE = std::lower_bound(EXEPEMachineTypes_offtbl, p_EXEPEMachineTypes_offtbl_end, cpu,
-		[](const EXEPEMachineTypes_offtbl_t &pe, uint16_t cpu) noexcept -> bool {
+		[](EXEPEMachineTypes_offtbl_t pe, uint16_t cpu) noexcept -> bool {
 			return (pe.machineType < cpu);
 		});
 	if (pPE == p_EXEPEMachineTypes_offtbl_end || pPE->machineType != cpu) {
@@ -102,7 +102,7 @@ const char *lookup_le_cpu(uint16_t cpu)
 	// Do a binary search.
 	static const auto *const p_EXELEMachineTypes_offtbl_end = &EXELEMachineTypes_offtbl[ARRAY_SIZE(EXELEMachineTypes_offtbl)];
 	auto pLE = std::lower_bound(EXELEMachineTypes_offtbl, p_EXELEMachineTypes_offtbl_end, cpu,
-		[](const EXELEMachineTypes_offtbl_t &pe, uint16_t cpu) noexcept -> bool {
+		[](EXELEMachineTypes_offtbl_t pe, uint16_t cpu) noexcept -> bool {
 			return (pe.machineType < cpu);
 		});
 	if (pLE == p_EXELEMachineTypes_offtbl_end || pLE->machineType != cpu) {

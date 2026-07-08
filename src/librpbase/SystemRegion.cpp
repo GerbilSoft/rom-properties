@@ -388,7 +388,7 @@ const char *getLocalizedLanguageName(uint32_t lc)
 {
 	// Do a binary search.
 	auto pLangOffTbl = std::lower_bound(languages_offtbl.cbegin(), languages_offtbl.cend(), lc,
-		[](const LanguageOffTbl_t &langOffTbl, uint32_t lc) noexcept -> bool {
+		[](LanguageOffTbl_t langOffTbl, uint32_t lc) noexcept -> bool {
 			return (langOffTbl.lc < lc);
 		});
 	if (pLangOffTbl == languages_offtbl.cend() || pLangOffTbl->lc != lc) {

@@ -832,7 +832,7 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 			}};
 
 			auto iter = std::find_if(orientation_tbl.cbegin(), orientation_tbl.cend(),
-				[v](const orientation_tbl_t &p) noexcept -> bool {
+				[v](orientation_tbl_t p) noexcept -> bool {
 					return !strncmp(p.str, v, 7);
 				});
 			if (iter != orientation_tbl.cend()) {

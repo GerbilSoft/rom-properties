@@ -542,7 +542,7 @@ const char *lookup_glEnum(unsigned int glEnum)
 
 	// Do a binary search.
 	auto pEntry = std::lower_bound(glEnum_offtbl.cbegin(), glEnum_offtbl.cend(), glEnum,
-		[](const OffTbl_t &entry, unsigned int glEnum) noexcept -> bool {
+		[](OffTbl_t entry, unsigned int glEnum) noexcept -> bool {
 			return (entry.id < glEnum);
 		});
 	if (pEntry == glEnum_offtbl.cend() || pEntry->id != glEnum || pEntry->offset == 0) {

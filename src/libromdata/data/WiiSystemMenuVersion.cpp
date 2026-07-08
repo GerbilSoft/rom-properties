@@ -69,7 +69,7 @@ const char *lookup(unsigned int version)
 {
 	// Do a binary search.
 	auto pVer = std::lower_bound(sysVersionList.cbegin(), sysVersionList.cend(), version,
-		[](const SysVersionEntry_t &sysVersion, unsigned int version) noexcept -> bool {{
+		[](SysVersionEntry_t sysVersion, unsigned int version) noexcept -> bool {{
 			return (sysVersion.version < version);
 		}});
 	if (pVer == sysVersionList.cend() || pVer->version != version) {
