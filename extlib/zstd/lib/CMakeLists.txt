@@ -27,6 +27,13 @@ IF(MSVC)
 
 	# Append 'd' to the DLL filename for debug builds.
 	SET(CMAKE_DEBUG_POSTFIX "d")
+
+	# CMake 4.0 added CMAKE_MSVC_RUNTIME_CHECKS. (CMP0184)
+	# Make sure it's empty so we don't add "/RTC1" to debug builds.
+	# (/RTC1 conflicts with /O2.)
+	IF(POLICY CMP0184)
+		SET(CMAKE_MSVC_RUNTIME_CHECKS "")
+	ENDIF(POLICY CMP0184)
 ELSE(MSVC)
 	SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O3")
 	SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")
