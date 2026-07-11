@@ -11,6 +11,7 @@
 
 // MiniZip-NG
 #include "mz.h"
+#include "compat/ioapi.h"
 
 // librpfile
 using LibRpFile::IRpFile;
@@ -107,15 +108,6 @@ static const zlib_filefunc64_def IRpFile_filefunc_def = {
 	IRpFile_testerror_file_func,
 	nullptr,
 };
-
-/**
- * Fill in filefuncs for IRpFile.
- * @param pzlib_filefunc_def
- */
-void fill_IRpFile_filefunc64(zlib_filefunc64_def *pzlib_filefunc_def)
-{
-	*pzlib_filefunc_def = IRpFile_filefunc_def;
-}
 
 /**
  * Open a ZIP file for reading using an IRpFile.
