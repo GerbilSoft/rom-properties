@@ -5,7 +5,7 @@
 On Debian/Ubuntu, you will need build-essential and the following development
 packages:
 * All: cmake zlib1g-dev libpng-dev libjpeg-dev nettle-dev pkg-config libpugixml-dev gettext libseccomp-dev libfmt-dev
-* Optional decompression: libzstd-dev liblz4-dev liblzo2-dev
+* Optional decompression: libzstd-dev liblz4-dev liblzo2-dev libminizip-ng-dev
 * KDE 4.x: libqt4-dev kdelibs5-dev
 * KDE 5.x: qtbase5-dev qttools5-dev-tools extra-cmake-modules libkf5kio-dev libkf5widgetsaddons-dev libkf5filemetadata-dev libkf5crash-dev
 * KDE 6.x: qt6-base-dev qt6-tools-dev-tools extra-cmake-modules libkf6kio-dev libkf6widgetsaddons-dev libkf6filemetadata-dev libkf6crash-dev
@@ -26,7 +26,7 @@ On Red Hat, Fedora, OpenSUSE, and other RPM-based distributions, you will need
 to install "C Development Tools and Libraries" and the following development
 packages:
 * All: cmake zlib-devel libpng-devel libjpeg-turbo-devel nettle-devel pugixml-devel gettext-devel libseccomp-devel
-* Optional decompression: libzstd-devel lz4-devel lzo-devel
+* Optional decompression: libzstd-devel lz4-devel lzo-devel minizip-ng-devel
 * KDE 4.x: qt-devel kdelibs-devel
 * KDE 5.x: qt5-qtbase-devel qt5-qttools extra-cmake-modules kf5-kio-devel kf5-kwidgetsaddons-devel kf5-kfilemetadata-devel kf5-kcrash-devel
 * KDE 6.x: qt6-qtbase-devel qt6-qttools extra-cmake-modules kf6-kio-devel kf6-kwidgetsaddons-devel kf6-kfilemetadata-devel kf6-kcrash-devel
@@ -40,7 +40,7 @@ NOTE: If gsound-devel is not available, use libcanberra-devel instead.
 On Arch and Arch base distros you will need to install "base-devel" and the
 following development packages:
 * All: zlib libpng libjpeg-turbo nettle pkgconf pugixml gettext libseccomp
-* Optional decompression: zstd lz4 lzo
+* Optional decompression: zstd lz4 lzo minizip-ng
 * KDE 5.x: qt5-base qt5-tools extra-cmake-modules kio kwidgetsaddons kfilemetadata kcrash
 * KDE 6.x: qt6-base qt6-tools extra-cmake-modules kio kwidgetsaddons kfilemetadata kcrash
 * XFCE (GTK+ 3.x): glib2 gtk3 cairo gsound
