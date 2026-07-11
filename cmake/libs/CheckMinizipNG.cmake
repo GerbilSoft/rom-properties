@@ -10,7 +10,7 @@ IF(NOT USE_INTERNAL_MinizipNG)
 	ELSE()
 		# System minizip was not found.
 		MESSAGE(STATUS "Using the internal copy of minizip-ng since a system version was not found.")
-		SET(USE_INTERNAL_MINIZIP ON CACHE BOOL "Use the internal copy of minizip-ng" FORCE)
+		SET(USE_INTERNAL_MinizipNG ON CACHE BOOL "Use the internal copy of minizip-ng" FORCE)
 	ENDIF()
 ELSE()
 	MESSAGE(STATUS "Using the internal copy of minizip-ng.")
