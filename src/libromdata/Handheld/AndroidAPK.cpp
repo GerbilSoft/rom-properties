@@ -62,8 +62,8 @@ namespace LibRomData {
 DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 #  endif /* ZLIB_IS_DLL */
 #  ifdef MINIZIP_IS_DLL
-// unzClose() can safely take nullptr; it won't do anything.
-DELAYLOAD_TEST_FUNCTION_IMPL1(unzClose, nullptr);
+// mz_zip_delete() can safely take nullptr; it won't do anything.
+DELAYLOAD_TEST_FUNCTION_IMPL1(mz_zip_delete, nullptr);
 #  endif /* MINIZIP_IS_DLL */
 #  ifdef XML_IS_DLL
 /**
@@ -517,7 +517,7 @@ AndroidAPK::AndroidAPK(const IRpFilePtr &file, unzFile unzfile)
 
 #  ifdef MINIZIP_IS_DLL
 	// Only if MiniZip is a DLL.
-	if (DelayLoad_test_unzClose() != 0) {
+	if (DelayLoad_test_mz_zip_delete() != 0) {
 		// Delay load failed.
 		// Android packages cannot be read without MiniZip.
 		d->isValid = false;
