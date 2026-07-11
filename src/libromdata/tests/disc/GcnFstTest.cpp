@@ -20,8 +20,8 @@
 #include "mz_zip_rw.h"
 
 // MiniZip-NG's native interface uses `void*` for handles.
-// We'll typedef it to mzFile.
-typedef void *mzFile;
+// We'll typedef it to mzReader.
+typedef void *mzReader;
 
 // Other rom-properties libraries
 #include "librpfile/FileSystem.hpp"
@@ -232,59 +232,59 @@ int GcnFstTest::getFileFromZip(const char *zip_filename,
 	off64_t max_filesize)
 {
 	// Open the Zip file.
-	mzFile mz = mz_zip_reader_create();
-	EXPECT_TRUE(mz != nullptr) << "Could not create a MiniZip-NG ZIP reader instance!";
-	if (!mz) {
+	mzReader zipReader = mz_zip_reader_create();
+	EXPECT_TRUE(zipReader != nullptr) << "Could not create a MiniZip-NG ZIP reader instance!";
+	if (!zipReader) {
 		return -1;
 	}
-	int ret = mz_zip_reader_open_file(mz, zip_filename);
+	int ret = mz_zip_reader_open_file(zipReader, zip_filename);
 	EXPECT_TRUE(ret != MZ_OK) <<
 		"Could not open '" << zip_filename << "', check the test directory!";
 	if (ret != MZ_OK) {
-		mz_zip_reader_delete(&mz);
+		mz_zip_reader_delete(&zipReader);
 		return -2;
 	}
 
 	// Locate the required FST file.
 	// NOTE: Using case-sensitive lookups for performance.
-	ret = mz_zip_reader_locate_entry(mz, int_filename, false);
+	ret = mz_zip_reader_locate_entry(zipReader, int_filename, false);
 	EXPECT_EQ(MZ_OK, ret);
 	if (ret != MZ_OK) {
-		mz_zip_reader_close(mz);
-		mz_zip_reader_delete(&mz);
+		mz_zip_reader_close(zipReader);
+		mz_zip_reader_delete(&zipReader);
 		return -3;
 	}
 
 	// Verify the FST file size.
 	mz_zip_file *file_info;
-	ret = mz_zip_reader_entry_get_info(mz, &file_info);
+	ret = mz_zip_reader_entry_get_info(zipReader, &file_info);
 	EXPECT_EQ(MZ_OK, ret);
 	if (ret != MZ_OK) {
-		mz_zip_reader_close(mz);
-		mz_zip_reader_delete(&mz);
+		mz_zip_reader_close(zipReader);
+		mz_zip_reader_delete(&zipReader);
 		return -4;
 	}
 	EXPECT_TRUE(file_info != nullptr);
 	if (!file_info) {
-		mz_zip_reader_close(mz);
-		mz_zip_reader_delete(&mz);
+		mz_zip_reader_close(zipReader);
+		mz_zip_reader_delete(&zipReader);
 		return -5;
 	}
 	const int64_t uncompressed_size = file_info->uncompressed_size;
 	EXPECT_LE(uncompressed_size, max_filesize) <<
 		"Compressed file '" << int_filename << "' is too big.";
 	if (uncompressed_size > max_filesize) {
-		mz_zip_reader_close(mz);
-		mz_zip_reader_delete(&mz);
+		mz_zip_reader_close(zipReader);
+		mz_zip_reader_delete(&zipReader);
 		return -6;
 	}
 
 	// Open the FST file.
-	ret = mz_zip_reader_entry_open(mz);
+	ret = mz_zip_reader_entry_open(zipReader);
 	EXPECT_EQ(MZ_OK, ret);
 	if (ret != MZ_OK) {
-		mz_zip_reader_close(mz);
-		mz_zip_reader_delete(&mz);
+		mz_zip_reader_close(zipReader);
+		mz_zip_reader_delete(&zipReader);
 		return -7;
 	}
 
@@ -298,12 +298,12 @@ int GcnFstTest::getFileFromZip(const char *zip_filename,
 	size_t size = buf.size();
 	while (size > 0) {
 		int to_read = static_cast<int>(size > UINT16_MAX ? UINT16_MAX : size);
-		ret = mz_zip_reader_entry_read(mz, p, to_read);
+		ret = mz_zip_reader_entry_read(zipReader, p, to_read);
 		EXPECT_EQ(to_read, ret);
 		if (ret != to_read) {
-			mz_zip_reader_entry_close(mz);
-			mz_zip_reader_close(mz);
-			mz_zip_reader_delete(&mz);
+			mz_zip_reader_entry_close(zipReader);
+			mz_zip_reader_close(zipReader);
+			mz_zip_reader_delete(&zipReader);
 			return -8;
 		}
 
@@ -315,23 +315,23 @@ int GcnFstTest::getFileFromZip(const char *zip_filename,
 	// Read one more byte to ensure unzReadCurrentFile() returns 0 for EOF.
 	// NOTE: MiniZip will zero out tmp if there's no data available.
 	uint8_t tmp;
-	ret = mz_zip_reader_entry_read(mz, &tmp, 1);
+	ret = mz_zip_reader_entry_read(zipReader, &tmp, 1);
 	EXPECT_EQ(0, ret);
 	if (ret != 0) {
-		mz_zip_reader_entry_close(mz);
-		mz_zip_reader_close(mz);
-		mz_zip_reader_delete(&mz);
+		mz_zip_reader_entry_close(zipReader);
+		mz_zip_reader_close(zipReader);
+		mz_zip_reader_delete(&zipReader);
 		return -9;
 	}
 
 	// Close the FST file.
 	// An error will occur here if the CRC is incorrect.
-	ret = mz_zip_reader_entry_close(mz);
+	ret = mz_zip_reader_entry_close(zipReader);
 	EXPECT_EQ(MZ_OK, ret);
 
 	// Close the Zip file.
-	mz_zip_reader_close(mz);
-	mz_zip_reader_delete(&mz);
+	mz_zip_reader_close(zipReader);
+	mz_zip_reader_delete(&zipReader);
 	// TODO: Change the return type to off64_t?
 	return (ret == MZ_OK) ? static_cast<int>(uncompressed_size) : -10;
 }
@@ -506,26 +506,26 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 			return {};
 	}
 
-	mzFile mz = mz_zip_reader_create();
-	EXPECT_TRUE(mz != nullptr) << "Could not create a MiniZip-NG ZIP reader instance!";
-	if (!mz) {
+	mzReader zipReader = mz_zip_reader_create();
+	EXPECT_TRUE(zipReader != nullptr) << "Could not create a MiniZip-NG ZIP reader instance!";
+	if (!zipReader) {
 		return {};
 	}
-	int ret = mz_zip_reader_open_file(mz, zip_filename);
+	int ret = mz_zip_reader_open_file(zipReader, zip_filename);
 	EXPECT_TRUE(ret != MZ_OK) <<
 		"Could not open '" << zip_filename << "', check the test directory!";
 	if (ret != MZ_OK) {
-		mz_zip_reader_delete(&mz);
+		mz_zip_reader_delete(&zipReader);
 		return {};
 	}
 
 	// MiniZip 2.x (up to 2.2.3) doesn't automatically go to the first file.
 	// Hence, we'll need to do that here.
-	ret = mz_zip_reader_goto_first_entry(mz);
+	ret = mz_zip_reader_goto_first_entry(zipReader);
 	EXPECT_EQ(0, ret) << "mz_zip_reader_goto_first_entry() failed in '" << zip_filename << "'.";
 	if (ret != 0) {
-		mz_zip_reader_close(mz);
-		mz_zip_reader_delete(&mz);
+		mz_zip_reader_close(zipReader);
+		mz_zip_reader_delete(&zipReader);
 		return {};
 	}
 
@@ -533,7 +533,7 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 	std::vector<GcnFstTest_mode> files;
 	do {
 		mz_zip_file *file_info;
-		ret = mz_zip_reader_entry_get_info(mz, &file_info);
+		ret = mz_zip_reader_entry_get_info(zipReader, &file_info);
 		if (ret != MZ_OK) {
 			break;
 		}
@@ -555,10 +555,10 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 		}
 
 		// Next file.
-		ret = mz_zip_reader_goto_next_entry(mz);
+		ret = mz_zip_reader_goto_next_entry(zipReader);
 	} while (ret == MZ_OK);
-	mz_zip_reader_close(mz);
-	mz_zip_reader_delete(&mz);
+	mz_zip_reader_close(zipReader);
+	mz_zip_reader_delete(&zipReader);
 
 	// Handle "end of file list" as OK.
 	if (ret == MZ_END_OF_LIST) {
