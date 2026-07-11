@@ -109,8 +109,8 @@ inline string NintendoDSPrivate::getGameID(void) const
  */
 std::string NintendoDSPrivate::dsi_getTitleID(void) const
 {
-	assert(romHeader.unitcode & 0x02);
-	if (!(romHeader.unitcode & 0x02)) {
+	assert(isDSi());
+	if (!(isDSi())) {
 		return {};
 	}
 
