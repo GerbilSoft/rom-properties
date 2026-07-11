@@ -6,6 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "librpbase/config.librpbase.h"
+
 #include "Nintendo3DSFirm.hpp"
 #include "RomData_p.hpp"
 
@@ -14,6 +16,11 @@
 
 // Other rom-properties libraries
 #include "librpbase/crypto/Hash.hpp"
+#ifdef ENABLE_DECRYPTION
+#  include "librpbase/crypto/AesCipherFactory.hpp"
+#  include "librpbase/crypto/IAesCipher.hpp"
+#  include "librpbase/crypto/KeyManager.hpp"
+#endif /* ENABLE_DECRYPTION */
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -139,6 +146,104 @@ int Nintendo3DSFirmPrivate::loadFirmBin(rp::uvector<uint8_t> &firmBuf)
 		}
 		return ret;
 	}
+
+#ifdef ENABLE_DECRYPTION
+	if (type > Nintendo3DSFirm::StorageType::NAND) {
+		// Decrypt the sections.
+		// - IV is [offset, load_addr, size, size] (all are packed as 32-bit little-endian)
+		// - Key depends on prod/devel and NTR/SPI.
+		// TODO: Heuristic for prod/devel. Assuming devel for now.
+		// Check for NCCH for official images, or maybe "has at least one 32-bit 00000000" for unofficial?
+		const char *keyName;
+		switch (type) {
+			default:
+				assert(!"Key not supported?!?!");
+				// TODO: Some other error?
+				return -ENOENT;
+			case Nintendo3DSFirm::StorageType::NTR:
+				keyName = "ctr-dev-ntr-boot";
+				break;
+			case Nintendo3DSFirm::StorageType::SPI:
+				keyName = "ctr-dev-spi-boot";
+				break;
+		}
+
+		KeyManager *const keyManager = KeyManager::instance();
+		assert(keyManager != nullptr);
+		if (!keyManager) {
+			// TODO: Some other error?
+			return -EIO;
+		}
+
+		KeyManager::KeyData_t keyData;
+		KeyManager::VerifyResult res = keyManager->get(keyName, &keyData);
+		if (res != KeyManager::VerifyResult::OK) {
+			// TODO: Some other error?
+			return -EIO;
+		}
+
+		// Initialize an AesCipher.
+		unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
+		assert((bool)cipher);
+		if (!cipher) {
+			// No AES cipher is available...
+			// TODO: Some other error?
+			return -ENOTSUP;
+		}
+
+		// Set decryption parameters.
+		cipher->setChainingMode(IAesCipher::ChainingMode::CBC);
+
+		// Decrypt each section.
+		for (const N3DS_FIRM_Section_Header_t &section : firmHeader.sections) {
+			if (section.size == 0) {
+				// Empty section. Skip it.
+				continue;
+			}
+
+			uint32_t addr = le32_to_cpu(section.offset);
+			assert(addr >= sizeof(N3DS_FIRM_Header_t));
+			if (addr < sizeof(N3DS_FIRM_Header_t)) {
+				// Invalid starting address.
+				// TODO: Return an error.
+				continue;
+			}
+			addr -= sizeof(N3DS_FIRM_Header_t);
+
+			uint32_t size = le32_to_cpu(section.size);
+			assert(addr + size <= firmBuf.size());
+			if (addr + size > firmBuf.size()) {
+				// Out of bounds?
+				// TODO: Return an error.
+				continue;
+			}
+
+			// Section sizes must be a mutiple of 16.
+			assert(size % 16 == 0);
+			if (size % 16 != 0) {
+				// Round it up...
+				size &= ~15;
+				size += 16;
+			}
+
+			// Set the key and IV.
+			union {
+				uint32_t u32[4];
+				uint8_t u8[16];
+			} iv;
+			iv.u32[0] = section.offset;
+			iv.u32[1] = section.load_addr;
+			iv.u32[2] = section.size;
+			iv.u32[3] = section.size;
+			cipher->setKey(keyData.key, keyData.length);
+			cipher->setIV(iv.u8, sizeof(iv.u8));
+
+			// Decrypt the data.
+			// TODO: Check for errors.
+			cipher->decrypt(&firmBuf[addr], size);
+		}
+	}
+#endif /* ENABLE_DECRYPTION */
 
 	// TODO: Decrypt the firmware binary, if necessary.
 	return 0;
@@ -368,6 +473,8 @@ int Nintendo3DSFirm::loadFieldData(void)
 		// System version
 		d->fields.addField_string(C_("Nintendo3DSFirm", "System Version"),
 			fmt::format(FSTR("{:d}.{:d}"), firmBin->sys.major, firmBin->sys.minor));
+
+		// TODO: Check sections for NCCH headers?
 	} else if (!firmBuf.empty() && checkARM9) {
 		// Check for ARM9 homebrew
 
