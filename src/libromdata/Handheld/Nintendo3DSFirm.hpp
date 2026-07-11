@@ -52,9 +52,9 @@ public:
 	 * NOTE: Check isValid() to determine if this is a valid ROM.
 	 *
 	 * @param file Open ROM image
-	 * @param type Storage type; used to determine if decryption is needed.
+	 * @param storageType Storage type; used to determine if decryption is needed.
 	 */
-	explicit Nintendo3DSFirm(const LibRpFile::IRpFilePtr &file, StorageType type);
+	explicit Nintendo3DSFirm(const LibRpFile::IRpFilePtr &file, StorageType storageType);
 
 ROMDATA_DECL_COMMON_FNS()
 ROMDATA_DECL_END()

@@ -44,7 +44,7 @@ namespace LibRomData {
 class Nintendo3DSFirmPrivate final : public RomDataPrivate
 {
 public:
-	explicit Nintendo3DSFirmPrivate(const IRpFilePtr &file, Nintendo3DSFirm::StorageType type);
+	explicit Nintendo3DSFirmPrivate(const IRpFilePtr &file, Nintendo3DSFirm::StorageType storageType);
 
 private:
 	typedef RomDataPrivate super;
@@ -62,7 +62,16 @@ public:
 	N3DS_FIRM_Header_t firmHeader;
 
 	// Storage type
-	Nintendo3DSFirm::StorageType type;
+	Nintendo3DSFirm::StorageType storageType;
+
+	// Retail/debug?
+	enum class CryptoType : int8_t {
+		Unknown	= -1,
+
+		Retail = 0,
+		Debug = 1,
+	};
+	CryptoType cryptoType;
 
 public:
 	static constexpr off64_t FIRM_MAX_SIZE = 4*1024*1024;
@@ -101,9 +110,10 @@ const RomDataInfo Nintendo3DSFirmPrivate::romDataInfo = {
 	"Nintendo3DSFirm", exts.data(), mimeTypes.data()
 };
 
-Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(const IRpFilePtr &file, Nintendo3DSFirm::StorageType type)
+Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(const IRpFilePtr &file, Nintendo3DSFirm::StorageType storageType)
 	: super(file, &romDataInfo)
-	, type(type)
+	, storageType(storageType)
+	, cryptoType(CryptoType::Unknown)
 {
 	// Clear the various structs.
 	memset(&firmHeader, 0, sizeof(firmHeader));
@@ -148,23 +158,23 @@ int Nintendo3DSFirmPrivate::loadFirmBin(rp::uvector<uint8_t> &firmBuf)
 	}
 
 #ifdef ENABLE_DECRYPTION
-	if (type > Nintendo3DSFirm::StorageType::NAND) {
+	if (storageType > Nintendo3DSFirm::StorageType::NAND) {
 		// Decrypt the sections.
 		// - IV is [offset, load_addr, size, size] (all are packed as 32-bit little-endian)
 		// - Key depends on prod/devel and NTR/SPI.
-		// TODO: Heuristic for prod/devel. Assuming devel for now.
+		// TODO: Decrypt the signature to determine prod vs. devel. Assuming debug if not using sighaxed for now.
 		// Check for NCCH for official images, or maybe "has at least one 32-bit 00000000" for unofficial?
 		const char *keyName;
-		switch (type) {
+		switch (storageType) {
 			default:
 				assert(!"Key not supported?!?!");
 				// TODO: Some other error?
 				return -ENOENT;
 			case Nintendo3DSFirm::StorageType::NTR:
-				keyName = "ctr-dev-ntr-boot";
+				keyName = (cryptoType != CryptoType::Debug) ? "ctr-ntr-boot" : "ctr-dev-ntr-boot";
 				break;
 			case Nintendo3DSFirm::StorageType::SPI:
-				keyName = "ctr-dev-spi-boot";
+				keyName = (cryptoType != CryptoType::Debug) ? "ctr-spi-boot" : "ctr-dev-spi-boot";
 				break;
 		}
 
@@ -295,6 +305,29 @@ Nintendo3DSFirm::Nintendo3DSFirm(const IRpFilePtr &file, StorageType type)
 
 	if (!d->isValid) {
 		d->file.reset();
+		return;
+	}
+
+	// Check for a sighaxed signature.
+	// If present, we can determine the crypto type.
+	// Otherwise, we'll need to use heuristics, and/or try decrypting
+	// the signature with various public keys.
+	const uint32_t first4 = be32_to_cpu(d->firmHeader.signature32[0]);
+	switch (first4) {
+		case 0x37E96B10:
+			// NTR/SPI retail
+			// FIXME: Distinguish between NTR and SPI?
+			d->cryptoType = Nintendo3DSFirmPrivate::CryptoType::Retail;
+			break;
+		case 0x18722BC7:
+			// NTR/SPI debug
+			// FIXME: Distinguish between NTR and SPI?
+			d->cryptoType = Nintendo3DSFirmPrivate::CryptoType::Debug;
+			break;
+		default:
+			// Unknown...
+			// TODO: Try to decrypt the signature?
+			break;
 	}
 }
 
