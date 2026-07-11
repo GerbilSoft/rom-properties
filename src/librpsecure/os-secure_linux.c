@@ -91,11 +91,10 @@ int rp_secure_enable(rp_secure_param_t param)
 		SCMP_SYS(read),
 		SCMP_SYS(rt_sigreturn),
 		SCMP_SYS(write),
-#ifdef ENABLE_NIXOS
-		// NixOS: std::locale ctor ends up calling getdents64().
-		// This doesn't happen on any other Linux system I know of...
-		SCMP_SYS(getdents64),
-#endif /* ENABLE_NIXOS */
+
+		// NixOS, Void Linux: std::locale ctor ends up calling getdents64().
+		// Not sure if any other distros need it, so just globally enable the syscall.
+		SCMP_SYS(getdents), SCMP_SYS(getdents64),
 
 		SCMP_SYS(access),
 		SCMP_SYS(faccessat),	// Linux on aarch64 does not have an access() syscall
