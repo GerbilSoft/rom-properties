@@ -153,6 +153,32 @@ int NintendoDSPrivate::loadIconTitleData(void)
 }
 
 /**
+ * Get the publisher.
+ * @return Publisher, or empty string on error.
+ */
+string NintendoDSPrivate::getPublisher(void)
+{
+	const char *const publisher = NintendoPublishers::lookup(romHeader.company);
+	if (publisher) {
+		return publisher;
+	}
+
+	// Unknown publisher. Print the company code as two characters if they're
+	// both alphanumeric; otherwise, hexadecimal.
+	string s_publisher;
+	if (isalnum_ascii(romHeader.company[0]) && isalnum_ascii(romHeader.company[1])) {
+		s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:c}{:c})")),
+			romHeader.company[0], romHeader.company[1]);
+	} else {
+		s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
+			static_cast<unsigned int>(romHeader.company[0]),
+			static_cast<unsigned int>(romHeader.company[1]));
+	}
+
+	return s_publisher;
+}
+
+/**
  * Convert a Nintendo DS(i) region value to a GameTDB language code.
  * @param ndsRegion Nintendo DS region.
  * @param dsiRegion Nintendo DSi region.
@@ -786,26 +812,8 @@ int NintendoDS::loadFieldData(void)
 	d->fields.addField_string(C_("RomData", "Game ID"), d->getGameID());
 
 	// Publisher
-	const char *const publisher_title = C_("RomData", "Publisher");
-	const char *const publisher = NintendoPublishers::lookup(romHeader->company);
-	if (publisher) {
-		d->fields.addField_string(publisher_title, publisher);
-	} else {
-		if (isalnum_ascii(romHeader->company[0]) && isalnum_ascii(romHeader->company[1])) {
-			const array<char, 3> s_company = {{
-				romHeader->company[0],
-				romHeader->company[1],
-				'\0'
-			}};
-			d->fields.addField_string(publisher_title,
-				fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_company.data()));
-		} else {
-			d->fields.addField_string(publisher_title,
-				fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
-					static_cast<unsigned int>(romHeader->company[0]),
-					static_cast<unsigned int>(romHeader->company[1])));
-		}
-	}
+	// TODO: Use publisher from the full title?
+	d->fields.addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
 	// ROM version
 	d->fields.addField_string_numeric(C_("RomData", "Revision"),
@@ -1109,25 +1117,7 @@ int NintendoDS::loadMetaData(void)
 
 	// Publisher
 	// TODO: Use publisher from the full title?
-	const char *const publisher = NintendoPublishers::lookup(romHeader->company);
-	if (publisher) {
-		d->metaData.addMetaData_string(Property::Publisher, publisher);
-	} else {
-		if (isalnum_ascii(romHeader->company[0]) && isalnum_ascii(romHeader->company[1])) {
-			const array<char, 3> s_company = {{
-				romHeader->company[0],
-				romHeader->company[1],
-				'\0'
-			}};
-			d->metaData.addMetaData_string(Property::Publisher,
-				fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_company.data()));
-		} else {
-			d->metaData.addMetaData_string(Property::Publisher,
-				fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
-					static_cast<unsigned int>(romHeader->company[0]),
-					static_cast<unsigned int>(romHeader->company[1])));
-		}
-	}
+	d->metaData.addMetaData_string(Property::Publisher, d->getPublisher());
 
 	/** Custom properties! **/
 

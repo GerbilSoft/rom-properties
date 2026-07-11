@@ -162,6 +162,12 @@ public:
 	 */
 	int loadIconTitleData(void);
 
+	/**
+	 * Get the publisher.
+	 * @return Publisher, or empty string on error.
+	 */
+	std::string getPublisher(void);
+
 	// If true, this is an SRL in a 3DS CIA.
 	// Some fields shouldn't be displayed.
 	bool cia;
