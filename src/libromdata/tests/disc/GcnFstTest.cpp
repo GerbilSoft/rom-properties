@@ -238,7 +238,7 @@ int GcnFstTest::getFileFromZip(const char *zip_filename,
 		return -1;
 	}
 	int ret = mz_zip_reader_open_file(zipReader, zip_filename);
-	EXPECT_TRUE(ret != MZ_OK) <<
+	EXPECT_TRUE(ret == MZ_OK) <<
 		"Could not open '" << zip_filename << "', check the test directory!";
 	if (ret != MZ_OK) {
 		mz_zip_reader_delete(&zipReader);
@@ -512,7 +512,7 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 		return {};
 	}
 	int ret = mz_zip_reader_open_file(zipReader, zip_filename);
-	EXPECT_TRUE(ret != MZ_OK) <<
+	EXPECT_TRUE(ret == MZ_OK) <<
 		"Could not open '" << zip_filename << "', check the test directory!";
 	if (ret != MZ_OK) {
 		mz_zip_reader_delete(&zipReader);
