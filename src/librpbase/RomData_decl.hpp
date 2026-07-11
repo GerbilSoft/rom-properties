@@ -137,6 +137,45 @@ public: \
 	explicit klass(const LibRpFile::IRpFilePtr &file, unzFile unzfile);
 
 /**
+ * MiniZip-NG stream/reader constructors for a RomData subclass.
+ */
+#define ROMDATA_DECL_CTOR_MZFILE(klass) \
+public: \
+	/**
+	 * Read a ROM image. \
+	 * \
+	 * A ROM image must be opened by the caller. The file handle \
+	 * will be ref()'d and must be kept open in order to load \
+	 * data from the ROM image. \
+	 * \
+	 * To close the file, either delete this object or call close(). \
+	 * \
+	 * NOTE: Check isValid() to determine if this is a valid ROM. \
+	 * \
+	 * @param file Open ROM image \
+	 */ \
+	explicit klass(const LibRpFile::IRpFilePtr &file) \
+		: klass(file, nullptr, nullptr) \
+	{} \
+\
+	/**
+	 * Read a ROM image. \
+	 * \
+	 * A ROM image must be opened by the caller. The file handle \
+	 * will be ref()'d and must be kept open in order to load \
+	 * data from the ROM image. \
+	 * \
+	 * To close the file, either delete this object or call close(). \
+	 * \
+	 * NOTE: Check isValid() to determine if this is a valid ROM. \
+	 * \
+	 * @param file Open ROM image \
+	 * @param stream MiniZip-NG mz_stream (this object takes ownership)
+	 * @param reader MiniZip-NG mz_zip_reader (this object takes ownership)
+	 */ \
+	explicit klass(const LibRpFile::IRpFilePtr &file, void *stream, void *reader);
+
+/**
  * Common functions for a RomData subclass.
  */
 #define ROMDATA_DECL_COMMON_FNS() \
@@ -222,6 +261,16 @@ ROMDATA_DECL_COMMON_FNS()
 #define ROMDATA_DECL_BEGIN_UNZFILE(klass) \
 ROMDATA_DECL_BEGIN_NO_CTOR(klass) \
 ROMDATA_DECL_CTOR_UNZFILE(klass) \
+ROMDATA_DECL_COMMON_FNS()
+
+/**
+ * Initial declaration for a RomData subclass with a MiniZip-NG stream/reader constructor.
+ * Declares functions common to all RomData subclasses.
+ * @param klass Class name
+ */
+#define ROMDATA_DECL_BEGIN_MZFILE(klass) \
+ROMDATA_DECL_BEGIN_NO_CTOR(klass) \
+ROMDATA_DECL_CTOR_MZFILE(klass) \
 ROMDATA_DECL_COMMON_FNS()
 
 /**

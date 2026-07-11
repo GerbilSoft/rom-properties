@@ -164,6 +164,7 @@ SET(${PROJECT_NAME}_SRCS
 	img/CacheManager.cpp
 	utils/SuperMagicDrive.cpp
 	file/IRpFile_unzFile_filefuncs.cpp
+	file/mz_stream_IRpFile.cpp
 	)
 # Headers
 SET(${PROJECT_NAME}_H
@@ -406,6 +407,7 @@ SET(${PROJECT_NAME}_H
 	img/CacheManager.hpp
 	utils/SuperMagicDrive.hpp
 	file/IRpFile_unzFile_filefuncs.hpp
+	file/mz_stream_IRpFile.hpp
 	)
 
 IF(ENABLE_XML)
