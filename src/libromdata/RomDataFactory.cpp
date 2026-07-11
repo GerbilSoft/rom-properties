@@ -590,7 +590,6 @@ static RomDataPtr openZipFile(const IRpFilePtr &file, unsigned int attrs)
 {
 #ifdef _MSC_VER
 	// Delay load verification.
-	// TODO: zlib/minizip checks are only needed if unzFile == nullptr?
 #  ifdef ZLIB_IS_DLL
 	// Only if zlib is a DLL.
 	if (DelayLoad_test_get_crc_table() != 0) {
