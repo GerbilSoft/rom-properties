@@ -86,7 +86,7 @@ static const char *const dll_whitelist[] = {
 	"zstd" DEBUG_SUFFIX ".dll",
 	"lz4" DEBUG_SUFFIX ".dll",
 	"minilzo" DEBUG_SUFFIX ".dll",
-	"minizip" DEBUG_SUFFIX ".dll",
+	"minizip-ng" DEBUG_SUFFIX ".dll",
 	"fmt-12" DEBUG_SUFFIX ".dll",
 };
 
