@@ -9,11 +9,10 @@
 #pragma once
 
 #include "librpbase/RomData.hpp"
-#include "compat/unzip.h"
 
 namespace LibRomData {
 
-ROMDATA_DECL_BEGIN_UNZFILE(J2ME)
+ROMDATA_DECL_BEGIN_MZFILE(J2ME)
 ROMDATA_DECL_CLOSE()
 ROMDATA_DECL_METADATA()
 ROMDATA_DECL_IMGSUPPORT()

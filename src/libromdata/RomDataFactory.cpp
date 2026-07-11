@@ -573,11 +573,11 @@ static constexpr size_t zipDetectTbl_count = 2;
 #else /* !ENABLE_XML */
 static constexpr size_t zipDetectTbl_count = 1;
 #endif /* ENABLE_XML */
-static const array<ZipDetectTbl_t, zipDetectTbl_count-1> zipDetectTbl = {{
+static const array<ZipDetectTbl_t, zipDetectTbl_count> zipDetectTbl = {{
 #ifdef ENABLE_XML
 	GetRomDataFns_mzFile(AndroidAPK,	"AndroidManifest.xml",		ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_HAS_DPOVERLAY),
 #endif /* ENABLE_XML */
-	//GetRomDataFns_unzFile(J2ME,		"META-INF/MANIFEST.MF",		ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
+	GetRomDataFns_mzFile(J2ME,		"META-INF/MANIFEST.MF",		ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 }};
 
 /**
