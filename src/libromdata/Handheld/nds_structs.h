@@ -17,6 +17,32 @@ extern "C" {
 #endif
 
 /**
+ * Nintendo DS: arm9/arm7 code info struct
+ *
+ * All fields are little-endian.
+ */
+typedef struct _NDS_CodeInfo_t {
+	uint32_t rom_offset;	// [0x000]
+	uint32_t entry_address;	// [0x004]
+	uint32_t ram_address;	// [0x008]
+	uint32_t size;		// [0x00C]
+} NDS_CodeInfo_t;
+ASSERT_STRUCT(NDS_CodeInfo_t, 16);
+
+/**
+ * Nintendo DSi: arm9i/arm7i code info struct
+ *
+ * All fields are little-endian.
+ */
+typedef struct _DSi_CodeInfo_t {
+	uint32_t rom_offset;		// [0x000] On arm9i: Usually 0xXX03000h, where XX is the 1MB boundary after the NDS area.
+	uint32_t arm7i_param_addr;	// [0x004] For arm7i only: Pointer to base address where structures are passed to the title.
+	uint32_t load_address;		// [0x008]
+	uint32_t size;			// [0x00C]
+} DSi_CodeInfo_t;
+ASSERT_STRUCT(DSi_CodeInfo_t, 16);
+
+/**
  * Nintendo DS ROM header.
  * This matches the ROM header format exactly.
  * Reference: http://problemkaputt.de/gbatek.htm#dscartridgeheader
@@ -24,169 +50,146 @@ extern "C" {
  * All fields are little-endian.
  * NOTE: Strings are NOT null-terminated!
  */
+#define NDS_CARD_CONTROL_13_NTR 0x00586000
+#define NDS_CARD_CONTROL_BF_NTR 0x001808F8
+// FIXME: Verify that these are used by actual TWL NTRBOOT carts, not just homebrew.
+#define NDS_CARD_CONTROL_13_NTRBOOT_TWL 0x00416657
+#define NDS_CARD_CONTROL_BF_NTRBOOT_TWL 0x081808F8
 typedef struct _NDS_RomHeader {
-	char title[12];
+	char title[12];				// [0x000]
 	// Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
 	union RP_PACKED {
-		char id6[6];	// Game code. (ID6)
+		char id6[6];			// [0x00C] Game code (ID6)
 		struct RP_PACKED {
-			char id4[4];		// Game code. (ID4)
-			char company[2];	// Company code.
+			char id4[4];		// [0x00C] Game code (ID4)
+			char company[2];	// [0x010] Company code
 		};
 	};
 #pragma pack()
 
-	// 0x12
-	uint8_t unitcode;	// 00h == NDS, 02h == NDS+DSi, 03h == DSi only
-	uint8_t enc_seed_select;
-	uint8_t device_capacity;
-	uint8_t reserved1[7];
-	uint8_t reserved2_dsi;
-	uint8_t nds_region;	// NDS region code (See NDS_Region_e)
-	uint8_t rom_version;
-	uint8_t autostart;
+	uint8_t unitcode;		// [0x012] // 00h == NDS, 02h == NDS+DSi, 03h == DSi only
+	uint8_t enc_seed_select;	// [0x013]
+	uint8_t device_capacity;	// [0x014]
+	uint8_t reserved1[7];		// [0x015]
+	uint8_t reserved2_dsi;		// [0x01C]
+	uint8_t nds_region;		// [0x01D] // NDS region code (See NDS_Region_e)
+	uint8_t rom_version;		// [0x01E]
+	uint8_t autostart;		// [0x01F]
 
-	// 0x20
-	struct {
-		uint32_t rom_offset;
-		uint32_t entry_address;
-		uint32_t ram_address;
-		uint32_t size;
-	} arm9;
-	struct {
-		uint32_t rom_offset;
-		uint32_t entry_address;
-		uint32_t ram_address;
-		uint32_t size;
-	} arm7;
+	NDS_CodeInfo_t arm9;		// [0x020]
+	NDS_CodeInfo_t arm7;		// [0x030]
 
-	// 0x40
-	uint32_t fnt_offset;	// File Name Table offset
-	uint32_t fnt_size;	// File Name Table size
-	uint32_t fat_offset;
-	uint32_t fat_size;
+	uint32_t fnt_offset;		// [0x040] File Name Table offset
+	uint32_t fnt_size;		// [0x044] File Name Table size
+	uint32_t fat_offset;		// [0x048]
+	uint32_t fat_size;		// [0x04C]
 
 	// 0x50
-	uint32_t arm9_overlay_offset;
-	uint32_t arm9_overlay_size;
-	uint32_t arm7_overlay_offset;
-	uint32_t arm7_overlay_size;
+	uint32_t arm9_overlay_offset;	// [0x050]
+	uint32_t arm9_overlay_size;	// [0x054]
+	uint32_t arm7_overlay_offset;	// [0x058]
+	uint32_t arm7_overlay_size;	// [0x05C]
 
-	// 0x60
-	uint32_t cardControl13;	// Port 0x40001A4 setting for normal commands (usually 0x00586000)
-	uint32_t cardControlBF;	// Port 0x40001A4 setting for KEY1 commands (usually 0x001808F8)
+	uint32_t cardControl13;		// [0x060] Port 0x40001A4 setting for normal commands (usually 0x00586000)
+	uint32_t cardControlBF;		// [0x064] Port 0x40001A4 setting for KEY1 commands (usually 0x001808F8)
 
-	// 0x68
-	uint32_t icon_offset;
-	uint16_t secure_area_checksum;		// CRC32 of 0x0020...0x7FFF
-	uint16_t secure_area_delay;		// Delay, in 131 kHz units (0x051E=10ms, 0x0D7E=26ms)
+	uint32_t icon_offset;		// [0x068] Offset to NDS_IconTitleData
+	uint16_t secure_area_checksum;	// [0x06C] CRC32 of 0x0020...0x7FFF
+	uint16_t secure_area_delay;	// [0x06E] Delay, in 131 kHz units (0x051E=10ms, 0x0D7E=26ms)
 
-	uint32_t arm9_auto_load_list_ram_address;
-	uint32_t arm7_auto_load_list_ram_address;
+	uint32_t arm9_auto_load_list_ram_address;	// [0x070]
+	uint32_t arm7_auto_load_list_ram_address;	// [0x074]
 
-	uint64_t secure_area_disable;
+	uint64_t secure_area_disable;		// [0x078]
 
-	// 0x80
-	uint32_t total_used_rom_size;		// Excluding DSi area
-	uint32_t rom_header_size;		// Usually 0x4000
-	uint8_t reserved3[0x38];
-	uint8_t nintendo_logo[0x9C];		// GBA-style Nintendo logo
-	uint16_t nintendo_logo_checksum;	// CRC16 of nintendo_logo[] (always 0xCF56)
-	uint16_t header_checksum;		// CRC16 of 0x0000...0x015D
+	uint32_t total_used_rom_size;		// [0x080] Total used ROM size, excluding DSi area
+	uint32_t rom_header_size;		// [0x084] Usually 0x4000
+	uint8_t reserved3[0x38];		// [0x088]
+	uint8_t nintendo_logo[0x9C];		// [0x0C0] GBA-style Nintendo logo
+	uint16_t nintendo_logo_checksum;	// [0x15C] CRC16 of nintendo_logo[] (always 0xCF56)
+	uint16_t header_checksum;		// [0x15E] CRC16 of 0x0000...0x015D
 
-	// 0x160
 	struct {
-		uint32_t rom_offset;
-		uint32_t size;
-		uint32_t ram_address;
+		uint32_t rom_offset;	// [0x160]
+		uint32_t size;		// [0x164]
+		uint32_t ram_address;	// [0x168]
 	} debug;
 
-	// 0x16C
-	uint8_t reserved4[4];
-	uint8_t reserved5[0x10];
+	uint8_t reserved4[4];		// [0x16C]
+	uint8_t reserved5[0x10];	// [0x170]
 
-	/** DSi-specific **/
+	/** DSi-specific [0x180] **/
 	struct {
 		// 0x180 [memory settings]
-		uint32_t global_mbk[5];		// Global MBK1..MBK5 settings.
-		uint32_t arm9_mbk[3];		// Local ARM9 MBK6..MBK8 settings.
-		uint32_t arm7_mbk[3];		// Local ARM7 MBK6..MBK8 settings.
-		uint8_t arm9_mbk9_master[3];	// Global MBK9 setting, WRAM slot master.
-		uint8_t unknown;		// Usually 0x03, but System Menu has 0xFC, System Settings has 0x00.
+		uint32_t global_mbk[5];		// [0x180] Global MBK1..MBK5 settings
+		uint32_t arm9_mbk[3];		// [0x194] Local ARM9 MBK6..MBK8 settings
+		uint32_t arm7_mbk[3];		// [0x1A0] Local ARM7 MBK6..MBK8 settings
+		uint8_t arm9_mbk9_master[3];	// [0x1AC] Global MBK9 setting, WRAM slot master
+		uint8_t unknown;		// [0x1AF] Usually 0x03, but System Menu has 0xFC, System Settings has 0x00
 
 		// 0x1B0
-		uint32_t region_code;		// DSi region code (See DSi_Region_e)
-		uint32_t access_control;	// ???
-		uint32_t arm7_scfg_mask;
-		uint8_t reserved1[3];		// Unknown flags. (always 0)
-		uint8_t flags;			// See DSi_Flags.
+		uint32_t region_code;		// [0x1B0] DSi region code (See DSi_Region_e)
+		uint32_t access_control;	// [0x1B4] ???
+		uint32_t arm7_scfg_mask;	// [0x1B8]
+		uint8_t reserved1[3];		// [0x1BC] Unknown flags (always 0)
+		uint8_t flags;			// [0x1BF] See DSi_Flags
 
 		// 0x1C0
-		struct {
-			uint32_t rom_offset;	// Usually 0xXX03000h, where XX is the 1MB boundary after the NDS area.
-			uint32_t reserved;	// Zero-filled.
-			uint32_t load_address;
-			uint32_t size;
-		} arm9i;
-		struct {
-			uint32_t rom_offset;
-			uint32_t param_addr;	// Pointer to base address where structures are passed to the title.
-			uint32_t load_address;
-			uint32_t size;
-		} arm7i;
+		DSi_CodeInfo_t arm9i;		// [0x1C0]
+		DSi_CodeInfo_t arm7i;		// [0x1D0]
 
 		// 0x1E0 [digest offsets]
 		struct {
-			uint32_t ntr_region_offset;	// Usually the same as ARM9 rom_offset, 0x0004000
-			uint32_t ntr_region_length;
-			uint32_t twl_region_offset;	// Usually the same as ARM9i rom_offset, 0xXX03000
-			uint32_t twl_region_length;
-			uint32_t sector_hashtable_offset;	// SHA1 HMACs on all sectors
-			uint32_t sector_hashtable_length;	// in the above NTR+TWL regions.
-			uint32_t block_hashtable_offset;	// SHA1 HMACs on each N entries
-			uint32_t block_hashtable_length;	// in the above Sector Hashtable.
-			uint32_t sector_size;			// e.g. 0x400 bytes per sector
-			uint32_t block_sector_count;		// e.g. 0x20 sectors per block
+			uint32_t ntr_region_offset;		// [0x1E0] Usually the same as ARM9 rom_offset, 0x0004000
+			uint32_t ntr_region_length;		// [0x1E4]
+			uint32_t twl_region_offset;		// [0x1E8] Usually the same as ARM9i rom_offset, 0xXX03000
+			uint32_t twl_region_length;		// [0x1EC]
+			uint32_t sector_hashtable_offset;	// [0x1F0] SHA1 HMACs on all sectors
+			uint32_t sector_hashtable_length;	// [0x1F4]     in the above NTR+TWL regions.
+			uint32_t block_hashtable_offset;	// [0x1F8] SHA1 HMACs on each N entries
+			uint32_t block_hashtable_length;	// [0x1FC]     in the above Sector Hashtable.
+			uint32_t sector_size;			// [0x200] e.g. 0x400 bytes per sector
+			uint32_t block_sector_count;		// [0x204] e.g. 0x20 sectors per block
 		} digest;
 
 		// 0x208
-		uint32_t icon_title_size;	// Size of icon/title. (usually 0x23C0)
-		uint32_t reserved2;		// 00 00 01 00
-		uint32_t total_used_rom_size;	// *INCLUDING* DSi area
-		uint32_t reserved3[3];		// 00 00 00 00; 84 D0 04 00; 2C 05 00 00
+		uint32_t icon_title_size;	// [0x208] Size of icon/title (usually 0x23C0)
+		uint32_t reserved2;		// [0x20C] 00 00 01 00
+		uint32_t total_used_rom_size;	// [0x210] *INCLUDING* DSi area
+		uint32_t reserved3[3];		// [0x214] 00 00 00 00; 84 D0 04 00; 2C 05 00 00
 
 		// 0x220
-		uint32_t modcrypt1_offset;	// Usually the same as ARM9i rom_offset, 0xXX03000
-		uint32_t modcrypt1_size;	// Usually min(0x4000, ARM9i ((size + 0x0F) & ~0x0F))
-		uint32_t modcrypt2_offset;	// 0 for none
-		uint32_t modcrypt2_size;	// 0 for none
+		uint32_t modcrypt1_offset;	// [0x220] Usually the same as ARM9i rom_offset, 0xXX03000
+		uint32_t modcrypt1_size;	// [0x224] Usually min(0x4000, ARM9i ((size + 0x0F) & ~0x0F))
+		uint32_t modcrypt2_offset;	// [0x228] 0 for none
+		uint32_t modcrypt2_size;	// [0x22C] 0 for none
 
 		// 0x230
 		Nintendo_TitleID_LE_t title_id;	// [0x230] Title ID
 
 		// 0x238
-		uint32_t sd_public_sav_size;
-		uint32_t sd_private_sav_size;
+		uint32_t sd_public_sav_size;	// [0x238]
+		uint32_t sd_private_sav_size;	// [0x23C]
 
 		// 0x240
-		uint8_t reserved6[176];		// Zero-filled
+		uint8_t reserved6[176];		// [0x240] Zero-filled
 
 		// 0x2F0
-		uint8_t age_ratings[0x10];	// Age ratings.
+		uint8_t age_ratings[0x10];	// [0x2F0] Age ratings
 
 		// 0x300
-		uint8_t sha1_hmac_arm9[20];	// SHA1 HMAC of ARM9 (with encrypted secure area)
-		uint8_t sha1_hmac_arm7[20];	// SHA1 HMAC of ARM7
-		uint8_t sha1_hmac_digest_master[20];
-		uint8_t sha1_hmac_icon_title[20];
-		uint8_t sha1_hmac_arm9i[20];	// decrypted
-		uint8_t sha1_hmac_arm7i[20];	// decrypted
-		uint8_t reserved7[40];
-		uint8_t sha1_hmac_arm9_nosecure[20];	// SHA1 HMAC of ARM9 without 16 KB secure area
-		uint8_t reserved8[2636];
-		uint8_t debug_args[0x180];	// Zero and unchecked on retail; used for arguments on debug.
-		uint8_t rsa_sha1[0x80];		// RSA SHA1 signature on 0x000...0xDFF.
+		uint8_t sha1_hmac_arm9[20];		// [0x300] SHA1 HMAC of ARM9 (with encrypted secure area)
+		uint8_t sha1_hmac_arm7[20];		// [0x314] SHA1 HMAC of ARM7
+		uint8_t sha1_hmac_digest_master[20];	// [0x328]
+		uint8_t sha1_hmac_icon_title[20];	// [0x33C]
+		uint8_t sha1_hmac_arm9i[20];		// [0x350] decrypted
+		uint8_t sha1_hmac_arm7i[20];		// [0x364] decrypted
+		uint8_t reserved7[40];			// [0x378]
+		uint8_t sha1_hmac_arm9_nosecure[20];	// [0x3A0] SHA1 HMAC of ARM9 without 16 KB secure area
+		uint8_t reserved8[2636];		// [0x3B4]
+		uint8_t debug_args[0x180];		// [0xE00] Zero and unchecked on retail; used for arguments on debug.
+		uint8_t rsa_sha1[0x80];			// [0xF80] RSA SHA1 signature on 0x000...0xDFF.
 	} dsi;
 } NDS_RomHeader;
 ASSERT_STRUCT(NDS_RomHeader, 4096);

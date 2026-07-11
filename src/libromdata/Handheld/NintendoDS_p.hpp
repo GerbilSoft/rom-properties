@@ -90,6 +90,9 @@ public:
 		DSi_Enhanced	= 2,	// Nintendo DSi-enhanced ROM
 		DSi_Exclusive	= 3,	// Nintendo DSi-exclusive ROM
 
+		NTRBOOT_DSi	= 4,	// NTRBOOT for DSi repair
+		NTRBOOT_3DS	= 5,	// NTRBOOT for 3DS repair
+
 		Max
 	};
 	RomType romType;
@@ -114,7 +117,31 @@ public:
 	 */
 	inline bool isDSi(void) const
 	{
-		return !!(romHeader.unitcode & 0x02);
+		switch (romType) {
+			case RomType::DSi_Enhanced:
+			case RomType::DSi_Exclusive:
+			case RomType::NTRBOOT_DSi:
+				return true;
+
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * Is this an NTRBOOT ROM?
+	 * @return True if it is; false if it isn't.
+	 */
+	inline bool isNTRBOOT(void) const
+	{
+		switch (romType) {
+			case RomType::NTRBOOT_DSi:
+			case RomType::NTRBOOT_3DS:
+				return true;
+
+			default:
+				return false;
+		}
 	}
 
 	/**

@@ -424,10 +424,29 @@ NintendoDS::NintendoDS(const IRpFilePtr &file, bool cia)
 	d->secData = d->checkNDSSecurityData();
 	d->secArea = d->checkNDSSecureArea();
 
-	// Set the MIME type. (unofficial)
-	d->mimeType = (d->romType == NintendoDSPrivate::RomType::DSi_Exclusive)
-			? "application/x-nintendo-dsi-rom"	// (not on fd.o)
-			: "application/x-nintendo-ds-rom";
+	// Set the file type and MIME type.
+	// NOTE: RomData defaults to FileType::ROM_Image, so file type will
+	// only be set for NTRBOOT ROMs.
+	switch (d->romType) {
+		case NintendoDSPrivate::RomType::DSi_Exclusive:
+			// NOTE: Not on FreeDesktop.org.
+			d->mimeType = "application/x-nintendo-dsi-rom";
+			break;
+
+		case NintendoDSPrivate::RomType::NTRBOOT_DSi:
+			d->mimeType = "application/x-nintendo-dsi-rom";
+			d->fileType = FileType::FirmwareBinary;	// TODO: Better file type?
+			break;
+
+		case NintendoDSPrivate::RomType::NTRBOOT_3DS:
+			d->mimeType = "application/x-nintendo-3ds-rom";
+			d->fileType = FileType::FirmwareBinary;	// TODO: Better file type?
+			break;
+
+		default:
+			d->mimeType = "application/x-nintendo-ds-rom";
+			break;
+	}
 }
 
 /**
@@ -478,6 +497,41 @@ int NintendoDS::isRomSupported_static(const DetectInfo *info)
 		return static_cast<int>(NintendoDSPrivate::RomType::NDS_Slot2);
 	}
 
+	// NTRBOOT ROMs don't have a valid logo, but *do* have port 0x40001A4 settings.
+	// NOTE: 3DS NTRBOOT matches NTR settings, but DSi NTRBOOT has its own?
+	if ((romHeader->cardControl13 == cpu_to_le32(NDS_CARD_CONTROL_13_NTR) &&
+	     romHeader->cardControlBF == cpu_to_le32(NDS_CARD_CONTROL_BF_NTR)) ||
+	    (romHeader->cardControl13 == cpu_to_le32(NDS_CARD_CONTROL_13_NTRBOOT_TWL) &&
+	     romHeader->cardControlBF == cpu_to_le32(NDS_CARD_CONTROL_BF_NTRBOOT_TWL)))
+	{
+		// It's an NTRBOOT ROM.
+		// NOTE: DSi NTRBOOT ROMs have valid data in the DSi-specific header area,
+		// up to the "unknown" field (0xFF?), whereas 3DS NTRBOOT ROMs have a
+		// mostly empty header.
+		bool isZero = true;
+		do {
+#define CHECK_DSi_ARRAY(arr) \
+			for (size_t i = 0; isZero && i < ARRAY_SIZE(romHeader->dsi.arr); i++) { \
+				if (romHeader->dsi.arr[i] != 0) { \
+					isZero = false; \
+					break; \
+				} \
+			} \
+			if (!isZero) break
+
+			CHECK_DSi_ARRAY(global_mbk);
+			CHECK_DSi_ARRAY(arm9_mbk);
+			CHECK_DSi_ARRAY(arm7_mbk);
+			CHECK_DSi_ARRAY(arm9_mbk9_master);
+			if (romHeader->dsi.unknown != 0) {
+				isZero = false;
+			}
+		} while (0);
+
+		return (isZero) ? static_cast<int>(NintendoDSPrivate::RomType::NTRBOOT_3DS)
+		                : static_cast<int>(NintendoDSPrivate::RomType::NTRBOOT_DSi);
+	}
+
 	// Not supported.
 	return static_cast<int>(NintendoDSPrivate::RomType::Unknown);
 }
@@ -501,43 +555,54 @@ const char *NintendoDS::systemName(unsigned int type) const
 		"NintendoDS::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	// Bit 2: 0 for NDS, 1 for DSi-exclusive.
-	// Bit 3: 0 for worldwide, 1 for China. (iQue DS)
-	static const array<const char*, 4*4> sysNames = {{
-		// Nintendo (worldwide)
+	// Bit 2: 0 for worldwide, 1 for China. (iQue DS)
+	static const array<const char*, 4*2> sysNames_NDS = {{
 		"Nintendo DS", "Nintendo DS", "NDS", nullptr,
+		"iQue DS", "iQue DS", "NDS", nullptr
+	}};
+	static const array<const char*, 4*2> sysNames_DSi = {{
 		"Nintendo DSi", "Nintendo DSi", "DSi", nullptr,
-
-		// iQue (China)
-		"iQue DS", "iQue DS", "NDS", nullptr,
 		"iQue DSi", "iQue DSi", "DSi", nullptr
+	}};
+
+	// NTRBOOT (3DS) doesn't have a region code.
+	static const array<const char*, 4> sysNames_3DS = {{
+		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr,
 	}};
 
 	// "iQue" is only used if the localized system name is requested
 	// *and* the ROM's region code is China only.
 	unsigned int idx = (type & SYSNAME_TYPE_MASK);
-	if (d->romType == NintendoDSPrivate::RomType::DSi_Exclusive) {
-		// DSi-exclusive game.
-		idx |= (1U << 2);
-		if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
-			if ((d->romHeader.dsi.region_code == cpu_to_le32(DSi_REGION_CHINA)) ||
-			    (d->romHeader.nds_region & 0x80))
-			{
-				// iQue DSi.
-				idx |= (1U << 3);
+	switch (d->romType) {
+		case NintendoDSPrivate::RomType::DSi_Exclusive:
+		case NintendoDSPrivate::RomType::NTRBOOT_DSi:
+			// TODO: Is the region code relevant for NTRBOOT DSi?
+			if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
+				if ((d->romHeader.dsi.region_code == cpu_to_le32(DSi_REGION_CHINA)) ||
+				(d->romHeader.nds_region & 0x80))
+				{
+					// iQue DSi.
+					idx |= (1U << 3);
+				}
 			}
-		}
-	} else {
-		// NDS-only and/or DSi-enhanced game.
-		if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
-			if (d->romHeader.nds_region & 0x80) {
-				// iQue DS.
-				idx |= (1U << 3);
+			return sysNames_DSi[idx];
+
+		case NintendoDSPrivate::RomType::NTRBOOT_3DS:
+			return sysNames_3DS[idx];
+
+		default:
+			// NDS-only and/or DSi-enhanced game.
+			if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
+				if (d->romHeader.nds_region & 0x80) {
+					// iQue DS.
+					idx |= (1U << 3);
+				}
 			}
-		}
+			return sysNames_NDS[idx];
 	}
 
-	return sysNames[idx];
+	// Not recognized...
+	return nullptr;
 }
 
 /**
@@ -673,10 +738,12 @@ int NintendoDS::loadFieldData(void)
 	// - Show IR cart and/or other accessories? (NAND ROM, etc.)
 	const char *nds_romType;
 	const uint16_t dsi_filetype = le16_to_cpu(romHeader->dsi.title_id.catID);
-	if (d->cia || ((romHeader->unitcode & NintendoDSPrivate::DS_HW_DSi) &&
+	if (d->isNTRBOOT()) {
+		nds_romType = "NTRBOOT";
+	} else if (d->cia || ((romHeader->unitcode & NintendoDSPrivate::DS_HW_DSi) &&
 		dsi_filetype != DSi_FTYPE_CARTRIDGE))
 	{
-		// DSiWare.
+		// DSiWare
 		// TODO: Verify games that are available as both
 		// cartridge and DSiWare.
 		if (dsi_filetype == DSi_FTYPE_DSiWARE) {
@@ -1191,6 +1258,11 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) 
 	{
 		// This is either a prototype, a download demo, or homebrew.
 		// No external images are available.
+		return -ENOENT;
+	}
+
+	if (d->isNTRBOOT()) {
+		// NTRBOOT ROMs don't have any external images. (...yet)
 		return -ENOENT;
 	}
 

@@ -259,9 +259,9 @@ static std::once_flag once_mimeTypes;
  * - magic2: Second 32-bit magic number, if available.
  */
 #ifdef ENABLE_XML
-static constexpr size_t romDataFns_magic_count = 38;
+static constexpr size_t romDataFns_magic_count = 40;
 #else /* !ENABLE_XML */
-static constexpr size_t romDataFns_magic_count = 37;
+static constexpr size_t romDataFns_magic_count = 39;
 #endif /* ENABLE_XML */
 static const array<RomDataFns, romDataFns_magic_count> romDataFns_magic = {{
 	// Consoles
@@ -291,6 +291,10 @@ static const array<RomDataFns, romDataFns_magic_count> romDataFns_magic = {{
 	GetRomDataFns_magic1(Nintendo3DS_SMDH, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'SMDH'),
 	GetRomDataFns_magic1(Nintendo3DS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA, 0, 'Z3DS'),	// Z3DS format only!
 	GetRomDataFns_magic2(NintendoDS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA, 0xC0, 0x24FFAE51, 0xC8604FE2),
+	// NTRBOOT ROMs don't have the logo, but *do* have the port 0x40001A4 command settings.
+	// NOTE: 3DS NTRBOOT matches NTR settings, but DSi NTRBOOT has its own?
+	GetRomDataFns_magic2(NintendoDS, ATTR_NONE, 0x60, 0x00605800, 0x00F80818),	// NTRBOOT (3DS)
+	GetRomDataFns_magic2(NintendoDS, ATTR_NONE, 0x60, 0x57664100, 0xF8081808),	// NTRBOOT (DSi)
 
 	// Common
 	GetRomDataFns_magic1(ParamSFO, ATTR_HAS_METADATA, 0, 0x00505346),	// '\0PSF'
