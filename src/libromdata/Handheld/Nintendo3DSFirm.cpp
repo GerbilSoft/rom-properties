@@ -356,18 +356,18 @@ int Nintendo3DSFirm::loadFieldData(void)
 		const uint32_t first4 = be32_to_cpu(firmHeader->signature32[0]);
 		struct sighaxStatus_tbl_t {
 			uint32_t first4;
-			char status[12];
+			char status[16];
 		};
 		static constexpr array<sighaxStatus_tbl_t, 7> sighaxStatus_tbl = {{
 			{0xB6724531,	"NAND retail"},		// SciresM
 			{0x6EFF209C,	"NAND retail"},		// sighax.com
-			{0x88697CDC,	"NAND devkit"},		// SciresM
+			{0x88697CDC,	"NAND debug"},		// SciresM
 
 			{0x6CF52F89,	"NCSD retail"},
-			{0x53CB0E4E,	"NCSD devkit"},
+			{0x53CB0E4E,	"NCSD debug"},
 
-			{0x37E96B10,	"SPI retail"},
-			{0x18722BC7,	"SPI devkit"},
+			{0x37E96B10,	"NTR/SPI retail"},
+			{0x18722BC7,	"NTR/SPI debug"},
 		}};
 
 		const char *s_sighax_status = nullptr;
