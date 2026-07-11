@@ -16,6 +16,7 @@
 #  include "librpbase/crypto/IAesCipher.hpp"
 #endif /* ENABLE_DECRYPTION */
 #include "librpbase/disc/PartitionFile.hpp"
+#include "librpbyteswap/byteswap_rp.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 

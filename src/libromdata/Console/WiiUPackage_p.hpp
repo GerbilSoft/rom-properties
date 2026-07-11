@@ -20,6 +20,7 @@
 #include "disc/WiiUFst.hpp"
 
 // librpbase
+#include "librpbase/disc/IDiscReader.hpp"
 #ifdef ENABLE_DECRYPTION
 #  include "librpbase/disc/CBCReader.hpp"
 #  include "disc/WiiUH3Reader.hpp"
