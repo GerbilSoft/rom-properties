@@ -1294,12 +1294,14 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(IRpFile *file)
 	}
 
 	// Key addresses and indexes.
-	static const array<KeyStoreUIPrivate::KeyBinAddress, 6> keyBinAddress = {{
-		{0x5720, static_cast<int>(N3DSVerifyKeys::EncryptionKeys::Key_Retail_SpiBoot)},
+	static const array<KeyStoreUIPrivate::KeyBinAddress, 8> keyBinAddress = {{
+		{0x5720, static_cast<int>(N3DSVerifyKeys::EncryptionKeys::Key_Retail_NtrBoot)},
+		{0x5730, static_cast<int>(N3DSVerifyKeys::EncryptionKeys::Key_Retail_SpiBoot)},
 		{0x59D0, static_cast<int>(N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x2CKeyX)},
 		{0x5A20, static_cast<int>(N3DSVerifyKeys::EncryptionKeys::Key_Retail_Slot0x3DKeyX)},
 
-		{0x5740, static_cast<int>(N3DSVerifyKeys::EncryptionKeys::Key_Debug_SpiBoot)},
+		{0x5740, static_cast<int>(N3DSVerifyKeys::EncryptionKeys::Key_Debug_NtrBoot)},
+		{0x5750, static_cast<int>(N3DSVerifyKeys::EncryptionKeys::Key_Debug_SpiBoot)},
 		{0x5DD0, static_cast<int>(N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x2CKeyX)},
 		{0x5E20, static_cast<int>(N3DSVerifyKeys::EncryptionKeys::Key_Debug_Slot0x3DKeyX)},
 	}};
