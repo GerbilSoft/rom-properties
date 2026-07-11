@@ -6,6 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "librpbase/config.librpbase.h"
+
 #include "Nintendo3DSFirm.hpp"
 #include "RomData_p.hpp"
 
@@ -14,6 +16,11 @@
 
 // Other rom-properties libraries
 #include "librpbase/crypto/Hash.hpp"
+#ifdef ENABLE_DECRYPTION
+#  include "librpbase/crypto/AesCipherFactory.hpp"
+#  include "librpbase/crypto/IAesCipher.hpp"
+#  include "librpbase/crypto/KeyManager.hpp"
+#endif /* ENABLE_DECRYPTION */
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -29,12 +36,15 @@ using std::array;
 using std::string;
 using std::unique_ptr;
 
+// Uninitialized vector class
+#include "uvector.h"
+
 namespace LibRomData {
 
 class Nintendo3DSFirmPrivate final : public RomDataPrivate
 {
 public:
-	explicit Nintendo3DSFirmPrivate(const IRpFilePtr &file);
+	explicit Nintendo3DSFirmPrivate(const IRpFilePtr &file, Nintendo3DSFirm::StorageType storageType);
 
 private:
 	typedef RomDataPrivate super;
@@ -50,6 +60,32 @@ public:
 	// Firmware header
 	// NOTE: Must be byteswapped on access.
 	N3DS_FIRM_Header_t firmHeader;
+
+	// Storage type
+	Nintendo3DSFirm::StorageType storageType;
+
+	// Retail/debug?
+	enum class CryptoType : int8_t {
+		Unknown	= -1,
+
+		Retail = 0,
+		Debug = 1,
+	};
+	CryptoType cryptoType;
+
+public:
+	static constexpr off64_t FIRM_MAX_SIZE = 4*1024*1024;
+
+	/**
+	 * Load the firmware binary. (excluding header)
+	 *
+	 * For NTR/SPI, the binary will also be decrypted
+	 * if the keys are available.
+	 *
+	 * @param firmBuf Buffer for the firmware binary
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int loadFirmBin(rp::uvector<uint8_t> &firmBuf);
 };
 
 ROMDATA_IMPL(Nintendo3DSFirm)
@@ -74,11 +110,153 @@ const RomDataInfo Nintendo3DSFirmPrivate::romDataInfo = {
 	"Nintendo3DSFirm", exts.data(), mimeTypes.data()
 };
 
-Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(const IRpFilePtr &file)
+Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(const IRpFilePtr &file, Nintendo3DSFirm::StorageType storageType)
 	: super(file, &romDataInfo)
+	, storageType(storageType)
+	, cryptoType(CryptoType::Unknown)
 {
 	// Clear the various structs.
 	memset(&firmHeader, 0, sizeof(firmHeader));
+}
+
+/**
+ * Load the firmware binary. (excluding header)
+ *
+ * For NTR/SPI, the binary will also be decrypted
+ * if the keys are available.
+ *
+ * @param firmBuf Buffer for the firmware binary
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int Nintendo3DSFirmPrivate::loadFirmBin(rp::uvector<uint8_t> &firmBuf)
+{
+	firmBuf.clear();
+
+	off64_t szFile64 = file->size();
+	if (szFile64 < static_cast<off64_t>(sizeof(N3DS_FIRM_Header_t))) {
+		// Firmware file is too small...
+		return -EIO;
+	}
+	szFile64 -= sizeof(N3DS_FIRM_Header_t);
+	if (szFile64 > FIRM_MAX_SIZE) {
+		// Firmware file is too big.
+		return -E2BIG;	// FIXME: Probably wrong...
+	}
+
+	// Firmware binary is 4 MB or less.
+	const unsigned int szFile = static_cast<unsigned int>(szFile64);
+	firmBuf.resize(szFile);
+	size_t size = file->seekAndRead(sizeof(N3DS_FIRM_Header_t), firmBuf.data(), firmBuf.size());
+	if (size != szFile) {
+		// Error reading the firmware binary.
+		firmBuf.clear();
+		int ret = file->lastError();
+		if (ret == 0) {
+			ret = -EIO;
+		}
+		return ret;
+	}
+
+#ifdef ENABLE_DECRYPTION
+	if (storageType > Nintendo3DSFirm::StorageType::NAND) {
+		// Decrypt the sections.
+		// - IV is [offset, load_addr, size, size] (all are packed as 32-bit little-endian)
+		// - Key depends on prod/devel and NTR/SPI.
+		// TODO: Decrypt the signature to determine prod vs. devel. Assuming debug if not using sighaxed for now.
+		// Check for NCCH for official images, or maybe "has at least one 32-bit 00000000" for unofficial?
+		const char *keyName;
+		switch (storageType) {
+			default:
+				assert(!"Key not supported?!?!");
+				// TODO: Some other error?
+				return -ENOENT;
+			case Nintendo3DSFirm::StorageType::NTR:
+				keyName = (cryptoType != CryptoType::Debug) ? "ctr-ntr-boot" : "ctr-dev-ntr-boot";
+				break;
+			case Nintendo3DSFirm::StorageType::SPI:
+				keyName = (cryptoType != CryptoType::Debug) ? "ctr-spi-boot" : "ctr-dev-spi-boot";
+				break;
+		}
+
+		KeyManager *const keyManager = KeyManager::instance();
+		assert(keyManager != nullptr);
+		if (!keyManager) {
+			// TODO: Some other error?
+			return -EIO;
+		}
+
+		KeyManager::KeyData_t keyData;
+		KeyManager::VerifyResult res = keyManager->get(keyName, &keyData);
+		if (res != KeyManager::VerifyResult::OK) {
+			// TODO: Some other error?
+			return -EIO;
+		}
+
+		// Initialize an AesCipher.
+		unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
+		assert((bool)cipher);
+		if (!cipher) {
+			// No AES cipher is available...
+			// TODO: Some other error?
+			return -ENOTSUP;
+		}
+
+		// Set decryption parameters.
+		cipher->setChainingMode(IAesCipher::ChainingMode::CBC);
+
+		// Decrypt each section.
+		for (const N3DS_FIRM_Section_Header_t &section : firmHeader.sections) {
+			if (section.size == 0) {
+				// Empty section. Skip it.
+				continue;
+			}
+
+			uint32_t addr = le32_to_cpu(section.offset);
+			assert(addr >= sizeof(N3DS_FIRM_Header_t));
+			if (addr < sizeof(N3DS_FIRM_Header_t)) {
+				// Invalid starting address.
+				// TODO: Return an error.
+				continue;
+			}
+			addr -= sizeof(N3DS_FIRM_Header_t);
+
+			uint32_t size = le32_to_cpu(section.size);
+			assert(addr + size <= firmBuf.size());
+			if (addr + size > firmBuf.size()) {
+				// Out of bounds?
+				// TODO: Return an error.
+				continue;
+			}
+
+			// Section sizes must be a mutiple of 16.
+			assert(size % 16 == 0);
+			if (size % 16 != 0) {
+				// Round it up...
+				size &= ~15;
+				size += 16;
+			}
+
+			// Set the key and IV.
+			union {
+				uint32_t u32[4];
+				uint8_t u8[16];
+			} iv;
+			iv.u32[0] = section.offset;
+			iv.u32[1] = section.load_addr;
+			iv.u32[2] = section.size;
+			iv.u32[3] = section.size;
+			cipher->setKey(keyData.key, keyData.length);
+			cipher->setIV(iv.u8, sizeof(iv.u8));
+
+			// Decrypt the data.
+			// TODO: Check for errors.
+			cipher->decrypt(&firmBuf[addr], size);
+		}
+	}
+#endif /* ENABLE_DECRYPTION */
+
+	// TODO: Decrypt the firmware binary, if necessary.
+	return 0;
 }
 
 /** Nintendo3DSFirm **/
@@ -94,10 +272,11 @@ Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(const IRpFilePtr &file)
  *
  * NOTE: Check isValid() to determine if this is a valid ROM.
  *
- * @param file Open ROM image.
+ * @param file Open ROM image
+ * @param type Storage type; used to determine if decryption is needed.
  */
-Nintendo3DSFirm::Nintendo3DSFirm(const IRpFilePtr &file)
-	: super(new Nintendo3DSFirmPrivate(file))
+Nintendo3DSFirm::Nintendo3DSFirm(const IRpFilePtr &file, StorageType type)
+	: super(new Nintendo3DSFirmPrivate(file, type))
 {
 	RP_D(Nintendo3DSFirm);
 	d->mimeType = "application/x-nintendo-3ds-firm";	// unofficial, not on fd.o
@@ -126,6 +305,29 @@ Nintendo3DSFirm::Nintendo3DSFirm(const IRpFilePtr &file)
 
 	if (!d->isValid) {
 		d->file.reset();
+		return;
+	}
+
+	// Check for a sighaxed signature.
+	// If present, we can determine the crypto type.
+	// Otherwise, we'll need to use heuristics, and/or try decrypting
+	// the signature with various public keys.
+	const uint32_t first4 = be32_to_cpu(d->firmHeader.signature32[0]);
+	switch (first4) {
+		case 0x37E96B10:
+			// NTR/SPI retail
+			// FIXME: Distinguish between NTR and SPI?
+			d->cryptoType = Nintendo3DSFirmPrivate::CryptoType::Retail;
+			break;
+		case 0x18722BC7:
+			// NTR/SPI debug
+			// FIXME: Distinguish between NTR and SPI?
+			d->cryptoType = Nintendo3DSFirmPrivate::CryptoType::Debug;
+			break;
+		default:
+			// Unknown...
+			// TODO: Try to decrypt the signature?
+			break;
 	}
 }
 
@@ -211,19 +413,10 @@ int Nintendo3DSFirm::loadFieldData(void)
 	d->fields.reserve(6);	// Maximum of 6 fields.
 
 	// Read the firmware binary.
-	unique_ptr<uint8_t[]> firmBuf;
-	unsigned int szFile = 0;
-	if (d->file->size() <= 4*1024*1024) {
-		// Firmware binary is 4 MB or less.
-		szFile = static_cast<unsigned int>(d->file->size());
-		firmBuf.reset(new uint8_t[szFile]);
-		d->file->rewind();
-		size_t size = d->file->read(firmBuf.get(), szFile);
-		if (size != szFile) {
-			// Error reading the firmware binary.
-			firmBuf.reset();
-		}
-	}
+	// NOTE: firmBuf does *not* include the FIRM header.
+	rp::uvector<uint8_t> firmBuf;
+	int ret = d->loadFirmBin(firmBuf);
+	// TODO: If decryption failed, show a warning.
 
 	// If both ARM11 and ARM9 entry points are non-zero,
 	// check if this is an official 3DS firmware binary.
@@ -237,13 +430,33 @@ int Nintendo3DSFirm::loadFieldData(void)
 		// Calculate the CRC32 and look it up.
 		// TODO: Check firmBuf before initializing CRC32?
 		Hash crc32Hash(Hash::Algorithm::CRC32);
-		if (crc32Hash.isUsable() && firmBuf) {
-			crc32Hash.process(firmBuf.get(), szFile);
+		if (crc32Hash.isUsable() && !firmBuf.empty()) {
+			// NOTE: The CRC32s include the FIRM header.
+			crc32Hash.process(firmHeader, sizeof(*firmHeader));
+			crc32Hash.process(firmBuf.data(), firmBuf.size());
 			const uint32_t crc = crc32Hash.getHash32();
 			firmBin = Nintendo3DSFirmData::lookup_firmBin(crc);
 			if (firmBin != nullptr) {
 				// Official firmware binary.
-				firmBinDesc = (firmBin->isNew3DS ? "New3DS FIRM" : "Old3DS FIRM");
+				if (firmBin->flags & Nintendo3DSFirmData::FLAG_New3DS) {
+					// New3DS
+					if (firmBin->flags & Nintendo3DSFirmData::FLAG_AGB_FIRM) {
+						firmBinDesc = "New3DS AGB_FIRM";
+					} else if (firmBin->flags & Nintendo3DSFirmData::FLAG_TWL_FIRM) {
+						firmBinDesc = "New3DS TWL_FIRM";
+					} else {
+						firmBinDesc = "New3DS NATIVE_FIRM";
+					}
+				} else {
+					// Old3DS
+					if (firmBin->flags & Nintendo3DSFirmData::FLAG_AGB_FIRM) {
+						firmBinDesc = "Old3DS AGB_FIRM";
+					} else if (firmBin->flags & Nintendo3DSFirmData::FLAG_TWL_FIRM) {
+						firmBinDesc = "Old3DS TWL_FIRM";
+					} else {
+						firmBinDesc = "Old3DS NATIVE_FIRM";
+					}
+				}
 			} else {
 				// Check for a custom FIRM.
 				checkCustomFIRM = true;
@@ -269,7 +482,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 		if (!memcmp(&firmHeader->reserved[0x2D], "B9S", 3)) {
 			// This is Boot9Strap.
 			firmBinDesc = "Boot9Strap";
-		} else if (firmBuf) {
+		} else if (!firmBuf.empty()) {
 			// Check for sighax installer.
 			// NOTE: String has a NULL terminator.
 			static constexpr char sighax_magic[] = "3DS BOOTHAX INS";
@@ -293,7 +506,9 @@ int Nintendo3DSFirm::loadFieldData(void)
 		// System version
 		d->fields.addField_string(C_("Nintendo3DSFirm", "System Version"),
 			fmt::format(FSTR("{:d}.{:d}"), firmBin->sys.major, firmBin->sys.minor));
-	} else if (firmBuf && checkARM9) {
+
+		// TODO: Check sections for NCCH headers?
+	} else if (!firmBuf.empty() && checkARM9) {
 		// Check for ARM9 homebrew
 
 		// Version strings
@@ -318,7 +533,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 		string s_verstr;
 		for (const auto &p : arm9VerStr_tbl) {
 			const char *verstr = static_cast<const char*>(memmem(
-				firmBuf.get(), szFile, p.searchstr, p.searchlen));
+				firmBuf.data(), firmBuf.size(), p.searchstr, p.searchlen));
 			if (!verstr)
 				continue;
 
@@ -326,7 +541,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 
 			// Version does NOT include the 'v' character.
 			verstr += p.searchlen;
-			const char *end = (const char*)firmBuf.get() + szFile;
+			const char *const end = reinterpret_cast<const char*>(firmBuf.data()) + firmBuf.size();
 			int count = 0;
 			while (verstr < end && count < 32 && verstr[count] != 0 &&
 			       !ISSPACE(verstr[count]) && verstr[count] != ')')
@@ -351,18 +566,18 @@ int Nintendo3DSFirm::loadFieldData(void)
 		const uint32_t first4 = be32_to_cpu(firmHeader->signature32[0]);
 		struct sighaxStatus_tbl_t {
 			uint32_t first4;
-			char status[12];
+			char status[16];
 		};
 		static constexpr array<sighaxStatus_tbl_t, 7> sighaxStatus_tbl = {{
 			{0xB6724531,	"NAND retail"},		// SciresM
 			{0x6EFF209C,	"NAND retail"},		// sighax.com
-			{0x88697CDC,	"NAND devkit"},		// SciresM
+			{0x88697CDC,	"NAND debug"},		// SciresM
 
 			{0x6CF52F89,	"NCSD retail"},
-			{0x53CB0E4E,	"NCSD devkit"},
+			{0x53CB0E4E,	"NCSD debug"},
 
-			{0x37E96B10,	"SPI retail"},
-			{0x18722BC7,	"SPI devkit"},
+			{0x37E96B10,	"NTR/SPI retail"},
+			{0x18722BC7,	"NTR/SPI debug"},
 		}};
 
 		const char *s_sighax_status = nullptr;

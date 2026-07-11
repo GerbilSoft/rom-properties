@@ -14,6 +14,10 @@
 #include "data/NintendoLanguage.hpp"
 #include "../Console/WiiCommon.hpp"
 
+// for 3DS NTRBOOT ROMs
+#include "Nintendo3DSFirm.hpp"
+#include "n3ds_firm_structs.h"
+
 // Other rom-properties libraries
 #include "librpbase/config/Config.hpp"
 #include "librpbase/disc/DiscReader.hpp"
@@ -49,7 +53,7 @@ const array<const char*, 4+1> NintendoDSPrivate::exts = {{
 
 	nullptr
 }};
-const array<const char*, 3+1> NintendoDSPrivate::mimeTypes = {{
+const array<const char*, 5+1> NintendoDSPrivate::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-nintendo-ds-rom",
 
@@ -59,6 +63,8 @@ const array<const char*, 3+1> NintendoDSPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-nintendo-dsi-rom",
+	"application/x-nintendo-dsi-ntrboot",
+	"application/x-nintendo-3ds-ntrboot",
 
 	nullptr
 }};
@@ -103,8 +109,8 @@ inline string NintendoDSPrivate::getGameID(void) const
  */
 std::string NintendoDSPrivate::dsi_getTitleID(void) const
 {
-	assert(romHeader.unitcode & 0x02);
-	if (!(romHeader.unitcode & 0x02)) {
+	assert(isDSi());
+	if (!(isDSi())) {
 		return {};
 	}
 
@@ -150,6 +156,32 @@ int NintendoDSPrivate::loadIconTitleData(void)
 	// Save the banner file.
 	this->nds_icon_title = std::move(bnrFile);
 	return 0;
+}
+
+/**
+ * Get the publisher.
+ * @return Publisher, or empty string on error.
+ */
+string NintendoDSPrivate::getPublisher(void)
+{
+	const char *const publisher = NintendoPublishers::lookup(romHeader.company);
+	if (publisher) {
+		return publisher;
+	}
+
+	// Unknown publisher. Print the company code as two characters if they're
+	// both alphanumeric; otherwise, hexadecimal.
+	string s_publisher;
+	if (isalnum_ascii(romHeader.company[0]) && isalnum_ascii(romHeader.company[1])) {
+		s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:c}{:c})")),
+			romHeader.company[0], romHeader.company[1]);
+	} else {
+		s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
+			static_cast<unsigned int>(romHeader.company[0]),
+			static_cast<unsigned int>(romHeader.company[1]));
+	}
+
+	return s_publisher;
 }
 
 /**
@@ -424,10 +456,29 @@ NintendoDS::NintendoDS(const IRpFilePtr &file, bool cia)
 	d->secData = d->checkNDSSecurityData();
 	d->secArea = d->checkNDSSecureArea();
 
-	// Set the MIME type. (unofficial)
-	d->mimeType = (d->romType == NintendoDSPrivate::RomType::DSi_Exclusive)
-			? "application/x-nintendo-dsi-rom"	// (not on fd.o)
-			: "application/x-nintendo-ds-rom";
+	// Set the file type and MIME type.
+	// NOTE: RomData defaults to FileType::ROM_Image, so file type will
+	// only be set for NTRBOOT ROMs.
+	switch (d->romType) {
+		case NintendoDSPrivate::RomType::DSi_Exclusive:
+			// NOTE: Not on FreeDesktop.org.
+			d->mimeType = "application/x-nintendo-dsi-rom";
+			break;
+
+		case NintendoDSPrivate::RomType::NTRBOOT_DSi:
+			d->mimeType = "application/x-nintendo-dsi-rom";
+			d->fileType = FileType::FirmwareBinary;	// TODO: Better file type?
+			break;
+
+		case NintendoDSPrivate::RomType::NTRBOOT_3DS:
+			d->mimeType = "application/x-nintendo-3ds-rom";
+			d->fileType = FileType::FirmwareBinary;	// TODO: Better file type?
+			break;
+
+		default:
+			d->mimeType = "application/x-nintendo-ds-rom";
+			break;
+	}
 }
 
 /**
@@ -478,6 +529,42 @@ int NintendoDS::isRomSupported_static(const DetectInfo *info)
 		return static_cast<int>(NintendoDSPrivate::RomType::NDS_Slot2);
 	}
 
+	// NTRBOOT ROMs don't have a valid logo, but *do* have port 0x40001A4 settings.
+	// NOTE: 3DS NTRBOOT matches NTR settings, but DSi NTRBOOT has its own?
+	if ((romHeader->cardControl13 == cpu_to_le32(NDS_CARD_CONTROL_13_NTR) &&
+	     romHeader->cardControlBF == cpu_to_le32(NDS_CARD_CONTROL_BF_NTR)) ||
+	    (romHeader->cardControl13 == cpu_to_le32(NDS_CARD_CONTROL_13_NTRBOOT_TWL) &&
+	     romHeader->cardControlBF == cpu_to_le32(NDS_CARD_CONTROL_BF_NTRBOOT_TWL)))
+	{
+		// It's an NTRBOOT ROM.
+		// NOTE: DSi NTRBOOT ROMs have valid data in the DSi-specific header area,
+		// up to the "unknown" field (0xFF?), whereas 3DS NTRBOOT ROMs have a
+		// mostly empty header.
+		bool isZero = true;
+		do {
+#define CHECK_DSi_ARRAY(arr) \
+			for (size_t i = 0; isZero && i < ARRAY_SIZE(romHeader->dsi.arr); i++) { \
+				if (romHeader->dsi.arr[i] != 0) { \
+					isZero = false; \
+					break; \
+				} \
+			} \
+			if (!isZero) break
+
+			CHECK_DSi_ARRAY(global_mbk);
+			CHECK_DSi_ARRAY(arm9_mbk);
+			CHECK_DSi_ARRAY(arm7_mbk);
+			CHECK_DSi_ARRAY(arm9_mbk9_master);
+			// FIXME: Is this value always 0xFF for DSi NTRBOOT?
+			if (romHeader->dsi.unknown & 0x80) {
+				isZero = false;
+			}
+		} while (0);
+
+		return (isZero) ? static_cast<int>(NintendoDSPrivate::RomType::NTRBOOT_3DS)
+		                : static_cast<int>(NintendoDSPrivate::RomType::NTRBOOT_DSi);
+	}
+
 	// Not supported.
 	return static_cast<int>(NintendoDSPrivate::RomType::Unknown);
 }
@@ -501,43 +588,54 @@ const char *NintendoDS::systemName(unsigned int type) const
 		"NintendoDS::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	// Bit 2: 0 for NDS, 1 for DSi-exclusive.
-	// Bit 3: 0 for worldwide, 1 for China. (iQue DS)
-	static const array<const char*, 4*4> sysNames = {{
-		// Nintendo (worldwide)
+	// Bit 2: 0 for worldwide, 1 for China. (iQue DS)
+	static const array<const char*, 4*2> sysNames_NDS = {{
 		"Nintendo DS", "Nintendo DS", "NDS", nullptr,
+		"iQue DS", "iQue DS", "NDS", nullptr
+	}};
+	static const array<const char*, 4*2> sysNames_DSi = {{
 		"Nintendo DSi", "Nintendo DSi", "DSi", nullptr,
-
-		// iQue (China)
-		"iQue DS", "iQue DS", "NDS", nullptr,
 		"iQue DSi", "iQue DSi", "DSi", nullptr
+	}};
+
+	// NTRBOOT (3DS) doesn't have a region code.
+	static const array<const char*, 4> sysNames_3DS = {{
+		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr,
 	}};
 
 	// "iQue" is only used if the localized system name is requested
 	// *and* the ROM's region code is China only.
 	unsigned int idx = (type & SYSNAME_TYPE_MASK);
-	if (d->romType == NintendoDSPrivate::RomType::DSi_Exclusive) {
-		// DSi-exclusive game.
-		idx |= (1U << 2);
-		if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
-			if ((d->romHeader.dsi.region_code == cpu_to_le32(DSi_REGION_CHINA)) ||
-			    (d->romHeader.nds_region & 0x80))
-			{
-				// iQue DSi.
-				idx |= (1U << 3);
+	switch (d->romType) {
+		case NintendoDSPrivate::RomType::DSi_Exclusive:
+		case NintendoDSPrivate::RomType::NTRBOOT_DSi:
+			// TODO: Is the region code relevant for NTRBOOT DSi?
+			if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
+				if ((d->romHeader.dsi.region_code == cpu_to_le32(DSi_REGION_CHINA)) ||
+				(d->romHeader.nds_region & 0x80))
+				{
+					// iQue DSi.
+					idx |= (1U << 3);
+				}
 			}
-		}
-	} else {
-		// NDS-only and/or DSi-enhanced game.
-		if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
-			if (d->romHeader.nds_region & 0x80) {
-				// iQue DS.
-				idx |= (1U << 3);
+			return sysNames_DSi[idx];
+
+		case NintendoDSPrivate::RomType::NTRBOOT_3DS:
+			return sysNames_3DS[idx];
+
+		default:
+			// NDS-only and/or DSi-enhanced game.
+			if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
+				if (d->romHeader.nds_region & 0x80) {
+					// iQue DS.
+					idx |= (1U << 3);
+				}
 			}
-		}
+			return sysNames_NDS[idx];
 	}
 
-	return sysNames[idx];
+	// Not recognized...
+	return nullptr;
 }
 
 /**
@@ -673,10 +771,12 @@ int NintendoDS::loadFieldData(void)
 	// - Show IR cart and/or other accessories? (NAND ROM, etc.)
 	const char *nds_romType;
 	const uint16_t dsi_filetype = le16_to_cpu(romHeader->dsi.title_id.catID);
-	if (d->cia || ((romHeader->unitcode & NintendoDSPrivate::DS_HW_DSi) &&
+	if (d->isNTRBOOT()) {
+		nds_romType = "NTRBOOT";
+	} else if (d->cia || ((romHeader->unitcode & NintendoDSPrivate::DS_HW_DSi) &&
 		dsi_filetype != DSi_FTYPE_CARTRIDGE))
 	{
-		// DSiWare.
+		// DSiWare
 		// TODO: Verify games that are available as both
 		// cartridge and DSiWare.
 		if (dsi_filetype == DSi_FTYPE_DSiWARE) {
@@ -719,26 +819,8 @@ int NintendoDS::loadFieldData(void)
 	d->fields.addField_string(C_("RomData", "Game ID"), d->getGameID());
 
 	// Publisher
-	const char *const publisher_title = C_("RomData", "Publisher");
-	const char *const publisher = NintendoPublishers::lookup(romHeader->company);
-	if (publisher) {
-		d->fields.addField_string(publisher_title, publisher);
-	} else {
-		if (isalnum_ascii(romHeader->company[0]) && isalnum_ascii(romHeader->company[1])) {
-			const array<char, 3> s_company = {{
-				romHeader->company[0],
-				romHeader->company[1],
-				'\0'
-			}};
-			d->fields.addField_string(publisher_title,
-				fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_company.data()));
-		} else {
-			d->fields.addField_string(publisher_title,
-				fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
-					static_cast<unsigned int>(romHeader->company[0]),
-					static_cast<unsigned int>(romHeader->company[1])));
-		}
-	}
+	// TODO: Use publisher from the full title?
+	d->fields.addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
 	// ROM version
 	d->fields.addField_string_numeric(C_("RomData", "Revision"),
@@ -802,20 +884,67 @@ int NintendoDS::loadFieldData(void)
 	d->fields.addField_bitfield(C_("NintendoDS", "DS Region Code"),
 		v_nds_region_bitfield_names, 0, nds_region);
 
-	if (!(hw_type & NintendoDSPrivate::DS_HW_DSi)) {
-		// Not a DSi-enhanced or DSi-exclusive ROM image.
-		if (romHeader->dsi.flags != 0) {
-			// DSi flags.
-			// NOTE: These are present in NDS games released after the DSi,
-			// even if the game isn't DSi-enhanced.
-			d->fields.addTab("DSi");
-			auto *const vv_dsi_flags = d->getDSiFlagsStringVector();
-			RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, 8);
-			params.headers = nullptr;
-			params.data.single = vv_dsi_flags;
-			params.mxd.checkboxes = romHeader->dsi.flags;
-			d->fields.addField_listData(C_("RomData", "Flags"), &params);
+	if (!d->isDSi() && romHeader->dsi.flags != 0) {
+		// Not a DSi-enhanced or DSi-exclusive ROM image,
+		// but DSi flags are present.
+		// NOTE: These are present in NDS games released after the DSi,
+		// even if the game isn't DSi-enhanced.
+		d->fields.addTab("DSi");
+		auto *const vv_dsi_flags = d->getDSiFlagsStringVector();
+		RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, 8);
+		params.headers = nullptr;
+		params.data.single = vv_dsi_flags;
+		params.mxd.checkboxes = romHeader->dsi.flags;
+		d->fields.addField_listData(C_("RomData", "Flags"), &params);
+	}
+
+	if (d->isNTRBOOT()) do {
+		// NTRBOOT
+		if (d->romType == NintendoDSPrivate::RomType::NTRBOOT_3DS) {
+			// Add a FIRM tab.
+
+			// Read the FIRM header and determine the total amount of data.
+			N3DS_FIRM_Header_t firmHeader;
+			size_t size = d->file->seekAndRead(N3DS_NTRBOOT_FIRM_OFFSET, &firmHeader, sizeof(firmHeader));
+			if (size != sizeof(firmHeader)) {
+				break;
+			}
+			assert(firmHeader.magic == cpu_to_be32(N3DS_FIRM_MAGIC));
+			if (firmHeader.magic != cpu_to_be32(N3DS_FIRM_MAGIC)) {
+				break;
+			}
+
+			off64_t firmSize = sizeof(firmHeader);
+			for (const N3DS_FIRM_Section_Header_t &section : firmHeader.sections) {
+				firmSize += le32_to_cpu(section.size);
+			}
+
+			// Create a DiscReader for the FIRM.
+			IDiscReaderPtr discReader = std::make_shared<DiscReader>(d->file, N3DS_NTRBOOT_FIRM_OFFSET, firmSize);
+			if (!discReader->isOpen()) {
+				// Failed to open the DiscReader.
+				break;
+			}
+			// Read the FIRM data.
+			unique_ptr<Nintendo3DSFirm> firmFile(new Nintendo3DSFirm(discReader, Nintendo3DSFirm::StorageType::NTR));
+			if (!firmFile->isValid()) {
+				// Failed to open the Nintendo3DSFirm.
+				break;
+			}
+
+			const RomFields *const other = firmFile->fields();
+			assert(other != nullptr);
+			if (other) {
+				// Add the fields.
+				d->fields.addTab("FIRM");
+				d->fields.addFields_romFields(other, -1);
+			}
 		}
+		// TODO: DSi NTRBOOT stuff?
+	} while (0);
+
+	if (!d->isDSi()) {
+		// Remainder of function is for DSi-enhanced or DSi-exclusive ROMs only.
 		return d->fields.count();
 	}
 
@@ -1042,25 +1171,7 @@ int NintendoDS::loadMetaData(void)
 
 	// Publisher
 	// TODO: Use publisher from the full title?
-	const char *const publisher = NintendoPublishers::lookup(romHeader->company);
-	if (publisher) {
-		d->metaData.addMetaData_string(Property::Publisher, publisher);
-	} else {
-		if (isalnum_ascii(romHeader->company[0]) && isalnum_ascii(romHeader->company[1])) {
-			const array<char, 3> s_company = {{
-				romHeader->company[0],
-				romHeader->company[1],
-				'\0'
-			}};
-			d->metaData.addMetaData_string(Property::Publisher,
-				fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_company.data()));
-		} else {
-			d->metaData.addMetaData_string(Property::Publisher,
-				fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
-					static_cast<unsigned int>(romHeader->company[0]),
-					static_cast<unsigned int>(romHeader->company[1])));
-		}
-	}
+	d->metaData.addMetaData_string(Property::Publisher, d->getPublisher());
 
 	/** Custom properties! **/
 
@@ -1191,6 +1302,11 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) 
 	{
 		// This is either a prototype, a download demo, or homebrew.
 		// No external images are available.
+		return -ENOENT;
+	}
+
+	if (d->isNTRBOOT()) {
+		// NTRBOOT ROMs don't have any external images. (...yet)
 		return -ENOENT;
 	}
 

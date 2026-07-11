@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * n3ds_firm_structs.h: Nintendo 3DS firmware data structures.             *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,7 +29,7 @@ typedef struct _N3DS_FIRM_Section_Header_t {
 	uint32_t copy_method;		// [0x00C] 0 = NDMA, 1 = XDMA, 2 = CPU memcpy()
 	uint8_t sha256[32];		// [0x010] SHA-256 of the previous fields
 } N3DS_FIRM_Section_Header_t;
-ASSERT_STRUCT(_N3DS_FIRM_Section_Header_t, 48);
+ASSERT_STRUCT(N3DS_FIRM_Section_Header_t, 48);
 
 /**
  * Nintendo 3DS firmware binary header struct.
@@ -50,7 +50,10 @@ typedef struct _N3DS_FIRM_Header_t {
 		uint32_t signature32[0x100/4];	// [0x100] RSA-2048 signature (uint32_t version)
 	};
 } N3DS_FIRM_Header_t;
-ASSERT_STRUCT(_N3DS_FIRM_Header_t, 512);
+ASSERT_STRUCT(N3DS_FIRM_Header_t, 512);
+
+// NTRBOOT: FIRM is located at 0x7E00.
+#define N3DS_NTRBOOT_FIRM_OFFSET 0x7E00
 
 #ifdef __cplusplus
 }

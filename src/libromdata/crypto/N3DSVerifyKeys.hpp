@@ -92,7 +92,8 @@ enum class EncryptionKeys {
 	Key_Unknown = -1,
 
 	// Retail
-	Key_Retail_SpiBoot = 0,
+	Key_Retail_NtrBoot = 0,			// NTRBOOT from an NTR cartridge
+	Key_Retail_SpiBoot,			// SPIBOOT from WLAN firmware
 	Key_Retail_Slot0x18KeyX,
 	Key_Retail_Slot0x1BKeyX,
 	Key_Retail_Slot0x25KeyX,
@@ -112,7 +113,8 @@ enum class EncryptionKeys {
 	Key_Retail_Slot0x3DKeyNormal_5,
 
 	// Debug
-	Key_Debug_SpiBoot,
+	Key_Debug_NtrBoot,			// NTRBOOT from an NTR cartridge
+	Key_Debug_SpiBoot,			// SPIBOOT from WLAN firmware
 	Key_Debug_FixedCryptoKey,
 	Key_Debug_Slot0x18KeyX,
 	Key_Debug_Slot0x1BKeyX,
