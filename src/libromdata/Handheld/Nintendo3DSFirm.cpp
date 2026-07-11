@@ -29,6 +29,9 @@ using std::array;
 using std::string;
 using std::unique_ptr;
 
+// Uninitialized vector class
+#include "uvector.h"
+
 namespace LibRomData {
 
 class Nintendo3DSFirmPrivate final : public RomDataPrivate
@@ -53,6 +56,20 @@ public:
 
 	// Storage type
 	Nintendo3DSFirm::StorageType type;
+
+public:
+	static constexpr off64_t FIRM_MAX_SIZE = 4*1024*1024;
+
+	/**
+	 * Load the firmware binary. (excluding header)
+	 *
+	 * For NTR/SPI, the binary will also be decrypted
+	 * if the keys are available.
+	 *
+	 * @param firmBuf Buffer for the firmware binary
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int loadFirmBin(rp::uvector<uint8_t> &firmBuf);
 };
 
 ROMDATA_IMPL(Nintendo3DSFirm)
@@ -83,6 +100,48 @@ Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(const IRpFilePtr &file, Nintendo3
 {
 	// Clear the various structs.
 	memset(&firmHeader, 0, sizeof(firmHeader));
+}
+
+/**
+ * Load the firmware binary. (excluding header)
+ *
+ * For NTR/SPI, the binary will also be decrypted
+ * if the keys are available.
+ *
+ * @param firmBuf Buffer for the firmware binary
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int Nintendo3DSFirmPrivate::loadFirmBin(rp::uvector<uint8_t> &firmBuf)
+{
+	firmBuf.clear();
+
+	off64_t szFile64 = file->size();
+	if (szFile64 < static_cast<off64_t>(sizeof(N3DS_FIRM_Header_t))) {
+		// Firmware file is too small...
+		return -EIO;
+	}
+	szFile64 -= sizeof(N3DS_FIRM_Header_t);
+	if (szFile64 > FIRM_MAX_SIZE) {
+		// Firmware file is too big.
+		return -E2BIG;	// FIXME: Probably wrong...
+	}
+
+	// Firmware binary is 4 MB or less.
+	const unsigned int szFile = static_cast<unsigned int>(szFile64);
+	firmBuf.resize(szFile);
+	size_t size = file->seekAndRead(sizeof(N3DS_FIRM_Header_t), firmBuf.data(), firmBuf.size());
+	if (size != szFile) {
+		// Error reading the firmware binary.
+		firmBuf.clear();
+		int ret = file->lastError();
+		if (ret == 0) {
+			ret = -EIO;
+		}
+		return ret;
+	}
+
+	// TODO: Decrypt the firmware binary, if necessary.
+	return 0;
 }
 
 /** Nintendo3DSFirm **/
@@ -216,19 +275,10 @@ int Nintendo3DSFirm::loadFieldData(void)
 	d->fields.reserve(6);	// Maximum of 6 fields.
 
 	// Read the firmware binary.
-	unique_ptr<uint8_t[]> firmBuf;
-	unsigned int szFile = 0;
-	if (d->file->size() <= 4*1024*1024) {
-		// Firmware binary is 4 MB or less.
-		szFile = static_cast<unsigned int>(d->file->size());
-		firmBuf.reset(new uint8_t[szFile]);
-		d->file->rewind();
-		size_t size = d->file->read(firmBuf.get(), szFile);
-		if (size != szFile) {
-			// Error reading the firmware binary.
-			firmBuf.reset();
-		}
-	}
+	// NOTE: firmBuf does *not* include the FIRM header.
+	rp::uvector<uint8_t> firmBuf;
+	int ret = d->loadFirmBin(firmBuf);
+	// TODO: If decryption failed, show a warning.
 
 	// If both ARM11 and ARM9 entry points are non-zero,
 	// check if this is an official 3DS firmware binary.
@@ -242,8 +292,10 @@ int Nintendo3DSFirm::loadFieldData(void)
 		// Calculate the CRC32 and look it up.
 		// TODO: Check firmBuf before initializing CRC32?
 		Hash crc32Hash(Hash::Algorithm::CRC32);
-		if (crc32Hash.isUsable() && firmBuf) {
-			crc32Hash.process(firmBuf.get(), szFile);
+		if (crc32Hash.isUsable() && !firmBuf.empty()) {
+			// NOTE: The CRC32s include the FIRM header.
+			crc32Hash.process(firmHeader, sizeof(*firmHeader));
+			crc32Hash.process(firmBuf.data(), firmBuf.size());
 			const uint32_t crc = crc32Hash.getHash32();
 			firmBin = Nintendo3DSFirmData::lookup_firmBin(crc);
 			if (firmBin != nullptr) {
@@ -292,7 +344,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 		if (!memcmp(&firmHeader->reserved[0x2D], "B9S", 3)) {
 			// This is Boot9Strap.
 			firmBinDesc = "Boot9Strap";
-		} else if (firmBuf) {
+		} else if (!firmBuf.empty()) {
 			// Check for sighax installer.
 			// NOTE: String has a NULL terminator.
 			static constexpr char sighax_magic[] = "3DS BOOTHAX INS";
@@ -316,7 +368,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 		// System version
 		d->fields.addField_string(C_("Nintendo3DSFirm", "System Version"),
 			fmt::format(FSTR("{:d}.{:d}"), firmBin->sys.major, firmBin->sys.minor));
-	} else if (firmBuf && checkARM9) {
+	} else if (!firmBuf.empty() && checkARM9) {
 		// Check for ARM9 homebrew
 
 		// Version strings
@@ -341,7 +393,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 		string s_verstr;
 		for (const auto &p : arm9VerStr_tbl) {
 			const char *verstr = static_cast<const char*>(memmem(
-				firmBuf.get(), szFile, p.searchstr, p.searchlen));
+				firmBuf.data(), firmBuf.size(), p.searchstr, p.searchlen));
 			if (!verstr)
 				continue;
 
@@ -349,7 +401,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 
 			// Version does NOT include the 'v' character.
 			verstr += p.searchlen;
-			const char *end = (const char*)firmBuf.get() + szFile;
+			const char *const end = reinterpret_cast<const char*>(firmBuf.data()) + firmBuf.size();
 			int count = 0;
 			while (verstr < end && count < 32 && verstr[count] != 0 &&
 			       !ISSPACE(verstr[count]) && verstr[count] != ')')
