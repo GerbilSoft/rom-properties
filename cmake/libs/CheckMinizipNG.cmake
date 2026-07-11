@@ -1,5 +1,5 @@
-# Check for minizip. (NOTE: minizip-ng *only*, not original minizip)
-# If zlib isn't found, extlib/zlib/ will be used instead.
+# Check for minizip-ng. (NOTE: minizip-ng *only*, not original minizip)
+# If minizip-ng isn't found, extlib/minizip-ng/ will be used instead.
 
 IF(NOT USE_INTERNAL_MinizipNG)
 	# Check for minizip-ng.
