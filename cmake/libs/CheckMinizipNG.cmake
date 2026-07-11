@@ -1,7 +1,7 @@
 # Check for minizip. (NOTE: minizip-ng *only*, not original minizip)
 # If zlib isn't found, extlib/zlib/ will be used instead.
 
-IF(NOT USE_INTERNAL_MINIZIP)
+IF(NOT USE_INTERNAL_MinizipNG)
 	# Check for minizip-ng.
 	FIND_PACKAGE(MinizipNG)
 	IF(MinizipNG_FOUND)
@@ -14,9 +14,9 @@ IF(NOT USE_INTERNAL_MINIZIP)
 	ENDIF()
 ELSE()
 	MESSAGE(STATUS "Using the internal copy of minizip-ng.")
-ENDIF(NOT USE_INTERNAL_MINIZIP)
+ENDIF(NOT USE_INTERNAL_MinizipNG)
 
-IF(USE_INTERNAL_MINIZIP)
+IF(USE_INTERNAL_MinizipNG)
 	# Using the internal minizip library.
 	SET(MinizipNG_FOUND 1)
 	SET(HAVE_MinizipNG 1)
@@ -35,6 +35,6 @@ IF(USE_INTERNAL_MINIZIP)
 		${CMAKE_BINARY_DIR}/extlib/minizip-ng
 		)
 	SET(MINIZIP_INCLUDE_DIRS ${ZLIB_INCLUDE_DIR})
-ELSE(USE_INTERNAL_MINIZIP)
-	SET(USE_INTERNAL_MINIZIP_DLL OFF)
-ENDIF(USE_INTERNAL_MINIZIP)
+ELSE(USE_INTERNAL_MinizipNG)
+	SET(USE_INTERNAL_MinizipNG_DLL OFF)
+ENDIF(USE_INTERNAL_MinizipNG)
