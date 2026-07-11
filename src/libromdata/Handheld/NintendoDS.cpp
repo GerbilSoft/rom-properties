@@ -14,6 +14,10 @@
 #include "data/NintendoLanguage.hpp"
 #include "../Console/WiiCommon.hpp"
 
+// for 3DS NTRBOOT ROMs
+#include "Nintendo3DSFirm.hpp"
+#include "n3ds_firm_structs.h"
+
 // Other rom-properties libraries
 #include "librpbase/config/Config.hpp"
 #include "librpbase/disc/DiscReader.hpp"
@@ -880,20 +884,67 @@ int NintendoDS::loadFieldData(void)
 	d->fields.addField_bitfield(C_("NintendoDS", "DS Region Code"),
 		v_nds_region_bitfield_names, 0, nds_region);
 
-	if (!(hw_type & NintendoDSPrivate::DS_HW_DSi)) {
-		// Not a DSi-enhanced or DSi-exclusive ROM image.
-		if (romHeader->dsi.flags != 0) {
-			// DSi flags.
-			// NOTE: These are present in NDS games released after the DSi,
-			// even if the game isn't DSi-enhanced.
-			d->fields.addTab("DSi");
-			auto *const vv_dsi_flags = d->getDSiFlagsStringVector();
-			RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, 8);
-			params.headers = nullptr;
-			params.data.single = vv_dsi_flags;
-			params.mxd.checkboxes = romHeader->dsi.flags;
-			d->fields.addField_listData(C_("RomData", "Flags"), &params);
+	if (!d->isDSi() && romHeader->dsi.flags != 0) {
+		// Not a DSi-enhanced or DSi-exclusive ROM image,
+		// but DSi flags are present.
+		// NOTE: These are present in NDS games released after the DSi,
+		// even if the game isn't DSi-enhanced.
+		d->fields.addTab("DSi");
+		auto *const vv_dsi_flags = d->getDSiFlagsStringVector();
+		RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, 8);
+		params.headers = nullptr;
+		params.data.single = vv_dsi_flags;
+		params.mxd.checkboxes = romHeader->dsi.flags;
+		d->fields.addField_listData(C_("RomData", "Flags"), &params);
+	}
+
+	if (d->isNTRBOOT()) do {
+		// NTRBOOT
+		if (d->romType == NintendoDSPrivate::RomType::NTRBOOT_3DS) {
+			// Add a FIRM tab.
+
+			// Read the FIRM header and determine the total amount of data.
+			N3DS_FIRM_Header_t firmHeader;
+			size_t size = d->file->seekAndRead(N3DS_NTRBOOT_FIRM_OFFSET, &firmHeader, sizeof(firmHeader));
+			if (size != sizeof(firmHeader)) {
+				break;
+			}
+			assert(firmHeader.magic == cpu_to_be32(N3DS_FIRM_MAGIC));
+			if (firmHeader.magic != cpu_to_be32(N3DS_FIRM_MAGIC)) {
+				break;
+			}
+
+			off64_t firmSize = sizeof(firmHeader);
+			for (const N3DS_FIRM_Section_Header_t &section : firmHeader.sections) {
+				firmSize += le32_to_cpu(section.size);
+			}
+
+			// Create a DiscReader for the FIRM.
+			IDiscReaderPtr discReader = std::make_shared<DiscReader>(d->file, N3DS_NTRBOOT_FIRM_OFFSET, firmSize);
+			if (!discReader->isOpen()) {
+				// Failed to open the DiscReader.
+				break;
+			}
+			// Read the FIRM data.
+			unique_ptr<Nintendo3DSFirm> firmFile(new Nintendo3DSFirm(discReader, Nintendo3DSFirm::StorageType::NTR));
+			if (!firmFile->isValid()) {
+				// Failed to open the Nintendo3DSFirm.
+				break;
+			}
+
+			const RomFields *const other = firmFile->fields();
+			assert(other != nullptr);
+			if (other) {
+				// Add the fields.
+				d->fields.addTab("FIRM");
+				d->fields.addFields_romFields(other, -1);
+			}
 		}
+		// TODO: DSi NTRBOOT stuff?
+	} while (0);
+
+	if (!d->isDSi()) {
+		// Remainder of function is for DSi-enhanced or DSi-exclusive ROMs only.
 		return d->fields.count();
 	}
 

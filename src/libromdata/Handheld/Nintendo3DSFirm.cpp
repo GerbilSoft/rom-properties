@@ -34,7 +34,7 @@ namespace LibRomData {
 class Nintendo3DSFirmPrivate final : public RomDataPrivate
 {
 public:
-	explicit Nintendo3DSFirmPrivate(const IRpFilePtr &file);
+	explicit Nintendo3DSFirmPrivate(const IRpFilePtr &file, Nintendo3DSFirm::StorageType type);
 
 private:
 	typedef RomDataPrivate super;
@@ -50,6 +50,9 @@ public:
 	// Firmware header
 	// NOTE: Must be byteswapped on access.
 	N3DS_FIRM_Header_t firmHeader;
+
+	// Storage type
+	Nintendo3DSFirm::StorageType type;
 };
 
 ROMDATA_IMPL(Nintendo3DSFirm)
@@ -74,8 +77,9 @@ const RomDataInfo Nintendo3DSFirmPrivate::romDataInfo = {
 	"Nintendo3DSFirm", exts.data(), mimeTypes.data()
 };
 
-Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(const IRpFilePtr &file)
+Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(const IRpFilePtr &file, Nintendo3DSFirm::StorageType type)
 	: super(file, &romDataInfo)
+	, type(type)
 {
 	// Clear the various structs.
 	memset(&firmHeader, 0, sizeof(firmHeader));
@@ -94,10 +98,11 @@ Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(const IRpFilePtr &file)
  *
  * NOTE: Check isValid() to determine if this is a valid ROM.
  *
- * @param file Open ROM image.
+ * @param file Open ROM image
+ * @param type Storage type; used to determine if decryption is needed.
  */
-Nintendo3DSFirm::Nintendo3DSFirm(const IRpFilePtr &file)
-	: super(new Nintendo3DSFirmPrivate(file))
+Nintendo3DSFirm::Nintendo3DSFirm(const IRpFilePtr &file, StorageType type)
+	: super(new Nintendo3DSFirmPrivate(file, type))
 {
 	RP_D(Nintendo3DSFirm);
 	d->mimeType = "application/x-nintendo-3ds-firm";	// unofficial, not on fd.o
