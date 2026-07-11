@@ -14,9 +14,14 @@
 
 // MiniZip
 #include <zlib.h>
+#include "mz.h"
 #include "mz_zip.h"
-#include "compat/ioapi.h"
-#include "compat/unzip.h"
+#include "mz_strm.h"	// FIXME: Should be included by mz_zip_rw.h...
+#include "mz_zip_rw.h"
+
+// MiniZip-NG's native interface uses `void*` for handles.
+// We'll typedef it to mzFile.
+typedef void *mzFile;
 
 // Other rom-properties libraries
 #include "librpfile/FileSystem.hpp"
@@ -102,8 +107,8 @@ inline ::std::ostream& operator<<(::std::ostream& os, const GcnFstTest_mode& mod
 };
 
 // Maximum file size for FST files.
-static constexpr uint64_t MAX_GCN_FST_BIN_FILESIZE = 1024UL*1024UL;	// 1.0 MB
-static constexpr uint64_t MAX_GCN_FST_TXT_FILESIZE = 1536UL*1024UL;	// 1.5 MB
+static constexpr off64_t MAX_GCN_FST_BIN_FILESIZE = 1024L*1024L;	// 1.0 MB
+static constexpr off64_t MAX_GCN_FST_TXT_FILESIZE = 1536L*1024L;	// 1.5 MB
 
 class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 {
@@ -121,7 +126,7 @@ protected:
 	 * @param filename Zip filename.
 	 * @return Zip file, or nullptr on error.
 	 */
-	static unzFile openZip(const char *filename);
+	static mzFile openZip(const char *filename);
 
 	/**
 	 * Get a file from a Zip file.
@@ -134,7 +139,7 @@ protected:
 	static int getFileFromZip(const char *zip_filename,
 		const char *int_filename,
 		rp::uvector<uint8_t>& buf,
-		uint64_t max_filesize = MAX_GCN_FST_BIN_FILESIZE);
+		off64_t max_filesize = MAX_GCN_FST_BIN_FILESIZE);
 
 public:
 	// FST data
@@ -225,17 +230,22 @@ void GcnFstTest::TearDown(void)
  * @param filename Zip filename.
  * @return Zip file, or nullptr on error.
  */
-unzFile GcnFstTest::openZip(const char *filename)
+mzFile GcnFstTest::openZip(const char *filename)
 {
-#ifdef _WIN32
-	// NOTE: MiniZip 3.0.2's compatibility functions
-	// take UTF-8 on Windows, not UTF-16.
-	zlib_filefunc64_def ffunc;
-	fill_win32_filefunc64(&ffunc);
-	return unzOpen2_64(filename, &ffunc);
-#else /* !_WIN32 */
-	return unzOpen(filename);
-#endif /* _WIN32 */
+	// MiniZip-NG's Windows functions automatically convert
+	// UTF-8 to UTF-16.
+	mzFile mz = mz_zip_reader_create();
+	if (!mz) {
+		return nullptr;
+	}
+
+	int32_t ret = mz_zip_reader_open_file(mz, filename);
+	if (ret != MZ_OK) {
+		mz_zip_reader_delete(&mz);
+		return nullptr;
+	}
+
+	return mz;
 }
 
 /**
@@ -249,68 +259,78 @@ unzFile GcnFstTest::openZip(const char *filename)
 int GcnFstTest::getFileFromZip(const char *zip_filename,
 	const char *int_filename,
 	rp::uvector<uint8_t>& buf,
-	uint64_t max_filesize)
+	off64_t max_filesize)
 {
 	// Open the Zip file.
 	// NOTE: MiniZip 2.2.3's compatibility functions
 	// take UTF-8 on Windows, not UTF-16.
-	unzFile unz = openZip(zip_filename);
-	EXPECT_TRUE(unz != nullptr) <<
+	mzFile mz = openZip(zip_filename);
+	EXPECT_TRUE(mz != nullptr) <<
 		"Could not open '" << zip_filename << "', check the test directory!";
-	if (!unz) {
+	if (!mz) {
 		return -1;
 	}
 
 	// Locate the required FST file.
-	// TODO: Always case-insensitive? (currently using OS-dependent value)
-	int ret = unzLocateFile(unz, int_filename, nullptr);
-	EXPECT_EQ(UNZ_OK, ret);
-	if (ret != UNZ_OK) {
-		unzClose(unz);
+	// NOTE: Using case-sensitive lookups for performance.
+	int ret = mz_zip_reader_locate_entry(mz, int_filename, false);
+	EXPECT_EQ(MZ_OK, ret);
+	if (ret != MZ_OK) {
+		mz_zip_reader_close(mz);
+		mz_zip_reader_delete(&mz);
 		return -2;
 	}
 
 	// Verify the FST file size.
-	unz_file_info64 file_info;
-	ret = unzGetCurrentFileInfo64(unz,
-		&file_info,
-		nullptr, 0,
-		nullptr, 0,
-		nullptr, 0);
-	EXPECT_EQ(UNZ_OK, ret);
-	if (ret != UNZ_OK) {
-		unzClose(unz);
+	mz_zip_file *file_info;
+	ret = mz_zip_reader_entry_get_info(mz, &file_info);
+	EXPECT_EQ(MZ_OK, ret);
+	if (ret != MZ_OK) {
+		mz_zip_reader_close(mz);
+		mz_zip_reader_delete(&mz);
 		return -3;
 	}
-	EXPECT_LE(file_info.uncompressed_size, max_filesize) <<
-		"Compressed file '" << int_filename << "' is too big.";
-	if (file_info.uncompressed_size > max_filesize) {
-		unzClose(unz);
+	EXPECT_TRUE(file_info != nullptr);
+	if (!file_info) {
+		mz_zip_reader_close(mz);
+		mz_zip_reader_delete(&mz);
 		return -4;
+	}
+	const int64_t uncompressed_size = file_info->uncompressed_size;
+	EXPECT_LE(uncompressed_size, max_filesize) <<
+		"Compressed file '" << int_filename << "' is too big.";
+	if (uncompressed_size > max_filesize) {
+		mz_zip_reader_close(mz);
+		mz_zip_reader_delete(&mz);
+		return -5;
 	}
 
 	// Open the FST file.
-	ret = unzOpenCurrentFile(unz);
-	EXPECT_EQ(UNZ_OK, ret);
-	if (ret != UNZ_OK) {
-		unzClose(unz);
-		return -5;
+	ret = mz_zip_reader_entry_open(mz);
+	EXPECT_EQ(MZ_OK, ret);
+	if (ret != MZ_OK) {
+		mz_zip_reader_close(mz);
+		mz_zip_reader_delete(&mz);
+		return -6;
 	}
 
 	// Read the FST file.
 	// NOTE: zlib and minizip are only guaranteed to be able to
 	// read UINT16_MAX (64 KB) at a time, and the updated MiniZip
 	// from https://github.com/nmoinvaz/minizip enforces this.
-	buf.resize(static_cast<size_t>(file_info.uncompressed_size));
+	// TODO: Does MiniZip-NG's native API still have this limitation?
+	buf.resize(static_cast<size_t>(uncompressed_size));
 	uint8_t *p = buf.data();
 	size_t size = buf.size();
 	while (size > 0) {
 		int to_read = static_cast<int>(size > UINT16_MAX ? UINT16_MAX : size);
-		ret = unzReadCurrentFile(unz, p, to_read);
+		ret = mz_zip_reader_entry_read(mz, p, to_read);
 		EXPECT_EQ(to_read, ret);
 		if (ret != to_read) {
-			unzClose(unz);
-			return -6;
+			mz_zip_reader_entry_close(mz);
+			mz_zip_reader_close(mz);
+			mz_zip_reader_delete(&mz);
+			return -7;
 		}
 
 		// ret == number of bytes read.
@@ -321,25 +341,25 @@ int GcnFstTest::getFileFromZip(const char *zip_filename,
 	// Read one more byte to ensure unzReadCurrentFile() returns 0 for EOF.
 	// NOTE: MiniZip will zero out tmp if there's no data available.
 	uint8_t tmp;
-	ret = unzReadCurrentFile(unz, &tmp, 1);
+	ret = mz_zip_reader_entry_read(mz, &tmp, 1);
 	EXPECT_EQ(0, ret);
 	if (ret != 0) {
-		unzClose(unz);
+		mz_zip_reader_entry_close(mz);
+		mz_zip_reader_close(mz);
+		mz_zip_reader_delete(&mz);
 		return -7;
 	}
 
 	// Close the FST file.
 	// An error will occur here if the CRC is incorrect.
-	ret = unzCloseCurrentFile(unz);
-	EXPECT_EQ(UNZ_OK, ret);
-	if (ret != UNZ_OK) {
-		unzClose(unz);
-		return -8;
-	}
+	ret = mz_zip_reader_entry_close(mz);
+	EXPECT_EQ(MZ_OK, ret);
 
 	// Close the Zip file.
-	unzClose(unz);
-	return static_cast<int>(file_info.uncompressed_size);
+	mz_zip_reader_close(mz);
+	mz_zip_reader_delete(&mz);
+	// TODO: Change the return type to off64_t?
+	return (ret == MZ_OK) ? static_cast<int>(uncompressed_size) : -8;
 }
 
 /**
@@ -513,61 +533,59 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 			return files;
 	}
 
-	unzFile unz = openZip(zip_filename);
-	EXPECT_TRUE(unz != nullptr) <<
+	mzFile mz = openZip(zip_filename);
+	EXPECT_TRUE(mz != nullptr) <<
 		"Could not open '" << zip_filename << "', check the test directory!";
-	if (!unz) {
+	if (!mz) {
 		return files;
 	}
 
 	// MiniZip 2.x (up to 2.2.3) doesn't automatically go to the first file.
 	// Hence, we'll need to do that here.
-	int ret = unzGoToFirstFile(unz);
-	EXPECT_EQ(0, ret) << "unzGoToFirstFile failed in '" << zip_filename << "'.";
+	int ret = mz_zip_reader_goto_first_entry(mz);
+	EXPECT_EQ(0, ret) << "mz_zip_reader_goto_first_entry() failed in '" << zip_filename << "'.";
 	if (ret != 0) {
-		unzClose(unz);
+		mz_zip_reader_close(mz);
+		mz_zip_reader_delete(&mz);
 		return files;
 	}
 
 	// Read the filenames.
-	char filename[256];
-	unz_file_info64 file_info;
 	do {
-		ret = unzGetCurrentFileInfo64(unz,
-			&file_info,
-			filename, sizeof(filename),
-			nullptr, 0,
-			nullptr, 0);
-		if (ret != UNZ_OK)
+		mz_zip_file *file_info;
+		ret = mz_zip_reader_entry_get_info(mz, &file_info);
+		if (ret != MZ_OK) {
 			break;
+		}
 
 		// Make sure the filename isn't empty.
-		EXPECT_GT(file_info.size_filename, 0UL) << "A filename in the ZIP file has no name. Skipping...";
+		EXPECT_GT(file_info->filename_size, 0U) << "A filename in the ZIP file has no name. Skipping...";
 
 		// Make sure the file isn't too big.
-		EXPECT_LE(file_info.uncompressed_size, MAX_GCN_FST_BIN_FILESIZE) <<
-			"GCN FST file '" << filename << "' is too big. (maximum size is 1 MB)";
+		EXPECT_LE(file_info->uncompressed_size, MAX_GCN_FST_BIN_FILESIZE) <<
+			"GCN FST file '" << file_info->filename << "' is too big. (maximum size is 1 MB)";
 
-		if (file_info.size_filename > 0UL &&
-		    file_info.uncompressed_size <= MAX_GCN_FST_BIN_FILESIZE)
+		if (file_info->filename_size > 0 &&
+		    file_info->uncompressed_size <= MAX_GCN_FST_BIN_FILESIZE)
 		{
 			// Add this filename to the list.
 			// NOTE: Filename might not be NULL-terminated,
 			// so use the explicit length.
-			GcnFstTest_mode mode(string(filename, file_info.size_filename), offsetShift);
-			files.push_back(std::move(mode));
+			files.emplace_back(string(file_info->filename, file_info->filename_size), offsetShift);
 		}
 
 		// Next file.
-		ret = unzGoToNextFile(unz);
-	} while (ret == UNZ_OK);
-	unzClose(unz);
+		ret = mz_zip_reader_goto_next_entry(mz);
+	} while (ret == MZ_OK);
+	mz_zip_reader_close(mz);
+	mz_zip_reader_delete(&mz);
 
 	// Handle "end of file list" as OK.
-	if (ret == UNZ_END_OF_LIST_OF_FILE)
-		ret = UNZ_OK;
+	if (ret == MZ_END_OF_LIST) {
+		ret = MZ_OK;
+	}
 
-	EXPECT_EQ(UNZ_OK, ret);
+	EXPECT_EQ(MZ_OK, ret);
 	EXPECT_GT(files.size(), 0U);
 	return files;
 }
