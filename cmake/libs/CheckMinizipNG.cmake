@@ -22,10 +22,10 @@ IF(USE_INTERNAL_MinizipNG)
 	SET(HAVE_MinizipNG 1)
 	IF(WIN32)
 		# Using DLLs on Windows.
-		SET(USE_INTERNAL_MINIZIP_DLL ON)
+		SET(USE_INTERNAL_MinizipNG_DLL ON)
 	ELSE()
 		# Using static linking on other systems.
-		SET(USE_INTERNAL_MINIZIP_DLL OFF)
+		SET(USE_INTERNAL_MinizipNG_DLL OFF)
 	ENDIF()
 	SET(MinizipNG_LIBRARY minizip-ng CACHE INTERNAL "minizip library" FORCE)
 	SET(MinizipNG_LIBRARIES ${MinizipNG_LIBRARY})
