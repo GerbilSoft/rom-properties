@@ -125,9 +125,9 @@ public:
 
 public:
 	// Maximum size for various files.
-	static constexpr size_t AndroidManifest_xml_FILE_SIZE_MAX = (256U * 1024U);
-	static constexpr size_t resources_arsc_FILE_SIZE_MAX = (4096U * 1024U);
-	static constexpr size_t ICON_PNG_FILE_SIZE_MAX = (1024U * 1024U);
+	static constexpr off64_t AndroidManifest_xml_FILE_SIZE_MAX = (256 * 1024);
+	static constexpr off64_t resources_arsc_FILE_SIZE_MAX = (4096 * 1024);
+	static constexpr off64_t ICON_PNG_FILE_SIZE_MAX = (1024 * 1024);
 
 	// AndroidManifest.xml document
 	// NOTE: Using a pointer to prevent delay-load issues.
@@ -528,7 +528,7 @@ AndroidAPK::AndroidAPK(const IRpFilePtr &file, mzStream stream, mzReader reader)
 
 #ifdef _MSC_VER
 	// Delay load verification.
-	// TODO: zlib/minizip checks are only needed if mz == nullptr?
+	// TODO: zlib/minizip checks are only needed if apkStream/apkReader == nullptr?
 #  ifdef ZLIB_IS_DLL
 	// Only if zlib is a DLL.
 	if (DelayLoad_test_get_crc_table() != 0) {

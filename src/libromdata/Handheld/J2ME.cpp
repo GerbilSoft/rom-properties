@@ -138,8 +138,8 @@ public:
 	map_t m_map;
 
 	// Maximum size for various files.
-	static constexpr size_t MANIFEST_MF_FILE_SIZE_MAX = 32768U;
-	static constexpr size_t ICON_PNG_FILE_SIZE_MAX = 16384U;
+	static constexpr off64_t MANIFEST_MF_FILE_SIZE_MAX = 32768;
+	static constexpr off64_t ICON_PNG_FILE_SIZE_MAX = 16384;
 
 public:
 	/**
