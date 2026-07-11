@@ -909,6 +909,39 @@
       </match>
     </magic>
   </mime-type>
+  <!-- NTRBOOT ROMs are slightly different from regular NDS/DSi ROMs -->
+  <mime-type type="application/x-nintendo-dsi-ntrboot">
+    <comment>Nintendo DSi NTRBOOT ROM</comment>
+    <generic-icon name="application-x-executable"/>
+    <alias type="application/x-nintendo-dsi-rom"/>
+    <magic priority="90">
+      <!-- DSi NTRBOOT ROMs have more info than 3DS NTRBOOT ROMs, but they still don't have a Nintendo logo -->
+      <match value="0" type="little32" offset="192">
+        <match value="0x00416657" type="little32" offset="96">    <!-- card control 13 -->
+          <match value="0x081808F8" type="little32" offset="100"> <!-- card control BF -->
+            <!-- FIXME: Verify that this value is always 0xFF in DSi NTRBOOT ROMs. -->
+            <match value="0x80" mask="0x80" type="byte" offset="431"/>
+          </match>
+        </match>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-nintendo-3ds-ntrboot">
+    <comment>Nintendo 3DS NTRBOOT ROM</comment>
+    <generic-icon name="application-x-executable"/>
+    <alias type="application/x-nintendo-3ds-rom"/>
+    <magic priority="70">
+      <!-- 3DS NTRBOOT ROMs are mostly empty (no Nintendo logo) -->
+      <match value="0" type="little32" offset="192">
+        <match value="0x00586000" type="little32" offset="96">    <!-- card control 13 -->
+          <match value="0x001808F8" type="little32" offset="100"> <!-- card control BF -->
+            <!-- NOTE: KDE doesn't like this one (offset is too high?) -->
+            <!--<match value="FIRM" type="string" offset="32256"/>-->
+          </match>
+        </match>
+      </match>
+    </magic>
+  </mime-type>
 
   <!-- NintendoDS_BNR -->
   <!-- FIXME: The magic number is too generic... -->

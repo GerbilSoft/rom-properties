@@ -40,7 +40,7 @@ private:
 public:
 	/** RomDataInfo **/
 	static const std::array<const char*, 4+1> exts;
-	static const std::array<const char*, 3+1> mimeTypes;
+	static const std::array<const char*, 5+1> mimeTypes;
 	static const LibRpBase::RomDataInfo romDataInfo;
 
 public:

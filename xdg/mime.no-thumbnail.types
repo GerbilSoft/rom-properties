@@ -46,6 +46,8 @@ application/xml				# AndroidManifestXML (too generic?)
 application/x-atari-lynx-rom		# Lynx
 application/x-nintendo-3ds-emmc		# Nintendo3DS
 application/x-nintendo-3ds-firm		# Nintendo3DSFirm
+application/x-nintendo-3ds-ntrboot	# NintendoDS
+application/x-nintendo-dsi-ntrboot	# NintendoDS
 application/x-pokemon-mini-rom		# PokemonMini
 application/x-virtual-boy-rom		# VirtualBoy
 

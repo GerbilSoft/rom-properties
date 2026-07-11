@@ -49,7 +49,7 @@ const array<const char*, 4+1> NintendoDSPrivate::exts = {{
 
 	nullptr
 }};
-const array<const char*, 3+1> NintendoDSPrivate::mimeTypes = {{
+const array<const char*, 5+1> NintendoDSPrivate::mimeTypes = {{
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-nintendo-ds-rom",
 
@@ -59,6 +59,8 @@ const array<const char*, 3+1> NintendoDSPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-nintendo-dsi-rom",
+	"application/x-nintendo-dsi-ntrboot",
+	"application/x-nintendo-3ds-ntrboot",
 
 	nullptr
 }};
@@ -549,7 +551,8 @@ int NintendoDS::isRomSupported_static(const DetectInfo *info)
 			CHECK_DSi_ARRAY(arm9_mbk);
 			CHECK_DSi_ARRAY(arm7_mbk);
 			CHECK_DSi_ARRAY(arm9_mbk9_master);
-			if (romHeader->dsi.unknown != 0) {
+			// FIXME: Is this value always 0xFF for DSi NTRBOOT?
+			if (romHeader->dsi.unknown & 0x80) {
 				isZero = false;
 			}
 		} while (0);
