@@ -248,7 +248,25 @@ int Nintendo3DSFirm::loadFieldData(void)
 			firmBin = Nintendo3DSFirmData::lookup_firmBin(crc);
 			if (firmBin != nullptr) {
 				// Official firmware binary.
-				firmBinDesc = (firmBin->isNew3DS ? "New3DS FIRM" : "Old3DS FIRM");
+				if (firmBin->flags & Nintendo3DSFirmData::FLAG_New3DS) {
+					// New3DS
+					if (firmBin->flags & Nintendo3DSFirmData::FLAG_AGB_FIRM) {
+						firmBinDesc = "New3DS AGB_FIRM";
+					} else if (firmBin->flags & Nintendo3DSFirmData::FLAG_TWL_FIRM) {
+						firmBinDesc = "New3DS TWL_FIRM";
+					} else {
+						firmBinDesc = "New3DS NATIVE_FIRM";
+					}
+				} else {
+					// Old3DS
+					if (firmBin->flags & Nintendo3DSFirmData::FLAG_AGB_FIRM) {
+						firmBinDesc = "Old3DS AGB_FIRM";
+					} else if (firmBin->flags & Nintendo3DSFirmData::FLAG_TWL_FIRM) {
+						firmBinDesc = "Old3DS TWL_FIRM";
+					} else {
+						firmBinDesc = "Old3DS NATIVE_FIRM";
+					}
+				}
 			} else {
 				// Check for a custom FIRM.
 				checkCustomFIRM = true;
