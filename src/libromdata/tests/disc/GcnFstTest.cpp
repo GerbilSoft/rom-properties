@@ -122,13 +122,6 @@ protected:
 	void TearDown(void) final;
 
 	/**
-	 * Open a Zip file for reading.
-	 * @param filename Zip filename.
-	 * @return Zip file, or nullptr on error.
-	 */
-	static mzFile openZip(const char *filename);
-
-	/**
 	 * Get a file from a Zip file.
 	 * @param zip_filename	[in] Zip filename.
 	 * @param int_filename	[in] Internal filename.
@@ -226,29 +219,6 @@ void GcnFstTest::TearDown(void)
 }
 
 /**
- * Open a Zip file for reading.
- * @param filename Zip filename.
- * @return Zip file, or nullptr on error.
- */
-mzFile GcnFstTest::openZip(const char *filename)
-{
-	// MiniZip-NG's Windows functions automatically convert
-	// UTF-8 to UTF-16.
-	mzFile mz = mz_zip_reader_create();
-	if (!mz) {
-		return nullptr;
-	}
-
-	int32_t ret = mz_zip_reader_open_file(mz, filename);
-	if (ret != MZ_OK) {
-		mz_zip_reader_delete(&mz);
-		return nullptr;
-	}
-
-	return mz;
-}
-
-/**
  * Get a file from a Zip file.
  * @param zip_filename	[in] Zip filename.
  * @param int_filename	[in] Internal filename.
@@ -262,23 +232,27 @@ int GcnFstTest::getFileFromZip(const char *zip_filename,
 	off64_t max_filesize)
 {
 	// Open the Zip file.
-	// NOTE: MiniZip 2.2.3's compatibility functions
-	// take UTF-8 on Windows, not UTF-16.
-	mzFile mz = openZip(zip_filename);
-	EXPECT_TRUE(mz != nullptr) <<
-		"Could not open '" << zip_filename << "', check the test directory!";
+	mzFile mz = mz_zip_reader_create();
+	EXPECT_TRUE(mz != nullptr) << "Could not create a MiniZip-NG ZIP reader instance!";
 	if (!mz) {
 		return -1;
+	}
+	int ret = mz_zip_reader_open_file(mz, zip_filename);
+	EXPECT_TRUE(ret != MZ_OK) <<
+		"Could not open '" << zip_filename << "', check the test directory!";
+	if (ret != MZ_OK) {
+		mz_zip_reader_delete(&mz);
+		return -2;
 	}
 
 	// Locate the required FST file.
 	// NOTE: Using case-sensitive lookups for performance.
-	int ret = mz_zip_reader_locate_entry(mz, int_filename, false);
+	ret = mz_zip_reader_locate_entry(mz, int_filename, false);
 	EXPECT_EQ(MZ_OK, ret);
 	if (ret != MZ_OK) {
 		mz_zip_reader_close(mz);
 		mz_zip_reader_delete(&mz);
-		return -2;
+		return -3;
 	}
 
 	// Verify the FST file size.
@@ -288,13 +262,13 @@ int GcnFstTest::getFileFromZip(const char *zip_filename,
 	if (ret != MZ_OK) {
 		mz_zip_reader_close(mz);
 		mz_zip_reader_delete(&mz);
-		return -3;
+		return -4;
 	}
 	EXPECT_TRUE(file_info != nullptr);
 	if (!file_info) {
 		mz_zip_reader_close(mz);
 		mz_zip_reader_delete(&mz);
-		return -4;
+		return -5;
 	}
 	const int64_t uncompressed_size = file_info->uncompressed_size;
 	EXPECT_LE(uncompressed_size, max_filesize) <<
@@ -302,7 +276,7 @@ int GcnFstTest::getFileFromZip(const char *zip_filename,
 	if (uncompressed_size > max_filesize) {
 		mz_zip_reader_close(mz);
 		mz_zip_reader_delete(&mz);
-		return -5;
+		return -6;
 	}
 
 	// Open the FST file.
@@ -311,7 +285,7 @@ int GcnFstTest::getFileFromZip(const char *zip_filename,
 	if (ret != MZ_OK) {
 		mz_zip_reader_close(mz);
 		mz_zip_reader_delete(&mz);
-		return -6;
+		return -7;
 	}
 
 	// Read the FST file.
@@ -330,7 +304,7 @@ int GcnFstTest::getFileFromZip(const char *zip_filename,
 			mz_zip_reader_entry_close(mz);
 			mz_zip_reader_close(mz);
 			mz_zip_reader_delete(&mz);
-			return -7;
+			return -8;
 		}
 
 		// ret == number of bytes read.
@@ -347,7 +321,7 @@ int GcnFstTest::getFileFromZip(const char *zip_filename,
 		mz_zip_reader_entry_close(mz);
 		mz_zip_reader_close(mz);
 		mz_zip_reader_delete(&mz);
-		return -7;
+		return -9;
 	}
 
 	// Close the FST file.
@@ -359,7 +333,7 @@ int GcnFstTest::getFileFromZip(const char *zip_filename,
 	mz_zip_reader_close(mz);
 	mz_zip_reader_delete(&mz);
 	// TODO: Change the return type to off64_t?
-	return (ret == MZ_OK) ? static_cast<int>(uncompressed_size) : -8;
+	return (ret == MZ_OK) ? static_cast<int>(uncompressed_size) : -10;
 }
 
 /**
@@ -514,8 +488,7 @@ TEST_P(GcnFstTest, FstPrint)
  */
 std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShift)
 {
-	// NOTE: Cannot use ASSERT_TRUE() here.
-	std::vector<GcnFstTest_mode> files;
+	// NOTE: Cannot use ASSERT_TRUE() here due to the return value.
 
 	// Open the Zip file.
 	// NOTE: MiniZip 2.2.3's compatibility functions
@@ -530,27 +503,34 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 			break;
 		default:
 			EXPECT_TRUE(false) << "offsetShift is " << static_cast<int>(offsetShift) << "; should be either 0 or 2.";
-			return files;
+			return {};
 	}
 
-	mzFile mz = openZip(zip_filename);
-	EXPECT_TRUE(mz != nullptr) <<
-		"Could not open '" << zip_filename << "', check the test directory!";
+	mzFile mz = mz_zip_reader_create();
+	EXPECT_TRUE(mz != nullptr) << "Could not create a MiniZip-NG ZIP reader instance!";
 	if (!mz) {
-		return files;
+		return {};
+	}
+	int ret = mz_zip_reader_open_file(mz, zip_filename);
+	EXPECT_TRUE(ret != MZ_OK) <<
+		"Could not open '" << zip_filename << "', check the test directory!";
+	if (ret != MZ_OK) {
+		mz_zip_reader_delete(&mz);
+		return {};
 	}
 
 	// MiniZip 2.x (up to 2.2.3) doesn't automatically go to the first file.
 	// Hence, we'll need to do that here.
-	int ret = mz_zip_reader_goto_first_entry(mz);
+	ret = mz_zip_reader_goto_first_entry(mz);
 	EXPECT_EQ(0, ret) << "mz_zip_reader_goto_first_entry() failed in '" << zip_filename << "'.";
 	if (ret != 0) {
 		mz_zip_reader_close(mz);
 		mz_zip_reader_delete(&mz);
-		return files;
+		return {};
 	}
 
 	// Read the filenames.
+	std::vector<GcnFstTest_mode> files;
 	do {
 		mz_zip_file *file_info;
 		ret = mz_zip_reader_entry_get_info(mz, &file_info);
