@@ -15,6 +15,10 @@
   * PSP: Parse the PARAM.SFO file.
   * Add a "Version" custom property and handle it in all RomData subclasses
     that have a "Version" or "Revision" field.
+  * NintendoDS, Nintendo3DSFirm: Initial support for DSi and 3DS NTRBOOT
+    ROM images. These were previously not detected at all due to missing
+    fields in the ROM header.
+    * Thanks to F3l1x_10m for providing test files.
 
 * Other changes:
   * KDE Frameworks 6: Also use the file size unit dialect specified in
