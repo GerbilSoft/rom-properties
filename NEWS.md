@@ -23,6 +23,9 @@
 * Other changes:
   * KDE Frameworks 6: Also use the file size unit dialect specified in
     System Settings when explicitly formatting kilobytes.
+  * The MiniZip-NG native API is now used instead of the compat API.
+    On Linux systems, a system-wide version of MiniZip-NG is now preferred
+    instead of the built-in copy if it's available.
 
 * Bug fixes:
   * Dreamcast and SegaSaturn incorrectly added DiscNumber as integer.

@@ -163,7 +163,7 @@ SET(${PROJECT_NAME}_SRCS
 	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
 	img/CacheManager.cpp
 	utils/SuperMagicDrive.cpp
-	file/IRpFile_unzFile_filefuncs.cpp
+	file/mz_stream_IRpFile.cpp
 	)
 # Headers
 SET(${PROJECT_NAME}_H
@@ -405,7 +405,7 @@ SET(${PROJECT_NAME}_H
 	img/TCreateThumbnail.hpp
 	img/CacheManager.hpp
 	utils/SuperMagicDrive.hpp
-	file/IRpFile_unzFile_filefuncs.hpp
+	file/mz_stream_IRpFile.hpp
 	)
 
 IF(ENABLE_XML)
@@ -518,7 +518,7 @@ IF(RP_LIBROMDATA_IS_DLL)
 	ADD_DEFINITIONS(-DRP_BUILDING_FOR_DLL=1)
 	# NOTE: Not using the project version here.
 	# This represents the ABI version.
-	SET(${PROJECT_NAME}_VERSION 9.0)
+	SET(${PROJECT_NAME}_VERSION 9.1)
 	SET(${PROJECT_NAME}_SOVERSION 9)
 ELSE()
 	SET(${PROJECT_NAME}_LINKAGE STATIC)
@@ -783,8 +783,8 @@ IF(ZLIB_FOUND)
 	TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${ZLIB_INCLUDE_DIRS})
 	TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME} PRIVATE ${ZLIB_DEFINITIONS})
 
-	# MiniZip (used by J2ME)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE minizip)
+	# MiniZip-NG (used by AndroidAPK and J2ME)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE MINIZIP::minizip-ng)
 ELSE(ZLIB_FOUND)
 	MESSAGE(FATAL_ERROR "ZLIB_LIBRARIES has not been set by CheckZLIB.cmake.")
 ENDIF(ZLIB_FOUND)

@@ -9,12 +9,19 @@
 #include "J2ME.hpp"
 #include "RomData_p.hpp"
 
-// MiniZip
+// MiniZip-NG
 #include <zlib.h>
+#include "mz.h"
 #include "mz_zip.h"
-#include "compat/ioapi.h"
-#include "compat/unzip.h"
-#include "../file/IRpFile_unzFile_filefuncs.hpp"
+#include "mz_strm.h"	// FIXME: Should be included by mz_zip_rw.h...
+#include "mz_zip_rw.h"
+#include "../file/mz_stream_IRpFile.hpp"
+using namespace LibRomData::mz_stream_IRpFile;
+
+// MiniZip-NG's native interface uses `void*` for handles.
+// We'll typedef it to mzStream and mzReader.
+typedef void *mzStream;
+typedef void *mzReader;
 
 // Other rom-properties libraries
 #include "librpbase/img/RpPng.hpp"
@@ -49,15 +56,15 @@ namespace LibRomData {
 DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 #  endif /* ZLIB_IS_DLL */
 #  ifdef MINIZIP_IS_DLL
-// unzClose() can safely take nullptr; it won't do anything.
-DELAYLOAD_TEST_FUNCTION_IMPL1(unzClose, nullptr);
+// mz_zip_delete() can safely take nullptr; it won't do anything.
+DELAYLOAD_TEST_FUNCTION_IMPL1(mz_zip_delete, nullptr);
 #  endif /* MINIZIP_IS_DLL */
 #endif /* _MSC_VER */
 
 class J2MEPrivate final : public RomDataPrivate
 {
 public:
-	explicit J2MEPrivate(const IRpFilePtr &file, unzFile jarFile);
+	explicit J2MEPrivate(const IRpFilePtr &file, mzStream jarStream, mzReader jarReader);
 	~J2MEPrivate() override;
 
 private:
@@ -82,7 +89,8 @@ public:
 	JFileType jfileType;
 
 	// Opened .jar file
-	unzFile jarFile;
+	mzStream jarStream;	// mz_stream_IRpFile
+	mzReader jarReader;	// opened with mz_zip_reader_open()
 
 	// Icon
 	rp_image_ptr img_icon;
@@ -130,8 +138,8 @@ public:
 	map_t m_map;
 
 	// Maximum size for various files.
-	static constexpr size_t MANIFEST_MF_FILE_SIZE_MAX = 32768U;
-	static constexpr size_t ICON_PNG_FILE_SIZE_MAX = 16384U;
+	static constexpr off64_t MANIFEST_MF_FILE_SIZE_MAX = 32768;
+	static constexpr off64_t ICON_PNG_FILE_SIZE_MAX = 16384;
 
 public:
 	/**
@@ -140,11 +148,11 @@ public:
 	 * @param max_size Maximum size
 	 * @return rp::uvector with the file data, or empty vector on error
 	 */
-	rp::uvector<uint8_t> loadFileFromZip(const char *filename, size_t max_size = std::numeric_limits<size_t>::max());
+	rp::uvector<uint8_t> loadFileFromZip(const char *filename, off64_t max_size = std::numeric_limits<off64_t>::max());
 
 	/**
-	 * Load MANIFEST.MF from this->jarFile.
-	 * this->jarFile must have already been opened.
+	 * Load MANIFEST.MF from this->jarReader.
+	 * this->jarReader must have already been opened.
 	 * On success, the MANIFEST.MF tags will be loaded into this->m_map.
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
@@ -224,16 +232,22 @@ const array<const char*, static_cast<size_t>(J2MEPrivate::manifest_tag_t::Manife
 	"Digest-Algorithms",
 }};
 
-J2MEPrivate::J2MEPrivate(const IRpFilePtr &file, unzFile jarFile)
+J2MEPrivate::J2MEPrivate(const IRpFilePtr &file, mzStream jarStream, mzReader jarReader)
 	: super(file, &romDataInfo)
 	, jfileType(JFileType::Unknown)
-	, jarFile(jarFile)
+	, jarStream(jarStream)
+	, jarReader(jarReader)
 {}
 
 J2MEPrivate::~J2MEPrivate()
 {
-	if (jarFile) {
-		unzClose(jarFile);
+	if (jarReader) {
+		mz_zip_reader_close(jarReader);
+		mz_zip_reader_delete(&jarReader);
+	}
+	if (jarStream) {
+		mz_stream_IRpFile_close(jarStream);
+		mz_stream_IRpFile_delete(&jarStream);
 	}
 }
 
@@ -243,29 +257,34 @@ J2MEPrivate::~J2MEPrivate()
  * @param max_size Maximum size
  * @return rp::uvector with the file data, or empty vector on error
  */
-rp::uvector<uint8_t> J2MEPrivate::loadFileFromZip(const char *filename, size_t max_size)
+rp::uvector<uint8_t> J2MEPrivate::loadFileFromZip(const char *filename, off64_t max_size)
 {
 	// TODO: This is also used by GcnFstTest. Move to a common utility file?
-	int ret = unzLocateFile(jarFile, filename, nullptr);
-	if (ret != UNZ_OK) {
+	// NOTE: Using case-insensitive lookups for compatibility. Needs testing!
+	int ret = mz_zip_reader_locate_entry(jarReader, filename, true);
+	if (ret != MZ_OK) {
 		return {};
 	}
 
 	// Get file information.
-	unz_file_info64 file_info;
-	ret = unzGetCurrentFileInfo64(jarFile,
-		&file_info, nullptr, 0, nullptr, 0, nullptr, 0);
-	if (ret != UNZ_OK || file_info.uncompressed_size >= max_size) {
-		// Error getting file information, or the uncompressed size is too big.
+	mz_zip_file *file_info;
+	ret = mz_zip_reader_entry_get_info(jarReader, &file_info);
+	if (ret != MZ_OK) {
+		// Error getting the file information.
+		return {};
+	}
+	const off64_t uncompressed_size = file_info->uncompressed_size;
+	if (uncompressed_size >= max_size) {
+		// The uncompressed size is too big.
 		return {};
 	}
 
-	ret = unzOpenCurrentFile(jarFile);
-	if (ret != UNZ_OK) {
+	ret = mz_zip_reader_entry_open(jarReader);
+	if (ret != MZ_OK) {
 		return {};
 	}
 
-	size_t size = static_cast<size_t>(file_info.uncompressed_size);
+	size_t size = static_cast<size_t>(uncompressed_size);
 	rp::uvector<uint8_t> buf;
 	buf.resize(size);
 
@@ -273,11 +292,13 @@ rp::uvector<uint8_t> J2MEPrivate::loadFileFromZip(const char *filename, size_t m
 	// NOTE: zlib and minizip are only guaranteed to be able to
 	// read UINT16_MAX (64 KB) at a time, and the updated MiniZip
 	// from https://github.com/nmoinvaz/minizip enforces this.
+	// TODO: Does MiniZip-NG's native API still have this limitation?
 	uint8_t *p = buf.data();
 	while (size > 0) {
 		int to_read = static_cast<int>(size > UINT16_MAX ? UINT16_MAX : size);
-		ret = unzReadCurrentFile(jarFile, p, to_read);
+		ret = mz_zip_reader_entry_read(jarReader, p, to_read);
 		if (ret != to_read) {
+			mz_zip_reader_entry_close(jarReader);
 			return {};
 		}
 
@@ -288,8 +309,8 @@ rp::uvector<uint8_t> J2MEPrivate::loadFileFromZip(const char *filename, size_t m
 
 	// Close the file.
 	// An error will occur here if the CRC is incorrect.
-	ret = unzCloseCurrentFile(jarFile);
-	if (ret != UNZ_OK) {
+	ret = mz_zip_reader_entry_close(jarReader);
+	if (ret != MZ_OK) {
 		return {};
 	}
 
@@ -297,8 +318,8 @@ rp::uvector<uint8_t> J2MEPrivate::loadFileFromZip(const char *filename, size_t m
 }
 
 /**
- * Load MANIFEST.MF from this->jarFile.
- * this->jarFile must have already been opened.
+ * Load MANIFEST.MF from this->jarReader.
+ * this->jarReader must have already been opened.
  * On success, the MANIFEST.MF tags will be loaded into this->m_map.
  * @return 0 on success; negative POSIX error code on error.
  */
@@ -313,8 +334,8 @@ int J2MEPrivate::loadManifestMF(void)
 
 		case JFileType::JAR:
 			// The .jar file must have been opened already.
-			assert(jarFile != nullptr);
-			if (!jarFile) {
+			assert(jarReader != nullptr);
+			if (!jarReader) {
 				return -EIO;
 			}
 
@@ -569,7 +590,8 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
 	}
 
 	// Make sure the .jar file is open.
-	if (!jarFile) {
+	assert(jarReader != nullptr);
+	if (!jarReader) {
 		// Not open...
 		return {};
 	}
@@ -636,20 +658,27 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
  * NOTE: Check isValid() to determine if this is a valid ROM.
  *
  * @param file Open ROM file
- * @param unzfile .zip file opened with MiniZip. (this object takes ownership)
+ * @param stream MiniZip-NG mz_stream (this object takes ownership)
+ * @param reader MiniZip-NG mz_zip_reader (this object takes ownership)
  */
-J2ME::J2ME(const IRpFilePtr &file, unzFile unzfile)
-	: super(new J2MEPrivate(file, unzfile))
+J2ME::J2ME(const IRpFilePtr &file, mzStream stream, mzReader reader)
+	: super(new J2MEPrivate(file, stream, reader))
 {
 	RP_D(J2ME);
 
 	if (!d->file) {
 		// Could not ref() the file handle.
 		// NOTE: Delay-Load handling is *not* needed here because
-		// if apkFile is not nullptr, MiniZip was already used.
-		if (d->jarFile) {
-			unzClose(d->jarFile);
-			d->jarFile = nullptr;
+		// if jarReader/jarStream are not nullptr, MiniZip was already used.
+		if (d->jarReader) {
+			mz_zip_reader_close(d->jarReader);
+			mz_zip_reader_delete(&d->jarReader);
+			d->jarReader = nullptr;
+		}
+		if (d->jarStream) {
+			mz_stream_IRpFile_close(d->jarStream);
+			mz_stream_IRpFile_delete(&d->jarStream);
+			d->jarStream = nullptr;
 		}
 		return;
 	}
@@ -676,9 +705,15 @@ J2ME::J2ME(const IRpFilePtr &file, unzFile unzfile)
 	d->isValid = (static_cast<int>(d->jfileType) >= 0);
 
 	if (!d->isValid) {
-		if (d->jarFile) {
-			unzClose(d->jarFile);
-			d->jarFile = nullptr;
+		if (d->jarReader) {
+			mz_zip_reader_close(d->jarReader);
+			mz_zip_reader_delete(&d->jarReader);
+			d->jarReader = nullptr;
+		}
+		if (d->jarStream) {
+			mz_stream_IRpFile_close(d->jarStream);
+			mz_stream_IRpFile_delete(&d->jarStream);
+			d->jarStream = nullptr;
 		}
 		d->file.reset();
 		return;
@@ -688,18 +723,24 @@ J2ME::J2ME(const IRpFilePtr &file, unzFile unzfile)
 		default:
 			// Not supported.
 			assert(!"Unsupported J2ME file type.");
-			d->isValid = false;
-			if (d->jarFile) {
-				unzClose(d->jarFile);
-				d->jarFile = nullptr;
+			if (d->jarReader) {
+				mz_zip_reader_close(d->jarReader);
+				mz_zip_reader_delete(&d->jarReader);
+				d->jarReader = nullptr;
 			}
+			if (d->jarStream) {
+				mz_stream_IRpFile_close(d->jarStream);
+				mz_stream_IRpFile_delete(&d->jarStream);
+				d->jarStream = nullptr;
+			}
+			d->isValid = false;
 			d->file.reset();
 			return;
 
 		case J2MEPrivate::JFileType::JAR:
 #ifdef _MSC_VER
 			// Delay load verification.
-			// TODO: zlib/minizip checks are only needed if unzFile == nullptr?
+			// TODO: zlib/minizip checks are only needed if jarStream/jarReader == nullptr?
 #  ifdef ZLIB_IS_DLL
 			// Only if zlib is a DLL.
 			if (DelayLoad_test_get_crc_table() != 0) {
@@ -717,7 +758,7 @@ J2ME::J2ME(const IRpFilePtr &file, unzFile unzfile)
 
 #  ifdef MINIZIP_IS_DLL
 			// Only if MiniZip is a DLL.
-			if (DelayLoad_test_unzClose() != 0) {
+			if (DelayLoad_test_mz_zip_delete() != 0) {
 				// Delay load failed.
 				// J2ME packages cannot be read without MiniZip.
 				d->isValid = false;
@@ -727,12 +768,39 @@ J2ME::J2ME(const IRpFilePtr &file, unzFile unzfile)
 #  endif /* MINIZIP_IS_DLL */
 #endif /* _MSC_VER */
 
-			// Attempt to open as a .zip file first. (only if jarFile is nullptr)
-			if (!d->jarFile) {
-				d->jarFile = IRpFile_unzFile_filefuncs::unzOpen2_64_IRpFile(d->file);
-				if (!d->jarFile) {
-					// Cannot open as a .zip file.
-					d->isValid = false;
+			// Attempt to open as a .zip file first. (only if apkStream and apkReader are nullptr)
+			// FIXME: Both must be either set or nullptr. Check for a bad condition!
+			if (!d->jarStream && !d->jarReader) {
+				d->jarStream = mz_stream_IRpFile_create();
+				if (!d->jarStream) {
+					d->file.reset();
+					return;
+				}
+
+				int ret = mz_stream_IRpFile_open(d->jarStream, d->file, MZ_OPEN_MODE_READ | MZ_OPEN_MODE_EXISTING);
+				if (ret != MZ_OK) {
+					mz_stream_IRpFile_delete(&d->jarStream);
+					d->jarStream = nullptr;
+					d->file.reset();
+					return;
+				}
+
+				d->jarReader = mz_zip_reader_create();
+				if (!d->jarReader) {
+					mz_stream_IRpFile_close(d->jarStream);
+					mz_stream_IRpFile_delete(&d->jarStream);
+					d->jarStream = nullptr;
+					d->file.reset();
+					return;
+				}
+
+				ret = mz_zip_reader_open(d->jarReader, d->jarStream);
+				if (ret != MZ_OK) {
+					mz_zip_reader_delete(&d->jarStream);
+					d->jarReader = nullptr;
+					mz_stream_IRpFile_close(d->jarStream);
+					mz_stream_IRpFile_delete(&d->jarStream);
+					d->jarStream = nullptr;
 					d->file.reset();
 					return;
 				}
@@ -742,8 +810,16 @@ J2ME::J2ME(const IRpFilePtr &file, unzFile unzfile)
 			// For .jar files, this requires a Zip file lookup.
 			if (d->loadManifestMF() != 0) {
 				// Unable to open MANIFEST.MF.
-				unzClose(d->jarFile);
-				d->jarFile = nullptr;
+				if (d->jarReader) {
+					mz_zip_reader_close(d->jarReader);
+					mz_zip_reader_delete(&d->jarReader);
+					d->jarReader = nullptr;
+				}
+				if (d->jarStream) {
+					mz_stream_IRpFile_close(d->jarStream);
+					mz_stream_IRpFile_delete(&d->jarStream);
+					d->jarStream = nullptr;
+				}
 				d->isValid = false;
 				d->file.reset();
 				return;
@@ -753,10 +829,16 @@ J2ME::J2ME(const IRpFilePtr &file, unzFile unzfile)
 			break;
 
 		case J2MEPrivate::JFileType::JAD:
-			// No unzFile here...
-			if (d->jarFile) {
-				unzClose(d->jarFile);
-				d->jarFile = nullptr;
+			// No jarReader here...
+			if (d->jarReader) {
+				mz_zip_reader_close(d->jarReader);
+				mz_zip_reader_delete(&d->jarReader);
+				d->jarReader = nullptr;
+			}
+			if (d->jarStream) {
+				mz_stream_IRpFile_close(d->jarStream);
+				mz_stream_IRpFile_delete(&d->jarStream);
+				d->jarStream = nullptr;
 			}
 
 			// Sanity check: Verify the JAD file size.
@@ -787,9 +869,15 @@ J2ME::J2ME(const IRpFilePtr &file, unzFile unzfile)
 	    d->m_map.find(J2MEPrivate::manifest_tag_t::MIDlet_1) == d->m_map.end())
 	{
 		// Neither tag was found.
-		if (d->jarFile) {
-			unzClose(d->jarFile);
-			d->jarFile = nullptr;
+		if (d->jarReader) {
+			mz_zip_reader_close(d->jarReader);
+			mz_zip_reader_delete(&d->jarReader);
+			d->jarReader = nullptr;
+		}
+		if (d->jarStream) {
+			mz_stream_IRpFile_close(d->jarStream);
+			mz_stream_IRpFile_delete(&d->jarStream);
+			d->jarStream = nullptr;
 		}
 		d->isValid = false;
 		d->file.reset();
@@ -801,9 +889,15 @@ J2ME::J2ME(const IRpFilePtr &file, unzFile unzfile)
 	d->isValid = ((int)d->jfileType >= 0);
 
 	if (!d->isValid) {
-		if (d->jarFile) {
-			unzClose(d->jarFile);
-			d->jarFile = nullptr;
+		if (d->jarReader) {
+			mz_zip_reader_close(d->jarReader);
+			mz_zip_reader_delete(&d->jarReader);
+			d->jarReader = nullptr;
+		}
+		if (d->jarStream) {
+			mz_stream_IRpFile_close(d->jarStream);
+			mz_stream_IRpFile_delete(&d->jarStream);
+			d->jarStream = nullptr;
 		}
 		d->file.reset();
 		return;
@@ -821,10 +915,17 @@ J2ME::J2ME(const IRpFilePtr &file, unzFile unzfile)
 void J2ME::close(void)
 {
 	RP_D(J2ME);
-	if (d->jarFile) {
-		unzClose(d->jarFile);
-		d->jarFile = nullptr;
+	if (d->jarReader) {
+		mz_zip_reader_close(d->jarReader);
+		mz_zip_reader_delete(&d->jarReader);
+		d->jarReader = nullptr;
 	}
+	if (d->jarStream) {
+		mz_stream_IRpFile_close(d->jarStream);
+		mz_stream_IRpFile_delete(&d->jarStream);
+		d->jarStream = nullptr;
+	}
+	d->file.reset();
 }
 
 /** ROM detection functions. **/

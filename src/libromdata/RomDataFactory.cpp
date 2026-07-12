@@ -12,9 +12,6 @@
 #include "RomDataFactory.hpp"
 #include "RomData_p.hpp"	// for RomDataInfo
 
-// for .zip files
-#include "file/IRpFile_unzFile_filefuncs.hpp"
-
 // Other rom-properties libraries
 // librpbase, librpfile
 #include "librpfile/DualFile.hpp"
@@ -25,6 +22,15 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpTexture;
+
+// MiniZip
+#include <zlib.h>
+#include "mz.h"
+#include "mz_zip.h"
+#include "mz_strm.h"	// FIXME: Should be included by mz_zip_rw.h...
+#include "mz_zip_rw.h"
+#include "file/mz_stream_IRpFile.hpp"
+using namespace LibRomData::mz_stream_IRpFile;
 
 // C++ STL classes
 #include <mutex>
@@ -163,8 +169,8 @@ namespace LibRomData { namespace RomDataFactory {
 DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 #  endif /* ZLIB_IS_DLL */
 #  ifdef MINIZIP_IS_DLL
-// unzClose() can safely take nullptr; it won't do anything.
-DELAYLOAD_TEST_FUNCTION_IMPL1(unzClose, nullptr);
+// mz_zip_delete() can safely take nullptr; it won't do anything.
+DELAYLOAD_TEST_FUNCTION_IMPL1(mz_zip_delete, nullptr);
 #  endif /* MINIZIP_IS_DLL */
 #endif /* _MSC_VER */
 
@@ -535,26 +541,32 @@ static RomDataPtr openDreamcastVMSandVMI(const IRpFilePtr &file)
 	return dcSave;
 }
 
+// MiniZip-NG's native interface uses `void*` for handles.
+// We'll typedef it to mzStream and mzReader.
+typedef void *mzStream;
+typedef void *mzReader;
+
 /**
- * Templated function to construct a new RomData subclass with an unzFile.
+ * Templated function to construct a new RomData subclass with MiniZip-NG's native stream/reader objects.
  * @param klass Class name
- * @param unzfile unzFile
+ * @param stream mz_stream
+ * @param reader mz_zip_reader
  */
 template<typename klass>
-static RomDataPtr RomData_unzFile_ctor(const IRpFilePtr &file, unzFile unzfile)
+static RomDataPtr RomData_mzFile_ctor(const IRpFilePtr &file, mzStream stream, mzReader reader)
 {
-	return std::make_shared<klass>(file, unzfile);
+	return std::make_shared<klass>(file, stream, reader);
 }
 
-typedef RomDataPtr (*pfnNewRomData_unzFile_t)(const IRpFilePtr &file, unzFile unzfile);
+typedef RomDataPtr (*pfnNewRomData_mzFile_t)(const IRpFilePtr &file, mzStream stream, mzReader reader);
 struct ZipDetectTbl_t {
-	pfnNewRomData_unzFile_t newRomData;
+	pfnNewRomData_mzFile_t newRomData;
 	pfnRomDataInfo_t romDataInfo;
 	const char *filename;	// Filname to search for within the .zip file.
 	unsigned int attrs;
 };
-#define GetRomDataFns_unzFile(sys, filename, attrs) \
-	{RomData_unzFile_ctor<sys>, sys::romDataInfo_static, (filename), (attrs)}
+#define GetRomDataFns_mzFile(sys, filename, attrs) \
+	{RomData_mzFile_ctor<sys>, sys::romDataInfo_static, (filename), (attrs)}
 
 #ifdef ENABLE_XML
 static constexpr size_t zipDetectTbl_count = 2;
@@ -563,9 +575,9 @@ static constexpr size_t zipDetectTbl_count = 1;
 #endif /* ENABLE_XML */
 static const array<ZipDetectTbl_t, zipDetectTbl_count> zipDetectTbl = {{
 #ifdef ENABLE_XML
-	GetRomDataFns_unzFile(AndroidAPK,	"AndroidManifest.xml",		ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_HAS_DPOVERLAY),
+	GetRomDataFns_mzFile(AndroidAPK,	"AndroidManifest.xml",		ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_HAS_DPOVERLAY),
 #endif /* ENABLE_XML */
-	GetRomDataFns_unzFile(J2ME,		"META-INF/MANIFEST.MF",		ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
+	GetRomDataFns_mzFile(J2ME,		"META-INF/MANIFEST.MF",		ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 }};
 
 /**
@@ -578,7 +590,6 @@ static RomDataPtr openZipFile(const IRpFilePtr &file, unsigned int attrs)
 {
 #ifdef _MSC_VER
 	// Delay load verification.
-	// TODO: zlib/minizip checks are only needed if unzFile == nullptr?
 #  ifdef ZLIB_IS_DLL
 	// Only if zlib is a DLL.
 	if (DelayLoad_test_get_crc_table() != 0) {
@@ -593,17 +604,36 @@ static RomDataPtr openZipFile(const IRpFilePtr &file, unsigned int attrs)
 
 #  ifdef MINIZIP_IS_DLL
 	// Only if MiniZip is a DLL.
-	if (DelayLoad_test_unzClose() != 0) {
+	if (DelayLoad_test_mz_zip_delete() != 0) {
 		// Delay load failed.
 		return {};
 	}
 #  endif /* MINIZIP_IS_DLL */
 #endif /* _MSC_VER */
 
-	// Open the .zip file here.
-	unzFile unzfile = IRpFile_unzFile_filefuncs::unzOpen2_64_IRpFile(file);
-	if (!unzfile) {
-		// Unable to open the .zip file...
+	// Create and open a MiniZip-NG stream.
+	mzStream stream = mz_stream_IRpFile_create();
+	if (!stream) {
+		return {};
+	}
+	int ret = mz_stream_IRpFile_open(stream, file, MZ_OPEN_MODE_READ | MZ_OPEN_MODE_EXISTING);
+	if (ret != MZ_OK) {
+		mz_stream_IRpFile_delete(&stream);
+		return {};
+	}
+
+	// Create and open a MiniZip-NG zip reader.
+	mzReader reader = mz_zip_reader_create();
+	if (!reader)  {
+		mz_stream_IRpFile_close(stream);
+		mz_stream_IRpFile_delete(&stream);
+		return {};
+	}
+	ret = mz_zip_reader_open(reader, stream);
+	if (ret != MZ_OK) {
+		mz_zip_reader_delete(&reader);
+		mz_stream_IRpFile_close(stream);
+		mz_stream_IRpFile_delete(&stream);
 		return {};
 	}
 
@@ -611,7 +641,6 @@ static RomDataPtr openZipFile(const IRpFilePtr &file, unsigned int attrs)
 	// NOTE: If the required file is found, that RomData subclass will be
 	// used without checking any other readers, since the subclass will
 	// automatically take ownership of the unzFile.
-	// FIXME: Both APK and JAR use case-sensitive filenames...
 	for (const auto &p : zipDetectTbl) {
 		if ((attrs & p.attrs) != attrs) {
 			// Incorrect attributes.
@@ -619,10 +648,12 @@ static RomDataPtr openZipFile(const IRpFilePtr &file, unsigned int attrs)
 		}
 
 		// Check for the file within the .zip file.
-		int ret = unzLocateFile(unzfile, p.filename, nullptr);
-		if (ret == UNZ_OK) {
-			RomDataPtr romData = p.newRomData(file, unzfile);
-			unzfile = nullptr;
+		// NOTE: Using case-insensitive lookups for compatibility. Needs testing!
+		int ret = mz_zip_reader_locate_entry(reader, p.filename, true);
+		if (ret == MZ_OK) {
+			RomDataPtr romData = p.newRomData(file, stream, reader);
+			reader = nullptr;
+			stream = nullptr;
 			if (romData->isValid()) {
 				// RomData subclass obtained.
 				return romData;
@@ -632,11 +663,16 @@ static RomDataPtr openZipFile(const IRpFilePtr &file, unsigned int attrs)
 		}
 	}
 
-	// Close the unzFile if it's still open for some reason.
+	// Close the reader and stream if they're still open for some reason.
 	// (e.g. none of the attrs match, or none of the required files
 	// were found in the Zip file)
-	if (unzfile) {
-		unzClose(unzfile);
+	if (reader) {
+		mz_zip_reader_close(reader);
+		mz_zip_reader_delete(&reader);
+	}
+	if (stream) {
+		mz_stream_IRpFile_close(stream);
+		mz_stream_IRpFile_delete(&stream);
 	}
 	return {};
 }

@@ -738,6 +738,13 @@ IF(NOT BUILD_SHARED_LIBS)
     SET(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 ENDIF(NOT BUILD_SHARED_LIBS)
 
+# rom-properties: minizip-ng.dll doesn't export any symbols!
+# Instead of using CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS, use a .def file.
+# Note that this will need to be updated whenever new symbols are added.
+IF(WIN32 AND NOT MZ_COMPAT)
+    list(APPEND MINIZIP_SRC minizip-ng.def)
+ENDIF(WIN32 AND NOT MZ_COMPAT)
+
 # Create minizip library and aliases
 add_library(${MINIZIP_TARGET} ${MINIZIP_SRC} ${MINIZIP_HDR})
 add_library(MINIZIP::${MINIZIP_TARGET} ALIAS ${MINIZIP_TARGET})

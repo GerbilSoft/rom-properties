@@ -15,12 +15,19 @@
 #include "android_apk_structs.h"
 #include "../disc/AndroidResourceReader.hpp"
 
-// MiniZip
+// MiniZip-NG
 #include <zlib.h>
+#include "mz.h"
 #include "mz_zip.h"
-#include "compat/ioapi.h"
-#include "compat/unzip.h"
-#include "../file/IRpFile_unzFile_filefuncs.hpp"
+#include "mz_strm.h"	// FIXME: Should be included by mz_zip_rw.h...
+#include "mz_zip_rw.h"
+#include "../file/mz_stream_IRpFile.hpp"
+using namespace LibRomData::mz_stream_IRpFile;
+
+// MiniZip-NG's native interface uses `void*` for handles.
+// We'll typedef it to mzStream and mzReader.
+typedef void *mzStream;
+typedef void *mzReader;
 
 // Other rom-properties libraries
 #include "librpbase/img/RpImageLoader.hpp"
@@ -62,8 +69,8 @@ namespace LibRomData {
 DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 #  endif /* ZLIB_IS_DLL */
 #  ifdef MINIZIP_IS_DLL
-// unzClose() can safely take nullptr; it won't do anything.
-DELAYLOAD_TEST_FUNCTION_IMPL1(unzClose, nullptr);
+// mz_zip_delete() can safely take nullptr; it won't do anything.
+DELAYLOAD_TEST_FUNCTION_IMPL1(mz_zip_delete, nullptr);
 #  endif /* MINIZIP_IS_DLL */
 #  ifdef XML_IS_DLL
 /**
@@ -78,7 +85,7 @@ extern int DelayLoad_test_PugiXML(void);
 class AndroidAPKPrivate final : public RomDataPrivate
 {
 public:
-	explicit AndroidAPKPrivate(const IRpFilePtr &file, unzFile apkFile);
+	explicit AndroidAPKPrivate(const IRpFilePtr &file, mzStream apkStream, mzReader apkReader);
 	~AndroidAPKPrivate() override;
 
 private:
@@ -93,7 +100,8 @@ public:
 
 public:
 	// Opened .apk file
-	unzFile apkFile;
+	mzStream apkStream;	// mz_stream_IRpFile
+	mzReader apkReader;	// opened with mz_zip_reader_open()
 
 	// Icon
 	rp_image_ptr img_icon;
@@ -105,10 +113,10 @@ public:
 	 * @param max_size Maximum size
 	 * @return rp::uvector with the file data, or empty vector on error
 	 */
-	rp::uvector<uint8_t> loadFileFromZip(const char *filename, size_t max_size = std::numeric_limits<size_t>::max());
+	rp::uvector<uint8_t> loadFileFromZip(const char *filename, off64_t max_size = std::numeric_limits<off64_t>::max());
 
 	/**
-	 * Load AndroidManifest.xml from this->apkFile.
+	 * Load AndroidManifest.xml from this->apkReader.
 	 * this->apkFile must have already been opened.
 	 * TODO: Store it in a PugiXML document, but need to check delay-load...
 	 * @return 0 on success; negative POSIX error code on error.
@@ -117,9 +125,9 @@ public:
 
 public:
 	// Maximum size for various files.
-	static constexpr size_t AndroidManifest_xml_FILE_SIZE_MAX = (256U * 1024U);
-	static constexpr size_t resources_arsc_FILE_SIZE_MAX = (4096U * 1024U);
-	static constexpr size_t ICON_PNG_FILE_SIZE_MAX = (1024U * 1024U);
+	static constexpr off64_t AndroidManifest_xml_FILE_SIZE_MAX = (256 * 1024);
+	static constexpr off64_t resources_arsc_FILE_SIZE_MAX = (4096 * 1024);
+	static constexpr off64_t ICON_PNG_FILE_SIZE_MAX = (1024 * 1024);
 
 	// AndroidManifest.xml document
 	// NOTE: Using a pointer to prevent delay-load issues.
@@ -189,15 +197,21 @@ const RomDataInfo AndroidAPKPrivate::romDataInfo = {
 	"AndroidAPK", exts.data(), mimeTypes.data()
 };
 
-AndroidAPKPrivate::AndroidAPKPrivate(const IRpFilePtr &file, unzFile apkFile)
+AndroidAPKPrivate::AndroidAPKPrivate(const IRpFilePtr &file, mzStream apkStream, mzReader apkReader)
 	: super(file, &romDataInfo)
-	, apkFile(apkFile)
+	, apkStream(apkStream)
+	, apkReader(apkReader)
 {}
 
 AndroidAPKPrivate::~AndroidAPKPrivate()
 {
-	if (apkFile) {
-		unzClose(apkFile);
+	if (apkReader) {
+		mz_zip_reader_close(apkReader);
+		mz_zip_reader_delete(&apkReader);
+	}
+	if (apkStream) {
+		mz_stream_IRpFile_close(apkStream);
+		mz_stream_IRpFile_delete(&apkStream);
 	}
 }
 
@@ -207,29 +221,34 @@ AndroidAPKPrivate::~AndroidAPKPrivate()
  * @param max_size Maximum size
  * @return rp::uvector with the file data, or empty vector on error
  */
-rp::uvector<uint8_t> AndroidAPKPrivate::loadFileFromZip(const char *filename, size_t max_size)
+rp::uvector<uint8_t> AndroidAPKPrivate::loadFileFromZip(const char *filename, off64_t max_size)
 {
 	// TODO: This is also used by GcnFstTest. Move to a common utility file?
-	int ret = unzLocateFile(apkFile, filename, nullptr);
-	if (ret != UNZ_OK) {
+	// NOTE: Using case-insensitive lookups for compatibility. Needs testing!
+	int ret = mz_zip_reader_locate_entry(apkReader, filename, true);
+	if (ret != MZ_OK) {
 		return {};
 	}
 
 	// Get file information.
-	unz_file_info64 file_info;
-	ret = unzGetCurrentFileInfo64(apkFile,
-		&file_info, nullptr, 0, nullptr, 0, nullptr, 0);
-	if (ret != UNZ_OK || file_info.uncompressed_size >= max_size) {
-		// Error getting file information, or the uncompressed size is too big.
+	mz_zip_file *file_info;
+	ret = mz_zip_reader_entry_get_info(apkReader, &file_info);
+	if (ret != MZ_OK) {
+		// Error getting the file information.
+		return {};
+	}
+	const off64_t uncompressed_size = file_info->uncompressed_size;
+	if (uncompressed_size >= max_size) {
+		// The uncompressed size is too big.
 		return {};
 	}
 
-	ret = unzOpenCurrentFile(apkFile);
-	if (ret != UNZ_OK) {
+	ret = mz_zip_reader_entry_open(apkReader);
+	if (ret != MZ_OK) {
 		return {};
 	}
 
-	size_t size = static_cast<size_t>(file_info.uncompressed_size);
+	size_t size = static_cast<size_t>(uncompressed_size);
 	rp::uvector<uint8_t> buf;
 	buf.resize(size);
 
@@ -237,11 +256,13 @@ rp::uvector<uint8_t> AndroidAPKPrivate::loadFileFromZip(const char *filename, si
 	// NOTE: zlib and minizip are only guaranteed to be able to
 	// read UINT16_MAX (64 KB) at a time, and the updated MiniZip
 	// from https://github.com/nmoinvaz/minizip enforces this.
+	// TODO: Does MiniZip-NG's native API still have this limitation?
 	uint8_t *p = buf.data();
 	while (size > 0) {
 		int to_read = static_cast<int>(size > UINT16_MAX ? UINT16_MAX : size);
-		ret = unzReadCurrentFile(apkFile, p, to_read);
+		ret = mz_zip_reader_entry_read(apkReader, p, to_read);
 		if (ret != to_read) {
+			mz_zip_reader_entry_close(apkReader);
 			return {};
 		}
 
@@ -252,8 +273,8 @@ rp::uvector<uint8_t> AndroidAPKPrivate::loadFileFromZip(const char *filename, si
 
 	// Close the file.
 	// An error will occur here if the CRC is incorrect.
-	ret = unzCloseCurrentFile(apkFile);
-	if (ret != UNZ_OK) {
+	ret = mz_zip_reader_entry_close(apkReader);
+	if (ret != MZ_OK) {
 		return {};
 	}
 
@@ -261,8 +282,8 @@ rp::uvector<uint8_t> AndroidAPKPrivate::loadFileFromZip(const char *filename, si
 }
 
 /**
- * Load AndroidManifest.xml from this->apkFile.
- * this->apkFile must have already been opened.
+ * Load AndroidManifest.xml from this->apkReader.
+ * this->apkReader must have already been opened.
  * TODO: Store it in a PugiXML document, but need to check delay-load...
  * @return 0 on success; negative POSIX error code on error.
  */
@@ -274,8 +295,8 @@ int AndroidAPKPrivate::loadAndroidManifestXml(void)
 	}
 
 	// The .apk file must have been opened already.
-	assert(apkFile != nullptr);
-	if (!apkFile) {
+	assert(apkReader != nullptr);
+	if (!apkReader) {
 		return -EIO;
 	}
 
@@ -356,7 +377,8 @@ rp_image_const_ptr AndroidAPKPrivate::loadIcon(void)
 	}
 
 	// Make sure the .apk file is open.
-	if (!apkFile) {
+	assert(apkReader != nullptr);
+	if (!apkReader) {
 		// Not open...
 		return {};
 	}
@@ -476,10 +498,11 @@ rp_image_const_ptr AndroidAPKPrivate::loadIcon(void)
  * NOTE: Check isValid() to determine if this is a valid ROM.
  *
  * @param file Open ROM file
- * @param unzfile .zip file opened with MiniZip. (this object takes ownership)
+ * @param stream MiniZip-NG mz_stream (this object takes ownership)
+ * @param reader MiniZip-NG mz_zip_reader (this object takes ownership)
  */
-AndroidAPK::AndroidAPK(const IRpFilePtr &file, unzFile unzfile)
-	: super(new AndroidAPKPrivate(file, unzfile))
+AndroidAPK::AndroidAPK(const IRpFilePtr &file, mzStream stream, mzReader reader)
+	: super(new AndroidAPKPrivate(file, stream, reader))
 {
 	// This class handles application packages.
 	RP_D(AndroidAPK);
@@ -489,17 +512,23 @@ AndroidAPK::AndroidAPK(const IRpFilePtr &file, unzFile unzfile)
 	if (!d->file) {
 		// Could not ref() the file handle.
 		// NOTE: Delay-Load handling is *not* needed here because
-		// if apkFile is not nullptr, MiniZip was already used.
-		if (d->apkFile) {
-			unzClose(d->apkFile);
-			d->apkFile = nullptr;
+		// if apkReader/apkStream are not nullptr, MiniZip was already used.
+		if (d->apkReader) {
+			mz_zip_reader_close(d->apkReader);
+			mz_zip_reader_delete(&d->apkReader);
+			d->apkReader = nullptr;
+		}
+		if (d->apkStream) {
+			mz_stream_IRpFile_close(d->apkStream);
+			mz_stream_IRpFile_delete(&d->apkStream);
+			d->apkStream = nullptr;
 		}
 		return;
 	}
 
 #ifdef _MSC_VER
 	// Delay load verification.
-	// TODO: zlib/minizip checks are only needed if unzFile == nullptr?
+	// TODO: zlib/minizip checks are only needed if apkStream/apkReader == nullptr?
 #  ifdef ZLIB_IS_DLL
 	// Only if zlib is a DLL.
 	if (DelayLoad_test_get_crc_table() != 0) {
@@ -517,7 +546,7 @@ AndroidAPK::AndroidAPK(const IRpFilePtr &file, unzFile unzfile)
 
 #  ifdef MINIZIP_IS_DLL
 	// Only if MiniZip is a DLL.
-	if (DelayLoad_test_unzClose() != 0) {
+	if (DelayLoad_test_mz_zip_delete() != 0) {
 		// Delay load failed.
 		// Android packages cannot be read without MiniZip.
 		d->isValid = false;
@@ -531,9 +560,15 @@ AndroidAPK::AndroidAPK(const IRpFilePtr &file, unzFile unzfile)
 	if (ret_dl != 0) {
 		// Delay load failed.
 		d->isValid = false;
-		if (d->apkFile) {
-			unzClose(d->apkFile);
-			d->apkFile = nullptr;
+		if (d->apkReader) {
+			mz_zip_reader_close(d->apkReader);
+			mz_zip_reader_delete(&d->apkReader);
+			d->apkReader = nullptr;
+		}
+		if (d->apkStream) {
+			mz_stream_IRpFile_close(d->apkStream);
+			mz_stream_IRpFile_delete(&d->apkStream);
+			d->apkStream = nullptr;
 		}
 		d->file.reset();
 		return;
@@ -548,11 +583,17 @@ AndroidAPK::AndroidAPK(const IRpFilePtr &file, unzFile unzfile)
 	uint8_t header[32];
 	size_t size = d->file->read(header, sizeof(header));
 	if (size < 32) {
-		d->file.reset();
-		if (d->apkFile) {
-			unzClose(d->apkFile);
-			d->apkFile = nullptr;
+		if (d->apkReader) {
+			mz_zip_reader_close(d->apkReader);
+			mz_zip_reader_delete(&d->apkReader);
+			d->apkReader = nullptr;
 		}
+		if (d->apkStream) {
+			mz_stream_IRpFile_close(d->apkStream);
+			mz_stream_IRpFile_delete(&d->apkStream);
+			d->apkStream = nullptr;
+		}
+		d->file.reset();
 		return;
 	}
 
@@ -566,20 +607,53 @@ AndroidAPK::AndroidAPK(const IRpFilePtr &file, unzFile unzfile)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		if (d->apkFile) {
-			unzClose(d->apkFile);
-			d->apkFile = nullptr;
+		if (d->apkReader) {
+			mz_zip_reader_close(d->apkReader);
+			mz_zip_reader_delete(&d->apkReader);
+			d->apkReader = nullptr;
+		}
+		if (d->apkStream) {
+			mz_stream_IRpFile_close(d->apkStream);
+			mz_stream_IRpFile_delete(&d->apkStream);
+			d->apkStream = nullptr;
 		}
 		d->file.reset();
 		return;
 	}
 
-	// Attempt to open as a .zip file. (only if apkFile is nullptr)
-	if (!d->apkFile) {
-		d->apkFile = IRpFile_unzFile_filefuncs::unzOpen2_64_IRpFile(d->file);
-		if (!d->apkFile) {
-			// Cannot open as a .zip file.
-			d->isValid = false;
+	// Attempt to open as a .zip file. (only if apkStream and apkReader are nullptr)
+	// FIXME: Both must be either set or nullptr. Check for a bad condition!
+	if (!d->apkStream && !d->apkReader) {
+		d->apkStream = mz_stream_IRpFile_create();
+		if (!d->apkStream) {
+			d->file.reset();
+			return;
+		}
+
+		int ret = mz_stream_IRpFile_open(d->apkStream, d->file, MZ_OPEN_MODE_READ | MZ_OPEN_MODE_EXISTING);
+		if (ret != MZ_OK) {
+			mz_stream_IRpFile_delete(&d->apkStream);
+			d->apkStream = nullptr;
+			d->file.reset();
+			return;
+		}
+
+		d->apkReader = mz_zip_reader_create();
+		if (!d->apkReader) {
+			mz_stream_IRpFile_close(d->apkStream);
+			mz_stream_IRpFile_delete(&d->apkStream);
+			d->apkStream = nullptr;
+			d->file.reset();
+			return;
+		}
+
+		ret = mz_zip_reader_open(d->apkReader, d->apkStream);
+		if (ret != MZ_OK) {
+			mz_zip_reader_delete(&d->apkStream);
+			d->apkReader = nullptr;
+			mz_stream_IRpFile_close(d->apkStream);
+			mz_stream_IRpFile_delete(&d->apkStream);
+			d->apkStream = nullptr;
 			d->file.reset();
 			return;
 		}
@@ -589,9 +663,15 @@ AndroidAPK::AndroidAPK(const IRpFilePtr &file, unzFile unzfile)
 	if (d->loadAndroidManifestXml() != 0) {
 		// Failed to load AndroidManifest.xml.
 		d->isValid = false;
-		if (d->apkFile) {
-			unzClose(d->apkFile);
-			d->apkFile = nullptr;
+		if (d->apkReader) {
+			mz_zip_reader_close(d->apkReader);
+			mz_zip_reader_delete(&d->apkReader);
+			d->apkReader = nullptr;
+		}
+		if (d->apkStream) {
+			mz_stream_IRpFile_close(d->apkStream);
+			mz_stream_IRpFile_delete(&d->apkStream);
+			d->apkStream = nullptr;
 		}
 		d->file.reset();
 		return;
@@ -604,10 +684,17 @@ AndroidAPK::AndroidAPK(const IRpFilePtr &file, unzFile unzfile)
 void AndroidAPK::close(void)
 {
 	RP_D(AndroidAPK);
-	if (d->apkFile) {
-		unzClose(d->apkFile);
-		d->apkFile = nullptr;
+	if (d->apkReader) {
+		mz_zip_reader_close(d->apkReader);
+		mz_zip_reader_delete(&d->apkReader);
+		d->apkReader = nullptr;
 	}
+	if (d->apkStream) {
+		mz_stream_IRpFile_close(d->apkStream);
+		mz_stream_IRpFile_delete(&d->apkStream);
+		d->apkStream = nullptr;
+	}
+	d->file.reset();
 }
 
 /** ROM detection functions. **/

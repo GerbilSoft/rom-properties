@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData_decl.hpp: ROM data base class. (Subclass macros)                *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -99,9 +99,9 @@ public: \
 	explicit klass(const LibRpFile::IRpFilePtr &file);
 
 /**
- * unzFile constructors for a RomData subclass.
+ * MiniZip-NG stream/reader constructors for a RomData subclass.
  */
-#define ROMDATA_DECL_CTOR_UNZFILE(klass) \
+#define ROMDATA_DECL_CTOR_MZFILE(klass) \
 public: \
 	/**
 	 * Read a ROM image. \
@@ -117,7 +117,7 @@ public: \
 	 * @param file Open ROM image \
 	 */ \
 	explicit klass(const LibRpFile::IRpFilePtr &file) \
-		: klass(file, nullptr) \
+		: klass(file, nullptr, nullptr) \
 	{} \
 \
 	/**
@@ -132,9 +132,10 @@ public: \
 	 * NOTE: Check isValid() to determine if this is a valid ROM. \
 	 * \
 	 * @param file Open ROM image \
-	 * @param unzfile .zip file opened with MiniZip. (this object takes ownership)
+	 * @param stream MiniZip-NG mz_stream (this object takes ownership)
+	 * @param reader MiniZip-NG mz_zip_reader (this object takes ownership)
 	 */ \
-	explicit klass(const LibRpFile::IRpFilePtr &file, unzFile unzfile);
+	explicit klass(const LibRpFile::IRpFilePtr &file, void *stream, void *reader);
 
 /**
  * Common functions for a RomData subclass.
@@ -215,13 +216,13 @@ ROMDATA_DECL_CTOR_EXPORT(klass) \
 ROMDATA_DECL_COMMON_FNS()
 
 /**
- * Initial declaration for a RomData subclass with an unzFile constructor.
+ * Initial declaration for a RomData subclass with a MiniZip-NG stream/reader constructor.
  * Declares functions common to all RomData subclasses.
  * @param klass Class name
  */
-#define ROMDATA_DECL_BEGIN_UNZFILE(klass) \
+#define ROMDATA_DECL_BEGIN_MZFILE(klass) \
 ROMDATA_DECL_BEGIN_NO_CTOR(klass) \
-ROMDATA_DECL_CTOR_UNZFILE(klass) \
+ROMDATA_DECL_CTOR_MZFILE(klass) \
 ROMDATA_DECL_COMMON_FNS()
 
 /**

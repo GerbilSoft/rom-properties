@@ -68,15 +68,15 @@
 #  define XML_IS_DLL 1
 #endif
 
-/* Define to 1 if we're using the internal copy of MiniZip. */
-#cmakedefine USE_INTERNAL_MINIZIP 1
+/* Define to 1 if we're using the internal copy of MiniZip-NG. */
+#cmakedefine USE_INTERNAL_MinizipNG 1
 
-/* Define to 1 if we're using the internal copy of MiniZip as a DLL. */
-#cmakedefine USE_INTERNAL_MINIZIP_DLL 1
+/* Define to 1 if we're using the internal copy of MiniZip-NG as a DLL. */
+#cmakedefine USE_INTERNAL_MinizipNG_DLL 1
 
 /* Define to 1 if MiniZip is a DLL. */
-#if !defined(USE_INTERNAL_MINIZIP) || defined(USE_INTERNAL_MINIZIP_DLL)
-#  define MINIZIP_IS_DLL 1
+#if !defined(USE_INTERNAL_MinizipNG) || defined(USE_INTERNAL_MinizipNG_DLL)
+#  define MinizipNG_IS_DLL 1
 #endif
 
 /* Define to 1 if you have zstd. */
