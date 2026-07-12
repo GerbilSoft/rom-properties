@@ -288,10 +288,6 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		Win8		= (1U << 2),
 		Win81		= (1U << 3),
 		Win10		= (1U << 4),
-
-		// Not specifically OS-compatibility, but
-		// present in the same section.
-		LongPathAware	= (1U << 5),
 	};
 
 	static const array<const char*, 6> OS_Compatibility_names = {{
@@ -332,16 +328,6 @@ int EXEPrivate::addFields_PE_Manifest(void)
 					// NOTE: Also used for Windows 11.
 					// Reference: https://stackoverflow.com/questions/68240304/whats-the-supportedos-guid-for-windows-11
 					compat |= static_cast<uint32_t>(OS_Compatibility::Win10);
-				}
-			}
-
-			// Check for long path awareness.
-			xml_node const longPathAware = application.child("longPathAware");
-			if (longPathAware) {
-				xml_text text = longPathAware.text();
-				if (text && !strcasecmp(text.get(), "true")) {
-					// Long path aware.
-					compat |= static_cast<uint32_t>(OS_Compatibility::LongPathAware);
 				}
 			}
 
