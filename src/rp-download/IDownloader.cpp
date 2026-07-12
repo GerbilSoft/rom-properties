@@ -324,7 +324,7 @@ tstring IDownloader::getOSRelease(void)
 
 			if (pfnIsWow64Process) {
 				BOOL bIsWow64Process = FALSE;
-				BOOL bRet = IsWow64Process(GetCurrentProcess(), &bIsWow64Process);
+				BOOL bRet = pfnIsWow64Process(GetCurrentProcess(), &bIsWow64Process);
 				if (bRet && bIsWow64Process) {
 					bIsWow64 = true;
 				}
