@@ -6,7 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "config.librpfile.h"
 #include "../FileSystem.hpp"
+
 // C includes
 #include <sys/stat.h>
 #include <sys/utime.h>
@@ -620,8 +622,12 @@ bool is_symlink(const wchar_t *filename)
 	return is_symlink_int(tfilename.c_str());
 }
 
-// GetFinalPathnameByHandle() lookup
-static std::once_flag once_gfpbh;
+#ifdef RP_SUPPORTS_WINDOWS_XP
+namespace Private {
+
+// Windows XP: Use GetProcAddress() for the GetFinalPathNameByHandle() function.
+static std::once_flag once_GetFinalPathNameByHandle;
+
 typedef DWORD (WINAPI *pfnGetFinalPathNameByHandleA_t)(
 	_In_  HANDLE hFile,
 	_Out_ LPSTR lpszFilePath,
@@ -634,6 +640,7 @@ typedef DWORD (WINAPI *pfnGetFinalPathNameByHandleW_t)(
 	_In_  DWORD  cchFilePath,
 	_In_  DWORD  dwFlags
 );
+
 #ifdef UNICODE
 using pfnGetFinalPathNameByHandle_t = pfnGetFinalPathNameByHandleW_t;
 static constexpr char GetFinalPathNameByHandle_fn[] = "GetFinalPathNameByHandleW";
@@ -641,19 +648,25 @@ static constexpr char GetFinalPathNameByHandle_fn[] = "GetFinalPathNameByHandleW
 using pfnGetFinalPathNameByHandle_t = pfnGetFinalPathNameByHandleA_t;
 static constexpr char GetFinalPathNameByHandle_fn[] = "GetFinalPathNameByHandleA";
 #endif /* UNICODE */
-static pfnGetFinalPathNameByHandle_t pfnGetFinalPathnameByHandle = nullptr;
+static pfnGetFinalPathNameByHandle_t pfnGetFinalPathNameByHandle = nullptr;
 
 /**
- * Look up GetFinalPathnameByHandleW().
+ * Initialize the GetFinalPathNameByHandle() function pointer.
+ *
+ * Called by std::call_once().
  */
-static void LookupGetFinalPathnameByHandle(void)
+static void init_GetFinalPathNameByHandle(void)
 {
-	HMODULE hKernel32 = GetModuleHandle(_T("kernel32.dll"));
-	if (hKernel32) {
-		pfnGetFinalPathnameByHandle = reinterpret_cast<pfnGetFinalPathNameByHandle_t>(
-			GetProcAddress(hKernel32, GetFinalPathNameByHandle_fn));
+	HMODULE hKernel32_dll = GetModuleHandle(_T("kernel32.dll"));
+	assert(hKernel32_dll != nullptr);
+	if (hKernel32_dll) {
+		pfnGetFinalPathNameByHandle = reinterpret_cast<pfnGetFinalPathNameByHandle_t>(
+			GetProcAddress(hKernel32_dll, GetFinalPathNameByHandle_fn));
 	}
 }
+
+} // namespace Private
+#endif /* RP_SUPPORTS_WINDOWS_XP */
 
 /**
  * Resolve a symbolic link.
@@ -667,11 +680,13 @@ static void LookupGetFinalPathnameByHandle(void)
  */
 static tstring resolve_symlink_int(const TCHAR *tfilename)
 {
-	std::call_once(once_gfpbh, LookupGetFinalPathnameByHandle);
-	if (!pfnGetFinalPathnameByHandle) {
-		// GetFinalPathnameByHandle() not available.
+#ifdef RP_SUPPORTS_WINDOWS_XP
+	std::call_once(Private::once_GetFinalPathNameByHandle, Private::init_GetFinalPathNameByHandle);
+	if (!Private::pfnGetFinalPathNameByHandle) {
+		// GetFinalPathNameByHandle() not available.
 		return {};
 	}
+#endif /* RP_SUPPORTS_WINDOWS_XP */
 
 	// Reference: https://devblogs.microsoft.com/oldnewthing/20100212-00/?p=14963
 	// TODO: Enable write sharing in regular IRpFile?
@@ -688,7 +703,11 @@ static tstring resolve_symlink_int(const TCHAR *tfilename)
 	}
 
 	// NOTE: GetFinalPathNameByHandle() always returns "\\\\?\\" paths.
-	DWORD cchDeref = pfnGetFinalPathnameByHandle(hFile, nullptr, 0, VOLUME_NAME_DOS);
+#ifdef RP_SUPPORTS_WINDOWS_XP
+	DWORD cchDeref = Private::pfnGetFinalPathNameByHandle(hFile, nullptr, 0, VOLUME_NAME_DOS);
+#else /* !RP_SUPPORTS_WINDOWS_XP */
+	DWORD cchDeref = GetFinalPathNameByHandle(hFile, nullptr, 0, VOLUME_NAME_DOS);
+#endif /* RP_SUPPORTS_WINDOWS_XP */
 	if (cchDeref == 0) {
 		// Error...
 		CloseHandle(hFile);
@@ -699,7 +718,11 @@ static tstring resolve_symlink_int(const TCHAR *tfilename)
 	// We'll add one anyway, just in case it doesn't.
 	// TODO: Allocate std::wstring() here and read directly into data()?
 	unique_ptr<TCHAR[]> szDeref(new TCHAR[cchDeref+1]);
-	pfnGetFinalPathnameByHandle(hFile, szDeref.get(), cchDeref+1, VOLUME_NAME_DOS);
+#ifdef RP_SUPPORTS_WINDOWS_XP
+	Private::pfnGetFinalPathNameByHandle(hFile, szDeref.get(), cchDeref+1, VOLUME_NAME_DOS);
+#else /* !RP_SUPPORTS_WINDOWS_XP */
+	GetFinalPathNameByHandle(hFile, szDeref.get(), cchDeref+1, VOLUME_NAME_DOS);
+#endif /* RP_SUPPORTS_WINDOWS_XP */
 	if (szDeref[cchDeref-1] == '\0') {
 		// Extra NULL terminator found.
 		cchDeref--;

@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "config.librpfile.h"
 #include "XAttrReader.hpp"
 #include "XAttrReader_p.hpp"
 
@@ -55,6 +56,7 @@ typedef struct _RP_FILE_PROVIDER_EXTERNAL_INFO_V1 {
 #endif
 
 // C++ STL classes
+#include <mutex>
 using std::string;
 using std::tstring;
 using std::unique_ptr;
@@ -65,10 +67,6 @@ extern "C" {
 	extern unsigned char RP_LibRpFile_XAttrReader_impl_ForceLinkage;
 	unsigned char RP_LibRpFile_XAttrReader_impl_ForceLinkage;
 }
-
-// ADS functions (Windows Vista and later)
-typedef HANDLE (WINAPI *pfnFindFirstStreamW_t)(_In_ LPCWSTR lpFileName, _In_ STREAM_INFO_LEVELS InfoLevel, _Out_ LPVOID lpFindStreamData, DWORD dwFlags);
-typedef HANDLE (WINAPI *pfnFindNextStreamW_t)(_In_ HANDLE hFindStream, _Out_ LPVOID lpFindStreamData);
 
 namespace LibRpFile {
 
@@ -311,6 +309,48 @@ int XAttrReaderPrivate::loadZAlgorithm(void)
 }
 
 #ifdef UNICODE
+
+#ifdef RP_SUPPORTS_WINDOWS_XP
+namespace Private {
+
+// Windows XP: Use GetProcAddress() for the FindFirstStreamW() and FindNextStreamW() functions.
+static std::once_flag once_FindFirstStreamW;
+
+// ADS functions (Windows Vista and later)
+typedef HANDLE (WINAPI *pfnFindFirstStreamW_t)(_In_ LPCWSTR lpFileName, _In_ STREAM_INFO_LEVELS InfoLevel, _Out_ LPVOID lpFindStreamData, DWORD dwFlags);
+typedef HANDLE (WINAPI *pfnFindNextStreamW_t)(_In_ HANDLE hFindStream, _Out_ LPVOID lpFindStreamData);
+
+static pfnFindFirstStreamW_t pfnFindFirstStreamW = nullptr;
+static pfnFindNextStreamW_t pfnFindNextStreamW = nullptr;
+
+/**
+ * Initialize the FindFirstStreamW() and FindNextStreamW() function pointers.
+ *
+ * Called by std::call_once().
+ */
+static void init_FindFirstStreamW(void)
+{
+	HMODULE hKernel32 = GetModuleHandle(_T("kernel32.dll"));
+	assert(hKernel32 != nullptr);
+	if (!hKernel32) {
+		return;
+	}
+
+	pfnFindFirstStreamW = reinterpret_cast<pfnFindFirstStreamW_t>(
+		GetProcAddress(hKernel32, "FindFirstStreamW"));
+	pfnFindNextStreamW = reinterpret_cast<pfnFindNextStreamW_t>(
+		GetProcAddress(hKernel32, "FindNextStreamW"));
+	if (!pfnFindFirstStreamW || !pfnFindNextStreamW) {
+		// Unable to retrieve the procedure addresses.
+		// NULL out both of them.
+		pfnFindFirstStreamW = nullptr;
+		pfnFindNextStreamW = nullptr;
+	}
+}
+
+} // namespace Private
+#endif /* RP_SUPPORTS_WINDOWS_XP */
+
 /**
  * Load generic xattrs, if available.
  * (POSIX xattr on Linux; ADS on Windows)
@@ -322,24 +362,21 @@ int XAttrReaderPrivate::loadGenericXattrs_FindFirstStreamW(void)
 {
 	// Windows Vista: Use FindFirstStream().
 	// Windows XP: Use BackupRead(). [TODO]
-	HMODULE hKernel32 = GetModuleHandle(_T("kernel32.dll"));
-	assert(hKernel32 != nullptr);
-	if (!hKernel32) {
-		return -ENOMEM;
-	}
-
-	pfnFindFirstStreamW_t pfnFindFirstStreamW = reinterpret_cast<pfnFindFirstStreamW_t>(
-		GetProcAddress(hKernel32, "FindFirstStreamW"));
-	pfnFindNextStreamW_t pfnFindNextStreamW = reinterpret_cast<pfnFindNextStreamW_t>(
-		GetProcAddress(hKernel32, "FindNextStreamW"));
-	if (!pfnFindFirstStreamW || !pfnFindNextStreamW) {
+#ifdef RP_SUPPORTS_WINDOWS_XP
+	std::call_once(Private::once_FindFirstStreamW, Private::init_FindFirstStreamW);
+	if (!Private::pfnFindFirstStreamW || !Private::pfnFindNextStreamW) {
 		// Unable to retrieve the procedure addresses.
 		return -ENOTSUP;
 	}
+#endif /* RP_SUPPORTS_WINDOWS_XP */
 
 	// We have FindFirstStreamW().
 	WIN32_FIND_STREAM_DATA fsd;
-	HANDLE hFindADS = pfnFindFirstStreamW(filename.c_str(), FindStreamInfoStandard, &fsd, 0);
+#ifdef RP_SUPPORTS_WINDOWS_XP
+	HANDLE hFindADS = Private::pfnFindFirstStreamW(filename.c_str(), FindStreamInfoStandard, &fsd, 0);
+#else /* !RP_SUPPORTS_WINDOWS_XP */
+	HANDLE hFindADS = FindFirstStreamW(filename.c_str(), FindStreamInfoStandard, &fsd, 0);
+#endif /* RP_SUPPORTS_WINDOWS_XP */
 	if (!hFindADS || hFindADS == INVALID_HANDLE_VALUE) {
 		// FindFirstStream() failed.
 		return -ENOENT;
@@ -438,7 +475,11 @@ int XAttrReaderPrivate::loadGenericXattrs_FindFirstStreamW(void)
 			s_value.assign(is_unicode ? W2U8(ads_data.wch) : A2U8(ads_data.ch));
 		}
 		genericXAttrs.emplace(std::move(s_name), std::move(s_value));
-	} while (pfnFindNextStreamW(hFindADS, &fsd));
+#ifdef RP_SUPPORTS_WINDOWS_XP
+	} while (Private::pfnFindNextStreamW(hFindADS, &fsd));
+#else /* !RP_SUPPORTS_WINDOWS_XP */
+	} while (FindNextStreamW(hFindADS, &fsd));
+#endif /* RP_SUPPORTS_WINDOWS_XP */
 
 	FindClose(hFindADS);
 

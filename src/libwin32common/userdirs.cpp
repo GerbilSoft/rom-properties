@@ -15,6 +15,7 @@
 #include <cstring>
 
 // C++ includes
+#include <mutex>
 #include <string>
 using std::string;
 
@@ -65,6 +66,38 @@ string getHomeDirectory(void)
 	return getCSIDLPath(CSIDL_PROFILE);
 }
 
+#ifdef RP_SUPPORTS_WINDOWS_XP
+namespace Private {
+
+// Windows XP: Use GetProcAddress() for the SHGetKnownFolderPath() functions.
+static std::once_flag once_SHGetKnownFolderPath;
+
+typedef HRESULT (WINAPI *pfnSHGetKnownFolderPath_t)(
+	_In_ REFKNOWNFOLDERID rfid,
+	_In_ DWORD /* KNOWN_FOLDER_FLAG */ dwFlags,
+	_In_opt_ HANDLE hToken,
+	_Outptr_ PWSTR *ppszPath);
+
+static pfnSHGetKnownFolderPath_t pfnSHGetKnownFolderPath = nullptr;
+
+/**
+ * Initialize the SHGetKnownFolderPath() function pointer.
+ *
+ * Called by std::call_once().
+ */
+static void init_SHGetKnownFolderPath(void)
+{
+	HMODULE hShell32_dll = GetModuleHandle(_T("shell32.dll"));
+	assert(hShell32_dll != nullptr);
+	if (hShell32_dll) {
+		pfnSHGetKnownFolderPath = reinterpret_cast<pfnSHGetKnownFolderPath_t>(
+			GetProcAddress(hShell32_dll, "SHGetKnownFolderPath"));
+	}
+}
+
+} // namespace Private
+#endif /* RP_SUPPORTS_WINDOWS_XP */
+
 /**
  * Get the user's cache directory.
  *
@@ -88,27 +121,22 @@ string getCacheDirectory(void)
 	// low-integrity process on Windows Vista and later.
 	// - Windows XP: C:\Documents and Settings\username\Local Settings\Application Data
 	// - Windows Vista: C:\Users\username\AppData\LocalLow
-	HMODULE hShell32_dll = GetModuleHandle(_T("shell32.dll"));
-	assert(hShell32_dll != nullptr);
-	if (!hShell32_dll) {
-		// Not possible. Both SHGetFolderPath() and
-		// SHGetKnownFolderPath() are in shell32.dll.
-		return cache_dir;
-	}
 
 	// Check for SHGetKnownFolderPath. (Windows Vista and later)
-	typedef HRESULT (WINAPI *pfnSHGetKnownFolderPath_t)(
-		_In_ REFKNOWNFOLDERID rfid,
-		_In_ DWORD /* KNOWN_FOLDER_FLAG */ dwFlags,
-		_In_opt_ HANDLE hToken,
-		_Outptr_ PWSTR *ppszPath);
-	pfnSHGetKnownFolderPath_t pfnSHGetKnownFolderPath =
-		(pfnSHGetKnownFolderPath_t)GetProcAddress(hShell32_dll, "SHGetKnownFolderPath");
-	if (pfnSHGetKnownFolderPath) {
+#ifdef RP_SUPPORTS_WINDOWS_XP
+	std::call_once(Private::once_SHGetKnownFolderPath, Private::init_SHGetKnownFolderPath);
+	if (Private::pfnSHGetKnownFolderPath)
+#endif /* RP_SUPPORTS_WINDOWS_XP */
+	{
 		// We have SHGetKnownFolderPath. (NOTE: Unicode only!)
 		PWSTR pszPath = nullptr;	// free with CoTaskMemFree()
-		HRESULT hr = pfnSHGetKnownFolderPath(FOLDERID_LocalAppDataLow,
+#ifdef RP_SUPPORTS_WINDOWS_XP
+		HRESULT hr = Private::pfnSHGetKnownFolderPath(FOLDERID_LocalAppDataLow,
 			SHGFP_TYPE_CURRENT, nullptr, &pszPath);
+#else /* !RP_SUPPORTS_WINDOWS_XP */
+		HRESULT hr = SHGetKnownFolderPath(FOLDERID_LocalAppDataLow,
+			SHGFP_TYPE_CURRENT, nullptr, &pszPath);
+#endif /* RP_SUPPORTS_WINDOWS_XP */
 		if (SUCCEEDED(hr) && pszPath != nullptr) {
 			// Path obtained.
 			cache_dir = W2U8(pszPath);
@@ -121,8 +149,13 @@ string getCacheDirectory(void)
 			// Try again with FOLDERID_LocalAppData.
 			// NOTE: This might cause problems if rp-download is running
 			// with a low integrity level.
-			hr = pfnSHGetKnownFolderPath(FOLDERID_LocalAppData,
+#ifdef RP_SUPPORTS_WINDOWS_XP
+			hr = Private::pfnSHGetKnownFolderPath(FOLDERID_LocalAppData,
 				SHGFP_TYPE_CURRENT, nullptr, &pszPath);
+#else /* !RP_SUPPORTS_WINDOWS_XP */
+			hr = SHGetKnownFolderPath(FOLDERID_LocalAppData,
+				SHGFP_TYPE_CURRENT, nullptr, &pszPath);
+#endif /* RP_SUPPORTS_WINDOWS_XP */
 			if (SUCCEEDED(hr) && pszPath != nullptr) {
 				// Path obtained.
 				cache_dir = W2U8(pszPath);
