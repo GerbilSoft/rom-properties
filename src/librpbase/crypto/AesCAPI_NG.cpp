@@ -21,11 +21,6 @@
 #include <bcrypt.h>
 #include <winternl.h>
 
-// Function pointer macro.
-#define DECL_FUNCPTR(f) __typeof__(f) * pfn##f
-#define DEF_FUNCPTR(f) __typeof__(f) * pfn##f = nullptr
-#define LOAD_FUNCPTR(f) pfn##f = (__typeof__(f)*)GetProcAddress(hBcrypt_dll.get(), #f)
-
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define AesCAPI_NGPrivate AesCAPI_NG_Private
 
@@ -41,8 +36,19 @@ using std::unique_ptr;
 
 namespace LibRpBase {
 
+// FIXME: The Windows Vista method requires linking to bcrypt.dll,
+// which requires delay-load stuff, which defeats the point of the
+// whole GetProcAddress() setup. We'll use the GetProcAddress()
+// version on all systems for now.
+#define RP_SUPPORTS_WINDOWS_XP 1
+
 #ifdef RP_SUPPORTS_WINDOWS_XP
 namespace Private {
+
+// Function pointer macro.
+#define DECL_FUNCPTR(f) __typeof__(f) * pfn##f
+#define DEF_FUNCPTR(f) __typeof__(f) * pfn##f = nullptr
+#define LOAD_FUNCPTR(f) pfn##f = (__typeof__(f)*)GetProcAddress(hBcrypt_dll.get(), #f)
 
 /** bcrypt.dll handle **/
 static unique_ptr<HMODULE, HMODULE_deleter> hBcrypt_dll;
