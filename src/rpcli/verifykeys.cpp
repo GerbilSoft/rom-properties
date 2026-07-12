@@ -97,9 +97,11 @@ int VerifyKeys(void)
 			// NOTE: Not a table because only 'OK' is valid; others are errors.
 			bool isOK = false;
 			const char *s_err = nullptr;
+			AnsiColor8 color = ANSI_COLOR_8_RED;
 			switch (key->status) {
 				case KeyStoreUI::Key::Status::Empty:
 					s_err = C_("rpcli|KeyVerifyStatus", "Empty key");
+					color = ANSI_COLOR_8_YELLOW;
 					break;
 				case KeyStoreUI::Key::Status::Unknown:
 				default:
@@ -114,15 +116,15 @@ int VerifyKeys(void)
 				case KeyStoreUI::Key::Status::OK:
 					isOK = true;
 					s_err = C_("rpcli|KeyVerifyStatus", "OK");
+					color = ANSI_COLOR_8_GREEN;
 					break;
 			}
 
 			Gsvt::StdOut.fputs(fmt::format(FSTR("{:s}: "), key->name));
+			Gsvt::StdOut.textColorSet8(color, true);
 			if (isOK) {
-				Gsvt::StdOut.textColorSet8(ANSI_COLOR_8_GREEN, true);
 				Gsvt::StdOut.fputs(s_err);
 			} else {
-				Gsvt::StdOut.textColorSet8(ANSI_COLOR_8_RED, true);
 				Gsvt::StdOut.fputs(fmt::format(FRUN(C_("rpcli", "ERROR: {:s}")), s_err));
 				ret = 1;
 			}
