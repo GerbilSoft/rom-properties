@@ -25,7 +25,7 @@
 #include "d_type.h"
 
 #ifdef _WIN32
-#  include "file/IsDriveLetter.hpp"
+#  include "win32/IsDriveLetter.hpp"
 #endif /* _WIN32 */
 
 namespace LibRpFile {
