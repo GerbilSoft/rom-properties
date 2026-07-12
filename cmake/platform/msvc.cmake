@@ -154,7 +154,7 @@ SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /wd4996 /w34996")
 # This doesn't work on Windows XP or Windows Server 2003, so disable it.
 # NOTE: Only for i386 and amd64; enabling elsewhere because
 # Windows XP and Windows Server 2003 weren't available for ARM.
-IF(MSVC_VERSION GREATER 1899 AND _MSVC_C_ARCHITECTURE_FAMILY MATCHES "^([iI]?[xX3]86)|([xX]64)$")
+IF(MSVC_VERSION GREATER 1899 AND CMAKE_GENERATOR_TOOLSET MATCHES "_xp$")
 	MESSAGE(STATUS "MSVC: Disabling thread-safe statics for Windows XP and Windows Server 2003 compatibility")
 	SET(RP_C_FLAGS_COMMON   "${RP_C_FLAGS_COMMON} /Zc:threadSafeInit-")
 	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /Zc:threadSafeInit-")
