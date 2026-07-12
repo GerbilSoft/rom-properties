@@ -129,20 +129,44 @@ public:
 	static time_t fds_bcd_datestamp_to_unix_time(const FDS_BCD_DateStamp *fds_bcd_ds);
 
 	/**
+	 * Calculate the PRG ROM size from an NES 2.0 header.
+	 *
+	 * NOTE: Older INES headers may work with this function,
+	 * but if the PRG hi-nybble field has a bogus value,
+	 * it will result in the wrong calculation.
+	 *
+	 * @param header NES 2.0 header
+	 * @return PRG ROM size
+	 */
+	static unsigned int calc_NES2_prg_rom_size(const INES_RomHeader *header);
+
+	/**
 	 * Get the PRG ROM size.
-	 * @return PRG ROM size.
+	 * @return PRG ROM size
 	 */
 	unsigned int get_prg_rom_size(void) const;
 
 	/**
+	 * Calculate the CHR ROM size from an NES 2.0 header.
+	 *
+	 * NOTE: Older INES headers may work with this function,
+	 * but if the CHR hi-nybble field has a bogus value,
+	 * it will result in the wrong calculation.
+	 *
+	 * @param header NES 2.0 header
+	 * @return CHR ROM size
+	 */
+	static unsigned int calc_NES2_chr_rom_size(const INES_RomHeader *header);
+
+	/**
 	 * Get the CHR ROM size.
-	 * @return CHR ROM size.
+	 * @return CHR ROM size
 	 */
 	unsigned int get_chr_rom_size(void) const;
 
 	/**
 	 * Get the iNES mapper number.
-	 * @return iNES mapper number.
+	 * @return iNES mapper number
 	 */
 	int get_iNES_mapper_number(void) const;
 
@@ -307,8 +331,44 @@ time_t NESPrivate::fds_bcd_datestamp_to_unix_time(const FDS_BCD_DateStamp *fds_b
 }
 
 /**
+ * Calculate the PRG ROM size from an NES 2.0 header.
+ *
+ * NOTE: Older INES headers may work with this function,
+ * but if the PRG hi-nybble field has a bogus value,
+ * it will result in the wrong calculation.
+ *
+ * @param header NES 2.0 header
+ * @return PRG ROM size
+ */
+unsigned int NESPrivate::calc_NES2_prg_rom_size(const INES_RomHeader *header)
+{
+	unsigned int prg_rom_size;
+
+	// NES 2.0 has an alternate method for indicating PRG ROM size,
+	// so we need to check for that.
+	if (likely((header->nes2.banks_hi & 0x0F) != 0x0F)) {
+		// Standard method
+		prg_rom_size = ((header->prg_banks |
+				((header->nes2.banks_hi & 0x0F) << 8))
+				* INES_PRG_BANK_SIZE);
+	} else {
+		// Alternate method: [EEEE EEMM] -> 2^E * (MM*2 + 1)
+		// TODO: Verify that this works.
+		if ((header->prg_banks >> 2) > 24) {
+			// Sanity check: Too big???
+			prg_rom_size = 0xFFFFFFFF;
+		} else {
+			prg_rom_size = (1U << (header->prg_banks >> 2)) *
+			               (((header->prg_banks & 0x03) * 2) + 1);
+		}
+	}
+
+	return prg_rom_size;
+}
+
+/**
  * Get the PRG ROM size.
- * @return PRG ROM size.
+ * @return PRG ROM size
  */
 unsigned int NESPrivate::get_prg_rom_size(void) const
 {
@@ -330,27 +390,9 @@ unsigned int NESPrivate::get_prg_rom_size(void) const
 			prg_rom_size = header.ines.prg_banks * INES_PRG_BANK_SIZE;
 			break;
 
-		case NESPrivate::ROM_FORMAT_NES2: {
-			// NES 2.0 has an alternate method for indicating PRG ROM size,
-			// so we need to check for that.
-			if (likely((header.ines.nes2.banks_hi & 0x0F) != 0x0F)) {
-				// Standard method
-				prg_rom_size = ((header.ines.prg_banks |
-						((header.ines.nes2.banks_hi & 0x0F) << 8))
-						* INES_PRG_BANK_SIZE);
-			} else {
-				// Alternate method: [EEEE EEMM] -> 2^E * (MM*2 + 1)
-				// TODO: Verify that this works.
-				if ((header.ines.prg_banks >> 2) > 24) {
-					// Sanity check: Too big???
-					prg_rom_size = 0xFFFFFFFF;
-				} else {
-					prg_rom_size = (1U << (header.ines.prg_banks >> 2)) *
-					               (((header.ines.prg_banks & 0x03) * 2) + 1);
-				}
-			}
+		case NESPrivate::ROM_FORMAT_NES2:
+			prg_rom_size = calc_NES2_prg_rom_size(&header.ines);
 			break;
-		}
 
 		case NESPrivate::ROM_FORMAT_TNES:
 			prg_rom_size = header.tnes.prg_banks * TNES_PRG_BANK_SIZE;
@@ -366,8 +408,44 @@ unsigned int NESPrivate::get_prg_rom_size(void) const
 }
 
 /**
- * Get the PRG ROM size.
- * @return PRG ROM size.
+ * Calculate the CHR ROM size from an NES 2.0 header.
+ *
+ * NOTE: Older INES headers may work with this function,
+ * but if the CHR hi-nybble field has a bogus value,
+ * it will result in the wrong calculation.
+ *
+ * @param header NES 2.0 header
+ * @return CHR ROM size
+ */
+unsigned int NESPrivate::calc_NES2_chr_rom_size(const INES_RomHeader *header)
+{
+	unsigned int chr_rom_size;
+
+	// NES 2.0 has an alternate method for indicating CHR ROM size,
+	// so we need to check for that.
+	if (likely((header->nes2.banks_hi & 0xF0) != 0xF0)) {
+		// Standard method
+		chr_rom_size = ((header->chr_banks |
+				((header->nes2.banks_hi & 0xF0) << 4))
+				* INES_CHR_BANK_SIZE);
+	} else {
+		// Alternate method: [EEEE EEMM] -> 2^E * (MM*2 + 1)
+		// TODO: Verify that this works.
+		if ((header->chr_banks >> 2) > 24) {
+			// Sanity check: Too big???
+			chr_rom_size = 0xFFFFFFFF;
+		} else {
+			chr_rom_size = (1U << (header->chr_banks >> 2)) *
+			               (((header->chr_banks & 0x03) * 2) + 1);
+		}
+	}
+
+	return chr_rom_size;
+}
+
+/**
+ * Get the CHR ROM size.
+ * @return CHR ROM size
  */
 unsigned int NESPrivate::get_chr_rom_size(void) const
 {
@@ -380,24 +458,7 @@ unsigned int NESPrivate::get_chr_rom_size(void) const
 			break;
 
 		case NESPrivate::ROM_FORMAT_NES2:
-			// NES 2.0 has an alternate method for indicating CHR ROM size,
-			// so we need to check for that.
-			if (likely((header.ines.nes2.banks_hi & 0xF0) != 0xF0)) {
-				// Standard method
-				chr_rom_size = ((header.ines.chr_banks |
-						((header.ines.nes2.banks_hi & 0xF0) << 4))
-						* INES_CHR_BANK_SIZE);
-			} else {
-				// Alternate method: [EEEE EEMM] -> 2^E * (MM*2 + 1)
-				// TODO: Verify that this works.
-				if ((header.ines.chr_banks >> 2) > 24) {
-					// Sanity check: Too big???
-					chr_rom_size = 0xFFFFFFFF;
-				} else {
-					chr_rom_size = (1U << (header.ines.chr_banks >> 2)) *
-					               (((header.ines.chr_banks & 0x03) * 2) + 1);
-				}
-			}
+			chr_rom_size = calc_NES2_chr_rom_size(&header.ines);
 			break;
 
 		case NESPrivate::ROM_FORMAT_TNES:
@@ -415,7 +476,7 @@ unsigned int NESPrivate::get_chr_rom_size(void) const
 
 /**
  * Get the iNES mapper number.
- * @return iNES mapper number.
+ * @return iNES mapper number
  */
 int NESPrivate::get_iNES_mapper_number(void) const
 {
@@ -957,43 +1018,8 @@ int NES::isRomSupported_static(const DetectInfo *info)
 			} else {
 				// NES 2.0 has an alternate method for indicating PRG and CHR ROM sizes,
 				// so we need to check for that.
-				unsigned int prg_rom_size, chr_rom_size;
-
-				// PRG ROM size
-				if (likely((inesHeader->nes2.banks_hi & 0x0F) != 0x0F)) {
-					// Standard method
-					prg_rom_size = ((inesHeader->prg_banks |
-							((inesHeader->nes2.banks_hi & 0x0F) << 8))
-							* INES_PRG_BANK_SIZE);
-				} else {
-					// Alternate method: [EEEE EEMM] -> 2^E * (MM*2 + 1)
-					// TODO: Verify that this works.
-					if ((inesHeader->prg_banks >> 2) > 24) {
-						// Sanity check: Too big???
-						prg_rom_size = 0xFFFFFFFF;
-					} else {
-						prg_rom_size = (1U << (inesHeader->prg_banks >> 2)) *
-						               (((inesHeader->prg_banks & 0x03) * 2) + 1);
-					}
-				}
-
-				// CHR ROM size
-				if (likely((inesHeader->nes2.banks_hi & 0xF0) != 0xF0)) {
-					// Standard method
-					chr_rom_size = ((inesHeader->chr_banks |
-							((inesHeader->nes2.banks_hi & 0xF0) << 4))
-							* INES_CHR_BANK_SIZE);
-				} else {
-					// Alternate method: [EEEE EEMM] -> 2^E * (MM*2 + 1)
-					// TODO: Verify that this works.
-					if ((inesHeader->chr_banks >> 2) > 24) {
-						// Sanity check: Too big???
-						chr_rom_size = 0xFFFFFFFF;
-					} else {
-						chr_rom_size = (1U << (inesHeader->chr_banks >> 2)) *
-							(((inesHeader->chr_banks & 0x03) * 2) + 1);
-					}
-				}
+				const unsigned int prg_rom_size = NESPrivate::calc_NES2_prg_rom_size(inesHeader);
+				const unsigned int chr_rom_size = NESPrivate::calc_NES2_chr_rom_size(inesHeader);
 
 				const off64_t size = sizeof(INES_RomHeader) +
 					prg_rom_size + chr_rom_size;
