@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "config.librpbase.h"
 #include "AesCAPI_NG.hpp"
 
 // libwin32common
@@ -21,9 +22,9 @@
 #include <winternl.h>
 
 // Function pointer macro.
-#define DECL_FUNCPTR(f) __typeof__(f) * p##f
-#define DEF_FUNCPTR(f) __typeof__(f) * AesCAPI_NG_Private::p##f = nullptr
-#define LOAD_FUNCPTR(f) AesCAPI_NG_Private::p##f = (__typeof__(f)*)GetProcAddress(hBcrypt_dll.get(), #f)
+#define DECL_FUNCPTR(f) __typeof__(f) * pfn##f
+#define DEF_FUNCPTR(f) __typeof__(f) * pfn##f = nullptr
+#define LOAD_FUNCPTR(f) pfn##f = (__typeof__(f)*)GetProcAddress(hBcrypt_dll.get(), #f)
 
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define AesCAPI_NGPrivate AesCAPI_NG_Private
@@ -40,6 +41,112 @@ using std::unique_ptr;
 
 namespace LibRpBase {
 
+#ifdef RP_SUPPORTS_WINDOWS_XP
+namespace Private {
+
+/** bcrypt.dll handle **/
+static unique_ptr<HMODULE, HMODULE_deleter> hBcrypt_dll;
+static std::once_flag once_bcrypt;
+
+/** bcrypt.dll function pointers **/
+static DEF_FUNCPTR(BCryptOpenAlgorithmProvider);
+static DEF_FUNCPTR(BCryptGetProperty);
+static DEF_FUNCPTR(BCryptSetProperty);
+static DEF_FUNCPTR(BCryptCloseAlgorithmProvider);
+static DEF_FUNCPTR(BCryptGenerateSymmetricKey);
+static DEF_FUNCPTR(BCryptDecrypt);
+static DEF_FUNCPTR(BCryptDestroyKey);
+static DEF_FUNCPTR(BCryptEncrypt);
+
+/**
+ * Load bcrypt.dll and associated function pointers.
+ * Called by std::call_once().
+ *
+ * Check if hBcrypt_dll is nullptr afterwards.
+ */
+static void init_bcrypt(void)
+{
+	// Attempt to load bcrypt.dll.
+	hBcrypt_dll.reset(LoadLibraryEx(_T("bcrypt.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
+	if (!hBcrypt_dll) {
+		// bcrypt.dll not found.
+		return;
+	}
+
+	// Load the function pointers.
+	LOAD_FUNCPTR(BCryptOpenAlgorithmProvider);
+	LOAD_FUNCPTR(BCryptGetProperty);
+	LOAD_FUNCPTR(BCryptSetProperty);
+	LOAD_FUNCPTR(BCryptCloseAlgorithmProvider);
+	LOAD_FUNCPTR(BCryptGenerateSymmetricKey);
+	LOAD_FUNCPTR(BCryptDecrypt);
+	LOAD_FUNCPTR(BCryptDestroyKey);
+	LOAD_FUNCPTR(BCryptEncrypt);
+
+	// Make sure all of the function pointers are valid.
+	if (!pfnBCryptOpenAlgorithmProvider ||
+	    !pfnBCryptGetProperty ||
+	    !pfnBCryptSetProperty ||
+	    !pfnBCryptCloseAlgorithmProvider ||
+	    !pfnBCryptGenerateSymmetricKey ||
+	    !pfnBCryptDecrypt ||
+	    !pfnBCryptDestroyKey ||
+	    !pfnBCryptEncrypt)
+	{
+		// At least one function pointer is missing.
+		pfnBCryptOpenAlgorithmProvider = nullptr;
+		pfnBCryptGetProperty = nullptr;
+		pfnBCryptSetProperty = nullptr;
+		pfnBCryptCloseAlgorithmProvider = nullptr;
+		pfnBCryptGenerateSymmetricKey = nullptr;
+		pfnBCryptDecrypt = nullptr;
+		pfnBCryptDestroyKey = nullptr;
+		pfnBCryptEncrypt = nullptr;
+
+		hBcrypt_dll.reset();
+		return;
+	}
+
+	// bcrypt.dll has been loaded.
+}
+
+}
+
+#  define _BCryptOpenAlgorithmProvider(phAlgorithm, pszAlgId, pszImplementation, dwFlags) \
+	Private::pfnBCryptOpenAlgorithmProvider((phAlgorithm), (pszAlgId), (pszImplementation), (dwFlags))
+#  define _BCryptGetProperty(hObject, pszProperty, pbOutput, cbOutput, pcbResult, dwFlags) \
+	Private::pfnBCryptGetProperty((hObject), (pszProperty), (pbOutput), (cbOutput), (pcbResult), (dwFlags))
+#  define _BCryptSetProperty(hObject, pszProperty, pbInput, cbInput, dwFlags) \
+	Private::pfnBCryptSetProperty((hObject), (pszProperty), (pbInput), (cbInput), (dwFlags))
+#  define _BCryptCloseAlgorithmProvider(hAlgorithm, dwFlags) \
+	Private::pfnBCryptCloseAlgorithmProvider((hAlgorithm), (dwFlags))
+#  define _BCryptGenerateSymmetricKey(hAlgorithm, phKey, pbKeyObject, cbKeyObject, pbSecret, cbSecret, dwFlags) \
+	Private::pfnBCryptGenerateSymmetricKey((hAlgorithm), (phKey), (pbKeyObject), (cbKeyObject), (pbSecret), (cbSecret), (dwFlags))
+#  define _BCryptDecrypt(hKey, pInput, cbInput, pPaddingInfo, pbIV, cbIV, pbOutput, cbOutput, pcbResult, dwFlags) \
+	Private::pfnBCryptDecrypt((hKey), (pInput), (cbInput), (pPaddingInfo), (pbIV), (cbIV), (pbOutput), (cbOutput), (pcbResult), (dwFlags))
+#  define _BCryptDestroyKey(hKey) \
+	Private::pfnBCryptDestroyKey(hKey)
+#  define _BCryptEncrypt(hKey, pbInput, cbInput, pPaddingInfo, pbIV, cbIV, pbOutput, cbOutput, pcbResult, dwFlags) \
+	Private::pfnBCryptEncrypt((hKey), (pbInput), (cbInput), (pPaddingInfo), (pbIV), (cbIV), (pbOutput), (cbOutput), (pcbResult), (dwFlags))
+#else /* !RP_SUPPORTS_WINDOWS_XP */
+#  define _BCryptOpenAlgorithmProvider(phAlgorithm, pszAlgId, pszImplementation, dwFlags) \
+	BCryptOpenAlgorithmProvider((phAlgorithm), (pszAlgId), (pszImplementation), (dwFlags))
+#  define _BCryptGetProperty(hObject, pszProperty, pbOutput, cbOutput, pcbResult, dwFlags) \
+	BCryptGetProperty((hObject), (pszProperty), (pbOutput), (cbOutput), (pcbResult), (dwFlags))
+#  define _BCryptSetProperty(hObject, pszProperty, pbInput, cbInput, dwFlags) \
+	BCryptSetProperty((hObject), (pszProperty), (pbInput), (cbInput), (dwFlags))
+#  define _BCryptCloseAlgorithmProvider(hAlgorithm, dwFlags) \
+	BCryptCloseAlgorithmProvider((hAlgorithm), (dwFlags))
+#  define _BCryptGenerateSymmetricKey(hAlgorithm, phKey, pbKeyObject, cbKeyObject, pbSecret, cbSecret, dwFlags) \
+	BCryptGenerateSymmetricKey((hAlgorithm), (phKey), (pbKeyObject), (cbKeyObject), (pbSecret), (cbSecret), (dwFlags))
+#  define _BCryptDecrypt(hKey, pInput, cbInput, pPaddingInfo, pbIV, cbIV, pbOutput, cbOutput, pcbResult, dwFlags) \
+	BCryptDecrypt((hKey), (pInput), (cbInput), (pPaddingInfo), (pbIV), (cbIV), (pbOutput), (cbOutput), (pcbResult), (dwFlags))
+#  define _BCryptDestroyKey(hKey) \
+	BCryptDestroyKey(hKey)
+#  define _BCryptEncrypt(hKey, pbInput, cbInput, pPaddingInfo, pbIV, cbIV, pbOutput, cbOutput, pcbResult, dwFlags) \
+	BCryptEncrypt((hKey), (pbInput), (cbInput), (pPaddingInfo), (pbIV), (cbIV), (pbOutput), (cbOutput), (pcbResult), (dwFlags))
+#endif /* RP_SUPPORTS_WINDOWS_XP */
+
 class AesCAPI_NG_Private
 {
 public:
@@ -48,29 +155,6 @@ public:
 
 private:
 	RP_DISABLE_COPY(AesCAPI_NG_Private)
-
-public:
-	/**
-	 * Load bcrypt.dll and associated function pointers.
-	 * Called by std::call_once().
-	 *
-	 * Check if hBcrypt_dll is nullptr afterwards.
-	 */
-	static void load_bcrypt(void);
-
-	/** bcrypt.dll handle **/
-	static unique_ptr<HMODULE, HMODULE_deleter> hBcrypt_dll;
-	static std::once_flag bcrypt_once_flag;
-
-	/** bcrypt.dll function pointers **/
-	static DECL_FUNCPTR(BCryptOpenAlgorithmProvider);
-	static DECL_FUNCPTR(BCryptGetProperty);
-	static DECL_FUNCPTR(BCryptSetProperty);
-	static DECL_FUNCPTR(BCryptCloseAlgorithmProvider);
-	static DECL_FUNCPTR(BCryptGenerateSymmetricKey);
-	static DECL_FUNCPTR(BCryptDecrypt);
-	static DECL_FUNCPTR(BCryptDestroyKey);
-	static DECL_FUNCPTR(BCryptEncrypt);
 
 public:
 	// NOTE: While the provider is shared in AesCAPI,
@@ -100,20 +184,6 @@ public:
 
 /** AesCAPI_NG_Private **/
 
-/** bcrypt.dll handle **/
-unique_ptr<HMODULE, HMODULE_deleter> AesCAPI_NG_Private::hBcrypt_dll;
-std::once_flag AesCAPI_NG_Private::bcrypt_once_flag;
-
-/** bcrypt.dll function pointers **/
-DEF_FUNCPTR(BCryptOpenAlgorithmProvider);
-DEF_FUNCPTR(BCryptGetProperty);
-DEF_FUNCPTR(BCryptSetProperty);
-DEF_FUNCPTR(BCryptCloseAlgorithmProvider);
-DEF_FUNCPTR(BCryptGenerateSymmetricKey);
-DEF_FUNCPTR(BCryptDecrypt);
-DEF_FUNCPTR(BCryptDestroyKey);
-DEF_FUNCPTR(BCryptEncrypt);
-
 AesCAPI_NG_Private::AesCAPI_NG_Private()
 	: hAesAlg(nullptr)
 	, hKey(nullptr)
@@ -126,19 +196,21 @@ AesCAPI_NG_Private::AesCAPI_NG_Private()
 	key.fill(0);
 	iv.fill(0);
 
+#ifdef RP_SUPPORTS_WINDOWS_XP
 	// Attempt to load bcrypt.dll.
-	std::call_once(bcrypt_once_flag, load_bcrypt);
-	if (!hBcrypt_dll) {
+	std::call_once(Private::once_bcrypt, Private::init_bcrypt);
+	if (!Private::hBcrypt_dll) {
 		// Error loading bcrypt.dll.
 		return;
 	}
+#endif /* RP_SUPPORTS_WINDOWS_XP */
 
 	BCRYPT_ALG_HANDLE hAesAlg;
-	NTSTATUS status = pBCryptOpenAlgorithmProvider(
+	NTSTATUS status = _BCryptOpenAlgorithmProvider(
 		&hAesAlg, BCRYPT_AES_ALGORITHM, nullptr, 0);
 	if (NT_SUCCESS(status)) {
 		// Default to ECB chaining.
-		status = pBCryptSetProperty(
+		status = _BCryptSetProperty(
 				hAesAlg, 
 				BCRYPT_CHAINING_MODE, 
 				(PBYTE)BCRYPT_CHAIN_MODE_ECB,
@@ -148,75 +220,26 @@ AesCAPI_NG_Private::AesCAPI_NG_Private()
 			this->hAesAlg = hAesAlg;
 		} else {
 			// Error setting the chaining mode.
-			pBCryptCloseAlgorithmProvider(hAesAlg, 0);
+			_BCryptCloseAlgorithmProvider(hAesAlg, 0);
 		}
 	}
 }
 
 AesCAPI_NG_Private::~AesCAPI_NG_Private()
 {
-	if (hBcrypt_dll) {
+#ifdef RP_SUPPORTS_WINDOWS_XP
+	if (Private::hBcrypt_dll)
+#endif /* RP_SUPPORTS_WINDOWS_XP */
+	{
 		if (hKey) {
-			pBCryptDestroyKey(hKey);
+			_BCryptDestroyKey(hKey);
 		}
 		if (hAesAlg) {
-			pBCryptCloseAlgorithmProvider(hAesAlg, 0);
+			_BCryptCloseAlgorithmProvider(hAesAlg, 0);
 		}
 	}
 
 	free(pbKeyObject);
-}
-
-/*
- * Load bcrypt.dll and associated function pointers.
- * Called by std::call_once().
- *
- * Check if hBcrypt_dll is nullptr afterwards.
- */
-void AesCAPI_NG_Private::load_bcrypt(void)
-{
-	// Attempt to load bcrypt.dll.
-	hBcrypt_dll.reset(LoadLibraryEx(_T("bcrypt.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
-	if (!hBcrypt_dll) {
-		// bcrypt.dll not found.
-		return;
-	}
-
-	// Load the function pointers.
-	LOAD_FUNCPTR(BCryptOpenAlgorithmProvider);
-	LOAD_FUNCPTR(BCryptGetProperty);
-	LOAD_FUNCPTR(BCryptSetProperty);
-	LOAD_FUNCPTR(BCryptCloseAlgorithmProvider);
-	LOAD_FUNCPTR(BCryptGenerateSymmetricKey);
-	LOAD_FUNCPTR(BCryptDecrypt);
-	LOAD_FUNCPTR(BCryptDestroyKey);
-	LOAD_FUNCPTR(BCryptEncrypt);
-
-	// Make sure all of the function pointers are valid.
-	if (!AesCAPI_NG_Private::pBCryptOpenAlgorithmProvider ||
-	    !AesCAPI_NG_Private::pBCryptGetProperty ||
-	    !AesCAPI_NG_Private::pBCryptSetProperty ||
-	    !AesCAPI_NG_Private::pBCryptCloseAlgorithmProvider ||
-	    !AesCAPI_NG_Private::pBCryptGenerateSymmetricKey ||
-	    !AesCAPI_NG_Private::pBCryptDecrypt ||
-	    !AesCAPI_NG_Private::pBCryptDestroyKey ||
-	    !AesCAPI_NG_Private::pBCryptEncrypt)
-	{
-		// At least one function pointer is missing.
-		AesCAPI_NG_Private::pBCryptOpenAlgorithmProvider = nullptr;
-		AesCAPI_NG_Private::pBCryptGetProperty = nullptr;
-		AesCAPI_NG_Private::pBCryptSetProperty = nullptr;
-		AesCAPI_NG_Private::pBCryptCloseAlgorithmProvider = nullptr;
-		AesCAPI_NG_Private::pBCryptGenerateSymmetricKey = nullptr;
-		AesCAPI_NG_Private::pBCryptDecrypt = nullptr;
-		AesCAPI_NG_Private::pBCryptDestroyKey = nullptr;
-		AesCAPI_NG_Private::pBCryptEncrypt = nullptr;
-
-		hBcrypt_dll.reset();
-		return;
-	}
-
-	// bcrypt.dll has been loaded.
 }
 
 /** AesCAPI_NG **/
@@ -240,21 +263,28 @@ AesCAPI_NG::~AesCAPI_NG()
  */
 bool AesCAPI_NG::isUsable(void)
 {
-	if (AesCAPI_NG_Private::hBcrypt_dll) {
+#ifdef RP_SUPPORTS_WINDOWS_XP
+	if (Private::hBcrypt_dll) {
 		// bcrypt.dll is loaded.
 		return true;
 	}
 
-	// NOTE: We can't call load_bcrypt() due to reference counting,
+	// NOTE: We can't call init_bcrypt() due to reference counting,
 	// so assume it works as long as bcrypt.dll is present and
 	// BCryptOpenAlgorithmProvider exists.
+	// NOTE 2: LOAD_LIBRARY_SEARCH_SYSTEM32 requires Windows Vista or later,
+	// which works for us because bcrypt.dll was first added in Windows Vista.
 	bool bRet = false;
-	HMODULE hBcrypt_dll = LoadLibraryEx(_T("bcrypt.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
-	if (hBcrypt_dll) {
-		bRet = (GetProcAddress(hBcrypt_dll, "BCryptOpenAlgorithmProvider") != nullptr);
-		FreeLibrary(hBcrypt_dll);
+	HMODULE tmp_hBcrypt_dll = LoadLibraryEx(_T("bcrypt.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+	if (tmp_hBcrypt_dll) {
+		bRet = (GetProcAddress(tmp_hBcrypt_dll, "BCryptOpenAlgorithmProvider") != nullptr);
+		FreeLibrary(tmp_hBcrypt_dll);
 	}
 	return bRet;
+#else /* !RP_SUPPORTS_WINDOWS_XP */
+	// Compiled for Vista or later. bcrypt.dll is *always* loaded.
+	return true;
+#endif /* RP_SUPPORTS_WINDOWS_XP */
 }
 
 /**
@@ -273,8 +303,12 @@ const char *AesCAPI_NG::name(void) const
 bool AesCAPI_NG::isInit(void) const
 {
 	RP_D(const AesCAPI_NG);
-	return (d->hBcrypt_dll != nullptr &&
-		d->hAesAlg != nullptr);
+#ifdef RP_SUPPORTS_WINDOWS_XP
+	if (!Private::hBcrypt_dll) {
+		return false;
+	}
+#endif /* RP_SUPPORTS_WINDOWS_XP */
+	return (d->hAesAlg != nullptr);
 }
 
 /**
@@ -293,7 +327,14 @@ int AesCAPI_NG::setKey(const uint8_t *RESTRICT pKey, size_t size)
 	if (!pKey) {
 		// No key specified.
 		return -EINVAL;
-	} else if (!d->hBcrypt_dll || !d->hAesAlg) {
+	}
+#ifdef RP_SUPPORTS_WINDOWS_XP
+	if (!Private::hBcrypt_dll) {
+		// bcrypt.dll is not available.
+		return -EBADF;
+	}
+#endif /* RP_SUPPORTS_WINDOWS_XP */
+	if (!d->hAesAlg) {
 		// Algorithm is not available.
 		return -EBADF;
 	}
@@ -308,7 +349,7 @@ int AesCAPI_NG::setKey(const uint8_t *RESTRICT pKey, size_t size)
 	// Calculate the buffer size for the key object.
 	ULONG cbKeyObject;
 	ULONG cbData;
-	NTSTATUS status = d->pBCryptGetProperty(
+	NTSTATUS status = _BCryptGetProperty(
 		d->hAesAlg,
 		BCRYPT_OBJECT_LENGTH,
 		(PBYTE)&cbKeyObject, sizeof(cbKeyObject),
@@ -326,7 +367,7 @@ int AesCAPI_NG::setKey(const uint8_t *RESTRICT pKey, size_t size)
 
 	// Generate the key.
 	BCRYPT_KEY_HANDLE hKey;
-	status = d->pBCryptGenerateSymmetricKey(
+	status = _BCryptGenerateSymmetricKey(
 		d->hAesAlg,
 		&hKey,
 		pbKeyObject, cbKeyObject,
@@ -346,7 +387,7 @@ int AesCAPI_NG::setKey(const uint8_t *RESTRICT pKey, size_t size)
 	d->cbKeyObject = cbKeyObject;
 	if (hOldKey != nullptr) {
 		// Destroy the old key.
-		d->pBCryptDestroyKey(hOldKey);
+		_BCryptDestroyKey(hOldKey);
 	}
 	// Delete the old key blob.
 	free(pbOldKeyObject);
@@ -369,7 +410,13 @@ int AesCAPI_NG::setKey(const uint8_t *RESTRICT pKey, size_t size)
 int AesCAPI_NG::setChainingMode(ChainingMode mode)
 {
 	RP_D(AesCAPI_NG);
-	if (!d->hBcrypt_dll || !d->hAesAlg) {
+#ifdef RP_SUPPORTS_WINDOWS_XP
+	if (!Private::hBcrypt_dll) {
+		// bcrypt.dll is not available.
+		return -EBADF;
+	}
+#endif /* RP_SUPPORTS_WINDOWS_XP */
+	if (!d->hAesAlg) {
 		// Algorithm is not available.
 		return -EBADF;
 	} else if (d->chainingMode == mode) {
@@ -394,7 +441,7 @@ int AesCAPI_NG::setChainingMode(ChainingMode mode)
 	}
 
 	// Set the cipher chaining mode on the algorithm.
-	NTSTATUS status = d->pBCryptSetProperty(
+	NTSTATUS status = _BCryptSetProperty(
 				d->hAesAlg, 
                                 BCRYPT_CHAINING_MODE, 
                                 (PBYTE)szMode, cbMode, 0);
@@ -423,7 +470,14 @@ int AesCAPI_NG::setIV(const uint8_t *RESTRICT pIV, size_t size)
 	RP_D(AesCAPI_NG);
 	if (!pIV || size != 16) {
 		return -EINVAL;
-	} else if (!d->hBcrypt_dll || !d->hAesAlg) {
+	}
+#ifdef RP_SUPPORTS_WINDOWS_XP
+	if (!Private::hBcrypt_dll) {
+		// bcrypt.dll is not available.
+		return -EBADF;
+	}
+#endif /* #ifdef RP_SUPPORTS_WINDOWS_XP */
+	if (!d->hAesAlg) {
 		// Algorithm is not available.
 		return -EBADF;
 	} else if (d->chainingMode < ChainingMode::CBC || d->chainingMode >= ChainingMode::Max) {
@@ -434,7 +488,7 @@ int AesCAPI_NG::setIV(const uint8_t *RESTRICT pIV, size_t size)
 	// Verify the block length.
 	ULONG cbBlockLen;
 	ULONG cbData;
-	NTSTATUS status = d->pBCryptGetProperty(
+	NTSTATUS status = _BCryptGetProperty(
 				d->hAesAlg, 
 				BCRYPT_BLOCK_LENGTH, 
 				(PBYTE)&cbBlockLen, sizeof(DWORD),
@@ -467,7 +521,13 @@ int AesCAPI_NG::setIV(const uint8_t *RESTRICT pIV, size_t size)
 size_t AesCAPI_NG::decrypt(uint8_t *RESTRICT pData, size_t size)
 {
 	RP_D(AesCAPI_NG);
-	if (!d->hBcrypt_dll || !d->hAesAlg || !d->hKey) {
+#ifdef RP_SUPPORTS_WINDOWS_XP
+	if (!Private::hBcrypt_dll) {
+		// bcrypt.dll is not available.
+		return 0;
+	}
+#endif /* RP_SUPPORTS_WINDOWS_XP */
+	if (!d->hAesAlg || !d->hKey) {
 		// Algorithm is not available,
 		// or the key hasn't been set.
 		return 0;
@@ -476,7 +536,7 @@ size_t AesCAPI_NG::decrypt(uint8_t *RESTRICT pData, size_t size)
 	// Get the block length.
 	ULONG cbBlockLen;
 	ULONG cbData;
-	NTSTATUS status = d->pBCryptGetProperty(
+	NTSTATUS status = _BCryptGetProperty(
 				d->hAesAlg, 
 				BCRYPT_BLOCK_LENGTH, 
 				(PBYTE)&cbBlockLen, sizeof(DWORD),
@@ -501,7 +561,7 @@ size_t AesCAPI_NG::decrypt(uint8_t *RESTRICT pData, size_t size)
 	ULONG cbResult;
 	switch (d->chainingMode) {
 		case ChainingMode::ECB:
-			status = d->pBCryptDecrypt(d->hKey,
+			status = _BCryptDecrypt(d->hKey,
 						pData, (ULONG)size,
 						nullptr,
 						nullptr, 0,
@@ -510,7 +570,7 @@ size_t AesCAPI_NG::decrypt(uint8_t *RESTRICT pData, size_t size)
 			break;
 
 		case ChainingMode::CBC:
-			status = d->pBCryptDecrypt(d->hKey,
+			status = _BCryptDecrypt(d->hKey,
 						pData, (ULONG)size,
 						nullptr,
 						d->iv.data(), (ULONG)d->iv.size(),
@@ -538,7 +598,7 @@ size_t AesCAPI_NG::decrypt(uint8_t *RESTRICT pData, size_t size)
 			for (; size > 0; size -= 16, ctr_data++) {
 				// Encrypt the current counter.
 				memcpy(ctr_crypt.u8, d->iv.data(), sizeof(ctr_crypt.u8));
-				status = d->pBCryptEncrypt(d->hKey,
+				status = _BCryptEncrypt(d->hKey,
 						ctr_crypt.u8, sizeof(ctr_crypt.u8),
 						nullptr,
 						nullptr, 0,
