@@ -25,9 +25,11 @@ namespace LibRomData { namespace DMGSpecialCases {
 // Array *must* be sorted by title, then publisher, then flags value.
 // NOTE: An empty publisher value indicates the publisher isn't relevant.
 
-#define FLAG_NONE	0
-#define FLAG_JP		(1U << 0)
-#define FLAG_CGB	(1U << 1)
+enum ATTR_FLAG_ENUM Flags : uint8_t {
+	FLAG_NONE	= 0,
+	FLAG_JP		= (1U << 0),
+	FLAG_CGB	= (1U << 1),
+};
 
 struct DmgSpecialCase_t {
 	char title[17];

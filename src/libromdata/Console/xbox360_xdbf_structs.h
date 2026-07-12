@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * xbox360_xdbf_structs.h: Microsoft Xbox 360 game resource structures.    *
  *                                                                         *
- * Copyright (c) 2019-2025 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -242,7 +242,7 @@ ASSERT_STRUCT(XDBF_XACH_Entry_Header_GPD, 0x1C);
 /**
  * XDBF: XACH - Achievements flags.
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	// Achievement type
 	XDBF_XACH_TYPE_COMPLETION	= 1U,
 	XDBF_XACH_TYPE_LEVELING		= 2U,

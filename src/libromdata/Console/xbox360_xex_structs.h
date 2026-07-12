@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * xbox360_xex_structs.h: Microsoft Xbox 360 executable data structures.   *
  *                                                                         *
- * Copyright (c) 2019-2025 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -39,7 +39,7 @@ ASSERT_STRUCT(XEX2_Header, 6*sizeof(uint32_t));
 /**
  * XEX2: Module flags
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	XEX2_MODULE_FLAG_TITLE			= (1U << 0),
 	XEX2_MODULE_FLAG_EXPORTS_TO_TITLE	= (1U << 1),
 	XEX2_MODULE_FLAG_SYSTEM_DEBUGGER	= (1U << 2),
@@ -100,7 +100,7 @@ ASSERT_STRUCT(XEX2_Security_Info, 0x184);
 /**
  * XEX2: Image flags
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	XEX2_IMAGE_FLAG_MANUFACTURING_UTILITY		= (1U <<  1),
 	XEX2_IMAGE_FLAG_MANUFACTURING_SUPPORT_TOOLS	= (1U <<  2),
 	XEX2_IMAGE_FLAG_XGD2_MEDIA_ONLY			= (1U <<  3),	// Must be on a retail disc.
@@ -125,7 +125,7 @@ typedef enum {
  * XEX2: Media types
  * NOTE: Might be ignored if XEX2_IMAGE_FLAG_XGD2_MEDIA_ONLY is set.
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	XEX2_MEDIA_TYPE_HARDDISK		= (1U <<  0),
 	XEX2_MEDIA_TYPE_XGD1			= (1U <<  1),
 	XEX2_MEDIA_TYPE_DVD_CD			= (1U <<  2),
@@ -391,7 +391,7 @@ ASSERT_STRUCT(XEX2_TLS_Info, 4*sizeof(uint32_t));
 /**
  * XEX2: System flags (0x30000)
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	XEX2_SYSTEM_FLAG_NO_FORCED_REBOOT			= (1U <<  0),
 	XEX2_SYSTEM_FLAG_FOREGROUND_TASKS			= (1U <<  1),
 	XEX2_SYSTEM_FLAG_NO_ODD_MAPPING				= (1U <<  2),

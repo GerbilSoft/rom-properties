@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * cbmdos_structs.h: Commodore DOS floppy disk structs.                    *
  *                                                                         *
- * Copyright (c) 2019-2025 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -85,7 +85,7 @@ ASSERT_STRUCT(cbmdos_C1541_BAM_t, CBMDOS_SECTOR_SIZE);
 /**
  * CBMDOS: C1571 double-sided flag
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	CBMDOS_C1571_SingleSided = (0U << 7),
 	CBMDOS_C1571_DoubleSided = (1U << 7),
 

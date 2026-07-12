@@ -66,7 +66,7 @@ public:
 
 public:
 	// Which headers do we have loaded?
-	enum DC_LoadedHeaders {
+	enum ATTR_FLAG_ENUM DC_LoadedHeaders {
 		DC_HAVE_UNKNOWN = 0,
 
 		// VMS data. Present in .VMS and .DCI files.

@@ -8,11 +8,13 @@
 
 #pragma once
 
+#include "compiler-attrs.h"
+
 namespace LibRomData { namespace MegaDriveRegions {
 
 // Region code bitfields
 // This corresponds to the later hexadecimal region codes.
-enum MD_RegionCode {
+enum ATTR_FLAG_ENUM MD_RegionCode {
 	MD_REGION_JAPAN		= (1U << 0),
 	MD_REGION_ASIA		= (1U << 1),
 	MD_REGION_USA		= (1U << 2),

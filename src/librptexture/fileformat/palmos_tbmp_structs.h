@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * palmos_tbmp_structs.h: Palm OS Tbmp data structures.                    *
  *                                                                         *
- * Copyright (c) 2018-2025 by David Korth.                                 *
+ * Copyright (c) 2018-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -95,7 +95,7 @@ ASSERT_STRUCT(PalmOS_BitmapType_t, 0x18);
  *
  * NOTE: M68K C bitfields start at the MSB.
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	PalmOS_BitmapType_Flags_compressed		= (1U << 15),
 	PalmOS_BitmapType_Flags_hasColorTable		= (1U << 14),
 	PalmOS_BitmapType_Flags_hasTransparency		= (1U << 13),

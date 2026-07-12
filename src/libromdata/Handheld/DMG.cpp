@@ -55,14 +55,14 @@ public:
 	/** RomFields **/
 
 	// System. (RFT_BITFIELD)
-	enum DMG_System : uint8_t {
+	enum ATTR_FLAG_ENUM DMG_System : uint8_t {
 		DMG_SYSTEM_DMG		= (1U << 0),
 		DMG_SYSTEM_SGB		= (1U << 1),
 		DMG_SYSTEM_CGB		= (1U << 2),
 	};
 
 	// Cartridge hardware features. (RFT_BITFIELD)
-	enum DMG_Feature : uint8_t  {
+	enum ATTR_FLAG_ENUM DMG_Feature : uint8_t  {
 		DMG_FEATURE_RAM		= (1U << 0),
 		DMG_FEATURE_BATTERY	= (1U << 1),
 		DMG_FEATURE_TIMER	= (1U << 2),

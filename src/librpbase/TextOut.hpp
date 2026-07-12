@@ -9,7 +9,8 @@
 
 #pragma once
 
-#include "dll-macros.h"
+#include "compiler-attrs.h"	// for ATTR_FLAG_ENUM
+#include "dll-macros.h"		// for RP_LIBROMDATA_PUBLIC
 
 // C includes (C++ namespace)
 #include <cstdint>
@@ -22,7 +23,7 @@ namespace LibRpBase {
 
 class RomData;
 
-enum OutputFlags {
+enum ATTR_FLAG_ENUM OutputFlags {
 	OF_SkipInternalImages		= (1U << 0),
 	OF_SkipListDataMoreThan10	= (1U << 1),	// ROMOutput only
 	OF_JSON_NoPrettyPrint		= (1U << 2),	// JSONROMOutput only

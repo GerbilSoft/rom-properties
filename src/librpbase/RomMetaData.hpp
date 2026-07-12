@@ -142,7 +142,7 @@ class RomMetaData
 public:
 	// String format flags. (Property::String)
 	// NOTE: These have the same values as RomFields::StringFormat.
-	enum StringFormat {
+	enum ATTR_FLAG_ENUM StringFormat {
 		// Trim spaces from the end of strings.
 		STRF_TRIM_END	= (1U << 3),
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * gtest_init.hpp: Google Test initialization.                             *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,6 +10,8 @@
 
 #include "config.librpsecure.h"
 #include "gtest/gtest.h"
+
+#include "compiler-attrs.h"
 #include "tcharx.h"
 
 #ifdef __cplusplus
@@ -24,7 +26,7 @@ extern "C" {
 extern const unsigned int rp_gtest_syscall_set;
 
 // Syscall sets
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	RP_GTEST_SYSCALL_SET_GTEST_DEATH_TEST	= (1U << 0),
 	RP_GTEST_SYSCALL_SET_QT			= (1U << 1),
 	RP_GTEST_SYSCALL_SET_GTK		= (1U << 2),

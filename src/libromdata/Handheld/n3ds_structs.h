@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * n3ds_structs.h: Nintendo 3DS data structures.                           *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -74,7 +74,7 @@ typedef enum {
 /**
  * Region code bits.
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	N3DS_REGION_JAPAN	= (1U << 0),
 	N3DS_REGION_USA		= (1U << 1),
 	N3DS_REGION_EUROPE	= (1U << 2),
@@ -87,7 +87,7 @@ typedef enum {
 /**
  * Flag bits.
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	N3DS_FLAG_VISIBLE		= (1U <<  0),
 	N3DS_FLAG_AUTOBOOT		= (1U <<  1),
 	N3DS_FLAG_USE_3D		= (1U <<  2),
@@ -454,7 +454,7 @@ typedef enum {
 /**
  * NCCH content type.
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	N3DS_NCCH_CONTENT_TYPE_Data		= 0x01,
 	N3DS_NCCH_CONTENT_TYPE_Executable	= 0x02,
 	N3DS_NCCH_CONTENT_TYPE_SystemUpdate	= 0x04,
@@ -466,7 +466,7 @@ typedef enum {
 /**
  * NCCH bit masks.
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	N3DS_NCCH_BIT_MASK_FixedCryptoKey	= 0x01,
 	N3DS_NCCH_BIT_MASK_NoMountRomFS		= 0x02,
 	N3DS_NCCH_BIT_MASK_NoCrypto		= 0x04,
@@ -609,7 +609,7 @@ ASSERT_STRUCT(N3DS_Content_Chunk_Record_t, 0x30);
  * Nintendo 3DS: Content Chunk type flags.
  * Reference: https://3dbrew.org/wiki/TMD#Content_Type_flags
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	N3DS_CONTENT_CHUNK_ENCRYPTED	= 1,
 	N3DS_CONTENT_CHUNK_DISC		= 2,
 	N3DS_CONTENT_CHUNK_CFM		= 4,
@@ -676,7 +676,7 @@ ASSERT_STRUCT(N3DS_NCCH_ExHeader_SCI_t, 0x200);
 /**
  * NCCH Extended Header: SCI flags.
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	N3DS_NCCH_EXHEADER_SCI_CompressExefsCode	= (1U << 0),
 	N3DS_NCCH_EXHEADER_SCI_SDApplication		= (1U << 1),
 } N3DS_NCCH_ExHeader_SCI_Flags;
@@ -749,18 +749,18 @@ typedef struct _N3DS_NCCH_ExHeader_ACI_t {
 ASSERT_STRUCT(N3DS_NCCH_ExHeader_ACI_t, 0x200);
 
 /**
- * NCCH Extended Header: ACI New3DS CPU mode. (flags[0])
+ * NCCH Extended Header: ACI New3DS CPU mode (flags[0])
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	N3DS_NCCH_EXHEADER_ACI_FLAG0_EnableL2Cache	= (1U << 0),	// Ignored.
 	N3DS_NCCH_EXHEADER_ACI_FLAG0_cpuspeed_804MHz	= (1U << 1),
 } N3DS_NCCH_ExHeader_ACI_Flag_New3DS_CPUMode;
 
 /**
- * NCCH Extended Header: ACI New3DS System Mode. (flags[1])
+ * NCCH Extended Header: ACI New3DS System Mode (flags[1])
  */
-typedef enum {
-	// New3DS system modes.
+typedef enum ATTR_FLAG_ENUM {
+	// New3DS system modes
 	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Legacy	= (  0U << 0),	// 64 MB
 	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Prod	= (  1U << 0),	// 124 MB
 	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev1	= (  2U << 0),	// 178 MB
@@ -769,13 +769,13 @@ typedef enum {
 } N3DS_NCCH_ExHeader_ACI_Flag_New3DS_SysMode;
 
 /**
- * NCCH Extended Header: ACI System Mode. (flags[2])
+ * NCCH Extended Header: ACI System Mode (flags[2])
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	N3DS_NCCH_EXHEADER_ACI_FLAG2_IdealCPU_Mask		= (2U << 0),
 	N3DS_NCCH_EXHEADER_ACI_FLAG2_Affinity_Mask		= (2U << 2),
 
-	// Old3DS system modes.
+	// Old3DS system modes
 	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Prod	= (  0U << 4),	// 64 MB
 	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev1	= (  2U << 4),	// 96 MB
 	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev2	= (  3U << 4),	// 80 MB
@@ -785,9 +785,9 @@ typedef enum {
 } N3DS_NCCH_ExHeader_ACI_Flag_SysMode;
 
 /**
- * NCCH Extended Header: ACI resource limit category.
+ * NCCH Extended Header: ACI resource limit category
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_APPLICATION	= 0,
 	N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_SYS_APPLET	= 1,
 	N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_LIB_APPLET	= 2,
@@ -795,9 +795,9 @@ typedef enum {
 } N3DS_NCCH_ExHeader_ACI_ResLimit_Category;
 
 /**
- * NCCH Extended Header: ACI filesystem access info.
+ * NCCH Extended Header: ACI filesystem access info
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategorySystemApplication	= (1U <<  0),
 	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategoryHardwareCheck		= (1U <<  1),
 	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategoryFilesystemTool		= (1U <<  2),
@@ -823,17 +823,17 @@ typedef enum {
 } N3DS_NCCH_ExHeader_ACI_FsAccess;
 
 /**
- * NCCH Extended Header: ACI other attributes.
+ * NCCH Extended Header: ACI other attributes
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	N3DS_NCCH_EXHEADER_ACI_OtherAttr_NoRomFS			= (1U << 0),
 	N3DS_NCCH_EXHEADER_ACI_OtherAttr_ExtendedSavedataAccess		= (1U << 1),
 } N3DS_NCCH_ExHeader_ACI_OtherAttr;
 
 /**
- * NCCH Extended Header: I/O access control. (ARM9)
+ * NCCH Extended Header: I/O access control (ARM9)
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNand		= (1U << 0),
 	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNandRoWrite	= (1U << 1),
 	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountTwln		= (1U << 2),

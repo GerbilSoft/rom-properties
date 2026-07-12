@@ -8,8 +8,8 @@
 
 #pragma once
 
-// for RP_C_API
-#include "dll-macros.h"
+#include "compiler-attrs.h"	// for ATTR_FLAG_ENUM
+#include "dll-macros.h"		// for RP_C_API
 
 /**
  * NOTE: TCreateThumbnail.cpp MUST be #included by a file in
@@ -42,7 +42,7 @@ typedef enum {
 /**
  * rp_create_thumbnail2() flags
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	RPCT_FLAG_NO_XDG_THUMBNAIL_METADATA	= (1U << 0),	/*< Don't add XDG thumbnail metadata */
 
 	RPCT_FLAG_VALID_MASK			= 0x00000001,

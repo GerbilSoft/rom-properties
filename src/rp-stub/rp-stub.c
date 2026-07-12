@@ -52,7 +52,7 @@ static bool is_debug = false;
 /**
  * rp_create_thumbnail2() flags
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	RPCT_FLAG_NO_XDG_THUMBNAIL_METADATA	= (1U << 0),	/*< Don't add XDG thumbnail metadata */
 } RpCreateThumbnailFlags;
 

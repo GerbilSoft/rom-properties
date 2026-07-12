@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * iso9660.h: ISO-9660 structs for CD-ROM images.                          *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -150,7 +150,7 @@ typedef struct RP_PACKED _ISO_DirEntry {
 ASSERT_STRUCT(ISO_DirEntry, 33);
 #pragma pack()
 
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	ISO_FLAG_HIDDEN		= (1U << 0),	// File is hidden.
 	ISO_FLAG_DIRECTORY	= (1U << 1),	// File is a subdirectory.
 	ISO_FLAG_ASSOCIATED	= (1U << 2),	// "Associated" file.

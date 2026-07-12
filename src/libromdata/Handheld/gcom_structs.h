@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * gcom_structs.h: Tiger game.com data structures.                         *
  *                                                                         *
- * Copyright (c) 2018-2025 by David Korth.                                 *
+ * Copyright (c) 2018-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -80,7 +80,7 @@ ASSERT_STRUCT(Gcom_RomHeader, 32);
 /**
  * game.com: Flags
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	GCOM_FLAG_HAS_ICON	= (1U << 1),	// Icon is present
 	GCOM_FLAG_ICON_RLE	= (1U << 3),	// Icon is RLE-compressed
 } Gcom_Flags_e;

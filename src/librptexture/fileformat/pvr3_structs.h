@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * pvr3_structs.h: PowerVR 3.0.0 texture format data structures.           *
  *                                                                         *
- * Copyright (c) 2019-2025 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -62,7 +62,7 @@ ASSERT_STRUCT(PowerVR3_Header, 52);
 /**
  * PowerVR3 flags
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	PVR3_FLAG_COMPRESSED	= (1U << 0),	// File is compressed.
 	PVR3_FLAG_PREMULTIPLIED	= (1U << 1),	// Pre-multiplied alpha.
 } PowerVR3_Flags_t;
@@ -232,7 +232,7 @@ ASSERT_STRUCT(PowerVR_Legacy_Header, PVR2_HEADER_SIZE);
 /**
  * PowerVR legacy header (v1 and v2): Flags
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	PVR_LEGACY_FLAG_MIPMAP		= (1U <<  8),
 	PVR_LEGACY_FLAG_BUMPMAP		= (1U << 10),
 	PVR_LEGACY_FLAG_CUBEMAP		= (1U << 12),
@@ -417,7 +417,7 @@ typedef enum {
 	// Number of pixel types, no point iterating beyond this.
 	NumPixelTypes,
 
-	// Error type.
+	// Error type
 	InvalidType = 0xffffffff
 } PowerVR_Legacy_Pixel_Format_e;
 

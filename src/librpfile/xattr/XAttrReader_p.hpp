@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * XAttrReader_p.hpp: Extended Attribute reader (PRIVATE CLASS)            *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -107,7 +107,7 @@ public:
 
 	int lastError;
 
-	enum class AttrBit : uint8_t {
+	enum class ATTR_FLAG_ENUM AttrBit : uint8_t {
 		Ext2Attributes	= (1U << 0),
 		XfsAttributes	= (1U << 1),
 		DosAttributes	= (1U << 2),

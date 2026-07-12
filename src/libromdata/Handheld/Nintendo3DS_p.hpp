@@ -74,7 +74,7 @@ public:
 
 public:
 	// What stuff do we have?
-	enum HeadersPresent {
+	enum ATTR_FLAG_ENUM HeadersPresent {
 		HEADER_NONE	= 0,
 
 		// The following headers are not exclusive,

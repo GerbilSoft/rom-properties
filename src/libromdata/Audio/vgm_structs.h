@@ -211,7 +211,7 @@ typedef enum {
  * VGM 1.51: SN76489 flags.
  * NOTE: This is a bitfield.
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	VGM_FLAG_SN76489_FREQ0_0x400	= (1U << 0),	// Frequency 0 is 0x400
 	VGM_FLAG_SN76489_OUTPUT_NEGATE	= (1U << 1),	// Negate output
 	VGM_FLAG_SN76489_STEREO		= (1U << 2),	// Stereo enable (0 == enabled)
@@ -237,7 +237,7 @@ typedef enum {
  * Default is 0x01.
  * NOTE: This is a bitfield.
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	VGM_AY8910_FLAG_LEGACY_OUTPUT	= (1U << 0),
 	VGM_AY8910_FLAG_SINGLE_OUTPUT	= (1U << 1),
 	VGM_AY8910_FLAG_DISCRETE_OUTPUT	= (1U << 2),
@@ -249,7 +249,7 @@ typedef enum {
  * Default is 0x00.
  * NOTE: This is a bitfield.
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	VGM_OKIM6258_FLAG_CLKDIV_MASK	= 3,	// Clock divider mask.
 	VGM_OKIM6258_FLAG_CLKDIV_1024	= 0,
 	VGM_OKIM6258_FLAG_CLKDIV_768	= 1,
@@ -264,7 +264,7 @@ typedef enum {
  * Default is 0x01.
  * NOTE: This is a bitfield.
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	VGM_K054539_FLAG_REVERSE_STEREO		= (1U << 0),	// Reverse stereo. (1=ON; 0=OFF)
 	VGM_K054539_FLAG_DISABLE_REVERB		= (1U << 1),	// Disable reverb.
 	VGM_K054539_FLAG_UPDATE_AT_KEY_ON	= (1U << 2),	// Update at KeyOn.
@@ -273,7 +273,7 @@ typedef enum {
 /**
  * VGM 1.61: C140 chip type.
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	VGM_C140_TYPE_NAMCO_SYSTEM_2	= 0x00,		// C140, Namco System 2
 	VGM_C140_TYPE_NAMCO_SYSTEM_21	= 0x01,		// C140, Namco System 21
 	VGM_C140_TYPE_NAMCO_C219	= 0x02,		// C219, Namco NA-1/NA-2

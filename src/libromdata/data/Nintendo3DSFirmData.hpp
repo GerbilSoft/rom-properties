@@ -9,11 +9,12 @@
 #pragma once
 
 #include <stdint.h>
+#include "compiler-attrs.h"
 
 namespace LibRomData { namespace Nintendo3DSFirmData {
 
 // Flags
-enum Flags : uint8_t {
+enum ATTR_FLAG_ENUM Flags : uint8_t {
 	FLAG_New3DS	= (1U << 0),	// for New 3DS
 	FLAG_Devel	= (1U << 1),	// devkit version
 	FLAG_SafeMode	= (1U << 2),	// safe mode only

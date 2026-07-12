@@ -120,7 +120,7 @@ public:
 	void parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) const;
 
 public:
-	enum DCRegionCode {
+	enum ATTR_FLAG_ENUM DCRegionCode {
 		DC_REGION_JAPAN		= (1U << 0),
 		DC_REGION_USA		= (1U << 1),
 		DC_REGION_EUROPE	= (1U << 2),

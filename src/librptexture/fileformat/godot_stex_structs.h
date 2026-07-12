@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * stex_structs.h: Godot STEX texture format data structures.              *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -78,7 +78,7 @@ ASSERT_STRUCT(STEX_Embed_Header, 2*sizeof(uint32_t));
 /**
  * Godot STEX: Texture flags
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	STEX_FLAG_MIPMAPS		= (1U <<  0),	// Enable automatic mipmap generation
 	STEX_FLAG_REPEAT		= (1U <<  1),	// Repeate texture (Tiling); otherwise Clamping
 	STEX_FLAG_FILTER		= (1U <<  2),	// Create texture with linear (or available) filter

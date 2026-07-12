@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_PVRTC.hpp: Image decoding functions: PVRTC                 *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,7 +15,7 @@ namespace LibRpTexture { namespace ImageDecoder {
 #ifdef ENABLE_PVRTC
 /* PVRTC */
 
-enum PVRTC_Mode_e {
+enum ATTR_FLAG_ENUM PVRTC_Mode_e {
 	// bpp
 	PVRTC_4BPP		= (0U << 0),
 	PVRTC_2BPP		= (1U << 0),

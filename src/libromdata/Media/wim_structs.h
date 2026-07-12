@@ -3,7 +3,7 @@
  * wim_structs.h: Microsoft WIM structs                                    *
  *                                                                         *
  * Copyright (c) 2023 by ecumber.                                          *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -53,7 +53,7 @@ typedef enum {
 	Wim_Max
 } WIM_Version_Type;
 
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	header_reserved		= (1U << 0),
 	has_compression		= (1U << 1),
 	read_only		= (1U << 2),
@@ -64,7 +64,7 @@ typedef enum {
 	rp_fix			= (1U << 7),
 } WIM_Flags;
 
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	compress_reserved	= (1U << 16),
 	compress_xpress		= (1U << 17),
 	compress_lzx		= (1U << 18),

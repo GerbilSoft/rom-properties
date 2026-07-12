@@ -47,20 +47,20 @@ public:
 	/** RomFields **/
 
 	// Hardware type (RFT_BITFIELD)
-	enum NDS_HWType {
+	enum ATTR_FLAG_ENUM NDS_HWType {
 		DS_HW_DS	= (1U << 0),
 		DS_HW_DSi	= (1U << 1),
 	};
 
 	// DS region (RFT_BITFIELD)
-	enum NDS_Region {
+	enum ATTR_FLAG_ENUM NDS_Region {
 		NDS_REGION_FREE		= (1U << 0),
 		NDS_REGION_SKOREA	= (1U << 1),
 		NDS_REGION_CHINA	= (1U << 2),
 	};
 
 	// Security data
-	enum NDS_SecurityData {
+	enum ATTR_FLAG_ENUM NDS_SecurityData {
 		// Blowfish tables. Based on the game code.
 		NDS_SECDATA_BLOWFISH	= (1U << 0),
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * nds_structs.h: Nintendo DS(i) data structures.                          *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -197,7 +197,7 @@ ASSERT_STRUCT(NDS_RomHeader, 4096);
 /**
  * Nintendo DS: Region code
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	NDS_REGION_ALL		= 0,
 	NDS_REGION_SKOREA	= 0x40,
 	NDS_REGION_CHINA	= 0x80,
@@ -206,7 +206,7 @@ typedef enum {
 /**
  * Nintendo DSi: Region code
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	DSi_REGION_JAPAN	= (1U << 0),
 	DSi_REGION_USA		= (1U << 1),
 	DSi_REGION_EUROPE	= (1U << 2),
@@ -216,9 +216,9 @@ typedef enum {
 } DSi_Region_e;
 
 /**
- * Nintendo DSi access control. (0x1B4)
+ * Nintendo DSi access control (0x1B4)
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	DSi_ACCESS_COMMON_KEY			= (1U <<  0),
 	DSi_ACCESS_AES_SLOT_B			= (1U <<  1),
 	DSi_ACCESS_AES_SLOT_C			= (1U <<  2),
@@ -241,9 +241,9 @@ typedef enum {
 } DSi_Access;
 
 /**
- * Nintendo DSi Flags. (0x1BF)
+ * Nintendo DSi Flags (0x1BF)
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	DSi_FLAGS_TOUCHSCREEN_MODE	= (1U << 0),	// 0 == NDS; 1 == DSi
 	DSi_FLAGS_REQUIRE_EULA		= (1U << 1),
 	DSi_FLAGS_CUSTOM_ICON		= (1U << 2),	// 0 == normal; 1 == banner.sav
@@ -255,7 +255,7 @@ typedef enum {
 } DSi_Flags;
 
 /**
- * Nintendo DSi file type.
+ * Nintendo DSi file type
  */
 typedef enum {
 	DSi_FTYPE_CARTRIDGE		= 0x00U,

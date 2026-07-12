@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CopierFormats.h: Various ROM copier formats.                            *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -47,7 +47,7 @@ typedef struct SMD_Header {
 ASSERT_STRUCT(SMD_Header, 512);
 
 /**
- * SMD file data types.
+ * SMD file data types
  * Reference: http://cgfm2.emuviews.com/txt/smdtech.txt
  */
 typedef enum {
@@ -58,20 +58,20 @@ typedef enum {
 } SMD_FileDataType;
 
 /**
- * SMD status flags. (bitfield)
+ * SMD status flags (bitfield)
  * Reference: http://cgfm2.emuviews.com/txt/smdtech.txt
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	// If 1, this file is part of a multi-file set and
 	// it isn't the last file in the set.
 	SMD_SF_MULTI_FILE = (1U << 6),
 } SMD_StatusFlags;
 
 /**
- * SMC/SWC emulation mode. (bitfield)
+ * SMC/SWC emulation mode (bitfield)
  * Reference: http://wiki.superfamicom.org/snes/show/Super+Wild+Card
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	// If 1, enable external cartridge memory image at
 	// bank $20-$5F, $A0-$DF in System Mode 2, 3.
 	SMC_EM_EXT_CART_MEMORY = (1U << 0),
@@ -104,7 +104,7 @@ typedef enum {
 } SMC_EmulationMode;
 
 /**
- * SMD/SMC/SWC/MG file types.
+ * SMD/SMC/SWC/MG file types
  * This indicates the platform and if the file is a
  * ROM file or an SRAM file.
  */

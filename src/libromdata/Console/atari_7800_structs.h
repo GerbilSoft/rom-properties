@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * atari_7800_structs.h: Atari 7800 ROM image data structures.             *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -49,7 +49,7 @@ ASSERT_STRUCT(Atari_A78Header, 0x80);
 /**
  * Atari 7800: Cartridge type (bitfield)
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	ATARI_A78_CartType_POKEY_x4000			= (1U <<  0),
 	ATARI_A78_CartType_SuperGame_BankSwitched	= (1U <<  1),
 	ATARI_A78_CartType_SuperGame_RAM_x4000		= (1U <<  2),
@@ -89,7 +89,7 @@ typedef enum {
 /**
  * Atari 7800: TV type (bitfield)
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	ATARI_A78_TVType_Format_NTSC		= (0U << 0),
 	ATARI_A78_TVType_Format_PAL		= (1U << 0),
 	ATARI_A78_TVType_Format_Mask		= (1U << 0),
@@ -102,7 +102,7 @@ typedef enum {
 /**
  * Atari 7800: Save device (bitfield)
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	ATARI_A78_SaveDevice_HSC		= (1U << 0),
 	ATARI_A78_SaveDevice_AtariVox_SaveKey	= (1U << 1),
 } Atari_A78_SaveDevice_e;
@@ -110,7 +110,7 @@ typedef enum {
 /**
  * Atari 7800: Slot passthrough device (bitfield)
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	ATARI_A78_PassThru_XM	= (1U << 0),
 } Atari_A78_PassThru_e;
 

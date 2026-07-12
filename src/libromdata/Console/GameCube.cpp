@@ -76,7 +76,7 @@ public:
 	// NDDEMO header
 	static const array<uint8_t, 64> nddemo_header;
 
-	enum DiscType {
+	enum ATTR_FLAG_ENUM DiscType {
 		DISC_UNKNOWN = -1,	// Unknown disc type
 
 		// Low byte: System ID

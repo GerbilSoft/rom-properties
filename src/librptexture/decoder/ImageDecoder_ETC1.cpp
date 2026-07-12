@@ -306,7 +306,7 @@ static inline CONSTEXPR_MULTILINE uint32_t clamp_ColorRGB(ColorRGB color)
 }
 
 // ETC decoding mode
-enum ETC_Decoding_Mode {
+enum ATTR_FLAG_ENUM ETC_Decoding_Mode {
 	// Bit 0: ETC1 vs. ETC2
 	ETC_DM_ETC1	= (0U << 0),	// ETC1
 	ETC_DM_ETC2	= (1U << 0),	// ETC2

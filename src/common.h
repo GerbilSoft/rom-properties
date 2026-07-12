@@ -14,6 +14,9 @@
 // Alignment macros
 #include "alignment_macros.h"
 
+// Compiler attributes
+#include "compiler-attrs.h"
+
 #ifdef __cplusplus
 #  include <cstddef>
 #else

@@ -80,7 +80,7 @@ public:
 	};
 
 	// String format flags (RFT_STRING)
-	enum StringFormat : unsigned int {
+	enum ATTR_FLAG_ENUM StringFormat : unsigned int {
 		// Print the string using a monospaced font.
 		STRF_MONOSPACE	= (1U << 0),
 
@@ -108,7 +108,7 @@ public:
 	};
 
 	// Display flags for RFT_LISTDATA
-	enum ListDataFlags : unsigned int {
+	enum ATTR_FLAG_ENUM ListDataFlags : unsigned int {
 		// Show the ListView on a separate row
 		// from the description label.
 		RFT_LISTDATA_SEPARATE_ROW = (1U << 0),
@@ -128,7 +128,7 @@ public:
 	};
 
 	// Display flags for RFT_DATETIME
-	enum DateTimeFlags : uint8_t {
+	enum ATTR_FLAG_ENUM DateTimeFlags : uint8_t {
 		// Default formatting
 		RFT_DATETIME_DEFAULT = 0U,
 

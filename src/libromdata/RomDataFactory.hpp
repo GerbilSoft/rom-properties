@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "compiler-attrs.h"
 #include "dll-macros.h"
 
 // Other rom-properties libraries
@@ -40,7 +41,7 @@ void setTestMode(bool mode);
 /**
  * Bitfield of RomData subclass attributes.
  */
-enum RomDataAttr {
+enum ATTR_FLAG_ENUM RomDataAttr {
 	// RomData subclass has no attributes.
 	RDA_NONE		= 0,
 

@@ -56,7 +56,7 @@ ASSERT_STRUCT(TGA_Header, 18);
 /**
  * TGA image type.
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	TGA_IMAGETYPE_NONE	= 0,	// No image data
 	TGA_IMAGETYPE_COLORMAP	= 1,	// Color-mapped image (8/15/16 bpp)
 	TGA_IMAGETYPE_TRUECOLOR	= 2,	// True color image
@@ -76,7 +76,7 @@ typedef enum {
 /**
  * TGA image orientation.
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	TGA_ORIENTATION_X_LTR	= (0U << 4),	// X: left-to-right
 	TGA_ORIENTATION_X_RTL	= (1U << 4),	// X: right-to-left
 	TGA_ORIENTATION_X_MASK	= (1U << 4),

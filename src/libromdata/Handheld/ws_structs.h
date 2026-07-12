@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ws_structs.h: Bandai WonderSwan (Color) data structures.                *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -50,7 +50,7 @@ typedef enum {
 /**
  * WonderSwan flags. (bitfield)
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	WS_FLAG_DISPLAY_HORIZONTAL		= (0U << 0),
 	WS_FLAG_DISPLAY_VERTICAL		= (1U << 0),
 	WS_FLAG_DISPLAY_MASK			= (1U << 0),

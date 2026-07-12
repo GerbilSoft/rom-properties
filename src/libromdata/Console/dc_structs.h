@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * dc_structs.h: Sega Dreamcast data structures.                           *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -160,7 +160,7 @@ ASSERT_STRUCT(DC_VMI_Header, 108);
 /**
  * DC_VMI_Header.mode
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	// Copy protection.
 	DC_VMI_MODE_PROTECT_COPY_OK        = (0U << 0),
 	DC_VMI_MODE_PROTECT_COPY_PROTECTED = (1U << 0),
@@ -269,7 +269,7 @@ ASSERT_STRUCT(DC_IP0000_BIN_t, 256);
  *
  * Reference: http://mc.pp.se/dc/ip0000.bin.html
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	DCP_WINDOWS_CE		= (1U <<  0),	// Uses Windows CE
 	DCP_VGA_BOX		= (1U <<  4),	// Supports VGA Box
 

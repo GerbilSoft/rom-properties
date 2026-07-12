@@ -96,7 +96,7 @@ public:
 };
 class SafeString {
 public:
-	enum SafeStringFlags {
+	enum ATTR_FLAG_ENUM SafeStringFlags {
 		SSF_NO_QUOTES	= 0,
 		SSF_QUOTES	= (1U << 0),
 

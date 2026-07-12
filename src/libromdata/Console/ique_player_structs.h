@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ique_player_structs.h: iQue Player data structures.                     *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -96,7 +96,7 @@ ASSERT_STRUCT(iQuePlayer_BbContentMetaDataHead, 0x1AC);
 /**
  * Hardware access rights
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	IQUE_PLAYER_HW_PI_BUFFER	= (1U << 0),
 	IQUE_PLAYER_HW_NAND_FLASH	= (1U << 1),
 	IQUE_PLAYER_HW_MEMORY_MAPPER	= (1U << 2),

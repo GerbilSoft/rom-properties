@@ -101,7 +101,7 @@ typedef enum {
 /**
  * Module type flags
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	LE_DLL_INIT_GLOBAL		= (0U << 2),
 	LE_DLL_INIT_PER_PROCESS		= (1U << 2),
 	LE_DLL_INIT_MASK		= (1U << 2),
@@ -139,7 +139,7 @@ ASSERT_STRUCT(LE_Object_Table_Entry, 0x18);
 /**
  * Object flags
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	LE_OBJECT_FLAG_READABLE			= (1U <<  0),
 	LE_OBJECT_FLAG_WRITABLE			= (1U <<  1),
 	LE_OBJECT_FLAG_EXECUTABLE		= (1U <<  2),

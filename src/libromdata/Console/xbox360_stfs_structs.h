@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * xbox360_stfs_structs.h: Microsoft Xbox 360 STFS data structures.        *
  *                                                                         *
- * Copyright (c) 2019-2025 by David Korth.                                 *
+ * Copyright (c) 2019-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -238,7 +238,7 @@ typedef enum {
 /**
  * STFS: Transfer flags
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	STFS_TRANSFER_FLAG_DEVICEID_AND_CONTENTID	= 0x00,
 	STFS_TRANSFER_FLAG_MOVE_ONLY			= 0x20,
 	STFS_TRANSFER_FLAG_DEVICEID			= 0x40,

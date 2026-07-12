@@ -57,7 +57,7 @@ public:
 	/** RomFields **/
 
 	// Peripherals (RFT_BITFIELD) [bit values]
-	enum Saturn_Peripherals_Bitfield : unsigned int {
+	enum ATTR_FLAG_ENUM Saturn_Peripherals_Bitfield : unsigned int {
 		SATURN_IOBF_CONTROL_PAD		= (1U <<  0),	// Standard control pad
 		SATURN_IOBF_ANALOG_CONTROLLER	= (1U <<  1),	// Analog controller
 		SATURN_IOBF_MOUSE		= (1U <<  2),	// Mouse
@@ -95,7 +95,7 @@ public:
 	};
 
 	// Region code
-	enum SaturnRegion {
+	enum ATTR_FLAG_ENUM SaturnRegion {
 		SATURN_REGION_JAPAN	= (1U << 0),
 		SATURN_REGION_TAIWAN	= (1U << 1),
 		SATURN_REGION_USA	= (1U << 2),

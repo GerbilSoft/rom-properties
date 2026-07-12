@@ -282,7 +282,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	// References:
 	// - https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests
 	// - https://docs.microsoft.com/en-us/windows/win32/sysinfo/targeting-your-application-at-windows-8-1
-	enum class OS_Compatibility {
+	enum class ATTR_FLAG_ENUM OS_Compatibility : uint32_t {
 		WinVista	= (1U << 0),
 		Win7		= (1U << 1),
 		Win8		= (1U << 2),
@@ -341,7 +341,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	// windowsSettings bitfield
 	// Reference: https://docs.microsoft.com/en-us/windows/win32/sbscs/manifest-file-schema
 	// TODO: Ordering.
-	enum class WindowsSettings : uint32_t {
+	enum class ATTR_FLAG_ENUM WindowsSettings : uint32_t {
 		autoElevate				= (1U << 0),
 		disableTheming				= (1U << 1),
 		disableWindowFiltering			= (1U << 2),

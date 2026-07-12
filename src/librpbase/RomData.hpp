@@ -124,7 +124,7 @@ public:
 	 */
 	virtual int isRomSupported(const DetectInfo *info) const = 0;
 
-	enum SystemNameType {
+	enum ATTR_FLAG_ENUM SystemNameType {
 		/**
 		 * The SystemNameType enum is a bitfield.
 		 *
@@ -330,7 +330,7 @@ public:
 	 * Image type bitfield.
 	 * Used in cases where multiple image types are supported.
 	 */
-	enum ImageTypeBF {
+	enum ATTR_FLAG_ENUM ImageTypeBF {
 		// Internal images are contained with the ROM or disc image.
 		IMGBF_INT_ICON   = (1U << IMG_INT_ICON),	// Internal icon, e.g. DS launcher icon
 		IMGBF_INT_BANNER = (1U << IMG_INT_BANNER),	// Internal banner, e.g. GameCube discs
@@ -356,7 +356,7 @@ public:
 	/**
 	 * Image processing flags.
 	 */
-	enum ImageProcessingBF {
+	enum ATTR_FLAG_ENUM ImageProcessingBF {
 		IMGPF_CDROM_120MM	= (1U << 0),	// Apply a 120mm CD-ROM transparency mask.
 		IMGPF_CDROM_80MM	= (1U << 1),	// Apply an 80mm CD-ROM transparency mask.
 
@@ -596,7 +596,7 @@ public:
 		const char *desc;	// Description (Use '&' for mnemonics)
 		uint32_t flags;		// Flags
 
-		enum RomOpsFlags {
+		enum ATTR_FLAG_ENUM RomOpsFlags {
 			ROF_ENABLED		= (1U << 0),	// Set to enable the ROM op
 			ROF_REQ_WRITABLE	= (1U << 1),	// Requires a writable RomData
 			ROF_SAVE_FILE		= (1U << 2),	// Prompt to save a new file

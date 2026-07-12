@@ -138,7 +138,7 @@ enum class CpRp : unsigned int {
 };
 
 // Text conversion flags.
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	// Enable cp1252 fallback if the text fails to
 	// decode using the specified code page.
 	TEXTCONV_FLAG_CP1252_FALLBACK		= (1U << 0),

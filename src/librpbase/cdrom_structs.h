@@ -82,8 +82,8 @@ ASSERT_STRUCT(CDROM_Mode2_XA_Subheader, 8);
 /**
  * CD-ROM Mode 2 XA submode flags.
  */
-typedef enum {
-	CDROM_MODE2_XA_SUBMODE_EOR	= (1U << 0),	// End of Record
+typedef enum ATTR_FLAG_ENUM {
+	CDROM_MODE2_XA_SUBMODE_EOR		= (1U << 0),	// End of Record
 
 	// Only one of these three flags may be set to indicate the sector type.
 	CDROM_MODE2_XA_SUBMODE_VIDEO		= (1U << 1),	// Video sector
@@ -100,7 +100,7 @@ typedef enum {
 /**
  * CD-ROM Mode 2 XA coding info flags. (ADPCM sectors only)
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	// Mono/Stereo (2-bit field)
 	CDROM_MODE2_XA_CODINGINFO_MONO		= (0U << 0),	// Mono
 	CDROM_MODE2_XA_CODINGINFO_STEREO	= (1U << 0),	// Stereo

@@ -72,7 +72,7 @@ public:
 	NonNCCHContentType nonNcchContentType;
 
 	// Loaded headers
-	enum HeadersPresent {
+	enum ATTR_FLAG_ENUM HeadersPresent : uint8_t {
 		HEADER_NONE	= 0,
 		HEADER_NCCH	= (1U << 0),
 		HEADER_EXHEADER	= (1U << 1),

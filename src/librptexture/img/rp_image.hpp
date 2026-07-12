@@ -475,7 +475,7 @@ public:
 	 */
 	inline int apply_chroma_key(uint32_t key);
 
-	enum FlipOp : uint8_t {
+	enum ATTR_FLAG_ENUM FlipOp : uint8_t {
 		FLIP_NONE	= 0,
 		FLIP_V		= (1U << 0),
 		FLIP_H		= (1U << 1),

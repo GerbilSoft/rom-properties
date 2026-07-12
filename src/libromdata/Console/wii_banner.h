@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * wii_banner.h: Nintendo Wii banner structures.                           *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -70,7 +70,7 @@ ASSERT_STRUCT(Wii_WIBN_Header_t, 160);
 /**
  * Wii save game flags.
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	WII_WIBN_FLAG_NO_COPY		= (1U << 0),	// Cannot copy from NAND normally.
 	WII_WIBN_FLAG_ICON_BOUNCE	= (1U << 4),	// Icon animation "bounces" instead of looping.
 } Wii_WIBN_Flags_e;

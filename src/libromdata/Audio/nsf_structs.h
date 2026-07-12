@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * nsf_structs.h: NSF audio data structures.                               *
  *                                                                         *
- * Copyright (c) 2018-2023 by David Korth.                                 *
+ * Copyright (c) 2018-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -60,7 +60,7 @@ typedef enum {
  * NSF: Expansion audio.
  * NOTE: This is a bitfield.
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	NSF_EXP_VRC6		= (1U << 0),	// Konami VRC6
 	NSF_EXP_VRC7		= (1U << 1),	// Konami VRC7
 	NSF_EXP_2C33		= (1U << 2),	// 2C33 (Famicom Disk System)

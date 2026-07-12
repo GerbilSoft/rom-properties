@@ -99,7 +99,7 @@ ASSERT_STRUCT(YYHeader, 0x64+0x04+0x08+0x08+0x04+0x04);
 /**
  * Screen flags
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	YYHEADER_SCREEN_FLAG_FULLSCREEN		= (1U <<  0),
 	YYHEADER_SCREEN_FLAG_VSYNC		= (1U <<  1),
 	YYHEADER_SCREEN_FLAG_SW_VERTEXES	= (1U <<  2),
@@ -125,7 +125,7 @@ typedef enum {
 /**
  * Function classes (v12+)
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	YYHEADER_FUNCTION_CLASS_Internet	= (1ULL <<  0),
 	YYHEADER_FUNCTION_CLASS_Joystick	= (1ULL <<  1),
 	YYHEADER_FUNCTION_CLASS_Gamepad		= (1ULL <<  2),

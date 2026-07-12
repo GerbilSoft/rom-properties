@@ -61,7 +61,7 @@ static RP_FORCEINLINE uint64_t extract48(const dxt5_alpha *RESTRICT data)
 }
 
 // decode_DXTn_tile_color_palette flags.
-enum DXTn_Palette_Flags {
+enum ATTR_FLAG_ENUM DXTn_Palette_Flags {
 	DXTn_PALETTE_BIG_ENDIAN		= (1U << 0),
 	DXTn_PALETTE_COLOR3_ALPHA	= (1U << 1),	// GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
 	DXTn_PALETTE_COLOR0_GT_COLOR1	= (1U << 2),	// Assume color0 > color1. (DXT2/DXT3)

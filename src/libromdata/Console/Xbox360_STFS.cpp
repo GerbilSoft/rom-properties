@@ -100,7 +100,7 @@ public:
 	STFS_Package_Metadata stfsMetadata;
 	STFS_Package_Thumbnails stfsThumbnails;
 
-	enum StfsPresent_e {
+	enum ATTR_FLAG_ENUM StfsPresent_e {
 		STFS_PRESENT_HEADER	= (1U << 0),
 		STFS_PRESENT_METADATA	= (1U << 1),
 		STFS_PRESENT_THUMBNAILS	= (1U << 2),

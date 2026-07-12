@@ -103,7 +103,7 @@ public:
 
 	// TODO: Print more comprehensive boot information?
 	// For now, just listing boot image types. (x86, EFI)
-	enum BootPlatform {
+	enum ATTR_FLAG_ENUM BootPlatform {
 		BOOT_PLATFORM_x86	= (1U << 0),
 		BOOT_PLATFORM_EFI	= (1U << 1),
 	};

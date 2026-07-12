@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * exe_ne_structs.h: DOS/Windows executable structures. (NE)               *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -71,7 +71,7 @@ typedef enum {
 	NE_DGT_NULL,		// (null)
 } NE_DGroupType;
 
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	NE_GLOBINIT	= (1U << 2),	// Global initialization
 	NE_PMODEONLY	= (1U << 3),	// Protected mode only
 	NE_INSTRUC86	= (1U << 4),	// 8086 instructions
@@ -90,7 +90,7 @@ typedef enum {
 	NE_APP_WINPMUSES,	// Uses Windows/P.M. API
 } NE_AppType;
 
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	NE_OS2APP	= (1U << 3),	// OS/2 family application
 	// bit 4 reserved?
 	NE_IMAGEERROR	= (1U << 5),	// Errors in image/executable
@@ -115,7 +115,7 @@ typedef enum {
 } NE_TargetOS;
 
 // Other OS/2 flags.
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	NE_OS2_LFN	= (1U << 0),	// OS/2 Long File Names
 	NE_OS2_PMODE	= (1U << 1),	// OS/2 2.x Protected Mode executable
 	NE_OS2_PFONT	= (1U << 2),	// OS/2 2.x Proportional Fonts
@@ -150,7 +150,7 @@ typedef struct _NE_Segment {
 } NE_Segment;
 ASSERT_STRUCT(NE_Segment, 8);
 
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	NE_SEG_DATA		= 0x0001,
 	NE_SEG_ALLOCATED	= 0x0002,
 	NE_SEG_LOADED		= 0x0004,

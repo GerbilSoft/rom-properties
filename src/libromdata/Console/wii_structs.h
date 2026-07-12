@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * wii_structs.h: Nintendo Wii data structures.                            *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -289,7 +289,7 @@ ASSERT_STRUCT(RVL_TMD_Header, 0x1E4);
 /**
  * Wii: Access rights
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	RVL_ACCESS_RIGHTS_AHBPROT	= (1U << 0),
 	RVL_ACCESS_RIGHTS_DVD_VIDEO	= (1U << 1),
 } RVL_Access_Rights_e;
@@ -297,7 +297,7 @@ typedef enum {
 /**
  * NetCard: Access rights
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	// Bits 0-2: Save type
 	NC_ACCESS_RIGHTS_SAVE_TYPE_NONE			= 0,
 	NC_ACCESS_RIGHTS_SAVE_TYPE_32_KIB_SRAM		= 1,
@@ -331,7 +331,7 @@ ASSERT_STRUCT(RVL_Content_Entry, 36);
 /**
  * Content type (bitfield)
  */
-typedef enum {
+typedef enum ATTR_FLAG_ENUM {
 	RVL_CONTENT_TYPE_DEFAULT	= 0x0001,
 	RVL_CONTENT_TYPE_UNKNOWN_0x04	= 0x0004,
 
