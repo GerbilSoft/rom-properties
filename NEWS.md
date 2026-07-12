@@ -36,6 +36,9 @@
   * Revert an incorrect ubsan fix that broke the PE Exports tab.
     * Fixes #498: Exports table disappeared from win32 shell ext page
       * Reported by @ksharperd.
+  * NES: Fix NES 2.0 exponent/multiplier calculations.
+    * Pull request #499: NES: fix multiplier in PRG-/CHR-ROM size calculation
+      * Submitted by @slp64.
 
 ## v2.8 (released 2026/06/20)
 
