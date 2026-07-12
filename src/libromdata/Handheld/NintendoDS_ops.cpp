@@ -184,15 +184,19 @@ vector<RomData::RomOp> NintendoDS::romOps_int(void) const
 {
 	// Determine if the ROM is trimmed and/or encrypted.
 	// TODO: Cache the vector?
+	RP_D(const NintendoDS);
+	if (d->isNTRBOOT()) {
+		// None of these RomOps are applicable to NTRBOOT images at the moment.
+		return {};
+	}
+
+	uint32_t flags;
 	vector<RomOp> ops;
 #ifdef ENABLE_DECRYPTION
 	ops.resize(2);
 #else /* !ENABLE_DECRYPTION */
 	ops.resize(1);
 #endif /* ENABLE_DECRYPTION */
-
-	RP_D(const NintendoDS);
-	uint32_t flags;
 
 	// Trim/Untrim ROM
 	bool showUntrim = false;
@@ -258,8 +262,12 @@ vector<RomData::RomOp> NintendoDS::romOps_int(void) const
 int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 {
 	RP_D(NintendoDS);
-	int ret = 0;
+	if (d->isNTRBOOT()) {
+		// None of these RomOps are applicable to NTRBOOT images at the moment.
+		id = -1;
+	}
 
+	int ret = 0;
 	switch (id) {
 		case 0: {
 			// Trim/untrim ROM.
