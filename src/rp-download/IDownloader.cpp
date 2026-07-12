@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "config.version.h"
+#include "config.rp-download.h"
 #include "IDownloader.hpp"
 
 // C includes (C++ namespace)
@@ -316,6 +317,7 @@ tstring IDownloader::getOSRelease(void)
 	static bool bTriedWow64 = false;
 	static bool bIsWow64 = false;
 	if (!bTriedWow64) {
+#    ifdef RP_SUPPORTS_WINDOWS_XP
 		HMODULE hKernel32 = GetModuleHandle(_T("kernel32.dll"));
 		assert(hKernel32 != nullptr);
 		if (hKernel32) {
@@ -330,6 +332,13 @@ tstring IDownloader::getOSRelease(void)
 				}
 			}
 		}
+#    else /* !RP_SUPPORTS_WINDOWS_XP */
+		BOOL bIsWow64Process = FALSE;
+		BOOL bRet = IsWow64Process(GetCurrentProcess(), &bIsWow64Process);
+		if (bRet && bIsWow64Process) {
+			bIsWow64 = true;
+		}
+#    endif /* RP_SUPPORTS_WINDOWS_XP */
 		bTriedWow64 = true;
 	}
 
