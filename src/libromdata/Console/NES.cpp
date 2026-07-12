@@ -955,9 +955,11 @@ int NES::isRomSupported_static(const DetectInfo *info)
 				// Assume it's NES2.
 				isNES2 = true;
 			} else {
-				// NES 2.0 has an alternate method for indicating PRG ROM size,
+				// NES 2.0 has an alternate method for indicating PRG and CHR ROM sizes,
 				// so we need to check for that.
 				unsigned int prg_rom_size, chr_rom_size;
+
+				// PRG ROM size
 				if (likely((inesHeader->nes2.banks_hi & 0x0F) != 0x0F)) {
 					// Standard method
 					prg_rom_size = ((inesHeader->prg_banks |
@@ -974,9 +976,24 @@ int NES::isRomSupported_static(const DetectInfo *info)
 						               (((inesHeader->prg_banks & 0x03) * 2) + 1);
 					}
 				}
-				chr_rom_size = ((inesHeader->chr_banks |
-						((inesHeader->nes2.banks_hi & 0xF0) << 4))
-						* INES_CHR_BANK_SIZE);
+
+				// CHR ROM size
+				if (likely((inesHeader->nes2.banks_hi & 0xF0) != 0xF0)) {
+					// Standard method
+					chr_rom_size = ((inesHeader->chr_banks |
+							((inesHeader->nes2.banks_hi & 0xF0) << 4))
+							* INES_CHR_BANK_SIZE);
+				} else {
+					// Alternate method: [EEEE EEMM] -> 2^E * (MM*2 + 1)
+					// TODO: Verify that this works.
+					if ((inesHeader->chr_banks >> 2) > 24) {
+						// Sanity check: Too big???
+						chr_rom_size = 0xFFFFFFFF;
+					} else {
+						chr_rom_size = (1U << (inesHeader->chr_banks >> 2)) *
+							(((inesHeader->chr_banks & 0x03) * 2) + 1);
+					}
+				}
 
 				const off64_t size = sizeof(INES_RomHeader) +
 					prg_rom_size + chr_rom_size;
