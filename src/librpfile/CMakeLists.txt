@@ -31,7 +31,7 @@ IF(NOT WIN32)
 	ENDIF()
 ENDIF(NOT WIN32)
 
-# Sources.
+# Sources
 SET(${PROJECT_NAME}_SRCS
 	IRpFile.cpp
 	MemFile.cpp
@@ -45,7 +45,7 @@ SET(${PROJECT_NAME}_SRCS
 	xattr/Ext2AttrData.c
 	xattr/XfsAttrData.c
 	)
-# Headers.
+# Headers
 SET(${PROJECT_NAME}_H
 	DualFile.hpp
 	IRpFile.hpp
@@ -122,6 +122,7 @@ IF(WIN32)
 		)
 	SET(${PROJECT_NAME}_OS_H
 		win32/IStreamWrapper.hpp
+		win32/IsDriveLetter.hpp
 		)
 ELSE(WIN32)
 	SET(${PROJECT_NAME}_OS_SRCS

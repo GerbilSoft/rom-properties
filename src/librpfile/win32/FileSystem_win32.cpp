@@ -40,19 +40,7 @@ using namespace LibWin32Common;
 #  define FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS 0x00400000
 #endif
 
-static inline constexpr bool IsDriveLetterA(char letter)
-{
-	return (letter >= 'A') && (letter <= 'Z');
-}
-static inline constexpr bool IsDriveLetterW(wchar_t letter)
-{
-	return (letter >= L'A') && (letter <= L'Z');
-}
-#ifdef _UNICODE
-#  define IsDriveLetter(x) IsDriveLetterW(x)
-#else /* !_UNICODE */
-#  define IsDriveLetter(x) IsDriveLetterA(x)
-#endif /* _UNICODE */
+#include "IsDriveLetter.hpp"
 
 namespace LibRpFile { namespace FileSystem {
 
