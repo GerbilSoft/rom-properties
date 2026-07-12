@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension.                                    *
  * d_type.h: d_type enumeration.                                           *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,7 +10,9 @@
 
 #include "config.libc.h"
 
-#if defined(HAVE_DIRENT_H)
+// NOTE: mz_config.h will define HAVE_DIRENT_H to 0 if it's not available.
+// Check for both defined and non-zero.
+#if defined(HAVE_DIRENT_H) && HAVE_DIRENT_H != 0
 #  include <dirent.h>
 #elif defined(HAVE_SYS_STAT_H)
 // Windows Universal CRT has S_IFMT defined in <sys/stat.h>.
