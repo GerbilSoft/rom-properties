@@ -346,7 +346,7 @@ unsigned int NESPrivate::get_prg_rom_size(void) const
 					prg_rom_size = 0xFFFFFFFF;
 				} else {
 					prg_rom_size = (1U << (header.ines.prg_banks >> 2)) *
-					               ((header.ines.prg_banks & 0x03) + 1);
+					               (((header.ines.prg_banks & 0x03) * 2) + 1);
 				}
 			}
 			break;
@@ -395,7 +395,7 @@ unsigned int NESPrivate::get_chr_rom_size(void) const
 					chr_rom_size = 0xFFFFFFFF;
 				} else {
 					chr_rom_size = (1U << (header.ines.chr_banks >> 2)) *
-					               ((header.ines.chr_banks & 0x03) + 1);
+					               (((header.ines.chr_banks & 0x03) * 2) + 1);
 				}
 			}
 			break;
@@ -971,7 +971,7 @@ int NES::isRomSupported_static(const DetectInfo *info)
 						prg_rom_size = 0xFFFFFFFF;
 					} else {
 						prg_rom_size = (1U << (inesHeader->prg_banks >> 2)) *
-						               ((inesHeader->prg_banks & 0x03) + 1);
+						               (((inesHeader->prg_banks & 0x03) * 2) + 1);
 					}
 				}
 				chr_rom_size = ((inesHeader->chr_banks |
