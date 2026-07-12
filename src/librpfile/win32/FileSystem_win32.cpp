@@ -666,6 +666,10 @@ static void init_GetFinalPathNameByHandle(void)
 }
 
 } // namespace Private
+
+#  define _GetFinalPathNameByHandle(hFile, lpszFilePath, cchFilePath, dwFlags) Private::pfnGetFinalPathNameByHandle((hFile), (lpszFilePath), (cchFilePath), (dwFlags))
+#else /* !RP_SUPPORTS_WINDOWS_XP */
+#  define _GetFinalPathNameByHandle(hFile, lpszFilePath, cchFilePath, dwFlags) GetFinalPathNameByHandle((hFile), (lpszFilePath), (cchFilePath), (dwFlags))
 #endif /* RP_SUPPORTS_WINDOWS_XP */
 
 /**
@@ -703,11 +707,7 @@ static tstring resolve_symlink_int(const TCHAR *tfilename)
 	}
 
 	// NOTE: GetFinalPathNameByHandle() always returns "\\\\?\\" paths.
-#ifdef RP_SUPPORTS_WINDOWS_XP
-	DWORD cchDeref = Private::pfnGetFinalPathNameByHandle(hFile, nullptr, 0, VOLUME_NAME_DOS);
-#else /* !RP_SUPPORTS_WINDOWS_XP */
-	DWORD cchDeref = GetFinalPathNameByHandle(hFile, nullptr, 0, VOLUME_NAME_DOS);
-#endif /* RP_SUPPORTS_WINDOWS_XP */
+	DWORD cchDeref = _GetFinalPathNameByHandle(hFile, nullptr, 0, VOLUME_NAME_DOS);
 	if (cchDeref == 0) {
 		// Error...
 		CloseHandle(hFile);
@@ -718,11 +718,7 @@ static tstring resolve_symlink_int(const TCHAR *tfilename)
 	// We'll add one anyway, just in case it doesn't.
 	// TODO: Allocate std::wstring() here and read directly into data()?
 	unique_ptr<TCHAR[]> szDeref(new TCHAR[cchDeref+1]);
-#ifdef RP_SUPPORTS_WINDOWS_XP
-	Private::pfnGetFinalPathNameByHandle(hFile, szDeref.get(), cchDeref+1, VOLUME_NAME_DOS);
-#else /* !RP_SUPPORTS_WINDOWS_XP */
-	GetFinalPathNameByHandle(hFile, szDeref.get(), cchDeref+1, VOLUME_NAME_DOS);
-#endif /* RP_SUPPORTS_WINDOWS_XP */
+	_GetFinalPathNameByHandle(hFile, szDeref.get(), cchDeref+1, VOLUME_NAME_DOS);
 	if (szDeref[cchDeref-1] == '\0') {
 		// Extra NULL terminator found.
 		cchDeref--;

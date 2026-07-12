@@ -349,6 +349,12 @@ static void init_FindFirstStreamW(void)
 }
 
 } // namespace Private
+
+#  define _FindFirstStreamW(lpFileName, InfoLevel, lpFindStreamData, dwFlags) Private::pfnFindFirstStreamW((lpFileName), (InfoLevel), (lpFindStreamData), (dwFlags))
+#  define _FindNextStreamW(hFindStream, lpFindStreamData) Private::pfnFindNextStreamW((hFindStream), (lpFindStreamData))
+#else /* !RP_SUPPORTS_WINDOWS_XP */
+#  define _FindFirstStreamW(lpFileName, InfoLevel, lpFindStreamData, dwFlags) FindFirstStreamW((lpFileName), (InfoLevel), (lpFindStreamData), (dwFlags))
+#  define _FindNextStreamW(hFindStream, lpFindStreamData) FindNextStreamW((hFindStream), (lpFindStreamData))
 #endif /* RP_SUPPORTS_WINDOWS_XP */
 
 /**
@@ -372,11 +378,7 @@ int XAttrReaderPrivate::loadGenericXattrs_FindFirstStreamW(void)
 
 	// We have FindFirstStreamW().
 	WIN32_FIND_STREAM_DATA fsd;
-#ifdef RP_SUPPORTS_WINDOWS_XP
-	HANDLE hFindADS = Private::pfnFindFirstStreamW(filename.c_str(), FindStreamInfoStandard, &fsd, 0);
-#else /* !RP_SUPPORTS_WINDOWS_XP */
-	HANDLE hFindADS = FindFirstStreamW(filename.c_str(), FindStreamInfoStandard, &fsd, 0);
-#endif /* RP_SUPPORTS_WINDOWS_XP */
+	HANDLE hFindADS = _FindFirstStreamW(filename.c_str(), FindStreamInfoStandard, &fsd, 0);
 	if (!hFindADS || hFindADS == INVALID_HANDLE_VALUE) {
 		// FindFirstStream() failed.
 		return -ENOENT;
@@ -475,11 +477,7 @@ int XAttrReaderPrivate::loadGenericXattrs_FindFirstStreamW(void)
 			s_value.assign(is_unicode ? W2U8(ads_data.wch) : A2U8(ads_data.ch));
 		}
 		genericXAttrs.emplace(std::move(s_name), std::move(s_value));
-#ifdef RP_SUPPORTS_WINDOWS_XP
-	} while (Private::pfnFindNextStreamW(hFindADS, &fsd));
-#else /* !RP_SUPPORTS_WINDOWS_XP */
-	} while (FindNextStreamW(hFindADS, &fsd));
-#endif /* RP_SUPPORTS_WINDOWS_XP */
+	} while (_FindNextStreamW(hFindADS, &fsd));
 
 	FindClose(hFindADS);
 

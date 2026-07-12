@@ -96,6 +96,10 @@ static void init_SHGetKnownFolderPath(void)
 }
 
 } // namespace Private
+
+#  define _SHGetKnownFolderPath(rfid, dwFlags, hToken, ppszPath) Private::pfnSHGetKnownFolderPath((rfid), (dwFlags), (hToken), (ppszPath))
+#else /* !RP_SUPPORTS_WINDOWS_XP */
+#  define _SHGetKnownFolderPath(rfid, dwFlags, hToken, ppszPath) SHGetKnownFolderPath((rfid), (dwFlags), (hToken), (ppszPath))
 #endif /* RP_SUPPORTS_WINDOWS_XP */
 
 /**
@@ -130,13 +134,8 @@ string getCacheDirectory(void)
 	{
 		// We have SHGetKnownFolderPath. (NOTE: Unicode only!)
 		PWSTR pszPath = nullptr;	// free with CoTaskMemFree()
-#ifdef RP_SUPPORTS_WINDOWS_XP
-		HRESULT hr = Private::pfnSHGetKnownFolderPath(FOLDERID_LocalAppDataLow,
+		HRESULT hr = _SHGetKnownFolderPath(FOLDERID_LocalAppDataLow,
 			SHGFP_TYPE_CURRENT, nullptr, &pszPath);
-#else /* !RP_SUPPORTS_WINDOWS_XP */
-		HRESULT hr = SHGetKnownFolderPath(FOLDERID_LocalAppDataLow,
-			SHGFP_TYPE_CURRENT, nullptr, &pszPath);
-#endif /* RP_SUPPORTS_WINDOWS_XP */
 		if (SUCCEEDED(hr) && pszPath != nullptr) {
 			// Path obtained.
 			cache_dir = W2U8(pszPath);
@@ -149,13 +148,8 @@ string getCacheDirectory(void)
 			// Try again with FOLDERID_LocalAppData.
 			// NOTE: This might cause problems if rp-download is running
 			// with a low integrity level.
-#ifdef RP_SUPPORTS_WINDOWS_XP
-			hr = Private::pfnSHGetKnownFolderPath(FOLDERID_LocalAppData,
+			hr = _SHGetKnownFolderPath(FOLDERID_LocalAppData,
 				SHGFP_TYPE_CURRENT, nullptr, &pszPath);
-#else /* !RP_SUPPORTS_WINDOWS_XP */
-			hr = SHGetKnownFolderPath(FOLDERID_LocalAppData,
-				SHGFP_TYPE_CURRENT, nullptr, &pszPath);
-#endif /* RP_SUPPORTS_WINDOWS_XP */
 			if (SUCCEEDED(hr) && pszPath != nullptr) {
 				// Path obtained.
 				cache_dir = W2U8(pszPath);
