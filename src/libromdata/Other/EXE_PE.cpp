@@ -1327,7 +1327,7 @@ int EXEPrivate::addFields_PE_PDB(void)
 		// Not a PE executable.
 		return -EBADF;
 	}
-	PE_data_t &PE_data = std::get<PE_data_t>(EXE_data);
+	//PE_data_t &PE_data = std::get<PE_data_t>(EXE_data);
 
 	// max path define on windows, should be this for all dos like paths
 	// (iirc nt paths are like 64k, but for pdbs this shooould be enough)
@@ -1401,7 +1401,6 @@ int EXEPrivate::addFields_PE_PDB(void)
 					le32_to_cpu(cv.PdbAge));
 				fields.addField_string("Symbol Server ID:", symsrv_path);
 
-				array<char, win32_maxpath> pdb_path {};
 				uint32_t str_addie = le32_to_cpu(dir.AddressOfRawData) + offsetof(CODEVIEW_INFO_PDB70, ImageName);
 				// - 1, null term, we ensure it ourselves
 				uint32_t strlen_chars = le32_to_cpu(dir.SizeOfData) - offsetof(CODEVIEW_INFO_PDB70, ImageName) - 1;
