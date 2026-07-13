@@ -1374,7 +1374,7 @@ int EXEPrivate::addFields_PE_PDB(void)
 				fields.addTab("PDB");
 				uint32_t cv_timestamp = le32_to_cpu(dir.TimeDateStamp);
 				if (cv_timestamp != 0) {
-					fields.addField_dateTime("CodeView timestamp",
+					fields.addField_dateTime(C_("EXE|PDB", "CodeView Timestamp"),
 						static_cast<time_t>(cv_timestamp),
 						RomFields::RFT_DATETIME_HAS_DATE |
 						RomFields::RFT_DATETIME_HAS_TIME);
@@ -1386,11 +1386,11 @@ int EXEPrivate::addFields_PE_PDB(void)
 					return -EFAULT;
 				}
 
-				string symsrv_path = fmt::format(
+				string symsrv_path = fmt::format(FSTR(
 					"{:08X}{:04X}{:04X}"
 					"{:02X}{:02X}{:02X}{:02X}"
 					"{:02X}{:02X}{:02X}{:02X}"
-					"{}",
+					"{:d}"),
 					le32_to_cpu(cv.PdbGuid.Data1),
 					le16_to_cpu(cv.PdbGuid.Data2),
 					le16_to_cpu(cv.PdbGuid.Data3),
@@ -1399,7 +1399,7 @@ int EXEPrivate::addFields_PE_PDB(void)
 					cv.PdbGuid.Data4[4], cv.PdbGuid.Data4[5],
 					cv.PdbGuid.Data4[6], cv.PdbGuid.Data4[7],
 					le32_to_cpu(cv.PdbAge));
-				fields.addField_string("Symbol Server ID:", symsrv_path);
+				fields.addField_string(C_("EXE|PDB", "Symbol Server ID"), symsrv_path);
 
 				uint32_t str_addie = le32_to_cpu(dir.AddressOfRawData) + offsetof(CODEVIEW_INFO_PDB70, ImageName);
 				// - 1, null term, we ensure it ourselves
@@ -1415,7 +1415,9 @@ int EXEPrivate::addFields_PE_PDB(void)
 							break;
 						}
 					}
-					fields.addField_string("PDB Link", fmt::format("<a href=\"https://msdl.microsoft.com/download/symbols/{}/{}/{}\">Microsoft Symbol Server</a>", last_path_component, symsrv_path, last_path_component));
+					fields.addField_string(C_("EXE|PDB", "PDB Link"),
+						fmt::format(FSTR("<a href=\"https://msdl.microsoft.com/download/symbols/{}/{}/{}\">Microsoft Symbol Server</a>"),
+							last_path_component, symsrv_path, last_path_component));
 					return 0;
 				}
 				// not fatal, though some information is missing
