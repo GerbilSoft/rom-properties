@@ -1354,7 +1354,7 @@ int EXEPrivate::addFields_PE_PDB(void) {
 
 		auto size = le32_to_cpu(debug_dir.Size);
 		if (size && debug_dir.VirtualAddress && (size/sizeof(IMAGE_DEBUG_DIRECTORY)) < 16) { // cap to a reasonable limit
-			vector<IMAGE_DEBUG_DIRECTORY> debug_ents( size/sizeof(IMAGE_DEBUG_DIRECTORY), {} );
+			vector<IMAGE_DEBUG_DIRECTORY> debug_ents( size/sizeof(IMAGE_DEBUG_DIRECTORY) );
 			if (safe_read_vmem(le32_to_cpu(debug_dir.VirtualAddress), size, debug_ents.data())) {
 				// oki we read all of them safely in
 				bool found_cv = false;
