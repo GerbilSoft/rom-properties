@@ -1331,11 +1331,11 @@ int EXEPrivate::addFields_PE_PDB(void)
 	PE_data_t &PE_data = std::get<PE_data_t>(EXE_data);
 	constexpr uintptr_t win32_maxpath = 260; // max path define on windows, should be this for all dos like paths
 						 // (iirc nt paths are like 64k, but for pdbs this shooould be enough)
-	const IMAGE_DATA_DIRECTORY *pDebugDir;
+	IMAGE_DATA_DIRECTORY debug_dir;
 	if (exeType == ExeType::PE) {
-		pDebugDir = &hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_DEBUG_INFO];
+		debug_dir = hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_DEBUG_INFO];
 	} else /*if (exeType == ExeType::PE32PLUS)*/ {
-		pDebugDir = &hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_DEBUG_INFO];
+		debug_dir = hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_DEBUG_INFO];
 	}
 
 	auto safe_read_vmem = [&](uint32_t va, uint32_t size, void* to) -> bool {
@@ -1349,10 +1349,10 @@ int EXEPrivate::addFields_PE_PDB(void)
 		return false;
 	};
 
-	uint32_t size = le32_to_cpu(pDebugDir->Size);
-	if (size && pDebugDir->VirtualAddress != 0 && (size/sizeof(IMAGE_DEBUG_DIRECTORY)) < 16) { // cap to a reasonable limit
+	uint32_t size = le32_to_cpu(debug_dir.Size);
+	if (size && debug_dir.VirtualAddress != 0 && (size/sizeof(IMAGE_DEBUG_DIRECTORY)) < 16) { // cap to a reasonable limit
 		vector<IMAGE_DEBUG_DIRECTORY> debug_ents( size/sizeof(IMAGE_DEBUG_DIRECTORY) );
-		if (safe_read_vmem(le32_to_cpu(pDebugDir->VirtualAddress), size, debug_ents.data())) {
+		if (safe_read_vmem(le32_to_cpu(debug_dir.VirtualAddress), size, debug_ents.data())) {
 			// oki we read all of them safely in
 			bool found_cv = false;
 			for (const IMAGE_DEBUG_DIRECTORY &dir : debug_ents) {
@@ -1442,12 +1442,9 @@ int EXEPrivate::loadPEImageLoadConfigDirectory(void)
 
 	if (exeType == EXEPrivate::ExeType::PE) {
 		// 32-bit version
-
 		// FIXME: How does XEX handle this?
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		const auto &dirEntry = hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_LOAD_CONFIG_TABLE];
-#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-		auto dirEntry = hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_LOAD_CONFIG_TABLE];
+		IMAGE_DATA_DIRECTORY dirEntry = hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_LOAD_CONFIG_TABLE];
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
 		dirEntry.VirtualAddress = le32_to_cpu(dirEntry.VirtualAddress);
 		dirEntry.Size = le32_to_cpu(dirEntry.Size);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
@@ -1488,11 +1485,8 @@ int EXEPrivate::loadPEImageLoadConfigDirectory(void)
 		}
 	} else if (exeType == EXEPrivate::ExeType::PE32PLUS) {
 		// 64-bit version
-
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		const auto &dirEntry = hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_LOAD_CONFIG_TABLE];
-#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-		auto dirEntry = hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_LOAD_CONFIG_TABLE];
+		IMAGE_DATA_DIRECTORY dirEntry = hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_LOAD_CONFIG_TABLE];
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
 		dirEntry.VirtualAddress = le32_to_cpu(dirEntry.VirtualAddress);
 		dirEntry.Size = le32_to_cpu(dirEntry.Size);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
