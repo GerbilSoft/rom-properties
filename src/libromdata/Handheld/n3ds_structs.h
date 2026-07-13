@@ -759,7 +759,7 @@ typedef enum ATTR_FLAG_ENUM {
 /**
  * NCCH Extended Header: ACI New3DS System Mode (flags[1])
  */
-typedef enum ATTR_FLAG_ENUM {
+typedef enum {
 	// New3DS system modes
 	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Legacy	= (  0U << 0),	// 64 MB
 	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Prod	= (  1U << 0),	// 124 MB
@@ -771,7 +771,7 @@ typedef enum ATTR_FLAG_ENUM {
 /**
  * NCCH Extended Header: ACI System Mode (flags[2])
  */
-typedef enum ATTR_FLAG_ENUM {
+typedef enum {
 	N3DS_NCCH_EXHEADER_ACI_FLAG2_IdealCPU_Mask		= (2U << 0),
 	N3DS_NCCH_EXHEADER_ACI_FLAG2_Affinity_Mask		= (2U << 2),
 
@@ -787,7 +787,7 @@ typedef enum ATTR_FLAG_ENUM {
 /**
  * NCCH Extended Header: ACI resource limit category
  */
-typedef enum ATTR_FLAG_ENUM {
+typedef enum {
 	N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_APPLICATION	= 0,
 	N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_SYS_APPLET	= 1,
 	N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_LIB_APPLET	= 2,
