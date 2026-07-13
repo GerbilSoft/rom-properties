@@ -1333,7 +1333,6 @@ int EXEPrivate::addFields_PE_PDB(void) {
 			if (exeType == ExeType::PE) {
 				const auto &opthdr = hdr.pe.OptionalHeader.opt32;
 				return opthdr.DataDirectory[IMAGE_DATA_DIRECTORY_DEBUG_INFO];
-				
 			} else /*if (exeType == ExeType::PE32PLUS)*/ {
 				const auto &opthdr = hdr.pe.OptionalHeader.opt64;
 				return opthdr.DataDirectory[IMAGE_DATA_DIRECTORY_DEBUG_INFO];
@@ -1374,9 +1373,7 @@ int EXEPrivate::addFields_PE_PDB(void) {
 								static_cast<time_t>(cv_timestamp),
 								RomFields::RFT_DATETIME_HAS_DATE |
 								RomFields::RFT_DATETIME_HAS_TIME);
-						} 
-
-
+						}
 
 						CODEVIEW_INFO_PDB70 cv {};
 						if (safe_read_vmem(le32_to_cpu(dir.AddressOfRawData), sizeof(CODEVIEW_INFO_PDB70),&cv)){
@@ -1394,7 +1391,7 @@ int EXEPrivate::addFields_PE_PDB(void) {
 								cv.PdbGuid.Data4[6], cv.PdbGuid.Data4[7],
 								le32_to_cpu(cv.PdbAge));
 							fields.addField_string("Symbol Server ID:", symsrv_path);
-							
+
 							std::array<char, win32_maxpath> pdb_path {};
 							uint32_t str_addie = le32_to_cpu(dir.AddressOfRawData) + offsetof(CODEVIEW_INFO_PDB70, ImageName);
 							uint32_t strlen_chars = le32_to_cpu(dir.SizeOfData) - offsetof(CODEVIEW_INFO_PDB70, ImageName) - 1; // - 1, null term, we ensure it ourselves
@@ -1408,7 +1405,7 @@ int EXEPrivate::addFields_PE_PDB(void) {
 										last_path_component = cur + 1;
 										break;
 									}
-								}				
+								}
 								fields.addField_string("PDB Link", fmt::format("<a href=\"https://msdl.microsoft.com/download/symbols/{}/{}/{}\">Microsoft Symbol Server</a>", last_path_component, symsrv_path, last_path_component));
 								return 0;
 							}
