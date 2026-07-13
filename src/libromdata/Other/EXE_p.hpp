@@ -401,6 +401,13 @@ public:
 	 */
 	int addFields_PE_Import(void);
 
+	/**
+	 * Add fields for PE Codeview PDB info data.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int addFields_PE_PDB(void);
+
+
 private:
 	/**
 	 * Load the IMAGE_LOAD_CONFIG_DIRECTORY.

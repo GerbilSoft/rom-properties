@@ -843,6 +843,7 @@ void EXEPrivate::addFields_PE(void)
 		addFields_PE_Export();
 		addFields_PE_Import();
 	}
+	addFields_PE_PDB();
 }
 
 /**
@@ -1317,6 +1318,109 @@ int EXEPrivate::addFields_PE_Import(void)
 	params.col_attrs.sort_dir   = RomFields::COLSORTORDER_ASCENDING;
 	fields.addField_listData(C_("EXE", "Imports"), &params);
 	return 0;
+}
+
+
+int EXEPrivate::addFields_PE_PDB(void) {
+	if (1) {
+		if (!std::holds_alternative<PE_data_t>(EXE_data)) {
+			// Not a PE executable.
+			return -EBADF;
+		}
+		PE_data_t &PE_data = std::get<PE_data_t>(EXE_data);
+		constexpr uintptr_t win32_maxpath = 260; // max path define on windows, should be this for all dos like paths (iirc nt paths are like 64k, but for pdbs this shooould be enough)
+		IMAGE_DATA_DIRECTORY debug_dir = [&]() -> IMAGE_DATA_DIRECTORY {
+			if (exeType == ExeType::PE) {
+				const auto &opthdr = hdr.pe.OptionalHeader.opt32;
+				return opthdr.DataDirectory[IMAGE_DATA_DIRECTORY_DEBUG_INFO];
+				
+			} else /*if (exeType == ExeType::PE32PLUS)*/ {
+				const auto &opthdr = hdr.pe.OptionalHeader.opt64;
+				return opthdr.DataDirectory[IMAGE_DATA_DIRECTORY_DEBUG_INFO];
+			}
+			return {}; // meow shouldnt run here but in that case the next check should fail as size and va are zeroed
+		}();
+
+		auto safe_read_vmem = [&](uint32_t va, uint32_t size, void* to) {
+			if (file && file->isOpen()){
+				auto addr = pe_vaddr_to_paddr(va,size);
+				file->seek(addr);
+				if (addr && file->read(to,size) == size) {
+					return true;
+				}
+			}
+			return false;
+		};
+
+		auto size = le32_to_cpu(debug_dir.Size);
+		if (size && debug_dir.VirtualAddress && (size/sizeof(IMAGE_DEBUG_DIRECTORY)) < 16) { // cap to a reasonable limit
+			vector<IMAGE_DEBUG_DIRECTORY> debug_ents( size/sizeof(IMAGE_DEBUG_DIRECTORY), {} );
+			if (safe_read_vmem(le32_to_cpu(debug_dir.VirtualAddress), size, debug_ents.data())) {
+				// oki we read all of them safely in
+				bool found_cv = false;
+				for (const auto& dir : debug_ents) {
+					if (le32_to_cpu(dir.Type) == IMAGE_DEBUG_TYPE_CODEVIEW && le32_to_cpu(dir.SizeOfData) <=  sizeof(CODEVIEW_INFO_PDB70) + win32_maxpath) { // sane bounds, cv data +  path + whatever-they-might-add-in-the-future
+						// aand we have a proper codeview entry
+						if (found_cv) {
+							// well, this is akward
+							return -EALREADY;
+						}
+						found_cv = true;
+
+						fields.addTab("PDB");
+						auto cv_timestamp = le32_to_cpu(dir.TimeDateStamp);
+						if (cv_timestamp != 0) {
+							fields.addField_dateTime("CodeView timestamp",
+								static_cast<time_t>(cv_timestamp),
+								RomFields::RFT_DATETIME_HAS_DATE |
+								RomFields::RFT_DATETIME_HAS_TIME);
+						} 
+
+
+
+						CODEVIEW_INFO_PDB70 cv {};
+						if (safe_read_vmem(le32_to_cpu(dir.AddressOfRawData), sizeof(CODEVIEW_INFO_PDB70),&cv)){
+							auto symsrv_path = fmt::format(
+								"{:08X}{:04X}{:04X}"
+								"{:02X}{:02X}{:02X}{:02X}"
+								"{:02X}{:02X}{:02X}{:02X}"
+								"{}",
+								le32_to_cpu(cv.PdbGuid.Data1),
+								le16_to_cpu(cv.PdbGuid.Data2),
+								le16_to_cpu(cv.PdbGuid.Data3),
+								cv.PdbGuid.Data4[0], cv.PdbGuid.Data4[1],
+								cv.PdbGuid.Data4[2], cv.PdbGuid.Data4[3],
+								cv.PdbGuid.Data4[4], cv.PdbGuid.Data4[5],
+								cv.PdbGuid.Data4[6], cv.PdbGuid.Data4[7],
+								le32_to_cpu(cv.PdbAge));
+							fields.addField_string("Symbol Server ID:", symsrv_path);
+							
+							std::array<char, win32_maxpath> pdb_path {};
+							uint32_t str_addie = le32_to_cpu(dir.AddressOfRawData) + offsetof(CODEVIEW_INFO_PDB70, ImageName);
+							uint32_t strlen_chars = le32_to_cpu(dir.SizeOfData) - offsetof(CODEVIEW_INFO_PDB70, ImageName) - 1; // - 1, null term, we ensure it ourselves
+							auto path_buf = std::make_unique<char[]>(strlen_chars + 1);
+							if (safe_read_vmem(str_addie, strlen_chars, &path_buf[0])) {
+								path_buf[strlen_chars] = '\0'; // ensure nullterm
+								fields.addField_string("PDB Path", &path_buf[0]);
+								char* last_path_component = &path_buf[0];
+								for (auto* cur = &path_buf[strlen_chars]; cur != &path_buf[0]; cur--) {
+									if (*cur == '\\'){
+										last_path_component = cur + 1;
+										break;
+									}
+								}				
+								fields.addField_string("PDB Link", fmt::format("<a href=\"https://msdl.microsoft.com/download/symbols/{}/{}/{}\">Microsoft Symbol Server</a>", last_path_component, symsrv_path, last_path_component));
+								return 0;
+							}
+							// not fatal, though some information is missing
+							return 0;
+						}
+					}
+				}
+			}
+		}
+	}
+	return -EFAULT;
 }
 
 /**
