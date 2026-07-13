@@ -9,6 +9,7 @@
 #include "GdkImageConv.hpp"
 
 // Other rom-properties libraries
+#include "argb32_t.hpp"
 #include "librptexture/img/rp_image.hpp"
 using namespace LibRpTexture;
 

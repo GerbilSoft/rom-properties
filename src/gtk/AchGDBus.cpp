@@ -20,6 +20,7 @@ using LibRpBase::Achievements;
 #include "AchSpriteSheet.hpp"
 
 // C++ STL classes
+#include <string>
 using std::string;
 
 /** AchGDBusPrivate (previously) **/

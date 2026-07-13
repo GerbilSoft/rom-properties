@@ -9,14 +9,18 @@
 
 #include "GdkImageConv.hpp"
 
-// librptexture
+// Other rom-properties libraries
+#include "aligned_malloc.h"
+#include "argb32_t.hpp"
+#include "librptexture/img/rp_image.hpp"
 using namespace LibRpTexture;
+
+// C++ STL classes
+#include <algorithm>
+using std::array;
 
 // ARM NEON intrinsics
 #include <arm_neon.h>
-
-// C++ STL classes
-using std::array;
 
 // TODO: Combine this with rp_image_ops_neon.cpp?
 #if defined(RP_CPU_ARM64)

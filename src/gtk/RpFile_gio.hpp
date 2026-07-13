@@ -11,6 +11,9 @@
 // librpfile
 #include "librpfile/IRpFile.hpp"
 
+// C++ STL classes
+#include <string>
+
 class RpFileGioPrivate;
 class RpFileGio final : public LibRpFile::IRpFile
 {

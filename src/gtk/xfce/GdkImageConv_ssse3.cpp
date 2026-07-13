@@ -10,6 +10,7 @@
 
 // Other rom-properties libraries
 #include "aligned_malloc.h"
+#include "argb32_t.hpp"
 #include "librptexture/img/rp_image.hpp"
 using namespace LibRpTexture;
 
