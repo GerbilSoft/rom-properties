@@ -13,7 +13,7 @@
 #include "../conversion.hpp"
 #include "../formatting.hpp"
 #include "../fourCC.hpp"
-#include "../utf8_strlen.hpp"
+#include "../utf8_funcs.hpp"
 #include "librpbyteswap/byteorder.h"
 using namespace LibRpText;
 

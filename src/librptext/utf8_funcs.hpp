@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librptext)                        *
- * utf8_strlen.cpp: UTF-8 strlen() functions                               *
+ * utf8_funcs.cpp: UTF-8 functions                                         *
  *                                                                         *
- * Copyright (c) 2022-2023 by David Korth.                                 *
+ * Copyright (c) 2022-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -38,5 +38,12 @@ static inline size_t utf8_disp_strlen(const std::string &str, size_t max_len = s
 {
 	return utf8_disp_strlen(str.c_str(), max_len);
 }
+
+/**
+ * Encode a Unicode code point as UTF-8.
+ * @param chr Code point
+ * @return UTF-8 encoded code point
+ */
+std::string utf8_encode_code_point(unsigned int chr);
 
 }

@@ -68,7 +68,7 @@ SET(${PROJECT_NAME}_SRCS
 	libc.c
 	html_entities.c
 	specialized.cpp
-	utf8_strlen.cpp
+	utf8_funcs.cpp
 	)
 # Headers
 SET(${PROJECT_NAME}_H
@@ -78,7 +78,7 @@ SET(${PROJECT_NAME}_H
 	html_entities.h
 	NULL-check.hpp
 	specialized.cpp
-	utf8_strlen.hpp
+	utf8_funcs.hpp
 	wchar.hpp
 	RP_CP_tbls.hpp
 	)
