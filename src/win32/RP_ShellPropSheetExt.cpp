@@ -347,9 +347,6 @@ HWND RP_ShellPropSheetExt_Private::createStringControl(
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			pt.x, pt.y, size.cx, size.cy,
 			hwndParent, (HMENU)static_cast<INT_PTR>(cId), nullptr, nullptr);
-		if (hDlgItem) {
-			hwndSysLinkControls.insert(hDlgItem);
-		}
 	}
 
 	if (!hDlgItem) {
@@ -2560,12 +2557,20 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 
 		case NM_CLICK:
 		case NM_RETURN: {
-			// Check if this is one of our SysLink controls.
-			// NOTE: SysLink control only supports Unicode.
-			auto iter = hwndSysLinkControls.find(pHdr->hwndFrom);
-			if (iter != hwndSysLinkControls.end()) {
-				// It's one of our SysLink controls.
+			// Check if the parent of this control is one of our tabs.
+			const HWND hwndParent = GetParent(pHdr->hwndFrom);
+			if (!hwndParent) {
+				break;
+			}
+
+			const bool isOurTab = std::any_of(tabs.cbegin(), tabs.cend(),
+				[hwndParent](const tab& tab) noexcept -> bool {
+					return (tab.hDlg == hwndParent);
+				});
+			if (isOurTab) {
+				// The SysLink control is in one of our tabs.
 				// Open the URL.
+				// NOTE: SysLink control only supports Unicode.
 				// TODO: Verify that the protocol starts with "https://" ?
 				PNMLINK pNMLink = reinterpret_cast<PNMLINK>(pHdr);
 				ShellExecute(nullptr, _T("open"), pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);

@@ -17,7 +17,6 @@
 
 // C++ includes
 #include <memory>
-#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -107,11 +106,6 @@ public:
 	LibWin32UI::WTSSessionNotification wts;
 	// ListView controls (for toggling LVS_EX_DOUBLEBUFFER)
 	std::vector<HWND> hwndListViewControls;
-
-	// SysLink controls
-	// NOTE: There's usually only a few of these, so we'll use
-	// a regular set<> instead of an unordered_set<>.
-	std::set<HWND> hwndSysLinkControls;
 
 	// ListView data
 	// - Key: ListView dialog ID
