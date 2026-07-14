@@ -338,7 +338,7 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 		// TODO: Do we need to replace '>' with "&gt;"?
 		const rp_qsizetype text_size = text.size();
 		QString escText;
-		escText.reserve(text.size());
+		escText.reserve(text_size);
 		for (rp_qsizetype i = 0; i < text_size; i++) {
 			QChar c = text[i];
 			if (c == QChar(L'<')) {
