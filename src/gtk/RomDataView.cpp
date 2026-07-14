@@ -798,24 +798,55 @@ rp_rom_data_view_init_string(RpRomDataView *page,
 		str = field.data.str;
 	}
 
-	if (field.type == RomFields::RomFieldType::RFT_STRING &&
-	    (field.flags & RomFields::STRF_CREDITS))
-	{
+	if (field.flags & RomFields::STRF_CREDITS) {
 		// Credits text. Enable formatting and center alignment.
 		gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_CENTER);
 		GTK_WIDGET_HALIGN_CENTER(widget);
 		GTK_LABEL_XALIGN_CENTER(widget);
-		if (str) {
-			// NOTE: Pango markup does not support <br/>.
-			// It uses standard newlines for line breaks.
-			gtk_label_set_markup(GTK_LABEL(widget), str);
-		}
 	} else {
 		// Standard text with no formatting.
 		gtk_label_set_selectable(GTK_LABEL(widget), true);
 		gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
 		GTK_WIDGET_HALIGN_LEFT(widget);
 		GTK_LABEL_XALIGN_LEFT(widget);
+	}
+
+	if (str && str[0] != '\0' && (field.flags & RomFields::STRF_PARSE_LINKS)) {
+		// NOTE: Only allowing a limited HTML subset: just `<a>`.
+		// Search for any other tags and replace the '<' with "&lt;".
+		// TODO: Do we need to replace '>' with "&gt;"?
+		const size_t text_size = strlen(str);
+		string escText;
+		escText.reserve(text_size);
+		for (size_t i = 0; i < text_size; i++) {
+			char c = str[i];
+			if (c == '<') {
+				// Found a '<'.
+				// Should be followed by:
+				// - "a ": start tag
+				// - "/a>": end tag
+				if ((i + 2 < text_size) && str[i+1] == 'a' && str[i+2] == ' ') {
+					// Valid start tag.
+					escText += "<a ";
+					i += 2;
+				} else if ((i + 3 < text_size) && str[i+1] == '/' && str[i+2] == 'a' && str[i+3] == '>') {
+					// Valid end tag.
+					escText += "</a>";
+					i += 3;
+				} else {
+					// Not a valid tag...
+					escText += "&lt;";
+				}
+			} else {
+				// Not a '<'.
+				escText += c;
+			}
+		}
+
+		// NOTE: Pango markup does not support <br/>.
+		// It uses standard newlines for line breaks.
+		gtk_label_set_markup(GTK_LABEL(widget), escText.c_str());
+	} else {
 		if (str) {
 			gtk_label_set_text(GTK_LABEL(widget), str);
 		}
