@@ -331,30 +331,34 @@ private:
 				tmpbuf[len] = '\0';
 				chr = strtoul(tmpbuf, &endptr, 10);
 			}
+			entity = p_end + 1;
 
 			// Encode as UTF-8.
-			string str;
+			char buf[5];
 			if (chr <= 0x7F) {
-				str = static_cast<char>(chr);
+				buf[0] = static_cast<char>(chr);
+				buf[1] = 0;
 			} else if (chr <= 0x7FF) {
-				str = static_cast<char>(0xC0 | (chr >> 6));
-				str += static_cast<char>(0x80 | (chr & 0x3F));
+				buf[0] = static_cast<char>(0xC0 | (chr >> 6));
+				buf[1] = static_cast<char>(0x80 | (chr & 0x3F));
+				buf[2] = 0;
 			} else if (chr <= 0xFFFF) {
-				str = static_cast<char>(0xE0 | (chr >> 12));
-				str += static_cast<char>(0x80 | ((chr >> 6) & 0x3F));
-				str += static_cast<char>(0x80 |  (chr & 0x3F));
+				buf[0] = static_cast<char>(0xE0 | (chr >> 12));
+				buf[1] = static_cast<char>(0x80 | ((chr >> 6) & 0x3F));
+				buf[2] = static_cast<char>(0x80 |  (chr & 0x3F));
 			} else if (chr <= 0x10FFFF) {
-				str = static_cast<char>(0xF0 | (chr >> 18));
-				str += static_cast<char>(0x80 | ((chr >> 12) & 0x3F));
-				str += static_cast<char>(0x80 | ((chr >> 6) & 0x3F));
-				str += static_cast<char>(0x80 |  (chr & 0x3F));
+				buf[0] = static_cast<char>(0xF0 | (chr >> 18));
+				buf[1] = static_cast<char>(0x80 | ((chr >> 12) & 0x3F));
+				buf[2] = static_cast<char>(0x80 | ((chr >> 6) & 0x3F));
+				buf[3] = static_cast<char>(0x80 |  (chr & 0x3F));
+				buf[4] = 0;
 			} else {
 				// Invalid UTF-8 character...
 				// Use the Unicode replacment character. (U+FFFD)
-				str = "�";
+				return "�";
 			}
-			entity = p_end + 1;
-			return str;
+
+			return buf;
 		}
 
 		// Check for known HTML entities.
