@@ -800,8 +800,16 @@ void EXEPrivate::addFields_PE(void)
 	string runtime_dll, runtime_link;
 	int ret = findPERuntimeDLL(runtime_dll, runtime_link);
 	if (ret == 0 && !runtime_dll.empty()) {
-		// TODO: Show the link?
-		fields.addField_string(C_("EXE", "Runtime DLL"), runtime_dll);
+		if (!runtime_link.empty()) {
+			// Format the link as HTML.
+			string html_link = fmt::format(FSTR("<a href=\"{:s}\">{:s}</a>"),
+				runtime_link, runtime_dll);
+			fields.addField_string(C_("EXE", "Runtime DLL"), html_link,
+				RomFields::STRF_PARSE_LINKS);
+		} else {
+			// No link; no HTML.
+			fields.addField_string(C_("EXE", "Runtime DLL"), runtime_dll);
+		}
 	}
 
 	// Load resources
