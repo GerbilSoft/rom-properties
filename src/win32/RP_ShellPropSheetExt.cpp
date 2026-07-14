@@ -338,6 +338,12 @@ HWND RP_ShellPropSheetExt_Private::createStringControl(
 	// TODO: With subtabs:
 	// - Verify behavior of LWS_TRANSPARENT.
 	// - Show below subtabs.
+	// FIXME: WC_LINK doesn't support HTML entities:
+	// - Ampersands are silently dropped, unless doubled-up.
+	// - "&&amp; <&lt; >&gt;" becomes "&amp; <lt; >gt;".
+	// - Can probably figure out a way to escape things decently,
+	//   but we'll need to *decode* entities here.
+	// - "&lt;a" will need to be decoded as "< a" to prevent issues.
 	HWND hDlgItem = nullptr;
 
 	// If a WC_LINK control is requested, try creating it first.
