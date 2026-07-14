@@ -293,35 +293,27 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 	const RomFields::Field &field,
 	const QString *str)
 {
-	// String type.
+	// String type
 	Q_Q(RomDataView);
 	QLabel *lblString = new QLabel(q);
+
+	// Determine the text to use.
+	QString text;
+	if (str) {
+		text = *str;
+	} else if (field.data.str) {
+		text = U82Q(field.data.str);
+	}
+
 	// NOTE: No name for this QObject.
 	if (field.flags & RomFields::STRF_CREDITS) {
 		// Credits text. Enable formatting and center text.
 		lblString->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
-		lblString->setTextFormat(Qt::RichText);
-		lblString->setOpenExternalLinks(true);
-		lblString->setTextInteractionFlags(
-			Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
-
 		lblString->setWordWrap(false);
 
-		// Replace newlines with "<br/>".
-		QString text;
-		if (str) {
-			text = *str;
-		} else if (field.data.str) {
-			text = U82Q(field.data.str);
-		}
-		text.replace(QChar(L'\n'), QLatin1String("<br/>"));
-		lblString->setText(text);
 	} else {
-		// tr: Standard text with no formatting.
+		// Standard text with no formatting.
 		lblString->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-		lblString->setTextFormat(Qt::PlainText);
-		lblString->setTextInteractionFlags(
-			Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
 
 		// Enable wordwrap to allow the label to be shrunken horizontally.
 		// NOTE: Setting minimum width to 1 incorrectly causes labels to
@@ -332,12 +324,57 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 		// TODO: Scrolling.
 		//lblString->setMinimumWidth(1);
 		lblString->setWordWrap(true);
+	}
 
-		if (str) {
-			lblString->setText(*str);
-		} else if (field.data.str) {
-			lblString->setText(U82Q(field.data.str));
+	if (field.flags & RomFields::STRF_PARSE_LINKS) {
+		// Enable link parsing.
+		lblString->setTextFormat(Qt::RichText);
+		lblString->setOpenExternalLinks(true);
+		lblString->setTextInteractionFlags(
+			Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
+
+		// NOTE: Only allowing a limited HTML subset: just `<a>`.
+		// Search for any other tags and replace the '<' with "&lt;".
+		// TODO: Do we need to replace '>' with "&gt;"?
+		const rp_qsizetype text_size = text.size();
+		QString escText;
+		escText.reserve(text.size());
+		for (rp_qsizetype i = 0; i < text_size; i++) {
+			QChar c = text[i];
+			if (c == QChar(L'<')) {
+				// Found a '<'.
+				// Should be followed by:
+				// - "a ": start tag
+				// - "/a>": end tag
+				if ((i + 2 < text_size) && text[i+1] == QChar(L'a') && text[i+2] == QChar(L' ')) {
+					// Valid start tag.
+					escText += QLatin1String("<a ");
+					i += 2;
+				} else if ((i + 3 < text_size) && text[i+1] == QChar(L'/') && text[i+2] == QChar(L'a') && text[i+3] == QChar(L'>')) {
+					// Valid end tag.
+					escText += QLatin1String("</a>");
+					i += 3;
+				} else {
+					// Not a valid tag...
+					escText += QLatin1String("&lt;");
+				}
+			} else if (c == QChar(L'\n')) {
+				// Replace newlines with "<br/>".
+				escText += QLatin1String("<br/>");
+			} else {
+				// Not a '<'.
+				escText += c;
+			}
 		}
+
+		lblString->setText(escText);
+	} else {
+		// No links.
+		lblString->setTextFormat(Qt::PlainText);
+		lblString->setTextInteractionFlags(
+			Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+
+		lblString->setText(text);
 	}
 
 	// Expand horizontally, but use preferred size for vertical.
