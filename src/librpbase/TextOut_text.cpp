@@ -370,8 +370,9 @@ private:
 			// Entity is too long!
 			entity++;
 		}
-		memcpy(key.entity, p, len);
+		strncpy(key.entity, p, len);
 		key.entity[len] = '\0';
+		memset(key.value, 0, sizeof(key.value));
 
 		void *ptr = bsearch(&key, rp_get_html_entities_table(),
 			rp_get_html_entities_table_count(), sizeof(html_entity_tbl_t),
