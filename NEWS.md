@@ -42,6 +42,9 @@
   * NES: Fix NES 2.0 exponent/multiplier calculations.
     * Pull request #499: NES: fix multiplier in PRG-/CHR-ROM size calculation
       * Submitted by @slp64.
+  * Windows: Fix SysLink controls not actually opening links when clicked.
+    This only affected the amiibo.life link in previous versions.
+    * Affects: v1.7 - v2.8
 
 ## v2.8 (released 2026/06/20)
 

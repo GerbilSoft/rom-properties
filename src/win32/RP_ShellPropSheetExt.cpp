@@ -3064,14 +3064,17 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 		}
 
 		case WM_NOTIFY: {
-			// Propagate NM_CUSTOMDRAW to the parent dialog.
+			// Propagate notifications to the parent dialog.
+			// FIXME: Propagate all notifications, or just this subset?
 			const NMHDR *const pHdr = reinterpret_cast<const NMHDR*>(lParam);
 			switch (pHdr->code) {
+				case HDN_DIVIDERDBLCLICK:
 				case LVN_GETDISPINFO:
 				case LVN_COLUMNCLICK:
-				case HDN_DIVIDERDBLCLICK:
+				case LVN_ITEMCHANGING:
 				case NM_CUSTOMDRAW:
-				case LVN_ITEMCHANGING: {
+				case NM_CLICK:
+				case NM_RETURN: {
 					// NOTE: Since this is a DlgProc, we can't simply return
 					// the CDRF code. It has to be set as DWLP_MSGRESULT.
 					// References:
