@@ -1351,7 +1351,7 @@ int EXEPrivate::addFields_PE_PDB(void)
 	};
 
 	uint32_t size = le32_to_cpu(debug_dir.Size);
-	if (size && debug_dir.VirtualAddress != 0 && (size/sizeof(IMAGE_DEBUG_DIRECTORY)) < 16) { // cap to a reasonable limit
+	if (size && debug_dir.VirtualAddress != 0 && (size / sizeof(IMAGE_DEBUG_DIRECTORY)) < 16) { // cap to a reasonable limit
 		rp::uvector<IMAGE_DEBUG_DIRECTORY> debug_ents(size / sizeof(IMAGE_DEBUG_DIRECTORY));
 		if (!safe_read_vmem(le32_to_cpu(debug_dir.VirtualAddress), size, debug_ents.data())) {
 			// Reading the IMAGE_DEBUG_DIRECTORY failed.
@@ -1415,7 +1415,7 @@ int EXEPrivate::addFields_PE_PDB(void)
 						}
 					}
 					fields.addField_string(C_("EXE|PDB", "PDB Link"),
-						fmt::format(FSTR("<a href=\"https://msdl.microsoft.com/download/symbols/{}/{}/{}\">Microsoft Symbol Server</a>"),
+						fmt::format(FSTR("<a href=\"https://msdl.microsoft.com/download/symbols/{:s}/{:s}/{:s}\">Microsoft Symbol Server</a>"),
 							last_path_component, symsrv_path, last_path_component));
 					return 0;
 				}
