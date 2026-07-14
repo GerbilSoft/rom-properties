@@ -529,7 +529,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		// Current DLL name from the import table.
 		const char *const dll_name = s_dll_name.c_str();
 
-		// Check for MSVC 2015-2019. (vcruntime140.dll)
+		// Check for MSVC 2015-2026. (vcruntime140.dll)
 		if (!strcasecmp(dll_name, "vcruntime140.dll")) {
 			// TODO: If host OS is Windows XP or earlier, limit it to 2017?
 			refDesc = fmt::format(
@@ -538,7 +538,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 				default:
 					break;
 				case IMAGE_FILE_MACHINE_I386:
-					refLink = "https://aka.ms/vs/17/release/VC_redist.x86.exe";
+					refLink = "https://aka.ms/vs/18/release/VC_redist.x86.exe";
 					break;
 				case IMAGE_FILE_MACHINE_ARMV7:
 					// No longer available from Microsoft...
@@ -546,10 +546,10 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 					refLink = "https://rpdb.gerbilsoft.com/redist/VC_redist.arm.vs2017.exe";
 					break;
 				case IMAGE_FILE_MACHINE_AMD64:
-					refLink = "https://aka.ms/vs/17/release/VC_redist.x64.exe";
+					refLink = "https://aka.ms/vs/18/release/VC_redist.x64.exe";
 					break;
 				case IMAGE_FILE_MACHINE_ARM64:
-					refLink = "https://aka.ms/vs/17/release/VC_redist.arm64.exe";
+					refLink = "https://aka.ms/vs/18/release/VC_redist.arm64.exe";
 					break;
 			}
 			break;
