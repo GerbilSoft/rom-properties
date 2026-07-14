@@ -270,9 +270,9 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 	static const array<msvb_dll_t, 5> msvb_dll_tbl = {{
 		{4,0, {'V','B','R','U','N','4','0','0'}, nullptr},
 		{4,0, {'V','B','R','U','N','4','1','6'}, nullptr},	// TODO: Is this a thing?
-		{3,0, {'V','B','R','U','N','3','0','0'}, nullptr},
-		{2,0, {'V','B','R','U','N','2','0','0'}, nullptr},
-		{1,0, {'V','B','R','U','N','1','0','0'}, "https://download.microsoft.com/download/vb30/sampleaa/1/w9xnt4/en-us/vbrun100.exe"},
+		{3,0, {'V','B','R','U','N','3','0','0'}, "https://download.microsoft.com/download/vb30/update/1/win98/EN-US/vbrun300.exe"},
+		{2,0, {'V','B','R','U','N','2','0','0'}, "https://download.microsoft.com/download/vb30/Sample39/1/W9XNT4/EN-US/vbrun200.exe"},
+		{1,0, {'V','B','R','U','N','1','0','0'}, "https://download.microsoft.com/download/vb30/sampleAA/1/W9XNT4/EN-US/vbrun100.exe"},
 	}};
 
 	// FIXME: Alignment?
@@ -532,8 +532,17 @@ void EXEPrivate::addFields_NE(void)
 	// Runtime DLL
 	// NOTE: Strings were obtained earlier.
 	if (hdr.ne.targOS == NE_OS_WIN && !runtime_dll.empty()) {
-		// TODO: Show the link?
-		fields.addField_string(C_("EXE", "Runtime DLL"), runtime_dll);
+		const char *const s_runtime_dll_title = C_("EXE", "Runtime DLL");
+		if (!runtime_link.empty()) {
+			// Format the link as HTML.
+			string html_link = fmt::format(FSTR("<a href=\"{:s}\">{:s}</a>"),
+				runtime_link, runtime_dll);
+			fields.addField_string(s_runtime_dll_title, html_link,
+				RomFields::STRF_PARSE_LINKS);
+		} else {
+			// No link; no HTML.
+			fields.addField_string(s_runtime_dll_title, runtime_dll);
+		}
 	}
 
 	// Module Name and Module Description
