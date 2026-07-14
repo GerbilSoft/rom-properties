@@ -247,6 +247,10 @@ private:
 			return printInvalidTag(tag);
 		}
 
+		// "OSC 8" references:
+		// - https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
+		// - https://github.com/Alhadis/OSC8-Adoption/
+
 		// Start building the return string using the URL.
 		str = "\033]8;;";		// OSC 8 start
 		str.append(p, dblquote - p);
