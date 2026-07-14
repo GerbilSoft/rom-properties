@@ -44,6 +44,6 @@ static inline size_t utf8_disp_strlen(const std::string &str, size_t max_len = s
  * @param chr Code point
  * @return UTF-8 encoded code point
  */
-std::string utf8_encode_code_point(unsigned int chr);
+std::string utf8_encode_code_point(char32_t chr);
 
 }

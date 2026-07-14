@@ -347,7 +347,7 @@ private:
 		}
 		strncpy(key.entity, p, len);
 		key.entity[len] = '\0';
-		memset(key.value, 0, sizeof(key.value));
+		key.chr = 0;
 
 		void *ptr = bsearch(&key, rp_get_html_entities_table(),
 			rp_get_html_entities_table_count(), sizeof(html_entity_tbl_t),
@@ -367,7 +367,7 @@ private:
 		// Return the decoded entity.
 		entity = p_end + 1;
 		const html_entity_tbl_t *const p_tbl = reinterpret_cast<const html_entity_tbl_t*>(ptr);
-		return p_tbl->value;
+		return utf8_encode_code_point(p_tbl->chr);
 	}
 
 	/**

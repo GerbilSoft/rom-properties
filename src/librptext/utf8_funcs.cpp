@@ -116,7 +116,7 @@ size_t utf8_disp_strlen(const char *str, size_t max_len)
  * @param chr Code point
  * @return UTF-8 encoded code point
  */
-string utf8_encode_code_point(unsigned int chr)
+string utf8_encode_code_point(char32_t chr)
 {
 	char buf[5];
 

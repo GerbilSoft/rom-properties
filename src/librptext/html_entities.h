@@ -10,6 +10,9 @@
 
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
+// C includes
+#include <uchar.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -23,7 +26,7 @@ extern "C" {
  */
 typedef struct _html_entity_tbl_t {
 	char entity[8];	// HTML entity, minus '&' and ';'
-	char value[4];	// Actual text value
+	char16_t chr;	// UTF-16 code point
 } html_entity_tbl_t;
 
 /**
