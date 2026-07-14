@@ -19,6 +19,9 @@
     ROM images. These were previously not detected at all due to missing
     fields in the ROM header.
     * Thanks to F3l1x_10m for providing test files.
+  * EXE: Show PDB CodeView information in executables that have it.
+    * Pull request #500: [libromdata] Add support for PDB Codeview info in PE binaries
+      * Submitted by @fishywitch.
 
 * Other changes:
   * KDE Frameworks 6: Also use the file size unit dialect specified in
