@@ -24,8 +24,10 @@ using LibRpTexture::rp_image;
 
 // C includes (C++ namespace)
 #include <cassert>
+#include <cstdlib>
 
 // C++ STL classes
+#include <algorithm>
 using std::array;
 using std::max;
 using std::ostream;
@@ -35,6 +37,9 @@ using std::vector;
 
 // libfmt
 #include "rp-libfmt.h"
+
+// HTML entities
+#include "html_entities.hpp"
 
 // TextOut_text isn't used by libromdata directly,
 // so use some linker hax to force linkage.
@@ -190,41 +195,233 @@ class StringField {
 	const RomFields::Field &romField;
 	bool useAnsiColor;
 private:
-	static string htmlLinkToOsc8(const string &in_str)
+	/**
+	 * Print an invalid HTML tag.
+	 * The tag contents is printed as-is.
+	 * @param tag Pointer to start of HTML tag (will be modified) (MUST be pointing to a NULL-terminated string!)
+	 * @return Invalid HTML tag.
+	 */
+	static string printInvalidTag(const char *&tag)
 	{
-		// Convert an HTML-style link to OSC 8.
-		// NOTE: Only supporting a single link in this format:
-		// <a href="https://blahblahblah">description</a>
 		string str;
-		const size_t apos1 = in_str.find("<a href=\"");
-		if (apos1 == string::npos) {
-			return in_str;
-		}
-		const size_t apos1_end = apos1 + 9;
-		const size_t apos2 = in_str.find("\">", apos1_end);
-		if (apos2 == string::npos) {
-			return in_str;
-		}
-		const size_t endapos = in_str.find("</a>", apos2 + 2);
-		if (endapos == string::npos) {
-			return in_str;
+
+		const char *const tag_end = strchr(tag, '>');
+		if (!tag_end) {
+			// No tag end...
+			const size_t p_remain = strlen(tag);
+			str.append(tag, p_remain);
+			tag += p_remain;
+		} else {
+			// Found the tag end.
+			str.append(tag, tag_end - tag + 1);
+			tag = tag_end + 1;
 		}
 
-		// "OSC 8" references:
-		// - https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
-		// - https://github.com/Alhadis/OSC8-Adoption/
+		return str;
+	}
 
-		// Build the return string.
-		str.reserve(in_str.size() + 12);
-		str = in_str.substr(0, apos1);
-		str += "\033]8;;";	// OSC 8 start
-		str += in_str.substr(apos1_end, apos2 - apos1_end);
-		str += "\033\\"		// End of URL; start of display text
-		       "\033[34;1;4m";	// blue, bold, underlined
-		str += in_str.substr(apos2 + 2, endapos - apos2 - 2);
+	/**
+	 * Parse an HTML tag.
+	 * @param tag Pointer to HTML tag (will be modified) (MUST be pointing to a NULL-terminated string!)
+	 * @return Parsed HTML tag
+	 */
+	static string parseHtmlTag(const char *&tag)
+	{
+		string str;
+		const char *p = tag;
+
+		// Check for an HTML link.
+		if (strncmp(p+1, "a href=\"", 8) != 0) {
+			// Not a link.
+			return printInvalidTag(tag);
+		}
+
+		// TODO: Search for HTML entities in the URL.
+		// For now, using it as-is.
+
+		// Find the end of the link text.
+		p += 9;
+		const char *const dblquote = strchr(p, '"');
+		if (!dblquote) {
+			// Link text doesn't end...
+			return printInvalidTag(tag);
+		}
+
+		// Start building the return string using the URL.
+		str = "\033]8;;";		// OSC 8 start
+		str.append(p, dblquote - p);
+		str += "\033\\";		// End of URL
+		p = dblquote + 1;
+
+		// Next character must be '>'.
+		if (*p != '>') {
+			// `<a>` tag isn't closed.
+			return printInvalidTag(tag);
+		}
+		p++;
+
+		// Search for "</a>".
+		// TODO: Search for entities in the display text.
+		// For now, using it as-is.
+		const char *end_link = strstr(p, "</a>");
+		if (!end_link) {
+			// No end tag...
+			return printInvalidTag(tag);
+		}
+
+		// Add the display text.
+		// TODO: Check for HTML entities?
+		str += "\033[34;1;4m";		// blue, bold, underlined
+		str.append(p, end_link - p);
 		str += "\033[0m"	// Unset color attributes
 		       "\033]8;;\033\\"; // OSC 8 end
-		str += in_str.substr(endapos + 4);
+
+		// End of link parsing.
+		tag = end_link + 4;
+		return str;
+	}
+
+	/**
+	 * Parse an HTML entity.
+	 * @param entity Pointer to HTML tag (will be modified) (MUST be pointing to a NULL-terminated string!)
+	 * @return Parsed HTML entity
+	 */
+	static string parseHtmlEntity(const char *&entity)
+	{
+		// First character is always '&', so skip it.
+		const char *p = entity + 1;
+
+		// Find the end of the entity string.
+		const char *const p_end = strchr(p, ';');
+		if (!p_end) {
+			// No end... Skip it.
+			entity++;
+			return "&";
+		}
+
+		size_t len = p_end - p;
+		if (len > 32) {
+			// Entity is too big...
+			entity++;
+			return "&";
+		}
+
+		// Need to copy the value into a buffer for NULL termination.
+		char tmpbuf[33];
+
+		// Check for a numeric entity.
+		if (p[0] == '#') {
+			// Numeric Unicode entity.
+			char *endptr = nullptr;
+			unsigned int chr;
+			if (p[1] == 'x') {
+				// Hexadecimal number
+				p += 2;
+				len -= 2;
+				memcpy(tmpbuf, p, len);
+				tmpbuf[len] = '\0';
+				chr = strtoul(tmpbuf, &endptr, 16);
+			} else {
+				// Decimal number
+				p++;
+				len--;
+				memcpy(tmpbuf, p, len);
+				tmpbuf[len] = '\0';
+				chr = strtoul(tmpbuf, &endptr, 10);
+			}
+
+			// Encode as UTF-8.
+			string str;
+			if (chr <= 0x7F) {
+				str = static_cast<char>(chr);
+			} else if (chr <= 0x7FF) {
+				str = static_cast<char>(0xC0 | (chr >> 6));
+				str += static_cast<char>(0x80 | (chr & 0x3F));
+			} else if (chr <= 0xFFFF) {
+				str = static_cast<char>(0xE0 | (chr >> 12));
+				str += static_cast<char>(0x80 | ((chr >> 6) & 0x3F));
+				str += static_cast<char>(0x80 |  (chr & 0x3F));
+			} else if (chr <= 0x10FFFF) {
+				str = static_cast<char>(0xF0 | (chr >> 18));
+				str += static_cast<char>(0x80 | ((chr >> 12) & 0x3F));
+				str += static_cast<char>(0x80 | ((chr >> 6) & 0x3F));
+				str += static_cast<char>(0x80 |  (chr & 0x3F));
+			} else {
+				// Invalid UTF-8 character...
+				// Use the Unicode replacment character. (U+FFFD)
+				str = "�";
+			}
+			entity = p_end + 1;
+			return str;
+		}
+
+		// Check for known HTML entities.
+		// FIXME: std::lower_bound() isn't working...
+		// Using bsearch() instead.
+		html_entity_tbl_t key;
+		if (len >= sizeof(key.entity) - 1) {
+			// Entity is too long!
+			entity++;
+		}
+		memcpy(key.entity, p, len);
+		key.entity[len] = '\0';
+
+		void *ptr = bsearch(&key, html_entity_tbl.data(),
+			html_entity_tbl.size(), sizeof(html_entity_tbl_t),
+			[](const void *a, const void *b) -> int
+			{
+				const html_entity_tbl_t *const pa = static_cast<const html_entity_tbl_t*>(a);
+				const html_entity_tbl_t *const pb = static_cast<const html_entity_tbl_t*>(b);
+				return strcmp(pa->entity, pb->entity);
+			});
+
+		if (!ptr) {
+			// Unsupported entity...
+			entity++;
+			return "&";
+		}
+
+		// Return the decoded entity.
+		entity = p_end + 1;
+		const html_entity_tbl_t *const p_tbl = reinterpret_cast<const html_entity_tbl_t*>(ptr);
+		return p_tbl->value;
+	}
+
+	/**
+	 * Parse text using our HTML links subset.
+	 * Links must use the exact format: `<a href="https://blahblahblah">description</a>`
+	 * Standard HTML entity rules apply, e.g. `&lt;`, `&gt`;, and `&amp;`.
+	 * HTML tags other than `<a>` will be displayed as plaintext.
+	 */
+	static string parseHtmlLinksSubset(const string &in_str)
+	{
+		string str;
+		str.reserve(in_str.size());
+
+		const char *p = in_str.c_str();
+		const char *const p_end = p + in_str.size();
+
+		while (p < p_end) {
+			// Find one of the following:
+			// - '<' (HTML tag open)
+			// - '&' (HTML entity)
+
+			if (*p == '<') {
+				// Start of an HTML tag.
+				str += parseHtmlTag(p);
+			} else if (*p == '&') {
+				// Start of an HTML entity.
+				str += parseHtmlEntity(p);
+			} else {
+				// Not an HTML tag.
+				// TODO: Search for '<' and '&' at the same time,
+				// then add the full string buffer instead of
+				// one character at a time?
+				str += *p++;
+			}
+		}
+
+		// String has been parsed.
 		return str;
 	}
 
@@ -237,19 +434,20 @@ public:
 
 		if ((field.romField.flags & RomFields::STRF_WARNING) && field.useAnsiColor) {
 			// Field should be printed as bold red.
+			// FIXME: If the string has links, this may break!
 			os << "\033[31;1m";
 		}
 
 		os << ColonPad(field.width, romField.name);
 		if (romField.data.str) {
-			if ((field.romField.flags & RomFields::STRF_CREDITS) && field.useAnsiColor) {
-				// Credits field may contain a link.
+			if ((field.romField.flags & RomFields::STRF_PARSE_LINKS) && field.useAnsiColor) {
+				// This field may contain a hyperlink. (restricted HTML subset)
 				// Print the link in blue with an underline, and use OSC 8.
 				// TODO: Is it possible to detect if the terminal supports OSC 8?
 				// FIXME: May conflict with STRF_WARNING.
 				// NOTE: Not using SafeString in order to print ANSI escape sequences.
-				// STRF_CREDITS fields shouldn't have any weird control codes...
-				string str = htmlLinkToOsc8(romField.data.str);
+				// STRF_PARSE_LINKS fields shouldn't have any weird control codes...
+				string str = parseHtmlLinksSubset(romField.data.str);
 				os << SafeString(str, static_cast<SafeString::SafeStringFlags>(SafeString::SSF_QUOTES | SafeString::SSF_NO_ESCAPE), field.width);
 			} else {
 				// Print the string without any formatting.

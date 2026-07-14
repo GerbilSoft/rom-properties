@@ -1416,7 +1416,8 @@ int EXEPrivate::addFields_PE_PDB(void)
 					}
 					fields.addField_string(C_("EXE|PDB", "PDB Link"),
 						fmt::format(FSTR("<a href=\"https://msdl.microsoft.com/download/symbols/{:s}/{:s}/{:s}\">Microsoft Symbol Server</a>"),
-							last_path_component, symsrv_path, last_path_component));
+							last_path_component, symsrv_path, last_path_component),
+							RomFields::STRF_PARSE_LINKS);
 					return 0;
 				}
 				// not fatal, though some information is missing
