@@ -316,6 +316,87 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(_In_ POINT pt_start, _In_ SIZE
 }
 
 /**
+ * Create a control for initString().
+ * @param isLink If true, creates a WC_LINK control to display links.
+ * @param isMultiline If true, create a multi-line control.
+ * @param str String data
+ * @param pt Position
+ * @param size Size
+ * @param hwndParent Parent window
+ * @param cId Control ID
+ * @return HWND
+ */
+HWND RP_ShellPropSheetExt_Private::createStringControl(
+	_In_ bool isLink, _In_ bool isMultiline,
+	_In_ LPCTSTR str, _In_ POINT pt, _In_ SIZE size,
+	_In_ HWND hwndParent, _In_ uint16_t cId)
+{
+	// Create a SysLink widget.
+	// SysLink allows the user to click a link and
+	// open a webpage. It does NOT allow highlighting.
+	// TODO: SysLink + EDIT?
+	// TODO: With subtabs:
+	// - Verify behavior of LWS_TRANSPARENT.
+	// - Show below subtabs.
+	HWND hDlgItem = nullptr;
+
+	// If a WC_LINK control is requested, try creating it first.
+	if (isLink) {
+		hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
+			WC_LINK, str,
+			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
+			pt.x, pt.y, size.cx, size.cy,
+			hwndParent, (HMENU)static_cast<INT_PTR>(cId), nullptr, nullptr);
+		if (hDlgItem) {
+			hwndSysLinkControls.insert(hDlgItem);
+		}
+	}
+
+	if (!hDlgItem) {
+		// Unable to create a SysLink control.
+		// This might happen if this is an ANSI build
+		// or if we're running on Windows 2000.
+		// (Alternatively, SysLink wasn't requested...)
+
+		// FIXME: Remove links from the text before creating
+		// a plain-old WC_EDIT control.
+
+		// Create a read-only EDIT control.
+		// The STATIC control doesn't allow the user
+		// to highlight and copy data.
+		DWORD dwStyle;
+		if (isMultiline) {
+			// Multiple lines
+			dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS |
+					ES_READONLY | ES_AUTOHSCROLL | ES_MULTILINE;
+		} else {
+			// Single line
+			dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS |
+					ES_READONLY | ES_AUTOHSCROLL;
+		}
+
+		hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
+			WC_EDIT, str, dwStyle,
+			0, 0, 0, 0,	// will be adjusted afterwards
+			hwndParent, (HMENU)static_cast<INT_PTR>(cId), nullptr, nullptr);
+
+		// Subclass multi-line EDIT controls to work around Enter/Escape issues.
+		// We're also subclassing single-line EDIT controls to disable the
+		// initial selection. (DLGC_HASSETSEL)
+		// Reference: http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
+		// TODO: Error handling?
+		SUBCLASSPROC proc = (isMultiline)
+			? LibWin32UI::MultiLineEditProc
+			: LibWin32UI::SingleLineEditProc;
+		SetWindowSubclass(hDlgItem, proc,
+			static_cast<UINT_PTR>(cId),
+			reinterpret_cast<DWORD_PTR>(GetParent(hDlgSheet)));
+	}
+
+	return hDlgItem;
+}
+
+/**
  * Initialize a string field. (Also used for Date/Time.)
  * @param hWndTab	[in] Tab window (for the actual control)
  * @param pt_start	[in] Starting position, in pixels
@@ -424,13 +505,12 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 		}
 	}
 
-	// Dialog item.
+	// Dialog item
 	const uint16_t cId = IDC_RFT_STRING(fieldIdx);
+	const bool isParseLinks = !!(field.flags & RomFields::STRF_PARSE_LINKS);
 	HWND hDlgItem;
 
-	if (field.type == RomFields::RomFieldType::RFT_STRING &&
-	    (field.flags & RomFields::STRF_CREDITS))
-	{
+	if (field.flags & RomFields::STRF_CREDITS) {
 		// Align to the bottom of the dialog and center-align the text.
 		// 7x7 DLU margin is recommended by the Windows UX guidelines.
 		// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
@@ -449,62 +529,6 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 			return 0;
 		}
 
-		// Create a SysLink widget.
-		// SysLink allows the user to click a link and
-		// open a webpage. It does NOT allow highlighting.
-		// TODO: SysLink + EDIT?
-		// FIXME: Centered text alignment?
-		// TODO: With subtabs:
-		// - Verify behavior of LWS_TRANSPARENT.
-		// - Show below subtabs.
-		hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
-			WC_LINK, str_nl.c_str(),
-			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
-			0, 0, 0, 0,	// will be adjusted afterwards
-			hWndTab, (HMENU)(INT_PTR)cId, nullptr, nullptr);
-		if (!hDlgItem) {
-			// Unable to create a SysLink control
-			// This might happen if this is an ANSI build
-			// or if we're running on Windows 2000.
-
-			// FIXME: Remove links from the text before creating
-			// a plain-old WC_EDIT control.
-
-			// Create a read-only EDIT control.
-			// The STATIC control doesn't allow the user
-			// to highlight and copy data.
-			DWORD dwStyle;
-			if (isMultiline) {
-				// Multiple lines
-				dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS |
-				          ES_READONLY | ES_AUTOHSCROLL | ES_MULTILINE;
-			} else {
-				// Single line
-				dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS |
-				          ES_READONLY | ES_AUTOHSCROLL;
-			}
-
-			hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
-				WC_EDIT, str_nl.c_str(), dwStyle,
-				0, 0, 0, 0,	// will be adjusted afterwards
-				hWndTab, (HMENU)(INT_PTR)cId, nullptr, nullptr);
-
-			// Subclass multi-line EDIT controls to work around Enter/Escape issues.
-			// We're also subclassing single-line EDIT controls to disable the
-			// initial selection. (DLGC_HASSETSEL)
-			// Reference: http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
-			// TODO: Error handling?
-			SUBCLASSPROC proc = (isMultiline)
-				? LibWin32UI::MultiLineEditProc
-				: LibWin32UI::SingleLineEditProc;
-			SetWindowSubclass(hDlgItem, proc,
-				static_cast<UINT_PTR>(cId),
-				reinterpret_cast<DWORD_PTR>(GetParent(hDlgSheet)));
-		}
-
-		tab.lblCredits = hDlgItem;
-		SetWindowFont(hDlgItem, hFont, false);
-
 		// NOTE: We can't use LibWin32UI::measureTextSize() because
 		// that includes the HTML markup, and LM_GETIDEALSIZE is Vista+ only.
 		// Use a wrapper measureTextSizeLink() that removes HTML-like
@@ -517,9 +541,12 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 			(((winRect.right - winRect.left) - szText.cx) / 2) + winRect.left,
 			winRect.bottom - tmpRect.top - szText.cy
 		};
-		// Set the position and size.
-		SetWindowPos(hDlgItem, nullptr, pos.x, pos.y, szText.cx, szText.cy,
-			SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+
+		// Create the SysLink control.
+		// FIXME: Centered text alignment?
+		hDlgItem = createStringControl(isParseLinks, isMultiline,
+			str_nl.c_str(), pos, szText, hWndTab, cId);
+		tab.lblCredits = hDlgItem;
 
 		// Clear field_cy so the description widget won't show up
 		// and the "normal" area will be empty.
@@ -528,22 +555,8 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 		// Create a read-only EDIT control.
 		// The STATIC control doesn't allow the user
 		// to highlight and copy data.
-		DWORD dwStyle;
-		if (isMultiline) {
-			// Multiple lines
-			dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS |
-			          ES_READONLY | ES_AUTOHSCROLL | ES_MULTILINE;
-		} else {
-			// Single line
-			dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS |
-			          ES_READONLY | ES_AUTOHSCROLL;
-		}
-		hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
-			WC_EDIT, str_nl.c_str(), dwStyle,
-			pt_start.x, pt_start.y,
-			size.cx, field_cy,
-			hWndTab, (HMENU)(INT_PTR)cId, nullptr, nullptr);
-		SetWindowFont(hDlgItem, hFont, false);
+		hDlgItem = createStringControl(isParseLinks, isMultiline,
+			str_nl.c_str(), pt_start, size, hWndTab, cId);
 
 		// Get the EDIT control margins.
 		const DWORD dwMargins = (DWORD)SendMessage(hDlgItem, EM_GETMARGINS, 0, 0);
@@ -553,19 +566,10 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 		SetWindowPos(hDlgItem, nullptr, pt_start.x - LOWORD(dwMargins), pt_start.y,
 			size.cx + LOWORD(dwMargins), field_cy,
 			SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-
-		// Subclass multi-line EDIT controls to work around Enter/Escape issues.
-		// We're also subclassing single-line EDIT controls to disable the
-		// initial selection. (DLGC_HASSETSEL)
-		// Reference:  http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
-		// TODO: Error handling?
-		SUBCLASSPROC proc = (isMultiline)
-			? LibWin32UI::MultiLineEditProc
-			: LibWin32UI::SingleLineEditProc;
-		SetWindowSubclass(hDlgItem, proc,
-			static_cast<UINT_PTR>(cId),
-			reinterpret_cast<DWORD_PTR>(GetParent(hDlgSheet)));
 	}
+
+	// Set the font.
+	SetWindowFont(hDlgItem, hFont, false);
 
 	// Save the control in the appropriate container, if necessary.
 	if (isWarning) {
@@ -2556,17 +2560,13 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 
 		case NM_CLICK:
 		case NM_RETURN: {
-			// Check if this is a SysLink control.
+			// Check if this is one of our SysLink controls.
 			// NOTE: SysLink control only supports Unicode.
-			// NOTE: Linear search...
-			const HWND hwndFrom = pHdr->hwndFrom;
-			const bool isSysLink = std::any_of(tabs.cbegin(), tabs.cend(),
-				[hwndFrom](const tab& tab) noexcept -> bool {
-					return (tab.lblCredits == hwndFrom);
-				});
-			if (isSysLink) {
-				// It's a SysLink control.
+			auto iter = hwndSysLinkControls.find(pHdr->hwndFrom);
+			if (iter != hwndSysLinkControls.end()) {
+				// It's one of our SysLink controls.
 				// Open the URL.
+				// TODO: Verify that the protocol starts with "https://" ?
 				PNMLINK pNMLink = reinterpret_cast<PNMLINK>(pHdr);
 				ShellExecute(nullptr, _T("open"), pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);
 			}

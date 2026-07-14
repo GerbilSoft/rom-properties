@@ -3,7 +3,7 @@
  * RP_ShellPropSheetExt_p.hpp: IShellPropSheetExt implementation.          *
  * (Private class)                                                         *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,6 +17,7 @@
 
 // C++ includes
 #include <memory>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -106,6 +107,11 @@ public:
 	LibWin32UI::WTSSessionNotification wts;
 	// ListView controls (for toggling LVS_EX_DOUBLEBUFFER)
 	std::vector<HWND> hwndListViewControls;
+
+	// SysLink controls
+	// NOTE: There's usually only a few of these, so we'll use
+	// a regular set<> instead of an unordered_set<>.
+	std::set<HWND> hwndSysLinkControls;
 
 	// ListView data
 	// - Key: ListView dialog ID
@@ -220,6 +226,22 @@ private:
 	 * @return Row height, in pixels.
 	 */
 	int createHeaderRow(_In_ POINT pt_start, _In_ SIZE size);
+
+	/**
+	 * Create a control for initString().
+	 * @param isLink If true, creates a WC_LINK control to display links.
+	 * @param isMultiline If true, create a multi-line control.
+	 * @param str String data
+	 * @param pt Position
+	 * @param size Size
+	 * @param hwndParent Parent window
+	 * @param cId Control ID
+	 * @return HWND
+	 */
+	HWND createStringControl(
+		_In_ bool isLink, _In_ bool isMultiline,
+		_In_ LPCTSTR str, _In_ POINT pt, _In_ SIZE size,
+		_In_ HWND hwndParent, _In_ uint16_t cId);
 
 	/**
 	 * Initialize a string field. (Also used for Date/Time.)
