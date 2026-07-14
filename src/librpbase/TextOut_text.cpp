@@ -343,13 +343,13 @@ private:
 				buf[1] = static_cast<char>(0x80 | (chr & 0x3F));
 				buf[2] = 0;
 			} else if (chr <= 0xFFFF) {
-				buf[0] = static_cast<char>(0xE0 | (chr >> 12));
-				buf[1] = static_cast<char>(0x80 | ((chr >> 6) & 0x3F));
+				buf[0] = static_cast<char>(0xE0 |  (chr >> 12));
+				buf[1] = static_cast<char>(0x80 | ((chr >>  6) & 0x3F));
 				buf[2] = static_cast<char>(0x80 |  (chr & 0x3F));
 			} else if (chr <= 0x10FFFF) {
-				buf[0] = static_cast<char>(0xF0 | (chr >> 18));
+				buf[0] = static_cast<char>(0xF0 |  (chr >> 18));
 				buf[1] = static_cast<char>(0x80 | ((chr >> 12) & 0x3F));
-				buf[2] = static_cast<char>(0x80 | ((chr >> 6) & 0x3F));
+				buf[2] = static_cast<char>(0x80 | ((chr >>  6) & 0x3F));
 				buf[3] = static_cast<char>(0x80 |  (chr & 0x3F));
 				buf[4] = 0;
 			} else {
