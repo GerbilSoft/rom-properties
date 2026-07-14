@@ -528,6 +528,38 @@ typedef enum {
 	XP_VISUAL_STYLE_MANIFEST_RESOURCE_ID = 123,
 } PE_ManifestID;
 
+// - https://github.com/MaxKellermann/w32api/blob/440c229960e782831d01c6638661f1c40cadbeb5/include/winnt.h
+typedef struct _IMAGE_DEBUG_DIRECTORY {
+	uint32_t Characteristics;
+	uint32_t TimeDateStamp;
+	uint16_t MajorVersion;
+	uint16_t MinorVersion;
+	uint32_t Type;
+	uint32_t SizeOfData;
+	uint32_t AddressOfRawData;
+	uint32_t PointerToRawData;
+} IMAGE_DEBUG_DIRECTORY;
+ASSERT_STRUCT(IMAGE_DEBUG_DIRECTORY, 6*sizeof(uint32_t) + 2*sizeof(uint16_t));
+
+#define IMAGE_DEBUG_TYPE_CODEVIEW 2
+
+typedef struct _GUID {
+	uint32_t Data1;
+	uint16_t Data2;
+	uint16_t Data3;
+	uint8_t Data4[8];
+} GUID;
+ASSERT_STRUCT(GUID, 16);
+
+//https://github.com/winsiderss/systeminformer/blob/5bb68c3a978533680e782bff60abe9d979ca6b64/phlib/include/mapimg.h#L810
+typedef struct _CODEVIEW_INFO_PDB70 {
+	uint32_t Signature;
+	GUID PdbGuid;
+	uint32_t PdbAge;
+	char ImageName[1];
+} CODEVIEW_INFO_PDB70;
+ASSERT_STRUCT(CODEVIEW_INFO_PDB70, 28);
+
 #ifdef __cplusplus
 }
 #endif
