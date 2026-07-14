@@ -371,6 +371,7 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 	} else {
 		// No links.
 		lblString->setTextFormat(Qt::PlainText);
+		lblString->setOpenExternalLinks(false);
 		lblString->setTextInteractionFlags(
 			Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
 
