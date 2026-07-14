@@ -2571,9 +2571,16 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 				// The SysLink control is in one of our tabs.
 				// Open the URL.
 				// NOTE: SysLink control only supports Unicode.
-				// TODO: Verify that the protocol starts with "https://" ?
 				PNMLINK pNMLink = reinterpret_cast<PNMLINK>(pHdr);
-				ShellExecute(nullptr, _T("open"), pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);
+				if (pNMLink->item.szUrl) {
+					// Verify the protocol.
+					if (!wcsncmp(pNMLink->item.szUrl, L"https://", 8) ||
+					    !wcsncmp(pNMLink->item.szUrl, L"mailto:", 7))
+					{
+						// Protocol is acceptable.
+						ShellExecute(nullptr, _T("open"), pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);
+					}
+				}
 			}
 			break;
 		}
