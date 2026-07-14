@@ -29,6 +29,9 @@
   * The MiniZip-NG native API is now used instead of the compat API.
     On Linux systems, a system-wide version of MiniZip-NG is now preferred
     instead of the built-in copy if it's available.
+  * String fields can now contain hyperlinks. This is currently used by the
+    EXE parser to provide download links for the Runtime DLL and, if available,
+    the PDB file from Microsoft Symbol Servers.
 
 * Bug fixes:
   * Dreamcast and SegaSaturn incorrectly added DiscNumber as integer.
