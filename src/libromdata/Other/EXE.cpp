@@ -1134,6 +1134,7 @@ int EXE::loadFieldData(void)
 	// - PE: 7
 	//   - PE Version: +6
 	//   - PE Manifest: +12
+	//   - PE PDB Codeview: +3
 	d->fields.reserve(28);
 
 	// Executable type.
