@@ -326,7 +326,7 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 		lblString->setWordWrap(true);
 	}
 
-	if (field.flags & RomFields::STRF_PARSE_LINKS) {
+	if (!text.isEmpty() && (field.flags & RomFields::STRF_PARSE_LINKS)) {
 		// Enable link parsing.
 		lblString->setTextFormat(Qt::RichText);
 		lblString->setOpenExternalLinks(true);
