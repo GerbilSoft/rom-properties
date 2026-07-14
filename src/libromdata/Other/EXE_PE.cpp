@@ -1342,9 +1342,8 @@ int EXEPrivate::addFields_PE_PDB(void)
 
 	auto safe_read_vmem = [&](uint32_t va, uint32_t size, void* to) -> bool {
 		if (file && file->isOpen()){
-			auto addr = pe_vaddr_to_paddr(va,size);
-			file->seek(addr);
-			if (addr && file->read(to,size) == size) {
+			uint32_t addr = pe_vaddr_to_paddr(va,size);
+			if (addr != 0 && file->seekAndRead(addr, to, size) == size) {
 				return true;
 			}
 		}
@@ -1353,7 +1352,7 @@ int EXEPrivate::addFields_PE_PDB(void)
 
 	uint32_t size = le32_to_cpu(debug_dir.Size);
 	if (size && debug_dir.VirtualAddress != 0 && (size/sizeof(IMAGE_DEBUG_DIRECTORY)) < 16) { // cap to a reasonable limit
-		vector<IMAGE_DEBUG_DIRECTORY> debug_ents( size/sizeof(IMAGE_DEBUG_DIRECTORY) );
+		rp::uvector<IMAGE_DEBUG_DIRECTORY> debug_ents(size / sizeof(IMAGE_DEBUG_DIRECTORY));
 		if (!safe_read_vmem(le32_to_cpu(debug_dir.VirtualAddress), size, debug_ents.data())) {
 			// Reading the IMAGE_DEBUG_DIRECTORY failed.
 			return -EFAULT;
