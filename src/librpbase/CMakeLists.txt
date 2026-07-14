@@ -90,7 +90,6 @@ SET(${PROJECT_NAME}_H
 	config/AboutTabText.hpp
 
 	cdrom_structs.h
-	html_entities.hpp
 	)
 
 # NOTE: ENABLE_WEBP has been removed and is always enabled now.

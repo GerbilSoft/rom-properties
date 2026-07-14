@@ -613,7 +613,7 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 	# should be linked in as PRIVATE, and include directories added
 	# manually. Otherwise, the .a libraries get linked in to the
 	# UI frontend plugins.
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpbyteswap-dll rptexture-dll rpfile-dll rpbase-dll rptext-dll)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpbyteswap-dll rptexture-dll rpfile-dll rptext-dll rpbase-dll)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE cachecommon-dll)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpuid)	# for CPU dispatch
 
@@ -673,7 +673,7 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 			)
 	ENDIF()
 ELSE()
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC rpbyteswap rptexture rpfile rpbase rptext)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC rpbyteswap rptexture rpfile rptext rpbase)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC cachecommon)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpuid)	# for CPU dispatch
 	IF(ENABLE_NLS)

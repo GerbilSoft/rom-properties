@@ -1,32 +1,23 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
- * html_entities.hpp: HTML entities table.                                 *
+ * ROM Properties Page shell extension. (librptext)                        *
+ * html_entities.c: HTML entities table.                                   *
  *                                                                         *
  * Copyright (c) 2026 by David Korth.                                      *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#pragma once
+#include "html_entities.h"
 
-// C includes (C++ namespace)
-#include <cstring>
+#include "common.h"	// for ARRAY_SIZE()
 
-// C++ STL classes
-#include <array>
-
-namespace LibRpBase {
-
-// HTML entities, sorted by entity name.
-// Can be used with e.g. bsearch() or std::lower_bound().
-// References:
-// - https://www.w3schools.com/HTML/html_entities.asp
-// - https://www.toptal.com/designers/htmlarrows/symbols/
-struct html_entity_tbl_t {
-	char entity[8];	// HTML entity, minus '&' and ';'
-	char value[4];	// Actual text value
-};
-
-static const std::array<html_entity_tbl_t, 77> html_entity_tbl = {{
+/**
+ * HTML entities, sorted by entity name.
+ * Can be used with e.g. bsearch() or std::lower_bound().
+ * References:
+ * - https://www.w3schools.com/HTML/html_entities.asp
+ * - https://www.toptal.com/designers/htmlarrows/symbols/
+ */
+static const html_entity_tbl_t html_entity_tbl[] = {
 	{"Cfr",		"ℭ"},
 	{"Copf",	"ℂ"},
 	{"DD",		"ⅅ"},
@@ -104,6 +95,29 @@ static const std::array<html_entity_tbl_t, 77> html_entity_tbl = {{
 	//{"VerticalSeparator",	"❘"},	// TODO: Special check for this one?
 	{"weierp",	"℘"},
 	{"yen",		"¥"},
-}};
 
-} // namespace LibRpBase
+	// end of table
+	{"", ""}
+};
+
+/**
+ * Get the HTML entities table.
+ * Table is terminated with an empty-string entry.
+ *
+ * @return HTML entities table
+ */
+const html_entity_tbl_t *rp_get_html_entities_table(void)
+{
+	return html_entity_tbl;
+}
+
+/**
+ * Get the number of entries in the HTML entities table.
+ * NOTE: This does *not* include the empty-string terminator entry.
+ *
+ * @return Number of entries in the HTML entities table
+ */
+size_t rp_get_html_entities_table_count(void)
+{
+	return ARRAY_SIZE(html_entity_tbl) - 1;
+}

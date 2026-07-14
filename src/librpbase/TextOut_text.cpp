@@ -17,6 +17,7 @@
 
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
+#include "librptext/html_entities.h"
 #include "librptext/utf8_strlen.hpp"
 #include "librptexture/img/rp_image.hpp"
 using namespace LibRpText;
@@ -37,9 +38,6 @@ using std::vector;
 
 // libfmt
 #include "rp-libfmt.h"
-
-// HTML entities
-#include "html_entities.hpp"
 
 // TextOut_text isn't used by libromdata directly,
 // so use some linker hax to force linkage.
@@ -370,8 +368,8 @@ private:
 		memcpy(key.entity, p, len);
 		key.entity[len] = '\0';
 
-		void *ptr = bsearch(&key, html_entity_tbl.data(),
-			html_entity_tbl.size(), sizeof(html_entity_tbl_t),
+		void *ptr = bsearch(&key, rp_get_html_entities_table(),
+			rp_get_html_entities_table_count(), sizeof(html_entity_tbl_t),
 			[](const void *a, const void *b) -> int
 			{
 				const html_entity_tbl_t *const pa = static_cast<const html_entity_tbl_t*>(a);
