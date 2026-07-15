@@ -64,7 +64,7 @@ QString rpFileDialogFilterToQt(const char *filter)
 	// Using QString::split() instead of strtok_r() so we don't
 	// have to manually strdup() the filter.
 	const QString qs_filter = QString::fromUtf8(filter);
-	QStringList sl = qs_filter.split(QChar(L'|'), Qt_KeepEmptyParts);
+	QStringList sl = qs_filter.split(QLatin1Char('|'), Qt_KeepEmptyParts);
 	assert(sl.size() % 3 == 0);
 	if (sl.size() % 3 != 0) {
 		// Not a multiple of 3.
@@ -83,7 +83,7 @@ QString rpFileDialogFilterToQt(const char *filter)
 		qs_ret += sl[i+0];
 		qs_ret += QLatin1String(" (");
 		qs_ret += sl[i+1];
-		qs_ret += QChar(L')');
+		qs_ret += QLatin1Char(')');
 	}
 
 	return qs_ret;

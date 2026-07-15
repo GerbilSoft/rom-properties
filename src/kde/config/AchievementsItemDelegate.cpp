@@ -68,7 +68,7 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 	// If no '\n' is present, assume this is regular text
 	// and use the default paint().
 	const QString s_ach = index.data().toString();
-	const rp_qsizetype nl_pos = s_ach.indexOf(QChar(L'\n'));
+	const rp_qsizetype nl_pos = s_ach.indexOf(QLatin1Char('\n'));
 	if (nl_pos < 0) {
 		// No '\n' is present.
 		// Use the default paint().
@@ -221,7 +221,7 @@ QSize AchievementsItemDelegate::sizeHint(const QStyleOptionViewItem &option,
 	// If no '\n' is present, assume this is regular text
 	// and use the default paint().
 	const QString s_ach = index.data().toString();
-	const rp_qsizetype nl_pos = s_ach.indexOf(QChar(L'\n'));
+	const rp_qsizetype nl_pos = s_ach.indexOf(QLatin1Char('\n'));
 	if (nl_pos < 0) {
 		// No '\n' is present.
 		// Use the default sizeHint().

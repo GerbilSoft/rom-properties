@@ -104,9 +104,9 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 		// so we need to urlencode it first.
 		QString path_enc = path;
 #ifndef _WIN32
-		path_enc.replace(QChar(L'?'), QLatin1String("%3f"));
+		path_enc.replace(QLatin1Char('?'), QLatin1String("%3f"));
 #endif /* _WIN32 */
-		path_enc.replace(QChar(L'#'), QLatin1String("%23"));
+		path_enc.replace(QLatin1Char('#'), QLatin1String("%23"));
 		const QUrl path_url(path_enc);
 
 		// Attempt to open the ROM file.

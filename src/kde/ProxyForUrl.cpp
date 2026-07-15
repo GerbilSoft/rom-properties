@@ -75,7 +75,7 @@ string proxyForUrl(const char *url)
 	}
 
 	proxy += hostName;
-	proxy += QChar(L':');
+	proxy += QLatin1Char(':');
 	proxy += QString::number(port);
 	return Q2U8(proxy);
 #else /* QT_VERSION < QT_VERSION_CHECK(6, 0, 0) */

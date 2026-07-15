@@ -74,7 +74,7 @@ QUrl localizeQUrl(const QUrl &url)
 	} else if (url.scheme() == QLatin1String("desktop")) {
 		// Desktop folder.
 		QString url_path = url.path();
-		if (!url_path.isEmpty() && url_path.at(0) == QChar(L'/')) {
+		if (!url_path.isEmpty() && url_path.at(0) == QLatin1Char('/')) {
 			url_path.remove(0, 1);
 		}
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
@@ -82,8 +82,8 @@ QUrl localizeQUrl(const QUrl &url)
 #else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 		QString qs_local_filename = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
 		if (!qs_local_filename.isEmpty()) {
-			if (qs_local_filename.at(qs_local_filename.size()-1) != QChar(L'/')) {
-				qs_local_filename += QChar(L'/');
+			if (qs_local_filename.at(qs_local_filename.size()-1) != QLatin1Char('/')) {
+				qs_local_filename += QLatin1Char('/');
 			}
 			qs_local_filename += url_path;
 		}

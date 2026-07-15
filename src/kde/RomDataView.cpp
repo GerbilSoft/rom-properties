@@ -341,16 +341,16 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 		escText.reserve(text_size);
 		for (rp_qsizetype i = 0; i < text_size; i++) {
 			QChar c = text[i];
-			if (c == QChar(L'<')) {
+			if (c == QLatin1Char('<')) {
 				// Found a '<'.
 				// Should be followed by:
 				// - "a ": start tag
 				// - "/a>": end tag
-				if ((i + 2 < text_size) && text[i+1] == QChar(L'a') && text[i+2] == QChar(L' ')) {
+				if ((i + 2 < text_size) && text[i+1] == QLatin1Char('a') && text[i+2] == QLatin1Char(' ')) {
 					// Valid start tag.
 					escText += QLatin1String("<a ");
 					i += 2;
-				} else if ((i + 3 < text_size) && text[i+1] == QChar(L'/') && text[i+2] == QChar(L'a') && text[i+3] == QChar(L'>')) {
+				} else if ((i + 3 < text_size) && text[i+1] == QLatin1Char('/') && text[i+2] == QLatin1Char('a') && text[i+3] == QLatin1Char('>')) {
 					// Valid end tag.
 					escText += QLatin1String("</a>");
 					i += 3;
@@ -358,7 +358,7 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 					// Not a valid tag...
 					escText += QLatin1String("&lt;");
 				}
-			} else if (c == QChar(L'\n')) {
+			} else if (c == QLatin1Char('\n')) {
 				// Replace newlines with "<br/>".
 				escText += QLatin1String("<br/>");
 			} else {
