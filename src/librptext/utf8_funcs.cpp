@@ -118,33 +118,34 @@ size_t utf8_disp_strlen(const char *str, size_t max_len)
  */
 string utf8_encode_code_point(char32_t chr)
 {
-	char buf[5];
+	char buf[4];
+	size_t size;
 
 	if (chr <= 0x7F) {
 		buf[0] = static_cast<char>(chr);
-		buf[1] = 0;
+		size = 1;
 	} else if (chr <= 0x7FF) {
 		buf[0] = static_cast<char>(0xC0 |  (chr >>  6));
 		buf[1] = static_cast<char>(0x80 |  (chr & 0x3F));
-		buf[2] = 0;
+		size = 2;
 	} else if (chr <= 0xFFFF) {
 		buf[0] = static_cast<char>(0xE0 |  (chr >> 12));
 		buf[1] = static_cast<char>(0x80 | ((chr >>  6) & 0x3F));
 		buf[2] = static_cast<char>(0x80 |  (chr & 0x3F));
-		buf[3] = 0;
+		size = 3;
 	} else if (chr <= 0x10FFFF) {
 		buf[0] = static_cast<char>(0xF0 |  (chr >> 18));
 		buf[1] = static_cast<char>(0x80 | ((chr >> 12) & 0x3F));
 		buf[2] = static_cast<char>(0x80 | ((chr >>  6) & 0x3F));
 		buf[3] = static_cast<char>(0x80 |  (chr & 0x3F));
-		buf[4] = 0;
+		size = 4;
 	} else {
 		// Invalid UTF-8 character...
 		// Use the Unicode replacment character. (U+FFFD)
 		return "�";
 	}
 
-	return buf;
+	return string(buf, size);
 }
 
 } // namespace LibRpText
