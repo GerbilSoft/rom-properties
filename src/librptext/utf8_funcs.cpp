@@ -142,7 +142,7 @@ string utf8_encode_code_point(char32_t chr)
 	} else {
 		// Invalid UTF-8 character...
 		// Use the Unicode replacment character. (U+FFFD)
-		return "�";
+		return "\xEF\xBF\xBD";
 	}
 
 	return string(buf, size);
