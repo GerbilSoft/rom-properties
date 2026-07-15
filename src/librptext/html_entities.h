@@ -11,7 +11,8 @@
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 // C includes
-#include <uchar.h>
+#include <stddef.h>	// for size_t
+#include <uchar.h>	// for char16_t
 
 #ifdef __cplusplus
 extern "C" {
