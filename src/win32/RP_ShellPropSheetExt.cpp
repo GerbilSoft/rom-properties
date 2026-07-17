@@ -31,7 +31,6 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
-using LibRpText::HtmlEntities::html_entity_tbl_t;
 using namespace LibRpTexture;
 using namespace LibRomData;
 

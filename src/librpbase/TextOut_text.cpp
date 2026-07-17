@@ -21,7 +21,6 @@
 #include "librptext/utf8_funcs.hpp"
 #include "librptexture/img/rp_image.hpp"
 using namespace LibRpText;
-using LibRpText::HtmlEntities::html_entity_tbl_t;
 using LibRpTexture::rp_image;
 
 // C includes (C++ namespace)

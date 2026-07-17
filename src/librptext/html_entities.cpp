@@ -9,6 +9,7 @@
 #include "html_entities.hpp"
 
 // C includes (C++ namespace)
+#include <cstddef>	// for size_t
 #include <cstdlib>
 #include <cstring>
 
@@ -19,13 +20,25 @@ using std::array;
 namespace LibRpText { namespace HtmlEntities {
 
 /**
+ * HTML entity entry, sorted by entity name.
+ * Can be used with e.g. bsearch() or std::lower_bound().
+ * References:
+ * - https://www.w3schools.com/HTML/html_entities.asp
+ * - https://www.toptal.com/designers/htmlarrows/symbols/
+ */
+struct html_entity_tbl_t {
+	char entity[8];	// HTML entity, minus '&' and ';'
+	char16_t chr;	// UTF-16 code point
+};
+
+/**
  * HTML entities, sorted by entity name.
  * Can be used with e.g. bsearch() or std::lower_bound().
  * References:
  * - https://www.w3schools.com/HTML/html_entities.asp
  * - https://www.toptal.com/designers/htmlarrows/symbols/
  */
-static const array<html_entity_tbl_t, 76+1> html_entity_tbl = {{
+static const array<html_entity_tbl_t, 76> html_entity_tbl = {{
 	{"Cfr",		0x212D},	// ℭ
 	{"Copf",	0x2102},	// ℂ
 	{"DD",		0x2145},	// ⅅ
@@ -103,32 +116,7 @@ static const array<html_entity_tbl_t, 76+1> html_entity_tbl = {{
 	//{"VerticalSeparator",	0x2758},	// ❘ (TODO: Special check for this one?)
 	{"weierp",	0x2118},	// ℘
 	{"yen",		0x00A5},	// ¥
-
-	// end of table
-	{"", 0}
 }};
-
-/**
- * Get the HTML entities table.
- * Table is terminated with an empty-string entry.
- *
- * @return HTML entities table
- */
-const html_entity_tbl_t *get_table(void)
-{
-	return html_entity_tbl.data();
-}
-
-/**
- * Get the number of entries in the HTML entities table.
- * NOTE: This does *not* include the empty-string terminator entry.
- *
- * @return Number of entries in the HTML entities table
- */
-size_t get_count(void)
-{
-	return html_entity_tbl.size() - 1;
-}
 
 /** Wrapper functions for T_parseHtmlEntity **/
 
@@ -226,8 +214,8 @@ static char16_t T_parseHtmlEntity(const CharType *&entity)
 	key.entity[len] = '\0';
 	key.chr = 0;
 
-	void *ptr = bsearch(&key, HtmlEntities::get_table(),
-		HtmlEntities::get_count(), sizeof(html_entity_tbl_t),
+	void *ptr = bsearch(&key, html_entity_tbl.data(),
+		html_entity_tbl.size(), sizeof(html_entity_tbl_t),
 		[](const void *a, const void *b) -> int
 		{
 			const html_entity_tbl_t *const pa = static_cast<const html_entity_tbl_t*>(a);
