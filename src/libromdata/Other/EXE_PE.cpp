@@ -329,10 +329,15 @@ int EXEPrivate::readPENullBlock(uint32_t low, uint32_t high, uint32_t minExtra,
 	if (sizeMin > minMax) {
 		return -EIO;
 	}
+	const uint32_t paddr = pe_vaddr_to_paddr(low, sizeMin);
+	if (paddr == 0) {
+		// Invalid VAs...
+		return -ENOENT;
+	}
 
 	const uint32_t sizeMax = sizeMin + maxExtra;
 	outPtr.reset(new char[sizeMax]);
-	outSize = readFromPEVAddr(low, reinterpret_cast<uint8_t*>(outPtr.get()), sizeMax);
+	outSize = file->seekAndRead(paddr, reinterpret_cast<uint8_t*>(outPtr.get()), sizeMax);
 	if (outSize < sizeMin || outSize > sizeMax) {
 		// Seek and/or read error.
 		return -EIO;
