@@ -25,7 +25,7 @@
 #include "librpbase/RomData.hpp"
 #include "librpbase/RomFields.hpp"
 #include "librpbase/TextOut.hpp"
-#include "librptext/html_entities.h"
+#include "librptext/html_entities.hpp"
 #include "librptext/wchar.hpp"
 #include "libromdata/RomDataFactory.hpp"
 using namespace LibRpBase;
