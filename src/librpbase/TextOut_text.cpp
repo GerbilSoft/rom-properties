@@ -285,93 +285,6 @@ private:
 	}
 
 	/**
-	 * Parse an HTML entity.
-	 * @param entity Pointer to HTML tag (will be modified) (MUST be pointing to a NULL-terminated string!)
-	 * @return Parsed HTML entity
-	 */
-	static string parseHtmlEntity(const char *&entity)
-	{
-		// First character is always '&', so skip it.
-		const char *p = entity + 1;
-
-		// Find the end of the entity string.
-		const char *const p_end = strchr(p, ';');
-		if (!p_end) {
-			// No end... Skip it.
-			entity++;
-			return "&";
-		}
-
-		size_t len = p_end - p;
-		if (len > 32) {
-			// Entity is too big...
-			entity++;
-			return "&";
-		}
-
-		// Need to copy the value into a buffer for NULL termination.
-		char tmpbuf[33];
-
-		// Check for a numeric entity.
-		if (p[0] == '#') {
-			// Numeric Unicode entity.
-			char *endptr = nullptr;
-			unsigned int chr;
-			if (p[1] == 'x') {
-				// Hexadecimal number
-				p += 2;
-				len -= 2;
-				memcpy(tmpbuf, p, len);
-				tmpbuf[len] = '\0';
-				chr = strtoul(tmpbuf, &endptr, 16);
-			} else {
-				// Decimal number
-				p++;
-				len--;
-				memcpy(tmpbuf, p, len);
-				tmpbuf[len] = '\0';
-				chr = strtoul(tmpbuf, &endptr, 10);
-			}
-			entity = p_end + 1;
-
-			// Encode as UTF-8.
-			return utf8_encode_code_point(chr);
-		}
-
-		// Check for known HTML entities.
-		// FIXME: std::lower_bound() isn't working...
-		// Using bsearch() instead.
-		html_entity_tbl_t key;
-		if (len >= sizeof(key.entity) - 1) {
-			// Entity is too long!
-			entity++;
-		}
-		strncpy(key.entity, p, len);
-		key.entity[len] = '\0';
-		key.chr = 0;
-
-		void *ptr = bsearch(&key, HtmlEntities::get_table(),
-			HtmlEntities::get_count(), sizeof(html_entity_tbl_t),
-			[](const void *a, const void *b) -> int
-			{
-				const html_entity_tbl_t *const pa = static_cast<const html_entity_tbl_t*>(a);
-				const html_entity_tbl_t *const pb = static_cast<const html_entity_tbl_t*>(b);
-				return strcmp(pa->entity, pb->entity);
-			});
-
-		if (!ptr) {
-			// Unsupported entity...
-			entity++;
-			return "&";
-		}
-
-		// Return the decoded entity.
-		entity = p_end + 1;
-		const html_entity_tbl_t *const p_tbl = reinterpret_cast<const html_entity_tbl_t*>(ptr);
-		return utf8_encode_code_point(p_tbl->chr);
-	}
-
-	/**
 	 * Parse text using our HTML links subset.
 	 * Links must use the exact format: `<a href="https://blahblahblah">description</a>`
 	 * Standard HTML entity rules apply, e.g. `&lt;`, `&gt`;, and `&amp;`.
@@ -395,7 +308,7 @@ private:
 				str += parseHtmlTag(p);
 			} else if (*p == '&') {
 				// Start of an HTML entity.
-				str += parseHtmlEntity(p);
+				str += utf8_encode_code_point(HtmlEntities::parseHtmlEntity(p));
 			} else {
 				// Not an HTML tag.
 				// TODO: Search for '<' and '&' at the same time,

@@ -8,6 +8,10 @@
 
 #include "html_entities.hpp"
 
+// C includes (C++ namespace)
+#include <cstdlib>
+#include <cstring>
+
 // C++ STL classes
 #include <array>
 using std::array;
@@ -125,5 +129,144 @@ size_t get_count(void)
 {
 	return html_entity_tbl.size() - 1;
 }
+
+/** Wrapper functions for T_parseHtmlEntity **/
+
+static inline const char *strchr_wrapper(const char *s, int c)
+{
+	return strchr(s, c);
+}
+
+static inline unsigned long strtoul_wrapper(const char *nptr, char **endptr, int base)
+{
+	return strtoul(nptr, endptr, base);
+}
+
+#ifdef _WIN32
+static inline const wchar_t *strchr_wrapper(const wchar_t *ws, wchar_t wc)
+{
+	return wcschr(ws, wc);
+}
+
+static inline unsigned long strtoul_wrapper(const wchar_t *nptr, wchar_t **endptr, int base)
+{
+	return wcstoul(nptr, endptr, base);
+}
+#endif /* _WIN32 */
+
+/**
+ * Parse an HTML entity.
+ * @param entity Pointer to HTML tag (will be modified) (MUST be pointing to a NULL-terminated string!)
+ * @return Parsed HTML entity (as a UTF-16 code point)
+ */
+template<typename CharType>
+static char16_t T_parseHtmlEntity(const CharType *&entity)
+{
+	// First character is always '&', so skip it.
+	const CharType *p = entity + 1;
+
+	// Find the end of the entity string.
+	const CharType *const p_end = strchr_wrapper(p, ';');
+	if (!p_end) {
+		// No end... Skip it.
+		entity++;
+		return u'&';
+	}
+
+	size_t len = p_end - p;
+	if (len > 32) {
+		// Entity is too big...
+		entity++;
+		return u'&';
+	}
+
+	// Need to copy the value into a buffer for NULL termination.
+	CharType tmpbuf[33];
+
+	// Check for a numeric entity.
+	if (p[0] == '#') {
+		// Numeric Unicode entity.
+		CharType *endptr = nullptr;
+		unsigned int chr;
+		if (p[1] == 'x') {
+			// Hexadecimal number
+			p += 2;
+			len -= 2;
+			memcpy(tmpbuf, p, len * sizeof(CharType));
+			tmpbuf[len] = '\0';
+			chr = strtoul_wrapper(tmpbuf, &endptr, 16);
+		} else {
+			// Decimal number
+			p++;
+			len--;
+			memcpy(tmpbuf, p, len * sizeof(CharType));
+			tmpbuf[len] = '\0';
+			chr = strtoul_wrapper(tmpbuf, &endptr, 10);
+		}
+		entity = p_end + 1;
+		// TODO: Return char32_t instead of char16_t?
+		return static_cast<char16_t>(chr);
+	}
+
+	// Check for known HTML entities.
+	// FIXME: std::lower_bound() isn't working...
+	// Using bsearch() instead.
+	html_entity_tbl_t key;
+	if (len >= sizeof(key.entity) - 1) {
+		// Entity is too long!
+		entity++;
+	}
+	// TODO: `if constexpr` to use strcpy() for char?
+	// NOTE: html_entity_tbl_t uses ASCII.
+	// Assuming the source entity is also ASCII.
+	// TODO: Fail if it isn't...
+	for (size_t i = 0; i < len && p[i] != 0; i++) {
+		key.entity[i] = static_cast<char>(p[i]);
+	}
+	key.entity[len] = '\0';
+	key.chr = 0;
+
+	void *ptr = bsearch(&key, HtmlEntities::get_table(),
+		HtmlEntities::get_count(), sizeof(html_entity_tbl_t),
+		[](const void *a, const void *b) -> int
+		{
+			const html_entity_tbl_t *const pa = static_cast<const html_entity_tbl_t*>(a);
+			const html_entity_tbl_t *const pb = static_cast<const html_entity_tbl_t*>(b);
+			return strcmp(pa->entity, pb->entity);
+		});
+
+	if (!ptr) {
+		// Unsupported entity...
+		entity++;
+		return u'&';
+	}
+
+	// Return the decoded entity.
+	entity = p_end + 1;
+	const html_entity_tbl_t *const p_tbl = reinterpret_cast<const html_entity_tbl_t*>(ptr);
+	return p_tbl->chr;
+}
+
+/**
+ * Parse an HTML entity.
+ * @param entity Pointer to HTML tag (will be modified) (MUST be pointing to a NULL-terminated string!)
+ * @return Parsed HTML entity (as a UTF-16 code point)
+ */
+char16_t parseHtmlEntity(const char *&entity)
+{
+	return T_parseHtmlEntity(entity);
+}
+
+#ifdef _WIN32
+/**
+ * Parse an HTML entity.
+ * @param entity Pointer to HTML tag (will be modified) (MUST be pointing to a NULL-terminated string!)
+ * @return Parsed HTML entity (as a UTF-16 code point)
+ */
+char16_t parseHtmlEntity(const wchar_t *&entity)
+{
+	return T_parseHtmlEntity(entity);
+}
+#endif /* _WIN32 */
 
 }} // namespace LibRpText::HtmlEntities

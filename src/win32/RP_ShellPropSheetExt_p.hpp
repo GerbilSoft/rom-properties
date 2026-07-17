@@ -222,13 +222,6 @@ private:
 	int createHeaderRow(_In_ POINT pt_start, _In_ SIZE size);
 
 	/**
-	 * Parse an HTML entity.
-	 * @param entity Pointer to HTML tag (will be modified) (MUST be pointing to a NULL-terminated string!)
-	 * @return Parsed HTML entity (as a UTF-16 code point)
-	 */
-	static char16_t parseHtmlEntity(const TCHAR *&entity);
-
-	/**
 	 * Parse HTML entities in a string for the SysLink control.
 	 * Standard HTML entity rules apply, e.g. `&lt;`, `&gt`;, and `&amp;`.
 	 * NOTE: `&lt;a` will be converted to `< a` to prevent confusion with links.

@@ -49,4 +49,22 @@ const html_entity_tbl_t *get_table(void);
 RP_LIBROMDATA_PUBLIC
 size_t get_count(void);
 
+/**
+ * Parse an HTML entity.
+ * @param entity Pointer to HTML tag (will be modified) (MUST be pointing to a NULL-terminated string!)
+ * @return Parsed HTML entity (as a UTF-16 code point)
+ */
+RP_LIBROMDATA_PUBLIC
+char16_t parseHtmlEntity(const char *&entity);
+
+#ifdef _WIN32
+/**
+ * Parse an HTML entity.
+ * @param entity Pointer to HTML tag (will be modified) (MUST be pointing to a NULL-terminated string!)
+ * @return Parsed HTML entity (as a UTF-16 code point)
+ */
+RP_LIBROMDATA_PUBLIC
+char16_t parseHtmlEntity(const wchar_t *&entity);
+#endif /* _WIN32 */
+
 }} // namespace LibRpText::HtmlEntities

@@ -318,96 +318,6 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(_In_ POINT pt_start, _In_ SIZE
 }
 
 /**
- * Parse an HTML entity.
- * @param entity Pointer to HTML tag (will be modified) (MUST be pointing to a NULL-terminated string!)
- * @return Parsed HTML entity (as a UTF-16 code point)
- */
-char16_t RP_ShellPropSheetExt_Private::parseHtmlEntity(const TCHAR *&entity)
-{
-	// First character is always '&', so skip it.
-	const TCHAR *p = entity + 1;
-
-	// Find the end of the entity string.
-	const TCHAR *const p_end = _tcschr(p, _T(';'));
-	if (!p_end) {
-		// No end... Skip it.
-		entity++;
-		return _T('&');
-	}
-
-	size_t len = p_end - p;
-	if (len > 32) {
-		// Entity is too big...
-		entity++;
-		return _T('&');
-	}
-
-	// Need to copy the value into a buffer for NULL termination.
-	TCHAR tmpbuf[33];
-
-	// Check for a numeric entity.
-	if (p[0] == _T('#')) {
-		// Numeric Unicode entity.
-		TCHAR *endptr = nullptr;
-		unsigned int chr;
-		if (p[1] == 'x') {
-			// Hexadecimal number
-			p += 2;
-			len -= 2;
-			memcpy(tmpbuf, p, len * sizeof(TCHAR));
-			tmpbuf[len] = '\0';
-			chr = _tcstoul(tmpbuf, &endptr, 16);
-		} else {
-			// Decimal number
-			p++;
-			len--;
-			memcpy(tmpbuf, p, len * sizeof(TCHAR));
-			tmpbuf[len] = '\0';
-			chr = _tcstoul(tmpbuf, &endptr, 10);
-		}
-		entity = p_end + 1;
-		return chr;
-	}
-
-	// Check for known HTML entities.
-	// FIXME: std::lower_bound() isn't working...
-	// Using bsearch() instead.
-	html_entity_tbl_t key;
-	if (len >= sizeof(key.entity) - 1) {
-		// Entity is too long!
-		entity++;
-	}
-	// NOTE: html_entity_tbl_t uses ASCII.
-	// Assuming the source entity is also ASCII.
-	// TODO: Fail if it isn't...
-	for (size_t i = 0; i < len && p[i] != _T('\0'); i++) {
-		key.entity[i] = static_cast<char>(p[i]);
-	}
-	key.entity[len] = '\0';
-	key.chr = 0;
-
-	void *ptr = bsearch(&key, HtmlEntities::get_table(),
-		HtmlEntities::get_count(), sizeof(html_entity_tbl_t),
-		[](const void *a, const void *b) -> int
-		{
-			const html_entity_tbl_t *const pa = static_cast<const html_entity_tbl_t*>(a);
-			const html_entity_tbl_t *const pb = static_cast<const html_entity_tbl_t*>(b);
-			return strcmp(pa->entity, pb->entity);
-		});
-
-	if (!ptr) {
-		// Unsupported entity...
-		entity++;
-		return _T('&');
-	}
-
-	// Return the decoded entity.
-	entity = p_end + 1;
-	const html_entity_tbl_t *const p_tbl = reinterpret_cast<const html_entity_tbl_t*>(ptr);
-	return p_tbl->chr;
-}
-
-/**
  * Parse HTML entities in a string for the SysLink control.
  * Standard HTML entity rules apply, e.g. `&lt;`, `&gt`;, and `&amp;`.
  * NOTE: `&lt;a` will be converted to `< a` to prevent confusion with links.
@@ -428,7 +338,7 @@ tstring RP_ShellPropSheetExt_Private::parseHtmlEntities(LPCTSTR in_str)
 
 		if (*p == _T('&')) {
 			// Start of an HTML entity.
-			char16_t chr = parseHtmlEntity(p);
+			char16_t chr = HtmlEntities::parseHtmlEntity(p);
 			// Special case: Convert "&lt;a" to "< a" to prevent SysLink issues.
 			if (chr == '<' && *p == _T('a')) {
 				str += _T("< a");
