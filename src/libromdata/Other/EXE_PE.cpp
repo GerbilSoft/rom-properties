@@ -1332,29 +1332,32 @@ int EXEPrivate::addFields_PE_Import(void)
 
 int EXEPrivate::addFields_PE_PDB(void)
 {
-	if (!std::holds_alternative<PE_data_t>(EXE_data)) {
-		// Not a PE executable.
+	if (!file || !file->isOpen()) {
+		// File isn't open.
 		return -EBADF;
 	}
-	//PE_data_t &PE_data = std::get<PE_data_t>(EXE_data);
 
 	// max path define on windows, should be this for all dos like paths
 	// (iirc nt paths are like 64k, but for pdbs this shooould be enough)
 	static constexpr size_t win32_maxpath = 260;
 
 	IMAGE_DATA_DIRECTORY debug_dir;
-	if (exeType == ExeType::PE) {
-		debug_dir = hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_DEBUG_INFO];
-	} else /*if (exeType == ExeType::PE32PLUS)*/ {
-		debug_dir = hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_DEBUG_INFO];
+	switch (exeType) {
+		case ExeType::PE:
+			debug_dir = hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_DEBUG_INFO];
+			break;
+		case ExeType::PE32PLUS:
+			debug_dir = hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_DEBUG_INFO];
+			break;
+		default:
+			// Not a PE executable.
+			return -ENOTSUP;
 	}
 
-	auto safe_read_vmem = [&](uint32_t va, uint32_t size, void* to) -> bool {
-		if (file && file->isOpen()){
-			uint32_t addr = pe_vaddr_to_paddr(va,size);
-			if (addr != 0 && file->seekAndRead(addr, to, size) == size) {
-				return true;
-			}
+	auto safe_read_vmem = [this](uint32_t va, uint32_t size, void* to) -> bool {
+		uint32_t addr = pe_vaddr_to_paddr(va,size);
+		if (addr != 0 && file->seekAndRead(addr, to, size) == size) {
+			return true;
 		}
 		return false;
 	};
