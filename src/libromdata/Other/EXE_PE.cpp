@@ -284,13 +284,6 @@ int EXEPrivate::readPEImpExpDir(IMAGE_DATA_DIRECTORY &dataDir, int type,
 	dataDir.Size = le32_to_cpu(dataDir.Size);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
-	// Get the import/export table's physical address.
-	const uint32_t tbl_paddr = pe_vaddr_to_paddr(dataDir.VirtualAddress, dataDir.Size);
-	if (tbl_paddr == 0) {
-		// Not found.
-		return -ENOENT;
-	}
-
 	// Found the section.
 	if (dataDir.Size < minSize) {
 		// Not enough space for the import table...
@@ -303,7 +296,7 @@ int EXEPrivate::readPEImpExpDir(IMAGE_DATA_DIRECTORY &dataDir, int type,
 
 	// Load the import/export directory table.
 	dirTbl.resize(dataDir.Size);
-	size_t size = file->seekAndRead(tbl_paddr, dirTbl.data(), dirTbl.size());
+	size_t size = readFromPEVAddr(dataDir.VirtualAddress, dirTbl.data(), dirTbl.size());
 	if (size != dirTbl.size()) {
 		// Seek and/or read error.
 		return -EIO;
@@ -336,15 +329,10 @@ int EXEPrivate::readPENullBlock(uint32_t low, uint32_t high, uint32_t minExtra,
 	if (sizeMin > minMax) {
 		return -EIO;
 	}
-	const uint32_t paddr = pe_vaddr_to_paddr(low, sizeMin);
-	if (paddr == 0) {
-		// Invalid VAs...
-		return -ENOENT;
-	}
 
 	const uint32_t sizeMax = sizeMin + maxExtra;
 	outPtr.reset(new char[sizeMax]);
-	outSize = file->seekAndRead(paddr, reinterpret_cast<uint8_t*>(outPtr.get()), sizeMax);
+	outSize = readFromPEVAddr(low, reinterpret_cast<uint8_t*>(outPtr.get()), sizeMax);
 	if (outSize < sizeMin || outSize > sizeMax) {
 		// Seek and/or read error.
 		return -EIO;
@@ -456,6 +444,23 @@ int EXEPrivate::readPEImportDir(void)
 
 	return 0;
 }
+
+/**
+ * Safely read data from a PE virtual address.
+ * @param vaddr	[in] Virtual address
+ * @param ptr	[out] Output data buffer
+ * @param size	[in] Amount of data to read, in bytes
+ * @return Number of bytes read on success; 0 on seek or read error.
+ */
+size_t EXEPrivate::readFromPEVAddr(uint32_t vaddr, void *ptr, size_t size)
+{
+	uint32_t paddr = pe_vaddr_to_paddr(vaddr, size);
+	if (paddr == 0) {
+		return 0;
+	}
+	return file->seekAndRead(paddr, ptr, size);
+}
+
 /**
  * Find the runtime DLL. (PE version)
  * @param refDesc String to store the description.
@@ -1354,18 +1359,10 @@ int EXEPrivate::addFields_PE_PDB(void)
 			return -ENOTSUP;
 	}
 
-	auto safe_read_vmem = [this](uint32_t va, uint32_t size, void* to) -> bool {
-		uint32_t addr = pe_vaddr_to_paddr(va,size);
-		if (addr != 0 && file->seekAndRead(addr, to, size) == size) {
-			return true;
-		}
-		return false;
-	};
-
 	uint32_t size = le32_to_cpu(debug_dir.Size);
 	if (size && debug_dir.VirtualAddress != 0 && (size / sizeof(IMAGE_DEBUG_DIRECTORY)) < 16) { // cap to a reasonable limit
 		rp::uvector<IMAGE_DEBUG_DIRECTORY> debug_ents(size / sizeof(IMAGE_DEBUG_DIRECTORY));
-		if (!safe_read_vmem(le32_to_cpu(debug_dir.VirtualAddress), size, debug_ents.data())) {
+		if (readFromPEVAddr(le32_to_cpu(debug_dir.VirtualAddress), debug_ents.data(), size) != size) {
 			// Reading the IMAGE_DEBUG_DIRECTORY failed.
 			return -EFAULT;
 		}
@@ -1392,7 +1389,7 @@ int EXEPrivate::addFields_PE_PDB(void)
 				}
 
 				CODEVIEW_INFO_PDB70 cv {};
-				if (!safe_read_vmem(le32_to_cpu(dir.AddressOfRawData), sizeof(CODEVIEW_INFO_PDB70), &cv)) {
+				if (readFromPEVAddr(le32_to_cpu(dir.AddressOfRawData), &cv, sizeof(CODEVIEW_INFO_PDB70)) != sizeof(CODEVIEW_INFO_PDB70)) {
 					// Unable to read the codeview entry...
 					return -EFAULT;
 				}
@@ -1416,7 +1413,7 @@ int EXEPrivate::addFields_PE_PDB(void)
 				// - 1, null term, we ensure it ourselves
 				uint32_t strlen_chars = le32_to_cpu(dir.SizeOfData) - offsetof(CODEVIEW_INFO_PDB70, ImageName) - 1;
 				unique_ptr<char[]> path_buf(new char[strlen_chars + 1]);
-				if (safe_read_vmem(str_addie, strlen_chars, &path_buf[0])) {
+				if (readFromPEVAddr(str_addie, &path_buf[0], strlen_chars) == strlen_chars) {
 					path_buf[strlen_chars] = '\0'; // ensure nullterm
 					fields.addField_string("PDB Path", &path_buf[0]);
 					char* last_path_component = &path_buf[0];
@@ -1477,14 +1474,8 @@ int EXEPrivate::loadPEImageLoadConfigDirectory(void)
 			return -EIO;
 		}
 
-		uint32_t size = dirEntry.Size;
-		const uint32_t paddr = pe_vaddr_to_paddr(dirEntry.VirtualAddress, size);
-		if (paddr == 0) {
-			return -ENOENT;
-		};
-
-		size_t sz_read = file->seekAndRead(paddr, &ilcd.ilcd32, size);
-		if (sz_read != size) {
+		size_t size = readFromPEVAddr(dirEntry.VirtualAddress, &ilcd.ilcd32, dirEntry.Size);
+		if (size != dirEntry.Size) {
 			ilcd.Size = 0;
 			return -EIO;
 		}
@@ -1519,14 +1510,8 @@ int EXEPrivate::loadPEImageLoadConfigDirectory(void)
 			return -EIO;
 		}
 
-		uint32_t size = dirEntry.Size;
-		const uint32_t paddr = pe_vaddr_to_paddr(dirEntry.VirtualAddress, size);
-		if (paddr == 0) {
-			return -ENOENT;
-		};
-
-		size_t sz_read = file->seekAndRead(paddr, &ilcd.ilcd64, size);
-		if (sz_read != size) {
+		size_t size = readFromPEVAddr(dirEntry.VirtualAddress, &ilcd.ilcd64, dirEntry.Size);
+		if (size != dirEntry.Size) {
 			ilcd.Size = 0;
 			return -EIO;
 		}

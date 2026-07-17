@@ -343,6 +343,15 @@ private:
 
 public:
 	/**
+	 * Safely read data from a PE virtual address.
+	 * @param vaddr	[in] Virtual address
+	 * @param ptr	[out] Output data buffer
+	 * @param size	[in] Amount of data to read, in bytes
+	 * @return Number of bytes read on success; 0 on seek or read error.
+	 */
+	size_t readFromPEVAddr(uint32_t vaddr, void *ptr, size_t size);
+
+	/**
 	 * Find the runtime DLL. (PE version)
 	 * @param refDesc String to store the description.
 	 * @param refLink String to store the download link.
