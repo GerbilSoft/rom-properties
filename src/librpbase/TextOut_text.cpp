@@ -17,10 +17,11 @@
 
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
-#include "librptext/html_entities.h"
+#include "librptext/html_entities.hpp"
 #include "librptext/utf8_funcs.hpp"
 #include "librptexture/img/rp_image.hpp"
 using namespace LibRpText;
+using LibRpText::HtmlEntities::html_entity_tbl_t;
 using LibRpTexture::rp_image;
 
 // C includes (C++ namespace)
@@ -349,8 +350,8 @@ private:
 		key.entity[len] = '\0';
 		key.chr = 0;
 
-		void *ptr = bsearch(&key, rp_get_html_entities_table(),
-			rp_get_html_entities_table_count(), sizeof(html_entity_tbl_t),
+		void *ptr = bsearch(&key, HtmlEntities::get_table(),
+			HtmlEntities::get_count(), sizeof(html_entity_tbl_t),
 			[](const void *a, const void *b) -> int
 			{
 				const html_entity_tbl_t *const pa = static_cast<const html_entity_tbl_t*>(a);

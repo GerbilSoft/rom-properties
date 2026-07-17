@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase)                        *
- * html_entities.h: HTML entities table.                                   *
+ * html_entities.hpp: HTML entities handling.                              *
  *                                                                         *
  * Copyright (c) 2026 by David Korth.                                      *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -11,24 +11,25 @@
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 // C includes
-#include <stddef.h>	// for size_t
+// NOTE: gcc-5 on Ubuntu 16.04 is missing <cuchar>...
 #include <uchar.h>	// for char16_t
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+// C includes (C++ namespace)
+#include <cstddef>	// for size_t
+
+namespace LibRpText { namespace HtmlEntities {
 
 /**
- * HTML entities, sorted by entity name.
+ * HTML entity entry, sorted by entity name.
  * Can be used with e.g. bsearch() or std::lower_bound().
  * References:
  * - https://www.w3schools.com/HTML/html_entities.asp
  * - https://www.toptal.com/designers/htmlarrows/symbols/
  */
-typedef struct _html_entity_tbl_t {
+struct html_entity_tbl_t {
 	char entity[8];	// HTML entity, minus '&' and ';'
 	char16_t chr;	// UTF-16 code point
-} html_entity_tbl_t;
+};
 
 /**
  * Get the HTML entities table.
@@ -37,7 +38,7 @@ typedef struct _html_entity_tbl_t {
  * @return HTML entities table
  */
 RP_LIBROMDATA_PUBLIC
-const html_entity_tbl_t *rp_get_html_entities_table(void);
+const html_entity_tbl_t *get_table(void);
 
 /**
  * Get the number of entries in the HTML entities table.
@@ -46,8 +47,6 @@ const html_entity_tbl_t *rp_get_html_entities_table(void);
  * @return Number of entries in the HTML entities table
  */
 RP_LIBROMDATA_PUBLIC
-size_t rp_get_html_entities_table_count(void);
+size_t get_count(void);
 
-#ifdef __cplusplus
-}
-#endif
+}} // namespace LibRpText::HtmlEntities

@@ -1,14 +1,18 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librptext)                        *
- * html_entities.c: HTML entities table.                                   *
+ * html_entities.cpp: HTML entities handling.                              *
  *                                                                         *
  * Copyright (c) 2026 by David Korth.                                      *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "html_entities.h"
+#include "html_entities.hpp"
 
-#include "common.h"	// for ARRAY_SIZE()
+// C++ STL classes
+#include <array>
+using std::array;
+
+namespace LibRpText { namespace HtmlEntities {
 
 /**
  * HTML entities, sorted by entity name.
@@ -17,7 +21,7 @@
  * - https://www.w3schools.com/HTML/html_entities.asp
  * - https://www.toptal.com/designers/htmlarrows/symbols/
  */
-static const html_entity_tbl_t html_entity_tbl[] = {
+static const array<html_entity_tbl_t, 76+1> html_entity_tbl = {{
 	{"Cfr",		0x212D},	// ℭ
 	{"Copf",	0x2102},	// ℂ
 	{"DD",		0x2145},	// ⅅ
@@ -98,7 +102,7 @@ static const html_entity_tbl_t html_entity_tbl[] = {
 
 	// end of table
 	{"", 0}
-};
+}};
 
 /**
  * Get the HTML entities table.
@@ -106,9 +110,9 @@ static const html_entity_tbl_t html_entity_tbl[] = {
  *
  * @return HTML entities table
  */
-const html_entity_tbl_t *rp_get_html_entities_table(void)
+const html_entity_tbl_t *get_table(void)
 {
-	return html_entity_tbl;
+	return html_entity_tbl.data();
 }
 
 /**
@@ -117,7 +121,9 @@ const html_entity_tbl_t *rp_get_html_entities_table(void)
  *
  * @return Number of entries in the HTML entities table
  */
-size_t rp_get_html_entities_table_count(void)
+size_t get_count(void)
 {
-	return ARRAY_SIZE(html_entity_tbl) - 1;
+	return html_entity_tbl.size() - 1;
 }
+
+}} // namespace LibRpText::HtmlEntities

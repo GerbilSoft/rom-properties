@@ -31,6 +31,7 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
+using LibRpText::HtmlEntities::html_entity_tbl_t;
 using namespace LibRpTexture;
 using namespace LibRomData;
 
@@ -385,8 +386,8 @@ char16_t RP_ShellPropSheetExt_Private::parseHtmlEntity(const TCHAR *&entity)
 	key.entity[len] = '\0';
 	key.chr = 0;
 
-	void *ptr = bsearch(&key, rp_get_html_entities_table(),
-		rp_get_html_entities_table_count(), sizeof(html_entity_tbl_t),
+	void *ptr = bsearch(&key, HtmlEntities::get_table(),
+		HtmlEntities::get_count(), sizeof(html_entity_tbl_t),
 		[](const void *a, const void *b) -> int
 		{
 			const html_entity_tbl_t *const pa = static_cast<const html_entity_tbl_t*>(a);
