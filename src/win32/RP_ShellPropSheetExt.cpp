@@ -337,13 +337,21 @@ tstring RP_ShellPropSheetExt_Private::parseHtmlEntities(LPCTSTR in_str)
 
 		if (*p == _T('&')) {
 			// Start of an HTML entity.
-			char16_t chr = HtmlEntities::parseHtmlEntity(p);
+			const char32_t chr = HtmlEntities::parseHtmlEntity(p);
 			// Special case: Convert "&lt;a" to "< a" to prevent SysLink issues.
-			if (chr == '<' && *p == _T('a')) {
+			if (chr == U'<' && *p == _T('a')) {
 				str += _T("< a");
 				p++;
-			} else {
+			} else if (chr <= 0xFFFF) {
 				str += static_cast<wchar_t>(chr);
+			} else if (chr <= 0x10FFFF) {
+				// Non-BMP characters need to be encoded as a surrogate pair.
+				str += static_cast<wchar_t>(0xD800 | ((chr >> 10) & 0x3FF));
+				str += static_cast<wchar_t>(0xDC00 | (chr & 0x3FF));
+			} else {
+				// Invalid Unicode character.
+				// Use the Unicode replacement character. (U+FFFD)
+				str += static_cast<wchar_t>(0xFFFD);
 			}
 		} else {
 			// Not an HTML tag.
