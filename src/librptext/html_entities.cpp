@@ -145,10 +145,10 @@ static inline unsigned long strtoul_wrapper(const wchar_t *nptr, wchar_t **endpt
 /**
  * Parse an HTML entity.
  * @param entity Pointer to HTML tag (will be modified) (MUST be pointing to a NULL-terminated string!)
- * @return Parsed HTML entity (as a UTF-16 code point)
+ * @return Parsed HTML entity (as a Unicode code point)
  */
 template<typename CharType>
-static char16_t T_parseHtmlEntity(const CharType *&entity)
+static char32_t T_parseHtmlEntity(const CharType *&entity)
 {
 	// First character is always '&', so skip it.
 	const CharType *p = entity + 1;
@@ -158,14 +158,14 @@ static char16_t T_parseHtmlEntity(const CharType *&entity)
 	if (!p_end) {
 		// No end... Skip it.
 		entity++;
-		return u'&';
+		return U'&';
 	}
 
 	size_t len = p_end - p;
 	if (len > 32) {
 		// Entity is too big...
 		entity++;
-		return u'&';
+		return U'&';
 	}
 
 	// Need to copy the value into a buffer for NULL termination.
@@ -192,8 +192,7 @@ static char16_t T_parseHtmlEntity(const CharType *&entity)
 			chr = strtoul_wrapper(tmpbuf, &endptr, 10);
 		}
 		entity = p_end + 1;
-		// TODO: Return char32_t instead of char16_t?
-		return static_cast<char16_t>(chr);
+		return chr;
 	}
 
 	// Check for known HTML entities.
@@ -226,21 +225,21 @@ static char16_t T_parseHtmlEntity(const CharType *&entity)
 	if (!ptr) {
 		// Unsupported entity...
 		entity++;
-		return u'&';
+		return U'&';
 	}
 
 	// Return the decoded entity.
 	entity = p_end + 1;
 	const html_entity_tbl_t *const p_tbl = reinterpret_cast<const html_entity_tbl_t*>(ptr);
-	return p_tbl->chr;
+	return static_cast<char32_t>(p_tbl->chr);
 }
 
 /**
  * Parse an HTML entity.
  * @param entity Pointer to HTML tag (will be modified) (MUST be pointing to a NULL-terminated string!)
- * @return Parsed HTML entity (as a UTF-16 code point)
+ * @return Parsed HTML entity (as a Unicode code point)
  */
-char16_t parseHtmlEntity(const char *&entity)
+char32_t parseHtmlEntity(const char *&entity)
 {
 	return T_parseHtmlEntity(entity);
 }
@@ -249,9 +248,9 @@ char16_t parseHtmlEntity(const char *&entity)
 /**
  * Parse an HTML entity.
  * @param entity Pointer to HTML tag (will be modified) (MUST be pointing to a NULL-terminated string!)
- * @return Parsed HTML entity (as a UTF-16 code point)
+ * @return Parsed HTML entity (as a Unicode code point)
  */
-char16_t parseHtmlEntity(const wchar_t *&entity)
+char32_t parseHtmlEntity(const wchar_t *&entity)
 {
 	return T_parseHtmlEntity(entity);
 }
