@@ -8,6 +8,8 @@
 
 #include "CisoPspDlopen.hpp"
 
+#if !defined(USE_INTERNAL_LZO) || defined(USE_INTERNAL_LZO_DLL)
+
 /** LZO types required for __lzo_init_v2() **/
 typedef uint32_t lzo_uint32_t;
 typedef lzo_uint lzo_xint;
@@ -56,6 +58,8 @@ struct lzo_callback_t
 	lzo_xint user2;
 	lzo_xint user3;
 };
+
+#endif /* !USE_INTERNAL_LZO || USE_INTERNAL_LZO_DLL */
 
 #ifdef _WIN32
 // rp_LoadLibrary()

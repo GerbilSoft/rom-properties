@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * dlopen-notes.c: dlopen() notes for dlopen()'d libraries.                *
  *                                                                         *
- * Copyright (c) 2024-2025 by David Korth.                                 *
+ * Copyright (c) 2024-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,6 +21,8 @@
 //
 // Ubuntu systems don't have the unversioned .so if the -dev package
 // isn't installed, so all tested versions are listed.
+
+// TODO: Remove LZ4 and/or LZO if they're statically linked.
 
 #define ELF_NOTE_DLOPEN3_THREESO0(var, feature0, description0, priority0, module0a, module0b, module0c, feature1, description1, priority1, module1, feature2, description2, priority2, module2) \
 	_ELF_NOTE_DLOPEN("[" _ELF_NOTE_DLOPEN_VA_INT(feature0, description0, priority0, module0a, module0b, module0c) "," \

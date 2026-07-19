@@ -14,8 +14,9 @@
 
 #ifdef HAVE_LZ4
 #  if defined(USE_INTERNAL_LZ4) && !defined(USE_INTERNAL_LZ4_DLL)
-     // Using a statically linked copy of LZ4.
+     // Using a statically-linked copy of LZ4.
 #    define LZ4_DIRECT_LINKAGE 1
+#    include "lz4.h"
 #  else /* !(USE_INTERNAL_LZ4 && USE_INTERNAL_LZ4_DLL) */
      // Using a shared library copy of LZ4.
 #    define LZ4_SHARED_LINKAGE 1
@@ -29,8 +30,9 @@
 // NOTE: The bundled version is MiniLZO.
 #ifdef HAVE_LZO
 #  if defined(USE_INTERNAL_LZO) && !defined(USE_INTERNAL_LZO_DLL)
-     // Using a statically linked copy of LZO.
+     // Using a statically-linked copy of LZO.
 #    define LZO_DIRECT_LINKAGE 1
+#    include "minilzo.h"
 #  else /* !(USE_INTERNAL_LZO && USE_INTERNAL_LZO_DLL) */
      // Using a shared library copy of LZO.
 #    define LZO_SHARED_LINKAGE 1
@@ -47,6 +49,7 @@
 #include <memory>
 #include <mutex>
 
+#if !defined(USE_INTERNAL_LZO) || defined(USE_INTERNAL_LZO_DLL)
 // LZO types (we're not including LZO headers)
 #define LZO_VERSION 0x20a0 /* 2.10 */
 typedef uint8_t *lzo_bytep;
@@ -54,6 +57,7 @@ typedef size_t lzo_uint, *lzo_uintp;
 typedef void *lzo_voidp;
 #define LZO_E_OK    0
 #define LZO_E_ERROR (-1)
+#endif /* !USE_INTERNAL_LZO || USE_INTERNAL_LZO_DLL */
 
 namespace LibRomData {
 
