@@ -456,7 +456,8 @@ int Amiibo::loadFieldData(void)
 	const string credits = fmt::format(
 		FRUN(C_("Amiibo", "amiibo images provided by {:s},\nthe Unofficial amiibo Database.")),
 		"<a href=\"https://amiibo.life/\">amiibo.life</a>");
-	d->fields.addField_string(C_("Amiibo", "Credits"), credits, RomFields::STRF_CREDITS);
+	d->fields.addField_string(C_("Amiibo", "Credits"), credits,
+		RomFields::STRF_CREDITS | RomFields::STRF_PARSE_LINKS);
 
 	// Finished reading the field data.
 	return d->fields.count();

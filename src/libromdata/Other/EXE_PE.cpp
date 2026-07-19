@@ -284,13 +284,6 @@ int EXEPrivate::readPEImpExpDir(IMAGE_DATA_DIRECTORY &dataDir, int type,
 	dataDir.Size = le32_to_cpu(dataDir.Size);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
-	// Get the import/export table's physical address.
-	const uint32_t tbl_paddr = pe_vaddr_to_paddr(dataDir.VirtualAddress, dataDir.Size);
-	if (tbl_paddr == 0) {
-		// Not found.
-		return -ENOENT;
-	}
-
 	// Found the section.
 	if (dataDir.Size < minSize) {
 		// Not enough space for the import table...
@@ -303,7 +296,7 @@ int EXEPrivate::readPEImpExpDir(IMAGE_DATA_DIRECTORY &dataDir, int type,
 
 	// Load the import/export directory table.
 	dirTbl.resize(dataDir.Size);
-	size_t size = file->seekAndRead(tbl_paddr, dirTbl.data(), dirTbl.size());
+	size_t size = readFromPEVAddr(dataDir.VirtualAddress, dirTbl.data(), dirTbl.size());
 	if (size != dirTbl.size()) {
 		// Seek and/or read error.
 		return -EIO;
@@ -456,6 +449,23 @@ int EXEPrivate::readPEImportDir(void)
 
 	return 0;
 }
+
+/**
+ * Safely read data from a PE virtual address.
+ * @param vaddr	[in] Virtual address
+ * @param ptr	[out] Output data buffer
+ * @param size	[in] Amount of data to read, in bytes
+ * @return Number of bytes read on success; 0 on seek or read error.
+ */
+size_t EXEPrivate::readFromPEVAddr(uint32_t vaddr, void *ptr, size_t size)
+{
+	uint32_t paddr = pe_vaddr_to_paddr(vaddr, size);
+	if (paddr == 0) {
+		return 0;
+	}
+	return file->seekAndRead(paddr, ptr, size);
+}
+
 /**
  * Find the runtime DLL. (PE version)
  * @param refDesc String to store the description.
@@ -800,8 +810,17 @@ void EXEPrivate::addFields_PE(void)
 	string runtime_dll, runtime_link;
 	int ret = findPERuntimeDLL(runtime_dll, runtime_link);
 	if (ret == 0 && !runtime_dll.empty()) {
-		// TODO: Show the link?
-		fields.addField_string(C_("EXE", "Runtime DLL"), runtime_dll);
+		const char *const s_runtime_dll_title = C_("EXE", "Runtime DLL");
+		if (!runtime_link.empty()) {
+			// Format the link as HTML.
+			string html_link = fmt::format(FSTR("<a href=\"{:s}\">{:s}</a>"),
+				runtime_link, runtime_dll);
+			fields.addField_string(s_runtime_dll_title, html_link,
+				RomFields::STRF_PARSE_LINKS);
+		} else {
+			// No link; no HTML.
+			fields.addField_string(s_runtime_dll_title, runtime_dll);
+		}
 	}
 
 	// Load resources
@@ -1323,37 +1342,32 @@ int EXEPrivate::addFields_PE_Import(void)
 
 int EXEPrivate::addFields_PE_PDB(void)
 {
-	if (!std::holds_alternative<PE_data_t>(EXE_data)) {
-		// Not a PE executable.
+	if (!file || !file->isOpen()) {
+		// File isn't open.
 		return -EBADF;
 	}
-	//PE_data_t &PE_data = std::get<PE_data_t>(EXE_data);
 
 	// max path define on windows, should be this for all dos like paths
 	// (iirc nt paths are like 64k, but for pdbs this shooould be enough)
 	static constexpr size_t win32_maxpath = 260;
 
 	IMAGE_DATA_DIRECTORY debug_dir;
-	if (exeType == ExeType::PE) {
-		debug_dir = hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_DEBUG_INFO];
-	} else /*if (exeType == ExeType::PE32PLUS)*/ {
-		debug_dir = hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_DEBUG_INFO];
+	switch (exeType) {
+		case ExeType::PE:
+			debug_dir = hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_DEBUG_INFO];
+			break;
+		case ExeType::PE32PLUS:
+			debug_dir = hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_DEBUG_INFO];
+			break;
+		default:
+			// Not a PE executable.
+			return -ENOTSUP;
 	}
-
-	auto safe_read_vmem = [&](uint32_t va, uint32_t size, void* to) -> bool {
-		if (file && file->isOpen()){
-			uint32_t addr = pe_vaddr_to_paddr(va,size);
-			if (addr != 0 && file->seekAndRead(addr, to, size) == size) {
-				return true;
-			}
-		}
-		return false;
-	};
 
 	uint32_t size = le32_to_cpu(debug_dir.Size);
 	if (size && debug_dir.VirtualAddress != 0 && (size / sizeof(IMAGE_DEBUG_DIRECTORY)) < 16) { // cap to a reasonable limit
 		rp::uvector<IMAGE_DEBUG_DIRECTORY> debug_ents(size / sizeof(IMAGE_DEBUG_DIRECTORY));
-		if (!safe_read_vmem(le32_to_cpu(debug_dir.VirtualAddress), size, debug_ents.data())) {
+		if (readFromPEVAddr(le32_to_cpu(debug_dir.VirtualAddress), debug_ents.data(), size) != size) {
 			// Reading the IMAGE_DEBUG_DIRECTORY failed.
 			return -EFAULT;
 		}
@@ -1380,7 +1394,7 @@ int EXEPrivate::addFields_PE_PDB(void)
 				}
 
 				CODEVIEW_INFO_PDB70 cv {};
-				if (!safe_read_vmem(le32_to_cpu(dir.AddressOfRawData), sizeof(CODEVIEW_INFO_PDB70), &cv)) {
+				if (readFromPEVAddr(le32_to_cpu(dir.AddressOfRawData), &cv, sizeof(CODEVIEW_INFO_PDB70)) != sizeof(CODEVIEW_INFO_PDB70)) {
 					// Unable to read the codeview entry...
 					return -EFAULT;
 				}
@@ -1404,7 +1418,7 @@ int EXEPrivate::addFields_PE_PDB(void)
 				// - 1, null term, we ensure it ourselves
 				uint32_t strlen_chars = le32_to_cpu(dir.SizeOfData) - offsetof(CODEVIEW_INFO_PDB70, ImageName) - 1;
 				unique_ptr<char[]> path_buf(new char[strlen_chars + 1]);
-				if (safe_read_vmem(str_addie, strlen_chars, &path_buf[0])) {
+				if (readFromPEVAddr(str_addie, &path_buf[0], strlen_chars) == strlen_chars) {
 					path_buf[strlen_chars] = '\0'; // ensure nullterm
 					fields.addField_string("PDB Path", &path_buf[0]);
 					char* last_path_component = &path_buf[0];
@@ -1416,7 +1430,8 @@ int EXEPrivate::addFields_PE_PDB(void)
 					}
 					fields.addField_string(C_("EXE|PDB", "PDB Link"),
 						fmt::format(FSTR("<a href=\"https://msdl.microsoft.com/download/symbols/{:s}/{:s}/{:s}\">Microsoft Symbol Server</a>"),
-							last_path_component, symsrv_path, last_path_component));
+							last_path_component, symsrv_path, last_path_component),
+							RomFields::STRF_PARSE_LINKS);
 					return 0;
 				}
 				// not fatal, though some information is missing
@@ -1464,14 +1479,8 @@ int EXEPrivate::loadPEImageLoadConfigDirectory(void)
 			return -EIO;
 		}
 
-		uint32_t size = dirEntry.Size;
-		const uint32_t paddr = pe_vaddr_to_paddr(dirEntry.VirtualAddress, size);
-		if (paddr == 0) {
-			return -ENOENT;
-		};
-
-		size_t sz_read = file->seekAndRead(paddr, &ilcd.ilcd32, size);
-		if (sz_read != size) {
+		size_t size = readFromPEVAddr(dirEntry.VirtualAddress, &ilcd.ilcd32, dirEntry.Size);
+		if (size != dirEntry.Size) {
 			ilcd.Size = 0;
 			return -EIO;
 		}
@@ -1506,14 +1515,8 @@ int EXEPrivate::loadPEImageLoadConfigDirectory(void)
 			return -EIO;
 		}
 
-		uint32_t size = dirEntry.Size;
-		const uint32_t paddr = pe_vaddr_to_paddr(dirEntry.VirtualAddress, size);
-		if (paddr == 0) {
-			return -ENOENT;
-		};
-
-		size_t sz_read = file->seekAndRead(paddr, &ilcd.ilcd64, size);
-		if (sz_read != size) {
+		size_t size = readFromPEVAddr(dirEntry.VirtualAddress, &ilcd.ilcd64, dirEntry.Size);
+		if (size != dirEntry.Size) {
 			ilcd.Size = 0;
 			return -EIO;
 		}

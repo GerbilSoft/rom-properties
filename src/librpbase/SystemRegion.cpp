@@ -473,15 +473,17 @@ int getFlagPosition(uint32_t lc, int *pCol, int *pRow, bool forcePAL)
  */
 string lcToString(uint32_t lc)
 {
-	string s_lc;
-	s_lc.reserve(4);
+	char buf[4];
+	size_t size = 0;
+
 	for (; lc != 0; lc <<= 8) {
 		const uint8_t chr = static_cast<uint8_t>(lc >> 24);
 		if (chr != 0) {
-			s_lc += TOLOWER(chr);
+			buf[size++] = TOLOWER(chr);
 		}
 	}
-	return s_lc;
+
+	return string(buf, size);
 }
 
 /**
@@ -492,15 +494,17 @@ string lcToString(uint32_t lc)
  */
 string lcToStringUpper(uint32_t lc)
 {
-	string s_lc;
-	s_lc.reserve(4);
+	char buf[4];
+	size_t size = 0;
+
 	for (; lc != 0; lc <<= 8) {
 		const uint8_t chr = static_cast<uint8_t>(lc >> 24);
 		if (chr != 0) {
-			s_lc += TOUPPER(chr);
+			buf[size++] = TOUPPER(chr);
 		}
 	}
-	return s_lc;
+
+	return string(buf, size);
 }
 
 #ifdef _WIN32
@@ -512,15 +516,17 @@ string lcToStringUpper(uint32_t lc)
  */
 wstring lcToWString(uint32_t lc)
 {
-	wstring ws_lc;
-	ws_lc.reserve(4);
+	wchar_t buf[4];
+	size_t size = 0;
+
 	for (; lc != 0; lc <<= 8) {
 		uint8_t chr = (uint8_t)(lc >> 24);
 		if (chr != 0) {
-			ws_lc += towlower(chr);
+			buf[size++] = towlower(chr);
 		}
 	}
-	return ws_lc;
+
+	return wstring(buf, size);
 }
 
 /**
@@ -531,15 +537,17 @@ wstring lcToWString(uint32_t lc)
  */
 wstring lcToWStringUpper(uint32_t lc)
 {
-	wstring ws_lc;
-	ws_lc.reserve(4);
+	wchar_t buf[4];
+	size_t size = 0;
+
 	for (; lc != 0; lc <<= 8) {
 		uint8_t chr = (uint8_t)(lc >> 24);
 		if (chr != 0) {
-			ws_lc += towupper(chr);
+			buf[size++] = towupper(chr);
 		}
 	}
-	return ws_lc;
+
+	return wstring(buf, size);
 }
 #endif /* _WIN32 */
 

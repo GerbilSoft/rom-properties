@@ -77,7 +77,7 @@ void UpdateChecker::run(void)
 
 	// Read the first line, which should contain a 4-decimal version number.
 	const QString sVersion = U82Q(file.readLine().constData()).trimmed();
-	const QStringList sVersionArray = sVersion.split(QChar(L'.'));
+	const QStringList sVersionArray = sVersion.split(QLatin1Char('.'));
 	if (sVersion.isEmpty() || sVersionArray.size() != 4) {
 		emit error(QC_("UpdateChecker", "Version file is invalid."));
 		emit finished();

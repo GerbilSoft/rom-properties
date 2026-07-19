@@ -1,13 +1,13 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librptext)                        *
- * utf8_strlen.cpp: UTF-8 strlen() functions                               *
+ * utf8_funcs.cpp: UTF-8 functions                                         *
  *                                                                         *
- * Copyright (c) 2022-2025 by David Korth.                                 *
+ * Copyright (c) 2022-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "config.librptext.h"
-#include "utf8_strlen.hpp"
+#include "utf8_funcs.hpp"
 #include "common.h"
 
 // C includes (C++ namespace)
@@ -19,6 +19,9 @@
 #  include "uniwidth.h"
 #  define wcwidth(c) uc_width(c)
 #endif /* HAVE_WCWIDTH */
+
+// C++ STL classes
+using std::string;
 
 namespace LibRpText {
 
@@ -108,4 +111,41 @@ size_t utf8_disp_strlen(const char *str, size_t max_len)
 	return len;
 }
 
+/**
+ * Encode a Unicode code point as UTF-8.
+ * @param chr Code point
+ * @return UTF-8 encoded code point
+ */
+string utf8_encode_code_point(char32_t chr)
+{
+	char buf[4];
+	size_t size;
+
+	if (chr <= 0x7F) {
+		buf[0] = static_cast<char>(chr);
+		size = 1;
+	} else if (chr <= 0x7FF) {
+		buf[0] = static_cast<char>(0xC0 |  (chr >>  6));
+		buf[1] = static_cast<char>(0x80 |  (chr & 0x3F));
+		size = 2;
+	} else if (chr <= 0xFFFF) {
+		buf[0] = static_cast<char>(0xE0 |  (chr >> 12));
+		buf[1] = static_cast<char>(0x80 | ((chr >>  6) & 0x3F));
+		buf[2] = static_cast<char>(0x80 |  (chr & 0x3F));
+		size = 3;
+	} else if (chr <= 0x10FFFF) {
+		buf[0] = static_cast<char>(0xF0 |  (chr >> 18));
+		buf[1] = static_cast<char>(0x80 | ((chr >> 12) & 0x3F));
+		buf[2] = static_cast<char>(0x80 | ((chr >>  6) & 0x3F));
+		buf[3] = static_cast<char>(0x80 |  (chr & 0x3F));
+		size = 4;
+	} else {
+		// Invalid UTF-8 character...
+		// Use the Unicode replacment character. (U+FFFD)
+		return "\xEF\xBF\xBD";
+	}
+
+	return string(buf, size);
 }
+
+} // namespace LibRpText

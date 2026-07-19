@@ -368,7 +368,7 @@ void ImageTypesTabPrivate::initCreditsLabel(void)
 		" the Unofficial amiibo Database.");
 
 	// Replace "\n" with "<br/>".
-	sCredits.replace(QChar(L'\n'), QLatin1String("<br/>"));
+	sCredits.replace(QLatin1Char('\n'), QLatin1String("<br/>"));
 	lblCredits->setText(sCredits);
 }
 

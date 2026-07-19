@@ -106,7 +106,7 @@ void AchievementsTab::reset(void)
 		}
 
 		// Get the name and description.
-		QString s_ach = U82Q(pAch->getName(id)) + QChar(L'\n');
+		QString s_ach = U82Q(pAch->getName(id)) + QLatin1Char('\n');
 		// TODO: Locked description?
 		s_ach += U82Q(pAch->getDescUnlocked(id));
 

@@ -29,6 +29,9 @@
   * The MiniZip-NG native API is now used instead of the compat API.
     On Linux systems, a system-wide version of MiniZip-NG is now preferred
     instead of the built-in copy if it's available.
+  * String fields can now contain hyperlinks. This is currently used by the
+    EXE parser to provide download links for the Runtime DLL and, if available,
+    the PDB file from Microsoft Symbol Servers.
 
 * Bug fixes:
   * Dreamcast and SegaSaturn incorrectly added DiscNumber as integer.
@@ -42,6 +45,9 @@
   * NES: Fix NES 2.0 exponent/multiplier calculations.
     * Pull request #499: NES: fix multiplier in PRG-/CHR-ROM size calculation
       * Submitted by @slp64.
+  * Windows: Fix SysLink controls not actually opening links when clicked.
+    This only affected the amiibo.life link in previous versions.
+    * Affects: v1.7 - v2.8
 
 ## v2.8 (released 2026/06/20)
 

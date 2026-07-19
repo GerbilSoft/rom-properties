@@ -173,7 +173,7 @@ int ParamSFOPrivate::readString(uint32_t offset, size_t length, string &str)
 
 	// Read directly into the string buffer.
 	str.resize(length);
-	if (file->seekAndRead(offset, str.data(), length) != length) {
+	if (file->seekAndRead(offset, const_cast<char*>(str.data()), length) != length) {
 		// Seek and/or read error.
 		str.clear();
 		return -EIO;

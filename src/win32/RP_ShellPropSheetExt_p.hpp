@@ -3,7 +3,7 @@
  * RP_ShellPropSheetExt_p.hpp: IShellPropSheetExt implementation.          *
  * (Private class)                                                         *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -220,6 +220,29 @@ private:
 	 * @return Row height, in pixels.
 	 */
 	int createHeaderRow(_In_ POINT pt_start, _In_ SIZE size);
+
+	/**
+	 * Parse HTML entities in a string for the SysLink control.
+	 * Standard HTML entity rules apply, e.g. `&lt;`, `&gt`;, and `&amp;`.
+	 * NOTE: `&lt;a` will be converted to `< a` to prevent confusion with links.
+	 */
+	static std::tstring parseHtmlEntities(LPCTSTR in_str);
+
+	/**
+	 * Create a control for initString().
+	 * @param isLink If true, creates a WC_LINK control to display links.
+	 * @param isMultiline If true, create a multi-line control.
+	 * @param str String data
+	 * @param pt Position
+	 * @param size Size
+	 * @param hwndParent Parent window
+	 * @param cId Control ID
+	 * @return HWND
+	 */
+	HWND createStringControl(
+		_In_ bool isLink, _In_ bool isMultiline,
+		_In_ LPCTSTR str, _In_ POINT pt, _In_ SIZE size,
+		_In_ HWND hwndParent, _In_ uint16_t cId);
 
 	/**
 	 * Initialize a string field. (Also used for Date/Time.)

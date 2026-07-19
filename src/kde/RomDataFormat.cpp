@@ -64,7 +64,7 @@ QString formatDateTime(time_t date_time, unsigned int flags)
 		     RomFields::RFT_DATETIME_NO_YEAR:
 			// Date and time. (No year)
 			// TODO: Localize this.
-			str = dateTime.date().toString(QLatin1String("MMM d")) + QChar(L' ') +
+			str = dateTime.date().toString(QLatin1String("MMM d")) + QLatin1Char(' ') +
 			      locale.toString(dateTime.time(), locale.timeFormat(QLocale::ShortFormat));
 			break;
 

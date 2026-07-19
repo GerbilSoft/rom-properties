@@ -17,15 +17,18 @@
 
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
-#include "librptext/utf8_strlen.hpp"
+#include "librptext/html_entities.hpp"
+#include "librptext/utf8_funcs.hpp"
 #include "librptexture/img/rp_image.hpp"
 using namespace LibRpText;
 using LibRpTexture::rp_image;
 
 // C includes (C++ namespace)
 #include <cassert>
+#include <cstdlib>
 
 // C++ STL classes
+#include <algorithm>
 using std::array;
 using std::max;
 using std::ostream;
@@ -190,41 +193,131 @@ class StringField {
 	const RomFields::Field &romField;
 	bool useAnsiColor;
 private:
-	static string htmlLinkToOsc8(const string &in_str)
+	/**
+	 * Print an invalid HTML tag.
+	 * The tag contents is printed as-is.
+	 * @param tag Pointer to start of HTML tag (will be modified) (MUST be pointing to a NULL-terminated string!)
+	 * @return Invalid HTML tag.
+	 */
+	static string printInvalidTag(const char *&tag)
 	{
-		// Convert an HTML-style link to OSC 8.
-		// NOTE: Only supporting a single link in this format:
-		// <a href="https://blahblahblah">description</a>
 		string str;
-		const size_t apos1 = in_str.find("<a href=\"");
-		if (apos1 == string::npos) {
-			return in_str;
+
+		const char *const tag_end = strchr(tag, '>');
+		if (!tag_end) {
+			// No tag end...
+			const size_t p_remain = strlen(tag);
+			str.append(tag, p_remain);
+			tag += p_remain;
+		} else {
+			// Found the tag end.
+			str.append(tag, tag_end - tag + 1);
+			tag = tag_end + 1;
 		}
-		const size_t apos1_end = apos1 + 9;
-		const size_t apos2 = in_str.find("\">", apos1_end);
-		if (apos2 == string::npos) {
-			return in_str;
+
+		return str;
+	}
+
+	/**
+	 * Parse an HTML tag.
+	 * @param tag Pointer to HTML tag (will be modified) (MUST be pointing to a NULL-terminated string!)
+	 * @return Parsed HTML tag
+	 */
+	static string parseHtmlTag(const char *&tag)
+	{
+		string str;
+		const char *p = tag;
+
+		// Check for an HTML link.
+		if (strncmp(p+1, "a href=\"", 8) != 0) {
+			// Not a link.
+			return printInvalidTag(tag);
 		}
-		const size_t endapos = in_str.find("</a>", apos2 + 2);
-		if (endapos == string::npos) {
-			return in_str;
+
+		// TODO: Search for HTML entities in the URL.
+		// For now, using it as-is.
+
+		// Find the end of the link text.
+		p += 9;
+		const char *const dblquote = strchr(p, '"');
+		if (!dblquote) {
+			// Link text doesn't end...
+			return printInvalidTag(tag);
 		}
 
 		// "OSC 8" references:
 		// - https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
 		// - https://github.com/Alhadis/OSC8-Adoption/
 
-		// Build the return string.
-		str.reserve(in_str.size() + 12);
-		str = in_str.substr(0, apos1);
-		str += "\033]8;;";	// OSC 8 start
-		str += in_str.substr(apos1_end, apos2 - apos1_end);
-		str += "\033\\"		// End of URL; start of display text
-		       "\033[34;1;4m";	// blue, bold, underlined
-		str += in_str.substr(apos2 + 2, endapos - apos2 - 2);
+		// Start building the return string using the URL.
+		str = "\033]8;;";		// OSC 8 start
+		str.append(p, dblquote - p);
+		str += "\033\\";		// End of URL
+		p = dblquote + 1;
+
+		// Next character must be '>'.
+		if (*p != '>') {
+			// `<a>` tag isn't closed.
+			return printInvalidTag(tag);
+		}
+		p++;
+
+		// Search for "</a>".
+		// TODO: Search for entities in the display text.
+		// For now, using it as-is.
+		const char *end_link = strstr(p, "</a>");
+		if (!end_link) {
+			// No end tag...
+			return printInvalidTag(tag);
+		}
+
+		// Add the display text.
+		// TODO: Check for HTML entities?
+		str += "\033[34;1;4m";		// blue, bold, underlined
+		str.append(p, end_link - p);
 		str += "\033[0m"	// Unset color attributes
 		       "\033]8;;\033\\"; // OSC 8 end
-		str += in_str.substr(endapos + 4);
+
+		// End of link parsing.
+		tag = end_link + 4;
+		return str;
+	}
+
+	/**
+	 * Parse text using our HTML links subset.
+	 * Links must use the exact format: `<a href="https://blahblahblah">description</a>`
+	 * Standard HTML entity rules apply, e.g. `&lt;`, `&gt`;, and `&amp;`.
+	 * HTML tags other than `<a>` will be displayed as plaintext.
+	 */
+	static string parseHtmlLinksSubset(const string &in_str)
+	{
+		string str;
+		str.reserve(in_str.size());
+
+		const char *p = in_str.c_str();
+		const char *const p_end = p + in_str.size();
+
+		while (p < p_end) {
+			// Find one of the following:
+			// - '<' (HTML tag open)
+			// - '&' (HTML entity)
+
+			if (*p == '<') {
+				// Start of an HTML tag.
+				str += parseHtmlTag(p);
+			} else if (*p == '&') {
+				// Start of an HTML entity.
+				str += utf8_encode_code_point(HtmlEntities::parseHtmlEntity(p));
+			} else {
+				// Not an HTML tag.
+				// TODO: Search for '<' and '&' at the same time,
+				// then add the full string buffer instead of
+				// one character at a time?
+				str += *p++;
+			}
+		}
+
+		// String has been parsed.
 		return str;
 	}
 
@@ -237,19 +330,20 @@ public:
 
 		if ((field.romField.flags & RomFields::STRF_WARNING) && field.useAnsiColor) {
 			// Field should be printed as bold red.
+			// FIXME: If the string has links, this may break!
 			os << "\033[31;1m";
 		}
 
 		os << ColonPad(field.width, romField.name);
 		if (romField.data.str) {
-			if ((field.romField.flags & RomFields::STRF_CREDITS) && field.useAnsiColor) {
-				// Credits field may contain a link.
+			if ((field.romField.flags & RomFields::STRF_PARSE_LINKS) && field.useAnsiColor) {
+				// This field may contain a hyperlink. (restricted HTML subset)
 				// Print the link in blue with an underline, and use OSC 8.
 				// TODO: Is it possible to detect if the terminal supports OSC 8?
 				// FIXME: May conflict with STRF_WARNING.
 				// NOTE: Not using SafeString in order to print ANSI escape sequences.
-				// STRF_CREDITS fields shouldn't have any weird control codes...
-				string str = htmlLinkToOsc8(romField.data.str);
+				// STRF_PARSE_LINKS fields shouldn't have any weird control codes...
+				string str = parseHtmlLinksSubset(romField.data.str);
 				os << SafeString(str, static_cast<SafeString::SafeStringFlags>(SafeString::SSF_QUOTES | SafeString::SSF_NO_ESCAPE), field.width);
 			} else {
 				// Print the string without any formatting.

@@ -244,7 +244,7 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 		prevExportDir = fi.path();
 	}
 
-	QString defaultFileName = prevExportDir + QChar(L'/') + fi.completeBaseName();
+	QString defaultFileName = prevExportDir + QLatin1Char('/') + fi.completeBaseName();
 	defaultFileName += QLatin1String(default_ext);
 
 	// TODO: Rework so it's not application-modal.

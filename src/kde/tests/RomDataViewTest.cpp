@@ -209,7 +209,7 @@ TEST_F(RomDataViewTest, RFT_STRING)
 	// Verify the label contents.
 	// NOTE: Description label will have an added ':'.
 	QString qs_field_desc = QLatin1String(s_field_desc);
-	qs_field_desc += QChar(L':');
+	qs_field_desc += QLatin1Char(':');
 
 	EXPECT_STREQ(Q2U8(qs_field_desc), Q2U8(m_lblDesc->text())) << "Field description is incorrect.";
 	EXPECT_EQ(QLatin1String(s_field_value), lblValue->text()) << "Field value is incorrect.";
@@ -248,7 +248,7 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_non_sparse)
 	// Verify the label contents.
 	// NOTE: Description label will have an added ':'.
 	QString qs_field_desc = QLatin1String(s_field_desc);
-	qs_field_desc += QChar(L':');
+	qs_field_desc += QLatin1Char(':');
 	EXPECT_STREQ(Q2U8(qs_field_desc), Q2U8(m_lblDesc->text())) << "Field description is incorrect.";
 
 	// Grid should be 4x4, since we specified 4 items per column,
@@ -336,7 +336,7 @@ TEST_F(RomDataViewTest, RFT_BITFIELD_sparse)
 	// Verify the label contents.
 	// NOTE: Description label will have an added ':'.
 	QString qs_field_desc = QLatin1String(s_field_desc);
-	qs_field_desc += QChar(L':');
+	qs_field_desc += QLatin1Char(':');
 	EXPECT_STREQ(Q2U8(qs_field_desc), Q2U8(m_lblDesc->text())) << "Field description is incorrect.";
 
 	// Grid should be 4x3, since we specified 4 items per column,
@@ -431,7 +431,7 @@ TEST_F(RomDataViewTest, RFT_DATETIME)
 	// Verify the label contents.
 	// NOTE: Description label will have an added ':'.
 	QString qs_field_desc = QLatin1String(s_field_desc);
-	qs_field_desc += QChar(L':');
+	qs_field_desc += QLatin1Char(':');
 
 	EXPECT_STREQ(Q2U8(qs_field_desc), Q2U8(m_lblDesc->text())) << "Field description is incorrect.";
 	EXPECT_STREQ(s_field_value, Q2U8(lblValue->text())) << "Field value is incorrect.";

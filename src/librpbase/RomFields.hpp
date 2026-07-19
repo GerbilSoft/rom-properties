@@ -90,10 +90,10 @@ public:
 
 		// "Credits" field.
 		// Used for providing credits for an external database.
-		// This field disables highlighting and enables links
-		// using HTML-style "<a>" tags. This field is also
-		// always shown at the bottom of the dialog and with
-		// center-aligned text.
+		// Highlighting is disabled.
+		// To enable links, add STRF_PARSE_LINKS.
+		// This field is also always shown at the bottom of the
+		// dialog and with center-aligned text.
 		// NOTE: Maximum of one STRF_CREDITS per RomData subclass.
 		STRF_CREDITS	= (1U << 2),
 
@@ -105,6 +105,12 @@ public:
 
 		// Hexdump: No spaces.
 		STRF_HEXDUMP_NO_SPACES	= (1U << 5),
+
+		// Parse links. This uses a subset of HTML:
+		// - Links must use the exact format: `<a href="https://blahblahblah">description</a>`
+		// - Standard HTML entity rules apply, e.g. `&lt;`, `&gt`;, and `&amp;`.
+		// - HTML tags other than `<a>` will be displayed as plaintext.
+		STRF_PARSE_LINKS	= (1U << 6),
 	};
 
 	// Display flags for RFT_LISTDATA
