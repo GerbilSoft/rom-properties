@@ -93,7 +93,7 @@ int RpFile::rereadDeviceSizeOS(off64_t *pDeviceSize, uint32_t *pSectorSize)
 			DISK_GEOMETRY_EX dg;
 			DWORD dwBytesReturned;  // TODO: Check this?
 			if (DeviceIoControl(d->file, IOCTL_DISK_GET_DRIVE_GEOMETRY_EX,
-				NULL, 0, &dg, sizeof(dg), &dwBytesReturned, NULL) != 0)
+				nullptr, 0, &dg, sizeof(dg), &dwBytesReturned, nullptr) != 0)
 			{
 				// Device geometry retrieved.
 				w32err = 0;

@@ -154,7 +154,7 @@ rp_nautilus_info_provider_finalize(GObject *object)
 	RpNautilusInfoProvider *const provider = RP_NAUTILUS_INFO_PROVIDER(object);
 
 	// Delete any remaining requests and free the queue.
-	for (GList *p = provider->request_queue.head; p != NULL; p = p->next) {
+	for (GList *p = provider->request_queue.head; p != nullptr; p = p->next) {
 		if (p->data) {
 			struct request_info *const req = static_cast<struct request_info*>(p->data);
 			g_object_unref(req->file_info);

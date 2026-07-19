@@ -473,7 +473,7 @@ int GczReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 		}
 
 		// Verify the hash of the *compressed* data.
-		uint32_t hash_calc = adler32(0L, Z_NULL, 0);
+		uint32_t hash_calc = adler32(0L, nullptr, 0);
 		hash_calc = adler32(hash_calc, d->z_buffer.data(), z_block_size);
 		if (hash_calc != le32_to_cpu(d->hashes[blockIdx])) {
 			// Hash error.

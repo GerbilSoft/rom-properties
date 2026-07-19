@@ -63,7 +63,7 @@ public:
 
 const char *const ListDataSortProxyModelTest::sorted_strings_asc[4][25] = {
 	// Column 0: Greek alphabet, standard sort
-	{NULL,
+	{nullptr,
 	 "Alpha", "Epsilon", "Eta", "Gamma",
 	 "Iota", "Lambda", "Nu", "Omicron",
 	 "Phi", "Psi", "Rho", "Tau",
@@ -71,7 +71,7 @@ const char *const ListDataSortProxyModelTest::sorted_strings_asc[4][25] = {
 	 "mU", "oMega", "pI", "sIgma",
 	 "tHeta", "uPsilon", "xI", "zEta"},
 	// Column 1: Greek alphabet, case-insensitive sort
-	{NULL,
+	{nullptr,
 	 "Alpha", "bEta", "cHi", "dElta",
 	 "Epsilon", "Eta", "Gamma", "Iota",
 	 "kAppa", "Lambda", "mU", "Nu",
@@ -79,7 +79,7 @@ const char *const ListDataSortProxyModelTest::sorted_strings_asc[4][25] = {
 	 "Psi", "Rho", "sIgma", "Tau",
 	 "tHeta", "uPsilon", "xI", "zEta"},
 	// Column 2: Numbers, standard sort
-	{NULL,
+	{nullptr,
 	 "1", "10", "11", "12",
 	 "13", "14", "15", "16",
 	 "17", "18", "19", "2",
@@ -87,7 +87,7 @@ const char *const ListDataSortProxyModelTest::sorted_strings_asc[4][25] = {
 	 "24", "3", "4", "5",
 	 "6", "7", "8", "9"},
 	// Column 3: Numbers, numeric sort
-	{NULL,
+	{nullptr,
 	 "1", "2", "3", "4",
 	 "5", "6", "7", "8",
 	 "9", "10", "11", "12",

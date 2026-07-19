@@ -32,7 +32,7 @@ void DarkMode_InitDialog(HWND hDlg)
 	if (unlikely(!g_darkModeSupported))
 		return;
 
-	SetWindowTheme(hDlg, L"CFD", NULL);
+	SetWindowTheme(hDlg, L"CFD", nullptr);
 	_AllowDarkModeForWindow(hDlg, true);
 
 	const LONG_PTR lpStyle = GetWindowLongPtr(hDlg, GWL_STYLE);
@@ -54,7 +54,7 @@ void DarkMode_InitButton(HWND hWnd)
 		return;
 
 	// FIXME: Not working for BS_GROUPBOX or BS_AUTOCHECKBOX.
-	SetWindowTheme(hWnd, L"Explorer", NULL);
+	SetWindowTheme(hWnd, L"Explorer", nullptr);
 	_AllowDarkModeForWindow(hWnd, true);
 
 	const LONG_PTR lpStyle = GetWindowLongPtr(hWnd, GWL_STYLE);
@@ -86,7 +86,7 @@ void DarkMode_InitComboBox(HWND hWnd)
 	if (unlikely(!g_darkModeSupported))
 		return;
 
-	SetWindowTheme(hWnd, L"Explorer", NULL);
+	SetWindowTheme(hWnd, L"Explorer", nullptr);
 	_AllowDarkModeForWindow(hWnd, true);
 	SendMessage(hWnd, WM_THEMECHANGED, 0, 0);
 
@@ -123,7 +123,7 @@ void DarkMode_InitComboBoxEx(HWND hWnd)
 		return;
 
 	// Set ComboBoxEx stuff first.
-	SetWindowTheme(hWnd, L"Explorer", NULL);
+	SetWindowTheme(hWnd, L"Explorer", nullptr);
 	_AllowDarkModeForWindow(hWnd, true);
 	SendMessage(hWnd, CBEM_SETWINDOWTHEME, 0, reinterpret_cast<LPARAM>(_T("Explorer")));
 	SendMessage(hWnd, WM_THEMECHANGED, 0, 0);
@@ -144,7 +144,7 @@ void DarkMode_InitEdit(HWND hWnd)
 	if (unlikely(!g_darkModeSupported))
 		return;
 
-	SetWindowTheme(hWnd, L"CFD", NULL);
+	SetWindowTheme(hWnd, L"CFD", nullptr);
 	_AllowDarkModeForWindow(hWnd, true);
 	SendMessage(hWnd, WM_THEMECHANGED, 0, 0);
 }

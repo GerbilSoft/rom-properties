@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libi18n)                          *
  * i18n.cpp: Internationalization support code.                            *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -137,7 +137,7 @@ static void rp_i18n_init_int(void)
 	// Found the locale subdirectory.
 	// Bind the gettext domain.
 	LPCTSTR base = tbindtextdomain(RP_I18N_DOMAIN, tpathname);
-	i18n_is_init = (base != NULL);
+	i18n_is_init = (base != nullptr);
 }
 
 #else /* !_WIN32 */
@@ -152,7 +152,7 @@ static void rp_i18n_init_int(void)
 {
 	// Unix/Linux: Use the system-wide locale directory.
 	const char *const base = bindtextdomain(RP_I18N_DOMAIN, DIR_INSTALL_LOCALE);
-	i18n_is_init = (base != NULL);
+	i18n_is_init = (base != nullptr);
 }
 #endif /* _WIN32 */
 

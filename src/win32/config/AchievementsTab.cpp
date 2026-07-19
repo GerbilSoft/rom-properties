@@ -249,7 +249,7 @@ INT_PTR CALLBACK AchievementsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wP
 				UpdateDarkModeEnabled();
 				if (d->lastDarkModeEnabled != g_darkModeEnabled) {
 					d->lastDarkModeEnabled = g_darkModeEnabled;
-					InvalidateRect(hDlg, NULL, true);
+					InvalidateRect(hDlg, nullptr, true);
 
 					// Propagate WM_THEMECHANGED to window controls that don't
 					// automatically handle Dark Mode changes, e.g. ComboBox and Button.

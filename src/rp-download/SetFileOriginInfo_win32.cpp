@@ -101,7 +101,7 @@ static bool getStoreFileOriginInfo(void)
 	conf_filename += _T("rom-properties\\rom-properties.conf");
 
 	dwRet = GetPrivateProfileString(_T("Downloads"), _T("StoreFileOriginInfo"),
-		NULL, szValue, _countof(szValue), conf_filename.c_str());
+		nullptr, szValue, _countof(szValue), conf_filename.c_str());
 
 	if ((dwRet == 5 && !_tcsicmp(szValue, _T("false"))) ||
 	    (dwRet == 1 && szValue[0] == _T('0')))

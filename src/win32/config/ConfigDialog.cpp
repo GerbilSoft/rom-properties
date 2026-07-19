@@ -445,7 +445,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 				if (lastDarkModeEnabled != g_darkModeEnabled) {
 					lastDarkModeEnabled = g_darkModeEnabled;
 					RefreshTitleBarThemeColor(hWnd);
-					InvalidateRect(hWnd, NULL, true);
+					InvalidateRect(hWnd, nullptr, true);
 
 					// Propagate WM_THEMECHANGED to window controls that don't
 					// automatically handle Dark Mode changes, e.g. ComboBox and Button.

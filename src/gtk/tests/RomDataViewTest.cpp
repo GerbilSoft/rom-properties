@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (gtk/tests)                        *
  * RomDataViewTest.cpp: RomDataView tests                                  *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -659,7 +659,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
         // g_thread_init() is automatic as of glib-2.32.0
         // and is marked deprecated.
         if (!g_thread_supported()) {
-                g_thread_init(NULL);
+                g_thread_init(nullptr);
         }
 #endif /* !GLIB_CHECK_VERSION(2, 32, 0) */
 

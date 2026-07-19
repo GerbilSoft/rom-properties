@@ -91,7 +91,7 @@ static void rp_init_DPIQueryType(void)
 	}
 
 	// Try GetDpiForMonitor(). (Windows 8.1)
-	hShcore_dll.reset(LoadLibraryEx(_T("shcore.dll"), NULL, LOAD_LIBRARY_SEARCH_SYSTEM32));
+	hShcore_dll.reset(LoadLibraryEx(_T("shcore.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
 	if (hShcore_dll) {
 		pfns.pfnGetDpiForMonitor = (pfnGetDpiForMonitor_t)GetProcAddress(hShcore_dll.get(), "GetDpiForMonitor");
 		if (pfns.pfnGetDpiForMonitor) {
@@ -123,9 +123,9 @@ UINT rp_GetDpiForWindow(HWND hWnd)
 		case DPIQT_GetDeviceCaps: {
 			// Windows 7 and earlier: System-wide DPI.
 			// NOTE: Assuming dpiX is the same as dpiY.
-			HDC hDC = GetDC(NULL);
+			HDC hDC = GetDC(nullptr);
 			dpi = (UINT)GetDeviceCaps(hDC, LOGPIXELSX);
-			ReleaseDC(NULL, hDC);
+			ReleaseDC(nullptr, hDC);
 			break;
 		}
 
