@@ -52,7 +52,7 @@
 #define _ELF_NOTE_DLOPEN_INT(feature, description, priority, module_) \
         "{\"feature\":\"" feature "\",\"description\":\"" description "\",\"priority\":\"" priority "\",\"soname\":[\"" module_ "\"]}"
 #define _ELF_NOTE_DLOPEN_VA_INT(feature, description, priority, ...) \
-	"[{\"feature\":\"" feature "\",\"description\":\"" description "\",\"priority\":\"" priority "\",\"soname\":" _SONAME_ARRAY(__VA_ARGS__) "}]"
+	"{\"feature\":\"" feature "\",\"description\":\"" description "\",\"priority\":\"" priority "\",\"soname\":" _SONAME_ARRAY(__VA_ARGS__) "}"
 
 #else /* !__ELF__ */
 
