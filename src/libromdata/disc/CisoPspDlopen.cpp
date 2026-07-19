@@ -8,6 +8,55 @@
 
 #include "CisoPspDlopen.hpp"
 
+/** LZO types required for __lzo_init_v2() **/
+typedef uint32_t lzo_uint32_t;
+typedef lzo_uint lzo_xint;
+
+#ifdef _MSC_VER
+#  define __LZO_CDECL __cdecl
+#else /* !_MSC_VER */
+#  define __LZO_CDECL
+#endif /* _MSC_VER */
+
+// Flat memory model
+#define __LZO_MMODEL
+
+#define lzo_sizeof_dict_t ((unsigned)sizeof(lzo_bytep))
+
+/* Callback interface. Currently only the progress indicator ("nprogress")
+ * is used, but this may change in a future release. */
+
+struct lzo_callback_t;
+typedef struct lzo_callback_t lzo_callback_t;
+#define lzo_callback_p lzo_callback_t __LZO_MMODEL *
+
+/* malloc & free function types */
+typedef lzo_voidp (__LZO_CDECL *lzo_alloc_func_t)
+    (lzo_callback_p self, lzo_uint items, lzo_uint size);
+typedef void      (__LZO_CDECL *lzo_free_func_t)
+    (lzo_callback_p self, lzo_voidp ptr);
+
+/* a progress indicator callback function */
+typedef void (__LZO_CDECL *lzo_progress_func_t)
+    (lzo_callback_p, lzo_uint, lzo_uint, int);
+
+struct lzo_callback_t
+{
+	/* custom allocators (set to 0 to disable) */
+	lzo_alloc_func_t nalloc;                /* [not used right now] */
+	lzo_free_func_t nfree;                  /* [not used right now] */
+
+	/* a progress indicator callback function (set to 0 to disable) */
+	lzo_progress_func_t nprogress;
+
+	/* INFO: the first parameter "self" of the nalloc/nfree/nprogress
+	* callbacks points back to this struct, so you are free to store
+	* some extra info in the following variables. */
+	lzo_voidp user1;
+	lzo_xint user2;
+	lzo_xint user3;
+};
+
 #ifdef _WIN32
 // rp_LoadLibrary()
 // NOTE: Delay-load is not supported with MinGW, but we still need
@@ -101,7 +150,8 @@ void CisoPspDlopen::init_pfn_LZO_int(void)
 	}
 
 	// Load the __lzo_init_v2 function pointer first and initialize LZO.
-	typedef __typeof__(__lzo_init_v2) *pfn___lzo_init_v2_t;
+	// NOTE: __lzo_init_v2() is based on the version from LZO v2.10.
+	typedef int (*pfn___lzo_init_v2_t)(unsigned,int,int,int,int,int,int,int,int,int);
 	pfn___lzo_init_v2_t pfn___lzo_init_v2 = reinterpret_cast<pfn___lzo_init_v2_t>(dlsym(lib, "__lzo_init_v2"));
 	if (!pfn___lzo_init_v2) {
 		// Failed to load the LZO initialization function pointer.

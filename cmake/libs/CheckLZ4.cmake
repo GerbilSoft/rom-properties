@@ -4,26 +4,23 @@
 IF(ENABLE_LZ4)
 
 IF(NOT USE_INTERNAL_LZ4)
-	IF(LZ4_LIBRARY MATCHES "^lz4$" OR LZ4_LIBRARY MATCHES "^lz4")
-		# Internal LZ4 was previously in use.
-		UNSET(LZ4_FOUND)
-		UNSET(HAVE_LZ4)
-		UNSET(LZ4_LIBRARY CACHE)
-		UNSET(LZ4_LIBRARIES CACHE)
-	ENDIF()
-
-	# Check for LZ4.
-	FIND_PACKAGE(LZ4)
-	IF(LZ4_FOUND)
-		# Found system LZ4.
-		SET(HAVE_LZ4 1)
-	ELSE()
-		# System LZ4 was not found.
-		MESSAGE(STATUS "Using the internal copy of LZ4 since a system version was not found.")
+	# Since we're using dlopen() for liblz4 on Linux now, we're only using
+	# the internal copy of LZ4 on Windows and macOS.
+	IF(WIN32)
+		MESSAGE(STATUS "Using the internal copy of LZ4 on Windows.")
+		SET(USE_INTERNAL_LZ4 ON CACHE BOOL "Use the internal copy of LZ4" FORCE)
+	ELSEIF(APPLE)
+		MESSAGE(STATUS "Using the internal copy of LZ4 on macOS.")
 		SET(USE_INTERNAL_LZ4 ON CACHE BOOL "Use the internal copy of LZ4" FORCE)
 	ENDIF()
 ELSE()
-	MESSAGE(STATUS "Using the internal copy of LZ4.")
+	IF(WIN32)
+		MESSAGE(STATUS "Using the internal copy of LZ4 on Windows.")
+	ELSEIF(APPLE)
+		MESSAGE(STATUS "Using the internal copy of LZ4 on macOS.")
+	ELSE()
+		MESSAGE(STATUS "Using the internal copy of LZ4.")
+	ENDIF()
 ENDIF(NOT USE_INTERNAL_LZ4)
 
 IF(USE_INTERNAL_LZ4)

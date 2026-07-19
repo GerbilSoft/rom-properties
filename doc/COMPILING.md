@@ -5,7 +5,7 @@
 On Debian/Ubuntu, you will need build-essential and the following development
 packages:
 * All: cmake zlib1g-dev libpng-dev libjpeg-dev nettle-dev pkg-config libpugixml-dev gettext libseccomp-dev libfmt-dev
-* Optional decompression: libzstd-dev liblz4-dev liblzo2-dev libminizip-ng-dev
+* Optional decompression: libzstd-dev libminizip-ng-dev
 * KDE 4.x: libqt4-dev kdelibs5-dev
 * KDE 5.x: qtbase5-dev qttools5-dev-tools extra-cmake-modules libkf5kio-dev libkf5widgetsaddons-dev libkf5filemetadata-dev libkf5crash-dev
 * KDE 6.x: qt6-base-dev qt6-tools-dev-tools extra-cmake-modules libkf6kio-dev libkf6widgetsaddons-dev libkf6filemetadata-dev libkf6crash-dev
@@ -13,6 +13,9 @@ packages:
 * XFCE (GTK+ 3.x): libglib2.0-dev libgtk-3-dev libcairo2-dev libthunarx-3-dev libgsound-dev
 * GNOME, MATE, Cinnamon: libglib2.0-dev libgtk-3-dev libcairo2-dev libnautilus-extension-dev libgsound-dev
 * GNOME 43: libglib2.0-dev libgtk-4-dev libgdk-pixbuf2.0-dev libnautilus-extension-dev libgsound-dev
+
+Optional runtime dependencies:
+* liblz4-1 liblzo2-2 (libwebp5 | libwebp6 | libwebp7)
 
 NOTE: On older versions of Ubuntu, some packages were different:
 * Earlier than 18.04:
@@ -35,17 +38,23 @@ packages:
 * GNOME, MATE, Cinnamon: glib2-devel gtk3-devel cairo-devel nautilus-devel gsound-devel
 * GNOME 43: glib2-devel gtk4-devel gdk-pixbuf2-devel nautilus-devel gsound-devel
 
+Optional runtime dependencies:
+* lz4 lzo libwebp
+
 NOTE: If gsound-devel is not available, use libcanberra-devel instead.
 
 On Arch and Arch base distros you will need to install "base-devel" and the
 following development packages:
 * All: zlib libpng libjpeg-turbo nettle pkgconf pugixml gettext libseccomp
-* Optional decompression: zstd lz4 lzo minizip-ng
+* Optional decompression: zstd minizip-ng
 * KDE 5.x: qt5-base qt5-tools extra-cmake-modules kio kwidgetsaddons kfilemetadata kcrash
 * KDE 6.x: qt6-base qt6-tools extra-cmake-modules kio kwidgetsaddons kfilemetadata kcrash
 * XFCE (GTK+ 3.x): glib2 gtk3 cairo gsound
 * GNOME, MATE, Cinnamon: glib2 gtk3 cairo libnautilus-extension gsound
 * GNOME 43: glib2 gtk4 gdk-pixbuf2 nautilus gsound
+
+Optional runtime dependencies:
+* lz4 lzo libwebp
 
 NOTE: If gsound is not available, use libcanberra instead.
 

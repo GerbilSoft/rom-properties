@@ -4,26 +4,23 @@
 IF(ENABLE_LZO)
 
 IF(NOT USE_INTERNAL_LZO)
-	IF(LZO_LIBRARY MATCHES "^lzo$" OR LZO_LIBRARY MATCHES "^lzo")
-		# Internal LZO was previously in use.
-		UNSET(LZO_FOUND)
-		UNSET(HAVE_LZO)
-		UNSET(LZO_LIBRARY CACHE)
-		UNSET(LZO_LIBRARIES CACHE)
-	ENDIF()
-
-	# Check for LZO.
-	FIND_PACKAGE(LZO)
-	IF(LZO_FOUND)
-		# Found system LZO.
-		SET(HAVE_LZO 1)
-	ELSE()
-		# System LZO was not found.
-		MESSAGE(STATUS "Using the internal copy of LZO since a system version was not found.")
+	# Since we're using dlopen() for liblzo2 on Linux now, we're only using
+	# the internal copy of LZO on Windows and macOS.
+	IF(WIN32)
+		MESSAGE(STATUS "Using the internal copy of LZO on Windows.")
+		SET(USE_INTERNAL_LZO ON CACHE BOOL "Use the internal copy of LZO" FORCE)
+	ELSEIF(APPLE)
+		MESSAGE(STATUS "Using the internal copy of LZO on macOS.")
 		SET(USE_INTERNAL_LZO ON CACHE BOOL "Use the internal copy of LZO" FORCE)
 	ENDIF()
 ELSE()
-	MESSAGE(STATUS "Using the internal copy of LZO.")
+	IF(WIN32)
+		MESSAGE(STATUS "Using the internal copy of LZO on Windows.")
+	ELSEIF(APPLE)
+		MESSAGE(STATUS "Using the internal copy of LZO on macOS.")
+	ELSE()
+		MESSAGE(STATUS "Using the internal copy of LZO.")
+	ENDIF()
 ENDIF(NOT USE_INTERNAL_LZO)
 
 IF(USE_INTERNAL_LZO)

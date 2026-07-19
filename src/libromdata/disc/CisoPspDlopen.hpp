@@ -10,6 +10,7 @@
 
 #include "config.libromdata.h"
 #include "HMODULE_deleter.hpp"
+#include "common.h"	// for RP_UNUSED()
 
 #ifdef HAVE_LZ4
 #  if defined(USE_INTERNAL_LZ4) && !defined(USE_INTERNAL_LZ4_DLL)
@@ -19,7 +20,9 @@
      // Using a shared library copy of LZ4.
 #    define LZ4_SHARED_LINKAGE 1
 #  endif /* USE_INTERNAL_LZ4 && USE_INTERNAL_LZ4_DLL */
-#  include <lz4.h>
+#else /* !HAVE_LZ4 */
+// LZ4 is not being linked in directly. Assume we're using dlopen().
+#  define LZ4_SHARED_LINKAGE 1
 #endif /* HAVE_LZ4 */
 
 // LZO (JISO)
@@ -32,22 +35,25 @@
      // Using a shared library copy of LZO.
 #    define LZO_SHARED_LINKAGE 1
 #  endif /* USE_INTERNAL_LZO && USE_INTERNAL_LZO_DLL */
-#  ifdef USE_INTERNAL_LZO
-#    include "minilzo.h"
-#  else
-#    include <lzo/lzo1x.h>
-#  endif
-#else /* !HAVE_LZO */
-typedef uint8_t *lzo_bytep;
-typedef size_t lzo_uint, *lzo_uintp;
-typedef void *lzo_voidp;
-#  define LZO_E_OK    0
-#  define LZO_E_ERROR (-1)
+#else
+// LZO is not being linked in directly. Assume we're using dlopen().
+#  define LZO_SHARED_LINKAGE 1
 #endif /* HAVE_LZO */
+
+// C includes (C++ namespace)
+#include <cstdint>
 
 // C++ STL classes
 #include <memory>
 #include <mutex>
+
+// LZO types (we're not including LZO headers)
+#define LZO_VERSION 0x20a0 /* 2.10 */
+typedef uint8_t *lzo_bytep;
+typedef size_t lzo_uint, *lzo_uintp;
+typedef void *lzo_voidp;
+#define LZO_E_OK    0
+#define LZO_E_ERROR (-1)
 
 namespace LibRomData {
 
@@ -68,14 +74,14 @@ private:
 #ifdef LZ4_SHARED_LINKAGE
 	std::unique_ptr<HMODULE, HMODULE_deleter> m_liblz4;
 
-	typedef __typeof__(::LZ4_decompress_safe) *pfn_LZ4_decompress_safe_t;
+	typedef int (*pfn_LZ4_decompress_safe_t)(const char *src, char *dst, int compressedSize, int dstCapacity);
 	pfn_LZ4_decompress_safe_t m_pfn_LZ4_decompress_safe;
 #endif /* LZ4_SHARED_LINKAGE */
 
 #ifdef LZO_SHARED_LINKAGE
 	std::unique_ptr<HMODULE, HMODULE_deleter> m_liblzo2;
 
-	typedef __typeof__(::lzo1x_decompress_safe) *pfn_lzo1x_decompress_safe_t;
+	typedef int (*pfn_lzo1x_decompress_safe_t)(const lzo_bytep src, lzo_uint src_len, lzo_bytep dst, lzo_uintp dst_len, lzo_voidp wrkmem /* NOT USED */);
 	pfn_lzo1x_decompress_safe_t m_pfn_lzo1x_decompress_safe;
 #elif defined(HAVE_LZO)
 	bool m_lzoInit;
