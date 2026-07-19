@@ -1355,14 +1355,15 @@ static void init_supportedFileExtensions(void)
 			}
 
 			for (; *sys_exts != nullptr; sys_exts++) {
-				auto iter = map_exts.find(*sys_exts);
+				const string s_ext(*sys_exts);
+				auto iter = map_exts.find(s_ext);
 				if (iter != map_exts.end()) {
 					// We already had this extension.
 					// Update its attributes.
 					iter->second |= fns->attrs;
 				} else {
 					// First time encountering this extension.
-					map_exts[*sys_exts] = fns->attrs;
+					map_exts.emplace(std::move(s_ext), fns->attrs);
 					vec_exts.emplace_back(*sys_exts, fns->attrs);
 				}
 			}
@@ -1377,14 +1378,15 @@ static void init_supportedFileExtensions(void)
 		}
 
 		for (; *sys_exts != nullptr; sys_exts++) {
-			auto iter = map_exts.find(*sys_exts);
+			const string s_ext(*sys_exts);
+			auto iter = map_exts.find(s_ext);
 			if (iter != map_exts.end()) {
 				// We already had this extension.
 				// Update its attributes.
 				iter->second |= fns.attrs;
 			} else {
 				// First time encountering this extension.
-				map_exts[*sys_exts] = fns.attrs;
+				map_exts.emplace(std::move(s_ext), fns.attrs);
 				vec_exts.emplace_back(*sys_exts, fns.attrs);
 			}
 		}
@@ -1399,6 +1401,7 @@ static void init_supportedFileExtensions(void)
 			? ATTR_HAS_METADATA
 			: ATTR_HAS_METADATA | ATTR_HAS_THUMBNAIL;
 
+		const string s_ext(ext);
 		auto iter = map_exts.find(ext);
 		if (iter != map_exts.end()) {
 			// We already had this extension.
@@ -1406,7 +1409,7 @@ static void init_supportedFileExtensions(void)
 			iter->second |= attrs;
 		} else {
 			// First time encountering this extension.
-			map_exts[ext] = attrs;
+			map_exts.emplace(std::move(s_ext), attrs);
 			vec_exts.emplace_back(ext, attrs);
 		}
 	}
@@ -1474,9 +1477,10 @@ static void init_supportedMimeTypes(void)
 			}
 
 			for (; *sys_mimeTypes != nullptr; sys_mimeTypes++) {
-				auto iter = set_mimeTypes.find(*sys_mimeTypes);
+				string s_mimeType(*sys_mimeTypes);
+				auto iter = set_mimeTypes.find(s_mimeType);
 				if (iter == set_mimeTypes.end()) {
-					set_mimeTypes.insert(*sys_mimeTypes);
+					set_mimeTypes.insert(std::move(s_mimeType));
 					vec_mimeTypes.push_back(*sys_mimeTypes);
 				}
 			}
@@ -1491,9 +1495,10 @@ static void init_supportedMimeTypes(void)
 		}
 
 		for (; *sys_mimeTypes != nullptr; sys_mimeTypes++) {
-			auto iter = set_mimeTypes.find(*sys_mimeTypes);
+			string s_mimeType(*sys_mimeTypes);
+			auto iter = set_mimeTypes.find(s_mimeType);
 			if (iter == set_mimeTypes.end()) {
-				set_mimeTypes.insert(*sys_mimeTypes);
+				set_mimeTypes.insert(std::move(s_mimeType));
 				vec_mimeTypes.push_back(*sys_mimeTypes);
 			}
 		}
@@ -1502,9 +1507,10 @@ static void init_supportedMimeTypes(void)
 	// Get MIME types from FileFormatFactory.
 	const vector<const char*> vec_mimeTypes_fileFormat = FileFormatFactory::supportedMimeTypes();
 	for (const char *mimeType : vec_mimeTypes_fileFormat) {
-		auto iter = set_mimeTypes.find(mimeType);
+		string s_mimeType(mimeType);
+		auto iter = set_mimeTypes.find(s_mimeType);
 		if (iter == set_mimeTypes.end()) {
-			set_mimeTypes.insert(mimeType);
+			set_mimeTypes.insert(std::move(s_mimeType));
 			vec_mimeTypes.push_back(mimeType);
 		}
 	}
