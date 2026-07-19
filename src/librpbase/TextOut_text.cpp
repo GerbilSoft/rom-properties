@@ -207,11 +207,11 @@ private:
 		if (!tag_end) {
 			// No tag end...
 			const size_t p_remain = strlen(tag);
-			str.append(tag, p_remain);
+			str.assign(tag, p_remain);
 			tag += p_remain;
 		} else {
 			// Found the tag end.
-			str.append(tag, tag_end - tag + 1);
+			str.assign(tag, tag_end - tag + 1);
 			tag = tag_end + 1;
 		}
 
