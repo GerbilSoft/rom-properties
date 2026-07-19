@@ -234,7 +234,7 @@ private:
 			return printInvalidTag(tag);
 		}
 
-		// TODO: Search for HTML entities in the URL.
+		// TODO: Search for HTML entities in the URL or display text.
 		// For now, using it as-is.
 
 		// Find the end of the link text.
