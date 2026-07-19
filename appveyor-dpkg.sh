@@ -4,6 +4,8 @@ set -ev
 add-apt-repository --remove "deb http://apt.postgresql.org/pub/repos/apt/ jammy-pgdg main"
 
 apt-get update
+
+# Development packages
 apt-get -y install \
 	zlib1g-dev \
 	libpng-dev \
@@ -16,8 +18,6 @@ apt-get -y install \
 	libfmt-dev \
 	\
 	libzstd-dev \
-	liblz4-dev \
-	liblzo2-dev \
 	\
 	qtbase5-dev \
 	qttools5-dev-tools \
@@ -41,3 +41,9 @@ apt-get -y install \
 	libgtk-4-dev \
 	\
 	xvfb
+
+# Runtime dependencies
+apt-get -y install \
+	liblz4-1 \
+	liblzo2-2 \
+	libwebp7
