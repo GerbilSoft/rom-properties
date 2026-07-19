@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "config.libromdata.h"
 #include "dlopen-notes.h"
 
 // NOTE: libpng.so isn't listed here, even though it's dlopen()'d,
@@ -22,14 +23,28 @@
 // Ubuntu systems don't have the unversioned .so if the -dev package
 // isn't installed, so all tested versions are listed.
 
-// TODO: Remove LZ4 and/or LZO if they're statically linked.
+#if defined(USE_INTERNAL_LZ4) && !defined(USE_INTERNAL_LZ4_DLL)
+#  define _ELF_NOTE_DLOPEN_LZ4(feature, description, priority, module)
+#  define _ELF_NOTE_COMMA_HAS_LZ4
+#else
+#  define _ELF_NOTE_DLOPEN_LZ4(feature, description, priority, module) _ELF_NOTE_DLOPEN_INT(feature, description, priority, module)
+#  define _ELF_NOTE_COMMA_HAS_LZ4 ","
+#endif
 
-#define ELF_NOTE_DLOPEN3_THREESO0(var, feature0, description0, priority0, module0a, module0b, module0c, feature1, description1, priority1, module1, feature2, description2, priority2, module2) \
-	_ELF_NOTE_DLOPEN("[" _ELF_NOTE_DLOPEN_VA_INT(feature0, description0, priority0, module0a, module0b, module0c) "," \
-	                     _ELF_NOTE_DLOPEN_INT(feature1, description1, priority1, module1) "," \
-	                     _ELF_NOTE_DLOPEN_INT(feature2, description2, priority2, module2) "]", var)
+#if defined(USE_INTERNAL_LZO) && !defined(USE_INTERNAL_LZO_DLL)
+#  define _ELF_NOTE_DLOPEN_LZO(feature, description, priority, module)
+#  define _ELF_NOTE_COMMA_HAS_LZO
+#else
+#  define _ELF_NOTE_DLOPEN_LZO(feature, description, priority, module) _ELF_NOTE_DLOPEN_INT(feature, description, priority, module)
+#  define _ELF_NOTE_COMMA_HAS_LZO ","
+#endif
 
-ELF_NOTE_DLOPEN3_THREESO0( \
+#define ELF_NOTE_DLOPEN3_LIBROMDATA(var, feature0, description0, priority0, module0a, module0b, module0c, feature1, description1, priority1, module1, feature2, description2, priority2, module2) \
+	_ELF_NOTE_DLOPEN("[" _ELF_NOTE_DLOPEN_VA_INT(feature0, description0, priority0, module0a, module0b, module0c) _ELF_NOTE_COMMA_HAS_LZ4 \
+	                     _ELF_NOTE_DLOPEN_LZ4(feature1, description1, priority1, module1) _ELF_NOTE_COMMA_HAS_LZO \
+	                     _ELF_NOTE_DLOPEN_LZO(feature2, description2, priority2, module2) "]", var)
+
+ELF_NOTE_DLOPEN3_LIBROMDATA( \
 	romdata_dlopen, \
 	"webp", "WebP image decoding (for Android APK packages)", "recommended", "libwebp.so.7", "libwebp.so.6", "libwebp.so.5", \
 	"lz4", "LZ4 decompression (for PSP CISOv2 and ZISO images)", "recommended", "liblz4.so.1", \
