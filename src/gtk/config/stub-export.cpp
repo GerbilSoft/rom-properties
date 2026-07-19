@@ -29,7 +29,7 @@ typedef void *GtkApplication;
 #endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 #if GTK_CHECK_VERSION(2, 90, 2)
-static GtkApplication *app = NULL;
+static GtkApplication *app = nullptr;
 #endif /* GTK_CHECK_VERSION(2, 90, 2) */
 static int status = 0;
 
@@ -60,7 +60,7 @@ config_dialog_delete_event(RpConfigDialog *dialog, GdkEvent *event, gpointer use
 /**
  * GtkApplication activate() signal handler.
  * Also used manually for GTK2.
- * @param app GtkApplication (or NULL on GTK2)
+ * @param app GtkApplication (or nullptr on GTK2)
  * @param user_data
  */
 static void
@@ -81,7 +81,7 @@ rp_config_app_activate(GtkApplication *app, gpointer user_data)
 	// GTK2: No GtkApplication to manage the main loop, so we
 	// need to to ensure it exits when the window is closed.
 	RP_UNUSED(app);
-	g_signal_connect(configDialog, "delete-event", G_CALLBACK(config_dialog_delete_event), NULL);
+	g_signal_connect(configDialog, "delete-event", G_CALLBACK(config_dialog_delete_event), nullptr);
 #endif /* !GTK_CHECK_VERSION(2, 90, 2) */
 }
 
@@ -111,7 +111,7 @@ int RP_C_API rp_show_config_dialog(int argc, char *argv[])
         // g_thread_init() is automatic as of glib-2.32.0
         // and is marked deprecated.
         if (!g_thread_supported()) {
-                g_thread_init(NULL);
+                g_thread_init(nullptr);
         }
 #endif /* !GLIB_CHECK_VERSION(2, 32, 0) */
 
@@ -126,7 +126,7 @@ int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 		"com.gerbilsoft.rom-properties.rp-config", G_APPLICATION_FLAGS_NONE);
 	// NOTE: GApplication is supposed to set this, but KDE isn't seeing it...
 	g_set_prgname("com.gerbilsoft.rom-properties.rp-config");
-	g_signal_connect(app, "activate", G_CALLBACK(rp_config_app_activate), NULL);
+	g_signal_connect(app, "activate", G_CALLBACK(rp_config_app_activate), nullptr);
 
 	// NOTE: We aren't setting up command line options in GApplication,
 	// so it will complain if argv has any parameters.
@@ -139,8 +139,8 @@ int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 	// NOTE: GTK2 doesn't send a startup notification.
 	// Not going to implement the Startup Notification protocol manually
 	// because GTK2 desktops likely wouldn't support it, anyway.
-	gtk_init(NULL, NULL);
-	rp_config_app_activate(NULL, 0);
+	gtk_init(nullptr, nullptr);
+	rp_config_app_activate(nullptr, 0);
 	gtk_main();
 #endif /* GTK_CHECK_VERSION(2, 90, 2) */
 
@@ -182,7 +182,7 @@ rp_show_RomDataView_dialog_response_handler(GtkDialog	*dialog,
 /**
  * GtkApplication activate() signal handler.
  * Also used manually for GTK2.
- * @param app GtkApplication (or NULL on GTK2)
+ * @param app GtkApplication (or nullptr on GTK2)
  * @param user_data URI to open
  */
 static void
@@ -197,10 +197,10 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 	static const char s_title[] = "RomDataView GTK" GTK_MAJOR_STR " test program";
 	GtkWidget *const dialog = gtk_dialog_new_with_buttons(
 		s_title,
-		NULL,
+		nullptr,
 		static_cast<GtkDialogFlags>(0),
 		GTK_I18N_STR_CLOSE, GTK_RESPONSE_CLOSE,
-		NULL);
+		nullptr);
 	gtk_widget_set_name(dialog, "RomDataView-test-dialog");
 	gtk_widget_set_visible(dialog, TRUE);
 
@@ -254,8 +254,8 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 	// NOTE: Need to run the idle process in order for RomDataView to process the URI.
 	// TODO: Create the RomData object here instead? (would need to convert to .cpp)
 	// Also, we'd be able to check for RomData without having to create everything first...
-	while (g_main_context_pending(NULL)) {
-		g_main_context_iteration(NULL, TRUE);
+	while (g_main_context_pending(nullptr)) {
+		g_main_context_iteration(nullptr, TRUE);
 	}
 	if (!rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(romDataView))) {
 		// Not a valid RomData object.
@@ -314,7 +314,7 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 		g_application_quit(G_APPLICATION(app));
 #else /* GTK_CHECK_VERSION(2, 90, 2) */
 		// NOTE: Calling gtk_main_quit() for GTK2 here fails:
-		// Gtk-CRITICAL **: IA__gtk_main_quit: assertion 'main_loops != NULL' failed
+		// Gtk-CRITICAL **: IA__gtk_main_quit: assertion 'main_loops != nullptr' failed
 		//gtk_main_quit();
 #endif /* GTK_CHECK_VERSION(2, 90, 2) */
 
@@ -322,7 +322,7 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 	}
 
 	// Connect the dialog response handler.
-	g_signal_connect(dialog, "response", G_CALLBACK(rp_show_RomDataView_dialog_response_handler), NULL);
+	g_signal_connect(dialog, "response", G_CALLBACK(rp_show_RomDataView_dialog_response_handler), nullptr);
 
 #if GTK_CHECK_VERSION(2, 90, 2)
 	gtk_application_add_window(app, GTK_WINDOW(dialog));
@@ -330,7 +330,7 @@ rp_RomDataView_app_activate(GtkApplication *app, const gchar *uri)
 	// GTK2: No GtkApplication to manage the main loop, so we
 	// need to to ensure it exits when the window is closed.
 	RP_UNUSED(app);
-	g_signal_connect(dialog, "delete-event", G_CALLBACK(config_dialog_delete_event), NULL);
+	g_signal_connect(dialog, "delete-event", G_CALLBACK(config_dialog_delete_event), nullptr);
 #endif /* !GTK_CHECK_VERSION(2, 90, 2) */
 }
 
@@ -367,7 +367,7 @@ int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
         // g_thread_init() is automatic as of glib-2.32.0
         // and is marked deprecated.
         if (!g_thread_supported()) {
-                g_thread_init(NULL);
+                g_thread_init(nullptr);
         }
 #endif
 
@@ -394,8 +394,8 @@ int RP_C_API rp_show_RomDataView_dialog(int argc, char *argv[])
 	// NOTE: GTK2 doesn't send a startup notification.
 	// Not going to implement the Startup Notification protocol manually
 	// because GTK2 desktops likely wouldn't support it, anyway.
-	gtk_init(NULL, NULL);
-	rp_RomDataView_app_activate(NULL, uri);
+	gtk_init(nullptr, nullptr);
+	rp_RomDataView_app_activate(nullptr, uri);
 	if (status == 0) {
 		gtk_main();
 	}
