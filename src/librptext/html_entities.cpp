@@ -212,7 +212,7 @@ static char32_t T_parseHtmlEntity(const CharType *&entity)
 	key.chr = 0;
 
 	void *ptr = bsearch(&key, html_entity_tbl.data(),
-		html_entity_tbl.size(), sizeof(html_entity_tbl_t),
+		html_entity_tbl.size(), sizeof(html_entity_tbl[0]),
 		[](const void *a, const void *b) -> int
 		{
 			const html_entity_tbl_t *const pa = static_cast<const html_entity_tbl_t*>(a);
