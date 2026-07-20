@@ -15,8 +15,9 @@
 // C includes
 #include "tcharx.h"
 
-// C++ STL classes
-#include <algorithm>
+// C includes (C++ namespace)
+#include <cstring>
+#include <cstdlib>
 
 namespace LibRomData { namespace EXENEEntries {
 
@@ -42,22 +43,46 @@ struct OrdinalNameTable {
  */
 const char *lookup_ordinal(const char *modname, uint16_t ordinal)
 {
-	static const OrdinalNameTable *const pEntries_end = &entries[ARRAY_SIZE(entries)];
-	auto it = std::lower_bound(entries, pEntries_end, modname,
-		[](const OrdinalNameTable &lhs, const char *rhs) noexcept -> bool {
-			return (strncasecmp(lhs.modname, rhs, 8) < 0);
-		});
-	if (it == pEntries_end || strncasecmp(it->modname, modname, 8) != 0)
-		return nullptr;
+	OrdinalNameTable key;
+	strncpy(key.modname, modname, sizeof(key.modname));
+	key.table = nullptr;
+	key.count = 0;
 
-	const OrdinalName *const pOrdinals_end = &it->table[it->count];
-	auto it2 = std::lower_bound(it->table, pOrdinals_end, ordinal,
-		[](OrdinalName lhs, uint16_t rhs) noexcept -> bool {
-			return (lhs.ordinal < rhs);
+	void *ptr = bsearch(&key, entries,
+		ARRAY_SIZE(entries), sizeof(entries[0]),
+		[](const void *a, const void *b) -> int
+		{
+			const OrdinalNameTable *const pa = static_cast<const OrdinalNameTable*>(a);
+			const OrdinalNameTable *const pb = static_cast<const OrdinalNameTable*>(b);
+			return strncasecmp(pa->modname, pb->modname, 8);
 		});
-	if (it2 == pOrdinals_end || it2->ordinal != ordinal)
+	if (!ptr) {
 		return nullptr;
-	return (likely(it2->offset != 0) ? &EXENEEntries_strtbl[it2->offset] : nullptr);
+	}
+
+	const OrdinalNameTable *const pNameTbl = static_cast<const OrdinalNameTable*>(ptr);
+	const OrdinalName key2 = {ordinal, 0};
+
+	ptr = bsearch(&key2, pNameTbl->table,
+		pNameTbl->count, sizeof(pNameTbl->table[0]),
+		[](const void *a, const void *b) -> int
+		{
+			const OrdinalName *const pa = static_cast<const OrdinalName*>(a);
+			const OrdinalName *const pb = static_cast<const OrdinalName*>(b);
+			// TODO: C++20 spaceship operator?
+			if (pa->ordinal < pb->ordinal) {
+				return -1;
+			} else if (pa->ordinal > pb->ordinal) {
+				return 1;
+			}
+			return 0;
+		});
+	if (!ptr) {
+		return nullptr;
+	}
+
+	const OrdinalName *const pNameInfo = static_cast<const OrdinalName*>(ptr);
+	return (likely(pNameInfo->offset != 0) ? &EXENEEntries_strtbl[pNameInfo->offset] : nullptr);
 }
 
 } } // namespace LibRomData::EXENEEntries
