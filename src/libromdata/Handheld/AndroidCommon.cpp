@@ -355,7 +355,7 @@ bool hasDangerousPermissions(const pugi::xml_document &manifest_xml)
 		const char *const permission = permission_node.attribute("name").as_string(nullptr);
 		if (permission && permission[0] != '\0') {
 			// Doing a linear search.
-			// TODO: Use std::lower_bound() instead?
+			// TODO: Use bsearch() instead, if more permissions are added?
 			auto iter = std::find_if(dangerousPermissions.cbegin(), dangerousPermissions.cend(),
 				[permission](const char *dperm) {
 					return (!strcmp(dperm, permission));
