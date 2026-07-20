@@ -43,10 +43,18 @@ struct OrdinalNameTable {
  */
 const char *lookup_ordinal(const char *modname, uint16_t ordinal)
 {
+	// NOTE: key.modname is *not* NULL-terminated.
+	// MSVC's strncpy_s() doesn't like this, so we'll have to
+	// do some manual shenanigans.
 	OrdinalNameTable key;
-	strncpy(key.modname, modname, sizeof(key.modname));
-	key.table = nullptr;
-	key.count = 0;
+	memset(&key, 0, sizeof(key));
+	size_t modname_len = strlen(modname);
+	assert(modname_len <= sizeof(key.modname));
+	if (modname_len > sizeof(key.modname)) {
+		// Not possible to match a module name longer than 8 chars.
+		return nullptr;
+	}
+	memcpy(key.modname, modname, modname_len);
 
 	void *ptr = bsearch(&key, entries,
 		ARRAY_SIZE(entries), sizeof(entries[0]),
