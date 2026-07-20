@@ -69,7 +69,7 @@ const char *lookup_ordinal(const char *modname, uint16_t ordinal)
 		{
 			const OrdinalName *const pa = static_cast<const OrdinalName*>(a);
 			const OrdinalName *const pb = static_cast<const OrdinalName*>(b);
-			return static_cast<int>(pa->ordinal) - static_cast<int>(pb->ordinal);
+			return (static_cast<int>(pa->ordinal) - static_cast<int>(pb->ordinal));
 		});
 	if (!ptr) {
 		return nullptr;
