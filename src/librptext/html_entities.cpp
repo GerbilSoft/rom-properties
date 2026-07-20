@@ -21,7 +21,7 @@ namespace LibRpText { namespace HtmlEntities {
 
 /**
  * HTML entity entry, sorted by entity name.
- * Can be used with e.g. bsearch() or std::lower_bound().
+ * Can be used with e.g. bsearch().
  * References:
  * - https://www.w3schools.com/HTML/html_entities.asp
  * - https://www.toptal.com/designers/htmlarrows/symbols/
@@ -33,7 +33,7 @@ struct html_entity_tbl_t {
 
 /**
  * HTML entities, sorted by entity name.
- * Can be used with e.g. bsearch() or std::lower_bound().
+ * Can be used with e.g. bsearch().
  * References:
  * - https://www.w3schools.com/HTML/html_entities.asp
  * - https://www.toptal.com/designers/htmlarrows/symbols/
@@ -196,8 +196,6 @@ static char32_t T_parseHtmlEntity(const CharType *&entity)
 	}
 
 	// Check for known HTML entities.
-	// FIXME: std::lower_bound() isn't working...
-	// Using bsearch() instead.
 	html_entity_tbl_t key;
 	if (len >= sizeof(key.entity) - 1) {
 		// Entity is too long!
