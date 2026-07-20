@@ -9,11 +9,13 @@
 #include "WiiSystemMenuVersion.hpp"
 
 // C includes (C++ namespace)
+#include <cassert>
 #include <cstdint>
+#include <cstdlib>
 
 // C++ STL classes
-#include <algorithm>
 #include <array>
+#include <limits>
 using std::array;
 
 namespace LibRomData { namespace WiiSystemMenuVersion {
@@ -67,14 +69,27 @@ static const array<SysVersionEntry_t, 48> sysVersionList = {{
  */
 const char *lookup(unsigned int version)
 {
-	// Do a binary search.
-	auto pVer = std::lower_bound(sysVersionList.cbegin(), sysVersionList.cend(), version,
-		[](SysVersionEntry_t sysVersion, unsigned int version) noexcept -> bool {{
-			return (sysVersion.version < version);
-		}});
-	if (pVer == sysVersionList.cend() || pVer->version != version) {
+	// Version table is limited to uint16_t.
+	assert(version <= std::numeric_limits<uint16_t>::max());
+	if (version > std::numeric_limits<uint16_t>::max()) {
 		return nullptr;
 	}
+
+	// Do a binary search.
+	const SysVersionEntry_t key = {static_cast<uint16_t>(version), ""};
+	void *ptr = bsearch(&key, sysVersionList.data(),
+		sysVersionList.size(), sizeof(sysVersionList[0]),
+		[](const void *a, const void *b) -> int
+		{
+			const SysVersionEntry_t *const pa = static_cast<const SysVersionEntry_t*>(a);
+			const SysVersionEntry_t *const pb = static_cast<const SysVersionEntry_t*>(b);
+			return (static_cast<int>(pa->version) - static_cast<int>(pb->version));
+		});
+	if (!ptr) {
+		return nullptr;
+	}
+
+	const SysVersionEntry_t *const pVer = static_cast<const SysVersionEntry_t*>(ptr);
 	return pVer->str;
 }
 
