@@ -13,7 +13,6 @@
 #include "libi18n/i18n.hpp"
 
 // C++ STL classes
-#include <algorithm>
 #include <array>
 using std::array;
 
@@ -21,7 +20,7 @@ namespace LibRomData { namespace Xbox360_STFS_ContentType {
 
 struct ContentTypeEntry {
 	uint32_t id;
-	const char *contentType;
+	const char *desc;
 };
 
 /**
@@ -73,14 +72,21 @@ static const array<ContentTypeEntry, 30> contentTypeList = {{
 const char *lookup(uint32_t contentType)
 {
 	// Do a binary search.
-	auto pContentType = std::lower_bound(contentTypeList.cbegin(), contentTypeList.cend(), contentType,
-		[](const ContentTypeEntry &cte, uint32_t contentType) noexcept -> bool {
-			return (cte.id < contentType);
+	const ContentTypeEntry key = {contentType, nullptr};
+	void *ptr = bsearch(&key, contentTypeList.data(),
+		contentTypeList.size(), sizeof(contentTypeList[0]),
+		[](const void *a, const void *b) -> int
+		{
+			const ContentTypeEntry *const pa = static_cast<const ContentTypeEntry*>(a);
+			const ContentTypeEntry *const pb = static_cast<const ContentTypeEntry*>(b);
+			return static_cast<int>(pa->id) - static_cast<int>(pb->id);
 		});
-	if (pContentType == contentTypeList.cend() || pContentType->id != contentType) {
+	if (!ptr) {
 		return nullptr;
 	}
-	return pgettext_expr("Xbox360_STFS|ContentType", pContentType->contentType);
+
+	const ContentTypeEntry *const pContentType = static_cast<const ContentTypeEntry*>(ptr);
+	return pgettext_expr("Xbox360_STFS|ContentType", pContentType->desc);
 }
 
 } } // namespace LibRomData::Xbox360_STFS_ContentType

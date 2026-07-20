@@ -757,17 +757,26 @@ int XboxDisc::isRomSupported_static(
 		//   - 16, -08:00
 	}};
 
-	// TODO: Use std::lower_bound() instead?
-	auto iter = std::find_if(xgd_tbl.cbegin(), xgd_tbl.cend(),
-		[btime](const xgd_pvd_t &p) noexcept -> bool {
-			return (p.btime == btime);
-		});
-	if (iter != xgd_tbl.cend()) {
-		// Found a match!
-		if (pWave) {
-			*pWave = iter->wave;
+	// Search the XGD PVD table for a matching timestamp, but only if
+	// the btime is in range.
+	if (btime <= 1430092800) {
+		const xgd_pvd_t key = {static_cast<DiscType>(0), 0, static_cast<int32_t>(btime)};
+		void *ptr = bsearch(&key, xgd_tbl.data(),
+			xgd_tbl.size(), sizeof(xgd_tbl[0]),
+			[](const void *a, const void *b) -> int
+			{
+				const xgd_pvd_t *const pa = static_cast<const xgd_pvd_t*>(a);
+				const xgd_pvd_t *const pb = static_cast<const xgd_pvd_t*>(b);
+				return (pa->btime - pb->btime);
+			});
+		if (ptr) {
+			// Found a match!
+			const xgd_pvd_t *const pXgd = static_cast<const xgd_pvd_t*>(ptr);
+			if (pWave) {
+				*pWave = pXgd->wave;
+			}
+			return static_cast<int>(pXgd->xgd);
 		}
-		return static_cast<int>(iter->xgd);
 	}
 
 	// No match in the XGD table.

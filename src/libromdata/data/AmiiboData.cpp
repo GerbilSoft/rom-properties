@@ -29,7 +29,6 @@ using namespace LibRpFile;
 #include <cstring>
 
 // C++ includes
-#include <algorithm>
 using std::string;
 using std::tstring;
 using std::unique_ptr;
@@ -624,17 +623,24 @@ const char *AmiiboData::lookup_char_name(uint32_t char_id) const
 	const uint32_t id = ((char_id >> 16) & 0xFFFF);
 
 	// Do a binary search.
-	//const CharTableEntry key = {id, 0};
-	const CharTableEntry *const pCharTblEnd = d->pCharTbl + d->charTbl_count;
-	auto pCTEntry = std::lower_bound(d->pCharTbl, pCharTblEnd, id,
-		[](const CharTableEntry &entry, uint32_t id2) noexcept -> bool {
-			const uint32_t id1 = le32_to_cpu(entry.char_id) & ~CHARTABLE_VARIANT_FLAG;
-			return (id1 < id2);
+	const CharTableEntry key = {id, 0};
+	void *ptr = bsearch(&key, d->pCharTbl,
+		d->charTbl_count, sizeof(*d->pCharTbl),
+		[](const void *a, const void *b) -> int
+		{
+			const CharTableEntry *const pa = static_cast<const CharTableEntry*>(a);
+			const CharTableEntry *const pb = static_cast<const CharTableEntry*>(b);
+
+			// NOTE: pb is from pCharTbl, so it needs to be byteswapped.
+			// Also, remove CHARTABLE_VARIANT_FLAG.
+			const uint32_t pb_char_id = le32_to_cpu(pb->char_id) & ~CHARTABLE_VARIANT_FLAG;
+			return (static_cast<int>(pa->char_id) - static_cast<int>(pb_char_id));
 		});
-	if (pCTEntry == pCharTblEnd || (le32_to_cpu(pCTEntry->char_id) & ~CHARTABLE_VARIANT_FLAG) != id) {
+	if (!ptr) {
 		// Character ID not found.
 		return nullptr;
 	}
+	const CharTableEntry *const pCTEntry = static_cast<const CharTableEntry*>(ptr);
 
 	// Check for variants.
 	const char *name = nullptr;
@@ -644,27 +650,27 @@ const char *AmiiboData::lookup_char_name(uint32_t char_id) const
 		const uint8_t variant_id = (char_id >> 8) & 0xFF;
 		const CharVariantTableEntry key = {cv_char_id, variant_id, 0, 0};
 
-		const CharVariantTableEntry *const pCharVarTblEnd = d->pCharVarTbl + d->charVarTbl_count;
-		auto pCVTEntry = std::lower_bound(d->pCharVarTbl, pCharVarTblEnd, key,
-			[](const CharVariantTableEntry &key1, const CharVariantTableEntry &key2) noexcept -> bool {
-				const uint16_t key1_char_id = le16_to_cpu(key1.char_id);
+		void *ptr2 = bsearch(&key, d->pCharVarTbl,
+			d->charVarTbl_count, sizeof(*d->pCharVarTbl),
+			[](const void *a, const void *b) -> int
+			{
+				const CharVariantTableEntry *const pa = static_cast<const CharVariantTableEntry*>(a);
+				const CharVariantTableEntry *const pb = static_cast<const CharVariantTableEntry*>(b);
+				// NOTE: pb is from pCharVarTbl, so it needs to be byteswapped.
 
 				// Compare the character ID first.
-				if (key1_char_id < key2.char_id) {
-					return true;
-				} else if (key1_char_id > key2.char_id) {
-					return false;
+				int char_id_diff = static_cast<int>(pa->char_id) - static_cast<int>(le32_to_cpu(pb->char_id));
+				if (char_id_diff != 0) {
+					return char_id_diff;
 				}
 
 				// Compare the variant ID.
-				return (key1.var_id < key2.var_id);
+				return (static_cast<int>(pa->var_id) - static_cast<int>(pb->var_id));
 			});
 
-		if (pCVTEntry != pCharVarTblEnd &&
-		    le16_to_cpu(pCVTEntry->char_id) == cv_char_id &&
-		    pCVTEntry->var_id == variant_id)
-		{
+		if (ptr2) {
 			// Character variant ID found.
+			const CharVariantTableEntry *const pCVTEntry = static_cast<const CharVariantTableEntry*>(ptr2);
 			name = d->strTbl_lookup(le32_to_cpu(pCVTEntry->name));
 		} else {
 			// Character variant ID not found.

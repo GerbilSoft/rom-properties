@@ -12,11 +12,29 @@
 using namespace LibRpBase;
 
 // C++ includes
-#include <algorithm>
 #include <array>
 using std::array;
 
 namespace LibWin32UI {
+
+// Language code mapping
+struct lc_mapping_t {
+	uint32_t lc;
+	WORD wLanguage;
+};
+
+/**
+ * bsearch() comparison functoin for lookup_disc_publisher().
+ * @param a
+ * @param b
+ * @return
+ */
+static int LoadResource_i18n_compar(const void *a, const void *b)
+{
+       const lc_mapping_t *const pa = static_cast<const lc_mapping_t*>(a);
+       const lc_mapping_t *const pb = static_cast<const lc_mapping_t*>(b);
+       return (static_cast<int>(pa->lc) - static_cast<int>(pb->lc));
+}
 
 /**
  * Load a resource using the current i18n settings.
@@ -40,10 +58,6 @@ LPVOID LoadResource_i18n(HMODULE hModule, LPCTSTR lpType, DWORD dwResId)
 
 	// Mappings for languages with only a single variant implemented.
 	// Reference: https://learn.microsoft.com/en-us/previous-versions/windows/desktop/indexsrv/valid-locale-identifiers
-	struct lc_mapping_t {
-		uint32_t lc;
-		WORD wLanguage;
-	};
 	static const array<lc_mapping_t, 8> lc_mappings = {{
 		{'de', MAKELANGID(LANG_GERMAN, SUBLANG_GERMAN)},
 		{'es', MAKELANGID(LANG_SPANISH, SUBLANG_SPANISH)},
@@ -69,24 +83,26 @@ LPVOID LoadResource_i18n(HMODULE hModule, LPCTSTR lpType, DWORD dwResId)
 
 		case 'en': {
 			// Check for English sub-language codes.
-			auto iter = std::lower_bound(en_cc_mappings.cbegin(), en_cc_mappings.cend(), cc,
-				[](lc_mapping_t cc_mapping, uint32_t cc) noexcept -> bool {
-					return (cc_mapping.lc < cc);
-				});
-			if (iter != en_cc_mappings.cend() && iter->lc == cc) {
-				wLanguage = iter->wLanguage;
+			const lc_mapping_t key = {cc, 0};
+			void *ptr = bsearch(&key, en_cc_mappings.data(),
+				en_cc_mappings.size(), sizeof(en_cc_mappings[0]),
+				LoadResource_i18n_compar);
+			if (ptr) {
+				const lc_mapping_t *const pMapping = static_cast<const lc_mapping_t*>(ptr);
+				wLanguage = pMapping->wLanguage;
 			}
 			break;
 		}
 
 		default: {
 			// Search for the specified language code.
-			auto iter = std::lower_bound(lc_mappings.cbegin(), lc_mappings.cend(), lc,
-				[](lc_mapping_t lc_mapping, uint32_t lc) noexcept -> bool {
-					return (lc_mapping.lc < lc);
-				});
-			if (iter != lc_mappings.cend() && iter->lc == lc) {
-				wLanguage = iter->wLanguage;
+			const lc_mapping_t key = {cc, 0};
+			void *ptr = bsearch(&key, lc_mappings.data(),
+				lc_mappings.size(), sizeof(lc_mappings[0]),
+				LoadResource_i18n_compar);
+			if (ptr) {
+				const lc_mapping_t *const pMapping = static_cast<const lc_mapping_t*>(ptr);
+				wLanguage = pMapping->wLanguage;
 			}
 			break;
 		}

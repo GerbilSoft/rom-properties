@@ -693,7 +693,6 @@ int EXEPrivate::addFields_NE_Entry(void)
 	/* Currently ents is sorted by ordinal. For duplicate names we'll add
 	 * more entries, so we must remember the original size so we can do
 	 * a binary search. */
-	size_t last = ents.size();
 	auto readNames = [&](span<const char> sp, bool is_resident) -> int {
 		const char *p = sp.data();
 		const char *const end = sp.data() + sp.size();
@@ -716,26 +715,32 @@ int EXEPrivate::addFields_NE_Entry(void)
 			const uint16_t ordinal = static_cast<uint8_t>(p[len]) | static_cast<uint8_t>(p[len+1])<<8;
 
 			// binary search for the ordinal
-			auto it = std::lower_bound(ents.begin(), ents.begin()+last, ordinal,
-				[](const Entry &lhs, uint16_t rhs) noexcept -> bool {
-					return (lhs.ordinal < rhs);
+			const Entry key = {"", ordinal, 0, 0, 0, false, false, false};
+			void *ptr = bsearch(&key, ents.data(),
+				ents.size(), sizeof(ents[0]),
+				[](const void *a, const void *b) -> int
+				{
+					const Entry *const pa = static_cast<const Entry*>(a);
+					const Entry *const pb = static_cast<const Entry*>(b);
+					return (pa->ordinal - pb->ordinal);
 				});
-			if (it == ents.begin()+last || it->ordinal != ordinal) {
+			if (!ptr) {
 				// name points to non-existent ordinal
 				return -ENOENT;
 			}
 
-			if (it->has_name) {
+			Entry *const pEntry = static_cast<Entry*>(ptr);
+			if (pEntry->has_name) {
 				// This ordinal already has a name.
 				// Duplicate the entry, replace name in the copy.
-				Entry ent = *it;
+				Entry ent = *pEntry;
 				ent.name = name;
 				ent.is_resident = is_resident;
-				ents.push_back(std::move(ent)); // `it` is invalidated here
+				ents.push_back(std::move(ent));
 			} else {
-				it->has_name = true;
-				it->name = name;
-				it->is_resident = is_resident;
+				pEntry->has_name = true;
+				pEntry->name = name;
+				pEntry->is_resident = is_resident;
 			}
 
 			p += len + 2;

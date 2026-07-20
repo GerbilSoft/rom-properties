@@ -82,14 +82,20 @@ static const array<FirmBin_t, 49> firmBins = {{
 const FirmBin_t *lookup_firmBin(const uint32_t crc)
 {
 	// Do a binary search.
-	auto pFirmBin = std::lower_bound(firmBins.cbegin(), firmBins.cend(), crc,
-		[](const FirmBin_t &firmBin, uint32_t crc) noexcept -> bool {
-			return (firmBin.crc < crc);
+	const FirmBin_t key = {crc, {0,0,0}, {0,0}, 0};
+	void *ptr = bsearch(&key, firmBins.data(),
+		firmBins.size(), sizeof(firmBins[0]),
+		[](const void *a, const void *b) -> int
+		{
+			const FirmBin_t *const pa = static_cast<const FirmBin_t*>(a);
+			const FirmBin_t *const pb = static_cast<const FirmBin_t*>(b);
+			return (static_cast<int>(pa->crc) - static_cast<int>(pb->crc));
 		});
-	if (pFirmBin == firmBins.cend() || pFirmBin->crc != crc) {
+	if (!ptr) {
 		return nullptr;
 	}
-	return &(*pFirmBin);
+
+	return static_cast<const FirmBin_t*>(ptr);
 }
 
 } } // namespace LibRomData::Nintendo3DSFirmData

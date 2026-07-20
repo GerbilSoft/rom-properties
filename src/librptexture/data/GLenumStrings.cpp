@@ -12,9 +12,9 @@
 // C includes (C++ namespace)
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
 
 // C++ STL classes
-#include <algorithm>
 #include <array>
 #include <limits>
 using std::array;
@@ -541,13 +541,20 @@ const char *lookup_glEnum(unsigned int glEnum)
 	}
 
 	// Do a binary search.
-	auto pEntry = std::lower_bound(glEnum_offtbl.cbegin(), glEnum_offtbl.cend(), glEnum,
-		[](OffTbl_t entry, unsigned int glEnum) noexcept -> bool {
-			return (entry.id < glEnum);
+	const OffTbl_t key = {static_cast<uint16_t>(glEnum), 0};
+	void *ptr = bsearch(&key, glEnum_offtbl.data(),
+		glEnum_offtbl.size(), sizeof(glEnum_offtbl[0]),
+		[](const void *a, const void *b) -> int
+		{
+			const OffTbl_t *const pa = static_cast<const OffTbl_t*>(a);
+			const OffTbl_t *const pb = static_cast<const OffTbl_t*>(b);
+			return static_cast<int>(pa->id) - static_cast<int>(pb->id);
 		});
-	if (pEntry == glEnum_offtbl.cend() || pEntry->id != glEnum || pEntry->offset == 0) {
+	if (!ptr) {
 		return nullptr;
 	}
+
+	const OffTbl_t *const pEntry = static_cast<const OffTbl_t*>(ptr);
 	return &glEnum_strtbl[pEntry->offset];
 }
 

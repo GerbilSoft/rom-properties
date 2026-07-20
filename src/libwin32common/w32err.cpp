@@ -9,12 +9,13 @@
 #include "w32err.hpp"
 
 // C includes (C++ namespace)
+#include <cassert>
 #include <cerrno>
 #include <cstdint>
 #include <cstdlib>
 
-// C++ includes
-#include <algorithm>
+// C++ STL classes
+#include <limits>
 
 // Some errors aren't present in various SDKs.
 #ifndef ERROR_IMAGE_SUBSYSTEM_NOT_PRESENT	// not present in MinGW-w64 4.0.6
@@ -121,20 +122,25 @@ static const errmap_t w32_to_posix[] = {
  */
 int w32err_to_posix(DWORD w32err)
 {
-	if (w32err > UINT16_MAX) {
-		// Error code table is limited to uint16_t.
+	// Error code table is limited to uint16_t.
+	assert(w32err <= std::numeric_limits<uint16_t>::max());
+	if (w32err > std::numeric_limits<uint16_t>::max()) {
 		return EINVAL;
 	}
 
 	// Check the error code table.
-	static const errmap_t *const p_w32_to_posix_end =
-		&w32_to_posix[_countof(w32_to_posix)];
-	auto pErr = std::lower_bound(w32_to_posix, p_w32_to_posix_end, w32err,
-		[](errmap_t err, DWORD w32err) noexcept -> bool {
-			return (err.w32 < w32err);
+	const errmap_t key = {static_cast<uint16_t>(w32err), 0};
+	void *ptr = bsearch(&key, w32_to_posix,
+		_countof(w32_to_posix), sizeof(w32_to_posix[0]),
+		[](const void *a, const void *b) -> int
+		{
+			const errmap_t *const pa = static_cast<const errmap_t*>(a);
+			const errmap_t *const pb = static_cast<const errmap_t*>(b);
+			return static_cast<int>(pa->w32) - static_cast<int>(pb->w32);
 		});
-	if (pErr != p_w32_to_posix_end && pErr->w32 == w32err) {
+	if (ptr) {
 		// Found an error code.
+		const errmap_t *const pErr = static_cast<const errmap_t*>(ptr);
 		return pErr->posix;
 	}
 

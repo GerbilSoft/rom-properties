@@ -15,7 +15,6 @@
 #include "libi18n/i18n.hpp"
 
 // C++ STL classes
-#include <algorithm>
 #include <array>
 using std::array;
 
@@ -81,14 +80,20 @@ static const array<const char*, IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION+1> subs
 const char *lookup_pe_cpu(uint16_t cpu)
 {
 	// Do a binary search.
-	static const auto *const p_EXEPEMachineTypes_offtbl_end = &EXEPEMachineTypes_offtbl[ARRAY_SIZE(EXEPEMachineTypes_offtbl)];
-	auto pPE = std::lower_bound(EXEPEMachineTypes_offtbl, p_EXEPEMachineTypes_offtbl_end, cpu,
-		[](EXEPEMachineTypes_offtbl_t pe, uint16_t cpu) noexcept -> bool {
-			return (pe.machineType < cpu);
+	const EXEPEMachineTypes_offtbl_t key = {cpu, 0};
+	void *ptr = bsearch(&key, EXEPEMachineTypes_offtbl,
+		ARRAY_SIZE(EXEPEMachineTypes_offtbl), sizeof(EXEPEMachineTypes_offtbl[0]),
+		[](const void *a, const void *b) -> int
+		{
+			const EXEPEMachineTypes_offtbl_t *const pa = static_cast<const EXEPEMachineTypes_offtbl_t*>(a);
+			const EXEPEMachineTypes_offtbl_t *const pb = static_cast<const EXEPEMachineTypes_offtbl_t*>(b);
+			return (static_cast<int>(pa->machineType) - static_cast<int>(pb->machineType));
 		});
-	if (pPE == p_EXEPEMachineTypes_offtbl_end || pPE->machineType != cpu) {
+	if (!ptr) {
 		return nullptr;
 	}
+
+	const EXEPEMachineTypes_offtbl_t *const pPE = static_cast<const EXEPEMachineTypes_offtbl_t*>(ptr);
 	return &EXEPEMachineTypes_strtbl[pPE->offset];
 }
 
@@ -99,15 +104,30 @@ const char *lookup_pe_cpu(uint16_t cpu)
  */
 const char *lookup_le_cpu(uint16_t cpu)
 {
-	// Do a binary search.
-	static const auto *const p_EXELEMachineTypes_offtbl_end = &EXELEMachineTypes_offtbl[ARRAY_SIZE(EXELEMachineTypes_offtbl)];
-	auto pLE = std::lower_bound(EXELEMachineTypes_offtbl, p_EXELEMachineTypes_offtbl_end, cpu,
-		[](EXELEMachineTypes_offtbl_t pe, uint16_t cpu) noexcept -> bool {
-			return (pe.machineType < cpu);
-		});
-	if (pLE == p_EXELEMachineTypes_offtbl_end || pLE->machineType != cpu) {
+	// The table uses uint8_t as keys, so we have to make sure the
+	// CPU value is in range.
+	static constexpr uint16_t EXELE_MachineType_Max = 0x42;
+	assert(EXELEMachineTypes_offtbl[ARRAY_SIZE(EXELEMachineTypes_offtbl)-1].machineType == EXELE_MachineType_Max);
+	if (cpu > EXELE_MachineType_Max) {
+		// Out of range.
 		return nullptr;
 	}
+
+	// Do a binary search.
+	const EXELEMachineTypes_offtbl_t key = {static_cast<uint8_t>(cpu), 0};
+	void *ptr = bsearch(&key, EXELEMachineTypes_offtbl,
+		ARRAY_SIZE(EXELEMachineTypes_offtbl), sizeof(EXELEMachineTypes_offtbl[0]),
+		[](const void *a, const void *b) -> int
+		{
+			const EXELEMachineTypes_offtbl_t *const pa = static_cast<const EXELEMachineTypes_offtbl_t*>(a);
+			const EXELEMachineTypes_offtbl_t *const pb = static_cast<const EXELEMachineTypes_offtbl_t*>(b);
+			return (static_cast<int>(pa->machineType) - static_cast<int>(pb->machineType));
+		});
+	if (!ptr) {
+		return nullptr;
+	}
+
+	const EXELEMachineTypes_offtbl_t *const pLE = static_cast<const EXELEMachineTypes_offtbl_t*>(ptr);
 	return &EXELEMachineTypes_strtbl[pLE->offset];
 }
 
@@ -119,8 +139,9 @@ const char *lookup_le_cpu(uint16_t cpu)
  */
 const char *lookup_pe_subsystem(uint16_t subsystem)
 {
-	if (subsystem >= subsystemNames.size())
+	if (subsystem >= subsystemNames.size()) {
 		return nullptr;
+	}
 
 	const char *const name = subsystemNames[subsystem];
 	return (name) ? pgettext_expr("EXE|Subsystem", name) : nullptr;

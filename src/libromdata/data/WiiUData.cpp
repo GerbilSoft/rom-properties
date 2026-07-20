@@ -8,8 +8,10 @@
 
 #include "WiiUData.hpp"
 
+// C includes (C++ namespace)
+#include <cstdlib>
+
 // C++ STL classes
-#include <algorithm>
 #include <array>
 using std::array;
 
@@ -283,6 +285,19 @@ static const array<WiiUDiscPublisher, 37> disc_publishers_region = {{
 /** Public functions **/
 
 /**
+ * bsearch() comparison functoin for lookup_disc_publisher().
+ * @param a
+ * @param b
+ * @return
+ */
+static int lookup_disc_publisher_compar(const void *a, const void *b)
+{
+	const WiiUDiscPublisher *const pa = static_cast<const WiiUDiscPublisher*>(a);
+	const WiiUDiscPublisher *const pb = static_cast<const WiiUDiscPublisher*>(b);
+	return (static_cast<int>(pa->id4) - static_cast<int>(pb->id4));
+}
+
+/**
  * Look up a Wii U retail disc publisher.
  *
  * NOTE: Wii U uses 4-character publisher IDs.
@@ -300,12 +315,13 @@ uint32_t lookup_disc_publisher(const char *id4)
 	                   (static_cast<uint8_t>(id4[2]) << 8) | 'x';
 
 	// Do a binary search.
-	auto pPubNoRegion = std::lower_bound(disc_publishers_noregion.cbegin(), disc_publishers_noregion.cend(), id4_u32,
-		[](WiiUDiscPublisher pub, const uint32_t id4_u32) noexcept -> bool {
-			return (pub.id4 < id4_u32);
-		});
-	if (pPubNoRegion != disc_publishers_noregion.cend() && pPubNoRegion->id4 == id4_u32) {
+	WiiUDiscPublisher key = {id4_u32, 0};
+	void *ptr = bsearch(&key, disc_publishers_noregion.data(),
+		disc_publishers_noregion.size(), sizeof(disc_publishers_noregion[0]),
+		lookup_disc_publisher_compar);
+	if (ptr) {
 		// Found a publisher in the region-independent list.
+		const WiiUDiscPublisher *const pPubNoRegion = static_cast<const WiiUDiscPublisher*>(ptr);
 		return pPubNoRegion->publisher;
 	}
 
@@ -314,12 +330,13 @@ uint32_t lookup_disc_publisher(const char *id4)
 	id4_u32 |= static_cast<uint8_t>(id4[3]);
 
 	// Do a binary search.
-	auto pPubRegion = std::lower_bound(disc_publishers_region.cbegin(), disc_publishers_region.cend(), id4_u32,
-		[](WiiUDiscPublisher pub, uint32_t id4_u32) noexcept -> bool {
-			return (pub.id4 < id4_u32);
-		});
-	if (pPubRegion != disc_publishers_region.cend() && pPubRegion->id4 == id4_u32) {
-		// Found a publisher in the region-dependent list.
+	key.id4 = id4_u32;
+	ptr = bsearch(&key, disc_publishers_noregion.data(),
+		disc_publishers_noregion.size(), sizeof(disc_publishers_noregion[0]),
+		lookup_disc_publisher_compar);
+	if (ptr) {
+		// Found a publisher in the region-independent list.
+		const WiiUDiscPublisher *const pPubRegion = static_cast<const WiiUDiscPublisher*>(ptr);
 		return pPubRegion->publisher;
 	}
 
@@ -394,18 +411,23 @@ static const array<WiiUApplicationType, 46> wiiu_application_types = {{
  */
 const char *lookup_application_type(uint32_t app_type)
 {
-	auto p_app_type = std::lower_bound(wiiu_application_types.cbegin(), wiiu_application_types.cend(), app_type,
-		[](const WiiUApplicationType &app_type_info, const uint32_t app_type) noexcept -> bool {
-			return (app_type_info.app_type < app_type);
+	const WiiUApplicationType key = {app_type, nullptr};
+	void *ptr = bsearch(&key, wiiu_application_types.data(),
+		wiiu_application_types.size(), sizeof(wiiu_application_types[0]),
+		[](const void *a, const void *b) -> int
+		{
+			const WiiUApplicationType *const pa = static_cast<const WiiUApplicationType*>(a);
+			const WiiUApplicationType *const pb = static_cast<const WiiUApplicationType*>(b);
+			return (static_cast<int>(pa->app_type) - static_cast<int>(pb->app_type));
 		});
-	if (p_app_type != wiiu_application_types.cend() && p_app_type->app_type == app_type) {
-		// Found a matching application type.
-		// TODO: Localize this?
-		return p_app_type->desc;
+	if (!ptr) {
+		return nullptr;
 	}
-
-	// Not found.
-	return nullptr;
+;
+	// Found a matching application type.
+	// TODO: Localize this?
+	const WiiUApplicationType *const p_app_type = static_cast<const WiiUApplicationType*>(ptr);
+	return p_app_type->desc;
 }
 
 } } // namespace LibRomData::WiiUData

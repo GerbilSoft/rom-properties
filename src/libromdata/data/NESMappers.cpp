@@ -19,7 +19,6 @@
 #include <cstdint>
 
 // C++ STL classes
-#include <algorithm>
 #include <array>
 using std::array;
 
@@ -388,35 +387,48 @@ const NESMapperEntry *lookup_ines_info(int mapper)
 const NESSubmapperInfo *lookup_nes2_submapper_info(int mapper, int submapper)
 {
 	assert(mapper >= 0);
+	assert(mapper < 4096);
 	assert(submapper >= 0);
 	assert(submapper < 16);
-	if (mapper < 0 || submapper < 0 || submapper >= 16) {
+	if (mapper < 0 || mapper >= 4096 || submapper < 0 || submapper >= 16) {
 		// Mapper or submapper number is out of range.
 		return nullptr;
 	}
 
 	// Do a binary search in submappers[].
-	auto pSubmapper = std::lower_bound(submappers.cbegin(), submappers.cend(), static_cast<uint16_t>(mapper),
-		[](const NESSubmapperEntry &submapper, uint16_t mapper) noexcept -> bool {
-			return (submapper.mapper < mapper);
+	const NESSubmapperEntry key = {static_cast<uint16_t>(mapper), 0, nullptr};
+	void *ptr = bsearch(&key, submappers.data(),
+		submappers.size(), sizeof(submappers[0]),
+		[](const void *a, const void *b) -> int
+		{
+			const NESSubmapperEntry *const pa = static_cast<const NESSubmapperEntry*>(a);
+			const NESSubmapperEntry *const pb = static_cast<const NESSubmapperEntry*>(b);
+			return (static_cast<int>(pa->mapper) - static_cast<int>(pb->mapper));
 		});
-	if (pSubmapper == submappers.cend() || pSubmapper->mapper != mapper ||
-	    !pSubmapper->info || pSubmapper->info_size == 0)
-	{
+	if (!ptr) {
+		return nullptr;
+	}
+
+	const NESSubmapperEntry *const pSubmapper = static_cast<const NESSubmapperEntry*>(ptr);
+	if (!pSubmapper->info || pSubmapper->info_size == 0) {
 		return nullptr;
 	}
 
 	// Do a binary search in pSubmapper->info.
-	const NESSubmapperInfo *const pInfo_end =
-		&pSubmapper->info[pSubmapper->info_size];
-	auto pSubmapperInfo = std::lower_bound(pSubmapper->info, pInfo_end, static_cast<uint8_t>(submapper),
-		[](const NESSubmapperInfo &submapperInfo, uint8_t submapper) noexcept -> bool {
-			return (submapperInfo.submapper < submapper);
+	const NESSubmapperInfo key2 = {static_cast<uint8_t>(submapper), 0, 0, static_cast<NESMirroring>(0), nullptr};
+	void *ptr2 = bsearch(&key2, pSubmapper->info,
+		pSubmapper->info_size, sizeof(*pSubmapper->info),
+		[](const void *a, const void *b) -> int
+		{
+			const NESSubmapperInfo *const pa = static_cast<const NESSubmapperInfo*>(a);
+			const NESSubmapperInfo *const pb = static_cast<const NESSubmapperInfo*>(b);
+			return (static_cast<int>(pa->submapper) - static_cast<int>(pb->submapper));
 		});
-	if (pSubmapperInfo == pInfo_end || pSubmapperInfo->submapper != submapper) {
+	if (!ptr2) {
 		return nullptr;
 	}
-	return pSubmapperInfo;
+
+	return static_cast<const NESSubmapperInfo*>(ptr2);
 }
 
 /**
