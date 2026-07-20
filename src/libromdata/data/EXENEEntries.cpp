@@ -69,13 +69,7 @@ const char *lookup_ordinal(const char *modname, uint16_t ordinal)
 		{
 			const OrdinalName *const pa = static_cast<const OrdinalName*>(a);
 			const OrdinalName *const pb = static_cast<const OrdinalName*>(b);
-			// TODO: C++20 spaceship operator?
-			if (pa->ordinal < pb->ordinal) {
-				return -1;
-			} else if (pa->ordinal > pb->ordinal) {
-				return 1;
-			}
-			return 0;
+			return static_cast<int>(pa->ordinal) - static_cast<int>(pb->ordinal);
 		});
 	if (!ptr) {
 		return nullptr;
