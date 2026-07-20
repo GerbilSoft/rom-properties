@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GNOME Tracker)                    *
  * tracker-mini-1.0.h: tracker-1.0 function declarations and pointers      *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -26,8 +26,8 @@ struct _TrackerSparqlBuilder {
 	TrackerSparqlBuilderPrivate * priv;
 };
 
-GType tracker_sparql_builder_get_type (void) G_GNUC_CONST;
-GType tracker_sparql_builder_state_get_type (void) G_GNUC_CONST;
+GType tracker_sparql_builder_get_type (void);
+GType tracker_sparql_builder_state_get_type (void);
 void tracker_sparql_builder_subject_variable (TrackerSparqlBuilder* self, const gchar* var_name);
 void tracker_sparql_builder_object_variable (TrackerSparqlBuilder* self, const gchar* var_name);
 void tracker_sparql_builder_subject_iri (TrackerSparqlBuilder* self, const gchar* iri);
@@ -76,7 +76,7 @@ typedef struct _tracker_sparql_1_0_pfns_t {
 
 typedef struct _TrackerExtractInfo TrackerExtractInfo;
 
-GType                 tracker_extract_info_get_type               (void) G_GNUC_CONST;
+GType                 tracker_extract_info_get_type               (void);
 
 TrackerExtractInfo *  tracker_extract_info_ref                    (TrackerExtractInfo *info);
 void                  tracker_extract_info_unref                  (TrackerExtractInfo *info);

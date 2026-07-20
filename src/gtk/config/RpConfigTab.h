@@ -32,7 +32,7 @@ typedef struct _RpConfigTabInterface {
 } RpConfigTabInterface;
 
 /* this function is implemented automatically by the G_DEFINE_TYPE macro */
-GType		rp_config_tab_get_type		(void) G_GNUC_CONST G_GNUC_INTERNAL;
+GType		rp_config_tab_get_type		(void) G_GNUC_INTERNAL;
 
 gboolean	rp_config_tab_has_defaults	(RpConfigTab *tab) G_GNUC_INTERNAL;
 
