@@ -459,12 +459,13 @@ gchar *rpGtk_convert_accel_to_gtk(const gchar *str)
 	}
 
 	// GTK+ uses '_' for accelerators, not '&'.
-	gchar *s_ret = g_strdup(str);
-	for (gchar *p = s_ret; *p != '\0'; p++) {
-		if (*p == '&') {
-			*p = '_';
-			break;
-		}
+	gchar *const s_ret = g_strdup(str);
+	if (!s_ret) {
+		return NULL;
+	}
+	gchar *const p = strchr(s_ret, '&');
+	if (p != NULL) {
+		*p = '_';
 	}
 	return s_ret;
 }
