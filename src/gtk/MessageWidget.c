@@ -349,11 +349,11 @@ rp_message_widget_init(RpMessageWidget *widget)
 #  endif /* USE_GTK_REVEALER */
 #endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
-	g_signal_connect(widget->close_button, "clicked",
-		G_CALLBACK(rp_message_widget_close_button_clicked_handler), widget);
+	g_signal_connect_object(widget->close_button, "clicked",
+		G_CALLBACK(rp_message_widget_close_button_clicked_handler), widget, G_CONNECT_DEFAULT);
 #ifdef USE_GTK_REVEALER
-	g_signal_connect(widget->revealer, "notify::child-revealed",
-		G_CALLBACK(rp_message_widget_notify_child_revealed), widget);
+	g_signal_connect_object(widget->revealer, "notify::child-revealed",
+		G_CALLBACK(rp_message_widget_notify_child_revealed), widget, G_CONNECT_DEFAULT);
 #endif /* USE_GTK_REVEALER */
 }
 

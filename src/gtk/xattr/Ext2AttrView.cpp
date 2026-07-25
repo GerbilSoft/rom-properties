@@ -203,7 +203,8 @@ rp_ext2_attr_view_init(RpExt2AttrView *widget)
 		// NOTE: Unlike Qt, both the "clicked" and "toggled" signals are
 		// emitted for both user and program modifications, so we have to
 		// connect this signal *after* setting the initial value.
-		g_signal_connect(checkBox, "toggled", G_CALLBACK(checkbox_no_toggle_signal_handler), widget);
+		g_signal_connect_object(checkBox, "toggled",
+			G_CALLBACK(checkbox_no_toggle_signal_handler), widget, G_CONNECT_DEFAULT);
 
 		// Next cell.
 		col++;

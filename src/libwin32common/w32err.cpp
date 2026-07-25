@@ -124,7 +124,7 @@ int w32err_to_posix(DWORD w32err)
 {
 	// Error code table is limited to uint16_t.
 	assert(w32err <= std::numeric_limits<uint16_t>::max());
-	if (w32err > std::numeric_limits<uint16_t>::max()) {
+	if (w32err > ERROR_NOT_ENOUGH_QUOTA) {
 		return EINVAL;
 	}
 

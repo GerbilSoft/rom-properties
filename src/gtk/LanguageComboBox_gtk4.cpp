@@ -188,7 +188,8 @@ rp_language_combo_box_rebuild_icons(struct _RpLanguageComboBox *widget)
 	// GtkDropDown doesn't have a "changed" signal, and its
 	// GtkSelectionModel object isn't accessible.
 	// Listen for GObject::notify for the "selected" property.
-	g_signal_connect(widget->dropDown, "notify::selected", G_CALLBACK(rp_language_combo_box_notify_selected_handler), widget);
+	g_signal_connect_object(widget->dropDown, "notify::selected",
+		G_CALLBACK(rp_language_combo_box_notify_selected_handler), widget, G_CONNECT_DEFAULT);
 }
 
 /** Property accessors / mutators **/

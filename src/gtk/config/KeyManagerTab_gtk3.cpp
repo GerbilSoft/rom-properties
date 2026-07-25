@@ -87,7 +87,8 @@ void rp_key_manager_tab_create_GtkTreeView(RpKeyManagerTab *tab)
 	g_object_set(renderer, "family", "Monospace", nullptr);
 	g_object_set(renderer, "mode", GTK_CELL_RENDERER_MODE_EDITABLE, nullptr);
 	g_object_set(renderer, "editable", TRUE, nullptr);
-	g_signal_connect(renderer, "edited", G_CALLBACK(renderer_edited_signal_handler), tab);
+	g_signal_connect_object(renderer, "edited",
+		G_CALLBACK(renderer_edited_signal_handler), tab, G_CONNECT_DEFAULT);
 	gtk_tree_view_column_pack_start(column, renderer, FALSE);
 	gtk_tree_view_column_add_attribute(column, renderer, "text", 1);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);

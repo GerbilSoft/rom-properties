@@ -532,7 +532,8 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 	// (Windows uses 5.)
 	g_object_set_qdata(G_OBJECT(treeView), RFT_LISTDATA_rows_visible_quark, GINT_TO_POINTER(listDataDesc.rows_visible));
 	if (listDataDesc.rows_visible > 0) {
-		g_signal_connect(treeView, "realize", G_CALLBACK(tree_view_realize_signal_handler), page);
+		g_signal_connect_object(treeView, "realize",
+			G_CALLBACK(tree_view_realize_signal_handler), page, G_CONNECT_DEFAULT);
 	}
 
 	if (isMulti) {

@@ -199,14 +199,15 @@ rp_systems_tab_init(RpSystemsTab *tab)
 	// programmatically edited, unlike Qt, so we'll need to
 	// inhibit handling when loading settings.
 #ifdef USE_GTK_DROP_DOWN
-	g_signal_connect(tab->cboDMG, "notify::selected", G_CALLBACK(rp_systems_tab_notify_selected_handler), tab);
-	g_signal_connect(tab->cboSGB, "notify::selected", G_CALLBACK(rp_systems_tab_notify_selected_handler), tab);
-	g_signal_connect(tab->cboCGB, "notify::selected", G_CALLBACK(rp_systems_tab_notify_selected_handler), tab);
+	static const char dmg_signal_name[] = "notify::selected";
+	static const GCallback dmg_signal_handler = G_CALLBACK(rp_systems_tab_notify_selected_handler);
 #else /* !USE_GTK_DROP_DOWN */
-	g_signal_connect(tab->cboDMG, "changed", G_CALLBACK(rp_systems_tab_modified_handler), tab);
-	g_signal_connect(tab->cboSGB, "changed", G_CALLBACK(rp_systems_tab_modified_handler), tab);
-	g_signal_connect(tab->cboCGB, "changed", G_CALLBACK(rp_systems_tab_modified_handler), tab);
+	static const char dmg_signal_name[] = "changed";
+	static const GCallback dmg_signal_handler = G_CALLBACK(rp_systems_tab_modified_handler);
 #endif /* USE_GTK_DROP_DOWN */
+	g_signal_connect_object(tab->cboDMG, dmg_signal_name, dmg_signal_handler, tab, G_CONNECT_DEFAULT);
+	g_signal_connect_object(tab->cboSGB, dmg_signal_name, dmg_signal_handler, tab, G_CONNECT_DEFAULT);
+	g_signal_connect_object(tab->cboCGB, dmg_signal_name, dmg_signal_handler, tab, G_CONNECT_DEFAULT);
 
 	// GtkGrid/GtkTable
 #ifdef USE_GTK_GRID
@@ -399,8 +400,9 @@ rp_systems_tab_notify_selected_handler(GtkDropDown *dropDown, GParamSpec *pspec,
 {
 	RP_UNUSED(dropDown);
 	RP_UNUSED(pspec);
-	if (tab->inhibit)
+	if (tab->inhibit) {
 		return;
+	}
 
 	// Forward the "modified" signal.
 	tab->changed = true;
@@ -416,8 +418,9 @@ static void
 rp_systems_tab_modified_handler(GtkComboBox *cbo, RpSystemsTab *tab)
 {
 	RP_UNUSED(cbo);
-	if (tab->inhibit)
+	if (tab->inhibit) {
 		return;
+	}
 
 	// Forward the "modified" signal.
 	tab->changed = true;

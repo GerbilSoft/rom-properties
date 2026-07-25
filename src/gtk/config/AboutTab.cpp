@@ -367,7 +367,7 @@ rp_about_tab_init(RpAboutTab *tab)
 
 	// Connect signals
 #ifdef ENABLE_UPDATE_CHECK
-	g_signal_connect(tab, "realize", G_CALLBACK(rp_about_tab_realize_event), 0);
+	g_signal_connect(tab, "realize", G_CALLBACK(rp_about_tab_realize_event), nullptr);
 #endif /* ENABLE_UPDATE_CHECK */
 }
 
@@ -882,8 +882,10 @@ rp_about_tab_realize_event(GtkWidget	*self,
 	// Run the update checker.
 	if (!tab->updChecker) {
 		tab->updChecker = rp_update_checker_new();
-		g_signal_connect(tab->updChecker, "error", G_CALLBACK(updChecker_error), tab);
-		g_signal_connect(tab->updChecker, "retrieved", G_CALLBACK(updChecker_retrieved), tab);
+		g_signal_connect_object(tab->updChecker, "error",
+			G_CALLBACK(updChecker_error), tab, G_CONNECT_DEFAULT);
+		g_signal_connect_object(tab->updChecker, "retrieved",
+			G_CALLBACK(updChecker_retrieved), tab, G_CONNECT_DEFAULT);
 	}
 	rp_update_checker_run(tab->updChecker);
 }

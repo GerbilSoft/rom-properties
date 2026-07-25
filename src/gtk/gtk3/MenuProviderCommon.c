@@ -126,7 +126,7 @@ gboolean rp_menu_provider_is_mime_type_supported(const gchar *mime_type)
 		mime_types_convert_to_png,
 		ARRAY_SIZE(mime_types_convert_to_png),
 		sizeof(mime_types_convert_to_png[0]),
-		(int(*)(const void*, const void*))mime_type_compar);
+		mime_type_compar);
 
 	return (type != NULL);
 }

@@ -198,10 +198,10 @@ rp_thumbnailer_constructed(GObject *object)
 	}
 
 	// Connect signals to the relevant functions.
-	g_signal_connect(thumbnailer->skeleton, "handle-queue",
-		G_CALLBACK(rp_thumbnailer_queue), thumbnailer);
-	g_signal_connect(thumbnailer->skeleton, "handle-dequeue",
-		G_CALLBACK(rp_thumbnailer_dequeue), thumbnailer);
+	g_signal_connect_object(thumbnailer->skeleton, "handle-queue",
+		G_CALLBACK(rp_thumbnailer_queue), thumbnailer, G_CONNECT_DEFAULT);
+	g_signal_connect_object(thumbnailer->skeleton, "handle-dequeue",
+		G_CALLBACK(rp_thumbnailer_dequeue), thumbnailer, G_CONNECT_DEFAULT);
 
 	// Make sure we shut down after inactivity.
 	thumbnailer->timeout_id = g_timeout_add_seconds(SHUTDOWN_TIMEOUT_SECONDS,

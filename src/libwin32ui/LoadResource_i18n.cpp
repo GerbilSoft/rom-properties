@@ -24,7 +24,7 @@ struct lc_mapping_t {
 };
 
 /**
- * bsearch() comparison functoin for lookup_disc_publisher().
+ * bsearch() comparison function for LoadResource_i18n().
  * @param a
  * @param b
  * @return

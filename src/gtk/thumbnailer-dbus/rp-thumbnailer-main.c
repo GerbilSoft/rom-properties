@@ -23,6 +23,9 @@
 // dlopen()
 #include <dlfcn.h>
 
+// for G_CONNECT_DEFAULT on older glib
+#include "glib-compat.h"
+
 // Shutdown request
 static bool stop_main_loop = false;
 
@@ -139,7 +142,7 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	GMainLoop *main_loop = g_main_loop_new(NULL, false);
+	GMainLoop *const main_loop = g_main_loop_new(NULL, false);
 
 	// Create the RpThumbnail service object.
 	RpThumbnailer *const thumbnailer = rp_thumbnailer_new(
@@ -154,7 +157,8 @@ int main(int argc, char *argv[])
 		// Service object is exported.
 
 		// Make sure we quit after the RpThumbnail server is idle for long enough.
-		g_signal_connect(thumbnailer, "shutdown", G_CALLBACK(shutdown_rp_thumbnailer_dbus), main_loop);
+		g_signal_connect_object(thumbnailer, "shutdown",
+			G_CALLBACK(shutdown_rp_thumbnailer_dbus), main_loop, G_CONNECT_DEFAULT);
 
 		// Run the main loop.
 		if (!stop_main_loop) {

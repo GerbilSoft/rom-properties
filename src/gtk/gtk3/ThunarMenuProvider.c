@@ -19,6 +19,9 @@
 #include <assert.h>
 #include "stdboolx.h"
 
+// for G_CONNECT_DEFAULT on older glib
+#include "glib-compat.h"
+
 // thunarx.h mini replacement
 #include "thunarx-mini.h"
 
@@ -106,7 +109,7 @@ rp_item_convert_to_png_ThreadFunc(GList *files)
 		g_free(source_uri);
 	}
 
-	thunarx_file_info_list_free(files);
+	// NOTE: `files` will be freed by the closure created by g_signal_connect_data().
 	return NULL;
 }
 
@@ -117,23 +120,48 @@ typedef GtkAction MenuItem_t;
 #endif /* GTK_CHECK_VERSION(3, 0, 0) */
 
 static void
-rp_item_convert_to_png(MenuItem_t *item, gpointer user_data)
+rp_item_convert_to_png(MenuItem_t *item, GList *files)
 {
-	RP_UNUSED(user_data);
-
-	GList *const files = (GList*)g_object_steal_qdata(G_OBJECT(item), rp_item_convert_to_png_quark);
-	if (G_UNLIKELY(!files))
+	RP_UNUSED(item);
+	if (G_UNLIKELY(!files)) {
 		return;
+	}
 
 	// Process the files in a separate thread.
 	char thread_name[64];
 	snprintf(thread_name, sizeof(thread_name), "rp-convert-to-png-%p", files);
 	GThread *const thread = g_thread_new(thread_name, (GThreadFunc)rp_item_convert_to_png_ThreadFunc, files);
+	if (!thread) {
+		// Could not create the thread for some reason...
+		// NOTE: `files` will be freed by the closure created by g_signal_connect_data().
+		return;
+	}
 
 	// TODO: Do we want to keep a handle to the thread somewhere?
 	g_thread_unref(thread);
 }
 
+/**
+ * GClosureNotify wrapper for thunarx_file_info_list_free(), since our
+ * compiler warning settings don't simply allow us to cast the function
+ * pointer to GClosureNotify.
+ * @param list
+ * @param closure
+ */
+static void
+rp_GClosureNotify_ThunarxFileInfoList(GList *list, GClosure* closure)
+{
+	RP_UNUSED(closure);
+	thunarx_file_info_list_free(list);
+}
+
+/**
+ * Get menu items for the specified files.
+ * @param provider (transfer none)
+ * @param window (transfer none)
+ * @param files (transfer none)
+ * @return (transfer full) List of menu items
+ */
 static GList*
 rp_thunar_menu_provider_get_file_menu_items(ThunarxMenuProvider *provider, GtkWidget *window, GList *files)
 {
@@ -200,10 +228,9 @@ rp_thunar_menu_provider_get_file_menu_items(ThunarxMenuProvider *provider, GtkWi
 #endif /* GTK_CHECK_VERSION(2, 16, 0) && !GTK_CHECK_VERSION(3, 0, 0) */
 
 	// Save the file list in the menu item.
-	g_object_set_qdata_full(G_OBJECT(item), rp_item_convert_to_png_quark,
-		thunarx_file_info_list_copy(files),
-		(GDestroyNotify)pfn_thunarx_file_info_list_free);
-	g_signal_connect_closure(G_OBJECT(item), "activate",
-		g_cclosure_new_object(G_CALLBACK(rp_item_convert_to_png), G_OBJECT(window)), TRUE);
+	// NOTE: `files` is "transfer none", so we need to make a copy of the list.
+	g_signal_connect_data(item, "activate",
+		G_CALLBACK(rp_item_convert_to_png), thunarx_file_info_list_copy(files),
+		(GClosureNotify)rp_GClosureNotify_ThunarxFileInfoList, G_CONNECT_DEFAULT);
 	return g_list_prepend(NULL, item);
 }

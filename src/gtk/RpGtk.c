@@ -16,6 +16,9 @@
 // for bool
 #include "stdboolx.h"
 
+// for G_CONNECT_DEFAULT on older glib
+#include "glib-compat.h"
+
 // Use the new GtkFileDialog class on GTK 4.10 and later.
 #if GTK_CHECK_VERSION(4, 9, 1)
 #  define USE_GTK4_FILE_DIALOG 1
@@ -255,6 +258,13 @@ rpGtk_getFileName_fileDialog_response(GtkFileChooserDialog *fileDialog, gint res
 		file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(fileDialog));
 	}
 
+	// NOTE: gfncbdata is automatically freed by the g_free()
+	// closure specified when calling g_signal_connect_data()
+	// when the fileDialog is deleted.
+	// Copy the required data here.
+	const rpGtk_fileDialogCallback callback = gfncbdata->callback;
+	const gpointer user_data = gfncbdata->user_data;
+
 	// Dialog is no longer needed.
 #if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_window_destroy(GTK_WINDOW(fileDialog));
@@ -264,8 +274,20 @@ rpGtk_getFileName_fileDialog_response(GtkFileChooserDialog *fileDialog, gint res
 
 	// Run the callback.
 	// NOTE: Callback function takes ownership of the GFile.
-	gfncbdata->callback(file, gfncbdata->user_data);
-	g_free(gfncbdata);
+	callback(file, user_data);
+}
+
+/**
+ * GClosureNotify wrapper for g_free, since our compiler warning
+ * settings don't simply allow us to cast g_free to GClosureNotify.
+ * @param ptr
+ * @param closure
+ */
+static void
+rp_GClosureNotify_g_free(gpointer ptr, GClosure *closure)
+{
+	((void)closure);	// RP_UNUSED() is in common.h
+	g_free(ptr);
 }
 #endif /* !USE_GTK4_FILE_DIALOG */
 
@@ -362,6 +384,7 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 
 	// Prompt for a filename.
 #ifdef USE_GTK4_FILE_DIALOG
+	// GTK4: gfncbdata is freed by rpGtk_getFileName_AsyncReadyCallback().
 	gtk_file_dialog_set_modal(fileDialog, true);
 	if (bSave) {
 		gtk_file_dialog_save(fileDialog, gfndata->parent, NULL,
@@ -371,7 +394,10 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 			(GAsyncReadyCallback)rpGtk_getFileName_AsyncReadyCallback, gfncbdata);
 	}
 #else /* !USE_GTK4_FILE_DIALOG */
-	g_signal_connect(fileDialog, "response", G_CALLBACK(rpGtk_getFileName_fileDialog_response), gfncbdata);
+	// GTK2/GTK3: Use g_signal_connect_data() to ensure gfncbdata is freed.
+	// It is *not* freed by rpGtk_getFileName_fileDialog_response().
+	g_signal_connect_data(fileDialog, "response",
+		G_CALLBACK(rpGtk_getFileName_fileDialog_response), gfncbdata, rp_GClosureNotify_g_free, G_CONNECT_DEFAULT);
 	gtk_window_set_transient_for(GTK_WINDOW(fileDialog), gfndata->parent);
 	gtk_window_set_modal(GTK_WINDOW(fileDialog), true);
 	gtk_widget_set_visible(GTK_WIDGET(fileDialog), true);

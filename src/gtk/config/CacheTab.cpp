@@ -182,8 +182,10 @@ rp_cache_tab_init(RpCacheTab *tab)
 #endif /* !GTK_CHECK_VERSION(3, 0, 0) */
 
 	// Connect the signal handlers for the buttons.
-	g_signal_connect(tab->btnSysCache, "clicked", G_CALLBACK(rp_cache_tab_on_btnSysCache_clicked), tab);
-	g_signal_connect(tab->btnRpCache,  "clicked", G_CALLBACK(rp_cache_tab_on_btnRpCache_clicked),  tab);
+	g_signal_connect_object(tab->btnSysCache, "clicked",
+		G_CALLBACK(rp_cache_tab_on_btnSysCache_clicked), tab, G_CONNECT_DEFAULT);
+	g_signal_connect_object(tab->btnRpCache,  "clicked",
+		G_CALLBACK(rp_cache_tab_on_btnRpCache_clicked),  tab, G_CONNECT_DEFAULT);
 
 #if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_widget_set_visible(tab->lblCacheStatus, false);
@@ -391,11 +393,16 @@ rp_cache_tab_clear_cache_dir(RpCacheTab *tab, RpCacheDir cache_dir)
 		g_object_ref_sink(tab->ccCleaner);
 
 		// Connect the signal handlers.
-		g_signal_connect(tab->ccCleaner, "progress",       G_CALLBACK(ccCleaner_progress),     tab);
-		g_signal_connect(tab->ccCleaner, "error",          G_CALLBACK(ccCleaner_error),        tab);
-		g_signal_connect(tab->ccCleaner, "cache-is-empty", G_CALLBACK(ccCleaner_cacheIsEmpty), tab);
-		g_signal_connect(tab->ccCleaner, "cache-cleared",  G_CALLBACK(ccCleaner_cacheCleared), tab);
-		g_signal_connect(tab->ccCleaner, "finished",       G_CALLBACK(ccCleaner_finished),     tab);
+		g_signal_connect_object(tab->ccCleaner, "progress",
+			G_CALLBACK(ccCleaner_progress), tab, G_CONNECT_DEFAULT);
+		g_signal_connect_object(tab->ccCleaner, "error",
+			G_CALLBACK(ccCleaner_error), tab, G_CONNECT_DEFAULT);
+		g_signal_connect_object(tab->ccCleaner, "cache-is-empty",
+			G_CALLBACK(ccCleaner_cacheIsEmpty), tab, G_CONNECT_DEFAULT);
+		g_signal_connect_object(tab->ccCleaner, "cache-cleared",
+			G_CALLBACK(ccCleaner_cacheCleared), tab, G_CONNECT_DEFAULT);
+		g_signal_connect_object(tab->ccCleaner, "finished",
+			G_CALLBACK(ccCleaner_finished), tab, G_CONNECT_DEFAULT);
 	}
 
 	// Set the cache directory.

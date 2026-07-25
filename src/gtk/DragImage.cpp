@@ -210,19 +210,27 @@ rp_drag_image_init(RpDragImage *image)
 #endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
 	// Pixmaps can only be updated once we have a valid size.
-	g_signal_connect(G_OBJECT(image), "map", G_CALLBACK(rp_drag_image_map_signal_handler), nullptr);
-	g_signal_connect(G_OBJECT(image), "notify::width-request",  G_CALLBACK(rp_drag_image_notify_width_or_height_signal_handler), nullptr);
-	g_signal_connect(G_OBJECT(image), "notify::height-request", G_CALLBACK(rp_drag_image_notify_width_or_height_signal_handler), nullptr);
+	g_signal_connect(G_OBJECT(image), "map",
+		G_CALLBACK(rp_drag_image_map_signal_handler), nullptr);
+	g_signal_connect(G_OBJECT(image), "notify::width-request",
+		G_CALLBACK(rp_drag_image_notify_width_or_height_signal_handler), nullptr);
+	g_signal_connect(G_OBJECT(image), "notify::height-request",
+		G_CALLBACK(rp_drag_image_notify_width_or_height_signal_handler), nullptr);
 
 #if GTK_CHECK_VERSION(4, 0, 0)
 	image->dragSource = gtk_drag_source_new();
-	g_signal_connect(G_OBJECT(image->dragSource), "prepare",    G_CALLBACK(rp_drag_image_drag_source_prepare),    image);
-	g_signal_connect(G_OBJECT(image->dragSource), "drag-begin", G_CALLBACK(rp_drag_image_drag_source_drag_begin), image);
-	g_signal_connect(G_OBJECT(image->dragSource), "drag-end",   G_CALLBACK(rp_drag_image_drag_source_drag_end),   image);
+	g_signal_connect_object(G_OBJECT(image->dragSource), "prepare",
+		G_CALLBACK(rp_drag_image_drag_source_prepare), image, G_CONNECT_DEFAULT);
+	g_signal_connect_object(G_OBJECT(image->dragSource), "drag-begin",
+		G_CALLBACK(rp_drag_image_drag_source_drag_begin), image, G_CONNECT_DEFAULT);
+	g_signal_connect_object(G_OBJECT(image->dragSource), "drag-end",
+		G_CALLBACK(rp_drag_image_drag_source_drag_end), image, G_CONNECT_DEFAULT);
 	gtk_widget_add_controller(GTK_WIDGET(image), GTK_EVENT_CONTROLLER(image->dragSource));
 #else /* !GTK_CHECK_VERSION(4, 0, 0) */
-	g_signal_connect(G_OBJECT(image), "drag-begin",    G_CALLBACK(rp_drag_image_drag_begin),    nullptr);
-	g_signal_connect(G_OBJECT(image), "drag-data-get", G_CALLBACK(rp_drag_image_drag_data_get), nullptr);
+	g_signal_connect(G_OBJECT(image), "drag-begin",
+		G_CALLBACK(rp_drag_image_drag_begin), nullptr);
+	g_signal_connect(G_OBJECT(image), "drag-data-get",
+		G_CALLBACK(rp_drag_image_drag_data_get), nullptr);
 #endif /* GTK_CHECK_VERSION(4, 0, 0) */
 }
 
@@ -494,7 +502,7 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 			fmt::format(FSTR("ecksbawks-{:d}"), i+1).c_str(), nullptr);
 		g_simple_action_set_enabled(action, TRUE);
 		g_object_set_qdata(G_OBJECT(action), ecksbawks_quark, GINT_TO_POINTER(i+1));
-		g_signal_connect(action, "activate", G_CALLBACK(ecksbawks_action_triggered_signal_handler), image);
+		g_signal_connect_object(action, "activate", G_CALLBACK(ecksbawks_action_triggered_signal_handler), image, G_CONNECT_DEFAULT);
 		g_action_map_add_action(G_ACTION_MAP(image->actionGroup), G_ACTION(action));
 		g_menu_append(image->menuEcksBawks, menu_items[i],
 			fmt::format(FSTR("{:s}.ecksbawks-{:d}"), s_prefix, i+1).c_str());
@@ -521,7 +529,8 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 		GtkWidget *const action = gtk_menu_item_new_with_label(menu_items[i]);
 		gtk_widget_set_name(action, fmt::format(FSTR("menuEcksBawks{:d}"), i).c_str());
 		g_object_set_qdata(G_OBJECT(action), ecksbawks_quark, GINT_TO_POINTER(i+1));
-		g_signal_connect(action, "activate", G_CALLBACK(ecksbawks_menuItem_triggered_signal_handler), image);
+		g_signal_connect_object(action, "activate",
+			G_CALLBACK(ecksbawks_menuItem_triggered_signal_handler), image, G_CONNECT_DEFAULT);
 		gtk_widget_show(action);
 		gtk_menu_shell_append(GTK_MENU_SHELL(image->menuEcksBawks), action);
 	}
@@ -533,7 +542,8 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 	GtkGesture *const rightClickGesture = gtk_gesture_click_new();
 	gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(rightClickGesture), GDK_BUTTON_SECONDARY);
 	gtk_widget_add_controller(GTK_WIDGET(image), GTK_EVENT_CONTROLLER(rightClickGesture));
-	g_signal_connect(rightClickGesture, "pressed", G_CALLBACK(rp_drag_image_on_gesture_pressed_event), image);
+	g_signal_connect_object(rightClickGesture, "pressed",
+		G_CALLBACK(rp_drag_image_on_gesture_pressed_event), image, G_CONNECT_DEFAULT);
 #else /* !GTK_CHECK_VERSION(4, 0, 0) */
 	// GTK2/GTK3: Show context menu on right-click.
 	// NOTE: On my system, programs show context menus on mouse button down.

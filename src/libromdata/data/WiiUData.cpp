@@ -285,7 +285,7 @@ static const array<WiiUDiscPublisher, 37> disc_publishers_region = {{
 /** Public functions **/
 
 /**
- * bsearch() comparison functoin for lookup_disc_publisher().
+ * bsearch() comparison function for lookup_disc_publisher().
  * @param a
  * @param b
  * @return

@@ -968,7 +968,8 @@ rp_rom_data_view_init_bitfield(RpRomDataView *page,
 		// NOTE: Unlike Qt, both the "clicked" and "toggled" signals are
 		// emitted for both user and program modifications, so we have to
 		// connect this signal *after* setting the initial value.
-		g_signal_connect(checkBox, "toggled", G_CALLBACK(checkbox_no_toggle_signal_handler), page);
+		g_signal_connect_object(checkBox, "toggled",
+			G_CALLBACK(checkbox_no_toggle_signal_handler), page, G_CONNECT_DEFAULT);
 
 #ifdef USE_GTK_GRID
 		// TODO: GTK_FILL
@@ -1177,7 +1178,8 @@ rp_rom_data_view_update_multi(RpRomDataView *page, uint32_t user_lc)
 		rp_language_combo_box_set_selected_lc(RP_LANGUAGE_COMBO_BOX(page->cboLanguage), lc_to_set);
 
 		// Connect the notification for "selected-lc".
-		g_signal_connect(page->cboLanguage, "notify::selected-lc", G_CALLBACK(cboLanguage_notify_selected_lc_handler), page);
+		g_signal_connect_object(page->cboLanguage, "notify::selected-lc",
+			G_CALLBACK(cboLanguage_notify_selected_lc_handler), page, G_CONNECT_DEFAULT);
 	}
 }
 
@@ -1360,7 +1362,8 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 	}
 
 	// Connect the RpOptionsMenuButton's triggered(int) signal.
-	g_signal_connect(page->btnOptions, "triggered", G_CALLBACK(btnOptions_triggered_signal_handler), page);
+	g_signal_connect_object(page->btnOptions, "triggered",
+		G_CALLBACK(btnOptions_triggered_signal_handler), page, G_CONNECT_DEFAULT);
 
 	// Initialize the menu options.
 	rp_options_menu_button_reinit_menu(RP_OPTIONS_MENU_BUTTON(page->btnOptions), page->cxx->romData.get());

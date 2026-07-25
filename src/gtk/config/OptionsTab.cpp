@@ -279,36 +279,36 @@ rp_options_tab_init(RpOptionsTab *tab)
 	// NOTE: Signal handlers are triggered if the value is
 	// programmatically edited, unlike Qt, so we'll need to
 	// inhibit handling when loading settings.
-	g_signal_connect(tab->chkExtImgDownloadEnabled, "toggled",
-		G_CALLBACK(rp_options_tab_modified_handler), tab);
-	g_signal_connect(tab->chkExtImgDownloadEnabled, "toggled",
-		G_CALLBACK(rp_options_tab_chkExtImgDownloadEnabled_toggled), tab);
+	g_signal_connect_object(tab->chkExtImgDownloadEnabled, "toggled",
+		G_CALLBACK(rp_options_tab_modified_handler), tab, G_CONNECT_DEFAULT);
+	g_signal_connect_object(tab->chkExtImgDownloadEnabled, "toggled",
+		G_CALLBACK(rp_options_tab_chkExtImgDownloadEnabled_toggled), tab, G_CONNECT_DEFAULT);
 #ifdef USE_GTK_DROP_DOWN
-	g_signal_connect(tab->cboUnmeteredConnection, "notify::selected",
-		G_CALLBACK(rp_options_tab_notify_selected_handler), tab);
-	g_signal_connect(tab->cboMeteredConnection, "notify::selected",
-		G_CALLBACK(rp_options_tab_notify_selected_handler), tab);
+	g_signal_connect_object(tab->cboUnmeteredConnection, "notify::selected",
+		G_CALLBACK(rp_options_tab_notify_selected_handler), tab, G_CONNECT_DEFAULT);
+	g_signal_connect_object(tab->cboMeteredConnection, "notify::selected",
+		G_CALLBACK(rp_options_tab_notify_selected_handler), tab, G_CONNECT_DEFAULT);
 #else /* !USE_GTK_DROP_DOWN */
-	g_signal_connect(tab->cboUnmeteredConnection, "changed",
-		G_CALLBACK(rp_options_tab_modified_handler), tab);
-	g_signal_connect(tab->cboMeteredConnection, "changed",
-		G_CALLBACK(rp_options_tab_modified_handler), tab);
+	g_signal_connect_object(tab->cboUnmeteredConnection, "changed",
+		G_CALLBACK(rp_options_tab_modified_handler), tab, G_CONNECT_DEFAULT);
+	g_signal_connect_object(tab->cboMeteredConnection, "changed",
+		G_CALLBACK(rp_options_tab_modified_handler), tab, G_CONNECT_DEFAULT);
 #endif /* USE_GTK_DROP_DOWN */
-	g_signal_connect(tab->chkUseIntIconForSmallSizes, "toggled",
-		G_CALLBACK(rp_options_tab_modified_handler), tab);
-	g_signal_connect(tab->chkStoreFileOriginInfo, "toggled",
-		G_CALLBACK(rp_options_tab_modified_handler), tab);
-	g_signal_connect(tab->cboGameTDBPAL, "notify::selected-lc",
-		G_CALLBACK(cboGameTDBPAL_notify_selected_lc_handler), tab);
+	g_signal_connect_object(tab->chkUseIntIconForSmallSizes, "toggled",
+		G_CALLBACK(rp_options_tab_modified_handler), tab, G_CONNECT_DEFAULT);
+	g_signal_connect_object(tab->chkStoreFileOriginInfo, "toggled",
+		G_CALLBACK(rp_options_tab_modified_handler), tab, G_CONNECT_DEFAULT);
+	g_signal_connect_object(tab->cboGameTDBPAL, "notify::selected-lc",
+		G_CALLBACK(cboGameTDBPAL_notify_selected_lc_handler), tab, G_CONNECT_DEFAULT);
 
-	g_signal_connect(tab->chkShowDangerousPermissionsOverlayIcon, "toggled",
-		G_CALLBACK(rp_options_tab_modified_handler), tab);
-	g_signal_connect(tab->chkEnableThumbnailOnNetworkFS, "toggled",
-		G_CALLBACK(rp_options_tab_modified_handler), tab);
-	g_signal_connect(tab->chkThumbnailDirectoryPackages, "toggled",
-		G_CALLBACK(rp_options_tab_modified_handler), tab);
-	g_signal_connect(tab->chkShowXAttrView, "toggled",
-		G_CALLBACK(rp_options_tab_modified_handler), tab);
+	g_signal_connect_object(tab->chkShowDangerousPermissionsOverlayIcon, "toggled",
+		G_CALLBACK(rp_options_tab_modified_handler), tab, G_CONNECT_DEFAULT);
+	g_signal_connect_object(tab->chkEnableThumbnailOnNetworkFS, "toggled",
+		G_CALLBACK(rp_options_tab_modified_handler), tab, G_CONNECT_DEFAULT);
+	g_signal_connect_object(tab->chkThumbnailDirectoryPackages, "toggled",
+		G_CALLBACK(rp_options_tab_modified_handler), tab, G_CONNECT_DEFAULT);
+	g_signal_connect_object(tab->chkShowXAttrView, "toggled",
+		G_CALLBACK(rp_options_tab_modified_handler), tab, G_CONNECT_DEFAULT);
 
 #if GTK_CHECK_VERSION(4, 0, 0)
 	gtk_box_append(GTK_BOX(tab), fraDownloads);

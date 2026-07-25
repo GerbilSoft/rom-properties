@@ -279,9 +279,9 @@ void RpImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	// GtkDropDown doesn't have a "changed" signal, and its
 	// GtkSelectionModel object isn't accessible.
 	// Listen for GObject::notify for the "selected" property.
-	g_signal_connect(cbo, "notify::selected", G_CALLBACK(rp_image_types_tab_notify_selected_handler), q);
+	g_signal_connect_object(cbo, "notify::selected", G_CALLBACK(rp_image_types_tab_notify_selected_handler), q, G_CONNECT_DEFAULT);
 #else /* !USE_GTK_DROP_DOWN */
-	g_signal_connect(cbo, "changed", G_CALLBACK(rp_image_types_tab_modified_handler), q);
+	g_signal_connect_object(cbo, "changed", G_CALLBACK(rp_image_types_tab_modified_handler), q, G_CONNECT_DEFAULT);
 #endif /* USE_GTK_DROP_DOWN */
 }
 

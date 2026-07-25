@@ -62,7 +62,7 @@ rp_language_combo_box_init_gtkX(struct _RpLanguageComboBox *widget)
 	/** Signals **/
 
 	// Connect the "changed" signal.
-	g_signal_connect(widget->comboBox, "changed", G_CALLBACK(rp_language_combo_box_changed_handler), widget);
+	g_signal_connect_object(widget->comboBox, "changed", G_CALLBACK(rp_language_combo_box_changed_handler), widget, G_CONNECT_DEFAULT);
 }
 
 /**

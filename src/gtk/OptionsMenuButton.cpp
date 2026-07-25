@@ -245,16 +245,19 @@ rp_options_menu_button_init(RpOptionsMenuButton *widget)
 	// NOTE: GTK4 GtkMenuButton does not have a "clicked" signal.
 	// TODO: Remove the wrapped "clicked" signal?
 #if !GTK_CHECK_VERSION(4, 0, 0)
-	g_signal_connect(widget->menuButton, "clicked", G_CALLBACK(menuButton_clicked_signal_handler), widget);
+	g_signal_connect_object(widget->menuButton, "clicked",
+		G_CALLBACK(menuButton_clicked_signal_handler), widget, G_CONNECT_DEFAULT);
 #endif /* !GTK_CHECK_VERSION(4, 0, 0) */
-	g_signal_connect(widget->menuButton, "activate", G_CALLBACK(menuButton_activate_signal_handler), widget);
+	g_signal_connect_object(widget->menuButton, "activate",
+		G_CALLBACK(menuButton_activate_signal_handler), widget, G_CONNECT_DEFAULT);
 
 #ifndef USE_GTK_MENU_BUTTON
 	// Connect the button's "event" signal.
 	// NOTE: We need to pass the event details. Otherwise, we'll
 	// end up with the menu getting "stuck" to the mouse.
 	// Reference: https://developer.gnome.org/gtk-tutorial/stable/x1577.html
-	g_signal_connect(widget->menuButton, "event", G_CALLBACK(btnOptions_event_signal_handler), widget);
+	g_signal_connect_object(widget->menuButton, "event",
+		G_CALLBACK(btnOptions_event_signal_handler), widget, G_CONNECT_DEFAULT);
 #endif /* !USE_GTK_MENU_BUTTON */
 
 #if USE_G_MENU_MODEL
@@ -553,7 +556,8 @@ rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
 			fmt::to_string(p.id).c_str(), nullptr);
 		g_simple_action_set_enabled(action, TRUE);
 		g_object_set_qdata(G_OBJECT(action), menuOptions_id_quark, GINT_TO_POINTER(p.id));
-		g_signal_connect(action, "activate", G_CALLBACK(action_triggered_signal_handler), widget);
+		g_signal_connect_object(action, "activate",
+			G_CALLBACK(action_triggered_signal_handler), widget, G_CONNECT_DEFAULT);
 		g_action_map_add_action(G_ACTION_MAP(actionGroup), G_ACTION(action));
 
 		// Create the menu item.
@@ -561,7 +565,7 @@ rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
 			fmt::format(FSTR("{:s}.{:d}"), s_prefix, p.id).c_str());
 	}
 
-	/** ROM operations. **/
+	/** ROM operations **/
 	const vector<RomData::RomOp> ops = romData->romOps();
 	if (!ops.empty()) {
 		// NOTE: The separator *does* show up properly with the KDE Breeze theme
@@ -576,7 +580,8 @@ rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
 				fmt::to_string(i).c_str(), nullptr);
 			g_simple_action_set_enabled(action, !!(op.flags & RomData::RomOp::ROF_ENABLED));
 			g_object_set_qdata(G_OBJECT(action), menuOptions_id_quark, GINT_TO_POINTER(i));
-			g_signal_connect(action, "activate", G_CALLBACK(action_triggered_signal_handler), widget);
+			g_signal_connect_object(action, "activate",
+				G_CALLBACK(action_triggered_signal_handler), widget, G_CONNECT_DEFAULT);
 			g_action_map_add_action(G_ACTION_MAP(actionGroup), G_ACTION(action));
 
 			// Create the menu item.
@@ -598,7 +603,8 @@ rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
 			pgettext_expr("RomDataView|Options", p.desc));
 		// NOTE: No name for this GtkWidget.
 		g_object_set_qdata(G_OBJECT(menuItem), menuOptions_id_quark, GINT_TO_POINTER(p.id));
-		g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), widget);
+		g_signal_connect_object(menuItem, "activate",
+			G_CALLBACK(menuOptions_triggered_signal_handler), widget, G_CONNECT_DEFAULT);
 		gtk_widget_show(menuItem);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menuOptions), menuItem);
 	}
@@ -622,7 +628,8 @@ rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
 			// NOTE: No name for this GtkWidget.
 			gtk_widget_set_sensitive(menuItem, !!(op.flags & RomData::RomOp::ROF_ENABLED));
 			g_object_set_qdata(G_OBJECT(menuItem), menuOptions_id_quark, GINT_TO_POINTER(i));
-			g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), widget);
+			g_signal_connect_object(menuItem, "activate",
+				G_CALLBACK(menuOptions_triggered_signal_handler), widget, G_CONNECT_DEFAULT);
 			gtk_widget_show(menuItem);
 			gtk_menu_shell_append(GTK_MENU_SHELL(menuOptions), menuItem);
 

@@ -117,9 +117,12 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 
 	// Initialize the KeyStoreGTK.
 	tab->keyStore = rp_key_store_gtk_new();
-	g_signal_connect(tab->keyStore, "key-changed", G_CALLBACK(keyStore_key_changed_signal_handler), tab);
-	g_signal_connect(tab->keyStore, "all-keys-changed", G_CALLBACK(keyStore_all_keys_changed_signal_handler), tab);
-	g_signal_connect(tab->keyStore, "modified", G_CALLBACK(keyStore_modified_signal_handler), tab);
+	g_signal_connect_object(tab->keyStore, "key-changed",
+		G_CALLBACK(keyStore_key_changed_signal_handler), tab, G_CONNECT_DEFAULT);
+	g_signal_connect_object(tab->keyStore, "all-keys-changed",
+		G_CALLBACK(keyStore_all_keys_changed_signal_handler), tab, G_CONNECT_DEFAULT);
+	g_signal_connect_object(tab->keyStore, "modified",
+		G_CALLBACK(keyStore_modified_signal_handler), tab, G_CONNECT_DEFAULT);
 
 	// Scroll area for the GtkTreeView.
 #if GTK_CHECK_VERSION(4, 0, 0)
@@ -200,7 +203,8 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 			fmt::to_string(i).c_str(), nullptr);
 		g_simple_action_set_enabled(action, TRUE);
 		g_object_set_qdata(G_OBJECT(action), menuImport_id_quark, GINT_TO_POINTER(i));
-		g_signal_connect(action, "activate", G_CALLBACK(action_triggered_signal_handler), tab);
+		g_signal_connect_object(action, "activate",
+			G_CALLBACK(action_triggered_signal_handler), tab, G_CONNECT_DEFAULT);
 		g_action_map_add_action(G_ACTION_MAP(tab->actionGroup), G_ACTION(action));
 
 		// Create the menu item.
@@ -216,7 +220,8 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 		GtkWidget *const menuItem = gtk_menu_item_new_with_label(import_menu_actions[i]);
 		gtk_widget_set_name(menuItem, fmt::format(FSTR("menuImport{:d}"), i).c_str());
 		g_object_set_qdata(G_OBJECT(menuItem), menuImport_id_quark, GINT_TO_POINTER(i));
-		g_signal_connect(menuItem, "activate", G_CALLBACK(menuImport_triggered_signal_handler), tab);
+		g_signal_connect_object(menuItem, "activate",
+			G_CALLBACK(menuImport_triggered_signal_handler), tab, G_CONNECT_DEFAULT);
 		gtk_widget_show(menuItem);
 		gtk_menu_shell_append(GTK_MENU_SHELL(tab->menuImport), menuItem);
 	}
@@ -238,7 +243,8 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 	// NOTE: We need to pass the event details. Otherwise, we'll
 	// end up with the menu getting "stuck" to the mouse.
 	// Reference: https://developer.gnome.org/gtk-tutorial/stable/x1577.html
-	g_signal_connect(tab->btnImport, "event", G_CALLBACK(btnImport_event_signal_handler), tab);
+	g_signal_connect_object(tab->btnImport, "event",
+		G_CALLBACK(btnImport_event_signal_handler), tab, G_CONNECT_DEFAULT);
 #endif /* !USE_GTK_MENU_BUTTON */
 
 #if GTK_CHECK_VERSION(4, 0, 0)

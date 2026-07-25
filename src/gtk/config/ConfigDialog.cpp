@@ -261,7 +261,7 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 		GtkWidget *const tab = tabInfo.ctor_fn();
 		gtk_widget_set_name(tab, tabInfo.tab_name);
 		GTK_WIDGET_SHOW_GTK3(tab);
-		g_signal_connect(tab, "modified", G_CALLBACK(rp_config_dialog_tab_modified), dialog);
+		g_signal_connect_object(tab, "modified", G_CALLBACK(rp_config_dialog_tab_modified), dialog, G_CONNECT_DEFAULT);
 
 		// Add the tab to the GtkNotebook.
 #ifndef RP_USE_GTK_ALIGNMENT
@@ -370,11 +370,16 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	gtk_box_append(GTK_BOX(dialog->vboxDialog), dialog->buttonBox);
 
 	// Connect the button signals.
-	g_signal_connect(dialog->btnReset,    "clicked", G_CALLBACK(rp_config_dialog_button_handler), dialog);
-	g_signal_connect(dialog->btnDefaults, "clicked", G_CALLBACK(rp_config_dialog_button_handler), dialog);
-	g_signal_connect(dialog->btnCancel,   "clicked", G_CALLBACK(rp_config_dialog_button_handler), dialog);
-	g_signal_connect(dialog->btnApply,    "clicked", G_CALLBACK(rp_config_dialog_button_handler), dialog);
-	g_signal_connect(dialog->btnOK,       "clicked", G_CALLBACK(rp_config_dialog_button_handler), dialog);
+	g_signal_connect_object(dialog->btnReset, "clicked",
+		G_CALLBACK(rp_config_dialog_button_handler), dialog, G_CONNECT_DEFAULT);
+	g_signal_connect_object(dialog->btnDefaults, "clicked",
+		G_CALLBACK(rp_config_dialog_button_handler), dialog, G_CONNECT_DEFAULT);
+	g_signal_connect_object(dialog->btnCancel, "clicked",
+		G_CALLBACK(rp_config_dialog_button_handler), dialog, G_CONNECT_DEFAULT);
+	g_signal_connect_object(dialog->btnApply, "clicked",
+		G_CALLBACK(rp_config_dialog_button_handler), dialog, G_CONNECT_DEFAULT);
+	g_signal_connect_object(dialog->btnOK, "clicked",
+		G_CALLBACK(rp_config_dialog_button_handler), dialog, G_CONNECT_DEFAULT);
 #endif /* USE_GTK_DIALOG */
 
 	g_free(s_reset);
@@ -409,11 +414,7 @@ rp_config_dialog_dispose(GObject *object)
 	// Disconnect GtkNotebook's signals.
 	// Otherwise, it ends up trying to adjust btnDefaults after
 	// the widget is already destroyed.
-	// NOTE: g_clear_signal_handler() was added in glib-2.62.
-	if (dialog->tabWidget_switch_page > 0) {
-		g_signal_handler_disconnect(dialog->tabWidget, dialog->tabWidget_switch_page);
-		dialog->tabWidget_switch_page = 0;
-	}
+	g_clear_signal_handler(&dialog->tabWidget_switch_page, dialog->tabWidget);
 
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(rp_config_dialog_parent_class)->dispose(object);

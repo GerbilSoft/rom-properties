@@ -82,10 +82,40 @@ typedef void (* GClearHandleFunc) (guint handle_id);
 #endif
 #define G_SOURCE_FUNC(f) ((GSourceFunc) (void (*)(void)) (f))
 
+/** Functions added in GLib 2.62.0 **/
+
+// NOTE: Always defining g_clear_signal_handler() here to prevent
+// warnings because we have a minimum GLib version set for warnings.
+#ifdef g_clear_signal_handler
+#  undef g_clear_signal_handler
+#endif
+#define  g_clear_signal_handler(handler_id_ptr, instance)           \
+  G_STMT_START {                                                    \
+    gpointer const _instance      = (instance);                     \
+    gulong *const _handler_id_ptr = (handler_id_ptr);               \
+    const gulong _handler_id      = *_handler_id_ptr;               \
+                                                                    \
+    if (_handler_id > 0)                                            \
+      {                                                             \
+        *_handler_id_ptr = 0;                                       \
+        g_signal_handler_disconnect (_instance, _handler_id);       \
+      }                                                             \
+  } G_STMT_END                                                      \
+
+/** Functions added in GLib 2.74.0 **/
+
+// NOTE: If GLIB_VERSION_MAX_ALLOWED < GLIB_VERSION_2_74, then we will
+// always define G_CONNECT_DEFAULT as a macro in order to eliminate
+// deprecation warnings.
+// G_CONNECT_DEFAULT was added in glib-2.73.2 / glib-2.74.0.
+#if !defined(GLIB_VERSION_2_74) || GLIB_VERSION_MAX_ALLOWED < GLIB_VERSION_2_74
+#  define G_CONNECT_DEFAULT ((GConnectFlags)0)
+#endif /* !defined(GLIB_VERSION_2_74) || GLIB_VERSION_MAX_ALLOWED < GLIB_VERSION_2_74 */
+
 /** Functions added in GLib 2.76.0 **/
 
 // NOTE: If GLIB_VERSION_MAX_ALLOWED < GLIB_VERSION_2_76, then we will
-// Always define g_set_str() as a macro that calls rp_g_set_str() in
+// always define g_set_str() as a macro that calls rp_g_set_str() in
 // order to eliminate deprecation warnings.
 // g_set_str() was added in glib-2.75.1 / glib-2.76.0.
 #if !defined(GLIB_VERSION_2_76) || GLIB_VERSION_MAX_ALLOWED < GLIB_VERSION_2_76

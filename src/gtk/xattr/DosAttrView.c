@@ -183,7 +183,8 @@ rp_dos_attr_view_init(RpDosAttrView *widget)
 	// emitted for both user and program modifications, so we have to
 	// connect this signal *after* setting the initial value.
 	for (size_t i = 0; i < ARRAY_SIZE(widget->checkBoxes); i++) {
-		g_signal_connect(widget->checkBoxes[i], "toggled", G_CALLBACK(checkbox_no_toggle_signal_handler), widget);
+		g_signal_connect_object(widget->checkBoxes[i], "toggled",
+			G_CALLBACK(checkbox_no_toggle_signal_handler), widget, G_CONNECT_DEFAULT);
 	}
 }
 
