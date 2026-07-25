@@ -563,7 +563,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 	// FIXME: Need to un-premultiply alpha on Cairo?
 	static constexpr bool is_abgr = false;
 #else /* !RP_GTK_USE_CAIRO */
-	// GdkPixbuf use ABGR32.
+	// GdkPixbuf uses ABGR32.
 	static constexpr bool is_abgr = true;
 #endif
 	pwRet = pngWriter.write_IDAT(row_pointers.get(), is_abgr);
