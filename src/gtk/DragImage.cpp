@@ -670,7 +670,7 @@ rp_drag_image_anim_timer_func(RpDragImage *image)
 
 	if (anim->tmrIconAnim == 0) {
 		// Shutting down...
-		return false;
+		return G_SOURCE_REMOVE;
 	}
 
 	// Next frame.
@@ -679,7 +679,7 @@ rp_drag_image_anim_timer_func(RpDragImage *image)
 	if (delay <= 0 || frame < 0) {
 		// Invalid frame...
 		anim->tmrIconAnim = 0;
-		return false;
+		return G_SOURCE_REMOVE;
 	}
 
 	if (frame != anim->last_frame_number) {
@@ -698,11 +698,11 @@ rp_drag_image_anim_timer_func(RpDragImage *image)
 		anim->last_delay = delay;
 		anim->tmrIconAnim = g_timeout_add(delay,
 			G_SOURCE_FUNC(rp_drag_image_anim_timer_func), image);
-		return false;
+		return G_SOURCE_REMOVE;
 	}
 
 	// Keep the current timer running.
-	return true;
+	return G_SOURCE_CONTINUE;
 }
 
 /**
@@ -770,7 +770,7 @@ rp_drag_image_is_anim_timer_running(RpDragImage *image)
 {
 	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
 	auto *const anim = image->cxx->anim.get();
-	return (anim && (anim->tmrIconAnim > 0));
+	return (anim && (anim->tmrIconAnim != 0));
 }
 
 /**

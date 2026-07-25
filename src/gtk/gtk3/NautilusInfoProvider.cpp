@@ -220,7 +220,7 @@ rp_nautilus_info_provider_process(RpNautilusInfoProvider *provider)
 	if (!req) {
 		// Nothing left in the queue.
 		provider->idle_process = 0;
-		return false;
+		return G_SOURCE_REMOVE;
 	}
 
 	// Get the URI.
@@ -236,7 +236,7 @@ rp_nautilus_info_provider_process(RpNautilusInfoProvider *provider)
 		g_closure_unref(req->update_complete);
 		g_free(req);
 		// Continue processing the queue.
-		return true;
+		return G_SOURCE_CONTINUE;
 	}
 
 	const RomDataPtr romData = rp_gtk_open_uri(uri);
@@ -252,7 +252,7 @@ rp_nautilus_info_provider_process(RpNautilusInfoProvider *provider)
 		g_closure_unref(req->update_complete);
 		g_free(req);
 		// Continue processing the queue.
-		return true;
+		return G_SOURCE_CONTINUE;
 	}
 
 	// Check for custom metadata propreties.
@@ -317,7 +317,7 @@ rp_nautilus_info_provider_process(RpNautilusInfoProvider *provider)
 	g_closure_unref(req->update_complete);
 	g_free(req);
 	// Continue processing the queue.
-	return true;
+	return G_SOURCE_CONTINUE;
 }
 
 static void

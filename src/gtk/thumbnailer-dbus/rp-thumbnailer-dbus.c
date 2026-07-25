@@ -439,7 +439,7 @@ rp_thumbnailer_timeout(RpThumbnailer *thumbnailer)
 	g_return_val_if_fail(RP_IS_THUMBNAILER(thumbnailer), false);
 	if (!g_queue_is_empty(&thumbnailer->request_queue)) {
 		// Still processing stuff.
-		return true;
+		return G_SOURCE_CONTINUE;
 	}
 
 	// Stop the timeout and shut down the thumbnailer.
@@ -447,7 +447,7 @@ rp_thumbnailer_timeout(RpThumbnailer *thumbnailer)
 	thumbnailer->shutdown_emitted = true;
 	g_signal_emit(thumbnailer, signals[SIGNAL_SHUTDOWN], 0);
 	g_debug("Shutting down due to %u seconds of inactivity.", SHUTDOWN_TIMEOUT_SECONDS);
-	return false;
+	return G_SOURCE_REMOVE;
 }
 
 /**
