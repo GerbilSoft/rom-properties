@@ -304,7 +304,7 @@ FileFormatPtr create(const IRpFilePtr &file)
 				FileFormatPtr fileFormat = fns.newFileFormat(file);
 				if (fileFormat->isValid()) {
 					// FileFormat subclass obtained.
-					return FileFormatPtr(fileFormat);
+					return fileFormat;
 				}
 			}
 		}
@@ -318,7 +318,7 @@ FileFormatPtr create(const IRpFilePtr &file)
 		FileFormatPtr fileFormat = std::make_shared<PowerVR3>(file);
 		if (fileFormat->isValid()) {
 			// FileFormat subclass obtained.
-			return FileFormatPtr(fileFormat);
+			return fileFormat;
 		}
 	}
 
