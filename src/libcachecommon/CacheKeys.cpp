@@ -29,6 +29,7 @@ using std::wstring;
 // OS-specific directory separator.
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
+#  include <io.h>	/* for R_OK */
 #  define DIR_SEP_CHR '\\'
 #  define DIR_SEP_WCHR L'\\'
 #else /* !_WIN32 */
