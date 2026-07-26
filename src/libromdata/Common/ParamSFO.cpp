@@ -552,7 +552,7 @@ int ParamSFO::loadFieldData(void)
 			if (valueType == SFOValueType::UTF8) {
 				row.push_back(getStringValue(key.first));
 			} else if (valueType == SFOValueType::Int32) {
-				row.push_back(fmt::format("0x{0:08X}", getIntValue(key.first)));
+				row.push_back(fmt::format(FSTR("0x{0:08X}"), getIntValue(key.first)));
 			} else {
 				// Unknown value type?
 				row.push_back(string());
