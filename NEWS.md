@@ -48,6 +48,8 @@
   * Windows: Fix SysLink controls not actually opening links when clicked.
     This only affected the amiibo.life link in previous versions.
     * Affects: v1.7 - v2.8
+  * iconv: Fix a memory leak in the UTF-16 to Code Page 1252 conversion
+    function. Only affects the Xbox360_STFS parser.
 
 ## v2.8 (released 2026/06/20)
 

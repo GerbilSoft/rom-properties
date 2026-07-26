@@ -517,7 +517,9 @@ std::string utf16_to_cp1252(const char16_t *wcs, int len)
 			return {};
 		}
 
-		return string(mbs);
+		string str(mbs);
+		free(mbs);
+		return str;
 	}
 
 	// Convert using "//TRANSLIT", then manually replace the bad characters.
@@ -528,6 +530,7 @@ std::string utf16_to_cp1252(const char16_t *wcs, int len)
 	}
 
 	string str(mbs);
+	free(mbs);
 	const int str_size = static_cast<int>(str.size());
 	for (int idx : char_idx) {
 		assert(idx < str_size);
