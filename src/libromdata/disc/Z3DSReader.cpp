@@ -323,7 +323,7 @@ off64_t Z3DSReader::size(void)
  * Get the metadata.
  * @return Metadata, or empty vector if not present or an error occurred.
  */
-vector<pair<string, std::vector<uint8_t>>> Z3DSReader::getZ3DSMetaData(void)
+Z3DSReader::Metadata_t Z3DSReader::getZ3DSMetaData(void)
 {
 	static constexpr unsigned int Z3DS_MAX_METADATA_SIZE = 128U * 1024U;
 	RP_D(Z3DSReader);
@@ -351,7 +351,7 @@ vector<pair<string, std::vector<uint8_t>>> Z3DSReader::getZ3DSMetaData(void)
 
 	// Process metadata items until we hit one of type TYPE_END.
 	// NOTE: Reserving 5 elements, since that's what Azahar usually writes.
-	vector<pair<string, vector<uint8_t>>> items;
+	Metadata_t items;
 	items.reserve(5);
 	while ((p + sizeof(Z3DS_Metadata_Item_Header)) < pEnd) {
 		const Z3DS_Metadata_Item_Header *const header =
