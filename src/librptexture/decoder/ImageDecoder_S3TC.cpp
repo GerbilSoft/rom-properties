@@ -196,6 +196,8 @@ static inline uint8_t decode_DXT5_alpha_S3TC(unsigned int a3, const uint8_t *RES
 rp_image_ptr fromDXT1_GCN(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
+	rp_image_ptr img;
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
@@ -204,20 +206,22 @@ rp_image_ptr fromDXT1_GCN(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < (((size_t)width * (size_t)height) / 2))
 	{
-		return {};
+		return img;
 	}
 
 	// GameCube DXT1 uses 2x2 blocks of 4x4 tiles.
 	assert(width % 8 == 0);
 	assert(height % 8 == 0);
-	if (width % 8 != 0 || height % 8 != 0)
-		return {};
+	if (width % 8 != 0 || height % 8 != 0) {
+		return img;
+	}
 
 	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	const dxt1_block *dxt1_src = reinterpret_cast<const dxt1_block*>(img_buf);
@@ -283,6 +287,8 @@ template<unsigned int palflags>
 static rp_image_ptr T_fromDXT1(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
+	rp_image_ptr img;
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
@@ -298,14 +304,15 @@ static rp_image_ptr T_fromDXT1(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < (((size_t)physWidth * (size_t)physHeight) / 2))
 	{
-		return {};
+		return img;
 	}
 
 	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	const dxt1_block *dxt1_src = reinterpret_cast<const dxt1_block*>(img_buf);
@@ -396,13 +403,13 @@ rp_image_ptr fromDXT2(int width, int height,
 	// to standard alpha.
 	rp_image_ptr img = fromDXT3(width, height, img_buf, img_siz);
 	if (!img) {
-		return {};
+		return img;
 	}
 
 	// Un-premultiply the image.
 	int ret = img->un_premultiply();
 	if (ret != 0) {
-		return {};
+		img.reset();
 	}
 	return img;
 }
@@ -418,6 +425,8 @@ rp_image_ptr fromDXT2(int width, int height,
 rp_image_ptr fromDXT3(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
+	rp_image_ptr img;
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
@@ -433,14 +442,15 @@ rp_image_ptr fromDXT3(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < ((size_t)physWidth * (size_t)physHeight))
 	{
-		return {};
+		return img;
 	}
 
 	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	// DXT3 block format.
@@ -512,13 +522,13 @@ rp_image_ptr fromDXT4(int width, int height,
 	// to standard alpha.
 	rp_image_ptr img = fromDXT5(width, height, img_buf, img_siz);
 	if (!img) {
-		return {};
+		return img;
 	}
 
 	// Un-premultiply the image.
 	int ret = img->un_premultiply();
 	if (ret != 0) {
-		return {};
+		img.reset();
 	}
 	return img;
 }
@@ -534,6 +544,8 @@ rp_image_ptr fromDXT4(int width, int height,
 rp_image_ptr fromDXT5(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
+	rp_image_ptr img;
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
@@ -549,14 +561,15 @@ rp_image_ptr fromDXT5(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < ((size_t)physWidth * (size_t)physHeight))
 	{
-		return {};
+		return img;
 	}
 
 	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	// DXT5 block format.
@@ -624,6 +637,8 @@ rp_image_ptr fromDXT5(int width, int height,
 rp_image_ptr fromBC4(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
+	rp_image_ptr img;
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
@@ -639,14 +654,15 @@ rp_image_ptr fromBC4(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < (((size_t)physWidth * (size_t)physHeight) / 2))
 	{
-		return {};
+		return img;
 	}
 
 	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	// BC4 block format.
@@ -714,6 +730,8 @@ rp_image_ptr fromBC4(int width, int height,
 rp_image_ptr fromBC5(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
+	rp_image_ptr img;
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
@@ -729,14 +747,15 @@ rp_image_ptr fromBC5(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < ((size_t)physWidth * (size_t)physHeight))
 	{
-		return {};
+		return img;
 	}
 
 	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	// BC5 block format.

@@ -29,6 +29,8 @@ namespace LibRpTexture { namespace ImageDecoder {
 rp_image_ptr fromLinearMono(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
+	rp_image_ptr img;
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
@@ -37,7 +39,7 @@ rp_image_ptr fromLinearMono(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) / 8))
 	{
-		return {};
+		return img;
 	}
 
 	// Source stride adjustment.
@@ -50,10 +52,11 @@ rp_image_ptr fromLinearMono(int width, int height,
 	}
 
 	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
+	img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 	const int dest_stride_adj = img->stride() - img->width();
 
@@ -113,6 +116,8 @@ ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image_ptr fromLinearGray2bpp(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
+	rp_image_ptr img;
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
@@ -121,7 +126,7 @@ rp_image_ptr fromLinearGray2bpp(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) / 4))
 	{
-		return {};
+		return img;
 	}
 
 	// Source stride adjustment.
@@ -134,10 +139,11 @@ rp_image_ptr fromLinearGray2bpp(int width, int height,
 	}
 
 	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
+	img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 	const int dest_stride_adj = img->stride() - img->width();
 
@@ -207,6 +213,8 @@ rp_image_ptr fromLinearMono_WinIcon(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	const uint8_t *RESTRICT mask_buf, size_t mask_siz, int stride)
 {
+	rp_image_ptr img;
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
@@ -217,7 +225,7 @@ rp_image_ptr fromLinearMono_WinIcon(int width, int height,
 	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) / 8) ||
 	    img_siz != mask_siz)
 	{
-		return {};
+		return img;
 	}
 
 	// Source stride adjustment.
@@ -230,10 +238,11 @@ rp_image_ptr fromLinearMono_WinIcon(int width, int height,
 	}
 
 	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
+	img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 	const int dest_stride_adj = img->stride() - img->width();
 

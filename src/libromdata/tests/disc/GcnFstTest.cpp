@@ -489,6 +489,7 @@ TEST_P(GcnFstTest, FstPrint)
 std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShift)
 {
 	// NOTE: Cannot use ASSERT_TRUE() here due to the return value.
+	std::vector<GcnFstTest_mode> files;
 
 	// Open the Zip file.
 	// NOTE: MiniZip 2.2.3's compatibility functions
@@ -503,20 +504,20 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 			break;
 		default:
 			EXPECT_TRUE(false) << "offsetShift is " << static_cast<int>(offsetShift) << "; should be either 0 or 2.";
-			return {};
+			return files;
 	}
 
 	mzReader zipReader = mz_zip_reader_create();
 	EXPECT_TRUE(zipReader != nullptr) << "Could not create a MiniZip-NG ZIP reader instance!";
 	if (!zipReader) {
-		return {};
+		return files;
 	}
 	int ret = mz_zip_reader_open_file(zipReader, zip_filename);
 	EXPECT_TRUE(ret == MZ_OK) <<
 		"Could not open '" << zip_filename << "', check the test directory!";
 	if (ret != MZ_OK) {
 		mz_zip_reader_delete(&zipReader);
-		return {};
+		return files;
 	}
 
 	// MiniZip 2.x (up to 2.2.3) doesn't automatically go to the first file.
@@ -526,11 +527,10 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 	if (ret != 0) {
 		mz_zip_reader_close(zipReader);
 		mz_zip_reader_delete(&zipReader);
-		return {};
+		return files;
 	}
 
 	// Read the filenames.
-	std::vector<GcnFstTest_mode> files;
 	do {
 		mz_zip_file *file_info;
 		ret = mz_zip_reader_entry_get_info(zipReader, &file_info);

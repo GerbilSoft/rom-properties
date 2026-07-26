@@ -150,15 +150,16 @@ static void init_webp(void)
  */
 rp_image_ptr load(IRpFile *file)
 {
+	rp_image_ptr img;
 	if (!file) {
-		return {};
+		return img;
 	}
 
 	// Check the file size.
 	const off64_t fileSize_o64 = file->size();
 	if (fileSize_o64 <= 16 || fileSize_o64 > WEBP_MAX_FILESIZE) {
 		// File is too big (or too small?).
-		return {};
+		return img;
 	}
 	const size_t fileSize = static_cast<size_t>(fileSize_o64);
 
@@ -166,7 +167,7 @@ rp_image_ptr load(IRpFile *file)
 	std::call_once(Private::webp_once_flag, init_webp);
 	if (!Private::libwebp_so) {
 		// Not found...
-		return {};
+		return img;
 	}
 
 	// Read the entire file into memory.
@@ -176,7 +177,7 @@ rp_image_ptr load(IRpFile *file)
 	size_t size = file->seekAndRead(0, webp_buf.data(), webp_buf.size());
 	if (size != webp_buf.size()) {
 		// Seek and/or read error.
-		return {};
+		return img;
 	}
 
 	// Get the WebP image dimensions.
@@ -185,16 +186,17 @@ rp_image_ptr load(IRpFile *file)
 	int ret = Private::pfn_WebPGetInfo(webp_buf.data(), webp_buf.size(), &width, &height);
 	if (!ret || width <= 0 || height <= 0) {
 		// WebP didn't like this image.
-		return {};
+		return img;
 	}
 
 	// Decode the WebP into an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	uint8_t *const pRet = Private::pfn_WebPDecodeBGRAInto(webp_buf.data(), webp_buf.size(),
 		static_cast<uint8_t*>(img->bits()), img->data_len(), img->stride());
 	if (!pRet) {
 		// Failed to decode the image...
-		return {};
+		img.reset();
+		return img;
 	}
 
 	// Image decoded successfully.

@@ -312,11 +312,13 @@ int filterCacheKey(wchar_t *pCacheKey)
  */
 string getCacheFilename(const char *pCacheKey)
 {
+	string cacheFilename;
+
 	assert(pCacheKey != nullptr);
 	assert(pCacheKey[0] != '\0');
 	if (!pCacheKey || pCacheKey[0] == '\0') {
 		// No cache key...
-		return {};
+		return cacheFilename;
 	}
 
 	// Filter the cache key.
@@ -324,11 +326,8 @@ string getCacheFilename(const char *pCacheKey)
 	int ret = filterCacheKey(filteredCacheKey);
 	if (ret != 0) {
 		// Invalid cache key.
-		return {};
+		return cacheFilename;
 	}
-
-	// Cache filename in the user's directory.
-	string cacheFilename_user;
 
 	// Make sure the cache directory is initialized.
 	// NOTE: May be empty if the cache directory isn't
@@ -337,37 +336,39 @@ string getCacheFilename(const char *pCacheKey)
 	if (!cache_dir.empty()) {
 		// Get the cache filename.
 		// This is the cache directory plus the cache key.
-		cacheFilename_user = cache_dir;
-		if (cacheFilename_user.at(cacheFilename_user.size()-1) != DIR_SEP_CHR) {
-			cacheFilename_user += DIR_SEP_CHR;
+		cacheFilename.assign(cache_dir);
+		if (cacheFilename.at(cacheFilename.size()-1) != DIR_SEP_CHR) {
+			cacheFilename += DIR_SEP_CHR;
 		}
-		cacheFilename_user += filteredCacheKey;
+		cacheFilename += filteredCacheKey;
+
+		// Verify that the cache file exists in the user's cache directory.
+		if (!access(cacheFilename.c_str(), R_OK)) {
+			// Cache file exists.
+			return cacheFilename;
+		}
 	}
 
 #ifdef DIR_INSTALL_CACHE
+	// File is not present in the user's cache directory.
 	// If the requested file is in the system-wide cache directory,
-	// but is not in the user's cache directory, use the system-wide
-	// version. This is useful in cases where the thumbnailer cannot
-	// download files, e.g. bubblewrap.
-	string cacheFilename_sys = DIR_INSTALL_CACHE;
-	if (cacheFilename_sys.at(cacheFilename_sys.size()-1) != DIR_SEP_CHR) {
-		cacheFilename_sys += DIR_SEP_CHR;
+	// use that version. This is useful in cases where the thumbnailer
+	// cannot download files, e.g. bubblewrap.
+	cacheFilename.assign(DIR_INSTALL_CACHE);
+	if (cacheFilename.at(cacheFilename.size()-1) != DIR_SEP_CHR) {
+		cacheFilename += DIR_SEP_CHR;
 	}
-	cacheFilename_sys += filteredCacheKey;
+	cacheFilename += filteredCacheKey;
 
-	if (!access(cacheFilename_sys.c_str(), R_OK)) {
+	if (!access(cacheFilename.c_str(), R_OK)) {
 		// File is in the system-wide cache.
-		if (!cacheFilename_user.empty() && !access(cacheFilename_user.c_str(), R_OK)) {
-			// File is also in the user's cache.
-			// User version overrides the system version.
-			return cacheFilename_user;
-		}
-		// File is not in the user's cache.
-		return cacheFilename_sys;
+		return cacheFilename;
 	}
 #endif /* DIR_INSTALL_CACHE */
 
-	return cacheFilename_user;
+	// Unable to retrieve a cache filename...
+	cacheFilename.clear();
+	return cacheFilename;
 }
 
 #ifdef _WIN32

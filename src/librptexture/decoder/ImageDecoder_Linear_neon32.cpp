@@ -55,6 +55,7 @@ typedef uint32x2_t uint32xVTBL_t;
 /**
  * Convert a linear 32-bit RGB image to rp_image.
  * NEON-optimized version.
+ * [INTERNAL VERSION; px_format and stride must have been checked for validity and 128-bit alignment]
  * @param px_format	[in] 32-bit pixel format.
  * @param width		[in] Image width.
  * @param height	[in] Image height.
@@ -67,20 +68,10 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
+	rp_image_ptr img;
+
 	ASSERT_ALIGNMENT(16, img_buf);
 	static constexpr int bytespp = 4;
-
-	// FIXME: Add support for these formats.
-	// For now, redirect back to the C++ version.
-	switch (px_format) {
-		case PixelFormat::A2R10G10B10:
-		case PixelFormat::A2B10G10R10:
-		case PixelFormat::RGB9_E5:
-			return fromLinear32_cpp(px_format, width, height, img_buf, img_siz, stride);
-
-		default:
-			break;
-	}
 
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -90,13 +81,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < ImageSizeCalc::T_calcImageSize(width, height, bytespp))
 	{
-		return {};
-	}
-
-	if (px_format == PixelFormat::BGR888_ABGR7888) {
-		// Not supported right now.
-		// Use the C++ version.
-		return fromLinear32_cpp(px_format, width, height, img_buf, img_siz, stride);
+		return img;
 	}
 
 	// Stride adjustment.
@@ -109,7 +94,7 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 		assert(stride >= (width * bytespp));
 		if (unlikely(stride % bytespp != 0 || stride < (width * bytespp))) {
 			// Invalid stride.
-			return {};
+			return img;
 		}
 		src_stride_adj = (stride / bytespp) - width;
 	} else {
@@ -121,10 +106,11 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 	}
 
 	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	if (px_format == PixelFormat::Host_ARGB32) {
@@ -162,7 +148,8 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 	switch (px_format) {
 		case PixelFormat::Host_ARGB32:
 			assert(!"ARGB32 is handled separately.");
-			return {};
+			img.reset();
+			return img;
 		case PixelFormat::Host_xRGB32: {
 			// TODO: Only apply the alpha mask instead of shuffling.
 			static const array<uint8_t, VEC_LEN_U8> shuf_mask_Host_xRGB32 = {{
@@ -245,7 +232,8 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 
 		default:
 			assert(!"Main pixels: Unsupported 32-bit pixel format.");
-			return {};
+			img.reset();
+			return img;
 	}
 
 	if (has_alpha) {
@@ -335,7 +323,8 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 
 				default:
 					assert(!"Remaining pixels: Unsupported 32-bit alpha pixel format.");
-					return {};
+					img.reset();
+					return img;
 			} }
 
 			// Next line.
@@ -449,7 +438,8 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 
 				default:
 					assert(!"Unsupported 32-bit no-alpha pixel format.");
-					return {};
+					img.reset();
+					return img;
 			} }
 
 			// Next line.
@@ -469,6 +459,54 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 
 	// Image has been converted.
 	return img;
+}
+
+/**
+ * Convert a linear 32-bit RGB image to rp_image.
+ * NEON-optimized version.
+ * @param px_format	[in] 32-bit pixel format.
+ * @param width		[in] Image width.
+ * @param height	[in] Image height.
+ * @param img_buf	[in] 32-bit image buffer.
+ * @param img_siz	[in] Size of image data. [must be >= (w*h)*3]
+ * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
+ * @return rp_image, or nullptr on error.
+ */
+rp_image_ptr fromLinear32_neon(PixelFormat px_format,
+	int width, int height,
+	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride)
+{
+	static constexpr int bytespp = 4;
+
+	// FIXME: Add support for these formats.
+	// For now, redirect back to the C++ version.
+	switch (px_format) {
+		case PixelFormat::BGR888_ABGR7888:
+		case PixelFormat::A2R10G10B10:
+		case PixelFormat::A2B10G10R10:
+		case PixelFormat::RGB9_E5:
+			return fromLinear32_cpp(px_format, width, height, img_buf, img_siz, stride);
+
+		default:
+			break;
+	}
+
+	// Host_ARGB32 uses memcpy() instead of SSSE3.
+	if (px_format != PixelFormat::Host_ARGB32) {
+		assert(stride >= 0);
+		if (stride == 0) {
+			stride = width * bytespp;
+		}
+		if (unlikely(stride % 16 != 0)) {
+			// Unaligned stride.
+			// Use the C++ version.
+			return fromLinear32_cpp(px_format, width, height, img_buf, img_siz, stride);
+		}
+	}
+
+	// NOTE: NEON's vld1q_*() supports unaligned loads.
+	// No need to check stride alignment here.
+	return fromLinear32_neon_int(px_format, width, height, img_buf, img_siz, stride);
 }
 
 } }

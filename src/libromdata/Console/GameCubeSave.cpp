@@ -621,9 +621,11 @@ inline string GameCubeSavePrivate::getGameID(void) const
  */
 string GameCubeSavePrivate::getComment(void) const
 {
+	string desc;
+
 	if (unlikely(direntry.commentaddr == 0xFFFFFFFFU)) {
 		// No comment.
-		return {};
+		return desc;
 	}
 
 	union {
@@ -637,7 +639,7 @@ string GameCubeSavePrivate::getComment(void) const
 					&comment, sizeof(comment));
 	if (size != sizeof(comment)) {
 		// Failed to read the comment.
-		return {};
+		return desc;
 	}
 
 	// Only allow Shift-JIS for non-US/EU region codes.
@@ -670,7 +672,6 @@ string GameCubeSavePrivate::getComment(void) const
 	// NOTE: Some games have garbage after the first NULL byte
 	// in the two description fields, which prevents the rest
 	// of the field from being displayed.
-	string desc;
 
 	// Check for a NULL byte in the game description.
 	size_t desc_len = sizeof(comment.desc);

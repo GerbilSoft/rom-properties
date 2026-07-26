@@ -198,11 +198,12 @@ public:
  */
 static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, int *p_err)
 {
+	RomDataPtr romData;
+
 	// NOTE: Not checking these in Release builds.
 	// TODO: Simplify the "is_directory" code.
 	assert(source_file != nullptr);
 	assert(p_err != nullptr);
-	RomDataPtr romData;
 
 	s_uri.clear();
 	const bool enableThumbnailOnNetworkFS =
@@ -222,7 +223,7 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 				// It's on a "bad" filesystem.
 				g_free(source_filename);
 				*p_err = RPCT_ERROR_SOURCE_FILE_BAD_FS;
-				return nullptr;
+				return romData;
 			}
 
 			if (likely(!FileSystem::is_directory(source_filename))) {
@@ -236,7 +237,7 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 					if (p_err) {
 						*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
 					}
-					return {};
+					return romData;
 				}
 
 				// Get the appropriate RomData class for this ROM.
@@ -249,7 +250,7 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 					if (p_err) {
 						*p_err = RPCT_ERROR_DIRECTORY_THUMBNAILING_DISABLED;
 					}
-					return {};
+					return romData;
 				}
 
 				// Directory: Call RomDataFactory::create() with the filename.
@@ -261,7 +262,7 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 			if (!enableThumbnailOnNetworkFS) {
 				// Thumbnailing on network file systems is disabled.
 				*p_err = RPCT_ERROR_SOURCE_FILE_BAD_FS;
-				return {};
+				return romData;
 			}
 
 			// Open the file using RpFileGio.
@@ -272,7 +273,7 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 				if (p_err) {
 					*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
 				}
-				return {};
+				return romData;
 			}
 
 			// Get the appropriate RomData class for this ROM.
@@ -289,7 +290,7 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 		if (FileSystem::isOnBadFS(source_file, enableThumbnailOnNetworkFS)) {
 			// It's on a "bad" filesystem.
 			*p_err = RPCT_ERROR_SOURCE_FILE_BAD_FS;
-			return {};
+			return romData;
 		}
 
 		// Check if we have an absolute or relative path.
@@ -328,7 +329,7 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 				if (p_err) {
 					*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
 				}
-				return {};
+				return romData;
 			}
 
 			// Get the appropriate RomData class for this ROM.
@@ -341,7 +342,7 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 				if (p_err) {
 					*p_err = RPCT_ERROR_DIRECTORY_THUMBNAILING_DISABLED;
 				}
-				return {};
+				return romData;
 			}
 
 			// Directory: Call RomDataFactory::create() with the filename.
@@ -358,7 +359,8 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 	// File was not opened.
 	// TODO: Actual error code?
 	*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
-	return {};
+	romData.reset();
+	return romData;
 }
 
 /**

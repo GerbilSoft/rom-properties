@@ -234,17 +234,18 @@ PIMGTYPE PIMGTYPE_load_png_from_gresource(const char *filename)
  */
 rp_image_ptr rp_image_load_png_from_gresource(const char *filename)
 {
+	rp_image_ptr img;
 	GBytes *const pBytes = g_resource_lookup_data(resources_get_resource(), filename,
 		G_RESOURCE_LOOKUP_FLAGS_NONE, nullptr);
 	if (!pBytes) {
 		// Not found.
-		return {};
+		return img;
 	}
 
 	gsize size = 0;
 	gconstpointer data = g_bytes_get_data(pBytes, &size);
 	MemFile *const memFile = new MemFile(data, size);
-	rp_image_ptr img = RpPng::load(memFile);
+	img = RpPng::load(memFile);
 	delete memFile;
 
 	g_bytes_unref(pBytes);

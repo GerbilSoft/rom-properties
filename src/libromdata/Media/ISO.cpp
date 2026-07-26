@@ -796,25 +796,29 @@ int ISOPrivate::loadAutorunInf(void)
  */
 rp_image_const_ptr ISOPrivate::loadIcon(void)
 {
+	rp_image_const_ptr icon;
+
 	if (img_icon) {
 		// Icon has already been loaded.
-		return img_icon;
+		// NOTE: Assigning to s_disk_name for named-value-return optimization.
+		icon = img_icon;
+		return icon;
 	} else if (!this->isValid || static_cast<int>(this->discType) < 0) {
 		// Can't load the icon.
-		return {};
+		return icon;
 	}
 
 	// Make sure the ISO-9660 file system is open.
 	int ret = openIsoPartition();
 	if (ret != 0) {
-		return {};
+		return icon;
 	}
 
 	// Make sure AUTORUN.INF is loaded.
 	ret = loadAutorunInf();
 	if (ret != 0 || autorun_inf.empty()) {
 		// Unable to load AUTORUN.INF.
-		return {};
+		return icon;
 	}
 
 	// Get the icon filename.
@@ -823,7 +827,7 @@ rp_image_const_ptr ISOPrivate::loadIcon(void)
 	auto iter = autorun_inf.find("icon");
 	if (iter == autorun_inf.end()) {
 		// No icon...
-		return {};
+		return icon;
 	}
 	string icon_filename = iter->second;
 
@@ -850,12 +854,11 @@ rp_image_const_ptr ISOPrivate::loadIcon(void)
 	IRpFilePtr f_file = isoPartition->open(icon_filename.c_str());
 	if (!f_file) {
 		// Unable to open the icon file.
-		return {};
+		return icon;
 	}
 
 	// Use the file extension to determine the reader.
 	// NOTE: May be better to check the file header...
-	rp_image_const_ptr icon;
 
 	const size_t icon_filename_size = icon_filename.size();
 	if (icon_filename_size > 4) {

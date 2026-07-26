@@ -49,6 +49,8 @@ rp_image_ptr fromASTC(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	uint8_t block_x, uint8_t block_y)
 {
+	rp_image_ptr img;
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
@@ -56,7 +58,7 @@ rp_image_ptr fromASTC(int width, int height,
 
 	// TODO: Validate combinations.
 	if (!ImageSizeCalc::validateBlockSizeASTC(block_x, block_y)) {
-		return {};
+		return img;
 	}
 
 	// Get the expected size.
@@ -65,7 +67,7 @@ rp_image_ptr fromASTC(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < expected_size_in)
 	{
-		return {};
+		return img;
 	}
 
 	// Align the image size.
@@ -75,10 +77,11 @@ rp_image_ptr fromASTC(int width, int height,
 	ImageSizeCalc::alignImageSizeASTC(physWidth, physHeight, block_x, block_y);
 
 	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
+	img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	// Basis Universal's ASTC decoder handles one block at a time,
@@ -125,7 +128,8 @@ rp_image_ptr fromASTC(int width, int height,
 				break;
 #else /* !_OPENMP */
 				// Not using OpenMP, so return immediately.
-				return {};
+				img.reset();
+				return img;
 #endif /* _OPENMP */
 			}
 
@@ -149,7 +153,8 @@ rp_image_ptr fromASTC(int width, int height,
 #ifdef _OPENMP
 	if (bErr) {
 		// A decompression error occurred.
-		return {};
+		img.reset();
+		return img;
 	}
 #endif /* _OPENMP */
 

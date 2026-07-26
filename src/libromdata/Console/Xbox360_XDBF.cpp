@@ -539,15 +539,17 @@ string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t str
  */
 string Xbox360_XDBF_Private::loadString_GPD(uint16_t string_id)
 {
+	string s_ret;
+
 	if (entryTable.empty()) {
 		// Entry table isn't loaded...
-		return {};
+		return s_ret;
 	}
 
 	// Can we load the string?
 	if (!file || !isValid) {
 		// Can't load the string.
-		return {};
+		return s_ret;
 	}
 
 	// TODO: Optimize by creating an unordered_map of IDs to strings?
@@ -559,7 +561,6 @@ string Xbox360_XDBF_Private::loadString_GPD(uint16_t string_id)
 	// Instead, each string is its own entry in the main resource table.
 	// Because of this, string IDs are 64-bit.
 	const uint64_t string_id64 = cpu_to_be64(string_id);
-	string s_ret;
 	for (const XDBF_Entry &p : entryTable) {
 		if (p.namespace_id != cpu_to_be16(XDBF_GPD_NAMESPACE_STRING)) {
 			// Not a string.
@@ -1926,6 +1927,8 @@ int Xbox360_XDBF::addFields_strings(LibRpBase::RomFields *fields) const
  */
 string Xbox360_XDBF::getString(LibRpBase::Property property) const
 {
+	string s_ret;
+
 	uint16_t string_id = 0;
 	switch (property) {
 		case LibRpBase::Property::Title:
@@ -1938,11 +1941,10 @@ string Xbox360_XDBF::getString(LibRpBase::Property property) const
 	assert(string_id != 0);
 	if (string_id == 0) {
 		// Not supported.
-		return {};
+		return s_ret;
 	}
 
 	RP_D(Xbox360_XDBF);
-	string s_ret;
 	switch (d->xdbfType) {
 		default:
 			assert(!"Unsupported XDBF type.");
@@ -1954,6 +1956,7 @@ string Xbox360_XDBF::getString(LibRpBase::Property property) const
 			s_ret = d->loadString_GPD(string_id);
 			break;
 	}
+
 	return s_ret;
 }
 

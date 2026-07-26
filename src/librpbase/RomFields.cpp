@@ -325,9 +325,10 @@ const char *RomFields::ageRatingAbbrev(AgeRatingsCountry country)
  */
 string RomFields::ageRatingDecode(AgeRatingsCountry country, uint16_t rating)
 {
+	string s_ret;
 	if (!(rating & AGEBF_ACTIVE)) {
 		// Rating isn't active.
-		return {};
+		return s_ret;
 	}
 
 	// Check for special statuses.
@@ -449,24 +450,23 @@ string RomFields::ageRatingDecode(AgeRatingsCountry country, uint16_t rating)
 		}
 	}
 
-	string str;
-	str.reserve(8);
+	s_ret.reserve(8);
 	if (s_rating) {
-		str = s_rating;
+		s_ret = s_rating;
 	} else {
 		// No string rating.
 		// Print the numeric value.
-		str = fmt::to_string(static_cast<unsigned int>(rating) & RomFields::AGEBF_MIN_AGE_MASK);
+		s_ret = fmt::to_string(static_cast<unsigned int>(rating) & RomFields::AGEBF_MIN_AGE_MASK);
 	}
 
 	if (rating & RomFields::AGEBF_ONLINE_PLAY) {
 		// Rating may change during online play.
 		// TODO: Add a description of this somewhere.
 		// Unicode U+00B0, encoded as UTF-8.
-		str += "\xC2\xB0";
+		s_ret += "\xC2\xB0";
 	}
 
-	return str;
+	return s_ret;
 }
 
 /**
@@ -478,48 +478,50 @@ string RomFields::ageRatingDecode(AgeRatingsCountry country, uint16_t rating)
  */
 string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlines)
 {
+	string s_ret;
 	assert(age_ratings != nullptr);
-	if (!age_ratings)
-		return {};
+	if (!age_ratings) {
+		return s_ret;
+	}
 
 	// Convert the age ratings field to a string.
-	string str;
-	str.reserve(64);
+	s_ret.reserve(64);
 	unsigned int ratings_count = 0;
 	for (size_t i = 0; i < age_ratings->size(); i++) {
 		const uint16_t rating = age_ratings->at(i);
-		if (!(rating & RomFields::AGEBF_ACTIVE))
+		if (!(rating & RomFields::AGEBF_ACTIVE)) {
 			continue;
+		}
 
 		if (ratings_count > 0) {
 			// Append a comma.
 			if (newlines && ratings_count % 4 == 0) {
 				// 4 ratings per line.
-				str += ",\n";
+				s_ret += ",\n";
 			} else {
-				str += ", ";
+				s_ret += ", ";
 			}
 		}
 
 		const char *const abbrev = RomFields::ageRatingAbbrev((AgeRatingsCountry)i);
 		if (abbrev) {
-			str += abbrev;
+			s_ret += abbrev;
 		} else {
 			// Invalid age rating organization.
 			// Use the numeric index.
-			str += fmt::to_string(i);
+			s_ret += fmt::to_string(i);
 		}
-		str += '=';
-		str += ageRatingDecode(static_cast<AgeRatingsCountry>(i), rating);
+		s_ret += '=';
+		s_ret += ageRatingDecode(static_cast<AgeRatingsCountry>(i), rating);
 		ratings_count++;
 	}
 
 	if (ratings_count == 0) {
 		// tr: No age ratings.
-		str = C_("RomFields|AgeRating", "None");
+		s_ret = C_("RomFields|AgeRating", "None");
 	}
 
-	return str;
+	return s_ret;
 }
 
 /** Multi-language convenience functions **/

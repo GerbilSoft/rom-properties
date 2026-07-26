@@ -1009,6 +1009,7 @@ rp_image_const_ptr SegaPVRPrivate::loadGvrImage(void)
 rp_image_ptr SegaPVRPrivate::svr_unswizzle_4or8(const rp_image_const_ptr &img_swz)
 {
 	// TODO: Move to ImageDecoder if more PS2 formats are added.
+	rp_image_ptr img;
 
 	// NOTE: The original code is for 4-bit textures, but 8-bit
 	// textures use the same algorithm. Since we've already
@@ -1036,7 +1037,7 @@ rp_image_ptr SegaPVRPrivate::svr_unswizzle_4or8(const rp_image_const_ptr &img_sw
 	if (!img_swz || !img_swz->isValid() ||
 	    img_swz->format() != rp_image::Format::CI8)
 	{
-		return {};
+		return img;
 	}
 
 	const int width = img_swz->width();
@@ -1047,20 +1048,22 @@ rp_image_ptr SegaPVRPrivate::svr_unswizzle_4or8(const rp_image_const_ptr &img_sw
 	assert(height % 4 == 0);
 	if (width % 4 != 0 || height % 4 != 0) {
 		// Unable to unswizzle this texture.
-		return {};
+		return img;
 	}
 
-	rp_image_ptr img = std::make_shared<rp_image>(width, height, img_swz->format());
+	img = std::make_shared<rp_image>(width, height, img_swz->format());
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	// Strides must be equal to the image width.
 	assert(img_swz->stride() == width);
 	assert(img->stride() == width);
 	if (img_swz->stride() != width || img->stride() != width) {
-		return {};
+		img.reset();
+		return img;
 	}
 
 	// Copy the palette.
@@ -1111,6 +1114,7 @@ rp_image_ptr SegaPVRPrivate::svr_unswizzle_4or8(const rp_image_const_ptr &img_sw
 rp_image_ptr SegaPVRPrivate::svr_unswizzle_16(const rp_image_const_ptr &img_swz)
 {
 	// TODO: Move to ImageDecoder if more PS2 formats are added.
+	rp_image_ptr img;
 
 	// FIXME: This code is *wrong*, but it's better than leaving it
 	// completely unswizzled...
@@ -1136,7 +1140,7 @@ rp_image_ptr SegaPVRPrivate::svr_unswizzle_16(const rp_image_const_ptr &img_swz)
 	if (!img_swz || !img_swz->isValid() ||
 	    img_swz->format() != rp_image::Format::ARGB32)
 	{
-		return {};
+		return img;
 	}
 
 	const int width = img_swz->width();
@@ -1147,13 +1151,14 @@ rp_image_ptr SegaPVRPrivate::svr_unswizzle_16(const rp_image_const_ptr &img_swz)
 	assert(height % 4 == 0);
 	if (width % 4 != 0 || height % 4 != 0) {
 		// Unable to unswizzle this texture.
-		return {};
+		return img;
 	}
 
-	rp_image_ptr img = std::make_shared<rp_image>(width, height, img_swz->format());
+	img = std::make_shared<rp_image>(width, height, img_swz->format());
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	// Strides must be equal to the image width.
@@ -1162,7 +1167,8 @@ rp_image_ptr SegaPVRPrivate::svr_unswizzle_16(const rp_image_const_ptr &img_swz)
 	if (img_swz->stride() / static_cast<int>(sizeof(uint32_t)) != width ||
 	    img->stride() / static_cast<int>(sizeof(uint32_t)) != width)
 	{
-		return {};
+		img.reset();
+		return img;
 	}
 
 	const uint32_t *const src_pixels = static_cast<const uint32_t*>(img_swz->bits());
@@ -1193,13 +1199,15 @@ rp_image_ptr SegaPVRPrivate::svr_unswizzle_16(const rp_image_const_ptr &img_swz)
 			const int xx = x + num1 * tileMatrix[num2];
 			assert(xx < width);
 			if (xx >= width) {
-				return {};
+				img.reset();
+				return img;
 			}
 
 			const int i = interlaceMatrix[num4] + num5 + num6 + num7;
 			assert(i < max_pixel_count);
 			if (i >= max_pixel_count) {
-				return {};
+				img.reset();
+				return img;
 			}
 
 			destLine[xx] = src_pixels[i];

@@ -573,6 +573,8 @@ unsigned int WiiTMD::cmdGroupCountV1(void)
  */
 rp::uvector<WUP_Content_Entry> WiiTMD::contentsTableV1(unsigned int grpIdx)
 {
+	rp::uvector<WUP_Content_Entry> contentsTbl;
+
 	// NOTE: Not cached, so the file needs to remain open.
 	RP_D(WiiTMD);
 	assert(d->isValid);
@@ -580,26 +582,26 @@ rp::uvector<WUP_Content_Entry> WiiTMD::contentsTableV1(unsigned int grpIdx)
 	assert(d->file->isOpen());
 	if (!d->isValid || !d->file || !d->file->isOpen()) {
 		// Unable to read data from the file.
-		return {};
+		return contentsTbl;
 	}
 
 	// grpIdx must be [0,64).
 	assert(grpIdx < ARRAY_SIZE(WUP_CMD_GroupHeader::entries));
 	if (grpIdx >= ARRAY_SIZE(WUP_CMD_GroupHeader::entries)) {
-		return {};
+		return contentsTbl;
 	}
 
 	// This TMD must be v1.
 	assert(d->tmdHeader.tmd_format_version == 1);
 	if (d->tmdHeader.tmd_format_version != 1) {
 		// Incorrect TMD version.
-		return {};
+		return contentsTbl;
 	}
 
 	// Make sure the CMD group header is loaded.
 	if (d->loadCmdGroupHeader() != 0) {
 		// Unable to load the CMD group header.
-		return {};
+		return contentsTbl;
 	}
 
 	static constexpr off64_t contents_tbl_offset =
@@ -610,18 +612,20 @@ rp::uvector<WUP_Content_Entry> WiiTMD::contentsTableV1(unsigned int grpIdx)
 	const unsigned int nbr_cont = be16_to_cpu(d->cmdGroupHeader->entries[grpIdx].nbr_cont);
 	if (nbr_cont == 0) {
 		// No contents?
-		return {};
+		return contentsTbl;
 	}
 
 	const off64_t addr = contents_tbl_offset + (be16_to_cpu(d->cmdGroupHeader->entries[grpIdx].offset) * sizeof(WUP_Content_Entry));
 
-	rp::uvector<WUP_Content_Entry> contentsTbl;
 	const size_t data_size = nbr_cont * sizeof(WUP_Content_Entry);
 	contentsTbl.resize(data_size);
 	size_t size = d->file->seekAndRead(addr, contentsTbl.data(), data_size);
-	if (likely(size == data_size))
-		return contentsTbl;
-	return {};
+	if (unlikely(size != data_size)) {
+		// Error reading the contents table...
+		contentsTbl.clear();
+	}
+
+	return contentsTbl;
 }
 
 } // namespace LibRomData

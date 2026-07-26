@@ -164,14 +164,17 @@ int NintendoDSPrivate::loadIconTitleData(void)
  */
 string NintendoDSPrivate::getPublisher(void)
 {
+	string s_publisher;
+
 	const char *const publisher = NintendoPublishers::lookup(romHeader.company);
 	if (publisher) {
-		return publisher;
+		// NOTE: Assigning to s_publisher for named-value-return optimization.
+		s_publisher.assign(publisher);
+		return s_publisher;
 	}
 
 	// Unknown publisher. Print the company code as two characters if they're
 	// both alphanumeric; otherwise, hexadecimal.
-	string s_publisher;
 	if (isalnum_ascii(romHeader.company[0]) && isalnum_ascii(romHeader.company[1])) {
 		s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:c}{:c})")),
 			romHeader.company[0], romHeader.company[1]);

@@ -27,20 +27,20 @@ using namespace LibRomData;
  */
 RomDataPtr rp_gtk_open_uri(const char *uri)
 {
-	g_return_val_if_fail(uri != nullptr && uri[0] != '\0', nullptr);
+	RomDataPtr romData;
+	g_return_val_if_fail(uri != nullptr && uri[0] != '\0', romData);
 
 	// TODO: Check file extensions and/or MIME types?
 
 	// Check if the URI maps to a local file.
 	gchar *const filename = g_filename_from_uri(uri, nullptr, nullptr);
 	if (filename) {
-		RomDataPtr romData = RomDataFactory::create(filename);
+		romData = RomDataFactory::create(filename);
 		g_free(filename);
 		return romData;
 	}
 
 	// This might be a plain filename and not a URI.
-	RomDataPtr romData;
 	if (access(uri, R_OK) == 0) {
 		// It's a plain filename.
 		romData = RomDataFactory::create(uri);

@@ -291,6 +291,8 @@ unsigned int SegaSaturnPrivate::parseRegionCodes(const char *region_codes, int s
  */
 string SegaSaturnPrivate::getPublisher(void) const
 {
+	string s_ret;
+
 	const char *publisher = nullptr;
 	if (!memcmp(discHeader.maker_id, SATURN_IP0000_BIN_MAKER_ID, sizeof(discHeader.maker_id))) {
 		// First-party Sega title.
@@ -312,13 +314,16 @@ string SegaSaturnPrivate::getPublisher(void) const
 
 	if (publisher) {
 		// Found the publisher.
-		return publisher;
+		// NOTE: Assigning to s_ret for named-value-return optimization.
+		s_ret.assign(publisher);
+		return s_ret;
+	} else {
+		// Unknown publisher.
+		// List the field as-is.
+		s_ret = latin1_to_utf8(discHeader.maker_id, sizeof(discHeader.maker_id));
+		trimEnd(s_ret);
 	}
 
-	// Unknown publisher.
-	// List the field as-is.
-	string s_ret = latin1_to_utf8(discHeader.maker_id, sizeof(discHeader.maker_id));
-	trimEnd(s_ret);
 	return s_ret;
 }
 

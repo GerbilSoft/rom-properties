@@ -251,20 +251,23 @@ RomDataPtr PlayStationDiscPrivate::openBootExe(void)
 	// FIXME: Returning `const RomDataPtr &` would be better,
 	// but the compiler is complaining that the nullptrs end up
 	// returning a reference to a local temporary object.
+	RomDataPtr exeData;
 
 	if (bootExeData) {
 		// The boot executable is already open.
-		return bootExeData;
+		// NOTE: Assigning to exeData for named-value-return optimization.
+		exeData = bootExeData;
+		return exeData;
 	}
 
 	if (!isoPartition || !isoPartition->isOpen()) {
 		// ISO partition is not open.
-		return {};
+		return exeData;
 	}
 
 	if (boot_filename.empty()) {
 		// No boot filename...
-		return {};
+		return exeData;
 	}
 
 	// Open the boot file.
@@ -272,10 +275,9 @@ RomDataPtr PlayStationDiscPrivate::openBootExe(void)
 	const IRpFilePtr f_bootExe(isoPartition->open(boot_filename.c_str()));
 	if (!f_bootExe) {
 		// Unable to open the default executable.
-		return {};
+		return exeData;
 	}
 
-	RomDataPtr exeData;
 	switch (consoleType) {
 		case ConsoleType::PS1: {
 			// Check if we have a STACK override in SYSTEM.CNF.
@@ -307,7 +309,8 @@ RomDataPtr PlayStationDiscPrivate::openBootExe(void)
 	}
 
 	// Unable to open the executable.
-	return {};
+	exeData.reset();
+	return exeData;
 }
 
 /** PlayStationDisc **/

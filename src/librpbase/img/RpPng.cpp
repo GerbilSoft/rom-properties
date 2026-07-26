@@ -242,7 +242,8 @@ static rp_image_ptr loadPng(png_structp png_ptr, png_infop info_ptr)
 	if (setjmp(png_jmpbuf(png_ptr))) {
 		// PNG read failed.
 		// FIXME: This is crashing in MSVC 2022 (17.6.5) release builds on Windows 10.
-		return {};
+		img.reset();
+		return img;
 	}
 #endif
 
@@ -268,7 +269,7 @@ static rp_image_ptr loadPng(png_structp png_ptr, png_infop info_ptr)
 	    width > 32768 || height > 32768)
 	{
 		// Image size is either invalid or too big.
-		return {};
+		return img;
 	}
 
 #ifdef PNG_sBIT_SUPPORTED
@@ -384,7 +385,7 @@ static rp_image_ptr loadPng(png_structp png_ptr, png_infop info_ptr)
 
 		default:
 			// Unsupported color type.
-			return {};
+			return img;
 	}
 
 	if (bit_depth > 8) {
@@ -421,7 +422,8 @@ static rp_image_ptr loadPng(png_structp png_ptr, png_infop info_ptr)
 	img = std::make_shared<rp_image>(width, height, fmt);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	// Allocate the row pointers.
@@ -466,8 +468,9 @@ static rp_image_ptr loadPng(png_structp png_ptr, png_infop info_ptr)
  */
 rp_image_ptr load(IRpFile *file)
 {
+	rp_image_ptr img;
 	if (!file) {
-		return {};
+		return img;
 	}
 
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
@@ -476,7 +479,7 @@ rp_image_ptr load(IRpFile *file)
 	    DelayLoad_test_png_access_version_number() != 0)
 	{
 		// Delay load failed.
-		return {};
+		return img;
 	}
 #else /* !defined(_MSC_VER) || (!defined(ZLIB_IS_DLL) && !defined(PNG_IS_DLL)) */
 	// zlib isn't in a DLL, but we need to ensure that the
@@ -490,7 +493,7 @@ rp_image_ptr load(IRpFile *file)
 	size_t size = file->seekAndRead(0, file_header, sizeof(file_header));
 	if (size != sizeof(file_header) || memcmp(file_header, png_magic.data(), sizeof(file_header)) != 0) {
 		// Not a valid PNG file.
-		return {};
+		return img;
 	}
 	// Rewind the file.
 	file->rewind();
@@ -501,12 +504,12 @@ rp_image_ptr load(IRpFile *file)
 	// Initialize libpng.
 	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 	if (!png_ptr) {
-		return {};
+		return img;
 	}
 	info_ptr = png_create_info_struct(png_ptr);
 	if (!info_ptr) {
 		png_destroy_read_struct(&png_ptr, nullptr, nullptr);
-		return {};
+		return img;
 	}
 
 #ifdef PNG_WARNINGS_SUPPORTED
@@ -518,7 +521,7 @@ rp_image_ptr load(IRpFile *file)
 	png_set_read_fn(png_ptr, file, png_io_IRpFile_read);
 
 	// Call the actual PNG image reading function.
-	rp_image_ptr img = loadPng(png_ptr, info_ptr);
+	img = loadPng(png_ptr, info_ptr);
 
 	// Free the PNG structs.
 	png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);

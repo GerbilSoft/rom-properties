@@ -849,21 +849,22 @@ int AndroidResourceReader::addField_string_i18n(RomFields *fields, const char *n
  */
 string AndroidResourceReader::findIconHighestDensity(uint32_t resource_id) const
 {
+	string icon_filename;	// FIXME: Using `const char*` results in an invalid string here...
+
 	RP_D(const AndroidResourceReader);
 	assert(!d->responseMap_i18n.empty());
 	if (d->responseMap_i18n.empty()) {
 		// No resources.
-		return {};
+		return icon_filename;
 	}
 
 	auto iter = d->responseMap_i18n.find(resource_id);
 	if (iter == d->responseMap_i18n.end()) {
-		return {};
+		return icon_filename;
 	}
 	const auto &lcmap = iter->second;
 
 	int highest_density = -1;
-	string icon_filename;	// FIXME: Using `const char*` results in an invalid string here...
 	for (auto iter2 : lcmap) {
 		// NOTE: Some packages, e.g. Magisk, don't have the density flag set.
 		// Allow this if the lc is 0.

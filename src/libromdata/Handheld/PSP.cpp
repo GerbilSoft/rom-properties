@@ -232,15 +232,18 @@ RomDataPtr PSPPrivate::openBootExe(void)
 	// FIXME: Returning `const RomDataPtr &` would be better,
 	// but the compiler is complaining that the nullptrs end up
 	// returning a reference to a local temporary object.
+	RomDataPtr exeData;
 
 	if (bootExeData) {
 		// The boot executable is already open.
-		return bootExeData;
+		// NOTE: Assigning to exeData for named-value-return optimization.
+		exeData = bootExeData;
+		return exeData;
 	}
 
 	if (!isoPartition || !isoPartition->isOpen()) {
 		// ISO partition is not open.
-		return {};
+		return exeData;
 	}
 
 	// Open the boot file.
@@ -248,7 +251,7 @@ RomDataPtr PSPPrivate::openBootExe(void)
 	// an unencrypted EBOOT.BIN.
 	const IRpFilePtr f_bootExe(isoPartition->open("/PSP_GAME/SYSDIR/EBOOT.BIN"));
 	if (f_bootExe) {
-		RomDataPtr exeData = std::make_shared<ELF>(f_bootExe);
+		exeData = std::make_shared<ELF>(f_bootExe);
 		if (exeData->isOpen() && exeData->isValid()) {
 			// Boot executable is open and valid.
 			bootExeData = exeData;
@@ -256,8 +259,9 @@ RomDataPtr PSPPrivate::openBootExe(void)
 		}
 	}
 
-	// Unable to open the default executable.
-	return {};
+	// Unable to open the executable.
+	exeData.reset();
+	return exeData;
 }
 
 /**
@@ -269,22 +273,25 @@ ParamSFOPtr PSPPrivate::openParamSfo(void)
 	// FIXME: Returning `const RomDataPtr &` would be better,
 	// but the compiler is complaining that the nullptrs end up
 	// returning a reference to a local temporary object.
+	ParamSFOPtr sfoData;
 
 	if (paramSfoData) {
 		// The PARAM.SFO is already open.
-		return paramSfoData;
+		// NOTE: Assigning to sfoData for named-value-return optimization.
+		sfoData = paramSfoData;
+		return sfoData;
 	}
 
 	if (!isoPartition || !isoPartition->isOpen()) {
 		// ISO partition is not open.
-		return {};
+		return sfoData;
 	}
 
 	// Open the PARAM.SFO
 	// TODO: Do video UMDs have PARAM.SFO?
 	const IRpFilePtr f_paramFile(isoPartition->open("/PSP_GAME/PARAM.SFO"));
 	if (f_paramFile) {
-		ParamSFOPtr sfoData = std::make_shared<ParamSFO>(f_paramFile);
+		sfoData = std::make_shared<ParamSFO>(f_paramFile);
 		if (sfoData->isOpen() && sfoData->isValid()) {
 			// Boot executable is open and valid.
 			paramSfoData = sfoData;
@@ -292,8 +299,9 @@ ParamSFOPtr PSPPrivate::openParamSfo(void)
 		}
 	}
 
-	// Unable to open the PARAM.SFO
-	return {};
+	// Unable to open the PARAM.SFO file.
+	sfoData.reset();
+	return sfoData;
 }
 
 /**

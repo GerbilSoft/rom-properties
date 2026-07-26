@@ -30,6 +30,8 @@ rp_image_ptr fromGcn16(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz)
 {
+	rp_image_ptr img;
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
@@ -38,20 +40,22 @@ rp_image_ptr fromGcn16(PixelFormat px_format,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < (((size_t)width * (size_t)height) * 2))
 	{
-		return {};
+		return img;
 	}
 
 	// GameCube RGB5A3 uses 4x4 tiles.
 	assert(width % 4 == 0);
 	assert(height % 4 == 0);
-	if (width % 4 != 0 || height % 4 != 0)
-		return {};
+	if (width % 4 != 0 || height % 4 != 0) {
+		return img;
+	}
 
 	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	// Calculate the total number of tiles.
@@ -96,7 +100,8 @@ rp_image_ptr fromGcn16(PixelFormat px_format,
 
 		default:
 			assert(!"Invalid pixel format for this function.");
-			return {};
+			img.reset();
+			return img;
 	}
 
 	// Image has been converted.
@@ -117,6 +122,8 @@ rp_image_ptr fromGcnCI8(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	const uint16_t *RESTRICT pal_buf, size_t pal_siz)
 {
+	rp_image_ptr img;
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(pal_buf != nullptr);
@@ -127,20 +134,22 @@ rp_image_ptr fromGcnCI8(int width, int height,
 	if (!img_buf || !pal_buf || width <= 0 || height <= 0 ||
 	    img_siz < ((size_t)width * (size_t)height) || pal_siz < 256*2)
 	{
-		return {};
+		return img;
 	}
 
 	// GameCube CI8 uses 8x4 tiles.
 	assert(width % 8 == 0);
 	assert(height % 4 == 0);
-	if (width % 8 != 0 || height % 4 != 0)
-		return {};
+	if (width % 8 != 0 || height % 4 != 0) {
+		return img;
+	}
 
 	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
+	img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	// Convert the palette.
@@ -149,7 +158,8 @@ rp_image_ptr fromGcnCI8(int width, int height,
 	assert(img->palette_len() >= 256);
 	if (img->palette_len() < 256) {
 		// Not enough colors...
-		return {};
+		img.reset();
+		return img;
 	}
 
 	int tr_idx = -1;
@@ -207,6 +217,8 @@ rp_image_ptr fromGcnCI8(int width, int height,
 rp_image_ptr fromGcnI8(int width, int height,
 	const uint8_t *img_buf, size_t img_siz)
 {
+	rp_image_ptr img;
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
@@ -215,25 +227,27 @@ rp_image_ptr fromGcnI8(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < ((size_t)width * (size_t)height))
 	{
-		return {};
+		return img;
 	}
 
 	// GameCube I8 uses 8x4 tiles.
 	// FIXME: Verify!
 	assert(width % 8 == 0);
 	assert(height % 4 == 0);
-	if (width % 8 != 0 || height % 4 != 0)
-		return {};
+	if (width % 8 != 0 || height % 4 != 0) {
+		return img;
+	}
 
 	// Calculate the total number of tiles.
 	const unsigned int tilesX = (unsigned int)(width / 8);
 	const unsigned int tilesY = (unsigned int)(height / 4);
 
 	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
+	img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	// Initialize a grayscale palette.
@@ -242,7 +256,8 @@ rp_image_ptr fromGcnI8(int width, int height,
 	assert(img->palette_len() >= 256);
 	if (img->palette_len() < 256) {
 		// Not enough colors...
-		return {};
+		img.reset();
+		return img;
 	}
 
 	uint32_t gray = 0xFF000000U;
@@ -286,6 +301,8 @@ rp_image_ptr fromGcnCI4(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	const uint16_t *RESTRICT pal_buf, size_t pal_siz)
 {
+	rp_image_ptr img;
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(pal_buf != nullptr);
@@ -296,24 +313,26 @@ rp_image_ptr fromGcnCI4(int width, int height,
 	if (!img_buf || !pal_buf || width <= 0 || height <= 0 ||
 	    img_siz < (((size_t)width * (size_t)height) / 2) || pal_siz < 16*2)
 	{
-		return {};
+		return img;
 	}
 
 	// GameCube CI4 uses 8x8 tiles.
 	assert(width % 8 == 0);
 	assert(height % 8 == 0);
-	if (width % 8 != 0 || height % 8 != 0)
-		return {};
+	if (width % 8 != 0 || height % 8 != 0) {
+		return img;
+	}
 
 	// Calculate the total number of tiles.
 	const int tilesX = (width / 8);
 	const int tilesY = (height / 8);
 
 	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
+	img = std::make_shared<rp_image>(width, height, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	// Convert the palette.
@@ -322,7 +341,8 @@ rp_image_ptr fromGcnCI4(int width, int height,
 	assert(img->palette_len() >= 16);
 	if (img->palette_len() < 16) {
 		// Not enough colors...
-		return {};
+		img.reset();
+		return img;
 	}
 
 	int tr_idx = -1;

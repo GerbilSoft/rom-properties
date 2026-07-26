@@ -710,27 +710,27 @@ IsoPartitionPtr GdiReader::openIsoPartition(int trackNumber)
  */
 ISOPtr GdiReader::openIsoRomData(int trackNumber)
 {
+	ISOPtr isoData;
 	RP_D(GdiReader);
 
 	unsigned int lba_start, lba_size;
 	if (d->getTrackLBAInfo(trackNumber, lba_start, lba_size) != 0) {
 		// Unable to get track LBA info.
-		return {};
+		return isoData;
 	}
 
 	PartitionFilePtr isoFile = std::make_shared<PartitionFile>(this->shared_from_this(),
 		static_cast<off64_t>(lba_start) * 2048,
 		static_cast<off64_t>(lba_size) * 2048);
 	if (isoFile->isOpen()) {
-		ISOPtr isoData = std::make_shared<ISO>(isoFile);
-		if (isoData->isOpen()) {
-			// ISO is opened.
-			return isoData;
+		isoData = std::make_shared<ISO>(isoFile);
+		if (!isoData->isOpen()) {
+			// Failed to open the ISO object...
+			isoData.reset();
 		}
 	}
 
-	// Unable to open the ISO object.
-	return {};
+	return isoData;
 }
 
 } // namespace LibRomData

@@ -66,6 +66,8 @@ rp_image_ptr fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz)
 {
+	rp_image_ptr img;
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
@@ -77,7 +79,7 @@ rp_image_ptr fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	    width != height || width > (int)DC_TMAP_SIZE ||
 	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) * 2))
 	{
-		return {};
+		return img;
 	}
 
 	// Initialize the twiddle map.
@@ -85,10 +87,11 @@ rp_image_ptr fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	const unsigned int *const p_tmap = dc_tmap->data();
 
 	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	// Convert one line at a time. (16-bit -> ARGB32)
@@ -119,7 +122,8 @@ rp_image_ptr fromDreamcastSquareTwiddled16(PixelFormat px_format,
 
 		default:
 			assert(!"Invalid pixel format for this function.");
-			return {};
+			img.reset();
+			return img;
 	}
 
 	// Image has been converted.
@@ -145,6 +149,8 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	const uint16_t *RESTRICT pal_buf, size_t pal_siz)
 {
+	rp_image_ptr img;
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(pal_buf != nullptr);
@@ -158,7 +164,7 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 	    width != height || width > (int)DC_TMAP_SIZE ||
 	    img_siz == 0 || pal_siz == 0)
 	{
-		return {};
+		return img;
 	}
 
 	// Determine the number of palette entries.
@@ -178,7 +184,7 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 	{
 		// Palette isn't large enough,
 		// or palette isn't an even multiple.
-		return {};
+		return img;
 	}
 
 	// Initialize the twiddle map.
@@ -186,10 +192,11 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 	const unsigned int *const p_tmap = dc_tmap->data();
 
 	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	// Convert the palette.
@@ -215,7 +222,8 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 
 		default:
 			assert(!"Invalid pixel format for this function.");
-			return {};
+			img.reset();
+			return img;
 	}
 
 	// Convert one line at a time. (16-bit -> ARGB32)
@@ -229,7 +237,8 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 		assert(srcIdx < (unsigned int)img_siz);
 		if (srcIdx >= static_cast<unsigned int>(img_siz)) {
 			// Out of bounds.
-			return {};
+			img.reset();
+			return img;
 		}
 
 		// Palette index.
@@ -243,7 +252,8 @@ rp_image_ptr fromDreamcastVQ16(PixelFormat px_format,
 				// Palette index is out of bounds.
 				// NOTE: This can only happen with SmallVQ,
 				// since VQ always has 1024 palette entries.
-				return {};
+				img.reset();
+				return img;
 			}
 		}
 

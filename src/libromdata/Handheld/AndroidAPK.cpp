@@ -223,11 +223,14 @@ AndroidAPKPrivate::~AndroidAPKPrivate()
  */
 rp::uvector<uint8_t> AndroidAPKPrivate::loadFileFromZip(const char *filename, off64_t max_size)
 {
-	// TODO: This is also used by GcnFstTest. Move to a common utility file?
+	// TODO: This is also used by J2ME. Move to a common utility file?
+	// (GcnFstTest also uses a similar function...)
+	rp::uvector<uint8_t> buf;
+
 	// NOTE: Using case-insensitive lookups for compatibility. Needs testing!
 	int ret = mz_zip_reader_locate_entry(apkReader, filename, true);
 	if (ret != MZ_OK) {
-		return {};
+		return buf;
 	}
 
 	// Get file information.
@@ -235,21 +238,20 @@ rp::uvector<uint8_t> AndroidAPKPrivate::loadFileFromZip(const char *filename, of
 	ret = mz_zip_reader_entry_get_info(apkReader, &file_info);
 	if (ret != MZ_OK) {
 		// Error getting the file information.
-		return {};
+		return buf;
 	}
 	const off64_t uncompressed_size = file_info->uncompressed_size;
 	if (uncompressed_size >= max_size) {
 		// The uncompressed size is too big.
-		return {};
+		return buf;
 	}
 
 	ret = mz_zip_reader_entry_open(apkReader);
 	if (ret != MZ_OK) {
-		return {};
+		return buf;
 	}
 
 	size_t size = static_cast<size_t>(uncompressed_size);
-	rp::uvector<uint8_t> buf;
 	buf.resize(size);
 
 	// Read the file.
@@ -262,8 +264,10 @@ rp::uvector<uint8_t> AndroidAPKPrivate::loadFileFromZip(const char *filename, of
 		int to_read = static_cast<int>(size > UINT16_MAX ? UINT16_MAX : size);
 		ret = mz_zip_reader_entry_read(apkReader, p, to_read);
 		if (ret != to_read) {
+			// Read error...
 			mz_zip_reader_entry_close(apkReader);
-			return {};
+			buf.clear();
+			return buf;
 		}
 
 		// ret == number of bytes read.
@@ -275,9 +279,9 @@ rp::uvector<uint8_t> AndroidAPKPrivate::loadFileFromZip(const char *filename, of
 	// An error will occur here if the CRC is incorrect.
 	ret = mz_zip_reader_entry_close(apkReader);
 	if (ret != MZ_OK) {
-		return {};
+		// CRC error.
+		buf.clear();
 	}
-
 	return buf;
 }
 

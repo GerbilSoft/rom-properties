@@ -996,12 +996,16 @@ GTEST_API_ ::std::string FormatFileLocation(const char* file, int line) {
 // to the file location it produces, unlike FormatFileLocation().
 GTEST_API_ ::std::string FormatCompilerIndependentFileLocation(const char* file,
                                                                int line) {
-  const std::string file_name(file == nullptr ? kUnknownFile : file);
+  // rom-properties: Modified for named-value-return optimization.
+  std::string file_name(file == nullptr ? kUnknownFile : file);
 
-  if (line < 0)
+  if (line < 0) {
     return file_name;
-  else
-    return file_name + ":" + StreamableToString(line);
+  } else {
+    file_name += ':';
+    file_name += StreamableToString(line);
+    return file_name;
+  }
 }
 
 GTestLog::GTestLog(GTestLogSeverity severity, const char* file, int line)

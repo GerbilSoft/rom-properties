@@ -293,6 +293,8 @@ rp_image_const_ptr DreamcastPrivate::load0GDTEX(void)
  */
 string DreamcastPrivate::getPublisher(void) const
 {
+	string s_ret;
+
 	const char *publisher = nullptr;
 	if (!memcmp(discHeader.publisher, DC_IP0000_BIN_MAKER_ID, sizeof(discHeader.publisher))) {
 		// First-party Sega title.
@@ -314,13 +316,16 @@ string DreamcastPrivate::getPublisher(void) const
 
 	if (publisher) {
 		// Found the publisher.
-		return publisher;
+		// NOTE: Assigning to s_ret for named-value-return optimization.
+		s_ret.assign(publisher);
+		return s_ret;
+	} else {
+		// Unknown publisher.
+		// List the field as-is.
+		s_ret = latin1_to_utf8(discHeader.maker_id, sizeof(discHeader.maker_id));
+		trimEnd(s_ret);
 	}
 
-	// Unknown publisher.
-	// List the field as-is.
-	string s_ret = latin1_to_utf8(discHeader.publisher, sizeof(discHeader.publisher));
-	trimEnd(s_ret);
 	return s_ret;
 }
 

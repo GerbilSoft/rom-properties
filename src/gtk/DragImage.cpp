@@ -838,11 +838,12 @@ rp_drag_image_notify_width_or_height_signal_handler(RpDragImage *image, GParamSp
 static VectorFilePtr
 rp_drag_image_create_PNG_file(RpDragImage *image)
 {
+	VectorFilePtr pngData = std::make_shared<VectorFile>();
+
 	_RpDragImageCxx *const cxx = image->cxx;
 	auto *const anim = cxx->anim.get();
 	const bool isAnimated = (anim && anim->iconAnimData && anim->iconAnimHelper.isAnimated());
 
-	VectorFilePtr pngData = std::make_shared<VectorFile>();
 	unique_ptr<RpPngWriter> pngWriter;
 	if (isAnimated) {
 		// Animated icon.
@@ -854,12 +855,15 @@ rp_drag_image_create_PNG_file(RpDragImage *image)
 		pngWriter.reset(new RpPngWriter(pngData, cxx->img));
 	} else {
 		// No icon...
-		return {};
+		pngData.reset();
+		return pngData;
 	}
 
 	if (!pngWriter->isOpen()) {
 		// Unable to open the PNG writer.
-		return {};
+		pngWriter.reset();
+		pngData.reset();
+		return pngData;
 	}
 
 	// TODO: Add text fields indicating the source game.
@@ -867,12 +871,16 @@ rp_drag_image_create_PNG_file(RpDragImage *image)
 	int pwRet = pngWriter->write_IHDR();
 	if (pwRet != 0) {
 		// Error writing the PNG image...
-		return {};
+		pngWriter.reset();
+		pngData.reset();
+		return pngData;
 	}
 	pwRet = pngWriter->write_IDAT();
 	if (pwRet != 0) {
 		// Error writing the PNG image...
-		return {};
+		pngWriter.reset();
+		pngData.reset();
+		return pngData;
 	}
 
 	// RpPngWriter will finalize the PNG on delete.

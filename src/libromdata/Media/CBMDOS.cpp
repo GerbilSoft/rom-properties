@@ -802,11 +802,14 @@ size_t CBMDOSPrivate::remove_A0_padding(const char *buf, size_t siz)
 ATTR_ACCESS(write_only, 2)
 string CBMDOSPrivate::getDiskName(CpRp *pCpRp) const
 {
+	string s_disk_name;
+
+	const char *disk_name;
+	size_t disk_name_len;
+
 	// TODO: Selectable unshifted vs. shifted PETSCII conversion. Using unshifted for now.
 	// TODO: Reverse video?
 	CpRp cpRp = CpRp::PETSCII_Unshifted;
-	const char *disk_name;
-	size_t disk_name_len;
 
 	switch (diskType) {
 		case CBMDOSPrivate::DiskType::D64:
@@ -837,7 +840,7 @@ string CBMDOSPrivate::getDiskName(CpRp *pCpRp) const
 			if (pCpRp) {
 				*pCpRp = cpRp;
 			}
-			return {};
+			return s_disk_name;
 	}
 
 	// Remove padding characters ($A0)
@@ -848,11 +851,13 @@ string CBMDOSPrivate::getDiskName(CpRp *pCpRp) const
 		if (pCpRp) {
 			*pCpRp = cpRp;
 		}
-		return latin1_to_utf8(disk_name, static_cast<int>(disk_name_len));
+		// NOTE: Assigning to s_disk_name for named-value-return optimization.
+		s_disk_name = latin1_to_utf8(disk_name, static_cast<int>(disk_name_len));
+		return s_disk_name;
 	}
 
 	// Try unshifted first.
-	string s_disk_name = cpRP_to_utf8(cpRp, disk_name, static_cast<int>(disk_name_len));
+	s_disk_name = cpRP_to_utf8(cpRp, disk_name, static_cast<int>(disk_name_len));
 	if (s_disk_name.find(uFFFD) != string::npos) {
 		// Disk name has invalid characters when using Unshifted.
 		// Try again with Shifted.

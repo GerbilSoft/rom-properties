@@ -114,17 +114,21 @@ void WiiUPackagePrivate::reset(void)
  */
 IDiscReaderPtr WiiUPackagePrivate::openContentFile(unsigned int idx)
 {
+	IDiscReaderPtr discReader;
+
 	assert(packageType == PackageType::NUS);
 	assert(idx < contentsReaders.size());
 	if (packageType != PackageType::NUS ||
 	    idx >= contentsReaders.size())
 	{
-		return {};
+		return discReader;
 	}
 
 	if (contentsReaders[idx]) {
 		// Content is already open.
-		return contentsReaders[idx];
+		// NOTE: Assigning to discReader for named-value-return optimization.
+		discReader = contentsReaders[idx];
+		return discReader;
 	}
 
 #ifdef ENABLE_DECRYPTION
@@ -148,13 +152,12 @@ IDiscReaderPtr WiiUPackagePrivate::openContentFile(unsigned int idx)
 		if (!subfile->isOpen()) {
 			// Unable to open the content file.
 			// TODO: Error code?
-			return {};
+			return discReader;
 		}
 	}
 
 	// Create a disc reader.
 	// TODO: Bitfield constants for 'type'?
-	IDiscReaderPtr discReader;
 	if (entry.type & cpu_to_be16(0x0002)) {
 		// Content is H3-hashed.
 		// NOTE: No IV is needed here.
@@ -171,16 +174,16 @@ IDiscReaderPtr WiiUPackagePrivate::openContentFile(unsigned int idx)
 	}
 	if (!discReader->isOpen()) {
 		// Unable to open the CBC reader.
-		return {};
+		discReader.reset();
+		return discReader;
 	}
 
 	// Disc reader is open.
 	contentsReaders[idx] = discReader;
+#endif
+
+	// NOTE: Unencrypted NUS packages are NOT supported right now.
 	return discReader;
-#else /* !ENABLE_DECRYPTION */
-	// Unencrypted NUS packages are NOT supported right now.
-	return {};
-#endif /* ENABLE_DECRYPTION */
 }
 
 /**

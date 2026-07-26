@@ -92,16 +92,19 @@ rp_image_ptr rp_image::dup(void) const
  */
 rp_image_ptr rp_image::dup_ARGB32(void) const
 {
+	rp_image_ptr img;
+
 	RP_D(const rp_image);
 	const rp_image_backend *const backend = d->backend.get();
 
 	if (backend->format == Format::ARGB32) {
 		// Already in ARGB32.
 		// Do a direct dup().
-		return this->dup();
+		img = this->dup();
+		return img;
 	} else if (backend->format != Format::CI8) {
 		// Only CI8->ARGB32 is supported right now.
-		return {};
+		return img;
 	}
 
 	const int width = backend->width;
@@ -112,13 +115,14 @@ rp_image_ptr rp_image::dup_ARGB32(void) const
 	// TODO: Handle palette length smaller than 256.
 	assert(backend->palette_len() == 256);
 	if (backend->palette_len() != 256) {
-		return {};
+		return img;
 	}
 
-	rp_image_ptr img = std::make_shared<rp_image>(width, height, Format::ARGB32);
+	img = std::make_shared<rp_image>(width, height, Format::ARGB32);
 	if (!img->isValid()) {
 		// Image is invalid. Something went wrong.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	// Copy the image, converting from CI8 to ARGB32.
@@ -171,6 +175,8 @@ rp_image_ptr rp_image::dup_ARGB32(void) const
  */
 rp_image_ptr rp_image::squared(void) const
 {
+	rp_image_ptr sq_img;
+
 	// Windows doesn't like non-square icons.
 	// Add extra transparent columns/rows before
 	// converting to HBITMAP.
@@ -183,12 +189,13 @@ rp_image_ptr rp_image::squared(void) const
 	assert(height > 0);
 	if (width <= 0 || height <= 0) {
 		// Cannot resize the image.
-		return {};
+		return sq_img;
 	}
 
 	if (width == height) {
 		// Image is already square. dup() it.
-		return this->dup();
+		sq_img = this->dup();
+		return sq_img;
 	}
 
 	// Image needs adjustment.
@@ -201,10 +208,11 @@ rp_image_ptr rp_image::squared(void) const
 
 	// Create the squared image.
 	const int max_dim = std::max(width, height);
-	rp_image_ptr sq_img = std::make_shared<rp_image>(max_dim, max_dim, rp_image::Format::ARGB32);
+	sq_img = std::make_shared<rp_image>(max_dim, max_dim, rp_image::Format::ARGB32);
 	if (!sq_img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		sq_img.reset();
+		return sq_img;
 	}
 
 	// NOTE: Using uint8_t* because stride is measured in bytes.
@@ -311,11 +319,13 @@ rp_image_ptr rp_image::squared(void) const
  */
 rp_image_ptr rp_image::resized(int width, int height, Alignment alignment, uint32_t bgColor) const
 {
+	rp_image_ptr img;
+
 	assert(width > 0);
 	assert(height > 0);
 	if (width <= 0 || height <= 0) {
 		// Cannot resize the image.
-		return {};
+		return img;
 	}
 
 	RP_D(const rp_image);
@@ -327,19 +337,21 @@ rp_image_ptr rp_image::resized(int width, int height, Alignment alignment, uint3
 	assert(orig_height > 0);
 	if (orig_width <= 0 || orig_height <= 0) {
 		// Cannot resize the image.
-		return {};
+		return img;
 	}
 
 	if (width == orig_width && height == orig_height) {
 		// No resize is necessary.
-		return this->dup();
+		img = this->dup();
+		return img;
 	}
 
 	const rp_image::Format format = backend->format;
-	rp_image_ptr img = std::make_shared<rp_image>(width, height, format);
+	img = std::make_shared<rp_image>(width, height, format);
 	if (!img->isValid()) {
 		// Image is invalid.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	// Copy the image.
@@ -576,14 +588,17 @@ int rp_image::apply_chroma_key_cpp(uint32_t key)
  */
 rp_image_ptr rp_image::flip(FlipOp op) const
 {
+	rp_image_ptr flipimg;
+
 	assert(op >= FLIP_V);
 	assert(op <= FLIP_VH);
 	if (op == 0) {
 		// No-op...
-		return this->dup();
+		flipimg = this->dup();
+		return flipimg;
 	} else if (op < FLIP_V || op > FLIP_VH) {
 		// Not supported.
-		return {};
+		return flipimg;
 	}
 
 	RP_D(const rp_image);
@@ -593,11 +608,16 @@ rp_image_ptr rp_image::flip(FlipOp op) const
 	const int height = backend->height;
 	assert(width > 0 && height > 0);
 	if (width <= 0 || height <= 0) {
-		return {};
+		return flipimg;
 	}
 
 	const int row_bytes = this->row_bytes();
-	rp_image_ptr flipimg = std::make_shared<rp_image>(width, height, backend->format);
+	flipimg = std::make_shared<rp_image>(width, height, backend->format);
+	if (!flipimg->isValid()) {
+		// Could not allocate the image.
+		flipimg.reset();
+		return flipimg;
+	}
 	const uint8_t *src = static_cast<const uint8_t*>(backend->data());
 	uint8_t *dest;
 	if (op & FLIP_V) {
@@ -623,7 +643,8 @@ rp_image_ptr rp_image::flip(FlipOp op) const
 		switch (backend->format) {
 			default:
 				assert(!"rp_image format not supported for H-flip.");
-				return {};
+				flipimg.reset();
+				return flipimg;
 
 			case rp_image::Format::CI8:
 				// 8-bit copy.

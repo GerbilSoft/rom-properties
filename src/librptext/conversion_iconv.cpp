@@ -46,6 +46,9 @@ using std::string;
 using std::u16string;
 using std::vector;
 
+// libfmt
+#include "rp-libfmt.h"
+
 namespace LibRpText {
 
 /** OS-specific text conversion functions. **/
@@ -172,22 +175,31 @@ static char *rp_iconv(const char *src, int len,
  */
 static string codePageToEncName(unsigned int cp)
 {
+	string str;
+
 	// Check for "special" code pages.
 	switch (cp) {
 		case CP_ACP:
 			// TODO: Get the system code page.
 			// Assuming cp1252 for now.
-			return "CP1252";
+			str.assign("CP1252");
+			break;
+
 		case CP_LATIN1:
-			return "LATIN1";
+			str.assign("LATIN1");
+			break;
+
 		case CP_UTF8:
-			return "UTF-8";
+			str.assign("UTF-8");
+			break;
+
 		default: {
-			string str = "CP";
-			str += std::to_string(cp);
-			return str;
+			str = fmt::format(FSTR("CP{:d}"), cp);
+			break;
 		}
 	}
+
+	return str;
 }
 
 /**
@@ -485,6 +497,8 @@ string utf16be_to_utf8(const char16_t *wcs, int len)
  */
 std::string utf16_to_cp1252(const char16_t *wcs, int len)
 {
+	string s_ret;
+
 	len = check_NULL_terminator(wcs, len);
 
 	// Find any "invalid" cp1252 characters.
@@ -514,34 +528,34 @@ std::string utf16_to_cp1252(const char16_t *wcs, int len)
 		char *mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), RP_ICONV_UTF16_ENCODING, "CP1252", false));
 		if (!mbs) {
 			// Conversion failed...
-			return {};
+			return s_ret;
 		}
 
-		string str(mbs);
-		free(mbs);
-		return str;
+		s_ret.assign(mbs);
+		return s_ret;
 	}
 
 	// Convert using "//TRANSLIT", then manually replace the bad characters.
 	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), RP_ICONV_UTF16_ENCODING, "CP1252//TRANSLIT", false));
 	if (!mbs) {
 		// Conversion failed...
-		return {};
+		return s_ret;
 	}
 
-	string str(mbs);
+	s_ret.assign(mbs);
 	free(mbs);
-	const int str_size = static_cast<int>(str.size());
+	const int s_ret_size = static_cast<int>(s_ret.size());
 	for (int idx : char_idx) {
-		assert(idx < str_size);
-		if (idx >= str_size) {
+		assert(idx < s_ret_size);
+		if (idx >= s_ret_size) {
 			// Invalid index?
-			return {};
+			s_ret.clear();
+			return s_ret;
 		}
-		str[idx] = static_cast<char>(static_cast<uint8_t>(wcs[idx]));
+		s_ret[idx] = static_cast<char>(static_cast<uint8_t>(wcs[idx]));
 	}
 
-	return str;
+	return s_ret;
 }
 
 }

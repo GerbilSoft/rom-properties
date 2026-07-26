@@ -140,12 +140,14 @@ const array<FileFormatFns, 4> FileFormatFns_mime = {{
  */
 FileFormatPtr create(const IRpFilePtr &file)
 {
+	FileFormatPtr fileFormat;
+
 	assert(file != nullptr);
 	if (!file || file->isDevice()) {
 		// Either no file was specified, or this is
 		// a device. No one would realistically use
 		// a whole device to store one texture...
-		return {};
+		return fileFormat;
 	}
 
 	// Read the file's magic number.
@@ -159,13 +161,12 @@ FileFormatPtr create(const IRpFilePtr &file)
 	size_t magic_size = file->read(&magic, sizeof(magic));
 	if (magic_size < 4) {
 		// Read error.
-		return {};
+		return fileFormat;
 	}
 
 	// Special check for Khronos KTX, which has the same
 	// 32-bit magic number for two completely different versions.
 	if (magic_size > 8 && magic.u32[0] == cpu_to_be32('\xABKTX')) {
-		FileFormatPtr fileFormat;
 		if (magic.u32[1] == cpu_to_be32(' 11\xBB')) {
 			// KTX 1.1
 			fileFormat = std::make_shared<KhronosKTX>(file);
@@ -227,7 +228,7 @@ FileFormatPtr create(const IRpFilePtr &file)
 
 	if (is_ico) {
 		// This might be a Windows icon or cursor.
-		FileFormatPtr fileFormat = std::make_shared<ICO>(file);
+		fileFormat = std::make_shared<ICO>(file);
 		if (fileFormat->isValid()) {
 			// FileFormat subclass obtained.
 			return fileFormat;
@@ -259,7 +260,7 @@ FileFormatPtr create(const IRpFilePtr &file)
 				case 24: case 32: {
 					// Valid color depth.
 					// This might be TGA.
-					FileFormatPtr fileFormat = std::make_shared<TGA>(file);
+					fileFormat = std::make_shared<TGA>(file);
 					if (fileFormat->isValid()) {
 						// FileFormat subclass obtained.
 						return fileFormat;
@@ -277,7 +278,7 @@ FileFormatPtr create(const IRpFilePtr &file)
 
 	if (is_tim) {
 		// This might be a PlayStation TIM texture.
-		FileFormatPtr fileFormat = std::make_shared<PlayStationTIM>(file);
+		fileFormat = std::make_shared<PlayStationTIM>(file);
 		if (fileFormat->isValid()) {
 			// FileFormat subclass obtained.
 			return fileFormat;
@@ -301,7 +302,7 @@ FileFormatPtr create(const IRpFilePtr &file)
 			// Found a matching magic number.
 			// TODO: Implement fns->isTextureSupported.
 			/*if (fns->isTextureSupported(&info) >= 0)*/ {
-				FileFormatPtr fileFormat = fns.newFileFormat(file);
+				fileFormat = fns.newFileFormat(file);
 				if (fileFormat->isValid()) {
 					// FileFormat subclass obtained.
 					return fileFormat;
@@ -315,7 +316,7 @@ FileFormatPtr create(const IRpFilePtr &file)
 	    (magic.u32[0x2C/4] == 0x21525650U || magic.u32[0x2C/4] == 0x50565221U))
 	{
 		// Found a matching magic number.
-		FileFormatPtr fileFormat = std::make_shared<PowerVR3>(file);
+		fileFormat = std::make_shared<PowerVR3>(file);
 		if (fileFormat->isValid()) {
 			// FileFormat subclass obtained.
 			return fileFormat;
@@ -323,7 +324,8 @@ FileFormatPtr create(const IRpFilePtr &file)
 	}
 
 	// Not supported.
-	return {};
+	fileFormat.reset();
+	return fileFormat;
 }
 
 #ifdef FILEFORMATFACTORY_USE_FILE_EXTENSIONS
