@@ -522,8 +522,6 @@ rp_image_ptr fromLinear16_neon(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
-	static constexpr int bytespp = 2;
-
 	// FIXME: Add support for these formats.
 	// For now, redirect back to the C++ version.
 	switch (px_format) {

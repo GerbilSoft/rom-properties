@@ -476,8 +476,6 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
-	static constexpr int bytespp = 4;
-
 	// FIXME: Add support for these formats.
 	// For now, redirect back to the C++ version.
 	switch (px_format) {
@@ -489,19 +487,6 @@ rp_image_ptr fromLinear32_neon(PixelFormat px_format,
 
 		default:
 			break;
-	}
-
-	// Host_ARGB32 uses memcpy() instead of SSSE3.
-	if (px_format != PixelFormat::Host_ARGB32) {
-		assert(stride >= 0);
-		if (stride == 0) {
-			stride = width * bytespp;
-		}
-		if (unlikely(stride % 16 != 0)) {
-			// Unaligned stride.
-			// Use the C++ version.
-			return fromLinear32_cpp(px_format, width, height, img_buf, img_siz, stride);
-		}
 	}
 
 	// NOTE: NEON's vld1q_*() supports unaligned loads.
