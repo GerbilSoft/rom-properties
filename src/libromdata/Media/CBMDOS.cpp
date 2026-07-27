@@ -196,6 +196,17 @@ public:
 	 */
 	ATTR_ACCESS(write_only, 2)
 	string getDiskName(CpRp *pCpRp = nullptr) const;
+
+	struct DiskIDandDOSType_t {
+		char disk_id[2];
+		char dos_type[2];
+	};
+
+	/**
+	 * Get the disk ID and DOS type.
+	 * @return Disk ID and DOS type
+	 */
+	DiskIDandDOSType_t getDiskIDandDOSType(void) const;
 };
 
 ROMDATA_IMPL(CBMDOS)
@@ -871,6 +882,48 @@ string CBMDOSPrivate::getDiskName(CpRp *pCpRp) const
 	return s_disk_name;
 }
 
+/**
+ * Get the disk ID and DOS type.
+ * @return Disk ID and DOS type
+ */
+CBMDOSPrivate::DiskIDandDOSType_t CBMDOSPrivate::getDiskIDandDOSType(void) const
+{
+	// TODO: Copy four bytes at a time? (May need some struct reworking.)
+	DiskIDandDOSType_t ret;
+
+	switch (diskType) {
+		case CBMDOSPrivate::DiskType::D64:
+		case CBMDOSPrivate::DiskType::D71:
+		case CBMDOSPrivate::DiskType::D67:
+		case CBMDOSPrivate::DiskType::G64:
+		case CBMDOSPrivate::DiskType::G71:
+			// C1541, C1571, C2040
+			memcpy(ret.disk_id, diskHeader.c1541.disk_id, sizeof(ret.disk_id));
+			memcpy(ret.dos_type, diskHeader.c1541.dos_type, sizeof(ret.dos_type));
+			break;
+
+		case CBMDOSPrivate::DiskType::D80:
+		case CBMDOSPrivate::DiskType::D82:
+			// C8050/C8250
+			memcpy(ret.disk_id, diskHeader.c8050.disk_id, sizeof(ret.disk_id));
+			memcpy(ret.dos_type, diskHeader.c8050.dos_type, sizeof(ret.dos_type));
+			break;
+
+		case CBMDOSPrivate::DiskType::D81:
+			// C1581
+			memcpy(ret.disk_id, diskHeader.c1581.disk_id, sizeof(ret.disk_id));
+			memcpy(ret.dos_type, diskHeader.c1581.dos_type, sizeof(ret.dos_type));
+			break;
+
+		default:
+			assert(!"Unsupported CBM disk type?");
+			memset(&ret, 0, sizeof(ret));
+			break;
+	}
+
+	return ret;
+}
+
 /** CBMDOS **/
 
 /**
@@ -1182,38 +1235,8 @@ int CBMDOS::loadFieldData(void)
 	const auto *diskHeader = &d->diskHeader;
 	d->fields.reserve(4);	// Maximum of 4 fields.
 
-	// Get the string addresses from the BAM/header sector.
-	// TODO: Separate function for this?
-	const char *disk_id, *dos_type;
-
-	switch (d->diskType) {
-		case CBMDOSPrivate::DiskType::D64:
-		case CBMDOSPrivate::DiskType::D71:
-		case CBMDOSPrivate::DiskType::D67:
-		case CBMDOSPrivate::DiskType::G64:
-		case CBMDOSPrivate::DiskType::G71:
-			// C1541, C1571, C2040
-			disk_id = diskHeader->c1541.disk_id;
-			dos_type = diskHeader->c1541.dos_type;
-			break;
-
-		case CBMDOSPrivate::DiskType::D80:
-		case CBMDOSPrivate::DiskType::D82:
-			// C8050/C8250
-			disk_id = diskHeader->c8050.disk_id;
-			dos_type = diskHeader->c8050.dos_type;
-			break;
-
-		case CBMDOSPrivate::DiskType::D81:
-			// C1581
-			disk_id = diskHeader->c1581.disk_id;
-			dos_type = diskHeader->c1581.dos_type;
-			break;
-
-		default:
-			assert(!"Unsupported CBM disk type?");
-			return 0;
-	}
+	// Get the disk ID and DOS type.
+	CBMDOSPrivate::DiskIDandDOSType_t diskIDandDOSType = d->getDiskIDandDOSType();
 
 	// Disk name
 	// This also sets codepage to the guessed codepage used by the disk name.
@@ -1221,11 +1244,11 @@ int CBMDOS::loadFieldData(void)
 
 	// Disk ID
 	d->fields.addField_string(C_("CBMDOS", "Disk ID"),
-		cpRP_to_utf8(cpRp, disk_id, sizeof(diskHeader->c1541.disk_id)));
+		cpRP_to_utf8(cpRp, diskIDandDOSType.disk_id, sizeof(diskIDandDOSType.disk_id)));
 
 	// DOS Type (NOTE: Always unshifted)
 	d->fields.addField_string(C_("CBMDOS", "DOS Type"),
-		cpRP_to_utf8(CpRp::PETSCII_Unshifted, dos_type, sizeof(diskHeader->c1541.dos_type)));
+		cpRP_to_utf8(CpRp::PETSCII_Unshifted, diskIDandDOSType.dos_type, sizeof(diskIDandDOSType.dos_type)));
 
 	// C1581 has an additional file type, "CBM".
 	const uint8_t max_file_type = (d->diskType == CBMDOSPrivate::DiskType::D81) ? 6 : 5;
@@ -1481,37 +1504,13 @@ int CBMDOS::loadMetaData(void)
 
 	/** Custom properties! **/
 
+	// Get the disk ID and DOS type.
+	// TODO: Custom property for disk ID?
+	CBMDOSPrivate::DiskIDandDOSType_t diskIDandDOSType = d->getDiskIDandDOSType();
+
 	// DOS Type (as OS Version) [NOTE: Always unshifted]
-	const char *dos_type;
-	switch (d->diskType) {
-		case CBMDOSPrivate::DiskType::D64:
-		case CBMDOSPrivate::DiskType::D71:
-		case CBMDOSPrivate::DiskType::D67:
-		case CBMDOSPrivate::DiskType::G64:
-		case CBMDOSPrivate::DiskType::G71:
-			// C1541, C1571, C2040
-			dos_type = diskHeader->c1541.dos_type;
-			break;
-
-		case CBMDOSPrivate::DiskType::D80:
-		case CBMDOSPrivate::DiskType::D82:
-			// C8050/C8250
-			dos_type = diskHeader->c8050.dos_type;
-			break;
-
-		case CBMDOSPrivate::DiskType::D81:
-			// C1581
-			dos_type = diskHeader->c1581.dos_type;
-			break;
-
-		default:
-			assert(!"Unsupported CBM disk type?");
-			return 0;
-	}
-
-	// DOS Type (NOTE: Always unshifted)
 	d->metaData.addMetaData_string(Property::OSVersion,
-		cpRP_to_utf8(CpRp::PETSCII_Unshifted, dos_type, sizeof(diskHeader->c1541.dos_type)));
+		cpRP_to_utf8(CpRp::PETSCII_Unshifted, diskIDandDOSType.dos_type, sizeof(diskIDandDOSType.dos_type)));
 
 	// Finished reading the metadata.
 	return d->metaData.count();
