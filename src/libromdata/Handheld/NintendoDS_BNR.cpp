@@ -131,12 +131,16 @@ NintendoDS_BNR_Private::NintendoDS_BNR_Private(const IRpFilePtr &file)
  */
 rp_image_const_ptr NintendoDS_BNR_Private::loadIcon(void)
 {
+	rp_image_const_ptr icon;
+
 	if (icon_first_frame) {
 		// Icon has already been loaded.
-		return icon_first_frame;
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		icon = icon_first_frame;
+		return icon;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the icon.
-		return {};
+		return icon;
 	}
 
 	// Load the icon data.
@@ -243,7 +247,9 @@ rp_image_const_ptr NintendoDS_BNR_Private::loadIcon(void)
 
 	// Return a pointer to the first frame.
 	icon_first_frame = iconAnimData->frames[iconAnimData->seq_index[0]];
-	return icon_first_frame;
+	// NOTE: Assigning to `icon` for named-return-value optimization.
+	icon = icon_first_frame;
+	return icon;
 }
 
 /**

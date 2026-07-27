@@ -89,7 +89,7 @@ public:
 	uint32_t gbix;
 
 	// Decoded image
-	rp_image_ptr img;
+	rp_image_ptr img_pvr;
 
 	// Invalid pixel format message
 	mutable string invalid_pixel_format;
@@ -384,15 +384,19 @@ const char *SegaPVRPrivate::imageDataTypeName(void) const
  */
 rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 {
-	if (img) {
+	rp_image_ptr img;
+
+	if (img_pvr) {
 		// Image has already been loaded.
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = img_pvr;
 		return img;
 	} else if (!file || !file->isOpen()) {
 		// File isn't open.
-		return {};
+		return img;
 	} else if (pvrType != PVRType::PVR && pvrType != PVRType::SVR) {
 		// Wrong PVR type for this function.
-		return {};
+		return img;
 	}
 
 	// Sanity check: Maximum image dimensions of 32768x32768.
@@ -404,12 +408,12 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 	    pvrHeader.height == 0 || pvrHeader.height > 32768)
 	{
 		// Invalid image dimensions.
-		return {};
+		return img;
 	}
 
 	// Sanity check: PVR files shouldn't be more than 16 MB.
 	if (file->size() > 16*1024*1024) {
-		return {};
+		return img;
 	}
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
@@ -446,19 +450,19 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 					bpp = 2;
 					break;
 				default:
-					return {};
+					return img;
 			}
 
 			// Make sure this is in fact a square textuer.
 			assert(pvrHeader.width == pvrHeader.height);
 			if (pvrHeader.width != pvrHeader.height) {
-				return {};
+				return img;
 			}
 
 			// Make sure the texture width is a power of two.
 			assert(isPow2(pvrHeader.width));
 			if (!isPow2(pvrHeader.width)) {
-				return {};
+				return img;
 			}
 
 			// Get the log2 of the texture width.
@@ -500,7 +504,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 
 				default:
 					// TODO
-					return {};
+					return img;
 			}
 			break;
 
@@ -560,7 +564,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 					break;
 				default:
 					assert(!"Unsupported pixel format for SVR.");
-					return {};
+					return img;
 			}
 			svr_pal_buf.resize(pal_siz);
 			mipmap_size = pal_siz;
@@ -587,7 +591,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 					break;
 				default:
 					assert(!"Unsupported pixel format for SVR.");
-					return {};
+					return img;
 			}
 			svr_pal_buf.resize(pal_siz);
 			mipmap_size = pal_siz;
@@ -596,7 +600,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 
 		default:
 			// TODO: Other formats.
-			return {};
+			return img;
 	}
 
 	if ((pvrDataStart + mipmap_size + expected_size) > file_sz) {
@@ -608,7 +612,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 			assert(!"PVR Small VQ file is too small.");
 		}
 #endif /* _DEBUG */
-		return {};
+		return img;
 	}
 
 	// Read the texture data.
@@ -616,7 +620,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 	size_t size = file->seekAndRead((pvrDataStart + mipmap_size), buf.get(), static_cast<size_t>(expected_size));
 	if (size != static_cast<size_t>(expected_size)) {
 		// Seek and/or read error.
-		return {};
+		return img;
 	}
 
 	// Determine the pixel format.
@@ -643,7 +647,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 			break;
 		default:
 			// Unsupported pixel format.
-			return {};
+			return img;
 	}
 
 	switch (pvrHeader.pvr.img_data_type) {
@@ -754,14 +758,14 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 			assert(!svr_pal_buf.empty());
 			if (svr_pal_buf.empty()) {
 				// Invalid palette buffer size.
-				return {};
+				return img;
 			}
 
 			// Palette is located immediately after the PVR header.
 			size = file->seekAndRead(pvrDataStart, svr_pal_buf.data(), svr_pal_buf.size());
 			if (size != svr_pal_buf.size()) {
 				// Seek and/or read error.
-				return {};
+				return img;
 			}
 
 			// FIXME: Puyo Tools has palette bit swapping in
@@ -792,14 +796,14 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 			assert(!svr_pal_buf.empty());
 			if (svr_pal_buf.empty()) {
 				// Invalid palette buffer size.
-				return {};
+				return img;
 			}
 
 			// Palette is located immediately after the PVR header.
 			size = file->seekAndRead(pvrDataStart, svr_pal_buf.data(), svr_pal_buf.size());
 			if (size != svr_pal_buf.size()) {
 				// Seek and/or read error.
-				return {};
+				return img;
 			}
 
 			// NOTE: Bits 3 and 4 in each image data byte is swapped.
@@ -840,6 +844,7 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
 			break;
 	}
 
+	img_pvr = img;
 	return img;
 }
 
@@ -849,12 +854,16 @@ rp_image_const_ptr SegaPVRPrivate::loadPvrImage(void)
  */
 rp_image_const_ptr SegaPVRPrivate::loadGvrImage(void)
 {
-	if (img) {
+	rp_image_ptr img;
+
+	if (img_pvr) {
 		// Image has already been loaded.
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = img_pvr;
 		return img;
 	} else if (!this->file || this->pvrType != PVRType::GVR) {
 		// Can't load the image.
-		return {};
+		return img;
 	}
 
 	// Sanity check: Maximum image dimensions of 32768x32768.
@@ -866,12 +875,12 @@ rp_image_const_ptr SegaPVRPrivate::loadGvrImage(void)
 	    pvrHeader.height == 0 || pvrHeader.height > 32768)
 	{
 		// Invalid image dimensions.
-		return {};
+		return img;
 	}
 
 	// Sanity check: GVR files shouldn't be more than 16 MB.
 	if (file->size() > 16*1024*1024) {
-		return {};
+		return img;
 	}
 	const unsigned int file_sz = static_cast<unsigned int>(file->size());
 
@@ -908,12 +917,12 @@ rp_image_const_ptr SegaPVRPrivate::loadGvrImage(void)
 			break;
 
 		default:
-			return {};
+			return img;
 	}
 
 	if ((expected_size + pvrDataStart) > file_sz) {
 		// File is too small.
-		return {};
+		return img;
 	}
 
 	// Read the texture data.
@@ -921,7 +930,7 @@ rp_image_const_ptr SegaPVRPrivate::loadGvrImage(void)
 	size_t size = file->seekAndRead(pvrDataStart, buf.get(), expected_size);
 	if (size != expected_size) {
 		// Seek and/or read error.
-		return {};
+		return img;
 	}
 
 	switch (pvrHeader.gvr.img_data_type) {
@@ -997,6 +1006,7 @@ rp_image_const_ptr SegaPVRPrivate::loadGvrImage(void)
 			break;
 	}
 
+	img_pvr = img;
 	return img;
 }
 
@@ -1554,31 +1564,36 @@ rp_image_const_ptr SegaPVR::image(void) const
  */
 rp_image_const_ptr SegaPVR::mipmap(int mip) const
 {
+	rp_image_const_ptr img;
+
 	RP_D(const SegaPVR);
 	if (!d->isValid) {
 		// Unknown file type.
-		return {};
+		return img;
 	}
 
 	// FIXME: Support decoding mipmaps.
 	if (mip != 0) {
-		return {};
+		return img;
 	}
 
 	// Load the image.
 	switch (d->pvrType) {
 		case SegaPVRPrivate::PVRType::PVR:
 		case SegaPVRPrivate::PVRType::SVR:
-			return const_cast<SegaPVRPrivate*>(d)->loadPvrImage();
+			img = const_cast<SegaPVRPrivate*>(d)->loadPvrImage();
+			break;
+
 		case SegaPVRPrivate::PVRType::GVR:
-			return const_cast<SegaPVRPrivate*>(d)->loadGvrImage();
+			img = const_cast<SegaPVRPrivate*>(d)->loadGvrImage();
+			break;
+
 		default:
 			// Not supported yet.
 			break;
 	}
 
-	// Not supported...
-	return {};
+	return img;
 }
 
 } // namespace LibRpTexture

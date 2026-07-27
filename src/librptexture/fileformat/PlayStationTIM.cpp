@@ -68,7 +68,7 @@ public:
 	uint32_t texDataStartAddr;
 
 	// Decoded image
-	rp_image_ptr img;
+	rp_image_ptr img_tim;
 
 	/**
 	 * Load the image.
@@ -115,17 +115,21 @@ PlayStationTIMPrivate::PlayStationTIMPrivate(PlayStationTIM *q, const IRpFilePtr
  */
 rp_image_const_ptr PlayStationTIMPrivate::loadImage(void)
 {
-	if (img) {
+	rp_image_ptr img;
+
+	if (img_tim) {
 		// Image has already been loaded.
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = img_tim;
 		return img;
 	} else if (!this->file) {
 		// Can't load the image.
-		return {};
+		return img;
 	}
 
 	if (texDataStartAddr == 0) {
 		// No texture data start address...
-		return {};
+		return img;
 	}
 
 	// CLUT buffer
@@ -137,7 +141,7 @@ rp_image_const_ptr PlayStationTIMPrivate::loadImage(void)
 		if (clutDataStartAddr == 0) {
 			// CLUT is present, but no CLUT data start address...
 			// TODO: Process it anyway, but with grayscale like no-CLUT images?
-			return {};
+			return img;
 		}
 
 		uint32_t clut_size;	// in uint16_t units
@@ -150,13 +154,13 @@ rp_image_const_ptr PlayStationTIMPrivate::loadImage(void)
 				break;
 			default:
 				assert(!"CLUT is not applicable for this color depth! (15-bpp or 24-bpp)");
-				return {};
+				return img;
 		}
 		clut_buf.resize(clut_size);
 		size_t size = file->seekAndRead(clutDataStartAddr, clut_buf.data(), clut_size * sizeof(uint16_t));
 		if (size != (clut_size * sizeof(uint16_t))) {
 			// Seek and/or read error.
-			return {};
+			return img;
 		}
 	} else {
 		// No CLUT. If this is 4-bpp or 8-bpp, create a grayscale CLUT.
@@ -202,14 +206,13 @@ rp_image_const_ptr PlayStationTIMPrivate::loadImage(void)
 	size_t size = file->seekAndRead(texDataStartAddr, img_buf.get(), img_siz);
 	if (size != img_siz) {
 		// Seek and/or read error.
-		return {};
+		return img;
 	}
 
 	// Process the image.
-	rp_image_ptr imgtmp;
 	switch (timHeader.flags & PS1_TIM_FLAG_BPP_MASK) {
 		case PS1_TIM_FLAG_BPP_4BPP:
-			imgtmp = ImageDecoder::fromLinearCI4(
+			img = ImageDecoder::fromLinearCI4(
 				ImageDecoder::PixelFormat::BGR555_PS1, false, width, height,
 				img_buf.get(), img_siz,
 				clut_buf.data(), clut_buf.size() * sizeof(uint16_t),
@@ -217,7 +220,7 @@ rp_image_const_ptr PlayStationTIMPrivate::loadImage(void)
 			break;
 
 		case PS1_TIM_FLAG_BPP_8BPP:
-			imgtmp = ImageDecoder::fromLinearCI8(
+			img = ImageDecoder::fromLinearCI8(
 				ImageDecoder::PixelFormat::BGR555_PS1, width, height,
 				img_buf.get(), img_siz,
 				clut_buf.data(), clut_buf.size() * sizeof(uint16_t),
@@ -225,24 +228,24 @@ rp_image_const_ptr PlayStationTIMPrivate::loadImage(void)
 			break;
 
 		case PS1_TIM_FLAG_BPP_15BPP:
-			imgtmp = ImageDecoder::fromLinear16(
+			img = ImageDecoder::fromLinear16(
 				ImageDecoder::PixelFormat::BGR555_PS1, width, height,
 				reinterpret_cast<const uint16_t*>(img_buf.get()), img_siz, stride);
 			break;
 
 		case PS1_TIM_FLAG_BPP_24BPP:
-			imgtmp = ImageDecoder::fromLinear24(
+			img = ImageDecoder::fromLinear24(
 				ImageDecoder::PixelFormat::BGR888, width, height,
 				img_buf.get(), img_siz, stride);
 			break;
 
 		default:
 			assert(!"Invalid BPP???");
-			return {};
+			return img;
 	}
 
-	img = imgtmp;
-	return imgtmp;
+	img_tim = img;
+	return img;
 }
 
 /** PlayStationTIM **/

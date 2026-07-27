@@ -128,20 +128,26 @@ GameComPrivate::GameComPrivate(const IRpFilePtr &file)
  */
 rp_image_const_ptr GameComPrivate::loadIcon(void)
 {
+	rp_image_const_ptr icon;
+
 	if (img_icon) {
 		// Icon has already been loaded.
-		return img_icon;
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		icon = img_icon;
+		return icon;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the icon.
-		return {};
+		return icon;
 	} else if (!(romHeader.flags & GCOM_FLAG_HAS_ICON)) {
 		// ROM doesn't have an icon.
-		return {};
+		return icon;
 	}
 
 	if (romHeader.flags & GCOM_FLAG_ICON_RLE) {
 		// Icon is RLE-compressed.
-		return loadIconRLE();
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		icon = loadIconRLE();
+		return icon;
 	}
 
 	// Icon is 64x64.
@@ -150,7 +156,7 @@ rp_image_const_ptr GameComPrivate::loadIcon(void)
 	    romHeader.icon.y > (GCOM_ICON_BANK_H - GCOM_ICON_H))
 	{
 		// Icon is out of range.
-		return {};
+		return icon;
 	}
 
 	const off64_t fileSize = this->file->size();
@@ -173,7 +179,7 @@ rp_image_const_ptr GameComPrivate::loadIcon(void)
 		// and it's over the 1 MB mark, forget it.
 		if (bank_offset > (fileSize * 2) && bank_offset > 1048576) {
 			// Completely out of range.
-			return {};
+			return icon;
 		}
 		// Get the lowest power of two size and mask the bank number.
 		const unsigned int lz = (1U << uilog2(static_cast<unsigned int>(fileSize)));
@@ -194,7 +200,7 @@ rp_image_const_ptr GameComPrivate::loadIcon(void)
 	icon_file_offset += ((romHeader.icon.x * GCOM_ICON_BANK_W) / 4);
 	if (icon_file_offset + icon_data_len > fileSize) {
 		// Out of range.
-		return {};
+		return icon;
 	}
 
 	// Create the icon.
@@ -205,7 +211,7 @@ rp_image_const_ptr GameComPrivate::loadIcon(void)
 	assert(palette != nullptr);
 	assert(tmp_icon->palette_len() >= 4);
 	if (!palette || tmp_icon->palette_len() < 4) {
-		return {};
+		return icon;
 	}
 	memcpy(palette, gcom_palette.data(), sizeof(gcom_palette));
 
@@ -216,7 +222,7 @@ rp_image_const_ptr GameComPrivate::loadIcon(void)
 	size_t size = file->seekAndRead(icon_file_offset, icon_data.get(), icon_data_len);
 	if (size != icon_data_len) {
 		// Short read.
-		return {};
+		return icon;
 	}
 
 	// NOTE: The image is vertically mirrored and rotated 270 degrees.
@@ -290,8 +296,10 @@ rp_image_const_ptr GameComPrivate::loadIcon(void)
 	tmp_icon->set_sBIT(sBIT);
 
 	// Save and return the icon.
+	// NOTE: Assigning to `icon` for named-return-value optimization.
 	this->img_icon = tmp_icon;
-	return tmp_icon;
+	icon = std::move(tmp_icon);
+	return icon;
 }
 
 /**
@@ -373,6 +381,8 @@ ssize_t GameComPrivate::rle_decompress(uint8_t *pOut, size_t out_len, const uint
  */
 rp_image_const_ptr GameComPrivate::loadIconRLE(void)
 {
+	rp_image_const_ptr icon;
+
 	// Checks were already done in loadIcon().
 	assert(romHeader.flags & GCOM_FLAG_ICON_RLE);
 
@@ -396,7 +406,7 @@ rp_image_const_ptr GameComPrivate::loadIconRLE(void)
 		// and it's over the 1 MB mark, forget it.
 		if (bank_offset > (fileSize * 2) && bank_offset > 1048576) {
 			// Completely out of range.
-			return {};
+			return icon;
 		}
 		// Get the lowest power of two size and mask the bank number.
 		const unsigned int lz = (1U << uilog2(static_cast<unsigned int>(fileSize)));
@@ -417,7 +427,7 @@ rp_image_const_ptr GameComPrivate::loadIconRLE(void)
 	size_t size = file->seekAndRead(icon_file_offset, icon_rle_data.get(), icon_rle_data_max_len);
 	if (size == 0) {
 		// No data...
-		return {};
+		return icon;
 	} else if (size < icon_rle_data_max_len) {
 		// Zero out the remaining area.
 		memset(&icon_rle_data[size], 0, icon_rle_data_max_len - size);
@@ -429,7 +439,7 @@ rp_image_const_ptr GameComPrivate::loadIconRLE(void)
 	ssize_t ssize = rle_decompress(icon_data.get(), icon_data_len, icon_rle_data.get(), icon_rle_data_max_len);
 	if (ssize != icon_data_len) {
 		// Decompression failed.
-		return {};
+		return icon;
 	}
 
 	// Create the icon.
@@ -440,7 +450,7 @@ rp_image_const_ptr GameComPrivate::loadIconRLE(void)
 	assert(palette != nullptr);
 	assert(tmp_icon->palette_len() >= 4);
 	if (!palette || tmp_icon->palette_len() < 4) {
-		return {};
+		return icon;
 	}
 	memcpy(palette, gcom_palette.data(), sizeof(gcom_palette));
 
@@ -480,8 +490,10 @@ rp_image_const_ptr GameComPrivate::loadIconRLE(void)
 	tmp_icon->set_sBIT(sBIT);
 
 	// Save and return the icon.
+	// NOTE: Assigning to `icon` for named-return-value optimization.
 	this->img_icon = tmp_icon;
-	return tmp_icon;
+	icon = std::move(tmp_icon);
+	return icon;
 }
 
 /** GameCom **/

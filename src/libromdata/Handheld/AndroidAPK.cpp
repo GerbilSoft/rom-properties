@@ -372,34 +372,38 @@ int AndroidAPKPrivate::addField_string_i18n(const char *name, const char *str, u
  */
 rp_image_const_ptr AndroidAPKPrivate::loadIcon(void)
 {
+	rp_image_ptr icon;
+
 	if (img_icon) {
 		// Icon has already been loaded.
-		return img_icon;
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		icon = img_icon;
+		return icon;
 	} else if (!this->isValid) {
 		// Can't load the icon.
-		return {};
+		return icon;
 	}
 
 	// Make sure the .apk file is open.
 	assert(apkReader != nullptr);
 	if (!apkReader) {
 		// Not open...
-		return {};
+		return icon;
 	}
 
 	// Get the icon filename from the AndroidManfiest.xml file.
 	xml_node manifest_node = manifest_xml->child("manifest");
 	if (!manifest_node) {
 		// No "<manifest>" node???
-		return {};
+		return icon;
 	}
 	xml_node application_node = manifest_node.child("application");
 	if (!application_node) {
-		return {};
+		return icon;
 	}
 	const char *icon_filename = application_node.attribute("icon").as_string(nullptr);
 	if (!icon_filename || icon_filename[0] == '\0') {
-		return {};
+		return icon;
 	}
 
 	// TODO: Lower density on request?
@@ -414,14 +418,14 @@ rp_image_const_ptr AndroidAPKPrivate::loadIcon(void)
 		icon_filename = resIcon.c_str();
 	} else if (!icon_filename) {
 		// Unable to load the icon filename...
-		return {};
+		return icon;
 	}
 
 	// Attempt to load the file.
 	rp::uvector<uint8_t> icon_buf = loadFileFromZip(icon_filename, ICON_PNG_FILE_SIZE_MAX);
 	if (icon_buf.size() < 8) {
 		// Unable to load the icon file.
-		return {};
+		return icon;
 	}
 
 	// Check for an Adaptive Icon.
@@ -429,7 +433,7 @@ rp_image_const_ptr AndroidAPKPrivate::loadIcon(void)
 	const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(icon_buf.data());
 	if (pData32[0] == cpu_to_be32(ANDROID_BINARY_XML_MAGIC)) {
 		// Not supported yet due to not supporting SVG...
-		return {};
+		return icon;
 #if 0
 		// Decode the XML.
 		MemFilePtr memFile(new MemFile(icon_buf.data(), icon_buf.size()));
@@ -484,8 +488,9 @@ rp_image_const_ptr AndroidAPKPrivate::loadIcon(void)
 	// Create a MemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly?
 	MemFile f_mem(icon_buf.data(), icon_buf.size());
-	this->img_icon = RpImageLoader::load(&f_mem);
-	return this->img_icon;
+	icon = RpImageLoader::load(&f_mem);
+	this->img_icon = icon;
+	return icon;
 }
 
 /** AndroidAPK **/

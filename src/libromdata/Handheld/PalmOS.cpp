@@ -162,12 +162,16 @@ const PalmOS_PRC_ResHeader_t *PalmOSPrivate::findResHeader(uint32_t type, uint16
  */
 rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 {
+	rp_image_const_ptr icon;
+
 	if (tbmpData) {
 		// Icon has already been loaded.
-		return tbmpData->image();
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		icon = tbmpData->image();
+		return icon;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the icon.
-		return {};
+		return icon;
 	}
 
 	// TODO: Make this a general icon loading function?
@@ -180,7 +184,7 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 	const PalmOS_PRC_ResHeader_t *const iconHdr = findResHeader(PalmOS_PRC_ResType_ApplicationIcon, 1000);
 	if (!iconHdr) {
 		// Not found...
-		return {};
+		return icon;
 	}
 
 	// Found the application icon.
@@ -199,7 +203,7 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 		size_t size = file->seekAndRead(addr, &bitmapType, sizeof(bitmapType));
 		if (size != sizeof(bitmapType)) {
 			// Failed to read the BitmapType struct.
-			return {};
+			return icon;
 		}
 
 		// Validate the bitmap version and get the next bitmap address.
@@ -208,7 +212,7 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 			default:
 				// Not supported.
 				assert(!"Unsupported BitmapType version.");
-				return {};
+				return icon;
 
 			case 0:
 				// v0: no chaining, so this is the last bitmap
@@ -257,7 +261,7 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 
 	if (bitmapTypeMap.empty()) {
 		// No bitmaps...
-		return {};
+		return icon;
 	}
 
 	// Select the "best" bitmap.
@@ -303,7 +307,7 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 
 	if (!selBitmapType) {
 		// No bitmap was selected...
-		return {};
+		return icon;
 	}
 
 	// Load the bitmap.
@@ -315,9 +319,10 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 		this->tbmpData = std::move(tmp_tbmp);
 	}
 
-	if (this->tbmpData)
-		return this->tbmpData->image();
-	return {};
+	if (this->tbmpData) {
+		icon = this->tbmpData->image();
+	}
+	return icon;
 }
 
 /**
@@ -328,9 +333,12 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
  */
 string PalmOSPrivate::load_string(uint32_t type, uint16_t id)
 {
+	string s_ret;
+
 	const PalmOS_PRC_ResHeader_t *const pRes = findResHeader(type, id);
-	if (!pRes)
-		return {};
+	if (!pRes) {
+		return s_ret;
+	}
 
 	// Read up to 256 bytes at tAIN's address.
 	// This resource contains a NULL-terminated string.
@@ -338,7 +346,7 @@ string PalmOSPrivate::load_string(uint32_t type, uint16_t id)
 	size_t size = file->seekAndRead(be32_to_cpu(pRes->addr), buf, sizeof(buf));
 	if (size == 0 || size > sizeof(buf)) {
 		// Out of range.
-		return {};
+		return s_ret;
 	}
 
 	// Make sure the buffer is NULL-terminated.
@@ -346,12 +354,15 @@ string PalmOSPrivate::load_string(uint32_t type, uint16_t id)
 
 	// Find the first NULL byte and use that as the length.
 	const char *const nullpos = static_cast<const char*>(memchr(buf, '\0', size));
-	if (!nullpos)
-		return {};
+	if (!nullpos) {
+		return s_ret;
+	}
 
 	// TODO: Text encoding.
 	const int len = static_cast<int>(nullpos - buf);
-	return latin1_to_utf8(buf, len);
+	// NOTE: Assigning to `s_ret` for named-return-value optimization.
+	s_ret = latin1_to_utf8(buf, len);
+	return s_ret;
 }
 
 /** PalmOS **/

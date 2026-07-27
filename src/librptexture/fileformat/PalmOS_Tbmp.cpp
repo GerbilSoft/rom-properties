@@ -56,7 +56,7 @@ public:
 	uint32_t bitmapTypeAddr;
 
 	// Decoded image
-	rp_image_ptr img;
+	rp_image_ptr img_tbmp;
 
 public:
 	// PalmOS 4-bit grayscale palette
@@ -348,6 +348,18 @@ uint8_t *PalmOS_Tbmp_Private::decompress_PackBits8(const uint8_t *compr_data, si
  */
 rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 {
+	rp_image_ptr img;
+
+	if (img_tbmp) {
+		// Image has already been loaded.
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = img_tbmp;
+		return img;
+	} else if (!this->file) {
+		// Can't load the image.
+		return img;
+	}
+
 	const uint8_t version = bitmapType.version;
 
 	static constexpr array<uint8_t, 4> header_size_tbl = {{
@@ -359,7 +371,7 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 	assert(version < header_size_tbl.size());
 	if (version >= header_size_tbl.size()) {
 		// Version is not supported...
-		return {};
+		return img;
 	}
 	uint32_t addr = bitmapTypeAddr + header_size_tbl[version];
 
@@ -374,7 +386,7 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 	    height <= 0 || height > 256)
 	{
 		// Icon size is probably out of range.
-		return {};
+		return img;
 	}
 	const unsigned int rowBytes = be16_to_cpu(bitmapType.rowBytes);
 	const size_t icon_data_len = static_cast<size_t>(rowBytes) * static_cast<size_t>(height);
@@ -386,14 +398,14 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 		assert(version >= 2);
 		assert(bitmapType.pixelSize == 16);
 		if (version < 2 || bitmapType.pixelSize != 16)
-			return {};
+			return img;
 
 		if (version == 2) {
 			// Read the BitmapDirectInfoType field.
 			size_t size = file->seekAndRead(addr, &bitmapDirectInfoType, sizeof(bitmapDirectInfoType));
 			if (size != sizeof(bitmapDirectInfoType)) {
 				// Seek and/or read error.
-				return {};
+				return img;
 			}
 			addr += sizeof(bitmapDirectInfoType);
 		}
@@ -407,7 +419,7 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 		size_t size = file->seekAndRead(addr, cbuf, sizeof(cbuf));
 		if (size != sizeof(cbuf)) {
 			// Seek and/or read error.
-			return {};
+			return img;
 		}
 
 		compr_type = bitmapType.v2.compressionType;
@@ -429,7 +441,7 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 	// Sanity check: compr_data_len should *always* be <= icon_data_len.
 	assert(compr_data_len <= icon_data_len);
 	if (compr_data_len > icon_data_len) {
-		return {};
+		return img;
 	}
 
 	// NOTE: Allocating enough memory for the uncompressed bitmap,
@@ -439,10 +451,9 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 	size_t size = file->seekAndRead(addr, icon_data.get(), compr_data_len);
 	if (size != compr_data_len) {
 		// Seek and/or read error.
-		return {};
+		return img;
 	}
 
-	rp_image_ptr img;
 	switch (bitmapType.pixelSize) {
 		default:
 			assert(!"Pixel size is not supported yet!");
@@ -503,7 +514,7 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 				default:
 					// Not supported...
 					assert(!"Unsupported bitmap compression type.");
-					return {};
+					return img;
 
 				case PalmOS_BitmapType_CompressionType_None:
 					// Not actually compressed...
@@ -514,7 +525,7 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 					icon_data.reset(decompress_scanline(icon_data.get(), compr_data_len));
 					if (!icon_data) {
 						// Decompression failed.
-						return {};
+						return img;
 					}
 					break;
 				}
@@ -524,7 +535,7 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 					icon_data.reset(decompress_PackBits8(icon_data.get(), compr_data_len));
 					if (!icon_data) {
 						// Decompression failed.
-						return {};
+						return img;
 					}
 					break;
 				}
@@ -534,7 +545,7 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 					icon_data.reset(decompress_RLE(icon_data.get(), compr_data_len));
 					if (!icon_data) {
 						// Decompression failed.
-						return {};
+						return img;
 					}
 					break;
 				}
@@ -595,7 +606,7 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 				default:
 					// Not supported...
 					assert(!"Unsupported bitmap compression type.");
-					return {};
+					return img;
 
 				case PalmOS_BitmapType_CompressionType_None:
 					// Not actually compressed...
@@ -607,7 +618,7 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 					icon_data.reset(decompress_scanline(icon_data.get(), compr_data_len));
 					if (!icon_data) {
 						// Decompression failed.
-						return {};
+						return img;
 					}
 					break;
 				}
@@ -646,8 +657,8 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 			}
 
 			img = ImageDecoder::fromLinear16(PixelFormat::RGB565,
-					width, height,
-					reinterpret_cast<const uint16_t*>(icon_data.get()), icon_data_len);
+				width, height,
+				reinterpret_cast<const uint16_t*>(icon_data.get()), icon_data_len);
 
 			if (img && (flags & PalmOS_BitmapType_Flags_hasTransparency)) {
 				// Apply transparency.
@@ -678,6 +689,7 @@ rp_image_const_ptr PalmOS_Tbmp_Private::loadTbmp(void)
 		}
 	}
 
+	img_tbmp = img;
 	return img;
 }
 

@@ -167,12 +167,16 @@ PSPPrivate::PSPPrivate(const IRpFilePtr &file)
  */
 rp_image_const_ptr PSPPrivate::loadIcon(void)
 {
+	rp_image_ptr icon;
+
 	if (img_icon) {
 		// Icon has already been loaded.
-		return img_icon;
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		icon = img_icon;
+		return icon;
 	} else if (!this->isValid || !this->isoPartition) {
 		// Can't load the icon.
-		return {};
+		return icon;
 	}
 
 	// Icon is located on disc as a regular PNG image.
@@ -183,13 +187,14 @@ rp_image_const_ptr PSPPrivate::loadIcon(void)
 	const IRpFilePtr f_icon(isoPartition->open(icon_filename));
 	if (!f_icon) {
 		// Unable to open the icon file.
-		return {};
+		return icon;
 	}
 
 	// Decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
-	this->img_icon = RpPng::load(f_icon);
-	return this->img_icon;
+	icon = RpPng::load(f_icon);
+	this->img_icon = icon;
+	return icon;
 }
 
 /**

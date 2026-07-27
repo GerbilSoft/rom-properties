@@ -320,12 +320,16 @@ bool GameCubeSavePrivate::isCardDirEntry(const uint8_t *buffer, uint32_t data_si
  */
 rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 {
+	rp_image_ptr icon;
+
 	if (iconAnimData) {
 		// Icon has already been loaded.
-		return iconAnimData->frames[0];
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		icon = iconAnimData->frames[0];
+		return icon;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the icon.
-		return {};
+		return icon;
 	}
 
 	// Calculate the icon start address.
@@ -333,7 +337,7 @@ rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 	uint32_t iconaddr = direntry.iconaddr;
 	if (unlikely(iconaddr == 0xFFFFFFFFU)) {
 		// No icon.
-		return {};
+		return icon;
 	}
 
 	static constexpr array<uint16_t, 4> banner_sizes = {{
@@ -392,7 +396,7 @@ rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 	size_t size = file->seekAndRead(dataOffset + iconaddr, icondata.get(), iconsizetotal);
 	if (size != iconsizetotal) {
 		// Seek and/or read error.
-		return {};
+		return icon;
 	}
 
 	this->iconAnimData = std::make_shared<IconAnimData>();
@@ -533,7 +537,9 @@ rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 	iconAnimData->seq_count = idx;
 
 	// Return the first frame.
-	return iconAnimData->frames[0];
+	// NOTE: Assigning to `icon` for named-return-value optimization.
+	icon = iconAnimData->frames[0];
+	return icon;
 }
 
 /**
@@ -542,12 +548,16 @@ rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
  */
 rp_image_const_ptr GameCubeSavePrivate::loadBanner(void)
 {
+	rp_image_ptr banner;
+
 	if (img_banner) {
 		// Banner is already loaded.
-		return img_banner;
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		banner = img_banner;
+		return banner;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the banner.
-		return {};
+		return banner;
 	}
 
 	// Banner is located at direntry.iconaddr.
@@ -561,7 +571,7 @@ rp_image_const_ptr GameCubeSavePrivate::loadBanner(void)
 	const unsigned int bannersize = banner_sizes[direntry.bannerfmt & CARD_BANNER_MASK];
 	if (bannersize == 0) {
 		// No banner.
-		return {};
+		return banner;
 	}
 
 	// Read the banner data.
@@ -571,12 +581,12 @@ rp_image_const_ptr GameCubeSavePrivate::loadBanner(void)
 					bannerbuf, bannersize);
 	if (size != bannersize) {
 		// Seek and/or read error.
-		return {};
+		return banner;
 	}
 
 	if ((direntry.bannerfmt & CARD_BANNER_MASK) == CARD_BANNER_RGB) {
 		// Convert the banner from GCN RGB5A3 format to ARGB32.
-		img_banner = ImageDecoder::fromGcn16(
+		banner = ImageDecoder::fromGcn16(
 			ImageDecoder::PixelFormat::RGB5A3, CARD_BANNER_W, CARD_BANNER_H,
 			reinterpret_cast<const uint16_t*>(bannerbuf), bannersize);
 	} else {
@@ -590,11 +600,12 @@ rp_image_const_ptr GameCubeSavePrivate::loadBanner(void)
 		}
 
 		// Convert the banner from GCN CI8 format to CI8.
-		img_banner = ImageDecoder::fromGcnCI8(CARD_BANNER_W, CARD_BANNER_H,
+		banner = ImageDecoder::fromGcnCI8(CARD_BANNER_W, CARD_BANNER_H,
 			bannerbuf, bannersize, palbuf, sizeof(palbuf));
 	}
 
-	return img_banner;
+	img_banner = banner;
+	return banner;
 }
 
 /**

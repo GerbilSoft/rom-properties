@@ -168,19 +168,23 @@ KhronosKTX2Private::KhronosKTX2Private(KhronosKTX2 *q, const IRpFilePtr &file)
  */
 rp_image_const_ptr KhronosKTX2Private::loadImage(int mip)
 {
+	rp_image_ptr img;
+
 	assert(mip >= 0);
 	assert(mip < static_cast<int>(mipmaps.size()));
 	if (mip < 0 || mip >= static_cast<int>(mipmaps.size())) {
 		// Invalid mipmap number.
-		return {};
+		return img;
 	}
 
 	if (!mipmaps.empty() && mipmaps[mip] != nullptr) {
 		// Image has already been loaded.
-		return mipmaps[mip];
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = mipmaps[mip];
+		return img;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the image.
-		return {};
+		return img;
 	}
 
 	// Sanity check: Maximum image dimensions of 32768x32768.
@@ -192,24 +196,24 @@ rp_image_const_ptr KhronosKTX2Private::loadImage(int mip)
 	    ktx2Header.pixelHeight > 32768)
 	{
 		// Invalid image dimensions.
-		return {};
+		return img;
 	}
 
 	// TODO: Support supercompression.
 	if (ktx2Header.supercompressionScheme != 0) {
-		return {};
+		return img;
 	}
 
 	// TODO: For VK_FORMAT_UNDEFINED, parse the DFD.
 	if (ktx2Header.vkFormat == VK_FORMAT_UNDEFINED) {
-		return {};
+		return img;
 	}
 
 	// Get the mipmap info.
 	assert(mip < (int)mipmap_data.size());
 	if (mip >= (int)mipmap_data.size()) {
 		// Not enough mipmap data loaded...
-		return {};
+		return img;
 	}
 	const auto &mipinfo = mipmap_data.at(mip);
 
@@ -231,12 +235,12 @@ rp_image_const_ptr KhronosKTX2Private::loadImage(int mip)
 	assert(mipinfo.byteOffset >= sizeof(ktx2Header));
 	if (mipinfo.byteOffset < sizeof(ktx2Header)) {
 		// Invalid texture data start address.
-		return {};
+		return img;
 	}
 
 	if (file->size() > 128*1024*1024) {
 		// Sanity check: KTX files shouldn't be more than 128 MB.
-		return {};
+		return img;
 	}
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
@@ -244,7 +248,7 @@ rp_image_const_ptr KhronosKTX2Private::loadImage(int mip)
 	int ret = file->seek(mipinfo.byteOffset);
 	if (ret != 0) {
 		// Seek error.
-		return {};
+		return img;
 	}
 
 	// Calculate the expected size.
@@ -385,20 +389,20 @@ rp_image_const_ptr KhronosKTX2Private::loadImage(int mip)
 #endif /* ENABLE_ASTC */
 
 			// Not supported.
-			return {};
+			return img;
 	}
 
 	// Verify mipmap size.
 	if (mipinfo.byteLength < expected_size) {
 		// Mipmap level is too small.
 		// TODO: Should we require the exact size?
-		return {};
+		return img;
 	}
 
 	// Verify file size.
 	if (mipinfo.byteOffset + expected_size > file_sz) {
 		// File is too small.
-		return {};
+		return img;
 	}
 
 	// Read the texture data.
@@ -406,11 +410,10 @@ rp_image_const_ptr KhronosKTX2Private::loadImage(int mip)
 	size_t size = file->read(buf.get(), expected_size);
 	if (size != expected_size) {
 		// Read error.
-		return {};
+		return img;
 	}
 
 	// TODO: Handle sRGB post-processing? (for e.g. GL_SRGB8)
-	rp_image_ptr img;
 	switch (ktx2Header.vkFormat) {
 		case VK_FORMAT_R8G8B8_UNORM:
 		case VK_FORMAT_R8G8B8_UINT:

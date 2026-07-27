@@ -250,6 +250,8 @@ int iQuePlayerPrivate::getTitleAndISBN(string &title, string &isbn)
 rp_image_ptr iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t unz_size,
 	ImageDecoder::PixelFormat px_format, int w, int h, bool byteswap)
 {
+	rp_image_ptr img;
+
 	assert(address >= static_cast<off64_t>(sizeof(contentDesc)));
 	assert(z_size != 0);
 	assert(unz_size > z_size);
@@ -260,7 +262,7 @@ rp_image_ptr iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t
 	if (DelayLoad_test_get_crc_table() != 0) {
 		// Delay load failed.
 		// Can't decompress the thumbnail image.
-		return {};
+		return img;
 	}
 #else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
 	// zlib isn't in a DLL, but we need to ensure that the
@@ -273,7 +275,7 @@ rp_image_ptr iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t
 	size_t size = file->seekAndRead(address, z_buf.get(), z_size);
 	if (size != z_size) {
 		// Seek and/or read error.
-		return {};
+		return img;
 	}
 
 	// Decompress the thumbnail image.
@@ -287,7 +289,7 @@ rp_image_ptr iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t
 	int ret = inflateInit2(&strm, -15);
 	if (ret != Z_OK) {
 		// Error initializing zlib.
-		return {};
+		return img;
 	}
 
 	strm.avail_in = static_cast<uInt>(z_size);
@@ -300,7 +302,7 @@ rp_image_ptr iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t
 	inflateEnd(&strm);
 	if (ret != Z_OK && ret != Z_STREAM_END) {
 		// Error decompressing.
-		return {};
+		return img;
 	}
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
@@ -312,8 +314,8 @@ rp_image_ptr iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 	// Convert the image.
-	return ImageDecoder::fromLinear16(px_format,
-		w, h, img_buf.get(), unz_size);
+	img = ImageDecoder::fromLinear16(px_format, w, h, img_buf.get(), unz_size);
+	return img;
 }
 
 /**
@@ -322,12 +324,16 @@ rp_image_ptr iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t
  */
 rp_image_const_ptr iQuePlayerPrivate::loadThumbnailImage(void)
 {
+	rp_image_ptr img;
+
 	if (img_thumbnail) {
 		// Thumbnail is already loaded.
-		return img_thumbnail;
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = img_thumbnail;
+		return img;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the banner.
-		return {};
+		return img;
 	}
 
 	// Get the thumbnail address and size.
@@ -335,14 +341,15 @@ rp_image_const_ptr iQuePlayerPrivate::loadThumbnailImage(void)
 	const size_t z_thumb_size = be16_to_cpu(contentDesc.thumb_image_size);
 	if (z_thumb_size > 0x4000) {
 		// Out of range.
-		return {};
+		return img;
 	}
 
 	// Load the image.
-	img_thumbnail = loadImage(thumb_addr, z_thumb_size, IQUE_PLAYER_THUMB_SIZE,
+	img = loadImage(thumb_addr, z_thumb_size, IQUE_PLAYER_THUMB_SIZE,
 		ImageDecoder::PixelFormat::RGBA5551,
 		IQUE_PLAYER_THUMB_W, IQUE_PLAYER_THUMB_H, true);
-	return img_thumbnail;
+	img_thumbnail = img;
+	return img;
 }
 
 /**
@@ -352,9 +359,13 @@ rp_image_const_ptr iQuePlayerPrivate::loadThumbnailImage(void)
  */
 rp_image_const_ptr iQuePlayerPrivate::loadTitleImage(void)
 {
+	rp_image_ptr img;
+
 	if (img_title) {
 		// Title is already loaded.
-		return img_title;
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = img_title;
+		return img;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the banner.
 		return {};
@@ -365,22 +376,23 @@ rp_image_const_ptr iQuePlayerPrivate::loadTitleImage(void)
 	const size_t z_title_size = be16_to_cpu(contentDesc.title_image_size);
 	if (z_title_size > 0x10000) {
 		// Out of range.
-		return {};
+		return img;
 	}
 
 	// Load the image.
 	// NOTE: Using A8L8 format, not IA8, which is GameCube-specific.
 	// TODO: Add ImageDecoder::fromLinear16() support for IA8 later.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-	img_title = loadImage(title_addr, z_title_size, IQUE_PLAYER_TITLE_SIZE,
+	img = loadImage(title_addr, z_title_size, IQUE_PLAYER_TITLE_SIZE,
 		ImageDecoder::PixelFormat::A8L8,
 		IQUE_PLAYER_TITLE_W, IQUE_PLAYER_TITLE_H, false);
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-	img_title = loadImage(title_addr, z_title_size, IQUE_PLAYER_TITLE_SIZE,
+	img = loadImage(title_addr, z_title_size, IQUE_PLAYER_TITLE_SIZE,
 		ImageDecoder::PixelFormat::L8A8,
 		IQUE_PLAYER_TITLE_W, IQUE_PLAYER_TITLE_H, false);
 #endif
-	return img_title;
+	img_title = img;
+	return img;
 }
 
 /** iQuePlayer **/

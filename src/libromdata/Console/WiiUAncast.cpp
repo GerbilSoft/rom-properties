@@ -128,13 +128,16 @@ rp_image_const_ptr WiiUAncastPrivate::loadIcon(void)
 	// TODO: Point to a preinstalled icon instead of generating a thumbnail.
 	// On Windows, point to an icon resource in the DLL?
 	// On Linux, point to a preinstalled icon in /usr/share/icons/.
+	rp_image_ptr icon;
 
 	if (img_icon) {
 		// Icon has already been loaded.
-		return img_icon;
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		icon = img_icon;
+		return icon;
 	} else if (!this->isValid || static_cast<int>(this->ancastType) < 0) {
 		// Can't load the icon.
-		return {};
+		return icon;
 	}
 
 	// Determine the target device and console type,
@@ -195,8 +198,9 @@ rp_image_const_ptr WiiUAncastPrivate::loadIcon(void)
 
 	// Create a MemFile and decode the image.
 	MemFile f_mem(png_data, png_size);
-	this->img_icon = RpPng::load(&f_mem);
-	return this->img_icon;
+	icon = RpPng::load(&f_mem);
+	this->img_icon = icon;
+	return icon;
 }
 
 /** WiiUAncast **/

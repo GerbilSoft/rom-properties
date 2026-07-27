@@ -558,27 +558,31 @@ int GodotSTEXPrivate::getMipmapInfo(void)
  */
 rp_image_const_ptr GodotSTEXPrivate::loadImage(int mip)
 {
+	rp_image_ptr img;
+
 	// Make sure the mipmap information is loaded.
 	int ret = getMipmapInfo();
 	assert(ret == 0);
 	assert(!mipmap_data.empty());
 	if (ret != 0 || mipmap_data.empty()) {
-		return {};
+		return img;
 	}
 
 	assert(mip >= 0);
 	assert(mip < (int)mipmaps.size());
 	if (mip < 0 || mip >= (int)mipmaps.size()) {
 		// Invalid mipmap number.
-		return {};
+		return img;
 	}
 
 	if (!mipmaps.empty() && mipmaps[mip] != nullptr) {
 		// Image has already been loaded.
-		return mipmaps[mip];
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = mipmaps[mip];
+		return img;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the image.
-		return {};
+		return img;
 	}
 
 	const mipmap_data_t &mdata = mipmap_data[mip];
@@ -592,12 +596,12 @@ rp_image_const_ptr GodotSTEXPrivate::loadImage(int mip)
 	    rescale_dimensions[1] > 32768)
 	{
 		// Invalid rescale dimensions.
-		return {};
+		return img;
 	}
 
 	if (file->size() > 128*1024*1024) {
 		// Sanity check: STEX files shouldn't be more than 128 MB.
-		return {};
+		return img;
 	}
 
 	// TODO: Support WebP images, and maybe Basis Universal.
@@ -605,11 +609,11 @@ rp_image_const_ptr GodotSTEXPrivate::loadImage(int mip)
 		// If it's PNG, load it.
 		if (embedHeader.fourCC != cpu_to_be32(STEX_FourCC_PNG)) {
 			// Not PNG.
-			return {};
+			return img;
 		}
 		if (stexVersion == 4 && stexHeader.v4.data_format != STEX4_DATA_FORMAT_PNG) {
 			// FourCC is PNG, but the data format isn't...
-			return {};
+			return img;
 		}
 
 		// Load the PNG data.
@@ -617,23 +621,24 @@ rp_image_const_ptr GodotSTEXPrivate::loadImage(int mip)
 		size_t size = file->seekAndRead(mdata.addr, buf.get(), mdata.size);
 		if (size != mdata.size) {
 			// Seek and/or read error.
-			return {};
+			return img;
 		}
 
 		// FIXME: Move RpPng to librptexture.
 		// Requires moving IconAnimData and some other stuff...
 		// TODO: Make use of PartitionFile instead of loading it into memory?
 		MemFile f_mem(buf.get(), mdata.size);
-		mipmaps[mip] = RpPng::load(&f_mem);
+		img = RpPng::load(&f_mem);
 
-		return mipmaps[mip];
+		mipmaps[mip] = img;
+		return img;
 	}
 
 	// Seek to the start of the texture data.
 	ret = file->seek(mdata.addr);
 	if (ret != 0) {
 		// Seek error.
-		return {};
+		return img;
 	}
 
 	// Read the texture data.
@@ -641,12 +646,11 @@ rp_image_const_ptr GodotSTEXPrivate::loadImage(int mip)
 	size_t size = file->read(buf.get(), mdata.size);
 	if (size != mdata.size) {
 		// Read error.
-		return {};
+		return img;
 	}
 
 	// Decode the image.
 	// TODO: More formats.
-	rp_image_ptr img;
 	if (pixelFormat <= STEX_FORMAT_BPTC_RGBFU) {
 		// Common format between v3 and v4.
 		switch (pixelFormat) {

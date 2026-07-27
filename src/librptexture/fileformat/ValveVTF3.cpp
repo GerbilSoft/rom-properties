@@ -45,7 +45,7 @@ public:
 	VTF3HEADER vtf3Header;
 
 	// Decoded image
-	rp_image_ptr img;
+	rp_image_ptr img_vtf3;
 
 	/**
 	 * Load the image.
@@ -89,12 +89,16 @@ ValveVTF3Private::ValveVTF3Private(ValveVTF3 *q, const IRpFilePtr &file)
  */
 rp_image_const_ptr ValveVTF3Private::loadImage(void)
 {
-	if (img) {
+	rp_image_ptr img;
+
+	if (img_vtf3) {
 		// Image has already been loaded.
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = img_vtf3;
 		return img;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the image.
-		return {};
+		return img;
 	}
 
 	// Sanity check: Maximum image dimensions of 32768x32768.
@@ -106,12 +110,12 @@ rp_image_const_ptr ValveVTF3Private::loadImage(void)
 	    vtf3Header.height > 32768)
 	{
 		// Invalid image dimensions.
-		return {};
+		return img;
 	}
 
 	if (file->size() > 128*1024*1024) {
 		// Sanity check: VTF files shouldn't be more than 128 MB.
-		return {};
+		return img;
 	}
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
@@ -129,7 +133,7 @@ rp_image_const_ptr ValveVTF3Private::loadImage(void)
 
 	if (expected_size == 0 || expected_size > file_sz) {
 		// Invalid image size.
-		return {};
+		return img;
 	}
 
 	// TODO: Adjust for mipmaps.
@@ -140,7 +144,7 @@ rp_image_const_ptr ValveVTF3Private::loadImage(void)
 	assert(texDataStartAddr >= sizeof(vtf3Header));
 	if (texDataStartAddr < sizeof(vtf3Header)) {
 		// Invalid texture data start address.
-		return {};
+		return img;
 	}
 
 	// Read the texture data.
@@ -148,7 +152,7 @@ rp_image_const_ptr ValveVTF3Private::loadImage(void)
 	size_t size = file->seekAndRead(texDataStartAddr, buf.get(), expected_size);
 	if (size != expected_size) {
 		// Seek and/or read error.
-		return {};
+		return img;
 	}
 
 	// Decode the image.
@@ -166,6 +170,7 @@ rp_image_const_ptr ValveVTF3Private::loadImage(void)
 			buf.get(), expected_size);
 	}
 
+	img_vtf3 = img;
 	return img;
 }
 

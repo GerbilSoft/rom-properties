@@ -352,6 +352,7 @@ int ValveVTFPrivate::getMipmapInfo(void)
 rp_image_const_ptr ValveVTFPrivate::loadImage(int mip)
 {
 	// TODO: Option to load the low-res image instead?
+	rp_image_ptr img;
 
 	// Make sure the mipmap info is loaded.
 	if (mipmap_data.empty()) {
@@ -361,7 +362,7 @@ rp_image_const_ptr ValveVTFPrivate::loadImage(int mip)
 		assert(mipmaps.size() == mipmap_data.size());
 		if (ret != 0 || mipmap_data.empty()) {
 			// Error getting the mipmap info.
-			return {};
+			return img;
 		}
 	}
 
@@ -369,15 +370,17 @@ rp_image_const_ptr ValveVTFPrivate::loadImage(int mip)
 	assert(mip < static_cast<int>(mipmaps.size()));
 	if (mip < 0 || mip >= static_cast<int>(mipmaps.size())) {
 		// Invalid mipmap number.
-		return {};
+		return img;
 	}
 
 	if (!mipmaps.empty() && mipmaps[mip] != nullptr) {
 		// Image has already been loaded.
-		return mipmaps[mip];
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = mipmaps[mip];
+		return img;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the image.
-		return {};
+		return img;
 	}
 
 	// Sanity check: Maximum image dimensions of 32768x32768.
@@ -389,12 +392,12 @@ rp_image_const_ptr ValveVTFPrivate::loadImage(int mip)
 	    vtfHeader.height > 32768)
 	{
 		// Invalid image dimensions.
-		return {};
+		return img;
 	}
 
 	if (file->size() > 128*1024*1024) {
 		// Sanity check: VTF files shouldn't be more than 128 MB.
-		return {};
+		return img;
 	}
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
@@ -406,14 +409,14 @@ rp_image_const_ptr ValveVTFPrivate::loadImage(int mip)
 	// Verify file size.
 	if (mdata.addr + mdata.size > file_sz) {
 		// File is too small.
-		return {};
+		return img;
 	}
 
 	// Texture cannot start inside of the VTF header.
 	assert(mdata.addr >= sizeof(vtfHeader));
 	if (mdata.addr < sizeof(vtfHeader)) {
 		// Invalid texture data start address.
-		return {};
+		return img;
 	}
 
 	// Read the texture data.
@@ -421,7 +424,7 @@ rp_image_const_ptr ValveVTFPrivate::loadImage(int mip)
 	size_t size = file->seekAndRead(mdata.addr, buf.get(), mdata.size);
 	if (size != mdata.size) {
 		// Read error.
-		return {};
+		return img;
 	}
 
 	// FIXME: Smaller mipmaps have read errors if encoded with e.g. DXTn,
@@ -432,7 +435,6 @@ rp_image_const_ptr ValveVTFPrivate::loadImage(int mip)
 	// (The channels appear to be backwards.)
 	// TODO: Lookup table to convert to PXF constants?
 	// TODO: Verify on big-endian?
-	rp_image_ptr img;
 	switch (vtfHeader.highResImageFormat) {
 		/* 32-bit */
 		case VTF_IMAGE_FORMAT_RGBA8888:

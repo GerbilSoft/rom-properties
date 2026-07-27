@@ -258,38 +258,43 @@ IRpFilePtr WiiUPackagePrivate::open(const char *filename)
  */
 rp_image_const_ptr WiiUPackagePrivate::loadIcon(void)
 {
+	rp_image_const_ptr icon;
+
 	if (img_icon) {
 		// Icon has already been loaded.
-		return img_icon;
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		icon = img_icon;
+		return icon;
 	} else if (!this->isValid) {
 		// Can't load the icon.
-		return {};
+		return icon;
 	}
 
 	// Verify that this is a Wii U package. (TMD format must be v1 or higher.)
 	if (tmd && tmd->tmdFormatVersion() < 1) {
 		// Not a Wii U package.
 		// TODO: loadInternalImage() should return ENOENT.
-		return {};
+		return icon;
 	}
 
 	// Icon is "/meta/iconTex.tga".
 	IRpFilePtr f_icon = this->open("/meta/iconTex.tga");
 	if (!f_icon) {
 		// Icon not found?
-		return {};
+		return icon;
 	}
 
 	// Attempt to open the icon as TGA.
 	TGA tga(f_icon);
 	if (!tga.isValid()) {
 		// Not a valid TGA file.
-		return {};
+		return icon;
 	}
 
 	// Get the icon.
-	img_icon = tga.image();
-	return img_icon;
+	icon = tga.image();
+	this->img_icon = icon;
+	return icon;
 }
 
 /** WiiUPackage **/

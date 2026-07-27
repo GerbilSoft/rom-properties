@@ -124,24 +124,28 @@ Nintendo3DS_SMDH_Private::Nintendo3DS_SMDH_Private(const IRpFilePtr &file)
  */
 rp_image_const_ptr Nintendo3DS_SMDH_Private::loadIcon(int idx)
 {
+	rp_image_ptr icon;
+
 	assert(idx == 0 || idx == 1);
 	if (idx != 0 && idx != 1) {
 		// Invalid icon index.
-		return {};
+		return icon;
 	}
 
 	if (img_icon[idx]) {
 		// Icon has already been loaded.
-		return img_icon[idx];
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		icon = img_icon[idx];
+		return icon;
 	} else if (!file || !isValid) {
 		// Can't load the icon.
-		return {};
+		return icon;
 	}
 
 	// Make sure the SMDH section is loaded.
 	if (smdh.header.magic != cpu_to_be32(N3DS_SMDH_HEADER_MAGIC)) {
 		// Not loaded. Cannot load an icon.
-		return {};
+		return icon;
 	}
 
 	// Convert the icon to rp_image.
@@ -154,23 +158,24 @@ rp_image_const_ptr Nintendo3DS_SMDH_Private::loadIcon(int idx)
 			// Small icon. (24x24)
 			// NOTE: Some older homebrew, including RxTools,
 			// has a broken 24x24 icon.
-			img_icon[0] = ImageDecoder::fromN3DSTiledRGB565(
+			icon = ImageDecoder::fromN3DSTiledRGB565(
 				N3DS_SMDH_ICON_SMALL_W, N3DS_SMDH_ICON_SMALL_H,
 				smdh.icon.small, sizeof(smdh.icon.small));
 			break;
 		case 1:
 			// Large icon. (48x48)
-			img_icon[1] = ImageDecoder::fromN3DSTiledRGB565(
+			icon = ImageDecoder::fromN3DSTiledRGB565(
 				N3DS_SMDH_ICON_LARGE_W, N3DS_SMDH_ICON_LARGE_H,
 				smdh.icon.large, sizeof(smdh.icon.large));
 			break;
 		default:
 			// Invalid icon index.
 			assert(!"Invalid 3DS icon index.");
-			return {};
+			return icon;
 	}
 
-	return img_icon[idx];
+	img_icon[idx] = icon;
+	return icon;
 }
 
 /**

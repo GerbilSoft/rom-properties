@@ -127,14 +127,18 @@ PlayStationSavePrivate::PlayStationSavePrivate(const IRpFilePtr &file)
  */
 rp_image_const_ptr PlayStationSavePrivate::loadIcon(void)
 {
+	rp_image_ptr icon;
+
 	if (iconAnimData) {
 		// Icon has already been loaded.
-		return iconAnimData->frames[0];
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		icon = iconAnimData->frames[0];
+		return icon;
 	}
 
 	if (static_cast<int>(saveType) < 0) {
 		// Invalid save type...
-		return {};
+		return icon;
 	}
 
 	// Determine how many frames need to be decoded.
@@ -144,7 +148,7 @@ rp_image_const_ptr PlayStationSavePrivate::loadIcon(void)
 		case PS1_SC_ICON_NONE:
 		default:
 			// No frames.
-			return {};
+			return icon;
 
 		case PS1_SC_ICON_STATIC:
 		case PS1_SC_ICON_ALT_STATIC:
@@ -190,7 +194,9 @@ rp_image_const_ptr PlayStationSavePrivate::loadIcon(void)
 
 
 	// Return the first frame.
-	return iconAnimData->frames[0];
+	// NOTE: Assigning to `icon` for named-return-value optimization.
+	icon = iconAnimData->frames[0];
+	return icon;
 }
 
 /** PlayStationSave **/

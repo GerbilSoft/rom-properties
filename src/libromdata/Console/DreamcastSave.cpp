@@ -179,9 +179,12 @@ public:
 	 * If a color icon is present, that will be loaded.
 	 * Otherwise, the monochrome icon will be loaded.
 	 *
+	 * NOTE: Called by loadIcon(), so return type must be
+	 * rp_image_ptr, *not* rp_image_const_ptr.
+	 *
 	 * @return Icon, or nullptr on error.
 	 */
-	rp_image_const_ptr loadIcon_ICONDATA_VMS(void);
+	rp_image_ptr loadIcon_ICONDATA_VMS(void);
 
 	/**
 	 * Load the save file's banner.
@@ -458,27 +461,33 @@ int DreamcastSavePrivate::readVmiHeader(const IRpFilePtr &vmi_file)
  */
 rp_image_const_ptr DreamcastSavePrivate::loadIcon(void)
 {
+	rp_image_ptr icon;
+
 	if (iconAnimData) {
 		// Icon has already been loaded.
-		return iconAnimData->frames[0];
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		icon = iconAnimData->frames[0];
+		return icon;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the icon.
-		return {};
+		return icon;
 	}
 
 	if (loaded_headers & DC_IS_ICONDATA_VMS) {
 		// Special handling for ICONDATA_VMS.
-		return loadIcon_ICONDATA_VMS();
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		icon = loadIcon_ICONDATA_VMS();
+		return icon;
 	} else if (!(loaded_headers & DC_HAVE_VMS)) {
 		// No VMS header. Cannot load the icon.
-		return {};
+		return icon;
 	}
 
 	// Check the icon count.
 	uint16_t icon_count = vms_header.icon_count;
 	if (icon_count == 0) {
 		// No icon.
-		return {};
+		return icon;
 	} else if (icon_count > 3) {
 		// VMU files have a maximum of 3 frames.
 		// Truncate the frame count.
@@ -496,7 +505,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon(void)
 	}
 	if (static_cast<off64_t>(sz_reserved) > this->file->size()) {
 		// File is NOT big enough.
-		return {};
+		return icon;
 	}
 
 	// Temporary icon buffer
@@ -507,7 +516,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon(void)
 					buf->palette.u16, sizeof(buf->palette.u16));
 	if (size != sizeof(buf->palette.u16)) {
 		// Seek and/or read error.
-		return {};
+		return icon;
 	}
 
 	if (this->saveType == SaveType::DCI) {
@@ -544,8 +553,9 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon(void)
 			DC_VMS_ICON_W, DC_VMS_ICON_H,
 			buf->icon_color.u8, sizeof(buf->icon_color.u8),
 			buf->palette.u16, sizeof(buf->palette.u16));
-		if (!iconAnimData->frames[i])
+		if (!iconAnimData->frames[i]) {
 			break;
+		}
 
 		// Icon loaded.
 		iconAnimData->count++;
@@ -562,7 +572,9 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon(void)
 	iconAnimData->seq_count = iconAnimData->count;
 
 	// Return the first frame.
-	return iconAnimData->frames[0];
+	// NOTE: Assigning to `icon` for named-return-value optimization.
+	icon = iconAnimData->frames[0];
+	return icon;
 }
 
 /**
@@ -571,21 +583,28 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon(void)
  * If a color icon is present, that will be loaded.
  * Otherwise, the monochrome icon will be loaded.
  *
+ * NOTE: Called by loadIcon(), so return type must be
+ * rp_image_ptr, *not* rp_image_const_ptr.
+ *
  * @return Icon, or nullptr on error.
  */
-rp_image_const_ptr DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
+rp_image_ptr DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 {
+	rp_image_ptr icon;
+
 	if (iconAnimData) {
 		// Icon has already been loaded.
-		return iconAnimData->frames[0];
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		icon = iconAnimData->frames[0];
+		return icon;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the icon.
-		return {};
+		return icon;
 	}
 
 	if (!(loaded_headers & DC_IS_ICONDATA_VMS)) {
 		// Not ICONDATA_VMS.
-		return {};
+		return icon;
 	}
 
 	// NOTE: We need to set up iconAnimData in order to ensure
@@ -610,7 +629,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 						buf->palette.u16, sizeof(buf->palette.u16));
 		if (size != sizeof(buf->palette.u16)) {
 			// Seek and/or read error.
-			return {};
+			return icon;
 		}
 
 		if (this->saveType == SaveType::DCI) {
@@ -622,7 +641,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 		size = file->read(buf->icon_color.u8, sizeof(buf->icon_color.u8));
 		if (size != sizeof(buf->icon_color.u8)) {
 			// Read error.
-			return {};
+			return icon;
 		}
 
 		if (this->saveType == SaveType::DCI) {
@@ -631,15 +650,15 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 		}
 
 		// Convert the icon to rp_image.
-		rp_image_ptr img = ImageDecoder::fromLinearCI4(
+		icon = ImageDecoder::fromLinearCI4(
 			ImageDecoder::PixelFormat::ARGB4444, true,
 			DC_VMS_ICON_W, DC_VMS_ICON_H,
 			buf->icon_color.u8, sizeof(buf->icon_color.u8),
 			buf->palette.u16, sizeof(buf->palette.u16));
-		if (img) {
+		if (icon) {
 			// Icon converted successfully.
-			iconAnimData->frames[0] = img;
-			return img;
+			iconAnimData->frames[0] = icon;
+			return icon;
 		}
 	}
 
@@ -649,7 +668,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 					buf->icon_mono.u8, sizeof(buf->icon_mono.u8));
 	if (size != sizeof(buf->icon_mono.u8)) {
 		// Seek and/or read error.
-		return {};
+		return icon;
 	}
 
 	if (this->saveType == SaveType::DCI) {
@@ -658,31 +677,31 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 	}
 
 	// Convert the icon to rp_image.
-	rp_image_ptr img = ImageDecoder::fromLinearMono(
+	icon = ImageDecoder::fromLinearMono(
 		DC_VMS_ICON_W, DC_VMS_ICON_H,
 		buf->icon_mono.u8, sizeof(buf->icon_mono.u8));
-	if (img) {
+	if (icon) {
 		// Adjust the palette to use a more
 		// VMU-like color scheme.
-		assert(img->palette_len() >= 2);
-		if (img->palette_len() < 2) {
+		assert(icon->palette_len() >= 2);
+		if (icon->palette_len() < 2) {
 			// Can't adjust the palette...
 			// Just return it as-is.
-			return img;
+			return icon;
 		}
 
-		uint32_t *const palette = img->palette();
+		uint32_t *const palette = icon->palette();
 		assert(palette != nullptr);
 		if (palette) {
 			palette[0] = 0xFF8CCEAD;	// Green
 			palette[1] = 0xFF081884;	// Blue
 		}
 
-		iconAnimData->frames[0] = img;
+		iconAnimData->frames[0] = icon;
 	}
 
 	// Return the ICONDATA_VMS image.
-	return img;
+	return icon;
 }
 
 /**
@@ -691,17 +710,21 @@ rp_image_const_ptr DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
  */
 rp_image_const_ptr DreamcastSavePrivate::loadBanner(void)
 {
+	rp_image_ptr banner;
+
 	if (img_banner) {
 		// Banner is already loaded.
-		return img_banner;
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		banner = img_banner;
+		return banner;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the banner.
-		return {};
+		return banner;
 	}
 
 	if (!(loaded_headers & DC_HAVE_VMS)) {
 		// No VMS header. Cannot load the banner.
-		return {};
+		return banner;
 	}
 
 	// Determine the eyecatch size.
@@ -709,7 +732,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadBanner(void)
 	    vms_header.eyecatch_type > DC_VMS_EYECATCH_CI4)
 	{
 		// No eyecatch.
-		return {};
+		return banner;
 	}
 
 	const unsigned int eyecatch_size = eyecatch_sizes[vms_header.eyecatch_type];
@@ -722,7 +745,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadBanner(void)
 		(vms_header.icon_count * DC_VMS_ICON_DATA_SIZE);
 	if (static_cast<off64_t>(sz_icons) + eyecatch_size > file->size()) {
 		// File is NOT big enough.
-		return {};
+		return banner;
 	}
 
 	// Load the eyecatch data.
@@ -731,7 +754,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadBanner(void)
 	size_t size = file->read(data.get(), eyecatch_size);
 	if (size != eyecatch_size) {
 		// Error loading the eyecatch data.
-		return {};
+		return banner;
 	}
 
 	if (this->saveType == SaveType::DCI) {
@@ -749,7 +772,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadBanner(void)
 		case DC_VMS_EYECATCH_ARGB4444: {
 			// ARGB4444 eyecatch.
 			// FIXME: Completely untested.
-			img_banner = ImageDecoder::fromLinear16(
+			banner = ImageDecoder::fromLinear16(
 				ImageDecoder::PixelFormat::ARGB4444,
 				DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H,
 				reinterpret_cast<const uint16_t*>(data.get()), DC_VMS_EYECATCH_ARGB4444_DATA_SIZE);
@@ -760,7 +783,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadBanner(void)
 			// CI8 eyecatch.
 			// TODO: Needs more testing.
 			const uint8_t *image_buf = data.get() + DC_VMS_EYECATCH_CI8_PALETTE_SIZE;
-			img_banner = ImageDecoder::fromLinearCI8(
+			banner = ImageDecoder::fromLinearCI8(
 				ImageDecoder::PixelFormat::ARGB4444,
 				DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H,
 				image_buf, DC_VMS_EYECATCH_CI8_DATA_SIZE,
@@ -771,7 +794,7 @@ rp_image_const_ptr DreamcastSavePrivate::loadBanner(void)
 		case DC_VMS_EYECATCH_CI4: {
 			// CI4 eyecatch.
 			const uint8_t *image_buf = data.get() + DC_VMS_EYECATCH_CI4_PALETTE_SIZE;
-			img_banner = ImageDecoder::fromLinearCI4(
+			banner = ImageDecoder::fromLinearCI4(
 				ImageDecoder::PixelFormat::ARGB4444, true,
 				DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H,
 				image_buf, DC_VMS_EYECATCH_CI4_DATA_SIZE,
@@ -780,7 +803,8 @@ rp_image_const_ptr DreamcastSavePrivate::loadBanner(void)
 		}
 	}
 
-	return img_banner;
+	img_banner = banner;
+	return banner;
 }
 
 /** DreamcastSave **/

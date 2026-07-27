@@ -80,7 +80,7 @@ public:
 	string image_id;
 
 	// Decoded image
-	rp_image_ptr img;
+	rp_image_ptr img_tga;
 
 	/**
 	 * Decompress RLE image data.
@@ -226,12 +226,16 @@ int TGAPrivate::decompressRLE(uint8_t *pDest, size_t dest_len,
  */
 rp_image_const_ptr TGAPrivate::loadImage(void)
 {
-	if (img) {
+	rp_image_ptr img;
+
+	if (img_tga) {
 		// Image has already been loaded.
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = img_tga;
 		return img;
 	} else if (!this->file) {
 		// Can't load the image.
-		return {};
+		return img;
 	}
 
         // Sanity check: Maximum image dimensions of 32768x32768.
@@ -243,14 +247,14 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 	    tgaHeader.img.height == 0 || tgaHeader.img.height > 32768)
 	{
 		// Invalid image dimensions.
-		return {};
+		return img;
 	}
 
 	// Image data starts immediately after the TGA header.
 	const off64_t img_data_offset = sizeof(tgaHeader) + tgaHeader.id_length;
 	if (file->seek(img_data_offset) != 0) {
 		// Seek error.
-		return {};
+		return img;
 	}
 
 	// Is the image colormapped (palette)?
@@ -270,7 +274,7 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 			// Load the color map. (up to 256 colors only)
 			if (tgaHeader.cmap.idx0 + tgaHeader.cmap.len > 256) {
 				// Too many colors.
-				return {};
+				return img;
 			}
 
 			pal_siz = 256U * cmap_bytespp;
@@ -286,7 +290,7 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 			size_t size = file->read(&pal_data[tgaHeader.cmap.idx0], cmap_size);
 			if (size != cmap_size) {
 				// Read error.
-				return {};
+				return img;
 			}
 		} else {
 			// Color map is present, but this is not a colormap image.
@@ -303,10 +307,10 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 
 	if (tgaHeader.image_type == TGA_IMAGETYPE_HUFFMAN_COLORMAP) {
 		// TODO: Huffman+Delta compression.
-		return {};
+		return img;
 	} else if (tgaHeader.image_type == TGA_IMAGETYPE_HUFFMAN_4PASS_COLORMAP) {
 		// TODO: Huffman+Delta, 4-pass compression.
-		return {};
+		return img;
 	} else if (tgaHeader.image_type & TGA_IMAGETYPE_RLE_FLAG) {
 		// Image is compressed. We'll need to decompress it.
 		// Read the rest of the file into memory.
@@ -314,7 +318,7 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 		if (fileSize > TGA_MAX_SIZE ||
 		    fileSize < static_cast<off64_t>(img_data_offset + sizeof(tgaFooter) + cmap_size))
 		{
-			return {};
+			return img;
 		}
 
 		const size_t rle_size = static_cast<size_t>(fileSize - img_data_offset - cmap_size);
@@ -322,21 +326,21 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 		size_t size = file->read(rle_data.get(), rle_size);
 		if (size != rle_size) {
 			// Read error.
-			return {};
+			return img;
 		}
 
 		// Decompress the RLE image.
 		int ret = decompressRLE(img_data.get(), img_siz, rle_data.get(), rle_size, bytespp);
 		if (ret != 0) {
 			// Error decompressing the RLE image.
-			return {};
+			return img;
 		}
 	} else {
 		// Image is not compressed. Read it directly.
 		size_t size = file->read(img_data.get(), img_siz);
 		if (size != static_cast<size_t>(img_siz)) {
 			// Read error.
-			return {};
+			return img;
 		}
 	}
 
@@ -346,7 +350,6 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 	// - Colormap: cmap_bpp == 32
 	// QtImageFormats assumes alpha is always present.
 	// TODO: Handle premultiplied alpha.
-	rp_image_ptr imgtmp;
 	switch (tgaHeader.image_type & ~TGA_IMAGETYPE_RLE_FLAG) {
 		case TGA_IMAGETYPE_COLORMAP:
 		case TGA_IMAGETYPE_HUFFMAN_COLORMAP:
@@ -400,7 +403,7 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 			assert(px_fmt != ImageDecoder::PixelFormat::Unknown);
 
 			// Decode the image.
-			imgtmp = ImageDecoder::fromLinearCI8(px_fmt,
+			img = ImageDecoder::fromLinearCI8(px_fmt,
 				tgaHeader.img.width, tgaHeader.img.height,
 				img_data.get(), img_siz,
 				pal_data.get(), pal_siz);
@@ -413,7 +416,7 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 			switch (tgaHeader.img.bpp) {
 				case 15:
 					// RGB555
-					imgtmp = ImageDecoder::fromLinear16(
+					img = ImageDecoder::fromLinear16(
 						ImageDecoder::PixelFormat::RGB555,
 						tgaHeader.img.width, tgaHeader.img.height,
 						reinterpret_cast<const uint16_t*>(img_data.get()), img_siz);
@@ -437,7 +440,7 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 							break;
 					}
 
-					imgtmp = ImageDecoder::fromLinear16(px_fmt,
+					img = ImageDecoder::fromLinear16(px_fmt,
 						tgaHeader.img.width, tgaHeader.img.height,
 						reinterpret_cast<const uint16_t*>(img_data.get()), img_siz);
 					break;
@@ -445,7 +448,7 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 
 				case 24:
 					// RGB888
-					imgtmp = ImageDecoder::fromLinear24(
+					img = ImageDecoder::fromLinear24(
 						ImageDecoder::PixelFormat::RGB888,
 						tgaHeader.img.width, tgaHeader.img.height,
 						img_data.get(), img_siz);
@@ -468,7 +471,7 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 							break;
 					}
 
-					imgtmp = ImageDecoder::fromLinear32(px_fmt,
+					img = ImageDecoder::fromLinear32(px_fmt,
 						tgaHeader.img.width, tgaHeader.img.height,
 						reinterpret_cast<const uint32_t*>(img_data.get()), img_siz);
 					break;
@@ -499,7 +502,7 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 					}
 
 					// Decode the image.
-					imgtmp = ImageDecoder::fromLinearCI8(
+					img = ImageDecoder::fromLinearCI8(
 						ImageDecoder::PixelFormat::Host_ARGB32,
 						tgaHeader.img.width, tgaHeader.img.height,
 						img_data.get(), img_siz,
@@ -517,7 +520,7 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 
 					// Decode the image.
 					// TODO: Verify; handle premultiplied alpha.
-					imgtmp = ImageDecoder::fromLinear16(
+					img = ImageDecoder::fromLinear16(
 						ImageDecoder::PixelFormat::A8L8,
 						tgaHeader.img.width, tgaHeader.img.height,
 						reinterpret_cast<const uint16_t*>(img_data.get()), img_siz);
@@ -537,15 +540,15 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
 	}
 
 	// Post-processing: Check if a flip is needed.
-	if (imgtmp && flipOp != rp_image::FLIP_NONE) {
-		rp_image_ptr flipimg = imgtmp->flip(flipOp);
+	if (img && flipOp != rp_image::FLIP_NONE) {
+		rp_image_ptr flipimg = img->flip(flipOp);
 		if (flipimg) {
-			imgtmp = std::move(flipimg);
+			img = std::move(flipimg);
 		}
 	}
 
-	img = imgtmp;
-	return imgtmp;
+	img_tga = img;
+	return img;
 }
 
 /**

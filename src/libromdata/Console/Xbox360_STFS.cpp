@@ -220,24 +220,28 @@ Xbox360_STFS_Private::Xbox360_STFS_Private(const IRpFilePtr &file)
  */
 rp_image_const_ptr Xbox360_STFS_Private::loadIcon(void)
 {
+	rp_image_ptr icon;
+
 	if (img_icon) {
 		// Icon has already been loaded.
-		return img_icon;
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		icon = img_icon;
+		return icon;
 	} else if (!this->isValid || static_cast<int>(this->stfsType) < 0) {
 		// Can't load the icon.
-		return {};
+		return icon;
 	}
 
 	// Make sure the STFS metadata and thumbnails are loaded.
 	int ret = loadHeader(STFS_PRESENT_METADATA);
 	if (ret != 0) {
 		// Not loaded and unable to load.
-		return {};
+		return icon;
 	}
 	ret = loadHeader(STFS_PRESENT_THUMBNAILS);
 	if (ret != 0) {
 		// Not loaded and unable to load.
-		return {};
+		return icon;
 	}
 
 	// TODO: Option to select title or regular thumbnail.
@@ -258,13 +262,12 @@ rp_image_const_ptr Xbox360_STFS_Private::loadIcon(void)
 
 	// Create a MemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
-	rp_image_ptr img;
 	{
 		MemFile f_mem(pIconData, iconSize);
-		img = RpPng::load(&f_mem);
+		icon = RpPng::load(&f_mem);
 	}
 
-	if (!img) {
+	if (!icon) {
 		// Unable to load the title thumbnail image.
 		// Try the regular thumbnail image.
 		if (metadata_version < 2) {
@@ -278,11 +281,11 @@ rp_image_const_ptr Xbox360_STFS_Private::loadIcon(void)
 		}
 
 		MemFile f_mem(pIconData, iconSize);
-		img = RpPng::load(&f_mem);
+		icon = RpPng::load(&f_mem);
 	}
 
-	this->img_icon = img;
-	return img;
+	this->img_icon = icon;
+	return icon;
 }
 
 /**

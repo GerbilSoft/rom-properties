@@ -49,7 +49,7 @@ public:
 	ASTC_Header astcHeader;
 
 	// Decoded image
-	rp_image_ptr img;
+	rp_image_ptr img_astc;
 
 	// Pixel format message
 	mutable string pixel_format;
@@ -95,12 +95,16 @@ ASTCPrivate::ASTCPrivate(ASTC *q, const IRpFilePtr &file)
  */
 rp_image_const_ptr ASTCPrivate::loadImage(void)
 {
-	if (img) {
+	rp_image_ptr img;
+
+	if (img_astc) {
 		// Image has already been loaded.
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = img_astc;
 		return img;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the image.
-		return {};
+		return img;
 	}
 
 #ifdef ENABLE_ASTC
@@ -116,17 +120,17 @@ rp_image_const_ptr ASTCPrivate::loadImage(void)
 	    dimensions[1] > 32768)
 	{
 		// Invalid image dimensions.
-		return {};
+		return img;
 	}
 
 	if (dimensions[2] > 1) {
 		// 3D textures are not supported.
-		return {};
+		return img;
 	}
 
 	if (file->size() > 128*1024*1024) {
 		// Sanity check: VTF files shouldn't be more than 128 MB.
-		return {};
+		return img;
 	}
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
@@ -140,7 +144,7 @@ rp_image_const_ptr ASTCPrivate::loadImage(void)
 		astcHeader.blockdimX, astcHeader.blockdimY);
 	if (expected_size == 0 || expected_size > file_sz) {
 		// Invalid image size.
-		return {};
+		return img;
 	}
 
 	// The ASTC file format does not support mipmaps.
@@ -151,7 +155,7 @@ rp_image_const_ptr ASTCPrivate::loadImage(void)
 	int ret = file->seek(texDataStartAddr);
 	if (ret != 0) {
 		// Seek error.
-		return {};
+		return img;
 	}
 
 	// Read the texture data.
@@ -159,7 +163,7 @@ rp_image_const_ptr ASTCPrivate::loadImage(void)
 	size_t size = file->read(buf.get(), expected_size);
 	if (size != expected_size) {
 		// Read error.
-		return {};
+		return img;
 	}
 
 	// Decode the image.
@@ -167,11 +171,10 @@ rp_image_const_ptr ASTCPrivate::loadImage(void)
 		dimensions[0], height,
 		buf.get(), expected_size,
 		astcHeader.blockdimX, astcHeader.blockdimY);
-	return img;
-#else /* !ENABLE_ASTC */
-	// ASTC decoder is disabled.
-	return {};
+	img_astc = img;
 #endif /* ENABLE_ASTC */
+
+	return img;
 }
 
 /** ASTC **/

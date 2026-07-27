@@ -586,19 +586,23 @@ vector<string> J2MEPrivate::parseMIDlet1tag(void)
  */
 rp_image_const_ptr J2MEPrivate::loadIcon(void)
 {
+	rp_image_ptr icon;
+
 	if (img_icon) {
 		// Icon has already been loaded.
-		return img_icon;
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		icon = img_icon;
+		return icon;
 	} else if (!this->isValid || static_cast<int>(this->jfileType) < 0) {
 		// Can't load the icon.
-		return {};
+		return icon;
 	}
 
 	// Make sure the .jar file is open.
 	assert(jarReader != nullptr);
 	if (!jarReader) {
 		// Not open...
-		return {};
+		return icon;
 	}
 
 	// PNG data buffer
@@ -618,7 +622,7 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
 
 		if (*icon_filename == '\0') {
 			// No filename.
-			return {};
+			return icon;
 		}
 
 		// Attempt to load the file.
@@ -630,7 +634,7 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
 		vector<string> vec = parseMIDlet1tag();
 		if (vec.size() < 2) {
 			// No filename.
-			return {};
+			return icon;
 		}
 
 		// Attempt to load the file.
@@ -639,14 +643,15 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
 
 	if (png_buf.empty()) {
 		// Unable to load the icon file.
-		return {};
+		return icon;
 	}
 
 	// Create a MemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
 	MemFile f_mem(png_buf.data(), png_buf.size());
-	this->img_icon = RpPng::load(&f_mem);
-	return this->img_icon;
+	icon = RpPng::load(&f_mem);
+	this->img_icon = icon;
+	return icon;
 }
 
 /** J2ME **/

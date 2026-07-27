@@ -110,13 +110,18 @@ rp_image_const_ptr EXEPrivate::loadSpecificIcon(int iconindex)
  */
 rp_image_const_ptr EXEPrivate::loadIcon(void)
 {
+	rp_image_const_ptr icon;
+
+	// NOTE: Assigning to `icon` for named-return-value optimization.
 	if (img_icon) {
 		// Icon has already been loaded.
-		return img_icon;
+		icon = img_icon;
+	} else {
+		// Load icon 0.
+		icon = loadSpecificIcon(0);
 	}
 
-	// Load icon 0.
-	return loadSpecificIcon(0);
+	return icon;
 }
 
 /**
@@ -325,16 +330,22 @@ rp::uvector<uint8_t> EXEPrivate::loadIconResourceData(int iconindex, int width, 
  */
 rp_image_const_ptr EXE::loadSpecificIcon(int iconindex)
 {
+	rp_image_const_ptr icon;
+
 	RP_D(EXE);
 	if (iconindex == 0) {
 		// Main icon. See if it's already loaded.
 		if (d->img_icon) {
 			// Icon has already been loaded.
-			return d->img_icon;
+			// NOTE: Assigning to `icon` for named-return-value optimization.
+			icon = d->img_icon;
+			return icon;
 		}
 	}
 
-	return d->loadSpecificIcon(iconindex);
+	// NOTE: Assigning to `icon` for named-return-value optimization.
+	icon = d->loadSpecificIcon(iconindex);
+	return icon;
 }
 
 /**
