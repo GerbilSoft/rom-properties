@@ -37,6 +37,21 @@ using std::wstring;
 #  include <unistd.h>	/* for R_OK */
 #endif /* _WIN32 */
 
+// Windows doesn't define X_OK, W_OK, or R_OK.
+// NOTE: F_OK doesn't work properly on Windows.
+#ifndef F_OK
+#  define F_OK 0
+#endif
+#ifndef X_OK
+#  define X_OK 1
+#endif
+#ifndef W_OK
+#  define W_OK 2
+#endif
+#ifndef R_OK
+#  define R_OK 4
+#endif
+
 namespace LibCacheCommon {
 
 // Don't allow control characters, invalid FAT32 characters, or dots.
