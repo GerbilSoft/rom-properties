@@ -38,15 +38,6 @@ private:
 
 public:
 	/**
-	 * Process an Android resource string pool.
-	 * @param data Start of string pool
-	 * @param size Size of string pool
-	 * @return Processed string pool, or empty vector<string> on error.
-	 */
-	ATTR_ACCESS_SIZE(read_only, 1, 2)
-	static vector<string> processStringPool(const uint8_t *data, size_t size);
-
-	/**
 	 * Convert an Android locale or country code to rom-properties language and country codes.
 	 * @param alocale Android locale
 	 * @param rLC rom-properties language code
