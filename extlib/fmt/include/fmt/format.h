@@ -33,6 +33,13 @@
 #ifndef FMT_FORMAT_H_
 #define FMT_FORMAT_H_
 
+// rom-properties: Disable -Wnrvo for fmtlib.
+#if (defined(__clang__) && __clang_major__ >= 21) || \
+    (defined(__GNUC__) && __GNUC__ >= 14)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wnrvo"
+#endif
+
 #ifndef _LIBCPP_REMOVE_TRANSITIVE_INCLUDES
 #  define _LIBCPP_REMOVE_TRANSITIVE_INCLUDES
 #  define FMT_REMOVE_TRANSITIVE_INCLUDES
@@ -4410,6 +4417,12 @@ FMT_END_NAMESPACE
 // Restore _LIBCPP_REMOVE_TRANSITIVE_INCLUDES.
 #ifdef FMT_REMOVE_TRANSITIVE_INCLUDES
 #  undef _LIBCPP_REMOVE_TRANSITIVE_INCLUDES
+#endif
+
+// rom-properties: Disable -Wnrvo for fmtlib.
+#if (defined(__clang__) && __clang_major__ >= 21) || \
+    (defined(__GNUC__) && __GNUC__ >= 14)
+#  pragma GCC diagnostic pop
 #endif
 
 #endif  // FMT_FORMAT_H_

@@ -96,15 +96,18 @@ static int W32U_UTF16_to_mbs(
  */
 string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags)
 {
+	string s_mbs;
+
 	if (cp & static_cast<unsigned int>(CpRp::Base)) {
 		// RP-custom code page.
-		return cpRP_to_utf8(static_cast<CpRp>(cp), str, len);
+		// NOTE: Assigning to `s_mbs` for named-value-return optimization.
+		s_mbs = cpRP_to_utf8(static_cast<CpRp>(cp), str, len);
+		return s_mbs;
 	}
 
 	// Convert from `cp` to UTF-16.
 	u16string s_wcs = cpN_to_utf16(cp, str, len, flags);
 
-	string s_mbs;
 	if (!s_wcs.empty()) {
 		// Convert from UTF-16 to UTF-8.
 		if (!W32U_UTF16_to_mbs(s_mbs, s_wcs.data(), static_cast<int>(s_wcs.size()), CP_UTF8)) {

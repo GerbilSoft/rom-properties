@@ -55,14 +55,14 @@ namespace LibRpFile { namespace FileSystem {
  */
 static inline wstring makeWinPath(const char *filename)
 {
+	wstring filenameW;
 	assert(filename != nullptr);
 	assert(filename[0] != '\0');
 	if (unlikely(!filename || filename[0] == '\0')) {
-		return {};
+		return filenameW;
 	}
 
 	// TODO: Don't bother if the filename is <= 240 characters?
-	wstring filenameW;
 	if (IsDriveLetterA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{
@@ -85,13 +85,13 @@ static inline wstring makeWinPath(const char *filename)
  */
 static inline wstring makeWinPath(const string &filename)
 {
+	wstring filenameW;
 	assert(!filename.empty());
 	if (unlikely(filename.empty())) {
-		return {};
+		return filenameW;
 	}
 
 	// TODO: Don't bother if the filename is <= 240 characters?
-	wstring filenameW;
 	if (IsDriveLetterA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{
@@ -114,14 +114,14 @@ static inline wstring makeWinPath(const string &filename)
  */
 static inline wstring makeWinPath(const wchar_t *filename)
 {
+	wstring filenameW;
 	assert(filename != nullptr);
 	assert(filename[0] != '\0');
 	if (unlikely(!filename || filename[0] == L'\0')) {
-		return {};
+		return filenameW;
 	}
 
 	// TODO: Don't bother if the filename is <= 240 characters?
-	wstring filenameW;
 	if (IsDriveLetterW(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{
@@ -144,13 +144,13 @@ static inline wstring makeWinPath(const wchar_t *filename)
  */
 static inline wstring makeWinPath(const wstring &filename)
 {
+	wstring filenameW;
 	assert(!filename.empty());
 	if (unlikely(filename.empty())) {
-		return {};
+		return filenameW;
 	}
 
 	// TODO: Don't bother if the filename is <= 240 characters?
-	wstring filenameW;
 	if (IsDriveLetterW(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{

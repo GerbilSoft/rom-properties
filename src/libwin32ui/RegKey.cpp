@@ -181,66 +181,75 @@ tstring RegKey::read(LPCTSTR lpValueName, LPDWORD lpType) const
  */
 tstring RegKey::read_expand(LPCTSTR lpValueName, LPDWORD lpType) const
 {
+	tstring ts_ret;
+
 	// Local buffer optimization to reduce memory allocation.
 	TCHAR locbuf[128];
 
 	DWORD dwType = 0;
-	tstring wstr = read(lpValueName, &dwType);
-	if (wstr.empty() || dwType != REG_EXPAND_SZ) {
+	tstring tstr = read(lpValueName, &dwType);
+	if (tstr.empty() || dwType != REG_EXPAND_SZ) {
 		// Empty string, or not REG_EXPAND_SZ.
 		// Return immediately.
 		if (lpType) {
 			*lpType = dwType;
 		}
-		return wstr;
+		// NOTE: Assigning to `ts_ret` for named-value-return optimization.
+		if (dwType == REG_SZ) {
+			ts_ret = std::move(tstr);
+		}
+		return ts_ret;
 	}
 
 	// Attempt to expand the string using the current environment.
 	// cchExpand includes the NULL terminator.
-	DWORD cchExpand = ExpandEnvironmentStrings(wstr.c_str(), nullptr, 0);
+	DWORD cchExpand = ExpandEnvironmentStrings(tstr.c_str(), nullptr, 0);
 	if (cchExpand == 0) {
 		// Error expanding the strings.
 		if (lpType) {
 			*lpType = 0;
 		}
-		return {};
+		return ts_ret;
 	}
 
 	if (cchExpand <= _countof(locbuf)) {
 		// The expanded string fits in the local buffer.
-		cchExpand = ExpandEnvironmentStrings(wstr.c_str(), locbuf, cchExpand);
+		cchExpand = ExpandEnvironmentStrings(tstr.c_str(), locbuf, cchExpand);
 		if (cchExpand == 0) {
 			// Error expanding the strings.
 			if (lpType) {
 				*lpType = 0;
 			}
-			return {};
+			return ts_ret;
 		}
 
 		// String has been expanded.
 		if (lpType) {
 			*lpType = REG_EXPAND_SZ;
 		}
-		return tstring(locbuf, cchExpand-1);
+		ts_ret.assign(locbuf, cchExpand-1);
+		return ts_ret;
 	}
 
 	// Temporarily allocate a buffer large enough for the string,
 	// then call ExpandEnvironmentStrings() again.
+	// TODO: Resize ts_ret instead of using tbuf?
 	unique_ptr<TCHAR[]> tbuf(new TCHAR[cchExpand]);
-	cchExpand = ExpandEnvironmentStrings(wstr.c_str(), tbuf.get(), cchExpand);
+	cchExpand = ExpandEnvironmentStrings(tstr.c_str(), tbuf.get(), cchExpand);
 	if (cchExpand == 0) {
 		// Error expanding the strings.
 		if (lpType) {
 			*lpType = 0;
 		}
-		return {};
+		return ts_ret;
 	}
 
 	// String has been expanded.
 	if (lpType) {
 		*lpType = REG_EXPAND_SZ;
 	}
-	return tstring(tbuf.get(), cchExpand-1);
+	ts_ret.assign(tbuf.get(), cchExpand-1);
+	return ts_ret;
 }
 
 /**

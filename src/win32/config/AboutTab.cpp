@@ -777,16 +777,17 @@ DWORD CALLBACK AboutTabPrivate::EditStreamCallback(
  */
 string AboutTabPrivate::rtfEscape(const char *str)
 {
+	string s_rtf;
+
 	assert(str != nullptr);
 	if (unlikely(!str)) {
-		return {};
+		return s_rtf;
 	}
 
 	// Convert the string to UTF-16 first.
 	const u16string u16str = utf8_to_utf16(str, -1);
 
 	// RTF return string.
-	string s_rtf;
 	s_rtf.reserve(u16str.size() * 2);
 
 	// Reference: http://www.zopatista.com/python/2012/06/06/rtf-and-unicode/

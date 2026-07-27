@@ -401,10 +401,12 @@ cleanup:
  */
 rp_image_ptr fromHBITMAP(HBITMAP hBitmap)
 {
+	rp_image_ptr img;
+
 	BITMAP bm;
 	if (!GetObject(hBitmap, sizeof(bm), &bm)) {
 		// GetObject() failed.
-		return nullptr;
+		return img;
 	}
 
 	// Determine the image format.
@@ -413,7 +415,7 @@ rp_image_ptr fromHBITMAP(HBITMAP hBitmap)
 	switch (bm.bmBitsPixel) {
 		case 8:
 			assert(!"fromHBITMAP() doesn't support 8bpp yet.");
-			return nullptr;
+			return img;
 #if 0
 			format = rp_image::Format::CI8;
 			copy_len = bm.bmWidth;
@@ -425,7 +427,7 @@ rp_image_ptr fromHBITMAP(HBITMAP hBitmap)
 			break;
 		default:
 			assert(!"Unsupported HBITMAP bmBitsPixel value.");
-			return nullptr;
+			return img;
 	}
 
 	// TODO: Copy the palette for 8-bit.
@@ -456,14 +458,15 @@ rp_image_ptr fromHBITMAP(HBITMAP hBitmap)
 	ReleaseDC(nullptr, hDC);
 	if (!dib_ret) {
 		// GetDIBits() failed.
-		return nullptr;
+		return img;
 	}
 
 	// Copy the data into a new rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(bm.bmWidth, height, format);
+	img = std::make_shared<rp_image>(bm.bmWidth, height, format);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return nullptr;
+		img.reset();
+		return img;
 	}
 
 	// TODO: Copy the palette for 8-bit.
