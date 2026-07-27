@@ -1145,8 +1145,10 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiKeysBin(IRpFile *file)
 	}};
 
 	// Import the keys.
-	return importKeysFromBlob(KeyStoreUIPrivate::SectionID::WiiTicket,
+	// NOTE: Assigning to `iret` for named-value-return optimization.
+	iret = importKeysFromBlob(KeyStoreUIPrivate::SectionID::WiiTicket,
 		keyBinAddress.data(), keyBinAddress.size(), buf, sizeof(buf));
+	return iret;
 }
 
 /**
@@ -1227,13 +1229,15 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(IRpFile *file)
 	}};
 
 	// Import the keys.
+	// NOTE: Assigning to `iret` for named-value-return optimization.
 	if (likely(!isDebug)) {
-		return importKeysFromBlob(KeyStoreUIPrivate::SectionID::WiiTicket,
+		iret = importKeysFromBlob(KeyStoreUIPrivate::SectionID::WiiTicket,
 			keyBinAddress_retail.data(), keyBinAddress_retail.size(), buf, sizeof(buf));
 	} else {
-		return importKeysFromBlob(KeyStoreUIPrivate::SectionID::WiiTicket,
+		iret = importKeysFromBlob(KeyStoreUIPrivate::SectionID::WiiTicket,
 			keyBinAddress_debug.data(), keyBinAddress_debug.size(), buf, sizeof(buf));
 	}
+	return iret;
 }
 
 /**
@@ -1307,8 +1311,10 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(IRpFile *file)
 	}};
 
 	// Import the keys.
-	return importKeysFromBlob(KeyStoreUIPrivate::SectionID::N3DSVerifyKeys,
+	// NOTE: Assigning to `iret` for named-value-return optimization.
+	iret = importKeysFromBlob(KeyStoreUIPrivate::SectionID::N3DSVerifyKeys,
 		keyBinAddress.data(), keyBinAddress.size(), buf->data(), buf->size());
+	return iret;
 }
 
 /**
