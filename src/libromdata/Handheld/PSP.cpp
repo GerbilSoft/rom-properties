@@ -322,28 +322,31 @@ string PSPPrivate::getGameID(void) const
 	// - Field 1: Encryption key?
 	// - Field 2: Revision?
 	// - Field 3: Age rating?
+	string s_ret;
 
 	const IRpFilePtr f_umdDataBin = isoPartition->open("/UMD_DATA.BIN");
 	if (!f_umdDataBin) {
-		return {};
+		return s_ret;
 	}
 
 	// Read up to 128 bytes.
 	char buf[129];
 	size_t size = f_umdDataBin->read(buf, sizeof(buf)-1);
 	if (size == 0 || size >= sizeof(buf)-1) {
-		return {};
+		return s_ret;
 	}
 	buf[size] = 0;
 
 	// Find the first '|'.
 	const char *const p = static_cast<const char*>(memchr(buf, '|', sizeof(buf)));
 	if (!p) {
-		return {};
+		return s_ret;
 	}
 
 	// Game ID field on UMD Video discs is the video title.
-	return latin1_to_utf8(buf, static_cast<int>(p - buf));
+	// NOTE: Assigning to `s_ret` for named-return-value optimization.
+	s_ret = latin1_to_utf8(buf, static_cast<int>(p - buf));
+	return s_ret;
 }
 
 /** PSP **/

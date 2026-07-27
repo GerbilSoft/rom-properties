@@ -476,12 +476,13 @@ const rp::uvector<char> *Xbox360_XDBF_Private::loadStringTable_SPA(XDBF_Language
  */
 string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t string_id)
 {
-	string ret;
+	string s_ret;
 
 	assert(langID >= 0);
 	assert(langID < XDBF_LANGUAGE_MAX);
-	if (langID < 0 || langID >= XDBF_LANGUAGE_MAX)
-		return ret;
+	if (langID < 0 || langID >= XDBF_LANGUAGE_MAX) {
+		return s_ret;
+	}
 
 	// Get the string table.
 	const rp::uvector<char> *vec = strTbls[langID];
@@ -489,7 +490,7 @@ string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t str
 		vec = loadStringTable_SPA(langID);
 		if (!vec) {
 			// Unable to load the string table.
-			return ret;
+			return s_ret;
 		}
 	}
 
@@ -519,7 +520,7 @@ string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t str
 				// Character set conversion isn't needed, since
 				// the string table is UTF-8, but we do need to
 				// convert from DOS to UNIX line endings.
-				ret = dos2unix(p_str, length);
+				s_ret = dos2unix(p_str, length);
 			}
 			break;
 		} else {
@@ -529,7 +530,7 @@ string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t str
 		}
 	}
 
-	return ret;
+	return s_ret;
 }
 
 /**

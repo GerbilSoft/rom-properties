@@ -636,6 +636,8 @@ int KeyStoreUIPrivate::getAesKeyDB_key(u128_t *pKey) const
  */
 string KeyStoreUIPrivate::convertKanjiToHex(const char *str)
 {
+	string s_ret;
+
 	// Check for non-ASCII characters.
 	// TODO: Also check for non-hex digits?
 	bool hasNonAscii = false;
@@ -651,7 +653,9 @@ string KeyStoreUIPrivate::convertKanjiToHex(const char *str)
 
 	if (!hasNonAscii) {
 		// No non-ASCII characters.
-		return str;
+		// NOTE: Assigning to `s_ret` for named-return-value optimization.
+		s_ret = str;
+		return s_ret;
 	}
 
 	// We're expecting 7 kanji symbols,
@@ -675,7 +679,9 @@ string KeyStoreUIPrivate::convertKanjiToHex(const char *str)
 		pHex[3] = hex_lookup[(u16 >>  8) & 0x0F];
 	}
 
-	return {hexstr.get(), hexlen};
+	// TODO: Write directly to `s_ret`?
+	s_ret.assign(hexstr.get(), hexlen);
+	return s_ret;
 }
 
 /**
@@ -779,11 +785,14 @@ void KeyStoreUIPrivate::verifyKey(int sectIdx, int keyIdx)
  */
 string KeyStoreUIPrivate::binToHexStr(const uint8_t *data, size_t len)
 {
+	string s_ret;
+
 	assert(data != nullptr);
 	assert(len > 0);
 	assert(len <= 64);
-	if (!data || len == 0 || len > 64)
-		return {};
+	if (!data || len == 0 || len > 64) {
+		return s_ret;
+	}
 
 	const size_t hexlen = len * 2;
 	unique_ptr<char[]> hexstr(new char[hexlen]);
@@ -793,7 +802,9 @@ string KeyStoreUIPrivate::binToHexStr(const uint8_t *data, size_t len)
 		pHex[1] = hex_lookup[*data & 0x0F];
 	}
 
-	return {hexstr.get(), hexlen};
+	// TODO: Write directly to `s_ret`?
+	s_ret.assign(hexstr.get(), hexlen);
+	return s_ret;
 }
 
 /** KeyStore **/

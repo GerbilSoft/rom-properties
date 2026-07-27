@@ -416,11 +416,15 @@ string Xbox_XBE_Private::getTitleID(void) const
  */
 string Xbox_XBE_Private::getPublisher(void) const
 {
+	string s_ret;
+
 	const uint16_t pub_id = (static_cast<unsigned int>(xbeCertificate.title_id.a) << 8) |
 	                        (static_cast<unsigned int>(xbeCertificate.title_id.b));
 	const char *const publisher = XboxPublishers::lookup(pub_id);
 	if (publisher) {
-		return publisher;
+		// NOTE: Assigning to `s_ret` for named-return-value optimization.
+		s_ret = publisher;
+		return s_ret;
 	}
 
 	// Unknown publisher.
@@ -428,15 +432,17 @@ string Xbox_XBE_Private::getPublisher(void) const
 	    isalnum_ascii(xbeCertificate.title_id.b))
 	{
 		// Publisher ID is alphanumeric.
-		return fmt::format(FRUN(C_("RomData", "Unknown ({:c}{:c})")),
+		s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:c}{:c})")),
 			xbeCertificate.title_id.a,
 			xbeCertificate.title_id.b);
+	} else {
+		// Publisher ID is not alphanumeric.
+		s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
+			static_cast<uint8_t>(xbeCertificate.title_id.a),
+			static_cast<uint8_t>(xbeCertificate.title_id.b));
 	}
 
-	// Publisher ID is not alphanumeric.
-	return fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
-		static_cast<uint8_t>(xbeCertificate.title_id.a),
-		static_cast<uint8_t>(xbeCertificate.title_id.b));
+	return s_ret;
 }
 
 /**

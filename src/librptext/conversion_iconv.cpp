@@ -388,19 +388,19 @@ u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned int f
  */
 string utf8_to_cpN(unsigned int cp, const char *str, int len)
 {
+	string s_ret;
 	len = check_NULL_terminator(str, len);
 
 	// Get the encoding name for the primary code page.
 	const string cp_name = codePageToEncName(cp);
 
 	// Attempt to convert the text from UTF-8.
-	string ret;
-	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len*sizeof(*str), "UTF-8", cp_name.c_str(), true));
+	char *const mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len*sizeof(*str), "UTF-8", cp_name.c_str(), true));
 	if (mbs) {
-		ret.assign(mbs);
+		s_ret.assign(mbs);
 		free(mbs);
 	}
-	return ret;
+	return s_ret;
 }
 
 /**
@@ -417,6 +417,7 @@ string utf8_to_cpN(unsigned int cp, const char *str, int len)
  */
 string utf16_to_cpN(unsigned int cp, const char16_t *wcs, int len)
 {
+	string s_ret;
 	len = check_NULL_terminator(wcs, len);
 
 	// Get the encoding name for the primary code page.
@@ -426,13 +427,12 @@ string utf16_to_cpN(unsigned int cp, const char16_t *wcs, int len)
 	const bool ignoreErr = (cp != CP_UTF8);
 
 	// Attempt to convert the text from UTF-8.
-	string ret;
-	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), RP_ICONV_UTF16_ENCODING, cp_name.c_str(), ignoreErr));
+	char *const mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), RP_ICONV_UTF16_ENCODING, cp_name.c_str(), ignoreErr));
 	if (mbs) {
-		ret.assign(mbs);
+		s_ret.assign(mbs);
 		free(mbs);
 	}
-	return ret;
+	return s_ret;
 }
 
 /** Specialized UTF-16 conversion functions. **/
@@ -440,6 +440,7 @@ string utf16_to_cpN(unsigned int cp, const char16_t *wcs, int len)
 /**
  * Convert 16-bit Unicode text to UTF-8.
  * Trailing NULL bytes will be removed.
+ * [INTERNAL VERSION, called by utf16(le|be)_to_utf8().]
  * @param src_encoding [in] Source encoding
  * @param wcs	[in] 16-bit Unicode text
  * @param len	[in] Length of wcs, in characters (-1 for NULL-terminated string)
@@ -447,16 +448,16 @@ string utf16_to_cpN(unsigned int cp, const char16_t *wcs, int len)
  */
 static string INT_utf16_to_utf8(const char *src_encoding, const char16_t *wcs, int len)
 {
+	string s_ret;
 	len = check_NULL_terminator(wcs, len);
 
 	// Attempt to convert the text from UTF-16LE to UTF-8.
-	string ret;
-	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), src_encoding, "UTF-8"));
+	char *const mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), src_encoding, "UTF-8"));
 	if (mbs) {
-		ret.assign(mbs);
+		s_ret.assign(mbs);
 		free(mbs);
 	}
-	return ret;
+	return s_ret;
 }
 
 /**
@@ -498,7 +499,6 @@ string utf16be_to_utf8(const char16_t *wcs, int len)
 std::string utf16_to_cp1252(const char16_t *wcs, int len)
 {
 	string s_ret;
-
 	len = check_NULL_terminator(wcs, len);
 
 	// Find any "invalid" cp1252 characters.
@@ -536,7 +536,7 @@ std::string utf16_to_cp1252(const char16_t *wcs, int len)
 	}
 
 	// Convert using "//TRANSLIT", then manually replace the bad characters.
-	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), RP_ICONV_UTF16_ENCODING, "CP1252//TRANSLIT", false));
+	char *const mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), RP_ICONV_UTF16_ENCODING, "CP1252//TRANSLIT", false));
 	if (!mbs) {
 		// Conversion failed...
 		return s_ret;
