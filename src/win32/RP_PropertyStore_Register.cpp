@@ -95,7 +95,7 @@ std::tstring RP_PropertyStore_Private::GetInfoTipString(void)
 	if (!hkcr_All.isOpen()) {
 		// Unable to open "*".
 		// Use the InfoTip as-is.
-		// NOTE: Assigning to `InfoTip` for named-value-return optimization.
+		// NOTE: Assigning to `InfoTip` for named-return-value optimization.
 		ts_infoTip.assign(InfoTip, _countof(InfoTip)-1);
 		return ts_infoTip;
 	}

@@ -126,7 +126,7 @@ IDiscReaderPtr WiiUPackagePrivate::openContentFile(unsigned int idx)
 
 	if (contentsReaders[idx]) {
 		// Content is already open.
-		// NOTE: Assigning to `discReader` for named-value-return optimization.
+		// NOTE: Assigning to `discReader` for named-return-value optimization.
 		discReader = contentsReaders[idx];
 		return discReader;
 	}

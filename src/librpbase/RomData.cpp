@@ -1024,7 +1024,7 @@ rp_image_const_ptr RomData::mipmap(int mipmapLevel) const
 
 	if (mipmapLevel == 0) {
 		// Mipmap level 0 is identical to the regular image.
-		// NOTE: Assigning to `img` for named-value-return optimization.
+		// NOTE: Assigning to `img` for named-return-value optimization.
 		img = this->image(IMG_INT_IMAGE);
 		return img;
 	}

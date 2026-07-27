@@ -270,7 +270,7 @@ IRpFilePtr XboxDiscPrivate::open(const char *filename)
 		}
 
 		// Open the file from the XDVDFS partition.
-		// NOTE: Assigning to `f` for named-value-return optimization.
+		// NOTE: Assigning to `f` for named-return-value optimization.
 		f = xdvdfsPartition->open(filename);
 		return f;
 	}
@@ -319,7 +319,7 @@ IRpFilePtr XboxDiscPrivate::open(const char *filename)
 	std::transform(toupper_iter, ts_full_filename.end(), toupper_iter, [](TCHAR c) noexcept -> TCHAR {
 		return TOUPPER(c);
 	});
-	// NOTE: Assigning to `f` for named-value-return optimization.
+	// NOTE: Assigning to `f` for named-return-value optimization.
 	f = std::make_shared<RpFile>(ts_full_filename, RpFile::FM_OPEN_READ);
 	return f;
 }

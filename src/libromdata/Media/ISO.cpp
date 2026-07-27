@@ -800,7 +800,7 @@ rp_image_const_ptr ISOPrivate::loadIcon(void)
 
 	if (img_icon) {
 		// Icon has already been loaded.
-		// NOTE: Assigning to `s_disk_name` for named-value-return optimization.
+		// NOTE: Assigning to `s_disk_name` for named-return-value optimization.
 		icon = img_icon;
 		return icon;
 	} else if (!this->isValid || static_cast<int>(this->discType) < 0) {

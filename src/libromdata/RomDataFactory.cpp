@@ -744,12 +744,12 @@ static IDiscReaderPtr openIDiscReader(const IRpFilePtr &file, uint32_t magic0)
 				}
 			}
 
-			// NOTE: Previously assigned to `discReader` for named-value-return optimization.
+			// NOTE: Previously assigned to `discReader` for named-return-value optimization.
 			return discReader;
 		} while (0);
 
 		// No file extension. Assume it's a single .wbfs file.
-		// NOTE: Assigning to `discReader` for named-value-return optimization.
+		// NOTE: Assigning to `discReader` for named-return-value optimization.
 		discReader = std::make_shared<WbfsReader>(file);
 		return discReader;
 	}
@@ -975,7 +975,7 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 	static constexpr uint32_t zip_magic = 0x504B0304;	// 'PK\x03\x04'
 	if (header.u32[0] == cpu_to_be32(zip_magic)) {
 		// This is a .zip file.
-		// NOTE: Assigning to `romData` for named-value-return optimization.
+		// NOTE: Assigning to `romData` for named-return-value optimization.
 		romData = Private::openZipFile(file, attrs);
 		return romData;
 	}
@@ -1263,7 +1263,7 @@ static RomDataPtr T_create(const CharType *filename, unsigned int attrs)
 		// Not a directory.
 		IRpFilePtr file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
 		if (file->isOpen()) {
-			// NOTE: Assigning to `romData` for named-value-return optimization.
+			// NOTE: Assigning to `romData` for named-return-value optimization.
 			romData = create(file, attrs);
 			return romData;
 		}

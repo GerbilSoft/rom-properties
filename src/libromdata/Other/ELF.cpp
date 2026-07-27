@@ -279,7 +279,7 @@ Elf64_Phdr ELFPrivate::readProgramHeader(const uint8_t *phbuf)
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
 		const Elf64_Phdr *const phdr = reinterpret_cast<const Elf64_Phdr*>(phbuf);
 		if (Elf_Header.primary.e_data == ELFDATAHOST) {
-			// NOTE: Assigning to `out` for named-value-return optimization.
+			// NOTE: Assigning to `out` for named-return-value optimization.
 			out = *phdr;
 			return out;
 		}
@@ -444,7 +444,7 @@ Elf64_Shdr ELFPrivate::readSectionHeader(const uint8_t *shbuf)
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
 		const Elf64_Shdr *const shdr = reinterpret_cast<const Elf64_Shdr*>(shbuf);
 		if (Elf_Header.primary.e_data == ELFDATAHOST) {
-			// NOTE: Assigning to `out` for named-value-return optimization.
+			// NOTE: Assigning to `out` for named-return-value optimization.
 			out = *shdr;
 			return out;
 		}

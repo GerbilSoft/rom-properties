@@ -194,7 +194,7 @@ tstring RegKey::read_expand(LPCTSTR lpValueName, LPDWORD lpType) const
 		if (lpType) {
 			*lpType = dwType;
 		}
-		// NOTE: Assigning to `ts_ret` for named-value-return optimization.
+		// NOTE: Assigning to `ts_ret` for named-return-value optimization.
 		if (dwType == REG_SZ) {
 			ts_ret = std::move(tstr);
 		}

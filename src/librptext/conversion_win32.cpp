@@ -100,7 +100,7 @@ string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags
 
 	if (cp & static_cast<unsigned int>(CpRp::Base)) {
 		// RP-custom code page.
-		// NOTE: Assigning to `s_mbs` for named-value-return optimization.
+		// NOTE: Assigning to `s_mbs` for named-return-value optimization.
 		s_mbs = cpRP_to_utf8(static_cast<CpRp>(cp), str, len);
 		return s_mbs;
 	}

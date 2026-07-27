@@ -233,7 +233,7 @@ private:
 		// Check for an HTML link.
 		if (strncmp(p+1, "a href=\"", 8) != 0) {
 			// Not a link.
-			// NOTE: Assigning to `str` for named-value-return optimization.
+			// NOTE: Assigning to `str` for named-return-value optimization.
 			str = printInvalidTag(tag);
 			return str;
 		}
@@ -246,7 +246,7 @@ private:
 		const char *const dblquote = strchr(p, '"');
 		if (!dblquote) {
 			// Link text doesn't end...
-			// NOTE: Assigning to `str` for named-value-return optimization.
+			// NOTE: Assigning to `str` for named-return-value optimization.
 			str = printInvalidTag(tag);
 			return str;
 		}
@@ -264,7 +264,7 @@ private:
 		// Next character must be '>'.
 		if (*p != '>') {
 			// `<a>` tag isn't closed.
-			// NOTE: Assigning to `str` for named-value-return optimization.
+			// NOTE: Assigning to `str` for named-return-value optimization.
 			str = printInvalidTag(tag);
 			return str;
 		}
@@ -276,7 +276,7 @@ private:
 		const char *end_link = strstr(p, "</a>");
 		if (!end_link) {
 			// No end tag...
-			// NOTE: Assigning to `str` for named-value-return optimization.
+			// NOTE: Assigning to `str` for named-return-value optimization.
 			str = printInvalidTag(tag);
 			return str;
 		}

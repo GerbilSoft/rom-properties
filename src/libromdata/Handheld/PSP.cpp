@@ -241,7 +241,7 @@ RomDataPtr PSPPrivate::openBootExe(void)
 
 	if (bootExeData) {
 		// The boot executable is already open.
-		// NOTE: Assigning to `exeData` for named-value-return optimization.
+		// NOTE: Assigning to `exeData` for named-return-value optimization.
 		exeData = bootExeData;
 		return exeData;
 	}
@@ -282,7 +282,7 @@ ParamSFOPtr PSPPrivate::openParamSfo(void)
 
 	if (paramSfoData) {
 		// The PARAM.SFO is already open.
-		// NOTE: Assigning to `sfoData` for named-value-return optimization.
+		// NOTE: Assigning to `sfoData` for named-return-value optimization.
 		sfoData = paramSfoData;
 		return sfoData;
 	}

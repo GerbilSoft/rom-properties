@@ -1145,7 +1145,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiKeysBin(IRpFile *file)
 	}};
 
 	// Import the keys.
-	// NOTE: Assigning to `iret` for named-value-return optimization.
+	// NOTE: Assigning to `iret` for named-return-value optimization.
 	iret = importKeysFromBlob(KeyStoreUIPrivate::SectionID::WiiTicket,
 		keyBinAddress.data(), keyBinAddress.size(), buf, sizeof(buf));
 	return iret;
@@ -1229,7 +1229,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(IRpFile *file)
 	}};
 
 	// Import the keys.
-	// NOTE: Assigning to `iret` for named-value-return optimization.
+	// NOTE: Assigning to `iret` for named-return-value optimization.
 	if (likely(!isDebug)) {
 		iret = importKeysFromBlob(KeyStoreUIPrivate::SectionID::WiiTicket,
 			keyBinAddress_retail.data(), keyBinAddress_retail.size(), buf, sizeof(buf));
@@ -1311,7 +1311,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(IRpFile *file)
 	}};
 
 	// Import the keys.
-	// NOTE: Assigning to `iret` for named-value-return optimization.
+	// NOTE: Assigning to `iret` for named-return-value optimization.
 	iret = importKeysFromBlob(KeyStoreUIPrivate::SectionID::N3DSVerifyKeys,
 		keyBinAddress.data(), keyBinAddress.size(), buf->data(), buf->size());
 	return iret;
