@@ -64,7 +64,7 @@ typedef uint32x2_t uint32xVTBL_t;
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-rp_image_ptr fromLinear32_neon(PixelFormat px_format,
+static rp_image_ptr fromLinear32_neon_int(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
