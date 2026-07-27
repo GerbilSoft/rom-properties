@@ -199,7 +199,7 @@ tstring AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileT
 	if (amiibo_data_bin_override_filename) {
 		// Overriding the filename.
 		// NOTE: amiiboBinFileType is ignored here.
-		// NOTE: Assigning to tfilename for named-value-return optimization.
+		// NOTE: Assigning to `tfilename` for named-value-return optimization.
 		tfilename.assign(amiibo_data_bin_override_filename);
 		return tfilename;
 	}

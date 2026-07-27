@@ -255,7 +255,7 @@ RomDataPtr PlayStationDiscPrivate::openBootExe(void)
 
 	if (bootExeData) {
 		// The boot executable is already open.
-		// NOTE: Assigning to exeData for named-value-return optimization.
+		// NOTE: Assigning to `exeData` for named-value-return optimization.
 		exeData = bootExeData;
 		return exeData;
 	}

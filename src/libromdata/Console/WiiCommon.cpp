@@ -229,7 +229,7 @@ string getRegionCodeForMetadataProperty(uint32_t region_code, bool showRegionT)
 	}
 
 	if (i18n_region) {
-		// NOTE: Assigning to s_region_code for named-value-return optimization.
+		// NOTE: Assigning to `s_region_code` for named-value-return optimization.
 		s_region_code = pgettext_expr("Region", i18n_region);
 		return s_region_code;
 	}

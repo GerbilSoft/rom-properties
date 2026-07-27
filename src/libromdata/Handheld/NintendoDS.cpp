@@ -168,7 +168,7 @@ string NintendoDSPrivate::getPublisher(void)
 
 	const char *const publisher = NintendoPublishers::lookup(romHeader.company);
 	if (publisher) {
-		// NOTE: Assigning to s_publisher for named-value-return optimization.
+		// NOTE: Assigning to `s_publisher` for named-value-return optimization.
 		s_publisher.assign(publisher);
 		return s_publisher;
 	}

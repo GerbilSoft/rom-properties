@@ -314,7 +314,7 @@ string SegaSaturnPrivate::getPublisher(void) const
 
 	if (publisher) {
 		// Found the publisher.
-		// NOTE: Assigning to s_ret for named-value-return optimization.
+		// NOTE: Assigning to `s_ret` for named-value-return optimization.
 		s_ret.assign(publisher);
 		return s_ret;
 	} else {

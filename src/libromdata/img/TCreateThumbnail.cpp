@@ -99,7 +99,7 @@ ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
 			}
 		}
 	} else {
-		// NOTE: Assigning to ret_img for named-value-return optimization.
+		// NOTE: Assigning to `ret_img` for named-value-return optimization.
 		ret_img = getNullImgClass();
 	}
 
@@ -220,7 +220,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 	if (sBIT) {
 		memset(sBIT, 0, sizeof(*sBIT));
 	}
-	// NOTE: Assigning to ret_img for named-value-return optimization.
+	// NOTE: Assigning to `ret_img` for named-value-return optimization.
 	ret_img = getNullImgClass();
 	return ret_img;
 }

@@ -219,7 +219,7 @@ string ParamSFOPrivate::getStringValue(const char *key)
 		auto iter = cachedStringValues.find(key);
 		if (iter != cachedStringValues.end()) {
 			// We already fetched a string value for this key.
-			// NOTE: Assigning to value for named-value-return optimization.
+			// NOTE: Assigning to `value` for named-value-return optimization.
 			value = iter->second;
 			return value;
 		}

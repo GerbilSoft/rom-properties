@@ -851,7 +851,7 @@ string CBMDOSPrivate::getDiskName(CpRp *pCpRp) const
 		if (pCpRp) {
 			*pCpRp = cpRp;
 		}
-		// NOTE: Assigning to s_disk_name for named-value-return optimization.
+		// NOTE: Assigning to `s_disk_name` for named-value-return optimization.
 		s_disk_name = latin1_to_utf8(disk_name, static_cast<int>(disk_name_len));
 		return s_disk_name;
 	}
