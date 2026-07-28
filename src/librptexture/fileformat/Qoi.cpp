@@ -54,7 +54,7 @@ public:
 	QoiHeader qoiHeader;
 
 	// Decoded image
-	rp_image_ptr img;
+	rp_image_ptr img_qoi;
 
 	/**
 	 * Load the image.
@@ -100,12 +100,16 @@ QoiPrivate::QoiPrivate(Qoi *q, const IRpFilePtr &file)
  */
 rp_image_const_ptr QoiPrivate::loadImage(void)
 {
-	if (img) {
+	rp_image_ptr img;
+
+	if (img_qoi) {
 		// Image has already been loaded.
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = img_qoi;
 		return img;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the image.
-		return {};
+		return img;
 	}
 
 	// Sanity check: Maximum image dimensions of 32768x32768.
@@ -117,12 +121,12 @@ rp_image_const_ptr QoiPrivate::loadImage(void)
 	    qoiHeader.desc.height == 0 || qoiHeader.desc.height > 32768)
 	{
 		// Invalid image dimensions.
-		return {};
+		return img;
 	}
 
 	if (file->size() > 128*1024*1024) {
 		// Sanity check: Qoi files shouldn't be more than 128 MB.
-		return {};
+		return img;
 	}
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
@@ -134,7 +138,7 @@ rp_image_const_ptr QoiPrivate::loadImage(void)
 	size_t size = file->seekAndRead(0, buf.get(), file_sz);
 	if (size != file_sz) {
 		// Seek and/or read error.
-		return {};
+		return img;
 	}
 
 	// Decode the image.
@@ -142,17 +146,17 @@ rp_image_const_ptr QoiPrivate::loadImage(void)
 	void *pixels = qoi_decode(buf.get(), file_sz, &tmp_desc, 4);
 	if (!pixels) {
 		// Error decoding the image.
-		return {};
+		return img;
 	}
 	buf.reset();
 
 	// Copy the decoded image into an rp_image.
-	rp_image *const tmp_img = new rp_image(qoiHeader.desc.width, qoiHeader.desc.height, rp_image::Format::ARGB32);
-	uint32_t *px_dest = static_cast<uint32_t*>(tmp_img->bits());
+	img = std::make_shared<rp_image>(qoiHeader.desc.width, qoiHeader.desc.height, rp_image::Format::ARGB32);
+	uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 	const uint32_t *px_src = static_cast<uint32_t*>(pixels);
 	const int src_stride = qoiHeader.desc.width;
 	const int src_bytes = src_stride * sizeof(*px_src);
-	const int dest_stride = tmp_img->stride() / sizeof(*px_dest);
+	const int dest_stride = img->stride() / sizeof(*px_dest);
 
 	for (unsigned int y = qoiHeader.desc.height; y > 0; y--) {
 		memcpy(px_dest, px_src, src_bytes);
@@ -161,8 +165,8 @@ rp_image_const_ptr QoiPrivate::loadImage(void)
 	}
 	free(pixels);
 
-	img.reset(tmp_img);
-	return img;
+	img_qoi = img;
+	return img_qoi;
 }
 
 /** Qoi **/

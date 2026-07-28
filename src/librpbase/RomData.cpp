@@ -977,15 +977,15 @@ const RomMetaData *RomData::metaData(void) const
  */
 rp_image_const_ptr RomData::image(ImageType imageType) const
 {
+	rp_image_const_ptr img;
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
 	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
 		// ImageType is out of range.
-		return {};
+		return img;
 	}
 	// TODO: Check supportedImageTypes()?
 
 	// Load the internal image.
-	rp_image_const_ptr img;
 	int ret = const_cast<RomData*>(this)->loadInternalImage(imageType, img);
 
 	// SANITY CHECK: If loadInternalImage() returns 0,
@@ -1014,20 +1014,22 @@ rp_image_const_ptr RomData::image(ImageType imageType) const
  */
 rp_image_const_ptr RomData::mipmap(int mipmapLevel) const
 {
+	rp_image_const_ptr img;
 	assert(mipmapLevel >= 0);
 	if (mipmapLevel < 0) {
-		return {};
+		return img;
 	}
 
 	// TODO: Check supportedImageTypes()?
 
 	if (mipmapLevel == 0) {
 		// Mipmap level 0 is identical to the regular image.
-		return this->image(IMG_INT_IMAGE);
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = this->image(IMG_INT_IMAGE);
+		return img;
 	}
 
 	// Load the internal image mipmap.
-	rp_image_const_ptr img;
 	int ret = const_cast<RomData*>(this)->loadInternalMipmap(mipmapLevel, img);
 
 	// SANITY CHECK: If loadInternalMipmap() returns 0,

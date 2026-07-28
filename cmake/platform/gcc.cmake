@@ -24,7 +24,7 @@ ADD_DEFINITIONS(-D_GNU_SOURCE=1)
 # Test for common CFLAGS and CXXFLAGS.
 # NOTE: Not adding -Werror=format-nonliteral because there are some
 # legitimate uses of non-literal format strings.
-SET(CFLAGS_WARNINGS -Wall -Wextra -Wno-multichar -Werror=return-type -Wheader-hygiene -Wno-psabi)
+SET(CFLAGS_WARNINGS -Wall -Wextra -Wno-multichar -Werror=return-type -Wheader-hygiene -Wpsabi -Winit-self)
 SET(CFLAGS_WERROR_FORMAT -Werror=format -Werror=format-security -Werror=format-signedness -Werror=format-truncation -Werror=format-y2k)
 SET(CFLAGS_OPTIONS -fstrict-aliasing -Werror=strict-aliasing -fno-common -fcf-protection -fno-math-errno)
 IF(MINGW)
@@ -59,6 +59,19 @@ FOREACH(FLAG_TEST ${CFLAGS_WERROR_C_ONLY})
 		SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} ${FLAG_TEST}")
 	ENDIF(CFLAG_${FLAG_TEST_VARNAME})
 	UNSET(CFLAG_${FLAG_TEST_VARNAME})
+ENDFOREACH(FLAG_TEST)
+
+# Warnings for C++ only.
+SET(CXXFLAGS_WARNINGS_CXX_ONLY -Wnrvo -Wnoexcept-type -Wno-exceptions -Wsfinae-incomplete -Wstrict-null-sentinel)
+FOREACH(FLAG_TEST ${CXXFLAGS_WARNINGS_CXX_ONLY})
+	# CMake doesn't like certain characters in variable names.
+	STRING(REGEX REPLACE "/|:|=" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
+
+	CHECK_CXX_COMPILER_FLAG("${FLAG_TEST}" CXXFLAG_${FLAG_TEST_VARNAME})
+	IF(CXXFLAG_${FLAG_TEST_VARNAME})
+		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${FLAG_TEST}")
+	ENDIF(CXXFLAG_${FLAG_TEST_VARNAME})
+	UNSET(CXXFLAG_${FLAG_TEST_VARNAME})
 ENDFOREACH(FLAG_TEST)
 
 # Enable "suggest override" if available. (C++ only)

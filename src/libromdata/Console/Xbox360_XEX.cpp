@@ -435,22 +435,24 @@ size_t Xbox360_XEX_Private::getOptHdrData(uint32_t header_id, uint32_t *pOut32)
  */
 rp::uvector<uint8_t> Xbox360_XEX_Private::getOptHdrData(uint32_t header_id)
 {
+	rp::uvector<uint8_t> vec;
+
 	assert((header_id & 0xFF) > 0x01);
 	if ((header_id & 0xFF) <= 0x01) {
 		// Not supported by this function.
-		return {};
+		return vec;
 	}
 
 	if (static_cast<int>(xexType) < 0) {
 		// Invalid XEX type.
-		return {};
+		return vec;
 	}
 
 	// Get the entry.
 	const XEX2_Optional_Header_Tbl *const entry = getOptHdrTblEntry(header_id);
 	if (!entry) {
 		// Not found.
-		return {};
+		return vec;
 	}
 
 	size_t size;
@@ -464,7 +466,7 @@ rp::uvector<uint8_t> Xbox360_XEX_Private::getOptHdrData(uint32_t header_id)
 		size_t sz_read = file->seekAndRead(offset, &dwSize, sizeof(dwSize));
 		if (sz_read != sizeof(dwSize)) {
 			// Seek and/or read error.
-			return {};
+			return vec;
 		}
 		size = be32_to_cpu(dwSize);
 	}
@@ -474,17 +476,16 @@ rp::uvector<uint8_t> Xbox360_XEX_Private::getOptHdrData(uint32_t header_id)
 	assert(size <= MAX_HEADER_SIZE);
 	if (size > MAX_HEADER_SIZE) {
 		// Invalid header size.
-		return {};
+		return vec;
 	}
 
 	// Read the data.
 	// NOTE: This includes the size value for 0xFF structs.
-	rp::uvector<uint8_t> vec;
 	vec.resize(size);
 	size_t sz_read = file->seekAndRead(offset, vec.data(), size);
 	if (sz_read != size) {
 		// Seek and/or read error.
-		return {};
+		vec.clear();
 	}
 	return vec;
 }
@@ -1434,11 +1435,13 @@ string Xbox360_XEX_Private::getTitleID(void) const
  */
 string Xbox360_XEX_Private::getPublisher(void) const
 {
+	string s_ret;
+
 	if (!isExecutionIDLoaded) {
 		const_cast<Xbox360_XEX_Private*>(this)->getXdbfResInfo();
 		if (!isExecutionIDLoaded) {
 			// Unable to get the publisher.
-			return {};
+			return s_ret;
 		}
 	}
 
@@ -1446,7 +1449,9 @@ string Xbox360_XEX_Private::getPublisher(void) const
 	                  ((unsigned int)executionID.title_id.b);
 	const char *const publisher = XboxPublishers::lookup(pub_id);
 	if (publisher) {
-		return publisher;
+		// NOTE: Assigning to `s_ret` for named-return-value optimization.
+		s_ret = publisher;
+		return s_ret;
 	}
 
 	// Unknown publisher
@@ -1454,15 +1459,17 @@ string Xbox360_XEX_Private::getPublisher(void) const
 	    isalnum_ascii(executionID.title_id.b))
 	{
 		// Publisher ID is alphanumeric.
-		return fmt::format(FRUN(C_("RomData", "Unknown ({:c}{:c})")),
+		s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:c}{:c})")),
 			executionID.title_id.a,
 			executionID.title_id.b);
+	} else {
+		// Publisher ID is not alphanumeric.
+		s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
+			static_cast<uint8_t>(executionID.title_id.a),
+			static_cast<uint8_t>(executionID.title_id.b));
 	}
 
-	// Publisher ID is not alphanumeric.
-	return fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
-		static_cast<uint8_t>(executionID.title_id.a),
-		static_cast<uint8_t>(executionID.title_id.b));
+	return s_ret;
 }
 
 /** Xbox360_XEX **/

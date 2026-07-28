@@ -116,6 +116,8 @@ std::string WiiWADPrivate::getTitleID(void) const
  */
 inline string WiiWADPrivate::getGameID(void) const
 {
+	string id4;
+
 	// NOTE: Only displayed if TID lo is all alphanumeric characters.
 	// TODO: Only for certain TID hi?
 	if (!isalnum_ascii(tmdHeader.title_id.u8[4]) ||
@@ -124,10 +126,9 @@ inline string WiiWADPrivate::getGameID(void) const
 	    !isalnum_ascii(tmdHeader.title_id.u8[7]))
 	{
 		// Not a valid game ID.
-		return {};
+		return id4;
 	}
 
-	string id4;
 	id4.resize(4, '\0');
 	memcpy(&id4[0], &tmdHeader.title_id.u8[4], 4);
 	return id4;
@@ -140,13 +141,14 @@ inline string WiiWADPrivate::getGameID(void) const
 string WiiWADPrivate::getGameInfo(void)
 {
 	// TODO: Check for DSi SRL.
+	string info;
 
 #ifdef ENABLE_DECRYPTION
 	// IMET header.
 	// TODO: Read on demand instead of always reading in the constructor.
 	if (imet.magic != cpu_to_be32(WII_IMET_MAGIC)) {
 		// Not valid.
-		return {};
+		return info;
 	}
 
 	// TODO: Combine with GameCubePrivate::wii_getBannerName()?
@@ -165,17 +167,15 @@ string WiiWADPrivate::getGameInfo(void)
 	// NOTE: The banner may have two lines.
 	// Each line is a maximum of 21 characters.
 	// Convert from UTF-16 BE and split into two lines at the same time.
-	string info = utf16be_to_utf8(imet.names[lang][0], 21);
+	info = utf16be_to_utf8(imet.names[lang][0], 21);
 	if (imet.names[lang][1][0] != 0) {
 		info += '\n';
 		info += utf16be_to_utf8(imet.names[lang][1], 21);
 	}
-
-	return info;
-#else /* !ENABLE_DECRYPTION */
-	// Unable to decrypt the IMET header.
-	return {};
 #endif /* ENABLE_DECRYPTION */
+
+	// NOTE: This will always be empty in NoCrypto builds.
+	return info;
 }
 
 /**

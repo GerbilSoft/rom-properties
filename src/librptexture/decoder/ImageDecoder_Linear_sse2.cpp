@@ -222,6 +222,7 @@ static inline void T_ARGB16_sse2(
 /**
  * Convert a linear 16-bit RGB image to rp_image.
  * SSE2-optimized version.
+ * [INTERNAL VERSION; px_format and stride must have been checked for validity and 128-bit alignment]
  * @param px_format	[in] 16-bit pixel format.
  * @param width		[in] Image width.
  * @param height	[in] Image height.
@@ -230,28 +231,14 @@ static inline void T_ARGB16_sse2(
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
+static rp_image_ptr fromLinear16_sse2_int(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
+	rp_image_ptr img;
+
 	ASSERT_ALIGNMENT(16, img_buf);
 	static constexpr int bytespp = 2;
-
-	// FIXME: Add support for these formats.
-	// For now, redirect back to the C++ version.
-	switch (px_format) {
-		case PixelFormat::ARGB8332:
-		case PixelFormat::RGB5A3:
-		case PixelFormat::BGR555_PS1:
-		case PixelFormat::BGR5A3:
-		case PixelFormat::L16:
-		case PixelFormat::A8L8:	// TODO: SSSE3
-		case PixelFormat::L8A8:	// TODO: SSSE3
-			return fromLinear16_cpp(px_format, width, height, img_buf, img_siz, stride);
-
-		default:
-			break;
-	}
 
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -261,7 +248,7 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) * bytespp))
 	{
-		return {};
+		return img;
 	}
 
 	// Stride adjustment.
@@ -274,23 +261,17 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 		assert(stride >= (width * bytespp));
 		if (unlikely(stride % bytespp != 0 || stride < (width * bytespp))) {
 			// Invalid stride.
-			return {};
+			return img;
 		}
 		src_stride_adj = (stride / bytespp) - width;
 	}
 
-	// If width + src_stride_adj is not a multiple of 8 pixels,
-	// fall back to the C++ version.
-	if ((width + src_stride_adj) % 8 != 0) {
-		// Fall back to the C++ version.
-		return fromLinear16_cpp(px_format, width, height, img_buf, img_siz, stride);
-	}
-
 	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	const int dest_stride_adj = (img->stride() / sizeof(uint32_t)) - img->width();
@@ -474,11 +455,59 @@ rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
 
 		default:
 			assert(!"Pixel format not supported.");
-			return {};
+			img.reset();
+			return img;
 	}
 
 	// Image has been converted.
 	return img;
+}
+
+/**
+ * Convert a linear 16-bit RGB image to rp_image.
+ * SSE2-optimized version.
+ * @param px_format	[in] 16-bit pixel format.
+ * @param width		[in] Image width.
+ * @param height	[in] Image height.
+ * @param img_buf	[in] 16-bit image buffer.
+ * @param img_siz	[in] Size of image data. [must be >= (w*h)*3]
+ * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
+ * @return rp_image, or nullptr on error.
+ */
+rp_image_ptr fromLinear16_sse2(PixelFormat px_format,
+	int width, int height,
+	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride)
+{
+	static constexpr int bytespp = 2;
+
+	// FIXME: Add support for these formats.
+	// For now, redirect back to the C++ version.
+	switch (px_format) {
+		case PixelFormat::ARGB8332:
+		case PixelFormat::RGB5A3:
+		case PixelFormat::BGR555_PS1:
+		case PixelFormat::BGR5A3:
+		case PixelFormat::L16:
+		case PixelFormat::A8L8:	// TODO: SSSE3
+		case PixelFormat::L8A8:	// TODO: SSSE3
+			return fromLinear16_cpp(px_format, width, height, img_buf, img_siz, stride);
+
+		default:
+			break;
+	}
+
+	assert(stride >= 0);
+	if (stride == 0) {
+		stride = width * bytespp;
+	}
+	if (unlikely(stride % 16 != 0)) {
+		// Unaligned stride.
+		// Use the C++ version.
+		return fromLinear16_cpp(px_format, width, height, img_buf, img_siz, stride);
+	}
+
+	// Stride is 128-bit aligned.
+	return fromLinear16_sse2_int(px_format, width, height, img_buf, img_siz, stride);
 }
 
 } }

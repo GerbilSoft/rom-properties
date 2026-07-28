@@ -257,6 +257,8 @@ XboxDiscPrivate::~XboxDiscPrivate()
  */
 IRpFilePtr XboxDiscPrivate::open(const char *filename)
 {
+	IRpFilePtr f;
+
 	// NOTE: Cannot check discType here, since it might not be initialized yet.
 	// If this is an extracted disc file system, d->file will be nullptr.
 	if (likely(this->file)) {
@@ -264,11 +266,13 @@ IRpFilePtr XboxDiscPrivate::open(const char *filename)
 		// Make sure the XDVDFS partition is open.
 		if (!xdvdfsPartition || !xdvdfsPartition->isOpen()) {
 			// XDVDFS partition is not open.
-			return {};
+			return f;
 		}
 
 		// Open the file from the XDVDFS partition.
-		return xdvdfsPartition->open(filename);
+		// NOTE: Assigning to `f` for named-return-value optimization.
+		f = xdvdfsPartition->open(filename);
+		return f;
 	}
 
 	// Extracted disc file system.
@@ -282,7 +286,7 @@ IRpFilePtr XboxDiscPrivate::open(const char *filename)
 	}
 	if (*filename == '\0') {
 		// Oops, no filename...
-		return {};
+		return f;
 	}
 
 	const size_t old_sz = ts_full_filename.size();
@@ -295,7 +299,7 @@ IRpFilePtr XboxDiscPrivate::open(const char *filename)
 	});
 #endif /* _WIN32 */
 
-	IRpFilePtr f;// = std::make_shared<RpFile>(ts_full_filename, RpFile::FM_OPEN_READ);
+	f = std::make_shared<RpFile>(ts_full_filename, RpFile::FM_OPEN_READ);
 	if (f && f->isOpen()) {
 		return f;
 	}
@@ -315,7 +319,9 @@ IRpFilePtr XboxDiscPrivate::open(const char *filename)
 	std::transform(toupper_iter, ts_full_filename.end(), toupper_iter, [](TCHAR c) noexcept -> TCHAR {
 		return TOUPPER(c);
 	});
-	return std::make_shared<RpFile>(ts_full_filename, RpFile::FM_OPEN_READ);
+	// NOTE: Assigning to `f` for named-return-value optimization.
+	f = std::make_shared<RpFile>(ts_full_filename, RpFile::FM_OPEN_READ);
+	return f;
 }
 
 /**

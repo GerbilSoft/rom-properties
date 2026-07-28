@@ -131,10 +131,11 @@ inline string GameBoyAdvancePrivate::getGameID(void) const
  */
 string GameBoyAdvancePrivate::getPublisher(void) const
 {
+	string s_ret;
+
 	const char *const publisher = NintendoPublishers::lookup(romHeader.company);
-	string s_publisher;
 	if (publisher) {
-		s_publisher = publisher;
+		s_ret = publisher;
 	} else {
 		if (isalnum_ascii(romHeader.company[0]) &&
 		    isalnum_ascii(romHeader.company[1]))
@@ -144,15 +145,15 @@ string GameBoyAdvancePrivate::getPublisher(void) const
 				romHeader.company[1],
 				'\0'
 			}};
-			s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_company.data());
+			s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_company.data());
 		} else {
-			s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
+			s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
 				static_cast<uint8_t>(romHeader.company[0]),
 				static_cast<uint8_t>(romHeader.company[1]));
 		}
 	}
 
-	return s_publisher;
+	return s_ret;
 }
 
 /** GameBoyAdvance **/

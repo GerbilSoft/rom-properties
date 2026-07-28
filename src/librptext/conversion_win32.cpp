@@ -96,15 +96,18 @@ static int W32U_UTF16_to_mbs(
  */
 string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags)
 {
+	string s_mbs;
+
 	if (cp & static_cast<unsigned int>(CpRp::Base)) {
 		// RP-custom code page.
-		return cpRP_to_utf8(static_cast<CpRp>(cp), str, len);
+		// NOTE: Assigning to `s_mbs` for named-return-value optimization.
+		s_mbs = cpRP_to_utf8(static_cast<CpRp>(cp), str, len);
+		return s_mbs;
 	}
 
 	// Convert from `cp` to UTF-16.
 	u16string s_wcs = cpN_to_utf16(cp, str, len, flags);
 
-	string s_mbs;
 	if (!s_wcs.empty()) {
 		// Convert from UTF-16 to UTF-8.
 		if (!W32U_UTF16_to_mbs(s_mbs, s_wcs.data(), static_cast<int>(s_wcs.size()), CP_UTF8)) {
@@ -135,16 +138,16 @@ string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags
  */
 u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned int flags)
 {
+	// Convert from `cp` to UTF-16.
+	u16string s_wcs;
 	len = check_NULL_terminator(str, len);
+
 	DWORD dwFlags = 0;
 	if (flags & TEXTCONV_FLAG_CP1252_FALLBACK) {
 		// Fallback is enabled.
 		// Fail on invalid characters in the first pass.
 		dwFlags = MB_ERR_INVALID_CHARS;
 	}
-
-	// Convert from `cp` to UTF-16.
-	u16string s_wcs;
 
 	if ((flags & TEXTCONV_FLAG_JIS_X_0208) && len >= 1) {
 		// Check if the string might be JIS X 0208.
@@ -212,13 +215,13 @@ u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned int f
  */
 string utf8_to_cpN(unsigned int cp, const char *str, int len)
 {
+	string s_mbs;
 	len = check_NULL_terminator(str, len);
 
-	// Convert from UTF-8 to UTF-16.
-	string s_mbs;
+	// First, convert from UTF-8 to UTF-16.
 	u16string s_wcs;
 	if (!W32U_mbs_to_UTF16(s_wcs, str, len, CP_UTF8, 0)) {
-		// Convert from UTF-16 to `cp`.
+		// Then, convert from UTF-16 to `cp`.
 		if (!W32U_UTF16_to_mbs(s_mbs, s_wcs.data(), static_cast<int>(s_wcs.size()), cp)) {
 			// Remove the NULL terminator if present.
 			if (!s_mbs.empty() && s_mbs[s_mbs.size()-1] == 0) {
@@ -250,10 +253,10 @@ string utf8_to_cpN(unsigned int cp, const char *str, int len)
  */
 string utf16_to_cpN(unsigned int cp, const char16_t *wcs, int len)
 {
+	string s_mbs;
 	len = check_NULL_terminator(wcs, len);
 
 	// Convert from UTF-16 to `cp`.
-	string s_mbs;
 	if (!W32U_UTF16_to_mbs(s_mbs, wcs, len, cp)) {
 		// Remove the NULL terminator if present.
 		if (!s_mbs.empty() && s_mbs[s_mbs.size()-1] == 0) {

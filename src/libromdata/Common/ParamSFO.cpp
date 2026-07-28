@@ -212,39 +212,43 @@ ParamSFO::SFOValueType ParamSFOPrivate::getKeyValueType(const char *key) const
 
 string ParamSFOPrivate::getStringValue(const char *key)
 {
+	string value;
+
 	// Did we look up this key already?
 	{
 		auto iter = cachedStringValues.find(key);
 		if (iter != cachedStringValues.end()) {
 			// We already fetched a string value for this key.
-			return iter->second;
+			// NOTE: Assigning to `value` for named-return-value optimization.
+			value = iter->second;
+			return value;
 		}
 	}
 
 	if (!file) {
 		// File isn't open.
-		return {};
+		return value;
 	} else if (!isValid) {
 		// File isn't valid
-		return {};
+		return value;
 	}
 
 	auto iter = keyLookup.find(key);
 	if (iter == keyLookup.end()) {
 		// We don't have this key.
-		return {};
+		return value;
 	}
 
 	const psf_key_t &psfKey = iter->second;
 	assert(psfKey.valueType == kPSF_UTF8 || psfKey.valueType == kPSF_UTF8S);
 	if (psfKey.valueType != kPSF_UTF8 && psfKey.valueType != kPSF_UTF8S) {
 		// Not a UTF-8 string key.
-		return {};
+		return value;
 	}
 
 	if (psfKey.dataLength <= 0) {
 		// Empty string, or negative length?
-		return {};
+		return value;
 	}
 	// Limit data length to 1,024.
 	assert(psfKey.dataLength <= ParamSFOPrivate::MAX_STRING_LENGTH);
@@ -253,10 +257,10 @@ string ParamSFOPrivate::getStringValue(const char *key)
 		dataLength = ParamSFOPrivate::MAX_STRING_LENGTH;
 	}
 
-	string value;
 	if (readString(fileHeader.dataOffset + psfKey.dataOffset, dataLength, value) != 0) {
 		// Failed to read the value.
-		return {};
+		value.clear();
+		return value;
 	}
 
 	// kPSF_UTF8: String should be NULL-terminated, so we'll need to
@@ -336,19 +340,21 @@ uint32_t ParamSFOPrivate::getIntValue(const char *key)
  */
 string ParamSFOPrivate::getMinimumOSVersion(void)
 {
+	string s_ret;
+
 	// Check for PSP.
-	string s_systemVer = getStringValue("PSP_SYSTEM_VER");
-	if (!s_systemVer.empty()) {
-		return s_systemVer;
+	s_ret = getStringValue("PSP_SYSTEM_VER");
+	if (!s_ret.empty()) {
+		return s_ret;
 	}
 
 	// Check for PS3.
-	s_systemVer = getStringValue("PS3_SYSTEM_VER");
-	if (!s_systemVer.empty()) {
+	s_ret = getStringValue("PS3_SYSTEM_VER");
+	if (!s_ret.empty()) {
 		// TODO: Reformat the system version?
 		// The standard format is "XX.YYYY", e.g. "03.4100", but usually
 		// we don't want to show a leading 0 for major or trailing 0s for minor.
-		return s_systemVer;
+		return s_ret;
 	}
 
 	// Check for PSP2_SYSTEM_VER (PS Vita) and/or SYSTEM_VER (PS4).
@@ -366,11 +372,10 @@ string ParamSFOPrivate::getMinimumOSVersion(void)
 		// Also, the value is in BCD, so print it as hex.
 		// FIXME: "EB0035-CUSA42526_00-DEGROIDPS4EE0000-A0102-V0100-PARAM.SFO" has 0x10508000...
 		u_systemVer >>= 16;
-		return fmt::format(FSTR("{:X}.{:0>2X}"), (u_systemVer >> 8) & 0xFF, u_systemVer & 0xFF);
+		s_ret = fmt::format(FSTR("{:X}.{:0>2X}"), (u_systemVer >> 8) & 0xFF, u_systemVer & 0xFF);
 	}
 
-	// Minimum OS version is not available...
-	return {};
+	return s_ret;
 }
 
 ParamSFO::ParamSFO(const IRpFilePtr &file)

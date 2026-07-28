@@ -126,15 +126,17 @@ RomFields::StringMultiMap_t *getWiiBannerStrings(
 string getWiiBannerStringForSysLC(
 	const Wii_IMET_t *pImet, uint32_t gcnRegion, char id4_region)
 {
+	string info;
+
 	assert(pImet != nullptr);
 	if (!pImet) {
-		return {};
+		return info;
 	}
 
 	// Validate the IMET magic number.
 	if (pImet->magic != cpu_to_be32(WII_IMET_MAGIC)) {
 		// Not valid.
-		return {};
+		return info;
 	}
 
 	// Determine the system's Nintendo language code.
@@ -155,7 +157,7 @@ string getWiiBannerStringForSysLC(
 			{
 				// Empty strings. Can't do anything else...
 				// TODO: Try all languages?
-				return {};
+				return info;
 			}
 		}
 	}
@@ -163,7 +165,6 @@ string getWiiBannerStringForSysLC(
 	// NOTE: The banner may have two lines.
 	// Each line is a maximum of 21 characters.
 	// Convert from UTF-16 BE and split into two lines at the same time.
-	string info;
 	if (pImet->names[langID][0][0] != '\0') {
 		info = utf16be_to_utf8(pImet->names[langID][0], ARRAY_SIZE_I(pImet->names[langID][0]));
 		if (pImet->names[langID][1][0] != cpu_to_be16('\0')) {
@@ -200,6 +201,7 @@ const array<const char*, 7> dsi_3ds_wiiu_region_bitfield_names = {{
  */
 string getRegionCodeForMetadataProperty(uint32_t region_code, bool showRegionT)
 {
+	string s_region_code;
 	unsigned int region_count;
 
 	// "Australia" region (bit 3) is present, but skipped with formatting.
@@ -227,14 +229,15 @@ string getRegionCodeForMetadataProperty(uint32_t region_code, bool showRegionT)
 	}
 
 	if (i18n_region) {
-		return pgettext_expr("Region", i18n_region);
+		// NOTE: Assigning to `s_region_code` for named-return-value optimization.
+		s_region_code = pgettext_expr("Region", i18n_region);
+		return s_region_code;
 	}
 
 	// Multi-region
 	static const char all_display_regions[] = "JUECKT";
 	const unsigned int all_display_regions_count = region_count - 1;
 
-	string s_region_code;
 	s_region_code.resize(all_display_regions_count, '-');
 	for (unsigned int i = 0; i < region_count; i++) {
 		if (i == 3) {

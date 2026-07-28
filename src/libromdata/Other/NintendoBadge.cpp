@@ -158,18 +158,22 @@ NintendoBadgePrivate::NintendoBadgePrivate(const IRpFilePtr &file)
  */
 rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 {
+	rp_image_ptr img;
+
 	assert(idx >= 0 || static_cast<size_t>(idx) < img_badges.size());
 	if (idx < 0 || static_cast<size_t>(idx) >= img_badges.size()) {
 		// Invalid image index.
-		return {};
+		return img;
 	}
 
 	if (img_badges[idx]) {
 		// Image has already been loaded.
-		return img_badges[idx];
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = img_badges[idx];
+		return img;
 	} else if (!this->file) {
 		// Can't load the image.
-		return {};
+		return img;
 	}
 
 	// Badge sizes.
@@ -194,7 +198,7 @@ rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 				    badgeHeader.prbs.mb_height > 16)
 				{
 					// Mega Badge is too mega for us.
-					return {};
+					return img;
 				}
 			}
 
@@ -219,7 +223,7 @@ rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 				assert(megaBadge);
 				if (!megaBadge) {
 					// Not a Mega Badge.
-					return {};
+					return img;
 				}
 				// Mega Badge tiles start at 0x4300.
 				doMegaBadge = true;
@@ -239,7 +243,7 @@ rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 			assert(idx == 0);
 			if (idx != 0) {
 				// Invalid index.
-				return {};
+				return img;
 			}
 			start_addr = 0x2080;
 			badge_rgb_sz = badge64_rgb_sz;
@@ -249,7 +253,7 @@ rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 
 		default:
 			assert(!"Unknown badge type. (Should not get here!)");
-			return {};
+			return img;
 	}
 
 	// TODO: Multiple internal image sizes.
@@ -257,13 +261,12 @@ rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 	const size_t badge_sz = badge_rgb_sz + badge_a4_sz;
 	auto badgeData = aligned_uptr<uint8_t>(16, badge_sz);
 
-	rp_image_ptr img;
 	if (!doMegaBadge) {
 		// Single badge.
 		size_t size = file->seekAndRead(start_addr, badgeData.get(), badge_sz);
 		if (size != badge_sz) {
 			// Seek and/or read error.
-			return {};
+			return img;
 		}
 
 		// Convert to rp_image.
@@ -302,7 +305,7 @@ rp_image_const_ptr NintendoBadgePrivate::loadImage(int idx)
 				size_t size = file->seekAndRead(start_addr, badgeData.get(), badge_sz);
 				if (size != badge_sz) {
 					// Seek and/or read error.
-					return {};
+					return img;
 				}
 
 				const rp_image_ptr mb_img = ImageDecoder::fromN3DSTiledRGB565_A4(

@@ -2450,10 +2450,10 @@ int Nintendo3DS::loadFieldData(void)
 	Z3DSReader *const z3ds = dynamic_cast<Z3DSReader*>(d->file.get());
 	if (z3ds) {
 		// This ROM is in Z3DS format. Show Z3DS metadata if it's available.
-		auto z3ds_metaData = z3ds->getZ3DSMetaData();
+		Z3DSReader::Metadata_t z3ds_metaData = z3ds->getZ3DSMetaData();
 		if (!z3ds_metaData.empty()) {
 			d->fields.addTab("Z3DS");
-			for (const auto &p : z3ds_metaData) {
+			for (const Z3DSReader::Metadata_Entry_t &p : z3ds_metaData) {
 				// Skip empty strings.
 				// NOTE: p.second is always NUL-terminated.
 				if (p.second.empty() || (p.second.size() == 1 && p.second[0] == '\0')) {

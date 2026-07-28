@@ -141,13 +141,15 @@ private:
 		// NOTE: We have to use a temporary string here because
 		// the caller might be using setw() for field padding.
 		// TODO: Try optimizing it out while preserving setw().
+		string escaped;
+
 		assert(cp.str != nullptr);
 		if (!cp.str || cp.len == 0) {
 			// nullptr or empty string.
-			return "''";
+			escaped.assign("''");
+			return escaped;
 		}
 
-		string escaped;
 		escaped.reserve(cp.len + ((cp.flags & SSF_QUOTES) ? 2 : 0));
 		if (cp.flags & SSF_QUOTES) {
 			escaped += '\'';
@@ -231,7 +233,9 @@ private:
 		// Check for an HTML link.
 		if (strncmp(p+1, "a href=\"", 8) != 0) {
 			// Not a link.
-			return printInvalidTag(tag);
+			// NOTE: Assigning to `str` for named-return-value optimization.
+			str = printInvalidTag(tag);
+			return str;
 		}
 
 		// TODO: Search for HTML entities in the URL or display text.
@@ -242,7 +246,9 @@ private:
 		const char *const dblquote = strchr(p, '"');
 		if (!dblquote) {
 			// Link text doesn't end...
-			return printInvalidTag(tag);
+			// NOTE: Assigning to `str` for named-return-value optimization.
+			str = printInvalidTag(tag);
+			return str;
 		}
 
 		// "OSC 8" references:
@@ -258,7 +264,9 @@ private:
 		// Next character must be '>'.
 		if (*p != '>') {
 			// `<a>` tag isn't closed.
-			return printInvalidTag(tag);
+			// NOTE: Assigning to `str` for named-return-value optimization.
+			str = printInvalidTag(tag);
+			return str;
 		}
 		p++;
 
@@ -268,7 +276,9 @@ private:
 		const char *end_link = strstr(p, "</a>");
 		if (!end_link) {
 			// No end tag...
-			return printInvalidTag(tag);
+			// NOTE: Assigning to `str` for named-return-value optimization.
+			str = printInvalidTag(tag);
+			return str;
 		}
 
 		// Add the display text.
@@ -449,13 +459,13 @@ static string formatDateTime(time_t timestamp, RomFields::DateTimeFlags dtflags)
 			tm_struct = fmt::gmtime(timestamp);
 		} catch (const fmt::format_error&) {
 			// fmt::gmtime() failed.
-			return {};
+			return s_ret;
 		}
 	} else {
 		tzset();
 		if (!localtime_r(&timestamp, &tm_struct)) {
 			// localtime_r() failed.
-			return {};
+			return s_ret;
 		}
 	}
 

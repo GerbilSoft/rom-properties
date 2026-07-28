@@ -36,16 +36,17 @@ namespace LibRomData {
  */
 rp_image_const_ptr EXEPrivate::loadSpecificIcon(int iconindex)
 {
+	rp_image_const_ptr icon;
 	if (!this->isValid || static_cast<int>(this->exeType) < 0) {
 		// Can't load the icon.
-		return {};
+		return icon;
 	}
 
 	// Make sure the the resource reader is loaded.
 	int ret = loadResourceReader();
 	if (ret != 0 || !rsrcReader) {
 		// No resources available.
-		return {};
+		return icon;
 	}
 
 	uint16_t type = RT_GROUP_ICON;
@@ -63,7 +64,7 @@ rp_image_const_ptr EXEPrivate::loadSpecificIcon(int iconindex)
 			type = RT_ICON;
 		} else {
 			// No icons...
-			return {};
+			return icon;
 		}
 	}
 
@@ -78,7 +79,7 @@ rp_image_const_ptr EXEPrivate::loadSpecificIcon(int iconindex)
 		resID = rsrcReader->lookup_resource_ID(RT_GROUP_ICON, iconindex);
 		if (resID < 0) {
 			// Not found.
-			return {};
+			return icon;
 		}
 	} else {
 		// Negative icon index
@@ -90,10 +91,10 @@ rp_image_const_ptr EXEPrivate::loadSpecificIcon(int iconindex)
 	unique_ptr<ICO> ico(new ICO(rsrcReader, type, resID, -1));
 	if (!ico->isValid()) {
 		// Unable to load the default icon.
-		return {};
+		return icon;
 	}
 
-	rp_image_const_ptr icon = ico->image();
+	icon = ico->image();
 	if (iconindex == 0) {
 		// Cache the main icon.
 		img_icon = icon;
@@ -109,13 +110,18 @@ rp_image_const_ptr EXEPrivate::loadSpecificIcon(int iconindex)
  */
 rp_image_const_ptr EXEPrivate::loadIcon(void)
 {
+	rp_image_const_ptr icon;
+
+	// NOTE: Assigning to `icon` for named-return-value optimization.
 	if (img_icon) {
 		// Icon has already been loaded.
-		return img_icon;
+		icon = img_icon;
+	} else {
+		// Load icon 0.
+		icon = loadSpecificIcon(0);
 	}
 
-	// Load icon 0.
-	return loadSpecificIcon(0);
+	return icon;
 }
 
 /**
@@ -129,6 +135,8 @@ rp_image_const_ptr EXEPrivate::loadIcon(void)
  */
 rp::uvector<uint8_t> EXEPrivate::loadIconResourceData(int iconindex, int width, int height, uint32_t *pIconResID)
 {
+	rp::uvector<uint8_t> iconData;
+
 	if (pIconResID) {
 		// Clear the returned icon resource ID initially.
 		*pIconResID = 0;
@@ -138,7 +146,7 @@ rp::uvector<uint8_t> EXEPrivate::loadIconResourceData(int iconindex, int width, 
 	int ret = loadResourceReader();
 	if (ret != 0 || !rsrcReader) {
 		// No resources available.
-		return {};
+		return iconData;
 	}
 
 	uint16_t type = RT_GROUP_ICON;
@@ -156,7 +164,7 @@ rp::uvector<uint8_t> EXEPrivate::loadIconResourceData(int iconindex, int width, 
 			type = RT_ICON;
 		} else {
 			// No icons...
-			return {};
+			return iconData;
 		}
 	}
 
@@ -171,7 +179,7 @@ rp::uvector<uint8_t> EXEPrivate::loadIconResourceData(int iconindex, int width, 
 		resID = rsrcReader->lookup_resource_ID(RT_GROUP_ICON, iconindex);
 		if (resID < 0) {
 			// Not found.
-			return {};
+			return iconData;
 		}
 	} else {
 		// Negative icon index
@@ -184,19 +192,19 @@ rp::uvector<uint8_t> EXEPrivate::loadIconResourceData(int iconindex, int width, 
 		IRpFilePtr f_rtGroupIcon = rsrcReader->open(type, resID, -1);
 		if (!f_rtGroupIcon) {
 			// Unable to open the RT_GROUP_ICON...
-			return {};
+			return iconData;
 		}
 
 		GRPICONDIR iconDir;
 		size_t size = f_rtGroupIcon->read(&iconDir, sizeof(iconDir));
 		if (size != sizeof(iconDir)) {
 			// Unable to read the GRPICONDIR.
-			return {};
+			return iconData;
 		}
 		const uint16_t iconCount = le16_to_cpu(iconDir.idCount);
 		if (iconCount == 0) {
 			// No icons?
-			return {};
+			return iconData;
 		}
 
 		// Zero-size == maximum size
@@ -274,7 +282,7 @@ rp::uvector<uint8_t> EXEPrivate::loadIconResourceData(int iconindex, int width, 
 
 		if (cur_id == 0) {
 			// No icon???
-			return {};
+			return iconData;
 		}
 
 		// Use this icon resource.
@@ -286,7 +294,7 @@ rp::uvector<uint8_t> EXEPrivate::loadIconResourceData(int iconindex, int width, 
 	IRpFilePtr f_rtIcon = rsrcReader->open(type, resID, -1);
 	if (!f_rtIcon) {
 		// Unable to open the RT_ICON...
-		return {};
+		return iconData;
 	}
 
 	// Sanity check: Icon shouldn't be larger than 4 MB.
@@ -295,15 +303,15 @@ rp::uvector<uint8_t> EXEPrivate::loadIconResourceData(int iconindex, int width, 
 	assert(iconSize > 0);
 	assert(iconSize <= MAX_ICON_SIZE);
 	if (iconSize <= 0 || iconSize > MAX_ICON_SIZE) {
-		return {};
+		return iconData;
 	}
 
-	rp::uvector<uint8_t> iconData;
 	iconData.resize(static_cast<size_t>(iconSize));
 	size_t size = f_rtIcon->read(iconData.data(), iconData.size());
 	if (size != iconData.size()) {
 		// Read error.
-		return {};
+		iconData.clear();
+		return iconData;
 	}
 
 	// Icon data retrieved.
@@ -322,16 +330,22 @@ rp::uvector<uint8_t> EXEPrivate::loadIconResourceData(int iconindex, int width, 
  */
 rp_image_const_ptr EXE::loadSpecificIcon(int iconindex)
 {
+	rp_image_const_ptr icon;
+
 	RP_D(EXE);
 	if (iconindex == 0) {
 		// Main icon. See if it's already loaded.
 		if (d->img_icon) {
 			// Icon has already been loaded.
-			return d->img_icon;
+			// NOTE: Assigning to `icon` for named-return-value optimization.
+			icon = d->img_icon;
+			return icon;
 		}
 	}
 
-	return d->loadSpecificIcon(iconindex);
+	// NOTE: Assigning to `icon` for named-return-value optimization.
+	icon = d->loadSpecificIcon(iconindex);
+	return icon;
 }
 
 /**

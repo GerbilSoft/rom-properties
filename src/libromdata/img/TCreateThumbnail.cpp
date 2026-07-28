@@ -53,6 +53,8 @@ ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
 	ImgSize *pOutSize,
 	LibRpTexture::rp_image::sBIT_t *sBIT)
 {
+	ImgClass ret_img = getNullImgClass();
+
 	using LibRpBase::RomData;
 	using LibRpTexture::rp_image_const_ptr;
 
@@ -62,7 +64,7 @@ ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
 		if (sBIT) {
 			memset(sBIT, 0, sizeof(*sBIT));
 		}
-		return getNullImgClass();
+		return ret_img;
 	}
 
 	const rp_image_const_ptr image = romData->image(imageType);
@@ -71,13 +73,13 @@ ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
 		if (sBIT) {
 			memset(sBIT, 0, sizeof(*sBIT));
 		}
-		return getNullImgClass();
+		return ret_img;
 	}
 
 	// TODO: Multiple internal image sizes. [add reqSize]
 
 	// Convert the rp_image to ImgClass.
-	ImgClass ret_img = rpImageToImgClass(image);
+	ret_img = rpImageToImgClass(image);
 	if (isImgClassValid(ret_img)) {
 		// Image converted successfully.
 		if (pOutSize) {
@@ -96,7 +98,11 @@ ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
 				memset(sBIT, 0, sizeof(*sBIT));
 			}
 		}
+	} else {
+		// NOTE: Assigning to `ret_img` for named-return-value optimization.
+		ret_img = getNullImgClass();
 	}
+
 	return ret_img;
 }
 
@@ -116,6 +122,8 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 	int reqSize, ImgSize *pOutSize,
 	LibRpTexture::rp_image::sBIT_t *sBIT)
 {
+	ImgClass ret_img = getNullImgClass();
+
 	using namespace LibRpBase;
 	using LibRpFile::IRpFilePtr;
 	using LibRpFile::RpFile;
@@ -127,7 +135,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 		if (sBIT) {
 			memset(sBIT, 0, sizeof(*sBIT));
 		}
-		return getNullImgClass();
+		return ret_img;
 	}
 
 	// Synchronously download from the source URLs.
@@ -139,7 +147,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 		if (sBIT) {
 			memset(sBIT, 0, sizeof(*sBIT));
 		}
-		return getNullImgClass();
+		return ret_img;
 	}
 
 	// NOTE: This will force a configuration timestamp check.
@@ -185,7 +193,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 			if (dl_img && dl_img->isValid()) {
 				// Image loaded successfully.
 				file->close();
-				ImgClass ret_img = rpImageToImgClass(dl_img);
+				ret_img = rpImageToImgClass(dl_img);
 				if (isImgClassValid(ret_img)) {
 					// Image converted successfully.
 					if (pOutSize) {
@@ -212,7 +220,9 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 	if (sBIT) {
 		memset(sBIT, 0, sizeof(*sBIT));
 	}
-	return getNullImgClass();
+	// NOTE: Assigning to `ret_img` for named-return-value optimization.
+	ret_img = getNullImgClass();
+	return ret_img;
 }
 
 /**

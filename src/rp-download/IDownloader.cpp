@@ -385,7 +385,7 @@ tstring IDownloader::getOSRelease(void)
 		if (f_in) {
 			fclose(f_in);
 		}
-		return {};
+		return s_os_release;
 	}
 
 	// Find the requested field.
@@ -393,7 +393,7 @@ tstring IDownloader::getOSRelease(void)
 	fclose(f_in);
 	if (ctx.ret_value[0] == '\0') {
 		// Field not found.
-		return {};
+		return s_os_release;
 	}
 
 	// Remove leading and trailing double-quotes or single-quotes, if present.

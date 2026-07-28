@@ -712,9 +712,10 @@ inline string GameCubePrivate::getGameID(void) const
  */
 string GameCubePrivate::getRegionCode(void) const
 {
+	string s_region;
 	if (!hasRegionCode) {
 		// No region code loaded...
-		return {};
+		return s_region;
 	}
 
 	bool isDefault = true;	// assuming the ID4 represents the disc region if nothing else says otherwise
@@ -743,19 +744,18 @@ string GameCubePrivate::getRegionCode(void) const
 			suffix = GameCubeRegions::gcnRegionToAbbrevString(gcnRegion);
 		}
 
-		string s_region;
 		if (suffix) {
 			// tr: {0:s} == full region name, {1:s} == abbreviation
 			s_region = fmt::format(FRUN(C_("Wii", "{0:s} ({1:s})")), region, suffix);
 		} else {
 			s_region = region;
 		}
-
-		return s_region;
+	} else {
+		// Invalid region code.
+		s_region = fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>8X})")), gcnRegion);
 	}
 
-	// Invalid region code.
-	return fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>8X})")), gcnRegion);
+	return s_region;
 }
 
 /**

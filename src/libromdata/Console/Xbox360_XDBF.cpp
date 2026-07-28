@@ -105,7 +105,7 @@ public:
 	// Loaded images.
 	// - Key: resource_id
 	// - Value: rp_image*
-	unordered_map<uint64_t, rp_image_ptr > map_images;
+	unordered_map<uint64_t, rp_image_const_ptr> map_images;
 
 public:
 	/**
@@ -476,12 +476,13 @@ const rp::uvector<char> *Xbox360_XDBF_Private::loadStringTable_SPA(XDBF_Language
  */
 string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t string_id)
 {
-	string ret;
+	string s_ret;
 
 	assert(langID >= 0);
 	assert(langID < XDBF_LANGUAGE_MAX);
-	if (langID < 0 || langID >= XDBF_LANGUAGE_MAX)
-		return ret;
+	if (langID < 0 || langID >= XDBF_LANGUAGE_MAX) {
+		return s_ret;
+	}
 
 	// Get the string table.
 	const rp::uvector<char> *vec = strTbls[langID];
@@ -489,7 +490,7 @@ string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t str
 		vec = loadStringTable_SPA(langID);
 		if (!vec) {
 			// Unable to load the string table.
-			return ret;
+			return s_ret;
 		}
 	}
 
@@ -519,7 +520,7 @@ string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t str
 				// Character set conversion isn't needed, since
 				// the string table is UTF-8, but we do need to
 				// convert from DOS to UNIX line endings.
-				ret = dos2unix(p_str, length);
+				s_ret = dos2unix(p_str, length);
 			}
 			break;
 		} else {
@@ -529,7 +530,7 @@ string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t str
 		}
 	}
 
-	return ret;
+	return s_ret;
 }
 
 /**
@@ -539,15 +540,17 @@ string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t str
  */
 string Xbox360_XDBF_Private::loadString_GPD(uint16_t string_id)
 {
+	string s_ret;
+
 	if (entryTable.empty()) {
 		// Entry table isn't loaded...
-		return {};
+		return s_ret;
 	}
 
 	// Can we load the string?
 	if (!file || !isValid) {
 		// Can't load the string.
-		return {};
+		return s_ret;
 	}
 
 	// TODO: Optimize by creating an unordered_map of IDs to strings?
@@ -559,7 +562,6 @@ string Xbox360_XDBF_Private::loadString_GPD(uint16_t string_id)
 	// Instead, each string is its own entry in the main resource table.
 	// Because of this, string IDs are 64-bit.
 	const uint64_t string_id64 = cpu_to_be64(string_id);
-	string s_ret;
 	for (const XDBF_Entry &p : entryTable) {
 		if (p.namespace_id != cpu_to_be16(XDBF_GPD_NAMESPACE_STRING)) {
 			// Not a string.
@@ -724,22 +726,26 @@ inline uint32_t Xbox360_XDBF_Private::getDefaultLC(void) const
  */
 rp_image_const_ptr Xbox360_XDBF_Private::loadImage(uint64_t image_id)
 {
+	rp_image_const_ptr img;
+
 	// Is the image already loaded?
 	auto iter = map_images.find(image_id);
 	if (iter != map_images.end()) {
 		// We already loaded the image.
-		return iter->second;
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = iter->second;
+		return img;
 	}
 
 	if (entryTable.empty()) {
 		// Entry table isn't loaded...
-		return {};
+		return img;
 	}
 
 	// Can we load the image?
 	if (!file || !isValid) {
 		// Can't load the image.
-		return {};
+		return img;
 	}
 
 	// Icons are stored in PNG format.
@@ -748,7 +754,7 @@ rp_image_const_ptr Xbox360_XDBF_Private::loadImage(uint64_t image_id)
 	const XDBF_Entry *const entry = findResource(XDBF_SPA_NAMESPACE_IMAGE, image_id);
 	if (!entry) {
 		// Not found...
-		return {};
+		return img;
 	}
 
 	// Load the image.
@@ -761,20 +767,20 @@ rp_image_const_ptr Xbox360_XDBF_Private::loadImage(uint64_t image_id)
 	assert(length <= 1024*1024);
 	if (length < 16 || length > 1024*1024) {
 		// Size is out of range.
-		return {};
+		return img;
 	}
 
 	unique_ptr<uint8_t[]> png_buf(new uint8_t[length]);
 	size_t size = file->seekAndRead(addr, png_buf.get(), length);
 	if (size != length) {
 		// Seek and/or read error.
-		return {};
+		return img;
 	}
 
 	// Create a MemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
 	MemFile f_mem(png_buf.get(), length);
-	rp_image_ptr img = RpPng::load(&f_mem);
+	img = RpPng::load(&f_mem);
 
 	if (img) {
 		// Save the image for later use.
@@ -790,23 +796,28 @@ rp_image_const_ptr Xbox360_XDBF_Private::loadImage(uint64_t image_id)
  */
 rp_image_const_ptr Xbox360_XDBF_Private::loadIcon(void)
 {
+	rp_image_const_ptr icon;
+
 	if (img_icon) {
 		// Icon has already been loaded.
-		return img_icon;
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		icon = img_icon;
+		return icon;
 	} else if (!file || !isValid) {
 		// Can't load the icon.
-		return {};
+		return icon;
 	}
 
 	// Make sure the entry table is loaded.
 	if (entryTable.empty()) {
 		// Not loaded. Cannot load an icon.
-		return {};
+		return icon;
 	}
 
 	// Get the icon.
-	img_icon = loadImage(XDBF_ID_TITLE);
-	return img_icon;
+	icon = loadImage(XDBF_ID_TITLE);
+	this->img_icon = icon;
+	return icon;
 }
 
 /**
@@ -1926,6 +1937,8 @@ int Xbox360_XDBF::addFields_strings(LibRpBase::RomFields *fields) const
  */
 string Xbox360_XDBF::getString(LibRpBase::Property property) const
 {
+	string s_ret;
+
 	uint16_t string_id = 0;
 	switch (property) {
 		case LibRpBase::Property::Title:
@@ -1938,11 +1951,10 @@ string Xbox360_XDBF::getString(LibRpBase::Property property) const
 	assert(string_id != 0);
 	if (string_id == 0) {
 		// Not supported.
-		return {};
+		return s_ret;
 	}
 
 	RP_D(Xbox360_XDBF);
-	string s_ret;
 	switch (d->xdbfType) {
 		default:
 			assert(!"Unsupported XDBF type.");
@@ -1954,6 +1966,7 @@ string Xbox360_XDBF::getString(LibRpBase::Property property) const
 			s_ret = d->loadString_GPD(string_id);
 			break;
 	}
+
 	return s_ret;
 }
 

@@ -298,20 +298,21 @@ bool is_symlink(const char *filename)
  */
 string resolve_symlink(const char *filename)
 {
+	string s_ret;
+
 	assert(filename != nullptr);
 	assert(filename[0] != '\0');
 	if (unlikely(!filename || filename[0] == '\0')) {
-		return {};
+		return s_ret;
 	}
 
 	// NOTE: realpath() might not be available on some systems...
-	string ret;
 	char *const resolved_path = realpath(filename, nullptr);
 	if (resolved_path != nullptr) {
-		ret = resolved_path;
+		s_ret.assign(resolved_path);
 		free(resolved_path);
 	}
-	return ret;
+	return s_ret;
 }
 
 /**

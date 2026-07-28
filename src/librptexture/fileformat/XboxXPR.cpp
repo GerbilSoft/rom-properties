@@ -62,7 +62,7 @@ public:
 	Xbox_XPR0_Header xpr0Header;
 
 	// Decoded image
-	rp_image_ptr img;
+	rp_image_ptr img_xpr;
 
 	// Invalid pixel format message
 	mutable string invalid_pixel_format;
@@ -282,18 +282,22 @@ void XboxXPRPrivate::unswizzle_box(const uint8_t *src_buf,
  */
 rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 {
-	if (img) {
+	rp_image_ptr img;
+
+	if (img_xpr) {
 		// Image has already been loaded.
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = img_xpr;
 		return img;
 	} else if (!this->file) {
 		// Can't load the image.
-		return {};
+		return img;
 	}
 
 	// Sanity check: XPR0 files shouldn't be more than 16 MB.
 	assert(file->size() <= 16*1024*1024);
 	if (file->size() > 16*1024*1024) {
-		return {};
+		return img;
 	}
 
 	// XPR0 textures are always square and encoded using DXT1.
@@ -313,7 +317,7 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 	assert(height > 0);
 	if (width == 0 || height == 0) {
 		// Invalid image dimensions.
-		return {};
+		return img;
 	}
 
 	// Mode table
@@ -405,7 +409,7 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 
 	if (xpr0Header.pixel_format >= xpr_mode_tbl.size()) {
 		// Invalid pixel format.
-		return {};
+		return img;
 	}
 
 	// Determine the expected size based on the pixel format.
@@ -414,7 +418,7 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 
 	if (expected_size > file_sz - data_offset) {
 		// File is too small.
-		return {};
+		return img;
 	}
 
 	// Read the image data.
@@ -422,7 +426,7 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 	size_t size = file->seekAndRead(data_offset, buf.get(), static_cast<size_t>(expected_size));
 	if (size != static_cast<size_t>(expected_size)) {
 		// Seek and/or read error.
-		return {};
+		return img;
 	}
 
 	if (mode.dxtn != 0) {
@@ -443,7 +447,7 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 				break;
 			default:
 				assert(!"Unsupported DXTn format.");
-				return {};
+				return img;
 		}
 	} else {
 		switch (mode.bpp) {
@@ -465,13 +469,13 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 			case 0:
 			default:
 				assert(!"Unsupported bpp value.");
-				return {};
+				return img;
 		}
 	}
 
 	if (!img) {
 		// Unable to decode the image.
-		return {};
+		return img;
 	}
 
 	if (mode.swizzled) {
@@ -509,6 +513,7 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 		img = std::move(imgunswz);
 	}
 
+	img_xpr = img;
 	return img;
 }
 

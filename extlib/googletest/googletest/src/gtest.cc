@@ -2193,14 +2193,19 @@ std::string StringStreamToString(::std::stringstream* ss) {
 std::string AppendUserMessage(const std::string& gtest_msg,
                               const Message& user_msg) {
   // Appends the user message if it's non-empty.
+  // rom-properties: Modified for named-value-return optimization.
+  std::string s_ret;
   const std::string user_msg_string = user_msg.GetString();
   if (user_msg_string.empty()) {
-    return gtest_msg;
+    s_ret = gtest_msg;
+  } else if (gtest_msg.empty()) {
+    s_ret = user_msg_string;
+  } else {
+    s_ret = gtest_msg;
+    s_ret += '\n';
+    s_ret += user_msg_string;
   }
-  if (gtest_msg.empty()) {
-    return user_msg_string;
-  }
-  return gtest_msg + "\n" + user_msg_string;
+  return s_ret;
 }
 
 }  // namespace internal

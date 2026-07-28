@@ -39,6 +39,8 @@ static constexpr array<uint8_t, 64> N3DS_tile_order = {{
 rp_image_ptr fromN3DSTiledRGB565(int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz)
 {
+	rp_image_ptr img;
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
@@ -47,20 +49,22 @@ rp_image_ptr fromN3DSTiledRGB565(int width, int height,
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) * 2))
 	{
-		return {};
+		return img;
 	}
 
 	// N3DS tiled images use 8x8 tiles.
 	assert(width % 8 == 0);
 	assert(height % 8 == 0);
-	if (width % 8 != 0 || height % 8 != 0)
-		return {};
+	if (width % 8 != 0 || height % 8 != 0) {
+		return img;
+	}
 
 	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	// Calculate the total number of tiles.
@@ -105,6 +109,8 @@ rp_image_ptr fromN3DSTiledRGB565_A4(int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz,
 	const uint8_t *RESTRICT alpha_buf, size_t alpha_siz)
 {
+	rp_image_ptr img;
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(alpha_buf != nullptr);
@@ -116,24 +122,26 @@ rp_image_ptr fromN3DSTiledRGB565_A4(int width, int height,
 	    img_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) * 2) ||
 	    alpha_siz < (static_cast<size_t>(width) * static_cast<size_t>(height) / 2))
 	{
-		return {};
+		return img;
 	}
 
 	// N3DS tiled images use 8x8 tiles.
 	assert(width % 8 == 0);
 	assert(height % 8 == 0);
-	if (width % 8 != 0 || height % 8 != 0)
-		return {};
+	if (width % 8 != 0 || height % 8 != 0) {
+		return img;
+	}
 
 	// Calculate the total number of tiles.
 	const unsigned int tilesX = static_cast<unsigned int>(width / 8);
 	const unsigned int tilesY = static_cast<unsigned int>(height / 8);
 
 	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
+	img = std::make_shared<rp_image>(width, height, rp_image::Format::ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	// Temporary tile buffer.

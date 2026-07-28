@@ -276,17 +276,19 @@ IsoPartitionPrivate::~IsoPartitionPrivate()
  */
 std::string IsoPartitionPrivate::sanitize_path(const char *path)
 {
+	string s_path;
+
 	// Remove leading slashes.
 	while (is_slash(*path)) {
 		path++;
 	}
 	if (*path == '\0') {
 		// Nothing but slashes?
-		return {};
+		return s_path;
 	}
 
 	// Convert to cp1252, then remove trailing slashes.
-	string s_path = utf8_to_cp1252(path, -1);
+	s_path = utf8_to_cp1252(path, -1);
 	size_t s_path_len = s_path.size();
 	while (s_path_len > 0 && is_slash(s_path[s_path_len-1])) {
 		s_path_len--;

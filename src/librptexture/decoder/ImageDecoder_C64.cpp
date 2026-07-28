@@ -20,18 +20,21 @@ namespace LibRpTexture { namespace ImageDecoder {
 rp_image_ptr fromC64_MultiColor_Sprite(
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
+	rp_image_ptr img;
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(img_siz >= 12*21/4);
 	if (!img_buf || img_siz < 12*21/4) {
-		return {};
+		return img;
 	}
 
 	// Create an rp_image.
-	rp_image_ptr img = std::make_shared<rp_image>(24, 21, rp_image::Format::CI8);
+	img = std::make_shared<rp_image>(24, 21, rp_image::Format::CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
-		return {};
+		img.reset();
+		return img;
 	}
 
 	// Set up a grayscale palette.

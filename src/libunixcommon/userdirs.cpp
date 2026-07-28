@@ -92,7 +92,7 @@ string getHomeDirectory(void)
 		// Make sure the directory is writable.
 		if (isWritableDirectory(home_env)) {
 			// $HOME is writable.
-			home_dir = home_env;
+			home_dir.assign(home_env);
 			// Remove trailing slashes.
 			removeTrailingSlashes(home_dir);
 			// If the path was "/", this will result in an empty directory.
@@ -115,7 +115,7 @@ string getHomeDirectory(void)
 	int ret = getpwuid_r(getuid(), &pwd, buf.get(), GETPW_BUF_SIZE, &pwd_result);
 	if (ret != 0 || !pwd_result) {
 		// getpwuid_r() failed.
-		return {};
+		return home_dir;
 	}
 	pw_dir = pwd_result->pw_dir;
 #elif defined(HAVE_GETPWUID)
@@ -123,7 +123,7 @@ string getHomeDirectory(void)
 	struct passwd *pwd = getpwuid(getuid());
 	if (!pwd) {
 		// getpwuid() failed.
-		return {};
+		return home_dir;
 	}
 	pw_dir = pwd->pw_dir;
 #else
@@ -132,14 +132,14 @@ string getHomeDirectory(void)
 
 	if (!pw_dir || pw_dir[0] == 0) {
 		// Empty home directory...
-		return {};
+		return home_dir;
 	}
 
 	// Make sure the directory is writable.
 	if (isWritableDirectory(pw_dir)) {
 		// Directory is writable.
 		// $HOME is writable.
-		home_dir = pw_dir;
+		home_dir.assign(pw_dir);
 		// Remove trailing slashes.
 		removeTrailingSlashes(home_dir);
 		// If the path was "/", this will result in an empty directory.
@@ -150,7 +150,7 @@ string getHomeDirectory(void)
 
 	// Unable to get the user's home directory...
 	assert(!"Unable to get the user's home directory.");
-	return {};
+	return home_dir;
 }
 
 /**
@@ -166,11 +166,11 @@ string getHomeDirectory(void)
  */
 static string getXDGDirectory(const char *xdgvar, const char *relpath)
 {
+	string xdg_dir;
+
 	assert(xdgvar != nullptr);
 	assert(relpath != nullptr);
 	assert(relpath[0] != '/');
-
-	string xdg_dir;
 
 	// Check the XDG variable first.
 	const char *const xdg_env = getenv(xdgvar);
@@ -178,7 +178,7 @@ static string getXDGDirectory(const char *xdgvar, const char *relpath)
 		// Make sure this is a writable directory.
 		if (isWritableDirectory(xdg_env)) {
 			// This is a writable directory.
-			xdg_dir = xdg_env;
+			xdg_dir.assign(xdg_env);
 			// Remove trailing slashes.
 			removeTrailingSlashes(xdg_dir);
 			// If the path was "/", this will result in an empty directory.
@@ -192,7 +192,8 @@ static string getXDGDirectory(const char *xdgvar, const char *relpath)
 	xdg_dir = getHomeDirectory();
 	if (xdg_dir.empty()) {
 		// No home directory...
-		return {};
+		xdg_dir.clear();
+		return xdg_dir;
 	}
 
 	xdg_dir += '/';

@@ -128,15 +128,16 @@ IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
 	// *and* the trash:/ URL, so it doesn't matter.
 	// TODO: Check KDE for other "local" URL schemes.
 
+	IRpFilePtr file;
 	if (url.isEmpty()) {
 		// Empty URL. Nothing to do here.
-		return {};
+		return file;
 	}
 
 	const QUrl localUrl = localizeQUrl(url);
 	if (localUrl.isEmpty()) {
 		// Unable to localize the URL.
-		return {};
+		return file;
 	}
 
 	string s_local_filename;
@@ -154,29 +155,28 @@ IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
 			// This is a local file. Check if it's on a "bad" file system.
 			if (FileSystem::isOnBadFS(s_local_filename, enableThumbnailOnNetworkFS)) {
 				// This file is on a "bad" file system.
-				return {};
+				return file;
 			}
 		} else {
 			// This is a remote file. Assume it's a "bad" file system.
 			if (!enableThumbnailOnNetworkFS) {
 				// Thumbnailing on network file systems is disabled.
-				return {};
+				return file;
 			}
 		}
 	}
 
 	// Attempt to open an IRpFile.
-	IRpFilePtr file;
 	if (!s_local_filename.empty()) {
 		// Local filename. Use RpFile.
 		file = std::make_shared<RpFile>(s_local_filename, RpFile::FM_OPEN_READ_GZ);
 	} else {
-		// Remote filename. Use RpFile_kio.
 #ifdef HAVE_RPFILE_KIO
+		// Remote filename. Use RpFile_kio.
 		file = std::make_shared<RpFileKio>(url);
 #else /* !HAVE_RPFILE_KIO */
-		// Not supported...
-		return {};
+		// RpFile_kio isn't available...
+		return file;
 #endif
 	}
 
@@ -187,5 +187,6 @@ IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
 
 	// Unable to open the file...
 	// TODO: Return an error code?
-	return {};
+	file.reset();
+	return file;
 }

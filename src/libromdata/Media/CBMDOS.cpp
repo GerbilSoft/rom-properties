@@ -58,7 +58,7 @@ public:
 
 public:
 	// Disk type
-	enum class DiskType {
+	enum class DiskType : int8_t {
 		Unknown = -1,
 
 		D64 = 0,		// C1541 disk image (single-sided, standard version)
@@ -86,9 +86,19 @@ public:
 	// Currently cached G64/G71 track. (0 == none)
 	uint8_t GCR_track_cache_number;
 
+	// GCR track size (usually 7,928; we'll allow up to 8,192)
+	uint16_t GCR_track_size;
+	static constexpr uint16_t GCR_MAX_TRACK_SIZE = 8192U;
+
 	// Error bytes info (for certain D64/D71 format images)
-	unsigned int err_bytes_count;
+	uint16_t err_bytes_count;
 	unsigned int err_bytes_offset;
+
+	// GCR track buffer (up to 21 sectors for .g64/.g71)
+	struct GCR_track_buffer_t {
+		uint8_t sectors[21][CBMDOS_SECTOR_SIZE];
+	};
+	unique_ptr<GCR_track_buffer_t> GCR_track_buffer;
 
 public:
 	// Track offsets
@@ -126,17 +136,6 @@ public:
 	 * @param header G64/G71 header
 	 */
 	void init_track_offsets_G64(const cbmdos_G64_header_t *header);
-
-public:
-	// GCR track buffer (up to 21 sectors for .g64/.g71)
-	struct GCR_track_buffer_t {
-		uint8_t sectors[21][CBMDOS_SECTOR_SIZE];
-	};
-	unique_ptr<GCR_track_buffer_t> GCR_track_buffer;
-
-	// GCR track size (usually 7,928; we'll allow up to 8,192)
-	unsigned int GCR_track_size;
-	static constexpr unsigned int GCR_MAX_TRACK_SIZE = 8192U;
 
 public:
 	// Disk header
@@ -197,6 +196,17 @@ public:
 	 */
 	ATTR_ACCESS(write_only, 2)
 	string getDiskName(CpRp *pCpRp = nullptr) const;
+
+	struct DiskIDandDOSType_t {
+		char disk_id[2];
+		char dos_type[2];
+	};
+
+	/**
+	 * Get the disk ID and DOS type.
+	 * @return Disk ID and DOS type
+	 */
+	DiskIDandDOSType_t getDiskIDandDOSType(void) const;
 };
 
 ROMDATA_IMPL(CBMDOS)
@@ -264,9 +274,9 @@ CBMDOSPrivate::CBMDOSPrivate(const IRpFilePtr &file)
 	, dir_track(0)
 	, dir_first_sector(0)
 	, GCR_track_cache_number(0)
+	, GCR_track_size(0)
 	, err_bytes_count(0)
 	, err_bytes_offset(0)
-	, GCR_track_size(0)
 {
 	// Clear the ROM header struct.
 	memset(&diskHeader, 0, sizeof(diskHeader));
@@ -542,7 +552,7 @@ int CBMDOSPrivate::decode_GCR_bytes(uint8_t *data, const uint8_t *gcr)
 		-1, 8, 0, 1,
 
 		// GCR: 01100, 01101, 01110, 01111
-		-1, 12, 4, 5,
+		-1, 0xC, 4, 5,
 
 		// GCR: 10000, 10001, 10010, 10011
 		-1, -1, 2, 3,
@@ -787,8 +797,9 @@ size_t CBMDOSPrivate::remove_A0_padding(const char *buf, size_t siz)
 
 	buf += (siz - 1);
 	for (; siz > 0; buf--, siz--) {
-		if (static_cast<uint8_t>(*buf) != 0xA0)
+		if (static_cast<uint8_t>(*buf) != 0xA0) {
 			break;
+		}
 	}
 
 	return siz;
@@ -802,11 +813,14 @@ size_t CBMDOSPrivate::remove_A0_padding(const char *buf, size_t siz)
 ATTR_ACCESS(write_only, 2)
 string CBMDOSPrivate::getDiskName(CpRp *pCpRp) const
 {
+	string s_disk_name;
+
+	const char *disk_name;
+	size_t disk_name_len;
+
 	// TODO: Selectable unshifted vs. shifted PETSCII conversion. Using unshifted for now.
 	// TODO: Reverse video?
 	CpRp cpRp = CpRp::PETSCII_Unshifted;
-	const char *disk_name;
-	size_t disk_name_len;
 
 	switch (diskType) {
 		case CBMDOSPrivate::DiskType::D64:
@@ -837,7 +851,7 @@ string CBMDOSPrivate::getDiskName(CpRp *pCpRp) const
 			if (pCpRp) {
 				*pCpRp = cpRp;
 			}
-			return {};
+			return s_disk_name;
 	}
 
 	// Remove padding characters ($A0)
@@ -848,11 +862,13 @@ string CBMDOSPrivate::getDiskName(CpRp *pCpRp) const
 		if (pCpRp) {
 			*pCpRp = cpRp;
 		}
-		return latin1_to_utf8(disk_name, static_cast<int>(disk_name_len));
+		// NOTE: Assigning to `s_disk_name` for named-return-value optimization.
+		s_disk_name = latin1_to_utf8(disk_name, static_cast<int>(disk_name_len));
+		return s_disk_name;
 	}
 
 	// Try unshifted first.
-	string s_disk_name = cpRP_to_utf8(cpRp, disk_name, static_cast<int>(disk_name_len));
+	s_disk_name = cpRP_to_utf8(cpRp, disk_name, static_cast<int>(disk_name_len));
 	if (s_disk_name.find(uFFFD) != string::npos) {
 		// Disk name has invalid characters when using Unshifted.
 		// Try again with Shifted.
@@ -864,6 +880,48 @@ string CBMDOSPrivate::getDiskName(CpRp *pCpRp) const
 		*pCpRp = cpRp;
 	}
 	return s_disk_name;
+}
+
+/**
+ * Get the disk ID and DOS type.
+ * @return Disk ID and DOS type
+ */
+CBMDOSPrivate::DiskIDandDOSType_t CBMDOSPrivate::getDiskIDandDOSType(void) const
+{
+	// TODO: Copy four bytes at a time? (May need some struct reworking.)
+	DiskIDandDOSType_t ret;
+
+	switch (diskType) {
+		case CBMDOSPrivate::DiskType::D64:
+		case CBMDOSPrivate::DiskType::D71:
+		case CBMDOSPrivate::DiskType::D67:
+		case CBMDOSPrivate::DiskType::G64:
+		case CBMDOSPrivate::DiskType::G71:
+			// C1541, C1571, C2040
+			memcpy(ret.disk_id, diskHeader.c1541.disk_id, sizeof(ret.disk_id));
+			memcpy(ret.dos_type, diskHeader.c1541.dos_type, sizeof(ret.dos_type));
+			break;
+
+		case CBMDOSPrivate::DiskType::D80:
+		case CBMDOSPrivate::DiskType::D82:
+			// C8050/C8250
+			memcpy(ret.disk_id, diskHeader.c8050.disk_id, sizeof(ret.disk_id));
+			memcpy(ret.dos_type, diskHeader.c8050.dos_type, sizeof(ret.dos_type));
+			break;
+
+		case CBMDOSPrivate::DiskType::D81:
+			// C1581
+			memcpy(ret.disk_id, diskHeader.c1581.disk_id, sizeof(ret.disk_id));
+			memcpy(ret.dos_type, diskHeader.c1581.dos_type, sizeof(ret.dos_type));
+			break;
+
+		default:
+			assert(!"Unsupported CBM disk type?");
+			memset(&ret, 0, sizeof(ret));
+			break;
+	}
+
+	return ret;
 }
 
 /** CBMDOS **/
@@ -1046,33 +1104,53 @@ int CBMDOS::isRomSupported_static(const DetectInfo *info)
 	// Assuming this image is valid if it has the correct filesize
 	// for one of the supported disk image formats.
 	struct DiskImageSizeMap_t {
-		uint32_t size;
+		uint16_t blockCount;
 		CBMDOSPrivate::DiskType diskType;
 	};
 
-	static const array<DiskImageSizeMap_t, 14> diskImageSizeMap = {{
+	static const array<DiskImageSizeMap_t, 8> diskImageSizeMap = {{
 		// Disk images without error bytes
-		{(683 * CBMDOS_SECTOR_SIZE), CBMDOSPrivate::DiskType::D64},
-		{(768 * CBMDOS_SECTOR_SIZE), CBMDOSPrivate::DiskType::D64},
-		{(1366 * CBMDOS_SECTOR_SIZE), CBMDOSPrivate::DiskType::D71},
-		{(2083 * CBMDOS_SECTOR_SIZE), CBMDOSPrivate::DiskType::D80},
-		{(4166 * CBMDOS_SECTOR_SIZE), CBMDOSPrivate::DiskType::D82},
-		{(3200 * CBMDOS_SECTOR_SIZE), CBMDOSPrivate::DiskType::D81},
-		{(690 * CBMDOS_SECTOR_SIZE), CBMDOSPrivate::DiskType::D67},
-		{(775 * CBMDOS_SECTOR_SIZE), CBMDOSPrivate::DiskType::D67},
-
-		// Disk images *with* error bytes
-		{(683 * CBMDOS_SECTOR_SIZE) + 683, CBMDOSPrivate::DiskType::D64},
-		{(768 * CBMDOS_SECTOR_SIZE) + 768, CBMDOSPrivate::DiskType::D64},
-		{(1366 * CBMDOS_SECTOR_SIZE) + 1366, CBMDOSPrivate::DiskType::D71},
-		{(3200 * CBMDOS_SECTOR_SIZE) + 3200, CBMDOSPrivate::DiskType::D81},
-		{(690 * CBMDOS_SECTOR_SIZE) + 690, CBMDOSPrivate::DiskType::D67},
-		{(775 * CBMDOS_SECTOR_SIZE) + 775, CBMDOSPrivate::DiskType::D67},
+		{ 683, CBMDOSPrivate::DiskType::D64},
+		{ 768, CBMDOSPrivate::DiskType::D64},
+		{1366, CBMDOSPrivate::DiskType::D71},
+		{2083, CBMDOSPrivate::DiskType::D80},
+		{4166, CBMDOSPrivate::DiskType::D82},
+		{3200, CBMDOSPrivate::DiskType::D81},
+		{ 690, CBMDOSPrivate::DiskType::D67},
+		{ 775, CBMDOSPrivate::DiskType::D67},
 	}};
 
-	for (const auto &p : diskImageSizeMap) {
-		if (p.size == info->szFile) {
-			return static_cast<int>(p.diskType);
+	// TODO: Test this!
+	if (info->szFile > 0 && info->szFile <= ((4166 * CBMDOS_SECTOR_SIZE) + 4166)) {
+		// None of the total block counts are an exact multiple of CBMDOS_SECTOR_SIZE,
+		// so if the file is an exact multiple, it doesn't have error bytes.
+		if (info->szFile % CBMDOS_SECTOR_SIZE == 0) {
+			// Exact multiple of the sector size; no error bytes.
+			const uint16_t blockCount = static_cast<uint16_t>(info->szFile / CBMDOS_SECTOR_SIZE);
+			for (const auto &p : diskImageSizeMap) {
+				// Check for the exact block size.
+				if (p.blockCount == blockCount) {
+					return static_cast<int>(p.diskType);
+				}
+			}
+		} else {
+			// Check for sizes with error bytes.
+			const int fileSize = static_cast<int>(info->szFile);
+			for (const auto &p : diskImageSizeMap) {
+				// NOTE: Only D64, D71, D81, and D64 were listed as supporting error bytes.
+				// Skip D80/D82.
+				if (p.diskType == CBMDOSPrivate::DiskType::D80 ||
+				    p.diskType == CBMDOSPrivate::DiskType::D82)
+				{
+					continue;
+				}
+
+				// Check for the file size with error bytes.
+				const int expectedFileSize = (p.blockCount * CBMDOS_SECTOR_SIZE) + p.blockCount;
+				if (fileSize == expectedFileSize) {
+					return static_cast<int>(p.diskType);
+				}
+			}
 		}
 	}
 
@@ -1157,38 +1235,8 @@ int CBMDOS::loadFieldData(void)
 	const auto *diskHeader = &d->diskHeader;
 	d->fields.reserve(4);	// Maximum of 4 fields.
 
-	// Get the string addresses from the BAM/header sector.
-	// TODO: Separate function for this?
-	const char *disk_id, *dos_type;
-
-	switch (d->diskType) {
-		case CBMDOSPrivate::DiskType::D64:
-		case CBMDOSPrivate::DiskType::D71:
-		case CBMDOSPrivate::DiskType::D67:
-		case CBMDOSPrivate::DiskType::G64:
-		case CBMDOSPrivate::DiskType::G71:
-			// C1541, C1571, C2040
-			disk_id = diskHeader->c1541.disk_id;
-			dos_type = diskHeader->c1541.dos_type;
-			break;
-
-		case CBMDOSPrivate::DiskType::D80:
-		case CBMDOSPrivate::DiskType::D82:
-			// C8050/C8250
-			disk_id = diskHeader->c8050.disk_id;
-			dos_type = diskHeader->c8050.dos_type;
-			break;
-
-		case CBMDOSPrivate::DiskType::D81:
-			// C1581
-			disk_id = diskHeader->c1581.disk_id;
-			dos_type = diskHeader->c1581.dos_type;
-			break;
-
-		default:
-			assert(!"Unsupported CBM disk type?");
-			return 0;
-	}
+	// Get the disk ID and DOS type.
+	CBMDOSPrivate::DiskIDandDOSType_t diskIDandDOSType = d->getDiskIDandDOSType();
 
 	// Disk name
 	// This also sets codepage to the guessed codepage used by the disk name.
@@ -1196,11 +1244,11 @@ int CBMDOS::loadFieldData(void)
 
 	// Disk ID
 	d->fields.addField_string(C_("CBMDOS", "Disk ID"),
-		cpRP_to_utf8(cpRp, disk_id, sizeof(diskHeader->c1541.disk_id)));
+		cpRP_to_utf8(cpRp, diskIDandDOSType.disk_id, sizeof(diskIDandDOSType.disk_id)));
 
 	// DOS Type (NOTE: Always unshifted)
 	d->fields.addField_string(C_("CBMDOS", "DOS Type"),
-		cpRP_to_utf8(CpRp::PETSCII_Unshifted, dos_type, sizeof(diskHeader->c1541.dos_type)));
+		cpRP_to_utf8(CpRp::PETSCII_Unshifted, diskIDandDOSType.dos_type, sizeof(diskIDandDOSType.dos_type)));
 
 	// C1581 has an additional file type, "CBM".
 	const uint8_t max_file_type = (d->diskType == CBMDOSPrivate::DiskType::D81) ? 6 : 5;
@@ -1456,37 +1504,13 @@ int CBMDOS::loadMetaData(void)
 
 	/** Custom properties! **/
 
+	// Get the disk ID and DOS type.
+	// TODO: Custom property for disk ID?
+	CBMDOSPrivate::DiskIDandDOSType_t diskIDandDOSType = d->getDiskIDandDOSType();
+
 	// DOS Type (as OS Version) [NOTE: Always unshifted]
-	const char *dos_type;
-	switch (d->diskType) {
-		case CBMDOSPrivate::DiskType::D64:
-		case CBMDOSPrivate::DiskType::D71:
-		case CBMDOSPrivate::DiskType::D67:
-		case CBMDOSPrivate::DiskType::G64:
-		case CBMDOSPrivate::DiskType::G71:
-			// C1541, C1571, C2040
-			dos_type = diskHeader->c1541.dos_type;
-			break;
-
-		case CBMDOSPrivate::DiskType::D80:
-		case CBMDOSPrivate::DiskType::D82:
-			// C8050/C8250
-			dos_type = diskHeader->c8050.dos_type;
-			break;
-
-		case CBMDOSPrivate::DiskType::D81:
-			// C1581
-			dos_type = diskHeader->c1581.dos_type;
-			break;
-
-		default:
-			assert(!"Unsupported CBM disk type?");
-			return 0;
-	}
-
-	// DOS Type (NOTE: Always unshifted)
 	d->metaData.addMetaData_string(Property::OSVersion,
-		cpRP_to_utf8(CpRp::PETSCII_Unshifted, dos_type, sizeof(diskHeader->c1541.dos_type)));
+		cpRP_to_utf8(CpRp::PETSCII_Unshifted, diskIDandDOSType.dos_type, sizeof(diskIDandDOSType.dos_type)));
 
 	// Finished reading the metadata.
 	return d->metaData.count();

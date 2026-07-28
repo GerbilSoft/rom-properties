@@ -718,8 +718,9 @@ static tstring rpFileDialogFilterToWin32(const TCHAR *filter)
 {
 	tstring ts_ret;
 	assert(filter != nullptr && filter[0] != '\0');
-	if (!filter || filter[0] == '\0')
+	if (!filter || filter[0] == '\0') {
 		return ts_ret;
+	}
 
 	// Temporary string so we can use strtok_r().
 	const LPTSTR tmpfilter = _tcsdup(filter);
@@ -736,7 +737,8 @@ static tstring rpFileDialogFilterToWin32(const TCHAR *filter)
 		if (!token) {
 			// Missing token...
 			free(tmpfilter);
-			return {};
+			ts_ret.clear();
+			return ts_ret;
 		}
 		const size_t lastpos = ts_ret.size();
 		ts_ret += token;
@@ -747,7 +749,8 @@ static tstring rpFileDialogFilterToWin32(const TCHAR *filter)
 		if (!token) {
 			// Missing token...
 			free(tmpfilter);
-			return {};
+			ts_ret.clear();
+			return ts_ret;
 		}
 
 		// Windows users are more accustomed to "*.*" instead of "*".

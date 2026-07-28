@@ -38,15 +38,6 @@ private:
 
 public:
 	/**
-	 * Process an Android resource string pool.
-	 * @param data Start of string pool
-	 * @param size Size of string pool
-	 * @return Processed string pool, or empty vector<string> on error.
-	 */
-	ATTR_ACCESS_SIZE(read_only, 1, 2)
-	static vector<string> processStringPool(const uint8_t *data, size_t size);
-
-	/**
 	 * Convert an Android locale or country code to rom-properties language and country codes.
 	 * @param alocale Android locale
 	 * @param rLC rom-properties language code
@@ -171,16 +162,18 @@ AndroidResourceReader::StringPoolAccessor::StringPoolAccessor(const uint8_t *dat
  */
 string AndroidResourceReader::StringPoolAccessor::getString(unsigned int index)
 {
+	string s_ret;
+
 	// TODO: Cache converted strings?
 	assert(index < stringCount);
 	if (index >= stringCount) {
-		return {};
+		return s_ret;
 	}
 
 	const uint8_t *p_u8str = pStringsStart + le32_to_cpu(pStrOffsetTbl[index]);
 	assert(p_u8str < pEnd);
 	if (p_u8str >= pEnd) {
-		return {};
+		return s_ret;
 	}
 
 	if (isUTF8) {
@@ -188,56 +181,55 @@ string AndroidResourceReader::StringPoolAccessor::getString(unsigned int index)
 		unsigned int u16len = *p_u8str++;
 		assert(p_u8str < pEnd);
 		if (p_u8str >= pEnd) {
-			return {};
+			return s_ret;
 		}
 		if (u16len & 0x80) {
 			// >= 128
 			u16len = ((u16len & 0x7F) << 8) + *p_u8str++;
 			assert(p_u8str < pEnd);
 			if (p_u8str >= pEnd) {
-				return {};
+				return s_ret;
 			}
 		}
 
 		unsigned int u8len = *p_u8str++;
 		assert(p_u8str < pEnd);
 		if (p_u8str >= pEnd) {
-			return {};
+			return s_ret;
 		}
 		if (u8len & 0x80) {
 			// >= 128
 			u8len = ((u8len & 0x7F) << 8) + *p_u8str++;
 			assert(p_u8str < pEnd);
 			if (p_u8str >= pEnd) {
-				return {};
+				return s_ret;
 			}
 		}
 
 		if (u8len > 0) {
-			return string(reinterpret_cast<const char*>(p_u8str), u8len);
+			s_ret.assign(reinterpret_cast<const char*>(p_u8str), u8len);
 		}
 	} else {
 		assert(p_u8str + 2 <= pEnd);
 		if (p_u8str + 2 > pEnd) {
-			return {};
+			return s_ret;
 		}
 		unsigned int u16len = read_u16(p_u8str);
 		if (u16len & 0x8000) {
 			// >= 32,768
 			assert(p_u8str + 2 <= pEnd);
 			if (p_u8str + 2 > pEnd) {
-				return {};
+				return s_ret;
 			}
 			u16len = ((u16len & 0x7FFF) << 16) + read_u16(p_u8str);
 		}
 
 		if (u16len > 0) {
-			return utf16le_to_utf8(reinterpret_cast<const char16_t*>(p_u8str), u16len);
+			s_ret = utf16le_to_utf8(reinterpret_cast<const char16_t*>(p_u8str), u16len);
 		}
 	}
 
-	// Empty string?
-	return {};
+	return s_ret;
 }
 
 /** AndroidResourceReaderPrivate **/
@@ -849,21 +841,22 @@ int AndroidResourceReader::addField_string_i18n(RomFields *fields, const char *n
  */
 string AndroidResourceReader::findIconHighestDensity(uint32_t resource_id) const
 {
+	string icon_filename;	// FIXME: Using `const char*` results in an invalid string here...
+
 	RP_D(const AndroidResourceReader);
 	assert(!d->responseMap_i18n.empty());
 	if (d->responseMap_i18n.empty()) {
 		// No resources.
-		return {};
+		return icon_filename;
 	}
 
 	auto iter = d->responseMap_i18n.find(resource_id);
 	if (iter == d->responseMap_i18n.end()) {
-		return {};
+		return icon_filename;
 	}
 	const auto &lcmap = iter->second;
 
 	int highest_density = -1;
-	string icon_filename;	// FIXME: Using `const char*` results in an invalid string here...
 	for (auto iter2 : lcmap) {
 		// NOTE: Some packages, e.g. Magisk, don't have the density flag set.
 		// Allow this if the lc is 0.

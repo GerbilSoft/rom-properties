@@ -8,6 +8,13 @@
 #ifndef FMT_FORMAT_INL_H_
 #define FMT_FORMAT_INL_H_
 
+// rom-properties: Disable -Wnrvo for fmtlib.
+#if (defined(__clang__) && __clang_major__ >= 21) || \
+    (defined(__GNUC__) && __GNUC__ >= 14)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wnrvo"
+#endif
+
 #ifdef __SANITIZE_THREAD__
 extern "C" void __tsan_acquire(void*);
 extern "C" void __tsan_release(void*);
@@ -1970,5 +1977,11 @@ FMT_FUNC auto is_printable(uint32_t cp) -> bool {
 }  // namespace detail
 
 FMT_END_NAMESPACE
+
+// rom-properties: Disable -Wnrvo for fmtlib.
+#if (defined(__clang__) && __clang_major__ >= 21) || \
+    (defined(__GNUC__) && __GNUC__ >= 14)
+#  pragma GCC diagnostic pop
+#endif
 
 #endif  // FMT_FORMAT_INL_H_

@@ -113,12 +113,16 @@ WiiWIBNPrivate::WiiWIBNPrivate(const IRpFilePtr &file)
  */
 rp_image_const_ptr WiiWIBNPrivate::loadIcon(void)
 {
+	rp_image_ptr icon;
+
 	if (iconAnimData) {
 		// Icon has already been loaded.
-		return iconAnimData->frames[0];
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		icon = iconAnimData->frames[0];
+		return icon;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the icon.
-		return {};
+		return icon;
 	}
 
 	// Icon starts after the header and banner.
@@ -131,12 +135,12 @@ rp_image_const_ptr WiiWIBNPrivate::loadIcon(void)
 	assert(icondata.get() != nullptr);
 	if (!icondata.get()) {
 		// Memory allocation failed somehow...
-		return {};
+		return icon;
 	}
 	size_t size = file->seekAndRead(iconstartaddr, icondata.get(), iconsizetotal);
 	if (size < BANNER_WIBN_ICON_SIZE) {
 		// Unable to read *any* icons.
-		return {};
+		return icon;
 	}
 
 	// Number of icons read
@@ -158,8 +162,9 @@ rp_image_const_ptr WiiWIBNPrivate::loadIcon(void)
 		if (delay == CARD_SPEED_END) {
 			// End of the icons.
 			// NOTE: Ignore this for the first icon.
-			if (i > 0)
+			if (i > 0) {
 				break;
+			}
 
 			// First icon. Keep going.
 			iconspeed = 0;
@@ -206,7 +211,9 @@ rp_image_const_ptr WiiWIBNPrivate::loadIcon(void)
 	iconAnimData->seq_count = idx;
 
 	// Return the first frame.
-	return iconAnimData->frames[0];
+	// NOTE: Assigning to `icon` for named-return-value optimization.
+	icon = iconAnimData->frames[0];
+	return icon;
 }
 
 /**
@@ -215,12 +222,16 @@ rp_image_const_ptr WiiWIBNPrivate::loadIcon(void)
  */
 rp_image_const_ptr WiiWIBNPrivate::loadBanner(void)
 {
+	rp_image_ptr banner;
+
 	if (img_banner) {
 		// Banner is already loaded.
-		return img_banner;
+		// NOTE: Assigning to `banner` for named-return-value optimization.
+		banner = img_banner;
+		return banner;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the banner.
-		return {};
+		return banner;
 	}
 
 	// Banner is located after the WIBN header,
@@ -229,15 +240,16 @@ rp_image_const_ptr WiiWIBNPrivate::loadBanner(void)
 	size_t size = file->seekAndRead(sizeof(wibnHeader), bannerbuf.get(), BANNER_WIBN_IMAGE_SIZE);
 	if (size != BANNER_WIBN_IMAGE_SIZE) {
 		// Seek and/or read error.
-		return {};
+		return banner;
 	}
 
 	// Convert the banner from GCN RGB5A3 format to ARGB32.
-	img_banner = ImageDecoder::fromGcn16(
+	banner = ImageDecoder::fromGcn16(
 		ImageDecoder::PixelFormat::RGB5A3,
 		BANNER_WIBN_IMAGE_W, BANNER_WIBN_IMAGE_H,
 		bannerbuf.get(), BANNER_WIBN_IMAGE_SIZE);
-	return img_banner;
+	this->img_banner = banner;
+	return banner;
 }
 
 /** WiiWIBN **/

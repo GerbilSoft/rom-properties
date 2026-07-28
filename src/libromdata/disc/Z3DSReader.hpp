@@ -95,11 +95,14 @@ public:
 public:
 	/** Z3DSReader-specific functions **/
 
+	typedef std::pair<std::string, std::vector<uint8_t>> Metadata_Entry_t;
+	typedef std::vector<Metadata_Entry_t> Metadata_t;
+
 	/**
 	 * Get the metadata.
 	 * @return Metadata, or empty map if not present or an error occurred.
 	 */
-	std::vector<std::pair<std::string, std::vector<uint8_t>>> getZ3DSMetaData(void);
+	Metadata_t getZ3DSMetaData(void);
 };
 
 typedef std::shared_ptr<Z3DSReader> Z3DSReaderPtr;

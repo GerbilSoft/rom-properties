@@ -38,6 +38,8 @@ namespace LibRomData { namespace PSFTagParser {
  */
 unordered_map<string, string> parseTags(const char *pData, size_t size, PSFTagStyle style)
 {
+	unordered_map<string, string> kv;
+
 	const char *p = pData;
 	const char *const pEnd = pData + size;
 
@@ -57,11 +59,11 @@ unordered_map<string, string> parseTags(const char *pData, size_t size, PSFTagSt
 	}
 	if (p + magicSize >= pEnd) {
 		// Out of bounds?
-		return {};
+		return kv;
 	}
 	if (memcmp(p, magicNumber, magicSize) != 0) {
 		// Invalid magic number.
-		return {};
+		return kv;
 	}
 	p += magicSize;
 
@@ -72,7 +74,7 @@ unordered_map<string, string> parseTags(const char *pData, size_t size, PSFTagSt
 		// S98: Check for a UTF-8 BOM.
 		if (p + 3 >= pEnd) {
 			// Not enough data...
-			return {};
+			return kv;
 		}
 
 		const uint8_t *const up = reinterpret_cast<const uint8_t*>(p);
@@ -83,7 +85,6 @@ unordered_map<string, string> parseTags(const char *pData, size_t size, PSFTagSt
 		}
 	}
 
-	unordered_map<string, string> kv;
 #ifdef HAVE_UNORDERED_MAP_RESERVE
 	kv.reserve(12);
 #endif /* HAVE_UNORDERED_MAP_RESERVE */

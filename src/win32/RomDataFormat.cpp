@@ -36,7 +36,7 @@ using std::tstring;
 tstring formatDateTime(time_t date_time, unsigned int flags)
 {
 	// Format the date/time using the system locale.
-	tstring tstr;
+	tstring ts_ret;
 	TCHAR buf[128];
 
 	// Convert from Unix time to Win32 SYSTEMTIME.
@@ -53,7 +53,7 @@ tstring formatDateTime(time_t date_time, unsigned int flags)
 		BOOL ret = SystemTimeToTzSpecificLocalTime(nullptr, &st_utc, &st);
 		if (!ret) {
 			// Conversion failed.
-			return {};
+			return ts_ret;
 		}
 	}
 
@@ -82,18 +82,19 @@ tstring formatDateTime(time_t date_time, unsigned int flags)
 		}
 		if (!ret) {
 			// Error!
-			return {};
+			ts_ret.clear();
+			return ts_ret;
 		}
 
 		// Add to the tstring.
-		tstr += buf;
+		ts_ret += buf;
 	}
 
 	if (flags & RomFields::RFT_DATETIME_HAS_TIME) {
 		// Format the time.
-		if (!tstr.empty()) {
+		if (!ts_ret.empty()) {
 			// Add a space.
-			tstr += _T(' ');
+			ts_ret += _T(' ');
 		}
 
 		int ret = GetTimeFormat(
@@ -101,14 +102,15 @@ tstring formatDateTime(time_t date_time, unsigned int flags)
 			0, &st, nullptr, buf, _countof(buf));
 		if (!ret) {
 			// Error!
-			return {};
+			ts_ret.clear();
+			return ts_ret;
 		}
 
 		// Add to the tstring.
-		tstr += buf;
+		ts_ret += buf;
 	}
 
-	return tstr;
+	return ts_ret;
 }
 
 /**

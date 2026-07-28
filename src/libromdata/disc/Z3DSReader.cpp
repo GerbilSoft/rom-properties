@@ -317,18 +317,20 @@ off64_t Z3DSReader::size(void)
 	return d->z3ds_header.uncompressed_size;
 }
 
-	/** Z3DSReader-specific functions **/
+/** Z3DSReader-specific functions **/
 
 /**
  * Get the metadata.
  * @return Metadata, or empty vector if not present or an error occurred.
  */
-vector<pair<string, std::vector<uint8_t>>> Z3DSReader::getZ3DSMetaData(void)
+Z3DSReader::Metadata_t Z3DSReader::getZ3DSMetaData(void)
 {
+	Z3DSReader::Metadata_t items;
+
 	static constexpr unsigned int Z3DS_MAX_METADATA_SIZE = 128U * 1024U;
 	RP_D(Z3DSReader);
 	if (!d->seekable || d->z3ds_header.metadata_size < 2 || d->z3ds_header.metadata_size > Z3DS_MAX_METADATA_SIZE) {
-		return {};
+		return items;
 	}
 
 	// Load the metadata.
@@ -337,7 +339,7 @@ vector<pair<string, std::vector<uint8_t>>> Z3DSReader::getZ3DSMetaData(void)
 	size_t size = m_file->seekAndRead(sizeof(d->z3ds_header), metaData.data(), d->z3ds_header.metadata_size);
 	if (size != d->z3ds_header.metadata_size) {
 		// Seek and/or read error.
-		return {};
+		return items;
 	}
 
 	const uint8_t *p = metaData.data();
@@ -346,12 +348,11 @@ vector<pair<string, std::vector<uint8_t>>> Z3DSReader::getZ3DSMetaData(void)
 	// Check the metadata version.
 	if (*p++ != Z3DS_METADATA_VERSION) {
 		// Incorrect metadata version.
-		return {};
+		return items;
 	}
 
 	// Process metadata items until we hit one of type TYPE_END.
 	// NOTE: Reserving 5 elements, since that's what Azahar usually writes.
-	vector<pair<string, vector<uint8_t>>> items;
 	items.reserve(5);
 	while ((p + sizeof(Z3DS_Metadata_Item_Header)) < pEnd) {
 		const Z3DS_Metadata_Item_Header *const header =

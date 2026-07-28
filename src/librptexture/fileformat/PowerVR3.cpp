@@ -501,19 +501,23 @@ size_t PowerVR3Private::calcExpectedSizeForMip0(const FmtLkup_t **out_fmt) const
  */
 rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 {
+	rp_image_ptr img;
+
 	assert(mip >= 0);
 	assert(mip < static_cast<int>(mipmaps.size()));
 	if (mip < 0 || mip >= static_cast<int>(mipmaps.size())) {
 		// Invalid mipmap number.
-		return {};
+		return img;
 	}
 
 	if (!mipmaps.empty() && mipmaps[mip] != nullptr) {
 		// Image has already been loaded.
-		return mipmaps[mip];
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = mipmaps[mip];
+		return img;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the image.
-		return {};
+		return img;
 	}
 
 	// NOTE: Only the first surface/face is supported at the moment,
@@ -525,7 +529,7 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 		num_surfaces = 1;
 	} else if (num_surfaces > 128) {
 		// Too many surfaces.
-		return {};
+		return img;
 	}
 	unsigned int num_faces = pvr3Header.num_faces;
 	assert(num_faces <= 128);
@@ -533,7 +537,7 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 		num_faces = 1;
 	} else if (num_faces > 128) {
 		// Too many faces.
-		return {};
+		return img;
 	}
 	// TODO: Skip the multiply if both surfaces and faces are 1?
 	const unsigned int prod_surfaces_faces = num_surfaces * num_faces;
@@ -547,27 +551,27 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 	    pvr3Header.height > 32768)
 	{
 		// Invalid image dimensions.
-		return {};
+		return img;
 	}
 
 	// Texture cannot start inside of the PowerVR3 header.
 	assert(texDataStartAddr >= sizeof(pvr3Header));
 	if (texDataStartAddr < sizeof(pvr3Header)) {
 		// Invalid texture data start address.
-		return {};
+		return img;
 	}
 
 	const off64_t fileSize = file->size();
 	if (fileSize > 128*1024*1024) {
 		// Sanity check: PowerVR3 files shouldn't be more than 128 MB.
-		return {};
+		return img;
 	}
 
 	// Seek to the start of the texture data.
 	int ret = file->seek(texDataStartAddr);
 	if (ret != 0) {
 		// Seek error.
-		return {};
+		return img;
 	}
 
 	// Handle a 1D texture as a "width x 1" 2D texture.
@@ -580,7 +584,7 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 	size_t expected_size = calcExpectedSizeForMip0(&fmtLkup);
 	if (unlikely(expected_size == 0)) {
 		// Unable to calculate the expected size.
-		return {};
+		return img;
 	}
 
 	// If we're requesting a mipmap level higher than 0 (full image),
@@ -594,7 +598,7 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 		assert(height > 0);
 		if (width <= 0 || height <= 0) {
 			// Mipmap size calculation error...
-			return {};
+			return img;
 		}
 
 		// TODO: Skip the multiply if both surfaces and faces are 1?
@@ -605,7 +609,7 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 	// Verify file size.
 	if ((start_addr + expected_size) > static_cast<size_t>(fileSize)) {
 		// File is too small.
-		return {};
+		return img;
 	}
 
 	// Read the texture data.
@@ -613,17 +617,16 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 	size_t size = file->seekAndRead(start_addr, buf.get(), expected_size);
 	if (size != expected_size) {
 		// Seek and/or read error.
-		return {};
+		return img;
 	}
 
 	// Decode the image.
-	rp_image_ptr img;
 	if (pvr3Header.channel_depth != 0) {
 		// Uncompressed format
 		assert(fmtLkup != nullptr);
 		if (!fmtLkup) {
 			// Shouldn't happen...
-			return {};
+			return img;
 		}
 
 		// TODO: Is the row stride required to be a specific multiple?
@@ -662,7 +665,7 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 			default:
 				// Not supported...
 				//assert(!"Unsupported PowerVR3 uncompressed format.");
-				return {};
+				return img;
 		}
 	} else {
 		// Compressed format
@@ -804,7 +807,7 @@ rp_image_const_ptr PowerVR3Private::loadImage(int mip)
 
 				// TODO: Other formats that aren't actually compressed.
 				//assert(!"Unsupported PowerVR3 compressed format.");
-				return {};
+				return img;
 		}
 	}
 

@@ -93,12 +93,13 @@ IntellivisionPrivate::IntellivisionPrivate(const IRpFilePtr &file)
 string IntellivisionPrivate::getTitle(int *pOutYear) const
 {
 	// NOTE: The cartridge ROM is mapped to 0x5000.
+	string title;
 
 	// Title/date address must be between 0x5010 and 0x50FF.
 	uint16_t title_addr = romHeader.title_date.get_real_value();
 	if (title_addr < 0x5010 || title_addr >= (0x5000 + ARRAY_SIZE(romHeader.u16))) {
 		// Out of range.
-		return {};
+		return title;
 	}
 	// Convert to an absolute address.
 	title_addr -= 0x5000;
@@ -118,7 +119,6 @@ string IntellivisionPrivate::getTitle(int *pOutYear) const
 	// Convert it to 8-bit ASCII.
 	// NOTE: Removing the high bit to ensure UTF-8 compatibility.
 	// NOTE: 0x7F-0xFF are graphics characters. Not sure if it maps to Unicode well...
-	string title;
 	title.reserve(32);
 	const uint16_t *const p_end = &romHeader.u16[ARRAY_SIZE(romHeader.u16)];
 	for (const uint16_t *p = &romHeader.u16[title_addr+1]; p < p_end; p++) {

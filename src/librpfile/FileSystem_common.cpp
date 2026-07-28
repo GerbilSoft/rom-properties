@@ -147,12 +147,13 @@ const wchar_t *file_ext(const wchar_t *filename)
  */
 std::string replace_ext(const char *filename, const char *ext)
 {
+	string s_ret;
 	if (!filename || filename[0] == '\0') {
 		// No filename...
-		return {};
+		return s_ret;
 	}
+	s_ret.assign(filename);
 
-	string s_ret = filename;
 	const size_t dotpos = s_ret.rfind('.');
 	const size_t slashpos = s_ret.rfind(DIR_SEP_CHR);
 	if (dotpos == string::npos ||

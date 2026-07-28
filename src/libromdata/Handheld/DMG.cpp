@@ -1431,7 +1431,7 @@ int DMG::loadMetaData(void)
 
 	// Revision (as Version)
 	d->metaData.addMetaData_string_numeric(Property::Version,
-		d->romHeader.version, RomMetaData::Base::Dec, 2);
+		romHeader->version, RomMetaData::Base::Dec, 2);
 
 	// Finished reading the metadata.
 	return d->metaData.count();

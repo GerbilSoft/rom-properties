@@ -182,16 +182,17 @@ const char *NintendoDSPrivate::getNDSSecureAreaString(void)
  */
 vector<RomData::RomOp> NintendoDS::romOps_int(void) const
 {
+	vector<RomOp> ops;
+
 	// Determine if the ROM is trimmed and/or encrypted.
 	// TODO: Cache the vector?
 	RP_D(const NintendoDS);
 	if (d->isNTRBOOT()) {
 		// None of these RomOps are applicable to NTRBOOT images at the moment.
-		return {};
+		return ops;
 	}
 
 	uint32_t flags;
-	vector<RomOp> ops;
 #ifdef ENABLE_DECRYPTION
 	ops.resize(2);
 #else /* !ENABLE_DECRYPTION */

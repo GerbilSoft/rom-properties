@@ -259,11 +259,14 @@ J2MEPrivate::~J2MEPrivate()
  */
 rp::uvector<uint8_t> J2MEPrivate::loadFileFromZip(const char *filename, off64_t max_size)
 {
-	// TODO: This is also used by GcnFstTest. Move to a common utility file?
+	// TODO: This is also used by AndroidAPK. Move to a common utility file?
+	// (GcnFstTest also uses a similar function...)
+	rp::uvector<uint8_t> buf;
+
 	// NOTE: Using case-insensitive lookups for compatibility. Needs testing!
 	int ret = mz_zip_reader_locate_entry(jarReader, filename, true);
 	if (ret != MZ_OK) {
-		return {};
+		return buf;
 	}
 
 	// Get file information.
@@ -271,21 +274,20 @@ rp::uvector<uint8_t> J2MEPrivate::loadFileFromZip(const char *filename, off64_t 
 	ret = mz_zip_reader_entry_get_info(jarReader, &file_info);
 	if (ret != MZ_OK) {
 		// Error getting the file information.
-		return {};
+		return buf;
 	}
 	const off64_t uncompressed_size = file_info->uncompressed_size;
 	if (uncompressed_size >= max_size) {
 		// The uncompressed size is too big.
-		return {};
+		return buf;
 	}
 
 	ret = mz_zip_reader_entry_open(jarReader);
 	if (ret != MZ_OK) {
-		return {};
+		return buf;
 	}
 
 	size_t size = static_cast<size_t>(uncompressed_size);
-	rp::uvector<uint8_t> buf;
 	buf.resize(size);
 
 	// Read the file.
@@ -298,8 +300,10 @@ rp::uvector<uint8_t> J2MEPrivate::loadFileFromZip(const char *filename, off64_t 
 		int to_read = static_cast<int>(size > UINT16_MAX ? UINT16_MAX : size);
 		ret = mz_zip_reader_entry_read(jarReader, p, to_read);
 		if (ret != to_read) {
+			// Read error...
 			mz_zip_reader_entry_close(jarReader);
-			return {};
+			buf.clear();
+			return buf;
 		}
 
 		// ret == number of bytes read.
@@ -311,9 +315,9 @@ rp::uvector<uint8_t> J2MEPrivate::loadFileFromZip(const char *filename, off64_t 
 	// An error will occur here if the CRC is incorrect.
 	ret = mz_zip_reader_entry_close(jarReader);
 	if (ret != MZ_OK) {
-		return {};
+		// CRC error.
+		buf.clear();
 	}
-
 	return buf;
 }
 
@@ -512,10 +516,12 @@ int J2MEPrivate::loadManifestMF(void)
  */
 vector<string> J2MEPrivate::parseMIDlet1tag(void)
 {
+	vector<string> vec;
+
 	auto iter = m_map.find(manifest_tag_t::MIDlet_1);
 	if (iter == m_map.end()) {
 		// "MIDlet-1 was not found.
-		return {};
+		return vec;
 	}
 
 	// "MIDlet-1" has three values, separated by commas:
@@ -523,7 +529,6 @@ vector<string> J2MEPrivate::parseMIDlet1tag(void)
 	// - Icon filename
 	// - Java class name
 	// - Additional strings: Permissions?
-	vector<string> vec;
 	vec.reserve(3);
 	const string &midlet_1 = iter->second;
 
@@ -581,19 +586,23 @@ vector<string> J2MEPrivate::parseMIDlet1tag(void)
  */
 rp_image_const_ptr J2MEPrivate::loadIcon(void)
 {
+	rp_image_ptr icon;
+
 	if (img_icon) {
 		// Icon has already been loaded.
-		return img_icon;
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		icon = img_icon;
+		return icon;
 	} else if (!this->isValid || static_cast<int>(this->jfileType) < 0) {
 		// Can't load the icon.
-		return {};
+		return icon;
 	}
 
 	// Make sure the .jar file is open.
 	assert(jarReader != nullptr);
 	if (!jarReader) {
 		// Not open...
-		return {};
+		return icon;
 	}
 
 	// PNG data buffer
@@ -613,7 +622,7 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
 
 		if (*icon_filename == '\0') {
 			// No filename.
-			return {};
+			return icon;
 		}
 
 		// Attempt to load the file.
@@ -625,7 +634,7 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
 		vector<string> vec = parseMIDlet1tag();
 		if (vec.size() < 2) {
 			// No filename.
-			return {};
+			return icon;
 		}
 
 		// Attempt to load the file.
@@ -634,14 +643,15 @@ rp_image_const_ptr J2MEPrivate::loadIcon(void)
 
 	if (png_buf.empty()) {
 		// Unable to load the icon file.
-		return {};
+		return icon;
 	}
 
 	// Create a MemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
 	MemFile f_mem(png_buf.data(), png_buf.size());
-	this->img_icon = RpPng::load(&f_mem);
-	return this->img_icon;
+	icon = RpPng::load(&f_mem);
+	this->img_icon = icon;
+	return icon;
 }
 
 /** J2ME **/

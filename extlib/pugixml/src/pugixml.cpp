@@ -12,6 +12,13 @@
 #ifndef SOURCE_PUGIXML_CPP
 #define SOURCE_PUGIXML_CPP
 
+// rom-properties: Disable -Wnrvo for PugiXML.
+#if (defined(__clang__) && __clang_major__ >= 21) || \
+    (defined(__GNUC__) && __GNUC__ >= 14)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wnrvo"
+#endif
+
 #include "pugixml.hpp"
 
 #include <stdlib.h>
@@ -13747,6 +13754,12 @@ namespace pugi
 #undef PUGI_IMPL_ENDSEG
 #undef PUGI_IMPL_THROW_ERROR
 #undef PUGI_IMPL_CHECK_ERROR
+
+// rom-properties: Disable -Wnrvo for PugiXML.
+#if (defined(__clang__) && __clang_major__ >= 21) || \
+    (defined(__GNUC__) && __GNUC__ >= 14)
+#  pragma GCC diagnostic pop
+#endif
 
 #endif
 

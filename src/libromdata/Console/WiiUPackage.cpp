@@ -114,17 +114,21 @@ void WiiUPackagePrivate::reset(void)
  */
 IDiscReaderPtr WiiUPackagePrivate::openContentFile(unsigned int idx)
 {
+	IDiscReaderPtr discReader;
+
 	assert(packageType == PackageType::NUS);
 	assert(idx < contentsReaders.size());
 	if (packageType != PackageType::NUS ||
 	    idx >= contentsReaders.size())
 	{
-		return {};
+		return discReader;
 	}
 
 	if (contentsReaders[idx]) {
 		// Content is already open.
-		return contentsReaders[idx];
+		// NOTE: Assigning to `discReader` for named-return-value optimization.
+		discReader = contentsReaders[idx];
+		return discReader;
 	}
 
 #ifdef ENABLE_DECRYPTION
@@ -148,13 +152,12 @@ IDiscReaderPtr WiiUPackagePrivate::openContentFile(unsigned int idx)
 		if (!subfile->isOpen()) {
 			// Unable to open the content file.
 			// TODO: Error code?
-			return {};
+			return discReader;
 		}
 	}
 
 	// Create a disc reader.
 	// TODO: Bitfield constants for 'type'?
-	IDiscReaderPtr discReader;
 	if (entry.type & cpu_to_be16(0x0002)) {
 		// Content is H3-hashed.
 		// NOTE: No IV is needed here.
@@ -171,16 +174,16 @@ IDiscReaderPtr WiiUPackagePrivate::openContentFile(unsigned int idx)
 	}
 	if (!discReader->isOpen()) {
 		// Unable to open the CBC reader.
-		return {};
+		discReader.reset();
+		return discReader;
 	}
 
 	// Disc reader is open.
 	contentsReaders[idx] = discReader;
+#endif
+
+	// NOTE: Unencrypted NUS packages are NOT supported right now.
 	return discReader;
-#else /* !ENABLE_DECRYPTION */
-	// Unencrypted NUS packages are NOT supported right now.
-	return {};
-#endif /* ENABLE_DECRYPTION */
 }
 
 /**
@@ -255,38 +258,43 @@ IRpFilePtr WiiUPackagePrivate::open(const char *filename)
  */
 rp_image_const_ptr WiiUPackagePrivate::loadIcon(void)
 {
+	rp_image_const_ptr icon;
+
 	if (img_icon) {
 		// Icon has already been loaded.
-		return img_icon;
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		icon = img_icon;
+		return icon;
 	} else if (!this->isValid) {
 		// Can't load the icon.
-		return {};
+		return icon;
 	}
 
 	// Verify that this is a Wii U package. (TMD format must be v1 or higher.)
 	if (tmd && tmd->tmdFormatVersion() < 1) {
 		// Not a Wii U package.
 		// TODO: loadInternalImage() should return ENOENT.
-		return {};
+		return icon;
 	}
 
 	// Icon is "/meta/iconTex.tga".
 	IRpFilePtr f_icon = this->open("/meta/iconTex.tga");
 	if (!f_icon) {
 		// Icon not found?
-		return {};
+		return icon;
 	}
 
 	// Attempt to open the icon as TGA.
 	TGA tga(f_icon);
 	if (!tga.isValid()) {
 		// Not a valid TGA file.
-		return {};
+		return icon;
 	}
 
 	// Get the icon.
-	img_icon = tga.image();
-	return img_icon;
+	icon = tga.image();
+	this->img_icon = icon;
+	return icon;
 }
 
 /** WiiUPackage **/

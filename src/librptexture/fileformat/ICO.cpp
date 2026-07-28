@@ -224,10 +224,14 @@ private:
 
 	/**
 	 * Load the image. (Windows Vista PNG format)
+	 *
+	 * NOTE: Called by loadImage_Win3(), so return type must be
+	 * rp_image_ptr, *not* rp_image_const_ptr.
+	 *
 	 * @param idx Icon's bitmap index (-1 for "best")
 	 * @return Image, or nullptr on error.
 	 */
-	rp_image_const_ptr loadImage_WinVista_PNG(int idx = -1);
+	rp_image_ptr loadImage_WinVista_PNG(int idx = -1);
 
 public:
 	/**
@@ -588,6 +592,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win1(int idx)
 {
 	// Icon data is located immediately after the header.
 	// Each icon is actually two icons: a 1bpp mask, then a 1bpp icon.
+	rp_image_ptr img;
 	unsigned int addr = sizeof(ICO_Win1_Header);
 
 	// NOTE: If the file has *both* DIB and DDB, then the DIB is first,
@@ -604,7 +609,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win1(int idx)
 		if ((format >> 8) != 2) {
 			// This icon does *not* have both DIB and DDB.
 			// Only a single bitmap is present.
-			return {};
+			return img;
 		}
 
 		// Add the first icon size to the address.
@@ -620,7 +625,9 @@ rp_image_const_ptr ICOPrivate::loadImage_Win1(int idx)
 	auto iter = img_map.find(idx);
 	if (iter != img_map.end()) {
 		// Image was already decoded.
-		return iter->second;
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = iter->second;
+		return img;
 	}
 
 	const ICO_Win1_Header *const pIcoHeaderWin1 = &icoHeader.win1[idx];
@@ -642,7 +649,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win1(int idx)
 		IRpFilePtr f_icon = res.resReader->open(dir.rt, res.id, res.lang);
 		if (!f_icon) {
 			// Unable to open the resource.
-			return {};
+			return img;
 		}
 
 		// Read from the resource.
@@ -653,20 +660,21 @@ rp_image_const_ptr ICOPrivate::loadImage_Win1(int idx)
 	} else {
 		// Not valid?
 		assert(!"Not a valid icon!");
-		return {};
+		return img;
 	}
 
 	if (size != icon_size * 2) {
 		// Seek and/or read error.
-		return {};
+		return img;
 	}
 
 	// Convert the icon.
 	const uint8_t *const p_mask_data = icon_data.get();
 	const uint8_t *const p_icon_data = p_mask_data + icon_size;
-	img_map[idx] = ImageDecoder::fromLinearMono_WinIcon(width, height,
+	img = ImageDecoder::fromLinearMono_WinIcon(width, height,
 		p_icon_data, icon_size, p_mask_data, icon_size, stride);
-	return img_map[idx];
+	img_map[idx] = img;
+	return img;
 }
 
 /**
@@ -678,6 +686,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 {
 	// Icon image header was already loaded by loadIconDirectory_Win3().
 	// TODO: Verify dwBytesInRes.
+	rp_image_ptr img;
 
 	// Check the header size.
 	if (idx < 0) {
@@ -685,14 +694,16 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 	}
 	if (idx < 0 || idx >= static_cast<int>(iconBitmapHeaders.size())) {
 		// Index is out of range.
-		return {};
+		return img;
 	}
 
 	// Check if this image was already decoded.
 	auto iter = img_map.find(idx);
 	if (iter != img_map.end()) {
 		// Image was already decoded.
-		return iter->second;
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = iter->second;
+		return img;
 	}
 
 	const IconBitmapHeader_t *const pIconHeader = &iconBitmapHeaders[idx];
@@ -700,11 +711,11 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 	switch (header_size) {
 		default:
 			// Not supported...
-			return {};
+			return img;
 
 		case BITMAPCOREHEADER_SIZE:
 			// TODO: Convert to BITMAPINFOHEADER.
-			return {};
+			return img;
 
 		case BITMAPINFOHEADER_SIZE:
 		case BITMAPV2INFOHEADER_SIZE:
@@ -715,7 +726,9 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 
 		case 0x474E5089:	// "\x89PNG"
 			// Load it as a PNG image.
-			return loadImage_WinVista_PNG();
+			// NOTE: Assigning to `img` for named-return-value optimization.
+			img = loadImage_WinVista_PNG();
+			return img;
 	}
 
 	// NOTE: For standard icons (non-alpha, not PNG), the height is
@@ -731,13 +744,13 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 	const int orig_height = static_cast<int>(le32_to_cpu(bih->biHeight));
 	if (orig_height < -32768 || orig_height > 32768) {
 		// Out of range...
-		return {};
+		return img;
 	}
 	const int width = le32_to_cpu(bih->biWidth);
 	const unsigned int height = abs(orig_height);
 	if (width <= 0 || height == 0 || (height & 1)) {
 		// Invalid bitmap size.
-		return {};
+		return img;
 	}
 
 	const bool is_upside_down = (orig_height > 0);
@@ -747,7 +760,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 	// TODO: Handle BI_BITFIELDS?
 	if (le16_to_cpu(bih->biPlanes) > 1) {
 		// Cannot handle planar bitmaps.
-		return {};
+		return img;
 	}
 
 	// Row must be 32-bit aligned.
@@ -797,13 +810,13 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 			pBestIcon = &res.iconDirectory[idx];
 		} else {
 			// Invalid index.
-			return {};
+			return img;
 		}
 
 		f_icon = res.resReader->open(dir.rt, le16_to_cpu(pBestIcon->nID), res.lang);
 		if (!f_icon) {
 			// Unable to open the resource.
-			return {};
+			return img;
 		}
 		addr = header_size;
 	} else if (std::holds_alternative<icodir_ico>(dir.data)) {
@@ -816,7 +829,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 			pBestIcon = &ico.iconDirectory[idx];
 		} else {
 			// Invalid index.
-			return {};
+			return img;
 		}
 
 		f_icon = this->file;
@@ -824,7 +837,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 	} else {
 		// Not valid?
 		assert(!"Not a valid icon!");
-		return {};
+		return img;
 	}
 
 	// For 8bpp or less, a color table is present.
@@ -853,7 +866,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 	size_t size = f_icon->seekAndRead(addr, img_data.get(), biSizeImage);
 	if (size != biSizeImage) {
 		// Seek and/or read error.
-		return {};
+		return img;
 	}
 
 	// Convert the main image first.
@@ -869,7 +882,6 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 		icon_data = mask_data + mask_size;
 	}
 
-	rp_image_ptr img;
 	switch (bitcount) {
 		default:
 			// Not supported yet...
@@ -919,7 +931,7 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 
 	if (!img) {
 		// No icon...
-		return {};
+		return img;
 	}
 
 	// Apply the icon mask.
@@ -1039,11 +1051,17 @@ rp_image_const_ptr ICOPrivate::loadImage_Win3(int idx)
 
 /**
  * Load the image. (Windows Vista PNG format)
+ *
+ * NOTE: Called by loadImage_Win3(), so return type must be
+ * rp_image_ptr, *not* rp_image_const_ptr.
+ *
  * @param idx Icon's bitmap index (-1 for "best")
  * @return Image, or nullptr on error.
  */
-rp_image_const_ptr ICOPrivate::loadImage_WinVista_PNG(int idx)
+rp_image_ptr ICOPrivate::loadImage_WinVista_PNG(int idx)
 {
+	rp_image_ptr img;
+
 	// Use RpPng to load a PNG image.
 	IRpFilePtr f_png;
 
@@ -1058,14 +1076,16 @@ rp_image_const_ptr ICOPrivate::loadImage_WinVista_PNG(int idx)
 			pBestIcon = &res.iconDirectory[idx];
 		} else {
 			// Invalid index.
-			return {};
+			return img;
 		}
 
 		// Check if this image was already decoded.
 		auto iter = img_map.find(idx);
 		if (iter != img_map.end()) {
 			// Image was already decoded.
-			return iter->second;
+			// NOTE: Assigning to `img` for named-return-value optimization.
+			img = iter->second;
+			return img;
 		}
 
 		f_png = res.resReader->open(dir.rt, le16_to_cpu(pBestIcon->nID), res.lang);
@@ -1080,14 +1100,16 @@ rp_image_const_ptr ICOPrivate::loadImage_WinVista_PNG(int idx)
 			pBestIcon = &ico.iconDirectory[idx];
 		} else {
 			// Invalid index.
-			return {};
+			return img;
 		}
 
 		// Check if this image was already decoded.
 		auto iter = img_map.find(idx);
 		if (iter != img_map.end()) {
 			// Image was already decoded.
-			return iter->second;
+			// NOTE: Assigning to `img` for named-return-value optimization.
+			img = iter->second;
+			return img;
 		}
 
 		// NOTE: PartitionFile only supports IDiscReader, so we'll need to
@@ -1098,11 +1120,12 @@ rp_image_const_ptr ICOPrivate::loadImage_WinVista_PNG(int idx)
 	} else {
 		// Not valid?
 		assert(!"Not a valid icon!");
-		return {};
+		return img;
 	}
 
-	img_map[idx] = RpPng::load(f_png);
-	return img_map[idx];
+	img = RpPng::load(f_png);
+	img_map[idx] = img;
+	return img;
 }
 
 /**

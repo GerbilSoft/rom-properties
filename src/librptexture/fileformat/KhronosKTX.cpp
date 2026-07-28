@@ -144,19 +144,23 @@ KhronosKTXPrivate::KhronosKTXPrivate(KhronosKTX *q, const IRpFilePtr &file)
  */
 rp_image_const_ptr KhronosKTXPrivate::loadImage(int mip)
 {
+	rp_image_ptr img;
+
 	assert(mip >= 0);
 	assert(mip < static_cast<int>(mipmaps.size()));
 	if (mip < 0 || mip >= static_cast<int>(mipmaps.size())) {
 		// Invalid mipmap number.
-		return {};
+		return img;
 	}
 
 	if (!mipmaps.empty() && mipmaps[mip] != nullptr) {
 		// Image has already been loaded.
-		return mipmaps[mip];
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = mipmaps[mip];
+		return img;
 	} else if (!this->isValid || !this->file) {
 		// Can't load the image.
-		return {};
+		return img;
 	}
 
 	// Sanity check: Maximum image dimensions of 32768x32768.
@@ -168,19 +172,19 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(int mip)
 	    ktxHeader.pixelHeight > 32768)
 	{
 		// Invalid image dimensions.
-		return {};
+		return img;
 	}
 
 	// Texture cannot start inside of the KTX header.
 	assert(texDataStartAddr >= sizeof(ktxHeader));
 	if (texDataStartAddr < sizeof(ktxHeader)) {
 		// Invalid texture data start address.
-		return {};
+		return img;
 	}
 
 	if (file->size() > 128*1024*1024) {
 		// Sanity check: KTX files shouldn't be more than 128 MB.
-		return {};
+		return img;
 	}
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
@@ -356,7 +360,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(int mip)
 						astc_idx = ktxHeader.glInternalFormat - GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
 					} else {
 						// Not supported.
-						return {};
+						return img;
 					}
 
 					expected_size = ImageSizeCalc::calcImageSizeASTC(
@@ -366,7 +370,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(int mip)
 					break;
 #else /* !ENABLE_ASTC */
 					// Not supported.
-					return {};
+					return img;
 #endif /* ENABLE_ASTC */
 				}
 			}
@@ -376,7 +380,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(int mip)
 	// Verify file size.
 	if (texDataStartAddr + expected_size > file_sz) {
 		// File is too small.
-		return {};
+		return img;
 	}
 
 	// Image size field.
@@ -389,7 +393,7 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(int mip)
 		size_t size = file->seekAndRead(mip_texDataStartAddr, &imageSize, sizeof(imageSize));
 		if (size != sizeof(imageSize)) {
 			// Unable to read the image size field.
-			return {};
+			return img;
 		}
 		if (isByteswapNeeded) {
 			imageSize = __swab32(imageSize);
@@ -407,13 +411,13 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(int mip)
 		// Single array element.
 		if (imageSize != expected_size) {
 			// Size is incorrect.
-			return {};
+			return img;
 		}
 	} else {
 		// Multiple array elements.
 		if (imageSize / ktxHeader.numberOfArrayElements != expected_size) {
 			// Size is incorrect.
-			return {};
+			return img;
 		}
 	}
 
@@ -422,13 +426,12 @@ rp_image_const_ptr KhronosKTXPrivate::loadImage(int mip)
 	size_t size = file->read(buf.get(), expected_size);
 	if (size != expected_size) {
 		// Read error.
-		return {};
+		return img;
 	}
 
 	// TODO: Byteswapping.
 	// TODO: Handle variants. Check for channel sizes in glInternalFormat?
 	// TODO: Handle sRGB post-processing? (for e.g. GL_SRGB8)
-	rp_image_ptr img;
 	switch (ktxHeader.glFormat) {
 		case GL_RGB:
 			// 24-bit RGB

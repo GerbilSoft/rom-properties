@@ -278,8 +278,11 @@ Elf64_Phdr ELFPrivate::readProgramHeader(const uint8_t *phbuf)
 
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
 		const Elf64_Phdr *const phdr = reinterpret_cast<const Elf64_Phdr*>(phbuf);
-		if (Elf_Header.primary.e_data == ELFDATAHOST)
-			return *phdr;
+		if (Elf_Header.primary.e_data == ELFDATAHOST) {
+			// NOTE: Assigning to `out` for named-return-value optimization.
+			out = *phdr;
+			return out;
+		}
 		out.p_type = __swab32(phdr->p_type);
 		out.p_flags = __swab32(phdr->p_flags);
 		out.p_offset = __swab64(phdr->p_offset);
@@ -440,8 +443,11 @@ Elf64_Shdr ELFPrivate::readSectionHeader(const uint8_t *shbuf)
 	Elf64_Shdr out;
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
 		const Elf64_Shdr *const shdr = reinterpret_cast<const Elf64_Shdr*>(shbuf);
-		if (Elf_Header.primary.e_data == ELFDATAHOST)
-			return *shdr;
+		if (Elf_Header.primary.e_data == ELFDATAHOST) {
+			// NOTE: Assigning to `out` for named-return-value optimization.
+			out = *shdr;
+			return out;
+		}
 		out.sh_name = elf32_to_cpu(shdr->sh_name);
 		out.sh_type = elf32_to_cpu(shdr->sh_type);
 		out.sh_flags = elf64_to_cpu(shdr->sh_flags);

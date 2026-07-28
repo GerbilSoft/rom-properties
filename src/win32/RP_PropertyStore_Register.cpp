@@ -75,7 +75,9 @@ tstring RP_PropertyStore_Private::GetPreviewDetailsString(void)
  */
 std::tstring RP_PropertyStore_Private::GetInfoTipString(void)
 {
-	// InfoTip.
+	tstring ts_infoTip;
+
+	// InfoTip
 	// NOTE: Default properties should go *before* these.
 	static const TCHAR InfoTip[] =
 		// Custom properties.
@@ -93,30 +95,31 @@ std::tstring RP_PropertyStore_Private::GetInfoTipString(void)
 	if (!hkcr_All.isOpen()) {
 		// Unable to open "*".
 		// Use the InfoTip as-is.
-		return tstring(InfoTip, _countof(InfoTip)-1);
+		// NOTE: Assigning to `InfoTip` for named-return-value optimization.
+		ts_infoTip.assign(InfoTip, _countof(InfoTip)-1);
+		return ts_infoTip;
 	}
 
 	// Get the default "InfoTip" and prepend them
 	// to the custom "InfoTip".
-	tstring s_infoTip;
-	const tstring s_reg = hkcr_All.read(_T("InfoTip"));
-	if (s_reg.size() > 5) {
+	tstring ts_reg = hkcr_All.read(_T("InfoTip"));
+	if (ts_reg.size() > 5) {
 		// First 5 characters should be "prop:".
-		if (!_tcsnicmp(s_reg.c_str(), _T("prop:"), 5)) {
+		if (!_tcsnicmp(ts_reg.c_str(), _T("prop:"), 5)) {
 			// Prepend the properties.
-			s_infoTip = s_reg;
+			ts_infoTip = std::move(ts_reg);
 		}
 	}
 
-	if (s_infoTip.empty()) {
+	if (ts_infoTip.empty()) {
 		// Prepend with "prop:".
-		s_infoTip = _T("prop:");
+		ts_infoTip = _T("prop:");
 	} else {
 		// Add a semicolon.
-		s_infoTip += _T(';');
+		ts_infoTip += _T(';');
 	}
-	s_infoTip.append(InfoTip, _countof(InfoTip)-1);
-	return s_infoTip;
+	ts_infoTip.append(InfoTip, _countof(InfoTip)-1);
+	return ts_infoTip;
 }
 
 /**
@@ -292,6 +295,8 @@ LONG RP_PropertyStore::UnregisterFileType(_In_ RegKey &hkcr, _In_opt_ RegKey *pH
  */
 tstring RP_PropertyStore_Private::GetPropertyDescriptionSchemaFilename(void)
 {
+	tstring tfilename;
+
 	// The .propdesc file should be located in either the DLL's directory
 	// or the DLL's parent directory.
 	TCHAR szDllFilename[MAX_PATH];
@@ -303,15 +308,16 @@ tstring RP_PropertyStore_Private::GetPropertyDescriptionSchemaFilename(void)
 		// Cannot get the DLL filename.
 		// TODO: Windows XP doesn't SetLastError() if the
 		// filename is too big for the buffer.
-		return {};
+		return tfilename;
 	}
 
 	// Remove the filename portion.
-	tstring tfilename = szDllFilename;
+	tfilename = szDllFilename;
 	size_t last_bslash = tfilename.rfind(_T('\\'));
 	if (last_bslash == tstring::npos) {
 		// No backslash?
-		return {};
+		tfilename.clear();
+		return tfilename;
 	}
 	tfilename.resize(last_bslash);
 
@@ -328,7 +334,8 @@ tstring RP_PropertyStore_Private::GetPropertyDescriptionSchemaFilename(void)
 	last_bslash = tfilename.rfind(_T('\\'));
 	if (last_bslash == tstring::npos) {
 		// No backslash?
-		return {};
+		tfilename.clear();
+		return tfilename;
 	}
 	tfilename.resize(last_bslash);
 	tfilename += _T("\\rom-properties.propdesc");
@@ -338,7 +345,8 @@ tstring RP_PropertyStore_Private::GetPropertyDescriptionSchemaFilename(void)
 	}
 
 	// .propdesc file not found in either the current directory or the parent directory.
-	return {};
+	tfilename.clear();
+	return tfilename;
 }
 
 /**

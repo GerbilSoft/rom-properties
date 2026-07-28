@@ -31,24 +31,25 @@ namespace LibRpText {
  */
 u16string utf16_bswap(const char16_t *str, int len)
 {
+	u16string s_ret;
+
 	if (len == 0) {
-		return {};
+		return s_ret;
 	} else if (len < 0) {
 		// NULL-terminated string.
 		len = static_cast<int>(u16_strlen(str));
 		if (len <= 0) {
-			return {};
+			return s_ret;
 		}
 	}
 
 	// TODO: Optimize this?
-	u16string ret;
-	ret.reserve(len);
+	s_ret.reserve(len);
 	for (; len > 0; len--, str++) {
-		ret += static_cast<char16_t>(__swab16(static_cast<uint16_t>(*str)));
+		s_ret += static_cast<char16_t>(__swab16(static_cast<uint16_t>(*str)));
 	}
 
-	return ret;
+	return s_ret;
 }
 
 #ifndef RP_WIS16

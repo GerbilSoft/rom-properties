@@ -167,12 +167,16 @@ PSPPrivate::PSPPrivate(const IRpFilePtr &file)
  */
 rp_image_const_ptr PSPPrivate::loadIcon(void)
 {
+	rp_image_ptr icon;
+
 	if (img_icon) {
 		// Icon has already been loaded.
-		return img_icon;
+		// NOTE: Assigning to `icon` for named-return-value optimization.
+		icon = img_icon;
+		return icon;
 	} else if (!this->isValid || !this->isoPartition) {
 		// Can't load the icon.
-		return {};
+		return icon;
 	}
 
 	// Icon is located on disc as a regular PNG image.
@@ -183,13 +187,14 @@ rp_image_const_ptr PSPPrivate::loadIcon(void)
 	const IRpFilePtr f_icon(isoPartition->open(icon_filename));
 	if (!f_icon) {
 		// Unable to open the icon file.
-		return {};
+		return icon;
 	}
 
 	// Decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
-	this->img_icon = RpPng::load(f_icon);
-	return this->img_icon;
+	icon = RpPng::load(f_icon);
+	this->img_icon = icon;
+	return icon;
 }
 
 /**
@@ -232,15 +237,18 @@ RomDataPtr PSPPrivate::openBootExe(void)
 	// FIXME: Returning `const RomDataPtr &` would be better,
 	// but the compiler is complaining that the nullptrs end up
 	// returning a reference to a local temporary object.
+	RomDataPtr exeData;
 
 	if (bootExeData) {
 		// The boot executable is already open.
-		return bootExeData;
+		// NOTE: Assigning to `exeData` for named-return-value optimization.
+		exeData = bootExeData;
+		return exeData;
 	}
 
 	if (!isoPartition || !isoPartition->isOpen()) {
 		// ISO partition is not open.
-		return {};
+		return exeData;
 	}
 
 	// Open the boot file.
@@ -248,7 +256,7 @@ RomDataPtr PSPPrivate::openBootExe(void)
 	// an unencrypted EBOOT.BIN.
 	const IRpFilePtr f_bootExe(isoPartition->open("/PSP_GAME/SYSDIR/EBOOT.BIN"));
 	if (f_bootExe) {
-		RomDataPtr exeData = std::make_shared<ELF>(f_bootExe);
+		exeData = std::make_shared<ELF>(f_bootExe);
 		if (exeData->isOpen() && exeData->isValid()) {
 			// Boot executable is open and valid.
 			bootExeData = exeData;
@@ -256,8 +264,9 @@ RomDataPtr PSPPrivate::openBootExe(void)
 		}
 	}
 
-	// Unable to open the default executable.
-	return {};
+	// Unable to open the executable.
+	exeData.reset();
+	return exeData;
 }
 
 /**
@@ -269,22 +278,25 @@ ParamSFOPtr PSPPrivate::openParamSfo(void)
 	// FIXME: Returning `const RomDataPtr &` would be better,
 	// but the compiler is complaining that the nullptrs end up
 	// returning a reference to a local temporary object.
+	ParamSFOPtr sfoData;
 
 	if (paramSfoData) {
 		// The PARAM.SFO is already open.
-		return paramSfoData;
+		// NOTE: Assigning to `sfoData` for named-return-value optimization.
+		sfoData = paramSfoData;
+		return sfoData;
 	}
 
 	if (!isoPartition || !isoPartition->isOpen()) {
 		// ISO partition is not open.
-		return {};
+		return sfoData;
 	}
 
 	// Open the PARAM.SFO
 	// TODO: Do video UMDs have PARAM.SFO?
 	const IRpFilePtr f_paramFile(isoPartition->open("/PSP_GAME/PARAM.SFO"));
 	if (f_paramFile) {
-		ParamSFOPtr sfoData = std::make_shared<ParamSFO>(f_paramFile);
+		sfoData = std::make_shared<ParamSFO>(f_paramFile);
 		if (sfoData->isOpen() && sfoData->isValid()) {
 			// Boot executable is open and valid.
 			paramSfoData = sfoData;
@@ -292,8 +304,9 @@ ParamSFOPtr PSPPrivate::openParamSfo(void)
 		}
 	}
 
-	// Unable to open the PARAM.SFO
-	return {};
+	// Unable to open the PARAM.SFO file.
+	sfoData.reset();
+	return sfoData;
 }
 
 /**
@@ -309,28 +322,31 @@ string PSPPrivate::getGameID(void) const
 	// - Field 1: Encryption key?
 	// - Field 2: Revision?
 	// - Field 3: Age rating?
+	string s_ret;
 
 	const IRpFilePtr f_umdDataBin = isoPartition->open("/UMD_DATA.BIN");
 	if (!f_umdDataBin) {
-		return {};
+		return s_ret;
 	}
 
 	// Read up to 128 bytes.
 	char buf[129];
 	size_t size = f_umdDataBin->read(buf, sizeof(buf)-1);
 	if (size == 0 || size >= sizeof(buf)-1) {
-		return {};
+		return s_ret;
 	}
 	buf[size] = 0;
 
 	// Find the first '|'.
 	const char *const p = static_cast<const char*>(memchr(buf, '|', sizeof(buf)));
 	if (!p) {
-		return {};
+		return s_ret;
 	}
 
 	// Game ID field on UMD Video discs is the video title.
-	return latin1_to_utf8(buf, static_cast<int>(p - buf));
+	// NOTE: Assigning to `s_ret` for named-return-value optimization.
+	s_ret = latin1_to_utf8(buf, static_cast<int>(p - buf));
+	return s_ret;
 }
 
 /** PSP **/

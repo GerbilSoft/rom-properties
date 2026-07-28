@@ -194,13 +194,15 @@ AmiiboDataPrivate::~AmiiboDataPrivate()
  */
 tstring AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileType) const
 {
+	tstring tfilename;
+
 	if (amiibo_data_bin_override_filename) {
 		// Overriding the filename.
 		// NOTE: amiiboBinFileType is ignored here.
-		return {amiibo_data_bin_override_filename};
+		// NOTE: Assigning to `tfilename` for named-return-value optimization.
+		tfilename.assign(amiibo_data_bin_override_filename);
+		return tfilename;
 	}
-
-	tstring tfilename;
 
 	switch (amiiboBinFileType) {
 		default:
