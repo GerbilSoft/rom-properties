@@ -554,6 +554,7 @@ string SNESPrivate::getRomTitle(void) const
 	// NOTE: Some JPN ROMs have a 'J' game ID but not a JPN region code.
 	// TODO: Space elimination; China, Korea encodings?
 	// TODO: Remove leading spaces? (Capcom NFL Football; symlinked on the server for now.)
+	string s_ret;
 
 	bool doSJIS = false;
 	bool hasExtraChr = false;
@@ -602,17 +603,16 @@ string SNESPrivate::getRomTitle(void) const
 		}
 	}
 
-	string s_title;
 	if (doSJIS) {
-		s_title = cp1252_sjis_to_utf8(title, static_cast<int>(len));
+		s_ret = cp1252_sjis_to_utf8(title, static_cast<int>(len));
 	} else {
-		s_title = cp1252_to_utf8(title, static_cast<int>(len));
+		s_ret = cp1252_to_utf8(title, static_cast<int>(len));
 	}
 	if (hasExtraChr) {
 		// Add the mapping byte as if it's an ASCII character.
-		s_title += static_cast<char>(romHeader.snes.rom_mapping);
+		s_ret += static_cast<char>(romHeader.snes.rom_mapping);
 	}
-	return s_title;
+	return s_ret;
 }
 
 /**
@@ -621,8 +621,7 @@ string SNESPrivate::getRomTitle(void) const
  */
 string SNESPrivate::getPublisher(void) const
 {
-	const char* publisher;
-	string s_publisher;
+	string s_ret;
 
 	// NOTE: SNES and BS-X have the same addresses for both publisher codes.
 	// Hence, we only need to check SNES.
@@ -630,9 +629,9 @@ string SNESPrivate::getPublisher(void) const
 	// Publisher.
 	if (romHeader.snes.old_publisher_code == 0x33) {
 		// New publisher code.
-		publisher = NintendoPublishers::lookup(romHeader.snes.ext.new_publisher_code.c);
+		const char *const publisher = NintendoPublishers::lookup(romHeader.snes.ext.new_publisher_code.c);
 		if (publisher) {
-			s_publisher = publisher;
+			s_ret = publisher;
 		} else {
 			if (isalnum_ascii(romHeader.snes.ext.new_publisher_code.c[0]) &&
 			    isalnum_ascii(romHeader.snes.ext.new_publisher_code.c[1]))
@@ -642,25 +641,25 @@ string SNESPrivate::getPublisher(void) const
 					romHeader.snes.ext.new_publisher_code.c[1],
 					'\0'
 				}};
-				s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_pub_code.data());
+				s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_pub_code.data());
 			} else {
-				s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
+				s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
 					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code.c[0]),
 					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code.c[1]));
 			}
 		}
 	} else {
 		// Old publisher code.
-		publisher = NintendoPublishers::lookup_old(romHeader.snes.old_publisher_code);
+		const char *const publisher = NintendoPublishers::lookup_old(romHeader.snes.old_publisher_code);
 		if (publisher) {
-			s_publisher = publisher;
+			s_ret = publisher;
 		} else {
-			s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X})")),
+			s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X})")),
 				romHeader.snes.old_publisher_code);
 		}
 	}
 
-	return s_publisher;
+	return s_ret;
 }
 
 /**

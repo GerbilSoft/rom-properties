@@ -695,7 +695,7 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
  */
 string MegaDrivePrivate::getPublisher(const MD_RomHeader *pRomHeader)
 {
-	string s_publisher;
+	string s_ret;
 
 	// Determine the publisher.
 	// Formats in the copyright line:
@@ -706,7 +706,7 @@ string MegaDrivePrivate::getPublisher(const MD_RomHeader *pRomHeader)
 	unsigned int t_code = 0;
 	if (!memcmp(pRomHeader->copyright, "(C)SEGA", 7)) {
 		// Sega first-party game.
-		s_publisher = "Sega";
+		s_ret = "Sega";
 	} else if (!memcmp(pRomHeader->copyright, "(C)T", 4)) {
 		// Third-party game.
 		int start = 4;
@@ -723,24 +723,24 @@ string MegaDrivePrivate::getPublisher(const MD_RomHeader *pRomHeader)
 			// Valid T-code. Look up the publisher.
 			const char *const publisher = SegaPublishers::lookup(t_code);
 			if (publisher) {
-				s_publisher = publisher;
+				s_ret = publisher;
 			}
 		}
 	}
 
-	if (s_publisher.empty()) {
+	if (s_ret.empty()) {
 		// Publisher not identified.
 		// Check for a T-code.
 		if (t_code > 0) {
 			// Found a T-code.
-			s_publisher = fmt::format(FSTR("T-{:d}"), t_code);
+			s_ret = fmt::format(FSTR("T-{:d}"), t_code);
 		} else {
 			// Unknown publisher.
-			s_publisher = C_("RomData", "Unknown");
+			s_ret = C_("RomData", "Unknown");
 		}
 	}
 
-	return s_publisher;
+	return s_ret;
 }
 
 /** MegaDrive **/

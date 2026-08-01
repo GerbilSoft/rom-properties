@@ -340,10 +340,8 @@ uint32_t ParamSFOPrivate::getIntValue(const char *key)
  */
 string ParamSFOPrivate::getMinimumOSVersion(void)
 {
-	string s_ret;
-
 	// Check for PSP.
-	s_ret = getStringValue("PSP_SYSTEM_VER");
+	string s_ret = getStringValue("PSP_SYSTEM_VER");
 	if (!s_ret.empty()) {
 		return s_ret;
 	}

@@ -184,10 +184,12 @@ string WiiWADPrivate::getGameInfo(void)
  */
 string WiiWADPrivate::wii_getIOSVersion(void) const
 {
+	string s_ret;
+
 	const uint16_t sysID = be16_to_cpu(tmdHeader.title_id.sysID);
 	assert(sysID <= NINTENDO_SYSID_RVL);
 	if (sysID > NINTENDO_SYSID_RVL) {
-		return {};
+		return s_ret;
 	}
 
 	const uint32_t ios_lo = be32_to_cpu(tmdHeader.sys_version.lo);
@@ -195,17 +197,16 @@ string WiiWADPrivate::wii_getIOSVersion(void) const
 		ios_lo > 2 && ios_lo < 0x300)
 	{
 		// Standard IOS slot.
-		return fmt::format(FSTR("IOS{:d}"), ios_lo);
+		s_ret = fmt::format(FSTR("IOS{:d}"), ios_lo);
 	} else if (tmdHeader.sys_version.id != 0) {
 		// Non-standard IOS slot.
 		// Print the full title ID.
-		return fmt::format(FSTR("{:0>8X}-{:0>8X}"),
+		s_ret = fmt::format(FSTR("{:0>8X}-{:0>8X}"),
 			be32_to_cpu(tmdHeader.sys_version.hi),
 			be32_to_cpu(tmdHeader.sys_version.lo));
 	}
 
-	// No IOS version...
-	return {};
+	return s_ret;
 }
 
 /**

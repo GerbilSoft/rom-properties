@@ -135,19 +135,20 @@ inline string N64Private::getGameID(void) const
  */
 string N64Private::getOSVersion(void) const
 {
+	string s_ret;
+
 	// TODO: isalpha_ascii(), or isupper_ascii()?
 	if (romHeader.os_version[0] == 0x00 &&
 	    romHeader.os_version[1] == 0x00 &&
 	    isalpha_ascii(romHeader.os_version[3]))
 	{
-		return fmt::format(FSTR("OS{:d}.{:d}{:c}"),
+		s_ret = fmt::format(FSTR("OS{:d}.{:d}{:c}"),
 			romHeader.os_version[2] / 10,
 			romHeader.os_version[2] % 10,
 			romHeader.os_version[3]);
 	}
 
-	// Unrecognized Release field.
-	return {};
+	return s_ret;
 }
 
 /** N64 **/

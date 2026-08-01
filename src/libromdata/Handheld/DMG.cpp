@@ -536,12 +536,13 @@ trimTitle:
  */
 string DMGPrivate::getPublisher(void) const
 {
-	string s_publisher;
+	string s_ret;
+
 	if (romHeader.old_publisher_code == 0x33) {
 		// New publisher code.
-		const char *publisher = NintendoPublishers::lookup(romHeader.new_publisher_code);
+		const char *const publisher = NintendoPublishers::lookup(romHeader.new_publisher_code);
 		if (publisher) {
-			s_publisher = publisher;
+			s_ret = publisher;
 		} else {
 			if (isalnum_ascii(romHeader.new_publisher_code[0]) &&
 			    isalnum_ascii(romHeader.new_publisher_code[1]))
@@ -551,25 +552,25 @@ string DMGPrivate::getPublisher(void) const
 					romHeader.new_publisher_code[1],
 					'\0'
 				}};
-				s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_company.data());
+				s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_company.data());
 			} else {
-				s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
+				s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
 					static_cast<uint8_t>(romHeader.new_publisher_code[0]),
 					static_cast<uint8_t>(romHeader.new_publisher_code[1]));
 			}
 		}
 	} else {
 		// Old publisher code.
-		const char *publisher = NintendoPublishers::lookup_old(romHeader.old_publisher_code);
+		const char *const publisher = NintendoPublishers::lookup_old(romHeader.old_publisher_code);
 		if (publisher) {
-			s_publisher = publisher;
+			s_ret = publisher;
 		} else {
-			s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X})")),
+			s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X})")),
 				romHeader.old_publisher_code);
 		}
 	}
 
-	return s_publisher;
+	return s_ret;
 }
 
 /**

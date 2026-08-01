@@ -142,17 +142,19 @@ SNDHPrivate::SNDHPrivate(const IRpFilePtr &file)
  */
 string SNDHPrivate::readStrFromBuffer(const uint8_t **p, const uint8_t *p_end, bool *p_err)
 {
+	string s_ret;
+
 	if (*p >= p_end) {
 		// Out of bounds.
 		*p_err = true;
-		return {};
+		return s_ret;
 	}
 
 	const uint8_t *const s_end = reinterpret_cast<const uint8_t*>(memchr(*p, 0, p_end-*p));
 	if (!s_end) {
 		// Out of bounds.
 		*p_err = true;
-		return {};
+		return s_ret;
 	}
 
 	*p_err = false;
@@ -163,11 +165,10 @@ string SNDHPrivate::readStrFromBuffer(const uint8_t **p, const uint8_t *p_end, b
 		// Reference: https://en.wikipedia.org/wiki/Atari_ST_character_set
 		const uint8_t *const p_old = *p;
 		*p = s_end + 1;
-		return cpRP_to_utf8(CpRp::AtariST, reinterpret_cast<const char*>(p_old), (int)(s_end-p_old));
+		s_ret = cpRP_to_utf8(CpRp::AtariST, reinterpret_cast<const char*>(p_old), (int)(s_end-p_old));
 	}
 
-	// Empty string.
-	return {};
+	return s_ret;
 }
 
 /**

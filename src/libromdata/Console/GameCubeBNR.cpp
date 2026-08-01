@@ -243,21 +243,28 @@ bool GameCubeBNRPrivate::shouldHandleStringAsShiftJIS(char chr0) const
 string GameCubeBNRPrivate::getGameNameString(const gcn_banner_comment_t *comment) const
 {
 	string s_ret;
-	char chr0 = '\0';
+
+	const char *gamename;
+	size_t field_len;
 
 	if (comment->gamename_full[0] != '\0') {
-		const size_t field_len = strnlen(comment->gamename_full, sizeof(comment->gamename_full));
-		s_ret.assign(comment->gamename_full, field_len);
-		chr0 = s_ret[0];
+		field_len = strnlen(comment->gamename_full, sizeof(comment->gamename_full));
+		gamename = comment->gamename_full;
 	} else if (comment->gamename[0] != '\0') {
-		const size_t field_len = strnlen(comment->gamename, sizeof(comment->gamename));
-		s_ret.assign(comment->gamename, field_len);
-		chr0 = s_ret[0];
+		field_len = strnlen(comment->gamename, sizeof(comment->gamename));
+		gamename = comment->gamename;
+	} else {
+		// No game name...
+		return s_ret;
 	}
 
-	return (shouldHandleStringAsShiftJIS(chr0))
-		? cp1252_sjis_to_utf8(s_ret)
-		: cp1252_to_utf8(s_ret);
+	// Convert from Shift-JIS (or cp1252) to UTF-8.
+	if (shouldHandleStringAsShiftJIS(gamename[0])) {
+		s_ret = cp1252_sjis_to_utf8(gamename, static_cast<int>(field_len));
+	} else {
+		s_ret = cp1252_to_utf8(gamename, static_cast<int>(field_len));
+	}
+	return s_ret;
 }
 
 /**
@@ -270,21 +277,28 @@ string GameCubeBNRPrivate::getGameNameString(const gcn_banner_comment_t *comment
 string GameCubeBNRPrivate::getCompanyString(const gcn_banner_comment_t *comment) const
 {
 	string s_ret;
-	char chr0 = '\0';
+
+	const char *company;
+	size_t field_len;
 
 	if (comment->company_full[0] != '\0') {
-		const size_t field_len = strnlen(comment->company_full, sizeof(comment->company_full));
-		s_ret.assign(comment->company_full, field_len);
-		chr0 = s_ret[0];
+		field_len = strnlen(comment->company_full, sizeof(comment->company_full));
+		company = comment->company_full;
 	} else if (comment->company[0] != '\0') {
-		const size_t field_len = strnlen(comment->company, sizeof(comment->company));
-		s_ret.assign(comment->company, field_len);
-		chr0 = s_ret[0];
+		field_len = strnlen(comment->company, sizeof(comment->company));
+		company = comment->company;
+	} else {
+		// No company name...
+		return s_ret;
 	}
 
-	return (shouldHandleStringAsShiftJIS(chr0))
-		? cp1252_sjis_to_utf8(s_ret)
-		: cp1252_to_utf8(s_ret);
+	// Convert from Shift-JIS (or cp1252) to UTF-8.
+	if (shouldHandleStringAsShiftJIS(company[0])) {
+		s_ret = cp1252_sjis_to_utf8(company, static_cast<int>(field_len));
+	} else {
+		s_ret = cp1252_to_utf8(company, static_cast<int>(field_len));
+	}
+	return s_ret;
 }
 
 /**
@@ -297,17 +311,25 @@ string GameCubeBNRPrivate::getCompanyString(const gcn_banner_comment_t *comment)
 string GameCubeBNRPrivate::getGameDescriptionString(const gcn_banner_comment_t *comment) const
 {
 	string s_ret;
-	char chr0 = '\0';
+
+	const char *gamedesc;
+	size_t field_len;
 
 	if (comment->gamedesc[0] != '\0') {
-		const size_t field_len = strnlen(comment->gamedesc, sizeof(comment->gamedesc));
-		s_ret.assign(comment->gamedesc, field_len);
-		chr0 = s_ret[0];
+		field_len = strnlen(comment->gamedesc, sizeof(comment->gamedesc));
+		gamedesc = comment->gamedesc;
+	} else {
+		// No game description...
+		return s_ret;
 	}
 
-	return (shouldHandleStringAsShiftJIS(chr0))
-		? cp1252_sjis_to_utf8(s_ret)
-		: cp1252_to_utf8(s_ret);
+	// Convert from Shift-JIS (or cp1252) to UTF-8.
+	if (shouldHandleStringAsShiftJIS(gamedesc[0])) {
+		s_ret = cp1252_sjis_to_utf8(gamedesc, static_cast<int>(field_len));
+	} else {
+		s_ret = cp1252_to_utf8(gamedesc, static_cast<int>(field_len));
+	}
+	return s_ret;
 }
 
 /**
@@ -328,7 +350,7 @@ string GameCubeBNRPrivate::getGameInfoString(const gcn_banner_comment_t *comment
 	// Game name
 	string s_tmp = getGameNameString(comment);
 	if (!s_tmp.empty()) {
-		s_gameInfo.append(s_tmp);
+		s_gameInfo = std::move(s_tmp);
 		s_gameInfo += '\n';
 	}
 

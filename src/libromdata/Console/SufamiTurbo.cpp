@@ -98,15 +98,18 @@ SufamiTurboPrivate::SufamiTurboPrivate(const IRpFilePtr &file)
  */
 string SufamiTurboPrivate::getRomTitle(void) const
 {
+	string s_ret;
+
 	// Find the start of the title.
 	size_t start;
 	for (start = 0; start < sizeof(romHeader.title); start++) {
-		if (romHeader.title[start] != ' ')
+		if (romHeader.title[start] != ' ') {
 			break;
+		}
 	}
 	if (start >= sizeof(romHeader.title)) {
 		// Empty title...
-		return {};
+		return s_ret;
 	}
 
 	// Trim spaces at the end of the title.
@@ -129,11 +132,13 @@ string SufamiTurboPrivate::getRomTitle(void) const
 	}
 	if (len == 0) {
 		// Empty title...
-		return {};
+		return s_ret;
 	}
 
 	// Convert the title from cp1252 and/or Shift-JIS.
-	return cp1252_sjis_to_utf8(&romHeader.title[start], static_cast<int>(len));
+	// NOTE: Assigning to `s_ret` for named-return-value optimization.
+	s_ret = cp1252_sjis_to_utf8(&romHeader.title[start], static_cast<int>(len));
+	return s_ret;
 }
 
 /** SufamiTurbo **/

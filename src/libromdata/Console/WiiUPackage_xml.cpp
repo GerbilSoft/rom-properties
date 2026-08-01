@@ -642,12 +642,14 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
  */
 string WiiUPackagePrivate::getProductCodeAndApplType_xml(uint32_t *pApplType)
 {
+	string s_ret;
+
 #if defined(_MSC_VER) && defined(XML_IS_DLL)
 	// Delay load verification.
 	int ret_dl = DelayLoad_test_PugiXML();
 	if (ret_dl != 0) {
 		// Delay load failed.
-		return {};
+		return s_ret;
 	}
 #endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
 
@@ -655,16 +657,19 @@ string WiiUPackagePrivate::getProductCodeAndApplType_xml(uint32_t *pApplType)
 	int retMeta = loadSystemXml(metaXml, "/meta/meta.xml", "menu");
 	if (retMeta != 0) {
 		// Unable to load meta.xml.
-		return {};
+		return s_ret;
 	}
 
 	xml_node metaRootNode = metaXml.child("menu");
 	if (!metaRootNode) {
 		// No root node.
-		return {};
+		return s_ret;
 	}
 
 	const char *const product_code = metaRootNode.child("product_code").text().as_string(nullptr);
+	if (product_code) {
+		s_ret = product_code;
+	}
 
 	if (pApplType) {
 		// Get the application type.
@@ -681,7 +686,7 @@ string WiiUPackagePrivate::getProductCodeAndApplType_xml(uint32_t *pApplType)
 		}
 	}
 
-	return (product_code) ? product_code : string();
+	return s_ret;
 }
 
 } // namespace LibRomData
