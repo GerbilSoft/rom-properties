@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-07-05 23:56-0400\n"
-"PO-Revision-Date: 2026-07-06 04:36\n"
+"PO-Revision-Date: 2026-08-01 03:48\n"
 "Last-Translator: \n"
 "Language-Team: English, United Kingdom\n"
 "Language: en_GB\n"
@@ -1403,7 +1403,7 @@ msgstr "Loop End"
 #: ../src/libromdata/Other/GameMaker.cpp:549
 msgctxt "RomData"
 msgid "Format Version"
-msgstr ""
+msgstr "Format Version"
 
 #: ../src/libromdata/Audio/BRSTM.cpp:335
 msgctxt "BRSTM|Codec"
@@ -1646,42 +1646,42 @@ msgstr "Comment"
 #: ../src/libromdata/Audio/PSFTagParser.cpp:256
 msgctxt "S98"
 msgid "System"
-msgstr ""
+msgstr "System"
 
 #: ../src/libromdata/Audio/S98.cpp:314
 msgctxt "S98"
 msgid "Timer Info"
-msgstr ""
+msgstr "Timer Info"
 
 #: ../src/libromdata/Audio/S98.cpp:381 ../src/libromdata/Audio/S98.cpp:384
 msgctxt "S98"
 msgid "(none)"
-msgstr ""
+msgstr "(none)"
 
 #: ../src/libromdata/Audio/S98.cpp:397
 msgctxt "S98"
 msgid "Chip"
-msgstr ""
+msgstr "Chip"
 
 #: ../src/libromdata/Audio/S98.cpp:398
 msgctxt "S98"
 msgid "Model"
-msgstr ""
+msgstr "Model"
 
 #: ../src/libromdata/Audio/S98.cpp:399
 msgctxt "S98"
 msgid "Clock Rate"
-msgstr ""
+msgstr "Clock Rate"
 
 #: ../src/libromdata/Audio/S98.cpp:400
 msgctxt "S98"
 msgid "Pan"
-msgstr ""
+msgstr "Pan"
 
 #: ../src/libromdata/Audio/S98.cpp:408
 msgctxt "S98"
 msgid "Device Info"
-msgstr ""
+msgstr "Device Info"
 
 #: ../src/libromdata/Audio/SAP.cpp:581 ../src/libromdata/Audio/SID.cpp:234
 msgctxt "RomData|Audio"
@@ -2042,17 +2042,17 @@ msgstr "{:s} Clock Divider"
 #: ../src/libromdata/Common/ParamSFO.cpp:515
 msgctxt "SFO"
 msgid "Key"
-msgstr ""
+msgstr "Key"
 
 #: ../src/libromdata/Common/ParamSFO.cpp:516
 msgctxt "SFO"
 msgid "Value"
-msgstr ""
+msgstr "Value"
 
 #: ../src/libromdata/Common/ParamSFO.cpp:528
 msgctxt "SFO"
 msgid "Values"
-msgstr ""
+msgstr "Values"
 
 #. tr: IMG_INT_ICON
 #: ../src/libromdata/config/ImageTypesConfig.cpp:97
@@ -7749,7 +7749,7 @@ msgstr "Disable Window Filter"
 #: ../src/libromdata/Other/EXE_manifest.cpp:374
 msgctxt "EXE|Manifest|WinSettings"
 msgid "GDI Scaling"
-msgstr ""
+msgstr "GDI Scaling"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:375
 msgctxt "EXE|Manifest|WinSettings"
@@ -7799,12 +7799,12 @@ msgstr "Active Code Page"
 #: ../src/libromdata/Other/EXE_manifest.cpp:437
 msgctxt "EXE|Manifest"
 msgid "Heap Type"
-msgstr ""
+msgstr "Heap Type"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:440
 msgctxt "EXE|Manifest"
 msgid "Console Allocation Policy"
-msgstr ""
+msgstr "Console Allocation Policy"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:329
 #: ../src/libromdata/Other/EXE_PE.cpp:637
@@ -8227,472 +8227,472 @@ msgstr "Ordinal #{:d}"
 #: ../src/libromdata/Other/GameMaker.cpp:540
 msgctxt "GameMaker"
 msgid "Display Name"
-msgstr ""
+msgstr "Display Name"
 
 #: ../src/libromdata/Other/GameMaker.cpp:546
 msgctxt "GameMaker"
 msgid "Game Name"
-msgstr ""
+msgstr "Game Name"
 
 #: ../src/libromdata/Other/GameMaker.cpp:551
 msgctxt "GameMaker"
 msgid "Runtime"
-msgstr ""
+msgstr "Runtime"
 
 #: ../src/libromdata/Other/GameMaker.cpp:555
 msgctxt "GameMaker"
 msgid "Project Name"
-msgstr ""
+msgstr "Project Name"
 
 #: ../src/libromdata/Other/GameMaker.cpp:560
 msgctxt "GameMaker"
 msgid "Project Config"
-msgstr ""
+msgstr "Project Config"
 
 #: ../src/libromdata/Other/GameMaker.cpp:567
 msgctxt "GameMaker"
 msgid "IDE Version"
-msgstr ""
+msgstr "IDE Version"
 
 #: ../src/libromdata/Other/GameMaker.cpp:570
 msgctxt "GameMaker"
 msgid "Resolution"
-msgstr ""
+msgstr "Resolution"
 
 #: ../src/libromdata/Other/GameMaker.cpp:572
 msgctxt "GameMaker"
 msgid "Build Timestamp"
-msgstr ""
+msgstr "Build Timestamp"
 
 #: ../src/libromdata/Other/GameMaker.cpp:577
 msgctxt "GameMaker|ScreenFlags"
 msgid "Fullscreen"
-msgstr ""
+msgstr "Fullscreen"
 
 #: ../src/libromdata/Other/GameMaker.cpp:578
 msgctxt "GameMaker|ScreenFlags"
 msgid "VSync"
-msgstr ""
+msgstr "VSync"
 
 #: ../src/libromdata/Other/GameMaker.cpp:579
 msgctxt "GameMaker|ScreenFlags"
 msgid "SW Vertexes"
-msgstr ""
+msgstr "SW Vertexes"
 
 #: ../src/libromdata/Other/GameMaker.cpp:580
 msgctxt "GameMaker|ScreenFlags"
 msgid "Anti-Aliasing"
-msgstr ""
+msgstr "Anti-Aliasing"
 
 #: ../src/libromdata/Other/GameMaker.cpp:581
 msgctxt "GameMaker|ScreenFlags"
 msgid "Keep Aspect Ratio"
-msgstr ""
+msgstr "Keep Aspect Ratio"
 
 #: ../src/libromdata/Other/GameMaker.cpp:582
 msgctxt "GameMaker|ScreenFlags"
 msgid "Show Cursor"
-msgstr ""
+msgstr "Show Cursor"
 
 #: ../src/libromdata/Other/GameMaker.cpp:583
 msgctxt "GameMaker|ScreenFlags"
 msgid "Resizable"
-msgstr ""
+msgstr "Resizable"
 
 #: ../src/libromdata/Other/GameMaker.cpp:584
 msgctxt "GameMaker|ScreenFlags"
 msgid "Allow FS Switch"
-msgstr ""
+msgstr "Allow FS Switch"
 
 #: ../src/libromdata/Other/GameMaker.cpp:585
 msgctxt "GameMaker|ScreenFlags"
 msgid "Allow Dock in FS"
-msgstr ""
+msgstr "Allow Dock in FS"
 
 #: ../src/libromdata/Other/GameMaker.cpp:586
 msgctxt "GameMaker|ScreenFlags"
 msgid "Free IDE"
-msgstr ""
+msgstr "Free IDE"
 
 #: ../src/libromdata/Other/GameMaker.cpp:587
 msgctxt "GameMaker|ScreenFlags"
 msgid "Standard IDE"
-msgstr ""
+msgstr "Standard IDE"
 
 #: ../src/libromdata/Other/GameMaker.cpp:588
 msgctxt "GameMaker|ScreenFlags"
 msgid "Pro IDE"
-msgstr ""
+msgstr "Pro IDE"
 
 #: ../src/libromdata/Other/GameMaker.cpp:589
 msgctxt "GameMaker|ScreenFlags"
 msgid "Steam Workshop"
-msgstr ""
+msgstr "Steam Workshop"
 
 #: ../src/libromdata/Other/GameMaker.cpp:590
 msgctxt "GameMaker|ScreenFlags"
 msgid "Roaming AppData"
-msgstr ""
+msgstr "Roaming AppData"
 
 #: ../src/libromdata/Other/GameMaker.cpp:591
 msgctxt "GameMaker|ScreenFlags"
 msgid "Borderless FS"
-msgstr ""
+msgstr "Borderless FS"
 
 #: ../src/libromdata/Other/GameMaker.cpp:592
 msgctxt "GameMaker|ScreenFlags"
 msgid "JS Enabled"
-msgstr ""
+msgstr "JS Enabled"
 
 #: ../src/libromdata/Other/GameMaker.cpp:594
 msgctxt "GameMaker|ScreenFlags"
 msgid "Is IDE Build"
-msgstr ""
+msgstr "Is IDE Build"
 
 #: ../src/libromdata/Other/GameMaker.cpp:595
 msgctxt "GameMaker|ScreenFlags"
 msgid "Transparent BG"
-msgstr ""
+msgstr "Transparent BG"
 
 #: ../src/libromdata/Other/GameMaker.cpp:596
 msgctxt "GameMaker|ScreenFlags"
 msgid "D3D Swap Discard"
-msgstr ""
+msgstr "D3D Swap Discard"
 
 #: ../src/libromdata/Other/GameMaker.cpp:601
 msgctxt "GameMaker"
 msgid "Screen Flags"
-msgstr ""
+msgstr "Screen Flags"
 
 #: ../src/libromdata/Other/GameMaker.cpp:611
 msgctxt "GameMaker|FunctionClass"
 msgid "Internet"
-msgstr ""
+msgstr "Internet"
 
 #: ../src/libromdata/Other/GameMaker.cpp:612
 msgctxt "GameMaker|FunctionClass"
 msgid "Joystick"
-msgstr ""
+msgstr "Joystick"
 
 #: ../src/libromdata/Other/GameMaker.cpp:613
 msgctxt "GameMaker|FunctionClass"
 msgid "Gamepad"
-msgstr ""
+msgstr "Gamepad"
 
 #: ../src/libromdata/Other/GameMaker.cpp:614
 msgctxt "GameMaker|FunctionClass"
 msgid "Immersion"
-msgstr ""
+msgstr "Immersion"
 
 #: ../src/libromdata/Other/GameMaker.cpp:615
 msgctxt "GameMaker|FunctionClass"
 msgid "Screengrab"
-msgstr ""
+msgstr "Screengrab"
 
 #: ../src/libromdata/Other/GameMaker.cpp:616
 msgctxt "GameMaker|FunctionClass"
 msgid "Math"
-msgstr ""
+msgstr "Math"
 
 #: ../src/libromdata/Other/GameMaker.cpp:617
 msgctxt "GameMaker|FunctionClass"
 msgid "Action"
-msgstr ""
+msgstr "Action"
 
 #: ../src/libromdata/Other/GameMaker.cpp:618
 msgctxt "GameMaker|FunctionClass"
 msgid "MatrixD3D"
-msgstr ""
+msgstr "MatrixD3D"
 
 #: ../src/libromdata/Other/GameMaker.cpp:619
 msgctxt "GameMaker|FunctionClass"
 msgid "D3DModel"
-msgstr ""
+msgstr "D3DModel"
 
 #: ../src/libromdata/Other/GameMaker.cpp:620
 msgctxt "GameMaker|FunctionClass"
 msgid "DataStructures"
-msgstr ""
+msgstr "DataStructures"
 
 #: ../src/libromdata/Other/GameMaker.cpp:621
 msgctxt "GameMaker|FunctionClass"
 msgid "File"
-msgstr ""
+msgstr "File"
 
 #: ../src/libromdata/Other/GameMaker.cpp:622
 msgctxt "GameMaker|FunctionClass"
 msgid "INI"
-msgstr ""
+msgstr "INI"
 
 #: ../src/libromdata/Other/GameMaker.cpp:623
 msgctxt "GameMaker|FunctionClass"
 msgid "Filename"
-msgstr ""
+msgstr "Filename"
 
 #: ../src/libromdata/Other/GameMaker.cpp:624
 msgctxt "GameMaker|FunctionClass"
 msgid "Directory"
-msgstr ""
+msgstr "Directory"
 
 #: ../src/libromdata/Other/GameMaker.cpp:625
 msgctxt "GameMaker|FunctionClass"
 msgid "Environment"
-msgstr ""
+msgstr "Environment"
 
 #: ../src/libromdata/Other/GameMaker.cpp:627
 msgctxt "GameMaker|FunctionClass"
 msgid "HTTP"
-msgstr ""
+msgstr "HTTP"
 
 #: ../src/libromdata/Other/GameMaker.cpp:628
 msgctxt "GameMaker|FunctionClass"
 msgid "Encoding"
-msgstr ""
+msgstr "Encoding"
 
 #: ../src/libromdata/Other/GameMaker.cpp:629
 msgctxt "GameMaker|FunctionClass"
 msgid "UIDialog"
-msgstr ""
+msgstr "UIDialog"
 
 #: ../src/libromdata/Other/GameMaker.cpp:630
 msgctxt "GameMaker|FunctionClass"
 msgid "MotionPlanning"
-msgstr ""
+msgstr "MotionPlanning"
 
 #: ../src/libromdata/Other/GameMaker.cpp:631
 msgctxt "GameMaker|FunctionClass"
 msgid "ShapeCollision"
-msgstr ""
+msgstr "ShapeCollision"
 
 #: ../src/libromdata/Other/GameMaker.cpp:632
 msgctxt "GameMaker|FunctionClass"
 msgid "Instance"
-msgstr ""
+msgstr "Instance"
 
 #: ../src/libromdata/Other/GameMaker.cpp:633
 msgctxt "GameMaker|FunctionClass"
 msgid "Room"
-msgstr ""
+msgstr "Room"
 
 #: ../src/libromdata/Other/GameMaker.cpp:634
 msgctxt "GameMaker|FunctionClass"
 msgid "Game"
-msgstr ""
+msgstr "Game"
 
 #: ../src/libromdata/Other/GameMaker.cpp:635
 msgctxt "GameMaker|FunctionClass"
 msgid "Display"
-msgstr ""
+msgstr "Display"
 
 #: ../src/libromdata/Other/GameMaker.cpp:636
 msgctxt "GameMaker|FunctionClass"
 msgid "Device"
-msgstr ""
+msgstr "Device"
 
 #: ../src/libromdata/Other/GameMaker.cpp:637
 msgctxt "GameMaker|FunctionClass"
 msgid "Window"
-msgstr ""
+msgstr "Window"
 
 #: ../src/libromdata/Other/GameMaker.cpp:638
 msgctxt "GameMaker|FunctionClass"
 msgid "DrawColor"
-msgstr ""
+msgstr "DrawColor"
 
 #: ../src/libromdata/Other/GameMaker.cpp:639
 msgctxt "GameMaker|FunctionClass"
 msgid "Texture"
-msgstr ""
+msgstr "Texture"
 
 #: ../src/libromdata/Other/GameMaker.cpp:640
 msgctxt "GameMaker|FunctionClass"
 msgid "Layer"
-msgstr ""
+msgstr "Layer"
 
 #: ../src/libromdata/Other/GameMaker.cpp:641
 msgctxt "GameMaker|FunctionClass"
 msgid "String"
-msgstr ""
+msgstr "String"
 
 #: ../src/libromdata/Other/GameMaker.cpp:642
 msgctxt "GameMaker|FunctionClass"
 msgid "Tiles"
-msgstr ""
+msgstr "Tiles"
 
 #: ../src/libromdata/Other/GameMaker.cpp:643
 msgctxt "GameMaker|FunctionClass"
 msgid "Surface"
-msgstr ""
+msgstr "Surface"
 
 #: ../src/libromdata/Other/GameMaker.cpp:644
 msgctxt "GameMaker|FunctionClass"
 msgid "Skeleton"
-msgstr ""
+msgstr "Skeleton"
 
 #: ../src/libromdata/Other/GameMaker.cpp:645
 msgctxt "GameMaker|FunctionClass"
 msgid "IO"
-msgstr ""
+msgstr "IO"
 
 #: ../src/libromdata/Other/GameMaker.cpp:646
 msgctxt "GameMaker|FunctionClass"
 msgid "Variables"
-msgstr ""
+msgstr "Variables"
 
 #: ../src/libromdata/Other/GameMaker.cpp:647
 msgctxt "GameMaker|FunctionClass"
 msgid "Array"
-msgstr ""
+msgstr "Array"
 
 #: ../src/libromdata/Other/GameMaker.cpp:648
 msgctxt "GameMaker|FunctionClass"
 msgid "ExternalCall"
-msgstr ""
+msgstr "ExternalCall"
 
 #: ../src/libromdata/Other/GameMaker.cpp:649
 msgctxt "GameMaker|FunctionClass"
 msgid "Notification"
-msgstr ""
+msgstr "Notification"
 
 #: ../src/libromdata/Other/GameMaker.cpp:650
 msgctxt "GameMaker|FunctionClass"
 msgid "Date"
-msgstr ""
+msgstr "Date"
 
 #: ../src/libromdata/Other/GameMaker.cpp:651
 msgctxt "GameMaker|FunctionClass"
 msgid "Particle"
-msgstr ""
+msgstr "Particle"
 
 #: ../src/libromdata/Other/GameMaker.cpp:652
 msgctxt "GameMaker|FunctionClass"
 msgid "Sprite"
-msgstr ""
+msgstr "Sprite"
 
 #: ../src/libromdata/Other/GameMaker.cpp:653
 msgctxt "GameMaker|FunctionClass"
 msgid "Clickable"
-msgstr ""
+msgstr "Clickable"
 
 #: ../src/libromdata/Other/GameMaker.cpp:654
 msgctxt "GameMaker|FunctionClass"
 msgid "LegacySound"
-msgstr ""
+msgstr "LegacySound"
 
 #: ../src/libromdata/Other/GameMaker.cpp:655
 msgctxt "GameMaker|FunctionClass"
 msgid "Audio"
-msgstr ""
+msgstr "Audio"
 
 #: ../src/libromdata/Other/GameMaker.cpp:656
 msgctxt "GameMaker|FunctionClass"
 msgid "Event"
-msgstr ""
+msgstr "Event"
 
 #: ../src/libromdata/Other/GameMaker.cpp:658
 msgctxt "GameMaker|FunctionClass"
 msgid "FreeType"
-msgstr ""
+msgstr "FreeType"
 
 #: ../src/libromdata/Other/GameMaker.cpp:659
 msgctxt "GameMaker|FunctionClass"
 msgid "Analytics"
-msgstr ""
+msgstr "Analytics"
 
 #: ../src/libromdata/Other/GameMaker.cpp:662
 msgctxt "GameMaker|FunctionClass"
 msgid "Achievement"
-msgstr ""
+msgstr "Achievement"
 
 #: ../src/libromdata/Other/GameMaker.cpp:663
 msgctxt "GameMaker|FunctionClass"
 msgid "CloudSaving"
-msgstr ""
+msgstr "CloudSaving"
 
 #: ../src/libromdata/Other/GameMaker.cpp:664
 msgctxt "GameMaker|FunctionClass"
 msgid "Ads"
-msgstr ""
+msgstr "Ads"
 
 #: ../src/libromdata/Other/GameMaker.cpp:665
 msgctxt "GameMaker|FunctionClass"
 msgid "OS"
-msgstr ""
+msgstr "OS"
 
 #: ../src/libromdata/Other/GameMaker.cpp:666
 msgctxt "GameMaker|FunctionClass"
 msgid "IAP"
-msgstr ""
+msgstr "IAP"
 
 #: ../src/libromdata/Other/GameMaker.cpp:667
 msgctxt "GameMaker|FunctionClass"
 msgid "Facebook"
-msgstr ""
+msgstr "Facebook"
 
 #: ../src/libromdata/Other/GameMaker.cpp:668
 msgctxt "GameMaker|FunctionClass"
 msgid "Physics"
-msgstr ""
+msgstr "Physics"
 
 #: ../src/libromdata/Other/GameMaker.cpp:669
 msgctxt "GameMaker|FunctionClass"
 msgid "FlashAA"
-msgstr ""
+msgstr "FlashAA"
 
 #: ../src/libromdata/Other/GameMaker.cpp:670
 msgctxt "GameMaker|FunctionClass"
 msgid "Console"
-msgstr ""
+msgstr "Console"
 
 #: ../src/libromdata/Other/GameMaker.cpp:671
 msgctxt "GameMaker|FunctionClass"
 msgid "Buffer"
-msgstr ""
+msgstr "Buffer"
 
 #: ../src/libromdata/Other/GameMaker.cpp:672
 msgctxt "GameMaker|FunctionClass"
 msgid "Steam"
-msgstr ""
+msgstr "Steam"
 
 #: ../src/libromdata/Other/GameMaker.cpp:673
 msgctxt "GameMaker|FunctionClass"
 msgid "Shaders"
-msgstr ""
+msgstr "Shaders"
 
 #: ../src/libromdata/Other/GameMaker.cpp:700
 msgctxt "GameMaker"
 msgid "Function Classes"
-msgstr ""
+msgstr "Function Classes"
 
 #: ../src/libromdata/Other/GameMaker.cpp:709
 msgctxt "GameMaker"
 msgid "Steam App ID"
-msgstr ""
+msgstr "Steam App ID"
 
 #: ../src/libromdata/Other/GameMaker.cpp:715
 msgctxt "GameMaker"
 msgid "Debugger Port"
-msgstr ""
+msgstr "Debugger Port"
 
 #: ../src/libromdata/Other/GameMaker.cpp:721
 msgctxt "GameMaker"
 msgid "Game Speed"
-msgstr ""
+msgstr "Game Speed"
 
 #: ../src/libromdata/Other/GameMaker.cpp:724
 msgctxt "GameMaker"
 msgid "Allow Statistics"
-msgstr ""
+msgstr "Allow Statistics"
 
 #: ../src/libromdata/Other/GameMaker.cpp:728
 msgctxt "GameMaker"
 msgid "Statistics"
-msgstr ""
+msgstr "Statistics"
 
 #: ../src/libromdata/Other/GameMaker.cpp:731
 msgctxt "GameMaker"
 msgid "Room Count"
-msgstr ""
+msgstr "Room Count"
 
 #: ../src/libromdata/Other/Lua.cpp:721
 msgctxt "Lua"
@@ -10308,17 +10308,17 @@ msgstr "Key/Value Data"
 #: ../src/librptexture/fileformat/PlayStationTIM.cpp:467
 msgctxt "PlayStationTIM"
 msgid "Image Position"
-msgstr ""
+msgstr "Image Position"
 
 #: ../src/librptexture/fileformat/PlayStationTIM.cpp:475
 msgctxt "PlayStationTIM"
 msgid "CLUT Position"
-msgstr ""
+msgstr "CLUT Position"
 
 #: ../src/librptexture/fileformat/PlayStationTIM.cpp:479
 msgctxt "PlayStationTIM"
 msgid "CLUT Size"
-msgstr ""
+msgstr "CLUT Size"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1269
 #, c++-format
