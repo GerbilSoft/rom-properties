@@ -1264,29 +1264,24 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(IRpFile *file)
 	// - 65,536 bytes: Unprotected + Protected boot9
 	// - 32,768 bytes: Protected boot9 only
 	const off64_t fileSize = file->size();
-	if (fileSize != 65536 && fileSize != 32768) {
+	off64_t addr;
+	if (fileSize == 65536) {
+		// 64 KiB (Unprotected + Protected boot9)
+		// Seek to the second half.
+		addr = 32768;
+	} else if (fileSize == 32768) {
+		// 32 KiB (Protected boot9.bin only)
+		// Rewind to the beginning of the file.
+		addr = 0;
+	} else {
+		// Incorrect size.
 		iret.status = KeyStoreUI::ImportStatus::InvalidFile;
 		return iret;
 	}
 
 	// Read the protected section into memory.
-	unique_ptr<array<uint8_t, 32768> > buf(new array<uint8_t, 32768>);
-	if (fileSize == 65536) {
-		// 64 KiB (Unprotected + Protected boot9)
-		// Seek to the second half.
-		int ret = file->seek(32768);
-		if (ret != 0) {
-			// Seek error.
-			iret.status = KeyStoreUI::ImportStatus::ReadError;
-			iret.error_code = static_cast<uint8_t>(file->lastError());
-			return iret;
-		}
-	} else {
-		// 32 KiB (Protected boot9.bin only)
-		// Rewind to the beginning of the file.
-		file->rewind();
-	}
-	size_t size = file->read(buf->data(), buf->size());
+	unique_ptr<array<uint8_t, 32768>> buf(new array<uint8_t, 32768>);
+	size_t size = file->seekAndRead(addr, buf->data(), buf->size());
 	if (size != 32768) {
 		// Read error.
 		iret.status = KeyStoreUI::ImportStatus::ReadError;
