@@ -2333,7 +2333,7 @@ msgstr ""
 #: ../src/libromdata/Console/Atari7800.cpp:232
 msgctxt "Atari7800|ControllerType"
 msgid "Keyboard (2600)"
-msgstr ""
+msgstr "Clavier (2600)"
 
 #: ../src/libromdata/Console/Atari7800.cpp:233
 msgctxt "Atari7800|ControllerType"
@@ -4281,7 +4281,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:529
 msgctxt "WiiU|Controller"
 msgid "USB Keyboard"
-msgstr ""
+msgstr "Clavier USB"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:530
 msgctxt "WiiU|Controller"
@@ -5208,7 +5208,7 @@ msgstr ""
 #: ../src/libromdata/data/NESMappers.cpp:702
 msgctxt "NES|Expansion"
 msgid "Subor Keyboard"
-msgstr ""
+msgstr "Clavier Subor"
 
 #: ../src/libromdata/data/NESMappers.cpp:703
 msgctxt "NES|Expansion"
