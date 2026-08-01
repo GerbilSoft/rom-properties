@@ -8280,7 +8280,7 @@ msgstr ""
 
 #: ../src/libromdata/Other/GameMaker.cpp:540
 msgctxt "GameMaker"
-msgid "Display Name'"
+msgid "Display Name"
 msgstr ""
 
 #: ../src/libromdata/Other/GameMaker.cpp:546
