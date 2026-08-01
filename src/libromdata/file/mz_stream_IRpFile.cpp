@@ -42,6 +42,13 @@ static const mz_stream_vtbl mz_stream_IRpFile_vtbl = {
 struct mz_stream_IRpFile_t {
 	mz_stream stream;
 	IRpFilePtr file;
+
+	mz_stream_IRpFile_t()
+	{
+		// FIXME: MiniZip-NG's stream vtbl pointer is *not* const...
+		stream.vtbl = const_cast<mz_stream_vtbl*>(&mz_stream_IRpFile_vtbl);
+		stream.base = nullptr;
+	}
 };
 
 /**
@@ -135,13 +142,7 @@ int32_t mz_stream_IRpFile_error(void *stream)
 void *mz_stream_IRpFile_create(void)
 {
 	// NOTE: Need to use new due to IRpFilePtr.
-	mz_stream_IRpFile_t *const s = new mz_stream_IRpFile_t();
-	if (s) {
-		// FIXME: MiniZip-NG's stream vtbl pointer is *not* const...
-		s->stream.vtbl = const_cast<mz_stream_vtbl*>(&mz_stream_IRpFile_vtbl);
-		s->stream.base = nullptr;
-	}
-	return s;
+	return new mz_stream_IRpFile_t();
 }
 
 /**
