@@ -132,7 +132,7 @@ public:
 	 * @param path Path to sanitize
 	 * @return Sanitized path (empty string for "/")
 	 */
-	static std::string sanitize_path(const char *path);
+	static string sanitize_path(const char *path);
 
 	/**
 	 * Look up a directory entry from a base filename and directory.
@@ -274,7 +274,7 @@ IsoPartitionPrivate::~IsoPartitionPrivate()
  * @param path Path to sanitize
  * @return Sanitized path (empty string for "/")
  */
-std::string IsoPartitionPrivate::sanitize_path(const char *path)
+string IsoPartitionPrivate::sanitize_path(const char *path)
 {
 	string s_path;
 
