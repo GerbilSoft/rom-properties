@@ -285,6 +285,12 @@ static const array<NESSubmapperInfo, 5> mapper313_submappers = {{
 	{4, 0,   0, NESMirroring::Unknown, "Game size: 256 KiB PRG (first game); 128 KiB PRG (other games); 128 KiB CHR"},
 }};
 
+// Mapper 318
+static const array<NESSubmapperInfo, 2> mapper318_submappers = {{
+	{0, 0,   0, NESMirroring::Unknown, "UNIF BTL-UT-1245A"},
+	{1, 0,   0, NESMirroring::Unknown, "UNIF BTL-BJ-40"},
+}};
+
 // Mapper 407: Win, Lose, or Draw Plug-n-Play (VT03)
 static const array<NESSubmapperInfo, 1> mapper407_submappers = {{
 	{15, 0,   0, NESMirroring::Unknown, "Opcode encryption (see mapper 256, submapper 15)"},
@@ -320,7 +326,7 @@ struct NESSubmapperEntry {
 
 #define NES2_SUBMAPPER(num, arr) {num, (uint16_t)((arr).size()), (arr).data()}
 // FIXME: MSVC 2015 doesn't like it when this array is marked as constexpr.
-static const array<NESSubmapperEntry, 31> submappers = {{
+static const array<NESSubmapperEntry, 32> submappers = {{
 	NES2_SUBMAPPER(  1, mmc1_submappers),			// MMC1
 	NES2_SUBMAPPER(  2, discrete_logic_submappers),		// UxROM
 	NES2_SUBMAPPER(  3, discrete_logic_submappers),		// CNROM
@@ -347,6 +353,7 @@ static const array<NESSubmapperEntry, 31> submappers = {{
 	NES2_SUBMAPPER(256, onebus_submappers),			// OneBus Famiclones
 	NES2_SUBMAPPER(268, smd132_smd133_submappers),		// SMD132/SMD133
 	NES2_SUBMAPPER(313, mapper313_submappers),		// Reset-based multicart (MMC3)
+	NES2_SUBMAPPER(318, mapper318_submappers),
 	NES2_SUBMAPPER(407, mapper407_submappers),		// Win, Lose, or Draw Plug-n-Play (VT03)
 	NES2_SUBMAPPER(444, mapper444_submappers),		// NC7000M multicart (MMC3-compatible)
 	NES2_SUBMAPPER(458, mapper458_submappers),		// K-3102 / GN-23 multicart (MMC3-based)

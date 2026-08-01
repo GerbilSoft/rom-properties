@@ -80,14 +80,12 @@
 053|Supervision 16-in-1||Unknown
 # 054: conflicting information
 054|Novel Diamond 9999999-in-1||Unknown
-# 055: From UNIF
-055|BTL-MARIO1-MALEE2||Header
+055|UNIF BTL-MARIO1-MALEE2||Header
 # 056: Some SMB3 unlicensed reproduction
 056|KS202 (unlicensed SMB3 reproduction)||MapperHV
 057|Multicart||MapperHV
 058|(C)NROM-based multicart||MapperHV
-# 059: From UNIF
-059|BMC-T3H53/BMC-D1038 multicart||MapperHV
+059|UNIF BMC-T3H53/BMC-D1038 multicart||MapperHV
 
 # Mappers 060-069
 060|Reset-based NROM-128 4-in-1 multicart||Header
@@ -153,8 +151,7 @@
 099|CNROM (Vs. System)|Nintendo|FourScreen
 
 # Mappers 100-109
-# 100: Also used for UNIF
-100|MMC3 variant (hacked ROMs)||MapperHV
+100|UNIF MMC3 variant (hacked ROMs)||MapperHV
 101|Jaleco JF-10 (misdump)|Jaleceo|Header
 102|Drip|Homebrew|Unknown
 103|Doki Doki Panic (FDS conversion)||MapperHV
@@ -351,11 +348,8 @@
 
 # Mappers 256-259
 256|OneBus Famiclone||Unknown
-# 257: From UNIF; reserved by FCEUX developers
 257|UNIF PEC-586||Unknown
-# 258: From UNIF; reserved by FCEUX developers
 258|UNIF 158B||Unknown
-# 259: From UNIF; reserved by FCEUX developers
 259|UNIF F-15 (MMC3 multicart)||Unknown
 
 # Mappers 260-269
@@ -381,7 +375,7 @@
 276|||Unknown
 277|||Unknown
 278|||Unknown
-279|||Unknown
+279|UNIF BMC-PC2-P3127-01||Unknown
 
 # Mappers 280-289
 280|||Unknown
@@ -394,7 +388,6 @@
 287|4-in-1 multicart (411120-C, 811120-C)||Unknown
 # 288: GoodNES 3.23b sets this to Mapper 133, which is wrong.
 288|GKCX1 21-in-1 multicart||Unknown
-# 289: From UNIF
 289|BMC-60311C||Unknown
 
 # Mappers 290-299
@@ -428,15 +421,14 @@
 313|Reset-based multicart (MMC3)||Unknown
 314|Y2K multicart||Unknown
 315|820732C- or 830134C- multicart||Unknown
-316|||Unknown
-317|||Unknown
-318|||Unknown
+316|Dragon Ball Fighter 2-in-1||Unknown
+317|UNIF BMC-810344-C||Unknown
+318|UNIF BTL-UT-1245A, BTL-BJ-40||Unknown
 319|HP-898F / KD-7/9-E boards||Unknown
 
 # Mappers 320-329
 320|Super HiK 6-in-1 A-030 multicart||Unknown
-# 321: From UNIF
-321|BMC-820310-C||Unknown
+321|UNIF BMC-820310-C||Unknown
 322|35-in-1 (K-3033) multicart||Unknown
 323|Farid's homebrew 8-in-1 SLROM multicart|Homebrew|Unknown
 324|Farid's homebrew 8-in-1 UNROM multicart|Homebrew|Unknown
@@ -601,13 +593,13 @@
 457|810431C multicart||MapperHV
 # 458: The two types are distinguished by submapper ID.
 458|K-3102 / GN-23 MMC3-based multicart||MapperHV
-459|||Unknown
+459|VQ-168|Kǎshèng|Unknown
 
 # Mappers 460-469
 460|FC-29-40 / K-3101 MMC3-based multicart||MapperHV
 461|CM-9309 MMC1-based multicart||Unknown
-462|||Unknown
-463|||Unknown
+462|971107-00G||Unknown
+463|YH810X1||Unknown
 464|||Unknown
 465|||Unknown
 466|||Unknown
@@ -616,12 +608,39 @@
 468|BlazePro multicart||Unknown
 469|BlazePro multicart (FDS)||Unknown
 
-# Mapperrs 470-479
+# Mappers 470-479
 470|INX_007T_V01|Retro-Bit|MapperAB
 471|IM1|Impact Soft|Header
 472|FK-206 JG (MMC3-compatible)|恒格|MapperHV
 473|KJ01A-18 (MMC3-compatible)||MapperHV
 474|NROM-383 / NROM-368|Akerasoft|Unknown
+475|||Unknown
+476|Croaky Karaoke|Advance Bright Limited|Unknown
+477|||Unknown
+478|||Unknown
+479|CoolX-Lite||Unknown
+
+# Mappers 480-489
+480|||Unknown
+481|045N|Subor|Unknown
+482|||Unknown
+483|||Unknown
+484|||Unknown
+485|||Unknown
+486|||Unknown
+487|NINA-08|AVE|Unknown
+488|||Unknown
+489|||Unknown
+
+# Mappers 490-499
+490|||Unknown
+491|||Unknown
+492|||Unknown
+493|Maxivision 30 Super Games||Unknown
+494|||Unknown
+495|N-46 (MMC2-like)||Unknown
+496|||Unknown
+497|LOGO|Subor|Unknown
 
 ### NES 2.0 Plane 2 [512-767] ###
 
@@ -661,8 +680,7 @@
 
 # Mappers 540-549
 540|Master Fighter VI' hack (variant of 359)||Unknown
-# 541: Is LittleCom the company name?
-541|LittleCom 160-in-1 multicart||Unknown
+541|160-in-1 multicart|LittleCom|Unknown
 542|World Hero hack (VRC4 clone)||Unknown
 543|5-in-1 (CH-501) multicart (MMC1 clone)||Unknown
 544|Wàixīng FS306|Wàixīng|Unknown
@@ -688,3 +706,46 @@
 560|||Unknown
 561|Bung Super Game Doctor 2M/4M RAM cartridge|Bung/FFE|Unknown
 562|Venus Turbo Game Doctor 4+/6+/6M RAM cartridge||Unknown
+563|||Unknown
+564|||Unknown
+565|||Unknown
+566|||Unknown
+567|||Unknown
+568|||Unknown
+569|||Unknown
+
+# Mappers 590-599
+590|||Unknown
+591|||Unknown
+592|||Unknown
+593|||Unknown
+594|Talkman 3-in-1 with Talkman RS-7600 Famiclone console|Rinco|Unknown
+595|NES-4MROM-512||Unknown
+596|||Unknown
+597|||Unknown
+598|||Unknown
+599|||Unknown
+
+# Mappers 600-609
+600|UM6578 plug-and-play consoles|Advance Bright Limited|Unknown
+601|UM6578-based plug-and-play consoles|dreamGEAR, Scenario|Unknown
+602|SB-2000 UM6576-based computer|Subor|Unknown
+603|||Unknown
+604|||Unknown
+605|||Unknown
+606|||Unknown
+607|||Unknown
+608|||Unknown
+609|||Unknown
+
+# Mappers 680-682
+680|||Unknown
+681|||Unknown
+682|Rainbow Mapper|Broke Studio|Unknown
+683|||Unknown
+684|||Unknown
+685|||Unknown
+686|||Unknown
+687|||Unknown
+688|||Unknown
+689|||Unknown
