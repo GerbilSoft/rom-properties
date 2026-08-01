@@ -9,6 +9,9 @@
  
 #pragma once
 
+// C includes (C++ namespace)
+#include <cstdint>
+
 namespace LibRomData { namespace NESMappers {
 
 /**
@@ -43,5 +46,12 @@ const char *lookup_nes2_submapper(int mapper, int submapper);
  * @return String describing the mirroring behavior
  */
 const char *lookup_ines_mirroring(int mapper, int submapper, bool vert, bool four);
+
+/**
+ * Look up the description for an NES 2.0 default expansion device.
+ * @param exp_hw Default expansion device value
+ * @return Description, or nullptr if not found.
+ */
+const char *lookup_nes2_default_expansion_device(uint8_t exp_hw);
 
 } } // namespace LibRomData::NESMappers
