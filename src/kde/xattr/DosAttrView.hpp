@@ -21,6 +21,7 @@ class DosAttrView : public QWidget
 
 public:
 	explicit DosAttrView(QWidget *parent = nullptr);
+	~DosAttrView();
 
 private:
 	typedef QWidget super;

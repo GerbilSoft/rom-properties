@@ -21,6 +21,7 @@ class XfsAttrView : public QWidget
 
 public:
 	explicit XfsAttrView(QWidget *parent = nullptr);
+	~XfsAttrView();
 
 private:
 	typedef QWidget super;

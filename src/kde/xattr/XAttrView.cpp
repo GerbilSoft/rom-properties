@@ -318,6 +318,11 @@ XAttrView::XAttrView(const QUrl &filename, QWidget *parent)
 	d->loadAttributes();
 }
 
+XAttrView::~XAttrView()
+{
+	delete d_ptr;
+}
+
 /**
  * Get the current filename.
  * @return Current filename

@@ -26,6 +26,7 @@ class Ext2AttrView : public QWidget
 
 public:
 	explicit Ext2AttrView(QWidget *parent = nullptr);
+	~Ext2AttrView();
 
 private:
 	typedef QWidget super;

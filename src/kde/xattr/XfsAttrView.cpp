@@ -166,6 +166,11 @@ XfsAttrView::XfsAttrView(QWidget *parent)
 	d->retranslateUi_nonDesigner();
 }
 
+XfsAttrView::~XfsAttrView()
+{
+	delete d_ptr;
+}
+
 /**
  * Widget state has changed.
  * @param event State change event.

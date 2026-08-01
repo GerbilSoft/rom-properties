@@ -55,6 +55,8 @@
     * Affects: v1.7 - v2.8
   * iconv: Fix a memory leak in the UTF-16 to Code Page 1252 conversion
     function. Only affects the Xbox360_STFS parser.
+  * KDE: Fix a memory leak in all of the xattr tab widgets.
+    * Affects: v2.2 - v2.8
 
 ## v2.8 (released 2026/06/20)
 

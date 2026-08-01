@@ -244,6 +244,11 @@ Ext2AttrView::Ext2AttrView(QWidget *parent)
 	d->retranslateUi_nonDesigner();
 }
 
+Ext2AttrView::~Ext2AttrView()
+{
+	delete d_ptr;
+}
+
 /**
  * Widget state has changed.
  * @param event State change event.

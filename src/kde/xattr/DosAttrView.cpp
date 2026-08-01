@@ -117,6 +117,11 @@ DosAttrView::DosAttrView(QWidget *parent)
 	d->connectCheckboxSignal(d->ui.chkEncrypted, this);
 }
 
+DosAttrView::~DosAttrView()
+{
+	delete d_ptr;
+}
+
 /**
  * Get the current MS-DOS attributes.
  * @return MS-DOS attributes

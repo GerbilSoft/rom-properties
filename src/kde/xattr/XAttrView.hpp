@@ -22,6 +22,7 @@ class XAttrView : public QWidget
 public:
 	explicit XAttrView(QWidget *parent = nullptr);
 	explicit XAttrView(const QUrl &url, QWidget *parent = nullptr);
+	~XAttrView();
 
 private:
 	typedef QWidget super;
