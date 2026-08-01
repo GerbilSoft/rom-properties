@@ -1388,7 +1388,7 @@ static void init_supportedFileExtensions(void)
 			}
 
 			for (; *sys_exts != nullptr; sys_exts++) {
-				const string s_ext(*sys_exts);
+				string s_ext(*sys_exts);
 				auto iter = map_exts.find(s_ext);
 				if (iter != map_exts.end()) {
 					// We already had this extension.
@@ -1411,7 +1411,7 @@ static void init_supportedFileExtensions(void)
 		}
 
 		for (; *sys_exts != nullptr; sys_exts++) {
-			const string s_ext(*sys_exts);
+			string s_ext(*sys_exts);
 			auto iter = map_exts.find(s_ext);
 			if (iter != map_exts.end()) {
 				// We already had this extension.
@@ -1434,7 +1434,7 @@ static void init_supportedFileExtensions(void)
 			? ATTR_HAS_METADATA
 			: ATTR_HAS_METADATA | ATTR_HAS_THUMBNAIL;
 
-		const string s_ext(ext);
+		string s_ext(ext);
 		auto iter = map_exts.find(ext);
 		if (iter != map_exts.end()) {
 			// We already had this extension.
