@@ -18,6 +18,11 @@
   * NintendoDS, Nintendo3DSFirm: Initial support for DSi and 3DS NTRBOOT
     ROM images. These were previously not detected at all due to missing
     fields in the ROM header.
+    * The keys labeled "ctr-spi-boot" and "ctr-dev-spi-boot" were actually
+      for NTRBOOT, and have been renamed to "ctr-ntr-boot" and "ctr-dev-ntr-boot".
+    * New keys for SPIBOOT have been added with the "ctr-spi-boot" and
+      "ctr-dev-spi-boot" names.
+    * All four of these keys can be found in the 3DS boot9.bin file.
     * Thanks to F3l1x_10m for providing test files.
   * EXE: Show PDB CodeView information in executables that have it.
     * Pull request #500: [libromdata] Add support for PDB Codeview info in PE binaries
