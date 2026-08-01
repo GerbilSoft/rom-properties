@@ -81,7 +81,7 @@ public:
 
 		ROM_SYSTEM_NES = (0U << 8),	// NES / Famicom
 		ROM_SYSTEM_FDS = (1U << 8),	// Famicom Disk System
-		ROM_SYSTEM_VS = (2U << 8),	// VS. System
+		ROM_SYSTEM_VS = (2U << 8),	// Vs. System
 		ROM_SYSTEM_PC10 = (3U << 8),	// PlayChoice-10
 		ROM_SYSTEM_UNKNOWN = (0xFFU << 8),
 		ROM_SYSTEM_MASK = (0xFFU << 8),
@@ -1037,11 +1037,22 @@ int NES::isRomSupported_static(const DetectInfo *info)
 						romType |= NESPrivate::ROM_FORMAT_NES2 |
 							   NESPrivate::ROM_SYSTEM_PC10;
 						break;
-					default:
-						// TODO: Handle Extended Console Type?
-						romType |= NESPrivate::ROM_FORMAT_NES2 |
-							   NESPrivate::ROM_SYSTEM_NES;
+					default: {
+						// Check for mappers 99 or 151. (Vs. System)
+						const int mapper = (inesHeader->mapper_lo >> 4) |
+						                   (inesHeader->mapper_hi & 0xF0) |
+						                  ((inesHeader->nes2.mapper_hi2 & 0x0F) << 8);
+						if (unlikely(mapper == 99 || mapper == 151)) {
+							// This is a Vs. System mapper.
+							romType |= NESPrivate::ROM_FORMAT_NES2 |
+							           NESPrivate::ROM_SYSTEM_VS;
+						} else {
+							// Not a Vs. System mapper.
+							romType |= NESPrivate::ROM_FORMAT_NES2 |
+							           NESPrivate::ROM_SYSTEM_NES;
+						}
 						break;
+					}
 				}
 				return romType;
 			}
@@ -1057,6 +1068,7 @@ int NES::isRomSupported_static(const DetectInfo *info)
 			    info->header.pData[15] == 0)
 			{
 				// Definitely iNES.
+				// TODO: What if both VS and PC10 bits are set?
 				switch (inesHeader->mapper_hi & INES_F7_SYSTEM_MASK) {
 					case INES_F7_SYSTEM_VS:
 						romType |= NESPrivate::ROM_FORMAT_INES |
@@ -1066,11 +1078,21 @@ int NES::isRomSupported_static(const DetectInfo *info)
 						romType |= NESPrivate::ROM_FORMAT_INES |
 							   NESPrivate::ROM_SYSTEM_PC10;
 						break;
-					default:
-						// TODO: What if both are set?
-						romType |= NESPrivate::ROM_FORMAT_INES |
-							   NESPrivate::ROM_SYSTEM_NES;
+					default: {
+						// Check for mappers 99 or 151. (Vs. System)
+						const int mapper = (inesHeader->mapper_lo >> 4) |
+						                   (inesHeader->mapper_hi & 0xF0);
+						if (unlikely(mapper == 99 || mapper == 151)) {
+							// This is a Vs. System mapper.
+							romType |= NESPrivate::ROM_FORMAT_INES |
+							           NESPrivate::ROM_SYSTEM_VS;
+						} else {
+							// Not a Vs. System mapper.
+							romType |= NESPrivate::ROM_FORMAT_INES |
+							           NESPrivate::ROM_SYSTEM_NES;
+						}
 						break;
+					}
 				}
 				return romType;
 			}
@@ -1191,10 +1213,10 @@ const char *NES::systemName(unsigned int type) const
 		}
 
 		case NESPrivate::ROM_SYSTEM_VS: {
-			static const array<const char*, 4> sysNames_VS = {{
-				"Nintendo VS. System", "VS. System", "VS", nullptr
+			static const array<const char*, 4> sysNames_Vs = {{
+				"Nintendo Vs. System", "Vs. System", "VS", nullptr
 			}};
-			return sysNames_VS[idx];
+			return sysNames_Vs[idx];
 		}
 
 		case NESPrivate::ROM_SYSTEM_PC10: {
@@ -1637,7 +1659,7 @@ int NES::loadFieldData(void)
 						// NES 2.0 Extended Console Type
 						static const array<const char*, 12> ext_hw_types = {{
 							"NES/Famicom/Dendy",	// Not normally used.
-							"Nintendo VS. System",	// Not normally used.
+							"Nintendo Vs. System",	// Not normally used.
 							"PlayChoice-10",	// Not normally used.
 							"Famiclone with BCD support",
 							"V.R. Technology VT01 with monochrome palette",
