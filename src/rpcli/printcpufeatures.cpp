@@ -14,7 +14,9 @@
 
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
+#include "librpbase/SystemRegion.hpp"
 #include "librpbyteswap/byteorder.h"
+using namespace LibRpBase;
 
 // CPU dispatch
 #include "cpu_dispatch.h"
@@ -54,6 +56,16 @@ int PrintCPUFeatures(void)
 	Gsvt::StdOut.fputs(fmt::format(FRUN(C_("rpcli", "Endianness: {:s}")), endianness));
 	Gsvt::StdOut.newline();
 
+	// Bullet character.
+	// If the system supports Unicode, use U+2022.
+	// Otherwise, use '*'.
+	const char *s_bullet;
+	if (SystemRegion::doesSystemSupportUnicode()) {
+		s_bullet = "\xE2\x80\xA2 ";
+	} else {
+		s_bullet = "* ";
+	}
+
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
 	RP_CPU_Flags_x86_Init();
 
@@ -85,9 +97,6 @@ int PrintCPUFeatures(void)
 	Gsvt::StdOut.fputs(C_("rpcli", "CPU Flags:"));
 	if (RP_CPU_Flags_x86 != 0) {
 		Gsvt::StdOut.newline();
-		// TODO: Check locale to see if we can print a Unicode bullet? (U+2022)
-		// On Windows, check OS version?
-		static const char s_bullet[] = "\xE2\x80\xA2 ";
 #  define CHECK_CPUFLAG_x86(flag, desc) do { \
 		if (RP_CPU_Flags_x86 & RP_CPUFLAG_x86_##flag) { \
 			Gsvt::StdOut.fputs(s_bullet); \

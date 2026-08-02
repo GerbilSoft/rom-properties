@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * SystemRegion.hpp: Get the system country code.                          *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -116,5 +116,15 @@ std::wstring lcToWStringUpper(uint32_t lc);
 #  endif /* _UNICODE */
 
 #endif /* _WIN32 */
+
+/**
+ * Does the system support Unicode?
+ * [INTERNAL FUNCTION; called via std::call_once()]
+ * On Unix-like systems, LC_MESSAGES should contain "UTF-8".
+ * On Windows, assume Unicode is supported if using Windows NT.
+ * @return True if the system supports Unicode; false if not.
+ */
+RP_LIBROMDATA_PUBLIC
+bool doesSystemSupportUnicode(void);
 
 } }
