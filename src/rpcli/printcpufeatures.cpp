@@ -29,6 +29,10 @@ using namespace LibRpBase;
 // C includes (C++ namespace)
 #include <cassert>
 
+// C++ STL classes
+#include <array>
+using std::array;
+
 // libfmt
 #include "rp-libfmt.h"
 
@@ -66,6 +70,14 @@ int PrintCPUFeatures(void)
 		s_bullet = "* ";
 	}
 
+	// CPU flag table
+	struct cpu_flag_tbl_t {
+		uint32_t value;
+		const char *name;
+		const char *desc;
+	};
+	uint32_t cpu_flags = 0;
+
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
 	RP_CPU_Flags_x86_Init();
 
@@ -92,50 +104,51 @@ int PrintCPUFeatures(void)
 	Gsvt::StdOut.newline();
 
 	// x86 CPU flags
+	cpu_flags = RP_CPU_Flags_x86;
+	static const array<cpu_flag_tbl_t, 17> cpu_flag_tbl = {{
+		{RP_CPUFLAG_x86_MMX,    "MMX",    "MultiMedia Extensions"},
+		{RP_CPUFLAG_x86_SSE,    "SSE",    "Streaming SIMD Extensions"},
+		{RP_CPUFLAG_x86_SSE2,   "SSE2",   "Streaming SIMD Extensions 2"},
+		{RP_CPUFLAG_x86_SSE3,   "SSE3",   "Streaming SIMD Extensions 3"},
+		{RP_CPUFLAG_x86_SSSE3,  "SSSE3",  "Supplemental Streaming SIMD Extensions 3"},
+		{RP_CPUFLAG_x86_SSE41,  "SSE41",  "Streaming SIMD Extensions 4.1"},
+		{RP_CPUFLAG_x86_SSE42,  "SSE42",  "Streaming SIMD Extensions 4.2"},
+		{RP_CPUFLAG_x86_AES,    "AES",    "Advanced Encryption Standard"},
+		{RP_CPUFLAG_x86_AVX,    "AVX",    "Advanced Vector Extensions"},
+		{RP_CPUFLAG_x86_F16C,   "F16C",   "Half-Precision Floating Point"},
+		{RP_CPUFLAG_x86_FMA3,   "FMA3",   "Fused Multiply-Add, 3-operand"},
+		{RP_CPUFLAG_x86_BMI1,   "BMI1",   "Bit Manipulation Instructions 1"},
+		{RP_CPUFLAG_x86_AVX2,   "AVX2",   "Advanced Vector Extensions 2"},
+		{RP_CPUFLAG_x86_BMI2,   "BMI2",   "Bit Manipulation Instructions 2"},
+		{RP_CPUFLAG_x86_SHA,    "SHA",    "Secure Hash Algorithm (SHA-1, SHA-256}"},
+		{RP_CPUFLAG_x86_SHA512, "SHA512", "Secure Hash Algorithm (SHA-512}"},
+		{RP_CPUFLAG_x86_APX,    "APX",    "Advanced Performance Extensions"},
+	}};
+#else
+	// No CPU flags for this architecture...
+	cpu_flags = 0;
+	static const array<cpu_flag_tbl_t, 0> cpu_flag_tbl = {{ }};
+#endif
+
 	// TODO: Colorization, maybe?
 	Gsvt::StdOut.newline();
 	Gsvt::StdOut.fputs(C_("rpcli", "CPU Flags:"));
-	if (RP_CPU_Flags_x86 != 0) {
+	if (cpu_flags != 0) {
 		Gsvt::StdOut.newline();
-#  define CHECK_CPUFLAG_x86(flag, desc) do { \
-		if (RP_CPU_Flags_x86 & RP_CPUFLAG_x86_##flag) { \
-			Gsvt::StdOut.fputs(s_bullet); \
-			Gsvt::StdOut.fputs(fmt::format(FRUN(C_("rpcli", "{0:s}: {1:s}")), #flag, desc)); \
-			Gsvt::StdOut.newline(); \
-		} \
-} while(0)
 
 		// TODO: Column alignment?
-		CHECK_CPUFLAG_x86(MMX, "MultiMedia Extensions");
-		CHECK_CPUFLAG_x86(SSE, "Streaming SIMD Extensions");
-		CHECK_CPUFLAG_x86(SSE2, "Streaming SIMD Extensions 2");
-		CHECK_CPUFLAG_x86(SSE3, "Streaming SIMD Extensions 3");
-		CHECK_CPUFLAG_x86(SSSE3, "Supplemental Streaming SIMD Extensions 3");
-		CHECK_CPUFLAG_x86(SSE41, "Streaming SIMD Extensions 4.1");
-		CHECK_CPUFLAG_x86(SSE42, "Streaming SIMD Extensions 4.2");
-		CHECK_CPUFLAG_x86(AES, "Advanced Encryption Standard");
-		CHECK_CPUFLAG_x86(AVX, "Advanced Vector Extensions");
-		CHECK_CPUFLAG_x86(F16C, "Half-Precision Floating Point");
-		CHECK_CPUFLAG_x86(FMA3, "Fused Multiply-Add, 3-operand");
-		CHECK_CPUFLAG_x86(BMI1, "Bit Manipulation Instructions 1");
-		CHECK_CPUFLAG_x86(AVX2, "Advanced Vector Extensions 2");
-		CHECK_CPUFLAG_x86(BMI2, "Bit Manipulation Instructions 2");
-		CHECK_CPUFLAG_x86(SHA, "Secure Hash Algorithm (SHA-1, SHA-256)");
-		CHECK_CPUFLAG_x86(SHA512, "Secure Hash Algorithm (SHA-512)");
-		CHECK_CPUFLAG_x86(APX, "Advanced Performance Extensions");
+		for (const cpu_flag_tbl_t &flag : cpu_flag_tbl) {
+			if (cpu_flags & flag.value) {
+				Gsvt::StdOut.fputs(s_bullet);
+				Gsvt::StdOut.fputs(fmt::format(FRUN(C_("rpcli", "{0:s}: {1:s}")), flag.name, flag.desc));
+				Gsvt::StdOut.newline();
+			}
+		}
 	} else {
 		Gsvt::StdOut.fputc(' ');
 		Gsvt::StdOut.fputs(C_("rpcli", "(none)"));
 		Gsvt::StdOut.newline();
 	}
-#else
-	// Unsupported CPU architecture...
-	Gsvt::StdOut.newline();
-	Gsvt::StdOut.fputs(C_("rpcli", "CPU Flags:"));
-	Gsvt::StdOut.fputc(' ');
-	Gsvt::StdOut.fputs(C_("rpcli", "(none)"));
-	Gsvt::StdOut.newline();
-#endif
 
 	Gsvt::StdOut.fflush();
 	return 0;
