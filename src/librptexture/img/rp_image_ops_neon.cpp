@@ -48,7 +48,7 @@ typedef uint32x2_t uint32xVTBL_t;
 #define vst1VTBL_u8  vst1_u8
 #define vst1VTBL_u32 vst1_u32
 #define vorrVTBL_u32 vorr_u32
-#define vtbl1_u8_u32(a, b) vreinterpret_u32_u8(vtbl1_u8(vreinterpret_u8_u32(a), vreinterpretq_u8_u32(b)))
+#define vtbl1_u8_u32(a, b) vreinterpret_u32_u8(vtbl1_u8(vreinterpret_u8_u32(a), vreinterpret_u8_u32(b)))
 #else
 #  error Unsupported CPU?
 #endif
