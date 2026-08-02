@@ -21,9 +21,13 @@
 #elif defined(__arm__) || defined(__thumb__) || defined(__arm) || defined(_ARM) || defined(_M_ARM)
 #  define RP_CPU_ARM 1
 #  define RP_CPU_ARCH_NAME "arm"
-#elif defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
+#elif defined(__aarch64__) || defined(_M_ARM64)
 #  define RP_CPU_ARM64 1
 #  define RP_CPU_ARCH_NAME "arm64"
+#elif defined(_M_ARM64EC)
+#  define RP_CPU_ARM64 1
+#  define RP_CPU_ARM64EC 1
+#  define RP_CPU_ARCH_NAME "arm64ec"
 #elif defined(__powerpc64__) || defined(__ppc64__) || defined(__PPC64__) || \
     defined(_ARCH_PPC64) || defined(_XENON)
 #  define RP_CPU_PPC64 1
