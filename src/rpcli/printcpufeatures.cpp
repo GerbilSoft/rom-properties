@@ -63,7 +63,7 @@ int PrintCPUFeatures(void)
 	cpu_flags = RP_CPU_Flags_x86;
 
 #  define CHECK_CPUFLAG_x86(flag) do { \
-	if (cpu_flags & RP_CPUFLAG_X86_##flag) { \
+	if (cpu_flags & RP_CPUFLAG_x86_##flag) { \
 		Gsvt::StdOut.fputs(" " #flag); \
 	} \
 } while(0)

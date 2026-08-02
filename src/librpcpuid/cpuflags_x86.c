@@ -55,7 +55,7 @@ static void RP_CPU_Flags_x86_Init_int(void)
 
 	// Initialize the CPU flags variable.
 	// amd64 is guaranteed to support MMX, SSE, and SSE2.
-	RP_CPU_Flags_x86 = (RP_CPUFLAG_X86_MMX | RP_CPUFLAG_X86_SSE | RP_CPUFLAG_X86_SSE2);
+	RP_CPU_Flags_x86 = (RP_CPUFLAG_x86_MMX | RP_CPUFLAG_x86_SSE | RP_CPUFLAG_x86_SSE2);
 #endif /* RP_CPU_I386 */
 
 	// CPUID is supported.
@@ -77,7 +77,7 @@ static void RP_CPU_Flags_x86_Init_int(void)
 		// MMX is supported.
 		// NOTE: Not officially supported on amd64 in 64-bit,
 		// but all known implementations support it.
-		RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_MMX;
+		RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_MMX;
 	}
 
 	if (regs[REG_EDX] & CPUFLAG_IA32_EDX_SSE) {
@@ -131,29 +131,29 @@ static void RP_CPU_Flags_x86_Init_int(void)
 			RP_CPU_Flags_x86 |= CPUFLAG_IA32_EDX_SSE;
 		}
 		if (regs[REG_EDX] & CPUFLAG_IA32_EDX_SSE2) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_SSE2;
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_SSE2;
 		}
 #endif /* RP_CPU_I386 */
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE3) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_SSE3;
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_SSE3;
 		}
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSSE3) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_SSSE3;
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_SSSE3;
 		}
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE41) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_SSE41;
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_SSE41;
 		}
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE42) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_SSE42;
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_SSE42;
 		}
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_AES) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_AES;
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_AES;
 		}
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_F16C) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_F16C;
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_F16C;
 		}
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_FMA3) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_FMA3;
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_FMA3;
 		}
 	}
 
@@ -164,7 +164,7 @@ static void RP_CPU_Flags_x86_Init_int(void)
 	if (can_XSAVE) {
 		// XSAVE and OSXSAVE are set.
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_AVX) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_AVX;
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_AVX;
 		}
 	}
 
@@ -174,25 +174,25 @@ static void RP_CPU_Flags_x86_Init_int(void)
 		cpuid_count(CPUID_EXT_FEATURES, 0, regs);
 
 		if (regs[REG_EBX] & CPUFLAG_IA32_FN7p0_EBX_BMI1) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_BMI1;
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_BMI1;
 		}
 		if (regs[REG_EBX] & CPUFLAG_IA32_FN7p0_EBX_BMI2) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_BMI2;
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_BMI2;
 		}
 		if (regs[REG_EBX] & CPUFLAG_IA32_FN7p0_EBX_SHA) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_SHA;
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_SHA;
 		}
 
 		if (can_XSAVE) {
 			if (can_XSAVE && (regs[REG_EBX] & CPUFLAG_IA32_FN7p0_EBX_AVX2)) {
-				RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_AVX2;
+				RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_AVX2;
 			}
 
 			// NOTE: APX is 64-bit only.
 #ifdef RP_CPU_AMD64
 			cpuid_count(CPUID_EXT_FEATURES, 1, regs);
 			if (regs[REG_EDX] & CPUFLAG_IA32_FN7p1_EDX_APX) {
-				RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_APX;
+				RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_APX;
 			}
 #endif /* RP_CPU_AMD64 */
 		}
