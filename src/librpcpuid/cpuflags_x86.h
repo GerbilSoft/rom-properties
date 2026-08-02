@@ -58,18 +58,11 @@ typedef struct _RP_CPU_Info_x86_t {
 	} manufacturer_id; // Manufacturer ID (*not* NULL-terminated)
 
 	// EAX=1
-	union {
-		struct {
-			uint32_t stepping	: 4;
-			uint32_t model		: 4;
-			uint32_t family_id	: 4;
-			uint32_t processor_type	: 2;
-			uint32_t reserved1	: 2;
-			uint32_t ext_model_id	: 4;
-			uint32_t ext_family_id	: 8;
-			uint32_t reserved2	: 4;
-		};
-		uint32_t u32;
+	struct {
+		uint8_t family_id;
+		uint8_t model_id;
+		uint8_t stepping_id;
+		uint8_t processor_type;
 	} version;
 
 	// EAX=0x80000002, 0x80000003, 0x80000004

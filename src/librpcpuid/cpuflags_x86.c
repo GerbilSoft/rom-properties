@@ -82,7 +82,41 @@ static void RP_CPU_Flags_x86_Init_int(void)
 
 	// Get the processor info and feature bits.
 	cpuid(CPUID_PROC_INFO_FEATURE_BITS, regs);
-	RP_CPU_Info_x86.version.u32 = regs[REG_EAX];
+
+	// Parse the processor version.
+	union {
+		struct {
+			uint32_t stepping_id	: 4;
+			uint32_t model		: 4;
+			uint32_t family_id	: 4;
+			uint32_t processor_type	: 2;
+			uint32_t reserved1	: 2;
+			uint32_t ext_model_id	: 4;
+			uint32_t ext_family_id	: 8;
+			uint32_t reserved2	: 4;
+		};
+		uint32_t u32;
+	} processor_version;
+	processor_version.u32 = regs[REG_EAX];
+
+	// Family ID: If 15, then add family ID + extended family ID; otherwise, just family ID.
+	// NOTE: May overflow uint8_t if extended family >= 240...
+	RP_CPU_Info_x86.version.family_id = processor_version.family_id;
+	if (processor_version.family_id == 15) {
+		assert(processor_version.ext_family_id < 240);
+		RP_CPU_Info_x86.version.family_id += processor_version.ext_family_id;
+	}
+
+	// Model ID: If family ID is 6 or 15, use ext_model_id as the high 4 bits
+	// and model as the low 4 bits. Otherwise, just use model.
+	RP_CPU_Info_x86.version.model_id = processor_version.model;
+	if (processor_version.family_id == 6 || processor_version.family_id == 15) {
+		RP_CPU_Info_x86.version.model_id |= (processor_version.ext_model_id << 4);
+	}
+
+	// Stepping ID, processor type: Use as-is.
+	RP_CPU_Info_x86.version.stepping_id = processor_version.stepping_id;
+	RP_CPU_Info_x86.version.processor_type = processor_version.processor_type;
 
 #ifdef RP_CPU_I386
 	if (regs[REG_EDX] & CPUFLAG_IA32_EDX_MMX) {

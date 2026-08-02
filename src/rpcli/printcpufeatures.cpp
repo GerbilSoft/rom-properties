@@ -69,6 +69,16 @@ int PrintCPUFeatures(void)
 		Gsvt::StdOut.newline();
 	}
 
+	// Family/Model/Stepping
+	Gsvt::StdOut.fputs(fmt::format(FRUN(C_("rpcli", "Family/Model/Stepping: {0:d}/{1:d}/{2:d} ({3:0>2X}h/{4:0>2X}h/{5:0>2X}h)")),
+		RP_CPU_Info_x86.version.family_id,
+		RP_CPU_Info_x86.version.model_id,
+		RP_CPU_Info_x86.version.stepping_id,
+		RP_CPU_Info_x86.version.family_id,
+		RP_CPU_Info_x86.version.model_id,
+		RP_CPU_Info_x86.version.stepping_id));
+	Gsvt::StdOut.newline();
+
 	// x86 CPU flags
 	// TODO: Colorization, maybe?
 	Gsvt::StdOut.fputs(C_("rpcli", "Flags:"));
