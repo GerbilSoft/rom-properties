@@ -39,7 +39,8 @@ extern "C" {
 #define RP_CPUFLAG_x86_AVX2		((uint32_t)(1U << 12))
 #define RP_CPUFLAG_x86_BMI2		((uint32_t)(1U << 13))
 #define RP_CPUFLAG_x86_SHA		((uint32_t)(1U << 14))
-#define RP_CPUFLAG_x86_APX		((uint32_t)(1U << 15))
+#define RP_CPUFLAG_x86_SHA512		((uint32_t)(1U << 15))
+#define RP_CPUFLAG_x86_APX		((uint32_t)(1U << 16))
 
 // Don't modify these!
 extern uint32_t RP_CPU_Flags_x86;

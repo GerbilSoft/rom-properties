@@ -236,6 +236,9 @@ static RP_FORCEINLINE void cpuid_count(unsigned int level, unsigned int count, u
 
 // CPUID function 7 (Extended Features), %ecx=1
 
+// Flags stored in the %eax register
+#define CPUFLAG_IA32_FN7p1_EAX_SHA512	((uint32_t)(1U <<  0))
+
 // Flags stored in the %edx register
 #define CPUFLAG_IA32_FN7p1_EDX_APX	((uint32_t)(1U << 21))
 

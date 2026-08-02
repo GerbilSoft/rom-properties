@@ -112,6 +112,7 @@ int PrintCPUFeatures(void)
 		CHECK_CPUFLAG_x86(AVX2, "Advanced Vector Extensions 2");
 		CHECK_CPUFLAG_x86(BMI2, "Bit Manipulation Instructions 2");
 		CHECK_CPUFLAG_x86(SHA, "Secure Hash Algorithm (SHA-1, SHA-256)");
+		CHECK_CPUFLAG_x86(SHA512, "Secure Hash Algorithm (SHA-512)");
 		CHECK_CPUFLAG_x86(APX, "Advanced Performance Extensions");
 	} else {
 		Gsvt::StdOut.fputc(' ');

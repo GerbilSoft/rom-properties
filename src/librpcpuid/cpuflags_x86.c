@@ -234,9 +234,12 @@ static void RP_CPU_Flags_x86_Init_int(void)
 				RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_AVX2;
 			}
 
-			// NOTE: APX is 64-bit only.
-#ifdef RP_CPU_AMD64
 			cpuid_count(CPUID_EXT_FEATURES, 1, regs);
+			if (regs[REG_EAX] & CPUFLAG_IA32_FN7p1_EAX_SHA512) {
+				RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_SHA512;
+			}
+#ifdef RP_CPU_AMD64
+			// NOTE: APX is 64-bit only.
 			if (regs[REG_EDX] & CPUFLAG_IA32_FN7p1_EDX_APX) {
 				RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_APX;
 			}
