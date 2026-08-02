@@ -33,23 +33,23 @@ using namespace Masks;
 /**
  * vzip1q_u16() for 32-bit ARM
  */
-static RP_FORCEINLINE uint32x4_t vzip1q_u16(uint16x8_t a, uint16x8_t b)
+static RP_FORCEINLINE uint16x8_t vzip1q_u16(uint16x8_t a, uint16x8_t b)
 {
 	uint16x4_t a1 = vget_low_u16(a);
 	uint16x4_t b1 = vget_low_u16(b);
 	uint16x4x2_t result = vzip_u16(a1, b1);
-	return vreinterpretq_u32_u16(vcombine_u16(result.val[0], result.val[1]));
+	return vcombine_u16(result.val[0], result.val[1]);
 }
 
 /**
  * vzip2q_u16() for 32-bit ARM
  */
-static RP_FORCEINLINE uint32x4_t vzip2q_u16(uint16x8_t a, uint16x8_t b)
+static RP_FORCEINLINE uint16x8_t vzip2q_u16(uint16x8_t a, uint16x8_t b)
 {
 	uint16x4_t a1 = vget_high_u16(a);
 	uint16x4_t b1 = vget_high_u16(b);
 	uint16x4x2_t result = vzip_u16(a1, b1);
-	return vreinterpretq_u32_u16(vcombine_u16(result.val[0], result.val[1]));
+	return vcombine_u16(result.val[0], result.val[1]);
 }
 #endif /* RP_CPU_ARM */
 
