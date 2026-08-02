@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <gtk/gtk.h>
+#include "gtk-compat.h"
 #include "PIMGTYPE.hpp"
 
 G_BEGIN_DECLS
