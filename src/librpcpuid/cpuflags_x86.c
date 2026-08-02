@@ -146,6 +146,9 @@ static void RP_CPU_Flags_x86_Init_int(void)
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE42) {
 			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_SSE42;
 		}
+		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_AES) {
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_AES;
+		}
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_F16C) {
 			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_F16C;
 		}
@@ -155,7 +158,7 @@ static void RP_CPU_Flags_x86_Init_int(void)
 	}
 
 	// Check for XSAVE and OSXSAVE.
-	// Required for AVX and AVX2.
+	// Required for AVX, AVX2, and APX.
 	can_XSAVE = (regs[REG_ECX] & (CPUFLAG_IA32_ECX_XSAVE | CPUFLAG_IA32_ECX_OSXSAVE)) ==
 	                             (CPUFLAG_IA32_ECX_XSAVE | CPUFLAG_IA32_ECX_OSXSAVE);
 	if (can_XSAVE) {
@@ -166,12 +169,32 @@ static void RP_CPU_Flags_x86_Init_int(void)
 	}
 
 	// Get extended features, including AVX2.
-	// NOTE: AVX2 requires XSAVE.
-	if (can_XSAVE && maxFunc >= CPUID_EXT_FEATURES) {
+	// NOTE: AVX2 and APX both require XSAVE.
+	if (maxFunc >= CPUID_EXT_FEATURES) {
 		cpuid_count(CPUID_EXT_FEATURES, 0, regs);
 
-		if (regs[REG_EBX] & CPUFLAG_IA32_FN7p0_EBX_AVX2) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_AVX2;
+		if (regs[REG_EBX] & CPUFLAG_IA32_FN7p0_EBX_BMI1) {
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_BMI1;
+		}
+		if (regs[REG_EBX] & CPUFLAG_IA32_FN7p0_EBX_BMI2) {
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_BMI2;
+		}
+		if (regs[REG_EBX] & CPUFLAG_IA32_FN7p0_EBX_SHA) {
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_SHA;
+		}
+
+		if (can_XSAVE) {
+			if (can_XSAVE && (regs[REG_EBX] & CPUFLAG_IA32_FN7p0_EBX_AVX2)) {
+				RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_AVX2;
+			}
+
+			// NOTE: APX is 64-bit only.
+#ifdef RP_CPU_AMD64
+			cpuid_count(CPUID_EXT_FEATURES, 1, regs);
+			if (regs[REG_EDX] & CPUFLAG_IA32_FN7p1_EDX_APX) {
+				RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_APX;
+			}
+#endif /* RP_CPU_AMD64 */
 		}
 	}
 

@@ -31,10 +31,15 @@ extern "C" {
 #define RP_CPUFLAG_X86_SSSE3		((uint32_t)(1U <<  4))
 #define RP_CPUFLAG_X86_SSE41		((uint32_t)(1U <<  5))
 #define RP_CPUFLAG_X86_SSE42		((uint32_t)(1U <<  6))
-#define RP_CPUFLAG_X86_AVX		((uint32_t)(1U <<  7))
-#define RP_CPUFLAG_X86_AVX2		((uint32_t)(1U <<  8))
+#define RP_CPUFLAG_X86_AES		((uint32_t)(1U <<  7))
+#define RP_CPUFLAG_X86_AVX		((uint32_t)(1U <<  8))
 #define RP_CPUFLAG_X86_F16C		((uint32_t)(1U <<  9))
 #define RP_CPUFLAG_X86_FMA3		((uint32_t)(1U << 10))
+#define RP_CPUFLAG_X86_BMI1		((uint32_t)(1U << 11))
+#define RP_CPUFLAG_X86_AVX2		((uint32_t)(1U << 12))
+#define RP_CPUFLAG_X86_BMI2		((uint32_t)(1U << 13))
+#define RP_CPUFLAG_X86_SHA		((uint32_t)(1U << 14))
+#define RP_CPUFLAG_X86_APX		((uint32_t)(1U << 15))
 
 // Don't modify these!
 extern uint32_t RP_CPU_Flags_x86;

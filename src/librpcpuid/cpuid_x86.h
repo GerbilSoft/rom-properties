@@ -208,41 +208,50 @@ static RP_FORCEINLINE void cpuid_count(unsigned int level, unsigned int count, u
 
 // CPUID function 1: Processor Info and Feature Bits
 
-// Flags stored in the %edx register.
+// Flags stored in the %edx register
 #define CPUFLAG_IA32_EDX_MMX		((uint32_t)(1U << 23))
 #define CPUFLAG_IA32_EDX_FXSAVE		((uint32_t)(1U << 24))
 #define CPUFLAG_IA32_EDX_SSE		((uint32_t)(1U << 25))
 #define CPUFLAG_IA32_EDX_SSE2		((uint32_t)(1U << 26))
 
-// Flags stored in the %ecx register.
-#define CPUFLAG_IA32_ECX_SSE3		((uint32_t)(1U << 0))
-#define CPUFLAG_IA32_ECX_SSSE3		((uint32_t)(1U << 9))
+// Flags stored in the %ecx register
+#define CPUFLAG_IA32_ECX_SSE3		((uint32_t)(1U <<  0))
+#define CPUFLAG_IA32_ECX_SSSE3		((uint32_t)(1U <<  9))
 #define CPUFLAG_IA32_ECX_FMA3		((uint32_t)(1U << 12))
 #define CPUFLAG_IA32_ECX_SSE41		((uint32_t)(1U << 19))
 #define CPUFLAG_IA32_ECX_SSE42		((uint32_t)(1U << 20))
+#define CPUFLAG_IA32_ECX_AES		((uint32_t)(1U << 25))
 #define CPUFLAG_IA32_ECX_XSAVE		((uint32_t)(1U << 26))
 #define CPUFLAG_IA32_ECX_OSXSAVE	((uint32_t)(1U << 27))
 #define CPUFLAG_IA32_ECX_AVX		((uint32_t)(1U << 28))
 #define CPUFLAG_IA32_ECX_F16C		((uint32_t)(1U << 29))
 
-// CPUID function 7, %ecx=0: Extended Features
+// CPUID function 7 (Extended Features), %ecx=0
 
-// Flags stored in the %ebx register.
-#define CPUFLAG_IA32_FN7p0_EBX_AVX2	((uint32_t)(1U << 5))
+// Flags stored in the %ebx register
+#define CPUFLAG_IA32_FN7p0_EBX_BMI1	((uint32_t)(1U <<  3))
+#define CPUFLAG_IA32_FN7p0_EBX_AVX2	((uint32_t)(1U <<  5))
+#define CPUFLAG_IA32_FN7p0_EBX_BMI2	((uint32_t)(1U <<  8))
+#define CPUFLAG_IA32_FN7p0_EBX_SHA	((uint32_t)(1U << 29))
+
+// CPUID function 7 (Extended Features), %ecx=1
+
+// Flags stored in the %edx register
+#define CPUFLAG_IA32_FN7p1_EDX_APX	((uint32_t)(1U << 21))
 
 // CPUID function 0x80000001: Extended Processor Info and Feature Bits
 
-// Flags stored in the %edx register.
+// Flags stored in the %edx register
 #define CPUFLAG_IA32_EXT_EDX_MMXEXT	((uint32_t)(1U << 22))
 #define CPUFLAG_IA32_EXT_EDX_3DNOW	((uint32_t)(1U << 31))
 #define CPUFLAG_IA32_EXT_EDX_3DNOWEXT	((uint32_t)(1U << 30))
 
-// Flags stored in the %ecx register.
-#define CPUFLAG_IA32_EXT_ECX_SSE4A	((uint32_t)(1U << 6))
+// Flags stored in the %ecx register
+#define CPUFLAG_IA32_EXT_ECX_SSE4A	((uint32_t)(1U <<  6))
 #define CPUFLAG_IA32_EXT_ECX_XOP	((uint32_t)(1U << 11))
 #define CPUFLAG_IA32_EXT_ECX_FMA4	((uint32_t)(1U << 16))
 
-// CPUID functions.
+// CPUID functions
 #define CPUID_MAX_FUNCTIONS			((uint32_t)(0x00000000U))
 #define CPUID_PROC_INFO_FEATURE_BITS		((uint32_t)(0x00000001U))
 #define CPUID_EXT_FEATURES			((uint32_t)(0x00000007U))
