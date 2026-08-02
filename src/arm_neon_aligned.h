@@ -171,20 +171,12 @@ static RP_ARM_FORCEINLINE uint32x2x2_t vld1_u32_x2(const uint32_t *src)
 	vec.val[1] = vld1_u32(&src[2]);
 	return vec;
 }
-#ifdef vld1_u32_x2_ex
-#  undef vld1_u32_x2_ex
-#endif
-#define vld1_u32_x2_ex(p, align) vld1_u32_x2(HINT_ALIGNED((p), (align)/8))
 
 static RP_ARM_FORCEINLINE void vst1_u32_x2(uint32_t *dest, uint32x2x2_t vec)
 {
 	vst1_u32(&dest[0], vec.val[0]);
 	vst1_u32(&dest[2], vec.val[1]);
 }
-#ifdef vst1_u32_x2_ex
-#  undef vst1_u32_x2_ex
-#endif
-#define vst1_u32_x2_ex(p, a, align) vst1_u32_x2(HINT_ALIGNED((p), (align)/8), (a))
 
 static RP_ARM_FORCEINLINE uint32x2x4_t vld1_u32_x4(const uint32_t *src)
 {
@@ -195,10 +187,6 @@ static RP_ARM_FORCEINLINE uint32x2x4_t vld1_u32_x4(const uint32_t *src)
 	vec.val[3] = vld1_u32(&src[6]);
 	return vec;
 }
-#ifdef vld1_u32_x4_ex
-#  undef vld1_u32_x4_ex
-#endif
-#define vld1_u32_x4_ex(p, align) vld1_u32_x4(HINT_ALIGNED((p), (align)/8))
 
 static RP_ARM_FORCEINLINE void vst1_u32_x4(uint32_t *dest, uint32x2x4_t vec)
 {
@@ -207,10 +195,6 @@ static RP_ARM_FORCEINLINE void vst1_u32_x4(uint32_t *dest, uint32x2x4_t vec)
 	vst1_u32(&dest[4], vec.val[2]);
 	vst1_u32(&dest[6], vec.val[3]);
 }
-#ifdef vst1_u32_x4_ex
-#  undef vst1_u32_x4_ex
-#endif
-#define vst1_u32_x4_ex(p, a, align) vst1_u32_x4(HINT_ALIGNED((p), (align)/8), (a))
 
 static RP_ARM_FORCEINLINE uint16x8x2_t vld1q_u16_x2(const uint16_t *src)
 {
@@ -219,20 +203,12 @@ static RP_ARM_FORCEINLINE uint16x8x2_t vld1q_u16_x2(const uint16_t *src)
 	vec.val[1] = vld1q_u16(&src[8]);
 	return vec;
 }
-#ifdef vld1q_u16_x2_ex
-#  undef vld1q_u16_x2_ex
-#endif
-#define vld1q_u16_x2_ex(p, align) vld1q_u16_x2(HINT_ALIGNED((p), (align)/8))
 
 static RP_ARM_FORCEINLINE void vst1q_u16_x2(uint16_t *dest, uint16x8x2_t vec)
 {
 	vst1q_u16(&dest[0], vec.val[0]);
 	vst1q_u16(&dest[8], vec.val[1]);
 }
-#ifdef vst1q_u16_x2_ex
-#  undef vst1q_u16_x2_ex
-#endif
-#define vst1q_u16_x2_ex(p, a, align) vst1q_u16_x2(HINT_ALIGNED((p), (align)/8), (a))
 
 static RP_ARM_FORCEINLINE uint32x4x2_t vld1q_u32_x2(const uint32_t *src)
 {
@@ -241,20 +217,12 @@ static RP_ARM_FORCEINLINE uint32x4x2_t vld1q_u32_x2(const uint32_t *src)
 	vec.val[1] = vld1q_u32(&src[4]);
 	return vec;
 }
-#ifdef vld1q_u32_x2_ex
-#  undef vld1q_u32_x2_ex
-#endif
-#define vld1q_u32_x2_ex(p, align) vld1q_u32_x2(HINT_ALIGNED((p), (align)/8))
 
 static RP_ARM_FORCEINLINE void vst1q_u32_x2(uint32_t *dest, uint32x4x2_t vec)
 {
 	vst1q_u32(&dest[0], vec.val[0]);
 	vst1q_u32(&dest[4], vec.val[1]);
 }
-#ifdef vst1q_u32_x2_ex
-#  undef vst1q_u32_x2_ex
-#endif
-#define vst1q_u32_x2_ex(p, a, align) vst1q_u32_x2(HINT_ALIGNED((p), (align)/8), (a))
 
 static RP_ARM_FORCEINLINE uint32x3x3_t vld1q_u32_x3(const uint32_t *src)
 {
@@ -264,10 +232,6 @@ static RP_ARM_FORCEINLINE uint32x3x3_t vld1q_u32_x3(const uint32_t *src)
 	vec.val[2] = vld1q_u32(&src[8]);
 	return vec;
 }
-#ifdef vld1q_u32_x3_ex
-#  undef vld1q_u32_x3_ex
-#endif
-#define vld1q_u32_x3_ex(p, align) vld1q_u32_x3(HINT_ALIGNED((p), (align)/8))
 
 static RP_ARM_FORCEINLINE void vst1q_u32_x3(uint32_t *dest, uint32x3x3_t vec)
 {
@@ -275,10 +239,6 @@ static RP_ARM_FORCEINLINE void vst1q_u32_x3(uint32_t *dest, uint32x3x3_t vec)
 	vst1q_u32(&dest[4], vec.val[1]);
 	vst1q_u32(&dest[8], vec.val[2]);
 }
-#ifdef vst1q_u32_x3_ex
-#  undef vst1q_u32_x3_ex
-#endif
-#define vst1q_u32_x3_ex(p, a, align) vst1q_u32_x3(HINT_ALIGNED((p), (align)/8), (a))
 
 static RP_ARM_FORCEINLINE uint32x4x4_t vld1q_u32_x4(const uint32_t *src)
 {
@@ -289,10 +249,6 @@ static RP_ARM_FORCEINLINE uint32x4x4_t vld1q_u32_x4(const uint32_t *src)
 	vec.val[3] = vld1q_u32(&src[12]);
 	return vec;
 }
-#ifdef vld1q_u32_x4_ex
-#  undef vld1q_u32_x4_ex
-#endif
-#define vld1q_u32_x4_ex(p, align) vld1q_u32_x4(HINT_ALIGNED((p), (align)/8))
 
 static RP_ARM_FORCEINLINE void vst1q_u32_x4(uint32_t *dest, uint32x4x4_t vec)
 {
@@ -301,9 +257,70 @@ static RP_ARM_FORCEINLINE void vst1q_u32_x4(uint32_t *dest, uint32x4x4_t vec)
 	vst1q_u32(&dest[ 8], vec.val[2]);
 	vst1q_u32(&dest[12], vec.val[3]);
 }
+#endif /* RP_ARM_MISSING_xN */
+
+// MSVC-specific aligned intrinsics
+// (NOTE: Not present on MSVC for 32-bit ARM, so we have to define them here in that case, too.)
+#if !defined(_MSC_VER) || (defined(_M_ARM) || defined(_M_ARMT))
+
 #ifdef vst1q_u32_x4_ex
 #  undef vst1q_u32_x4_ex
 #endif
 #define vst1q_u32_x4_ex(p, a, align) vst1q_u32_x4(HINT_ALIGNED((p), (align)/8), (a))
 
-#endif /* RP_ARM_MISSING_xN */
+#ifdef vld1_u32_x2_ex
+#  undef vld1_u32_x2_ex
+#endif
+#define vld1_u32_x2_ex(p, align) vld1_u32_x2(HINT_ALIGNED((p), (align)/8))
+
+#ifdef vst1_u32_x2_ex
+#  undef vst1_u32_x2_ex
+#endif
+#define vst1_u32_x2_ex(p, a, align) vst1_u32_x2(HINT_ALIGNED((p), (align)/8), (a))
+
+#ifdef vld1_u32_x4_ex
+#  undef vld1_u32_x4_ex
+#endif
+#define vld1_u32_x4_ex(p, align) vld1_u32_x4(HINT_ALIGNED((p), (align)/8))
+
+#ifdef vst1_u32_x4_ex
+#  undef vst1_u32_x4_ex
+#endif
+#define vst1_u32_x4_ex(p, a, align) vst1_u32_x4(HINT_ALIGNED((p), (align)/8), (a))
+
+#ifdef vld1q_u16_x2_ex
+#  undef vld1q_u16_x2_ex
+#endif
+#define vld1q_u16_x2_ex(p, align) vld1q_u16_x2(HINT_ALIGNED((p), (align)/8))
+
+#ifdef vst1q_u16_x2_ex
+#  undef vst1q_u16_x2_ex
+#endif
+#define vst1q_u16_x2_ex(p, a, align) vst1q_u16_x2(HINT_ALIGNED((p), (align)/8), (a))
+
+#ifdef vld1q_u32_x2_ex
+#  undef vld1q_u32_x2_ex
+#endif
+#define vld1q_u32_x2_ex(p, align) vld1q_u32_x2(HINT_ALIGNED((p), (align)/8))
+
+#ifdef vst1q_u32_x2_ex
+#  undef vst1q_u32_x2_ex
+#endif
+#define vst1q_u32_x2_ex(p, a, align) vst1q_u32_x2(HINT_ALIGNED((p), (align)/8), (a))
+
+#ifdef vld1q_u32_x3_ex
+#  undef vld1q_u32_x3_ex
+#endif
+#define vld1q_u32_x3_ex(p, align) vld1q_u32_x3(HINT_ALIGNED((p), (align)/8))
+
+#ifdef vst1q_u32_x3_ex
+#  undef vst1q_u32_x3_ex
+#endif
+#define vst1q_u32_x3_ex(p, a, align) vst1q_u32_x3(HINT_ALIGNED((p), (align)/8), (a))
+
+#ifdef vld1q_u32_x4_ex
+#  undef vld1q_u32_x4_ex
+#endif
+#define vld1q_u32_x4_ex(p, align) vld1q_u32_x4(HINT_ALIGNED((p), (align)/8))
+
+#endif /* !_MSC_VER || (_M_ARM || _M_ARMT) */
