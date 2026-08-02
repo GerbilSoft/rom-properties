@@ -120,8 +120,8 @@ int PrintCPUFeatures(void)
 		{RP_CPUFLAG_x86_BMI1,   "BMI1",   "Bit Manipulation Instructions 1"},
 		{RP_CPUFLAG_x86_AVX2,   "AVX2",   "Advanced Vector Extensions 2"},
 		{RP_CPUFLAG_x86_BMI2,   "BMI2",   "Bit Manipulation Instructions 2"},
-		{RP_CPUFLAG_x86_SHA,    "SHA",    "Secure Hash Algorithm (SHA-1, SHA-256}"},
-		{RP_CPUFLAG_x86_SHA512, "SHA512", "Secure Hash Algorithm (SHA-512}"},
+		{RP_CPUFLAG_x86_SHA,    "SHA",    "Secure Hash Algorithm (SHA-1, SHA-256)"},
+		{RP_CPUFLAG_x86_SHA512, "SHA512", "Secure Hash Algorithm (SHA-512)"},
 		{RP_CPUFLAG_x86_APX,    "APX",    "Advanced Performance Extensions"},
 	}};
 #else
