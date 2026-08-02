@@ -81,38 +81,47 @@ int PrintCPUFeatures(void)
 
 	// x86 CPU flags
 	// TODO: Colorization, maybe?
-	Gsvt::StdOut.fputs(C_("rpcli", "Flags:"));
+	Gsvt::StdOut.newline();
+	Gsvt::StdOut.fputs(C_("rpcli", "CPU Flags:"));
 	if (RP_CPU_Flags_x86 != 0) {
-#  define CHECK_CPUFLAG_x86(flag) do { \
+		Gsvt::StdOut.newline();
+		// TODO: Check locale to see if we can print a Unicode bullet? (U+2022)
+		// On Windows, check OS version?
+		static const char s_bullet[] = "\xE2\x80\xA2 ";
+#  define CHECK_CPUFLAG_x86(flag, desc) do { \
 		if (RP_CPU_Flags_x86 & RP_CPUFLAG_x86_##flag) { \
-			Gsvt::StdOut.fputs(" " #flag); \
+			Gsvt::StdOut.fputs(s_bullet); \
+			Gsvt::StdOut.fputs(fmt::format(FRUN(C_("rpcli", "{0:s}: {1:s}")), #flag, desc)); \
+			Gsvt::StdOut.newline(); \
 		} \
 } while(0)
 
-		CHECK_CPUFLAG_x86(MMX);
-		CHECK_CPUFLAG_x86(SSE);
-		CHECK_CPUFLAG_x86(SSE2);
-		CHECK_CPUFLAG_x86(SSE3);
-		CHECK_CPUFLAG_x86(SSSE3);
-		CHECK_CPUFLAG_x86(SSE41);
-		CHECK_CPUFLAG_x86(SSE42);
-		CHECK_CPUFLAG_x86(AES);
-		CHECK_CPUFLAG_x86(AVX);
-		CHECK_CPUFLAG_x86(F16C);
-		CHECK_CPUFLAG_x86(FMA3);
-		CHECK_CPUFLAG_x86(BMI1);
-		CHECK_CPUFLAG_x86(AVX2);
-		CHECK_CPUFLAG_x86(BMI2);
-		CHECK_CPUFLAG_x86(SHA);
-		CHECK_CPUFLAG_x86(APX);
+		// TODO: Column alignment?
+		CHECK_CPUFLAG_x86(MMX, "MultiMedia Extensions");
+		CHECK_CPUFLAG_x86(SSE, "Streaming SIMD Extensions");
+		CHECK_CPUFLAG_x86(SSE2, "Streaming SIMD Extensions 2");
+		CHECK_CPUFLAG_x86(SSE3, "Streaming SIMD Extensions 3");
+		CHECK_CPUFLAG_x86(SSSE3, "Supplemental Streaming SIMD Extensions 3");
+		CHECK_CPUFLAG_x86(SSE41, "Streaming SIMD Extensions 4.1");
+		CHECK_CPUFLAG_x86(SSE42, "Streaming SIMD Extensions 4.2");
+		CHECK_CPUFLAG_x86(AES, "Advanced Encryption Standard");
+		CHECK_CPUFLAG_x86(AVX, "Advanced Vector Extensions");
+		CHECK_CPUFLAG_x86(F16C, "Half-Precision Floating Point");
+		CHECK_CPUFLAG_x86(FMA3, "Fused Multiply-Add, 3-operand");
+		CHECK_CPUFLAG_x86(BMI1, "Bit Manipulation Instructions 1");
+		CHECK_CPUFLAG_x86(AVX2, "Advanced Vector Extensions 2");
+		CHECK_CPUFLAG_x86(BMI2, "Bit Manipulation Instructions 2");
+		CHECK_CPUFLAG_x86(SHA, "Secure Hash Algorithm (SHA-1, SHA-256)");
+		CHECK_CPUFLAG_x86(APX, "Advanced Performance Extensions");
 	} else {
 		Gsvt::StdOut.fputc(' ');
 		Gsvt::StdOut.fputs(C_("rpcli", "(none)"));
+		Gsvt::StdOut.newline();
 	}
-	Gsvt::StdOut.newline();
 #else
 	// Unsupported CPU architecture...
-	Gsvt::StdOut.fputs(C_("rpcli", "Flags:"));
+	Gsvt::StdOut.newline();
+	Gsvt::StdOut.fputs(C_("rpcli", "CPU Flags:"));
 	Gsvt::StdOut.fputc(' ');
 	Gsvt::StdOut.fputs(C_("rpcli", "(none)"));
 	Gsvt::StdOut.newline();
