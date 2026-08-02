@@ -45,6 +45,41 @@ extern "C" {
 extern uint32_t RP_CPU_Flags_x86;
 extern int RP_CPU_Flags_x86_IsInit;	// 1 if RP_CPU_Flags_x86 has been initialized.
 
+// x86 CPU information
+typedef struct _RP_CPU_Info_x86_t {
+	// EAX=0
+	uint32_t highest_fn;		// Highest regular function parameter
+	// EAX=0x80000000
+	uint32_t highest_ext_fn;	// Highest extended function parameter (>= 0x80000000)
+
+	union {
+		char c[12];
+		uint32_t u32[3];
+	} manufacturer_id; // Manufacturer ID (*not* NULL-terminated)
+
+	// EAX=1
+	union {
+		struct {
+			uint32_t stepping	: 4;
+			uint32_t model		: 4;
+			uint32_t family_id	: 4;
+			uint32_t processor_type	: 2;
+			uint32_t reserved1	: 2;
+			uint32_t ext_model_id	: 4;
+			uint32_t ext_family_id	: 8;
+			uint32_t reserved2	: 4;
+		};
+		uint32_t u32;
+	} version;
+
+	// EAX=0x80000002, 0x80000003, 0x80000004
+	union {
+		char c[48];
+		uint32_t u32[12];
+	} brand_string; // Processor brand string (*not necessarily* NULL-terminated)
+} RP_CPU_Info_x86_t;
+extern RP_CPU_Info_x86_t RP_CPU_Info_x86;
+
 /**
  * Initialize RP_CPU_Flags_x86.
  */

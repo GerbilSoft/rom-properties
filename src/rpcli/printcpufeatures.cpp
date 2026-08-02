@@ -53,46 +53,61 @@ int PrintCPUFeatures(void)
 
 	Gsvt::StdOut.fputs(fmt::format(FRUN(C_("rpcli", "Endianness: {:s}")), endianness));
 	Gsvt::StdOut.newline();
-	Gsvt::StdOut.fputs(C_("rpcli", "Flags:"));
-	uint32_t cpu_flags = 0;
 
-	// Flags
-	// TODO: Colorization, maybe?
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
 	RP_CPU_Flags_x86_Init();
-	cpu_flags = RP_CPU_Flags_x86;
 
+	// TODO: Trim the strings?
+	if (RP_CPU_Info_x86.manufacturer_id.c[0] != '\0') {
+		Gsvt::StdOut.fputs(fmt::format(FRUN(C_("rpcli", "Manufacturer ID: {:s}")),
+			fmt::string_view(RP_CPU_Info_x86.manufacturer_id.c, sizeof(RP_CPU_Info_x86.manufacturer_id.c))));
+		Gsvt::StdOut.newline();
+	}
+	if (RP_CPU_Info_x86.brand_string.c[0] != '\0') {
+		Gsvt::StdOut.fputs(fmt::format(FRUN(C_("rpcli", "Brand String: {:s}")),
+			fmt::string_view(RP_CPU_Info_x86.brand_string.c, sizeof(RP_CPU_Info_x86.brand_string.c))));
+		Gsvt::StdOut.newline();
+	}
+
+	// x86 CPU flags
+	// TODO: Colorization, maybe?
+	Gsvt::StdOut.fputs(C_("rpcli", "Flags:"));
+	if (RP_CPU_Flags_x86 != 0) {
 #  define CHECK_CPUFLAG_x86(flag) do { \
-	if (cpu_flags & RP_CPUFLAG_x86_##flag) { \
-		Gsvt::StdOut.fputs(" " #flag); \
-	} \
+		if (RP_CPU_Flags_x86 & RP_CPUFLAG_x86_##flag) { \
+			Gsvt::StdOut.fputs(" " #flag); \
+		} \
 } while(0)
 
-	CHECK_CPUFLAG_x86(MMX);
-	CHECK_CPUFLAG_x86(SSE);
-	CHECK_CPUFLAG_x86(SSE2);
-	CHECK_CPUFLAG_x86(SSE3);
-	CHECK_CPUFLAG_x86(SSSE3);
-	CHECK_CPUFLAG_x86(SSE41);
-	CHECK_CPUFLAG_x86(SSE42);
-	CHECK_CPUFLAG_x86(AES);
-	CHECK_CPUFLAG_x86(AVX);
-	CHECK_CPUFLAG_x86(F16C);
-	CHECK_CPUFLAG_x86(FMA3);
-	CHECK_CPUFLAG_x86(BMI1);
-	CHECK_CPUFLAG_x86(AVX2);
-	CHECK_CPUFLAG_x86(BMI2);
-	CHECK_CPUFLAG_x86(SHA);
-	CHECK_CPUFLAG_x86(APX);
-#endif
-
-	if (cpu_flags == 0) {
+		CHECK_CPUFLAG_x86(MMX);
+		CHECK_CPUFLAG_x86(SSE);
+		CHECK_CPUFLAG_x86(SSE2);
+		CHECK_CPUFLAG_x86(SSE3);
+		CHECK_CPUFLAG_x86(SSSE3);
+		CHECK_CPUFLAG_x86(SSE41);
+		CHECK_CPUFLAG_x86(SSE42);
+		CHECK_CPUFLAG_x86(AES);
+		CHECK_CPUFLAG_x86(AVX);
+		CHECK_CPUFLAG_x86(F16C);
+		CHECK_CPUFLAG_x86(FMA3);
+		CHECK_CPUFLAG_x86(BMI1);
+		CHECK_CPUFLAG_x86(AVX2);
+		CHECK_CPUFLAG_x86(BMI2);
+		CHECK_CPUFLAG_x86(SHA);
+		CHECK_CPUFLAG_x86(APX);
+	} else {
 		Gsvt::StdOut.fputc(' ');
 		Gsvt::StdOut.fputs(C_("rpcli", "(none)"));
 	}
-
 	Gsvt::StdOut.newline();
-	Gsvt::StdOut.fflush();
+#else
+	// Unsupported CPU architecture...
+	Gsvt::StdOut.fputs(C_("rpcli", "Flags:"));
+	Gsvt::StdOut.fputc(' ');
+	Gsvt::StdOut.fputs(C_("rpcli", "(none)"));
+	Gsvt::StdOut.newline();
+#endif
 
+	Gsvt::StdOut.fflush();
 	return 0;
 }
