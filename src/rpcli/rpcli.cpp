@@ -53,6 +53,7 @@ using namespace LibRpTexture;
 #  include "verifykeys.hpp"
 #endif /* ENABLE_DECRYPTION */
 #include "device.hpp"
+#include "printcpufeatures.hpp"
 
 // OS-specific userdirs
 #ifdef _WIN32
@@ -606,9 +607,9 @@ static void ShowUsage(void)
 {
 	// TODO: Use argv[0] instead of hard-coding 'rpcli'?
 #ifdef ENABLE_DECRYPTION	
-	const char *const s_usage = C_("rpcli", "Usage: rpcli [-cCdjkpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...");
+	const char *const s_usage = C_("rpcli", "Usage: rpcli [-cCdjkpPS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...");
 #else /* !ENABLE_DECRYPTION */
-	const char *const s_usage = C_("rpcli", "Usage: rpcli [-cCdjpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...");
+	const char *const s_usage = C_("rpcli", "Usage: rpcli [-cCdjpPS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]...");
 #endif /* ENABLE_DECRYPTION */
 	Gsvt::StdErr.fputs(s_usage);
 	Gsvt::StdErr.newline();
@@ -620,10 +621,10 @@ static void ShowUsage(void)
 
 	// Normal commands
 #ifdef ENABLE_DECRYPTION
-	static const array<cmd_t, 11> cmds = {{
+	static const array<cmd_t, 12> cmds = {{
 		{"  -k:  ", NOP_C_("rpcli", "Verify encryption keys in keys.conf.")},
 #else /* !ENABLE_DECRYPTION */
-	static const array<cmd_t, 10> cmds = {{
+	static const array<cmd_t, 11> cmds = {{
 #endif /* ENABLE_DECRYPTION */
 		{"  -c:  ", NOP_C_("rpcli", "Print system region information.")},
 		{"  -C:  ", NOP_C_("rpcli", "Force-enable ANSI escape sequences.")},
@@ -631,6 +632,7 @@ static void ShowUsage(void)
 		{"  -j:  ", NOP_C_("rpcli", "Use JSON output format.")},
 		{"  -l:  ", NOP_C_("rpcli", "Retrieve the specified language from the ROM image.")},
 		{"  -p:  ", NOP_C_("rpcli", "Print system path information.")},
+		{"  -P:  ", NOP_C_("rpcli", "Print detected CPU features.")},
 		{"  -S:  ", NOP_C_("rpcli", "Disable Sixel/Kitty graphics. (only for terminal output)")},
 		{"  -xN: ", NOP_C_("rpcli", "Extract image N to outfile in PNG format.")},
 		{"  -mN: ", NOP_C_("rpcli", "Extract mipmap level N to outfile in PNG format.")},
@@ -790,6 +792,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		}
 	}
 
+	// TODO: Switch to GNU getopt?
 	for (int i = 1; i < argc; i++) { // figure out the json mode in advance
 		if (argv[i][0] == _T('-')) {
 			if (argv[i][1] == _T('j')) {
@@ -922,6 +925,16 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				// Print pathnames.
 				PrintPathnames();
 				break;
+
+			case _T('P'): {
+				// Print CPU features.
+				static bool hasPrintedCPUFeatures = false;
+				if (!hasPrintedCPUFeatures) {
+					hasPrintedCPUFeatures = true;
+					ret = PrintCPUFeatures();
+				}
+				break;
+			}
 
 			case _T('S'):
 				// Disable Sixel/Kitty graphics output.

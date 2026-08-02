@@ -6,11 +6,13 @@ SET(${PROJECT_NAME}_SRCS
 	rpcli.cpp
 	device.cpp
 	rpcli_secure.c
+	printcpufeatures.cpp
 	)
 SET(${PROJECT_NAME}_H
 	device.hpp
 	rpcli_secure.h
 	sixel-mini.h
+	printcpufeatures.hpp
 	)
 
 # Sixel (TODO: Check for libsixel)

@@ -10752,19 +10752,19 @@ msgstr "No es un archivo de dispositivo"
 #: ../src/rpcli/rpcli.cpp:609
 msgctxt "rpcli"
 msgid ""
-"Usage: rpcli [-cCdjkpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a "
+"Usage: rpcli [-cCdjkpPS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a "
 "apngoutfile] filename]..."
 msgstr ""
-"Uso: rpcli [-cCdjkpS] [-l lang] [[-xN archivo de salida]... [-mN archivo de "
+"Uso: rpcli [-cCdjkpPS] [-l lang] [[-xN archivo de salida]... [-mN archivo de "
 "salida]... [-a archivo de salida apng] nombre de archivo]..."
 
 #: ../src/rpcli/rpcli.cpp:611
 msgctxt "rpcli"
 msgid ""
-"Usage: rpcli [-cCdjpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a "
+"Usage: rpcli [-cCdjpPS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a "
 "apngoutfile] filename]..."
 msgstr ""
-"Uso: rpcli [-cCdjpS] [-l lang] [[-xN archivo de salida]... [-mN archivo de "
+"Uso: rpcli [-cCdjpPS] [-l lang] [[-xN archivo de salida]... [-mN archivo de "
 "salida]... [-a archivo de salida apng] nombre de archivo]..."
 
 #: ../src/rpcli/rpcli.cpp:624
