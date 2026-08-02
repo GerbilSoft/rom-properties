@@ -124,6 +124,20 @@ int PrintCPUFeatures(void)
 		{RP_CPUFLAG_x86_SHA512, "SHA512", "Secure Hash Algorithm (SHA-512)"},
 		{RP_CPUFLAG_x86_APX,    "APX",    "Advanced Performance Extensions"},
 	}};
+#elif defined(RP_CPU_ARM) || defined(RP_CPU_ARM64)
+	// ARM
+	RP_CPU_Flags_arm_Init();
+	cpu_flags = RP_CPU_Flags_arm;
+	static const array<cpu_flag_tbl_t, 8> cpu_flag_tbl = {{
+		{RP_CPUFLAG_ARM_NEON,   "NEON",   "NEON SIMD Extensions"},
+		{RP_CPUFLAG_ARM_AES,    "AES",    "Advanced Encryption Standard"},
+		{RP_CPUFLAG_ARM_SHA1,   "SHA1",   "Secure Hash Algorithm (SHA-1)"},
+		{RP_CPUFLAG_ARM_SHA2,   "SHA2",   "Secure Hash Algorithm (SHA-256)"},
+		{RP_CPUFLAG_ARM_CRC32,  "CRC32",  "Cyclic Redundancy Check (32-bit)"},
+		{RP_CPUFLAG_ARM_SHA3,   "SHA3",   "Secure Hash Algorithm (SHA3-256)"},
+		{RP_CPUFLAG_ARM_SHA512, "SHA512", "Secure Hash Algorithm (SHA-512)"},
+		{RP_CPUFLAG_ARM_SVE,    "SVE",    "Scalable Vector Extensions"},
+	}};
 #else
 	// No CPU flags for this architecture...
 	cpu_flags = 0;

@@ -18,6 +18,8 @@ int main(void) {
 	return regs[0];
 }" HAVE_MSVC_CPUID)
 	ENDIF(HAVE_INTRIN_H)
+ELSE(WIN32)
+	CHECK_SYMBOL_EXISTS(getauxval "sys/auxv.h" HAVE_GETAUXVAL)
 ENDIF(WIN32)
 
 # for pthread_once()
