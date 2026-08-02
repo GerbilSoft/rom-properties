@@ -13,6 +13,7 @@
 // C includes
 #include <stddef.h>
 #include <stdint.h>
+#include <wchar.h>
 #include "stdboolx.h"
 
 // TCHAR
@@ -101,6 +102,28 @@ int gsvt_get_cell_size(int *pWidth, int *pHeight);
  * @return Number of characters written
  */
 size_t gsvt_fwrite(const char *ptr, size_t nmemb, gsvt_console *vt);
+
+/**
+ * fputc() wrapper function for gsvt_console.
+ *
+ * Escape codes are not supported; use fputs() to parse escape codes.
+ *
+ * @param c Character to write
+ * @param vt
+ * @return Non-negative number on success, or EOF on error.
+ */
+int gsvt_fputc(char c, gsvt_console *vt);
+
+/**
+ * fputwc() wrapper function for gsvt_console.
+ *
+ * Escape codes are not supported; use fputs() to parse escape codes.
+ *
+ * @param wc Character to write
+ * @param vt
+ * @return Non-negative number on success, or EOF on error.
+ */
+int gsvt_fputwc(wchar_t wc, gsvt_console *vt);
 
 /**
  * fputs() wrapper function for gsvt_console.
