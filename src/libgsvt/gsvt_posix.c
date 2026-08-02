@@ -408,15 +408,6 @@ int gsvt_fflush(gsvt_console *vt)
 
 /** Convenience functions **/
 
-/**
- * Print a newline to the specified gsvt_console.
- * @param vt
- */
-void gsvt_newline(gsvt_console *vt)
-{
-	fputc('\n', vt->stream);
-}
-
 /** Color functions (NOPs if the console doesn't support color) **/
 
 /**

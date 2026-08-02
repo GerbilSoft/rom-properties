@@ -150,8 +150,9 @@ int gsvt_fflush(gsvt_console *vt);
 /**
  * Print a newline to the specified gsvt_console.
  * @param vt
+ * @return Non-negative number on success, or EOF on error.
  */
-void gsvt_newline(gsvt_console *vt);
+int gsvt_newline(gsvt_console *vt);
 
 /** Color functions (NOPs if the console doesn't support color) **/
 

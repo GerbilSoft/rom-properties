@@ -204,3 +204,19 @@ int gsvt_get_cell_size(int *pWidth, int *pHeight)
 	// Retrieved the width and height.
 	return ret;
 }
+
+/** Convenience functions **/
+
+/**
+ * Print a newline to the specified gsvt_console.
+ * @param vt
+ * @return Non-negative number on success, or EOF on error.
+ */
+int gsvt_newline(gsvt_console *vt)
+{
+#if defined(_WIN32) && defined(_UNICODE)
+	return gsvt_fputwc(L'\n', vt);
+#else /* !(_WIN32 && _UNICODE) */
+	return gsvt_fputc('\n', vt);
+#endif /* _WIN32 && _UNCIODE */
+}

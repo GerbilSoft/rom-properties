@@ -864,22 +864,6 @@ int gsvt_fflush(gsvt_console *vt)
 
 /** Convenience functions **/
 
-/**
- * Print a newline to the specified gsvt_console.
- * @param vt
- */
-void gsvt_newline(gsvt_console *vt)
-{
-	if (vt->is_real_console) {
-		// This is a real Windows console.
-		// TODO: Use WriteConsoleW() or WriteConsoleA() directly?
-		gsvt_win32_console_print_raw(vt, "\n", 1);
-	} else {
-		// Not a real console. Use fputc().
-		fputc('\n', vt->stream);
-	}
-}
-
 /** Color functions (NOPs if the console doesn't support color) **/
 
 /**
