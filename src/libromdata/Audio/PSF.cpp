@@ -142,7 +142,7 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 	const off64_t data_len = file->size() - tag_addr;
 	if (data_len <= 0 || data_len > TAG_SIZE_MAX) {
 		// Not enough data, or too *much* data...
-		return {};
+		return unordered_map<string, string>();
 	}
 
 	const size_t data_len_sz = static_cast<size_t>(data_len);
@@ -150,7 +150,7 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 	size_t size = file->seekAndRead(tag_addr, tag_data.get(), data_len_sz);
 	if (size != data_len_sz) {
 		// Read error.
-		return {};
+		return unordered_map<string, string>();
 	}
 
 	// Parse the tags.
