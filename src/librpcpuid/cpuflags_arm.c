@@ -41,6 +41,38 @@
 #  endif /* RP_CPU_ARM64 */
 #endif /* HAVE_GETAUXVAL */
 
+// Windows headers for IsProcessorFeaturePresent()
+#ifdef _WIN32
+#  define WIN32_LEAN_AND_MEAN 1
+#  include <windows.h>
+
+// Processor features that might not be defined in older Windows SDKs.
+#  ifndef PF_ARM_NEON_INSTRUCTIONS_AVAILABLE
+#    define PF_ARM_NEON_INSTRUCTIONS_AVAILABLE 19
+#  endif
+#  ifndef PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE
+#    define PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE 30
+#  endif
+#  ifndef PF_ARM_V8_CRC32_INSTRUCTIONS_AVAILABLE
+#    define PF_ARM_V8_CRC32_INSTRUCTIONS_AVAILABLE 31
+#  endif
+#  ifndef PF_ARM_SHA3_INSTRUCTIONS_AVAILABLE
+#    define PF_ARM_SHA3_INSTRUCTIONS_AVAILABLE 64
+#  endif
+#  ifndef PF_ARM_SHA512_INSTRUCTIONS_AVAILABLE
+#    define PF_ARM_SHA512_INSTRUCTIONS_AVAILABLE 65
+#  endif
+#  ifndef PF_ARM_SVE_INSTRUCTIONS_AVAILABLE
+#    define PF_ARM_SVE_INSTRUCTIONS_AVAILABLE 46
+#  endif
+#  ifndef PF_ARM_SVE2_INSTRUCTIONS_AVAILABLE
+#    define PF_ARM_SVE2_INSTRUCTIONS_AVAILABLE 47
+#  endif
+#  ifndef PF_ARM_SVE2_1_INSTRUCTIONS_AVAILABLE
+#    define PF_ARM_SVE2_1_INSTRUCTIONS_AVAILABLE 48
+#  endif
+#endif
+
 // pthread_once()
 #ifdef _WIN32
 #  include "pthread_once_win32.h"
@@ -60,7 +92,7 @@ static void RP_CPU_Flags_arm_Init_int(void)
 {
 	RP_CPU_Flags_arm = 0;
 
-#ifdef HAVE_GETAUXVAL
+#if defined(HAVE_GETAUXVAL)
 	// glibc: Use getauxval() to get CPU information.
 
 	// Check HWCAP.
@@ -123,9 +155,43 @@ static void RP_CPU_Flags_arm_Init_int(void)
 
 	// SHA-3, SHA-512, SVE, and SVE2 are not available on 32-bit.
 #  endif
+#elif defined(_WIN32)
+	// Windows: Use IsProcessorFeaturePresent().
+	// NOTE: Some of these processor features have SVE and standard versions available.
+	// We're only checking standard versions.
+
+	// NEON instructions *must* be available on desktop Windows for ARM.
+	assert(IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE));
+
+	if (IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE)) {
+		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_NEON;
+	}
+	if (IsProcessorFeaturePresent(PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE)) {
+		// NOTE: This covers AES, SHA-1, and SHA-2.
+		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_AES |
+		                    RP_CPUFLAG_ARM_SHA1 |
+		                    RP_CPUFLAG_ARM_SHA2;
+	}
+	if (IsProcessorFeaturePresent(PF_ARM_V8_CRC32_INSTRUCTIONS_AVAILABLE)) {
+		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_CRC32;
+	}
+	if (IsProcessorFeaturePresent(PF_ARM_SHA3_INSTRUCTIONS_AVAILABLE)) {
+		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_SHA3;
+	}
+	if (IsProcessorFeaturePresent(PF_ARM_SHA512_INSTRUCTIONS_AVAILABLE)) {
+		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_SHA512;
+	}
+	if (IsProcessorFeaturePresent(PF_ARM_SVE_INSTRUCTIONS_AVAILABLE)) {
+		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_SVE;
+	}
+	if (IsProcessorFeaturePresent(PF_ARM_SVE2_INSTRUCTIONS_AVAILABLE)) {
+		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_SVE2;
+	}
+	if (IsProcessorFeaturePresent(PF_ARM_SVE2_1_INSTRUCTIONS_AVAILABLE)) {
+		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_SVE2P1;
+	}
 #else
-	// getauxval() is not available.
-	// TODO: Windows-specific checks?
+	// TODO: FreeBSD elf_aux_info()?
 #  if defined(RP_CPU_ARM64) || (defined(RP_CPU_ARM) && defined(_WIN32))
 	// ARM NEON is always available on arm64.
 	// Windows on ARM also always has NEON. (desktop Windows, e.g. Windows RT [Win8])
