@@ -20,8 +20,6 @@
 // NOTE: The _ex() functions take bits, not bytes.
 #include <arm_neon.h>
 
-#ifndef _MSC_VER
-
 // We want to force inlining here, even if building for debug.
 #if defined(__GNUC__)
 #  define RP_ARM_FORCEINLINE inline __attribute__((always_inline))
@@ -30,6 +28,8 @@
 #else
 #  define RP_ARM_FORCEINLINE inline
 #endif
+
+#ifndef _MSC_VER
 
 // for HINT_ALIGNED()
 #include "alignment_macros.h"
@@ -224,16 +224,16 @@ static RP_ARM_FORCEINLINE void vst1q_u32_x2(uint32_t *dest, uint32x4x2_t vec)
 	vst1q_u32(&dest[4], vec.val[1]);
 }
 
-static RP_ARM_FORCEINLINE uint32x3x3_t vld1q_u32_x3(const uint32_t *src)
+static RP_ARM_FORCEINLINE uint32x4x3_t vld1q_u32_x3(const uint32_t *src)
 {
-	uint32x3x3_t vec;
+	uint32x4x3_t vec;
 	vec.val[0] = vld1q_u32(&src[0]);
 	vec.val[1] = vld1q_u32(&src[4]);
 	vec.val[2] = vld1q_u32(&src[8]);
 	return vec;
 }
 
-static RP_ARM_FORCEINLINE void vst1q_u32_x3(uint32_t *dest, uint32x3x3_t vec)
+static RP_ARM_FORCEINLINE void vst1q_u32_x3(uint32_t *dest, uint32x4x3_t vec)
 {
 	vst1q_u32(&dest[0], vec.val[0]);
 	vst1q_u32(&dest[4], vec.val[1]);
