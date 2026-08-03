@@ -83,6 +83,26 @@ uint32_t RP_CPU_Flags_arm = 0;
 int RP_CPU_Flags_arm_IsInit = 0;	// 1 if RP_CPU_Flags_arm has been initialized.
 static pthread_once_t cpu_once_control = PTHREAD_ONCE_INIT;
 
+#ifdef __APPLE__
+#  include <sys/sysctl.h>
+#  include "stdboolx.h"
+/**
+ * Query a CPU feature using sysctlbyname().
+ * @param name CPU feature name
+ * @return True if supported; false if not.
+ */
+static bool mac_query_cpu_feature(const char *name)
+{
+	// Reference: https://zenn.dev/mod_poppo/articles/detect-processor-features-arm?locale=en
+	int result = 0;
+	size_t len = sizeof(result);
+	int ret = sysctlbyname(name, &result, &len, NULL, 0);
+	// sysctlbyname() returns 0 on success.
+	// result will then be 0 for not supported, non-zero for supported.
+	return (ret == 0) && (result != 0);
+}
+#endif /* __APPLE__ */
+
 /**
  * Initialize RP_CPU_Flags. (internal function)
  * Called by pthread_once().
@@ -188,6 +208,38 @@ static void RP_CPU_Flags_arm_Init_int(void)
 	}
 	if (IsProcessorFeaturePresent(PF_ARM_SVE2_1_INSTRUCTIONS_AVAILABLE)) {
 		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_SVE2P1;
+	}
+#elif defined(__APPLE__)
+	// macOS: Use sysctlbyname() via mac_query_cpu_feature().
+
+	// NEON instructions *must* be available on macOS for ARM.
+	assert(mac_query_cpu_feature("hw.optional.AdvSIMD") ||
+	       mac_query_cpu_feature("hw.optional.neon"));
+
+	typedef struct _MacARMFeature_tbl_t {
+		uint32_t value;
+		const char *name;
+	} MacARMFeature_tbl_t;
+	static const MacARMFeature_tbl_t MacARMFeature_tbl[] = {
+		{RP_CPUFLAG_ARM_NEON,	"hw.optional.AdvSIMD"},
+		{RP_CPUFLAG_ARM_NEON,	"hw.optional.neon"},		// deprecated
+		{RP_CPUFLAG_ARM_AES,	"hw.optional.arm.FEAT_AES"},
+		{RP_CPUFLAG_ARM_SHA1,	"hw.optional.arm.FEAT_SHA1"},
+		{RP_CPUFLAG_ARM_SHA2,	"hw.optional.arm.FEAT_SHA256"},
+		{RP_CPUFLAG_ARM_CRC32,	"hw.optional.armv8_crc32"},
+		{RP_CPUFLAG_ARM_SHA3,	"hw.optional.arm.FEAT_SHA3"},
+		{RP_CPUFLAG_ARM_SHA3,	"hw.optional.armv8_2_sha3"},	// deprecated
+		{RP_CPUFLAG_ARM_SHA512,	"hw.optional.arm.FEAT_SHA512"},
+		{RP_CPUFLAG_ARM_SHA512,	"hw.optional.armv8_2_sha512"},	// deprecated
+		// NOTE: Mac ARM CPUs don't support SVE, at least not yet...
+
+		{0, NULL}
+	};
+
+	for (const MacARMFeature_tbl_t *feature = MacARMFeature_tbl; feature->value != 0; feature++) {
+		if (mac_query_cpu_feature(feature->name)) {
+			RP_CPU_Flags_arm |= feature->value;
+		}
 	}
 #else
 	// TODO: FreeBSD elf_aux_info()?
