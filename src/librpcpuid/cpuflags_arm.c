@@ -12,7 +12,6 @@
 #if !defined(RP_CPU_ARM) && !defined(RP_CPU_ARM64)
 #  error Do not compile cpuflags_arm.c on non-ARM CPUs!
 #endif
-#include <stdio.h>
 
 #ifdef HAVE_GETAUXVAL
 #  include <sys/auxv.h>
