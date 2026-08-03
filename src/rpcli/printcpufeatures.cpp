@@ -37,6 +37,25 @@ using std::array;
 #include "rp-libfmt.h"
 
 /**
+ * Determine the actual length of a fixed-length string.
+ * This checks for the last non-whitespace character in the string.
+ * @param str String
+ * @param len Fixed length
+ * @return Actual length
+ */
+static size_t get_str_actual_len(const char *str, size_t len)
+{
+	for (; len > 0; len--) {
+		const char c = str[len-1];
+		if (c != ' ' && c != '\0') {
+			break;
+		}
+	}
+
+	return len;
+}
+
+/**
  * Print CPU features.
  * @return 0 on success; non-zero on error.
  */
@@ -83,13 +102,19 @@ int PrintCPUFeatures(void)
 
 	// TODO: Trim the strings?
 	if (RP_CPU_Info_x86.manufacturer_id.c[0] != '\0') {
-		Gsvt::StdOut.fputs(fmt::format(FRUN(C_("rpcli", "Manufacturer ID: {:s}")),
-			fmt::string_view(RP_CPU_Info_x86.manufacturer_id.c, sizeof(RP_CPU_Info_x86.manufacturer_id.c))));
+		const size_t len = get_str_actual_len(RP_CPU_Info_x86.manufacturer_id.c, sizeof(RP_CPU_Info_x86.manufacturer_id.c));
+		if (len > 0) {
+			Gsvt::StdOut.fputs(fmt::format(FRUN(C_("rpcli", "Manufacturer ID: {:s}")),
+				fmt::string_view(RP_CPU_Info_x86.manufacturer_id.c, len)));
+		}
 		Gsvt::StdOut.newline();
 	}
 	if (RP_CPU_Info_x86.brand_string.c[0] != '\0') {
-		Gsvt::StdOut.fputs(fmt::format(FRUN(C_("rpcli", "Brand String: {:s}")),
-			fmt::string_view(RP_CPU_Info_x86.brand_string.c, sizeof(RP_CPU_Info_x86.brand_string.c))));
+		const size_t len = get_str_actual_len(RP_CPU_Info_x86.brand_string.c, sizeof(RP_CPU_Info_x86.brand_string.c));
+		if (len > 0) {
+			Gsvt::StdOut.fputs(fmt::format(FRUN(C_("rpcli", "Brand String: {:s}")),
+				fmt::string_view(RP_CPU_Info_x86.brand_string.c, len)));
+		}
 		Gsvt::StdOut.newline();
 	}
 
