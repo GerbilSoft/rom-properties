@@ -146,7 +146,7 @@ int PrintCPUFeatures(void)
 
 	// TODO: Colorization, maybe?
 	Gsvt::StdOut.newline();
-	Gsvt::StdOut.fputs(C_("rpcli", "CPU Flags:"));
+	Gsvt::StdOut.fputs(C_("rpcli", "CPU flags:"));
 	if (cpu_flags != 0) {
 		Gsvt::StdOut.newline();
 
