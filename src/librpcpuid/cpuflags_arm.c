@@ -182,32 +182,29 @@ static void RP_CPU_Flags_arm_Init_int(void)
 	// NEON instructions *must* be available on desktop Windows for ARM.
 	assert(IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE));
 
-	if (IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE)) {
-		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_NEON;
-	}
-	if (IsProcessorFeaturePresent(PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE)) {
-		// NOTE: This covers AES, SHA-1, and SHA-2.
-		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_AES |
-		                    RP_CPUFLAG_ARM_SHA1 |
-		                    RP_CPUFLAG_ARM_SHA2;
-	}
-	if (IsProcessorFeaturePresent(PF_ARM_V8_CRC32_INSTRUCTIONS_AVAILABLE)) {
-		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_CRC32;
-	}
-	if (IsProcessorFeaturePresent(PF_ARM_SHA3_INSTRUCTIONS_AVAILABLE)) {
-		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_SHA3;
-	}
-	if (IsProcessorFeaturePresent(PF_ARM_SHA512_INSTRUCTIONS_AVAILABLE)) {
-		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_SHA512;
-	}
-	if (IsProcessorFeaturePresent(PF_ARM_SVE_INSTRUCTIONS_AVAILABLE)) {
-		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_SVE;
-	}
-	if (IsProcessorFeaturePresent(PF_ARM_SVE2_INSTRUCTIONS_AVAILABLE)) {
-		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_SVE2;
-	}
-	if (IsProcessorFeaturePresent(PF_ARM_SVE2_1_INSTRUCTIONS_AVAILABLE)) {
-		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_SVE2P1;
+	typedef struct _WindowsARMFeature_tbl_t {
+		uint32_t value;
+		uint32_t win_pf;
+	} WindowsARMFeature_tbl_t;
+	static const WindowsARMFeature_tbl_t WindowsARMFeature_tbl[] = {
+		{RP_CPUFLAG_ARM_NEON,	PF_ARM_NEON_INSTRUCTIONS_AVAILABLE},
+		{RP_CPUFLAG_ARM_AES,	PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE},	// this implies AES, SHA1, and SHA2
+		{RP_CPUFLAG_ARM_SHA1,	PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE},	// this implies AES, SHA1, and SHA2
+		{RP_CPUFLAG_ARM_SHA2,	PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE},	// this implies AES, SHA1, and SHA2
+		{RP_CPUFLAG_ARM_CRC32,	PF_ARM_V8_CRC32_INSTRUCTIONS_AVAILABLE},
+		{RP_CPUFLAG_ARM_SHA3,	PF_ARM_SHA3_INSTRUCTIONS_AVAILABLE},
+		{RP_CPUFLAG_ARM_SHA512,	PF_ARM_SHA512_INSTRUCTIONS_AVAILABLE},
+		{RP_CPUFLAG_ARM_SVE,	PF_ARM_SVE_INSTRUCTIONS_AVAILABLE},
+		{RP_CPUFLAG_ARM_SVE2,	PF_ARM_SVE2_INSTRUCTIONS_AVAILABLE},
+		{RP_CPUFLAG_ARM_SVE2P1,	PF_ARM_SVE2_1_INSTRUCTIONS_AVAILABLE},
+
+		{0, 0}
+	};
+
+	for (const WindowsARMFeature_tbl_t *feature = WindowsARMFeature_tbl; feature->value != 0; feature++) {
+		if (IsProcessorFeaturePresent(feature->win_pf)) {
+			RP_CPU_Flags_arm |= feature->value;
+		}
 	}
 #elif defined(__APPLE__)
 	// macOS: Use sysctlbyname() via mac_query_cpu_feature().
