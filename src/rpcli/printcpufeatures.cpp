@@ -153,7 +153,7 @@ int PrintCPUFeatures(void)
 	// ARM
 	RP_CPU_Flags_arm_Init();
 	cpu_flags = RP_CPU_Flags_arm;
-	static const array<cpu_flag_tbl_t, 8> cpu_flag_tbl = {{
+	static const array<cpu_flag_tbl_t, 11> cpu_flag_tbl = {{
 		{RP_CPUFLAG_ARM_NEON,   "NEON",   "NEON SIMD Extensions"},
 		{RP_CPUFLAG_ARM_AES,    "AES",    "Advanced Encryption Standard"},
 		{RP_CPUFLAG_ARM_SHA1,   "SHA1",   "Secure Hash Algorithm (SHA-1)"},
@@ -162,6 +162,9 @@ int PrintCPUFeatures(void)
 		{RP_CPUFLAG_ARM_SHA3,   "SHA3",   "Secure Hash Algorithm (SHA3-256)"},
 		{RP_CPUFLAG_ARM_SHA512, "SHA512", "Secure Hash Algorithm (SHA-512)"},
 		{RP_CPUFLAG_ARM_SVE,    "SVE",    "Scalable Vector Extensions"},
+		{RP_CPUFLAG_ARM_SVE2,   "SVE2",   "Scalable Vector Extensions 2"},
+		{RP_CPUFLAG_ARM_SVE2P1, "SVE2P1", "Scalable Vector Extensions 2.1"},
+		{RP_CPUFLAG_ARM_SVE2P2, "SVE2P2", "Scalable Vector Extensions 2.2"},
 	}};
 #else
 	// No CPU flags for this architecture...

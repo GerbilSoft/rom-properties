@@ -32,6 +32,9 @@ extern "C" {
 #define RP_CPUFLAG_ARM_SHA3		((uint32_t)(1U <<  5))
 #define RP_CPUFLAG_ARM_SHA512		((uint32_t)(1U <<  6))
 #define RP_CPUFLAG_ARM_SVE		((uint32_t)(1U <<  7))
+#define RP_CPUFLAG_ARM_SVE2		((uint32_t)(1U <<  8))
+#define RP_CPUFLAG_ARM_SVE2P1		((uint32_t)(1U <<  9))
+#define RP_CPUFLAG_ARM_SVE2P2		((uint32_t)(1U << 10))
 
 // Don't modify these!
 extern uint32_t RP_CPU_Flags_arm;

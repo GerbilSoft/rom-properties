@@ -17,6 +17,28 @@
 #ifdef HAVE_GETAUXVAL
 #  include <sys/auxv.h>
 #  include <asm/hwcap.h>
+
+// ARM64 HWCAPs defined after 2016 which may not be present in Ubuntu 16.04.
+#  ifdef RP_CPU_ARM64
+#    ifndef HWCAP_SHA3
+#      define HWCAP_SHA3	(1 << 17)
+#    endif
+#    ifndef HWCAP_SHA512
+#      define HWCAP_SHA512	(1 << 21)
+#    endif
+#    ifndef HWCAP_SVE
+#      define HWCAP_SVE		(1 << 22)
+#    endif
+#    ifndef HWCAP_SVE2P2
+#      define HWCAP_SVE2P2	(1UL << 41)
+#    endif
+#    ifndef HWCAP2_SVE2
+#      define HWCAP2_SVE2	(1 << 1)
+#    endif
+#    ifndef HWCAP2_SVE2P1
+#      define HWCAP2_SVE2P1	(1UL << 36)
+#    endif
+#  endif /* RP_CPU_ARM64 */
 #endif /* HAVE_GETAUXVAL */
 
 // pthread_once()
@@ -43,10 +65,7 @@ static void RP_CPU_Flags_arm_Init_int(void)
 
 	// Check HWCAP.
 	const unsigned long hwcap = getauxval(AT_HWCAP);
-#ifndef RP_CPU_ARM64
-	// Only needed for 32-bit ARM right now...
 	const unsigned long hwcap2 = getauxval(AT_HWCAP2);
-#endif /* !RP_CPU_ARM64 */
 
 #  ifdef RP_CPU_ARM64
 	// 64-bit ARM: HWCAP_ASIMD (NEON) must *always* be set.
@@ -76,6 +95,15 @@ static void RP_CPU_Flags_arm_Init_int(void)
 	if (hwcap & HWCAP_SVE) {
 		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_SVE;
 	}
+	if (hwcap2 & HWCAP2_SVE2) {
+		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_SVE2;
+	}
+	if (hwcap2 & HWCAP2_SVE2P1) {
+		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_SVE2P1;
+	}
+	if (hwcap & HWCAP_SVE2P2) {
+		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_SVE2P2;
+	}
 #  else /* RP_CPU_ARM */
 	if (hwcap & HWCAP_NEON) {
 		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_NEON;
@@ -93,7 +121,7 @@ static void RP_CPU_Flags_arm_Init_int(void)
 		RP_CPU_Flags_arm |= RP_CPUFLAG_ARM_CRC32;
 	}
 
-	// SHA-3, SHA-512, and SVE are not available on 32-bit.
+	// SHA-3, SHA-512, SVE, and SVE2 are not available on 32-bit.
 #  endif
 #else
 	// getauxval() is not available.
