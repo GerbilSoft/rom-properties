@@ -13,11 +13,9 @@
 #if defined(__i386__) || defined(__i386) || defined(_M_IX86)
 #  define RP_CPU_I386 1
 #  define RP_CPU_ARCH_NAME "i386"
-#elif defined(__x86_64__) || defined(__x86_64) || defined(__amd64__) || defined(__amd64) || defined(_M_X64) || defined(_M_AMD64)
-#  if !defined(_M_ARM64EC)
-#    define RP_CPU_AMD64 1
-#    define RP_CPU_ARCH_NAME "amd64"
-#  endif
+#elif !defined(_M_ARM64EC) && (defined(__x86_64__) || defined(__x86_64) || defined(__amd64__) || defined(__amd64) || defined(_M_X64) || defined(_M_AMD64))
+#  define RP_CPU_AMD64 1
+#  define RP_CPU_ARCH_NAME "amd64"
 #elif defined(__arm__) || defined(__thumb__) || defined(__arm) || defined(_ARM) || defined(_M_ARM)
 #  define RP_CPU_ARM 1
 #  define RP_CPU_ARCH_NAME "arm"
