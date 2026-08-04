@@ -14,7 +14,7 @@ CD /D "%~dp0\.."
 :: - Windows 10 SDK 10.0.19041.0 for 32-bit ARM
 :: - zip.exe and unzip.exe in %PATH%
 :: - Inno Setup 5 [for Windows XP/2003/Vista installation]
-:: - Inno Setup 6 [for Windows 7/8.x/10/11 installation]
+:: - Inno Setup 7 [for Windows 7/8.x/10/11 installation]
 ::
 :: Windows 10 SDK is required for 32-bit ARM.
 :: For ARM and ARM64 targets, MSVC 2019 is required.
@@ -56,7 +56,8 @@ SET CMAKE64_ARCH=
 
 SET MSVC_XP_VERSION=
 SET MSVC_XP_YEAR=
-SET CMAKE_XP_GENERATOR=
+SET CMAKE_XP32_GENERATOR=
+SET CMAKE_XP64_GENERATOR=
 SET CMAKE_XP_TOOLSET=
 
 :: Check for supported MSVC versions.
@@ -82,6 +83,8 @@ FOR %%I IN (2015.14) DO (
 		SET MSVC_XP_VERSION=!V!.0
 		SET MSVC_XP_YEAR=!YEAR!
 		SET CMAKE_XP_TOOLSET=v!V!0_xp
+		SET CMAKE_XP32_GENERATOR=!V! !YEAR!
+		SET CMAKE_XP64_GENERATOR=!V! !YEAR! Win64
 	)
 )
 
@@ -104,6 +107,8 @@ FOR %%I IN (Community Professional Enterprise) DO (
 		SET MSVC_XP_VERSION=14.16
 		SET MSVC_XP_YEAR=2017
 		SET CMAKE_XP_TOOLSET=v141_xp
+		SET CMAKE_XP32_GENERATOR=15 2017
+		SET CMAKE_XP64_GENERATOR=15 2017 Win64
 	)
 )
 
@@ -128,6 +133,8 @@ FOR %%I IN (Community Professional Enterprise) DO (
 		SET MSVC_XP_VERSION=14.16
 		SET MSVC_XP_YEAR=2019
 		SET CMAKE_XP_TOOLSET=v141_xp
+		SET CMAKE_XP32_GENERATOR=16 2019
+		SET CMAKE_XP64_GENERATOR=16 2019
 	)
 )
 
@@ -153,6 +160,8 @@ FOR %%I IN (Community Professional Enterprise) DO (
 		SET MSVC_XP_VERSION=14.16
 		SET MSVC_XP_YEAR=2022
 		SET CMAKE_XP_TOOLSET=v141_xp
+		SET CMAKE_XP32_GENERATOR=17 2022
+		SET CMAKE_XP64_GENERATOR=17 2022
 	)
 )
 
@@ -178,12 +187,15 @@ FOR %%I IN (Community Professional Enterprise) DO (
 		SET MSVC_XP_VERSION=14.16
 		SET MSVC_XP_YEAR=2022
 		SET CMAKE_XP_TOOLSET=v141_xp
+		SET CMAKE_XP32_GENERATOR=17 2022
+		SET CMAKE_XP64_GENERATOR=17 2022
 	)
 )
 
 :: MSVC 2026 [18.0]: Use the 2017 [14.1x] compiler for 32-bit in order to maintain WinXP compatibilty.
 :: Use MSVC 2022 v143 for 32-bit ARM, since MSVC 2026 no longer supports it.
 :: NOTE: MSVC 2022 switched to 64-bit Program Files
+:: NOTE: MSVC 2026 still has v141 but *not* v141_xp, so use MSVC 2022 for v141_xp.
 FOR %%I IN (Community Professional Enterprise) DO (
 	IF EXIST "%PrgFiles64%\Microsoft Visual Studio\18\%%I\VC\Tools\MSVC\14.51.36231\bin\HostX86\x86\cl.exe" (
 		SET "MSVC32_DIR=%PrgFiles64%\Microsoft Visual Studio\18\%%I\VC\Tools\MSVC\14.51.36231"
@@ -211,6 +223,8 @@ FOR %%I IN (Community Professional Enterprise) DO (
 		SET MSVC_XP_VERSION=14.16
 		SET MSVC_XP_YEAR=2026
 		SET CMAKE_XP_TOOLSET=v141_xp
+		SET CMAKE_XP32_GENERATOR=17 2022
+		SET CMAKE_XP64_GENERATOR=17 2022
 	)
 )
 
@@ -240,9 +254,9 @@ IF NOT EXIST "%ISCC5%" (
 	PAUSE
 	EXIT /B 1
 )
-SET "ISCC6=%PrgFiles32%\Inno Setup 6\ISCC.exe"
-IF NOT EXIST "%ISCC6%" (
-	ECHO *** ERROR: Inno Setup 6 was not found.
+SET "ISCC7=%PrgFiles64%\Inno Setup 7\ISCC.exe"
+IF NOT EXIST "%ISCC7%" (
+	ECHO *** ERROR: Inno Setup 7 was not found.
 	ECHO Get it at: https://jrsoftware.org/isdl.php
 	PAUSE
 	EXIT /B 1
@@ -386,7 +400,7 @@ MKDIR build.i386_xp
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 PUSHD build.i386_xp
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-cmake ..\.. -G "Visual Studio %CMAKE32_GENERATOR%" %CMAKE32_ARCH% ^
+cmake ..\.. -G "Visual Studio %CMAKE_XP32_GENERATOR%" %CMAKE32_ARCH% ^
 	-DCMAKE_GENERATOR_TOOLSET=%CMAKE_XP_TOOLSET% ^
 	-DCMAKE_BUILD_TYPE=Release ^
 	-DBUILD_TESTING=OFF ^
@@ -431,7 +445,7 @@ MKDIR build.amd64_xp
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 PUSHD build.amd64_xp
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-cmake ..\.. -G "Visual Studio %CMAKE64_GENERATOR%" %CMAKE64_ARCH% ^
+cmake ..\.. -G "Visual Studio %CMAKE_XP64_GENERATOR%" %CMAKE64_ARCH% ^
 	-DCMAKE_GENERATOR_TOOLSET=%CMAKE_XP_TOOLSET% ^
 	-DCMAKE_SYSTEM_VERSION=10.0 ^
 	-DCMAKE_BUILD_TYPE=Release ^
@@ -550,7 +564,7 @@ POPD
 CD /D "%~dp0"
 "%ISCC5%" setup5.iss /O..
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-"%ISCC6%" setup6.iss /O..
+"%ISCC7%" setup7.iss /O..
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 
 :doCombine
