@@ -13,11 +13,16 @@
 #  error Do not compile cpuflags_arm.c on non-ARM CPUs!
 #endif
 
-#ifdef HAVE_GETAUXVAL
+#if defined(HAVE_GETAUXVAL) || defined(HAVE_ELF_AUX_INFO)
 #  include <sys/auxv.h>
-#  include <asm/hwcap.h>
+#  if defined(__linux__)
+#    include <asm/hwcap.h>
+#  elif defined(__FreeBSD__)
+#    include <machine/elf.h>
+#  endif
 
 // ARM64 HWCAPs defined after 2016 which may not be present in Ubuntu 16.04.
+// NOTE: FreeBSD's ARM64 HWCAPs are intended to match Linux.
 #  ifdef RP_CPU_ARM64
 #    ifndef HWCAP_SHA3
 #      define HWCAP_SHA3	(1 << 17)
@@ -111,12 +116,27 @@ static void RP_CPU_Flags_arm_Init_int(void)
 {
 	RP_CPU_Flags_arm = 0;
 
-#if defined(HAVE_GETAUXVAL)
+#if defined(HAVE_GETAUXVAL) || defined(HAVE_ELF_AUX_INFO)
 	// glibc: Use getauxval() to get CPU information.
+	// FreeBSD: Use elf_aux_info() to get CPU information.
 
 	// Check HWCAP.
+#  if defined(HAVE_GETAUXVAL)
 	const unsigned long hwcap = getauxval(AT_HWCAP);
 	const unsigned long hwcap2 = getauxval(AT_HWCAP2);
+#  elif defined(HAVE_ELF_AUX_INFO)
+	unsigned long hwcap = 0, hwcap2 = 0;
+	if (elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap)) != 0) {
+		// Failed reading AT_HWCAP.
+		RP_CPU_Flags_arm_IsInit = 1;
+		return;
+	}
+	if (elf_aux_info(AT_HWCAP2, &hwcap2, sizeof(hwcap2)) != 0) {
+		// Failed reading AT_HWCAP2.
+		// We can still process AT_HWCAP.
+		hwcap2 = 0;
+	}
+#  endif
 
 #  ifdef RP_CPU_ARM64
 	// 64-bit ARM: HWCAP_ASIMD (NEON) must *always* be set.

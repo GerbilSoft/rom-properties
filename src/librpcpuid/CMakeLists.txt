@@ -20,6 +20,7 @@ int main(void) {
 	ENDIF(HAVE_INTRIN_H)
 ELSE(WIN32)
 	CHECK_SYMBOL_EXISTS(getauxval "sys/auxv.h" HAVE_GETAUXVAL)
+	CHECK_SYMBOL_EXISTS(elf_aux_info "sys/auxv.h" HAVE_ELF_AUX_INFO)
 ENDIF(WIN32)
 
 # for pthread_once()
