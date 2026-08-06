@@ -192,6 +192,7 @@ int PrintCPUFeatures(void)
 		Gsvt::StdOut.newline();
 	}
 
+	Gsvt::StdOut.newline();
 	Gsvt::StdOut.fflush();
 	return 0;
 }
