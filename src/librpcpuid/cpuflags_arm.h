@@ -24,17 +24,19 @@ extern "C" {
 
 // Set of CPU flags we check for right now.
 // More flags will be added if needed.
-#define RP_CPUFLAG_ARM_NEON		((uint32_t)(1U <<  0))
-#define RP_CPUFLAG_ARM_AES		((uint32_t)(1U <<  1))
-#define RP_CPUFLAG_ARM_SHA1		((uint32_t)(1U <<  2))
-#define RP_CPUFLAG_ARM_SHA2		((uint32_t)(1U <<  3))
-#define RP_CPUFLAG_ARM_CRC32		((uint32_t)(1U <<  4))
-#define RP_CPUFLAG_ARM_SHA3		((uint32_t)(1U <<  5))
-#define RP_CPUFLAG_ARM_SHA512		((uint32_t)(1U <<  6))
-#define RP_CPUFLAG_ARM_SVE		((uint32_t)(1U <<  7))
-#define RP_CPUFLAG_ARM_SVE2		((uint32_t)(1U <<  8))
-#define RP_CPUFLAG_ARM_SVE2P1		((uint32_t)(1U <<  9))
-#define RP_CPUFLAG_ARM_SVE2P2		((uint32_t)(1U << 10))
+typedef enum ATTR_FLAG_ENUM {
+	RP_CPUFLAG_ARM_NEON	= (1U <<  0),
+	RP_CPUFLAG_ARM_AES	= (1U <<  1),
+	RP_CPUFLAG_ARM_SHA1	= (1U <<  2),
+	RP_CPUFLAG_ARM_SHA2	= (1U <<  3),
+	RP_CPUFLAG_ARM_CRC32	= (1U <<  4),
+	RP_CPUFLAG_ARM_SHA3	= (1U <<  5),
+	RP_CPUFLAG_ARM_SHA512	= (1U <<  6),
+	RP_CPUFLAG_ARM_SVE	= (1U <<  7),
+	RP_CPUFLAG_ARM_SVE2	= (1U <<  8),
+	RP_CPUFLAG_ARM_SVE2P1	= (1U <<  9),
+	RP_CPUFLAG_ARM_SVE2P2	= (1U << 10),
+} RP_CPUFlag_ARM_e;
 
 // Don't modify these!
 extern uint32_t RP_CPU_Flags_arm;

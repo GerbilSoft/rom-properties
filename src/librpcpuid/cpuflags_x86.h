@@ -24,23 +24,25 @@ extern "C" {
 
 // Set of CPU flags we check for right now.
 // More flags will be added if needed.
-#define RP_CPUFLAG_x86_MMX		((uint32_t)(1U <<  0))
-#define RP_CPUFLAG_x86_SSE		((uint32_t)(1U <<  1))
-#define RP_CPUFLAG_x86_SSE2		((uint32_t)(1U <<  2))
-#define RP_CPUFLAG_x86_SSE3		((uint32_t)(1U <<  3))
-#define RP_CPUFLAG_x86_SSSE3		((uint32_t)(1U <<  4))
-#define RP_CPUFLAG_x86_SSE41		((uint32_t)(1U <<  5))
-#define RP_CPUFLAG_x86_SSE42		((uint32_t)(1U <<  6))
-#define RP_CPUFLAG_x86_AES		((uint32_t)(1U <<  7))
-#define RP_CPUFLAG_x86_AVX		((uint32_t)(1U <<  8))
-#define RP_CPUFLAG_x86_F16C		((uint32_t)(1U <<  9))
-#define RP_CPUFLAG_x86_FMA3		((uint32_t)(1U << 10))
-#define RP_CPUFLAG_x86_BMI1		((uint32_t)(1U << 11))
-#define RP_CPUFLAG_x86_AVX2		((uint32_t)(1U << 12))
-#define RP_CPUFLAG_x86_BMI2		((uint32_t)(1U << 13))
-#define RP_CPUFLAG_x86_SHA		((uint32_t)(1U << 14))
-#define RP_CPUFLAG_x86_SHA512		((uint32_t)(1U << 15))
-#define RP_CPUFLAG_x86_APX		((uint32_t)(1U << 16))
+typedef enum ATTR_FLAG_ENUM {
+	RP_CPUFLAG_x86_MMX	= (1U <<  0),
+	RP_CPUFLAG_x86_SSE	= (1U <<  1),
+	RP_CPUFLAG_x86_SSE2	= (1U <<  2),
+	RP_CPUFLAG_x86_SSE3	= (1U <<  3),
+	RP_CPUFLAG_x86_SSSE3	= (1U <<  4),
+	RP_CPUFLAG_x86_SSE41	= (1U <<  5),
+	RP_CPUFLAG_x86_SSE42	= (1U <<  6),
+	RP_CPUFLAG_x86_AES	= (1U <<  7),
+	RP_CPUFLAG_x86_AVX	= (1U <<  8),
+	RP_CPUFLAG_x86_F16C	= (1U <<  9),
+	RP_CPUFLAG_x86_FMA3	= (1U << 10),
+	RP_CPUFLAG_x86_BMI1	= (1U << 11),
+	RP_CPUFLAG_x86_AVX2	= (1U << 12),
+	RP_CPUFLAG_x86_BMI2	= (1U << 13),
+	RP_CPUFLAG_x86_SHA	= (1U << 14),
+	RP_CPUFLAG_x86_SHA512	= (1U << 15),
+	RP_CPUFLAG_x86_APX	= (1U << 16),
+} RP_CPUFlag_x86_e;
 
 // Don't modify these!
 extern uint32_t RP_CPU_Flags_x86;
