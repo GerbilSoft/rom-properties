@@ -38,7 +38,7 @@
 #  define SMD_ALWAYS_HAS_SSE2 1
 #endif
 #ifdef HAVE_ARM_NEON_H
-#  ifdef RP_CPU_ARM64
+#  if defined(_WIN32) || defined(RP_CPU_ARM64)
 #    define SMD_ALWAYS_HAS_NEON 1
 #  endif
 #endif
