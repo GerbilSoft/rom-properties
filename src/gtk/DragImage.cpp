@@ -220,7 +220,6 @@ struct _RpDragImageCxx {
 struct _RpDragImage {
 	super __parent__;
 	_RpDragImageCxx *cxx;	// C++ objects
-	PIMGTYPE curFrame;	// Current frame
 
 	// GtkImage (GTK2/GTK3) or GtkPicture (GTK4) child widget
 	GtkWidget *imageWidget;
@@ -311,9 +310,6 @@ rp_drag_image_dispose(GObject *object)
 {
 	RpDragImage *const image = RP_DRAG_IMAGE(object);
 
-	// Unreference the current frame if we still have it.
-	g_clear_pointer(&image->curFrame, PIMGTYPE_unref);
-
 	// Unregister the animation timer if it's set.
 	if (std::holds_alternative<_RpDragImageCxx::anim_vars_t>(image->cxx->imgData)) {
 		_RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(image->cxx->imgData);
@@ -388,8 +384,6 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 		return bRet;
 	}
 
-	g_clear_pointer(&image->curFrame, PIMGTYPE_unref);
-
 #if GTK_CHECK_VERSION(3, 0, 0)
 	// NOTE: In testing, the two sizes (minimum and natural) returned by
 	// gtk_widget_get_preferred_size() are both the same if
@@ -444,11 +438,11 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 		}
 
 		// Show the first frame.
-		image->curFrame = PIMGTYPE_ref(anim.iconFrames[iconAnimHelper.frameNumber()]);
+		PIMGTYPE frame0 = anim.iconFrames[iconAnimHelper.frameNumber()];
 #ifdef USE_GTK_PICTURE
-		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), GDK_PAINTABLE(image->curFrame));
+		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), GDK_PAINTABLE(frame0));
 #else /* !USE_GTK_PICTURE */
-		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), image->curFrame);
+		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), frame0);
 #endif /* USE_GTK_PICTURE */
 		bRet = true;
 	} else if (cxx->isNonAnim()) {
@@ -467,11 +461,10 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 		}
 		g_clear_pointer(&non_anim.pImg, PIMGTYPE_unref);
 		non_anim.pImg = img;
-		image->curFrame = PIMGTYPE_ref(img);
 #ifdef USE_GTK_PICTURE
-		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), GDK_PAINTABLE(image->curFrame));
+		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), GDK_PAINTABLE(non_anim.pImg));
 #else /* !USE_GTK_PICTURE */
-		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), image->curFrame);
+		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), non_anim.pImg);
 #endif /* USE_GTK_PICTURE */
 		bRet = true;
 	}
@@ -989,7 +982,21 @@ rp_drag_image_drag_source_drag_begin(GtkDragSource *source, GdkDrag *drag, RpDra
 	// Set the drag icon.
 	// NOTE: gtk_drag_source_set_icon() takes its own reference to the PIMGTYPE.
 	// TODO: Hotspot coordinates?
-	gtk_drag_source_set_icon(source, GDK_PAINTABLE(image->curFrame), 0, 0);
+	PIMGTYPE frame0 = nullptr;
+	const _RpDragImageCxx *const cxx = image->cxx;
+	if (cxx->isAnim()) {
+		const _RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(cxx->imgData);
+		// Get the first frame from the animation.
+		const int frame = anim.iconAnimData->seq_index[0];
+		frame0 = anim.iconFrames[frame];
+	} else {
+		const _RpDragImageCxx::non_anim_vars_t &non_anim = std::get<_RpDragImageCxx::non_anim_vars_t>(cxx->imgData);
+		frame0 = non_anim.pImg;
+	}
+
+	if (frame0) {
+		gtk_drag_source_set_icon(source, GDK_PAINTABLE(frame0), 0, 0);
+	}
 }
 
 static void
@@ -1014,7 +1021,18 @@ rp_drag_image_drag_begin(RpDragImage *image, GdkDragContext *context, gpointer u
 	// NOTE: Using gtk_drag_set_icon_PIMGTYPE() instead of gtk_drag_source_set_icon_pixbuf():
 	// - Setting source is done before dragging.
 	// - There's no source variant that takes a Cairo surface.
-	gtk_drag_set_icon_PIMGTYPE(context, image->curFrame);
+	PIMGTYPE frame0 = nullptr;
+	const _RpDragImageCxx *const cxx = image->cxx;
+	if (cxx->isAnim()) {
+		const _RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(cxx->imgData);
+		// Get the first frame from the animation.
+		const int frame = anim.iconAnimData->seq_index[0];
+		frame0 = anim.iconFrames[frame];
+	} else {
+		const _RpDragImageCxx::non_anim_vars_t &non_anim = std::get<_RpDragImageCxx::non_anim_vars_t>(cxx->imgData);
+		frame0 = non_anim.pImg;
+	}
+	gtk_drag_set_icon_PIMGTYPE(context, frame0);
 }
 
 static void
