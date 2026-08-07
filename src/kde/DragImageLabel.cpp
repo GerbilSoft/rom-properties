@@ -44,10 +44,12 @@ void DragImageLabel::setEcksBawks(bool newEcksBawks)
 {
 	m_ecksBawks = newEcksBawks;
 	setContextMenuPolicy(m_ecksBawks ? Qt::ActionsContextMenu : Qt::DefaultContextMenu);
-	if (!m_ecksBawks)
+	if (!m_ecksBawks) {
 		return;
-	if (!actions().isEmpty())
+	}
+	if (!actions().isEmpty()) {
 		return;
+	}
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	// Need to initialize Ecks Bawks actions.
@@ -69,9 +71,7 @@ void DragImageLabel::setEcksBawks(bool newEcksBawks)
 
 /**
  * Set the rp_image for this label.
- *
- * NOTE: If animated icon data is specified, that supercedes
- * the individual rp_image.
+ * This will replace any previously set rp_image or IconAnimData.
  *
  * @param img rp_image, or nullptr to clear.
  * @return True on success; false on error or if clearing.
@@ -81,14 +81,9 @@ bool DragImageLabel::setRpImage(const rp_image_const_ptr &img)
 	// NOTE: We're not checking if the image pointer matches the
 	// previously stored image, since the underlying image may
 	// have changed.
-
-	m_img = img;
+	m_imgData.emplace<non_anim_vars_t>(img);
 	if (!img) {
-		if (!m_anim || !m_anim->iconAnimData) {
-			this->clear();
-		} else {
-			return updatePixmaps();
-		}
+		this->clear();
 		return false;
 	}
 	return updatePixmaps();
@@ -96,35 +91,19 @@ bool DragImageLabel::setRpImage(const rp_image_const_ptr &img)
 
 /**
  * Set the icon animation data for this label.
- *
- * NOTE: If animated icon data is specified, that supercedes
- * the individual rp_image.
+ * This will replace any previously set rp_image or IconAnimData.
  *
  * @param iconAnimData IconAnimData, or nullptr to clear.
  * @return True on success; false on error or if clearing.
  */
 bool DragImageLabel::setIconAnimData(const IconAnimDataConstPtr &iconAnimData)
 {
-	if (!m_anim) {
-		m_anim.reset(new anim_vars());
-	}
-
 	// NOTE: We're not checking if the image pointer matches the
 	// previously stored image, since the underlying image may
 	// have changed.
-
-	m_anim->iconAnimData = iconAnimData;
+	m_imgData.emplace<anim_vars_t>(iconAnimData);
 	if (!iconAnimData) {
-		if (m_anim->tmrIconAnim) {
-			m_anim->tmrIconAnim->stop();
-		}
-		m_anim->anim_running = false;
-
-		if (!m_img) {
-			this->clear();
-		} else {
-			return updatePixmaps();
-		}
+		this->clear();
 		return false;
 	}
 	return updatePixmaps();
@@ -136,15 +115,7 @@ bool DragImageLabel::setIconAnimData(const IconAnimDataConstPtr &iconAnimData)
  */
 void DragImageLabel::clearRp(void)
 {
-	if (m_anim) {
-		if (m_anim->tmrIconAnim) {
-			m_anim->tmrIconAnim->stop();
-		}
-		m_anim->anim_running = false;
-		m_anim->iconAnimData.reset();
-	}
-
-	m_img.reset();
+	m_imgData.emplace<std::monostate>();
 	this->clear();
 }
 
@@ -184,56 +155,63 @@ QPixmap DragImageLabel::imgToPixmap(const QImage &img) const
  */
 bool DragImageLabel::updatePixmaps(void)
 {
-	if (m_anim && m_anim->iconAnimData) {
-		const IconAnimDataConstPtr &iconAnimData = m_anim->iconAnimData;
+	if (isAnim()) {
+		anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
+		const IconAnimDataConstPtr &iconAnimData = anim.iconAnimData;
 
 		// Convert the icons to QPixmaps.
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
 			const rp_image_ptr &frame = iconAnimData->frames[i];
 			if (frame && frame->isValid()) {
 				// NOTE: Allowing NULL frames here...
-				m_anim->iconFrames[i] = imgToPixmap(rpToQImage(frame));
+				anim.iconFrames[i] = imgToPixmap(rpToQImage(frame));
 			}
 		}
 
 		// Set up the IconAnimHelper.
-		IconAnimHelper &iconAnimHelper = m_anim->iconAnimHelper;
+		IconAnimHelper &iconAnimHelper = anim.iconAnimHelper;
 		iconAnimHelper.setIconAnimData(iconAnimData);
 		if (iconAnimHelper.isAnimated()) {
 			// Initialize the animation.
-			m_anim->last_frame_number = iconAnimHelper.frameNumber();
+			anim.last_frame_number = iconAnimHelper.frameNumber();
 			// Create the animation timer.
-			if (!m_anim->tmrIconAnim) {
-				m_anim->tmrIconAnim.reset(new QTimer(this));
-				m_anim->tmrIconAnim->setObjectName(QLatin1String("tmrIconAnim"));
-				m_anim->tmrIconAnim->setSingleShot(true);
+			if (!anim.tmrIconAnim) {
+				anim.tmrIconAnim.reset(new QTimer(this));
+				anim.tmrIconAnim->setObjectName(QLatin1String("tmrIconAnim"));
+				anim.tmrIconAnim->setSingleShot(true);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-				connect(m_anim->tmrIconAnim.get(), &QTimer::timeout,
+				connect(anim.tmrIconAnim.get(), &QTimer::timeout,
 					this, &DragImageLabel::tmrIconAnim_timeout);
 #else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
-				connect(m_anim->tmrIconAnim.get(), SIGNAL(timeout()),
+				connect(anim.tmrIconAnim.get(), SIGNAL(timeout()),
 					this, SLOT(tmrIconAnim_timeout()));
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 			}
 		}
 
 		// Show the first frame.
-		this->setPixmap(m_anim->iconFrames[m_anim->iconAnimHelper.frameNumber()]);
+		this->setPixmap(anim.iconFrames[anim.iconAnimHelper.frameNumber()]);
 		return true;
-	}
-
-	if (m_img && m_img->isValid()) {
-		// Single image.
+	} else if (isNonAnim()) {
+		// Single image
+		non_anim_vars_t &non_anim = std::get<non_anim_vars_t>(m_imgData);
 
 		// Convert the rp_image to a QImage.
-		const QImage qImg = rpToQImage(m_img);
+		QImage qImg = rpToQImage(non_anim.img);
 		if (qImg.isNull()) {
 			// Unable to convert the image.
 			return false;
 		}
 
+		// Convert the QImage to a QPixmap.
+		non_anim.qPixmap = imgToPixmap(qImg);
+		if (non_anim.qPixmap.isNull()) {
+			// Unable to convert the image.
+			return false;
+		}
+
 		// Image converted successfully.
-		this->setPixmap(imgToPixmap(qImg));
+		this->setPixmap(non_anim.qPixmap);
 		return true;
 	}
 
@@ -246,22 +224,23 @@ bool DragImageLabel::updatePixmaps(void)
  */
 void DragImageLabel::startAnimTimer(void)
 {
-	if (!m_anim) {
+	if (!isAnim()) {
 		// Not an animated icon.
 		return;
 	}
+	anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
 
 	// Sanity check: Timer should have been created already.
-	assert((bool)m_anim->tmrIconAnim);
+	assert((bool)anim.tmrIconAnim);
 
-	const IconAnimHelper &iconAnimHelper = m_anim->iconAnimHelper;
+	const IconAnimHelper &iconAnimHelper = anim.iconAnimHelper;
 	if (!iconAnimHelper.isAnimated()) {
 		// Not an animated icon.
 		return;
 	}
 
 	// Get the current frame information.
-	m_anim->last_frame_number = iconAnimHelper.frameNumber();
+	anim.last_frame_number = iconAnimHelper.frameNumber();
 	const int delay = iconAnimHelper.frameDelay();
 	assert(delay > 0);
 	if (delay <= 0) {
@@ -270,8 +249,8 @@ void DragImageLabel::startAnimTimer(void)
 	}
 
 	// Set a single-shot timer for the current frame.
-	m_anim->anim_running = true;
-	m_anim->tmrIconAnim->start(delay);
+	anim.anim_running = true;
+	anim.tmrIconAnim->start(delay);
 }
 
 /**
@@ -279,9 +258,12 @@ void DragImageLabel::startAnimTimer(void)
  */
 void DragImageLabel::stopAnimTimer(void)
 {
-	if (m_anim && m_anim->tmrIconAnim) {
-		m_anim->anim_running = false;
-		m_anim->tmrIconAnim->stop();
+	if (isAnim()) {
+		anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
+		if (anim.tmrIconAnim) {
+			anim.anim_running = false;
+			anim.tmrIconAnim->stop();
+		}
 	}
 }
 
@@ -290,30 +272,31 @@ void DragImageLabel::stopAnimTimer(void)
  */
 void DragImageLabel::tmrIconAnim_timeout(void)
 {
-	assert(m_anim != nullptr);
-	if (!m_anim) {
+	assert(isAnim());
+	if (!isAnim()) {
 		// Should not happen...
 		return;
 	}
+	anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
 
 	// Next frame.
 	int delay = 0;
-	const int frame = m_anim->iconAnimHelper.nextFrame(&delay);
+	const int frame = anim.iconAnimHelper.nextFrame(&delay);
 	if (delay <= 0 || frame < 0) {
 		// Invalid frame...
 		return;
 	}
 
-	if (frame != m_anim->last_frame_number) {
+	if (frame != anim.last_frame_number) {
 		// New frame number.
 		// Update the icon.
-		this->setPixmap(m_anim->iconFrames[frame]);
-		m_anim->last_frame_number = frame;
+		this->setPixmap(anim.iconFrames[frame]);
+		anim.last_frame_number = frame;
 	}
 
 	// Set the single-shot timer.
-	if (m_anim->anim_running) {
-		m_anim->tmrIconAnim->start(delay);
+	if (anim.anim_running) {
+		anim.tmrIconAnim->start(delay);
 	}
 }
 
@@ -321,31 +304,34 @@ void DragImageLabel::tmrIconAnim_timeout(void)
 
 void DragImageLabel::mousePressEvent(QMouseEvent *event)
 {
-	if (event->button() == Qt::LeftButton)
+	if (event->button() == Qt::LeftButton) {
 		m_dragStartPos = event->pos();
+	}
 
 	return super::mousePressEvent(event);
 }
 
 void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 {
-	if (!(event->buttons() & Qt::LeftButton))
+	if (!(event->buttons() & Qt::LeftButton)) {
 		return;
-	if ((event->pos() - m_dragStartPos).manhattanLength() < QApplication::startDragDistance())
+	}
+	if ((event->pos() - m_dragStartPos).manhattanLength() < QApplication::startDragDistance()) {
 		return;
-
-	const bool isAnimated = (m_anim && m_anim->iconAnimData && m_anim->iconAnimHelper.isAnimated());
+	}
 
 	shared_ptr<RpQByteArrayFile> pngData = std::make_shared<RpQByteArrayFile>();
 	unique_ptr<RpPngWriter> pngWriter;
-	if (isAnimated) {
-		// Animated icon.
-		pngWriter.reset(new RpPngWriter(pngData, m_anim->iconAnimData));
-	} else if (m_img) {
-		// Standard icon.
+	if (isAnim()) {
+		// Animated icon
+		const anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
+		pngWriter.reset(new RpPngWriter(pngData, anim.iconAnimData));
+	} else if (isNonAnim()) {
+		// Standard icon
 		// NOTE: Using the source image because we want the original
 		// size, not the resized version.
-		pngWriter.reset(new RpPngWriter(pngData, m_img));
+		const non_anim_vars_t &non_anim = std::get<non_anim_vars_t>(m_imgData);
+		pngWriter.reset(new RpPngWriter(pngData, non_anim.img));
 	} else {
 		// No icon...
 		return;
@@ -381,13 +367,21 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 	drag->setObjectName(QLatin1String("drag"));
 	drag->setMimeData(mimeData);
 
-	// Get the first frame and use it for the drag pixmap.
-	if (m_anim && m_anim->iconAnimHelper.isAnimated()) {
-		const int frame = m_anim->iconAnimData->seq_index[0];
-		if (!m_anim->iconFrames[frame].isNull()) {
-			drag->setPixmap(m_anim->iconFrames[frame]);
+	// Get drag pixmap.
+	bool dragPixmapSetFromAnim = false;
+	if (isAnim()) {
+		const anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
+		if (anim.iconAnimHelper.isAnimated()) {
+			// Get the first frame from the animation.
+			const int frame = anim.iconAnimData->seq_index[0];
+			if (!anim.iconFrames[frame].isNull()) {
+				drag->setPixmap(anim.iconFrames[frame]);
+				dragPixmapSetFromAnim = true;
+			}
 		}
-	} else {
+	}
+
+	if (!dragPixmapSetFromAnim) {
 		// Not animated. Use the QLabel pixmap directly.
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
 #  if defined(QT_DISABLE_DEPRECATED_BEFORE) && QT_DISABLE_DEPRECATED_BEFORE >= 0x050F00
