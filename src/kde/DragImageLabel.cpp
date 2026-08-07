@@ -110,7 +110,7 @@ bool DragImageLabel::setIconAnimData(const IconAnimDataConstPtr &iconAnimData)
 }
 
 /**
- * Clear the rp_image and iconAnimData.
+ * Clear the rp_image and/or iconAnimData.
  * This will stop the animation timer if it's running.
  */
 void DragImageLabel::clearRp(void)

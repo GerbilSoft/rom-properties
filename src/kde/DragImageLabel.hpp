@@ -94,7 +94,7 @@ public:
 	bool setIconAnimData(const LibRpBase::IconAnimDataConstPtr &iconAnimData);
 
 	/**
-	 * Clear the rp_image and iconAnimData.
+	 * Clear the rp_image and/or iconAnimData.
 	 * This will stop the animation timer if it's running.
 	 */
 	void clearRp(void);

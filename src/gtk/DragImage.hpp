@@ -60,7 +60,7 @@ bool rp_drag_image_set_icon_anim_data(RpDragImage *image, const LibRpBase::IconA
 #endif /* __cplusplus */
 
 /**
- * Clear the rp_image and iconAnimData.
+ * Clear the rp_image and/or iconAnimData.
  * This will stop the animation timer if it's running.
  * @param image RpDragImage
  */
