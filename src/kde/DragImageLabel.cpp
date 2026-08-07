@@ -165,6 +165,8 @@ bool DragImageLabel::updatePixmaps(void)
 			if (frame && frame->isValid()) {
 				// NOTE: Allowing NULL frames here...
 				anim.iconFrames[i] = imgToPixmap(rpToQImage(frame));
+			} else {
+				anim.iconFrames[i] = QPixmap();
 			}
 		}
 
