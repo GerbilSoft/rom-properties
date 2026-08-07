@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-07-31 23:58-0400\n"
-"PO-Revision-Date: 2026-08-01 05:19\n"
+"PO-Revision-Date: 2026-08-07 13:22\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -10684,12 +10684,12 @@ msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:609
 msgctxt "rpcli"
-msgid "Usage: rpcli [-cCdjkpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."
+msgid "Usage: rpcli [-cCdjkpPS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."
 msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:611
 msgctxt "rpcli"
-msgid "Usage: rpcli [-cCdjpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."
+msgid "Usage: rpcli [-cCdjpPS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."
 msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:624
