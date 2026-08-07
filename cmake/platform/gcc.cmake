@@ -62,7 +62,7 @@ FOREACH(FLAG_TEST ${CFLAGS_WERROR_C_ONLY})
 ENDFOREACH(FLAG_TEST)
 
 # Warnings for C++ only.
-SET(CXXFLAGS_WARNINGS_CXX_ONLY -Wnrvo -Wnoexcept-type -Wno-exceptions -Wsfinae-incomplete -Wstrict-null-sentinel)
+SET(CXXFLAGS_WARNINGS_CXX_ONLY -Wnrvo -Wnoexcept-type -Wno-exceptions -Wsfinae-incomplete -Wstrict-null-sentinel -Wdangling-reference)
 FOREACH(FLAG_TEST ${CXXFLAGS_WARNINGS_CXX_ONLY})
 	# CMake doesn't like certain characters in variable names.
 	STRING(REGEX REPLACE "/|:|=" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
