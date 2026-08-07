@@ -21,6 +21,7 @@ using namespace LibRpTexture;
 using std::array;
 using std::string;
 using std::unique_ptr;
+using std::vector;
 
 #ifdef HAVE_STD_VARIANT
 #  include <variant>
@@ -141,7 +142,7 @@ struct _RpDragImageCxx {
 	// Animated icon data
 	struct anim_vars_t {
 		IconAnimDataConstPtr iconAnimData;
-		array<PIMGTYPE, IconAnimData::MAX_FRAMES> iconFrames;
+		vector<PIMGTYPE> iconFrames;
 		IconAnimHelper iconAnimHelper;
 		guint tmrIconAnim;	// Timer ID
 		int last_delay;		// Last delay value.
@@ -156,25 +157,19 @@ struct _RpDragImageCxx {
 			: tmrIconAnim(0)
 			, last_delay(0)
 			, last_frame_number(0)
-		{
-			iconFrames.fill(nullptr);
-		}
+		{}
 		explicit anim_vars_t(const IconAnimDataConstPtr &iconAnimData)
 			: iconAnimData(iconAnimData)
 			, tmrIconAnim(0)
 			, last_delay(0)
 			, last_frame_number(0)
-		{
-			iconFrames.fill(nullptr);
-		}
+		{}
 		explicit anim_vars_t(IconAnimDataConstPtr &&iconAnimData)
 			: iconAnimData(iconAnimData)
 			, tmrIconAnim(0)
 			, last_delay(0)
 			, last_frame_number(0)
-		{
-			iconFrames.fill(nullptr);
-		}
+		{}
 
 		~anim_vars_t()
 		{
@@ -403,6 +398,24 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 		_RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(cxx->imgData);
 		const IconAnimDataConstPtr &iconAnimData = anim.iconAnimData;
 
+		assert(iconAnimData->count > 0);
+		assert(iconAnimData->count <= IconAnimData::MAX_FRAMES);
+		if (iconAnimData->count <= 0 || iconAnimData->count > IconAnimData::MAX_FRAMES) {
+			// Icon frame count is out of range...
+			for (PIMGTYPE frame : anim.iconFrames) {
+				if (frame) {
+					PIMGTYPE_unref(frame);
+				}
+			}
+			anim.iconFrames.clear();
+			return false;
+		}
+		// NOTE: Only increasing the vector size, not shrinking, because
+		// shrinking would require unreferencing PIMGTYPEs.
+		if (iconAnimData->count > static_cast<int>(anim.iconFrames.size())) {
+			anim.iconFrames.resize(iconAnimData->count);
+		}
+
 		// Convert the frames to PIMGTYPE.
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
 			// Remove the existing frame first.
@@ -438,12 +451,17 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 		}
 
 		// Show the first frame.
-		PIMGTYPE frame0 = anim.iconFrames[iconAnimHelper.frameNumber()];
+		const int frame = anim.iconAnimHelper.frameNumber();
+		assert(frame >= 0);
+		assert(frame < static_cast<int>(anim.iconFrames.size()));
+		if (frame >= 0 && frame < static_cast<int>(anim.iconFrames.size())) {
+			PIMGTYPE frame0 = anim.iconFrames[iconAnimHelper.frameNumber()];
 #ifdef USE_GTK_PICTURE
-		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), GDK_PAINTABLE(frame0));
+			gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), GDK_PAINTABLE(frame0));
 #else /* !USE_GTK_PICTURE */
-		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), frame0);
+			gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), frame0);
 #endif /* USE_GTK_PICTURE */
+		}
 		bRet = true;
 	} else if (cxx->isNonAnim()) {
 		// Single image
@@ -719,7 +737,7 @@ rp_drag_image_anim_timer_func(RpDragImage *image)
 	// Next frame.
 	int delay = 0;
 	const int frame = anim.iconAnimHelper.nextFrame(&delay);
-	if (delay <= 0 || frame < 0) {
+	if (delay <= 0 || frame < 0 || frame >= static_cast<int>(anim.iconFrames.size())) {
 		// Invalid frame...
 		anim.tmrIconAnim = 0;
 		return G_SOURCE_REMOVE;
@@ -984,7 +1002,9 @@ rp_drag_image_drag_source_drag_begin(GtkDragSource *source, GdkDrag *drag, RpDra
 		const _RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(cxx->imgData);
 		// Get the first frame from the animation.
 		const int frame = anim.iconAnimData->seq_index[0];
-		frame0 = anim.iconFrames[frame];
+		if (frame >= 0 && frame < static_cast<int>(anim.iconFrames.size())) {
+			frame0 = anim.iconFrames[frame];
+		}
 	} else {
 		const _RpDragImageCxx::non_anim_vars_t &non_anim = std::get<_RpDragImageCxx::non_anim_vars_t>(cxx->imgData);
 		frame0 = non_anim.pImg;

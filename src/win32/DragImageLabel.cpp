@@ -96,7 +96,7 @@ public:
 	// Animated icon data
 	struct anim_vars_t {
 		IconAnimDataConstPtr iconAnimData;
-		std::array<HBITMAP, IconAnimData::MAX_FRAMES> iconFrames;
+		std::vector<HBITMAP> iconFrames;
 		IconAnimHelper iconAnimHelper;
 		HWND m_hwndParent;
 		UINT_PTR animTimerID;
@@ -106,25 +106,19 @@ public:
 			: m_hwndParent(hwndParent)
 			, animTimerID(0)
 			, last_frame_number(0)
-		{
-			iconFrames.fill(nullptr);
-		}
+		{}
 		explicit anim_vars_t(HWND hwndParent, const IconAnimDataConstPtr &iconAnimData)
 			: m_hwndParent(hwndParent)
 			, iconAnimData(iconAnimData)
 			, animTimerID(0)
 			, last_frame_number(0)
-		{
-			iconFrames.fill(nullptr);
-		}
+		{}
 		explicit anim_vars_t(HWND hwndParent, IconAnimDataConstPtr &&iconAnimData)
 			: m_hwndParent(hwndParent)
 			, iconAnimData(iconAnimData)
 			, animTimerID(0)
 			, last_frame_number(0)
-		{
-			iconFrames.fill(nullptr);
-		}
+		{}
 
 		~anim_vars_t()
 		{
@@ -298,9 +292,34 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 		anim_vars_t &anim = std::get<anim_vars_t>(imgData);
 		const IconAnimDataConstPtr &iconAnimData = anim.iconAnimData;
 
+		assert(iconAnimData->count > 0);
+		assert(iconAnimData->count <= IconAnimData::MAX_FRAMES);
+		if (iconAnimData->count <= 0 || iconAnimData->count > IconAnimData::MAX_FRAMES) {
+			// Icon frame count is out of range...
+			for (HBITMAP hbmp : anim.iconFrames) {
+				if (hbmp) {
+					DeleteBitmap(hbmp);
+				}
+			}
+			anim.iconFrames.clear();
+			return false;
+		}
+		// NOTE: Only increasing the vector size, not shrinking, because
+		// shrinking would require deleting HBITMAPs.
+		if (iconAnimData->count > static_cast<int>(anim.iconFrames.size())) {
+			anim.iconFrames.resize(iconAnimData->count);
+		}
+
 		// Convert the icons to HBITMAP using the window background color.
 		// TODO: Rescale the icon. (port rescaleImage())
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
+			// Delete the existing HBITMAP first.
+			// COMMIT NOTE: Do this before the rest of the vectorization.
+			if (anim.iconFrames[i]) {
+				DeleteBitmap(anim.iconFrames[i]);
+				anim.iconFrames[i] = nullptr;
+			}
+
 			const rp_image_const_ptr &frame = iconAnimData->frames[i];
 			if (frame && frame->isValid()) {
 				if (actualSize.cx == 0) {
@@ -708,7 +727,12 @@ HBITMAP DragImageLabel::currentFrame(void) const
 	RP_D(const DragImageLabel);
 	if (d->isAnim()) {
 		const DragImageLabelPrivate::anim_vars_t &anim = std::get<DragImageLabelPrivate::anim_vars_t>(d->imgData);
-		return anim.iconFrames[anim.last_frame_number];
+		const int frame = anim.iconAnimHelper.frameNumber();
+		assert(frame >= 0);
+		assert(frame < static_cast<int>(anim.iconFrames.size()));
+		if (frame >= 0 && frame < static_cast<int>(anim.iconFrames.size())) {
+			return anim.iconFrames[anim.last_frame_number];
+		}
 	} else if (d->isNonAnim()) {
 		const DragImageLabelPrivate::non_anim_vars_t &non_anim = std::get<DragImageLabelPrivate::non_anim_vars_t>(d->imgData);
 		return non_anim.hbmpImg;

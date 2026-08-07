@@ -159,6 +159,15 @@ bool DragImageLabel::updatePixmaps(void)
 		anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
 		const IconAnimDataConstPtr &iconAnimData = anim.iconAnimData;
 
+		assert(iconAnimData->count > 0);
+		assert(iconAnimData->count <= IconAnimData::MAX_FRAMES);
+		if (iconAnimData->count <= 0 || iconAnimData->count > IconAnimData::MAX_FRAMES) {
+			// Icon frame count is out of range...
+			anim.iconFrames.clear();
+			return false;
+		}
+		anim.iconFrames.resize(iconAnimData->count);
+
 		// Convert the icons to QPixmaps.
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
 			const rp_image_ptr &frame = iconAnimData->frames[i];
@@ -192,7 +201,12 @@ bool DragImageLabel::updatePixmaps(void)
 		}
 
 		// Show the first frame.
-		this->setPixmap(anim.iconFrames[anim.iconAnimHelper.frameNumber()]);
+		const int frame = anim.iconAnimHelper.frameNumber();
+		assert(frame >= 0);
+		assert(frame < static_cast<int>(anim.iconFrames.size()));
+		if (frame >= 0 && frame < static_cast<int>(anim.iconFrames.size())) {
+			this->setPixmap(anim.iconFrames[frame]);
+		}
 		return true;
 	} else if (isNonAnim()) {
 		// Single image
@@ -284,7 +298,7 @@ void DragImageLabel::tmrIconAnim_timeout(void)
 	// Next frame.
 	int delay = 0;
 	const int frame = anim.iconAnimHelper.nextFrame(&delay);
-	if (delay <= 0 || frame < 0) {
+	if (delay <= 0 || frame < 0 || frame >= static_cast<int>(anim.iconFrames.size())) {
 		// Invalid frame...
 		return;
 	}
@@ -376,7 +390,9 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 		if (anim.iconAnimHelper.isAnimated()) {
 			// Get the first frame from the animation.
 			const int frame = anim.iconAnimData->seq_index[0];
-			if (!anim.iconFrames[frame].isNull()) {
+			if (frame >= 0 && frame < static_cast<int>(anim.iconFrames.size()) &&
+			    !anim.iconFrames[frame].isNull())
+			{
 				drag->setPixmap(anim.iconFrames[frame]);
 				dragPixmapSetFromAnim = true;
 			}

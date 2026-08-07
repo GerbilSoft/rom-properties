@@ -185,7 +185,7 @@ private:
 	// Animated icon data
 	struct anim_vars_t {
 		LibRpBase::IconAnimDataConstPtr iconAnimData;
-		std::array<QPixmap, LibRpBase::IconAnimData::MAX_FRAMES> iconFrames;
+		std::vector<QPixmap> iconFrames;
 		LibRpBase::IconAnimHelper iconAnimHelper;
 		std::unique_ptr<QTimer> tmrIconAnim;
 		int last_frame_number;		// Last frame number.
