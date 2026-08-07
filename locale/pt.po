@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-07-31 23:58-0400\n"
-"PO-Revision-Date: 2026-08-01 05:19\n"
+"PO-Revision-Date: 2026-08-07 13:22\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese, Brazilian\n"
 "Language: pt_BR\n"
@@ -10658,13 +10658,13 @@ msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:609
 msgctxt "rpcli"
-msgid "Usage: rpcli [-cCdjkpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."
-msgstr "Utilização: rpcli [-cCdjkpS] [-l lang] [[-xN arquivo de saída]... [-mN arquivo de saída]... [-a arquivo de saída apng] nome de arquivo]..."
+msgid "Usage: rpcli [-cCdjkpPS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."
+msgstr "Utilização: rpcli [-cCdjkpPS] [-l lang] [[-xN arquivo de saída]... [-mN arquivo de saída]... [-a arquivo de saída apng] nome de arquivo]..."
 
 #: ../src/rpcli/rpcli.cpp:611
 msgctxt "rpcli"
-msgid "Usage: rpcli [-cCdjpS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."
-msgstr "Utilização: rpcli [-cCdjpS] [-l lang] [[-xN arquivo de saída]... [-mN arquivo de saída]... [-a arquivo de saída apng] nome de arquivo]..."
+msgid "Usage: rpcli [-cCdjpPS] [-l lang] [[-xN outfile]... [-mN outfile]... [-a apngoutfile] filename]..."
+msgstr "Utilização: rpcli [-cCdjpPS] [-l lang] [[-xN arquivo de saída]... [-mN arquivo de saída]... [-a arquivo de saída apng] nome de arquivo]..."
 
 #: ../src/rpcli/rpcli.cpp:624
 msgctxt "rpcli"
