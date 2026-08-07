@@ -35,8 +35,19 @@ namespace Gdiplus {
 #include <comdef.h>
 #include <gdiplus.h>
 
-// C++ STL classes
-using std::unique_ptr;
+#ifdef HAVE_STD_VARIANT
+#  include <variant>
+#else /* !HAVE_STD_VARIANT */
+// std::variant<> is not available on this system.
+// Use mpark variant instead.
+#  include "mpark/variant.hpp"
+namespace std {
+	using mpark::variant;
+	using mpark::holds_alternative;
+	using mpark::get;
+	using mpark::monostate;
+}
+#endif /* HAVE_STD_VARIANT */
 
 class DragImageLabelPrivate
 {
@@ -57,12 +68,33 @@ public:
 
 	HMENU hMenuEcksBawks;
 
-	// rp_image
-	rp_image_const_ptr img;
-	HBITMAP hbmpImg;	// for non-animated only
+	// Non-animated icon data
+	struct non_anim_vars_t {
+		rp_image_const_ptr img;
+		HBITMAP hbmpImg;
+
+		explicit non_anim_vars_t()
+			: hbmpImg(nullptr)
+		{}
+		explicit non_anim_vars_t(const rp_image_const_ptr &img)
+			: img(img)
+			, hbmpImg(nullptr)
+		{}
+		explicit non_anim_vars_t(rp_image_const_ptr &&img)
+			: img(img)
+			, hbmpImg(nullptr)
+		{}
+
+		~non_anim_vars_t()
+		{
+			if (hbmpImg) {
+				DeleteBitmap(hbmpImg);
+			}
+		}
+	};
 
 	// Animated icon data
-	struct anim_vars {
+	struct anim_vars_t {
 		IconAnimDataConstPtr iconAnimData;
 		std::array<HBITMAP, IconAnimData::MAX_FRAMES> iconFrames;
 		IconAnimHelper iconAnimHelper;
@@ -70,14 +102,31 @@ public:
 		UINT_PTR animTimerID;
 		int last_frame_number;		// Last frame number.
 
-		explicit anim_vars(HWND hwndParent)
+		explicit anim_vars_t(HWND hwndParent)
 			: m_hwndParent(hwndParent)
 			, animTimerID(0)
 			, last_frame_number(0)
 		{
 			iconFrames.fill(nullptr);
 		}
-		~anim_vars()
+		explicit anim_vars_t(HWND hwndParent, const IconAnimDataConstPtr &iconAnimData)
+			: m_hwndParent(hwndParent)
+			, iconAnimData(iconAnimData)
+			, animTimerID(0)
+			, last_frame_number(0)
+		{
+			iconFrames.fill(nullptr);
+		}
+		explicit anim_vars_t(HWND hwndParent, IconAnimDataConstPtr &&iconAnimData)
+			: m_hwndParent(hwndParent)
+			, iconAnimData(iconAnimData)
+			, animTimerID(0)
+			, last_frame_number(0)
+		{
+			iconFrames.fill(nullptr);
+		}
+
+		~anim_vars_t()
 		{
 			if (animTimerID) {
 				KillTimer(m_hwndParent, animTimerID);
@@ -89,7 +138,27 @@ public:
 			}
 		}
 	};
-	unique_ptr<anim_vars> anim;
+
+	std::variant<std::monostate, non_anim_vars_t, anim_vars_t> imgData;
+
+	// Convenience functions to check both if the correct type is
+	// set in the variant and if the shared_ptr is not nullptr.
+	inline bool isAnim(void) const
+	{
+		if (std::holds_alternative<anim_vars_t>(imgData)) {
+			const anim_vars_t &anim = std::get<anim_vars_t>(imgData);
+			return static_cast<bool>(anim.iconAnimData);
+		}
+		return false;
+	}
+	inline bool isNonAnim(void) const
+	{
+		if (std::holds_alternative<non_anim_vars_t>(imgData)) {
+			const non_anim_vars_t &non_anim = std::get<non_anim_vars_t>(imgData);
+			return (non_anim.img && non_anim.img->isValid());
+		}
+		return false;
+	}
 
 	// Use nearest-neighbor scaling?
 	bool useNearestNeighbor;
@@ -131,8 +200,6 @@ public:
 DragImageLabelPrivate::DragImageLabelPrivate(HWND hwndParent)
 	: hwndParent(hwndParent)
 	, hMenuEcksBawks(nullptr)
-	, hbmpImg(nullptr)
-	, anim(nullptr)
 	, useNearestNeighbor(false)
 	, ecksBawks(false)
 {
@@ -153,10 +220,6 @@ DragImageLabelPrivate::DragImageLabelPrivate(HWND hwndParent)
 
 DragImageLabelPrivate::~DragImageLabelPrivate()
 {
-	if (hbmpImg) {
-		DeleteBitmap(hbmpImg);
-	}
-
 	if (hMenuEcksBawks) {
 		DestroyMenu(hMenuEcksBawks);
 	}
@@ -231,8 +294,9 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 	// Clear cx so we know if we got a valid icon size.
 	actualSize.cx = 0;
 
-	if (anim && anim->iconAnimData) {
-		const IconAnimDataConstPtr &iconAnimData = anim->iconAnimData;
+	if (isAnim()) {
+		anim_vars_t &anim = std::get<anim_vars_t>(imgData);
+		const IconAnimDataConstPtr &iconAnimData = anim.iconAnimData;
 
 		// Convert the icons to HBITMAP using the window background color.
 		// TODO: Rescale the icon. (port rescaleImage())
@@ -247,16 +311,16 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 				}
 
 				// NOTE: Allowing NULL frames here...
-				anim->iconFrames[i] = RpImageWin32::toHBITMAP(frame, gdipBgColor, actualSize, useNearestNeighbor);
+				anim.iconFrames[i] = RpImageWin32::toHBITMAP(frame, gdipBgColor, actualSize, useNearestNeighbor);
 			}
 		}
 
 		// Set up the IconAnimHelper.
-		IconAnimHelper &iconAnimHelper = anim->iconAnimHelper;
+		IconAnimHelper &iconAnimHelper = anim.iconAnimHelper;
 		iconAnimHelper.setIconAnimData(iconAnimData);
 		if (iconAnimHelper.isAnimated()) {
 			// Initialize the animation.
-			anim->last_frame_number = iconAnimHelper.frameNumber();
+			anim.last_frame_number = iconAnimHelper.frameNumber();
 
 			// Icon animation timer is set in startAnimTimer().
 		}
@@ -264,20 +328,21 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 		// Image data is valid.
 		updateRect();
 		bRet = true;
-	} else if (img && img->isValid()) {
+	} else if (isNonAnim()) {
 		// Single image.
 		// Convert to HBITMAP using the window background color.
 		// TODO: Rescale the icon. (port rescaleImage())
-		if (hbmpImg) {
-			DeleteBitmap(hbmpImg);
+		non_anim_vars_t &non_anim = std::get<non_anim_vars_t>(imgData);
+		if (non_anim.hbmpImg) {
+			DeleteBitmap(non_anim.hbmpImg);
 		}
 
 		// Get the icon size and rescale it, if necessary.
-		actualSize.cx = img->width();
-		actualSize.cy = img->height();
+		actualSize.cx = non_anim.img->width();
+		actualSize.cy = non_anim.img->height();
 		useNearestNeighbor = rescaleImage(requiredSize, actualSize);
 
-		hbmpImg = RpImageWin32::toHBITMAP(img, gdipBgColor, actualSize, useNearestNeighbor);
+		non_anim.hbmpImg = RpImageWin32::toHBITMAP(non_anim.img, gdipBgColor, actualSize, useNearestNeighbor);
 
 		// Image data is valid.
 		updateRect();
@@ -331,26 +396,27 @@ void CALLBACK DragImageLabelPrivate::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PT
 	// Sanity checks.
 	assert(d->hwndParent == hWnd);
 
-	assert(d->anim != nullptr);
-	if (!d->anim) {
+	assert(d->isAnim());
+	if (!d->isAnim()) {
 		// Should not happen...
 		return;
 	}
 
 	// Next frame.
+	DragImageLabelPrivate::anim_vars_t &anim = std::get<DragImageLabelPrivate::anim_vars_t>(d->imgData);
 	int delay = 0;
-	const int frame = d->anim->iconAnimHelper.nextFrame(&delay);
+	const int frame = anim.iconAnimHelper.nextFrame(&delay);
 	if (delay <= 0 || frame < 0) {
 		// Invalid frame...
 		KillTimer(hWnd, idEvent);
-		d->anim->animTimerID = 0;
+		anim.animTimerID = 0;
 		return;
 	}
 
-	if (frame != d->anim->last_frame_number) {
+	if (frame != anim.last_frame_number) {
 		// New frame number.
 		// Update the icon.
-		d->anim->last_frame_number = frame;
+		anim.last_frame_number = frame;
 		InvalidateRect(hWnd, &d->rect, false);
 	}
 
@@ -496,9 +562,7 @@ void DragImageLabel::tryPopupEcksBawks(LPARAM lParam)
 
 /**
  * Set the rp_image for this label.
- *
- * NOTE: If animated icon data is specified, that supercedes
- * the individual rp_image.
+ * This will replace any previously set rp_image or IconAnimData.
  *
  * @param img rp_image, or nullptr to clear.
  * @return True on success; false on error or if clearing.
@@ -508,18 +572,9 @@ bool DragImageLabel::setRpImage(const rp_image_const_ptr &img)
 	// NOTE: We're not checking if the image pointer matches the
 	// previously stored image, since the underlying image may
 	// have changed.
-
 	RP_D(DragImageLabel);
-	d->img = img;
+	d->imgData.emplace<DragImageLabelPrivate::non_anim_vars_t>(img);
 	if (!img) {
-		if (d->hbmpImg) {
-			DeleteBitmap(d->hbmpImg);
-			d->hbmpImg = nullptr;
-		}
-
-		if (d->anim && d->anim->iconAnimData) {
-			return d->updateBitmaps();
-		}
 		return false;
 	}
 	return d->updateBitmaps();
@@ -527,65 +582,32 @@ bool DragImageLabel::setRpImage(const rp_image_const_ptr &img)
 
 /**
  * Set the icon animation data for this label.
- *
- * NOTE: If animated icon data is specified, that supercedes
- * the individual rp_image.
+ * This will replace any previously set rp_image or IconAnimData.
  *
  * @param iconAnimData IconAnimData, or nullptr to clear.
  * @return True on success; false on error or if clearing.
  */
 bool DragImageLabel::setIconAnimData(const IconAnimDataConstPtr &iconAnimData)
 {
-	RP_D(DragImageLabel);
-
-	if (!d->anim) {
-		d->anim.reset(new DragImageLabelPrivate::anim_vars(d->hwndParent));
-	}
-	auto *const anim = d->anim.get();
-
 	// NOTE: We're not checking if the image pointer matches the
 	// previously stored image, since the underlying image may
 	// have changed.
-	anim->iconAnimData = iconAnimData;
+	RP_D(DragImageLabel);
+	d->imgData.emplace<DragImageLabelPrivate::anim_vars_t>(d->hwndParent, iconAnimData);
 	if (!iconAnimData) {
-		if (anim->animTimerID) {
-			KillTimer(d->hwndParent, anim->animTimerID);
-			anim->animTimerID = 0;
-		}
-
-		if (!d->img) {
-			if (d->hbmpImg) {
-				DeleteBitmap(d->hbmpImg);
-				d->hbmpImg = nullptr;
-			}
-		} else {
-			return d->updateBitmaps();
-		}
 		return false;
 	}
 	return d->updateBitmaps();
 }
 
 /**
- * Clear the rp_image and iconAnimData.
+ * Clear the rp_image and/or iconAnimData.
  * This will stop the animation timer if it's running.
  */
 void DragImageLabel::clearRp(void)
 {
 	RP_D(DragImageLabel);
-	if (d->anim) {
-		if (d->anim->animTimerID) {
-			KillTimer(d->hwndParent, d->anim->animTimerID);
-			d->anim->animTimerID = 0;
-		}
-		d->anim->iconAnimData.reset();
-	}
-
-	d->img.reset();
-	if (d->hbmpImg) {
-		DeleteBitmap(d->hbmpImg);
-		d->hbmpImg = nullptr;
-	}
+	d->imgData.emplace<std::monostate>();
 }
 
 /**
@@ -594,24 +616,25 @@ void DragImageLabel::clearRp(void)
 void DragImageLabel::startAnimTimer(void)
 {
 	RP_D(DragImageLabel);
-	if (!d->anim) {
+	if (!d->isAnim()) {
 		// Not an animated icon.
 		return;
 	}
 
-	const IconAnimHelper &iconAnimHelper = d->anim->iconAnimHelper;
+	DragImageLabelPrivate::anim_vars_t &anim = std::get<DragImageLabelPrivate::anim_vars_t>(d->imgData);
+	const IconAnimHelper &iconAnimHelper = anim.iconAnimHelper;
 	if (!iconAnimHelper.isAnimated()) {
 		// Not an animated icon.
 		return;
 	}
 
-	if (d->anim->animTimerID) {
+	if (anim.animTimerID) {
 		// Timer is already running.
 		return;
 	}
 
 	// Get the current frame information.
-	d->anim->last_frame_number = iconAnimHelper.frameNumber();
+	anim.last_frame_number = iconAnimHelper.frameNumber();
 	const int delay = iconAnimHelper.frameDelay();
 	assert(delay > 0);
 	if (delay <= 0) {
@@ -621,7 +644,7 @@ void DragImageLabel::startAnimTimer(void)
 
 	// Set a timer for the current frame.
 	// We're using the 'd' pointer as nIDEvent.
-	d->anim->animTimerID = SetTimer(d->hwndParent,
+	anim.animTimerID = SetTimer(d->hwndParent,
 		reinterpret_cast<UINT_PTR>(d),
 		delay, d->AnimTimerProc);
 }
@@ -632,9 +655,15 @@ void DragImageLabel::startAnimTimer(void)
 void DragImageLabel::stopAnimTimer(void)
 {
 	RP_D(DragImageLabel);
-	if (d->anim && d->anim->animTimerID) {
-		KillTimer(d->hwndParent, d->anim->animTimerID);
-		d->anim->animTimerID = 0;
+	if (!d->isAnim()) {
+		// Not an animated icon.
+		return;
+	}
+
+	DragImageLabelPrivate::anim_vars_t &anim = std::get<DragImageLabelPrivate::anim_vars_t>(d->imgData);
+	if (anim.animTimerID) {
+		KillTimer(d->hwndParent, anim.animTimerID);
+		anim.animTimerID = 0;
 	}
 }
 
@@ -645,7 +674,13 @@ void DragImageLabel::stopAnimTimer(void)
 bool DragImageLabel::isAnimTimerRunning(void) const
 {
 	RP_D(const DragImageLabel);
-	return (d->anim && d->anim->animTimerID);
+	if (!d->isAnim()) {
+		// Not an animated icon.
+		return false;
+	}
+
+	const DragImageLabelPrivate::anim_vars_t &anim = std::get<DragImageLabelPrivate::anim_vars_t>(d->imgData);
+	return (anim.animTimerID != 0);
 }
 
 /**
@@ -655,9 +690,13 @@ bool DragImageLabel::isAnimTimerRunning(void) const
 void DragImageLabel::resetAnimFrame(void)
 {
 	RP_D(DragImageLabel);
-	if (d->anim) {
-		d->anim->last_frame_number = 0;
+	if (!d->isAnim()) {
+		// Not an animated icon.
+		return;
 	}
+
+	DragImageLabelPrivate::anim_vars_t &anim = std::get<DragImageLabelPrivate::anim_vars_t>(d->imgData);
+	anim.last_frame_number = 0;
 }
 
 /**
@@ -667,10 +706,15 @@ void DragImageLabel::resetAnimFrame(void)
 HBITMAP DragImageLabel::currentFrame(void) const
 {
 	RP_D(const DragImageLabel);
-	if (d->anim && d->anim->iconAnimData) {
-		return d->anim->iconFrames[d->anim->last_frame_number];
+	if (d->isAnim()) {
+		const DragImageLabelPrivate::anim_vars_t &anim = std::get<DragImageLabelPrivate::anim_vars_t>(d->imgData);
+		return anim.iconFrames[anim.last_frame_number];
+	} else if (d->isNonAnim()) {
+		const DragImageLabelPrivate::non_anim_vars_t &non_anim = std::get<DragImageLabelPrivate::non_anim_vars_t>(d->imgData);
+		return non_anim.hbmpImg;
 	}
-	return d->hbmpImg;
+
+	return nullptr;
 }
 
 /**
