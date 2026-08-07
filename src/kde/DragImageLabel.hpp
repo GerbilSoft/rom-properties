@@ -19,6 +19,20 @@
 #include <array>
 #include <memory>
 
+#ifdef HAVE_STD_VARIANT
+#  include <variant>
+#else /* !HAVE_STD_VARIANT */
+// std::variant<> is not available on this system.
+// Use mpark variant instead.
+#  include "mpark/variant.hpp"
+namespace std {
+	using mpark::variant;
+	using mpark::holds_alternative;
+	using mpark::get;
+	using mpark::monostate;
+}
+#endif /* HAVE_STD_VARIANT */
+
 // Qt includes
 #include <QtCore/QTimer>
 #include <QLabel>
@@ -63,9 +77,7 @@ public:
 
 	/**
 	 * Set the rp_image for this label.
-	 *
-	 * NOTE: If animated icon data is specified, that supercedes
-	 * the individual rp_image.
+	 * This will replace any previously set rp_image or IconAnimData.
 	 *
 	 * @param img rp_image, or nullptr to clear.
 	 * @return True on success; false on error or if clearing.
@@ -74,9 +86,7 @@ public:
 
 	/**
 	 * Set the icon animation data for this label.
-	 *
-	 * NOTE: If animated icon data is specified, that supercedes
-	 * the individual rp_image.
+	 * This will replace any previously set rp_image or IconAnimData.
 	 *
 	 * @param iconAnimData IconAnimData, or nullptr to clear.
 	 * @return True on success; false on error or if clearing.
@@ -84,7 +94,7 @@ public:
 	bool setIconAnimData(const LibRpBase::IconAnimDataConstPtr &iconAnimData);
 
 	/**
-	 * Clear the rp_image and iconAnimData.
+	 * Clear the rp_image and/or iconAnimData.
 	 * This will stop the animation timer if it's running.
 	 */
 	void clearRp(void);
@@ -122,7 +132,11 @@ public:
 	 */
 	bool isAnimTimerRunning(void) const
 	{
-		return (m_anim && m_anim->anim_running);
+		if (!isAnim()) {
+			return false;
+		}
+		const anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
+		return anim.anim_running;
 	}
 
 	/**
@@ -131,8 +145,9 @@ public:
 	 */
 	void resetAnimFrame(void)
 	{
-		if (m_anim) {
-			m_anim->last_frame_number = 0;
+		if (isAnim()) {
+			anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
+			anim.last_frame_number = 0;
 		}
 	}
 
@@ -152,11 +167,23 @@ private:
 	QPoint m_dragStartPos;
 	bool m_ecksBawks;
 
-	// rp_image
-	LibRpTexture::rp_image_const_ptr m_img;
+	// Non-animated icon data
+	struct non_anim_vars_t {
+		LibRpTexture::rp_image_const_ptr img;
+		QPixmap qPixmap;
+
+		explicit non_anim_vars_t()
+		{}
+		explicit non_anim_vars_t(const LibRpTexture::rp_image_const_ptr &img)
+			: img(img)
+		{}
+		explicit non_anim_vars_t(LibRpTexture::rp_image_const_ptr &&img)
+			: img(img)
+		{}
+	};
 
 	// Animated icon data
-	struct anim_vars {
+	struct anim_vars_t {
 		LibRpBase::IconAnimDataConstPtr iconAnimData;
 		std::array<QPixmap, LibRpBase::IconAnimData::MAX_FRAMES> iconFrames;
 		LibRpBase::IconAnimHelper iconAnimHelper;
@@ -164,10 +191,40 @@ private:
 		int last_frame_number;		// Last frame number.
 		bool anim_running;		// Animation is running.
 
-		anim_vars()
+		explicit anim_vars_t()
 			: last_frame_number(0)
 			, anim_running(false)
 		{}
+		explicit anim_vars_t(const LibRpBase::IconAnimDataConstPtr &iconAnimData)
+			: iconAnimData(iconAnimData)
+			, last_frame_number(0)
+			, anim_running(false)
+		{}
+		explicit anim_vars_t(LibRpBase::IconAnimDataConstPtr &&iconAnimData)
+			: iconAnimData(iconAnimData)
+			, last_frame_number(0)
+			, anim_running(false)
+		{}
 	};
-	std::unique_ptr<anim_vars> m_anim;
+
+	std::variant<std::monostate, non_anim_vars_t, anim_vars_t> m_imgData;
+
+	// Convenience functions to check both if the correct type is
+	// set in the variant and if the shared_ptr is not nullptr.
+	inline bool isAnim(void) const
+	{
+		if (std::holds_alternative<anim_vars_t>(m_imgData)) {
+			const anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
+			return static_cast<bool>(anim.iconAnimData);
+		}
+		return false;
+	}
+	inline bool isNonAnim(void) const
+	{
+		if (std::holds_alternative<non_anim_vars_t>(m_imgData)) {
+			const non_anim_vars_t &non_anim = std::get<non_anim_vars_t>(m_imgData);
+			return (non_anim.img && non_anim.img->isValid());
+		}
+		return false;
+	}
 };

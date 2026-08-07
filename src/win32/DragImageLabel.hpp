@@ -39,9 +39,7 @@ public:
 
 	/**
 	 * Set the rp_image for this label.
-	 *
-	 * NOTE: If animated icon data is specified, that supercedes
-	 * the individual rp_image.
+	 * This will replace any previously set rp_image or IconAnimData.
 	 *
 	 * @param img rp_image, or nullptr to clear.
 	 * @return True on success; false on error or if clearing.
@@ -50,9 +48,7 @@ public:
 
 	/**
 	 * Set the icon animation data for this label.
-	 *
-	 * NOTE: If animated icon data is specified, that supercedes
-	 * the individual rp_image.
+	 * This will replace any previously set rp_image or IconAnimData.
 	 *
 	 * @param iconAnimData IconAnimData, or nullptr to clear.
 	 * @return True on success; false on error or if clearing.
@@ -60,7 +56,7 @@ public:
 	bool setIconAnimData(const LibRpBase::IconAnimDataConstPtr &iconAnimData);
 
 	/**
-	 * Clear the rp_image and iconAnimData.
+	 * Clear the rp_image and/or iconAnimData.
 	 * This will stop the animation timer if it's running.
 	 */
 	void clearRp(void);

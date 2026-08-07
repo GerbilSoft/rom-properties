@@ -39,9 +39,7 @@ G_END_DECLS
 
 /**
  * Set the rp_image for this RpDragImage.
- *
- * NOTE: If animated icon data is specified, that supercedes
- * the individual rp_image.
+ * This will replace any previously set rp_image or IconAnimData.
  *
  * @param image RpDragImage
  * @param img rp_image, or nullptr to clear.
@@ -51,9 +49,7 @@ bool rp_drag_image_set_rp_image(RpDragImage *image, const LibRpTexture::rp_image
 
 /**
  * Set the icon animation data for this RpDragImage.
- *
- * NOTE: If animated icon data is specified, that supercedes
- * the individual rp_image.
+ * This will replace any previously set rp_image or IconAnimData.
  *
  * @param image RpDragImage
  * @param iconAnimData IconAnimData, or nullptr to clear.
@@ -64,7 +60,7 @@ bool rp_drag_image_set_icon_anim_data(RpDragImage *image, const LibRpBase::IconA
 #endif /* __cplusplus */
 
 /**
- * Clear the rp_image and iconAnimData.
+ * Clear the rp_image and/or iconAnimData.
  * This will stop the animation timer if it's running.
  * @param image RpDragImage
  */

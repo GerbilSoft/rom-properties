@@ -22,6 +22,20 @@ using std::array;
 using std::string;
 using std::unique_ptr;
 
+#ifdef HAVE_STD_VARIANT
+#  include <variant>
+#else /* !HAVE_STD_VARIANT */
+// std::variant<> is not available on this system.
+// Use mpark variant instead.
+#  include "mpark/variant.hpp"
+namespace std {
+	using mpark::variant;
+	using mpark::holds_alternative;
+	using mpark::get;
+	using mpark::monostate;
+}
+#endif /* HAVE_STD_VARIANT */
+
 // libfmt
 #include "rp-libfmt.h"
 
@@ -85,9 +99,8 @@ struct _RpDragImageClass {
 // C++ objects
 struct _RpDragImageCxx {
 	_RpDragImageCxx()
-		: anim(nullptr)
 #if GTK_CHECK_VERSION(4, 0, 0)
-		, pngBytes(nullptr)
+		: pngBytes(nullptr)
 #endif /* GTK_CHECK_VERSION(4, 0, 0) */
 	{}
 
@@ -100,11 +113,33 @@ struct _RpDragImageCxx {
 #endif /* GTK_CHECK_VERSION(4, 0, 0) */
 	}
 
-	// rp_image (C++ shared_ptr)
-	rp_image_const_ptr img;
+	// Non-animated icon data
+	struct non_anim_vars_t {
+		rp_image_const_ptr img;
+		PIMGTYPE pImg;
+
+		explicit non_anim_vars_t()
+			: pImg(nullptr)
+		{}
+		explicit non_anim_vars_t(const rp_image_const_ptr &img)
+			: img(img)
+			, pImg(nullptr)
+		{}
+		explicit non_anim_vars_t(rp_image_const_ptr &&img)
+			: img(img)
+			, pImg(nullptr)
+		{}
+
+		~non_anim_vars_t()
+		{
+			if (pImg) {
+				PIMGTYPE_unref(pImg);
+			}
+		}
+	};
 
 	// Animated icon data
-	struct anim_vars {
+	struct anim_vars_t {
 		IconAnimDataConstPtr iconAnimData;
 		array<PIMGTYPE, IconAnimData::MAX_FRAMES> iconFrames;
 		IconAnimHelper iconAnimHelper;
@@ -117,14 +152,31 @@ struct _RpDragImageCxx {
 			g_clear_handle_id(&tmrIconAnim, g_source_remove);
 		}
 
-		anim_vars()
+		explicit anim_vars_t()
 			: tmrIconAnim(0)
 			, last_delay(0)
 			, last_frame_number(0)
 		{
 			iconFrames.fill(nullptr);
 		}
-		~anim_vars()
+		explicit anim_vars_t(const IconAnimDataConstPtr &iconAnimData)
+			: iconAnimData(iconAnimData)
+			, tmrIconAnim(0)
+			, last_delay(0)
+			, last_frame_number(0)
+		{
+			iconFrames.fill(nullptr);
+		}
+		explicit anim_vars_t(IconAnimDataConstPtr &&iconAnimData)
+			: iconAnimData(iconAnimData)
+			, tmrIconAnim(0)
+			, last_delay(0)
+			, last_frame_number(0)
+		{
+			iconFrames.fill(nullptr);
+		}
+
+		~anim_vars_t()
 		{
 			g_clear_handle_id(&tmrIconAnim, g_source_remove);
 
@@ -135,7 +187,27 @@ struct _RpDragImageCxx {
 			}
 		}
 	};
-	unique_ptr<anim_vars> anim;
+
+	std::variant<std::monostate, non_anim_vars_t, anim_vars_t> imgData;
+
+	// Convenience functions to check both if the correct type is
+	// set in the variant and if the shared_ptr is not nullptr.
+	inline bool isAnim(void) const
+	{
+		if (std::holds_alternative<anim_vars_t>(imgData)) {
+			const anim_vars_t &anim = std::get<anim_vars_t>(imgData);
+			return static_cast<bool>(anim.iconAnimData);
+		}
+		return false;
+	}
+	inline bool isNonAnim(void) const
+	{
+		if (std::holds_alternative<non_anim_vars_t>(imgData)) {
+			const non_anim_vars_t &non_anim = std::get<non_anim_vars_t>(imgData);
+			return (non_anim.img && non_anim.img->isValid());
+		}
+		return false;
+	}
 
 #if GTK_CHECK_VERSION(4, 0, 0)
 	// Temporary buffer for PNG data when dragging and dropping images.
@@ -148,7 +220,6 @@ struct _RpDragImageCxx {
 struct _RpDragImage {
 	super __parent__;
 	_RpDragImageCxx *cxx;	// C++ objects
-	PIMGTYPE curFrame;	// Current frame
 
 	// GtkImage (GTK2/GTK3) or GtkPicture (GTK4) child widget
 	GtkWidget *imageWidget;
@@ -239,12 +310,10 @@ rp_drag_image_dispose(GObject *object)
 {
 	RpDragImage *const image = RP_DRAG_IMAGE(object);
 
-	// Unreference the current frame if we still have it.
-	g_clear_pointer(&image->curFrame, PIMGTYPE_unref);
-
 	// Unregister the animation timer if it's set.
-	if (image->cxx->anim) {
-		image->cxx->anim->unregister_timer();
+	if (std::holds_alternative<_RpDragImageCxx::anim_vars_t>(image->cxx->imgData)) {
+		_RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(image->cxx->imgData);
+		anim.unregister_timer();
 	}
 
 #ifdef USE_G_MENU_MODEL
@@ -298,7 +367,6 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 {
 	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
 	_RpDragImageCxx *const cxx = image->cxx;
-	auto *const anim = cxx->anim.get();
 	bool bRet = false;
 
 	if (!gtk_widget_get_mapped(GTK_WIDGET(image))) {
@@ -308,15 +376,13 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 		image->dirty = true;
 
 		// Return a value similar to the rest of the function.
-		if (anim && anim->iconAnimData) {
+		if (cxx->isAnim()) {
 			bRet = true;
-		} else if (cxx->img && cxx->img->isValid()) {
+		} else if (cxx->isNonAnim()) {
 			bRet = true;
 		}
 		return bRet;
 	}
-
-	g_clear_pointer(&image->curFrame, PIMGTYPE_unref);
 
 #if GTK_CHECK_VERSION(3, 0, 0)
 	// NOTE: In testing, the two sizes (minimum and natural) returned by
@@ -333,13 +399,14 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 
 	// FIXME: Transparency isn't working for e.g. GALE01.gci.
 	// (Super Smash Bros. Melee)
-	if (anim && anim->iconAnimData) {
-		const IconAnimDataConstPtr &iconAnimData = anim->iconAnimData;
+	if (cxx->isAnim()) {
+		_RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(cxx->imgData);
+		const IconAnimDataConstPtr &iconAnimData = anim.iconAnimData;
 
 		// Convert the frames to PIMGTYPE.
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
 			// Remove the existing frame first.
-			g_clear_pointer(&anim->iconFrames[i], PIMGTYPE_unref);
+			g_clear_pointer(&anim.iconFrames[i], PIMGTYPE_unref);
 
 			const rp_image_const_ptr &frame = iconAnimData->frames[i];
 			if (frame && frame->isValid()) {
@@ -356,32 +423,33 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 						img = scale_img;
 					}
 				}
-				anim->iconFrames[i] = img;
+				anim.iconFrames[i] = img;
 			}
 		}
 
 		// Set up the IconAnimHelper.
-		IconAnimHelper &iconAnimHelper = anim->iconAnimHelper;
+		IconAnimHelper &iconAnimHelper = anim.iconAnimHelper;
 		iconAnimHelper.setIconAnimData(iconAnimData);
 		if (iconAnimHelper.isAnimated()) {
 			// Initialize the animation.
-			anim->last_frame_number = iconAnimHelper.frameNumber();
+			anim.last_frame_number = iconAnimHelper.frameNumber();
 
 			// Animation timer will be set up when animation is started.
 		}
 
 		// Show the first frame.
-		image->curFrame = PIMGTYPE_ref(anim->iconFrames[iconAnimHelper.frameNumber()]);
+		PIMGTYPE frame0 = anim.iconFrames[iconAnimHelper.frameNumber()];
 #ifdef USE_GTK_PICTURE
-		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), GDK_PAINTABLE(image->curFrame));
+		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), GDK_PAINTABLE(frame0));
 #else /* !USE_GTK_PICTURE */
-		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), image->curFrame);
+		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), frame0);
 #endif /* USE_GTK_PICTURE */
 		bRet = true;
-	} else if (cxx->img && cxx->img->isValid()) {
-		// Single image.
-		PIMGTYPE img = rp_image_to_PIMGTYPE(cxx->img);
-		if (img && doRescaleIfNeeded && (cxx->img->width() != req_sz.width || cxx->img->height() != req_sz.height)) {
+	} else if (cxx->isNonAnim()) {
+		// Single image
+		_RpDragImageCxx::non_anim_vars_t &non_anim = std::get<_RpDragImageCxx::non_anim_vars_t>(cxx->imgData);
+		PIMGTYPE img = rp_image_to_PIMGTYPE(non_anim.img);
+		if (img && doRescaleIfNeeded && (non_anim.img->width() != req_sz.width || non_anim.img->height() != req_sz.height)) {
 			// Need to rescale the image.
 			// TODO: Verify High-DPI.
 			// TODO: Nearest-neighbor scaling?
@@ -391,11 +459,12 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 				img = scale_img;
 			}
 		}
-		image->curFrame = img;
+		g_clear_pointer(&non_anim.pImg, PIMGTYPE_unref);
+		non_anim.pImg = img;
 #ifdef USE_GTK_PICTURE
-		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), GDK_PAINTABLE(image->curFrame));
+		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), GDK_PAINTABLE(non_anim.pImg));
 #else /* !USE_GTK_PICTURE */
-		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), image->curFrame);
+		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), non_anim.pImg);
 #endif /* USE_GTK_PICTURE */
 		bRet = true;
 	}
@@ -554,9 +623,7 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 
 /**
  * Set the rp_image for this RpDragImage.
- *
- * NOTE: If animated icon data is specified, that supercedes
- * the individual rp_image.
+ * This will replace any previously set rp_image or IconAnimData.
  *
  * @param image RpDragImage
  * @param img rp_image, or nullptr to clear.
@@ -571,18 +638,13 @@ rp_drag_image_set_rp_image(RpDragImage *image, const rp_image_const_ptr &img)
 	// NOTE: We're not checking if the image pointer matches the
 	// previously stored image, since the underlying image may
 	// have changed.
-
-	cxx->img = img;
+	cxx->imgData.emplace<_RpDragImageCxx::non_anim_vars_t>(img);
 	if (!img) {
-		if (!cxx->anim || !cxx->anim->iconAnimData) {
 #ifdef USE_GTK_PICTURE
-			gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), nullptr);
+		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), nullptr);
 #else /* !USE_GTK_PICTURE */
-			gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), nullptr);
+		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), nullptr);
 #endif /* USE_GTK_PICTURE */
-		} else {
-			return rp_drag_image_update_pixmaps(image);
-		}
 		return false;
 	}
 	return rp_drag_image_update_pixmaps(image);
@@ -590,9 +652,7 @@ rp_drag_image_set_rp_image(RpDragImage *image, const rp_image_const_ptr &img)
 
 /**
  * Set the icon animation data for this RpDragImage.
- *
- * NOTE: If animated icon data is specified, that supercedes
- * the individual rp_image.
+ * This will replace any previously set rp_image or IconAnimData.
  *
  * @param image RpDragImage
  * @param iconAnimData IconAnimData, or nullptr to clear.
@@ -604,35 +664,23 @@ rp_drag_image_set_icon_anim_data(RpDragImage *image, const IconAnimDataConstPtr 
 	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
 	_RpDragImageCxx *const cxx = image->cxx;
 
-	if (!cxx->anim) {
-		cxx->anim.reset(new _RpDragImageCxx::anim_vars());
-	}
-	auto *const anim = cxx->anim.get();
-
 	// NOTE: We're not checking if the image pointer matches the
 	// previously stored image, since the underlying image may
 	// have changed.
-
-	anim->iconAnimData = iconAnimData;
+	cxx->imgData.emplace<_RpDragImageCxx::anim_vars_t>(iconAnimData);
 	if (!iconAnimData) {
-		g_clear_handle_id(&anim->tmrIconAnim, g_source_remove);
-
-		if (!cxx->img) {
 #ifdef USE_GTK_PICTURE
-			gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), nullptr);
+		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), nullptr);
 #else /* !USE_GTK_PICTURE */
-			gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), nullptr);
+		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), nullptr);
 #endif /* USE_GTK_PICTURE */
-		} else {
-			return rp_drag_image_update_pixmaps(image);
-		}
 		return false;
 	}
 	return rp_drag_image_update_pixmaps(image);
 }
 
 /**
- * Clear the rp_image and iconAnimData.
+ * Clear the rp_image and/or iconAnimData.
  * This will stop the animation timer if it's running.
  * @param image RpDragImage
  */
@@ -642,13 +690,7 @@ rp_drag_image_clear(RpDragImage *image)
 	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
 	_RpDragImageCxx *const cxx = image->cxx;
 
-	auto *const anim = cxx->anim.get();
-	if (anim) {
-		g_clear_handle_id(&anim->tmrIconAnim, g_source_remove);
-		anim->iconAnimData.reset();
-	}
-
-	cxx->img.reset();
+	cxx->imgData.emplace<std::monostate>();
 #ifdef USE_GTK_PICTURE
 	gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), nullptr);
 #else /* !USE_GTK_PICTURE */
@@ -665,38 +707,39 @@ static gboolean
 rp_drag_image_anim_timer_func(RpDragImage *image)
 {
 	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
-	auto *const anim = image->cxx->anim.get();
-	g_return_val_if_fail(anim != nullptr, false);
+	_RpDragImageCxx *const cxx = image->cxx;
+	g_return_val_if_fail(cxx->isAnim(), false);
 
-	if (anim->tmrIconAnim == 0) {
+	_RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(cxx->imgData);
+	if (anim.tmrIconAnim == 0) {
 		// Shutting down...
 		return G_SOURCE_REMOVE;
 	}
 
 	// Next frame.
 	int delay = 0;
-	const int frame = anim->iconAnimHelper.nextFrame(&delay);
+	const int frame = anim.iconAnimHelper.nextFrame(&delay);
 	if (delay <= 0 || frame < 0) {
 		// Invalid frame...
-		anim->tmrIconAnim = 0;
+		anim.tmrIconAnim = 0;
 		return G_SOURCE_REMOVE;
 	}
 
-	if (frame != anim->last_frame_number) {
+	if (frame != anim.last_frame_number) {
 		// New frame number.
 		// Update the icon.
 #ifdef USE_GTK_PICTURE
-		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), GDK_PAINTABLE(anim->iconFrames[frame]));
+		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), GDK_PAINTABLE(anim.iconFrames[frame]));
 #else /* !USE_GTK_PICTURE */
-		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), anim->iconFrames[frame]);
+		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), anim.iconFrames[frame]);
 #endif /* USE_GTK_PICTURE */
-		anim->last_frame_number = frame;
+		anim.last_frame_number = frame;
 	}
 
-	if (anim->last_delay != delay) {
+	if (anim.last_delay != delay) {
 		// Set a new timer and unset the current one.
-		anim->last_delay = delay;
-		anim->tmrIconAnim = g_timeout_add(delay,
+		anim.last_delay = delay;
+		anim.tmrIconAnim = g_timeout_add(delay,
 			G_SOURCE_FUNC(rp_drag_image_anim_timer_func), image);
 		return G_SOURCE_REMOVE;
 	}
@@ -713,21 +756,21 @@ void
 rp_drag_image_start_anim_timer(RpDragImage *image)
 {
 	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
-
-	auto *const anim = image->cxx->anim.get();
-	if (!anim) {
+	_RpDragImageCxx *const cxx = image->cxx;
+	if (!cxx->isAnim()) {
 		// Not an animated icon.
 		return;
 	}
 
-	const IconAnimHelper &iconAnimHelper = anim->iconAnimHelper;
-	if (!anim->iconAnimHelper.isAnimated()) {
+	_RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(cxx->imgData);
+	const IconAnimHelper &iconAnimHelper = anim.iconAnimHelper;
+	if (!iconAnimHelper.isAnimated()) {
 		// Not an animated icon.
 		return;
 	}
 
 	// Get the current frame information.
-	anim->last_frame_number = iconAnimHelper.frameNumber();
+	anim.last_frame_number = iconAnimHelper.frameNumber();
 	const int delay = iconAnimHelper.frameDelay();
 	assert(delay > 0);
 	if (delay <= 0) {
@@ -739,8 +782,8 @@ rp_drag_image_start_anim_timer(RpDragImage *image)
 	rp_drag_image_stop_anim_timer(image);
 
 	// Set a single-shot timer for the current frame.
-	anim->last_delay = delay;
-	anim->tmrIconAnim = g_timeout_add(delay,
+	anim.last_delay = delay;
+	anim.tmrIconAnim = g_timeout_add(delay,
 		G_SOURCE_FUNC(rp_drag_image_anim_timer_func), image);
 }
 
@@ -752,12 +795,15 @@ void
 rp_drag_image_stop_anim_timer(RpDragImage *image)
 {
 	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
-
-	auto *const anim = image->cxx->anim.get();
-	if (anim) {
-		g_clear_handle_id(&anim->tmrIconAnim, g_source_remove);
-		anim->last_delay = 0;
+	_RpDragImageCxx *const cxx = image->cxx;
+	if (!cxx->isAnim()) {
+		// Not an animated icon.
+		return;
 	}
+
+	_RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(cxx->imgData);
+	g_clear_handle_id(&anim.tmrIconAnim, g_source_remove);
+	anim.last_delay = 0;
 }
 
 /**
@@ -769,8 +815,14 @@ bool
 rp_drag_image_is_anim_timer_running(RpDragImage *image)
 {
 	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
-	auto *const anim = image->cxx->anim.get();
-	return (anim && (anim->tmrIconAnim != 0));
+	const _RpDragImageCxx *const cxx = image->cxx;
+	if (!cxx->isAnim()) {
+		// Not an animated icon.
+		return false;
+	}
+
+	const _RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(cxx->imgData);
+	return (anim.tmrIconAnim != 0);
 }
 
 /**
@@ -782,11 +834,14 @@ void
 rp_drag_image_reset_anim_frame(RpDragImage *image)
 {
 	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
-
-	auto *const anim = image->cxx->anim.get();
-	if (anim) {
-		anim->last_frame_number = 0;
+	_RpDragImageCxx *const cxx = image->cxx;
+	if (!cxx->isAnim()) {
+		// Not an animated icon.
+		return;
 	}
+
+	_RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(cxx->imgData);
+	anim.last_frame_number = 0;
 }
 
 /** Signal handlers **/
@@ -839,20 +894,19 @@ static VectorFilePtr
 rp_drag_image_create_PNG_file(RpDragImage *image)
 {
 	VectorFilePtr pngData = std::make_shared<VectorFile>();
-
-	_RpDragImageCxx *const cxx = image->cxx;
-	auto *const anim = cxx->anim.get();
-	const bool isAnimated = (anim && anim->iconAnimData && anim->iconAnimHelper.isAnimated());
+	const _RpDragImageCxx *const cxx = image->cxx;
 
 	unique_ptr<RpPngWriter> pngWriter;
-	if (isAnimated) {
-		// Animated icon.
-		pngWriter.reset(new RpPngWriter(pngData, anim->iconAnimData));
-	} else if (cxx->img) {
-		// Standard icon.
+	if (cxx->isAnim()) {
+		// Animated icon
+		const _RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(cxx->imgData);
+		pngWriter.reset(new RpPngWriter(pngData, anim.iconAnimData));
+	} else if (cxx->isNonAnim()) {
+		// Standard icon
 		// NOTE: Using the source image because we want the original
 		// size, not the resized version.
-		pngWriter.reset(new RpPngWriter(pngData, cxx->img));
+		const _RpDragImageCxx::non_anim_vars_t &non_anim = std::get<_RpDragImageCxx::non_anim_vars_t>(cxx->imgData);
+		pngWriter.reset(new RpPngWriter(pngData, non_anim.img));
 	} else {
 		// No icon...
 		pngData.reset();
@@ -898,8 +952,9 @@ rp_drag_image_drag_source_prepare(GtkDragSource *source, double x, double y, RpD
 
 	_RpDragImageCxx *const cxx = image->cxx;
 	cxx->pngData = rp_drag_image_create_PNG_file(image);
-	if (!cxx->pngData)
+	if (!cxx->pngData) {
 		return nullptr;
+	}
 
 	if (cxx->pngBytes) {
 		g_bytes_unref(cxx->pngBytes);
@@ -923,7 +978,21 @@ rp_drag_image_drag_source_drag_begin(GtkDragSource *source, GdkDrag *drag, RpDra
 	// Set the drag icon.
 	// NOTE: gtk_drag_source_set_icon() takes its own reference to the PIMGTYPE.
 	// TODO: Hotspot coordinates?
-	gtk_drag_source_set_icon(source, GDK_PAINTABLE(image->curFrame), 0, 0);
+	PIMGTYPE frame0 = nullptr;
+	const _RpDragImageCxx *const cxx = image->cxx;
+	if (cxx->isAnim()) {
+		const _RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(cxx->imgData);
+		// Get the first frame from the animation.
+		const int frame = anim.iconAnimData->seq_index[0];
+		frame0 = anim.iconFrames[frame];
+	} else {
+		const _RpDragImageCxx::non_anim_vars_t &non_anim = std::get<_RpDragImageCxx::non_anim_vars_t>(cxx->imgData);
+		frame0 = non_anim.pImg;
+	}
+
+	if (frame0) {
+		gtk_drag_source_set_icon(source, GDK_PAINTABLE(frame0), 0, 0);
+	}
 }
 
 static void
@@ -948,7 +1017,18 @@ rp_drag_image_drag_begin(RpDragImage *image, GdkDragContext *context, gpointer u
 	// NOTE: Using gtk_drag_set_icon_PIMGTYPE() instead of gtk_drag_source_set_icon_pixbuf():
 	// - Setting source is done before dragging.
 	// - There's no source variant that takes a Cairo surface.
-	gtk_drag_set_icon_PIMGTYPE(context, image->curFrame);
+	PIMGTYPE frame0 = nullptr;
+	const _RpDragImageCxx *const cxx = image->cxx;
+	if (cxx->isAnim()) {
+		const _RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(cxx->imgData);
+		// Get the first frame from the animation.
+		const int frame = anim.iconAnimData->seq_index[0];
+		frame0 = anim.iconFrames[frame];
+	} else {
+		const _RpDragImageCxx::non_anim_vars_t &non_anim = std::get<_RpDragImageCxx::non_anim_vars_t>(cxx->imgData);
+		frame0 = non_anim.pImg;
+	}
+	gtk_drag_set_icon_PIMGTYPE(context, frame0);
 }
 
 static void
@@ -960,8 +1040,9 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 	RP_UNUSED(user_data);
 
 	VectorFilePtr pngData = rp_drag_image_create_PNG_file(image);
-	if (!pngData)
+	if (!pngData) {
 		return;
+	}
 
 	// Set the selection data.
 	// NOTE: gtk_selection_data_set() copies the data.
