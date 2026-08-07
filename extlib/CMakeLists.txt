@@ -246,6 +246,7 @@ IF(USE_INTERNAL_MinizipNG)
 	SET(MZ_FILE32_API OFF)
 	ADD_SUBDIRECTORY(minizip-ng)
 	SET_EXTLIB_PROPERTIES(minizip)
+	SET_EXTLIB_PROPERTIES(minizip-ng)
 
 	# We don't want to install the minigzip/minizip executables.
 	SET(SKIP_INSTALL_BINARIES ON)

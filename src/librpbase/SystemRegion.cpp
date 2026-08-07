@@ -37,8 +37,12 @@ namespace LibRpBase { namespace SystemRegion {
 static uint32_t cc = 0;
 static uint32_t lc = 0;
 
-// std::call_once() control variable
+// Is Unicode supported?
+static bool does_system_support_unicode = false;
+
+// std::call_once() control variables
 static std::once_flag system_region_once_flag;
+static std::once_flag unicode_once_flag;
 
 struct LanguageOffTbl_t {
 	uint32_t lc;
@@ -241,7 +245,7 @@ static int getSystemRegion_LC_MESSAGES(const char *locale)
 #ifdef _WIN32
 /**
  * Get the system region information.
- * Called by std::call_once().
+ * [INTERNAL FUNCTION; called via std::call_once()]
  * (Windows version)
  *
  * Country code will be stored in 'cc'.
@@ -331,7 +335,7 @@ static void getSystemRegion(void)
 
 /**
  * Get the system region information.
- * Called by std::call_once().
+ * [INTERNAL FUNCTION; called via std::call_once()]
  * (Unix/Linux version)
  *
  * Country code will be stored in 'cc'.
@@ -557,5 +561,62 @@ wstring lcToWStringUpper(uint32_t lc)
 	return wstring(buf, size);
 }
 #endif /* _WIN32 */
+
+/**
+ * Does the system support Unicode?
+ * [INTERNAL FUNCTION; called via std::call_once()]
+ * On Unix-like systems, LC_MESSAGES should contain "UTF-8".
+ * On Windows, assume Unicode is supported if using Windows NT.
+ */
+static void doesSystemSupportUnicode_int(void)
+{
+#ifdef _WIN32
+#  ifdef _MSC_VER
+#    pragma warning(push)
+#    pragma warning(disable: 4996)
+#  endif /* _MSC_VER */
+	// Get the OS version information.
+	OSVERSIONINFO osvi;
+	osvi.dwOSVersionInfoSize = sizeof(osvi);
+	GetVersionEx(&osvi);
+#  ifdef _MSC_VER
+#    pragma warning(pop)
+#  endif /* _MSC_VER */
+
+	// TODO: Ignore this if !UNICODE / !_UNICODE?
+	does_system_support_unicode = (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT);
+#else /* !_WIN32 */
+	does_system_support_unicode = false;
+
+	const char *const lc_messages = get_LC_MESSAGES();
+	if (!lc_messages || lc_messages[0] == '\0') {
+		// Empty string...
+		return;
+	}
+
+	// Check for variants of "UTF-8" in LC_MESSAGES.
+	if (strstr(lc_messages, "UTF-8") != nullptr ||
+	    strstr(lc_messages, "UTF8" ) != nullptr ||
+	    strstr(lc_messages, "utf-8") != nullptr ||
+	    strstr(lc_messages, "utf8" ) != nullptr)
+	{
+		// Found it!
+		does_system_support_unicode = true;
+	}
+#endif /* _WIN32 */
+}
+
+/**
+ * Does the system support Unicode?
+ * [INTERNAL FUNCTION; called via std::call_once()]
+ * On Unix-like systems, LC_MESSAGES should contain "UTF-8".
+ * On Windows, assume Unicode is supported if using Windows NT.
+ * @return True if the system supports Unicode; false if not.
+ */
+bool doesSystemSupportUnicode(void)
+{
+	std::call_once(unicode_once_flag, doesSystemSupportUnicode_int);
+	return does_system_support_unicode;
+}
 
 } }

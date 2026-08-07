@@ -9,6 +9,13 @@
   * ParamSFO: PlayStation System File Object files. Used by PSP, PS3,
     PS Vita, and PS4 games.
 
+* New features:
+  * rpcli has a new -P option to print detected CPU information.
+    * On all CPUs, this includes architecture and endianness.
+    * On x86 and amd64, this also includes the CPU brand string and
+      family/model/stepping.
+    * On x86, amd64, arm, and arm64, this also includes CPU feature flags.
+
 * New parser features:
   * GodotSTEX: Add (untested) support for ASTC_6x6 textures.
     * Support for ASTC_6x6 will be added in Godot 4.6.

@@ -113,7 +113,7 @@ ENDIF(CPU_i386 OR CPU_amd64)
 
 # FIXME: NEON on Ubuntu armhf is complaining when using LTO.
 # Disable NEON on armhf for now, except for MSVC.
-IF((CPU_arm AND MSVC) OR CPU_arm64 OR CPU_arm64ec)
+IF(CPU_arm OR CPU_arm64 OR CPU_arm64ec)
 	# Check for arm_neon.h.
 	# NOTE: Should always be present for arm64, but check anyway.
 	INCLUDE(CheckIncludeFile)
@@ -121,5 +121,12 @@ IF((CPU_arm AND MSVC) OR CPU_arm64 OR CPU_arm64ec)
 
 	IF(CPU_arm AND NOT MSVC)
 		SET(NEON_FLAG "-marm -mfpu=neon")
+
+		# NOTE: LTO must be disabled on NEON code in order to prevent linker errors!
+		# - gcc-14 (Debian 13): One Definition Rule for class-member NEON functions
+		# - gcc-7 (Ubuntu 18.04): Inlining failed when calling vst2q_u16: target specific option mismatch
+		IF(ENABLE_LTO)
+			SET(NEON_FLAG "${NEON_FLAG} -fno-lto")
+		ENDIF(ENABLE_LTO)
 	ENDIF(CPU_arm AND NOT MSVC)
-ENDIF((CPU_arm AND MSVC) OR CPU_arm64 OR CPU_arm64ec)
+ENDIF(CPU_arm OR CPU_arm64 OR CPU_arm64ec)

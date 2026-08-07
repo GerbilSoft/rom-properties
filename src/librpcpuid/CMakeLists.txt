@@ -18,6 +18,9 @@ int main(void) {
 	return regs[0];
 }" HAVE_MSVC_CPUID)
 	ENDIF(HAVE_INTRIN_H)
+ELSE(WIN32)
+	CHECK_SYMBOL_EXISTS(getauxval "sys/auxv.h" HAVE_GETAUXVAL)
+	CHECK_SYMBOL_EXISTS(elf_aux_info "sys/auxv.h" HAVE_ELF_AUX_INFO)
 ENDIF(WIN32)
 
 # for pthread_once()
@@ -34,7 +37,7 @@ INCLUDE(CPUInstructionSetFlags)
 IF(CPU_i386 OR CPU_amd64)
 	SET(${PROJECT_NAME}_CPU_SRCS cpuflags_x86.c)
 	SET(${PROJECT_NAME}_CPU_H cpuflags_x86.h cpuid_x86.h)
-ELSEIF(CPU_arm OR CPU_arm64)
+ELSEIF(CPU_arm OR CPU_arm64 OR CPU_arm64ec)
 	SET(${PROJECT_NAME}_CPU_SRCS cpuflags_arm.c)
 	SET(${PROJECT_NAME}_CPU_H cpuflags_arm.h)
 ENDIF()

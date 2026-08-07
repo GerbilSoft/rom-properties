@@ -171,7 +171,7 @@ int rp_secure_enable(rp_secure_param_t param)
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clone), 1,
 			SCMP_A0_32(SCMP_CMP_MASKED_EQ, 0x1F, 0));
 
-		// clone3() syscall: Block it ince we can't filter it easily.
+		// clone3() syscall: Block it since we can't filter it easily.
 		// [pthread_create() with glibc-2.34]
 #if defined(__SNR_clone3)
 		seccomp_rule_add(ctx, SCMP_ACT_ERRNO(ENOSYS), SCMP_SYS(clone3), 0);

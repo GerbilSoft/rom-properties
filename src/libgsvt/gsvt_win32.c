@@ -775,6 +775,48 @@ size_t gsvt_fwrite(const char *ptr, size_t nmemb, gsvt_console *vt)
 }
 
 /**
+ * fputc() wrapper function for gsvt_console.
+ *
+ * Escape codes are not supported; use fputs() to parse escape codes.
+ *
+ * @param c Character to write
+ * @param vt
+ * @return Non-negative number on success, or EOF on error.
+ */
+int gsvt_fputc(char c, gsvt_console *vt)
+{
+	if (vt->is_real_console) {
+		// This is a real Windows console.
+		// Write directly to the console.
+		return WriteConsoleA(vt->hConsole, &c, 1, NULL, NULL);
+	} else {
+		// Not a real console. Use fputc().
+		return fputc(c, vt->stream);
+	}
+}
+
+/**
+ * fputwc() wrapper function for gsvt_console.
+ *
+ * Escape codes are not supported; use fputs() to parse escape codes.
+ *
+ * @param wc Character to write
+ * @param vt
+ * @return Non-negative number on success, or EOF on error.
+ */
+int gsvt_fputwc(wchar_t wc, gsvt_console *vt)
+{
+	if (vt->is_real_console) {
+		// This is a real Windows console.
+		// Write directly to the console.
+		return WriteConsoleW(vt->hConsole, &wc, 1, NULL, NULL);
+	} else {
+		// Not a real console. Use fputwc().
+		return fputwc(wc, vt->stream);
+	}
+}
+
+/**
  * fputs() wrapper function for gsvt_console.
  *
  * On Windows, if using a standard Windows console and ANSI escape sequences
@@ -821,22 +863,6 @@ int gsvt_fflush(gsvt_console *vt)
 }
 
 /** Convenience functions **/
-
-/**
- * Print a newline to the specified gsvt_console.
- * @param vt
- */
-void gsvt_newline(gsvt_console *vt)
-{
-	if (vt->is_real_console) {
-		// This is a real Windows console.
-		// TODO: Use WriteConsoleW() or WriteConsoleA() directly?
-		gsvt_win32_console_print_raw(vt, "\n", 1);
-	} else {
-		// Not a real console. Use fputc().
-		fputc('\n', vt->stream);
-	}
-}
 
 /** Color functions (NOPs if the console doesn't support color) **/
 

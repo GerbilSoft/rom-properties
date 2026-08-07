@@ -29,7 +29,7 @@ namespace LibRpTexture {
 #  endif
 #endif
 #ifdef HAVE_ARM_NEON_H
-#  ifdef RP_CPU_ARM64
+#  if defined(_WIN32) || defined(RP_CPU_ARM64)
 #    define GDKIMAGECONV_ALWAYS_HAS_NEON 1
 #  endif
 #endif

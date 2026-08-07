@@ -77,7 +77,7 @@
 #    include "librpcpuid/cpuflags_arm.h"
 #    define BYTESWAP_HAS_NEON 1
 #  endif
-#  ifdef RP_CPU_ARM64
+#  if defined(_WIN32) || defined(RP_CPU_ARM64)
 #    define BYTESWAP_ALWAYS_HAS_NEON 1
 #  endif /* RP_CPU_ARM64 */
 #endif /* HAVE_ARM_NEON_H */

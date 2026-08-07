@@ -21,8 +21,12 @@
 #  include <pthread.h>
 #endif /* _WIN32 */
 
+// C includes
+#include <string.h>
+
 uint32_t RP_CPU_Flags_x86 = 0;
 int RP_CPU_Flags_x86_IsInit = 0;	// 1 if RP_CPU_Flags_x86 has been initialized.
+RP_CPU_Info_x86_t RP_CPU_Info_x86;
 static pthread_once_t cpu_once_control = PTHREAD_ONCE_INIT;
 
 /**
@@ -32,8 +36,10 @@ static pthread_once_t cpu_once_control = PTHREAD_ONCE_INIT;
 static void RP_CPU_Flags_x86_Init_int(void)
 {
 	unsigned int regs[4];	// %eax, %ebx, %ecx, %edx
-	unsigned int maxFunc;
 	uint8_t can_XSAVE = 0;
+
+	// CPU info struct, to be filled in later.
+	memset(&RP_CPU_Info_x86, 0, sizeof(RP_CPU_Info_x86));
 
 #ifdef RP_CPU_I386
 	// i386 is not guaranteed to support FXSAVE. (required for SSE)
@@ -55,16 +61,21 @@ static void RP_CPU_Flags_x86_Init_int(void)
 
 	// Initialize the CPU flags variable.
 	// amd64 is guaranteed to support MMX, SSE, and SSE2.
-	RP_CPU_Flags_x86 = (RP_CPUFLAG_X86_MMX | RP_CPUFLAG_X86_SSE | RP_CPUFLAG_X86_SSE2);
+	RP_CPU_Flags_x86 = (RP_CPUFLAG_x86_MMX | RP_CPUFLAG_x86_SSE | RP_CPUFLAG_x86_SSE2);
 #endif /* RP_CPU_I386 */
 
 	// CPUID is supported.
 	// Check if the CPUID Features function (Function 1) is supported.
-	// This also retrieves the CPU vendor string. (currently unused)
+	// This also retrieves the CPU vendor string.
 	cpuid(CPUID_MAX_FUNCTIONS, regs);
-	maxFunc = regs[0];
-	if (maxFunc < CPUID_PROC_INFO_FEATURE_BITS) {
+	RP_CPU_Info_x86.highest_fn = regs[REG_EAX];
+	RP_CPU_Info_x86.manufacturer_id.u32[0] = regs[REG_EBX];
+	RP_CPU_Info_x86.manufacturer_id.u32[1] = regs[REG_EDX];
+	RP_CPU_Info_x86.manufacturer_id.u32[2] = regs[REG_ECX];
+
+	if (RP_CPU_Info_x86.highest_fn < CPUID_PROC_INFO_FEATURE_BITS) {
 		// No CPUID functions are supported.
+		// NOTE: Skipping extended functions. (>= 0x80000000)
 		RP_CPU_Flags_x86_IsInit = 1;
 		return;
 	}
@@ -72,12 +83,47 @@ static void RP_CPU_Flags_x86_Init_int(void)
 	// Get the processor info and feature bits.
 	cpuid(CPUID_PROC_INFO_FEATURE_BITS, regs);
 
+	// Parse the processor version.
+	union {
+		struct {
+			uint32_t stepping_id	: 4;
+			uint32_t model		: 4;
+			uint32_t family_id	: 4;
+			uint32_t processor_type	: 2;
+			uint32_t reserved1	: 2;
+			uint32_t ext_model_id	: 4;
+			uint32_t ext_family_id	: 8;
+			uint32_t reserved2	: 4;
+		};
+		uint32_t u32;
+	} processor_version;
+	processor_version.u32 = regs[REG_EAX];
+
+	// Family ID: If 15, then add family ID + extended family ID; otherwise, just family ID.
+	// NOTE: May overflow uint8_t if extended family >= 240...
+	RP_CPU_Info_x86.version.family_id = processor_version.family_id;
+	if (processor_version.family_id == 15) {
+		assert(processor_version.ext_family_id < 240);
+		RP_CPU_Info_x86.version.family_id += processor_version.ext_family_id;
+	}
+
+	// Model ID: If family ID is 6 or 15, use ext_model_id as the high 4 bits
+	// and model as the low 4 bits. Otherwise, just use model.
+	RP_CPU_Info_x86.version.model_id = processor_version.model;
+	if (processor_version.family_id == 6 || processor_version.family_id == 15) {
+		RP_CPU_Info_x86.version.model_id |= (processor_version.ext_model_id << 4);
+	}
+
+	// Stepping ID, processor type: Use as-is.
+	RP_CPU_Info_x86.version.stepping_id = processor_version.stepping_id;
+	RP_CPU_Info_x86.version.processor_type = processor_version.processor_type;
+
 #ifdef RP_CPU_I386
 	if (regs[REG_EDX] & CPUFLAG_IA32_EDX_MMX) {
 		// MMX is supported.
 		// NOTE: Not officially supported on amd64 in 64-bit,
 		// but all known implementations support it.
-		RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_MMX;
+		RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_MMX;
 	}
 
 	if (regs[REG_EDX] & CPUFLAG_IA32_EDX_SSE) {
@@ -131,48 +177,88 @@ static void RP_CPU_Flags_x86_Init_int(void)
 			RP_CPU_Flags_x86 |= CPUFLAG_IA32_EDX_SSE;
 		}
 		if (regs[REG_EDX] & CPUFLAG_IA32_EDX_SSE2) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_SSE2;
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_SSE2;
 		}
 #endif /* RP_CPU_I386 */
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE3) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_SSE3;
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_SSE3;
 		}
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSSE3) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_SSSE3;
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_SSSE3;
 		}
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE41) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_SSE41;
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_SSE41;
 		}
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_SSE42) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_SSE42;
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_SSE42;
+		}
+		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_AES) {
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_AES;
 		}
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_F16C) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_F16C;
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_F16C;
 		}
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_FMA3) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_FMA3;
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_FMA3;
 		}
 	}
 
 	// Check for XSAVE and OSXSAVE.
-	// Required for AVX and AVX2.
+	// Required for AVX, AVX2, and APX.
 	can_XSAVE = (regs[REG_ECX] & (CPUFLAG_IA32_ECX_XSAVE | CPUFLAG_IA32_ECX_OSXSAVE)) ==
 	                             (CPUFLAG_IA32_ECX_XSAVE | CPUFLAG_IA32_ECX_OSXSAVE);
 	if (can_XSAVE) {
 		// XSAVE and OSXSAVE are set.
 		if (regs[REG_ECX] & CPUFLAG_IA32_ECX_AVX) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_AVX;
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_AVX;
 		}
 	}
 
 	// Get extended features, including AVX2.
-	// NOTE: AVX2 requires XSAVE.
-	if (can_XSAVE && maxFunc >= CPUID_EXT_FEATURES) {
+	// NOTE: AVX2 and APX both require XSAVE.
+	if (RP_CPU_Info_x86.highest_fn >= CPUID_EXT_FEATURES) {
 		cpuid_count(CPUID_EXT_FEATURES, 0, regs);
 
-		if (regs[REG_EBX] & CPUFLAG_IA32_FN7p0_EBX_AVX2) {
-			RP_CPU_Flags_x86 |= RP_CPUFLAG_X86_AVX2;
+		if (regs[REG_EBX] & CPUFLAG_IA32_FN7p0_EBX_BMI1) {
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_BMI1;
 		}
+		if (regs[REG_EBX] & CPUFLAG_IA32_FN7p0_EBX_BMI2) {
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_BMI2;
+		}
+		if (regs[REG_EBX] & CPUFLAG_IA32_FN7p0_EBX_SHA) {
+			RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_SHA;
+		}
+
+		if (can_XSAVE) {
+			if (can_XSAVE && (regs[REG_EBX] & CPUFLAG_IA32_FN7p0_EBX_AVX2)) {
+				RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_AVX2;
+			}
+
+			cpuid_count(CPUID_EXT_FEATURES, 1, regs);
+			if (regs[REG_EAX] & CPUFLAG_IA32_FN7p1_EAX_SHA512) {
+				RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_SHA512;
+			}
+#ifdef RP_CPU_AMD64
+			// NOTE: APX is 64-bit only.
+			if (regs[REG_EDX] & CPUFLAG_IA32_FN7p1_EDX_APX) {
+				RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_APX;
+			}
+#endif /* RP_CPU_AMD64 */
+		}
+	}
+
+	// Check the maximum number of Extended Functions.
+	cpuid(CPUID_MAX_EXT_FUNCTIONS, regs);
+	RP_CPU_Info_x86.highest_ext_fn = regs[REG_EAX];
+
+	if (RP_CPU_Info_x86.highest_ext_fn >= CPUID_EXT_PROC_BRAND_STRING_3) {
+		// Get the brand string.
+		cpuid(CPUID_EXT_PROC_BRAND_STRING_1, regs);
+		memcpy(&RP_CPU_Info_x86.brand_string.u32[0], regs, sizeof(regs));
+		cpuid(CPUID_EXT_PROC_BRAND_STRING_2, regs);
+		memcpy(&RP_CPU_Info_x86.brand_string.u32[4], regs, sizeof(regs));
+		cpuid(CPUID_EXT_PROC_BRAND_STRING_3, regs);
+		memcpy(&RP_CPU_Info_x86.brand_string.u32[8], regs, sizeof(regs));
 	}
 
 	// CPU flags initialized.

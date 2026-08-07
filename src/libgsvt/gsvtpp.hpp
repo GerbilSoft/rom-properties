@@ -81,6 +81,32 @@ public:
 	}
 
 	/**
+	 * fputc() wrapper function.
+	 *
+	 * Escape codes are not supported; use fputs() to parse escape codes.
+	 *
+	 * @param c Character to write
+	 * @return Non-negative number on success, or EOF on error.
+	 */
+	int fputc(char c)
+	{
+		return gsvt_fputc(c, m_console);
+	}
+
+	/**
+	 * fputwc() wrapper function.
+	 *
+	 * Escape codes are not supported; use fputs() to parse escape codes.
+	 *
+	 * @param wc Character to write
+	 * @return Non-negative number on success, or EOF on error.
+	 */
+	int fputwc(wchar_t wc)
+	{
+		return gsvt_fputwc(wc, m_console);
+	}
+
+	/**
 	 * fputs() wrapper function.
 	 *
 	 * On Windows, if using a standard Windows console and ANSI escape sequences

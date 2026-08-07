@@ -16,3 +16,6 @@
 
 /* Define to 1 if MSVC intrin.h has __cpuid() */
 #cmakedefine HAVE_MSVC_CPUID 1
+
+/* Define to 1 if you have getauxval() */
+#cmakedefine HAVE_GETAUXVAL 1

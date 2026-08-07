@@ -715,7 +715,8 @@ int EXEPrivate::addFields_NE_Entry(void)
 			const uint16_t ordinal = static_cast<uint8_t>(p[len]) | static_cast<uint8_t>(p[len+1])<<8;
 
 			// binary search for the ordinal
-			const Entry key = {"", ordinal, 0, 0, 0, false, false, false};
+			static const char empty_name[] = "";
+			const Entry key = {span<const char>(empty_name, 1), ordinal, 0, 0, 0, false, false, false};
 			void *ptr = bsearch(&key, ents.data(),
 				ents.size(), sizeof(ents[0]),
 				[](const void *a, const void *b) -> int

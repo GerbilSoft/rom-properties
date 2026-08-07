@@ -1,6 +1,11 @@
 # GTK UI frontend test suite
 PROJECT(gtk-tests LANGUAGES C CXX)
 
+IF(NOT GLib2_FOUND)
+	# Can't build any GLib/GTK+ tests without GLib...
+	RETURN()
+ENDIF(NOT GLib2_FOUND)
+
 # Top-level src directory
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../..)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../..)

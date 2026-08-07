@@ -8,8 +8,7 @@
 
 #pragma once
 
-#include <glib.h>
-#include <glib-object.h>
+#include "glib-compat.h"
 
 #include "ThunarPlugin.hpp"
 
