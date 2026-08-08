@@ -401,7 +401,9 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 
 	if (!dragPixmapSetFromAnim) {
 		// Not animated. Use the QLabel pixmap directly.
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+		drag->setPixmap(this->pixmap());
+#elif QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
 #  if defined(QT_DISABLE_DEPRECATED_BEFORE) && QT_DISABLE_DEPRECATED_BEFORE >= 0x050F00
 		drag->setPixmap(this->pixmap());
 #  else /* !QT_DISABLE_DEPRECATED_BEFORE || QT_DISABLE_DEPRECATED_BEFORE < 0x050F00 */
