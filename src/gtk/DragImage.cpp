@@ -421,7 +421,7 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 			// Remove the existing frame first.
 			g_clear_pointer(&anim.iconFrames[i], PIMGTYPE_unref);
 
-			const rp_image_const_ptr &frame = iconAnimData->frames[i];
+			const rp_image_ptr &frame = iconAnimData->frames[i];
 			if (frame && frame->isValid()) {
 				// NOTE: Allowing NULL frames here...
 				PIMGTYPE img = rp_image_to_PIMGTYPE(frame);
