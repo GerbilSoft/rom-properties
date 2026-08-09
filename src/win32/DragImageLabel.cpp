@@ -98,24 +98,24 @@ public:
 		IconAnimDataConstPtr iconAnimData;
 		std::vector<HBITMAP> iconFrames;
 		IconAnimHelper iconAnimHelper;
-		HWND m_hwndParent;
+		HWND hwndParent;
 		UINT_PTR animTimerID;
 		int last_frame_number;		// Last frame number.
 
 		explicit anim_vars_t(HWND hwndParent)
-			: m_hwndParent(hwndParent)
+			: hwndParent(hwndParent)
 			, animTimerID(0)
 			, last_frame_number(0)
 		{}
 		explicit anim_vars_t(HWND hwndParent, const IconAnimDataConstPtr &iconAnimData)
 			: iconAnimData(iconAnimData)
-			, m_hwndParent(hwndParent)
+			, hwndParent(hwndParent)
 			, animTimerID(0)
 			, last_frame_number(0)
 		{}
 		explicit anim_vars_t(HWND hwndParent, IconAnimDataConstPtr &&iconAnimData)
 			: iconAnimData(iconAnimData)
-			, m_hwndParent(hwndParent)
+			, hwndParent(hwndParent)
 			, animTimerID(0)
 			, last_frame_number(0)
 		{}
@@ -123,7 +123,7 @@ public:
 		~anim_vars_t()
 		{
 			if (animTimerID) {
-				KillTimer(m_hwndParent, animTimerID);
+				KillTimer(hwndParent, animTimerID);
 			}
 			for (HBITMAP hbmp : iconFrames) {
 				if (hbmp) {
