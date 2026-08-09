@@ -2822,39 +2822,6 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_COMMAND(HWND hDlg, WPARAM wPara
 	return ret;
 }
 
-#if 0
-/**
- * WM_PAINT handler for the property sheet.
- * @param hDlg Dialog window.
- * @return Return value.
- */
-INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_PAINT(HWND hDlg)
-{
-	if (!lblBanner && !lblIcon) {
-		// Nothing to draw...
-		return false;
-	}
-
-	PAINTSTRUCT ps;
-	HDC hdc = BeginPaint(hDlg, &ps);
-
-	// TODO: Share the memory DC between lblBanner and lblIcon?
-
-	// Draw the banner.
-	if (lblBanner && lblBanner->intersects(&ps.rcPaint)) {
-		lblBanner->draw(hdc);
-	}
-
-	// Draw the icon.
-	if (lblIcon && lblIcon->intersects(&ps.rcPaint)) {
-		lblIcon->draw(hdc);
-	}
-
-	EndPaint(hDlg, &ps);
-	return true;
-}
-#endif
-
 //
 //   FUNCTION: FilePropPageDlgProc
 //
