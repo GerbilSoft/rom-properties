@@ -54,15 +54,14 @@ static ATOM atom_dragImageLabel = 0;
 class DragImageLabelPrivate
 {
 public:
-	explicit DragImageLabelPrivate(HWND hwndDragImageLabel);
+	explicit DragImageLabelPrivate(HWND q);
 	~DragImageLabelPrivate();
 
 private:
 	RP_DISABLE_COPY(DragImageLabelPrivate)
+	HWND q_ptr;
 
 public:
-	HWND hwndDragImageLabel;
-
 	SIZE ourLabelSize;	// Actual label size.
 
 	HMENU hMenuEcksBawks;
@@ -233,8 +232,8 @@ public:
 
 /** DragImageLabelPrivate **/
 
-DragImageLabelPrivate::DragImageLabelPrivate(HWND hwndDragImageLabel)
-	: hwndDragImageLabel(hwndDragImageLabel)
+DragImageLabelPrivate::DragImageLabelPrivate(HWND q)
+	: q_ptr(q)
 	, hMenuEcksBawks(nullptr)
 	, useNearestNeighbor(false)
 	, ecksBawks(false)
@@ -271,8 +270,8 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 
 	// Get the DragImageLabel size.
 	RECT rectDragImageLabel;
-	GetWindowRect(hwndDragImageLabel, &rectDragImageLabel);
-	MapWindowPoints(HWND_DESKTOP, GetParent(hwndDragImageLabel), (LPPOINT)&rectDragImageLabel, 2);
+	GetWindowRect(q_ptr, &rectDragImageLabel);
+	MapWindowPoints(HWND_DESKTOP, GetParent(q_ptr), (LPPOINT)&rectDragImageLabel, 2);
 
 	// Icon size (= 0x0 if not determined yet)
 	SIZE iconSize = {0, 0};
@@ -377,7 +376,7 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 
 	// Resize the DragImageLabel to match the required size.
 	ourLabelSize = labelSize;
-	SetWindowPos(hwndDragImageLabel, nullptr, 0, 0, labelSize.cx, labelSize.cy,
+	SetWindowPos(q_ptr, nullptr, 0, 0, labelSize.cx, labelSize.cy,
 		SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER);
 	return bRet;
 }
@@ -415,7 +414,7 @@ void DragImageLabelPrivate::startAnimTimer(void)
 
 	// Set a timer for the current frame.
 	// We're using the 'd' pointer as nIDEvent.
-	anim.animTimerID = SetTimer(hwndDragImageLabel,
+	anim.animTimerID = SetTimer(q_ptr,
 		reinterpret_cast<UINT_PTR>(this),
 		delay, AnimTimerProc);
 }
@@ -432,7 +431,7 @@ void DragImageLabelPrivate::stopAnimTimer(void)
 
 	DragImageLabelPrivate::anim_vars_t &anim = std::get<DragImageLabelPrivate::anim_vars_t>(imgData);
 	if (anim.animTimerID) {
-		KillTimer(hwndDragImageLabel, anim.animTimerID);
+		KillTimer(q_ptr, anim.animTimerID);
 		anim.animTimerID = 0;
 	}
 }
@@ -512,8 +511,8 @@ void CALLBACK DragImageLabelPrivate::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PT
 		reinterpret_cast<DragImageLabelPrivate*>(idEvent);
 
 	// Sanity checks
-	assert(d->hwndDragImageLabel == hWnd);
-	if (d->hwndDragImageLabel != hWnd) {
+	assert(d->q_ptr == hWnd);
+	if (d->q_ptr != hWnd) {
 		// Should not happen...
 		return;
 	}
@@ -559,7 +558,7 @@ void DragImageLabelPrivate::on_WM_PAINT(void)
 	}
 
 	PAINTSTRUCT ps;
-	HDC hDC = BeginPaint(hwndDragImageLabel, &ps);
+	HDC hDC = BeginPaint(q_ptr, &ps);
 
 	// Memory DC for BitBlt.
 	HDC hdcMem = CreateCompatibleDC(hDC);
@@ -567,7 +566,7 @@ void DragImageLabelPrivate::on_WM_PAINT(void)
 	BitBlt(hDC, 0, 0, ourLabelSize.cx, ourLabelSize.cy, hdcMem, 0, 0, SRCCOPY);
 	DeleteDC(hdcMem);
 
-	EndPaint(hwndDragImageLabel, &ps);
+	EndPaint(q_ptr, &ps);
 }
 
 /** DragImageLabel **/
