@@ -108,14 +108,14 @@ public:
 			, last_frame_number(0)
 		{}
 		explicit anim_vars_t(HWND hwndParent, const IconAnimDataConstPtr &iconAnimData)
-			: m_hwndParent(hwndParent)
-			, iconAnimData(iconAnimData)
+			: iconAnimData(iconAnimData)
+			, m_hwndParent(hwndParent)
 			, animTimerID(0)
 			, last_frame_number(0)
 		{}
 		explicit anim_vars_t(HWND hwndParent, IconAnimDataConstPtr &&iconAnimData)
-			: m_hwndParent(hwndParent)
-			, iconAnimData(iconAnimData)
+			: iconAnimData(iconAnimData)
+			, m_hwndParent(hwndParent)
 			, animTimerID(0)
 			, last_frame_number(0)
 		{}
