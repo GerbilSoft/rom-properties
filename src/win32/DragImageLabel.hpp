@@ -27,8 +27,8 @@ void DragImageLabelUnregister(void);
 // CreateWindowEx() and/or SetWindowPos(). Width is calculated based
 // on the height and aspect ratio.
 
-#define WM_DIL_SET_RP_IMAGE		(WM_APP + 1)	// lParam == address of rp_image_const_ptr
-#define WM_DIL_SET_ICON_ANIM_DATA	(WM_APP + 2)	// lParam == address of IconAnimDataConstPtr
+#define WM_DIL_SET_RP_IMAGE		(WM_APP + 1)	// lParam == address of rp_image_const_ptr; return == true on success, false on error
+#define WM_DIL_SET_ICON_ANIM_DATA	(WM_APP + 2)	// lParam == address of IconAnimDataConstPtr; return == true on success, false on error
 #define WM_DIL_CLEAR_IMAGE		(WM_APP + 3)
 
 #define WM_DIL_ANIM_TIMER_CTRL		(WM_APP + 4)	// wParam == 0 to stop; non-zero to start
@@ -50,14 +50,14 @@ void DragImageLabelUnregister(void);
 #include "librpbase/img/IconAnimData.hpp"
 #include "librptexture/img/rp_image.hpp"
 
-static inline void DragImageLabel_SetRpImage(HWND hWnd, const LibRpTexture::rp_image_const_ptr &img)
+static inline bool DragImageLabel_SetRpImage(HWND hWnd, const LibRpTexture::rp_image_const_ptr &img)
 {
-	SendMessage(hWnd, WM_DIL_SET_RP_IMAGE, 0, reinterpret_cast<LPARAM>(&img));
+	return static_cast<bool>(SendMessage(hWnd, WM_DIL_SET_RP_IMAGE, 0, reinterpret_cast<LPARAM>(&img)));
 }
 
-static inline void DragImageLabel_SetIconAnimData(HWND hWnd, const LibRpBase::IconAnimDataConstPtr &img)
+static inline bool DragImageLabel_SetIconAnimData(HWND hWnd, const LibRpBase::IconAnimDataConstPtr &img)
 {
-	SendMessage(hWnd, WM_DIL_SET_ICON_ANIM_DATA, 0, reinterpret_cast<LPARAM>(&img));
+	return static_cast<bool>(SendMessage(hWnd, WM_DIL_SET_ICON_ANIM_DATA, 0, reinterpret_cast<LPARAM>(&img)));
 }
 
 #endif /* __cplusplus */

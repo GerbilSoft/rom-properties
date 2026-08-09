@@ -164,9 +164,7 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 					hDlgSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
 			}
 
-			// TODO: Return an 'ok' value?
-			DragImageLabel_SetRpImage(lblBanner, banner);
-			ok = true;
+			ok = DragImageLabel_SetRpImage(lblBanner, banner);
 		}
 	}
 	if (!ok) {
@@ -198,15 +196,12 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 			// Is this an animated icon?
 			const IconAnimDataConstPtr iconAnimData = romData->iconAnimData();
 			if (iconAnimData) {
-				// TODO: Return an 'ok' value?
-				DragImageLabel_SetIconAnimData(lblIcon, iconAnimData);
-				ok = true;
-			} else {
+				ok = DragImageLabel_SetIconAnimData(lblIcon, iconAnimData);
+			}
+			if (!ok) {
 				// Not an animated icon, or invalid icon data.
 				// Set the static icon.
-				// TODO: Return an 'ok' value?
-				DragImageLabel_SetRpImage(lblIcon, icon);
-				ok = true;
+				ok = DragImageLabel_SetRpImage(lblIcon, icon);
 			}
 		}
 	}

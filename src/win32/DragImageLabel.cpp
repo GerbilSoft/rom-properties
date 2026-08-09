@@ -694,17 +694,17 @@ DragImageLabelWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				return false;
 			}
 
+			bool ok = false;
 			const rp_image_const_ptr *const pImg = reinterpret_cast<const rp_image_const_ptr*>(lParam);
 			if (pImg) {
 				d->imgData.emplace<DragImageLabelPrivate::non_anim_vars_t>(*pImg);
 				if (*pImg) {
-					d->updateBitmaps();
+					ok = d->updateBitmaps();
 				}
 			}
 
 			// Custom message; don't bother running DefWindowProc.
-			// TODO: Return "ok"?
-			return 0;
+			return ok;
 		}
 
 		case WM_DIL_SET_ICON_ANIM_DATA: {
@@ -718,18 +718,18 @@ DragImageLabelWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				return false;
 			}
 
+			bool ok = false;
 			const IconAnimDataConstPtr *const pIconAnimData =
 				reinterpret_cast<const IconAnimDataConstPtr*>(lParam);
 			if (pIconAnimData) {
 				d->imgData.emplace<DragImageLabelPrivate::anim_vars_t>(hWnd, *pIconAnimData);
 				if (*pIconAnimData) {
-					d->updateBitmaps();
+					ok = d->updateBitmaps();
 				}
 			}
 
 			// Custom message; don't bother running DefWindowProc.
-			// TODO: Return "ok"?
-			return 0;
+			return ok;
 		}
 
 		case WM_DIL_CLEAR_IMAGE: {
