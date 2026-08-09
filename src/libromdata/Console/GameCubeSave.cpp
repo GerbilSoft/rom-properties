@@ -422,6 +422,7 @@ rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 		// NOTE: On all tested GCN IPL (NTSC and PAL), and Wii Menu 4.3U,
 		// the first image typically shows for one extra frame,
 		// and the last image typically shows for one fewer frame.
+		// TODO: More PAL IDs?
 		static constexpr std::array<uint8_t, 4> numers = {{0, 4, 8, 12}};
 		if (direntry.id6[3] == 'P') {
 			// PAL: 50 Hz
@@ -429,15 +430,19 @@ rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 			static constexpr std::array<uint16_t, 4> ms_first = {{0, 5*1000/50, 9*1000/50, 13*1000/50}};
 			static constexpr std::array<uint16_t, 4> ms_last  = {{0, 3*1000/50, 7*1000/50, 11*1000/50}};
 
+			iconAnimData->delays[i].numer = numers[delay];
 			iconAnimData->delays[i].denom = 50;
 			if (i == 0) {
-				iconAnimData->delays[i].numer = numers[delay] + 1;
+				if (delay != 0) {
+					iconAnimData->delays[i].numer++;
+				}
 				iconAnimData->delays[i].ms = ms_first[delay];
 			} else if (is_last_icon) {
-				iconAnimData->delays[i].numer = numers[delay] - 1;
+				if (delay != 0) {
+					iconAnimData->delays[i].numer--;
+				}
 				iconAnimData->delays[i].ms = ms_last[delay];
 			} else {
-				iconAnimData->delays[i].numer = numers[delay];
 				iconAnimData->delays[i].ms = ms[delay];
 			}
 		} else {
@@ -446,15 +451,19 @@ rp_image_const_ptr GameCubeSavePrivate::loadIcon(void)
 			static constexpr std::array<uint16_t, 4> ms_first = {{0, 83 /*5*1000/60*/, 150 /*9*1000/60*/, 260 /*13*1000/60*/}};
 			static constexpr std::array<uint16_t, 4> ms_last  = {{0, 50 /*3*1000/60*/, 117 /*7*1000/60*/, 183 /*11*1000/60*/}};
 
+			iconAnimData->delays[i].numer = numers[delay];
 			iconAnimData->delays[i].denom = 60;
 			if (i == 0) {
-				iconAnimData->delays[i].numer = numers[delay] + 1;
+				if (delay != 0) {
+					iconAnimData->delays[i].numer++;
+				}
 				iconAnimData->delays[i].ms = ms_first[delay];
 			} else if (is_last_icon) {
-				iconAnimData->delays[i].numer = numers[delay] - 1;
+				if (delay != 0) {
+					iconAnimData->delays[i].numer--;
+				}
 				iconAnimData->delays[i].ms = ms_last[delay];
 			} else {
-				iconAnimData->delays[i].numer = numers[delay];
 				iconAnimData->delays[i].ms = ms[delay];
 			}
 		}
