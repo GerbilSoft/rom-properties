@@ -320,7 +320,7 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 				anim.iconFrames[i] = nullptr;
 			}
 
-			const rp_image_const_ptr &frame = iconAnimData->frames[i];
+			const rp_image_ptr &frame = iconAnimData->frames[i];
 			if (frame && frame->isValid()) {
 				if (actualSize.cx == 0) {
 					// Get the icon size and rescale it, if necessary.
