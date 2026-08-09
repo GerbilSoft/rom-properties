@@ -39,7 +39,6 @@ void DragImageLabelUnregister(void);
 
 #define WM_DIL_SET_ECKS_BAWKS		(WM_APP + 8)	// wParam == 0 to clear Ecks Bawks mode; non-zero to set
 #define WM_DIL_GET_ECKS_BAWKS		(WM_APP + 9)	// return == 0 if Ecks Bawks mode is not set; non-zero if set
-#define WM_DIL_TRY_POPUP_ECKS_BAWKS	(WM_APP + 10)	// lParam == WM_RBUTTONUP lParam
 
 #ifdef __cplusplus
 }
@@ -102,31 +101,6 @@ static inline bool DragImageLabel_GetEcksBawks(HWND hWnd)
 	return (bool)SendMessage(hWnd, WM_DIL_GET_ECKS_BAWKS, 0, 0);
 }
 
-static inline void DragImageLabel_TryPopupEcksBawks(HWND hWnd, LPARAM lParam)
-{
-	SendMessage(hWnd, WM_DIL_TRY_POPUP_ECKS_BAWKS, 0, lParam);
-}
-
 #ifdef __cplusplus
 }
-#endif
-
-#if 0
-class DragImageLabelPrivate;
-class DragImageLabel
-{
-public:
-	explicit DragImageLabel(HWND hwndParent);
-	~DragImageLabel();
-
-private:
-	DragImageLabelPrivate *const d_ptr;
-	RP_DISABLE_COPY(DragImageLabel)
-
-public:
-	bool ecksBawks(void) const;
-	void setEcksBawks(bool newEcksBawks);
-
-	void tryPopupEcksBawks(LPARAM lParam);
-};
 #endif

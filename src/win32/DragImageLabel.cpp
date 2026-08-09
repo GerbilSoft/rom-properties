@@ -157,29 +157,11 @@ public:
 	bool ecksBawks;
 
 public:
-#if 0
-	/**
-	 * Rescale an image to be as close to the required size as possible.
-	 * @param req_sz	[in] Required size.
-	 * @param sz		[in/out] Image size.
-	 * @return True if nearest-neighbor scaling should be used (size was kept the same or enlarged); false if shrunken (so use interpolation).
-	 */
-	static bool rescaleImage(SIZE req_sz, SIZE &sz);
-#endif
-
 	/**
 	 * Update the bitmap(s).
 	 * @return True on success; false on error.
 	 */
 	bool updateBitmaps(void);
-
-#if 0
-	/**
-	 * Update the bitmap rect.
-	 * Called when position and/or size changes.
-	 */
-	void updateRect(void);
-#endif
 
 	/**
 	 * Get the current bitmap frame.
@@ -228,6 +210,9 @@ public:
 	 * This does NOT update the animation frame.
 	 */
 	void resetAnimFrame(void);
+
+	void setEcksBawks(bool newEcksBawks);
+	void tryPopupEcksBawks(LPARAM lParam);
 };
 
 /** DragImageLabelPrivate **/
@@ -569,121 +554,36 @@ void DragImageLabelPrivate::on_WM_PAINT(void)
 	EndPaint(q_ptr, &ps);
 }
 
-/** DragImageLabel **/
-
-#if 0
-DragImageLabel::DragImageLabel(HWND hwndParent)
-	: d_ptr(new DragImageLabelPrivate(hwndParent))
-{}
-
-DragImageLabel::~DragImageLabel()
+void DragImageLabelPrivate::setEcksBawks(bool newEcksBawks)
 {
-	delete d_ptr;
-}
-
-SIZE DragImageLabel::requiredSize(void) const
-{
-	RP_D(const DragImageLabel);
-	return d->requiredSize;
-}
-
-void DragImageLabel::setRequiredSize(SIZE requiredSize)
-{
-	RP_D(DragImageLabel);
-	if (d->requiredSize.cx != requiredSize.cx ||
-	    d->requiredSize.cy != requiredSize.cy)
-	{
-		d->requiredSize = requiredSize;
-		d->updateBitmaps();
-	}
-}
-
-void DragImageLabel::setRequiredSize(int width, int height)
-{
-	RP_D(DragImageLabel);
-	if (d->requiredSize.cx != width ||
-	    d->requiredSize.cy != height)
-	{
-		d->requiredSize.cx = width;
-		d->requiredSize.cy = height;
-		d->updateBitmaps();
-	}
-}
-
-SIZE DragImageLabel::actualSize(void) const
-{
-	RP_D(const DragImageLabel);
-	return d->actualSize;
-}
-
-POINT DragImageLabel::position(void) const
-{
-	RP_D(const DragImageLabel);
-	return { d->rect.left, d->rect.top };
-}
-
-void DragImageLabel::setPosition(POINT position)
-{
-	RP_D(DragImageLabel);
-	if (d->rect.left != position.x ||
-	    d->rect.top != position.y)
-	{
-		d->rect.left = position.x;
-		d->rect.top = position.y;
-		d->updateRect();
-	}
-}
-
-void DragImageLabel::setPosition(int x, int y)
-{
-	RP_D(DragImageLabel);
-	if (d->rect.left != x ||
-	    d->rect.top != y)
-	{
-		d->rect.left = x;
-		d->rect.top = y;
-		d->updateRect();
-	}
-}
-
-bool DragImageLabel::ecksBawks(void) const
-{
-	RP_D(const DragImageLabel);
-	return d->ecksBawks;
-}
-
-void DragImageLabel::setEcksBawks(bool newEcksBawks)
-{
-	RP_D(DragImageLabel);
-	d->ecksBawks = newEcksBawks;
-	if (!d->ecksBawks)
+	ecksBawks = newEcksBawks;
+	if (!ecksBawks) {
 		return;
-	if (d->hMenuEcksBawks)
+	}
+	if (hMenuEcksBawks) {
 		return;
+	}
 
 	// NOTE: Need to get the submenu of this menu.
-	d->hMenuEcksBawks = LoadMenu(HINST_THISCOMPONENT, MAKEINTRESOURCE(IDR_ECKS_BAWKS));
+	hMenuEcksBawks = LoadMenu(HINST_THISCOMPONENT, MAKEINTRESOURCE(IDR_ECKS_BAWKS));
 }
 
-void DragImageLabel::tryPopupEcksBawks(LPARAM lParam)
+void DragImageLabelPrivate::tryPopupEcksBawks(LPARAM lParam)
 {
-	RP_D(const DragImageLabel);
-	if (!d->ecksBawks || !d->hMenuEcksBawks)
+	if (!ecksBawks || !hMenuEcksBawks) {
 		return;
-
-	POINT pt = { LOWORD(lParam), HIWORD(lParam) };
-	if (!PtInRect(&d->rect, pt))
-		return;
+	}
 
 	// Convert from local coordinates to screen coordinates.
-	MapWindowPoints(d->hwndParent, HWND_DESKTOP, &pt, 1);
+	POINT pt = { LOWORD(lParam), HIWORD(lParam) };
+	MapWindowPoints(q_ptr, HWND_DESKTOP, &pt, 1);
 
-	HMENU hSubMenu = GetSubMenu(d->hMenuEcksBawks, 0);
+	HMENU hSubMenu = GetSubMenu(hMenuEcksBawks, 0);
 	assert(hSubMenu != nullptr);
 	int id = TrackPopupMenu(hSubMenu,
 		TPM_LEFTALIGN | TPM_TOPALIGN | TPM_VERNEGANIMATION |
 			TPM_NONOTIFY | TPM_RETURNCMD,
-		pt.x, pt.y, 0, d->hwndParent, nullptr);
+		pt.x, pt.y, 0, q_ptr, nullptr);
 
 	LPCTSTR url = nullptr;
 	switch (id) {
@@ -704,7 +604,6 @@ void DragImageLabel::tryPopupEcksBawks(LPARAM lParam)
 		ShellExecute(nullptr, _T("open"), url, nullptr, nullptr, SW_SHOW);
 	}
 }
-#endif
 
 static LRESULT CALLBACK
 DragImageLabelWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -753,6 +652,20 @@ DragImageLabelWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 			d->on_WM_PAINT();
 			break;
+		}
+
+		case WM_RBUTTONUP: {
+			DragImageLabelPrivate *const d = reinterpret_cast<DragImageLabelPrivate*>(
+				GetWindowLongPtr(hWnd, GWLP_USERDATA));
+			if (!d) {
+				// No DragImageLabelPrivate. Can't do anything...
+				return false;
+			}
+
+			d->tryPopupEcksBawks(lParam);
+
+			// Don't bother running DefWindowProc here.
+			return 0;
 		}
 
 		case WM_SYSCOLORCHANGE:
@@ -890,6 +803,31 @@ DragImageLabelWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			// Custom message; don't bother running DefWindowProc.
 			return 0;
+		}
+
+		case WM_DIL_SET_ECKS_BAWKS: {
+			DragImageLabelPrivate *const d = reinterpret_cast<DragImageLabelPrivate*>(
+				GetWindowLongPtr(hWnd, GWLP_USERDATA));
+			if (!d) {
+				// No DragImageLabelPrivate. Can't do anything...
+				return false;
+			}
+
+			d->setEcksBawks(static_cast<bool>(wParam));
+
+			// Custom message; don't bother running DefWindowProc.
+			return 0;
+		}
+
+		case WM_DIL_GET_ECKS_BAWKS: {
+			DragImageLabelPrivate *const d = reinterpret_cast<DragImageLabelPrivate*>(
+				GetWindowLongPtr(hWnd, GWLP_USERDATA));
+			if (!d) {
+				// No DragImageLabelPrivate. Can't do anything...
+				return false;
+			}
+
+			return d->ecksBawks;
 		}
 	}
 

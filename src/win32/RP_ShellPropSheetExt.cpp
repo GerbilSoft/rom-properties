@@ -3077,22 +3077,6 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			return TRUE;
 		}
 
-		case WM_RBUTTONUP: {
-			auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
-			if (!d) {
-				// No RP_ShellPropSheetExt_Private. Can't do anything...
-				return FALSE;
-			}
-
-			// Allow lblIcon to process this in case it's in lblIcon's rectangle.
-			// TODO: Make DragImageLabel a real control?
-			if (d->lblIcon) {
-				DragImageLabel_TryPopupEcksBawks(d->lblIcon, lParam);
-				return TRUE;
-			}
-			break;
-		}
-
 		case WM_CTLCOLORMSGBOX:
 		case WM_CTLCOLOREDIT:
 		case WM_CTLCOLORLISTBOX:
