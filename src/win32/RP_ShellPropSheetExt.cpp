@@ -144,7 +144,7 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	const uint32_t imgbf = romData->supportedImageTypes();
 	// FIXME: Store the standard image height somewhere else.
 	// FIXME: Adjust image sizes if the DPI changes.
-	//const int imgStdHeight = rp_AdjustSizeForDpi(32, rp_GetDpiForWindow(hDlgSheet));
+	const int imgStdHeight = rp_AdjustSizeForDpi(32, rp_GetDpiForWindow(hDlgSheet));
 	DragImageLabelRegister();
 
 	// Banner
@@ -160,12 +160,11 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 					WC_DRAGIMAGELABEL, nullptr,
 					WS_CHILD | WS_VISIBLE,
 					0, 0,
-					banner->width(), banner->height(),
+					0, imgStdHeight,	// width is calculated by DragImageLabel
 					hDlgSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
 			}
 
 			// TODO: Return an 'ok' value?
-			//ok = lblBanner->setRpImage(banner);
 			DragImageLabel_SetRpImage(lblBanner, banner);
 			ok = true;
 		}
@@ -192,7 +191,7 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 					WC_DRAGIMAGELABEL, nullptr,
 					WS_CHILD | WS_VISIBLE,
 					0, 0,
-					icon->width(), icon->height(),
+					0, imgStdHeight,	// width is calculated by DragImageLabel
 					hDlgSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
 			}
 
@@ -209,13 +208,6 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 				DragImageLabel_SetRpImage(lblIcon, icon);
 				ok = true;
 			}
-
-#if 0
-			if (ok) {
-				const SIZE labelSize = {icon->width(), icon->height()};
-				adjustImageHeight(lblIcon.get(), labelSize, imgStdHeight);
-			}
-#endif
 		}
 	}
 	if (!ok) {
