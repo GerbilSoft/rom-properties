@@ -58,8 +58,7 @@ static inline constexpr uint16_t IDC_RFT_BITFIELD(uint16_t idx, int bit)
 // libwin32ui
 #include "libwin32ui/WTSSessionNotification.hpp"
 
-// Custom controls (pseudo-controls)
-class DragImageLabel;
+// Font Handler
 #include "FontHandler.hpp"
 
 // ListView Data
@@ -140,9 +139,9 @@ public:
 	 */
 	inline int ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) const;
 
-	// Banner and icon
-	std::unique_ptr<DragImageLabel> lblBanner;
-	std::unique_ptr<DragImageLabel> lblIcon;
+	// Banner and icon (DragImageLabel)
+	HWND lblBanner;
+	HWND lblIcon;
 
 	// Tab layout
 	HWND tabWidget;
@@ -199,7 +198,7 @@ public:
 	 * @param labelSize rp_image size
 	 * @param imgStdHeight "Standard" height (usually 32px at 96dpi)
 	 */
-	static void adjustImageHeight(DragImageLabel *label, SIZE labelSize, int imgStdHeight);
+	static void adjustImageHeight(HWND label, SIZE labelSize, int imgStdHeight);
 
 	/**
 	 * Load the banner and icon as HBITMAPs.
@@ -426,7 +425,9 @@ private:
 	// Internal functions used by the callback functions.
 	INT_PTR DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr);
 	INT_PTR DlgProc_WM_COMMAND(HWND hDlg, WPARAM wParam, LPARAM lParam);
+#if 0
 	INT_PTR DlgProc_WM_PAINT(HWND hDlg);
+#endif
 
 public:
 	// Property sheet callback functions.

@@ -37,6 +37,7 @@
 #include "LanguageComboBox.hpp"
 #include "MessageWidget.hpp"
 #include "OptionsMenuButton.hpp"
+#include "DragImageLabel.hpp"
 
 #ifdef ENABLE_DETOURS
 #  include "RP_PrivateExtractIcons.hpp"
@@ -131,6 +132,7 @@ STDAPI DllCanUnloadNow(void)
 	MessageWidgetUnregister();
 	LanguageComboBoxUnregister();
 	OptionsMenuButtonUnregister();
+	DragImageLabelUnregister();
 
 	// Shut down GDI+ if it was initialized.
 	if (gdipToken != 0) {
