@@ -2643,7 +2643,7 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 				// Open the URL.
 				// NOTE: SysLink control only supports Unicode.
 				PNMLINK pNMLink = reinterpret_cast<PNMLINK>(pHdr);
-				if (pNMLink->item.szUrl) {
+				if (pNMLink->item.szUrl[0] != L'\0') {
 					// Verify the protocol.
 					if (!wcsncmp(pNMLink->item.szUrl, L"https://", 8) ||
 					    !wcsncmp(pNMLink->item.szUrl, L"mailto:", 7))
