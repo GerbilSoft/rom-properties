@@ -11,6 +11,9 @@
 #include "DragImageLabel.hpp"
 #include "RpImageWin32.hpp"
 
+// DIL DataObject (also handles IDropSource)
+#include "DILDataObject.hpp"
+
 // Other rom-properties libraries
 #include "librpbase/img/IconAnimHelper.hpp"
 #include "librpbase/img/RpPngWriter.hpp"
@@ -185,6 +188,13 @@ public:
 	 * WM_PAINT handler
 	 */
 	void on_WM_PAINT(void);
+
+	/**
+	 * WM_LBUTTONDOWN handler
+	 * @param wParam
+	 * @param lParam
+	 */
+	void on_WM_LBUTTONDOWN(WPARAM wParam, LPARAM lParam);
 
 public:
 	/** External message handlers **/
@@ -554,6 +564,40 @@ void DragImageLabelPrivate::on_WM_PAINT(void)
 	EndPaint(q_ptr, &ps);
 }
 
+/**
+ * WM_LBUTTONDOWN handler
+ * @param wParam
+ * @param lParam
+ */
+void DragImageLabelPrivate::on_WM_LBUTTONDOWN(WPARAM wParam, LPARAM lParam)
+{
+	// Check for a drag.
+	const POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+	if (!DragDetect(q_ptr, pt)) {
+		// Not a drag.
+		return;
+	}
+
+	// Start the drag operation.
+	// TODO: Handle IconAnimData.
+	if (!isNonAnim()) {
+		return;
+	}
+	const non_anim_vars_t &non_anim = std::get<non_anim_vars_t>(imgData);
+	// TODO: Copy the HBITMAP too?
+	DILDataObject *const dataObj = new DILDataObject(non_anim.img);
+
+	// TODO: Allow more than COPY? (everything will be handled as COPY regardless)
+	DWORD effect = 0;
+	HRESULT hr = DoDragDrop(dataObj, dataObj, DROPEFFECT_COPY, &effect);
+	if (FAILED(hr)) {
+		// DoDragDrop() failed...
+		dataObj->Release();
+		return;
+	}
+	dataObj->Release();
+}
+
 void DragImageLabelPrivate::setEcksBawks(bool newEcksBawks)
 {
 	ecksBawks = newEcksBawks;
@@ -650,6 +694,7 @@ DragImageLabelWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				// No DragImageLabelPrivate. Can't do anything...
 				return false;
 			}
+
 			d->on_WM_PAINT();
 			break;
 		}
@@ -679,6 +724,20 @@ DragImageLabelWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			// TODO: Only schedule an update, and update it in the next WM_PAINT?
 			d->updateBitmaps();
+		}
+
+		case WM_LBUTTONDOWN: {
+			DragImageLabelPrivate *const d = reinterpret_cast<DragImageLabelPrivate*>(
+				GetWindowLongPtr(hWnd, GWLP_USERDATA));
+			if (!d) {
+				// No RP_ShellPropSheetExt_Private. Can't do anything...
+				return false;
+			}
+
+			d->on_WM_LBUTTONDOWN(wParam, lParam);
+
+			// Don't bother running DefWindowProc here.
+			return 0;
 		}
 
 		// Custom messages

@@ -70,6 +70,7 @@ SET(${PROJECT_NAME}_SRCS
 	RP_XAttrView.cpp
 	RP_ColumnProvider.cpp
 	CreateThumbnail.cpp
+	DILDataObject.cpp
 	DragImageLabel.cpp
 	FontHandler.cpp
 	MessageWidget.cpp
@@ -123,6 +124,7 @@ SET(${PROJECT_NAME}_H
 	RP_ColumnProvider.hpp
 	RP_ColumnProvider_p.hpp
 	CreateThumbnail.hpp
+	DILDataObject.hpp
 	DragImageLabel.hpp
 	FontHandler.hpp
 	MessageWidget.hpp
