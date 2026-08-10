@@ -9,6 +9,8 @@
 #include "DragImage.hpp"
 #include "PIMGTYPE.hpp"
 
+#include "RpGtk.h"	// for GTK_MAJOR_STR
+
 // Other rom-properties libraries
 #include "librpbase/img/IconAnimHelper.hpp"
 #include "librpbase/img/RpPngWriter.hpp"
@@ -938,8 +940,17 @@ rp_drag_image_create_PNG_file(RpDragImage *image)
 		return pngData;
 	}
 
+	/** tEXt chunks **/
 	// TODO: Add text fields indicating the source game.
+	RpPngWriter::kv_vector kv;
 
+	// Software
+	kv.emplace_back("Software", "ROM Properties Page shell extension (GTK" GTK_MAJOR_STR ")");
+
+	// Write the tEXt chunks.
+	pngWriter->write_tEXt(kv);
+
+	/** IHDR and IDAT **/
 	int pwRet = pngWriter->write_IHDR();
 	if (pwRet != 0) {
 		// Error writing the PNG image...

@@ -358,8 +358,17 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 		return;
 	}
 
+	/** tEXt chunks **/
 	// TODO: Add text fields indicating the source game.
+	RpPngWriter::kv_vector kv;
 
+	// Software
+	kv.emplace_back("Software", "ROM Properties Page shell extension (" RP_KDE_UPPER ")");
+
+	// Write the tEXt chunks.
+	pngWriter->write_tEXt(kv);
+
+	/** IHDR and IDAT **/
 	int pwRet = pngWriter->write_IHDR();
 	if (pwRet != 0) {
 		// Error writing the PNG image...
