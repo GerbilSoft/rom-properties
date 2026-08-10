@@ -59,7 +59,7 @@ public:
 
 public:
 	// Supported data formats
-	array<FORMATETC, 2> formatEtc;
+	array<FORMATETC, 3> formatEtc;
 
 	/**
 	 * Check if a format is supported.
@@ -67,6 +67,12 @@ public:
 	 * @return Index if supported; -1 if not.
 	 */
 	int lookupFormatEtc(_In_ const FORMATETC *pformatetc) const;
+
+	/**
+	 * Get the CFSTR_FILEDESCRIPTORW for the image.
+	 * @return CFSTR_FILEDESCRIPTORW
+	 */
+	HGLOBAL getFileDescriptorW(void) const;
 
 	/**
 	 * Get the CFSTR_FILEDESCRIPTORA for the image.
@@ -104,19 +110,26 @@ void DILDataObjectPrivate::initFormatEtc(void)
 	// NOTE: Cannot make it static const because CFSTR_* formats have to be
 	// converted to integers using RegisterClipboardFormat().
 
-	// CFSTR_FILEDESCRIPTORA
-	formatEtc[0].cfFormat = RegisterClipboardFormat(CFSTR_FILEDESCRIPTORA);
+	// CFSTR_FILEDESCRIPTORW
+	formatEtc[0].cfFormat = RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW);
 	formatEtc[0].ptd = nullptr;
 	formatEtc[0].dwAspect = DVASPECT_CONTENT;
 	formatEtc[0].lindex = -1;
 	formatEtc[0].tymed = TYMED_HGLOBAL;
 
-	// CFSTR_FILECONTENTS
-	formatEtc[1].cfFormat = RegisterClipboardFormat(CFSTR_FILECONTENTS);
+	// CFSTR_FILEDESCRIPTORA
+	formatEtc[1].cfFormat = RegisterClipboardFormat(CFSTR_FILEDESCRIPTORA);
 	formatEtc[1].ptd = nullptr;
 	formatEtc[1].dwAspect = DVASPECT_CONTENT;
-	formatEtc[1].lindex = 0;
+	formatEtc[1].lindex = -1;
 	formatEtc[1].tymed = TYMED_HGLOBAL;
+
+	// CFSTR_FILECONTENTS
+	formatEtc[2].cfFormat = RegisterClipboardFormat(CFSTR_FILECONTENTS);
+	formatEtc[2].ptd = nullptr;
+	formatEtc[2].dwAspect = DVASPECT_CONTENT;
+	formatEtc[2].lindex = 0;
+	formatEtc[2].tymed = TYMED_HGLOBAL;
 }
 
 /**
@@ -146,13 +159,44 @@ int DILDataObjectPrivate::lookupFormatEtc(_In_ const FORMATETC *pformatetc) cons
 }
 
 /**
+ * Get the CFSTR_FILEDESCRIPTORW for the image.
+ * @return CFSTR_FILEDESCRIPTORW
+ */
+HGLOBAL DILDataObjectPrivate::getFileDescriptorW(void) const
+{
+	// Create a CFSTR_FILEDESCRIPTOR for a single virtual file.
+	// NOTE: FILEGROUPDESCRIPTORW contains one FILEDESCRIPTORW.
+	// NOTE: The Unicode version requires Windows Vista or later.
+	const size_t buf_size = sizeof(FILEGROUPDESCRIPTORW);
+	HGLOBAL hglbFileDesc = GlobalAlloc(GMEM_MOVEABLE, buf_size);
+	if (!hglbFileDesc) {
+		return nullptr;
+	}
+
+	FILEGROUPDESCRIPTORW *const fileGroupDesc = static_cast<FILEGROUPDESCRIPTORW*>(GlobalLock(hglbFileDesc));
+	if (!fileGroupDesc) {
+		GlobalFree(hglbFileDesc);
+		return nullptr;
+	}
+
+	fileGroupDesc->cItems = 1;
+
+	FILEDESCRIPTORW *const fileDesc = &fileGroupDesc->fgd[0];
+	fileDesc->dwFlags = FD_ATTRIBUTES;
+	fileDesc->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+	wcscpy(fileDesc->cFileName, L"🍅.png");
+
+	GlobalUnlock(hglbFileDesc);
+	return hglbFileDesc;
+}
+
+/**
  * Get the CFSTR_FILEDESCRIPTORA for the image.
  * @return CFSTR_FILEDESCRIPTORA
  */
 HGLOBAL DILDataObjectPrivate::getFileDescriptorA(void) const
 {
 	// Create a CFSTR_FILEDESCRIPTOR for a single virtual file.
-	// TODO: Support Unicode on Windows Vista and later?
 	// NOTE: FILEGROUPDESCRIPTORA contains one FILEDESCRIPTORA.
 	const size_t buf_size = sizeof(FILEGROUPDESCRIPTORA);
 	HGLOBAL hglbFileDesc = GlobalAlloc(GMEM_MOVEABLE, buf_size);
@@ -293,12 +337,17 @@ IFACEMETHODIMP DILDataObject::GetData(_In_ FORMATETC *pformatetcIn, _Out_ STGMED
 	pmedium->pUnkForRelease = nullptr;
 
 	switch (idx) {
-		case 0:	// CFSTR_FILEDESCRIPTORA
+		case 0:	// CFSTR_FILEDESCRIPTORW
+			// Get the file descriptor.
+			pmedium->hGlobal = d->getFileDescriptorW();
+			break;
+
+		case 1:	// CFSTR_FILEDESCRIPTORA
 			// Get the file descriptor.
 			pmedium->hGlobal = d->getFileDescriptorA();
 			break;
 
-		case 1:	// CFSTR_FILECONTENTS
+		case 2:	// CFSTR_FILECONTENTS
 			// Get the file contents.
 			pmedium->hGlobal = d->getFileContents();
 			if (!pmedium->hGlobal) {
