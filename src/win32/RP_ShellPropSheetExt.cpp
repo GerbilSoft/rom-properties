@@ -103,33 +103,6 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 }
 
 /**
- * Adjust the height for an image based on the "standard" height.
- * Used by loadImages().
- *
- * @param label DragImageLabel
- * @param labelSize rp_image size
- * @param imgStdHeight "Standard" height (usually 32px at 96dpi)
- */
-void RP_ShellPropSheetExt_Private::adjustImageHeight(HWND label, SIZE labelSize, int imgStdHeight)
-{
-#if 0
-	if (labelSize.cy != imgStdHeight) {
-		// Need to scale the label to match the aspect ratio.
-		const SIZE labelScaledSize = {
-			static_cast<LONG>(rintf(
-				static_cast<float>(imgStdHeight) * (static_cast<float>(labelSize.cx) /
-				static_cast<float>(labelSize.cy)))),
-			imgStdHeight
-		};
-		label->setRequiredSize(labelScaledSize);
-	} else {
-		// Use the original size.
-		label->setRequiredSize(labelSize);
-	}
-#endif
-}
-
-/**
  * Load the banner and icon as HBITMAPs.
  *
  * This function should be called on startup and if
@@ -1143,7 +1116,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 		const int px = rp_AdjustSizeForDpi(32, rp_GetDpiForWindow(hDlgSheet));
 		lvData.col0sizeadj = px;
 
-		const SIZE sizeListIconOrig = {px, px};
+		//const SIZE sizeListIconOrig = {px, px};
 		SIZE sizeListIconPhys = {px, px};
 		float factor = 1.0f;
 		bool resizeNeeded = false;
