@@ -55,9 +55,9 @@ static inline bool DragImageLabel_SetRpImage(HWND hWnd, const LibRpTexture::rp_i
 	return static_cast<bool>(SendMessage(hWnd, WM_DIL_SET_RP_IMAGE, 0, reinterpret_cast<LPARAM>(&img)));
 }
 
-static inline bool DragImageLabel_SetIconAnimData(HWND hWnd, const LibRpBase::IconAnimDataConstPtr &img)
+static inline bool DragImageLabel_SetIconAnimData(HWND hWnd, const LibRpBase::IconAnimDataConstPtr &iconAnimData)
 {
-	return static_cast<bool>(SendMessage(hWnd, WM_DIL_SET_ICON_ANIM_DATA, 0, reinterpret_cast<LPARAM>(&img)));
+	return static_cast<bool>(SendMessage(hWnd, WM_DIL_SET_ICON_ANIM_DATA, 0, reinterpret_cast<LPARAM>(&iconAnimData)));
 }
 
 #endif /* __cplusplus */
