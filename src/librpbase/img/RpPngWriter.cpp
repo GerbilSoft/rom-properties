@@ -332,7 +332,7 @@ RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, int width, int
 	, imageTag(ImageTag::Invalid), IHDR_written(false)
 	, file(theFile), png_ptr(nullptr), info_ptr(nullptr)
 {
-	if (!file || width <= 0 || height <= 0 ||
+	if (!file || !file->isOpen() || width <= 0 || height <= 0 ||
 	    (format != rp_image::Format::CI8 && format != rp_image::Format::ARGB32))
 	{
 		// Invalid parameters.
@@ -401,7 +401,7 @@ RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, const rp_image
 	, imageTag(ImageTag::Invalid), IHDR_written(false)
 	, file(theFile), png_ptr(nullptr), info_ptr(nullptr)
 {
-	if (!file || !img || !img->isValid()) {
+	if (!file || !file->isOpen() || !img || !img->isValid()) {
 		// Invalid parameters.
 		lastError = EINVAL;
 		file.reset();
@@ -462,7 +462,7 @@ RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, const IconAnim
 	, imageTag(ImageTag::Invalid), IHDR_written(false)
 	, file(theFile), png_ptr(nullptr), info_ptr(nullptr)
 {
-	if (!file || !iconAnimData || iconAnimData->seq_count <= 0) {
+	if (!file || !file->isOpen() || !iconAnimData || iconAnimData->seq_count <= 0) {
 		// Invalid parameters.
 		lastError = EINVAL;
 		file.reset();
