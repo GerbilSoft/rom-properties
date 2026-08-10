@@ -202,8 +202,7 @@ HGLOBAL DILDataObjectPrivate::getFileContents(void) const
 	}
 
 	/** tEXt chunks **/
-
-	// tEXt chunks
+	// TODO: Add text fields indicating the source game.
 	RpPngWriter::kv_vector kv;
 
 	// Software
@@ -213,7 +212,6 @@ HGLOBAL DILDataObjectPrivate::getFileContents(void) const
 	pngWriter->write_tEXt(kv);
 
 	/** IHDR and IDAT **/
-
 	int pwRet = pngWriter->write_IHDR();
 	if (pwRet != 0) {
 		// Error writing IHDR.
