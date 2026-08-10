@@ -10,27 +10,36 @@
 
 // Reference: https://www.catch22.net/tuts/ole/implementing-idataobject/
 #include "DILDataObject.hpp"
+#include "RpImageWin32.hpp"
 
-// librptexture
+// Other rom-properties libraries
+#include "librpbase/img/RpPngWriter.hpp"
+#include "librpfile/VectorFile.hpp"
+using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpTexture;
+
+// libwin32ui
+#include "libwin32ui/WinUI.hpp"
+#include <uxtheme.h>	// for IsThemeActive()
 
 // C++ STL classes
 #include <array>
+#include <memory>
 using std::array;
+using std::unique_ptr;
 
 class DILDataObjectPrivate
 {
 public:
-	explicit DILDataObjectPrivate(const LibRpTexture::rp_image_const_ptr &img)
-		: img(img)
-	{}
+	explicit DILDataObjectPrivate(const LibRpTexture::rp_image_const_ptr &img);
 
 public:
 	rp_image_const_ptr img;
 
 public:
 	// Supported data formats
-	static const array<FORMATETC, 1> formatEtc;
+	array<FORMATETC, 2> formatEtc;
 
 	/**
 	 * Check if a format is supported.
@@ -40,28 +49,41 @@ public:
 	int lookupFormatEtc(_In_ const FORMATETC *pformatetc) const;
 
 	/**
-	 * Helper function to copy a string to a new HGLOBAL.
-	 * @param szText
-	 * @param nTextLen Text length (if -1, assume a NULL-terminated string)
+	 * Get the CFSTR_FILEDESCRIPTORA for the image.
+	 * @return CFSTR_FILEDESCRIPTORA
 	 */
-	static HGLOBAL StringToHandle(LPCWSTR szText, int nTextLen = -1);
+	HGLOBAL getFileDescriptorA(void) const;
 
 	/**
-	 * Helper function to duplicate an HGLOBAL.
-	 * @param hMem HGLOBAL
-	 * @return Duplicated HGLOBAL
+	 * Get the image data in PNG format.
+	 * @return HGLOBAL containing the image data, or nullptr on error.
 	 */
-	static HGLOBAL dupGlobalMem(HGLOBAL hMem);
+	HGLOBAL getFileContents(void) const;
 };
 
 /** DILDataObjectPrivate **/
 
-// Supported data formats
-const array<FORMATETC, 1> DILDataObjectPrivate::formatEtc = {{
-	// TODO: "PNG" format?
-	// TODO: Actually store a bitmap. Testing with just text for now.
-	{CF_UNICODETEXT, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL},
-}};
+DILDataObjectPrivate::DILDataObjectPrivate(const LibRpTexture::rp_image_const_ptr &img)
+	: img(img)
+{
+	// Initialize formatEtc.
+	// NOTE: Cannot make it static const because CFSTR_* formats have to be
+	// converted to integers using RegisterClipboardFormat().
+
+	// CFSTR_FILEDESCRIPTORA
+	formatEtc[0].cfFormat = RegisterClipboardFormat(CFSTR_FILEDESCRIPTORA);
+	formatEtc[0].ptd = nullptr;
+	formatEtc[0].dwAspect = DVASPECT_CONTENT;
+	formatEtc[0].lindex = -1;
+	formatEtc[0].tymed = TYMED_HGLOBAL;
+
+	// CFSTR_FILECONTENTS
+	formatEtc[1].cfFormat = RegisterClipboardFormat(CFSTR_FILECONTENTS);
+	formatEtc[1].ptd = nullptr;
+	formatEtc[1].dwAspect = DVASPECT_CONTENT;
+	formatEtc[1].lindex = 0;
+	formatEtc[1].tymed = TYMED_HGLOBAL;
+}
 
 /**
  * Check if a format is supported.
@@ -90,42 +112,120 @@ int DILDataObjectPrivate::lookupFormatEtc(_In_ const FORMATETC *pformatetc) cons
 }
 
 /**
- * Helper function to copy a string to a new HGLOBAL.
- * @param szText
- * @param nTextLen Text length (if -1, assume a NULL-terminated string)
+ * Get the CFSTR_FILEDESCRIPTORA for the image.
+ * @return CFSTR_FILEDESCRIPTORA
  */
-HGLOBAL DILDataObjectPrivate::StringToHandle(LPCWSTR szText, int nTextLen)
+HGLOBAL DILDataObjectPrivate::getFileDescriptorA(void) const
 {
-	// if text length is -1 then treat as a nul-terminated string
-	if (nTextLen < 0) {
-		nTextLen = wcslen(szText);
+	// Create a CFSTR_FILEDESCRIPTOR for a single virtual file.
+	// TODO: Support Unicode on Windows Vista and later?
+	// NOTE: FILEGROUPDESCRIPTORA contains one FILEDESCRIPTORA.
+	const size_t buf_size = sizeof(FILEGROUPDESCRIPTORA);
+	HGLOBAL hglbFileDesc = GlobalAlloc(GMEM_MOVEABLE, buf_size);
+	if (!hglbFileDesc) {
+		return nullptr;
 	}
 
-	// allocate and lock a global memory buffer. Make it fixed
-	// data so we don't have to use GlobalLock
-	wchar_t *ptr = static_cast<wchar_t*>(GlobalAlloc(GMEM_FIXED, (nTextLen + 1) * sizeof(wchar_t)));
+	FILEGROUPDESCRIPTORA *const fileGroupDesc = static_cast<FILEGROUPDESCRIPTORA*>(GlobalLock(hglbFileDesc));
+	if (!fileGroupDesc) {
+		GlobalFree(hglbFileDesc);
+		return nullptr;
+	}
 
-	// copy the string into the buffer
-	memcpy(ptr, szText, nTextLen * sizeof(wchar_t));
-	ptr[nTextLen] = '\0';
+	fileGroupDesc->cItems = 1;
 
-	return ptr;
+	FILEDESCRIPTORA *const fileDesc = &fileGroupDesc->fgd[0];
+	fileDesc->dwFlags = FD_ATTRIBUTES;
+	fileDesc->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+	strcpy(fileDesc->cFileName, "test123.png");
+
+	GlobalUnlock(hglbFileDesc);
+	return hglbFileDesc;
 }
 
 /**
- * Helper function to duplicate an HGLOBAL.
- * @param hMem HGLOBAL
- * @return Duplicated HGLOBAL
+ * Get the image data in PNG format.
+ * @return HGLOBAL containing the image data, or nullptr on error.
  */
-HGLOBAL DILDataObjectPrivate::dupGlobalMem(HGLOBAL hMem)
+HGLOBAL DILDataObjectPrivate::getFileContents(void) const
 {
-	SIZE_T len = GlobalSize(hMem);
-	PVOID source = GlobalLock(hMem);
-	PVOID dest = GlobalAlloc(GMEM_FIXED, len);
+	// TODO: Handle iconAnimData.
+	if (!img) {
+		return nullptr;
+	}
 
-	memcpy(dest, source, len);
-	GlobalUnlock(hMem);
-	return dest;
+	// Save to a VectorFile.
+	// The data will be copied to an HGLOBAL later.
+	VectorFilePtr vfile(new VectorFile());
+
+	// Save the image using RpPngWriter.
+	const int height = img->height();
+
+	// tEXt chunks
+	RpPngWriter::kv_vector kv;
+
+	// TODO: Generate a temporary filename, possibly based on game ID or source filename?
+	RpPngWriter pngWriter(vfile, img->width(), height, img->format());
+	if (!pngWriter.isOpen()) {
+		// Could not open the PNG writer.
+		return nullptr;
+	}
+
+	/** tEXt chunks **/
+
+	// Software
+	kv.emplace_back("Software", "ROM Properties Page shell extension (Win32)");
+
+	// Write the tEXt chunks.
+	pngWriter.write_tEXt(kv);
+
+	/** IHDR **/
+
+	// If sBIT wasn't found, all fields will be 0.
+	// RpPngWriter will ignore sBIT in this case.
+	rp_image::sBIT_t sBIT;
+	if (img->get_sBIT(&sBIT) != 0) {
+		memset(&sBIT, 0, sizeof(sBIT));
+	}
+	int pwRet = pngWriter.write_IHDR(&sBIT,
+		img->palette(), img->palette_len());
+	if (pwRet != 0) {
+		// Error writing IHDR.
+		return nullptr;
+	}
+
+	/** IDAT chunk **/
+
+	// Initialize the row pointers.
+	unique_ptr<const uint8_t*[]> row_pointers(new const uint8_t*[height]);
+	const uint8_t *pixels = static_cast<const uint8_t*>(img->bits());
+	const int stride = img->stride();
+	for (int y = 0; y < height; y++, pixels += stride) {
+		row_pointers[y] = pixels;
+	}
+
+	// Write the IDAT section.
+	pwRet = pngWriter.write_IDAT(row_pointers.get());
+	if (pwRet != 0) {
+		// Error writing IDAT.
+		return nullptr;
+	}
+
+	// Copy the VectorFile data to an HGLOBAL.
+	const std::vector<uint8_t> &vec = vfile->vector();
+	HGLOBAL hglbPngFile = GlobalAlloc(GMEM_MOVEABLE, vec.size());
+	if (!hglbPngFile) {
+		return nullptr;
+	}
+
+	uint8_t *const fileBuf = static_cast<uint8_t*>(GlobalLock(hglbPngFile));
+	if (!fileBuf) {
+		GlobalFree(hglbPngFile);
+	}
+
+	memcpy(fileBuf, vec.data(), vec.size());
+	GlobalUnlock(hglbPngFile);
+	return hglbPngFile;
 }
 
 /** DILDataObject **/
@@ -176,13 +276,15 @@ IFACEMETHODIMP DILDataObject::GetData(_In_ FORMATETC *pformatetcIn, _Out_ STGMED
 	pmedium->tymed = fmtetc.tymed;
 	pmedium->pUnkForRelease = nullptr;
 
-	switch(fmtetc.tymed)
-	{
-		case TYMED_HGLOBAL:
-			// TODO: Prepare the image data.
-			// For now, just creating a string.
-			//pmedium->hGlobal = d->dupGlobalMem(d->stgMedium[idx].hGlobal);
-			pmedium->hGlobal = d->StringToHandle(L"Hello, World!");
+	switch (idx) {
+		case 0:	// CFSTR_FILEDESCRIPTORA
+			// Get the file descriptor.
+			pmedium->hGlobal = d->getFileDescriptorA();
+			break;
+
+		case 1:	// CFSTR_FILECONTENTS
+			// Get the file contents.
+			pmedium->hGlobal = d->getFileContents();
 			break;
 
 		default:
@@ -241,9 +343,10 @@ IFACEMETHODIMP DILDataObject::EnumFormatEtc(DWORD dwDirection, __RPC__deref_out_
 	// NOTE: Win2000+ has SHCreateStdEnumFmtEtc(), but it's not available in older versions.
 	// For 9x compatibility, this can be implemented later.
 	// Reference: https://www.catch22.net/tuts/ole/enumerating-formatetc/
+	RP_D(const DILDataObject);
 	HRESULT hr = SHCreateStdEnumFmtEtc(
-		static_cast<int>(DILDataObjectPrivate::formatEtc.size()),
-		DILDataObjectPrivate::formatEtc.data(),
+		static_cast<int>(d->formatEtc.size()),
+		d->formatEtc.data(),
 		ppenumFormatEtc);
 	if (FAILED(hr) || !*ppenumFormatEtc) {
 		if (*ppenumFormatEtc) {
