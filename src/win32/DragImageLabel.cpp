@@ -580,12 +580,17 @@ void DragImageLabelPrivate::on_WM_LBUTTONDOWN(WPARAM wParam, LPARAM lParam)
 
 	// Start the drag operation.
 	// TODO: Handle IconAnimData.
-	if (!isNonAnim()) {
+	DILDataObject *dataObj = nullptr;
+	if (isAnim()) {
+		const anim_vars_t &anim = std::get<anim_vars_t>(imgData);
+		dataObj = new DILDataObject(anim.iconAnimData);
+	} else if (isNonAnim()) {
+		const non_anim_vars_t &non_anim = std::get<non_anim_vars_t>(imgData);
+		dataObj = new DILDataObject(non_anim.img);
+	} else {
+		// No icon...
 		return;
 	}
-	const non_anim_vars_t &non_anim = std::get<non_anim_vars_t>(imgData);
-	// TODO: Copy the HBITMAP too?
-	DILDataObject *const dataObj = new DILDataObject(non_anim.img);
 
 	// TODO: Allow more than COPY? (everything will be handled as COPY regardless)
 	DWORD effect = 0;

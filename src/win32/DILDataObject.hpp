@@ -12,7 +12,8 @@
 
 #include "common.h"
 
-// librptexture
+// Other rom-properties libraries
+#include "librpbase/img/IconAnimData.hpp"
 #include "librptexture/img/rp_image.hpp"
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
@@ -24,6 +25,7 @@ class DILDataObject final : public LibWin32Common::ComBase<IDataObject, IDropSou
 {
 public:
 	explicit DILDataObject(const LibRpTexture::rp_image_const_ptr &img);
+	explicit DILDataObject(const LibRpBase::IconAnimDataConstPtr &iconAnimData);
 protected:
 	~DILDataObject() final;
 

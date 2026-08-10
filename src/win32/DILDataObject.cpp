@@ -29,13 +29,33 @@ using namespace LibRpTexture;
 using std::array;
 using std::unique_ptr;
 
+#ifdef HAVE_STD_VARIANT
+#  include <variant>
+#else /* !HAVE_STD_VARIANT */
+// std::variant<> is not available on this system.
+// Use mpark variant instead.
+#  include "mpark/variant.hpp"
+namespace std {
+	using mpark::variant;
+	using mpark::holds_alternative;
+	using mpark::get;
+	using mpark::monostate;
+}
+#endif /* HAVE_STD_VARIANT */
+
 class DILDataObjectPrivate
 {
 public:
-	explicit DILDataObjectPrivate(const LibRpTexture::rp_image_const_ptr &img);
+	explicit DILDataObjectPrivate(const rp_image_const_ptr &img);
+	explicit DILDataObjectPrivate(const IconAnimDataConstPtr &iconAnimData);
+private:
+	/**
+	 * Initialize the formatEtc array.
+	 */
+	void initFormatEtc(void);
 
 public:
-	rp_image_const_ptr img;
+	std::variant<std::monostate, rp_image_const_ptr, IconAnimDataConstPtr> imgData;
 
 public:
 	// Supported data formats
@@ -63,8 +83,22 @@ public:
 
 /** DILDataObjectPrivate **/
 
-DILDataObjectPrivate::DILDataObjectPrivate(const LibRpTexture::rp_image_const_ptr &img)
-	: img(img)
+DILDataObjectPrivate::DILDataObjectPrivate(const rp_image_const_ptr &img)
+	: imgData(img)
+{
+	initFormatEtc();
+}
+
+DILDataObjectPrivate::DILDataObjectPrivate(const IconAnimDataConstPtr &iconAnimData)
+	: imgData(iconAnimData)
+{
+	initFormatEtc();
+}
+
+/**
+ * Initialize the formatEtc array.
+ */
+void DILDataObjectPrivate::initFormatEtc(void)
 {
 	// Initialize formatEtc.
 	// NOTE: Cannot make it static const because CFSTR_* formats have to be
@@ -149,70 +183,50 @@ HGLOBAL DILDataObjectPrivate::getFileDescriptorA(void) const
  */
 HGLOBAL DILDataObjectPrivate::getFileContents(void) const
 {
-	// TODO: Handle iconAnimData.
-	if (!img) {
-		return nullptr;
-	}
-
 	// Save to a VectorFile.
 	// The data will be copied to an HGLOBAL later.
-	VectorFilePtr vfile(new VectorFile());
+	VectorFilePtr pngData(new VectorFile());
 
 	// Save the image using RpPngWriter.
-	const int height = img->height();
-
-	// tEXt chunks
-	RpPngWriter::kv_vector kv;
-
 	// TODO: Generate a temporary filename, possibly based on game ID or source filename?
-	RpPngWriter pngWriter(vfile, img->width(), height, img->format());
-	if (!pngWriter.isOpen()) {
-		// Could not open the PNG writer.
+	unique_ptr<RpPngWriter> pngWriter;
+	if (std::holds_alternative<IconAnimDataConstPtr>(imgData)) {
+		// Animated icon
+		pngWriter.reset(new RpPngWriter(pngData, std::get<IconAnimDataConstPtr>(imgData)));
+	} else if (std::holds_alternative<rp_image_const_ptr>(imgData)) {
+		// Standard icon
+		pngWriter.reset(new RpPngWriter(pngData, std::get<rp_image_const_ptr>(imgData)));
+	} else {
+		// No icon...
 		return nullptr;
 	}
 
 	/** tEXt chunks **/
 
+	// tEXt chunks
+	RpPngWriter::kv_vector kv;
+
 	// Software
 	kv.emplace_back("Software", "ROM Properties Page shell extension (Win32)");
 
 	// Write the tEXt chunks.
-	pngWriter.write_tEXt(kv);
+	pngWriter->write_tEXt(kv);
 
-	/** IHDR **/
+	/** IHDR and IDAT **/
 
-	// If sBIT wasn't found, all fields will be 0.
-	// RpPngWriter will ignore sBIT in this case.
-	rp_image::sBIT_t sBIT;
-	if (img->get_sBIT(&sBIT) != 0) {
-		memset(&sBIT, 0, sizeof(sBIT));
-	}
-	int pwRet = pngWriter.write_IHDR(&sBIT,
-		img->palette(), img->palette_len());
+	int pwRet = pngWriter->write_IHDR();
 	if (pwRet != 0) {
 		// Error writing IHDR.
 		return nullptr;
 	}
-
-	/** IDAT chunk **/
-
-	// Initialize the row pointers.
-	unique_ptr<const uint8_t*[]> row_pointers(new const uint8_t*[height]);
-	const uint8_t *pixels = static_cast<const uint8_t*>(img->bits());
-	const int stride = img->stride();
-	for (int y = 0; y < height; y++, pixels += stride) {
-		row_pointers[y] = pixels;
-	}
-
-	// Write the IDAT section.
-	pwRet = pngWriter.write_IDAT(row_pointers.get());
+	pwRet = pngWriter->write_IDAT();
 	if (pwRet != 0) {
 		// Error writing IDAT.
 		return nullptr;
 	}
 
 	// Copy the VectorFile data to an HGLOBAL.
-	const std::vector<uint8_t> &vec = vfile->vector();
+	const std::vector<uint8_t> &vec = pngData->vector();
 	HGLOBAL hglbPngFile = GlobalAlloc(GMEM_MOVEABLE, vec.size());
 	if (!hglbPngFile) {
 		return nullptr;
@@ -232,6 +246,10 @@ HGLOBAL DILDataObjectPrivate::getFileContents(void) const
 
 DILDataObject::DILDataObject(const LibRpTexture::rp_image_const_ptr &img)
 	: d_ptr(new DILDataObjectPrivate(img))
+{}
+
+DILDataObject::DILDataObject(const LibRpBase::IconAnimDataConstPtr &iconAnimData)
+	: d_ptr(new DILDataObjectPrivate(iconAnimData))
 {}
 
 DILDataObject::~DILDataObject()
@@ -285,6 +303,10 @@ IFACEMETHODIMP DILDataObject::GetData(_In_ FORMATETC *pformatetcIn, _Out_ STGMED
 		case 1:	// CFSTR_FILECONTENTS
 			// Get the file contents.
 			pmedium->hGlobal = d->getFileContents();
+			if (!pmedium->hGlobal) {
+				// Shouldn't happen...
+				return E_FAIL;
+			}
 			break;
 
 		default:
