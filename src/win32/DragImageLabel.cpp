@@ -795,6 +795,7 @@ DragImageLabelWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			// TODO: Only schedule an update, and update it in the next WM_PAINT?
 			d->updateBitmaps();
+			break;
 		}
 
 		case WM_LBUTTONDOWN: {
