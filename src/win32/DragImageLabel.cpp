@@ -294,11 +294,13 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 	// Get the DragImageLabel size.
 	RECT rectDragImageLabel;
 	GetWindowRect(q_ptr, &rectDragImageLabel);
-	MapWindowPoints(HWND_DESKTOP, GetParent(q_ptr), (LPPOINT)&rectDragImageLabel, 2);
 
 	// Icon size (= 0x0 if not determined yet)
 	SIZE iconSize = {0, 0};
-	SIZE labelSize = {rectDragImageLabel.right, rectDragImageLabel.bottom};
+	SIZE labelSize = {
+		rectDragImageLabel.right - rectDragImageLabel.left,
+		rectDragImageLabel.bottom - rectDragImageLabel.top
+	};
 
 	if (isAnim()) {
 		anim_vars_t &anim = std::get<anim_vars_t>(imgData);
