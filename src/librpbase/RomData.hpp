@@ -84,6 +84,7 @@ public:
 	 * Get a reference to the internal file.
 	 * @return Reference to file, or nullptr on error.
 	 */
+	RP_LIBROMDATA_PUBLIC
 	LibRpFile::IRpFilePtr ref_file(void) const;
 
 	/**

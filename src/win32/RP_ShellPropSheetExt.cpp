@@ -25,6 +25,7 @@
 #include "librpbase/RomData.hpp"
 #include "librpbase/RomFields.hpp"
 #include "librpbase/TextOut.hpp"
+#include "librpfile/RpFile.hpp"
 #include "librptext/html_entities.hpp"
 #include "librptext/wchar.hpp"
 #include "libromdata/RomDataFactory.hpp"
@@ -44,7 +45,8 @@ using std::unique_ptr;
 using std::vector;
 using std::wstring;	// for tstring
 
-// libwin32ui
+// libwin32common, libwin32ui
+#include "libwin32common/w32time.h"
 #include "libwin32ui/AutoGetDC.hpp"
 #include "libwin32ui/HiDPI.hpp"
 #include "libwin32ui/WinUI.hpp"
@@ -146,11 +148,24 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	// TODO: ...and an mtime_win32() function to get the time in FILETIME format?
 	FILETIME mtime = {0, 0};
 	{
-		WIN32_FIND_DATA findFileData;
-		HANDLE hFind = FindFirstFile(tfilename, &findFileData);
-		if (hFind && hFind != INVALID_HANDLE_VALUE) {
-			mtime = findFileData.ftLastWriteTime;
-			FindClose(hFind);
+		IRpFilePtr file = romData->ref_file();
+		if (file) {
+			// Check for RpFile, which has a FILETIME mtime() function.
+			RpFile *const rpFile = dynamic_cast<RpFile*>(file.get());
+			if (rpFile) {
+				int ret = rpFile->mtime(&mtime);
+				if (ret != 0) {
+					// Failed to get the mtime.
+					mtime.dwLowDateTime = 0;
+					mtime.dwHighDateTime = 0;
+				}
+			} else {
+				// Not an RpFile. Convert a Unix mtime instead.
+				const time_t unixtime = file->mtime();
+				if (unixtime != -1) {
+					UnixTimeToFileTime(unixtime, &mtime);
+				}
+			}
 		}
 	}
 

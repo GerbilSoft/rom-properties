@@ -11,6 +11,7 @@
 
 // libwin32common
 #include "libwin32common/w32err.hpp"
+#include "libwin32common/w32time.h"
 #include "libwin32common/MiniU82T.hpp"
 using namespace LibWin32Common;
 
@@ -775,6 +776,54 @@ const wchar_t *RpFile::filenameW(void) const
 {
 	RP_D(const RpFile);
 	return (likely(!d->filenameW.empty())) ? d->filenameW.c_str() : nullptr;
+}
+
+/**
+ * Get the file modification time.
+ * @return File modification time, or -1 if not available.
+ */
+time_t RpFile::mtime(void)
+{
+	FILETIME lastWriteTime;
+	int ret = mtime(&lastWriteTime);
+	if (ret != 0) {
+		// mtime(FILETIME*) failed...
+		return -1;
+	}
+
+	// Convert FILETIME to Unix time.
+	return FileTimeToUnixTime(&lastWriteTime);
+}
+
+/**
+ * Get the file modification time. (FILETIME format)
+ * @param mtime Output buffer for file modification time. (If not available, -1 will be written.)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+RP_LIBROMDATA_PUBLIC
+int RpFile::mtime(FILETIME *mtime)
+{
+	RP_D(RpFile);
+	if (!d->file) {
+		m_lastError = EBADF;
+		return -EBADF;
+	} else if (!mtime) {
+		m_lastError = EINVAL;
+		return -EINVAL;
+	}
+
+	FILETIME lastWriteTime;
+	BOOL bRet = GetFileTime(d->file, nullptr, nullptr, &lastWriteTime);
+	if (!bRet) {
+		m_lastError = w32err_to_posix(GetLastError());
+		if (m_lastError == 0) {
+			m_lastError = EIO;
+		}
+		return -m_lastError;
+	}
+
+	*mtime = lastWriteTime;
+	return 0;
 }
 
 /** Extra functions **/
