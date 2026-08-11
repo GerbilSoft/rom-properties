@@ -68,10 +68,6 @@ public:
 	vector<FORMATETC> vec_formatEtc;
 	vector<STGMEDIUM> vec_stgMedium;
 
-	// fRelease vector
-	// NOTE: uint8_t is used instead of bool to avoid the vector<bool> "optimization".
-	vector<uint8_t> vec_fRelease;
-
 	/**
 	 * Check if a format is supported.
 	 * @param pformatetc FORMATETC
@@ -144,7 +140,6 @@ void DILDataObjectPrivate::initDataVectors(void)
 	// converted to integers using RegisterClipboardFormat().
 	vec_formatEtc.reserve(OUR_DATA_COUNT);
 	vec_stgMedium.reserve(OUR_DATA_COUNT);
-	vec_fRelease.reserve(OUR_DATA_COUNT);
 
 	static const STGMEDIUM stgm_hGlobal = {TYMED_HGLOBAL, nullptr, nullptr};
 
@@ -156,7 +151,6 @@ void DILDataObjectPrivate::initDataVectors(void)
 		-1,						// lindex
 		TYMED_HGLOBAL);					// tymed
 	vec_stgMedium.push_back(stgm_hGlobal);
-	vec_fRelease.push_back(true);
 
 	// CFSTR_FILEDESCRIPTORA
 	vec_formatEtc.emplace_back(
@@ -166,7 +160,6 @@ void DILDataObjectPrivate::initDataVectors(void)
 		-1,						// lindex
 		TYMED_HGLOBAL);					// tymed
 	vec_stgMedium.push_back(stgm_hGlobal);
-	vec_fRelease.push_back(true);
 
 	// CFSTR_FILECONTENTS
 	vec_formatEtc.emplace_back(
@@ -176,11 +169,9 @@ void DILDataObjectPrivate::initDataVectors(void)
 		-1,						// lindex
 		TYMED_HGLOBAL);					// tymed
 	vec_stgMedium.push_back(stgm_hGlobal);
-	vec_fRelease.push_back(true);
 
 	assert(vec_formatEtc.size() == static_cast<size_t>(OUR_DATA_COUNT));
 	assert(vec_stgMedium.size() == static_cast<size_t>(OUR_DATA_COUNT));
-	assert(vec_fRelease.size()  == static_cast<size_t>(OUR_DATA_COUNT));
 }
 
 /**
@@ -247,11 +238,6 @@ void DILDataObjectPrivate::clearStgMediumData(int idx)
 	assert(idx >= OUR_DATA_COUNT);
 	assert(idx < static_cast<int>(vec_stgMedium.size()));
 	if (idx < OUR_DATA_COUNT || idx >= static_cast<int>(vec_stgMedium.size())) {
-		return;
-	}
-
-	// If fRelease is false, don't do anything.
-	if (!vec_fRelease[idx]) {
 		return;
 	}
 
@@ -436,9 +422,9 @@ IFACEMETHODIMP DILDataObject::GetData(_In_ FORMATETC *pformatetcIn, _Out_ STGMED
 	}
 
 	// found a match - transfer data into supplied storage medium
-	const FORMATETC &fmtetc = d->vec_formatEtc[idx];
-	pmedium->tymed = fmtetc.tymed;
-	pmedium->pUnkForRelease = nullptr;
+	const STGMEDIUM *const stgm = &d->vec_stgMedium[idx];
+	pmedium->tymed = stgm->tymed;
+	pmedium->pUnkForRelease = stgm->pUnkForRelease;
 
 	// TODO: Cache the hGlobal data in d->vec_stgMedium?
 	// For now, d->vec_stgMedium data is only valid for anything set with SetData().
@@ -464,9 +450,50 @@ IFACEMETHODIMP DILDataObject::GetData(_In_ FORMATETC *pformatetcIn, _Out_ STGMED
 
 		default:
 			// Get the STGMEDIUM that was previously set using SetData().
-			// NOTE: Union of pointers, so copying hGlobal should work regardless.
-			// TODO: Return a copy?
-			pmedium->hGlobal = d->vec_stgMedium[idx].hGlobal;
+			// TODO: Verify actions using: https://learn.microsoft.com/en-us/windows/win32/api/ole2/nf-ole2-releasestgmedium
+			switch (stgm->tymed) {
+				default:
+					assert(!"Unsupported TYMED!");
+					return DV_E_TYMED;
+
+				case TYMED_NULL:
+					// Nothing to do here...
+					break;
+
+				case TYMED_HGLOBAL:
+					if (stgm->pUnkForRelease) {
+						// Return the HGLOBAL as-is.
+						// TODO: Verify that this is correct.
+						pmedium->hGlobal = stgm->hGlobal;
+					} else {
+						// Need to dup() the HGLOBAL.
+						pmedium->hGlobal = (stgm->hGlobal != nullptr)
+							? d->dupGlobalMem(stgm->hGlobal)
+							: nullptr;
+					}
+					break;
+
+				case TYMED_ISTREAM:
+					if (stgm->pstm) {
+						stgm->pstm->AddRef();
+					}
+					pmedium->pstm = stgm->pstm;
+					break;
+
+				case TYMED_ISTORAGE:
+					if (stgm->pstg) {
+						stgm->pstg->AddRef();
+					}
+					pmedium->pstg = stgm->pstg;
+					break;
+
+				case TYMED_FILE:
+				case TYMED_GDI:
+				case TYMED_MFPICT:
+				case TYMED_ENHMF:
+					assert(!"Unsupported TYMED!");
+					return DV_E_TYMED;
+			}
 			break;
 	}
 
@@ -511,28 +538,29 @@ IFACEMETHODIMP DILDataObject::SetData(_In_ FORMATETC *pformatetc, _In_ STGMEDIUM
 	RP_D(DILDataObject);
 	int idx = d->lookupFormatEtc(pformatetc);
 	if (idx >= d->OUR_DATA_COUNT) {
-		// TODO: Free the existing STGMEDIUM.
+		// Free the existing STGMEDIUM.
+		d->clearStgMediumData(idx);
 		memcpy(&d->vec_formatEtc[idx], pformatetc, sizeof(FORMATETC));
 		memcpy(&d->vec_stgMedium[idx], pmedium, sizeof(STGMEDIUM));
-		d->vec_fRelease[idx] = fRelease;
 	} else if (idx < 0) {
 		// Not found. Create a new entry.
 		idx = static_cast<int>(d->vec_formatEtc.size());
 		d->vec_formatEtc.push_back(*pformatetc);
 		d->vec_stgMedium.push_back(*pmedium);
-		d->vec_fRelease.push_back(fRelease);
 	} else {
 		// Matches one of our predefined data entries...
 		return DV_E_LINDEX;
 	}
 
-	if (fRelease) {
-		// Need to dup() the input.
-		// TODO: Revert the vector changes on error?
+	if (!fRelease) {
+		// fRelease == false: ownership is *not* transferred to us.
+		// We'll need to dup() the input.
+		// NOTE: CopyStgMedium() in urlmon.lib can handle this...
 		STGMEDIUM *const stgm = &d->vec_stgMedium[idx];
 		switch (stgm->tymed) {
 			default:
 				// Unsupported...
+				// TODO: Undo the vector changes?
 				assert(!"Unsupported TYMED!");
 				stgm->tymed = TYMED_NULL;
 				return DV_E_TYMED;
@@ -540,21 +568,37 @@ IFACEMETHODIMP DILDataObject::SetData(_In_ FORMATETC *pformatetc, _In_ STGMEDIUM
 			case TYMED_NULL:
 				// Nothing to do here...
 				break;
+
 			case TYMED_HGLOBAL:
-				stgm->hGlobal = d->dupGlobalMem(stgm->hGlobal);
+				stgm->hGlobal = (pmedium->hGlobal != nullptr)
+					? d->dupGlobalMem(pmedium->hGlobal)
+					: nullptr;
 				break;
+
+			case TYMED_FILE:
+				// from wine's urlmon_main.c
+				if (pmedium->lpszFileName && !pmedium->pUnkForRelease) {
+					size_t cb = (wcslen(pmedium->lpszFileName) + 1) * sizeof(wchar_t);
+					// TODO: Return E_OUTOFMEMORY if this fails. (TODO: Undo the vector changes?)
+					stgm->lpszFileName = static_cast<LPOLESTR>(CoTaskMemAlloc(cb));
+					memcpy(stgm->lpszFileName, pmedium->lpszFileName, cb);
+				} else {
+					stgm->lpszFileName = pmedium->lpszFileName;
+				}
+				break;
+
 			case TYMED_ISTREAM:
 				stgm->pstm->AddRef();
 				break;
+
 			case TYMED_ISTORAGE:
 				stgm->pstg->AddRef();
 				break;
 
-			case TYMED_FILE:
 			case TYMED_GDI:
 			case TYMED_MFPICT:
 			case TYMED_ENHMF:
-				// TODO
+				// TODO: Undo the vector changes?
 				assert(!"Unsupported TYMED!");
 				stgm->tymed = TYMED_NULL;
 				return DV_E_TYMED;
