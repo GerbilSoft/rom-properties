@@ -348,8 +348,8 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 
 					// Use nearest-neighbor scaling if the label size is
 					// an integer multiple of the icon size.
-					useNearestNeighbor = ((labelSize.cx % iconSize.cx == 0) &&
-					                      (labelSize.cy % iconSize.cy) == 0);
+					useNearestNeighbor = (labelSize.cx % iconSize.cx == 0) &&
+					                     (labelSize.cy % iconSize.cy == 0);
 				}
 
 				// NOTE: Allowing NULL frames here...
@@ -389,8 +389,8 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 
 		// Use nearest-neighbor scaling if the label size is
 		// an integer multiple of the icon size.
-		useNearestNeighbor = ((labelSize.cx % iconSize.cx == 0) &&
-		                      (labelSize.cy % iconSize.cy) == 0);
+		useNearestNeighbor = (labelSize.cx % iconSize.cx == 0) &&
+		                     (labelSize.cy % iconSize.cy == 0);
 
 		non_anim.hbmpImg = RpImageWin32::toHBITMAP(non_anim.img, gdipBgColor, labelSize, useNearestNeighbor);
 
@@ -630,18 +630,28 @@ void DragImageLabelPrivate::on_WM_LBUTTONDOWN(WPARAM wParam, LPARAM lParam)
 		HRESULT hr = CoCreateInstance(CLSID_DragDropHelper, nullptr,
 			CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pDragSourceHelper));
 		if (SUCCEEDED(hr)) {
-			// TODO: Resize frame0 to match DragImageLabel's size?
+			// Get the DragImageLabel size.
+			RECT rectDragImageLabel;
+			GetWindowRect(q_ptr, &rectDragImageLabel);
+
+			const SIZE iconSize = {frame0->width(), frame0->height()};
+			const SIZE labelSize = {
+				rectDragImageLabel.right - rectDragImageLabel.left,
+				rectDragImageLabel.bottom - rectDragImageLabel.top
+			};
+
+			// Use nearest-neighbor scaling if the label size is
+			// an integer multiple of the icon size.
+			bool useNearestNeighbor = (labelSize.cx % iconSize.cx == 0) &&
+			                          (labelSize.cy % iconSize.cy == 0);
+
 			SHDRAGIMAGE di;
-			di.sizeDragImage.cx = frame0->width();
-			di.sizeDragImage.cy = frame0->height();
-			di.ptOffset.x = 0;
+			di.sizeDragImage = labelSize;
+			di.ptOffset.x = 0;	// TODO: Mouse position
 			di.ptOffset.y = 0;
 			di.crColorKey = CLR_INVALID;
 
-			// TODO: Use nearest-neighbor scaling if less than 32x32 and it's an integer multiple.
-			// TODO: Get the cursor size and use that?
-			SIZE size = {32, 32};
-			di.hbmpDragImage = RpImageWin32::toHBITMAP_alpha(frame0, size, false);
+			di.hbmpDragImage = RpImageWin32::toHBITMAP_alpha(frame0, labelSize, useNearestNeighbor);
 			pDragSourceHelper->InitializeFromBitmap(&di, pDataObj);
 
 			// NOTE: IDragSourceHelper::InitializeFromBitmap() takes a copy of the bitmap.
