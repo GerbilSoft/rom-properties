@@ -277,6 +277,7 @@ HGLOBAL DILDataObjectPrivate::getFileContents(void) const
 	uint8_t *const fileBuf = static_cast<uint8_t*>(GlobalLock(hglbPngFile));
 	if (!fileBuf) {
 		GlobalFree(hglbPngFile);
+		return nullptr;
 	}
 
 	memcpy(fileBuf, vec.data(), vec.size());
