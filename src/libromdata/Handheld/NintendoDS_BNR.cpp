@@ -246,7 +246,6 @@ rp_image_const_ptr NintendoDS_BNR_Private::loadIcon(void)
 	// if iconAnimData is nullptr.
 
 	// Return a pointer to the first frame.
-	printf("BNR seq_index[0] == %d\n", iconAnimData->seq_index[0]);
 	icon_first_frame = iconAnimData->frame0();
 	// NOTE: Assigning to `icon` for named-return-value optimization.
 	icon = icon_first_frame;
