@@ -13,6 +13,7 @@
 // Other rom-properties libraries
 #include "librpbase/img/RpPngWriter.hpp"
 #include "librpfile/VectorFile.hpp"
+#include "librptext/wchar.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpTexture;
@@ -28,6 +29,7 @@ using namespace LibRpTexture;
 #include <memory>
 #include <vector>
 using std::array;
+using std::string;
 using std::tstring;
 using std::unique_ptr;
 using std::vector;
@@ -256,8 +258,8 @@ HGLOBAL DILDataObjectPrivate::getFileDescriptorW(void) const
 #ifdef UNICODE
 	wcsncpy_s(fileDesc->cFileName, _countof(fileDesc->cFileName), filename.c_str(), _TRUNCATE);
 #else /* !UNICODE */
-	// TODO: A to W?
-	fileDesc->cFileName[0] = L'\0';
+	const wstring wstr = A2W_s(filename);
+	wcsncpy_s(fileDesc->cFileName, _countof(fileDesc->cFileName), wstr.c_str(), _TRUNCATE);
 #endif /* UNICODE */
 
 	GlobalUnlock(hglbFileDesc);
@@ -290,8 +292,8 @@ HGLOBAL DILDataObjectPrivate::getFileDescriptorA(void) const
 	fileDesc->dwFlags = FD_ATTRIBUTES;
 	fileDesc->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
 #ifdef UNICODE
-	// TODO: W to A?
-	fileDesc->cFileName[0] = '\0';
+	const string str = W2A(filename);
+	strncpy_s(fileDesc->cFileName, _countof(fileDesc->cFileName), str.c_str(), _TRUNCATE);
 #else /* !UNICODE */
 	strncpy_s(fileDesc->cFileName, _countof(fileDesc->cFileName), filename.c_str(), _TRUNCATE);
 #endif /* UNICODE */
