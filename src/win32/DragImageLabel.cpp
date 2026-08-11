@@ -27,6 +27,10 @@ using namespace LibRpTexture;
 #include "libwin32ui/WinUI.hpp"
 #include <shellapi.h>	// for ShellExecute()
 #include <uxtheme.h>	// for IsThemeActive()
+#include <shobjidl.h>	// for IDragSourceHelper and SHDRAGIMAGE
+
+// COM smart pointer typedefs
+_COM_SMARTPTR_TYPEDEF(IDragSourceHelper, IID_IDragSourceHelper);
 
 // Gdiplus for image drawing.
 // NOTE: Gdiplus requires min/max.
@@ -603,27 +607,55 @@ void DragImageLabelPrivate::on_WM_LBUTTONDOWN(WPARAM wParam, LPARAM lParam)
 	}
 
 	// Start the drag operation.
-	DILDataObject *dataObj = nullptr;
+	DILDataObject *pDataObj = nullptr;
+	rp_image_const_ptr frame0;	// for IDragSourceHelper
 	if (isAnim()) {
 		const anim_vars_t &anim = std::get<anim_vars_t>(imgData);
-		dataObj = new DILDataObject(anim.iconAnimData);
+		frame0 = anim.iconAnimData->frame0();
+		pDataObj = new DILDataObject(anim.iconAnimData);
 	} else if (isNonAnim()) {
 		const non_anim_vars_t &non_anim = std::get<non_anim_vars_t>(imgData);
-		dataObj = new DILDataObject(non_anim.img);
+		frame0 = non_anim.img;
+		pDataObj = new DILDataObject(frame0);
 	} else {
 		// No icon...
 		return;
 	}
 
+	// Try to create an IDragSourceHelper so we can have a custom drag image.
+	if (frame0) {
+		IDragSourceHelperPtr pDragSourceHelper;
+		HRESULT hr = CoCreateInstance(CLSID_DragDropHelper, nullptr,
+			CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pDragSourceHelper));
+		if (SUCCEEDED(hr)) {
+			// TODO: Resize frame0 to match DragImageLabel's size?
+			SHDRAGIMAGE di;
+			di.sizeDragImage.cx = frame0->width();
+			di.sizeDragImage.cy = frame0->height();
+			di.ptOffset.x = 0;
+			di.ptOffset.y = 0;
+			di.crColorKey = CLR_INVALID;
+
+			// TODO: Use nearest-neighbor scaling if less than 32x32 and it's an integer multiple.
+			// TODO: Get the cursor size and use that?
+			SIZE size = {32, 32};
+			di.hbmpDragImage = RpImageWin32::toHBITMAP_alpha(frame0, size, false);
+			pDragSourceHelper->InitializeFromBitmap(&di, pDataObj);
+
+			// NOTE: IDragSourceHelper::InitializeFromBitmap() takes a copy of the bitmap.
+			DeleteBitmap(di.hbmpDragImage);
+		}
+	}
+
 	// TODO: Allow more than COPY? (everything will be handled as COPY regardless)
 	DWORD effect = 0;
-	HRESULT hr = DoDragDrop(dataObj, dataObj, DROPEFFECT_COPY, &effect);
+	HRESULT hr = DoDragDrop(pDataObj, pDataObj, DROPEFFECT_COPY, &effect);
 	if (FAILED(hr)) {
 		// DoDragDrop() failed...
-		dataObj->Release();
+		pDataObj->Release();
 		return;
 	}
-	dataObj->Release();
+	pDataObj->Release();
 }
 
 void DragImageLabelPrivate::setEcksBawks(bool newEcksBawks)

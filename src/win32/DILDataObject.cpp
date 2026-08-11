@@ -24,9 +24,10 @@ using namespace LibRpTexture;
 #include <uxtheme.h>	// for IsThemeActive()
 
 // C++ STL classes
-#include <array>
 #include <memory>
+#include <vector>
 using std::array;
+using std::vector;
 using std::unique_ptr;
 
 #ifdef HAVE_STD_VARIANT
@@ -48,18 +49,28 @@ class DILDataObjectPrivate
 public:
 	explicit DILDataObjectPrivate(const rp_image_const_ptr &img);
 	explicit DILDataObjectPrivate(const IconAnimDataConstPtr &iconAnimData);
+	~DILDataObjectPrivate();
+
 private:
 	/**
-	 * Initialize the formatEtc array.
+	 * Initialize the data vectors.
 	 */
-	void initFormatEtc(void);
+	void initDataVectors(void);
 
 public:
 	std::variant<std::monostate, rp_image_const_ptr, IconAnimDataConstPtr> imgData;
 
 public:
-	// Supported data formats
-	array<FORMATETC, 3> formatEtc;
+	// Our own data takes up the first 3 indexes in vec_formatEtc and vec_stgMedium.
+	static constexpr int OUR_DATA_COUNT = 3;
+
+	// Data formats and storage
+	vector<FORMATETC> vec_formatEtc;
+	vector<STGMEDIUM> vec_stgMedium;
+
+	// fRelease vector
+	// NOTE: uint8_t is used instead of bool to avoid the vector<bool> "optimization".
+	vector<uint8_t> vec_fRelease;
 
 	/**
 	 * Check if a format is supported.
@@ -68,6 +79,20 @@ public:
 	 */
 	int lookupFormatEtc(_In_ const FORMATETC *pformatetc) const;
 
+	/**
+	 * dup() an HGLOBAL.
+	 * @param hMem HGLOBAL
+	 * @return dup()'d HGLOBAL
+	 */
+	static HGLOBAL dupGlobalMem(HGLOBAL hMem);
+
+	/**
+	 * Clear copied memory in an STGMEDIUM entry.
+	 * @param idx Index
+	 */
+	void clearStgMediumData(int idx);
+
+public:
 	/**
 	 * Get the CFSTR_FILEDESCRIPTORW for the image.
 	 * @return CFSTR_FILEDESCRIPTORW
@@ -92,44 +117,70 @@ public:
 DILDataObjectPrivate::DILDataObjectPrivate(const rp_image_const_ptr &img)
 	: imgData(img)
 {
-	initFormatEtc();
+	initDataVectors();
 }
 
 DILDataObjectPrivate::DILDataObjectPrivate(const IconAnimDataConstPtr &iconAnimData)
 	: imgData(iconAnimData)
 {
-	initFormatEtc();
+	initDataVectors();
+}
+
+DILDataObjectPrivate::~DILDataObjectPrivate()
+{
+	// Make sure any data set via SetData() is freed.
+	for (int i = OUR_DATA_COUNT; i < static_cast<int>(vec_stgMedium.size()); i++) {
+		clearStgMediumData(i);
+	}
 }
 
 /**
- * Initialize the formatEtc array.
+ * Initialize the data vectors.
  */
-void DILDataObjectPrivate::initFormatEtc(void)
+void DILDataObjectPrivate::initDataVectors(void)
 {
-	// Initialize formatEtc.
+	// Initialize vec_formatEtc and vec_stgMedium.
 	// NOTE: Cannot make it static const because CFSTR_* formats have to be
 	// converted to integers using RegisterClipboardFormat().
+	vec_formatEtc.reserve(OUR_DATA_COUNT);
+	vec_stgMedium.reserve(OUR_DATA_COUNT);
+	vec_fRelease.reserve(OUR_DATA_COUNT);
+
+	static const STGMEDIUM stgm_hGlobal = {TYMED_HGLOBAL, nullptr, nullptr};
 
 	// CFSTR_FILEDESCRIPTORW
-	formatEtc[0].cfFormat = RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW);
-	formatEtc[0].ptd = nullptr;
-	formatEtc[0].dwAspect = DVASPECT_CONTENT;
-	formatEtc[0].lindex = -1;
-	formatEtc[0].tymed = TYMED_HGLOBAL;
+	vec_formatEtc.emplace_back(
+		RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW),	// cfFormat
+		nullptr,					// ptd
+		DVASPECT_CONTENT,				// dwAspect
+		-1,						// lindex
+		TYMED_HGLOBAL);					// tymed
+	vec_stgMedium.push_back(stgm_hGlobal);
+	vec_fRelease.push_back(true);
 
 	// CFSTR_FILEDESCRIPTORA
-	formatEtc[1].cfFormat = RegisterClipboardFormat(CFSTR_FILEDESCRIPTORA);
-	formatEtc[1].ptd = nullptr;
-	formatEtc[1].dwAspect = DVASPECT_CONTENT;
-	formatEtc[1].lindex = -1;
-	formatEtc[1].tymed = TYMED_HGLOBAL;
+	vec_formatEtc.emplace_back(
+		RegisterClipboardFormat(CFSTR_FILEDESCRIPTORA),	// cfFormat
+		nullptr,					// ptd
+		DVASPECT_CONTENT,				// dwAspect
+		-1,						// lindex
+		TYMED_HGLOBAL);					// tymed
+	vec_stgMedium.push_back(stgm_hGlobal);
+	vec_fRelease.push_back(true);
 
 	// CFSTR_FILECONTENTS
-	formatEtc[2].cfFormat = RegisterClipboardFormat(CFSTR_FILECONTENTS);
-	formatEtc[2].ptd = nullptr;
-	formatEtc[2].dwAspect = DVASPECT_CONTENT;
-	formatEtc[2].lindex = 0;
-	formatEtc[2].tymed = TYMED_HGLOBAL;
+	vec_formatEtc.emplace_back(
+		RegisterClipboardFormat(CFSTR_FILECONTENTS),	// cfFormat
+		nullptr,					// ptd
+		DVASPECT_CONTENT,				// dwAspect
+		-1,						// lindex
+		TYMED_HGLOBAL);					// tymed
+	vec_stgMedium.push_back(stgm_hGlobal);
+	vec_fRelease.push_back(true);
+
+	assert(vec_formatEtc.size() == static_cast<size_t>(OUR_DATA_COUNT));
+	assert(vec_stgMedium.size() == static_cast<size_t>(OUR_DATA_COUNT));
+	assert(vec_fRelease.size()  == static_cast<size_t>(OUR_DATA_COUNT));
 }
 
 /**
@@ -143,11 +194,11 @@ int DILDataObjectPrivate::lookupFormatEtc(_In_ const FORMATETC *pformatetc) cons
 		return -1;
 	}
 
-	for (int i = 0; i < static_cast<int>(formatEtc.size()); i++) {
-		const FORMATETC &fmtchk = formatEtc[i];
-		if (((fmtchk.tymed & pformatetc->tymed) != 0) &&
-		    fmtchk.cfFormat == pformatetc->cfFormat &&
-		    fmtchk.dwAspect == pformatetc->dwAspect)
+	for (int i = 0; i < static_cast<int>(vec_formatEtc.size()); i++) {
+		const FORMATETC *const fmtchk = &vec_formatEtc[i];
+		if (((fmtchk->tymed & pformatetc->tymed) != 0) &&
+		    fmtchk->cfFormat == pformatetc->cfFormat &&
+		    fmtchk->dwAspect == pformatetc->dwAspect)
 		{
 			// Found a matching format.
 			return i;
@@ -156,6 +207,59 @@ int DILDataObjectPrivate::lookupFormatEtc(_In_ const FORMATETC *pformatetc) cons
 
 	// Not found.
 	return -1;
+}
+
+/**
+ * dup() an HGLOBAL.
+ * @param hMem HGLOBAL
+ * @return dup()'d HGLOBAL
+ */
+HGLOBAL DILDataObjectPrivate::dupGlobalMem(HGLOBAL hMem)
+{
+	const SIZE_T len = GlobalSize(hMem);
+	HGLOBAL hRet = GlobalAlloc(GMEM_MOVEABLE, len);
+
+	PVOID source = GlobalLock(hMem);
+	if (!source) {
+		GlobalFree(hRet);
+		return nullptr;
+	}
+	PVOID dest = GlobalLock(hRet);
+	if (!dest) {
+		GlobalUnlock(hMem);
+		GlobalFree(hRet);
+		return nullptr;
+	}
+
+	memcpy(dest, source, len);
+
+	GlobalUnlock(hRet);
+	GlobalUnlock(hMem);
+	return hRet;
+}
+
+/**
+ * Clear copied memory in an STGMEDIUM entry.
+ * @param idx Index
+ */
+void DILDataObjectPrivate::clearStgMediumData(int idx)
+{
+	assert(idx >= OUR_DATA_COUNT);
+	assert(idx < static_cast<int>(vec_stgMedium.size()));
+	if (idx < OUR_DATA_COUNT || idx >= static_cast<int>(vec_stgMedium.size())) {
+		return;
+	}
+
+	// If fRelease is false, don't do anything.
+	if (!vec_fRelease[idx]) {
+		return;
+	}
+
+	// ReleaseStgMedium() will set tymed to TYMED_NULL
+	// and NULL out pUnkForRelease.
+	STGMEDIUM *const stgm = &vec_stgMedium[idx];
+	ReleaseStgMedium(stgm);
+	stgm->hGlobal = nullptr;
 }
 
 /**
@@ -332,10 +436,12 @@ IFACEMETHODIMP DILDataObject::GetData(_In_ FORMATETC *pformatetcIn, _Out_ STGMED
 	}
 
 	// found a match - transfer data into supplied storage medium
-	const FORMATETC &fmtetc = d->formatEtc[idx];
+	const FORMATETC &fmtetc = d->vec_formatEtc[idx];
 	pmedium->tymed = fmtetc.tymed;
 	pmedium->pUnkForRelease = nullptr;
 
+	// TODO: Cache the hGlobal data in d->vec_stgMedium?
+	// For now, d->vec_stgMedium data is only valid for anything set with SetData().
 	switch (idx) {
 		case 0:	// CFSTR_FILEDESCRIPTORW
 			// Get the file descriptor.
@@ -357,7 +463,11 @@ IFACEMETHODIMP DILDataObject::GetData(_In_ FORMATETC *pformatetcIn, _Out_ STGMED
 			break;
 
 		default:
-			return DV_E_FORMATETC;
+			// Get the STGMEDIUM that was previously set using SetData().
+			// NOTE: Union of pointers, so copying hGlobal should work regardless.
+			// TODO: Return a copy?
+			pmedium->hGlobal = d->vec_stgMedium[idx].hGlobal;
+			break;
 	}
 
 	return S_OK;
@@ -391,10 +501,67 @@ IFACEMETHODIMP DILDataObject::GetCanonicalFormatEtc(__RPC__in_opt FORMATETC *pfo
 
 IFACEMETHODIMP DILDataObject::SetData(_In_ FORMATETC *pformatetc, _In_ STGMEDIUM *pmedium, BOOL fRelease)
 {
-	// Not supported; data can only be set from the constructor.
-	RP_UNUSED(pformatetc);
-	RP_UNUSED(fRelease);
-	return E_NOTIMPL;
+	if (!pformatetc || !pmedium) {
+		return E_POINTER;
+	}
+
+	// Check if the FORMATETC already exists.
+	// If it does, and it's after our default data, replace it.
+	// Otherwise, add it.
+	RP_D(DILDataObject);
+	int idx = d->lookupFormatEtc(pformatetc);
+	if (idx >= d->OUR_DATA_COUNT) {
+		// TODO: Free the existing STGMEDIUM.
+		memcpy(&d->vec_formatEtc[idx], pformatetc, sizeof(FORMATETC));
+		memcpy(&d->vec_stgMedium[idx], pmedium, sizeof(STGMEDIUM));
+		d->vec_fRelease[idx] = fRelease;
+	} else if (idx < 0) {
+		// Not found. Create a new entry.
+		idx = static_cast<int>(d->vec_formatEtc.size());
+		d->vec_formatEtc.push_back(*pformatetc);
+		d->vec_stgMedium.push_back(*pmedium);
+		d->vec_fRelease.push_back(fRelease);
+	} else {
+		// Matches one of our predefined data entries...
+		return DV_E_LINDEX;
+	}
+
+	if (fRelease) {
+		// Need to dup() the input.
+		// TODO: Revert the vector changes on error?
+		STGMEDIUM *const stgm = &d->vec_stgMedium[idx];
+		switch (stgm->tymed) {
+			default:
+				// Unsupported...
+				assert(!"Unsupported TYMED!");
+				stgm->tymed = TYMED_NULL;
+				return DV_E_TYMED;
+
+			case TYMED_NULL:
+				// Nothing to do here...
+				break;
+			case TYMED_HGLOBAL:
+				stgm->hGlobal = d->dupGlobalMem(stgm->hGlobal);
+				break;
+			case TYMED_ISTREAM:
+				stgm->pstm->AddRef();
+				break;
+			case TYMED_ISTORAGE:
+				stgm->pstg->AddRef();
+				break;
+
+			case TYMED_FILE:
+			case TYMED_GDI:
+			case TYMED_MFPICT:
+			case TYMED_ENHMF:
+				// TODO
+				assert(!"Unsupported TYMED!");
+				stgm->tymed = TYMED_NULL;
+				return DV_E_TYMED;
+		}
+	}
+
+	return S_OK;
 }
 
 IFACEMETHODIMP DILDataObject::EnumFormatEtc(DWORD dwDirection, __RPC__deref_out_opt IEnumFORMATETC **ppenumFormatEtc)
@@ -414,8 +581,8 @@ IFACEMETHODIMP DILDataObject::EnumFormatEtc(DWORD dwDirection, __RPC__deref_out_
 	// Reference: https://www.catch22.net/tuts/ole/enumerating-formatetc/
 	RP_D(const DILDataObject);
 	HRESULT hr = SHCreateStdEnumFmtEtc(
-		static_cast<int>(d->formatEtc.size()),
-		d->formatEtc.data(),
+		static_cast<int>(d->vec_formatEtc.size()),
+		d->vec_formatEtc.data(),
 		ppenumFormatEtc);
 	if (FAILED(hr) || !*ppenumFormatEtc) {
 		if (*ppenumFormatEtc) {
