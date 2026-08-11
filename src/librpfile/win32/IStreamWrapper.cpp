@@ -8,8 +8,12 @@
 
 #include "IStreamWrapper.hpp"
 
+// RpFile
+#include "RpFile.hpp"
+
 // libwin32common
 #include "libwin32common/MiniU82T.hpp"
+#include "libwin32common/w32time.h"
 using namespace LibWin32Common;
 
 // C++ STL classes
@@ -250,10 +254,26 @@ IFACEMETHODIMP IStreamWrapper::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
 	const off64_t fileSize = m_file->size();
 	pstatstg->cbSize.QuadPart = (fileSize > 0 ? fileSize : 0);
 
-	// No timestamps are available...
-	// TODO: IRpFile::stat()?
+	// Get mtime from the file if it's available.
 	pstatstg->mtime.dwLowDateTime  = 0;
 	pstatstg->mtime.dwHighDateTime = 0;
+	RpFile *const rpFile = dynamic_cast<RpFile*>(m_file);
+	if (rpFile) {
+		int ret = rpFile->mtime(&pstatstg->mtime);
+		if (ret != 0) {
+			// Failed to get the mtime.
+			pstatstg->mtime.dwLowDateTime = 0;
+			pstatstg->mtime.dwHighDateTime = 0;
+		}
+	} else {
+		// Not an RpFile. Convert a Unix mtime instead.
+		const time_t unixtime = m_file->mtime();
+		if (unixtime != -1) {
+			UnixTimeToFileTime(unixtime, &pstatstg->mtime);
+		}
+	}
+
+	// ctime and atime aren't available.
 	pstatstg->ctime.dwLowDateTime  = 0;
 	pstatstg->ctime.dwHighDateTime = 0;
 	pstatstg->atime.dwLowDateTime  = 0;
