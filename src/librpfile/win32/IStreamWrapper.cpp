@@ -233,20 +233,37 @@ IFACEMETHODIMP IStreamWrapper::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
 		return E_HANDLE;
 	}
 
+	// Some shortcuts are available if m_file is RpFile.
+	RpFile *const rpFile = dynamic_cast<RpFile*>(m_file);
+
 	if (grfStatFlag & STATFLAG_NONAME) {
 		pstatstg->pwcsName = nullptr;
 	} else {
 		// Copy the filename
 		// TODO: Is nullptr for empty filename allowed?
 		// For now, we'll just return an empty name.
-		const char *const u8_filename = m_file->filename();
-		const wstring wfilename(u8_filename ? U82W_c(u8_filename) : L"");
-		const size_t sz = (wfilename.size() + 1) * sizeof(wchar_t);
-		pstatstg->pwcsName = static_cast<LPOLESTR>(CoTaskMemAlloc(sz));
-		if (!pstatstg->pwcsName) {
-			return E_OUTOFMEMORY;
+		if (rpFile) {
+			LPCWSTR wfilename = rpFile->filenameW();
+			if (wfilename) {
+				const size_t cb = (wcslen(wfilename) + 1) * sizeof(wchar_t);
+				pstatstg->pwcsName = static_cast<LPOLESTR>(CoTaskMemAlloc(cb));
+				if (!pstatstg->pwcsName) {
+					return E_OUTOFMEMORY;
+				}
+				memcpy(pstatstg->pwcsName, wfilename, cb);
+			} else {
+				pstatstg->pwcsName = nullptr;
+			}
+		} else {
+			const char *const u8_filename = m_file->filename();
+			const wstring wfilename(u8_filename ? U82W_c(u8_filename) : L"");
+			const size_t cb = (wfilename.size() + 1) * sizeof(wchar_t);
+			pstatstg->pwcsName = static_cast<LPOLESTR>(CoTaskMemAlloc(cb));
+			if (!pstatstg->pwcsName) {
+				return E_OUTOFMEMORY;
+			}
+			memcpy(pstatstg->pwcsName, wfilename.c_str(), cb);
 		}
-		memcpy(pstatstg->pwcsName, wfilename.c_str(), sz);
 	}
 
 	pstatstg->type = STGTY_STREAM;	// TODO: or STGTY_STORAGE?
@@ -257,7 +274,6 @@ IFACEMETHODIMP IStreamWrapper::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
 	// Get mtime from the file if it's available.
 	pstatstg->mtime.dwLowDateTime  = 0;
 	pstatstg->mtime.dwHighDateTime = 0;
-	RpFile *const rpFile = dynamic_cast<RpFile*>(m_file);
 	if (rpFile) {
 		int ret = rpFile->mtime(&pstatstg->mtime);
 		if (ret != 0) {
