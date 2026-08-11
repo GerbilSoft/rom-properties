@@ -603,7 +603,6 @@ void DragImageLabelPrivate::on_WM_LBUTTONDOWN(WPARAM wParam, LPARAM lParam)
 	}
 
 	// Start the drag operation.
-	// TODO: Handle IconAnimData.
 	DILDataObject *dataObj = nullptr;
 	if (isAnim()) {
 		const anim_vars_t &anim = std::get<anim_vars_t>(imgData);
