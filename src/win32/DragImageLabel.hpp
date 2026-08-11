@@ -37,11 +37,12 @@ void DragImageLabelUnregister(void);
 
 #define WM_DIL_SET_DRAG_FILENAMEW	(WM_APP + 7)	// lParam = LPCWSTR of drag filename (e.g. ROM filename but with a .png extension) for dropped images
 #define WM_DIL_SET_DRAG_FILENAMEA	(WM_APP + 8)	// lParam = LPCSTR of drag filename (e.g. ROM filename but with a .png extension) for dropped images
+#define WM_DIL_SET_DRAG_MTIME		(WM_APP + 9)	// lParam = pointer to modification time (last write time) [FILETIME struct]
 
-#define WM_DIL_INVALIDATE_BITMAPS	(WM_APP + 9)
+#define WM_DIL_INVALIDATE_BITMAPS	(WM_APP + 10)
 
-#define WM_DIL_SET_ECKS_BAWKS		(WM_APP + 10)	// wParam == 0 to clear Ecks Bawks mode; non-zero to set
-#define WM_DIL_GET_ECKS_BAWKS		(WM_APP + 11)	// return == 0 if Ecks Bawks mode is not set; non-zero if set
+#define WM_DIL_SET_ECKS_BAWKS		(WM_APP + 11)	// wParam == 0 to clear Ecks Bawks mode; non-zero to set
+#define WM_DIL_GET_ECKS_BAWKS		(WM_APP + 12)	// return == 0 if Ecks Bawks mode is not set; non-zero if set
 
 #ifdef __cplusplus
 }
@@ -97,6 +98,11 @@ static inline void DragImageLabel_SetDragFileNameW(HWND hWnd, LPCWSTR dragFilena
 static inline void DragImageLabel_SetDragFileNameA(HWND hWnd, LPCSTR dragFilename)
 {
 	SendMessage(hWnd, WM_DIL_SET_DRAG_FILENAMEA, 0, reinterpret_cast<LPARAM>(dragFilename));
+}
+
+static inline void DragImageLabel_SetDragMTime(HWND hWnd, const FILETIME *mtime)
+{
+	SendMessage(hWnd, WM_DIL_SET_DRAG_MTIME, 0, reinterpret_cast<LPARAM>(mtime));
 }
 
 static inline void DragImageLabel_InvalidateBitmaps(HWND hWnd)

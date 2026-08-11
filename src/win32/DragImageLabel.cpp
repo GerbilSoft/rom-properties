@@ -192,6 +192,8 @@ public:
 
 	// Drag filename (e.g. ROM filename but with a .png extension) for dropped images
 	tstring dragFilename;
+	// File modification time
+	FILETIME mtime;
 
 	// Use nearest-neighbor scaling?
 	bool useNearestNeighbor;
@@ -270,7 +272,11 @@ DragImageLabelPrivate::DragImageLabelPrivate(HWND q)
 	, hMenuEcksBawks(nullptr)
 	, useNearestNeighbor(false)
 	, ecksBawks(false)
-{}
+{
+	// Clear the mtime initially.
+	mtime.dwLowDateTime = 0;
+	mtime.dwHighDateTime = 0;
+}
 
 DragImageLabelPrivate::~DragImageLabelPrivate()
 {
@@ -642,6 +648,9 @@ void DragImageLabelPrivate::on_WM_LBUTTONDOWN(WPARAM wParam, LPARAM lParam)
 		pDataObj->setFilename(dragFilename.c_str());
 	}
 
+	// Set the drag mtime.
+	pDataObj->setMTime(&mtime);
+
 	// Try to create an IDragSourceHelper so we can have a custom drag image.
 	if (frame0) {
 		IDragSourceHelperPtr pDragSourceHelper;
@@ -955,7 +964,9 @@ DragImageLabelWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			} else {
 				d->dragFilename.clear();
 			}
-			break;
+
+			// Custom message; don't bother running DefWindowProc.
+			return 0;
 		}
 
 		case WM_DIL_SET_DRAG_FILENAMEA: {
@@ -975,7 +986,28 @@ DragImageLabelWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			} else {
 				d->dragFilename.clear();
 			}
-			break;
+
+			// Custom message; don't bother running DefWindowProc.
+			return 0;
+		}
+
+		case WM_DIL_SET_DRAG_MTIME: {
+			DragImageLabelPrivate *const d = reinterpret_cast<DragImageLabelPrivate*>(
+				GetWindowLongPtr(hWnd, GWLP_USERDATA));
+			if (!d) {
+				// No DragImageLabelPrivate. Can't do anything...
+				return false;
+			}
+
+			if (lParam) {
+				d->mtime = *(reinterpret_cast<const FILETIME*>(lParam));
+			} else {
+				d->mtime.dwLowDateTime = 0;
+				d->mtime.dwHighDateTime = 0;
+			}
+
+			// Custom message; don't bother running DefWindowProc.
+			return 0;
 		}
 
 		case WM_DIL_INVALIDATE_BITMAPS: {

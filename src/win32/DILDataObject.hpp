@@ -45,6 +45,12 @@ public:
 	 */
 	void setFilename(LPCTSTR filename);
 
+	/**
+	 * Set the mtime for the dropped object.
+	 * @param mtime Modification time (last write time) (or nullptr to clear the mtime)
+	 */
+	void setMTime(const FILETIME *mtime);
+
 public:
 	// IUnknown
 	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;

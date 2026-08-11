@@ -141,6 +141,19 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 		}
 	}
 
+	// Get the file modification time.
+	// TODO: Add an mtime() function to RpFile?
+	// TODO: ...and an mtime_win32() function to get the time in FILETIME format?
+	FILETIME mtime = {0, 0};
+	{
+		WIN32_FIND_DATA findFileData;
+		HANDLE hFind = FindFirstFile(tfilename, &findFileData);
+		if (hFind && hFind != INVALID_HANDLE_VALUE) {
+			mtime = findFileData.ftLastWriteTime;
+			FindClose(hFind);
+		}
+	}
+
 	// Banner
 	bool ok = false;
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
@@ -165,6 +178,9 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 				dragFilename += _T(".banner.png");
 				DragImageLabel_SetDragFileName(lblBanner, dragFilename.c_str());
 				dragFilename.resize(prevSize);
+
+				// Set the drag mtime.
+				DragImageLabel_SetDragMTime(lblBanner, &mtime);
 			}
 		}
 	}
@@ -211,6 +227,9 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 				dragFilename += _T(".icon.png");
 				DragImageLabel_SetDragFileName(lblIcon, dragFilename.c_str());
 				dragFilename.resize(prevSize);
+
+				// Set the drag mtime.
+				DragImageLabel_SetDragMTime(lblIcon, &mtime);
 			}
 		}
 	}

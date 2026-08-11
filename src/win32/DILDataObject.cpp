@@ -74,6 +74,8 @@ public:
 
 	// Filename for the dropped object
 	tstring filename;
+	// File modification time
+	FILETIME mtime;
 
 	/**
 	 * Check if a format is supported.
@@ -115,12 +117,20 @@ public:
 DILDataObjectPrivate::DILDataObjectPrivate(const rp_image_const_ptr &img)
 	: imgData(img)
 {
+	// Clear the mtime initially.
+	mtime.dwLowDateTime = 0;
+	mtime.dwHighDateTime = 0;
+
 	initDataVectors();
 }
 
 DILDataObjectPrivate::DILDataObjectPrivate(const IconAnimDataConstPtr &iconAnimData)
 	: imgData(iconAnimData)
 {
+	// Clear the mtime initially.
+	mtime.dwLowDateTime = 0;
+	mtime.dwHighDateTime = 0;
+
 	initDataVectors();
 }
 
@@ -257,7 +267,7 @@ HGLOBAL DILDataObjectPrivate::getFileDescriptorW(void) const
 	fileDesc->dwFlags = FD_ATTRIBUTES;
 	fileDesc->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
 
-	// Get the HGLOBAL size.
+	// Set the file size, if available. (Should be available!)
 	if (vec_stgMedium.size() >= static_cast<size_t>(OUR_DATA_COUNT)) {
 		if (vec_stgMedium[2].hGlobal) {
 			const SIZE_T len = GlobalSize(vec_stgMedium[2].hGlobal);
@@ -269,6 +279,12 @@ HGLOBAL DILDataObjectPrivate::getFileDescriptorW(void) const
 				fileDesc->dwFlags |= FD_FILESIZE;
 			}
 		}
+	}
+
+	// Set the mtime, if available. (Should be available!)
+	if (mtime.dwLowDateTime != 0 || mtime.dwHighDateTime != 0) {
+		fileDesc->ftLastWriteTime = mtime;
+		fileDesc->dwFlags |= FD_WRITESTIME;
 	}
 
 #ifdef UNICODE
@@ -317,7 +333,7 @@ HGLOBAL DILDataObjectPrivate::getFileDescriptorA(void) const
 	fileDesc->dwFlags = FD_ATTRIBUTES;
 	fileDesc->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
 
-	// Get the HGLOBAL size.
+	// Set the file size, if available. (Should be available!)
 	if (vec_stgMedium.size() >= static_cast<size_t>(OUR_DATA_COUNT)) {
 		if (vec_stgMedium[2].hGlobal) {
 			const SIZE_T len = GlobalSize(vec_stgMedium[2].hGlobal);
@@ -331,7 +347,11 @@ HGLOBAL DILDataObjectPrivate::getFileDescriptorA(void) const
 		}
 	}
 
-	// TODO: Timestamp and other attributes?
+	// Set the mtime, if available. (Should be available!)
+	if (mtime.dwLowDateTime != 0 || mtime.dwHighDateTime != 0) {
+		fileDesc->ftLastWriteTime = mtime;
+		fileDesc->dwFlags |= FD_WRITESTIME;
+	}
 
 #ifdef UNICODE
 	const string str = W2A(filename);
@@ -455,6 +475,20 @@ void DILDataObject::setFilename(LPCTSTR filename)
 	}
 }
 
+/**
+ * Set the mtime for the dropped object.
+ * @param mtime Modification time (last write time) (or nullptr to clear the mtime)
+ */
+void DILDataObject::setMTime(const FILETIME *mtime)
+{
+	RP_D(DILDataObject);
+	if (mtime) {
+		d->mtime = *mtime;
+	} else {
+		d->mtime.dwLowDateTime = 0;
+		d->mtime.dwHighDateTime = 0;
+	}
+}
 
 /** IUnknown **/
 // Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
