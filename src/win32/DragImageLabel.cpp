@@ -132,6 +132,30 @@ public:
 				}
 			}
 		}
+
+		/**
+		 * Get frame 0.
+		 * @return Frame 0, or nullptr on error.
+		 */
+		HBITMAP frame0(void) const
+		{
+			if (!iconAnimData || iconAnimData->seq_count <= 0) {
+				// No animation sequence.
+				// We might still have a static icon, though...
+				if (iconFrames.size() >= 1) {
+					return iconFrames[0];
+				}
+				// No icons at all.
+				return nullptr;
+			}
+
+			const int frame0_idx = iconAnimData->seq_index[0];
+			if (frame0_idx < 0 || frame0_idx >= static_cast<int>(iconFrames.size())) {
+				return nullptr;
+			}
+
+			return iconFrames[frame0_idx];
+		}
 	};
 
 	std::variant<std::monostate, non_anim_vars_t, anim_vars_t> imgData;

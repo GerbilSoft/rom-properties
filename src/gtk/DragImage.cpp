@@ -183,6 +183,30 @@ struct _RpDragImageCxx {
 				}
 			}
 		}
+
+		/**
+		 * Get frame 0.
+		 * @return Frame 0, or nullptr on error.
+		 */
+		PIMGTYPE frame0(void) const
+		{
+			if (!iconAnimData || iconAnimData->seq_count <= 0) {
+				// No animation sequence.
+				// We might still have a static icon, though...
+				if (iconFrames.size() >= 1) {
+					return iconFrames[0];
+				}
+				// No icons at all.
+				return nullptr;
+			}
+
+			const int frame0_idx = iconAnimData->seq_index[0];
+			if (frame0_idx < 0 || frame0_idx >= static_cast<int>(iconFrames.size())) {
+				return nullptr;
+			}
+
+			return iconFrames[frame0_idx];
+		}
 	};
 
 	std::variant<std::monostate, non_anim_vars_t, anim_vars_t> imgData;
@@ -1011,11 +1035,7 @@ rp_drag_image_drag_source_drag_begin(GtkDragSource *source, GdkDrag *drag, RpDra
 	const _RpDragImageCxx *const cxx = image->cxx;
 	if (cxx->isAnim()) {
 		const _RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(cxx->imgData);
-		// Get the first frame from the animation.
-		const int frame = anim.iconAnimData->seq_index[0];
-		if (frame >= 0 && frame < static_cast<int>(anim.iconFrames.size())) {
-			frame0 = anim.iconFrames[frame];
-		}
+		frame0 = anim.frame0();
 	} else {
 		const _RpDragImageCxx::non_anim_vars_t &non_anim = std::get<_RpDragImageCxx::non_anim_vars_t>(cxx->imgData);
 		frame0 = non_anim.pImg;
@@ -1052,9 +1072,7 @@ rp_drag_image_drag_begin(RpDragImage *image, GdkDragContext *context, gpointer u
 	const _RpDragImageCxx *const cxx = image->cxx;
 	if (cxx->isAnim()) {
 		const _RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(cxx->imgData);
-		// Get the first frame from the animation.
-		const int frame = anim.iconAnimData->seq_index[0];
-		frame0 = anim.iconFrames[frame];
+		frame0 = anim.frame0();
 	} else {
 		const _RpDragImageCxx::non_anim_vars_t &non_anim = std::get<_RpDragImageCxx::non_anim_vars_t>(cxx->imgData);
 		frame0 = non_anim.pImg;

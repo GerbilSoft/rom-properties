@@ -520,22 +520,22 @@ RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, const IconAnim
 	file->rewind();
 
 	// Set img or iconAnimData.
+	rp_image_const_ptr frame0 = iconAnimData->frame0();
+	assert((bool)frame0);
+	if (unlikely(!frame0)) {
+		// Invalid animated image.
+		lastError = EINVAL;
+		imageTag = ImageTag::Invalid;
+		file.reset();
+		return;
+	}
+
 	if (imageTag == ImageTag::IconAnimData) {
 		this->data = iconAnimData;
-		// Cache the image parameters.
-		const rp_image_const_ptr &img0 = iconAnimData->frames[iconAnimData->seq_index[0]];
-		assert((bool)img0);
-		if (unlikely(!img0)) {
-			// Invalid animated image.
-			lastError = EINVAL;
-			imageTag = ImageTag::Invalid;
-		}
-		cache.setFrom(img0);
 	} else {
-		const rp_image_const_ptr &img = iconAnimData->frames[iconAnimData->seq_index[0]];
-		this->data = img;
-		cache.setFrom(img);
+		this->data = frame0;
 	}
+	cache.setFrom(frame0);
 
 	// Initialize the PNG write structs.
 	ret = init_png_write_structs();

@@ -67,6 +67,48 @@ struct IconAnimData final
 		delays.fill({0, 0, 0});
 	}
 
+	/**
+	 * Get frame 0.
+	 * @return Frame 0, or nullptr on error.
+	 */
+	LibRpTexture::rp_image_ptr frame0(void)
+	{
+		if (seq_count <= 0) {
+			// No animation sequence.
+			// We might still have a static icon, though...
+			if (count >= 1) {
+				return frames[0];
+			}
+			// No icons at all.
+			return {};
+		}
+
+		const int frame0_idx = seq_index[0];
+		if (frame0_idx < 0 || frame0_idx >= count) {
+			return {};
+		}
+
+		return frames[frame0_idx];
+	}
+
+	/**
+	 * Get frame 0.
+	 * @return Frame 0, or nullptr on error.
+	 */
+	LibRpTexture::rp_image_const_ptr frame0(void) const
+	{
+		if (seq_count <= 0) {
+			return {};
+		}
+
+		const int frame0_idx = seq_index[0];
+		if (frame0_idx < 0 || frame0_idx >= count) {
+			return {};
+		}
+
+		return frames[frame0_idx];
+	}
+
 private:
 	RP_DISABLE_COPY(IconAnimData);
 };

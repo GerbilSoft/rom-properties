@@ -734,8 +734,7 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 			ok = rp_drag_image_set_icon_anim_data(RP_DRAG_IMAGE(page->imgIcon), iconAnimData);
 			if (ok) {
 				// Get the size of the first animated icon frame.
-				const int frame = iconAnimData->seq_index[0];
-				const rp_image_ptr &img = iconAnimData->frames[frame];
+				rp_image_const_ptr img = iconAnimData->frame0();
 				assert((bool)img);
 				if (img) {
 					icon_w = img->width();

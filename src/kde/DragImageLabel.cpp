@@ -398,11 +398,10 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 		const anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
 		if (anim.iconAnimHelper.isAnimated()) {
 			// Get the first frame from the animation.
-			const int frame = anim.iconAnimData->seq_index[0];
-			if (frame >= 0 && frame < static_cast<int>(anim.iconFrames.size()) &&
-			    !anim.iconFrames[frame].isNull())
+			QPixmap frame0 = anim.frame0();
+			if (!frame0.isNull())
 			{
-				drag->setPixmap(anim.iconFrames[frame]);
+				drag->setPixmap(frame0);
 				dragPixmapSetFromAnim = true;
 			}
 		}
