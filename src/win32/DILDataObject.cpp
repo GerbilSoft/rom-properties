@@ -6,8 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-
 // Reference: https://www.catch22.net/tuts/ole/implementing-idataobject/
 #include "DILDataObject.hpp"
 #include "RpImageWin32.hpp"
