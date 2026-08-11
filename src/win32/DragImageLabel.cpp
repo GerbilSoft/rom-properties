@@ -17,6 +17,7 @@
 // Other rom-properties libraries
 #include "librpbase/img/IconAnimHelper.hpp"
 #include "librpbase/img/RpPngWriter.hpp"
+#include "librpbase/img/T_img_vars.hpp"
 #include "librptext/wchar.hpp"
 using namespace LibRpBase;
 using namespace LibRpTexture;
@@ -77,98 +78,39 @@ private:
 
 public:
 	SIZE ourLabelSize;	// Actual label size.
-
 	HMENU hMenuEcksBawks;
 
-	// Non-animated icon data
-	struct non_anim_vars_t {
-		rp_image_const_ptr img;
-		HBITMAP hbmpImg;
+	class HBITMAP_deleter
+	{
+	public:
+		typedef HBITMAP pointer;
 
-		explicit non_anim_vars_t()
-			: hbmpImg(nullptr)
-		{}
-		explicit non_anim_vars_t(const rp_image_const_ptr &img)
-			: img(img)
-			, hbmpImg(nullptr)
-		{}
-		explicit non_anim_vars_t(rp_image_const_ptr &&img)
-			: img(img)
-			, hbmpImg(nullptr)
-		{}
-
-		~non_anim_vars_t()
+		void operator()(HBITMAP hBitmap)
 		{
-			if (hbmpImg) {
-				DeleteBitmap(hbmpImg);
+			if (hBitmap) {
+				DeleteBitmap(hBitmap);
 			}
 		}
 	};
 
-	// Animated icon data
-	struct anim_vars_t {
-		IconAnimDataConstPtr iconAnimData;
-		std::vector<HBITMAP> iconFrames;
-		IconAnimHelper iconAnimHelper;
-		HWND hwndDragImageLabel;
-		UINT_PTR animTimerID;
-		int last_frame_number;		// Last frame number.
+	// HWND and uIDEvent pair
+	using WinTimer_t = std::pair<HWND, UINT_PTR>;
 
-		explicit anim_vars_t(HWND hwndDragImageLabel)
-			: hwndDragImageLabel(hwndDragImageLabel)
-			, animTimerID(0)
-			, last_frame_number(0)
-		{}
-		explicit anim_vars_t(HWND hwndDragImageLabel, const IconAnimDataConstPtr &iconAnimData)
-			: iconAnimData(iconAnimData)
-			, hwndDragImageLabel(hwndDragImageLabel)
-			, animTimerID(0)
-			, last_frame_number(0)
-		{}
-		explicit anim_vars_t(HWND hwndDragImageLabel, IconAnimDataConstPtr &&iconAnimData)
-			: iconAnimData(iconAnimData)
-			, hwndDragImageLabel(hwndDragImageLabel)
-			, animTimerID(0)
-			, last_frame_number(0)
-		{}
+	class WinTimer_deleter
+	{
+	public:
+		typedef UINT_PTR pointer;
 
-		~anim_vars_t()
+		void operator()(WinTimer_t winTimer)
 		{
-			if (animTimerID) {
-				KillTimer(hwndDragImageLabel, animTimerID);
+			if (winTimer.second > 0) {
+				KillTimer(winTimer.first, winTimer.second);
 			}
-			for (HBITMAP hbmp : iconFrames) {
-				if (hbmp) {
-					DeleteBitmap(hbmp);
-				}
-			}
-		}
-
-		/**
-		 * Get frame 0.
-		 * @return Frame 0, or nullptr on error.
-		 */
-		HBITMAP frame0(void) const
-		{
-			if (!iconAnimData || iconAnimData->seq_count <= 0) {
-				// No animation sequence.
-				// We might still have a static icon, though...
-				if (iconFrames.size() >= 1) {
-					return iconFrames[0];
-				}
-				// No icons at all.
-				return nullptr;
-			}
-
-			const int frame0_idx = iconAnimData->seq_index[0];
-			if (frame0_idx < 0 || frame0_idx >= static_cast<int>(iconFrames.size())) {
-				return nullptr;
-			}
-
-			return iconFrames[frame0_idx];
 		}
 	};
 
+	using non_anim_vars_t = LibRpBase::non_anim_vars_t<HBITMAP, HBITMAP_deleter>;
+	using anim_vars_t = LibRpBase::anim_vars_t<HBITMAP, WinTimer_t, HBITMAP_deleter, WinTimer_deleter>;
 	std::variant<std::monostate, non_anim_vars_t, anim_vars_t> imgData;
 
 	// Convenience functions to check both if the correct type is
@@ -391,10 +333,6 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 		// Convert to HBITMAP using the window background color.
 		// TODO: Rescale the icon. (port rescaleImage())
 		non_anim_vars_t &non_anim = std::get<non_anim_vars_t>(imgData);
-		if (non_anim.hbmpImg) {
-			DeleteBitmap(non_anim.hbmpImg);
-		}
-
 		iconSize.cx = non_anim.img->width();
 		iconSize.cy = non_anim.img->height();
 
@@ -408,7 +346,10 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 		useNearestNeighbor = (labelSize.cx % iconSize.cx == 0) &&
 		                     (labelSize.cy % iconSize.cy == 0);
 
-		non_anim.hbmpImg = RpImageWin32::toHBITMAP(non_anim.img, gdipBgColor, labelSize, useNearestNeighbor);
+		if (non_anim.imgClass) {
+			DeleteBitmap(non_anim.imgClass);
+		}
+		non_anim.imgClass = RpImageWin32::toHBITMAP(non_anim.img, gdipBgColor, labelSize, useNearestNeighbor);
 
 		// Image data is valid.
 		//updateRect();
@@ -439,7 +380,7 @@ void DragImageLabelPrivate::startAnimTimer(void)
 		return;
 	}
 
-	if (anim.animTimerID) {
+	if (anim.tmrIconAnim.second > 0) {
 		// Timer is already running.
 		return;
 	}
@@ -455,9 +396,8 @@ void DragImageLabelPrivate::startAnimTimer(void)
 
 	// Set a timer for the current frame.
 	// We're using the 'd' pointer as nIDEvent.
-	anim.animTimerID = SetTimer(q_ptr,
-		reinterpret_cast<UINT_PTR>(this),
-		delay, AnimTimerProc);
+	anim.tmrIconAnim = WinTimer_t(q_ptr,
+		SetTimer(q_ptr, reinterpret_cast<UINT_PTR>(this), delay, AnimTimerProc));
 }
 
 /**
@@ -471,9 +411,8 @@ void DragImageLabelPrivate::stopAnimTimer(void)
 	}
 
 	DragImageLabelPrivate::anim_vars_t &anim = std::get<DragImageLabelPrivate::anim_vars_t>(imgData);
-	if (anim.animTimerID) {
-		KillTimer(q_ptr, anim.animTimerID);
-		anim.animTimerID = 0;
+	if (anim.tmrIconAnim.second > 0) {
+		anim.unregister_timer();
 	}
 }
 
@@ -489,7 +428,7 @@ bool DragImageLabelPrivate::isAnimTimerRunning(void) const
 	}
 
 	const DragImageLabelPrivate::anim_vars_t &anim = std::get<DragImageLabelPrivate::anim_vars_t>(imgData);
-	return (anim.animTimerID != 0);
+	return (anim.tmrIconAnim.second > 0);
 }
 
 /**
@@ -523,7 +462,7 @@ HBITMAP DragImageLabelPrivate::currentFrame(void) const
 		}
 	} else if (isNonAnim()) {
 		const DragImageLabelPrivate::non_anim_vars_t &non_anim = std::get<DragImageLabelPrivate::non_anim_vars_t>(imgData);
-		return non_anim.hbmpImg;
+		return non_anim.imgClass;
 	}
 
 	return nullptr;
@@ -570,8 +509,7 @@ void CALLBACK DragImageLabelPrivate::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PT
 	const int frame = anim.iconAnimHelper.nextFrame(&delay);
 	if (delay <= 0 || frame < 0) {
 		// Invalid frame...
-		KillTimer(hWnd, idEvent);
-		anim.animTimerID = 0;
+		anim.unregister_timer();
 		return;
 	}
 
@@ -583,7 +521,6 @@ void CALLBACK DragImageLabelPrivate::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PT
 	}
 
 	// Update the timer.
-	// TODO: Verify that this affects the next callback.
 	SetTimer(hWnd, idEvent, delay, AnimTimerProc);
 }
 
@@ -880,7 +817,7 @@ DragImageLabelWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			const IconAnimDataConstPtr *const pIconAnimData =
 				reinterpret_cast<const IconAnimDataConstPtr*>(lParam);
 			if (pIconAnimData) {
-				d->imgData.emplace<DragImageLabelPrivate::anim_vars_t>(hWnd, *pIconAnimData);
+				d->imgData.emplace<DragImageLabelPrivate::anim_vars_t>(*pIconAnimData);
 				if (*pIconAnimData) {
 					ok = d->updateBitmaps();
 				}

@@ -12,7 +12,7 @@
 
 // Other rom-properties libraries
 #include "librpbase/img/IconAnimData.hpp"
-#include "librpbase/img/IconAnimHelper.hpp"
+#include "librpbase/img/T_img_vars.hpp"
 #include "librptexture/img/rp_image.hpp"
 
 // C++ includes
@@ -167,70 +167,8 @@ private:
 	QPoint m_dragStartPos;
 	bool m_ecksBawks;
 
-	// Non-animated icon data
-	struct non_anim_vars_t {
-		LibRpTexture::rp_image_const_ptr img;
-		QPixmap qPixmap;
-
-		explicit non_anim_vars_t()
-		{}
-		explicit non_anim_vars_t(const LibRpTexture::rp_image_const_ptr &img)
-			: img(img)
-		{}
-		explicit non_anim_vars_t(LibRpTexture::rp_image_const_ptr &&img)
-			: img(img)
-		{}
-	};
-
-	// Animated icon data
-	struct anim_vars_t {
-		LibRpBase::IconAnimDataConstPtr iconAnimData;
-		std::vector<QPixmap> iconFrames;
-		LibRpBase::IconAnimHelper iconAnimHelper;
-		std::unique_ptr<QTimer> tmrIconAnim;
-		int last_frame_number;		// Last frame number.
-		bool anim_running;		// Animation is running.
-
-		explicit anim_vars_t()
-			: last_frame_number(0)
-			, anim_running(false)
-		{}
-		explicit anim_vars_t(const LibRpBase::IconAnimDataConstPtr &iconAnimData)
-			: iconAnimData(iconAnimData)
-			, last_frame_number(0)
-			, anim_running(false)
-		{}
-		explicit anim_vars_t(LibRpBase::IconAnimDataConstPtr &&iconAnimData)
-			: iconAnimData(iconAnimData)
-			, last_frame_number(0)
-			, anim_running(false)
-		{}
-
-		/**
-		 * Get frame 0.
-		 * @return Frame 0, or nullptr on error.
-		 */
-		QPixmap frame0(void) const
-		{
-			if (!iconAnimData || iconAnimData->seq_count <= 0) {
-				// No animation sequence.
-				// We might still have a static icon, though...
-				if (iconFrames.size() >= 1) {
-					return iconFrames[0];
-				}
-				// No icons at all.
-				return {};
-			}
-
-			const int frame0_idx = iconAnimData->seq_index[0];
-			if (frame0_idx < 0 || frame0_idx >= static_cast<int>(iconFrames.size())) {
-				return {};
-			}
-
-			return iconFrames[frame0_idx];
-		}
-	};
-
+	using non_anim_vars_t = LibRpBase::non_anim_vars_t<QPixmap>;
+	using anim_vars_t = LibRpBase::anim_vars_t<QPixmap, QTimer>;
 	std::variant<std::monostate, non_anim_vars_t, anim_vars_t> m_imgData;
 
 	// Convenience functions to check both if the correct type is
