@@ -21,12 +21,16 @@ using namespace LibRpTexture;
 #include "libwin32ui/WinUI.hpp"
 #include <uxtheme.h>	// for IsThemeActive()
 
+// C includes
+#include "tcharx.h"
+
 // C++ STL classes
 #include <memory>
 #include <vector>
 using std::array;
-using std::vector;
+using std::tstring;
 using std::unique_ptr;
+using std::vector;
 
 #ifdef HAVE_STD_VARIANT
 #  include <variant>
@@ -65,6 +69,9 @@ public:
 	// Data formats and storage
 	vector<FORMATETC> vec_formatEtc;
 	vector<STGMEDIUM> vec_stgMedium;
+
+	// Filename for the dropped object
+	tstring filename;
 
 	/**
 	 * Check if a format is supported.
@@ -246,7 +253,12 @@ HGLOBAL DILDataObjectPrivate::getFileDescriptorW(void) const
 	FILEDESCRIPTORW *const fileDesc = &fileGroupDesc->fgd[0];
 	fileDesc->dwFlags = FD_ATTRIBUTES;
 	fileDesc->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
-	wcscpy(fileDesc->cFileName, L"🍅.png");
+#ifdef UNICODE
+	wcsncpy_s(fileDesc->cFileName, _countof(fileDesc->cFileName), filename.c_str(), _TRUNCATE);
+#else /* !UNICODE */
+	// TODO: A to W?
+	fileDesc->cFileName[0] = L'\0';
+#endif /* UNICODE */
 
 	GlobalUnlock(hglbFileDesc);
 	return hglbFileDesc;
@@ -277,7 +289,12 @@ HGLOBAL DILDataObjectPrivate::getFileDescriptorA(void) const
 	FILEDESCRIPTORA *const fileDesc = &fileGroupDesc->fgd[0];
 	fileDesc->dwFlags = FD_ATTRIBUTES;
 	fileDesc->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
-	strcpy(fileDesc->cFileName, "test123.png");
+#ifdef UNICODE
+	// TODO: W to A?
+	fileDesc->cFileName[0] = '\0';
+#else /* !UNICODE */
+	strncpy_s(fileDesc->cFileName, _countof(fileDesc->cFileName), filename.c_str(), _TRUNCATE);
+#endif /* UNICODE */
 
 	GlobalUnlock(hglbFileDesc);
 	return hglbFileDesc;
@@ -361,6 +378,21 @@ DILDataObject::~DILDataObject()
 {
 	delete d_ptr;
 }
+
+/**
+ * Set the filename for the dropped object.
+ * @param filename Filename (or nullptr to clear the filename)
+ */
+void DILDataObject::setFilename(LPCTSTR filename)
+{
+	RP_D(DILDataObject);
+	if (filename) {
+		d->filename = filename;
+	} else {
+		d->filename.clear();
+	}
+}
+
 
 /** IUnknown **/
 // Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus

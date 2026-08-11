@@ -42,6 +42,12 @@ namespace Gdiplus {
 #include <comdef.h>
 #include <gdiplus.h>
 
+// C includes
+#include "tcharx.h"
+
+// C++ STL classes
+using std::tstring;
+
 #ifdef HAVE_STD_VARIANT
 #  include <variant>
 #else /* !HAVE_STD_VARIANT */
@@ -182,6 +188,9 @@ public:
 		}
 		return false;
 	}
+
+	// Drag filename (e.g. ROM filename but with a .png extension) for dropped images
+	tstring dragFilename;
 
 	// Use nearest-neighbor scaling?
 	bool useNearestNeighbor;
@@ -624,6 +633,12 @@ void DragImageLabelPrivate::on_WM_LBUTTONDOWN(WPARAM wParam, LPARAM lParam)
 		return;
 	}
 
+	// Set the drag filename.
+	// NOTE: The operation will *fail* with hr == S_OK if a drag filename isn't set...
+	if (!dragFilename.empty()) {
+		pDataObj->setFilename(dragFilename.c_str());
+	}
+
 	// Try to create an IDragSourceHelper so we can have a custom drag image.
 	if (frame0) {
 		IDragSourceHelperPtr pDragSourceHelper;
@@ -918,6 +933,46 @@ DragImageLabelWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			// Custom message; don't bother running DefWindowProc.
 			return 0;
+		}
+
+		case WM_DIL_SET_DRAG_FILENAMEW: {
+			DragImageLabelPrivate *const d = reinterpret_cast<DragImageLabelPrivate*>(
+				GetWindowLongPtr(hWnd, GWLP_USERDATA));
+			if (!d) {
+				// No DragImageLabelPrivate. Can't do anything...
+				return false;
+			}
+
+			if (lParam) {
+#ifdef UNICODE
+				d->dragFilename.assign(reinterpret_cast<LPCWSTR>(lParam));
+#else /* !UNICODE */
+				// TODO: Convert W to A?
+#endif /* UNICODE */
+			} else {
+				d->dragFilename.clear();
+			}
+			break;
+		}
+
+		case WM_DIL_SET_DRAG_FILENAMEA: {
+			DragImageLabelPrivate *const d = reinterpret_cast<DragImageLabelPrivate*>(
+				GetWindowLongPtr(hWnd, GWLP_USERDATA));
+			if (!d) {
+				// No DragImageLabelPrivate. Can't do anything...
+				return false;
+			}
+
+			if (lParam) {
+#ifdef UNICODE
+				// TODO: Convert A to W?
+#else /* !UNICODE */
+				d->dragFilename.assign(reinterpret_cast<LPCSTR>(lParam));
+#endif /* UNICODE */
+			} else {
+				d->dragFilename.clear();
+			}
+			break;
 		}
 
 		case WM_DIL_INVALIDATE_BITMAPS: {

@@ -120,6 +120,27 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	const int imgStdHeight = rp_AdjustSizeForDpi(32, rp_GetDpiForWindow(hDlgSheet));
 	DragImageLabelRegister();
 
+	// Get the drag filename (e.g. ROM filename but with a .png extension) for dropped images.
+	// TODO: Only do this if the labels are dragged? (requires adding notification messages...)
+	tstring dragFilename;
+	{
+		// Get just the filename portion, i.e. no subdirectories.
+		const TCHAR *const slashPos = _tcsrchr(tfilename, DIR_SEP_CHR);
+		if (slashPos) {
+			// Skip the backslash.
+			dragFilename.assign(slashPos + 1);
+		} else {
+			// No backslash??? Use the whole filename.
+			dragFilename = tfilename;
+		}
+
+		// Remove the last extension so we can add our own extension.
+		const size_t dotPos = dragFilename.rfind(_T('.'));
+		if (dotPos != tstring::npos) {
+			dragFilename.resize(dotPos);
+		}
+	}
+
 	// Banner
 	bool ok = false;
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
@@ -138,6 +159,13 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 			}
 
 			ok = DragImageLabel_SetRpImage(lblBanner, banner);
+			if (ok) {
+				// Set the drag filename.
+				const size_t prevSize = dragFilename.size();
+				dragFilename += _T(".banner.png");
+				DragImageLabel_SetDragFileName(lblBanner, dragFilename.c_str());
+				dragFilename.resize(prevSize);
+			}
 		}
 	}
 	if (!ok) {
@@ -175,6 +203,14 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 				// Not an animated icon, or invalid icon data.
 				// Set the static icon.
 				ok = DragImageLabel_SetRpImage(lblIcon, icon);
+			}
+
+			if (ok) {
+				// Set the drag filename.
+				const size_t prevSize = dragFilename.size();
+				dragFilename += _T(".icon.png");
+				DragImageLabel_SetDragFileName(lblIcon, dragFilename.c_str());
+				dragFilename.resize(prevSize);
 			}
 		}
 	}

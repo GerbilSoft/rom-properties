@@ -37,6 +37,15 @@ private:
 	DILDataObjectPrivate *const d_ptr;
 
 public:
+	// DILDataObject-specific (non-COM)
+
+	/**
+	 * Set the filename for the dropped object.
+	 * @param filename Filename (or nullptr to clear the filename)
+	 */
+	void setFilename(LPCTSTR filename);
+
+public:
 	// IUnknown
 	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
 

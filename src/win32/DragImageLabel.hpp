@@ -35,10 +35,13 @@ void DragImageLabelUnregister(void);
 #define WM_DIL_IS_ANIM_TIMER_RUNNING	(WM_APP + 5)	// return == 0 if animation timer is not running; non-zero if it is
 #define WM_DIL_RESET_ANIM_FRAME		(WM_APP + 6)
 
-#define WM_DIL_INVALIDATE_BITMAPS	(WM_APP + 7)
+#define WM_DIL_SET_DRAG_FILENAMEW	(WM_APP + 7)	// lParam = LPCWSTR of drag filename (e.g. ROM filename but with a .png extension) for dropped images
+#define WM_DIL_SET_DRAG_FILENAMEA	(WM_APP + 8)	// lParam = LPCSTR of drag filename (e.g. ROM filename but with a .png extension) for dropped images
 
-#define WM_DIL_SET_ECKS_BAWKS		(WM_APP + 8)	// wParam == 0 to clear Ecks Bawks mode; non-zero to set
-#define WM_DIL_GET_ECKS_BAWKS		(WM_APP + 9)	// return == 0 if Ecks Bawks mode is not set; non-zero if set
+#define WM_DIL_INVALIDATE_BITMAPS	(WM_APP + 9)
+
+#define WM_DIL_SET_ECKS_BAWKS		(WM_APP + 10)	// wParam == 0 to clear Ecks Bawks mode; non-zero to set
+#define WM_DIL_GET_ECKS_BAWKS		(WM_APP + 11)	// return == 0 if Ecks Bawks mode is not set; non-zero if set
 
 #ifdef __cplusplus
 }
@@ -86,6 +89,16 @@ static inline void DragImageLabel_ResetAnimFrame(HWND hWnd)
 	SendMessage(hWnd, WM_DIL_RESET_ANIM_FRAME, 0, 0);
 }
 
+static inline void DragImageLabel_SetDragFileNameW(HWND hWnd, LPCWSTR dragFilename)
+{
+	SendMessage(hWnd, WM_DIL_SET_DRAG_FILENAMEW, 0, reinterpret_cast<LPARAM>(dragFilename));
+}
+
+static inline void DragImageLabel_SetDragFileNameA(HWND hWnd, LPCSTR dragFilename)
+{
+	SendMessage(hWnd, WM_DIL_SET_DRAG_FILENAMEA, 0, reinterpret_cast<LPARAM>(dragFilename));
+}
+
 static inline void DragImageLabel_InvalidateBitmaps(HWND hWnd)
 {
 	SendMessage(hWnd, WM_DIL_INVALIDATE_BITMAPS, 0, 0);
@@ -104,3 +117,12 @@ static inline bool DragImageLabel_GetEcksBawks(HWND hWnd)
 #ifdef __cplusplus
 }
 #endif
+
+// Unicode macros
+#ifdef UNICODE
+#  define WM_DIL_SET_DRAG_FILENAME WM_DIL_SET_DRAG_FILENAMEW
+#  define DragImageLabel_SetDragFileName(hWnd, dragFilename) DragImageLabel_SetDragFileNameW((hWnd), (dragFilename))
+#else /* !UNICODE */
+#  define WM_DIL_SET_DRAG_FILENAME WM_DIL_SET_DRAG_FILENAMEA
+#  define DragImageLabel_SetDragFileName(hWnd, dragFilename) DragImageLabel_SetDragFileNameA((hWnd), (dragFilename))
+#endif /* UNICODE */
