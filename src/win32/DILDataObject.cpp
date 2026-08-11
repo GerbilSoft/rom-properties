@@ -166,7 +166,6 @@ HGLOBAL DILDataObjectPrivate::getFileDescriptorW(void) const
 {
 	// Create a CFSTR_FILEDESCRIPTOR for a single virtual file.
 	// NOTE: FILEGROUPDESCRIPTORW contains one FILEDESCRIPTORW.
-	// NOTE: The Unicode version requires Windows Vista or later.
 	const size_t buf_size = sizeof(FILEGROUPDESCRIPTORW);
 	HGLOBAL hglbFileDesc = GlobalAlloc(GMEM_MOVEABLE, buf_size);
 	if (!hglbFileDesc) {
