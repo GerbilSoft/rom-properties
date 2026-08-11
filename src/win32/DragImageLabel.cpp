@@ -647,8 +647,7 @@ void DragImageLabelPrivate::on_WM_LBUTTONDOWN(WPARAM wParam, LPARAM lParam)
 
 			SHDRAGIMAGE di;
 			di.sizeDragImage = labelSize;
-			di.ptOffset.x = 0;	// TODO: Mouse position
-			di.ptOffset.y = 0;
+			di.ptOffset = pt;
 			di.crColorKey = CLR_INVALID;
 
 			di.hbmpDragImage = RpImageWin32::toHBITMAP_alpha(frame0, labelSize, useNearestNeighbor);
