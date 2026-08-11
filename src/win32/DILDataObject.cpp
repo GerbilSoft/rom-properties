@@ -103,10 +103,11 @@ public:
 	HGLOBAL getFileDescriptorA(void) const;
 
 	/**
-	 * Get the image data in PNG format.
-	 * @return HGLOBAL containing the image data, or nullptr on error.
+	 * Convert the loaded rp_image or IconAnimData to a .PNG file and
+	 * store it in the CFSTR_FILECONTENTS HGLOBAL in vec_stgMedium.
+	 * @return 0 on success; negative POSIX error code on error.
 	 */
-	HGLOBAL getFileContents(void) const;
+	int convertImageToHGLOBAL(void);
 };
 
 /** DILDataObjectPrivate **/
@@ -126,7 +127,8 @@ DILDataObjectPrivate::DILDataObjectPrivate(const IconAnimDataConstPtr &iconAnimD
 DILDataObjectPrivate::~DILDataObjectPrivate()
 {
 	// Make sure any data set via SetData() is freed.
-	for (int i = OUR_DATA_COUNT; i < static_cast<int>(vec_stgMedium.size()); i++) {
+	// Also CFSTR_FILECONTENTS.
+	for (int i = 2; i < static_cast<int>(vec_stgMedium.size()); i++) {
 		ReleaseStgMedium(&vec_stgMedium[i]);
 	}
 }
@@ -144,6 +146,7 @@ void DILDataObjectPrivate::initDataVectors(void)
 
 	FORMATETC fmtetc = {0, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
 	static const STGMEDIUM stgm_hGlobal = {TYMED_HGLOBAL, nullptr, nullptr};
+	static const STGMEDIUM stgm_null = {TYMED_NULL, nullptr, nullptr};
 
 	// CFSTR_FILEDESCRIPTORW
 	fmtetc.cfFormat = RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW);
@@ -158,7 +161,7 @@ void DILDataObjectPrivate::initDataVectors(void)
 	// CFSTR_FILECONTENTS
 	fmtetc.cfFormat = RegisterClipboardFormat(CFSTR_FILECONTENTS);
 	vec_formatEtc.push_back(fmtetc);
-	vec_stgMedium.push_back(stgm_hGlobal);
+	vec_stgMedium.push_back(stgm_null);
 
 	assert(vec_formatEtc.size() == static_cast<size_t>(OUR_DATA_COUNT));
 	assert(vec_stgMedium.size() == static_cast<size_t>(OUR_DATA_COUNT));
@@ -239,6 +242,15 @@ HGLOBAL DILDataObjectPrivate::getFileDescriptorW(void) const
 		return nullptr;
 	}
 
+	// If the CFSTR_FILECONTENTS HGLOBAL hasn't been initialized yet,
+	// initialize it now.
+	assert(vec_stgMedium.size() >= static_cast<size_t>(OUR_DATA_COUNT));
+	if (vec_stgMedium.size() >= static_cast<size_t>(OUR_DATA_COUNT)) {
+		if (!vec_stgMedium[2].hGlobal) {
+			const_cast<DILDataObjectPrivate*>(this)->convertImageToHGLOBAL();
+		}
+	}
+
 	fileGroupDesc->cItems = 1;
 
 	FILEDESCRIPTORW *const fileDesc = &fileGroupDesc->fgd[0];
@@ -275,6 +287,15 @@ HGLOBAL DILDataObjectPrivate::getFileDescriptorA(void) const
 		return nullptr;
 	}
 
+	// If the CFSTR_FILECONTENTS HGLOBAL hasn't been initialized yet,
+	// initialize it now.
+	assert(vec_stgMedium.size() >= static_cast<size_t>(OUR_DATA_COUNT));
+	if (vec_stgMedium.size() >= static_cast<size_t>(OUR_DATA_COUNT)) {
+		if (!vec_stgMedium[2].hGlobal) {
+			const_cast<DILDataObjectPrivate*>(this)->convertImageToHGLOBAL();
+		}
+	}
+
 	fileGroupDesc->cItems = 1;
 
 	FILEDESCRIPTORA *const fileDesc = &fileGroupDesc->fgd[0];
@@ -292,11 +313,27 @@ HGLOBAL DILDataObjectPrivate::getFileDescriptorA(void) const
 }
 
 /**
- * Get the image data in PNG format.
- * @return HGLOBAL containing the image data, or nullptr on error.
+ * Convert the loaded rp_image or IconAnimData to a .PNG file and
+ * store it in the CFSTR_FILECONTENTS HGLOBAL in vec_stgMedium.
+ * @return 0 on success; negative POSIX error code on error.
  */
-HGLOBAL DILDataObjectPrivate::getFileContents(void) const
+int DILDataObjectPrivate::convertImageToHGLOBAL(void)
 {
+	assert(vec_stgMedium.size() >= static_cast<size_t>(OUR_DATA_COUNT));
+	if (vec_stgMedium.size() < static_cast<size_t>(OUR_DATA_COUNT)) {
+		// The vectors haven't been initialized yet...
+		return -ENODATA;
+	}
+
+	// CFSTR_FILECONTENTS is stored in index 2.
+	STGMEDIUM *const stgm = &vec_stgMedium[2];
+	if (stgm->hGlobal) {
+		// Delete the existing HGLOBAL.
+		GlobalFree(stgm->hGlobal);
+		stgm->tymed = TYMED_NULL;
+		stgm->hGlobal = nullptr;
+	}
+
 	// Save to a VectorFile.
 	// The data will be copied to an HGLOBAL later.
 	VectorFilePtr pngData(new VectorFile());
@@ -312,7 +349,7 @@ HGLOBAL DILDataObjectPrivate::getFileContents(void) const
 		pngWriter.reset(new RpPngWriter(pngData, std::get<rp_image_const_ptr>(imgData)));
 	} else {
 		// No icon...
-		return nullptr;
+		return -ENOENT;
 	}
 
 	/** tEXt chunks **/
@@ -329,30 +366,32 @@ HGLOBAL DILDataObjectPrivate::getFileContents(void) const
 	int pwRet = pngWriter->write_IHDR();
 	if (pwRet != 0) {
 		// Error writing IHDR.
-		return nullptr;
+		return -EIO;
 	}
 	pwRet = pngWriter->write_IDAT();
 	if (pwRet != 0) {
 		// Error writing IDAT.
-		return nullptr;
+		return -EIO;
 	}
 
 	// Copy the VectorFile data to an HGLOBAL.
 	const std::vector<uint8_t> &vec = pngData->vector();
 	HGLOBAL hglbPngFile = GlobalAlloc(GMEM_MOVEABLE, vec.size());
 	if (!hglbPngFile) {
-		return nullptr;
+		return -ENOMEM;
 	}
 
 	uint8_t *const fileBuf = static_cast<uint8_t*>(GlobalLock(hglbPngFile));
 	if (!fileBuf) {
 		GlobalFree(hglbPngFile);
-		return nullptr;
+		return -ENOMEM;
 	}
 
 	memcpy(fileBuf, vec.data(), vec.size());
 	GlobalUnlock(hglbPngFile);
-	return hglbPngFile;
+	stgm->tymed = TYMED_HGLOBAL;
+	stgm->hGlobal = hglbPngFile;
+	return 0;
 }
 
 /** DILDataObject **/
@@ -410,7 +449,7 @@ IFACEMETHODIMP DILDataObject::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *
 
 IFACEMETHODIMP DILDataObject::GetData(_In_ FORMATETC *pformatetcIn, _Out_ STGMEDIUM *pmedium)
 {
-	RP_D(const DILDataObject);
+	RP_D(DILDataObject);
 	int idx = d->lookupFormatEtc(pformatetcIn);
 	if (idx < 0) {
 		// Not supported...
@@ -436,16 +475,15 @@ IFACEMETHODIMP DILDataObject::GetData(_In_ FORMATETC *pformatetcIn, _Out_ STGMED
 			break;
 
 		case 2:	// CFSTR_FILECONTENTS
-			// Get the file contents.
-			pmedium->hGlobal = d->getFileContents();
-			if (!pmedium->hGlobal) {
-				// Shouldn't happen...
-				return E_FAIL;
+			// Make sure the image has been converted.
+			if (!d->vec_stgMedium[2].hGlobal) {
+				d->convertImageToHGLOBAL();
 			}
-			break;
+			// fall-through
 
 		default:
 			// Get the STGMEDIUM that was previously set using SetData().
+			// Also CFSTR_FILECONTENTS.
 			// TODO: Verify actions using: https://learn.microsoft.com/en-us/windows/win32/api/ole2/nf-ole2-releasestgmedium
 			switch (stgm->tymed) {
 				default:
