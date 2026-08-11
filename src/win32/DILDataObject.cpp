@@ -142,33 +142,22 @@ void DILDataObjectPrivate::initDataVectors(void)
 	vec_formatEtc.reserve(OUR_DATA_COUNT);
 	vec_stgMedium.reserve(OUR_DATA_COUNT);
 
+	FORMATETC fmtetc = {0, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
 	static const STGMEDIUM stgm_hGlobal = {TYMED_HGLOBAL, nullptr, nullptr};
 
 	// CFSTR_FILEDESCRIPTORW
-	vec_formatEtc.emplace_back(
-		RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW),	// cfFormat
-		nullptr,					// ptd
-		DVASPECT_CONTENT,				// dwAspect
-		-1,						// lindex
-		TYMED_HGLOBAL);					// tymed
+	fmtetc.cfFormat = RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW);
+	vec_formatEtc.push_back(fmtetc);
 	vec_stgMedium.push_back(stgm_hGlobal);
 
 	// CFSTR_FILEDESCRIPTORA
-	vec_formatEtc.emplace_back(
-		RegisterClipboardFormat(CFSTR_FILEDESCRIPTORA),	// cfFormat
-		nullptr,					// ptd
-		DVASPECT_CONTENT,				// dwAspect
-		-1,						// lindex
-		TYMED_HGLOBAL);					// tymed
+	fmtetc.cfFormat = RegisterClipboardFormat(CFSTR_FILEDESCRIPTORA);
+	vec_formatEtc.push_back(fmtetc);
 	vec_stgMedium.push_back(stgm_hGlobal);
 
 	// CFSTR_FILECONTENTS
-	vec_formatEtc.emplace_back(
-		RegisterClipboardFormat(CFSTR_FILECONTENTS),	// cfFormat
-		nullptr,					// ptd
-		DVASPECT_CONTENT,				// dwAspect
-		-1,						// lindex
-		TYMED_HGLOBAL);					// tymed
+	fmtetc.cfFormat = RegisterClipboardFormat(CFSTR_FILECONTENTS);
+	vec_formatEtc.push_back(fmtetc);
 	vec_stgMedium.push_back(stgm_hGlobal);
 
 	assert(vec_formatEtc.size() == static_cast<size_t>(OUR_DATA_COUNT));
