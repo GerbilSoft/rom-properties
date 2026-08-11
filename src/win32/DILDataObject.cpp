@@ -256,6 +256,21 @@ HGLOBAL DILDataObjectPrivate::getFileDescriptorW(void) const
 	FILEDESCRIPTORW *const fileDesc = &fileGroupDesc->fgd[0];
 	fileDesc->dwFlags = FD_ATTRIBUTES;
 	fileDesc->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+
+	// Get the HGLOBAL size.
+	if (vec_stgMedium.size() >= static_cast<size_t>(OUR_DATA_COUNT)) {
+		if (vec_stgMedium[2].hGlobal) {
+			const SIZE_T len = GlobalSize(vec_stgMedium[2].hGlobal);
+			if (len > 0) {
+				fileDesc->nFileSizeLow = (len & 0xFFFFFFFFU);
+				// NOTE: The PNG should never be more than 4 GB.
+				// Hard-coding this to 0 to prevent warnings in 32-bit builds.
+				fileDesc->nFileSizeHigh = 0; //(len >> 32);
+				fileDesc->dwFlags |= FD_FILESIZE;
+			}
+		}
+	}
+
 #ifdef UNICODE
 	wcsncpy_s(fileDesc->cFileName, _countof(fileDesc->cFileName), filename.c_str(), _TRUNCATE);
 #else /* !UNICODE */
@@ -301,6 +316,23 @@ HGLOBAL DILDataObjectPrivate::getFileDescriptorA(void) const
 	FILEDESCRIPTORA *const fileDesc = &fileGroupDesc->fgd[0];
 	fileDesc->dwFlags = FD_ATTRIBUTES;
 	fileDesc->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+
+	// Get the HGLOBAL size.
+	if (vec_stgMedium.size() >= static_cast<size_t>(OUR_DATA_COUNT)) {
+		if (vec_stgMedium[2].hGlobal) {
+			const SIZE_T len = GlobalSize(vec_stgMedium[2].hGlobal);
+			if (len > 0) {
+				fileDesc->nFileSizeLow = (len & 0xFFFFFFFFU);
+				// NOTE: The PNG should never be more than 4 GB.
+				// Hard-coding this to 0 to prevent warnings in 32-bit builds.
+				fileDesc->nFileSizeHigh = 0; //(len >> 32);
+				fileDesc->dwFlags |= FD_FILESIZE;
+			}
+		}
+	}
+
+	// TODO: Timestamp and other attributes?
+
 #ifdef UNICODE
 	const string str = W2A(filename);
 	strncpy_s(fileDesc->cFileName, _countof(fileDesc->cFileName), str.c_str(), _TRUNCATE);
