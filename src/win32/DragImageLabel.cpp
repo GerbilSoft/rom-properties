@@ -611,6 +611,8 @@ void DragImageLabelPrivate::on_WM_PAINT(void)
  */
 void DragImageLabelPrivate::on_WM_LBUTTONDOWN(WPARAM wParam, LPARAM lParam)
 {
+	RP_UNUSED(wParam);
+
 	// Check for a drag.
 	const POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 	if (!DragDetect(q_ptr, pt)) {
