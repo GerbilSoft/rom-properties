@@ -82,12 +82,6 @@ public:
 	 */
 	static HGLOBAL dupGlobalMem(HGLOBAL hMem);
 
-	/**
-	 * Clear copied memory in an STGMEDIUM entry.
-	 * @param idx Index
-	 */
-	void clearStgMediumData(int idx);
-
 public:
 	/**
 	 * Get the CFSTR_FILEDESCRIPTORW for the image.
@@ -126,7 +120,7 @@ DILDataObjectPrivate::~DILDataObjectPrivate()
 {
 	// Make sure any data set via SetData() is freed.
 	for (int i = OUR_DATA_COUNT; i < static_cast<int>(vec_stgMedium.size()); i++) {
-		clearStgMediumData(i);
+		ReleaseStgMedium(&vec_stgMedium[i]);
 	}
 }
 
@@ -227,25 +221,6 @@ HGLOBAL DILDataObjectPrivate::dupGlobalMem(HGLOBAL hMem)
 	GlobalUnlock(hRet);
 	GlobalUnlock(hMem);
 	return hRet;
-}
-
-/**
- * Clear copied memory in an STGMEDIUM entry.
- * @param idx Index
- */
-void DILDataObjectPrivate::clearStgMediumData(int idx)
-{
-	assert(idx >= OUR_DATA_COUNT);
-	assert(idx < static_cast<int>(vec_stgMedium.size()));
-	if (idx < OUR_DATA_COUNT || idx >= static_cast<int>(vec_stgMedium.size())) {
-		return;
-	}
-
-	// ReleaseStgMedium() will set tymed to TYMED_NULL
-	// and NULL out pUnkForRelease.
-	STGMEDIUM *const stgm = &vec_stgMedium[idx];
-	ReleaseStgMedium(stgm);
-	stgm->hGlobal = nullptr;
 }
 
 /**
@@ -539,7 +514,7 @@ IFACEMETHODIMP DILDataObject::SetData(_In_ FORMATETC *pformatetc, _In_ STGMEDIUM
 	int idx = d->lookupFormatEtc(pformatetc);
 	if (idx >= d->OUR_DATA_COUNT) {
 		// Free the existing STGMEDIUM.
-		d->clearStgMediumData(idx);
+		ReleaseStgMedium(&d->vec_stgMedium[idx]);
 		memcpy(&d->vec_formatEtc[idx], pformatetc, sizeof(FORMATETC));
 		memcpy(&d->vec_stgMedium[idx], pmedium, sizeof(STGMEDIUM));
 	} else if (idx < 0) {
