@@ -136,7 +136,7 @@ public:
 			return false;
 		}
 		const anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
-		return anim.anim_running;
+		return anim.tmrIconAnim.isActive();
 	}
 
 	/**

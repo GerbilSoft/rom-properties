@@ -261,7 +261,6 @@ void DragImageLabel::startAnimTimer(void)
 	}
 
 	// Set a single-shot timer for the current frame.
-	anim.anim_running = true;
 	anim.tmrIconAnim.start(delay);
 }
 
@@ -272,7 +271,6 @@ void DragImageLabel::stopAnimTimer(void)
 {
 	if (isAnim()) {
 		anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
-		anim.anim_running = false;
 		anim.tmrIconAnim.stop();
 	}
 }
@@ -305,9 +303,7 @@ void DragImageLabel::tmrIconAnim_timeout(void)
 	}
 
 	// Set the single-shot timer.
-	if (anim.anim_running) {
-		anim.tmrIconAnim.start(delay);
-	}
+	anim.tmrIconAnim.start(delay);
 }
 
 /** Overridden QWidget functions **/

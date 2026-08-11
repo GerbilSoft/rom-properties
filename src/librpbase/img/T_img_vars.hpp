@@ -70,30 +70,24 @@ struct anim_vars_t {
 	TmrClass tmrIconAnim;
 	int last_frame_number;	// Last frame number
 
-	// KDE only (TODO: Can this be replaced with a QTimer check?)
-	bool anim_running;	// Animation is running
-
 	// GTK only
 	int last_delay;		// Last delay value
 
 	explicit anim_vars_t()
 		: tmrIconAnim()
 		, last_frame_number(0)
-		, anim_running(false)
 		, last_delay(0)
 	{}
 	explicit anim_vars_t(const LibRpBase::IconAnimDataConstPtr &iconAnimData)
 		: iconAnimData(iconAnimData)
 		, tmrIconAnim()
 		, last_frame_number(0)
-		, anim_running(false)
 		, last_delay(0)
 	{}
 	explicit anim_vars_t(LibRpBase::IconAnimDataConstPtr &&iconAnimData)
 		: iconAnimData(iconAnimData)
 		, tmrIconAnim()
 		, last_frame_number(0)
-		, anim_running(false)
 		, last_delay(0)
 	{}
 
