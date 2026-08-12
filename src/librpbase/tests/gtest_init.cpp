@@ -333,6 +333,11 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// This is a legacy MS-DOS holdover, e.g. the "Abort, Retry, Fail" prompt.
 	// NOTE: rp_secure_enable() sets SEM_FAILCRITICALERRORS already.
 	SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX);
+
+	// Disable TIMERPROC exception suppression.
+	static const BOOL bTimerProcExceptionSuppression = FALSE;
+	SetUserObjectInformation(GetCurrentProcess(), UOI_TIMERPROC_EXCEPTION_SUPPRESSION,
+		(PVOID)&bTimerProcExceptionSuppression, sizeof(bTimerProcExceptionSuppression));
 #endif /* _WIN32 */
 
 #ifdef HAVE_SECCOMP

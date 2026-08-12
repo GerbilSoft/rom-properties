@@ -22,6 +22,11 @@ int rp_download_do_security_options(void)
 	// Suppress Windows "critical" error dialogs.
 	// This is a legacy MS-DOS holdover, e.g. the "Abort, Retry, Fail" prompt.
 	SetErrorMode(SEM_FAILCRITICALERRORS);
+
+	// Disable TIMERPROC exception suppression.
+	static const BOOL bTimerProcExceptionSuppression = FALSE;
+	SetUserObjectInformation(GetCurrentProcess(), UOI_TIMERPROC_EXCEPTION_SUPPRESSION,
+		(PVOID)&bTimerProcExceptionSuppression, sizeof(bTimerProcExceptionSuppression));
 #endif /* !_WIN32 */
 
 	// Restrict DLL lookups.

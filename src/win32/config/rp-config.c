@@ -129,6 +129,11 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	// This is a legacy MS-DOS holdover, e.g. the "Abort, Retry, Fail" prompt.
 	SetErrorMode(SEM_FAILCRITICALERRORS);
 
+	// Disable TIMERPROC exception suppression.
+	static const BOOL bTimerProcExceptionSuppression = FALSE;
+	SetUserObjectInformation(GetCurrentProcess(), UOI_TIMERPROC_EXCEPTION_SUPPRESSION,
+		(PVOID)&bTimerProcExceptionSuppression, sizeof(bTimerProcExceptionSuppression));
+
 	// Restrict DLL lookups.
 	rp_secure_restrict_dll_lookups();
 
