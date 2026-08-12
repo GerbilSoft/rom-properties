@@ -24,6 +24,11 @@
 #include <tchar.h>
 #include "libwin32common/rp_versionhelpers.h"
 
+// Not defined in MSVC 2017 v141_xp...
+#ifndef UOI_TIMERPROC_EXCEPTION_SUPPRESSION
+#  define UOI_TIMERPROC_EXCEPTION_SUPPRESSION 7
+#endif
+
 #ifndef _WIN64
 
 // NtSetInformationProcess() (needed for DEP on XP SP2)
