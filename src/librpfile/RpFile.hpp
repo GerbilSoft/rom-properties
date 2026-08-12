@@ -19,6 +19,16 @@ struct _SCSI_RESP_INQUIRY_STD;
 // from ata_protocol.h
 struct _ATA_RESP_IDENTIFY_DEVICE;
 
+#ifdef _WIN32
+#  ifdef __cplusplus
+extern "C" {
+#  endif
+struct _FILETIME;
+#  ifdef __cplusplus
+}
+#  endif
+#endif /* _WIN32 */
+
 namespace LibRpFile {
 
 class RpFilePrivate;
@@ -166,6 +176,23 @@ public:
 	 */
 	RP_LIBROMDATA_PUBLIC
 	const wchar_t *filenameW(void) const;
+#endif /* _WIN32 */
+
+	/**
+	 * Get the file modification time.
+	 * @return File modification time, or -1 if not available.
+	 */
+	RP_LIBROMDATA_PUBLIC
+	time_t mtime(void) final;
+
+#ifdef _WIN32
+	/**
+	 * Get the file modification time. (FILETIME format)
+	 * @param mtime Output buffer for file modification time. (If not available, -1 will be written.)
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	RP_LIBROMDATA_PUBLIC
+	int mtime(struct _FILETIME *mtime);
 #endif /* _WIN32 */
 
 public:

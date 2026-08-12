@@ -102,7 +102,19 @@ bool DragImageLabel::setIconAnimData(const IconAnimDataConstPtr &iconAnimData)
 	// previously stored image, since the underlying image may
 	// have changed.
 	m_imgData.emplace<anim_vars_t>(iconAnimData);
-	if (!iconAnimData) {
+	if (iconAnimData) {
+		// Initialize the QTimer.
+		anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
+		anim.tmrIconAnim.setObjectName(QLatin1String("tmrIconAnim"));
+		anim.tmrIconAnim.setSingleShot(true);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+		connect(&anim.tmrIconAnim, &QTimer::timeout,
+			this, &DragImageLabel::tmrIconAnim_timeout);
+#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
+		connect(&anim.tmrIconAnim, SIGNAL(timeout()),
+			this, SLOT(tmrIconAnim_timeout()));
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
+	} else {
 		this->clear();
 		return false;
 	}
@@ -185,19 +197,6 @@ bool DragImageLabel::updatePixmaps(void)
 		if (iconAnimHelper.isAnimated()) {
 			// Initialize the animation.
 			anim.last_frame_number = iconAnimHelper.frameNumber();
-			// Create the animation timer.
-			if (!anim.tmrIconAnim) {
-				anim.tmrIconAnim.reset(new QTimer(this));
-				anim.tmrIconAnim->setObjectName(QLatin1String("tmrIconAnim"));
-				anim.tmrIconAnim->setSingleShot(true);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-				connect(anim.tmrIconAnim.get(), &QTimer::timeout,
-					this, &DragImageLabel::tmrIconAnim_timeout);
-#else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
-				connect(anim.tmrIconAnim.get(), SIGNAL(timeout()),
-					this, SLOT(tmrIconAnim_timeout()));
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
-			}
 		}
 
 		// Show the first frame.
@@ -220,14 +219,14 @@ bool DragImageLabel::updatePixmaps(void)
 		}
 
 		// Convert the QImage to a QPixmap.
-		non_anim.qPixmap = imgToPixmap(qImg);
-		if (non_anim.qPixmap.isNull()) {
+		non_anim.imgClass = imgToPixmap(qImg);
+		if (non_anim.imgClass.isNull()) {
 			// Unable to convert the image.
 			return false;
 		}
 
 		// Image converted successfully.
-		this->setPixmap(non_anim.qPixmap);
+		this->setPixmap(non_anim.imgClass);
 		return true;
 	}
 
@@ -246,9 +245,6 @@ void DragImageLabel::startAnimTimer(void)
 	}
 	anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
 
-	// Sanity check: Timer should have been created already.
-	assert((bool)anim.tmrIconAnim);
-
 	const IconAnimHelper &iconAnimHelper = anim.iconAnimHelper;
 	if (!iconAnimHelper.isAnimated()) {
 		// Not an animated icon.
@@ -265,8 +261,7 @@ void DragImageLabel::startAnimTimer(void)
 	}
 
 	// Set a single-shot timer for the current frame.
-	anim.anim_running = true;
-	anim.tmrIconAnim->start(delay);
+	anim.tmrIconAnim.start(delay);
 }
 
 /**
@@ -276,10 +271,7 @@ void DragImageLabel::stopAnimTimer(void)
 {
 	if (isAnim()) {
 		anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
-		if (anim.tmrIconAnim) {
-			anim.anim_running = false;
-			anim.tmrIconAnim->stop();
-		}
+		anim.tmrIconAnim.stop();
 	}
 }
 
@@ -311,9 +303,7 @@ void DragImageLabel::tmrIconAnim_timeout(void)
 	}
 
 	// Set the single-shot timer.
-	if (anim.anim_running) {
-		anim.tmrIconAnim->start(delay);
-	}
+	anim.tmrIconAnim.start(delay);
 }
 
 /** Overridden QWidget functions **/
@@ -358,8 +348,17 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 		return;
 	}
 
+	/** tEXt chunks **/
 	// TODO: Add text fields indicating the source game.
+	RpPngWriter::kv_vector kv;
 
+	// Software
+	kv.emplace_back("Software", "ROM Properties Page shell extension (" RP_KDE_UPPER ")");
+
+	// Write the tEXt chunks.
+	pngWriter->write_tEXt(kv);
+
+	/** IHDR and IDAT **/
 	int pwRet = pngWriter->write_IHDR();
 	if (pwRet != 0) {
 		// Error writing the PNG image...
@@ -389,11 +388,10 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 		const anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
 		if (anim.iconAnimHelper.isAnimated()) {
 			// Get the first frame from the animation.
-			const int frame = anim.iconAnimData->seq_index[0];
-			if (frame >= 0 && frame < static_cast<int>(anim.iconFrames.size()) &&
-			    !anim.iconFrames[frame].isNull())
+			QPixmap frame0 = anim.frame0();
+			if (!frame0.isNull())
 			{
-				drag->setPixmap(anim.iconFrames[frame]);
+				drag->setPixmap(frame0);
 				dragPixmapSetFromAnim = true;
 			}
 		}

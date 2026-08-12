@@ -332,7 +332,7 @@ RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, int width, int
 	, imageTag(ImageTag::Invalid), IHDR_written(false)
 	, file(theFile), png_ptr(nullptr), info_ptr(nullptr)
 {
-	if (!file || width <= 0 || height <= 0 ||
+	if (!file || !file->isOpen() || width <= 0 || height <= 0 ||
 	    (format != rp_image::Format::CI8 && format != rp_image::Format::ARGB32))
 	{
 		// Invalid parameters.
@@ -401,7 +401,7 @@ RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, const rp_image
 	, imageTag(ImageTag::Invalid), IHDR_written(false)
 	, file(theFile), png_ptr(nullptr), info_ptr(nullptr)
 {
-	if (!file || !img || !img->isValid()) {
+	if (!file || !file->isOpen() || !img || !img->isValid()) {
 		// Invalid parameters.
 		lastError = EINVAL;
 		file.reset();
@@ -462,7 +462,7 @@ RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, const IconAnim
 	, imageTag(ImageTag::Invalid), IHDR_written(false)
 	, file(theFile), png_ptr(nullptr), info_ptr(nullptr)
 {
-	if (!file || !iconAnimData || iconAnimData->seq_count <= 0) {
+	if (!file || !file->isOpen() || !iconAnimData || iconAnimData->seq_count <= 0) {
 		// Invalid parameters.
 		lastError = EINVAL;
 		file.reset();
@@ -520,22 +520,22 @@ RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, const IconAnim
 	file->rewind();
 
 	// Set img or iconAnimData.
+	rp_image_const_ptr frame0 = iconAnimData->frame0();
+	assert((bool)frame0);
+	if (unlikely(!frame0)) {
+		// Invalid animated image.
+		lastError = EINVAL;
+		imageTag = ImageTag::Invalid;
+		file.reset();
+		return;
+	}
+
 	if (imageTag == ImageTag::IconAnimData) {
 		this->data = iconAnimData;
-		// Cache the image parameters.
-		const rp_image_const_ptr &img0 = iconAnimData->frames[iconAnimData->seq_index[0]];
-		assert((bool)img0);
-		if (unlikely(!img0)) {
-			// Invalid animated image.
-			lastError = EINVAL;
-			imageTag = ImageTag::Invalid;
-		}
-		cache.setFrom(img0);
 	} else {
-		const rp_image_const_ptr &img = iconAnimData->frames[iconAnimData->seq_index[0]];
-		this->data = img;
-		cache.setFrom(img);
+		this->data = frame0;
 	}
+	cache.setFrom(frame0);
 
 	// Initialize the PNG write structs.
 	ret = init_png_write_structs();

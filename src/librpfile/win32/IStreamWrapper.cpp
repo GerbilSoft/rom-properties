@@ -8,8 +8,12 @@
 
 #include "IStreamWrapper.hpp"
 
+// RpFile
+#include "RpFile.hpp"
+
 // libwin32common
 #include "libwin32common/MiniU82T.hpp"
+#include "libwin32common/w32time.h"
 using namespace LibWin32Common;
 
 // C++ STL classes
@@ -229,20 +233,37 @@ IFACEMETHODIMP IStreamWrapper::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
 		return E_HANDLE;
 	}
 
+	// Some shortcuts are available if m_file is RpFile.
+	RpFile *const rpFile = dynamic_cast<RpFile*>(m_file);
+
 	if (grfStatFlag & STATFLAG_NONAME) {
 		pstatstg->pwcsName = nullptr;
 	} else {
 		// Copy the filename
 		// TODO: Is nullptr for empty filename allowed?
 		// For now, we'll just return an empty name.
-		const char *const u8_filename = m_file->filename();
-		const wstring wfilename(u8_filename ? U82W_c(u8_filename) : L"");
-		const size_t sz = (wfilename.size() + 1) * sizeof(wchar_t);
-		pstatstg->pwcsName = static_cast<LPOLESTR>(CoTaskMemAlloc(sz));
-		if (!pstatstg->pwcsName) {
-			return E_OUTOFMEMORY;
+		if (rpFile) {
+			LPCWSTR wfilename = rpFile->filenameW();
+			if (wfilename) {
+				const size_t cb = (wcslen(wfilename) + 1) * sizeof(wchar_t);
+				pstatstg->pwcsName = static_cast<LPOLESTR>(CoTaskMemAlloc(cb));
+				if (!pstatstg->pwcsName) {
+					return E_OUTOFMEMORY;
+				}
+				memcpy(pstatstg->pwcsName, wfilename, cb);
+			} else {
+				pstatstg->pwcsName = nullptr;
+			}
+		} else {
+			const char *const u8_filename = m_file->filename();
+			const wstring wfilename(u8_filename ? U82W_c(u8_filename) : L"");
+			const size_t cb = (wfilename.size() + 1) * sizeof(wchar_t);
+			pstatstg->pwcsName = static_cast<LPOLESTR>(CoTaskMemAlloc(cb));
+			if (!pstatstg->pwcsName) {
+				return E_OUTOFMEMORY;
+			}
+			memcpy(pstatstg->pwcsName, wfilename.c_str(), cb);
 		}
-		memcpy(pstatstg->pwcsName, wfilename.c_str(), sz);
 	}
 
 	pstatstg->type = STGTY_STREAM;	// TODO: or STGTY_STORAGE?
@@ -250,10 +271,25 @@ IFACEMETHODIMP IStreamWrapper::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
 	const off64_t fileSize = m_file->size();
 	pstatstg->cbSize.QuadPart = (fileSize > 0 ? fileSize : 0);
 
-	// No timestamps are available...
-	// TODO: IRpFile::stat()?
+	// Get mtime from the file if it's available.
 	pstatstg->mtime.dwLowDateTime  = 0;
 	pstatstg->mtime.dwHighDateTime = 0;
+	if (rpFile) {
+		int ret = rpFile->mtime(&pstatstg->mtime);
+		if (ret != 0) {
+			// Failed to get the mtime.
+			pstatstg->mtime.dwLowDateTime = 0;
+			pstatstg->mtime.dwHighDateTime = 0;
+		}
+	} else {
+		// Not an RpFile. Convert a Unix mtime instead.
+		const time_t unixtime = m_file->mtime();
+		if (unixtime != -1) {
+			UnixTimeToFileTime(unixtime, &pstatstg->mtime);
+		}
+	}
+
+	// ctime and atime aren't available.
 	pstatstg->ctime.dwLowDateTime  = 0;
 	pstatstg->ctime.dwHighDateTime = 0;
 	pstatstg->atime.dwLowDateTime  = 0;

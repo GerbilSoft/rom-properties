@@ -126,18 +126,14 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_filename)
 	}
 
 	// Save the image using RpPngWriter.
-	const int height = img->height();
-
-	// tEXt chunks
-	RpPngWriter::kv_vector kv;
-
-	RpPngWriter pngWriter(output_filename.c_str(), img->width(), height, img->format());
+	RpPngWriter pngWriter(output_filename.c_str(), img);
 	if (!pngWriter.isOpen()) {
 		// Could not open the PNG writer.
 		return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
 	/** tEXt chunks **/
+	RpPngWriter::kv_vector kv;
 
 	// Software
 	kv.emplace_back("Software", "ROM Properties Page shell extension (Win32)");
@@ -147,32 +143,14 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_filename)
 
 	/** IHDR **/
 
-	// If sBIT wasn't found, all fields will be 0.
-	// RpPngWriter will ignore sBIT in this case.
-	rp_image::sBIT_t sBIT;
-	if (img->get_sBIT(&sBIT) != 0) {
-		memset(&sBIT, 0, sizeof(sBIT));
-	}
-	int pwRet = pngWriter.write_IHDR(&sBIT,
-		img->palette(), img->palette_len());
+	/** IHDR and IDAT **/
+	int pwRet = pngWriter.write_IHDR();
 	if (pwRet != 0) {
 		// Error writing IHDR.
 		// TODO: Unlink the PNG image.
 		return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
-
-	/** IDAT chunk **/
-
-	// Initialize the row pointers.
-	unique_ptr<const uint8_t*[]> row_pointers(new const uint8_t*[height]);
-	const uint8_t *pixels = static_cast<const uint8_t*>(img->bits());
-	const int stride = img->stride();
-	for (int y = 0; y < height; y++, pixels += stride) {
-		row_pointers[y] = pixels;
-	}
-
-	// Write the IDAT section.
-	pwRet = pngWriter.write_IDAT(row_pointers.get());
+	pwRet = pngWriter.write_IDAT();
 	if (pwRet != 0) {
 		// Error writing IDAT.
 		// TODO: Unlink the PNG image.

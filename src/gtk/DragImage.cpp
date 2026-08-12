@@ -9,9 +9,12 @@
 #include "DragImage.hpp"
 #include "PIMGTYPE.hpp"
 
+#include "RpGtk.h"	// for GTK_MAJOR_STR
+
 // Other rom-properties libraries
 #include "librpbase/img/IconAnimHelper.hpp"
 #include "librpbase/img/RpPngWriter.hpp"
+#include "librpbase/img/T_img_vars.hpp"
 #include "librpfile/VectorFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -114,24 +117,12 @@ struct _RpDragImageCxx {
 #endif /* GTK_CHECK_VERSION(4, 0, 0) */
 	}
 
-	// Non-animated icon data
-	struct non_anim_vars_t {
-		rp_image_const_ptr img;
-		PIMGTYPE pImg;
+	class PIMGTYPE_deleter
+	{
+	public:
+		typedef PIMGTYPE pointer;
 
-		explicit non_anim_vars_t()
-			: pImg(nullptr)
-		{}
-		explicit non_anim_vars_t(const rp_image_const_ptr &img)
-			: img(img)
-			, pImg(nullptr)
-		{}
-		explicit non_anim_vars_t(rp_image_const_ptr &&img)
-			: img(img)
-			, pImg(nullptr)
-		{}
-
-		~non_anim_vars_t()
+		void operator()(PIMGTYPE pImg)
 		{
 			if (pImg) {
 				PIMGTYPE_unref(pImg);
@@ -139,50 +130,21 @@ struct _RpDragImageCxx {
 		}
 	};
 
-	// Animated icon data
-	struct anim_vars_t {
-		IconAnimDataConstPtr iconAnimData;
-		vector<PIMGTYPE> iconFrames;
-		IconAnimHelper iconAnimHelper;
-		guint tmrIconAnim;	// Timer ID
-		int last_delay;		// Last delay value.
-		int last_frame_number;	// Last frame number.
+	class g_source_deleter
+	{
+	public:
+		typedef guint pointer;
 
-		void unregister_timer(void)
+		void operator()(guint source_id)
 		{
-			g_clear_handle_id(&tmrIconAnim, g_source_remove);
-		}
-
-		explicit anim_vars_t()
-			: tmrIconAnim(0)
-			, last_delay(0)
-			, last_frame_number(0)
-		{}
-		explicit anim_vars_t(const IconAnimDataConstPtr &iconAnimData)
-			: iconAnimData(iconAnimData)
-			, tmrIconAnim(0)
-			, last_delay(0)
-			, last_frame_number(0)
-		{}
-		explicit anim_vars_t(IconAnimDataConstPtr &&iconAnimData)
-			: iconAnimData(iconAnimData)
-			, tmrIconAnim(0)
-			, last_delay(0)
-			, last_frame_number(0)
-		{}
-
-		~anim_vars_t()
-		{
-			g_clear_handle_id(&tmrIconAnim, g_source_remove);
-
-			for (PIMGTYPE frame : iconFrames) {
-				if (frame) {
-					PIMGTYPE_unref(frame);
-				}
+			if (source_id > 0) {
+				g_source_remove(source_id);
 			}
 		}
 	};
 
+	using non_anim_vars_t = LibRpBase::non_anim_vars_t<PIMGTYPE, PIMGTYPE_deleter>;
+	using anim_vars_t = LibRpBase::anim_vars_t<PIMGTYPE, guint, PIMGTYPE_deleter, g_source_deleter>;
 	std::variant<std::monostate, non_anim_vars_t, anim_vars_t> imgData;
 
 	// Convenience functions to check both if the correct type is
@@ -477,12 +439,12 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 				img = scale_img;
 			}
 		}
-		g_clear_pointer(&non_anim.pImg, PIMGTYPE_unref);
-		non_anim.pImg = img;
+		g_clear_pointer(&non_anim.imgClass, PIMGTYPE_unref);
+		non_anim.imgClass = img;
 #ifdef USE_GTK_PICTURE
-		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), GDK_PAINTABLE(non_anim.pImg));
+		gtk_picture_set_paintable(GTK_PICTURE(image->imageWidget), GDK_PAINTABLE(non_anim.imgClass));
 #else /* !USE_GTK_PICTURE */
-		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), non_anim.pImg);
+		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), non_anim.imgClass);
 #endif /* USE_GTK_PICTURE */
 		bRet = true;
 	}
@@ -820,7 +782,7 @@ rp_drag_image_stop_anim_timer(RpDragImage *image)
 	}
 
 	_RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(cxx->imgData);
-	g_clear_handle_id(&anim.tmrIconAnim, g_source_remove);
+	anim.unregister_timer();
 	anim.last_delay = 0;
 }
 
@@ -938,8 +900,17 @@ rp_drag_image_create_PNG_file(RpDragImage *image)
 		return pngData;
 	}
 
+	/** tEXt chunks **/
 	// TODO: Add text fields indicating the source game.
+	RpPngWriter::kv_vector kv;
 
+	// Software
+	kv.emplace_back("Software", "ROM Properties Page shell extension (GTK" GTK_MAJOR_STR ")");
+
+	// Write the tEXt chunks.
+	pngWriter->write_tEXt(kv);
+
+	/** IHDR and IDAT **/
 	int pwRet = pngWriter->write_IHDR();
 	if (pwRet != 0) {
 		// Error writing the PNG image...
@@ -1000,14 +971,10 @@ rp_drag_image_drag_source_drag_begin(GtkDragSource *source, GdkDrag *drag, RpDra
 	const _RpDragImageCxx *const cxx = image->cxx;
 	if (cxx->isAnim()) {
 		const _RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(cxx->imgData);
-		// Get the first frame from the animation.
-		const int frame = anim.iconAnimData->seq_index[0];
-		if (frame >= 0 && frame < static_cast<int>(anim.iconFrames.size())) {
-			frame0 = anim.iconFrames[frame];
-		}
+		frame0 = anim.frame0();
 	} else {
 		const _RpDragImageCxx::non_anim_vars_t &non_anim = std::get<_RpDragImageCxx::non_anim_vars_t>(cxx->imgData);
-		frame0 = non_anim.pImg;
+		frame0 = non_anim.imgClass;
 	}
 
 	if (frame0) {
@@ -1041,12 +1008,10 @@ rp_drag_image_drag_begin(RpDragImage *image, GdkDragContext *context, gpointer u
 	const _RpDragImageCxx *const cxx = image->cxx;
 	if (cxx->isAnim()) {
 		const _RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(cxx->imgData);
-		// Get the first frame from the animation.
-		const int frame = anim.iconAnimData->seq_index[0];
-		frame0 = anim.iconFrames[frame];
+		frame0 = anim.frame0();
 	} else {
 		const _RpDragImageCxx::non_anim_vars_t &non_anim = std::get<_RpDragImageCxx::non_anim_vars_t>(cxx->imgData);
-		frame0 = non_anim.pImg;
+		frame0 = non_anim.imgClass;
 	}
 	gtk_drag_set_icon_PIMGTYPE(context, frame0);
 }

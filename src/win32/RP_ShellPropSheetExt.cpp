@@ -25,6 +25,7 @@
 #include "librpbase/RomData.hpp"
 #include "librpbase/RomFields.hpp"
 #include "librpbase/TextOut.hpp"
+#include "librpfile/RpFile.hpp"
 #include "librptext/html_entities.hpp"
 #include "librptext/wchar.hpp"
 #include "libromdata/RomDataFactory.hpp"
@@ -44,7 +45,8 @@ using std::unique_ptr;
 using std::vector;
 using std::wstring;	// for tstring
 
-// libwin32ui
+// libwin32common, libwin32ui
+#include "libwin32common/w32time.h"
 #include "libwin32ui/AutoGetDC.hpp"
 #include "libwin32ui/HiDPI.hpp"
 #include "libwin32ui/WinUI.hpp"
@@ -79,6 +81,8 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(LPTSTR tfilename)
 	, tfilename(tfilename)
 	, fontHandler(nullptr)
 	, lblSysInfo(nullptr)
+	, lblBanner(nullptr)
+	, lblIcon(nullptr)
 	, tabWidget(nullptr)
 	, lblDescHeight(0)
 	, hBtnOptions(nullptr)
@@ -101,31 +105,6 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 }
 
 /**
- * Adjust the height for an image based on the "standard" height.
- * Used by loadImages().
- *
- * @param label DragImageLabel
- * @param labelSize rp_image size
- * @param imgStdHeight "Standard" height (usually 32px at 96dpi)
- */
-void RP_ShellPropSheetExt_Private::adjustImageHeight(DragImageLabel *label, SIZE labelSize, int imgStdHeight)
-{
-	if (labelSize.cy != imgStdHeight) {
-		// Need to scale the label to match the aspect ratio.
-		const SIZE labelScaledSize = {
-			static_cast<LONG>(rintf(
-				static_cast<float>(imgStdHeight) * (static_cast<float>(labelSize.cx) /
-				static_cast<float>(labelSize.cy)))),
-			imgStdHeight
-		};
-		label->setRequiredSize(labelScaledSize);
-	} else {
-		// Use the original size.
-		label->setRequiredSize(labelSize);
-	}
-}
-
-/**
  * Load the banner and icon as HBITMAPs.
  *
  * This function should be called on startup and if
@@ -141,6 +120,54 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	// FIXME: Store the standard image height somewhere else.
 	// FIXME: Adjust image sizes if the DPI changes.
 	const int imgStdHeight = rp_AdjustSizeForDpi(32, rp_GetDpiForWindow(hDlgSheet));
+	DragImageLabelRegister();
+
+	// Get the drag filename (e.g. ROM filename but with a .png extension) for dropped images.
+	// TODO: Only do this if the labels are dragged? (requires adding notification messages...)
+	tstring dragFilename;
+	{
+		// Get just the filename portion, i.e. no subdirectories.
+		const TCHAR *const slashPos = _tcsrchr(tfilename, DIR_SEP_CHR);
+		if (slashPos) {
+			// Skip the backslash.
+			dragFilename.assign(slashPos + 1);
+		} else {
+			// No backslash??? Use the whole filename.
+			dragFilename = tfilename;
+		}
+
+		// Remove the last extension so we can add our own extension.
+		const size_t dotPos = dragFilename.rfind(_T('.'));
+		if (dotPos != tstring::npos) {
+			dragFilename.resize(dotPos);
+		}
+	}
+
+	// Get the file modification time.
+	// TODO: Add an mtime() function to RpFile?
+	// TODO: ...and an mtime_win32() function to get the time in FILETIME format?
+	FILETIME mtime = {0, 0};
+	{
+		IRpFilePtr file = romData->ref_file();
+		if (file) {
+			// Check for RpFile, which has a FILETIME mtime() function.
+			RpFile *const rpFile = dynamic_cast<RpFile*>(file.get());
+			if (rpFile) {
+				int ret = rpFile->mtime(&mtime);
+				if (ret != 0) {
+					// Failed to get the mtime.
+					mtime.dwLowDateTime = 0;
+					mtime.dwHighDateTime = 0;
+				}
+			} else {
+				// Not an RpFile. Convert a Unix mtime instead.
+				const time_t unixtime = file->mtime();
+				if (unixtime != -1) {
+					UnixTimeToFileTime(unixtime, &mtime);
+				}
+			}
+		}
+	}
 
 	// Banner
 	bool ok = false;
@@ -149,22 +176,36 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 		const rp_image_const_ptr banner = romData->image(RomData::IMG_INT_BANNER);
 		if (banner && banner->isValid()) {
 			if (!lblBanner) {
-				lblBanner.reset(new DragImageLabel(hDlgSheet));
-				// TODO: Required size? For now, disabling scaling.
-				lblBanner->setRequiredSize(0, 0);
+				// Create the banner.
+				// NOTE: Position is set later.
+				lblBanner = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+					WC_DRAGIMAGELABEL, nullptr,
+					WS_CHILD | WS_VISIBLE,
+					0, 0,
+					0, imgStdHeight,	// width is calculated by DragImageLabel
+					hDlgSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
 			}
 
-			ok = lblBanner->setRpImage(banner);
+			ok = DragImageLabel_SetRpImage(lblBanner, banner);
 			if (ok) {
-				const SIZE labelSize = {banner->width(), banner->height()};
-				adjustImageHeight(lblBanner.get(), labelSize, imgStdHeight);
+				// Set the drag filename.
+				const size_t prevSize = dragFilename.size();
+				dragFilename += _T(".banner.png");
+				DragImageLabel_SetDragFileName(lblBanner, dragFilename.c_str());
+				dragFilename.resize(prevSize);
+
+				// Set the drag mtime.
+				DragImageLabel_SetDragMTime(lblBanner, &mtime);
 			}
 		}
 	}
 	if (!ok) {
 		// No banner, or unable to load the banner.
 		// Delete the DragImageLabel if it was created previously.
-		lblBanner.reset();
+		if (lblBanner) {
+			DestroyWindow(lblBanner);
+			lblBanner = nullptr;
+		}
 	}
 
 	// Icon
@@ -174,27 +215,46 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 		const rp_image_const_ptr icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
 			if (!lblIcon) {
-				lblIcon.reset(new DragImageLabel(hDlgSheet));
+				// Create the icon.
+				// NOTE: Position is set later.
+				lblIcon = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+					WC_DRAGIMAGELABEL, nullptr,
+					WS_CHILD | WS_VISIBLE,
+					0, 0,
+					0, imgStdHeight,	// width is calculated by DragImageLabel
+					hDlgSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
 			}
 
 			// Is this an animated icon?
-			ok = lblIcon->setIconAnimData(romData->iconAnimData());
+			const IconAnimDataConstPtr iconAnimData = romData->iconAnimData();
+			if (iconAnimData) {
+				ok = DragImageLabel_SetIconAnimData(lblIcon, iconAnimData);
+			}
 			if (!ok) {
 				// Not an animated icon, or invalid icon data.
 				// Set the static icon.
-				ok = lblIcon->setRpImage(icon);
+				ok = DragImageLabel_SetRpImage(lblIcon, icon);
 			}
 
 			if (ok) {
-				const SIZE labelSize = {icon->width(), icon->height()};
-				adjustImageHeight(lblIcon.get(), labelSize, imgStdHeight);
+				// Set the drag filename.
+				const size_t prevSize = dragFilename.size();
+				dragFilename += _T(".icon.png");
+				DragImageLabel_SetDragFileName(lblIcon, dragFilename.c_str());
+				dragFilename.resize(prevSize);
+
+				// Set the drag mtime.
+				DragImageLabel_SetDragMTime(lblIcon, &mtime);
 			}
 		}
 	}
 	if (!ok) {
 		// No icon, or unable to load the icon.
 		// Delete the DragImageLabel if it was created previously.
-		lblIcon.reset();
+		if (lblIcon) {
+			DestroyWindow(lblIcon);
+			lblIcon = nullptr;
+		}
 	}
 }
 
@@ -256,20 +316,29 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(_In_ POINT pt_start, _In_ SIZE
 	}
 
 	// Add the banner and icon widths.
+	SIZE bannerSize = {0, 0};
+	SIZE iconSize = {0, 0};
 
 	// Banner
 	// TODO: Spacing between banner and text?
 	// Doesn't seem to be needed with Dreamcast saves...
-	const int banner_width = (lblBanner ? lblBanner->actualSize().cx : 0);
-	total_widget_width += banner_width;
+	if (lblBanner) {
+		RECT rectBanner;
+		GetWindowRect(lblBanner, &rectBanner);
+		MapWindowPoints(HWND_DESKTOP, hDlgSheet, (LPPOINT)&rectBanner, 2);
+		bannerSize.cx = rectBanner.right;
+		bannerSize.cy = rectBanner.bottom;
+		total_widget_width += bannerSize.cx;
+	}
 
 	// Icon
-	const int icon_width = (lblIcon ? lblIcon->actualSize().cx : 0);
-	if (icon_width > 0) {
-		if (total_widget_width > 0) {
-			total_widget_width += pt_start.x;
-		}
-		total_widget_width += icon_width;
+	if (lblIcon) {
+		RECT rectIcon;
+		GetWindowRect(lblIcon, &rectIcon);
+		MapWindowPoints(HWND_DESKTOP, hDlgSheet, (LPPOINT)&rectIcon, 2);
+		iconSize.cx = rectIcon.right;
+		iconSize.cy = rectIcon.bottom;
+		total_widget_width += iconSize.cx;
 	}
 
 	// Starting point
@@ -294,21 +363,23 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(_In_ POINT pt_start, _In_ SIZE
 	}
 
 	// Banner
-	if (banner_width > 0) {
-		lblBanner->setPosition(curPt);
-		curPt.x += banner_width + pt_start.x;
+	if (bannerSize.cx > 0) {
+		SetWindowPos(lblBanner, nullptr, curPt.x, curPt.y, bannerSize.cx, bannerSize.cy,
+			SWP_NOACTIVATE | SWP_NOZORDER);
+		curPt.x += bannerSize.cx + pt_start.x;
 	}
 
 	// Icon
-	if (icon_width > 0) {
-		lblIcon->setPosition(curPt);
-		curPt.x += icon_width + pt_start.x;
+	if (iconSize.cx > 0) {
+		SetWindowPos(lblIcon, nullptr, curPt.x, curPt.y, iconSize.cx, iconSize.cy,
+			SWP_NOACTIVATE | SWP_NOZORDER);
+		curPt.x += iconSize.cx + pt_start.x;
 	}
 
 	if (lblIcon) {
 		const bool ecksBawks = (romData->fileType() == RomData::FileType::DiscImage &&
 		                        systemName && strstr(systemName, "Xbox") != nullptr);
-		lblIcon->setEcksBawks(ecksBawks);
+		DragImageLabel_SetEcksBawks(lblIcon, ecksBawks);
 	}
 
 	// Return the label height and some extra padding.
@@ -1115,7 +1186,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 		const int px = rp_AdjustSizeForDpi(32, rp_GetDpiForWindow(hDlgSheet));
 		lvData.col0sizeadj = px;
 
-		const SIZE sizeListIconOrig = {px, px};
+		//const SIZE sizeListIconOrig = {px, px};
 		SIZE sizeListIconPhys = {px, px};
 		float factor = 1.0f;
 		bool resizeNeeded = false;
@@ -1709,14 +1780,24 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 				SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 		}
 		if (lblBanner) {
-			POINT pos = lblBanner->position();
-			pos.x -= adj;
-			lblBanner->setPosition(pos);
+			RECT rectBanner;
+			GetWindowRect(lblBanner, &rectBanner);
+			MapWindowPoints(HWND_DESKTOP, hDlgSheet, (LPPOINT)&rectBanner, 2);
+
+			// Decrease the X position.
+			const LONG banner_x = rectBanner.left - adj;
+			SetWindowPos(lblBanner, nullptr, banner_x, rectBanner.top, 0, 0,
+				SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOZORDER);
 		}
 		if (lblIcon) {
-			POINT pos = lblIcon->position();
-			pos.x -= adj;
-			lblIcon->setPosition(pos);
+			RECT rectIcon;
+			GetWindowRect(lblIcon, &rectIcon);
+			MapWindowPoints(HWND_DESKTOP, hDlgSheet, (LPPOINT)&rectIcon, 2);
+
+			// Decrease the X position.
+			const LONG icon_x = rectIcon.left - adj;
+			SetWindowPos(lblIcon, nullptr, icon_x, rectIcon.top, 0, 0,
+				SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOZORDER);
 		}
 	}
 }
@@ -2599,7 +2680,7 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 	switch (pHdr->code) {
 		case PSN_SETACTIVE:
 			if (lblIcon) {
-				lblIcon->startAnimTimer();
+				DragImageLabel_AnimTimerCtrl(lblIcon, true);
 			}
 			if (hBtnOptions) {
 				ShowWindow(hBtnOptions, SW_SHOW);
@@ -2608,7 +2689,7 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 
 		case PSN_KILLACTIVE:
 			if (lblIcon) {
-				lblIcon->stopAnimTimer();
+				DragImageLabel_AnimTimerCtrl(lblIcon, false);
 			}
 			if (hBtnOptions) {
 				ShowWindow(hBtnOptions, SW_HIDE);
@@ -2632,7 +2713,7 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 				// Open the URL.
 				// NOTE: SysLink control only supports Unicode.
 				PNMLINK pNMLink = reinterpret_cast<PNMLINK>(pHdr);
-				if (pNMLink->item.szUrl) {
+				if (pNMLink->item.szUrl[0] != L'\0') {
 					// Verify the protocol.
 					if (!wcsncmp(pNMLink->item.szUrl, L"https://", 8) ||
 					    !wcsncmp(pNMLink->item.szUrl, L"mailto:", 7))
@@ -2784,37 +2865,6 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_COMMAND(HWND hDlg, WPARAM wPara
 	return ret;
 }
 
-/**
- * WM_PAINT handler for the property sheet.
- * @param hDlg Dialog window.
- * @return Return value.
- */
-INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_PAINT(HWND hDlg)
-{
-	if (!lblBanner && !lblIcon) {
-		// Nothing to draw...
-		return false;
-	}
-
-	PAINTSTRUCT ps;
-	HDC hdc = BeginPaint(hDlg, &ps);
-
-	// TODO: Share the memory DC between lblBanner and lblIcon?
-
-	// Draw the banner.
-	if (lblBanner && lblBanner->intersects(&ps.rcPaint)) {
-		lblBanner->draw(hdc);
-	}
-
-	// Draw the icon.
-	if (lblIcon && lblIcon->intersects(&ps.rcPaint)) {
-		lblIcon->draw(hdc);
-	}
-
-	EndPaint(hDlg, &ps);
-	return true;
-}
-
 //
 //   FUNCTION: FilePropPageDlgProc
 //
@@ -2886,7 +2936,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 
 			// Start the icon animation timer.
 			if (d->lblIcon) {
-				d->lblIcon->startAnimTimer();
+				DragImageLabel_AnimTimerCtrl(d->lblIcon, true);
 			}
 
 			// Continue normal processing.
@@ -2897,7 +2947,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (d && d->lblIcon) {
 				// Stop the animation timer.
-				d->lblIcon->stopAnimTimer();
+				DragImageLabel_AnimTimerCtrl(d->lblIcon, false);
 			}
 			return true;
 		}
@@ -2922,6 +2972,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			return d->DlgProc_WM_COMMAND(hDlg, wParam, lParam);
 		}
 
+#if 0
 		case WM_PAINT: {
 			auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (!d) {
@@ -2930,6 +2981,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			}
 			return d->DlgProc_WM_PAINT(hDlg);
 		}
+#endif
 
 		case WM_SYSCOLORCHANGE:
 		case WM_THEMECHANGED: {
@@ -2943,6 +2995,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			d->isDarkModeEnabled = VerifyDialogDarkMode(GetParent(hDlg));
 			// TODO: Force a window update?
 
+#if 0
 			// Reload the images.
 			// Assuming the main background color may have changed.
 
@@ -2956,6 +3009,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			if (d->lblIcon) {
 				d->lblIcon->invalidateRect();
 			}
+#endif
 
 			// TODO: Check for RFT_LISTDATA with icons and reinitialize
 			// the icons if the background color changed.
@@ -3026,22 +3080,6 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				SendMessage(d->tabs[tabIndex].hDlg, uMsg, wParam, lParam);
 			}
 			return TRUE;
-		}
-
-		case WM_RBUTTONUP: {
-			auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
-			if (!d) {
-				// No RP_ShellPropSheetExt_Private. Can't do anything...
-				return FALSE;
-			}
-
-			// Allow lblIcon to process this in case it's in lblIcon's rectangle.
-			// TODO: Make DragImageLabel a real control?
-			if (d->lblIcon) {
-				d->lblIcon->tryPopupEcksBawks(lParam);
-				return TRUE;
-			}
-			break;
 		}
 
 		case WM_CTLCOLORMSGBOX:

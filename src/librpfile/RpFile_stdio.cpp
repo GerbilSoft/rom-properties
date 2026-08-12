@@ -10,6 +10,8 @@
 #  error RpFile_stdio is not supported on Windows, use RpFile_win32.
 #endif /* _WIN32 */
 
+#include "config.librpfile.h"
+
 #include "RpFile.hpp"
 #include "RpFile_p.hpp"
 
@@ -21,6 +23,7 @@
 
 // C includes
 #include <fcntl.h>	// fcntl(), F_GETFD, F_SETFD
+#include <sys/stat.h>	// stat(), statx()
 #include <unistd.h>	// ftruncate()
 #include "tcharx.h"
 
@@ -607,6 +610,44 @@ const char *RpFile::filename(void) const
 {
 	RP_D(const RpFile);
 	return (likely(!d->filename.empty())) ? d->filename.c_str() : nullptr;
+}
+
+/**
+ * Get the file modification time.
+ * @return File modification time, or -1 if not available.
+ */
+time_t RpFile::mtime(void)
+{
+	RP_D(RpFile);
+	if (!d->file) {
+		m_lastError = EBADF;
+		return -1;
+	}
+
+#ifdef HAVE_STATX
+	struct statx sbx;
+	int ret = statx(fileno(d->file), "", AT_EMPTY_PATH, STATX_MTIME, &sbx);
+	if (ret != 0 || !(sbx.stx_mask & STATX_MTIME)) {
+		// statx() failed and/or did not return the modification time.
+		m_lastError = errno;
+		if (m_lastError == 0) {
+			m_lastError = EIO;
+		}
+		return -1;
+	}
+	return sbx.stx_mtime.tv_sec;
+#else /* !HAVE_STATX */
+	struct stat sb;
+	if (fstat(fileno(d->file), &sb) != 0) {
+		// stat() failed.
+		m_lastError = errno;
+		if (m_lastError == 0) {
+			m_lastError = EIO;
+		}
+		return -1;
+	}
+	return sb.st_mtime;
+#endif /* HAVE_STATX */
 }
 
 /** Extra functions **/

@@ -70,6 +70,7 @@ SET(${PROJECT_NAME}_SRCS
 	RP_XAttrView.cpp
 	RP_ColumnProvider.cpp
 	CreateThumbnail.cpp
+	DILDataObject.cpp
 	DragImageLabel.cpp
 	FontHandler.cpp
 	MessageWidget.cpp
@@ -123,6 +124,7 @@ SET(${PROJECT_NAME}_H
 	RP_ColumnProvider.hpp
 	RP_ColumnProvider_p.hpp
 	CreateThumbnail.hpp
+	DILDataObject.hpp
 	DragImageLabel.hpp
 	FontHandler.hpp
 	MessageWidget.hpp
@@ -243,8 +245,8 @@ IF(RP_LIBROMDATA_IS_DLL AND MSVC)
 	# Otherwise, we won't be able to load it if it's in an
 	# architecture-specific subdirectory.
 	# TODO: Global variable with the libromdata SOVERSION?
-	SET(DL_DEBUG_FLAGS "${DL_DEBUG_FLAGS} /DELAYLOAD:romdata-9d.dll")
-	SET(DL_RELEASE_FLAGS "${DL_RELEASE_FLAGS} /DELAYLOAD:romdata-9.dll")
+	SET(DL_DEBUG_FLAGS "${DL_DEBUG_FLAGS} /DELAYLOAD:romdata-10d.dll")
+	SET(DL_RELEASE_FLAGS "${DL_RELEASE_FLAGS} /DELAYLOAD:romdata-10.dll")
 
 	SET(CMAKE_SHARED_LINKER_FLAGS_DEBUG	"${CMAKE_SHARED_LINKER_FLAGS_DEBUG} ${DL_DEBUG_FLAGS}")
 	SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE	"${CMAKE_SHARED_LINKER_FLAGS_RELEASE} ${DL_RELEASE_FLAGS}")

@@ -35,6 +35,7 @@ using std::tstring;
 
 // libwin32common, libwin32ui
 #include "libwin32common/sdk/windowsx_ts.h"
+#include "libwin32common/rp_versionhelpers.h"
 #include "libwin32ui/WinUI.hpp"
 
 #include "libi18n/config.libi18n.h"
@@ -528,6 +529,22 @@ int CALLBACK rp_show_config_dialog(
 	if (FAILED(hr)) {
 		// Failed to initialize COM.
 		return EXIT_FAILURE;
+	}
+
+	if (IsWindowsVistaOrGreater()) {
+		// Disable COM's global exception handler.
+		IGlobalOptions *pGlobalOptions = nullptr;
+		hr = CoCreateInstance(CLSID_GlobalOptions, nullptr,
+			CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pGlobalOptions));
+		if (SUCCEEDED(hr)) {
+			// Windows 7 supports COMGLB_EXCEPTION_DONOT_HANDLE_ANY.
+			// Windows Vista only supports COMGLB_EXCEPTION_DONOT_HANDLE.
+			const ULONG_PTR value = IsWindows7OrGreater()
+				? COMGLB_EXCEPTION_DONOT_HANDLE_ANY
+				: COMGLB_EXCEPTION_DONOT_HANDLE;
+			pGlobalOptions->Set(COMGLB_EXCEPTION_HANDLING, value);
+			pGlobalOptions->Release();
+		}
 	}
 
 	// Initialize GDI+.

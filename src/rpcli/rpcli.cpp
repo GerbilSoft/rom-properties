@@ -219,7 +219,7 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 					Gsvt::StdErr.newline();
 					Gsvt::StdErr.fflush();
 					// falling back to outputting the first frame
-					errcode = RpPng::save(p.filename, iconAnimData->frames[iconAnimData->seq_index[0]]);
+					errcode = RpPng::save(p.filename, iconAnimData->frame0());
 				}
 				if (errcode != 0) {
 					Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_RED, true);
