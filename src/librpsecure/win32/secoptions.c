@@ -64,6 +64,10 @@ typedef BOOL (WINAPI *pfnSetProcessDEPPolicy_t)(_In_ DWORD dwFlags);
 #include "secoptions_win8.h"
 typedef BOOL (WINAPI *pfnSetProcessMitigationPolicy_t)(_In_ PROCESS_MITIGATION_POLICY MitigationPolicy, _In_ PVOID lpBuffer, _In_ SIZE_T dwLength);
 
+// for UOI_TIMERPROC_EXCEPTION_SUPPRESSION
+// Reference: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setuserobjectinformationa
+static const BOOL bTimerProcExceptionSuppression = FALSE;
+
 /**
  * Harden the process's integrity level policy.
  *
@@ -212,6 +216,10 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 		return GetLastError();
 	}
 
+	// Suppress Windows "critical" error dialogs.
+	// This is a legacy MS-DOS holdover, e.g. the "Abort, Retry, Fail" prompt.
+	SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX);
+
 	/** BEGIN: Windows XP/2003 **/
 
 	// Terminate the process if heap corruption is detected.
@@ -255,6 +263,10 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 		}
 	}
 #endif /* !_WIN64 */
+
+	// Disable TIMERPROC exception suppression.
+	SetUserObjectInformation(GetCurrentProcess(), UOI_TIMERPROC_EXCEPTION_SUPPRESSION,
+		(PVOID)&bTimerProcExceptionSuppression, sizeof(bTimerProcExceptionSuppression));
 
 	if (!IsWindowsVistaOrGreater()) {
 		// We're done here.

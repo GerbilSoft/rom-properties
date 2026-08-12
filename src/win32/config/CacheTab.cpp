@@ -163,12 +163,6 @@ CacheTabPrivate::CacheTabPrivate()
 	} else {
 		// Not available. Use manual cache cleaning.
 		isVista = false;
-
-		// Handle "critical" errors ourselves.
-		// This fixes an issue where Windows shows a
-		// "There is no disk in the drive." message when
-		// a CD-ROM is removed and we call SHGetFileInfo().
-		SetErrorMode(SEM_FAILCRITICALERRORS);
 	}
 }
 
