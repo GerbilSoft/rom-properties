@@ -15,6 +15,10 @@
     * On x86 and amd64, this also includes the CPU brand string and
       family/model/stepping.
     * On x86, amd64, arm, and arm64, this also includes CPU feature flags.
+  * Windows: Implemented drag & drop for the icon and banner on the
+    properties tab. The icon and banner can be dragged from the properties
+    tab to a Windows Explorer window, and the PNG will be saved.
+    * This was implemented in v1.5 in the GTK and KDE UI frontends.
 
 * New parser features:
   * GodotSTEX: Add (untested) support for ASTC_6x6 textures.
