@@ -1399,6 +1399,7 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 	// Since kv_vector is Latin-1, we don't have to
 	// strdup() the strings.
 	unique_ptr<png_text[]> text(new png_text[kv.size()]);
+	memset(text.get(), 0, sizeof(png_text) * kv.size());
 	png_text *pTxt = text.get();
 	const auto kv_cend = kv.cend();
 	for (auto iter = kv.cbegin(); iter != kv_cend; ++iter, ++pTxt) {
@@ -1432,8 +1433,6 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 				// libpng-1.4 enabled this by default.
 				// Previous versions did not, since it changed the struct size.
 				pTxt->compression = (compress ? PNG_ITXT_COMPRESSION_zTXt : PNG_ITXT_COMPRESSION_NONE);
-				pTxt->lang = nullptr;
-				pTxt->lang_key = nullptr;
 #else /* !PNG_iTXt_SUPPORTED */
 				// iTXt is not supported at compile time.
 				// Fall back to storing UTF-8 as tEXt.
