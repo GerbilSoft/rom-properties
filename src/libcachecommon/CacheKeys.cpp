@@ -357,33 +357,27 @@ string getCacheFilename(const char *pCacheKey)
 			cacheFilename += DIR_SEP_CHR;
 		}
 		cacheFilename += filteredCacheKey;
-
-		// Verify that the cache file exists in the user's cache directory.
-		if (!access(cacheFilename.c_str(), R_OK)) {
-			// Cache file exists.
-			return cacheFilename;
-		}
 	}
 
 #ifdef DIR_INSTALL_CACHE
-	// File is not present in the user's cache directory.
 	// If the requested file is in the system-wide cache directory,
-	// use that version. This is useful in cases where the thumbnailer
-	// cannot download files, e.g. bubblewrap.
-	cacheFilename.assign(DIR_INSTALL_CACHE);
-	if (cacheFilename.at(cacheFilename.size()-1) != DIR_SEP_CHR) {
-		cacheFilename += DIR_SEP_CHR;
+	// but not the user's cache directory, use the one in the system-wide
+	// directory. This is useful in cases where the thumbnailer cannot
+	// download files, e.g. bubblewrap.
+	string cacheFilename_sys = DIR_INSTALL_CACHE;
+	if (cacheFilename_sys.at(cacheFilename_sys.size()-1) != DIR_SEP_CHR) {
+		cacheFilename_sys += DIR_SEP_CHR;
 	}
-	cacheFilename += filteredCacheKey;
+	cacheFilename_sys += filteredCacheKey;
 
-	if (!access(cacheFilename.c_str(), R_OK)) {
+	if (!access(cacheFilename_sys.c_str(), R_OK)) {
 		// File is in the system-wide cache.
+		cacheFilename = std::move(cacheFilename_sys);
 		return cacheFilename;
 	}
 #endif /* DIR_INSTALL_CACHE */
 
-	// Unable to retrieve a cache filename...
-	cacheFilename.clear();
+	// Return the filename in the user's cache directory.
 	return cacheFilename;
 }
 
