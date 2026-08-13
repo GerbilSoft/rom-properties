@@ -12,6 +12,7 @@
 #include "IconAnimHelper.hpp"
 
 // Other rom-properties libraries
+#include "common.h"
 #include "librptexture/img/rp_image.hpp"
 
 // C++ STL classes
@@ -55,6 +56,8 @@ public:
 template<typename ImgClass, typename ImgClassDeleter = non_pointer_deleter<ImgClass>>
 struct T_non_anim_vars_t
 {
+	RP_DISABLE_COPY(T_non_anim_vars_t);
+
 	LibRpTexture::rp_image_const_ptr img;
 	ImgClass imgClass;
 
@@ -80,6 +83,8 @@ struct T_non_anim_vars_t
 template<typename ImgClass, typename TmrClass, typename ImgClassDeleter = non_pointer_deleter<ImgClass>, typename TmrClassDeleter = non_pointer_deleter<TmrClass>>
 struct T_anim_vars_t
 {
+	RP_DISABLE_COPY(T_anim_vars_t);
+
 	IconAnimDataConstPtr iconAnimData;
 	std::vector<ImgClass> iconFrames;
 	IconAnimHelper iconAnimHelper;
@@ -154,6 +159,10 @@ struct T_anim_vars_t
 template<typename ImgClass, typename TmrClass, typename ImgClassDeleter = non_pointer_deleter<ImgClass>, typename TmrClassDeleter = non_pointer_deleter<TmrClass>>
 class T_img_vars_t
 {
+public:
+	explicit T_img_vars_t() = default;	// required due to RP_DISABLE_COPY()
+	RP_DISABLE_COPY(T_img_vars_t);
+
 public:
 	using non_anim_vars_t = T_non_anim_vars_t<ImgClass, ImgClassDeleter>;
 	using anim_vars_t = T_anim_vars_t<ImgClass, TmrClass, ImgClassDeleter, TmrClassDeleter>;
