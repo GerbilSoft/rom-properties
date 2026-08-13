@@ -34,7 +34,7 @@ public:
 		, projectId(0)
 	{}
 
-private:
+public:
 	Q_DISABLE_COPY(XfsAttrViewPrivate)
 
 public:

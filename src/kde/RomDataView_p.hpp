@@ -60,7 +60,7 @@ public:
 private:
 	RomDataView *const q_ptr;
 	Q_DECLARE_PUBLIC(RomDataView)
-private:
+public:
 	Q_DISABLE_COPY(RomDataViewPrivate)
 
 public:

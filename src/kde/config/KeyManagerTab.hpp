@@ -23,6 +23,7 @@ private:
 	typedef ITab super;
 	KeyManagerTabPrivate *const d_ptr;
 	Q_DECLARE_PRIVATE(KeyManagerTab);
+public:
 	Q_DISABLE_COPY(KeyManagerTab)
 
 protected:

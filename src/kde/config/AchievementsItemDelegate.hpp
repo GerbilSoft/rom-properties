@@ -20,6 +20,7 @@ public:
 
 private:
 	typedef QStyledItemDelegate super;
+public:
 	Q_DISABLE_COPY(AchievementsItemDelegate)
 
 private:

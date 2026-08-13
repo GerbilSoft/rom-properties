@@ -41,5 +41,6 @@ private:
 	typedef KIO::ThumbnailCreator super;
 	RomThumbnailCreatorPrivate *const d_ptr;
 	Q_DECLARE_PRIVATE(RomThumbnailCreator)
+public:
 	Q_DISABLE_COPY(RomThumbnailCreator)
 };

@@ -35,6 +35,7 @@ public:
 
 private:
 	typedef TCreateThumbnail<QImage> super;
+public:
 	Q_DISABLE_COPY(RomThumbCreatorPrivate)
 
 public:

@@ -23,6 +23,7 @@ private:
 	typedef ITab super;
 	ImageTypesTabPrivate *const d_ptr;
 	Q_DECLARE_PRIVATE(ImageTypesTab);
+public:
 	Q_DISABLE_COPY(ImageTypesTab)
 
 protected:

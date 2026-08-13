@@ -37,6 +37,7 @@ private:
 
 private:
 	typedef KPropertiesDialogPlugin super;
+public:
 	Q_DISABLE_COPY(RomPropertiesDialogPlugin)
 
 private:

@@ -28,6 +28,7 @@ private:
 	typedef QWidget super;
 	XAttrViewPrivate *const d_ptr;
 	Q_DECLARE_PRIVATE(XAttrView)
+public:
 	Q_DISABLE_COPY(XAttrView)
 
 public:

@@ -24,7 +24,7 @@ public:
 		, validAttrs(0)
 	{}
 
-private:
+public:
 	Q_DISABLE_COPY(DosAttrViewPrivate)
 
 public:

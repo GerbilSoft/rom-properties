@@ -32,7 +32,7 @@ public:
 protected:
 	KeyStoreModel *const q_ptr;
 	Q_DECLARE_PUBLIC(KeyStoreModel)
-private:
+public:
 	Q_DISABLE_COPY(KeyStoreModelPrivate)
 
 public:

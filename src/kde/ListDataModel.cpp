@@ -39,7 +39,7 @@ public:
 protected:
 	ListDataModel *const q_ptr;
 	Q_DECLARE_PUBLIC(ListDataModel)
-private:
+public:
 	Q_DISABLE_COPY(ListDataModelPrivate)
 
 public:

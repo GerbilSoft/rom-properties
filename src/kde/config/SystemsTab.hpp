@@ -23,6 +23,7 @@ private:
 	typedef ITab super;
 	SystemsTabPrivate *const d_ptr;
 	Q_DECLARE_PRIVATE(SystemsTab);
+public:
 	Q_DISABLE_COPY(SystemsTab)
 
 protected:

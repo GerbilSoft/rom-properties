@@ -43,7 +43,7 @@ public:
 		, zLevel(0)
 	{}
 
-private:
+public:
 	Q_DISABLE_COPY(Ext2AttrViewPrivate)
 
 public:

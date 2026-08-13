@@ -18,7 +18,7 @@ class SystemsTabPrivate
 public:
 	explicit SystemsTabPrivate();
 
-private:
+public:
 	Q_DISABLE_COPY(SystemsTabPrivate)
 
 public:

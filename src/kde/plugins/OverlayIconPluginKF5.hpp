@@ -34,6 +34,7 @@ public:
 
 private:
 	typedef KOverlayIconPlugin super;
+public:
 	Q_DISABLE_COPY(OverlayIconPlugin);
 
 public:

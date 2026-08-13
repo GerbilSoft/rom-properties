@@ -31,6 +31,7 @@ private:
 	typedef QWidget super;
 	RomDataViewPrivate *const d_ptr;
 	Q_DECLARE_PRIVATE(RomDataView)
+public:
 	Q_DISABLE_COPY(RomDataView)
 
 protected:

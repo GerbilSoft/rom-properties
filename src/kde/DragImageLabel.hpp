@@ -39,6 +39,7 @@ public:
 
 private:
 	typedef QLabel super;
+public:
 	Q_DISABLE_COPY(DragImageLabel)
 
 public:

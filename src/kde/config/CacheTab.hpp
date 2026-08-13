@@ -24,6 +24,7 @@ private:
 	typedef ITab super;
 	CacheTabPrivate *const d_ptr;
 	Q_DECLARE_PRIVATE(CacheTab);
+public:
 	Q_DISABLE_COPY(CacheTab)
 
 protected:

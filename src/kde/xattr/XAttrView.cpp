@@ -32,7 +32,7 @@ public:
 		, hasAttributes(false)
 	{}
 
-private:
+public:
 	Q_DISABLE_COPY(XAttrViewPrivate)
 
 public:

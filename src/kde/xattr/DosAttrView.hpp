@@ -27,6 +27,7 @@ private:
 	typedef QWidget super;
 	DosAttrViewPrivate *const d_ptr;
 	Q_DECLARE_PRIVATE(DosAttrView)
+public:
 	Q_DISABLE_COPY(DosAttrView)
 
 public:

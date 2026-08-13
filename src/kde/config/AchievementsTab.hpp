@@ -23,6 +23,7 @@ private:
 	typedef ITab super;
 	AchievementsTabPrivate *const d_ptr;
 	Q_DECLARE_PRIVATE(AchievementsTab);
+public:
 	Q_DISABLE_COPY(AchievementsTab)
 
 protected:

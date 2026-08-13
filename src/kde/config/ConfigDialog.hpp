@@ -23,6 +23,7 @@ private:
 	typedef QDialog super;
 	ConfigDialogPrivate *const d_ptr;
 	Q_DECLARE_PRIVATE(ConfigDialog)
+public:
 	Q_DISABLE_COPY(ConfigDialog)
 
 protected:

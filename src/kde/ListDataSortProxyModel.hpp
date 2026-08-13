@@ -28,7 +28,7 @@ public:
 	{}
 	~ListDataSortProxyModel() override = default;
 
-private:
+public:
 	Q_DISABLE_COPY(ListDataSortProxyModel)
 
 private:

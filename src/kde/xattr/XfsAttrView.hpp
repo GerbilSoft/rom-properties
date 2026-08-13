@@ -27,6 +27,7 @@ private:
 	typedef QWidget super;
 	XfsAttrViewPrivate *const d_ptr;
 	Q_DECLARE_PRIVATE(XfsAttrView)
+public:
 	Q_DISABLE_COPY(XfsAttrView)
 
 protected:

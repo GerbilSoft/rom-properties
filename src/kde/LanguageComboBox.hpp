@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * LanguageComboBox.hpp: Language QComboBox subclass.                      *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,6 +29,7 @@ public:
 
 private:
 	typedef QComboBox super;
+public:
 	Q_DISABLE_COPY(LanguageComboBox)
 
 protected:

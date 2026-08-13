@@ -38,6 +38,7 @@ public:
 
 private:
 	typedef KFileMetaData::ExtractorPlugin super;
+public:
 	Q_DISABLE_COPY(ExtractorPlugin);
 
 public:

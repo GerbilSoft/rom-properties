@@ -25,6 +25,7 @@ public:
 
 private:
 	typedef QProgressBar super;
+public:
 	Q_DISABLE_COPY(RpProgressBar)
 
 public:

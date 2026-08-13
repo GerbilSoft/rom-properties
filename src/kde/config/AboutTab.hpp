@@ -23,6 +23,7 @@ private:
 	typedef ITab super;
 	AboutTabPrivate *const d_ptr;
 	Q_DECLARE_PRIVATE(AboutTab);
+public:
 	Q_DISABLE_COPY(AboutTab)
 
 protected:

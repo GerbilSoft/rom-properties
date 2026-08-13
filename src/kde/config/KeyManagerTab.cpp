@@ -55,6 +55,7 @@ public:
 private:
 	KeyManagerTab *const q_ptr;
 	Q_DECLARE_PUBLIC(KeyManagerTab)
+public:
 	Q_DISABLE_COPY(KeyManagerTabPrivate)
 
 public:

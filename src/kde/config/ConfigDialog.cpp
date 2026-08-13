@@ -39,6 +39,7 @@ public:
 private:
 	ConfigDialog *const q_ptr;
 	Q_DECLARE_PUBLIC(ConfigDialog)
+public:
 	Q_DISABLE_COPY(ConfigDialogPrivate)
 
 public:

@@ -26,6 +26,7 @@ public:
 
 private:
 	typedef LibRpTexture::rp_image_backend super;
+public:
 	Q_DISABLE_COPY(RpQImageBackend)
 
 public:

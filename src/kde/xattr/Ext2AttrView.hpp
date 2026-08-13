@@ -32,6 +32,7 @@ private:
 	typedef QWidget super;
 	Ext2AttrViewPrivate *const d_ptr;
 	Q_DECLARE_PRIVATE(Ext2AttrView)
+public:
 	Q_DISABLE_COPY(Ext2AttrView)
 
 protected:

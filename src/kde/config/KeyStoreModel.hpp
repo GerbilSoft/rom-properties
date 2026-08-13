@@ -28,6 +28,7 @@ private:
 	typedef QAbstractItemModel super;
 	KeyStoreModelPrivate *const d_ptr;
 	Q_DECLARE_PRIVATE(KeyStoreModel)
+public:
 	Q_DISABLE_COPY(KeyStoreModel)
 
 public:

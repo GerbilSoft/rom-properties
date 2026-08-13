@@ -19,6 +19,7 @@ public:
 
 private:
 	typedef QObject super;
+public:
 	Q_DISABLE_COPY(UpdateChecker)
 
 public slots:

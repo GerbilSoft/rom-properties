@@ -73,6 +73,7 @@ public:
 private:
 	AboutTab *const q_ptr;
 	Q_DECLARE_PUBLIC(AboutTab)
+public:
 	Q_DISABLE_COPY(AboutTabPrivate)
 
 public:

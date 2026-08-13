@@ -38,6 +38,7 @@ public:
 private:
 	CacheTab *const q_ptr;
 	Q_DECLARE_PUBLIC(CacheTab)
+public:
 	Q_DISABLE_COPY(CacheTabPrivate)
 
 public:

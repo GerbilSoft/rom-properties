@@ -38,6 +38,7 @@ public:
 private:
 	ImageTypesTab *const q_ptr;
 	Q_DECLARE_PUBLIC(ImageTypesTab)
+public:
 	Q_DISABLE_COPY(ImageTypesTabPrivate)
 
 public:

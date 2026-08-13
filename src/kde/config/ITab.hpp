@@ -26,6 +26,7 @@ public:
 
 private:
 	typedef QWidget super;
+public:
 	Q_DISABLE_COPY(ITab)
 
 public:

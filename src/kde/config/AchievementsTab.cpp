@@ -25,7 +25,7 @@ class AchievementsTabPrivate
 public:
 	explicit AchievementsTabPrivate() = default;
 
-private:
+public:
 	Q_DISABLE_COPY(AchievementsTabPrivate)
 
 public:

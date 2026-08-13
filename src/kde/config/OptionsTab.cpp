@@ -21,7 +21,7 @@ class OptionsTabPrivate
 public:
 	explicit OptionsTabPrivate();
 
-private:
+public:
 	Q_DISABLE_COPY(OptionsTabPrivate)
 
 public:

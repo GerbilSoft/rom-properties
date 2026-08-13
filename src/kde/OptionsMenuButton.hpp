@@ -40,6 +40,7 @@ public:
 
 private:
 	typedef QPushButton super;
+public:
 	Q_DISABLE_COPY(OptionsMenuButton)
 
 public:
