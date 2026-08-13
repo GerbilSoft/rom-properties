@@ -74,6 +74,7 @@ SET(${PROJECT_NAME}_H
 	img/RpPng.hpp
 	img/RpPngWriter.hpp
 	img/APNG_dlopen.hpp
+	img/T_img_vars.hpp
 	disc/IDiscReader.hpp
 	disc/DiscReader.hpp
 	disc/IPartition.hpp
