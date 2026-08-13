@@ -19,20 +19,6 @@
 #include <array>
 #include <memory>
 
-#ifdef HAVE_STD_VARIANT
-#  include <variant>
-#else /* !HAVE_STD_VARIANT */
-// std::variant<> is not available on this system.
-// Use mpark variant instead.
-#  include "mpark/variant.hpp"
-namespace std {
-	using mpark::variant;
-	using mpark::holds_alternative;
-	using mpark::get;
-	using mpark::monostate;
-}
-#endif /* HAVE_STD_VARIANT */
-
 // Qt includes
 #include <QtCore/QTimer>
 #include <QLabel>
@@ -132,10 +118,10 @@ public:
 	 */
 	bool isAnimTimerRunning(void) const
 	{
-		if (!isAnim()) {
+		if (!m_imgData.isAnim()) {
 			return false;
 		}
-		const anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
+		const auto &anim = m_imgData.animVars();
 		return anim.tmrIconAnim.isActive();
 	}
 
@@ -145,8 +131,8 @@ public:
 	 */
 	void resetAnimFrame(void)
 	{
-		if (isAnim()) {
-			anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
+		if (m_imgData.isAnim()) {
+			auto &anim = m_imgData.animVars();
 			anim.last_frame_number = 0;
 		}
 	}
@@ -167,26 +153,5 @@ private:
 	QPoint m_dragStartPos;
 	bool m_ecksBawks;
 
-	using non_anim_vars_t = LibRpBase::non_anim_vars_t<QPixmap>;
-	using anim_vars_t = LibRpBase::anim_vars_t<QPixmap, QTimer>;
-	std::variant<std::monostate, non_anim_vars_t, anim_vars_t> m_imgData;
-
-	// Convenience functions to check both if the correct type is
-	// set in the variant and if the shared_ptr is not nullptr.
-	inline bool isAnim(void) const
-	{
-		if (std::holds_alternative<anim_vars_t>(m_imgData)) {
-			const anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
-			return static_cast<bool>(anim.iconAnimData);
-		}
-		return false;
-	}
-	inline bool isNonAnim(void) const
-	{
-		if (std::holds_alternative<non_anim_vars_t>(m_imgData)) {
-			const non_anim_vars_t &non_anim = std::get<non_anim_vars_t>(m_imgData);
-			return (non_anim.img && non_anim.img->isValid());
-		}
-		return false;
-	}
+	LibRpBase::T_img_vars_t<QPixmap, QTimer> m_imgData;
 };

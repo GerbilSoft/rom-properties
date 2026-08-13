@@ -50,20 +50,6 @@ namespace Gdiplus {
 // C++ STL classes
 using std::tstring;
 
-#ifdef HAVE_STD_VARIANT
-#  include <variant>
-#else /* !HAVE_STD_VARIANT */
-// std::variant<> is not available on this system.
-// Use mpark variant instead.
-#  include "mpark/variant.hpp"
-namespace std {
-	using mpark::variant;
-	using mpark::holds_alternative;
-	using mpark::get;
-	using mpark::monostate;
-}
-#endif /* HAVE_STD_VARIANT */
-
 static ATOM atom_dragImageLabel = 0;
 
 class DragImageLabelPrivate
@@ -109,28 +95,7 @@ public:
 		}
 	};
 
-	using non_anim_vars_t = LibRpBase::non_anim_vars_t<HBITMAP, HBITMAP_deleter>;
-	using anim_vars_t = LibRpBase::anim_vars_t<HBITMAP, WinTimer_t, HBITMAP_deleter, WinTimer_deleter>;
-	std::variant<std::monostate, non_anim_vars_t, anim_vars_t> imgData;
-
-	// Convenience functions to check both if the correct type is
-	// set in the variant and if the shared_ptr is not nullptr.
-	inline bool isAnim(void) const
-	{
-		if (std::holds_alternative<anim_vars_t>(imgData)) {
-			const anim_vars_t &anim = std::get<anim_vars_t>(imgData);
-			return static_cast<bool>(anim.iconAnimData);
-		}
-		return false;
-	}
-	inline bool isNonAnim(void) const
-	{
-		if (std::holds_alternative<non_anim_vars_t>(imgData)) {
-			const non_anim_vars_t &non_anim = std::get<non_anim_vars_t>(imgData);
-			return (non_anim.img && non_anim.img->isValid());
-		}
-		return false;
-	}
+	LibRpBase::T_img_vars_t<HBITMAP, WinTimer_t, HBITMAP_deleter, WinTimer_deleter> imgData;
 
 	// Drag filename (e.g. ROM filename but with a .png extension) for dropped images
 	tstring dragFilename;
@@ -260,8 +225,8 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 		rectDragImageLabel.bottom - rectDragImageLabel.top
 	};
 
-	if (isAnim()) {
-		anim_vars_t &anim = std::get<anim_vars_t>(imgData);
+	if (imgData.isAnim()) {
+		auto &anim = imgData.animVars();
 		const IconAnimDataConstPtr &iconAnimData = anim.iconAnimData;
 
 		assert(iconAnimData->count > 0);
@@ -328,11 +293,11 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 		// Image data is valid.
 		//updateRect();
 		bRet = true;
-	} else if (isNonAnim()) {
+	} else if (imgData.isNonAnim()) {
 		// Single image.
 		// Convert to HBITMAP using the window background color.
 		// TODO: Rescale the icon. (port rescaleImage())
-		non_anim_vars_t &non_anim = std::get<non_anim_vars_t>(imgData);
+		auto &non_anim = imgData.nonAnimVars();
 		iconSize.cx = non_anim.img->width();
 		iconSize.cy = non_anim.img->height();
 
@@ -368,12 +333,12 @@ bool DragImageLabelPrivate::updateBitmaps(void)
  */
 void DragImageLabelPrivate::startAnimTimer(void)
 {
-	if (!isAnim()) {
+	if (!imgData.isAnim()) {
 		// Not an animated icon.
 		return;
 	}
 
-	DragImageLabelPrivate::anim_vars_t &anim = std::get<DragImageLabelPrivate::anim_vars_t>(imgData);
+	auto &anim = imgData.animVars();
 	const IconAnimHelper &iconAnimHelper = anim.iconAnimHelper;
 	if (!iconAnimHelper.isAnimated()) {
 		// Not an animated icon.
@@ -405,12 +370,12 @@ void DragImageLabelPrivate::startAnimTimer(void)
  */
 void DragImageLabelPrivate::stopAnimTimer(void)
 {
-	if (!isAnim()) {
+	if (!imgData.isAnim()) {
 		// Not an animated icon.
 		return;
 	}
 
-	DragImageLabelPrivate::anim_vars_t &anim = std::get<DragImageLabelPrivate::anim_vars_t>(imgData);
+	auto &anim = imgData.animVars();
 	if (anim.tmrIconAnim.second > 0) {
 		anim.unregister_timer();
 	}
@@ -422,12 +387,12 @@ void DragImageLabelPrivate::stopAnimTimer(void)
  */
 bool DragImageLabelPrivate::isAnimTimerRunning(void) const
 {
-	if (!isAnim()) {
+	if (!imgData.isAnim()) {
 		// Not an animated icon.
 		return false;
 	}
 
-	const DragImageLabelPrivate::anim_vars_t &anim = std::get<DragImageLabelPrivate::anim_vars_t>(imgData);
+	const auto &anim = imgData.animVars();
 	return (anim.tmrIconAnim.second > 0);
 }
 
@@ -437,12 +402,12 @@ bool DragImageLabelPrivate::isAnimTimerRunning(void) const
  */
 void DragImageLabelPrivate::resetAnimFrame(void)
 {
-	if (!isAnim()) {
+	if (!imgData.isAnim()) {
 		// Not an animated icon.
 		return;
 	}
 
-	DragImageLabelPrivate::anim_vars_t &anim = std::get<DragImageLabelPrivate::anim_vars_t>(imgData);
+	auto &anim = imgData.animVars();
 	anim.last_frame_number = 0;
 }
 
@@ -452,16 +417,16 @@ void DragImageLabelPrivate::resetAnimFrame(void)
  */
 HBITMAP DragImageLabelPrivate::currentFrame(void) const
 {
-	if (isAnim()) {
-		const DragImageLabelPrivate::anim_vars_t &anim = std::get<DragImageLabelPrivate::anim_vars_t>(imgData);
+	if (imgData.isAnim()) {
+		const auto &anim = imgData.animVars();
 		const int frame = anim.iconAnimHelper.frameNumber();
 		assert(frame >= 0);
 		assert(frame < static_cast<int>(anim.iconFrames.size()));
 		if (frame >= 0 && frame < static_cast<int>(anim.iconFrames.size())) {
 			return anim.iconFrames[anim.last_frame_number];
 		}
-	} else if (isNonAnim()) {
-		const DragImageLabelPrivate::non_anim_vars_t &non_anim = std::get<DragImageLabelPrivate::non_anim_vars_t>(imgData);
+	} else if (imgData.isNonAnim()) {
+		const auto &non_anim = imgData.nonAnimVars();
 		return non_anim.imgClass;
 	}
 
@@ -497,14 +462,14 @@ void CALLBACK DragImageLabelPrivate::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PT
 		return;
 	}
 
-	assert(d->isAnim());
-	if (!d->isAnim()) {
+	assert(d->imgData.isAnim());
+	if (!d->imgData.isAnim()) {
 		// Should not happen...
 		return;
 	}
 
 	// Next frame.
-	DragImageLabelPrivate::anim_vars_t &anim = std::get<DragImageLabelPrivate::anim_vars_t>(d->imgData);
+	auto &anim = d->imgData.animVars();
 	int delay = 0;
 	const int frame = anim.iconAnimHelper.nextFrame(&delay);
 	if (delay <= 0 || frame < 0) {
@@ -566,12 +531,12 @@ void DragImageLabelPrivate::on_WM_LBUTTONDOWN(WPARAM wParam, LPARAM lParam)
 	// Start the drag operation.
 	DILDataObject *pDataObj = nullptr;
 	rp_image_const_ptr frame0;	// for IDragSourceHelper
-	if (isAnim()) {
-		const anim_vars_t &anim = std::get<anim_vars_t>(imgData);
+	if (imgData.isAnim()) {
+		const auto &anim = imgData.animVars();
 		frame0 = anim.iconAnimData->frame0();
 		pDataObj = new DILDataObject(anim.iconAnimData);
-	} else if (isNonAnim()) {
-		const non_anim_vars_t &non_anim = std::get<non_anim_vars_t>(imgData);
+	} else if (imgData.isNonAnim()) {
+		const auto &non_anim = imgData.nonAnimVars();
 		frame0 = non_anim.img;
 		pDataObj = new DILDataObject(frame0);
 	} else {
@@ -792,7 +757,7 @@ DragImageLabelWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			bool ok = false;
 			const rp_image_const_ptr *const pImg = reinterpret_cast<const rp_image_const_ptr*>(lParam);
 			if (pImg) {
-				d->imgData.emplace<DragImageLabelPrivate::non_anim_vars_t>(*pImg);
+				d->imgData.set(*pImg);
 				if (*pImg) {
 					ok = d->updateBitmaps();
 				}
@@ -817,7 +782,7 @@ DragImageLabelWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			const IconAnimDataConstPtr *const pIconAnimData =
 				reinterpret_cast<const IconAnimDataConstPtr*>(lParam);
 			if (pIconAnimData) {
-				d->imgData.emplace<DragImageLabelPrivate::anim_vars_t>(*pIconAnimData);
+				d->imgData.set(*pIconAnimData);
 				if (*pIconAnimData) {
 					ok = d->updateBitmaps();
 				}
@@ -835,7 +800,7 @@ DragImageLabelWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				return false;
 			}
 
-			d->imgData.emplace<std::monostate>();
+			d->imgData.clear();
 
 			// Custom message; don't bother running DefWindowProc.
 			return 0;

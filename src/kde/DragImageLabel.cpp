@@ -81,7 +81,7 @@ bool DragImageLabel::setRpImage(const rp_image_const_ptr &img)
 	// NOTE: We're not checking if the image pointer matches the
 	// previously stored image, since the underlying image may
 	// have changed.
-	m_imgData.emplace<non_anim_vars_t>(img);
+	m_imgData.set(img);
 	if (!img) {
 		this->clear();
 		return false;
@@ -101,10 +101,10 @@ bool DragImageLabel::setIconAnimData(const IconAnimDataConstPtr &iconAnimData)
 	// NOTE: We're not checking if the image pointer matches the
 	// previously stored image, since the underlying image may
 	// have changed.
-	m_imgData.emplace<anim_vars_t>(iconAnimData);
+	m_imgData.set(iconAnimData);
 	if (iconAnimData) {
 		// Initialize the QTimer.
-		anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
+		auto &anim = m_imgData.animVars();
 		anim.tmrIconAnim.setObjectName(QLatin1String("tmrIconAnim"));
 		anim.tmrIconAnim.setSingleShot(true);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
@@ -127,7 +127,7 @@ bool DragImageLabel::setIconAnimData(const IconAnimDataConstPtr &iconAnimData)
  */
 void DragImageLabel::clearRp(void)
 {
-	m_imgData.emplace<std::monostate>();
+	m_imgData.clear();
 	this->clear();
 }
 
@@ -167,8 +167,8 @@ QPixmap DragImageLabel::imgToPixmap(const QImage &img) const
  */
 bool DragImageLabel::updatePixmaps(void)
 {
-	if (isAnim()) {
-		anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
+	if (m_imgData.isAnim()) {
+		auto &anim = m_imgData.animVars();
 		const IconAnimDataConstPtr &iconAnimData = anim.iconAnimData;
 
 		assert(iconAnimData->count > 0);
@@ -207,9 +207,9 @@ bool DragImageLabel::updatePixmaps(void)
 			this->setPixmap(anim.iconFrames[frame]);
 		}
 		return true;
-	} else if (isNonAnim()) {
+	} else if (m_imgData.isNonAnim()) {
 		// Single image
-		non_anim_vars_t &non_anim = std::get<non_anim_vars_t>(m_imgData);
+		auto &non_anim = m_imgData.nonAnimVars();
 
 		// Convert the rp_image to a QImage.
 		QImage qImg = rpToQImage(non_anim.img);
@@ -239,11 +239,11 @@ bool DragImageLabel::updatePixmaps(void)
  */
 void DragImageLabel::startAnimTimer(void)
 {
-	if (!isAnim()) {
+	if (!m_imgData.isAnim()) {
 		// Not an animated icon.
 		return;
 	}
-	anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
+	auto &anim = m_imgData.animVars();
 
 	const IconAnimHelper &iconAnimHelper = anim.iconAnimHelper;
 	if (!iconAnimHelper.isAnimated()) {
@@ -269,8 +269,8 @@ void DragImageLabel::startAnimTimer(void)
  */
 void DragImageLabel::stopAnimTimer(void)
 {
-	if (isAnim()) {
-		anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
+	if (m_imgData.isAnim()) {
+		auto &anim = m_imgData.animVars();
 		anim.tmrIconAnim.stop();
 	}
 }
@@ -280,12 +280,12 @@ void DragImageLabel::stopAnimTimer(void)
  */
 void DragImageLabel::tmrIconAnim_timeout(void)
 {
-	assert(isAnim());
-	if (!isAnim()) {
+	assert(m_imgData.isAnim());
+	if (!m_imgData.isAnim()) {
 		// Should not happen...
 		return;
 	}
-	anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
+	auto &anim = m_imgData.animVars();
 
 	// Next frame.
 	int delay = 0;
@@ -328,15 +328,15 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 
 	shared_ptr<RpQByteArrayFile> pngData = std::make_shared<RpQByteArrayFile>();
 	unique_ptr<RpPngWriter> pngWriter;
-	if (isAnim()) {
+	if (m_imgData.isAnim()) {
 		// Animated icon
-		const anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
+		const auto &anim = m_imgData.animVars();
 		pngWriter.reset(new RpPngWriter(pngData, anim.iconAnimData));
-	} else if (isNonAnim()) {
+	} else if (m_imgData.isNonAnim()) {
 		// Standard icon
 		// NOTE: Using the source image because we want the original
 		// size, not the resized version.
-		const non_anim_vars_t &non_anim = std::get<non_anim_vars_t>(m_imgData);
+		const auto &non_anim = m_imgData.nonAnimVars();
 		pngWriter.reset(new RpPngWriter(pngData, non_anim.img));
 	} else {
 		// No icon...
@@ -384,8 +384,8 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 
 	// Get drag pixmap.
 	bool dragPixmapSetFromAnim = false;
-	if (isAnim()) {
-		const anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
+	if (m_imgData.isAnim()) {
+		const auto &anim = m_imgData.animVars();
 		if (anim.iconAnimHelper.isAnimated()) {
 			// Get the first frame from the animation.
 			QPixmap frame0 = anim.frame0();

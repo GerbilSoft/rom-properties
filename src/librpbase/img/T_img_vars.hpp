@@ -17,6 +17,20 @@
 // C++ STL classes
 #include <vector>
 
+#ifdef HAVE_STD_VARIANT
+#  include <variant>
+#else /* !HAVE_STD_VARIANT */
+// std::variant<> is not available on this system.
+// Use mpark variant instead.
+#  include "mpark/variant.hpp"
+namespace std {
+	using mpark::variant;
+	using mpark::holds_alternative;
+	using mpark::get;
+	using mpark::monostate;
+}
+#endif /* HAVE_STD_VARIANT */
+
 namespace LibRpBase {
 
 // NOTE: Default () init works for C++ objects (default constructor), pointers (nullptr), and primitive types (0).
@@ -39,23 +53,24 @@ public:
 
 // Non-animated icon data
 template<typename ImgClass, typename ImgClassDeleter = non_pointer_deleter<ImgClass>>
-struct non_anim_vars_t {
+struct T_non_anim_vars_t
+{
 	LibRpTexture::rp_image_const_ptr img;
 	ImgClass imgClass;
 
-	explicit non_anim_vars_t()
+	explicit T_non_anim_vars_t()
 		: imgClass()
 	{}
-	explicit non_anim_vars_t(const LibRpTexture::rp_image_const_ptr &img)
+	explicit T_non_anim_vars_t(const LibRpTexture::rp_image_const_ptr &img)
 		: img(img)
 		, imgClass()
 	{}
-	explicit non_anim_vars_t(LibRpTexture::rp_image_const_ptr &&img)
+	explicit T_non_anim_vars_t(LibRpTexture::rp_image_const_ptr &&img)
 		: img(img)
 		, imgClass()
 	{}
 
-	~non_anim_vars_t()
+	~T_non_anim_vars_t()
 	{
 		ImgClassDeleter()(imgClass);
 	}
@@ -63,7 +78,8 @@ struct non_anim_vars_t {
 
 // Animated icon data
 template<typename ImgClass, typename TmrClass, typename ImgClassDeleter = non_pointer_deleter<ImgClass>, typename TmrClassDeleter = non_pointer_deleter<TmrClass>>
-struct anim_vars_t {
+struct T_anim_vars_t
+{
 	IconAnimDataConstPtr iconAnimData;
 	std::vector<ImgClass> iconFrames;
 	IconAnimHelper iconAnimHelper;
@@ -73,25 +89,25 @@ struct anim_vars_t {
 	// GTK only
 	int last_delay;		// Last delay value
 
-	explicit anim_vars_t()
+	explicit T_anim_vars_t()
 		: tmrIconAnim()
 		, last_frame_number(0)
 		, last_delay(0)
 	{}
-	explicit anim_vars_t(const LibRpBase::IconAnimDataConstPtr &iconAnimData)
+	explicit T_anim_vars_t(const LibRpBase::IconAnimDataConstPtr &iconAnimData)
 		: iconAnimData(iconAnimData)
 		, tmrIconAnim()
 		, last_frame_number(0)
 		, last_delay(0)
 	{}
-	explicit anim_vars_t(LibRpBase::IconAnimDataConstPtr &&iconAnimData)
+	explicit T_anim_vars_t(LibRpBase::IconAnimDataConstPtr &&iconAnimData)
 		: iconAnimData(iconAnimData)
 		, tmrIconAnim()
 		, last_frame_number(0)
 		, last_delay(0)
 	{}
 
-	~anim_vars_t()
+	~T_anim_vars_t()
 	{
 		auto imgClassDeleter = ImgClassDeleter();
 		for (auto iter = iconFrames.begin(); iter != iconFrames.end(); ++iter) {
@@ -132,6 +148,78 @@ struct anim_vars_t {
 
 		return iconFrames[frame0_idx];
 	}
+};
+
+// Class for managing a variant containing both non_anim_vars_t and anim_vars_t.
+template<typename ImgClass, typename TmrClass, typename ImgClassDeleter = non_pointer_deleter<ImgClass>, typename TmrClassDeleter = non_pointer_deleter<TmrClass>>
+class T_img_vars_t
+{
+public:
+	using non_anim_vars_t = T_non_anim_vars_t<ImgClass, ImgClassDeleter>;
+	using anim_vars_t = T_anim_vars_t<ImgClass, TmrClass, ImgClassDeleter, TmrClassDeleter>;
+
+	void clear(void)
+	{
+		m_imgData = std::monostate();
+	}
+
+	void set(const LibRpTexture::rp_image_const_ptr &img)
+	{
+		m_imgData.template emplace<non_anim_vars_t>(img);
+	}
+	void set(LibRpTexture::rp_image_const_ptr &&img)
+	{
+		m_imgData.template emplace<non_anim_vars_t>(img);
+	}
+
+	void set(const IconAnimDataConstPtr &iconAnimData)
+	{
+		m_imgData.template emplace<anim_vars_t>(iconAnimData);
+	}
+	void set(IconAnimDataConstPtr &&iconAnimData)
+	{
+		m_imgData.template emplace<anim_vars_t>(iconAnimData);
+	}
+
+	// Convenience functions to check both if the correct type is
+	// set in the variant and if the shared_ptr is not nullptr.
+	inline bool isAnim(void) const
+	{
+		if (std::holds_alternative<anim_vars_t>(m_imgData)) {
+			const anim_vars_t &anim = std::get<anim_vars_t>(m_imgData);
+			return static_cast<bool>(anim.iconAnimData);
+		}
+		return false;
+	}
+	inline bool isNonAnim(void) const
+	{
+		if (std::holds_alternative<non_anim_vars_t>(m_imgData)) {
+			const non_anim_vars_t &non_anim = std::get<non_anim_vars_t>(m_imgData);
+			return (non_anim.img && non_anim.img->isValid());
+		}
+		return false;
+	}
+
+	non_anim_vars_t &nonAnimVars(void)
+	{
+		return std::get<non_anim_vars_t>(m_imgData);
+	}
+	const non_anim_vars_t &nonAnimVars(void) const
+	{
+		return std::get<non_anim_vars_t>(m_imgData);
+	}
+
+	anim_vars_t &animVars(void)
+	{
+		return std::get<anim_vars_t>(m_imgData);
+	}
+	const anim_vars_t &animVars(void) const
+	{
+		return std::get<anim_vars_t>(m_imgData);
+	}
+
+private:
+	std::variant<std::monostate, non_anim_vars_t, anim_vars_t> m_imgData;
 };
 
 }
