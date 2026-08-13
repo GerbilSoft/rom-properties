@@ -62,11 +62,11 @@ class RpKeyStoreGTKPrivate final : public LibRomData::KeyStoreUI
 {
 public:
 	explicit RpKeyStoreGTKPrivate(RpKeyStoreGTK *q)
-		: q(q)
+		: q_ptr(q)
 	{}
 
 private:
-	RpKeyStoreGTK *const q;
+	RpKeyStoreGTK *const q_ptr;
 public:
 	RP_DISABLE_COPY(RpKeyStoreGTKPrivate);
 
@@ -78,6 +78,7 @@ protected: /*signals:*/
 	 */
 	void keyChanged_int(int sectIdx, int keyIdx) final
 	{
+		RP_Q(RpKeyStoreGTK);
 		g_signal_emit(q, signals[SIGNAL_KEY_CHANGED], 0, sectIdx, keyIdx);
 	}
 
@@ -87,6 +88,7 @@ protected: /*signals:*/
 	 */
 	void keyChanged_int(int idx) final
 	{
+		RP_Q(RpKeyStoreGTK);
 		g_signal_emit(q, signals[SIGNAL_KEY_CHANGED_FLAT], 0, idx);
 	}
 
@@ -95,6 +97,7 @@ protected: /*signals:*/
 	 */
 	void allKeysChanged_int(void) final
 	{
+		RP_Q(RpKeyStoreGTK);
 		g_signal_emit(q, signals[SIGNAL_ALL_KEYS_CHANGED], 0);
 	}
 
@@ -104,6 +107,7 @@ protected: /*signals:*/
 	void modified_int(void) final
 	{
 		// TODO: Do we need both a signal and notify?
+		RP_Q(RpKeyStoreGTK);
 		g_object_notify_by_pspec(G_OBJECT(q), props[PROP_CHANGED]);
 		g_signal_emit(q, signals[SIGNAL_MODIFIED], 0);
 	}

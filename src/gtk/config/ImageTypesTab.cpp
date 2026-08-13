@@ -39,7 +39,7 @@ public:
 	~RpImageTypesTabPrivate() final;
 
 private:
-	RpImageTypesTab *const q;
+	RpImageTypesTab *const q_ptr;
 public:
 	RP_DISABLE_COPY(RpImageTypesTabPrivate)
 
@@ -154,7 +154,7 @@ G_DEFINE_TYPE_EXTENDED(RpImageTypesTab, rp_image_types_tab,
 /** RpImageTypesTabPrivate **/
 
 RpImageTypesTabPrivate::RpImageTypesTabPrivate(RpImageTypesTab* q)
-	: q(q)
+	: q_ptr(q)
 	, keyFile(nullptr)
 { }
 
@@ -175,6 +175,7 @@ void RpImageTypesTabPrivate::createGridLabels(void)
 	// TODO: Make sure that all columns except 0 have equal sizes.
 
 	// Create the image type labels.
+	RP_Q(RpImageTypesTab);
 	const unsigned int imageTypeCount = ImageTypesConfig::imageTypeCount();
 	for (unsigned int i = 0; i < imageTypeCount; i++) {
 		// TODO: Decrement the column number for >IMG_INT_MEDIA?
@@ -248,6 +249,7 @@ void RpImageTypesTabPrivate::createComboBox(unsigned int cbid)
 		return;
 	}
 
+	RP_Q(RpImageTypesTab);
 	SysData_t &sysData = v_sysData[sys];
 
 	// Create the ComboBox.
@@ -295,15 +297,18 @@ void RpImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 {
 	const unsigned int sys = sysFromCbid(cbid);
 	const unsigned int imageType = imageTypeFromCbid(cbid);
-	if (!validateSysImageType(sys, imageType))
+	if (!validateSysImageType(sys, imageType)) {
 		return;
+	}
 	const SysData_t &sysData = v_sysData[sys];
 
 	OurComboBox *const cbo = sysData.cboImageType[imageType];
 	assert(cbo != nullptr);
-	if (!cbo)
+	if (!cbo) {
 		return;
+	}
 
+	RP_Q(RpImageTypesTab);
 	const bool prev_inhibit = q->inhibit;
 	q->inhibit = true;
 
@@ -374,10 +379,12 @@ void RpImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, un
 {
 	const unsigned int sys = sysFromCbid(cbid);
 	const unsigned int imageType = imageTypeFromCbid(cbid);
-	if (!validateSysImageType(sys, imageType))
+	if (!validateSysImageType(sys, imageType)) {
 		return;
+	}
 	const SysData_t &sysData = v_sysData[sys];
 
+	RP_Q(RpImageTypesTab);
 	OurComboBox *const cbo = sysData.cboImageType[imageType];
 	assert(cbo != nullptr);
 	if (cbo) {
