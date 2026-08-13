@@ -29,6 +29,7 @@ public:
 
 private:
 	typedef LibWin32Common::ComBase<RP_EmptyVolumeCacheCallBack> super;
+public:
 	RP_DISABLE_COPY(RP_EmptyVolumeCacheCallBack)
 
 public:

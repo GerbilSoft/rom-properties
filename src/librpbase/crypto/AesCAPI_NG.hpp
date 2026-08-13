@@ -21,10 +21,10 @@ public:
 
 private:
 	typedef IAesCipher super;
-	RP_DISABLE_COPY(AesCAPI_NG)
-private:
 	friend class AesCAPI_NG_Private;
 	AesCAPI_NG_Private *const d_ptr;
+public:
+	RP_DISABLE_COPY(AesCAPI_NG)
 
 public:
 	/**

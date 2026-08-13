@@ -40,6 +40,7 @@ public:
 
 private:
 	typedef IDiscReader super;
+public:
 	RP_DISABLE_COPY(CIAReader)
 
 protected:

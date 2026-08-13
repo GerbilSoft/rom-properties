@@ -34,7 +34,7 @@ public:
 	~XAttrReaderPrivate();
 #endif /* !_WIN32 */
 
-private:
+public:
 	RP_DISABLE_COPY(XAttrReaderPrivate)
 
 public:

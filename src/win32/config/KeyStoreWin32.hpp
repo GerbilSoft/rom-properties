@@ -19,8 +19,10 @@ class KeyStoreWin32 final : public LibRomData::KeyStoreUI
 public:
 	explicit KeyStoreWin32(HWND hWnd);
 
-private:
+public:
 	RP_DISABLE_COPY(KeyStoreWin32)
+
+private:
 	HWND m_hWnd;
 
 public:

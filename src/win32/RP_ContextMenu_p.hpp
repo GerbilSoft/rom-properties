@@ -26,7 +26,7 @@ public:
 	RP_ContextMenu_Private();
 	~RP_ContextMenu_Private();
 
-private:
+public:
 	RP_DISABLE_COPY(RP_ContextMenu_Private)
 
 public:

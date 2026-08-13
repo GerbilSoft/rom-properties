@@ -30,11 +30,11 @@ public:
 
 private:
 	typedef IPartition super;
-	RP_DISABLE_COPY(IsoPartition)
-
 protected:
 	friend class IsoPartitionPrivate;
 	IsoPartitionPrivate *const d_ptr;
+public:
+	RP_DISABLE_COPY(IsoPartition)
 
 public:
 	/** IDiscReader **/

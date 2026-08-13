@@ -23,7 +23,7 @@ protected:
 public:
 	virtual ~IAesCipher() = 0;
 
-private:
+public:
 	RP_DISABLE_COPY(IAesCipher)
 
 public:

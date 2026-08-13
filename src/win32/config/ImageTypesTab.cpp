@@ -56,6 +56,7 @@ public:
 
 private:
 	typedef TImageTypesConfig<HWND> super;
+public:
 	RP_DISABLE_COPY(ImageTypesTabPrivate)
 
 protected:

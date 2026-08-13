@@ -37,10 +37,10 @@ public:
 	XDVDFSPartitionPrivate(XDVDFSPartition *q,
 		off64_t partition_offset, off64_t partition_size);
 
-private:
-	RP_DISABLE_COPY(XDVDFSPartitionPrivate)
 protected:
 	XDVDFSPartition *const q_ptr;
+public:
+	RP_DISABLE_COPY(XDVDFSPartitionPrivate)
 
 public:
 	// Partition start offset (in bytes)

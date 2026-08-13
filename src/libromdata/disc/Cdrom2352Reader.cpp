@@ -32,6 +32,7 @@ public:
 
 private:
 	typedef SparseDiscReaderPrivate super;
+public:
 	RP_DISABLE_COPY(Cdrom2352ReaderPrivate)
 
 public:

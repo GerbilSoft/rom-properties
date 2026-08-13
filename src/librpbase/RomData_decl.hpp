@@ -38,6 +38,7 @@ class klass final : public LibRpBase::RomData { \
 private: \
 	typedef LibRpBase::RomData super; \
 	friend class klass##Private; \
+public: \
 	RP_DISABLE_COPY(klass); \
 
 /**
@@ -55,6 +56,7 @@ class RP_LIBROMDATA_PUBLIC klass final : public LibRpBase::RomData { \
 private: \
 	typedef LibRpBase::RomData super; \
 	friend class klass##Private; \
+public: \
 	RP_DISABLE_COPY(klass); \
 
 /**

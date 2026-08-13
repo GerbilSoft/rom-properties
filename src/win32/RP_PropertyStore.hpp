@@ -34,10 +34,10 @@ protected:
 
 private:
 	typedef LibWin32Common::ComBase<IInitializeWithStream, IPropertyStore, IPropertyStoreCapabilities> super;
-	RP_DISABLE_COPY(RP_PropertyStore)
-private:
 	friend class RP_PropertyStore_Private;
 	RP_PropertyStore_Private *const d_ptr;
+public:
+	RP_DISABLE_COPY(RP_PropertyStore)
 
 public:
 	FILETYPE_HANDLER_HKLM_DECL(RP_PropertyStore)

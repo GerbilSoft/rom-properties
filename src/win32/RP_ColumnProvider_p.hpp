@@ -26,7 +26,7 @@ public:
 	RP_ColumnProvider_Private() = default;
 	~RP_ColumnProvider_Private() = default;
 
-private:
+public:
 	RP_DISABLE_COPY(RP_ColumnProvider_Private)
 
 public:

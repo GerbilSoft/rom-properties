@@ -214,6 +214,7 @@ public:
 private:
 	friend class RpPngWriterPrivate;
 	RpPngWriterPrivate *const d_ptr;
+public:
 	RP_DISABLE_COPY(RpPngWriter)
 
 public:

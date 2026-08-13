@@ -28,7 +28,7 @@ class RomFieldsPrivate
 public:
 	RomFieldsPrivate();
 
-private:
+public:
 	RP_DISABLE_COPY(RomFieldsPrivate)
 
 public:

@@ -55,12 +55,12 @@ public:
 
 private:
 	typedef GcnPartition super;
-	RP_DISABLE_COPY(WiiPartition)
-
 protected:
 	friend class WiiPartitionPrivate;
 	// d_ptr is used from the subclass.
 	//WiiPartitionPrivate *const d_ptr;
+public:
+	RP_DISABLE_COPY(WiiPartition)
 
 public:
 	/** IDiscReader **/

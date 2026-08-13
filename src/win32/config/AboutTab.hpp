@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * AboutTab.hpp: About tab for rp-config.                                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,10 +19,10 @@ public:
 
 private:
 	typedef ITab super;
-	RP_DISABLE_COPY(AboutTab)
-private:
 	friend class AboutTabPrivate;
 	AboutTabPrivate *const d_ptr;
+public:
+	RP_DISABLE_COPY(AboutTab)
 
 public:
 	/**

@@ -40,10 +40,10 @@ protected:
 
 private:
 	typedef LibWin32Common::ComBase<IShellExtInit, IShellPropSheetExt> super;
-	RP_DISABLE_COPY(RP_ShellPropSheetExt)
-private:
 	friend class RP_ShellPropSheetExt_Private;
 	RP_ShellPropSheetExt_Private *d_ptr;
+public:
+	RP_DISABLE_COPY(RP_ShellPropSheetExt)
 
 public:
 	FILETYPE_HANDLER_DECL(RP_ShellPropSheetExt)

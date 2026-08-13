@@ -36,7 +36,7 @@ public:
 	AesNettlePrivate();
 	~AesNettlePrivate() = default;
 
-private:
+public:
 	RP_DISABLE_COPY(AesNettlePrivate)
 
 public:

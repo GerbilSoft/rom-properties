@@ -115,7 +115,8 @@ public:
 public:
 	TCreateThumbnail() = default;
 	virtual ~TCreateThumbnail() = default;
-private:
+
+public:
 	RP_DISABLE_COPY(TCreateThumbnail)
 
 public:

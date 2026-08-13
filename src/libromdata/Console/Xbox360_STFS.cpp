@@ -53,6 +53,7 @@ public:
 
 private:
 	typedef RomDataPrivate super;
+public:
 	RP_DISABLE_COPY(Xbox360_STFS_Private)
 
 public:

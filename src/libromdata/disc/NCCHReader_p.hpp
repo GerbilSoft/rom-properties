@@ -43,10 +43,10 @@ public:
 	NCCHReaderPrivate(NCCHReader *q, uint8_t media_unit_shift,
 		off64_t ncch_offset, uint32_t ncch_length);
 
-private:
-	RP_DISABLE_COPY(NCCHReaderPrivate)
 protected:
 	NCCHReader *const q_ptr;
+public:
+	RP_DISABLE_COPY(NCCHReaderPrivate)
 
 public:
 	// NCCH offsets

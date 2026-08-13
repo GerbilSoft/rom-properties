@@ -32,10 +32,10 @@ protected:
 	~AmiiboData();
 
 private:
-	RP_DISABLE_COPY(AmiiboData)
-private:
 	friend class AmiiboDataPrivate;
 	AmiiboDataPrivate *d_ptr;
+public:
+	RP_DISABLE_COPY(AmiiboData)
 
 public:
 	/**

@@ -32,7 +32,7 @@ class RP_ThumbnailProvider_Private
 public:
 	RP_ThumbnailProvider_Private();
 
-private:
+public:
 	RP_DISABLE_COPY(RP_ThumbnailProvider_Private)
 
 public:

@@ -38,7 +38,7 @@ public:
 
 	~RP_XAttrView_Private();
 
-private:
+public:
 	RP_DISABLE_COPY(RP_XAttrView_Private)
 
 public:

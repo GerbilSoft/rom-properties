@@ -46,6 +46,7 @@ public:
 
 private:
 	typedef RomDataPrivate super;
+public:
 	RP_DISABLE_COPY(Xbox360_XDBF_Private)
 
 public:

@@ -85,10 +85,11 @@ public:
 
 private:
 	typedef IRpFile super;
-	RP_DISABLE_COPY(RpFile)
 protected:
 	friend class RpFilePrivate;
 	RpFilePrivate *const d_ptr;
+public:
+	RP_DISABLE_COPY(RpFile)
 
 public:
 	/**

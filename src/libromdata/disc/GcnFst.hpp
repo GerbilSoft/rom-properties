@@ -31,11 +31,10 @@ public:
 
 private:
 	typedef IFst super;
-	RP_DISABLE_COPY(GcnFst)
-
-private:
 	friend class GcnFstPrivate;
 	GcnFstPrivate *const d_ptr;
+public:
+	RP_DISABLE_COPY(GcnFst)
 
 public:
 	/**

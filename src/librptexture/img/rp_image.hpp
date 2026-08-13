@@ -88,10 +88,10 @@ public:
 	~rp_image();
 
 private:
-	RP_DISABLE_COPY(rp_image)
-private:
 	friend class rp_image_private;
 	rp_image_private *const d_ptr;
+public:
+	RP_DISABLE_COPY(rp_image)
 
 public:
 	/**

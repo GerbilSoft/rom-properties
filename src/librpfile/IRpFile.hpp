@@ -37,7 +37,7 @@ protected:
 public:
 	virtual ~IRpFile() = default;
 
-private:
+public:
 	RP_DISABLE_COPY(IRpFile)
 
 public:

@@ -40,8 +40,9 @@ public:
 	WiiUH3ReaderPrivate(WiiUH3Reader *q, const uint8_t *pKey, size_t keyLen);
 
 private:
-	RP_DISABLE_COPY(WiiUH3ReaderPrivate)
 	WiiUH3Reader *const q_ptr;
+public:
+	RP_DISABLE_COPY(WiiUH3ReaderPrivate)
 
 public:
 	// Decrypted read position (0xFC00 bytes out of 0x10000)

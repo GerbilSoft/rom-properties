@@ -40,10 +40,10 @@ protected:
 
 private:
 	typedef LibWin32Common::ComBase<IInitializeWithStream, IThumbnailProvider> super;
-	RP_DISABLE_COPY(RP_ThumbnailProvider)
-private:
 	friend class RP_ThumbnailProvider_Private;
 	RP_ThumbnailProvider_Private *const d_ptr;
+public:
+	RP_DISABLE_COPY(RP_ThumbnailProvider)
 
 public:
 	FILETYPE_HANDLER_DECL(RP_ThumbnailProvider)

@@ -25,7 +25,8 @@ protected:
 	 */
 	AchQtDBus();
 	~AchQtDBus();
-private:
+
+public:
 	RP_DISABLE_COPY(AchQtDBus);
 
 private:

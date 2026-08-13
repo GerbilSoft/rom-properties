@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IResourceReader.hpp: Interface for Windows resource readers.            *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -41,6 +41,7 @@ public:
 
 private:
 	typedef IPartition super;
+public:
 	RP_DISABLE_COPY(IResourceReader)
 
 public:

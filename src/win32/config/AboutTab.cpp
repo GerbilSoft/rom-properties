@@ -116,7 +116,7 @@ public:
 	AboutTabPrivate();
 	~AboutTabPrivate();
 
-private:
+public:
 	RP_DISABLE_COPY(AboutTabPrivate)
 
 public:

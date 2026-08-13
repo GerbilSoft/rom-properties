@@ -52,7 +52,7 @@ class AchievementsPrivate
 public:
 	AchievementsPrivate();
 
-private:
+public:
 	RP_DISABLE_COPY(AchievementsPrivate)
 
 public:

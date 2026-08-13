@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * ConfigDialog.hpp: Configuration dialog.                                 *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,10 +19,10 @@ public:
 	~ConfigDialog();
 
 private:
-	RP_DISABLE_COPY(ConfigDialog)
-private:
 	friend class ConfigDialogPrivate;
 	ConfigDialogPrivate *const d_ptr;
+public:
+	RP_DISABLE_COPY(ConfigDialog)
 
 public:
 	/**

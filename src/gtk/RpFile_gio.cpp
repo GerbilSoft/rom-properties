@@ -23,7 +23,7 @@ public:
 	explicit RpFileGioPrivate(const string &uri);
 	~RpFileGioPrivate();
 
-private:
+public:
 	RP_DISABLE_COPY(RpFileGioPrivate)
 
 public:

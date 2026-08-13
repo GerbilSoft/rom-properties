@@ -29,7 +29,7 @@ public:
 	PropSheetIconPrivate();
 	~PropSheetIconPrivate();
 
-private:
+public:
 	RP_DISABLE_COPY(PropSheetIconPrivate)
 
 public:

@@ -50,6 +50,7 @@ class klass final : public LibRpTexture::FileFormat { \
 private: \
 	typedef FileFormat super; \
 	friend class klass##Private; \
+public: \
 	RP_DISABLE_COPY(klass); \
 
 /**

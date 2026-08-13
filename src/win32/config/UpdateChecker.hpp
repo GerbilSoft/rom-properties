@@ -32,7 +32,7 @@ public:
 	UpdateChecker();
 	~UpdateChecker();
 
-private:
+public:
 	RP_DISABLE_COPY(UpdateChecker)
 
 public:

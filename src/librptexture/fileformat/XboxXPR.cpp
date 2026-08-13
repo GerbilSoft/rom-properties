@@ -38,6 +38,7 @@ public:
 
 private:
 	typedef FileFormatPrivate super;
+public:
 	RP_DISABLE_COPY(XboxXPRPrivate)
 
 public:

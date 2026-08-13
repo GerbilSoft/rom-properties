@@ -40,10 +40,10 @@ protected:
 
 private:
 	typedef LibWin32Common::ComBase<IShellExtInit, IShellPropSheetExt> super;
-	RP_DISABLE_COPY(RP_XAttrView)
-private:
 	friend class RP_XAttrView_Private;
 	RP_XAttrView_Private *d_ptr;
+public:
+	RP_DISABLE_COPY(RP_XAttrView)
 
 public:
 	FILETYPE_HANDLER_DECL(RP_XAttrView)

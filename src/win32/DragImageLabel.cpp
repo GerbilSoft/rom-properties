@@ -59,8 +59,9 @@ public:
 	~DragImageLabelPrivate();
 
 private:
-	RP_DISABLE_COPY(DragImageLabelPrivate)
 	HWND q_ptr;
+public:
+	RP_DISABLE_COPY(DragImageLabelPrivate)
 
 public:
 	SIZE ourLabelSize;	// Actual label size.

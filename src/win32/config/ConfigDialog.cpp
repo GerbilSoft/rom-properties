@@ -72,7 +72,7 @@ public:
 	ConfigDialogPrivate();
 	~ConfigDialogPrivate();
 
-private:
+public:
 	RP_DISABLE_COPY(ConfigDialogPrivate)
 
 public:

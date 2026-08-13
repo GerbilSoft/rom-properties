@@ -24,7 +24,7 @@ public:
 	CacheManager() = default;
 	~CacheManager() = default;
 
-private:
+public:
 	RP_DISABLE_COPY(CacheManager)
 
 public:

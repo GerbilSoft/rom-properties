@@ -52,6 +52,7 @@ public:
 
 private:
 	typedef RomDataPrivate super;
+public:
 	RP_DISABLE_COPY(Xbox_XBE_Private)
 
 public:

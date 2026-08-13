@@ -21,6 +21,7 @@ public:
 
 private:
 	typedef IDownloader super;
+public:
 	RP_DISABLE_COPY(WinInetDownloader)
 
 public:

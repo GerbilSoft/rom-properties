@@ -34,10 +34,10 @@ protected:
 
 private:
 	typedef LibWin32Common::ComBase<IColumnProvider> super;
-	RP_DISABLE_COPY(RP_ColumnProvider)
-private:
 	friend class RP_ColumnProvider_Private;
 	RP_ColumnProvider_Private *const d_ptr;
+public:
+	RP_DISABLE_COPY(RP_ColumnProvider)
 
 public:
 	FILETYPE_HANDLER_DECL(RP_ColumnProvider)

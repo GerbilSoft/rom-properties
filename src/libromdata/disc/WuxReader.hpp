@@ -26,9 +26,9 @@ public:
 
 private:
 	typedef SparseDiscReader super;
-	RP_DISABLE_COPY(WuxReader)
-private:
 	friend class WuxReaderPrivate;
+public:
+	RP_DISABLE_COPY(WuxReader)
 
 public:
 	/** Disc image detection functions **/

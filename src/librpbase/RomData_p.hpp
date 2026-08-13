@@ -60,7 +60,7 @@ protected:
 public:
 	virtual ~RomDataPrivate() = default;
 
-private:
+public:
 	RP_DISABLE_COPY(RomDataPrivate)
 
 public:

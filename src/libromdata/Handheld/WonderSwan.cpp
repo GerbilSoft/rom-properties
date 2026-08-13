@@ -32,6 +32,7 @@ public:
 
 private:
 	typedef RomDataPrivate super;
+public:
 	RP_DISABLE_COPY(WonderSwanPrivate)
 
 public:

@@ -24,6 +24,7 @@ public:
 
 private:
 	typedef SparseDiscReaderPrivate super;
+public:
 	RP_DISABLE_COPY(WbfsReaderPrivate)
 
 public:

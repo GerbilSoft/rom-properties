@@ -67,6 +67,7 @@ public:
 
 private:
 	RpKeyStoreGTK *const q;
+public:
 	RP_DISABLE_COPY(RpKeyStoreGTKPrivate);
 
 protected: /*signals:*/

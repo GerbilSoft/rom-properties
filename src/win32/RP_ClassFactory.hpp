@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ClassFactory.hpp: IClassFactory implementation.                      *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -32,6 +32,7 @@ public:
 
 private:
 	typedef LibWin32Common::ComBase<IClassFactory> super;
+public:
 	RP_DISABLE_COPY(RP_ClassFactory)
 
 public:

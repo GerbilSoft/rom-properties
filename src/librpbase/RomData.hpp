@@ -54,11 +54,11 @@ public:
 	RP_LIBROMDATA_PUBLIC
 	virtual ~RomData();
 
-private:
-	RP_DISABLE_COPY(RomData)
 protected:
 	friend class RomDataPrivate;
 	RomDataPrivate *const d_ptr;
+public:
+	RP_DISABLE_COPY(RomData)
 
 public:
 	/**

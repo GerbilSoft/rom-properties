@@ -61,6 +61,7 @@ public:
 
 private:
 	typedef rp_image_backend super;
+public:
 	RP_DISABLE_COPY(RpGdiplusBackend)
 
 private:

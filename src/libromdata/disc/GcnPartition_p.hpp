@@ -31,10 +31,10 @@ public:
 		uint8_t offsetShift = 0);
 	virtual ~GcnPartitionPrivate() = default;
 
-private:
-	RP_DISABLE_COPY(GcnPartitionPrivate)
 protected:
 	GcnPartition *const q_ptr;
+public:
+	RP_DISABLE_COPY(GcnPartitionPrivate)
 
 public:
 	// Offsets (-1 == error)

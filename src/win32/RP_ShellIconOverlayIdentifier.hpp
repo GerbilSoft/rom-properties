@@ -34,10 +34,10 @@ protected:
 
 private:
 	typedef LibWin32Common::ComBase<IShellIconOverlayIdentifier> super;
-	RP_DISABLE_COPY(RP_ShellIconOverlayIdentifier)
-private:
 	friend class RP_ShellIconOverlayIdentifier_Private;
 	//RP_ShellIconOverlayIdentifier_Private *const d_ptr;
+public:
+	RP_DISABLE_COPY(RP_ShellIconOverlayIdentifier)
 
 public:
 	/**

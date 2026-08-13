@@ -431,10 +431,10 @@ public:
 	~RomFields();
 
 private:
-	RP_DISABLE_COPY(RomFields)
-private:
 	friend class RomFieldsPrivate;
 	RomFieldsPrivate *const d_ptr;
+public:
+	RP_DISABLE_COPY(RomFields)
 
 public:
 	/** Field iterator types **/

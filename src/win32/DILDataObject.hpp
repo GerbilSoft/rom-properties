@@ -31,10 +31,10 @@ protected:
 
 private:
 	typedef LibWin32Common::ComBase<IDataObject, IDropSource> super;
-	RP_DISABLE_COPY(DILDataObject)
-private:
 	friend class DILDataObjectPrivate;
 	DILDataObjectPrivate *const d_ptr;
+public:
+	RP_DISABLE_COPY(DILDataObject)
 
 public:
 	// DILDataObject-specific (non-COM)

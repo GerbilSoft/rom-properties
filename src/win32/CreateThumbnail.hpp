@@ -28,6 +28,7 @@ public:
 
 private:
 	typedef TCreateThumbnail<HBITMAP> super;
+public:
 	RP_DISABLE_COPY(CreateThumbnail)
 
 public:
@@ -154,6 +155,7 @@ public:
 
 private:
 	typedef CreateThumbnail super;
+public:
 	RP_DISABLE_COPY(CreateThumbnailNoAlpha)
 
 public:

@@ -38,7 +38,7 @@ public:
 	SystemsTabPrivate();
 	~SystemsTabPrivate();
 
-private:
+public:
 	RP_DISABLE_COPY(SystemsTabPrivate)
 
 public:

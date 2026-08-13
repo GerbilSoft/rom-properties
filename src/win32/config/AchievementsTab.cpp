@@ -47,7 +47,7 @@ public:
 	AchievementsTabPrivate();
 	~AchievementsTabPrivate();
 
-private:
+public:
 	RP_DISABLE_COPY(AchievementsTabPrivate)
 
 public:

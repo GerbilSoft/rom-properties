@@ -56,6 +56,7 @@ public:
 
 private:
 	typedef FileFormatPrivate super;
+public:
 	RP_DISABLE_COPY(PowerVR3Private)
 
 public:

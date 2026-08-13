@@ -22,8 +22,9 @@ public:
 	rp_image_backend(int width, int height, rp_image::Format format);
 	virtual ~rp_image_backend() = default;
 
-private:
+public:
 	RP_DISABLE_COPY(rp_image_backend)
+
 public:
 	bool isValid(void) const;
 

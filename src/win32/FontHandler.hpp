@@ -21,10 +21,10 @@ public:
 	~FontHandler();
 
 private:
-	RP_DISABLE_COPY(FontHandler)
-private:
 	friend class FontHandlerPrivate;
 	FontHandlerPrivate *d_ptr;
+public:
+	RP_DISABLE_COPY(FontHandler)
 
 public:
 	/**

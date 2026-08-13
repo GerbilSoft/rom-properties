@@ -80,7 +80,7 @@ public:
 	KeyManagerTabPrivate();
 	~KeyManagerTabPrivate();
 
-private:
+public:
 	RP_DISABLE_COPY(KeyManagerTabPrivate)
 
 public:

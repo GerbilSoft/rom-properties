@@ -19,7 +19,7 @@ class RP_ExtractIcon_Private
 public:
 	RP_ExtractIcon_Private();
 
-private:
+public:
 	RP_DISABLE_COPY(RP_ExtractIcon_Private)
 
 public:

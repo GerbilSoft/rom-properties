@@ -46,11 +46,11 @@ public:
 public:
 	virtual ~FileFormatPrivate() = default;
 
-private:
-	RP_DISABLE_COPY(FileFormatPrivate)
 protected:
 	friend class FileFormat;
 	FileFormat *const q_ptr;
+public:
+	RP_DISABLE_COPY(FileFormatPrivate)
 
 public:
 	bool isValid;			// Subclass must set this to true if the texture is valid.

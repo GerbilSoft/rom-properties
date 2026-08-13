@@ -34,10 +34,10 @@ protected:
 
 private:
 	typedef LibWin32Common::ComBase<IPersistFile, IContextMenu> super;
-	RP_DISABLE_COPY(RP_ContextMenu)
-private:
 	friend class RP_ContextMenu_Private;
 	RP_ContextMenu_Private *const d_ptr;
+public:
+	RP_DISABLE_COPY(RP_ContextMenu)
 
 public:
 	FILETYPE_HANDLER_DECL(RP_ContextMenu)

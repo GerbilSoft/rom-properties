@@ -30,11 +30,10 @@ public:
 
 private:
 	typedef IFst super;
-	RP_DISABLE_COPY(WiiUFst)
-
-private:
 	friend class WiiUFstPrivate;
 	WiiUFstPrivate *const d_ptr;
+public:
+	RP_DISABLE_COPY(WiiUFst)
 
 public:
 	/**

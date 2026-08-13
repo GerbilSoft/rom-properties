@@ -33,6 +33,7 @@ public:
 
 private:
 	typedef ConfReaderPrivate super;
+public:
 	RP_DISABLE_COPY(ConfigPrivate)
 
 public:

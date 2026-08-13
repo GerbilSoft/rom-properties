@@ -63,6 +63,7 @@ public:
 
 private:
 	typedef RomDataPrivate super;
+public:
 	RP_DISABLE_COPY(Xbox360_XEX_Private)
 
 public:

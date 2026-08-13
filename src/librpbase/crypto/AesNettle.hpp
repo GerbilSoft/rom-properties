@@ -22,10 +22,10 @@ public:
 
 private:
 	typedef IAesCipher super;
-	RP_DISABLE_COPY(AesNettle)
-private:
 	friend class AesNettlePrivate;
 	AesNettlePrivate *const d_ptr;
+public:
+	RP_DISABLE_COPY(AesNettle)
 
 public:
 	/**

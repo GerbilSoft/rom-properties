@@ -26,9 +26,9 @@ public:
 
 private:
 	typedef SparseDiscReader super;
-	RP_DISABLE_COPY(NASOSReader)
-private:
 	friend class NASOSReaderPrivate;
+public:
+	RP_DISABLE_COPY(NASOSReader)
 
 public:
 	/** Disc image detection functions **/

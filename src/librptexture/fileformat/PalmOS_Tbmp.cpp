@@ -41,6 +41,7 @@ public:
 
 private:
 	typedef FileFormatPrivate super;
+public:
 	RP_DISABLE_COPY(PalmOS_Tbmp_Private)
 
 public:

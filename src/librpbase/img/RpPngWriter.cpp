@@ -137,7 +137,7 @@ public:
 
 	~RpPngWriterPrivate();
 
-private:
+public:
 	RP_DISABLE_COPY(RpPngWriterPrivate)
 
 public:

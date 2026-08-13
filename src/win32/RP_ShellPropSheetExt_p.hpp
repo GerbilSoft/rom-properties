@@ -79,7 +79,7 @@ public:
 
 	~RP_ShellPropSheetExt_Private();
 
-private:
+public:
 	RP_DISABLE_COPY(RP_ShellPropSheetExt_Private)
 
 public:

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+)                             *
  * AchSpriteSheet.hpp: Achievement sprite sheets loader.                   *
  *                                                                         *
- * Copyright (c) 2020-2023 by David Korth.                                 *
+ * Copyright (c) 2020-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,6 +25,7 @@ public:
 
 private:
 	typedef ISpriteSheet super;
+public:
 	RP_DISABLE_COPY(AchSpriteSheet)
 
 protected:

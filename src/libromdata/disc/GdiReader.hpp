@@ -30,9 +30,9 @@ public:
 
 private:
 	typedef MultiTrackSparseDiscReader super;
-	RP_DISABLE_COPY(GdiReader)
-private:
 	friend class GdiReaderPrivate;
+public:
+	RP_DISABLE_COPY(GdiReader)
 
 public:
 	/** Disc image detection functions **/

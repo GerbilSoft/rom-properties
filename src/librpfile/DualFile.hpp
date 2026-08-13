@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * DualFile.hpp: Special wrapper for handling a split file as one.         *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -36,6 +36,7 @@ protected:
 
 private:
 	typedef IRpFile super;
+public:
 	RP_DISABLE_COPY(DualFile)
 
 public:

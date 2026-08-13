@@ -41,6 +41,7 @@ public:
 
 private:
 	typedef RomDataPrivate super;
+public:
 	RP_DISABLE_COPY(Nintendo3DS_SMDH_Private)
 
 public:

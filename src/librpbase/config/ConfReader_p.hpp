@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * ConfReader_p.hpp: Configuration reader base class.(Private class)       *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -31,7 +31,7 @@ public:
 	explicit ConfReaderPrivate(const char *filename);
 	virtual ~ConfReaderPrivate() = default;
 
-private:
+public:
 	RP_DISABLE_COPY(ConfReaderPrivate)
 
 public:

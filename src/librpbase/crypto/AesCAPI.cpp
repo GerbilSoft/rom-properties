@@ -36,7 +36,7 @@ public:
 	AesCAPIPrivate();
 	~AesCAPIPrivate();
 
-private:
+public:
 	RP_DISABLE_COPY(AesCAPIPrivate)
 
 public:

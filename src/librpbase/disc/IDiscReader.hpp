@@ -27,7 +27,7 @@ protected:
 public:
 	~IDiscReader() override = default;
 
-private:
+public:
 	RP_DISABLE_COPY(IDiscReader)
 
 public:

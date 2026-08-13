@@ -53,6 +53,7 @@ public:
 
 private:
 	KeyStoreUI *const q_ptr;
+public:
 	RP_DISABLE_COPY(KeyStoreUIPrivate)
 
 public:

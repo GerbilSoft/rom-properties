@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IconAnimData.hpp: Icon animation data.                                  *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -109,7 +109,7 @@ struct IconAnimData final
 		return frames[frame0_idx];
 	}
 
-private:
+public:
 	RP_DISABLE_COPY(IconAnimData);
 };
 

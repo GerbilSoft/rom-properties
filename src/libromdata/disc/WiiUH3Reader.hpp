@@ -30,11 +30,11 @@ public:
 
 private:
 	typedef IPartition super;
-	RP_DISABLE_COPY(WiiUH3Reader)
-
 protected:
 	friend class WiiUH3ReaderPrivate;
 	WiiUH3ReaderPrivate *const d_ptr;
+public:
+	RP_DISABLE_COPY(WiiUH3Reader)
 
 public:
 	/** IDiscReader **/

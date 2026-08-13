@@ -36,7 +36,7 @@ public:
 	GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offsetShift);
 	~GcnFstPrivate();
 
-private:
+public:
 	RP_DISABLE_COPY(GcnFstPrivate)
 
 public:

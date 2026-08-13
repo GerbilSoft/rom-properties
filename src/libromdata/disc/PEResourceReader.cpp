@@ -39,10 +39,10 @@ public:
 	PEResourceReaderPrivate(PEResourceReader *q,
 		uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va);
 
-private:
-	RP_DISABLE_COPY(PEResourceReaderPrivate)
 protected:
 	PEResourceReader *const q_ptr;
+public:
+	RP_DISABLE_COPY(PEResourceReaderPrivate)
 
 public:
 	// Read position

@@ -33,7 +33,7 @@ class AndroidResourceReaderPrivate
 public:
 	AndroidResourceReaderPrivate(const uint8_t *pArsc, size_t arscLen);
 
-private:
+public:
 	RP_DISABLE_COPY(AndroidResourceReaderPrivate)
 
 public:

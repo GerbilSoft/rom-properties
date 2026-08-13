@@ -56,6 +56,7 @@ public:
 
 private:
 	typedef TCreateThumbnail<PIMGTYPE> super;
+public:
 	RP_DISABLE_COPY(CreateThumbnailPrivate)
 
 public:

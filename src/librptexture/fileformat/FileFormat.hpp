@@ -46,11 +46,11 @@ protected:
 public:
 	virtual ~FileFormat();
 
-private:
-	RP_DISABLE_COPY(FileFormat)
 protected:
 	friend class FileFormatPrivate;
 	FileFormatPrivate *const d_ptr;
+public:
+	RP_DISABLE_COPY(FileFormat)
 
 public:
 	/**

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * ISpriteSheet.hpp: Generic sprite sheets loader.                         *
  *                                                                         *
- * Copyright (c) 2020-2023 by David Korth.                                 *
+ * Copyright (c) 2020-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -31,7 +31,7 @@ protected:
 public:
 	virtual ~ISpriteSheet() = default;
 
-private:
+public:
 	RP_DISABLE_COPY(ISpriteSheet)
 
 protected:

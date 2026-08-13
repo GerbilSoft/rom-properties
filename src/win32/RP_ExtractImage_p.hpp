@@ -19,7 +19,7 @@ class RP_ExtractImage_Private
 public:
 	RP_ExtractImage_Private();
 
-private:
+public:
 	RP_DISABLE_COPY(RP_ExtractImage_Private)
 
 public:

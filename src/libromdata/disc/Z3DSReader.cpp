@@ -46,10 +46,10 @@ public:
 	Z3DSReaderPrivate(Z3DSReader *q);
 	~Z3DSReaderPrivate();
 
-private:
-	RP_DISABLE_COPY(Z3DSReaderPrivate)
 protected:
 	Z3DSReader *const q_ptr;
+public:
+	RP_DISABLE_COPY(Z3DSReaderPrivate)
 
 public:
 	// Z3DS header

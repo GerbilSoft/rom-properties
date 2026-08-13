@@ -34,10 +34,10 @@ protected:
 
 private:
 	typedef LibWin32Common::ComBase<IPersistFile, IExtractImage2> super;
-	RP_DISABLE_COPY(RP_ExtractImage)
-private:
 	friend class RP_ExtractImage_Private;
 	RP_ExtractImage_Private *const d_ptr;
+public:
+	RP_DISABLE_COPY(RP_ExtractImage)
 
 public:
 	FILETYPE_HANDLER_DECL(RP_ExtractImage)

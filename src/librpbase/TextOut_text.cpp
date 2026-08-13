@@ -49,10 +49,13 @@ extern "C" {
 namespace LibRpBase {
 
 class StreamStateSaver {
+public:
 	RP_DISABLE_COPY(StreamStateSaver)
 
+private:
 	std::ios &stream;	// Stream being adjusted.
 	std::ios state;		// Copy of original flags.
+
 public:
 	explicit StreamStateSaver(std::ios &stream)
 		: stream(stream)

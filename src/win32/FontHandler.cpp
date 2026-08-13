@@ -36,7 +36,7 @@ public:
 	explicit FontHandlerPrivate(HWND hWnd);
 	~FontHandlerPrivate();
 
-private:
+public:
 	RP_DISABLE_COPY(FontHandlerPrivate)
 
 public:

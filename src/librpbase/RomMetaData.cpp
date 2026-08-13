@@ -37,7 +37,7 @@ class RomMetaDataPrivate
 public:
 	RomMetaDataPrivate();
 
-private:
+public:
 	RP_DISABLE_COPY(RomMetaDataPrivate)
 
 public:

@@ -45,6 +45,7 @@ public:
 
 private:
 	typedef ConfReaderPrivate super;
+public:
 	RP_DISABLE_COPY(KeyManagerPrivate)
 
 #ifdef ENABLE_DECRYPTION

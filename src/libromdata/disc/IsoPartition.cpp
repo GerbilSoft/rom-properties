@@ -38,10 +38,10 @@ public:
 	IsoPartitionPrivate(IsoPartition *q, off64_t partition_offset, int iso_start_offset);
 	~IsoPartitionPrivate();
 
-private:
-	RP_DISABLE_COPY(IsoPartitionPrivate)
 protected:
 	IsoPartition *const q_ptr;
+public:
+	RP_DISABLE_COPY(IsoPartitionPrivate)
 
 public:
 	// Partition start offset (in bytes)

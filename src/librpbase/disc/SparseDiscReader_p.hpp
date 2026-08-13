@@ -37,11 +37,11 @@ protected:
 public:
 	virtual ~SparseDiscReaderPrivate() = default;
 
-private:
-	RP_DISABLE_COPY(SparseDiscReaderPrivate)
 protected:
 	friend class SparseDiscReader;
 	SparseDiscReader *const q_ptr;
+public:
+	RP_DISABLE_COPY(SparseDiscReaderPrivate)
 
 public:
 	off64_t disc_size;		// Virtual disc image size.

@@ -39,6 +39,7 @@ public:
 
 private:
 	typedef GcnPartitionPrivate super;
+public:
 	RP_DISABLE_COPY(WiiPartitionPrivate)
 
 public:

@@ -24,7 +24,8 @@ protected:
 	 */
 	AchGDBus();
 	~AchGDBus();
-private:
+
+public:
 	RP_DISABLE_COPY(AchGDBus);
 
 private:

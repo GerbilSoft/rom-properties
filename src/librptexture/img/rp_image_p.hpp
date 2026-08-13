@@ -40,7 +40,7 @@ public:
 	 */
 	explicit rp_image_private(rp_image_backend *backend);
 
-private:
+public:
 	RP_DISABLE_COPY(rp_image_private)
 
 public:

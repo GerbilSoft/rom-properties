@@ -159,7 +159,7 @@ public:
 	AesCAPI_NG_Private();
 	~AesCAPI_NG_Private();
 
-private:
+public:
 	RP_DISABLE_COPY(AesCAPI_NG_Private)
 
 public:

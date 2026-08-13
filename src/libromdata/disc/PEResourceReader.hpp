@@ -32,10 +32,11 @@ public:
 
 private:
 	typedef LibRpBase::IResourceReader super;
-	RP_DISABLE_COPY(PEResourceReader)
 protected:
 	friend class PEResourceReaderPrivate;
 	PEResourceReaderPrivate *const d_ptr;
+public:
+	RP_DISABLE_COPY(PEResourceReader)
 
 public:
 	/** IDiscReader **/

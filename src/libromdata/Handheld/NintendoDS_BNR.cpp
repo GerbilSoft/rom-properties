@@ -39,6 +39,7 @@ public:
 
 private:
 	typedef RomDataPrivate super;
+public:
 	RP_DISABLE_COPY(NintendoDS_BNR_Private)
 
 public:

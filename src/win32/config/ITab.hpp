@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * ITab.hpp: Property sheet base class for rp-config.                      *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,7 +21,7 @@ protected:
 public:
 	virtual ~ITab() = 0;
 
-private:
+public:
 	RP_DISABLE_COPY(ITab)
 
 public:

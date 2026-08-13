@@ -31,7 +31,8 @@ class NOVTABLE TImageTypesConfig
 public:
 	TImageTypesConfig();
 	virtual ~TImageTypesConfig() = default;
-private:
+
+public:
 	RP_DISABLE_COPY(TImageTypesConfig)
 
 public:

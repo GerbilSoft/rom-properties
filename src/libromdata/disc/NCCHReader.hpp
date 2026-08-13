@@ -51,11 +51,11 @@ public:
 
 private:
 	typedef IPartition super;
-	RP_DISABLE_COPY(NCCHReader)
-
 protected:
 	friend class NCCHReaderPrivate;
 	NCCHReaderPrivate *const d_ptr;
+public:
+	RP_DISABLE_COPY(NCCHReader)
 
 public:
 	/** IDiscReader **/

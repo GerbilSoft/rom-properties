@@ -3,7 +3,7 @@
  * SubFile.hpp: SubFile sub-file implementation, essentially the           *
  * equivalent of DiscReader+PartitionFile but with less overhead.          *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,6 +29,7 @@ public:
 
 private:
 	typedef SubFile super;
+public:
 	RP_DISABLE_COPY(SubFile)
 
 public:

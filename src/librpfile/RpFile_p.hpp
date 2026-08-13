@@ -67,8 +67,9 @@ public:
 	~RpFilePrivate();
 
 private:
-	RP_DISABLE_COPY(RpFilePrivate)
 	RpFile *const q_ptr;
+public:
+	RP_DISABLE_COPY(RpFilePrivate)
 
 public:
 	FILE_TYPE file;		// File pointer

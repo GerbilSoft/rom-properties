@@ -30,7 +30,7 @@
 
 class RP_ShellIconOverlayIdentifier_Private
 {
-private:
+public:
 	RP_DISABLE_COPY(RP_ShellIconOverlayIdentifier_Private)
 
 public:

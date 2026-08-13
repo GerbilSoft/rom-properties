@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpFile_kio.hpp: IRpFile implementation using KIO.                       *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -57,10 +57,11 @@ public:
 
 private:
 	typedef LibRpFile::IRpFile super;
-	RP_DISABLE_COPY(RpFileKio)
 protected:
 	friend class RpFileKioPrivate;
 	RpFileKioPrivate *const d_ptr;
+public:
+	RP_DISABLE_COPY(RpFileKio)
 
 public:
 	/**

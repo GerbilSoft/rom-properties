@@ -36,7 +36,7 @@ public:
 	WiiUFstPrivate(const uint8_t *fstData, uint32_t len);
 	~WiiUFstPrivate();
 
-private:
+public:
 	RP_DISABLE_COPY(WiiUFstPrivate)
 
 public:

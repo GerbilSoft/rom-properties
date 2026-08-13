@@ -41,7 +41,7 @@ public:
 	AchWin32Private();
 	~AchWin32Private();
 
-private:
+public:
 	RP_DISABLE_COPY(AchWin32Private)
 
 public:

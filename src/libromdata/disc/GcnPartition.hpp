@@ -34,11 +34,11 @@ protected:
 
 private:
 	typedef IPartition super;
-	RP_DISABLE_COPY(GcnPartition)
-
 protected:
 	friend class GcnPartitionPrivate;
 	GcnPartitionPrivate *const d_ptr;
+public:
+	RP_DISABLE_COPY(GcnPartition)
 
 public:
 	/** IDiscReader **/

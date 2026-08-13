@@ -30,10 +30,9 @@ protected:
 
 private:
 	typedef ConfReader super;
-	RP_DISABLE_COPY(KeyManager)
-
-private:
 	friend class KeyManagerPrivate;
+public:
+	RP_DISABLE_COPY(KeyManager)
 
 public:
 	/**

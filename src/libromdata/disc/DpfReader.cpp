@@ -37,7 +37,7 @@ class DpfReaderPrivate
 public:
 	explicit DpfReaderPrivate();
 
-private:
+public:
 	RP_DISABLE_COPY(DpfReaderPrivate)
 
 public:

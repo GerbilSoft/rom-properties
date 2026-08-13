@@ -39,7 +39,7 @@ class CBCReaderPrivate
 public:
 	CBCReaderPrivate(CBCReader *q, off64_t offset, off64_t length, const uint8_t *key, const uint8_t *iv);
 
-private:
+public:
 	RP_DISABLE_COPY(CBCReaderPrivate)
 
 public:

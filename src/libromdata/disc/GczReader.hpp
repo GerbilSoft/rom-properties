@@ -26,9 +26,9 @@ public:
 
 private:
 	typedef SparseDiscReader super;
-	RP_DISABLE_COPY(GczReader)
-private:
 	friend class GczReaderPrivate;
+public:
+	RP_DISABLE_COPY(GczReader)
 
 public:
 	/** Disc image detection functions **/

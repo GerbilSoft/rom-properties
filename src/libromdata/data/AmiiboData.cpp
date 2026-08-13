@@ -74,7 +74,7 @@ public:
 	AmiiboDataPrivate();
 	~AmiiboDataPrivate();
 
-private:
+public:
 	RP_DISABLE_COPY(AmiiboDataPrivate)
 
 public:

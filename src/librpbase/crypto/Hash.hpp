@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * Hash.hpp: Hash class.                                                   *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -41,11 +41,11 @@ public:
 	explicit Hash(Algorithm algorithm);
 	~Hash();
 
-private:
-	RP_DISABLE_COPY(Hash)
 protected:
 	friend class HashPrivate;
 	HashPrivate *const d_ptr;
+public:
+	RP_DISABLE_COPY(Hash)
 
 public:
 	/**

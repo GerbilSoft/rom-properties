@@ -37,6 +37,7 @@ public:
 
 private:
 	typedef LibRpFile::IRpFile super;
+public:
 	RP_DISABLE_COPY(RpFile_IStream)
 
 public:

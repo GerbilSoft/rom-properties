@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * ISpriteSheet.hpp: Generic sprite sheets loader.                         *
  *                                                                         *
- * Copyright (c) 2020-2025 by David Korth.                                 *
+ * Copyright (c) 2020-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,6 +29,7 @@ public:
 private:
 	// FIXME: Disabling copy breaks array<AchSpriteSheet> on gcc5.
 #if defined(__clang__) || !defined(__GNUC__) || __GNUC__ > 5
+public:
 	RP_DISABLE_COPY(ISpriteSheet)
 #endif /* __clang__ || !__GNUC__ || __GNUC__ > 5 */
 

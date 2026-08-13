@@ -33,6 +33,7 @@ public:
 private:
 	KeyStoreUIPrivate *const d_ptr;
 	friend class KeyStoreUIPrivate;
+public:
 	RP_DISABLE_COPY(KeyStoreUI)
 
 public:

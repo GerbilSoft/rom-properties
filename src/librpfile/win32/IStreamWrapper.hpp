@@ -34,6 +34,7 @@ public:
 
 private:
 	typedef LibWin32Common::ComBase<IStream> super;
+public:
 	RP_DISABLE_COPY(IStreamWrapper)
 
 public:

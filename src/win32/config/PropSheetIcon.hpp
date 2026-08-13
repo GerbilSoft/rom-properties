@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * PropSheetIcon.hpp: Property sheet icon.                                 *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,10 +25,10 @@ protected:
 	~PropSheetIcon();
 
 private:
-	RP_DISABLE_COPY(PropSheetIcon);
-private:
 	friend class PropSheetIconPrivate;
 	PropSheetIconPrivate *const d_ptr;
+public:
+	RP_DISABLE_COPY(PropSheetIcon);
 
 public:
 	/**

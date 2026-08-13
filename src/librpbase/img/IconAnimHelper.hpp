@@ -33,7 +33,7 @@ public:
 		reset();
 	}
 
-private:
+public:
 	RP_DISABLE_COPY(IconAnimHelper);
 
 public:

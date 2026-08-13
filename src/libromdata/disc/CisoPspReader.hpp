@@ -26,9 +26,9 @@ public:
 
 private:
 	typedef SparseDiscReader super;
-	RP_DISABLE_COPY(CisoPspReader)
-private:
 	friend class CisoPspReaderPrivate;
+public:
+	RP_DISABLE_COPY(CisoPspReader)
 
 public:
 	/** Disc image detection functions **/

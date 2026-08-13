@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * AchWin32.hpp: Win32 notifications for achievements.                     *
  *                                                                         *
- * Copyright (c) 2020-2023 by David Korth.                                 *
+ * Copyright (c) 2020-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,10 +24,10 @@ protected:
 	~AchWin32();
 
 private:
-	RP_DISABLE_COPY(AchWin32);
-private:
 	friend class AchWin32Private;
 	AchWin32Private *const d_ptr;
+public:
+	RP_DISABLE_COPY(AchWin32);
 
 public:
 	/**

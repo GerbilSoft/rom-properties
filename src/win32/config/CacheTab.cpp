@@ -70,7 +70,7 @@ public:
 	CacheTabPrivate();
 	~CacheTabPrivate();
 
-private:
+public:
 	RP_DISABLE_COPY(CacheTabPrivate)
 
 public:

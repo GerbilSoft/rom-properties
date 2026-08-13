@@ -42,10 +42,10 @@ public:
 		const N3DS_Ticket_t *ticket,
 		uint16_t tmd_content_index);
 
-private:
-	RP_DISABLE_COPY(CIAReaderPrivate)
 protected:
 	CIAReader *const q_ptr;
+public:
+	RP_DISABLE_COPY(CIAReaderPrivate)
 
 public:
 	CBCReaderPtr cbcReader;

@@ -31,11 +31,11 @@ public:
 
 private:
 	typedef IDiscReader super;
-	RP_DISABLE_COPY(Z3DSReader)
-
 protected:
 	friend class Z3DSReaderPrivate;
 	Z3DSReaderPrivate *const d_ptr;
+public:
+	RP_DISABLE_COPY(Z3DSReader)
 
 public:
 	/** Disc image detection functions **/

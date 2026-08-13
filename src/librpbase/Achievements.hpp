@@ -27,10 +27,10 @@ protected:
 	~Achievements();
 
 private:
-	RP_DISABLE_COPY(Achievements)
-private:
 	friend class AchievementsPrivate;
 	AchievementsPrivate *d_ptr;
+public:
+	RP_DISABLE_COPY(Achievements)
 
 public:
 	/**

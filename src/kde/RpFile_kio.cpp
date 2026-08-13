@@ -32,9 +32,9 @@ public:
 
 	~RpFileKioPrivate();
 
-private:
-	RP_DISABLE_COPY(RpFileKioPrivate)
+public:
 	RpFileKio *const q_ptr;
+	RP_DISABLE_COPY(RpFileKioPrivate)
 
 public:
 	KIO::FileJob *fileJob;	// File job

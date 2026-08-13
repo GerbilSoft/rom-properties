@@ -35,6 +35,7 @@ public:
 
 private:
 	typedef LibRpBase::RomDataPrivate super;
+public:
 	RP_DISABLE_COPY(NintendoDSPrivate)
 
 public:

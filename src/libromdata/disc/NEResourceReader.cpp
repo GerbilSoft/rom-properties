@@ -39,10 +39,10 @@ public:
 	NEResourceReaderPrivate(NEResourceReader *q,
 		uint32_t rsrc_tbl_addr, uint32_t rsrc_tbl_size);
 
-private:
-	RP_DISABLE_COPY(NEResourceReaderPrivate)
 protected:
 	NEResourceReader *const q_ptr;
+public:
+	RP_DISABLE_COPY(NEResourceReaderPrivate)
 
 public:
 	// Resource segment table

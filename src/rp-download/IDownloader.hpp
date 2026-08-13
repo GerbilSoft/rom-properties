@@ -35,7 +35,7 @@ public:
 	explicit IDownloader(const std::tstring &url);
 	virtual ~IDownloader() = default;
 
-private:
+public:
 	RP_DISABLE_COPY(IDownloader)
 
 public:

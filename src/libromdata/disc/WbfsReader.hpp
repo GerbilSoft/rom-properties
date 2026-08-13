@@ -26,9 +26,9 @@ public:
 
 private:
 	typedef SparseDiscReader super;
-	RP_DISABLE_COPY(WbfsReader)
-private:
 	friend class WbfsReaderPrivate;
+public:
+	RP_DISABLE_COPY(WbfsReader)
 
 public:
 	/** Disc image detection functions **/

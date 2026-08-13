@@ -41,6 +41,7 @@ public:
 
 private:
 	typedef IRpFile super;
+public:
 	RP_DISABLE_COPY(MemFile)
 
 public:

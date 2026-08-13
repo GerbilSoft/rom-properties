@@ -30,6 +30,7 @@ public:
 
 private:
 	typedef RomDataPrivate super;
+public:
 	RP_DISABLE_COPY(NSFPrivate)
 
 public:

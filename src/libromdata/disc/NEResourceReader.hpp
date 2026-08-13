@@ -31,10 +31,11 @@ public:
 
 private:
 	typedef LibRpBase::IResourceReader super;
-	RP_DISABLE_COPY(NEResourceReader)
 protected:
 	friend class NEResourceReaderPrivate;
 	NEResourceReaderPrivate *const d_ptr;
+public:
+	RP_DISABLE_COPY(NEResourceReader)
 
 public:
 	/** IDiscReader **/

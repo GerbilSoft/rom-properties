@@ -36,7 +36,7 @@ public:
 	RP_PropertyStore_Private();
 	~RP_PropertyStore_Private();
 
-private:
+public:
 	RP_DISABLE_COPY(RP_PropertyStore_Private)
 
 public:

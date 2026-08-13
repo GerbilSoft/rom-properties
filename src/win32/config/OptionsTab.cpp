@@ -50,7 +50,7 @@ public:
 	OptionsTabPrivate();
 	~OptionsTabPrivate();
 
-private:
+public:
 	RP_DISABLE_COPY(OptionsTabPrivate)
 
 protected:

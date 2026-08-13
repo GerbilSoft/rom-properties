@@ -210,10 +210,10 @@ public:
 	~RomMetaData();
 
 private:
-	RP_DISABLE_COPY(RomMetaData)
-private:
 	friend class RomMetaDataPrivate;
 	RomMetaDataPrivate *d_ptr;
+public:
+	RP_DISABLE_COPY(RomMetaData)
 
 public:
 	/** Metadata iterator types **/

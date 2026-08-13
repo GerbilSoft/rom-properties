@@ -40,6 +40,7 @@ public:
 
 private:
 	RpImageTypesTab *const q;
+public:
 	RP_DISABLE_COPY(RpImageTypesTabPrivate)
 
 protected:
