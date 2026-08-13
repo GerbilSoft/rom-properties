@@ -972,7 +972,7 @@ rp_drag_image_drag_source_drag_begin(GtkDragSource *source, GdkDrag *drag, RpDra
 	if (cxx->isAnim()) {
 		const _RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(cxx->imgData);
 		frame0 = anim.frame0();
-	} else {
+	} else if (cxx->isNonAnim()) {
 		const _RpDragImageCxx::non_anim_vars_t &non_anim = std::get<_RpDragImageCxx::non_anim_vars_t>(cxx->imgData);
 		frame0 = non_anim.imgClass;
 	}
@@ -1009,7 +1009,7 @@ rp_drag_image_drag_begin(RpDragImage *image, GdkDragContext *context, gpointer u
 	if (cxx->isAnim()) {
 		const _RpDragImageCxx::anim_vars_t &anim = std::get<_RpDragImageCxx::anim_vars_t>(cxx->imgData);
 		frame0 = anim.frame0();
-	} else {
+	} else if (cxx->isNonAnim()) {
 		const _RpDragImageCxx::non_anim_vars_t &non_anim = std::get<_RpDragImageCxx::non_anim_vars_t>(cxx->imgData);
 		frame0 = non_anim.imgClass;
 	}
