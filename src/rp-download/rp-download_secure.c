@@ -117,6 +117,11 @@ int rp_download_do_security_options(void)
 		// Needed by cURL 8.13 for QUIC (HTTP/3).
 		SCMP_SYS(recvmmsg),
 
+		// Needed by Bazzite 44 with cURL 8.18.
+		// (Gentoo's cURL 8.21 seemingly doesn't need this; maybe it's
+		// because Bazzite uses an immutable system image?)
+		SCMP_SYS(statfs),
+
 		-1	// End of whitelist
 	};
 	param.syscall_wl = syscall_wl;

@@ -70,6 +70,9 @@
     function. Only affects the Xbox360_STFS parser.
   * KDE: Fix a memory leak in all of the xattr tab widgets.
     * Affects: v2.2 - v2.8
+  * rp-download: Allow statfs() for Bazzite 44.
+    * Fixes Fixes #504: rp-download killed by seccomp on statfs() with Fedora 44 / curl 8.18
+      * Reported by @Kamui2040.
 
 ## v2.8 (released 2026/06/20)
 
