@@ -23,6 +23,7 @@
 
 // C includes
 #include <string.h>
+#include "stdboolx.h"
 
 uint32_t RP_CPU_Flags_x86 = 0;
 int RP_CPU_Flags_x86_IsInit = 0;	// 1 if RP_CPU_Flags_x86 has been initialized.
@@ -36,14 +37,14 @@ static pthread_once_t cpu_once_control = PTHREAD_ONCE_INIT;
 static void RP_CPU_Flags_x86_Init_int(void)
 {
 	unsigned int regs[4];	// %eax, %ebx, %ecx, %edx
-	uint8_t can_XSAVE = 0;
+	bool can_XSAVE = false;
 
 	// CPU info struct, to be filled in later.
 	memset(&RP_CPU_Info_x86, 0, sizeof(RP_CPU_Info_x86));
 
 #ifdef RP_CPU_I386
 	// i386 is not guaranteed to support FXSAVE. (required for SSE)
-	uint8_t can_FXSAVE = 0;
+	bool can_FXSAVE = false;
 
 	// Check if cpuid is supported.
 	if (!is_cpuid_supported()) {
@@ -57,7 +58,7 @@ static void RP_CPU_Flags_x86_Init_int(void)
 	RP_CPU_Flags_x86 = 0;
 #else /* !RP_CPU_I386 */
 	// amd64 *is* guaranteed to support FXSAVE.
-	static const uint8_t can_FXSAVE = 1;
+	static const bool can_FXSAVE = true;
 
 	// Initialize the CPU flags variable.
 	// amd64 is guaranteed to support MMX, SSE, and SSE2.
@@ -156,14 +157,14 @@ static void RP_CPU_Flags_x86_Init_int(void)
 			if (!(__smsw & IA32_CR0_EM)) {
 				// FPU emulation is disabled.
 				// SSE is enabled by the OS.
-				can_FXSAVE = 1;
+				can_FXSAVE = true;
 			}
 #  else /* !_WIN32 */
 			// For non-Windows operating systems, we'll assume
 			// the OS supports SSE. Valgrind doesn't like the
 			// 'smsw' instruction, so we can't do memory debugging
 			// with Valgrind if we use 'smsw'.
-			can_FXSAVE = 1;
+			can_FXSAVE = true;
 #  endif /* _WIN32 */
 		}
 	}
