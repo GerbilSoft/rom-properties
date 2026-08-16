@@ -741,6 +741,7 @@ const char *lookup_nes2_default_expansion_device(uint8_t exp_hw)
 		NOP_C_("NES|Expansion", "Zapper ($4016)"),
 		NOP_C_("NES|Expansion", "Arkanoid Vaus Controller (Prototype)"),
 		NOP_C_("NES|Expansion", "TV Mahjong Game Controller"),
+		NOP_C_("NES|Expansion", "Mahjong Gekitou Densetsu"),
 		NOP_C_("NES|Expansion", "Subor Keyboard plus X-inverted PS/2 mouse in $4017"),
 		NOP_C_("NES|Expansion", "IBM PC/XT Keyboard"),
 		NOP_C_("NES|Expansion", "Subor Keyboard plus Mega Book Mouse"),
