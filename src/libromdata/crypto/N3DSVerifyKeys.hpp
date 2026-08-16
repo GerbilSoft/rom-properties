@@ -111,6 +111,7 @@ enum class EncryptionKeys {
 	Key_Retail_Slot0x3DKeyNormal_3,
 	Key_Retail_Slot0x3DKeyNormal_4,
 	Key_Retail_Slot0x3DKeyNormal_5,
+	Key_Retail_Slot0x3EKeyNormal,
 
 	// Debug
 	Key_Debug_NtrBoot,			// NTRBOOT from an NTR cartridge
@@ -133,6 +134,7 @@ enum class EncryptionKeys {
 	Key_Debug_Slot0x3DKeyNormal_3,
 	Key_Debug_Slot0x3DKeyNormal_4,
 	Key_Debug_Slot0x3DKeyNormal_5,
+	Key_Debug_Slot0x3EKeyNormal,
 
 	Key_Max
 };
