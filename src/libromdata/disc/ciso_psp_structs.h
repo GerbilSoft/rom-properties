@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ciso_psp_structs.h: PlayStation Portable CISO structs.                  *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -40,8 +40,8 @@ ASSERT_STRUCT(CisoPspHeader, 0x18);
 
 // 2 KB minimum block size (DVD sector)
 // 16 MB maximum block size
-#define CISO_PSP_BLOCK_SIZE_MIN (2048)
-#define CISO_PSP_BLOCK_SIZE_MAX (16*1024*1024)
+#define CISO_PSP_BLOCK_SIZE_MIN (2048U)
+#define CISO_PSP_BLOCK_SIZE_MAX (16U*1024U*1024U)
 
 // For v0 and v1: High bit of index entry is set if the block is not compressed.
 #define CISO_PSP_V0_NOT_COMPRESSED	(1U << 31)
@@ -55,7 +55,7 @@ ASSERT_STRUCT(CisoPspHeader, 0x18);
  *
  * All fields are in little-endian.
  */
-#define DAX_MAGIC 0x44415800
+#define DAX_MAGIC 0x44415800U
 typedef struct _DaxHeader {
 	uint32_t magic;			// [0x000] 'DAX\0'
 	uint32_t uncompressed_size;	// [0x004] Uncompressed data size.
@@ -75,7 +75,7 @@ typedef struct _DaxNCArea {
 ASSERT_STRUCT(DaxNCArea, 2*sizeof(uint32_t));
 
 // DAX has a fixed block size.
-#define DAX_BLOCK_SIZE 0x2000
+#define DAX_BLOCK_SIZE 0x2000U
 
 /**
  * PlayStation Portable JISO header.
@@ -115,8 +115,8 @@ ASSERT_STRUCT(JisoHeader, 0x30);
 
 // 2 KB minimum block size (DVD sector)
 // 64 KB maximum block size
-#define JISO_BLOCK_SIZE_MIN (2048)
-#define JISO_BLOCK_SIZE_MAX (64*1024)
+#define JISO_BLOCK_SIZE_MIN (2048U)
+#define JISO_BLOCK_SIZE_MAX (64U*1024U)
 
 /**
  * JISO: Compression method.
