@@ -617,8 +617,8 @@ const char *NintendoDS::systemName(unsigned int type) const
 				if ((d->romHeader.dsi.region_code == cpu_to_le32(DSi_REGION_CHINA)) ||
 				(d->romHeader.nds_region & 0x80))
 				{
-					// iQue DSi.
-					idx |= (1U << 3);
+					// iQue DSi
+					idx |= (1U << 2);
 				}
 			}
 			return sysNames_DSi[idx];
@@ -630,8 +630,8 @@ const char *NintendoDS::systemName(unsigned int type) const
 			// NDS-only and/or DSi-enhanced game.
 			if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
 				if (d->romHeader.nds_region & 0x80) {
-					// iQue DS.
-					idx |= (1U << 3);
+					// iQue DS
+					idx |= (1U << 2);
 				}
 			}
 			return sysNames_NDS[idx];
