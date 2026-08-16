@@ -682,6 +682,15 @@ INSTANTIATE_TEST_SUITE_P(WonderSwan, RomHeaderTest,
 		"Handheld/WonderSwan.json.tar.zst"))
 	, RomHeaderTest::test_case_suffix_generator);
 
+/* Media */
+
+INSTANTIATE_TEST_SUITE_P(ISO, RomHeaderTest,
+	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
+		"Media/ISO.bin.tar.zst",
+		"Media/ISO.txt.tar.zst",
+		"Media/ISO.json.tar.zst"))
+	, RomHeaderTest::test_case_suffix_generator);
+
 /* Other */
 
 INSTANTIATE_TEST_SUITE_P(Amiibo, RomHeaderTest,
