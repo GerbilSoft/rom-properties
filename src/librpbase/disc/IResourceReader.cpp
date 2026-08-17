@@ -53,6 +53,11 @@ LibRpFile::IRpFilePtr IResourceReader::open(const char *type, const char *id, in
 {
 	// Convert the names to IDs.
 	// NOTE: Need to ensure the type ID is loaded after getting u_type.
+	assert(type != nullptr);
+	if (!type) {
+		// Type *must* be specified...
+		return {};
+	}
 	uint32_t u_type = nameToResourceID(type);
 	if (u_type == 0) {
 		// Type was not found...
@@ -60,7 +65,7 @@ LibRpFile::IRpFilePtr IResourceReader::open(const char *type, const char *id, in
 	}
 	this->ensureTypeIDIsLoaded(u_type);
 
-	uint32_t u_id = nameToResourceID(id);
+	uint32_t u_id = (id) ? nameToResourceID(id) : -1;
 	if (u_id == 0) {
 		// ID was not found...
 		return {};
