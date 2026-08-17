@@ -1365,9 +1365,13 @@ int EXEPrivate::addFields_PE_PDB(void)
 	}
 
 	uint32_t size = le32_to_cpu(debug_dir.Size);
-	if (size && debug_dir.VirtualAddress != 0 && (size / sizeof(IMAGE_DEBUG_DIRECTORY)) < 16) { // cap to a reasonable limit
-		rp::uvector<IMAGE_DEBUG_DIRECTORY> debug_ents(size / sizeof(IMAGE_DEBUG_DIRECTORY));
-		if (readFromPEVAddr(le32_to_cpu(debug_dir.VirtualAddress), debug_ents.data(), size) != size) {
+	// NOTE: If size is not a multiple of sizeof(IMAGE_DEBUG_DIRECTORY),
+	// remove the trailing bytes.
+	uint32_t num_entries = size / sizeof(IMAGE_DEBUG_DIRECTORY);
+	if (size && debug_dir.VirtualAddress != 0 && num_entries < 16) { // cap to a reasonable limit
+		rp::uvector<IMAGE_DEBUG_DIRECTORY> debug_ents(num_entries);
+		const size_t real_size = num_entries * sizeof(IMAGE_DEBUG_DIRECTORY);
+		if (readFromPEVAddr(le32_to_cpu(debug_dir.VirtualAddress), debug_ents.data(), real_size) != real_size) {
 			// Reading the IMAGE_DEBUG_DIRECTORY failed.
 			return -EFAULT;
 		}
