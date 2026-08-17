@@ -737,7 +737,7 @@ int NEResourceReader::nameToResourceID(const char *name) const
 	// TODO: Implement named resource handling for Win16.
 	RP_UNUSED(name);
 	assert(!"NOT IMPLEMENTED!");
-	return {};
+	return 0;
 }
 
 /**
