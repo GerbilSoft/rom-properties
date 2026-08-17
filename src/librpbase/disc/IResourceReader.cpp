@@ -65,13 +65,18 @@ LibRpFile::IRpFilePtr IResourceReader::open(const char *type, const char *id, in
 	}
 	this->ensureTypeIDIsLoaded(u_type);
 
-	uint32_t u_id = (id) ? nameToResourceID(id) : -1;
-	if (u_id == 0) {
-		// ID was not found...
-		return {};
+	int i_id;
+	if (id) {
+		i_id = static_cast<int>(nameToResourceID(id));
+		if (i_id == 0) {
+			// ID was not found...
+			return {};
+		}
+	} else {
+		i_id = -1;
 	}
 
-	return this->open(u_type, u_id, lang);
+	return this->open(u_type, i_id, lang);
 }
 
 }
