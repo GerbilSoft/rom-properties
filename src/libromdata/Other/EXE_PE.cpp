@@ -1421,8 +1421,13 @@ int EXEPrivate::addFields_PE_PDB(void)
 				uint32_t str_addie = le32_to_cpu(dir.AddressOfRawData) + offsetof(CODEVIEW_INFO_PDB70, ImageName);
 				// - 1, null term, we ensure it ourselves
 				uint32_t strlen_chars = le32_to_cpu(dir.SizeOfData) - offsetof(CODEVIEW_INFO_PDB70, ImageName) - 1;
+				assert(strlen_chars <= 32768);
+				if (strlen_chars > 32768) {
+					// Too long...
+					return -EFAULT;
+				}
 				unique_ptr<char[]> path_buf(new char[strlen_chars + 1]);
-				if (readFromPEVAddr(str_addie, &path_buf[0], strlen_chars) == strlen_chars) {
+				if (readFromPEVAddr(str_addie, path_buf.get(), strlen_chars) == strlen_chars) {
 					path_buf[strlen_chars] = '\0'; // ensure nullterm
 					fields.addField_string("PDB Path", &path_buf[0]);
 					char* last_path_component = &path_buf[0];
