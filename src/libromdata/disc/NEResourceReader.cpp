@@ -671,12 +671,12 @@ off64_t NEResourceReader::partition_size_used(void) const
 
 /**
  * Open a resource.
- * @param type Resource type ID.
- * @param id Resource ID. (-1 for "first entry")
- * @param lang Language ID. (-1 for "first entry")
+ * @param type Resource type ID
+ * @param id Resource ID (-1 for "first entry")
+ * @param lang Language ID (-1 for "first entry")
  * @return IRpFile*, or nullptr on error.
  */
-IRpFilePtr NEResourceReader::open(uint16_t type, int id, int lang)
+IRpFilePtr NEResourceReader::open(uint32_t type, int id, int lang)
 {
 	RP_D(NEResourceReader);
 
@@ -724,6 +724,32 @@ IRpFilePtr NEResourceReader::open(uint16_t type, int id, int lang)
 	// and size as the file parameters.
 	// TODO: Set the codepage somewhere?
 	return std::make_shared<PartitionFile>(this->shared_from_this(), entry->addr, entry->len);
+}
+
+/**
+ * Convert a name to a resource ID.
+ * Needed in order to look up named resources.
+ * @param name Name
+ * @return Resource ID, or 0 on error.
+ */
+int NEResourceReader::nameToResourceID(const char *name) const
+{
+	// TODO: Implement named resource handling for Win16.
+	RP_UNUSED(name);
+	assert(!"NOT IMPLEMENTED!");
+	return {};
+}
+
+/**
+ * Ensure a type directory is loaded.
+ * This is needed in order to resolve resource names within that type.
+ * @param type Type ID
+ */
+void NEResourceReader::ensureTypeIDIsLoaded(uint32_t type)
+{
+	// Not needed for NE.
+	RP_UNUSED(type);
+	return;
 }
 
 /**
