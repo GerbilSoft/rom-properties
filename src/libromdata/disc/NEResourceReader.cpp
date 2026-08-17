@@ -23,10 +23,11 @@ using namespace LibRpText;
 // C++ STL classes
 #include <algorithm>
 #include <array>
+#include <map>
 using std::array;
+using std::map;
 using std::string;
 using std::unique_ptr;
-using std::unordered_map;
 
 // Uninitialized vector class
 #include "uvector.h"
@@ -57,8 +58,22 @@ public:
 	};
 	typedef rp::uvector<ResTblEntry> rsrc_dir_t;
 
+	// Map of names to IDs for named resources and/or resource types.
+	// Key: Name (UTF-8)
+	// Value: ID (with the high bit clear)
+	map<string, uint16_t> name_to_id;
+
 	// Resource types
-	unordered_map<uint16_t, rsrc_dir_t> res_types;
+	map<uint16_t, rsrc_dir_t> res_types;
+
+	/**
+	 * Read a counted ANSI string and convert it to UTF-8.
+	 * @param rsrc_tbl	[in] Resource table
+	 * @param rsrc_size	[in] Size of resource table
+	 * @param addr		[in] Starting address of the string (relative to the start of rsrc_tbl)
+	 * @return String, or empty string on error.
+	 */
+	static string readCountedANSI(const uint8_t *rsrc_tbl, size_t rsrc_size, uint16_t addr);
 
 	/**
 	 * Load the resource table.
@@ -150,6 +165,44 @@ NEResourceReaderPrivate::NEResourceReaderPrivate(
 }
 
 /**
+ * Read a counted ANSI string and convert it to UTF-8.
+ * @param rsrc_tbl	[in] Resource table
+ * @param rsrc_size	[in] Size of resource table
+ * @param addr		[in] Starting address of the string (relative to the start of rsrc_tbl)
+ * @return String, or empty string on error.
+ */
+string NEResourceReaderPrivate::readCountedANSI(const uint8_t *rsrc_tbl, size_t rsrc_size, uint16_t addr)
+{
+	string s_ret;
+
+	assert(addr < rsrc_size);
+	if (addr >= rsrc_size) {
+		// Out of bounds.
+		return s_ret;
+	}
+
+	// Get the string length.
+	uint8_t len = rsrc_tbl[addr++];
+	if (len == 0) {
+		// Empty string.
+		return s_ret;
+	}
+
+	// Make sure the full string is in bounds.
+	assert(addr + len <= rsrc_size);
+	if (addr + len > rsrc_size) {
+		// Out of bounds.
+		return s_ret;
+	}
+
+	// TODO: Which ANSI code page?
+	// Assuming cp1252 for now.
+	// NOTE: Assigning to `s_ret` for named-return-value optimization.
+	s_ret = cp1252_to_utf8(reinterpret_cast<const char*>(&rsrc_tbl[addr]), len);
+	return s_ret;
+}
+
+/**
  * Load the resource table.
  *
  * NOTE: Only numeric resources are loaded.
@@ -212,10 +265,6 @@ int NEResourceReaderPrivate::loadResTbl(void)
 			break;
 		}
 
-		// FIXME: If !(rtTypeId & 0x8000), it's a named type
-		// and should be skipped. (Or, keep it and add named
-		// lookup later?)
-
 		// Must have at least 6 bytes for the resource type information.
 		if ((pos + sizeof(NE_TYPEINFO)) >= rsrc_tbl_size) {
 			// I/O error; not enough space for NE_TYPEINFO.
@@ -269,12 +318,15 @@ int NEResourceReaderPrivate::loadResTbl(void)
 			 * the icons have names?
 			 */
 			const uint16_t rnID = le16_to_cpu(nameInfo->rnID);
-#if 0
 			if (!(rnID & 0x8000)) {
-				// Resource name is a string. Not supported.
-				continue;
+				// ID is an offset to the actual name within the resource section.
+				// (NOTE: Name is ANSI, with a leading 8-bit length.)
+				string str = readCountedANSI(rsrcTblData.get(), rsrc_tbl_size, rnID);
+				if (!str.empty()) {
+					// Save the name.
+					name_to_id.emplace(std::move(str), rnID);
+				}
 			}
-#endif
 
 			// Add the resource information.
 			auto &entry = dir[entriesRead];
@@ -685,6 +737,7 @@ IRpFilePtr NEResourceReader::open(uint32_t type, int id, int lang)
 
 	// NOTE: Type and resource IDs have the high bit set for integers.
 	// We're only supporting integer IDs, so set the high bits here.
+	// (Lookup by string is handled by a wrapper function in IResourceReader.)
 	type |= 0x8000;
 	id |= 0x8000;
 
@@ -734,10 +787,9 @@ IRpFilePtr NEResourceReader::open(uint32_t type, int id, int lang)
  */
 int NEResourceReader::nameToResourceID(const char *name) const
 {
-	// TODO: Implement named resource handling for Win16.
-	RP_UNUSED(name);
-	assert(!"NOT IMPLEMENTED!");
-	return 0;
+	RP_D(const NEResourceReader);
+	auto iter = d->name_to_id.find(name);
+	return (iter != d->name_to_id.cend()) ? iter->second : 0;
 }
 
 /**
