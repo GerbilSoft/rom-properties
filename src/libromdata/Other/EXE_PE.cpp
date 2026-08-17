@@ -12,8 +12,12 @@
 #include "data/EXEData.hpp"
 #include "disc/PEResourceReader.hpp"
 
+// GfWL / XNA
+#include "Console/Xbox360_XDBF.hpp"
+
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
 
 // for strnlen() if it's not available in <string.h>
@@ -832,8 +836,7 @@ void EXEPrivate::addFields_PE(void)
 		IResourceReader::StringFileInfo vssfi;
 		if (rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi, &vssfi) == 0) {
 			// Add the version fields.
-			fields.setTabName(1, C_("RomData", "Version"));
-			fields.setTabIndex(1);
+			fields.addTab(C_("RomData", "Version"));
 			addFields_VS_VERSION_INFO(&vsffi, &vssfi);
 		}
 
@@ -852,6 +855,17 @@ void EXEPrivate::addFields_PE(void)
 			C_("RomData", "XML parsing is disabled in this build."),
 			RomFields::STRF_WARNING);
 #endif /* ENABLE_XML */
+
+		// Check for a GfWL XDBF resource.
+		IRpFilePtr f_xdbf = rsrcReader->open("RT_RCDATA", "SPAFILE", -1);
+		if (f_xdbf && f_xdbf->isOpen()) {
+			unique_ptr<Xbox360_XDBF> xdbf(new Xbox360_XDBF(f_xdbf));
+			if (xdbf->isValid()) {
+				// Add the XDBF fields.
+				fields.addTab("XDBF");
+				fields.addFields_romFields(xdbf->fields(), -1);
+			}
+		}
 	}
 
 	if (!dotnet) {
