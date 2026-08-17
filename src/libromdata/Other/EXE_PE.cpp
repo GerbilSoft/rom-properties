@@ -856,8 +856,24 @@ void EXEPrivate::addFields_PE(void)
 			RomFields::STRF_WARNING);
 #endif /* ENABLE_XML */
 
-		// Check for a GfWL XDBF resource.
-		IRpFilePtr f_xdbf = rsrcReader->open("RT_RCDATA", "SPAFILE", -1);
+		// Check for XDBF resources.
+		// TODO: Show title ID if present. (Usually not displayed in
+		// XDBF resources due to redundancy with XEX.)
+		struct XDBF_Resource_Names_t {
+			const char *type;
+			const char *id;
+		};
+		static const array<XDBF_Resource_Names_t, 2> XDBF_Resource_Names_tbl = {{
+			{"RT_RCDATA", "SPAFILE"},	// GfWL
+			{"DATA", "__XBL_GAMECONFIG"},	// XNA
+		}};
+		IRpFilePtr f_xdbf;
+		for (const auto &rsrc : XDBF_Resource_Names_tbl) {
+			f_xdbf = rsrcReader->open(rsrc.type, rsrc.id, -1);
+			if (f_xdbf && f_xdbf->isOpen()) {
+				break;
+			}
+		}
 		if (f_xdbf && f_xdbf->isOpen()) {
 			unique_ptr<Xbox360_XDBF> xdbf(new Xbox360_XDBF(f_xdbf));
 			if (xdbf->isValid()) {
