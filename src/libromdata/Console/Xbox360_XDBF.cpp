@@ -1934,13 +1934,50 @@ int Xbox360_XDBF::loadMetaData(void)
 		return -EIO;
 	}
 
-	d->metaData.reserve(1);	// Maximum of 1 metadata property.
+	d->metaData.reserve(d->xex ? 2 : 3);	// Maximum of 2 metadata properties if XEX; otherwise 3.
 
 	// NOTE: RomMetaData ignores empty strings, so we don't need to
 	// check for them here.
 
 	// Title
 	d->metaData.addMetaData_string(Property::Title, getString(Property::Title));
+
+	// Get the XTHD struct.
+	XDBF_XTHD xthd;
+	int ret = d->getXTHD(&xthd);
+	if (ret == 0) {
+		// Title version (as Version)
+		d->metaData.addMetaData_string(Property::Version,
+			fmt::format(FSTR("{:d}.{:d}.{:d}.{:d}"),
+				be16_to_cpu(xthd.title_version.major),
+				be16_to_cpu(xthd.title_version.minor),
+				be16_to_cpu(xthd.title_version.build),
+				be16_to_cpu(xthd.title_version.revision)));
+
+		// Title ID (for non-XEX only)
+		if (!d->xex) {
+			// FIXME: Verify behavior on big-endian.
+			// TODO: Consolidate implementations into a shared function.
+			string tid_str;
+			if (isupper_ascii(xthd.title_id.a)) {
+				tid_str += (char)xthd.title_id.a;
+			} else {
+				tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)xthd.title_id.a);
+			}
+			if (isupper_ascii(xthd.title_id.b)) {
+				tid_str += (char)xthd.title_id.b;
+			} else {
+				tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)xthd.title_id.b);
+			}
+
+			d->metaData.addMetaData_string(Property::TitleID,
+				// tr: Xbox 360 title ID (32-bit hex, then two letters followed by a 4-digit decimal number)
+				fmt::format(FRUN(C_("Xbox360_XEX", "{0:0>8X} ({1:s}-{2:0>4d})")),
+					be32_to_cpu(xthd.title_id.u32),
+					tid_str.c_str(),
+					be16_to_cpu(xthd.title_id.u16)));
+		}
+	}
 
 	// Finished reading the metadata.
 	return d->metaData.count();

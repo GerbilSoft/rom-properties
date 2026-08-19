@@ -1307,6 +1307,13 @@ int EXE::loadMetaData(void)
 
 				d->metaData.addMetaData_string(Property::OSVersion, d->formatPESubsystemName(
 					PE_data.pe_subsystem, subsystem_ver_major, subsystem_ver_minor));
+
+				// Check for XDBF resources.
+				RomDataPtr xdbf = d->openXDBF();
+				if (xdbf) {
+					// Add the XDBF metadata.
+					d->metaData.addMetaData_metaData(xdbf->metaData());
+				}
 			}
 			break;
 		}
