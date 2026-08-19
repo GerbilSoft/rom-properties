@@ -2121,8 +2121,8 @@ int Xbox360_XEX::loadMetaData(void)
 				static_cast<unsigned int>(minver.qfe)));
 	}
 
-	// Title ID (as Game ID)
-	d->metaData.addMetaData_string(Property::GameID, d->getTitleID());
+	// Title ID
+	d->metaData.addMetaData_string(Property::TitleID, d->getTitleID());
 
 	// Media ID
 	d->metaData.addMetaData_string(Property::MediaID,
