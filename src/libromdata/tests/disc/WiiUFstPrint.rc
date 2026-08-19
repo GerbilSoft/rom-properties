@@ -38,15 +38,15 @@ BEGIN
 		BEGIN
 			//VALUE "Comments"
 			//VALUE "CompanyName"
-			VALUE "FileDescription", "rom-properties - WiiUFstPrint test program"
-			VALUE "FileVersion", "WiiUFstPrint " Win32_RC_FileVersion
-			VALUE "InternalName", "WiiUFstPrint"
-			VALUE "LegalCopyright", "Copyright (c) 2016-2026 by David Korth."
+			VALUE "FileDescription", "rom-properties - WiiUFstPrint test program\0"
+			VALUE "FileVersion", Win32_RC_FileVersion "\0"
+			VALUE "InternalName", "WiiUFstPrint\0"
+			VALUE "LegalCopyright", "Copyright (c) 2016-2026 by David Korth.\0"
 			//VALUE "LegalTrademarks"
 			//VALUE "OriginalFilename"
 			//VALUE "PrivateBuild"
-			VALUE "ProductName", "rom-properties - WiiUFstPrint test program"
-			VALUE "ProductVersion", "WiiUFstPrint " Win32_RC_FileVersion
+			VALUE "ProductName", "rom-properties - WiiUFstPrint test program\0"
+			VALUE "ProductVersion", Win32_RC_FileVersion "\0"
 			//VALUE "SpecialBuild"
 		END
 	END

@@ -38,15 +38,15 @@ BEGIN
 		BEGIN
 			//VALUE "Comments"
 			//VALUE "CompanyName"
-			VALUE "FileDescription", "ROM Properties Page command line interface"
-			VALUE "FileVersion", "rpcli " Win32_RC_FileVersion
-			VALUE "InternalName", "rpcli"
-			VALUE "LegalCopyright", "Copyright (c) 2016-2026 by David Korth, Egor."
+			VALUE "FileDescription", "ROM Properties Page command line interface\0"
+			VALUE "FileVersion", Win32_RC_FileVersion "\0"
+			VALUE "InternalName", "rpcli\0"
+			VALUE "LegalCopyright", "Copyright (c) 2016-2026 by David Korth, Egor.\0"
 			//VALUE "LegalTrademarks"
 			//VALUE "OriginalFilename"
 			//VALUE "PrivateBuild"
-			VALUE "ProductName", "ROM Properties Page command line interface"
-			VALUE "ProductVersion", "rpcli " Win32_RC_FileVersion
+			VALUE "ProductName", "ROM Properties Page command line interface\0"
+			VALUE "ProductVersion", Win32_RC_FileVersion "\0"
 			//VALUE "SpecialBuild"
 		END
 	END

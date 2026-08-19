@@ -38,15 +38,15 @@ BEGIN
 		BEGIN
 			//VALUE "Comments"
 			//VALUE "CompanyName"
-			VALUE "FileDescription", "rom-properties - GcnFstPrint test program"
-			VALUE "FileVersion", "GcnFstPrint " Win32_RC_FileVersion
-			VALUE "InternalName", "GcnFstPrint"
-			VALUE "LegalCopyright", "Copyright (c) 2016-2026 by David Korth."
+			VALUE "FileDescription", "rom-properties - GcnFstPrint test program\0"
+			VALUE "FileVersion", Win32_RC_FileVersion "\0"
+			VALUE "InternalName", "GcnFstPrint\0"
+			VALUE "LegalCopyright", "Copyright (c) 2016-2026 by David Korth.\0"
 			//VALUE "LegalTrademarks"
 			//VALUE "OriginalFilename"
 			//VALUE "PrivateBuild"
-			VALUE "ProductName", "rom-properties - GcnFstPrint test program"
-			VALUE "ProductVersion", "GcnFstPrint " Win32_RC_FileVersion
+			VALUE "ProductName", "rom-properties - GcnFstPrint test program\0"
+			VALUE "ProductVersion", Win32_RC_FileVersion "\0"
 			//VALUE "SpecialBuild"
 		END
 	END
