@@ -1219,7 +1219,7 @@ int EXE::loadMetaData(void)
 		return -EIO;
 	}
 
-	d->metaData.reserve(5);	// Maximum of 5 metadata properties.
+	d->metaData.reserve(6);	// Maximum of 6 metadata properties. (TODO: Recalculate?)
 
 	// NOTE: Doing custom properties first because the other properties require
 	// a valid VS_VERSION_INFO section.
@@ -1389,6 +1389,38 @@ int EXE::loadMetaData(void)
 	val = findval(st, "LegalCopyright");
 	if (val) {
 		d->metaData.addMetaData_string(Property::Copyright, val);
+	}
+
+	if (!d->metaData.get(Property::Version)) {
+		// Version
+		// Using the following, in priority order:
+		// - StringFileInfo: FileVersion
+		// - StringFileInfo: ProductVersion
+		// - VS_FIXEDFILEINFO: FileVersion
+		// - VS_FIXEDFILEINFO: ProductVersion
+		val = findval(st, "FileVersion");
+		if (!val) {
+			val = findval(st, "ProductVersion");
+		}
+		if (val) {
+			// Found a string version entry.
+			d->metaData.addMetaData_string(Property::Version, val);
+		} else {
+			// No string version entry.
+			// Check VS_FIXEDFILEINFO for non-zero versions.
+			uint32_t verMS = vsffi.dwFileVersionMS;
+			uint32_t verLS = vsffi.dwFileVersionLS;
+			if (verMS == 0 && verLS == 0) {
+				verMS = vsffi.dwProductVersionMS;
+				verLS = vsffi.dwProductVersionLS;
+			}
+			if (verMS != 0 || verMS != 0) {
+				d->metaData.addMetaData_string(Property::Version,
+					fmt::format(FSTR("{:d}.{:d}.{:d}.{:d}"),
+						verMS >> 16, verMS & 0xFFFFU,
+						verLS >> 16, verLS & 0xFFFFU));
+			}
+		}
 	}
 
 	// TODO: Comments? On KDE Dolphin, "Comments" is assumed to be user-added...
