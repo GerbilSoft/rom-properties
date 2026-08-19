@@ -11,6 +11,8 @@
 #include <stdint.h>
 #include "common.h"
 
+#include "xbox360_common_structs.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -166,21 +168,6 @@ typedef struct _XDBF_XSTR_Entry_Header {
 ASSERT_STRUCT(XDBF_XSTR_Entry_Header, 2*sizeof(uint16_t));
 
 /**
- * XDBF: Title ID
- * Contains two characters and a 16-bit number.
- * NOTE: Struct positioning only works with the original BE32 value.
- * TODO: Combine with XEX2 version.
- */
-typedef union _XDBF_Title_ID {
-	struct {
-		char c[2];
-		uint16_t u16;
-	};
-	uint32_t u32;
-} XDBF_Title_ID;
-ASSERT_STRUCT(XDBF_Title_ID, sizeof(uint32_t));
-
-/**
  * XDBF: XACH - Achievements table
  * All fields are in big-endian.
  */
@@ -267,11 +254,11 @@ typedef enum ATTR_FLAG_ENUM {
 #define XDBF_XTHD_MAGIC 'XTHD'
 #define XDBF_XTHD_VERSION 1
 typedef struct _XDBF_XTHD {
-	uint32_t magic;		// [0x000] 'XTHD'
-	uint32_t version;	// [0x004] Version (1)
-	uint32_t size;		// [0x008] Size (might be 0?)
-	XDBF_Title_ID title_id;	// [0x00C] Title ID
-	uint32_t title_type;	// [0x010] Type (See XDBF_Title_Type_e)
+	uint32_t magic;			// [0x000] 'XTHD'
+	uint32_t version;		// [0x004] Version (1)
+	uint32_t size;			// [0x008] Size (might be 0?)
+	Xbox360_Title_ID title_id;	// [0x00C] Title ID
+	uint32_t title_type;		// [0x010] Type (See XDBF_Title_Type_e)
 	struct {
 		uint16_t major;
 		uint16_t minor;
@@ -319,7 +306,7 @@ typedef struct _XDBF_XGAA_Entry {
 	uint16_t avatar_award_id;	// [0x004] Avatar award ID
 	uint16_t unk_0x006;		// [0x006] ???
 	uint8_t unk_0x008[4];		// [0x008] ???
-	XDBF_Title_ID title_id;		// [0x00C] Title ID
+	Xbox360_Title_ID title_id;	// [0x00C] Title ID
 	uint16_t name_id;		// [0x010] Name ID (string table)
 	uint16_t unlocked_desc_id;	// [0x012] Unlocked description ID (string table)
 	uint16_t locked_desc_id;	// [0x014] Locked description ID (string table)

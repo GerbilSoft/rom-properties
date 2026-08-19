@@ -21,6 +21,9 @@ using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
 
+// C includes
+#include "ctypex.h"
+
 // C++ STL classes
 #include <unordered_map>
 using std::array;
@@ -174,6 +177,14 @@ public:
 	rp_image_const_ptr loadIcon(void);
 
 public:
+	/**
+	 * Get the XTHD struct.
+	 * TODO: Cache it?
+	 * @param pXthd	[out] Pointer to XDBF_XTHD
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int getXTHD(XDBF_XTHD *pXthd) const;
+
 	/**
 	 * Get the title type as a string.
 	 * @return Title type, or nullptr if not found.
@@ -822,30 +833,51 @@ rp_image_const_ptr Xbox360_XDBF_Private::loadIcon(void)
 }
 
 /**
- * Get the title type as a string.
- * @return Title type, or nullptr if not found.
+ * Get the XTHD struct.
+ * @param pXthd	[out] Pointer to XDBF_XTHD
+ * @return 0 on success; negative POSIX error code on error.
  */
-const char *Xbox360_XDBF_Private::getTitleType(void) const
+int Xbox360_XDBF_Private::getXTHD(XDBF_XTHD *pXthd) const
 {
 	// Get the XTHD struct.
 	// TODO: Cache it?
 	const XDBF_Entry *const entry = findResource(XDBF_SPA_NAMESPACE_METADATA, XDBF_XTHD_MAGIC);
 	if (!entry) {
 		// Not found...
-		return nullptr;
+		return -ENOENT;
 	}
 
 	// Load the XTHD entry.
 	const uint32_t addr = be32_to_cpu(entry->offset) + data_offset;
 	if (be32_to_cpu(entry->length) != sizeof(XDBF_XTHD)) {
 		// Invalid size.
-		return nullptr;
+		return -EIO;
 	}
 
-	XDBF_XTHD xthd;
-	size_t size = file->seekAndRead(addr, &xthd, sizeof(xthd));
-	if (size != sizeof(xthd)) {
+	size_t size = file->seekAndRead(addr, pXthd, sizeof(*pXthd));
+	if (size != sizeof(*pXthd)) {
 		// Seek and/or read error.
+		int err = -file->lastError();
+		if (err == 0) {
+			err = -EIO;
+		}
+		return err;
+	}
+
+	return 0;
+}
+
+/**
+ * Get the title type as a string.
+ * @return Title type, or nullptr if not found.
+ */
+const char *Xbox360_XDBF_Private::getTitleType(void) const
+{
+	// Get the XTHD struct.
+	XDBF_XTHD xthd;
+	int ret = getXTHD(&xthd);
+	if (ret != 0) {
+		// Error getting the XTHD struct.
 		return nullptr;
 	}
 
@@ -933,6 +965,43 @@ int Xbox360_XDBF_Private::addFields_strings_SPA(RomFields *fields) const
 	const char *const title_type = getTitleType();
 	fields->addField_string(C_("RomData", "Type"),
 		title_type ? title_type : C_("RomData", "Unknown"));
+
+	// Get the XTHD struct.
+	XDBF_XTHD xthd;
+	int ret = getXTHD(&xthd);
+	if (ret == 0) {
+		// Title version
+		fields->addField_string(C_("RomData", "Title Version"),
+			fmt::format(FSTR("{:d}.{:d}.{:d}.{:d}"),
+				be16_to_cpu(xthd.title_version.major),
+				be16_to_cpu(xthd.title_version.minor),
+				be16_to_cpu(xthd.title_version.build),
+				be16_to_cpu(xthd.title_version.revision)));
+
+		// Title ID (for non-XEX only)
+		if (!this->xex) {
+			// FIXME: Verify behavior on big-endian.
+			// TODO: Consolidate implementations into a shared function.
+			string tid_str;
+			if (isupper_ascii(xthd.title_id.a)) {
+				tid_str += (char)xthd.title_id.a;
+			} else {
+				tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)xthd.title_id.a);
+			}
+			if (isupper_ascii(xthd.title_id.b)) {
+				tid_str += (char)xthd.title_id.b;
+			} else {
+				tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)xthd.title_id.b);
+			}
+
+			fields->addField_string(C_("Xbox360_XEX", "Title ID"),
+				// tr: Xbox 360 title ID (32-bit hex, then two letters followed by a 4-digit decimal number)
+				fmt::format(FRUN(C_("Xbox360_XEX", "{0:0>8X} ({1:s}-{2:0>4d})")),
+					be32_to_cpu(xthd.title_id.u32),
+					tid_str.c_str(),
+					be16_to_cpu(xthd.title_id.u16)));
+		}
+	}
 
 	// TODO: Get more fields from the .xlast resource. (XSRC)
 	// - gzipped XML file, in UTF-16LE
@@ -1390,7 +1459,7 @@ int Xbox360_XDBF_Private::addFields_strings_GPD(RomFields *fields) const
 }
 
 /**
- * Add the Achievements RFT_LISTDATA field. (SPA)
+ * Add the Achievements RFT_LISTDATA field. (GPD)
  * @return 0 on success; non-zero on error.
  */
 int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
