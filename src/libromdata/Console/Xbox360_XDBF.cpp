@@ -187,9 +187,10 @@ public:
 
 	/**
 	 * Get the title type as a string.
+	 * @param pXthd XDBF_XTHD
 	 * @return Title type, or nullptr if not found.
 	 */
-	const char *getTitleType(void) const;
+	static const char *getTitleType(const XDBF_XTHD *pXthd);
 
 private:
 	/**
@@ -869,18 +870,11 @@ int Xbox360_XDBF_Private::getXTHD(XDBF_XTHD *pXthd) const
 
 /**
  * Get the title type as a string.
+ * @param pXthd XDBF_XTHD
  * @return Title type, or nullptr if not found.
  */
-const char *Xbox360_XDBF_Private::getTitleType(void) const
+const char *Xbox360_XDBF_Private::getTitleType(const XDBF_XTHD *pXthd)
 {
-	// Get the XTHD struct.
-	XDBF_XTHD xthd;
-	int ret = getXTHD(&xthd);
-	if (ret != 0) {
-		// Error getting the XTHD struct.
-		return nullptr;
-	}
-
 	static const array<const char*, 4> title_type_tbl = {{
 		NOP_C_("Xbox360_XDBF|TitleType", "System Title"),
 		NOP_C_("Xbox360_XDBF|TitleType", "Full Game"),
@@ -888,7 +882,7 @@ const char *Xbox360_XDBF_Private::getTitleType(void) const
 		NOP_C_("Xbox360_XDBF|TitleType", "Download"),
 	}};
 
-	const uint32_t title_type = be32_to_cpu(xthd.title_type);
+	const uint32_t title_type = be32_to_cpu(pXthd->title_type);
 	if (title_type < title_type_tbl.size()) {
 		return pgettext_expr("Xbox360_XDBF|TitleType",
 			title_type_tbl[title_type]);
@@ -961,15 +955,15 @@ int Xbox360_XDBF_Private::addFields_strings_SPA(RomFields *fields) const
 		fields->addField_string(s_title_title, C_("RomData", "Unknown"));
 	}
 
-	// Title type
-	const char *const title_type = getTitleType();
-	fields->addField_string(C_("RomData", "Type"),
-		title_type ? title_type : C_("RomData", "Unknown"));
-
 	// Get the XTHD struct.
 	XDBF_XTHD xthd;
 	int ret = getXTHD(&xthd);
 	if (ret == 0) {
+		// Title type
+		const char *const title_type = getTitleType(&xthd);
+		fields->addField_string(C_("RomData", "Type"),
+			title_type ? title_type : C_("RomData", "Unknown"));
+
 		// Title version
 		fields->addField_string(C_("RomData", "Title Version"),
 			fmt::format(FSTR("{:d}.{:d}.{:d}.{:d}"),
