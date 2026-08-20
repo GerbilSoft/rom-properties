@@ -38,6 +38,7 @@
   * EXE: Show PDB CodeView information in executables that have it.
     * Pull request #500: [libromdata] Add support for PDB Codeview info in PE binaries
       * Submitted by @fishywitch.
+  * J2ME: MIDlet versions are now listed in metadata.
 
 * Other changes:
   * KDE Frameworks 6: Also use the file size unit dialect specified in
