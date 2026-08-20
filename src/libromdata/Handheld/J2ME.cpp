@@ -130,7 +130,8 @@ public:
 
 		Manifest_Tag_Max
 	};
-	static const array<const char*, static_cast<size_t>(manifest_tag_t::Manifest_Tag_Max)> manifest_tag_names;
+	static const char manifest_tag_names_strtbl[];
+	static const array<uint16_t, static_cast<size_t>(manifest_tag_t::Manifest_Tag_Max)> manifest_tag_names_offtbl;
 
 	// Map of MANIFEST.MF
 	// - Key: manifest_tag_t
@@ -201,36 +202,43 @@ const RomDataInfo J2MEPrivate::romDataInfo = {
 	"J2ME", exts.data(), mimeTypes.data()
 };
 
-// Manifest tag names
-const array<const char*, static_cast<size_t>(J2MEPrivate::manifest_tag_t::Manifest_Tag_Max)> J2MEPrivate::manifest_tag_names = {{
-	nullptr,
+// Manifest tag names: string table
+const char J2MEPrivate::manifest_tag_names_strtbl[] = {
+	"\0"				// 0
 
-	"Manifest-Version",
-	"Created-By",
-	"MicroEdition-Configuration",
-	"MicroEdition-Profile",
-	"MIDlet-Name",
-	"MIDlet-Description",
-	"MIDlet-Version",
-	"MIDlet-Vendor",
-	"MIDlet-Icon",
-	"MIDlet-Data-Size",
-	"MIDlet-1",
+	"Manifest-Version\0"		// 1
+	"Created-By\0"			// 18
+	"MicroEdition-Configuration\0"	// 29
+	"MicroEdition-Profile\0"	// 56
+	"MIDlet-Name\0"			// 77
+	"MIDlet-Description\0"		// 89
+	"MIDlet-Version\0"		// 108
+	"MIDlet-Vendor\0"		// 123
+	"MIDlet-Icon\0"			// 137
+	"MIDlet-Data-Size\0"		// 149
+	"MIDlet-1\0"			// 166
 
 	// .jad only
-	"MIDlet-Jar-URL",
-	"MIDlet-Jar-Size",
-	"Nokia-MIDlet-Category",
-	"TC-BookReader-Logging",
+	"MIDlet-Jar-URL\0"		// 175
+	"MIDlet-Jar-Size\0"		// 190
+	"Nokia-MIDlet-Category\0"	// 206
+	"TC-BookReader-Logging\0"	// 228
 
 	// .jad: File digest tags
-	"Name",
-	"MD5-Digest",
-	"SHA-Digest",		// deprecated alias of SHA1_Digest?
-	"SHA1-Digest",
-	"SHA-1-Digest",		// incorrect version found in some .jad files
-	"SHA-256-Digest",	// probably not found in J2ME .jar files
-	"Digest-Algorithms",
+	"Name\0"			// 250
+	"MD5-Digest\0"			// 255
+	"SHA-Digest\0"			// 266; deprecated alias of SHA1_Digest?
+	"SHA1-Digest\0"			// 277
+	"SHA-1-Digest\0"		// 289; incorrect version found in some .jad files
+	"SHA-256-Digest\0"		// 302; probably not found in J2ME .jar files
+	"Digest-Algorithms\0"		// 317
+};
+
+// Manifest tag names: offset table
+const array<uint16_t, static_cast<size_t>(J2MEPrivate::manifest_tag_t::Manifest_Tag_Max)> J2MEPrivate::manifest_tag_names_offtbl = {{
+	  0,   1,  18,  29,  56,  77,  89, 108,
+	123, 137, 149, 166, 175, 190, 206, 228,
+	250, 255, 266, 277, 289, 302, 317,
 }};
 
 J2MEPrivate::J2MEPrivate(const IRpFilePtr &file, mzStream jarStream, mzReader jarReader)
@@ -430,8 +438,8 @@ int J2MEPrivate::loadManifestMF(void)
 
 		// Determine if this tag is known.
 		manifest_tag_t tag = manifest_tag_t::Unknown;
-		for (uint8_t i = 1; i < static_cast<uint8_t>(manifest_tag_t::Manifest_Tag_Max); i++) {
-			if (!strcmp(manifest_tag_names[i], tag_name)) {
+		for (size_t i = 1; i < manifest_tag_names_offtbl.size(); i++) {
+			if (!strcmp(&manifest_tag_names_strtbl[manifest_tag_names_offtbl[i]], tag_name)) {
 				// Found a match.
 				tag = static_cast<manifest_tag_t>(i);
 				break;
@@ -1110,9 +1118,12 @@ int J2ME::loadFieldData(void)
 	// TODO: Fancier names and/or leave some out?
 	const auto iter_end = d->m_map.end();
 	for (auto iter = d->m_map.cbegin(); iter != iter_end; ++iter) {
-		assert(static_cast<uint8_t>(iter->first) < J2MEPrivate::manifest_tag_names.size());
+		assert(static_cast<uint8_t>(iter->first) < J2MEPrivate::manifest_tag_names_offtbl.size());
 
-		d->fields.addField_string(J2MEPrivate::manifest_tag_names[static_cast<uint8_t>(iter->first)], iter->second);
+		d->fields.addField_string(
+			&J2MEPrivate::manifest_tag_names_strtbl[
+				J2MEPrivate::manifest_tag_names_offtbl[
+					static_cast<uint8_t>(iter->first)]], iter->second);
 	}
 
 	return d->fields.count();
