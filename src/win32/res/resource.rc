@@ -73,14 +73,14 @@ BEGIN
 			//VALUE "Comments", "\0"
 			//VALUE "CompanyName", "\0"
 			VALUE "FileDescription", "ROM Properties Win32 UI frontend\0"
-			VALUE "FileVersion", "rom-properties " Win32_RC_FileVersion "\0"
+			VALUE "FileVersion", Win32_RC_FileVersion "\0"
 			VALUE "InternalName", "rom-properties\0"
 			VALUE "LegalCopyright", "Copyright (c) 2016-2026 by David Korth.\0"
 			//VALUE "LegalTrademarks", "\0"
 			//VALUE "OriginalFilename", "\0"
 			//VALUE "PrivateBuild", "\0"
 			VALUE "ProductName", "ROM Properties Page shell extension\0"
-			VALUE "ProductVersion", "rom-properties " Win32_RC_FileVersion "\0"
+			VALUE "ProductVersion", Win32_RC_FileVersion "\0"
 			//VALUE "SpecialBuild", "\0"
 		END
 	END

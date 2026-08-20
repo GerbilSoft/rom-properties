@@ -72,8 +72,34 @@ public:
 	 * @param lang	[in] Language ID (-1 for "first entry")
 	 * @return IRpFile*, or nullptr on error.
 	 */
-	virtual LibRpFile::IRpFilePtr open(uint16_t type, int id, int lang) = 0;
+	virtual LibRpFile::IRpFilePtr open(uint32_t type, int id, int lang) = 0;
 
+	/**
+	 * Open a resource.
+	 * @param type	[in] Resource type ID [named]
+	 * @param id	[in] Resource ID [named] (nullptr for "first entry")
+	 * @param lang	[in] Language ID (-1 for "first entry")
+	 * @return IRpFile*, or nullptr on error.
+	 */
+	LibRpFile::IRpFilePtr open(const char *type, const char *id, int lang);
+
+protected:
+	/**
+	 * Convert a name to a resource ID.
+	 * Needed in order to look up named resources.
+	 * @param name Name
+	 * @return Resource ID, or 0 on error.
+	 */
+	virtual int nameToResourceID(const char *name) const = 0;
+
+	/**
+	 * Ensure a type directory is loaded.
+	 * This is needed in order to resolve resource names within that type.
+	 * @param type Type ID
+	 */
+	virtual void ensureTypeIDIsLoaded(uint32_t type) = 0;
+
+public:
 #ifdef _WIN32
 #  define open_MAKEINTRESOURCE_wrapper(WIN_TYPE) \
 	/** \

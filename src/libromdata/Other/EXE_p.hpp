@@ -136,6 +136,9 @@ public:
 		std::vector<IMAGE_IMPORT_DIRECTORY> peImportDir;
 		// PE Import DLL Names (same order as the directory)
 		std::vector<std::string> peImportNames;
+
+		// XDBF resource, if available
+		LibRpBase::RomDataPtr xdbf;
 	};
 
 	// NE-specific data
@@ -417,7 +420,6 @@ public:
 	 */
 	int addFields_PE_PDB(void);
 
-
 private:
 	/**
 	 * Load the IMAGE_LOAD_CONFIG_DIRECTORY.
@@ -437,6 +439,12 @@ public:
 	 * @return Dependent Load Flags, or 0 if not present.
 	 */
 	uint16_t getDependentLoadFlags(void);
+
+	/**
+	 * Open the XDBF resource, if available.
+	 * @teurn Xbox360_XDBF if found; nullptr if not.
+	 */
+	LibRpBase::RomDataPtr openXDBF(void);
 };
 
 } // namespace LibRomData

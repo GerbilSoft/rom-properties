@@ -39,6 +39,10 @@
     * Pull request #500: [libromdata] Add support for PDB Codeview info in PE binaries
       * Submitted by @fishywitch.
   * J2ME: MIDlet versions are now listed in metadata.
+  * EXE: Display XDBF sections in GfWL and XNA executables.
+    * Also show the Xbox-style title ID and title version number.
+    * Fixes #505: [Feature Request] Parse Xbox 360-style XDBF data out of GfWL EXE, WP7 XNA DLL
+      * Requested by @InvoxiPlayGames.
 
 * Other changes:
   * KDE Frameworks 6: Also use the file size unit dialect specified in

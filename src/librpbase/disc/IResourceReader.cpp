@@ -42,4 +42,41 @@ LibRpFile::IRpFilePtr IResourceReader::open(const char *filename)
 	return {};
 }
 
+/**
+ * Open a resource.
+ * @param type	[in] Resource type ID [named]
+ * @param id	[in] Resource ID [named] (nullptr for "first entry")
+ * @param lang	[in] Language ID (-1 for "first entry")
+ * @return IRpFile*, or nullptr on error.
+ */
+LibRpFile::IRpFilePtr IResourceReader::open(const char *type, const char *id, int lang)
+{
+	// Convert the names to IDs.
+	// NOTE: Need to ensure the type ID is loaded after getting u_type.
+	assert(type != nullptr);
+	if (!type) {
+		// Type *must* be specified...
+		return {};
+	}
+	uint32_t u_type = nameToResourceID(type);
+	if (u_type == 0) {
+		// Type was not found...
+		return {};
+	}
+	this->ensureTypeIDIsLoaded(u_type);
+
+	int i_id;
+	if (id) {
+		i_id = static_cast<int>(nameToResourceID(id));
+		if (i_id == 0) {
+			// ID was not found...
+			return {};
+		}
+	} else {
+		i_id = -1;
+	}
+
+	return this->open(u_type, i_id, lang);
+}
+
 }

@@ -924,8 +924,8 @@ int Xbox_XBE::loadMetaData(void)
 
 	/** Custom properties! **/
 
-	// Title ID (as Game ID)
-	d->metaData.addMetaData_string(Property::GameID, d->getTitleID());
+	// Title ID
+	d->metaData.addMetaData_string(Property::TitleID, d->getTitleID());
 
 	// Region code
 	// For multi-region titles, region will be formatted as: "UJEM"

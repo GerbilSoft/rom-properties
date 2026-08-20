@@ -12,8 +12,12 @@
 #include "data/EXEData.hpp"
 #include "disc/PEResourceReader.hpp"
 
+// GfWL / XNA
+#include "Console/Xbox360_XDBF.hpp"
+
 // Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRpText;
 
 // for strnlen() if it's not available in <string.h>
@@ -832,8 +836,7 @@ void EXEPrivate::addFields_PE(void)
 		IResourceReader::StringFileInfo vssfi;
 		if (rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi, &vssfi) == 0) {
 			// Add the version fields.
-			fields.setTabName(1, C_("RomData", "Version"));
-			fields.setTabIndex(1);
+			fields.addTab(C_("RomData", "Version"));
 			addFields_VS_VERSION_INFO(&vsffi, &vssfi);
 		}
 
@@ -852,6 +855,14 @@ void EXEPrivate::addFields_PE(void)
 			C_("RomData", "XML parsing is disabled in this build."),
 			RomFields::STRF_WARNING);
 #endif /* ENABLE_XML */
+
+		// Check for XDBF resources.
+		RomDataPtr xdbf = openXDBF();
+		if (xdbf) {
+			// Add the XDBF fields.
+			fields.addTab("XDBF");
+			fields.addFields_romFields(xdbf->fields(), -1);
+		}
 	}
 
 	if (!dotnet) {
@@ -1635,6 +1646,67 @@ uint16_t EXEPrivate::getDependentLoadFlags(void)
 	// FIXME: Shouldn't get here...
 	assert(!"Unreachable code!");
 	return 0;
+}
+
+/**
+ * Open the XDBF resource, if available.
+ * @teurn Xbox360_XDBF if found; nullptr if not.
+ */
+RomDataPtr EXEPrivate::openXDBF(void)
+{
+	RomDataPtr romData;
+
+	if (!std::holds_alternative<PE_data_t>(EXE_data)) {
+		// Not a PE executable.
+		return romData;
+	}
+	PE_data_t &PE_data = std::get<PE_data_t>(EXE_data);
+	if (PE_data.xdbf) {
+		// XDBF is already open.
+		// NOTE: Assigning to `romData` for named-return-value optimization.
+		romData = PE_data.xdbf;
+		return romData;
+	}
+
+	// Make sure the resource reader is open.
+	int ret = loadPEResourceTypes();
+	if (ret != 0) {
+		// Unable to open the resource reader.
+		return romData;
+	}
+
+	// Check for XDBF resources.
+	struct XDBF_Resource_Names_t {
+		const char *type;
+		const char *id;
+	};
+	static const array<XDBF_Resource_Names_t, 2> XDBF_Resource_Names_tbl = {{
+		{"RT_RCDATA", "SPAFILE"},	// GfWL
+		{"DATA", "__XBL_GAMECONFIG"},	// XNA
+	}};
+	IRpFilePtr f_xdbf;
+	for (const auto &rsrc : XDBF_Resource_Names_tbl) {
+		f_xdbf = rsrcReader->open(rsrc.type, rsrc.id, -1);
+		if (f_xdbf && f_xdbf->isOpen()) {
+			break;
+		}
+	}
+
+	if (!f_xdbf || !f_xdbf->isOpen()) {
+		// Not found...
+		return romData;
+	}
+
+	romData.reset(new Xbox360_XDBF(f_xdbf));
+	if (!romData->isValid()) {
+		// Not valid...
+		romData.reset();
+		return romData;
+	}
+
+	// Save the XDBF and return it.
+	PE_data.xdbf = romData;
+	return romData;
 }
 
 } // namespace LibRomData

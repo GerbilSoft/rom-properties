@@ -87,11 +87,11 @@ ASSERT_STRUCT(XBE_Header, 0x178);
 /**
  * Initialization flags
  */
-typedef enum {
-	XBE_INIT_FLAG_MountUtilityDrive		= 0x00000001,
-	XBE_INIT_FLAG_FormatUtilityDrive	= 0x00000002,
-	XBE_INIT_FLAG_Limit64Megabytes		= 0x00000004,
-	XBE_INIT_FLAG_DontSetupHarddisk		= 0x00000008,
+typedef enum ATTR_FLAG_ENUM {
+	XBE_INIT_FLAG_MountUtilityDrive		= (1U << 0),
+	XBE_INIT_FLAG_FormatUtilityDrive	= (1U << 1),
+	XBE_INIT_FLAG_Limit64Megabytes		= (1U << 2),
+	XBE_INIT_FLAG_DontSetupHarddisk		= (1U << 3),
 } XBE_InitFlags_e;
 
 /**
@@ -110,7 +110,7 @@ typedef union _XBE_Title_ID {
 ASSERT_STRUCT(XBE_Title_ID, sizeof(uint32_t));
 
 /**
- * XBE certificate.
+ * XBE certificate
  * Reference: http://www.caustik.com/cxbx/download/xbe.htm
  *
  * All fields are in little-endian.
@@ -136,18 +136,19 @@ ASSERT_STRUCT(XBE_Certificate, 0x1D0);
  * Allowed media (bitfield)
  */
 typedef enum {
-	XBE_MEDIA_TYPE_HARD_DISK		= 0x00000001,
-	XBE_MEDIA_TYPE_XGD1			= 0x00000002,
-	XBE_MEDIA_TYPE_DVD_CD			= 0x00000004,
-	XBE_MEDIA_TYPE_CD			= 0x00000008,
-	XBE_MEDIA_TYPE_DVD_5_RO			= 0x00000010,
-	XBE_MEDIA_TYPE_DVD_9_RO			= 0x00000020,
-	XBE_MEDIA_TYPE_DVD_5_RW			= 0x00000040,
-	XBE_MEDIA_TYPE_DVD_9_RW			= 0x00000080,
-	XBE_MEDIA_TYPE_DONGLE			= 0x00000100,
-	XBE_MEDIA_TYPE_MEDIA_BOARD		= 0x00000200,
-	XBE_MEDIA_TYPE_NONSECURE_HARD_DISK	= 0x40000000,
-	XBE_MEDIA_TYPE_NONSECURE_MODE		= 0x80000000,
+	XBE_MEDIA_TYPE_HARD_DISK		= (1U <<  0),
+	XBE_MEDIA_TYPE_XGD1			= (1U <<  1),
+	XBE_MEDIA_TYPE_DVD_CD			= (1U <<  2),
+	XBE_MEDIA_TYPE_CD			= (1U <<  3),
+	XBE_MEDIA_TYPE_DVD_5_RO			= (1U <<  4),
+	XBE_MEDIA_TYPE_DVD_9_RO			= (1U <<  5),
+	XBE_MEDIA_TYPE_DVD_5_RW			= (1U <<  6),
+	XBE_MEDIA_TYPE_DVD_9_RW			= (1U <<  7),
+	XBE_MEDIA_TYPE_DONGLE			= (1U <<  8),
+	XBE_MEDIA_TYPE_MEDIA_BOARD		= (1U <<  9),
+
+	XBE_MEDIA_TYPE_NONSECURE_HARD_DISK	= (1U << 30),
+	XBE_MEDIA_TYPE_NONSECURE_MODE		= (1U << 31),
 
 	XBE_MEDIA_TYPE_MEDIA_MASK		= 0x00FFFFFF,
 } XBE_Media_e;
@@ -156,10 +157,11 @@ typedef enum {
  * Region code (bitfield)
  */
 typedef enum {
-	XBE_REGION_CODE_NORTH_AMERICA	= 0x00000001,
-	XBE_REGION_CODE_JAPAN		= 0x00000002,
-	XBE_REGION_CODE_RESTOFWORLD	= 0x00000004,
-	XBE_REGION_CODE_MANUFACTURING	= 0x80000000,
+	XBE_REGION_CODE_NORTH_AMERICA	= (1U <<  0),
+	XBE_REGION_CODE_JAPAN		= (1U <<  1),
+	XBE_REGION_CODE_RESTOFWORLD	= (1U <<  2),
+
+	XBE_REGION_CODE_MANUFACTURING	= (1U << 31),
 } XBE_Region_Code_e;
 
 /**
@@ -185,13 +187,13 @@ ASSERT_STRUCT(XBE_Section_Header, 0x38);
 /**
  * Section flags
  */
-typedef enum {
-	XBE_SECTION_FLAG_Writable		= 0x00000001,
-	XBE_SECTION_FLAG_Preload		= 0x00000002,
-	XBE_SECTION_FLAG_Executable		= 0x00000004,
-	XBE_SECTION_FLAG_Inserted_File		= 0x00000008,
-	XBE_SECTION_FLAG_Head_Page_Read_Only	= 0x00000010,
-	XBE_SECTION_FLAG_Tail_Page_Read_Only	= 0x00000020,
+typedef enum ATTR_FLAG_ENUM {
+	XBE_SECTION_FLAG_Writable		= (1U << 0),
+	XBE_SECTION_FLAG_Preload		= (1U << 1),
+	XBE_SECTION_FLAG_Executable		= (1U << 2),
+	XBE_SECTION_FLAG_Inserted_File		= (1U << 3),
+	XBE_SECTION_FLAG_Head_Page_Read_Only	= (1U << 4),
+	XBE_SECTION_FLAG_Tail_Page_Read_Only	= (1U << 5),
 } XBE_Section_Flags_e;
 
 /**

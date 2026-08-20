@@ -38,15 +38,15 @@ BEGIN
 		BEGIN
 			//VALUE "Comments"
 			//VALUE "CompanyName"
-			VALUE "FileDescription", "ROM Properties Page online image database downloader"
-			VALUE "FileVersion", "rp-download " Win32_RC_FileVersion
-			VALUE "InternalName", "rp-download"
-			VALUE "LegalCopyright", "Copyright (c) 2016-2026 by David Korth."
+			VALUE "FileDescription", "ROM Properties Page online image database downloader\0"
+			VALUE "FileVersion", Win32_RC_FileVersion "\0"
+			VALUE "InternalName", "rp-download\0"
+			VALUE "LegalCopyright", "Copyright (c) 2016-2026 by David Korth.\0"
 			//VALUE "LegalTrademarks"
 			//VALUE "OriginalFilename"
 			//VALUE "PrivateBuild"
-			VALUE "ProductName", "ROM Properties Page online image database downloader"
-			VALUE "ProductVersion", "rp-download " Win32_RC_FileVersion
+			VALUE "ProductName", "ROM Properties Page online image database downloader\0"
+			VALUE "ProductVersion", Win32_RC_FileVersion "\0"
 			//VALUE "SpecialBuild"
 		END
 	END

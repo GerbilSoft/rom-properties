@@ -23,13 +23,19 @@ using namespace LibRpText;
 // C++ STL classes
 #include <algorithm>
 #include <array>
+#include <map>
+#include <unordered_map>
 using std::array;
+using std::map;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
 
 // Uninitialized vector class
 #include "uvector.h"
+
+// NOTE: Resource IDs under 0x10000 are numeric IDs.
+// 0x10000 and over are string IDs.
 
 namespace LibRomData {
 
@@ -55,7 +61,7 @@ public:
 
 	// Resource directory entry
 	struct ResDirEntry {
-		uint16_t id;	// Resource ID
+		uint32_t id;	// Resource ID (if high bit set, string ID)
 		uint32_t addr;	// Address of the IMAGE_RESOURCE_DIRECTORY or
 				// IMAGE_RESOURCE_DATA_ENTRY, relative to rsrc_addr.
 				// NOTE: If the high bit is set, this is a subdirectory.
@@ -65,15 +71,28 @@ public:
 	// Resource types (Top-level directory)
 	rsrc_dir_t res_types;
 
+	// Map of names to IDs for named resources and/or resource types.
+	// Key: Name (UTF-8)
+	// Value: ID (with the high bit set)
+	map<string, uint32_t> name_to_id;
+
 	// Cached top-level directories (type)
 	// Key: type
 	// Value: Resources contained within the directory.
-	unordered_map<uint16_t, rsrc_dir_t> type_dirs;
+	map<uint32_t, rsrc_dir_t> type_dirs;
 
 	// Cached second-level directories (type and ID)
-	// Key: LOWORD == type, HIWORD == id
+	// Key: LODWORD == type, HIDWORD == id
+	// (32-bit values are used in order to handle string type/ID.)
 	// Value: Resources contained within the directory.
-	unordered_map<uint32_t, rsrc_dir_t> type_and_id_dirs;
+	unordered_map<uint64_t, rsrc_dir_t> type_and_id_dirs;
+
+	/**
+	 * Read a counted UTF-16 string and convert it to UTF-8.
+	 * @param addr	[in] Starting address of the string (relative to the start of .rsrc)
+	 * @return String, or empty string on error.
+	 */
+	string readCountedUTF16(uint32_t addr);
 
 	/**
 	 * Load a resource directory.
@@ -89,18 +108,18 @@ public:
 
 	/**
 	 * Get the resource directory for the specified type.
-	 * @param type Resource type.
+	 * @param type Resource type
 	 * @return Resource directory, or nullptr if not found.
 	 */
-	const rsrc_dir_t *getTypeDir(uint16_t type);
+	const rsrc_dir_t *getTypeDir(uint32_t type);
 
 	/**
 	 * Get the resource directory for the specified type and ID.
-	 * @param type Resource type.
-	 * @param id Resource ID.
+	 * @param type Resource type
+	 * @param id Resource ID
 	 * @return Resource directory, or nullptr if not found.
 	 */
-	const rsrc_dir_t *getTypeIdDir(uint16_t type, uint16_t id);
+	const rsrc_dir_t *getTypeIdDir(uint32_t type, uint32_t id);
 
 	/**
 	 * Read the section header in a PE version resource.
@@ -178,6 +197,55 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 }
 
 /**
+ * Read a counted UTF-16 string and convert it to UTF-8.
+ * @param addr	[in] Starting address of the string (relative to the start of .rsrc)
+ * @return String, or empty string on error.
+ */
+string PEResourceReaderPrivate::readCountedUTF16(uint32_t addr)
+{
+	// First UTF-16 value at addr is the string length, in UTF-16 code points.
+	string s_ret;
+
+	RP_Q(PEResourceReader);
+	uint16_t length = 0;
+	size_t size = q->m_file->seekAndRead(rsrc_addr + addr, &length, sizeof(length));
+	if (size != sizeof(length)) {
+		// Seek and/or read error.
+		return s_ret;
+	}
+
+	static constexpr uint16_t MAX_UTF16_STRING_LEN = 1024;
+	length = le16_to_cpu(length);
+	assert(length <= MAX_UTF16_STRING_LEN);
+	if (length > MAX_UTF16_STRING_LEN) {
+		// String is too long...
+		return s_ret;
+	}
+
+	// Make sure we're in bounds.
+	const uint32_t max_addr = rsrc_addr + rsrc_size;
+	assert(addr + (length * sizeof(char16_t)) <= max_addr);
+	if (addr + (length * sizeof(char16_t)) > max_addr) {
+		// Out of bounds...
+		return s_ret;
+	}
+
+	// Read the string data.
+	// NOTE: ***NOT*** NULL-terminated!
+	unique_ptr<char16_t[]> buf(new char16_t[length]);
+	size = q->m_file->read(buf.get(), length * sizeof(char16_t));
+	if (size != length * sizeof(char16_t)) {
+		// Seek and/or read error.
+		return s_ret;
+	}
+
+	// Convert the string to UTF-8.
+	// NOTE: Assigning to `s_ret` for named-return-value optimization.
+	s_ret = utf16le_to_utf8(buf.get(), length);
+	return s_ret;
+}
+
+/**
  * Load a resource directory.
  *
  * NOTE: Only numeric resources and/or subdirectories are loaded.
@@ -217,14 +285,19 @@ int PEResourceReaderPrivate::loadResDir(uint32_t addr, rsrc_dir_t &dir)
 	for (unsigned int i = 0; i < entryCount; i++, irdEntry++) {
 		// Skipping any root directory entry that isn't an ID.
 		const uint32_t id = le32_to_cpu(irdEntry->Name);
-		if (id > 0xFFFF) {
-			// Not an ID.
-			continue;
+		if (id & 0x80000000U) {
+			// ID is an offset to the actual name within the resource section.
+			// (NOTE: Name is UTF-16, with a leading 16-bit length.)
+			string str = readCountedUTF16(id & ~0x80000000U);
+			if (!str.empty()) {
+				// Save the name.
+				name_to_id.emplace(std::move(str), id);
+			}
 		}
 
-		// Entry data.
+		// Entry data
 		auto &entry = dir[entriesRead];
-		entry.id = static_cast<uint16_t>(id);
+		entry.id = id;
 		// addr points to IMAGE_RESOURCE_DIRECTORY
 		// or IMAGE_RESOURCE_DATA_ENTRY.
 		entry.addr = le32_to_cpu(irdEntry->OffsetToData);
@@ -240,10 +313,10 @@ int PEResourceReaderPrivate::loadResDir(uint32_t addr, rsrc_dir_t &dir)
 
 /**
  * Get the resource directory for the specified type.
- * @param type Resource type.
+ * @param type Resource type
  * @return Resource directory, or nullptr if not found.
  */
-const PEResourceReaderPrivate::rsrc_dir_t *PEResourceReaderPrivate::getTypeDir(uint16_t type)
+const PEResourceReaderPrivate::rsrc_dir_t *PEResourceReaderPrivate::getTypeDir(uint32_t type)
 {
 	// Check if the type is already cached.
 	auto iter_td = type_dirs.find(type);
@@ -286,14 +359,14 @@ const PEResourceReaderPrivate::rsrc_dir_t *PEResourceReaderPrivate::getTypeDir(u
 
 /**
  * Get the resource directory for the specified type and ID.
- * @param type Resource type.
- * @param id Resource ID.
+ * @param type Resource type
+ * @param id Resource ID
  * @return Resource directory, or nullptr if not found.
  */
-const PEResourceReaderPrivate::rsrc_dir_t *PEResourceReaderPrivate::getTypeIdDir(uint16_t type, uint16_t id)
+const PEResourceReaderPrivate::rsrc_dir_t *PEResourceReaderPrivate::getTypeIdDir(uint32_t type, uint32_t id)
 {
 	// Check if the type and ID is already cached.
-	const uint32_t type_and_id = (type | (static_cast<uint32_t>(id) << 16));
+	const uint64_t type_and_id = (static_cast<uint64_t>(type) | (static_cast<uint64_t>(id) << 32));
 	auto iter_td = type_and_id_dirs.find(type_and_id);
 	if (iter_td != type_and_id_dirs.end()) {
 		// Type and ID is already cached.
@@ -709,12 +782,12 @@ off64_t PEResourceReader::partition_size_used(void) const
 
 /**
  * Open a resource.
- * @param type Resource type ID.
- * @param id Resource ID. (-1 for "first entry")
- * @param lang Language ID. (-1 for "first entry")
+ * @param type Resource type ID
+ * @param id Resource ID (-1 for "first entry")
+ * @param lang Language ID (-1 for "first entry")
  * @return IRpFile*, or nullptr on error.
  */
-IRpFilePtr PEResourceReader::open(uint16_t type, int id, int lang)
+IRpFilePtr PEResourceReader::open(uint32_t type, int id, int lang)
 {
 	// Check if the directory has been cached.
 	RP_D(PEResourceReader);
@@ -729,9 +802,10 @@ IRpFilePtr PEResourceReader::open(uint16_t type, int id, int lang)
 
 	// Get the directory for the type and ID.
 	const PEResourceReaderPrivate::rsrc_dir_t *type_id_dir =
-		d->getTypeIdDir(type, static_cast<uint16_t>(id));
-	if (!type_id_dir || type_id_dir->empty())
+		d->getTypeIdDir(type, id);
+	if (!type_id_dir || type_id_dir->empty()) {
 		return {};
+	}
 
 	const PEResourceReaderPrivate::ResDirEntry *dirEntry = nullptr;
 	if (lang == -1) {
@@ -741,7 +815,7 @@ IRpFilePtr PEResourceReader::open(uint16_t type, int id, int lang)
 		// Find the specified language ID.
 		auto iter = std::find_if(type_id_dir->cbegin(), type_id_dir->cend(),
 			[lang](PEResourceReaderPrivate::ResDirEntry entry) noexcept -> bool {
-				return (entry.id == static_cast<uint16_t>(lang));
+				return (entry.id == static_cast<uint32_t>(lang));
 			}
 		);
 
@@ -780,6 +854,30 @@ IRpFilePtr PEResourceReader::open(uint16_t type, int id, int lang)
 	// and size as the file parameters.
 	// TODO: Set the codepage somewhere?
 	return std::make_shared<PartitionFile>(this->shared_from_this(), data_addr, le32_to_cpu(irdata.Size));
+}
+
+/**
+ * Convert a name to a resource ID.
+ * Needed in order to look up named resources.
+ * @param name Name
+ * @return Resource ID, or 0 on error.
+ */
+int PEResourceReader::nameToResourceID(const char *name) const
+{
+	RP_D(const PEResourceReader);
+	auto iter = d->name_to_id.find(name);
+	return (iter != d->name_to_id.cend()) ? iter->second : 0;
+}
+
+/**
+ * Ensure a type directory is loaded.
+ * This is needed in order to resolve resource names within that type.
+ * @param type Type ID
+ */
+void PEResourceReader::ensureTypeIDIsLoaded(uint32_t type)
+{
+	RP_D(PEResourceReader);
+	d->getTypeDir(type);
 }
 
 /**
