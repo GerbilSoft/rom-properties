@@ -110,6 +110,7 @@ public:
 		MIDlet_Version,
 		MIDlet_Vendor,
 		MIDlet_Icon,
+		MIDlet_Info_URL,
 		MIDlet_Data_Size,
 		MIDlet_1,
 
@@ -215,30 +216,31 @@ const char J2MEPrivate::manifest_tag_names_strtbl[] = {
 	"MIDlet-Version\0"		// 108
 	"MIDlet-Vendor\0"		// 123
 	"MIDlet-Icon\0"			// 137
-	"MIDlet-Data-Size\0"		// 149
-	"MIDlet-1\0"			// 166
+	"MIDlet-Info-URL\0"		// 149
+	"MIDlet-Data-Size\0"		// 165
+	"MIDlet-1\0"			// 182
 
 	// .jad only
-	"MIDlet-Jar-URL\0"		// 175
-	"MIDlet-Jar-Size\0"		// 190
-	"Nokia-MIDlet-Category\0"	// 206
-	"TC-BookReader-Logging\0"	// 228
+	"MIDlet-Jar-URL\0"		// 191
+	"MIDlet-Jar-Size\0"		// 206
+	"Nokia-MIDlet-Category\0"	// 222
+	"TC-BookReader-Logging\0"	// 244
 
 	// .jad: File digest tags
-	"Name\0"			// 250
-	"MD5-Digest\0"			// 255
-	"SHA-Digest\0"			// 266; deprecated alias of SHA1_Digest?
-	"SHA1-Digest\0"			// 277
-	"SHA-1-Digest\0"		// 289; incorrect version found in some .jad files
-	"SHA-256-Digest\0"		// 302; probably not found in J2ME .jar files
-	"Digest-Algorithms\0"		// 317
+	"Name\0"			// 266
+	"MD5-Digest\0"			// 271
+	"SHA-Digest\0"			// 282; deprecated alias of SHA1_Digest?
+	"SHA1-Digest\0"			// 293
+	"SHA-1-Digest\0"		// 305; incorrect version found in some .jad files
+	"SHA-256-Digest\0"		// 318; probably not found in J2ME .jar files
+	"Digest-Algorithms\0"		// 333
 };
 
 // Manifest tag names: offset table
 const array<uint16_t, static_cast<size_t>(J2MEPrivate::manifest_tag_t::Manifest_Tag_Max)> J2MEPrivate::manifest_tag_names_offtbl = {{
 	  0,   1,  18,  29,  56,  77,  89, 108,
-	123, 137, 149, 166, 175, 190, 206, 228,
-	250, 255, 266, 277, 289, 302, 317,
+	123, 137, 149, 165, 182, 191, 206, 222,
+	244, 266, 271, 282, 293, 305, 318, 333
 }};
 
 J2MEPrivate::J2MEPrivate(const IRpFilePtr &file, mzStream jarStream, mzReader jarReader)
