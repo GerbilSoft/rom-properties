@@ -1149,7 +1149,7 @@ int J2ME::loadMetaData(void)
 	}
 
 	// MANIFEST.MF is read in the constructor.
-	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
+	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
 
 	// Name (using this tag for Title)
 	auto iter = d->m_map.find(J2MEPrivate::manifest_tag_t::MIDlet_Name);
@@ -1173,6 +1173,13 @@ int J2ME::loadMetaData(void)
 	iter = d->m_map.find(J2MEPrivate::manifest_tag_t::MIDlet_Vendor);
 	if (iter != d->m_map.end()) {
 		d->metaData.addMetaData_string(Property::Publisher, iter->second);
+	}
+
+	// TODO: do version *after* string table
+	// Version
+	iter = d->m_map.find(J2MEPrivate::manifest_tag_t::MIDlet_Version);
+	if (iter != d->m_map.end()) {
+		d->metaData.addMetaData_string(Property::Version, iter->second);
 	}
 
 	// Finished reading the metadata.
