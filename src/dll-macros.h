@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension.                                    *
  * dll-macros.h: DLL visibility macros.                                    *
  *                                                                         *
- * Copyright (c) 2022-2023 by David Korth.                                 *
+ * Copyright (c) 2022-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -66,3 +66,17 @@
 #  define RP_LIBROMDATA_PUBLIC
 #  define RP_LIBROMDATA_LOCAL
 #endif
+
+// Android generally doesn't use versioned library filenames.
+// Use this macro, e.g.: RP_LIBRARY_SO_VERSIONED("liblz4.so", ".1")
+// On Android, this becomes "liblz4.so".
+// On other platforms, this becomes "liblz4.so.1".
+#ifdef __ANDROID__
+#  define RP_LIBRARY_SO_VERSIONED(libname, soversion) libname
+#else /* !__ANDROID__ */
+#  define RP_LIBRARY_SO_VERSIONED(libname, soversion) libname soversion
+#endif /* __ANDROID__ */
+
+// Default dlopen() flags.
+// TODO: Allow customization via CMake options?
+#define RP_DLOPEN_FLAGS (RTLD_NOW | RTLD_LOCAL)

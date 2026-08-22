@@ -27,7 +27,7 @@ using std::unique_ptr;
 static unique_ptr<HMODULE, HMODULE_deleter> libpng_dll;
 static std::once_flag apng_once_flag;
 
-// APNG function pointers.
+// APNG function pointers
 APNG_png_get_acTL_t APNG_png_get_acTL = nullptr;
 APNG_png_set_acTL_t APNG_png_set_acTL = nullptr;
 APNG_png_get_num_frames_t APNG_png_get_num_frames = nullptr;
@@ -67,6 +67,14 @@ static void init_apng(void)
 #define xstr(a) str(a)
 #define str(a) #a
 
+// NOTE: libpng-1.2 uses "libpng12.so.0".
+// Starting with libpng-1.4, "libpng14.so.14" is used, where the
+// SOVERSION matches the library name suffix.
+// NOTE: Older libpng might not work due to libpng-1.0 and earlier
+// simply using "libpng.so.X", but those are ancient history...
+#define PNG_LIBRARY_NAME	"libpng" xstr(PNG_LIBPNG_VER_MAJOR) xstr(PNG_LIBPNG_VER_MINOR)
+#define T_PNG_LIBRARY_NAME	_T("libpng") _T(xstr(PNG_LIBPNG_VER_MAJOR)) _T(xstr(PNG_LIBPNG_VER_MINOR))
+
 #ifdef _WIN32
 	// Get the handle of the already-opened libpng.
 	// Using GetModuleHandleEx() to increase the refcount.
@@ -74,9 +82,9 @@ static void init_apng(void)
 	// ensure that it's loaded before calling this function!
 	// Otherwise, this will fail.
 #ifndef NDEBUG
-	static const TCHAR libpng_dll_filename[] = _T("libpng") xstr(PNG_LIBPNG_VER_DLLNUM) _T("d.dll");
+	static const TCHAR libpng_dll_filename[] = T_PNG_LIBRARY_NAME _T("d.dll");
 #else /* !NDEBUG */
-	static const TCHAR libpng_dll_filename[] = _T("libpng") xstr(PNG_LIBPNG_VER_DLLNUM) _T(".dll");
+	static const TCHAR libpng_dll_filename[] = T_PNG_LIBRARY_NAME _T(".dll");
 #endif /* NDEBUG */
 	HMODULE hTmp = nullptr;
 	bRet = GetModuleHandleEx(0, libpng_dll_filename, &hTmp);
@@ -88,12 +96,35 @@ static void init_apng(void)
 #else /* !_WIN32 */
 	// TODO: Get path of already-opened libpng?
 	// TODO: On Linux, __USE_GNU and RTLD_DEFAULT.
-	static const char libpng_so_filename[] = "libpng" xstr(PNG_LIBPNG_VER_SONUM) ".so";
-	libpng_dll.reset(dlopen(libpng_so_filename, RTLD_LOCAL|RTLD_NOW));
+	static const char libpng_so_filename[] = RP_LIBRARY_SO_VERSIONED(PNG_LIBRARY_NAME ".so", "." xstr(PNG_LIBPNG_VER_SONUM));
+	libpng_dll.reset(dlopen(libpng_so_filename, RP_DLOPEN_FLAGS));
 	if (!libpng_dll) {
 		return;
 	}
 #endif
+
+	// Verify that the dlopen()'d libpng has a compatible
+	// major and minor version number.
+	typedef png_uint_32 (*png_access_version_number_t)(void);
+	png_access_version_number_t pfn_access_version_number =
+		reinterpret_cast<png_access_version_number_t>(dlsym(libpng_dll.get(), "png_access_version_number"));
+	assert(pfn_access_version_number != nullptr);
+	if (!pfn_access_version_number) {
+		libpng_dll.reset();
+		return;
+	}
+
+	// Version number is in decimal: XXYYZZ
+	// - XX: major
+	// - YY: minor
+	// - ZZ: release
+	// Divide by 100 so we only compare major and minor.
+	const uint32_t APNG_version_number = pfn_access_version_number();
+	assert(APNG_version_number / 100 == PNG_LIBPNG_VER / 100);
+	if (APNG_version_number / 100 != PNG_LIBPNG_VER / 100) {
+		libpng_dll.reset();
+		return;
+	}
 
 	// Check for APNG support.
 #define DLSYM(sym) APNG_##sym = reinterpret_cast<__typeof__(APNG_##sym)>(dlsym(libpng_dll.get(), #sym))

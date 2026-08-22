@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
  * NautilusPlugin.cpp: Nautilus (and forks) Plugin Definition              *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -92,7 +92,7 @@ rp_nautilus_register_types(GTypeModule *g_module)
 	} \
 \
 	/* dlopen() the extension library. */ \
-	libextension_so = dlopen("lib" #prefix "-extension.so.1", RTLD_LAZY | RTLD_LOCAL); \
+	libextension_so = dlopen("lib" #prefix "-extension.so.1", RP_DLOPEN_FLAGS); \
 	if (!libextension_so) { \
 		g_critical("*** " G_LOG_DOMAIN ": dlopen() failed: %s\n", dlerror()); \
 		return; \

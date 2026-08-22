@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GNOME Tracker)                    *
  * tracker-mini.c: Tracker function declarations and pointers              *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,6 +11,7 @@
 
 #include "tracker-mini.h"
 #include "tracker-file-utils.h"
+#include "dll-macros.h"	// for RP_LIBRARY_SO_VERSIONED()
 
 // C includes
 #include <dlfcn.h>
@@ -149,27 +150,27 @@ int rp_tracker_init_pfn(void)
 	} TrackerApiLibs_t;
 	static const TrackerApiLibs_t trackerApiLibs[] = {
 		// LocalSearch 3.0 (aka tracker-3.8)
-		{"libtinysparql-3.0.so.0", "libtracker-extract.so", 3},
+		{RP_LIBRARY_SO_VERSIONED("libtinysparql-3.0.so", ".0"), "libtracker-extract.so", 3},
 
 		// Tracker 3.0
-		{"libtracker-sparql-3.0.so.0", "libtracker-extract.so", 3},
+		{RP_LIBRARY_SO_VERSIONED("libtracker-sparql-3.0.so", ".0"), "libtracker-extract.so", 3},
 
 		// Tracker 2.0
-		{"libtracker-sparql-2.0.so.0", "libtracker-extract.so.0", 2},
+		{RP_LIBRARY_SO_VERSIONED("libtracker-sparql-2.0.so", ".0"), "libtracker-extract.so.0", 2},
 
 		// Tracker 1.0
-		{"libtracker-sparql-1.0.so.0", "libtracker-extract.so.0", 1},
+		{RP_LIBRARY_SO_VERSIONED("libtracker-sparql-1.0.so", ".0"), "libtracker-extract.so.0", 1},
 	};
 	static const TrackerApiLibs_t *const pEnd = &trackerApiLibs[sizeof(trackerApiLibs)/sizeof(trackerApiLibs[0])];
 
 	for (const TrackerApiLibs_t *p = trackerApiLibs; p < pEnd; p++) {
-		libtracker_sparql_so = dlopen(p->sparql_so, RTLD_NOW | RTLD_LOCAL);
+		libtracker_sparql_so = dlopen(p->sparql_so, RP_DLOPEN_FLAGS);
 		if (!libtracker_sparql_so) {
 			// Not found. Try the next one.
 			continue;
 		}
 
-		libtracker_extract_so = dlopen(p->extract_so, RTLD_NOW | RTLD_LOCAL);
+		libtracker_extract_so = dlopen(p->extract_so, RP_DLOPEN_FLAGS);
 		if (!libtracker_extract_so) {
 			// Not found. Try the next one.
 			dlclose(libtracker_sparql_so);
