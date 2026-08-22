@@ -27,7 +27,7 @@ using std::unique_ptr;
 static unique_ptr<HMODULE, HMODULE_deleter> libpng_dll;
 static std::once_flag apng_once_flag;
 
-// APNG function pointers.
+// APNG function pointers
 APNG_png_get_acTL_t APNG_png_get_acTL = nullptr;
 APNG_png_set_acTL_t APNG_png_set_acTL = nullptr;
 APNG_png_get_num_frames_t APNG_png_get_num_frames = nullptr;
@@ -102,6 +102,29 @@ static void init_apng(void)
 		return;
 	}
 #endif
+
+	// Verify that the dlopen()'d libpng has a compatible
+	// major and minor version number.
+	typedef png_uint_32 (*png_access_version_number_t)(void);
+	png_access_version_number_t pfn_access_version_number =
+		reinterpret_cast<png_access_version_number_t>(dlsym(libpng_dll.get(), "png_access_version_number"));
+	assert(pfn_access_version_number != nullptr);
+	if (!pfn_access_version_number) {
+		libpng_dll.reset();
+		return;
+	}
+
+	// Version number is in decimal: XXYYZZ
+	// - XX: major
+	// - YY: minor
+	// - ZZ: release
+	// Divide by 100 so we only compare major and minor.
+	const uint32_t APNG_version_number = pfn_access_version_number();
+	assert(APNG_version_number / 100 == PNG_LIBPNG_VER / 100);
+	if (APNG_version_number / 100 != PNG_LIBPNG_VER / 100) {
+		libpng_dll.reset();
+		return;
+	}
 
 	// Check for APNG support.
 #define DLSYM(sym) APNG_##sym = reinterpret_cast<__typeof__(APNG_##sym)>(dlsym(libpng_dll.get(), #sym))
