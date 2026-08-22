@@ -101,6 +101,12 @@ void CisoPspDlopen::init_pfn_LZ4_int(void)
 	HMODULE lib = rp_LoadLibrary(LZ4_DLL_FILENAME);
 #else /* !_WIN32 */
 	HMODULE lib = dlopen("liblz4.so.1", RTLD_LOCAL|RTLD_NOW);
+#  ifdef __ANDROID__
+	if (!lib) {
+		// Android generally doesn't use versioned library filenames.
+		lib = dlopen("liblz4.so", RTLD_LOCAL|RTLD_NOW);
+	}
+#  endif /* __ANDROID__ */
 #endif /* _WIN32 */
 	if (!lib) {
 		// NOTE: dlopen() does not set errno, but it does have dlerror().
@@ -147,6 +153,12 @@ void CisoPspDlopen::init_pfn_LZO_int(void)
 	HMODULE lib = rp_LoadLibrary(LZO_DLL_FILENAME);
 #else /* !_WIN32 */
 	HMODULE lib = dlopen("liblzo2.so.2", RTLD_LOCAL|RTLD_NOW);
+#  ifdef __ANDROID__
+	if (!lib) {
+		// Android generally doesn't use versioned library filenames.
+		lib = dlopen("liblzo2.so", RTLD_LOCAL|RTLD_NOW);
+	}
+#  endif /* __ANDROID__ */
 #endif /* _WIN32 */
 	if (!lib) {
 		// NOTE: dlopen() does not set errno, but it does have dlerror().
