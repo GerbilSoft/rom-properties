@@ -67,6 +67,14 @@ static void init_apng(void)
 #define xstr(a) str(a)
 #define str(a) #a
 
+// NOTE: libpng-1.2 uses "libpng12.so.0".
+// Starting with libpng-1.4, "libpng14.so.14" is used, where the
+// SOVERSION matches the library name suffix.
+// NOTE: Older libpng might not work due to libpng-1.0 and earlier
+// simply using "libpng.so.X", but those are ancient history...
+#define PNG_LIBRARY_NAME	"libpng" xstr(PNG_LIBPNG_VER_MAJOR) xstr(PNG_LIBPNG_VER_MINOR)
+#define T_PNG_LIBRARY_NAME	_T("libpng") _T(xstr(PNG_LIBPNG_VER_MAJOR)) _T(xstr(PNG_LIBPNG_VER_MINOR))
+
 #ifdef _WIN32
 	// Get the handle of the already-opened libpng.
 	// Using GetModuleHandleEx() to increase the refcount.
@@ -74,9 +82,9 @@ static void init_apng(void)
 	// ensure that it's loaded before calling this function!
 	// Otherwise, this will fail.
 #ifndef NDEBUG
-	static const TCHAR libpng_dll_filename[] = _T("libpng") xstr(PNG_LIBPNG_VER_DLLNUM) _T("d.dll");
+	static const TCHAR libpng_dll_filename[] = T_PNG_LIBRARY_NAME _T("d.dll");
 #else /* !NDEBUG */
-	static const TCHAR libpng_dll_filename[] = _T("libpng") xstr(PNG_LIBPNG_VER_DLLNUM) _T(".dll");
+	static const TCHAR libpng_dll_filename[] = T_PNG_LIBRARY_NAME _T(".dll");
 #endif /* NDEBUG */
 	HMODULE hTmp = nullptr;
 	bRet = GetModuleHandleEx(0, libpng_dll_filename, &hTmp);
@@ -88,7 +96,7 @@ static void init_apng(void)
 #else /* !_WIN32 */
 	// TODO: Get path of already-opened libpng?
 	// TODO: On Linux, __USE_GNU and RTLD_DEFAULT.
-	static const char libpng_so_filename[] = "libpng" xstr(PNG_LIBPNG_VER_SONUM) ".so";
+	static const char libpng_so_filename[] = RP_LIBRARY_SO_VERSIONED(PNG_LIBRARY_NAME ".so", "." xstr(PNG_LIBPNG_VER_SONUM));
 	libpng_dll.reset(dlopen(libpng_so_filename, RTLD_LOCAL|RTLD_NOW));
 	if (!libpng_dll) {
 		return;
