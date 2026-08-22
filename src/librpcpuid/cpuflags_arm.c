@@ -243,6 +243,7 @@ static void RP_CPU_Flags_arm_Init_int(void)
 		{RP_CPUFLAG_ARM_AES,	"hw.optional.arm.FEAT_AES"},
 		{RP_CPUFLAG_ARM_SHA1,	"hw.optional.arm.FEAT_SHA1"},
 		{RP_CPUFLAG_ARM_SHA2,	"hw.optional.arm.FEAT_SHA256"},
+		{RP_CPUFLAG_ARM_CRC32,	"hw.optional.arm.FEAT_CRC32"},
 		{RP_CPUFLAG_ARM_CRC32,	"hw.optional.armv8_crc32"},
 		{RP_CPUFLAG_ARM_SHA3,	"hw.optional.arm.FEAT_SHA3"},
 		{RP_CPUFLAG_ARM_SHA3,	"hw.optional.armv8_2_sha3"},	// deprecated
