@@ -14,7 +14,7 @@
 int main(int argc, const char **argv)
 {
 	static_assert(sizeof(off_t) == sizeof(int64_t), "off_t is the wrong size");
-	off_t offset = ftello(NULL);
-	fseeko(NULL, offset, SEEK_SET);
+	off_t offset = ftello(stdin);
+	fseeko(stdin, offset, SEEK_SET);
 	return 0;
 }

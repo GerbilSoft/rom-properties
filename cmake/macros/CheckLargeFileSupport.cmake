@@ -66,7 +66,18 @@ FUNCTION(CHECK_LARGE_FILE_SUPPORT)
 					SET(TMP_LFS_DEFINITIONS "${TMP_LFS_DEFINITIONS_BITS}")
 				ELSE()
 					# LFS macros failed.
-					MESSAGE(STATUS "Checking if Large File Support is available - no")
+					# NOTE: When GNU compiler extensions are disabled,
+					# musl libc requires _POSIX_SOURCE, _POSIX_C_SOURCE, or _GNU_SOURCE
+					# in order to enable ftello() and fseeko().
+					SET(TMP_LFS_DEFINITIONS_BITS ${TMP_LFS_DEFINITOINS_BITS} -D_POSIX_C_SOURCE=200112L)
+					TRY_COMPILE(TMP_LFS_FOUND "${CMAKE_BINARY_DIR}"
+						"${LFS_SOURCE_PATH}/LargeFileSupport_fseeko.c"
+						COMPILE_DEFINITIONS ${TMP_LFS_DEFINITIONS_BITS})
+					IF(TMP_LFS_FOUND)
+						MESSAGE(STATUS "Checking if Large File Support is available - yes, using LFS macros and _POSIX_C_SOURCE")
+					ELSE()
+						MESSAGE(STATUS "Checking if Large File Support is available - no")
+					ENDIF()
 				ENDIF()
 			ENDIF()
 		ENDIF()
