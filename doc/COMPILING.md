@@ -15,11 +15,12 @@ packages:
 * GNOME 43: libglib2.0-dev libgtk-4-dev libgdk-pixbuf2.0-dev libnautilus-extension-dev libgsound-dev
 
 Optional runtime dependencies:
-* liblz4-1 liblzo2-2 (libwebp5 | libwebp6 | libwebp7)
+* libcurl4 liblz4-1 liblzo2-2 (libwebp5 | libwebp6 | libwebp7)
 
 NOTE: On older versions of Ubuntu, some packages were different:
 * Earlier than 18.04:
   * libkf5kio-dev: use kio-dev
+  * libcurl4: use libcurl3
 * Earlier than 16.04:
   * libgsound-dev: use libcanberra-dev and a GTK-specific library package:
     * libcanberra-gtk-dev
