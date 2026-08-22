@@ -97,7 +97,7 @@ static void init_apng(void)
 	// TODO: Get path of already-opened libpng?
 	// TODO: On Linux, __USE_GNU and RTLD_DEFAULT.
 	static const char libpng_so_filename[] = RP_LIBRARY_SO_VERSIONED(PNG_LIBRARY_NAME ".so", "." xstr(PNG_LIBPNG_VER_SONUM));
-	libpng_dll.reset(dlopen(libpng_so_filename, RTLD_LOCAL|RTLD_NOW));
+	libpng_dll.reset(dlopen(libpng_so_filename, RP_DLOPEN_FLAGS));
 	if (!libpng_dll) {
 		return;
 	}

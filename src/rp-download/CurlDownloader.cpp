@@ -72,7 +72,7 @@ static void init_curl_once(void)
 	libcurl_dll.reset(rp_LoadLibraryEx(_T("libcurl.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32 | LOAD_LIBRARY_SEARCH_APPLICATION_DIR));
 #elif defined(__ANDROID__)
 	// Android generally doesn't use versioned library filenames.
-	libcurl_dll.reset(dlopen("libcurl.so", RTLD_NOW | RTLD_LOCAL));
+	libcurl_dll.reset(dlopen("libcurl.so", RP_DLOPEN_FLAGS));
 #else
 	// NOTE: Debian/Ubuntu systems don't have an unversioned .so unless the -dev package is installed.
 	// NOTE: cURL ABI version 4 was introduced with cURL v7.16.0 (October 2006),
@@ -81,15 +81,12 @@ static void init_curl_once(void)
 	// libcurl4 was added to Debian as part of Debian 10 (July 2019),
 	// and Ubuntu as part of Ubuntu 18.04 (April 2018).
 	// Reference: https://daniel.haxx.se/blog/2024/10/30/eighteen-years-of-abi-stability/
-
-	// TODO: Consistently use either RTLD_NOW or RTLD_LAZY.
-	// Maybe make it a CMake option?
 	static const char libcurl_so_filenames[2][16] = {
 		"libcurl.so.4",
 		"libcurl.so.3",
 	};
 	for (auto filename : libcurl_so_filenames) {
-		libcurl_dll.reset(dlopen(filename, RTLD_NOW | RTLD_LOCAL));
+		libcurl_dll.reset(dlopen(filename, RP_DLOPEN_FLAGS));
 		if (libcurl_dll.get() != nullptr) {
 			break;
 		}

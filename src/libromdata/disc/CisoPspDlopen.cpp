@@ -101,7 +101,7 @@ void CisoPspDlopen::init_pfn_LZ4_int(void)
 #  endif /* NDEBUG */
 	HMODULE lib = rp_LoadLibrary(LZ4_DLL_FILENAME);
 #else /* !_WIN32 */
-	HMODULE lib = dlopen(RP_LIBRARY_SO_VERSIONED("liblz4.so", ".1"), RTLD_LOCAL|RTLD_NOW);
+	HMODULE lib = dlopen(RP_LIBRARY_SO_VERSIONED("liblz4.so", ".1"), RP_DLOPEN_FLAGS);
 #endif /* _WIN32 */
 	if (!lib) {
 		// NOTE: dlopen() does not set errno, but it does have dlerror().
@@ -147,7 +147,7 @@ void CisoPspDlopen::init_pfn_LZO_int(void)
 #  endif /* NDEBUG */
 	HMODULE lib = rp_LoadLibrary(LZO_DLL_FILENAME);
 #else /* !_WIN32 */
-	HMODULE lib = dlopen(RP_LIBRARY_SO_VERSIONED("liblzo2.so", ".2"), RTLD_LOCAL|RTLD_NOW);
+	HMODULE lib = dlopen(RP_LIBRARY_SO_VERSIONED("liblzo2.so", ".2"), RP_DLOPEN_FLAGS);
 #endif /* _WIN32 */
 	if (!lib) {
 		// NOTE: dlopen() does not set errno, but it does have dlerror().

@@ -107,7 +107,7 @@ static void init_webp(void)
 	}
 #elif defined(__ANDROID__)
 	// Android generally doesn't use versioned filenames.
-	Private::libwebp_so.reset(dlopen("libwebp.so", RTLD_NOW | RTLD_LOCAL));
+	Private::libwebp_so.reset(dlopen("libwebp.so", RP_DLOPEN_FLAGS));
 #else
 	// NOTE: Ubuntu systems don't have an unversioned .so unless the -dev package is installed.
 	static const char libwebp_so_filenames[3][16] = {
@@ -116,7 +116,7 @@ static void init_webp(void)
 		"libwebp.so.5",
 	};
 	for (auto filename : libwebp_so_filenames) {
-		Private::libwebp_so.reset(dlopen(filename, RTLD_NOW | RTLD_LOCAL));
+		Private::libwebp_so.reset(dlopen(filename, RP_DLOPEN_FLAGS));
 		if (Private::libwebp_so.get() != nullptr) {
 			break;
 		}

@@ -76,3 +76,7 @@
 #else /* !__ANDROID__ */
 #  define RP_LIBRARY_SO_VERSIONED(libname, soversion) libname soversion
 #endif /* __ANDROID__ */
+
+// Default dlopen() flags.
+// TODO: Allow customization via CMake options?
+#define RP_DLOPEN_FLAGS (RTLD_NOW | RTLD_LOCAL)

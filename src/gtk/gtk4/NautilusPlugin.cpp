@@ -93,7 +93,7 @@ rp_nautilus_register_types(GTypeModule *module)
 	} \
 \
 	/* dlopen() the extension library. */ \
-	libextension_so = dlopen("lib" #prefix "-extension.so.4", RTLD_LAZY | RTLD_LOCAL); \
+	libextension_so = dlopen("lib" #prefix "-extension.so.4", RP_DLOPEN_FLAGS); \
 	if (!libextension_so) { \
 		g_critical("*** " G_LOG_DOMAIN ": dlopen() failed: %s\n", dlerror()); \
 		return; \

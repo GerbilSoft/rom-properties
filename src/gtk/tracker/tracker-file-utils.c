@@ -214,7 +214,7 @@ init_libblkid_so(void)
 
 	// Attempt to dlopen() libblkid.so.
 	// NOTE: Not dlclose()'d.
-	libblkid_so = dlopen(RP_LIBRARY_SO_VERSIONED("libblkid.so", ".1"), RTLD_NOW | RTLD_LOCAL);
+	libblkid_so = dlopen(RP_LIBRARY_SO_VERSIONED("libblkid.so", ".1"), RP_DLOPEN_FLAGS);
 	if (!libblkid_so) {
 		// Not found...
 		// TODO: Other error?

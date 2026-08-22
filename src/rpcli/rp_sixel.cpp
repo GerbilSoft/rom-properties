@@ -72,9 +72,7 @@ static void init_sixel_once(void)
 	// TODO: Also check arch-specific subdirectory?
 	libsixel_dll.reset(rp_LoadLibraryEx(_T("libsixel-1.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32 | LOAD_LIBRARY_SEARCH_APPLICATION_DIR));
 #else /* !_WIN32 */
-	// TODO: Consistently use either RTLD_NOW or RTLD_LAZY.
-	// Maybe make it a CMake option?
-	libsixel_dll.reset(dlopen(RP_LIBRARY_SO_VERSIONED("libsixel.so", ".1"), RTLD_LOCAL | RTLD_NOW));
+	libsixel_dll.reset(dlopen(RP_LIBRARY_SO_VERSIONED("libsixel.so", ".1"), RP_DLOPEN_FLAGS));
 #endif /* _WIN32 */
 
 	if (!libsixel_dll) {

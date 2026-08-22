@@ -164,13 +164,13 @@ int rp_tracker_init_pfn(void)
 	static const TrackerApiLibs_t *const pEnd = &trackerApiLibs[sizeof(trackerApiLibs)/sizeof(trackerApiLibs[0])];
 
 	for (const TrackerApiLibs_t *p = trackerApiLibs; p < pEnd; p++) {
-		libtracker_sparql_so = dlopen(p->sparql_so, RTLD_NOW | RTLD_LOCAL);
+		libtracker_sparql_so = dlopen(p->sparql_so, RP_DLOPEN_FLAGS);
 		if (!libtracker_sparql_so) {
 			// Not found. Try the next one.
 			continue;
 		}
 
-		libtracker_extract_so = dlopen(p->extract_so, RTLD_NOW | RTLD_LOCAL);
+		libtracker_extract_so = dlopen(p->extract_so, RP_DLOPEN_FLAGS);
 		if (!libtracker_extract_so) {
 			// Not found. Try the next one.
 			dlclose(libtracker_sparql_so);
