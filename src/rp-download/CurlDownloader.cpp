@@ -7,7 +7,7 @@
  ***************************************************************************/
 
 #include "CurlDownloader.hpp"
-
+#include "dll-macros.h"	// for RP_LIBRARY_SO_VERSIONED()
 // C includes
 #include "ctypex.h"
 #include "tcharx.h"
@@ -77,7 +77,7 @@ static void init_curl_once(void)
 	// Version 4 was introduced with cURL v7.16.0 (October 2006),
 	// but Debian arbitrarily kept it at version 3.
 	// Reference: https://daniel.haxx.se/blog/2024/10/30/eighteen-years-of-abi-stability/
-	libcurl_dll.reset(dlopen("libcurl.so.4", RTLD_LOCAL | RTLD_NOW));
+	libcurl_dll.reset(dlopen(RP_LIBRARY_SO_VERSIONED("libcurl.so", ".4"), RTLD_LOCAL | RTLD_NOW));
 #endif /* _WIN32 */
 
 	if (!libcurl_dll) {

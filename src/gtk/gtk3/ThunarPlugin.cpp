@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
  * ThunarPlugin.cpp: ThunarX Plugin Definition                             *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -26,12 +26,12 @@ using std::array;
 
 // Thunar version is based on GTK+ version.
 #if GTK_CHECK_VERSION(3, 0, 0)
-static const char LIBTHUNARX_SO_FILENAME[] = "libthunarx-3.so.0";
+static const char LIBTHUNARX_SO_FILENAME[] = RP_LIBRARY_SO_VERSIONED("libthunarx-3.so", ".0");
 static constexpr int THUNARX_MAJOR_VERSION = 1;
 static constexpr int THUNARX_MINOR_VERSION = 8;
 static constexpr int THUNARX_MICRO_VERSION = 0;
 #else /* !GTK_CHECK_VERSION(3, 0, 0) */
-static const char LIBTHUNARX_SO_FILENAME[] = "libthunarx-2.so.0";
+static const char LIBTHUNARX_SO_FILENAME[] = RP_LIBRARY_SO_VERSIONED("libthunarx-2.so", ".0");
 static constexpr int THUNARX_MAJOR_VERSION = 1;
 static constexpr int THUNARX_MINOR_VERSION = 6;
 static constexpr int THUNARX_MICRO_VERSION = 0;

@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "rp_sixel.hpp"
+#include "dll-macros.h"	// for RP_LIBRARY_SO_VERSIONED()
 
 // libgsvt for VT handling
 #include "gsvt.h"
@@ -73,7 +74,7 @@ static void init_sixel_once(void)
 #else /* !_WIN32 */
 	// TODO: Consistently use either RTLD_NOW or RTLD_LAZY.
 	// Maybe make it a CMake option?
-	libsixel_dll.reset(dlopen("libsixel.so.1", RTLD_LOCAL | RTLD_NOW));
+	libsixel_dll.reset(dlopen(RP_LIBRARY_SO_VERSIONED("libsixel.so", ".1"), RTLD_LOCAL | RTLD_NOW));
 #endif /* _WIN32 */
 
 	if (!libsixel_dll) {

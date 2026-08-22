@@ -70,7 +70,7 @@ static pfn_WebPDecodeBGRAInto_t pfn_WebPDecodeBGRAInto = nullptr;
  */
 static void init_webp(void)
 {
-#ifdef _WIN32
+#if defined(_WIN32)
 	// NOTE: Not bundling libwebp, so we'll only check for non-debug filenames.
 
 	// NOTE: Need to load libsharpyuv first due to DLL path restrictions.
@@ -105,7 +105,10 @@ static void init_webp(void)
 		// Unload libsharpyuv.dll, since libwebp.dll could not be found.
 		Private::libsharpyuv_dll.reset();
 	}
-#else /* !_WIN32 */
+#elif defined(__ANDROID__)
+	// Android generally doesn't use versioned filenames.
+	Private::libwebp_so.reset(dlopen("libwebp.so", RTLD_NOW | RTLD_LOCAL));
+#else
 	// NOTE: Ubuntu systems don't have an unversioned .so unless the -dev package is installed.
 	static const char libwebp_so_filenames[3][16] = {
 		"libwebp.so.7",
@@ -118,7 +121,7 @@ static void init_webp(void)
 			break;
 		}
 	}
-#endif /* !_WIN32 */
+#endif
 
 	if (!Private::libwebp_so) {
 		return;

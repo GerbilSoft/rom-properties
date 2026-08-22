@@ -12,6 +12,7 @@
 // libtracker-miners-common, which is statically-linked.
 #include "config.tracker.h"
 #include "tracker-file-utils.h"
+#include "dll-macros.h"	// for RP_LIBRARY_SO_VERSIONED()
 
 #include <gio/gunixmounts.h>
 //#include <blkid.h>
@@ -213,7 +214,7 @@ init_libblkid_so(void)
 
 	// Attempt to dlopen() libblkid.so.
 	// NOTE: Not dlclose()'d.
-	libblkid_so = dlopen("libblkid.so.1", RTLD_NOW | RTLD_LOCAL);
+	libblkid_so = dlopen(RP_LIBRARY_SO_VERSIONED("libblkid.so", ".1"), RTLD_NOW | RTLD_LOCAL);
 	if (!libblkid_so) {
 		// Not found...
 		// TODO: Other error?

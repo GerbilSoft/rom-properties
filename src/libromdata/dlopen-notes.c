@@ -39,6 +39,25 @@
 #  define _ELF_NOTE_COMMA_HAS_LZO ","
 #endif
 
+#ifdef __ANDROID__
+
+// Android: Filenames for these libraries don't have SOVERSIONs.
+#define ELF_NOTE_DLOPEN4_LIBROMDATA(var, feature0, description0, priority0, module0, feature1, description1, priority1, module1, feature2, description2, priority2, module2, feature3, description3, priority3, module3) \
+	_ELF_NOTE_DLOPEN("[" _ELF_NOTE_DLOPEN_INT(feature0, description0, priority0, module0) "," \
+	                     _ELF_NOTE_DLOPEN_INT(feature1, description1, priority1, module1) _ELF_NOTE_COMMA_HAS_LZ4 \
+	                     _ELF_NOTE_DLOPEN_LZ4(feature2, description2, priority2, module2) _ELF_NOTE_COMMA_HAS_LZO \
+	                     _ELF_NOTE_DLOPEN_LZO(feature3, description3, priority3, module3) "]", var)
+
+ELF_NOTE_DLOPEN4_LIBROMDATA( \
+	romdata_dlopen, \
+	"webp", "WebP image decoding (for Android APK packages)", "recommended", "libwebp.so", \
+	"sharpyuv", "libsharpyuv, dependency of libwebp (for Android APK packages)", "recommended", "libsharpyuv.so", \
+	"lz4", "LZ4 decompression (for PSP CISOv2 and ZISO images)", "recommended", "liblz4.so", \
+	"lzo", "LZO decompression (for PSP JISO images)", "recommended", "liblzo2.so"
+);
+
+#else /* !__ANDROID__ */
+
 #define ELF_NOTE_DLOPEN4_LIBROMDATA(var, feature0, description0, priority0, module0a, module0b, module0c, feature1, description1, priority1, module1, feature2, description2, priority2, module2, feature3, description3, priority3, module3) \
 	_ELF_NOTE_DLOPEN("[" _ELF_NOTE_DLOPEN_VA_INT(feature0, description0, priority0, module0a, module0b, module0c) "," \
 	                     _ELF_NOTE_DLOPEN_INT(feature1, description1, priority1, module1) _ELF_NOTE_COMMA_HAS_LZ4 \
@@ -52,3 +71,6 @@ ELF_NOTE_DLOPEN4_LIBROMDATA( \
 	"lz4", "LZ4 decompression (for PSP CISOv2 and ZISO images)", "recommended", "liblz4.so.1", \
 	"lzo", "LZO decompression (for PSP JISO images)", "recommended", "liblzo2.so.2"
 );
+
+#endif /* __ANDROID__ */
+
