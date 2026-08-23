@@ -20,6 +20,9 @@
 #include <seccomp.h>
 #include <sys/prctl.h>
 #include <linux/sched.h>	// CLONE_THREAD
+#ifndef __GLIBC__
+#  include <sys/ioctl.h>	// TIOCGWINSZ
+#endif /* !__GLIBC__ */
 
 // Socket headers for filtering socket() calls.
 #include <sys/socket.h>
@@ -91,6 +94,10 @@ int rp_secure_enable(rp_secure_param_t param)
 		SCMP_SYS(read),
 		SCMP_SYS(rt_sigreturn),
 		SCMP_SYS(write),
+#ifndef __GLIBC__
+		SCMP_SYS(readv),	// needed by musl libc
+		SCMP_SYS(writev),	// needed by musl libc
+#endif /* !__GLIBC__ */
 
 		// NixOS, Void Linux: std::locale ctor ends up calling getdents64().
 		// Not sure if any other distros need it, so just globally enable the syscall.
@@ -140,6 +147,16 @@ int rp_secure_enable(rp_secure_param_t param)
 
 		SCMP_SYS(madvise),	// glibc-2.42 (or gcc-15.1?) for OpenMP [TODO: Only in OpenMP builds?]
 
+#if defined(ENABLE_NLS) && !defined __GLIBC__
+		// GNU gettext runtime, and musl's libintl, checks UID and GID.
+		// NOTE: Most Linux systems use glibc's libintl.
+		// Our bundled libintl is only used on Windows.
+		SCMP_SYS(geteuid), SCMP_SYS(getuid),
+		SCMP_SYS(getegid), SCMP_SYS(getgid),
+		SCMP_SYS(geteuid32), SCMP_SYS(getuid32),
+		SCMP_SYS(getegid32), SCMP_SYS(getgid32),
+#endif /* ENABLE_NLS && !__GLIBC__ */
+
 		-1	// End of whitelist
 	};
 
@@ -147,6 +164,14 @@ int rp_secure_enable(rp_secure_param_t param)
 	for (const int16_t *p = syscall_wl_std; *p != -1; p++) {
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, *p, 0);
 	}
+
+	// musl libc calls ioctl(fd, TIOCGWINSZ, ...) when opening a file for write.
+	// NOTE: musl does not define any preprocessor macro, so we'll have to
+	// unconditionally enable this on non-glibc systems.
+#ifndef __GLIBC__
+	seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(ioctl), 1,
+		SCMP_A1_32(SCMP_CMP_EQ, TIOCGWINSZ, 0));
+#endif /* !__GLIBC__ */
 
 	// Multi-threading syscalls.
 	if (param.threading) {
@@ -187,6 +212,12 @@ int rp_secure_enable(rp_secure_param_t param)
 #elif defined(__NR_rseq)
 			__NR_rseq,		// restartable sequences, glibc-2.35
 #endif /* __SNR_rseq || __NR_rseq */
+
+#if defined(__SNR_membarrier)
+			SCMP_SYS(membarrier),	// OpenMP on musl libc
+#elif defined(__NR_membarrier)
+			__NR_membarrier,	// OpenMP on musl libc
+#endif /* __SNR_membarrier || __NR_membarrier */
 
 #ifdef __clang__
 			// LLVM/clang's OpenMP implementation (libomp) calls
