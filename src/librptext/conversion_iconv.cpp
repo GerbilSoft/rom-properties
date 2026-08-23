@@ -75,8 +75,9 @@ static char *rp_iconv(const char *src, int len,
 	//assert(len > 0);	// Don't assert on empty strings.
 	assert(src_charset != nullptr);
 	assert(dest_charset != nullptr);
-	if (!src || len <= 0 || !src_charset || !dest_charset)
+	if (!src || len <= 0 || !src_charset || !dest_charset) {
 		return nullptr;
+	}
 
 	// Based on examples from:
 	// * http://www.delorie.com/gnu/docs/glibc/libc_101.html
@@ -84,7 +85,7 @@ static char *rp_iconv(const char *src, int len,
 
 	// Open an iconv descriptor.
 	iconv_t cd;
-#if defined(__linux__) || defined(HAVE_ICONV_LIBICONV)
+#if defined(__GLIBC__) || defined(HAVE_ICONV_LIBICONV)
 	// glibc/libiconv: Append "//IGNORE" to the source character set
 	// if ignoreErr == true.
 	// TODO: Destination, not source?
