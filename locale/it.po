@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-08-23 16:02-0400\n"
-"PO-Revision-Date: 2026-08-23 20:27\n"
+"POT-Creation-Date: 2026-08-23 18:24-0400\n"
+"PO-Revision-Date: 2026-08-23 22:37\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -1061,7 +1061,8 @@ msgstr ""
 #: ../src/gtk/RomDataView_gtk3.cpp:304 ../src/gtk/RomDataView_gtk3.cpp:614
 #: ../src/gtk/RomDataView_gtk4.cpp:425 ../src/gtk/RomDataView_gtk4.cpp:578
 #: ../src/kde/ListDataModel.cpp:263 ../src/libromdata/Audio/ADX.cpp:285
-#: ../src/libromdata/Console/GameCube.cpp:1854
+#: ../src/libromdata/Console/GameCube.cpp:1654
+#: ../src/libromdata/Console/GameCube.cpp:1855
 #: ../src/libromdata/Console/GameCubeSave.cpp:1037
 #: ../src/libromdata/Console/MegaDrive.cpp:740
 #: ../src/libromdata/Console/NES.cpp:1431
@@ -1069,7 +1070,8 @@ msgstr ""
 #: ../src/libromdata/Console/Sega8Bit.cpp:579
 #: ../src/libromdata/Console/Sega8Bit.cpp:581
 #: ../src/libromdata/Console/SNES.cpp:1468
-#: ../src/libromdata/Console/SNES.cpp:1504
+#: ../src/libromdata/Console/SNES.cpp:1473
+#: ../src/libromdata/Console/SNES.cpp:1509
 #: ../src/libromdata/Console/WiiUAncast.cpp:507
 #: ../src/libromdata/Console/WiiUAncast.cpp:525
 #: ../src/libromdata/Console/WiiUAncast.cpp:575
@@ -1086,22 +1088,21 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox_XBE.cpp:775
 #: ../src/libromdata/Console/Xbox_XBE.cpp:779
 #: ../src/libromdata/Handheld/DMG.cpp:657
+#: ../src/libromdata/Handheld/DMG.cpp:725
 #: ../src/libromdata/Handheld/DMG.cpp:760
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:426
 #: ../src/libromdata/Handheld/Lynx.cpp:219
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:725
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:739
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1713
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:500
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:603
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:618
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:497
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:520
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:173
 #: ../src/libromdata/Media/Wim.cpp:269 ../src/libromdata/Other/Amiibo.cpp:428
 #: ../src/libromdata/Other/Amiibo.cpp:433
 #: ../src/libromdata/Other/Amiibo.cpp:438
 #: ../src/libromdata/Other/Amiibo.cpp:453 ../src/libromdata/Other/ELF.cpp:1548
-#: ../src/libromdata/Other/EXE.cpp:246
+#: ../src/libromdata/Other/EXE.cpp:246 ../src/libromdata/Other/EXE.cpp:1162
 #: ../src/libromdata/Other/EXE_manifest.cpp:237
 #: ../src/libromdata/Other/EXE_PE.cpp:53 ../src/libromdata/Other/MachO.cpp:507
 #: ../src/libromdata/Other/NintendoBadge.cpp:460
@@ -1305,9 +1306,9 @@ msgstr "Fine Ciclo"
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:964
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1931
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2351
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:499
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:602
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:617
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:501
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:604
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:619
 #: ../src/libromdata/Handheld/NintendoDS.cpp:801
 #: ../src/libromdata/Handheld/PalmOS.cpp:645
 #: ../src/libromdata/Other/EXE.cpp:1157
@@ -1573,8 +1574,8 @@ msgstr "Sistema"
 #: ../src/libromdata/Console/NES.cpp:1780
 #: ../src/libromdata/Console/NES.cpp:1790
 #: ../src/libromdata/Console/NES.cpp:1835
-#: ../src/libromdata/Console/SNES.cpp:1556
-#: ../src/libromdata/Console/SNES.cpp:1575
+#: ../src/libromdata/Console/SNES.cpp:1561
+#: ../src/libromdata/Console/SNES.cpp:1580
 #: ../src/libromdata/Console/WiiWAD.cpp:1059
 #: ../src/libromdata/Console/WiiWAD.cpp:1103
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:2028
@@ -2217,7 +2218,7 @@ msgstr "File WAD Wii"
 #: ../src/libromdata/Console/iQuePlayer.cpp:650
 #: ../src/libromdata/Console/N64.cpp:339
 #: ../src/libromdata/Console/SegaSaturn.cpp:528
-#: ../src/libromdata/Console/SNES.cpp:1495
+#: ../src/libromdata/Console/SNES.cpp:1500
 #: ../src/libromdata/Console/SufamiTurbo.cpp:352
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:369
 #: ../src/libromdata/Console/WiiWIBN.cpp:470
@@ -2231,7 +2232,7 @@ msgstr "File WAD Wii"
 #: ../src/libromdata/Handheld/GameCom.cpp:729
 #: ../src/libromdata/Handheld/Lynx.cpp:205
 #: ../src/libromdata/Handheld/NGPC.cpp:320
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:606
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:608
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:517
 #: ../src/libromdata/Handheld/NintendoDS.cpp:804
 #: ../src/libromdata/Handheld/PalmOS.cpp:635
@@ -2376,7 +2377,7 @@ msgstr "Dreamcast"
 #: ../src/libromdata/Console/NES.cpp:1581
 #: ../src/libromdata/Console/NES.cpp:1828
 #: ../src/libromdata/Console/SegaSaturn.cpp:533
-#: ../src/libromdata/Console/SNES.cpp:1508
+#: ../src/libromdata/Console/SNES.cpp:1513
 #: ../src/libromdata/Console/WiiU.cpp:380
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:371
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1054
@@ -2405,7 +2406,7 @@ msgstr "Prodotto #"
 #: ../src/libromdata/Console/WiiU.cpp:384
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1110
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2149
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:611
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:613
 #: ../src/libromdata/Handheld/PalmOS.cpp:670
 #: ../src/libromdata/Handheld/PSP.cpp:643
 #: ../src/libromdata/Other/EXE_NE.cpp:576
@@ -2438,7 +2439,7 @@ msgstr "{0:d} di {1:d}"
 #: ../src/libromdata/Console/MegaDrive.cpp:588
 #: ../src/libromdata/Console/Sega8Bit.cpp:580
 #: ../src/libromdata/Console/SegaSaturn.cpp:561
-#: ../src/libromdata/Console/SNES.cpp:1568
+#: ../src/libromdata/Console/SNES.cpp:1573
 #: ../src/libromdata/Console/WiiU.cpp:401
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:450
 #: ../src/libromdata/Console/WiiWAD.cpp:1039
@@ -2628,6 +2629,7 @@ msgstr "Controller Opz."
 #: ../src/libromdata/Console/WiiUPackage.cpp:813
 #: ../src/libromdata/Console/WiiUPackage.cpp:827
 #: ../src/libromdata/Console/WiiUPackage.cpp:833
+#: ../src/libromdata/Console/WiiWAD.cpp:962
 #: ../src/libromdata/Console/WiiWAD.cpp:1157
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1799
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1749
@@ -2828,7 +2830,7 @@ msgid "{0:s} ({1:s})"
 msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:756
-#: ../src/libromdata/Console/SNES.cpp:1646
+#: ../src/libromdata/Console/SNES.cpp:1651
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1091
 #: ../src/libromdata/Other/EXE.cpp:216 ../src/libromdata/Other/EXE.cpp:249
 #: ../src/librptexture/fileformat/DidjTex.cpp:447
@@ -2842,7 +2844,7 @@ msgstr "Sconosciuto (0x{:0>8X})"
 #: ../src/libromdata/Console/GameCube.cpp:1523
 #: ../src/libromdata/Console/GameCubeSave.cpp:1032
 #: ../src/libromdata/Console/NES.cpp:1575
-#: ../src/libromdata/Console/SNES.cpp:1498
+#: ../src/libromdata/Console/SNES.cpp:1503
 #: ../src/libromdata/Console/SufamiTurbo.cpp:357
 #: ../src/libromdata/Console/WiiSave.cpp:456
 #: ../src/libromdata/Console/WiiU.cpp:345
@@ -2923,82 +2925,78 @@ msgctxt "GameCube"
 msgid "ERROR: {:s}"
 msgstr "ERRORE: {:s}"
 
-#: ../src/libromdata/Console/GameCube.cpp:1654
-msgctxt "GameCube"
-msgid "Unknown"
-msgstr "Sconosciuto"
-
 #. tr: Update version included on this disc
 #: ../src/libromdata/Console/GameCube.cpp:1763
 msgctxt "Nintendo"
 msgid "Update"
 msgstr "Aggiornamento"
 
-#: ../src/libromdata/Console/GameCube.cpp:1786
+#. tr: No update partition is on the disc.
+#: ../src/libromdata/Console/GameCube.cpp:1787
 msgctxt "Nintendo"
 msgid "None"
 msgstr "Nessuno"
 
-#: ../src/libromdata/Console/GameCube.cpp:1795
+#: ../src/libromdata/Console/GameCube.cpp:1796
 msgctxt "Nintendo"
 msgid "Update Date"
 msgstr "Data aggiornamento"
 
 #. tr: GameCubePrivate::RVL_PT_GAME (Game partition)
-#: ../src/libromdata/Console/GameCube.cpp:1820
+#: ../src/libromdata/Console/GameCube.cpp:1821
 msgctxt "Wii|Partition"
 msgid "Game"
 msgstr "Gioco"
 
 #. tr: GameCubePrivate::RVL_PT_UPDATE (Update partition)
-#: ../src/libromdata/Console/GameCube.cpp:1822
+#: ../src/libromdata/Console/GameCube.cpp:1823
 msgctxt "Wii|Partition"
 msgid "Update"
 msgstr "Aggiornamento"
 
 #. tr: GameCubePrivate::RVL_PT_CHANNEL (Channel partition)
-#: ../src/libromdata/Console/GameCube.cpp:1824
+#: ../src/libromdata/Console/GameCube.cpp:1825
 msgctxt "Wii|Partition"
 msgid "Channel"
 msgstr "Canale"
 
 #. tr: Unknown used size.
-#: ../src/libromdata/Console/GameCube.cpp:1864
+#: ../src/libromdata/Console/GameCube.cpp:1865
 msgctxt "Wii|Partition"
 msgid "Unknown"
 msgstr "Sconosciuta"
 
 #. tr: Partition number.
-#: ../src/libromdata/Console/GameCube.cpp:1874
+#: ../src/libromdata/Console/GameCube.cpp:1875
 msgctxt "Wii|Partition"
 msgid "#"
 msgstr "#"
 
 #. tr: Partition type.
-#: ../src/libromdata/Console/GameCube.cpp:1876
+#: ../src/libromdata/Console/GameCube.cpp:1877
 msgctxt "Wii|Partition"
 msgid "Type"
 msgstr "Tipo"
 
 #. tr: Encryption key.
-#: ../src/libromdata/Console/GameCube.cpp:1878
+#: ../src/libromdata/Console/GameCube.cpp:1879
 msgctxt "Wii|Partition"
 msgid "Key"
 msgstr "Chiave"
 
 #. tr: Actual data used within the partition.
-#: ../src/libromdata/Console/GameCube.cpp:1880
+#: ../src/libromdata/Console/GameCube.cpp:1881
 msgctxt "Wii|Partition"
 msgid "Used Size"
 msgstr "Capacità Usata"
 
 #. tr: Total size of the partition.
-#: ../src/libromdata/Console/GameCube.cpp:1882
+#: ../src/libromdata/Console/GameCube.cpp:1883
 msgctxt "Wii|Partition"
 msgid "Total Size"
 msgstr "Dimensione totale"
 
-#: ../src/libromdata/Console/GameCube.cpp:1890
+#: ../src/libromdata/Console/GameCube.cpp:1891
 msgctxt "Wii"
 msgid "Partitions"
 msgstr "Partizioni"
@@ -3949,47 +3947,47 @@ msgctxt "RomData"
 msgid "Directory"
 msgstr ""
 
-#: ../src/libromdata/Console/SNES.cpp:1550
+#: ../src/libromdata/Console/SNES.cpp:1555
 msgctxt "SNES"
 msgid "ROM Mapping"
 msgstr "Mappatura ROM"
 
-#: ../src/libromdata/Console/SNES.cpp:1561
+#: ../src/libromdata/Console/SNES.cpp:1566
 msgctxt "SNES"
 msgid "Cartridge HW"
 msgstr "Cartuccia HW"
 
-#: ../src/libromdata/Console/SNES.cpp:1580
+#: ../src/libromdata/Console/SNES.cpp:1585
 msgctxt "SNES"
 msgid "Revision"
 msgstr "Revisione"
 
-#: ../src/libromdata/Console/SNES.cpp:1618
+#: ../src/libromdata/Console/SNES.cpp:1623
 msgctxt "SNES"
 msgid "Date"
 msgstr "Data"
 
-#: ../src/libromdata/Console/SNES.cpp:1631
+#: ../src/libromdata/Console/SNES.cpp:1636
 msgctxt "SNES|ProgramType"
 msgid "BS-X Script"
 msgstr "Script BS-X"
 
-#: ../src/libromdata/Console/SNES.cpp:1634
+#: ../src/libromdata/Console/SNES.cpp:1639
 msgctxt "SNES|ProgramType"
 msgid "SA-1"
 msgstr "SA-1"
 
-#: ../src/libromdata/Console/SNES.cpp:1640
+#: ../src/libromdata/Console/SNES.cpp:1645
 msgctxt "SNES"
 msgid "Program Type"
 msgstr "Tipo Programma"
 
-#: ../src/libromdata/Console/SNES.cpp:1659
+#: ../src/libromdata/Console/SNES.cpp:1664
 msgctxt "SNES"
 msgid "Limited Starts"
 msgstr "Avvii Limitati"
 
-#: ../src/libromdata/Console/SNES.cpp:1667
+#: ../src/libromdata/Console/SNES.cpp:1672
 msgctxt "SNES"
 msgid "Unlimited"
 msgstr "Illimitati"
@@ -4239,11 +4237,6 @@ msgstr "Gamepad"
 msgctxt "WiiU"
 msgid "Controllers"
 msgstr "Controllers"
-
-#: ../src/libromdata/Console/WiiWAD.cpp:962
-msgctxt "WiiWAD"
-msgid "Warning"
-msgstr "Attenzione"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:993
 msgctxt "WiiWAD"
@@ -5826,11 +5819,6 @@ msgctxt "DMG"
 msgid "ROM Size"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:725
-msgctxt "DMG"
-msgid "Unknown"
-msgstr ""
-
 #: ../src/libromdata/Handheld/DMG.cpp:730
 #: ../src/libromdata/Handheld/DMG.cpp:752
 #, c++-format
@@ -6241,8 +6229,8 @@ msgid "Permissions"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:472
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:554
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:595
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:556
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:597
 msgctxt "Nintendo3DSFirm"
 msgid "ARM9 Homebrew"
 msgstr ""
@@ -6252,32 +6240,32 @@ msgctxt "Nintendo3DSFirm"
 msgid "ARM11 Homebrew"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:503
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:505
 msgctxt "Nintendo3DSFirm"
 msgid "FIRM Version"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:508
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:510
 msgctxt "Nintendo3DSFirm"
 msgid "System Version"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:598
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:600
 msgctxt "Nintendo3DSFirm"
 msgid "Not sighaxed"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:614
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:616
 msgctxt "Nintendo3DSFirm"
 msgid "Sighax Status"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:623
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:625
 msgctxt "Nintendo3DSFirm"
 msgid "ARM11 Entry Point"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:627
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:629
 msgctxt "Nintendo3DSFirm"
 msgid "ARM9 Entry Point"
 msgstr ""
@@ -7765,11 +7753,6 @@ msgstr ""
 msgctxt "EXE"
 msgid "Unknown EXE"
 msgstr "EXE Sconosciuto"
-
-#: ../src/libromdata/Other/EXE.cpp:1162
-msgctxt "EXE"
-msgid "Unknown"
-msgstr "Sconosciuto"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:233
 msgctxt "EXE"
