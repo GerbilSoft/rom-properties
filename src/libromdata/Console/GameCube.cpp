@@ -1783,6 +1783,7 @@ int GameCube::loadFieldData(void)
 				// FIXME: Sometimes shows "Something happened" even if it wasn't a crypto error.
 				const char *updateStatus;
 				if (!d->updatePartition) {
+					// tr: No update partition is on the disc.
 					updateStatus = C_("Nintendo", "None");
 				} else {
 					updateStatus = d->wii_getCryptoStatus(d->updatePartition);
