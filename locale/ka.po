@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.8+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-08-23 15:27-0400\n"
+"POT-Creation-Date: 2026-08-23 15:48-0400\n"
 "PO-Revision-Date: 2026-08-23 15:27-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -2442,7 +2442,9 @@ msgid "Region Code"
 msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:733
-msgctxt "Dreamcast"
+#: ../src/libromdata/Console/PlayStationDisc.cpp:748
+#: ../src/libromdata/Console/XboxDisc.cpp:1070
+msgctxt "RomData"
 msgid "Boot Filename"
 msgstr ""
 
@@ -3582,11 +3584,6 @@ msgstr ""
 #: ../src/libromdata/Console/NES.cpp:1825
 msgctxt "NES"
 msgid "Board Type"
-msgstr ""
-
-#: ../src/libromdata/Console/PlayStationDisc.cpp:748
-msgctxt "PlayStationDisc"
-msgid "Boot Filename"
 msgstr ""
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:752
@@ -4742,11 +4739,6 @@ msgstr ""
 #: ../src/libromdata/Console/XboxDisc.cpp:1046
 msgctxt "XboxDisc"
 msgid "Disc Timestamp"
-msgstr ""
-
-#: ../src/libromdata/Console/XboxDisc.cpp:1070
-msgctxt "XboxDisc"
-msgid "Boot Filename"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:162

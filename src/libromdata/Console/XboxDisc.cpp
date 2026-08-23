@@ -1067,7 +1067,7 @@ int XboxDisc::loadFieldData(void)
 				s_boot_filename = nullptr;
 				break;
 		}
-		d->fields.addField_string(C_("XboxDisc", "Boot Filename"),
+		d->fields.addField_string(C_("RomData", "Boot Filename"),
 			(s_boot_filename ? s_boot_filename : C_("RomData", "Unknown")));
 
 		// Add the fields.

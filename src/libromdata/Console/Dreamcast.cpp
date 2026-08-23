@@ -730,7 +730,7 @@ int Dreamcast::loadFieldData(void)
 		v_region_code_bitfield_names, 0, region_code);
 
 	// Boot filename
-	d->fields.addField_string(C_("Dreamcast", "Boot Filename"),
+	d->fields.addField_string(C_("RomData", "Boot Filename"),
 		latin1_to_utf8(discHeader->boot_filename, sizeof(discHeader->boot_filename)),
 		RomFields::STRF_TRIM_END);
 

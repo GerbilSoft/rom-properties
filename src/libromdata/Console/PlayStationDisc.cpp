@@ -745,7 +745,7 @@ int PlayStationDisc::loadFieldData(void)
 	d->fields.setTabName(0, s_tab_name);
 
 	// Boot filename
-	d->fields.addField_string(C_("PlayStationDisc", "Boot Filename"), d->boot_filename);
+	d->fields.addField_string(C_("RomData", "Boot Filename"), d->boot_filename);
 
 	// Boot argument, if present
 	if (!d->boot_argument.empty()) {

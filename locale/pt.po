@@ -7,11 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.7.1\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-08-23 15:27-0400\n"
+"POT-Creation-Date: 2026-08-23 15:48-0400\n"
 "PO-Revision-Date: 2023-07-17 19:58\n"
 "Last-Translator: Null Magic\n"
 "Language-Team: \n"
-"Language: pt_BR\n"
+"Language: pt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -2509,7 +2509,9 @@ msgid "Region Code"
 msgstr "Código de região"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:733
-msgctxt "Dreamcast"
+#: ../src/libromdata/Console/PlayStationDisc.cpp:748
+#: ../src/libromdata/Console/XboxDisc.cpp:1070
+msgctxt "RomData"
 msgid "Boot Filename"
 msgstr "Nome de arquivo de boot"
 
@@ -3654,11 +3656,6 @@ msgstr ""
 msgctxt "NES"
 msgid "Board Type"
 msgstr ""
-
-#: ../src/libromdata/Console/PlayStationDisc.cpp:748
-msgctxt "PlayStationDisc"
-msgid "Boot Filename"
-msgstr "Nome de arquivo de boot"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:752
 msgctxt "PlayStationDisc"
@@ -4824,11 +4821,6 @@ msgstr ""
 msgctxt "XboxDisc"
 msgid "Disc Timestamp"
 msgstr ""
-
-#: ../src/libromdata/Console/XboxDisc.cpp:1070
-msgctxt "XboxDisc"
-msgid "Boot Filename"
-msgstr "Nome de arquivo de boot"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:162
 msgctxt "Region"
