@@ -294,6 +294,7 @@ static std::basic_string<T> T_cpN_to_unicode(const char *out_encoding, unsigned 
 			// Some versions of libiconv map characters differently compared to cp932:
 			// - FreeBSD Shift-JIS: 8160: mapped to U+301C (WAVE DASH); cp932 uses U+FF5E (FULLWIDTH TILDE)
 			// - Termux libiconv: 817C: mapped to U+2212 (MINUS SIGN); cp932 uses U+FF0D (FULLWIDTH HYPHEN-MINUS)
+			// FIXME: musl libc's cp932 is lacking and can't really be fixed here...
 			if_constexpr (sizeof(T) == sizeof(uint8_t)) {
 				const auto ret_end = ret.end();
 				for (auto p = ret.begin(); p != ret_end; ++p) {
