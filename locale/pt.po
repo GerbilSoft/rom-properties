@@ -11,7 +11,7 @@ msgstr ""
 "PO-Revision-Date: 2023-07-17 19:58\n"
 "Last-Translator: Null Magic\n"
 "Language-Team: \n"
-"Language: pt_BR\n"
+"Language: pt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -2680,6 +2680,7 @@ msgstr "Controle opcional"
 #: ../src/libromdata/Console/WiiUPackage.cpp:813
 #: ../src/libromdata/Console/WiiUPackage.cpp:827
 #: ../src/libromdata/Console/WiiUPackage.cpp:833
+#: ../src/libromdata/Console/WiiWAD.cpp:962
 #: ../src/libromdata/Console/WiiWAD.cpp:1157
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1799
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1749
@@ -4300,11 +4301,6 @@ msgstr ""
 msgctxt "WiiU"
 msgid "Controllers"
 msgstr ""
-
-#: ../src/libromdata/Console/WiiWAD.cpp:962
-msgctxt "WiiWAD"
-msgid "Warning"
-msgstr "Aviso"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:993
 msgctxt "WiiWAD"

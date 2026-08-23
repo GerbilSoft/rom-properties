@@ -2692,6 +2692,7 @@ msgstr "Control opcional"
 #: ../src/libromdata/Console/WiiUPackage.cpp:813
 #: ../src/libromdata/Console/WiiUPackage.cpp:827
 #: ../src/libromdata/Console/WiiUPackage.cpp:833
+#: ../src/libromdata/Console/WiiWAD.cpp:962
 #: ../src/libromdata/Console/WiiWAD.cpp:1157
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1799
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1749
@@ -4303,11 +4304,6 @@ msgstr ""
 msgctxt "WiiU"
 msgid "Controllers"
 msgstr ""
-
-#: ../src/libromdata/Console/WiiWAD.cpp:962
-msgctxt "WiiWAD"
-msgid "Warning"
-msgstr "Aviso"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:993
 msgctxt "WiiWAD"

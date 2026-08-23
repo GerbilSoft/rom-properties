@@ -959,7 +959,7 @@ int WiiWAD::loadFieldData(void)
 		if (!err) {
 			err = C_("RomData", "Unknown error. (THIS IS A BUG!)");
 		}
-		d->fields.addField_string(C_("WiiWAD", "Warning"),
+		d->fields.addField_string(C_("RomData", "Warning"),
 			err, RomFields::STRF_WARNING);
 	}
 
