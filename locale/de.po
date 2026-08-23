@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.7.1\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-08-23 15:48-0400\n"
+"POT-Creation-Date: 2026-08-23 16:02-0400\n"
 "PO-Revision-Date: 2024-11-03 20:21\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
@@ -1882,8 +1882,10 @@ msgctxt "RomData|Audio"
 msgid "Song Name"
 msgstr "Song Name"
 
-#: ../src/libromdata/Audio/SPC.cpp:787
-msgctxt "SPC"
+#: ../src/libromdata/Audio/SPC.cpp:787 ../src/libromdata/Audio/VGM.cpp:405
+#: ../src/libromdata/Console/GameCubeBNR.cpp:626
+#: ../src/libromdata/Other/GameMaker.cpp:547
+msgctxt "RomData"
 msgid "Game Name"
 msgstr "Spiel Name"
 
@@ -1936,11 +1938,6 @@ msgstr "OST Track #"
 msgctxt "RomData|Audio"
 msgid "Track Name"
 msgstr "Track Name"
-
-#: ../src/libromdata/Audio/VGM.cpp:405
-msgctxt "VGM"
-msgid "Game Name"
-msgstr "Spiel Name"
 
 #: ../src/libromdata/Audio/VGM.cpp:406
 msgctxt "VGM"
@@ -2804,11 +2801,6 @@ msgctxt "DreamcastSave"
 msgid "Game Title"
 msgstr "Spiel Titel"
 
-#: ../src/libromdata/Console/GameCubeBNR.cpp:626
-msgctxt "GameCubeBNR"
-msgid "Game Name"
-msgstr "Spiel Name"
-
 #: ../src/libromdata/Console/GameCubeBNR.cpp:627
 msgctxt "GameCubeBNR"
 msgid "Company"
@@ -2819,6 +2811,8 @@ msgstr "Unternehmen"
 #: ../src/libromdata/Console/PlayStationSave.cpp:508
 #: ../src/libromdata/Console/Sega8Bit.cpp:649
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1047
+#: ../src/libromdata/Handheld/AndroidCommon.cpp:93
+#: ../src/libromdata/Other/EXE_manifest.cpp:261
 msgctxt "RomData"
 msgid "Description"
 msgstr "Beschreibung"
@@ -3538,7 +3532,12 @@ msgid "Trainer"
 msgstr "Trainer"
 
 #: ../src/libromdata/Console/NES.cpp:1535
-msgctxt "NES"
+#: ../src/libromdata/Console/SufamiTurbo.cpp:390
+#: ../src/libromdata/Handheld/AndroidCommon.cpp:202
+#: ../src/libromdata/Handheld/DMG.cpp:718
+#: ../src/libromdata/Handheld/DMG.cpp:1337
+#: ../src/libromdata/Handheld/WonderSwan.cpp:626
+msgctxt "RomData"
 msgid "Features"
 msgstr "Funktionen"
 
@@ -4049,11 +4048,6 @@ msgstr ""
 msgctxt "SNES"
 msgid "Unlimited"
 msgstr "Unbegrenzt"
-
-#: ../src/libromdata/Console/SufamiTurbo.cpp:390
-msgctxt "SufamiTurbo"
-msgid "Features"
-msgstr "Funktionen"
 
 #: ../src/libromdata/Console/SufamiTurbo.cpp:394
 msgctxt "SufamiTurbo"
@@ -5797,11 +5791,6 @@ msgctxt "AndroidManifestXML"
 msgid "Package Name"
 msgstr ""
 
-#: ../src/libromdata/Handheld/AndroidCommon.cpp:93
-msgctxt "AndroidAPK"
-msgid "Description"
-msgstr "Beschreibung"
-
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:100
 msgctxt "AndroidAPK"
 msgid "Category"
@@ -5836,11 +5825,6 @@ msgstr "Funktion"
 msgctxt "AndroidAPK|Features"
 msgid "Required?"
 msgstr ""
-
-#: ../src/libromdata/Handheld/AndroidCommon.cpp:202
-msgctxt "AndroidAPK"
-msgid "Features"
-msgstr "Funktionen"
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:231
 msgctxt "AndroidAPK"
@@ -5894,12 +5878,6 @@ msgstr "Rumble"
 msgctxt "DMG|Features"
 msgid "Tilt Sensor"
 msgstr "Neigungssensor"
-
-#: ../src/libromdata/Handheld/DMG.cpp:718
-#: ../src/libromdata/Handheld/DMG.cpp:1337
-msgctxt "DMG"
-msgid "Features"
-msgstr "Funktionen"
 
 #: ../src/libromdata/Handheld/DMG.cpp:722
 #: ../src/libromdata/Handheld/DMG.cpp:1341
@@ -6820,11 +6798,6 @@ msgstr ""
 msgctxt "WonderSwan|Features"
 msgid "RTC Present"
 msgstr "RTC vorhanden"
-
-#: ../src/libromdata/Handheld/WonderSwan.cpp:626
-msgctxt "WonderSwan"
-msgid "Features"
-msgstr ""
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:630
 msgctxt "WonderSwan"
@@ -7901,11 +7874,6 @@ msgctxt "EXE|Manifest"
 msgid "publicKeyToken"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_manifest.cpp:261
-msgctxt "EXE|Manifest"
-msgid "Description"
-msgstr "Beschreibung"
-
 #: ../src/libromdata/Other/EXE_manifest.cpp:274
 msgctxt "EXE|Manifest"
 msgid "Execution Level"
@@ -8433,11 +8401,6 @@ msgstr ""
 msgctxt "GameMaker"
 msgid "Display Name"
 msgstr "Anzeigename"
-
-#: ../src/libromdata/Other/GameMaker.cpp:547
-msgctxt "GameMaker"
-msgid "Game Name"
-msgstr "Spiel Name"
 
 #: ../src/libromdata/Other/GameMaker.cpp:552
 msgctxt "GameMaker"

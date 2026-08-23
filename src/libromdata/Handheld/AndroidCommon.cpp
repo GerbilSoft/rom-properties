@@ -90,7 +90,7 @@ int loadFieldData(LibRpBase::RomFields &fields, const pugi::xml_document &manife
 
 		const char *const description = application_node.attribute("description").as_string(nullptr);
 		if (description && description[0] != '\0') {
-			addField_string_i18n(C_("AndroidAPK", "Description"), description, 0);
+			addField_string_i18n(C_("RomData", "Description"), description, 0);
 		}
 
 		// appCategory is usually an integer. (0 *is* valid here)
@@ -199,7 +199,7 @@ int loadFieldData(LibRpBase::RomFields &fields, const pugi::xml_document &manife
 			params.headers = v_features_headers;
 			params.data.single = vv_features;
 			params.col_attrs.align_data = AFLD_ALIGN2(TXA_D, TXA_C);
-			fields.addField_listData(C_("AndroidAPK", "Features"), &params);
+			fields.addField_listData(C_("RomData", "Features"), &params);
 		} else {
 			delete vv_features;
 		}

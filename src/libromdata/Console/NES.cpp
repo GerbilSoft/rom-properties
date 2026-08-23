@@ -1532,7 +1532,7 @@ int NES::loadFieldData(void)
 		rom_features = C_("NES|Features", "Trainer");
 	}
 	if (rom_features) {
-		d->fields.addField_string(C_("NES", "Features"), rom_features);
+		d->fields.addField_string(C_("RomData", "Features"), rom_features);
 	}
 
 	// ROM sizes

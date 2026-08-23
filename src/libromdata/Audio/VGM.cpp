@@ -402,7 +402,7 @@ int VGM::loadFieldData(void)
 			// TODO: Multiple composer handling.
 			static const array<gd3_tag_field_tbl_t, 7> gd3_tag_field_tbl = {{
 				GD3_TAG_FIELD_TBL_ENTRY("RomData|Audio",	NOP_C_("RomData|Audio", "Track Name"),	GD3_TAG_TRACK_NAME_EN),
-				GD3_TAG_FIELD_TBL_ENTRY("VGM",			NOP_C_("VGM", "Game Name"),		GD3_TAG_GAME_NAME_EN),
+				GD3_TAG_FIELD_TBL_ENTRY("RomData",		NOP_C_("RomData", "Game Name"),		GD3_TAG_GAME_NAME_EN),
 				GD3_TAG_FIELD_TBL_ENTRY("VGM",			NOP_C_("VGM", "System Name"),		GD3_TAG_SYSTEM_NAME_EN),
 				GD3_TAG_FIELD_TBL_ENTRY("RomData|Audio",	NOP_C_("RomData|Audio", "Composer"),	GD3_TAG_TRACK_AUTHOR_EN),
 				GD3_TAG_FIELD_TBL_ENTRY("RomData",		NOP_C_("RomData", "Release Date"),	GD3_TAG_DATE_GAME_RELEASE),

@@ -544,7 +544,7 @@ int GameMaker::loadFieldData(void)
 
 		if (!d->gameName.empty()) {
 			d->fields.addField_string(
-				C_("GameMaker", "Game Name"), d->gameName.c_str(), RomFields::STRF_TRIM_END);
+				C_("RomData", "Game Name"), d->gameName.c_str(), RomFields::STRF_TRIM_END);
 		}
 
 		d->fields.addField_string_numeric(C_("RomData", "Format Version"), d->dataVersion);

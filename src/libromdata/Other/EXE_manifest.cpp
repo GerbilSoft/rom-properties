@@ -258,7 +258,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	}
 
 	// Description
-	ADD_TEXT(assembly, "description", C_("EXE|Manifest", "Description"));
+	ADD_TEXT(assembly, "description", C_("RomData", "Description"));
 
 	// Trust info
 	// TODO: Fine-grained permissions?

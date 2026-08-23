@@ -623,7 +623,7 @@ int WonderSwan::loadFieldData(void)
 	}};
 	vector<string> *const v_ws_feature_bitfield_names = RomFields::strArrayToVector_i18n(
 		"WonderSwan|Features", ws_feature_bitfield_names);
-	d->fields.addField_bitfield(C_("WonderSwan", "Features"),
+	d->fields.addField_bitfield(C_("RomData", "Features"),
 		v_ws_feature_bitfield_names, 0, romFooter->rtc_present);
 
 	// Flags: Display orientation

@@ -387,7 +387,7 @@ int SufamiTurbo::loadFieldData(void)
 			features |= (1U << 3);
 			break;
 	}
-	d->fields.addField_bitfield(C_("SufamiTurbo", "Features"),
+	d->fields.addField_bitfield(C_("RomData", "Features"),
 		v_features_bitfield_names, 4, features);
 
 	// ROM size

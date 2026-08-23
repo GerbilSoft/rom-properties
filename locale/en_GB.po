@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-08-23 15:48-0400\n"
+"POT-Creation-Date: 2026-08-23 16:02-0400\n"
 "PO-Revision-Date: 2026-01-29 06:37\n"
 "Last-Translator: \n"
 "Language-Team: English, United Kingdom\n"
@@ -1876,8 +1876,10 @@ msgctxt "RomData|Audio"
 msgid "Song Name"
 msgstr "Song Name"
 
-#: ../src/libromdata/Audio/SPC.cpp:787
-msgctxt "SPC"
+#: ../src/libromdata/Audio/SPC.cpp:787 ../src/libromdata/Audio/VGM.cpp:405
+#: ../src/libromdata/Console/GameCubeBNR.cpp:626
+#: ../src/libromdata/Other/GameMaker.cpp:547
+msgctxt "RomData"
 msgid "Game Name"
 msgstr "Game Name"
 
@@ -1930,11 +1932,6 @@ msgstr "OST Track #"
 msgctxt "RomData|Audio"
 msgid "Track Name"
 msgstr "Track Name"
-
-#: ../src/libromdata/Audio/VGM.cpp:405
-msgctxt "VGM"
-msgid "Game Name"
-msgstr "Game Name"
 
 #: ../src/libromdata/Audio/VGM.cpp:406
 msgctxt "VGM"
@@ -2795,11 +2792,6 @@ msgctxt "DreamcastSave"
 msgid "Game Title"
 msgstr "Game Title"
 
-#: ../src/libromdata/Console/GameCubeBNR.cpp:626
-msgctxt "GameCubeBNR"
-msgid "Game Name"
-msgstr "Game Name"
-
 #: ../src/libromdata/Console/GameCubeBNR.cpp:627
 msgctxt "GameCubeBNR"
 msgid "Company"
@@ -2810,6 +2802,8 @@ msgstr "Company"
 #: ../src/libromdata/Console/PlayStationSave.cpp:508
 #: ../src/libromdata/Console/Sega8Bit.cpp:649
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1047
+#: ../src/libromdata/Handheld/AndroidCommon.cpp:93
+#: ../src/libromdata/Other/EXE_manifest.cpp:261
 msgctxt "RomData"
 msgid "Description"
 msgstr "Description"
@@ -3529,7 +3523,12 @@ msgid "Trainer"
 msgstr "Trainer"
 
 #: ../src/libromdata/Console/NES.cpp:1535
-msgctxt "NES"
+#: ../src/libromdata/Console/SufamiTurbo.cpp:390
+#: ../src/libromdata/Handheld/AndroidCommon.cpp:202
+#: ../src/libromdata/Handheld/DMG.cpp:718
+#: ../src/libromdata/Handheld/DMG.cpp:1337
+#: ../src/libromdata/Handheld/WonderSwan.cpp:626
+msgctxt "RomData"
 msgid "Features"
 msgstr "Features"
 
@@ -4040,11 +4039,6 @@ msgstr "Limited Starts"
 msgctxt "SNES"
 msgid "Unlimited"
 msgstr "Unlimited"
-
-#: ../src/libromdata/Console/SufamiTurbo.cpp:390
-msgctxt "SufamiTurbo"
-msgid "Features"
-msgstr "Features"
 
 #: ../src/libromdata/Console/SufamiTurbo.cpp:394
 msgctxt "SufamiTurbo"
@@ -5788,11 +5782,6 @@ msgctxt "AndroidManifestXML"
 msgid "Package Name"
 msgstr "Package Name"
 
-#: ../src/libromdata/Handheld/AndroidCommon.cpp:93
-msgctxt "AndroidAPK"
-msgid "Description"
-msgstr "Description"
-
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:100
 msgctxt "AndroidAPK"
 msgid "Category"
@@ -5827,11 +5816,6 @@ msgstr "Feature"
 msgctxt "AndroidAPK|Features"
 msgid "Required?"
 msgstr "Required?"
-
-#: ../src/libromdata/Handheld/AndroidCommon.cpp:202
-msgctxt "AndroidAPK"
-msgid "Features"
-msgstr "Features"
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:231
 msgctxt "AndroidAPK"
@@ -5885,12 +5869,6 @@ msgstr "Rumble"
 msgctxt "DMG|Features"
 msgid "Tilt Sensor"
 msgstr "Tilt Sensor"
-
-#: ../src/libromdata/Handheld/DMG.cpp:718
-#: ../src/libromdata/Handheld/DMG.cpp:1337
-msgctxt "DMG"
-msgid "Features"
-msgstr "Features"
 
 #: ../src/libromdata/Handheld/DMG.cpp:722
 #: ../src/libromdata/Handheld/DMG.cpp:1341
@@ -6809,11 +6787,6 @@ msgstr "EEPROM"
 msgctxt "WonderSwan|Features"
 msgid "RTC Present"
 msgstr "RTC Present"
-
-#: ../src/libromdata/Handheld/WonderSwan.cpp:626
-msgctxt "WonderSwan"
-msgid "Features"
-msgstr "Features"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:630
 msgctxt "WonderSwan"
@@ -7890,11 +7863,6 @@ msgctxt "EXE|Manifest"
 msgid "publicKeyToken"
 msgstr "publicKeyToken"
 
-#: ../src/libromdata/Other/EXE_manifest.cpp:261
-msgctxt "EXE|Manifest"
-msgid "Description"
-msgstr "Description"
-
 #: ../src/libromdata/Other/EXE_manifest.cpp:274
 msgctxt "EXE|Manifest"
 msgid "Execution Level"
@@ -8422,11 +8390,6 @@ msgstr "PDB Link"
 msgctxt "GameMaker"
 msgid "Display Name"
 msgstr "Display Name"
-
-#: ../src/libromdata/Other/GameMaker.cpp:547
-msgctxt "GameMaker"
-msgid "Game Name"
-msgstr "Game Name"
 
 #: ../src/libromdata/Other/GameMaker.cpp:552
 msgctxt "GameMaker"

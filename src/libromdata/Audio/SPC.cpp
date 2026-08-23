@@ -784,7 +784,7 @@ int SPC::loadFieldData(void)
 		const auto &data = iter->second;
 		assert(data.isStrIdx);
 		if (data.isStrIdx) {
-			d->fields.addField_string(C_("SPC", "Game Name"), kv.getStr(data));
+			d->fields.addField_string(C_("RomData", "Game Name"), kv.getStr(data));
 		}
 	}
 

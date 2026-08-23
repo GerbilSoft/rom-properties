@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.8+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-08-23 15:48-0400\n"
+"POT-Creation-Date: 2026-08-23 16:02-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1853,8 +1853,10 @@ msgctxt "RomData|Audio"
 msgid "Song Name"
 msgstr ""
 
-#: ../src/libromdata/Audio/SPC.cpp:787
-msgctxt "SPC"
+#: ../src/libromdata/Audio/SPC.cpp:787 ../src/libromdata/Audio/VGM.cpp:405
+#: ../src/libromdata/Console/GameCubeBNR.cpp:626
+#: ../src/libromdata/Other/GameMaker.cpp:547
+msgctxt "RomData"
 msgid "Game Name"
 msgstr ""
 
@@ -1906,11 +1908,6 @@ msgstr ""
 #: ../src/libromdata/Audio/VGM.cpp:404
 msgctxt "RomData|Audio"
 msgid "Track Name"
-msgstr ""
-
-#: ../src/libromdata/Audio/VGM.cpp:405
-msgctxt "VGM"
-msgid "Game Name"
 msgstr ""
 
 #: ../src/libromdata/Audio/VGM.cpp:406
@@ -2752,11 +2749,6 @@ msgctxt "DreamcastSave"
 msgid "Game Title"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCubeBNR.cpp:626
-msgctxt "GameCubeBNR"
-msgid "Game Name"
-msgstr ""
-
 #: ../src/libromdata/Console/GameCubeBNR.cpp:627
 msgctxt "GameCubeBNR"
 msgid "Company"
@@ -2767,6 +2759,8 @@ msgstr ""
 #: ../src/libromdata/Console/PlayStationSave.cpp:508
 #: ../src/libromdata/Console/Sega8Bit.cpp:649
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1047
+#: ../src/libromdata/Handheld/AndroidCommon.cpp:93
+#: ../src/libromdata/Other/EXE_manifest.cpp:261
 msgctxt "RomData"
 msgid "Description"
 msgstr ""
@@ -3486,7 +3480,12 @@ msgid "Trainer"
 msgstr ""
 
 #: ../src/libromdata/Console/NES.cpp:1535
-msgctxt "NES"
+#: ../src/libromdata/Console/SufamiTurbo.cpp:390
+#: ../src/libromdata/Handheld/AndroidCommon.cpp:202
+#: ../src/libromdata/Handheld/DMG.cpp:718
+#: ../src/libromdata/Handheld/DMG.cpp:1337
+#: ../src/libromdata/Handheld/WonderSwan.cpp:626
+msgctxt "RomData"
 msgid "Features"
 msgstr ""
 
@@ -3996,11 +3995,6 @@ msgstr ""
 #: ../src/libromdata/Console/SNES.cpp:1667
 msgctxt "SNES"
 msgid "Unlimited"
-msgstr ""
-
-#: ../src/libromdata/Console/SufamiTurbo.cpp:390
-msgctxt "SufamiTurbo"
-msgid "Features"
 msgstr ""
 
 #: ../src/libromdata/Console/SufamiTurbo.cpp:394
@@ -5743,11 +5737,6 @@ msgctxt "AndroidManifestXML"
 msgid "Package Name"
 msgstr ""
 
-#: ../src/libromdata/Handheld/AndroidCommon.cpp:93
-msgctxt "AndroidAPK"
-msgid "Description"
-msgstr ""
-
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:100
 msgctxt "AndroidAPK"
 msgid "Category"
@@ -5781,11 +5770,6 @@ msgstr ""
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:193
 msgctxt "AndroidAPK|Features"
 msgid "Required?"
-msgstr ""
-
-#: ../src/libromdata/Handheld/AndroidCommon.cpp:202
-msgctxt "AndroidAPK"
-msgid "Features"
 msgstr ""
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:231
@@ -5839,12 +5823,6 @@ msgstr ""
 #: ../src/libromdata/Handheld/DMG.cpp:714
 msgctxt "DMG|Features"
 msgid "Tilt Sensor"
-msgstr ""
-
-#: ../src/libromdata/Handheld/DMG.cpp:718
-#: ../src/libromdata/Handheld/DMG.cpp:1337
-msgctxt "DMG"
-msgid "Features"
 msgstr ""
 
 #: ../src/libromdata/Handheld/DMG.cpp:722
@@ -6763,11 +6741,6 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:622
 msgctxt "WonderSwan|Features"
 msgid "RTC Present"
-msgstr ""
-
-#: ../src/libromdata/Handheld/WonderSwan.cpp:626
-msgctxt "WonderSwan"
-msgid "Features"
 msgstr ""
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:630
@@ -7843,11 +7816,6 @@ msgctxt "EXE|Manifest"
 msgid "publicKeyToken"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_manifest.cpp:261
-msgctxt "EXE|Manifest"
-msgid "Description"
-msgstr ""
-
 #: ../src/libromdata/Other/EXE_manifest.cpp:274
 msgctxt "EXE|Manifest"
 msgid "Execution Level"
@@ -8374,11 +8342,6 @@ msgstr ""
 #: ../src/libromdata/Other/GameMaker.cpp:541
 msgctxt "GameMaker"
 msgid "Display Name"
-msgstr ""
-
-#: ../src/libromdata/Other/GameMaker.cpp:547
-msgctxt "GameMaker"
-msgid "Game Name"
 msgstr ""
 
 #: ../src/libromdata/Other/GameMaker.cpp:552

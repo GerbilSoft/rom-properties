@@ -715,7 +715,7 @@ void DMGPrivate::addFields_romHeader(const DMG_RomHeader *pRomHeader)
 	}};
 	vector<string> *const v_feature_bitfield_names = RomFields::strArrayToVector_i18n(
 		"DMG|Features", feature_bitfield_names);
-	fields.addField_bitfield(C_("DMG", "Features"),
+	fields.addField_bitfield(C_("RomData", "Features"),
 		v_feature_bitfield_names, 3, cart_type.features);
 
 	// ROM Size
@@ -1334,7 +1334,7 @@ int DMG::loadFieldData(void)
 		}};
 		vector<string> *const v_gbx_feature_bitfield_names = RomFields::strArrayToVector_i18n(
 			"DMG|Features", gbx_feature_bitfield_names);
-		d->fields.addField_bitfield(C_("DMG", "Features"),
+		d->fields.addField_bitfield(C_("RomData", "Features"),
 			v_gbx_feature_bitfield_names, 0, gbx_features);
 
 		// ROM size, in bytes. (formatted as KiB)
