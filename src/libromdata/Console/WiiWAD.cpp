@@ -1022,7 +1022,7 @@ int WiiWAD::loadFieldData(void)
 
 	// Title version
 	const unsigned int title_version = be16_to_cpu(tmdHeader->title_version);
-	d->fields.addField_string(C_("Nintendo", "Title Version"),
+	d->fields.addField_string(C_("RomData", "Title Version"),
 		fmt::format(FSTR("{:d}.{:d} (v{:d})"),
 			title_version >> 8, title_version & 0xFF, title_version));
 

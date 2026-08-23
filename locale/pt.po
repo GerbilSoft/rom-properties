@@ -7,11 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.7.1\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-08-23 15:10-0400\n"
+"POT-Creation-Date: 2026-08-23 15:23-0400\n"
 "PO-Revision-Date: 2023-07-17 19:58\n"
 "Last-Translator: Null Magic\n"
 "Language-Team: \n"
-"Language: pt\n"
+"Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -4203,7 +4203,8 @@ msgstr "Nenhum(a)"
 
 #: ../src/libromdata/Console/WiiTMD.cpp:359
 #: ../src/libromdata/Console/WiiWAD.cpp:1025
-msgctxt "Nintendo"
+#: ../src/libromdata/Console/Xbox360_XDBF.cpp:968
+msgctxt "RomData"
 msgid "Title Version"
 msgstr ""
 
@@ -4545,11 +4546,6 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:882
 msgctxt "Xbox360_XDBF|TitleType"
 msgid "Download"
-msgstr ""
-
-#: ../src/libromdata/Console/Xbox360_XDBF.cpp:968
-msgctxt "RomData"
-msgid "Title Version"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1088
