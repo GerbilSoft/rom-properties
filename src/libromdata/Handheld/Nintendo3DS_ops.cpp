@@ -45,8 +45,8 @@ vector<RomData::RomOp> Nintendo3DS::romOps_int(void) const
 	NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent.get());
 	if (srl) {
 		RomOp op("E&xtract SRL...", RomOp::ROF_SAVE_FILE | RomOp::ROF_ENABLED);
-		op.sfi.title = C_("Nintendo3DS|RomOps", "Extract Nintendo DS SRL File");
-		op.sfi.filter = C_("Nintendo3DS|RomOps", "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom");
+		op.sfi.title = C_("Nintendo|RomOps", "Extract Nintendo DS SRL File");
+		op.sfi.filter = C_("Nintendo|RomOps", "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom");
 		op.sfi.ext = ".nds";
 		ops.push_back(std::move(op));
 	}
@@ -92,10 +92,10 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 			pParams->msg = C_("RomData", "ROM operation ID is invalid for this object.");
 		} else if (ret == -EIO) {
 			// Unable to open the DSi SRL.
-			pParams->msg = C_("Nintendo3DS", "Unable to open the SRL.");
+			pParams->msg = C_("Nintendo", "Unable to open the SRL.");
 		} else {
 			// Unknown error...
-			pParams->msg = C_("Nintendo3DS", "An unknown error occurred attempting to open the SRL.");
+			pParams->msg = C_("Nintendo", "An unknown error occurred attempting to open the SRL.");
 		}
 		return ret;
 	}
@@ -108,7 +108,7 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 			d->mainContent->close();
 		}
 		pParams->status = -EIO;
-		pParams->msg = C_("Nintendo3DS", "Unable to open the SRL.");
+		pParams->msg = C_("Nintendo", "Unable to open the SRL.");
 		return -EIO;
 	}
 
@@ -120,7 +120,7 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 		// No source file...
 		// TODO: More useful message?
 		pParams->status = -EIO;
-		pParams->msg = C_("Nintendo3DS", "Unable to open the SRL.");
+		pParams->msg = C_("Nintendo", "Unable to open the SRL.");
 		goto out;
 	}
 
@@ -129,7 +129,7 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 	if (!destFile->isOpen()) {
 		// TODO: More useful message?
 		pParams->status = -destFile->lastError();
-		pParams->msg = C_("Nintendo3DS", "Could not open output SRL file.");
+		pParams->msg = C_("Nintendo", "Could not open output SRL file.");
 		goto out;
 	}
 
@@ -139,13 +139,13 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 	pParams->status = ret;
 	switch (ret) {
 		case 0:
-			pParams->msg = C_("Nintendo3DS", "SRL file extracted successfully.");
+			pParams->msg = C_("Nintendo", "SRL file extracted successfully.");
 			break;
 		case -EIO:
-			pParams->msg = C_("Nintendo3DS", "An I/O error occurred while extracting the SRL.");
+			pParams->msg = C_("Nintendo", "An I/O error occurred while extracting the SRL.");
 			break;
 		default:
-			pParams->msg = C_("Nintendo3DS", "An unknown error occurred while extracting the SRL.");
+			pParams->msg = C_("Nintendo", "An unknown error occurred while extracting the SRL.");
 			break;
 	}
 

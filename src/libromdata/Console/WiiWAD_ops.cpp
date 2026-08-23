@@ -43,8 +43,8 @@ vector<RomData::RomOp> WiiWAD::romOps_int(void) const
 	}
 
 	RomOp op("E&xtract SRL...", RomOp::ROF_ENABLED | RomOp::ROF_SAVE_FILE);
-	op.sfi.title = C_("WiiWAD|RomOps", "Extract Nintendo DS SRL File");
-	op.sfi.filter = C_("WiiWAD|RomOps", "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom");
+	op.sfi.title = C_("Nintendo|RomOps", "Extract Nintendo DS SRL File");
+	op.sfi.filter = C_("Nintendo|RomOps", "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom");
 	op.sfi.ext = ".nds";
 #ifndef ENABLE_DECRYPTION
 	op.flags &= ~RomOp::ROF_ENABLED;
@@ -100,10 +100,10 @@ int WiiWAD::doRomOp_int(int id, RomOpParams *pParams)
 			pParams->msg = C_("RomData", "ROM operation ID is invalid for this object.");
 		} else if (ret == -EIO) {
 			// Unable to open the DSi SRL.
-			pParams->msg = C_("WiiWAD", "Unable to open the SRL.");
+			pParams->msg = C_("Nintendo", "Unable to open the SRL.");
 		} else {
 			// Unknown error...
-			pParams->msg = C_("WiiWAD", "An unknown error occurred attempting to open the SRL.");
+			pParams->msg = C_("Nintendo", "An unknown error occurred attempting to open the SRL.");
 		}
 		return ret;
 	}
@@ -116,7 +116,7 @@ int WiiWAD::doRomOp_int(int id, RomOpParams *pParams)
 			d->mainContent->close();
 		}
 		pParams->status = -EIO;
-		pParams->msg = C_("WiiWAD", "Unable to open the SRL.");
+		pParams->msg = C_("Nintendo", "Unable to open the SRL.");
 		return -EIO;
 	}
 
@@ -128,7 +128,7 @@ int WiiWAD::doRomOp_int(int id, RomOpParams *pParams)
 		// No source file...
 		// TODO: More useful message?
 		pParams->status = -EIO;
-		pParams->msg = C_("WiiWAD", "Unable to open the SRL.");
+		pParams->msg = C_("Nintendo", "Unable to open the SRL.");
 		goto out;
 	}
 
@@ -137,7 +137,7 @@ int WiiWAD::doRomOp_int(int id, RomOpParams *pParams)
 	if (!destFile->isOpen()) {
 		// TODO: More useful message?
 		pParams->status = -destFile->lastError();
-		pParams->msg = C_("WiiWAD", "Could not open output SRL file.");
+		pParams->msg = C_("Nintendo", "Could not open output SRL file.");
 		goto out;
 	}
 
@@ -147,13 +147,13 @@ int WiiWAD::doRomOp_int(int id, RomOpParams *pParams)
 	pParams->status = ret;
 	switch (ret) {
 		case 0:
-			pParams->msg = C_("WiiWAD", "SRL file extracted successfully.");
+			pParams->msg = C_("Nintendo", "SRL file extracted successfully.");
 			break;
 		case -EIO:
-			pParams->msg = C_("WiiWAD", "An I/O error occurred while extracting the SRL.");
+			pParams->msg = C_("Nintendo", "An I/O error occurred while extracting the SRL.");
 			break;
 		default:
-			pParams->msg = C_("WiiWAD", "An unknown error occurred while extracting the SRL.");
+			pParams->msg = C_("Nintendo", "An unknown error occurred while extracting the SRL.");
 			break;
 	}
 
@@ -165,7 +165,7 @@ out:
 	return pParams->status;
 #else /* !ENABLE_DECRYPTION */
 	pParams->status = -ENOTSUP;
-	pParams->msg = C_("WiiWAD", "SRL extraction is not supported in NoCrypto builds.");
+	pParams->msg = C_("Nintendo", "SRL extraction is not supported in NoCrypto builds.");
 	return -ENOTSUP;
 #endif /* ENABLE_DECRYPTION */
 }

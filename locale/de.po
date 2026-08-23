@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.7.1\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-08-23 15:23-0400\n"
+"POT-Creation-Date: 2026-08-23 15:27-0400\n"
 "PO-Revision-Date: 2024-11-03 20:21\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
@@ -4362,12 +4362,14 @@ msgid "Game Info"
 msgstr "Spiel Info"
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:46
-msgctxt "WiiWAD|RomOps"
+#: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:48
+msgctxt "Nintendo|RomOps"
 msgid "Extract Nintendo DS SRL File"
 msgstr "Nintendo DS SRL-Datei extrahieren"
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:47
-msgctxt "WiiWAD|RomOps"
+#: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:49
+msgctxt "Nintendo|RomOps"
 msgid ""
 "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/"
 "x-nintendo-dsi-rom"
@@ -4398,37 +4400,45 @@ msgstr "SRL Extraktion wird nur für DSi TAD Pakete unterstützt."
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:103
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:119
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:131
-msgctxt "WiiWAD"
+#: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:95
+#: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:111
+#: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:123
+msgctxt "Nintendo"
 msgid "Unable to open the SRL."
 msgstr "SRL konnte nicht geöffnet werden."
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:106
-msgctxt "WiiWAD"
+#: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:98
+msgctxt "Nintendo"
 msgid "An unknown error occurred attempting to open the SRL."
-msgstr ""
+msgstr "Beim Öffnen der SRL trat ein unbekannter Fehler auf."
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:140
-msgctxt "WiiWAD"
+#: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:132
+msgctxt "Nintendo"
 msgid "Could not open output SRL file."
 msgstr "Die Ausgabe der SRL Datei konnte nicht geöffnet werden."
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:150
-msgctxt "WiiWAD"
+#: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:142
+msgctxt "Nintendo"
 msgid "SRL file extracted successfully."
 msgstr "SRL Datei erfolgreich extrahiert."
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:153
-msgctxt "WiiWAD"
+#: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:145
+msgctxt "Nintendo"
 msgid "An I/O error occurred while extracting the SRL."
-msgstr ""
+msgstr "Beim Extrahieren der SRL ist ein E/A-Fehler aufgetreten."
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:156
-msgctxt "WiiWAD"
+#: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:148
+msgctxt "Nintendo"
 msgid "An unknown error occurred while extracting the SRL."
-msgstr ""
+msgstr "Beim Extrahieren der SRL ist ein unbekannter Fehler aufgetreten."
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:168
-msgctxt "WiiWAD"
+msgctxt "Nintendo"
 msgid "SRL extraction is not supported in NoCrypto builds."
 msgstr "SRL-Extraktion wird in NoCrypto-Builds nicht unterstützt."
 
@@ -6362,52 +6372,6 @@ msgstr "ARM11 Einstiegspunkt"
 msgctxt "Nintendo3DSFirm"
 msgid "ARM9 Entry Point"
 msgstr "ARM9 Einstiegspunkt"
-
-#: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:48
-msgctxt "Nintendo3DS|RomOps"
-msgid "Extract Nintendo DS SRL File"
-msgstr "Nintendo DS SRL-Datei extrahieren"
-
-#: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:49
-msgctxt "Nintendo3DS|RomOps"
-msgid ""
-"Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/"
-"x-nintendo-dsi-rom"
-msgstr ""
-"Nintendo DS SRL-Dateien|*.nds;*.srl|application/x-nintendo-ds-"
-"rom;application/x-nintendo-dsi-rom"
-
-#: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:95
-#: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:111
-#: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:123
-msgctxt "Nintendo3DS"
-msgid "Unable to open the SRL."
-msgstr "SRL konnte nicht geöffnet werden."
-
-#: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:98
-msgctxt "Nintendo3DS"
-msgid "An unknown error occurred attempting to open the SRL."
-msgstr "Beim Öffnen der SRL trat ein unbekannter Fehler auf."
-
-#: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:132
-msgctxt "Nintendo3DS"
-msgid "Could not open output SRL file."
-msgstr "Die ausgegebene SRL-Datei konnte nicht geöffnet werden."
-
-#: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:142
-msgctxt "Nintendo3DS"
-msgid "SRL file extracted successfully."
-msgstr "SRL Datei erfolgreich extrahiert."
-
-#: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:145
-msgctxt "Nintendo3DS"
-msgid "An I/O error occurred while extracting the SRL."
-msgstr "Beim Extrahieren der SRL ist ein E/A-Fehler aufgetreten."
-
-#: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:148
-msgctxt "Nintendo3DS"
-msgid "An unknown error occurred while extracting the SRL."
-msgstr "Beim Extrahieren der SRL ist ein unbekannter Fehler aufgetreten."
 
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:607
 msgctxt "RomData"
