@@ -271,7 +271,7 @@ static std::basic_string<T> T_cpN_to_unicode(const char *out_encoding, unsigned 
 		out_str = reinterpret_cast<T*>(rp_iconv((char*)str, len*sizeof(*str), cp_name.c_str(), out_encoding, ignoreErr));
 	}
 
-	if (!out_str /*&& (flags & TEXTCONV_FLAG_CP1252_FALLBACK)*/) {
+	if (!out_str && (flags & TEXTCONV_FLAG_CP1252_FALLBACK)) {
 		// Try cp1252 fallback.
 		// NOTE: Sometimes cp1252 fails, even with ignore set.
 		if (cp != 1252) {
