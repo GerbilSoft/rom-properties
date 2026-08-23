@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-23 16:02-0400\n"
-"PO-Revision-Date: 2026-08-23 20:27\n"
+"PO-Revision-Date: 2026-08-23 21:29\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
 "Language: ka_GE\n"
@@ -9477,7 +9477,7 @@ msgctxt "LibRpText|FileSize"
 msgid "byte"
 msgid_plural "bytes"
 msgstr[0] "ბაიტი"
-msgstr[1] "ბაიტი"
+msgstr[1] "ბაიტები"
 
 #. tr: Kilobytes (binary)
 #: ../src/librptext/formatting.cpp:236 ../src/librptext/formatting.cpp:414
