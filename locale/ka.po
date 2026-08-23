@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-07-31 23:58-0400\n"
-"PO-Revision-Date: 2026-08-23 18:07\n"
+"PO-Revision-Date: 2026-08-23 19:18\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
 "Language: ka_GE\n"
@@ -5677,7 +5677,7 @@ msgstr "ახალი ამბები"
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:42
 msgctxt "Android|AppCategory"
 msgid "Maps"
-msgstr ""
+msgstr "რუკები"
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:43
 msgctxt "Android|AppCategory"
@@ -5890,12 +5890,12 @@ msgstr ""
 #: ../src/libromdata/Handheld/Lynx.cpp:211
 msgctxt "Lynx|Rotation"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Handheld/Lynx.cpp:212
 msgctxt "Lynx|Rotation"
 msgid "Left"
-msgstr ""
+msgstr "მარცხნივ"
 
 #: ../src/libromdata/Handheld/Lynx.cpp:213
 msgctxt "Lynx|Rotation"
@@ -5987,7 +5987,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:867
 msgctxt "Nintendo3DS"
 msgid "Logo"
-msgstr ""
+msgstr "ლოგო"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1169
 msgctxt "Nintendo3DS"
@@ -6028,7 +6028,7 @@ msgstr "#"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1918
 msgctxt "Nintendo3DS|CCI"
 msgid "Type"
-msgstr ""
+msgstr "ტიპი"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1919
 msgctxt "Nintendo3DS|CCI"
@@ -6043,7 +6043,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1921
 msgctxt "Nintendo3DS|CCI"
 msgid "Size"
-msgstr ""
+msgstr "ზომა"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1943
 msgctxt "Nintendo3DS|eMMC"
@@ -6053,7 +6053,7 @@ msgstr "#"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1944
 msgctxt "Nintendo3DS|eMMC"
 msgid "Type"
-msgstr ""
+msgstr "ტიპი"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1945
 msgctxt "Nintendo3DS|eMMC"
@@ -6063,7 +6063,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1946
 msgctxt "Nintendo3DS|eMMC"
 msgid "Size"
-msgstr ""
+msgstr "ზომა"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1965
 msgctxt "Nintendo3DS"
@@ -6083,7 +6083,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1996
 msgctxt "Nintendo3DS|CDev"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1997
 msgctxt "Nintendo3DS|CDev"
@@ -6125,7 +6125,7 @@ msgstr "#"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2315
 msgctxt "Nintendo3DS|CtNames"
 msgid "Type"
-msgstr ""
+msgstr "ტიპი"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2316
 msgctxt "Nintendo3DS|CtNames"
@@ -6140,7 +6140,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2318
 msgctxt "Nintendo3DS|CtNames"
 msgid "Size"
-msgstr ""
+msgstr "ზომა"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2325
 msgctxt "Nintendo3DS"
@@ -6695,7 +6695,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/PokemonMini.cpp:349
 msgctxt "RomData|VectorTable"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Handheld/PSP.cpp:618
 msgctxt "RomData"
@@ -6705,7 +6705,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:539
 msgctxt "WonderSwan"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:562
 msgctxt "WonderSwan"
@@ -6726,7 +6726,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:603
 msgctxt "WonderSwan|SaveMemory"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #. tr: Parameter 2 indicates the save type, e.g. "SRAM" or "EEPROM".
 #: ../src/libromdata/Handheld/WonderSwan.cpp:590
@@ -6739,7 +6739,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:592
 msgctxt "WonderSwan|SaveMemory"
 msgid "SRAM"
-msgstr ""
+msgstr "SRAM"
 
 #. tr: Parameter 2 indicates the save type, e.g. "SRAM" or "EEPROM".
 #: ../src/libromdata/Handheld/WonderSwan.cpp:612
@@ -6836,7 +6836,7 @@ msgstr ""
 #: ../src/libromdata/Media/CBMDOS.cpp:1391
 msgctxt "CBMDOS|Directory"
 msgid "Type"
-msgstr ""
+msgstr "ტიპი"
 
 #: ../src/libromdata/Media/CBMDOS.cpp:1448
 msgctxt "CBMDOS"
@@ -7006,7 +7006,7 @@ msgstr ""
 #: ../src/libromdata/Media/Wim.cpp:270
 msgctxt "RomData"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Media/Wim.cpp:273
 msgctxt "Wim"
@@ -7041,7 +7041,7 @@ msgstr "#"
 #: ../src/libromdata/Media/Wim_xml.cpp:374
 msgctxt "Wim|Images"
 msgid "Name"
-msgstr ""
+msgstr "სახელი"
 
 #: ../src/libromdata/Media/Wim_xml.cpp:375
 msgctxt "Wim|Images"
@@ -7110,13 +7110,13 @@ msgstr ""
 #: ../src/libromdata/Other/Amiibo.cpp:403
 msgctxt "Amiibo|Type"
 msgid "Card"
-msgstr ""
+msgstr "ბარათი"
 
 #. tr: NFP_TYPE_YARN == yarn amiibo
 #: ../src/libromdata/Other/Amiibo.cpp:405
 msgctxt "Amiibo|Type"
 msgid "Yarn"
-msgstr ""
+msgstr "დიოსკორეა"
 
 #. tr: NFP_TYPE_BAND == Power-Up Band
 #: ../src/libromdata/Other/Amiibo.cpp:407
@@ -7180,7 +7180,7 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:975
 msgctxt "ELF"
 msgid "Name"
-msgstr ""
+msgstr "სახელი"
 
 #: ../src/libromdata/Other/ELF.cpp:1079
 msgctxt "ELF|Symbol"
@@ -7200,7 +7200,7 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:1143
 msgctxt "ELF|Symbol"
 msgid "Name"
-msgstr ""
+msgstr "სახელი"
 
 #: ../src/libromdata/Other/ELF.cpp:1144
 msgctxt "ELF|Symbol"
@@ -7210,7 +7210,7 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:1145
 msgctxt "ELF|Symbol"
 msgid "Type"
-msgstr ""
+msgstr "ტიპი"
 
 #: ../src/libromdata/Other/ELF.cpp:1146
 msgctxt "ELF|Symbol"
@@ -7230,7 +7230,7 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:1149
 msgctxt "ELF|Symbol"
 msgid "Size"
-msgstr ""
+msgstr "ზომა"
 
 #: ../src/libromdata/Other/ELF.cpp:1531 ../src/libromdata/Other/MachO.cpp:492
 msgctxt "RomData|ExecType"
@@ -7348,7 +7348,7 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:1718
 msgctxt "ELF|PARISCFlags"
 msgid "Wide"
-msgstr ""
+msgstr "ფართო"
 
 #: ../src/libromdata/Other/ELF.cpp:1720
 msgctxt "ELF|PARISCFlags"
@@ -7576,7 +7576,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:230
 msgctxt "EXE|FileType"
 msgid "Font"
-msgstr ""
+msgstr "ფონტი"
 
 #. tr: VFT_VXD
 #: ../src/libromdata/Other/EXE.cpp:232
@@ -7748,7 +7748,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:436
 msgctxt "EXE"
 msgid "High"
-msgstr ""
+msgstr "მაღალი"
 
 #: ../src/libromdata/Other/EXE.cpp:440
 msgctxt "EXE"
@@ -7808,12 +7808,12 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_manifest.cpp:251
 msgctxt "EXE|Manifest"
 msgid "Type"
-msgstr ""
+msgstr "ტიპი"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:252
 msgctxt "EXE|Manifest"
 msgid "Name"
-msgstr ""
+msgstr "სახელი"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:253
 msgctxt "EXE|Manifest"
@@ -7940,7 +7940,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:420
 msgctxt "EXE|DGroupType"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:421
 msgctxt "EXE|DGroupType"
@@ -7996,7 +7996,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:456
 msgctxt "EXE|ApplType"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:448
 msgctxt "EXE|ApplType"
@@ -8154,7 +8154,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:1323
 msgctxt "EXE|Exports"
 msgid "Name"
-msgstr ""
+msgstr "სახელი"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:826
 msgctxt "EXE|Exports"
@@ -8318,7 +8318,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:1034
 msgctxt "EXE|Exports"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:1051
 #: ../src/libromdata/Other/EXE_PE.cpp:1072
@@ -8330,7 +8330,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:1324
 msgctxt "EXE|Exports"
 msgid "Hint"
-msgstr ""
+msgstr "მინიშნება"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:1058
 msgctxt "EXE|Exports"
@@ -8521,7 +8521,7 @@ msgstr ""
 #: ../src/libromdata/Other/NintendoBadge.cpp:453
 msgctxt "NintendoBadge"
 msgid "Name"
-msgstr ""
+msgstr "სახელი"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:716
 msgctxt "NintendoBadge"
@@ -8556,7 +8556,7 @@ msgstr ""
 #: ../src/libromdata/Other/NintendoBadge.cpp:759
 msgctxt "NintendoBadge"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #. tr: {0:s} == Title name, {1:s} == Region
 #: ../src/libromdata/Other/NintendoBadge.cpp:779
@@ -9128,7 +9128,7 @@ msgstr "ყველა"
 #: ../src/librpbase/RomFields.cpp:521
 msgctxt "RomFields|AgeRating"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/librpbase/TextOut_text.cpp:603 ../src/librpbase/TextOut_text.cpp:624
 msgctxt "TextOut"
@@ -9329,7 +9329,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:67
 msgctxt "Ext2AttrView"
 msgid "sync"
-msgstr ""
+msgstr "სინქრონიზაცია"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:68
 msgctxt "Ext2AttrView"
@@ -9429,7 +9429,7 @@ msgstr ""
 #: ../src/librpfile/xattr/XfsAttrData.c:30
 msgctxt "XfsAttrView"
 msgid "sync"
-msgstr ""
+msgstr "სინქრონიზაცია"
 
 #: ../src/librpfile/xattr/XfsAttrData.c:31
 msgctxt "XfsAttrView"
@@ -9542,8 +9542,8 @@ msgstr ""
 msgctxt "LibRpText|FileSize"
 msgid "byte"
 msgid_plural "bytes"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "ბაიტი"
+msgstr[1] "ბაიტი"
 
 #. tr: Kilobytes (binary)
 #: ../src/librptext/formatting.cpp:236 ../src/librptext/formatting.cpp:414
@@ -9726,7 +9726,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1386
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Caps"
-msgstr ""
+msgstr "მთავრული"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1387
 msgctxt "DirectDrawSurface|dwFlags"
@@ -9796,7 +9796,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1439
 msgctxt "DirectDrawSurface"
 msgid "Caps"
-msgstr ""
+msgstr "მთავრული"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1446
 msgctxt "DirectDrawSurface|dwCaps2"
@@ -9981,12 +9981,12 @@ msgstr ""
 #: ../src/librptexture/fileformat/ICO.cpp:406
 msgctxt "ICO|PixelFormat"
 msgid "Mono"
-msgstr ""
+msgstr "მონო"
 
 #: ../src/librptexture/fileformat/ICO.cpp:1492
 msgctxt "ICO"
 msgid "Size"
-msgstr ""
+msgstr "ზომა"
 
 #: ../src/librptexture/fileformat/ICO.cpp:1494
 msgctxt "ICO"
@@ -10234,7 +10234,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/TGA.cpp:889
 msgctxt "TGA|Compression"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/librptexture/fileformat/TGA.cpp:891
 msgctxt "TGA"
