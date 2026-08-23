@@ -1651,7 +1651,7 @@ int GameCube::loadFieldData(void)
 				const char *status = d->wii_getCryptoStatus(d->gamePartition);
 				d->fields.addField_string(game_info_title,
 					fmt::format(FRUN(C_("GameCube", "ERROR: {:s}")),
-						(status ? status : C_("GameCube", "Unknown"))));
+						(status ? status : C_("RomData", "Unknown"))));
 			}
 		}
 

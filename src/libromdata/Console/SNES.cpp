@@ -1413,9 +1413,9 @@ int SNES::loadFieldData(void)
 	}};
 	static const array<const char*, 16> hw_enh_tbl = {{
 		"DSP-1", "Super FX", "OBC-1", "SA-1",
-		"S-DD1", "S-RTC", "Unknown", "Unknown",
-		"Unknown", "Unknown", "Unknown", "Unknown",
-		"Unknown", "Unknown", "Other", "Custom Chip"
+		"S-DD1", "S-RTC", nullptr, nullptr,
+		nullptr, nullptr, nullptr, nullptr,
+		nullptr, nullptr, "Other", "Custom Chip"
 	}};
 
 	string cart_hw;
@@ -1437,30 +1437,35 @@ int SNES::loadFieldData(void)
 				if ((romHeader->snes.rom_type & SNES_ROMTYPE_ROM_MASK) >= SNES_ROMTYPE_ROM_ENH) {
 					// Enhancement chip.
 					const uint8_t enh = (romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK);
+					const char *s_hw = nullptr;
 					if (enh == SNES_ROMTYPE_ENH_CUSTOM) {
 						// Check the chipset subtype.
-						const char *subtype;
 						switch (romHeader->snes.ext.chipset_subtype) {
 							case SNES_CHIPSUBTYPE_SPC7110:
-								subtype = "SPC7110";
+								s_hw = "SPC7110";
 								break;
 							case SNES_CHIPSUBTYPE_STO10_ST011:
-								subtype = "ST010/ST011";
+								s_hw = "ST010/ST011";
 								break;
 							case SNES_CHIPSUBTYPE_STO18:
-								subtype = "ST018";
+								s_hw = "ST018";
 								break;
 							case SNES_CHIPSUBTYPE_CX4:
-								subtype = "CX4";
+								s_hw = "CX4";
 								break;
 							default:
-								subtype = hw_enh_tbl[SNES_ROMTYPE_ENH_CUSTOM >> 4];
+								s_hw = hw_enh_tbl[SNES_ROMTYPE_ENH_CUSTOM >> 4];
 								break;
 						}
-						cart_hw += subtype;
 					} else {
 						// No subtype needed.
-						cart_hw += hw_enh_tbl[(romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) >> 4];
+						s_hw = hw_enh_tbl[(romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) >> 4];
+					}
+
+					if (s_hw) {
+						cart_hw += s_hw;
+					} else {
+						cart_hw += C_("RomData", "Unknown");
 					}
 				}
 			} else {

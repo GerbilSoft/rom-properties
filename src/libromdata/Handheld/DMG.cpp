@@ -722,7 +722,7 @@ void DMGPrivate::addFields_romHeader(const DMG_RomHeader *pRomHeader)
 	const char *const rom_size_title = C_("DMG", "ROM Size");
 	const int rom_size = DMGPrivate::RomSize(pRomHeader->rom_size);
 	if (rom_size < 0) {
-		fields.addField_string(rom_size_title, C_("DMG", "Unknown"));
+		fields.addField_string(rom_size_title, C_("RomData", "Unknown"));
 	} else {
 		if (rom_size > 32) {
 			const int banks = rom_size / 16;

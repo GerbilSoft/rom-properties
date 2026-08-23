@@ -1159,7 +1159,7 @@ int EXE::loadFieldData(void)
 		const unsigned int offset = exeTypes_offtbl[static_cast<size_t>(d->exeType)];
 		d->fields.addField_string(type_title, &exeTypes_strtbl[offset]);
 	} else {
-		d->fields.addField_string(type_title, C_("EXE", "Unknown"));
+		d->fields.addField_string(type_title, C_("RomData", "Unknown"));
 	}
 
 	switch (d->exeType) {

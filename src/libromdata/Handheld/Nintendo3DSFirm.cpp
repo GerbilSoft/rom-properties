@@ -494,10 +494,12 @@ int Nintendo3DSFirm::loadFieldData(void)
 		}
 	}
 
+	const char *const s_unknown = C_("RomData", "Unknown");
+
 	if (firmBin) {
 		// Official firmware binary fields
 		d->fields.addField_string(C_("RomData", "Type"),
-			(firmBinDesc ? firmBinDesc : C_("RomData", "Unknown")));
+			(firmBinDesc ? firmBinDesc : s_unknown));
 
 		// FIRM version
 		d->fields.addField_string(C_("Nintendo3DSFirm", "FIRM Version"),
@@ -600,7 +602,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 
 		// Add the firmware type field.
 		d->fields.addField_string(C_("RomData", "Type"),
-			(firmBinDesc ? firmBinDesc : C_("RomData", "Unknown")));
+			(firmBinDesc ? firmBinDesc : s_unknown));
 
 		if (arm9VerStr_title) {
 			d->fields.addField_string(C_("RomData", "Title"), arm9VerStr_title);
@@ -615,7 +617,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 	} else {
 		// Add the firmware type field.
 		d->fields.addField_string(C_("RomData", "Type"),
-			(firmBinDesc ? firmBinDesc : C_("RomData", "Unknown")));
+			(firmBinDesc ? firmBinDesc : s_unknown));
 	}
 
 	// Entry Points
