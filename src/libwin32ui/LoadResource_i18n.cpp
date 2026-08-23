@@ -58,11 +58,12 @@ LPVOID LoadResource_i18n(HMODULE hModule, LPCTSTR lpType, DWORD dwResId)
 
 	// Mappings for languages with only a single variant implemented.
 	// Reference: https://learn.microsoft.com/en-us/previous-versions/windows/desktop/indexsrv/valid-locale-identifiers
-	static const array<lc_mapping_t, 8> lc_mappings = {{
+	static const array<lc_mapping_t, 9> lc_mappings = {{
 		{'de', MAKELANGID(LANG_GERMAN, SUBLANG_GERMAN)},
 		{'es', MAKELANGID(LANG_SPANISH, SUBLANG_SPANISH)},
 		{'fr', MAKELANGID(LANG_FRENCH, SUBLANG_FRENCH)},
 		{'it', MAKELANGID(LANG_ITALIAN, SUBLANG_DEFAULT)},
+		{'ka', MAKELANGID(LANG_GEORGIAN, SUBLANG_GEORGIAN_GEORGIA)},
 		{'pt', MAKELANGID(LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN)},
 		{'ro', MAKELANGID(LANG_ROMANIAN, SUBLANG_DEFAULT)},
 		{'ru', MAKELANGID(LANG_RUSSIAN, SUBLANG_DEFAULT)},
