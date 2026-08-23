@@ -75,8 +75,9 @@ static char *rp_iconv(const char *src, int len,
 	//assert(len > 0);	// Don't assert on empty strings.
 	assert(src_charset != nullptr);
 	assert(dest_charset != nullptr);
-	if (!src || len <= 0 || !src_charset || !dest_charset)
+	if (!src || len <= 0 || !src_charset || !dest_charset) {
 		return nullptr;
+	}
 
 	// Based on examples from:
 	// * http://www.delorie.com/gnu/docs/glibc/libc_101.html
@@ -84,7 +85,7 @@ static char *rp_iconv(const char *src, int len,
 
 	// Open an iconv descriptor.
 	iconv_t cd;
-#if defined(__linux__) || defined(HAVE_ICONV_LIBICONV)
+#if defined(__GLIBC__) || defined(HAVE_ICONV_LIBICONV)
 	// glibc/libiconv: Append "//IGNORE" to the source character set
 	// if ignoreErr == true.
 	// TODO: Destination, not source?
@@ -288,11 +289,12 @@ static std::basic_string<T> T_cpN_to_unicode(const char *out_encoding, unsigned 
 		ret.assign(out_str);
 		free(out_str);
 
-#ifdef HAVE_ICONV_LIBICONV
+#if !defined(__GLIBC__) || defined(HAVE_ICONV_LIBICONV)
 		if (cp == CP_SJIS) {
 			// Some versions of libiconv map characters differently compared to cp932:
 			// - FreeBSD Shift-JIS: 8160: mapped to U+301C (WAVE DASH); cp932 uses U+FF5E (FULLWIDTH TILDE)
 			// - Termux libiconv: 817C: mapped to U+2212 (MINUS SIGN); cp932 uses U+FF0D (FULLWIDTH HYPHEN-MINUS)
+			// FIXME: musl libc's cp932 is lacking and can't really be fixed here...
 			if_constexpr (sizeof(T) == sizeof(uint8_t)) {
 				const auto ret_end = ret.end();
 				for (auto p = ret.begin(); p != ret_end; ++p) {
@@ -330,7 +332,7 @@ static std::basic_string<T> T_cpN_to_unicode(const char *out_encoding, unsigned 
 				static_assert(sizeof(T) == sizeof(uint8_t) || sizeof(T) == sizeof(uint16_t), "Wrong character size!");
 			}
 		}
-#endif /* HAVE_ICONV_LIBICONV */
+#endif /* !__GLIBC__ || HAVE_ICONV_LIBICONV */
 	}
 	return ret;
 }
