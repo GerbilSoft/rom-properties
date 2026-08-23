@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-23 18:24-0400\n"
-"PO-Revision-Date: 2026-08-23 22:37\n"
+"PO-Revision-Date: 2026-08-23 23:35\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -993,7 +993,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1432
 msgctxt "RomDataView"
 msgid "Unknown"
-msgstr "DESCONOCIDO"
+msgstr "Desconocido"
 
 #. tr: No age ratings data.
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:145
@@ -1115,7 +1115,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1653
 msgctxt "RomData"
 msgid "Unknown"
-msgstr "DESCONOCIDO"
+msgstr "Desconocido"
 
 #: ../src/gtk/RomDataView_ops.cpp:316 ../src/gtk/RomDataView_ops.cpp:425
 #: ../src/kde/RomDataView_ops.cpp:202 ../src/kde/RomDataView_ops.cpp:272
