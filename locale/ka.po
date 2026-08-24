@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-23 18:24-0400\n"
-"PO-Revision-Date: 2026-08-24 14:05\n"
+"PO-Revision-Date: 2026-08-24 15:19\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
 "Language: ka_GE\n"
@@ -7903,12 +7903,12 @@ msgstr "8086 insns"
 #: ../src/libromdata/Other/EXE_NE.cpp:434
 msgctxt "EXE|ProgFlags"
 msgid "80286 insns"
-msgstr ""
+msgstr "80286 insns"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:435
 msgctxt "EXE|ProgFlags"
 msgid "80386 insns"
-msgstr ""
+msgstr "80386 insns"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:436
 msgctxt "EXE|ProgFlags"
@@ -7964,7 +7964,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:472
 msgctxt "EXE|ApplFlags"
 msgid "Image Error"
-msgstr ""
+msgstr "გამოსახულების შეცდომა"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:473
 msgctxt "EXE|ApplFlags"
@@ -8004,7 +8004,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:493
 msgctxt "EXE"
 msgid "Other Flags"
-msgstr ""
+msgstr "სხვა ალმები"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:525
 #: ../src/libromdata/Other/EXE_PE.cpp:802
@@ -8016,12 +8016,12 @@ msgstr "დროის შტამპი"
 #: ../src/libromdata/Other/EXE_PE.cpp:817
 msgctxt "EXE"
 msgid "Runtime DLL"
-msgstr ""
+msgstr "გაშვების გარემოს DLL"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:560
 msgctxt "EXE"
 msgid "Module Name"
-msgstr ""
+msgstr "მოდულის სახელი"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:563
 msgctxt "EXE"
@@ -8263,7 +8263,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:1070
 msgctxt "EXE|Exports"
 msgid "File Offset"
-msgstr ""
+msgstr "ფაილის წანაცვლება"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:1279
 #, c++-format
@@ -8309,7 +8309,7 @@ msgstr ""
 #: ../src/libromdata/Other/GameMaker.cpp:566
 msgctxt "GameMaker"
 msgid "IDE Version"
-msgstr ""
+msgstr "IDE-ის ვერსია"
 
 #: ../src/libromdata/Other/GameMaker.cpp:570
 msgctxt "GameMaker"
@@ -8369,7 +8369,7 @@ msgstr "int-ის ზომა"
 #: ../src/libromdata/Other/Lua.cpp:724
 msgctxt "Lua"
 msgid "size_t size"
-msgstr ""
+msgstr "size_t-ის ზომა"
 
 #: ../src/libromdata/Other/Lua.cpp:726
 msgctxt "Lua"
@@ -8434,7 +8434,7 @@ msgstr "CPU"
 #: ../src/libromdata/Other/MachO.cpp:523
 msgctxt "MachO"
 msgid "CPU Subtype"
-msgstr ""
+msgstr "CPU-ის ქვეტიპი"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:454
 msgctxt "NintendoBadge"
@@ -8548,7 +8548,7 @@ msgctxt "FstPrint"
 msgid "{:Ld} file"
 msgid_plural "{:Ld} files"
 msgstr[0] "{:Ld} ფაილი"
-msgstr[1] "{:Ld} ფაილი"
+msgstr[1] "{:Ld} ფაილები"
 
 #: ../src/libromdata/tests/disc/GcnFstPrint.cpp:88
 #, c++-format
@@ -8846,7 +8846,7 @@ msgstr "ხატულას ფაილი"
 #: ../src/librpbase/RomData.cpp:724
 msgctxt "RomData|FileType"
 msgid "Banner File"
-msgstr ""
+msgstr "ბანერის ფაილი"
 
 #. tr: FileType::Homebrew
 #: ../src/librpbase/RomData.cpp:726
@@ -8906,7 +8906,7 @@ msgstr "აუდიოფაილი"
 #: ../src/librpbase/RomData.cpp:744
 msgctxt "RomData|FileType"
 msgid "Boot Sector"
-msgstr ""
+msgstr "ჩამტვირთავი სექტორი"
 
 #. tr: FileType::Bundle (Mac OS X bundle)
 #: ../src/librpbase/RomData.cpp:746
@@ -9086,7 +9086,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:18
 msgctxt "Ext2AttrView"
 msgid "append only"
-msgstr ""
+msgstr "append only"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:19
 msgctxt "Ext2AttrView"
@@ -9207,7 +9207,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:55
 msgctxt "Ext2AttrView"
 msgid "no compress"
-msgstr ""
+msgstr "no compress"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:56
 msgctxt "Ext2AttrView"
@@ -9327,7 +9327,7 @@ msgstr ""
 #: ../src/librpfile/xattr/XfsAttrData.c:24
 msgctxt "XfsAttrView"
 msgid "immutable"
-msgstr "immutable"
+msgstr "უცვლელი"
 
 #: ../src/librpfile/xattr/XfsAttrData.c:25
 msgctxt "XfsAttrView"
