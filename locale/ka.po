@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-23 18:24-0400\n"
-"PO-Revision-Date: 2026-08-24 08:21\n"
+"PO-Revision-Date: 2026-08-24 09:25\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
 "Language: ka_GE\n"
@@ -8220,7 +8220,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:789
 msgctxt "EXE|DependentLoadFlags"
 msgid "User Dirs"
-msgstr ""
+msgstr "მომხმარებლის საქაღალდეები"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:791
 msgctxt "EXE|DependentLoadFlags"
