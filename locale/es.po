@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-08-23 18:24-0400\n"
-"PO-Revision-Date: 2026-08-23 23:35\n"
+"POT-Creation-Date: 2026-08-24 12:07-0400\n"
+"PO-Revision-Date: 2026-08-24 23:14\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -1281,18 +1281,20 @@ msgctxt "ADX"
 msgid "Encrypted"
 msgstr "Encriptado"
 
-#: ../src/libromdata/Audio/ADX.cpp:324
-msgctxt "ADX"
+#: ../src/libromdata/Audio/ADX.cpp:324 ../src/libromdata/Audio/BCSTM.cpp:501
+#: ../src/libromdata/Audio/BRSTM.cpp:365
+msgctxt "RomData|Audio"
 msgid "Looping"
 msgstr "Bucle"
 
-#: ../src/libromdata/Audio/ADX.cpp:327
-msgctxt "ADX"
+#: ../src/libromdata/Audio/ADX.cpp:327 ../src/libromdata/Audio/BCSTM.cpp:504
+#: ../src/libromdata/Audio/BRSTM.cpp:368
+msgctxt "RomData|Audio"
 msgid "Loop Start"
 msgstr "Inicio del bucle"
 
-#: ../src/libromdata/Audio/ADX.cpp:329
-msgctxt "ADX"
+#: ../src/libromdata/Audio/ADX.cpp:329 ../src/libromdata/Audio/BCSTM.cpp:508
+msgctxt "RomData|Audio"
 msgid "Loop End"
 msgstr "Final del bucle"
 
@@ -1379,25 +1381,10 @@ msgctxt "BCSTM|Codec"
 msgid "Signed 16-bit PCM"
 msgstr "PCM de 16 bits con signo"
 
-#: ../src/libromdata/Audio/BCSTM.cpp:477
-msgctxt "BCSTM"
+#: ../src/libromdata/Audio/BCSTM.cpp:477 ../src/libromdata/Audio/BRSTM.cpp:340
+msgctxt "RomData|Audio"
 msgid "Codec"
 msgstr ""
-
-#: ../src/libromdata/Audio/BCSTM.cpp:501
-msgctxt "BCSTM"
-msgid "Looping"
-msgstr "Bucle"
-
-#: ../src/libromdata/Audio/BCSTM.cpp:504
-msgctxt "BCSTM"
-msgid "Loop Start"
-msgstr "Inicio del bucle"
-
-#: ../src/libromdata/Audio/BCSTM.cpp:508
-msgctxt "BCSTM"
-msgid "Loop End"
-msgstr "Final del bucle"
 
 #: ../src/libromdata/Audio/BRSTM.cpp:325 ../src/libromdata/Audio/S98.cpp:306
 #: ../src/libromdata/Audio/SID.cpp:224 ../src/libromdata/Audio/VGM.cpp:355
@@ -1415,21 +1402,6 @@ msgstr "PCM de 8 bits con signo"
 msgctxt "BRSTM|Codec"
 msgid "Signed 16-bit PCM"
 msgstr "PCM de 16 bits con signo"
-
-#: ../src/libromdata/Audio/BRSTM.cpp:340
-msgctxt "BRSTM"
-msgid "Codec"
-msgstr ""
-
-#: ../src/libromdata/Audio/BRSTM.cpp:365
-msgctxt "BRSTM"
-msgid "Looping"
-msgstr "Bucle"
-
-#: ../src/libromdata/Audio/BRSTM.cpp:368
-msgctxt "BRSTM"
-msgid "Loop Start"
-msgstr "Inicio del bucle"
 
 #: ../src/libromdata/Audio/GBS.cpp:244 ../src/libromdata/Audio/NSF.cpp:212
 #: ../src/libromdata/Audio/PSFTagParser.cpp:173
@@ -1869,7 +1841,8 @@ msgid "Dump Date"
 msgstr "Fecha de dumpeo"
 
 #: ../src/libromdata/Audio/SPC.cpp:855
-msgctxt "RomData|Audio"
+#: ../src/librptexture/fileformat/TGA.cpp:931
+msgctxt "RomData"
 msgid "Comments"
 msgstr "Comentarios"
 
@@ -3330,6 +3303,7 @@ msgid "Address"
 msgstr "Dirección"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:689
+#: ../src/libromdata/Console/MegaDrive.cpp:1457
 #: ../src/libromdata/Handheld/PokemonMini.cpp:370
 msgctxt "RomData"
 msgid "Vector Table"
@@ -3339,11 +3313,6 @@ msgstr "Tabla de vectores"
 msgctxt "MegaDrive"
 msgid "ROM Header"
 msgstr "Cabecera de ROM"
-
-#: ../src/libromdata/Console/MegaDrive.cpp:1457
-msgctxt "MegaDrive"
-msgid "Vector Table"
-msgstr "Tabla de vectores"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:1464
 msgctxt "MegaDrive"
@@ -5914,15 +5883,12 @@ msgctxt "Lynx"
 msgid "Rotation"
 msgstr "Rotación"
 
-#: ../src/libromdata/Handheld/Lynx.cpp:221
+#. tr: Lynx has two banks, 0 and 1.
+#: ../src/libromdata/Handheld/Lynx.cpp:222
+#, c++-format
 msgctxt "Lynx"
-msgid "Bank 0 Size"
-msgstr "Tamaño de Banco 0"
-
-#: ../src/libromdata/Handheld/Lynx.cpp:224
-msgctxt "Lynx"
-msgid "Bank 1 Size"
-msgstr "Tamaño de Banco 1"
+msgid "Bank {:d} Size"
+msgstr "Tamaño de Banco {:d}"
 
 #: ../src/libromdata/Handheld/NGPC.cpp:325
 msgctxt "RomData"
@@ -6753,20 +6719,18 @@ msgctxt "WonderSwan|BusWidth"
 msgid "16-bit"
 msgstr ""
 
-#: ../src/libromdata/Handheld/WonderSwan.cpp:642
+#: ../src/libromdata/Handheld/WonderSwan.cpp:643
 msgctxt "WonderSwan"
 msgid "ROM Access Speed"
 msgstr ""
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:644
-msgctxt "WonderSwan|ROMAccessSpeed"
-msgid "1 cycle"
-msgstr ""
-
-#: ../src/libromdata/Handheld/WonderSwan.cpp:645
-msgctxt "WonderSwan|ROMAccessSpeed"
-msgid "3 cycles"
-msgstr ""
+#, c++-format
+msgctxt "WonderSwan"
+msgid "{:d} cycle"
+msgid_plural "{:d} cycles"
+msgstr[0] ""
+msgstr[1] ""
 
 #: ../src/libromdata/Media/CBMDOS.cpp:1244
 msgctxt "CBMDOS"
@@ -9956,22 +9920,27 @@ msgid "# of Layers"
 msgstr ""
 
 #: ../src/librptexture/fileformat/KhronosKTX2.cpp:1019
-msgctxt "KhronosKTX2"
+#: ../src/librptexture/fileformat/KhronosKTX.cpp:1110
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1420
+msgctxt "FileFormat"
 msgid "# of Faces"
 msgstr "Nº de caras"
 
 #: ../src/librptexture/fileformat/KhronosKTX2.cpp:1027
-msgctxt "KhronosKTX2|KeyValue"
+#: ../src/librptexture/fileformat/KhronosKTX.cpp:1118
+msgctxt "FileFormat|KeyValue"
 msgid "Key"
 msgstr "Clave"
 
 #: ../src/librptexture/fileformat/KhronosKTX2.cpp:1028
-msgctxt "KhronosKTX2|KeyValue"
+#: ../src/librptexture/fileformat/KhronosKTX.cpp:1119
+msgctxt "FileFormat|KeyValue"
 msgid "Value"
 msgstr "Valor"
 
 #: ../src/librptexture/fileformat/KhronosKTX2.cpp:1038
-msgctxt "KhronosKTX2"
+#: ../src/librptexture/fileformat/KhronosKTX.cpp:1129
+msgctxt "FileFormat"
 msgid "Key/Value Data"
 msgstr "Datos clave/valor"
 
@@ -9979,26 +9948,6 @@ msgstr "Datos clave/valor"
 msgctxt "KhronosKTX"
 msgid "# of Array Elements"
 msgstr "Nº de elementos de array"
-
-#: ../src/librptexture/fileformat/KhronosKTX.cpp:1110
-msgctxt "KhronosKTX"
-msgid "# of Faces"
-msgstr "Nº de caras"
-
-#: ../src/librptexture/fileformat/KhronosKTX.cpp:1118
-msgctxt "KhronosKTX|KeyValue"
-msgid "Key"
-msgstr "Clave"
-
-#: ../src/librptexture/fileformat/KhronosKTX.cpp:1119
-msgctxt "KhronosKTX|KeyValue"
-msgid "Value"
-msgstr "Valor"
-
-#: ../src/librptexture/fileformat/KhronosKTX.cpp:1129
-msgctxt "KhronosKTX"
-msgid "Key/Value Data"
-msgstr "Datos clave/valor"
 
 #: ../src/librptexture/fileformat/PlayStationTIM.cpp:471
 msgctxt "PlayStationTIM"
@@ -10127,11 +10076,6 @@ msgctxt "PowerVR3"
 msgid "# of Surfaces"
 msgstr "# of Superficies"
 
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1420
-msgctxt "PowerVR3"
-msgid "# of Faces"
-msgstr "Nº de caras"
-
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1439
 msgctxt "PowerVR3"
 msgid "Orientation"
@@ -10216,11 +10160,6 @@ msgstr ""
 msgctxt "TGA"
 msgid "Alpha Type"
 msgstr ""
-
-#: ../src/librptexture/fileformat/TGA.cpp:931
-msgctxt "RomData"
-msgid "Comments"
-msgstr "Comentarios"
 
 #: ../src/librptexture/fileformat/TGA.cpp:939
 msgctxt "TGA"
