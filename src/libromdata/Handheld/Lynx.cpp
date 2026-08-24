@@ -218,11 +218,14 @@ int Lynx::loadFieldData(void)
 			? pgettext_expr("Lynx|Rotation", rotation_names[romHeader->rotation])
 			: C_("RomData", "Unknown")));
 
-	d->fields.addField_string(C_("Lynx", "Bank 0 Size"),
-		LibRpText::formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));
+	// tr: Lynx has two banks, 0 and 1.
+	const char *const s_fmt_bank_n_size = C_("Lynx", "Bank {:d} Size");
 
-	d->fields.addField_string(C_("Lynx", "Bank 1 Size"),
-		LibRpText::formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));
+	d->fields.addField_string(fmt::format(FRUN(s_fmt_bank_n_size), 0U).c_str(),
+		LibRpText::formatFileSize(static_cast<off64_t>(le16_to_cpu(romHeader->page_size_bank0)) * 256U));
+
+	d->fields.addField_string(fmt::format(FRUN(s_fmt_bank_n_size), 1U).c_str(),
+		LibRpText::formatFileSize(static_cast<off64_t>(le16_to_cpu(romHeader->page_size_bank0)) * 256U));
 
 	return d->fields.count();
 }

@@ -1016,7 +1016,7 @@ int KhronosKTX2::getFields(RomFields *fields) const
 
 	// # of faces (for cubemaps)
 	if (ktx2Header->faceCount > 1) {
-		fields->addField_string_numeric(C_("KhronosKTX2", "# of Faces"),
+		fields->addField_string_numeric(C_("FileFormat", "# of Faces"),
 			ktx2Header->faceCount);
 	}
 
@@ -1024,18 +1024,18 @@ int KhronosKTX2::getFields(RomFields *fields) const
 	d->loadKeyValueData();
 	if (!d->kv_data.empty()) {
 		static const array<const char*, 2> kv_field_names = {{
-			NOP_C_("KhronosKTX2|KeyValue", "Key"),
-			NOP_C_("KhronosKTX2|KeyValue", "Value"),
+			NOP_C_("FileFormat|KeyValue", "Key"),
+			NOP_C_("FileFormat|KeyValue", "Value"),
 		}};
 
 		// NOTE: Making a copy.
 		RomFields::ListData_t *const p_kv_data = new RomFields::ListData_t(d->kv_data);
-		vector<string> *const v_kv_field_names = RomFields::strArrayToVector_i18n("KhronosKTX2|KeyValue", kv_field_names);
+		vector<string> *const v_kv_field_names = RomFields::strArrayToVector_i18n("FileFormat|KeyValue", kv_field_names);
 
 		RomFields::AFLD_PARAMS params;
 		params.headers = v_kv_field_names;
 		params.data.single = p_kv_data;
-		fields->addField_listData(C_("KhronosKTX2", "Key/Value Data"), &params);
+		fields->addField_listData(C_("FileFormat", "Key/Value Data"), &params);
 	}
 
 	// Finished reading the field data.

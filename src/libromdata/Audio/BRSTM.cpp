@@ -337,7 +337,7 @@ int BRSTM::loadFieldData(void)
 		NOP_C_("BRSTM|Codec", "Signed 16-bit PCM"),
 		"4-bit THP ADPCM",
 	}};
-	const char *const codec_title = C_("BRSTM", "Codec");
+	const char *const codec_title = C_("RomData|Audio", "Codec");
 	if (headChunk1->codec < codec_tbl.size()) {
 		d->fields.addField_string(codec_title,
 			pgettext_expr("BRSTM|Codec", codec_tbl[headChunk1->codec]));
@@ -362,10 +362,10 @@ int BRSTM::loadFieldData(void)
 		formatSampleAsTime(sample_count, sample_rate));
 
 	// Looping
-	d->fields.addField_string(C_("BRSTM", "Looping"),
+	d->fields.addField_string(C_("RomData|Audio", "Looping"),
 		(headChunk1->loop_flag ? C_("RomData", "Yes") : C_("RomData", "No")));
 	if (headChunk1->loop_flag) {
-		d->fields.addField_string(C_("BRSTM", "Loop Start"),
+		d->fields.addField_string(C_("RomData|Audio", "Loop Start"),
 			formatSampleAsTime(d->brstm32_to_cpu(headChunk1->loop_start), sample_rate));
 	}
 

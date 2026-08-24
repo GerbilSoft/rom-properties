@@ -1448,13 +1448,13 @@ int MegaDrive::loadFieldData(void)
 	// Reserve at least 2 tabs.
 	d->fields.reserveTabs(2);
 
-	// ROM Header.
+	// ROM Header
 	d->fields.setTabName(0, C_("MegaDrive", "ROM Header"));
 	d->addFields_romHeader(&d->romHeader);
 
 	if (!d->isDisc()) {
-		// Vector table. (MD only; not valid for Mega CD.)
-		d->fields.addTab(C_("MegaDrive", "Vector Table"));
+		// Vector table (MD only; not valid for Mega CD.)
+		d->fields.addTab(C_("RomData", "Vector Table"));
 		d->addFields_vectorTable(&d->vectors);
 	}
 

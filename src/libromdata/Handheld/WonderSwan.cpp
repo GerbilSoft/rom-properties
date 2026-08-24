@@ -639,10 +639,9 @@ int WonderSwan::loadFieldData(void)
 			: C_("WonderSwan|BusWidth", "16-bit"));
 
 	// Flags: ROM access speed
+	const int cycles = ((romFooter->flags & WS_FLAG_ROM_ACCESS_SPEED_MASK) == WS_FLAG_ROM_ACCESS_SPEED_1_CYCLE) ? 1 : 3;
 	d->fields.addField_string(C_("WonderSwan", "ROM Access Speed"),
-		((romFooter->flags & WS_FLAG_ROM_ACCESS_SPEED_MASK) == WS_FLAG_ROM_ACCESS_SPEED_1_CYCLE)
-			? C_("WonderSwan|ROMAccessSpeed", "1 cycle")
-			: C_("WonderSwan|ROMAccessSpeed", "3 cycles"));
+		fmt::format(FRUN(NC_("WonderSwan", "{:d} cycle", "{:d} cycles", cycles)), cycles));
 
 	return d->fields.count();
 }

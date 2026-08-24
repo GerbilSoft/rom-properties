@@ -321,12 +321,12 @@ int ADX::loadFieldData(void)
 	// Looping
 	const ADX_LoopData *const pLoopData = d->pLoopData;
 	const bool isLooping = (pLoopData && pLoopData->loop_flag != 0);
-	d->fields.addField_string(C_("ADX", "Looping"),
+	d->fields.addField_string(C_("RomData|Audio", "Looping"),
 		(isLooping ? s_yes : s_no));
 	if (isLooping) {
-		d->fields.addField_string(C_("ADX", "Loop Start"),
+		d->fields.addField_string(C_("RomData|Audio", "Loop Start"),
 			formatSampleAsTime(be32_to_cpu(pLoopData->start_sample), sample_rate));
-		d->fields.addField_string(C_("ADX", "Loop End"),
+		d->fields.addField_string(C_("RomData|Audio", "Loop End"),
 			formatSampleAsTime(be32_to_cpu(pLoopData->end_sample), sample_rate));
 	}
 

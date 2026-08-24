@@ -1417,7 +1417,7 @@ int PowerVR3::getFields(RomFields *fields) const
 	// Other numeric fields.
 	fields->addField_string_numeric(C_("PowerVR3", "# of Surfaces"),
 		pvr3Header->num_surfaces);
-	fields->addField_string_numeric(C_("PowerVR3", "# of Faces"),
+	fields->addField_string_numeric(C_("FileFormat", "# of Faces"),
 		pvr3Header->num_faces);
 
 	// Orientation.

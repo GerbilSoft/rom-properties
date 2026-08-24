@@ -474,7 +474,7 @@ int BCSTM::loadFieldData(void)
 		NOP_C_("BCSTM|Codec", "Signed 16-bit PCM"),
 		"DSP ADPCM", "IMA ADPCM",
 	}};
-	const char *const codec_title = C_("BCSTM", "Codec");
+	const char *const codec_title = C_("RomData|Audio", "Codec");
 	if (codec < codec_tbl.size()) {
 		d->fields.addField_string(codec_title,
 			pgettext_expr("BCSTM|Codec", codec_tbl[codec]));
@@ -498,14 +498,14 @@ int BCSTM::loadFieldData(void)
 	}
 
 	// Looping
-	d->fields.addField_string(C_("BCSTM", "Looping"),
+	d->fields.addField_string(C_("RomData|Audio", "Looping"),
 		(loop_flag ? C_("RomData", "Yes") : C_("RomData", "No")));
 	if (loop_flag) {
-		d->fields.addField_string(C_("BCSTM", "Loop Start"),
+		d->fields.addField_string(C_("RomData|Audio", "Loop Start"),
 			formatSampleAsTime(loop_start, sample_rate));
 		if (d->audioFormat == BCSTMPrivate::AudioFormat::BCSTM) {
 			// TODO: Verify that this isn't used in looping BFSTMs.
-			d->fields.addField_string(C_("BCSTM", "Loop End"),
+			d->fields.addField_string(C_("RomData|Audio", "Loop End"),
 				formatSampleAsTime(loop_end, sample_rate));
 		}
 	}
