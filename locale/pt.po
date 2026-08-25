@@ -7,11 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-08-24 12:07-0400\n"
+"POT-Creation-Date: 2026-08-25 18:31-0400\n"
 "PO-Revision-Date: 2026-08-25 17:02\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese, Brazilian\n"
-"Language: pt_BR\n"
+"Language: pt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1442,7 +1442,8 @@ msgstr ""
 #: ../src/libromdata/Audio/GBS.cpp:256 ../src/libromdata/Audio/NSF.cpp:224
 #: ../src/libromdata/Audio/PSFTagParser.cpp:204
 #: ../src/libromdata/Audio/SID.cpp:241
-msgctxt "RomData|Audio"
+#: ../src/libromdata/Console/MegaDrive.cpp:449
+msgctxt "RomData"
 msgid "Copyright"
 msgstr "Direitos autorais"
 
@@ -1850,9 +1851,12 @@ msgid "Game Name"
 msgstr ""
 
 #: ../src/libromdata/Audio/SPC.cpp:807
-msgctxt "SPC"
+#: ../src/libromdata/Console/ColecoVision.cpp:448
+#: ../src/libromdata/Console/Intellivision.cpp:295
+#, fuzzy
+msgctxt "RomData"
 msgid "Copyright Year"
-msgstr ""
+msgstr "Direitos autorais"
 
 #: ../src/libromdata/Audio/SPC.cpp:831
 msgctxt "SPC"
@@ -2315,11 +2319,6 @@ msgctxt "Atari7800"
 msgid "Controller {:d}"
 msgstr ""
 
-#: ../src/libromdata/Console/ColecoVision.cpp:448
-msgctxt "ColecoVision"
-msgid "Copyright Year"
-msgstr ""
-
 #: ../src/libromdata/Console/ColecoVision.cpp:454
 #: ../src/libromdata/Console/N64.cpp:351 ../src/libromdata/Handheld/DMG.cpp:669
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:393
@@ -2767,7 +2766,7 @@ msgstr ""
 #: ../src/libromdata/Console/GameCubeBNR.cpp:628
 #: ../src/libromdata/Console/GameCubeSave.cpp:1051
 #: ../src/libromdata/Console/PlayStationSave.cpp:508
-#: ../src/libromdata/Console/Sega8Bit.cpp:649
+#: ../src/libromdata/Console/Sega8Bit.cpp:653
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1047
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:93
 #: ../src/libromdata/Other/EXE_manifest.cpp:261
@@ -2854,7 +2853,7 @@ msgstr "Desconhecido (0x{:0>8X})"
 
 #: ../src/libromdata/Console/GameCube.cpp:1523
 #: ../src/libromdata/Console/GameCubeSave.cpp:1032
-#: ../src/libromdata/Console/NES.cpp:1575
+#: ../src/libromdata/Console/N64.cpp:344 ../src/libromdata/Console/NES.cpp:1575
 #: ../src/libromdata/Console/SNES.cpp:1503
 #: ../src/libromdata/Console/SufamiTurbo.cpp:357
 #: ../src/libromdata/Console/WiiSave.cpp:456
@@ -3115,11 +3114,6 @@ msgctxt "GameCubeSave"
 msgid "Blocks"
 msgstr "Blocos"
 
-#: ../src/libromdata/Console/Intellivision.cpp:295
-msgctxt "Intellivision"
-msgid "Copyright Year"
-msgstr ""
-
 #: ../src/libromdata/Console/Intellivision.cpp:311
 msgctxt "Intellivision|Flags"
 msgid "Intellivision 2"
@@ -3169,11 +3163,6 @@ msgstr "Ásia"
 msgctxt "MegaDrive"
 msgid "System"
 msgstr "Sistema"
-
-#: ../src/libromdata/Console/MegaDrive.cpp:449
-msgctxt "RomData"
-msgid "Copyright"
-msgstr "Direitos autorais"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:457
 msgctxt "MegaDrive"
@@ -3359,11 +3348,6 @@ msgstr "Cabeçalho da ROM"
 msgctxt "MegaDrive"
 msgid "Locked-On ROM Header"
 msgstr "Cabeçalho da ROM combinada"
-
-#: ../src/libromdata/Console/N64.cpp:344
-msgctxt "N64"
-msgid "Game ID"
-msgstr "Código de jogo"
 
 #: ../src/libromdata/Console/N64.cpp:355
 #: ../src/libromdata/Console/WiiTMD.cpp:447
@@ -3745,8 +3729,8 @@ msgid "System"
 msgstr "Sistema"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:596
-#: ../src/libromdata/Console/Sega8Bit.cpp:620
-#: ../src/libromdata/Console/Sega8Bit.cpp:655
+#: ../src/libromdata/Console/Sega8Bit.cpp:624
+#: ../src/libromdata/Console/Sega8Bit.cpp:659
 msgctxt "Sega8Bit"
 msgid "Extra Header"
 msgstr "Cabeçalho extra"
@@ -3761,40 +3745,37 @@ msgctxt "Sega8Bit"
 msgid "CM Checksum Banks"
 msgstr "Bancos de soma CM"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:611
+#. tr: Codemasters Checksum - two checksums are present
+#: ../src/libromdata/Console/Sega8Bit.cpp:613
+#, c++-format
 msgctxt "Sega8Bit"
-msgid "CM Checksum 1"
-msgstr "Soma de verificação 1 (CM)"
+msgid "CM Checksum {:d}"
+msgstr "Soma de verificação {:d} (CM)"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:614
-msgctxt "Sega8Bit"
-msgid "CM Checksum 2"
-msgstr "Soma de verificação 2 (CM)"
-
-#: ../src/libromdata/Console/Sega8Bit.cpp:634
+#: ../src/libromdata/Console/Sega8Bit.cpp:638
 msgctxt "Sega8Bit"
 msgid "SDSC Version"
 msgstr "Versão de especificações 8 bits"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:639
+#: ../src/libromdata/Console/Sega8Bit.cpp:643
 msgctxt "Sega8Bit"
 msgid "Build Date"
 msgstr "Data de compilação"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:645
+#: ../src/libromdata/Console/Sega8Bit.cpp:649
 #: ../src/librptexture/fileformat/TGA.cpp:914
 msgctxt "RomData"
 msgid "Author"
 msgstr "Autor"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:647
+#: ../src/libromdata/Console/Sega8Bit.cpp:651
 #: ../src/libromdata/Console/WiiWAD.cpp:1005
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1039
 msgctxt "RomData"
 msgid "Name"
 msgstr "Nome"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:656
+#: ../src/libromdata/Console/Sega8Bit.cpp:660
 msgctxt "Sega8Bit"
 msgid "M404 Copyright Header"
 msgstr "Cabeçalho de direitos autorais M404"
@@ -8639,6 +8620,7 @@ msgid "*** ERROR: Could not parse '{:s}' as GcnFst."
 msgstr ""
 
 #: ../src/libromdata/tests/disc/GcnFstPrint.cpp:187
+#: ../src/libromdata/tests/disc/WiiUFstPrint.cpp:156
 msgctxt "GcnFstPrint"
 msgid "*** WARNING: FST has errors and may be unusable."
 msgstr "*** AVISO: FST possui erros e pode ficar inutilizável."
@@ -8654,11 +8636,6 @@ msgstr "Sintaxe: {:s} fst.bin"
 msgctxt "WiiUFstPrint"
 msgid "*** ERROR: Could not parse '{:s}' as WiiUFst."
 msgstr ""
-
-#: ../src/libromdata/tests/disc/WiiUFstPrint.cpp:156
-msgctxt "WiiUFstPrint"
-msgid "*** WARNING: FST has errors and may be unusable."
-msgstr "*** AVISO: FST possui erros e pode ficar inutilizável."
 
 #: ../src/librpbase/Achievements.cpp:205
 msgctxt "Achievements"

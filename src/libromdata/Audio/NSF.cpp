@@ -221,7 +221,7 @@ int NSF::loadFieldData(void)
 
 	// Copyright.
 	if (nsfHeader->copyright[0] != 0) {
-		d->fields.addField_string(C_("RomData|Audio", "Copyright"),
+		d->fields.addField_string(C_("RomData", "Copyright"),
 			cp1252_sjis_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
 	}
 

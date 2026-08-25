@@ -445,7 +445,7 @@ int ColecoVision::loadFieldData(void)
 
 	// Copyright year
 	if (year >= 0) {
-		d->fields.addField_string_numeric(C_("ColecoVision", "Copyright Year"), year);
+		d->fields.addField_string_numeric(C_("RomData", "Copyright Year"), year);
 	}
 
 	// TODO: Various table addresses?

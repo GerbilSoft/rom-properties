@@ -608,10 +608,14 @@ int Sega8Bit::loadFieldData(void)
 		// Checksum
 		d->fields.addField_string_numeric(C_("Sega8Bit", "CM Checksum Banks"),
 			codemasters->checksum_banks);
-		d->fields.addField_string_numeric(C_("Sega8Bit", "CM Checksum 1"),
+
+		// tr: Codemasters Checksum - two checksums are present
+		const char *const s_cm_checksum_N = C_("Sega8Bit", "CM Checksum {:d}");
+
+		d->fields.addField_string_numeric(fmt::format(FRUN(s_cm_checksum_N), 1U).c_str(),
 			le16_to_cpu(codemasters->checksum),
 			RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
-		d->fields.addField_string_numeric(C_("Sega8Bit", "CM Checksum 2"),
+		d->fields.addField_string_numeric(fmt::format(FRUN(s_cm_checksum_N), 2U).c_str(),
 			le16_to_cpu(codemasters->checksum_compl),
 			RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	} else if (d->isSdscHeaderPresent()) {

@@ -804,7 +804,7 @@ int SPC::loadFieldData(void)
 		const auto &data = iter->second;
 		assert(!data.isStrIdx);
 		if (!data.isStrIdx) {
-			d->fields.addField_string_numeric(C_("SPC", "Copyright Year"), data.uvalue);
+			d->fields.addField_string_numeric(C_("RomData", "Copyright Year"), data.uvalue);
 		}
 	}
 

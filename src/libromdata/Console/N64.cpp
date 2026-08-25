@@ -341,7 +341,7 @@ int N64::loadFieldData(void)
 		RomFields::STRF_TRIM_END);
 
 	// Game ID
-	d->fields.addField_string(C_("N64", "Game ID"), d->getGameID());
+	d->fields.addField_string(C_("RomData", "Game ID"), d->getGameID());
 
 	// Revision
 	d->fields.addField_string_numeric(C_("RomData", "Revision"),

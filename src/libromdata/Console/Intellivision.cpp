@@ -292,7 +292,7 @@ int Intellivision::loadFieldData(void)
 
 	// Copyright year
 	if (year >= 0) {
-		d->fields.addField_string_numeric(C_("Intellivision", "Copyright Year"), year);
+		d->fields.addField_string_numeric(C_("RomData", "Copyright Year"), year);
 	}
 
 	// Flags

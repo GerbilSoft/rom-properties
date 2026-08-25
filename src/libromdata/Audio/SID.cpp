@@ -238,7 +238,7 @@ int SID::loadFieldData(void)
 
 	// Copyright.
 	if (sidHeader->copyright[0] != 0) {
-		d->fields.addField_string(C_("RomData|Audio", "Copyright"),
+		d->fields.addField_string(C_("RomData", "Copyright"),
 			latin1_to_utf8(sidHeader->copyright, sizeof(sidHeader->copyright)));
 	}
 

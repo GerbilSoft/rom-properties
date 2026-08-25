@@ -253,7 +253,7 @@ int GBS::loadFieldData(void)
 
 			// Copyright
 			if (gbs->copyright[0] != 0) {
-				d->fields.addField_string(C_("RomData|Audio", "Copyright"),
+				d->fields.addField_string(C_("RomData", "Copyright"),
 					cp1252_sjis_to_utf8(gbs->copyright, sizeof(gbs->copyright)));
 			}
 

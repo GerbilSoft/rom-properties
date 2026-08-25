@@ -153,7 +153,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	if (fst->hasErrors()) {
 		Gsvt::StdErr.newline();
 		Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_YELLOW, true);
-		Gsvt::StdErr.fputs(C_("WiiUFstPrint", "*** WARNING: FST has errors and may be unusable."));
+		Gsvt::StdErr.fputs(C_("GcnFstPrint", "*** WARNING: FST has errors and may be unusable."));
 		Gsvt::StdErr.textColorReset();
 		Gsvt::StdErr.newline();
 	}

@@ -201,7 +201,7 @@ int addTagsToRomFields(RomFields *fields, const unordered_map<string, string> &t
 	// Copyright
 	iter = tags.find("copyright");
 	if (iter != tags.end()) {
-		fields->addField_string(C_("RomData|Audio", "Copyright"), iter->second);
+		fields->addField_string(C_("RomData", "Copyright"), iter->second);
 	}
 
 	// Ripped By
