@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-24 12:07-0400\n"
-"PO-Revision-Date: 2026-08-25 14:14\n"
+"PO-Revision-Date: 2026-08-25 15:46\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
 "Language: ka_GE\n"
@@ -7333,7 +7333,7 @@ msgstr "ColdFire ISA"
 #: ../src/libromdata/Other/ELF.cpp:1973
 msgctxt "ELF"
 msgid "M32R New Insns"
-msgstr ""
+msgstr "M32R ახალი Insns"
 
 #: ../src/libromdata/Other/ELF.cpp:2007
 msgctxt "ELF|BlackfinFlags"
@@ -7491,7 +7491,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:236
 msgctxt "EXE|FileType"
 msgid "Static Library"
-msgstr ""
+msgstr "სტატიკური ბიბლიოთეკა"
 
 #: ../src/libromdata/Other/EXE.cpp:238
 msgctxt "EXE"
@@ -7556,7 +7556,7 @@ msgstr "ხმა"
 #: ../src/libromdata/Other/EXE.cpp:281
 msgctxt "EXE|FileSubType"
 msgid "Communications"
-msgstr ""
+msgstr "ურთიერთობები"
 
 #. tr: VFT2_DRV_INPUTMETHOD
 #: ../src/libromdata/Other/EXE.cpp:283
@@ -7731,7 +7731,7 @@ msgstr "CPU-ის არქიტექტურა"
 #: ../src/libromdata/Other/EXE_manifest.cpp:257
 msgctxt "EXE|Manifest"
 msgid "publicKeyToken"
-msgstr ""
+msgstr "publicKeyToken"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:274
 msgctxt "EXE|Manifest"
@@ -7939,7 +7939,7 @@ msgstr "გამოსახულების შეცდომა"
 #: ../src/libromdata/Other/EXE_NE.cpp:473
 msgctxt "EXE|ApplFlags"
 msgid "Non-Conforming"
-msgstr ""
+msgstr "არათავსებადი"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:474
 msgctxt "EXE|ApplFlags"
@@ -7959,7 +7959,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:488
 msgctxt "EXE|OtherFlags"
 msgid "Protected Mode"
-msgstr ""
+msgstr "დაცული რეჟიმი"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:489
 msgctxt "EXE|OtherFlags"
@@ -8274,7 +8274,7 @@ msgstr "პროექტის სახელი"
 #: ../src/libromdata/Other/GameMaker.cpp:561
 msgctxt "GameMaker"
 msgid "Project Config"
-msgstr ""
+msgstr "პროექტის კონფიგურაცია"
 
 #: ../src/libromdata/Other/GameMaker.cpp:566
 msgctxt "GameMaker"
@@ -8359,7 +8359,7 @@ msgstr ""
 #: ../src/libromdata/Other/Lua.cpp:735
 msgctxt "Lua"
 msgid "Floating-point"
-msgstr ""
+msgstr "მცურავმძიმიანი"
 
 #: ../src/libromdata/Other/Lua.cpp:738
 msgctxt "Lua"
@@ -8389,7 +8389,7 @@ msgstr ""
 #: ../src/libromdata/Other/Lua.cpp:759
 msgctxt "Lua"
 msgid "File corrupted"
-msgstr ""
+msgstr "ფაილი დაზიანებულია"
 
 #: ../src/libromdata/Other/MachO.cpp:498
 msgctxt "MachO"
@@ -8834,7 +8834,7 @@ msgstr "eMMC-ის დამპი"
 #: ../src/librpbase/RomData.cpp:730
 msgctxt "RomData|FileType"
 msgid "Container File"
-msgstr ""
+msgstr "შემცველი ფაილი"
 
 #. tr: FileType::FirmwareBinary
 #: ../src/librpbase/RomData.cpp:732
@@ -8858,7 +8858,7 @@ msgstr ""
 #: ../src/librpbase/RomData.cpp:738
 msgctxt "RomData|FileType"
 msgid "Shared Library"
-msgstr ""
+msgstr "დინამიკური ბიბლიოთეკა"
 
 #. tr: FileType::CoreDump
 #: ../src/librpbase/RomData.cpp:740
@@ -8942,7 +8942,7 @@ msgstr ""
 #: ../src/librpbase/RomData.cpp:1092
 msgctxt "RomData|ImageType"
 msgid "Internal image"
-msgstr ""
+msgstr "შიდა გამოსახულება"
 
 #. tr: IMG_EXT_MEDIA
 #: ../src/librpbase/RomData.cpp:1097
@@ -9422,7 +9422,7 @@ msgstr "hasattr"
 #: ../src/librpfile/xattr/XfsAttrData.c:61
 msgctxt "XfsAttrView"
 msgid "Has attributes"
-msgstr ""
+msgstr "აქვს ატრიბუტები"
 
 #. tr: Bytes (< 1,024)
 #. tr: Bytes (< 1,000)
@@ -9560,7 +9560,7 @@ msgstr "ეკრანის ზომა"
 #, c++-format
 msgctxt "DirectDrawSurface"
 msgid "RGB ({:d}-bit)"
-msgstr ""
+msgstr "RGB ({:d}-bit)"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1297
 #, c++-format
@@ -9572,7 +9572,7 @@ msgstr ""
 #, c++-format
 msgctxt "DirectDrawSurface"
 msgid "YUV ({:d}-bit)"
-msgstr ""
+msgstr "YUV ({:d}-bit)"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1306
 #, c++-format
@@ -9739,7 +9739,7 @@ msgstr "ფილის მოდელი"
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1470
 msgctxt "DirectDrawSurface"
 msgid "Base Alignment"
-msgstr ""
+msgstr "საბაზისო სწორება"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1472
 msgctxt "DirectDrawSurface"
@@ -9884,7 +9884,7 @@ msgstr "ფორმატი"
 #: ../src/librptexture/fileformat/ICO.cpp:1569
 msgctxt "ICO"
 msgid "Icon Directory"
-msgstr ""
+msgstr "ხატულას საქაღალდე"
 
 #: ../src/librptexture/fileformat/KhronosKTX2.cpp:993
 #: ../src/librptexture/fileformat/KhronosKTX2.cpp:996
@@ -9920,7 +9920,7 @@ msgstr "მნიშვნელობა"
 #: ../src/librptexture/fileformat/KhronosKTX.cpp:1129
 msgctxt "FileFormat"
 msgid "Key/Value Data"
-msgstr ""
+msgstr "გასაღები/მნიშვნელობის მონაცემები"
 
 #: ../src/librptexture/fileformat/KhronosKTX.cpp:1104
 msgctxt "KhronosKTX"
@@ -9930,7 +9930,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/PlayStationTIM.cpp:471
 msgctxt "PlayStationTIM"
 msgid "Image Position"
-msgstr ""
+msgstr "გამოსახულების მდებარეობა"
 
 #: ../src/librptexture/fileformat/PlayStationTIM.cpp:479
 msgctxt "PlayStationTIM"
@@ -10012,7 +10012,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1399
 msgctxt "PowerVR3|ChannelType"
 msgid "Unsigned Short"
-msgstr ""
+msgstr "უნიშნო მოკლე"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1400
 msgctxt "PowerVR3|ChannelType"
@@ -10037,7 +10037,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1404
 msgctxt "PowerVR3|ChannelType"
 msgid "Signed Integer"
-msgstr ""
+msgstr "ნიშნიანი მთელი რიცხვი"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1405
 msgctxt "PowerVR3|ChannelType"
@@ -10193,7 +10193,7 @@ msgstr "VTF-ის ვერსია"
 #: ../src/librptexture/fileformat/ValveVTF.cpp:795
 msgctxt "ValveVTF|Flags"
 msgid "Point Sampling"
-msgstr ""
+msgstr "წერტილის ზონდირება"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:796
 msgctxt "ValveVTF|Flags"
@@ -10298,7 +10298,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/ValveVTF.cpp:821
 msgctxt "ValveVTF|Flags"
 msgid "Normal to DuDv"
-msgstr ""
+msgstr "ნორმალურიდან DuDv-მდე"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:822
 msgctxt "ValveVTF|Flags"
@@ -10323,7 +10323,7 @@ msgstr "აპროქსიმაცია U"
 #: ../src/librptexture/fileformat/ValveVTF.cpp:827
 msgctxt "ValveVTF|Flags"
 msgid "Vertex Texture"
-msgstr ""
+msgstr "წვეროს ტექსტურა"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:828
 msgctxt "ValveVTF|Flags"
@@ -10373,7 +10373,7 @@ msgstr "დაბალი გარჩევადობის ზომა"
 #: ../src/librptexture/fileformat/ValveVTF.cpp:903
 msgctxt "ValveVTF"
 msgid "# of Resources"
-msgstr ""
+msgstr "რესურსების #"
 
 #: ../src/rpcli/device.cpp:74
 #, c++-format
@@ -10727,7 +10727,7 @@ msgstr "ცარიელი გასაღები"
 #: ../src/rpcli/verifykeys.cpp:108
 msgctxt "rpcli|KeyVerifyStatus"
 msgid "Unknown status"
-msgstr ""
+msgstr "უცნობი მდგომარეობა"
 
 #: ../src/rpcli/verifykeys.cpp:111
 msgctxt "rpcli|KeyVerifyStatus"
