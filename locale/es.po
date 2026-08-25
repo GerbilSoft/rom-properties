@@ -4,11 +4,11 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: rom-properties 2.7.1\n"
+"Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-24 12:07-0400\n"
-"PO-Revision-Date: 2024-07-04 17:40\n"
-"Last-Translator: Amnesia1000\n"
+"PO-Revision-Date: 2026-08-25 20:35\n"
+"Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -2057,7 +2057,6 @@ msgid "{:s} Clock Divider"
 msgstr "{:s} Divisor de reloj"
 
 #: ../src/libromdata/Common/ParamSFO.cpp:567
-#, fuzzy
 msgctxt "SFO"
 msgid "Key"
 msgstr "Llave"
@@ -2389,7 +2388,7 @@ msgstr "Japón"
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:424
 msgctxt "Region"
 msgid "USA"
-msgstr ""
+msgstr "EE.UU."
 
 #: ../src/libromdata/Console/Dreamcast.cpp:178
 #: ../src/libromdata/Console/MegaDrive.cpp:257
@@ -2554,7 +2553,7 @@ msgstr "Dispositivo de vibración"
 #: ../src/libromdata/Console/Dreamcast.cpp:793
 msgctxt "Dreamcast|Expansion"
 msgid "Microphone"
-msgstr "Microfono"
+msgstr "Micrófono"
 
 #. tr: "VMS" in Japan; "VMU" in USA; "VM" in Europe
 #: ../src/libromdata/Console/Dreamcast.cpp:795
@@ -2575,42 +2574,42 @@ msgstr ""
 #: ../src/libromdata/Console/Dreamcast.cpp:805
 msgctxt "Dreamcast|ReqCtrl"
 msgid "C Button"
-msgstr "Boton C"
+msgstr "Botón C"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:806
 msgctxt "Dreamcast|ReqCtrl"
 msgid "D Button"
-msgstr "Boton D"
+msgstr "Botón D"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:807
 msgctxt "Dreamcast|ReqCtrl"
 msgid "X Button"
-msgstr "Boton X"
+msgstr "Botón X"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:808
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Y Button"
-msgstr "Boton Y"
+msgstr "Botón Y"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:809
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Z Button"
-msgstr "Boton Z"
+msgstr "Botón Z"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:810
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Second D-Pad"
-msgstr "D-Pad secundário"
+msgstr "D-Pad secundario"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:811
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog L Trigger"
-msgstr "Boton analógico L"
+msgstr "Botón analógico L"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:812
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog R Trigger"
-msgstr "Boton analógico R"
+msgstr "Botón analógico R"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:813
 msgctxt "Dreamcast|ReqCtrl"
@@ -2788,7 +2787,7 @@ msgstr "Titulo del juego"
 #: ../src/libromdata/Console/GameCubeBNR.cpp:627
 msgctxt "GameCubeBNR"
 msgid "Company"
-msgstr "Campañia"
+msgstr "Compañía"
 
 #: ../src/libromdata/Console/GameCubeBNR.cpp:628
 #: ../src/libromdata/Console/GameCubeSave.cpp:1051
@@ -2837,7 +2836,7 @@ msgstr "Desconocido ({:0>2X} {:0>2X})"
 #: ../src/libromdata/Console/GameCube.cpp:675
 msgctxt "Wii"
 msgid "Invalid common key index."
-msgstr "Indice inválido de llave comun."
+msgstr "Indice inválido de llave común."
 
 #: ../src/libromdata/Console/GameCube.cpp:682
 msgctxt "Wii"
@@ -2864,7 +2863,7 @@ msgstr "Todas las regiones (depuración)"
 #, c++-format
 msgctxt "Wii"
 msgid "{0:s} ({1:s})"
-msgstr ""
+msgstr "{0:s} ({1:s})"
 
 #: ../src/libromdata/Console/GameCube.cpp:756
 #: ../src/libromdata/Console/SNES.cpp:1651
@@ -2966,7 +2965,7 @@ msgstr ""
 #: ../src/libromdata/Console/GameCube.cpp:1763
 msgctxt "Nintendo"
 msgid "Update"
-msgstr "Atualización"
+msgstr "Actualización"
 
 #. tr: No update partition is on the disc.
 #: ../src/libromdata/Console/GameCube.cpp:1787
@@ -2989,7 +2988,7 @@ msgstr "Juego"
 #: ../src/libromdata/Console/GameCube.cpp:1823
 msgctxt "Wii|Partition"
 msgid "Update"
-msgstr "Atualizar"
+msgstr "Actualizar"
 
 #. tr: GameCubePrivate::RVL_PT_CHANNEL (Channel partition)
 #: ../src/libromdata/Console/GameCube.cpp:1825
@@ -3044,7 +3043,7 @@ msgstr "Particiones"
 #: ../src/libromdata/Console/WiiCommon.cpp:187
 msgctxt "Region"
 msgid "Taiwan"
-msgstr ""
+msgstr "Taiwán"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:69
 #: ../src/libromdata/Console/GameCubeRegions.cpp:129
@@ -3065,7 +3064,7 @@ msgstr "Corea del Sur"
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1206
 msgctxt "Region"
 msgid "China"
-msgstr ""
+msgstr "China"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:89
 msgctxt "Region"
@@ -3112,7 +3111,7 @@ msgstr "España"
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:306
 msgctxt "Region"
 msgid "Australia"
-msgstr ""
+msgstr "Australia"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:153
 #: ../src/libromdata/Handheld/NintendoDS.cpp:882
@@ -3214,7 +3213,7 @@ msgstr "Exportar titulo"
 #: ../src/libromdata/Console/MegaDrive.cpp:462
 msgctxt "MegaDrive"
 msgid "Serial Number"
-msgstr "Número de série"
+msgstr "Número de serie"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:473
 msgctxt "MegaDrive|I/O"
@@ -3280,7 +3279,7 @@ msgstr ""
 #: ../src/libromdata/Console/MegaDrive.cpp:486
 msgctxt "MegaDrive|I/O"
 msgid "Floppy Drive"
-msgstr "Unidad de disquete"
+msgstr "Disquetera"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:487
 msgctxt "MegaDrive|I/O"
@@ -3736,7 +3735,7 @@ msgstr "América del Norte"
 #: ../src/libromdata/Console/PlayStationEXE.cpp:259
 msgctxt "RomData"
 msgid "Region"
-msgstr ""
+msgstr "Región"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:226
 msgctxt "Sega8Bit|SysID"
@@ -3925,7 +3924,7 @@ msgstr "Desconocido(a) ({:0>2X})"
 #: ../src/libromdata/Console/SNES.cpp:815
 msgctxt "Region"
 msgid "Scandinavia"
-msgstr "Escandinávia"
+msgstr "Escandinavia"
 
 #: ../src/libromdata/Console/SNES.cpp:826
 msgctxt "Region"
@@ -4177,7 +4176,7 @@ msgstr "Contenedor"
 #: ../src/libromdata/Console/WiiUAncast.cpp:534
 msgctxt "WiiUAncast"
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: ../src/libromdata/Console/WiiUAncast.cpp:575
 #: ../src/libromdata/Console/WiiUAncast.cpp:580
@@ -4408,7 +4407,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWIBN.cpp:478
 msgctxt "WiiWIBN"
 msgid "Subtitle"
-msgstr "Subtitulo"
+msgstr "Subtítulo"
 
 #: ../src/libromdata/Console/WiiWIBN.cpp:484
 msgctxt "WiiWIBN|Flags"
@@ -4423,7 +4422,7 @@ msgstr "No hay copia"
 #, c++-format
 msgctxt "Xbox360_XEX"
 msgid "{0:0>8X} ({1:s}-{2:0>4d})"
-msgstr "{0:0>8X} ({1:s}-{2:0>4d})"
+msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1066
 msgctxt "Xbox360_STFS"
@@ -4794,7 +4793,7 @@ msgstr "Fabricación"
 #, c++-format
 msgctxt "Xbox_XBE"
 msgid "{0:0>8X} ({1:s}-{2:0>3d})"
-msgstr "{0:0>8X} ({1:s}-{2:0>3d})"
+msgstr ""
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:763
 msgctxt "Xbox_XBE"
@@ -5182,7 +5181,7 @@ msgstr "Teclado Family BASIC más Famicom Data Recorder"
 #: ../src/libromdata/data/NESMappers.cpp:700
 msgctxt "NES|Expansion"
 msgid "Dōngdá PEC Keyboard"
-msgstr "Teclado Dongda PEC"
+msgstr "Teclado Dōngdá PEC"
 
 #: ../src/libromdata/data/NESMappers.cpp:701
 msgctxt "NES|Expansion"
@@ -5267,7 +5266,7 @@ msgstr ""
 #: ../src/libromdata/data/NESMappers.cpp:719
 msgctxt "NES|Expansion"
 msgid "Kēdá Keyboard"
-msgstr "Kēdá Teclado"
+msgstr "Teclado Kēdá"
 
 #: ../src/libromdata/data/NESMappers.cpp:720
 msgctxt "NES|Expansion"
@@ -5469,12 +5468,12 @@ msgstr ""
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:58
 msgctxt "Nintendo3DSSysTitles"
 msgid "System Updater (SAFE_MODE)"
-msgstr "Atualizador de sistema (SAFE_MODE)"
+msgstr "Actualizadora del sistema (SAFE_MODE)"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:59
 msgctxt "Nintendo3DSSysTitles"
 msgid "Promotional Video (v1.1.0)"
-msgstr "Vídeo promocional (v. 1.1.0)"
+msgstr "Vídeo promocional (v1.1.0)"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:60
 msgctxt "Nintendo3DSSysTitles"
@@ -5596,7 +5595,7 @@ msgstr ""
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:36
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Installed Game"
-msgstr "Juegos instalados"
+msgstr "Juego instalado"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:37
 msgctxt "Xbox360_STFS|ContentType"
@@ -5721,12 +5720,12 @@ msgstr "Juego"
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:37
 msgctxt "Android|AppCategory"
 msgid "Audio"
-msgstr "Audio"
+msgstr ""
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:38
 msgctxt "Android|AppCategory"
 msgid "Video"
-msgstr "Video"
+msgstr ""
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:39
 msgctxt "Android|AppCategory"
@@ -6251,7 +6250,7 @@ msgstr "Modo de sist. de New3DS"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2429
 msgctxt "Nintendo3DS|N3DSCPUMode"
 msgid "L2 Cache"
-msgstr "Cachê L2"
+msgstr "Caché L2"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2430
 msgctxt "Nintendo3DS|N3DSCPUMode"
@@ -6392,7 +6391,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:887
 msgctxt "NintendoDS"
 msgid "DS Region Code"
-msgstr "Codigo de region DS"
+msgstr "Código de región DS"
 
 #. tr: DSi-enhanced or DSi-exclusive cartridge.
 #: ../src/libromdata/Handheld/NintendoDS.cpp:968
@@ -6438,7 +6437,7 @@ msgstr "Tipo de ROM DSi"
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1022
 msgctxt "NintendoDS"
 msgid "DSi Region Code"
-msgstr "Codigo de región DSi"
+msgstr "Código de región DSi"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1075
 msgctxt "NintendoDS|DSi_Permissions"
@@ -6738,7 +6737,7 @@ msgstr "Ninguno"
 #, c++-format
 msgctxt "WonderSwan|SaveMemory"
 msgid "{0:d} KiB ({1:s})"
-msgstr "{0:d} KiB ({1:s})"
+msgstr ""
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:593
 msgctxt "WonderSwan|SaveMemory"
@@ -7013,7 +7012,7 @@ msgstr ""
 #: ../src/libromdata/Media/Wim.cpp:274
 msgctxt "Wim"
 msgid "Part Number"
-msgstr "Numero de Parte"
+msgstr "Número de Parte"
 
 #: ../src/libromdata/Media/Wim.cpp:276
 msgctxt "Wim"
@@ -7145,7 +7144,7 @@ msgstr "Nombre de personaje"
 #: ../src/libromdata/Other/Amiibo.cpp:437
 msgctxt "Amiibo"
 msgid "amiibo Series"
-msgstr "Série de amiibo"
+msgstr "Serie de amiibo"
 
 #: ../src/libromdata/Other/Amiibo.cpp:442
 msgctxt "Amiibo"
@@ -7260,7 +7259,7 @@ msgstr "Formato"
 #: ../src/libromdata/Other/ELF.cpp:1552
 msgctxt "ELF"
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: ../src/libromdata/Other/ELF.cpp:1558 ../src/libromdata/Other/EXE.cpp:489
 #: ../src/libromdata/Other/EXE_PE.cpp:731
@@ -7298,7 +7297,7 @@ msgstr "Inválido(a)"
 #: ../src/libromdata/Other/ELF.cpp:1624
 msgctxt "ELF"
 msgid "Memory Ordering"
-msgstr "Orden de memória"
+msgstr "Orden de memoria"
 
 #. tr: Little-Endian Data
 #: ../src/libromdata/Other/ELF.cpp:1638
@@ -7485,7 +7484,7 @@ msgstr "Linkeo"
 #: ../src/libromdata/Other/ELF.cpp:2108
 msgctxt "ELF|Linkage"
 msgid "Dynamic"
-msgstr "Dinamica"
+msgstr "Dinámica"
 
 #: ../src/libromdata/Other/ELF.cpp:2109
 msgctxt "ELF|Linkage"
@@ -7728,12 +7727,12 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:428
 msgctxt "EXE"
 msgid "Min. Memory"
-msgstr "Memória mínima"
+msgstr "Memoria mínima"
 
 #: ../src/libromdata/Other/EXE.cpp:429
 msgctxt "EXE"
 msgid "Max. Memory"
-msgstr "Memória máxima"
+msgstr "Memoria máxima"
 
 #: ../src/libromdata/Other/EXE.cpp:430
 msgctxt "EXE"
@@ -7768,7 +7767,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:482 ../src/libromdata/Other/EXE_PE.cpp:739
 msgctxt "EXE"
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: ../src/libromdata/Other/EXE.cpp:494 ../src/libromdata/Other/EXE_NE.cpp:402
 msgctxt "EXE"
@@ -8228,7 +8227,7 @@ msgstr "Valor de alta entropia"
 #: ../src/libromdata/Other/EXE_PE.cpp:766
 msgctxt "EXE|DLLFlags"
 msgid "Dynamic Base"
-msgstr "Base dinamica"
+msgstr "Base dinámica"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:767
 msgctxt "EXE|DLLFlags"
@@ -8238,7 +8237,7 @@ msgstr "Forzar verificación"
 #: ../src/libromdata/Other/EXE_PE.cpp:768
 msgctxt "EXE|DLLFlags"
 msgid "NX Compatible"
-msgstr "Compatíble con NX"
+msgstr "Compatible con NX"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:769
 msgctxt "EXE|DLLFlags"
@@ -8496,7 +8495,7 @@ msgstr "Formato"
 #: ../src/libromdata/Other/MachO.cpp:511
 msgctxt "MachO"
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: ../src/libromdata/Other/MachO.cpp:523
 msgctxt "MachO"
@@ -8548,7 +8547,7 @@ msgstr "Ninguno"
 #, c++-format
 msgctxt "NintendoBadge"
 msgid "{0:s} (New3DS) ({1:s})"
-msgstr ""
+msgstr "{0:s} (New3DS) ({1:s})"
 
 #. tr: Title name
 #: ../src/libromdata/Other/NintendoBadge.cpp:783
@@ -8562,7 +8561,7 @@ msgstr ""
 #, c++-format
 msgctxt "NintendoBadge"
 msgid "{0:s} ({1:s})"
-msgstr ""
+msgstr "{0:s} ({1:s})"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:793
 msgctxt "NintendoBadge"
@@ -8597,7 +8596,7 @@ msgstr "Formato de pixel"
 #: ../src/libromdata/Other/RpTextureWrapper.cpp:286
 msgctxt "RpTextureWrapper"
 msgid "Mipmap Count"
-msgstr "Contagem de mipmaps"
+msgstr "Recuento de Mipmap"
 
 #. tr: {:Ld} == number of directories processed
 #: ../src/libromdata/tests/disc/FstPrint.cpp:220
@@ -10336,7 +10335,7 @@ msgstr "Mapa normal"
 #: ../src/librptexture/fileformat/ValveVTF.cpp:805
 msgctxt "ValveVTF|Flags"
 msgid "No Mipmaps"
-msgstr "Sim mipmaps"
+msgstr "Sin mipmaps"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:806
 msgctxt "ValveVTF|Flags"
@@ -10542,7 +10541,7 @@ msgstr "(nada)"
 #, c++-format
 msgctxt "rpcli"
 msgid "Extracting {0:s} into '{1:s}'"
-msgstr "Extracción de {0:s} en '{1:s}'"
+msgstr "Extracción de {0:s} en '{1:s}"
 
 #. tr: {0:d} == mipmap level, {1:s} == output filename
 #: ../src/rpcli/rpcli.cpp:179
@@ -10772,7 +10771,6 @@ msgctxt "rpcli"
 msgid "Warning: ignoring invalid language code '{:s}'"
 msgstr "Advertencia: ignorando el código de idioma inválido '{:s}'"
 
-# c++-format
 #: ../src/rpcli/rpcli.cpp:956
 #, c++-format
 msgctxt "rpcli"
@@ -10792,7 +10790,7 @@ msgid "Warning: skipping invalid mipmap level '{:s}'"
 msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:992
-#, fuzzy, c++-format
+#, c++-format
 msgctxt "rpcli"
 msgid "Warning: skipping out-of-range mipmap level {:d}"
 msgstr "Advertencia: se ha omitido una imagen desconocida de tipo {:d}"

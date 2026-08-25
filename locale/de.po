@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: rom-properties 2.7.1\n"
+"Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-24 12:07-0400\n"
-"PO-Revision-Date: 2024-11-03 20:21\n"
+"PO-Revision-Date: 2026-08-25 17:02\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -415,7 +415,7 @@ msgstr ""
 #, c++-format
 msgctxt "AboutTab"
 msgid "Version {:s}"
-msgstr "Version {:s}"
+msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:496 ../src/kde/config/AboutTab.cpp:246
 #: ../src/win32/config/AboutTab.cpp:1028
@@ -455,7 +455,7 @@ msgstr "Übersetzer:"
 #, c++-format
 msgctxt "AboutTab|Credits"
 msgid " ({:s})"
-msgstr " ({:s})"
+msgstr ""
 
 #. tr: Using an internal copy of a library.
 #: ../src/gtk/config/AboutTab.cpp:580 ../src/kde/config/AboutTab.cpp:326
@@ -1058,7 +1058,7 @@ msgstr "(unbekanntes Dateiformat)"
 #, c++-format
 msgctxt "RomDataView"
 msgid "{0:s} | {1:s}"
-msgstr "{0:s} | {1:s}"
+msgstr ""
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:223
 msgctxt "RomDataView"
@@ -1081,8 +1081,6 @@ msgid ""
 "{0:s}\n"
 "{1:s}"
 msgstr ""
-"{0:s}\n"
-"{1:s}"
 
 #. tr: Field description label.
 #: ../src/gtk/RomDataView.cpp:1518 ../src/kde/RomDataView.cpp:1076
@@ -1090,7 +1088,7 @@ msgstr ""
 #, c++-format
 msgctxt "RomDataView"
 msgid "{:s}:"
-msgstr "{:s}:"
+msgstr ""
 
 #. tr: EncryptionKeys::Unknown
 #: ../src/gtk/RomDataView_gtk3.cpp:304 ../src/gtk/RomDataView_gtk3.cpp:614
@@ -1278,7 +1276,7 @@ msgstr "Sample Rate"
 #, c++-format
 msgctxt "RomData"
 msgid "{:Ld} Hz"
-msgstr "{:Ld} Hz"
+msgstr ""
 
 #: ../src/libromdata/Audio/ADX.cpp:302 ../src/libromdata/Audio/BCSTM.cpp:496
 #: ../src/libromdata/Audio/BRSTM.cpp:361
@@ -1421,7 +1419,7 @@ msgstr "Signiert 16-bit PCM"
 #: ../src/libromdata/Audio/BCSTM.cpp:477 ../src/libromdata/Audio/BRSTM.cpp:340
 msgctxt "RomData|Audio"
 msgid "Codec"
-msgstr "Codec"
+msgstr ""
 
 #: ../src/libromdata/Audio/BRSTM.cpp:325 ../src/libromdata/Audio/S98.cpp:306
 #: ../src/libromdata/Audio/SID.cpp:224 ../src/libromdata/Audio/VGM.cpp:355
@@ -1656,7 +1654,7 @@ msgstr "Kommentar"
 #: ../src/libromdata/Audio/PSFTagParser.cpp:257
 msgctxt "S98"
 msgid "System"
-msgstr "System"
+msgstr ""
 
 #: ../src/libromdata/Audio/S98.cpp:315
 msgctxt "S98"
@@ -1828,7 +1826,7 @@ msgstr "VBlank Freq"
 #, c++-format
 msgctxt "SNDH"
 msgid "Timer {:c} Freq"
-msgstr "Timer {:c} Freq"
+msgstr ""
 
 #: ../src/libromdata/Audio/SNDH.cpp:871
 msgctxt "SMDH"
@@ -1881,7 +1879,7 @@ msgstr "Dump Datum"
 #: ../src/librptexture/fileformat/TGA.cpp:931
 msgctxt "RomData"
 msgid "Comments"
-msgstr ""
+msgstr "Kommentare"
 
 #: ../src/libromdata/Audio/SPC.cpp:868
 msgctxt "SPC|Emulator"
@@ -1953,13 +1951,13 @@ msgstr "{:s} Taktfrequenz"
 #, c++-format
 msgctxt "VGM"
 msgid "{:s} Dual-Chip"
-msgstr "{:s} Dual-Chip"
+msgstr ""
 
 #: ../src/libromdata/Audio/VGM.cpp:458
 #, c++-format
 msgctxt "VGM"
 msgid "{:s} Flags"
-msgstr "{:s} Flags"
+msgstr ""
 
 #: ../src/libromdata/Audio/VGM.cpp:489
 #, c++-format
@@ -1997,7 +1995,7 @@ msgstr "/8 Takt Teiler"
 #, c++-format
 msgctxt "VGM"
 msgid "{:s} IF reg"
-msgstr "{:s} IF reg"
+msgstr ""
 
 #: ../src/libromdata/Audio/VGM.cpp:561
 msgctxt "VGM|AY8910Flags"
@@ -2048,10 +2046,9 @@ msgid "{:s} Clock Divider"
 msgstr "{:s} Takt Teiler"
 
 #: ../src/libromdata/Common/ParamSFO.cpp:567
-#, fuzzy
 msgctxt "SFO"
 msgid "Key"
-msgstr "Schlüssel"
+msgstr ""
 
 #: ../src/libromdata/Common/ParamSFO.cpp:568
 msgctxt "SFO"
@@ -2330,7 +2327,7 @@ msgstr "Maus (Amiga)"
 #, c++-format
 msgctxt "Atari7800"
 msgid "Controller {:d}"
-msgstr "Controller {:d}"
+msgstr ""
 
 #: ../src/libromdata/Console/ColecoVision.cpp:448
 msgctxt "ColecoVision"
@@ -2847,7 +2844,7 @@ msgstr "Unbekannter Fehler. (DIES IST EIN BUG!)"
 #: ../src/libromdata/Console/GameCube.cpp:730
 msgctxt "GameCube"
 msgid "Region-Free (debug)"
-msgstr "Regionen-Frei (debug)"
+msgstr "Region-Frei (debug)"
 
 #. tr: {0:s} == full region name, {1:s} == abbreviation
 #: ../src/libromdata/Console/GameCube.cpp:750
@@ -2855,7 +2852,7 @@ msgstr "Regionen-Frei (debug)"
 #, c++-format
 msgctxt "Wii"
 msgid "{0:s} ({1:s})"
-msgstr "{0:s} ({1:s})"
+msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:756
 #: ../src/libromdata/Console/SNES.cpp:1651
@@ -3110,7 +3107,7 @@ msgstr "Australien"
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1218
 msgctxt "Region"
 msgid "Region-Free"
-msgstr "Regionen-Frei"
+msgstr "Region-Frei"
 
 #: ../src/libromdata/Console/GameCubeSave.cpp:1055
 msgctxt "GameCubeSave"
@@ -3205,7 +3202,7 @@ msgstr "Export Titel"
 #: ../src/libromdata/Console/MegaDrive.cpp:462
 msgctxt "MegaDrive"
 msgid "Serial Number"
-msgstr "Serien Nummer"
+msgstr "Seriennummer"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:473
 msgctxt "MegaDrive|I/O"
@@ -3440,7 +3437,7 @@ msgstr "Format"
 #, c++-format
 msgctxt "NES|Format"
 msgid "{:s} (Wii U Virtual Console)"
-msgstr "{:s} (Wii U Virtual Console)"
+msgstr ""
 
 #: ../src/libromdata/Console/NES.cpp:1462
 msgctxt "NES"
@@ -3456,7 +3453,7 @@ msgstr "Mapper"
 #, c++-format
 msgctxt "NES|Mapper"
 msgid "{0:d} - {1:s}"
-msgstr "{0:d} - {1:s}"
+msgstr ""
 
 #: ../src/libromdata/Console/NES.cpp:1484
 msgctxt "NES"
@@ -3943,7 +3940,7 @@ msgstr "Andere"
 #: ../src/libromdata/Console/SNES.cpp:949
 msgctxt "SNES|NintendoPower"
 msgid "#"
-msgstr "#"
+msgstr ""
 
 #: ../src/libromdata/Console/SNES.cpp:950
 msgctxt "SNES|NintendoPower"
@@ -4139,13 +4136,13 @@ msgstr "Debug (Wii U)"
 #: ../src/libromdata/Console/WiiTicket.cpp:756
 msgctxt "Wii|EncKey"
 msgid "Retail (iQue NetCard)"
-msgstr "Retail (iQue NetCard)"
+msgstr ""
 
 #. tr: Key_NC_Debug
 #: ../src/libromdata/Console/WiiTicket.cpp:758
 msgctxt "Wii|EncKey"
 msgid "Debug (iQue NetCard)"
-msgstr "Debug (iQue NetCard)"
+msgstr ""
 
 #. tr: EncryptionKeys::None - No encryption.
 #: ../src/libromdata/Console/WiiTicket.cpp:766
@@ -4168,7 +4165,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiUAncast.cpp:534
 msgctxt "WiiUAncast"
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: ../src/libromdata/Console/WiiUAncast.cpp:575
 #: ../src/libromdata/Console/WiiUAncast.cpp:580
@@ -4413,7 +4410,7 @@ msgstr ""
 #, c++-format
 msgctxt "Xbox360_XEX"
 msgid "{0:0>8X} ({1:s}-{2:0>4d})"
-msgstr "{0:0>8X} ({1:s}-{2:0>4d})"
+msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1066
 msgctxt "Xbox360_STFS"
@@ -4757,7 +4754,7 @@ msgstr "Disk Typ"
 #: ../src/libromdata/Console/XboxDisc.cpp:1022
 msgctxt "XboxDisc"
 msgid "XDVDFS Partition"
-msgstr "XDVDFS Partition"
+msgstr ""
 
 #: ../src/libromdata/Console/XboxDisc.cpp:1026
 msgctxt "XboxDisc"
@@ -4784,7 +4781,7 @@ msgstr "Hersteller"
 #, c++-format
 msgctxt "Xbox_XBE"
 msgid "{0:0>8X} ({1:s}-{2:0>3d})"
-msgstr "{0:0>8X} ({1:s}-{2:0>3d})"
+msgstr ""
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:763
 msgctxt "Xbox_XBE"
@@ -4814,7 +4811,7 @@ msgstr "Festplatte"
 #: ../src/libromdata/Console/Xbox_XBE.cpp:827
 msgctxt "Xbox_XBE|MediaType"
 msgid "Dongle"
-msgstr "Dongle"
+msgstr ""
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:828
 msgctxt "Xbox_XBE|MediaType"
@@ -5102,7 +5099,7 @@ msgstr "Jissen Mahjong Controller"
 #: ../src/libromdata/data/NESMappers.cpp:684
 msgctxt "NES|Expansion"
 msgid "Yonezawa Party Tap"
-msgstr "Yonezawa Party Tap"
+msgstr ""
 
 #: ../src/libromdata/data/NESMappers.cpp:685
 msgctxt "NES|Expansion"
@@ -5172,7 +5169,7 @@ msgstr "Familie BASIC Tastatur mit Famicom Data Recorder"
 #: ../src/libromdata/data/NESMappers.cpp:700
 msgctxt "NES|Expansion"
 msgid "Dōngdá PEC Keyboard"
-msgstr "Dongda PEC Tastatur"
+msgstr "Dōngdá PEC Tastatur"
 
 #: ../src/libromdata/data/NESMappers.cpp:701
 msgctxt "NES|Expansion"
@@ -5357,7 +5354,7 @@ msgstr "SNES Maus ($4017)"
 #: ../src/libromdata/data/NESMappers.cpp:741
 msgctxt "NES|Expansion"
 msgid "Zapper ($4016)"
-msgstr "Zapper"
+msgstr "Zapper ($4016)"
 
 #: ../src/libromdata/data/NESMappers.cpp:742
 msgctxt "NES|Expansion"
@@ -5716,7 +5713,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:38
 msgctxt "Android|AppCategory"
 msgid "Video"
-msgstr "Video"
+msgstr ""
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:39
 msgctxt "Android|AppCategory"
@@ -5771,7 +5768,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:132
 msgctxt "AndroidAPK"
 msgid "Version"
-msgstr "Version"
+msgstr ""
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:136
 msgctxt "AndroidAPK"
@@ -5861,7 +5858,7 @@ msgstr[1] ""
 #, c++-format
 msgctxt "DMG"
 msgid "{:d} KiB"
-msgstr "{:d} KiB"
+msgstr ""
 
 #: ../src/libromdata/Handheld/DMG.cpp:739
 #: ../src/libromdata/Handheld/DMG.cpp:1346
@@ -5884,7 +5881,7 @@ msgstr ""
 #, c++-format
 msgctxt "DMG"
 msgid "0x{:0>2X} (INVALID)"
-msgstr "0x{:0>2X} (INVALID)"
+msgstr ""
 
 #: ../src/libromdata/Handheld/DMG.cpp:791
 #, c++-format
@@ -5928,7 +5925,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Lynx.cpp:212
 msgctxt "Lynx|Rotation"
 msgid "None"
-msgstr ""
+msgstr "Keine"
 
 #: ../src/libromdata/Handheld/Lynx.cpp:213
 msgctxt "Lynx|Rotation"
@@ -6233,7 +6230,7 @@ msgstr "Old3DS Sys-Modus"
 #, c++-format
 msgctxt "Nintendo3DS"
 msgid "{0:s} ({1:d} MiB)"
-msgstr "{0:s} ({1:d} MiB)"
+msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2413
 msgctxt "Nintendo3DS"
@@ -6700,7 +6697,7 @@ msgstr "Video Titel"
 #: ../src/libromdata/Handheld/WonderSwan.cpp:540
 msgctxt "WonderSwan"
 msgid "None"
-msgstr ""
+msgstr "Keine"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:563
 msgctxt "WonderSwan"
@@ -6721,7 +6718,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:604
 msgctxt "WonderSwan|SaveMemory"
 msgid "None"
-msgstr ""
+msgstr "Keine"
 
 #. tr: Parameter 2 indicates the save type, e.g. "SRAM" or "EEPROM".
 #: ../src/libromdata/Handheld/WonderSwan.cpp:591
@@ -6729,7 +6726,7 @@ msgstr ""
 #, c++-format
 msgctxt "WonderSwan|SaveMemory"
 msgid "{0:d} KiB ({1:s})"
-msgstr "{0:d} KiB ({1:s})"
+msgstr ""
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:593
 msgctxt "WonderSwan|SaveMemory"
@@ -7921,7 +7918,7 @@ msgstr "Microsoft Visual Basic {:d}.{:d} Laufzeit"
 #: ../src/libromdata/Other/EXE_NE.cpp:420
 msgctxt "EXE|DGroupType"
 msgid "None"
-msgstr ""
+msgstr "Keine"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:421
 msgctxt "EXE|DGroupType"
@@ -7977,7 +7974,7 @@ msgstr "FPU insns"
 #: ../src/libromdata/Other/EXE_NE.cpp:456
 msgctxt "EXE|ApplType"
 msgid "None"
-msgstr ""
+msgstr "Keine"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:448
 msgctxt "EXE|ApplType"
@@ -8539,21 +8536,21 @@ msgstr "Keine"
 #, c++-format
 msgctxt "NintendoBadge"
 msgid "{0:s} (New3DS) ({1:s})"
-msgstr "{0:s} (New3DS) ({1:s})"
+msgstr ""
 
 #. tr: Title name
 #: ../src/libromdata/Other/NintendoBadge.cpp:783
 #, c++-format
 msgctxt "NintendoBadge"
 msgid "{:s} (New3DS)"
-msgstr "{:s} (New3DS)"
+msgstr ""
 
 #. tr: {0:s} == Title name, {1:s} == Region
 #: ../src/libromdata/Other/NintendoBadge.cpp:788
 #, c++-format
 msgctxt "NintendoBadge"
 msgid "{0:s} ({1:s})"
-msgstr "{0:s} ({1:s})"
+msgstr ""
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:793
 msgctxt "NintendoBadge"
@@ -8583,7 +8580,7 @@ msgstr "Skalieren nach"
 #: ../src/libromdata/Other/RpTextureWrapper.cpp:280
 msgctxt "RpTextureWrapper"
 msgid "Pixel Format"
-msgstr ""
+msgstr "Pixel Format"
 
 #: ../src/libromdata/Other/RpTextureWrapper.cpp:286
 msgctxt "RpTextureWrapper"
@@ -9619,7 +9616,7 @@ msgstr ""
 #, c++-format
 msgctxt "LibRpText|FileSize"
 msgid "{0:s} {1:s}"
-msgstr "{0:s} {1:s}"
+msgstr ""
 
 #. tr: {0:Ld} == localized value, {1:s} == suffix (e.g. MiB)
 #: ../src/librptext/formatting.cpp:424
@@ -9657,7 +9654,7 @@ msgstr "GHz"
 #, c++-format
 msgctxt "LibRpText|Frequency"
 msgid "{0:s} {1:s}"
-msgstr "{0:s} {1:s}"
+msgstr ""
 
 #: ../src/librptexture/fileformat/DidjTex.cpp:476
 msgctxt "DidjTex"
@@ -9674,13 +9671,13 @@ msgstr ""
 #, c++-format
 msgctxt "DirectDrawSurface"
 msgid "Alpha ({:d}-bit)"
-msgstr "Alpha ({:d}-bit)"
+msgstr ""
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1301
 #, c++-format
 msgctxt "DirectDrawSurface"
 msgid "YUV ({:d}-bit)"
-msgstr "YUV ({:d}-bit)"
+msgstr ""
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1306
 #, c++-format
@@ -9742,7 +9739,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1396
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Pixel Format"
-msgstr ""
+msgstr "Pixel Format"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1400
 msgctxt "DirectDrawSurface|dwFlags"
@@ -9987,7 +9984,7 @@ msgstr "Größe"
 #: ../src/librptexture/fileformat/ICO.cpp:1495
 msgctxt "ICO"
 msgid "Format"
-msgstr "Format"
+msgstr ""
 
 #: ../src/librptexture/fileformat/ICO.cpp:1569
 msgctxt "ICO"
@@ -10195,27 +10192,27 @@ msgstr ""
 #: ../src/librptexture/fileformat/TGA.cpp:879
 msgctxt "TGA"
 msgid "Orientation"
-msgstr ""
+msgstr "Ausrichtung"
 
 #: ../src/librptexture/fileformat/TGA.cpp:884
 msgctxt "TGA|Compression"
 msgid "Huffman+Delta"
-msgstr ""
+msgstr "Huffman+Delta"
 
 #: ../src/librptexture/fileformat/TGA.cpp:886
 msgctxt "TGA|Compression"
 msgid "Huffman+Delta, 4-pass"
-msgstr ""
+msgstr "Huffman+Delta, 4-Pass"
 
 #: ../src/librptexture/fileformat/TGA.cpp:890
 msgctxt "TGA|Compression"
 msgid "None"
-msgstr ""
+msgstr "Keine"
 
 #: ../src/librptexture/fileformat/TGA.cpp:892
 msgctxt "TGA"
 msgid "Compression"
-msgstr ""
+msgstr "Komprimierung"
 
 #: ../src/librptexture/fileformat/TGA.cpp:898
 msgctxt "TGA|AlphaType"
@@ -10225,17 +10222,17 @@ msgstr "Keine"
 #: ../src/librptexture/fileformat/TGA.cpp:899
 msgctxt "TGA|AlphaType"
 msgid "Undefined (ignore)"
-msgstr ""
+msgstr "Undefiniert (ignorieren)"
 
 #: ../src/librptexture/fileformat/TGA.cpp:900
 msgctxt "TGA|AlphaType"
 msgid "Undefined (retain)"
-msgstr ""
+msgstr "Undefiniert (behalten)"
 
 #: ../src/librptexture/fileformat/TGA.cpp:901
 msgctxt "TGA|AlphaType"
 msgid "Present"
-msgstr ""
+msgstr "Vorhanden"
 
 #: ../src/librptexture/fileformat/TGA.cpp:902
 msgctxt "TGA|AlphaType"
@@ -10245,12 +10242,12 @@ msgstr ""
 #: ../src/librptexture/fileformat/TGA.cpp:906
 msgctxt "TGA"
 msgid "Alpha Type"
-msgstr ""
+msgstr "Alpha-Kanal"
 
 #: ../src/librptexture/fileformat/TGA.cpp:939
 msgctxt "TGA"
 msgid "Last Saved Time"
-msgstr ""
+msgstr "Zuletzt gespeichert"
 
 #: ../src/librptexture/fileformat/TGA.cpp:947
 msgctxt "TGA"
@@ -10265,12 +10262,12 @@ msgstr ""
 #: ../src/librptexture/fileformat/TGA.cpp:966
 msgctxt "TGA"
 msgid "Software ID"
-msgstr ""
+msgstr "Software-ID"
 
 #: ../src/librptexture/fileformat/TGA.cpp:978
 msgctxt "TGA"
 msgid "Software Version"
-msgstr ""
+msgstr "Software-Version"
 
 #: ../src/librptexture/fileformat/TGA.cpp:987
 msgctxt "TGA"
@@ -10280,18 +10277,18 @@ msgstr ""
 #: ../src/librptexture/fileformat/TGA.cpp:994
 msgctxt "TGA"
 msgid "Pixel Aspect Ratio"
-msgstr ""
+msgstr "Pixel Seitenverhältnis"
 
 #: ../src/librptexture/fileformat/TGA.cpp:1005
 msgctxt "TGA"
 msgid "Gamma Value"
-msgstr ""
+msgstr "Gamma Wert"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:742
 #: ../src/librptexture/fileformat/ValveVTF.cpp:879
 msgctxt "ValveVTF|ImageFormat"
 msgid "None"
-msgstr ""
+msgstr "Keine"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:788
 msgctxt "ValveVTF"
@@ -10505,7 +10502,7 @@ msgstr ""
 #, c++-format
 msgctxt "rpcli"
 msgid "Endianness: {:s}"
-msgstr "Endianness: {:s}"
+msgstr ""
 
 #: ../src/rpcli/printcpufeatures.cpp:107
 #, c++-format

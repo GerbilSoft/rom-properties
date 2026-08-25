@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: rom-properties 2.7.1\n"
+"Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-24 12:07-0400\n"
-"PO-Revision-Date: 2024-03-31 10:53\n"
+"PO-Revision-Date: 2026-08-24 23:14\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar\n"
@@ -1082,8 +1082,6 @@ msgid ""
 "{0:s}\n"
 "{1:s}"
 msgstr ""
-"{0:s}\n"
-"{1:s}"
 
 #. tr: Field description label.
 #: ../src/gtk/RomDataView.cpp:1518 ../src/kde/RomDataView.cpp:1076
@@ -1091,7 +1089,7 @@ msgstr ""
 #, c++-format
 msgctxt "RomDataView"
 msgid "{:s}:"
-msgstr "{:s}:"
+msgstr ""
 
 #. tr: EncryptionKeys::Unknown
 #: ../src/gtk/RomDataView_gtk3.cpp:304 ../src/gtk/RomDataView_gtk3.cpp:614
@@ -2833,7 +2831,7 @@ msgstr ""
 #, c++-format
 msgctxt "Wii"
 msgid "{0:s} ({1:s})"
-msgstr "{0:s} ({1:s})"
+msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:756
 #: ../src/libromdata/Console/SNES.cpp:1651
@@ -3921,7 +3919,7 @@ msgstr ""
 #: ../src/libromdata/Console/SNES.cpp:949
 msgctxt "SNES|NintendoPower"
 msgid "#"
-msgstr "#"
+msgstr ""
 
 #: ../src/libromdata/Console/SNES.cpp:950
 msgctxt "SNES|NintendoPower"
@@ -4389,7 +4387,7 @@ msgstr ""
 #, c++-format
 msgctxt "Xbox360_XEX"
 msgid "{0:0>8X} ({1:s}-{2:0>4d})"
-msgstr "{0:0>8X} ({1:s}-{2:0>4d})"
+msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1066
 msgctxt "Xbox360_STFS"
@@ -4760,7 +4758,7 @@ msgstr ""
 #, c++-format
 msgctxt "Xbox_XBE"
 msgid "{0:0>8X} ({1:s}-{2:0>3d})"
-msgstr "{0:0>8X} ({1:s}-{2:0>3d})"
+msgstr ""
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:763
 msgctxt "Xbox_XBE"
