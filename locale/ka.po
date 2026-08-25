@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-24 12:07-0400\n"
-"PO-Revision-Date: 2026-08-25 08:24\n"
+"PO-Revision-Date: 2026-08-25 09:30\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
 "Language: ka_GE\n"
@@ -2690,7 +2690,7 @@ msgstr ""
 #: ../src/libromdata/Console/DreamcastSave.cpp:1483
 msgctxt "DreamcastSave"
 msgid "DC Description"
-msgstr ""
+msgstr "DC-ის აღწერა"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1492
 msgctxt "DreamcastSave"
@@ -2730,7 +2730,7 @@ msgstr "თამაშის ინფორმაცია"
 #, c++-format
 msgctxt "RomData"
 msgid "Unknown ({:s})"
-msgstr ""
+msgstr "უცნობი ({:s})"
 
 #: ../src/libromdata/Console/GameCube.cpp:487
 #: ../src/libromdata/Console/SNES.cpp:647
@@ -3056,7 +3056,7 @@ msgstr "ბლოკები"
 #: ../src/libromdata/Console/Intellivision.cpp:295
 msgctxt "Intellivision"
 msgid "Copyright Year"
-msgstr ""
+msgstr "საავტორო უფლების წელი"
 
 #: ../src/libromdata/Console/Intellivision.cpp:311
 msgctxt "Intellivision|Flags"
@@ -3116,7 +3116,7 @@ msgstr "საავტორო უფლებები"
 #: ../src/libromdata/Console/MegaDrive.cpp:457
 msgctxt "MegaDrive"
 msgid "Domestic Title"
-msgstr ""
+msgstr "ლოკალური სახელი"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:459
 msgctxt "MegaDrive"
@@ -3339,7 +3339,7 @@ msgstr ""
 #: ../src/libromdata/Console/NES.cpp:1418
 msgctxt "NES|Format"
 msgid "FDS disk image"
-msgstr ""
+msgstr "FDS-ის დისკის ასლის ფაილი"
 
 #: ../src/libromdata/Console/NES.cpp:1422
 msgctxt "NES|Format"
@@ -3566,7 +3566,7 @@ msgstr "ვიდეოს რეჟიმი"
 #: ../src/libromdata/Console/PlayStationDisc.cpp:796
 msgctxt "PlayStationDisc"
 msgid "Boot File Time"
-msgstr ""
+msgstr "ჩატვირთვის ფაილის დრო"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:829
 msgctxt "PlayStationDisc"
@@ -3606,7 +3606,7 @@ msgstr "ამძრავის მოდელი"
 #: ../src/libromdata/Console/PlayStationDisc.cpp:865
 msgctxt "PlayStationDisc"
 msgid "Drive Firmware"
-msgstr ""
+msgstr "დისკის მიკროკოდი"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:868
 msgctxt "PlayStationDisc"
@@ -3930,7 +3930,7 @@ msgstr "პროგრამის ტიპი"
 #: ../src/libromdata/Console/SNES.cpp:1664
 msgctxt "SNES"
 msgid "Limited Starts"
-msgstr ""
+msgstr "შეზღუდული გაშვებები"
 
 #: ../src/libromdata/Console/SNES.cpp:1672
 msgctxt "SNES"
@@ -3982,7 +3982,7 @@ msgstr "გასაღების ინდექსი"
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:2012
 msgctxt "RomData"
 msgid "Encryption Key"
-msgstr ""
+msgstr "დაშიფვრის გასაღები"
 
 #: ../src/libromdata/Console/WiiTicket.cpp:529
 #: ../src/libromdata/Console/WiiWAD.cpp:1158
@@ -4018,7 +4018,7 @@ msgstr "გამართვა"
 #: ../src/libromdata/Console/WiiTicket.cpp:733
 msgctxt "Wii|EncKey"
 msgid "Korean (debug)"
-msgstr ""
+msgstr "კორეული (გამართვა)"
 
 #. tr: Key_CAT_vWii - vWii (debug) Wii encryption key
 #: ../src/libromdata/Console/WiiTicket.cpp:735
@@ -4048,7 +4048,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiTicket.cpp:749
 msgctxt "Wii|EncKey"
 msgid "Retail (Wii U)"
-msgstr ""
+msgstr "საცალო (Wii U)"
 
 #. tr: Key_CAT_Starbuck_WiiU_Common - Debug Wii U encryption key
 #: ../src/libromdata/Console/WiiTicket.cpp:751
@@ -4095,12 +4095,12 @@ msgstr "CPU"
 #: ../src/libromdata/Console/WiiUAncast.cpp:580
 msgctxt "WiiUAncast"
 msgid "Signature Type"
-msgstr ""
+msgstr "ხელმოწერის ტიპი"
 
 #: ../src/libromdata/Console/WiiUAncast.cpp:585
 msgctxt "WiiUAncast"
 msgid "Has Signature?"
-msgstr ""
+msgstr "აქვს ხელმოწერა?"
 
 #: ../src/libromdata/Console/WiiUAncast.cpp:589
 msgctxt "WiiUAncast"
@@ -4648,7 +4648,7 @@ msgstr "არცერთი"
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:2018
 msgctxt "Xbox360_XEX|Compression"
 msgid "Basic (Sparse)"
-msgstr ""
+msgstr "საბაზისო (ზედმეტი)"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:2019
 msgctxt "Xbox360_XEX|Compression"
@@ -4684,7 +4684,7 @@ msgstr ""
 #: ../src/libromdata/Console/XboxDisc.cpp:1046
 msgctxt "XboxDisc"
 msgid "Disc Timestamp"
-msgstr ""
+msgstr "დისკის დროის შტამპი"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:162
 msgctxt "Region"
@@ -4949,7 +4949,7 @@ msgstr "Vs. Zapper"
 #: ../src/libromdata/data/NESMappers.cpp:668
 msgctxt "NES|Expansion"
 msgid "Zapper ($4017)"
-msgstr ""
+msgstr "Zapper ($4017)"
 
 #: ../src/libromdata/data/NESMappers.cpp:669
 msgctxt "NES|Expansion"
