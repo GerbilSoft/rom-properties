@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-24 12:07-0400\n"
-"PO-Revision-Date: 2026-08-25 09:30\n"
+"PO-Revision-Date: 2026-08-25 10:50\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
 "Language: ka_GE\n"
@@ -5099,7 +5099,7 @@ msgstr ""
 #: ../src/libromdata/data/NESMappers.cpp:702
 msgctxt "NES|Expansion"
 msgid "Subor Keyboard"
-msgstr ""
+msgstr "Subor-ის კლავიატურა"
 
 #: ../src/libromdata/data/NESMappers.cpp:703
 msgctxt "NES|Expansion"
@@ -5274,7 +5274,7 @@ msgstr ""
 #: ../src/libromdata/data/NESMappers.cpp:741
 msgctxt "NES|Expansion"
 msgid "Zapper ($4016)"
-msgstr ""
+msgstr "Zapper ($4016)"
 
 #: ../src/libromdata/data/NESMappers.cpp:742
 msgctxt "NES|Expansion"
@@ -5448,7 +5448,7 @@ msgstr "Mii-ის ამრჩევი"
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:83
 msgctxt "Nintendo3DSSysTitles"
 msgid "Picture picker"
-msgstr ""
+msgstr "სურათის ამრჩევი"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:84
 msgctxt "Nintendo3DSSysTitles"
@@ -5503,7 +5503,7 @@ msgstr ""
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:36
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Installed Game"
-msgstr ""
+msgstr "დაყენებული თამაში"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:37
 msgctxt "Xbox360_STFS|ContentType"
@@ -5618,7 +5618,7 @@ msgstr "ვირუსული ვიდეო"
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:62
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Community Game"
-msgstr ""
+msgstr "საზოგადოებრივი თამაში"
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:36
 msgctxt "Android|AppCategory"
@@ -5867,7 +5867,7 @@ msgstr "მობრუნება"
 #, c++-format
 msgctxt "Lynx"
 msgid "Bank {:d} Size"
-msgstr ""
+msgstr "ბანკის {:d} ზომა"
 
 #: ../src/libromdata/Handheld/NGPC.cpp:325
 msgctxt "RomData"
@@ -6067,7 +6067,7 @@ msgstr "დანაყოფები"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2180
 msgctxt "Nintendo3DS"
 msgid "Demo Use Limit"
-msgstr ""
+msgstr "დემოს გამოყენების ლიმიტი"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2314
 msgctxt "Nintendo3DS|CtNames"
@@ -6120,7 +6120,7 @@ msgstr "სისტემური აპლეტი"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2347
 msgctxt "Nintendo3DS|ApplType"
 msgid "Library Applet"
-msgstr ""
+msgstr "ბიბლიოთეკის აპლეტი"
 
 #. tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_OTHER
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2349
@@ -6180,7 +6180,7 @@ msgstr "ARM9 Homebrew"
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:476
 msgctxt "Nintendo3DSFirm"
 msgid "ARM11 Homebrew"
-msgstr ""
+msgstr "ARM11 Homebrew"
 
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:505
 msgctxt "Nintendo3DSFirm"
@@ -6190,7 +6190,7 @@ msgstr "FIRM-ის ვერსია"
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:510
 msgctxt "Nintendo3DSFirm"
 msgid "System Version"
-msgstr ""
+msgstr "სისტემის ვერსია"
 
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:600
 msgctxt "Nintendo3DSFirm"
@@ -6254,12 +6254,12 @@ msgstr "უსადენო DS"
 #: ../src/libromdata/Handheld/NintendoDS.cpp:390
 msgctxt "NintendoDS|DSi_Flags"
 msgid "NDS Icon SHA-1"
-msgstr ""
+msgstr "NDS-ის ხატულას SHA-1"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:391
 msgctxt "NintendoDS|DSi_Flags"
 msgid "NDS Header RSA"
-msgstr ""
+msgstr "NDS-ის თავსართის RSA"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:392
 msgctxt "NintendoDS|DSi_Flags"
@@ -6299,7 +6299,7 @@ msgstr "აპარატურა"
 #: ../src/libromdata/Handheld/NintendoDS.cpp:887
 msgctxt "NintendoDS"
 msgid "DS Region Code"
-msgstr ""
+msgstr "DS-ის რეგიონის კოდი"
 
 #. tr: DSi-enhanced or DSi-exclusive cartridge.
 #: ../src/libromdata/Handheld/NintendoDS.cpp:968
@@ -6749,7 +6749,7 @@ msgstr "C128 boot T/S"
 #: ../src/libromdata/Media/CBMDOS.cpp:1452
 msgctxt "CBMDOS"
 msgid "C128 boot bank"
-msgstr ""
+msgstr "C128 ჩატვირთვის ბანკი"
 
 #: ../src/libromdata/Media/CBMDOS.cpp:1454
 msgctxt "CBMDOS"
@@ -6799,7 +6799,7 @@ msgstr "აპლიკაცია"
 #: ../src/libromdata/Media/ISO.cpp:595
 msgctxt "ISO"
 msgid "Copyright File"
-msgstr ""
+msgstr "საავტორო უფლების ფაილი"
 
 #: ../src/libromdata/Media/ISO.cpp:600
 msgctxt "ISO"
@@ -6824,7 +6824,7 @@ msgstr ""
 #: ../src/libromdata/Media/ISO.cpp:634
 msgctxt "ISO"
 msgid "Effective Time"
-msgstr ""
+msgstr "ეფექტური დრო"
 
 #: ../src/libromdata/Media/ISO.cpp:1250
 msgctxt "ISO"
