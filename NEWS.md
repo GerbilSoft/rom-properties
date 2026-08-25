@@ -19,6 +19,7 @@
     properties tab. The icon and banner can be dragged from the properties
     tab to a Windows Explorer window, and the PNG will be saved.
     * This was implemented in v1.5 in the GTK and KDE UI frontends.
+  * Added Georgian translations from temuri.doghonadze.
 
 * New parser features:
   * GodotSTEX: Add (untested) support for ASTC_6x6 textures.

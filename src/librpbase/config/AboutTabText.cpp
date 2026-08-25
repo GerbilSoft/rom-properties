@@ -102,7 +102,7 @@ ProgramInfoStringID getProgramInfoStringCount(void)
  * Credits data.
  * Ends with CreditType::Max.
  */
-static const array<CreditsData_t, 20+1> creditsData = {{
+static const array<CreditsData_t, 21+1> creditsData = {{
 	// Developers
 	{CreditType::Developer,		"David Korth", "mailto:gerbilsoft@gerbilsoft.com", "gerbilsoft@gerbilsoft.com", nullptr},
 	{CreditType::Continue,		"Egor", "mailto:egor@opensrc.club", "egor@opensrc.club", nullptr},
@@ -125,6 +125,7 @@ static const array<CreditsData_t, 20+1> creditsData = {{
 	{CreditType::Continue,		"Chipsum", nullptr, nullptr, "ar"},
 	{CreditType::Continue,		"spencerchris8080", nullptr, nullptr, "es"},
 	{CreditType::Continue,		"NoNameWasDefined", nullptr, nullptr, "fr"},
+	{CreditType::Continue,		"temuri.doghonadze", nullptr, nullptr, "ka"},
 
 	// Contributors
 	{CreditType::Contributor,	"CheatFreak47", nullptr, nullptr, nullptr},

@@ -5,52 +5,57 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: rom-properties 2.8+\n"
+"Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-24 12:07-0400\n"
-"PO-Revision-Date: 2026-08-23 15:27-0400\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2026-08-24 23:13\n"
+"Last-Translator: \n"
+"Language-Team: Georgian\n"
 "Language: ka\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: rom-properties\n"
+"X-Crowdin-Project-ID: 573479\n"
+"X-Crowdin-Language: ka\n"
+"X-Crowdin-File: /master/locale/rom-properties.pot\n"
+"X-Crowdin-File-ID: 5\n"
 
 #: ../build/src/kde/kf6/ui_AboutTab.h:276 ../src/gtk/config/AboutTab.cpp:300
 msgctxt "AboutTab"
 msgid "C&redits"
-msgstr ""
+msgstr "ავტო&რები"
 
 #: ../build/src/kde/kf6/ui_AboutTab.h:277 ../src/gtk/config/AboutTab.cpp:303
 msgctxt "AboutTab"
 msgid "&Libraries"
-msgstr ""
+msgstr "&ბიბლიოთეკები"
 
 #: ../build/src/kde/kf6/ui_AboutTab.h:278 ../src/gtk/config/AboutTab.cpp:306
 msgctxt "AboutTab"
 msgid "&Support"
-msgstr ""
+msgstr "&მხარდაჭერა"
 
 #: ../build/src/kde/kf6/ui_AchievementsTab.h:51
 #: ../src/gtk/config/AchievementsTab.cpp:219
 #: ../src/win32/config/AchievementsTab.cpp:561
 msgctxt "AchievementsTab"
 msgid "Unlock Time"
-msgstr ""
+msgstr "განბლოკვის დრო"
 
 #: ../build/src/kde/kf6/ui_AchievementsTab.h:52
 #: ../src/gtk/config/AchievementsTab.cpp:218
 #: ../src/win32/config/AchievementsTab.cpp:555
 msgctxt "AchievementsTab"
 msgid "Achievement"
-msgstr ""
+msgstr "მიღწევა"
 
 #: ../build/src/kde/kf6/ui_AchievementsTab.h:53
 #: ../src/gtk/config/AchievementsTab.cpp:217
 msgctxt "AchievementsTab"
 msgid "Icon"
-msgstr ""
+msgstr "ხატულა"
 
 #: ../build/src/kde/kf6/ui_CacheTab.h:98 ../src/gtk/config/CacheTab.cpp:157
 msgctxt "CacheTab"
@@ -88,19 +93,19 @@ msgstr ""
 #: ../src/gtk/config/ConfigDialog.cpp:243
 msgctxt "ConfigDialog"
 msgid "&Image Types"
-msgstr ""
+msgstr "&გამოსახულების ტიპები"
 
 #: ../build/src/kde/kf6/ui_ConfigDialog.h:93
 #: ../src/gtk/config/ConfigDialog.cpp:244
 msgctxt "ConfigDialog"
 msgid "&Systems"
-msgstr ""
+msgstr "&სისტემები"
 
 #: ../build/src/kde/kf6/ui_ConfigDialog.h:94
 #: ../src/gtk/config/ConfigDialog.cpp:245
 msgctxt "ConfigDialog"
 msgid "&Options"
-msgstr ""
+msgstr "&პარამეტრები"
 
 #: ../build/src/kde/kf6/ui_ConfigDialog.h:95
 #: ../src/gtk/config/ConfigDialog.cpp:246
@@ -112,49 +117,49 @@ msgstr ""
 #: ../src/gtk/config/ConfigDialog.cpp:247
 msgctxt "ConfigDialog"
 msgid "&Achievements"
-msgstr ""
+msgstr "&მიღწევები"
 
 #: ../build/src/kde/kf6/ui_ConfigDialog.h:97
 #: ../src/gtk/config/ConfigDialog.cpp:251
 msgctxt "ConfigDialog"
 msgid "Abou&t"
-msgstr ""
+msgstr "შე&სახებ"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:100 ../src/gtk/xattr/DosAttrView.c:137
 msgctxt "DosAttrView"
 msgid "&Read-only"
-msgstr ""
+msgstr "&მხოლოდ-წაკითხვადი"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:101 ../src/gtk/xattr/DosAttrView.c:139
 msgctxt "DosAttrView"
 msgid "&Hidden"
-msgstr ""
+msgstr "&დამალული"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:102 ../src/gtk/xattr/DosAttrView.c:141
 msgctxt "DosAttrView"
 msgid "&Archive"
-msgstr ""
+msgstr "&არქივი"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:103 ../src/gtk/xattr/DosAttrView.c:143
 msgctxt "DosAttrView"
 msgid "&System"
-msgstr ""
+msgstr "&სისტემა"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:104 ../src/gtk/xattr/DosAttrView.c:165
 msgctxt "DosAttrView"
 msgid "&Compressed"
-msgstr ""
+msgstr "&შეკუმშულია"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:105 ../src/gtk/xattr/DosAttrView.c:167
 msgctxt "DosAttrView"
 msgid "&Encrypted"
-msgstr ""
+msgstr "&დაშიფრულია"
 
 #: ../build/src/kde/kf6/ui_Ext2AttrView.h:89
 #: ../src/gtk/xattr/Ext2AttrView.cpp:147
 msgctxt "Ext2AttrView"
 msgid "lsattr:"
-msgstr ""
+msgstr "lsattr:"
 
 #: ../build/src/kde/kf6/ui_ImageTypesTab.h:67
 #: ../src/gtk/config/ImageTypesTab.cpp:433
@@ -173,12 +178,12 @@ msgstr ""
 #: ../src/kde/config/KeyManagerTab.cpp:331
 msgctxt "KeyManagerTab"
 msgid "I&mport"
-msgstr ""
+msgstr "შე&მოტანა"
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:184
 msgctxt "OptionsTab"
 msgid "&Downloads"
-msgstr ""
+msgstr "&გადმოწერები"
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:185
 #: ../src/gtk/config/OptionsTab.cpp:144
@@ -246,7 +251,7 @@ msgstr ""
 #: ../build/src/kde/kf6/ui_OptionsTab.h:202
 msgctxt "OptionsTab"
 msgid "&Options"
-msgstr ""
+msgstr "&პარამეტრები"
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:203
 #: ../src/gtk/config/OptionsTab.cpp:264
@@ -287,7 +292,7 @@ msgstr ""
 #: ../src/gtk/config/SystemsTab.cpp:119
 msgctxt "SystemsTab"
 msgid "Game &Boy:"
-msgstr ""
+msgstr "Game &Boy:"
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:126
 #: ../build/src/kde/kf6/ui_SystemsTab.h:130
@@ -295,7 +300,7 @@ msgstr ""
 #: ../src/gtk/config/SystemsTab.cpp:127
 msgctxt "SystemsTab"
 msgid "Game Boy"
-msgstr ""
+msgstr "Game Boy"
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:127
 #: ../build/src/kde/kf6/ui_SystemsTab.h:132
@@ -357,19 +362,19 @@ msgstr ""
 #: ../src/gtk/xattr/XAttrView_gtk4.cpp:139
 msgctxt "XAttrView"
 msgid "Value"
-msgstr ""
+msgstr "მნიშვნელობა"
 
 #: ../build/src/kde/kf6/ui_XAttrView.h:125
 #: ../src/gtk/xattr/XAttrView_gtk3.cpp:53
 #: ../src/gtk/xattr/XAttrView_gtk4.cpp:138
 msgctxt "XAttrView"
 msgid "Name"
-msgstr ""
+msgstr "სახელი"
 
 #: ../build/src/kde/kf6/ui_XfsAttrView.h:85 ../src/gtk/xattr/XfsAttrView.c:174
 msgctxt "XfsAttrView"
 msgid "Project ID:"
-msgstr ""
+msgstr "პროექტის ID:"
 
 #: ../src/gtk/AchGDBus.cpp:198 ../src/kde/AchQtDBus.cpp:195
 #: ../src/win32/AchWin32.cpp:292
@@ -390,13 +395,13 @@ msgstr ""
 #, c++-format
 msgctxt "AboutTab"
 msgid "Version {:s}"
-msgstr ""
+msgstr "ვერსია {:s}"
 
 #: ../src/gtk/config/AboutTab.cpp:496 ../src/kde/config/AboutTab.cpp:246
 #: ../src/win32/config/AboutTab.cpp:1028
 msgctxt "AboutTabl|Credits"
 msgid "GNU GPL v2"
-msgstr ""
+msgstr "GNU GPL v2"
 
 #. tr: {:s} is the name of the license.
 #: ../src/gtk/config/AboutTab.cpp:506 ../src/kde/config/AboutTab.cpp:256
@@ -410,19 +415,19 @@ msgstr ""
 #: ../src/win32/config/AboutTab.cpp:1046
 msgctxt "AboutTab|Credits"
 msgid "Developers:"
-msgstr ""
+msgstr "პროგრამისტები:"
 
 #: ../src/gtk/config/AboutTab.cpp:523 ../src/kde/config/AboutTab.cpp:273
 #: ../src/win32/config/AboutTab.cpp:1049
 msgctxt "AboutTab|Credits"
 msgid "Contributors:"
-msgstr ""
+msgstr "მოხალისეები:"
 
 #: ../src/gtk/config/AboutTab.cpp:526 ../src/kde/config/AboutTab.cpp:276
 #: ../src/win32/config/AboutTab.cpp:1052
 msgctxt "AboutTab|Credits"
 msgid "Translators:"
-msgstr ""
+msgstr "მთარგმნელები:"
 
 #. tr: Sub-credit
 #: ../src/gtk/config/AboutTab.cpp:555 ../src/kde/config/AboutTab.cpp:305
@@ -430,7 +435,7 @@ msgstr ""
 #, c++-format
 msgctxt "AboutTab|Credits"
 msgid " ({:s})"
-msgstr ""
+msgstr " ({:s})"
 
 #. tr: Using an internal copy of a library.
 #: ../src/gtk/config/AboutTab.cpp:580 ../src/kde/config/AboutTab.cpp:326
@@ -454,7 +459,7 @@ msgstr ""
 #, c++-format
 msgctxt "AboutTab|Libraries"
 msgid "Using {:s}."
-msgstr ""
+msgstr "გამოყენება {:s}."
 
 #. tr: License: (libraries with only a single license)
 #: ../src/gtk/config/AboutTab.cpp:586 ../src/kde/config/AboutTab.cpp:332
@@ -462,7 +467,7 @@ msgstr ""
 #, c++-format
 msgctxt "AboutTab|Libraries"
 msgid "License: {:s}"
-msgstr ""
+msgstr "ლიცენზია: {:s}"
 
 #. tr: Licenses: (libraries with multiple licenses)
 #: ../src/gtk/config/AboutTab.cpp:588 ../src/kde/config/AboutTab.cpp:334
@@ -476,7 +481,7 @@ msgstr ""
 #: ../src/win32/config/AboutTab.cpp:1210
 msgctxt "AboutTab|Libraries"
 msgid "APNG patch:"
-msgstr ""
+msgstr "APNG-ის პაჩი:"
 
 #: ../src/gtk/config/AboutTab.cpp:837 ../src/kde/config/AboutTab.cpp:607
 #: ../src/win32/config/AboutTab.cpp:1315
@@ -607,21 +612,21 @@ msgstr ""
 #: ../src/gtk/config/ConfigDialog.cpp:249 ../src/kde/config/ConfigDialog.cpp:87
 msgctxt "ConfigDialog"
 msgid "&Key Manager"
-msgstr ""
+msgstr "&გასაღებების მმართველი"
 
 #. tr: "Reset" button.
 #: ../src/gtk/config/ConfigDialog.cpp:306
 #: ../src/win32/config/ConfigDialog.cpp:302
 msgctxt "ConfigDialog"
 msgid "&Reset"
-msgstr ""
+msgstr "&ჩამოყრა"
 
 #. tr: "Defaults" button.
 #: ../src/gtk/config/ConfigDialog.cpp:307
 #: ../src/win32/config/ConfigDialog.cpp:319
 msgctxt "ConfigDialog"
 msgid "Defaults"
-msgstr ""
+msgstr "ნაგულისხმევები"
 
 #. tr: Don't use this image type for this particular system.
 #: ../src/gtk/config/ImageTypesTab.cpp:320
@@ -630,7 +635,7 @@ msgstr ""
 #: ../src/win32/config/ImageTypesTab.cpp:420
 msgctxt "ImageTypesTab|Values"
 msgid "No"
-msgstr ""
+msgstr "არა"
 
 #: ../src/gtk/config/ImageTypesTab.cpp:446
 #: ../src/kde/config/ImageTypesTab.cpp:366
@@ -856,7 +861,7 @@ msgstr[1] ""
 #: ../src/win32/config/KeyManagerTab.cpp:376
 msgctxt "KeyManagerTab"
 msgid "Key Name"
-msgstr ""
+msgstr "გასაღების სახელი"
 
 #. tr: Column 1: Value.
 #. tr: Column 1: Value
@@ -866,7 +871,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:385
 msgctxt "KeyManagerTab"
 msgid "Value"
-msgstr ""
+msgstr "მნიშვნელობა"
 
 #. tr: Column 2: Verification status.
 #. tr: Column 2: Verification status
@@ -876,18 +881,18 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:391
 msgctxt "KeyManagerTab"
 msgid "Valid?"
-msgstr ""
+msgstr "სწორია?"
 
 #: ../src/gtk/config/OptionsTab.cpp:120
 msgctxt "OptionsTab"
 msgid "Downloads"
-msgstr ""
+msgstr "გადმოწერები"
 
 #. tr: Tab title.
 #: ../src/gtk/config/OptionsTab.cpp:247 ../src/win32/config/OptionsTab.cpp:682
 msgctxt "OptionsTab"
 msgid "Options"
-msgstr ""
+msgstr "პარამეტრები"
 
 #: ../src/gtk/config/SystemsTab.cpp:96
 msgctxt "SystemsTab"
@@ -982,7 +987,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1432
 msgctxt "RomDataView"
 msgid "Unknown"
-msgstr ""
+msgstr "უცნობი"
 
 #. tr: No age ratings data.
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:145
@@ -990,7 +995,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1454
 msgctxt "RomDataView"
 msgid "ERROR"
-msgstr ""
+msgstr "შეცდომა"
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:211
 #: ../src/gtk/RomDataView.cpp:695 ../src/kde/RomDataView.cpp:177
@@ -1013,19 +1018,19 @@ msgstr ""
 #, c++-format
 msgctxt "RomDataView"
 msgid "{0:s} | {1:s}"
-msgstr ""
+msgstr "{0:s} | {1:s}"
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:223
 msgctxt "RomDataView"
 msgid "File Type"
-msgstr ""
+msgstr "ფაილის ტიპი"
 
 #. tr: "Options" button.
 #: ../src/gtk/OptionsMenuButton.cpp:197 ../src/kde/OptionsMenuButton.cpp:34
 #: ../src/win32/OptionsMenuButton.cpp:82
 msgctxt "OptionsMenuButton"
 msgid "&Options"
-msgstr ""
+msgstr "&პარამეტრები"
 
 #. tr: {0:s} == system name, {1:s} == file type
 #: ../src/gtk/RomDataView.cpp:703 ../src/kde/RomDataView.cpp:185
@@ -1036,6 +1041,8 @@ msgid ""
 "{0:s}\n"
 "{1:s}"
 msgstr ""
+"{0:s}\n"
+"{1:s}"
 
 #. tr: Field description label.
 #: ../src/gtk/RomDataView.cpp:1518 ../src/kde/RomDataView.cpp:1076
@@ -1043,7 +1050,7 @@ msgstr ""
 #, c++-format
 msgctxt "RomDataView"
 msgid "{:s}:"
-msgstr ""
+msgstr "{:s}:"
 
 #. tr: EncryptionKeys::Unknown
 #: ../src/gtk/RomDataView_gtk3.cpp:304 ../src/gtk/RomDataView_gtk3.cpp:614
@@ -1105,7 +1112,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1653
 msgctxt "RomData"
 msgid "Unknown"
-msgstr ""
+msgstr "უცნობი"
 
 #: ../src/gtk/RomDataView_ops.cpp:316 ../src/gtk/RomDataView_ops.cpp:425
 #: ../src/kde/RomDataView_ops.cpp:202 ../src/kde/RomDataView_ops.cpp:272
@@ -1114,7 +1121,7 @@ msgstr ""
 #, c++-format
 msgctxt "RomDataView"
 msgid "File: '{:s}'"
-msgstr ""
+msgstr "ფაილი: '{:s}'"
 
 #: ../src/gtk/RomDataView_ops.cpp:445 ../src/kde/RomDataView_ops.cpp:222
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:330
@@ -1147,14 +1154,14 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:505
 msgctxt "RomData"
 msgid "All Files|*|-"
-msgstr ""
+msgstr "ყველა ფაილი|*|-"
 
 #. tr: format string for Ext2 attribute checkbox labels (%c == lsattr character)
 #: ../src/gtk/xattr/Ext2AttrView.cpp:179
 #, c-format
 msgctxt "Ext2AttrView"
 msgid "%c: %s"
-msgstr ""
+msgstr "%c: %s"
 
 #: ../src/gtk/xattr/Ext2AttrView.cpp:374 ../src/kde/xattr/Ext2AttrView.cpp:181
 #, c++-format
@@ -1190,13 +1197,13 @@ msgstr ""
 #: ../src/kde/xattr/Ext2AttrView.cpp:97
 msgctxt "Ext2AttrView"
 msgid "%1: %2"
-msgstr ""
+msgstr "%1: %2"
 
 #. tr: XAttrView tab title
 #: ../src/kde/xattr/XAttrViewPropertiesDialogPlugin.cpp:86
 msgctxt "XAttrView"
 msgid "xattrs"
-msgstr ""
+msgstr "xattrs"
 
 #: ../src/libromdata/Audio/ADX.cpp:265
 msgctxt "ADX|Format"
@@ -1211,19 +1218,19 @@ msgstr ""
 #: ../src/libromdata/Audio/ADX.cpp:288
 msgctxt "RomData|Audio"
 msgid "Format"
-msgstr ""
+msgstr "ფორმატი"
 
 #: ../src/libromdata/Audio/ADX.cpp:291 ../src/libromdata/Audio/BCSTM.cpp:487
 #: ../src/libromdata/Audio/BRSTM.cpp:350
 msgctxt "RomData|Audio"
 msgid "Channels"
-msgstr ""
+msgstr "არხები"
 
 #: ../src/libromdata/Audio/ADX.cpp:298 ../src/libromdata/Audio/BCSTM.cpp:490
 #: ../src/libromdata/Audio/BRSTM.cpp:357
 msgctxt "RomData|Audio"
 msgid "Sample Rate"
-msgstr ""
+msgstr "დისკრ. სიხშ"
 
 #: ../src/libromdata/Audio/ADX.cpp:299 ../src/libromdata/Audio/ADX.cpp:310
 #: ../src/libromdata/Audio/BCSTM.cpp:491 ../src/libromdata/Audio/BRSTM.cpp:358
@@ -1231,13 +1238,13 @@ msgstr ""
 #, c++-format
 msgctxt "RomData"
 msgid "{:Ld} Hz"
-msgstr ""
+msgstr "{:Ld} ჰც"
 
 #: ../src/libromdata/Audio/ADX.cpp:302 ../src/libromdata/Audio/BCSTM.cpp:496
 #: ../src/libromdata/Audio/BRSTM.cpp:361
 msgctxt "RomData|Audio"
 msgid "Length"
-msgstr ""
+msgstr "სიგრძე"
 
 #: ../src/libromdata/Audio/ADX.cpp:309
 msgctxt "ADX"
@@ -1253,7 +1260,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:437
 msgctxt "RomData"
 msgid "Yes"
-msgstr ""
+msgstr "დიახ"
 
 #. tr: Debugging is disabled.
 #: ../src/libromdata/Audio/ADX.cpp:315 ../src/libromdata/Audio/BCSTM.cpp:502
@@ -1264,12 +1271,12 @@ msgstr ""
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:439
 msgctxt "RomData"
 msgid "No"
-msgstr ""
+msgstr "არა"
 
 #: ../src/libromdata/Audio/ADX.cpp:318
 msgctxt "ADX"
 msgid "Encrypted"
-msgstr ""
+msgstr "დაშიფრულია"
 
 #: ../src/libromdata/Audio/ADX.cpp:324 ../src/libromdata/Audio/BCSTM.cpp:501
 #: ../src/libromdata/Audio/BRSTM.cpp:365
@@ -1306,7 +1313,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/XboxXPR.cpp:709
 msgctxt "RomData"
 msgid "Type"
-msgstr ""
+msgstr "ტიპი"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:416 ../src/libromdata/Audio/BCSTM.cpp:483
 #: ../src/libromdata/Audio/BRSTM.cpp:346
@@ -1337,7 +1344,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1364
 msgctxt "RomData"
 msgid "Endianness"
-msgstr ""
+msgstr "ბოლოიანობა"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:424 ../src/libromdata/Audio/BRSTM.cpp:331
 #: ../src/libromdata/Other/Lua.cpp:708
@@ -1348,7 +1355,7 @@ msgstr ""
 #: ../src/rpcli/printcpufeatures.cpp:69
 msgctxt "RomData"
 msgid "Big-Endian"
-msgstr ""
+msgstr "მსხვილბოლოიანი"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:425 ../src/libromdata/Audio/BRSTM.cpp:332
 #: ../src/libromdata/Other/Lua.cpp:711
@@ -1359,7 +1366,7 @@ msgstr ""
 #: ../src/rpcli/printcpufeatures.cpp:71
 msgctxt "RomData"
 msgid "Little-Endian"
-msgstr ""
+msgstr "წვრილბოლოიანი"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:473
 msgctxt "BCSTM|Codec"
@@ -1397,25 +1404,25 @@ msgstr ""
 #: ../src/libromdata/Audio/PSFTagParser.cpp:173
 msgctxt "RomData|Audio"
 msgid "Title"
-msgstr ""
+msgstr "დასახელება"
 
 #: ../src/libromdata/Audio/GBS.cpp:250 ../src/libromdata/Audio/NSF.cpp:218
 #: ../src/libromdata/Audio/SNDH.cpp:818 ../src/libromdata/Audio/VGM.cpp:407
 msgctxt "RomData|Audio"
 msgid "Composer"
-msgstr ""
+msgstr "კომპოზიტორი"
 
 #: ../src/libromdata/Audio/GBS.cpp:256 ../src/libromdata/Audio/NSF.cpp:224
 #: ../src/libromdata/Audio/PSFTagParser.cpp:204
 #: ../src/libromdata/Audio/SID.cpp:241
 msgctxt "RomData|Audio"
 msgid "Copyright"
-msgstr ""
+msgstr "საავტორო უფლებები"
 
 #: ../src/libromdata/Audio/GBS.cpp:261 ../src/libromdata/Audio/NSF.cpp:229
 msgctxt "RomData|Audio"
 msgid "Track Count"
-msgstr ""
+msgstr "ტრეკების რაოდენობა"
 
 #: ../src/libromdata/Audio/GBS.cpp:265 ../src/libromdata/Audio/NSF.cpp:233
 msgctxt "RomData|Audio"
@@ -1425,57 +1432,57 @@ msgstr ""
 #: ../src/libromdata/Audio/GBS.cpp:269
 msgctxt "GBS"
 msgid "Load Address"
-msgstr ""
+msgstr "მისამართის ჩატვირთვა"
 
 #: ../src/libromdata/Audio/GBS.cpp:274 ../src/libromdata/Audio/GBS.cpp:299
 msgctxt "GBS"
 msgid "Init Address"
-msgstr ""
+msgstr "მისამართის ინიციალიზაცია"
 
 #: ../src/libromdata/Audio/GBS.cpp:279
 msgctxt "GBS"
 msgid "Play Address"
-msgstr ""
+msgstr "მისამართის დაკვრა"
 
 #: ../src/libromdata/Audio/GBS.cpp:284
 msgctxt "GBS"
 msgid "Stack Pointer"
-msgstr ""
+msgstr "სტეკის მაჩვენებელი"
 
 #: ../src/libromdata/Audio/GBS.cpp:304
 msgctxt "GBS"
 msgid "VSync Address"
-msgstr ""
+msgstr "VSync-ის მისამართი"
 
 #: ../src/libromdata/Audio/GBS.cpp:309
 msgctxt "GBS"
 msgid "Timer Address"
-msgstr ""
+msgstr "ტაიმერის მისამართი"
 
 #: ../src/libromdata/Audio/NSF.cpp:237
 msgctxt "NSF"
 msgid "Load Address"
-msgstr ""
+msgstr "მისამართის ჩატვირთვა"
 
 #: ../src/libromdata/Audio/NSF.cpp:242
 msgctxt "NSF"
 msgid "Init Address"
-msgstr ""
+msgstr "მისამართის ინიციალიზაცია"
 
 #: ../src/libromdata/Audio/NSF.cpp:247
 msgctxt "NSF"
 msgid "Play Address"
-msgstr ""
+msgstr "მისამართის დაკვრა"
 
 #: ../src/libromdata/Audio/NSF.cpp:264
 msgctxt "NSF"
 msgid "TV System"
-msgstr ""
+msgstr "ტელევიზიის სისტემა"
 
 #: ../src/libromdata/Audio/NSF.cpp:273
 msgctxt "NSF"
 msgid "Expansion"
-msgstr ""
+msgstr "გავრცობა"
 
 #: ../src/libromdata/Audio/PSF.cpp:115
 msgctxt "PSF|System"
@@ -1490,7 +1497,7 @@ msgstr ""
 #: ../src/libromdata/Audio/PSF.cpp:117
 msgctxt "PSF|System"
 msgid "Sega Saturn"
-msgstr ""
+msgstr "Sega Saturn"
 
 #: ../src/libromdata/Audio/PSF.cpp:118
 msgctxt "PSF|System"
@@ -1505,7 +1512,7 @@ msgstr ""
 #: ../src/libromdata/Audio/PSF.cpp:120
 msgctxt "PSF|System"
 msgid "Nintendo 64"
-msgstr ""
+msgstr "Nintendo 64"
 
 #: ../src/libromdata/Audio/PSF.cpp:121
 msgctxt "PSF|System"
@@ -1515,17 +1522,17 @@ msgstr ""
 #: ../src/libromdata/Audio/PSF.cpp:122
 msgctxt "PSF|System"
 msgid "Super NES"
-msgstr ""
+msgstr "Super NES"
 
 #: ../src/libromdata/Audio/PSF.cpp:123
 msgctxt "PSF|System"
 msgid "Capcom QSound"
-msgstr ""
+msgstr "Capcom QSound"
 
 #: ../src/libromdata/Audio/PSF.cpp:325
 msgctxt "PSF"
 msgid "System"
-msgstr ""
+msgstr "სისტემა"
 
 #: ../src/libromdata/Audio/PSF.cpp:331 ../src/libromdata/Audio/SPC.cpp:886
 #: ../src/libromdata/Console/DreamcastSave.cpp:1419
@@ -1558,12 +1565,12 @@ msgstr ""
 #: ../src/libromdata/Audio/SPC.cpp:797
 msgctxt "RomData|Audio"
 msgid "Artist"
-msgstr ""
+msgstr "შემსრულებელი"
 
 #: ../src/libromdata/Audio/PSFTagParser.cpp:185
 msgctxt "PSF"
 msgid "Game"
-msgstr ""
+msgstr "თამაში"
 
 #: ../src/libromdata/Audio/PSFTagParser.cpp:192
 #: ../src/libromdata/Audio/VGM.cpp:408
@@ -1571,22 +1578,22 @@ msgstr ""
 #: ../src/libromdata/Console/SegaSaturn.cpp:549
 msgctxt "RomData"
 msgid "Release Date"
-msgstr ""
+msgstr "გამოსვლის თარიღი"
 
 #: ../src/libromdata/Audio/PSFTagParser.cpp:198
 msgctxt "RomData|Audio"
 msgid "Genre"
-msgstr ""
+msgstr "თამაში"
 
 #: ../src/libromdata/Audio/PSFTagParser.cpp:209
 msgctxt "PSF"
 msgid "Ripped By"
-msgstr ""
+msgstr "დარიპა"
 
 #: ../src/libromdata/Audio/PSFTagParser.cpp:224
 msgctxt "PSF"
 msgid "Volume"
-msgstr ""
+msgstr "ხმოვანება"
 
 #: ../src/libromdata/Audio/PSFTagParser.cpp:238
 #: ../src/libromdata/Audio/SAP.cpp:695 ../src/libromdata/Audio/SNDH.cpp:936
@@ -1594,7 +1601,7 @@ msgstr ""
 #: ../src/libromdata/Audio/SPC.cpp:821 ../src/libromdata/Audio/VGM.cpp:426
 msgctxt "RomData|Audio"
 msgid "Duration"
-msgstr ""
+msgstr "ხანგრძლივობა"
 
 #: ../src/libromdata/Audio/PSFTagParser.cpp:245
 msgctxt "PSF"
@@ -1604,67 +1611,67 @@ msgstr ""
 #: ../src/libromdata/Audio/PSFTagParser.cpp:251
 msgctxt "RomData|Audio"
 msgid "Comment"
-msgstr ""
+msgstr "კომენტარი"
 
 #: ../src/libromdata/Audio/PSFTagParser.cpp:257
 msgctxt "S98"
 msgid "System"
-msgstr ""
+msgstr "სისტემა"
 
 #: ../src/libromdata/Audio/S98.cpp:315
 msgctxt "S98"
 msgid "Timer Info"
-msgstr ""
+msgstr "ტაიმერის ინფორმაცია"
 
 #: ../src/libromdata/Audio/S98.cpp:382 ../src/libromdata/Audio/S98.cpp:385
 msgctxt "S98"
 msgid "(none)"
-msgstr ""
+msgstr "(არცერთი)"
 
 #: ../src/libromdata/Audio/S98.cpp:398
 msgctxt "S98"
 msgid "Chip"
-msgstr ""
+msgstr "ჩიპი"
 
 #: ../src/libromdata/Audio/S98.cpp:399
 msgctxt "S98"
 msgid "Model"
-msgstr ""
+msgstr "მოდელი"
 
 #: ../src/libromdata/Audio/S98.cpp:400
 msgctxt "S98"
 msgid "Clock Rate"
-msgstr ""
+msgstr "საათის სიხშირე"
 
 #: ../src/libromdata/Audio/S98.cpp:401
 msgctxt "S98"
 msgid "Pan"
-msgstr ""
+msgstr "კალამი"
 
 #: ../src/libromdata/Audio/S98.cpp:409
 msgctxt "S98"
 msgid "Device Info"
-msgstr ""
+msgstr "მოწყობილობის ინფორმაცია"
 
 #: ../src/libromdata/Audio/SAP.cpp:582 ../src/libromdata/Audio/SID.cpp:235
 msgctxt "RomData|Audio"
 msgid "Author"
-msgstr ""
+msgstr "ავტორი"
 
 #: ../src/libromdata/Audio/SAP.cpp:587 ../src/libromdata/Audio/SNDH.cpp:812
 msgctxt "RomData|Audio"
 msgid "Song Title"
-msgstr ""
+msgstr "სიმღერის სათაური"
 
 #: ../src/libromdata/Audio/SAP.cpp:592
 msgctxt "SAP"
 msgid "Date"
-msgstr ""
+msgstr "თარიღი"
 
 #: ../src/libromdata/Audio/SAP.cpp:596 ../src/libromdata/Audio/SID.cpp:261
 msgctxt "RomData|Audio"
 msgid "# of Songs"
-msgstr ""
+msgstr "სიმღერების #"
 
 #: ../src/libromdata/Audio/SAP.cpp:600
 msgctxt "RomData|Audio"
@@ -1674,7 +1681,7 @@ msgstr ""
 #: ../src/libromdata/Audio/SAP.cpp:607
 msgctxt "SAP|Flags"
 msgid "Stereo"
-msgstr ""
+msgstr "სტერეო"
 
 #: ../src/libromdata/Audio/SAP.cpp:614
 #: ../src/libromdata/Console/Intellivision.cpp:316
@@ -1684,22 +1691,22 @@ msgstr ""
 #: ../src/libromdata/Media/Wim.cpp:241 ../src/libromdata/Other/MachO.cpp:547
 msgctxt "RomData"
 msgid "Flags"
-msgstr ""
+msgstr "ალმები"
 
 #: ../src/libromdata/Audio/SAP.cpp:635
 msgctxt "SAP"
 msgid "Fastplay"
-msgstr ""
+msgstr "Fastplay"
 
 #: ../src/libromdata/Audio/SAP.cpp:644
 msgctxt "SAP"
 msgid "Init Address"
-msgstr ""
+msgstr "მისამართის ინიციალიზაცია"
 
 #: ../src/libromdata/Audio/SAP.cpp:650
 msgctxt "SAP"
 msgid "Music Address"
-msgstr ""
+msgstr "მუსიკის მისამართი"
 
 #: ../src/libromdata/Audio/SAP.cpp:657
 msgctxt "SAP"
@@ -1709,42 +1716,42 @@ msgstr ""
 #: ../src/libromdata/Audio/SAP.cpp:663
 msgctxt "SAP"
 msgid "COVOX Address"
-msgstr ""
+msgstr "COVOX-ის მისამართი"
 
 #: ../src/libromdata/Audio/SAP.cpp:694
 msgctxt "SAP|SongList"
 msgid "#"
-msgstr ""
+msgstr "#"
 
 #: ../src/libromdata/Audio/SAP.cpp:696
 msgctxt "SAP|SongList"
 msgid "Looping"
-msgstr ""
+msgstr "მარყუჟი"
 
 #: ../src/libromdata/Audio/SAP.cpp:703
 msgctxt "SAP"
 msgid "Song List"
-msgstr ""
+msgstr "სიმღერების სია"
 
 #: ../src/libromdata/Audio/SID.cpp:229
 msgctxt "RomData|Audio"
 msgid "Name"
-msgstr ""
+msgstr "სახელი"
 
 #: ../src/libromdata/Audio/SID.cpp:246
 msgctxt "SID"
 msgid "Load Address"
-msgstr ""
+msgstr "მისამართის ჩატვირთვა"
 
 #: ../src/libromdata/Audio/SID.cpp:251
 msgctxt "SID"
 msgid "Init Address"
-msgstr ""
+msgstr "მისამართის ინიციალიზაცია"
 
 #: ../src/libromdata/Audio/SID.cpp:256
 msgctxt "SID"
 msgid "Play Address"
-msgstr ""
+msgstr "მისამართის დაკვრა"
 
 #: ../src/libromdata/Audio/SID.cpp:265
 msgctxt "RomData|Audio"
@@ -1754,12 +1761,12 @@ msgstr ""
 #: ../src/libromdata/Audio/SNDH.cpp:824
 msgctxt "SNDH"
 msgid "Ripper"
-msgstr ""
+msgstr "რიპერი"
 
 #: ../src/libromdata/Audio/SNDH.cpp:830
 msgctxt "SNDH"
 msgid "Converter"
-msgstr ""
+msgstr "კონვერტორი"
 
 #: ../src/libromdata/Audio/SNDH.cpp:836
 msgctxt "SNDH"
@@ -1769,12 +1776,12 @@ msgstr ""
 #: ../src/libromdata/Audio/SNDH.cpp:841
 msgctxt "SNDH"
 msgid "# of Subtunes"
-msgstr ""
+msgstr "ქვესიმღერების #"
 
 #: ../src/libromdata/Audio/SNDH.cpp:851
 msgctxt "SNDH"
 msgid "VBlank Freq"
-msgstr ""
+msgstr "VBlank-ის სიხსირე"
 
 #. tr: Frequency of Timer A, Timer B, etc. ("Timer {:c}" is a single entity)
 #: ../src/libromdata/Audio/SNDH.cpp:858
@@ -1791,29 +1798,29 @@ msgstr ""
 #: ../src/libromdata/Audio/SNDH.cpp:930
 msgctxt "SNDH|SubtuneList"
 msgid "#"
-msgstr ""
+msgstr "#"
 
 #: ../src/libromdata/Audio/SNDH.cpp:935 ../src/libromdata/Audio/SNDH.cpp:938
 msgctxt "SNDH|SubtuneList"
 msgid "Name"
-msgstr ""
+msgstr "სახელი"
 
 #: ../src/libromdata/Audio/SNDH.cpp:952
 msgctxt "SNDH"
 msgid "Subtune List"
-msgstr ""
+msgstr "ქვესიმღერების სია"
 
 #: ../src/libromdata/Audio/SPC.cpp:777
 msgctxt "RomData|Audio"
 msgid "Song Name"
-msgstr ""
+msgstr "სიმღერის სახელი"
 
 #: ../src/libromdata/Audio/SPC.cpp:787 ../src/libromdata/Audio/VGM.cpp:405
 #: ../src/libromdata/Console/GameCubeBNR.cpp:626
 #: ../src/libromdata/Other/GameMaker.cpp:547
 msgctxt "RomData"
 msgid "Game Name"
-msgstr ""
+msgstr "თამაშის სახელი"
 
 #: ../src/libromdata/Audio/SPC.cpp:807
 msgctxt "SPC"
@@ -1823,78 +1830,78 @@ msgstr ""
 #: ../src/libromdata/Audio/SPC.cpp:831
 msgctxt "SPC"
 msgid "Dumper"
-msgstr ""
+msgstr "დამპერი"
 
 #: ../src/libromdata/Audio/SPC.cpp:841
 msgctxt "SPC"
 msgid "Dump Date"
-msgstr ""
+msgstr "დამპის თარიღი"
 
 #: ../src/libromdata/Audio/SPC.cpp:855
 #: ../src/librptexture/fileformat/TGA.cpp:931
 msgctxt "RomData"
 msgid "Comments"
-msgstr ""
+msgstr "კომენტარები"
 
 #: ../src/libromdata/Audio/SPC.cpp:868
 msgctxt "SPC|Emulator"
 msgid "Unknown"
-msgstr ""
+msgstr "უცნობი"
 
 #: ../src/libromdata/Audio/SPC.cpp:881
 msgctxt "SPC"
 msgid "Emulator Used"
-msgstr ""
+msgstr "გამოყენებული ემულატორი"
 
 #: ../src/libromdata/Audio/SPC.cpp:897
 msgctxt "SPC"
 msgid "OST Title"
-msgstr ""
+msgstr "OST-ის დასახელება"
 
 #: ../src/libromdata/Audio/SPC.cpp:907
 msgctxt "SPC"
 msgid "OST Disc #"
-msgstr ""
+msgstr "OST დისკის #"
 
 #: ../src/libromdata/Audio/SPC.cpp:929
 msgctxt "SPC"
 msgid "OST Track #"
-msgstr ""
+msgstr "OST ტრეკის #"
 
 #: ../src/libromdata/Audio/VGM.cpp:404
 msgctxt "RomData|Audio"
 msgid "Track Name"
-msgstr ""
+msgstr "ტრეკის სახელი"
 
 #: ../src/libromdata/Audio/VGM.cpp:406
 msgctxt "VGM"
 msgid "System Name"
-msgstr ""
+msgstr "სისტემის სახელი"
 
 #: ../src/libromdata/Audio/VGM.cpp:409
 msgctxt "VGM"
 msgid "VGM Ripper"
-msgstr ""
+msgstr "VGM რიპერი"
 
 #: ../src/libromdata/Audio/VGM.cpp:410
 msgctxt "RomData|Audio"
 msgid "Notes"
-msgstr ""
+msgstr "შენიშვნები"
 
 #: ../src/libromdata/Audio/VGM.cpp:431
 msgctxt "VGM"
 msgid "Loop Offset"
-msgstr ""
+msgstr "მარყუჟის წანაცვლება"
 
 #: ../src/libromdata/Audio/VGM.cpp:438
 msgctxt "VGM"
 msgid "Frame Rate"
-msgstr ""
+msgstr "კადრის სიხშირე"
 
 #: ../src/libromdata/Audio/VGM.cpp:444
 msgctxt "VGM"
 msgid "Sound Chips"
-msgstr ""
+msgstr "ხმის ჩიპები"
 
 #: ../src/libromdata/Audio/VGM.cpp:452
 #, c++-format
@@ -1912,7 +1919,7 @@ msgstr ""
 #, c++-format
 msgctxt "VGM"
 msgid "{:s} Flags"
-msgstr ""
+msgstr "{:s} ალმები"
 
 #: ../src/libromdata/Audio/VGM.cpp:489
 #, c++-format
@@ -1934,12 +1941,12 @@ msgstr ""
 #: ../src/libromdata/Audio/VGM.cpp:506
 msgctxt "VGM|PSGFlags"
 msgid "Output Negate"
-msgstr ""
+msgstr "გამოტანის უარყოფითად გადაკეთება"
 
 #: ../src/libromdata/Audio/VGM.cpp:507
 msgctxt "VGM|PSGFlags"
 msgid "Stereo"
-msgstr ""
+msgstr "სტერეო"
 
 #: ../src/libromdata/Audio/VGM.cpp:508
 msgctxt "VGM|PSGFlags"
@@ -1950,17 +1957,17 @@ msgstr ""
 #, c++-format
 msgctxt "VGM"
 msgid "{:s} IF reg"
-msgstr ""
+msgstr "{:s} IF რეგ"
 
 #: ../src/libromdata/Audio/VGM.cpp:561
 msgctxt "VGM|AY8910Flags"
 msgid "Legacy Output"
-msgstr ""
+msgstr "მოძველებული გამოტანა"
 
 #: ../src/libromdata/Audio/VGM.cpp:562
 msgctxt "VGM|AY8910Flags"
 msgid "Single Output"
-msgstr ""
+msgstr "ერთმაგი გამოტანა"
 
 #: ../src/libromdata/Audio/VGM.cpp:563
 msgctxt "VGM|AY8910Flags"
@@ -1970,7 +1977,7 @@ msgstr ""
 #: ../src/libromdata/Audio/VGM.cpp:564
 msgctxt "VGM|AY8910Flags"
 msgid "Raw Output"
-msgstr ""
+msgstr "დაუმუშავებელი გამოტანა"
 
 #: ../src/libromdata/Audio/VGM.cpp:711
 msgctxt "VGM|NESExpansion"
@@ -1980,7 +1987,7 @@ msgstr ""
 #: ../src/libromdata/Audio/VGM.cpp:712
 msgctxt "VGM|NESExpansion"
 msgid "(none)"
-msgstr ""
+msgstr "(არცერთი)"
 
 #: ../src/libromdata/Audio/VGM.cpp:714
 #, c++-format
@@ -2003,17 +2010,17 @@ msgstr ""
 #: ../src/libromdata/Common/ParamSFO.cpp:567
 msgctxt "SFO"
 msgid "Key"
-msgstr ""
+msgstr "გასაღები"
 
 #: ../src/libromdata/Common/ParamSFO.cpp:568
 msgctxt "SFO"
 msgid "Value"
-msgstr ""
+msgstr "მნიშვნელობა"
 
 #: ../src/libromdata/Common/ParamSFO.cpp:580
 msgctxt "SFO"
 msgid "Values"
-msgstr ""
+msgstr "მნიშვნელობები"
 
 #. tr: IMG_INT_ICON
 #: ../src/libromdata/config/ImageTypesConfig.cpp:97
@@ -2022,6 +2029,8 @@ msgid ""
 "Internal\n"
 "Icon"
 msgstr ""
+"შიდა\n"
+"ხატულა"
 
 #. tr: IMG_INT_BANNER
 #: ../src/libromdata/config/ImageTypesConfig.cpp:99
@@ -2086,6 +2095,8 @@ msgid ""
 "External\n"
 "Box"
 msgstr ""
+"გარე\n"
+"ყუთი"
 
 #. tr: IMG_EXT_TITLE_SCREEN
 #: ../src/libromdata/config/ImageTypesConfig.cpp:118
@@ -2099,13 +2110,13 @@ msgstr ""
 #: ../src/libromdata/config/ImageTypesConfig.cpp:146
 msgctxt "ImageTypesConfig|SysName"
 msgid "amiibo"
-msgstr ""
+msgstr "amiibo"
 
 #. tr: NintendoBadge
 #: ../src/libromdata/config/ImageTypesConfig.cpp:148
 msgctxt "ImageTypesConfig|SysName"
 msgid "Badge Arcade"
-msgstr ""
+msgstr "არკადის გულსაკიდი"
 
 #. tr: DreamcastSave
 #: ../src/libromdata/config/ImageTypesConfig.cpp:150
@@ -2135,7 +2146,7 @@ msgstr ""
 #: ../src/libromdata/config/ImageTypesConfig.cpp:158
 msgctxt "ImageTypesConfig|SysName"
 msgid "Nintendo 3DS"
-msgstr ""
+msgstr "Nintendo 3DS"
 
 #. tr: PlayStationDisc (PS1 and PS2)
 #: ../src/libromdata/config/ImageTypesConfig.cpp:160
@@ -2153,7 +2164,7 @@ msgstr ""
 #: ../src/libromdata/config/ImageTypesConfig.cpp:164
 msgctxt "ImageTypesConfig|SysName"
 msgid "Wii U"
-msgstr ""
+msgstr "Wii U"
 
 #. tr: WiiUPackage
 #: ../src/libromdata/config/ImageTypesConfig.cpp:166
@@ -2165,7 +2176,7 @@ msgstr ""
 #: ../src/libromdata/config/ImageTypesConfig.cpp:168
 msgctxt "ImageTypesConfig|SysName"
 msgid "Wii WAD Files"
-msgstr ""
+msgstr "Wii-ის WAD ფაილები"
 
 #: ../src/libromdata/Console/Atari7800.cpp:204
 #: ../src/libromdata/Console/CBMCart.cpp:301
@@ -2199,17 +2210,17 @@ msgstr ""
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:384
 msgctxt "RomData"
 msgid "Title"
-msgstr ""
+msgstr "დასახელება"
 
 #: ../src/libromdata/Console/Atari7800.cpp:212
 msgctxt "Atari7800"
 msgid "TV Type"
-msgstr ""
+msgstr "ტელევიზორის ტიპი"
 
 #: ../src/libromdata/Console/Atari7800.cpp:226
 msgctxt "Atari7800|ControllerType"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Console/Atari7800.cpp:227
 msgctxt "Atari7800|ControllerType"
@@ -2219,17 +2230,17 @@ msgstr ""
 #: ../src/libromdata/Console/Atari7800.cpp:228
 msgctxt "Atari7800|ControllerType"
 msgid "Light Gun"
-msgstr ""
+msgstr "სინათლის პისტოლეტი"
 
 #: ../src/libromdata/Console/Atari7800.cpp:229
 msgctxt "Atari7800|ControllerType"
 msgid "Paddle"
-msgstr ""
+msgstr "Paddle"
 
 #: ../src/libromdata/Console/Atari7800.cpp:230
 msgctxt "Atari7800|ControllerType"
 msgid "Trak-Ball"
-msgstr ""
+msgstr "ტრეკბოლი"
 
 #: ../src/libromdata/Console/Atari7800.cpp:231
 msgctxt "Atari7800|ControllerType"
@@ -2254,7 +2265,7 @@ msgstr ""
 #: ../src/libromdata/Console/Atari7800.cpp:235
 msgctxt "Atari7800|ControllerType"
 msgid "Mouse (Amiga)"
-msgstr ""
+msgstr "თაგუნა (Amiga)"
 
 #: ../src/libromdata/Console/Atari7800.cpp:242
 #, c++-format
@@ -2274,17 +2285,17 @@ msgstr ""
 #: ../src/libromdata/Handheld/NGPC.cpp:342 ../src/libromdata/Other/ELF.cpp:2137
 msgctxt "RomData"
 msgid "Entry Point"
-msgstr ""
+msgstr "შესვლის წერტილი"
 
 #: ../src/libromdata/Console/ColecoVision.cpp:459
 msgctxt "ColecoVision"
 msgid "IRQ Vector"
-msgstr ""
+msgstr "IRQ ვექტორი"
 
 #: ../src/libromdata/Console/ColecoVision.cpp:462
 msgctxt "ColecoVision"
 msgid "NMI Vector"
-msgstr ""
+msgstr "NMI ვექტორი"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:176
 #: ../src/libromdata/Console/GameCubeRegions.cpp:61
@@ -2299,7 +2310,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:421
 msgctxt "Region"
 msgid "Japan"
-msgstr ""
+msgstr "იაპონია"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:177
 #: ../src/libromdata/Console/GameCubeRegions.cpp:119
@@ -2310,7 +2321,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:424
 msgctxt "Region"
 msgid "USA"
-msgstr ""
+msgstr "აშშ"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:178
 #: ../src/libromdata/Console/MegaDrive.cpp:257
@@ -2321,12 +2332,12 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:305
 msgctxt "Region"
 msgid "Europe"
-msgstr ""
+msgstr "ევროპა"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:685
 msgctxt "Dreamcast"
 msgid "Dreamcast"
-msgstr ""
+msgstr "Dreamcast"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:693
 #: ../src/libromdata/Console/GameCube.cpp:1526
@@ -2350,12 +2361,12 @@ msgstr ""
 #: ../src/libromdata/Media/ISO.cpp:580
 msgctxt "RomData"
 msgid "Publisher"
-msgstr ""
+msgstr "გამომცემი"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:698
 msgctxt "Dreamcast"
 msgid "Product #"
-msgstr ""
+msgstr "პროდუქტის #"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:703
 #: ../src/libromdata/Console/PlayStationDisc.cpp:777
@@ -2371,7 +2382,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:839
 msgctxt "RomData"
 msgid "Version"
-msgstr ""
+msgstr "ვერსია"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:718
 #: ../src/libromdata/Console/GameCube.cpp:1529
@@ -2380,7 +2391,7 @@ msgstr ""
 #: ../src/libromdata/Media/ISO.cpp:567
 msgctxt "RomData"
 msgid "Disc #"
-msgstr ""
+msgstr "დისკის #"
 
 #. tr: Disc X of Y (for multi-disc games)
 #: ../src/libromdata/Console/Dreamcast.cpp:721
@@ -2410,14 +2421,14 @@ msgstr ""
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:433
 msgctxt "RomData"
 msgid "Region Code"
-msgstr ""
+msgstr "რეგიონის კოდი"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:733
 #: ../src/libromdata/Console/PlayStationDisc.cpp:748
 #: ../src/libromdata/Console/XboxDisc.cpp:1070
 msgctxt "RomData"
 msgid "Boot Filename"
-msgstr ""
+msgstr "ჩატვირთვის ფაილის სახელი"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:747
 #: ../src/libromdata/Console/Dreamcast.cpp:751
@@ -2427,7 +2438,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/DMG.cpp:788
 msgctxt "RomData"
 msgid "Checksum"
-msgstr ""
+msgstr "საკონტროლო ჯამი"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:748
 #, c++-format
@@ -2450,38 +2461,38 @@ msgstr ""
 #: ../src/libromdata/Console/Dreamcast.cpp:780
 msgctxt "Dreamcast|OSSupport"
 msgid "Windows CE"
-msgstr ""
+msgstr "Windows CE"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:782
 msgctxt "Dreamcast|OSSupport"
 msgid "VGA Box"
-msgstr ""
+msgstr "VGA ადაპტერი"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:786
 msgctxt "Dreamcast"
 msgid "OS Support"
-msgstr ""
+msgstr "ოს-ის მხარდაჭერა"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:791
 msgctxt "Dreamcast|Expansion"
 msgid "Other"
-msgstr ""
+msgstr "სხვა"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:792
 msgctxt "Dreamcast|Expansion"
 msgid "Jump Pack"
-msgstr ""
+msgstr "ვიბრაციის პაკეტი"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:793
 msgctxt "Dreamcast|Expansion"
 msgid "Microphone"
-msgstr ""
+msgstr "მიკროფონი"
 
 #. tr: "VMS" in Japan; "VMU" in USA; "VM" in Europe
 #: ../src/libromdata/Console/Dreamcast.cpp:795
 msgctxt "Dreamcast|Expansion"
 msgid "VMU"
-msgstr ""
+msgstr "VM"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:799
 msgctxt "Dreamcast"
@@ -2496,32 +2507,32 @@ msgstr ""
 #: ../src/libromdata/Console/Dreamcast.cpp:805
 msgctxt "Dreamcast|ReqCtrl"
 msgid "C Button"
-msgstr ""
+msgstr "ღილაკი C"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:806
 msgctxt "Dreamcast|ReqCtrl"
 msgid "D Button"
-msgstr ""
+msgstr "ღილაკი D"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:807
 msgctxt "Dreamcast|ReqCtrl"
 msgid "X Button"
-msgstr ""
+msgstr "ღილაკი X"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:808
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Y Button"
-msgstr ""
+msgstr "ღილაკი Y"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:809
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Z Button"
-msgstr ""
+msgstr "ღილაკი Z"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:810
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Second D-Pad"
-msgstr ""
+msgstr "მეორე D-Pad"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:811
 msgctxt "Dreamcast|ReqCtrl"
@@ -2536,22 +2547,22 @@ msgstr ""
 #: ../src/libromdata/Console/Dreamcast.cpp:813
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog H1"
-msgstr ""
+msgstr "ანალოგური H1"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:814
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog V1"
-msgstr ""
+msgstr "ანალოგური V1"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:815
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog H2"
-msgstr ""
+msgstr "ანალოგური H2"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:816
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog V2"
-msgstr ""
+msgstr "ანალოგური V2"
 
 #. tr: Required controller features
 #: ../src/libromdata/Console/Dreamcast.cpp:821
@@ -2562,17 +2573,17 @@ msgstr ""
 #: ../src/libromdata/Console/Dreamcast.cpp:826
 msgctxt "Dreamcast|OptCtrl"
 msgid "Light Gun"
-msgstr ""
+msgstr "სინათლის პისტოლეტი"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:827
 msgctxt "Dreamcast|OptCtrl"
 msgid "Keyboard"
-msgstr ""
+msgstr "კლავიატურა"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:828
 msgctxt "Dreamcast|OptCtrl"
 msgid "Mouse"
-msgstr ""
+msgstr "თაგუნა"
 
 #. tr: Optional controller features
 #: ../src/libromdata/Console/Dreamcast.cpp:833
@@ -2602,7 +2613,7 @@ msgstr ""
 #: ../src/libromdata/Other/Lua.cpp:755 ../src/libromdata/Other/Lua.cpp:758
 msgctxt "RomData"
 msgid "Warning"
-msgstr ""
+msgstr "გაფრთხილება"
 
 #. tr: VMS file is missing.
 #: ../src/libromdata/Console/DreamcastSave.cpp:1339
@@ -2630,43 +2641,43 @@ msgstr ""
 #: ../src/libromdata/Console/DreamcastSave.cpp:1366
 msgctxt "DreamcastSave"
 msgid "VMI Copyright"
-msgstr ""
+msgstr "VMI-ის საავტორო უფლებები"
 
 #. tr: ICONDATA_VMS
 #: ../src/libromdata/Console/DreamcastSave.cpp:1376
 msgctxt "DreamcastSave"
 msgid "Icon Data"
-msgstr ""
+msgstr "ხატულას მონაცემები"
 
 #. tr: No file type entry.
 #: ../src/libromdata/Console/DreamcastSave.cpp:1382
 msgctxt "DreamcastSave"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #. tr: Save file.
 #: ../src/libromdata/Console/DreamcastSave.cpp:1386
 #: ../src/libromdata/Console/DreamcastSave.cpp:1401
 msgctxt "DreamcastSave"
 msgid "Save Data"
-msgstr ""
+msgstr "მონაცემების შენახვა"
 
 #. tr: VMU game file. ("VMS" in Japan; "VMU" in USA; "VM" in Europe)
 #: ../src/libromdata/Console/DreamcastSave.cpp:1390
 #: ../src/libromdata/Console/DreamcastSave.cpp:1405
 msgctxt "DreamcastSave"
 msgid "VMU Game"
-msgstr ""
+msgstr "VM თამაში"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1413
 msgctxt "DreamcastSave"
 msgid "File Type"
-msgstr ""
+msgstr "ფაილის ტიპი"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1430
 msgctxt "DreamcastSave"
 msgid "Copy OK"
-msgstr ""
+msgstr "კოპირება წარმატებულია"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1433
 msgctxt "DreamcastSave"
@@ -2676,7 +2687,7 @@ msgstr ""
 #: ../src/libromdata/Console/DreamcastSave.cpp:1437
 msgctxt "DreamcastSave"
 msgid "Copy Protect"
-msgstr ""
+msgstr "ასლის დაცვა"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1448
 #: ../src/libromdata/Console/GameCubeSave.cpp:1046
@@ -2684,12 +2695,12 @@ msgstr ""
 #: ../src/libromdata/Other/NintendoBadge.cpp:742
 msgctxt "RomData"
 msgid "Filename"
-msgstr ""
+msgstr "ფაილის სახელი"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1452
 msgctxt "DreamcastSave"
 msgid "Creation Time"
-msgstr ""
+msgstr "შექმნის დრო"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1459
 msgctxt "DreamcastSave"
@@ -2704,12 +2715,12 @@ msgstr ""
 #: ../src/libromdata/Console/DreamcastSave.cpp:1492
 msgctxt "DreamcastSave"
 msgid "Game Title"
-msgstr ""
+msgstr "თამაშის სახელი"
 
 #: ../src/libromdata/Console/GameCubeBNR.cpp:627
 msgctxt "GameCubeBNR"
 msgid "Company"
-msgstr ""
+msgstr "კომპანია"
 
 #: ../src/libromdata/Console/GameCubeBNR.cpp:628
 #: ../src/libromdata/Console/GameCubeSave.cpp:1051
@@ -2720,14 +2731,14 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_manifest.cpp:261
 msgctxt "RomData"
 msgid "Description"
-msgstr ""
+msgstr "აღწერა"
 
 #: ../src/libromdata/Console/GameCubeBNR.cpp:875
 #: ../src/libromdata/Console/GameCube.cpp:1642
 #: ../src/libromdata/Console/WiiBNR.cpp:242
 msgctxt "GameCube"
 msgid "Game Info"
-msgstr ""
+msgstr "თამაშის ინფორმაცია"
 
 #: ../src/libromdata/Console/GameCube.cpp:483
 #: ../src/libromdata/Console/SNES.cpp:645
@@ -2785,7 +2796,7 @@ msgstr ""
 #, c++-format
 msgctxt "Wii"
 msgid "{0:s} ({1:s})"
-msgstr ""
+msgstr "{0:s} ({1:s})"
 
 #: ../src/libromdata/Console/GameCube.cpp:756
 #: ../src/libromdata/Console/SNES.cpp:1651
@@ -2817,7 +2828,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:535
 msgctxt "RomData"
 msgid "Game ID"
-msgstr ""
+msgstr "თამაშის ID"
 
 #: ../src/libromdata/Console/GameCube.cpp:1531
 #: ../src/libromdata/Console/N64.cpp:347 ../src/libromdata/Console/NES.cpp:1592
@@ -2829,7 +2840,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:544
 msgctxt "RomData"
 msgid "Revision"
-msgstr ""
+msgstr "რევიზია"
 
 #: ../src/libromdata/Console/GameCube.cpp:1576
 #: ../src/libromdata/Console/WiiTicket.cpp:503
@@ -2840,27 +2851,27 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:958
 msgctxt "Nintendo"
 msgid "Title ID"
-msgstr ""
+msgstr "დასახელების ID"
 
 #: ../src/libromdata/Console/GameCube.cpp:1583
 #: ../src/libromdata/Console/WiiTMD.cpp:454
 #: ../src/libromdata/Console/WiiWAD.cpp:1077
 msgctxt "Wii"
 msgid "DVD Video"
-msgstr ""
+msgstr "DVD-ვიდეო"
 
 #: ../src/libromdata/Console/GameCube.cpp:1585
 #: ../src/libromdata/Console/WiiTMD.cpp:456
 #: ../src/libromdata/Console/WiiWAD.cpp:1079
 msgctxt "Wii"
 msgid "Access Rights"
-msgstr ""
+msgstr "წვდომის უფლებები"
 
 #: ../src/libromdata/Console/GameCube.cpp:1592
 #: ../src/libromdata/Console/WiiWAD.cpp:1066
 msgctxt "Wii"
 msgid "IOS Version"
-msgstr ""
+msgstr "IOS-ის ვერსია"
 
 #: ../src/libromdata/Console/GameCube.cpp:1632
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:502
@@ -2870,7 +2881,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1068
 msgctxt "RomData"
 msgid "Age Ratings"
-msgstr ""
+msgstr "ასაკის რეიტინგები"
 
 #: ../src/libromdata/Console/GameCube.cpp:1647
 msgctxt "GameCube"
@@ -2881,83 +2892,83 @@ msgstr ""
 #, c++-format
 msgctxt "GameCube"
 msgid "ERROR: {:s}"
-msgstr ""
+msgstr "შეცდომა: {:s}"
 
 #. tr: Update version included on this disc
 #: ../src/libromdata/Console/GameCube.cpp:1763
 msgctxt "Nintendo"
 msgid "Update"
-msgstr ""
+msgstr "განახლება"
 
 #. tr: No update partition is on the disc.
 #: ../src/libromdata/Console/GameCube.cpp:1787
 msgctxt "Nintendo"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Console/GameCube.cpp:1796
 msgctxt "Nintendo"
 msgid "Update Date"
-msgstr ""
+msgstr "განახლების თარიღი"
 
 #. tr: GameCubePrivate::RVL_PT_GAME (Game partition)
 #: ../src/libromdata/Console/GameCube.cpp:1821
 msgctxt "Wii|Partition"
 msgid "Game"
-msgstr ""
+msgstr "თამაში"
 
 #. tr: GameCubePrivate::RVL_PT_UPDATE (Update partition)
 #: ../src/libromdata/Console/GameCube.cpp:1823
 msgctxt "Wii|Partition"
 msgid "Update"
-msgstr ""
+msgstr "განახლება"
 
 #. tr: GameCubePrivate::RVL_PT_CHANNEL (Channel partition)
 #: ../src/libromdata/Console/GameCube.cpp:1825
 msgctxt "Wii|Partition"
 msgid "Channel"
-msgstr ""
+msgstr "არხი"
 
 #. tr: Unknown used size.
 #: ../src/libromdata/Console/GameCube.cpp:1865
 msgctxt "Wii|Partition"
 msgid "Unknown"
-msgstr ""
+msgstr "უცნობი"
 
 #. tr: Partition number.
 #: ../src/libromdata/Console/GameCube.cpp:1875
 msgctxt "Wii|Partition"
 msgid "#"
-msgstr ""
+msgstr "#"
 
 #. tr: Partition type.
 #: ../src/libromdata/Console/GameCube.cpp:1877
 msgctxt "Wii|Partition"
 msgid "Type"
-msgstr ""
+msgstr "ტიპი"
 
 #. tr: Encryption key.
 #: ../src/libromdata/Console/GameCube.cpp:1879
 msgctxt "Wii|Partition"
 msgid "Key"
-msgstr ""
+msgstr "გასაღები"
 
 #. tr: Actual data used within the partition.
 #: ../src/libromdata/Console/GameCube.cpp:1881
 msgctxt "Wii|Partition"
 msgid "Used Size"
-msgstr ""
+msgstr "გამოყენებული ზომა"
 
 #. tr: Total size of the partition.
 #: ../src/libromdata/Console/GameCube.cpp:1883
 msgctxt "Wii|Partition"
 msgid "Total Size"
-msgstr ""
+msgstr "სრული ზომა"
 
 #: ../src/libromdata/Console/GameCube.cpp:1891
 msgctxt "Wii"
 msgid "Partitions"
-msgstr ""
+msgstr "დანაყოფები"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:64
 #: ../src/libromdata/Console/GameCubeRegions.cpp:145
@@ -2965,7 +2976,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiCommon.cpp:187
 msgctxt "Region"
 msgid "Taiwan"
-msgstr ""
+msgstr "ტაივანი"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:69
 #: ../src/libromdata/Console/GameCubeRegions.cpp:129
@@ -2975,7 +2986,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1209
 msgctxt "Region"
 msgid "South Korea"
-msgstr ""
+msgstr "სამხრეთი კორეა"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:71
 #: ../src/libromdata/Console/GameCubeRegions.cpp:137
@@ -2986,7 +2997,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1206
 msgctxt "Region"
 msgid "China"
-msgstr ""
+msgstr "ჩინეთი"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:89
 msgctxt "Region"
@@ -2997,70 +3008,70 @@ msgstr ""
 #: ../src/libromdata/Console/SNES.cpp:821
 msgctxt "Region"
 msgid "Germany"
-msgstr ""
+msgstr "გერმანია"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:94
 #: ../src/libromdata/Console/SNES.cpp:818
 msgctxt "Region"
 msgid "France"
-msgstr ""
+msgstr "საფრანგეთი"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:96
 #: ../src/libromdata/Console/SNES.cpp:819
 msgctxt "Region"
 msgid "Netherlands"
-msgstr ""
+msgstr "ნიდერლანდები"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:98
 #: ../src/libromdata/Console/SNES.cpp:822
 msgctxt "Region"
 msgid "Italy"
-msgstr ""
+msgstr "იტალია"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:100
 msgctxt "Region"
 msgid "Russia"
-msgstr ""
+msgstr "რუსეთი"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:102
 #: ../src/libromdata/Console/SNES.cpp:820
 msgctxt "Region"
 msgid "Spain"
-msgstr ""
+msgstr "ესპანეთი"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:104
 #: ../src/libromdata/Console/SNES.cpp:829
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:306
 msgctxt "Region"
 msgid "Australia"
-msgstr ""
+msgstr "ავსტრალია"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:153
 #: ../src/libromdata/Handheld/NintendoDS.cpp:882
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1218
 msgctxt "Region"
 msgid "Region-Free"
-msgstr ""
+msgstr "შეუზღუდავი"
 
 #: ../src/libromdata/Console/GameCubeSave.cpp:1055
 msgctxt "GameCubeSave"
 msgid "Last Modified"
-msgstr ""
+msgstr "ბოლო ცვლილება"
 
 #: ../src/libromdata/Console/GameCubeSave.cpp:1069
 msgctxt "GameCubeSave"
 msgid "Mode"
-msgstr ""
+msgstr "რეჟიმი"
 
 #: ../src/libromdata/Console/GameCubeSave.cpp:1072
 msgctxt "GameCubeSave"
 msgid "Copy Count"
-msgstr ""
+msgstr "ასლების რაოდენობა"
 
 #: ../src/libromdata/Console/GameCubeSave.cpp:1074
 msgctxt "GameCubeSave"
 msgid "Blocks"
-msgstr ""
+msgstr "ბლოკები"
 
 #: ../src/libromdata/Console/Intellivision.cpp:295
 msgctxt "Intellivision"
@@ -3086,12 +3097,12 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:603
 msgctxt "RomData"
 msgid "ISBN"
-msgstr ""
+msgstr "ISBN"
 
 #: ../src/libromdata/Console/iQuePlayer.cpp:663
 msgctxt "iQuePlayer"
 msgid "Content ID"
-msgstr ""
+msgstr "შემცველობის ID"
 
 #: ../src/libromdata/Console/iQuePlayer.cpp:673
 #: ../src/libromdata/Console/WiiTicket.cpp:512
@@ -3099,28 +3110,28 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2187
 msgctxt "Nintendo"
 msgid "Console ID"
-msgstr ""
+msgstr "კონსოლის ID"
 
 #: ../src/libromdata/Console/iQuePlayer.cpp:688
 msgctxt "iQuePlayer"
 msgid "HW Access"
-msgstr ""
+msgstr "წვდომა აპარატურასთან"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:255
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:304
 msgctxt "Region"
 msgid "Asia"
-msgstr ""
+msgstr "აზია"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:446
 msgctxt "MegaDrive"
 msgid "System"
-msgstr ""
+msgstr "სისტემა"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:449
 msgctxt "RomData"
 msgid "Copyright"
-msgstr ""
+msgstr "საავტორო უფლებები"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:457
 msgctxt "MegaDrive"
@@ -3130,177 +3141,177 @@ msgstr ""
 #: ../src/libromdata/Console/MegaDrive.cpp:459
 msgctxt "MegaDrive"
 msgid "Export Title"
-msgstr ""
+msgstr "სათაურის გატანა"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:462
 msgctxt "MegaDrive"
 msgid "Serial Number"
-msgstr ""
+msgstr "სერიული ნომერი"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:473
 msgctxt "MegaDrive|I/O"
 msgid "Joypad"
-msgstr ""
+msgstr "Joypad"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:474
 msgctxt "MegaDrive|I/O"
 msgid "6-button"
-msgstr ""
+msgstr "6-ღილაკიანი"
 
 #. tr: Use a locale-specific abbreviation for Sega Master System, e.g. MK3 or similar.
 #: ../src/libromdata/Console/MegaDrive.cpp:476
 msgctxt "MegaDrive|I/O"
 msgid "SMS Joypad"
-msgstr ""
+msgstr "SMS Joypad"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:477
 msgctxt "MegaDrive|I/O"
 msgid "Analog"
-msgstr ""
+msgstr "ანალოგური"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:478
 msgctxt "MegaDrive|I/O"
 msgid "Team Player"
-msgstr ""
+msgstr "მრავალმოთამაშიანი"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:479
 msgctxt "MegaDrive|I/O"
 msgid "Light Gun"
-msgstr ""
+msgstr "სინათლის პისტოლეტი"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:480
 msgctxt "MegaDrive|I/O"
 msgid "Keyboard"
-msgstr ""
+msgstr "კლავიატურა"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:481
 msgctxt "MegaDrive|I/O"
 msgid "Serial I/O"
-msgstr ""
+msgstr "სერიული I/O"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:482
 msgctxt "MegaDrive|I/O"
 msgid "Printer"
-msgstr ""
+msgstr "პრინტერი"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:483
 msgctxt "MegaDrive|I/O"
 msgid "Tablet"
-msgstr ""
+msgstr "ტაბლეტი"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:484
 msgctxt "MegaDrive|I/O"
 msgid "Trackball"
-msgstr ""
+msgstr "ტრეკბოლი"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:485
 msgctxt "MegaDrive|I/O"
 msgid "Paddle"
-msgstr ""
+msgstr "Paddle"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:486
 msgctxt "MegaDrive|I/O"
 msgid "Floppy Drive"
-msgstr ""
+msgstr "დისკეტა"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:487
 msgctxt "MegaDrive|I/O"
 msgid "CD-ROM"
-msgstr ""
+msgstr "CD-ROM"
 
 #. tr: Brand name; only translate if the name was changed in your region.
 #: ../src/libromdata/Console/MegaDrive.cpp:489
 msgctxt "MegaDrive|I/O"
 msgid "Activator"
-msgstr ""
+msgstr "გამააქტიურებელი"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:490
 msgctxt "MegaDrive|I/O"
 msgid "Mega Mouse"
-msgstr ""
+msgstr "Mega Mouse"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:510
 msgctxt "MegaDrive|I/O"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:512
 msgctxt "MegaDrive"
 msgid "I/O Support"
-msgstr ""
+msgstr "I/O-ის მხარდაჭერა"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:516
 msgctxt "MegaDrive"
 msgid "ROM Range"
-msgstr ""
+msgstr "ROM-ის შუალედი"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:522
 msgctxt "MegaDrive"
 msgid "RAM Range"
-msgstr ""
+msgstr "RAM-ის შუალედი"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:529
 msgctxt "MegaDrive"
 msgid "SRAM Range"
-msgstr ""
+msgstr "SRAM-ის შუალედი"
 
 #. tr: SRAM format: Even bytes only.
 #: ../src/libromdata/Console/MegaDrive.cpp:540
 msgctxt "MegaDrive|SRAM"
 msgid "(even only)"
-msgstr ""
+msgstr "(მხოლოდ ლუწი)"
 
 #. tr: SRAM format: Odd bytes only.
 #: ../src/libromdata/Console/MegaDrive.cpp:544
 msgctxt "MegaDrive|SRAM"
 msgid "(odd only)"
-msgstr ""
+msgstr "(მხოლოდ კენტი)"
 
 #. tr: SRAM format: 16-bit.
 #: ../src/libromdata/Console/MegaDrive.cpp:549
 msgctxt "MegaDrive|SRAM"
 msgid "(16-bit)"
-msgstr ""
+msgstr "(16-ბიტიანი)"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:558
 msgctxt "MegaDrive"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:573
 msgctxt "MegaDrive"
 msgid "ExtROM Range"
-msgstr ""
+msgstr "ExtROM-ის შუალედი"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:679
 #: ../src/libromdata/Handheld/PokemonMini.cpp:361
 msgctxt "RomData|VectorTable"
 msgid "#"
-msgstr ""
+msgstr "#"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:680
 #: ../src/libromdata/Handheld/PokemonMini.cpp:362
 msgctxt "RomData|VectorTable"
 msgid "Vector"
-msgstr ""
+msgstr "ვექტორი"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:681
 #: ../src/libromdata/Handheld/PokemonMini.cpp:363
 msgctxt "RomData|VectorTable"
 msgid "Address"
-msgstr ""
+msgstr "მისამართი"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:689
 #: ../src/libromdata/Console/MegaDrive.cpp:1457
 #: ../src/libromdata/Handheld/PokemonMini.cpp:370
 msgctxt "RomData"
 msgid "Vector Table"
-msgstr ""
+msgstr "ვექტორების ცხრილი"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:1452
 msgctxt "MegaDrive"
 msgid "ROM Header"
-msgstr ""
+msgstr "ROM-ის თავსართი"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:1464
 msgctxt "MegaDrive"
@@ -3310,7 +3321,7 @@ msgstr ""
 #: ../src/libromdata/Console/N64.cpp:344
 msgctxt "N64"
 msgid "Game ID"
-msgstr ""
+msgstr "თამაშის ID"
 
 #: ../src/libromdata/Console/N64.cpp:355
 #: ../src/libromdata/Console/WiiTMD.cpp:447
@@ -3318,27 +3329,27 @@ msgstr ""
 #: ../src/libromdata/Handheld/PSP.cpp:646 ../src/libromdata/Other/ELF.cpp:2119
 msgctxt "RomData"
 msgid "OS Version"
-msgstr ""
+msgstr "ოს-ის ვერსია"
 
 #: ../src/libromdata/Console/N64.cpp:368
 msgctxt "N64"
 msgid "Clock Rate"
-msgstr ""
+msgstr "საათის სიხშირე"
 
 #: ../src/libromdata/Console/N64.cpp:372
 msgctxt "N64|ClockRate"
 msgid "0 (default)"
-msgstr ""
+msgstr "0 (ნაგულისხმევი)"
 
 #: ../src/libromdata/Console/N64.cpp:379
 msgctxt "N64"
 msgid "CRCs"
-msgstr ""
+msgstr "CRC-ები"
 
 #: ../src/libromdata/Console/NES.cpp:1350
 msgctxt "NES|Format"
 msgid "Archaic iNES"
-msgstr ""
+msgstr "არქაული iNES"
 
 #: ../src/libromdata/Console/NES.cpp:1409
 msgctxt "NES|Format"
@@ -3363,7 +3374,7 @@ msgstr ""
 #: ../src/libromdata/Console/NES.cpp:1437
 msgctxt "NES"
 msgid "Format"
-msgstr ""
+msgstr "ფორმატი"
 
 #. tr: ROM format, e.g. iNES or FDS disk image.
 #: ../src/libromdata/Console/NES.cpp:1448
@@ -3375,7 +3386,7 @@ msgstr ""
 #: ../src/libromdata/Console/NES.cpp:1462
 msgctxt "NES"
 msgid "Mapper"
-msgstr ""
+msgstr "Mapper"
 
 #. tr: Print the mapper ID followed by the mapper name.
 #. tr: Print the submapper ID followed by the submapper name.
@@ -3386,7 +3397,7 @@ msgstr ""
 #, c++-format
 msgctxt "NES|Mapper"
 msgid "{0:d} - {1:s}"
-msgstr ""
+msgstr "{0:d} - {1:s}"
 
 #: ../src/libromdata/Console/NES.cpp:1484
 msgctxt "NES"
@@ -3396,12 +3407,12 @@ msgstr ""
 #: ../src/libromdata/Console/NES.cpp:1503
 msgctxt "NES"
 msgid "Submapper"
-msgstr ""
+msgstr "Submapper"
 
 #: ../src/libromdata/Console/NES.cpp:1509
 msgctxt "NES"
 msgid "TNES Mapper"
-msgstr ""
+msgstr "TNES Mapper"
 
 #: ../src/libromdata/Console/NES.cpp:1517
 msgctxt "NES|TVMode"
@@ -3411,7 +3422,7 @@ msgstr ""
 #: ../src/libromdata/Console/NES.cpp:1521
 msgctxt "NES"
 msgid "TV Mode"
-msgstr ""
+msgstr "ტელევიზორის რეჟიმი"
 
 #: ../src/libromdata/Console/NES.cpp:1528
 msgctxt "NES|Features"
@@ -3421,12 +3432,12 @@ msgstr ""
 #: ../src/libromdata/Console/NES.cpp:1530
 msgctxt "NES|Features"
 msgid "Save RAM"
-msgstr ""
+msgstr "RAM-ის შენახვა"
 
 #: ../src/libromdata/Console/NES.cpp:1532
 msgctxt "NES|Features"
 msgid "Trainer"
-msgstr ""
+msgstr "მწვრთნელი"
 
 #: ../src/libromdata/Console/NES.cpp:1535
 #: ../src/libromdata/Console/SufamiTurbo.cpp:390
@@ -3436,24 +3447,24 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:626
 msgctxt "RomData"
 msgid "Features"
-msgstr ""
+msgstr "თვისებები"
 
 #: ../src/libromdata/Console/NES.cpp:1540
 #: ../src/libromdata/Console/NES.cpp:1782
 msgctxt "NES"
 msgid "PRG ROM Size"
-msgstr ""
+msgstr "PRG ROM-ის ზომა"
 
 #: ../src/libromdata/Console/NES.cpp:1544
 #: ../src/libromdata/Console/NES.cpp:1793
 msgctxt "NES"
 msgid "CHR ROM Size"
-msgstr ""
+msgstr "CHR ROM-ის ზომა"
 
 #: ../src/libromdata/Console/NES.cpp:1550
 msgctxt "NES"
 msgid "PRG RAM Size"
-msgstr ""
+msgstr "PRG RAM-ის ზომა"
 
 #. tr: Save RAM with a battery backup.
 #: ../src/libromdata/Console/NES.cpp:1555
@@ -3465,7 +3476,7 @@ msgstr ""
 #: ../src/libromdata/Console/NES.cpp:1798
 msgctxt "NES"
 msgid "CHR RAM Size"
-msgstr ""
+msgstr "CHR RAM-ის ზომა"
 
 #. tr: CHR RAM with a battery backup.
 #: ../src/libromdata/Console/NES.cpp:1564
@@ -3481,46 +3492,46 @@ msgstr ""
 #: ../src/libromdata/Console/NES.cpp:1698
 msgctxt "NES|Mirroring"
 msgid "One Screen"
-msgstr ""
+msgstr "ერთი ეკრანი"
 
 #: ../src/libromdata/Console/NES.cpp:1700
 msgctxt "NES|Mirroring"
 msgid "Programmable"
-msgstr ""
+msgstr "პროგრამირებადი"
 
 #: ../src/libromdata/Console/NES.cpp:1704
 #: ../src/libromdata/Console/NES.cpp:1805
 #: ../src/libromdata/data/NESMappers.cpp:632
 msgctxt "NES|Mirroring"
 msgid "Horizontal"
-msgstr ""
+msgstr "ჰორიზონტალური"
 
 #: ../src/libromdata/Console/NES.cpp:1707
 #: ../src/libromdata/Console/NES.cpp:1807
 #: ../src/libromdata/data/NESMappers.cpp:632
 msgctxt "NES|Mirroring"
 msgid "Vertical"
-msgstr ""
+msgstr "ვერტიკალური"
 
 #: ../src/libromdata/Console/NES.cpp:1719
 msgctxt "NES"
 msgid "Mirroring"
-msgstr ""
+msgstr "ანარეკლი"
 
 #: ../src/libromdata/Console/NES.cpp:1724
 msgctxt "NES"
 msgid "Vs. PPU"
-msgstr ""
+msgstr "Vs. PPU"
 
 #: ../src/libromdata/Console/NES.cpp:1728
 msgctxt "NES"
 msgid "Vs. Hardware"
-msgstr ""
+msgstr "Vs. აპარატურა"
 
 #: ../src/libromdata/Console/NES.cpp:1732
 msgctxt "NES"
 msgid "Console Type"
-msgstr ""
+msgstr "კონსოლის ტიპი"
 
 #: ../src/libromdata/Console/NES.cpp:1736
 msgctxt "NES"
@@ -3535,27 +3546,27 @@ msgstr ""
 #: ../src/libromdata/Console/NES.cpp:1751
 msgctxt "NES"
 msgid "Internal Name"
-msgstr ""
+msgstr "შიდა სახელი"
 
 #: ../src/libromdata/Console/NES.cpp:1756
 msgctxt "NES"
 msgid "PRG Checksum"
-msgstr ""
+msgstr "PRG-ის საკონტროლო ჯამი"
 
 #: ../src/libromdata/Console/NES.cpp:1761
 msgctxt "NES"
 msgid "CHR Checksum"
-msgstr ""
+msgstr "CHR-ის საკონტროლო ჯამი"
 
 #: ../src/libromdata/Console/NES.cpp:1825
 msgctxt "NES"
 msgid "Board Type"
-msgstr ""
+msgstr "დაფის ტიპი"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:752
 msgctxt "PlayStationDisc"
 msgid "Boot Argument"
-msgstr ""
+msgstr "ჩატვირთვის არგუმენტი"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:762
 msgctxt "PlayStationDisc"
@@ -3570,7 +3581,7 @@ msgstr ""
 #: ../src/libromdata/Console/PlayStationDisc.cpp:784
 msgctxt "PlayStationDisc"
 msgid "Video Mode"
-msgstr ""
+msgstr "ვიდეოს რეჟიმი"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:796
 msgctxt "PlayStationDisc"
@@ -3585,12 +3596,12 @@ msgstr ""
 #: ../src/libromdata/Console/PlayStationDisc.cpp:834
 msgctxt "PlayStationDisc"
 msgid "Disc Name"
-msgstr ""
+msgstr "დისკის სახელი"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:839
 msgctxt "PlayStationDisc"
 msgid "Producer Name"
-msgstr ""
+msgstr "პროდიუსერის სახელი"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:844
 msgctxt "PlayStationDisc"
@@ -3600,17 +3611,17 @@ msgstr ""
 #: ../src/libromdata/Console/PlayStationDisc.cpp:850
 msgctxt "PlayStationDisc"
 msgid "Creation Date"
-msgstr ""
+msgstr "შექმნის თარიღი"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:859
 msgctxt "PlayStationDisc"
 msgid "Drive Vendor"
-msgstr ""
+msgstr "დისკის მომწოდებელი"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:862
 msgctxt "PlayStationDisc"
 msgid "Drive Model"
-msgstr ""
+msgstr "ამძრავის მოდელი"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:865
 msgctxt "PlayStationDisc"
@@ -3620,27 +3631,27 @@ msgstr ""
 #: ../src/libromdata/Console/PlayStationDisc.cpp:868
 msgctxt "PlayStationDisc"
 msgid "Drive Notes"
-msgstr ""
+msgstr "ამძრავის შენიშვნები"
 
 #: ../src/libromdata/Console/PlayStationEXE.cpp:215
 msgctxt "PlayStationEXE"
 msgid "RAM Address"
-msgstr ""
+msgstr "RAM-ის მისამართი"
 
 #: ../src/libromdata/Console/PlayStationEXE.cpp:220
 msgctxt "PlayStationEXE"
 msgid "Initial PC"
-msgstr ""
+msgstr "საწყისი PIC"
 
 #: ../src/libromdata/Console/PlayStationEXE.cpp:225
 msgctxt "PlayStationEXE"
 msgid "Initial GP"
-msgstr ""
+msgstr "საწყისი GP"
 
 #: ../src/libromdata/Console/PlayStationEXE.cpp:231
 msgctxt "PlayStationEXE"
 msgid "Initial SP/FP"
-msgstr ""
+msgstr "საწყისი SP/FP"
 
 #: ../src/libromdata/Console/PlayStationEXE.cpp:236
 msgctxt "PlayStationEXE"
@@ -3652,12 +3663,12 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox_XBE.cpp:160
 msgctxt "Region"
 msgid "North America"
-msgstr ""
+msgstr "ჩრდ. ამერიკა"
 
 #: ../src/libromdata/Console/PlayStationEXE.cpp:259
 msgctxt "RomData"
 msgid "Region"
-msgstr ""
+msgstr "რეგიონი"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:226
 msgctxt "Sega8Bit|SysID"
@@ -3667,41 +3678,41 @@ msgstr ""
 #: ../src/libromdata/Console/Sega8Bit.cpp:230
 msgctxt "Sega8Bit|SysID"
 msgid "Game Gear"
-msgstr ""
+msgstr "Game Gear"
 
 #. tr: Any region that isn't Japan. (used for Sega 8-bit)
 #: ../src/libromdata/Console/Sega8Bit.cpp:251
 msgctxt "Region"
 msgid "Export"
-msgstr ""
+msgstr "გატანა"
 
 #. tr: Effectively region-free.
 #: ../src/libromdata/Console/Sega8Bit.cpp:254
 msgctxt "Region"
 msgid "Worldwide"
-msgstr ""
+msgstr "მთელ მსოფლიოში"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:570
 msgctxt "Sega8Bit"
 msgid "Product Code"
-msgstr ""
+msgstr "პროდუქტის კოდი"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:578
 msgctxt "Sega8Bit"
 msgid "System"
-msgstr ""
+msgstr "სისტემა"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:596
 #: ../src/libromdata/Console/Sega8Bit.cpp:620
 #: ../src/libromdata/Console/Sega8Bit.cpp:655
 msgctxt "Sega8Bit"
 msgid "Extra Header"
-msgstr ""
+msgstr "დამატებითი თავსართი"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:602
 msgctxt "Sega8Bit"
 msgid "Build Time"
-msgstr ""
+msgstr "აგების დრო"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:609
 msgctxt "Sega8Bit"
@@ -3711,7 +3722,7 @@ msgstr ""
 #: ../src/libromdata/Console/Sega8Bit.cpp:611
 msgctxt "Sega8Bit"
 msgid "CM Checksum 1"
-msgstr ""
+msgstr "CM საკონტროლო ჯამი 1"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:614
 msgctxt "Sega8Bit"
@@ -3721,25 +3732,25 @@ msgstr ""
 #: ../src/libromdata/Console/Sega8Bit.cpp:634
 msgctxt "Sega8Bit"
 msgid "SDSC Version"
-msgstr ""
+msgstr "SDSC-ის ვერსია"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:639
 msgctxt "Sega8Bit"
 msgid "Build Date"
-msgstr ""
+msgstr "აგების თარიღი"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:645
 #: ../src/librptexture/fileformat/TGA.cpp:914
 msgctxt "RomData"
 msgid "Author"
-msgstr ""
+msgstr "ავტორი"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:647
 #: ../src/libromdata/Console/WiiWAD.cpp:1005
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1039
 msgctxt "RomData"
 msgid "Name"
-msgstr ""
+msgstr "სახელი"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:656
 msgctxt "Sega8Bit"
@@ -3749,17 +3760,17 @@ msgstr ""
 #: ../src/libromdata/Console/SegaSaturn.cpp:525
 msgctxt "SegaSaturn"
 msgid "Saturn"
-msgstr ""
+msgstr "Saturn"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:538
 msgctxt "SegaSaturn"
 msgid "Product #"
-msgstr ""
+msgstr "პროდუქტის #"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:577
 msgctxt "SegaSaturn|Peripherals"
 msgid "Control Pad"
-msgstr ""
+msgstr "საკონტროლო პადი"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:578
 msgctxt "SegaSaturn|Peripherals"
@@ -3769,12 +3780,12 @@ msgstr ""
 #: ../src/libromdata/Console/SegaSaturn.cpp:579
 msgctxt "SegaSaturn|Peripherals"
 msgid "Mouse"
-msgstr ""
+msgstr "თაგუნა"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:580
 msgctxt "SegaSaturn|Peripherals"
 msgid "Keyboard"
-msgstr ""
+msgstr "კლავიატურა"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:581
 msgctxt "SegaSaturn|Peripherals"
@@ -3784,12 +3795,12 @@ msgstr ""
 #: ../src/libromdata/Console/SegaSaturn.cpp:582
 msgctxt "SegaSaturn|Peripherals"
 msgid "Multi-Tap"
-msgstr ""
+msgstr "მრავალდატყაპუნებადი"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:583
 msgctxt "SegaSaturn|Peripherals"
 msgid "Light Gun"
-msgstr ""
+msgstr "სინათლის პისტოლეტი"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:584
 msgctxt "SegaSaturn|Peripherals"
@@ -3804,22 +3815,22 @@ msgstr ""
 #: ../src/libromdata/Console/SegaSaturn.cpp:586
 msgctxt "SegaSaturn|Peripherals"
 msgid "Link Cable"
-msgstr ""
+msgstr "კავშირის კაბელი"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:587
 msgctxt "SegaSaturn|Peripherals"
 msgid "NetLink"
-msgstr ""
+msgstr "NetLink"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:588
 msgctxt "SegaSaturn|Peripherals"
 msgid "Pachinko"
-msgstr ""
+msgstr "Pachinko"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:589
 msgctxt "SegaSaturn|Peripherals"
 msgid "Floppy Drive"
-msgstr ""
+msgstr "დისკეტა"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:590
 msgctxt "SegaSaturn|Peripherals"
@@ -3829,12 +3840,12 @@ msgstr ""
 #: ../src/libromdata/Console/SegaSaturn.cpp:591
 msgctxt "SegaSaturn|Peripherals"
 msgid "MPEG Card"
-msgstr ""
+msgstr "MPEG ბარათი"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:597
 msgctxt "SegaSaturn"
 msgid "Peripherals"
-msgstr ""
+msgstr "პერიფერიები"
 
 #: ../src/libromdata/Console/SNES.cpp:658
 #: ../src/libromdata/Handheld/DMG.cpp:569
@@ -3846,95 +3857,95 @@ msgstr ""
 #: ../src/libromdata/Console/SNES.cpp:815
 msgctxt "Region"
 msgid "Scandinavia"
-msgstr ""
+msgstr "სკანდინავია"
 
 #: ../src/libromdata/Console/SNES.cpp:826
 msgctxt "Region"
 msgid "All"
-msgstr ""
+msgstr "ყველა"
 
 #: ../src/libromdata/Console/SNES.cpp:827
 msgctxt "Region"
 msgid "Canada"
-msgstr ""
+msgstr "კანადა"
 
 #: ../src/libromdata/Console/SNES.cpp:828
 msgctxt "Region"
 msgid "Brazil"
-msgstr ""
+msgstr "ბრაზილია"
 
 #: ../src/libromdata/Console/SNES.cpp:830
 #: ../src/libromdata/Console/SNES.cpp:831
 #: ../src/libromdata/Console/SNES.cpp:832
 msgctxt "Region"
 msgid "Other"
-msgstr ""
+msgstr "სხვა"
 
 #: ../src/libromdata/Console/SNES.cpp:949
 msgctxt "SNES|NintendoPower"
 msgid "#"
-msgstr ""
+msgstr "#"
 
 #: ../src/libromdata/Console/SNES.cpp:950
 msgctxt "SNES|NintendoPower"
 msgid "Title"
-msgstr ""
+msgstr "დასახელება"
 
 #: ../src/libromdata/Console/SNES.cpp:951
 msgctxt "SNES|NintendoPower"
 msgid "Game Code"
-msgstr ""
+msgstr "თამაშის კოდი"
 
 #: ../src/libromdata/Console/SNES.cpp:952
 msgctxt "SNES|NintendoPower"
 msgid "Timestamp"
-msgstr ""
+msgstr "დროის შტამპი"
 
 #: ../src/libromdata/Console/SNES.cpp:953
 msgctxt "SNES|NintendoPower"
 msgid "Kiosk ID"
-msgstr ""
+msgstr "კიოსკის ID"
 
 #: ../src/libromdata/Console/SNES.cpp:966
 #: ../src/libromdata/Media/CBMDOS.cpp:1413
 msgctxt "RomData"
 msgid "Directory"
-msgstr ""
+msgstr "საქაღალდე"
 
 #: ../src/libromdata/Console/SNES.cpp:1555
 msgctxt "SNES"
 msgid "ROM Mapping"
-msgstr ""
+msgstr "ROM-ის ასახვა"
 
 #: ../src/libromdata/Console/SNES.cpp:1566
 msgctxt "SNES"
 msgid "Cartridge HW"
-msgstr ""
+msgstr "კარტრიჯის აპარატურა"
 
 #: ../src/libromdata/Console/SNES.cpp:1585
 msgctxt "SNES"
 msgid "Revision"
-msgstr ""
+msgstr "რევიზია"
 
 #: ../src/libromdata/Console/SNES.cpp:1623
 msgctxt "SNES"
 msgid "Date"
-msgstr ""
+msgstr "თარიღი"
 
 #: ../src/libromdata/Console/SNES.cpp:1636
 msgctxt "SNES|ProgramType"
 msgid "BS-X Script"
-msgstr ""
+msgstr "BS-X სკრიპტი"
 
 #: ../src/libromdata/Console/SNES.cpp:1639
 msgctxt "SNES|ProgramType"
 msgid "SA-1"
-msgstr ""
+msgstr "SA-1"
 
 #: ../src/libromdata/Console/SNES.cpp:1645
 msgctxt "SNES"
 msgid "Program Type"
-msgstr ""
+msgstr "პროგრამის ტიპი"
 
 #: ../src/libromdata/Console/SNES.cpp:1664
 msgctxt "SNES"
@@ -3944,32 +3955,32 @@ msgstr ""
 #: ../src/libromdata/Console/SNES.cpp:1672
 msgctxt "SNES"
 msgid "Unlimited"
-msgstr ""
+msgstr "ულიმიტო"
 
 #: ../src/libromdata/Console/SufamiTurbo.cpp:394
 msgctxt "SufamiTurbo"
 msgid "ROM Size"
-msgstr ""
+msgstr "ROM-ის ზომა"
 
 #: ../src/libromdata/Console/SufamiTurbo.cpp:398
 msgctxt "SufamiTurbo"
 msgid "SRAM Size"
-msgstr ""
+msgstr "SRAM-ის ზომა"
 
 #: ../src/libromdata/Console/WiiSave.cpp:438
 msgctxt "WiiSave"
 msgid "Savegame ID"
-msgstr ""
+msgstr "შენახული თამაშის ID"
 
 #: ../src/libromdata/Console/WiiSave.cpp:479
 msgctxt "WiiSave"
 msgid "Permissions"
-msgstr ""
+msgstr "უფლებები"
 
 #: ../src/libromdata/Console/WiiSave.cpp:496
 msgctxt "WiiSave"
 msgid "MAC Address"
-msgstr ""
+msgstr "MAC მისამართი"
 
 #: ../src/libromdata/Console/WiiTicket.cpp:507
 #: ../src/libromdata/Console/WiiTMD.cpp:352
@@ -3978,13 +3989,13 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2167
 msgctxt "Nintendo"
 msgid "Issuer"
-msgstr ""
+msgstr "გამომცემელი"
 
 #: ../src/libromdata/Console/WiiTicket.cpp:517
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1018
 msgctxt "Nintendo"
 msgid "Key Index"
-msgstr ""
+msgstr "გასაღების ინდექსი"
 
 #: ../src/libromdata/Console/WiiTicket.cpp:522
 #: ../src/libromdata/Console/WiiWAD.cpp:1155
@@ -4003,25 +4014,25 @@ msgstr ""
 #: ../src/libromdata/Console/WiiTicket.cpp:724
 msgctxt "Wii|EncKey"
 msgid "Retail"
-msgstr ""
+msgstr "საცალო"
 
 #. tr: Key_RVL_Korean - Korean Wii encryption key
 #: ../src/libromdata/Console/WiiTicket.cpp:726
 msgctxt "Wii|EncKey"
 msgid "Korean"
-msgstr ""
+msgstr "კორეული"
 
 #. tr: Key_WUP_vWii - vWii-specific Wii encryption key
 #: ../src/libromdata/Console/WiiTicket.cpp:728
 msgctxt "Wii|EncKey"
 msgid "vWii"
-msgstr ""
+msgstr "vWii"
 
 #. tr: Key_RVT_Debug - Debug Wii encryption key
 #: ../src/libromdata/Console/WiiTicket.cpp:731
 msgctxt "Wii|EncKey"
 msgid "Debug"
-msgstr ""
+msgstr "გამართვა"
 
 #. tr: Key_RVT_Korean - Korean (debug) Wii encryption key
 #: ../src/libromdata/Console/WiiTicket.cpp:733
@@ -4033,19 +4044,19 @@ msgstr ""
 #: ../src/libromdata/Console/WiiTicket.cpp:735
 msgctxt "Wii|EncKey"
 msgid "vWii (debug)"
-msgstr ""
+msgstr "vWii (გამართვა)"
 
 #. tr: Key_RVL_SD_AES - SD card encryption key
 #: ../src/libromdata/Console/WiiTicket.cpp:740
 msgctxt "Wii|EncKey"
 msgid "SD card AES"
-msgstr ""
+msgstr "SD ბარათი AES"
 
 #. tr: Key_RVL_SD_IV - SD card IV
 #: ../src/libromdata/Console/WiiTicket.cpp:742
 msgctxt "Wii|EncKey"
 msgid "SD card IV"
-msgstr ""
+msgstr "SD ბარათი IV"
 
 #. tr: Key_RVL_SD_MD5 - SD card MD5 blanker
 #: ../src/libromdata/Console/WiiTicket.cpp:744
@@ -4081,7 +4092,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiTicket.cpp:766
 msgctxt "Wii|EncKey"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Console/WiiTMD.cpp:359
 #: ../src/libromdata/Console/WiiWAD.cpp:1025
@@ -4093,12 +4104,12 @@ msgstr ""
 #: ../src/libromdata/Console/WiiUAncast.cpp:519
 msgctxt "WiiUAncast"
 msgid "Container"
-msgstr ""
+msgstr "კონტეინერი"
 
 #: ../src/libromdata/Console/WiiUAncast.cpp:534
 msgctxt "WiiUAncast"
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: ../src/libromdata/Console/WiiUAncast.cpp:575
 #: ../src/libromdata/Console/WiiUAncast.cpp:580
@@ -4119,7 +4130,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiUAncast.cpp:621
 msgctxt "WiiUAncast"
 msgid "Console Type"
-msgstr ""
+msgstr "კონსოლის ტიპი"
 
 #: ../src/libromdata/Console/WiiU.cpp:373
 #, c++-format
@@ -4144,33 +4155,33 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS_BNR.cpp:655
 msgctxt "Nintendo"
 msgid "Full Title"
-msgstr ""
+msgstr "სრული დასახელება"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:415
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:717
 msgctxt "Nintendo"
 msgid "Product Code"
-msgstr ""
+msgstr "პროდუქტის კოდი"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:421
 msgctxt "WiiU"
 msgid "SDK Version"
-msgstr ""
+msgstr "SDK-ის ვერსია"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:525
 msgctxt "WiiU|Controller"
 msgid "Nunchuk"
-msgstr ""
+msgstr "Nunchuk"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:526
 msgctxt "WiiU|Controller"
 msgid "Classic"
-msgstr ""
+msgstr "კლასიკური"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:527
 msgctxt "WiiU|Controller"
 msgid "Pro"
-msgstr ""
+msgstr "Pro"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:528
 msgctxt "WiiU|Controller"
@@ -4180,17 +4191,17 @@ msgstr ""
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:529
 msgctxt "WiiU|Controller"
 msgid "USB Keyboard"
-msgstr ""
+msgstr "USB კლავიატურა"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:530
 msgctxt "WiiU|Controller"
 msgid "Gamepad"
-msgstr ""
+msgstr "Gamepad"
 
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:534
 msgctxt "WiiU"
 msgid "Controllers"
-msgstr ""
+msgstr "კონტროლერები"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:993
 msgctxt "WiiWAD"
@@ -4206,12 +4217,12 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWAD.cpp:1089
 msgctxt "Wii|NetCardGBASaveType"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:1090
 msgctxt "Wii|NetCardGBASaveType"
 msgid "32 KiB SRAM"
-msgstr ""
+msgstr "32 კიბ SRAM"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:1091
 msgctxt "Wii|NetCardGBASaveType"
@@ -4231,7 +4242,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWAD.cpp:1094
 msgctxt "Wii|NetCardGBASaveType"
 msgid "8 KiB EEPROM"
-msgstr ""
+msgstr "8 კიბ EEPROM"
 
 #. tr: NetCard: RTC emulation
 #: ../src/libromdata/Console/WiiWAD.cpp:1107
@@ -4242,7 +4253,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWAD.cpp:1191
 msgctxt "WiiWAD"
 msgid "Game Info"
-msgstr ""
+msgstr "თამაშის ინფორმაცია"
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:46
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:48
@@ -4326,12 +4337,12 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWIBN.cpp:478
 msgctxt "WiiWIBN"
 msgid "Subtitle"
-msgstr ""
+msgstr "სუბტიტრი"
 
 #: ../src/libromdata/Console/WiiWIBN.cpp:484
 msgctxt "WiiWIBN|Flags"
 msgid "No Copy"
-msgstr ""
+msgstr "ასლის გარეშე"
 
 #. tr: Xbox 360 title ID (32-bit hex, then two letters followed by a 4-digit decimal number)
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:657
@@ -4346,7 +4357,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1066
 msgctxt "Xbox360_STFS"
 msgid "Package Type"
-msgstr ""
+msgstr "პაკეტის ტიპი"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1068
 msgctxt "Xbox360_STFS|FileType"
@@ -4366,104 +4377,104 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1084
 msgctxt "Xbox360_STFS"
 msgid "Content Type"
-msgstr ""
+msgstr "შემცველობის ტიპი"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1096
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1958
 msgctxt "Xbox360_XEX"
 msgid "Media ID"
-msgstr ""
+msgstr "მედიის ID"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1102
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:991
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1978
 msgctxt "Xbox360_XEX"
 msgid "Title ID"
-msgstr ""
+msgstr "დასახელების ID"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1116
 msgctxt "Xbox360_XEX"
 msgid "Base Version"
-msgstr ""
+msgstr "საბაზისო ვერსია"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1127
 msgctxt "Xbox360_XEX"
 msgid "Console ID"
-msgstr ""
+msgstr "კონსოლის ID"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1134
 msgctxt "Xbox360_XEX"
 msgid "Part Number"
-msgstr ""
+msgstr "ნაწილის ნომერი"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1142
 msgctxt "Xbox360_XEX|ConsoleType"
 msgid "Debug"
-msgstr ""
+msgstr "გამართვა"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1145
 msgctxt "Xbox360_XEX|ConsoleType"
 msgid "Retail"
-msgstr ""
+msgstr "საცალო"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1151
 msgctxt "Xbox360_XEX"
 msgid "Console Type"
-msgstr ""
+msgstr "კონსოლის ტიპი"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:879
 msgctxt "Xbox360_XDBF|TitleType"
 msgid "System Title"
-msgstr ""
+msgstr "სისტემის სახელი"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:880
 msgctxt "Xbox360_XDBF|TitleType"
 msgid "Full Game"
-msgstr ""
+msgstr "სრული თამაში"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:881
 msgctxt "Xbox360_XDBF|TitleType"
 msgid "Demo"
-msgstr ""
+msgstr "დემო"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:882
 msgctxt "Xbox360_XDBF|TitleType"
 msgid "Download"
-msgstr ""
+msgstr "გადმოწერა"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1088
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1480
 msgctxt "Xbox360_XDBF|Achievements"
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1089
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1481
 msgctxt "Xbox360_XDBF|Achievements"
 msgid "Description"
-msgstr ""
+msgstr "აღწერა"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1090
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1482
 msgctxt "Xbox360_XDBF|Achievements"
 msgid "Gamerscore"
-msgstr ""
+msgstr "Gamerscore"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1208
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1617
 msgctxt "Xbox360_XDBF"
 msgid "Achievements"
-msgstr ""
+msgstr "მიღწევები"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1302
 msgctxt "Xbox360_XDBF|AvatarAwards"
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1303
 msgctxt "Xbox360_XDBF|AvatarAwards"
 msgid "Description"
-msgstr ""
+msgstr "აღწერა"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1414
 msgctxt "Xbox360_XDBF"
@@ -4473,12 +4484,12 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:307
 msgctxt "Region"
 msgid "New Zealand"
-msgstr ""
+msgstr "ახალი ზელანდია"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1225
 msgctxt "Xbox360_XEX|EncKey"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1237
 msgctxt "Xbox360_XEX|EncKey"
@@ -4488,12 +4499,12 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1242
 msgctxt "Xbox360_XEX|EncKey"
 msgid "Retail"
-msgstr ""
+msgstr "საცალო"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1245
 msgctxt "Xbox360_XEX|EncKey"
 msgid "Debug"
-msgstr ""
+msgstr "გამართვა"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1463
 #: ../src/libromdata/Console/Xbox_XBE.cpp:436
@@ -4512,64 +4523,64 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1824
 msgctxt "Xbox360_XEX"
 msgid "PE Filename"
-msgstr ""
+msgstr "PE ფაილის სახელი"
 
 #. tr: Minimum kernel version (i.e. dashboard)
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1848
 msgctxt "Xbox360_XEX"
 msgid "Min. Kernel"
-msgstr ""
+msgstr "მინ. ბირთვი"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1852
 msgctxt "Xbox360_XEX"
 msgid "Title"
-msgstr ""
+msgstr "დასახელება"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1853
 msgctxt "Xbox360_XEX"
 msgid "Exports"
-msgstr ""
+msgstr "გატანები"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1854
 msgctxt "Xbox360_XEX"
 msgid "Debugger"
-msgstr ""
+msgstr "გამმართველი"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1855
 msgctxt "Xbox360_XEX"
 msgid "DLL"
-msgstr ""
+msgstr "DLL"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1856
 msgctxt "Xbox360_XEX"
 msgid "Module Patch"
-msgstr ""
+msgstr "მოდულის პაჩი"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1857
 msgctxt "Xbox360_XEX"
 msgid "Full Patch"
-msgstr ""
+msgstr "სრული პაჩი"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1858
 msgctxt "Xbox360_XEX"
 msgid "Delta Patch"
-msgstr ""
+msgstr "დელტა პაჩი"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1859
 msgctxt "Xbox360_XEX"
 msgid "User Mode"
-msgstr ""
+msgstr "მომხმარებლის რეჟიმი"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1862
 msgctxt "Xbox360_XEX"
 msgid "Module Flags"
-msgstr ""
+msgstr "მოდულის ალმები"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1874
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1944
 msgctxt "Xbox360_XEX"
 msgid "Media Types"
-msgstr ""
+msgstr "მედიის ტიპები"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1875
 msgctxt "Xbox360_XEX"
@@ -4579,7 +4590,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1881
 msgctxt "Xbox360_XEX|MediaType"
 msgid "Hard Disk"
-msgstr ""
+msgstr "მყარი დისკი"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1887
 msgctxt "Xbox360_XEX|MediaType"
@@ -4589,7 +4600,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1889
 msgctxt "Xbox360_XEX|MediaType"
 msgid "Memory Unit"
-msgstr ""
+msgstr "მეხსიერების ერთეული"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1891
 msgctxt "Xbox360_XEX|MediaType"
@@ -4599,7 +4610,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1892
 msgctxt "Xbox360_XEX|MediaType"
 msgid "Network"
-msgstr ""
+msgstr "ქსელი"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1893
 msgctxt "Xbox360_XEX|MediaType"
@@ -4609,7 +4620,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1894
 msgctxt "Xbox360_XEX|MediaType"
 msgid "RAM Drive"
-msgstr ""
+msgstr "RAM-დისკი"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1896
 msgctxt "Xbox360_XEX|MediaType"
@@ -4639,12 +4650,12 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1908
 msgctxt "Xbox360_XEX|MediaType"
 msgid "Xbox Package"
-msgstr ""
+msgstr "Xbox-ის პაკეტი"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1945
 msgctxt "Xbox360_XEX|MediaType"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1968
 msgctxt "Xbox360_XEX"
@@ -4654,7 +4665,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:2017
 msgctxt "Xbox360_XEX|Compression"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:2018
 msgctxt "Xbox360_XEX|Compression"
@@ -4664,23 +4675,23 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:2019
 msgctxt "Xbox360_XEX|Compression"
 msgid "Normal (LZX)"
-msgstr ""
+msgstr "ნორმალური (LZX)"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:2020
 msgctxt "Xbox360_XEX|Compression"
 msgid "Delta"
-msgstr ""
+msgstr "დელტა"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:2023
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:2027
 msgctxt "Xbox360_XEX"
 msgid "Compression"
-msgstr ""
+msgstr "შეკუმშვა"
 
 #: ../src/libromdata/Console/XboxDisc.cpp:1017
 msgctxt "XboxDisc"
 msgid "Disc Type"
-msgstr ""
+msgstr "დისკის ტიპი"
 
 #: ../src/libromdata/Console/XboxDisc.cpp:1022
 msgctxt "XboxDisc"
@@ -4717,47 +4728,47 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox_XBE.cpp:763
 msgctxt "Xbox_XBE"
 msgid "PE Filename"
-msgstr ""
+msgstr "PE ფაილის სახელი"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:783
 msgctxt "Xbox_XBE"
 msgid "Title ID"
-msgstr ""
+msgstr "დასახელების ID"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:799
 msgctxt "Xbox_XBE"
 msgid "Timestamp"
-msgstr ""
+msgstr "დროის შტამპი"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:807
 msgctxt "Xbox_XBE"
 msgid "Not set"
-msgstr ""
+msgstr "დაყენებული არაა"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:817
 msgctxt "Xbox_XBE|MediaType"
 msgid "Hard Disk"
-msgstr ""
+msgstr "მყარი დისკი"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:827
 msgctxt "Xbox_XBE|MediaType"
 msgid "Dongle"
-msgstr ""
+msgstr "წვდომის გასაღები"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:828
 msgctxt "Xbox_XBE|MediaType"
 msgid "Media Board"
-msgstr ""
+msgstr "მედიის დაფა"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:858
 msgctxt "Xbox_XBE"
 msgid "Media Types"
-msgstr ""
+msgstr "მედიის ტიპები"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:859
 msgctxt "Xbox_XBE|MediaType"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:864
 msgctxt "Xbox_XBE|InitFlags"
@@ -4782,7 +4793,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox_XBE.cpp:870
 msgctxt "Xbox_XBE"
 msgid "Init Flags"
-msgstr ""
+msgstr "ალმების ინიციალიზაცია"
 
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:889
 msgctxt "KeyStoreUI|Section"
@@ -4808,25 +4819,25 @@ msgstr ""
 #: ../src/libromdata/data/EXEData.cpp:40
 msgctxt "EXE|Subsystem"
 msgid "Native"
-msgstr ""
+msgstr "თავისი"
 
 #. tr: IMAGE_SUBSYSTEM_WINDOWS_GUI
 #: ../src/libromdata/data/EXEData.cpp:42
 msgctxt "EXE|Subsystem"
 msgid "Windows"
-msgstr ""
+msgstr "Windows"
 
 #. tr: IMAGE_SUBSYSTEM_WINDOWS_CUI
 #: ../src/libromdata/data/EXEData.cpp:44
 msgctxt "EXE|Subsystem"
 msgid "Console"
-msgstr ""
+msgstr "კონსოლი"
 
 #. tr: IMAGE_SUBSYSTEM_OS2_CUI
 #: ../src/libromdata/data/EXEData.cpp:48
 msgctxt "EXE|Subsystem"
 msgid "OS/2 Console"
-msgstr ""
+msgstr "OS/2-ის კონსოლი"
 
 #. tr: IMAGE_SUBSYSTEM_POSIX_CUI
 #: ../src/libromdata/data/EXEData.cpp:52
@@ -4844,7 +4855,7 @@ msgstr ""
 #: ../src/libromdata/data/EXEData.cpp:56
 msgctxt "EXE|Subsystem"
 msgid "Windows CE"
-msgstr ""
+msgstr "Windows CE"
 
 #. tr: IMAGE_SUBSYSTEM_EFI_APPLICATION
 #: ../src/libromdata/data/EXEData.cpp:58
@@ -4874,7 +4885,7 @@ msgstr ""
 #: ../src/libromdata/data/EXEData.cpp:66
 msgctxt "EXE|Subsystem"
 msgid "Xbox"
-msgstr ""
+msgstr "Xbox"
 
 #. tr: IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION
 #: ../src/libromdata/data/EXEData.cpp:70
@@ -4915,12 +4926,12 @@ msgstr ""
 #: ../src/libromdata/data/NESMappers.cpp:647
 msgctxt "NES|Mirroring"
 msgid "Four Screens"
-msgstr ""
+msgstr "ოთხი ეკრანი"
 
 #: ../src/libromdata/data/NESMappers.cpp:660
 msgctxt "NES|Expansion"
 msgid "Unspecified"
-msgstr ""
+msgstr "მითითებული არაა"
 
 #: ../src/libromdata/data/NESMappers.cpp:661
 msgctxt "NES|Expansion"
@@ -4955,7 +4966,7 @@ msgstr ""
 #: ../src/libromdata/data/NESMappers.cpp:667
 msgctxt "NES|Expansion"
 msgid "Vs. Zapper"
-msgstr ""
+msgstr "Vs. Zapper"
 
 #: ../src/libromdata/data/NESMappers.cpp:668
 msgctxt "NES|Expansion"
@@ -4965,7 +4976,7 @@ msgstr ""
 #: ../src/libromdata/data/NESMappers.cpp:669
 msgctxt "NES|Expansion"
 msgid "Two Zappers"
-msgstr ""
+msgstr "ორი Zapper"
 
 #: ../src/libromdata/data/NESMappers.cpp:670
 msgctxt "NES|Expansion"
@@ -5130,7 +5141,7 @@ msgstr ""
 #: ../src/libromdata/data/NESMappers.cpp:706
 msgctxt "NES|Expansion"
 msgid "Multicart"
-msgstr ""
+msgstr "Multicart"
 
 #: ../src/libromdata/data/NESMappers.cpp:707
 msgctxt "NES|Expansion"
@@ -5145,7 +5156,7 @@ msgstr ""
 #: ../src/libromdata/data/NESMappers.cpp:709
 msgctxt "NES|Expansion"
 msgid "U-Force"
-msgstr ""
+msgstr "U-Force"
 
 #: ../src/libromdata/data/NESMappers.cpp:710
 msgctxt "NES|Expansion"
@@ -5175,7 +5186,7 @@ msgstr ""
 #: ../src/libromdata/data/NESMappers.cpp:717
 msgctxt "NES|Expansion"
 msgid "ABL Pinball"
-msgstr ""
+msgstr "ABL Pinball"
 
 #: ../src/libromdata/data/NESMappers.cpp:718
 msgctxt "NES|Expansion"
@@ -5330,7 +5341,7 @@ msgstr ""
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:47
 msgctxt "Nintendo3DSSysTitles"
 msgid "Activity Log"
-msgstr ""
+msgstr "აქტივობის ჟურნალი"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:48
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:63
@@ -5351,7 +5362,7 @@ msgstr ""
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:51
 msgctxt "Nintendo3DSSysTitles"
 msgid "Mii Maker"
-msgstr ""
+msgstr "Mii Maker"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:52
 msgctxt "Nintendo3DSSysTitles"
@@ -5361,7 +5372,7 @@ msgstr ""
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:53
 msgctxt "Nintendo3DSSysTitles"
 msgid "eShop"
-msgstr ""
+msgstr "eShop"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:54
 msgctxt "Nintendo3DSSysTitles"
@@ -5377,12 +5388,12 @@ msgstr ""
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:64
 msgctxt "Nintendo3DSSysTitles"
 msgid "Face Raiders"
-msgstr ""
+msgstr "Face Raiders"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:57
 msgctxt "Nintendo3DSSysTitles"
 msgid "AR Games"
-msgstr ""
+msgstr "AR Games"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:58
 msgctxt "Nintendo3DSSysTitles"
@@ -5407,12 +5418,12 @@ msgstr ""
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:73
 msgctxt "Nintendo3DSSysTitles"
 msgid "HOME Menu"
-msgstr ""
+msgstr "საწყისი მენიუ"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:74
 msgctxt "Nintendo3DSSysTitles"
 msgid "Camera"
-msgstr ""
+msgstr "კამერა"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:75
 msgctxt "Nintendo3DSSysTitles"
@@ -5422,7 +5433,7 @@ msgstr ""
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:76
 msgctxt "Nintendo3DSSysTitles"
 msgid "Game Notes"
-msgstr ""
+msgstr "თამაშის შენიშვნები"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:77
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:91
@@ -5433,7 +5444,7 @@ msgstr ""
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:78
 msgctxt "Nintendo3DSSysTitles"
 msgid "Friend List"
-msgstr ""
+msgstr "მეგობრების სია"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:79
 msgctxt "Nintendo3DSSysTitles"
@@ -5454,7 +5465,7 @@ msgstr ""
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:82
 msgctxt "Nintendo3DSSysTitles"
 msgid "Mii picker"
-msgstr ""
+msgstr "Mii-ის ამრჩევი"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:83
 msgctxt "Nintendo3DSSysTitles"
@@ -5469,12 +5480,12 @@ msgstr ""
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:85
 msgctxt "Nintendo3DSSysTitles"
 msgid "eShop applet"
-msgstr ""
+msgstr "eShop-ის აპლეტი"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:86
 msgctxt "Nintendo3DSSysTitles"
 msgid "Miiverse"
-msgstr ""
+msgstr "Miiverse"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:87
 msgctxt "Nintendo3DSSysTitles"
@@ -5489,7 +5500,7 @@ msgstr ""
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:31
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Saved Game"
-msgstr ""
+msgstr "შენახული თამაში"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:32
 msgctxt "Xbox360_STFS|ContentType"
@@ -5499,7 +5510,7 @@ msgstr ""
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:33
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Publisher"
-msgstr ""
+msgstr "გამომცემი"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:34
 msgctxt "Xbox360_STFS|ContentType"
@@ -5524,12 +5535,12 @@ msgstr ""
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:38
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Avatar Item"
-msgstr ""
+msgstr "ავატარის ელემენტი"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:39
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Profile"
-msgstr ""
+msgstr "პროფილი"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:40
 msgctxt "Xbox360_STFS|ContentType"
@@ -5539,12 +5550,12 @@ msgstr ""
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:41
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Theme"
-msgstr ""
+msgstr "თემა"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:42
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Cache File"
-msgstr ""
+msgstr "კეშის ფაილი"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:43
 msgctxt "Xbox360_STFS|ContentType"
@@ -5564,32 +5575,32 @@ msgstr ""
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:48
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Game Demo"
-msgstr ""
+msgstr "თამაშის დემო"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:49
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Video"
-msgstr ""
+msgstr "ვიდეო"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:50
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Game"
-msgstr ""
+msgstr "თამაში"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:51
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Installer"
-msgstr ""
+msgstr "დაყენების პროგრამა"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:52
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Game Trailer"
-msgstr ""
+msgstr "თამაშის ტრეილერი"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:53
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Arcade Game"
-msgstr ""
+msgstr "არკადული თამაში"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:55
 msgctxt "Xbox360_STFS|ContentType"
@@ -5599,22 +5610,22 @@ msgstr ""
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:56
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Movie"
-msgstr ""
+msgstr "ფილმი"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:57
 msgctxt "Xbox360_STFS|ContentType"
 msgid "TV"
-msgstr ""
+msgstr "ტელევიზორი"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:58
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Music Video"
-msgstr ""
+msgstr "მუსიკის ვიდეო"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:59
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Game Video"
-msgstr ""
+msgstr "თამაშის ვიდეო"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:60
 msgctxt "Xbox360_STFS|ContentType"
@@ -5624,7 +5635,7 @@ msgstr ""
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:61
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Viral Video"
-msgstr ""
+msgstr "ვირუსული ვიდეო"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:62
 msgctxt "Xbox360_STFS|ContentType"
@@ -5634,42 +5645,42 @@ msgstr ""
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:36
 msgctxt "Android|AppCategory"
 msgid "Game"
-msgstr ""
+msgstr "თამაში"
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:37
 msgctxt "Android|AppCategory"
 msgid "Audio"
-msgstr ""
+msgstr "აუდიო"
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:38
 msgctxt "Android|AppCategory"
 msgid "Video"
-msgstr ""
+msgstr "ვიდეო"
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:39
 msgctxt "Android|AppCategory"
 msgid "Image"
-msgstr ""
+msgstr "გამოსახულება"
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:40
 msgctxt "Android|AppCategory"
 msgid "Social"
-msgstr ""
+msgstr "სოციალური"
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:41
 msgctxt "Android|AppCategory"
 msgid "News"
-msgstr ""
+msgstr "ახალი ამბები"
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:42
 msgctxt "Android|AppCategory"
 msgid "Maps"
-msgstr ""
+msgstr "რუკები"
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:43
 msgctxt "Android|AppCategory"
 msgid "Productivity"
-msgstr ""
+msgstr "პროდუქტიულობა"
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:44
 msgctxt "Android|AppCategory"
@@ -5679,12 +5690,12 @@ msgstr ""
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:80
 msgctxt "AndroidManifestXML"
 msgid "Package Name"
-msgstr ""
+msgstr "პაკეტის სახელი"
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:100
 msgctxt "AndroidAPK"
 msgid "Category"
-msgstr ""
+msgstr "კატეგორია"
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:120
 msgctxt "AndroidAPK"
@@ -5699,81 +5710,81 @@ msgstr ""
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:132
 msgctxt "AndroidAPK"
 msgid "Version"
-msgstr ""
+msgstr "ვერსია"
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:136
 msgctxt "AndroidAPK"
 msgid "Version Code"
-msgstr ""
+msgstr "ვერსიის კოდი"
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:192
 msgctxt "AndroidAPK|Features"
 msgid "Feature"
-msgstr ""
+msgstr "თვისება"
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:193
 msgctxt "AndroidAPK|Features"
 msgid "Required?"
-msgstr ""
+msgstr "აუცილებელია?"
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:231
 msgctxt "AndroidAPK"
 msgid "Permissions"
-msgstr ""
+msgstr "უფლებები"
 
 #: ../src/libromdata/Handheld/DMG.cpp:586
 msgctxt "Region|DMG"
 msgid "Japanese"
-msgstr ""
+msgstr "იაპონური"
 
 #: ../src/libromdata/Handheld/DMG.cpp:588
 msgctxt "Region|DMG"
 msgid "Non-Japanese"
-msgstr ""
+msgstr "არაიაპონური"
 
 #: ../src/libromdata/Handheld/DMG.cpp:665
 msgctxt "DMG"
 msgid "System"
-msgstr ""
+msgstr "სისტემა"
 
 #: ../src/libromdata/Handheld/DMG.cpp:705
 msgctxt "DMG"
 msgid "Hardware"
-msgstr ""
+msgstr "აპარატურა"
 
 #: ../src/libromdata/Handheld/DMG.cpp:710
 msgctxt "DMG|Features"
 msgid "RAM"
-msgstr ""
+msgstr "RAM"
 
 #: ../src/libromdata/Handheld/DMG.cpp:711
 #: ../src/libromdata/Handheld/DMG.cpp:1331
 msgctxt "DMG|Features"
 msgid "Battery"
-msgstr ""
+msgstr "ელემენტი"
 
 #: ../src/libromdata/Handheld/DMG.cpp:712
 #: ../src/libromdata/Handheld/DMG.cpp:1333
 msgctxt "DMG|Features"
 msgid "Timer"
-msgstr ""
+msgstr "ტაიმერი"
 
 #: ../src/libromdata/Handheld/DMG.cpp:713
 #: ../src/libromdata/Handheld/DMG.cpp:1332
 msgctxt "DMG|Features"
 msgid "Rumble"
-msgstr ""
+msgstr "ვიბრაცია"
 
 #: ../src/libromdata/Handheld/DMG.cpp:714
 msgctxt "DMG|Features"
 msgid "Tilt Sensor"
-msgstr ""
+msgstr "დახრის სენსორი"
 
 #: ../src/libromdata/Handheld/DMG.cpp:722
 #: ../src/libromdata/Handheld/DMG.cpp:1341
 msgctxt "DMG"
 msgid "ROM Size"
-msgstr ""
+msgstr "ROM-ის ზომა"
 
 #: ../src/libromdata/Handheld/DMG.cpp:730
 #: ../src/libromdata/Handheld/DMG.cpp:752
@@ -5789,24 +5800,24 @@ msgstr[1] ""
 #, c++-format
 msgctxt "DMG"
 msgid "{:d} KiB"
-msgstr ""
+msgstr "{:d} კიბ"
 
 #: ../src/libromdata/Handheld/DMG.cpp:739
 #: ../src/libromdata/Handheld/DMG.cpp:1346
 msgctxt "DMG"
 msgid "RAM Size"
-msgstr ""
+msgstr "RAM-ის ზომა"
 
 #. tr: MBC2 internal memory - Not really RAM, but whatever.
 #: ../src/libromdata/Handheld/DMG.cpp:745
 msgctxt "DMG"
 msgid "512 x 4 bits"
-msgstr ""
+msgstr "512 x 4 ბიტიანი"
 
 #: ../src/libromdata/Handheld/DMG.cpp:747
 msgctxt "DMG"
 msgid "No RAM"
-msgstr ""
+msgstr "მეხსიერების გარეშე"
 
 #: ../src/libromdata/Handheld/DMG.cpp:770
 #, c++-format
@@ -5829,14 +5840,14 @@ msgstr ""
 #: ../src/libromdata/Handheld/DMG.cpp:1239
 msgctxt "DMG"
 msgid "GBX Version"
-msgstr ""
+msgstr "GBX-ის ვერსია"
 
 #: ../src/libromdata/Handheld/DMG.cpp:1292
 #: ../src/libromdata/Handheld/DMG.cpp:1302
 #: ../src/libromdata/Handheld/DMG.cpp:1307
 msgctxt "DMG"
 msgid "Mapper"
-msgstr ""
+msgstr "Mapper"
 
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:420
 msgctxt "GameBoyAdvance"
@@ -5846,32 +5857,32 @@ msgstr ""
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:434
 msgctxt "GameBoyAdvance"
 msgid "Enable Debug"
-msgstr ""
+msgstr "გამართვის ჩართვა"
 
 #: ../src/libromdata/Handheld/Lynx.cpp:208
 msgctxt "Lynx"
 msgid "Manufacturer"
-msgstr ""
+msgstr "მწარმოებელი"
 
 #: ../src/libromdata/Handheld/Lynx.cpp:212
 msgctxt "Lynx|Rotation"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Handheld/Lynx.cpp:213
 msgctxt "Lynx|Rotation"
 msgid "Left"
-msgstr ""
+msgstr "მარცხნივ"
 
 #: ../src/libromdata/Handheld/Lynx.cpp:214
 msgctxt "Lynx|Rotation"
 msgid "Right"
-msgstr ""
+msgstr "მარჯვნივ"
 
 #: ../src/libromdata/Handheld/Lynx.cpp:216
 msgctxt "Lynx"
 msgid "Rotation"
-msgstr ""
+msgstr "მობრუნება"
 
 #. tr: Lynx has two banks, 0 and 1.
 #: ../src/libromdata/Handheld/Lynx.cpp:222
@@ -5883,43 +5894,43 @@ msgstr ""
 #: ../src/libromdata/Handheld/NGPC.cpp:325
 msgctxt "RomData"
 msgid "Product ID"
-msgstr ""
+msgstr "პროდუქტის ID"
 
 #: ../src/libromdata/Handheld/NGPC.cpp:336
 msgctxt "NGPC"
 msgid "System"
-msgstr ""
+msgstr "სისტემა"
 
 #: ../src/libromdata/Handheld/NGPC.cpp:349
 msgctxt "NGPC|DebugMode"
 msgid "Off"
-msgstr ""
+msgstr "გამორთ"
 
 #: ../src/libromdata/Handheld/NGPC.cpp:352
 msgctxt "NGPC|DebugMode"
 msgid "On"
-msgstr ""
+msgstr "ჩართ"
 
 #: ../src/libromdata/Handheld/NGPC.cpp:358
 #: ../src/libromdata/Handheld/NGPC.cpp:360
 msgctxt "NGPC"
 msgid "Debug Mode"
-msgstr ""
+msgstr "გამართვის რეჟიმი"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:683
 msgctxt "Nintendo3DS"
 msgid "Media ID"
-msgstr ""
+msgstr "მედიის ID"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:711
 msgctxt "Nintendo3DS"
 msgid "Program ID"
-msgstr ""
+msgstr "პროგრამის ID"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:724
 msgctxt "Nintendo3DS"
 msgid "Content Type"
-msgstr ""
+msgstr "შემცველობის ტიპი"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:732
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2024
@@ -5927,7 +5938,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2574
 msgctxt "Nintendo3DS"
 msgid "Debug"
-msgstr ""
+msgstr "გამართვა"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:733
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2025
@@ -5935,37 +5946,37 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2575
 msgctxt "Nintendo3DS"
 msgid "Retail"
-msgstr ""
+msgstr "საცალო"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:738
 msgctxt "Nintendo3DS"
 msgid "Encryption"
-msgstr ""
+msgstr "დაშიფვრა"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:862
 msgctxt "Nintendo3DS|Logo"
 msgid "Custom"
-msgstr ""
+msgstr "მორგებული"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:867
 msgctxt "Nintendo3DS"
 msgid "Logo"
-msgstr ""
+msgstr "ლოგო"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1169
 msgctxt "Nintendo3DS"
 msgid "FS Access"
-msgstr ""
+msgstr "წვდომა ფაილურ სისტემასთან"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1200
 msgctxt "Nintendo3DS"
 msgid "ARM9 Access"
-msgstr ""
+msgstr "ARM9-ის წვდომა"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1226
 msgctxt "Nintendo3DS"
 msgid "Services"
-msgstr ""
+msgstr "სერვისები"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1750
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1846
@@ -5976,7 +5987,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1800
 msgctxt "Nintendo3DS"
 msgid "DSiWare"
-msgstr ""
+msgstr "DSiWare"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1868
 msgctxt "Nintendo3DS"
@@ -5986,52 +5997,52 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1917
 msgctxt "Nintendo3DS|CCI"
 msgid "#"
-msgstr ""
+msgstr "#"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1918
 msgctxt "Nintendo3DS|CCI"
 msgid "Type"
-msgstr ""
+msgstr "ტიპი"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1919
 msgctxt "Nintendo3DS|CCI"
 msgid "Encryption"
-msgstr ""
+msgstr "დაშიფვრა"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1920
 msgctxt "Nintendo3DS|CCI"
 msgid "Version"
-msgstr ""
+msgstr "ვერსია"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1921
 msgctxt "Nintendo3DS|CCI"
 msgid "Size"
-msgstr ""
+msgstr "ზომა"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1943
 msgctxt "Nintendo3DS|eMMC"
 msgid "#"
-msgstr ""
+msgstr "#"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1944
 msgctxt "Nintendo3DS|eMMC"
 msgid "Type"
-msgstr ""
+msgstr "ტიპი"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1945
 msgctxt "Nintendo3DS|eMMC"
 msgid "Keyslot"
-msgstr ""
+msgstr "Keyslot"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1946
 msgctxt "Nintendo3DS|eMMC"
 msgid "Size"
-msgstr ""
+msgstr "ზომა"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1965
 msgctxt "Nintendo3DS"
 msgid "Media Type"
-msgstr ""
+msgstr "მედიის ტიპი"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1976
 msgctxt "Nintendo3DS"
@@ -6041,22 +6052,22 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1995
 msgctxt "Nintendo3DS|CDev"
 msgid "NOR Flash"
-msgstr ""
+msgstr "NOR Flash"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1996
 msgctxt "Nintendo3DS|CDev"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1997
 msgctxt "Nintendo3DS|CDev"
 msgid "Bluetooth"
-msgstr ""
+msgstr "ბლუთუზი"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1999
 msgctxt "Nintendo3DS"
 msgid "Card Device"
-msgstr ""
+msgstr "ბარათის მოწყობილობა"
 
 #. tr: Unrecognized card device (the raw SDK2 and SDK3 values are shown)
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2006
@@ -6073,7 +6084,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2127
 msgctxt "Nintendo3DS"
 msgid "Partitions"
-msgstr ""
+msgstr "დანაყოფები"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2180
 msgctxt "Nintendo3DS"
@@ -6083,43 +6094,43 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2314
 msgctxt "Nintendo3DS|CtNames"
 msgid "#"
-msgstr ""
+msgstr "#"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2315
 msgctxt "Nintendo3DS|CtNames"
 msgid "Type"
-msgstr ""
+msgstr "ტიპი"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2316
 msgctxt "Nintendo3DS|CtNames"
 msgid "Encryption"
-msgstr ""
+msgstr "დაშიფვრა"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2317
 msgctxt "Nintendo3DS|CtNames"
 msgid "Version"
-msgstr ""
+msgstr "ვერსია"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2318
 msgctxt "Nintendo3DS|CtNames"
 msgid "Size"
-msgstr ""
+msgstr "ზომა"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2325
 msgctxt "Nintendo3DS"
 msgid "Contents"
-msgstr ""
+msgstr "შემცველობა"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2337
 msgctxt "Nintendo3DS"
 msgid "Process Name"
-msgstr ""
+msgstr "პროცესის სახელი"
 
 #. tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_APPLICATION
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2343
 msgctxt "Nintendo3DS|ApplType"
 msgid "Application"
-msgstr ""
+msgstr "აპლიკაცია"
 
 #. tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_SYS_APPLET
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2345
@@ -6137,7 +6148,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2349
 msgctxt "Nintendo3DS|ApplType"
 msgid "SysModule"
-msgstr ""
+msgstr "სისტემური მოდული"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2358
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2401
@@ -6169,17 +6180,17 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2429
 msgctxt "Nintendo3DS|N3DSCPUMode"
 msgid "L2 Cache"
-msgstr ""
+msgstr "L2 კეში"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2430
 msgctxt "Nintendo3DS|N3DSCPUMode"
 msgid "804 MHz"
-msgstr ""
+msgstr "804 მჰც"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2444
 msgctxt "Nintendo3DS"
 msgid "Permissions"
-msgstr ""
+msgstr "უფლებები"
 
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:472
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:556
@@ -6196,7 +6207,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:505
 msgctxt "Nintendo3DSFirm"
 msgid "FIRM Version"
-msgstr ""
+msgstr "FIRM-ის ვერსია"
 
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:510
 msgctxt "Nintendo3DSFirm"
@@ -6206,7 +6217,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:600
 msgctxt "Nintendo3DSFirm"
 msgid "Not sighaxed"
-msgstr ""
+msgstr "არაt sighaxed"
 
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:616
 msgctxt "Nintendo3DSFirm"
@@ -6243,24 +6254,24 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:384
 msgctxt "NintendoDS|DSi_Flags"
 msgid "Require EULA"
-msgstr ""
+msgstr "EULA-ის მოთხოვნა"
 
 #. tr: Custom icon is used from the save file.
 #: ../src/libromdata/Handheld/NintendoDS.cpp:386
 msgctxt "NintendoDS|DSi_Flags"
 msgid "Custom Icon"
-msgstr ""
+msgstr "მომხმარებლის ხატულა"
 
 #. tr: Game supports Nintendo Wi-Fi Connection.
 #: ../src/libromdata/Handheld/NintendoDS.cpp:388
 msgctxt "NintendoDS|DSi_Flags"
 msgid "Nintendo WFC"
-msgstr ""
+msgstr "Nintendo WFC"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:389
 msgctxt "NintendoDS|DSi_Flags"
 msgid "DS Wireless"
-msgstr ""
+msgstr "უსადენო DS"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:390
 msgctxt "NintendoDS|DSi_Flags"
@@ -6275,7 +6286,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:392
 msgctxt "NintendoDS|DSi_Flags"
 msgid "Developer"
-msgstr ""
+msgstr "პროგრამისტი"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:834
 msgctxt "NintendoDS|SecurityData"
@@ -6285,12 +6296,12 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:835
 msgctxt "NintendoDS|SecurityData"
 msgid "Static Data"
-msgstr ""
+msgstr "სტატიკური მონაცემები"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:836
 msgctxt "NintendoDS|SecurityData"
 msgid "Random Data"
-msgstr ""
+msgstr "შემთხვევითი მონაცემები"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:840
 msgctxt "NintendoDS"
@@ -6300,12 +6311,12 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:846
 msgctxt "NintendoDS"
 msgid "Secure Area"
-msgstr ""
+msgstr "დაცული არე"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:862
 msgctxt "NintendoDS"
 msgid "Hardware"
-msgstr ""
+msgstr "აპარატურა"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:887
 msgctxt "NintendoDS"
@@ -6316,13 +6327,13 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:968
 msgctxt "NintendoDS|DSiFileType"
 msgid "Cartridge"
-msgstr ""
+msgstr "კარტრიჯი"
 
 #. tr: DSiWare (download-only title)
 #: ../src/libromdata/Handheld/NintendoDS.cpp:970
 msgctxt "NintendoDS|DSiFileType"
 msgid "DSiWare"
-msgstr ""
+msgstr "DSiWare"
 
 #. tr: DSi_FTYPE_SYSTEM_FUN_TOOL
 #: ../src/libromdata/Handheld/NintendoDS.cpp:972
@@ -6346,12 +6357,12 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:978
 msgctxt "NintendoDS|DSiFileType"
 msgid "System Menu"
-msgstr ""
+msgstr "სისტემური მენიუ"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:992
 msgctxt "NintendoDS"
 msgid "DSi ROM Type"
-msgstr ""
+msgstr "DSi ROM-ის ტიპი"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1022
 msgctxt "NintendoDS"
@@ -6361,27 +6372,27 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1075
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "Common Key"
-msgstr ""
+msgstr "საერთო გასაღები"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1076
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "AES Slot B"
-msgstr ""
+msgstr "AES სლოტი B"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1077
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "AES Slot C"
-msgstr ""
+msgstr "AES სლოტი C"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1078
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "SD Card"
-msgstr ""
+msgstr "SD-ბარათი"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1079
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "eMMC Access"
-msgstr ""
+msgstr "eMMC-სთან წვდომა"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1080
 msgctxt "NintendoDS|DSi_Permissions"
@@ -6391,7 +6402,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1081
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "Shared2 File"
-msgstr ""
+msgstr "Shared2 ფაილი"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1082
 msgctxt "NintendoDS|DSi_Permissions"
@@ -6446,47 +6457,47 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1116
 msgctxt "NintendoDS"
 msgid "Permissions"
-msgstr ""
+msgstr "უფლებები"
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:161
 msgctxt "NintendoDS|SecureArea"
 msgid "Homebrew"
-msgstr ""
+msgstr "Homebrew"
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:162
 msgctxt "NintendoDS|SecureArea"
 msgid "Multiboot"
-msgstr ""
+msgstr "Multiboot"
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:163
 msgctxt "NintendoDS|SecureArea"
 msgid "Decrypted"
-msgstr ""
+msgstr "გაშიფრულია"
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:164
 msgctxt "NintendoDS|SecureArea"
 msgid "Encrypted"
-msgstr ""
+msgstr "დაშიფრულია"
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:226
 msgctxt "NintendoDS|RomOps"
 msgid "&Untrim ROM"
-msgstr ""
+msgstr "ROM-ის წაკვეთის გა&უქმება"
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:227
 msgctxt "NintendoDS|RomOps"
 msgid "&Trim ROM"
-msgstr ""
+msgstr "ROM-ის &წაკვეთა"
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:248
 msgctxt "NintendoDS|RomOps"
 msgid "Encrypt ROM"
-msgstr ""
+msgstr "ROM-ის დაშიფვრა"
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:249
 msgctxt "NintendoDS|RomOps"
 msgid "Decrypt ROM"
-msgstr ""
+msgstr "ROM-ის გაშიფვრა"
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:281
 msgctxt "NintendoDS"
@@ -6601,53 +6612,53 @@ msgstr[1] ""
 #: ../src/libromdata/Handheld/PalmOS.cpp:656
 msgctxt "PalmOS"
 msgid "Creator ID"
-msgstr ""
+msgstr "შემქმნელის ID"
 
 #: ../src/libromdata/Handheld/PalmOS.cpp:664
 msgctxt "PalmOS"
 msgid "Icon Name"
-msgstr ""
+msgstr "ხატულას სახელი"
 
 #: ../src/libromdata/Handheld/PalmOS.cpp:676
 msgctxt "PalmOS"
 msgid "Category"
-msgstr ""
+msgstr "კატეგორია"
 
 #: ../src/libromdata/Handheld/PokemonMini.cpp:350
 msgctxt "RomData|VectorTable"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Handheld/PSP.cpp:619
 msgctxt "RomData"
 msgid "Video Title"
-msgstr ""
+msgstr "ვიდეოს სახელი"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:540
 msgctxt "WonderSwan"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:563
 msgctxt "WonderSwan"
 msgid "System"
-msgstr ""
+msgstr "სისტემა"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:572
 msgctxt "WonderSwan"
 msgid "ROM Size"
-msgstr ""
+msgstr "ROM-ის ზომა"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:585
 msgctxt "WonderSwan"
 msgid "Save Memory"
-msgstr ""
+msgstr "მეხსიერების შენახვა"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:587
 #: ../src/libromdata/Handheld/WonderSwan.cpp:604
 msgctxt "WonderSwan|SaveMemory"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #. tr: Parameter 2 indicates the save type, e.g. "SRAM" or "EEPROM".
 #: ../src/libromdata/Handheld/WonderSwan.cpp:591
@@ -6660,7 +6671,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:593
 msgctxt "WonderSwan|SaveMemory"
 msgid "SRAM"
-msgstr ""
+msgstr "SRAM"
 
 #. tr: Parameter 2 indicates the save type, e.g. "SRAM" or "EEPROM".
 #: ../src/libromdata/Handheld/WonderSwan.cpp:613
@@ -6672,42 +6683,42 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:616
 msgctxt "WonderSwan|SaveMemory"
 msgid "EEPROM"
-msgstr ""
+msgstr "EEPROM"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:622
 msgctxt "WonderSwan|Features"
 msgid "RTC Present"
-msgstr ""
+msgstr "RTC არსებობს"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:630
 msgctxt "WonderSwan"
 msgid "Orientation"
-msgstr ""
+msgstr "ორიენტაცია"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:632
 msgctxt "WonderSwan|Orientation"
 msgid "Vertical"
-msgstr ""
+msgstr "ვერტიკალური"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:633
 msgctxt "WonderSwan|Orientation"
 msgid "Horizontal"
-msgstr ""
+msgstr "ჰორიზონტალური"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:636
 msgctxt "WonderSwan"
 msgid "Bus Width"
-msgstr ""
+msgstr "სალტეს სიგანე"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:638
 msgctxt "WonderSwan|BusWidth"
 msgid "8-bit"
-msgstr ""
+msgstr "8-ბიტიანი"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:639
 msgctxt "WonderSwan|BusWidth"
 msgid "16-bit"
-msgstr ""
+msgstr "16-ბიტიანი"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:643
 msgctxt "WonderSwan"
@@ -6725,32 +6736,32 @@ msgstr[1] ""
 #: ../src/libromdata/Media/CBMDOS.cpp:1244
 msgctxt "CBMDOS"
 msgid "Disk Name"
-msgstr ""
+msgstr "დისკის სახელი"
 
 #: ../src/libromdata/Media/CBMDOS.cpp:1247
 msgctxt "CBMDOS"
 msgid "Disk ID"
-msgstr ""
+msgstr "დისკის ID"
 
 #: ../src/libromdata/Media/CBMDOS.cpp:1251
 msgctxt "CBMDOS"
 msgid "DOS Type"
-msgstr ""
+msgstr "DOS-ის ტიპი"
 
 #: ../src/libromdata/Media/CBMDOS.cpp:1390
 msgctxt "CBMDOS|Directory"
 msgid "Blocks"
-msgstr ""
+msgstr "ბლოკები"
 
 #: ../src/libromdata/Media/CBMDOS.cpp:1391
 msgctxt "CBMDOS|Directory"
 msgid "Filename"
-msgstr ""
+msgstr "ფაილის სახელი"
 
 #: ../src/libromdata/Media/CBMDOS.cpp:1392
 msgctxt "CBMDOS|Directory"
 msgid "Type"
-msgstr ""
+msgstr "ტიპი"
 
 #: ../src/libromdata/Media/CBMDOS.cpp:1449
 msgctxt "CBMDOS"
@@ -6780,22 +6791,22 @@ msgstr ""
 #: ../src/libromdata/Media/ISO.cpp:546
 msgctxt "ISO"
 msgid "System ID"
-msgstr ""
+msgstr "სისტემის ID"
 
 #: ../src/libromdata/Media/ISO.cpp:551
 msgctxt "ISO"
 msgid "Volume ID"
-msgstr ""
+msgstr "ტომის ID"
 
 #: ../src/libromdata/Media/ISO.cpp:556
 msgctxt "ISO"
 msgid "Volume Size"
-msgstr ""
+msgstr "ტომის ზომა"
 
 #: ../src/libromdata/Media/ISO.cpp:575
 msgctxt "ISO"
 msgid "Volume Set"
-msgstr ""
+msgstr "ტომი დაყენებულია"
 
 #: ../src/libromdata/Media/ISO.cpp:585
 msgctxt "ISO"
@@ -6805,7 +6816,7 @@ msgstr ""
 #: ../src/libromdata/Media/ISO.cpp:590
 msgctxt "ISO"
 msgid "Application"
-msgstr ""
+msgstr "აპლიკაცია"
 
 #: ../src/libromdata/Media/ISO.cpp:595
 msgctxt "ISO"
@@ -6845,7 +6856,7 @@ msgstr ""
 #: ../src/libromdata/Media/ISO.cpp:1255
 msgctxt "ISO"
 msgid "ISO-9660 PVD"
-msgstr ""
+msgstr "ISO-9660 PVD"
 
 #: ../src/libromdata/Media/ISO.cpp:1261 ../src/libromdata/Media/ISO.cpp:1312
 msgctxt "ISO"
@@ -6860,12 +6871,12 @@ msgstr ""
 #: ../src/libromdata/Media/ISO.cpp:1283
 msgctxt "ISO"
 msgid "Joliet"
-msgstr ""
+msgstr "Joliet"
 
 #: ../src/libromdata/Media/ISO.cpp:1285
 msgctxt "ISO|JolietSVDType"
 msgid "Not Present"
-msgstr ""
+msgstr "არ არსებობს"
 
 #: ../src/libromdata/Media/ISO.cpp:1295
 msgctxt "ISO"
@@ -6875,32 +6886,32 @@ msgstr ""
 #: ../src/libromdata/Media/ISO.cpp:1306
 msgctxt "ISO"
 msgid "CD-i PVD"
-msgstr ""
+msgstr "CD-i PVD"
 
 #: ../src/libromdata/Media/ISO.cpp:1331
 msgctxt "ISO"
 msgid "UDF Version"
-msgstr ""
+msgstr "UDF-ის ვერსია"
 
 #: ../src/libromdata/Media/Wim.cpp:217
 msgctxt "Wim"
 msgid "WIM Version"
-msgstr ""
+msgstr "WIM-ის ვერსია"
 
 #: ../src/libromdata/Media/Wim.cpp:230
 msgctxt "Wim|Flags"
 msgid "Compressed"
-msgstr ""
+msgstr "შეკუმშულია"
 
 #: ../src/libromdata/Media/Wim.cpp:231
 msgctxt "Wim|Flags"
 msgid "Read-only"
-msgstr ""
+msgstr "მხოლოდ-წაკითხვადი"
 
 #: ../src/libromdata/Media/Wim.cpp:232
 msgctxt "Wim|Flags"
 msgid "Spanned"
-msgstr ""
+msgstr "გაწელილია"
 
 #: ../src/libromdata/Media/Wim.cpp:233
 msgctxt "Wim|Flags"
@@ -6920,7 +6931,7 @@ msgstr ""
 #: ../src/libromdata/Media/Wim.cpp:270
 msgctxt "RomData"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Media/Wim.cpp:273
 msgctxt "Wim"
@@ -6930,42 +6941,42 @@ msgstr ""
 #: ../src/libromdata/Media/Wim.cpp:274
 msgctxt "Wim"
 msgid "Part Number"
-msgstr ""
+msgstr "ნაწილის ნომერი"
 
 #: ../src/libromdata/Media/Wim.cpp:276
 msgctxt "Wim"
 msgid "Total Images"
-msgstr ""
+msgstr "გამოსახულებები სულ"
 
 #: ../src/libromdata/Media/Wim_xml.cpp:176
 msgctxt "Wim"
 msgid "(unknown)"
-msgstr ""
+msgstr "(უცნობი)"
 
 #: ../src/libromdata/Media/Wim_xml.cpp:237
 msgctxt "Wim"
 msgid "(none)"
-msgstr ""
+msgstr "(არცერთი)"
 
 #: ../src/libromdata/Media/Wim_xml.cpp:373
 msgctxt "Wim|Images"
 msgid "#"
-msgstr ""
+msgstr "#"
 
 #: ../src/libromdata/Media/Wim_xml.cpp:374
 msgctxt "Wim|Images"
 msgid "Name"
-msgstr ""
+msgstr "სახელი"
 
 #: ../src/libromdata/Media/Wim_xml.cpp:375
 msgctxt "Wim|Images"
 msgid "Description"
-msgstr ""
+msgstr "აღწერა"
 
 #: ../src/libromdata/Media/Wim_xml.cpp:376
 msgctxt "Wim|Images"
 msgid "Display Name"
-msgstr ""
+msgstr "საჩვენებელი სახელი"
 
 #: ../src/libromdata/Media/Wim_xml.cpp:377
 msgctxt "Wim|Images"
@@ -6980,27 +6991,27 @@ msgstr ""
 #: ../src/libromdata/Media/Wim_xml.cpp:379
 msgctxt "Wim|Images"
 msgid "OS Version"
-msgstr ""
+msgstr "ოს-ის ვერსია"
 
 #: ../src/libromdata/Media/Wim_xml.cpp:380
 msgctxt "Wim|Images"
 msgid "Edition"
-msgstr ""
+msgstr "გამოცემა"
 
 #: ../src/libromdata/Media/Wim_xml.cpp:381
 msgctxt "Wim|Images"
 msgid "Architecture"
-msgstr ""
+msgstr "არქიტექტურა"
 
 #: ../src/libromdata/Media/Wim_xml.cpp:382
 msgctxt "Wim|Images"
 msgid "Language"
-msgstr ""
+msgstr "ენა"
 
 #: ../src/libromdata/Media/Wim_xml.cpp:394
 msgctxt "Wim"
 msgid "Images"
-msgstr ""
+msgstr "გამოსახულებები"
 
 #: ../src/libromdata/Other/Amiibo.cpp:385
 msgctxt "Amiibo"
@@ -7012,25 +7023,25 @@ msgstr ""
 #: ../src/libromdata/Other/Amiibo.cpp:395
 msgctxt "Amiibo"
 msgid "amiibo ID"
-msgstr ""
+msgstr "amiibo ID"
 
 #. tr: NFP_TYPE_FIGURINE == standard amiibo
 #: ../src/libromdata/Other/Amiibo.cpp:402
 msgctxt "Amiibo|Type"
 msgid "Figurine"
-msgstr ""
+msgstr "პატარა ქანდაკება"
 
 #. tr: NFP_TYPE_CARD == amiibo card
 #: ../src/libromdata/Other/Amiibo.cpp:404
 msgctxt "Amiibo|Type"
 msgid "Card"
-msgstr ""
+msgstr "ბარათი"
 
 #. tr: NFP_TYPE_YARN == yarn amiibo
 #: ../src/libromdata/Other/Amiibo.cpp:406
 msgctxt "Amiibo|Type"
 msgid "Yarn"
-msgstr ""
+msgstr "დიოსკორეა"
 
 #. tr: NFP_TYPE_BAND == Power-Up Band
 #: ../src/libromdata/Other/Amiibo.cpp:408
@@ -7042,12 +7053,12 @@ msgstr ""
 #: ../src/libromdata/Other/Amiibo.cpp:410
 msgctxt "Amiibo|Type"
 msgid "Wooden Block"
-msgstr ""
+msgstr "ხის ბლოკი"
 
 #: ../src/libromdata/Other/Amiibo.cpp:412
 msgctxt "Amiibo"
 msgid "amiibo Type"
-msgstr ""
+msgstr "amiibo-ის ტიპი"
 
 #: ../src/libromdata/Other/Amiibo.cpp:427
 msgctxt "Amiibo"
@@ -7067,7 +7078,7 @@ msgstr ""
 #: ../src/libromdata/Other/Amiibo.cpp:442
 msgctxt "Amiibo"
 msgid "amiibo Name"
-msgstr ""
+msgstr "amiibo-ის სახელი"
 
 #: ../src/libromdata/Other/Amiibo.cpp:447
 msgctxt "Amiibo"
@@ -7090,62 +7101,62 @@ msgstr ""
 #: ../src/libromdata/Other/Amiibo.cpp:460
 msgctxt "Amiibo"
 msgid "Credits"
-msgstr ""
+msgstr "ავტორები"
 
 #: ../src/libromdata/Other/ELF.cpp:976
 msgctxt "ELF"
 msgid "Name"
-msgstr ""
+msgstr "სახელი"
 
 #: ../src/libromdata/Other/ELF.cpp:1080
 msgctxt "ELF|Symbol"
 msgid "(Undefined)"
-msgstr ""
+msgstr "(აღწერილი არაა)"
 
 #: ../src/libromdata/Other/ELF.cpp:1081
 msgctxt "ELF|Symbol"
 msgid "(Absolute)"
-msgstr ""
+msgstr "(აბსოლუტური)"
 
 #: ../src/libromdata/Other/ELF.cpp:1082
 msgctxt "ELF|Symbol"
 msgid "(COMMON)"
-msgstr ""
+msgstr "(საერთო)"
 
 #: ../src/libromdata/Other/ELF.cpp:1144
 msgctxt "ELF|Symbol"
 msgid "Name"
-msgstr ""
+msgstr "სახელი"
 
 #: ../src/libromdata/Other/ELF.cpp:1145
 msgctxt "ELF|Symbol"
 msgid "Binding"
-msgstr ""
+msgstr "ასოცირება"
 
 #: ../src/libromdata/Other/ELF.cpp:1146
 msgctxt "ELF|Symbol"
 msgid "Type"
-msgstr ""
+msgstr "ტიპი"
 
 #: ../src/libromdata/Other/ELF.cpp:1147
 msgctxt "ELF|Symbol"
 msgid "Visibility"
-msgstr ""
+msgstr "ხილვადობა"
 
 #: ../src/libromdata/Other/ELF.cpp:1148
 msgctxt "ELF|Symbol"
 msgid "Section"
-msgstr ""
+msgstr "განყოფილება"
 
 #: ../src/libromdata/Other/ELF.cpp:1149
 msgctxt "ELF|Symbol"
 msgid "Value"
-msgstr ""
+msgstr "მნიშვნელობა"
 
 #: ../src/libromdata/Other/ELF.cpp:1150
 msgctxt "ELF|Symbol"
 msgid "Size"
-msgstr ""
+msgstr "ზომა"
 
 #: ../src/libromdata/Other/ELF.cpp:1532 ../src/libromdata/Other/MachO.cpp:493
 msgctxt "RomData|ExecType"
@@ -7170,12 +7181,12 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:1537
 msgctxt "ELF"
 msgid "Format"
-msgstr ""
+msgstr "ფორმატი"
 
 #: ../src/libromdata/Other/ELF.cpp:1552
 msgctxt "ELF"
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: ../src/libromdata/Other/ELF.cpp:1558 ../src/libromdata/Other/EXE.cpp:489
 #: ../src/libromdata/Other/EXE_PE.cpp:731
@@ -7208,7 +7219,7 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:1622
 msgctxt "ELF|SPARC_MM"
 msgid "Invalid"
-msgstr ""
+msgstr "არასწორი"
 
 #: ../src/libromdata/Other/ELF.cpp:1624
 msgctxt "ELF"
@@ -7219,7 +7230,7 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:1638
 msgctxt "ELF|SPARCFlags"
 msgid "LE Data"
-msgstr ""
+msgstr "LE მონაცემები"
 
 #: ../src/libromdata/Other/ELF.cpp:1641 ../src/libromdata/Other/ELF.cpp:1686
 #: ../src/libromdata/Other/ELF.cpp:1726 ../src/libromdata/Other/ELF.cpp:1774
@@ -7228,22 +7239,22 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:2078
 msgctxt "ELF"
 msgid "CPU Flags"
-msgstr ""
+msgstr "CPU-ის ალმები"
 
 #: ../src/libromdata/Other/ELF.cpp:1650
 msgctxt "ELF"
 msgid "MIPS ABI"
-msgstr ""
+msgstr "MIPS ABI"
 
 #: ../src/libromdata/Other/ELF.cpp:1661
 msgctxt "ELF"
 msgid "CPU Level"
-msgstr ""
+msgstr "CPU-ის დონე"
 
 #: ../src/libromdata/Other/ELF.cpp:1674
 msgctxt "ELF|MIPSFlags"
 msgid "No Reorder"
-msgstr ""
+msgstr "გადალაგების გარეშე"
 
 #: ../src/libromdata/Other/ELF.cpp:1678
 msgctxt "ELF|MIPSFlags"
@@ -7258,57 +7269,57 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:1717
 msgctxt "ELF|PARISCFlags"
 msgid "Trap NULL"
-msgstr ""
+msgstr "მახე NULL-ის ტოლია"
 
 #: ../src/libromdata/Other/ELF.cpp:1719
 msgctxt "ELF|PARISCFlags"
 msgid "Wide"
-msgstr ""
+msgstr "ფართო"
 
 #: ../src/libromdata/Other/ELF.cpp:1721
 msgctxt "ELF|PARISCFlags"
 msgid "No KABP"
-msgstr ""
+msgstr "KABP-ის გარეშე"
 
 #: ../src/libromdata/Other/ELF.cpp:1723
 msgctxt "ELF|PARISCFlags"
 msgid "Lazy Swap"
-msgstr ""
+msgstr "ზარმაცი სვოპი"
 
 #: ../src/libromdata/Other/ELF.cpp:1753
 msgctxt "ELF"
 msgid "ARM EABI"
-msgstr ""
+msgstr "ARM EABI"
 
 #: ../src/libromdata/Other/ELF.cpp:1763
 msgctxt "ELF|ARMFlags"
 msgid "APCS Float"
-msgstr ""
+msgstr "APCS მცურავი"
 
 #: ../src/libromdata/Other/ELF.cpp:1765
 msgctxt "ELF|ARMFlags"
 msgid "Align8"
-msgstr ""
+msgstr "Align8"
 
 #: ../src/libromdata/Other/ELF.cpp:1766
 msgctxt "ELF|ARMFlags"
 msgid "New ABI"
-msgstr ""
+msgstr "ახალი ABI"
 
 #: ../src/libromdata/Other/ELF.cpp:1768
 msgctxt "ELF|ARMFlags"
 msgid "Old ABI"
-msgstr ""
+msgstr "ძველი ABI"
 
 #: ../src/libromdata/Other/ELF.cpp:1769
 msgctxt "ELF|ARMFlags"
 msgid "Soft Float"
-msgstr ""
+msgstr "პროგრამული მცურავი"
 
 #: ../src/libromdata/Other/ELF.cpp:1770
 msgctxt "ELF|ARMFlags"
 msgid "VFP Float"
-msgstr ""
+msgstr "VFP მცურავი"
 
 #: ../src/libromdata/Other/ELF.cpp:1771
 msgctxt "ELF|ARMFlags"
@@ -7330,17 +7341,17 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:2034
 msgctxt "ELF"
 msgid "CPU Subtype"
-msgstr ""
+msgstr "CPU-ის ქვეტიპი"
 
 #: ../src/libromdata/Other/ELF.cpp:1857
 msgctxt "ELF"
 msgid "Linux OSABI"
-msgstr ""
+msgstr "Linux-ის OSABI"
 
 #: ../src/libromdata/Other/ELF.cpp:1928
 msgctxt "ELF"
 msgid "ColdFire ISA"
-msgstr ""
+msgstr "ColdFire ISA"
 
 #: ../src/libromdata/Other/ELF.cpp:1973
 msgctxt "ELF"
@@ -7350,32 +7361,32 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:2007
 msgctxt "ELF|BlackfinFlags"
 msgid "Code in L1"
-msgstr ""
+msgstr "კოდი L1-ში"
 
 #: ../src/libromdata/Other/ELF.cpp:2008
 msgctxt "ELF|BlackfinFlags"
 msgid "Data in L1"
-msgstr ""
+msgstr "მონაცემები L1-ში"
 
 #: ../src/libromdata/Other/ELF.cpp:2064
 msgctxt "ELF|RISCVFPABI"
 msgid "Soft-Float"
-msgstr ""
+msgstr "პროგრამული მცურავი"
 
 #: ../src/libromdata/Other/ELF.cpp:2065
 msgctxt "ELF|RISCVFPABI"
 msgid "Single-Float"
-msgstr ""
+msgstr "ერთმაგი მცურავი"
 
 #: ../src/libromdata/Other/ELF.cpp:2066
 msgctxt "ELF|RISCVFPABI"
 msgid "Double-Float"
-msgstr ""
+msgstr "ორმაგი მცურავი"
 
 #: ../src/libromdata/Other/ELF.cpp:2067
 msgctxt "ELF|RISCVFPABI"
 msgid "Quad-Float"
-msgstr ""
+msgstr "მეოთხე დონის მცურავი"
 
 #: ../src/libromdata/Other/ELF.cpp:2069
 msgctxt "ELF"
@@ -7385,32 +7396,32 @@ msgstr ""
 #: ../src/libromdata/Other/ELF.cpp:2089
 msgctxt "ELF"
 msgid "OS ABI"
-msgstr ""
+msgstr "OS ABI"
 
 #: ../src/libromdata/Other/ELF.cpp:2100
 msgctxt "ELF"
 msgid "ABI Version"
-msgstr ""
+msgstr "ABI-ის ვერსია"
 
 #: ../src/libromdata/Other/ELF.cpp:2106
 msgctxt "ELF"
 msgid "Linkage"
-msgstr ""
+msgstr "კავშირი"
 
 #: ../src/libromdata/Other/ELF.cpp:2108
 msgctxt "ELF|Linkage"
 msgid "Dynamic"
-msgstr ""
+msgstr "დინამიკური"
 
 #: ../src/libromdata/Other/ELF.cpp:2109
 msgctxt "ELF|Linkage"
 msgid "Static"
-msgstr ""
+msgstr "სტატიკური"
 
 #: ../src/libromdata/Other/ELF.cpp:2114
 msgctxt "ELF"
 msgid "Interpreter"
-msgstr ""
+msgstr "ინტერპრეტატორი"
 
 #. tr: Entry point, then "Position-Independent".
 #: ../src/libromdata/Other/ELF.cpp:2135
@@ -7422,7 +7433,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:143
 msgctxt "EXE"
 msgid "File Version"
-msgstr ""
+msgstr "ფაილის ვერსია"
 
 #: ../src/libromdata/Other/EXE.cpp:151
 msgctxt "EXE"
@@ -7432,17 +7443,17 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:160
 msgctxt "EXE|FileFlags"
 msgid "Debug"
-msgstr ""
+msgstr "გამართვა"
 
 #: ../src/libromdata/Other/EXE.cpp:161
 msgctxt "EXE|FileFlags"
 msgid "Prerelease"
-msgstr ""
+msgstr "გამოცემამდელი"
 
 #: ../src/libromdata/Other/EXE.cpp:162
 msgctxt "EXE|FileFlags"
 msgid "Patched"
-msgstr ""
+msgstr "დაპაჩული"
 
 #: ../src/libromdata/Other/EXE.cpp:163
 msgctxt "EXE|FileFlags"
@@ -7462,24 +7473,24 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:168
 msgctxt "EXE"
 msgid "File Flags"
-msgstr ""
+msgstr "ფაილის ალმები"
 
 #: ../src/libromdata/Other/EXE.cpp:211
 msgctxt "EXE"
 msgid "File OS"
-msgstr ""
+msgstr "ოს-ის ფაილი"
 
 #. tr: VFT_APP
 #: ../src/libromdata/Other/EXE.cpp:224
 msgctxt "EXE|FileType"
 msgid "Application"
-msgstr ""
+msgstr "აპლიკაცია"
 
 #. tr: VFT_DLL
 #: ../src/libromdata/Other/EXE.cpp:226
 msgctxt "EXE|FileType"
 msgid "DLL"
-msgstr ""
+msgstr "DLL"
 
 #. tr: VFT_DRV
 #: ../src/libromdata/Other/EXE.cpp:228
@@ -7491,7 +7502,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:230
 msgctxt "EXE|FileType"
 msgid "Font"
-msgstr ""
+msgstr "ფონტი"
 
 #. tr: VFT_VXD
 #: ../src/libromdata/Other/EXE.cpp:232
@@ -7508,61 +7519,61 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:238
 msgctxt "EXE"
 msgid "File Type"
-msgstr ""
+msgstr "ფაილის ტიპი"
 
 #. tr: VFT2_DRV_PRINTER
 #: ../src/libromdata/Other/EXE.cpp:263
 msgctxt "EXE|FileSubType"
 msgid "Printer"
-msgstr ""
+msgstr "პრინტერი"
 
 #. tr: VFT2_DRV_KEYBOARD
 #: ../src/libromdata/Other/EXE.cpp:265
 msgctxt "EXE|FileSubType"
 msgid "Keyboard"
-msgstr ""
+msgstr "კლავიატურა"
 
 #. tr: VFT2_DRV_LANGUAGE
 #: ../src/libromdata/Other/EXE.cpp:267
 msgctxt "EXE|FileSubType"
 msgid "Language"
-msgstr ""
+msgstr "ენა"
 
 #. tr: VFT2_DRV_DISPLAY
 #: ../src/libromdata/Other/EXE.cpp:269
 msgctxt "EXE|FileSubType"
 msgid "Display"
-msgstr ""
+msgstr "ჩვენება"
 
 #. tr: VFT2_DRV_MOUSE
 #: ../src/libromdata/Other/EXE.cpp:271
 msgctxt "EXE|FileSubType"
 msgid "Mouse"
-msgstr ""
+msgstr "თაგუნა"
 
 #. tr: VFT2_DRV_NETWORK
 #: ../src/libromdata/Other/EXE.cpp:273
 msgctxt "EXE|FileSubType"
 msgid "Network"
-msgstr ""
+msgstr "ქსელი"
 
 #. tr: VFT2_DRV_SYSTEM
 #: ../src/libromdata/Other/EXE.cpp:275
 msgctxt "EXE|FileSubType"
 msgid "System"
-msgstr ""
+msgstr "სისტემა"
 
 #. tr: VFT2_DRV_INSTALLABLE
 #: ../src/libromdata/Other/EXE.cpp:277
 msgctxt "EXE|FileSubType"
 msgid "Installable"
-msgstr ""
+msgstr "დაყენებადი"
 
 #. tr: VFT2_DRV_SOUND
 #: ../src/libromdata/Other/EXE.cpp:279
 msgctxt "EXE|FileSubType"
 msgid "Sound"
-msgstr ""
+msgstr "ხმა"
 
 #. tr: VFT2_DRV_COMM
 #: ../src/libromdata/Other/EXE.cpp:281
@@ -7574,7 +7585,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:283
 msgctxt "EXE|FileSubType"
 msgid "Input Method"
-msgstr ""
+msgstr "შეყვანის მეთოდი"
 
 #. tr: VFT2_DRV_VERSIONED_PRINTER
 #: ../src/libromdata/Other/EXE.cpp:285
@@ -7586,49 +7597,49 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:299
 msgctxt "EXE|FileSubType"
 msgid "Raster"
-msgstr ""
+msgstr "რასტრული"
 
 #. tr: VFT2_FONT_VECTOR
 #: ../src/libromdata/Other/EXE.cpp:301
 msgctxt "EXE|FileSubType"
 msgid "Vector"
-msgstr ""
+msgstr "ვექტორული"
 
 #. tr: VFT2_FONT_TRUETYPE
 #: ../src/libromdata/Other/EXE.cpp:303
 msgctxt "EXE|FileSubType"
 msgid "TrueType"
-msgstr ""
+msgstr "TrueType"
 
 #: ../src/libromdata/Other/EXE.cpp:316
 msgctxt "EXE"
 msgid "File Subtype"
-msgstr ""
+msgstr "ფაილის ქვეტიპი"
 
 #: ../src/libromdata/Other/EXE.cpp:333
 msgctxt "EXE"
 msgid "File Time"
-msgstr ""
+msgstr "ფაილის დრო"
 
 #: ../src/libromdata/Other/EXE.cpp:360
 msgctxt "EXE|StringFileInfo"
 msgid "Key"
-msgstr ""
+msgstr "გასაღები"
 
 #: ../src/libromdata/Other/EXE.cpp:361
 msgctxt "EXE|StringFileInfo"
 msgid "Value"
-msgstr ""
+msgstr "მნიშვნელობა"
 
 #: ../src/libromdata/Other/EXE.cpp:400
 msgctxt "EXE"
 msgid "Header Size"
-msgstr ""
+msgstr "თავსართის ზომა"
 
 #: ../src/libromdata/Other/EXE.cpp:402
 msgctxt "EXE"
 msgid "Program Size"
-msgstr ""
+msgstr "პროგრამის ზომა"
 
 #: ../src/libromdata/Other/EXE.cpp:415
 msgctxt "EXE"
@@ -7643,27 +7654,27 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:428
 msgctxt "EXE"
 msgid "Min. Memory"
-msgstr ""
+msgstr "მინ. მეხსიერება"
 
 #: ../src/libromdata/Other/EXE.cpp:429
 msgctxt "EXE"
 msgid "Max. Memory"
-msgstr ""
+msgstr "მაქს. მეხსიერება"
 
 #: ../src/libromdata/Other/EXE.cpp:430
 msgctxt "EXE"
 msgid "All"
-msgstr ""
+msgstr "ყველა"
 
 #: ../src/libromdata/Other/EXE.cpp:436
 msgctxt "EXE"
 msgid "Load Type"
-msgstr ""
+msgstr "ჩატვირთვის ტიპი"
 
 #: ../src/libromdata/Other/EXE.cpp:436
 msgctxt "EXE"
 msgid "High"
-msgstr ""
+msgstr "მაღალი"
 
 #: ../src/libromdata/Other/EXE.cpp:440
 msgctxt "EXE"
@@ -7678,22 +7689,22 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:459
 msgctxt "EXE"
 msgid "No stack"
-msgstr ""
+msgstr "სტეკის გარეშე"
 
 #: ../src/libromdata/Other/EXE.cpp:482 ../src/libromdata/Other/EXE_PE.cpp:739
 msgctxt "EXE"
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: ../src/libromdata/Other/EXE.cpp:494 ../src/libromdata/Other/EXE_NE.cpp:402
 msgctxt "EXE"
 msgid "Target OS"
-msgstr ""
+msgstr "სამიზნე ოს-ი"
 
 #: ../src/libromdata/Other/EXE.cpp:889
 msgctxt "EXE"
 msgid "Unknown NE"
-msgstr ""
+msgstr "უცნობი NE"
 
 #: ../src/libromdata/Other/EXE.cpp:914
 msgctxt "EXE"
@@ -7703,42 +7714,42 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:977
 msgctxt "EXE"
 msgid "Unknown EXE"
-msgstr ""
+msgstr "უცნობი EXE"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:233
 msgctxt "EXE"
 msgid "Manifest"
-msgstr ""
+msgstr "მანიფესტი"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:236
 msgctxt "EXE|Manifest"
 msgid "Manifest ID"
-msgstr ""
+msgstr "მანიფესტის ID"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:251
 msgctxt "EXE|Manifest"
 msgid "Type"
-msgstr ""
+msgstr "ტიპი"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:252
 msgctxt "EXE|Manifest"
 msgid "Name"
-msgstr ""
+msgstr "სახელი"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:253
 msgctxt "EXE|Manifest"
 msgid "Language"
-msgstr ""
+msgstr "ენა"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:254
 msgctxt "EXE|Manifest"
 msgid "Version"
-msgstr ""
+msgstr "ვერსია"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:256
 msgctxt "EXE|Manifest"
 msgid "CPU Arch"
-msgstr ""
+msgstr "CPU-ის არქიტექტურა"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:257
 msgctxt "EXE|Manifest"
@@ -7753,7 +7764,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_manifest.cpp:275
 msgctxt "EXE|Manifest"
 msgid "UI Access"
-msgstr ""
+msgstr "წვდომა ინტერფეისთან"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:336
 msgctxt "EXE|Manifest"
@@ -7763,7 +7774,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_manifest.cpp:357
 msgctxt "EXE|Manifest|WinSettings"
 msgid "Auto Elevate"
-msgstr ""
+msgstr "ავტომატურად ამაღლება"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:358
 msgctxt "EXE|Manifest|WinSettings"
@@ -7778,7 +7789,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_manifest.cpp:360
 msgctxt "EXE|Manifest|WinSettings"
 msgid "GDI Scaling"
-msgstr ""
+msgstr "GDI-ის მასშტაბი"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:361
 msgctxt "EXE|Manifest|WinSettings"
@@ -7808,12 +7819,12 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_manifest.cpp:408
 msgctxt "EXE|Manifest"
 msgid "Settings"
-msgstr ""
+msgstr "პარამეტრები"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:415
 msgctxt "EXE|Manifest"
 msgid "DPI Aware"
-msgstr ""
+msgstr "იცის, რა არის DPI"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:417
 msgctxt "EXE|Manifest"
@@ -7828,7 +7839,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_manifest.cpp:423
 msgctxt "EXE|Manifest"
 msgid "Heap Type"
-msgstr ""
+msgstr "დროებითი მეხსიერების ტიპი"
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:426
 msgctxt "EXE|Manifest"
@@ -7845,7 +7856,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:420
 msgctxt "EXE|DGroupType"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:421
 msgctxt "EXE|DGroupType"
@@ -7855,22 +7866,22 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:422
 msgctxt "EXE|DGroupType"
 msgid "Multiple"
-msgstr ""
+msgstr "ერთზე მეტი"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:423
 msgctxt "EXE|DGroupType"
 msgid "(null)"
-msgstr ""
+msgstr "(ნული)"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:425
 msgctxt "EXE"
 msgid "DGroup Type"
-msgstr ""
+msgstr "DGroup-ის ტიპი"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:431
 msgctxt "EXE|ProgFlags"
 msgid "Global Init"
-msgstr ""
+msgstr "გლობალური ინიციალიზაცია"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:432
 msgctxt "EXE|ProgFlags"
@@ -7880,28 +7891,28 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:433
 msgctxt "EXE|ProgFlags"
 msgid "8086 insns"
-msgstr ""
+msgstr "8086 insns"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:434
 msgctxt "EXE|ProgFlags"
 msgid "80286 insns"
-msgstr ""
+msgstr "80286 insns"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:435
 msgctxt "EXE|ProgFlags"
 msgid "80386 insns"
-msgstr ""
+msgstr "80386 insns"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:436
 msgctxt "EXE|ProgFlags"
 msgid "FPU insns"
-msgstr ""
+msgstr "FPU insns"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:447
 #: ../src/libromdata/Other/EXE_NE.cpp:456
 msgctxt "EXE|ApplType"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:448
 msgctxt "EXE|ApplType"
@@ -7946,7 +7957,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:472
 msgctxt "EXE|ApplFlags"
 msgid "Image Error"
-msgstr ""
+msgstr "გამოსახულების შეცდომა"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:473
 msgctxt "EXE|ApplFlags"
@@ -7956,7 +7967,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:474
 msgctxt "EXE|ApplFlags"
 msgid "DLL"
-msgstr ""
+msgstr "DLL"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:477
 msgctxt "EXE"
@@ -7986,24 +7997,24 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:493
 msgctxt "EXE"
 msgid "Other Flags"
-msgstr ""
+msgstr "სხვა ალმები"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:525
 #: ../src/libromdata/Other/EXE_PE.cpp:802
 msgctxt "EXE"
 msgid "Timestamp"
-msgstr ""
+msgstr "დროის შტამპი"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:535
 #: ../src/libromdata/Other/EXE_PE.cpp:817
 msgctxt "EXE"
 msgid "Runtime DLL"
-msgstr ""
+msgstr "გაშვების გარემოს DLL"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:560
 msgctxt "EXE"
 msgid "Module Name"
-msgstr ""
+msgstr "მოდულის სახელი"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:563
 msgctxt "EXE"
@@ -8014,7 +8025,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:963
 msgctxt "EXE|Exports"
 msgid "(No name)"
-msgstr ""
+msgstr "(უსახელო)"
 
 #. tr: Segment:Offset (and segment type)
 #: ../src/libromdata/Other/EXE_NE.cpp:764
@@ -8026,12 +8037,12 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:765
 msgctxt "EXE|Exports"
 msgid "Movable"
-msgstr ""
+msgstr "გადატანადი"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:766
 msgctxt "EXE|Exports"
 msgid "Fixed"
-msgstr ""
+msgstr "ფიქსირებული"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:767
 #, c++-format
@@ -8044,14 +8055,14 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:841
 msgctxt "EXE"
 msgid "Entries"
-msgstr ""
+msgstr "ჩანაწერები"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:825
 #: ../src/libromdata/Other/EXE_NE.cpp:1032
 #: ../src/libromdata/Other/EXE_PE.cpp:1067
 msgctxt "EXE|Exports"
 msgid "Ordinal"
-msgstr ""
+msgstr "რიგობითი რიცხვითი სახელი"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:826
 #: ../src/libromdata/Other/EXE_NE.cpp:1031
@@ -8059,17 +8070,17 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:1334
 msgctxt "EXE|Exports"
 msgid "Name"
-msgstr ""
+msgstr "სახელი"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:827
 msgctxt "EXE|Exports"
 msgid "Address"
-msgstr ""
+msgstr "მისამართი"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:828
 msgctxt "EXE|Exports"
 msgid "Flags"
-msgstr ""
+msgstr "ალმები"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:1026
 #: ../src/libromdata/Other/EXE_NE.cpp:1046
@@ -8077,13 +8088,13 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:1349
 msgctxt "EXE"
 msgid "Imports"
-msgstr ""
+msgstr "შემოტანები"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:1033
 #: ../src/libromdata/Other/EXE_PE.cpp:1336
 msgctxt "EXE|Exports"
 msgid "Module"
-msgstr ""
+msgstr "მოდული"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:550
 #: ../src/libromdata/Other/EXE_PE.cpp:607
@@ -8113,12 +8124,12 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:742
 msgctxt "EXE"
 msgid "Subsystem"
-msgstr ""
+msgstr "ქვესისტემა"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:749
 msgctxt "EXE|PEFlags"
 msgid "Executable"
-msgstr ""
+msgstr "შესრულებადი"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:751
 msgctxt "EXE|PEFlags"
@@ -8128,12 +8139,12 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:755
 msgctxt "EXE|PEFlags"
 msgid "DLL"
-msgstr ""
+msgstr "DLL"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:759
 msgctxt "EXE"
 msgid "PE Flags"
-msgstr ""
+msgstr "PE ალმები"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:765
 msgctxt "EXE|DLLFlags"
@@ -8143,7 +8154,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:766
 msgctxt "EXE|DLLFlags"
 msgid "Dynamic Base"
-msgstr ""
+msgstr "დინამიკური ბაზა"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:767
 msgctxt "EXE|DLLFlags"
@@ -8158,27 +8169,27 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:769
 msgctxt "EXE|DLLFlags"
 msgid "No Isolation"
-msgstr ""
+msgstr "იზოლაციის გარეშე"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:770
 msgctxt "EXE|DLLFlags"
 msgid "No SEH"
-msgstr ""
+msgstr "SEH-ის გარეშე"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:771
 msgctxt "EXE|DLLFlags"
 msgid "No Bind"
-msgstr ""
+msgstr "ასოცირების გარეშე"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:772
 msgctxt "EXE|DLLFlags"
 msgid "AppContainer"
-msgstr ""
+msgstr "AppContainer"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:773
 msgctxt "EXE|DLLFlags"
 msgid "WDM Driver"
-msgstr ""
+msgstr "WDM დრაივერი"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:774
 msgctxt "EXE|DLLFlags"
@@ -8188,12 +8199,12 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:775
 msgctxt "EXE|DLLFlags"
 msgid "TS Aware"
-msgstr ""
+msgstr "იცის TS"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:778
 msgctxt "EXE"
 msgid "DLL Flags"
-msgstr ""
+msgstr "DLL-ის ალმები"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:788
 msgctxt "EXE|DependentLoadFlags"
@@ -8203,12 +8214,12 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:789
 msgctxt "EXE|DependentLoadFlags"
 msgid "User Dirs"
-msgstr ""
+msgstr "მომხმარებლის საქაღალდეები"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:791
 msgctxt "EXE|DependentLoadFlags"
 msgid "Default Dirs"
-msgstr ""
+msgstr "ნაგულისხმევი საქაღალდეები"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:794
 msgctxt "EXE"
@@ -8218,24 +8229,24 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:810
 msgctxt "EXE"
 msgid "Not set"
-msgstr ""
+msgstr "დაყენებული არაა"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:1045
 msgctxt "EXE|Exports"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:1062
 #: ../src/libromdata/Other/EXE_PE.cpp:1083
 msgctxt "EXE"
 msgid "Exports"
-msgstr ""
+msgstr "გატანები"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:1068
 #: ../src/libromdata/Other/EXE_PE.cpp:1335
 msgctxt "EXE|Exports"
 msgid "Hint"
-msgstr ""
+msgstr "მინიშნება"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:1069
 msgctxt "EXE|Exports"
@@ -8245,7 +8256,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:1070
 msgctxt "EXE|Exports"
 msgid "File Offset"
-msgstr ""
+msgstr "ფაილის წანაცვლება"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:1279
 #, c++-format
@@ -8266,22 +8277,22 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:1451
 msgctxt "EXE|PDB"
 msgid "PDB Link"
-msgstr ""
+msgstr "PDB Link"
 
 #: ../src/libromdata/Other/GameMaker.cpp:541
 msgctxt "GameMaker"
 msgid "Display Name"
-msgstr ""
+msgstr "საჩვენებელი სახელი"
 
 #: ../src/libromdata/Other/GameMaker.cpp:552
 msgctxt "GameMaker"
 msgid "Runtime"
-msgstr ""
+msgstr "გაშვების გარემო"
 
 #: ../src/libromdata/Other/GameMaker.cpp:556
 msgctxt "GameMaker"
 msgid "Project Name"
-msgstr ""
+msgstr "პროექტის სახელი"
 
 #: ../src/libromdata/Other/GameMaker.cpp:561
 msgctxt "GameMaker"
@@ -8291,12 +8302,12 @@ msgstr ""
 #: ../src/libromdata/Other/GameMaker.cpp:566
 msgctxt "GameMaker"
 msgid "IDE Version"
-msgstr ""
+msgstr "IDE-ის ვერსია"
 
 #: ../src/libromdata/Other/GameMaker.cpp:570
 msgctxt "GameMaker"
 msgid "Resolution"
-msgstr ""
+msgstr "გარჩევადობა"
 
 #: ../src/libromdata/Other/GameMaker.cpp:572
 msgctxt "GameMaker"
@@ -8306,7 +8317,7 @@ msgstr ""
 #: ../src/libromdata/Other/GameMaker.cpp:601
 msgctxt "GameMaker"
 msgid "Screen Flags"
-msgstr ""
+msgstr "ეკრანის ალმები"
 
 #: ../src/libromdata/Other/GameMaker.cpp:700
 msgctxt "GameMaker"
@@ -8316,7 +8327,7 @@ msgstr ""
 #: ../src/libromdata/Other/GameMaker.cpp:709
 msgctxt "GameMaker"
 msgid "Steam App ID"
-msgstr ""
+msgstr "Steam App ID"
 
 #: ../src/libromdata/Other/GameMaker.cpp:715
 msgctxt "GameMaker"
@@ -8326,7 +8337,7 @@ msgstr ""
 #: ../src/libromdata/Other/GameMaker.cpp:721
 msgctxt "GameMaker"
 msgid "Game Speed"
-msgstr ""
+msgstr "თამაშის სიჩქარე"
 
 #: ../src/libromdata/Other/GameMaker.cpp:724
 msgctxt "GameMaker"
@@ -8336,22 +8347,22 @@ msgstr ""
 #: ../src/libromdata/Other/GameMaker.cpp:728
 msgctxt "GameMaker"
 msgid "Statistics"
-msgstr ""
+msgstr "სტატისტიკა"
 
 #: ../src/libromdata/Other/GameMaker.cpp:731
 msgctxt "GameMaker"
 msgid "Room Count"
-msgstr ""
+msgstr "ოთახების რაოდენობა"
 
 #: ../src/libromdata/Other/Lua.cpp:722
 msgctxt "Lua"
 msgid "int size"
-msgstr ""
+msgstr "int-ის ზომა"
 
 #: ../src/libromdata/Other/Lua.cpp:724
 msgctxt "Lua"
 msgid "size_t size"
-msgstr ""
+msgstr "size_t-ის ზომა"
 
 #: ../src/libromdata/Other/Lua.cpp:726
 msgctxt "Lua"
@@ -8376,12 +8387,12 @@ msgstr ""
 #: ../src/libromdata/Other/Lua.cpp:738
 msgctxt "Lua"
 msgid "Integer"
-msgstr ""
+msgstr "მთელი რიცხვი"
 
 #: ../src/libromdata/Other/Lua.cpp:741
 msgctxt "Lua"
 msgid "String"
-msgstr ""
+msgstr "სტრიქონი"
 
 #: ../src/libromdata/Other/Lua.cpp:748
 msgctxt "Lua"
@@ -8406,32 +8417,32 @@ msgstr ""
 #: ../src/libromdata/Other/MachO.cpp:498
 msgctxt "MachO"
 msgid "Format"
-msgstr ""
+msgstr "ფორმატი"
 
 #: ../src/libromdata/Other/MachO.cpp:511
 msgctxt "MachO"
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: ../src/libromdata/Other/MachO.cpp:523
 msgctxt "MachO"
 msgid "CPU Subtype"
-msgstr ""
+msgstr "CPU-ის ქვეტიპი"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:454
 msgctxt "NintendoBadge"
 msgid "Name"
-msgstr ""
+msgstr "სახელი"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:717
 msgctxt "NintendoBadge"
 msgid "Set Name"
-msgstr ""
+msgstr "სახელის დაყენება"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:728
 msgctxt "NintendoBadge|Type"
 msgid "Mega Badge"
-msgstr ""
+msgstr "მეგაგულსაკიდი"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:729
 msgctxt "NintendoBadge|Type"
@@ -8441,7 +8452,7 @@ msgstr ""
 #: ../src/libromdata/Other/NintendoBadge.cpp:738
 msgctxt "NintendoBadge"
 msgid "Badge ID"
-msgstr ""
+msgstr "სამკერდე ნიშნის ID"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:751
 msgctxt "NintendoBadge"
@@ -8456,7 +8467,7 @@ msgstr ""
 #: ../src/libromdata/Other/NintendoBadge.cpp:760
 msgctxt "NintendoBadge"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #. tr: {0:s} == Title name, {1:s} == Region
 #: ../src/libromdata/Other/NintendoBadge.cpp:780
@@ -8487,32 +8498,32 @@ msgstr ""
 #: ../src/libromdata/Other/NintendoBadge.cpp:801
 msgctxt "NintendoBadge"
 msgid "Badge Set"
-msgstr ""
+msgstr "გულსამაგრების ნაკრები"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:810
 msgctxt "NintendoBadge"
 msgid "Set ID"
-msgstr ""
+msgstr "ID-ის დაყენება"
 
 #: ../src/libromdata/Other/RpTextureWrapper.cpp:259
 msgctxt "RpTextureWrapper"
 msgid "Dimensions"
-msgstr ""
+msgstr "ზომები"
 
 #: ../src/libromdata/Other/RpTextureWrapper.cpp:269
 msgctxt "RpTextureWrapper"
 msgid "Rescale To"
-msgstr ""
+msgstr "მასშტაბის შეცვლა"
 
 #: ../src/libromdata/Other/RpTextureWrapper.cpp:280
 msgctxt "RpTextureWrapper"
 msgid "Pixel Format"
-msgstr ""
+msgstr "პიქსელის ფორმატი"
 
 #: ../src/libromdata/Other/RpTextureWrapper.cpp:286
 msgctxt "RpTextureWrapper"
 msgid "Mipmap Count"
-msgstr ""
+msgstr "Mipmap-ების რაოდენობა"
 
 #. tr: {:Ld} == number of directories processed
 #: ../src/libromdata/tests/disc/FstPrint.cpp:220
@@ -8529,8 +8540,8 @@ msgstr[1] ""
 msgctxt "FstPrint"
 msgid "{:Ld} file"
 msgid_plural "{:Ld} files"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "{:Ld} ფაილი"
+msgstr[1] "{:Ld} ფაილები"
 
 #: ../src/libromdata/tests/disc/GcnFstPrint.cpp:88
 #, c++-format
@@ -8740,12 +8751,12 @@ msgstr ""
 #: ../src/librpbase/OptionsMenuButton_data.inc.h:28
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Copy as Text"
-msgstr ""
+msgstr "კოპირება ტექსტის სახით"
 
 #: ../src/librpbase/OptionsMenuButton_data.inc.h:29
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Copy as JSON"
-msgstr ""
+msgstr "კოპირება JSON-ის სახით"
 
 #: ../src/librpbase/RomData.cpp:698
 msgctxt "RomData|FileType"
@@ -8756,19 +8767,19 @@ msgstr ""
 #: ../src/librpbase/RomData.cpp:700
 msgctxt "RomData|FileType"
 msgid "ROM Image"
-msgstr ""
+msgstr "ROM-ის ასლის ფაილი"
 
 #. tr: FileType::DiscImage
 #: ../src/librpbase/RomData.cpp:702
 msgctxt "RomData|FileType"
 msgid "Disc Image"
-msgstr ""
+msgstr "დისკის ასლის ფაილი"
 
 #. tr: FileType::SaveFile
 #: ../src/librpbase/RomData.cpp:704
 msgctxt "RomData|FileType"
 msgid "Save File"
-msgstr ""
+msgstr "ფაილის შენახვა"
 
 #. tr: FileType::EmbeddedDiscImage
 #: ../src/librpbase/RomData.cpp:706
@@ -8786,19 +8797,19 @@ msgstr ""
 #: ../src/librpbase/RomData.cpp:710
 msgctxt "RomData|FileType"
 msgid "NFC Dump"
-msgstr ""
+msgstr "NFC-ის დამპი"
 
 #. tr: FileType::DiskImage
 #: ../src/librpbase/RomData.cpp:712
 msgctxt "RomData|FileType"
 msgid "Disk Image"
-msgstr ""
+msgstr "დისკის ასლის ფაილი"
 
 #. tr: FileType::Executable
 #: ../src/librpbase/RomData.cpp:714
 msgctxt "RomData|FileType"
 msgid "Executable"
-msgstr ""
+msgstr "შესრულებადი"
 
 #. tr: FileType::DLL
 #: ../src/librpbase/RomData.cpp:716
@@ -8822,13 +8833,13 @@ msgstr ""
 #: ../src/librpbase/RomData.cpp:722
 msgctxt "RomData|FileType"
 msgid "Icon File"
-msgstr ""
+msgstr "ხატულას ფაილი"
 
 #. tr: FileType::BannerFile
 #: ../src/librpbase/RomData.cpp:724
 msgctxt "RomData|FileType"
 msgid "Banner File"
-msgstr ""
+msgstr "ბანერის ფაილი"
 
 #. tr: FileType::Homebrew
 #: ../src/librpbase/RomData.cpp:726
@@ -8840,7 +8851,7 @@ msgstr ""
 #: ../src/librpbase/RomData.cpp:728
 msgctxt "RomData|FileType"
 msgid "eMMC Dump"
-msgstr ""
+msgstr "eMMC-ის დამპი"
 
 #. tr: FileType::ContainerFile
 #: ../src/librpbase/RomData.cpp:730
@@ -8858,7 +8869,7 @@ msgstr ""
 #: ../src/librpbase/RomData.cpp:734
 msgctxt "RomData|FileType"
 msgid "Texture File"
-msgstr ""
+msgstr "ტექსტური ფაილი"
 
 #. tr: FileType::RelocatableObject
 #: ../src/librpbase/RomData.cpp:736
@@ -8876,25 +8887,25 @@ msgstr ""
 #: ../src/librpbase/RomData.cpp:740
 msgctxt "RomData|FileType"
 msgid "Core Dump"
-msgstr ""
+msgstr "ბირთვის დამპი"
 
 #. tr: FileType::AudioFile
 #: ../src/librpbase/RomData.cpp:742
 msgctxt "RomData|FileType"
 msgid "Audio File"
-msgstr ""
+msgstr "აუდიოფაილი"
 
 #. tr: FileType::BootSector
 #: ../src/librpbase/RomData.cpp:744
 msgctxt "RomData|FileType"
 msgid "Boot Sector"
-msgstr ""
+msgstr "ჩამტვირთავი სექტორი"
 
 #. tr: FileType::Bundle (Mac OS X bundle)
 #: ../src/librpbase/RomData.cpp:746
 msgctxt "RomData|FileType"
 msgid "Bundle"
-msgstr ""
+msgstr "პაკეტი"
 
 #. tr: FileType::ResourceFile
 #: ../src/librpbase/RomData.cpp:748
@@ -8906,7 +8917,7 @@ msgstr ""
 #: ../src/librpbase/RomData.cpp:750
 msgctxt "RomData|FileType"
 msgid "Partition"
-msgstr ""
+msgstr "დანაყოფი"
 
 #. tr: FileType::MetadataFile
 #: ../src/librpbase/RomData.cpp:752
@@ -8918,13 +8929,13 @@ msgstr ""
 #: ../src/librpbase/RomData.cpp:754
 msgctxt "RomData|FileType"
 msgid "Patch File"
-msgstr ""
+msgstr "პაჩის ფაილი"
 
 #. tr: FileType::Ticket
 #: ../src/librpbase/RomData.cpp:756
 msgctxt "RomData|FileType"
 msgid "Ticket"
-msgstr ""
+msgstr "ბილეთი"
 
 #. tr: FileType::ConfigurationFile
 #: ../src/librpbase/RomData.cpp:758
@@ -9016,19 +9027,19 @@ msgstr ""
 #: ../src/librpbase/RomFields.cpp:339
 msgctxt "RomFields|AgeRating"
 msgid "No"
-msgstr ""
+msgstr "არა"
 
 #. tr: No age restriction.
 #: ../src/librpbase/RomFields.cpp:345
 msgctxt "RomFields|AgeRating"
 msgid "All"
-msgstr ""
+msgstr "ყველა"
 
 #. tr: No age ratings.
 #: ../src/librpbase/RomFields.cpp:521
 msgctxt "RomFields|AgeRating"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/librpbase/TextOut_text.cpp:606 ../src/librpbase/TextOut_text.cpp:627
 msgctxt "TextOut"
@@ -9044,7 +9055,7 @@ msgstr ""
 #, c++-format
 msgctxt "TextOut"
 msgid "(tab {:d})"
-msgstr ""
+msgstr "(tab {:d})"
 
 #. tr: "[System] [FileType] detected."
 #: ../src/librpbase/TextOut_text.cpp:1108
@@ -9068,7 +9079,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:18
 msgctxt "Ext2AttrView"
 msgid "append only"
-msgstr ""
+msgstr "append only"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:19
 msgctxt "Ext2AttrView"
@@ -9078,7 +9089,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:21
 msgctxt "Ext2AttrView"
 msgid "no atime"
-msgstr ""
+msgstr "atime-ის გარეშე"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:22
 msgctxt "Ext2AttrView"
@@ -9088,7 +9099,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:24
 msgctxt "Ext2AttrView"
 msgid "compressed"
-msgstr ""
+msgstr "შეკუმშულია"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:25
 msgctxt "Ext2AttrView"
@@ -9098,7 +9109,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:27
 msgctxt "Ext2AttrView"
 msgid "no CoW"
-msgstr ""
+msgstr "CoW-ის გარეშე"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:28
 msgctxt "Ext2AttrView"
@@ -9108,7 +9119,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:30
 msgctxt "Ext2AttrView"
 msgid "no dump"
-msgstr ""
+msgstr "დამპის გარეშე"
 
 #. tr: "dump" is the name of the executable, so it should not be localized.
 #: ../src/librpfile/xattr/Ext2AttrData.c:32
@@ -9119,7 +9130,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:34
 msgctxt "Ext2AttrView"
 msgid "dir sync"
-msgstr ""
+msgstr "საქაღალდის სინქრონიზაცია"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:35
 msgctxt "Ext2AttrView"
@@ -9129,7 +9140,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:37
 msgctxt "Ext2AttrView"
 msgid "extents"
-msgstr ""
+msgstr "extents"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:38
 msgctxt "Ext2AttrView"
@@ -9139,7 +9150,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:40
 msgctxt "Ext2AttrView"
 msgid "encrypted"
-msgstr ""
+msgstr "დაშიფრულია"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:41
 msgctxt "Ext2AttrView"
@@ -9149,7 +9160,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:43
 msgctxt "Ext2AttrView"
 msgid "casefold"
-msgstr ""
+msgstr "casefold"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:44
 msgctxt "Ext2AttrView"
@@ -9159,7 +9170,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:46
 msgctxt "Ext2AttrView"
 msgid "immutable"
-msgstr ""
+msgstr "უცვლელი"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:47
 msgctxt "Ext2AttrView"
@@ -9169,7 +9180,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:49
 msgctxt "Ext2AttrView"
 msgid "indexed"
-msgstr ""
+msgstr "დაინდექსებული"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:50
 msgctxt "Ext2AttrView"
@@ -9179,7 +9190,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:52
 msgctxt "Ext2AttrView"
 msgid "journalled"
-msgstr ""
+msgstr "ჟურნალით"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:53
 msgctxt "Ext2AttrView"
@@ -9189,7 +9200,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:55
 msgctxt "Ext2AttrView"
 msgid "no compress"
-msgstr ""
+msgstr "no compress"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:56
 msgctxt "Ext2AttrView"
@@ -9199,7 +9210,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:58
 msgctxt "Ext2AttrView"
 msgid "inline data"
-msgstr ""
+msgstr "inline data"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:59
 msgctxt "Ext2AttrView"
@@ -9209,7 +9220,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:61
 msgctxt "Ext2AttrView"
 msgid "project"
-msgstr ""
+msgstr "პროექტი"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:62
 msgctxt "Ext2AttrView"
@@ -9219,7 +9230,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:64
 msgctxt "Ext2AttrView"
 msgid "secure del"
-msgstr ""
+msgstr "დაცული წაშლა"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:65
 msgctxt "Ext2AttrView"
@@ -9229,7 +9240,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:67
 msgctxt "Ext2AttrView"
 msgid "sync"
-msgstr ""
+msgstr "სინქრონიზაცია"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:68
 msgctxt "Ext2AttrView"
@@ -9251,7 +9262,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:73
 msgctxt "Ext2AttrView"
 msgid "top dir"
-msgstr ""
+msgstr "ძირითადი საქაღალდე"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:74
 msgctxt "Ext2AttrView"
@@ -9263,7 +9274,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:76
 msgctxt "Ext2AttrView"
 msgid "undelete"
-msgstr ""
+msgstr "undelete"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:77
 msgctxt "Ext2AttrView"
@@ -9275,7 +9286,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:79
 msgctxt "Ext2AttrView"
 msgid "DAX"
-msgstr ""
+msgstr "DAX"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:80
 msgctxt "Ext2AttrView"
@@ -9285,7 +9296,7 @@ msgstr ""
 #: ../src/librpfile/xattr/Ext2AttrData.c:82
 msgctxt "Ext2AttrView"
 msgid "fs-verity"
-msgstr ""
+msgstr "fs-verity"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:83
 msgctxt "Ext2AttrView"
@@ -9295,7 +9306,7 @@ msgstr ""
 #: ../src/librpfile/xattr/XfsAttrData.c:18
 msgctxt "XfsAttrView"
 msgid "realtime"
-msgstr ""
+msgstr "realtime"
 
 #: ../src/librpfile/xattr/XfsAttrData.c:19
 msgctxt "XfsAttrView"
@@ -9305,7 +9316,7 @@ msgstr ""
 #: ../src/librpfile/xattr/XfsAttrData.c:21
 msgctxt "XfsAttrView"
 msgid "prealloc"
-msgstr ""
+msgstr "prealloc"
 
 #: ../src/librpfile/xattr/XfsAttrData.c:22
 msgctxt "XfsAttrView"
@@ -9315,7 +9326,7 @@ msgstr ""
 #: ../src/librpfile/xattr/XfsAttrData.c:24
 msgctxt "XfsAttrView"
 msgid "immutable"
-msgstr ""
+msgstr "უცვლელი"
 
 #: ../src/librpfile/xattr/XfsAttrData.c:25
 msgctxt "XfsAttrView"
@@ -9325,7 +9336,7 @@ msgstr ""
 #: ../src/librpfile/xattr/XfsAttrData.c:27
 msgctxt "XfsAttrView"
 msgid "append"
-msgstr ""
+msgstr "ბოლოში მიწერა"
 
 #: ../src/librpfile/xattr/XfsAttrData.c:28
 msgctxt "XfsAttrView"
@@ -9335,7 +9346,7 @@ msgstr ""
 #: ../src/librpfile/xattr/XfsAttrData.c:30
 msgctxt "XfsAttrView"
 msgid "sync"
-msgstr ""
+msgstr "სინქრონიზაცია"
 
 #: ../src/librpfile/xattr/XfsAttrData.c:31
 msgctxt "XfsAttrView"
@@ -9345,7 +9356,7 @@ msgstr ""
 #: ../src/librpfile/xattr/XfsAttrData.c:33
 msgctxt "XfsAttrView"
 msgid "no atime"
-msgstr ""
+msgstr "atime-ის გარეშე"
 
 #: ../src/librpfile/xattr/XfsAttrData.c:34
 msgctxt "XfsAttrView"
@@ -9355,7 +9366,7 @@ msgstr ""
 #: ../src/librpfile/xattr/XfsAttrData.c:36
 msgctxt "XfsAttrView"
 msgid "no dump"
-msgstr ""
+msgstr "დამპის გარეშე"
 
 #: ../src/librpfile/xattr/XfsAttrData.c:37
 msgctxt "XfsAttrView"
@@ -9365,7 +9376,7 @@ msgstr ""
 #: ../src/librpfile/xattr/XfsAttrData.c:39
 msgctxt "XfsAttrView"
 msgid "RT inherit"
-msgstr ""
+msgstr "RT მემკვიდრეობით"
 
 #: ../src/librpfile/xattr/XfsAttrData.c:40
 msgctxt "XfsAttrView"
@@ -9375,7 +9386,7 @@ msgstr ""
 #: ../src/librpfile/xattr/XfsAttrData.c:42
 msgctxt "XfsAttrView"
 msgid "proj inherit"
-msgstr ""
+msgstr "proj inherit"
 
 #: ../src/librpfile/xattr/XfsAttrData.c:43
 msgctxt "XfsAttrView"
@@ -9385,7 +9396,7 @@ msgstr ""
 #: ../src/librpfile/xattr/XfsAttrData.c:45
 msgctxt "XfsAttrView"
 msgid "no symlinks"
-msgstr ""
+msgstr "no symlinks"
 
 #: ../src/librpfile/xattr/XfsAttrData.c:46
 msgctxt "XfsAttrView"
@@ -9395,7 +9406,7 @@ msgstr ""
 #: ../src/librpfile/xattr/XfsAttrData.c:48
 msgctxt "XfsAttrView"
 msgid "extsize"
-msgstr ""
+msgstr "extsize"
 
 #: ../src/librpfile/xattr/XfsAttrData.c:49
 msgctxt "XfsAttrView"
@@ -9405,7 +9416,7 @@ msgstr ""
 #: ../src/librpfile/xattr/XfsAttrData.c:51
 msgctxt "XfsAttrView"
 msgid "extszinherit"
-msgstr ""
+msgstr "extszinherit"
 
 #: ../src/librpfile/xattr/XfsAttrData.c:52
 msgctxt "XfsAttrView"
@@ -9415,7 +9426,7 @@ msgstr ""
 #: ../src/librpfile/xattr/XfsAttrData.c:54
 msgctxt "XfsAttrView"
 msgid "no defrag"
-msgstr ""
+msgstr "no defrag"
 
 #: ../src/librpfile/xattr/XfsAttrData.c:55
 msgctxt "XfsAttrView"
@@ -9425,7 +9436,7 @@ msgstr ""
 #: ../src/librpfile/xattr/XfsAttrData.c:57
 msgctxt "XfsAttrView"
 msgid "filestream"
-msgstr ""
+msgstr "filestream"
 
 #: ../src/librpfile/xattr/XfsAttrData.c:58
 msgctxt "XfsAttrView"
@@ -9435,7 +9446,7 @@ msgstr ""
 #: ../src/librpfile/xattr/XfsAttrData.c:60
 msgctxt "XfsAttrView"
 msgid "hasattr"
-msgstr ""
+msgstr "hasattr"
 
 #: ../src/librpfile/xattr/XfsAttrData.c:61
 msgctxt "XfsAttrView"
@@ -9448,131 +9459,131 @@ msgstr ""
 msgctxt "LibRpText|FileSize"
 msgid "byte"
 msgid_plural "bytes"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "ბაიტი"
+msgstr[1] "ბაიტები"
 
 #. tr: Kilobytes (binary)
 #: ../src/librptext/formatting.cpp:236 ../src/librptext/formatting.cpp:414
 msgctxt "LibRpText|FileSize"
 msgid "KiB"
-msgstr ""
+msgstr "კიბ"
 
 #. tr: Kilobytes (decimal)
 #: ../src/librptext/formatting.cpp:238 ../src/librptext/formatting.cpp:297
 #: ../src/librptext/formatting.cpp:419
 msgctxt "LibRpText|FileSize"
 msgid "KB"
-msgstr ""
+msgstr "კბ"
 
 #. tr: Megabytes (binary)
 #: ../src/librptext/formatting.cpp:244
 msgctxt "LibRpText|FileSize"
 msgid "MiB"
-msgstr ""
+msgstr "მიბ"
 
 #. tr: Megabytes (decimal)
 #: ../src/librptext/formatting.cpp:246 ../src/librptext/formatting.cpp:302
 msgctxt "LibRpText|FileSize"
 msgid "MB"
-msgstr ""
+msgstr "მბ"
 
 #. tr: Gigabytes (binary)
 #: ../src/librptext/formatting.cpp:252
 msgctxt "LibRpText|FileSize"
 msgid "GiB"
-msgstr ""
+msgstr "გიბ"
 
 #. tr: Gigabytes (decimal)
 #: ../src/librptext/formatting.cpp:254 ../src/librptext/formatting.cpp:307
 msgctxt "LibRpText|FileSize"
 msgid "GB"
-msgstr ""
+msgstr "გბ"
 
 #. tr: Terabytes (binary)
 #: ../src/librptext/formatting.cpp:260
 msgctxt "LibRpText|FileSize"
 msgid "TiB"
-msgstr ""
+msgstr "ტიბ"
 
 #. tr: Terabytes (decimal)
 #: ../src/librptext/formatting.cpp:262 ../src/librptext/formatting.cpp:312
 msgctxt "LibRpText|FileSize"
 msgid "TB"
-msgstr ""
+msgstr "ტბ"
 
 #. tr: Petabytes (binary)
 #: ../src/librptext/formatting.cpp:268
 msgctxt "LibRpText|FileSize"
 msgid "PiB"
-msgstr ""
+msgstr "პიბ"
 
 #. tr: Petabytes (decimal)
 #: ../src/librptext/formatting.cpp:270 ../src/librptext/formatting.cpp:317
 msgctxt "LibRpText|FileSize"
 msgid "PB"
-msgstr ""
+msgstr "პბ"
 
 #. tr: Exabytes (binary)
 #: ../src/librptext/formatting.cpp:276
 msgctxt "LibRpText|FileSize"
 msgid "EiB"
-msgstr ""
+msgstr "ეიბ"
 
 #. tr: Exabytes (decimal)
 #: ../src/librptext/formatting.cpp:278 ../src/librptext/formatting.cpp:322
 msgctxt "LibRpText|FileSize"
 msgid "EB"
-msgstr ""
+msgstr "ებ"
 
 #. tr: {0:s} == localized value, {1:s} == suffix (e.g. MiB)
 #: ../src/librptext/formatting.cpp:365
 #, c++-format
 msgctxt "LibRpText|FileSize"
 msgid "{0:s} {1:s}"
-msgstr ""
+msgstr "{0:s} {1:s}"
 
 #. tr: {0:Ld} == localized value, {1:s} == suffix (e.g. MiB)
 #: ../src/librptext/formatting.cpp:424
 #, c++-format
 msgctxt "LibRpText|FileSize"
 msgid "{0:Ld} {1:s}"
-msgstr ""
+msgstr "{0:Ld} {1:s}"
 
 #. tr: Hertz (< 1,000)
 #: ../src/librptext/formatting.cpp:442
 msgctxt "LibRpText|Frequency"
 msgid "Hz"
-msgstr ""
+msgstr "ჰც"
 
 #. tr: Kilohertz
 #: ../src/librptext/formatting.cpp:447
 msgctxt "LibRpText|Frequency"
 msgid "kHz"
-msgstr ""
+msgstr "კჰც"
 
 #. tr: Megahertz
 #: ../src/librptext/formatting.cpp:452
 msgctxt "LibRpText|Frequency"
 msgid "MHz"
-msgstr ""
+msgstr "მჰც"
 
 #. tr: Gigahertz
 #: ../src/librptext/formatting.cpp:457
 msgctxt "LibRpText|Frequency"
 msgid "GHz"
-msgstr ""
+msgstr "გჰც"
 
 #. tr: {0:s} == localized value, {1:s} == suffix (e.g. MHz)
 #: ../src/librptext/formatting.cpp:488
 #, c++-format
 msgctxt "LibRpText|Frequency"
 msgid "{0:s} {1:s}"
-msgstr ""
+msgstr "{0:s} {1:s}"
 
 #: ../src/librptexture/fileformat/DidjTex.cpp:476
 msgctxt "DidjTex"
 msgid "Display Size"
-msgstr ""
+msgstr "ეკრანის ზომა"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1293
 #, c++-format
@@ -9607,22 +9618,22 @@ msgstr ""
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1348
 msgctxt "DirectDrawSurface"
 msgid "Linear Size"
-msgstr ""
+msgstr "წრფივი ზომა"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1349
 msgctxt "DirectDrawSurface"
 msgid "Pitch"
-msgstr ""
+msgstr "ტონი"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1357
 msgctxt "DirectDrawSurface"
 msgid "DX10 Format"
-msgstr ""
+msgstr "DX10 ფორმატი"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1365
 msgctxt "DirectDrawSurface"
 msgid "NVTT Version"
-msgstr ""
+msgstr "NVTT-ის ვერსია"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1380
 msgctxt "DirectDrawSurface"
@@ -9632,127 +9643,127 @@ msgstr ""
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1387
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Caps"
-msgstr ""
+msgstr "მთავრული"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1388
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Height"
-msgstr ""
+msgstr "სიმაღლე"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1389
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Width"
-msgstr ""
+msgstr "სიგანე"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1390
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Pitch"
-msgstr ""
+msgstr "ტონი"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1396
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Pixel Format"
-msgstr ""
+msgstr "პიქსელის ფორმატი"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1400
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Mipmap Count"
-msgstr ""
+msgstr "Mipmap-ების რაოდენობა"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1402
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Linear Size"
-msgstr ""
+msgstr "წრფივი ზომა"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1405
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Depth"
-msgstr ""
+msgstr "სიღრმე"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1408
 msgctxt "DirectDrawSurface"
 msgid "Flags"
-msgstr ""
+msgstr "ალმები"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1415
 msgctxt "DirectDrawSurface|ddspf"
 msgid "Normal Map"
-msgstr ""
+msgstr "ნორმალური რუკა"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1418
 msgctxt "DirectDrawSurface"
 msgid "PF Flags"
-msgstr ""
+msgstr "PF ალმები"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1425
 msgctxt "DirectDrawSurface|dwCaps"
 msgid "Complex"
-msgstr ""
+msgstr "კომპლექსი"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1431
 msgctxt "DirectDrawSurface|dwCaps"
 msgid "Texture"
-msgstr ""
+msgstr "ტექსტურა"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1437
 msgctxt "DirectDrawSurface|dwCaps"
 msgid "Mipmap"
-msgstr ""
+msgstr "Mipmap"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1440
 msgctxt "DirectDrawSurface"
 msgid "Caps"
-msgstr ""
+msgstr "მთავრული"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1447
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "Cubemap"
-msgstr ""
+msgstr "Cubemap"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1448
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+X"
-msgstr ""
+msgstr "+X"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1449
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-X"
-msgstr ""
+msgstr "-X"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1451
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+Y"
-msgstr ""
+msgstr "+Y"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1452
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-Y"
-msgstr ""
+msgstr "-Y"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1453
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+Z"
-msgstr ""
+msgstr "+Z"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1454
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-Z"
-msgstr ""
+msgstr "-Z"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1459
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "Volume"
-msgstr ""
+msgstr "მოცულობა"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1462
 msgctxt "DirectDrawSurface"
 msgid "Caps2"
-msgstr ""
+msgstr "Caps2"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1469
 msgctxt "DirectDrawSurface"
 msgid "Tile Mode"
-msgstr ""
+msgstr "ფილის მოდელი"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1470
 msgctxt "DirectDrawSurface"
@@ -9762,48 +9773,48 @@ msgstr ""
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1472
 msgctxt "DirectDrawSurface"
 msgid "Data Size"
-msgstr ""
+msgstr "მონაცემთა ზომა"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1474
 msgctxt "DirectDrawSurface"
 msgid "XDK Version"
-msgstr ""
+msgstr "XDK-ის ვერსია"
 
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1219
 msgctxt "GodotSTEX"
 msgid "STEX Version"
-msgstr ""
+msgstr "STEX-ის ვერსია"
 
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1242
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1270
 msgctxt "GodotSTEX"
 msgid "Data Format"
-msgstr ""
+msgstr "მონაცემთა ფორმატი"
 
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1247
 msgctxt "GodotSTEX|Flags"
 msgid "Mipmaps"
-msgstr ""
+msgstr "Mipmap-ები"
 
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1248
 msgctxt "GodotSTEX|Flags"
 msgid "Repeat"
-msgstr ""
+msgstr "გამეორება"
 
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1249
 msgctxt "GodotSTEX|Flags"
 msgid "Filter"
-msgstr ""
+msgstr "ფილტრი"
 
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1250
 msgctxt "GodotSTEX|Flags"
 msgid "Anisotropic"
-msgstr ""
+msgstr "ანიზოტროპული"
 
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1251
 msgctxt "GodotSTEX|Flags"
 msgid "To Linear"
-msgstr ""
+msgstr "წრფივზე"
 
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1252
 msgctxt "GodotSTEX|Flags"
@@ -9813,7 +9824,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1254
 msgctxt "GodotSTEX|Flags"
 msgid "Cubemap"
-msgstr ""
+msgstr "Cubemap"
 
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1255
 msgctxt "GodotSTEX|Flags"
@@ -9823,12 +9834,12 @@ msgstr ""
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1258
 msgctxt "GodotSTEX"
 msgid "Flags"
-msgstr ""
+msgstr "ალმები"
 
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1265
 msgctxt "GodotSTEX|DataFormat"
 msgid "Image"
-msgstr ""
+msgstr "გამოსახულება"
 
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1268
 msgctxt "GodotSTEX|DataFormat"
@@ -9838,34 +9849,34 @@ msgstr ""
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1286
 msgctxt "GodotSTEX|FormatFlags"
 msgid "Lossless"
-msgstr ""
+msgstr "კარგვის გარეშე"
 
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1287
 msgctxt "GodotSTEX|FormatFlags"
 msgid "Lossy"
-msgstr ""
+msgstr "კარგვებით"
 
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1288
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1298
 msgctxt "GodotSTEX|FormatFlags"
 msgid "Stream"
-msgstr ""
+msgstr "ნაკადი"
 
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1289
 msgctxt "GodotSTEX|FormatFlags"
 msgid "Has Mipmaps"
-msgstr ""
+msgstr "აქვს Mipmap-ები"
 
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1290
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1300
 msgctxt "GodotSTEX|FormatFlags"
 msgid "Detect 3D"
-msgstr ""
+msgstr "3D-ის დადგენა"
 
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1291
 msgctxt "GodotSTEX|FormatFlags"
 msgid "Detect sRGB"
-msgstr ""
+msgstr "sRGB-ის დადგენა"
 
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1292
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1302
@@ -9881,23 +9892,23 @@ msgstr ""
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1322
 msgctxt "GodotSTEX"
 msgid "Format Flags"
-msgstr ""
+msgstr "ფორმატის ალმები"
 
 #. tr: Abbreviation of "Monochrome".
 #: ../src/librptexture/fileformat/ICO.cpp:407
 msgctxt "ICO|PixelFormat"
 msgid "Mono"
-msgstr ""
+msgstr "მონო"
 
 #: ../src/librptexture/fileformat/ICO.cpp:1493
 msgctxt "ICO"
 msgid "Size"
-msgstr ""
+msgstr "ზომა"
 
 #: ../src/librptexture/fileformat/ICO.cpp:1495
 msgctxt "ICO"
 msgid "Format"
-msgstr ""
+msgstr "ფორმატი"
 
 #: ../src/librptexture/fileformat/ICO.cpp:1569
 msgctxt "ICO"
@@ -9913,7 +9924,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/KhronosKTX2.cpp:1013
 msgctxt "KhronosKTX2"
 msgid "# of Layers"
-msgstr ""
+msgstr "ფენების #"
 
 #: ../src/librptexture/fileformat/KhronosKTX2.cpp:1019
 #: ../src/librptexture/fileformat/KhronosKTX.cpp:1110
@@ -9958,7 +9969,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/PlayStationTIM.cpp:483
 msgctxt "PlayStationTIM"
 msgid "CLUT Size"
-msgstr ""
+msgstr "CLUT-ის ზომა"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1273
 #, c++-format
@@ -9969,12 +9980,12 @@ msgstr ""
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1350
 msgctxt "PowerVR3"
 msgid "Version"
-msgstr ""
+msgstr "ვერსია"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1370
 msgctxt "PowerVR3|Flags"
 msgid "Compressed"
-msgstr ""
+msgstr "შეკუმშულია"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1371
 msgctxt "PowerVR3|Flags"
@@ -9984,18 +9995,18 @@ msgstr ""
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1374
 msgctxt "PowerVR3"
 msgid "Flags"
-msgstr ""
+msgstr "ალმები"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1379
 msgctxt "PowerVR3|ColorSpace"
 msgid "Linear RGB"
-msgstr ""
+msgstr "წრფივი RGB"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1382
 #: ../src/librptexture/fileformat/Qoi.cpp:285
 msgctxt "RomData"
 msgid "Color Space"
-msgstr ""
+msgstr "ფერთა სივრცე"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1393
 msgctxt "PowerVR3|ChannelType"
@@ -10015,7 +10026,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1396
 msgctxt "PowerVR3|ChannelType"
 msgid "Signed Byte"
-msgstr ""
+msgstr "ნიშნიანი ბაიტი"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1397
 msgctxt "PowerVR3|ChannelType"
@@ -10035,7 +10046,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1400
 msgctxt "PowerVR3|ChannelType"
 msgid "Signed Short"
-msgstr ""
+msgstr "ნიშნიანი მოკლე"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1401
 msgctxt "PowerVR3|ChannelType"
@@ -10060,12 +10071,12 @@ msgstr ""
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1405
 msgctxt "PowerVR3|ChannelType"
 msgid "Float"
-msgstr ""
+msgstr "მცურავი"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1408
 msgctxt "PowerVR3"
 msgid "Channel Type"
-msgstr ""
+msgstr "არხის ტიპი"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1418
 msgctxt "PowerVR3"
@@ -10075,7 +10086,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1439
 msgctxt "PowerVR3"
 msgid "Orientation"
-msgstr ""
+msgstr "ორიენტაცია"
 
 #: ../src/librptexture/fileformat/Qoi.cpp:278
 msgctxt "Qoi|Colorspace"
@@ -10095,17 +10106,17 @@ msgstr ""
 #: ../src/librptexture/fileformat/SegaPVR.cpp:1537
 msgctxt "SegaPVR"
 msgid "Global Index"
-msgstr ""
+msgstr "გლობალური ინდექსი"
 
 #: ../src/librptexture/fileformat/TGA.cpp:870
 msgctxt "TGA"
 msgid "Image ID"
-msgstr ""
+msgstr "გამოსახულების ID"
 
 #: ../src/librptexture/fileformat/TGA.cpp:879
 msgctxt "TGA"
 msgid "Orientation"
-msgstr ""
+msgstr "ორიენტაცია"
 
 #: ../src/librptexture/fileformat/TGA.cpp:884
 msgctxt "TGA|Compression"
@@ -10120,17 +10131,17 @@ msgstr ""
 #: ../src/librptexture/fileformat/TGA.cpp:890
 msgctxt "TGA|Compression"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/librptexture/fileformat/TGA.cpp:892
 msgctxt "TGA"
 msgid "Compression"
-msgstr ""
+msgstr "შეკუმშვა"
 
 #: ../src/librptexture/fileformat/TGA.cpp:898
 msgctxt "TGA|AlphaType"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/librptexture/fileformat/TGA.cpp:899
 msgctxt "TGA|AlphaType"
@@ -10145,7 +10156,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/TGA.cpp:901
 msgctxt "TGA|AlphaType"
 msgid "Present"
-msgstr ""
+msgstr "არსებობს"
 
 #: ../src/librptexture/fileformat/TGA.cpp:902
 msgctxt "TGA|AlphaType"
@@ -10155,7 +10166,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/TGA.cpp:906
 msgctxt "TGA"
 msgid "Alpha Type"
-msgstr ""
+msgstr "ალფას ტიპი"
 
 #: ../src/librptexture/fileformat/TGA.cpp:939
 msgctxt "TGA"
@@ -10165,17 +10176,17 @@ msgstr ""
 #: ../src/librptexture/fileformat/TGA.cpp:947
 msgctxt "TGA"
 msgid "Job Name/ID"
-msgstr ""
+msgstr "დავალების სახელი/ID"
 
 #: ../src/librptexture/fileformat/TGA.cpp:957
 msgctxt "TGA"
 msgid "Job Time"
-msgstr ""
+msgstr "დავალების დრო"
 
 #: ../src/librptexture/fileformat/TGA.cpp:966
 msgctxt "TGA"
 msgid "Software ID"
-msgstr ""
+msgstr "პროგრამის ID"
 
 #: ../src/librptexture/fileformat/TGA.cpp:978
 msgctxt "TGA"
@@ -10185,7 +10196,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/TGA.cpp:987
 msgctxt "TGA"
 msgid "Key Color"
-msgstr ""
+msgstr "გასაღების ფერი"
 
 #: ../src/librptexture/fileformat/TGA.cpp:994
 msgctxt "TGA"
@@ -10195,18 +10206,18 @@ msgstr ""
 #: ../src/librptexture/fileformat/TGA.cpp:1005
 msgctxt "TGA"
 msgid "Gamma Value"
-msgstr ""
+msgstr "გამას მნიშვნელობა"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:742
 #: ../src/librptexture/fileformat/ValveVTF.cpp:879
 msgctxt "ValveVTF|ImageFormat"
 msgid "None"
-msgstr ""
+msgstr "არცერთი"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:788
 msgctxt "ValveVTF"
 msgid "VTF Version"
-msgstr ""
+msgstr "VTF-ის ვერსია"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:795
 msgctxt "ValveVTF|Flags"
@@ -10221,12 +10232,12 @@ msgstr ""
 #: ../src/librptexture/fileformat/ValveVTF.cpp:797
 msgctxt "ValveVTF|Flags"
 msgid "Clamp S"
-msgstr ""
+msgstr "აპროქსიმაცია S"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:798
 msgctxt "ValveVTF|Flags"
 msgid "Clamp T"
-msgstr ""
+msgstr "აპროქსიმაცია T"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:800
 msgctxt "ValveVTF|Flags"
@@ -10236,7 +10247,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/ValveVTF.cpp:801
 msgctxt "ValveVTF|Flags"
 msgid "Hint DXT5"
-msgstr ""
+msgstr "DXT5-ის მინიშნება"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:802
 msgctxt "ValveVTF|Flags"
@@ -10246,12 +10257,12 @@ msgstr ""
 #: ../src/librptexture/fileformat/ValveVTF.cpp:803
 msgctxt "ValveVTF|Flags"
 msgid "Normal Map"
-msgstr ""
+msgstr "ნორმალური რუკა"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:805
 msgctxt "ValveVTF|Flags"
 msgid "No Mipmaps"
-msgstr ""
+msgstr "Mipmap-ების გარეშე"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:806
 msgctxt "ValveVTF|Flags"
@@ -10266,17 +10277,17 @@ msgstr ""
 #: ../src/librptexture/fileformat/ValveVTF.cpp:808
 msgctxt "ValveVTF|Flags"
 msgid "Procedural"
-msgstr ""
+msgstr "პროცედურული"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:810
 msgctxt "ValveVTF|Flags"
 msgid "1-bit Alpha"
-msgstr ""
+msgstr "1-ბიტიანი ალფა"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:811
 msgctxt "ValveVTF|Flags"
 msgid "8-bit Alpha"
-msgstr ""
+msgstr "8-ბიტიანი ალფა"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:812
 msgctxt "ValveVTF|Flags"
@@ -10301,12 +10312,12 @@ msgstr ""
 #: ../src/librptexture/fileformat/ValveVTF.cpp:817
 msgctxt "ValveVTF|Flags"
 msgid "Single Copy"
-msgstr ""
+msgstr "ერთი ასლი"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:818
 msgctxt "ValveVTF|Flags"
 msgid "Pre SRGB"
-msgstr ""
+msgstr "Pre SRGB"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:820
 msgctxt "ValveVTF|Flags"
@@ -10336,7 +10347,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/ValveVTF.cpp:826
 msgctxt "ValveVTF|Flags"
 msgid "Clamp U"
-msgstr ""
+msgstr "აპროქსიმაცია U"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:827
 msgctxt "ValveVTF|Flags"
@@ -10346,27 +10357,27 @@ msgstr ""
 #: ../src/librptexture/fileformat/ValveVTF.cpp:828
 msgctxt "ValveVTF|Flags"
 msgid "SSBump"
-msgstr ""
+msgstr "SSBump"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:831
 msgctxt "ValveVTF|Flags"
 msgid "Border"
-msgstr ""
+msgstr "საზღვარი"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:852
 msgctxt "ValveVTF"
 msgid "Flags"
-msgstr ""
+msgstr "ალმები"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:855
 msgctxt "ValveVTF"
 msgid "# of Frames"
-msgstr ""
+msgstr "კადრების #"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:857
 msgctxt "ValveVTF"
 msgid "First Frame"
-msgstr ""
+msgstr "პირველი კადრი"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:861
 msgctxt "ValveVTF"
@@ -10386,7 +10397,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/ValveVTF.cpp:890
 msgctxt "ValveVTF"
 msgid "Low-Res Size"
-msgstr ""
+msgstr "დაბალი გარჩევადობის ზომა"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:903
 msgctxt "ValveVTF"
@@ -10439,18 +10450,18 @@ msgstr ""
 #: ../src/rpcli/printcpufeatures.cpp:177
 msgctxt "rpcli"
 msgid "CPU flags:"
-msgstr ""
+msgstr "CPU-ის ალმები:"
 
 #: ../src/rpcli/printcpufeatures.cpp:185
 #, c++-format
 msgctxt "rpcli"
 msgid "{0:s}: {1:s}"
-msgstr ""
+msgstr "{0:s}: {1:s}"
 
 #: ../src/rpcli/printcpufeatures.cpp:191
 msgctxt "rpcli"
 msgid "(none)"
-msgstr ""
+msgstr "(არცერთი)"
 
 #. tr: {0:s} == image type name, {1:s} == output filename
 #: ../src/rpcli/rpcli.cpp:175
@@ -10475,7 +10486,7 @@ msgstr ""
 #: ../src/rpcli/rpcli.cpp:196 ../src/rpcli/rpcli.cpp:233
 msgctxt "rpcli"
 msgid "Done"
-msgstr ""
+msgstr "მზადაა"
 
 #: ../src/rpcli/rpcli.cpp:208
 #, c++-format
@@ -10660,7 +10671,7 @@ msgstr ""
 #: ../src/rpcli/rpcli.cpp:667
 msgctxt "rpcli"
 msgid "Examples:"
-msgstr ""
+msgstr "მაგალითები:"
 
 #: ../src/rpcli/rpcli.cpp:671
 msgctxt "rpcli"
@@ -10745,7 +10756,7 @@ msgstr ""
 #: ../src/rpcli/verifykeys.cpp:103
 msgctxt "rpcli|KeyVerifyStatus"
 msgid "Empty key"
-msgstr ""
+msgstr "ცარიელი გასაღები"
 
 #: ../src/rpcli/verifykeys.cpp:108
 msgctxt "rpcli|KeyVerifyStatus"
@@ -10755,7 +10766,7 @@ msgstr ""
 #: ../src/rpcli/verifykeys.cpp:111
 msgctxt "rpcli|KeyVerifyStatus"
 msgid "Not a key"
-msgstr ""
+msgstr "გასაღები არაა"
 
 #: ../src/rpcli/verifykeys.cpp:114
 msgctxt "rpcli|KeyVerifyStatus"
@@ -10765,13 +10776,13 @@ msgstr ""
 #: ../src/rpcli/verifykeys.cpp:118
 msgctxt "rpcli|KeyVerifyStatus"
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
 #: ../src/rpcli/verifykeys.cpp:128
 #, c++-format
 msgctxt "rpcli"
 msgid "ERROR: {:s}"
-msgstr ""
+msgstr "შეცდომა: {:s}"
 
 #: ../src/rp-stub/rp-stub.c:89
 msgctxt "rp_stub"
@@ -10869,7 +10880,7 @@ msgstr ""
 #, c-format
 msgctxt "rp-stub|Help"
 msgid "Usage: %s"
-msgstr ""
+msgstr "გამოყენება: %s"
 
 #: ../src/rp-stub/rp-stub.c:162
 msgctxt "rp-stub|Help"
@@ -10954,7 +10965,7 @@ msgstr ""
 #: ../src/win32/config/AboutTab.cpp:664
 msgctxt "AboutTab"
 msgid "ERROR:"
-msgstr ""
+msgstr "შეცდომა:"
 
 #: ../src/win32/config/AboutTab.cpp:717
 msgctxt "AboutTab"
@@ -10964,29 +10975,29 @@ msgstr ""
 #: ../src/win32/config/AboutTab.cpp:1090
 msgctxt "AboutTab"
 msgid "Credits"
-msgstr ""
+msgstr "ავტორები"
 
 #: ../src/win32/config/AboutTab.cpp:1297
 msgctxt "AboutTab"
 msgid "Libraries"
-msgstr ""
+msgstr "ბიბლიოთეკები"
 
 #: ../src/win32/config/AboutTab.cpp:1337
 msgctxt "AboutTab"
 msgid "Support"
-msgstr ""
+msgstr "მხარდაჭერა"
 
 #. tr: Tab title.
 #: ../src/win32/config/AboutTab.cpp:1636
 msgctxt "AboutTab"
 msgid "About"
-msgstr ""
+msgstr "შესახებ"
 
 #. tr: Tab title.
 #: ../src/win32/config/AchievementsTab.cpp:666
 msgctxt "AchievementsTab"
 msgid "Achievements"
-msgstr ""
+msgstr "მიღწევები"
 
 #. tr: Windows Vista and later. Has a centralized thumbnails cache.
 #: ../src/win32/config/CacheTab.cpp:185
@@ -11059,7 +11070,7 @@ msgstr ""
 #, c++-format
 msgctxt "CacheTab"
 msgid "ERROR: {:s}"
-msgstr ""
+msgstr "შეცდომა: {:s}"
 
 #: ../src/win32/config/CacheTab.cpp:616
 msgctxt "CacheTab"
@@ -11076,24 +11087,24 @@ msgstr ""
 #: ../src/win32/config/ImageTypesTab.cpp:808
 msgctxt "ImageTypesTab"
 msgid "Image Types"
-msgstr ""
+msgstr "გამოსახულების ტიპები"
 
 #: ../src/win32/config/KeyManagerTab.cpp:358
 msgctxt "KeyManagerTab"
 msgid "I&mport..."
-msgstr ""
+msgstr "შე&მოტანა..."
 
 #. tr: Tab title.
 #: ../src/win32/config/KeyManagerTab.cpp:1870
 msgctxt "KeyManagerTab"
 msgid "Key Manager"
-msgstr ""
+msgstr "გასაღებების მმართველი"
 
 #. tr: Tab title.
 #: ../src/win32/config/SystemsTab.cpp:480
 msgctxt "SystemsTab"
 msgid "Systems"
-msgstr ""
+msgstr "სისტემები"
 
 #: ../src/win32/config/UpdateChecker.cpp:195
 msgctxt "UpdateChecker"
@@ -11104,4 +11115,4 @@ msgstr ""
 #: ../src/win32/OptionsMenuButton.cpp:95
 msgctxt "OptionsMenuButton"
 msgid "&Options..."
-msgstr ""
+msgstr "&პარამეტრები..."

@@ -469,7 +469,7 @@ under CC-BY 4.0.
 * Chipsum: Arabic
 * spencerchris8080: Spanish
 * @NoNameWasDefined: French
-
+* temuri.doghonadze: Georgian
 ### Other Contributions
 
 [This list is incomplete; if you think you should be listed here, file an issue.]
