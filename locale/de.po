@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-24 12:07-0400\n"
-"PO-Revision-Date: 2026-08-24 23:14\n"
+"PO-Revision-Date: 2026-08-25 17:02\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -3145,7 +3145,7 @@ msgstr "Export Titel"
 #: ../src/libromdata/Console/MegaDrive.cpp:462
 msgctxt "MegaDrive"
 msgid "Serial Number"
-msgstr "Serien Nummer"
+msgstr "Seriennummer"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:473
 msgctxt "MegaDrive|I/O"
@@ -5108,7 +5108,7 @@ msgstr "Familie BASIC Tastatur mit Famicom Data Recorder"
 #: ../src/libromdata/data/NESMappers.cpp:700
 msgctxt "NES|Expansion"
 msgid "Dōngdá PEC Keyboard"
-msgstr "Dongda PEC Tastatur"
+msgstr "Dōngdá PEC Tastatur"
 
 #: ../src/libromdata/data/NESMappers.cpp:701
 msgctxt "NES|Expansion"
@@ -5293,7 +5293,7 @@ msgstr "SNES Maus ($4017)"
 #: ../src/libromdata/data/NESMappers.cpp:741
 msgctxt "NES|Expansion"
 msgid "Zapper ($4016)"
-msgstr "Zapper"
+msgstr "Zapper ($4016)"
 
 #: ../src/libromdata/data/NESMappers.cpp:742
 msgctxt "NES|Expansion"
