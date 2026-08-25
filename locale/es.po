@@ -4003,7 +4003,7 @@ msgstr "Fecha"
 #: ../src/libromdata/Console/SNES.cpp:1636
 msgctxt "SNES|ProgramType"
 msgid "BS-X Script"
-msgstr "Juego Stellaview (BS-X)"
+msgstr ""
 
 #: ../src/libromdata/Console/SNES.cpp:1639
 msgctxt "SNES|ProgramType"
@@ -6319,7 +6319,7 @@ msgstr "No. de aprobación de la publicación"
 #: ../src/libromdata/Handheld/NintendoDS.cpp:382
 msgctxt "NintendoDS|DSi_Flags"
 msgid "DSi Touchscreen"
-msgstr "DSi Touchscree"
+msgstr ""
 
 #. tr: Game requires agreeing to the Nintendo online services agreement.
 #: ../src/libromdata/Handheld/NintendoDS.cpp:384
@@ -7445,7 +7445,7 @@ msgstr "Datos en L1"
 #: ../src/libromdata/Other/ELF.cpp:2064
 msgctxt "ELF|RISCVFPABI"
 msgid "Soft-Float"
-msgstr "oft-Float"
+msgstr ""
 
 #: ../src/libromdata/Other/ELF.cpp:2065
 msgctxt "ELF|RISCVFPABI"

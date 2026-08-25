@@ -2157,8 +2157,6 @@ msgid ""
 "External\n"
 "Title Screen"
 msgstr ""
-"Capa\n"
-"externa"
 
 #. tr: amiibo
 #: ../src/libromdata/config/ImageTypesConfig.cpp:146
@@ -2593,12 +2591,12 @@ msgstr "Direcional secundário"
 #: ../src/libromdata/Console/Dreamcast.cpp:811
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog L Trigger"
-msgstr "Botão analógico L"
+msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:812
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog R Trigger"
-msgstr "Botão analógico R"
+msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:813
 msgctxt "Dreamcast|ReqCtrl"
@@ -7331,7 +7329,7 @@ msgstr "Parâmetros de CPU"
 #: ../src/libromdata/Other/ELF.cpp:1650
 msgctxt "ELF"
 msgid "MIPS ABI"
-msgstr "ABI MIPS "
+msgstr "ABI MIPS"
 
 #: ../src/libromdata/Other/ELF.cpp:1661
 msgctxt "ELF"
