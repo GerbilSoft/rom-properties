@@ -646,7 +646,7 @@ msgstr "Cache de rom-properties se limpió con éxito."
 #: ../src/gtk/config/ConfigDialog.cpp:249 ../src/kde/config/ConfigDialog.cpp:87
 msgctxt "ConfigDialog"
 msgid "&Key Manager"
-msgstr "Gestor de &Llaves"
+msgstr "Gestor de &Claves"
 
 #. tr: "Reset" button.
 #: ../src/gtk/config/ConfigDialog.cpp:306
@@ -822,7 +822,7 @@ msgstr "El archivo '{0:s}' no es un archivo {1:s} valido."
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "No keys were imported from '{:s}'."
-msgstr "No se importaron llaves de '{:s}'."
+msgstr "No se importaron claves de '{:s}'."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:623
 #: ../src/kde/config/KeyManagerTab.cpp:225
@@ -831,8 +831,8 @@ msgstr "No se importaron llaves de '{:s}'."
 msgctxt "KeyManagerTab"
 msgid "{0:Ld} key was imported from '{1:s}'."
 msgid_plural "{0:Ld} keys were imported from '{1:s}'."
-msgstr[0] "{0:Ld} llave fue importada de '{1:s}'."
-msgstr[1] "{0:Ld} llaves fueron importadas de '{1:s}'."
+msgstr[0] "{0:Ld} clave fue importada de '{1:s}'."
+msgstr[1] "{0:Ld} claves fueron importadas de '{1:s}'."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:641
 #: ../src/kde/config/KeyManagerTab.cpp:244
@@ -841,8 +841,8 @@ msgstr[1] "{0:Ld} llaves fueron importadas de '{1:s}'."
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key already exists in the Key Manager."
 msgid_plural "{:Ld} keys already exist in the Key Manager."
-msgstr[0] "{:Ld} llave ya existen en el Administrador de Llaves."
-msgstr[1] "{:Ld} llaves ya existen en el Administrador de Llaves."
+msgstr[0] "{:Ld} clave ya existen en el Administrador de Claves."
+msgstr[1] "{:Ld} claves ya existen en el Administrador de Claves."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:650
 #: ../src/kde/config/KeyManagerTab.cpp:253
@@ -851,8 +851,8 @@ msgstr[1] "{:Ld} llaves ya existen en el Administrador de Llaves."
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key was not imported because it is incorrect."
 msgid_plural "{:Ld} keys were not imported because they are incorrect."
-msgstr[0] "{:Ld} llave no fue importada porque es incorrecta."
-msgstr[1] "{:Ld} llaves no fueron importadas porque son incorrectas."
+msgstr[0] "{:Ld} clave no fue importada porque es incorrecta."
+msgstr[1] "{:Ld} claves no fueron importadas porque son incorrectas."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:659
 #: ../src/kde/config/KeyManagerTab.cpp:262
@@ -862,9 +862,9 @@ msgctxt "KeyManagerTab"
 msgid "{:Ld} key was not imported because it isn't used by rom-properties."
 msgid_plural ""
 "{:Ld} keys were not imported because they aren't used by rom-properties."
-msgstr[0] "{:Ld} llave no fue importada porque no es usada por rom-properties."
+msgstr[0] "{:Ld} clave no fue importada porque no es usada por rom-properties."
 msgstr[1] ""
-"{:Ld} llaves no fueron importadas porque no son usadas por rom-properties."
+"{:Ld} claves no fueron importadas porque no son usadas por rom-properties."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:668
 #: ../src/kde/config/KeyManagerTab.cpp:271
@@ -878,10 +878,10 @@ msgid_plural ""
 "{:Ld} keys were not imported because they are encrypted and the master key "
 "isn't available."
 msgstr[0] ""
-"{:Ld} llave no importada porque está codificada y la clave maestra no esta "
+"{:Ld} clave no importada porque está codificada y la clave maestra no esta "
 "disponible."
 msgstr[1] ""
-"{:Ld} llaves no importadas porque están codificadas y las llaves maestras no "
+"{:Ld} claves no importadas porque están codificadas y las claves maestras no "
 "estan disponible."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:677
@@ -891,8 +891,8 @@ msgstr[1] ""
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key has been imported and verified as correct."
 msgid_plural "{:Ld} keys have been imported and verified as correct."
-msgstr[0] "{:Ld} llave importada y validada."
-msgstr[1] "{:Ld} llaves importadas y validadas."
+msgstr[0] "{:Ld} clave importada y validada."
+msgstr[1] "{:Ld} claves importadas y validadas."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:686
 #: ../src/kde/config/KeyManagerTab.cpp:289
@@ -901,8 +901,8 @@ msgstr[1] "{:Ld} llaves importadas y validadas."
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key has been imported without verification."
 msgid_plural "{:Ld} keys have been imported without verification."
-msgstr[0] "{:Ld} llave fue importada sin validación."
-msgstr[1] "{:Ld} llaves fueron importadas sin validación."
+msgstr[0] "{:Ld} clave fue importada sin validación."
+msgstr[1] "{:Ld} claves fueron importadas sin validación."
 
 #. tr: Column 0: Key Name.
 #. tr: Column 0: Key Name
@@ -912,7 +912,7 @@ msgstr[1] "{:Ld} llaves fueron importadas sin validación."
 #: ../src/win32/config/KeyManagerTab.cpp:376
 msgctxt "KeyManagerTab"
 msgid "Key Name"
-msgstr "Nombre de Llave"
+msgstr "Nombre de Clave"
 
 #. tr: Column 1: Value.
 #. tr: Column 1: Value
@@ -2062,7 +2062,7 @@ msgstr "{:s} Divisor de reloj"
 #: ../src/libromdata/Common/ParamSFO.cpp:567
 msgctxt "SFO"
 msgid "Key"
-msgstr "Llave"
+msgstr "Clave"
 
 #: ../src/libromdata/Common/ParamSFO.cpp:568
 msgctxt "SFO"
@@ -2834,7 +2834,7 @@ msgstr "Desconocido ({:0>2X} {:0>2X})"
 #: ../src/libromdata/Console/GameCube.cpp:675
 msgctxt "Wii"
 msgid "Invalid common key index."
-msgstr "Indice inválido de llave común."
+msgstr "Indice inválido de clave común."
 
 #: ../src/libromdata/Console/GameCube.cpp:682
 msgctxt "Wii"
@@ -3016,7 +3016,7 @@ msgstr "Tipo"
 #: ../src/libromdata/Console/GameCube.cpp:1879
 msgctxt "Wii|Partition"
 msgid "Key"
-msgstr "Llave"
+msgstr "Clave"
 
 #. tr: Actual data used within the partition.
 #: ../src/libromdata/Console/GameCube.cpp:1881
@@ -4042,14 +4042,14 @@ msgstr "Emisor"
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1018
 msgctxt "Nintendo"
 msgid "Key Index"
-msgstr "Índice de Llave"
+msgstr "Índice de Clave"
 
 #: ../src/libromdata/Console/WiiTicket.cpp:522
 #: ../src/libromdata/Console/WiiWAD.cpp:1155
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:2012
 msgctxt "RomData"
 msgid "Encryption Key"
-msgstr "Llave de encripación"
+msgstr "Clave de encripación"
 
 #: ../src/libromdata/Console/WiiTicket.cpp:529
 #: ../src/libromdata/Console/WiiWAD.cpp:1158
@@ -4568,7 +4568,7 @@ msgstr "Desconocido ({:c}{:c})"
 #, c++-format
 msgctxt "Xbox360_XEX"
 msgid "The Xbox 360 {:s} encryption key is not available."
-msgstr "La llave de cifrado de Xbox 360 {:s} no está disponible."
+msgstr "La clave de cifrado de Xbox 360 {:s} no está disponible."
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1824
 msgctxt "Xbox360_XEX"
@@ -4848,17 +4848,17 @@ msgstr ""
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:889
 msgctxt "KeyStoreUI|Section"
 msgid "Nintendo Wii AES Keys"
-msgstr "Llaves AES de Nintendo Wii"
+msgstr "Claves AES de Nintendo Wii"
 
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:890
 msgctxt "KeyStoreUI|Section"
 msgid "Nintendo 3DS Key Scrambler Constants"
-msgstr "Constantes de codificación de Llave de Nintendo 3DS"
+msgstr "Constantes de codificación de Clave de Nintendo 3DS"
 
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:891
 msgctxt "KeyStoreUI|Section"
 msgid "Nintendo 3DS AES Keys"
-msgstr "Llaves AES de Nintendo 3DS"
+msgstr "Claves AES de Nintendo 3DS"
 
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:892
 msgctxt "KeyStoreUI|Section"
@@ -6082,7 +6082,7 @@ msgstr "Tipo"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1945
 msgctxt "Nintendo3DS|eMMC"
 msgid "Keyslot"
-msgstr "Registro de Llave"
+msgstr "Registro de Clave"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1946
 msgctxt "Nintendo3DS|eMMC"
@@ -6422,7 +6422,7 @@ msgstr "Código de región DSi"
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1075
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "Common Key"
-msgstr "Llave comun"
+msgstr "Clave comun"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1076
 msgctxt "NintendoDS|DSi_Permissions"
@@ -7677,7 +7677,7 @@ msgstr "Fecha de Archivo"
 #: ../src/libromdata/Other/EXE.cpp:360
 msgctxt "EXE|StringFileInfo"
 msgid "Key"
-msgstr "Llave"
+msgstr "Clave"
 
 #: ../src/libromdata/Other/EXE.cpp:361
 msgctxt "EXE|StringFileInfo"
@@ -8755,13 +8755,13 @@ msgstr "keys.conf tiene un error y no se ha podido cargar."
 #: ../src/librpbase/crypto/KeyManager.cpp:260
 msgctxt "KeyManager|VerifyResult"
 msgid "Required key was not found in keys.conf."
-msgstr "Llave necesaria no se encuentra en keys.conf."
+msgstr "Clave necesaria no se encuentra en keys.conf."
 
 #. tr: VerifyResult::KeyInvalid
 #: ../src/librpbase/crypto/KeyManager.cpp:262
 msgctxt "KeyManager|VerifyResult"
 msgid "The key in keys.conf is not a valid key."
-msgstr "Llave en keys.conf no es válida."
+msgstr "Clave en keys.conf no es válida."
 
 #. tr: VerifyResult::IAesCipherInitErr
 #: ../src/librpbase/crypto/KeyManager.cpp:264
@@ -8779,7 +8779,7 @@ msgstr "Fallo de descifrado AES."
 #: ../src/librpbase/crypto/KeyManager.cpp:268
 msgctxt "KeyManager|VerifyResult"
 msgid "The key in keys.conf is incorrect."
-msgstr "Llave en keys.conf incorreta."
+msgstr "Clave en keys.conf incorreta."
 
 #. tr: VerifyResult::IncrementingValues
 #: ../src/librpbase/crypto/KeyManager.cpp:270
@@ -10644,7 +10644,7 @@ msgstr ""
 #: ../src/rpcli/rpcli.cpp:625
 msgctxt "rpcli"
 msgid "Verify encryption keys in keys.conf."
-msgstr "Comprueba las llaves de encriptación en keys.conf."
+msgstr "Comprueba las claves de encriptación en keys.conf."
 
 #: ../src/rpcli/rpcli.cpp:629
 msgctxt "rpcli"
@@ -10805,7 +10805,7 @@ msgstr ""
 #, c++-format
 msgctxt "rpcli"
 msgid "WARNING: Key [{:d},{:d}] has no name. Skipping..."
-msgstr "AVISO: la llave [{:d},{:d}] no tiene nombre. Ignorando..."
+msgstr "AVISO: La clave [{:d},{:d}] no tiene nombre. Ignorando..."
 
 #: ../src/rpcli/verifykeys.cpp:103
 msgctxt "rpcli|KeyVerifyStatus"
@@ -11172,7 +11172,7 @@ msgstr "I&mportar..."
 #: ../src/win32/config/KeyManagerTab.cpp:1870
 msgctxt "KeyManagerTab"
 msgid "Key Manager"
-msgstr "Gestor de &Llaves"
+msgstr "Gestor de &Claves"
 
 #. tr: Tab title.
 #: ../src/win32/config/SystemsTab.cpp:480
