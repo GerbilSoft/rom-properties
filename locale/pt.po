@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-08-24 12:07-0400\n"
-"PO-Revision-Date: 2026-08-25 17:02\n"
+"POT-Creation-Date: 2026-08-25 18:31-0400\n"
+"PO-Revision-Date: 2026-08-25 23:20\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese, Brazilian\n"
 "Language: pt_BR\n"
@@ -1340,7 +1340,7 @@ msgstr "Desconhecido ({:d})"
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1364
 msgctxt "RomData"
 msgid "Endianness"
-msgstr ""
+msgstr "Ordem de bytes"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:424 ../src/libromdata/Audio/BRSTM.cpp:331
 #: ../src/libromdata/Other/Lua.cpp:708
@@ -1351,7 +1351,7 @@ msgstr ""
 #: ../src/rpcli/printcpufeatures.cpp:69
 msgctxt "RomData"
 msgid "Big-Endian"
-msgstr ""
+msgstr "Decrescente"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:425 ../src/libromdata/Audio/BRSTM.cpp:332
 #: ../src/libromdata/Other/Lua.cpp:711
@@ -1362,7 +1362,7 @@ msgstr ""
 #: ../src/rpcli/printcpufeatures.cpp:71
 msgctxt "RomData"
 msgid "Little-Endian"
-msgstr ""
+msgstr "Crescente"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:473
 msgctxt "BCSTM|Codec"
@@ -1411,7 +1411,8 @@ msgstr ""
 #: ../src/libromdata/Audio/GBS.cpp:256 ../src/libromdata/Audio/NSF.cpp:224
 #: ../src/libromdata/Audio/PSFTagParser.cpp:204
 #: ../src/libromdata/Audio/SID.cpp:241
-msgctxt "RomData|Audio"
+#: ../src/libromdata/Console/MegaDrive.cpp:449
+msgctxt "RomData"
 msgid "Copyright"
 msgstr "Direitos autorais"
 
@@ -1622,7 +1623,7 @@ msgstr ""
 #: ../src/libromdata/Audio/S98.cpp:382 ../src/libromdata/Audio/S98.cpp:385
 msgctxt "S98"
 msgid "(none)"
-msgstr ""
+msgstr "(nenhum)"
 
 #: ../src/libromdata/Audio/S98.cpp:398
 msgctxt "S98"
@@ -1732,7 +1733,7 @@ msgstr ""
 #: ../src/libromdata/Audio/SID.cpp:229
 msgctxt "RomData|Audio"
 msgid "Name"
-msgstr ""
+msgstr "Nome"
 
 #: ../src/libromdata/Audio/SID.cpp:246
 msgctxt "SID"
@@ -1799,7 +1800,7 @@ msgstr "Nº"
 #: ../src/libromdata/Audio/SNDH.cpp:935 ../src/libromdata/Audio/SNDH.cpp:938
 msgctxt "SNDH|SubtuneList"
 msgid "Name"
-msgstr ""
+msgstr "Nome"
 
 #: ../src/libromdata/Audio/SNDH.cpp:952
 msgctxt "SNDH"
@@ -1819,7 +1820,9 @@ msgid "Game Name"
 msgstr ""
 
 #: ../src/libromdata/Audio/SPC.cpp:807
-msgctxt "SPC"
+#: ../src/libromdata/Console/ColecoVision.cpp:448
+#: ../src/libromdata/Console/Intellivision.cpp:295
+msgctxt "RomData"
 msgid "Copyright Year"
 msgstr ""
 
@@ -1983,7 +1986,7 @@ msgstr ""
 #: ../src/libromdata/Audio/VGM.cpp:712
 msgctxt "VGM|NESExpansion"
 msgid "(none)"
-msgstr ""
+msgstr "(nenhum)"
 
 #: ../src/libromdata/Audio/VGM.cpp:714
 #, c++-format
@@ -2212,7 +2215,7 @@ msgstr ""
 #: ../src/libromdata/Console/Atari7800.cpp:226
 msgctxt "Atari7800|ControllerType"
 msgid "None"
-msgstr ""
+msgstr "Nenhum"
 
 #: ../src/libromdata/Console/Atari7800.cpp:227
 msgctxt "Atari7800|ControllerType"
@@ -2263,11 +2266,6 @@ msgstr ""
 #, c++-format
 msgctxt "Atari7800"
 msgid "Controller {:d}"
-msgstr ""
-
-#: ../src/libromdata/Console/ColecoVision.cpp:448
-msgctxt "ColecoVision"
-msgid "Copyright Year"
 msgstr ""
 
 #: ../src/libromdata/Console/ColecoVision.cpp:454
@@ -2692,7 +2690,7 @@ msgstr "Nome de arquivo"
 #: ../src/libromdata/Console/DreamcastSave.cpp:1452
 msgctxt "DreamcastSave"
 msgid "Creation Time"
-msgstr "Dados de criação"
+msgstr "Hora de criação"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1459
 msgctxt "DreamcastSave"
@@ -2717,7 +2715,7 @@ msgstr ""
 #: ../src/libromdata/Console/GameCubeBNR.cpp:628
 #: ../src/libromdata/Console/GameCubeSave.cpp:1051
 #: ../src/libromdata/Console/PlayStationSave.cpp:508
-#: ../src/libromdata/Console/Sega8Bit.cpp:649
+#: ../src/libromdata/Console/Sega8Bit.cpp:653
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1047
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:93
 #: ../src/libromdata/Other/EXE_manifest.cpp:261
@@ -2804,7 +2802,7 @@ msgstr "Desconhecido (0x{:0>8X})"
 
 #: ../src/libromdata/Console/GameCube.cpp:1523
 #: ../src/libromdata/Console/GameCubeSave.cpp:1032
-#: ../src/libromdata/Console/NES.cpp:1575
+#: ../src/libromdata/Console/N64.cpp:344 ../src/libromdata/Console/NES.cpp:1575
 #: ../src/libromdata/Console/SNES.cpp:1503
 #: ../src/libromdata/Console/SufamiTurbo.cpp:357
 #: ../src/libromdata/Console/WiiSave.cpp:456
@@ -2873,7 +2871,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1068
 msgctxt "RomData"
 msgid "Age Ratings"
-msgstr ""
+msgstr "Classificação indicativa"
 
 #: ../src/libromdata/Console/GameCube.cpp:1647
 msgctxt "GameCube"
@@ -2896,7 +2894,7 @@ msgstr "Atualização"
 #: ../src/libromdata/Console/GameCube.cpp:1787
 msgctxt "Nintendo"
 msgid "None"
-msgstr ""
+msgstr "Nenhum(a)"
 
 #: ../src/libromdata/Console/GameCube.cpp:1796
 msgctxt "Nintendo"
@@ -2968,7 +2966,7 @@ msgstr "Partições"
 #: ../src/libromdata/Console/WiiCommon.cpp:187
 msgctxt "Region"
 msgid "Taiwan"
-msgstr ""
+msgstr "Taiwan"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:69
 #: ../src/libromdata/Console/GameCubeRegions.cpp:129
@@ -2989,7 +2987,7 @@ msgstr "Coreia do Sul"
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1206
 msgctxt "Region"
 msgid "China"
-msgstr ""
+msgstr "China"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:89
 msgctxt "Region"
@@ -3065,11 +3063,6 @@ msgctxt "GameCubeSave"
 msgid "Blocks"
 msgstr "Blocos"
 
-#: ../src/libromdata/Console/Intellivision.cpp:295
-msgctxt "Intellivision"
-msgid "Copyright Year"
-msgstr ""
-
 #: ../src/libromdata/Console/Intellivision.cpp:311
 msgctxt "Intellivision|Flags"
 msgid "Intellivision 2"
@@ -3119,11 +3112,6 @@ msgstr "Ásia"
 msgctxt "MegaDrive"
 msgid "System"
 msgstr "Sistema"
-
-#: ../src/libromdata/Console/MegaDrive.cpp:449
-msgctxt "RomData"
-msgid "Copyright"
-msgstr ""
 
 #: ../src/libromdata/Console/MegaDrive.cpp:457
 msgctxt "MegaDrive"
@@ -3225,7 +3213,7 @@ msgstr ""
 #: ../src/libromdata/Console/MegaDrive.cpp:510
 msgctxt "MegaDrive|I/O"
 msgid "None"
-msgstr ""
+msgstr "Nenhum"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:512
 msgctxt "MegaDrive"
@@ -3309,11 +3297,6 @@ msgstr "Cabeçalho da ROM"
 msgctxt "MegaDrive"
 msgid "Locked-On ROM Header"
 msgstr "Cabeçalho da ROM combinada"
-
-#: ../src/libromdata/Console/N64.cpp:344
-msgctxt "N64"
-msgid "Game ID"
-msgstr "Código de jogo"
 
 #: ../src/libromdata/Console/N64.cpp:355
 #: ../src/libromdata/Console/WiiTMD.cpp:447
@@ -3583,7 +3566,7 @@ msgstr ""
 #: ../src/libromdata/Console/PlayStationDisc.cpp:829
 msgctxt "PlayStationDisc"
 msgid "CDVDGEN Version"
-msgstr ""
+msgstr "Versão CDVDGEN"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:834
 msgctxt "PlayStationDisc"
@@ -3695,8 +3678,8 @@ msgid "System"
 msgstr "Sistema"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:596
-#: ../src/libromdata/Console/Sega8Bit.cpp:620
-#: ../src/libromdata/Console/Sega8Bit.cpp:655
+#: ../src/libromdata/Console/Sega8Bit.cpp:624
+#: ../src/libromdata/Console/Sega8Bit.cpp:659
 msgctxt "Sega8Bit"
 msgid "Extra Header"
 msgstr "Cabeçalho extra"
@@ -3711,40 +3694,37 @@ msgctxt "Sega8Bit"
 msgid "CM Checksum Banks"
 msgstr "Bancos de soma CM"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:611
+#. tr: Codemasters Checksum - two checksums are present
+#: ../src/libromdata/Console/Sega8Bit.cpp:613
+#, c++-format
 msgctxt "Sega8Bit"
-msgid "CM Checksum 1"
-msgstr "Soma de verificação 1 (CM)"
+msgid "CM Checksum {:d}"
+msgstr "Soma de verificação {:d} (CM)"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:614
-msgctxt "Sega8Bit"
-msgid "CM Checksum 2"
-msgstr "Soma de verificação 2 (CM)"
-
-#: ../src/libromdata/Console/Sega8Bit.cpp:634
+#: ../src/libromdata/Console/Sega8Bit.cpp:638
 msgctxt "Sega8Bit"
 msgid "SDSC Version"
 msgstr "Versão de especificações 8 bits"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:639
+#: ../src/libromdata/Console/Sega8Bit.cpp:643
 msgctxt "Sega8Bit"
 msgid "Build Date"
 msgstr "Data de compilação"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:645
+#: ../src/libromdata/Console/Sega8Bit.cpp:649
 #: ../src/librptexture/fileformat/TGA.cpp:914
 msgctxt "RomData"
 msgid "Author"
 msgstr "Autor"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:647
+#: ../src/libromdata/Console/Sega8Bit.cpp:651
 #: ../src/libromdata/Console/WiiWAD.cpp:1005
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1039
 msgctxt "RomData"
 msgid "Name"
 msgstr "Nome"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:656
+#: ../src/libromdata/Console/Sega8Bit.cpp:660
 msgctxt "Sega8Bit"
 msgid "M404 Copyright Header"
 msgstr "Cabeçalho de direitos autorais M404"
@@ -3952,12 +3932,12 @@ msgstr "Ilimitado"
 #: ../src/libromdata/Console/SufamiTurbo.cpp:394
 msgctxt "SufamiTurbo"
 msgid "ROM Size"
-msgstr ""
+msgstr "Tamanho da ROM"
 
 #: ../src/libromdata/Console/SufamiTurbo.cpp:398
 msgctxt "SufamiTurbo"
 msgid "SRAM Size"
-msgstr ""
+msgstr "Tamanho da SRAM"
 
 #: ../src/libromdata/Console/WiiSave.cpp:438
 msgctxt "WiiSave"
@@ -4084,7 +4064,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiTicket.cpp:766
 msgctxt "Wii|EncKey"
 msgid "None"
-msgstr ""
+msgstr "Nenhum(a)"
 
 #: ../src/libromdata/Console/WiiTMD.cpp:359
 #: ../src/libromdata/Console/WiiWAD.cpp:1025
@@ -4367,13 +4347,13 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1084
 msgctxt "Xbox360_STFS"
 msgid "Content Type"
-msgstr ""
+msgstr "Tipo de conteúdo"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1096
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1958
 msgctxt "Xbox360_XEX"
 msgid "Media ID"
-msgstr ""
+msgstr "Código de mídia"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1102
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:991
@@ -4513,7 +4493,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1824
 msgctxt "Xbox360_XEX"
 msgid "PE Filename"
-msgstr ""
+msgstr "Nome de arquivo de PE"
 
 #. tr: Minimum kernel version (i.e. dashboard)
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1848
@@ -4718,12 +4698,12 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox_XBE.cpp:763
 msgctxt "Xbox_XBE"
 msgid "PE Filename"
-msgstr ""
+msgstr "Nome de arquivo de PE"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:783
 msgctxt "Xbox_XBE"
 msgid "Title ID"
-msgstr ""
+msgstr "Código de nome"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:799
 msgctxt "Xbox_XBE"
@@ -5439,7 +5419,7 @@ msgstr "Lista de amigos"
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:79
 msgctxt "Nintendo3DSSysTitles"
 msgid "Notifications"
-msgstr ""
+msgstr "Notificações"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:80
 msgctxt "Nintendo3DSSysTitles"
@@ -5490,7 +5470,7 @@ msgstr "Configurações de amiibo"
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:31
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Saved Game"
-msgstr ""
+msgstr "Dados de gravação"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:32
 msgctxt "Xbox360_STFS|ContentType"
@@ -5884,7 +5864,7 @@ msgstr "Tamanho de Banco {:d}"
 #: ../src/libromdata/Handheld/NGPC.cpp:325
 msgctxt "RomData"
 msgid "Product ID"
-msgstr ""
+msgstr "Nº de produto"
 
 #: ../src/libromdata/Handheld/NGPC.cpp:336
 msgctxt "NGPC"
@@ -5910,7 +5890,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:683
 msgctxt "Nintendo3DS"
 msgid "Media ID"
-msgstr ""
+msgstr "Código de mídia"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:711
 msgctxt "Nintendo3DS"
@@ -6377,12 +6357,12 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1078
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "SD Card"
-msgstr ""
+msgstr "Cartão SD"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1079
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "eMMC Access"
-msgstr ""
+msgstr "Acesso ao eMMC"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1080
 msgctxt "NintendoDS|DSi_Permissions"
@@ -6627,7 +6607,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:540
 msgctxt "WonderSwan"
 msgid "None"
-msgstr ""
+msgstr "Nenhum"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:563
 msgctxt "WonderSwan"
@@ -6637,7 +6617,7 @@ msgstr "Sistema"
 #: ../src/libromdata/Handheld/WonderSwan.cpp:572
 msgctxt "WonderSwan"
 msgid "ROM Size"
-msgstr ""
+msgstr "Tamanho da ROM"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:585
 msgctxt "WonderSwan"
@@ -6648,7 +6628,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:604
 msgctxt "WonderSwan|SaveMemory"
 msgid "None"
-msgstr ""
+msgstr "Nenhum"
 
 #. tr: Parameter 2 indicates the save type, e.g. "SRAM" or "EEPROM".
 #: ../src/libromdata/Handheld/WonderSwan.cpp:591
@@ -6806,7 +6786,7 @@ msgstr ""
 #: ../src/libromdata/Media/ISO.cpp:590
 msgctxt "ISO"
 msgid "Application"
-msgstr ""
+msgstr "Aplicativo"
 
 #: ../src/libromdata/Media/ISO.cpp:595
 msgctxt "ISO"
@@ -6821,7 +6801,7 @@ msgstr ""
 #: ../src/libromdata/Media/ISO.cpp:616
 msgctxt "ISO"
 msgid "Creation Time"
-msgstr ""
+msgstr "Hora de criação"
 
 #: ../src/libromdata/Media/ISO.cpp:622
 msgctxt "ISO"
@@ -6946,7 +6926,7 @@ msgstr ""
 #: ../src/libromdata/Media/Wim_xml.cpp:237
 msgctxt "Wim"
 msgid "(none)"
-msgstr ""
+msgstr "(nenhum)"
 
 #: ../src/libromdata/Media/Wim_xml.cpp:373
 msgctxt "Wim|Images"
@@ -8581,6 +8561,7 @@ msgid "*** ERROR: Could not parse '{:s}' as GcnFst."
 msgstr ""
 
 #: ../src/libromdata/tests/disc/GcnFstPrint.cpp:187
+#: ../src/libromdata/tests/disc/WiiUFstPrint.cpp:156
 msgctxt "GcnFstPrint"
 msgid "*** WARNING: FST has errors and may be unusable."
 msgstr "*** AVISO: FST possui erros e pode ficar inutilizável."
@@ -8596,11 +8577,6 @@ msgstr "Sintaxe: {:s} fst.bin"
 msgctxt "WiiUFstPrint"
 msgid "*** ERROR: Could not parse '{:s}' as WiiUFst."
 msgstr ""
-
-#: ../src/libromdata/tests/disc/WiiUFstPrint.cpp:156
-msgctxt "WiiUFstPrint"
-msgid "*** WARNING: FST has errors and may be unusable."
-msgstr "*** AVISO: FST possui erros e pode ficar inutilizável."
 
 #: ../src/librpbase/Achievements.cpp:205
 msgctxt "Achievements"
@@ -8901,7 +8877,7 @@ msgstr ""
 #: ../src/librpbase/RomData.cpp:748
 msgctxt "RomData|FileType"
 msgid "Resource File"
-msgstr ""
+msgstr "Arquivo de Recursos"
 
 #. tr: FileType::Partition
 #: ../src/librpbase/RomData.cpp:750
@@ -10444,7 +10420,7 @@ msgstr ""
 #: ../src/rpcli/printcpufeatures.cpp:191
 msgctxt "rpcli"
 msgid "(none)"
-msgstr ""
+msgstr "(nenhum)"
 
 #. tr: {0:s} == image type name, {1:s} == output filename
 #: ../src/rpcli/rpcli.cpp:175
@@ -10790,7 +10766,7 @@ msgstr "Este programa foi licenciado de acordo com a GNU GPL, versão 2.\n"
 #, c-format
 msgctxt "rp-stub|Help"
 msgid "Usage: %s [-s size] source_file output_file"
-msgstr ""
+msgstr "Utilização: %s [-s tamanho] arquivo_fonte arquivo_de_saída"
 
 #: ../src/rp-stub/rp-stub.c:116
 msgctxt "rp-stub|Help"
@@ -10865,7 +10841,9 @@ msgctxt "rp-stub|Help"
 msgid "When invoked as rp-config, this program will open the configuration dialog\n"
 "using an installed plugin that most closely matches the currently running\n"
 "desktop environment."
-msgstr ""
+msgstr "Ao invocar este programa pelo rp-config, ele abrirá o diálogo de configuração\n"
+"utilizando um plugin instalado que mais combine com o ambiente de trabalho\n"
+"em execução."
 
 #: ../src/rp-stub/rp-stub.c:211
 #, c-format
