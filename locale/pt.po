@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-24 12:07-0400\n"
-"PO-Revision-Date: 2026-08-24 23:14\n"
+"PO-Revision-Date: 2026-08-25 17:02\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese, Brazilian\n"
 "Language: pt_BR\n"
@@ -2096,8 +2096,7 @@ msgstr "Caixa\n"
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "External\n"
 "Title Screen"
-msgstr "Capa\n"
-"externa"
+msgstr ""
 
 #. tr: amiibo
 #: ../src/libromdata/config/ImageTypesConfig.cpp:146
@@ -2530,12 +2529,12 @@ msgstr "Direcional secundário"
 #: ../src/libromdata/Console/Dreamcast.cpp:811
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog L Trigger"
-msgstr "Botão analógico L"
+msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:812
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog R Trigger"
-msgstr "Botão analógico R"
+msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:813
 msgctxt "Dreamcast|ReqCtrl"
@@ -3347,7 +3346,7 @@ msgstr "iNES muito antigo"
 #: ../src/libromdata/Console/NES.cpp:1409
 msgctxt "NES|Format"
 msgid "TNES (Nintendo 3DS Virtual Console)"
-msgstr "TNES (Console virtual 3Ds)"
+msgstr "TNES (Console virtual Nintendo 3DS)"
 
 #: ../src/libromdata/Console/NES.cpp:1418
 msgctxt "NES|Format"
@@ -4031,7 +4030,7 @@ msgstr "Depuração"
 #: ../src/libromdata/Console/WiiTicket.cpp:733
 msgctxt "Wii|EncKey"
 msgid "Korean (debug)"
-msgstr "Coreano (debug)"
+msgstr "Coreano (depuração)"
 
 #. tr: Key_CAT_vWii - vWii (debug) Wii encryption key
 #: ../src/libromdata/Console/WiiTicket.cpp:735
@@ -4729,7 +4728,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox_XBE.cpp:799
 msgctxt "Xbox_XBE"
 msgid "Timestamp"
-msgstr ""
+msgstr "Carimbo de data/hora"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:807
 msgctxt "Xbox_XBE"
@@ -4840,7 +4839,7 @@ msgstr "Console POSIX"
 #: ../src/libromdata/data/EXEData.cpp:54
 msgctxt "EXE|Subsystem"
 msgid "Win9x Native Driver"
-msgstr "Controlador nativo do Windows"
+msgstr "Controlador nativo do Win9x"
 
 #. tr: IMAGE_SUBSYSTEM_WINDOWS_CE_GUI
 #: ../src/libromdata/data/EXEData.cpp:56
@@ -7235,7 +7234,7 @@ msgstr "Parâmetros de CPU"
 #: ../src/libromdata/Other/ELF.cpp:1650
 msgctxt "ELF"
 msgid "MIPS ABI"
-msgstr "ABI MIPS "
+msgstr "ABI MIPS"
 
 #: ../src/libromdata/Other/ELF.cpp:1661
 msgctxt "ELF"
