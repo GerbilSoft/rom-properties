@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-24 12:07-0400\n"
-"PO-Revision-Date: 2026-08-25 10:50\n"
+"PO-Revision-Date: 2026-08-25 12:11\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
 "Language: ka_GE\n"
@@ -6844,7 +6844,7 @@ msgstr ""
 #: ../src/libromdata/Media/ISO.cpp:1277
 msgctxt "ISO"
 msgid "Boot Platforms"
-msgstr ""
+msgstr "ჩატვირთვის პლატფორმები"
 
 #: ../src/libromdata/Media/ISO.cpp:1283
 msgctxt "ISO"
@@ -6994,7 +6994,7 @@ msgstr "გამოსახულებები"
 #: ../src/libromdata/Other/Amiibo.cpp:385
 msgctxt "Amiibo"
 msgid "NTAG215 Serial"
-msgstr ""
+msgstr "NTAG215-ის სერიული ნომერი"
 
 #. tr: amiibo ID. Represents the character and amiibo series.
 #. TODO: Link to https://amiibo.life/nfc/{:0>8X}-{:0>8X}
@@ -7046,7 +7046,7 @@ msgstr ""
 #: ../src/libromdata/Other/Amiibo.cpp:432
 msgctxt "Amiibo"
 msgid "Character Name"
-msgstr ""
+msgstr "პიროვნების სახელი"
 
 #: ../src/libromdata/Other/Amiibo.cpp:437
 msgctxt "Amiibo"
@@ -7301,7 +7301,7 @@ msgstr "VFP მცურავი"
 #: ../src/libromdata/Other/ELF.cpp:1771
 msgctxt "ELF|ARMFlags"
 msgid "Maverick Float"
-msgstr ""
+msgstr "Maverick მცურავი"
 
 #: ../src/libromdata/Other/ELF.cpp:1786
 msgctxt "ELF|AlphaFlags"
