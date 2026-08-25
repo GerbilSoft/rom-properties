@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-24 12:07-0400\n"
-"PO-Revision-Date: 2026-08-25 18:01\n"
+"PO-Revision-Date: 2026-08-25 19:11\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -2322,7 +2322,7 @@ msgstr "Japón"
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:424
 msgctxt "Region"
 msgid "USA"
-msgstr ""
+msgstr "EE.UU."
 
 #: ../src/libromdata/Console/Dreamcast.cpp:178
 #: ../src/libromdata/Console/MegaDrive.cpp:257
@@ -2797,7 +2797,7 @@ msgstr "Todas las regiones (depuración)"
 #, c++-format
 msgctxt "Wii"
 msgid "{0:s} ({1:s})"
-msgstr ""
+msgstr "{0:s} ({1:s})"
 
 #: ../src/libromdata/Console/GameCube.cpp:756
 #: ../src/libromdata/Console/SNES.cpp:1651
@@ -2977,7 +2977,7 @@ msgstr "Particiones"
 #: ../src/libromdata/Console/WiiCommon.cpp:187
 msgctxt "Region"
 msgid "Taiwan"
-msgstr ""
+msgstr "Taiwán"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:69
 #: ../src/libromdata/Console/GameCubeRegions.cpp:129
@@ -2998,7 +2998,7 @@ msgstr "Corea del Sur"
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1206
 msgctxt "Region"
 msgid "China"
-msgstr ""
+msgstr "China"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:89
 msgctxt "Region"
@@ -3045,7 +3045,7 @@ msgstr "España"
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:306
 msgctxt "Region"
 msgid "Australia"
-msgstr ""
+msgstr "Australia"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:153
 #: ../src/libromdata/Handheld/NintendoDS.cpp:882
@@ -3669,7 +3669,7 @@ msgstr "América del Norte"
 #: ../src/libromdata/Console/PlayStationEXE.cpp:259
 msgctxt "RomData"
 msgid "Region"
-msgstr ""
+msgstr "Región"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:226
 msgctxt "Sega8Bit|SysID"
@@ -6320,7 +6320,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:887
 msgctxt "NintendoDS"
 msgid "DS Region Code"
-msgstr "Codigo de region DS"
+msgstr "Código de región DS"
 
 #. tr: DSi-enhanced or DSi-exclusive cartridge.
 #: ../src/libromdata/Handheld/NintendoDS.cpp:968
@@ -6366,7 +6366,7 @@ msgstr "Tipo de ROM DSi"
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1022
 msgctxt "NintendoDS"
 msgid "DSi Region Code"
-msgstr "Codigo de región DSi"
+msgstr "Código de región DSi"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1075
 msgctxt "NintendoDS|DSi_Permissions"
@@ -6940,7 +6940,7 @@ msgstr ""
 #: ../src/libromdata/Media/Wim.cpp:274
 msgctxt "Wim"
 msgid "Part Number"
-msgstr "Numero de Parte"
+msgstr "Número de Parte"
 
 #: ../src/libromdata/Media/Wim.cpp:276
 msgctxt "Wim"
@@ -7072,7 +7072,7 @@ msgstr "Nombre de personaje"
 #: ../src/libromdata/Other/Amiibo.cpp:437
 msgctxt "Amiibo"
 msgid "amiibo Series"
-msgstr "Série de amiibo"
+msgstr "Serie de amiibo"
 
 #: ../src/libromdata/Other/Amiibo.cpp:442
 msgctxt "Amiibo"
@@ -7223,7 +7223,7 @@ msgstr "Inválido(a)"
 #: ../src/libromdata/Other/ELF.cpp:1624
 msgctxt "ELF"
 msgid "Memory Ordering"
-msgstr "Orden de memória"
+msgstr "Orden de memoria"
 
 #. tr: Little-Endian Data
 #: ../src/libromdata/Other/ELF.cpp:1638
@@ -7370,7 +7370,7 @@ msgstr "Datos en L1"
 #: ../src/libromdata/Other/ELF.cpp:2064
 msgctxt "ELF|RISCVFPABI"
 msgid "Soft-Float"
-msgstr "oft-Float"
+msgstr ""
 
 #: ../src/libromdata/Other/ELF.cpp:2065
 msgctxt "ELF|RISCVFPABI"
@@ -7410,7 +7410,7 @@ msgstr "Linkeo"
 #: ../src/libromdata/Other/ELF.cpp:2108
 msgctxt "ELF|Linkage"
 msgid "Dynamic"
-msgstr "Dinamica"
+msgstr "Dinámica"
 
 #: ../src/libromdata/Other/ELF.cpp:2109
 msgctxt "ELF|Linkage"
@@ -7653,12 +7653,12 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:428
 msgctxt "EXE"
 msgid "Min. Memory"
-msgstr "Memória mínima"
+msgstr "Memoria mínima"
 
 #: ../src/libromdata/Other/EXE.cpp:429
 msgctxt "EXE"
 msgid "Max. Memory"
-msgstr "Memória máxima"
+msgstr "Memoria máxima"
 
 #: ../src/libromdata/Other/EXE.cpp:430
 msgctxt "EXE"
@@ -8153,7 +8153,7 @@ msgstr "Valor de alta entropia"
 #: ../src/libromdata/Other/EXE_PE.cpp:766
 msgctxt "EXE|DLLFlags"
 msgid "Dynamic Base"
-msgstr "Base dinamica"
+msgstr "Base dinámica"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:767
 msgctxt "EXE|DLLFlags"
@@ -8163,7 +8163,7 @@ msgstr "Forzar verificación"
 #: ../src/libromdata/Other/EXE_PE.cpp:768
 msgctxt "EXE|DLLFlags"
 msgid "NX Compatible"
-msgstr "Compatíble con NX"
+msgstr "Compatible con NX"
 
 #: ../src/libromdata/Other/EXE_PE.cpp:769
 msgctxt "EXE|DLLFlags"
@@ -8473,7 +8473,7 @@ msgstr "Ninguno"
 #, c++-format
 msgctxt "NintendoBadge"
 msgid "{0:s} (New3DS) ({1:s})"
-msgstr ""
+msgstr "{0:s} (New3DS) ({1:s})"
 
 #. tr: Title name
 #: ../src/libromdata/Other/NintendoBadge.cpp:783
@@ -8487,7 +8487,7 @@ msgstr ""
 #, c++-format
 msgctxt "NintendoBadge"
 msgid "{0:s} ({1:s})"
-msgstr ""
+msgstr "{0:s} ({1:s})"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:793
 msgctxt "NintendoBadge"
@@ -8522,7 +8522,7 @@ msgstr "Formato de pixel"
 #: ../src/libromdata/Other/RpTextureWrapper.cpp:286
 msgctxt "RpTextureWrapper"
 msgid "Mipmap Count"
-msgstr "Contagem de mipmaps"
+msgstr "Recuento de Mipmap"
 
 #. tr: {:Ld} == number of directories processed
 #: ../src/libromdata/tests/disc/FstPrint.cpp:220
@@ -10255,7 +10255,7 @@ msgstr "Mapa normal"
 #: ../src/librptexture/fileformat/ValveVTF.cpp:805
 msgctxt "ValveVTF|Flags"
 msgid "No Mipmaps"
-msgstr "Sim mipmaps"
+msgstr "Sin mipmaps"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:806
 msgctxt "ValveVTF|Flags"
