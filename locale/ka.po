@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-24 12:07-0400\n"
-"PO-Revision-Date: 2026-08-25 05:36\n"
+"PO-Revision-Date: 2026-08-25 06:51\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
 "Language: ka_GE\n"
@@ -5519,7 +5519,7 @@ msgstr "პროფილი"
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:40
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Gamer Picture"
-msgstr ""
+msgstr "მოთამაშის სურათი"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:41
 msgctxt "Xbox360_STFS|ContentType"
@@ -5579,7 +5579,7 @@ msgstr "არკადული თამაში"
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:55
 msgctxt "Xbox360_STFS|ContentType"
 msgid "License Store"
-msgstr ""
+msgstr "ლიცენზიების მაღაზია"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:56
 msgctxt "Xbox360_STFS|ContentType"
@@ -5604,7 +5604,7 @@ msgstr "თამაშის ვიდეო"
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:60
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Podcast Video"
-msgstr ""
+msgstr "პოდკასტის ვიდეო"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:61
 msgctxt "Xbox360_STFS|ContentType"
@@ -5659,7 +5659,7 @@ msgstr "პროდუქტიულობა"
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:44
 msgctxt "Android|AppCategory"
 msgid "Accessibility"
-msgstr ""
+msgstr "წვდომადობა"
 
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:80
 msgctxt "AndroidManifestXML"
@@ -6053,7 +6053,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2012
 msgctxt "Nintendo3DS"
 msgid "Card Revision"
-msgstr ""
+msgstr "ბარათის რევიზია"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2127
 msgctxt "Nintendo3DS"
@@ -6110,7 +6110,7 @@ msgstr "აპლიკაცია"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2345
 msgctxt "Nintendo3DS|ApplType"
 msgid "System Applet"
-msgstr ""
+msgstr "სისტემური აპლეტი"
 
 #. tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_LIB_APPLET
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2347
@@ -6171,7 +6171,7 @@ msgstr "უფლებები"
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:597
 msgctxt "Nintendo3DSFirm"
 msgid "ARM9 Homebrew"
-msgstr ""
+msgstr "ARM9 Homebrew"
 
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:476
 msgctxt "Nintendo3DSFirm"
@@ -6196,7 +6196,7 @@ msgstr "არაt sighaxed"
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:616
 msgctxt "Nintendo3DSFirm"
 msgid "Sighax Status"
-msgstr ""
+msgstr "Sighax-ის სტატუსი"
 
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:625
 msgctxt "Nintendo3DSFirm"
@@ -6280,7 +6280,7 @@ msgstr "შემთხვევითი მონაცემები"
 #: ../src/libromdata/Handheld/NintendoDS.cpp:840
 msgctxt "NintendoDS"
 msgid "Security Data"
-msgstr ""
+msgstr "უსაფრთხოების მონაცემები"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:846
 msgctxt "NintendoDS"
@@ -6740,7 +6740,7 @@ msgstr "ტიპი"
 #: ../src/libromdata/Media/CBMDOS.cpp:1449
 msgctxt "CBMDOS"
 msgid "C128 boot T/S"
-msgstr ""
+msgstr "C128 boot T/S"
 
 #: ../src/libromdata/Media/CBMDOS.cpp:1452
 msgctxt "CBMDOS"
