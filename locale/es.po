@@ -10769,7 +10769,7 @@ msgstr ""
 #, c++-format
 msgctxt "rpcli"
 msgid "Warning: skipping out-of-range mipmap level {:d}"
-msgstr "Advertencia: se ha omitido una imagen desconocida de tipo {:d}"
+msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:1029
 msgctxt "rpcli"
