@@ -841,8 +841,8 @@ msgstr[1] "{0:Ld} claves fueron importadas de '{1:s}'."
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key already exists in the Key Manager."
 msgid_plural "{:Ld} keys already exist in the Key Manager."
-msgstr[0] "{:Ld} clave ya existen en el Administrador de Claves."
-msgstr[1] "{:Ld} claves ya existen en el Administrador de Claves."
+msgstr[0] "{:Ld} clave ya existen en el Gestor de Claves."
+msgstr[1] "{:Ld} claves ya existen en el Gestor de Claves."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:650
 #: ../src/kde/config/KeyManagerTab.cpp:253
