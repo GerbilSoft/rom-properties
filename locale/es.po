@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-25 18:31-0400\n"
-"PO-Revision-Date: 2026-08-26 00:27\n"
+"PO-Revision-Date: 2026-08-26 05:09\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -4782,7 +4782,7 @@ msgstr "Claves AES de Nintendo Wii"
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:890
 msgctxt "KeyStoreUI|Section"
 msgid "Nintendo 3DS Key Scrambler Constants"
-msgstr "Constantes de codificación de Llave de Nintendo 3DS"
+msgstr "Constantes de codificación de Clave de Nintendo 3DS"
 
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:891
 msgctxt "KeyStoreUI|Section"
@@ -6011,7 +6011,7 @@ msgstr "Tipo"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1945
 msgctxt "Nintendo3DS|eMMC"
 msgid "Keyslot"
-msgstr "Registro de Llave"
+msgstr "Registro de Clave"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1946
 msgctxt "Nintendo3DS|eMMC"
@@ -6351,7 +6351,7 @@ msgstr "Código de región DSi"
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1075
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "Common Key"
-msgstr "Llave comun"
+msgstr "Clave común"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1076
 msgctxt "NintendoDS|DSi_Permissions"
