@@ -56,6 +56,9 @@
     the PDB file from Microsoft Symbol Servers.
   * GTK, KDE: Add the "Software" key for PNG files created by dragging the
     icon and/or banner from the properties tab to a file browser window.
+  * GTK rom-properties.thumbnailer: Add a hack to make KDE show an empty
+    name for the .thumbnailer file.
+    * TODO: Need to request a way for KDE to hide the .thumbnailer file.
 
 * Bug fixes:
   * Dreamcast and SegaSaturn incorrectly added DiscNumber as integer.

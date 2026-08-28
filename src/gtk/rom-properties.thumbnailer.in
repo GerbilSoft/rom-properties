@@ -6,4 +6,8 @@ Exec=@CMAKE_INSTALL_FULL_LIBEXECDIR@/rp-thumbnail -s %s %u %o
 
 # Supported MIME types.
 # For GNOME thumbnailers, only thumbnailable types are listed.
-MimeType=@MIMETYPES_THUMBONLY@
+# NOTE: The leading semicolon is a hack to prevent KDE from listing the
+# .thumbnailer file as a preview plugin. Use the KDE-specific thumbnailing
+# plugin on KDE instead.
+X-NotShowIn=KDE;
+MimeType=;@MIMETYPES_THUMBONLY@
