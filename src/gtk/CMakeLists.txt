@@ -355,7 +355,10 @@ IF(GTK3_FOUND OR GTK4_FOUND)
 	# Process the .thumbnailer file.
 	INCLUDE(DirInstallPaths)
 	INCLUDE(ParseMimeTypes)
-	PARSE_MIME_TYPES(MIMETYPES_THUMBONLY "${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types")
+	PARSE_MIME_TYPES(MIMETYPES_THUMBONLY
+		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
+		"${CMAKE_SOURCE_DIR}/xdg/mime.inode-directory.types"
+		)
 	CONFIGURE_FILE(rom-properties.thumbnailer.in rom-properties.thumbnailer @ONLY)
 	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties.thumbnailer"
 		DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/thumbnailers"
