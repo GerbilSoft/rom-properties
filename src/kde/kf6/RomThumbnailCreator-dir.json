@@ -1,0 +1,15 @@
+{
+    "CacheThumbnail": true,
+    "KPlugin": {
+        "Name": "ROM Properties Page (directory thumbnailer)",
+        "Description": "ROM Properties Page for KDE Frameworks 6 (directory thumbnailer)",
+        "MimeTypes": [
+            "inode/directory"
+        ]
+    },
+    "MimeType": "inode/directory;",
+    "X-KDE-Protocols": [
+        "file",
+        "desktop"
+    ]
+}

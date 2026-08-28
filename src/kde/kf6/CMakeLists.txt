@@ -114,10 +114,10 @@ TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}_LIB
 	)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}_LIB PRIVATE romdata)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}_LIB PUBLIC KF6::KIOWidgets KF6::KIOGui KF6::KIOCore KF6::WidgetsAddons KF6::FileMetaData KF6::Crash)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME}_LIB PUBLIC Qt6::Network Qt6::Widgets Qt6::Gui Qt6::Core)
 IF(HAVE_QtDBus)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME}_LIB PRIVATE Qt6::DBus)
 ENDIF(HAVE_QtDBus)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME}_LIB PUBLIC Qt6::Network Qt6::Widgets Qt6::Gui Qt6::Core)
 
 # PugiXML and zstd headers are needed for AboutTab.
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}_LIB PRIVATE ${pugixml_INCLUDE_DIR})
@@ -148,9 +148,12 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE
 	)
 
 ### ThumbnailCreator plugin ###
+# NOTE: Workaround for kio-extras thumbnail.so not handling directories properly.
+# Two copies of RomThumbnailCreator are built: one for all except directories,
+# and one for only directories. This allows the directories one to be disabled
+# separately.
 SET(RomThumbnailCreator_NAME RomThumbnailCreator-kf6)
-ADD_LIBRARY(${RomThumbnailCreator_NAME} MODULE
-	ThumbnailCreatorPluginFactoryKF6.cpp
+SET(${RomThumbnailCreator_NAME}_SRC
 	../plugins/RomThumbnailCreator.cpp
 	../plugins/RomThumbCreator_p.cpp
 	../ProxyForUrl.cpp
@@ -158,33 +161,42 @@ ADD_LIBRARY(${RomThumbnailCreator_NAME} MODULE
 	../RpQUrl.cpp
 	../RpQt.cpp
 
+	# NetworkManager D-Bus interface
+	${${PROJECT_NAME}_DBUS_IFACE_NM_SRCS}
+	)
+SET(${RomThumbnailCreator_NAME}_H
 	../plugins/RomThumbnailCreator.hpp
 	../plugins/RomThumbCreator_p.hpp
 	../ProxyForUrl.hpp
 	../RpQImageBackend.hpp
 	../RpQUrl.hpp
 	../RpQt.hpp
+	)
 
-	# NetworkManager D-Bus interface
-	${${PROJECT_NAME}_DBUS_IFACE_NM_SRCS}
-	)
-SET_TARGET_PROPERTIES(${RomThumbnailCreator_NAME} PROPERTIES PREFIX "")
-DO_SPLIT_DEBUG(${RomThumbnailCreator_NAME})
-TARGET_INCLUDE_DIRECTORIES(${RomThumbnailCreator_NAME}
-	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# kf6
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# kf6
-	PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# kde
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# kde
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
-	)
-TARGET_COMPILE_DEFINITIONS(${RomThumbnailCreator_NAME} PRIVATE RP_NO_INCLUDE_LIBFMT_IN_STDAFX_H)
-TARGET_LINK_LIBRARIES(${RomThumbnailCreator_NAME} PRIVATE romdata)
-TARGET_LINK_LIBRARIES(${RomThumbnailCreator_NAME} PRIVATE KF6::KIOWidgets KF6::KIOCore)
-TARGET_LINK_LIBRARIES(${RomThumbnailCreator_NAME} PUBLIC Qt6::Widgets Qt6::Gui Qt6::Core)
-IF(HAVE_QtDBus)
-	TARGET_LINK_LIBRARIES(${RomThumbnailCreator_NAME} PUBLIC Qt6::DBus)
-ENDIF(HAVE_QtDBus)
+FOREACH(RTC_SUFFIX "" "-dir")
+	ADD_LIBRARY(${RomThumbnailCreator_NAME}${RTC_SUFFIX} MODULE
+		ThumbnailCreatorPluginFactoryKF6${RTC_SUFFIX}.cpp
+		${${RomThumbnailCreator_NAME}_SRC}
+		${${RomThumbnailCreator_NAME}_H}
+		)
+	SET_TARGET_PROPERTIES(${RomThumbnailCreator_NAME}${RTC_SUFFIX} PROPERTIES PREFIX "")
+	DO_SPLIT_DEBUG(${RomThumbnailCreator_NAME}${RTC_SUFFIX})
+	TARGET_INCLUDE_DIRECTORIES(${RomThumbnailCreator_NAME}${RTC_SUFFIX}
+		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# kf6
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# kf6
+		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# kde
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# kde
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
+		)
+	TARGET_COMPILE_DEFINITIONS(${RomThumbnailCreator_NAME}${RTC_SUFFIX} PRIVATE RP_NO_INCLUDE_LIBFMT_IN_STDAFX_H)
+	TARGET_LINK_LIBRARIES(${RomThumbnailCreator_NAME}${RTC_SUFFIX} PRIVATE romdata)
+	TARGET_LINK_LIBRARIES(${RomThumbnailCreator_NAME}${RTC_SUFFIX} PRIVATE KF6::KIOWidgets KF6::KIOCore)
+	TARGET_LINK_LIBRARIES(${RomThumbnailCreator_NAME}${RTC_SUFFIX} PUBLIC Qt6::Widgets Qt6::Gui Qt6::Core)
+	IF(HAVE_QtDBus)
+		TARGET_LINK_LIBRARIES(${RomThumbnailCreator_NAME}${RTC_SUFFIX} PUBLIC Qt6::DBus)
+	ENDIF(HAVE_QtDBus)
+ENDFOREACH(RTC_SUFFIX)
 
 ### XAttrView plugin ###
 SET(XATTRVIEW_NAME xattrview-kf6)
@@ -300,6 +312,7 @@ PARSE_MIME_TYPES(MIMETYPES_THUMBONLY
 PARSE_MIME_TYPES(MIMETYPES_ALL
 	"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
 	"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types"
+	"${CMAKE_SOURCE_DIR}/xdg/mime.inode-directory.types"
 	)
 PARSE_MIME_TYPES_JSON(MIMETYPES_THUMBONLY_JSON_ARRAY "            "
 	"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
@@ -307,11 +320,14 @@ PARSE_MIME_TYPES_JSON(MIMETYPES_THUMBONLY_JSON_ARRAY "            "
 PARSE_MIME_TYPES_JSON(MIMETYPES_ALL_JSON_ARRAY "            "
 	"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
 	"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types"
+	"${CMAKE_SOURCE_DIR}/xdg/mime.inode-directory.types"
 	)
 PARSE_MIME_TYPES_JSON_VERSIONED(MIMETYPES_ALL_JSON_VERSIONED_ARRAY "        "
 	"${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}"
 	"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
-	"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types")
+	"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types"
+	"${CMAKE_SOURCE_DIR}/xdg/mime.inode-directory.types"
+	)
 
 CONFIGURE_FILE(${PROJECT_NAME}.json.in ${PROJECT_NAME}.json @ONLY)
 CONFIGURE_FILE(RomThumbnailCreator.json.in RomThumbnailCreator.json @ONLY)
@@ -322,9 +338,11 @@ CONFIGURE_FILE(OverlayIconPlugin.json.in OverlayIconPlugin.json @ONLY)
 INSTALL(TARGETS ${PROJECT_NAME} ${XATTRVIEW_NAME}
 	LIBRARY DESTINATION "${KF6_PRPD_PLUGIN_INSTALL_DIR}"
 	COMPONENT "plugin")
-INSTALL(TARGETS ${RomThumbnailCreator_NAME}
-	LIBRARY DESTINATION "${KF6_THUMB_PLUGIN_INSTALL_DIR}"
-	COMPONENT "plugin")
+FOREACH(RTC_SUFFIX "" "-dir")
+	INSTALL(TARGETS ${RomThumbnailCreator_NAME}${RTC_SUFFIX}
+		LIBRARY DESTINATION "${KF6_THUMB_PLUGIN_INSTALL_DIR}"
+		COMPONENT "plugin")
+ENDFOREACH(RTC_SUFFIX)
 INSTALL(TARGETS kfilemetadata_${PROJECT_NAME}
 	LIBRARY DESTINATION "${KF6_KFMD_PLUGIN_INSTALL_DIR}"
 	COMPONENT "plugin")
@@ -350,6 +368,17 @@ IF(INSTALL_DEBUG)
 			DESTINATION "lib/debug/${KF6_PLUGIN_INSTALL_DIR}"
 			COMPONENT "debug")
 	ENDIF(DEBUG_FILENAME)
+
+	## COMMIT NOTE: PDB for RomThumbnailCreator wasn't installed before...
+	FOREACH(RTC_SUFFIX "" "-dir")
+		GET_TARGET_PROPERTY(DEBUG_FILENAME ${RomThumbnailCreator_NAME}${RTC_SUFFIX} PDB)
+		IF(DEBUG_FILENAME)
+			INSTALL(FILES "${DEBUG_FILENAME}"
+				DESTINATION "lib/debug/${KF6_THUMB_PLUGIN_INSTALL_DIR}"
+				COMPONENT "debug"
+				)
+		ENDIF(DEBUG_FILENAME)
+	ENDFOREACH(RTC_SUFFIX)
 
 	GET_TARGET_PROPERTY(DEBUG_FILENAME kfilemetadata_${PROJECT_NAME} PDB)
 	IF(DEBUG_FILENAME)

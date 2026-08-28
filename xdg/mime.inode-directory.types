@@ -1,0 +1,6 @@
+# MIME types for rom-properties: Directory edition
+# Due to a bug in how kio-extras's thumbnail.so handles directories,
+# inode/directory is split out into a separate plugin.
+
+# Console
+inode/directory				# WiiUPackage (NOTE: Very generic!)
