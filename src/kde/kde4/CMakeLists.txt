@@ -178,6 +178,7 @@ PARSE_MIME_TYPES(MIMETYPES_THUMBONLY
 PARSE_MIME_TYPES(MIMETYPES_ALL
 	"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
 	"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types"
+	"${CMAKE_SOURCE_DIR}/xdg/mime.inode-directory.types"
 	)
 CONFIGURE_FILE(${PROJECT_NAME}.KPropertiesDialog.desktop.in ${PROJECT_NAME}.KPropertiesDialog.desktop @ONLY)
 CONFIGURE_FILE(${PROJECT_NAME}.ThumbCreator.desktop.in      ${PROJECT_NAME}.ThumbCreator.desktop @ONLY)
@@ -190,6 +191,7 @@ INSTALL(TARGETS ${PROJECT_NAME} ${XATTRVIEW_NAME}
 	)
 INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.KPropertiesDialog.desktop"
 	      "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.ThumbCreator.desktop"
+	      "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.ThumbCreator-dir.desktop"
 	      "${XATTRVIEW_NAME}.desktop"
 	DESTINATION "${KDE4_SERVICES_INSTALL_DIR}"
 	COMPONENT "plugin"
