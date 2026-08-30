@@ -42,8 +42,8 @@ STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_T
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Écrans d'Accueil Game Boy", IDC_SYSTEMS_DMGTS_GROUPBOX, 7, 7, 397, 74
-    LTEXT           "Sélectionnez le modèle de Game Boy à utiliser pour les écrans d'accueils pour les différents types d'images de ROM Game Boy.", IDC_STATIC, 15, 18, 381, 8
+    GROUPBOX        "Écrans titres Game Boy", IDC_SYSTEMS_DMGTS_GROUPBOX, 7, 7, 397, 74
+    LTEXT           "Sélectionnez le modèle de Game Boy à utiliser pour les écrans titres pour les différents types d'images de ROM Game Boy.", IDC_STATIC, 15, 18, 381, 8
     LTEXT           "Game Boy :", IDC_STATIC, 15, 30, 80, 9
     COMBOBOX        IDC_SYSTEMS_DMGTS_DMG, 77, 29, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Super Game Boy :", IDC_STATIC, 15, 45, 80, 9
