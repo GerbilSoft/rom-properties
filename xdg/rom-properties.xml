@@ -1520,4 +1520,9 @@
     <glob pattern="*.dol"/>
   </mime-type>
 
+  <!-- Dummy MIME type for rom-properties.thumbnailer when KDE displays it -->
+  <mime-type type="application/x-dummy-rom-properties-thumbnailer-kde">
+    <comment>ROM Propreties Page GTK thumbnailer (don't enable on KDE!)</comment>
+    <glob pattern="*.donotusethismimetype"/>
+  </mime-type>
 </mime-info>
