@@ -32,7 +32,7 @@ QString formatDateTime(time_t date_time, unsigned int flags)
 	const QDateTime dateTime = unixTimeToQDateTime(date_time, !!(flags & RomFields::RFT_DATETIME_IS_UTC));
 
 	QString str;
-	const QLocale locale = QLocale::system();
+	const QLocale locale;
 	switch (flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK) {
 		case RomFields::RFT_DATETIME_HAS_DATE:
 			// Date only.

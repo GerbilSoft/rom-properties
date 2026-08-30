@@ -41,6 +41,9 @@ protected:
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 		m_isQt611 = (QLibraryInfo::version() >= QVersionNumber(6, 11, 0));
 #endif /* QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) */
+
+		// Ensure the Qt locale is set to "C.UTF-8".
+		QLocale::setDefault(QLocale(QLatin1String("C.UTF-8")));
 	}
 
 protected:
