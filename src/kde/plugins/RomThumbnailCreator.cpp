@@ -44,7 +44,6 @@ RomThumbnailCreator::~RomThumbnailCreator()
  */
 KIO::ThumbnailResult RomThumbnailCreator::create(const KIO::ThumbnailRequest &request)
 {
-	printf("URL: '%s', mime type: '%s'\n", request.url().toString().toUtf8().constData(), request.mimeType().toUtf8().constData());
 	const QUrl url = request.url();
 	if (url.isEmpty()) {
 		return KIO::ThumbnailResult::fail();
