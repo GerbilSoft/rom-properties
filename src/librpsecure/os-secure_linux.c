@@ -108,7 +108,7 @@ int rp_secure_enable(rp_secure_param_t param)
 #if defined(__SNR_faccessat2)
 		SCMP_SYS(faccessat2),	// Required for Gentoo's sandbox (amiiboc)
 #elif defined(__NR_faccessat2)
-		__NR_faccessat2		// Required for Gentoo's sandbox (amiiboc)
+		__NR_faccessat2,	// Required for Gentoo's sandbox (amiiboc)
 #endif /* __SNR_faccessat2 || __NR_faccessat2 */
 
 		// stat()
