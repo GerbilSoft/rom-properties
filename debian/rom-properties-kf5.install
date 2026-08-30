@@ -13,7 +13,6 @@ usr/lib/*/qt5/plugins/kf5/overlayicon/overlayiconplugin_rom-properties-kf5.so
 usr/share/kservices5/rp-convert-to-png.desktop
 
 # NOTE: Disable or remove these .desktop lines if the target system has KF5 5.74 or later.
-# FIXME: Was previously only removed on 22.04 and later; need to verify with KF5 5.74 on Ubuntu 20.10.
 # Ubuntu 18.04: 5.44.0
 # Ubuntu 20.04: 5.68.0
 # Ubuntu 20.10: 5.74.0 <-- starting here
