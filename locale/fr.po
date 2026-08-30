@@ -312,7 +312,7 @@ msgstr "Afficher l'onglet des Attributs Étendus."
 #: ../build/src/kde/kf6/ui_SystemsTab.h:124
 msgctxt "SystemsTab"
 msgid "&Game Boy Title Screens"
-msgstr "&Écrans d'Accueil Game Boy"
+msgstr "&Écrans titres Game Boy"
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:125
 #: ../src/gtk/config/SystemsTab.cpp:119
@@ -362,7 +362,7 @@ msgid ""
 "Select the Game Boy model to use for title screens for different types of\n"
 "Game Boy ROM images."
 msgstr ""
-"Sélectionnez le modèle de Game Boy à utiliser pour les écrans d'accueils "
+"Sélectionnez le modèle de Game Boy à utiliser pour les écrans titres "
 "pour les différents types d'images de ROM Game Boy."
 
 #: ../build/src/kde/kf6/ui_XAttrView.h:119 ../src/gtk/xattr/XAttrView.cpp:73
@@ -951,7 +951,7 @@ msgstr "Options"
 #: ../src/gtk/config/SystemsTab.cpp:96
 msgctxt "SystemsTab"
 msgid "Game Boy Title Screens"
-msgstr "Écrans d'Accueil Game Boy"
+msgstr "Écrans titres Game Boy"
 
 #: ../src/gtk/config/UpdateChecker.cpp:161
 #: ../src/kde/config/UpdateChecker.cpp:64
