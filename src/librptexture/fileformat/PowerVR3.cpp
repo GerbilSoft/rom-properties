@@ -1389,36 +1389,46 @@ int PowerVR3::getFields(RomFields *fields) const
 	}
 
 	// Channel type
-	static const array<const char*, PVR3_CHTYPE_MAX> pvr3_chtype_tbl = {{
-		NOP_C_("PowerVR3|ChannelType", "Unsigned Byte (normalized)"),
-		NOP_C_("PowerVR3|ChannelType", "Signed Byte (normalized)"),
-		NOP_C_("PowerVR3|ChannelType", "Unsigned Byte"),
-		NOP_C_("PowerVR3|ChannelType", "Signed Byte"),
-		NOP_C_("PowerVR3|ChannelType", "Unsigned Short (normalized)"),
-		NOP_C_("PowerVR3|ChannelType", "Signed Short (normalized)"),
-		NOP_C_("PowerVR3|ChannelType", "Unsigned Short"),
-		NOP_C_("PowerVR3|ChannelType", "Signed Short"),
-		NOP_C_("PowerVR3|ChannelType", "Unsigned Integer (normalized)"),
-		NOP_C_("PowerVR3|ChannelType", "Signed Integer (normalized)"),
-		NOP_C_("PowerVR3|ChannelType", "Unsigned Integer"),
-		NOP_C_("PowerVR3|ChannelType", "Signed Integer"),
-		NOP_C_("PowerVR3|ChannelType", "Float"),
+	struct pvr3_chtype_tbl_t {
+		const char *desc;
+		bool normalized;
+	};
+	static const array<pvr3_chtype_tbl_t, PVR3_CHTYPE_MAX> pvr3_chtype_tbl = {{
+		{NOP_C_("PowerVR3|ChannelType", "Unsigned Byte"), true},
+		{NOP_C_("PowerVR3|ChannelType", "Signed Byte"), true},
+		{NOP_C_("PowerVR3|ChannelType", "Unsigned Byte"), false},
+		{NOP_C_("PowerVR3|ChannelType", "Signed Byte"), false},
+		{NOP_C_("PowerVR3|ChannelType", "Unsigned Short"), true},
+		{NOP_C_("PowerVR3|ChannelType", "Signed Short"), true},
+		{NOP_C_("PowerVR3|ChannelType", "Unsigned Short"), false},
+		{NOP_C_("PowerVR3|ChannelType", "Signed Short"), false},
+		{NOP_C_("PowerVR3|ChannelType", "Unsigned Integer"), true},
+		{NOP_C_("PowerVR3|ChannelType", "Signed Integer"), true},
+		{NOP_C_("PowerVR3|ChannelType", "Unsigned Integer"), false},
+		{NOP_C_("PowerVR3|ChannelType", "Signed Integer"), false},
+		{NOP_C_("PowerVR3|ChannelType", "Float"), false},
 	}};
 	static_assert(pvr3_chtype_tbl.size() == PVR3_CHTYPE_MAX, "pvr3_chtype_tbl[] needs to be updated!");
 	const char *const s_channel_type_title = C_("PowerVR3", "Channel Type");
 	if (pvr3Header->channel_type < pvr3_chtype_tbl.size()) {
-		fields->addField_string(s_channel_type_title,
-			pgettext_expr("PowerVR3|ChannelType", pvr3_chtype_tbl[pvr3Header->channel_type]));
+		const pvr3_chtype_tbl_t &entry = pvr3_chtype_tbl[pvr3Header->channel_type];
+		const char *const desc = pgettext_expr("PowerVR3|ChannelType", entry.desc);
+
+		if (entry.normalized) {
+			fields->addField_string(s_channel_type_title,
+				// tr: Channel type {:s} should be interpreted as having "normalized" values.
+				fmt::format(FRUN(C_("PowerVR3|ChannelType", "{:s} (normalized)")), desc));
+		} else {
+			fields->addField_string(s_channel_type_title, desc);
+		}
 	} else {
 		fields->addField_string_numeric(s_channel_type_title,
 			pvr3Header->channel_type);
 	}
 
 	// Other numeric fields.
-	fields->addField_string_numeric(C_("PowerVR3", "# of Surfaces"),
-		pvr3Header->num_surfaces);
-	fields->addField_string_numeric(C_("FileFormat", "# of Faces"),
-		pvr3Header->num_faces);
+	fields->addField_string_numeric(C_("PowerVR3", "# of Surfaces"), pvr3Header->num_surfaces);
+	fields->addField_string_numeric(C_("FileFormat", "# of Faces"), pvr3Header->num_faces);
 
 	// Orientation.
 	if (d->orientation_valid) {

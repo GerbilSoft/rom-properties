@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.7.1\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-08-25 18:31-0400\n"
+"POT-Creation-Date: 2026-08-30 12:52-0400\n"
 "PO-Revision-Date: 2025-01-24 15:53\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
@@ -9976,7 +9976,7 @@ msgstr ""
 
 #: ../src/librptexture/fileformat/KhronosKTX2.cpp:1019
 #: ../src/librptexture/fileformat/KhronosKTX.cpp:1110
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1420
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1431
 msgctxt "FileFormat"
 msgid "# of Faces"
 msgstr ""
@@ -10056,82 +10056,65 @@ msgctxt "RomData"
 msgid "Color Space"
 msgstr ""
 
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1393
-msgctxt "PowerVR3|ChannelType"
-msgid "Unsigned Byte (normalized)"
-msgstr ""
-
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1394
-msgctxt "PowerVR3|ChannelType"
-msgid "Signed Byte (normalized)"
-msgstr ""
-
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1395
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1397
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1399
 msgctxt "PowerVR3|ChannelType"
 msgid "Unsigned Byte"
 msgstr ""
 
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1396
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1398
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1400
 msgctxt "PowerVR3|ChannelType"
 msgid "Signed Byte"
 msgstr ""
 
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1397
-msgctxt "PowerVR3|ChannelType"
-msgid "Unsigned Short (normalized)"
-msgstr ""
-
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1398
-msgctxt "PowerVR3|ChannelType"
-msgid "Signed Short (normalized)"
-msgstr ""
-
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1399
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1401
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1403
 msgctxt "PowerVR3|ChannelType"
 msgid "Unsigned Short"
 msgstr ""
 
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1400
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1402
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1404
 msgctxt "PowerVR3|ChannelType"
 msgid "Signed Short"
 msgstr ""
 
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1401
-msgctxt "PowerVR3|ChannelType"
-msgid "Unsigned Integer (normalized)"
-msgstr ""
-
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1402
-msgctxt "PowerVR3|ChannelType"
-msgid "Signed Integer (normalized)"
-msgstr ""
-
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1403
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1405
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1407
 msgctxt "PowerVR3|ChannelType"
 msgid "Unsigned Integer"
 msgstr ""
 
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1404
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1406
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1408
 msgctxt "PowerVR3|ChannelType"
 msgid "Signed Integer"
 msgstr ""
 
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1405
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1409
 msgctxt "PowerVR3|ChannelType"
 msgid "Float"
 msgstr ""
 
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1408
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1412
 msgctxt "PowerVR3"
 msgid "Channel Type"
 msgstr ""
 
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1418
+#. tr: Channel type {:s} should be interpreted as having "normalized" values.
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1420
+#, c++-format
+msgctxt "PowerVR3|ChannelType"
+msgid "{:s} (normalized)"
+msgstr ""
+
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1430
 msgctxt "PowerVR3"
 msgid "# of Surfaces"
 msgstr ""
 
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1439
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1449
 msgctxt "PowerVR3"
 msgid "Orientation"
 msgstr ""
