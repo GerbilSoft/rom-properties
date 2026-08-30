@@ -2,14 +2,34 @@ usr/lib/*/qt5/plugins/rom-properties-kf5.so
 usr/lib/*/qt5/plugins/xattrview-kf5.so
 usr/lib/*/qt5/plugins/kf5/kfilemetadata/kfilemetadata_rom-properties-kf5.so
 usr/lib/*/qt5/plugins/kf5/overlayicon/overlayiconplugin_rom-properties-kf5.so
-usr/share/kservices5/rom-properties-kf5.KPropertiesDialog.desktop
-usr/share/kservices5/rom-properties-kf5.ThumbCreator.desktop
-usr/share/kservices5/xattrview-kf5.desktop
 
 # NOTE: Disable or remove this line if the target system has KF5 5.85 or later.
 # Ubuntu 18.04: 5.44.0
 # Ubuntu 20.04: 5.68.0
+# Ubuntu 20.10: 5.74.0
 # Ubuntu 21.04: 5.80.0
 # Ubuntu 21.10: 5.86.0 <-- starting here
-# Ubuntu 22.04: 5.98.0
+# Ubuntu 22.04: 5.92.0
 usr/share/kservices5/rp-convert-to-png.desktop
+
+# NOTE: Disable or remove these .desktop lines if the target system has KF5 5.74 or later.
+# FIXME: Was previously only removed on 22.04 and later; need to verify with KF5 5.74 on Ubuntu 20.10.
+# Ubuntu 18.04: 5.44.0
+# Ubuntu 20.04: 5.68.0
+# Ubuntu 20.10: 5.74.0 <-- starting here
+# Ubuntu 21.04: 5.80.0
+# Ubuntu 21.10: 5.86.0
+# Ubuntu 22.04: 5.92.0
+usr/share/kservices5/rom-properties-kf5.KPropertiesDialog.desktop
+usr/share/kservices5/xattrview-kf5.desktop
+
+# NOTE: Disable or remove these .desktop lines if the target system has KF5 5.100 or later.
+# NOTE: JSON loading of the old ThumbCreator interface is supported as of KF5 5.89, but
+# since ThumbCreator is deprecated, we're not supporting JSON ThumbCreator here.
+# Ubuntu 22.04: 5.92.0
+# Ubuntu 22.10: 5.98.0
+# Ubuntu 23.04: 5.104.0 <-- starting here
+# Ubuntu 23.10: 5.110.0
+# Ubuntu 24.04: 5.115.0
+usr/share/kservices5/rom-properties-kf5.ThumbCreator.desktop
+usr/share/kservices5/rom-properties-kf5.ThumbCreator-dir.desktop

@@ -93,10 +93,13 @@ MACRO(FIND_QT5_AND_KF5)
 				SET(HAVE_KF5_DEPRECATED_SERVICE_MENU_DIR 1)
 			ENDIF(TARGET KF5::CoreAddons AND KF5CoreAddons_VERSION VERSION_LESS 5.84.79)
 
-			# CoreAddons: If 5.89 or later, use JSON installation instead of .desktop files.
-			IF(TARGET KF5::CoreAddons AND KF5CoreAddons_VERSION VERSION_GREATER 5.88.79)
+			# CoreAddons: If 5.74 or later, use JSON installation instead of .desktop files.
+			# (for KPropertiesDialog)
+			# FIXME: Need to test; was previously set 5.89 or later, but 5.74 seems to
+			# support JSON plugin loading.
+			IF(TARGET KF5::CoreAddons AND KF5CoreAddons_VERSION VERSION_GREATER 5.73.79)
 				SET(HAVE_JSON_PLUGIN_LOADER 1)
-			ENDIF(TARGET KF5::CoreAddons AND KF5CoreAddons_VERSION VERSION_GREATER 5.88.79)
+			ENDIF(TARGET KF5::CoreAddons AND KF5CoreAddons_VERSION VERSION_GREATER 5.73.79)
 
 			# KIOGui library is needed if we have KIO/ThumbnailCreator.
 			IF(TARGET KF5::KIOGui AND KF5KIO_VERSION VERSION_GREATER 5.99.79)

@@ -44,3 +44,19 @@ private:
 public:
 	Q_DISABLE_COPY(RomThumbnailCreator)
 };
+
+// for RomThumbnailCreator-dir
+class RomThumbnailCreatorDir : public RomThumbnailCreator
+{
+	Q_OBJECT
+
+public:
+	RomThumbnailCreatorDir(QObject *parent, const QVariantList &args)
+		: RomThumbnailCreator(parent, args)
+	{ }
+
+private:
+	typedef RomThumbnailCreator super;
+public:
+	Q_DISABLE_COPY(RomThumbnailCreatorDir)
+};
