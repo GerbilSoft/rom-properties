@@ -878,6 +878,17 @@ public:
 	int addField_dimensions(const char *name, int dimX, int dimY = 0, int dimZ = 0);
 
 	/**
+	 * Add image dimensions.
+	 * @param name Field name
+	 * @param dims Dimensions (3-element array)
+	 * @return Field index, or -1 on error.
+	 */
+	inline int addField_dimensions(const char *name, const int dims[3])
+	{
+		return addField_dimensions(name, dims[0], dims[1], dims[2]);
+	}
+
+	/**
 	 * Add a multi-language string.
 	 * NOTE: This object takes ownership of the map.
 	 * @param name Field name

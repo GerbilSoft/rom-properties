@@ -256,8 +256,7 @@ int RpTextureWrapper::loadFieldData(void)
 	int dimensions[3];
 	int ret = texture->getDimensions(dimensions);
 	if (ret == 0) {
-		d->fields.addField_dimensions(C_("RpTextureWrapper", "Dimensions"),
-			dimensions[0], dimensions[1], dimensions[2]);
+		d->fields.addField_dimensions(C_("RpTextureWrapper", "Dimensions"), dimensions);
 
 		// Rescale dimensions (may not be present)
 		// TODO: 3D rescaling?
