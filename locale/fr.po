@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.7.1\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-08-30 12:59-0400\n"
+"POT-Creation-Date: 2026-08-30 15:16-0400\n"
 "PO-Revision-Date: 2025-10-04 03:46\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
@@ -362,8 +362,8 @@ msgid ""
 "Select the Game Boy model to use for title screens for different types of\n"
 "Game Boy ROM images."
 msgstr ""
-"Sélectionnez le modèle de Game Boy à utiliser pour les écrans titres "
-"pour les différents types d'images de ROM Game Boy."
+"Sélectionnez le modèle de Game Boy à utiliser pour les écrans titres pour "
+"les différents types d'images de ROM Game Boy."
 
 #: ../build/src/kde/kf6/ui_XAttrView.h:119 ../src/gtk/xattr/XAttrView.cpp:73
 msgctxt "XAttrView"
@@ -1114,7 +1114,7 @@ msgstr "{:s} :"
 #: ../src/libromdata/Console/GameCube.cpp:1654
 #: ../src/libromdata/Console/GameCube.cpp:1855
 #: ../src/libromdata/Console/GameCubeSave.cpp:1037
-#: ../src/libromdata/Console/MegaDrive.cpp:741
+#: ../src/libromdata/Console/MegaDrive.cpp:742
 #: ../src/libromdata/Console/NES.cpp:1431
 #: ../src/libromdata/Console/NES.cpp:1710
 #: ../src/libromdata/Console/Sega8Bit.cpp:580
@@ -2462,7 +2462,7 @@ msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:729
 #: ../src/libromdata/Console/GameCube.cpp:1550
-#: ../src/libromdata/Console/MegaDrive.cpp:589
+#: ../src/libromdata/Console/MegaDrive.cpp:590
 #: ../src/libromdata/Console/Sega8Bit.cpp:581
 #: ../src/libromdata/Console/SegaSaturn.cpp:561
 #: ../src/libromdata/Console/SNES.cpp:1573
@@ -3315,47 +3315,48 @@ msgctxt "MegaDrive|SRAM"
 msgid "(16-bit)"
 msgstr "(16-bit)"
 
-#: ../src/libromdata/Console/MegaDrive.cpp:559
+#. tr: No SRAM
+#: ../src/libromdata/Console/MegaDrive.cpp:560
 msgctxt "MegaDrive"
 msgid "None"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:574
+#: ../src/libromdata/Console/MegaDrive.cpp:575
 msgctxt "MegaDrive"
 msgid "ExtROM Range"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:680
+#: ../src/libromdata/Console/MegaDrive.cpp:681
 #: ../src/libromdata/Handheld/PokemonMini.cpp:361
 msgctxt "RomData|VectorTable"
 msgid "#"
 msgstr "#"
 
-#: ../src/libromdata/Console/MegaDrive.cpp:681
+#: ../src/libromdata/Console/MegaDrive.cpp:682
 #: ../src/libromdata/Handheld/PokemonMini.cpp:362
 msgctxt "RomData|VectorTable"
 msgid "Vector"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:682
+#: ../src/libromdata/Console/MegaDrive.cpp:683
 #: ../src/libromdata/Handheld/PokemonMini.cpp:363
 msgctxt "RomData|VectorTable"
 msgid "Address"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:690
-#: ../src/libromdata/Console/MegaDrive.cpp:1458
+#: ../src/libromdata/Console/MegaDrive.cpp:691
+#: ../src/libromdata/Console/MegaDrive.cpp:1459
 #: ../src/libromdata/Handheld/PokemonMini.cpp:370
 msgctxt "RomData"
 msgid "Vector Table"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:1453
+#: ../src/libromdata/Console/MegaDrive.cpp:1454
 msgctxt "MegaDrive"
 msgid "ROM Header"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:1465
+#: ../src/libromdata/Console/MegaDrive.cpp:1466
 msgctxt "MegaDrive"
 msgid "Locked-On ROM Header"
 msgstr ""

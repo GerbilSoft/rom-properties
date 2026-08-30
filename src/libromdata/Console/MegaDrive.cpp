@@ -556,6 +556,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 				be32_to_cpu(pRomHeader->sram_end),
 				suffix, 8, RomFields::STRF_MONOSPACE);
 		} else {
+			// tr: No SRAM
 			fields.addField_string(sram_range_title, C_("MegaDrive", "None"));
 		}
 
