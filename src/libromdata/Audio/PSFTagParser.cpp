@@ -254,7 +254,8 @@ int addTagsToRomFields(RomFields *fields, const unordered_map<string, string> &t
 	// System (S98-only, but will add it if present in PSF anyway)
 	iter = tags.find("system");
 	if (iter != tags.end()) {
-		fields->addField_string(C_("S98", "System"), iter->second);
+		// tr: Indicates the specific system this S98 file is for.
+		fields->addField_string(C_("RomData", "System"), iter->second);
 	}
 
 	// Done adding tags.

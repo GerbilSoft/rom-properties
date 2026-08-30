@@ -443,7 +443,8 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 	}
 
 	// Read the strings from the header.
-	fields.addField_string(C_("MegaDrive", "System"),
+	// tr: Indicates the specific system this Mega Drive ROM image is for.
+	fields.addField_string(C_("RomData", "System"),
 		cp1252_sjis_to_utf8(s_system, system_len),
 			RomFields::STRF_TRIM_END);
 	fields.addField_string(C_("RomData", "Copyright"),

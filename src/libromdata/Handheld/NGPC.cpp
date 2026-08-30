@@ -333,7 +333,8 @@ int NGPC::loadFieldData(void)
 		"NGP (Monochrome)", "NGP Color"
 	}};
 	vector<string> *const v_system_bitfield_names = RomFields::strArrayToVector(system_bitfield_names);
-	d->fields.addField_bitfield(C_("NGPC", "System"),
+	// tr: Indicates the specific system this NGPC ROM image is for.
+	d->fields.addField_bitfield(C_("RomData", "System"),
 		v_system_bitfield_names, 0,
 			(d->romType == NGPCPrivate::RomType::NGPC ? 3 : 1));
 

@@ -322,7 +322,8 @@ int PSF::loadFieldData(void)
 		sys_name = iter->sys_name;
 	}
 
-	const char *const system_title = C_("PSF", "System");
+	// tr: Indicates the specific system this PSF file is for.
+	const char *const system_title = C_("RomData", "System");
 	if (sys_name) {
 		d->fields.addField_string(system_title,
 			pgettext_expr("PSF|System", sys_name));

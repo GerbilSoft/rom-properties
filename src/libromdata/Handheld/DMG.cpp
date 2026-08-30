@@ -662,7 +662,8 @@ void DMGPrivate::addFields_romHeader(const DMG_RomHeader *pRomHeader)
 		"DMG", "SGB", "CGB"
 	}};
 	vector<string> *const v_system_bitfield_names = RomFields::strArrayToVector(system_bitfield_names);
-	fields.addField_bitfield(C_("DMG", "System"),
+	// tr: Indicates the specific system this Game Boy ROM image is for.
+	fields.addField_bitfield(C_("RomData", "System"),
 		v_system_bitfield_names, 0, dmg_system);
 
 	// Entry Point

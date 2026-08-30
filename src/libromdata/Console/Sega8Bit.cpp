@@ -575,7 +575,8 @@ int Sega8Bit::loadFieldData(void)
 	// Region code and system ID
 	const char *s_system_ID = d->getSystemID();
 	const char *s_region_code = d->getRegionCode();
-	d->fields.addField_string(C_("Sega8Bit", "System"),
+	// tr: Indicates the specific system this Sega 8-bit ROM image is for.
+	d->fields.addField_string(C_("RomData", "System"),
 		(s_system_ID ? s_system_ID : C_("RomData", "Unknown")));
 	d->fields.addField_string(C_("RomData", "Region Code"),
 		(s_region_code ? s_region_code : C_("RomData", "Unknown")));

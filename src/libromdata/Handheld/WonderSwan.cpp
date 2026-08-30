@@ -560,7 +560,8 @@ int WonderSwan::loadFieldData(void)
 	// TODO: Localize?
 	vector<string> *const v_system_bitfield_names = RomFields::strArrayToVector(system_bitfield_names);
 	const uint32_t ws_system = (romFooter->system_id & 1) ? 3 : 1;
-	d->fields.addField_bitfield(C_("WonderSwan", "System"),
+	// tr: Indicates the specific system this WonderSwan ROM image is for.
+	d->fields.addField_bitfield(C_("RomData", "System"),
 		v_system_bitfield_names, 0, ws_system);
 
 	// ROM size
