@@ -80,8 +80,14 @@
   * KDE: Fix a memory leak in all of the xattr tab widgets.
     * Affects: v2.2 - v2.8
   * rp-download: Allow statfs() for Bazzite 44.
-    * Fixes Fixes #504: rp-download killed by seccomp on statfs() with Fedora 44 / curl 8.18
+    * Fixes #504: rp-download killed by seccomp on statfs() with Fedora 44 / curl 8.18
       * Reported by @Kamui2040.
+  * KDE: Work around an issue with the directorythumbnail plugin by splitting
+    rom-properties' ThumbnailCreator in two: one for most types, and one for
+    only directories.
+    * An upstream fix to handle fallbacks in thumbnail.so will be needed.
+    * Fixes #507: some sort of conflict with folder thumbnails after reinstalling/upgrading kio-extras
+      * Reported by @LuanVSO.
 
 ## v2.8 (released 2026/06/20)
 
