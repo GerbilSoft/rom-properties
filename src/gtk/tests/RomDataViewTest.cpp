@@ -228,7 +228,9 @@ void RomDataViewTest::getRowWidgets(RpRomDataView *romDataView, int row)
 	guint table_rows = 0, table_columns = 0;
 	gtk_table_get_size(GTK_TABLE(tableTab0), &table_rows, &table_columns);
 	EXPECT_EQ(2, table_columns) << "Main table has the wrong number of columns.";
-	EXPECT_EQ(1, table_rows) << "Main table has the wrong number of rows.";
+	// NOTE: May be more than one row for multi-field tests.
+	// Ensure that we have *at least* the required number of rows
+	EXPECT_LT(row, table_rows) << "Main table has the wrong number of rows.";
 #  endif /* GTK_CHECK_VERSION(3, 0, 0) */
 #endif /* GTK_CHECK_VERSION(3, 89, 3) */
 
@@ -634,6 +636,58 @@ TEST_F(RomDataViewTest, RFT_DATETIME)
 	// NOTE: Using gtk_label_get_label(), which returns mnemonics and Pango markup.
 	EXPECT_STREQ(stds_field_desc.c_str(), gtk_label_get_label(GTK_LABEL(m_lblDesc))) << "Field description is incorrect.";
 	EXPECT_STREQ(s_field_value, gtk_label_get_label(GTK_LABEL(m_widgetValue))) << "Field value is incorrect.";
+}
+
+/**
+ * Test RomDataView with a RomData object with RFT_DIMENSIONS fields.
+ */
+TEST_F(RomDataViewTest, RFT_DIMENSIONS)
+{
+	// Add a few RFT_DIMENSIONS fields.
+	struct DimensionData_t {
+		const char *desc;
+		int value[3];
+		const char *str;
+	};
+
+	static const array<DimensionData_t, 3> dimensionData = {{
+		{"RFT_DIMENSIONS 0", {2,  0,   0}, "2"},
+		{"RFT_DIMENSIONS 1", {2, 12,   0}, "2x12"},
+		{"RFT_DIMENSIONS 2", {2, 12, 194}, "2x12x194"},
+	}};
+
+	RomFields *const fields = m_romData->getWritableFields();
+	for (const DimensionData_t &p : dimensionData) {
+		fields->addField_dimensions(p.desc, p.value);
+	}
+
+	/** Verify the GTK widgets. **/
+
+	// Create a RomDataView.
+	// TODO: Set description format type properly.
+	m_romDataView = rp_rom_data_view_new_with_romData("", m_romData, RP_DFT_GNOME);
+	g_object_ref_sink(m_romDataView);
+
+	// NOTE: For efficiency reasons, GTK RomDataView uses g_idle_add()
+	// to schedule its display update. Force it to run here.
+	ASSERT_TRUE(rp_rom_data_view_is_showing_data(RP_ROM_DATA_VIEW(m_romDataView)));
+
+	for (int i = 0; i < static_cast<int>(dimensionData.size()); i++) {
+		// Get the widgets from the first row.
+		// Widgets will be stored in m_lblDesc and m_widgetValue.
+		ASSERT_NO_FATAL_FAILURE(getRowWidgets(RP_ROM_DATA_VIEW(m_romDataView), i));
+		ASSERT_TRUE(GTK_IS_LABEL(m_widgetValue));
+
+		const DimensionData_t &p = dimensionData[i];
+
+		// Verify the label contents.
+		// NOTE: Description label will have an added ':'.
+		string stds_field_desc = p.desc;
+		stds_field_desc += ':';
+
+		EXPECT_STREQ(stds_field_desc.c_str(), gtk_label_get_label(GTK_LABEL(m_lblDesc))) << "Field description is incorrect.";
+		EXPECT_STREQ(p.str, gtk_label_get_label(GTK_LABEL(m_widgetValue))) << "Field value is incorrect.";
+	}
 }
 
 } }
