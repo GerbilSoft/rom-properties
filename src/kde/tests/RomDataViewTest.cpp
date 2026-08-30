@@ -440,6 +440,51 @@ TEST_F(RomDataViewTest, RFT_DATETIME)
 	EXPECT_STREQ(s_field_value, Q2U8(lblValue->text())) << "Field value is incorrect.";
 }
 
+/**
+ * Test RomDataView with a RomData object with RFT_DIMENSIONS fields.
+ */
+TEST_F(RomDataViewTest, RFT_DIMENSIONS)
+{
+	// Add a few RFT_DIMENSIONS fields.
+	struct DimensionData_t {
+		const char *desc;
+		int value[3];
+		const char *str;
+	};
+
+	static const array<DimensionData_t, 3> dimensionData = {{
+		{"RFT_DIMENSIONS 0", {2,  0,   0}, "2"},
+		{"RFT_DIMENSIONS 1", {2, 12,   0}, "2x12"},
+		{"RFT_DIMENSIONS 2", {2, 12, 194}, "2x12x194"},
+	}};
+
+	RomFields *const fields = m_romData->getWritableFields();
+	for (const DimensionData_t &p : dimensionData) {
+		fields->addField_dimensions(p.desc, p.value);
+	}
+
+	/** Verify the Qt widgets. **/
+
+	// Create a RomDataView.
+	m_romDataView.reset(new RomDataView(m_romData));
+
+	for (int i = 0; i < static_cast<int>(dimensionData.size()); i++) {
+		ASSERT_NO_FATAL_FAILURE(getRowWidgets(m_romDataView.get(), i));
+		QLabel *const lblValue = qobject_cast<QLabel*>(m_widgetValue);
+		ASSERT_NE(nullptr, lblValue);
+
+		const DimensionData_t &p = dimensionData[i];
+
+		// Verify the label contents.
+		// NOTE: Description label will have an added ':'.
+		QString qs_field_desc = QLatin1String(p.desc);
+		qs_field_desc += QLatin1Char(':');
+
+		EXPECT_STREQ(Q2U8(qs_field_desc), Q2U8(m_lblDesc->text())) << "Field " << i << " description is incorrect.";
+		EXPECT_EQ(QLatin1String(p.str), lblValue->text()) << "Field " << i << " value is incorrect.";
+	}
+}
+
 } }
 
 #ifdef HAVE_SECCOMP
