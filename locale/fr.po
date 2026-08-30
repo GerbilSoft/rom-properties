@@ -3132,8 +3132,8 @@ msgstr ""
 
 #: ../src/libromdata/Console/Intellivision.cpp:311
 msgctxt "Intellivision|Flags"
-msgid "Intellivision 2"
-msgstr ""
+msgid "Intellivision II"
+msgstr "Intellivision II"
 
 #: ../src/libromdata/Console/Intellivision.cpp:312
 msgctxt "Intellivision|Flags"

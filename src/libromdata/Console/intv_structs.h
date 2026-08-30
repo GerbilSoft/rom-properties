@@ -77,7 +77,7 @@ ASSERT_STRUCT(Intellivision_ROMHeader, 512);
 typedef enum {
 	INTV_SKIP_ECS			= (1U << 9) | (1U << 8),	// Skip ECS title screen (both bits must be set)
 	INTV_RUN_CODE_AFTER_TITLE	= (1U << 7),			// Run code that appears after the title string
-	INTV_SUPPORT_INTV2		= (1U << 6),			// Must be set to allow use on Intellivision 2
+	INTV_SUPPORT_INTV2		= (1U << 6),			// Must be set to allow use on Intellivision II
 	INTV_KEYCLICK_MASK		= 0x001F,			// Keyclick mask (requires EXEC)
 } Intellivision_Flags_e;
 

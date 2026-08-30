@@ -308,7 +308,7 @@ int Intellivision::loadFieldData(void)
 		nullptr, nullptr, nullptr, nullptr, nullptr,
 
 		// Bits 6-8
-		NOP_C_("Intellivision|Flags", "Intellivision 2"),
+		NOP_C_("Intellivision|Flags", "Intellivision II"),
 		NOP_C_("Intellivision|Flags", "Run code after title string"),
 		NOP_C_("Intellivision|Flags", "Skip ECS title screen"),
 	}};

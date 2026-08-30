@@ -3131,8 +3131,8 @@ msgstr "Blocks"
 
 #: ../src/libromdata/Console/Intellivision.cpp:311
 msgctxt "Intellivision|Flags"
-msgid "Intellivision 2"
-msgstr "Intellivision 2"
+msgid "Intellivision II"
+msgstr "Intellivision II"
 
 #: ../src/libromdata/Console/Intellivision.cpp:312
 msgctxt "Intellivision|Flags"
