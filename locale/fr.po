@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-30 12:59-0400\n"
-"PO-Revision-Date: 2026-08-30 17:34\n"
+"PO-Revision-Date: 2026-08-30 18:33\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -294,7 +294,7 @@ msgstr "Afficher l'onglet des Attributs Étendus."
 #: ../build/src/kde/kf6/ui_SystemsTab.h:124
 msgctxt "SystemsTab"
 msgid "&Game Boy Title Screens"
-msgstr "&Écrans d'Accueil Game Boy"
+msgstr "&Écrans titres Game Boy"
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:125
 #: ../src/gtk/config/SystemsTab.cpp:119
@@ -342,7 +342,7 @@ msgstr "Game Boy &Color :"
 msgctxt "SystemsTab"
 msgid "Select the Game Boy model to use for title screens for different types of\n"
 "Game Boy ROM images."
-msgstr "Sélectionnez le modèle de Game Boy à utiliser pour les écrans d'accueils pour les différents types d'images de ROM Game Boy."
+msgstr "Sélectionnez le modèle de Game Boy à utiliser pour les écrans titres pour les différents types d'images de ROM Game Boy."
 
 #: ../build/src/kde/kf6/ui_XAttrView.h:119
 #: ../src/gtk/xattr/XAttrView.cpp:73
@@ -903,7 +903,7 @@ msgstr "Options"
 #: ../src/gtk/config/SystemsTab.cpp:96
 msgctxt "SystemsTab"
 msgid "Game Boy Title Screens"
-msgstr "Écrans d'Accueil Game Boy"
+msgstr "Écrans titres Game Boy"
 
 #: ../src/gtk/config/UpdateChecker.cpp:161
 #: ../src/kde/config/UpdateChecker.cpp:64
@@ -1644,7 +1644,7 @@ msgstr "(aucun)"
 #: ../src/libromdata/Audio/S98.cpp:398
 msgctxt "S98"
 msgid "Chip"
-msgstr ""
+msgstr "Puce"
 
 #: ../src/libromdata/Audio/S98.cpp:399
 msgctxt "S98"
@@ -2397,7 +2397,7 @@ msgstr ""
 #, c++-format
 msgctxt "RomData|Disc"
 msgid "{0:d} of {1:d}"
-msgstr ""
+msgstr "{0:d} de {1:d}"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:729
 #: ../src/libromdata/Console/GameCube.cpp:1550
@@ -2457,7 +2457,7 @@ msgstr ""
 #: ../src/libromdata/Console/Dreamcast.cpp:780
 msgctxt "Dreamcast|OSSupport"
 msgid "Windows CE"
-msgstr ""
+msgstr "Windows CE"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:782
 msgctxt "Dreamcast|OSSupport"
@@ -2472,7 +2472,7 @@ msgstr ""
 #: ../src/libromdata/Console/Dreamcast.cpp:791
 msgctxt "Dreamcast|Expansion"
 msgid "Other"
-msgstr ""
+msgstr "Autre"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:792
 msgctxt "Dreamcast|Expansion"
@@ -2900,7 +2900,7 @@ msgstr ""
 #: ../src/libromdata/Console/GameCube.cpp:1787
 msgctxt "Nintendo"
 msgid "None"
-msgstr ""
+msgstr "Aucune"
 
 #: ../src/libromdata/Console/GameCube.cpp:1796
 msgctxt "Nintendo"
@@ -2917,7 +2917,7 @@ msgstr "Jeu"
 #: ../src/libromdata/Console/GameCube.cpp:1823
 msgctxt "Wii|Partition"
 msgid "Update"
-msgstr ""
+msgstr "Mise à jour"
 
 #. tr: GameCubePrivate::RVL_PT_CHANNEL (Channel partition)
 #: ../src/libromdata/Console/GameCube.cpp:1825
@@ -2953,13 +2953,13 @@ msgstr "Clé"
 #: ../src/libromdata/Console/GameCube.cpp:1881
 msgctxt "Wii|Partition"
 msgid "Used Size"
-msgstr ""
+msgstr "Espace utilisé"
 
 #. tr: Total size of the partition.
 #: ../src/libromdata/Console/GameCube.cpp:1883
 msgctxt "Wii|Partition"
 msgid "Total Size"
-msgstr ""
+msgstr "Espace total"
 
 #: ../src/libromdata/Console/GameCube.cpp:1891
 msgctxt "Wii"
@@ -3193,7 +3193,7 @@ msgstr ""
 #: ../src/libromdata/Console/MegaDrive.cpp:487
 msgctxt "MegaDrive|I/O"
 msgid "Floppy Drive"
-msgstr ""
+msgstr "Lecteur de disquette"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:488
 msgctxt "MegaDrive|I/O"
@@ -3204,7 +3204,7 @@ msgstr "CD-ROM"
 #: ../src/libromdata/Console/MegaDrive.cpp:490
 msgctxt "MegaDrive|I/O"
 msgid "Activator"
-msgstr ""
+msgstr "Activator"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:491
 msgctxt "MegaDrive|I/O"
@@ -3257,7 +3257,7 @@ msgstr "(16-bit)"
 #: ../src/libromdata/Console/MegaDrive.cpp:559
 msgctxt "MegaDrive"
 msgid "None"
-msgstr ""
+msgstr "Aucun"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:574
 msgctxt "MegaDrive"
@@ -3280,7 +3280,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/PokemonMini.cpp:363
 msgctxt "RomData|VectorTable"
 msgid "Address"
-msgstr ""
+msgstr "Adresse"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:690
 #: ../src/libromdata/Console/MegaDrive.cpp:1458
@@ -3893,7 +3893,7 @@ msgstr ""
 #: ../src/libromdata/Console/SNES.cpp:1585
 msgctxt "SNES"
 msgid "Revision"
-msgstr ""
+msgstr "Révision"
 
 #: ../src/libromdata/Console/SNES.cpp:1623
 msgctxt "SNES"
@@ -3908,7 +3908,7 @@ msgstr ""
 #: ../src/libromdata/Console/SNES.cpp:1639
 msgctxt "SNES|ProgramType"
 msgid "SA-1"
-msgstr ""
+msgstr "SA-1"
 
 #: ../src/libromdata/Console/SNES.cpp:1645
 msgctxt "SNES"
@@ -3923,12 +3923,12 @@ msgstr ""
 #: ../src/libromdata/Console/SNES.cpp:1672
 msgctxt "SNES"
 msgid "Unlimited"
-msgstr ""
+msgstr "Illimité"
 
 #: ../src/libromdata/Console/SufamiTurbo.cpp:394
 msgctxt "SufamiTurbo"
 msgid "ROM Size"
-msgstr ""
+msgstr "Taille de la ROM"
 
 #: ../src/libromdata/Console/SufamiTurbo.cpp:398
 msgctxt "SufamiTurbo"
@@ -4169,7 +4169,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:534
 msgctxt "WiiU"
 msgid "Controllers"
-msgstr ""
+msgstr "Manettes"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:993
 msgctxt "WiiWAD"
@@ -4361,7 +4361,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1116
 msgctxt "Xbox360_XEX"
 msgid "Base Version"
-msgstr ""
+msgstr "Version de base"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1127
 msgctxt "Xbox360_XEX"
@@ -4386,7 +4386,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1151
 msgctxt "Xbox360_XEX"
 msgid "Console Type"
-msgstr ""
+msgstr "Type de console"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:879
 msgctxt "Xbox360_XDBF|TitleType"
@@ -4440,7 +4440,7 @@ msgstr "ID"
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1303
 msgctxt "Xbox360_XDBF|AvatarAwards"
 msgid "Description"
-msgstr ""
+msgstr "Description"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1414
 msgctxt "Xbox360_XDBF"
@@ -4500,7 +4500,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1852
 msgctxt "Xbox360_XEX"
 msgid "Title"
-msgstr ""
+msgstr "Titre"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1853
 msgctxt "Xbox360_XEX"
@@ -4621,7 +4621,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1945
 msgctxt "Xbox360_XEX|MediaType"
 msgid "None"
-msgstr ""
+msgstr "Aucun"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1968
 msgctxt "Xbox360_XEX"
@@ -4631,7 +4631,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:2017
 msgctxt "Xbox360_XEX|Compression"
 msgid "None"
-msgstr ""
+msgstr "Aucune"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:2018
 msgctxt "Xbox360_XEX|Compression"
@@ -4652,7 +4652,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:2027
 msgctxt "Xbox360_XEX"
 msgid "Compression"
-msgstr ""
+msgstr "Compression"
 
 #: ../src/libromdata/Console/XboxDisc.cpp:1017
 msgctxt "XboxDisc"
@@ -4709,12 +4709,12 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox_XBE.cpp:807
 msgctxt "Xbox_XBE"
 msgid "Not set"
-msgstr ""
+msgstr "Non défini"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:817
 msgctxt "Xbox_XBE|MediaType"
 msgid "Hard Disk"
-msgstr ""
+msgstr "Disque dur"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:827
 msgctxt "Xbox_XBE|MediaType"
@@ -4764,7 +4764,7 @@ msgstr ""
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:889
 msgctxt "KeyStoreUI|Section"
 msgid "Nintendo Wii AES Keys"
-msgstr ""
+msgstr "Clés AES Nintendo Wii"
 
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:890
 msgctxt "KeyStoreUI|Section"
@@ -4774,12 +4774,12 @@ msgstr ""
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:891
 msgctxt "KeyStoreUI|Section"
 msgid "Nintendo 3DS AES Keys"
-msgstr ""
+msgstr "Clés AES Nintendo 3DS"
 
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:892
 msgctxt "KeyStoreUI|Section"
 msgid "Microsoft Xbox 360 AES Keys"
-msgstr ""
+msgstr "Clés AES Microsoft Xbox 360"
 
 #. tr: IMAGE_SUBSYSTEM_NATIVE
 #: ../src/libromdata/data/EXEData.cpp:40
