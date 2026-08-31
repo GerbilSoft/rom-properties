@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-30 15:16-0400\n"
-"PO-Revision-Date: 2026-08-30 19:47\n"
+"PO-Revision-Date: 2026-08-31 04:41\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
 "Language: ka_GE\n"
@@ -111,7 +111,7 @@ msgstr "&პარამეტრები"
 #: ../src/gtk/config/ConfigDialog.cpp:246
 msgctxt "ConfigDialog"
 msgid "Thumbnail Cache"
-msgstr ""
+msgstr "მინიატურების კეში"
 
 #: ../build/src/kde/kf6/ui_ConfigDialog.h:96
 #: ../src/gtk/config/ConfigDialog.cpp:247
@@ -337,7 +337,7 @@ msgstr ""
 #: ../src/gtk/xattr/XAttrView.cpp:73
 msgctxt "XAttrView"
 msgid "Ext2 Attributes"
-msgstr ""
+msgstr "Ext2-ის ატრიბუტები"
 
 #: ../build/src/kde/kf6/ui_XAttrView.h:120
 #: ../src/gtk/xattr/XAttrView.cpp:81
@@ -1416,7 +1416,7 @@ msgstr "ტრეკების რაოდენობა"
 #: ../src/libromdata/Audio/GBS.cpp:265 ../src/libromdata/Audio/NSF.cpp:233
 msgctxt "RomData|Audio"
 msgid "Default Track #"
-msgstr ""
+msgstr "ნაგულისხმევი ტრეკის #"
 
 #: ../src/libromdata/Audio/GBS.cpp:269
 msgctxt "GBS"
@@ -1496,7 +1496,7 @@ msgstr "Sega Dreamcast"
 #: ../src/libromdata/Audio/PSF.cpp:119
 msgctxt "PSF|System"
 msgid "Sega Mega Drive"
-msgstr ""
+msgstr "Sega Mega Drive"
 
 #: ../src/libromdata/Audio/PSF.cpp:120
 msgctxt "PSF|System"
@@ -1753,7 +1753,7 @@ msgstr "მისამართის დაკვრა"
 #: ../src/libromdata/Audio/SID.cpp:265
 msgctxt "RomData|Audio"
 msgid "Starting Song #"
-msgstr ""
+msgstr "პირველი სიმღერის #"
 
 #: ../src/libromdata/Audio/SNDH.cpp:824
 msgctxt "SNDH"
@@ -1768,7 +1768,7 @@ msgstr "კონვერტორი"
 #: ../src/libromdata/Audio/SNDH.cpp:836
 msgctxt "SNDH"
 msgid "Year of Release"
-msgstr ""
+msgstr "გამოშვების თარიღი"
 
 #: ../src/libromdata/Audio/SNDH.cpp:841
 msgctxt "SNDH"
@@ -1785,12 +1785,12 @@ msgstr "VBlank-ის სიხსირე"
 #, c++-format
 msgctxt "SNDH"
 msgid "Timer {:c} Freq"
-msgstr ""
+msgstr "ტაიმერის {:c} სიხშ"
 
 #: ../src/libromdata/Audio/SNDH.cpp:871
 msgctxt "SMDH"
 msgid "Default Subtune"
-msgstr ""
+msgstr "ნაგულისხმევი ქვესიმღერა"
 
 #: ../src/libromdata/Audio/SNDH.cpp:930
 msgctxt "SNDH|SubtuneList"
@@ -1906,7 +1906,7 @@ msgstr "ხმის ჩიპები"
 #, c++-format
 msgctxt "VGM"
 msgid "{:s} Clock Rate"
-msgstr ""
+msgstr "{:s} საათის სიხშირე"
 
 #: ../src/libromdata/Audio/VGM.cpp:453
 #, c++-format
@@ -1930,12 +1930,12 @@ msgstr ""
 #, c++-format
 msgctxt "VGM"
 msgid "{:s} LFSR width"
-msgstr ""
+msgstr "{:s} LFSR-ის სიგანე"
 
 #: ../src/libromdata/Audio/VGM.cpp:505
 msgctxt "VGM|PSGFlags"
 msgid "Freq 0 is 0x400"
-msgstr ""
+msgstr "სიხშირე 0 არის 0x400"
 
 #: ../src/libromdata/Audio/VGM.cpp:506
 msgctxt "VGM|PSGFlags"
@@ -1971,7 +1971,7 @@ msgstr "ერთმაგი გამოტანა"
 #: ../src/libromdata/Audio/VGM.cpp:563
 msgctxt "VGM|AY8910Flags"
 msgid "Discrete Output"
-msgstr ""
+msgstr "დიკსრეტული გმაოტანა"
 
 #: ../src/libromdata/Audio/VGM.cpp:564
 msgctxt "VGM|AY8910Flags"
@@ -1992,7 +1992,7 @@ msgstr "(არცერთი)"
 #, c++-format
 msgctxt "VGM"
 msgid "{:s} Expansions"
-msgstr ""
+msgstr "{:s} გაფართოებები"
 
 #: ../src/libromdata/Audio/VGM.cpp:784 ../src/libromdata/Audio/VGM.cpp:806
 #, c++-format
@@ -2034,7 +2034,8 @@ msgstr "შიდა\n"
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "Internal\n"
 "Banner"
-msgstr ""
+msgstr "შიდა\n"
+"ბანერი"
 
 #. tr: IMG_INT_MEDIA
 #: ../src/libromdata/config/ImageTypesConfig.cpp:101
@@ -2113,7 +2114,7 @@ msgstr "არკადის გულსაკიდი"
 #: ../src/libromdata/config/ImageTypesConfig.cpp:150
 msgctxt "ImageTypesConfig|SysName"
 msgid "Dreamcast Saves"
-msgstr ""
+msgstr "Dreamcast-ის შენახულები"
 
 #. tr: GameCube
 #: ../src/libromdata/config/ImageTypesConfig.cpp:152
@@ -2216,7 +2217,7 @@ msgstr "არცერთი"
 #: ../src/libromdata/Console/Atari7800.cpp:227
 msgctxt "Atari7800|ControllerType"
 msgid "Joystick (7800)"
-msgstr ""
+msgstr "Joystick (7800)"
 
 #: ../src/libromdata/Console/Atari7800.cpp:228
 msgctxt "Atari7800|ControllerType"
@@ -2236,7 +2237,7 @@ msgstr "ტრეკბოლი"
 #: ../src/libromdata/Console/Atari7800.cpp:231
 msgctxt "Atari7800|ControllerType"
 msgid "Joystick (2600)"
-msgstr ""
+msgstr "Joystick (2600)"
 
 #: ../src/libromdata/Console/Atari7800.cpp:232
 msgctxt "Atari7800|ControllerType"
@@ -2246,7 +2247,7 @@ msgstr "Driving (2600)"
 #: ../src/libromdata/Console/Atari7800.cpp:233
 msgctxt "Atari7800|ControllerType"
 msgid "Keyboard (2600)"
-msgstr ""
+msgstr "კლავიატურა (2600)"
 
 #: ../src/libromdata/Console/Atari7800.cpp:234
 msgctxt "Atari7800|ControllerType"
@@ -2262,7 +2263,7 @@ msgstr "თაგუნა (Amiga)"
 #, c++-format
 msgctxt "Atari7800"
 msgid "Controller {:d}"
-msgstr ""
+msgstr "კონტროლერი {:d}"
 
 #: ../src/libromdata/Console/ColecoVision.cpp:454
 #: ../src/libromdata/Console/N64.cpp:351 ../src/libromdata/Handheld/DMG.cpp:670
@@ -2483,7 +2484,7 @@ msgstr "VM"
 #: ../src/libromdata/Console/Dreamcast.cpp:799
 msgctxt "Dreamcast"
 msgid "Expansion Units"
-msgstr ""
+msgstr "გაფართოების ერთეულები"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:804
 msgctxt "Dreamcast|ReqCtrl"
@@ -2554,7 +2555,7 @@ msgstr "ანალოგური V2"
 #: ../src/libromdata/Console/Dreamcast.cpp:821
 msgctxt "Dreamcast"
 msgid "Req. Controller"
-msgstr ""
+msgstr "აუცილ. კონტროლერი"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:826
 msgctxt "Dreamcast|OptCtrl"
@@ -2575,7 +2576,7 @@ msgstr "თაგუნა"
 #: ../src/libromdata/Console/Dreamcast.cpp:833
 msgctxt "Dreamcast"
 msgid "Opt. Controller"
-msgstr ""
+msgstr "არასავ. კონტროლერი"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1337
 #: ../src/libromdata/Console/DreamcastSave.cpp:1345
@@ -10780,7 +10781,7 @@ msgstr ""
 #: ../src/rp-stub/rp-stub.c:149
 msgctxt "rp-stub|Help"
 msgid "Other options:"
-msgstr ""
+msgstr "სხვა პარამეტრები:"
 
 #: ../src/rp-stub/rp-stub.c:159
 #, c-format
