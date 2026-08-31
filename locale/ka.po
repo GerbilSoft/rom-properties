@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-30 15:16-0400\n"
-"PO-Revision-Date: 2026-08-31 04:41\n"
+"PO-Revision-Date: 2026-08-31 06:20\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
 "Language: ka_GE\n"
@@ -2623,7 +2623,7 @@ msgstr ""
 #: ../src/libromdata/Console/DreamcastSave.cpp:1362
 msgctxt "DreamcastSave"
 msgid "VMI Description"
-msgstr ""
+msgstr "VMI-ის აღწერა"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1366
 msgctxt "DreamcastSave"
@@ -2692,7 +2692,7 @@ msgstr "შექმნის დრო"
 #: ../src/libromdata/Console/DreamcastSave.cpp:1459
 msgctxt "DreamcastSave"
 msgid "VMS Description"
-msgstr ""
+msgstr "VMS-ის აღწერა"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1483
 msgctxt "DreamcastSave"
@@ -3385,7 +3385,7 @@ msgstr "TNES Mapper"
 #: ../src/libromdata/Console/NES.cpp:1517
 msgctxt "NES|TVMode"
 msgid "Dual (NTSC/PAL)"
-msgstr ""
+msgstr "ორმაგი (NTSC/PAL)"
 
 #: ../src/libromdata/Console/NES.cpp:1521
 msgctxt "NES"
@@ -3504,7 +3504,7 @@ msgstr "კონსოლის ტიპი"
 #: ../src/libromdata/Console/NES.cpp:1736
 msgctxt "NES"
 msgid "Misc. ROM Count"
-msgstr ""
+msgstr "სხვა ROM-ების რაოდენობა"
 
 #: ../src/libromdata/Console/NES.cpp:1740
 msgctxt "NES"
@@ -3544,7 +3544,7 @@ msgstr ""
 #: ../src/libromdata/Console/PlayStationDisc.cpp:768
 msgctxt "PlayStationDisc"
 msgid "Max Event Count"
-msgstr ""
+msgstr "მაქს. მოვლენების რაოდენობა"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:784
 msgctxt "PlayStationDisc"
@@ -3559,7 +3559,7 @@ msgstr "ჩატვირთვის ფაილის დრო"
 #: ../src/libromdata/Console/PlayStationDisc.cpp:829
 msgctxt "PlayStationDisc"
 msgid "CDVDGEN Version"
-msgstr ""
+msgstr "CDVDGEN-ის ვერსია"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:834
 msgctxt "PlayStationDisc"
@@ -4197,7 +4197,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWAD.cpp:1093
 msgctxt "Wii|NetCardGBASaveType"
 msgid "512-byte EEPROM"
-msgstr ""
+msgstr "512-ბაიტიანი EEPROM"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:1094
 msgctxt "Wii|NetCardGBASaveType"
@@ -4573,7 +4573,7 @@ msgstr "ქსელი"
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1893
 msgctxt "Xbox360_XEX|MediaType"
 msgid "Direct from RAM"
-msgstr ""
+msgstr "პირდაპირ RAM-დან"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1894
 msgctxt "Xbox360_XEX|MediaType"
