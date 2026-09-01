@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-30 15:16-0400\n"
-"PO-Revision-Date: 2026-08-31 06:20\n"
+"PO-Revision-Date: 2026-09-01 07:35\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
 "Language: ka_GE\n"
@@ -4618,7 +4618,7 @@ msgstr "არცერთი"
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1968
 msgctxt "Xbox360_XEX"
 msgid "Disc Profile ID"
-msgstr ""
+msgstr "დისკის პროფილის ID"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:2017
 msgctxt "Xbox360_XEX|Compression"
@@ -4746,7 +4746,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox_XBE.cpp:867
 msgctxt "Xbox_XBE|InitFlags"
 msgid "Don't Setup HDD"
-msgstr ""
+msgstr "HDD-ის არმორგება"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:870
 msgctxt "Xbox_XBE"
@@ -4819,7 +4819,7 @@ msgstr "Windows CE"
 #: ../src/libromdata/data/EXEData.cpp:58
 msgctxt "EXE|Subsystem"
 msgid "EFI Application"
-msgstr ""
+msgstr "EFI აპლიკაცია"
 
 #. tr: IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER
 #: ../src/libromdata/data/EXEData.cpp:60
@@ -5044,7 +5044,7 @@ msgstr ""
 #: ../src/libromdata/data/NESMappers.cpp:693
 msgctxt "NES|Expansion"
 msgid "R.O.B. Gyromite"
-msgstr ""
+msgstr "R.O.B. Gyromite"
 
 #: ../src/libromdata/data/NESMappers.cpp:696
 msgctxt "NES|Expansion"
@@ -5119,7 +5119,7 @@ msgstr "U-Force"
 #: ../src/libromdata/data/NESMappers.cpp:710
 msgctxt "NES|Expansion"
 msgid "R.O.B. Stack-Up"
-msgstr ""
+msgstr "R.O.B. Stack-Up"
 
 #: ../src/libromdata/data/NESMappers.cpp:711
 msgctxt "NES|Expansion"
@@ -5234,7 +5234,7 @@ msgstr ""
 #: ../src/libromdata/data/NESMappers.cpp:737
 msgctxt "NES|Expansion"
 msgid "Gigggle TV Pump"
-msgstr ""
+msgstr "Gigggle TV Pump"
 
 #: ../src/libromdata/data/NESMappers.cpp:738
 msgctxt "NES|Expansion"
@@ -5244,7 +5244,7 @@ msgstr ""
 #: ../src/libromdata/data/NESMappers.cpp:739
 msgctxt "NES|Expansion"
 msgid "Magical Cooking"
-msgstr ""
+msgstr "საჭმლის ჯადოსნური მომზადება"
 
 #: ../src/libromdata/data/NESMappers.cpp:740
 msgctxt "NES|Expansion"
@@ -5289,7 +5289,7 @@ msgstr ""
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:45
 msgctxt "Nintendo3DSSysTitles"
 msgid "System Settings"
-msgstr ""
+msgstr "სისტემის მორგება"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:46
 msgctxt "Nintendo3DSSysTitles"
@@ -5335,7 +5335,7 @@ msgstr "eShop"
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:54
 msgctxt "Nintendo3DSSysTitles"
 msgid "System Transfer"
-msgstr ""
+msgstr "სისტემის გადატანა"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:55
 msgctxt "Nintendo3DSSysTitles"
