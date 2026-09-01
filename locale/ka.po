@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-30 15:16-0400\n"
-"PO-Revision-Date: 2026-09-01 07:35\n"
+"PO-Revision-Date: 2026-09-01 09:16\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
 "Language: ka_GE\n"
@@ -5453,7 +5453,7 @@ msgstr ""
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:88
 msgctxt "Nintendo3DSSysTitles"
 msgid "amiibo Settings"
-msgstr ""
+msgstr "amiibo-ის მორგება"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:31
 msgctxt "Xbox360_STFS|ContentType"
@@ -6109,7 +6109,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2389
 msgctxt "Nintendo3DS"
 msgid "Old3DS Sys Mode"
-msgstr ""
+msgstr "Old3DS-ის სისტემური რეჟიმი"
 
 #. tr: {0:s} == Old3DS system mode; {1:d} == RAM allocation, in megabytes
 #. tr: {0:s} == New3DS system mode; {1:d} == RAM allocation, in megabytes
@@ -6123,7 +6123,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2413
 msgctxt "Nintendo3DS"
 msgid "New3DS Sys Mode"
-msgstr ""
+msgstr "New3DS-ის სისტემური რეჟიმი"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2429
 msgctxt "Nintendo3DS|N3DSCPUMode"
