@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-08-30 15:16-0400\n"
-"PO-Revision-Date: 2026-08-25 15:46\n"
+"PO-Revision-Date: 2026-09-01 09:16\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
 "Language: ka\n"
@@ -111,7 +111,7 @@ msgstr "&პარამეტრები"
 #: ../src/gtk/config/ConfigDialog.cpp:246
 msgctxt "ConfigDialog"
 msgid "Thumbnail Cache"
-msgstr ""
+msgstr "მინიატურების კეში"
 
 #: ../build/src/kde/kf6/ui_ConfigDialog.h:96
 #: ../src/gtk/config/ConfigDialog.cpp:247
@@ -340,7 +340,7 @@ msgstr ""
 #: ../build/src/kde/kf6/ui_XAttrView.h:119 ../src/gtk/xattr/XAttrView.cpp:73
 msgctxt "XAttrView"
 msgid "Ext2 Attributes"
-msgstr ""
+msgstr "Ext2-ის ატრიბუტები"
 
 #: ../build/src/kde/kf6/ui_XAttrView.h:120 ../src/gtk/xattr/XAttrView.cpp:81
 msgctxt "XAttrView"
@@ -1428,7 +1428,7 @@ msgstr "ტრეკების რაოდენობა"
 #: ../src/libromdata/Audio/GBS.cpp:265 ../src/libromdata/Audio/NSF.cpp:233
 msgctxt "RomData|Audio"
 msgid "Default Track #"
-msgstr ""
+msgstr "ნაგულისხმევი ტრეკის #"
 
 #: ../src/libromdata/Audio/GBS.cpp:269
 msgctxt "GBS"
@@ -1508,7 +1508,7 @@ msgstr "Sega Dreamcast"
 #: ../src/libromdata/Audio/PSF.cpp:119
 msgctxt "PSF|System"
 msgid "Sega Mega Drive"
-msgstr ""
+msgstr "Sega Mega Drive"
 
 #: ../src/libromdata/Audio/PSF.cpp:120
 msgctxt "PSF|System"
@@ -1765,7 +1765,7 @@ msgstr "მისამართის დაკვრა"
 #: ../src/libromdata/Audio/SID.cpp:265
 msgctxt "RomData|Audio"
 msgid "Starting Song #"
-msgstr ""
+msgstr "პირველი სიმღერის #"
 
 #: ../src/libromdata/Audio/SNDH.cpp:824
 msgctxt "SNDH"
@@ -1780,7 +1780,7 @@ msgstr "კონვერტორი"
 #: ../src/libromdata/Audio/SNDH.cpp:836
 msgctxt "SNDH"
 msgid "Year of Release"
-msgstr ""
+msgstr "გამოშვების თარიღი"
 
 #: ../src/libromdata/Audio/SNDH.cpp:841
 msgctxt "SNDH"
@@ -1797,12 +1797,12 @@ msgstr "VBlank-ის სიხსირე"
 #, c++-format
 msgctxt "SNDH"
 msgid "Timer {:c} Freq"
-msgstr ""
+msgstr "ტაიმერის {:c} სიხშ"
 
 #: ../src/libromdata/Audio/SNDH.cpp:871
 msgctxt "SMDH"
 msgid "Default Subtune"
-msgstr ""
+msgstr "ნაგულისხმევი ქვესიმღერა"
 
 #: ../src/libromdata/Audio/SNDH.cpp:930
 msgctxt "SNDH|SubtuneList"
@@ -1918,7 +1918,7 @@ msgstr "ხმის ჩიპები"
 #, c++-format
 msgctxt "VGM"
 msgid "{:s} Clock Rate"
-msgstr ""
+msgstr "{:s} საათის სიხშირე"
 
 #: ../src/libromdata/Audio/VGM.cpp:453
 #, c++-format
@@ -1942,12 +1942,12 @@ msgstr ""
 #, c++-format
 msgctxt "VGM"
 msgid "{:s} LFSR width"
-msgstr ""
+msgstr "{:s} LFSR-ის სიგანე"
 
 #: ../src/libromdata/Audio/VGM.cpp:505
 msgctxt "VGM|PSGFlags"
 msgid "Freq 0 is 0x400"
-msgstr ""
+msgstr "სიხშირე 0 არის 0x400"
 
 #: ../src/libromdata/Audio/VGM.cpp:506
 msgctxt "VGM|PSGFlags"
@@ -1983,7 +1983,7 @@ msgstr "ერთმაგი გამოტანა"
 #: ../src/libromdata/Audio/VGM.cpp:563
 msgctxt "VGM|AY8910Flags"
 msgid "Discrete Output"
-msgstr ""
+msgstr "დიკსრეტული გმაოტანა"
 
 #: ../src/libromdata/Audio/VGM.cpp:564
 msgctxt "VGM|AY8910Flags"
@@ -2004,7 +2004,7 @@ msgstr "(არცერთი)"
 #, c++-format
 msgctxt "VGM"
 msgid "{:s} Expansions"
-msgstr ""
+msgstr "{:s} გაფართოებები"
 
 #: ../src/libromdata/Audio/VGM.cpp:784 ../src/libromdata/Audio/VGM.cpp:806
 #, c++-format
@@ -2050,6 +2050,8 @@ msgid ""
 "Internal\n"
 "Banner"
 msgstr ""
+"შიდა\n"
+"ბანერი"
 
 #. tr: IMG_INT_MEDIA
 #: ../src/libromdata/config/ImageTypesConfig.cpp:101
@@ -2141,7 +2143,7 @@ msgstr "არკადის გულსაკიდი"
 #: ../src/libromdata/config/ImageTypesConfig.cpp:150
 msgctxt "ImageTypesConfig|SysName"
 msgid "Dreamcast Saves"
-msgstr ""
+msgstr "Dreamcast-ის შენახულები"
 
 #. tr: GameCube
 #: ../src/libromdata/config/ImageTypesConfig.cpp:152
@@ -2244,7 +2246,7 @@ msgstr "არცერთი"
 #: ../src/libromdata/Console/Atari7800.cpp:227
 msgctxt "Atari7800|ControllerType"
 msgid "Joystick (7800)"
-msgstr ""
+msgstr "Joystick (7800)"
 
 #: ../src/libromdata/Console/Atari7800.cpp:228
 msgctxt "Atari7800|ControllerType"
@@ -2264,7 +2266,7 @@ msgstr "ტრეკბოლი"
 #: ../src/libromdata/Console/Atari7800.cpp:231
 msgctxt "Atari7800|ControllerType"
 msgid "Joystick (2600)"
-msgstr ""
+msgstr "Joystick (2600)"
 
 #: ../src/libromdata/Console/Atari7800.cpp:232
 msgctxt "Atari7800|ControllerType"
@@ -2274,7 +2276,7 @@ msgstr "Driving (2600)"
 #: ../src/libromdata/Console/Atari7800.cpp:233
 msgctxt "Atari7800|ControllerType"
 msgid "Keyboard (2600)"
-msgstr ""
+msgstr "კლავიატურა (2600)"
 
 #: ../src/libromdata/Console/Atari7800.cpp:234
 msgctxt "Atari7800|ControllerType"
@@ -2290,7 +2292,7 @@ msgstr "თაგუნა (Amiga)"
 #, c++-format
 msgctxt "Atari7800"
 msgid "Controller {:d}"
-msgstr ""
+msgstr "კონტროლერი {:d}"
 
 #: ../src/libromdata/Console/ColecoVision.cpp:454
 #: ../src/libromdata/Console/N64.cpp:351 ../src/libromdata/Handheld/DMG.cpp:670
@@ -2511,7 +2513,7 @@ msgstr "VM"
 #: ../src/libromdata/Console/Dreamcast.cpp:799
 msgctxt "Dreamcast"
 msgid "Expansion Units"
-msgstr ""
+msgstr "გაფართოების ერთეულები"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:804
 msgctxt "Dreamcast|ReqCtrl"
@@ -2582,7 +2584,7 @@ msgstr "ანალოგური V2"
 #: ../src/libromdata/Console/Dreamcast.cpp:821
 msgctxt "Dreamcast"
 msgid "Req. Controller"
-msgstr ""
+msgstr "აუცილ. კონტროლერი"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:826
 msgctxt "Dreamcast|OptCtrl"
@@ -2603,7 +2605,7 @@ msgstr "თაგუნა"
 #: ../src/libromdata/Console/Dreamcast.cpp:833
 msgctxt "Dreamcast"
 msgid "Opt. Controller"
-msgstr ""
+msgstr "არასავ. კონტროლერი"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1337
 #: ../src/libromdata/Console/DreamcastSave.cpp:1345
@@ -2650,7 +2652,7 @@ msgstr ""
 #: ../src/libromdata/Console/DreamcastSave.cpp:1362
 msgctxt "DreamcastSave"
 msgid "VMI Description"
-msgstr ""
+msgstr "VMI-ის აღწერა"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1366
 msgctxt "DreamcastSave"
@@ -2719,7 +2721,7 @@ msgstr "შექმნის დრო"
 #: ../src/libromdata/Console/DreamcastSave.cpp:1459
 msgctxt "DreamcastSave"
 msgid "VMS Description"
-msgstr ""
+msgstr "VMS-ის აღწერა"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1483
 msgctxt "DreamcastSave"
@@ -3412,7 +3414,7 @@ msgstr "TNES Mapper"
 #: ../src/libromdata/Console/NES.cpp:1517
 msgctxt "NES|TVMode"
 msgid "Dual (NTSC/PAL)"
-msgstr ""
+msgstr "ორმაგი (NTSC/PAL)"
 
 #: ../src/libromdata/Console/NES.cpp:1521
 msgctxt "NES"
@@ -3531,7 +3533,7 @@ msgstr "კონსოლის ტიპი"
 #: ../src/libromdata/Console/NES.cpp:1736
 msgctxt "NES"
 msgid "Misc. ROM Count"
-msgstr ""
+msgstr "სხვა ROM-ების რაოდენობა"
 
 #: ../src/libromdata/Console/NES.cpp:1740
 msgctxt "NES"
@@ -3571,7 +3573,7 @@ msgstr ""
 #: ../src/libromdata/Console/PlayStationDisc.cpp:768
 msgctxt "PlayStationDisc"
 msgid "Max Event Count"
-msgstr ""
+msgstr "მაქს. მოვლენების რაოდენობა"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:784
 msgctxt "PlayStationDisc"
@@ -3586,7 +3588,7 @@ msgstr "ჩატვირთვის ფაილის დრო"
 #: ../src/libromdata/Console/PlayStationDisc.cpp:829
 msgctxt "PlayStationDisc"
 msgid "CDVDGEN Version"
-msgstr ""
+msgstr "CDVDGEN-ის ვერსია"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:834
 msgctxt "PlayStationDisc"
@@ -4224,7 +4226,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWAD.cpp:1093
 msgctxt "Wii|NetCardGBASaveType"
 msgid "512-byte EEPROM"
-msgstr ""
+msgstr "512-ბაიტიანი EEPROM"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:1094
 msgctxt "Wii|NetCardGBASaveType"
@@ -4602,7 +4604,7 @@ msgstr "ქსელი"
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1893
 msgctxt "Xbox360_XEX|MediaType"
 msgid "Direct from RAM"
-msgstr ""
+msgstr "პირდაპირ RAM-დან"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1894
 msgctxt "Xbox360_XEX|MediaType"
@@ -4647,7 +4649,7 @@ msgstr "არცერთი"
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1968
 msgctxt "Xbox360_XEX"
 msgid "Disc Profile ID"
-msgstr ""
+msgstr "დისკის პროფილის ID"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:2017
 msgctxt "Xbox360_XEX|Compression"
@@ -4775,7 +4777,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox_XBE.cpp:867
 msgctxt "Xbox_XBE|InitFlags"
 msgid "Don't Setup HDD"
-msgstr ""
+msgstr "HDD-ის არმორგება"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:870
 msgctxt "Xbox_XBE"
@@ -4848,7 +4850,7 @@ msgstr "Windows CE"
 #: ../src/libromdata/data/EXEData.cpp:58
 msgctxt "EXE|Subsystem"
 msgid "EFI Application"
-msgstr ""
+msgstr "EFI აპლიკაცია"
 
 #. tr: IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER
 #: ../src/libromdata/data/EXEData.cpp:60
@@ -5073,7 +5075,7 @@ msgstr ""
 #: ../src/libromdata/data/NESMappers.cpp:693
 msgctxt "NES|Expansion"
 msgid "R.O.B. Gyromite"
-msgstr ""
+msgstr "R.O.B. Gyromite"
 
 #: ../src/libromdata/data/NESMappers.cpp:696
 msgctxt "NES|Expansion"
@@ -5148,7 +5150,7 @@ msgstr "U-Force"
 #: ../src/libromdata/data/NESMappers.cpp:710
 msgctxt "NES|Expansion"
 msgid "R.O.B. Stack-Up"
-msgstr ""
+msgstr "R.O.B. Stack-Up"
 
 #: ../src/libromdata/data/NESMappers.cpp:711
 msgctxt "NES|Expansion"
@@ -5263,7 +5265,7 @@ msgstr ""
 #: ../src/libromdata/data/NESMappers.cpp:737
 msgctxt "NES|Expansion"
 msgid "Gigggle TV Pump"
-msgstr ""
+msgstr "Gigggle TV Pump"
 
 #: ../src/libromdata/data/NESMappers.cpp:738
 msgctxt "NES|Expansion"
@@ -5273,7 +5275,7 @@ msgstr ""
 #: ../src/libromdata/data/NESMappers.cpp:739
 msgctxt "NES|Expansion"
 msgid "Magical Cooking"
-msgstr ""
+msgstr "საჭმლის ჯადოსნური მომზადება"
 
 #: ../src/libromdata/data/NESMappers.cpp:740
 msgctxt "NES|Expansion"
@@ -5318,7 +5320,7 @@ msgstr ""
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:45
 msgctxt "Nintendo3DSSysTitles"
 msgid "System Settings"
-msgstr ""
+msgstr "სისტემის მორგება"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:46
 msgctxt "Nintendo3DSSysTitles"
@@ -5364,7 +5366,7 @@ msgstr "eShop"
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:54
 msgctxt "Nintendo3DSSysTitles"
 msgid "System Transfer"
-msgstr ""
+msgstr "სისტემის გადატანა"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:55
 msgctxt "Nintendo3DSSysTitles"
@@ -5482,7 +5484,7 @@ msgstr ""
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:88
 msgctxt "Nintendo3DSSysTitles"
 msgid "amiibo Settings"
-msgstr ""
+msgstr "amiibo-ის მორგება"
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:31
 msgctxt "Xbox360_STFS|ContentType"
@@ -6138,7 +6140,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2389
 msgctxt "Nintendo3DS"
 msgid "Old3DS Sys Mode"
-msgstr ""
+msgstr "Old3DS-ის სისტემური რეჟიმი"
 
 #. tr: {0:s} == Old3DS system mode; {1:d} == RAM allocation, in megabytes
 #. tr: {0:s} == New3DS system mode; {1:d} == RAM allocation, in megabytes
@@ -6152,7 +6154,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2413
 msgctxt "Nintendo3DS"
 msgid "New3DS Sys Mode"
-msgstr ""
+msgstr "New3DS-ის სისტემური რეჟიმი"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2429
 msgctxt "Nintendo3DS|N3DSCPUMode"
@@ -10825,7 +10827,7 @@ msgstr ""
 #: ../src/rp-stub/rp-stub.c:149
 msgctxt "rp-stub|Help"
 msgid "Other options:"
-msgstr ""
+msgstr "სხვა პარამეტრები:"
 
 #: ../src/rp-stub/rp-stub.c:159
 #, c-format
