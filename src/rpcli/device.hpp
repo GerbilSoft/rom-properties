@@ -45,4 +45,13 @@ public:
 	friend std::ostream &operator<<(std::ostream &os, const AtaIdentifyDevice& si);
 };
 
+class JSONAtaIdentifyDevice
+{
+	LibRpFile::RpFile *const file;
+	const bool packet;
+public:
+	explicit JSONAtaIdentifyDevice(LibRpFile::RpFile *file, bool packet = false);
+	friend std::ostream &operator<<(std::ostream &os, const JSONAtaIdentifyDevice& si);
+};
+
 #endif /* RP_OS_SCSI_SUPPORTED */

@@ -299,4 +299,89 @@ ostream &operator<<(ostream &os, const AtaIdentifyDevice& si)
 	return os;
 }
 
+/** JSONAtaIdentifyDevice **/
+
+JSONAtaIdentifyDevice::JSONAtaIdentifyDevice(RpFile *file, bool packet)
+	: file(file)
+	, packet(packet)
+{}
+
+ostream &operator<<(ostream &os, const JSONAtaIdentifyDevice& si)
+{
+	Document document;
+	document.SetObject();	// document should be an object, not an array
+	Document::AllocatorType& allocator = document.GetAllocator();
+
+	// NOTE: Unlike JSONRomOutput:
+	// - Always using pretty-printing. (TODO: override if using '-J'?)
+	// - Not setting CRLF mode; this should be printed to
+	//   a terminal or redirected to a file in text mode.
+
+	ATA_RESP_IDENTIFY_DEVICE resp;
+	int ret;
+	if (si.packet) {
+		ret = si.file->ata_identify_packet_device(&resp);
+	} else {
+		ret = si.file->ata_identify_device(&resp);
+	}
+
+	if (ret != 0) {
+		// TODO: Decode the error.
+		Value error_val;
+		error_val.SetString(
+			fmt::format(FRUN(C_("rpcli", "ATA {:s} failed: {:0>8X}")),
+				(si.packet ? "IDENTIFY PACKET DEVICE" : "IDENTIFY DEVICE"),
+				static_cast<unsigned int>(ret)),
+				allocator);
+		document.AddMember("error", error_val, allocator);
+
+		// Use pretty-printing.
+		OStreamWrapper oswr(os);
+		PrettyWriter<OStreamWrapper> writer(oswr);
+		document.Accept(writer);
+		return os;
+	}
+
+	// ATA device information.
+	// TODO: Decode numeric values.
+	// TODO: Trim spaces?
+	// TODO: i18n?
+	Value tmpval;
+
+	tmpval.SetString(si.packet ? "ATA PACKET IDENTIFY DEVICE" : "ATA IDENTIFY DEVICE", allocator);
+	document.AddMember("inquiryType", tmpval, allocator);
+
+	tmpval.SetString(si.file->filename(), allocator);
+	document.AddMember("deviceFilename", tmpval, allocator);
+
+	tmpval.SetString(latin1_to_utf8(resp.model_number, sizeof(resp.model_number)), allocator);
+	document.AddMember("modelNumber", tmpval, allocator);
+
+	tmpval.SetString(latin1_to_utf8(resp.firmware_revision, sizeof(resp.firmware_revision)), allocator);
+	document.AddMember("firmwareVersion", tmpval, allocator);
+
+	tmpval.SetString(latin1_to_utf8(resp.serial_number, sizeof(resp.serial_number)), allocator);
+	document.AddMember("serialNumber", tmpval, allocator);
+
+	tmpval.SetString(latin1_to_utf8(resp.media_serial_number, sizeof(resp.media_serial_number)), allocator);
+	document.AddMember("mediaSerialNumber", tmpval, allocator);
+
+	// TODO: Byte count.
+
+	tmpval.SetUint(resp.total_sectors);
+	document.AddMember("sectorCount_28bit", tmpval, allocator);
+
+	tmpval.SetUint64(resp.total_sectors_48);
+	document.AddMember("sectorCount_48bit", tmpval, allocator);
+
+	tmpval.SetString(fmt::format(FSTR("{:0>4X}"), +resp.integrity), allocator);
+	document.AddMember("integrityWord", tmpval, allocator);
+
+	// Use pretty-printing.
+	OStreamWrapper oswr(os);
+	PrettyWriter<OStreamWrapper> writer(oswr);
+	document.Accept(writer);
+	return os;
+}
+
 #endif /* RP_OS_SCSI_SUPPORTED */

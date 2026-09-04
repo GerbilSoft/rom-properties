@@ -468,10 +468,10 @@ static void DoDeviceInquiry_int(ostream &os, RpFile *file, bool json, DeviceInqu
 				os << JSONScsiInquiry(file) << '\n';
 				break;
 			case DeviceInquiryCommand::AtaIdentifyDevice:
-				//os << JSONAtaIdentifyDevice(file, false) << '\n';
+				os << JSONAtaIdentifyDevice(file, false) << '\n';
 				break;
 			case DeviceInquiryCommand::AtaIdentifyPacketDevice:
-				//os << JSONAtaIdentifyDevice(file, true) << '\n';
+				os << JSONAtaIdentifyDevice(file, true) << '\n';
 				break;
 		}
 	} else {
