@@ -212,6 +212,10 @@ ostream &operator<<(ostream &os, const JSONScsiInquiry& si)
 	}
 
 	Value tmpval;
+
+	tmpval.SetString("SCSI INQUIRY", allocator);
+	document.AddMember("inquiryType", tmpval, allocator);
+
 	tmpval.SetString(si.file->filename(), allocator);
 	document.AddMember("deviceFilename", tmpval, allocator);
 
