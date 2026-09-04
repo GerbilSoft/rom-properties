@@ -213,41 +213,41 @@ ostream &operator<<(ostream &os, const JSONScsiInquiry& si)
 
 	Value tmpval;
 
-	tmpval.SetString("SCSI INQUIRY", allocator);
-	document.AddMember("inquiryType", tmpval, allocator);
+	tmpval.SetString(StringRef("SCSI INQUIRY"), allocator);
+	document.AddMember(StringRef("inquiryType"), tmpval, allocator);
 
 	tmpval.SetString(si.file->filename(), allocator);
-	document.AddMember("deviceFilename", tmpval, allocator);
+	document.AddMember(StringRef("deviceFilename"), tmpval, allocator);
 
 	const char *const pdt = Private::scsi_pdt_tbl[resp.PeripheralDeviceType & 0x1F];
-	tmpval.SetString((pdt ? pdt : fmt::format(FSTR("0x{:0>2X}"), static_cast<unsigned int>(resp.PeripheralDeviceType) & 0x1F)), allocator);
-	document.AddMember("peripheralDeviceType", tmpval, allocator);
+	tmpval.SetString(StringRef((pdt ? pdt : fmt::format(FSTR("0x{:0>2X}"), static_cast<unsigned int>(resp.PeripheralDeviceType) & 0x1F))), allocator);
+	document.AddMember(StringRef("peripheralDeviceType"), tmpval, allocator);
 
-	tmpval.SetString(Private::scsi_pq_tbl[resp.PeripheralDeviceType >> 5], allocator);
-	document.AddMember("peripheralQualifier", tmpval, allocator);
+	tmpval.SetString(StringRef(Private::scsi_pq_tbl[resp.PeripheralDeviceType >> 5]), allocator);
+	document.AddMember(StringRef("peripheralQualifier"), tmpval, allocator);
 
 	tmpval.SetBool(!!(resp.RMB_DeviceTypeModifier & 0x80));
-	document.AddMember("removableMedia", tmpval, allocator);
+	document.AddMember(StringRef("removableMedia"), tmpval, allocator);
 
 	if (resp.Version <= 0x07) {
-		tmpval.SetString(Private::scsi_version_tbl[resp.Version], allocator);
+		tmpval.SetString(StringRef(Private::scsi_version_tbl[resp.Version]), allocator);
 	} else {
 		tmpval.SetString(fmt::format(FSTR("0x{:0>2X}"), resp.Version), allocator);
 	}
-	document.AddMember("scsiVersion", tmpval, allocator);
+	document.AddMember(StringRef("scsiVersion"), tmpval, allocator);
 
 	// TODO: ResponseDataFormat and high bits?
 	// TODO: Verify AdditionalLength field?
 	// TODO: Flags.
 	// TODO: Trim spaces.
 	tmpval.SetString(latin1_to_utf8(resp.vendor_id, sizeof(resp.vendor_id)), allocator);
-	document.AddMember("vendorID", tmpval, allocator);
+	document.AddMember(StringRef("vendorID"), tmpval, allocator);
 	tmpval.SetString(latin1_to_utf8(resp.product_id, sizeof(resp.product_id)), allocator);
-	document.AddMember("productID", tmpval, allocator);
+	document.AddMember(StringRef("productID"), tmpval, allocator);
 	tmpval.SetString(latin1_to_utf8(resp.product_revision_level, sizeof(resp.product_revision_level)), allocator);
-	document.AddMember("firmwareVersion", tmpval, allocator);
+	document.AddMember(StringRef("firmwareVersion"), tmpval, allocator);
 	tmpval.SetString(latin1_to_utf8(resp.VendorSpecific, sizeof(resp.VendorSpecific)), allocator);
-	document.AddMember("vendorNotes", tmpval, allocator);
+	document.AddMember(StringRef("vendorNotes"), tmpval, allocator);
 
 	// TODO: Check supported media types for CD/DVD/BD-ROM drives?
 	// That's a bit more than an INQUIRY command...
@@ -352,34 +352,34 @@ ostream &operator<<(ostream &os, const JSONAtaIdentifyDevice& si)
 	// TODO: i18n?
 	Value tmpval;
 
-	tmpval.SetString(si.packet ? "ATA PACKET IDENTIFY DEVICE" : "ATA IDENTIFY DEVICE", allocator);
-	document.AddMember("inquiryType", tmpval, allocator);
+	tmpval.SetString(StringRef(si.packet ? "ATA PACKET IDENTIFY DEVICE" : "ATA IDENTIFY DEVICE"), allocator);
+	document.AddMember(StringRef("inquiryType"), tmpval, allocator);
 
 	tmpval.SetString(si.file->filename(), allocator);
-	document.AddMember("deviceFilename", tmpval, allocator);
+	document.AddMember(StringRef("deviceFilename"), tmpval, allocator);
 
 	tmpval.SetString(latin1_to_utf8(resp.model_number, sizeof(resp.model_number)), allocator);
-	document.AddMember("modelNumber", tmpval, allocator);
+	document.AddMember(StringRef("modelNumber"), tmpval, allocator);
 
 	tmpval.SetString(latin1_to_utf8(resp.firmware_revision, sizeof(resp.firmware_revision)), allocator);
-	document.AddMember("firmwareVersion", tmpval, allocator);
+	document.AddMember(StringRef("firmwareVersion"), tmpval, allocator);
 
 	tmpval.SetString(latin1_to_utf8(resp.serial_number, sizeof(resp.serial_number)), allocator);
-	document.AddMember("serialNumber", tmpval, allocator);
+	document.AddMember(StringRef("serialNumber"), tmpval, allocator);
 
 	tmpval.SetString(latin1_to_utf8(resp.media_serial_number, sizeof(resp.media_serial_number)), allocator);
-	document.AddMember("mediaSerialNumber", tmpval, allocator);
+	document.AddMember(StringRef("mediaSerialNumber"), tmpval, allocator);
 
 	// TODO: Byte count.
 
 	tmpval.SetUint(resp.total_sectors);
-	document.AddMember("sectorCount_28bit", tmpval, allocator);
+	document.AddMember(StringRef("sectorCount_28bit"), tmpval, allocator);
 
 	tmpval.SetUint64(resp.total_sectors_48);
-	document.AddMember("sectorCount_48bit", tmpval, allocator);
+	document.AddMember(StringRef("sectorCount_48bit"), tmpval, allocator);
 
 	tmpval.SetString(fmt::format(FSTR("{:0>4X}"), +resp.integrity), allocator);
-	document.AddMember("integrityWord", tmpval, allocator);
+	document.AddMember(StringRef("integrityWord"), tmpval, allocator);
 
 	// Use pretty-printing.
 	OStreamWrapper oswr(os);
