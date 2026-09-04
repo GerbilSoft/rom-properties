@@ -193,6 +193,13 @@ ostream &operator<<(ostream &os, const JSONScsiInquiry& si)
 	// - Always using pretty-printing. (TODO: override if using '-J'?)
 	// - Not setting CRLF mode; this should be printed to
 	//   a terminal or redirected to a file in text mode.
+	Value tmpval;
+
+	tmpval.SetString(StringRef("SCSI INQUIRY"), allocator);
+	document.AddMember(StringRef("inquiryType"), tmpval, allocator);
+
+	tmpval.SetString(si.file->filename(), allocator);
+	document.AddMember(StringRef("deviceFilename"), tmpval, allocator);
 
 	SCSI_RESP_INQUIRY_STD resp;
 	int ret = si.file->scsi_inquiry(&resp);
@@ -210,14 +217,6 @@ ostream &operator<<(ostream &os, const JSONScsiInquiry& si)
 		document.Accept(writer);
 		return os;
 	}
-
-	Value tmpval;
-
-	tmpval.SetString(StringRef("SCSI INQUIRY"), allocator);
-	document.AddMember(StringRef("inquiryType"), tmpval, allocator);
-
-	tmpval.SetString(si.file->filename(), allocator);
-	document.AddMember(StringRef("deviceFilename"), tmpval, allocator);
 
 	const char *const pdt = Private::scsi_pdt_tbl[resp.PeripheralDeviceType & 0x1F];
 	tmpval.SetString(StringRef((pdt ? pdt : fmt::format(FSTR("0x{:0>2X}"), static_cast<unsigned int>(resp.PeripheralDeviceType) & 0x1F))), allocator);
@@ -320,6 +319,13 @@ ostream &operator<<(ostream &os, const JSONAtaIdentifyDevice& si)
 	// - Always using pretty-printing. (TODO: override if using '-J'?)
 	// - Not setting CRLF mode; this should be printed to
 	//   a terminal or redirected to a file in text mode.
+	Value tmpval;
+
+	tmpval.SetString(StringRef(si.packet ? "ATA PACKET IDENTIFY DEVICE" : "ATA IDENTIFY DEVICE"), allocator);
+	document.AddMember(StringRef("inquiryType"), tmpval, allocator);
+
+	tmpval.SetString(si.file->filename(), allocator);
+	document.AddMember(StringRef("deviceFilename"), tmpval, allocator);
 
 	ATA_RESP_IDENTIFY_DEVICE resp;
 	int ret;
@@ -328,7 +334,6 @@ ostream &operator<<(ostream &os, const JSONAtaIdentifyDevice& si)
 	} else {
 		ret = si.file->ata_identify_device(&resp);
 	}
-
 	if (ret != 0) {
 		// TODO: Decode the error.
 		Value error_val;
@@ -350,13 +355,6 @@ ostream &operator<<(ostream &os, const JSONAtaIdentifyDevice& si)
 	// TODO: Decode numeric values.
 	// TODO: Trim spaces?
 	// TODO: i18n?
-	Value tmpval;
-
-	tmpval.SetString(StringRef(si.packet ? "ATA PACKET IDENTIFY DEVICE" : "ATA IDENTIFY DEVICE"), allocator);
-	document.AddMember(StringRef("inquiryType"), tmpval, allocator);
-
-	tmpval.SetString(si.file->filename(), allocator);
-	document.AddMember(StringRef("deviceFilename"), tmpval, allocator);
 
 	tmpval.SetString(latin1_to_utf8(resp.model_number, sizeof(resp.model_number)), allocator);
 	document.AddMember(StringRef("modelNumber"), tmpval, allocator);
