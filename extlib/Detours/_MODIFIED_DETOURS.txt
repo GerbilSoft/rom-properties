@@ -1,7 +1,7 @@
 This copy of Detours is a modified version of the original.
 
-commit d644ce94e8c7f7f5a31591577c78134ea3ac1fae
-Remove windows-2019 from build matrix. (#375)
+commit adb07604aa56508448b95bf037c2a6d0d3b6831a
+Support hooking ARM64EC target functions (#388)
 
 The following changes have been made to the original:
 
