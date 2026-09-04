@@ -78,7 +78,7 @@ using std::array;
 using std::cout;
 using std::cerr;
 using std::locale;
-using std::ofstream;
+using std::ostream;
 using std::ostringstream;
 using std::shared_ptr;
 using std::string;
@@ -451,6 +451,53 @@ enum class DeviceInquiryCommand {
 
 /**
  * Run a SCSI INQUIRY, ATA IDENTIFY DEVICE, or ATA IDENTIFY PACKET DEVICE command on a device.
+ * Internal function; called by DoDeviceInquiry().
+ * @param os ostream&
+ * @param file Device file
+ * @param json Is program running in json mode?
+ * @param cmd Command to run
+ */
+static void DoDeviceInquiry_int(ostream &os, RpFile *file, bool json, DeviceInquiryCommand cmd)
+{
+	if (json) {
+		/* TODO: JSON versions.
+		switch (cmd) {
+			default:
+				assert(!"Invalid device inquiry command.");
+				return;
+			case DeviceInquiryCommand::ScsiInquiry:
+				os << JSONScsiInquiry(file) << '\n';
+				break;
+			case DeviceInquiryCommand::AtaIdentifyDevice:
+				os << JSONAtaIdentifyDevice(file, false) << '\n';
+				break;
+			case DeviceInquiryCommand::AtaIdentifyPacketDevice:
+				os << JSONAtaIdentifyDevice(file, true) << '\n';
+				break;
+		}
+		*/
+	} else {
+		switch (cmd) {
+			default:
+				assert(!"Invalid device inquiry command.");
+				return;
+			case DeviceInquiryCommand::ScsiInquiry:
+				os << ScsiInquiry(file) << '\n';
+				break;
+			case DeviceInquiryCommand::AtaIdentifyDevice:
+				os << AtaIdentifyDevice(file, false) << '\n';
+				break;
+			case DeviceInquiryCommand::AtaIdentifyPacketDevice:
+				os << AtaIdentifyDevice(file, true) << '\n';
+				break;
+		}
+	}
+
+	os.flush();
+}
+
+/**
+ * Run a SCSI INQUIRY, ATA IDENTIFY DEVICE, or ATA IDENTIFY PACKET DEVICE command on a device.
  * @param filename Device filename
  * @param json Is program running in json mode?
  * @param cmd Command to run
@@ -506,68 +553,22 @@ static void DoDeviceInquiry(const TCHAR *filename, bool json, DeviceInquiryComma
 		Gsvt::StdErr.textColorReset();
 		Gsvt::StdErr.newline();
 		Gsvt::StdErr.fflush();
-
-		/* TODO: JSON versions.
-		switch (cmd) {
-			default:
-				assert(!"Invalid device inquiry command.");
-				return;
-			case DeviceInquiryCommand::ScsiInquiry:
-				cout << JSONScsiInquiry(file.get()) << '\n';
-				break;
-			case DeviceInquiryCommand::AtaIdentifyDevice:
-				cout << JSONAtaIdentifyDevice(file.get(), false) << '\n';
-				break;
-			case DeviceInquiryCommand::AtaIdentifyPacketDevice:
-				cout << JSONAtaIdentifyDevice(file.get(), true) << '\n';
-				break;
-		}
-		cout.flush();
-		*/
-	} else {
-#ifdef _WIN32
-		// Windows: Use gsvt_fwrite() for faster console output where applicable.
-		// FIXME: gsvt_cout wrapper.
-		// FIXME: gsvt_fwrite_raw() function to skip ANSI escape parsing.
-		ostringstream oss;
-		switch (cmd) {
-			default:
-				assert(!"Invalid device inquiry command.");
-				return;
-			case DeviceInquiryCommand::ScsiInquiry:
-				oss << ScsiInquiry(file.get()) << '\n';
-				break;
-			case DeviceInquiryCommand::AtaIdentifyDevice:
-				oss << AtaIdentifyDevice(file.get(), false) << '\n';
-				break;
-			case DeviceInquiryCommand::AtaIdentifyPacketDevice:
-				oss << AtaIdentifyDevice(file.get(), true) << '\n';
-				break;
-		}
-		oss.flush();
-		const string str = oss.str();
-		// TODO: Error checking.
-		Gsvt::StdOut.fputs(str);
-#else /* !_WIN32 */
-		// Not Windows: Write directly to cout.
-		// FIXME: gsvt_cout wrapper.
-		switch (cmd) {
-			default:
-				assert(!"Invalid device inquiry command.");
-				return;
-			case DeviceInquiryCommand::ScsiInquiry:
-				cout << ScsiInquiry(file.get()) << '\n';
-				break;
-			case DeviceInquiryCommand::AtaIdentifyDevice:
-				cout << AtaIdentifyDevice(file.get(), false) << '\n';
-				break;
-			case DeviceInquiryCommand::AtaIdentifyPacketDevice:
-				cout << AtaIdentifyDevice(file.get(), true) << '\n';
-				break;
-		}
-		cout.flush();
-#endif /* _WIN32 */
 	}
+
+#ifdef _WIN32
+	// Windows: Use gsvt_fwrite() for faster console output where applicable.
+	// FIXME: gsvt_cout wrapper.
+	// FIXME: gsvt_fwrite_raw() function to skip ANSI escape parsing.
+	ostringstream oss;
+	DoDeviceInquiry_int(oss, file.get(), json, cmd);
+	const string str = oss.str();
+	// TODO: Error checking.
+	Gsvt::StdOut.fputs(str);
+#else /* !_WIN32 */
+	// Not Windows: Write directly to cout.
+	// FIXME: gsvt_cout wrapper.
+	DoDeviceInquiry_int(cout, file.get(), json, cmd);
+#endif /* _WIN32 */
 }
 #endif /* RP_OS_SCSI_SUPPORTED */
 
