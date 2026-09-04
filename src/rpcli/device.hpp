@@ -28,6 +28,14 @@ public:
 	friend std::ostream &operator<<(std::ostream &os, const ScsiInquiry& si);
 };
 
+class JSONScsiInquiry
+{
+	LibRpFile::RpFile *const file;
+public:
+	explicit JSONScsiInquiry(LibRpFile::RpFile *file);
+	friend std::ostream &operator<<(std::ostream &os, const JSONScsiInquiry& si);
+};
+
 class AtaIdentifyDevice
 {
 	LibRpFile::RpFile *const file;
