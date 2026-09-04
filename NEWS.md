@@ -59,6 +59,7 @@
   * GTK rom-properties.thumbnailer: Add a hack to make KDE show an empty
     name for the .thumbnailer file.
     * TODO: Need to request a way for KDE to hide the .thumbnailer file.
+  * rpcli: Added support for JSON output for the device inquiry commands.
 
 * Bug fixes:
   * Dreamcast and SegaSaturn incorrectly added DiscNumber as integer.
@@ -88,6 +89,8 @@
     * An upstream fix to handle fallbacks in thumbnail.so will be needed.
     * Fixes #507: some sort of conflict with folder thumbnails after reinstalling/upgrading kio-extras
       * Reported by @LuanVSO.
+  * Windows: Fix device inquiries for optical drives that don't currently
+    have a disc inserted.
 
 ## v2.8 (released 2026/06/20)
 
