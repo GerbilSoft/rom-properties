@@ -141,11 +141,10 @@ int RpFilePrivate::readOneLBA(uint32_t lba)
 size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 {
 	assert(devInfo != nullptr);
-	assert(devInfo->device_size > 0);
-	assert(devInfo->sector_size >= 512);
-	if (!devInfo) {
-		// Not a block device...
-		// NOTE: Not checking device_size or sector_size anymore.
+	//assert(devInfo->device_size > 0);	// may be 0 if no medium is present
+	//assert(devInfo->sector_size >= 512);	// may be 0 if no medium is present
+	if (!devInfo || devInfo->device_size == 0 || devInfo->sector_size == 0) {
+		// Not a block device, or no medium is inserted...
 		return 0;
 	}
 
