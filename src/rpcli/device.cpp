@@ -119,7 +119,7 @@ static constexpr char scsi_version_tbl[8][8] = {
 	"SPC-5",	// 0x07
 };
 
-}
+} // namespace Private
 
 /** ScsiInquiry **/
 
