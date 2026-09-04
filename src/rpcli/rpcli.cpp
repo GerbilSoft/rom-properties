@@ -508,7 +508,7 @@ static void DoScsiInquiry(const TCHAR *filename, bool json)
 		// FIXME: gsvt_fwrite_raw() function to skip ANSI escape parsing.
 		ostringstream oss;
 		oss << ScsiInquiry(file.get()) << '\n';
-		cout.flush();
+		oss.flush();
 		const string str = oss.str();
 		// TODO: Error checking.
 		Gsvt::StdOut.fputs(str);
@@ -589,7 +589,7 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 		// FIXME: gsvt_fwrite_raw() function to skip ANSI escape parsing.
 		ostringstream oss;
 		oss << AtaIdentifyDevice(file.get(), packet) << '\n';
-		cout.flush();
+		oss.flush();
 		const string str = oss.str();
 		// TODO: Error checking.
 		Gsvt::StdOut.fputs(str);
