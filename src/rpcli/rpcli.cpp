@@ -78,7 +78,7 @@ using std::array;
 using std::cout;
 using std::cerr;
 using std::locale;
-using std::ofstream;
+using std::ostream;
 using std::ostringstream;
 using std::shared_ptr;
 using std::string;
@@ -441,93 +441,66 @@ static void PrintPathnames(void)
 }
 
 #ifdef RP_OS_SCSI_SUPPORTED
+
+
+enum class DeviceInquiryCommand {
+	ScsiInquiry,
+	AtaIdentifyDevice,
+	AtaIdentifyPacketDevice,
+};
+
 /**
- * Run a SCSI INQUIRY command on a device.
- * @param filename Device filename
+ * Run a SCSI INQUIRY, ATA IDENTIFY DEVICE, or ATA IDENTIFY PACKET DEVICE command on a device.
+ * Internal function; called by DoDeviceInquiry().
+ * @param os ostream&
+ * @param file Device file
  * @param json Is program running in json mode?
+ * @param cmd Command to run
  */
-static void DoScsiInquiry(const TCHAR *filename, bool json)
+static void DoDeviceInquiry_int(ostream &os, RpFile *file, bool json, DeviceInquiryCommand cmd)
 {
-	// FIXME: Make T2U8c() unnecessary here.
-	Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_CYAN, true);
-	Gsvt::StdErr.fputs("== ");
-	Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8c(filename)));
-	Gsvt::StdErr.textColorReset();
-	Gsvt::StdErr.newline();
-	Gsvt::StdErr.fflush();
-
-	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
-	if (!file->isOpen()) {
-		// TODO: Return an error code?
-		Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_RED, true);
-		Gsvt::StdErr.fputs("-- ");
-		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Couldn't open file: {:s}")), strerror(file->lastError())));
-		Gsvt::StdErr.textColorReset();
-		Gsvt::StdErr.newline();
-		Gsvt::StdErr.fflush();
-
-		if (json) {
-			Gsvt::StdOut.fputs(fmt::format(FSTR("{{\"error\":\"couldn't open file\",\"code\":{:d}}}\n"), file->lastError()));
-			Gsvt::StdOut.fflush();
-		}
-		return;
-	}
-
-	// TODO: Check for unsupported devices? (Only CD-ROM is supported.)
-	if (!file->isDevice()) {
-		// TODO: Return an error code?
-		Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_RED, true);
-		Gsvt::StdErr.fputs("-- ");
-		Gsvt::StdErr.fputs(C_("rpcli", "Not a device file"));
-		Gsvt::StdErr.textColorReset();
-		Gsvt::StdErr.newline();
-		Gsvt::StdErr.fflush();
-
-		if (json) {
-			Gsvt::StdOut.fputs("{\"error\":\"not a device file\"}\n");
-			Gsvt::StdOut.fflush();
-		}
-		return;
-	}
-
 	if (json) {
-		Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_CYAN, true);
-		Gsvt::StdErr.fputs("-- ");
-		Gsvt::StdErr.fputs(C_("rpcli", "Outputting JSON data"));
-		Gsvt::StdErr.textColorReset();
-		Gsvt::StdErr.newline();
-		Gsvt::StdErr.fflush();
-
-		// TODO: JSONScsiInquiry
-		//cout << JSONScsiInquiry(file.get()) << '\n';
-		//cout.flush();
+		switch (cmd) {
+			default:
+				assert(!"Invalid device inquiry command.");
+				return;
+			case DeviceInquiryCommand::ScsiInquiry:
+				os << JSONScsiInquiry(file) << '\n';
+				break;
+			case DeviceInquiryCommand::AtaIdentifyDevice:
+				os << JSONAtaIdentifyDevice(file, false) << '\n';
+				break;
+			case DeviceInquiryCommand::AtaIdentifyPacketDevice:
+				os << JSONAtaIdentifyDevice(file, true) << '\n';
+				break;
+		}
 	} else {
-#ifdef _WIN32
-		// Windows: Use gsvt_fwrite() for faster console output where applicable.
-		// FIXME: gsvt_cout wrapper.
-		// FIXME: gsvt_fwrite_raw() function to skip ANSI escape parsing.
-		ostringstream oss;
-		oss << ScsiInquiry(file.get()) << '\n';
-		cout.flush();
-		const string str = oss.str();
-		// TODO: Error checking.
-		Gsvt::StdOut.fputs(str);
-#else /* !_WIN32 */
-		// Not Windows: Write directly to cout.
-		// FIXME: gsvt_cout wrapper.
-		cout << ScsiInquiry(file.get()) << '\n';
-		cout.flush();
-#endif /* _WIN32 */
+		switch (cmd) {
+			default:
+				assert(!"Invalid device inquiry command.");
+				return;
+			case DeviceInquiryCommand::ScsiInquiry:
+				os << ScsiInquiry(file) << '\n';
+				break;
+			case DeviceInquiryCommand::AtaIdentifyDevice:
+				os << AtaIdentifyDevice(file, false) << '\n';
+				break;
+			case DeviceInquiryCommand::AtaIdentifyPacketDevice:
+				os << AtaIdentifyDevice(file, true) << '\n';
+				break;
+		}
 	}
+
+	os.flush();
 }
 
 /**
- * Run an ATA IDENTIFY DEVICE command on a device.
+ * Run a SCSI INQUIRY, ATA IDENTIFY DEVICE, or ATA IDENTIFY PACKET DEVICE command on a device.
  * @param filename Device filename
  * @param json Is program running in json mode?
- * @param packet If true, use ATA IDENTIFY PACKET.
+ * @param cmd Command to run
  */
-static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
+static void DoDeviceInquiry(const TCHAR *filename, bool json, DeviceInquiryCommand cmd)
 {
 	// FIXME: Make T2U8c() unnecessary here.
 	Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_CYAN, true);
@@ -578,28 +551,22 @@ static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 		Gsvt::StdErr.textColorReset();
 		Gsvt::StdErr.newline();
 		Gsvt::StdErr.fflush();
-
-		// TODO: JSONAtaIdentifyDevice
-		//cout << JSONAtaIdentifyDevice(file.get(), packet) << '\n';
-		//cout.flush();
-	} else {
-#ifdef _WIN32
-		// Windows: Use gsvt_fwrite() for faster console output where applicable.
-		// FIXME: gsvt_cout wrapper.
-		// FIXME: gsvt_fwrite_raw() function to skip ANSI escape parsing.
-		ostringstream oss;
-		oss << AtaIdentifyDevice(file.get(), packet) << '\n';
-		cout.flush();
-		const string str = oss.str();
-		// TODO: Error checking.
-		Gsvt::StdOut.fputs(str);
-#else /* !_WIN32 */
-		// Not Windows: Write directly to cout.
-		// FIXME: gsvt_cout wrapper.
-		cout << AtaIdentifyDevice(file.get(), packet) << '\n';
-		cout.flush();
-#endif /* _WIN32 */
 	}
+
+#ifdef _WIN32
+	// Windows: Use gsvt_fwrite() for faster console output where applicable.
+	// FIXME: gsvt_cout wrapper.
+	// FIXME: gsvt_fwrite_raw() function to skip ANSI escape parsing.
+	ostringstream oss;
+	DoDeviceInquiry_int(oss, file.get(), json, cmd);
+	const string str = oss.str();
+	// TODO: Error checking.
+	Gsvt::StdOut.fputs(str);
+#else /* !_WIN32 */
+	// Not Windows: Write directly to cout.
+	// FIXME: gsvt_cout wrapper.
+	DoDeviceInquiry_int(cout, file.get(), json, cmd);
+#endif /* _WIN32 */
 }
 #endif /* RP_OS_SCSI_SUPPORTED */
 
@@ -1062,13 +1029,13 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 #ifdef RP_OS_SCSI_SUPPORTED
 			if (inq_scsi) {
 				// SCSI INQUIRY command.
-				DoScsiInquiry(argv[i], json);
+				DoDeviceInquiry(argv[i], json, DeviceInquiryCommand::ScsiInquiry);
 			} else if (inq_ata) {
 				// ATA IDENTIFY DEVICE command.
-				DoAtaIdentifyDevice(argv[i], json, false);
+				DoDeviceInquiry(argv[i], json, DeviceInquiryCommand::AtaIdentifyDevice);
 			} else if (inq_ata_packet) {
 				// ATA IDENTIFY PACKET DEVICE command.
-				DoAtaIdentifyDevice(argv[i], json, true);
+				DoDeviceInquiry(argv[i], json, DeviceInquiryCommand::AtaIdentifyPacketDevice);
 			} else
 #endif /* RP_OS_SCSI_SUPPORTED */
 			{

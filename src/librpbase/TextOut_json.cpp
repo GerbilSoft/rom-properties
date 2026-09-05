@@ -97,7 +97,9 @@ private:
 				} else {
 					// Not a timestamp column. Use the string as-is.
 					// TODO: Some way to indicate a numeric data column?
-					row_array.PushBack(StringRef(jt), allocator);
+					Value strval;
+					strval.SetString(jt, allocator);
+					row_array.PushBack(strval, allocator);
 				}
 
 				is_timestamp >>= 1;
@@ -125,35 +127,35 @@ public:
 					break;
 				default: {
 					assert(!"Unknown RomFieldType");
-					field_obj.AddMember("type", "NYI", allocator);
+					field_obj.AddMember(StringRef("type"), StringRef("NYI"), allocator);
 
 					Value desc_obj(kObjectType);	// desc
-					desc_obj.AddMember("name", StringRef(romField.name), allocator);
-					field_obj.AddMember("desc", desc_obj, allocator);
+					desc_obj.AddMember(StringRef("name"), StringRef(romField.name), allocator);
+					field_obj.AddMember(StringRef("desc"), desc_obj, allocator);
 					break;
 				}
 
 				case RomFields::RomFieldType::RFT_STRING: {
-					field_obj.AddMember("type", "STRING", allocator);
+					field_obj.AddMember(StringRef("type"), StringRef("STRING"), allocator);
 
 					Value desc_obj(kObjectType);	// desc
-					desc_obj.AddMember("name", StringRef(romField.name), allocator);
-					desc_obj.AddMember("format", romField.flags, allocator);
-					field_obj.AddMember("desc", desc_obj, allocator);
+					desc_obj.AddMember(StringRef("name"), StringRef(romField.name), allocator);
+					desc_obj.AddMember(StringRef("format"), romField.flags, allocator);
+					field_obj.AddMember(StringRef("desc"), desc_obj, allocator);
 
-					field_obj.AddMember("data",
+					field_obj.AddMember(StringRef("data"),
 						romField.data.str ? StringRef(romField.data.str) : StringRef(""),
 						allocator);
 					break;
 				}
 
 				case RomFields::RomFieldType::RFT_BITFIELD: {
-					field_obj.AddMember("type", "BITFIELD", allocator);
+					field_obj.AddMember(StringRef("type"), StringRef("BITFIELD"), allocator);
 					const auto &bitfieldDesc = romField.desc.bitfield;
 
 					Value desc_obj(kObjectType);	// desc
-					desc_obj.AddMember("name", StringRef(romField.name), allocator);
-					desc_obj.AddMember("elementsPerRow", bitfieldDesc.elemsPerRow, allocator);
+					desc_obj.AddMember(StringRef("name"), StringRef(romField.name), allocator);
+					desc_obj.AddMember(StringRef("elementsPerRow"), bitfieldDesc.elemsPerRow, allocator);
 
 					assert(bitfieldDesc.names != nullptr);
 					if (bitfieldDesc.names) {
@@ -170,48 +172,48 @@ public:
 							names_array.PushBack(StringRef(name), allocator);
 						}
 						if (!names_array.Empty()) {
-							desc_obj.AddMember("names", names_array, allocator);
+							desc_obj.AddMember(StringRef("names"), names_array, allocator);
 						} else {
-							desc_obj.AddMember("names", "ERROR", allocator);
+							desc_obj.AddMember(StringRef("names"), StringRef("ERROR"), allocator);
 						}
 					} else {
-						desc_obj.AddMember("names", "ERROR", allocator);
+						desc_obj.AddMember(StringRef("names"), StringRef("ERROR"), allocator);
 					}
 
-					field_obj.AddMember("desc", desc_obj, allocator);
-					field_obj.AddMember("data", romField.data.bitfield, allocator);
+					field_obj.AddMember(StringRef("desc"), desc_obj, allocator);
+					field_obj.AddMember(StringRef("data"), romField.data.bitfield, allocator);
 					break;
 				}
 
 				case RomFields::RomFieldType::RFT_LISTDATA: {
-					field_obj.AddMember("type", "LISTDATA", allocator);
+					field_obj.AddMember(StringRef("type"), StringRef("LISTDATA"), allocator);
 					const auto &listDataDesc = romField.desc.list_data;
 
 					Value desc_obj(kObjectType);	// desc
-					desc_obj.AddMember("name", StringRef(romField.name), allocator);
+					desc_obj.AddMember(StringRef("name"), StringRef(romField.name), allocator);
 
 					Value names_array(kArrayType);	// names
 					if (listDataDesc.names) {
 						if (romField.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
 							// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
-							names_array.PushBack("checked", allocator);
+							names_array.PushBack(StringRef("checked"), allocator);
 						}
 						for (const auto &name : *(listDataDesc.names)) {
 							names_array.PushBack(StringRef(name), allocator);
 						}
 					}
-					desc_obj.AddMember("names", names_array, allocator);
-					field_obj.AddMember("desc", desc_obj, allocator);
+					desc_obj.AddMember(StringRef("names"), names_array, allocator);
+					field_obj.AddMember(StringRef("desc"), desc_obj, allocator);
 
 					if (!(romField.flags & RomFields::RFT_LISTDATA_MULTI)) {
 						// Single-language ListData.
 						Value data_array = listDataToValue(romField,
 							romField.data.list_data.data.single, allocator);
 						if (!data_array.Empty()) {
-							field_obj.AddMember("data", data_array, allocator);
+							field_obj.AddMember(StringRef("data"), data_array, allocator);
 						} else {
 							// No data...
-							field_obj.AddMember("data", "ERROR", allocator);
+							field_obj.AddMember(StringRef("data"), StringRef("ERROR"), allocator);
 							break;
 						}
 					} else {
@@ -221,7 +223,7 @@ public:
 						assert(list_data != nullptr);
 						if (!list_data) {
 							// No data...
-							field_obj.AddMember("data", "ERROR", allocator);
+							field_obj.AddMember(StringRef("data"), StringRef("ERROR"), allocator);
 							break;
 						}
 
@@ -237,39 +239,39 @@ public:
 								data_obj.AddMember(s_lc_name, lc_array, allocator);
 							} else {
 								// No data...
-								data_obj.AddMember(s_lc_name, "ERROR", allocator);
+								data_obj.AddMember(s_lc_name, StringRef("ERROR"), allocator);
 								continue;
 							}
 						}
 
-						field_obj.AddMember("data", data_obj, allocator);
+						field_obj.AddMember(StringRef("data"), data_obj, allocator);
 					}
 					break;
 				}
 
 				case RomFields::RomFieldType::RFT_DATETIME: {
-					field_obj.AddMember("type", "DATETIME", allocator);
+					field_obj.AddMember(StringRef("type"), StringRef("DATETIME"), allocator);
 
 					Value desc_obj(kObjectType);	// desc
-					desc_obj.AddMember("name", StringRef(romField.name), allocator);
-					desc_obj.AddMember("flags", romField.flags, allocator);
-					field_obj.AddMember("desc", desc_obj, allocator);
+					desc_obj.AddMember(StringRef("name"), StringRef(romField.name), allocator);
+					desc_obj.AddMember(StringRef("flags"), romField.flags, allocator);
+					field_obj.AddMember(StringRef("desc"), desc_obj, allocator);
 
-					field_obj.AddMember("data", static_cast<int64_t>(romField.data.date_time), allocator);
+					field_obj.AddMember(StringRef("data"), static_cast<int64_t>(romField.data.date_time), allocator);
 					break;
 				}
 
 				case RomFields::RomFieldType::RFT_AGE_RATINGS: {
-					field_obj.AddMember("type", "AGE_RATINGS", allocator);
+					field_obj.AddMember(StringRef("type"), StringRef("AGE_RATINGS"), allocator);
 
 					Value desc_obj(kObjectType);	// desc
-					desc_obj.AddMember("name", StringRef(romField.name), allocator);
-					field_obj.AddMember("desc", desc_obj, allocator);
+					desc_obj.AddMember(StringRef("name"), StringRef(romField.name), allocator);
+					field_obj.AddMember(StringRef("desc"), desc_obj, allocator);
 
 					const RomFields::age_ratings_t *age_ratings = romField.data.age_ratings;
 					assert(age_ratings != nullptr);
 					if (!age_ratings) {
-						field_obj.AddMember("data", "ERROR", allocator);
+						field_obj.AddMember(StringRef("data"), StringRef("ERROR"), allocator);
 						break;
 					}
 
@@ -282,49 +284,49 @@ public:
 						Value rating_obj(kObjectType);
 						const char *const abbrev = RomFields::ageRatingAbbrev(static_cast<RomFields::AgeRatingsCountry>(j));
 						if (abbrev) {
-							rating_obj.AddMember("name", StringRef(abbrev), allocator);
+							rating_obj.AddMember(StringRef("name"), StringRef(abbrev), allocator);
 						} else {
 							// Invalid age rating.
 							// Use the numeric index.
-							rating_obj.AddMember("name", static_cast<unsigned int>(j), allocator);
+							rating_obj.AddMember(StringRef("name"), static_cast<unsigned int>(j), allocator);
 						}
 
 						const string s_age_rating = RomFields::ageRatingDecode(static_cast<RomFields::AgeRatingsCountry>(j), rating);
 						Value rating_val;
 						rating_val.SetString(s_age_rating, allocator);
-						rating_obj.AddMember("rating", rating_val, allocator);
+						rating_obj.AddMember(StringRef("rating"), rating_val, allocator);
 
 						data_array.PushBack(rating_obj, allocator);
 					}
 
-					field_obj.AddMember("data", data_array, allocator);
+					field_obj.AddMember(StringRef("data"), data_array, allocator);
 					break;
 				}
 
 				case RomFields::RomFieldType::RFT_DIMENSIONS: {
-					field_obj.AddMember("type", "DIMENSIONS", allocator);
+					field_obj.AddMember(StringRef("type"), StringRef("DIMENSIONS"), allocator);
 
 					const int *const dimensions = romField.data.dimensions;
 					Value data_obj(kObjectType);	// data
-					data_obj.AddMember("w", dimensions[0], allocator);
+					data_obj.AddMember(StringRef("w"), dimensions[0], allocator);
 					if (dimensions[1] > 0) {
-						data_obj.AddMember("h", dimensions[1], allocator);
+						data_obj.AddMember(StringRef("h"), dimensions[1], allocator);
 						if (dimensions[2] > 0) {
-							data_obj.AddMember("d", dimensions[2], allocator);
+							data_obj.AddMember(StringRef("d"), dimensions[2], allocator);
 						}
 					}
-					field_obj.AddMember("data", data_obj, allocator);
+					field_obj.AddMember(StringRef("data"), data_obj, allocator);
 					break;
 				}
 
 				case RomFields::RomFieldType::RFT_STRING_MULTI: {
 					// TODO: Act like RFT_STRING if there's only one language?
-					field_obj.AddMember("type", "STRING_MULTI", allocator);
+					field_obj.AddMember(StringRef("type"), "STRING_MULTI", allocator);
 
 					Value desc_obj(kObjectType);	// desc
-					desc_obj.AddMember("name", StringRef(romField.name), allocator);
-					desc_obj.AddMember("format", romField.flags, allocator);
-					field_obj.AddMember("desc", desc_obj, allocator);
+					desc_obj.AddMember(StringRef("name"), StringRef(romField.name), allocator);
+					desc_obj.AddMember(StringRef("format"), romField.flags, allocator);
+					field_obj.AddMember(StringRef("desc"), desc_obj, allocator);
 
 					Value data_obj(kObjectType);	// data
 					const auto *const pStr_multi = romField.data.str_multi;
@@ -334,7 +336,7 @@ public:
 						data_obj.AddMember(s_lc_name, StringRef(iter->second), allocator);
 					}
 
-					field_obj.AddMember("data", data_obj, allocator);
+					field_obj.AddMember(StringRef("data"), data_obj, allocator);
 					break;
 				}
 			}
@@ -362,8 +364,8 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	Document document;
 	document.SetObject();	// document should be an object, not an array
 	Document::AllocatorType& allocator = document.GetAllocator();
-	document.AddMember("system", StringRef(systemName ? systemName : "unknown"), allocator);
-	document.AddMember("filetype", StringRef(fileType ? fileType : "unknown"), allocator);
+	document.AddMember(StringRef("system"), StringRef(systemName ? systemName : "unknown"), allocator);
+	document.AddMember(StringRef("filetype"), StringRef(fileType ? fileType : "unknown"), allocator);
 
 	// Fields
 	const RomFields *const fields = romData->fields();
@@ -372,7 +374,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 		Value fields_array(kArrayType);	// fields
 		JSONFieldsOutput(*fields).writeToJSON(fields_array, allocator);
 		if (!fields_array.Empty()) {
-			document.AddMember("fields", fields_array, allocator);
+			document.AddMember(StringRef("fields"), fields_array, allocator);
 		}
 	}
 
@@ -391,42 +393,42 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 					continue;
 
 				Value imgint_obj(kObjectType);
-				imgint_obj.AddMember("type", StringRef(RomData::getImageTypeName(static_cast<RomData::ImageType>(i))), allocator);
-				imgint_obj.AddMember("format", StringRef(rp_image::getFormatName(image->format())), allocator);
+				imgint_obj.AddMember(StringRef("type"), StringRef(RomData::getImageTypeName(static_cast<RomData::ImageType>(i))), allocator);
+				imgint_obj.AddMember(StringRef("format"), StringRef(rp_image::getFormatName(image->format())), allocator);
 
 				Value size_array(kArrayType);	// size
 				size_array.PushBack(image->width(), allocator);
 				size_array.PushBack(image->height(), allocator);
-				imgint_obj.AddMember("size", size_array, allocator);
+				imgint_obj.AddMember(StringRef("size"), size_array, allocator);
 
 				const uint32_t ppf = romData->imgpf(static_cast<RomData::ImageType>(i));
 				if (ppf) {
-					imgint_obj.AddMember("postprocessing", ppf, allocator);
+					imgint_obj.AddMember(StringRef("postprocessing"), ppf, allocator);
 				}
 
 				if (ppf & RomData::IMGPF_ICON_ANIMATED) {
 					auto animdata = romData->iconAnimData();
 					if (animdata) {
-						imgint_obj.AddMember("frames", animdata->count, allocator);
+						imgint_obj.AddMember(StringRef("frames"), animdata->count, allocator);
 
 						Value animseq(kArrayType);	// sequence
 						for (int j = 0; j < animdata->seq_count; j++) {
 							animseq.PushBack(static_cast<unsigned int>(animdata->seq_index[j]), allocator);
 						}
-						imgint_obj.AddMember("sequence", animseq, allocator);
+						imgint_obj.AddMember(StringRef("sequence"), animseq, allocator);
 
 						Value animdelay(kArrayType);	// delay
 						for (int j = 0; j < animdata->seq_count; j++) {
 							animdelay.PushBack(animdata->delays[j].ms, allocator);
 						}
-						imgint_obj.AddMember("delay", animdelay, allocator);
+						imgint_obj.AddMember(StringRef("delay"), animdelay, allocator);
 					}
 				}
 
 				imgint_array.PushBack(imgint_obj, allocator);
 			}
 			if (!imgint_array.Empty()) {
-				document.AddMember("imgint", imgint_array, allocator);
+				document.AddMember(StringRef("imgint"), imgint_array, allocator);
 			}
 		}
 
@@ -449,24 +451,24 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 				continue;
 
 			Value imgext_obj(kObjectType);
-			imgext_obj.AddMember("type", StringRef(RomData::getImageTypeName(static_cast<RomData::ImageType>(i))), allocator);
+			imgext_obj.AddMember(StringRef("type"), StringRef(RomData::getImageTypeName(static_cast<RomData::ImageType>(i))), allocator);
 
 			Value exturls_obj(kObjectType);
 			for (const auto &extURL : extURLs) {
 				Value url_val;
 				const string url_str = urlPartialUnescape(extURL.url);
 				url_val.SetString(url_str, allocator);
-				exturls_obj.AddMember("url", url_val, allocator);
+				exturls_obj.AddMember(StringRef("url"), url_val, allocator);
 
 				Value cache_key_val;
 				cache_key_val.SetString(extURL.cache_key, allocator);
-				exturls_obj.AddMember("cache_key", cache_key_val, allocator);
+				exturls_obj.AddMember(StringRef("cache_key"), cache_key_val, allocator);
 			}
-			imgext_obj.AddMember("exturls", exturls_obj, allocator);
+			imgext_obj.AddMember(StringRef("exturls"), exturls_obj, allocator);
 			imgext_array.PushBack(imgext_obj, allocator);
 		}
 		if (!imgext_array.Empty()) {
-			document.AddMember("imgext", imgext_array, allocator);
+			document.AddMember(StringRef("imgext"), imgext_array, allocator);
 		}
 	}
 

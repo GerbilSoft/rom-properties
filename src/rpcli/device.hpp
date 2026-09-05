@@ -28,6 +28,14 @@ public:
 	friend std::ostream &operator<<(std::ostream &os, const ScsiInquiry& si);
 };
 
+class JSONScsiInquiry
+{
+	LibRpFile::RpFile *const file;
+public:
+	explicit JSONScsiInquiry(LibRpFile::RpFile *file);
+	friend std::ostream &operator<<(std::ostream &os, const JSONScsiInquiry& si);
+};
+
 class AtaIdentifyDevice
 {
 	LibRpFile::RpFile *const file;
@@ -35,6 +43,15 @@ class AtaIdentifyDevice
 public:
 	explicit AtaIdentifyDevice(LibRpFile::RpFile *file, bool packet = false);
 	friend std::ostream &operator<<(std::ostream &os, const AtaIdentifyDevice& si);
+};
+
+class JSONAtaIdentifyDevice
+{
+	LibRpFile::RpFile *const file;
+	const bool packet;
+public:
+	explicit JSONAtaIdentifyDevice(LibRpFile::RpFile *file, bool packet = false);
+	friend std::ostream &operator<<(std::ostream &os, const JSONAtaIdentifyDevice& si);
 };
 
 #endif /* RP_OS_SCSI_SUPPORTED */

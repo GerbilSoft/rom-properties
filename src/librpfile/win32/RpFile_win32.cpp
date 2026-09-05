@@ -268,14 +268,21 @@ int RpFilePrivate::reOpenFile(void)
 		// Get the disk space.
 		int ret = q->rereadDeviceSizeOS();
 		if (ret != 0) {
-			// An error occurred...
-			q->m_lastError = w32err_to_posix(GetLastError());
-			if (q->m_lastError == 0) {
-				q->m_lastError = EIO;
+			// An error occurred.
+			DWORD dwErr = GetLastError();
+			if (dwErr == ERROR_NOT_READY) {
+				// No media is present.
+				// We'll still keep the file open for e.g. SCSI INQUIRY commands.
+			} else {
+				// Some other error.
+				q->m_lastError = ret;
+				if (q->m_lastError == 0) {
+					q->m_lastError = EIO;
+				}
+				CloseHandle(file);
+				file = nullptr;
+				return -q->m_lastError;
 			}
-			CloseHandle(file);
-			file = nullptr;
-			return -q->m_lastError;
 		}
 	}
 
