@@ -3,14 +3,14 @@
  * libc.h: Reimplementations of libc functions that aren't present on      *
  * this system.                                                            *
  *                                                                         *
- * Copyright (c) 2009-2024 by David Korth.                                 *
+ * Copyright (c) 2009-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
 #include "config.librptext.h"
-#include "common.h"
+#include "compiler-attrs.h"	// for ATTR_*
 
 // C includes
 #include <stddef.h>

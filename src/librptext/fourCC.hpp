@@ -8,14 +8,14 @@
 
 #pragma once
 
-#include "common.h"	// for ATTR_PRINTF()
-
 // C includes (C++ namespace)
 #include <cstddef>	/* size_t */
 #include <cstdint>
 
 // C++ includes
 #include <string>
+
+#include "compiler-attrs.h"	// for ATTR_PRINTF()
 
 namespace LibRpText {
 

@@ -11,6 +11,8 @@
 // Google Test
 #include "gtest_init.hpp"
 
+#include "common.h"	// for ARRAY_SIZE()
+
 // TextFuncs
 #include "../conversion.hpp"
 #include "../formatting.hpp"

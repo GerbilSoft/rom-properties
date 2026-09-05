@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * Ext2AttrData.h: Ext2 file system attribute data                         *
  *                                                                         *
- * Copyright (c) 2016-2023 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -63,7 +63,7 @@ typedef struct _Ext2AttrCheckboxInfo_t {
  * using the "Ext2AttrView" context.
  *
  * @param id Ext2AttrCheckboxID
- * @return Ext2AttrCheckboxInfo_t struct, or nullptr if the ID is invalid.
+ * @return Ext2AttrCheckboxInfo_t struct, or NULL if the ID is invalid.
  */
 RP_LIBROMDATA_PUBLIC
 const Ext2AttrCheckboxInfo_t *ext2AttrCheckboxInfo(Ext2AttrCheckboxID id);

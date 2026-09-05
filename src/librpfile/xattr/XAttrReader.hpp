@@ -18,7 +18,6 @@
 // C++ includes
 #include <map>
 #include <string>
-#include <utility>
 
 namespace LibRpFile {
 

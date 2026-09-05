@@ -17,6 +17,7 @@
 #include "libi18n/i18n.hpp"
 #include "librpbase/RomFields.hpp"
 #include "librpbase/img/RpPng.hpp"
+#include "librpbyteswap/bitstuff.h"
 #include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;

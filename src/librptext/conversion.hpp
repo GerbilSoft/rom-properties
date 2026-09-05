@@ -14,8 +14,8 @@
 // Conversions to UTF-16 always use host-endian.
 #include "librpbyteswap/byteorder.h"
 
-#include "common.h"
-#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
+#include "compiler-attrs.h"	// for ATTR_*
+#include "dll-macros.h"		// for RP_LIBROMDATA_PUBLIC
 
 // C includes (C++ namespace)
 #include <cstddef>	/* size_t */

@@ -3,7 +3,7 @@
  * libc.c: Reimplementations of libc functions that aren't present on      *
  * this system.                                                            *
  *                                                                         *
- * Copyright (c) 2009-2024 by David Korth.                                 *
+ * Copyright (c) 2009-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,8 +24,9 @@
 size_t rp_strnlen(const char *str, size_t maxlen)
 {
 	const char *ptr = memchr(str, 0, maxlen);
-	if (!ptr)
+	if (!ptr) {
 		return maxlen;
+	}
 	return ptr - str;
 }
 #endif /* HAVE_STRNLEN */
@@ -50,23 +51,27 @@ void *rp_memmem(const void *haystack, size_t haystacklen,
 	const char *cs = (const char *)needle;
 
 	/* we need something to compare */
-	if (haystacklen == 0 || needlelen == 0)
+	if (haystacklen == 0 || needlelen == 0) {
 		return NULL;
+	}
 
 	/* "s" must be smaller or equal to "l" */
-	if (haystacklen < needlelen)
+	if (haystacklen < needlelen) {
 		return NULL;
+	}
 
 	/* special case where s_len == 1 */
-	if (needlelen == 1)
+	if (needlelen == 1) {
 		return (void*)memchr(haystack, (int)*cs, needlelen);
+	}
 
 	/* the last position where its possible to find "s" in "l" */
 	last = (const char *)cl + haystacklen - needlelen;
 
 	for (cur = (const char *)cl; cur <= last; cur++) {
-		if (cur[0] == cs[0] && memcmp(cur, cs, needlelen) == 0)
+		if (cur[0] == cs[0] && memcmp(cur, cs, needlelen) == 0) {
 			return (void*)cur;
+		}
 	}
 
 	return NULL;
@@ -92,13 +97,15 @@ size_t rp_strlcat(char *dst, const char *src, size_t size)
 	size_t dlen;
 
 	/* Find the end of dst and adjust bytes left but don't go past end */
-	while (n-- != 0 && *d != '\0')
+	while (n-- != 0 && *d != '\0') {
 		d++;
+	}
 	dlen = d - dst;
 	n = size - dlen;
 
-	if (n == 0)
+	if (n == 0) {
 		return(dlen + strlen(s));
+	}
 	while (*s != '\0') {
 		if (n != 1) {
 			*d++ = *s;

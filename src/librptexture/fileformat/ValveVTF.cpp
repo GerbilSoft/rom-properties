@@ -19,6 +19,7 @@
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
 #include "librpbase/RomFields.hpp"
+#include "librpbyteswap/bitstuff.h"
 using namespace LibRpFile;
 using LibRpBase::RomFields;
 

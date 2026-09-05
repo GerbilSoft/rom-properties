@@ -13,9 +13,9 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <signal.h>
-#include <string.h>
 
 // for __GLIBC__
 #ifdef HAVE_FEATURES_H

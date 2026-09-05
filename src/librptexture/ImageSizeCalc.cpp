@@ -9,6 +9,7 @@
 #include "ImageSizeCalc.hpp"
 
 #include "alignment_macros.h"
+#include "librpbyteswap/bitstuff.h"
 
 namespace LibRpTexture { namespace ImageSizeCalc {
 

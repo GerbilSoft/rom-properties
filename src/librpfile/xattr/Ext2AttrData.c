@@ -13,6 +13,7 @@
 
 // C includes
 #include <assert.h>
+#include <stddef.h>	// for NULL
 
 static const Ext2AttrCheckboxInfo_t ext2AttrCheckboxInfo_data[EXT2_ATTR_CHECKBOX_MAX] = {
 	{"chkAppendOnly", 'a', NOP_C_("Ext2AttrView", "append only"),
@@ -90,7 +91,7 @@ static const Ext2AttrCheckboxInfo_t ext2AttrCheckboxInfo_data[EXT2_ATTR_CHECKBOX
  * using the "Ext2AttrView" context.
  *
  * @param id Ext2AttrCheckboxID
- * @return Ext2AttrCheckboxInfo_t struct, or nullptr if the ID is invalid.
+ * @return Ext2AttrCheckboxInfo_t struct, or NULL if the ID is invalid.
  */
 const Ext2AttrCheckboxInfo_t *ext2AttrCheckboxInfo(Ext2AttrCheckboxID id)
 {

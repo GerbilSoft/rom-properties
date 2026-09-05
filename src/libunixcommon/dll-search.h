@@ -2,16 +2,16 @@
  * ROM Properties Page shell extension. (libunixcommon)                    *
  * dll-search.h: Function to search for a usable rom-properties library.   *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#include <sys/types.h>
+#include <sys/types.h>		// for pid_t
+#include <stddef.h>		// for size_t
 
-// Common definitions, including function attributes.
-#include "common.h"
+#include "compiler-attrs.h"	// for ATTR_*
 
 #ifdef __cplusplus
 extern "C" {

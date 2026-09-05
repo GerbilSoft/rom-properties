@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include "librpbyteswap/bitstuff.h"
-
 // C includes (C++ namespace)
 #include <cassert>
 #include <cstdint>
