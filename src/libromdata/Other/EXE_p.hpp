@@ -26,20 +26,7 @@ using LibRpBase::IResourceReaderPtr;
 #include "uvector.h"
 
 #include "span.hh"
-
-#ifdef HAVE_STD_VARIANT
-#  include <variant>
-#else /* !HAVE_STD_VARIANT */
-// std::variant<> is not available on this system.
-// Use mpark variant instead.
-#  include "mpark/variant.hpp"
-namespace std {
-	using mpark::variant;
-	using mpark::holds_alternative;
-	using mpark::get;
-	using mpark::monostate;
-}
-#endif /* HAVE_STD_VARIANT */
+#include "rp-variant.hpp"
 
 // PugiXML
 // NOTE: Cannot forward-declare the PugiXML classes...
