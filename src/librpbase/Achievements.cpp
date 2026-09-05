@@ -23,11 +23,11 @@ using namespace LibRpFile;
 
 // C++ STL classes
 #include <array>
-#include <unordered_map>
+#include <map>
 using std::array;
+using std::map;
 using std::string;
 using std::unique_ptr;
-using std::unordered_map;
 
 // Uninitialized vector class
 #include "uvector.h"
@@ -89,6 +89,7 @@ public:
 	};
 	static const array<AchInfo_t, 6> achInfo;
 
+#if 0	// uncomment if switching to unordered_map
 	// C++14 adds support for enum classes as unordered_map keys.
 	// C++11 needs an explicit hash functor.
 	struct EnumClassHash {
@@ -97,6 +98,7 @@ public:
 			return std::hash<int>()(static_cast<int>(t));
 		}
 	};
+#endif /* 0 */
 
 	// Active achievement data.
 	struct AchData_t {
@@ -108,8 +110,8 @@ public:
 	};
 
 	// Achievement map
-	// TODO: Map vs. unordered_map for performance?
-	unordered_map<Achievements::ID, AchData_t, EnumClassHash> mapAchData;
+	// NOTE: Change to unordered_map if more achievements are added?
+	map<Achievements::ID, AchData_t/*, EnumClassHash*/> mapAchData;
 	bool loaded;	// Have achievements been loaded from disk?
 
 	// Achievements filename and magic number
