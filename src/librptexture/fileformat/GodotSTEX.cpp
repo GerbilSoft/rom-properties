@@ -343,12 +343,12 @@ unsigned int GodotSTEXPrivate::getExpectedSize(int width, int height) const
 			assert(!"Invalid STEX version.");
 			break;
 
-		case 3: {
+		case 3:
 			expected_size = ImageSizeCalc::calcImageSize_tbl(
 				op_tbl_v3.data(), op_tbl_v3.size(), pixelFormat, width, height);
 			break;
-		}
-		case 4: {
+
+		case 4:
 			if (unlikely(pixelFormat == STEX4_FORMAT_ASTC_6x6 || pixelFormat == STEX4_FORMAT_ASTC_6x6_HDR)) {
 				// Use calcImageSizeASTC().
 				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 6, 6);
@@ -357,7 +357,6 @@ unsigned int GodotSTEXPrivate::getExpectedSize(int width, int height) const
 					op_tbl_v4.data(), op_tbl_v4.size(), pixelFormat, width, height);
 			}
 			break;
-		}
 	}
 
 	return expected_size;
