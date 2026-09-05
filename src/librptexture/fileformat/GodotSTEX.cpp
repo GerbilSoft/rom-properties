@@ -210,103 +210,80 @@ const array<const char*, 0x31> GodotSTEXPrivate::img_format_tbl_v4 = {{
 	"ASTC_6x6_HDR",
 }};
 
+// ImageSizeCalc entries for formats common to STEX v3 and v4 (0x00 - 0x18)
+#define STEX_COMMON_FORMATS_ImageSizeCalc_0x00_to_0x18 \
+	/* 0x00 */ \
+	OpCode::None,		/* STEX_FORMAT_L8 */ \
+	OpCode::Multiply2,	/* STEX_FORMAT_LA8 */ \
+	OpCode::None,		/* STEX_FORMAT_R8 */ \
+	OpCode::Multiply2,	/* STEX_FORMAT_RG8 */ \
+	OpCode::Multiply3,	/* STEX_FORMAT_RGB8 */ \
+	OpCode::Multiply4,	/* STEX_FORMAT_RGBA8 */ \
+	OpCode::Multiply2,	/* STEX_FORMAT_RGBA4444 */ \
+	OpCode::Multiply2,	/* STEX_FORMAT_RGB565 */ \
+\
+	/* 0x08 */ \
+	OpCode::Multiply4,	/* STEX_FORMAT_RF */ \
+	OpCode::Multiply8,	/* STEX_FORMAT_RGF */ \
+	OpCode::Multiply12,	/* STEX_FORMAT_RGBF */		/* TODO: Verify that it's not RGBxF. */ \
+	OpCode::Multiply16,	/* STEX_FORMAT_RGBAF */ \
+	OpCode::Multiply2,	/* STEX_FORMAT_RH */ \
+	OpCode::Multiply4,	/* STEX_FORMAT_RGH */ \
+	OpCode::Multiply6,	/* STEX_FORMAT_RGBH */		/* TODO: Verify that it's not RGBxH. */ \
+	OpCode::Multiply8,	/* STEX_FORMAT_RGBAH */ \
+\
+	/* 0x10 */ \
+	OpCode::Multiply4,	/* STEX_FORMAT_RGBE9995 */ \
+	OpCode::Align4Divide2,	/* STEX_FORMAT_DXT1 */ \
+	OpCode::Align4,		/* STEX_FORMAT_DXT3 */ \
+	OpCode::Align4,		/* STEX_FORMAT_DXT5 */ \
+	OpCode::Align4Divide2,	/* STEX_FORMAT_RGTC_R */ \
+	OpCode::Align4,		/* STEX_FORMAT_RGTC_RG */ \
+	OpCode::Align4,		/* STEX_FORMAT_BPTC_RGBA */ \
+	OpCode::Align4,		/* STEX_FORMAT_BPTC_RGBF */	/* TODO: Verify */ \
+\
+	/* 0x18 */ \
+	OpCode::Align4		/* STEX_FORMAT_BPTC_RGBFU */	/* TODO: Verify */
+
 // ImageSizeCalc opcode table (STEX v3)
 const array<ImageSizeCalc::OpCode, 0x26> GodotSTEXPrivate::op_tbl_v3 = {{
-	// 0x00
-	OpCode::None,		// STEX_FORMAT_L8
-	OpCode::Multiply2,	// STEX_FORMAT_LA8
-	OpCode::None,		// STEX_FORMAT_R8
-	OpCode::Multiply2,	// STEX_FORMAT_RG8
-	OpCode::Multiply3,	// STEX_FORMAT_RGB8
-	OpCode::Multiply4,	// STEX_FORMAT_RGBA8
-	OpCode::Multiply2,	// STEX_FORMAT_RGBA4444
-	OpCode::Multiply2,	// STEX_FORMAT_RGB565
+	STEX_COMMON_FORMATS_ImageSizeCalc_0x00_to_0x18,
 
-	// 0x08
-	OpCode::Multiply4,	// STEX_FORMAT_RF
-	OpCode::Multiply8,	// STEX_FORMAT_RGF
-	OpCode::Multiply12,	// STEX_FORMAT_RGBF	// TODO: Verify that it's not RGBxF.
-	OpCode::Multiply16,	// STEX_FORMAT_RGBAF
-	OpCode::Multiply2,	// STEX_FORMAT_RH
-	OpCode::Multiply4,	// STEX_FORMAT_RGH
-	OpCode::Multiply6,	// STEX_FORMAT_RGBH	// TODO: Verify that it's not RGBxH.
-	OpCode::Multiply8,	// STEX_FORMAT_RGBAH
-
-	// 0x10
-	OpCode::Multiply4,	// STEX_FORMAT_RGBE9995
-	OpCode::Align4Divide2,	// STEX_FORMAT_DXT1
-	OpCode::Align4,		// STEX_FORMAT_DXT3
-	OpCode::Align4,		// STEX_FORMAT_DXT5
-	OpCode::Align4Divide2,	// STEX_FORMAT_RGTC_R
-	OpCode::Align4,		// STEX_FORMAT_RGTC_RG
-	OpCode::Align4,		// STEX_FORMAT_BPTC_RGBA
-	OpCode::Align4,		// STEX_FORMAT_BPTC_RGBF	// TODO: Verify
-
-	// 0x18
-	OpCode::Align4,		// STEX_FORMAT_BPTC_RGBFU	// TODO: Verify
-	OpCode::Divide4,	// STEX_FORMAT_PVRTC1_2
-	OpCode::Divide4,	// STEX_FORMAT_PVRTC1_2A
-	OpCode::Divide2,	// STEX_FORMAT_PVRTC1_4
-	OpCode::Divide2,	// STEX_FORMAT_PVRTC1_4A
-	OpCode::Divide2,	// STEX_FORMAT_ETC
-	OpCode::Divide2,	// STEX_FORMAT_ETC2_R11
-	OpCode::Divide2,	// STEX_FORMAT_ETC2_R11S
+	// 0x19
+	OpCode::Divide4,	// STEX3_FORMAT_PVRTC1_2
+	OpCode::Divide4,	// STEX3_FORMAT_PVRTC1_2A
+	OpCode::Divide2,	// STEX3_FORMAT_PVRTC1_4
+	OpCode::Divide2,	// STEX3_FORMAT_PVRTC1_4A
+	OpCode::Divide2,	// STEX3_FORMAT_ETC
+	OpCode::Divide2,	// STEX3_FORMAT_ETC2_R11
+	OpCode::Divide2,	// STEX3_FORMAT_ETC2_R11S
 
 	// 0x20
-	OpCode::None,		// STEX_FORMAT_ETC2_RG11
-	OpCode::None,		// STEX_FORMAT_ETC2_RG11S
-	OpCode::Align4Divide2,	// STEX_FORMAT_ETC2_RGB8	// TODO: Verify?
-	OpCode::Align4,		// STEX_FORMAT_ETC2_RGBA8	// TODO: Verify?
-	OpCode::Align4Divide2,	// STEX_FORMAT_ETC2_RGB8A1	// TODO: Verify?
+	OpCode::None,		// STEX3_FORMAT_ETC2_RG11
+	OpCode::None,		// STEX3_FORMAT_ETC2_RG11S
+	OpCode::Align4Divide2,	// STEX3_FORMAT_ETC2_RGB8	// TODO: Verify?
+	OpCode::Align4,		// STEX3_FORMAT_ETC2_RGBA8	// TODO: Verify?
+	OpCode::Align4Divide2,	// STEX3_FORMAT_ETC2_RGB8A1	// TODO: Verify?
 
 	// Proprietary format used in Sonic Colors Ultimate.
-	OpCode::Align8Divide4,	// STEX_FORMAT_SCU_ASTC_8x8	// 8x8 == 2bpp
+	OpCode::Align8Divide4,	// STEX3_FORMAT_SCU_ASTC_8x8	// 8x8 == 2bpp
 }};
 
 // ImageSizeCalc opcode table (STEX v3)
 const array<ImageSizeCalc::OpCode, 0x31> GodotSTEXPrivate::op_tbl_v4 = {{
-	// 0x00
-	OpCode::None,		// STEX_FORMAT_L8
-	OpCode::Multiply2,	// STEX_FORMAT_LA8
-	OpCode::None,		// STEX_FORMAT_R8
-	OpCode::Multiply2,	// STEX_FORMAT_RG8
-	OpCode::Multiply3,	// STEX_FORMAT_RGB8
-	OpCode::Multiply4,	// STEX_FORMAT_RGBA8
-	OpCode::Multiply2,	// STEX_FORMAT_RGBA4444
-	OpCode::Multiply2,	// STEX_FORMAT_RGB565
+	STEX_COMMON_FORMATS_ImageSizeCalc_0x00_to_0x18,
 
-	// 0x08
-	OpCode::Multiply4,	// STEX_FORMAT_RF
-	OpCode::Multiply8,	// STEX_FORMAT_RGF
-	OpCode::Multiply12,	// STEX_FORMAT_RGBF	// TODO: Verify that it's not RGBxF.
-	OpCode::Multiply16,	// STEX_FORMAT_RGBAF
-	OpCode::Multiply2,	// STEX_FORMAT_RH
-	OpCode::Multiply4,	// STEX_FORMAT_RGH
-	OpCode::Multiply6,	// STEX_FORMAT_RGBH	// TODO: Verify that it's not RGBxH.
-	OpCode::Multiply8,	// STEX_FORMAT_RGBAH
-
-	// 0x10
-	OpCode::Multiply4,	// STEX_FORMAT_RGBE9995
-	OpCode::Align4Divide2,	// STEX_FORMAT_DXT1
-	OpCode::Align4,		// STEX_FORMAT_DXT3
-	OpCode::Align4,		// STEX_FORMAT_DXT5
-	OpCode::Align4Divide2,	// STEX_FORMAT_RGTC_R
-	OpCode::Align4,		// STEX_FORMAT_RGTC_RG
-	OpCode::Align4,		// STEX_FORMAT_BPTC_RGBA
-	OpCode::Align4,		// STEX_FORMAT_BPTC_RGBF	// TODO: Verify
-
-	// 0x18
-	OpCode::Align4,		// STEX_FORMAT_BPTC_RGBFU	// TODO: Verify
-	OpCode::Divide2,	// STEX_FORMAT_ETC
-	OpCode::Divide2,	// STEX_FORMAT_ETC2_R11
-	OpCode::Divide2,	// STEX_FORMAT_ETC2_R11S
-	OpCode::None,		// STEX_FORMAT_ETC2_RG11
-	OpCode::None,		// STEX_FORMAT_ETC2_RG11S
-	OpCode::Align4Divide2,	// STEX_FORMAT_ETC2_RGB8	// TODO: Verify?
-	OpCode::Align4,		// STEX_FORMAT_ETC2_RGBA8	// TODO: Verify?
+	// 0x19
+	OpCode::Divide2,	// STEX4_FORMAT_ETC
+	OpCode::Divide2,	// STEX4_FORMAT_ETC2_R11
+	OpCode::Divide2,	// STEX4_FORMAT_ETC2_R11S
+	OpCode::None,		// STEX4_FORMAT_ETC2_RG11
+	OpCode::None,		// STEX4_FORMAT_ETC2_RG11S
+	OpCode::Align4Divide2,	// STEX4_FORMAT_ETC2_RGB8	// TODO: Verify?
+	OpCode::Align4,		// STEX4_FORMAT_ETC2_RGBA8	// TODO: Verify?
 
 	// 0x20
-	OpCode::Align4Divide2,	// STEX_FORMAT_ETC2_RGB8A1	// TODO: Verify?
+	OpCode::Align4Divide2,	// STEX4_FORMAT_ETC2_RGB8A1	// TODO: Verify?
 	OpCode::Align4,		// STEX4_FORMAT_ETC2_RA_AS_RG	// TODO: Verify?
 	OpCode::Align4,		// STEX4_FORMAT_DXT5_RA_AS_RG	// TODO: Verify?
 	OpCode::None,		// STEX4_FORMAT_ASTC_4x4	// 4x4 == 8bpp
