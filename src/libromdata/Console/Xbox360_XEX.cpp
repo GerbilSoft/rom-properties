@@ -122,7 +122,7 @@ public:
 	// NOTE: These structs **ARE** byteswapped.
 	// - Key: Resource ID. (Title ID for normal resources; "HASHSEC" for SHA-1 hashes.)
 	// - Value: XEX2_Resource_Info
-	unordered_map<std::string, XEX2_Resource_Info> mapResInfo;
+	unordered_map<string, XEX2_Resource_Info> mapResInfo;
 
 	// File format info. (XEX2_OPTHDR_FILE_FORMAT_INFO)
 	// Initialized by initPeReader().

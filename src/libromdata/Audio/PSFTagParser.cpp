@@ -401,7 +401,7 @@ static unsigned int lengthToMs(const char *str)
  * @param psfby Key for "psfby" field
  * @return Number of metadata properties added.
  */
-int addTagsToRomMetaData(LibRpBase::RomMetaData *metaData, const std::unordered_map<std::string, std::string> &tags, const char *psfby)
+int addTagsToRomMetaData(LibRpBase::RomMetaData *metaData, const unordered_map<string, string> &tags, const char *psfby)
 {
 	if (tags.empty()) {
 		// No tags...

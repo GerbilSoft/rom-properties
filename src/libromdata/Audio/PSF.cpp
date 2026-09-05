@@ -143,7 +143,7 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 	const off64_t data_len = file->size() - tag_addr;
 	if (data_len <= 0 || data_len > TAG_SIZE_MAX) {
 		// Not enough data, or too *much* data...
-		return unordered_map<string, string>();
+		return {};
 	}
 
 	const size_t data_len_sz = static_cast<size_t>(data_len);
@@ -151,7 +151,7 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 	size_t size = file->seekAndRead(tag_addr, tag_data.get(), data_len_sz);
 	if (size != data_len_sz) {
 		// Read error.
-		return unordered_map<string, string>();
+		return {};
 	}
 
 	// Parse the tags.
@@ -337,7 +337,6 @@ int PSF::loadFieldData(void)
 		le32_to_cpu(psfHeader->reserved_size) +
 		le32_to_cpu(psfHeader->compressed_prg_length);
 	unordered_map<string, string> tags = d->parseTags(tag_addr);
-
 	if (!tags.empty()) {
 		const char *const ripped_by_tag = d->getRippedByTagName(psfHeader->version);
 		PSFTagParser::addTagsToRomFields(&d->fields, tags, ripped_by_tag);

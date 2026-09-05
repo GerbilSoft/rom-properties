@@ -56,7 +56,7 @@ public:
 	// - Value: Raw directory table from the disc.
 	// NOTE: Directory entries are variable-length, so this
 	// is a byte array, not an ISO_DirEntry array.
-	unordered_map<std::string, rp::uvector<uint8_t> > dirTables;
+	unordered_map<string, rp::uvector<uint8_t> > dirTables;
 
 	/**
 	 * Get an entry within a specified directory table.
