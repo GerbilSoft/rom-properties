@@ -25,7 +25,7 @@
 
 // rom-properties: Disabled the basisu.h include.
 //#include "../transcoder/basisu.h" // to pick up the iterator debug level madness
-#include <vector>
+//#include <vector>
 #include <stdint.h>
 
 namespace basisu_astc
