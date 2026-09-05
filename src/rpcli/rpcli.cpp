@@ -8,6 +8,7 @@
  ***************************************************************************/
 
 #include "config.rpcli.h"
+#include "config.libc.h"
 #include "config.version.h"
 #include "librpbase/config.librpbase.h"
 #include "libromdata/config.libromdata.h"
@@ -70,6 +71,11 @@ using namespace LibRpTexture;
 
 // C includes
 #include "ctypex.h"
+
+// for __GLIBC__
+#ifdef HAVE_FEATURES_H
+#  include <features.h>
+#endif /* HAVE_FEATURES_H */
 
 // C++ STL classes
 #include <iostream>

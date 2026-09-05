@@ -6,6 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "config.libc.h"
+
 // Google Test
 #include "gtest_init.hpp"
 
@@ -21,7 +23,11 @@ using namespace LibRpText;
 #include <cstdio>
 #include <cstring>
 
-// glibc
+// for __GLIBC__
+#ifdef HAVE_FEATURES_H
+#  include <features.h>
+#endif /* HAVE_FEATURES_H */
+
 #ifdef __GLIBC__
 #  include <gnu/libc-version.h>
 #endif /* __GLIBC__ */

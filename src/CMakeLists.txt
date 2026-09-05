@@ -9,6 +9,8 @@ CHECK_LARGE_FILE_SUPPORT()
 
 # Check for dirent.h. (for d_type.h)
 CHECK_INCLUDE_FILE("dirent.h" HAVE_DIRENT_H)
+# Check for features.h. (for __GLIBC__)
+CHECK_INCLUDE_FILE("features.h" HAVE_FEATURES_H)
 # Check for sys/stat.h. (for d_type.h)
 # Windows Universal CRT has this; older versions of MSVCRT do not.
 CHECK_INCLUDE_FILE("sys/stat.h" HAVE_SYS_STAT_H)

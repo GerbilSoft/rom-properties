@@ -12,6 +12,7 @@
  * rom-properties libraries. If found, it runs the requested
  * function from the library.
  */
+#include "config.libc.h"
 #include "config.version.h"
 #include "git.h"
 
@@ -35,6 +36,11 @@
 #include <unistd.h>
 
 #include "tcharx.h"	// for DIR_SEP_CHR
+
+// for __GLIBC__
+#ifdef HAVE_FEATURES_H
+#  include <features.h>
+#endif /* HAVE_FEATURES_H */
 
 /**
  * Program mode

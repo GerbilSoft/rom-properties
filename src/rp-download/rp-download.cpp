@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "config.rp-download.h"
+#include "config.libc.h"
 
 // OS-specific security options
 #include "rp-download_secure.h"
@@ -31,6 +32,11 @@ using namespace LibRpFile;
 #ifndef S_ISDIR
 #  define S_ISDIR(mode) __S_ISTYPE((mode), S_IFDIR)
 #endif /* !S_ISTYPE */
+
+// for __GLIBC__
+#ifdef HAVE_FEATURES_H
+#  include <features.h>
+#endif /* HAVE_FEATURES_H */
 
 // C includes (C++ namespace)
 #include <cerrno>

@@ -7,8 +7,9 @@
  ***************************************************************************/
 
 #include "os-secure.h"
+#include "config.libc.h"
 
-// C includes.
+// C includes
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>
@@ -16,10 +17,16 @@
 #include <signal.h>
 #include <string.h>
 
+// for __GLIBC__
+#ifdef HAVE_FEATURES_H
+#  include <features.h>
+#endif /* HAVE_FEATURES_H */
+
 // libseccomp
 #include <seccomp.h>
 #include <sys/prctl.h>
 #include <linux/sched.h>	// CLONE_THREAD
+
 #ifndef __GLIBC__
 #  include <sys/ioctl.h>	// TIOCGWINSZ
 #endif /* !__GLIBC__ */

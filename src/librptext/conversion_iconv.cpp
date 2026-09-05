@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "config.librptext.h"
+#include "config.libc.h"
 #include "conversion.hpp"
 #include "NULL-check.hpp"
 
@@ -39,6 +40,11 @@ static const char RP_ICONV_UTF16_ENCODING[] = "UTF-16LE";
 
 // C includes (C++ namespace)
 #include <cassert>
+
+// for __GLIBC__
+#ifdef HAVE_FEATURES_H
+#  include <features.h>
+#endif /* HAVE_FEATURES_H */
 
 // C++ STL classes
 #include <vector>
