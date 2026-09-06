@@ -519,7 +519,7 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			// Add the class name information to the map.
 			uint32_t keyIdx = static_cast<uint32_t>(vStartPos);
 			keyIdx |= (count << 24);
-			mapImgTypePrio.emplace(className_lower, keyIdx);
+			mapImgTypePrio.emplace(std::move(className_lower), keyIdx);
 		}
 	}
 
