@@ -213,43 +213,44 @@ ParamSFO::SFOValueType ParamSFOPrivate::getKeyValueType(const char *key) const
 
 string ParamSFOPrivate::getStringValue(const char *key)
 {
-	string value;
+	string s_value;
+	string s_key(key);
 
 	// Did we look up this key already?
 	{
-		auto iter = cachedStringValues.find(key);
+		auto iter = cachedStringValues.find(s_key);
 		if (iter != cachedStringValues.end()) {
 			// We already fetched a string value for this key.
 			// NOTE: Assigning to `value` for named-return-value optimization.
-			value = iter->second;
-			return value;
+			s_value = iter->second;
+			return s_value;
 		}
 	}
 
 	if (!file) {
 		// File isn't open.
-		return value;
+		return s_value;
 	} else if (!isValid) {
 		// File isn't valid
-		return value;
+		return s_value;
 	}
 
-	auto iter = keyLookup.find(key);
+	auto iter = keyLookup.find(s_key);
 	if (iter == keyLookup.end()) {
 		// We don't have this key.
-		return value;
+		return s_value;
 	}
 
 	const psf_key_t &psfKey = iter->second;
 	assert(psfKey.valueType == kPSF_UTF8 || psfKey.valueType == kPSF_UTF8S);
 	if (psfKey.valueType != kPSF_UTF8 && psfKey.valueType != kPSF_UTF8S) {
 		// Not a UTF-8 string key.
-		return value;
+		return s_value;
 	}
 
 	if (psfKey.dataLength <= 0) {
 		// Empty string, or negative length?
-		return value;
+		return s_value;
 	}
 	// Limit data length to 1,024.
 	assert(psfKey.dataLength <= ParamSFOPrivate::MAX_STRING_LENGTH);
@@ -258,35 +259,36 @@ string ParamSFOPrivate::getStringValue(const char *key)
 		dataLength = ParamSFOPrivate::MAX_STRING_LENGTH;
 	}
 
-	if (readString(fileHeader.dataOffset + psfKey.dataOffset, dataLength, value) != 0) {
+	if (readString(fileHeader.dataOffset + psfKey.dataOffset, dataLength, s_value) != 0) {
 		// Failed to read the value.
-		value.clear();
-		return value;
+		s_value.clear();
+		return s_value;
 	}
 
 	// kPSF_UTF8: String should be NULL-terminated, so we'll need to
 	// find the first NULL byte and terminate the string there.
 	// NOTE: Some strings have a larger data length than they should...
 	// Assassin's Creed - Bloodlines (Europe) (PSP) (PSN).iso: PSP_SYSTEM_VER == "5.50\0\x95"
-	if (psfKey.valueType == kPSF_UTF8 && !value.empty()) {
-		size_t null_pos = value.find('\0');
+	if (psfKey.valueType == kPSF_UTF8 && !s_value.empty()) {
+		size_t null_pos = s_value.find('\0');
 		if (null_pos != string::npos) {
-			value.resize(null_pos);
+			s_value.resize(null_pos);
 		}
 	}
 
 	// Cache the value for later.
-	cachedStringValues.emplace(key, value);
-	return value;
+	cachedStringValues.emplace(std::move(s_key), s_value);
+	return s_value;
 }
 
 uint32_t ParamSFOPrivate::getIntValue(const char *key)
 {
 	// TODO: Can we error out of this function?
+	string s_key(key);
 
 	// Did we look up this key already?
 	{
-		auto iter = cachedIntValues.find(key);
+		auto iter = cachedIntValues.find(s_key);
 		if (iter != cachedIntValues.end()) {
 			// We already fetched a uint32_t value for this key.
 			return iter->second;
@@ -301,7 +303,7 @@ uint32_t ParamSFOPrivate::getIntValue(const char *key)
 		return 0;
 	}
 
-	auto iter = keyLookup.find(key);
+	auto iter = keyLookup.find(s_key);
 	if (iter == keyLookup.end()) {
 		// We don't have this key.
 		return 0;
@@ -331,7 +333,7 @@ uint32_t ParamSFOPrivate::getIntValue(const char *key)
 	value = le32_to_cpu(value);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
-	cachedIntValues.emplace(key, value);
+	cachedIntValues.emplace(std::move(key), value);
 	return value;
 }
 
