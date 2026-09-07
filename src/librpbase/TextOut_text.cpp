@@ -83,8 +83,8 @@ public:
 		}
 		return os;
 	}
-
 };
+
 class ColonPad {
 	size_t width;
 	const char* str;
@@ -100,6 +100,7 @@ public:
 		return os;
 	}
 };
+
 class SafeString {
 public:
 	enum ATTR_FLAG_ENUM SafeStringFlags {
@@ -108,11 +109,13 @@ public:
 
 		SSF_NO_ESCAPE	= (1U << 1),
 	};
+
 private:
 	const char *str;
 	size_t len;
 	size_t width;
 	SafeStringFlags flags;
+
 public:
 	explicit SafeString(const char *str, SafeStringFlags flags = SSF_QUOTES, size_t width = 0)
 		: str(str)
@@ -197,6 +200,7 @@ class StringField {
 	size_t width;
 	const RomFields::Field &romField;
 	bool useAnsiColor;
+
 private:
 	/**
 	 * Print an invalid HTML tag.
@@ -379,6 +383,7 @@ public:
 class BitfieldField {
 	size_t width;
 	const RomFields::Field &romField;
+
 public:
 	BitfieldField(size_t width, const RomFields::Field &romField)
 		: width(width), romField(romField) { }
@@ -571,6 +576,7 @@ class ListDataField {
 	uint32_t def_lc;	// ROM-default language code.
 	uint32_t user_lc;	// User-specified language code.
 	unsigned int flags;
+
 public:
 	ListDataField(size_t width, const RomFields::Field &romField, uint32_t def_lc, uint32_t user_lc, unsigned int flags)
 		: width(width), romField(romField), def_lc(def_lc), user_lc(user_lc), flags(flags) { }
@@ -892,6 +898,7 @@ public:
 class DateTimeField {
 	size_t width;
 	const RomFields::Field &romField;
+
 public:
 	DateTimeField(size_t width, const RomFields::Field &romField)
 		: width(width), romField(romField) { }
@@ -968,6 +975,7 @@ class StringMultiField {
 	const RomFields::Field &romField;
 	uint32_t def_lc;	// ROM-default language code.
 	uint32_t user_lc;	// User-specified language code.
+
 public:
 	StringMultiField(size_t width, const RomFields::Field &romField, uint32_t def_lc, uint32_t user_lc)
 		: width(width), romField(romField), def_lc(def_lc), user_lc(user_lc)
@@ -999,6 +1007,7 @@ class FieldsOutput {
 	const RomFields& fields;
 	uint32_t lc;
 	unsigned int flags;
+
 public:
 	explicit FieldsOutput(const RomFields& fields, uint32_t lc = 0, unsigned int flags = 0)
 		: fields(fields), lc(lc), flags(flags) { }

@@ -439,7 +439,6 @@ int WiiSave::loadFieldData(void)
 			fmt::format(FSTR("{:0>8X}-{:0>8X}"),
 				be32_to_cpu(svHeader->savegame_id.hi),
 				be32_to_cpu(svHeader->savegame_id.lo)));
-
 	}
 
 	// Game ID
@@ -544,7 +543,6 @@ int WiiSave::loadMetaData(void)
 			fmt::format(FSTR("{:0>8X}-{:0>8X}"),
 				be32_to_cpu(svHeader->savegame_id.hi),
 				be32_to_cpu(svHeader->savegame_id.lo)));
-
 	}
 
 	// Game ID

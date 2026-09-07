@@ -44,6 +44,7 @@ namespace LibRpBase {
 
 class JSONFieldsOutput {
 	const RomFields& fields;
+
 public:
 	explicit JSONFieldsOutput(const RomFields& fields) :fields(fields) {}
 

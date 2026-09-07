@@ -92,6 +92,7 @@ private:
 #endif /* LZO_SHARED_LINKAGE */
 
 #ifdef LZ4_SHARED_LINKAGE
+
 private:
 	/**
 	 * Initialize the LZ4 function pointers.
@@ -120,6 +121,7 @@ public:
 		return m_pfn_LZ4_decompress_safe(src, dst, compressedSize, dstCapacity);
 	}
 #else /* LZ4_SHARED_LINKAGE */
+
 public:
 	/**
 	 * Initialize the LZ4 function pointers.
@@ -162,6 +164,7 @@ public:
 #endif /* LZ4_SHARED_LINKAGE */
 
 #ifdef LZO_SHARED_LINKAGE
+
 private:
 	/**
 	 * Initialize the LZO function pointers.
@@ -192,6 +195,7 @@ public:
 		return m_pfn_lzo1x_decompress_safe(src, src_len, dst, dst_len, wrkmem);
 	}
 #else /* !LZO_SHARED_LINKAGE */
+
 public:
 	/**
 	 * Initialize the LZO function pointers.

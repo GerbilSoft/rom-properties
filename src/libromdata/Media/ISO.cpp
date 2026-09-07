@@ -1276,7 +1276,6 @@ int ISO::loadFieldData(void)
 				vector<string> *const v_boot_platforms_names = RomFields::strArrayToVector(boot_platforms_names);
 				d->fields.addField_bitfield(C_("ISO", "Boot Platforms"),
 					v_boot_platforms_names, 0, d->boot_platforms);
-
 			}
 
 			// Joliet SVD
