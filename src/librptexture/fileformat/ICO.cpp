@@ -187,7 +187,6 @@ public:
 		int height;
 		unsigned int bitcount;
 		bool isPNG;
-		char pixel_format[11];
 	};
 
 	// Temporary data for pixelFormat().
@@ -199,6 +198,13 @@ public:
 	 * @return Useful data (on error, all values will be 0)
 	 */
 	static IconBitmapHeader_data getIconBitmapHeaderData(const IconBitmapHeader_t *pHeader);
+
+	/**
+	 * Get the pixel format name from a IconBitmapHeader_data.
+	 * @param data	[in] IconBitmapHeader_data
+	 * @return Pixel format name, or empty string on error
+	 */
+	static string getIconPixelFormat(const IconBitmapHeader_data &data);
 
 public:
 	/**
@@ -339,7 +345,7 @@ ICOPrivate::ICOPrivate(ICO *q, const IResourceReaderPtr &resReader, uint16_t typ
  */
 ICOPrivate::IconBitmapHeader_data ICOPrivate::getIconBitmapHeaderData(const IconBitmapHeader_t *pHeader)
 {
-	IconBitmapHeader_data data = {0, 0, 0, false, ""};
+	IconBitmapHeader_data data = {0, 0, 0, false};
 
 	switch (le32_to_cpu(pHeader->size)) {
 		default:
@@ -370,7 +376,7 @@ ICOPrivate::IconBitmapHeader_data ICOPrivate::getIconBitmapHeaderData(const Icon
 			data.bitcount = le16_to_cpu(pHeader->bih.biBitCount);
 			break;
 
-		case 0x474E5089:	// "\x89PNG"
+		case 0x474E5089:	// '\x89PNG'
 			data.isPNG = true;
 			switch (pHeader->png.ihdr.data.color_type) {
 				default:
@@ -399,30 +405,46 @@ ICOPrivate::IconBitmapHeader_data ICOPrivate::getIconBitmapHeaderData(const Icon
 			break;
 	}
 
+	return data;
+}
+
+/**
+ * Get the pixel format name from a IconBitmapHeader_data.
+ * @param data	[in] IconBitmapHeader_data
+ * @return Pixel format name, or empty string on error
+ */
+string ICOPrivate::getIconPixelFormat(const IconBitmapHeader_data &data)
+{
 	// Determine pixel format based on bitcount.
 	// TODO: Other bitcounts?
+	string s_ret;
+
 	switch (data.bitcount) {
+		case 0:
+			// Not valid...
+			assert(!"Invalid bit count 0!");
+			break;
 		case 1:
 			// tr: Abbreviation of "Monochrome".
-			snprintf(data.pixel_format, sizeof(data.pixel_format), "%s", C_("ICO|PixelFormat", "Mono"));
+			s_ret = C_("ICO|PixelFormat", "Mono");
 			break;
 		case 4:
 		case 8:
-			snprintf(data.pixel_format, sizeof(data.pixel_format), "CI%u", data.bitcount);
+			s_ret = fmt::format(FSTR("CI%u"), data.bitcount);
 			break;
 		case 24:
-			strcpy(data.pixel_format, "RGB");
+			s_ret = "RGB";
 			break;
 		case 32:
-			strcpy(data.pixel_format, "ARGB");
+			s_ret = "ARGB";
 			break;
 		default:
 			// Invalid bitcount?
-			snprintf(data.pixel_format, sizeof(data.pixel_format), "%u-bit", data.bitcount);
+			s_ret = fmt::format(FSTR("{:d}-bit"), data.bitcount);
 			break;
 	}
 
-	return data;
+	return s_ret;
 }
 
 /**
@@ -1390,7 +1412,7 @@ void ICO::init(bool res)
 					d->dimensions[1] = le32_to_cpu(pIconHeader->bih.biHeight) / 2;
 					break;
 
-				case 0x474E5089:	// "\x89PNG"
+				case 0x474E5089:	// '\x89PNG'
 					// TODO: Verify more IHDR fields?
 					d->dimensions[0] = be32_to_cpu(pIconHeader->png.ihdr.data.width);
 					d->dimensions[1] = be32_to_cpu(pIconHeader->png.ihdr.data.height);
@@ -1446,11 +1468,12 @@ const char *ICO::pixelFormat(void) const
 			}
 
 			ICOPrivate::IconBitmapHeader_data data = d->getIconBitmapHeaderData(&d->iconBitmapHeaders[idx]);
-			if (data.pixel_format[0] == '\0') {
+			string s_pixel_format = d->getIconPixelFormat(data);
+			if (s_pixel_format.empty()) {
 				return C_("RomData", "Unknown");
 			}
 
-			snprintf(const_cast<ICOPrivate*>(d)->pixel_format, sizeof(d->pixel_format), "%s", data.pixel_format);
+			snprintf(const_cast<ICOPrivate*>(d)->pixel_format, sizeof(d->pixel_format), "%s", s_pixel_format.c_str());
 			return d->pixel_format;
 		}
 	}
@@ -1542,7 +1565,7 @@ int ICO::getFields(RomFields *fields) const
 			// Add text fields.
 			data_row.push_back(fmt::format(FSTR("{:d}x{:d}"), data.width, data.height));
 			data_row.push_back(fmt::to_string(data.bitcount));
-			string s_pixel_format = data.pixel_format;
+			string s_pixel_format = d->getIconPixelFormat(data);
 			if (data.isPNG) {
 				s_pixel_format += " (PNG)";
 			}
