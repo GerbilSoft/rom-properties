@@ -1094,26 +1094,67 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 			vector<string> row;
 			row.reserve(7);
 			row.push_back(&strtab[sym.st_name]);
-			static const array<const char*, 16> bindings = {{
-				"LOCAL", "GLOBAL", "WEAK",
-				"3", "4", "5", "6", "7", "8", "9",
-				"GNU_UNIQUE", "LOOS+1", "LOOS+2",
-				"LOPROC+0", "LOPROC+1", "LOPROC+2",
-			}};
-			static const array<const char*, 16> types = {{
-				"NOTYPE", "OBJECT", "FUNC", "SECTION",
-				"FILE", "COMMON", "TLS",
-				"7", "8", "9",
-				"GNU_IFNUC", "LOOS+1", "LOOS+2",
-				"LOPROC+0", "LOPROC+1", "LOPROC+2",
-			}};
-			static const array<const char*, 4> visibilities = {{
-				"DEFAULT", "INTERNAL", "HIDDEN", "PROTECTED"
+
+			static constexpr char bindings_strtbl[] =
+				"LOCAL\0"	// 0
+				"GLOBAL\0"	// 6
+				"WEAK\0"	// 13
+				"3\0"		// 18
+				"4\0"		// 20
+				"5\0"		// 22
+				"6\0"		// 24
+				"7\0"		// 26
+				"8\0"		// 28
+				"9\0"		// 30
+				"GNU_UNIQUE\0"	// 32
+				"LOOS+1\0"	// 43
+				"LOOS+2\0"	// 50
+				"LOPROC+0\0"	// 57
+				"LOPROC+1\0"	// 66
+				"LOPROC+2\0";	// 75
+			static const array<uint8_t, 16> bindings_offtbl = {{
+				 0,  6, 13, 18,
+				20, 22, 24, 26,
+				28, 30, 32, 43,
+				50, 57, 66, 75,
 			}};
 
-			row.push_back(bindings[ELF64_ST_BIND(sym.st_info)]);
-			row.push_back(types[ELF64_ST_TYPE(sym.st_info)]);
-			row.push_back(visibilities[ELF64_ST_VISIBILITY(sym.st_other)]);
+			static constexpr char types_strtbl[] =
+				"NOTYPE\0"	// 0
+				"OBJECT\0"	// 7
+				"FUNC\0"	// 14
+				"SECTION\0"	// 19
+				"FILE\0"	// 27
+				"COMMON\0"	// 32
+				"TLS\0"		// 39
+				"7\0"		// 43
+				"8\0"		// 45
+				"9\0"		// 47
+				"GNU_IFUNC\0"	// 49
+				"LOOS+1\0"	// 59
+				"LOOS+2\0"	// 66
+				"LOPROC+0\0"	// 73
+				"LOPROC+1\0"	// 82
+				"LOPROC+2\0";	// 91
+			static const array<uint8_t, 16> types_offtbl = {{
+				 0,  7, 14, 19,
+				27, 32, 39, 43,
+				45, 47, 49, 59,
+				66, 73, 82, 91,
+			}};
+
+			static constexpr char visibilities_strtbl[] =
+				"DEFAULT\0"	// 0
+				"INTERNAL\0"	// 8
+				"HIDDEN\0"	// 17
+				"PROTECTED\0";	// 24
+			static const array<uint8_t, 4> visibilities_offtbl = {{
+				0, 8, 17, 24,
+			}};
+
+			row.push_back(&bindings_strtbl[bindings_offtbl[ELF64_ST_BIND(sym.st_info)]]);
+			row.push_back(&types_strtbl[types_offtbl[ELF64_ST_TYPE(sym.st_info)]]);
+			row.push_back(&visibilities_strtbl[visibilities_offtbl[ELF64_ST_VISIBILITY(sym.st_other)]]);
 			// TODO: output section name if possible
 			if (sym.st_shndx == SHN_UNDEF) {
 				row.push_back(elf_sym_undefined);
