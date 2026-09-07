@@ -22,6 +22,7 @@ using LibRpBase::Achievements;
 // C++ STL classes
 #include <string>
 using std::string;
+using std::unique_ptr;
 
 /** AchGDBusPrivate (previously) **/
 
@@ -120,7 +121,7 @@ int AchGDBus::notifyFunc(Achievements::ID id)
 	// We'll need to download it to a local memory buffer.
 	const unsigned int rowstride = iconSize * sizeof(uint32_t);
 	const size_t imgDataLen = rowstride * iconSize;
-	std::unique_ptr<uint8_t[]> texdata(new uint8_t[imgDataLen]);
+	unique_ptr<uint8_t[]> texdata(new uint8_t[imgDataLen]);
 	// FIXME: Using GdkTextureDownloader to convert to GDK_MEMORY_B8G8R8A8
 	// causes a heap overflow. (R8G8B8A8 works, as does B8G8R8A8_PREMULTIPLIED.)
 	// TODO: Un-premultiply the texture.
