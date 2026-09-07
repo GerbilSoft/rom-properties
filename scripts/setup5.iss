@@ -185,6 +185,7 @@ Source: "..\pkg_windows\build.i386_xp\locale\de.gmo"; DestDir: "{app}\locale\de\
 Source: "..\pkg_windows\build.i386_xp\locale\es.gmo"; DestDir: "{app}\locale\es\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/es; Flags: ignoreversion
 Source: "..\pkg_windows\build.i386_xp\locale\fr.gmo"; DestDir: "{app}\locale\fr\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/fr; Flags: ignoreversion
 Source: "..\pkg_windows\build.i386_xp\locale\it.gmo"; DestDir: "{app}\locale\it\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/it; Flags: ignoreversion
+Source: "..\pkg_windows\build.i386_xp\locale\ka.gmo"; DestDir: "{app}\locale\ka\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/it; Flags: ignoreversion
 Source: "..\pkg_windows\build.i386_xp\locale\pt.gmo"; DestDir: "{app}\locale\pt\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/pt; Flags: ignoreversion
 Source: "..\pkg_windows\build.i386_xp\locale\ro.gmo"; DestDir: "{app}\locale\ro\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/ro; Flags: ignoreversion
 Source: "..\pkg_windows\build.i386_xp\locale\ru.gmo"; DestDir: "{app}\locale\ru\LC_MESSAGES"; DestName: "rom-properties.mo"; Components: locale/ru; Flags: ignoreversion
