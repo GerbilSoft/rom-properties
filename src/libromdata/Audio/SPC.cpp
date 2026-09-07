@@ -167,6 +167,19 @@ public:
 		}
 
 		/**
+		 * Insert a string value.
+		 * @param key Extended ID666 tag index.
+		 * @param str String value.
+		 */
+		inline void insertStr(SPC_xID6_Item_e key, string &&str)
+		{
+			val_t val(static_cast<unsigned int>(strs.size()));
+			val.isStrIdx = true;
+			strs.push_back(str);
+			map.emplace(key, val);
+		}
+
+		/**
 		 * Get a string.
 		 * @param data val_t struct.
 		 * @return String.
