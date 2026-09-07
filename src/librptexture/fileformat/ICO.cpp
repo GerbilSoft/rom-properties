@@ -1381,7 +1381,7 @@ void ICO::init(bool res)
 		case ICOPrivate::IconType::Icon_Win3:
 		case ICOPrivate::IconType::Cursor_Win3:
 		case ICOPrivate::IconType::IconRes_Win3:
-		case ICOPrivate::IconType::CursorRes_Win3:
+		case ICOPrivate::IconType::CursorRes_Win3: {
 			if (d->dir.bestIcon_idx < 0 || d->dir.bestIcon_idx >= static_cast<int>(d->iconBitmapHeaders.size())) {
 				// No "best" icon...
 				d->file.reset();
@@ -1390,35 +1390,18 @@ void ICO::init(bool res)
 			}
 
 			const ICOPrivate::IconBitmapHeader_t *const pIconHeader = &d->iconBitmapHeaders[d->dir.bestIcon_idx];
-			const unsigned int header_size = le32_to_cpu(pIconHeader->size);
-			switch (header_size) {
-				default:
-					// Not supported...
-					d->file.reset();
-					d->dir.data = std::monostate();
-					return;
-
-				case BITMAPCOREHEADER_SIZE:
-					d->dimensions[0] = le16_to_cpu(pIconHeader->bch.bcWidth);
-					d->dimensions[1] = le16_to_cpu(pIconHeader->bch.bcHeight) / 2;
-					break;
-
-				case BITMAPINFOHEADER_SIZE:
-				case BITMAPV2INFOHEADER_SIZE:
-				case BITMAPV3INFOHEADER_SIZE:
-				case BITMAPV4HEADER_SIZE:
-				case BITMAPV5HEADER_SIZE:
-					d->dimensions[0] = le32_to_cpu(pIconHeader->bih.biWidth);
-					d->dimensions[1] = le32_to_cpu(pIconHeader->bih.biHeight) / 2;
-					break;
-
-				case 0x474E5089:	// '\x89PNG'
-					// TODO: Verify more IHDR fields?
-					d->dimensions[0] = be32_to_cpu(pIconHeader->png.ihdr.data.width);
-					d->dimensions[1] = be32_to_cpu(pIconHeader->png.ihdr.data.height);
-					break;
+			ICOPrivate::IconBitmapHeader_data data = d->getIconBitmapHeaderData(pIconHeader);
+			if (data.bitcount == 0) {
+				// Not supported...
+				d->file.reset();
+				d->dir.data = std::monostate();
+				return;
 			}
+
+			d->dimensions[0] = data.width;
+			d->dimensions[1] = data.height;
 			break;
+		}
 	}
 
 	// File is valid.
