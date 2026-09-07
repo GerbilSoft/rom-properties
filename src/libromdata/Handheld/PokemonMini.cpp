@@ -269,41 +269,46 @@ int PokemonMini::loadFieldData(void)
 	d->fields.addField_string(C_("RomData", "Game ID"), d->getGameID());
 
 	// Vector table.
-	static const array<const char*, PokemonMini_IRQ_MAX> vectors_names = {{
+	static constexpr char vectors_strtbl[] =
 		// 0
-		"Reset",
-		"PRC Frame Copy",
-		"PRC Render",
-		"Timer 2 Underflow (upper)",
-		"Timer 2 Underflow (lower)",
-		"Timer 1 Underflow (upper)",
-		"Timer 1 Underflow (lower)",
-		"Timer 3 Underflow (upper)",
+		"Reset\0"			// 0
+		"PRC Frame Copy\0"		// 6
+		"PRC Render\0"			// 21
+		"Timer 2 Underflow (upper)\0"	// 32
+		"Timer 2 Underflow (lower)\0"	// 58
+		"Timer 1 Underflow (upper)\0"	// 84
+		"Timer 1 Underflow (lower)\0"	// 110
+		"Timer 3 Underflow (upper)\0"	// 136
 
 		// 8
-		"Timer 3 Comparator",
-		"32 Hz Timer",
-		"8 Hz Timer",
-		"2 Hz Timer",
-		"1 Hz Timer",
-		"IR Receiver",
-		"Shake Sensor",
-		"Power Key",
+		"Timer 3 Comparator\0"		// 162
+		"32 Hz Timer\0"			// 181
+		"8 Hz Timer\0"			// 193
+		"2 Hz Timer\0"			// 204
+		"1 Hz Timer\0"			// 215
+		"IR Receiver\0"			// 226
+		"Shake Sensor\0"		// 238
+		"Power Key\0"			// 251
 
 		// 16
-		"Right Key",
-		"Left Key",
-		"Down Key",
-		"Up Key",
-		"C Key",
-		"B Key",
-		"A Key",
-		"Vector #23",	// undefined
+		"Right Key\0"			// 261
+		"Left Key\0"			// 271
+		"Down Key\0"			// 280
+		"Up Key\0"			// 289
+		"C Key\0"			// 296
+		"B Key\0"			// 302
+		"A Key\0"			// 308
+		"Vector #23\0"			// 314 - undefined
 
 		// 24
-		"Vector #24",	// undefined
-		"Vector #25",	// undefined
-		"Cartridge",
+		"Vector #24\0"			// 325 - undefined
+		"Vector #25\0"			// 336 - undefined
+		"Cartridge\0";			// 347
+	static constexpr array<uint16_t, 27> vectors_offtbl = {{
+		  0,   6,  21,  32,  58,  84, 110, 136,
+		162, 181, 193, 204, 215, 226, 238, 251,
+		261, 271, 280, 289, 296, 302, 308, 314,
+		325, 336, 347,
 	}};
 
 	// Vector format: CE C4 00 F3 nn nn
@@ -317,9 +322,9 @@ int PokemonMini::loadFieldData(void)
 	static constexpr array<uint8_t, 6> vec_empty_ff = {{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}};
 	static constexpr array<uint8_t, 6> vec_empty_00 = {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
 
-	auto *const vv_vectors = new RomFields::ListData_t(vectors_names.size());
+	auto *const vv_vectors = new RomFields::ListData_t(vectors_offtbl.size());
 	uint32_t pc = 0x2100 + offsetof(PokemonMini_RomHeader, irqs);
-	for (size_t i = 0; i < vectors_names.size(); i++, pc += 6) {
+	for (size_t i = 0; i < vectors_offtbl.size(); i++, pc += 6) {
 		auto &data_row = vv_vectors->at(i);
 		data_row.reserve(3);
 
@@ -327,7 +332,7 @@ int PokemonMini::loadFieldData(void)
 		data_row.push_back(fmt::to_string(i));
 
 		// Vector name
-		data_row.push_back(vectors_names[i]);
+		data_row.push_back(&vectors_strtbl[vectors_offtbl[i]]);
 
 		const uint8_t *const irq = romHeader->irqs[i];
 
