@@ -430,7 +430,7 @@ int EXEPrivate::readPEImportDir(void)
 	dll_name_data[dll_size_read-1] = '\0';
 
 	// Copy to peImportDir
-	PE_data.peImportDir.insert(PE_data.peImportDir.begin(), pImpDirTbl, p);
+	PE_data.peImportDir.assign(pImpDirTbl, p);
 
 	// Fill peImportNames
 	PE_data.peImportNames.reserve(PE_data.peImportDir.size());
@@ -446,6 +446,7 @@ int EXEPrivate::readPEImportDir(void)
 		}
 
 		// Current DLL name from the import table.
+		// TODO: Verify NULL termination?
 		const char *const dll_name = &dll_name_data[vaddr - dll_vaddr_low];
 		PE_data.peImportNames.push_back(dll_name);
 	}
