@@ -610,7 +610,7 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 	// - Increase the height.
 	// - Show on a separate line?
 
-	static constexpr char vectors_strtbl[] = {
+	static constexpr char vectors_strtbl[] =
 		// $00
 		"Initial SP\0"
 		"Entry Point\0"
@@ -635,8 +635,7 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 		"IRQ4 (HBlank)\0"
 		"IRQ5\0"
 		"IRQ6 (VBlank)\0"
-		"IRQ7 (NMI)\0"
-	};
+		"IRQ7 (NMI)\0";
 	// Just under 255 (uint8_t max). Nice.
 	static constexpr array<uint8_t, 20> vectors_offtbl = {{
 		0, 11, 23, 33, 47, 67, 84, 98,	// $00-$1C
