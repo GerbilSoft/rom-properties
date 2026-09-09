@@ -117,10 +117,18 @@ rp_rom_data_view_class_init(RpRomDataViewClass *klass)
 
 	// NOTE: Not using g_quark_from_static_string()
 	// because the extension can be unloaded.
-	RFT_BITFIELD_value_quark = g_quark_from_string("RFT_BITFIELD_value");
-	RFT_LISTDATA_rows_visible_quark = g_quark_from_string("RFT_LISTDATA_rows_visible");
-	RFT_fieldIdx_quark = g_quark_from_string("RFT_fieldIdx");
-	RFT_STRING_warning_quark = g_quark_from_string("RFT_STRING_warning");
+	if (RFT_BITFIELD_value_quark == 0) {
+		RFT_BITFIELD_value_quark = g_quark_from_string("RFT_BITFIELD_value");
+	}
+	if (RFT_LISTDATA_rows_visible_quark == 0) {
+		RFT_LISTDATA_rows_visible_quark = g_quark_from_string("RFT_LISTDATA_rows_visible");
+	}
+	if (RFT_fieldIdx_quark == 0) {
+		RFT_fieldIdx_quark = g_quark_from_string("RFT_fieldIdx");
+	}
+	if (RFT_STRING_warning_quark == 0) {
+		RFT_STRING_warning_quark = g_quark_from_string("RFT_STRING_warning");
+	}
 
 	/** Properties **/
 

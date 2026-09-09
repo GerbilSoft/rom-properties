@@ -25,7 +25,7 @@
 // thunarx.h mini replacement
 #include "thunarx-mini.h"
 
-static GQuark rp_item_convert_to_png_quark;
+static GQuark rp_item_convert_to_png_quark = 0;
 
 static void   rp_thunar_menu_provider_page_provider_init	(ThunarxMenuProviderIface *iface);
 static GList *rp_thunar_menu_provider_get_file_menu_items	(ThunarxMenuProvider      *provider,
@@ -74,7 +74,9 @@ rp_thunar_menu_provider_class_init(RpThunarMenuProviderClass *klass)
 	RP_UNUSED(klass);
 
 	// Get quarks for the various GLib strings.
-	rp_item_convert_to_png_quark = g_quark_from_string("rp-item-convert-to-png");
+	if (rp_item_convert_to_png_quark == 0) {
+		rp_item_convert_to_png_quark = g_quark_from_string("rp-item-convert-to-png");
+	}
 }
 
 static void

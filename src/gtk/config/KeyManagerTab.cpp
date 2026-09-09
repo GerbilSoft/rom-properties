@@ -28,8 +28,8 @@ static const array<const char*, 4> import_menu_actions = {{
 	"3DS aeskeydb.bin",
 }};
 
-static GQuark menuImport_id_quark;
-static GQuark KeyManagerTab_fileID_quark;
+static GQuark menuImport_id_quark = 0;
+static GQuark KeyManagerTab_fileID_quark = 0;
 
 static void	rp_key_manager_tab_dispose			(GObject	*object);
 static void	rp_key_manager_tab_finalize			(GObject	*object);
@@ -85,8 +85,12 @@ rp_key_manager_tab_class_init(RpKeyManagerTabClass *klass)
 
 	// NOTE: Not using g_quark_from_static_string()
 	// because the extension can be unloaded.
-	menuImport_id_quark = g_quark_from_string("menuImport_id");
-	KeyManagerTab_fileID_quark = g_quark_from_string("KeyManagerTab.fileID");
+	if (menuImport_id_quark == 0) {
+		menuImport_id_quark = g_quark_from_string("menuImport_id");
+	}
+	if (KeyManagerTab_fileID_quark == 0) {
+		KeyManagerTab_fileID_quark = g_quark_from_string("KeyManagerTab.fileID");
+	}
 
 	// Version-specific class initialization
 	rp_key_manager_tab_class_init_gtkver(klass);

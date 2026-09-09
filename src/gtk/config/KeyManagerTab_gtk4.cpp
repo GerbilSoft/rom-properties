@@ -30,10 +30,10 @@ typedef enum {
 } KeyManagerColumns;
 
 // Quark for GtkEditableLabel to identify the original key index.
-static GQuark KeyManagerTab_flatKeyIdx_quark;
+static GQuark KeyManagerTab_flatKeyIdx_quark = 0;
 
 // Quark for GtkEditableLabel to access the KeyManagerTab object.
-static GQuark KeyManagerTab_self_quark;
+static GQuark KeyManagerTab_self_quark = 0;
 
 /**
  * GWeakNotify function to destroy the GtkTreeListModel and related when the GtkColumnView is destroyed.
@@ -253,8 +253,12 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
  */
 void rp_key_manager_tab_class_init_gtkver(RpKeyManagerTabClass *klass)
 {
-	KeyManagerTab_flatKeyIdx_quark = g_quark_from_string("KeyManagerTab.flatKeyIdx");
-	KeyManagerTab_self_quark = g_quark_from_string("KeyManagerTab.self");
+	if (KeyManagerTab_flatKeyIdx_quark == 0) {
+		KeyManagerTab_flatKeyIdx_quark = g_quark_from_string("KeyManagerTab.flatKeyIdx");
+	}
+	if (KeyManagerTab_self_quark == 0) {
+		KeyManagerTab_self_quark = g_quark_from_string("KeyManagerTab.self");
+	}
 
 	// CSS class for monospace GtkEditableLabel widgets
 	GtkCssProvider *const provider = gtk_css_provider_new();

@@ -48,7 +48,7 @@ static void	rp_xfs_attr_view_update_project_id(RpXfsAttrView *widget);
 
 static GParamSpec *props[PROP_LAST];
 
-static GQuark XfsAttrView_value_quark;
+static GQuark XfsAttrView_value_quark = 0;
 
 #if GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkBoxClass superclass;
@@ -98,7 +98,9 @@ rp_xfs_attr_view_class_init(RpXfsAttrViewClass *klass)
 
 	// NOTE: Not using g_quark_from_static_string()
 	// because the extension can be unloaded.
-	XfsAttrView_value_quark = g_quark_from_string("XfsAttrValue.value");
+	if (XfsAttrView_value_quark == 0) {
+		XfsAttrView_value_quark = g_quark_from_string("XfsAttrValue.value");
+	}
 
 	/** Properties **/
 

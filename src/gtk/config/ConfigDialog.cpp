@@ -79,7 +79,7 @@ typedef enum {
 	SIGNAL_LAST
 } RpConfigDialogSignalID;
 
-static GQuark response_id_quark;
+static GQuark response_id_quark = 0;
 static guint signals[SIGNAL_LAST];
 #endif /* !USE_GTK_DIALOG */
 
@@ -136,7 +136,9 @@ rp_config_dialog_class_init(RpConfigDialogClass *klass)
 
 	// NOTE: Not using g_quark_from_static_string()
 	// because the extension can be unloaded.
-	response_id_quark = g_quark_from_string("response-id");
+	if (response_id_quark == 0) {
+		response_id_quark = g_quark_from_string("response-id");
+	}
 
 	/** Signals **/
 

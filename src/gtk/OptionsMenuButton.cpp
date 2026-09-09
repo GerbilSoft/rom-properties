@@ -70,7 +70,7 @@ typedef enum {
 	SIGNAL_LAST
 } OptionsMenuButtonSignalID;
 
-static GQuark menuOptions_id_quark;
+static GQuark menuOptions_id_quark = 0;
 
 static void	rp_options_menu_button_dispose		(GObject	*object);
 static void	rp_options_menu_button_set_property	(GObject	*object,
@@ -150,7 +150,9 @@ rp_options_menu_button_class_init(RpOptionsMenuButtonClass *klass)
 
 	// NOTE: Not using g_quark_from_static_string()
 	// because the extension can be unloaded.
-	menuOptions_id_quark = g_quark_from_string("menuOptions_id");
+	if (menuOptions_id_quark == 0) {
+		menuOptions_id_quark = g_quark_from_string("menuOptions_id");
+	}
 
 	/** Properties **/
 

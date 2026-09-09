@@ -122,7 +122,7 @@ struct _RpImageTypesTab {
 	GtkWidget *lblCredits;
 };
 
-static GQuark rp_config_cbid_quark;
+static GQuark rp_config_cbid_quark = 0;
 
 static void	rp_image_types_tab_finalize			(GObject		*object);
 
@@ -407,7 +407,9 @@ rp_image_types_tab_class_init(RpImageTypesTabClass *klass)
 
 	// NOTE: Not using g_quark_from_static_string()
 	// because the extension can be unloaded.
-	rp_config_cbid_quark = g_quark_from_string("rp-config.cbid");
+	if (rp_config_cbid_quark == 0) {
+		rp_config_cbid_quark = g_quark_from_string("rp-config.cbid");
+	}
 }
 
 static void

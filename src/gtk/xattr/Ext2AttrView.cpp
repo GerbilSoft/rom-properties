@@ -55,7 +55,7 @@ static void	rp_ext2_attr_view_update_flags_display(RpExt2AttrView *widget);
 
 static GParamSpec *props[PROP_LAST];
 
-static GQuark Ext2AttrView_value_quark;
+static GQuark Ext2AttrView_value_quark = 0;
 
 #if GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkBoxClass superclass;
@@ -109,7 +109,9 @@ rp_ext2_attr_view_class_init(RpExt2AttrViewClass *klass)
 
 	// NOTE: Not using g_quark_from_static_string()
 	// because the extension can be unloaded.
-	Ext2AttrView_value_quark = g_quark_from_string("Ext2AttrValue.value");
+	if (Ext2AttrView_value_quark == 0) {
+		Ext2AttrView_value_quark = g_quark_from_string("Ext2AttrValue.value");
+	}
 
 	/** Properties **/
 

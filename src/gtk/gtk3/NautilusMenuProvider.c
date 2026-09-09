@@ -32,7 +32,7 @@
 #  include "nautilus-extension-mini.h"
 #endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
-static GQuark rp_item_convert_to_png_quark;
+static GQuark rp_item_convert_to_png_quark = 0;
 
 static void	rp_nautilus_menu_provider_page_provider_init		(NautilusMenuProviderInterface *iface);
 
@@ -89,7 +89,9 @@ rp_nautilus_menu_provider_class_init(RpNautilusMenuProviderClass *klass)
 	RP_UNUSED(klass);
 
 	// Get quarks for the various GLib strings.
-	rp_item_convert_to_png_quark = g_quark_from_string("rp-item-convert-to-png");
+	if (rp_item_convert_to_png_quark == 0) {
+		rp_item_convert_to_png_quark = g_quark_from_string("rp-item-convert-to-png");
+	}
 }
 
 static void

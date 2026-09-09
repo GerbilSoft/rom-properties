@@ -47,7 +47,7 @@ static void	rp_dos_attr_view_update_attrs_display(RpDosAttrView *widget);
 
 static GParamSpec *props[PROP_LAST];
 
-static GQuark DosAttrView_value_quark;
+static GQuark DosAttrView_value_quark = 0;
 
 #if GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkBoxClass superclass;
@@ -104,7 +104,9 @@ rp_dos_attr_view_class_init(RpDosAttrViewClass *klass)
 
 	// NOTE: Not using g_quark_from_static_string()
 	// because the extension can be unloaded.
-	DosAttrView_value_quark = g_quark_from_string("DosAttrValue.value");
+	if (DosAttrView_value_quark == 0) {
+		DosAttrView_value_quark = g_quark_from_string("DosAttrValue.value");
+	}
 
 	/** Properties **/
 
