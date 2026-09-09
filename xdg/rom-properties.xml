@@ -608,7 +608,7 @@
     <comment>Wii U firmware image</comment>
     <sub-class-of type="application/x-executable"/>
     <generic-icon name="application-x-executable"/>
-    <alias type="application/x-wii-u-ancast">
+    <alias type="application/x-wii-u-ancast"/>
     <glob pattern="*.ancast"/>
     <glob pattern="*.img"/>
     <magic priority="90">
@@ -621,7 +621,7 @@
     <comment>Wii U Toucan image</comment>
     <sub-class-of type="application/x-executable"/>
     <generic-icon name="application-x-executable"/>
-    <alias type="application/x-wii-u-toucan">
+    <alias type="application/x-wii-u-toucan"/>
     <!-- <glob pattern="*.bin"/> FIXME: Too generic? -->
     <magic priority="70">
       <match value="0xFD9B5B7A" type="big32" offset="0"/>
