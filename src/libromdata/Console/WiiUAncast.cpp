@@ -41,7 +41,7 @@ public:
 public:
 	/** RomDataInfo **/
 	static const array<const char*, 3+1> exts;
-	static const array<const char*, 2+1> mimeTypes;
+	static const array<const char*, 4+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
 
 public:
@@ -98,10 +98,13 @@ const array<const char*, 3+1> WiiUAncastPrivate::exts = {{
 
 	nullptr
 }};
-const array<const char*, 2+1> WiiUAncastPrivate::mimeTypes = {{
+const array<const char*, 4+1> WiiUAncastPrivate::mimeTypes = {{
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
-	// TODO: Change from "Ancast" to "Firmware"?
+	"application/x-wii-u-firmware-image",
+	"application/x-wii-u-toucan-image",
+
+	// Old MIME types for compatibility.
 	"application/x-wii-u-ancast",
 	"application/x-wii-u-toucan",
 
@@ -223,7 +226,7 @@ WiiUAncast::WiiUAncast(const IRpFilePtr &file)
 	: super(new WiiUAncastPrivate(file))
 {
 	RP_D(WiiUAncast);
-	d->mimeType = "application/x-wii-u-ancast";	// unofficial, not on fd.o
+	d->mimeType = "application/x-wii-u-firmware-image";	// unofficial, not on fd.o
 	d->fileType = FileType::FirmwareBinary;
 
 	if (!d->file) {
@@ -269,6 +272,7 @@ WiiUAncast::WiiUAncast(const IRpFilePtr &file)
 			// Add the section 0 and section 1 lengths to get the section 2 start address.
 			// NOTE: Requires 32-byte alignment.
 			d->container = WiiUAncastPrivate::Container::Toucan;
+			d->mimeType = "application/x-wii-u-toucan-image";	// unofficial, not on fd.o
 			start_addr = 0x20 + (8 * section_count);
 			start_addr += be32_to_cpu(pData32[0x0024/4]);
 			start_addr += be32_to_cpu(pData32[0x0028/4]);
