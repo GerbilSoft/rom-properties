@@ -17,7 +17,6 @@
 using namespace LibWin32Common;
 
 // C++ STL classes
-using std::shared_ptr;
 using std::wstring;
 
 namespace LibRpFile {
@@ -234,7 +233,7 @@ IFACEMETHODIMP IStreamWrapper::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
 	}
 
 	// Some shortcuts are available if m_file is RpFile.
-	RpFile *const rpFile = dynamic_cast<RpFile*>(m_file);
+	RpFile *const rpFile = dynamic_cast<RpFile*>(m_file.get());
 
 	if (grfStatFlag & STATFLAG_NONAME) {
 		pstatstg->pwcsName = nullptr;

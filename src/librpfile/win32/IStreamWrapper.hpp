@@ -24,11 +24,9 @@ class IStreamWrapper final : public LibWin32Common::ComBase<IStream>
 public:
 	/**
 	 * Create an IStream wrapper for IRpFile.
-	 * NOTE: The original IRpFile must not be deleted while this wrapper is in use!
-	 * The IRpFile ownership is *not* changed.
 	 * @param file IRpFile
 	 */
-	explicit IStreamWrapper(LibRpFile::IRpFile *file)
+	explicit IStreamWrapper(LibRpFile::IRpFilePtr file)
 		: m_file(file)
 	{}
 
@@ -40,19 +38,27 @@ public:
 public:
 	/**
 	 * Get the IRpFile.
-	 * NOTE: The IRpFile is *not* owned by this object.
 	 * @return IRpFile
 	 */
 	inline IRpFile *file(void) const
 	{
-		return m_file;
+		return m_file.get();
 	}
 
 	/**
 	 * Set the IRpFile.
 	 * @param file New IRpFile (must *not* be deleted while in use)
 	 */
-	void setFile(LibRpFile::IRpFile *file)
+	inline void setFile(const LibRpFile::IRpFilePtr &file)
+	{
+		m_file = file;
+	}
+
+	/**
+	 * Set the IRpFile.
+	 * @param file New IRpFile (must *not* be deleted while in use)
+	 */
+	inline void setFile(LibRpFile::IRpFilePtr &&file)
 	{
 		m_file = file;
 	}
@@ -77,7 +83,7 @@ public:
 	IFACEMETHODIMP Clone(IStream **ppstm) final;
 
 protected:
-	IRpFile *m_file;
+	IRpFilePtr m_file;
 };
 
 }

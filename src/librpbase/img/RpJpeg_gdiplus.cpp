@@ -46,7 +46,7 @@ rp_image_ptr load(const IRpFilePtr &file)
 	file->rewind();
 
 	// Load the image using IStreamWrapper.
-	IStreamWrapper *const stream = new IStreamWrapper(file.get());
+	IStreamWrapper *const stream = new IStreamWrapper(file);
 	Gdiplus::Bitmap *const pGdipBmp = Gdiplus::Bitmap::FromStream(stream, FALSE);
 	stream->Release();
 	if (!pGdipBmp) {
