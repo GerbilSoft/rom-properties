@@ -181,11 +181,17 @@ int OptionsMenuButtonPrivate::popupMenu(void)
 	// Get the absolute position of the "Options" button.
 	RECT rect_btnOptions;
 	GetWindowRect(hWnd, &rect_btnOptions);
-	int id = TrackPopupMenu(hMenuOptions,
-		TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_VERNEGANIMATION |
-			TPM_NONOTIFY | TPM_RETURNCMD,
-		rect_btnOptions.left, rect_btnOptions.top, 0,
-		hWnd, nullptr);
+
+	UINT uFlags;
+	int x;
+	if (GetSystemMetrics(SM_MENUDROPALIGNMENT) != 0) {
+		uFlags = TPM_RIGHTALIGN | TPM_BOTTOMALIGN | TPM_VERNEGANIMATION | TPM_NONOTIFY | TPM_RETURNCMD;
+		x = rect_btnOptions.right;
+	} else {
+		uFlags = TPM_LEFTALIGN  | TPM_BOTTOMALIGN | TPM_VERNEGANIMATION | TPM_NONOTIFY | TPM_RETURNCMD;
+		x = rect_btnOptions.left;
+	}
+	int id = TrackPopupMenu(hMenuOptions, uFlags, x, rect_btnOptions.top, 0, hWnd, nullptr);
 
 	// TODO: Send a notification instead of returning a value?
 	return id;

@@ -625,9 +625,10 @@ void DragImageLabelPrivate::tryPopupEcksBawks(LPARAM lParam)
 
 	HMENU hSubMenu = GetSubMenu(hMenuEcksBawks, 0);
 	assert(hSubMenu != nullptr);
-	int id = TrackPopupMenu(hSubMenu,
-		TPM_LEFTALIGN | TPM_TOPALIGN | TPM_VERNEGANIMATION |
-			TPM_NONOTIFY | TPM_RETURNCMD,
+	const UINT uFlags = (GetSystemMetrics(SM_MENUDROPALIGNMENT) != 0)
+		? (TPM_RIGHTALIGN | TPM_BOTTOMALIGN | TPM_VERNEGANIMATION | TPM_NONOTIFY | TPM_RETURNCMD)
+		: (TPM_LEFTALIGN  | TPM_BOTTOMALIGN | TPM_VERNEGANIMATION | TPM_NONOTIFY | TPM_RETURNCMD);
+	int id = TrackPopupMenu(hSubMenu, uFlags,
 		pt.x, pt.y, 0, q_ptr, nullptr);
 
 	LPCTSTR url = nullptr;

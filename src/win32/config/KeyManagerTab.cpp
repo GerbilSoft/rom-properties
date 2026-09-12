@@ -721,8 +721,17 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 
 					RECT btnRect;
 					GetWindowRect(GetDlgItem(hDlg, IDC_KEYMANAGER_IMPORT), &btnRect);
-					TrackPopupMenu(d->hMenuImport, TPM_LEFTALIGN|TPM_BOTTOMALIGN,
-						btnRect.left, btnRect.top, 0, hDlg, nullptr);
+
+					UINT uFlags;
+					int x;
+					if (GetSystemMetrics(SM_MENUDROPALIGNMENT) != 0) {
+						uFlags = TPM_RIGHTALIGN | TPM_BOTTOMALIGN | TPM_VERPOSANIMATION;
+						x = btnRect.right;
+					} else {
+						uFlags = TPM_LEFTALIGN  | TPM_BOTTOMALIGN | TPM_VERPOSANIMATION;
+						x = btnRect.left;
+					}
+					TrackPopupMenu(d->hMenuImport, uFlags, x, btnRect.top, 0, hDlg, nullptr);
 					return true;
 				}
 
