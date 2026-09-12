@@ -488,8 +488,8 @@ rp_image_const_ptr AndroidAPKPrivate::loadIcon(void)
 
 	// Create a MemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly?
-	MemFile f_mem(icon_buf.data(), icon_buf.size());
-	icon = RpImageLoader::load(&f_mem);
+	MemFilePtr f_mem = std::make_shared<MemFile>(icon_buf.data(), icon_buf.size());
+	icon = RpImageLoader::load(f_mem);
 	this->img_icon = icon;
 	return icon;
 }

@@ -19,16 +19,6 @@ namespace LibRpBase { namespace RpJpeg {
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-LibRpTexture::rp_image_ptr load(LibRpFile::IRpFile *file);
-
-/**
- * Load a JPEG image from an IRpFile.
- * @param file IRpFile to load from.
- * @return rp_image*, or nullptr on error.
- */
-static inline LibRpTexture::rp_image_ptr load(const LibRpFile::IRpFilePtr &file)
-{
-	return load(file.get());
-}
+LibRpTexture::rp_image_ptr load(const LibRpFile::IRpFilePtr &file);
 
 } }

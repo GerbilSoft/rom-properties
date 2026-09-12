@@ -245,10 +245,11 @@ static void jpeg_IRpFile_src(j_decompress_ptr cinfo, IRpFile *infile)
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-rp_image_ptr load(IRpFile *file)
+rp_image_ptr load(const IRpFilePtr &file)
 {
+	rp_image_ptr img;
 	if (!file) {
-		return {};
+		return img;
 	}
 
 	// Rewind the file.
@@ -256,7 +257,6 @@ rp_image_ptr load(IRpFile *file)
 
 	Private::my_error_mgr jerr;
 	jpeg_decompress_struct cinfo;
-	rp_image *img = nullptr;	// Image
 	int row_stride;			// Physical row width in output buffer
 	bool direct_copy = false;	// True if a direct copy can be made
 
@@ -278,8 +278,7 @@ rp_image_ptr load(IRpFile *file)
 	// Multi-level setjmp() so we can test for JCS_EXT_BGRA.
 	int jmperr = setjmp(jerr.setjmp_buffer);
 	if (jmperr) {
-		delete img;
-		img = nullptr;
+		img.reset();
 
 		if (try_ext_bgra && tried_ext_bgra) {
 			// Tried using JCS_EXT_BGRA and it didn't work.
@@ -295,9 +294,9 @@ rp_image_ptr load(IRpFile *file)
 			// An error occurred while decoding the JPEG.
 			// NOTE: buffer is allocated using JPEG allocation functions,
 			// so it's automatically freed when we destroy cinfo.
-			delete img;
 			jpeg_destroy_decompress(&cinfo);
-			return {};
+			img.reset();
+			return img;
 		}
 	}
 
@@ -305,7 +304,7 @@ rp_image_ptr load(IRpFile *file)
 	jpeg_create_decompress(&cinfo);
 
 	/** Step 2: Specify data source. **/
-	Private::jpeg_IRpFile_src(&cinfo, file);
+	Private::jpeg_IRpFile_src(&cinfo, file.get());
 
 	/** Step 3: Read file parameters with jpeg_read_header(). */
 	// Return value is not useful here since:
@@ -323,7 +322,7 @@ rp_image_ptr load(IRpFile *file)
 	{
 		// Image size is either invalid or too big.
 		jpeg_destroy_decompress(&cinfo);
-		return {};
+		return img;
 	}
 
 	/** Step 4: Set parameters for decompression. **/
@@ -372,16 +371,16 @@ rp_image_ptr load(IRpFile *file)
 			if (cinfo.output_components != 1) {
 				// Only 8-bit grayscale is supported.
 				jpeg_destroy_decompress(&cinfo);
-				return {};
+				return img;
 			}
 
 			// Create the image.
-			img = new rp_image(cinfo.output_width, cinfo.output_height, rp_image::Format::CI8);
+			img = std::make_shared<rp_image>(cinfo.output_width, cinfo.output_height, rp_image::Format::CI8);
 			if (!img->isValid()) {
 				// Could not allocate the image.
-				delete img;
 				jpeg_destroy_decompress(&cinfo);
-				return {};
+				img.reset();
+				return img;
 			}
 
 			// Create a grayscale palette.
@@ -389,9 +388,9 @@ rp_image_ptr load(IRpFile *file)
 			assert(img_palette != nullptr);
 			if (!img_palette) {
 				// No palette...
-				delete img;
 				jpeg_destroy_decompress(&cinfo);
-				return {};
+				img.reset();
+				return img;
 			}
 
 			const unsigned int img_palette_len = img->palette_len();
@@ -422,15 +421,15 @@ rp_image_ptr load(IRpFile *file)
 			if (cinfo.output_components != 3) {
 				// Only 24-bit RGB/YCbCr is supported.
 				jpeg_destroy_decompress(&cinfo);
-				return {};
+				return img;
 			}
 
-			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
+			img = std::make_shared<rp_image>(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
 			if (!img->isValid()) {
 				// Could not allocate the image.
-				delete img;
 				jpeg_destroy_decompress(&cinfo);
-				return {};
+				img.reset();
+				return img;
 			}
 			break;
 		}
@@ -443,15 +442,15 @@ rp_image_ptr load(IRpFile *file)
 			if (cinfo.output_components != 4) {
 				// Only 4-component CMYK/YCCK is supported.
 				jpeg_destroy_decompress(&cinfo);
-				return {};
+				return img;
 			}
 
-			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
+			img = std::make_shared<rp_image>(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
 			if (!img->isValid()) {
 				// Could not allocate the image.
-				delete img;
 				jpeg_destroy_decompress(&cinfo);
-				return {};
+				img.reset();
+				return img;
 			}
 			break;
 
@@ -462,15 +461,15 @@ rp_image_ptr load(IRpFile *file)
 			if (cinfo.output_components != 4) {
 				// Only 32-bit BGRA is supported.
 				jpeg_destroy_decompress(&cinfo);
-				return {};
+				return img;
 			}
 
-			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
+			img = std::make_shared<rp_image>(cinfo.image_width, cinfo.image_height, rp_image::Format::ARGB32);
 			if (!img->isValid()) {
 				// Could not allocate the image.
-				delete img;
 				jpeg_destroy_decompress(&cinfo);
-				return {};
+				img.reset();
+				return img;
 			}
 			break;
 		}
@@ -479,7 +478,7 @@ rp_image_ptr load(IRpFile *file)
 			// Unsupported colorspace.
 			assert(!"Unsupported JPEG colorspace. (Step 5)");
 			jpeg_destroy_decompress(&cinfo);
-			return {};
+			return img;
 	}
 
 	/** Step 6: while (scan lines remain to be read) jpeg_read_scanlines(...); */
@@ -500,7 +499,7 @@ rp_image_ptr load(IRpFile *file)
 				// conversion step.
 #ifdef RPJPEG_HAS_SSSE3
 				if (RP_CPU_x86_HasSSSE3()) {
-					ssse3::decodeBGRtoARGB(img, &cinfo, buffer);
+					ssse3::decodeBGRtoARGB(img.get(), &cinfo, buffer);
 					break;
 				}
 #endif /* RPJPEG_HAS_SSSE3 */
@@ -580,10 +579,10 @@ rp_image_ptr load(IRpFile *file)
 
 			default:
 				assert(!"Unsupported JPEG colorspace. (Step 6)");
-				delete img;
 				jpeg_finish_decompress(&cinfo);
 				jpeg_destroy_decompress(&cinfo);
-				return {};
+				img.reset();
+				return img;
 		}
 
 		// Set the sBIT metadata.
@@ -627,7 +626,7 @@ rp_image_ptr load(IRpFile *file)
 	jpeg_destroy_decompress(&cinfo);
 
 	// Return the image.
-	return rp_image_ptr(img);
+	return img;
 }
 
 } }

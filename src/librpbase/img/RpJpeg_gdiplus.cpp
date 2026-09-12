@@ -35,26 +35,30 @@ namespace LibRpBase { namespace RpJpeg {
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-rp_image_ptr load(IRpFile *file)
+rp_image_ptr load(const IRpFilePtr &file)
 {
-	if (!file)
-		return {};
+	rp_image_ptr img;
+	if (!file) {
+		return img;
+	}
 
 	// Rewind the file.
 	file->rewind();
 
 	// Load the image using IStreamWrapper.
-	IStreamWrapper *const stream = new IStreamWrapper(file);
+	IStreamWrapper *const stream = new IStreamWrapper(file.get());
 	Gdiplus::Bitmap *const pGdipBmp = Gdiplus::Bitmap::FromStream(stream, FALSE);
 	stream->Release();
 	if (!pGdipBmp) {
 		// Could not load the image.
-		return {};
+		return img;
 	}
 
 	// Create an rp_image using the GDI+ bitmap.
+	// NOTE: Assigning to `img` for named-return-value optimization.
 	RpGdiplusBackend *const backend = new RpGdiplusBackend(pGdipBmp);
-	return std::make_shared<rp_image>(backend);
+	img = std::make_shared<rp_image>(backend);
+	return img;
 }
 
 } }

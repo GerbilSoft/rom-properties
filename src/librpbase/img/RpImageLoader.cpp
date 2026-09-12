@@ -51,7 +51,7 @@ static constexpr array<uint8_t, 7> webp_magic = {{'W','E','B','P','V','P','8'}};
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-rp_image_ptr load(IRpFile *file)
+rp_image_ptr load(const IRpFilePtr &file)
 {
 	file->rewind();
 
