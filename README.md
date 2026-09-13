@@ -13,33 +13,29 @@ video game ROM and disc images.
 
 ###### no vibes, no bevis
 
-## v2.8
+## v2.9
 
 ![rom-properties (rpcli) showing graphics in KDE Konsole using the Kitty protocol.](doc/img/rp-v2.8-konsole-rpcli-kitty.png)
 
-Major additions in v2.8 include:
+Major additions in v2.9 include:
 
-* PlayStation TIM textures.
+* Game Maker Studio data.win parser. (Contributed by @InvoxiPlayGames)
 
-* S98 audio files.
+* PlayStation PARAM.SFO parser. (Contributed by @InvoxiPlayGames)
 
-* rpcli supports displaying icons and banners using the Sixel and/or
-  Kitty protocols when using a terminal that supports it.
+* rpcli now has a `-P` option to list CPU features detected on the
+  current system. Currently supports x86 and ARM.
 
-* Improvements for Wii U firmware files, amiibo, and Lua bytecode.
+* On Windows, the icon and banner on the ROM Properties tab can now be
+  dragged and dropped into a folder window to extract it in PNG format.
 
-* Numerous improvements for Windows icon handling, including a fix for
-  NT 3.x EXEs that have two 16-color icons, one of which is actually an
-  8-color icon.
+* Added Georgian translations from temuri.doghonadze .
 
-* Added more ARM NEON optimizations, including linear RGB decoding and
-  Super Magic Drive decoding.
+* EXE: Games for Windows Live and XNA executables now show an Xbox 360-style
+  XDBF tab for Achievements.
 
-* Windows-specific changes:
-  * Fix fallback icons for files where the registered DefaultIcon has
-    double-quotes, e.g. PowerShell .ps1 scripts.
-  * GNU gettext is now built as part of rom-properties, which simplifies
-    upgrades.
+* KDE Frameworks 6: The system-wide file size unit dialect setting is now used
+  instead of assuming IEC-style (KiB, MiB).
 
 * Lots and lots of tiny bug fixes and improvements.
 
@@ -303,10 +299,12 @@ button.
 |             System             | Properties Tab | Metadata | Internal Images | External Scans |
 |:------------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | Executable and Linkable Format |       Yes      |    No    |       N/A       |       N/A      |
+| GameMaker Studio data.win      |       Yes      |   Yes    |       N/A       |       N/A      |
 | PUC Lua binaries               |       Yes      |    No    |       N/A       |       N/A      |
 | Mach-O Binaries                |       Yes      |    No    |       N/A       |       N/A      |
 | Nintendo amiibo                |       Yes      |    No    |       N/A       |      Media     |
 | Nintendo Badge Arcade          |       Yes      |   Yes    |      Image      |       N/A      |
+| Sony PlayStation PARAM.SFO     |       Yes      |   Yes    |       N/A       |       N/A      |
 | Windows/DOS Executables        |       Yes      |   Yes    |       Icon¹     |       N/A      |
 
 * 1: Icon thumbnailing is disabled for ICO, CUR, and EXE files to prevent
@@ -470,6 +468,7 @@ under CC-BY 4.0.
 * spencerchris8080: Spanish
 * @NoNameWasDefined: French
 * temuri.doghonadze: Georgian
+
 ### Other Contributions
 
 [This list is incomplete; if you think you should be listed here, file an issue.]

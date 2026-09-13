@@ -1,6 +1,6 @@
 # Changes
 
-## v2.9 (released 2026/??/??)
+## v2.9 (released 2026/09/13)
 
 * New parsers:
   * GameMaker: Game Maker Studio data.win parser.
