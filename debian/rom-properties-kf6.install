@@ -1,0 +1,5 @@
+usr/lib/*/qt6/plugins/kf6/propertiesdialog/rom-properties-kf6.so
+usr/lib/*/qt6/plugins/kf6/propertiesdialog/xattrview-kf6.so
+usr/lib/*/qt6/plugins/kf6/thumbcreator/RomThumbnailCreator-kf6.so
+usr/lib/*/qt6/plugins/kf6/kfilemetadata/kfilemetadata_rom-properties-kf6.so
+usr/lib/*/qt6/plugins/kf6/overlayicon/overlayiconplugin_rom-properties-kf6.so
