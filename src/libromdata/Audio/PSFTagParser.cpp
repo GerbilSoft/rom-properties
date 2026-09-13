@@ -387,7 +387,7 @@ static unsigned int lengthToMs(const char *str)
 	s = sscanf(str, "%u", &sec);
 	if (s == 1) {
 		// Format matched.
-		return sec;
+		return sec * 1000;
 	}
 
 	// No matches.
