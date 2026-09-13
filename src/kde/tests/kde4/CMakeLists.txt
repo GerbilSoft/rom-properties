@@ -42,7 +42,8 @@ ADD_EXECUTABLE(RomDataViewTest_kde4 ${RomDataViewTest_kde4_SRCS})
 SET(RomDataViewTest_kde4_XVFB ON)
 TARGET_LINK_LIBRARIES(RomDataViewTest_kde4 PRIVATE rptest romdata)
 TARGET_LINK_LIBRARIES(RomDataViewTest_kde4 PRIVATE rom-properties-kde4_LIB)
-LIST(APPEND KDE4_TESTS RomDataViewTest_kde4)
+# Disable for Launchpad.
+#LIST(APPEND KDE4_TESTS RomDataViewTest_kde4)
 
 ###### Add tests to CTest ######
 

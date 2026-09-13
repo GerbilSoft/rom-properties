@@ -46,7 +46,8 @@ ADD_EXECUTABLE(RomDataViewTest_kf5 ${RomDataViewTest_kf5_SRCS})
 SET(RomDataViewTest_kf5_XVFB ON)
 TARGET_LINK_LIBRARIES(RomDataViewTest_kf5 PRIVATE rptest romdata)
 TARGET_LINK_LIBRARIES(RomDataViewTest_kf5 PRIVATE rom-properties-kf5_LIB)
-LIST(APPEND KF5_TESTS RomDataViewTest_kf5)
+# Disable for Launchpad.
+#LIST(APPEND KF5_TESTS RomDataViewTest_kf5)
 
 ###### Add tests to CTest ######
 

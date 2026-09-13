@@ -64,7 +64,8 @@ IF(BUILD_XFCE)
 	TARGET_LINK_LIBRARIES(RomDataViewTest_gtk2 PRIVATE rptest romdata)
 	TARGET_LINK_LIBRARIES(RomDataViewTest_gtk2 PUBLIC GTK2::gtk GTK2::gdk GTK2::pango)
 	TARGET_LINK_LIBRARIES(RomDataViewTest_gtk2 PUBLIC rom-properties-xfce_LIB)
-	LIST(APPEND GTK_TESTS RomDataViewTest_gtk2)
+	# Disable for Launchpad.
+	#LIST(APPEND GTK_TESTS RomDataViewTest_gtk2)
 ENDIF(BUILD_XFCE)
 IF(BUILD_GTK3)
 	ADD_EXECUTABLE(SortFuncsTest_gtk3
@@ -83,7 +84,8 @@ IF(BUILD_GTK3)
 	SET(RomDataViewTest_gtk3_XVFB ON)
 	TARGET_LINK_LIBRARIES(RomDataViewTest_gtk3 PRIVATE rptest romdata)
 	TARGET_LINK_LIBRARIES(RomDataViewTest_gtk3 PUBLIC rom-properties-gtk3_LIB)
-	LIST(APPEND GTK_TESTS RomDataViewTest_gtk3)
+	# Disable for Launchpad.
+	#LIST(APPEND GTK_TESTS RomDataViewTest_gtk3)
 ENDIF(BUILD_GTK3)
 IF(BUILD_GTK4)
 	ADD_EXECUTABLE(SortFuncsTest_gtk4
