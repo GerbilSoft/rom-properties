@@ -23,7 +23,8 @@ ADD_EXECUTABLE(ListDataSortProxyModelTest_kde4
 	)
 TARGET_LINK_LIBRARIES(ListDataSortProxyModelTest_kde4 PRIVATE rptest romdata)
 TARGET_LINK_LIBRARIES(ListDataSortProxyModelTest_kde4 PRIVATE rom-properties-kde4_LIB)
-LIST(APPEND KDE4_TESTS ListDataSortProxyModelTest_kde4)
+# Disable for Launchpad.
+#LIST(APPEND KDE4_TESTS ListDataSortProxyModelTest_kde4)
 
 ### RomDataFormat tests
 

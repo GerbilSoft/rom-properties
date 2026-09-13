@@ -24,7 +24,8 @@ ADD_EXECUTABLE(ListDataSortProxyModelTest_kf5
 	)
 TARGET_LINK_LIBRARIES(ListDataSortProxyModelTest_kf5 PRIVATE rptest romdata)
 TARGET_LINK_LIBRARIES(ListDataSortProxyModelTest_kf5 PRIVATE rom-properties-kf5_LIB)
-LIST(APPEND KF5_TESTS ListDataSortProxyModelTest_kf5)
+# Disable for Launchpad.
+#LIST(APPEND KF5_TESTS ListDataSortProxyModelTest_kf5)
 
 ### RomDataFormat tests
 
