@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "conversion.hpp"
+#include "common.h"	// for unlikely()
 
 // Other rom-properties libraries
 #include "librpbyteswap/byteswap_rp.h"
