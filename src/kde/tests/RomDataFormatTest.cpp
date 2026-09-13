@@ -30,6 +30,9 @@ using LibRpBase::RomFields;
 // C++ STL classes
 using std::array;
 
+// Qt includes
+#include <QtCore/QLocale>
+
 namespace RomPropertiesKDE { namespace Tests {
 
 class RomDataFormatTest : public ::testing::Test

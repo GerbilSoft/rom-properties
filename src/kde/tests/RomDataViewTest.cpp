@@ -31,6 +31,7 @@ using LibRpFile::VectorFilePtr;
 #include "RomDataView.hpp"
 
 // Qt includes
+#include <QtCore/QLocale>
 #include <QCheckBox>
 #include <QFormLayout>
 #include <QLabel>
