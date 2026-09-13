@@ -1,3 +1,20 @@
+rom-properties (2.9-1ppa2~focal1) focal; urgency=medium
+
+  * Build for Ubuntu 20.04 "Focal" Fossa.
+
+    * Disable GTK+ 2.x builds. (XFCE)
+    * Disable KDE 4.x builds.
+    * Enable system libzstd.
+    * Enable system fmt.
+    * Tracker API version increased to 3.
+    * libwebp SO version: 6
+
+  * PPA version bumped to ensure it updates from previous versions.
+
+  * GdkImageConv_neon.cpp: #include "arm_neon_aligned.h" instead of arm_neon.h.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 13 Sep 2026 17:31:48 -0400
+
 rom-properties (2.9-1ppa2~bionic1) bionic; urgency=medium
 
   * Build for Ubuntu 18.04 "Bionic" Beaver.
