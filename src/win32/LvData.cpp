@@ -297,10 +297,10 @@ void LvData::doSort(int column, RomFields::ColSortOrder direction)
 			assert(!"Invalid sort direction.");
 			// fall-through
 		case RomFields::COLSORTORDER_ASCENDING:
-			std::sort(vSortMap.begin(), vSortMap.end(), compar);
+			std::stable_sort(vSortMap.begin(), vSortMap.end(), compar);
 			break;
 		case RomFields::COLSORTORDER_DESCENDING:
-			std::sort(vSortMap.rbegin(), vSortMap.rend(), compar);
+			std::stable_sort(vSortMap.rbegin(), vSortMap.rend(), compar);
 			break;
 	}
 
