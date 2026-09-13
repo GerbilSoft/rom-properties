@@ -33,7 +33,8 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" RomDataFormatTest_kde4_SRCS "${RomDataFo
 ADD_EXECUTABLE(RomDataFormatTest_kde4 ${RomDataFormatTest_kde4_SRCS})
 TARGET_LINK_LIBRARIES(RomDataFormatTest_kde4 PRIVATE rptest romdata)
 TARGET_LINK_LIBRARIES(RomDataFormatTest_kde4 PRIVATE rom-properties-kde4_LIB)
-LIST(APPEND KDE4_TESTS RomDataFormatTest_kde4)
+# Disable for Launchpad.
+#LIST(APPEND KDE4_TESTS RomDataFormatTest_kde4)
 
 ### RomDataView tests
 

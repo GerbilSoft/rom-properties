@@ -37,7 +37,8 @@ ADD_EXECUTABLE(RomDataFormatTest_kf5
 	)
 TARGET_LINK_LIBRARIES(RomDataFormatTest_kf5 PRIVATE rptest romdata)
 TARGET_LINK_LIBRARIES(RomDataFormatTest_kf5 PRIVATE rom-properties-kf5_LIB)
-LIST(APPEND KF5_TESTS RomDataFormatTest_kf5)
+# Disable for Launchpad.
+#LIST(APPEND KF5_TESTS RomDataFormatTest_kf5)
 
 ### RomDataView tests
 
