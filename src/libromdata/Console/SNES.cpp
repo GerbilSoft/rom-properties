@@ -622,10 +622,9 @@ string SNESPrivate::getRomTitle(void) const
  */
 string SNESPrivate::getPublisher(void) const
 {
-	string s_ret;
-
 	// NOTE: SNES and BS-X have the same addresses for both publisher codes.
 	// Hence, we only need to check SNES.
+	string s_ret;
 
 	// Publisher.
 	if (romHeader.snes.old_publisher_code == 0x33) {
