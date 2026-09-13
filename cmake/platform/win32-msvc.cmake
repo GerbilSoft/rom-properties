@@ -70,9 +70,15 @@ SET(RP_LINKER_FLAGS_WIN32_EXE "/SUBSYSTEM:WINDOWS,${RP_WIN32_SUBSYSTEM_VERSION}"
 SET(RP_LINKER_FLAGS_CONSOLE_EXE "/SUBSYSTEM:CONSOLE,${RP_WIN32_SUBSYSTEM_VERSION}")
 UNSET(RP_WIN32_SUBSYSTEM_VERSION)
 
-# Append the CFLAGS and LDFLAGS.
-SET(RP_C_FLAGS_COMMON	"${RP_C_FLAGS_COMMON} ${RP_C_FLAGS_WIN32}")
-SET(RP_CXX_FLAGS_COMMON	"${RP_CXX_FLAGS_COMMON} ${RP_C_FLAGS_WIN32} ${RP_CXX_FLAGS_WIN32}")
+# MSVC 2015 uses thread-safe statics by default.
+# This doesn't work on Windows XP or Windows Server 2003, so disable it.
+# NOTE: Only for i386 and amd64; enabling elsewhere because
+# Windows XP and Windows Server 2003 weren't available for ARM.
+IF(MSVC_VERSION GREATER 1899 AND RP_SUPPORTS_WINDOWS_XP)
+	MESSAGE(STATUS "MSVC: Disabling thread-safe statics for Windows XP and Windows Server 2003 compatibility")
+	SET(RP_C_FLAGS_COMMON   "${RP_C_FLAGS_COMMON} /Zc:threadSafeInit-")
+	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /Zc:threadSafeInit-")
+ENDIF()
 
 # Unset temporary variables.
 UNSET(RP_C_FLAGS_WIN32)
