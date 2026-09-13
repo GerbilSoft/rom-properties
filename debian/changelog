@@ -1,3 +1,11 @@
+rom-properties (2.9-1ppa1~xenial2) xenial; urgency=medium
+
+  * Fix build error caused by pwritev2() not being available on 16.04,
+    though the installed libseccomp thinks it is.
+    (Only affects unit tests.)
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 13 Sep 2026 16:03:58 -0400
+
 rom-properties (2.9-1ppa1~xenial1) xenial; urgency=medium
 
   * 2.9 release.
