@@ -4,6 +4,8 @@ rom-properties (2.9-1ppa1~xenial2) xenial; urgency=medium
     though the installed libseccomp thinks it is.
     (Only affects unit tests.)
 
+  * Fix KDE unit test builds on KDE4 due to missing #include <QtCore/QLocale>.
+
  -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 13 Sep 2026 16:03:58 -0400
 
 rom-properties (2.9-1ppa1~xenial1) xenial; urgency=medium
