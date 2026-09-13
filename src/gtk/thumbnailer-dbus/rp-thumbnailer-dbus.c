@@ -110,12 +110,10 @@ struct _RpThumbnailer {
 	guint32 last_handle;	// Last handle value
 
 	/** Status **/
-
 	bool shutdown_emitted;	// Has the shutdown signal been emitted?
 	bool exported;		// Is the D-Bus object exported?
 
 	/** Properties **/
-
 	GDBusConnection *connection;	// D-Bus connection
 	gchar *cache_dir;		// Thumbnail cache directory
 
