@@ -64,7 +64,7 @@ static inline UINT PrivateExtractIcons_wrapper(
 	return PrivateExtractIconsA(szFileName, nIconIndex, cxIcon, cyIcon, phIcon, piconid, nIcons, flags);
 }
 
-// Type traits to determine he character type for IExtractIconW vs. IExtractIconA.
+// Type traits to determine the character type for IExtractIconW vs. IExtractIconA.
 template<typename T> struct CharTrait;
 template<> struct CharTrait<IExtractIconW> { using CharType = wchar_t; };
 template<> struct CharTrait<IExtractIconA> { using CharType = char; };
