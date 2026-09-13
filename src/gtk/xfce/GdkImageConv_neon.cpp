@@ -20,7 +20,7 @@ using namespace LibRpTexture;
 using std::array;
 
 // ARM NEON intrinsics
-#include <arm_neon.h>
+#include "arm_neon_aligned.h"
 
 // TODO: Combine this with rp_image_ops_neon.cpp?
 #if defined(RP_CPU_ARM64)
