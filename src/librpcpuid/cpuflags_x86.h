@@ -42,10 +42,12 @@ typedef enum ATTR_FLAG_ENUM {
 	RP_CPUFLAG_x86_SHA	= (1U << 14),
 	RP_CPUFLAG_x86_SHA512	= (1U << 15),
 	RP_CPUFLAG_x86_APX	= (1U << 16),
+	RP_CPUFLAG_x86_AVX10	= (1U << 17),
 } RP_CPUFlag_x86_e;
 
 // Don't modify these!
 extern uint32_t RP_CPU_Flags_x86;
+extern uint8_t RP_CPU_Flags_x86_AVX10_version;
 extern int RP_CPU_Flags_x86_IsInit;	// 1 if RP_CPU_Flags_x86 has been initialized.
 
 // x86 CPU information

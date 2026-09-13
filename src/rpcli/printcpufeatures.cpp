@@ -186,6 +186,16 @@ int PrintCPUFeatures(void)
 				Gsvt::StdOut.newline();
 			}
 		}
+
+#if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
+		// Special handling for AVX10.
+		if (cpu_flags & RP_CPUFLAG_x86_AVX10) {
+			Gsvt::StdOut.fputs(s_bullet);
+			Gsvt::StdOut.fputs(fmt::format(FRUN(C_("rpcli", "{0:s}: {1:s}, version {2:d}")),
+				"AVX10", "Advanced Vector Extensions 10", RP_CPU_Flags_x86_AVX10_version));
+			Gsvt::StdOut.newline();
+		}
+#endif /* RP_CPU_I386 || RP_CPU_AMD64 */
 	} else {
 		Gsvt::StdOut.fputc(' ');
 		Gsvt::StdOut.fputs(C_("rpcli", "(none)"));

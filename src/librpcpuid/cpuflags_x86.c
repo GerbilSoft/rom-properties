@@ -26,6 +26,7 @@
 #include "stdboolx.h"
 
 uint32_t RP_CPU_Flags_x86 = 0;
+uint8_t RP_CPU_Flags_x86_AVX10_version = 0;
 int RP_CPU_Flags_x86_IsInit = 0;	// 1 if RP_CPU_Flags_x86 has been initialized.
 RP_CPU_Info_x86_t RP_CPU_Info_x86;
 static pthread_once_t cpu_once_control = PTHREAD_ONCE_INIT;
@@ -245,6 +246,13 @@ static void RP_CPU_Flags_x86_Init_int(void)
 				RP_CPU_Flags_x86 |= RP_CPUFLAG_x86_APX;
 			}
 #endif /* RP_CPU_AMD64 */
+
+			// NOTE: Unsure if AVX10 is 64-bit only.
+			 if ((regs[REG_EDX] & CPUFLAG_IA32_FN7p1_EDX_AVX10) && (RP_CPU_Info_x86.highest_fn >= CPUID_AVX10_ENUMERATION)) {
+				 // Get the AVX10 version.
+				 cpuid_count(CPUID_AVX10_ENUMERATION, 0, regs);
+				 RP_CPU_Flags_x86_AVX10_version = (regs[REG_EBX] & 0xFF);
+			 }
 		}
 	}
 

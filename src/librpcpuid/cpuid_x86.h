@@ -240,6 +240,7 @@ static RP_FORCEINLINE void cpuid_count(unsigned int level, unsigned int count, u
 #define CPUFLAG_IA32_FN7p1_EAX_SHA512	((uint32_t)(1U <<  0))
 
 // Flags stored in the %edx register
+#define CPUFLAG_IA32_FN7p1_EDX_AVX10	((uint32_t)(1U << 19))
 #define CPUFLAG_IA32_FN7p1_EDX_APX	((uint32_t)(1U << 21))
 
 // CPUID function 0x80000001: Extended Processor Info and Feature Bits
@@ -258,6 +259,7 @@ static RP_FORCEINLINE void cpuid_count(unsigned int level, unsigned int count, u
 #define CPUID_MAX_FUNCTIONS			((uint32_t)(0x00000000U))
 #define CPUID_PROC_INFO_FEATURE_BITS		((uint32_t)(0x00000001U))
 #define CPUID_EXT_FEATURES			((uint32_t)(0x00000007U))
+#define CPUID_AVX10_ENUMERATION			((uint32_t)(0x00000024U))
 #define CPUID_MAX_EXT_FUNCTIONS			((uint32_t)(0x80000000U))
 #define CPUID_EXT_PROC_INFO_FEATURE_BITS	((uint32_t)(0x80000001U))
 #define CPUID_EXT_PROC_BRAND_STRING_1		((uint32_t)(0x80000002U))
