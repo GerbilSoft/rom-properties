@@ -251,7 +251,16 @@ static constexpr int16_t syscall_wl_gtk[] = {
 	//SCMP_SYS(execve),	// only used if the above syscalls fail?
 	// GTK3 on Alpine Linux with musl libc hangs if pwritev2() isn't allowed.
 	// We'll allow pwritev() as well.
-	SCMP_SYS(pwritev), SCMP_SYS(pwritev2),
+	SCMP_SYS(pwritev),
+	// NOTE: libseccomp on Ubuntu 16.04 thinks pwritev2() is available,
+	// but it isn't...
+#ifdef __NR_pwritev2
+#  ifdef __SNR_pwritev2
+	SCMP_SYS(pwritev2),
+#  else /* !__SNR_pwritev2 */
+	__NR_pwritev2,
+#  endif /*  __SNR_pwritev2 */
+#endif /* __SNR_pwritev2 */
 
 	// GTK4 when using Xvfb-run with DISPLAY= WAYLAND_DISPLAY=
 	SCMP_SYS(kcmp),
