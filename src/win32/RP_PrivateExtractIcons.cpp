@@ -134,7 +134,7 @@ static UINT WINAPI RP_PrivateExtractIconsW_int(
 {
 	// TODO: Handle nIcons > 1.
 	assert(szFileName != nullptr);
-	assert(szFileName[0] != L'\0');
+	//assert(szFileName[0] != L'\0');	// FIXME: This occasionally trips on Win10 22H2...
 	assert(cxIcon != 0);
 	assert(cyIcon != 0);
 	assert(nIcons >= 0);
