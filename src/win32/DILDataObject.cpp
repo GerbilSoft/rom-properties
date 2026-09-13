@@ -18,6 +18,9 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpTexture;
 
+// libwin32common
+#include "libwin32common/rp_versionhelpers.h"
+
 // libwin32ui
 #include "libwin32ui/WinUI.hpp"
 #include <uxtheme.h>	// for IsThemeActive()
@@ -252,7 +255,11 @@ HGLOBAL DILDataObjectPrivate::getFileDescriptorW(void) const
 	fileGroupDesc->cItems = 1;
 
 	FILEDESCRIPTORW *const fileDesc = &fileGroupDesc->fgd[0];
-	fileDesc->dwFlags = FD_ATTRIBUTES;
+	if (IsWindowsVistaOrGreater()) {
+		fileDesc->dwFlags = FD_ATTRIBUTES | FD_UNICODE;
+	} else {
+		fileDesc->dwFlags = FD_ATTRIBUTES;
+	}
 	fileDesc->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
 
 	// Set the file size, if available. (Should be available!)
