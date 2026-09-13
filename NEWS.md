@@ -23,7 +23,7 @@
 
 * New parser features:
   * GodotSTEX: Add (untested) support for ASTC_6x6 textures.
-    * Support for ASTC_6x6 will be added in Godot 4.6.
+    * Support for ASTC_6x6 was added in Godot 4.6.
   * PSP: Parse the PARAM.SFO file.
   * Add a "Version" custom property and handle it in all RomData subclasses
     that have a "Version" or "Revision" field.
