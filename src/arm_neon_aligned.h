@@ -196,16 +196,16 @@ static RP_ARM_FORCEINLINE void vst1_u32_x4(uint32_t *dest, uint32x2x4_t vec)
 	vst1_u32(&dest[6], vec.val[3]);
 }
 
-static RP_ARM_FORCEINLINE uint16x8x3_t vld1q_u8_x3(const uint8_t *src)
+static RP_ARM_FORCEINLINE uint8x16x3_t vld1q_u8_x3(const uint8_t *src)
 {
-	uint16x8x3_t vec;
+	uint8x16x3_t vec;
 	vec.val[0] = vld1q_u8(&src[ 0]);
 	vec.val[1] = vld1q_u8(&src[16]);
 	vec.val[2] = vld1q_u8(&src[24]);
 	return vec;
 }
 
-static RP_ARM_FORCEINLINE void vst1q_u8_x3(uint8_t *dest, uint16x8x3_t vec)
+static RP_ARM_FORCEINLINE void vst1q_u8_x3(uint8_t *dest, uint8x16x3_t vec)
 {
 	vst1q_u8(&dest[ 0], vec.val[0]);
 	vst1q_u8(&dest[16], vec.val[1]);
