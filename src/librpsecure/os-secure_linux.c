@@ -302,6 +302,16 @@ int rp_secure_enable(rp_secure_param_t param)
 		seccomp_rule_add_array(ctx, SCMP_ACT_ALLOW, *p, 0, NULL);
 	}
 
+	if (param.cacheflush) {
+		// Needed for RomDataViewTest_gtk4 on Ubuntu 26.04 for armhf/arm64.
+		// NOTE: On armhf, the syscall number is 983042, so it doesn't fit
+		// in an int16_t.
+		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(cacheflush), 0, NULL);
+#ifdef __ARM_NR_cacheflush
+		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, __ARM_NR_cacheflush, 0, NULL);
+#endif /* __ARM_NR_cacheflush */
+	}
+
 	// Load the filter.
 	int ret = seccomp_load(ctx);
 	seccomp_release(ctx);

@@ -86,6 +86,7 @@ static constexpr int16_t syscall_wl_base[] = {
 
 	// RomDataFormat needs this, at least on 32-bit (i386) KF5 builds.
 	SCMP_SYS(clock_getres),
+	SCMP_SYS(clock_getres_time64),	// needed on 32-bit armhf GTK3 builds
 
 	// for ImageDecoderTest so we don't have to copy the test files to the binary directory
 	SCMP_SYS(chdir),
@@ -177,6 +178,10 @@ static constexpr int16_t syscall_wl_qt[] = {
 	SCMP_SYS(uname),
 	SCMP_SYS(socketcall),
 	SCMP_SYS(time),
+
+	// Needed for RomDataFormatTest_kf5 and RomDataViewTest_kf5 on Ubuntu 26.04 for armhf/arm64.
+	// (...but not kf6?)
+	SCMP_SYS(getrandom),
 };
 
 // for GTK tests
@@ -186,7 +191,7 @@ static constexpr int16_t syscall_wl_gtk[] = {
 	 *
 	 * This process is currently running setuid or setgid.
 	 * This is not a supported use of GTK+. You must create a helper
-	 * program instea.d For further details, see:
+	 * program instead. For further details, see:
 	 *
 	 *   http://www.gtk.org/setuid.html
 	 *
@@ -274,6 +279,10 @@ static constexpr int16_t syscall_wl_gtk[] = {
 	SCMP_SYS(uname),
 	SCMP_SYS(socketcall),
 	SCMP_SYS(time),
+
+	// Needed for RomDataViewTest_gtk[234] on Ubuntu 26.04 for armhf/arm64.
+	SCMP_SYS(recv),
+	SCMP_SYS(send),
 };
 
 #endif /* HAVE_SECCOMP */
@@ -296,6 +305,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// Default to no Unix domain sockets.
 	// It should be enabled if building Qt or GTK tests.
 	param.socket_unix = false;
+	param.cacheflush = false;	// no cacheflush() by default
 
 	if (rp_gtest_syscall_set & RP_GTEST_SYSCALL_SET_GTEST_DEATH_TEST) {
 		// Add Google Test death test syscalls.
@@ -312,6 +322,11 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// Add GTK syscalls.
 		syscall_wl.insert(syscall_wl.end(), syscall_wl_gtk, &syscall_wl_gtk[ARRAY_SIZE(syscall_wl_gtk)]);
 		param.socket_unix = true;
+
+		// Needed for RomDataViewTest_gtk4 on Ubuntu 26.04 for armhf/arm64.
+		// NOTE: On armhf, the syscall number is 983042, so it doesn't fit
+		// in an int16_t.
+		param.cacheflush = true;
 	}
 
 	// End of syscalls.
@@ -421,6 +436,14 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		}
 	}
 #endif /* _WIN32 */
+
+#ifdef HAVE_SECCOMP
+	// Disable Mesa's shader cache.
+	// RomDataViewTest_gtk4 attempts to delete ~/.cache/mesa_shader_cache_db/mesa_cache.db,
+	// which requires access to the unlink() syscall.
+	static TCHAR mesa_shader_cache_disable[] =_T("MESA_SHADER_CACHE_DISABLE=true");
+	_tputenv(mesa_shader_cache_disable);
+#endif /* HAVE_SECCOMP */
 
 	// Call the actual main function.
 	int ret = gtest_main(argc, argv);

@@ -73,6 +73,7 @@ int rpcli_do_security_options(void)
 
 		// RomDataFormat needs this, at least on 32-bit (i386) KF5 builds.
 		SCMP_SYS(clock_getres),
+		SCMP_SYS(clock_getres_time64),	// needed on 32-bit armhf GTK3 builds
 
 		// glibc ncsd
 		// TODO: Restrict connect() to AF_UNIX.
