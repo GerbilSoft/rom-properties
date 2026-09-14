@@ -60,6 +60,9 @@
     name for the .thumbnailer file.
     * TODO: Need to request a way for KDE to hide the .thumbnailer file.
   * rpcli: Added support for JSON output for the device inquiry commands.
+  * Linux/armhf: NEON is now enabled in the build system. It was disabled
+    previously due to issues with Ubuntu Launchpad. Support for NEON is
+    checked before it's used, since not all armhf CPUs have it.
 
 * Bug fixes:
   * Dreamcast and SegaSaturn incorrectly added DiscNumber as integer.
