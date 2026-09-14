@@ -15,7 +15,7 @@ ADD_LIBRARY(zstd_seekable_format STATIC
 	)
 TARGET_INCLUDE_DIRECTORIES(zstd_seekable_format
 	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-	PRIVATE	../../lib/common
+	PRIVATE	../../lib/common ${ZSTD_INCLUDE_DIR}
 	)
 
 TARGET_LINK_LIBRARIES(zstd_seekable_format ${ZSTD_LIBRARY})
