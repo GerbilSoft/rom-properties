@@ -721,6 +721,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 	// NOTE: GTK+ 3.24.19 was an incorrect tag from the GTK4 dev branch,
 	// so it also lacks parameters in gtk_init(). Release files from
 	// GTK+ 3.24.19 are missing from the official servers...
+	gtk_disable_setlocale();
 #if GTK_CHECK_VERSION(3, 89, 4)
 	gtk_init();
 #else /* !GTK_CHECK_VERSION(3, 89, 4) */
