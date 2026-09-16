@@ -10,6 +10,8 @@
 #include "MessageSound.hpp"
 #include "common.h"
 
+#include "gtk-compat.h"	// for gtk_widget_get_toplevel_widget()
+
 #include <gdk/gdkdisplay.h>
 
 #ifdef HAVE_WAYLAND_VERSION_H
