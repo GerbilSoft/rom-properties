@@ -127,7 +127,7 @@ void play(GtkMessageType notificationType, const char *message, GtkWidget *paren
 	g_hash_table_destroy(attrs);
 #elif defined(HAVE_LIBCANBERRA_GTK)
 	if (parent) {
-		ca_gtk_play_for_widget(gtk_widget_get_toplevel(parent), 0,
+		ca_gtk_play_for_widget(gtk_widget_get_toplevel_widget(parent), 0,
 			CA_PROP_EVENT_ID, event_id,
 			CA_PROP_EVENT_DESCRIPTION, (message ? message : ""),
 			nullptr);
