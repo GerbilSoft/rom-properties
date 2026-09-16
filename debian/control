@@ -51,7 +51,7 @@ Description: ROM Properties Page shell extension (meta package)
 Package: libromdata10
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, rom-properties-data
-Recommends: liblz4-1, liblzo2-2, libwebp5
+Recommends: liblz4-1, liblzo2-2, libwebp7 | libwebp6 | libwebp5
 Description: ROM Properties Page shell extension (shared library)
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
@@ -153,7 +153,7 @@ Description: ROM Properties Page shell extension (Tracker metadata extractor mod
 
 Package: rom-properties-utils
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libcurl3
+Depends: ${shlibs:Depends}, ${misc:Depends}, libcurl4t64 | libcurl4 | libcurl3
 Recommends: rom-properties-lang
 Conflicts: rom-properties-stub
 Replaces: rom-properties-stub
