@@ -20,6 +20,9 @@
 // Windows
 #include "libwin32common/RpWin32_sdk.h"
 
+// C includes (C++ namespace)
+#include <cstdint>
+
 // C++ STL classes.
 using std::string;
 using std::u16string;
