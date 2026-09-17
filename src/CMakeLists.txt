@@ -43,13 +43,14 @@ UNSET(CMAKE_REQUIRED_DEFINITIONS)
 IF(NOT HAVE_TIMEGM)
 	# NOTE: MSVCRT's _mkgmtime64() has a range of [1970/01/01, 3000/12/31].
 	# glibc and boost both support arbitrary ranges.
-	CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime "time.h" "struct tm tm; time_t x = _mkgmtime(&tm);" HAVE__MKGMTIME)
-	CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime32 "time.h" "struct tm tm; time_t x = _mkgmtime(&tm);" HAVE__MKGMTIME32)
 	CHECK_SYMBOL_EXISTS_OR_INLINE(_mkgmtime64 "time.h" "struct tm tm; time_t x = _mkgmtime64(&tm);" HAVE__MKGMTIME64)
+	IF(MSVC AND NOT HAVE__MKGMTIME64)
+		MESSAGE(FATAL_ERROR "MSVC should always have _mkgmtime64()!")
+	ENDIF(MSVC AND NOT HAVE__MKGMTIME64)
 ENDIF(NOT HAVE_TIMEGM)
-IF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME AND NOT HAVE__MKGMTIME32 AND NOT HAVE__MKGMTIME64)
+IF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME64)
 	MESSAGE(FATAL_ERROR "timegm() or equivalent function not found.")
-ENDIF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME AND NOT HAVE__MKGMTIME32 AND NOT HAVE__MKGMTIME64)
+ENDIF(NOT HAVE_TIMEGM AND NOT HAVE__MKGMTIME64)
 
 # Aligned malloc() functions.
 # NOTE: MinGW-w64 only has _aligned_malloc().

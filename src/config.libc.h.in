@@ -47,12 +47,6 @@
 /* Define to 1 if you have the `timegm' function. */
 #cmakedefine HAVE_TIMEGM 1
 
-/* Define to 1 if you have the `_mkgmtime' function. */
-#cmakedefine HAVE__MKGMTIME 1
-
-/* Define to 1 if you have the `_mkgmtime32' function. */
-#cmakedefine HAVE__MKGMTIME32 1
-
 /* Define to 1 if you have the `_mkgmtime64' function. */
 #cmakedefine HAVE__MKGMTIME64 1
 

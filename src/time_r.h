@@ -69,7 +69,7 @@ static inline struct tm *localtime_r(const time_t *timep, struct tm *result)
  * Linux, Mac OS X, and other Unix-like operating systems have a
  * function timegm() that converts `struct tm` to `time_t`.
  *
- * MSVCRT's equivalent function is _mkgmtime(). Note that it might
+ * MSVCRT's equivalent function is _mkgmtime64(). Note that it might
  * write to the original `struct tm`, so we'll need to make a copy.
  *
  * NOTE: timegm() is NOT part of *any* standard!
@@ -80,14 +80,8 @@ static inline time_t timegm(struct tm *tm)
 	struct tm my_tm;
 	my_tm = *tm;
 #if defined(HAVE__MKGMTIME64)
-#  define USING_MSVCRT_MKGMTIME 1
+#  define USING_MSVCRT__MKGMTIME64 1
 	return _mkgmtime64(&my_tm);
-#elif defined(HAVE__MKGMTIME32)
-#  define USING_MSVCRT_MKGMTIME 1
-	return _mkgmtime32(&my_tm);
-#elif defined(HAVE__MKGMTIME)
-#  define USING_MSVCRT_MKGMTIME 1
-	return _mkgmtime(&my_tm);
 #else
 #  error timegm() or equivalent function not found.
 #endif

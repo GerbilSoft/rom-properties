@@ -40,11 +40,7 @@ static struct tm TM_INIT(int year, int month, int day, int hour, int minute, int
 TEST(TimegmTest, unixEpochMinusTwoTest)
 {
 	struct tm tm_unix_epochMinusTwo = TM_INIT(1969, 12, 31, 23, 59, 58);
-#ifdef USING_MSVCRT_MKGMTIME
 	EXPECT_EQ(-2LL, timegm(&tm_unix_epochMinusTwo));
-#else /* !USING_MSVCRT_MKGMTIME */
-	EXPECT_EQ(-2LL, timegm(&tm_unix_epochMinusTwo));
-#endif /* USING_MSVCRT_MKGMTIME */
 }
 
 TEST(TimegmTest, unixEpochMinusOneTest)
@@ -62,25 +58,25 @@ TEST(TimegmTest, unixEpochTest)
 TEST(TimegmTest, unix32bitMinMinusOneTest)
 {
 	struct tm tm_unix_32bit_minMinusOne = TM_INIT(1901, 12, 13, 20, 45, 51);
-#ifdef USING_MSVCRT_MKGMTIME
+#ifdef USING_MSVCRT__MKGMTIME64
 	EXPECT_EQ(-1LL, timegm(&tm_unix_32bit_minMinusOne));
-#else /* !USING_MSVCRT_MKGMTIME */
+#else /* !USING_MSVCRT__MKGMTIME64 */
 	if (sizeof(time_t) < 8) {
 		EXPECT_EQ(-1LL, timegm(&tm_unix_32bit_minMinusOne));
 	} else {
 		EXPECT_EQ(-2147483649LL, timegm(&tm_unix_32bit_minMinusOne));
 	}
-#endif /* USING_MSVCRT_MKGMTIME */
+#endif /* USING_MSVCRT__MKGMTIME64 */
 }
 
 TEST(TimegmTest, unix32bitMinTest)
 {
 	struct tm tm_unix_32bit_min = TM_INIT(1901, 12, 13, 20, 45, 52);
-#ifdef USING_MSVCRT_MKGMTIME
+#ifdef USING_MSVCRT__MKGMTIME64
 	EXPECT_EQ(-1LL, timegm(&tm_unix_32bit_min));
-#else /* !USING_MSVCRT_MKGMTIME */
+#else /* !USING_MSVCRT__MKGMTIME64 */
 	EXPECT_EQ(-2147483648LL, timegm(&tm_unix_32bit_min));
-#endif /* USING_MSVCRT_MKGMTIME */
+#endif /* USING_MSVCRT__MKGMTIME64 */
 }
 
 TEST(TimegmTest, unix32bitMaxTest)
@@ -110,15 +106,15 @@ TEST(TimegmTest, msdosEpochTest)
 TEST(TimegmTest, winEpochTest)
 {
 	struct tm tm_win_epoch = TM_INIT(1601, 1, 1, 0, 0, 0);
-#ifdef USING_MSVCRT_MKGMTIME
+#ifdef USING_MSVCRT__MKGMTIME64
 	EXPECT_EQ(-1LL, timegm(&tm_win_epoch));
-#else /* !USING_MSVCRT_MKGMTIME */
+#else /* !USING_MSVCRT__MKGMTIME64 */
 	if (sizeof(time_t) < 8) {
 		EXPECT_EQ(-1LL, timegm(&tm_win_epoch));
 	} else {
 		EXPECT_EQ(-11644473600LL, timegm(&tm_win_epoch));
 	}
-#endif /* USING_MSVCRT_MKGMTIME */
+#endif /* USING_MSVCRT__MKGMTIME64 */
 }
 #endif /* __APPLE__ */
 
@@ -135,15 +131,15 @@ TEST(TimegmTest, mkgmtime64RealMinMinusOneTest)
 {
 	// Real minimum value for MSVCRT _mkgmtime64(), minus one.
 	struct tm tm_mkgmtime_realMinMinusOne = TM_INIT(1968, 12, 31, 23, 59, 59);
-#ifdef USING_MSVCRT_MKGMTIME
+#ifdef USING_MSVCRT__MKGMTIME64
 	EXPECT_EQ(-1LL, timegm(&tm_mkgmtime_realMinMinusOne));
-#else /* !USING_MSVCRT_MKGMTIME */
+#else /* !USING_MSVCRT__MKGMTIME64 */
 	if (sizeof(time_t) < 8) {
 		EXPECT_EQ(-1LL, timegm(&tm_mkgmtime_realMinMinusOne));
 	} else {
 		EXPECT_EQ(-31536001LL, timegm(&tm_mkgmtime_realMinMinusOne));
 	}
-#endif /* USING_MSVCRT_MKGMTIME */
+#endif /* USING_MSVCRT__MKGMTIME64 */
 }
 #endif
 
@@ -187,29 +183,29 @@ TEST(TimegmTest, mkgmtime64RealMaxPlusOneTest)
 {
 	// Real maximum value for MSVCRT _mkgmtime64(), plus one.
 	struct tm tm_mkgmtime_realMaxPlusOne = TM_INIT(3002, 1, 1, 0, 0, 0);
-#ifdef USING_MSVCRT_MKGMTIME
+#ifdef USING_MSVCRT__MKGMTIME64
 	EXPECT_EQ(-1LL, timegm(&tm_mkgmtime_realMaxPlusOne));
-#else /* !USING_MSVCRT_MKGMTIME */
+#else /* !USING_MSVCRT__MKGMTIME64 */
 	if (sizeof(time_t) < 8) {
 		EXPECT_EQ(-1LL, timegm(&tm_mkgmtime_realMaxPlusOne));
 	} else {
 		EXPECT_EQ(32566752000LL, timegm(&tm_mkgmtime_realMaxPlusOne));
 	}
-#endif /* USING_MSVCRT_MKGMTIME */
+#endif /* USING_MSVCRT__MKGMTIME64 */
 }
 
 TEST(TimegmTest, winMaxTimeTest)
 {
 	struct tm tm_win_maxTime = TM_INIT(30828, 9, 14, 2, 48, 5);
-#ifdef USING_MSVCRT_MKGMTIME
+#ifdef USING_MSVCRT__MKGMTIME64
 	EXPECT_EQ(-1LL, timegm(&tm_win_maxTime));
-#else /* !USING_MSVCRT_MKGMTIME */
+#else /* !USING_MSVCRT__MKGMTIME64 */
 	if (sizeof(time_t) < 8) {
 		EXPECT_EQ(-1LL, timegm(&tm_win_maxTime));
 	} else {
 		EXPECT_EQ(910692730085LL, timegm(&tm_win_maxTime));
 	}
-#endif /* USING_MSVCRT_MKGMTIME */
+#endif /* USING_MSVCRT__MKGMTIME64 */
 }
 
 TEST(TimegmTest, gcnEpochTest)
@@ -229,14 +225,8 @@ const unsigned int rp_gtest_syscall_set = 0;
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-#if defined(USING_MSVCRT_MKGMTIME)
-# if defined(HAVE__MKGMTIME64)
+#if defined(USING_MSVCRT__MKGMTIME64)
 	static constexpr char func_name[] = "_mkgmtime64() (MSVCRT)";
-# elif defined(HAVE__MKGMTIME32)
-	static constexpr char func_name[] = "_mkgmtime32() (MSVCRT)";
-# else /*elif defined(HAVE__MKGMTIME)*/
-	static constexpr char func_name[] = "_mkgmtime() (MSVCRT)";
-# endif
 #elif defined(HAVE_TIMEGM)
 	static constexpr char func_name[] = "timegm() (libc)";
 #else
