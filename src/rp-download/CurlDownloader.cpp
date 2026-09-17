@@ -24,6 +24,7 @@ using std::tstring;
 
 // We're opening libcurl dynamically, so we need to define all
 // cURL function prototypes and definitions here.
+// NOTE: Minimum cURL version is 7.47.0. (Ubuntu 16.04)
 #include "curl-mini.h"
 
 // HMODULE deleter for std::unique_ptr<>
@@ -50,7 +51,6 @@ static std::once_flag curl_once_flag;
 
 DEF_STATIC_FUNCPTR(curl_slist_append);
 DEF_STATIC_FUNCPTR(curl_slist_free_all);
-DEF_STATIC_FUNCPTR(curl_getdate);
 DEF_STATIC_FUNCPTR(curl_version_info);
 
 DEF_STATIC_FUNCPTR(curl_easy_init);
@@ -105,7 +105,6 @@ static void init_curl_once(void)
 	LOAD_FUNCPTR(curl_global_init);
 	LOAD_FUNCPTR(curl_slist_append);
 	LOAD_FUNCPTR(curl_slist_free_all);
-	LOAD_FUNCPTR(curl_getdate);
 	LOAD_FUNCPTR(curl_version_info);
 
 	LOAD_FUNCPTR(curl_easy_init);
@@ -117,7 +116,6 @@ static void init_curl_once(void)
 	if (!pcurl_global_init ||
 	    !pcurl_slist_append ||
 	    !pcurl_slist_free_all ||
-	    !pcurl_getdate ||
 	    !pcurl_easy_init ||
 	    !pcurl_easy_setopt ||
 	    !pcurl_easy_perform ||
@@ -198,87 +196,6 @@ size_t CurlDownloader::write_data(char *ptr, size_t size, size_t nmemb, void *us
 }
 
 /**
- * Internal cURL header parsing function.
- * @param ptr Pointer to header data. (NOT necessarily null-terminated!)
- * @param size Element size.
- * @param nitems Number of elements.
- * @param userdata m_data pointer.
- * @return Amount of data processed, or 0 on error.
- */
-size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void *userdata)
-{
-	// References:
-	// - https://curl.haxx.se/libcurl/c/CURLOPT_HEADERFUNCTION.html
-
-	// TODO: Add support for non-HTTP protocols?
-	CurlDownloader *curlDL = static_cast<CurlDownloader*>(userdata);
-	rp::uvector<uint8_t> *vec = &curlDL->m_data;
-	const size_t len = size * nitems;
-
-	// Supported headers.
-	static constexpr char http_content_length[] = "Content-Length: ";
-	static constexpr char http_last_modified[] = "Last-Modified: ";
-
-	if (len >= sizeof(http_content_length) &&
-	    !strncasecmp(ptr, http_content_length, sizeof(http_content_length)-1))
-	{
-		// Found the Content-Length.
-		// Parse the value.
-		char s_val[24];
-		size_t val_len = len-sizeof(http_content_length);
-		if (val_len >= sizeof(s_val)) {
-			// Shouldn't happen...
-			val_len = sizeof(s_val)-1;
-		}
-		memcpy(s_val, ptr+sizeof(http_content_length)-1, val_len);
-		s_val[val_len] = 0;
-
-		// Convert the Content-Length to an off64_t.
-		char *endptr = nullptr;
-		const off64_t fileSize = strtoll(s_val, &endptr, 10);
-
-		// *endptr should be \0 or a whitespace character.
-		if (*endptr != '\0' && !ISSPACE(*endptr)) {
-			// Content-Length is invalid.
-			return 0;
-		} else if (fileSize <= 0) {
-			// Content-Length is too small.
-			return 0;
-		} else if (curlDL->m_maxSize > 0 &&
-			   fileSize > static_cast<off64_t>(curlDL->m_maxSize))
-		{
-			// Content-Length is too big.
-			return 0;
-		}
-
-		// Reserve enough space for the file being downloaded.
-		vec->reserve(static_cast<size_t>(fileSize));
-	}
-	else if (len >= sizeof(http_last_modified) &&
-	         !strncasecmp(ptr, http_last_modified, sizeof(http_last_modified)-1))
-	{
-		// Found the Last-Modified time.
-		// Should be in the format: "Wed, 15 Nov 1995 04:58:08 GMT"
-		// - "GMT" can be "UTC".
-		// - It should NOT be another timezone, but some servers are misconfigured...
-		char mtime_str[40];
-		size_t val_len = len-sizeof(http_last_modified);
-		if (val_len >= sizeof(mtime_str)) {
-			// Shouldn't happen...
-			val_len = sizeof(mtime_str)-1;
-		}
-		memcpy(mtime_str, ptr+sizeof(http_last_modified)-1, val_len);
-		mtime_str[val_len] = 0;
-
-		// Parse the modification time.
-		curlDL->m_mtime = pcurl_getdate(mtime_str, nullptr);
-	}
-
-	// Continue processing.
-	return len;
-}
-
-/**
  * Get the name of the IDownloader implementation.
  * @return Name
  */
@@ -328,6 +245,10 @@ int CurlDownloader::download(void)
 
 	// TODO: Send a HEAD request first?
 
+	// Get the cURL version for feature testing.
+	const curl_version_info_data *const verinfo = pcurl_version_info(CURLVERSION_FIRST);
+	const unsigned int version_num = (verinfo) ? verinfo->version_num : 0;
+
 	// Set options for curl's "easy" mode.
 	pcurl_easy_setopt(curl, CURLOPT_URL, T2U8(m_url).c_str());
 	pcurl_easy_setopt(curl, CURLOPT_NOPROGRESS, true);
@@ -337,18 +258,20 @@ int CurlDownloader::download(void)
 	pcurl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, true);
 	pcurl_easy_setopt(curl, CURLOPT_MAXREDIRS, 8L);
 	// Request file modification time.
-	// NOTE: Probably not needed for http...
 	pcurl_easy_setopt(curl, CURLOPT_FILETIME, 1L);
+	// Maximum file size (curl-7.11)
+	pcurl_easy_setopt(curl, CURLOPT_MAXFILESIZE_LARGE, static_cast<curl_off_t>(m_maxSize));
 
 	if (m_if_modified_since >= 0) {
 		// Add an "If-Modified-Since" header.
 
 		// Check the cURL version.
-		const curl_version_info_data *const verinfo = pcurl_version_info(CURLVERSION_FIRST);
-		if (verinfo && verinfo->version_num >= CURL_VERSION_BITS(7, 59, 0)) {
+		if (version_num >= CURL_VERSION_BITS(7, 59, 0)) {
+			// curl-7.59.0: CURLOPT_TIMEVALUE_LARGE for 64-bit time
 			static_assert(sizeof(curl_off_t) == 8, "sizeof(curl_off_t) != 8");
 			pcurl_easy_setopt(curl, CURLOPT_TIMEVALUE_LARGE, static_cast<curl_off_t>(m_if_modified_since));
 		} else {
+			// curl-7.1: CURLOPT_TIMEVALUE for `long` time
 			pcurl_easy_setopt(curl, CURLOPT_TIMEVALUE, static_cast<long>(m_if_modified_since));
 		}
 		pcurl_easy_setopt(curl, CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE);
@@ -367,22 +290,20 @@ int CurlDownloader::download(void)
 		pcurl_easy_setopt(curl, CURLOPT_HTTPHEADER, req_headers);
 	}
 
-	// Header and data functions.
-	pcurl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, parse_header);
-	pcurl_easy_setopt(curl, CURLOPT_HEADERDATA, this);
+	// Data function
 	pcurl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
 	pcurl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
 
 	// Don't use signals. We're running as a plugin, so using
 	// signals might interfere.
-	pcurl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
+	pcurl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
 
 	// Set timeouts to ensure we don't take forever.
 	// TODO: User configuration?
 	// - Connect timeout: 2 seconds.
 	// - Total timeout: 10 seconds.
-	pcurl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 2);
-	pcurl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
+	pcurl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 2L);
+	pcurl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
 
 #ifdef _WIN32
 	// On Windows, Allow passing through some cURL environment variables:
@@ -446,6 +367,11 @@ int CurlDownloader::download(void)
 			ret = -ETIMEDOUT;
 			break;
 
+		case CURLE_FILESIZE_EXCEEDED:
+			// File is larger than the maximum allowed file size.
+			ret = -ENOMEM;	// TODO: Better error code?
+			break;
+
 		default:
 			// Some other error downloading the file.
 			// Check if we have an HTTP response code.
@@ -462,11 +388,35 @@ int CurlDownloader::download(void)
 			break;
 	}
 
-	pcurl_slist_free_all(req_headers);
-	pcurl_easy_cleanup(curl);
 	if (ret != 0) {
+		// An error occurred...
+		m_mtime = -1;
+		pcurl_slist_free_all(req_headers);
+		pcurl_easy_cleanup(curl);
 		return ret;
 	}
+
+	// Get the file's modification time.
+	if (version_num >= CURL_VERSION_BITS(7, 59, 0)) {
+		// curl-7.59.0: CURLINFO_FILETIME_T for 64-bit time
+		static_assert(sizeof(curl_off_t) == 8, "sizeof(curl_off_t) != 8");
+		curl_off_t mtime = -1;
+		res = pcurl_easy_getinfo(curl, CURLINFO_FILETIME_T, &mtime);
+		if (res == CURLE_OK && mtime >= 0) {
+			// FIXME: What if time_t is 32-bit? This might be truncated...
+			m_mtime = static_cast<time_t>(mtime);
+		}
+	} else {
+		// curl-7.1: CURLINFO_FILETIME for `long` time
+		long mtime = -1L;
+		res = pcurl_easy_getinfo(curl, CURLINFO_FILETIME, &mtime);
+		if (res == CURLE_OK && mtime >= 0) {
+			m_mtime = static_cast<time_t>(mtime);
+		}
+	}
+
+	pcurl_slist_free_all(req_headers);
+	pcurl_easy_cleanup(curl);
 
 	// Check if we have data.
 	if (m_data.empty()) {
