@@ -452,12 +452,13 @@ int CurlDownloader::download(void)
 			// NOTE: GameTDB sometimes returns nothing instead of 404...
 			long response_code = 0;
 			pcurl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
-			if (response_code <= 0) {
+			if (response_code > 0) {
+				ret = static_cast<int>(response_code);
+			} else {
 				// No HTTP response code.
 				// TODO: Return a cURL error code and/or message...
-				return -EIO;
+				ret = -EIO;
 			}
-			ret = static_cast<int>(response_code);
 			break;
 	}
 
