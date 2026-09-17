@@ -398,7 +398,7 @@ off64_t filesize(const wchar_t *filename)
  * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-static int get_mtime_int(const tstring &tfilename, time_t *pMtime)
+static int get_mtime_int(const tstring &tfilename, rp_time_t *pMtime)
 {
 	assert(pMtime != nullptr);
 	if (!pMtime)
@@ -428,7 +428,7 @@ static int get_mtime_int(const tstring &tfilename, time_t *pMtime)
  * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_mtime(const char *filename, time_t *pMtime)
+int get_mtime(const char *filename, rp_time_t *pMtime)
 {
 	return get_mtime_int(makeWinPath(filename), pMtime);
 }
@@ -439,7 +439,7 @@ int get_mtime(const char *filename, time_t *pMtime)
  * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_mtime(const wchar_t *filename, time_t *pMtime)
+int get_mtime(const wchar_t *filename, rp_time_t *pMtime)
 {
 	return get_mtime_int(makeWinPath(filename), pMtime);
 }
@@ -894,7 +894,7 @@ bool isOnBadFS(const wchar_t *filename, bool allowNetFS)
  * @param pMtime	[out] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-static int get_file_size_and_mtime_int(const tstring &tfilename, off64_t *pFileSize, time_t *pMtime)
+static int get_file_size_and_mtime_int(const tstring &tfilename, off64_t *pFileSize, rp_time_t *pMtime)
 {
 	assert(pFileSize != nullptr);
 	assert(pMtime != nullptr);
@@ -945,7 +945,7 @@ static int get_file_size_and_mtime_int(const tstring &tfilename, off64_t *pFileS
  * @param pMtime	[out] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, time_t *pMtime)
+int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, rp_time_t *pMtime)
 {
 	return get_file_size_and_mtime_int(makeWinPath(filename), pFileSize, pMtime);
 }
@@ -957,7 +957,7 @@ int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, time_t *pM
  * @param pMtime	[out] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_file_size_and_mtime(const wchar_t *filename, off64_t *pFileSize, time_t *pMtime)
+int get_file_size_and_mtime(const wchar_t *filename, off64_t *pFileSize, rp_time_t *pMtime)
 {
 	return get_file_size_and_mtime_int(makeWinPath(filename), pFileSize, pMtime);
 }

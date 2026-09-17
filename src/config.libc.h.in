@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension.                                    *
  * config.libc.h.in: Common libc function detection. (source file)         *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,6 +27,10 @@
 #cmakedefine HAVE_SYS_STAT_H 1
 
 /** Time functions **/
+
+/* Define to the size of `time_t`. */
+/* FIXME: cmakedefine doesn't seem to work here??? (It results in SIZEOF_TIME_T always being undefined.) */
+#define SIZEOF_TIME_T @TIME_T@
 
 /* Define to 1 if you have the `gmtime_r` function. */
 #cmakedefine HAVE_GMTIME_R 1

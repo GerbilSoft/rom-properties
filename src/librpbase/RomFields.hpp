@@ -405,7 +405,7 @@ public:
 			// RFT_DATETIME (UNIX format)
 			// NOTE: -1 is used to indicate
 			// an invalid date/time.
-			time_t date_time;
+			rp_time_t date_time;
 
 			// RFT_AGE_RATINGS
 			// See AgeRatingsCountry for field indexes.
@@ -759,7 +759,7 @@ public:
 
 	// Union for packing 64-bit time_t into a string for `is_timestamp` entries.
 	typedef union _TimeString_t {
-		int64_t time;
+		rp_time_t time;
 		char str[8];
 	} TimeString_t;
 	ASSERT_STRUCT(TimeString_t, 8);
@@ -856,7 +856,7 @@ public:
 	 * @param flags Date/Time flags
 	 * @return Field index, or -1 on error.
 	 */
-	int addField_dateTime(const char *name, time_t date_time, unsigned int flags = 0);
+	int addField_dateTime(const char *name, rp_time_t date_time, unsigned int flags = 0);
 
 	/**
 	 * Add age ratings.

@@ -2476,7 +2476,7 @@ int Nintendo3DS::loadFieldData(void)
 					}
 				} else if (p.first == "date") {
 					// Date the file was compressed, in ISO date format.
-					const time_t isotime = d->iso_format_time_to_unix_time(reinterpret_cast<const char*>(p.second.data()));
+					const rp_time_t isotime = d->iso_format_time_to_unix_time(reinterpret_cast<const char*>(p.second.data()));
 					if (isotime != -1) {
 						d->fields.addField_dateTime(p.first.c_str(), isotime,
 							RomFields::RFT_DATETIME_HAS_DATE |

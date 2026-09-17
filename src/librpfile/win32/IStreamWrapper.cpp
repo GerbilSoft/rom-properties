@@ -282,7 +282,7 @@ IFACEMETHODIMP IStreamWrapper::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
 		}
 	} else {
 		// Not an RpFile. Convert a Unix mtime instead.
-		const time_t unixtime = m_file->mtime();
+		const rp_time_t unixtime = m_file->mtime();
 		if (unixtime != -1) {
 			UnixTimeToFileTime(unixtime, &pstatstg->mtime);
 		}

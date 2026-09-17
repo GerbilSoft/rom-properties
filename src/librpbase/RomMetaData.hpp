@@ -195,7 +195,7 @@ public:
 			const char *str;
 
 			// UNIX timestamp
-			time_t timestamp;
+			rp_time_t timestamp;
 
 			// Double-precision floating point value
 			double dvalue;
@@ -391,7 +391,7 @@ public:
 	 * @param timestamp UNIX timestamp
 	 * @return Metadata index, or -1 on error.
 	 */
-	int addMetaData_timestamp(Property name, time_t timestamp);
+	int addMetaData_timestamp(Property name, rp_time_t timestamp);
 
 	/**
 	 * Add a double-precision floating point metadata property.

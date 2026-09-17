@@ -177,12 +177,13 @@ off64_t filesize(const char *filename)
  * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_mtime(const char *filename, time_t *pMtime)
+int get_mtime(const char *filename, rp_time_t *pMtime)
 {
 	assert(filename && filename[0] != '\0');
 	assert(pMtime != nullptr);
-	if (!filename || filename[0] == '\0' || !pMtime)
+	if (!filename || filename[0] == '\0' || !pMtime) {
 		return -EINVAL;
+	}
 
 #ifdef HAVE_STATX
 	struct statx sbx;
@@ -200,6 +201,7 @@ int get_mtime(const char *filename, time_t *pMtime)
 		int ret = -errno;
 		return (ret != 0 ? ret : -EIO);
 	}
+	// FIXME: Handle systems with 32-bit time_t.
 	*pMtime = sb.st_mtime;
 #endif /* HAVE_STATX */
 
@@ -429,7 +431,7 @@ bool isOnBadFS(const char *filename, bool allowNetFS)
  * @param pMtime	[out] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, time_t *pMtime)
+int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, rp_time_t *pMtime)
 {
 	assert(filename && filename[0] != '\0');
 	assert(pFileSize != nullptr);
@@ -472,6 +474,7 @@ int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, time_t *pM
 
 	// Return the file size and mtime.
 	*pFileSize = sb.st_size;
+	// FIXME: Handle systems with 32-bit time_t.
 	*pMtime = sb.st_mtime;
 #endif /* HAVE_STATX */
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * timeconv.h: Conversion between Unix time and other formats.             *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -45,7 +45,7 @@
  * @return Unix time
  */
 ATTR_CONST
-static inline CONSTEXPR time_t WindowsTimeToUnixTime(int64_t wintime)
+static inline CONSTEXPR rp_time_t WindowsTimeToUnixTime(int64_t wintime)
 {
 	return (wintime - FILETIME_1970) / HECTONANOSEC_PER_SEC;
 }
@@ -59,9 +59,9 @@ static inline CONSTEXPR time_t WindowsTimeToUnixTime(int64_t wintime)
  * @return Unix time
  */
 ATTR_CONST
-static inline CONSTEXPR time_t WindowsSplitTimeToUnixTime(uint32_t wintime_hi, uint32_t wintime_lo)
+static inline CONSTEXPR rp_time_t WindowsSplitTimeToUnixTime(uint32_t wintime_hi, uint32_t wintime_lo)
 {
-	return WindowsTimeToUnixTime(((int64_t)wintime_hi << 32U) | wintime_lo);
+	return WindowsTimeToUnixTime(((rp_time_t)wintime_hi << 32U) | wintime_lo);
 }
 
 /**
@@ -72,7 +72,7 @@ static inline CONSTEXPR time_t WindowsSplitTimeToUnixTime(uint32_t wintime_hi, u
  * @return Unix time
  */
 ATTR_CONST
-static inline CONSTEXPR int64_t UnixTimeToWindowsTime(time_t unixtime)
+static inline CONSTEXPR rp_time_t UnixTimeToWindowsTime(time_t unixtime)
 {
-	return ((int64_t)unixtime * HECTONANOSEC_PER_SEC) + FILETIME_1970;
+	return ((rp_time_t)unixtime * HECTONANOSEC_PER_SEC) + FILETIME_1970;
 }

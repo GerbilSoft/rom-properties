@@ -163,7 +163,7 @@ public:
 	 * @param isofiletime File timestamp
 	 * @return Unix time
 	 */
-	static time_t parseTimestamp(const ISO_Dir_DateTime_t *isofiletime);
+	static rp_time_t parseTimestamp(const ISO_Dir_DateTime_t *isofiletime);
 };
 
 /** IsoPartitionPrivate **/
@@ -625,7 +625,7 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup(const char *filename)
  * @param isofiletime File timestamp
  * @return Unix time
  */
-time_t IsoPartitionPrivate::parseTimestamp(const ISO_Dir_DateTime_t *isofiletime)
+rp_time_t IsoPartitionPrivate::parseTimestamp(const ISO_Dir_DateTime_t *isofiletime)
 {
 	// Convert to Unix time.
 	// NOTE: struct tm has some oddities:
@@ -647,6 +647,7 @@ time_t IsoPartitionPrivate::parseTimestamp(const ISO_Dir_DateTime_t *isofiletime
 	isotime.tm_isdst = 0;
 
 	// If conversion fails, this will return -1.
+	// FIXME: Handle systems with 32-bit time_t.
 	time_t unixtime = timegm(&isotime);
 	if (unixtime == -1) {
 		return unixtime;
@@ -1064,7 +1065,7 @@ IRpFilePtr IsoPartition::open(const char *filename)
  * @param filename Filename
  * @return Timestamp, or -1 on error.
  */
-time_t IsoPartition::get_mtime(const char *filename)
+rp_time_t IsoPartition::get_mtime(const char *filename)
 {
 	RP_D(IsoPartition);
 	assert(m_file != nullptr);

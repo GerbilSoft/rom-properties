@@ -42,6 +42,20 @@ typedef int64_t off64_t;
 #  endif /* defined(SIZEOF_OFF_T) && SIZEOF_OFF_T >= 8 */
 #endif /* !defined(SIZEOF_OFF64_t) */
 
+// Ensure we use 64-bit (or greater) time_t throughout rom-properties.
+#if SIZEOF_TIME_T >= 8
+// time_t is 64-bit (or greater).
+typedef time_t rp_time_t;
+#else /* SIZEOF_TIME_T < 8 */
+// time_t is not 64-bit. Use a 64-bit int type for time64_t.
+#  ifdef _MSC_VER
+typedef __int64 rp_time_t;
+#  else /* !_MSC_VER */
+#    include <stdint.h>
+typedef int64_t rp_time_t;
+#  endif /* _MSC_VER */
+#endif /* SIZEOF_TIME_T >= 8 */
+
 /**
  * MSVC doesn't have typeof(), but as of MSVC 2010,
  * it has decltype(), which is essentially the same thing.

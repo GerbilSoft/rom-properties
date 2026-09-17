@@ -112,7 +112,7 @@ static bool getStoreFileOriginInfo(void)
  * @param mtime If >= 0, this value is set as the mtime.
  * @return 0 on success; negative POSIX error code on error.
  */
-int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
+int setFileOriginInfo(FILE *file, const TCHAR *url, rp_time_t mtime)
 {
 	const int fd = fileno(file);
 
@@ -194,6 +194,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 		}
 
 		// mtime
+		// FIXME: Handle systems with 32-bit time_t.
 		tv[1].tv_sec = mtime;
 		tv[1].tv_usec = 0;
 

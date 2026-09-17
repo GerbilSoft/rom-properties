@@ -891,7 +891,7 @@ int SNESPrivate::addFields_NP(void)
 		// but for now, we'll handle it as "UTC".
 
 		// Convert from strings to struct tm.
-		time_t nptime = -1;
+		rp_time_t nptime = -1;
 		struct tm tm;
 		char buf[16];
 		do {
@@ -931,8 +931,9 @@ int SNESPrivate::addFields_NP(void)
 			nptime = timegm(&tm);
 		} while (0);
 
-		// Pack the 64-bit time_t into a string.
+		// Pack the 64-bit rp_time_t into a string.
 		RomFields::TimeString_t time_string;
+		static_assert(sizeof(rp_time_t) == sizeof(time_string), "sizeof(rp_time_t) != sizeof(time_string) !!!");
 		time_string.time = nptime;
 		data_row.emplace_back(time_string.str, sizeof(time_string.str));
 
@@ -1591,7 +1592,7 @@ int SNES::loadFieldData(void)
 			// Date
 			// Verify that the date field is valid.
 			// NOTE: Not verifying the low bits. (should be 0)
-			time_t unixtime = -1;
+			rp_time_t unixtime = -1;
 			const uint8_t month = romHeader->bsx.date.month >> 4;
 			const uint8_t day = romHeader->bsx.date.day >> 3;
 			if (month > 0 && month <= 12 && day > 0 && day <= 31) {

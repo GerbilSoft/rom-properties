@@ -218,7 +218,7 @@ public:
 	 * Get the file modification time.
 	 * @return File modification time, or -1 if not available.
 	 */
-	virtual time_t mtime(void)
+	virtual rp_time_t mtime(void)
 	{
 		return -1;
 	}

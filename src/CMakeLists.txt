@@ -7,6 +7,10 @@ PROJECT(src)
 INCLUDE(CheckLargeFileSupport)
 CHECK_LARGE_FILE_SUPPORT()
 
+# Check for 64-bit time support.
+INCLUDE(Check64BitTimeSupport)
+CHECK_64BIT_TIME_SUPPORT()
+
 # Check for dirent.h. (for d_type.h)
 CHECK_INCLUDE_FILE("dirent.h" HAVE_DIRENT_H)
 # Check for features.h. (for __GLIBC__)

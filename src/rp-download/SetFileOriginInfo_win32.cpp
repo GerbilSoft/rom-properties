@@ -122,7 +122,7 @@ static bool getStoreFileOriginInfo(void)
  * @param mtime If >= 0, this value is set as the mtime.
  * @return 0 on success; negative POSIX error code on error.
  */
-int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
+int setFileOriginInfo(FILE *file, const TCHAR *url, rp_time_t mtime)
 {
 	// NOTE: Even if one of the xattr functions fails, we'll
 	// continue with others and setting mtime. The first error

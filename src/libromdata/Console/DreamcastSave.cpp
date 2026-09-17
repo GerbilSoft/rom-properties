@@ -112,10 +112,10 @@ public:
 	// depending on if we loaded a VMI or DCI.
 	// If the original value is invalid, this will
 	// be set to -1.
-	time_t ctime;
+	rp_time_t ctime;
 
 	// Time conversion functions
-	static time_t vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm);
+	static rp_time_t vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm);
 
 	/**
 	 * Check a Dreamcast VMS field for invalid characters.
@@ -258,7 +258,7 @@ DreamcastSavePrivate::DreamcastSavePrivate(const IRpFilePtr &file)
  * NOTE: vmi_tm->year must have been byteswapped prior to
  * calling this function.
  */
-time_t DreamcastSavePrivate::vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm)
+rp_time_t DreamcastSavePrivate::vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm)
 {
 	// Convert the VMI time to Unix time.
 	// NOTE: struct tm has some oddities:
@@ -279,6 +279,7 @@ time_t DreamcastSavePrivate::vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm)
 	dctime.tm_isdst = 0;
 
 	// If conversion fails, d->ctime will be set to -1.
+	// FIXME: Handle systems with 32-bit time_t.
 	return timegm(&dctime);
 }
 

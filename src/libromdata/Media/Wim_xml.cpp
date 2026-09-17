@@ -76,8 +76,8 @@ struct WimIndex {
 	uint64_t dircount = 0;
 	uint64_t filecount = 0;
 	uint64_t totalbytes = 0;
-	//time_t creationtime = 0;	// not used right now
-	time_t lastmodificationtime = 0;
+	//rp_time_t creationtime = 0;	// not used right now
+	rp_time_t lastmodificationtime = 0;
 	WimWindowsInfo windowsinfo;
 	string name, description;
 	//string flags;			// not used right now
@@ -318,8 +318,9 @@ int WimPrivate::addFields_XML()
 		data_row.push_back(image.dispname);
 		data_row.push_back(image.dispdescription);
 
-		// Pack the 64-bit time_t into a string.
+		// Pack the 64-bit rp_time_t into a string.
 		RomFields::TimeString_t time_string;
+		static_assert(sizeof(rp_time_t) == sizeof(time_string), "sizeof(rp_time_t) != sizeof(time_string) !!!");
 		time_string.time = image.lastmodificationtime;
 		data_row.emplace_back(time_string.str, sizeof(time_string.str));
 

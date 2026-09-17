@@ -132,7 +132,7 @@ public:
 	 * @param pvd_time PVD timestamp
 	 * @return UNIX time, or -1 if invalid or not set.
 	 */
-	static inline time_t pvd_time_to_unix_time(const ISO_PVD_DateTime_t *pvd_time)
+	static inline rp_time_t pvd_time_to_unix_time(const ISO_PVD_DateTime_t *pvd_time)
 	{
 		// Wrapper for RomData::pvd_time_to_unix_time(),
 		// which doesn't take an ISO_PVD_DateTime_t struct.
@@ -144,7 +144,7 @@ public:
 	 * @param pvd_time PVD timestamp
 	 * @return UNIX time, or -1 if invalid or not set.
 	 */
-	static inline time_t pvd_time_to_unix_time(const HSFS_PVD_DateTime_t *pvd_time)
+	static inline rp_time_t pvd_time_to_unix_time(const HSFS_PVD_DateTime_t *pvd_time)
 	{
 		// Wrapper for RomData::pvd_time_to_unix_time(),
 		// which doesn't take an HSFS_PVD_DateTime_t struct.

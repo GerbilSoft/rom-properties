@@ -33,7 +33,7 @@ using std::tstring;
  * @param flags		[in] RFT_DATETIME flags
  * @return Formatted RFT_DATETIME, or empty on error.
  */
-tstring formatDateTime(time_t date_time, unsigned int flags)
+tstring formatDateTime(rp_time_t date_time, unsigned int flags)
 {
 	// Format the date/time using the system locale.
 	tstring ts_ret;

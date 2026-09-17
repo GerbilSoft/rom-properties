@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RomDataFormat.hpp: Common RomData string formatting functions.          *
  *                                                                         *
- * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,7 +22,7 @@
  * @param flags		[in] RFT_DATETIME flags
  * @return Formatted RFT_DATETIME, or empty on error.
  */
-std::tstring formatDateTime(time_t date_time, unsigned int flags);
+std::tstring formatDateTime(rp_time_t date_time, unsigned int flags);
 
 /**
  * Format an RFT_DIMENSIONS.

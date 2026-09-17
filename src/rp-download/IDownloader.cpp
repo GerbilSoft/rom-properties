@@ -133,7 +133,7 @@ void IDownloader::setMaxSize(size_t maxSize)
  * Get the If-Modified-Since request timestamp.
  * @return If-Modified-Since timestamp (-1 for none)
  */
-time_t IDownloader::ifModifiedSince(void) const
+rp_time_t IDownloader::ifModifiedSince(void) const
 {
 	return m_if_modified_since;
 }
@@ -142,7 +142,7 @@ time_t IDownloader::ifModifiedSince(void) const
  * Set the If-Modified-Since request timestamp.
  * @param timestamp If-Modified-Since timestamp (-1 for none)
  */
-void IDownloader::setIfModifiedSince(time_t timestamp)
+void IDownloader::setIfModifiedSince(rp_time_t timestamp)
 {
 	assert(!m_inProgress);
 	// TODO: Don't set if m_inProgress?
@@ -204,7 +204,7 @@ const uint8_t *IDownloader::data(void) const
  * Get the Last-Modified time.
  * @return Last-Modified time, or -1 if none was set by the server.
  */
-time_t IDownloader::mtime(void) const
+rp_time_t IDownloader::mtime(void) const
 {
 	return m_mtime;
 }

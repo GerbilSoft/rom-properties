@@ -382,7 +382,7 @@ void AchievementsTabPrivate::updateImageList(void)
 	const Achievements *const pAch = Achievements::instance();
 	for (int i = 0; i < (int)Achievements::ID::Max; i++) {
 		const Achievements::ID id = (Achievements::ID)i;
-		const time_t timestamp = pAch->isUnlocked(id);
+		const rp_time_t timestamp = pAch->isUnlocked(id);
 		const bool unlocked = (timestamp != -1);
 
 		// Get the achievement icon.
@@ -575,7 +575,7 @@ void AchievementsTabPrivate::reset(void)
 	const Achievements *const pAch = Achievements::instance();
 	for (int i = 0; i < (int)Achievements::ID::Max; i++) {
 		const Achievements::ID id = (Achievements::ID)i;
-		const time_t timestamp = pAch->isUnlocked(id);
+		const rp_time_t timestamp = pAch->isUnlocked(id);
 
 		// Get the name and description.
 		tstring ts_ach = U82T_c(pAch->getName(id));

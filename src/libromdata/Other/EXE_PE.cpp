@@ -799,12 +799,10 @@ void EXEPrivate::addFields_PE(void)
 	// Timestamp
 	// TODO: Windows 10 modules have hashes here instead of timestamps.
 	// We should detect that by checking for obviously out-of-range values.
-	// TODO: time_t is signed, so values greater than 2^31-1 may be negative.
 	const char *const timestamp_title = C_("EXE", "Timestamp");
-	const uint32_t timestamp = le32_to_cpu(hdr.pe.FileHeader.TimeDateStamp);
+	const rp_time_t timestamp = static_cast<rp_time_t>(le32_to_cpu(hdr.pe.FileHeader.TimeDateStamp));
 	if (timestamp != 0) {
-		fields.addField_dateTime(timestamp_title,
-			static_cast<time_t>(timestamp),
+		fields.addField_dateTime(timestamp_title, timestamp,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME);
 	} else {
@@ -1401,10 +1399,9 @@ int EXEPrivate::addFields_PE_PDB(void)
 				found_cv = true;
 
 				fields.addTab("PDB");
-				uint32_t cv_timestamp = le32_to_cpu(dir.TimeDateStamp);
+				const rp_time_t cv_timestamp = static_cast<rp_time_t>(le32_to_cpu(dir.TimeDateStamp));
 				if (cv_timestamp != 0) {
-					fields.addField_dateTime(C_("EXE|PDB", "CodeView Timestamp"),
-						static_cast<time_t>(cv_timestamp),
+					fields.addField_dateTime(C_("EXE|PDB", "CodeView Timestamp"), cv_timestamp,
 						RomFields::RFT_DATETIME_HAS_DATE |
 						RomFields::RFT_DATETIME_HAS_TIME);
 				}

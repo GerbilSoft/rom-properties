@@ -127,7 +127,7 @@ public:
 	 * not likely to be valid for NES/Famicom, since the Famicom
 	 * was released in 1983.
 	 */
-	static time_t fds_bcd_datestamp_to_unix_time(const FDS_BCD_DateStamp *fds_bcd_ds);
+	static rp_time_t fds_bcd_datestamp_to_unix_time(const FDS_BCD_DateStamp *fds_bcd_ds);
 
 	/**
 	 * Calculate the PRG ROM size from an NES 2.0 header.
@@ -283,7 +283,7 @@ NESPrivate::NESPrivate(const IRpFilePtr &file)
  * not likely to be valid for NES/Famicom, since the Famicom
  * was released in 1983.
  */
-time_t NESPrivate::fds_bcd_datestamp_to_unix_time(const FDS_BCD_DateStamp *fds_bcd_ds)
+rp_time_t NESPrivate::fds_bcd_datestamp_to_unix_time(const FDS_BCD_DateStamp *fds_bcd_ds)
 {
 	// Convert the FDS time to Unix time.
 	// NOTE: struct tm has some oddities:
@@ -328,6 +328,7 @@ time_t NESPrivate::fds_bcd_datestamp_to_unix_time(const FDS_BCD_DateStamp *fds_b
 	fdstime.tm_isdst = 0;
 
 	// If conversion fails, d->ctime will be set to -1.
+	// FIXME: Handle systems with 32-bit time_t.
 	return timegm(&fdstime);
 }
 
@@ -1593,7 +1594,7 @@ int NES::loadFieldData(void)
 			header->fds.revision, RomFields::Base::Dec, 2);
 
 		// Manufacturing Date.
-		const time_t mfr_date = d->fds_bcd_datestamp_to_unix_time(&header->fds.mfr_date);
+		const rp_time_t mfr_date = d->fds_bcd_datestamp_to_unix_time(&header->fds.mfr_date);
 		d->fields.addField_dateTime(C_("NES", "Manufacturing Date"), mfr_date,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_IS_UTC  // Date only.

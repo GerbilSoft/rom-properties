@@ -789,7 +789,7 @@ const wchar_t *RpFile::filenameW(void) const
  * Get the file modification time.
  * @return File modification time, or -1 if not available.
  */
-time_t RpFile::mtime(void)
+rp_time_t RpFile::mtime(void)
 {
 	FILETIME lastWriteTime;
 	int ret = mtime(&lastWriteTime);

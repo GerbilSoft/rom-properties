@@ -135,7 +135,7 @@ static void ATTR_TPRINTF(1, 2) show_info(const TCHAR *format, ...)
  * @param pMtime	[out] Modification time.
  * @return 0 on success; negative POSIX error code on error.
  */
-static int get_file_size_and_mtime(const TCHAR *filename, off64_t *pFileSize, time_t *pMtime)
+static int get_file_size_and_mtime(const TCHAR *filename, off64_t *pFileSize, rp_time_t *pMtime)
 {
 	assert(pFileSize != nullptr);
 	assert(pMtime != nullptr);
@@ -374,7 +374,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 	// Get the cache file information.
 	off64_t filesize = 0;
-	time_t filemtime = -1;
+	rp_time_t filemtime = -1;
 	int ret = get_file_size_and_mtime(cache_filename.c_str(), &filesize, &filemtime);
 	if (ret == 0) {
 		// Check if the file is 0 bytes.
@@ -384,6 +384,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			// If the file is older than a week, try to redownload it.
 			// NOTE: Not used for "check_newer" files, e.g. "sys/".
 			// TODO: Configurable time.
+			// FIXME: Handle systems with 32-bit time_t.
 			const time_t systime = time(nullptr);
 			if ((systime - filemtime) < (86400*7)) {
 				// Less than a week old.

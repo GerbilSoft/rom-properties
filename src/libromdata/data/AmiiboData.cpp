@@ -112,8 +112,8 @@ public:
 	static TCHAR *amiibo_data_bin_override_filename;
 
 	// amiibo.bin timestamps
-	time_t amiibo_bin_check_ts;	// Last check timestamp
-	time_t amiibo_bin_file_ts;	// File mtime
+	rp_time_t amiibo_bin_check_ts;	// Last check timestamp
+	rp_time_t amiibo_bin_file_ts;	// File mtime
 
 	enum class AmiiboBinFileType : uint8_t {
 		None = 0,
@@ -281,6 +281,7 @@ tstring AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileT
  */
 int AmiiboDataPrivate::loadIfNeeded(void)
 {
+	// FIXME: Handle systems with 32-bit time_t.
 	const time_t now = time(nullptr);
 	if (!amiibo_bin_data.empty()) {
 		// amiibo data is already loaded.
@@ -302,7 +303,7 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 	// NOTE: mtime is checked even if no file is loaded, since this is
 	// also used to check if the file exists in the first place.
 	AmiiboBinFileType bin_ft = AmiiboBinFileType::None;
-	time_t mtime = -1;
+	rp_time_t mtime = -1;
 	bool ok = false;	// Set to true once a valid file is found.
 
 	// Check the user filename.

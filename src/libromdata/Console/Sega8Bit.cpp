@@ -101,14 +101,14 @@ public:
 	 * @param timestamp Codemasters timestamp.
 	 * @return Unix timestamp, or -1 on error.
 	 */
-	static time_t codemasters_timestamp_to_unix_time(const Sega8_Codemasters_Timestamp *timestamp);
+	static rp_time_t codemasters_timestamp_to_unix_time(const Sega8_Codemasters_Timestamp *timestamp);
 
 	/**
 	 * Convert an SDSC build date to a Unix timestamp.
 	 * @param date SDSC build date.
 	 * @return Unix timestamp, or -1 on error.
 	 */
-	static time_t sdsc_date_to_unix_time(const Sega8_SDSC_Date *date);
+	static rp_time_t sdsc_date_to_unix_time(const Sega8_SDSC_Date *date);
 
 	/**
 	 * Is this a Game Gear ROM?
@@ -329,7 +329,7 @@ string Sega8BitPrivate::getSdscString(uint16_t ptr)
  * @param timestamp Codemasters timestamp.
  * @return Unix timestamp, or -1 on error.
  */
-time_t Sega8BitPrivate::codemasters_timestamp_to_unix_time(const Sega8_Codemasters_Timestamp *timestamp)
+rp_time_t Sega8BitPrivate::codemasters_timestamp_to_unix_time(const Sega8_Codemasters_Timestamp *timestamp)
 {
 	// Convert date/time from BCD.
 	// NOTE: struct tm has some oddities:
@@ -360,6 +360,7 @@ time_t Sega8BitPrivate::codemasters_timestamp_to_unix_time(const Sega8_Codemaste
 	cmtime.tm_isdst = 0;
 
 	// If conversion fails, d->ctime will be set to -1.
+	// FIXME: Handle systems with 32-bit time_t.
 	return timegm(&cmtime);
 }
 
@@ -368,7 +369,7 @@ time_t Sega8BitPrivate::codemasters_timestamp_to_unix_time(const Sega8_Codemaste
  * @param date SDSC build date.
  * @return Unix timestamp, or -1 on error.
  */
-time_t Sega8BitPrivate::sdsc_date_to_unix_time(const Sega8_SDSC_Date *date)
+rp_time_t Sega8BitPrivate::sdsc_date_to_unix_time(const Sega8_SDSC_Date *date)
 {
 	// Convert date/time from BCD.
 	// NOTE: struct tm has some oddities:
@@ -402,6 +403,7 @@ time_t Sega8BitPrivate::sdsc_date_to_unix_time(const Sega8_SDSC_Date *date)
 	sdsctime.tm_isdst = 0;
 
 	// If conversion fails, d->ctime will be set to -1.
+	// FIXME: Handle systems with 32-bit time_t.
 	return timegm(&sdsctime);
 }
 
@@ -598,7 +600,7 @@ int Sega8Bit::loadFieldData(void)
 
 		// Build time
 		// NOTE: CreationDate is currently handled as QDate on KDE.
-		const time_t ctime = d->codemasters_timestamp_to_unix_time(&codemasters->timestamp);
+		const rp_time_t ctime = d->codemasters_timestamp_to_unix_time(&codemasters->timestamp);
 
 		d->fields.addField_dateTime(C_("Sega8Bit", "Build Time"), ctime,
 			RomFields::RFT_DATETIME_HAS_DATE |
@@ -639,7 +641,7 @@ int Sega8Bit::loadFieldData(void)
 		d->fields.addField_string(C_("Sega8Bit", "SDSC Version"), bcdbuf);
 
 		// Build date
-		const time_t ctime = d->sdsc_date_to_unix_time(&sdsc->date);
+		const rp_time_t ctime = d->sdsc_date_to_unix_time(&sdsc->date);
 
 		d->fields.addField_dateTime(C_("Sega8Bit", "Build Date"), ctime,
 			RomFields::RFT_DATETIME_HAS_DATE |
@@ -693,7 +695,7 @@ int Sega8Bit::loadMetaData(void)
 
 		// Build time.
 		// NOTE: CreationDate is currently handled as QDate on KDE.
-		time_t ctime = d->codemasters_timestamp_to_unix_time(&codemasters->timestamp);
+		const rp_time_t ctime = d->codemasters_timestamp_to_unix_time(&codemasters->timestamp);
 		d->metaData.addMetaData_timestamp(Property::CreationDate, ctime);
 	} else if (d->isSdscHeaderPresent()) {
 		// SDSC header is present.
@@ -701,7 +703,7 @@ int Sega8Bit::loadMetaData(void)
 		const Sega8_SDSC_RomHeader *const sdsc = &d->romHeader.sdsc;
 
 		// Build date
-		const time_t ctime = d->sdsc_date_to_unix_time(&sdsc->date);
+		const rp_time_t ctime = d->sdsc_date_to_unix_time(&sdsc->date);
 		d->metaData.addMetaData_timestamp(Property::CreationDate, ctime);
 
 		// Author

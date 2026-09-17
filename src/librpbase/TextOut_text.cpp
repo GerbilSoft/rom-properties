@@ -457,7 +457,7 @@ public:
  * @param dtflags	[in] DateTimeFlags
  * @return Formatted RFT_DATETIME on success; empty string on error.
  */
-static string formatDateTime(time_t timestamp, RomFields::DateTimeFlags dtflags)
+static string formatDateTime(rp_time_t timestamp, RomFields::DateTimeFlags dtflags)
 {
 	string s_ret;
 
@@ -471,7 +471,9 @@ static string formatDateTime(time_t timestamp, RomFields::DateTimeFlags dtflags)
 		}
 	} else {
 		tzset();
-		if (!localtime_r(&timestamp, &tm_struct)) {
+		// FIXME: Handle systems with 32-bit time_t.
+		const time_t t = static_cast<time_t>(timestamp);
+		if (!localtime_r(&t, &tm_struct)) {
 			// localtime_r() failed.
 			return s_ret;
 		}
@@ -660,8 +662,7 @@ public:
 					RomFields::TimeString_t time_string;
 					memcpy(time_string.str, jt->data(), 8);
 
-					string str = formatDateTime(
-						static_cast<time_t>(time_string.time),
+					string str = formatDateTime(time_string.time,
 						listDataDesc.col_attrs.dtflags);
 					if (unlikely(str.empty())) {
 						str = C_("RomData", "Unknown");
@@ -823,8 +824,7 @@ public:
 							RomFields::TimeString_t time_string;
 							memcpy(time_string.str, jt->data(), 8);
 
-							str = formatDateTime(
-								static_cast<time_t>(time_string.time),
+							str = formatDateTime(time_string.time,
 								listDataDesc.col_attrs.dtflags);
 							if (unlikely(str.empty())) {
 								str = C_("RomData", "Unknown");

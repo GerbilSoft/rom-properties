@@ -1659,7 +1659,7 @@ int GameCube::loadFieldData(void)
 		unsigned int sysMenuVersion = 0;
 		unsigned int ios_slot = 0, ios_major = 0, ios_minor = 0;
 		unsigned int ios_retail_count = 0;
-		time_t update_date = -1;	// from update.inf
+		rp_time_t update_date = -1;	// from update.inf
 		bool isDebugIOS = false;
 		if (d->updatePartition) {
 			// Get the update version.
@@ -1753,6 +1753,7 @@ int GameCube::loadFieldData(void)
 						tm.tm_year -= 1900;
 						tm.tm_mon -= 1;
 
+						// FIXME: Handle systems with 32-bit time_t.
 						update_date = timegm(&tm);
 					}
 				}

@@ -616,7 +616,7 @@ const char *RpFile::filename(void) const
  * Get the file modification time.
  * @return File modification time, or -1 if not available.
  */
-time_t RpFile::mtime(void)
+rp_time_t RpFile::mtime(void)
 {
 	RP_D(RpFile);
 	if (!d->file) {
@@ -646,6 +646,7 @@ time_t RpFile::mtime(void)
 		}
 		return -1;
 	}
+	// FIXME: Handle systems with 32-bit time_t.
 	return sb.st_mtime;
 #endif /* HAVE_STATX */
 }

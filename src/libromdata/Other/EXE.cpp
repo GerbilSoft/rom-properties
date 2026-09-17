@@ -329,7 +329,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	                           static_cast<uint64_t>(pVsFfi->dwFileDateLS);
 	if (fileTime != 0) {
 		// Convert to UNIX time for display purposes.
-		const time_t fileTimeUnix = WindowsTimeToUnixTime(fileTime);
+		const rp_time_t fileTimeUnix = WindowsTimeToUnixTime(fileTime);
 		fields.addField_dateTime(C_("EXE", "File Time"), fileTimeUnix,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME);

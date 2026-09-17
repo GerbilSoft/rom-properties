@@ -94,6 +94,7 @@ int ConfReader::load(bool force)
 	if (!force && d->conf_was_found) {
 		// Have we checked the timestamp recently?
 		// TODO: Define the threshold somewhere.
+		// FIXME: Handle systems with 32-bit time_t.
 		const time_t now = time(nullptr);
 		if (llabs(now - d->conf_last_checked) < 2) {
 			// We checked it recently. Assume it's up to date.
@@ -103,7 +104,7 @@ int ConfReader::load(bool force)
 
 		// Check if the keys.conf timestamp has changed.
 		// Initial check. (fast path)
-		time_t mtime;
+		rp_time_t mtime;
 		int ret = FileSystem::get_mtime(d->conf_filename, &mtime);
 		if (ret != 0) {
 			// Failed to retrieve the mtime.
@@ -136,7 +137,7 @@ int ConfReader::load(bool force)
 	} else if (!force && d->conf_was_found) {
 		// Check if the keys.conf timestamp has changed.
 		// NOTE: Second check once the mutex is locked.
-		time_t mtime;
+		rp_time_t mtime;
 		int ret = FileSystem::get_mtime(d->conf_filename, &mtime);
 		if (ret != 0) {
 			// Failed to retrieve the mtime.
@@ -187,7 +188,7 @@ int ConfReader::load(bool force)
 
 	// Save the mtime from the keys.conf file.
 	// TODO: Combine with earlier check?
-	time_t mtime;
+	rp_time_t mtime;
 	ret = FileSystem::get_mtime(d->conf_filename, &mtime);
 	if (ret == 0) {
 		d->conf_mtime = mtime;

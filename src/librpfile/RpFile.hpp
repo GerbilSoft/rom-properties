@@ -184,7 +184,7 @@ public:
 	 * @return File modification time, or -1 if not available.
 	 */
 	RP_LIBROMDATA_PUBLIC
-	time_t mtime(void) final;
+	rp_time_t mtime(void) final;
 
 #ifdef _WIN32
 	/**
