@@ -45,6 +45,7 @@ typedef int64_t off64_t;
 // Ensure we use 64-bit (or greater) time_t throughout rom-properties.
 #if SIZEOF_TIME_T >= 8
 // time_t is 64-bit (or greater).
+#  include <time.h>
 typedef time_t rp_time_t;
 #else /* SIZEOF_TIME_T < 8 */
 // time_t is not 64-bit. Use a 64-bit int type for time64_t.
