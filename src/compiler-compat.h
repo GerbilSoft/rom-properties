@@ -45,7 +45,16 @@ typedef int64_t off64_t;
 // Ensure we use 64-bit (or greater) time_t throughout rom-properties.
 #if SIZEOF_TIME_T >= 8
 // time_t is 64-bit (or greater).
-#  include "time_r.h"
+// _POSIX_C_SOURCE is required for *_r() on MinGW-w64.
+// However, this breaks snprintf() on FreeBSD when using clang/libc++,
+// so only define it on Windows.
+// Reference: https://github.com/pocoproject/poco/issues/1045#issuecomment-245987081
+#  ifdef _WIN32
+#    ifndef _POSIX_C_SOURCE
+#      define _POSIX_C_SOURCE 1
+#    endif
+#  endif /* _WIN32 */
+#  include <time.h>
 typedef time_t rp_time_t;
 #else /* SIZEOF_TIME_T < 8 */
 // time_t is not 64-bit. Use a 64-bit int type for time64_t.
