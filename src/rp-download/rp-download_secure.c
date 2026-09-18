@@ -62,7 +62,8 @@ int rp_download_do_security_options(void)
 #endif /* __SNR_openat2 || __NR_openat2 */
 		SCMP_SYS(poll),
 		SCMP_SYS(unlink),	// to delete expired cache files
-		SCMP_SYS(utimensat),
+		SCMP_SYS(futimesat),
+		SCMP_SYS(utimensat), SCMP_SYS(utimensat_time64),
 
 		// select()
 		SCMP_SYS(select),
