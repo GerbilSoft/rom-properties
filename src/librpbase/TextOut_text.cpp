@@ -463,10 +463,8 @@ static string formatDateTime(rp_time_t timestamp, RomFields::DateTimeFlags dtfla
 
 	struct tm tm_struct;
 	if (dtflags & RomFields::RFT_DATETIME_IS_UTC) {
-		try {
-			tm_struct = fmt::gmtime(timestamp);
-		} catch (const fmt::format_error&) {
-			// fmt::gmtime() failed.
+		if (!rp_gmtime(&timestamp, &tm_struct)) {
+			// rp_gmtime() failed.
 			return s_ret;
 		}
 	} else {
