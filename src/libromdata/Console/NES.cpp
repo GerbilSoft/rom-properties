@@ -328,8 +328,7 @@ rp_time_t NESPrivate::fds_bcd_datestamp_to_unix_time(const FDS_BCD_DateStamp *fd
 	fdstime.tm_isdst = 0;
 
 	// If conversion fails, d->ctime will be set to -1.
-	// FIXME: Handle systems with 32-bit time_t.
-	return timegm(&fdstime);
+	return rp_timegm(&fdstime);
 }
 
 /**

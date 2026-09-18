@@ -365,7 +365,7 @@ SPCPrivate::spc_tags_t SPCPrivate::parseTags(void)
 			ymdtime.tm_isdst = 0;
 
 			// If conversion fails, this will return -1.
-			kv.insertTimestamp(SPC_xID6_ITEM_DUMP_DATE, timegm(&ymdtime));
+			kv.insertTimestamp(SPC_xID6_ITEM_DUMP_DATE, rp_timegm(&ymdtime));
 		}
 
 		// Artist

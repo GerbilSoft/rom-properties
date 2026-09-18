@@ -471,7 +471,7 @@ static string formatDateTime(rp_time_t timestamp, RomFields::DateTimeFlags dtfla
 		}
 	} else {
 		tzset();
-		// FIXME: Handle systems with 32-bit time_t.
+		// FIXME: Handle localtime_r() on systems with 32-bit time_t.
 		const time_t t = static_cast<time_t>(timestamp);
 		if (!localtime_r(&t, &tm_struct)) {
 			// localtime_r() failed.

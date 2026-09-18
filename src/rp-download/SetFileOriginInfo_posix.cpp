@@ -194,7 +194,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, rp_time_t mtime)
 		}
 
 		// mtime
-		// FIXME: Handle systems with 32-bit time_t.
+		// FIXME: Handle futimes() on systems with 32-bit time_t.
 		tv[1].tv_sec = mtime;
 		tv[1].tv_usec = 0;
 

@@ -111,7 +111,6 @@ string CacheManager::download(const char *cache_key)
 				// on the server. If the file is older than a week,
 				// try to redownload it.
 				// TODO: Configurable time.
-				// FIXME: Handle systems with 32-bit time_t.
 				const time_t systime = time(nullptr);
 				if ((systime - filemtime) < (86400*7)) {
 					// Less than a week old.

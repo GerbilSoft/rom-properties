@@ -309,8 +309,7 @@ rp_time_t RomDataPrivate::ascii_yyyymmdd_to_unix_time(const char *ascii_date)
 	ymdtime.tm_isdst = 0;
 
 	// If conversion fails, this will return -1.
-	// FIXME: Handle systems with 32-bit time_t.
-	return timegm(&ymdtime);
+	return rp_timegm(&ymdtime);
 }
 
 /**
@@ -372,8 +371,7 @@ rp_time_t RomDataPrivate::bcd_to_unix_time(const uint8_t *bcd_tm, size_t size)
 	bcdtime.tm_isdst = 0;
 
 	// If conversion fails, this will return -1.
-	// FIXME: Handle systems with 32-bit time_t.
-	return timegm(&bcdtime);
+	return rp_timegm(&bcdtime);
 }
 
 /**
@@ -435,8 +433,7 @@ rp_time_t RomDataPrivate::pvd_time_to_unix_time(const char (*pvd_time)[16], int8
 	pvdtime.tm_isdst = 0;
 
 	// If conversion fails, this will return -1.
-	// FIXME: Handle systems with 32-bit time_t.
-	rp_time_t unixtime = timegm(&pvdtime);
+	rp_time_t unixtime = rp_timegm(&pvdtime);
 	if (unixtime == -1) {
 		return -1;
 	}
@@ -484,8 +481,7 @@ rp_time_t RomDataPrivate::iso_format_time_to_unix_time(const char *iso_date)
 	isotime.tm_isdst = 0;
 
 	// If conversion fails, this will return -1.
-	// FIXME: Handle systems with 32-bit time_t.
-	return timegm(&isotime);
+	return rp_timegm(&isotime);
 }
 
 /** Functions for RomData subclasses that handle directories **/

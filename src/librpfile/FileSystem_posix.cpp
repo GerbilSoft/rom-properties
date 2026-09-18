@@ -201,7 +201,7 @@ int get_mtime(const char *filename, rp_time_t *pMtime)
 		int ret = -errno;
 		return (ret != 0 ? ret : -EIO);
 	}
-	// FIXME: Handle systems with 32-bit time_t.
+	// FIXME: Handle stat() on systems with 32-bit time_t.
 	*pMtime = sb.st_mtime;
 #endif /* HAVE_STATX */
 
@@ -474,7 +474,7 @@ int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, rp_time_t 
 
 	// Return the file size and mtime.
 	*pFileSize = sb.st_size;
-	// FIXME: Handle systems with 32-bit time_t.
+	// FIXME: Handle stat() on systems with 32-bit time_t.
 	*pMtime = sb.st_mtime;
 #endif /* HAVE_STATX */
 

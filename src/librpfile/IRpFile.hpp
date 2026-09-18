@@ -8,6 +8,12 @@
 
 #pragma once
 
+// Common macros
+#include "common.h"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
+#include "d_type.h"
+#include "time_r.h"	// for rp_time_t
+
 // C includes
 #include <sys/types.h>	// for off64_t
 
@@ -18,11 +24,6 @@
 
 // C++ includes
 #include <memory>
-
-// Common macros
-#include "common.h"
-#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
-#include "d_type.h"
 
 #ifdef _WIN32
 #  include "win32/IsDriveLetter.hpp"

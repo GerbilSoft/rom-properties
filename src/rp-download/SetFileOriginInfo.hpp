@@ -8,7 +8,9 @@
 
 #pragma once
 
-// C includes. (C++ namespace)
+#include "time_r.h"	// for rp_time_t
+
+// C includes (C++ namespace)
 #include <cerrno>
 #include <cstddef>
 #include <cstdio>

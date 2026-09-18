@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * TimegmTest.cpp: timegm() test.                                          *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -40,31 +40,31 @@ static struct tm TM_INIT(int year, int month, int day, int hour, int minute, int
 TEST(TimegmTest, unixEpochMinusTwoTest)
 {
 	struct tm tm_unix_epochMinusTwo = TM_INIT(1969, 12, 31, 23, 59, 58);
-	EXPECT_EQ(-2LL, timegm(&tm_unix_epochMinusTwo));
+	EXPECT_EQ(-2LL, rp_timegm(&tm_unix_epochMinusTwo));
 }
 
 TEST(TimegmTest, unixEpochMinusOneTest)
 {
 	struct tm tm_unix_epochMinusOne = TM_INIT(1969, 12, 31, 23, 59, 59);
-	EXPECT_EQ(-1LL, timegm(&tm_unix_epochMinusOne));
+	EXPECT_EQ(-1LL, rp_timegm(&tm_unix_epochMinusOne));
 }
 
 TEST(TimegmTest, unixEpochTest)
 {
 	struct tm tm_unix_epoch = TM_INIT(1970, 1, 1, 0, 0, 0);
-	EXPECT_EQ(0LL, timegm(&tm_unix_epoch));
+	EXPECT_EQ(0LL, rp_timegm(&tm_unix_epoch));
 }
 
 TEST(TimegmTest, unix32bitMinMinusOneTest)
 {
 	struct tm tm_unix_32bit_minMinusOne = TM_INIT(1901, 12, 13, 20, 45, 51);
 #ifdef USING_MSVCRT__MKGMTIME64
-	EXPECT_EQ(-1LL, timegm(&tm_unix_32bit_minMinusOne));
+	EXPECT_EQ(-1LL, rp_timegm(&tm_unix_32bit_minMinusOne));
 #else /* !USING_MSVCRT__MKGMTIME64 */
 	if (sizeof(time_t) < 8) {
-		EXPECT_EQ(-1LL, timegm(&tm_unix_32bit_minMinusOne));
+		EXPECT_EQ(-1LL, rp_timegm(&tm_unix_32bit_minMinusOne));
 	} else {
-		EXPECT_EQ(-2147483649LL, timegm(&tm_unix_32bit_minMinusOne));
+		EXPECT_EQ(-2147483649LL, rp_timegm(&tm_unix_32bit_minMinusOne));
 	}
 #endif /* USING_MSVCRT__MKGMTIME64 */
 }
@@ -73,32 +73,32 @@ TEST(TimegmTest, unix32bitMinTest)
 {
 	struct tm tm_unix_32bit_min = TM_INIT(1901, 12, 13, 20, 45, 52);
 #ifdef USING_MSVCRT__MKGMTIME64
-	EXPECT_EQ(-1LL, timegm(&tm_unix_32bit_min));
+	EXPECT_EQ(-1LL, rp_timegm(&tm_unix_32bit_min));
 #else /* !USING_MSVCRT__MKGMTIME64 */
-	EXPECT_EQ(-2147483648LL, timegm(&tm_unix_32bit_min));
+	EXPECT_EQ(-2147483648LL, rp_timegm(&tm_unix_32bit_min));
 #endif /* USING_MSVCRT__MKGMTIME64 */
 }
 
 TEST(TimegmTest, unix32bitMaxTest)
 {
 	struct tm tm_unix_32bit_max = TM_INIT(2038, 1, 19, 3, 14, 7);
-	EXPECT_EQ(2147483647LL, timegm(&tm_unix_32bit_max));
+	EXPECT_EQ(2147483647LL, rp_timegm(&tm_unix_32bit_max));
 }
 
 TEST(TimegmTest, unix32bitMaxPlusOne)
 {
 	struct tm tm_unix_32bit_maxPlusOne = TM_INIT(2038, 1, 19, 3, 14, 8);
 	if (sizeof(time_t) < 8) {
-		EXPECT_EQ(-1LL, timegm(&tm_unix_32bit_maxPlusOne));
+		EXPECT_EQ(-1LL, rp_timegm(&tm_unix_32bit_maxPlusOne));
 	} else {
-		EXPECT_EQ(2147483648LL, timegm(&tm_unix_32bit_maxPlusOne));
+		EXPECT_EQ(2147483648LL, rp_timegm(&tm_unix_32bit_maxPlusOne));
 	}
 }
 
 TEST(TimegmTest, msdosEpochTest)
 {
 	struct tm tm_msdos_epoch = TM_INIT(1980, 1, 1, 0, 0, 0);
-	EXPECT_EQ(315532800LL, timegm(&tm_msdos_epoch));
+	EXPECT_EQ(315532800LL, rp_timegm(&tm_msdos_epoch));
 }
 
 // FIXME: Broken on Mac OS X on travis-ci. (Returns -1 instead of the correct value.)
@@ -107,12 +107,12 @@ TEST(TimegmTest, winEpochTest)
 {
 	struct tm tm_win_epoch = TM_INIT(1601, 1, 1, 0, 0, 0);
 #ifdef USING_MSVCRT__MKGMTIME64
-	EXPECT_EQ(-1LL, timegm(&tm_win_epoch));
+	EXPECT_EQ(-1LL, rp_timegm(&tm_win_epoch));
 #else /* !USING_MSVCRT__MKGMTIME64 */
 	if (sizeof(time_t) < 8) {
-		EXPECT_EQ(-1LL, timegm(&tm_win_epoch));
+		EXPECT_EQ(-1LL, rp_timegm(&tm_win_epoch));
 	} else {
-		EXPECT_EQ(-11644473600LL, timegm(&tm_win_epoch));
+		EXPECT_EQ(-11644473600LL, rp_timegm(&tm_win_epoch));
 	}
 #endif /* USING_MSVCRT__MKGMTIME64 */
 }
@@ -124,7 +124,7 @@ TEST(TimegmTest, mkgmtime64RealMinTest)
 {
 	// Real minimum value for MSVCRT _mkgmtime64().
 	struct tm tm_mkgmtime_realMin = TM_INIT(1969, 1, 1, 0, 0, 0);
-	EXPECT_EQ(-31536000LL, timegm(&tm_mkgmtime_realMin));
+	EXPECT_EQ(-31536000LL, rp_timegm(&tm_mkgmtime_realMin));
 }
 
 TEST(TimegmTest, mkgmtime64RealMinMinusOneTest)
@@ -132,12 +132,12 @@ TEST(TimegmTest, mkgmtime64RealMinMinusOneTest)
 	// Real minimum value for MSVCRT _mkgmtime64(), minus one.
 	struct tm tm_mkgmtime_realMinMinusOne = TM_INIT(1968, 12, 31, 23, 59, 59);
 #ifdef USING_MSVCRT__MKGMTIME64
-	EXPECT_EQ(-1LL, timegm(&tm_mkgmtime_realMinMinusOne));
+	EXPECT_EQ(-1LL, rp_timegm(&tm_mkgmtime_realMinMinusOne));
 #else /* !USING_MSVCRT__MKGMTIME64 */
 	if (sizeof(time_t) < 8) {
-		EXPECT_EQ(-1LL, timegm(&tm_mkgmtime_realMinMinusOne));
+		EXPECT_EQ(-1LL, rp_timegm(&tm_mkgmtime_realMinMinusOne));
 	} else {
-		EXPECT_EQ(-31536001LL, timegm(&tm_mkgmtime_realMinMinusOne));
+		EXPECT_EQ(-31536001LL, rp_timegm(&tm_mkgmtime_realMinMinusOne));
 	}
 #endif /* USING_MSVCRT__MKGMTIME64 */
 }
@@ -148,9 +148,9 @@ TEST(TimegmTest, mkgmtime64DocMaxTest)
 	// Documented maximum value for MSVCRT _mkgmtime64().
 	struct tm tm_mkgmtime_docMax = TM_INIT(3000, 12, 31, 23, 59, 59);
 	if (sizeof(time_t) < 8) {
-		EXPECT_EQ(-1LL, timegm(&tm_mkgmtime_docMax));
+		EXPECT_EQ(-1LL, rp_timegm(&tm_mkgmtime_docMax));
 	} else {
-		EXPECT_EQ(32535215999LL, timegm(&tm_mkgmtime_docMax));
+		EXPECT_EQ(32535215999LL, rp_timegm(&tm_mkgmtime_docMax));
 	}
 }
 
@@ -159,9 +159,9 @@ TEST(TimegmTest, mkgmtime64DocMaxPlusOneTest)
 	// Documented maximum value for MSVCRT _mkgmtime64(), plus one.
 	struct tm tm_mkgmtime_docMaxPlusOne = TM_INIT(3001, 1, 1, 0, 0, 0);
 	if (sizeof(time_t) < 8) {
-		EXPECT_EQ(-1LL, timegm(&tm_mkgmtime_docMaxPlusOne));
+		EXPECT_EQ(-1LL, rp_timegm(&tm_mkgmtime_docMaxPlusOne));
 	} else {
-		EXPECT_EQ(32535216000LL, timegm(&tm_mkgmtime_docMaxPlusOne));
+		EXPECT_EQ(32535216000LL, rp_timegm(&tm_mkgmtime_docMaxPlusOne));
 	}
 }
 
@@ -172,9 +172,9 @@ TEST(TimegmTest, mkgmtime64RealMaxTest)
 	// FIXME: Figure this out. It's between [3001/01/01, 3001/01/02].
 	struct tm tm_mkgmtime_realMax = TM_INIT(3001, 12, 31, 23, 59, 59);
 	if (sizeof(time_t) < 8) {
-		EXPECT_EQ(-1LL, timegm(&tm_mkgmtime_realMax));
+		EXPECT_EQ(-1LL, rp_timegm(&tm_mkgmtime_realMax));
 	} else {
-		EXPECT_EQ(32566751999LL, timegm(&tm_mkgmtime_realMax));
+		EXPECT_EQ(32566751999LL, rp_timegm(&tm_mkgmtime_realMax));
 	}
 }
 #endif
@@ -184,12 +184,12 @@ TEST(TimegmTest, mkgmtime64RealMaxPlusOneTest)
 	// Real maximum value for MSVCRT _mkgmtime64(), plus one.
 	struct tm tm_mkgmtime_realMaxPlusOne = TM_INIT(3002, 1, 1, 0, 0, 0);
 #ifdef USING_MSVCRT__MKGMTIME64
-	EXPECT_EQ(-1LL, timegm(&tm_mkgmtime_realMaxPlusOne));
+	EXPECT_EQ(-1LL, rp_timegm(&tm_mkgmtime_realMaxPlusOne));
 #else /* !USING_MSVCRT__MKGMTIME64 */
 	if (sizeof(time_t) < 8) {
-		EXPECT_EQ(-1LL, timegm(&tm_mkgmtime_realMaxPlusOne));
+		EXPECT_EQ(-1LL, rp_timegm(&tm_mkgmtime_realMaxPlusOne));
 	} else {
-		EXPECT_EQ(32566752000LL, timegm(&tm_mkgmtime_realMaxPlusOne));
+		EXPECT_EQ(32566752000LL, rp_timegm(&tm_mkgmtime_realMaxPlusOne));
 	}
 #endif /* USING_MSVCRT__MKGMTIME64 */
 }
@@ -198,12 +198,12 @@ TEST(TimegmTest, winMaxTimeTest)
 {
 	struct tm tm_win_maxTime = TM_INIT(30828, 9, 14, 2, 48, 5);
 #ifdef USING_MSVCRT__MKGMTIME64
-	EXPECT_EQ(-1LL, timegm(&tm_win_maxTime));
+	EXPECT_EQ(-1LL, rp_timegm(&tm_win_maxTime));
 #else /* !USING_MSVCRT__MKGMTIME64 */
 	if (sizeof(time_t) < 8) {
-		EXPECT_EQ(-1LL, timegm(&tm_win_maxTime));
+		EXPECT_EQ(-1LL, rp_timegm(&tm_win_maxTime));
 	} else {
-		EXPECT_EQ(910692730085LL, timegm(&tm_win_maxTime));
+		EXPECT_EQ(910692730085LL, rp_timegm(&tm_win_maxTime));
 	}
 #endif /* USING_MSVCRT__MKGMTIME64 */
 }
@@ -211,7 +211,7 @@ TEST(TimegmTest, winMaxTimeTest)
 TEST(TimegmTest, gcnEpochTest)
 {
 	struct tm tm_gcn_epoch = TM_INIT(2000, 1, 1, 0, 0, 0);
-	EXPECT_EQ(0x386D4380LL, timegm(&tm_gcn_epoch));
+	EXPECT_EQ(0x386D4380LL, rp_timegm(&tm_gcn_epoch));
 }
 
 } }
@@ -226,11 +226,11 @@ const unsigned int rp_gtest_syscall_set = 0;
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
 #if defined(USING_MSVCRT__MKGMTIME64)
-	static constexpr char func_name[] = "_mkgmtime64() (MSVCRT)";
+	static constexpr char func_name[] = "_mkgmtime64() via rp_timegm() (MSVCRT)";
 #elif defined(HAVE_TIMEGM)
-	static constexpr char func_name[] = "timegm() (libc)";
+	static constexpr char func_name[] = "timegm() via rp_timegm() (libc)";
 #else
-	static constexpr char func_name[] = "timegm() (internal)";
+	static constexpr char func_name[] = "rp_timegm() (internal)";
 #endif
 
 	fmt::print(stderr, FSTR("LibRpBase test suite: timegm() tests.\n"));

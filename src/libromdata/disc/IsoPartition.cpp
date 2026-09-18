@@ -647,8 +647,7 @@ rp_time_t IsoPartitionPrivate::parseTimestamp(const ISO_Dir_DateTime_t *isofilet
 	isotime.tm_isdst = 0;
 
 	// If conversion fails, this will return -1.
-	// FIXME: Handle systems with 32-bit time_t.
-	time_t unixtime = timegm(&isotime);
+	rp_time_t unixtime = rp_timegm(&isotime);
 	if (unixtime == -1) {
 		return unixtime;
 	}

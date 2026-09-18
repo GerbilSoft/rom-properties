@@ -11,7 +11,7 @@
 
 #include "tga_structs.h"
 
-// timegm()
+// rp_timegm()
 #include "time_r.h"
 
 // Other rom-properties libraries
@@ -583,8 +583,7 @@ rp_time_t TGAPrivate::tgaTimeToUnixTime(const TGA_DateStamp *timestamp)
 	tgatime.tm_isdst = 0;
 
 	// If conversion fails, this will return -1.
-	// FIXME: Handle systems with 32-bit time_t.
-	return timegm(&tgatime);
+	return rp_timegm(&tgatime);
 }
 
 /** TGA **/

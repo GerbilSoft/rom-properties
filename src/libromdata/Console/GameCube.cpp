@@ -1753,8 +1753,7 @@ int GameCube::loadFieldData(void)
 						tm.tm_year -= 1900;
 						tm.tm_mon -= 1;
 
-						// FIXME: Handle systems with 32-bit time_t.
-						update_date = timegm(&tm);
+						update_date = rp_timegm(&tm);
 					}
 				}
 			}

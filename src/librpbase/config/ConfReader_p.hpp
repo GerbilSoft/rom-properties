@@ -10,6 +10,7 @@
 
 #include "librpbase/config.librpbase.h"
 #include "common.h"
+#include "time_r.h"	// for rp_time_t
 
 // INI parser
 #include "ini.h"

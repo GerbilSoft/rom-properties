@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "time_r.h"	// for rp_time_t
+
 // Qt includes
 #include <QtCore/QDateTime>
 #include <QtCore/QObject>

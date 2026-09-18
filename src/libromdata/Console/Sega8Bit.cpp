@@ -360,8 +360,7 @@ rp_time_t Sega8BitPrivate::codemasters_timestamp_to_unix_time(const Sega8_Codema
 	cmtime.tm_isdst = 0;
 
 	// If conversion fails, d->ctime will be set to -1.
-	// FIXME: Handle systems with 32-bit time_t.
-	return timegm(&cmtime);
+	return rp_timegm(&cmtime);
 }
 
 /**
@@ -403,8 +402,7 @@ rp_time_t Sega8BitPrivate::sdsc_date_to_unix_time(const Sega8_SDSC_Date *date)
 	sdsctime.tm_isdst = 0;
 
 	// If conversion fails, d->ctime will be set to -1.
-	// FIXME: Handle systems with 32-bit time_t.
-	return timegm(&sdsctime);
+	return rp_timegm(&sdsctime);
 }
 
 /**

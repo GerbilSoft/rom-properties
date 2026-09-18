@@ -928,7 +928,7 @@ int SNESPrivate::addFields_NP(void)
 			tm.tm_isdst = 0;
 
 			// If conversion fails, nptime will be set to -1.
-			nptime = timegm(&tm);
+			nptime = rp_timegm(&tm);
 		} while (0);
 
 		// Pack the 64-bit rp_time_t into a string.
@@ -1617,7 +1617,7 @@ int SNES::loadFieldData(void)
 
 				// Convert to Unix time.
 				// If this fails, unixtime will be equal to -1.
-				unixtime = timegm(&bsxtime);
+				unixtime = rp_timegm(&bsxtime);
 			}
 
 			d->fields.addField_dateTime(C_("SNES", "Date"), unixtime,

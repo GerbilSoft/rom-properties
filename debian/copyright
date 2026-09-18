@@ -35,6 +35,13 @@ Copyright: Copyright 2016 The Android Open Source Project
 License: Apache-2.0
 
 Files:
+ extlib/boost-time64/*
+Copyright:
+ (C) Copyright Howard Hinnant
+ (C) Copyright 2010-2011 Vicente J. Botet Escriba
+License: BSL-1.0
+
+Files:
  extlib/googletest/*
 Copyright: 2008-2022, Google Inc.
 License: BSD-3-clause

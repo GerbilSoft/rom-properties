@@ -646,7 +646,7 @@ rp_time_t RpFile::mtime(void)
 		}
 		return -1;
 	}
-	// FIXME: Handle systems with 32-bit time_t.
+	// FIXME: Handle stat() on systems with 32-bit time_t.
 	return sb.st_mtime;
 #endif /* HAVE_STATX */
 }

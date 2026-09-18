@@ -94,7 +94,7 @@ int ConfReader::load(bool force)
 	if (!force && d->conf_was_found) {
 		// Have we checked the timestamp recently?
 		// TODO: Define the threshold somewhere.
-		// FIXME: Handle systems with 32-bit time_t.
+		// FIXME: Handle time() on systems with 32-bit time_t.
 		const time_t now = time(nullptr);
 		if (llabs(now - d->conf_last_checked) < 2) {
 			// We checked it recently. Assume it's up to date.

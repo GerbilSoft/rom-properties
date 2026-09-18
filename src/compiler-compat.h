@@ -42,30 +42,6 @@ typedef int64_t off64_t;
 #  endif /* defined(SIZEOF_OFF_T) && SIZEOF_OFF_T >= 8 */
 #endif /* !defined(SIZEOF_OFF64_t) */
 
-// Ensure we use 64-bit (or greater) time_t throughout rom-properties.
-#if SIZEOF_TIME_T >= 8
-// time_t is 64-bit (or greater).
-// _POSIX_C_SOURCE is required for *_r() on MinGW-w64.
-// However, this breaks snprintf() on FreeBSD when using clang/libc++,
-// so only define it on Windows.
-// Reference: https://github.com/pocoproject/poco/issues/1045#issuecomment-245987081
-#  ifdef _WIN32
-#    ifndef _POSIX_C_SOURCE
-#      define _POSIX_C_SOURCE 1
-#    endif
-#  endif /* _WIN32 */
-#  include <time.h>
-typedef time_t rp_time_t;
-#else /* SIZEOF_TIME_T < 8 */
-// time_t is not 64-bit. Use a 64-bit int type for time64_t.
-#  ifdef _MSC_VER
-typedef __int64 rp_time_t;
-#  else /* !_MSC_VER */
-#    include <stdint.h>
-typedef int64_t rp_time_t;
-#  endif /* _MSC_VER */
-#endif /* SIZEOF_TIME_T >= 8 */
-
 /**
  * MSVC doesn't have typeof(), but as of MSVC 2010,
  * it has decltype(), which is essentially the same thing.

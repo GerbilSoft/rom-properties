@@ -8,8 +8,7 @@
 
 #pragma once
 
-// C includes (C++ namespace)
-#include <ctime>
+#include "time_r.h"	// for rp_time_t
 
 // C++ includes
 #include <string>

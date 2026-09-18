@@ -384,7 +384,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			// If the file is older than a week, try to redownload it.
 			// NOTE: Not used for "check_newer" files, e.g. "sys/".
 			// TODO: Configurable time.
-			// FIXME: Handle systems with 32-bit time_t.
+			// FIXME: Handle time() on systems with 32-bit time_t.
 			const time_t systime = time(nullptr);
 			if ((systime - filemtime) < (86400*7)) {
 				// Less than a week old.

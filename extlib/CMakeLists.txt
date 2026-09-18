@@ -47,6 +47,12 @@ INCLUDE(DirInstallPaths)
 SET(INSTALL_BIN_DIR "${DIR_INSTALL_DLL}")
 SET(INSTALL_LIB_DIR "${DIR_INSTALL_LIB}")
 
+# 64-bit time functions, if the current platform doesn't have them.
+# Needed even if the functions aren't, since it has
+# config.boost-time64.h and time_r.h.
+ADD_SUBDIRECTORY(boost-time64)
+SET_EXTLIB_PROPERTIES(boost-time64)
+
 IF(USE_INTERNAL_ZLIB)
 	# Use the internal copy of zlib-ng.
 	# On Windows, this will build DLLs.

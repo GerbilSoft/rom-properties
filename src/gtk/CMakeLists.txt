@@ -296,6 +296,7 @@ IF(BUILD_XFCE OR BUILD_GTK3 OR BUILD_GTK4)
 	TARGET_LINK_LIBRARIES(rom-properties-glib PUBLIC Pango::pango)
 	TARGET_LINK_LIBRARIES(rom-properties-glib PUBLIC GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
 	TARGET_LINK_LIBRARIES(rom-properties-glib PRIVATE romdata)		# for config.librpbase.h
+	TARGET_LINK_LIBRARIES(rom-properties-glib PUBLIC boost-time64)		# for rp_time_t and 64-bit time functions
 
 	# libfmt
 	IF(Fmt_FOUND)

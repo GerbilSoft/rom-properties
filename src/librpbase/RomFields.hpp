@@ -10,6 +10,7 @@
 
 #include "common.h"
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
+#include "time_r.h"	// for rp_time_t
 
 // C includes (C++ namespace)
 #include <cstddef>	/* size_t */

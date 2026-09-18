@@ -281,7 +281,6 @@ tstring AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileT
  */
 int AmiiboDataPrivate::loadIfNeeded(void)
 {
-	// FIXME: Handle systems with 32-bit time_t.
 	const time_t now = time(nullptr);
 	if (!amiibo_bin_data.empty()) {
 		// amiibo data is already loaded.

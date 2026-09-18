@@ -279,8 +279,7 @@ rp_time_t DreamcastSavePrivate::vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm)
 	dctime.tm_isdst = 0;
 
 	// If conversion fails, d->ctime will be set to -1.
-	// FIXME: Handle systems with 32-bit time_t.
-	return timegm(&dctime);
+	return rp_timegm(&dctime);
 }
 
 /**

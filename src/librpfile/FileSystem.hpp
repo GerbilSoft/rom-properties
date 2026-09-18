@@ -10,6 +10,7 @@
 
 #include <cstdint>
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
+#include "time_r.h"	// for rp_time_t
 
 // access() macros.
 #ifdef _WIN32
@@ -33,7 +34,6 @@
 #  define R_OK 4
 #endif
 
-// Directory separator characters.
 #include "tcharx.h"
 
 // C++ includes.

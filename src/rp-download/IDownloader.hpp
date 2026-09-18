@@ -8,8 +8,8 @@
 
 #pragma once
 
-// Common definitions, including function attributes
 #include "common.h"
+#include "time_r.h"	// for rp_time_t
 
 // C includes (C++ namespace)
 #include <cstddef>

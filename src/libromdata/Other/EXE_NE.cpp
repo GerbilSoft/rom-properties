@@ -521,8 +521,7 @@ void EXEPrivate::addFields_NE(void)
 		    ne_tm.tm_hour <= 23 && ne_tm.tm_min <= 60 && ne_tm.tm_sec <= 59)
 		{
 			// In range.
-			// FIXME: Handle systems with 32-bit time_t.
-			const rp_time_t ne_time = timegm(&ne_tm);
+			const rp_time_t ne_time = rp_timegm(&ne_tm);
 			fields.addField_dateTime(C_("EXE", "Timestamp"), ne_time,
 				RomFields::RFT_DATETIME_HAS_DATE |
 				RomFields::RFT_DATETIME_HAS_TIME |
