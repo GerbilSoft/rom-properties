@@ -61,11 +61,7 @@ TEST(TimegmTest, unix32bitMinMinusOneTest)
 #ifdef USING_MSVCRT__MKGMTIME64
 	EXPECT_EQ(-1LL, rp_timegm(&tm_unix_32bit_minMinusOne));
 #else /* !USING_MSVCRT__MKGMTIME64 */
-	if (sizeof(time_t) < 8) {
-		EXPECT_EQ(-1LL, rp_timegm(&tm_unix_32bit_minMinusOne));
-	} else {
-		EXPECT_EQ(-2147483649LL, rp_timegm(&tm_unix_32bit_minMinusOne));
-	}
+	EXPECT_EQ(-2147483649LL, rp_timegm(&tm_unix_32bit_minMinusOne));
 #endif /* USING_MSVCRT__MKGMTIME64 */
 }
 
@@ -88,11 +84,7 @@ TEST(TimegmTest, unix32bitMaxTest)
 TEST(TimegmTest, unix32bitMaxPlusOne)
 {
 	struct tm tm_unix_32bit_maxPlusOne = TM_INIT(2038, 1, 19, 3, 14, 8);
-	if (sizeof(time_t) < 8) {
-		EXPECT_EQ(-1LL, rp_timegm(&tm_unix_32bit_maxPlusOne));
-	} else {
-		EXPECT_EQ(2147483648LL, rp_timegm(&tm_unix_32bit_maxPlusOne));
-	}
+	EXPECT_EQ(2147483648LL, rp_timegm(&tm_unix_32bit_maxPlusOne));
 }
 
 TEST(TimegmTest, msdosEpochTest)
@@ -109,11 +101,7 @@ TEST(TimegmTest, winEpochTest)
 #ifdef USING_MSVCRT__MKGMTIME64
 	EXPECT_EQ(-1LL, rp_timegm(&tm_win_epoch));
 #else /* !USING_MSVCRT__MKGMTIME64 */
-	if (sizeof(time_t) < 8) {
-		EXPECT_EQ(-1LL, rp_timegm(&tm_win_epoch));
-	} else {
-		EXPECT_EQ(-11644473600LL, rp_timegm(&tm_win_epoch));
-	}
+	EXPECT_EQ(-11644473600LL, rp_timegm(&tm_win_epoch));
 #endif /* USING_MSVCRT__MKGMTIME64 */
 }
 #endif /* __APPLE__ */
@@ -134,11 +122,7 @@ TEST(TimegmTest, mkgmtime64RealMinMinusOneTest)
 #ifdef USING_MSVCRT__MKGMTIME64
 	EXPECT_EQ(-1LL, rp_timegm(&tm_mkgmtime_realMinMinusOne));
 #else /* !USING_MSVCRT__MKGMTIME64 */
-	if (sizeof(time_t) < 8) {
-		EXPECT_EQ(-1LL, rp_timegm(&tm_mkgmtime_realMinMinusOne));
-	} else {
-		EXPECT_EQ(-31536001LL, rp_timegm(&tm_mkgmtime_realMinMinusOne));
-	}
+	EXPECT_EQ(-31536001LL, rp_timegm(&tm_mkgmtime_realMinMinusOne));
 #endif /* USING_MSVCRT__MKGMTIME64 */
 }
 #endif
@@ -147,22 +131,14 @@ TEST(TimegmTest, mkgmtime64DocMaxTest)
 {
 	// Documented maximum value for MSVCRT _mkgmtime64().
 	struct tm tm_mkgmtime_docMax = TM_INIT(3000, 12, 31, 23, 59, 59);
-	if (sizeof(time_t) < 8) {
-		EXPECT_EQ(-1LL, rp_timegm(&tm_mkgmtime_docMax));
-	} else {
-		EXPECT_EQ(32535215999LL, rp_timegm(&tm_mkgmtime_docMax));
-	}
+	EXPECT_EQ(32535215999LL, rp_timegm(&tm_mkgmtime_docMax));
 }
 
 TEST(TimegmTest, mkgmtime64DocMaxPlusOneTest)
 {
 	// Documented maximum value for MSVCRT _mkgmtime64(), plus one.
 	struct tm tm_mkgmtime_docMaxPlusOne = TM_INIT(3001, 1, 1, 0, 0, 0);
-	if (sizeof(time_t) < 8) {
-		EXPECT_EQ(-1LL, rp_timegm(&tm_mkgmtime_docMaxPlusOne));
-	} else {
-		EXPECT_EQ(32535216000LL, rp_timegm(&tm_mkgmtime_docMaxPlusOne));
-	}
+	EXPECT_EQ(32535216000LL, rp_timegm(&tm_mkgmtime_docMaxPlusOne));
 }
 
 #if 0
@@ -171,11 +147,7 @@ TEST(TimegmTest, mkgmtime64RealMaxTest)
 	// Real maximum value for MSVCRT _mkgmtime64().
 	// FIXME: Figure this out. It's between [3001/01/01, 3001/01/02].
 	struct tm tm_mkgmtime_realMax = TM_INIT(3001, 12, 31, 23, 59, 59);
-	if (sizeof(time_t) < 8) {
-		EXPECT_EQ(-1LL, rp_timegm(&tm_mkgmtime_realMax));
-	} else {
-		EXPECT_EQ(32566751999LL, rp_timegm(&tm_mkgmtime_realMax));
-	}
+	EXPECT_EQ(32566751999LL, rp_timegm(&tm_mkgmtime_realMax));
 }
 #endif
 
@@ -186,11 +158,7 @@ TEST(TimegmTest, mkgmtime64RealMaxPlusOneTest)
 #ifdef USING_MSVCRT__MKGMTIME64
 	EXPECT_EQ(-1LL, rp_timegm(&tm_mkgmtime_realMaxPlusOne));
 #else /* !USING_MSVCRT__MKGMTIME64 */
-	if (sizeof(time_t) < 8) {
-		EXPECT_EQ(-1LL, rp_timegm(&tm_mkgmtime_realMaxPlusOne));
-	} else {
-		EXPECT_EQ(32566752000LL, rp_timegm(&tm_mkgmtime_realMaxPlusOne));
-	}
+	EXPECT_EQ(32566752000LL, rp_timegm(&tm_mkgmtime_realMaxPlusOne));
 #endif /* USING_MSVCRT__MKGMTIME64 */
 }
 
@@ -200,11 +168,7 @@ TEST(TimegmTest, winMaxTimeTest)
 #ifdef USING_MSVCRT__MKGMTIME64
 	EXPECT_EQ(-1LL, rp_timegm(&tm_win_maxTime));
 #else /* !USING_MSVCRT__MKGMTIME64 */
-	if (sizeof(time_t) < 8) {
-		EXPECT_EQ(-1LL, rp_timegm(&tm_win_maxTime));
-	} else {
-		EXPECT_EQ(910692730085LL, rp_timegm(&tm_win_maxTime));
-	}
+	EXPECT_EQ(910692730085LL, rp_timegm(&tm_win_maxTime));
 #endif /* USING_MSVCRT__MKGMTIME64 */
 }
 
@@ -235,11 +199,6 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 
 	fmt::print(stderr, FSTR("LibRpBase test suite: timegm() tests.\n"));
 	fmt::print(stderr, FSTR("Time conversion function in use: {:s}\n"), func_name);
-	if (sizeof(time_t) < 8) {
-		fmt::print(stderr,
-			FSTR("*** WARNING: 32-bit time_t is in use.\n"
-			     "*** Disabling tests known to fail with 32-bit time_t.\n"));
-	}
 	fmt::print(stderr, FSTR("\n"));
 		
 	fflush(nullptr);
