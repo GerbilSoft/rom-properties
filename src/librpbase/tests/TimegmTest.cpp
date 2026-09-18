@@ -189,12 +189,14 @@ const unsigned int rp_gtest_syscall_set = 0;
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-#if defined(USING_MSVCRT__MKGMTIME64)
+#if defined(USING_INTERNAL_RP_TIMEGM)
+	static constexpr char func_name[] = "rp_timegm() (internal)";
+#elif defined(USING_MSVCRT__MKGMTIME64)
 	static constexpr char func_name[] = "_mkgmtime64() via rp_timegm() (MSVCRT)";
 #elif defined(HAVE_TIMEGM)
 	static constexpr char func_name[] = "timegm() via rp_timegm() (libc)";
 #else
-	static constexpr char func_name[] = "rp_timegm() (internal)";
+#  error Unknown timegm() implementation
 #endif
 
 	fmt::print(stderr, FSTR("LibRpBase test suite: timegm() tests.\n"));
