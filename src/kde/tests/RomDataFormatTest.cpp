@@ -63,7 +63,7 @@ using RomDataFormatDeathTest = RomDataFormatTest;
 // NOTE: -1 is considered an invalid date/time by libromdata,
 // so use -2 to test "before 1970/01/01 00:00:00".
 struct DateTimeTestData {
-	time_t timestamp;
+	rp_time_t timestamp;
 	const char *str;	// using "C" locale, prior to Qt 6.11
 	const char *str611;	// using "C" locale, Qt 6.11+
 };
@@ -104,7 +104,7 @@ TEST_F(RomDataFormatDeathTest, formatDateTime_0_invalid)
 		// FIXME: "\\d" isn't working...
 		// FIXME: With "threadsafe", SIGABRT is caught and assert()'s message doesn't print.
 		// FIXME: With "fast", the message *does* print, but the subprocess doesn't exit properly...
-		//"RomDataFormat\\.cpp:[0-9]+: gchar\\* rom_data_format_datetime\\(time_t, unsigned int\\): Assertion `format\\[0\\] != '\\\\0'' failed\\."
+		//"RomDataFormat\\.cpp:[0-9]+: gchar\\* rom_data_format_datetime\\(rp_time_t, unsigned int\\): Assertion `format\\[0\\] != '\\\\0'' failed\\."
 		EXPECT_DEBUG_DEATH(str = formatDateTime(test.timestamp, flags), "");
 		EXPECT_STREQ(m_isQt611 ? test.str611 : test.str, Q2U8(str));
 	}
@@ -217,7 +217,7 @@ TEST_F(RomDataFormatDeathTest, formatDateTime_4_invalid)
 		// FIXME: "\\d" isn't working...
 		// FIXME: With "threadsafe", SIGABRT is caught and assert()'s message doesn't print.
 		// FIXME: With "fast", the message *does* print, but the subprocess doesn't exit properly...
-		//"RomDataFormat\\.cpp:[0-9]+: gchar\\* rom_data_format_datetime\\(time_t, unsigned int\\): Assertion `format\\[0\\] != '\\\\0'' failed\\."
+		//"RomDataFormat\\.cpp:[0-9]+: gchar\\* rom_data_format_datetime\\(rp_time_t, unsigned int\\): Assertion `format\\[0\\] != '\\\\0'' failed\\."
 		EXPECT_DEBUG_DEATH(str = formatDateTime(test.timestamp, flags), "");
 		EXPECT_STREQ(m_isQt611 ? test.str611 : test.str, Q2U8(str));
 	}
