@@ -100,8 +100,8 @@ protected:
 	// There shouldn't be any conflicts, though...
 	static string last_bin_filename;
 	static rp::uvector<uint8_t> last_bin_data;
-	static rp::uvector<uint8_t> last_txt_data;
-	static rp::uvector<uint8_t> last_json_data;
+	static rp::uvector<char> last_txt_data;
+	static rp::uvector<char> last_json_data;
 
 	/**
 	 * Read the next set of files from the .tar files.
@@ -139,8 +139,8 @@ forward_list<tar_files_t> RomHeaderTest::all_tar_files;
 // There shouldn't be any conflicts, though...
 string RomHeaderTest::last_bin_filename;
 rp::uvector<uint8_t> RomHeaderTest::last_bin_data;
-rp::uvector<uint8_t> RomHeaderTest::last_txt_data;
-rp::uvector<uint8_t> RomHeaderTest::last_json_data;
+rp::uvector<char> RomHeaderTest::last_txt_data;
+rp::uvector<char> RomHeaderTest::last_json_data;
 
 /**
  * Read the next set of files from the .tar files.
@@ -314,7 +314,7 @@ TEST_P(RomHeaderTest, Text)
 		}
 		str += '\n';
 
-		ASSERT_EQ(reinterpret_cast<const char*>(last_txt_data.data()), str) << "Text output does not match the expected value.";
+		ASSERT_EQ(last_txt_data.data(), str) << "Text output does not match the expected value.";
 	} else {
 		// No RomData object. Verify that the text file is empty.
 		// NOTE: Extra byte for the NULL string terminator.
@@ -354,8 +354,7 @@ TEST_P(RomHeaderTest, JSON)
 		string actual_json = oss.str();
 		actual_json += '\n';
 
-		const char *const expected_json = reinterpret_cast<const char*>(last_json_data.data());
-		ASSERT_EQ(expected_json, actual_json);
+		ASSERT_EQ(last_json_data.data(), actual_json) << "JSON output does not match the expected value.";
 	} else {
 		// No RomData object. Verify that the JSON file is correct.
 		// NOTE: Extra byte for the NULL string terminator.
