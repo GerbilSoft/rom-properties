@@ -345,30 +345,18 @@ int access(const wchar_t *pathname, int mode)
  */
 static off64_t filesize_int(const tstring &tfilename)
 {
-	// TODO: Add a static_warning() macro?
-	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
-#if _USE_32BIT_TIME_T
-# error 32-bit time_t is not supported. Get a newer compiler.
-#endif
-
-	// Use GetFileSize() instead of _stati64().
-	HANDLE hFile = CreateFile(tfilename.c_str(),
-		GENERIC_READ, FILE_SHARE_READ, nullptr,
-		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-	if (!hFile || hFile == INVALID_HANDLE_VALUE) {
-		// Error opening the file.
+	// Use FindFirstFile() to get the file information.
+	WIN32_FIND_DATA ffd;
+	HANDLE hFind = FindFirstFile(tfilename.c_str(), &ffd);
+	if (!hFind || hFind == INVALID_HANDLE_VALUE) {
+		// Cannot find the file???
 		return -w32err_to_posix(GetLastError());
 	}
 
 	LARGE_INTEGER liFileSize;
-	BOOL bRet = GetFileSizeEx(hFile, &liFileSize);
-	CloseHandle(hFile);
-	if (!bRet) {
-		// Error getting the file size.
-		return -w32err_to_posix(GetLastError());
-	}
-
-	// Return the file size.
+	liFileSize.LowPart = ffd.nFileSizeLow;
+	liFileSize.HighPart = ffd.nFileSizeHigh;
+	FindClose(hFind);
 	return liFileSize.QuadPart;
 }
 
@@ -400,24 +388,27 @@ off64_t filesize(const wchar_t *filename)
  */
 static int get_mtime_int(const tstring &tfilename, rp_time_t *pMtime)
 {
-	assert(pMtime != nullptr);
-	if (!pMtime)
-		return -EINVAL;
-
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
-#if _USE_32BIT_TIME_T
+#if _USE_32BIT_TIME_T || SIZEOF_TIME_T < 8
 #  error 32-bit time_t is not supported. Get a newer compiler.
 #endif
-	WIN32_FIND_DATA findFileData;
-	HANDLE hFind = FindFirstFile(tfilename.c_str(), &findFileData);
+
+	assert(pMtime != nullptr);
+	if (!pMtime) {
+		return -EINVAL;
+	}
+
+	// Use FindFirstFile() to get the file information.
+	WIN32_FIND_DATA ffd;
+	HANDLE hFind = FindFirstFile(tfilename.c_str(), &ffd);
 	if (!hFind || hFind == INVALID_HANDLE_VALUE) {
 		// Cannot find the file???
 		return -w32err_to_posix(GetLastError());
 	}
 
 	// Convert to Unix timestamp.
-	*pMtime = FileTimeToUnixTime(&findFileData.ftLastWriteTime);
+	*pMtime = FileTimeToUnixTime(&ffd.ftLastWriteTime);
 	FindClose(hFind);
 	return 0;
 }
@@ -896,17 +887,17 @@ bool isOnBadFS(const wchar_t *filename, bool allowNetFS)
  */
 static int get_file_size_and_mtime_int(const tstring &tfilename, off64_t *pFileSize, rp_time_t *pMtime)
 {
+	// TODO: Add a static_warning() macro?
+	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
+#if _USE_32BIT_TIME_T || SIZEOF_TIME_T < 8
+#  error 32-bit time_t is not supported. Get a newer compiler.
+#endif
+
 	assert(pFileSize != nullptr);
 	assert(pMtime != nullptr);
 	if (unlikely(!pFileSize || !pMtime)) {
 		return -EINVAL;
 	}
-
-	// TODO: Add a static_warning() macro?
-	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
-#if _USE_32BIT_TIME_T
-#  error 32-bit time_t is not supported. Get a newer compiler.
-#endif
 
 	// Use FindFirstFile() to get the file information.
 	WIN32_FIND_DATA ffd;
@@ -925,10 +916,10 @@ static int get_file_size_and_mtime_int(const tstring &tfilename, off64_t *pFileS
 	}
 
 	// Convert the file size from two DWORDs to off64_t.
-	LARGE_INTEGER fileSize;
-	fileSize.LowPart = ffd.nFileSizeLow;
-	fileSize.HighPart = ffd.nFileSizeHigh;
-	*pFileSize = fileSize.QuadPart;
+	LARGE_INTEGER liFileSize;
+	liFileSize.LowPart = ffd.nFileSizeLow;
+	liFileSize.HighPart = ffd.nFileSizeHigh;
+	*pFileSize = liFileSize.QuadPart;
 
 	// Convert mtime from FILETIME.
 	*pMtime = FileTimeToUnixTime(&ffd.ftLastWriteTime);
