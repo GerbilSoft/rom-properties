@@ -5,6 +5,17 @@ PROJECT(boost-time64 LANGUAGES C)
 INCLUDE(Check64BitTimeSupport)
 CHECK_64BIT_TIME_SUPPORT()
 
+# Check the size of time_t.
+INCLUDE(CheckTypeSize)
+SET(CMAKE_REQUIRED_INCLUDES "time.h")
+IF(TMP_TIME64_DEFINITIONS)
+	SET(CMAKE_REQUIRED_DEFINITIONS ${LFS_DEFINITIONS} ${TMP_TIME64_DEFINITIONS})
+ENDIF(TMP_TIME64_DEFINITIONS)
+CHECK_TYPE_SIZE("time_t" TIME_T)
+IF(NOT TIME_T)
+	MESSAGE(FATAL_ERROR "Cannot determine the size of time_t!")
+ENDIF(NOT TIME_T)
+
 # Check for reentrant time functions.
 # NOTE: May be _gmtime32_s() or _gmtime64_s() on MSVC 2005+.
 # The "inline" part will detect that.
