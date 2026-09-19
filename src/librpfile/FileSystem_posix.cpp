@@ -201,7 +201,11 @@ int get_mtime(const char *filename, rp_time_t *pMtime)
 		int ret = -errno;
 		return (ret != 0 ? ret : -EIO);
 	}
-	// FIXME: Handle stat() on systems with 32-bit time_t.
+
+	// NOTE: Not going to write a custom 64-bit wrapper for stat().
+	// Support for 64-bit time_t on i386/armhf was added in:
+	// - Linux kernel 5.1 (2019/05/05)
+	// - glibc-2.31 (2020/02/01)
 	*pMtime = sb.st_mtime;
 #endif /* HAVE_STATX */
 
@@ -474,7 +478,11 @@ int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, rp_time_t 
 
 	// Return the file size and mtime.
 	*pFileSize = sb.st_size;
-	// FIXME: Handle stat() on systems with 32-bit time_t.
+
+	// NOTE: Not going to write a custom 64-bit wrapper for stat().
+	// Support for 64-bit time_t on i386/armhf was added in:
+	// - Linux kernel 5.1 (2019/05/05)
+	// - glibc-2.31 (2020/02/01)
 	*pMtime = sb.st_mtime;
 #endif /* HAVE_STATX */
 

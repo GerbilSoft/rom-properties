@@ -194,7 +194,6 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, rp_time_t mtime)
 		}
 
 		// mtime
-		// FIXME: Handle futimes() on systems with 32-bit time_t.
 		tv[1].tv_sec = mtime;
 		tv[1].tv_usec = 0;
 
@@ -203,6 +202,10 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, rp_time_t mtime)
 		::fflush(file);
 
 		// Set the times.
+		// NOTE: Not going to write a custom 64-bit wrapper for utimes().
+		// Support for 64-bit time_t on i386/armhf was added in:
+		// - Linux kernel 5.1 (2019/05/05)
+		// - glibc-2.31 (2020/02/01)
 		errno = 0;
 		ret = futimes(fd, tv);
 		if (ret != 0 && err == 0) {
