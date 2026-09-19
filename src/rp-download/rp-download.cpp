@@ -141,32 +141,29 @@ static int get_file_size_and_mtime(const TCHAR *filename, off64_t *pFileSize, rp
 	assert(pMtime != nullptr);
 
 #if defined(_WIN32)
-	// Windows: Use FindFirstFile(), since the stat() functions
-	// have to do a lot more processing.
-	WIN32_FIND_DATA ffd;
-	HANDLE hFind = FindFirstFile(filename, &ffd);
-	if (!hFind || hFind == INVALID_HANDLE_VALUE) {
-		// An error occurred.
+	// Windows: Use GetFileAttributesEx() to get the file information.
+	WIN32_FILE_ATTRIBUTE_DATA fad;
+	BOOL bRet = GetFileAttributesEx(filename, GetFileExInfoStandard, &fad);
+	if (!bRet) {
+		// GetFileAttributesEx() failed.
 		const int err = w32err_to_posix(GetLastError());
 		return (err != 0 ? -err : -EIO);
 	}
 
 	// Make sure this is not a directory.
-	if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+	if (fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 		// It's a directory.
-		FindClose(hFind);
 		return -EISDIR;
 	}
 
 	// Convert the file size from two DWORDs to off64_t.
 	LARGE_INTEGER fileSize;
-	fileSize.LowPart = ffd.nFileSizeLow;
-	fileSize.HighPart = ffd.nFileSizeHigh;
+	fileSize.LowPart = fad.nFileSizeLow;
+	fileSize.HighPart = fad.nFileSizeHigh;
 	*pFileSize = fileSize.QuadPart;
 
 	// Convert mtime from FILETIME.
-	*pMtime = FileTimeToUnixTime(&ffd.ftLastWriteTime);
-	FindClose(hFind);
+	*pMtime = FileTimeToUnixTime(&fad.ftLastWriteTime);
 #elif defined(HAVE_STATX)
 	// Linux or UNIX system with statx()
 	struct statx sbx;

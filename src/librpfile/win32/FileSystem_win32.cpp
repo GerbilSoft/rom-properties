@@ -345,18 +345,17 @@ int access(const wchar_t *pathname, int mode)
  */
 static off64_t filesize_int(const tstring &tfilename)
 {
-	// Use FindFirstFile() to get the file information.
-	WIN32_FIND_DATA ffd;
-	HANDLE hFind = FindFirstFile(tfilename.c_str(), &ffd);
-	if (!hFind || hFind == INVALID_HANDLE_VALUE) {
-		// Cannot find the file???
+	// Use GetFileAttributesEx() to get the file information.
+	WIN32_FILE_ATTRIBUTE_DATA fad;
+	BOOL bRet = GetFileAttributesEx(tfilename.c_str(), GetFileExInfoStandard, &fad);
+	if (!bRet) {
+		// GetFileAttributesEx() failed.
 		return -w32err_to_posix(GetLastError());
 	}
 
 	LARGE_INTEGER liFileSize;
-	liFileSize.LowPart = ffd.nFileSizeLow;
-	liFileSize.HighPart = ffd.nFileSizeHigh;
-	FindClose(hFind);
+	liFileSize.LowPart = fad.nFileSizeLow;
+	liFileSize.HighPart = fad.nFileSizeHigh;
 	return liFileSize.QuadPart;
 }
 
@@ -399,17 +398,16 @@ static int get_mtime_int(const tstring &tfilename, rp_time_t *pMtime)
 		return -EINVAL;
 	}
 
-	// Use FindFirstFile() to get the file information.
-	WIN32_FIND_DATA ffd;
-	HANDLE hFind = FindFirstFile(tfilename.c_str(), &ffd);
-	if (!hFind || hFind == INVALID_HANDLE_VALUE) {
-		// Cannot find the file???
+	// Use GetFileAttributesEx() to get the file information.
+	WIN32_FILE_ATTRIBUTE_DATA fad;
+	BOOL bRet = GetFileAttributesEx(tfilename.c_str(), GetFileExInfoStandard, &fad);
+	if (!bRet) {
+		// GetFileAttributesEx() failed.
 		return -w32err_to_posix(GetLastError());
 	}
 
 	// Convert to Unix timestamp.
-	*pMtime = FileTimeToUnixTime(&ffd.ftLastWriteTime);
-	FindClose(hFind);
+	*pMtime = FileTimeToUnixTime(&fad.ftLastWriteTime);
 	return 0;
 }
 
@@ -899,33 +897,30 @@ static int get_file_size_and_mtime_int(const tstring &tfilename, off64_t *pFileS
 		return -EINVAL;
 	}
 
-	// Use FindFirstFile() to get the file information.
-	WIN32_FIND_DATA ffd;
-	HANDLE hFind = FindFirstFile(tfilename.c_str(), &ffd);
-	if (!hFind || hFind == INVALID_HANDLE_VALUE) {
-		// An error occurred.
-		const int err = w32err_to_posix(GetLastError());
-		return (err != 0 ? -err : -EIO);
+	// Use GetFileAttributesEx() to get the file information.
+	WIN32_FILE_ATTRIBUTE_DATA fad;
+	BOOL bRet = GetFileAttributesEx(tfilename.c_str(), GetFileExInfoStandard, &fad);
+	if (!bRet) {
+		// GetFileAttributesEx() failed.
+		return -w32err_to_posix(GetLastError());
 	}
 
 	// Make sure this is not a directory.
-	if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+	if (fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 		// It's a directory.
-		FindClose(hFind);
 		return -EISDIR;
 	}
 
 	// Convert the file size from two DWORDs to off64_t.
 	LARGE_INTEGER liFileSize;
-	liFileSize.LowPart = ffd.nFileSizeLow;
-	liFileSize.HighPart = ffd.nFileSizeHigh;
+	liFileSize.LowPart = fad.nFileSizeLow;
+	liFileSize.HighPart = fad.nFileSizeHigh;
 	*pFileSize = liFileSize.QuadPart;
 
 	// Convert mtime from FILETIME.
-	*pMtime = FileTimeToUnixTime(&ffd.ftLastWriteTime);
+	*pMtime = FileTimeToUnixTime(&fad.ftLastWriteTime);
 
 	// We're done here.
-	FindClose(hFind);
 	return 0;
 }
 
