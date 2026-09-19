@@ -229,10 +229,12 @@ int RomHeaderTest::read_next_files(const RomHeaderTest_mode &mode)
 	if (txt_file_header->size > 0) {
 		ret2 = mtar_read_data(const_cast<mtar_t*>(&mode.p_tar_files->txt_tar), last_txt_data.data(), txt_file_header->size);
 	}
+	last_txt_data[txt_file_header->size] = '\0';	// requires NULL termination for C string comparisons
 	last_json_data.resize(json_file_header->size+1);
 	if (json_file_header->size > 0) {
 		ret3 = mtar_read_data(const_cast<mtar_t*>(&mode.p_tar_files->json_tar), last_json_data.data(), json_file_header->size);
 	}
+	last_json_data[json_file_header->size] = '\0';	// requires NULL termination for C string comparisons
 
 	// SNES: Ensure the BIN file is at least 64 KB.
 	if (mode.bin_filename.size() > 4 &&
@@ -245,12 +247,6 @@ int RomHeaderTest::read_next_files(const RomHeaderTest_mode &mode)
 			memset(&last_bin_data[cur_size], 0, MIN_BIN_DATA_SIZE - cur_size);
 		}
 	}
-
-	// Ensure the text and JSON data arrays are NULL-terminated.
-	last_txt_data[last_txt_data.size()-1] = 0;
-	last_json_data[last_json_data.size()-1] = 0;
-	last_txt_data.resize(last_txt_data.size()-1);
-	last_json_data.resize(last_json_data.size()-1);
 
 	if (ret1 != MTAR_ESUCCESS) {
 		return ret1;
