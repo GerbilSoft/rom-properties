@@ -317,7 +317,8 @@ TEST_P(RomHeaderTest, Text)
 		ASSERT_EQ(reinterpret_cast<const char*>(last_txt_data.data()), str) << "Text output does not match the expected value.";
 	} else {
 		// No RomData object. Verify that the text file is empty.
-		ASSERT_EQ(last_txt_data.size(), 0U) << "Binary file is not valid RomData, but text file is not empty.";
+		// NOTE: Extra byte for the NULL string terminator.
+		ASSERT_EQ(last_txt_data.size(), 0U+1U) << "Binary file is not valid RomData, but text file is not empty.";
 	}
 }
 
@@ -357,7 +358,8 @@ TEST_P(RomHeaderTest, JSON)
 		ASSERT_EQ(expected_json, actual_json);
 	} else {
 		// No RomData object. Verify that the JSON file is correct.
-		ASSERT_EQ(last_json_data.size(), 33U) << "Binary file is not valid RomData, but JSON file does not have an error message.";
+		// NOTE: Extra byte for the NULL string terminator.
+		ASSERT_EQ(last_json_data.size(), 33U+1U) << "Binary file is not valid RomData, but JSON file does not have an error message.";
 		ASSERT_STREQ(reinterpret_cast<const char*>(last_json_data.data()), "{\"error\":\"rom is not supported\"}\n")
 			<< "Binary file is not valid RomData, but JSON file does not have an error message.";
 	}
