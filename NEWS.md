@@ -7,9 +7,13 @@
     whether or not the host system supports 64-bit time_t. In the case of
     gmtime() and timegm() (mostly older 32-bit Linux systems), 64-bit
     implementations from the Boost libraries are used as substitutes.
-    * stat() and futimes() have not been updated yet, so those functions
-      are still stuck with 32-bit time_t on older systems. (statx()
-      supports 64-bit time_t, if it's available.)
+    * localtime_r() likely can't be updated to support 64-bit time_t on
+      systems with 32-bit time_t due to timezone complexity.
+    * Linux kernel 5.1 (2019/05/05) added 64-bit time_t syscalls to 32-bit
+      architectures, and similar support was added to glibc-2.31 (2020/02/01).
+      Only a few distributions were released between the two (e.g. Ubuntu 19.10,
+      which has kernel 5.3 and glibc-2.30), so it's not worth attempting to
+      add our own 64-bit time_t syscall wrappers.)
 
 ## v2.9 (released 2026/09/13)
 
