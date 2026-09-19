@@ -1053,7 +1053,7 @@ int GameCubeSave::loadFieldData(void)
 
 	// Last Modified timestamp
 	d->fields.addField_dateTime(C_("GameCubeSave", "Last Modified"),
-		static_cast<time_t>(direntry->lastmodified) + GC_UNIX_TIME_DIFF,
+		static_cast<rp_time_t>(direntry->lastmodified) + static_cast<rp_time_t>(GC_UNIX_TIME_DIFF),
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_HAS_TIME |
 		RomFields::RFT_DATETIME_IS_UTC	// GameCube doesn't support timezones.
@@ -1116,7 +1116,7 @@ int GameCubeSave::loadMetaData(void)
 	// NOTE: Using "CreationDate".
 	// TODO: Adjust for local timezone, since it's UTC.
 	d->metaData.addMetaData_timestamp(Property::CreationDate,
-		static_cast<time_t>(direntry->lastmodified) + GC_UNIX_TIME_DIFF);
+		static_cast<rp_time_t>(direntry->lastmodified) + static_cast<rp_time_t>(GC_UNIX_TIME_DIFF));
 
 	/** Custom properties! **/
 

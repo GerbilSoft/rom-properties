@@ -150,6 +150,7 @@ TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}_LIB
 	)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}_LIB PRIVATE rom-properties-glib)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}_LIB PRIVATE romdata)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME}_LIB PUBLIC boost-time64)		# for rp_time_t and 64-bit time functions
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}_LIB PRIVATE Cairo::gobject)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}_LIB PUBLIC GTK4::gtk GTK4::pango)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}_LIB PUBLIC GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
@@ -182,7 +183,7 @@ ADD_LIBRARY(${PROJECT_NAME} MODULE
 SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(${PROJECT_NAME})
 # NOTE: Need to use -Wl,--whole-archive. Otherwise, some exported symbols
-# may be trimmed, and the Qt Resoruces will *definitely* be trimmed.
+# may be trimmed, and the GLib Resoruces will *definitely* be trimmed.
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE
 	-Wl,--whole-archive
 	${PROJECT_NAME}_LIB

@@ -8,8 +8,8 @@
 
 #pragma once
 
-// Common definitions, including function attributes
 #include "common.h"
+#include "time_r.h"	// for rp_time_t
 
 // C includes (C++ namespace)
 #include <cstddef>
@@ -81,13 +81,13 @@ public:
 	 * Get the If-Modified-Since request timestamp.
 	 * @return If-Modified-Since timestamp (-1 for none)
 	 */
-	time_t ifModifiedSince(void) const;
+	rp_time_t ifModifiedSince(void) const;
 
 	/**
 	 * Set the If-Modified-Since request timestamp.
 	 * @param timestamp If-Modified-Since timestamp (-1 for none)
 	 */
-	void setIfModifiedSince(time_t timestamp);
+	void setIfModifiedSince(rp_time_t timestamp);
 
 	/**
 	 * Get the specified MIME type(s) for the "Accept:" header.
@@ -126,7 +126,7 @@ public:
 	 * Get the Last-Modified time.
 	 * @return Last-Modified time, or -1 if none was set by the server.
 	 */
-	time_t mtime(void) const;
+	rp_time_t mtime(void) const;
 
 	/**
 	 * Clear the data.
@@ -177,8 +177,8 @@ protected:
 	// Reference: http://andreoffringa.org/?q=uvector
 	rp::uvector<uint8_t> m_data;
 
-	time_t m_mtime;			// Last-Modified response
-	time_t m_if_modified_since;	// If-Modified-Since request
+	rp_time_t m_mtime;		// Last-Modified response
+	rp_time_t m_if_modified_since;	// If-Modified-Since request
 	std::tstring m_reqMimeType;	// MIME type for "Accept:" header
 
 	size_t m_maxSize;		// Maximum buffer size. (0 == unlimited)

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension.                                    *
  * config.libc.h.in: Common libc function detection. (source file)         *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,32 +25,6 @@
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #cmakedefine HAVE_SYS_STAT_H 1
-
-/** Time functions **/
-
-/* Define to 1 if you have the `gmtime_r` function. */
-#cmakedefine HAVE_GMTIME_R 1
-
-/* Define to 1 if you have the `gmtime_s` function. */
-#cmakedefine HAVE_GMTIME_S 1
-
-/* Define to 1 if you have the `localtime_r' function. */
-#cmakedefine HAVE_LOCALTIME_R 1
-
-/* Define to 1 if you have the `localtime_s' function. */
-#cmakedefine HAVE_LOCALTIME_S 1
-
-/* Define to 1 if you have the `timegm' function. */
-#cmakedefine HAVE_TIMEGM 1
-
-/* Define to 1 if you have the `_mkgmtime' function. */
-#cmakedefine HAVE__MKGMTIME 1
-
-/* Define to 1 if you have the `_mkgmtime32' function. */
-#cmakedefine HAVE__MKGMTIME32 1
-
-/* Define to 1 if you have the `_mkgmtime64' function. */
-#cmakedefine HAVE__MKGMTIME64 1
 
 /** Aligned malloc() functions. **/
 

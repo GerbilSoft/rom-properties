@@ -117,9 +117,7 @@ int WinInetDownloader::download(void)
 		// Add an "If-Modified-Since" header.
 		// FIXME: +4 is needed to avoid ERROR_INSUFFICIENT_BUFFER.
 		TCHAR szTime[INTERNET_RFC1123_BUFSIZE+4];
-		SYSTEMTIME st;
-
-		UnixTimeToSystemTime(m_if_modified_since, &st);
+		const SYSTEMTIME st = UnixTimeToSystemTime(m_if_modified_since);
 		BOOL bRet = InternetTimeFromSystemTime(&st, INTERNET_RFC1123_FORMAT, szTime, sizeof(szTime));
 		if (bRet) {
 			req_headers = _T("If-Modified-Since: ");

@@ -705,7 +705,7 @@ int Dreamcast::loadFieldData(void)
 		RomFields::STRF_TRIM_END);
 
 	// Release date
-	const time_t release_date = d->ascii_yyyymmdd_to_unix_time(discHeader->release_date);
+	const rp_time_t release_date = d->ascii_yyyymmdd_to_unix_time(discHeader->release_date);
 	d->fields.addField_dateTime(C_("RomData", "Release Date"), release_date,
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_IS_UTC  // Date only.

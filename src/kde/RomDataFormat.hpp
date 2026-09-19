@@ -2,14 +2,13 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomDataFormat.hpp: Common RomData string formatting functions.          *
  *                                                                         *
- * Copyright (c) 2017-2024 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-// C includes (C++ namespace)
-#include <ctime>
+#include "time_r.h"	// for rp_time_t
 
 // Qt includes
 #include <QtCore/QString>
@@ -20,7 +19,7 @@
  * @param flags		[in] RFT_DATETIME flags
  * @return Formatted RFT_DATETIME, or empty on error.
  */
-QString formatDateTime(time_t date_time, unsigned int flags);
+QString formatDateTime(rp_time_t date_time, unsigned int flags);
 
 /**
  * Format an RFT_DIMENSIONS.

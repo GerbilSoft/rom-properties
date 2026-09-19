@@ -795,12 +795,10 @@ int Xbox_XBE::loadFieldData(void)
 	d->fields.addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
 	// Timestamp
-	// TODO: time_t is signed, so values greater than 2^31-1 may be negative.
 	const char *const s_timestamp_title = C_("Xbox_XBE", "Timestamp");
-	const uint32_t timestamp = le32_to_cpu(xbeHeader->timestamp);
+	const rp_time_t timestamp = static_cast<rp_time_t>(le32_to_cpu(xbeHeader->timestamp));
 	if (timestamp != 0) {
-		d->fields.addField_dateTime(s_timestamp_title,
-			static_cast<time_t>(timestamp),
+		d->fields.addField_dateTime(s_timestamp_title, timestamp,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME);
 	} else {

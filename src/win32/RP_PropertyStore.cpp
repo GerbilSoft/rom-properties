@@ -397,6 +397,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 				if (!prop.data.str || prop.data.str[0] == '\0') {
 					continue;
 				}
+
 				const wstring wstr = U82W_c(prop.data.str);
 				const wchar_t *vstr[] = {wstr.c_str()};
 
@@ -408,22 +409,23 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 			// Add a proper VT_DATE handler.
 			case VT_DATE: {
 				assert(prop.type == PropertyType::Timestamp);
-				if (prop.type != PropertyType::Timestamp)
+				if (prop.type != PropertyType::Timestamp) {
 					continue;
+				}
+
 				// Date is stored as Unix time.
 				// Convert to FILETIME, then to VT_DATE.
 				// TODO: Verify timezone handling.
-				FILETIME ft;
-				UnixTimeToFileTime(prop.data.timestamp, &ft);
-
+				const FILETIME ft = UnixTimeToFileTime(prop.data.timestamp);
 				InitPropVariantFromFileTime(&ft, &prop_var);
 				break;
 			}
 
 			case VT_R8: {
 				assert(prop.type == PropertyType::Double);
-				if (prop.type != PropertyType::Double)
+				if (prop.type != PropertyType::Double) {
 					continue;
+				}
 
 				InitPropVariantFromDouble(prop.data.dvalue, &prop_var);
 				break;
@@ -431,8 +433,9 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 
 			case VT_R4: {
 				assert(prop.type == PropertyType::Double);
-				if (prop.type != PropertyType::Double)
+				if (prop.type != PropertyType::Double) {
 					continue;
+				}
 
 				InitPropVariantFromFloat(static_cast<float>(prop.data.dvalue), &prop_var);
 				break;

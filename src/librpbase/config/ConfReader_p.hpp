@@ -10,6 +10,7 @@
 
 #include "librpbase/config.librpbase.h"
 #include "common.h"
+#include "time_r.h"	// for rp_time_t
 
 // INI parser
 #include "ini.h"
@@ -38,13 +39,13 @@ public:
 	// load() mutex
 	std::mutex mtxLoad;
 
-	// Configuration filename.
+	// Configuration filename
 	const char *const conf_rel_filename;	// from ctor
 	std::string conf_filename;		// alloc()'d in load()
 
-	// rom-properties.conf status.
-	time_t conf_mtime;
-	time_t conf_last_checked;
+	// rom-properties.conf status
+	rp_time_t conf_mtime;
+	rp_time_t conf_last_checked;
 	bool conf_was_found;
 
 public:

@@ -682,7 +682,7 @@ int RomMetaData::addMetaData_string_numeric(Property name, uint32_t val, Base ba
  * @param timestamp UNIX timestamp
  * @return Metadata index, or -1 on error.
  */
-int RomMetaData::addMetaData_timestamp(Property name, time_t timestamp)
+int RomMetaData::addMetaData_timestamp(Property name, rp_time_t timestamp)
 {
 	RP_D(RomMetaData);
 	MetaData *const pMetaData = d->addProperty(name);

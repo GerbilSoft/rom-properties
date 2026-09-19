@@ -369,7 +369,7 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 	for (int i = 0; i < (int)Achievements::ID::Max; i++) {
 		// Is the achievement unlocked?
 		const Achievements::ID id = (Achievements::ID)i;
-		const time_t timestamp = pAch->isUnlocked(id);
+		const rp_time_t timestamp = pAch->isUnlocked(id);
 		const bool unlocked = (timestamp != -1);
 
 		// Get the achievement icon.

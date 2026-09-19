@@ -128,7 +128,7 @@ public:
 	 * @param filename Filename
 	 * @return Timestamp, or -1 on error.
 	 */
-	time_t get_mtime(const char *filename);
+	rp_time_t get_mtime(const char *filename);
 };
 
 typedef std::shared_ptr<IsoPartition> IsoPartitionPtr;

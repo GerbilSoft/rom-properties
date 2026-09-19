@@ -1184,7 +1184,7 @@ int RomFields::addField_listData(const char *name, const AFLD_PARAMS *params)
  * @param flags Date/Time flags
  * @return Field index, or -1 on error.
  */
-int RomFields::addField_dateTime(const char *name, time_t date_time, unsigned int flags)
+int RomFields::addField_dateTime(const char *name, rp_time_t date_time, unsigned int flags)
 {
 	assert(name != nullptr);
 	if (!name)

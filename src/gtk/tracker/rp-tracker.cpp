@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GNOME Tracker)                    *
  * rp-tracker.cpp: Tracker extractor module                                *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -82,7 +82,8 @@ add_metadata_properties_v1(const RomMetaData *metaData, TrackerSparqlBuilder *bu
 				// cause an off-by-one in some timezones...
 				GDateTime *const dateTime = g_date_time_new_utc(
 					static_cast<gint>(prop.data.uvalue), 1, 1, 0, 0, 0);
-				time_t unixTime = g_date_time_to_unix(dateTime);
+				// FIXME: object_date uses time_t, not a 64-bit timestamp.
+				time_t unixTime = static_cast<time_t>(g_date_time_to_unix(dateTime));
 				g_date_time_unref(dateTime);
 
 				tracker_sparql_pfns.v1.builder.predicate(builder, "nmm:releaseDate");
@@ -133,7 +134,8 @@ add_metadata_properties_v1(const RomMetaData *metaData, TrackerSparqlBuilder *bu
 				break;
 			case Property::CreationDate: {
 				tracker_sparql_pfns.v1.builder.predicate(builder, "nie:contentCreated");
-				time_t unixTime = prop.data.timestamp;
+				// FIXME: object_date uses time_t, not a 64-bit timestamp.
+				time_t unixTime = static_cast<time_t>(prop.data.timestamp);
 				tracker_sparql_pfns.v1.builder.object_date(builder, &unixTime);
 				break;
 			}

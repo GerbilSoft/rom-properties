@@ -265,7 +265,7 @@ const RomData::ImageSizeDef *RomDataPrivate::selectBestSize(const vector<RomData
  * @param ascii_date ASCII release date. (Must be 8 characters.)
  * @return Unix time_t, or -1 on error.
  */
-time_t RomDataPrivate::ascii_yyyymmdd_to_unix_time(const char *ascii_date)
+rp_time_t RomDataPrivate::ascii_yyyymmdd_to_unix_time(const char *ascii_date)
 {
 	// Release date format: "YYYYMMDD"
 
@@ -309,7 +309,7 @@ time_t RomDataPrivate::ascii_yyyymmdd_to_unix_time(const char *ascii_date)
 	ymdtime.tm_isdst = 0;
 
 	// If conversion fails, this will return -1.
-	return timegm(&ymdtime);
+	return rp_timegm(&ymdtime);
 }
 
 /**
@@ -322,7 +322,7 @@ time_t RomDataPrivate::ascii_yyyymmdd_to_unix_time(const char *ascii_date)
  * not likely to be valid, since the first programmable
  * video game consoles were released in the late 1970s.
  */
-time_t RomDataPrivate::bcd_to_unix_time(const uint8_t *bcd_tm, size_t size)
+rp_time_t RomDataPrivate::bcd_to_unix_time(const uint8_t *bcd_tm, size_t size)
 {
 	// Convert BCD time to Unix time.
 	// NOTE: struct tm has some oddities:
@@ -371,7 +371,7 @@ time_t RomDataPrivate::bcd_to_unix_time(const uint8_t *bcd_tm, size_t size)
 	bcdtime.tm_isdst = 0;
 
 	// If conversion fails, this will return -1.
-	return timegm(&bcdtime);
+	return rp_timegm(&bcdtime);
 }
 
 /**
@@ -380,7 +380,7 @@ time_t RomDataPrivate::bcd_to_unix_time(const uint8_t *bcd_tm, size_t size)
  * @param tz_offset PVD timezone offset
  * @return UNIX time, or -1 if invalid or not set.
  */
-time_t RomDataPrivate::pvd_time_to_unix_time(const char (*pvd_time)[16], int8_t tz_offset)
+rp_time_t RomDataPrivate::pvd_time_to_unix_time(const char (*pvd_time)[16], int8_t tz_offset)
 {
 	// TODO: Verify tz_offset range? [-48, +52]
 	assert(pvd_time != nullptr);
@@ -433,7 +433,7 @@ time_t RomDataPrivate::pvd_time_to_unix_time(const char (*pvd_time)[16], int8_t 
 	pvdtime.tm_isdst = 0;
 
 	// If conversion fails, this will return -1.
-	time_t unixtime = timegm(&pvdtime);
+	rp_time_t unixtime = rp_timegm(&pvdtime);
 	if (unixtime == -1) {
 		return -1;
 	}
@@ -444,7 +444,7 @@ time_t RomDataPrivate::pvd_time_to_unix_time(const char (*pvd_time)[16], int8_t 
 	// NOTE: Restricting to [-52, +52] as per the Linux kernel's isofs module.
 	// TODO: Return the timezone offset separately.
 	if (-52 <= tz_offset && tz_offset <= 52) {
-		unixtime -= (static_cast<time_t>(tz_offset) * (15*60));
+		unixtime -= (static_cast<rp_time_t>(tz_offset) * (15*60));
 	}
 	return unixtime;
 }
@@ -455,7 +455,7 @@ time_t RomDataPrivate::pvd_time_to_unix_time(const char (*pvd_time)[16], int8_t 
  * @param iso_date ISO date
  * @return Unix time, or -1 if invalid or not set.
  */
-time_t RomDataPrivate::iso_format_time_to_unix_time(const char *iso_date)
+rp_time_t RomDataPrivate::iso_format_time_to_unix_time(const char *iso_date)
 {
 	assert(iso_date != nullptr);
 	if (!iso_date)
@@ -481,7 +481,7 @@ time_t RomDataPrivate::iso_format_time_to_unix_time(const char *iso_date)
 	isotime.tm_isdst = 0;
 
 	// If conversion fails, this will return -1.
-	return timegm(&isotime);
+	return rp_timegm(&isotime);
 }
 
 /** Functions for RomData subclasses that handle directories **/

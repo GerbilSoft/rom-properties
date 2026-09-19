@@ -788,7 +788,7 @@ int PlayStationDisc::loadFieldData(void)
 	}
 
 	// Boot file timestamp
-	time_t boot_file_timestamp = -1;
+	rp_time_t boot_file_timestamp = -1;
 	if (!d->boot_filename.empty()) {
 		// TODO: Do we need a leading slash?
 		boot_file_timestamp = d->isoPartition->get_mtime(d->boot_filename.c_str());

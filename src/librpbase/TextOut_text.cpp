@@ -457,21 +457,21 @@ public:
  * @param dtflags	[in] DateTimeFlags
  * @return Formatted RFT_DATETIME on success; empty string on error.
  */
-static string formatDateTime(time_t timestamp, RomFields::DateTimeFlags dtflags)
+static string formatDateTime(rp_time_t timestamp, RomFields::DateTimeFlags dtflags)
 {
 	string s_ret;
 
 	struct tm tm_struct;
 	if (dtflags & RomFields::RFT_DATETIME_IS_UTC) {
-		try {
-			tm_struct = fmt::gmtime(timestamp);
-		} catch (const fmt::format_error&) {
-			// fmt::gmtime() failed.
+		if (!rp_gmtime(&timestamp, &tm_struct)) {
+			// rp_gmtime() failed.
 			return s_ret;
 		}
 	} else {
 		tzset();
-		if (!localtime_r(&timestamp, &tm_struct)) {
+		// FIXME: Handle localtime_r() on systems with 32-bit time_t.
+		const time_t t = static_cast<time_t>(timestamp);
+		if (!localtime_r(&t, &tm_struct)) {
 			// localtime_r() failed.
 			return s_ret;
 		}
@@ -660,8 +660,7 @@ public:
 					RomFields::TimeString_t time_string;
 					memcpy(time_string.str, jt->data(), 8);
 
-					string str = formatDateTime(
-						static_cast<time_t>(time_string.time),
+					string str = formatDateTime(time_string.time,
 						listDataDesc.col_attrs.dtflags);
 					if (unlikely(str.empty())) {
 						str = C_("RomData", "Unknown");
@@ -823,8 +822,7 @@ public:
 							RomFields::TimeString_t time_string;
 							memcpy(time_string.str, jt->data(), 8);
 
-							str = formatDateTime(
-								static_cast<time_t>(time_string.time),
+							str = formatDateTime(time_string.time,
 								listDataDesc.col_attrs.dtflags);
 							if (unlikely(str.empty())) {
 								str = C_("RomData", "Unknown");

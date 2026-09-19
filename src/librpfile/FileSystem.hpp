@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem.hpp: File system functions.                                  *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,6 +10,7 @@
 
 #include <cstdint>
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
+#include "time_r.h"	// for rp_time_t
 
 // access() macros.
 #ifdef _WIN32
@@ -33,7 +34,6 @@
 #  define R_OK 4
 #endif
 
-// Directory separator characters.
 #include "tcharx.h"
 
 // C++ includes.
@@ -142,7 +142,7 @@ const std::string &getConfigDirectory(void);
  * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_mtime(const char *filename, time_t *pMtime);
+int get_mtime(const char *filename, rp_time_t *pMtime);
 
 /**
  * Get the modification timestamp of a file.
@@ -150,7 +150,7 @@ int get_mtime(const char *filename, time_t *pMtime);
  * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-static inline int get_mtime(const std::string &filename, time_t *pMtime)
+static inline int get_mtime(const std::string &filename, rp_time_t *pMtime)
 {
 	return get_mtime(filename.c_str(), pMtime);
 }
@@ -162,7 +162,7 @@ static inline int get_mtime(const std::string &filename, time_t *pMtime)
  * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_mtime(const wchar_t *filename, time_t *pMtime);
+int get_mtime(const wchar_t *filename, rp_time_t *pMtime);
 
 /**
  * Get the modification timestamp of a file.
@@ -170,7 +170,7 @@ int get_mtime(const wchar_t *filename, time_t *pMtime);
  * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-static inline int get_mtime(const std::wstring &filename, time_t *pMtime)
+static inline int get_mtime(const std::wstring &filename, rp_time_t *pMtime)
 {
 	return get_mtime(filename.c_str(), pMtime);
 }
@@ -440,7 +440,7 @@ static inline bool isOnBadFS(const std::wstring &filename, bool allowNetFS = fal
  * @param pMtime	[out] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, time_t *pMtime);
+int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, rp_time_t *pMtime);
 
 /**
  * Get a file's size and time.
@@ -449,7 +449,7 @@ int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, time_t *pM
  * @param pMtime	[out] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-static inline int get_file_size_and_mtime(const std::string &filename, off64_t *pFileSize, time_t *pMtime)
+static inline int get_file_size_and_mtime(const std::string &filename, off64_t *pFileSize, rp_time_t *pMtime)
 {
 	return get_file_size_and_mtime(filename.c_str(), pFileSize, pMtime);
 }
@@ -462,7 +462,7 @@ static inline int get_file_size_and_mtime(const std::string &filename, off64_t *
  * @param pMtime	[out] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_file_size_and_mtime(const wchar_t *filename, off64_t *pFileSize, time_t *pMtime);
+int get_file_size_and_mtime(const wchar_t *filename, off64_t *pFileSize, rp_time_t *pMtime);
 
 /**
  * Get a file's size and time.
@@ -471,7 +471,7 @@ int get_file_size_and_mtime(const wchar_t *filename, off64_t *pFileSize, time_t 
  * @param pMtime	[out] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-static inline int get_file_size_and_mtime(const std::wstring &filename, off64_t *pFileSize, time_t *pMtime)
+static inline int get_file_size_and_mtime(const std::wstring &filename, off64_t *pFileSize, rp_time_t *pMtime)
 {
 	return get_file_size_and_mtime(filename.c_str(), pFileSize, pMtime);
 }

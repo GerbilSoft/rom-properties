@@ -2,11 +2,13 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpQt.hpp: Qt wrappers for some libromdata functionality.                *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
+
+#include "time_r.h"	// for rp_time_t
 
 // Qt includes
 #include <QtCore/QDateTime>
@@ -219,9 +221,10 @@ QString rpFileDialogFilterToQt(const char *filter);
  * @param utc If true, use UTC; otherwise, use localtime.
  * @return QDateTime
  */
-static inline QDateTime unixTimeToQDateTime(time_t timestamp, bool utc)
+static inline QDateTime unixTimeToQDateTime(rp_time_t timestamp, bool utc)
 {
-	const qint64 msecs = static_cast<qint64>(timestamp) * 1000;
+	static_assert(sizeof(rp_time_t) == sizeof(qint64), "rp_time_t != qint64!");
+	const qint64 msecs = timestamp * 1000;
 
 // NOTE: Using QT_VERSION_CHECK causes errors on moc-qt4 due to CMAKE_AUTOMOC.
 // Reference: https://bugzilla.redhat.com/show_bug.cgi?id=1396755

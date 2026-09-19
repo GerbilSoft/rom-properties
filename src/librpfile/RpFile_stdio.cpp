@@ -616,7 +616,7 @@ const char *RpFile::filename(void) const
  * Get the file modification time.
  * @return File modification time, or -1 if not available.
  */
-time_t RpFile::mtime(void)
+rp_time_t RpFile::mtime(void)
 {
 	RP_D(RpFile);
 	if (!d->file) {
@@ -646,6 +646,11 @@ time_t RpFile::mtime(void)
 		}
 		return -1;
 	}
+
+	// NOTE: Not going to write a custom 64-bit wrapper for stat().
+	// Support for 64-bit time_t on i386/armhf was added in:
+	// - Linux kernel 5.1 (2019/05/05)
+	// - glibc-2.31 (2020/02/01)
 	return sb.st_mtime;
 #endif /* HAVE_STATX */
 }

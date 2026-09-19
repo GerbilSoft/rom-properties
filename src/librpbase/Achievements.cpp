@@ -106,7 +106,7 @@ public:
 			uint8_t count;		// AT_COUNT
 			uint64_t bitfield;	// AT_BITFIELD
 		};
-		time_t timestamp;		// Time this achievement was last updated.
+		rp_time_t timestamp;		// Time this achievement was last updated.
 	};
 
 	// Achievement map
@@ -642,11 +642,12 @@ int AchievementsPrivate::load(void)
 			break;
 		}
 
-		// Type byte.
+		// Type byte
 		const uint8_t type = p[2];
 
-		// Timestamp.
-		int64_t timestamp;
+		// Timestamp
+		static_assert(sizeof(rp_time_t) == 8, "sizeof(rp_time_t) is not 64-bit!!!");
+		rp_time_t timestamp;
 		int bytesParsed = parseVarlenInt(timestamp, &p[3], p_end);
 		if (bytesParsed == 0) {
 			assert(!"Not enough bytes for the timestamp.");
@@ -665,7 +666,7 @@ int AchievementsPrivate::load(void)
 		switch (type) {
 			case AT_COUNT: {
 				if (isIDok) {
-					mapAchData[(Achievements::ID)id].timestamp = static_cast<time_t>(timestamp);
+					mapAchData[(Achievements::ID)id].timestamp = timestamp;
 					mapAchData[(Achievements::ID)id].count = *p;
 				}
 				p++;
@@ -687,7 +688,7 @@ int AchievementsPrivate::load(void)
 				p += bytesParsed;
 
 				if (isIDok) {
-					mapAchData[(Achievements::ID)id].timestamp = static_cast<time_t>(timestamp);
+					mapAchData[(Achievements::ID)id].timestamp = timestamp;
 					mapAchData[(Achievements::ID)id].bitfield = bitfield;
 				}
 				break;
@@ -887,7 +888,7 @@ int Achievements::unlock(ID id, int bit)
  * @param id Achievement ID.
  * @return UNIX time value if unlocked; -1 if not.
  */
-time_t Achievements::isUnlocked(ID id) const
+rp_time_t Achievements::isUnlocked(ID id) const
 {
 	// If this achievement is bool/count, increment the value.
 	// If the value has hit the maximum, achievement is unlocked.
@@ -905,7 +906,7 @@ time_t Achievements::isUnlocked(ID id) const
 	}
 
 	// Check the type.
-	time_t timestamp = -1;
+	rp_time_t timestamp = -1;
 	const AchievementsPrivate::AchInfo_t *const achInfo = &d->achInfo[(int)id];
 	switch (achInfo->type) {
 		default:

@@ -253,6 +253,7 @@ FOREACH(_target ${TARGETS})
 		rptexture${_target_suffix} cachecommon${_target_suffix})
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpcpuid)	# for CPU dispatch
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE inih)
+	TARGET_LINK_LIBRARIES(${_target} PUBLIC boost-time64)	# for rp_time_t and 64-bit time functions
 
 	IF(CMAKE_THREAD_LIBS_INIT)
 		# for std::call_once() [pthread_once()]

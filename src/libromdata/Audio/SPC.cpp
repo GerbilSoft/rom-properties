@@ -65,7 +65,7 @@ public:
 			union {
 				int ivalue;
 				unsigned int uvalue;
-				time_t timestamp;
+				rp_time_t timestamp;
 			}; 
 			bool isStrIdx;
 
@@ -146,7 +146,7 @@ public:
 		 * @param key Extended ID666 tag index.
 		 * @param timestamp Timestamp value.
 		 */
-		inline void insertTimestamp(SPC_xID6_Item_e key, time_t timestamp)
+		inline void insertTimestamp(SPC_xID6_Item_e key, rp_time_t timestamp)
 		{
 			val_t val;
 			val.timestamp = timestamp;
@@ -365,7 +365,7 @@ SPCPrivate::spc_tags_t SPCPrivate::parseTags(void)
 			ymdtime.tm_isdst = 0;
 
 			// If conversion fails, this will return -1.
-			kv.insertTimestamp(SPC_xID6_ITEM_DUMP_DATE, timegm(&ymdtime));
+			kv.insertTimestamp(SPC_xID6_ITEM_DUMP_DATE, rp_timegm(&ymdtime));
 		}
 
 		// Artist

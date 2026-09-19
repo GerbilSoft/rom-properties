@@ -29,8 +29,9 @@ using std::string;
  * @return Formatted RFT_DATETIME, or nullptr on error. (allocated string; free with g_free)
  */
 gchar *
-rom_data_format_datetime(time_t date_time, unsigned int flags)
+rom_data_format_datetime(rp_time_t date_time, unsigned int flags)
 {
+	static_assert(sizeof(rp_time_t) == sizeof(gint64), "sizeof(rp_time_t) != sizeof(gint64) !!!");
 	if (date_time == -1) {
 		// Invalid date/time.
 		return nullptr;

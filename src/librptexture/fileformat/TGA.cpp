@@ -11,7 +11,7 @@
 
 #include "tga_structs.h"
 
-// timegm()
+// rp_timegm()
 #include "time_r.h"
 
 // Other rom-properties libraries
@@ -109,7 +109,7 @@ public:
 	 * @param timestamp TGA timestamp. (little-endian)
 	 * @return UNIX time, or -1 if invalid or not set.
 	 */
-	static time_t tgaTimeToUnixTime(const TGA_DateStamp *timestamp);
+	static rp_time_t tgaTimeToUnixTime(const TGA_DateStamp *timestamp);
 };
 
 FILEFORMAT_IMPL(TGA)
@@ -557,7 +557,7 @@ rp_image_const_ptr TGAPrivate::loadImage(void)
  * @param timestamp TGA timestamp. (little-endian)
  * @return UNIX time, or -1 if invalid or not set.
  */
-time_t TGAPrivate::tgaTimeToUnixTime(const TGA_DateStamp *timestamp)
+rp_time_t TGAPrivate::tgaTimeToUnixTime(const TGA_DateStamp *timestamp)
 {
 	assert(timestamp != nullptr);
 	if (!timestamp)
@@ -583,7 +583,7 @@ time_t TGAPrivate::tgaTimeToUnixTime(const TGA_DateStamp *timestamp)
 	tgatime.tm_isdst = 0;
 
 	// If conversion fails, this will return -1.
-	return timegm(&tgatime);
+	return rp_timegm(&tgatime);
 }
 
 /** TGA **/
@@ -934,7 +934,7 @@ int TGA::getFields(RomFields *fields) const
 		// Timestamp
 		// NOTE: Copy needed to avoid an unaligned pointer.
 		const TGA_DateStamp tga_dateStamp = tgaExtArea->timestamp;
-		const time_t timestamp = d->tgaTimeToUnixTime(&tga_dateStamp);
+		const rp_time_t timestamp = d->tgaTimeToUnixTime(&tga_dateStamp);
 		if (timestamp != -1) {
 			fields->addField_dateTime(C_("TGA", "Last Saved Time"), timestamp,
 				RomFields::RFT_DATETIME_HAS_DATE |

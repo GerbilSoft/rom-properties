@@ -112,7 +112,7 @@ static bool getStoreFileOriginInfo(void)
  * @param mtime If >= 0, this value is set as the mtime.
  * @return 0 on success; negative POSIX error code on error.
  */
-int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
+int setFileOriginInfo(FILE *file, const TCHAR *url, rp_time_t mtime)
 {
 	const int fd = fileno(file);
 
@@ -202,6 +202,10 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 		::fflush(file);
 
 		// Set the times.
+		// NOTE: Not going to write a custom 64-bit wrapper for utimes().
+		// Support for 64-bit time_t on i386/armhf was added in:
+		// - Linux kernel 5.1 (2019/05/05)
+		// - glibc-2.31 (2020/02/01)
 		errno = 0;
 		ret = futimes(fd, tv);
 		if (ret != 0 && err == 0) {

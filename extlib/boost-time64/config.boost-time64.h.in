@@ -1,0 +1,39 @@
+/***************************************************************************
+ * ROM Properties Page shell extension. (boost-time64)                     *
+ * config.boost-time64.h.in: System time function detection. (source file) *
+ *                                                                         *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
+ * SPDX-License-Identifier: GPL-2.0-or-later                               *
+ ***************************************************************************/
+
+#pragma once
+
+/** Time functions **/
+
+/* Define to the size of `time_t`. */
+/* FIXME: cmakedefine doesn't seem to work here??? (It results in SIZEOF_TIME_T always being undefined.) */
+#define SIZEOF_TIME_T @TIME_T@
+
+/* Define to 1 if you have the `gmtime_r` function. */
+#cmakedefine HAVE_GMTIME_R 1
+
+/* Define to 1 if you have the `gmtime_s` function. */
+#cmakedefine HAVE_GMTIME_S 1
+
+/* Define to 1 if you have the `localtime_r' function. */
+#cmakedefine HAVE_LOCALTIME_R 1
+
+/* Define to 1 if you have the `localtime_s' function. */
+#cmakedefine HAVE_LOCALTIME_S 1
+
+/* Define to 1 if you have the `timegm' function. */
+#cmakedefine HAVE_TIMEGM 1
+
+/* Define to 1 if you have the `_mkgmtime64' function. */
+#cmakedefine HAVE__MKGMTIME64 1
+
+/* Define to 1 if you are using the internal `rp_timegm` function. */
+#cmakedefine USING_INTERNAL_RP_TIMEGM 1
+
+/* Define to 1 if you are using the internal `rp_gmtime` function. */
+#cmakedefine USING_INTERNAL_RP_GMTIME 1

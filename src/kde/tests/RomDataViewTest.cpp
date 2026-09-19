@@ -412,7 +412,7 @@ TEST_F(RomDataViewTest, RFT_DATETIME)
 {
 	// Add an RFT_DATETIME field.
 	static const char s_field_desc[] = "RFT_STRING 0";
-	static constexpr time_t time_value = 722574855;
+	static constexpr rp_time_t time_value = 722574855;
 
 	const char *const s_field_value = (m_isQt611)
 		? "24 11 1992 03:14"

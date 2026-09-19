@@ -9,7 +9,8 @@
 #pragma once
 
 #include "common.h"
-#include "dll-macros.h"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
+#include "time_r.h"	// for rp_time_t
 
 namespace LibRpBase {
 
@@ -120,7 +121,7 @@ public:
 	 * @return UNIX time value if unlocked; -1 if not.
 	 */
 	RP_LIBROMDATA_PUBLIC
-	time_t isUnlocked(ID id) const;
+	rp_time_t isUnlocked(ID id) const;
 
 public:
 	/**

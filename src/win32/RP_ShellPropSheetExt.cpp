@@ -161,9 +161,9 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 				}
 			} else {
 				// Not an RpFile. Convert a Unix mtime instead.
-				const time_t unixtime = file->mtime();
+				const rp_time_t unixtime = file->mtime();
 				if (unixtime != -1) {
-					UnixTimeToFileTime(unixtime, &mtime);
+					mtime = UnixTimeToFileTime(unixtime);
 				}
 			}
 		}

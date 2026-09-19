@@ -27,8 +27,9 @@ using std::string;
  * @param flags		[in] RFT_DATETIME flags
  * @return Formatted RFT_DATETIME, or empty on error.
  */
-QString formatDateTime(time_t date_time, unsigned int flags)
+QString formatDateTime(rp_time_t date_time, unsigned int flags)
 {
+	static_assert(sizeof(rp_time_t) == sizeof(qint64), "sizeof(rp_time_t) != sizeof(qint64) !!!");
 	const QDateTime dateTime = unixTimeToQDateTime(date_time, !!(flags & RomFields::RFT_DATETIME_IS_UTC));
 
 	QString str;

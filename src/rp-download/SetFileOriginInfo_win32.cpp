@@ -122,7 +122,7 @@ static bool getStoreFileOriginInfo(void)
  * @param mtime If >= 0, this value is set as the mtime.
  * @return 0 on success; negative POSIX error code on error.
  */
-int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
+int setFileOriginInfo(FILE *file, const TCHAR *url, rp_time_t mtime)
 {
 	// NOTE: Even if one of the xattr functions fails, we'll
 	// continue with others and setting mtime. The first error
@@ -131,7 +131,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
-#if _USE_32BIT_TIME_T
+#if _USE_32BIT_TIME_T || SIZEOF_TIME_T < 8
 #  error 32-bit time_t is not supported. Get a newer compiler.
 #endif
 
@@ -240,8 +240,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 
 		// SetFileTime() requires FILETIME format.
 		// NOTE: We only need to adjust mtime, not atime.
-		FILETIME ft_mtime;
-		UnixTimeToFileTime(mtime, &ft_mtime);
+		const FILETIME ft_mtime = UnixTimeToFileTime(mtime);
 
 		if (!SetFileTime(hFile, nullptr, nullptr, &ft_mtime)) {
 			// Error setting the file time.

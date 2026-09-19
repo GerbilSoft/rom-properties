@@ -159,7 +159,7 @@ public:
 	 * @param ascii_date ASCII release date. (Must be 8 characters.)
 	 * @return Unix time_t, or -1 on error.
 	 */
-	static time_t ascii_yyyymmdd_to_unix_time(const char *ascii_date);
+	static rp_time_t ascii_yyyymmdd_to_unix_time(const char *ascii_date);
 
 	/**
 	 * Convert a BCD timestamp to Unix time.
@@ -171,7 +171,7 @@ public:
 	 * not likely to be valid, since the first programmable
 	 * video game consoles were released in the late 1970s.
 	 */
-	static time_t bcd_to_unix_time(const uint8_t *bcd_tm, size_t size);
+	static rp_time_t bcd_to_unix_time(const uint8_t *bcd_tm, size_t size);
 
 	/**
 	 * Convert an ISO-9660 PVD timestamp to Unix time.
@@ -179,7 +179,7 @@ public:
 	 * @param tz_offset PVD timezone offset
 	 * @return Unix time, or -1 if invalid or not set.
 	 */
-	static time_t pvd_time_to_unix_time(const char (*pvd_time)[16], int8_t tz_offset);
+	static rp_time_t pvd_time_to_unix_time(const char (*pvd_time)[16], int8_t tz_offset);
 
 	/**
 	 * Convert an ISO format datestamp to Unix time.
@@ -187,7 +187,7 @@ public:
 	 * @param iso_date ISO date
 	 * @return Unix time, or -1 if invalid or not set.
 	 */
-	static time_t iso_format_time_to_unix_time(const char *iso_date);
+	static rp_time_t iso_format_time_to_unix_time(const char *iso_date);
 
 	/** Functions for RomData subclasses that handle directories **/
 

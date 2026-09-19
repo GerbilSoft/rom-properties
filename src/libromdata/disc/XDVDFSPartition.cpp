@@ -596,7 +596,7 @@ IRpFilePtr XDVDFSPartition::open(const char *filename)
  * Get the XDVDFS timestamp.
  * @return XDVDFS timestamp, or -1 on error.
  */
-time_t XDVDFSPartition::xdvdfsTimestamp(void) const
+rp_time_t XDVDFSPartition::xdvdfsTimestamp(void) const
 {
 	RP_D(const XDVDFSPartition);
 	assert(m_file != nullptr);

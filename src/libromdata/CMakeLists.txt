@@ -615,7 +615,8 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 	# UI frontend plugins.
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpbyteswap-dll rptexture-dll rpfile-dll rptext-dll rpbase-dll)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE cachecommon-dll)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpuid)	# for CPU dispatch
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpuid)		# for CPU dispatch
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC boost-time64)	# for rp_time_t and 64-bit time functions
 
 	IF(CMAKE_THREAD_LIBS_INIT)
 		# for std::call_once() [pthread_once()]
@@ -675,7 +676,8 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 ELSE()
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC rpbyteswap rptexture rpfile rptext rpbase)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC cachecommon)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpuid)	# for CPU dispatch
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpuid)		# for CPU dispatch
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC boost-time64)	# for rp_time_t and 64-bit time functions
 	IF(ENABLE_NLS)
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC i18n)
 	ENDIF(ENABLE_NLS)

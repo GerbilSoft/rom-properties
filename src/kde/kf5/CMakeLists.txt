@@ -199,6 +199,7 @@ FOREACH(RTC_SUFFIX "" "-dir")
 		)
 	TARGET_COMPILE_DEFINITIONS(${RomThumbnailCreator_NAME}${RTC_SUFFIX} PRIVATE RP_NO_INCLUDE_LIBFMT_IN_STDAFX_H)
 	TARGET_LINK_LIBRARIES(${RomThumbnailCreator_NAME}${RTC_SUFFIX} PRIVATE romdata)
+	TARGET_LINK_LIBRARIES(${RomThumbnailCreator_NAME}${RTC_SUFFIX} PRIVATE boost-time64)	# for rp_time_t and 64-bit time functions
 	TARGET_LINK_LIBRARIES(${RomThumbnailCreator_NAME}${RTC_SUFFIX} PRIVATE KF5::KIOWidgets KF5::KIOCore)
 	TARGET_LINK_LIBRARIES(${RomThumbnailCreator_NAME}${RTC_SUFFIX} PUBLIC Qt5::Widgets Qt5::Gui Qt5::Core)
 	IF(HAVE_QtDBus)

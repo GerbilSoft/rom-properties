@@ -22,6 +22,7 @@ ENDIF(NOT WIN32)
 # librptest library
 ADD_LIBRARY(rptest STATIC gtest_init.cpp gtest_init.hpp)
 TARGET_LINK_LIBRARIES(rptest PUBLIC rpsecure)
+TARGET_LINK_LIBRARIES(rptest PUBLIC boost-time64)	# for rp_time_t and 64-bit time functions
 # librptest doesn't use gtest directly, but all tests do,
 # so add it with interface linkage.
 # NOTE: The include path is still needed because gtest_init.hpp includes "gtest/gtest.h".

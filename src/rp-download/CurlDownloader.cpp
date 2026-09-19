@@ -403,15 +403,14 @@ int CurlDownloader::download(void)
 		curl_off_t mtime = -1;
 		res = pcurl_easy_getinfo(curl, CURLINFO_FILETIME_T, &mtime);
 		if (res == CURLE_OK && mtime >= 0) {
-			// FIXME: What if time_t is 32-bit? This might be truncated...
-			m_mtime = static_cast<time_t>(mtime);
+			m_mtime = static_cast<rp_time_t>(mtime);
 		}
 	} else {
 		// curl-7.1: CURLINFO_FILETIME for `long` time
 		long mtime = -1L;
 		res = pcurl_easy_getinfo(curl, CURLINFO_FILETIME, &mtime);
 		if (res == CURLE_OK && mtime >= 0) {
-			m_mtime = static_cast<time_t>(mtime);
+			m_mtime = static_cast<rp_time_t>(mtime);
 		}
 	}
 

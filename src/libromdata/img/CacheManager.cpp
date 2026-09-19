@@ -101,7 +101,7 @@ string CacheManager::download(const char *cache_key)
 	if (!check_newer) {
 		// Check if the file already exists.
 		off64_t filesize = 0;
-		time_t filemtime = 0;
+		rp_time_t filemtime = 0;
 		int ret = FileSystem::get_file_size_and_mtime(cache_filename, &filesize, &filemtime);
 		if (ret == 0) {
 			// Check if the file is 0 bytes.

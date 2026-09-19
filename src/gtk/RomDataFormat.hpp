@@ -2,11 +2,13 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RomDataFormat.hpp: Common RomData string formatting functions.          *
  *                                                                         *
- * Copyright (c) 2017-2025 by David Korth.                                 *
+ * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
+
+#include "time_r.h"	// for rp_time_t
 
 #include <glib.h>
 
@@ -22,7 +24,7 @@ G_BEGIN_DECLS
  * @return Formatted RFT_DATETIME, or nullptr on error. (allocated string; free with g_free)
  */
 gchar *
-rom_data_format_datetime(time_t date_time, unsigned int flags) G_GNUC_MALLOC;
+rom_data_format_datetime(rp_time_t date_time, unsigned int flags) G_GNUC_MALLOC;
 
 G_END_DECLS
 

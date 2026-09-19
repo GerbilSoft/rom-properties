@@ -345,30 +345,17 @@ int access(const wchar_t *pathname, int mode)
  */
 static off64_t filesize_int(const tstring &tfilename)
 {
-	// TODO: Add a static_warning() macro?
-	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
-#if _USE_32BIT_TIME_T
-# error 32-bit time_t is not supported. Get a newer compiler.
-#endif
-
-	// Use GetFileSize() instead of _stati64().
-	HANDLE hFile = CreateFile(tfilename.c_str(),
-		GENERIC_READ, FILE_SHARE_READ, nullptr,
-		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-	if (!hFile || hFile == INVALID_HANDLE_VALUE) {
-		// Error opening the file.
+	// Use GetFileAttributesEx() to get the file information.
+	WIN32_FILE_ATTRIBUTE_DATA fad;
+	BOOL bRet = GetFileAttributesEx(tfilename.c_str(), GetFileExInfoStandard, &fad);
+	if (!bRet) {
+		// GetFileAttributesEx() failed.
 		return -w32err_to_posix(GetLastError());
 	}
 
 	LARGE_INTEGER liFileSize;
-	BOOL bRet = GetFileSizeEx(hFile, &liFileSize);
-	CloseHandle(hFile);
-	if (!bRet) {
-		// Error getting the file size.
-		return -w32err_to_posix(GetLastError());
-	}
-
-	// Return the file size.
+	liFileSize.LowPart = fad.nFileSizeLow;
+	liFileSize.HighPart = fad.nFileSizeHigh;
 	return liFileSize.QuadPart;
 }
 
@@ -398,27 +385,29 @@ off64_t filesize(const wchar_t *filename)
  * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-static int get_mtime_int(const tstring &tfilename, time_t *pMtime)
+static int get_mtime_int(const tstring &tfilename, rp_time_t *pMtime)
 {
-	assert(pMtime != nullptr);
-	if (!pMtime)
-		return -EINVAL;
-
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
-#if _USE_32BIT_TIME_T
+#if _USE_32BIT_TIME_T || SIZEOF_TIME_T < 8
 #  error 32-bit time_t is not supported. Get a newer compiler.
 #endif
-	WIN32_FIND_DATA findFileData;
-	HANDLE hFind = FindFirstFile(tfilename.c_str(), &findFileData);
-	if (!hFind || hFind == INVALID_HANDLE_VALUE) {
-		// Cannot find the file???
+
+	assert(pMtime != nullptr);
+	if (!pMtime) {
+		return -EINVAL;
+	}
+
+	// Use GetFileAttributesEx() to get the file information.
+	WIN32_FILE_ATTRIBUTE_DATA fad;
+	BOOL bRet = GetFileAttributesEx(tfilename.c_str(), GetFileExInfoStandard, &fad);
+	if (!bRet) {
+		// GetFileAttributesEx() failed.
 		return -w32err_to_posix(GetLastError());
 	}
 
 	// Convert to Unix timestamp.
-	*pMtime = FileTimeToUnixTime(&findFileData.ftLastWriteTime);
-	FindClose(hFind);
+	*pMtime = FileTimeToUnixTime(fad.ftLastWriteTime);
 	return 0;
 }
 
@@ -428,7 +417,7 @@ static int get_mtime_int(const tstring &tfilename, time_t *pMtime)
  * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_mtime(const char *filename, time_t *pMtime)
+int get_mtime(const char *filename, rp_time_t *pMtime)
 {
 	return get_mtime_int(makeWinPath(filename), pMtime);
 }
@@ -439,7 +428,7 @@ int get_mtime(const char *filename, time_t *pMtime)
  * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_mtime(const wchar_t *filename, time_t *pMtime)
+int get_mtime(const wchar_t *filename, rp_time_t *pMtime)
 {
 	return get_mtime_int(makeWinPath(filename), pMtime);
 }
@@ -894,47 +883,44 @@ bool isOnBadFS(const wchar_t *filename, bool allowNetFS)
  * @param pMtime	[out] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-static int get_file_size_and_mtime_int(const tstring &tfilename, off64_t *pFileSize, time_t *pMtime)
+static int get_file_size_and_mtime_int(const tstring &tfilename, off64_t *pFileSize, rp_time_t *pMtime)
 {
+	// TODO: Add a static_warning() macro?
+	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
+#if _USE_32BIT_TIME_T || SIZEOF_TIME_T < 8
+#  error 32-bit time_t is not supported. Get a newer compiler.
+#endif
+
 	assert(pFileSize != nullptr);
 	assert(pMtime != nullptr);
 	if (unlikely(!pFileSize || !pMtime)) {
 		return -EINVAL;
 	}
 
-	// TODO: Add a static_warning() macro?
-	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
-#if _USE_32BIT_TIME_T
-#  error 32-bit time_t is not supported. Get a newer compiler.
-#endif
-
-	// Use FindFirstFile() to get the file information.
-	WIN32_FIND_DATA ffd;
-	HANDLE hFind = FindFirstFile(tfilename.c_str(), &ffd);
-	if (!hFind || hFind == INVALID_HANDLE_VALUE) {
-		// An error occurred.
-		const int err = w32err_to_posix(GetLastError());
-		return (err != 0 ? -err : -EIO);
+	// Use GetFileAttributesEx() to get the file information.
+	WIN32_FILE_ATTRIBUTE_DATA fad;
+	BOOL bRet = GetFileAttributesEx(tfilename.c_str(), GetFileExInfoStandard, &fad);
+	if (!bRet) {
+		// GetFileAttributesEx() failed.
+		return -w32err_to_posix(GetLastError());
 	}
 
 	// Make sure this is not a directory.
-	if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+	if (fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 		// It's a directory.
-		FindClose(hFind);
 		return -EISDIR;
 	}
 
 	// Convert the file size from two DWORDs to off64_t.
-	LARGE_INTEGER fileSize;
-	fileSize.LowPart = ffd.nFileSizeLow;
-	fileSize.HighPart = ffd.nFileSizeHigh;
-	*pFileSize = fileSize.QuadPart;
+	LARGE_INTEGER liFileSize;
+	liFileSize.LowPart = fad.nFileSizeLow;
+	liFileSize.HighPart = fad.nFileSizeHigh;
+	*pFileSize = liFileSize.QuadPart;
 
 	// Convert mtime from FILETIME.
-	*pMtime = FileTimeToUnixTime(&ffd.ftLastWriteTime);
+	*pMtime = FileTimeToUnixTime(fad.ftLastWriteTime);
 
 	// We're done here.
-	FindClose(hFind);
 	return 0;
 }
 
@@ -945,7 +931,7 @@ static int get_file_size_and_mtime_int(const tstring &tfilename, off64_t *pFileS
  * @param pMtime	[out] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, time_t *pMtime)
+int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, rp_time_t *pMtime)
 {
 	return get_file_size_and_mtime_int(makeWinPath(filename), pFileSize, pMtime);
 }
@@ -957,7 +943,7 @@ int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, time_t *pM
  * @param pMtime	[out] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_file_size_and_mtime(const wchar_t *filename, off64_t *pFileSize, time_t *pMtime)
+int get_file_size_and_mtime(const wchar_t *filename, off64_t *pFileSize, rp_time_t *pMtime)
 {
 	return get_file_size_and_mtime_int(makeWinPath(filename), pFileSize, pMtime);
 }

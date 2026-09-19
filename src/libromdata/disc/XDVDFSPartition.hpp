@@ -135,7 +135,7 @@ public:
 	 * Get the XDVDFS timestamp.
 	 * @return XDVDFS timestamp, or -1 on error.
 	 */
-	time_t xdvdfsTimestamp(void) const;
+	rp_time_t xdvdfsTimestamp(void) const;
 };
 
 typedef std::shared_ptr<XDVDFSPartition> XDVDFSPartitionPtr;
