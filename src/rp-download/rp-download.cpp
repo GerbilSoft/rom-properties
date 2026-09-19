@@ -163,7 +163,7 @@ static int get_file_size_and_mtime(const TCHAR *filename, off64_t *pFileSize, rp
 	*pFileSize = fileSize.QuadPart;
 
 	// Convert mtime from FILETIME.
-	*pMtime = FileTimeToUnixTime(&fad.ftLastWriteTime);
+	*pMtime = FileTimeToUnixTime(fad.ftLastWriteTime);
 #elif defined(HAVE_STATX)
 	// Linux or UNIX system with statx()
 	struct statx sbx;

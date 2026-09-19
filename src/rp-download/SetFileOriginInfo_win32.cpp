@@ -240,8 +240,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, rp_time_t mtime)
 
 		// SetFileTime() requires FILETIME format.
 		// NOTE: We only need to adjust mtime, not atime.
-		FILETIME ft_mtime;
-		UnixTimeToFileTime(mtime, &ft_mtime);
+		const FILETIME ft_mtime = UnixTimeToFileTime(mtime);
 
 		if (!SetFileTime(hFile, nullptr, nullptr, &ft_mtime)) {
 			// Error setting the file time.

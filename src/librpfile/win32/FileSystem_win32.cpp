@@ -407,7 +407,7 @@ static int get_mtime_int(const tstring &tfilename, rp_time_t *pMtime)
 	}
 
 	// Convert to Unix timestamp.
-	*pMtime = FileTimeToUnixTime(&fad.ftLastWriteTime);
+	*pMtime = FileTimeToUnixTime(fad.ftLastWriteTime);
 	return 0;
 }
 
@@ -918,7 +918,7 @@ static int get_file_size_and_mtime_int(const tstring &tfilename, off64_t *pFileS
 	*pFileSize = liFileSize.QuadPart;
 
 	// Convert mtime from FILETIME.
-	*pMtime = FileTimeToUnixTime(&fad.ftLastWriteTime);
+	*pMtime = FileTimeToUnixTime(fad.ftLastWriteTime);
 
 	// We're done here.
 	return 0;

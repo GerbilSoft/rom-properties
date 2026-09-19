@@ -40,8 +40,7 @@ tstring formatDateTime(rp_time_t date_time, unsigned int flags)
 	TCHAR buf[128];
 
 	// Convert from Unix time to Win32 SYSTEMTIME.
-	SYSTEMTIME st;
-	UnixTimeToSystemTime(date_time, &st);
+	SYSTEMTIME st = UnixTimeToSystemTime(date_time);
 
 	// At least one of Date and/or Time must be set.
 	assert((flags &

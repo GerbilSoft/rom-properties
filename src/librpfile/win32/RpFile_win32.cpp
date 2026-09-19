@@ -799,7 +799,7 @@ rp_time_t RpFile::mtime(void)
 	}
 
 	// Convert FILETIME to Unix time.
-	return FileTimeToUnixTime(&lastWriteTime);
+	return FileTimeToUnixTime(lastWriteTime);
 }
 
 /**

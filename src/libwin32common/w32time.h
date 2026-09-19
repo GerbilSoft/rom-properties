@@ -16,26 +16,29 @@
 /**
  * Convert from Unix time to Win32 FILETIME.
  * @param unixtime Unix time
- * @param pFileTime FILETIME
+ * @return FILETIME
  */
-static inline void UnixTimeToFileTime(_In_ rp_time_t unixtime, _Out_ FILETIME *pFileTime)
+static inline FILETIME UnixTimeToFileTime(_In_ rp_time_t unixtime)
 {
+	FILETIME ft;
 	LARGE_INTEGER li;
 	li.QuadPart = UnixTimeToWindowsTime(unixtime);
-	pFileTime->dwLowDateTime = li.LowPart;
-	pFileTime->dwHighDateTime = (DWORD)li.HighPart;
+	ft.dwLowDateTime = li.LowPart;
+	ft.dwHighDateTime = (DWORD)li.HighPart;
+	return ft;
 }
 
 /**
  * Convert from Unix time to Win32 SYSTEMTIME.
  * @param unixtime Unix time
- * @param pSystemTime Win32 SYSTEMTIME
+ * @return Win32 SYSTEMTIME
  */
-static inline void UnixTimeToSystemTime(_In_ rp_time_t unixtime, _Out_ SYSTEMTIME *pSystemTime)
+static inline SYSTEMTIME UnixTimeToSystemTime(_In_ rp_time_t unixtime)
 {
-	FILETIME ft;
-	UnixTimeToFileTime(unixtime, &ft);
-	FileTimeToSystemTime(&ft, pSystemTime);
+	SYSTEMTIME st;
+	const FILETIME ft = UnixTimeToFileTime(unixtime);
+	FileTimeToSystemTime(&ft, &st);
+	return st;
 }
 
 /**
@@ -43,11 +46,11 @@ static inline void UnixTimeToSystemTime(_In_ rp_time_t unixtime, _Out_ SYSTEMTIM
  * @param pFileTime Win32 FILETIME
  * @return Unix time.
  */
-static inline int64_t FileTimeToUnixTime(_In_ const FILETIME *pFileTime)
+static inline int64_t FileTimeToUnixTime(_In_ FILETIME ft)
 {
 	LARGE_INTEGER li;
-	li.LowPart = pFileTime->dwLowDateTime;
-	li.HighPart = (LONG)pFileTime->dwHighDateTime;
+	li.LowPart = ft.dwLowDateTime;
+	li.HighPart = (LONG)ft.dwHighDateTime;
 	return WindowsTimeToUnixTime(li.QuadPart);
 }
 
@@ -58,7 +61,7 @@ static inline int64_t FileTimeToUnixTime(_In_ const FILETIME *pFileTime)
  */
 static inline int64_t SystemTimeToUnixTime(_In_ const SYSTEMTIME *pSystemTime)
 {
-	FILETIME fileTime;
-	SystemTimeToFileTime(pSystemTime, &fileTime);
-	return FileTimeToUnixTime(&fileTime);
+	FILETIME ft;
+	SystemTimeToFileTime(pSystemTime, &ft);
+	return FileTimeToUnixTime(ft);
 }
