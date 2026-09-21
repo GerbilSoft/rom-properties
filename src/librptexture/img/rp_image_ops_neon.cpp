@@ -15,6 +15,7 @@
 #include "librpbyteswap/byteswap_rp.h"
 
 // C includes (C++ namespace)
+#include <cerrno>
 #include <cstring>
 
 // C++ STL classes

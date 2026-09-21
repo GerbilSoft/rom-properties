@@ -26,6 +26,7 @@ using namespace LibRpFile;
 
 // C includes (C++ namespace)
 #include <cassert>
+#include <cstdlib>
 #include <cstring>
 
 // C++ includes

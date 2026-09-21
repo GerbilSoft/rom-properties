@@ -24,6 +24,9 @@ using namespace LibRpFile;
 // C includes
 #include "ctypex.h"
 
+// C includes (C++ namespace)
+#include <cstdlib>
+
 // C++ STL classes
 #include <limits>
 using std::string;

@@ -11,8 +11,12 @@
 #include "rp_image_backend.hpp"
 
 // C includes (C++ namespace)
+#include <cerrno>
 #include <cmath>
 #include <cstring>
+
+// C++ STL classes
+#include <algorithm>
 
 // Other rom-properties libraries
 #include "librpbyteswap/byteswap_rp.h"

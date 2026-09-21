@@ -8,6 +8,9 @@
 
 #include "Nintendo3DSFirmData.hpp"
 
+// C includes (C++ namespace)
+#include <cstdlib>
+
 // C++ STL classes
 #include <algorithm>
 #include <array>

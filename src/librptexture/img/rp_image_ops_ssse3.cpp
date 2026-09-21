@@ -19,6 +19,7 @@
 #include <tmmintrin.h>
 
 // C includes (C++ namespace)
+#include <cerrno>
 #include <cstring>
 
 // Workaround for RP_D() expecting the no-underscore, UpperCamelCase naming convention.

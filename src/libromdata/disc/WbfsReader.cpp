@@ -14,6 +14,9 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 
+// C includes (C++ namespace)
+#include <cstdlib>
+
 namespace LibRomData {
 
 class WbfsReaderPrivate final : public SparseDiscReaderPrivate

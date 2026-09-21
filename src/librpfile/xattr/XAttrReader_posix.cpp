@@ -85,6 +85,8 @@ struct fsxattr {
 #include "uvector.h"
 
 // C includes (C++ namespace)
+#include <cerrno>
+#include <cstdlib>
 #include <cstring>
 
 // C++ STL classes

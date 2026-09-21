@@ -15,6 +15,9 @@
 // librpsecure
 #include "librpsecure/win32/integrity_level.h"
 
+// C includes (C++ namespace)
+#include <cerrno>
+
 // C++ includes
 #include <string>
 using std::string;

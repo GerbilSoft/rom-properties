@@ -18,6 +18,10 @@
 #  include <spawn.h>
 #endif /* HAVE_POSIX_SPAWN */
 
+// C includes (C++ namespace)
+#include <cerrno>
+#include <cstdlib>
+
 // C++ includes
 #include <array>
 #include <string>

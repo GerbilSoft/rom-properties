@@ -19,6 +19,7 @@ using namespace LibRpText;
 
 // C includes (C++ namespace)
 #include <cassert>
+#include <cerrno>
 #include <cstring>
 
 // C++ STL classes

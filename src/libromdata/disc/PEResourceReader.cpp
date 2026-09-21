@@ -18,6 +18,7 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // C includes (C++ namespace)
+#include <cstdlib>
 #include <cstring>
 
 // C++ STL classes

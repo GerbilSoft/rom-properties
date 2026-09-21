@@ -14,6 +14,9 @@
 // SSE2 intrinsics
 #include <emmintrin.h>
 
+// C includes (C++ namespace)
+#include <cerrno>
+
 // Workaround for RP_D() expecting the no-underscore, UpperCamelCase naming convention.
 #define rp_imagePrivate rp_image_private
 

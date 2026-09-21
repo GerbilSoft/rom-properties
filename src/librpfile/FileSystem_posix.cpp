@@ -9,6 +9,10 @@
 #include "config.librpfile.h"
 #include "FileSystem.hpp"
 
+// Needed for realpath().
+#define _BSD_SOURCE 1		// <=glibc-2.19
+#define _DEFAULT_SOURCE 1	// >=glibc-2.20
+
 // Common definitions, including function attributes.
 #include "common.h"
 
@@ -20,11 +24,11 @@
 
 // C includes (C++ namespace)
 #include <cassert>
-
-// C++ includes
-#include <algorithm>
+#include <cerrno>
+#include <cstdlib>
 
 // C++ STL classes
+#include <algorithm>
 #include <array>
 using std::array;
 using std::string;

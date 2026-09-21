@@ -19,6 +19,7 @@
 #include "tcharx.h"
 
 // C includes (C++ namespace)
+#include <cerrno>
 #include <cstring>
 
 // C++ STL classes

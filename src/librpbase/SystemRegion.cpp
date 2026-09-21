@@ -11,6 +11,7 @@
 
 // C includes (C++ namespace)
 #include <clocale>
+#include <cstdlib>
 #include <cstring>
 
 // C++ STL classes

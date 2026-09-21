@@ -13,6 +13,9 @@
 #include "librpfile/FileSystem.hpp"
 using namespace LibRpFile;
 
+// C includes (C++ namespace)
+#include <cstdlib>
+
 // OS-specific includes
 #ifdef _WIN32
 // for U82T_s()
