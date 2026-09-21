@@ -394,16 +394,21 @@ ROM Properties is licensed under the GNU General Public License v2.
 Some bundled components have other licenses:
 
 * basisu_astc: Apache License 2.0
+* Detours: MIT
+* fmt: MIT
+* gettext: GPL-2+ for tools; LGPL-2.1+ for libintl
 * googletest: BSD 3-clause
 * GCR_CMake: GPL-3
 * inih: BSD-3-clause
 * libmspack-xenia: LGPL-2.1
-* lz4: BSD 2-clause for lib/; GPLv2 for others
+* lz4: BSD 2-clause for lib/; GPL-2 for others
 * microtar: MIT
+* minilzo: GPL-2
 * minizip-ng: zlib
+* mpark-variant: BSL-1.0
 * PowerVR: MIT
-* rapidjson: MIT
 * PugiXML: MIT
+* rapidjson: MIT
 * unice68: GPL-3
 * uniwidth: LPGL-2.1+
 * zlib-ng: zlib
