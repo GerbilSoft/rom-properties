@@ -112,15 +112,8 @@ the "ROM Properties" tab to view more information about the ROM image.
 
 ### Windows
 
-Extract the ZIP archive to a directory, then run install.exe. The installer
-requires administrator access, so click "Yes" if requested. In the installer,
-click the "Install" button to register the ROM Properties Page DLL.
-
-Note that this will hard-code the location of the DLL files in the registry,
-so you may want to place the DLLs in a common location.
-
-To uninstall the plugin, run install.exe again, then click the "Uninstall"
-button.
+Run the installer. Currently, only system-wide installation is supported,
+so administrator access is required.
 
 ## Current Desktop Environment Feature Support
 
