@@ -10,6 +10,7 @@
 
 // C includes (C++ namespace)
 #include <cassert>
+#include <cstdlib>
 #include <cstring>
 
 // C++ STL classes

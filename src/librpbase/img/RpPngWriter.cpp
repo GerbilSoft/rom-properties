@@ -69,6 +69,7 @@ using namespace LibRpTexture;
 
 // C includes (C++ namespace)
 #include <csetjmp>
+#include <cstdlib>
 
 // C++ STL classes
 #include "rp-variant.hpp"
