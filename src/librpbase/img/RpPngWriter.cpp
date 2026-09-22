@@ -453,9 +453,9 @@ RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, const rp_image
 	}
 
 	// Cache the image parameters.
-	this->data = img;
 	imageTag = ImageTag::RpImage;
 	cache.setFrom(img);
+	this->data = std::move(img);
 }
 
 RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, const IconAnimDataConstPtr &iconAnimData)
@@ -531,12 +531,12 @@ RpPngWriterPrivate::RpPngWriterPrivate(const IRpFilePtr &theFile, const IconAnim
 		return;
 	}
 
-	if (imageTag == ImageTag::IconAnimData) {
-		this->data = iconAnimData;
-	} else {
-		this->data = frame0;
-	}
 	cache.setFrom(frame0);
+	if (imageTag == ImageTag::IconAnimData) {
+		this->data = std::move(iconAnimData);
+	} else {
+		this->data = std::move(frame0);
+	}
 
 	// Initialize the PNG write structs.
 	ret = init_png_write_structs();
