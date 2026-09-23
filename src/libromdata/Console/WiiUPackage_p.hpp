@@ -117,11 +117,25 @@ public:
 	LibRpBase::IDiscReaderPtr openContentFile(unsigned int idx);
 
 	/**
+	 * Create a host system filename for an Extracted packgae.
+	 * @param filename Filename within the package
+	 * @return Host system filename
+	 */
+	std::tstring host_system_filename(const char *filename) const;
+
+	/**
 	 * Open a file from the contents using the FST.
 	 * @param filename Filename
 	 * @return IRpFile, or nullptr on error.
 	 */
 	LibRpFile::IRpFilePtr open(const char *filename);
+
+	/**
+	 * Does the specified file exist in the package?
+	 * @param filename Filename
+	 * @return True if the file exists; false if not.
+	 */
+	bool file_exists(const char *filename) const;
 
 	/**
 	 * Load the icon.

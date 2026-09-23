@@ -2,6 +2,9 @@
 
 ## v3.0 (released 2026/??/??)
 
+* Bug fixes:
+  * WiiUPackage: Fix icon thumbnailing for packages extracted from a Wii U MLC.
+
 * Other changes:
   * 64-bit time_t (using the rp_time_t typedef) is now used regardless of
     whether or not the host system supports 64-bit time_t. In the case of

@@ -20,6 +20,7 @@
 // Other rom-properties libraries
 #include "librpbase/disc/PartitionFile.hpp"
 #include "librpbase/SystemRegion.hpp"
+#include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -187,50 +188,74 @@ IDiscReaderPtr WiiUPackagePrivate::openContentFile(unsigned int idx)
 }
 
 /**
+ * Create a host system filename for an Extracted packgae.
+ * @param filename Filename within the package
+ * @return Host system filename
+ */
+std::tstring WiiUPackagePrivate::host_system_filename(const char *filename) const
+{
+	tstring ts_full_filename;
+	assert(packageType == PackageType::Extracted);
+	if (packageType != PackageType::Extracted) {
+		return ts_full_filename;
+	}
+
+	// Extracted package format. Open the file directly.
+	ts_full_filename.assign(path);
+	ts_full_filename += DIR_SEP_CHR;
+
+	// Remove leading slashes, if present.
+	while (*filename == _T('/')) {
+		filename++;
+	}
+	if (*filename == '\0') {
+		// Oops, no filename...
+		ts_full_filename.clear();
+		return ts_full_filename;
+	}
+
+#ifdef _WIN32
+	const size_t old_sz = ts_full_filename.size();
+#endif /* _WIN32 */
+	ts_full_filename += U82T_c(filename);
+#ifdef _WIN32
+	// Replace all slashes with backslashes.
+	const auto start_iter = ts_full_filename.begin() + old_sz;
+	std::transform(start_iter, ts_full_filename.end(), start_iter, [](TCHAR c) noexcept -> bool {
+		return (c == '/') ? DIR_SEP_CHR : c;
+	});
+#endif /* _WIN32 */
+
+	return ts_full_filename;
+}
+
+/**
  * Open a file from the contents using the FST.
  * @param filename Filename
  * @return IRpFile, or nullptr on error.
  */
 IRpFilePtr WiiUPackagePrivate::open(const char *filename)
 {
+	IRpFilePtr fp;
 	if (!filename || filename[0] == '\0') {
-		return {};
+		return fp;
 	}
 
 	if (packageType == PackageType::Extracted) {
 		// Extracted package format. Open the file directly.
-		// TODO: Change slashes to backslashes on Windows?
-		tstring ts_full_filename(path);
-		ts_full_filename += DIR_SEP_CHR;
-
-		// Remove leading slashes, if present.
-		while (*filename == _T('/')) {
-			filename++;
-		}
-		if (*filename == '\0') {
-			// Oops, no filename...
-			return {};
+		tstring ts_full_filename = host_system_filename(filename);
+		if (ts_full_filename.empty()) {
+			return fp;
 		}
 
-#ifdef _WIN32
-		const size_t old_sz = ts_full_filename.size();
-#endif /* _WIN32 */
-		ts_full_filename += U82T_c(filename);
-#ifdef _WIN32
-		// Replace all slashes with backslashes.
-		const auto start_iter = ts_full_filename.begin() + old_sz;
-		std::transform(start_iter, ts_full_filename.end(), start_iter, [](TCHAR c) noexcept -> bool {
-			return (c == '/') ? DIR_SEP_CHR : c;
-		});
-#endif /* _WIN32 */
-
-		return std::make_shared<RpFile>(ts_full_filename.c_str(), RpFile::FM_OPEN_READ);
+		// NOTE: Assigning to `fp` for named-return-value optimization.
+		fp = std::make_shared<RpFile>(ts_full_filename.c_str(), RpFile::FM_OPEN_READ);
+		return fp;
 	}
 
 	if (!fst) {
 		// No FST.
-		// TODO: Add support for Wii NUS packages?
-		return {};
+		return fp;
 	}
 
 	// Get the FST entry.
@@ -238,18 +263,52 @@ IRpFilePtr WiiUPackagePrivate::open(const char *filename)
 	int ret = fst->find_file(filename, &dirent);
 	if (ret != 0) {
 		// File not found?
-		return {};
+		return fp;
 	}
 
 	// Make sure the required content file is open.
 	IDiscReaderPtr contentFile = openContentFile(dirent.ptnum);
 	if (!contentFile) {
 		// Unable to open this content file.
-		return {};
+		return fp;
 	}
 
 	// Create a PartitionFile.
-	return std::make_shared<PartitionFile>(contentFile, dirent.offset, dirent.size);
+	// NOTE: Assigning to `fp` for named-return-value optimization.
+	fp = std::make_shared<PartitionFile>(contentFile, dirent.offset, dirent.size);
+	return fp;
+}
+
+/**
+ * Does the specified file exist in the package?
+ * @param filename Filename
+ * @return True if the file exists; false if not.
+ */
+bool WiiUPackagePrivate::file_exists(const char *filename) const
+{
+	if (!filename || filename[0] == '\0') {
+		return false;
+	}
+
+	if (packageType == PackageType::Extracted) {
+		// Extracted package format. Open the file directly.
+		tstring ts_full_filename = host_system_filename(filename);
+		if (ts_full_filename.empty()) {
+			return false;
+		}
+
+		// Does the file exist?
+		return (FileSystem::access(ts_full_filename.c_str(), R_OK) == 0);
+	}
+
+	if (!fst) {
+		// No FST.
+		return false;
+	}
+
+	// Get the FST entry.
+	IFst::DirEnt dirent;
+	return (fst->find_file(filename, &dirent) == 0);
 }
 
 /**
@@ -676,8 +735,13 @@ uint32_t WiiUPackage::supportedImageTypes(void) const
 {
 	RP_D(const WiiUPackage);
 	uint32_t ret = 0;
+
+	// NOTE: Extracted packages might not have a TMD.
 	if (d->tmd && d->tmd->tmdFormatVersion() >= 1) {
 		// Wii U packages have an icon.
+		ret = IMGBF_INT_ICON;
+	} else if (d->file_exists("/meta/iconTex.tga")) {
+		// iconTex.tga exists.
 		ret = IMGBF_INT_ICON;
 	}
 
@@ -688,8 +752,7 @@ uint32_t WiiUPackage::supportedImageTypes(void) const
 	       IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D |
 	       IMGBF_EXT_COVER_FULL;
 #else /* !HAVE_JPEG */
-	ret |= IMGBF_INT_ICON |
-	       IMGBF_EXT_MEDIA | IMGBF_EXT_COVER_3D;
+	ret |= IMGBF_EXT_MEDIA | IMGBF_EXT_COVER_3D;
 #endif /* HAVE_JPEG */
 
 #endif /* ENABLE_XML */
