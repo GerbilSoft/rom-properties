@@ -114,16 +114,22 @@ int RP_XAttrView_Private::loadDosAttrs(void)
 int RP_XAttrView_Private::loadCompressionAlgorithm(void)
 {
 	HWND hCboZAlg = GetDlgItem(hDlgSheet, IDC_XATTRVIEW_NTFS_COMPRESSION_ALG);
-	int ret = 0;
 
+	if (!(xattrReader->validDosAttributes() & FILE_ATTRIBUTE_COMPRESSED)) {
+		// Compression is not supported.
+		ComboBox_SetCurSel(hCboZAlg, -1);
+		EnableWindow(hCboZAlg, FALSE);
+		return -ENOENT;
+	}
+
+	int ret = 0;
+	EnableWindow(hCboZAlg, TRUE);
 	if (!xattrReader->hasZAlgorithm()) {
 		// No compression algorithm...
 		// NOTE: If FILE_ATTRIBUTE_COMPRESSED is set, assume LZNT1.
 		XAttrReader::ZAlgorithm zalg = XAttrReader::ZAlgorithm::None;
 		if (xattrReader->hasDosAttributes()) {
-			if ((xattrReader->validDosAttributes() & FILE_ATTRIBUTE_COMPRESSED) &&
-			    (xattrReader->dosAttributes() & FILE_ATTRIBUTE_COMPRESSED))
-			{
+			if (xattrReader->dosAttributes() & FILE_ATTRIBUTE_COMPRESSED) {
 				// File is compressed. Assume LZNT1.
 				zalg = XAttrReader::ZAlgorithm::LZNT1;
 			}
