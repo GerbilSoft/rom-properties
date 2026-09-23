@@ -32,7 +32,9 @@ static const char CBM_C64_cart_type_strtbl[] =
 	"H.E.R.O." "\x00" "IEEE Flash! 64" "\x00" "Turtle Graphics II" "\x00"
 	"Freeze Frame MK2" "\x00" "Partner 64" "\x00" "Hyper-BASIC" "\x00"
 	"Universal Cartridge 1" "\x00" "Universal Cartridge 1.5" "\x00" "U"
-	"niversal Cartridge 2" "\x00";
+	"niversal Cartridge 2" "\x00" "BMP Data Turbo" "\x00" "Profi-DOS" "\x00"
+	"Magic Desk 16" "\x00" "Protovision \"Megabyter\"" "\x00" "Protov"
+	"ision \"TwoMegabyter\"" "\x00";
 
 static const uint16_t CBM_C64_cart_type_offtbl[] = {
 	/* CBM_C64_cart_type 0 */
@@ -50,5 +52,5 @@ static const uint16_t CBM_C64_cart_type_offtbl[] = {
 	/* CBM_C64_cart_type 64 */
 	860,872,884,896,911,920,927,936,
 	948,972,980,989,1004,1023,1040,1051,
-	1063,1085,1109,
+	1063,1085,1109,1131,1146,1156,1170,1194,
 };

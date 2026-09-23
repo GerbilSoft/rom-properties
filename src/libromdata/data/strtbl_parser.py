@@ -125,6 +125,10 @@ for c in string_table:
 		last_was_hex = True
 		f_out.write("\\x{0:0{1}x}".format(c, 2))
 		i += 4
+	elif c == 34:
+		# Double-quotes need to be backslash-escaped.
+		f_out.write("\\\"");
+		i += 2
 	else:
 		if last_was_hex:
 			f_out.write("\" \"")

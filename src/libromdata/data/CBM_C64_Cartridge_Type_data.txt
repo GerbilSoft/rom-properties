@@ -104,3 +104,8 @@
 80|Universal Cartridge 1
 81|Universal Cartridge 1.5
 82|Universal Cartridge 2
+83|BMP Data Turbo
+84|Profi-DOS
+85|Magic Desk 16
+86|Protovision "Megabyter"
+87|Protovision "TwoMegabyter"
