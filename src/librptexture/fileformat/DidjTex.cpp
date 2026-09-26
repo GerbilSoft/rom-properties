@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "config.librptexture.h"
 #include "DidjTex.hpp"
 #include "FileFormat_p.hpp"
 
@@ -40,10 +41,10 @@ using std::unique_ptr;
 
 namespace LibRpTexture {
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 // DelayLoad test implementation.
 DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
-#endif /* _MSC_VER */
+#endif /* _MSC_VER && ZLIB_IS_DLL */
 
 class DidjTexPrivate final : public FileFormatPrivate
 {
