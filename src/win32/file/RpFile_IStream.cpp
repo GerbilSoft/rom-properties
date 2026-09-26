@@ -13,7 +13,7 @@
 #include "librpbyteswap/byteswap_rp.h"
 #include "librptext/wchar.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::unique_ptr;
 

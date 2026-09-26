@@ -127,12 +127,12 @@ ENDIF()
 
 # MSVC: C++ conformance settings
 INCLUDE(CheckCXXCompilerFlag)
-SET(CXX_CONFORMANCE_FLAGS "/Zc:__cplusplus" "/Zc:checkGwOdr" "/Zc:rvalueCast" "/Zc:templateScope" "/Zc:ternary")
+SET(CXX_CONFORMANCE_FLAGS "/Zc:__cplusplus" "/Zc:rvalueCast" "/Zc:ternary")
 IF(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	# clang-cl enables certain conformance options by default,
 	# and these cause warnings to be printed if specified.
 	# Only enable these for original MSVC.
-	SET(CXX_CONFORMANCE_FLAGS ${CXX_CONFORMANCE_FLAGS} "/Zc:externC" "/Zc:noexceptTypes" "/Zc:throwingNew")
+	SET(CXX_CONFORMANCE_FLAGS ${CXX_CONFORMANCE_FLAGS} "/Zc:externC" "/Zc:noexceptTypes" "/Zc:throwingNew" "/Zc:checkGwOdr" "/Zc:templateScope")
 ENDIF(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 FOREACH(FLAG_TEST ${CXX_CONFORMANCE_FLAGS})
 	# CMake doesn't like certain characters in variable names.

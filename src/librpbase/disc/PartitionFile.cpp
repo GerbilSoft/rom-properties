@@ -8,7 +8,8 @@
 
 #include "PartitionFile.hpp"
 
-// C++ STL classes.
+// C++ STL classes
+#include <string>
 using std::string;
 
 namespace LibRpBase {

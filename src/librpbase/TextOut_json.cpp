@@ -51,7 +51,10 @@ public:
 private:
 	typedef Document::AllocatorType Allocator;
 
-	static Value lcToValue(uint32_t lc, Allocator &allocator)
+	// FIXME: With ClangCL on MSVC 2026, returning a Value fails:
+	// error : calling a private constructor of class 'rapidjson::GenericValue<rapidjson::UTF8<>>'
+	// extlib\rapidjson\include\rapidjson/document.h(578,5): note: declared private here
+	static void lcToValue(Value &s_lc_name, uint32_t lc, Allocator &allocator)
 	{
 		char s_lc[8];
 		int s_lc_pos = 0;
@@ -63,19 +66,23 @@ private:
 		}
 		s_lc[s_lc_pos] = '\0';
 
-		Value s_lc_name;
 		s_lc_name.SetString(s_lc, s_lc_pos, allocator);
-		return s_lc_name;
 	}
 
-	static Value listDataToValue(const RomFields::Field &romField,
+	// FIXME: With ClangCL on MSVC 2026, returning a Value fails:
+	// error : calling a private constructor of class 'rapidjson::GenericValue<rapidjson::UTF8<>>'
+	// extlib\rapidjson\include\rapidjson/document.h(578,5): note: declared private here
+	static void listDataToValue(Value &data_array, const RomFields::Field &romField,
 		const RomFields::ListData_t *list_data, Allocator &allocator)
 	{
-		Value data_array(kArrayType);	// data
+		// FIXME: This breaks linking libromdata:
+		// lld-link : error : undefined symbol: private: __cdecl rapidjson::GenericValue<struct rapidjson::UTF8<char>, class rapidjson::MemoryPoolAllocator<class rapidjson::CrtAllocator>>::GenericValue<struct rapidjson::UTF8<char>, class rapidjson::MemoryPoolAllocator<class rapidjson::CrtAllocator>>(class rapidjson::GenericValue<struct rapidjson::UTF8<char>, class rapidjson::MemoryPoolAllocator<class rapidjson::CrtAllocator>> const &)
+		//data_array = Value(kArrayType);
+
 		assert(list_data != nullptr);
 		if (!list_data) {
 			// No data...
-			return data_array;
+			return;
 		}
 
 		const bool has_checkboxes = !!(romField.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
@@ -108,8 +115,6 @@ private:
 
 			data_array.PushBack(row_array, allocator);
 		}
-
-		return data_array;
 	}
 
 public:
@@ -208,7 +213,8 @@ public:
 
 					if (!(romField.flags & RomFields::RFT_LISTDATA_MULTI)) {
 						// Single-language ListData.
-						Value data_array = listDataToValue(romField,
+						Value data_array(kArrayType);
+						listDataToValue(data_array, romField,
 							romField.data.list_data.data.single, allocator);
 						if (!data_array.Empty()) {
 							field_obj.AddMember(StringRef("data"), data_array, allocator);
@@ -232,9 +238,11 @@ public:
 						for (auto mapIter = list_data->cbegin(); mapIter != list_data_cend; ++mapIter) {
 							// Key: Language code
 							// Value: Vector of string data
-							Value s_lc_name = lcToValue(mapIter->first, allocator);
+							Value s_lc_name(kStringType);
+							lcToValue(s_lc_name, mapIter->first, allocator);
 
-							Value lc_array = listDataToValue(romField,
+							Value lc_array(kArrayType);
+							listDataToValue(lc_array, romField,
 								&mapIter->second, allocator);
 							if (!lc_array.Empty()) {
 								data_obj.AddMember(s_lc_name, lc_array, allocator);
@@ -333,7 +341,8 @@ public:
 					const auto *const pStr_multi = romField.data.str_multi;
 					const auto pStr_multi_cend = pStr_multi->cend();
 					for (auto iter = pStr_multi->cbegin(); iter != pStr_multi_cend; ++iter) {
-						Value s_lc_name = lcToValue(iter->first, allocator);
+						Value s_lc_name(kStringType);
+						lcToValue(s_lc_name, iter->first, allocator);
 						data_obj.AddMember(s_lc_name, StringRef(iter->second), allocator);
 					}
 

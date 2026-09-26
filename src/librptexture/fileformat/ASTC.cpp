@@ -21,6 +21,7 @@ using LibRpBase::RomFields;
 #include "decoder/ImageDecoder_ASTC.hpp"
 
 // C++ STL classes
+#include <string>
 using std::array;
 using std::string;
 

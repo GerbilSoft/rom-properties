@@ -43,7 +43,13 @@ using std::tstring;
 // MSVC: Exception handling for /DELAYLOAD.
 #  include "libwin32common/DelayLoadHelper.h"
 // DelayLoad test implementation.
+// NOTE: ClangCL with MSVC 2026 uses a path that doesn't define libintl_textdomain.
+#  ifdef __clang__
+DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
+#    define DelayLoad_test_libintl_textdomain DelayLoad_test_textdomain
+#  else /* !__clang__ */
 DELAYLOAD_TEST_FUNCTION_IMPL1(libintl_textdomain, nullptr);
+#  endif /* __clang__ */
 #endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
 
 // Property sheet tabs
