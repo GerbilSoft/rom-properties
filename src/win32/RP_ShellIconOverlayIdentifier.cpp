@@ -102,7 +102,7 @@ void RP_ShellIconOverlayIdentifier_Private::initUacShieldIconVars(void)
 /** IUnknown **/
 // Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
-IFACEMETHODIMP RP_ShellIconOverlayIdentifier::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
+IFACEMETHODIMP RP_ShellIconOverlayIdentifier::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) noexcept
 {
 #ifdef _MSC_VER
 #  pragma warning(push)
@@ -121,7 +121,7 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::QueryInterface(_In_ REFIID riid, _
 /** IShellIconOverlayIdentifier **/
 // Reference: https://docs.microsoft.com/en-us/windows/desktop/shell/how-to-implement-icon-overlay-handlers
 
-IFACEMETHODIMP RP_ShellIconOverlayIdentifier::IsMemberOf(_In_ PCWSTR pwszPath, DWORD dwAttrib)
+IFACEMETHODIMP RP_ShellIconOverlayIdentifier::IsMemberOf(_In_ PCWSTR pwszPath, DWORD dwAttrib) noexcept
 {
 	if (!pwszPath) {
 		return E_POINTER;
@@ -158,7 +158,7 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::IsMemberOf(_In_ PCWSTR pwszPath, D
 	return (romData->hasDangerousPermissions()) ? S_OK : S_FALSE;
 }
 
-IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetOverlayInfo(_Out_writes_(cchMax) PWSTR pwszIconFile, int cchMax, _Out_ int *pIndex, _Out_ DWORD *pdwFlags)
+IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetOverlayInfo(_Out_writes_(cchMax) PWSTR pwszIconFile, int cchMax, _Out_ int *pIndex, _Out_ DWORD *pdwFlags) noexcept
 {
 	if (!pwszIconFile || !pIndex || !pdwFlags) {
 		return E_POINTER;
@@ -190,7 +190,7 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetOverlayInfo(_Out_writes_(cchMax
 	return hr;
 }
 
-IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetPriority(_Out_ int *pPriority)
+IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetPriority(_Out_ int *pPriority) noexcept
 {
 	if (!pPriority) {
 		return E_POINTER;

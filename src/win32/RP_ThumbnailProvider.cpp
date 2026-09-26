@@ -45,7 +45,7 @@ RP_ThumbnailProvider::~RP_ThumbnailProvider()
 /** IUnknown **/
 // Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
-IFACEMETHODIMP RP_ThumbnailProvider::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
+IFACEMETHODIMP RP_ThumbnailProvider::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) noexcept
 {
 #ifdef _MSC_VER
 #  pragma warning(push)
@@ -65,7 +65,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::QueryInterface(_In_ REFIID riid, _Outptr_ L
 /** IInitializeWithStream **/
 // Reference: https://docs.microsoft.com/en-us/windows/win32/api/propsys/nf-propsys-iinitializewithstream-initialize [Initialize()]
 
-IFACEMETHODIMP RP_ThumbnailProvider::Initialize(_In_ IStream *pstream, DWORD grfMode)
+IFACEMETHODIMP RP_ThumbnailProvider::Initialize(_In_ IStream *pstream, DWORD grfMode) noexcept
 {
 	// Ignoring grfMode for now. (always read-only)
 	RP_UNUSED(grfMode);
@@ -93,7 +93,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::Initialize(_In_ IStream *pstream, DWORD grf
 /** IThumbnailProvider **/
 // Reference: https://docs.microsoft.com/en-us/windows/win32/api/thumbcache/nf-thumbcache-ithumbnailprovider-getthumbnail [GetThumbnail()]
 
-IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, _Outptr_ HBITMAP *phbmp, _Out_ WTS_ALPHATYPE *pdwAlpha)
+IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, _Outptr_ HBITMAP *phbmp, _Out_ WTS_ALPHATYPE *pdwAlpha) noexcept
 {
 	// Verify parameters:
 	// - A stream must have been set by calling IInitializeWithStream::Initialize().

@@ -50,13 +50,13 @@ public:
 
 public:
 	// IUnknown
-	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
+	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) noexcept final;
 
 	// IInitializeWithStream
-	IFACEMETHODIMP Initialize(_In_ IStream *pstream, DWORD grfMode) final;
+	IFACEMETHODIMP Initialize(_In_ IStream *pstream, DWORD grfMode) noexcept final;
 
 	// IThumbnailProvider
-	IFACEMETHODIMP GetThumbnail(UINT cx, _Outptr_ HBITMAP *phbmp, _Out_ WTS_ALPHATYPE *pdwAlpha) final;
+	IFACEMETHODIMP GetThumbnail(UINT cx, _Outptr_ HBITMAP *phbmp, _Out_ WTS_ALPHATYPE *pdwAlpha) noexcept final;
 };
 
 #ifdef __CRT_UUID_DECL

@@ -18,7 +18,7 @@ template<class comObj>
 class RP_MultiCreator
 {
 protected:
-	comObj *CreateObject()
+	comObj *CreateObject() noexcept
 	{
 		return new comObj;
 	}
@@ -38,7 +38,7 @@ public:
 public:
 	/** IUnknown **/
 
-	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObject) final
+	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObject) noexcept final
 	{
 		if (!ppvObject) {
 			return E_POINTER;
@@ -61,7 +61,7 @@ public:
 
 	/** IClassFactory **/
 
-	IFACEMETHODIMP CreateInstance(_In_ LPUNKNOWN pUnkOuter, _In_ REFIID riid, _Outptr_ LPVOID *ppvObject) final
+	IFACEMETHODIMP CreateInstance(_In_ LPUNKNOWN pUnkOuter, _In_ REFIID riid, _Outptr_ LPVOID *ppvObject) noexcept final
 	{
 		// Always set out parameter to NULL, validating it first.
 		if (!ppvObject)
@@ -86,7 +86,7 @@ public:
 		return hr;
 	}
 
-	IFACEMETHODIMP LockServer(_In_ BOOL fLock) final
+	IFACEMETHODIMP LockServer(_In_ BOOL fLock) noexcept final
 	{
 		// FIXME: Should the last parameter be TRUE?
 		return CoLockObjectExternal(this, fLock, TRUE);

@@ -44,32 +44,32 @@ public:
 
 public:
 	// IUnknown
-	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
+	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) noexcept final;
 
 	// IPersist (IPersistFile base class)
-	IFACEMETHODIMP GetClassID(_Out_ CLSID *pClassID) final;
+	IFACEMETHODIMP GetClassID(_Out_ CLSID *pClassID) noexcept final;
 	// IPersistFile
 	IFACEMETHODIMP IsDirty(void) final;
-	IFACEMETHODIMP Load(_In_ LPCOLESTR pszFileName, DWORD dwMode) final;
-	IFACEMETHODIMP Save(_In_ LPCOLESTR pszFileName, BOOL fRemember) final;
-	IFACEMETHODIMP SaveCompleted(_In_ LPCOLESTR pszFileName) final;
-	IFACEMETHODIMP GetCurFile(_In_ LPOLESTR *ppszFileName) final;
+	IFACEMETHODIMP Load(_In_ LPCOLESTR pszFileName, DWORD dwMode) noexcept final;
+	IFACEMETHODIMP Save(_In_ LPCOLESTR pszFileName, BOOL fRemember) noexcept final;
+	IFACEMETHODIMP SaveCompleted(_In_ LPCOLESTR pszFileName) noexcept final;
+	IFACEMETHODIMP GetCurFile(_In_ LPOLESTR *ppszFileName) noexcept final;
 
 	// IExtractIconW
 	IFACEMETHODIMP GetIconLocation(UINT uFlags,
 		_Out_writes_(cchMax) LPWSTR pszIconFile, UINT cchMax,
-		_Out_ int *piIndex, _Out_ UINT *pwFlags) final;
+		_Out_ int *piIndex, _Out_ UINT *pwFlags) noexcept final;
 	IFACEMETHODIMP Extract(_In_ LPCWSTR pszFile, UINT nIconIndex,
 		_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall,
-		UINT nIconSize) final;
+		UINT nIconSize) noexcept final;
 
 	// IExtractIconA
 	IFACEMETHODIMP GetIconLocation(UINT uFlags,
 		_Out_writes_(cchMax) LPSTR pszIconFile, UINT cchMax,
-		_Out_ int *piIndex, _Out_ UINT *pwFlags) final;
+		_Out_ int *piIndex, _Out_ UINT *pwFlags) noexcept final;
 	IFACEMETHODIMP Extract(_In_ LPCSTR pszFile, UINT nIconIndex,
 		_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall,
-		UINT nIconSize) final;
+		UINT nIconSize) noexcept final;
 };
 
 #ifdef __CRT_UUID_DECL

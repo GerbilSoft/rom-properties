@@ -24,7 +24,7 @@ namespace LibRpFile {
 /** IUnknown **/
 // Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
-IFACEMETHODIMP IStreamWrapper::QueryInterface(REFIID riid, LPVOID *ppvObj)
+IFACEMETHODIMP IStreamWrapper::QueryInterface(REFIID riid, LPVOID *ppvObj) noexcept
 {
 #ifdef _MSC_VER
 #  pragma warning(push)
@@ -43,7 +43,7 @@ IFACEMETHODIMP IStreamWrapper::QueryInterface(REFIID riid, LPVOID *ppvObj)
 /** ISequentialStream **/
 // Reference: https://docs.microsoft.com/en-us/windows/win32/api/objidl/nn-objidl-isequentialstream
 
-IFACEMETHODIMP IStreamWrapper::Read(void *pv, ULONG cb, ULONG *pcbRead)
+IFACEMETHODIMP IStreamWrapper::Read(void *pv, ULONG cb, ULONG *pcbRead) noexcept
 {
 	if (!m_file) {
 		return E_HANDLE;
@@ -58,7 +58,7 @@ IFACEMETHODIMP IStreamWrapper::Read(void *pv, ULONG cb, ULONG *pcbRead)
 	return (size == static_cast<size_t>(cb) ? S_OK : S_FALSE);
 }
 
-IFACEMETHODIMP IStreamWrapper::Write(const void *pv, ULONG cb, ULONG *pcbWritten)
+IFACEMETHODIMP IStreamWrapper::Write(const void *pv, ULONG cb, ULONG *pcbWritten) noexcept
 {
 	if (!m_file) {
 		return E_HANDLE;
@@ -76,7 +76,7 @@ IFACEMETHODIMP IStreamWrapper::Write(const void *pv, ULONG cb, ULONG *pcbWritten
 /** IStream **/
 // Reference: https://docs.microsoft.com/en-us/windows/win32/api/objidl/nn-objidl-istream
 
-IFACEMETHODIMP IStreamWrapper::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition)
+IFACEMETHODIMP IStreamWrapper::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition) noexcept
 {
 	if (!m_file) {
 		return E_HANDLE;
@@ -96,7 +96,7 @@ IFACEMETHODIMP IStreamWrapper::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULAR
 	return S_OK;
 }
 
-IFACEMETHODIMP IStreamWrapper::SetSize(ULARGE_INTEGER libNewSize)
+IFACEMETHODIMP IStreamWrapper::SetSize(ULARGE_INTEGER libNewSize) noexcept
 {
 	if (!m_file) {
 		return E_HANDLE;
@@ -139,7 +139,7 @@ IFACEMETHODIMP IStreamWrapper::SetSize(ULARGE_INTEGER libNewSize)
  * @param pcbWritten	[out,opt] Number of bytes written to the destination.
  */
 IFACEMETHODIMP IStreamWrapper::CopyTo(IStream *pstm, ULARGE_INTEGER cb,
-		ULARGE_INTEGER *pcbRead, ULARGE_INTEGER *pcbWritten)
+		ULARGE_INTEGER *pcbRead, ULARGE_INTEGER *pcbWritten) noexcept
 {
 	// FIXME: Totally untested.
 
@@ -197,27 +197,19 @@ IFACEMETHODIMP IStreamWrapper::CopyTo(IStream *pstm, ULARGE_INTEGER cb,
 	return hr;
 }
 
-IFACEMETHODIMP IStreamWrapper::Commit(DWORD grfCommitFlags)
+IFACEMETHODIMP IStreamWrapper::Commit(DWORD grfCommitFlags) noexcept
 {
 	// NOTE: Returning S_OK, even though we're not doing anything here.
 	RP_UNUSED(grfCommitFlags);
 	return S_OK;
 }
 
-IFACEMETHODIMP IStreamWrapper::Revert(void)
+IFACEMETHODIMP IStreamWrapper::Revert(void) noexcept
 {
 	return E_NOTIMPL;
 }
 
-IFACEMETHODIMP IStreamWrapper::LockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType)
-{
-	RP_UNUSED(libOffset);
-	RP_UNUSED(cb);
-	RP_UNUSED(dwLockType);
-	return E_NOTIMPL;
-}
-
-IFACEMETHODIMP IStreamWrapper::UnlockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType)
+IFACEMETHODIMP IStreamWrapper::LockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) noexcept
 {
 	RP_UNUSED(libOffset);
 	RP_UNUSED(cb);
@@ -225,7 +217,15 @@ IFACEMETHODIMP IStreamWrapper::UnlockRegion(ULARGE_INTEGER libOffset, ULARGE_INT
 	return E_NOTIMPL;
 }
 
-IFACEMETHODIMP IStreamWrapper::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
+IFACEMETHODIMP IStreamWrapper::UnlockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) noexcept
+{
+	RP_UNUSED(libOffset);
+	RP_UNUSED(cb);
+	RP_UNUSED(dwLockType);
+	return E_NOTIMPL;
+}
+
+IFACEMETHODIMP IStreamWrapper::Stat(STATSTG *pstatstg, DWORD grfStatFlag) noexcept
 {
 	// TODO: Initialize STATSTG on file open?
 	if (!m_file) {
@@ -303,7 +303,7 @@ IFACEMETHODIMP IStreamWrapper::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
 	return S_OK;
 }
 
-IFACEMETHODIMP IStreamWrapper::Clone(IStream **ppstm)
+IFACEMETHODIMP IStreamWrapper::Clone(IStream **ppstm) noexcept
 {
 	if (!ppstm)
 		return STG_E_INVALIDPOINTER;

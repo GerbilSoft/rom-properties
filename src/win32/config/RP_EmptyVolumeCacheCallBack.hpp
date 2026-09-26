@@ -34,12 +34,12 @@ public:
 
 public:
 	// IUnknown
-	IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
+	IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) noexcept final;
 
 public:
 	// IEmptyVolumeCacheCallBack
-	IFACEMETHODIMP ScanProgress(DWORDLONG dwlSpaceUsed, DWORD dwFlags, LPCWSTR pcwszStatus) final;
-	IFACEMETHODIMP PurgeProgress(DWORDLONG dwlSpaceFreed, DWORDLONG dwlSpaceToFree, DWORD dwFlags, LPCWSTR pcwszStatus) final;
+	IFACEMETHODIMP ScanProgress(DWORDLONG dwlSpaceUsed, DWORD dwFlags, LPCWSTR pcwszStatus) noexcept final;
+	IFACEMETHODIMP PurgeProgress(DWORDLONG dwlSpaceFreed, DWORDLONG dwlSpaceToFree, DWORD dwFlags, LPCWSTR pcwszStatus) noexcept final;
 
 private:
 	HWND m_hProgressBar;		// Progress bar to update.

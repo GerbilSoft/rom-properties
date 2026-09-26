@@ -44,15 +44,15 @@ public:
 
 public:
 	// IUnknown
-	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
+	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) noexcept final;
 
 	// IShellExtInit
-	IFACEMETHODIMP Initialize(_In_ LPCITEMIDLIST pidlFolder, _In_ LPDATAOBJECT pDataObj, _In_ HKEY hKeyProgID) final;
+	IFACEMETHODIMP Initialize(_In_ LPCITEMIDLIST pidlFolder, _In_ LPDATAOBJECT pDataObj, _In_ HKEY hKeyProgID) noexcept final;
 
 	// IContextMenu
-	IFACEMETHODIMP QueryContextMenu(_In_ HMENU hMenu, _In_ UINT indexMenu, _In_ UINT idCmdFirst, _In_ UINT idCmdLast, _In_ UINT uFlags) final;
-	IFACEMETHODIMP InvokeCommand(_In_ CMINVOKECOMMANDINFO *pici) final;
-	IFACEMETHODIMP GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT uType, _Reserved_ UINT *pReserved, _Out_ CHAR *pszName, _In_  UINT cchMax) final;
+	IFACEMETHODIMP QueryContextMenu(_In_ HMENU hMenu, _In_ UINT indexMenu, _In_ UINT idCmdFirst, _In_ UINT idCmdLast, _In_ UINT uFlags) noexcept final;
+	IFACEMETHODIMP InvokeCommand(_In_ CMINVOKECOMMANDINFO *pici) noexcept final;
+	IFACEMETHODIMP GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT uType, _Reserved_ UINT *pReserved, _Out_ CHAR *pszName, _In_  UINT cchMax) noexcept final;
 };
 
 #ifdef __CRT_UUID_DECL

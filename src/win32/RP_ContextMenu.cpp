@@ -326,7 +326,7 @@ RP_ContextMenu::~RP_ContextMenu()
 /** IUnknown **/
 // Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
-IFACEMETHODIMP RP_ContextMenu::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
+IFACEMETHODIMP RP_ContextMenu::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) noexcept
 {
 #ifdef _MSC_VER
 #  pragma warning(push)
@@ -347,7 +347,7 @@ IFACEMETHODIMP RP_ContextMenu::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID 
 // Reference: https://docs.microsoft.com/en-us/windows/win32/api/shobjidl_core/nf-shobjidl_core-ishellextinit-initialize [Initialize()]
 
 IFACEMETHODIMP RP_ContextMenu::Initialize(
-	_In_ LPCITEMIDLIST pidlFolder, _In_ LPDATAOBJECT pDataObj, _In_ HKEY hKeyProgID)
+	_In_ LPCITEMIDLIST pidlFolder, _In_ LPDATAOBJECT pDataObj, _In_ HKEY hKeyProgID) noexcept
 {
 	((void)pidlFolder);
 	((void)hKeyProgID);
@@ -442,7 +442,7 @@ IFACEMETHODIMP RP_ContextMenu::Initialize(
 // - https://learn.microsoft.com/en-us/windows/win32/shell/how-to-implement-the-icontextmenu-interface
 // - https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nn-shobjidl_core-icontextmenu
 
-IFACEMETHODIMP RP_ContextMenu::QueryContextMenu(_In_ HMENU hMenu, _In_ UINT indexMenu, _In_ UINT idCmdFirst, _In_ UINT idCmdLast, _In_ UINT uFlags)
+IFACEMETHODIMP RP_ContextMenu::QueryContextMenu(_In_ HMENU hMenu, _In_ UINT indexMenu, _In_ UINT idCmdFirst, _In_ UINT idCmdLast, _In_ UINT uFlags) noexcept
 {
 	RP_UNUSED(idCmdLast);
 
@@ -483,7 +483,7 @@ IFACEMETHODIMP RP_ContextMenu::QueryContextMenu(_In_ HMENU hMenu, _In_ UINT inde
 	return MAKE_HRESULT(SEVERITY_SUCCESS, 0, USHORT(IDM_RP_CONVERT_TO_PNG + 1));
 }
 
-IFACEMETHODIMP RP_ContextMenu::InvokeCommand(_In_ CMINVOKECOMMANDINFO *pici)
+IFACEMETHODIMP RP_ContextMenu::InvokeCommand(_In_ CMINVOKECOMMANDINFO *pici) noexcept
 {
 	// Check for a matching "Convert to PNG" verb.
 	// Reference: https://devblogs.microsoft.com/oldnewthing/20041006-00/?p=37643
@@ -535,7 +535,7 @@ IFACEMETHODIMP RP_ContextMenu::InvokeCommand(_In_ CMINVOKECOMMANDINFO *pici)
 	return S_OK;
 }
 
-IFACEMETHODIMP RP_ContextMenu::GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT uType, _Reserved_ UINT *pReserved, _Out_ CHAR *pszName, _In_  UINT cchMax)
+IFACEMETHODIMP RP_ContextMenu::GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT uType, _Reserved_ UINT *pReserved, _Out_ CHAR *pszName, _In_  UINT cchMax) noexcept
 {
 	// NOTE: Using snprintf()/swprintf() because strncpy()
 	// clears the buffer, which can be slow.

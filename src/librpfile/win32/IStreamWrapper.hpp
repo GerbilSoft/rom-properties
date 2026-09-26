@@ -65,22 +65,22 @@ public:
 
 public:
 	// IUnknown
-	IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
+	IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) noexcept final;
 
 	// ISequentialStream
-	IFACEMETHODIMP Read(void *pv, ULONG cb, ULONG *pcbRead) final;
-	IFACEMETHODIMP Write(const void *pv, ULONG cb, ULONG *pcbWritten) final;
+	IFACEMETHODIMP Read(void *pv, ULONG cb, ULONG *pcbRead) noexcept final;
+	IFACEMETHODIMP Write(const void *pv, ULONG cb, ULONG *pcbWritten) noexcept final;
 
 	// IStream
-	IFACEMETHODIMP Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition) final;
-	IFACEMETHODIMP SetSize(ULARGE_INTEGER libNewSize) final;
-	IFACEMETHODIMP CopyTo(IStream *pstm, ULARGE_INTEGER cb, ULARGE_INTEGER *pcbRead, ULARGE_INTEGER *pcbWritten) final;
-	IFACEMETHODIMP Commit(DWORD grfCommitFlags) final;
-	IFACEMETHODIMP Revert(void) final;
-	IFACEMETHODIMP LockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) final;
-	IFACEMETHODIMP UnlockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) final;
-	IFACEMETHODIMP Stat(STATSTG *pstatstg, DWORD grfStatFlag) final;
-	IFACEMETHODIMP Clone(IStream **ppstm) final;
+	IFACEMETHODIMP Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition) noexcept final;
+	IFACEMETHODIMP SetSize(ULARGE_INTEGER libNewSize) noexcept final;
+	IFACEMETHODIMP CopyTo(IStream *pstm, ULARGE_INTEGER cb, ULARGE_INTEGER *pcbRead, ULARGE_INTEGER *pcbWritten) noexcept final;
+	IFACEMETHODIMP Commit(DWORD grfCommitFlags) noexcept final;
+	IFACEMETHODIMP Revert(void) noexcept final;
+	IFACEMETHODIMP LockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) noexcept final;
+	IFACEMETHODIMP UnlockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) noexcept final;
+	IFACEMETHODIMP Stat(STATSTG *pstatstg, DWORD grfStatFlag) noexcept final;
+	IFACEMETHODIMP Clone(IStream **ppstm) noexcept final;
 
 protected:
 	IRpFilePtr m_file;

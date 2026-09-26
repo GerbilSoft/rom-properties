@@ -53,20 +53,20 @@ public:
 
 public:
 	// IUnknown
-	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
+	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) noexcept final;
 
 	// IDataObject
-	IFACEMETHODIMP GetData(_In_ FORMATETC *pformatetcIn, _Out_ STGMEDIUM *pmedium) final;
-	IFACEMETHODIMP GetDataHere(_In_ FORMATETC *pformatetc, _Inout_ STGMEDIUM *pmedium) final;
-	IFACEMETHODIMP QueryGetData(__RPC__in_opt FORMATETC *pformatetc) final;
-	IFACEMETHODIMP GetCanonicalFormatEtc(__RPC__in_opt FORMATETC *pformatetcIn, __RPC__out FORMATETC *pformatetcOut) final;
-	IFACEMETHODIMP SetData(_In_ FORMATETC *pformatetc, _In_ STGMEDIUM *pmedium, BOOL fRelease) final;
-	IFACEMETHODIMP EnumFormatEtc(DWORD dwDirection, __RPC__deref_out_opt IEnumFORMATETC **ppenumFormatEtc) final;
-	IFACEMETHODIMP DAdvise(__RPC__in FORMATETC *pformatetc, DWORD advf, __RPC__in_opt IAdviseSink *pAdvSink, __RPC__out DWORD *pdwConnection) final;
-	IFACEMETHODIMP DUnadvise(DWORD dwConnection) final;
-	IFACEMETHODIMP EnumDAdvise(__RPC__deref_out_opt IEnumSTATDATA **ppenumAdvise) final;
+	IFACEMETHODIMP GetData(_In_ FORMATETC *pformatetcIn, _Out_ STGMEDIUM *pmedium) noexcept final;
+	IFACEMETHODIMP GetDataHere(_In_ FORMATETC *pformatetc, _Inout_ STGMEDIUM *pmedium) noexcept final;
+	IFACEMETHODIMP QueryGetData(__RPC__in_opt FORMATETC *pformatetc) noexcept final;
+	IFACEMETHODIMP GetCanonicalFormatEtc(__RPC__in_opt FORMATETC *pformatetcIn, __RPC__out FORMATETC *pformatetcOut) noexcept final;
+	IFACEMETHODIMP SetData(_In_ FORMATETC *pformatetc, _In_ STGMEDIUM *pmedium, BOOL fRelease) noexcept final;
+	IFACEMETHODIMP EnumFormatEtc(DWORD dwDirection, __RPC__deref_out_opt IEnumFORMATETC **ppenumFormatEtc) noexcept final;
+	IFACEMETHODIMP DAdvise(__RPC__in FORMATETC *pformatetc, DWORD advf, __RPC__in_opt IAdviseSink *pAdvSink, __RPC__out DWORD *pdwConnection) noexcept final;
+	IFACEMETHODIMP DUnadvise(DWORD dwConnection) noexcept final;
+	IFACEMETHODIMP EnumDAdvise(__RPC__deref_out_opt IEnumSTATDATA **ppenumAdvise) noexcept final;
 
 	// IDropSource
-	IFACEMETHODIMP QueryContinueDrag(_In_ BOOL fEscapePressed, _In_ DWORD grfKeyState) final;
-	IFACEMETHODIMP GiveFeedback(_In_ DWORD dwEffect) final;
+	IFACEMETHODIMP QueryContinueDrag(_In_ BOOL fEscapePressed, _In_ DWORD grfKeyState) noexcept final;
+	IFACEMETHODIMP GiveFeedback(_In_ DWORD dwEffect) noexcept final;
 };

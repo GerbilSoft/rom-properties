@@ -56,7 +56,7 @@ RP_ExtractIcon::~RP_ExtractIcon()
 /** IUnknown **/
 // Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
-IFACEMETHODIMP RP_ExtractIcon::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
+IFACEMETHODIMP RP_ExtractIcon::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) noexcept
 {
 #ifdef _MSC_VER
 #  pragma warning(push)
@@ -78,7 +78,7 @@ IFACEMETHODIMP RP_ExtractIcon::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID 
 /** IPersistFile **/
 // Reference: https://docs.microsoft.com/en-us/windows/win32/shell/handlers
 
-IFACEMETHODIMP RP_ExtractIcon::GetClassID(_Out_ CLSID *pClassID)
+IFACEMETHODIMP RP_ExtractIcon::GetClassID(_Out_ CLSID *pClassID) noexcept
 {
 	if (!pClassID) {
 		return E_POINTER;
@@ -92,7 +92,7 @@ IFACEMETHODIMP RP_ExtractIcon::IsDirty(void)
 	return E_NOTIMPL;
 }
 
-IFACEMETHODIMP RP_ExtractIcon::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
+IFACEMETHODIMP RP_ExtractIcon::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode) noexcept
 {
 	// NOTE: Since this is the registered icon handler
 	// for the file type, we have to implement our own
@@ -146,20 +146,20 @@ IFACEMETHODIMP RP_ExtractIcon::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 	return S_OK;
 }
 
-IFACEMETHODIMP RP_ExtractIcon::Save(_In_ LPCOLESTR pszFileName, BOOL fRemember)
+IFACEMETHODIMP RP_ExtractIcon::Save(_In_ LPCOLESTR pszFileName, BOOL fRemember) noexcept
 {
 	RP_UNUSED(pszFileName);
 	RP_UNUSED(fRemember);
 	return E_NOTIMPL;
 }
 
-IFACEMETHODIMP RP_ExtractIcon::SaveCompleted(_In_ LPCOLESTR pszFileName)
+IFACEMETHODIMP RP_ExtractIcon::SaveCompleted(_In_ LPCOLESTR pszFileName) noexcept
 {
 	RP_UNUSED(pszFileName);
 	return E_NOTIMPL;
 }
 
-IFACEMETHODIMP RP_ExtractIcon::GetCurFile(_In_ LPOLESTR *ppszFileName)
+IFACEMETHODIMP RP_ExtractIcon::GetCurFile(_In_ LPOLESTR *ppszFileName) noexcept
 {
 	if (!ppszFileName)
 		return E_POINTER;
@@ -195,7 +195,7 @@ IFACEMETHODIMP RP_ExtractIcon::GetCurFile(_In_ LPOLESTR *ppszFileName)
 
 IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 	_Out_writes_(cchMax) LPWSTR pszIconFile, UINT cchMax,
-	_Out_ int *piIndex, _Out_ UINT *pwFlags)
+	_Out_ int *piIndex, _Out_ UINT *pwFlags) noexcept
 {
 	// TODO: If the icon is cached on disk, return a filename.
 	// TODO: Enable ASYNC?
@@ -229,7 +229,7 @@ IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 }
 
 IFACEMETHODIMP RP_ExtractIcon::Extract(_In_ LPCWSTR pszFile, UINT nIconIndex,
-	_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall, UINT nIconSize)
+	_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall, UINT nIconSize) noexcept
 {
 	// NOTE: pszFile and nIconIndex were set in GetIconLocation().
 	// TODO: Validate them to make sure they're the same values
@@ -310,7 +310,7 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(_In_ LPCWSTR pszFile, UINT nIconIndex,
 
 IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 	_Out_writes_(cchMax) LPSTR pszIconFile, UINT cchMax,
-	_Out_ int *piIndex, _Out_ UINT *pwFlags)
+	_Out_ int *piIndex, _Out_ UINT *pwFlags) noexcept
 {
 	// NOTE: pszIconFile is always blanked out in the IExtractIconW
 	// interface, so no conversion is necessary. We still need a
@@ -326,7 +326,7 @@ IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 }
 
 IFACEMETHODIMP RP_ExtractIcon::Extract(_In_ LPCSTR pszFile, UINT nIconIndex,
-	_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall, UINT nIconSize)
+	_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall, UINT nIconSize) noexcept
 {
 	// NOTE: The IExtractIconW interface doesn't use pszFile,
 	// so no conversion is necessary.

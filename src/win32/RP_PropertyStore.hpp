@@ -57,20 +57,20 @@ public:
 
 public:
 	// IUnknown
-	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
+	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) noexcept final;
 
 	// IInitializeWithStream
-	IFACEMETHODIMP Initialize(_In_ IStream *pstream, DWORD grfMode) final;
+	IFACEMETHODIMP Initialize(_In_ IStream *pstream, DWORD grfMode) noexcept final;
 
 	// IPropertyStore
-	IFACEMETHODIMP Commit(void) final;
-	IFACEMETHODIMP GetAt(_In_ DWORD iProp, _Out_ PROPERTYKEY *pkey) final;
-	IFACEMETHODIMP GetCount(_Out_ DWORD *cProps) final;
-	IFACEMETHODIMP GetValue(_In_ REFPROPERTYKEY key, _Out_ PROPVARIANT *pv) final;
-	IFACEMETHODIMP SetValue(_In_ REFPROPERTYKEY key, _In_ REFPROPVARIANT propvar) final;
+	IFACEMETHODIMP Commit(void) noexcept final;
+	IFACEMETHODIMP GetAt(_In_ DWORD iProp, _Out_ PROPERTYKEY *pkey) noexcept final;
+	IFACEMETHODIMP GetCount(_Out_ DWORD *cProps) noexcept final;
+	IFACEMETHODIMP GetValue(_In_ REFPROPERTYKEY key, _Out_ PROPVARIANT *pv) noexcept final;
+	IFACEMETHODIMP SetValue(_In_ REFPROPERTYKEY key, _In_ REFPROPVARIANT propvar) noexcept final;
 
 	// IPropertyStoreCapabilities
-	IFACEMETHODIMP IsPropertyWritable(REFPROPERTYKEY key) final;
+	IFACEMETHODIMP IsPropertyWritable(REFPROPERTYKEY key) noexcept final;
 };
 
 #ifdef __CRT_UUID_DECL
