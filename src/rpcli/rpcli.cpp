@@ -121,7 +121,13 @@ static int DelayLoad_test_ImageTypesConfig_className(void) {
 
 #  ifdef ENABLE_NLS
 // DelayLoad: libi18n
+// NOTE: ClangCL with MSVC 2026 uses a path that doesn't define libintl_textdomain.
+#    ifdef __clang__
+DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
+#      define DelayLoad_test_libintl_textdomain DelayLoad_test_textdomain
+#    else /* !__clang__ */
 DELAYLOAD_TEST_FUNCTION_IMPL1(libintl_textdomain, nullptr);
+#    endif /* __clang__ */
 #  endif /* ENABLE_NLS */
 #endif /* _MSC_VER */
 

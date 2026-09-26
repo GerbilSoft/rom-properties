@@ -44,12 +44,12 @@ public:
 
 public:
 	// IUnknown
-	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
+	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) noexcept final;
 
 	// IColumnProvider
-	IFACEMETHODIMP Initialize(LPCSHCOLUMNINIT psci) final;
-	IFACEMETHODIMP GetColumnInfo(_In_ DWORD dwIndex, _Out_ SHCOLUMNINFO *psci) final;
-	IFACEMETHODIMP GetItemData(_In_ LPCSHCOLUMNID pscid, _In_ LPCSHCOLUMNDATA pscd, _Out_ VARIANT *pvarData) final;
+	IFACEMETHODIMP Initialize(LPCSHCOLUMNINIT psci) noexcept final;
+	IFACEMETHODIMP GetColumnInfo(_In_ DWORD dwIndex, _Out_ SHCOLUMNINFO *psci) noexcept final;
+	IFACEMETHODIMP GetItemData(_In_ LPCSHCOLUMNID pscid, _In_ LPCSHCOLUMNDATA pscd, _Out_ VARIANT *pvarData) noexcept final;
 };
 
 #ifdef __CRT_UUID_DECL

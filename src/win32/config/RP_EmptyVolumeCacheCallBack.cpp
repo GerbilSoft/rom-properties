@@ -16,7 +16,7 @@ RP_EmptyVolumeCacheCallBack::RP_EmptyVolumeCacheCallBack(HWND hProgressBar)
 /** IUnknown **/
 // Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
-IFACEMETHODIMP RP_EmptyVolumeCacheCallBack::QueryInterface(REFIID riid, LPVOID *ppvObj)
+IFACEMETHODIMP RP_EmptyVolumeCacheCallBack::QueryInterface(REFIID riid, LPVOID *ppvObj) noexcept
 {
 #ifdef _MSC_VER
 #  pragma warning(push)
@@ -36,7 +36,7 @@ IFACEMETHODIMP RP_EmptyVolumeCacheCallBack::QueryInterface(REFIID riid, LPVOID *
 // Reference: https://docs.microsoft.com/en-us/windows/win32/api/emptyvc/nn-emptyvc-iemptyvolumecachecallback
 // TODO: Needs testing on a system with lots of thumbnails.
 
-IFACEMETHODIMP RP_EmptyVolumeCacheCallBack::ScanProgress(DWORDLONG dwlSpaceUsed, DWORD dwFlags, LPCWSTR pcwszStatus)
+IFACEMETHODIMP RP_EmptyVolumeCacheCallBack::ScanProgress(DWORDLONG dwlSpaceUsed, DWORD dwFlags, LPCWSTR pcwszStatus) noexcept
 {
 	RP_UNUSED(dwlSpaceUsed);
 	RP_UNUSED(dwFlags);
@@ -44,7 +44,7 @@ IFACEMETHODIMP RP_EmptyVolumeCacheCallBack::ScanProgress(DWORDLONG dwlSpaceUsed,
 	return S_OK;
 }
 
-IFACEMETHODIMP RP_EmptyVolumeCacheCallBack::PurgeProgress(DWORDLONG dwlSpaceFreed, DWORDLONG dwlSpaceToFree, DWORD dwFlags, LPCWSTR pcwszStatus)
+IFACEMETHODIMP RP_EmptyVolumeCacheCallBack::PurgeProgress(DWORDLONG dwlSpaceFreed, DWORDLONG dwlSpaceToFree, DWORD dwFlags, LPCWSTR pcwszStatus) noexcept
 {
 	RP_UNUSED(dwFlags);
 	RP_UNUSED(pcwszStatus);

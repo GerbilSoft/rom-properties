@@ -39,6 +39,7 @@ extern "C" {
 #ifndef LZ4_H_2983827168210
 #define LZ4_H_2983827168210
 
+#ifndef RC_INVOKED  // rom-properties
 /* --- Dependency --- */
 #include <stddef.h>   /* size_t */
 
@@ -125,6 +126,7 @@ extern "C" {
 #elif ! defined(LZ4_FREESTANDING)
 #  define LZ4_FREESTANDING 0
 #endif
+#endif /* RC_INVOKED */ // rom-properties
 
 
 /*------   Version   ------*/
@@ -139,6 +141,7 @@ extern "C" {
 #define LZ4_EXPAND_AND_QUOTE(str) LZ4_QUOTE(str)
 #define LZ4_VERSION_STRING LZ4_EXPAND_AND_QUOTE(LZ4_LIB_VERSION)  /* requires v1.7.3+ */
 
+#ifndef RC_INVOKED  // rom-properties
 LZ4LIB_API int LZ4_versionNumber (void);  /**< library version number; useful to check dll version; requires v1.3.0+ */
 LZ4LIB_API const char* LZ4_versionString (void);   /**< library version string; useful to check dll version; requires v1.7.5+ */
 
@@ -559,6 +562,7 @@ LZ4_decompress_safe_partial_usingDict(const char* src, char* dst,
                                       int targetOutputSize, int maxOutputSize,
                                       const char* dictStart, int dictSize);
 
+#endif /* RC_INVOKED */ // rom-properties
 #endif /* LZ4_H_2983827168210 */
 
 
@@ -682,6 +686,7 @@ int LZ4_compress_destSize_extState(void* state, const char* src, char* dst, int*
 
 
 
+#ifndef RC_INVOKED  // rom-properties
 #ifndef LZ4_H_98237428734687
 #define LZ4_H_98237428734687
 
@@ -877,6 +882,7 @@ LZ4LIB_API void LZ4_resetStream (LZ4_stream_t* streamPtr);
 
 
 #endif /* LZ4_H_98237428734687 */
+#endif /* RC_INVOKED */ // rom-properties
 
 
 #if defined (__cplusplus)

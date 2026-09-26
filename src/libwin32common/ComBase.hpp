@@ -35,8 +35,8 @@
 namespace LibWin32Common {
 
 // Manipulate the global COM reference count.
-RP_LIBROMDATA_PUBLIC void incRpGlobalRefCount(void);
-RP_LIBROMDATA_PUBLIC void decRpGlobalRefCount(void);
+RP_LIBROMDATA_PUBLIC void incRpGlobalRefCount(void) noexcept;
+RP_LIBROMDATA_PUBLIC void decRpGlobalRefCount(void) noexcept;
 
 /**
  * Is an RP_ComBase object referenced?
@@ -44,11 +44,11 @@ RP_LIBROMDATA_PUBLIC void decRpGlobalRefCount(void);
  */
 // References of all objects.
 RP_LIBROMDATA_PUBLIC
-bool ComBase_isReferenced(void);
+bool ComBase_isReferenced(void) noexcept;
 
 // QISearch() [our own implementation]
 RP_LIBROMDATA_PUBLIC
-HRESULT WINAPI rp_QISearch(_Inout_ void *that, _In_ LPCQITAB pqit, _In_ REFIID riid, _COM_Outptr_ void **ppv);
+HRESULT WINAPI rp_QISearch(_Inout_ void *that, _In_ LPCQITAB pqit, _In_ REFIID riid, _COM_Outptr_ void **ppv) noexcept;
 
 template<class... I>
 class NOVTABLE ComBase : public I...
@@ -58,13 +58,13 @@ protected:
 	volatile long m_lRefCount;
 
 public:
-	ComBase() : m_lRefCount(1)
+	ComBase() noexcept : m_lRefCount(1)
 	{
 		incRpGlobalRefCount();
 	}
 
 protected:
-	virtual ~ComBase()
+	virtual ~ComBase() noexcept
 	{
 		assert(m_lRefCount == 0);
 	}
@@ -80,13 +80,13 @@ public:
 
 public:
 	// IUnknown
-	IFACEMETHODIMP_(ULONG) AddRef(void) final
+	IFACEMETHODIMP_(ULONG) AddRef(void) noexcept final
 	{
 		incRpGlobalRefCount();
 		return static_cast<ULONG>(_InterlockedIncrement(&m_lRefCount));
 	}
 
-	IFACEMETHODIMP_(ULONG) Release(void) final
+	IFACEMETHODIMP_(ULONG) Release(void) noexcept final
 	{
 		assert(m_lRefCount > 0);
 		long lRefCount = _InterlockedDecrement(&m_lRefCount);

@@ -2300,7 +2300,7 @@ RP_ShellPropSheetExt::~RP_ShellPropSheetExt()
 /** IUnknown **/
 // Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
-IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
+IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) noexcept
 {
 #ifdef _MSC_VER
 #  pragma warning(push)
@@ -2321,7 +2321,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(_In_ REFIID riid, _Outptr_ L
 // Reference: https://docs.microsoft.com/en-us/windows/win32/api/shobjidl_core/nf-shobjidl_core-ishellextinit-initialize [Initialize()]
 
 IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
-	_In_ LPCITEMIDLIST pidlFolder, _In_ LPDATAOBJECT pDataObj, _In_ HKEY hKeyProgID)
+	_In_ LPCITEMIDLIST pidlFolder, _In_ LPDATAOBJECT pDataObj, _In_ HKEY hKeyProgID) noexcept
 {
 	((void)pidlFolder);
 	((void)hKeyProgID);
@@ -2419,7 +2419,7 @@ cleanup:
 /** IShellPropSheetExt **/
 // Reference: https://docs.microsoft.com/en-us/windows/win32/api/shobjidl_core/nn-shobjidl_core-ishellpropsheetext
 
-IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(_In_ LPFNADDPROPSHEETPAGE pfnAddPage, LPARAM lParam)
+IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(_In_ LPFNADDPROPSHEETPAGE pfnAddPage, LPARAM lParam) noexcept
 {
 	// Based on CppShellExtPropSheetHandler.
 	// https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
@@ -2472,7 +2472,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(_In_ LPFNADDPROPSHEETPAGE pfnAddPa
 }
 
 IFACEMETHODIMP RP_ShellPropSheetExt::ReplacePage(UINT uPageID,
-	_In_ LPFNADDPROPSHEETPAGE pfnReplaceWith, LPARAM lParam)
+	_In_ LPFNADDPROPSHEETPAGE pfnReplaceWith, LPARAM lParam) noexcept
 {
 	// Not used.
 	RP_UNUSED(uPageID);

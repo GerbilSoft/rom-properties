@@ -17,7 +17,7 @@ KeyStore_OwnerDataCallback::KeyStore_OwnerDataCallback(const KeyStoreWin32 *keyS
 /** IUnknown **/
 // Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
-IFACEMETHODIMP KeyStore_OwnerDataCallback::QueryInterface(REFIID riid, LPVOID *ppvObj)
+IFACEMETHODIMP KeyStore_OwnerDataCallback::QueryInterface(REFIID riid, LPVOID *ppvObj) noexcept
 {
 #ifdef _MSC_VER
 #  pragma warning(push)
@@ -36,14 +36,14 @@ IFACEMETHODIMP KeyStore_OwnerDataCallback::QueryInterface(REFIID riid, LPVOID *p
 /** KeyStore_OwnerDataCallback **/
 // Reference: https://www.codeproject.com/Articles/35197/Undocumented-List-View-Features#virtualgroups
 
-IFACEMETHODIMP KeyStore_OwnerDataCallback::GetItemPosition(int itemIndex, LPPOINT pPosition)
+IFACEMETHODIMP KeyStore_OwnerDataCallback::GetItemPosition(int itemIndex, LPPOINT pPosition) noexcept
 {
 	RP_UNUSED(itemIndex);
 	RP_UNUSED(pPosition);
 	return E_NOTIMPL;
 }
 
-IFACEMETHODIMP KeyStore_OwnerDataCallback::SetItemPosition(int itemIndex, POINT position)
+IFACEMETHODIMP KeyStore_OwnerDataCallback::SetItemPosition(int itemIndex, POINT position) noexcept
 {
 	RP_UNUSED(itemIndex);
 	RP_UNUSED(position);
@@ -56,7 +56,7 @@ IFACEMETHODIMP KeyStore_OwnerDataCallback::SetItemPosition(int itemIndex, POINT 
  * @param groupWideItemIndex	[in] Key index.
  * @param pTotalItemIndex	[out] Flat key index.
  */
-IFACEMETHODIMP KeyStore_OwnerDataCallback::GetItemInGroup(int groupIndex, int groupWideItemIndex, PINT pTotalItemIndex)
+IFACEMETHODIMP KeyStore_OwnerDataCallback::GetItemInGroup(int groupIndex, int groupWideItemIndex, PINT pTotalItemIndex) noexcept
 {
 	if (!pTotalItemIndex)
 		return E_POINTER;
@@ -72,7 +72,7 @@ IFACEMETHODIMP KeyStore_OwnerDataCallback::GetItemInGroup(int groupIndex, int gr
  * @param occurrenceIndex	[in] Instance of the item. (usually 0 here)
  * @param pGroupIndex		[out] Section index.
  */
-IFACEMETHODIMP KeyStore_OwnerDataCallback::GetItemGroup(int itemIndex, int occurrenceIndex, PINT pGroupIndex)
+IFACEMETHODIMP KeyStore_OwnerDataCallback::GetItemGroup(int itemIndex, int occurrenceIndex, PINT pGroupIndex) noexcept
 {
 	RP_UNUSED(occurrenceIndex);
 
@@ -89,7 +89,7 @@ IFACEMETHODIMP KeyStore_OwnerDataCallback::GetItemGroup(int itemIndex, int occur
 	return S_OK;
 }
 
-IFACEMETHODIMP KeyStore_OwnerDataCallback::GetItemGroupCount(int itemIndex, PINT pOccurenceCount)
+IFACEMETHODIMP KeyStore_OwnerDataCallback::GetItemGroupCount(int itemIndex, PINT pOccurenceCount) noexcept
 {
 	// Items only appear in a single group.
 	RP_UNUSED(itemIndex);
@@ -99,7 +99,7 @@ IFACEMETHODIMP KeyStore_OwnerDataCallback::GetItemGroupCount(int itemIndex, PINT
 	return S_OK;
 }
 
-IFACEMETHODIMP KeyStore_OwnerDataCallback::OnCacheHint(LVITEMINDEX firstItem, LVITEMINDEX lastItem)
+IFACEMETHODIMP KeyStore_OwnerDataCallback::OnCacheHint(LVITEMINDEX firstItem, LVITEMINDEX lastItem) noexcept
 {
 	RP_UNUSED(firstItem);
 	RP_UNUSED(lastItem);

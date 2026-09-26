@@ -80,7 +80,7 @@ RP_ColumnProvider::~RP_ColumnProvider()
 /** IUnknown **/
 // Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
-IFACEMETHODIMP RP_ColumnProvider::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
+IFACEMETHODIMP RP_ColumnProvider::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) noexcept
 {
 	// FIXME: MinGW-w64 build is failing because uuidof() emulation
 	// isn't detecting IID_IColumnProvider...
@@ -104,7 +104,7 @@ IFACEMETHODIMP RP_ColumnProvider::QueryInterface(_In_ REFIID riid, _Outptr_ LPVO
 /** IColumnProvider **/
 // Reference: https://learn.microsoft.com/en-us/windows/win32/api/shlobj/nn-shlobj-icolumnprovider
 
-IFACEMETHODIMP RP_ColumnProvider::Initialize(LPCSHCOLUMNINIT psci)
+IFACEMETHODIMP RP_ColumnProvider::Initialize(LPCSHCOLUMNINIT psci) noexcept
 {
 	// Check if the directory is on a "bad" file system.
 	Config *const config = Config::instance();
@@ -117,7 +117,7 @@ IFACEMETHODIMP RP_ColumnProvider::Initialize(LPCSHCOLUMNINIT psci)
 	return S_OK;
 }
 
-IFACEMETHODIMP RP_ColumnProvider::GetColumnInfo(_In_ DWORD dwIndex, _Out_ SHCOLUMNINFO *psci)
+IFACEMETHODIMP RP_ColumnProvider::GetColumnInfo(_In_ DWORD dwIndex, _Out_ SHCOLUMNINFO *psci) noexcept
 {
 	static_assert(coldata_t.size() == colpkey_t.size(), "coldata_t.size() != colpkey_t.size()");
 
@@ -140,7 +140,7 @@ IFACEMETHODIMP RP_ColumnProvider::GetColumnInfo(_In_ DWORD dwIndex, _Out_ SHCOLU
 }
 
 #ifndef HAVE_INITVARIANTFROMSTRING
-static inline HRESULT InitVariantFromString(_In_ PCWSTR lpszString, _Out_ VARIANT *pOutVar)
+static inline HRESULT InitVariantFromString(_In_ PCWSTR lpszString, _Out_ VARIANT *pOutVar) noexcept
 {
 	pOutVar->vt = VT_BSTR;
 	pOutVar->bstrVal = SysAllocString(lpszString);
@@ -152,7 +152,7 @@ static inline HRESULT InitVariantFromString(_In_ PCWSTR lpszString, _Out_ VARIAN
 }
 #endif /* HAVE_INITVARIANTFROMSTRING */
 
-IFACEMETHODIMP RP_ColumnProvider::GetItemData(_In_ LPCSHCOLUMNID pscid, _In_ LPCSHCOLUMNDATA pscd, _Out_ VARIANT *pvarData)
+IFACEMETHODIMP RP_ColumnProvider::GetItemData(_In_ LPCSHCOLUMNID pscid, _In_ LPCSHCOLUMNDATA pscd, _Out_ VARIANT *pvarData) noexcept
 {
 	// Map the specified property key to a Property enum value.
 	Property name = Property::Invalid;

@@ -178,7 +178,7 @@ RP_PropertyStore::~RP_PropertyStore()
 /** IUnknown **/
 // Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
-IFACEMETHODIMP RP_PropertyStore::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
+IFACEMETHODIMP RP_PropertyStore::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) noexcept
 {
 #ifdef _MSC_VER
 #  pragma warning(push)
@@ -199,7 +199,7 @@ IFACEMETHODIMP RP_PropertyStore::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOI
 /** IInitializeWithStream **/
 // Reference: https://docs.microsoft.com/en-us/windows/win32/api/propsys/nf-propsys-iinitializewithstream-initialize [Initialize()]
 
-IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode)
+IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode) noexcept
 {
 	// Ignoring grfMode for now. (always read-only)
 	RP_UNUSED(grfMode);
@@ -472,13 +472,13 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 /** IPropertyStore **/
 // Reference: https://docs.microsoft.com/en-us/windows/win32/api/propsys/nn-propsys-ipropertystore
 
-IFACEMETHODIMP RP_PropertyStore::Commit(void)
+IFACEMETHODIMP RP_PropertyStore::Commit(void) noexcept
 {
 	// All properties are read-only.
 	return STG_E_ACCESSDENIED;
 }
 
-IFACEMETHODIMP RP_PropertyStore::GetAt(_In_ DWORD iProp, _Out_ PROPERTYKEY *pkey)
+IFACEMETHODIMP RP_PropertyStore::GetAt(_In_ DWORD iProp, _Out_ PROPERTYKEY *pkey) noexcept
 {
 	RP_D(const RP_PropertyStore);
 	if (iProp >= d->prop_key.size()) {
@@ -491,7 +491,7 @@ IFACEMETHODIMP RP_PropertyStore::GetAt(_In_ DWORD iProp, _Out_ PROPERTYKEY *pkey
 	return S_OK;
 }
 
-IFACEMETHODIMP RP_PropertyStore::GetCount(_Out_ DWORD *cProps)
+IFACEMETHODIMP RP_PropertyStore::GetCount(_Out_ DWORD *cProps) noexcept
 {
 	if (!cProps) {
 		return E_POINTER;
@@ -502,7 +502,7 @@ IFACEMETHODIMP RP_PropertyStore::GetCount(_Out_ DWORD *cProps)
 	return S_OK;
 }
 
-IFACEMETHODIMP RP_PropertyStore::GetValue(_In_ REFPROPERTYKEY key, _Out_ PROPVARIANT *pv)
+IFACEMETHODIMP RP_PropertyStore::GetValue(_In_ REFPROPERTYKEY key, _Out_ PROPVARIANT *pv) noexcept
 {
 	RP_D(const RP_PropertyStore);
 	if (!pv) {
@@ -524,7 +524,7 @@ IFACEMETHODIMP RP_PropertyStore::GetValue(_In_ REFPROPERTYKEY key, _Out_ PROPVAR
 	return S_OK;
 }
 
-IFACEMETHODIMP RP_PropertyStore::SetValue(_In_ REFPROPERTYKEY key, _In_ REFPROPVARIANT propvar)
+IFACEMETHODIMP RP_PropertyStore::SetValue(_In_ REFPROPERTYKEY key, _In_ REFPROPVARIANT propvar) noexcept
 {
 	// All properties are read-only.
 	RP_UNUSED(key);
@@ -535,7 +535,7 @@ IFACEMETHODIMP RP_PropertyStore::SetValue(_In_ REFPROPERTYKEY key, _In_ REFPROPV
 /** IPropertyStoreCapabilities **/
 // Reference: https://docs.microsoft.com/en-us/windows/win32/api/propsys/nn-propsys-ipropertystorecapabilities
 
-IFACEMETHODIMP RP_PropertyStore::IsPropertyWritable(REFPROPERTYKEY key)
+IFACEMETHODIMP RP_PropertyStore::IsPropertyWritable(REFPROPERTYKEY key) noexcept
 {
 	// All properties are read-only.
 	RP_UNUSED(key);

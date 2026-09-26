@@ -488,7 +488,7 @@ void DILDataObject::setMTime(const FILETIME *mtime)
 /** IUnknown **/
 // Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
-IFACEMETHODIMP DILDataObject::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
+IFACEMETHODIMP DILDataObject::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) noexcept
 {
 #ifdef _MSC_VER
 #  pragma warning(push)
@@ -508,7 +508,7 @@ IFACEMETHODIMP DILDataObject::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *
 /** IDataObject **/
 // Reference: https://www.catch22.net/tuts/ole/implementing-idataobject/
 
-IFACEMETHODIMP DILDataObject::GetData(_In_ FORMATETC *pformatetcIn, _Out_ STGMEDIUM *pmedium)
+IFACEMETHODIMP DILDataObject::GetData(_In_ FORMATETC *pformatetcIn, _Out_ STGMEDIUM *pmedium) noexcept
 {
 	RP_D(DILDataObject);
 	int idx = d->lookupFormatEtc(pformatetcIn);
@@ -595,7 +595,7 @@ IFACEMETHODIMP DILDataObject::GetData(_In_ FORMATETC *pformatetcIn, _Out_ STGMED
 	return S_OK;
 }
 
-IFACEMETHODIMP DILDataObject::GetDataHere(_In_ FORMATETC *pformatetc, _Inout_ STGMEDIUM *pmedium)
+IFACEMETHODIMP DILDataObject::GetDataHere(_In_ FORMATETC *pformatetc, _Inout_ STGMEDIUM *pmedium) noexcept
 {
 	// Only HGLOBAL (in-memory) data is supported,
 	// e.g. from an rp_image or IconAnimData.
@@ -604,13 +604,13 @@ IFACEMETHODIMP DILDataObject::GetDataHere(_In_ FORMATETC *pformatetc, _Inout_ ST
 	return DATA_E_FORMATETC;
 }
 
-IFACEMETHODIMP DILDataObject::QueryGetData(__RPC__in_opt FORMATETC *pformatetc)
+IFACEMETHODIMP DILDataObject::QueryGetData(__RPC__in_opt FORMATETC *pformatetc) noexcept
 {
 	RP_D(const DILDataObject);
 	return (d->lookupFormatEtc(pformatetc) == -1) ? DV_E_FORMATETC : S_OK;
 }
 
-IFACEMETHODIMP DILDataObject::GetCanonicalFormatEtc(__RPC__in_opt FORMATETC *pformatetcIn, __RPC__out FORMATETC *pformatetcOut)
+IFACEMETHODIMP DILDataObject::GetCanonicalFormatEtc(__RPC__in_opt FORMATETC *pformatetcIn, __RPC__out FORMATETC *pformatetcOut) noexcept
 {
 	// Not needed.
 	RP_UNUSED(pformatetcIn);
@@ -621,7 +621,7 @@ IFACEMETHODIMP DILDataObject::GetCanonicalFormatEtc(__RPC__in_opt FORMATETC *pfo
 	return E_NOTIMPL;
 }
 
-IFACEMETHODIMP DILDataObject::SetData(_In_ FORMATETC *pformatetc, _In_ STGMEDIUM *pmedium, BOOL fRelease)
+IFACEMETHODIMP DILDataObject::SetData(_In_ FORMATETC *pformatetc, _In_ STGMEDIUM *pmedium, BOOL fRelease) noexcept
 {
 	if (!pformatetc || !pmedium) {
 		return E_POINTER;
@@ -703,7 +703,7 @@ IFACEMETHODIMP DILDataObject::SetData(_In_ FORMATETC *pformatetc, _In_ STGMEDIUM
 	return S_OK;
 }
 
-IFACEMETHODIMP DILDataObject::EnumFormatEtc(DWORD dwDirection, __RPC__deref_out_opt IEnumFORMATETC **ppenumFormatEtc)
+IFACEMETHODIMP DILDataObject::EnumFormatEtc(DWORD dwDirection, __RPC__deref_out_opt IEnumFORMATETC **ppenumFormatEtc) noexcept
 {
 	if (unlikely(!ppenumFormatEtc)) {
 		return E_POINTER;
@@ -737,7 +737,7 @@ IFACEMETHODIMP DILDataObject::EnumFormatEtc(DWORD dwDirection, __RPC__deref_out_
 	return hr;
 }
 
-IFACEMETHODIMP DILDataObject::DAdvise(__RPC__in FORMATETC *pformatetc, DWORD advf, __RPC__in_opt IAdviseSink *pAdvSink, __RPC__out DWORD *pdwConnection)
+IFACEMETHODIMP DILDataObject::DAdvise(__RPC__in FORMATETC *pformatetc, DWORD advf, __RPC__in_opt IAdviseSink *pAdvSink, __RPC__out DWORD *pdwConnection) noexcept
 {
 	// Not supported.
 	RP_UNUSED(pformatetc);
@@ -747,14 +747,14 @@ IFACEMETHODIMP DILDataObject::DAdvise(__RPC__in FORMATETC *pformatetc, DWORD adv
 	return OLE_E_ADVISENOTSUPPORTED;
 }
 
-IFACEMETHODIMP DILDataObject::DUnadvise(DWORD dwConnection)
+IFACEMETHODIMP DILDataObject::DUnadvise(DWORD dwConnection) noexcept
 {
 	// Not supported.
 	RP_UNUSED(dwConnection);
 	return OLE_E_ADVISENOTSUPPORTED;
 }
 
-IFACEMETHODIMP DILDataObject::EnumDAdvise(__RPC__deref_out_opt IEnumSTATDATA **ppenumAdvise)
+IFACEMETHODIMP DILDataObject::EnumDAdvise(__RPC__deref_out_opt IEnumSTATDATA **ppenumAdvise) noexcept
 {
 	// Not supported.
 	RP_UNUSED(ppenumAdvise);
@@ -763,7 +763,7 @@ IFACEMETHODIMP DILDataObject::EnumDAdvise(__RPC__deref_out_opt IEnumSTATDATA **p
 
 /** IDropSource **/
 
-IFACEMETHODIMP DILDataObject::QueryContinueDrag(_In_ BOOL fEscapePressed, _In_ DWORD grfKeyState)
+IFACEMETHODIMP DILDataObject::QueryContinueDrag(_In_ BOOL fEscapePressed, _In_ DWORD grfKeyState) noexcept
 {
 	// if the Escape key has been pressed since the last call, cancel the drop
 	if (fEscapePressed) {
@@ -779,7 +779,7 @@ IFACEMETHODIMP DILDataObject::QueryContinueDrag(_In_ BOOL fEscapePressed, _In_ D
 	return S_OK;
 }
 
-IFACEMETHODIMP DILDataObject::GiveFeedback(_In_ DWORD dwEffect)
+IFACEMETHODIMP DILDataObject::GiveFeedback(_In_ DWORD dwEffect) noexcept
 {
 	// TODO: Do something here?
 	RP_UNUSED(dwEffect);

@@ -19,6 +19,9 @@ _COM_SMARTPTR_TYPEDEF(IStream, __uuidof(IStream));
 #  endif /* RP_IStreamPtr_DEFINED */
 #endif /* _MSC_VER */
 
+// C++ STL classes
+#include <string>
+
 // zlib
 struct z_stream_s;
 

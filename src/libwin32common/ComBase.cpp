@@ -21,12 +21,12 @@ namespace LibWin32Common {
 // References of all objects.
 static volatile long RP_lTotalRefCount = 0;
 
-void incRpGlobalRefCount(void)
+void incRpGlobalRefCount(void) noexcept
 {
 	_InterlockedIncrement(&RP_lTotalRefCount);
 }
 
-void decRpGlobalRefCount(void)
+void decRpGlobalRefCount(void) noexcept
 {
 	_InterlockedDecrement(&RP_lTotalRefCount);
 }
@@ -35,7 +35,7 @@ void decRpGlobalRefCount(void)
  * Is an RP_ComBase object referenced?
  * @return True if RP_ulTotalRefCount > 0; false if not.
  */
-bool ComBase_isReferenced(void)
+bool ComBase_isReferenced(void) noexcept
 {
 	return (RP_lTotalRefCount > 0);
 }
@@ -55,7 +55,7 @@ bool ComBase_isReferenced(void)
  * @param ppv	[out] Output pointer.
  * @return S_OK if the requested interface was found; E_NOINTERFACE if not found.
  */
-HRESULT WINAPI rp_QISearch(_Inout_ void *that, _In_ LPCQITAB pqit, _In_ REFIID riid, _COM_Outptr_ void **ppv)
+HRESULT WINAPI rp_QISearch(_Inout_ void *that, _In_ LPCQITAB pqit, _In_ REFIID riid, _COM_Outptr_ void **ppv) noexcept
 {
 	assert(that != nullptr);
 	assert(ppv != nullptr);

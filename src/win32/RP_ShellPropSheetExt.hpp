@@ -73,14 +73,14 @@ private:
 
 public:
 	// IUnknown
-	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
+	IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) noexcept final;
 
 	// IShellExtInit
-	IFACEMETHODIMP Initialize(_In_ LPCITEMIDLIST pidlFolder, _In_ LPDATAOBJECT pDataObj, _In_ HKEY hKeyProgID) final;
+	IFACEMETHODIMP Initialize(_In_ LPCITEMIDLIST pidlFolder, _In_ LPDATAOBJECT pDataObj, _In_ HKEY hKeyProgID) noexcept final;
 
 	// IShellPropSheetExt
-	IFACEMETHODIMP AddPages(_In_ LPFNADDPROPSHEETPAGE pfnAddPage, LPARAM lParam) final;
-	IFACEMETHODIMP ReplacePage(UINT uPageID, _In_ LPFNADDPROPSHEETPAGE pfnReplaceWith, LPARAM lParam) final;
+	IFACEMETHODIMP AddPages(_In_ LPFNADDPROPSHEETPAGE pfnAddPage, LPARAM lParam) noexcept final;
+	IFACEMETHODIMP ReplacePage(UINT uPageID, _In_ LPFNADDPROPSHEETPAGE pfnReplaceWith, LPARAM lParam) noexcept final;
 };
 
 #ifdef __CRT_UUID_DECL

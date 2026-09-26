@@ -48,7 +48,7 @@ RP_ExtractImage::~RP_ExtractImage()
 /** IUnknown **/
 // Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
-IFACEMETHODIMP RP_ExtractImage::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
+IFACEMETHODIMP RP_ExtractImage::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) noexcept
 {
 #ifdef _MSC_VER
 #  pragma warning(push)
@@ -70,7 +70,7 @@ IFACEMETHODIMP RP_ExtractImage::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID
 /** IPersistFile **/
 // Reference: https://docs.microsoft.com/en-us/windows/win32/shell/handlers
 
-IFACEMETHODIMP RP_ExtractImage::GetClassID(_Out_ CLSID *pClassID)
+IFACEMETHODIMP RP_ExtractImage::GetClassID(_Out_ CLSID *pClassID) noexcept
 {
 	if (!pClassID) {
 		return E_POINTER;
@@ -79,12 +79,12 @@ IFACEMETHODIMP RP_ExtractImage::GetClassID(_Out_ CLSID *pClassID)
 	return S_OK;
 }
 
-IFACEMETHODIMP RP_ExtractImage::IsDirty(void)
+IFACEMETHODIMP RP_ExtractImage::IsDirty(void) noexcept
 {
 	return E_NOTIMPL;
 }
 
-IFACEMETHODIMP RP_ExtractImage::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
+IFACEMETHODIMP RP_ExtractImage::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode) noexcept
 {
 	// NOTE: Since this is the registered image extractor
 	// for the file type, we have to implement our own
@@ -144,20 +144,20 @@ IFACEMETHODIMP RP_ExtractImage::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 	return S_OK;
 }
 
-IFACEMETHODIMP RP_ExtractImage::Save(_In_ LPCOLESTR pszFileName, BOOL fRemember)
+IFACEMETHODIMP RP_ExtractImage::Save(_In_ LPCOLESTR pszFileName, BOOL fRemember) noexcept
 {
 	RP_UNUSED(pszFileName);
 	RP_UNUSED(fRemember);
 	return E_NOTIMPL;
 }
 
-IFACEMETHODIMP RP_ExtractImage::SaveCompleted(_In_ LPCOLESTR pszFileName)
+IFACEMETHODIMP RP_ExtractImage::SaveCompleted(_In_ LPCOLESTR pszFileName) noexcept
 {
 	RP_UNUSED(pszFileName);
 	return E_NOTIMPL;
 }
 
-IFACEMETHODIMP RP_ExtractImage::GetCurFile(_Outptr_ LPOLESTR *ppszFileName)
+IFACEMETHODIMP RP_ExtractImage::GetCurFile(_Outptr_ LPOLESTR *ppszFileName) noexcept
 {
 	if (!ppszFileName)
 		return E_POINTER;
@@ -196,7 +196,7 @@ IFACEMETHODIMP RP_ExtractImage::GetCurFile(_Outptr_ LPOLESTR *ppszFileName)
 IFACEMETHODIMP RP_ExtractImage::GetLocation(
 	_Out_writes_(cchMax) LPWSTR pszPathBuffer, DWORD cchMax,
 	_Out_ DWORD *pdwPriority, _In_ const SIZE *prgSize,
-	DWORD dwRecClrDepth, _Inout_ DWORD *pdwFlags)
+	DWORD dwRecClrDepth, _Inout_ DWORD *pdwFlags) noexcept
 {
 	((void)pszPathBuffer);
 	((void)cchMax);
@@ -252,7 +252,7 @@ IFACEMETHODIMP RP_ExtractImage::GetLocation(
 	return S_OK;
 }
 
-IFACEMETHODIMP RP_ExtractImage::Extract(_Outptr_ HBITMAP *phBmpImage)
+IFACEMETHODIMP RP_ExtractImage::Extract(_Outptr_ HBITMAP *phBmpImage) noexcept
 {
 	// Make sure a filename was set by calling IPersistFile::Load().
 	RP_D(RP_ExtractImage);
@@ -290,7 +290,7 @@ IFACEMETHODIMP RP_ExtractImage::Extract(_Outptr_ HBITMAP *phBmpImage)
  * @param pDateStamp	[out] Pointer to FILETIME to store the timestamp in.
  * @return COM error code.
  */
-IFACEMETHODIMP RP_ExtractImage::GetDateStamp(_Out_ FILETIME *pDateStamp)
+IFACEMETHODIMP RP_ExtractImage::GetDateStamp(_Out_ FILETIME *pDateStamp) noexcept
 {
 	RP_D(RP_ExtractImage);
 	if (!pDateStamp) {

@@ -127,12 +127,12 @@ ENDIF()
 
 # MSVC: C++ conformance settings
 INCLUDE(CheckCXXCompilerFlag)
-SET(CXX_CONFORMANCE_FLAGS "/Zc:__cplusplus" "/Zc:checkGwOdr" "/Zc:rvalueCast" "/Zc:templateScope" "/Zc:ternary")
+SET(CXX_CONFORMANCE_FLAGS "/Zc:__cplusplus" "/Zc:rvalueCast" "/Zc:ternary")
 IF(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	# clang-cl enables certain conformance options by default,
 	# and these cause warnings to be printed if specified.
 	# Only enable these for original MSVC.
-	SET(CXX_CONFORMANCE_FLAGS ${CXX_CONFORMANCE_FLAGS} "/Zc:externC" "/Zc:noexceptTypes" "/Zc:throwingNew")
+	SET(CXX_CONFORMANCE_FLAGS ${CXX_CONFORMANCE_FLAGS} "/Zc:externC" "/Zc:noexceptTypes" "/Zc:throwingNew" "/Zc:checkGwOdr" "/Zc:templateScope")
 ENDIF(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 FOREACH(FLAG_TEST ${CXX_CONFORMANCE_FLAGS})
 	# CMake doesn't like certain characters in variable names.
@@ -149,6 +149,12 @@ ENDFOREACH()
 # Otherwise, it gets handled as an error due to /sdl.
 SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} /wd4996 /w34996")
 SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /wd4996 /w34996")
+
+# ClangCL: Disable several unnecessary warnings.
+IF(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} -Wno-multichar -Wunused-local-typedef")
+	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} -Wno-multichar -Wunused-local-typedef")
+ENDIF(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
 # Disable the RC and MASM "logo".
 # FIXME: Setting CMAKE_RC_FLAGS causes msbuild to fail,

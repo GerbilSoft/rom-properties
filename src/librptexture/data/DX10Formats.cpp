@@ -28,7 +28,7 @@ const char *lookup_dxgiFormat(unsigned int dxgiFormat)
 		return (likely(offset != 0) ? &dxgiFormat_strtbl[offset] : nullptr);
 	} else {
 		switch (dxgiFormat) {
-			case DXGI_FORMAT_FORCE_UINT:
+			case static_cast<unsigned int>(DXGI_FORMAT_FORCE_UINT):
 				texFormat = "FORCE_UINT";
 				break;
 

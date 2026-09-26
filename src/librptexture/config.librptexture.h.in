@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * config.librptexture.h.in: LibRpTexture configuration. (source file)     *
  *                                                                         *
- * Copyright (c) 2016-2025 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,3 +19,19 @@
 
 /* Define to 1 if ASTC decompression should be enabled. */
 #cmakedefine ENABLE_ASTC 1
+
+/** Libraries **/
+
+/* Define to 1 if you have zlib. */
+#cmakedefine HAVE_ZLIB 1
+
+/* Define to 1 if we're using the internal copy of zlib. */
+#cmakedefine USE_INTERNAL_ZLIB 1
+
+/* Define to 1 if we're using the internal copy of zlib as a DLL. */
+#cmakedefine USE_INTERNAL_ZLIB_DLL 1
+
+/* Define to 1 if zlib is a DLL. */
+#if !defined(USE_INTERNAL_ZLIB) || defined(USE_INTERNAL_ZLIB_DLL)
+#  define ZLIB_IS_DLL 1
+#endif
