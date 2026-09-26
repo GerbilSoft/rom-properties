@@ -106,11 +106,7 @@ set(LZ4_LIBRARIES_BUILT)
 if(BUILD_SHARED_LIBS)
   IF(WIN32)
     # rom-properties: Add the Win32 resource file.
-    # FIXME: Broken with ClangCL on MSVC 2026:
-    # C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\Llvm\x64\lib\clang\22\include\__stddef_ptrdiff_t.h(15): fatal error RC1012: mismatched parenthesis : missing '
-    IF(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-      SET(LZ4_RC_FILE "${LZ4_TOP_SOURCE_DIR}/build/VS2022/liblz4-dll/liblz4-dll.rc")
-    ENDIF(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    SET(LZ4_RC_FILE "${LZ4_TOP_SOURCE_DIR}/build/VS2022/liblz4-dll/liblz4-dll.rc")
     SET(LZ4_SOURCES ${LZ4_SOURCES} ${LZ4_RC_FILE})
   ENDIF(WIN32)
   add_library(lz4_shared SHARED ${LZ4_SOURCES})
