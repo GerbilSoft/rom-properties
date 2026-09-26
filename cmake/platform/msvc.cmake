@@ -150,6 +150,12 @@ ENDFOREACH()
 SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} /wd4996 /w34996")
 SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /wd4996 /w34996")
 
+# ClangCL: Disable several unnecessary warnings.
+IF(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} -Wno-multichar -Wunused-local-typedef")
+	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} -Wno-multichar -Wunused-local-typedef")
+ENDIF(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+
 # Disable the RC and MASM "logo".
 # FIXME: Setting CMAKE_RC_FLAGS causes msbuild to fail,
 # since CMake already sets /NOLOGO there.
