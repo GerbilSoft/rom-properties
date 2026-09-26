@@ -29,16 +29,16 @@ public:
 
 public:
 	// IUnknown
-	IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
+	IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) noexcept final;
 
 public:
 	// IOwnerDataCallback
-	IFACEMETHODIMP GetItemPosition(int itemIndex, LPPOINT pPosition) final;
-	IFACEMETHODIMP SetItemPosition(int itemIndex, POINT position) final;
-	IFACEMETHODIMP GetItemInGroup(int groupIndex, int groupWideItemIndex, PINT pTotalItemIndex) final;
-	IFACEMETHODIMP GetItemGroup(int itemIndex, int occurrenceIndex, PINT pGroupIndex) final;
-	IFACEMETHODIMP GetItemGroupCount(int itemIndex, PINT pOccurrenceCount) final;
-	IFACEMETHODIMP OnCacheHint(LVITEMINDEX firstItem, LVITEMINDEX lastItem) final;
+	IFACEMETHODIMP GetItemPosition(int itemIndex, LPPOINT pPosition) noexcept final;
+	IFACEMETHODIMP SetItemPosition(int itemIndex, POINT position) noexcept final;
+	IFACEMETHODIMP GetItemInGroup(int groupIndex, int groupWideItemIndex, PINT pTotalItemIndex) noexcept final;
+	IFACEMETHODIMP GetItemGroup(int itemIndex, int occurrenceIndex, PINT pGroupIndex) noexcept final;
+	IFACEMETHODIMP GetItemGroupCount(int itemIndex, PINT pOccurrenceCount) noexcept final;
+	IFACEMETHODIMP OnCacheHint(LVITEMINDEX firstItem, LVITEMINDEX lastItem) noexcept final;
 
 private:
 	const KeyStoreWin32 *m_keyStore;

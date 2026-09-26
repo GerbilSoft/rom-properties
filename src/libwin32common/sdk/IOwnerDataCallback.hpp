@@ -27,13 +27,13 @@ public:
 	/// TODO
 	///
 	/// \return An \c HRESULT error code.
-	virtual HRESULT STDMETHODCALLTYPE GetItemPosition(int itemIndex, LPPOINT pPosition) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetItemPosition(int itemIndex, LPPOINT pPosition) noexcept = 0;
 	/// \brief <em>TODO</em>
 	///
 	/// TODO
 	///
 	/// \return An \c HRESULT error code.
-	virtual HRESULT STDMETHODCALLTYPE SetItemPosition(int itemIndex, POINT position) = 0;
+	virtual HRESULT STDMETHODCALLTYPE SetItemPosition(int itemIndex, POINT position) noexcept = 0;
 	/// \brief <em>Will be called to retrieve an item's zero-based control-wide index</em>
 	///
 	/// This method is called by the listview control to retrieve an item's zero-based control-wide index.
@@ -47,7 +47,7 @@ public:
 	/// \param[out] pTotalItemIndex Receives the item's zero-based control-wide index.
 	///
 	/// \return An \c HRESULT error code.
-	virtual HRESULT STDMETHODCALLTYPE GetItemInGroup(int groupIndex, int groupWideItemIndex, PINT pTotalItemIndex) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetItemInGroup(int groupIndex, int groupWideItemIndex, PINT pTotalItemIndex) noexcept = 0;
 	/// \brief <em>Will be called to retrieve the group containing a specific occurrence of an item</em>
 	///
 	/// This method is called by the listview control to retrieve the listview group in which the specified
@@ -60,7 +60,7 @@ public:
 	///             specified copy of the specified item.
 	///
 	/// \return An \c HRESULT error code.
-	virtual HRESULT STDMETHODCALLTYPE GetItemGroup(int itemIndex, int occurrenceIndex, PINT pGroupIndex) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetItemGroup(int itemIndex, int occurrenceIndex, PINT pGroupIndex) noexcept = 0;
 	/// \brief <em>Will be called to determine how often an item occurs in the listview control</em>
 	///
 	/// This method is called by the listview control to determine how often the specified item occurs in the
@@ -70,7 +70,7 @@ public:
 	/// \param[out] pOccurrencesCount Receives the number of occurrences of the item in the listview control.
 	///
 	/// \return An \c HRESULT error code.
-	virtual HRESULT STDMETHODCALLTYPE GetItemGroupCount(int itemIndex, PINT pOccurrenceCount) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetItemGroupCount(int itemIndex, PINT pOccurrenceCount) noexcept = 0;
 	/// \brief <em>Will be called to prepare the client app that the data for a certain range of items will be required very soon</em>
 	///
 	/// This method is similar to the \c LVN_ODCACHEHINT notification. It tells the client application that
@@ -83,7 +83,7 @@ public:
 	/// \param[in] lastItem The last item to cache.
 	///
 	/// \return An \c HRESULT error code.
-	virtual HRESULT STDMETHODCALLTYPE OnCacheHint(LVITEMINDEX firstItem, LVITEMINDEX lastItem) = 0;
+	virtual HRESULT STDMETHODCALLTYPE OnCacheHint(LVITEMINDEX firstItem, LVITEMINDEX lastItem) noexcept = 0;
 };
 
 #ifdef __CRT_UUID_DECL
