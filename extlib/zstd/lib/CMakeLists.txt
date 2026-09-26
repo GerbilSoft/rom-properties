@@ -135,11 +135,7 @@ ADD_DEFINITIONS(-DZSTD_LEGACY_SUPPORT=${ZSTD_LEGACY_SUPPORT})
 
 IF(WIN32)
 	# Add the Win32 resource file.
-	# FIXME: Broken with ClangCL on MSVC 2026:
-	# C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\Llvm\x64\lib\clang\22\include\__stddef_ptrdiff_t.h(15): fatal error RC1012: mismatched parenthesis : missing '
-	IF(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-		SET(ZSTD_FILES ${ZSTD_FILES} windres/libzstd-dll.rc)
-	ENDIF(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	SET(ZSTD_FILES ${ZSTD_FILES} windres/libzstd-dll.rc)
 ENDIF(WIN32)
 
 IF(BUILD_SHARED_LIBS)
