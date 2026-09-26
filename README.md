@@ -222,7 +222,7 @@ so administrator access is required.
 | PowerVR 3.0.0            |       Yes      |    Yes   |
 | Quite OK Image Format    |       Yes      |    Yes   |
 | Sega PVR/GVR/SVR         |       Yes      |    Yes   |
-| Sony PlayStation TIM|    |       Yes      |    Yes   |
+| Sony PlayStation TIM     |       Yes      |    Yes   |
 | TrueVision TGA           |       Yes      |    Yes   |
 | Valve VTF                |       Yes      |    Yes   |
 | Valve VTF3 (PS3)         |       Yes      |    Yes   |
