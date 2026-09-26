@@ -650,7 +650,7 @@ rp_time_t RpFile::mtime(void)
 	// NOTE: Not going to write a custom 64-bit wrapper for stat().
 	// Support for 64-bit time_t on i386/armhf was added in:
 	// - Linux kernel 5.1 (2019/05/05)
-	// - glibc-2.31 (2020/02/01)
+	// - glibc-2.34 (2021/08/01)
 	return sb.st_mtime;
 #endif /* HAVE_STATX */
 }

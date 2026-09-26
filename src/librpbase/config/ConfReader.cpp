@@ -100,7 +100,7 @@ int ConfReader::load(bool force)
 		// NOTE: Not going to write a custom 64-bit wrapper for time().
 		// Support for 64-bit time_t on i386/armhf was added in:
 		// - Linux kernel 5.1 (2019/05/05)
-		// - glibc-2.31 (2020/02/01)
+		// - glibc-2.34 (2021/08/01)
 		const time_t now = time(nullptr);
 		if (llabs(now - d->conf_last_checked) < 2) {
 			// We checked it recently. Assume it's up to date.
