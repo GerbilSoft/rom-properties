@@ -149,9 +149,6 @@ SET(${PROJECT_NAME}_H
 	file/RpFile_windres.hpp
 	res/resource.h
 	)
-# FIXME: Broken with ClangCL on MSVC 2026:
-# C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\Llvm\x64\lib\clang\22\include\__stddef_ptrdiff_t.h(15): fatal error RC1012: mismatched parenthesis : missing '
-IF(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 SET(${PROJECT_NAME}_RC
 	res/resource.rc
 	res/rp-de_DE.rc
@@ -165,7 +162,6 @@ SET(${PROJECT_NAME}_RC
 	res/rp-ro_RO.rc
 	res/rp-ru_RU.rc
 	)
-ENDIF(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
 IF(HAVE_RP_PROPERTYSTORE_DEPS)
 	SET(${PROJECT_NAME}-PropKey_SRCS

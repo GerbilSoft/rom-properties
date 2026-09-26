@@ -17,7 +17,19 @@
 #include <windows.h>
 #include <wingdi.h>
 #include <commctrl.h>
-#include <richedit.h>
+
+// FIXME: ClangCL 22 with MSVC 2026 doesn't like richedit.h:
+// C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\Llvm\x64\lib\clang\22\include\vadefs.h(12): fatal error RC1021: invalid preprocessor command 'include_next'
+// We only need RICHDEIT_CLASS from richedit.h, so define that here.
+//#include <richedit.h>
+#define RICHEDIT_CLASSA "RichEdit20A"
+#define RICHEDIT_CLASSW L"RichEdit20W"
+#ifdef UNICODE
+#  define RICHEDIT_CLASS RICHEDIT_CLASSW
+#else
+#  define RICHEDIT_CLASS RICHEDIT_CLASSA
+#endif
+
 #undef APSTUDIO_HIDDEN_SYMBOLS
 
 /**
