@@ -37,18 +37,6 @@ rp_image_ptr fromETC2_RGB(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
- * Convert an ETC2 RGBA image to rp_image.
- * @param width Image width.
- * @param height Image height.
- * @param img_buf ETC2 RGBA image buffer.
- * @param img_siz Size of image data. [must be >= (w*h)]
- * @return rp_image, or nullptr on error.
- */
-ATTR_ACCESS_SIZE(read_only, 3, 4)
-rp_image_ptr fromETC2_RGBA(int width, int height,
-	const uint8_t *RESTRICT img_buf, size_t img_siz);
-
-/**
  * Convert an ETC2 RGB+A1 (punchthrough alpha) image to rp_image.
  * @param width Image width.
  * @param height Image height.
@@ -58,6 +46,18 @@ rp_image_ptr fromETC2_RGBA(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image_ptr fromETC2_RGB_A1(int width, int height,
+	const uint8_t *RESTRICT img_buf, size_t img_siz);
+
+/**
+ * Convert an ETC2 RGBA image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf ETC2 RGBA image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)]
+ * @return rp_image, or nullptr on error.
+ */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
+rp_image_ptr fromETC2_RGBA(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**

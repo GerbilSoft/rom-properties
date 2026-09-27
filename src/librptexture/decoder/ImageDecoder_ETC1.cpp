@@ -601,15 +601,22 @@ static void decodeBlock_ETC_RGB(array<uint32_t, 4*4> &tileBuf, const etc1_block 
 	}
 }
 
+enum class EtcnFormat_1block {
+	ETC1,
+	ETC2_RGB,
+	ETC2_RGB_A1,
+};
+
 /**
- * Convert an ETC1 image to rp_image.
- * @param width Image width.
- * @param height Image height.
- * @param img_buf ETC1 image buffer.
- * @param img_siz Size of image data. [must be >= (w*h)/2]
- * @return rp_image, or nullptr on error.
+ * Convert a 1-block ETC1 or ETC2 image to rp_image. (internal function)
+ * @param format ETCn format
+ * @param width Image width
+ * @param height Image height
+ * @param img_buf ETC2 RGBA image buffer
+ * @param img_siz Size of image data [must be >= (w*h)]
+ * @return rp_image, or nullptr on error
  */
-rp_image_ptr fromETC1(int width, int height,
+static rp_image_ptr fromETCn_1block(EtcnFormat_1block format, int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	rp_image_ptr img;
@@ -648,26 +655,78 @@ rp_image_ptr fromETC1(int width, int height,
 	// Temporary tile buffer.
 	array<uint32_t, 4*4> tileBuf;
 
-	for (unsigned int y = 0; y < tilesY; y++) {
-	for (unsigned int x = 0; x < tilesX; x++, etc1_src++) {
-		// Decode the ETC1 RGB block.
-		decodeBlock_ETC_RGB<ETC_DM_ETC1>(tileBuf, etc1_src);
+	static const rp_image::sBIT_t sBIT_a0 = {8,8,8,0,0};
+	static const rp_image::sBIT_t sBIT_a1 = {8,8,8,0,1};
 
-		// Blit the tile to the main image buffer.
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
-	} }
+	switch (format) {
+		default:
+			assert(!"ETCn format not supported???");
+			return img;
+
+		case EtcnFormat_1block::ETC1:
+			for (unsigned int y = 0; y < tilesY; y++) {
+			for (unsigned int x = 0; x < tilesX; x++, etc1_src++) {
+				// Decode the ETC1 RGB block.
+				decodeBlock_ETC_RGB<ETC_DM_ETC1>(tileBuf, etc1_src);
+
+				// Blit the tile to the main image buffer.
+				ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
+			} }
+
+			// Set the sBIT metadata.
+			img->set_sBIT(sBIT_a0);
+			break;
+
+		case EtcnFormat_1block::ETC2_RGB:
+			for (unsigned int y = 0; y < tilesY; y++) {
+			for (unsigned int x = 0; x < tilesX; x++, etc1_src++) {
+				// Decode the ETC2 RGB block.
+				decodeBlock_ETC_RGB<ETC_DM_ETC2>(tileBuf, etc1_src);
+
+				// Blit the tile to the main image buffer.
+				ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
+			} }
+
+			// Set the sBIT metadata.
+			img->set_sBIT(sBIT_a0);
+			break;
+
+		case EtcnFormat_1block::ETC2_RGB_A1:
+			for (unsigned int y = 0; y < tilesY; y++) {
+			for (unsigned int x = 0; x < tilesX; x++, etc1_src++) {
+				// Decode the ETC2 RGB block.
+				decodeBlock_ETC_RGB<ETC_DM_ETC2 | ETC2_DM_A1>(tileBuf, etc1_src);
+
+				// Blit the tile to the main image buffer.
+				ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
+			} }
+
+			// Set the sBIT metadata.
+			img->set_sBIT(sBIT_a1);
+			break;
+	}
 
 	if (width < physWidth || height < physHeight) {
 		// Shrink the image.
 		img->shrink(width, height);
 	}
 
-	// Set the sBIT metadata.
-	static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
-	img->set_sBIT(sBIT);
-
 	// Image has been converted.
 	return img;
+}
+
+/**
+ * Convert an ETC1 image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf ETC1 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)/2]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image_ptr fromETC1(int width, int height,
+	const uint8_t *RESTRICT img_buf, size_t img_siz)
+{
+	return fromETCn_1block(EtcnFormat_1block::ETC1, width, height, img_buf, img_siz);
 }
 
 /**
@@ -681,62 +740,21 @@ rp_image_ptr fromETC1(int width, int height,
 rp_image_ptr fromETC2_RGB(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
-	rp_image_ptr img;
+	return fromETCn_1block(EtcnFormat_1block::ETC2_RGB, width, height, img_buf, img_siz);
+}
 
-	// ETC2 uses 4x4 tiles, but some container formats allow
-	// the last tile to be cut off, so round up for the
-	// physical tile size.
-	const int physWidth = ALIGN_BYTES(4, width);
-	const int physHeight = ALIGN_BYTES(4, height);
-
-	// Verify parameters.
-	assert(img_buf != nullptr);
-	assert(width > 0);
-	assert(height > 0);
-	assert(img_siz >= (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight) / 2));
-	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight) / 2))
-	{
-		return img;
-	}
-
-	// Create an rp_image.
-	img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
-	if (!img->isValid()) {
-		// Could not allocate the image.
-		img.reset();
-		return img;
-	}
-
-	const etc1_block *etc1_src = reinterpret_cast<const etc1_block*>(img_buf);
-
-	// Calculate the total number of tiles.
-	const unsigned int tilesX = static_cast<unsigned int>(physWidth / 4);
-	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
-
-	// Temporary tile buffer.
-	array<uint32_t, 4*4> tileBuf;
-
-	for (unsigned int y = 0; y < tilesY; y++) {
-	for (unsigned int x = 0; x < tilesX; x++, etc1_src++) {
-		// Decode the ETC2 RGB block.
-		decodeBlock_ETC_RGB<ETC_DM_ETC2>(tileBuf, etc1_src);
-
-		// Blit the tile to the main image buffer.
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
-	} }
-
-	if (width < physWidth || height < physHeight) {
-		// Shrink the image.
-		img->shrink(width, height);
-	}
-
-	// Set the sBIT metadata.
-	static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
-	img->set_sBIT(sBIT);
-
-	// Image has been converted.
-	return img;
+/**
+ * Convert an ETC2 RGB+A1 (punchthrough alpha) image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf ETC2 RGB+A1 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)/2]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image_ptr fromETC2_RGB_A1(int width, int height,
+	const uint8_t *RESTRICT img_buf, size_t img_siz)
+{
+	return fromETCn_1block(EtcnFormat_1block::ETC2_RGB_A1, width, height, img_buf, img_siz);
 }
 
 /**
@@ -849,75 +867,6 @@ rp_image_ptr fromETC2_RGBA(int width, int height,
 
 	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
-	img->set_sBIT(sBIT);
-
-	// Image has been converted.
-	return img;
-}
-
-/**
- * Convert an ETC2 RGB+A1 (punchthrough alpha) image to rp_image.
- * @param width Image width.
- * @param height Image height.
- * @param img_buf ETC2 RGB+A1 image buffer.
- * @param img_siz Size of image data. [must be >= (w*h)/2]
- * @return rp_image, or nullptr on error.
- */
-rp_image_ptr fromETC2_RGB_A1(int width, int height,
-	const uint8_t *RESTRICT img_buf, size_t img_siz)
-{
-	rp_image_ptr img;
-
-	// ETC2 uses 4x4 tiles, but some container formats allow
-	// the last tile to be cut off, so round up for the
-	// physical tile size.
-	const int physWidth = ALIGN_BYTES(4, width);
-	const int physHeight = ALIGN_BYTES(4, height);
-
-	// Verify parameters.
-	assert(img_buf != nullptr);
-	assert(width > 0);
-	assert(height > 0);
-	assert(img_siz >= (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight) / 2));
-	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (static_cast<size_t>(physWidth) * static_cast<size_t>(physHeight) / 2))
-	{
-		return img;
-	}
-
-	// Create an rp_image.
-	img = std::make_shared<rp_image>(physWidth, physHeight, rp_image::Format::ARGB32);
-	if (!img->isValid()) {
-		// Could not allocate the image.
-		img.reset();
-		return img;
-	}
-
-	const etc1_block *etc1_src = reinterpret_cast<const etc1_block*>(img_buf);
-
-	// Calculate the total number of tiles.
-	const unsigned int tilesX = static_cast<unsigned int>(physWidth / 4);
-	const unsigned int tilesY = static_cast<unsigned int>(physHeight / 4);
-
-	// Temporary tile buffer.
-	array<uint32_t, 4*4> tileBuf;
-
-	for (unsigned int y = 0; y < tilesY; y++) {
-	for (unsigned int x = 0; x < tilesX; x++, etc1_src++) {
-		// Decode the ETC2 RGB block.
-		decodeBlock_ETC_RGB<ETC_DM_ETC2 | ETC2_DM_A1>(tileBuf, etc1_src);
-
-		// Blit the tile to the main image buffer.
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img.get(), tileBuf, x, y);
-	} }
-
-	if (width < physWidth || height < physHeight) {
-		// Shrink the image.
-		img->shrink(width, height);
-	}
-
-	// Set the sBIT metadata.
-	static const rp_image::sBIT_t sBIT = {8,8,8,0,1};
 	img->set_sBIT(sBIT);
 
 	// Image has been converted.
