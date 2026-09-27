@@ -394,6 +394,7 @@ ROM Properties is licensed under the GNU General Public License v2.
 Some bundled components have other licenses:
 
 * basisu_astc: Apache License 2.0
+* boost-time64: BSL-1.0
 * Detours: MIT
 * fmt: MIT
 * gettext: GPL-2+ for tools; LGPL-2.1+ for libintl
