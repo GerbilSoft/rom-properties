@@ -413,8 +413,9 @@ int WiiTMD::loadFieldData(void)
 			case NINTENDO_SYSID_WUP: {
 				// Wii U (IOSU)
 				// TODO: Add pre-release versions.
-				if (be32_to_cpu(os_tid.hi) != 0x00050010)
+				if (be32_to_cpu(os_tid.hi) != 0x00050010) {
 					break;
+				}
 
 				const uint32_t tid_lo = be32_to_cpu(os_tid.lo);
 				if ((tid_lo & 0xFFFF3F00) != 0x10000000) {
@@ -422,18 +423,32 @@ int WiiTMD::loadFieldData(void)
 					// tid_lo should be:
 					// - 0x100040xx for NDEBUG
 					// - 0x100080xx for DEBUG
+					// - 0x1000C0xx for FDEBUG
 					break;
 				}
 
 				const unsigned int debug_flag = (tid_lo & 0xC000);
-				if (debug_flag != 0x4000 && debug_flag != 0x8000) {
+				const char *s_debug_flag;
+				switch (debug_flag) {
+					default:
+						s_debug_flag = nullptr;
+						break;
+					case 0x4000:
+						s_debug_flag = "NDEBUG";
+						break;
+					case 0x8000:
+						s_debug_flag = "DEBUG";
+						break;
+					case 0xC000:
+						s_debug_flag = "FDEBUG";
+						break;
+				}
+				if (!s_debug_flag) {
 					// Incorrect debug flag.
 					break;
 				}
 
-				s_os_name = fmt::format(FSTR("OSv{:d} {:s}"),
-					(tid_lo & 0xFF),
-					(likely(debug_flag == 0x4000)) ? "NDEBUG" : "DEBUG");
+				s_os_name = fmt::format(FSTR("OSv{:d} {:s}"), (tid_lo & 0xFF), s_debug_flag);
 				break;
 			}
 		}
