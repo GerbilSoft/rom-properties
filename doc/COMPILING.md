@@ -44,9 +44,9 @@ Optional runtime dependencies:
 
 NOTE: If gsound-devel is not available, use libcanberra-devel instead.
 
-On Arch and Arch base distros you will need to install "base-devel" and the
+On Arch and Arch-based distros, you will need to install "base-devel" and the
 following development packages:
-* All: zlib libpng libjpeg-turbo nettle pkgconf pugixml gettext libseccomp
+* All: cmake zlib libpng libjpeg-turbo nettle pkgconf pugixml gettext libseccomp
 * Optional decompression: zstd minizip-ng
 * KDE 5.x: qt5-base qt5-tools extra-cmake-modules kio kwidgetsaddons kfilemetadata kcrash
 * KDE 6.x: qt6-base qt6-tools extra-cmake-modules kio kwidgetsaddons kfilemetadata kcrash
