@@ -1,0 +1,10 @@
+---
+name: Bug report
+about: Report a bug you found in rom-properties
+title: "[BUG] ..."
+labels: bug
+assignees: ''
+
+---
+
+<!-- IMPORTANT: Do not use an LLM to generate your bug report. If you can't be bothered to spend 5 minutes to write up a bug report, we can't be bothered to spend 5 minutes to investigate it. -->
