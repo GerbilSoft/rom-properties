@@ -563,7 +563,7 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
 	int ret = loadSystemXml(metaXml, "/meta/meta.xml", "menu");
 	if (ret == 0) {
 		// meta.xml root node: "menu"
-		xml_node metaRootNode = metaXml.child("menu");
+		metaRootNode = metaXml.child("menu");
 		if (metaRootNode) {
 			// Get the system language code and see if we have a matching title.
 			// NOTE: Using the same LC for all fields once we find a matching title.

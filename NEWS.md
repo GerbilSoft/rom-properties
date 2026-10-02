@@ -8,6 +8,8 @@
   * WiiUPackage: Fix a crash in Nautilus when viewing metadata from extracted packages.
     * Fixes #514: [v2.9] Nautilus (GTK4) crashes with SIGSEGV in WiiUPackage::loadMetaData when opening a folder of extracted Wii U titles
       * Reported by @brunolarouche.
+  * WiiUPackage: Fix meta.xml metadata not being added properly. This fixes
+    e.g. the Game ID column in Nautilus and Windows Explorer.
 
 * Other changes:
   * 64-bit time_t (using the rp_time_t typedef) is now used regardless of
