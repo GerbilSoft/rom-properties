@@ -5,6 +5,9 @@
 * Bug fixes:
   * WiiUPackage: Fix icon thumbnailing for packages extracted from a Wii U MLC.
   * DidjTex: Fix the zlib delay-load check on Windows.
+  * WiiUPackage: Fix a crash in Nautilus when viewing metadata from extracted packages.
+    * Fixes #514: [v2.9] Nautilus (GTK4) crashes with SIGSEGV in WiiUPackage::loadMetaData when opening a folder of extracted Wii U titles
+      * Reported by @brunolarouche.
 
 * Other changes:
   * 64-bit time_t (using the rp_time_t typedef) is now used regardless of
