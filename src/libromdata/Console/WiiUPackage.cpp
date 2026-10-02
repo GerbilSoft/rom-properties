@@ -885,7 +885,8 @@ int WiiUPackage::loadFieldData(void)
 	// Parse the Wii U System XMLs.
 	// NOTE: Only if the FST was loaded, or reading an extracted package.
 	if (canLoadXMLs) {
-		int ret = d->addFields_System_XMLs();
+		const bool hasTicket = (bool)d->ticket;
+		int ret = d->addFields_System_XMLs(!hasTicket);
 		if (ret != 0) {
 			d->fields.addField_string(C_("RomData", "Warning"),
 				C_("RomData", "XML parsing failed."),
@@ -954,15 +955,26 @@ int WiiUPackage::loadMetaData(void)
 	// NOTE: Adding custom properties from the ticket first, since it
 	// sets the Title to the Title ID. This will be overwritten with
 	// the actual Title if decryption is available and the XMLs are usable.
-	d->metaData.addMetaData_metaData(d->ticket->metaData());
+	if (d->ticket) {
+		d->metaData.addMetaData_metaData(d->ticket->metaData());
+	}
 
 #ifdef ENABLE_XML
 	// Check if the decryption keys were loaded.
-	const KeyManager::VerifyResult verifyResult = d->ticket->verifyResult();
-	if (verifyResult == KeyManager::VerifyResult::OK) {
-		// Decryption keys were loaded. We can add XML fields.
+	// NOTE: If not in Extracted format, requires a valid ticket.
+	if (d->packageType == WiiUPackagePrivate::PackageType::Extracted) {
+		// Extracted format. We can always add the XMLs.
 		// Parse the Wii U System XMLs.
-		d->addMetaData_System_XMLs();
+		const bool hasTicket = (bool)d->ticket;
+		d->addMetaData_System_XMLs(!hasTicket);
+	} else {
+		// For NUS format, we need a valid ticket in order to decrypt the contents.
+		const KeyManager::VerifyResult verifyResult = d->ticket->verifyResult();
+		if (verifyResult == KeyManager::VerifyResult::OK) {
+			// Decryption keys were loaded. We can add XML fields.
+			// Parse the Wii U System XMLs.
+			d->addMetaData_System_XMLs();
+		}
 	}
 #endif /* ENABLE_XML */
 

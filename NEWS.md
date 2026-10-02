@@ -5,6 +5,11 @@
 * Bug fixes:
   * WiiUPackage: Fix icon thumbnailing for packages extracted from a Wii U MLC.
   * DidjTex: Fix the zlib delay-load check on Windows.
+  * WiiUPackage: Fix a crash in Nautilus when viewing metadata from extracted packages.
+    * Fixes #514: [v2.9] Nautilus (GTK4) crashes with SIGSEGV in WiiUPackage::loadMetaData when opening a folder of extracted Wii U titles
+      * Reported by @brunolarouche.
+  * WiiUPackage: Fix meta.xml metadata not being added properly. This fixes
+    e.g. the Game ID column in Nautilus and Windows Explorer.
   * rp-download: Allow AF_UNIX to fix issues with systemd-resolved on CachyOS.
     * Fixes #512: rp-download hangs forever on systems using systemd-resolved (seccomp kills download threads with SIGSYS)
       * Reported by @dnmodder.
@@ -21,6 +26,8 @@
       Only a few distributions were released between the two (e.g. Ubuntu 19.10,
       which has kernel 5.3 and glibc-2.30), so it's not worth attempting to
       add our own 64-bit time_t syscall wrappers.)
+  * WiiUPackage: Add the title ID from meta.xml if a ticket isn't available.
+    * TODO: OS version?
 
 ## v2.9 (released 2026/09/13)
 
