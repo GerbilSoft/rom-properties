@@ -50,7 +50,7 @@ following development packages:
 * Optional decompression: zstd minizip-ng
 * KDE 5.x: qt5-base qt5-tools extra-cmake-modules kio kwidgetsaddons kfilemetadata kcrash
 * KDE 6.x: qt6-base qt6-tools extra-cmake-modules kio kwidgetsaddons kfilemetadata kcrash
-* XFCE (GTK+ 3.x): glib2 gtk3 cairo gsound
+* XFCE (GTK+ 3.x): glib2 glib2-devel gtk3 cairo gsound
 * GNOME, MATE, Cinnamon: glib2 gtk3 cairo libnautilus-extension gsound
 * GNOME 43: glib2 gtk4 gdk-pixbuf2 nautilus gsound
 
