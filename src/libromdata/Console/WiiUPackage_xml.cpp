@@ -541,9 +541,10 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 
 /**
  * Add metadata from the Wii U System XML files.
+ * @param addTicketProperties Add ticket properties, i.e. if title.tik isn't available.
  * @return 0 on success; negative POSIX error code on error.
  */
-int WiiUPackagePrivate::addMetaData_System_XMLs(void)
+int WiiUPackagePrivate::addMetaData_System_XMLs(bool addTicketProperties)
 {
 #if defined(_MSC_VER) && defined(XML_IS_DLL)
 	// Delay load verification.
@@ -610,6 +611,28 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(void)
 
 	// Product code (as Game ID)
 	metaData.addMetaData_string(Property::GameID, metaRootNode.child("product_code").text().as_string(nullptr));
+
+	// Title ID (only if adding fields usually provided by Tickets)
+	if (addTicketProperties) {
+		const char *const s_title_id = metaRootNode.child("title_id").text().as_string(nullptr);
+		if (s_title_id) {
+			if (strlen(s_title_id) == 16) {
+				// 16-digit title ID
+				// Add a hyphen in between the first 8 and last 8.
+				string s_disp_title_id;
+				s_disp_title_id.reserve(17);
+				s_disp_title_id.assign(s_title_id, 8);
+				s_disp_title_id += '-';
+				s_disp_title_id.append(&s_title_id[8], 8);
+				metaData.addMetaData_string(Property::TitleID, s_disp_title_id);
+			} else {
+				// Something else... Add it as-is.
+				metaData.addMetaData_string(Property::TitleID, s_title_id);
+			}
+		}
+
+		// TODO: OS version?
+	}
 
 	// Region code
 	// For multi-region titles, region will be formatted as: "JUECKT"

@@ -221,9 +221,10 @@ public:
 
 	/**
 	 * Add metadata from the Wii U System XML files.
+	 * @param addTicketProperties Add ticket properties, i.e. if title.tik isn't available.
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
-	int addMetaData_System_XMLs(void);
+	int addMetaData_System_XMLs(bool addTicketProperties = false);
 
 	/**
 	 * Get the product code from meta.xml, and application type from app.xml.

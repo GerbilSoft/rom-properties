@@ -954,7 +954,6 @@ int WiiUPackage::loadMetaData(void)
 	// NOTE: Adding custom properties from the ticket first, since it
 	// sets the Title to the Title ID. This will be overwritten with
 	// the actual Title if decryption is available and the XMLs are usable.
-	// TODO: Add equivalent metadata if using Extracted format and the ticket isn't available.s
 	if (d->ticket) {
 		d->metaData.addMetaData_metaData(d->ticket->metaData());
 	}
@@ -965,7 +964,8 @@ int WiiUPackage::loadMetaData(void)
 	if (d->packageType == WiiUPackagePrivate::PackageType::Extracted) {
 		// Extracted format. We can always add the XMLs.
 		// Parse the Wii U System XMLs.
-		d->addMetaData_System_XMLs();
+		const bool hasTicket = (bool)d->ticket;
+		d->addMetaData_System_XMLs(!hasTicket);
 	} else {
 		// For NUS format, we need a valid ticket in order to decrypt the contents.
 		const KeyManager::VerifyResult verifyResult = d->ticket->verifyResult();
