@@ -5,6 +5,9 @@
 * Bug fixes:
   * WiiUPackage: Fix icon thumbnailing for packages extracted from a Wii U MLC.
   * DidjTex: Fix the zlib delay-load check on Windows.
+  * rp-download: Allow AF_UNIX to fix issues with systemd-resolved on CachyOS.
+    * Fixes #512: rp-download hangs forever on systems using systemd-resolved (seccomp kills download threads with SIGSYS)
+      * Reported by @dnmodder.
 
 * Other changes:
   * 64-bit time_t (using the rp_time_t typedef) is now used regardless of

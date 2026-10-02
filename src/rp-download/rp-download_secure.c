@@ -123,12 +123,16 @@ int rp_download_do_security_options(void)
 		// because Bazzite uses an immutable system image?)
 		SCMP_SYS(statfs),
 
+		// Needed by CachyOS for some reason.
+		// fgetxattr() is used on the AF_UNIX socket...
+		SCMP_SYS(fgetxattr),
+
 		-1	// End of whitelist
 	};
 	param.syscall_wl = syscall_wl;
 	param.threading = true;		// libcurl uses multi-threading.
 	param.socket_tcp_udp = true;	// for downloading from the Internet
-	param.socket_unix = false;
+	param.socket_unix = true;
 #elif defined(HAVE_PLEDGE)
 	// Promises:
 	// - stdio: General stdio functionality.
