@@ -233,9 +233,10 @@ uint64_t WiiUPackagePrivate::parseHexBinary(xml_node rootNode, const char *name)
 
 /**
  * Add fields from the Wii U System XML files.
+ * @param addTicketFields Add ticket properties, i.e. if title.tik isn't available.
  * @return 0 on success; negative POSIX error code on error.
  */
-int WiiUPackagePrivate::addFields_System_XMLs(void)
+int WiiUPackagePrivate::addFields_System_XMLs(bool addTicketFields)
 {
 #if defined(_MSC_VER) && defined(XML_IS_DLL)
 	// Delay load verification.
@@ -413,6 +414,29 @@ int WiiUPackagePrivate::addFields_System_XMLs(void)
 
 	// Product code
 	ADD_TEXT(metaRootNode, "product_code", C_("Nintendo", "Product Code"));
+
+	// Title ID (only if adding fields usually provided by Tickets)
+	if (addTicketFields) {
+		const char *const s_title_id_title = C_("Nintendo", "Title ID");
+		const char *const s_title_id = metaRootNode.child("title_id").text().as_string(nullptr);
+		if (s_title_id) {
+			if (strlen(s_title_id) == 16) {
+				// 16-digit title ID
+				// Add a hyphen in between the first 8 and last 8.
+				string s_disp_title_id;
+				s_disp_title_id.reserve(17);
+				s_disp_title_id.assign(s_title_id, 8);
+				s_disp_title_id += '-';
+				s_disp_title_id.append(&s_title_id[8], 8);
+				fields.addField_string(s_title_id_title, s_disp_title_id);
+			} else {
+				// Something else... Add it as-is.
+				fields.addField_string(s_title_id_title, s_title_id);
+			}
+		}
+
+		// TODO: OS version?
+	}
 
 	// SDK version
 	if (appRootNode) {

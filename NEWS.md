@@ -23,6 +23,8 @@
       Only a few distributions were released between the two (e.g. Ubuntu 19.10,
       which has kernel 5.3 and glibc-2.30), so it's not worth attempting to
       add our own 64-bit time_t syscall wrappers.)
+  * WiiUPackage: Add the title ID from meta.xml if a ticket isn't available.
+    * TODO: OS version?
 
 ## v2.9 (released 2026/09/13)
 
