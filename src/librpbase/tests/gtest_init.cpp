@@ -302,9 +302,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// Add base syscalls.
 	syscall_wl.insert(syscall_wl.end(), syscall_wl_base, &syscall_wl_base[ARRAY_SIZE(syscall_wl_base)]);
 
-	// Default to no Unix domain sockets.
-	// It should be enabled if building Qt or GTK tests.
+	// Default to no Unix domain sockets or AF_NETLINK sockets.
+	// Unix domain sockets should be enabled if building Qt or GTK tests.
 	param.socket_unix = false;
+	param.socket_netlink = false;
 	param.cacheflush = false;	// no cacheflush() by default
 
 	if (rp_gtest_syscall_set & RP_GTEST_SYSCALL_SET_GTEST_DEATH_TEST) {

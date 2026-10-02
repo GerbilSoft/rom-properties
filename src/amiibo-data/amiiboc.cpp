@@ -151,6 +151,7 @@ static int set_security_options(void)
 	param.threading = false;
 	param.socket_tcp_udp = false;
 	param.socket_unix = false;
+	param.socket_netlink = false;
 #elif defined(HAVE_PLEDGE)
 	// Promises:
 	// - stdio: General stdio functionality.

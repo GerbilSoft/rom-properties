@@ -104,6 +104,7 @@ int rpcli_do_security_options(void)
 	param.threading = true;		// FIXME: Only if OpenMP is enabled?
 	param.socket_tcp_udp = false;
 	param.socket_unix = false;
+	param.socket_netlink = false;
 #elif defined(HAVE_PLEDGE)
 	// Promises:
 	// - stdio: General stdio functionality.

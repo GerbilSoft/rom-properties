@@ -121,6 +121,7 @@ int rp_stub_do_security_options(bool config)
 	param.threading = true;		// FIXME: Only if OpenMP is enabled?
 	param.socket_tcp_udp = false;
 	param.socket_unix = true;	// potentially needed for D-Bus
+	param.socket_netlink = false;
 #elif defined(HAVE_PLEDGE)
 	// Promises:
 	// - stdio: General stdio functionality.

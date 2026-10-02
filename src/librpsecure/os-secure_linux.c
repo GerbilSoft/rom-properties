@@ -296,6 +296,13 @@ int rp_secure_enable(rp_secure_param_t param)
 			SCMP_A0_32(SCMP_CMP_EQ, AF_UNIX, 0));
 	}
 
+	if (param.socket_netlink) {
+		// Allow socket() for AF_NETLINK.
+		// Required when using systemd-resolved on some systems.
+		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(socket), 1,
+			SCMP_A0_32(SCMP_CMP_EQ, AF_NETLINK, 0));
+	}
+
 	// Add syscalls from the caller's whitelist.
 	// TODO: More extensive syscall parameters?
 	for (const int16_t *p = param.syscall_wl; *p != -1; p++) {

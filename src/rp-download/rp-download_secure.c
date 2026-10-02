@@ -132,7 +132,10 @@ int rp_download_do_security_options(void)
 	param.syscall_wl = syscall_wl;
 	param.threading = true;		// libcurl uses multi-threading.
 	param.socket_tcp_udp = true;	// for downloading from the Internet
+	// systemd-resolved requires Unix domain sockets and AF_NETLINK sockets
+	// on some systems, e.g. CachyOS.
 	param.socket_unix = true;
+	param.socket_netlink = true;
 #elif defined(HAVE_PLEDGE)
 	// Promises:
 	// - stdio: General stdio functionality.

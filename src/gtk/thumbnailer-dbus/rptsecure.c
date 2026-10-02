@@ -101,6 +101,7 @@ int rpt_do_security_options(void)
 	param.threading = true;		// libcurl uses multi-threading.
 	param.socket_tcp_udp = true;	// for downloading from the Internet
 	param.socket_unix = true;	// for D-Bus
+	param.socket_netlink = false;
 #elif defined(HAVE_PLEDGE)
 	// Promises:
 	// - stdio: General stdio functionality.
