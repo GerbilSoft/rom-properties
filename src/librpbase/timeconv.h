@@ -73,7 +73,7 @@ static inline CONSTEXPR rp_time_t WindowsSplitTimeToUnixTime(uint32_t wintime_hi
  * @return Unix time
  */
 ATTR_CONST
-static inline CONSTEXPR rp_time_t UnixTimeToWindowsTime(rp_time_t unixtime)
+static inline CONSTEXPR int64_t UnixTimeToWindowsTime(rp_time_t unixtime)
 {
 	return (unixtime * HECTONANOSEC_PER_SEC) + FILETIME_1970;
 }
