@@ -33,13 +33,15 @@ namespace LibRomData { namespace NESMappers {
 // Mirroring behaviors for different mappers
 enum class NESMirroring : uint8_t {
 	Unknown = 0,		// When submapper has this value, it inherits mapper's value
+
 	// NOTE: for all of these we assume that if 4-Screen bit is set it means that the mapper's
 	// logic gets ignored, and there's simply 4K of SRAM at $2000. For more complicated mappers
 	// (MMC5) this would actually be a downgrade, and maybe even impossible, but iNES format
 	// applies the same logic to all mappers (except 30 and 218, see below)
-	// Reference: http://wiki.nesdev.com/w/index.php/NES_2.0#Hard-Wired_Mirroring
+	// Reference: https://www.nesdev.org/wiki/NES_2.0#Header
 	// NOTE: H/V/A/B refers to CIRAM A10 being connected to PPU A11/A10/Vss/Vdd respectively
 	// NOTE: boards that only ever existed in H or V configuration still use the H/V bit.
+
 	Header,			// fixed H/V (the default)
 	Mapper,			// Mapper-controlled (unspecified)
 	MapperHVAB,		// - switchable H/V/A/B (e.g. MMC1)
@@ -63,6 +65,7 @@ enum class NESMirroring : uint8_t {
 	OneScreen_B,		// fixed B
 				// (the distinction is only relevant for Magic Floor)
 	FourScreen,		// 4 screen regardless of header (e.g. Vs. System)
+
 	// The following mappers interpret the header bits differently
 	UNROM512,		// fixed H/V/4 or switchable A/B (mapper 30)
 	BandaiFamilyTrainer,	// fixed H/V or switchable A/B (mapper 70) (see note below)

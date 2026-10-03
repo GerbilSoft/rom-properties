@@ -549,7 +549,7 @@ static const NESMapperEntry NESMappers_offtbl[] = {
 	{4483, 0, NESMirroring::MapperHV},
 	{4507, 1452, NESMirroring::MapperHV},
 	{4536, 0, NESMirroring::MapperHV},
-	{4563, 2450, NESMirroring::MapperHV /* not sure */},
+	{4563, 2450, NESMirroring::MapperHV},
 	{4586, 0, NESMirroring::MapperHV},
 	{4626, 1452, NESMirroring::MapperHVAB},
 

@@ -27,6 +27,48 @@ string_table = bytearray(b'\x00')
 # String dictionary. Maps strings to offsets within the string table.
 string_dict = {"": 0}
 
+# NESMirroring enum values
+NESMirroring_enum = {
+	'Unknown': 0,			# When submapper has this value, it inherits mapper's value
+
+	# NOTE: for all of these we assume that if 4-Screen bit is set it means that the mapper's
+	# logic gets ignored, and there's simply 4K of SRAM at $2000. For more complicated mappers
+	# (MMC5) this would actually be a downgrade, and maybe even impossible, but iNES format
+	# applies the same logic to all mappers (except 30 and 218, see below)
+	# Reference: https://www.nesdev.org/wiki/NES_2.0#Header
+	# NOTE: H/V/A/B refers to CIRAM A10 being connected to PPU A11/A10/Vss/Vdd respectively
+	# NOTE: boards that only ever existed in H or V configuration still use the H/V bit.
+
+	'Header': 1,			# fixed H/V (the default)
+	'Mapper': 2,			# Mapper-controlled (unspecified)
+	'MapperHVAB': 3,		# - switchable H/V/A/B (e.g. MMC1)
+	'MapperHV': 4,			# - switchable H/V     (e.g. MMC3)
+	'MapperAB': 5,			# - switchable A/B     (e.g. AxROM)
+	'MapperMMC5': 6,		# - arbitrary configuration with 3 NTs and fill mode
+	'MapperNamco163': 7,		# - arbitrary configuration with 2 RAM and 224 ROM NTs
+	'MapperVRC6': 8,		# - it's complicated (Konami games only use H/V/A/B)
+	'MapperJY': 9,			# - J.Y. Company ASIC mapper (also complicated)
+	'MapperSunsoft4': 10,		# - switchable H/V/A/B with 2 RAM and 128 ROM NTs
+	'MapperNamcot3425': 11,		# - H but you can select how PPU A11 maps to CIRAM A10
+					#   (effectively it's selectable H/A/B/swapped-H)
+	'MapperGTROM': 12,		# - paged 4 screen RAM
+	'MapperTxSROM': 13,		# - arbitrary configuration with 2 NTs
+	'MapperSachen8259': 14,		# - switchable H/V/A/L-shaped (A10 or A11)
+	'MapperSachen74LS374N': 15,	# - switchable H/V/A/L-shaped (A10 and A11)
+	'MapperDIS23C01': 16,		# - switchable H/V. A on reset.
+	'Mapper233': 17,		# - switchable H/V/B/L-shaped (A10 and A11)
+	'Mapper235': 18,		# - switchable H/V/A
+	'OneScreen_A': 19,		# fixed A
+	'OneScreen_B': 20,		# fixed B
+					# (the distinction is only relevant for Magic Floor)
+	'FourScreen': 21,		# 4 screen regardless of header (e.g. Vs. System)
+
+	# The following mappers interpret the header bits differently
+	'UNROM512': 22,			# fixed H/V/4 or switchable A/B (mapper 30)
+	'BandaiFamilyTrainer': 23,	# fixed H/V or switchable A/B (mapper 70) (see note below)
+	'MagicFloor': 24,		# fixed H/V/A/B (mapper 218)
+}
+
 # Dictionary of entries.
 # - Key: Mapper number
 # - Value: Tuple: (Name, Manufacturer, Mirroring)
@@ -83,10 +125,18 @@ with open(sys.argv[1], 'r') as f_in:
 			string_table.append(0)
 			string_dict[arr[2]] = mfr_idx
 
-		# TODO: Validate the NESMirroring value?
+		# If a space is present in the NESMirroring value,
+		# remove the space and anything after it.
+		NESMirroring_value = arr[3]
+		if ' ' in NESMirroring_value:
+			NESMirroring_value = NESMirroring_value.split(' ', 1)[0]
+
+		# Validate the NESMirroring value.
+		if not NESMirroring_value in NESMirroring_enum:
+			raise ValueError(f"Unrecognized NESMirroring value: '{NESMirroring_value}'")
 
 		# Add the tuple.
-		entry_dict[mapper] = (name_idx, mfr_idx, arr[3])
+		entry_dict[mapper] = (name_idx, mfr_idx, NESMirroring_value)
 
 		# Next line.
 		line = f_in.readline()
