@@ -422,6 +422,38 @@ public:
 			// - Value: String
 			const StringMultiMap_t *str_multi;
 		} data;
+
+		/**
+		 * Validate ListDataFlags to ensure they don't have both Checkboxes and Icons set.
+		 * Also verify that if icons is set, an icon vector is provided.
+		 * @param hasCheckboxes	[out] True if RFT_LISTDATA_CHECKBOXES is set.
+		 * @param hasIcons	[out] True if RFT_LISTDATA_ICONS is set.
+		 * @return 0 if ListDataFlags is valid; non-zero if it is not.
+		 */
+		inline int validateListDataFlags(bool &hasCheckboxes, bool &hasIcons) const
+		{
+			assert(type == RomFields::RomFieldType::RFT_LISTDATA);
+			if (type != RomFields::RomFieldType::RFT_LISTDATA) {
+				return 1;
+			}
+
+			hasCheckboxes = !!(flags & RomFields::RFT_LISTDATA_CHECKBOXES);
+			hasIcons = !!(flags & RomFields::RFT_LISTDATA_ICONS);
+			assert(!(hasCheckboxes && hasIcons));
+			if (hasCheckboxes && hasIcons) {
+				return 2;
+			}
+
+			if (hasIcons) {
+				assert(data.list_data.mxd.icons != nullptr);
+				if (!data.list_data.mxd.icons) {
+					// No icons vector...
+					return 3;
+				}
+			}
+
+			return 0;
+		}
 	};
 
 public:

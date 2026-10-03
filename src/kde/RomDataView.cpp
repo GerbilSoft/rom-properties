@@ -544,22 +544,10 @@ QTreeView *RomDataViewPrivate::initListData(QLabel *lblDesc,
 
 	// Validate flags.
 	// Cannot have both checkboxes and icons.
-	const bool hasCheckboxes = !!(field.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
-	const bool hasIcons = !!(field.flags & RomFields::RFT_LISTDATA_ICONS);
-	assert(!(hasCheckboxes && hasIcons));
-	if (hasCheckboxes && hasIcons) {
-		// Both are set. This shouldn't happen...
-		delete lblDesc;
-		return nullptr;
-	}
-
-	if (hasIcons) {
-		assert(field.data.list_data.mxd.icons != nullptr);
-		if (!field.data.list_data.mxd.icons) {
-			// No icons vector...
-			delete lblDesc;
-			return nullptr;
-		}
+	bool hasCheckboxes, hasIcons;
+	if (field.validateListDataFlags(hasCheckboxes, hasIcons) != 0) {
+		// Not valid...
+		return 0;
 	}
 
 	int colCount = 1;
