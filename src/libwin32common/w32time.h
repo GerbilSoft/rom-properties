@@ -46,7 +46,7 @@ static inline SYSTEMTIME UnixTimeToSystemTime(_In_ rp_time_t unixtime)
  * @param pFileTime Win32 FILETIME
  * @return Unix time.
  */
-static inline int64_t FileTimeToUnixTime(_In_ FILETIME ft)
+static inline rp_time_t FileTimeToUnixTime(_In_ FILETIME ft)
 {
 	LARGE_INTEGER li;
 	li.LowPart = ft.dwLowDateTime;
@@ -59,7 +59,7 @@ static inline int64_t FileTimeToUnixTime(_In_ FILETIME ft)
  * @param pFileTime Win32 SYSTEMTIME
  * @return Unix time.
  */
-static inline int64_t SystemTimeToUnixTime(_In_ const SYSTEMTIME *pSystemTime)
+static inline rp_time_t SystemTimeToUnixTime(_In_ const SYSTEMTIME *pSystemTime)
 {
 	FILETIME ft;
 	SystemTimeToFileTime(pSystemTime, &ft);
