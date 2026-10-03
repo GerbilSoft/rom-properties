@@ -975,25 +975,26 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 	static constexpr uint32_t zip_magic = 0x504B0304;	// 'PK\x03\x04'
 	if (header.u32[0] == cpu_to_be32(zip_magic)) {
 		// This is a .zip file.
-
-		if(info.ext == nullptr) {
+		if (info.ext == nullptr) {
 			// No file extension...
 			return romData;
 		}
 
 		// Check the file extension to see if it matches any supported subclass.
-	    // This avoids opening files that we know are not supported.
+		// This avoids opening files that we know are not supported.
 		for (const auto &p : Private::zipDetectTbl) {
 			const RomDataInfo *const rdi = p.romDataInfo();
+			assert(rdi != nullptr);
+			assert(rdi->exts != nullptr);
 			if (!rdi || !rdi->exts) {
-				// No extensions in this table
+				// No extensions in this table???
 				continue;
 			}
 
 			// Check for a matching file extension
 			for (const char *const *ext = rdi->exts; *ext != nullptr; ++ext) {
 				if (!strcasecmp(info.ext, *ext)) {
-					// This file is supported, try to open it
+					// This file extension is supported, try to open it.
 
 					// NOTE: Assigning to `romData` for named-return-value optimization.
 					romData = Private::openZipFile(file, attrs);
