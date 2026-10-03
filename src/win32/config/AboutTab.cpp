@@ -56,10 +56,7 @@ using LibWin32UI::LoadDialog_i18n;
 // for rp_LoadLibraryEx()
 #include "libwin32common/rp_LoadLibraryEx.h"
 
-// libfmt
-#include "rp-libfmt.h"
-
-// Windows: RichEdit control.
+// Windows: RichEdit control
 #include <richedit.h>
 // NOTE: AURL_ENABLEURL is only defined if _RICHEDIT_VER >= 0x0800
 // but this seems to work on Windows XP.
@@ -79,6 +76,9 @@ using LibWin32UI::LoadDialog_i18n;
 static constexpr int MAX_TABS = 3;
 
 /** Libraries **/
+
+// NOTE: time_r.h must be included before png.h; otherwise, gmtime_r() fails on MinGW-w64.
+#include "time_r.h"
 
 // zlib and libpng
 // TODO: Make ZLIBNG_VERSION and ZLIB_VERSION accessible via RpPng.
@@ -109,6 +109,9 @@ static constexpr int MAX_TABS = 3;
 #define RTF_ALIGN_CENTER "\\qc "
 #define RTF_BOLD_ON "\\b "
 #define RTF_BOLD_OFF "\\b0 "
+
+// libfmt
+#include "rp-libfmt.h"
 
 class AboutTabPrivate
 {
