@@ -28,6 +28,10 @@
       add our own 64-bit time_t syscall wrappers.)
   * WiiUPackage: Add the title ID from meta.xml if a ticket isn't available.
     * TODO: OS version?
+  * Only check ZIP files if they have a supported extension, e.g. .apk for
+    Android packages and .jar for J2ME.
+    * Pull request #515: [libromdata] RomDataFactory.cpp: only open zip if file extension is known and supported
+      * Submitted by @Di-Strix.
 
 ## v2.9 (released 2026/09/13)
 
