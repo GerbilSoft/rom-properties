@@ -8,6 +8,9 @@
 
 #pragma once
 
+// time_r.h needs to be here due to *_r() issues on MinGW-w64.
+#include "time_r.h"
+
 #ifdef __cplusplus
 /** C++ **/
 
@@ -36,7 +39,6 @@
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
-#include <time.h>
 #include <stdint.h>
 
 #ifdef _WIN32

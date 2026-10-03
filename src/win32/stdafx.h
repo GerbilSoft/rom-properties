@@ -8,6 +8,9 @@
 
 #pragma once
 
+// time_r.h needs to be here due to *_r() issues on MinGW-w64.
+#include "time_r.h"
+
 // Make sure STRICT is defined for better type safety.
 #ifndef STRICT
 #define STRICT
