@@ -5,5 +5,9 @@ set -ev
 ./strtbl_parser.py vkEnum_1000156xxx vkEnum_1000156xxx_data.txt vkEnum_1000156xxx_data.h
 ./strtbl_parser.py vkEnum_1000330xxx vkEnum_1000330xxx_data.txt vkEnum_1000330xxx_data.h
 ./strtbl_parser.py vkEnum_1000340xxx vkEnum_1000340xxx_data.txt vkEnum_1000340xxx_data.h
+./strtbl_parser.py vkEnum_1000470xxx vkEnum_1000470xxx_data.txt vkEnum_1000470xxx_data.h
 ./strtbl_parser.py vkEnum_PVRTC vkEnum_PVRTC_data.txt vkEnum_PVRTC_data.h
 ./strtbl_parser.py vkEnum_ASTC vkEnum_ASTC_data.txt vkEnum_ASTC_data.h
+./strtbl_parser.py vkEnum_ASTC_3D vkEnum_ASTC_3D_data.txt vkEnum_ASTC_3D_data.h
+./strtbl_parser.py vkEnum_1000460xxx vkEnum_1000460xxx_data.txt vkEnum_1000460xxx_data.h
+./strtbl_parser.py vkEnum_1000609xxx vkEnum_1000609xxx_data.txt vkEnum_1000609xxx_data.h

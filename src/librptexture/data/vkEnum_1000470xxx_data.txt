@@ -1,0 +1,9 @@
+# Vulkan formats (1000470xxx table)
+# Format: ID|Name
+# ID is always interpreted as decimal.
+
+# NOTE: IDs are relative to 1000470000 for base.
+
+# 1000470000
+0|A1B5G5R5_UNORM_PACK16
+1|A8_UNORM

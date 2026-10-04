@@ -15,8 +15,12 @@ namespace LibRpTexture { namespace VkEnumStrings {
 #include "vkEnum_1000156xxx_data.h"
 #include "vkEnum_1000330xxx_data.h"
 #include "vkEnum_1000340xxx_data.h"
+#include "vkEnum_1000470xxx_data.h"
 #include "vkEnum_PVRTC_data.h"
 #include "vkEnum_ASTC_data.h"
+#include "vkEnum_ASTC_3D_data.h"
+#include "vkEnum_1000460xxx_data.h"
+#include "vkEnum_1000609xxx_data.h"
 
 /** Public functions **/
 
@@ -53,6 +57,12 @@ const char *lookup_vkFormat(unsigned int vkFormat)
 		tbl = vkEnum_1000340xxx_strtbl;
 		offset = vkEnum_1000340xxx_offtbl[vkFormat - VK_FORMAT_A4R4G4B4_UNORM_PACK16];
 	}
+	else if (vkFormat >= VK_FORMAT_A1B5G5R5_UNORM_PACK16 &&
+	         vkFormat <= VK_FORMAT_A8_UNORM)
+	{
+		tbl = vkEnum_1000470xxx_strtbl;
+		offset = vkEnum_1000470xxx_offtbl[vkFormat - VK_FORMAT_A1B5G5R5_UNORM_PACK16];
+	}
 	else if (vkFormat >= VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG &&
 	         vkFormat <= VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG)
 	{
@@ -65,12 +75,26 @@ const char *lookup_vkFormat(unsigned int vkFormat)
 		tbl = vkEnum_ASTC_strtbl;
 		offset = vkEnum_ASTC_offtbl[vkFormat - VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK];
 	}
+	else if (vkFormat >= VK_FORMAT_ASTC_3x3x3_UNORM_BLOCK_EXT &&
+	         vkFormat <= VK_FORMAT_ASTC_6x6x6_SFLOAT_BLOCK_EXT)
+	{
+		tbl = vkEnum_ASTC_3D_strtbl;
+		offset = vkEnum_ASTC_3D_offtbl[vkFormat - VK_FORMAT_ASTC_3x3x3_UNORM_BLOCK_EXT];
+	}
+	else if (vkFormat >= VK_FORMAT_R8_BOOL_ARM &&
+	         vkFormat <= VK_FORMAT_R8_SFLOAT_FPENCODING_FLOAT8E5M2_ARM)
+	{
+		tbl = vkEnum_1000460xxx_strtbl;
+		offset = vkEnum_1000460xxx_offtbl[vkFormat - VK_FORMAT_R8_BOOL_ARM];
+	}
+	else if (vkFormat >= VK_FORMAT_R10X6_UINT_PACK16_ARM &&
+	         vkFormat <= VK_FORMAT_G14X2_B14X2R14X2_2PLANE_422_UNORM_3PACK16_ARM)
+	{
+		tbl = vkEnum_1000460xxx_strtbl;
+		offset = vkEnum_1000460xxx_offtbl[vkFormat - VK_FORMAT_R10X6_UINT_PACK16_ARM];
+	}
 	else if (vkFormat == VK_FORMAT_R16G16_SFIXED5_NV) {
 		return "R16G16_SFIXED5_NV";
-	} else if (vkFormat == VK_FORMAT_A1B5G5R5_UNORM_PACK16_KHR) {
-		return "A1B5G5R5_UNORM_PACK16_KHR";
-	} else if (vkFormat == VK_FORMAT_A8_UNORM_KHR) {
-		return "A8_UNORM_KHR";
 	}
 
 	if (!tbl || offset == 0) {

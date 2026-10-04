@@ -138,8 +138,12 @@ SET(${PROJECT_NAME}_H
 	data/vkEnum_1000156xxx_data.h
 	data/vkEnum_1000330xxx_data.h
 	data/vkEnum_1000340xxx_data.h
+	data/vkEnum_1000470xxx_data.h
 	data/vkEnum_PVRTC_data.h
 	data/vkEnum_ASTC_data.h
+	data/vkEnum_ASTC_3D_data.h
+	data/vkEnum_1000460xxx_data.h
+	data/vkEnum_1000609xxx_data.h
 	)
 
 IF(WIN32)
