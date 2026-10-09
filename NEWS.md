@@ -13,6 +13,11 @@
   * rp-download: Allow AF_UNIX to fix issues with systemd-resolved on CachyOS.
     * Fixes #512: rp-download hangs forever on systems using systemd-resolved (seccomp kills download threads with SIGSYS)
       * Reported by @dnmodder.
+  * Linux: Increase MIME type magic priority for raw GameCube and Wii disc images.
+    * Some disc images with a .iso extension were not properly detected as GCN/Wii.
+    * This incorrectly caused Dolphin 26.08's "Change File Type" dialog to appear
+      every so often when renaming the base part of the filename (not the extension).
+    * Reported by @dev-camo.
 
 * Other changes:
   * 64-bit time_t (using the rp_time_t typedef) is now used regardless of
