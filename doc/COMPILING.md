@@ -10,9 +10,9 @@ packages:
 * KDE 5.x: qtbase5-dev qttools5-dev-tools extra-cmake-modules libkf5kio-dev libkf5widgetsaddons-dev libkf5filemetadata-dev libkf5crash-dev
 * KDE 6.x: qt6-base-dev qt6-tools-dev-tools extra-cmake-modules libkf6kio-dev libkf6widgetsaddons-dev libkf6filemetadata-dev libkf6crash-dev
 * XFCE (GTK+ 2.x): libglib2.0-dev libgtk2.0-dev libgdk-pixbuf2.0-dev libthunarx-2-dev libcanberra-dev libgsound-dev
-* XFCE (GTK+ 3.x): libglib2.0-dev libgtk-3-dev libcairo2-dev libthunarx-3-dev libgsound-dev
-* GNOME, MATE, Cinnamon: libglib2.0-dev libgtk-3-dev libcairo2-dev libnautilus-extension-dev libgsound-dev
-* GNOME 43: libglib2.0-dev libgtk-4-dev libgdk-pixbuf2.0-dev libnautilus-extension-dev libgsound-dev
+* XFCE (GTK+ 3.x): libglib2.0-dev libatk1.0-dev libgtk-3-dev libcairo2-dev libthunarx-3-dev libgsound-dev
+* GNOME, MATE, Cinnamon: libglib2.0-dev libatk1.0-dev libgtk-3-dev libcairo2-dev libnautilus-extension-dev libgsound-dev
+* GNOME 43: libglib2.0-dev libatk1.0-dev libgtk-4-dev libgdk-pixbuf2.0-dev libnautilus-extension-dev libgsound-dev
 
 Optional runtime dependencies:
 * libcurl4 liblz4-1 liblzo2-2 (libwebp5 | libwebp6 | libwebp7)
@@ -35,9 +35,9 @@ packages:
 * KDE 5.x: qt5-qtbase-devel qt5-qttools extra-cmake-modules kf5-kio-devel kf5-kwidgetsaddons-devel kf5-kfilemetadata-devel kf5-kcrash-devel
 * KDE 6.x: qt6-qtbase-devel qt6-qttools extra-cmake-modules kf6-kio-devel kf6-kwidgetsaddons-devel kf6-kfilemetadata-devel kf6-kcrash-devel
 * XFCE (GTK+ 2.x): glib2-devel gtk2-devel gdk-pixbuf2-devel Thunar-devel gsound-devel
-* XFCE (GTK+ 3.x): glib2-devel gtk3-devel cairo-devel Thunar-devel gsound-devel
-* GNOME, MATE, Cinnamon: glib2-devel gtk3-devel cairo-devel nautilus-devel gsound-devel
-* GNOME 43: glib2-devel gtk4-devel gdk-pixbuf2-devel nautilus-devel gsound-devel
+* XFCE (GTK+ 3.x): glib2-devel atk-devel gtk3-devel cairo-devel Thunar-devel gsound-devel
+* GNOME, MATE, Cinnamon: glib2-devel atk-devel gtk3-devel cairo-devel nautilus-devel gsound-devel
+* GNOME 43: glib2-devel atk-devel gtk4-devel gdk-pixbuf2-devel nautilus-devel gsound-devel
 
 Optional runtime dependencies:
 * lz4 lzo libwebp
