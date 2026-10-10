@@ -339,7 +339,7 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 		romData = RomDataFactory::create(s_local_filename);
 	} else {
 		// File: Open the file and call RomDataFactory::create() with the opened file.
-		IRpFilePtr file(openQUrl(localUrl, false));
+		IRpFilePtr file(openQUrl(localUrl, true));
 		if (!file) {
 			// Could not open the file.
 			return;
