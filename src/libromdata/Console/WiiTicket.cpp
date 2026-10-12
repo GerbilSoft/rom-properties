@@ -225,7 +225,7 @@ int WiiTicketPrivate::getEncKey(void)
 
 	uint32_t ca, xs;
 	char c;
-	int ret = sscanf(issuer, "Root-CA%08X-XS%08X%c", &ca, &xs, &c);
+	int ret = sscanf(issuer, "Root-CA%08x-XS%08x%c", &ca, &xs, &c);
 	if (ret != 2) {
 		// Not a valid issuer...
 		return -EINVAL;
@@ -239,11 +239,11 @@ int WiiTicketPrivate::getEncKey(void)
 
 	// Check CA and XS.
 	struct ca_xs_tbl_t {
-		uint16_t ca;
-		uint16_t xs;
+		uint32_t ca;
+		uint32_t xs;
 		WiiTicket::EncryptionKeys encKey;
 	};
-	static const array<ca_xs_tbl_t, 7> ca_xs_tbl = {{
+	static const array<ca_xs_tbl_t, 13> ca_xs_tbl = {{
 		// RVL retail
 		{1, 3, WiiTicket::EncryptionKeys::Key_RVL_Common},
 
@@ -264,6 +264,30 @@ int WiiTicketPrivate::getEncKey(void)
 
 		// iQue NetCard retail (NOTE: Not released...)
 		{0x111, 0x114, WiiTicket::EncryptionKeys::Key_NC_Retail},
+
+		// RVA: Mario Party
+		// NOTE: Uses the same key as RVT systems.
+		{0x50000000, 0x50000000, WiiTicket::EncryptionKeys::Key_RVT_Debug},
+
+		// RVA: Sega
+		// NOTE: Uses the same key as RVT systems.
+		{0xA0000000, 0xA0000000, WiiTicket::EncryptionKeys::Key_RVT_Debug},
+
+		// RVA: Taito
+		// NOTE: Uses the same key as RVT systems.
+		{0xC0000000, 0xC0000000, WiiTicket::EncryptionKeys::Key_RVT_Debug},
+
+		// RVA: Capcom
+		// NOTE: Uses the same key as RVT systems.
+		{0xD0000000, 0xD0000000, WiiTicket::EncryptionKeys::Key_RVT_Debug},
+
+		// RVA: Konami
+		// NOTE: Uses the same key as RVT systems.
+		{0xE0000000, 0xE0000000, WiiTicket::EncryptionKeys::Key_RVT_Debug},
+
+		// RVA: Generic
+		// NOTE: Uses the same key as RVT systems.
+		{0xF0000000, 0xF0000000, WiiTicket::EncryptionKeys::Key_RVT_Debug},
 	}};
 
 	WiiTicket::EncryptionKeys encKey = WiiTicket::EncryptionKeys::Unknown;
@@ -555,7 +579,7 @@ int WiiTicket::loadMetaData(void)
 
 	// Ticket is read in the constructor.
 	//const RVL_Ticket *const ticket = &d->ticket.v0;
-	d->metaData.reserve(3);	// Maximum of 3 metadata property.
+	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 	// Title ID (using as Title)
 	const string s_titleID = d->getTitleID();
