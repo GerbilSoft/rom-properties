@@ -17,9 +17,11 @@
 #include <dlfcn.h>
 #include <errno.h>
 
-// Tracker API version in use.
-// Currently, only Tracker 1.x is supported.
+// Tracker API version in use
 int rp_tracker_api = 0;
+
+// Is this localsearch? (v3.9 or later)
+bool rp_tracker_is_3L = false;
 
 // Module handles
 static void *libtracker_extract_so;
@@ -192,19 +194,20 @@ int rp_tracker_init_pfn(void)
 		const char *sparql_so;	// libtracker-sparql filename
 		const char *extract_so;	// libtracker-extract.so filename
 		int api_version;	// Tracker API version (1, 2, 3; 3L isn't used here)
+		bool is3L;		// Set for localsearch only
 	} TrackerApiLibs_t;
 	static const TrackerApiLibs_t trackerApiLibs[] = {
 		// LocalSearch 3.0 (aka tracker-3.8)
-		{RP_LIBRARY_SO_VERSIONED("libtinysparql-3.0.so", ".0"), "libtracker-extract.so", 3},
+		{RP_LIBRARY_SO_VERSIONED("libtinysparql-3.0.so", ".0"), "libtracker-extract.so", 3, true},
 
 		// Tracker 3.0
-		{RP_LIBRARY_SO_VERSIONED("libtracker-sparql-3.0.so", ".0"), "libtracker-extract.so", 3},
+		{RP_LIBRARY_SO_VERSIONED("libtracker-sparql-3.0.so", ".0"), "libtracker-extract.so", 3, false},
 
 		// Tracker 2.0
-		{RP_LIBRARY_SO_VERSIONED("libtracker-sparql-2.0.so", ".0"), "libtracker-extract.so.0", 2},
+		{RP_LIBRARY_SO_VERSIONED("libtracker-sparql-2.0.so", ".0"), "libtracker-extract.so.0", 2, false},
 
 		// Tracker 1.0
-		{RP_LIBRARY_SO_VERSIONED("libtracker-sparql-1.0.so", ".0"), "libtracker-extract.so.0", 1},
+		{RP_LIBRARY_SO_VERSIONED("libtracker-sparql-1.0.so", ".0"), "libtracker-extract.so.0", 1, false},
 	};
 	static const TrackerApiLibs_t *const pEnd = &trackerApiLibs[sizeof(trackerApiLibs)/sizeof(trackerApiLibs[0])];
 
@@ -234,6 +237,7 @@ int rp_tracker_init_pfn(void)
 
 		if (ret == 0) {
 			rp_tracker_api = p->api_version;
+			rp_tracker_is_3L = p->is3L;
 			return 0;
 		}
 
