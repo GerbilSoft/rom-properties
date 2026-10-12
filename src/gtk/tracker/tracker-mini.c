@@ -35,8 +35,9 @@ tracker_extract_pfns_t tracker_extract_pfns;
 /**
  * Initialize libtracker_extract v1 function pointers.
  * Common to both v1 and v2.
+ * @return 0 on success; non-zero on error.
  */
-static void init_tracker_extract_v1(void)
+static int init_tracker_extract_v1(void)
 {
 	/** TrackerExtractInfo **/
 
@@ -48,13 +49,28 @@ static void init_tracker_extract_v1(void)
 	//DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_preupdate_builder);
 	//DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_postupdate_builder);
 	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_metadata_builder);
+
+	if (!tracker_extract_pfns.v1.info.get_file ||
+	    !tracker_extract_pfns.v1.info.get_metadata_builder)
+	{
+		return -ENOENT;
+	}
+
+	return 0;
 }
 
 /**
  * Initialize tracker-1.0 function pointers.
+ * @return 0 on success; non-zero on error.
  */
-static void init_tracker_v1(void)
+static int init_tracker_v1(void)
 {
+	/** TrackerExtractInfo **/
+	int ret = init_tracker_extract_v1();
+	if (ret != 0) {
+		return ret;
+	}
+
 	/** TrackerSparqlBuilder **/
 
 	//DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, get_type);
@@ -78,18 +94,42 @@ static void init_tracker_v1(void)
 	//DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, prepend);
 	//DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v1, builder, tracker_sparql_builder, append);
 
-	/** TrackerExtractInfo **/
-	init_tracker_extract_v1();
+	if (!tracker_sparql_pfns.v1.builder.predicate ||
+	    !tracker_sparql_pfns.v1.builder.object ||
+	    !tracker_sparql_pfns.v1.builder.object_string ||
+	    !tracker_sparql_pfns.v1.builder.object_int64 ||
+	    !tracker_sparql_pfns.v1.builder.object_date)
+	{
+		return -ENOENT;
+	}
 
-	rp_tracker_api = 1;
+	return 0;
 }
 
 /**
  * Initialize tracker-2.0 function pointers.
+ * @return 0 on success; non-zero on error.
  */
-static void init_tracker_v2(void)
+static int init_tracker_v2(void)
 {
-	// TODO: Check for NULL symbols?
+	/** TrackerExtractInfo **/
+
+	int ret = init_tracker_extract_v1();
+	if (ret != 0) {
+		return ret;
+	}
+
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v2, info, tracker_extract_info, set_resource);
+
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v2, _new, tracker_extract_new, artist);
+	DLSYM(libtracker_extract_so, tracker_extract_pfns, v2, _new, tracker_extract_new, music_album_disc);
+
+	if (!tracker_extract_pfns.v2.info.set_resource ||
+	    !tracker_extract_pfns.v2._new.artist ||
+	    !tracker_extract_pfns.v2._new.music_album_disc)
+	{
+		return -ENOENT;
+	}
 
 	/** TrackerResource (part of libtracker_sparql) **/
 
@@ -116,16 +156,21 @@ static void init_tracker_v2(void)
 	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, add_take_relation);
 	//DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, add_string);
 	DLSYM(libtracker_sparql_so, tracker_sparql_pfns, v2, resource, tracker_resource, add_uri);
-// 
-	/** TrackerExtractInfo **/
 
-	init_tracker_extract_v1();
-	DLSYM(libtracker_extract_so, tracker_extract_pfns, v2, info, tracker_extract_info, set_resource);
+	if (!tracker_sparql_pfns.v2.resource._new ||
+	    !tracker_sparql_pfns.v2.resource.get_first_relation ||
+	    !tracker_sparql_pfns.v2.resource.set_gvalue ||
+	    !tracker_sparql_pfns.v2.resource.set_int ||
+	    !tracker_sparql_pfns.v2.resource.set_relation ||
+	    !tracker_sparql_pfns.v2.resource.set_take_relation ||
+	    !tracker_sparql_pfns.v2.resource.set_string ||
+	    !tracker_sparql_pfns.v2.resource.add_take_relation ||
+	    !tracker_sparql_pfns.v2.resource.add_uri)
+	{
+		return -ENOENT;
+	}
 
-	DLSYM(libtracker_extract_so, tracker_extract_pfns, v2, _new, tracker_extract_new, artist);
-	DLSYM(libtracker_extract_so, tracker_extract_pfns, v2, _new, tracker_extract_new, music_album_disc);
-
-	rp_tracker_api = 2;
+	return 0;
 }
 
 /**
@@ -180,17 +225,30 @@ int rp_tracker_init_pfn(void)
 
 		// Found a Tracker API.
 		// NOTE: API v3 is essentially the same as v2.
+		int ret = 0;
 		if (p->api_version >= 2) {
-			init_tracker_v2();
+			ret = init_tracker_v2();
 		} else {
-			init_tracker_v1();
+			ret = init_tracker_v1();
 		}
 
-		rp_tracker_api = p->api_version;
-		return 0;
+		if (ret == 0) {
+			rp_tracker_api = p->api_version;
+			return 0;
+		}
+
+		// Could not initialize the libraries...
+		dlclose(libtracker_sparql_so);
+		libtracker_sparql_so = NULL;
+		dlclose(libtracker_extract_so);
+		libtracker_extract_so = NULL;
+
+		rp_tracker_api = 0;
+		break;
 	}
 
-	// One or more libraries were not found.
+	// One or more libraries were not found,
+	// or required symbols are missing.
 	return -ENOENT;
 }
 
