@@ -37,9 +37,10 @@ tracker_extract_pfns_t tracker_extract_pfns;
 /**
  * Initialize libtracker_extract v1 function pointers.
  * Common to both v1 and v2.
+ * @param isV1 If true, using ABI v1; get_metadata_builder is required. (Not used for v2 or later.)
  * @return 0 on success; non-zero on error.
  */
-static int init_tracker_extract_v1(void)
+static int init_tracker_extract_v1(bool isV1)
 {
 	/** TrackerExtractInfo **/
 
@@ -50,12 +51,17 @@ static int init_tracker_extract_v1(void)
 	//DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_mimetype);
 	//DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_preupdate_builder);
 	//DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_postupdate_builder);
-	DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_metadata_builder);
 
-	if (!tracker_extract_pfns.v1.info.get_file ||
-	    !tracker_extract_pfns.v1.info.get_metadata_builder)
-	{
+	if (!tracker_extract_pfns.v1.info.get_file) {
 		return -ENOENT;
+	}
+
+	// v1 only
+	if (isV1) {
+		DLSYM(libtracker_extract_so, tracker_extract_pfns, v1, info, tracker_extract_info, get_metadata_builder);
+		if (!tracker_extract_pfns.v1.info.get_metadata_builder) {
+			return -ENOENT;
+		}
 	}
 
 	return 0;
@@ -68,7 +74,7 @@ static int init_tracker_extract_v1(void)
 static int init_tracker_v1(void)
 {
 	/** TrackerExtractInfo **/
-	int ret = init_tracker_extract_v1();
+	int ret = init_tracker_extract_v1(true);
 	if (ret != 0) {
 		return ret;
 	}
@@ -116,7 +122,7 @@ static int init_tracker_v2(void)
 {
 	/** TrackerExtractInfo **/
 
-	int ret = init_tracker_extract_v1();
+	int ret = init_tracker_extract_v1(false);
 	if (ret != 0) {
 		return ret;
 	}
