@@ -315,7 +315,11 @@ add_metadata_properties_v2(const RomMetaData *metaData, TrackerResource *resourc
 	g_clear_object(&album_artist);
 }
 
-// NOTE: The "error" parameter was added in tracker-3.0.
+// NOTE: The "error" parameter was added in tracker-3.1.
+// Assume tracker-3.1 is in use if it's localsearch.
+// Unfortunately, there doesn't seem to be any other way to detect
+// tracker-3.1 or later, so if it's not localsearch, fall back to
+// reporting `true` on error.
 extern "C"
 G_MODULE_EXPORT gboolean
 tracker_extract_get_metadata(TrackerExtractInfo *info, GError **error)
@@ -324,38 +328,57 @@ tracker_extract_get_metadata(TrackerExtractInfo *info, GError **error)
 	// TODO: ELF ctor/dtor?
 	if (rp_tracker_init_pfn() != 0) {
 		// Failed to initialize function pointers.
-		return false;
+		if (rp_tracker_is_3L) {
+			g_set_error(error, G_IO_ERROR, g_io_error_from_errno(ENOENT), "Tracker function pointers could not be initialized.");
+			return false;
+		}
+		return true;
 	}
 
 	GFile *const file = tracker_extract_pfns.v1.info.get_file(info);
 	if (!file) {
-		// TODO: Set error if Tracker 3.0.
-		((void)error);
-		return false;
+		// TODO: Propagate error from Tracker 3.0?
+		if (rp_tracker_is_3L) {
+			g_set_error(error, G_IO_ERROR, g_io_error_from_errno(EIO), "tracker_extract_get_file() failed.");
+			return false;
+		}
+		return true;
 	}
 
 	gchar *const filename = g_file_get_path(file);
 	if (!filename) {
 		// Unable to get a local filename.
 		// TODO: Support URIs?
-		return false;
+		if (rp_tracker_is_3L) {
+			g_set_error(error, G_IO_ERROR, g_io_error_from_errno(EIO), "Could not get a local filename for the file.");
+			return false;
+		}
+		return true;
 	}
 
 	// Check for "bad" file systems.
+	// TODO: Also check if it's a directory?
 	Config *const config = Config::instance();
 	if (FileSystem::isOnBadFS(filename, config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS))) {
 		// This file is on a "bad" file system.
+		// Not an "error" per se, so just return success.
 		g_free(filename);
-		return false;
+		return true;
 	}
 
 	// Attempt to open the file using RomDataFactory.
 	RomDataPtr romData = RomDataFactory::create(filename);
-	g_free(filename);
 	if (!romData) {
 		// No RomData was created.
-		return false;
+		if (rp_tracker_is_3L) {
+			g_set_error(error, G_IO_ERROR, g_io_error_from_errno(EIO), "Could not create a RomData object for file '%s'.", filename);
+			g_free(filename);
+			return false;
+		}
+		g_free(filename);
+		return true;
 	}
+	g_free(filename);
 
 	union {
 		TrackerSparqlBuilder *builder;
@@ -364,7 +387,11 @@ tracker_extract_get_metadata(TrackerExtractInfo *info, GError **error)
 	switch (rp_tracker_api) {
 		default:
 			assert(!"Tracker API version is not supported.");
-			break;
+			if (rp_tracker_is_3L) {
+				g_set_error(error, G_IO_ERROR, g_io_error_from_errno(ENOENT), "Unsupported tracker API version: %d", rp_tracker_api);
+				return false;
+			}
+			return true;
 
 		case 1:
 			builder = tracker_extract_pfns.v1.info.get_metadata_builder(info);
@@ -521,7 +548,11 @@ tracker_extract_get_metadata(TrackerExtractInfo *info, GError **error)
 	switch (rp_tracker_api) {
 		default:
 			assert(!"Tracker API version is not supported.");
-			break;
+			if (rp_tracker_is_3L) {
+				g_set_error(error, G_IO_ERROR, g_io_error_from_errno(ENOENT), "Unsupported tracker API version: %d", rp_tracker_api);
+				return false;
+			}
+			return true;
 		case 1:
 			add_metadata_properties_v1(metaData, builder);
 			break;

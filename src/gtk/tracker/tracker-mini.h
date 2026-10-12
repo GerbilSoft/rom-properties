@@ -10,6 +10,8 @@
 // do not install headers for libtracker-extract.
 #pragma once
 
+#include "stdboolx.h"
+
 #include <glib.h>
 
 #include "tracker-mini-1.0.h"
@@ -17,9 +19,11 @@
 
 G_BEGIN_DECLS
 
-// Tracker API version in use.
-// Currently, only Tracker 1.x is supported.
+// Tracker API version in use
 extern int rp_tracker_api;
+
+// Is this localsearch? (v3.9 or later)
+extern bool rp_tracker_is_3L;
 
 /** Function pointer structs **/
 
