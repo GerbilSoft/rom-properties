@@ -18,6 +18,9 @@
     * This incorrectly caused Dolphin 26.08's "Change File Type" dialog to appear
       every so often when renaming the base part of the filename (not the extension).
     * Reported by @dev-camo.
+  * tracker/localsearch: Fix crashes with localsearch v3.9, v3.10, and v3.11.
+    * Fixes #519: [BUG] localsearch-extractor-3 crashes on .so / .exe / .dll files with the localsearch plugin installed
+      * Reported by @evrenge.
 
 * Other changes:
   * 64-bit time_t (using the rp_time_t typedef) is now used regardless of
