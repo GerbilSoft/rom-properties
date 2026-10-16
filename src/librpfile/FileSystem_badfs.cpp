@@ -82,6 +82,77 @@ using std::string;
 #  endif
 #endif /* __linux__ */
 
+#ifdef __linux__
+/**
+ * Get the filesystem name for the mount point for the specified filename.
+ * @param filename Filename
+ * @return Filesystem name for the Mount point, or empty string on error.
+ */
+string getFileSystemForMountPoint(const char *filename)
+{
+	string fs_name;
+
+	// Read in `/proc/mounts` and find the longest mount point that matches the filename.
+	// TODO: Cache it?
+	FILE *f_mounts = fopen("/proc/mounts", "r");
+	if (!f_mounts) {
+		// Unable to read /proc/mounts?
+		return fs_name;
+	}
+
+	string s_mnt("/", 1);
+	while (!feof(f_mounts)) {
+		// FIXME: Is 1024 bytes enough for a single line?
+		char buf[1024];
+		if (!fgets(buf, sizeof(buf), f_mounts)) {
+			break;
+		}
+
+		// Token 0: Device name
+		// Token 1: Mount point
+		char *saveptr = nullptr;
+		const char *token = strtok_r(buf, " ", &saveptr);
+		token = strtok_r(nullptr, " ", &saveptr);
+		assert(token != nullptr);
+		if (!token) {
+			continue;
+		}
+
+		// Is this mount point longer than the current mount point?
+		const size_t mount_point_len = strlen(token);
+		if (mount_point_len <= s_mnt.size()) {
+			// Not longer. Skip it.
+			continue;
+		}
+
+		// Does the start of the filename match the mount point?
+		if (strncmp(token, filename, mount_point_len) != 0) {
+			// Not a match.
+			continue;
+		}
+
+		// Is the next character in the filename either '/' or '\0'?
+		char next_chr = filename[mount_point_len];
+		if (next_chr == '/' || next_chr == '\0') {
+			// It is! This is a longer mount point.
+			s_mnt = token;	// TODO: Only need to save the length?
+
+			// Token 2: Filesystem name
+			token = strtok_r(nullptr, " ", &saveptr);
+			assert(token != nullptr);
+			if (token) {
+				fs_name.assign(token);
+			} else {
+				fs_name.clear();
+			}
+		}
+	}
+
+	fclose(f_mounts);
+	return fs_name;
+}
+#endif /* __linux__ */
+
 /**
  * Is a file located on a "bad" file system?
  *
@@ -169,12 +240,29 @@ bool isOnBadFS(const char *filename, bool allowNetFS)
 			// Found a network file system. Ignore it.
 			return true;
 		}
-	}
 
-	// TODO: Check for FUSE_SUPER_MAGIC, and if found, check the actual fs type.
-	// FIXME: `fuse` is used for various local file systems
-	// as well as sshfs. Local is more common, so let's assume
-	// it's in use for a local file system.
+		if (f_type == FUSE_SUPER_MAGIC) {
+			// Get the actual filesystem name from the mount point.
+			string fs_name = getFileSystemForMountPoint(filename);
+			if (fs_name.empty()) {
+				// findMountPoint() failed.
+				// Assume it's a slow filesystem.
+				return true;
+			}
+
+			// Check for known local FUSE filesystems.
+			if (fs_name.find("exfat") != string::npos ||
+			    fs_name.find("ntfs") != string::npos)
+			{
+				// It's a local filesystem.
+				return false;
+			}
+
+			// It's not a known local FUSE filesystem.
+			// Assume it's remote.
+			return true;
+		}
+	}
 #else
 #  warning TODO: Implement "badfs" support for non-Linux systems.
 	RP_UNUSED(filename);
