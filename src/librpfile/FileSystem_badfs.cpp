@@ -15,8 +15,11 @@
 // C++ STL classes
 #include <algorithm>
 #include <array>
+#include <vector>
 using std::array;
+using std::pair;
 using std::string;
+using std::vector;
 
 // isOnBadFS() isn't used by libromdata directly,
 // so use some linker hax to force linkage.
@@ -92,21 +95,30 @@ extern "C" {
 namespace LibRpFile { namespace FileSystem {
 
 #ifdef __linux__
+// `/proc/mounts` cache.
+// NOTE: Could use a string table instead, but that wouldn't cache
+// the string length, which is useful here.
+// - first: mount point
+// - second: filesystem
+static vector<pair<string, string>> procMountsCache;
+
 /**
- * Get the filesystem name for the mount point for the specified filename.
- * @param filename Filename
- * @return Filesystem name for the Mount point, or empty string on error.
+ * Update the `/proc/mounts` cache.
+ * @return 0 on success; negative POSIX error code on error.
  */
-string getFileSystemForMountPoint(const char *filename)
+static int updateProcMountsCache(void)
 {
-	string fs_name;
+	procMountsCache.clear();
 
 	// Read in `/proc/mounts` and find the longest mount point that matches the filename.
-	// TODO: Cache it?
 	FILE *f_mounts = fopen("/proc/mounts", "r");
 	if (!f_mounts) {
 		// Unable to read /proc/mounts?
-		return fs_name;
+		int err = -errno;
+		if (err == 0) {
+			err = -EIO;
+		}
+		return err;
 	}
 
 	string s_mnt("/", 1);
@@ -120,22 +132,49 @@ string getFileSystemForMountPoint(const char *filename)
 		// Token 0: Device name
 		// Token 1: Mount point
 		char *saveptr = nullptr;
-		const char *token = strtok_r(buf, " ", &saveptr);
-		token = strtok_r(nullptr, " ", &saveptr);
-		assert(token != nullptr);
-		if (!token) {
+		const char *const tok_device_name = strtok_r(buf, " ", &saveptr);
+		const char *const tok_mount_point = strtok_r(nullptr, " ", &saveptr);
+		assert(tok_device_name != nullptr);
+		assert(tok_mount_point != nullptr);
+		if (!tok_device_name || !tok_mount_point) {
 			continue;
 		}
 
+		// Token 2: Filesystem name
+		const char *const tok_fs_name = strtok_r(nullptr, " ", &saveptr);
+		assert(tok_fs_name != nullptr);
+		if (tok_fs_name) {
+			procMountsCache.emplace_back(tok_mount_point, tok_fs_name);
+		}
+	}
+
+	fclose(f_mounts);
+	return 0;
+}
+
+/**
+ * Get the filesystem name for the mount point for the specified filename.
+ * @param filename Filename
+ * @return Filesystem name for the Mount point, or empty string on error.
+ */
+const char *getFileSystemForMountPoint(const char *filename)
+{
+	const char *fs_name = nullptr;
+	size_t cur_mount_point_len = 0;
+
+	// TODO: Only re-cache if this function hasn't been called in the past 2 seconds.
+	updateProcMountsCache();
+
+	for (const auto &p : procMountsCache) {
 		// Is this mount point longer than the current mount point?
-		const size_t mount_point_len = strlen(token);
-		if (mount_point_len <= s_mnt.size()) {
+		const size_t mount_point_len = p.first.size();
+		if (mount_point_len <= cur_mount_point_len) {
 			// Not longer. Skip it.
 			continue;
 		}
 
 		// Does the start of the filename match the mount point?
-		if (strncmp(token, filename, mount_point_len) != 0) {
+		if (strncmp(p.first.c_str(), filename, mount_point_len) != 0) {
 			// Not a match.
 			continue;
 		}
@@ -144,20 +183,11 @@ string getFileSystemForMountPoint(const char *filename)
 		char next_chr = filename[mount_point_len];
 		if (next_chr == '/' || next_chr == '\0') {
 			// It is! This is a longer mount point.
-			s_mnt = token;	// TODO: Only need to save the length?
-
-			// Token 2: Filesystem name
-			token = strtok_r(nullptr, " ", &saveptr);
-			assert(token != nullptr);
-			if (token) {
-				fs_name.assign(token);
-			} else {
-				fs_name.clear();
-			}
+			cur_mount_point_len = mount_point_len;
+			fs_name = p.second.c_str();
 		}
 	}
 
-	fclose(f_mounts);
 	return fs_name;
 }
 #endif /* __linux__ */
@@ -252,16 +282,16 @@ bool isOnBadFS(const char *filename, bool allowNetFS)
 
 		if (f_type == FUSE_SUPER_MAGIC) {
 			// Get the actual filesystem name from the mount point.
-			string fs_name = getFileSystemForMountPoint(filename);
-			if (fs_name.empty()) {
+			const char *fs_name = getFileSystemForMountPoint(filename);
+			if (!fs_name) {
 				// findMountPoint() failed.
 				// Assume it's a slow filesystem.
 				return true;
 			}
 
 			// Check for known local FUSE filesystems.
-			if (fs_name.find("exfat") != string::npos ||
-			    fs_name.find("ntfs") != string::npos)
+			if (strstr(fs_name, "exfat") != nullptr ||
+			    strstr(fs_name, "ntfs") != nullptr)
 			{
 				// It's a local filesystem.
 				return false;
