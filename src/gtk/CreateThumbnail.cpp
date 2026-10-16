@@ -515,8 +515,8 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 		ret = RPCT_ERROR_INVALID_IMAGE_SIZE;
 		goto cleanup;
 	}
-	rowstride = outParams.fullSize.width * sizeof(uint32_t);
-	texdata.reset(new uint8_t[rowstride * outParams.fullSize.height]);
+	rowstride = outParams.thumbSize.width * sizeof(uint32_t);
+	texdata.reset(new uint8_t[rowstride * outParams.thumbSize.height]);
 	// FIXME: Using GdkTextureDownloader to convert to GDK_MEMORY_B8G8R8A8
 	// causes a heap overflow. (R8G8B8A8 works, as does B8G8R8A8_PREMULTIPLIED.)
 	// TODO: Un-premultiply the texture.
