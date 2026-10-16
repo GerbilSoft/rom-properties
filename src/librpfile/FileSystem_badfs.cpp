@@ -157,7 +157,7 @@ static int updateProcMountsCache(void)
  * @param filename Filename
  * @return Filesystem name for the Mount point, or empty string on error.
  */
-const char *getFileSystemForMountPoint(const char *filename)
+static const char *getFileSystemForMountPoint(const char *filename)
 {
 	const char *fs_name = nullptr;
 	size_t cur_mount_point_len = 0;
