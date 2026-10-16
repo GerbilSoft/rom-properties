@@ -255,7 +255,7 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 				}
 
 				// Directory: Call RomDataFactory::create() with the filename.
-				romData = RomDataFactory::create(source_filename);
+				romData = RomDataFactory::create(source_filename, RomDataFactory::RDA_HAS_THUMBNAIL);
 			}
 			g_free(source_filename);
 		} else {
@@ -347,7 +347,7 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 			}
 
 			// Directory: Call RomDataFactory::create() with the filename.
-			romData = RomDataFactory::create(source_file);
+			romData = RomDataFactory::create(source_file, RomDataFactory::RDA_HAS_THUMBNAIL);
 		}
 	}
 
