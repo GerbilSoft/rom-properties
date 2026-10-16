@@ -18,6 +18,13 @@
 using std::array;
 using std::string;
 
+// isOnBadFS() isn't used by libromdata directly,
+// so use some linker hax to force linkage.
+extern "C" {
+        extern unsigned char RP_LibRpFile_isOnBadFS_ForceLinkage;
+        unsigned char RP_LibRpFile_isOnBadFS_ForceLinkage;
+}
+
 #ifdef __linux__
 // TODO: Remove once /proc/mounts parsing is implemented.
 #  include <sys/vfs.h>

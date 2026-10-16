@@ -737,6 +737,7 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 		# FIXME: Getting a missing symbol error on MSVC ARM64EC builds if these
 		# are unconditionally added to SYMS_FORCE.
 		SET(SYMS_FORCE ${SYMS_FORCE}
+			RP_LibRpFile_isOnBadFS_ForceLinkage
 			ext2AttrCheckboxInfo	# librpfile
 			xfsAttrCheckboxInfo	# librpfile
 			)
