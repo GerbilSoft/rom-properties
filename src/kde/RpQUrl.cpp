@@ -147,9 +147,21 @@ IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
 		s_local_filename = Q2U8_StdString(localUrl.toLocalFile());
 	}
 
+	// FIXME: Handle opening directories by opening RomData here instead of IRpFile?
+
 	if (isThumbnail) {
 		// We're thumbnailing the file. Check "bad FS" settings.
 		const Config *const config = Config::instance();
+
+		if (unlikely(FileSystem::is_directory(s_local_filename.c_str()))) {
+			// This is a directory. Check if directory thumbnailing is enabled.
+			const bool thumbnailDirectoryPackages = config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages);
+			if (!thumbnailDirectoryPackages) {
+				// Directory package thumbnailing is disabled.
+				return file;
+			}
+		}
+
 		const bool enableThumbnailOnNetworkFS = config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS);
 		if (!s_local_filename.empty()) {
 			// This is a local file. Check if it's on a "bad" file system.
