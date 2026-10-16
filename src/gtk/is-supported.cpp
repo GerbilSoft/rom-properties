@@ -12,6 +12,8 @@
 #include "RpFile_gio.hpp"
 
 // Other rom-properties libraries
+#include "librpbase/config/Config.hpp"
+#include "librpfile/FileSystem.hpp"
 #include "libromdata/RomDataFactory.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -21,11 +23,34 @@ using namespace LibRomData;
 #include <unistd.h>
 
 /**
- * Attempt to open a RomData object from the specified GVfs URI.
- * @param uri URI from e.g. nautilus_file_info_get_uri() [UTF-8]
+ * Attempt to open a RomData object from the specified filename.
+ * @param filename Filename [UTF-8]
+ * @param isThumbnail If true, this file is being used for thumbnailing. Handle "bad FS" checking.
  * @return RomData object if supported; nullptr if not.
  */
-RomDataPtr rp_gtk_open_uri(const char *uri)
+static RomDataPtr rp_gtk_open_filename(const char *filename, bool isThumbnail)
+{
+	if (isThumbnail) {
+		// We're thumbnailing the file. Check "bad FS" settings.
+		const Config *const config = Config::instance();
+		const bool enableThumbnailOnNetworkFS = config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS);
+		if (FileSystem::isOnBadFS(filename, enableThumbnailOnNetworkFS)) {
+			// This file is on a "bad" file system.
+			return {};
+		}
+	}
+
+	// Open the file.
+	return RomDataFactory::create(filename);
+}
+
+/**
+ * Attempt to open a RomData object from the specified GVfs URI.
+ * @param uri URI from e.g. nautilus_file_info_get_uri() [UTF-8]
+ * @param isThumbnail If true, this file is being used for thumbnailing. Handle "bad FS" checking.
+ * @return RomData object if supported; nullptr if not.
+ */
+RomDataPtr rp_gtk_open_uri(const char *uri, bool isThumbnail)
 {
 	RomDataPtr romData;
 	g_return_val_if_fail(uri != nullptr && uri[0] != '\0', romData);
@@ -35,7 +60,8 @@ RomDataPtr rp_gtk_open_uri(const char *uri)
 	// Check if the URI maps to a local file.
 	gchar *const filename = g_filename_from_uri(uri, nullptr, nullptr);
 	if (filename) {
-		romData = RomDataFactory::create(filename);
+		// It's a local file.
+		romData = rp_gtk_open_filename(filename, isThumbnail);
 		g_free(filename);
 		return romData;
 	}
@@ -46,9 +72,13 @@ RomDataPtr rp_gtk_open_uri(const char *uri)
 		romData = RomDataFactory::create(uri);
 	} else {
 		// Not a local file. Use RpFileGio.
-		IRpFilePtr file = std::make_shared<RpFileGio>(uri);
-		if (file->isOpen()) {
-			romData = RomDataFactory::create(file);
+		const Config *const config = Config::instance();
+		const bool enableThumbnailOnNetworkFS = config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS);
+		if (enableThumbnailOnNetworkFS) {
+			IRpFilePtr file = std::make_shared<RpFileGio>(uri);
+			if (file->isOpen()) {
+				romData = RomDataFactory::create(file);
+			}
 		}
 	}
 

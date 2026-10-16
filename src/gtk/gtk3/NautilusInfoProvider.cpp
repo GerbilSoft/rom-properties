@@ -239,7 +239,7 @@ rp_nautilus_info_provider_process(RpNautilusInfoProvider *provider)
 		return G_SOURCE_CONTINUE;
 	}
 
-	const RomDataPtr romData = rp_gtk_open_uri(uri);
+	const RomDataPtr romData = rp_gtk_open_uri(uri, true);
 	g_free(uri);
 	if (G_UNLIKELY(!romData)) {
 		// Unable to open the URI as a RomData object.

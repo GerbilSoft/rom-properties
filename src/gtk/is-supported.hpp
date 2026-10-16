@@ -16,8 +16,9 @@
 /**
  * Attempt to open a RomData object from the specified GVfs URI.
  * @param uri URI from e.g. nautilus_file_info_get_uri() [UTF-8]
+ * @param isThumbnail If true, this file is being used for thumbnailing. Handle "bad FS" checking.
  * @return RomData object if supported; nullptr if not.
  */
-LibRpBase::RomDataPtr rp_gtk_open_uri(const char *uri);
+LibRpBase::RomDataPtr rp_gtk_open_uri(const char *uri, bool isThumbnail = false);
 
 #endif /* __cplusplus */

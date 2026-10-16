@@ -116,7 +116,7 @@ rp_nautilus_properties_model_provider_get_models(NautilusPropertiesModelProvider
 	}
 
 	// Attempt to open the URI.
-	const RomDataPtr romData = rp_gtk_open_uri(uri);
+	const RomDataPtr romData = rp_gtk_open_uri(uri, false);
 	if (G_UNLIKELY(!romData)) {
 		// Unable to open the URI as a RomData object.
 		g_free(uri);
