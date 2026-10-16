@@ -34,20 +34,20 @@ static RomDataPtr rp_gtk_open_filename(const char *filename, unsigned int attrs)
 	if ((attrs & (RDA_HAS_THUMBNAIL | RDA_HAS_METADATA)) != 0) {
 		const Config *const config = Config::instance();
 
-		if (unlikely(FileSystem::is_directory(filename))) {
-			// This is a directory. Check if directory thumbnailing is enabled.
-			const bool thumbnailDirectoryPackages = config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages);
-			if (!thumbnailDirectoryPackages) {
-				// Directory package thumbnailing is disabled.
-				return {};
-			}
-		}
-
 		// We're thumbnailing the file. Check "bad FS" settings.
 		const bool enableThumbnailOnNetworkFS = config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS);
 		if (FileSystem::isOnBadFS(filename, enableThumbnailOnNetworkFS)) {
 			// This file is on a "bad" file system.
 			return {};
+		}
+
+		// If this is a directory, check if directory thumbnailing is enabled.
+		if (unlikely(FileSystem::is_directory(filename))) {
+			const bool thumbnailDirectoryPackages = config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages);
+			if (!thumbnailDirectoryPackages) {
+				// Directory package thumbnailing is disabled.
+				return {};
+			}
 		}
 	}
 
