@@ -1764,7 +1764,7 @@ rp_rom_data_view_load_rom_data(RpRomDataView *page)
 	}
 
 	// Load the specified URI.
-	page->cxx->romData = rp_gtk_open_uri(page->uri, false);
+	page->cxx->romData = rp_gtk_open_uri(page->uri);
 	if (page->cxx->romData) {
 		page->hasCheckedAchievements = false;
 

@@ -111,7 +111,7 @@ static NautilusPropertyPage*
 rp_nautilus_property_page_provider_get_RomDataView(const gchar *uri)
 {
 	// Attempt to open the URI.
-	const RomDataPtr romData = rp_gtk_open_uri(uri, false);
+	const RomDataPtr romData = rp_gtk_open_uri(uri);
 	if (G_UNLIKELY(!romData)) {
 		// Unable to open the URI as a RomData object.
 		return nullptr;

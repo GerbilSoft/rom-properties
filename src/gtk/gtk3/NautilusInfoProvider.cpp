@@ -20,7 +20,9 @@
 // Other rom-properties libraries
 #include "librpbase/config/Config.hpp"
 #include "librpbase/RomMetaData.hpp"
+#include "libromdata/RomDataFactory.hpp"
 using namespace LibRpBase;
+using namespace LibRomData;
 
 // C++ STL classes
 using std::array;
@@ -239,7 +241,7 @@ rp_nautilus_info_provider_process(RpNautilusInfoProvider *provider)
 		return G_SOURCE_CONTINUE;
 	}
 
-	const RomDataPtr romData = rp_gtk_open_uri(uri, true);
+	const RomDataPtr romData = rp_gtk_open_uri(uri, RomDataFactory::RDA_HAS_METADATA);
 	g_free(uri);
 	if (G_UNLIKELY(!romData)) {
 		// Unable to open the URI as a RomData object.
