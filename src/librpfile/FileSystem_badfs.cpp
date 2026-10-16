@@ -11,6 +11,7 @@
 // C includes (C++ namespace)
 #include <cassert>
 #include <cstring>
+#include <ctime>
 
 // C++ STL classes
 #include <algorithm>
@@ -102,6 +103,12 @@ namespace LibRpFile { namespace FileSystem {
 // - second: filesystem
 static vector<pair<string, string>> procMountsCache;
 
+// Last update time.
+// NOTE: Not checking nanosecond time because that'd require more
+// complicated checks, so it might be 1-3 seconds, not 2 seconds.
+static constexpr int TIME_TO_RECACHE = 3;
+static time_t lastUpdateTime = 0;
+
 /**
  * Update the `/proc/mounts` cache.
  * @return 0 on success; negative POSIX error code on error.
@@ -162,8 +169,12 @@ static const char *getFileSystemForMountPoint(const char *filename)
 	const char *fs_name = nullptr;
 	size_t cur_mount_point_len = 0;
 
-	// TODO: Only re-cache if this function hasn't been called in the past 2 seconds.
-	updateProcMountsCache();
+	const time_t cur_time = time(nullptr);
+	if ((cur_time - lastUpdateTime) >= TIME_TO_RECACHE) {
+		// Recache is needed!
+		updateProcMountsCache();
+		lastUpdateTime = cur_time;
+	}
 
 	for (const auto &p : procMountsCache) {
 		// Is this mount point longer than the current mount point?
