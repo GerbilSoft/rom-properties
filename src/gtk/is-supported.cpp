@@ -31,8 +31,18 @@ using namespace LibRomData;
 static RomDataPtr rp_gtk_open_filename(const char *filename, bool isThumbnail)
 {
 	if (isThumbnail) {
-		// We're thumbnailing the file. Check "bad FS" settings.
 		const Config *const config = Config::instance();
+
+		if (unlikely(FileSystem::is_directory(filename))) {
+			// This is a directory. Check if directory thumbnailing is enabled.
+			const bool thumbnailDirectoryPackages = config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages);
+			if (!thumbnailDirectoryPackages) {
+				// Directory package thumbnailing is disabled.
+				return {};
+			}
+		}
+
+		// We're thumbnailing the file. Check "bad FS" settings.
 		const bool enableThumbnailOnNetworkFS = config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS);
 		if (FileSystem::isOnBadFS(filename, enableThumbnailOnNetworkFS)) {
 			// This file is on a "bad" file system.
@@ -69,9 +79,10 @@ RomDataPtr rp_gtk_open_uri(const char *uri, bool isThumbnail)
 	// This might be a plain filename and not a URI.
 	if (access(uri, R_OK) == 0) {
 		// It's a plain filename.
-		romData = RomDataFactory::create(uri);
+		romData = rp_gtk_open_filename(uri, isThumbnail);
 	} else {
 		// Not a local file. Use RpFileGio.
+		// TODO: Check if it's a directory?
 		const Config *const config = Config::instance();
 		const bool enableThumbnailOnNetworkFS = config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS);
 		if (enableThumbnailOnNetworkFS) {
