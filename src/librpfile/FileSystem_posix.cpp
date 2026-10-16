@@ -356,4 +356,4 @@ int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, rp_time_t 
 	return 0;
 }
 
-} }
+} } // namespace LibRpFile::FileSystem

@@ -82,6 +82,8 @@ using std::string;
 #  endif
 #endif /* __linux__ */
 
+namespace LibRpFile { namespace FileSystem {
+
 #ifdef __linux__
 /**
  * Get the filesystem name for the mount point for the specified filename.
@@ -271,3 +273,5 @@ bool isOnBadFS(const char *filename, bool allowNetFS)
 
 	return false;
 }
+
+} } // namespace LibRpFile::FileSystem
