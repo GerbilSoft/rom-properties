@@ -61,8 +61,10 @@ static constexpr int16_t syscall_wl_base[] = {
 	// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
 	// defined in earlier versions, including Ubuntu 14.04.
 	SCMP_SYS(clock_gettime),
-#if defined(__SNR_clock_gettime64) || defined(__NR_clock_gettime64)
+#if defined(__SNR_clock_gettime64)
 	SCMP_SYS(clock_gettime64),
+#elif defined(__NR_clock_gettime64)
+	__NR_clock_gettime64,
 #endif /* __SNR_clock_gettime64 || __NR_clock_gettime64 */
 	SCMP_SYS(fcntl), SCMP_SYS(fcntl64),		// gcc profiling
 	SCMP_SYS(futex),				// iconv_open()

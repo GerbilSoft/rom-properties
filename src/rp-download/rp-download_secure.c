@@ -34,8 +34,10 @@ int rp_download_do_security_options(void)
 		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
 		// defined in earlier versions, including Ubuntu 14.04.
 		SCMP_SYS(clock_gettime),
-#if defined(__SNR_clock_gettime64) || defined(__NR_clock_gettime64)
+#if defined(__SNR_clock_gettime64)
 		SCMP_SYS(clock_gettime64),
+#elif defined(__NR_clock_gettime64)
+		__NR_clock_gettime64,
 #endif /* __SNR_clock_gettime64 || __NR_clock_gettime64 */
 		SCMP_SYS(close),
 		SCMP_SYS(fcntl),     SCMP_SYS(fcntl64),		// gcc profiling

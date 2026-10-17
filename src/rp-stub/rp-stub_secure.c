@@ -77,11 +77,20 @@ int rp_stub_do_security_options(bool config)
 
 		// ConfReader checks timestamps between rpcli runs.
 		// NOTE: Only seems to get triggered on PowerPC...
-		SCMP_SYS(clock_gettime), SCMP_SYS(clock_gettime64),
+		SCMP_SYS(clock_gettime),
+#if defined(__SNR_clock_gettime64)
+		SCMP_SYS(clock_gettime64),
+#elif defined(__NR_clock_gettime64)
+		__NR_clock_gettime64,
+#endif /* __SNR_clock_gettime64 || __NR_clock_gettime64 */
 
 		// RomDataFormat needs this, at least on 32-bit (i386) KF5 builds.
 		SCMP_SYS(clock_getres),
+#if defined(__SNR_clock_getres_time64)
 		SCMP_SYS(clock_getres_time64),	// needed on 32-bit armhf GTK3 builds
+#elif defined(__NR_clock_getres_time64)
+		__NR_clock_getres_time64,	// needed on 32-bit armhf GTK3 builds
+#endif /* __SNR_clock_getres_time64 || __NR_clock_getres_time64 */
 
 		// glibc ncsd
 		// TODO: Restrict connect() to AF_UNIX.
