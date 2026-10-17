@@ -845,7 +845,7 @@ static inline bool T_isOnBadFS(const CharType *filename, bool allowNetFS)
 	// TODO: Also check mount points? (not very common on Windows...)
 	if (isalpha_ascii(filename[0]) && filename[1] == ':') {
 		const CharType s_root[] = {filename[0], ':', '\\', '\0'};
-		if (GetDriveType(s_root) == DRIVE_REMOTE) {
+		if (GetDriveType_wrapper(s_root) == DRIVE_REMOTE) {
 			// It's a network share.
 			return !allowNetFS;
 		}
