@@ -18,6 +18,10 @@
     * This incorrectly caused Dolphin 26.08's "Change File Type" dialog to appear
       every so often when renaming the base part of the filename (not the extension).
     * Reported by @dev-camo.
+  * Improved handling of "bad" (i.e. slow) filesystems, especially in the
+    GTK UI frontend.
+    * See #518: Nautilus freezing on sftp connection due to rom-properties
+      * Reported by @worminux.
 
 * Other changes:
   * 64-bit time_t (using the rp_time_t typedef) is now used regardless of
