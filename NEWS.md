@@ -23,6 +23,10 @@
       * Reported by @evrenge.
   * GameCube: Fix reading data from GCN/Wii discs on little-endian systems.
     * Affects: v2.8 - v2.9
+  * Improved handling of "bad" (i.e. slow) filesystems, especially in the
+    GTK UI frontend.
+    * See #518: Nautilus freezing on sftp connection due to rom-properties
+      * Reported by @worminux.
 
 * Other changes:
   * 64-bit time_t (using the rp_time_t typedef) is now used regardless of

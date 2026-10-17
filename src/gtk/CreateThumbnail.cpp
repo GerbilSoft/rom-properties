@@ -201,98 +201,32 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 {
 	RomDataPtr romData;
 
-	// NOTE: Not checking these in Release builds.
-	// TODO: Simplify the "is_directory" code.
 	assert(source_file != nullptr);
 	assert(p_err != nullptr);
+	if (!source_file || !p_err) {
+		if (!p_err) {
+			*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
+		}
+		return romData;
+	}
 
 	s_uri.clear();
 	const bool enableThumbnailOnNetworkFS =
 		Config::instance()->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS);
 
 	char *const uri_scheme = g_uri_parse_scheme(source_file);
+	char *source_filename = nullptr;	// allocated; free it later
+
 	if (uri_scheme != nullptr) {
 		// This is a URI.
 		s_uri = source_file;
 		g_free(uri_scheme);
+
 		// Check if it's a local filename.
-		gchar *const source_filename = g_filename_from_uri(source_file, nullptr, nullptr);
-		if (source_filename) {
-			// It's a local filename.
-			// Check if it's on a "bad" filesystem.
-			if (FileSystem::isOnBadFS(source_filename, enableThumbnailOnNetworkFS)) {
-				// It's on a "bad" filesystem.
-				g_free(source_filename);
-				*p_err = RPCT_ERROR_SOURCE_FILE_BAD_FS;
-				return romData;
-			}
-
-			if (likely(!FileSystem::is_directory(source_filename))) {
-				// File: Open the file and call RomDataFactory::create() with the opened file.
-
-				// Attempt to open the ROM file.
-				const IRpFilePtr file =
-					std::make_shared<RpFile>(source_filename, RpFile::FM_OPEN_READ_GZ);
-				if (!file->isOpen()) {
-					// Could not open the file.
-					if (p_err) {
-						*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
-					}
-					return romData;
-				}
-
-				// Get the appropriate RomData class for this ROM.
-				// RomData class *must* support at least one image type.
-				romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
-			} else {
-				const Config *const config = Config::instance();
-				if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {
-					// Directory package thumbnailing is disabled.
-					if (p_err) {
-						*p_err = RPCT_ERROR_DIRECTORY_THUMBNAILING_DISABLED;
-					}
-					return romData;
-				}
-
-				// Directory: Call RomDataFactory::create() with the filename.
-				romData = RomDataFactory::create(source_filename);
-			}
-			g_free(source_filename);
-		} else {
-			// Not a local filename.
-			if (!enableThumbnailOnNetworkFS) {
-				// Thumbnailing on network file systems is disabled.
-				*p_err = RPCT_ERROR_SOURCE_FILE_BAD_FS;
-				return romData;
-			}
-
-			// Open the file using RpFileGio.
-			// TODO: Directories using RpFileGio?
-			const IRpFilePtr file = std::make_shared<RpFileGio>(source_file);
-			if (!file) {
-				// Could not open the file.
-				if (p_err) {
-					*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
-				}
-				return romData;
-			}
-
-			// Get the appropriate RomData class for this ROM.
-			// RomData class *must* support at least one image type.
-			romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
-		}
+		// source_filename will be nullptr if it's not local.
+		source_filename = g_filename_from_uri(source_file, nullptr, nullptr);
 	} else {
-		// This is a filename.
-		// Note that for everything except the URI, we can use relative paths
-		// as well as absolute paths, so the absolute path conversion is only
-		// needed to get the URI for the thumbnail.
-
-		// Check if it's on a "bad" filesystem.
-		if (FileSystem::isOnBadFS(source_file, enableThumbnailOnNetworkFS)) {
-			// It's on a "bad" filesystem.
-			*p_err = RPCT_ERROR_SOURCE_FILE_BAD_FS;
-			return romData;
-		}
+		// This is a local filename.
 
 		// Check if we have an absolute or relative path.
 		if (g_path_is_absolute(source_file)) {
@@ -302,6 +236,7 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 				s_uri = source_uri;
 				g_free(source_uri);
 			}
+			source_filename = g_strdup(source_file);
 		} else {
 			// We have a relative path.
 			// Convert the filename to an absolute path.
@@ -314,22 +249,42 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 						s_uri = source_uri;
 						g_free(source_uri);
 					}
+					source_filename = g_file_get_path(abspath);
 					g_object_unref(abspath);
 				}
 				g_object_unref(curdir);
 			}
 		}
 
-		if (likely(!FileSystem::is_directory(source_file))) {
+		if (!source_filename) {
+			// Unable to resolve the source filename...
+			// TODO: More error codes?
+			*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
+			return romData;
+		}
+	}
+
+	if (source_filename) {
+		// It's a local filename.
+
+		// Check if it's on a "bad" filesystem.
+		if (FileSystem::isOnBadFS(source_filename, enableThumbnailOnNetworkFS)) {
+			// It's on a "bad" filesystem.
+			g_free(source_filename);
+			*p_err = RPCT_ERROR_SOURCE_FILE_BAD_FS;
+			return romData;
+		}
+
+		if (likely(!FileSystem::is_directory(source_filename))) {
 			// File: Open the file and call RomDataFactory::create() with the opened file.
 
 			// Attempt to open the ROM file.
-			const IRpFilePtr file = std::make_shared<RpFile>(source_file, RpFile::FM_OPEN_READ_GZ);
-			if (!file) {
+			const IRpFilePtr file =
+				std::make_shared<RpFile>(source_filename, RpFile::FM_OPEN_READ_GZ);
+			if (!file->isOpen()) {
 				// Could not open the file.
-				if (p_err) {
-					*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
-				}
+				*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
+				g_free(source_filename);
 				return romData;
 			}
 
@@ -340,15 +295,36 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 			const Config *const config = Config::instance();
 			if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {
 				// Directory package thumbnailing is disabled.
-				if (p_err) {
-					*p_err = RPCT_ERROR_DIRECTORY_THUMBNAILING_DISABLED;
-				}
+				*p_err = RPCT_ERROR_DIRECTORY_THUMBNAILING_DISABLED;
+				g_free(source_filename);
 				return romData;
 			}
 
 			// Directory: Call RomDataFactory::create() with the filename.
-			romData = RomDataFactory::create(source_file);
+			romData = RomDataFactory::create(source_filename, RomDataFactory::RDA_HAS_THUMBNAIL);
 		}
+
+		g_free(source_filename);
+	} else {
+		// Not a local filename.
+		if (!enableThumbnailOnNetworkFS) {
+			// Thumbnailing on network file systems is disabled.
+			*p_err = RPCT_ERROR_SOURCE_FILE_BAD_FS;
+			return romData;
+		}
+
+		// Open the file using RpFileGio.
+		// TODO: Directories using RpFileGio?
+		const IRpFilePtr file = std::make_shared<RpFileGio>(source_file);
+		if (!file) {
+			// Could not open the file.
+			*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
+			return romData;
+		}
+
+		// Get the appropriate RomData class for this ROM.
+		// RomData class *must* support at least one image type.
+		romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
 	}
 
 	if (romData && romData->isValid()) {
@@ -539,8 +515,8 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 		ret = RPCT_ERROR_INVALID_IMAGE_SIZE;
 		goto cleanup;
 	}
-	rowstride = outParams.fullSize.width * sizeof(uint32_t);
-	texdata.reset(new uint8_t[rowstride * outParams.fullSize.height]);
+	rowstride = outParams.thumbSize.width * sizeof(uint32_t);
+	texdata.reset(new uint8_t[rowstride * outParams.thumbSize.height]);
 	// FIXME: Using GdkTextureDownloader to convert to GDK_MEMORY_B8G8R8A8
 	// causes a heap overflow. (R8G8B8A8 works, as does B8G8R8A8_PREMULTIPLIED.)
 	// TODO: Un-premultiply the texture.

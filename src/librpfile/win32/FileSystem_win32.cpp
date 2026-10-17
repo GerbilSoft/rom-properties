@@ -14,6 +14,7 @@
 #include <sys/utime.h>
 
 #include "common.h"
+#include "ctypex.h"
 #include "d_type.h"	// DT_* enumeration
 
 // C includes (C++ namespace)
@@ -805,6 +806,16 @@ static inline DWORD GetFileAttributes_wrapper(LPCWSTR lpFileName)
 	return GetFileAttributesW(lpFileName);
 }
 
+static inline UINT GetDriveType_wrapper(LPCSTR lpRootPathName)
+{
+	return GetDriveTypeA(lpRootPathName);
+}
+
+static inline UINT GetDriveType_wrapper(LPCTSTR lpRootPathName)
+{
+	return GetDriveTypeW(lpRootPathName);
+}
+
 /**
  * Is a file located on a "bad" file system?
  *
@@ -828,6 +839,16 @@ static inline bool T_isOnBadFS(const CharType *filename, bool allowNetFS)
 	{
 		// This file is located on a network share.
 		return !allowNetFS;
+	}
+
+	// If it's a drive letter, check if it's DRIVE_REMOTE.
+	// TODO: Also check mount points? (not very common on Windows...)
+	if (isalpha_ascii(filename[0]) && filename[1] == ':') {
+		const CharType s_root[] = {filename[0], ':', '\\', '\0'};
+		if (GetDriveType_wrapper(s_root) == DRIVE_REMOTE) {
+			// It's a network share.
+			return !allowNetFS;
+		}
 	}
 
 	// Also check if the file is marked as "offline".

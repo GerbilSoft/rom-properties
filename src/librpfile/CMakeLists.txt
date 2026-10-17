@@ -127,6 +127,7 @@ IF(WIN32)
 ELSE(WIN32)
 	SET(${PROJECT_NAME}_OS_SRCS
 		FileSystem_posix.cpp
+		FileSystem_badfs.cpp
 		RecursiveScan_posix.cpp
 		RpFile_stdio.cpp
 		)

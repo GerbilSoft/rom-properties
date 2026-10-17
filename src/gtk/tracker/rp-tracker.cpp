@@ -366,6 +366,15 @@ tracker_extract_get_metadata(TrackerExtractInfo *info, GError **error)
 		return true;
 	}
 
+	// Check if this is a directory.
+	if (unlikely(FileSystem::is_directory(filename))) {
+		const Config *const config = Config::instance();
+		if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {
+			// Directory package thumbnailing is disabled.
+			return false;
+		}
+	}
+
 	// Attempt to open the file using RomDataFactory.
 	RomDataPtr romData = RomDataFactory::create(filename);
 	if (!romData) {

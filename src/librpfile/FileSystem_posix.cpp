@@ -28,53 +28,10 @@
 #include <cstdlib>
 
 // C++ STL classes
-#include <algorithm>
-#include <array>
-using std::array;
 using std::string;
 
 // DT_* enumeration
 #include "d_type.h"
-
-#ifdef __linux__
-// TODO: Remove once /proc/mounts parsing is implemented.
-#  include <sys/vfs.h>
-#  include <linux/magic.h>
-// from `man 2 fstatfs`, but not present in linux/magic.h on 4.14-r1
-#  ifndef BPF_FS_MAGIC
-#    define BPF_FS_MAGIC 0xcafe4a11
-#  endif
-#  ifndef CGROUP2_SUPER_MAGIC
-#    define CGROUP2_SUPER_MAGIC 0x63677270
-#  endif
-#  ifndef CIFS_MAGIC_NUMBER
-#    define CIFS_MAGIC_NUMBER 0xff534d42
-#  endif
-#  ifndef COH_SUPER_MAGIC
-#    define COH_SUPER_MAGIC 0x012ff7b7
-#  endif
-#  ifndef FUSE_SUPER_MAGIC
-#    define FUSE_SUPER_MAGIC 0x65735546
-#  endif
-#  ifndef MQUEUE_MAGIC
-#    define MQUEUE_MAGIC 0x19800202
-#  endif
-#  ifndef NSFS_MAGIC
-#    define NSFS_MAGIC 0x6e736673
-#  endif
-#  ifndef OCFS2_SUPER_MAGIC
-#    define OCFS2_SUPER_MAGIC 0x7461636f
-#  endif
-#  ifndef TRACEFS_MAGIC
-#    define TRACEFS_MAGIC 0x74726163
-#  endif
-#  ifndef SYSV2_SUPER_MAGIC
-#    define SYSV2_SUPER_MAGIC 0x012ff7b6
-#  endif
-#  ifndef SYSV4_SUPER_MAGIC
-#    define SYSV4_SUPER_MAGIC 0x012ff7b5
-#  endif
-#endif /* __linux__ */
 
 namespace LibRpFile { namespace FileSystem {
 
@@ -339,100 +296,6 @@ bool is_directory(const char *filename)
 }
 
 /**
- * Is a file located on a "bad" file system?
- *
- * We don't want to check files on e.g. procfs,
- * or on network file systems if the option is disabled.
- *
- * @param filename Filename (UTF-8)
- * @param allowNetFS If true, allow network file systems.
- *
- * @return True if this file is on a "bad" file system; false if not.
- */
-bool isOnBadFS(const char *filename, bool allowNetFS)
-{
-#ifdef __linux__
-	// TODO: Get the mount point, then look it up in /proc/mounts.
-
-	struct statfs sfbuf;
-	if (statfs(filename, &sfbuf) != 0) {
-		// statfs() failed.
-		// Assume this isn't a network file system.
-		return false;
-	}
-	const uint32_t f_type = static_cast<uint32_t>(sfbuf.f_type);
-
-	// Virtual file systems; ignore these completely
-	static constexpr array<uint32_t, 23> vfs_types = {{
-		ANON_INODE_FS_MAGIC,
-		BDEVFS_MAGIC,
-		BPF_FS_MAGIC,
-		CGROUP_SUPER_MAGIC,
-		CGROUP2_SUPER_MAGIC,
-		DEBUGFS_MAGIC,
-		DEVPTS_SUPER_MAGIC,
-		EFIVARFS_MAGIC,
-		FUTEXFS_SUPER_MAGIC,
-		MQUEUE_MAGIC,
-		NSFS_MAGIC,
-		OPENPROM_SUPER_MAGIC,
-		PIPEFS_MAGIC,
-		PROC_SUPER_MAGIC,
-		PSTOREFS_MAGIC,
-		SECURITYFS_MAGIC,
-		SMACK_MAGIC,
-		SOCKFS_MAGIC,
-		SYSFS_MAGIC,
-		SYSV2_SUPER_MAGIC,
-		SYSV4_SUPER_MAGIC,
-		TRACEFS_MAGIC,
-		USBDEVICE_SUPER_MAGIC,
-	}};
-
-	// Network file systems; ignore only if !netFS
-	static constexpr array<uint32_t, 9> netfs_types = {{
-		AFS_SUPER_MAGIC,
-		CIFS_MAGIC_NUMBER,
-		CODA_SUPER_MAGIC,
-		COH_SUPER_MAGIC,
-		NCP_SUPER_MAGIC,
-		NFS_SUPER_MAGIC,
-		OCFS2_SUPER_MAGIC,
-		SMB_SUPER_MAGIC,
-		V9FS_MAGIC,
-	}};
-
-	// Search for a virtual file system.
-	auto vfs_iter = std::find(vfs_types.cbegin(), vfs_types.cend(), f_type);
-	if (vfs_iter != vfs_types.cend()) {
-		// Found a virtual file system. Ignore it.
-		return true;
-	}
-
-	// If network file systems are prohibited, check if this is one.
-	if (!allowNetFS) {
-		// Search for a network file system.
-		auto netfs_iter = std::find(netfs_types.cbegin(), netfs_types.cend(), f_type);
-		if (netfs_iter != netfs_types.cend()) {
-			// Found a network file system. Ignore it.
-			return true;
-		}
-	}
-
-	// TODO: Check for FUSE_SUPER_MAGIC, and if found, check the actual fs type.
-	// FIXME: `fuse` is used for various local file systems
-	// as well as sshfs. Local is more common, so let's assume
-	// it's in use for a local file system.
-#else
-#  warning TODO: Implement "badfs" support for non-Linux systems.
-	RP_UNUSED(filename);
-	RP_UNUSED(allowNetFS);
-#endif
-
-	return false;
-}
-
-/**
  * Get a file's size and time.
  * @param filename	[in] Filename (UTF-8)
  * @param pFileSize	[out] File size
@@ -493,4 +356,4 @@ int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, rp_time_t 
 	return 0;
 }
 
-} }
+} } // namespace LibRpFile::FileSystem
