@@ -21,6 +21,8 @@
   * tracker/localsearch: Fix crashes with localsearch v3.9, v3.10, and v3.11.
     * Fixes #519: [BUG] localsearch-extractor-3 crashes on .so / .exe / .dll files with the localsearch plugin installed
       * Reported by @evrenge.
+  * GameCube: Fix reading data from GCN/Wii discs on little-endian systems.
+    * Affects: v2.9
 
 * Other changes:
   * 64-bit time_t (using the rp_time_t typedef) is now used regardless of

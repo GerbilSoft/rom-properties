@@ -11,7 +11,8 @@
 #include "GcnFst.hpp"
 #include "GcnPartition.hpp"
 
-// librpfile
+// Other rom-properties libraries
+#include "librpbyteswap/byteswap_rp.h"
 using LibRpFile::IRpFile;
 
 // C includes (C++ namespace)
