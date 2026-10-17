@@ -1002,6 +1002,9 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 				}
 			}
 		}
+
+		// Not a supported .zip file...
+		return romData;
 	}
 
 	// The actual file reader we're using.
