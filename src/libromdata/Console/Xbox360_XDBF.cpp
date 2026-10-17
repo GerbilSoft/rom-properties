@@ -1678,11 +1678,7 @@ Xbox360_XDBF::Xbox360_XDBF(const IRpFilePtr &file, bool xex)
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	// Byteswap the header for little-endian systems.
 	// NOTE: The magic number is *not* byteswapped here.
-	d->xdbfHeader.version			= be32_to_cpu(d->xdbfHeader.version);
-	d->xdbfHeader.entry_table_length	= be32_to_cpu(d->xdbfHeader.entry_table_length);
-	d->xdbfHeader.entry_count		= be32_to_cpu(d->xdbfHeader.entry_count);
-	d->xdbfHeader.free_space_table_length	= be32_to_cpu(d->xdbfHeader.free_space_table_length);
-	d->xdbfHeader.free_space_table_count	= be32_to_cpu(d->xdbfHeader.free_space_table_count);
+	rp_byte_swap_32_array(&d->xdbfHeader.u32[1], sizeof(d->xdbfHeader.u32) - sizeof(uint32_t));
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 	// Calculate the data start offset.

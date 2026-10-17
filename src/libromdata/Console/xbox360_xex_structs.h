@@ -26,13 +26,16 @@ extern "C" {
  */
 #define XEX1_MAGIC 'XEX1'
 #define XEX2_MAGIC 'XEX2'
-typedef struct _XEX2_Header {
-	uint32_t magic;			// [0x000] 'XEX2' or 'XEX1'
-	uint32_t module_flags;		// [0x004] See XEX2_Flags_e
-	uint32_t pe_offset;		// [0x008] PE data offset
-	uint32_t reserved;		// [0x00C]
-	uint32_t sec_info_offset;	// [0x010] Security info offset (See XEX2_Security_Info)
-	uint32_t opt_header_count;	// [0x014] Optional header count
+typedef union _XEX2_Header {
+	struct {
+		uint32_t magic;			// [0x000] 'XEX2' or 'XEX1'
+		uint32_t module_flags;		// [0x004] See XEX2_Flags_e
+		uint32_t pe_offset;		// [0x008] PE data offset
+		uint32_t reserved;		// [0x00C]
+		uint32_t sec_info_offset;	// [0x010] Security info offset (See XEX2_Security_Info)
+		uint32_t opt_header_count;	// [0x014] Optional header count
+	};
+	uint32_t u32[6];
 } XEX2_Header;
 ASSERT_STRUCT(XEX2_Header, 6*sizeof(uint32_t));
 

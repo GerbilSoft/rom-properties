@@ -29,14 +29,17 @@ extern "C" {
  */
 #define PSF_MAGIC	0x00505346 // '\0PSF'
 #define PSF_VERSION	0x01010000 // v1.1
-typedef struct _psf_header {
-	uint32_t magic;		// [0x000] '\0PSF'
-	uint32_t version;	// [0x004] 0x01010000
-	uint32_t keyOffset;	// [0x008] Offset to the key name table
-	uint32_t dataOffset;	// [0x00C] Offset to the data table
-	int numKeys;		// [0x010] Number of keys (key table immediately follows this header)
+typedef union _psf_header {
+	struct {
+		uint32_t magic;		// [0x000] '\0PSF'
+		uint32_t version;	// [0x004] 0x01010000
+		uint32_t keyOffset;	// [0x008] Offset to the key name table
+		uint32_t dataOffset;	// [0x00C] Offset to the data table
+		int numKeys;		// [0x010] Number of keys (key table immediately follows this header)
+	};
+	uint32_t u32[5];
 } psf_header_t;
-ASSERT_STRUCT(psf_header_t, 0x14);
+ASSERT_STRUCT(psf_header_t, 5*sizeof(uint32_t));
 
 /**
  * PSF key struct

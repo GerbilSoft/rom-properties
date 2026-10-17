@@ -99,13 +99,7 @@ DpfReader::DpfReader(const IRpFilePtr &file)
 
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
 	// Byteswap the header.
-	d->dpfHeader.magic		= le32_to_cpu(d->dpfHeader.magic);
-	d->dpfHeader.version		= le32_to_cpu(d->dpfHeader.version);
-	d->dpfHeader.header_size	= le32_to_cpu(d->dpfHeader.header_size);
-	d->dpfHeader.unknown_0C		= le32_to_cpu(d->dpfHeader.unknown_0C);
-	d->dpfHeader.entry_table_offset	= le32_to_cpu(d->dpfHeader.entry_table_offset);
-	d->dpfHeader.entry_count	= le32_to_cpu(d->dpfHeader.entry_count);
-	d->dpfHeader.data_offset	= le32_to_cpu(d->dpfHeader.data_offset);
+	rp_byte_swap_32_array(d->dpfHeader.u32, sizeof(d->dpfHeader.u32));
 #endif /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
 
 	// Allow up to 65,535 entries.

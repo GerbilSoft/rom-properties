@@ -1532,11 +1532,7 @@ Xbox360_XEX::Xbox360_XEX(const IRpFilePtr &file)
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	// Byteswap the header for little-endian systems.
 	// NOTE: The magic number is *not* byteswapped here.
-	d->xex2Header.module_flags	= be32_to_cpu(d->xex2Header.module_flags);
-	d->xex2Header.pe_offset		= be32_to_cpu(d->xex2Header.pe_offset);
-	d->xex2Header.reserved		= be32_to_cpu(d->xex2Header.reserved);
-	d->xex2Header.sec_info_offset	= be32_to_cpu(d->xex2Header.sec_info_offset);
-	d->xex2Header.opt_header_count	= be32_to_cpu(d->xex2Header.opt_header_count);
+	rp_byte_swap_32_array(&d->xex2Header.u32[1], sizeof(d->xex2Header.u32) - sizeof(uint32_t));
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 	// Is this a patch?

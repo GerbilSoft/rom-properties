@@ -329,7 +329,7 @@ uint32_t ParamSFOPrivate::getIntValue(const char *key)
 	}
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
-	// Byteswap the value
+	// Byteswap the value.
 	value = le32_to_cpu(value);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
@@ -412,11 +412,7 @@ ParamSFO::ParamSFO(const IRpFilePtr &file)
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 	// Byteswap the header.
-	d->fileHeader.magic = le32_to_cpu(d->fileHeader.magic);
-	d->fileHeader.version = le32_to_cpu(d->fileHeader.version);
-	d->fileHeader.keyOffset = le32_to_cpu(d->fileHeader.keyOffset);
-	d->fileHeader.dataOffset = le32_to_cpu(d->fileHeader.dataOffset);
-	d->fileHeader.numKeys = le32_to_cpu(d->fileHeader.numKeys);
+	rp_byte_swap_32_array(d->fileHeader.u32, sizeof(d->fileHeader.u32));
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
 	// Sanity check: Must have at least 1 key, and a maximum of 16,384 keys.

@@ -81,24 +81,9 @@ int GcnPartitionPrivate::loadBootBlockAndInfo(void)
 	}
 
 #if SYS_BYTEORDER != SYS_BIG_ENDIAN
-	// Byteswap bootBlock.
-	bootBlock.dol_offset	= be32_to_cpu(bootBlock.dol_offset);
-	bootBlock.fst_offset	= be32_to_cpu(bootBlock.fst_offset);
-	bootBlock.fst_size	= be32_to_cpu(bootBlock.fst_size);
-	bootBlock.fst_max_size	= be32_to_cpu(bootBlock.fst_max_size);
-	bootBlock.fst_mem_addr	= be32_to_cpu(bootBlock.fst_mem_addr);
-	bootBlock.user_pos	= be32_to_cpu(bootBlock.user_pos);
-	bootBlock.user_len	= be32_to_cpu(bootBlock.user_len);
-
-	// Byteswap bootInfo.
-	bootInfo.debug_mon_size	= be32_to_cpu(bootInfo.debug_mon_size);
-	bootInfo.sim_mem_size	= be32_to_cpu(bootInfo.sim_mem_size);
-	bootInfo.arg_offset	= be32_to_cpu(bootInfo.arg_offset);
-	bootInfo.debug_flag	= be32_to_cpu(bootInfo.debug_flag);
-	bootInfo.trk_location	= be32_to_cpu(bootInfo.trk_location);
-	bootInfo.trk_size	= be32_to_cpu(bootInfo.trk_size);
-	bootInfo.region_code	= be32_to_cpu(bootInfo.region_code);
-	bootInfo.dol_limit	= be32_to_cpu(bootInfo.dol_limit);
+	// Byteswap bootBlock and bootInfo.
+	rp_byte_swap_32_array(bootBlock.u32, sizeof(bootBlock.u32));
+	rp_byte_swap_32_array(bootInfo.u32, sizeof(bootInfo.u32));
 #endif /* SYS_BYTEORDER != SYS_BIG_ENDIAN */
 
 	// bootBlock and bootInfo have been loaded.

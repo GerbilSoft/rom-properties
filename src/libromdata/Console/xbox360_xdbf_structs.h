@@ -35,13 +35,16 @@ extern "C" {
  */
 #define XDBF_MAGIC 'XDBF'
 #define XDBF_VERSION 0x10000
-typedef struct _XDBF_Header {
-	uint32_t magic;				// [0x000] 'XDBF'
-	uint32_t version;			// [0x004] Version (0x10000)
-	uint32_t entry_table_length;		// [0x008] Entry table length, in number of entries
-	uint32_t entry_count;			// [0x00C] Entry count (# of used entries)
-	uint32_t free_space_table_length;	// [0x010] Free space table length, in number of entries
-	uint32_t free_space_table_count;	// [0x014] Free space table entry count (# of used entries)
+typedef union _XDBF_Header {
+	struct {
+		uint32_t magic;				// [0x000] 'XDBF'
+		uint32_t version;			// [0x004] Version (0x10000)
+		uint32_t entry_table_length;		// [0x008] Entry table length, in number of entries
+		uint32_t entry_count;			// [0x00C] Entry count (# of used entries)
+		uint32_t free_space_table_length;	// [0x010] Free space table length, in number of entries
+		uint32_t free_space_table_count;	// [0x014] Free space table entry count (# of used entries)
+	};
+	uint32_t u32[6];
 } XDBF_Header;
 ASSERT_STRUCT(XDBF_Header, 6*sizeof(uint32_t));
 
