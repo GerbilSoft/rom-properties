@@ -86,7 +86,11 @@ static constexpr int16_t syscall_wl_base[] = {
 
 	// RomDataFormat needs this, at least on 32-bit (i386) KF5 builds.
 	SCMP_SYS(clock_getres),
+#if defined(__SNR_clock_getres_time64)
 	SCMP_SYS(clock_getres_time64),	// needed on 32-bit armhf GTK3 builds
+#elif defined(__NR_clock_getres_time64)
+	__NR_clock_getres_time64,	// needed on 32-bit armhf GTK3 builds
+#endif /* __SNR_clock_getres_time64 || __NR_clock_getres_time64 */
 
 	// for ImageDecoderTest so we don't have to copy the test files to the binary directory
 	SCMP_SYS(chdir),
