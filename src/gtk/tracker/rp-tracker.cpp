@@ -357,7 +357,6 @@ tracker_extract_get_metadata(TrackerExtractInfo *info, GError **error)
 	}
 
 	// Check for "bad" file systems.
-	// TODO: Also check if it's a directory?
 	Config *const config = Config::instance();
 	if (FileSystem::isOnBadFS(filename, config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS))) {
 		// This file is on a "bad" file system.
