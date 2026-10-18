@@ -265,9 +265,9 @@ static std::once_flag once_mimeTypes;
  * - magic2: Second 32-bit magic number, if available.
  */
 #ifdef ENABLE_XML
-static constexpr size_t romDataFns_magic_count = 40;
+static constexpr size_t romDataFns_magic_count = 41;
 #else /* !ENABLE_XML */
-static constexpr size_t romDataFns_magic_count = 39;
+static constexpr size_t romDataFns_magic_count = 40;
 #endif /* ENABLE_XML */
 static const array<RomDataFns, romDataFns_magic_count> romDataFns_magic = {{
 	// Consoles
@@ -279,6 +279,7 @@ static const array<RomDataFns, romDataFns_magic_count> romDataFns_magic = {{
 	GetRomDataFns_magic1(WiiBNR, ATTR_HAS_METADATA, 128, 'IMET'),	// seen in some homebrew
 	GetRomDataFns_magic1(WiiSettingTxt, 0, 0, 0xBBA6AC92),
 	GetRomDataFns_magic1(WiiU, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES, 0, 'WUP-'),
+	GetRomDataFns_magic1(WiiUPackage, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 0x28B52FFD),	// WUA (Wii U Archive) only
 	GetRomDataFns_magic1(WiiWIBN, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'WIBN'),
 	GetRomDataFns_magic1(Xbox_XBE, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XBEH'),
 	GetRomDataFns_magic1(Xbox360_XDBF, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XDBF'),

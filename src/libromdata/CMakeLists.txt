@@ -151,6 +151,7 @@ SET(${PROJECT_NAME}_SRCS
 	disc/NCCHReader.cpp
 	disc/NEResourceReader.cpp
 	disc/PEResourceReader.cpp
+	disc/RpFile_ZArchiveReader.cpp
 	disc/WbfsReader.cpp
 	disc/WiiPartition.cpp
 	disc/WiiUFst.cpp
@@ -383,6 +384,7 @@ SET(${PROJECT_NAME}_H
 	disc/NCCHReader_p.hpp
 	disc/NEResourceReader.hpp
 	disc/PEResourceReader.hpp
+	disc/RpFile_ZArchiveReader.hpp
 	disc/WbfsReader.hpp
 	disc/WiiPartition.hpp
 	disc/WiiUFst.hpp
@@ -617,6 +619,7 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE cachecommon-dll)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpuid)		# for CPU dispatch
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC boost-time64)	# for rp_time_t and 64-bit time functions
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE zarchive)		# for Wii U .wua files
 
 	IF(CMAKE_THREAD_LIBS_INIT)
 		# for std::call_once() [pthread_once()]
@@ -678,6 +681,7 @@ ELSE()
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC cachecommon)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpuid)		# for CPU dispatch
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC boost-time64)	# for rp_time_t and 64-bit time functions
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE zarchive)		# for Wii U .wua files
 	IF(ENABLE_NLS)
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC i18n)
 	ENDIF(ENABLE_NLS)
