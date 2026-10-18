@@ -1,3 +1,11 @@
+/***************************************************************************
+ * ROM Properties Page shell extension. (libromdata)                       *
+ * RpFile_ZArchiveReader.cpp: IRpFile wrapper for ZArchiveReader.          *
+ *                                                                         *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
+ * SPDX-License-Identifier: GPL-2.0-or-later                               *
+ ***************************************************************************/
+
 #include "RpFile_ZArchiveReader.hpp"
 
 // libfmt
