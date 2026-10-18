@@ -48,7 +48,8 @@
 #  include <pugixml.hpp>
 #endif /* ENABLE_XML */
 
-class ZArchiveReader;
+// for .wua files
+#include "zarchive/zarchivereader.h"
 
 namespace LibRomData {
 
@@ -60,7 +61,6 @@ public:
 #if defined(_WIN32) && defined(_UNICODE)
 	WiiUPackagePrivate(const wchar_t *path);
 #endif /* _WIN32 && _UNICODE */
-	~WiiUPackagePrivate();
 
 private:
 	typedef LibRpBase::RomDataPrivate super;
@@ -89,8 +89,23 @@ public:
 	// Directory path
 	std::tstring path;
 
-	// ZArchive reader for .wua files
-	ZArchiveReader *zarchive;
+	struct wua_t {
+		// ZArchive reader for .wua files
+		ZArchiveReader *zarchive;
+
+		// Package name from the .wua file.
+		std::string package_name;
+
+		wua_t()
+			: zarchive(nullptr)
+		{}
+
+		~wua_t()
+		{
+			delete zarchive;
+		}
+	};
+	wua_t wua;
 
 	// Ticket, TMD, and FST
 	std::unique_ptr<WiiTicket> ticket;

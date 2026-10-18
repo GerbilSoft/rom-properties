@@ -19,9 +19,10 @@ public:
 	 * Create an IRpFile using ZArchiveReader as the underlying storage mechanism.
 	 * NOTE: RpFile_ZArchiveReader does NOT take ownership of the ZArchiveReader.
 	 * @param zarchive	[in] ZArchiveReader*
+	 * @param package_name	[in] Package name within the ZArchive (usually title ID + version)
 	 * @param filename	[in] File to open within the ZArchive
 	 */
-	explicit RpFile_ZArchiveReader(ZArchiveReader *zarchive, const char *filename);
+	explicit RpFile_ZArchiveReader(ZArchiveReader *zarchive, const char *package_name, const char *filename);
 
 private:
 	typedef LibRpFile::IRpFile super;

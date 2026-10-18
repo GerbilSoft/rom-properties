@@ -1,27 +1,35 @@
 #include "RpFile_ZArchiveReader.hpp"
 
+// libfmt
+#include "rp-libfmt.h"
+
 namespace LibRomData {
 
 /**
  * Create an IRpFile using ZArchiveReader as the underlying storage mechanism.
  * NOTE: RpFile_ZArchiveReader does NOT take ownership of the ZArchiveReader.
  * @param zarchive	[in] ZArchiveReader*
+ * @param package_name	[in] Package name within the ZArchive (usually title ID + version)
  * @param filename	[in] File to open within the ZArchive
  */
-RpFile_ZArchiveReader::RpFile_ZArchiveReader(ZArchiveReader *zarchive, const char *filename)
+RpFile_ZArchiveReader::RpFile_ZArchiveReader(ZArchiveReader *zarchive, const char *package_name, const char *filename)
 	: m_zarchive(zarchive)
 	, m_pos(0)
 	, m_size(0)
 	, m_handle(ZARCHIVE_INVALID_NODE)
 {
-	if (!filename || filename[0] == '\0') {
-		m_filename.clear();
+	if (!package_name || package_name[0] == '\0' ||
+	    !filename || filename[0] == '\0')
+	{
 		return;
 	}
 
-	// FIXME: Need to enumerate root directories and get the main title root.
-	// For now, hard-coding it.
-	m_filename = "/000500001017d800_v0";
+	// Construct the full filename.
+	m_filename = "/";
+	m_filename += package_name;
+	if (filename[0] != '/') {
+		m_filename += '/';
+	}
 	m_filename += filename;
 
 	// NOTE: ZArchive handles do not need to be closed.
