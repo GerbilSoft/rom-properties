@@ -67,6 +67,14 @@
 # endif
 #endif
 
+#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
+/* Disable -Wvla warnings enabled by KF5's extra-cmake-modules. */
+#  if (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#    pragma GCC diagnostic push
+#  endif
+#  pragma GCC diagnostic ignored "-Wunused-function"
+#endif
+
 namespace _ZARCHIVE
 {
 	inline constexpr size_t COMPRESSED_BLOCK_SIZE = 64 * 1024; // 64KiB
@@ -385,3 +393,6 @@ namespace _ZARCHIVE
 
 };
 
+#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#  pragma GCC diagnostic pop
+#endif
