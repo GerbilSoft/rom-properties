@@ -401,7 +401,7 @@ bool WiiUPackagePrivate::file_exists(const char *filename) const
 			full_filename += filename;
 
 			ZArchiveNodeHandle handle = wua.zarchive->LookUp(full_filename, true, false);
-			return (handle != ZARCHIVE_INVALID_NODE);
+			return (handle != ZARCHIVE_INVALID_NODE && wua.zarchive->IsFile(handle));
 		}
 #endif /* HAVE_ZARCHIVE */
 	}
@@ -561,7 +561,7 @@ void WiiUPackage::init(void)
 		// Get the first package name that matches 00050000*. (game package)
 		// TODO: Allow the user to select other packages?
 		ZArchiveNodeHandle handle_root = wua.zarchive->LookUp("/", false, true);
-		if (handle_root == ZARCHIVE_INVALID_NODE) {
+		if (handle_root == ZARCHIVE_INVALID_NODE || !wua.zarchive->IsDirectory(handle_root)) {
 			// Unable to get a handle to the root directory...
 			d->reset();
 			return;

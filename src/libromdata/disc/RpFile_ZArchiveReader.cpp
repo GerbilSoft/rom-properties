@@ -45,7 +45,7 @@ RpFile_ZArchiveReader::RpFile_ZArchiveReader(const shared_ptr<ZArchiveReader> &z
 
 	// NOTE: ZArchive handles do not need to be closed.
 	m_handle = zarchive->LookUp(m_filename.c_str(), true, false);
-	if (!m_zarchive->IsFile(m_handle)) {
+	if (m_handle == ZARCHIVE_INVALID_NODE || !m_zarchive->IsFile(m_handle)) {
 		m_filename.clear();
 		m_handle = ZARCHIVE_INVALID_NODE;
 		return;
