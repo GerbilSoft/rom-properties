@@ -41,8 +41,6 @@ using namespace LibRpTexture;
 #endif /* _WIN32 */
 
 // C++ STL classes
-#include <fstream>
-#include <iostream>
 using std::array;
 using std::string;
 using std::tstring;
@@ -540,21 +538,16 @@ void WiiUPackage::init(void)
 	if (d->file) {
 #ifdef HAVE_ZARCHIVE
 		// Attempt to open as .wua.
-		// NOTE: Using direct filename access for now, so this may fail for network files.
-		// TODO: Implement an std::istream or std::streambuf wrapper for IRpFile,
-		// or just add IRpFile support to ZArchive.
 		if (!std::holds_alternative<WiiUPackagePrivate::wua_t>(d->data)) {
 			d->reset();
 			return;
 		}
 		WiiUPackagePrivate::wua_t &wua = std::get<WiiUPackagePrivate::wua_t>(d->data);
 
-		const char *filename = d->file->filename();
-		if (!filename) {
-			d->reset();
-			return;
-		}
-		wua.zarchive.reset(ZArchiveReader::OpenFromStream(unique_ptr<std::ifstream>(new std::ifstream(filename, std::ifstream::in))));
+		// Create an std::streambuf wrapper around the IRpFile.
+		// The streambuf will be used for an std::istream.
+		wua.streambuf = new streambuf_IRpFile(d->file);
+		wua.zarchive.reset(ZArchiveReader::OpenFromStream(unique_ptr<std::istream>(new std::istream(wua.streambuf))));
 		if (!wua.zarchive) {
 			d->reset();
 			return;
