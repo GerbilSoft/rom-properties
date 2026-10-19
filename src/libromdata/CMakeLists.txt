@@ -151,7 +151,6 @@ SET(${PROJECT_NAME}_SRCS
 	disc/NCCHReader.cpp
 	disc/NEResourceReader.cpp
 	disc/PEResourceReader.cpp
-	disc/RpFile_ZArchiveReader.cpp
 	disc/WbfsReader.cpp
 	disc/WiiPartition.cpp
 	disc/WiiUFst.cpp
@@ -384,7 +383,6 @@ SET(${PROJECT_NAME}_H
 	disc/NCCHReader_p.hpp
 	disc/NEResourceReader.hpp
 	disc/PEResourceReader.hpp
-	disc/RpFile_ZArchiveReader.hpp
 	disc/WbfsReader.hpp
 	disc/WiiPartition.hpp
 	disc/WiiUFst.hpp
@@ -465,6 +463,12 @@ IF(HAVE_ZSTD)
 	SET(${PROJECT_NAME}_ZSTD_SRCS disc/Z3DSReader.cpp)
 	SET(${PROJECT_NAME}_ZSTD_H    disc/Z3DSReader.hpp)
 ENDIF(HAVE_ZSTD)
+
+# Files that require ZArchive.
+IF(HAVE_ZARCHIVE)
+	SET(${PROJECT_NAME}_ZArchive_SRCS disc/RpFile_ZArchiveReader.cpp)
+	SET(${PROJECT_NAME}_ZArchive_H    disc/RpFile_ZArchiveReader.hpp)
+ENDIF(HAVE_ZARCHIVE)
 
 # dlopen() notes
 IF(NOT WIN32 AND NOT APPLE)
@@ -560,6 +564,7 @@ ADD_LIBRARY(${PROJECT_NAME} ${${PROJECT_NAME}_LINKAGE}
 	${${PROJECT_NAME}_CRYPTO_SRCS} ${${PROJECT_NAME}_CRYPTO_H}
 	${${PROJECT_NAME}_NETWORKING_SRCS}
 	${${PROJECT_NAME}_ZSTD_SRCS} ${${PROJECT_NAME}_ZSTD_H}
+	${${PROJECT_NAME}_ZArchive_SRCS} ${${PROJECT_NAME}_ZArchive_H}
 	${${PROJECT_NAME}_DLOPEN_SRCS}
 	${${PROJECT_NAME}_MMX_SRCS}
 	${${PROJECT_NAME}_SSE2_SRCS}
@@ -619,7 +624,9 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE cachecommon-dll)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpuid)		# for CPU dispatch
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC boost-time64)	# for rp_time_t and 64-bit time functions
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE zarchive)		# for Wii U .wua files
+	IF(HAVE_ZARCHIVE)
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE zarchive)		# for Wii U .wua files
+	ENDIF(HAVE_ZARCHIVE)
 
 	IF(CMAKE_THREAD_LIBS_INIT)
 		# for std::call_once() [pthread_once()]
@@ -681,7 +688,9 @@ ELSE()
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC cachecommon)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpuid)		# for CPU dispatch
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC boost-time64)	# for rp_time_t and 64-bit time functions
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE zarchive)		# for Wii U .wua files
+	IF(HAVE_ZARCHIVE)
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE zarchive)		# for Wii U .wua files
+	ENDIF(HAVE_ZARCHIVE)
 	IF(ENABLE_NLS)
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC i18n)
 	ENDIF(ENABLE_NLS)

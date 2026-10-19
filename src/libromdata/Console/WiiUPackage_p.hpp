@@ -9,6 +9,7 @@
 #pragma once
 
 #include "config.librpbase.h"
+#include "config.libromdata.h"
 #include "common.h"
 
 // RomData subclasses
@@ -52,7 +53,9 @@
 #endif /* ENABLE_XML */
 
 // for .wua files
-#include "zarchive/zarchivereader.h"
+#ifdef HAVE_ZARCHIVE
+#  include "zarchive/zarchivereader.h"
+#endif /* HAVE_ZARCHIVE */
 
 namespace LibRomData {
 
@@ -70,10 +73,19 @@ private:
 public:
 	RP_DISABLE_COPY(WiiUPackagePrivate)
 
+private:
+#ifdef HAVE_ZARCHIVE
+	static constexpr size_t ZARCHIVE_EXT_COUNT = 1;
+	static constexpr size_t ZARCHIVE_MIME_COUNT = 1;
+#else /* !HAVE_ZARCHIVE */
+	static constexpr size_t ZARCHIVE_EXT_COUNT = 0;
+	static constexpr size_t ZARCHIVE_MIME_COUNT = 0;
+#endif /* HAVE_ZARCHIVE */
+
 public:
 	/** RomDataInfo **/
-	static const std::array<const char*, 1+1> exts;
-	static const std::array<const char*, 2+1> mimeTypes;
+	static const std::array<const char*, ZARCHIVE_EXT_COUNT+0+1> exts;
+	static const std::array<const char*, ZARCHIVE_MIME_COUNT+1+1> mimeTypes;
 	static const LibRpBase::RomDataInfo romDataInfo;
 
 public:
@@ -83,7 +95,9 @@ public:
 
 		NUS		= 0,	// NUS format
 		Extracted	= 1,	// Extracted
+#ifdef HAVE_ZARCHIVE
 		WUA		= 2,	// WUA (Wii U Archive)
+#endif /* HAVE_ZARCHIVE */
 
 		Max
 	};
@@ -102,6 +116,7 @@ public:
 		{}
 	};
 
+#ifdef HAVE_ZARCHIVE
 	struct wua_t {
 		// ZArchive reader for .wua files
 		std::shared_ptr<ZArchiveReader> zarchive;
@@ -109,8 +124,13 @@ public:
 		// Package name from the .wua file.
 		std::string package_name;
 	};
+#endif /* HAVE_ZARCHIVE */
 
+#ifdef HAVE_ZARCHIVE
 	std::variant<std::monostate, nus_t, wua_t> data;
+#else /* !HAVE_ZARCHIVE */
+	std::variant<std::monostate, nus_t> data;
+#endif /* HAVE_ZARCHIVE */
 
 	// Ticket, TMD, and FST
 	std::unique_ptr<WiiTicket> ticket;

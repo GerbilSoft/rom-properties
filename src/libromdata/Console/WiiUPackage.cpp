@@ -17,8 +17,10 @@
 // TGA FileFormat
 #include "librptexture/fileformat/TGA.hpp"
 
+#ifdef HAVE_ZARCHIVE
 // for .wua files
-#include "disc/RpFile_ZArchiveReader.hpp"
+#  include "disc/RpFile_ZArchiveReader.hpp"
+#endif /* HAVE_ZARCHIVE */
 
 // Other rom-properties libraries
 #include "librpbase/disc/PartitionFile.hpp"
@@ -52,20 +54,24 @@ ROMDATA_IMPL(WiiUPackage)
 /** WiiUPackagePrivate **/
 
 /* RomDataInfo */
-const array<const char*, 1+1> WiiUPackagePrivate::exts = {{
+const array<const char*, WiiUPackagePrivate::ZARCHIVE_EXT_COUNT+0+1> WiiUPackagePrivate::exts = {{
 	// NUS packages are directories.
 
+#ifdef HAVE_ZARCHIVE
 	// WUA archives are files.
 	".wua",
+#endif /* HAVE_ZARCHIVE */
 
 	nullptr
 }};
-const array<const char*, 2+1> WiiUPackagePrivate::mimeTypes = {{
+const array<const char*, WiiUPackagePrivate::ZARCHIVE_MIME_COUNT+1+1> WiiUPackagePrivate::mimeTypes = {{
 	// NUS packages are directories.
 	"inode/directory",
 
+#ifdef HAVE_ZARCHIVE
 	// WUA archives are also supported.
 	"application/x-wii-u-wua",
+#endif /* HAVE_ZARCHIVE */
 
 	nullptr
 }};
@@ -77,7 +83,9 @@ WiiUPackagePrivate::WiiUPackagePrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 	, packageType(PackageType::Unknown)
 {
+#ifdef HAVE_ZARCHIVE
 	this->data = wua_t();
+#endif /* HAVE_ZARCHIVE */
 }
 
 WiiUPackagePrivate::WiiUPackagePrivate(const char *path)
@@ -313,6 +321,7 @@ IRpFilePtr WiiUPackagePrivate::open(const char *filename)
 			return fp;
 		}
 
+#ifdef HAVE_ZARCHIVE
 		case PackageType::WUA: {
 			// .wua archive. Open the file using ZArchiveReader.
 			assert(std::holds_alternative<wua_t>(this->data));
@@ -328,6 +337,7 @@ IRpFilePtr WiiUPackagePrivate::open(const char *filename)
 			fp = std::make_shared<RpFile_ZArchiveReader>(wua.zarchive, wua.package_name.c_str(), filename);
 			return fp;
 		}
+#endif /* HAVE_ZARCHIVE */
 	}
 }
 
@@ -369,6 +379,7 @@ bool WiiUPackagePrivate::file_exists(const char *filename) const
 			return (FileSystem::access(ts_full_filename.c_str(), R_OK) == 0);
 		}
 
+#ifdef HAVE_ZARCHIVE
 		case PackageType::WUA: {
 			// .wua archive. Check if we can get a valid handle from ZArchive.
 			assert(std::holds_alternative<wua_t>(this->data));
@@ -392,6 +403,7 @@ bool WiiUPackagePrivate::file_exists(const char *filename) const
 			ZArchiveNodeHandle handle = wua.zarchive->LookUp(full_filename, true, false);
 			return (handle != ZARCHIVE_INVALID_NODE);
 		}
+#endif /* HAVE_ZARCHIVE */
 	}
 }
 
@@ -458,7 +470,11 @@ rp_image_const_ptr WiiUPackagePrivate::loadIcon(void)
 WiiUPackage::WiiUPackage(const IRpFilePtr &file)
 	: super(new WiiUPackagePrivate(file))
 {
+#ifdef HAVE_ZARCHIVE
 	init();
+#else /* !HAVE_ZARCHIVE */
+	// Can't open .wua on this system...
+#endif /* HAVE_ZARCHIVE */
 }
 
 /**
@@ -520,6 +536,7 @@ void WiiUPackage::init(void)
 
 	// Check if this path is supported.
 	if (d->file) {
+#ifdef HAVE_ZARCHIVE
 		// Attempt to open as .wua.
 		// NOTE: Using direct filename access for now, so this may fail for network files.
 		// TODO: Implement an std::istream or std::streambuf wrapper for IRpFile,
@@ -586,6 +603,11 @@ void WiiUPackage::init(void)
 		s_path = "/";
 		s_path += wua.package_name;
 		s_path += '/';
+#else /* !HAVE_ZARCHIVE */
+		// Can't open .wua on this system...
+		d->reset();
+		return;
+#endif /* HAVE_ZARCHIVE */
 	} else {
 		if (!std::holds_alternative<WiiUPackagePrivate::nus_t>(d->data)) {
 			d->reset();
@@ -623,10 +645,13 @@ void WiiUPackage::init(void)
 	s_path += _T("title.tik");
 
 	IRpFilePtr subfile;
+#ifdef HAVE_ZARCHIVE
 	if (d->packageType == WiiUPackagePrivate::PackageType::WUA) {
 		const WiiUPackagePrivate::wua_t &wua = std::get<WiiUPackagePrivate::wua_t>(d->data);
 		subfile = std::make_shared<RpFile_ZArchiveReader>(wua.zarchive, wua.package_name.c_str(), s_path.c_str());
-	} else {
+	} else
+#endif /* HAVE_ZARCHIVE */
+	{
 		subfile = std::make_shared<RpFile>(s_path, RpFile::FM_OPEN_READ);
 	}
 
@@ -666,10 +691,13 @@ void WiiUPackage::init(void)
 	}
 	s_path += _T("title.tmd");
 
+#ifdef HAVE_ZARCHIVE
 	if (d->packageType == WiiUPackagePrivate::PackageType::WUA) {
 		const WiiUPackagePrivate::wua_t &wua = std::get<WiiUPackagePrivate::wua_t>(d->data);
 		subfile = std::make_shared<RpFile_ZArchiveReader>(wua.zarchive, wua.package_name.c_str(), s_path.c_str());
-	} else {
+	} else
+#endif /* HAVE_ZARCHIVE */
+	{
 		subfile = std::make_shared<RpFile>(s_path, RpFile::FM_OPEN_READ);
 	}
 	if (subfile->isOpen()) {
@@ -797,6 +825,7 @@ void WiiUPackage::init(void)
  */
 int WiiUPackage::isRomSupported_static(const DetectInfo *info)
 {
+#ifdef HAVE_ZARCHIVE
 	assert(info != nullptr);
 	assert(info->header.pData != nullptr);
 	assert(info->header.addr == 0);
@@ -825,6 +854,11 @@ int WiiUPackage::isRomSupported_static(const DetectInfo *info)
 
 	// May be a .wua file.
 	return static_cast<int>(WiiUPackagePrivate::PackageType::WUA);
+#else /* !HAVE_ZARCHIVE */
+	// Can't open .wua on this system...
+	RP_UNUSED(info);
+	return static_cast<int>(WiiUPackagePrivate::PackageType::Unknown);
+#endif /* HAVE_ZARCHIVE */
 }
 
 /**
@@ -1103,7 +1137,9 @@ int WiiUPackage::loadFieldData(void)
 		}
 
 		case WiiUPackagePrivate::PackageType::Extracted:
+#ifdef HAVE_ZARCHIVE
 		case WiiUPackagePrivate::PackageType::WUA:
+#endif /* HAVE_ZARCHIVE */
 			// XML can always be loaded in extracted packages and WUA archives.
 			canLoadXMLs = true;
 			break;

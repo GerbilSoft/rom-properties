@@ -62,3 +62,6 @@
 #if !defined(USE_INTERNAL_LZO) || defined(USE_INTERNAL_LZO_DLL)
 #  define LZO_IS_DLL 1
 #endif
+
+/* Define to 1 if ZArchive is available. */
+#cmakedefine HAVE_ZARCHIVE 1
