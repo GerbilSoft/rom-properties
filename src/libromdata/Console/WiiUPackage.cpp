@@ -37,6 +37,7 @@ using namespace LibRpTexture;
 #else /* _WIN32 */
 #  define U82T_c(str) (str)
 #  define U82T_s(str) (str)
+#  define T2U8(str) (str)
 #endif /* _WIN32 */
 
 // C++ STL classes
@@ -167,21 +168,21 @@ IDiscReaderPtr WiiUPackagePrivate::openContentFile(unsigned int idx)
 
 	// Attempt to open the content.
 	const WUP_Content_Entry &entry = contentsTable[idx];
-	tstring s_path(nus.path);
-	s_path += DIR_SEP_CHR;
-	const size_t orig_path_size = s_path.size();
+	tstring ts_path(nus.path);
+	ts_path += DIR_SEP_CHR;
+	const size_t orig_path_size = ts_path.size();
 
 	// Try with lowercase hex first.
 	const uint32_t content_id = be32_to_cpu(entry.content_id);
-	s_path += fmt::format(FSTR(_T("{:0>8x}.app")), content_id);
+	ts_path += fmt::format(FSTR(_T("{:0>8x}.app")), content_id);
 
-	IRpFilePtr subfile = std::make_shared<RpFile>(s_path.c_str(), RpFile::FM_OPEN_READ);
+	IRpFilePtr subfile = std::make_shared<RpFile>(ts_path.c_str(), RpFile::FM_OPEN_READ);
 	if (!subfile->isOpen()) {
 		// Try with uppercase hex.
-		s_path.resize(orig_path_size);
-		s_path += fmt::format(FSTR(_T("{:0>8X}.app")), content_id);
+		ts_path.resize(orig_path_size);
+		ts_path += fmt::format(FSTR(_T("{:0>8X}.app")), content_id);
 
-		subfile = std::make_shared<RpFile>(s_path.c_str(), RpFile::FM_OPEN_READ);
+		subfile = std::make_shared<RpFile>(ts_path.c_str(), RpFile::FM_OPEN_READ);
 		if (!subfile->isOpen()) {
 			// Unable to open the content file.
 			// TODO: Error code?
@@ -533,7 +534,7 @@ void WiiUPackage::init(void)
 		return;
 	}
 
-	tstring s_path;
+	tstring ts_path;
 
 	// Check if this path is supported.
 	if (d->file) {
@@ -601,9 +602,9 @@ void WiiUPackage::init(void)
 		}
 
 		d->packageType = WiiUPackagePrivate::PackageType::WUA;
-		s_path = _T("/");
-		s_path += U82T_s(wua.package_name);
-		s_path += _T('/');
+		ts_path = _T("/");
+		ts_path += U82T_s(wua.package_name);
+		ts_path += _T('/');
 #else /* !HAVE_ZARCHIVE */
 		// Can't open .wua on this system...
 		d->reset();
@@ -620,8 +621,8 @@ void WiiUPackage::init(void)
 			d->reset();
 			return;
 		}
-		s_path = nus.path;
-		s_path += DIR_SEP_CHR;
+		ts_path = nus.path;
+		ts_path += DIR_SEP_CHR;
 	}
 
 	d->isValid = ((int)d->packageType >= 0);
@@ -637,23 +638,23 @@ void WiiUPackage::init(void)
 
 	// TODO: Skip this for .wua?
 	// TODO: Use '/' instead of DIR_SEP_CHR for .wua?
-	const size_t orig_path_size = s_path.size();
+	const size_t orig_path_size = ts_path.size();
 
 	if (d->packageType != WiiUPackagePrivate::PackageType::NUS) {
-		s_path += _T("code");
-		s_path += DIR_SEP_CHR;
+		ts_path += _T("code");
+		ts_path += DIR_SEP_CHR;
 	}
-	s_path += _T("title.tik");
+	ts_path += _T("title.tik");
 
 	IRpFilePtr subfile;
 #ifdef HAVE_ZARCHIVE
 	if (d->packageType == WiiUPackagePrivate::PackageType::WUA) {
 		const WiiUPackagePrivate::wua_t &wua = std::get<WiiUPackagePrivate::wua_t>(d->data);
-		subfile = std::make_shared<RpFile_ZArchiveReader>(wua.zarchive, wua.package_name.c_str(), s_path.c_str());
+		subfile = std::make_shared<RpFile_ZArchiveReader>(wua.zarchive, wua.package_name.c_str(), T2U8(ts_path).c_str());
 	} else
 #endif /* HAVE_ZARCHIVE */
 	{
-		subfile = std::make_shared<RpFile>(s_path, RpFile::FM_OPEN_READ);
+		subfile = std::make_shared<RpFile>(ts_path, RpFile::FM_OPEN_READ);
 	}
 
 	if (subfile->isOpen()) {
@@ -685,21 +686,21 @@ void WiiUPackage::init(void)
 	unique_ptr<WiiTMD> tmd;
 	int tmdFormatVersion = -1;
 
-	s_path.resize(orig_path_size);
+	ts_path.resize(orig_path_size);
 	if (d->packageType != WiiUPackagePrivate::PackageType::NUS) {
-		s_path += _T("code");
-		s_path += DIR_SEP_CHR;
+		ts_path += _T("code");
+		ts_path += DIR_SEP_CHR;
 	}
-	s_path += _T("title.tmd");
+	ts_path += _T("title.tmd");
 
 #ifdef HAVE_ZARCHIVE
 	if (d->packageType == WiiUPackagePrivate::PackageType::WUA) {
 		const WiiUPackagePrivate::wua_t &wua = std::get<WiiUPackagePrivate::wua_t>(d->data);
-		subfile = std::make_shared<RpFile_ZArchiveReader>(wua.zarchive, wua.package_name.c_str(), s_path.c_str());
+		subfile = std::make_shared<RpFile_ZArchiveReader>(wua.zarchive, wua.package_name.c_str(), T2U8(ts_path).c_str());
 	} else
 #endif /* HAVE_ZARCHIVE */
 	{
-		subfile = std::make_shared<RpFile>(s_path, RpFile::FM_OPEN_READ);
+		subfile = std::make_shared<RpFile>(ts_path, RpFile::FM_OPEN_READ);
 	}
 	if (subfile->isOpen()) {
 		tmd.reset(new WiiTMD(subfile));
