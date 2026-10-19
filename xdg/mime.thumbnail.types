@@ -72,6 +72,7 @@ application/x-wii-u-ancast		# WiiUAncast
 application/x-wii-u-firmware-image	# WiiUAncast
 application/x-wii-u-toucan		# WiiUAncast
 application/x-wii-u-toucan-image	# WiiUAncast
+application/x-wii-u-wua			# WiiUPackage (for .wua)
 application/x-nintendo-dsi-tad		# WiiWAD
 application/x-wii-wad			# WiiWAD
 application/x-doom-wad			# WiiWAD (for compatibility)
