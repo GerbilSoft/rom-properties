@@ -104,19 +104,10 @@ public:
 
 	struct wua_t {
 		// ZArchive reader for .wua files
-		ZArchiveReader *zarchive;
+		std::shared_ptr<ZArchiveReader> zarchive;
 
 		// Package name from the .wua file.
 		std::string package_name;
-
-		wua_t()
-			: zarchive(nullptr)
-		{}
-
-		~wua_t()
-		{
-			delete zarchive;
-		}
 	};
 
 	std::variant<std::monostate, nus_t, wua_t> data;

@@ -14,6 +14,8 @@
 
 #include "zarchive/zarchivereader.h"
 
+// C++ STL classes
+#include <memory>
 #include <string>
 
 namespace LibRomData {
@@ -30,7 +32,7 @@ public:
 	 * @param package_name	[in] Package name within the ZArchive (usually title ID + version)
 	 * @param filename	[in] File to open within the ZArchive
 	 */
-	explicit RpFile_ZArchiveReader(ZArchiveReader *zarchive, const char *package_name, const char *filename);
+	explicit RpFile_ZArchiveReader(const std::shared_ptr<ZArchiveReader> &zarchive, const char *package_name, const char *filename);
 
 private:
 	typedef LibRpFile::IRpFile super;
@@ -112,7 +114,7 @@ public:
 	const char *filename(void) const final;
 
 protected:
-	ZArchiveReader *m_zarchive;
+	std::shared_ptr<ZArchiveReader> m_zarchive;
 	std::string m_filename;
 
 	off64_t m_pos;

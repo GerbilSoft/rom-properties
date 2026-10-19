@@ -8,6 +8,9 @@
 
 #include "RpFile_ZArchiveReader.hpp"
 
+// C++ STL classes
+using std::shared_ptr;
+
 // libfmt
 #include "rp-libfmt.h"
 
@@ -20,7 +23,7 @@ namespace LibRomData {
  * @param package_name	[in] Package name within the ZArchive (usually title ID + version)
  * @param filename	[in] File to open within the ZArchive
  */
-RpFile_ZArchiveReader::RpFile_ZArchiveReader(ZArchiveReader *zarchive, const char *package_name, const char *filename)
+RpFile_ZArchiveReader::RpFile_ZArchiveReader(const shared_ptr<ZArchiveReader> &zarchive, const char *package_name, const char *filename)
 	: m_zarchive(zarchive)
 	, m_pos(0)
 	, m_size(0)

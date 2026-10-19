@@ -535,7 +535,7 @@ void WiiUPackage::init(void)
 			d->reset();
 			return;
 		}
-		wua.zarchive = ZArchiveReader::OpenFromStream(unique_ptr<std::ifstream>(new std::ifstream(filename, std::ifstream::in)));
+		wua.zarchive.reset(ZArchiveReader::OpenFromStream(unique_ptr<std::ifstream>(new std::ifstream(filename, std::ifstream::in))));
 		if (!wua.zarchive) {
 			d->reset();
 			return;
