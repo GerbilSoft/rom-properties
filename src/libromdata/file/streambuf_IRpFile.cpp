@@ -76,24 +76,13 @@ streambuf_IRpFile::pos_type streambuf_IRpFile::seekoff(off_type off,
 	setg(nullptr, nullptr, nullptr);
 
         // Convert from C++ seek constants to IRpFile::SeekWhence (C-style).
-	// TODO: Are the C++ values the same as the C values?
-	IRpFile::SeekWhence whence;
-	switch (way) {
-		default:
-			assert(!"Invalid streambuf seek operation!");
-			return static_cast<pos_type>(-1);
-		case std::ios_base::beg:
-			whence = IRpFile::SeekWhence::Set;
-			break;
-		case std::ios_base::cur:
-			whence = IRpFile::SeekWhence::Cur;
-			break;
-		case std::ios_base::end:
-			whence = IRpFile::SeekWhence::End;
-			break;
-	}
+	// NOTE: libstdc++ has the same values as C-style functions.
+	// Need to check MSVCRT/UCRT and libc++.
+	static_assert(static_cast<int>(std::ios_base::beg) == static_cast<int>(IRpFile::SeekWhence::Set), "std::ios_base::beg != IRpFile::SeekWhence::Set");
+	static_assert(static_cast<int>(std::ios_base::cur) == static_cast<int>(IRpFile::SeekWhence::Cur), "std::ios_base::cur != IRpFile::SeekWhence::Cur");
+	static_assert(static_cast<int>(std::ios_base::end) == static_cast<int>(IRpFile::SeekWhence::End), "std::ios_base::end != IRpFile::SeekWhence::End");
 
-	int ret = m_file->seek(off, whence);
+	int ret = m_file->seek(off, static_cast<IRpFile::SeekWhence>(way));
 	if (ret != 0) {
 		return static_cast<pos_type>(-1);
 	}
