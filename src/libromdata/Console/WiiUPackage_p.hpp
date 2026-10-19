@@ -42,6 +42,9 @@
 #include <memory>
 #include <vector>
 
+// std::variant<>
+#include "rp-variant.hpp"
+
 // PugiXML
 // NOTE: Cannot forward-declare the PugiXML classes...
 #ifdef ENABLE_XML
@@ -86,8 +89,18 @@ public:
 	};
 	PackageType packageType;
 
-	// Directory path
-	std::tstring path;
+	struct nus_t {
+		// Directory path
+		std::tstring path;
+
+		nus_t(const std::tstring &path)
+			: path(path)
+		{}
+
+		nus_t(std::tstring &&path)
+			: path(path)
+		{}
+	};
 
 	struct wua_t {
 		// ZArchive reader for .wua files
@@ -105,7 +118,8 @@ public:
 			delete zarchive;
 		}
 	};
-	wua_t wua;
+
+	std::variant<std::monostate, nus_t, wua_t> data;
 
 	// Ticket, TMD, and FST
 	std::unique_ptr<WiiTicket> ticket;
