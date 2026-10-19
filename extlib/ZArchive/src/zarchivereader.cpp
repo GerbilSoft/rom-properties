@@ -132,6 +132,10 @@ ZArchiveReader::~ZArchiveReader()
 
 ZArchiveNodeHandle ZArchiveReader::LookUp(std::string_view path, bool allowFile, bool allowDirectory)
 {
+	// rom-properties: FIXME: allowFile and allowDirectory aren't actually used...
+	((void)allowFile);
+	((void)allowDirectory);
+
 	std::string_view pathParser = path;
 	uint32_t currentNode = 0;
 	while (true)
