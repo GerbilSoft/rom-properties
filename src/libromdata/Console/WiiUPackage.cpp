@@ -600,9 +600,9 @@ void WiiUPackage::init(void)
 		}
 
 		d->packageType = WiiUPackagePrivate::PackageType::WUA;
-		s_path = "/";
+		s_path = _T("/");
 		s_path += wua.package_name;
-		s_path += '/';
+		s_path += _T('/');
 #else /* !HAVE_ZARCHIVE */
 		// Can't open .wua on this system...
 		d->reset();
