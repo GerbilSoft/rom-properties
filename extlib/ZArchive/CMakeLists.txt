@@ -44,11 +44,11 @@ IF(NOT MSVC)
 ENDIF(NOT MSVC)
 
 # build static library
-add_library (zarchive ${SOURCE_FILES_LIB})
+add_library (zarchive STATIC ${SOURCE_FILES_LIB})
 add_library (ZArchive::zarchive ALIAS zarchive)
 target_compile_features(zarchive PUBLIC cxx_std_20)
 set_target_properties(zarchive PROPERTIES
-    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+    #MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
     VERSION "${PROJECT_VERSION}"
     SOVERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
 )
