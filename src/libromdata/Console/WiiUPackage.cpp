@@ -36,6 +36,7 @@ using namespace LibRpTexture;
 #  include "librptext/wchar.hpp"
 #else /* _WIN32 */
 #  define U82T_c(str) (str)
+#  define U82T_s(str) (str)
 #endif /* _WIN32 */
 
 // C++ STL classes
@@ -601,7 +602,7 @@ void WiiUPackage::init(void)
 
 		d->packageType = WiiUPackagePrivate::PackageType::WUA;
 		s_path = _T("/");
-		s_path += wua.package_name;
+		s_path += U82T_s(wua.package_name);
 		s_path += _T('/');
 #else /* !HAVE_ZARCHIVE */
 		// Can't open .wua on this system...
