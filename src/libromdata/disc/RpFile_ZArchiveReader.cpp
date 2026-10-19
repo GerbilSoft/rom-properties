@@ -129,16 +129,6 @@ off64_t RpFile_ZArchiveReader::tell(void)
 }
 
 /**
- * Truncate the file.
- * @param size New size. (default is 0)
- * @return 0 on success; negative POSIX error code on error.
- */
-int RpFile_ZArchiveReader::truncate(off64_t size)
-{
-	return -EROFS;
-}
-
-/**
  * Flush buffers.
  * This operation only makes sense on writable files.
  * @return 0 on success; negative POSIX error code on error.

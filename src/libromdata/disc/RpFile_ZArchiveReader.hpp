@@ -85,13 +85,6 @@ public:
 	off64_t tell(void) final;
 
 	/**
-	 * Truncate the file.
-	 * @param size New size. (default is 0)
-	 * @return 0 on success; negative POSIX error code on error.
-	 */
-	int truncate(off64_t size = 0) final;
-
-	/**
 	 * Flush buffers.
 	 * This operation only makes sense on writable files.
 	 * @return 0 on success; negative POSIX error code on error.
