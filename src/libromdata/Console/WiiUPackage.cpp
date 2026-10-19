@@ -1128,8 +1128,8 @@ int WiiUPackage::loadMetaData(void)
 	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
-	} else if (d->path.empty()) {
-		// No directory...
+	} else if (d->path.empty() && !d->file) {
+		// No directory or file...
 		return -EBADF;
 	} else if (!d->isValid) {
 		// Unknown ROM image type.
@@ -1147,9 +1147,9 @@ int WiiUPackage::loadMetaData(void)
 
 #ifdef ENABLE_XML
 	// Check if the decryption keys were loaded.
-	// NOTE: If not in Extracted format, requires a valid ticket.
-	if (d->packageType == WiiUPackagePrivate::PackageType::Extracted) {
-		// Extracted format. We can always add the XMLs.
+	// NOTE: If not in Extracted or .wua format, requires a valid ticket.
+	if (d->packageType != WiiUPackagePrivate::PackageType::NUS) {
+		// Extracted or .wua format. We can always add the XMLs.
 		// Parse the Wii U System XMLs.
 		const bool hasTicket = (bool)d->ticket;
 		d->addMetaData_System_XMLs(!hasTicket);
