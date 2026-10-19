@@ -4,6 +4,8 @@
 #include <string_view>
 #include <cstring>
 
+#include <algorithm>
+
 /* Determine endianness */
 /* Original code by https://github.com/rofl0r */
 #if (defined __BYTE_ORDER__) && (defined __ORDER_LITTLE_ENDIAN__)
