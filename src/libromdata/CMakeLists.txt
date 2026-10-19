@@ -466,8 +466,8 @@ ENDIF(HAVE_ZSTD)
 
 # Files that require ZArchive.
 IF(HAVE_ZARCHIVE)
-	SET(${PROJECT_NAME}_ZArchive_SRCS disc/RpFile_ZArchiveReader.cpp)
-	SET(${PROJECT_NAME}_ZArchive_H    disc/RpFile_ZArchiveReader.hpp)
+	SET(${PROJECT_NAME}_ZArchive_SRCS file/RpFile_ZArchiveReader.cpp)
+	SET(${PROJECT_NAME}_ZArchive_H    file/RpFile_ZArchiveReader.hpp)
 ENDIF(HAVE_ZARCHIVE)
 
 # dlopen() notes

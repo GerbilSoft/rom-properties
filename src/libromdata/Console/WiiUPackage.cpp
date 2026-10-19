@@ -19,7 +19,7 @@
 
 #ifdef HAVE_ZARCHIVE
 // for .wua files
-#  include "disc/RpFile_ZArchiveReader.hpp"
+#  include "file/RpFile_ZArchiveReader.hpp"
 #endif /* HAVE_ZARCHIVE */
 
 // Other rom-properties libraries
