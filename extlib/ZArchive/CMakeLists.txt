@@ -70,6 +70,8 @@ set_property(TARGET zarchiveTool PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$
 set_target_properties(zarchiveTool PROPERTIES OUTPUT_NAME "zarchive")
 target_link_libraries(zarchiveTool PRIVATE zarchive ${STATIC_TOOL_FLAG})
 
+# rom-properties: Disable installation.
+IF(0)
 # install
 install(DIRECTORY include/zarchive/ DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/zarchive" FILES_MATCHING PATTERN "zarchive*.h")
 install(TARGETS zarchive)
@@ -85,3 +87,4 @@ install(
     FILES "${CMAKE_CURRENT_BINARY_DIR}/zarchive.pc"
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
 )
+ENDIF(0) # rom-properties
