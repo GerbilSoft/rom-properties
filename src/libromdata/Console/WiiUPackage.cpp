@@ -520,7 +520,9 @@ void WiiUPackage::init(void)
 	d->fileType = FileType::Unknown;
 
 	using nus_t = WiiUPackagePrivate::nus_t;
+#ifdef HAVE_ZARCHIVE
 	using wua_t = WiiUPackagePrivate::wua_t;
+#endif /* HAVE_ZARCHIVE */
 
 	if (std::holds_alternative<nus_t>(d->data)) {
 		const nus_t &nus = std::get<nus_t>(d->data);
