@@ -924,12 +924,13 @@ const char *EXE::systemName(unsigned int type) const
 		case EXEPrivate::ExeType::PE32PLUS: {
 			// Portable Executable.
 			// TODO: Also used by older SkyOS and BeOS, and HX for DOS.
-			assert(std::holds_alternative<EXEPrivate::PE_data_t>(d->EXE_data));
-			if (!std::holds_alternative<EXEPrivate::PE_data_t>(d->EXE_data)) {
+			using PE_data_t = EXEPrivate::PE_data_t;
+			assert(std::holds_alternative<PE_data_t>(d->EXE_data));
+			if (!std::holds_alternative<PE_data_t>(d->EXE_data)) {
 				// Should have PE_data_t, but doesn't...
 				return nullptr;
 			}
-			const EXEPrivate::PE_data_t &PE_data = std::get<EXEPrivate::PE_data_t>(d->EXE_data);
+			const PE_data_t &PE_data = std::get<PE_data_t>(d->EXE_data);
 			switch (PE_data.pe_subsystem) {
 				case IMAGE_SUBSYSTEM_EFI_APPLICATION:
 				case IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER:
@@ -1301,9 +1302,10 @@ int EXE::loadMetaData(void)
 				subsystem_ver_minor = le16_to_cpu(opthdr.MinorSubsystemVersion);
 			}
 
-			assert(std::holds_alternative<EXEPrivate::PE_data_t>(d->EXE_data));
-			if (std::holds_alternative<EXEPrivate::PE_data_t>(d->EXE_data)) {
-				const EXEPrivate::PE_data_t &PE_data = std::get<EXEPrivate::PE_data_t>(d->EXE_data);
+			using PE_data_t = EXEPrivate::PE_data_t;
+			assert(std::holds_alternative<PE_data_t>(d->EXE_data));
+			if (std::holds_alternative<PE_data_t>(d->EXE_data)) {
+				const PE_data_t &PE_data = std::get<PE_data_t>(d->EXE_data);
 
 				d->metaData.addMetaData_string(Property::OSVersion, d->formatPESubsystemName(
 					PE_data.pe_subsystem, subsystem_ver_major, subsystem_ver_minor));
@@ -1507,12 +1509,13 @@ int EXE::checkViewedAchievements(void) const
 			return 0;
 	}
 
-	assert(std::holds_alternative<EXEPrivate::PE_data_t>(d->EXE_data));
-	if (!std::holds_alternative<EXEPrivate::PE_data_t>(d->EXE_data)) {
+	using PE_data_t = EXEPrivate::PE_data_t;
+	assert(std::holds_alternative<PE_data_t>(d->EXE_data));
+	if (!std::holds_alternative<PE_data_t>(d->EXE_data)) {
 		// Should have PE_data_t, but doesn't...
 		return 0;
 	}
-	const EXEPrivate::PE_data_t &PE_data = std::get<EXEPrivate::PE_data_t>(d->EXE_data);
+	const PE_data_t &PE_data = std::get<PE_data_t>(d->EXE_data);
 
 	switch (PE_data.pe_subsystem) {
 		case IMAGE_SUBSYSTEM_WINDOWS_GUI:
