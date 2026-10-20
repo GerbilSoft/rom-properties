@@ -1,0 +1,5 @@
+[ExtractorRule]
+ModulePath=libextract-rom-properties.so
+MimeTypes=application/x-wii-u-wua;
+FallbackRdfTypes=nfo:Archive;
+Graph=tracker:Software

@@ -1,5 +1,6 @@
 usr/lib/*/tracker-1.0/extract-modules/libextract-rom-properties.so
 usr/share/tracker/extract-rules/14-rp-application-packages.rule
+usr/share/tracker/extract-rules/14-rp-archives.rule
 usr/share/tracker/extract-rules/14-rp-audio.rule
 usr/share/tracker/extract-rules/14-rp-banners.rule
 usr/share/tracker/extract-rules/14-rp-cd-images.rule
