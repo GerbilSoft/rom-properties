@@ -519,8 +519,11 @@ void WiiUPackage::init(void)
 	RP_D(WiiUPackage);
 	d->fileType = FileType::Unknown;
 
-	if (std::holds_alternative<WiiUPackagePrivate::nus_t>(d->data)) {
-		const WiiUPackagePrivate::nus_t &nus = std::get<WiiUPackagePrivate::nus_t>(d->data);
+	using nus_t = WiiUPackagePrivate::nus_t;
+	using wua_t = WiiUPackagePrivate::wua_t;
+
+	if (std::holds_alternative<nus_t>(d->data)) {
+		const nus_t &nus = std::get<nus_t>(d->data);
 		if (nus.path.empty()) {
 			// No path...
 			d->reset();
@@ -538,11 +541,11 @@ void WiiUPackage::init(void)
 	if (d->file) {
 #ifdef HAVE_ZARCHIVE
 		// Attempt to open as .wua.
-		if (!std::holds_alternative<WiiUPackagePrivate::wua_t>(d->data)) {
+		if (!std::holds_alternative<wua_t>(d->data)) {
 			d->reset();
 			return;
 		}
-		WiiUPackagePrivate::wua_t &wua = std::get<WiiUPackagePrivate::wua_t>(d->data);
+		wua_t &wua = std::get<wua_t>(d->data);
 
 		// Create an std::streambuf wrapper around the IRpFile.
 		// The streambuf will be used for an std::istream.
@@ -604,11 +607,11 @@ void WiiUPackage::init(void)
 		return;
 #endif /* HAVE_ZARCHIVE */
 	} else {
-		if (!std::holds_alternative<WiiUPackagePrivate::nus_t>(d->data)) {
+		if (!std::holds_alternative<nus_t>(d->data)) {
 			d->reset();
 			return;
 		}
-		const WiiUPackagePrivate::nus_t &nus = std::get<WiiUPackagePrivate::nus_t>(d->data);
+		const nus_t &nus = std::get<nus_t>(d->data);
 		d->packageType = static_cast<WiiUPackagePrivate::PackageType>(isDirSupported_static(nus.path));
 		if ((int)d->packageType < 0) {
 			d->reset();
@@ -642,7 +645,7 @@ void WiiUPackage::init(void)
 	IRpFilePtr subfile;
 #ifdef HAVE_ZARCHIVE
 	if (d->packageType == WiiUPackagePrivate::PackageType::WUA) {
-		const WiiUPackagePrivate::wua_t &wua = std::get<WiiUPackagePrivate::wua_t>(d->data);
+		const wua_t &wua = std::get<wua_t>(d->data);
 		subfile = std::make_shared<RpFile_ZArchiveReader>(wua.zarchive, wua.package_name.c_str(), T2U8(ts_path).c_str());
 	} else
 #endif /* HAVE_ZARCHIVE */
@@ -688,7 +691,7 @@ void WiiUPackage::init(void)
 
 #ifdef HAVE_ZARCHIVE
 	if (d->packageType == WiiUPackagePrivate::PackageType::WUA) {
-		const WiiUPackagePrivate::wua_t &wua = std::get<WiiUPackagePrivate::wua_t>(d->data);
+		const wua_t &wua = std::get<wua_t>(d->data);
 		subfile = std::make_shared<RpFile_ZArchiveReader>(wua.zarchive, wua.package_name.c_str(), T2U8(ts_path).c_str());
 	} else
 #endif /* HAVE_ZARCHIVE */
