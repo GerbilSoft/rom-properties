@@ -736,7 +736,7 @@ void WiiUPackage::init(void)
 
 	if (d->packageType != WiiUPackagePrivate::PackageType::NUS) {
 		// Only NUS format needs decryption.
-		// Extracted format is already decrypted.
+		// Extracted and .wua formats are already decrypted.
 		return;
 	}
 
