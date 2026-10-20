@@ -722,7 +722,7 @@ void WiiUPackage::init(void)
 	if (d->file) {
 		// Using an archive file; probably ZArchive.
 		d->mimeType = "application/x-wii-u-wua";
-		d->fileType = FileType::DiscImage;	// FIXME: "ArchiveFile" type?
+		d->fileType = FileType::ArchiveFile;
 	} else {
 		// Using a directory.
 		d->mimeType = "inode/directory";
