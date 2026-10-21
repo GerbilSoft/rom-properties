@@ -150,6 +150,7 @@ SET(RULE_FILES
 	rules/14-rp-cd-images.rule
 	rules/14-rp-disk-images.rule
 	rules/14-rp-executables.rule
+	rules/14-rp-resource-files.rule
 	rules/14-rp-rom-images.rule
 	rules/14-rp-save-files.rule
 	rules/14-rp-textures.rule
