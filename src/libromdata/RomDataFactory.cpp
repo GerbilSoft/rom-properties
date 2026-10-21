@@ -265,11 +265,16 @@ static std::once_flag once_mimeTypes;
  * - magic2: Second 32-bit magic number, if available.
  */
 #ifdef ENABLE_XML
-static constexpr size_t romDataFns_magic_count = 41;
+static constexpr size_t XML_MAGIC_COUNT = 1;
 #else /* !ENABLE_XML */
-static constexpr size_t romDataFns_magic_count = 40;
+static constexpr size_t XML_MAGIC_COUNT = 0;
 #endif /* ENABLE_XML */
-static const array<RomDataFns, romDataFns_magic_count> romDataFns_magic = {{
+#ifdef HAVE_ZARCHIVE
+static constexpr size_t ZARCHIVE_MAGIC_COUNT = 1;
+#else /* !HAVE_ZARCHIVE */
+static constexpr size_t ZARCHIVE_MAGIC_COUNT = 0;
+#endif /* HAVE_ZARCHIVE */
+static const array<RomDataFns, XML_MAGIC_COUNT+ZARCHIVE_MAGIC_COUNT+39> romDataFns_magic = {{
 	// Consoles
 	GetRomDataFns_magic1(Atari7800, ATTR_HAS_METADATA, 4, 'RI78'),	// "ATARI7800"
 	GetRomDataFns_magic2(GameCubeBNR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'BNR1', 'BNR2'),
@@ -279,7 +284,9 @@ static const array<RomDataFns, romDataFns_magic_count> romDataFns_magic = {{
 	GetRomDataFns_magic1(WiiBNR, ATTR_HAS_METADATA, 128, 'IMET'),	// seen in some homebrew
 	GetRomDataFns_magic1(WiiSettingTxt, 0, 0, 0xBBA6AC92),
 	GetRomDataFns_magic1(WiiU, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES, 0, 'WUP-'),
+#ifdef HAVE_ZARCHIVE
 	GetRomDataFns_magic1(WiiUPackage, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 0x28B52FFD),	// WUA (Wii U Archive) only
+#endif /* HAVE_ZARCHIVE */
 	GetRomDataFns_magic1(WiiWIBN, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'WIBN'),
 	GetRomDataFns_magic1(Xbox_XBE, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XBEH'),
 	GetRomDataFns_magic1(Xbox360_XDBF, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XDBF'),
