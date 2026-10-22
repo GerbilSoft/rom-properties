@@ -49,6 +49,8 @@ using std::vector;
 // for .wua files
 #  include "file/RpFile_ZArchiveReader.hpp"
 #  ifdef _MSC_VER
+// need zstd.h for ZSTD_freeDCtx()
+#    include <zstd.h>
 // MSVC: Exception handling for /DELAYLOAD.
 #    include "libwin32common/DelayLoadHelper.h"
 #  endif /* _MSC_VER */
