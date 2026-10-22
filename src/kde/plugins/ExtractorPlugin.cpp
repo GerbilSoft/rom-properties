@@ -176,6 +176,10 @@ QStringList ExtractorPlugin::mimetypes(void) const
 	for (const char *mimeType : vec_mimeTypes) {
 		mimeTypes += QLatin1String(mimeType);
 	}
+
+	// FIXME: KFileMetaData detects .wua archives as "application/zstd".
+	mimeTypes += QLatin1String("application/zstd");
+
 	return mimeTypes;
 }
 
