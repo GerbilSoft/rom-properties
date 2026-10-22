@@ -2,6 +2,13 @@
 
 ## v3.0 (released 2026/??/??)
 
+* New parser features:
+  * WiiUPackage: Support for Wii U Archive (.wua) format. This uses the ZArchive
+    library, which requires a C++20 compiler in order to build. If an older
+    compiler is used, .wua support will not be included.
+    * Implements #378: [Feature Request] Add support for WUA Wii U games
+      * Reported by @dnmodder.
+
 * Bug fixes:
   * WiiUPackage: Fix icon thumbnailing for packages extracted from a Wii U MLC.
   * DidjTex: Fix the zlib delay-load check on Windows.
