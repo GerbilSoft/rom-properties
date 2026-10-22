@@ -6,6 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "config.librpbase.h"
+#include "config.libromdata.h"
+
 #include "WiiUPackage.hpp"
 #include "WiiUPackage_p.hpp"
 #include "data/WiiUData.hpp"
@@ -16,11 +19,6 @@
 
 // TGA FileFormat
 #include "librptexture/fileformat/TGA.hpp"
-
-#ifdef HAVE_ZARCHIVE
-// for .wua files
-#  include "file/RpFile_ZArchiveReader.hpp"
-#endif /* HAVE_ZARCHIVE */
 
 // Other rom-properties libraries
 #include "librpbase/disc/PartitionFile.hpp"
@@ -47,7 +45,21 @@ using std::tstring;
 using std::unique_ptr;
 using std::vector;
 
+#ifdef HAVE_ZARCHIVE
+// for .wua files
+#  include "file/RpFile_ZArchiveReader.hpp"
+#  ifdef _MSC_VER
+// MSVC: Exception handling for /DELAYLOAD.
+#    include "libwin32common/DelayLoadHelper.h"
+#  endif /* _MSC_VER */
+#endif /* HAVE_ZARCHIVE */
+
 namespace LibRomData {
+
+#if defined(HAVE_ZARCHIVE) && defined(_MSC_VER) && defined(ZSTD_IS_DLL)
+// DelayLoad test implementation.
+DELAYLOAD_TEST_FUNCTION_IMPL1(ZSTD_freeDCtx, nullptr);
+#endif /* HAVE_ZARCHIVE && _MSC_VER && ZSTD_IS_DLL */
 
 ROMDATA_IMPL(WiiUPackage)
 
@@ -542,6 +554,17 @@ void WiiUPackage::init(void)
 	// Check if this path is supported.
 	if (d->file) {
 #ifdef HAVE_ZARCHIVE
+#  if defined(_MSC_VER) && defined(ZSTD_IS_DLL)
+		// Delay load verification.
+		int err = DelayLoad_test_ZSTD_freeDCtx();
+		if (err != 0) {
+			// Delay load failed.
+			// .wua format is not supported without zstd.
+			d->reset();
+			return;
+		}
+#  endif /* _MSC_VER && ZSTD_IS_DLL */
+
 		// Attempt to open as .wua.
 		if (!std::holds_alternative<wua_t>(d->data)) {
 			d->reset();
@@ -851,6 +874,16 @@ int WiiUPackage::isRomSupported_static(const DetectInfo *info)
 		// Not the ZSTD magic number.
 		return static_cast<int>(WiiUPackagePrivate::PackageType::Unknown);
 	}
+
+#  if defined(_MSC_VER) && defined(ZSTD_IS_DLL)
+	// Delay load verification.
+	int err = DelayLoad_test_ZSTD_freeDCtx();
+	if (err != 0) {
+		// Delay load failed.
+		// .wua format is not supported without zstd.
+		return static_cast<int>(WiiUPackagePrivate::PackageType::Unknown);
+	}
+#  endif /* _MSC_VER && ZSTD_IS_DLL */
 
 	// May be a .wua file.
 	return static_cast<int>(WiiUPackagePrivate::PackageType::WUA);
