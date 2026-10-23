@@ -295,7 +295,7 @@ IRpFilePtr XboxDiscPrivate::open(const char *filename)
 #ifdef _WIN32
 	// Replace all slashes with backslashes.
 	const auto start_iter = ts_full_filename.begin() + old_sz;
-	std::transform(start_iter, ts_full_filename.end(), start_iter, [](TCHAR c) noexcept -> bool {
+	std::transform(start_iter, ts_full_filename.end(), start_iter, [](TCHAR c) noexcept -> TCHAR {
 		return (c == '/') ? DIR_SEP_CHR : c;
 	});
 #endif /* _WIN32 */
