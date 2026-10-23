@@ -27,7 +27,7 @@
     GTK UI frontend.
     * See #518: Nautilus freezing on sftp connection due to rom-properties
       * Reported by @worminux.
-  * XboxDisc: Fix handling extracted Xbox disc file systems on Windows.
+  * XboxDisc, WiiUPackage: Fix handling extracted file systems on Windows.
     * Affects: v2.9
 
 * Other changes:
