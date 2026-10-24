@@ -43,24 +43,24 @@
  * @param str UTF-8 string
  * @return UTF-16 string
  */
-static inline std::u16string U82U16(std::string_view str)
+static inline std::u16string U82U16_str(std::string_view str)
 {
 	return LibRpText::utf8_to_utf16(str.data(), static_cast<int>(str.size()));
 }
 
-#define U82W(str) (reinterpret_cast<const wchar_t*>(U82U16(str).c_str()))
+#define U82W(str) (reinterpret_cast<const wchar_t*>(U82U16_str(str).c_str()))
 
 /**
  * Convert UTF-16 to UTF-8.
  * @param wcs UTF-16 string
  * @return UTF-8 string
  */
-static inline std::string W2U8_int(std::wstring_view wcs)
+static inline std::string W2U8_str(std::wstring_view wcs)
 {
 	return LibRpText::utf16_to_utf8(reinterpret_cast<const char16_t*>(wcs.data()), static_cast<int>(wcs.size()));
 }
 
-#define W2U8(wcs) (W2U8_int(wcs).c_str())
+#define W2U8(wcs) (W2U8_str(wcs).c_str())
 
 /** char (ANSI) **/
 
@@ -69,20 +69,24 @@ static inline std::string W2U8_int(std::wstring_view wcs)
  * @param str UTF-8 string
  * @return ANSI string
  */
-static inline std::string U82A(std::string_view str)
+static inline std::string U82A_str(std::string_view str)
 {
 	return LibRpText::utf8_to_ansi(str.data(), static_cast<int>(str.size()));
 }
+
+#define U82A(str) (U82A_str(str).c_str())
 
 /**
  * Convert ANSI to UTF-8.
  * @param str ANSI string
  * @return UTF-8 string
  */
-static inline std::string A2U8(std::string_view str)
+static inline std::string A2U8_str(std::string_view str)
 {
 	return LibRpText::ansi_to_utf8(str.data(), static_cast<int>(str.size()));
 }
+
+#define A2U8(str) (A2U8_str(str).c_str())
 
 /** UTF-16 to ANSI and vice-versa **/
 
@@ -91,12 +95,12 @@ static inline std::string A2U8(std::string_view str)
  * @param str ANSI string
  * @return UTF-16 string
  */
-static inline std::u16string A2U16(std::string_view str)
+static inline std::u16string A2U16_str(std::string_view str)
 {
 	return LibRpText::cpN_to_utf16(CP_ACP, str.data(), static_cast<int>(str.size()));
 }
 
-#define A2W(str) (reinterpret_cast<const wchar_t*>(A2U16(str).c_str()))
+#define A2W(str) (reinterpret_cast<const wchar_t*>(A2U16_str(str).c_str()))
 
 /**
  * Convert UTF-16 to ANSI.
