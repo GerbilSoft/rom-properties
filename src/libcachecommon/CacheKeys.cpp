@@ -383,12 +383,13 @@ string getCacheFilename(const char *pCacheKey)
 
 #ifdef _WIN32
 /**
- * Internal U82W() function.
+ * Internal U82W_str() function.
  * @param mbs UTF-8 string.
  * @return UTF-16 C++ string.
  */
-static inline wstring U82W(const string &mbs)
+static inline wstring U82W_str(const string &mbs)
 {
+	// TODO: Use MiniU82T or librptext/wchar.hpp?
 	wstring s_wcs;
 
 	const int cchWcs = MultiByteToWideChar(CP_UTF8, 0, mbs.c_str(), static_cast<int>(mbs.size()), nullptr, 0);
@@ -433,7 +434,7 @@ wstring getCacheFilename(const wchar_t *pCacheKey)
 
 	// Get the cache filename.
 	// This is the cache directory plus the cache key.
-	cacheFilename_user = U82W(cache_dir);
+	cacheFilename_user = U82W_str(cache_dir);
 	if (cacheFilename_user.at(cacheFilename_user.size()-1) != DIR_SEP_WCHR) {
 		cacheFilename_user += DIR_SEP_WCHR;
 	}
