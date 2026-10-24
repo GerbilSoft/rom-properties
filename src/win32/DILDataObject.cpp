@@ -285,7 +285,7 @@ HGLOBAL DILDataObjectPrivate::getFileDescriptorW(void) const
 #ifdef UNICODE
 	wcsncpy_s(fileDesc->cFileName, _countof(fileDesc->cFileName), filename.c_str(), _TRUNCATE);
 #else /* !UNICODE */
-	const wstring wstr = A2W_s(filename);
+	const wstring wstr = A2W(filename);
 	wcsncpy_s(fileDesc->cFileName, _countof(fileDesc->cFileName), wstr.c_str(), _TRUNCATE);
 #endif /* UNICODE */
 

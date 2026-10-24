@@ -757,7 +757,7 @@ wstring resolve_symlink(const wchar_t *filename)
 #ifdef UNICODE
 	return resolve_symlink_int(tfilename.c_str());
 #else /* !UNICODE */
-	return A2W_s(resolve_symlink_int(tfilename.c_str()));
+	return A2W(resolve_symlink_int(tfilename.c_str()));
 #endif /* UNICODE */
 }
 
