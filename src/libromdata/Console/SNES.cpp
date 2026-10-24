@@ -1096,45 +1096,83 @@ SNES::SNES(const IRpFilePtr &file)
 	// Header addresses to check.
 	// If a copier header is detected, use index 1,
 	// which checks +512 offsets first.
-	static constexpr uint32_t all_header_addresses[2][4] = {
-		// Non-headered first.
-		{0x7FB0, 0xFFB0, 0x7FB0+512, 0xFFB0+512},
-		// Headered first.
-		{0x7FB0+512, 0xFFB0+512, 0x7FB0, 0xFFB0},
+	struct snes_header_addresses_t {
+		uint32_t address;
+		bool isHiROM;
+		bool isExHiROM;
+	};
+	static constexpr snes_header_addresses_t snes_header_addresses[2][6] = {
+		// Non-headered first
+		{
+			// address     HiROM  ExHiROM
+			{  0x7FB0,     false, false},
+			{  0xFFB0,      true, false},
+			{0x40FFB0,      true,  true},
+			{  0x7FB0+512, false, false},
+			{  0xFFB0+512,  true, false},
+			{0x40FFB0+512,  true,  true},
+		},
+
+		// Headered first
+		{
+			// address     HiROM  ExHiROM
+			{  0x7FB0+512, false, false},
+			{  0xFFB0+512,  true, false},
+			{0x40FFB0+512,  true,  true},
+			{  0x7FB0,     false, false},
+			{  0xFFB0,      true, false},
+			{0x40FFB0,      true,  true},
+		},
 	};
 
 	d->header_address = 0;
-	const uint32_t *pHeaderAddress = &all_header_addresses[isCopierHeader][0];
-	for (unsigned int i = 0; i < 4; i++, pHeaderAddress++) {
-		size_t size = d->file->seekAndRead(*pHeaderAddress, &d->romHeader, sizeof(d->romHeader));
+	const off64_t fileSize = d->file->size();
+	const snes_header_addresses_t *pHeaderAddress = &snes_header_addresses[isCopierHeader][0];
+	for (size_t i = 0; i < ARRAY_SIZE(snes_header_addresses[0]); i++, pHeaderAddress++) {
+		if (fileSize + sizeof(d->romHeader) < pHeaderAddress->address) {
+			// File isn't big enough to have this address.
+			continue;
+		}
+
+		size_t size = d->file->seekAndRead(pHeaderAddress->address, &d->romHeader, sizeof(d->romHeader));
 		if (size != sizeof(d->romHeader)) {
 			// Seek and/or read error.
 			continue;
 		}
 
-		if (d->romType == SNESPrivate::RomType::BSX) {
+		if (pHeaderAddress->isExHiROM) {
+			// Only accept ExHiROM mappings at the ExHiROM header address. Not valid for BS-X
+			const uint8_t rom_mapping = d->romHeader.snes.rom_mapping;
+			if (rom_mapping != SNES_ROMMAPPING_ExHiROM &&
+			    rom_mapping != SNES_ROMMAPPING_ExHiROM_FastROM)
+			{
+				continue;
+			}
+		}
+
+		if (d->romType == SNESPrivate::RomType::BSX && !pHeaderAddress->isExHiROM) {
 			// Check for a valid BS-X ROM header first.
-			if (d->isBsxRomHeaderValid(&d->romHeader, (i & 1))) {
+			if (d->isBsxRomHeaderValid(&d->romHeader, pHeaderAddress->isHiROM)) {
 				// BS-X ROM header is valid.
-				d->header_address = *pHeaderAddress;
+				d->header_address = pHeaderAddress->address;
 				d->mimeType = "application/x-satellaview-rom";	// unofficial, not on fd.o
 				break;
-			} else if (d->isSnesRomHeaderValid(&d->romHeader, (i & 1))) {
+			} else if (d->isSnesRomHeaderValid(&d->romHeader, pHeaderAddress->isHiROM)) {
 				// SNES/SFC ROM header is valid.
-				d->header_address = *pHeaderAddress;
+				d->header_address = pHeaderAddress->address;
 				d->romType = SNESPrivate::RomType::SNES;
 				break;
 			}
 		} else {
 			// Check for a valid SNES/SFC ROM header.
-			if (d->isSnesRomHeaderValid(&d->romHeader, (i & 1))) {
+			if (d->isSnesRomHeaderValid(&d->romHeader, pHeaderAddress->isHiROM)) {
 				// SNES/SFC ROM header is valid.
-				d->header_address = *pHeaderAddress;
+				d->header_address = pHeaderAddress->address;
 				d->romType = SNESPrivate::RomType::SNES;
 				break;
-			} else if (d->isBsxRomHeaderValid(&d->romHeader, (i & 1))) {
+			} else if (!pHeaderAddress->isExHiROM && d->isBsxRomHeaderValid(&d->romHeader, pHeaderAddress->isHiROM)) {
 				// BS-X ROM header is valid.
-				d->header_address = *pHeaderAddress;
+				d->header_address = pHeaderAddress->address;
 				d->romType = SNESPrivate::RomType::BSX;
 				d->mimeType = "application/x-satellaview-rom";	// unofficial, not on fd.o
 				break;
