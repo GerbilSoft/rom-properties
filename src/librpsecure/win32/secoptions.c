@@ -412,7 +412,7 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 		{
 			PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY system_call_disable = { 0 };
 			system_call_disable.DisallowWin32kSystemCalls = TRUE;
-			system_call_disable.AuditDisallowWin32kSystemCalls = FALSE;
+			//system_call_disable.AuditDisallowWin32kSystemCalls = FALSE;
 			// TODO: Win11 24H2 added DisallowFsctlSystemCalls.
 			//system_call_disable.DisallowFsctlSystemCalls = TRUE;
 			//system_call_disable.AuditDisallowFsctlSystemCalls = FALSE;
