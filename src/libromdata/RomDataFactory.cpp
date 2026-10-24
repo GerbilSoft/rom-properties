@@ -1242,6 +1242,13 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 	return romData;
 }
 
+template<typename CharType>
+static constexpr inline bool isBackslashOrSlash(CharType c)
+{
+	return (c == static_cast<CharType>('\\') ||
+	        c == static_cast<CharType>('/'));
+}
+
 /**
  * Create a RomData subclass for the specified ROM file.
  *
@@ -1269,7 +1276,7 @@ static RomDataPtr T_create(const CharType *filename, unsigned int attrs)
 #ifdef _WIN32
 	// If this is a drive letter, try handling it as a file first.
 	if (T_IsDriveLetter(filename[0]) && filename[1] == L':' &&
-		(filename[2] == '\0' || (filename[2] == '\\' && filename[3] == '\0')))
+		(filename[2] == '\0' || (isBackslashOrSlash(filename[2]) && filename[3] == '\0')))
 	{
 		// It's a drive letter. (volume root)
 		const CharType drvfilename[4] = {filename[0], ':', '\\', '\0'};

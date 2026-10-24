@@ -102,6 +102,13 @@ inline int RpFilePrivate::mode_to_win32(RpFile::FileMode mode,
 	return 0;
 }
 
+template<typename CharType>
+static constexpr inline bool isBackslashOrSlash(CharType c)
+{
+	return (c == static_cast<CharType>('\\') ||
+	        c == static_cast<CharType>('/'));
+}
+
 /**
  * (Re-)Open the main file.
  *
@@ -145,7 +152,7 @@ int RpFilePrivate::reOpenFile(void)
 
 	// Check if the path starts with a drive letter.
 	if (IsDriveLetterW(filenameW[0]) &&
-	    filenameW[1] == L':' && filenameW[2] == L'\\')
+	    filenameW[1] == L':' && isBackslashOrSlash(filenameW[2]))
 	{
 		// Is it only a drive letter?
 		if (filenameW[3] == L'\0') {

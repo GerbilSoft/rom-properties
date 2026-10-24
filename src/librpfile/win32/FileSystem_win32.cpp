@@ -47,6 +47,13 @@ using namespace LibWin32Common;
 
 namespace LibRpFile { namespace FileSystem {
 
+template<typename CharType>
+static constexpr inline bool isBackslashOrSlash(CharType c)
+{
+	return (c == static_cast<CharType>('\\') ||
+	        c == static_cast<CharType>('/'));
+}
+
 #ifdef UNICODE
 /**
  * Prepend "\\\\?\\" to an absolute Windows path.
@@ -65,7 +72,7 @@ static inline wstring makeWinPath(const char *filename)
 
 	// TODO: Don't bother if the filename is <= 240 characters?
 	if (IsDriveLetterA(filename[0]) &&
-	    filename[1] == ':' && filename[2] == '\\')
+	    filename[1] == ':' && isBackslashOrSlash(filename[2]))
 	{
 		// Absolute path. Prepend "\\\\?\\" to the path.
 		filenameW = L"\\\\?\\";
@@ -94,7 +101,7 @@ static inline wstring makeWinPath(const string &filename)
 
 	// TODO: Don't bother if the filename is <= 240 characters?
 	if (IsDriveLetterA(filename[0]) &&
-	    filename[1] == ':' && filename[2] == '\\')
+	    filename[1] == ':' && isBackslashOrSlash(filename[2]))
 	{
 		// Absolute path. Prepend "\\\\?\\" to the path.
 		filenameW = L"\\\\?\\";
@@ -124,7 +131,7 @@ static inline wstring makeWinPath(const wchar_t *filename)
 
 	// TODO: Don't bother if the filename is <= 240 characters?
 	if (IsDriveLetterW(filename[0]) &&
-	    filename[1] == ':' && filename[2] == '\\')
+	    filename[1] == ':' && isBackslashOrSlash(filename[2]))
 	{
 		// Absolute path. Prepend "\\\\?\\" to the path.
 		filenameW = L"\\\\?\\";
@@ -153,7 +160,7 @@ static inline wstring makeWinPath(const wstring &filename)
 
 	// TODO: Don't bother if the filename is <= 240 characters?
 	if (IsDriveLetterW(filename[0]) &&
-	    filename[1] == ':' && filename[2] == '\\')
+	    filename[1] == ':' && isBackslashOrSlash(filename[2]))
 	{
 		// Absolute path. Prepend "\\\\?\\" to the path.
 		filenameW = L"\\\\?\\";
@@ -834,7 +841,10 @@ static inline bool T_isOnBadFS(const CharType *filename, bool allowNetFS)
 	// TODO: More comprehensive check.
 	// For now, merely checking if it starts with "\\\\"
 	// and the third character is not '?' or '.'.
-	if (filename[0] == '\\' && filename[1] == '\\' &&
+	// NOTE: Windows normalizes slashes to backslashes, so check for both.
+	// https://github.com/notepad-plus-plus/notepad-plus-plus/security/advisories/GHSA-gr8w-74qx-pc2v
+	if (isBackslashOrSlash(filename[0]) &&
+	    isBackslashOrSlash(filename[1]) &&
 	    filename[2] != '\0' && filename[2] != '?' && filename[2] != '.')
 	{
 		// This file is located on a network share.

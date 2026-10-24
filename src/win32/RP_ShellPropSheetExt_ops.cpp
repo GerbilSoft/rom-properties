@@ -300,6 +300,13 @@ int RP_ShellPropSheetExt_Private::updateField(int fieldIdx)
 	return ret;
 }
 
+template<typename CharType>
+static constexpr inline bool isBackslashOrSlash(CharType c)
+{
+	return (c == static_cast<CharType>('\\') ||
+	        c == static_cast<CharType>('/'));
+}
+
 /**
  * An "Options" menu button action was triggered.
  * @param menuId Menu ID. (Options ID + IDM_OPTIONS_MENU_BASE)
@@ -309,8 +316,9 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 	if (menuId < IDM_OPTIONS_MENU_BASE) {
 		// Export to text or JSON.
 		const char *const rom_filename = romData->filename();
-		if (!rom_filename)
+		if (!rom_filename) {
 			return;
+		}
 
 		const unsigned int id2 = static_cast<unsigned int>(abs(menuId - IDM_OPTIONS_MENU_BASE)) - 1;
 		assert(id2 < 4);
@@ -356,7 +364,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				ts_prevExportDir = U82T_c(rom_filename);
 
 				// Remove the filename portion.
-				const size_t bspos = ts_prevExportDir.rfind(_T('\\'));
+				const size_t bspos = ts_prevExportDir.find_last_of(_T("\\/"));
 				if (bspos != string::npos) {
 					if (bspos > 2) {
 						ts_prevExportDir.resize(bspos);
@@ -367,15 +375,20 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			}
 
 			tstring defaultFileName = ts_prevExportDir;
-			if (!defaultFileName.empty() && defaultFileName.at(defaultFileName.size()-1) != _T('\\')) {
+			if (!defaultFileName.empty() && !isBackslashOrSlash(defaultFileName.at(defaultFileName.size()-1))) {
 				defaultFileName += _T('\\');
 			}
 
 			// Get the base name of the ROM.
 			tstring rom_basename;
 			const char *const bspos = strrchr(rom_filename, '\\');
-			if (bspos) {
-				rom_basename = U82T_c(bspos+1);
+			const char *const spos = strrchr(rom_filename, '/');
+			if (bspos || spos) {
+				if (bspos > spos) {
+					rom_basename = U82T_c(bspos+1);
+				} else if (spos > bspos) {
+					rom_basename = U82T_c(spos+1);
+				}
 			} else {
 				rom_basename = U82T_c(rom_filename);
 			}
@@ -398,7 +411,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 
 			// Save the previous export directory.
 			ts_prevExportDir = tfilename;
-			const size_t bspos2 = ts_prevExportDir.rfind(_T('\\'));
+			const size_t bspos2 = ts_prevExportDir.find_last_of(_T("\\/"));
 			if (bspos2 != tstring::npos && bspos2 > 3) {
 				ts_prevExportDir.resize(bspos2);
 			}

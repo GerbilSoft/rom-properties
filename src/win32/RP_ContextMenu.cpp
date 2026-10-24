@@ -98,7 +98,7 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_filename)
 	} else {
 		// If the dot is after the last slash, we already have a file extension.
 		// Otherwise, we don't have one, and need to add it.
-		const size_t slashpos = output_filename.rfind(_T('\\'));
+		const size_t slashpos = output_filename.find_last_of(_T("\\/"));
 		if (slashpos < dotpos) {
 			// We already have a file extension. Remove it first.
 			output_filename.resize(dotpos);

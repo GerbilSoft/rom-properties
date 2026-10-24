@@ -1441,7 +1441,8 @@ int EXEPrivate::addFields_PE_PDB(void)
 					fields.addField_string("PDB Path", &path_buf[0]);
 					char* last_path_component = &path_buf[0];
 					for (char *cur = &path_buf[strlen_chars]; cur != &path_buf[0]; cur--) {
-						if (*cur == '\\'){
+						const char c = *cur;
+						if (c == '\\' || c == '/'){
 							last_path_component = cur + 1;
 							break;
 						}

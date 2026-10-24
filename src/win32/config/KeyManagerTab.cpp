@@ -234,7 +234,7 @@ public:
 		// NOTE: If this is the root directory, the backslash is left intact.
 		// Otherwise, the backslash is removed.
 		ts_keyFileDir = tfilename;
-		const size_t bspos = ts_keyFileDir.rfind(_T('\\'));
+		const size_t bspos = ts_keyFileDir.find_last_of(_T("\\/"));
 		if (bspos != string::npos) {
 			if (bspos > 2) {
 				ts_keyFileDir.resize(bspos);
@@ -1588,7 +1588,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 
 	// Filename, minus directory.
 	tstring fileNoPath;
-	const size_t bs_pos = filename.rfind(_T('\\'));
+	const size_t bs_pos = filename.find_last_of(_T("\\/"));
 	if (bs_pos != tstring::npos && bs_pos != fileNoPath.size()-1) {
 		fileNoPath = filename.substr(bs_pos + 1);
 	} else {
