@@ -46,12 +46,10 @@ static inline SYSTEMTIME UnixTimeToSystemTime(_In_ rp_time_t unixtime)
  * @param pFileTime Win32 FILETIME
  * @return Unix time.
  */
-static inline rp_time_t FileTimeToUnixTime(_In_ FILETIME ft)
+ATTR_CONST
+static inline CONSTEXPR rp_time_t FileTimeToUnixTime(_In_ FILETIME ft)
 {
-	LARGE_INTEGER li;
-	li.LowPart = ft.dwLowDateTime;
-	li.HighPart = (LONG)ft.dwHighDateTime;
-	return WindowsTimeToUnixTime(li.QuadPart);
+	return WindowsSplitTimeToUnixTime(ft.dwLowDateTime, ft.dwHighDateTime);
 }
 
 /**
