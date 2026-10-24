@@ -31,12 +31,22 @@ using std::tstring;
 #include "HMODULE_deleter.hpp"
 
 #include "tcharx.h"
-#ifndef _WIN32
-#  define T2U8(str) (str)
-#else /* _WIN32 */
+#ifdef _WIN32
 #  include "libwin32common/MiniU82T.hpp"
 #  include "libwin32common/rp_LoadLibraryEx.h"
-using LibWin32Common::T2U8;
+using namespace LibWin32Common;
+#else /* _WIN32 */
+using std::tstring_view;
+static inline tstring U82T_str(string_view str)
+{
+	return tstring(str);
+}
+static inline string T2U8_str(tstring_view tcs)
+{
+	return string(tcs);
+}
+#  define U82T(str) (U82T_str(str).c_str())
+#  define T2U8(str) (T2U8_str(str).c_str())
 #endif /* _WIN32 */
 
 namespace RpDownload {
@@ -250,7 +260,7 @@ int CurlDownloader::download(void)
 	const unsigned int version_num = (verinfo) ? verinfo->version_num : 0;
 
 	// Set options for curl's "easy" mode.
-	pcurl_easy_setopt(curl, CURLOPT_URL, T2U8(m_url).c_str());
+	pcurl_easy_setopt(curl, CURLOPT_URL, T2U8(m_url));
 	pcurl_easy_setopt(curl, CURLOPT_NOPROGRESS, true);
 	// Fail on HTTP errors. (>= 400)
 	pcurl_easy_setopt(curl, CURLOPT_FAILONERROR, true);
@@ -311,7 +321,7 @@ int CurlDownloader::download(void)
 	// - CURL_INSECURE: If not empty or 0, disable certificate verification entirely.
 	LPCTSTR curl_ca_bundle = _tgetenv(_T("CURL_CA_BUNDLE"));
 	if (curl_ca_bundle) {
-		pcurl_easy_setopt(curl, CURLOPT_CAINFO, T2U8(curl_ca_bundle).c_str());
+		pcurl_easy_setopt(curl, CURLOPT_CAINFO, T2U8(curl_ca_bundle));
 	} else {
 		// Set the default CA bundle path.
 		TCHAR path[MAX_PATH + 32];
@@ -327,7 +337,7 @@ int CurlDownloader::download(void)
 			TCHAR *const last_slash = _tcsrchr(path, _T('\\'));
 			if (last_slash && last_slash < &path[MAX_PATH]) {
 				_tcscpy(&last_slash[1], _T("curl-ca-bundle.crt"));
-				pcurl_easy_setopt(curl, CURLOPT_CAINFO, T2U8(path).c_str());
+				pcurl_easy_setopt(curl, CURLOPT_CAINFO, T2U8(path));
 			}
 		}
 	}
@@ -341,7 +351,7 @@ int CurlDownloader::download(void)
 #endif /* _WIN32 */
 
 	// Set the User-Agent.
-	pcurl_easy_setopt(curl, CURLOPT_USERAGENT, T2U8(m_userAgent).c_str());
+	pcurl_easy_setopt(curl, CURLOPT_USERAGENT, T2U8(m_userAgent));
 
 	// Download the file.
 	int ret;

@@ -18,7 +18,7 @@ using std::wstring_view;
 
 namespace LibWin32Common {
 
-wstring U82W_int(string_view mbs)
+wstring U82W_str(string_view mbs)
 {
 	wstring wcs;
 
@@ -32,7 +32,7 @@ wstring U82W_int(string_view mbs)
 	return wcs;
 }
 
-string W2U8(wstring_view wcs)
+string W2U8_str(wstring_view wcs)
 {
 	string mbs;
 
@@ -46,7 +46,7 @@ string W2U8(wstring_view wcs)
 	return mbs;
 }
 
-string A2U8(string_view mbs)
+string A2U8_str(string_view mbs)
 {
 	string u8str;
 

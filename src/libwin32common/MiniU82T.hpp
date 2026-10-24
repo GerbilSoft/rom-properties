@@ -18,28 +18,36 @@
 
 namespace LibWin32Common {
 
-std::wstring U82W_int(std::string_view mbs);
-#define U82W(str) (U82W_int(str).c_str())
+std::wstring U82W_str(std::string_view mbs);
+#define U82W(mbs) (U82W_str(mbs).c_str())
+
+static inline std::string U82A_str(std::string_view mbs)
+{
+	// FIXME: Actually convert from ANSI?
+	return std::string(mbs);
+}
+#define U82A(mbs) (U82A_str(mbs).c_str())
 
 #ifdef _UNICODE
-#  define U82T(str) (U82W_int(str).c_str())
+#  define U82T_str(mbs) U82W_str(mbs)
+#  define U82T(mbs)     U82W(mbs)
 #else /* _UNICODE */
-#  define U82T(str) (str)
+#  define U82T_str(mbs) U82A_str(mbs)
+#  define U82T(mbs)     U82A(mbs)
 #endif /* _UNICODE */
 
-std::string W2U8(std::wstring_view wcs);
-std::string A2U8(std::string_view mbs);
+std::string W2U8_str(std::wstring_view wcs);
+#define W2U8(wcs) (W2U8_str(wcs).c_str())
+
+std::string A2U8_str(std::string_view mbs);
+#define A2U8(mbs) (A2U8_str(mbs).c_str())
 
 #ifdef _UNICODE
-static inline std::string T2U8(std::wstring_view tcs)
-{
-	return W2U8(tcs);
-}
-#else /* !_UNICODE */
-static inline std::string T2U8(std::string_view tcs)
-{
-	return A2U8(tcs);
-}
+#  define T2U8_str(mbs) W2U8_str(mbs)
+#  define T2U8(mbs)     W2U8(mbs)
+#else /* _UNICODE */
+#  define T2U8_str(mbs) A2U8_str(mbs)
+#  define T2U8(mbs)     A2U8(mbs)
 #endif /* _UNICODE */
 
 }
