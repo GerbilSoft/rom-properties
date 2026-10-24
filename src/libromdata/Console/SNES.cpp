@@ -1129,7 +1129,7 @@ SNES::SNES(const IRpFilePtr &file)
 	const off64_t fileSize = d->file->size();
 	const snes_header_addresses_t *pHeaderAddress = &snes_header_addresses[isCopierHeader][0];
 	for (size_t i = 0; i < ARRAY_SIZE(snes_header_addresses[0]); i++, pHeaderAddress++) {
-		if (fileSize + sizeof(d->romHeader) < pHeaderAddress->address) {
+		if (fileSize < static_cast<off64_t>(pHeaderAddress->address + sizeof(d->romHeader))) {
 			// File isn't big enough to have this address.
 			continue;
 		}
