@@ -1096,30 +1096,42 @@ SNES::SNES(const IRpFilePtr &file)
 	// Header addresses to check.
 	// If a copier header is detected, use index 1,
 	// which checks +512 offsets first.
-	static constexpr uint32_t all_header_addresses[2][4] = {
+	static constexpr uint32_t all_header_addresses[2][6] = {
 		// Non-headered first.
-		{0x7FB0, 0xFFB0, 0x7FB0+512, 0xFFB0+512},
+		{0x7FB0, 0xFFB0, 0x7FB0+512, 0xFFB0+512, 0x40FFB0, 0x40FFB0+512},
 		// Headered first.
-		{0x7FB0+512, 0xFFB0+512, 0x7FB0, 0xFFB0},
+		{0x7FB0+512, 0xFFB0+512, 0x7FB0, 0xFFB0, 0x40FFB0+512, 0x40FFB0},
 	};
 
 	d->header_address = 0;
 	const uint32_t *pHeaderAddress = &all_header_addresses[isCopierHeader][0];
-	for (unsigned int i = 0; i < 4; i++, pHeaderAddress++) {
+	for (unsigned int i = 0; i < ARRAY_SIZE(all_header_addresses[0]); i++, pHeaderAddress++) {
 		size_t size = d->file->seekAndRead(*pHeaderAddress, &d->romHeader, sizeof(d->romHeader));
 		if (size != sizeof(d->romHeader)) {
 			// Seek and/or read error.
 			continue;
 		}
 
-		if (d->romType == SNESPrivate::RomType::BSX) {
+		const bool isExHiROM = (i >= 4);
+		const bool isHiROM = (isExHiROM || (i & 1));
+		if (isExHiROM) {
+			// Only accept ExHiROM mappings at the ExHiROM header address. Not valid for BS-X
+			const uint8_t rom_mapping = d->romHeader.snes.rom_mapping;
+			if (rom_mapping != SNES_ROMMAPPING_ExHiROM &&
+			    rom_mapping != SNES_ROMMAPPING_ExHiROM_FastROM)
+			{
+				continue;
+			}
+		}
+
+		if (d->romType == SNESPrivate::RomType::BSX && !isExHiROM) {
 			// Check for a valid BS-X ROM header first.
-			if (d->isBsxRomHeaderValid(&d->romHeader, (i & 1))) {
+			if (d->isBsxRomHeaderValid(&d->romHeader, isHiROM)) {
 				// BS-X ROM header is valid.
 				d->header_address = *pHeaderAddress;
 				d->mimeType = "application/x-satellaview-rom";	// unofficial, not on fd.o
 				break;
-			} else if (d->isSnesRomHeaderValid(&d->romHeader, (i & 1))) {
+			} else if (d->isSnesRomHeaderValid(&d->romHeader, isHiROM)) {
 				// SNES/SFC ROM header is valid.
 				d->header_address = *pHeaderAddress;
 				d->romType = SNESPrivate::RomType::SNES;
@@ -1127,12 +1139,12 @@ SNES::SNES(const IRpFilePtr &file)
 			}
 		} else {
 			// Check for a valid SNES/SFC ROM header.
-			if (d->isSnesRomHeaderValid(&d->romHeader, (i & 1))) {
+			if (d->isSnesRomHeaderValid(&d->romHeader, isHiROM)) {
 				// SNES/SFC ROM header is valid.
 				d->header_address = *pHeaderAddress;
 				d->romType = SNESPrivate::RomType::SNES;
 				break;
-			} else if (d->isBsxRomHeaderValid(&d->romHeader, (i & 1))) {
+			} else if (!isExHiROM && d->isBsxRomHeaderValid(&d->romHeader, isHiROM)) {
 				// BS-X ROM header is valid.
 				d->header_address = *pHeaderAddress;
 				d->romType = SNESPrivate::RomType::BSX;
