@@ -51,6 +51,9 @@ static inline std::u16string U82U16_str(std::string_view str)
 
 #define U82W(str) (reinterpret_cast<const wchar_t*>(U82U16_str(str).c_str()))
 
+// FIXME: Better U82W_str().
+#define U82W_str(str) U82W(str)
+
 /**
  * Convert UTF-16 to UTF-8.
  * @param wcs UTF-16 string
@@ -118,10 +121,16 @@ static inline std::string W2A(std::wstring_view wcs)
 
 #ifdef UNICODE
 
+#define U82T_str(str) U82W_str(str)
+#define T2U8_str(wcs) W2U8_str(wcs)
+
 #define U82T(str) U82W(str)
 #define T2U8(wcs) W2U8(wcs)
 
 #else /* !UNICODE */
+
+#define U82T_str(str) U82A_str(str)
+#define T2U8_str(wcs) A2U8_str(wcs)
 
 #define U82T(str) U82A(str)
 #define T2U8(wcs) A2U8(wcs)
