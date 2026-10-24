@@ -598,7 +598,7 @@ IFACEMETHODIMP RP_ContextMenu::GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT u
 		if (likely(uType == GCS_HELPTEXTW)) {
 			swprintf(reinterpret_cast<LPWSTR>(pszName), cchMax, L"%s", U82T(msg));
 		} else /*if (uType == GCS_HELPTEXTA)*/ {
-			snprintf(pszName, cchMax, "%s", U82A(msg).c_str());
+			snprintf(pszName, cchMax, "%s", U82A(msg));
 		}
 		return S_OK;
 	} else {
