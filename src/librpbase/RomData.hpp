@@ -220,6 +220,7 @@ public:
 		PatchFile,		// Patch File
 		Ticket,			// Ticket file (e.g. Wii/Wii U .tik)
 		ConfigurationFile,	// Configuration File
+		ArchiveFile,		// Archive File
 
 		Max
 	};

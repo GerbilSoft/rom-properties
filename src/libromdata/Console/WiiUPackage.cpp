@@ -6,6 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "config.librpbase.h"
+#include "config.libromdata.h"
+
 #include "WiiUPackage.hpp"
 #include "WiiUPackage_p.hpp"
 #include "data/WiiUData.hpp"
@@ -31,6 +34,8 @@ using namespace LibRpTexture;
 #  include "librptext/wchar.hpp"
 #else /* _WIN32 */
 #  define U82T_c(str) (str)
+#  define U82T_s(str) (str)
+#  define T2U8(str) (str)
 #endif /* _WIN32 */
 
 // C++ STL classes
@@ -40,26 +45,62 @@ using std::tstring;
 using std::unique_ptr;
 using std::vector;
 
+#ifdef HAVE_ZARCHIVE
+// for .wua files
+#  include "file/RpFile_ZArchiveReader.hpp"
+#  ifdef _MSC_VER
+// need zstd.h for ZSTD_freeDCtx()
+#    include <zstd.h>
+// MSVC: Exception handling for /DELAYLOAD.
+#    include "libwin32common/DelayLoadHelper.h"
+#  endif /* _MSC_VER */
+#endif /* HAVE_ZARCHIVE */
+
 namespace LibRomData {
+
+#if defined(HAVE_ZARCHIVE) && defined(_MSC_VER) && defined(ZSTD_IS_DLL)
+// DelayLoad test implementation.
+DELAYLOAD_TEST_FUNCTION_IMPL1(ZSTD_freeDCtx, nullptr);
+#endif /* HAVE_ZARCHIVE && _MSC_VER && ZSTD_IS_DLL */
 
 ROMDATA_IMPL(WiiUPackage)
 
 /** WiiUPackagePrivate **/
 
 /* RomDataInfo */
-const array<const char*, 0+1> WiiUPackagePrivate::exts = {{
-	// No file extensions; NUS packages are directories.
+const array<const char*, WiiUPackagePrivate::ZARCHIVE_EXT_COUNT+0+1> WiiUPackagePrivate::exts = {{
+	// NUS packages are directories.
+
+#ifdef HAVE_ZARCHIVE
+	// WUA archives are files.
+	".wua",
+#endif /* HAVE_ZARCHIVE */
+
 	nullptr
 }};
-const array<const char*, 1+1> WiiUPackagePrivate::mimeTypes = {{
+const array<const char*, WiiUPackagePrivate::ZARCHIVE_MIME_COUNT+1+1> WiiUPackagePrivate::mimeTypes = {{
 	// NUS packages are directories.
 	"inode/directory",
+
+#ifdef HAVE_ZARCHIVE
+	// WUA archives are also supported.
+	"application/x-wii-u-wua",
+#endif /* HAVE_ZARCHIVE */
 
 	nullptr
 }};
 const RomDataInfo WiiUPackagePrivate::romDataInfo = {
 	"WiiUPackage", exts.data(), mimeTypes.data()
 };
+
+WiiUPackagePrivate::WiiUPackagePrivate(const IRpFilePtr &file)
+	: super(file, &romDataInfo)
+	, packageType(PackageType::Unknown)
+{
+#ifdef HAVE_ZARCHIVE
+	this->data = wua_t();
+#endif /* HAVE_ZARCHIVE */
+}
 
 WiiUPackagePrivate::WiiUPackagePrivate(const char *path)
 	: super({}, &romDataInfo)
@@ -68,9 +109,9 @@ WiiUPackagePrivate::WiiUPackagePrivate(const char *path)
 	if (path && path[0] != '\0') {
 #ifdef _WIN32
 		// Windows: Storing the path as UTF-16 internally.
-		this->path.assign(U82T_c(path));
+		this->data = nus_t(U82T_c(path));
 #else /* !_WIN32 */
-		this->path.assign(path);
+		this->data = nus_t(path);
 #endif /* _WIN32 */
 	}
 
@@ -86,7 +127,7 @@ WiiUPackagePrivate::WiiUPackagePrivate(const wchar_t *path)
 	, packageType(PackageType::Unknown)
 {
 	if (path && path[0] != L'\0') {
-		this->path.assign(path);
+		this->data = nus_t(path);
 	}
 
 #ifdef ENABLE_DECRYPTION
@@ -101,7 +142,7 @@ WiiUPackagePrivate::WiiUPackagePrivate(const wchar_t *path)
  */
 void WiiUPackagePrivate::reset(void)
 {
-	path.clear();
+	this->data = std::monostate();
 
 	ticket.reset();
 	tmd.reset();
@@ -118,8 +159,10 @@ IDiscReaderPtr WiiUPackagePrivate::openContentFile(unsigned int idx)
 	IDiscReaderPtr discReader;
 
 	assert(packageType == PackageType::NUS);
+	assert(std::holds_alternative<nus_t>(this->data));
 	assert(idx < contentsReaders.size());
 	if (packageType != PackageType::NUS ||
+	    !std::holds_alternative<nus_t>(this->data) ||
 	    idx >= contentsReaders.size())
 	{
 		return discReader;
@@ -133,23 +176,25 @@ IDiscReaderPtr WiiUPackagePrivate::openContentFile(unsigned int idx)
 	}
 
 #ifdef ENABLE_DECRYPTION
+	const nus_t &nus = std::get<nus_t>(this->data);
+
 	// Attempt to open the content.
 	const WUP_Content_Entry &entry = contentsTable[idx];
-	tstring s_path(this->path);
-	s_path += DIR_SEP_CHR;
-	const size_t orig_path_size = s_path.size();
+	tstring ts_path(nus.path);
+	ts_path += DIR_SEP_CHR;
+	const size_t orig_path_size = ts_path.size();
 
 	// Try with lowercase hex first.
 	const uint32_t content_id = be32_to_cpu(entry.content_id);
-	s_path += fmt::format(FSTR(_T("{:0>8x}.app")), content_id);
+	ts_path += fmt::format(FSTR(_T("{:0>8x}.app")), content_id);
 
-	IRpFilePtr subfile = std::make_shared<RpFile>(s_path.c_str(), RpFile::FM_OPEN_READ);
+	IRpFilePtr subfile = std::make_shared<RpFile>(ts_path.c_str(), RpFile::FM_OPEN_READ);
 	if (!subfile->isOpen()) {
 		// Try with uppercase hex.
-		s_path.resize(orig_path_size);
-		s_path += fmt::format(FSTR(_T("{:0>8X}.app")), content_id);
+		ts_path.resize(orig_path_size);
+		ts_path += fmt::format(FSTR(_T("{:0>8X}.app")), content_id);
 
-		subfile = std::make_shared<RpFile>(s_path.c_str(), RpFile::FM_OPEN_READ);
+		subfile = std::make_shared<RpFile>(ts_path.c_str(), RpFile::FM_OPEN_READ);
 		if (!subfile->isOpen()) {
 			// Unable to open the content file.
 			// TODO: Error code?
@@ -196,12 +241,17 @@ std::tstring WiiUPackagePrivate::host_system_filename(const char *filename) cons
 {
 	tstring ts_full_filename;
 	assert(packageType == PackageType::Extracted);
-	if (packageType != PackageType::Extracted) {
+	assert(std::holds_alternative<nus_t>(this->data));
+	if (packageType != PackageType::Extracted ||
+	    !std::holds_alternative<nus_t>(this->data))
+	{
 		return ts_full_filename;
 	}
 
+	const nus_t &nus = std::get<nus_t>(this->data);
+
 	// Extracted package format. Open the file directly.
-	ts_full_filename.assign(path);
+	ts_full_filename.assign(nus.path);
 	ts_full_filename += DIR_SEP_CHR;
 
 	// Remove leading slashes, if present.
@@ -241,42 +291,68 @@ IRpFilePtr WiiUPackagePrivate::open(const char *filename)
 		return fp;
 	}
 
-	if (packageType == PackageType::Extracted) {
-		// Extracted package format. Open the file directly.
-		tstring ts_full_filename = host_system_filename(filename);
-		if (ts_full_filename.empty()) {
+	switch (packageType) {
+		default:
+			assert(!"Unsupported Wii U package type.");
+			return fp;
+
+		case PackageType::NUS: {
+			if (!fst) {
+				// No FST.
+				return fp;
+			}
+
+			// Get the FST entry.
+			IFst::DirEnt dirent;
+			int ret = fst->find_file(filename, &dirent);
+			if (ret != 0) {
+				// File not found?
+				return fp;
+			}
+
+			// Make sure the required content file is open.
+			IDiscReaderPtr contentFile = openContentFile(dirent.ptnum);
+			if (!contentFile) {
+				// Unable to open this content file.
+				return fp;
+			}
+
+			// Create a PartitionFile.
+			// NOTE: Assigning to `fp` for named-return-value optimization.
+			fp = std::make_shared<PartitionFile>(contentFile, dirent.offset, dirent.size);
 			return fp;
 		}
 
-		// NOTE: Assigning to `fp` for named-return-value optimization.
-		fp = std::make_shared<RpFile>(ts_full_filename.c_str(), RpFile::FM_OPEN_READ);
-		return fp;
-	}
+		case PackageType::Extracted: {
+			// Extracted package format. Open the file directly.
+			tstring ts_full_filename = host_system_filename(filename);
+			if (ts_full_filename.empty()) {
+				return fp;
+			}
 
-	if (!fst) {
-		// No FST.
-		return fp;
-	}
+			// NOTE: Assigning to `fp` for named-return-value optimization.
+			fp = std::make_shared<RpFile>(ts_full_filename.c_str(), RpFile::FM_OPEN_READ);
+			return fp;
+		}
 
-	// Get the FST entry.
-	IFst::DirEnt dirent;
-	int ret = fst->find_file(filename, &dirent);
-	if (ret != 0) {
-		// File not found?
-		return fp;
-	}
+#ifdef HAVE_ZARCHIVE
+		case PackageType::WUA: {
+			// .wua archive. Open the file using ZArchiveReader.
+			assert(std::holds_alternative<wua_t>(this->data));
+			if (!std::holds_alternative<wua_t>(this->data)) {
+				return fp;
+			}
+			const wua_t &wua = std::get<wua_t>(this->data);
+			assert(wua.zarchive != nullptr);
+			if (!wua.zarchive) {
+				return fp;
+			}
 
-	// Make sure the required content file is open.
-	IDiscReaderPtr contentFile = openContentFile(dirent.ptnum);
-	if (!contentFile) {
-		// Unable to open this content file.
-		return fp;
+			fp = std::make_shared<RpFile_ZArchiveReader>(wua.zarchive, wua.package_name.c_str(), filename);
+			return fp;
+		}
+#endif /* HAVE_ZARCHIVE */
 	}
-
-	// Create a PartitionFile.
-	// NOTE: Assigning to `fp` for named-return-value optimization.
-	fp = std::make_shared<PartitionFile>(contentFile, dirent.offset, dirent.size);
-	return fp;
 }
 
 /**
@@ -290,25 +366,59 @@ bool WiiUPackagePrivate::file_exists(const char *filename) const
 		return false;
 	}
 
-	if (packageType == PackageType::Extracted) {
-		// Extracted package format. Open the file directly.
-		tstring ts_full_filename = host_system_filename(filename);
-		if (ts_full_filename.empty()) {
+	switch (packageType) {
+		default:
+			assert(!"Unsupported Wii U package type.");
 			return false;
+
+		case PackageType::NUS: {
+			if (!fst) {
+				// No FST.
+				return false;
+			}
+
+			// Get the FST entry.
+			IFst::DirEnt dirent;
+			return (fst->find_file(filename, &dirent) == 0);
 		}
 
-		// Does the file exist?
-		return (FileSystem::access(ts_full_filename.c_str(), R_OK) == 0);
-	}
+		case PackageType::Extracted: {
+			// Extracted package format. Open the file directly.
+			tstring ts_full_filename = host_system_filename(filename);
+			if (ts_full_filename.empty()) {
+				return false;
+			}
 
-	if (!fst) {
-		// No FST.
-		return false;
-	}
+			// Does the file exist?
+			return (FileSystem::access(ts_full_filename.c_str(), R_OK) == 0);
+		}
 
-	// Get the FST entry.
-	IFst::DirEnt dirent;
-	return (fst->find_file(filename, &dirent) == 0);
+#ifdef HAVE_ZARCHIVE
+		case PackageType::WUA: {
+			// .wua archive. Check if we can get a valid handle from ZArchive.
+			assert(std::holds_alternative<wua_t>(this->data));
+			if (!std::holds_alternative<wua_t>(this->data)) {
+				return false;
+			}
+			const wua_t &wua = std::get<wua_t>(this->data);
+			assert(wua.zarchive != nullptr);
+			if (!wua.zarchive) {
+				return false;
+			}
+
+			// Construct the full filename.
+			string full_filename = "/";
+			full_filename += wua.package_name;
+			if (filename[0] != '/') {
+				full_filename += '/';
+			}
+			full_filename += filename;
+
+			ZArchiveNodeHandle handle = wua.zarchive->LookUp(full_filename, true, false);
+			return (handle != ZARCHIVE_INVALID_NODE && wua.zarchive->IsFile(handle));
+		}
+#endif /* HAVE_ZARCHIVE */
+	}
 }
 
 /**
@@ -359,10 +469,7 @@ rp_image_const_ptr WiiUPackagePrivate::loadIcon(void)
 /** WiiUPackage **/
 
 /**
- * Read a Wii U NUS package.
- *
- * NOTE: Wii U NUS packages are directories. This constructor
- * only accepts IRpFilePtr, so it isn't usable.
+ * Read a WUA (Wii U Archive) file.
  *
  * A ROM image must be opened by the caller. The file handle
  * will be ref()'d and must be kept open in order to load
@@ -375,10 +482,13 @@ rp_image_const_ptr WiiUPackagePrivate::loadIcon(void)
  * @param file Open ROM image.
  */
 WiiUPackage::WiiUPackage(const IRpFilePtr &file)
-	: super(new WiiUPackagePrivate((const TCHAR*)nullptr))
+	: super(new WiiUPackagePrivate(file))
 {
-	// Not supported!
-	RP_UNUSED(file);
+#ifdef HAVE_ZARCHIVE
+	init();
+#else /* !HAVE_ZARCHIVE */
+	// Can't open .wua on this system...
+#endif /* HAVE_ZARCHIVE */
 }
 
 /**
@@ -421,17 +531,122 @@ WiiUPackage::WiiUPackage(const wchar_t *path)
 void WiiUPackage::init(void)
 {
 	RP_D(WiiUPackage);
-	d->mimeType = "inode/directory";
-	d->fileType = FileType::ApplicationPackage;
+	d->fileType = FileType::Unknown;
 
-	if (d->path.empty()) {
-		// No path specified...
+	using nus_t = WiiUPackagePrivate::nus_t;
+#ifdef HAVE_ZARCHIVE
+	using wua_t = WiiUPackagePrivate::wua_t;
+#endif /* HAVE_ZARCHIVE */
+
+	if (std::holds_alternative<nus_t>(d->data)) {
+		const nus_t &nus = std::get<nus_t>(d->data);
+		if (nus.path.empty()) {
+			// No path...
+			d->reset();
+			return;
+		}
+	} else if (!d->file) {
+		// Not NUS, and no file specified...
 		d->reset();
 		return;
 	}
 
+	tstring ts_path;
+
 	// Check if this path is supported.
-	d->packageType = static_cast<WiiUPackagePrivate::PackageType>(isDirSupported_static(d->path));
+	if (d->file) {
+#ifdef HAVE_ZARCHIVE
+#  if defined(_MSC_VER) && defined(ZSTD_IS_DLL)
+		// Delay load verification.
+		int err = DelayLoad_test_ZSTD_freeDCtx();
+		if (err != 0) {
+			// Delay load failed.
+			// .wua format is not supported without zstd.
+			d->reset();
+			return;
+		}
+#  endif /* _MSC_VER && ZSTD_IS_DLL */
+
+		// Attempt to open as .wua.
+		if (!std::holds_alternative<wua_t>(d->data)) {
+			d->reset();
+			return;
+		}
+		wua_t &wua = std::get<wua_t>(d->data);
+
+		// Create an std::streambuf wrapper around the IRpFile.
+		// The streambuf will be used for an std::istream.
+		wua.streambuf = new streambuf_IRpFile(d->file);
+		wua.zarchive.reset(ZArchiveReader::OpenFromStream(unique_ptr<std::istream>(new std::istream(wua.streambuf))));
+		if (!wua.zarchive) {
+			d->reset();
+			return;
+		}
+
+		// Get the first package name that matches 00050000*. (game package)
+		// TODO: Allow the user to select other packages?
+		ZArchiveNodeHandle handle_root = wua.zarchive->LookUp("/", false, true);
+		if (handle_root == ZARCHIVE_INVALID_NODE || !wua.zarchive->IsDirectory(handle_root)) {
+			// Unable to get a handle to the root directory...
+			d->reset();
+			return;
+		}
+
+		// Read the root directory.
+		uint32_t root_count = wua.zarchive->GetDirEntryCount(handle_root);
+		assert(root_count < 65536);
+		if (root_count >= 65536) {
+			// Too many entries...
+			return;
+		}
+
+		ZArchiveReader::DirEntry dirEntry;
+		for (uint32_t i = 0; i < root_count; i++) {
+			bool bRet = wua.zarchive->GetDirEntry(handle_root, i, dirEntry);
+			if (!bRet) {
+				continue;
+			}
+			if (!dirEntry.isDirectory || dirEntry.name.size() < 8) {
+				continue;
+			}
+
+			// Check if it's a game entry.
+			if (strncmp(dirEntry.name.data(), "00050000", 8) == 0) {
+				// It's a game entry. We'll use it.
+				wua.package_name = "/" + string(dirEntry.name);
+				break;
+			}
+		}
+		if (wua.package_name.empty()) {
+			// No game packages...
+			// TODO: Use the first package name?
+			d->reset();
+			return;
+		}
+
+		d->packageType = WiiUPackagePrivate::PackageType::WUA;
+		ts_path = _T("/");
+		ts_path += U82T_s(wua.package_name);
+		ts_path += _T('/');
+#else /* !HAVE_ZARCHIVE */
+		// Can't open .wua on this system...
+		d->reset();
+		return;
+#endif /* HAVE_ZARCHIVE */
+	} else {
+		if (!std::holds_alternative<nus_t>(d->data)) {
+			d->reset();
+			return;
+		}
+		const nus_t &nus = std::get<nus_t>(d->data);
+		d->packageType = static_cast<WiiUPackagePrivate::PackageType>(isDirSupported_static(nus.path));
+		if ((int)d->packageType < 0) {
+			d->reset();
+			return;
+		}
+		ts_path = nus.path;
+		ts_path += DIR_SEP_CHR;
+	}
 
 	d->isValid = ((int)d->packageType >= 0);
 	if (!d->isValid) {
@@ -444,15 +659,27 @@ void WiiUPackage::init(void)
 	unique_ptr<WiiTicket> ticket;
 	int ticketFormatVersion = -1;
 
-	tstring s_path(d->path);
-	s_path += DIR_SEP_CHR;
-	const size_t orig_path_size = s_path.size();
-	if (d->packageType == WiiUPackagePrivate::PackageType::Extracted) {
-		s_path += _T("code");
-		s_path += DIR_SEP_CHR;
+	// TODO: Skip this for .wua?
+	// TODO: Use '/' instead of DIR_SEP_CHR for .wua?
+	const size_t orig_path_size = ts_path.size();
+
+	if (d->packageType != WiiUPackagePrivate::PackageType::NUS) {
+		ts_path += _T("code");
+		ts_path += DIR_SEP_CHR;
 	}
-	s_path += _T("title.tik");
-	IRpFilePtr subfile = std::make_shared<RpFile>(s_path, RpFile::FM_OPEN_READ);
+	ts_path += _T("title.tik");
+
+	IRpFilePtr subfile;
+#ifdef HAVE_ZARCHIVE
+	if (d->packageType == WiiUPackagePrivate::PackageType::WUA) {
+		const wua_t &wua = std::get<wua_t>(d->data);
+		subfile = std::make_shared<RpFile_ZArchiveReader>(wua.zarchive, wua.package_name.c_str(), T2U8(ts_path).c_str());
+	} else
+#endif /* HAVE_ZARCHIVE */
+	{
+		subfile = std::make_shared<RpFile>(ts_path, RpFile::FM_OPEN_READ);
+	}
+
 	if (subfile->isOpen()) {
 		ticket.reset(new WiiTicket(subfile));
 		if (ticket->isValid()) {
@@ -482,13 +709,22 @@ void WiiUPackage::init(void)
 	unique_ptr<WiiTMD> tmd;
 	int tmdFormatVersion = -1;
 
-	s_path.resize(orig_path_size);
-	if (d->packageType == WiiUPackagePrivate::PackageType::Extracted) {
-		s_path += _T("code");
-		s_path += DIR_SEP_CHR;
+	ts_path.resize(orig_path_size);
+	if (d->packageType != WiiUPackagePrivate::PackageType::NUS) {
+		ts_path += _T("code");
+		ts_path += DIR_SEP_CHR;
 	}
-	s_path += _T("title.tmd");
-	subfile = std::make_shared<RpFile>(s_path, RpFile::FM_OPEN_READ);
+	ts_path += _T("title.tmd");
+
+#ifdef HAVE_ZARCHIVE
+	if (d->packageType == WiiUPackagePrivate::PackageType::WUA) {
+		const wua_t &wua = std::get<wua_t>(d->data);
+		subfile = std::make_shared<RpFile_ZArchiveReader>(wua.zarchive, wua.package_name.c_str(), T2U8(ts_path).c_str());
+	} else
+#endif /* HAVE_ZARCHIVE */
+	{
+		subfile = std::make_shared<RpFile>(ts_path, RpFile::FM_OPEN_READ);
+	}
 	if (subfile->isOpen()) {
 		tmd.reset(new WiiTMD(subfile));
 		if (tmd->isValid()) {
@@ -513,9 +749,19 @@ void WiiUPackage::init(void)
 	}
 	d->tmd = std::move(tmd);
 
+	if (d->file) {
+		// Using an archive file; probably ZArchive.
+		d->mimeType = "application/x-wii-u-wua";
+		d->fileType = FileType::ArchiveFile;
+	} else {
+		// Using a directory.
+		d->mimeType = "inode/directory";
+		d->fileType = FileType::ApplicationPackage;
+	}
+
 	if (d->packageType != WiiUPackagePrivate::PackageType::NUS) {
 		// Only NUS format needs decryption.
-		// Extracted format is already decrypted.
+		// Extracted and .wua formats are already decrypted.
 		return;
 	}
 
@@ -604,9 +850,50 @@ void WiiUPackage::init(void)
  */
 int WiiUPackage::isRomSupported_static(const DetectInfo *info)
 {
-	// Files are not supported.
+#ifdef HAVE_ZARCHIVE
+	assert(info != nullptr);
+	assert(info->header.pData != nullptr);
+	assert(info->header.addr == 0);
+	if (!info || !info->header.pData ||
+	    info->header.addr != 0 ||
+	    info->header.size < sizeof(uint32_t) ||
+	    !info->ext || info->ext[0] == '\0')
+	{
+		// Either no detection information was specified,
+		// or the header is too small.
+		return static_cast<int>(WiiUPackagePrivate::PackageType::Unknown);
+	}
+
+	// Check for a .wua file.
+	// File extension must be .wua, and it must start with the zstd magic number.
+	if (strcasecmp(info->ext, ".wua") != 0) {
+		// Not a .wua file.
+		return static_cast<int>(WiiUPackagePrivate::PackageType::Unknown);
+	}
+
+	const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(info->header.pData);
+	if (pData32[0] != cpu_to_be32(0x28B52FFD)) {
+		// Not the ZSTD magic number.
+		return static_cast<int>(WiiUPackagePrivate::PackageType::Unknown);
+	}
+
+#  if defined(_MSC_VER) && defined(ZSTD_IS_DLL)
+	// Delay load verification.
+	int err = DelayLoad_test_ZSTD_freeDCtx();
+	if (err != 0) {
+		// Delay load failed.
+		// .wua format is not supported without zstd.
+		return static_cast<int>(WiiUPackagePrivate::PackageType::Unknown);
+	}
+#  endif /* _MSC_VER && ZSTD_IS_DLL */
+
+	// May be a .wua file.
+	return static_cast<int>(WiiUPackagePrivate::PackageType::WUA);
+#else /* !HAVE_ZARCHIVE */
+	// Can't open .wua on this system...
 	RP_UNUSED(info);
-	return -1;
+	return static_cast<int>(WiiUPackagePrivate::PackageType::Unknown);
+#endif /* HAVE_ZARCHIVE */
 }
 
 /**
@@ -844,8 +1131,8 @@ int WiiUPackage::loadFieldData(void)
 	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
-	} else if (d->path.empty()) {
-		// No directory...
+	} else if (std::holds_alternative<std::monostate>(d->data)) {
+		// No directory or file...
 		return -EBADF;
 	} else if (!d->isValid) {
 		// Unknown ROM image type.
@@ -858,32 +1145,44 @@ int WiiUPackage::loadFieldData(void)
 	d->fields.setTabName(0, "Wii U");
 
 	bool canLoadXMLs = false;
-	if (d->packageType == WiiUPackagePrivate::PackageType::NUS) {
-		// Check if the decryption keys were loaded.
-		const KeyManager::VerifyResult verifyResult = d->ticket->verifyResult();
-		if (verifyResult == KeyManager::VerifyResult::OK) {
-			// We can decrypt the XMLs if the FST was loaded.
-			canLoadXMLs = (d->fst != nullptr);
-		} else {
-			// No decryption keys, so we can't decrypt the XMLs.
-			// Show a warning.
-			// NOTE: We can still show ticket/TMD fields.
-			canLoadXMLs = false;
-			const char *err = KeyManager::verifyResultToString(verifyResult);
-			if (!err) {
-				err = C_("RomData", "Unknown error. (THIS IS A BUG!)");
+	switch (d->packageType) {
+		default:
+			assert(!"Unsupported Wii U package type.");
+			return d->fields.count();
+
+		case WiiUPackagePrivate::PackageType::NUS: {
+			// Check if the decryption keys were loaded.
+			const KeyManager::VerifyResult verifyResult = d->ticket->verifyResult();
+			if (verifyResult == KeyManager::VerifyResult::OK) {
+				// We can decrypt the XMLs if the FST was loaded.
+				canLoadXMLs = (d->fst != nullptr);
+			} else {
+				// No decryption keys, so we can't decrypt the XMLs.
+				// Show a warning.
+				// NOTE: We can still show ticket/TMD fields.
+				canLoadXMLs = false;
+				const char *err = KeyManager::verifyResultToString(verifyResult);
+				if (!err) {
+					err = C_("RomData", "Unknown error. (THIS IS A BUG!)");
+				}
+				d->fields.addField_string(C_("RomData", "Warning"), err,
+					RomFields::STRF_WARNING);
 			}
-			d->fields.addField_string(C_("RomData", "Warning"), err,
-				RomFields::STRF_WARNING);
+			break;
 		}
-	} else if (d->packageType == WiiUPackagePrivate::PackageType::Extracted) {
-		// XML can always be loaded in extracted packages.
-		canLoadXMLs = true;
+
+		case WiiUPackagePrivate::PackageType::Extracted:
+#ifdef HAVE_ZARCHIVE
+		case WiiUPackagePrivate::PackageType::WUA:
+#endif /* HAVE_ZARCHIVE */
+			// XML can always be loaded in extracted packages and WUA archives.
+			canLoadXMLs = true;
+			break;
 	}
 
 #ifdef ENABLE_XML
 	// Parse the Wii U System XMLs.
-	// NOTE: Only if the FST was loaded, or reading an extracted package.
+	// NOTE: Only if the FST was loaded, or reading an extracted package or WUA archive.
 	if (canLoadXMLs) {
 		const bool hasTicket = (bool)d->ticket;
 		int ret = d->addFields_System_XMLs(!hasTicket);
@@ -942,8 +1241,8 @@ int WiiUPackage::loadMetaData(void)
 	if (!d->metaData.empty()) {
 		// Metadata *has* been loaded...
 		return 0;
-	} else if (d->path.empty()) {
-		// No directory...
+	} else if (std::holds_alternative<std::monostate>(d->data)) {
+		// No directory or file...
 		return -EBADF;
 	} else if (!d->isValid) {
 		// Unknown ROM image type.
@@ -961,9 +1260,9 @@ int WiiUPackage::loadMetaData(void)
 
 #ifdef ENABLE_XML
 	// Check if the decryption keys were loaded.
-	// NOTE: If not in Extracted format, requires a valid ticket.
-	if (d->packageType == WiiUPackagePrivate::PackageType::Extracted) {
-		// Extracted format. We can always add the XMLs.
+	// NOTE: If not in Extracted or .wua format, requires a valid ticket.
+	if (d->packageType != WiiUPackagePrivate::PackageType::NUS) {
+		// Extracted or .wua format. We can always add the XMLs.
 		// Parse the Wii U System XMLs.
 		const bool hasTicket = (bool)d->ticket;
 		d->addMetaData_System_XMLs(!hasTicket);
@@ -995,7 +1294,7 @@ int WiiUPackage::loadInternalImage(ImageType imageType, rp_image_const_ptr &pIma
 	RP_D(WiiUPackage);
 	ROMDATA_loadInternalImage_single(
 		IMG_INT_ICON,	// ourImageType
-		d->path.c_str(),// file (NOTE: Using d->path because we don't have a "file")
+		!std::holds_alternative<std::monostate>(d->data),	// file (NOTE: Using d->data because we might not have a "file")
 		d->isValid,	// isValid
 		0,		// romType
 		d->img_icon,	// imgCache

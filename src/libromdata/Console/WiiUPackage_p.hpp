@@ -9,6 +9,7 @@
 #pragma once
 
 #include "config.librpbase.h"
+#include "config.libromdata.h"
 #include "common.h"
 
 // RomData subclasses
@@ -42,17 +43,27 @@
 #include <memory>
 #include <vector>
 
+// std::variant<>
+#include "rp-variant.hpp"
+
 // PugiXML
 // NOTE: Cannot forward-declare the PugiXML classes...
 #ifdef ENABLE_XML
 #  include <pugixml.hpp>
 #endif /* ENABLE_XML */
 
+// for .wua files
+#ifdef HAVE_ZARCHIVE
+#  include "zarchive/zarchivereader.h"
+#  include "file/streambuf_IRpFile.hpp"
+#endif /* HAVE_ZARCHIVE */
+
 namespace LibRomData {
 
 class WiiUPackagePrivate final : public LibRpBase::RomDataPrivate
 {
 public:
+	WiiUPackagePrivate(const LibRpFile::IRpFilePtr &file);
 	WiiUPackagePrivate(const char *path);
 #if defined(_WIN32) && defined(_UNICODE)
 	WiiUPackagePrivate(const wchar_t *path);
@@ -63,10 +74,19 @@ private:
 public:
 	RP_DISABLE_COPY(WiiUPackagePrivate)
 
+private:
+#ifdef HAVE_ZARCHIVE
+	static constexpr size_t ZARCHIVE_EXT_COUNT = 1;
+	static constexpr size_t ZARCHIVE_MIME_COUNT = 1;
+#else /* !HAVE_ZARCHIVE */
+	static constexpr size_t ZARCHIVE_EXT_COUNT = 0;
+	static constexpr size_t ZARCHIVE_MIME_COUNT = 0;
+#endif /* HAVE_ZARCHIVE */
+
 public:
 	/** RomDataInfo **/
-	static const std::array<const char*, 0+1> exts;
-	static const std::array<const char*, 1+1> mimeTypes;
+	static const std::array<const char*, ZARCHIVE_EXT_COUNT+0+1> exts;
+	static const std::array<const char*, ZARCHIVE_MIME_COUNT+1+1> mimeTypes;
 	static const LibRpBase::RomDataInfo romDataInfo;
 
 public:
@@ -76,13 +96,56 @@ public:
 
 		NUS		= 0,	// NUS format
 		Extracted	= 1,	// Extracted
+#ifdef HAVE_ZARCHIVE
+		WUA		= 2,	// WUA (Wii U Archive)
+#endif /* HAVE_ZARCHIVE */
 
 		Max
 	};
 	PackageType packageType;
 
-	// Directory path
-	std::tstring path;
+	struct nus_t {
+		// Directory path
+		std::tstring path;
+
+		nus_t(const std::tstring &path)
+			: path(path)
+		{}
+
+		nus_t(std::tstring &&path)
+			: path(path)
+		{}
+	};
+
+#ifdef HAVE_ZARCHIVE
+	struct wua_t {
+		// ZArchive reader for .wua files
+		std::shared_ptr<ZArchiveReader> zarchive;
+
+		// Package name from the .wua file.
+		std::string package_name;
+
+		// streambuf_IRpFile wrapper
+		streambuf_IRpFile *streambuf;
+
+		wua_t()
+			: streambuf(nullptr)
+		{}
+
+		~wua_t()
+		{
+			// TODO: Make sure all subfiles are closed first due to streambuf.
+			zarchive.reset();
+			delete streambuf;
+		}
+	};
+#endif /* HAVE_ZARCHIVE */
+
+#ifdef HAVE_ZARCHIVE
+	std::variant<std::monostate, nus_t, wua_t> data;
+#else /* !HAVE_ZARCHIVE */
+	std::variant<std::monostate, nus_t> data;
+#endif /* HAVE_ZARCHIVE */
 
 	// Ticket, TMD, and FST
 	std::unique_ptr<WiiTicket> ticket;

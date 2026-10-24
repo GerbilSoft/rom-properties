@@ -422,100 +422,107 @@ tracker_extract_get_metadata(TrackerExtractInfo *info, GError **error)
 
 	// Determine the file type.
 	// TODO: Better NFOs for some of these.
+	using FileType = RomData::FileType;
 	array<const char*, 2> fileTypes = {{nullptr, nullptr}};
 	switch (romData->fileType()) {
 		default:
 			assert(!"Unhandled file type!");
 			break;
-		case RomData::FileType::ROM_Image:
+
+		case FileType::ROM_Image:
 			fileTypes[0] = "nfo:Software";
 			break;
-		case RomData::FileType::DiscImage:
+		case FileType::DiscImage:
 			fileTypes[0] = "nfo:Filesystem";
 			// TODO: Specific type of file system? ("nfo:filesystemType")
 			break;
-		case RomData::FileType::SaveFile:
+		case FileType::SaveFile:
 			// FIXME: Not the best type...
 			fileTypes[0] = "nfo:Document";
 			break;
-		case RomData::FileType::EmbeddedDiscImage:
+		case FileType::EmbeddedDiscImage:
 			fileTypes[0] = "nfo:Filesystem";
 			// TODO: Specific type of file system? ("nfo:filesystemType")
 			break;
-		case RomData::FileType::ApplicationPackage:
+		case FileType::ApplicationPackage:
 			fileTypes[0] = "nfo:Application";
-		case RomData::FileType::NFC_Dump:
+		case FileType::NFC_Dump:
 			// TODO
 			break;
-		case RomData::FileType::DiskImage:
+		case FileType::DiskImage:
 			fileTypes[0] = "nfo:Filesystem";
 			// TODO: Specific type of file system? ("nfo:filesystemType")
 			break;
-		case RomData::FileType::Executable:
+		case FileType::Executable:
 			fileTypes[0] = "nfo:Application";
 			break;
-		case RomData::FileType::DLL:
+		case FileType::DLL:
 			fileTypes[0] = "nfo:Software";
 			break;
-		case RomData::FileType::DeviceDriver:
+		case FileType::DeviceDriver:
 			fileTypes[0] = "nfo:Software";
 			break;
-		case RomData::FileType::ResourceLibrary:
+		case FileType::ResourceLibrary:
 			fileTypes[0] = "nfo:DataContainer";
 			break;
-		case RomData::FileType::IconFile:
+		case FileType::IconFile:
 			fileTypes[0] = "nfo:Image";
 			fileTypes[1] = "nfo:RasterImage";
 			break;
-		case RomData::FileType::BannerFile:
+		case FileType::BannerFile:
 			fileTypes[0] = "nfo:Image";
 			fileTypes[1] = "nfo:RasterImage";
 			break;
-		case RomData::FileType::Homebrew:
+		case FileType::Homebrew:
 			fileTypes[0] = "nfo:Application";
 			break;
-		case RomData::FileType::eMMC_Dump:
+		case FileType::eMMC_Dump:
 			fileTypes[0] = "nfo:Filesystem";
 			break;
-		case RomData::FileType::ContainerFile:
+		case FileType::ContainerFile:
 			fileTypes[0] = "nfo:DataContainer";
 			break;
-		case RomData::FileType::FirmwareBinary:
+		case FileType::FirmwareBinary:
 			fileTypes[0] = "nfo:OperatingSystem";
 			break;
-		case RomData::FileType::TextureFile:
+		case FileType::TextureFile:
 			fileTypes[0] = "nfo:Image";
 			fileTypes[1] = "nfo:RasterImage";
 			break;
-		case RomData::FileType::RelocatableObject:
+		case FileType::RelocatableObject:
 			// TODO
 			break;
-		case RomData::FileType::SharedLibrary:
+		case FileType::SharedLibrary:
 			fileTypes[0] = "nfo:Application";
 			break;
-		case RomData::FileType::CoreDump:
+		case FileType::CoreDump:
 			// TODO
 			break;
-		case RomData::FileType::AudioFile:
+		case FileType::AudioFile:
 			fileTypes[0] = "nfo:Audio";
 			break;
-		case RomData::FileType::BootSector:
+		case FileType::BootSector:
 			// TODO
 			break;
-		case RomData::FileType::Bundle:
+		case FileType::Bundle:
 			fileTypes[0] = "nfo:DataContainer";
 			break;
-		case RomData::FileType::ResourceFile:
+		case FileType::ResourceFile:
 			fileTypes[0] = "nfo:DataContainer";
 			break;
-		case RomData::FileType::Partition:
+		case FileType::Partition:
 			fileTypes[0] = "nfo:FilesystemImage";
 			break;
 
-		case RomData::FileType::MetadataFile:
-		case RomData::FileType::PatchFile:
-		case RomData::FileType::Ticket:
+		case FileType::MetadataFile:
+		case FileType::PatchFile:
+		case FileType::Ticket:
+		case FileType::ConfigurationFile:
 			// TODO
+			break;
+
+		case FileType::ArchiveFile:
+			fileTypes[0] = "nfo:Archive";
 			break;
 	}
 

@@ -515,3 +515,23 @@ ENDIF(WIN32 AND MSVC)
 IF(WIN32 AND ENABLE_NLS)
 	ADD_SUBDIRECTORY(gettext)
 ENDIF(WIN32 AND ENABLE_NLS)
+
+# ZArchive for Wii U .wua format
+# Requires C++20 and zstd.
+IF(CMAKE_VERSION VERSION_GREATER 3.11.99)
+	# Check for std::filesystem.
+	INCLUDE(CheckCXXSourceCompiles)
+	CHECK_CXX_SOURCE_COMPILES("
+#include <filesystem>
+
+int main(int argc, char *argv[]) {
+	std::filesystem::path path(argv[0]);
+	return 0;
+}" HAVE_STD_FILESYSTEM)
+	IF(HAVE_STD_FILESYSTEM)
+		SET(HAVE_ZARCHIVE 1 PARENT_SCOPE)
+		ADD_SUBDIRECTORY(ZArchive)
+		SET_EXTLIB_PROPERTIES(zarchive)
+		SET_EXTLIB_PROPERTIES(zarchiveTool)
+	ENDIF(HAVE_STD_FILESYSTEM)
+ENDIF(CMAKE_VERSION VERSION_GREATER 3.11.99)

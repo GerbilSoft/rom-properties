@@ -628,6 +628,15 @@
     </magic>
   </mime-type>
 
+  <!-- WiiUPackage -->
+  <mime-type type="application/x-wii-u-wua">
+    <comment>Wii U archive</comment>
+    <sub-class-of type="application/x-archive"/>
+    <generic-icon name="application-x-archive"/>
+    <glob pattern="*.wua"/>
+    <!-- NOTE: Not checking for zstd magic here. -->
+  </mime-type>
+
   <!-- WiiWAD -->
   <!-- Wii WADs have 64-byte alignment; BroadOn WADs do not. -->
   <!-- DSi debug TADs *usually* don't have 64-byte alignment. -->

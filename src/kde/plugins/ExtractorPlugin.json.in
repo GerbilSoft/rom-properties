@@ -2,6 +2,7 @@
     "Name": "extractorplugin_rom-properties-@KF_SUFFIX@",
     "Id": "com.gerbilsoft.@KF_SUFFIX@.extractorplugin",
     "MimeTypes": {
-@MIMETYPES_ALL_JSON_VERSIONED_ARRAY@
+@MIMETYPES_ALL_JSON_VERSIONED_ARRAY@,
+        "application/zstd": { "Version": "@CMAKE_PROJECT_VERSION_MAJOR@.@CMAKE_PROJECT_VERSION_MINOR@.@CMAKE_PROJECT_VERSION_PATCH@" }
     }
 }

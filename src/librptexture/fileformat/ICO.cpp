@@ -1240,8 +1240,9 @@ void ICO::init(bool res)
 
 	// Read the ICONDIR.
 	IRpFilePtr f_icondir;
-	if (res && std::holds_alternative<ICOPrivate::icodir_res>(d->dir.data)) {
-		const auto &res = std::get<ICOPrivate::icodir_res>(d->dir.data);
+	using icodir_res = ICOPrivate::icodir_res;
+	if (res && std::holds_alternative<icodir_res>(d->dir.data)) {
+		const auto &res = std::get<icodir_res>(d->dir.data);
 		f_icondir = res.resReader->open(res.type, res.id, res.lang);
 		if (!f_icondir) {
 			// Unable to open the icon or cursor.
@@ -1480,7 +1481,9 @@ int ICO::getFields(RomFields *fields) const
 		// Unknown file type.
 		return -EIO;
 	}
-	if (!std::holds_alternative<ICOPrivate::icodir_ico>(d->dir.data)) {
+
+	using icodir_ico = ICOPrivate::icodir_ico;
+	if (!std::holds_alternative<icodir_ico>(d->dir.data)) {
 		// Only adding fields for standalone .ico files right now,
 		// not for .exe/.dll resources.
 		return 0;

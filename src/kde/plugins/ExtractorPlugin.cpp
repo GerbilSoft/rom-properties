@@ -176,6 +176,10 @@ QStringList ExtractorPlugin::mimetypes(void) const
 	for (const char *mimeType : vec_mimeTypes) {
 		mimeTypes += QLatin1String(mimeType);
 	}
+
+	// FIXME: KFileMetaData detects .wua archives as "application/zstd".
+	mimeTypes += QLatin1String("application/zstd");
+
 	return mimeTypes;
 }
 
@@ -356,7 +360,7 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 
 	// File type
 	// NOTE: KFileMetaData has a limited set of file types as of v5.107.
-	static_assert(static_cast<size_t>(RomData::FileType::Max) == static_cast<size_t>(RomData::FileType::ConfigurationFile) + 1, "Update KFileMetaData file types!");
+	static_assert(static_cast<size_t>(RomData::FileType::Max) == static_cast<size_t>(RomData::FileType::ArchiveFile) + 1, "Update KFileMetaData file types!");
 	switch (romData->fileType()) {
 		default:
 			// No KFileMetaData::Type is applicable here.
@@ -370,6 +374,7 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 
 		case RomData::FileType::ContainerFile:
 		case RomData::FileType::Bundle:
+		case RomData::FileType::ArchiveFile:
 			result->addType(KFileMetaData::Type::Archive);
 			break;
 

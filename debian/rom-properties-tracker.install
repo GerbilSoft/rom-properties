@@ -1,10 +1,12 @@
 usr/lib/*/tracker-1.0/extract-modules/libextract-rom-properties.so
 usr/share/tracker/extract-rules/14-rp-application-packages.rule
+usr/share/tracker/extract-rules/14-rp-archives.rule
 usr/share/tracker/extract-rules/14-rp-audio.rule
 usr/share/tracker/extract-rules/14-rp-banners.rule
 usr/share/tracker/extract-rules/14-rp-cd-images.rule
 usr/share/tracker/extract-rules/14-rp-disk-images.rule
 usr/share/tracker/extract-rules/14-rp-executables.rule
+usr/share/tracker/extract-rules/14-rp-resource-files.rule
 usr/share/tracker/extract-rules/14-rp-rom-images.rule
 usr/share/tracker/extract-rules/14-rp-save-files.rule
 usr/share/tracker/extract-rules/14-rp-textures.rule

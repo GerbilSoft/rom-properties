@@ -164,6 +164,7 @@ SET(${PROJECT_NAME}_SRCS
 	img/CacheManager.cpp
 	utils/SuperMagicDrive.cpp
 	file/mz_stream_IRpFile.cpp
+	file/streambuf_IRpFile.cpp
 	)
 # Headers
 SET(${PROJECT_NAME}_H
@@ -406,6 +407,7 @@ SET(${PROJECT_NAME}_H
 	img/CacheManager.hpp
 	utils/SuperMagicDrive.hpp
 	file/mz_stream_IRpFile.hpp
+	file/streambuf_IRpFile.hpp
 	)
 
 IF(ENABLE_XML)
@@ -463,6 +465,12 @@ IF(HAVE_ZSTD)
 	SET(${PROJECT_NAME}_ZSTD_SRCS disc/Z3DSReader.cpp)
 	SET(${PROJECT_NAME}_ZSTD_H    disc/Z3DSReader.hpp)
 ENDIF(HAVE_ZSTD)
+
+# Files that require ZArchive.
+IF(HAVE_ZARCHIVE)
+	SET(${PROJECT_NAME}_ZArchive_SRCS file/RpFile_ZArchiveReader.cpp)
+	SET(${PROJECT_NAME}_ZArchive_H    file/RpFile_ZArchiveReader.hpp)
+ENDIF(HAVE_ZARCHIVE)
 
 # dlopen() notes
 IF(NOT WIN32 AND NOT APPLE)
@@ -558,6 +566,7 @@ ADD_LIBRARY(${PROJECT_NAME} ${${PROJECT_NAME}_LINKAGE}
 	${${PROJECT_NAME}_CRYPTO_SRCS} ${${PROJECT_NAME}_CRYPTO_H}
 	${${PROJECT_NAME}_NETWORKING_SRCS}
 	${${PROJECT_NAME}_ZSTD_SRCS} ${${PROJECT_NAME}_ZSTD_H}
+	${${PROJECT_NAME}_ZArchive_SRCS} ${${PROJECT_NAME}_ZArchive_H}
 	${${PROJECT_NAME}_DLOPEN_SRCS}
 	${${PROJECT_NAME}_MMX_SRCS}
 	${${PROJECT_NAME}_SSE2_SRCS}
@@ -617,6 +626,9 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE cachecommon-dll)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpuid)		# for CPU dispatch
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC boost-time64)	# for rp_time_t and 64-bit time functions
+	IF(HAVE_ZARCHIVE)
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE zarchive)		# for Wii U .wua files
+	ENDIF(HAVE_ZARCHIVE)
 
 	IF(CMAKE_THREAD_LIBS_INIT)
 		# for std::call_once() [pthread_once()]
@@ -678,6 +690,9 @@ ELSE()
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC cachecommon)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpuid)		# for CPU dispatch
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC boost-time64)	# for rp_time_t and 64-bit time functions
+	IF(HAVE_ZARCHIVE)
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE zarchive)		# for Wii U .wua files
+	ENDIF(HAVE_ZARCHIVE)
 	IF(ENABLE_NLS)
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC i18n)
 	ENDIF(ENABLE_NLS)

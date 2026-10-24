@@ -1,0 +1,15 @@
+This copy of zarchive 0.1.2+ is a modified version of the original.
+
+commit 965b66c8d67b6b7e30fd63b3b75aa91a99ff303b
+Add support for generic istream in ZArchiveReader (#25)
+    
+Tag: v0.1.2 +4
+
+The following changes have been made to the original:
+
+- Disable -Werror=no-reorder.
+
+- TODO: Fix other warnings.
+
+To obtain the original ZArchive library, visit:
+https://github.com/Exzap/ZArchive

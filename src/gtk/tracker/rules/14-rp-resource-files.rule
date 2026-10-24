@@ -1,0 +1,5 @@
+[ExtractorRule]
+ModulePath=libextract-rom-properties.so
+MimeTypes=application/x-iff;application/x-playstation-sfo;
+FallbackRdfTypes=nfo:DataContainer;
+Graph=tracker:Software
