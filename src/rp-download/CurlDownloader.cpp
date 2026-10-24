@@ -36,17 +36,8 @@ using std::tstring;
 #  include "libwin32common/rp_LoadLibraryEx.h"
 using namespace LibWin32Common;
 #else /* _WIN32 */
-using std::tstring_view;
-static inline tstring U82T_str(string_view str)
-{
-	return tstring(str);
-}
-static inline string T2U8_str(tstring_view tcs)
-{
-	return string(tcs);
-}
-#  define U82T(str) (U82T_str(str).c_str())
-#  define T2U8(str) (T2U8_str(str).c_str())
+// wchar.hpp on non-Windows systems is all macros and inline functions.
+#  include "librptext/wchar.hpp"
 #endif /* _WIN32 */
 
 namespace RpDownload {

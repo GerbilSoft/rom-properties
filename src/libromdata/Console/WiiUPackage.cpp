@@ -25,6 +25,7 @@
 #include "librpbase/SystemRegion.hpp"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
+#include "librptext/wchar.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -38,23 +39,6 @@ using std::string_view;
 using std::tstring;
 using std::unique_ptr;
 using std::vector;
-
-#ifdef _WIN32
-#  include "librptext/wchar.hpp"
-#else /* _WIN32 */
-#  include "tcharx.h"
-using std::tstring_view;
-static inline tstring U82T_str(string_view str)
-{
-	return tstring(str);
-}
-static inline string T2U8_str(tstring_view tcs)
-{
-	return string(tcs);
-}
-#  define U82T(str) (U82T_str(str).c_str())
-#  define T2U8(str) (T2U8_str(str).c_str())
-#endif /* _WIN32 */
 
 #ifdef HAVE_ZARCHIVE
 // for .wua files

@@ -16,12 +16,12 @@
 // OS-specific includes
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
-#  include "librptext/wchar.hpp"
 #endif /* _WIN32 */
 
 // Other rom-properties libraries
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
+#include "librptext/wchar.hpp"
 using namespace LibRpFile;
 
 // C includes (C++ namespace)
@@ -33,13 +33,6 @@ using namespace LibRpFile;
 using std::string;
 using std::tstring;
 using std::unique_ptr;
-
-// Mini-U82T()
-#ifdef _WIN32
-#  include "librptext/wchar.hpp"
-#else /* !_WIN32 */
-#  define U82T(str) (str)
-#endif /* _WIN32 */
 
 // Uninitialized vector class
 #include "uvector.h"

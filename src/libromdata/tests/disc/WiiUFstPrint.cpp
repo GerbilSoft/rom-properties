@@ -19,6 +19,10 @@ using LibRomData::WiiUFst;
 // libgsvt for VT handling
 #include "gsvtpp.hpp"
 
+// Other rom-properties libraries
+#include "librpsecure/os-secure.h"
+#include "librptext/wchar.hpp"
+
 // C includes (C++ namespace)
 #include <cerrno>
 #include <cstdio>
@@ -41,30 +45,6 @@ using std::unique_ptr;
 
 // libfmt
 #include "rp-libfmt.h"
-
-// librpsecure
-#include "librpsecure/os-secure.h"
-
-#include "tcharx.h"
-#ifdef _WIN32
-#  include "libwin32common/RpWin32_sdk.h"
-#  include "librptext/wchar.hpp"
-#  include "libwin32common/rp_LoadLibraryEx.h"
-#  include <io.h>
-#else /* _WIN32 */
-using std::tstring;
-using std::tstring_view;
-static inline tstring U82T_str(string_view str)
-{
-	return tstring(str);
-}
-static inline string T2U8_str(tstring_view tcs)
-{
-	return string(tcs);
-}
-#  define U82T(str) (U82T_str(str).c_str())
-#  define T2U8(str) (T2U8_str(str).c_str())
-#endif /* _WIN32 */
 
 int RP_C_API _tmain(int argc, TCHAR *argv[])
 {

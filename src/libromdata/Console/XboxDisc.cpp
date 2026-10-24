@@ -11,16 +11,11 @@
 
 // Other rom-properties libraries
 #include "librpfile/RpFile.hpp"
+#include "librptext/wchar.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-
-#ifdef _WIN32
-#  include "librptext/wchar.hpp"
-#else /* !_WIN32 */
-#  define U82T(str) (str)
-#endif /* _WIN32 */
 
 // XDVDFSPartition
 #include "../iso_structs.h"

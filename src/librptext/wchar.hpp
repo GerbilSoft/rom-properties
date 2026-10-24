@@ -21,20 +21,21 @@
  * result in a dangling pointer.
  */
 
+// C includes
+#include "tcharx.h"
+
+// C++ STL classes
+#include <string_view>
+
+#ifdef _WIN32
+
 // Make sure conversion.hpp was included.
 #include "librptext/conversion.hpp"
 #include "common.h"
 
-#ifdef _WIN32
-#  include "tcharx.h"
-#endif /* _WIN32 */
-
 #ifndef RP_WIS16
 #  error Cannot use librptext/wchar.hpp if sizeof(wchar_t) != 2
 #endif /* RP_WIS16 */
-
-// C++ STL classes
-#include <string_view>
 
 /** wchar_t (Unicode) **/
 
@@ -115,7 +116,6 @@ static inline std::string W2A(std::wstring_view wcs)
 
 /** TCHAR **/
 
-#ifdef _WIN32
 #ifdef UNICODE
 
 #define U82T(str) U82W(str)
@@ -128,6 +128,22 @@ static inline std::string W2A(std::wstring_view wcs)
 
 #endif /* UNICODE */
 
+#else /* !_WIN32 */
+
+// Compatibility functions for U82T() / T2U8() on non-Windows systems.
+static inline std::tstring U82T_str(std::string_view str)
+{
+	return std::tstring(str);
+}
+static inline std::string T2U8_str(std::tstring_view tcs)
+{
+	return std::string(tcs);
+}
+#define U82T(str) (U82T_str(str).c_str())
+#define T2U8(str) (T2U8_str(str).c_str())
+
+#endif /* _WIN32 */
+
 // Helper macro for using C_() with U82T().
 // NOTE: Must include i18n.hpp before using this macro!
 #define T_(msgid)				U82T(_(msgid))
@@ -138,5 +154,3 @@ static inline std::string W2A(std::wstring_view wcs)
 #define tdpgettext_expr(domain, msgctxt, msgid)			U82T(dpgettext_expr(domain, msgctxt, msgid))
 #define tnpgettext_expr(msgctxt, msgid1, msgid2, n)		U82T(npgettext_expr(msgctxt, msgid1, msgid2, n))
 #define tdnpgettext_expr(domain, msgctxt, msgid1, msgid2, n)	U82T(dnpgettext_expr(domain, msgctxt, msgid1, msgid2, n))
-
-#endif /* _WIN32 */
