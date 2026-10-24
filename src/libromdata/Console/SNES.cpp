@@ -1112,8 +1112,8 @@ SNES::SNES(const IRpFilePtr &file)
 			continue;
 		}
 
-		const bool isExHiROM = (i >= 4);
-		const bool isHiROM = (isExHiROM || (i & 1));
+		const bool isExHiROM = (*pHeaderAddress > 0x400000);
+		const bool isHiROM = (isExHiROM || (i == 1 || i == 4));
 		if (isExHiROM) {
 			// Only accept ExHiROM mappings at the ExHiROM header address. Not valid for BS-X
 			const uint8_t rom_mapping = d->romHeader.snes.rom_mapping;
