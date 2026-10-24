@@ -14,7 +14,6 @@
 // C includes
 #include <assert.h>
 #include <errno.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 // Windows includes
@@ -29,10 +28,19 @@
 #  define UOI_TIMERPROC_EXCEPTION_SUPPRESSION 7
 #endif
 
+// SetUserObjectInformationW() for UOI_TIMERPROC_EXCEPTION_SUPPRESSION.
+// GetProcAddress() is needed to avoid a hard dependency on USER32.DLL,
+// which breaks disabling Win32k syscalls.
+typedef BOOL (WINAPI *pfnSetUserObjectInformationW_t)(
+	_In_ HANDLE hObj,
+	_In_ int nIndex,
+	_In_ PVOID pvInfo,
+	_In_ DWORD nLength);
+
 #ifndef _WIN64
 
 // NtSetInformationProcess() (needed for DEP on XP SP2)
-typedef NTSTATUS (WINAPI *pfnNTSetInformationProcess_t)(
+typedef NTSTATUS (WINAPI *pfnNtSetInformationProcess_t)(
 	HANDLE ProcessHandle,
 	_In_ PROCESSINFOCLASS ProcessInformationClass,
 	_In_ PVOID ProcessInformation,
@@ -68,10 +76,6 @@ typedef BOOL (WINAPI *pfnSetProcessDEPPolicy_t)(_In_ DWORD dwFlags);
 // Reference: https://git.videolan.org/?p=vlc/vlc-2.2.git;a=commitdiff;h=054cf24557164f79045d773efe7da87c4fe357de;hp=52e4b740ad47574bdff7b80aba4949311e1b88f1
 #include "secoptions_win8.h"
 typedef BOOL (WINAPI *pfnSetProcessMitigationPolicy_t)(_In_ PROCESS_MITIGATION_POLICY MitigationPolicy, _In_ PVOID lpBuffer, _In_ SIZE_T dwLength);
-
-// for UOI_TIMERPROC_EXCEPTION_SUPPRESSION
-// Reference: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setuserobjectinformationa
-static const BOOL bTimerProcExceptionSuppression = FALSE;
 
 /**
  * Harden the process's integrity level policy.
@@ -257,8 +261,8 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 		HMODULE hNtDll = GetModuleHandle(_T("ntdll.dll"));
 		assert(hNtDll != NULL);
 		if (hNtDll) {
-			pfnNTSetInformationProcess_t pfnNtSetInformationProcess =
-				(pfnNTSetInformationProcess_t)GetProcAddress(hNtDll, "NtSetInformationProcess");
+			pfnNtSetInformationProcess_t pfnNtSetInformationProcess =
+				(pfnNtSetInformationProcess_t)GetProcAddress(hNtDll, "NtSetInformationProcess");
 			if (pfnNtSetInformationProcess) {
 				ULONG dep = MEM_EXECUTE_OPTION_DISABLE |
 				            MEM_EXECUTE_OPTION_PERMANENT;
@@ -270,8 +274,22 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 #endif /* !_WIN64 */
 
 	// Disable TIMERPROC exception suppression.
-	SetUserObjectInformation(GetCurrentProcess(), UOI_TIMERPROC_EXCEPTION_SUPPRESSION,
-		(PVOID)&bTimerProcExceptionSuppression, sizeof(bTimerProcExceptionSuppression));
+	// NOTE: This requires USER32.DLL, which breaks disabling Win32k syscalls.
+	// Hence, only suppress if !bHighSec, or if we're not running on Windows 8.
+	if (!bHighSec || !IsWindows8OrGreater()) {
+		HMODULE hUser32_dll = LoadLibraryEx(_T("user32.dll"), NULL,
+			IsWindowsVistaOrGreater() ? LOAD_LIBRARY_SEARCH_SYSTEM32 : 0);
+		if (hUser32_dll) {
+			pfnSetUserObjectInformationW_t pfnSetUserObjectInformationW =
+				(pfnSetUserObjectInformationW_t)GetProcAddress(hUser32_dll, "SetUserObjectInformationW");
+			if (pfnSetUserObjectInformationW) {
+				BOOL bTimerProcExceptionSuppression = FALSE;
+				pfnSetUserObjectInformationW(GetCurrentProcess(), UOI_TIMERPROC_EXCEPTION_SUPPRESSION,
+					(PVOID)&bTimerProcExceptionSuppression, sizeof(bTimerProcExceptionSuppression));
+			}
+			FreeLibrary(hUser32_dll);
+		}
+	}
 
 	if (!IsWindowsVistaOrGreater()) {
 		// We're done here.
@@ -394,7 +412,10 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 		{
 			PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY system_call_disable = { 0 };
 			system_call_disable.DisallowWin32kSystemCalls = TRUE;
-			//system_call_disable.AuditDisallowWin32kSystemCalls = FALSE;
+			system_call_disable.AuditDisallowWin32kSystemCalls = FALSE;
+			// TODO: Win11 24H2 added DisallowFsctlSystemCalls.
+			//system_call_disable.DisallowFsctlSystemCalls = TRUE;
+			//system_call_disable.AuditDisallowFsctlSystemCalls = FALSE;
 			bRet = pfnSetProcessMitigationPolicy(ProcessSystemCallDisablePolicy,
 				&system_call_disable, sizeof(system_call_disable));
 #ifndef NDEBUG
