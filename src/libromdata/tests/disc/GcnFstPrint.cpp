@@ -29,11 +29,13 @@ using LibRomData::GcnFst;
 #include <memory>
 #include <sstream>
 #include <string>
+#include <string_view>
 using std::array;
 using std::locale;
 using std::ostream;
 using std::ostringstream;
 using std::string;
+using std::string_view;
 using std::unique_ptr;
 
 // libfmt
@@ -42,15 +44,26 @@ using std::unique_ptr;
 // librpsecure
 #include "librpsecure/os-secure.h"
 
+#include "tcharx.h"
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
-#  include <io.h>
 #  include "librptext/wchar.hpp"
-#else
-#  define T2U8(str) (str)
+#  include "libwin32common/rp_LoadLibraryEx.h"
+#  include <io.h>
+#else /* _WIN32 */
+using std::tstring;
+using std::tstring_view;
+static inline tstring U82T_str(string_view str)
+{
+	return tstring(str);
+}
+static inline string T2U8_str(tstring_view tcs)
+{
+	return string(tcs);
+}
+#  define U82T(str) (U82T_str(str).c_str())
+#  define T2U8(str) (T2U8_str(str).c_str())
 #endif /* _WIN32 */
-
-#include "tcharx.h"
 
 int RP_C_API _tmain(int argc, TCHAR *argv[])
 {
