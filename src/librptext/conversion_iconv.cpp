@@ -107,7 +107,7 @@ static char *rp_iconv(const char *src, int len,
 	cd = iconv_open(dest_charset, src_charset);
 #endif
 
-	if (cd == (iconv_t)(-1)) {
+	if (!cd || cd == (iconv_t)(-1)) {
 		// Error opening iconv.
 		return nullptr;
 	}
