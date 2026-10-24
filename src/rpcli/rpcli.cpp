@@ -67,7 +67,6 @@ using namespace LibRpTexture;
 #  include "libunixcommon/userdirs.hpp"
 #  define OS_NAMESPACE LibUnixCommon
 #endif
-#include "tcharx.h"
 
 // C includes
 #include "ctypex.h"
@@ -79,6 +78,7 @@ using namespace LibRpTexture;
 
 // C++ STL classes
 #include <iostream>
+#include <string_view>
 #include <sstream>
 using std::array;
 using std::cout;
@@ -88,6 +88,7 @@ using std::ostream;
 using std::ostringstream;
 using std::shared_ptr;
 using std::string;
+using std::string_view;
 using std::unique_ptr;
 using std::vector;
 
@@ -131,11 +132,22 @@ DELAYLOAD_TEST_FUNCTION_IMPL1(libintl_textdomain, nullptr);
 #  endif /* ENABLE_NLS */
 #endif /* _MSC_VER */
 
-// T2U8()
+#include "tcharx.h"
 #ifdef _WIN32
 #  include "librptext/wchar.hpp"
-#else /* !_WIN32 */
-#  define T2U8(tcs) (tcs)
+#else /* _WIN32 */
+using std::tstring;
+using std::tstring_view;
+static inline tstring U82T_str(string_view str)
+{
+	return tstring(str);
+}
+static inline string T2U8_str(tstring_view tcs)
+{
+	return string(tcs);
+}
+#  define U82T(str) (U82T_str(str).c_str())
+#  define T2U8(str) (T2U8_str(str).c_str())
 #endif /* _WIN32 */
 
 struct ExtractParam {
