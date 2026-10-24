@@ -1098,9 +1098,9 @@ SNES::SNES(const IRpFilePtr &file)
 	// which checks +512 offsets first.
 	static constexpr uint32_t all_header_addresses[2][6] = {
 		// Non-headered first.
-		{0x7FB0, 0xFFB0, 0x7FB0+512, 0xFFB0+512, 0x40FFB0, 0x40FFB0+512},
+		{0x7FB0, 0xFFB0, 0x40FFB0, 0x7FB0+512, 0xFFB0+512, 0x40FFB0+512},
 		// Headered first.
-		{0x7FB0+512, 0xFFB0+512, 0x7FB0, 0xFFB0, 0x40FFB0+512, 0x40FFB0},
+		{0x7FB0+512, 0xFFB0+512, 0x40FFB0+512, 0x7FB0, 0xFFB0, 0x40FFB0},
 	};
 
 	d->header_address = 0;
