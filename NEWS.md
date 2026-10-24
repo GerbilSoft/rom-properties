@@ -34,6 +34,10 @@
       as NTRBOOT.
     * Fixes #521: .cci files are detected as ntrboot, so KDE/Dolphin never thumbnails them
       * Reported by @Amnesia1000.
+  * SNES: Correctly recognize ExHiROM images, which have the ROM header at
+    0x40FFC0, not 0x00FFC0.
+    * Pull request #520: [libromdata] SNES: Check for ExHiROM headers at 0x40FFC0.
+      * Submitted by @littlegamer87.
 
 * Other changes:
   * 64-bit time_t (using the rp_time_t typedef) is now used regardless of
