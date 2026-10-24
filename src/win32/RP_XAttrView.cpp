@@ -170,14 +170,14 @@ int RP_XAttrView_Private::loadADS(void)
 	lvItem.mask = LVIF_TEXT;
 	lvItem.iItem = 0;
 	for (const auto &xattr : xattrList) {
-		tstring tstr = U82T_c(xattr.first.c_str());
+		tstring tstr = U82T(xattr.first.c_str());
 		lvItem.iSubItem = 0;
 		lvItem.pszText = const_cast<LPTSTR>(tstr.c_str());
 		ListView_InsertItem(hListViewADS, &lvItem);
 
 		// Trim spaces for the value.
 		// TODO: Split this into a separate function.
-		tstr = U82T_c(xattr.second.c_str());
+		tstr = U82T(xattr.second.c_str());
 		// Trim at the end.
 		size_t pos = tstr.size();
 		while (pos > 0 && ISSPACE(tstr[pos-1])) {
@@ -312,7 +312,7 @@ void RP_XAttrView_Private::initDialog(void)
 	HWND hCboZAlg = GetDlgItem(hDlgSheet, IDC_XATTRVIEW_NTFS_COMPRESSION_ALG);
 	ComboBox_AddString(hCboZAlg, _T("None"));	// TODO: Localize this?
 	for (int i = (int)XAttrReader::ZAlgorithm::LZNT1; i <= (int)XAttrReader::ZAlgorithm::XPRESS16K; i++) {
-		ComboBox_AddString(hCboZAlg, U82T_c(XAttrReader::zAlgorithmToString(static_cast<XAttrReader::ZAlgorithm>(i))));
+		ComboBox_AddString(hCboZAlg, U82T(XAttrReader::zAlgorithmToString(static_cast<XAttrReader::ZAlgorithm>(i))));
 	}
 
 	// Initialize ADS ListView columns.

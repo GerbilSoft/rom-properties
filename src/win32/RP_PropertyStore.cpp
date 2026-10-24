@@ -384,7 +384,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 					continue;
 				}
 				if (prop.data.str) {
-					InitPropVariantFromString(U82W_s(prop.data.str), &prop_var);
+					InitPropVariantFromString(U82W(prop.data.str), &prop_var);
 				}
 				break;
 
@@ -398,7 +398,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 					continue;
 				}
 
-				const wstring wstr = U82W_c(prop.data.str);
+				const wstring wstr = U82W(prop.data.str);
 				const wchar_t *vstr[] = {wstr.c_str()};
 
 				InitPropVariantFromStringVector(vstr, 1, &prop_var);

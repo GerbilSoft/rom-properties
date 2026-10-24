@@ -578,10 +578,10 @@ void AchievementsTabPrivate::reset(void)
 		const rp_time_t timestamp = pAch->isUnlocked(id);
 
 		// Get the name and description.
-		tstring ts_ach = U82T_c(pAch->getName(id));
+		tstring ts_ach = U82T(pAch->getName(id));
 		ts_ach += _T('\n');
 		// TODO: Locked description?
-		ts_ach += U82T_c(pAch->getDescUnlocked(id));
+		ts_ach += U82T(pAch->getDescUnlocked(id));
 
 		// Measure the text width.
 		const int col1Width_cur = LibWin32UI::measureStringForListView(hDC, ts_ach);

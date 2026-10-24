@@ -435,7 +435,7 @@ void KeyManagerTabPrivate::initDialog(void)
 			lvGroup.mask = LVGF_ALIGN | LVGF_GROUPID | LVGF_HEADER | LVGF_ITEMS;
 			lvGroup.uAlign = LVGA_HEADER_LEFT;
 			for (int sectIdx = 0; sectIdx < keyStore->sectCount(); sectIdx++) {
-				const wstring sectName = U82W_c(keyStore->sectName(sectIdx));
+				const wstring sectName = U82W(keyStore->sectName(sectIdx));
 				lvGroup.iGroupId = sectIdx;
 				lvGroup.pszHeader = const_cast<LPWSTR>(sectName.c_str());
 				lvGroup.cItems = keyStore->keyCount(sectIdx);
@@ -474,13 +474,13 @@ void KeyManagerTabPrivate::initDialog(void)
 			continue;
 
 		int tmp_width[2];
-		tmp_width[0] = ListView_GetStringWidth(hListView, U82T_s(key->name)) + column_padding[0];
-		//tmp_width[1] = ListView_GetStringWidth(hListView, U82T_s(key->value)) + column_padding[1];
+		tmp_width[0] = ListView_GetStringWidth(hListView, U82T(key->name)) + column_padding[0];
+		//tmp_width[1] = ListView_GetStringWidth(hListView, U82T(key->value)) + column_padding[1];
 
 		column_width[0] = std::max(column_width[0], tmp_width[0]);
 		//column_width[1] = std::max(column_width[1], tmp_width[1]);
 
-		ret = LibWin32UI::measureTextSize(hListView, hFontMono, U82T_s(key->value), &szValue);
+		ret = LibWin32UI::measureTextSize(hListView, hFontMono, U82T(key->value), &szValue);
 		assert(ret == 0);
 		if (ret == 0) {
 			column_width[1] = std::max(column_width[1], (int)szValue.cx + column_padding[1]);
@@ -586,7 +586,7 @@ void KeyManagerTabPrivate::save(void)
 	}
 
 	// Save the keys.
-	const tstring tfilename = U82T_c(filename);
+	const tstring tfilename = U82T(filename);
 	const int totalKeyCount = keyStore->totalKeyCount();
 	for (int i = 0; i < totalKeyCount; i++) {
 		const KeyStoreWin32::Key *const pKey = keyStore->getKey(i);
@@ -595,7 +595,7 @@ void KeyManagerTabPrivate::save(void)
 			continue;
 
 		// Save this key.
-		WritePrivateProfileString(_T("Keys"), U82T_s(pKey->name), U82T_s(pKey->value), tfilename.c_str());
+		WritePrivateProfileString(_T("Keys"), U82T(pKey->name), U82T(pKey->value), tfilename.c_str());
 	}
 
 	// Clear the modified status.
@@ -1110,7 +1110,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 			TCHAR tbuf[128];
 			tbuf[0] = 0;
 			GetWindowText(hWnd, tbuf, _countof(tbuf));
-			d->keyStore->setKey(d->iEditItem, T2U8(tbuf).c_str());
+			d->keyStore->setKey(d->iEditItem, T2U8(tbuf));
 
 			// Item is no longer being edited.
 			d->iEditItem = -1;
@@ -1310,11 +1310,11 @@ inline BOOL KeyManagerTabPrivate::ListView_GetDispInfo(NMLVDISPINFO *plvdi)
 		switch (plvItem->iSubItem) {
 			case 0:
 				// Key name.
-				_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, U82T_s(key->name));
+				_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, U82T(key->name));
 				return true;
 			case 1:
 				// Value.
-				_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, U82T_s(key->value));
+				_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, U82T(key->value));
 				return true;
 			default:
 				// No text for "Valid?".

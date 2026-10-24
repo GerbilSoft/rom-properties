@@ -81,7 +81,7 @@ static constexpr unsigned int VALID_DOS_ATTRIBUTES_FAT = \
 
 #ifdef _UNICODE
 XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
-	: XAttrReaderPrivate(U82T_c(filename))
+	: XAttrReaderPrivate(U82T(filename))
 {}
 
 XAttrReaderPrivate::XAttrReaderPrivate(const wchar_t *filename)

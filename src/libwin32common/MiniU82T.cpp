@@ -11,56 +11,52 @@
 
 // C++ STL classes
 using std::string;
+using std::string_view;
 using std::unique_ptr;
 using std::wstring;
+using std::wstring_view;
 
 namespace LibWin32Common {
 
-wstring U82W_int(const char *mbs)
+wstring U82W_int(string_view mbs)
 {
-	wstring wstr;
+	wstring wcs;
 
-	const int cchWcs = MultiByteToWideChar(CP_UTF8, 0, mbs, -1, nullptr, 0);
+	const int cchWcs = MultiByteToWideChar(CP_UTF8, 0, mbs.data(), static_cast<int>(mbs.size()), nullptr, 0);
 	if (cchWcs <= 0) {
-		return wstr;
+		return wcs;
 	}
 
-	wstr.resize(cchWcs);
-	MultiByteToWideChar(CP_UTF8, 0, mbs, -1, &wstr[0], cchWcs);
-	return wstr;
+	wcs.resize(cchWcs);
+	MultiByteToWideChar(CP_UTF8, 0, mbs.data(), static_cast<int>(mbs.size()), &wcs[0], cchWcs);
+	return wcs;
 }
 
-string W2U8(const wchar_t *wcs, int len)
+string W2U8(wstring_view wcs)
 {
-	string str;
+	string mbs;
 
-	const int cbMbs = WideCharToMultiByte(CP_UTF8, 0, wcs, len, nullptr, 0, nullptr, nullptr);
+	const int cbMbs = WideCharToMultiByte(CP_UTF8, 0, wcs.data(), static_cast<int>(wcs.size()), nullptr, 0, nullptr, nullptr);
 	if (cbMbs <= 0) {
-		return str;
+		return mbs;
 	}
 
-	str.resize(cbMbs);
-	WideCharToMultiByte(CP_UTF8, 0, wcs, len, &str[0], cbMbs, nullptr, nullptr);
-	if (len < 0 && str[cbMbs-1] == '\0') {
-		str.resize(cbMbs-1);
-	}
-	return str;
+	mbs.resize(cbMbs);
+	WideCharToMultiByte(CP_UTF8, 0, wcs.data(), static_cast<int>(wcs.size()), &mbs[0], cbMbs, nullptr, nullptr);
+	return mbs;
 }
 
-string A2U8(const char *mbs, int len)
+string A2U8(string_view mbs)
 {
 	string u8str;
 
-	int cchWcs = MultiByteToWideChar(CP_ACP, 0, mbs, len, nullptr, 0);
+	int cchWcs = MultiByteToWideChar(CP_ACP, 0, mbs.data(), static_cast<int>(mbs.size()), nullptr, 0);
 	if (cchWcs <= 0) {
 		return u8str;
 	}
 
 	unique_ptr<wchar_t[]> wcs(new wchar_t[cchWcs]);
-	MultiByteToWideChar(CP_ACP, 0, mbs, -1, wcs.get(), cchWcs);
-	if (len < 0 && wcs[cchWcs-1] == L'\0') {
-		cchWcs--;
-	}
+	MultiByteToWideChar(CP_ACP, 0, mbs.data(), static_cast<int>(mbs.size()), wcs.get(), cchWcs);
 
 	const int cbUtf8 = WideCharToMultiByte(CP_UTF8, 0, wcs.get(), cchWcs, nullptr, 0, nullptr, nullptr);
 	if (cbUtf8 <= 0) {

@@ -14,42 +14,31 @@
 // C++ STL classes
 #include <memory>
 #include <string>
+#include <string_view>
 
 namespace LibWin32Common {
 
-std::wstring U82W_int(const char *mbs);
-#define U82W_c(str) (U82W_int(str).c_str())
-#define U82W_s(str) (U82W_int(str.c_str()).c_str())
+std::wstring U82W_int(std::string_view mbs);
+#define U82W(str) (U82W_int(str).c_str())
 
 #ifdef _UNICODE
-#  define U82T_c(str) (U82W_int(str).c_str())
-#  define U82T_s(str) (U82W_int(str.c_str()).c_str())
+#  define U82T(str) (U82W_int(str).c_str())
 #else /* _UNICODE */
-#  define U82T_c(str) (str)
-#  define U82T_s(str) (str.c_str())
+#  define U82T(str) (str)
 #endif /* _UNICODE */
 
-std::string W2U8(const wchar_t *wcs, int len = -1);
-static inline std::string W2U8(const std::wstring &wstr)
-{
-	return W2U8(wstr.data(), static_cast<int>(wstr.size()));
-}
-
-std::string A2U8(const char *mbs, int len = -1);
-static inline std::string A2U8(const std::string &astr)
-{
-	return A2U8(astr.data(), static_cast<int>(astr.size()));
-}
+std::string W2U8(std::wstring_view wcs);
+std::string A2U8(std::string_view mbs);
 
 #ifdef _UNICODE
-static inline std::string T2U8(const std::wstring &wstr)
+static inline std::string T2U8(std::wstring_view tcs)
 {
-	return W2U8(wstr.data(), static_cast<int>(wstr.size()));
+	return W2U8(tcs);
 }
 #else /* !_UNICODE */
-static inline std::string T2U8(const std::string &str)
+static inline std::string T2U8(std::string_view tcs)
 {
-	return A2U8(str.data(), static_cast<int>(str.size()));
+	return A2U8(tcs);
 }
 #endif /* _UNICODE */
 

@@ -257,7 +257,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 		}
 
 		SIZE szCur;
-		LibWin32UI::measureTextSize(hWndPropSheet, hFontDlg, U82T_c(imageTypeName(i)), &szCur);
+		LibWin32UI::measureTextSize(hWndPropSheet, hFontDlg, U82T(imageTypeName(i)), &szCur);
 		h_lbl[i] = szCur.cy;
 		if (szCur.cx > sz_lblImageType.cx) {
 			sz_lblImageType.cx = szCur.cx;
@@ -272,7 +272,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	SIZE sz_lblSysName = {0, 0};
 	for (unsigned int sys = 0; sys < sysCount; sys++) {
 		SIZE szCur;
-		LibWin32UI::measureTextSize(hWndPropSheet, hFontDlg, U82T_c(sysName(sys)), &szCur);
+		LibWin32UI::measureTextSize(hWndPropSheet, hFontDlg, U82T(sysName(sys)), &szCur);
 		if (szCur.cx > sz_lblSysName.cx) {
 			sz_lblSysName.cx = szCur.cx;
 		}
@@ -309,7 +309,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 
 		const int y_lbl = curPt.y + (sz_lblImageType.cy - h_lbl[i]);
 		HWND lblImageType = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_STATIC, U82T_c(imageTypeName(i)),
+			WC_STATIC, U82T(imageTypeName(i)),
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_CENTER | SS_NOPREFIX,
 			curPt.x, y_lbl, sz_lblImageType.cx, h_lbl[i],
 			hWndPropSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
@@ -334,7 +334,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	for (unsigned int sys = 0; sys < sysCount; sys++) {
 		// System name label.
 		HWND lblSysName = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_STATIC, U82T_c(sysName(sys)),
+			WC_STATIC, U82T(sysName(sys)),
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_RIGHT | SS_NOPREFIX,
 			curPt.x, curPt.y,
 			sz_lblSysName.cx, sz_lblSysName.cy,
@@ -475,7 +475,7 @@ int ImageTypesTabPrivate::saveStart(void)
 
 	// Store the configuration filename.
 	assert(tmp_conf_filename.empty());
-	tmp_conf_filename = U82T_s(filename);
+	tmp_conf_filename = U82T(filename);
 	return 0;
 }
 
@@ -491,7 +491,7 @@ int ImageTypesTabPrivate::saveWriteEntry(const char *sysName, const char *imageT
 	if (tmp_conf_filename.empty()) {
 		return -ENOENT;
 	}
-	WritePrivateProfileString(_T("ImageTypes"), U82T_c(sysName), U82T_c(imageTypeList), tmp_conf_filename.c_str());
+	WritePrivateProfileString(_T("ImageTypes"), U82T(sysName), U82T(imageTypeList), tmp_conf_filename.c_str());
 	return 0;
 }
 

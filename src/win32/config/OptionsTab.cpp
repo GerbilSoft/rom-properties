@@ -331,7 +331,7 @@ void OptionsTabPrivate::save(void)
 		return;
 	}
 
-	const tstring tfilename = U82T_c(filename);
+	const tstring tfilename = U82T(filename);
 
 	// Downloads
 	const TCHAR *btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_CHKEXTIMGDL));
@@ -352,8 +352,8 @@ void OptionsTabPrivate::save(void)
 		static_cast<Config::ImgBandwidth>(ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_UNMETERED_DL))));
 	const char *const sMetered = Config::imgBandwidthToConfSetting(
 		static_cast<Config::ImgBandwidth>(ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_METERED_DL))));
-	WritePrivateProfileString(_T("Downloads"), _T("ImgBandwidthUnmetered"), U82T_c(sUnmetered), tfilename.c_str());
-	WritePrivateProfileString(_T("Downloads"), _T("ImgBandwidthMetered"), U82T_c(sMetered), tfilename.c_str());
+	WritePrivateProfileString(_T("Downloads"), _T("ImgBandwidthUnmetered"), U82T(sUnmetered), tfilename.c_str());
+	WritePrivateProfileString(_T("Downloads"), _T("ImgBandwidthMetered"), U82T(sMetered), tfilename.c_str());
 	// TODO: Remove the old key.
 
 	// Options

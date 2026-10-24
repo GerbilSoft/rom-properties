@@ -390,7 +390,7 @@ static UINT WINAPI RP_PrivateExtractIconsA(
 	if (uRet == 0 || uRet == 0xFFFFFFFFU) {
 		// The original function failed.
 		// Convert the ANSI filename to Unicode, then call RP_PrivateExtractIconsW_int().
-		uRet = RP_PrivateExtractIconsW_int(A2W_c(szFileName), nIconIndex, cxIcon, cyIcon, phicon, piconid, nIcons, flags);
+		uRet = RP_PrivateExtractIconsW_int(A2W(szFileName), nIconIndex, cxIcon, cyIcon, phicon, piconid, nIcons, flags);
 	}
 	return uRet;
 }

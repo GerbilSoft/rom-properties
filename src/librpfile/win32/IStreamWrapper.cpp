@@ -255,7 +255,7 @@ IFACEMETHODIMP IStreamWrapper::Stat(STATSTG *pstatstg, DWORD grfStatFlag) noexce
 			}
 		} else {
 			const char *const u8_filename = m_file->filename();
-			const wstring wfilename(u8_filename ? U82W_c(u8_filename) : L"");
+			const wstring wfilename(u8_filename ? U82W(u8_filename) : L"");
 			const size_t cb = (wfilename.size() + 1) * sizeof(wchar_t);
 			pstatstg->pwcsName = static_cast<LPOLESTR>(CoTaskMemAlloc(cb));
 			if (!pstatstg->pwcsName) {

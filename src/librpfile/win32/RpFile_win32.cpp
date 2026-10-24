@@ -425,7 +425,7 @@ RpFile::RpFile(const wchar_t *filenameW, FileMode mode)
  * @param mode File mode
  */
 RpFile::RpFile(const char *filename, FileMode mode)
-	: RpFile(U82W_c(filename), mode)
+	: RpFile(U82W(filename), mode)
 {}
 
 /**
@@ -435,7 +435,7 @@ RpFile::RpFile(const char *filename, FileMode mode)
  * @param mode File mode
  */
 RpFile::RpFile(const string &filename, FileMode mode)
-	: RpFile(U82W_s(filename), mode)
+	: RpFile(U82W(filename), mode)
 {}
 
 /**

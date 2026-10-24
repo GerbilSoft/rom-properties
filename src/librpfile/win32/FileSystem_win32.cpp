@@ -76,11 +76,11 @@ static inline wstring makeWinPath(const char *filename)
 	{
 		// Absolute path. Prepend "\\\\?\\" to the path.
 		filenameW = L"\\\\?\\";
-		filenameW += U82W_c(filename);
+		filenameW += U82W(filename);
 	} else {
 		// Not an absolute path, or "\\\\?\\" is already
 		// prepended. Use it as-is.
-		filenameW = U82W_c(filename);
+		filenameW = U82W(filename);
 	}
 	return filenameW;
 }
@@ -105,11 +105,11 @@ static inline wstring makeWinPath(const string &filename)
 	{
 		// Absolute path. Prepend "\\\\?\\" to the path.
 		filenameW = L"\\\\?\\";
-		filenameW += U82W_s(filename);
+		filenameW += U82W(filename);
 	} else {
 		// Not an absolute path, or "\\\\?\\" is already
 		// prepended. Use it as-is.
-		filenameW = U82W_s(filename);
+		filenameW = U82W(filename);
 	}
 	return filenameW;
 }
@@ -184,7 +184,7 @@ static inline wstring makeWinPath(const wstring &filename)
  */
 static inline tstring makeWinPath(const char *filename)
 {
-	return U82T_c(filename);
+	return U82T(filename);
 }
 
 /**
@@ -198,7 +198,7 @@ static inline tstring makeWinPath(const char *filename)
  */
 static inline tstring makeWinPath(const string &filename)
 {
-	return U82T_s(filename);
+	return U82T(filename);
 }
 
 /**
@@ -250,11 +250,11 @@ int rmkdir(const string &path, int mode)
 	static_assert(sizeof(wchar_t) == sizeof(char16_t), "wchar_t is not 16-bit!");
 	RP_UNUSED(mode);
 
-	// NOTE: Explicitly calling U82W_s(), not U82T_s(), to prevent
+	// NOTE: Explicitly calling U82W(), not U82T(), to prevent
 	// infinite recursion in ANSI builds.
 	// NOTE 2: This probably won't work in ANSI builds anyway...
 	// TODO: makeWinPath()?
-	return rmkdir(U82W_s(path));
+	return rmkdir(U82W(path));
 }
 
 /**

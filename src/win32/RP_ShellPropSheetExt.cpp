@@ -298,7 +298,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(_In_ POINT pt_start, _In_ SIZE
 	}
 
 	const tstring ts_sysInfo =
-		LibWin32UI::unix2dos(U82T_s(fmt::format(
+		LibWin32UI::unix2dos(U82T(fmt::format(
 			// tr: {0:s} == system name, {1:s} == file type
 			FRUN(C_("RomDataView", "{0:s}\n{1:s}")), systemName, fileType)));
 
@@ -563,7 +563,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 			case RomFields::RomFieldType::RFT_STRING:
 				// NULL string == empty string
 				if (field.data.str) {
-					str_nl = LibWin32UI::unix2dos(U82T_s(field.data.str), &lf_count);
+					str_nl = LibWin32UI::unix2dos(U82T(field.data.str), &lf_count);
 				}
 				break;
 
@@ -757,9 +757,9 @@ int RP_ShellPropSheetExt_Private::initBitfield(_In_ HWND hWndTab,
 	tnames.reserve(count);
 	for (const string &name : *(bitfieldDesc.names)) {
 		if (!name.empty()) {
-			tnames.push_back(U82T_s(name));
+			tnames.push_back(U82T(name));
 		} else {
-			// Skip U82T_s() for empty strings.
+			// Skip U82T() for empty strings.
 			tnames.push_back(tstring());
 		}
 	}
@@ -1027,7 +1027,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 				// NOTE: pszText is LPTSTR, not LPCTSTR...
 				// NOTE 2: ListView is limited to 260 characters. (259+1)
 				// TODO: Handle surrogate pairs?
-				tstring tstr = U82T_s(str);
+				tstring tstr = U82T(str);
 				if (tstr.size() >= 260) {
 					// Reduce to 256 and add "..."
 					tstr.resize(256);
@@ -1133,7 +1133,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 						tstr = TC_("RomData", "Unknown");
 					}
 				} else {
-					tstr = U82T_s(data_str);
+					tstr = U82T(data_str);
 					if (tstr.size() >= 260) {
 						// Reduce to 256 and add "..."
 						tstr.resize(256);
@@ -1446,7 +1446,7 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(_In_ HWND hWndTab,
 
 	// Convert the age ratings field to a string and initialize the string field.
 	return initString(hWndTab, pt_start, size, field, fieldIdx,
-		U82T_s(RomFields::ageRatingsDecode(age_ratings)));
+		U82T(RomFields::ageRatingsDecode(age_ratings)));
 }
 
 /**
@@ -1527,7 +1527,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		const string *const pStr = RomFields::getFromStringMulti(pStr_multi, def_lc, user_lc);
 		assert(pStr != nullptr);
 		if (pStr != nullptr) {
-			SetWindowText(lblString, LibWin32UI::unix2dos(U82T_s(*pStr)).c_str());
+			SetWindowText(lblString, LibWin32UI::unix2dos(U82T(*pStr)).c_str());
 		} else {
 			SetWindowText(lblString, _T(""));
 		}
@@ -1597,7 +1597,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 
 					// NOTE: ListView is limited to 260 characters. (259+1)
 					// TODO: Handle surrogate pairs?
-					tstring tstr = U82T_s(str);
+					tstring tstr = U82T(str);
 					if (tstr.size() >= 260) {
 						// Reduce to 256 and add "..."
 						tstr.resize(256);
@@ -1643,7 +1643,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 							tstr = TC_("RomData", "Unknown");
 						}
 					} else {
-						tstr = U82T_s(*iter_sdr);
+						tstr = U82T(*iter_sdr);
 						if (tstr.size() >= 260) {
 							// Reduce to 256 and add "..."
 							tstr.resize(256);
@@ -1866,7 +1866,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		if (!field.isValid())
 			continue;
 
-		tstring desc_text = U82T_s(fmt::format(FRUN(desc_label_fmt), field.name));
+		tstring desc_text = U82T(fmt::format(FRUN(desc_label_fmt), field.name));
 
 		// Get the width of this specific entry.
 		// TODO: Use measureTextSize()?
@@ -1993,7 +1993,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 				// Skip this tab.
 				continue;
 			}
-			const tstring tstr = U82T_c(name);
+			const tstring tstr = U82T(name);
 
 			TCITEM tcItem;
 			tcItem.mask = TCIF_TEXT;

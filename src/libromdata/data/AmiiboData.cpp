@@ -38,7 +38,7 @@ using std::unique_ptr;
 #ifdef _WIN32
 #  include "librptext/wchar.hpp"
 #else /* !_WIN32 */
-#  define U82T_s(u8str) (u8str)
+#  define U82T(str) (str)
 #endif /* _WIN32 */
 
 // Uninitialized vector class
@@ -263,7 +263,7 @@ tstring AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileT
 		}
 
 		case AmiiboBinFileType::User:
-			tfilename = U82T_s(FileSystem::getConfigDirectory());
+			tfilename = U82T(FileSystem::getConfigDirectory());
 			if (!tfilename.empty()) {
 				if (tfilename.at(tfilename.size()-1) != DIR_SEP_CHR) {
 					tfilename += DIR_SEP_CHR;

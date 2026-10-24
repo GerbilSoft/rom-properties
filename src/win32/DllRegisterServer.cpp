@@ -69,7 +69,7 @@ static LONG RegisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory::
 	LONG lResult;
 
 	// Register the filetype in HKCR.
-	const tstring t_ext = U82T_c(extInfo.ext);
+	const tstring t_ext = U82T(extInfo.ext);
 
 	RegKey *pHkey_fileType;
 	lResult = RegKey::RegisterFileType(t_ext.c_str(), &pHkey_fileType);
@@ -181,7 +181,7 @@ static LONG UnregisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory
 	LONG lResult;
 
 	// Open the file type key if it's present.
-	const tstring t_ext = U82T_c(extInfo.ext);
+	const tstring t_ext = U82T(extInfo.ext);
 
 	RegKey hkey_fileType(hkcr, t_ext.c_str(), KEY_READ|KEY_WRITE, false);
 	if (!hkey_fileType.isOpen()) {
@@ -298,7 +298,7 @@ static tstring GetUserFileAssoc(const tstring &sid, const char *ext)
 
 	tstring ts_regPath = fmt::format(
 		FSTR(_T("{:s}\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\{:s}\\UserChoice")),
-			sid, U82T_c(ext));
+			sid, U82T(ext));
 
 	// FIXME: This will NOT update profiles that aren't loaded.
 	// Other profiles will need to be loaded manually, or those users

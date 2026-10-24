@@ -78,7 +78,7 @@ unsigned int WINAPI UpdateChecker::ThreadProc(LPVOID lpParameter)
 
 	// Read the version file.
 	HANDLE hVersionFile = CreateFile(
-		U82T_s(cache_filename),			// lpFileName
+		U82T(cache_filename),			// lpFileName
 		GENERIC_READ,				// dwDesiredAccess
 		FILE_SHARE_READ | FILE_SHARE_WRITE,	// dwShareMode
 		nullptr,				// lpSecurityAttributes
