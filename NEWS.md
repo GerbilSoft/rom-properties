@@ -29,6 +29,11 @@
       * Reported by @worminux.
   * XboxDisc, WiiUPackage: Fix handling extracted file systems on Windows.
     * Affects: v2.9
+  * Linux: Remove alias types from the DSi and 3DS NTRBOOT MIME type entries.
+    * This caused KDE Dolphin to incorrectly detect all .cci and .3ds files
+      as NTRBOOT.
+    * Fixes #521: .cci files are detected as ntrboot, so KDE/Dolphin never thumbnails them
+      * Reported by @Amnesia1000.
 
 * Other changes:
   * 64-bit time_t (using the rp_time_t typedef) is now used regardless of
