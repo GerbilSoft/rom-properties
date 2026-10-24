@@ -93,7 +93,7 @@ QUrl localizeQUrl(const QUrl &url)
 
 	// Not a recognized local file scheme.
 	// This is probably a remote file.
-	return url;
+	return {};
 }
 
 /**
