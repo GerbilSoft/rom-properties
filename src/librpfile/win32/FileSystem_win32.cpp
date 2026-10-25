@@ -314,7 +314,7 @@ static int get_mtime_int(const tstring &tfilename, rp_time_t *pMtime)
 {
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
-#if _USE_32BIT_TIME_T || SIZEOF_TIME_T < 8
+#if defined(_USE_32BIT_TIME_T) || SIZEOF_TIME_T < 8
 #  error 32-bit time_t is not supported. Get a newer compiler.
 #endif
 
@@ -835,7 +835,7 @@ static int get_file_size_and_mtime_int(const tstring &tfilename, off64_t *pFileS
 {
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
-#if _USE_32BIT_TIME_T || SIZEOF_TIME_T < 8
+#if defined(_USE_32BIT_TIME_T) || SIZEOF_TIME_T < 8
 #  error 32-bit time_t is not supported. Get a newer compiler.
 #endif
 
