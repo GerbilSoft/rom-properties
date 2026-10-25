@@ -2,6 +2,10 @@
 #cmake_minimum_required(VERSION 3.14...3.31.0)
 message(STATUS "Using CMake version ${CMAKE_VERSION}")
 
+# rom-properties: Remove "-Werror=undef".
+string(REPLACE "-Werror=undef" "" CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}")
+string(REPLACE "-Werror=undef" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
 if(POLICY CMP0169)
     cmake_policy(SET CMP0169 OLD) # CMake 3.30: call FetchContent_Populate() with just the name of a dependency
 endif()
