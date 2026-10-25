@@ -29,17 +29,18 @@
 
 // C++ STL classes
 using std::string;
+using std::string_view;
 
 namespace LibRpFile {
 
 /** RpFilePrivate **/
 
-RpFilePrivate::RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
+RpFilePrivate::RpFilePrivate(RpFile *q, string_view filename, RpFile::FileMode mode)
 	: q_ptr(q), file(nullptr)
 	, mode(mode), gzfd(nullptr), gzsz(-1)
 {
-	assert(filename != nullptr);
-	this->filename.assign(filename);
+	assert(!filename.empty());
+	STRING_VIEW_ASSIGN(this->filename, filename);
 }
 
 RpFilePrivate::~RpFilePrivate()
@@ -241,7 +242,7 @@ int RpFilePrivate::reOpenFile(void)
  * @param filename Filename
  * @param mode File mode
  */
-RpFile::RpFile(const char *filename, FileMode mode)
+RpFile::RpFile(std::string_view filename, FileMode mode)
 	: d_ptr(new RpFilePrivate(this, filename, mode))
 {
 	RP_D(RpFile);
@@ -316,16 +317,6 @@ RpFile::RpFile(const char *filename, FileMode mode)
 		::fflush(d->file);
 	}
 }
-
-/**
- * Open a file.
- * NOTE: Files are always opened in binary mode.
- * @param filename Filename
- * @param mode File mode
- */
-RpFile::RpFile(const string &filename, FileMode mode)
-	: RpFile(filename.c_str(), mode)
-{}
 
 RpFile::~RpFile()
 {
