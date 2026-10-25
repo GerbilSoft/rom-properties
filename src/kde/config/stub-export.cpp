@@ -83,7 +83,7 @@ static QApplication *initQApp(int &argc, char *argv[], const QString &applicatio
 	// Disable the Qt shader disk cache. (Qt 5.9 and later)
 	// We're not using Qt Quick, so a shader cache file *shouldn't* be created,
 	// but sometimes it is for some reason.
-#if QT_VERISON >= QT_VERSION_CHECK(5, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #  if QT_VERSION >= QT_VERSION_CHECK(5, 9, 0)
 	QApplication::setAttribute(Qt::AA_DisableShaderDiskCache, true);
 #  else /* QT_VERSION < QT_VERSION_CHECK(5, 9, 0) */
