@@ -98,7 +98,7 @@ KIO::ThumbnailResult RomThumbnailCreator::create(const KIO::ThumbnailRequest &re
 	// If img.width() * bytespp != img.bytesPerLine(), the image
 	// pitch is incorrect. Test image: hi_mark_sq.ktx (145x130)
 	// The underlying QImage works perfectly fine, though...
-	int bytespp;
+	unsigned int bytespp;
 	switch (img.format()) {
 		// TODO: Other formats?
 		case QImage::Format_Indexed8:
@@ -110,7 +110,7 @@ KIO::ThumbnailResult RomThumbnailCreator::create(const KIO::ThumbnailRequest &re
 			bytespp = 4;
 			break;
 	}
-	if (img.width() * bytespp != img.bytesPerLine()) {
+	if (static_cast<rp_qsizetype>(img.width()) * bytespp != img.bytesPerLine()) {
 		img = img.copy();
 	}
 
