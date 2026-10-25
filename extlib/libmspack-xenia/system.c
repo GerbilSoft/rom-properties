@@ -206,7 +206,7 @@ static void msp_msg(struct mspack_file *file, const char *format, ...) {
 
 static void *msp_alloc(struct mspack_system *self, size_t bytes) {
   ((void)self);
-#if DEBUG
+#ifdef DEBUG
   /* make uninitialised data obvious */
   char *buf = malloc(bytes + 8);
   if (buf) memset(buf, 0xDC, bytes);
@@ -218,7 +218,7 @@ static void *msp_alloc(struct mspack_system *self, size_t bytes) {
 }
 
 static void msp_free(void *buffer) {
-#if DEBUG
+#ifdef DEBUG
   char *buf = buffer;
   size_t bytes;
   if (buf) {

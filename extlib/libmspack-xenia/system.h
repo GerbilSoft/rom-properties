@@ -42,7 +42,7 @@ extern "C" {
 # endif
 #endif
 
-#if DEBUG
+#ifdef DEBUG
 # include <stdio.h>
 # define D(x) do { printf("%s:%d (%s) ",__FILE__, __LINE__, __func__); \
                    printf x ; fputc('\n', stdout); fflush(stdout);} while (0);
