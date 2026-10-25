@@ -41,6 +41,9 @@ ENDIF()
 # Check for glibc features.h.
 CHECK_INCLUDE_FILE("features.h" HAVE_FEATURES_H)
 
+# Write the libc configuration file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libc.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libc.h")
+
 # Check for std::variant<>.
 # If not found, use mpark variant from extlib.
 CHECK_INCLUDE_FILE_CXX("variant" HAVE_STD_VARIANT)
@@ -48,11 +51,10 @@ IF(NOT HAVE_STD_VARIANT)
 	INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/extlib/mpark-variant/include")
 ENDIF(NOT HAVE_STD_VARIANT)
 
-# Write the libc configuration file.
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libc.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libc.h")
+# Write the std::variant configuration file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/rp-variant.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/rp-variant.hpp")
 
 # Check for std::string_view (or std::experimental::string_view).
-# TODO: Move std::variant<>'s config out of config.libc.h.in and into rp-variant.hpp.in?
 INCLUDE(CheckCXXSourceCompiles)
 CHECK_CXX_SOURCE_COMPILES("
 #include <string_view>
