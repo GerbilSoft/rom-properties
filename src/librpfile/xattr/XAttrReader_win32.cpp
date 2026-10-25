@@ -475,9 +475,9 @@ int XAttrReaderPrivate::loadGenericXattrs_FindFirstStreamW(void)
 		}
 		if (ads_data.zero_data != 0) {
 			if (is_unicode) {
-				s_value.assign(W2U8_str(ads_data.wch));
+				s_value = W2U8_str(ads_data.wch);
 			} else {
-				s_value.assign(A2U8_str(ads_data.ch));
+				s_value = A2U8_str(ads_data.ch);
 			}
 		}
 		genericXAttrs.emplace(std::move(s_name), std::move(s_value));
