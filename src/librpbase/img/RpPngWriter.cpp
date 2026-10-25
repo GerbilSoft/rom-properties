@@ -72,9 +72,11 @@ using namespace LibRpTexture;
 #include <cstdlib>
 
 // C++ STL classes
+#include "rp-string_view.hpp"
 #include "rp-variant.hpp"
 using std::array;
 using std::string;
+using std::string_view;
 using std::unique_ptr;
 using std::variant;
 using std::vector;
@@ -1314,26 +1316,33 @@ int RpPngWriter::write_IHDR(const rp_image::sBIT_t *sBIT, const uint32_t *palett
  * 0xA0-0xFF, the function will return 1, which indicates that the
  * string must be converted from UTF-8 to Latin-1.
  *
- * @param str UTF-8 string.
+ * @param str UTF-8 string
  * @return 0 if it's ASCII; 1 if it's Latin-1; 2 if it's not Latin-1.
  */
-static int u8strIsPngLatin1(const char *str)
+static int u8strIsPngLatin1(string_view str)
 {
+	const char *p = str.data();
+	const char *const p_end = p + str.size();
+
 	int ret = 0;
-	for (; *str != 0; str++) {
-		if (!(*str & 0x80))
+	for (; p < p_end; p++) {
+		if (!(*p & 0x80))
 			continue;
 
 		// Check for a 2-byte UTF-8 sequence.
-		if ((*str & 0xE0) == 0xC0) {
+		if ((*p & 0xE0) == 0xC0) {
 			// 2-byte sequence.
-			if ((str[1] & 0xC0) != 0x80) {
+			if (p + 1 >= p_end) {
+				// Out of bounds...
+				return 2;
+			} else if ((p[1] & 0xC0) != 0x80) {
 				// Invalid second character.
 				return 2;
 			}
+
 			const unsigned int chr =
-				(((unsigned int)str[0] & 0x1F) << 5) |
-				 ((unsigned int)str[1] & 0x3F);
+				(((unsigned int)p[0] & 0x1F) << 5) |
+				 ((unsigned int)p[1] & 0x3F);
 			if ((chr > 0xFF) ||
 			    (chr < 0x20 && chr != '\n') ||
 			    (chr > 0x7E && chr < 0xA0))
@@ -1345,7 +1354,7 @@ static int u8strIsPngLatin1(const char *str)
 
 			// This is an allowed Latin-1 character.
 			ret = 1;
-			str++;
+			p++;
 		} else {
 			// More than 2 bytes.
 			// This is definitely not Latin-1.
@@ -1408,7 +1417,7 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 		const string &value = iter->second;
 		const bool compress = (value.size() >= 40);	// same as Qt
 
-		const int status = u8strIsPngLatin1(value.c_str());
+		const int status = u8strIsPngLatin1(value);
 		switch (status) {
 			case 0:
 				// ASCII. Use it as-is.
