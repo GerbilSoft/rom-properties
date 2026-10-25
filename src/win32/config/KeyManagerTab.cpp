@@ -29,9 +29,11 @@ using namespace LibRomData;
 
 // C++ STL classes
 #include <array>
+#include "rp-string_view.hpp"
 using std::array;
 using std::locale;
 using std::string;
+using std::tstring_view;
 using std::wstring;
 
 // IListView and other undocumented stuff.
@@ -1587,12 +1589,12 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	msg.reserve(1024);
 
 	// Filename, minus directory.
-	tstring fileNoPath;
+	tstring_view fileNoPath;
 	const size_t bs_pos = filename.find_last_of(_T("\\/"));
 	if (bs_pos != tstring::npos && bs_pos != fileNoPath.size()-1) {
-		fileNoPath = filename.substr(bs_pos + 1);
+		fileNoPath = tstring_view(&filename[bs_pos + 1], filename.size() - (bs_pos + 1));
 	} else {
-		fileNoPath = filename;
+		fileNoPath = tstring_view(filename);
 	}
 
 	// TODO: Localize POSIX error messages?
