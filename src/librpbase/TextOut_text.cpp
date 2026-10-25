@@ -285,12 +285,12 @@ private:
 	 * Standard HTML entity rules apply, e.g. `&lt;`, `&gt`;, and `&amp;`.
 	 * HTML tags other than `<a>` will be displayed as plaintext.
 	 */
-	static string parseHtmlLinksSubset(const string &in_str)
+	static string parseHtmlLinksSubset(string_view in_str)
 	{
 		string str;
 		str.reserve(in_str.size());
 
-		const char *p = in_str.c_str();
+		const char *p = in_str.data();
 		const char *const p_end = p + in_str.size();
 
 		while (p < p_end) {
