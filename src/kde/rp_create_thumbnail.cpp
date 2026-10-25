@@ -99,8 +99,10 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	RomThumbCreatorPrivate rtcp;
 	RomThumbCreatorPrivate::GetThumbnailOutParams_t outParams;
 	int ret = rtcp.getThumbnail(romData, maximum_size, &outParams);
-
-	if (ret != 0 || outParams.retImg.isNull()) {
+	if (ret != 0) {
+		// getThumbnail() failed.
+		return ret;
+	} else if (outParams.retImg.isNull()) {
 		// No image.
 		return RPCT_ERROR_SOURCE_FILE_NO_IMAGE;
 	}

@@ -157,6 +157,9 @@ RpCreateThumbnailError TCreateThumbnail<ImgClass>::getExternalImage(
 		? config->imgBandwidthMetered()
 		: config->imgBandwidthUnmetered();
 
+	// TODO: Log all errors. For now, just set a bool if `rp-download` is missing.
+	bool isRpDownloadMissing = false;
+
 	CacheManager cache;
 	for (const auto &extURL : extURLs) {
 		std::string proxy = proxyForUrl(extURL.url.c_str());
@@ -186,7 +189,9 @@ RpCreateThumbnailError TCreateThumbnail<ImgClass>::getExternalImage(
 		}
 		if (err != CacheManager::DownloadError::Success) {
 			// TODO: Log errors.
-			// TODO: Abort if it's RPCT_ERROR_RP_DOWNLOAD_MISSING.
+			if (err == CacheManager::DownloadError::RpDownload_missing) {
+				isRpDownloadMissing = true;
+			}
 			continue;
 		}
 
@@ -218,7 +223,9 @@ RpCreateThumbnailError TCreateThumbnail<ImgClass>::getExternalImage(
 	}
 
 	// No image.
-	return RPCT_ERROR_SOURCE_FILE_NO_IMAGE;
+	return (unlikely(isRpDownloadMissing))
+		? RPCT_ERROR_RP_DOWNLOAD_MISSING
+		: RPCT_ERROR_SOURCE_FILE_NO_IMAGE;
 }
 
 /**
@@ -281,6 +288,9 @@ RpCreateThumbnailError TCreateThumbnail<ImgClass>::getThumbnail(const LibRpBase:
 
 	uint32_t imgbf = romData->supportedImageTypes();
 	uint32_t imgpf = 0;
+
+	// TODO: Log all errors. For now, just set a bool if `rp-download` is missing.
+	bool isRpDownloadMissing = false;
 
 	// Get the image priority.
 	const Config *const config = Config::instance();
@@ -354,6 +364,11 @@ RpCreateThumbnailError TCreateThumbnail<ImgClass>::getThumbnail(const LibRpBase:
 			// Image retrieved.
 			assert(isImgClassValid(pOutParams->retImg));
 			break;
+		} else if (err == RPCT_ERROR_RP_DOWNLOAD_MISSING) {
+			// `rp-download` is missing.
+			// If no other image types succeed, return this error
+			// instead of RPCT_ERROR_SOURCE_FILE_NO_IMAGE.
+			isRpDownloadMissing = true;
 		}
 
 		// Make sure we don't check this image type again
@@ -364,7 +379,9 @@ RpCreateThumbnailError TCreateThumbnail<ImgClass>::getThumbnail(const LibRpBase:
 
 	if (!isImgClassValid(pOutParams->retImg)) {
 		// No image.
-		return RPCT_ERROR_SOURCE_FILE_NO_IMAGE;
+		return (unlikely(isRpDownloadMissing))
+			? RPCT_ERROR_RP_DOWNLOAD_MISSING
+			: RPCT_ERROR_SOURCE_FILE_NO_IMAGE;
 	}
 
 skip_image_check:
