@@ -632,7 +632,7 @@ INSTANTIATE_TEST_SUITE_P(AtariLynx, RomHeaderTest,
 
 INSTANTIATE_TEST_SUITE_P(DMG, RomHeaderTest,
 	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
-			"Handheld/DMG.bin.tar.zst",
+		"Handheld/DMG.bin.tar.zst",
 		"Handheld/DMG.txt.tar.zst",
 		"Handheld/DMG.json.tar.zst"))
 	, RomHeaderTest::test_case_suffix_generator);

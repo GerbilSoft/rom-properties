@@ -33,7 +33,7 @@ protected:
 	 */
 	pos_type seekoff(off_type off,
 		std::ios_base::seekdir way,
-                std::ios_base::openmode which = std::ios_base::in | std::ios_base::out) override;
+		std::ios_base::openmode which = std::ios_base::in | std::ios_base::out) override;
 
 	/**
 	 * Seek to the specified position in the file.

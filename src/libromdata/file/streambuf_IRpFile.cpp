@@ -28,7 +28,7 @@ streambuf_IRpFile::streambuf_IRpFile(const IRpFilePtr &file)
  */
 streambuf_IRpFile::int_type streambuf_IRpFile::underflow(void)
 {
-        if (!m_file) {
+	if (!m_file) {
 		return traits_type::eof();
 	}
 
@@ -75,7 +75,7 @@ streambuf_IRpFile::pos_type streambuf_IRpFile::seekoff(off_type off,
 	// Invalidate the get pointer.
 	setg(nullptr, nullptr, nullptr);
 
-        // Convert from C++ seek constants to IRpFile::SeekWhence (C-style).
+	// Convert from C++ seek constants to IRpFile::SeekWhence (C-style).
 	// NOTE: libstdc++ has the same values as C-style functions.
 	// Need to check MSVCRT/UCRT and libc++.
 	static_assert(static_cast<int>(std::ios_base::beg) == static_cast<int>(IRpFile::SeekWhence::Set), "std::ios_base::beg != IRpFile::SeekWhence::Set");
@@ -88,7 +88,7 @@ streambuf_IRpFile::pos_type streambuf_IRpFile::seekoff(off_type off,
 	}
 
 	// Return the new file position.
-        return m_file->tell();
+	return m_file->tell();
 }
 
 /**
