@@ -544,7 +544,7 @@ QTreeView *RomDataViewPrivate::initListData(QLabel *lblDesc,
 
 	// Validate flags.
 	// Cannot have both checkboxes and icons.
-	bool hasCheckboxes, hasIcons;
+	bool hasCheckboxes = false, hasIcons = false;
 	if (field.validateListDataFlags(hasCheckboxes, hasIcons) != 0) {
 		// Not valid...
 		return 0;

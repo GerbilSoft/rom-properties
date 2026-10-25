@@ -938,7 +938,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 
 	// Validate flags.
 	// Cannot have both checkboxes and icons.
-	bool hasCheckboxes, hasIcons;
+	bool hasCheckboxes = false, hasIcons = false;
 	if (field.validateListDataFlags(hasCheckboxes, hasIcons) != 0) {
 		// Not valid...
 		return 0;

@@ -208,7 +208,7 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 
 	// Validate flags.
 	// Cannot have both checkboxes and icons.
-	bool hasCheckboxes, hasIcons;
+	bool hasCheckboxes = false, hasIcons = false;
 	if (field.validateListDataFlags(hasCheckboxes, hasIcons) != 0) {
 		// Not valid...
 		return 0;
