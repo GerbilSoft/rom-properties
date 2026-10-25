@@ -142,14 +142,41 @@ static inline std::string W2A_str(std::wstring_view wcs)
 #else /* !_WIN32 */
 
 // Compatibility functions for U82T() / T2U8() on non-Windows systems.
-static inline std::tstring U82T_str(std::string_view str)
+
+static inline std::tstring U82T_str(const char *str)
 {
 	return std::tstring(str);
 }
-static inline std::string T2U8_str(std::tstring_view tcs)
+static inline std::tstring U82T_str(const std::string &str)
+{
+	return str;
+}
+static inline std::string T2U8_str(const TCHAR *tcs)
 {
 	return std::string(tcs);
 }
+static inline std::string T2U8_str(const std::tstring &tcs)
+{
+	return tcs;
+}
+
+static inline const TCHAR *U82T(const char *str)
+{
+	return str;
+}
+/*static inline const TCHAR *U82T(const std::string &str)
+{
+	return str.c_str();
+}*/
+static inline const char *T2U8(const TCHAR *tcs)
+{
+	return tcs;
+}
+/*static inline const char *T2U8(const std::tstring &tcs)
+{
+	return tcs.c_str();
+}*/
+
 #define U82T(str) (U82T_str(str).c_str())
 #define T2U8(str) (T2U8_str(str).c_str())
 
