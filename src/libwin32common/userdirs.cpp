@@ -138,7 +138,7 @@ string getCacheDirectory(void)
 			SHGFP_TYPE_CURRENT, nullptr, &pszPath);
 		if (SUCCEEDED(hr) && pszPath != nullptr) {
 			// Path obtained.
-			cache_dir = W2U8(pszPath);
+			cache_dir = W2U8_str(pszPath);
 		}
 		CoTaskMemFree(pszPath);
 		pszPath = nullptr;
@@ -152,7 +152,7 @@ string getCacheDirectory(void)
 				SHGFP_TYPE_CURRENT, nullptr, &pszPath);
 			if (SUCCEEDED(hr) && pszPath != nullptr) {
 				// Path obtained.
-				cache_dir = W2U8(pszPath);
+				cache_dir = W2U8_str(pszPath);
 			}
 			CoTaskMemFree(pszPath);
 			pszPath = nullptr;

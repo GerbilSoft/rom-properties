@@ -16,13 +16,8 @@
 // libsixel function prototypes and definitions here.
 #include "sixel-mini.h"
 
-#ifndef _WIN32
-// T2U8() is a no-op.
-#  define T2U8(str) (str)
-#else /* _WIN32 */
-#  include "libwin32common/MiniU82T.hpp"
+#ifdef _WIN32
 #  include "libwin32common/rp_LoadLibraryEx.h"
-using LibWin32Common::T2U8;
 #endif /* _WIN32 */
 
 // HMODULE deleter for std::unique_ptr<>

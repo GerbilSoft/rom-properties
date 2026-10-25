@@ -26,18 +26,20 @@
 // Windows: Use the SDK tchar.h.
 #include <tchar.h>
 
-// std::tstring, std::tstringstream
+// std::tstring, std::tstringstream, std::tstring_view
 #if defined(__cplusplus) && !defined(tstring)
 #  ifdef _UNICODE
 #    define tstring		wstring
 #    define tstringstream	wstringstream
 #    define tistringstream	wistringstream
 #    define tostringstream	wostringstream
+#    define tstring_view	wstring_view
 #  else /* !_UNICODE */
 #    define tstring		string
 #    define tstringstream	stringstream
 #    define tistringstream	istringstream
 #    define tostringstream	ostringstream
+#    define tstring_view	string_view
 #  endif /* _UNICODE */
 #endif /* __cplusplus && !tstring */
 
@@ -76,9 +78,13 @@ static inline int _tmemcmp_inline(const TCHAR *s1, const TCHAR *s2, size_t n)
 
 // Other systems: Define TCHAR and related macros.
 typedef char TCHAR;
-#define _T(x) x
-#define _tmain main
-#define tstring string
+#define _T(x)		x
+#define _tmain		main
+#define tstring		string
+#define tstringstream	stringstream
+#define tistringstream	istringstream
+#define tostringstream	ostringstream
+#define tstring_view	string_view
 
 // ctype.h
 #define _istalpha(c) isalpha(c)

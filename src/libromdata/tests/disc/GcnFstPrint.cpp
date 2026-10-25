@@ -17,6 +17,10 @@ using LibRomData::GcnFst;
 // libgsvt for VT handling
 #include "gsvtpp.hpp"
 
+// Other rom-properties libraries
+#include "librpsecure/os-secure.h"
+#include "librptext/wchar.hpp"
+
 // C includes (C++ namespace)
 #include <cerrno>
 #include <cstdio>
@@ -29,28 +33,17 @@ using LibRomData::GcnFst;
 #include <memory>
 #include <sstream>
 #include <string>
+#include "rp-string_view.hpp"
 using std::array;
 using std::locale;
 using std::ostream;
 using std::ostringstream;
 using std::string;
+using std::string_view;
 using std::unique_ptr;
 
 // libfmt
 #include "rp-libfmt.h"
-
-// librpsecure
-#include "librpsecure/os-secure.h"
-
-#ifdef _WIN32
-#  include "libwin32common/RpWin32_sdk.h"
-#  include <io.h>
-#  include "librptext/wchar.hpp"
-#else
-#  define T2U8(str) (str)
-#endif /* _WIN32 */
-
-#include "tcharx.h"
 
 int RP_C_API _tmain(int argc, TCHAR *argv[])
 {
@@ -84,8 +77,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	rp_i18n_init();
 
 	if (argc < 2 || argc > 3) {
-		// FIXME: T2U8() shouldn't be needed on Windows, but MSVC is complaining...
-		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("GcnFstPrint", "Syntax: {:s} fst.bin [offsetShift]")), T2U8(argv[0])));
+		// FIXME: T2U8_str() shouldn't be needed on Windows, but MSVC is complaining...
+		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("GcnFstPrint", "Syntax: {:s} fst.bin [offsetShift]")), T2U8_str(argv[0])));
 		Gsvt::StdErr.newline();
 		Gsvt::StdErr.fputs(C_("GcnFstPrint", "offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)"));
 		Gsvt::StdErr.newline();
@@ -99,8 +92,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		long ltmp = _tcstol(argv[2], &endptr, 10);
 		if (*endptr != '\0' || (ltmp != 0 && ltmp != 2)) {
 			Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_RED, true);
-			// FIXME: T2U8() shouldn't be needed on Windows, but MSVC is complaining...
-			Gsvt::StdErr.fputs(fmt::format(FRUN(C_("GcnFstPrint", "Invalid offset shift '{:s}' specified.")), T2U8(argv[2])));
+			// FIXME: T2U8_str() shouldn't be needed on Windows, but MSVC is complaining...
+			Gsvt::StdErr.fputs(fmt::format(FRUN(C_("GcnFstPrint", "Invalid offset shift '{:s}' specified.")), T2U8_str(argv[2])));
 			Gsvt::StdErr.textColorReset();
 			Gsvt::StdErr.newline();
 			Gsvt::StdErr.fputs(C_("GcnFstPrint", "offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)"));
@@ -114,9 +107,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	FILE *f = _tfopen(argv[1], _T("rb"));
 	if (!f) {
 		Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_RED, true);
-		// FIXME: T2U8() shouldn't be needed on Windows, but MSVC is complaining...
+		// FIXME: T2U8_str() shouldn't be needed on Windows, but MSVC is complaining...
 		// tr: {0:s} == filename, {1:s} == error message
-		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("GcnFstPrint", "Error opening '{0:s}': '{1:s}'")), T2U8(argv[1]), T2U8(_tcserror(errno))));
+		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("GcnFstPrint", "Error opening '{0:s}': '{1:s}'")), T2U8_str(argv[1]), T2U8_str(_tcserror(errno))));
 		Gsvt::StdErr.textColorReset();
 		Gsvt::StdErr.newline();
 		return EXIT_FAILURE;
@@ -169,8 +162,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		static_cast<uint32_t>(fileSize - fst_start_offset), offsetShift));
 	if (!fst->isOpen()) {
 		Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_RED, true);
-		// FIXME: T2U8() shouldn't be needed on Windows, but MSVC is complaining...
-		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("GcnFstPrint", "*** ERROR: Could not parse '{:s}' as GcnFst.")), T2U8(argv[1])));
+		// FIXME: T2U8_str() shouldn't be needed on Windows, but MSVC is complaining...
+		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("GcnFstPrint", "*** ERROR: Could not parse '{:s}' as GcnFst.")), T2U8_str(argv[1])));
 		Gsvt::StdErr.textColorReset();
 		Gsvt::StdErr.newline();
 		return EXIT_FAILURE;

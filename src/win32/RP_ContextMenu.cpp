@@ -413,7 +413,7 @@ IFACEMETHODIMP RP_ContextMenu::Initialize(
 
 		// The list of supported file extensions is in UTF-8.
 		// Convert the file extension from TCHAR to UTF-8.
-		const string s_ext = T2U8(FileSystem::file_ext(tfilename));
+		const string s_ext = T2U8_str(FileSystem::file_ext(tfilename));
 
 		bool is_texture = false;
 		for (const char *texture_ext : texture_exts) {
@@ -596,9 +596,9 @@ IFACEMETHODIMP RP_ContextMenu::GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT u
 			nc);
 
 		if (likely(uType == GCS_HELPTEXTW)) {
-			swprintf(reinterpret_cast<LPWSTR>(pszName), cchMax, L"%s", U82T_c(msg));
+			swprintf(reinterpret_cast<LPWSTR>(pszName), cchMax, L"%s", U82T(msg));
 		} else /*if (uType == GCS_HELPTEXTA)*/ {
-			snprintf(pszName, cchMax, "%s", U82A_c(msg));
+			snprintf(pszName, cchMax, "%s", U82A(msg));
 		}
 		return S_OK;
 	} else {

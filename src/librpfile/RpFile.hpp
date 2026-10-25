@@ -10,9 +10,10 @@
 
 #include "IRpFile.hpp"
 
-// C++ includes
+// C++ STL classes
 #include <string>
 #include <vector>
+#include "rp-string_view.hpp"
 
 // from scsi_protocol.h
 struct _SCSI_RESP_INQUIRY_STD;
@@ -62,9 +63,7 @@ public:
 	 * @param mode File mode
 	 */
 	RP_LIBROMDATA_PUBLIC
-	RpFile(const char *filename, FileMode mode);
-	RP_LIBROMDATA_PUBLIC
-	RpFile(const std::string &filename, FileMode mode);
+	RpFile(std::string_view filename, FileMode mode);
 
 #ifdef _WIN32
 	/**
@@ -74,9 +73,7 @@ public:
 	 * @param mode File mode
 	 */
 	RP_LIBROMDATA_PUBLIC
-	RpFile(const wchar_t *filenameW, FileMode mode);
-	RP_LIBROMDATA_PUBLIC
-	RpFile(const std::wstring &filenameW, FileMode mode);
+	RpFile(std::wstring_view filenameW, FileMode mode);
 #endif /* _WIN32 */
 
 public:

@@ -14,43 +14,40 @@
 // C++ STL classes
 #include <memory>
 #include <string>
+#include "rp-string_view.hpp"
 
 namespace LibWin32Common {
 
-std::wstring U82W_int(const char *mbs);
-#define U82W_c(str) (U82W_int(str).c_str())
-#define U82W_s(str) (U82W_int(str.c_str()).c_str())
+std::wstring U82W_str(std::string_view mbs);
+#define U82W(mbs) (U82W_str(mbs).c_str())
+
+static inline std::string U82A_str(std::string_view mbs)
+{
+	// FIXME: Actually convert from ANSI?
+	return std::string(mbs);
+}
+#define U82A(mbs) (U82A_str(mbs).c_str())
 
 #ifdef _UNICODE
-#  define U82T_c(str) (U82W_int(str).c_str())
-#  define U82T_s(str) (U82W_int(str.c_str()).c_str())
+#  define U82T_str(mbs) U82W_str(mbs)
+#  define U82T(mbs)     U82W(mbs)
 #else /* _UNICODE */
-#  define U82T_c(str) (str)
-#  define U82T_s(str) (str.c_str())
+#  define U82T_str(mbs) U82A_str(mbs)
+#  define U82T(mbs)     U82A(mbs)
 #endif /* _UNICODE */
 
-std::string W2U8(const wchar_t *wcs, int len = -1);
-static inline std::string W2U8(const std::wstring &wstr)
-{
-	return W2U8(wstr.data(), static_cast<int>(wstr.size()));
-}
+std::string W2U8_str(std::wstring_view wcs);
+#define W2U8(wcs) (W2U8_str(wcs).c_str())
 
-std::string A2U8(const char *mbs, int len = -1);
-static inline std::string A2U8(const std::string &astr)
-{
-	return A2U8(astr.data(), static_cast<int>(astr.size()));
-}
+std::string A2U8_str(std::string_view mbs);
+#define A2U8(mbs) (A2U8_str(mbs).c_str())
 
 #ifdef _UNICODE
-static inline std::string T2U8(const std::wstring &wstr)
-{
-	return W2U8(wstr.data(), static_cast<int>(wstr.size()));
-}
-#else /* !_UNICODE */
-static inline std::string T2U8(const std::string &str)
-{
-	return A2U8(str.data(), static_cast<int>(str.size()));
-}
+#  define T2U8_str(mbs) W2U8_str(mbs)
+#  define T2U8(mbs)     W2U8(mbs)
+#else /* _UNICODE */
+#  define T2U8_str(mbs) A2U8_str(mbs)
+#  define T2U8(mbs)     A2U8(mbs)
 #endif /* _UNICODE */
 
 }

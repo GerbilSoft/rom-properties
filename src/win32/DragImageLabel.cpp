@@ -863,7 +863,7 @@ DragImageLabelWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #ifdef UNICODE
 				d->dragFilename.assign(reinterpret_cast<LPCWSTR>(lParam));
 #else /* !UNICODE */
-				d->dragFilename = W2A(reinterpret_cast<LPCWSTR>(lParam));
+				d->dragFilename = W2A_str(reinterpret_cast<LPCWSTR>(lParam));
 #endif /* UNICODE */
 			} else {
 				d->dragFilename.clear();
@@ -883,7 +883,7 @@ DragImageLabelWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			if (lParam) {
 #ifdef UNICODE
-				d->dragFilename = A2W_c(reinterpret_cast<LPCSTR>(lParam));
+				d->dragFilename = A2W(reinterpret_cast<LPCSTR>(lParam));
 #else /* !UNICODE */
 				d->dragFilename.assign(reinterpret_cast<LPCSTR>(lParam));
 #endif /* UNICODE */

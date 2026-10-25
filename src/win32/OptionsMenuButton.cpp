@@ -138,7 +138,7 @@ void OptionsMenuButtonPrivate::reinitMenu(const RomData *romData)
 			} else {
 				uFlags = MF_STRING;
 			}
-			AppendMenu(hMenuOptions, uFlags, i, U82T_c(op.desc));
+			AppendMenu(hMenuOptions, uFlags, i, U82T(op.desc));
 
 			// Next menu item.
 			i++;
@@ -167,7 +167,7 @@ void OptionsMenuButtonPrivate::updateOp(int id, const RomData::RomOp *op)
 	}
 
 	const int menuId = id + IDM_OPTIONS_MENU_BASE;
-	ModifyMenu(hMenuOptions, menuId, uFlags, menuId, U82T_c(op->desc));
+	ModifyMenu(hMenuOptions, menuId, uFlags, menuId, U82T(op->desc));
 }
 
 /**

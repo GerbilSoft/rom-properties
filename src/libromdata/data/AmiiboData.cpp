@@ -16,12 +16,12 @@
 // OS-specific includes
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
-#  include "librptext/wchar.hpp"
 #endif /* _WIN32 */
 
 // Other rom-properties libraries
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
+#include "librptext/wchar.hpp"
 using namespace LibRpFile;
 
 // C includes (C++ namespace)
@@ -33,13 +33,6 @@ using namespace LibRpFile;
 using std::string;
 using std::tstring;
 using std::unique_ptr;
-
-// Mini-U82T()
-#ifdef _WIN32
-#  include "librptext/wchar.hpp"
-#else /* !_WIN32 */
-#  define U82T_s(u8str) (u8str)
-#endif /* _WIN32 */
 
 // Uninitialized vector class
 #include "uvector.h"
@@ -263,7 +256,7 @@ tstring AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileT
 		}
 
 		case AmiiboBinFileType::User:
-			tfilename = U82T_s(FileSystem::getConfigDirectory());
+			tfilename = U82T(FileSystem::getConfigDirectory());
 			if (!tfilename.empty()) {
 				if (tfilename.at(tfilename.size()-1) != DIR_SEP_CHR) {
 					tfilename += DIR_SEP_CHR;

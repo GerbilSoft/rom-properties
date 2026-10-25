@@ -10,6 +10,9 @@
 
 #include "time_r.h"	// for rp_time_t
 
+// C++ STL classes
+#include "rp-string_view.hpp"
+
 // Qt includes
 #include <QtCore/QDateTime>
 #include <QtCore/QObject>
@@ -60,24 +63,13 @@ typedef int rp_qsizetype;
 #endif /* QT_VERSION >= 0x60000 */
 
 /**
- * Convert an std::string to QString.
- * @param str std::string
+ * Convert a C or C++ string to QString.
+ * @param str C or C++ string
  * @return QString
  */
-static inline QString U82Q(const std::string &str)
+static inline QString U82Q(std::string_view str)
 {
 	return QString::fromUtf8(str.data(), static_cast<rp_qsizetype>(str.size()));
-}
-
-/**
- * Convert a const char* to a QString.
- * @param str const char*
- * @param len Length of str, in characters. (optional; -1 for C string)
- * @return QString
- */
-static inline QString U82Q(const char *str, rp_qsizetype len = -1)
-{
-	return QString::fromUtf8(str, len);
 }
 
 // Helper macro for using C_() with U82Q().

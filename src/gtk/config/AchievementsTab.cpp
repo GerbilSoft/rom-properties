@@ -317,7 +317,7 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 {
 	g_return_if_fail(RP_IS_ACHIEVEMENTS_TAB(tab));
 
-#if USE_GTK_COLUMN_VIEW
+#ifdef USE_GTK_COLUMN_VIEW
 	g_list_store_remove_all(tab->listStore);
 #else /*USE_GTK_COLUMN_VIEW */
 	gtk_list_store_clear(tab->listStore);

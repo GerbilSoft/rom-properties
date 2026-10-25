@@ -8,21 +8,23 @@
 
 #include "RpFile_kio.hpp"
 
-// Qt includes.
+// Qt includes
 #include <QtCore/QEventLoop>
 
-// KDE includes.
+// KDE includes
 #include <KIO/FileJob>
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::string_view;
 
 #include "RpQt.hpp"
 
 class RpFileKioPrivate
 {
 public:
-	RpFileKioPrivate(RpFileKio *q, const char *uri);
+	RpFileKioPrivate(RpFileKio *q, string_view uri);
+
 	RpFileKioPrivate(RpFileKio *q, const QUrl &uri)
 		: q_ptr(q)
 		, uri(uri)
@@ -60,15 +62,15 @@ public:
 
 /** RpFileKioPrivate **/
 
-RpFileKioPrivate::RpFileKioPrivate(RpFileKio *q, const char *uri)
+RpFileKioPrivate::RpFileKioPrivate(RpFileKio *q, string_view uri)
 	: q_ptr(q)
 	, fileJob(nullptr)
 	, lastResult(0)
 	, pos(0)
 {
 	// Check if the source filename is a URI.
-	const QString qs_uri(QString::fromUtf8(uri));
-	QUrl url(QString::fromUtf8(uri));
+	const QString qs_uri(QString::fromUtf8(uri.data(), static_cast<rp_qsizetype>(uri.size())));
+	QUrl url(qs_uri);
 	if (url.scheme().isEmpty()) {
 		// No scheme. This is a plain old filename.
 		this->uri = QUrl::fromLocalFile(qs_uri);
@@ -109,7 +111,7 @@ void RpFileKioPrivate::enterLoop(void)
  * NOTE: Files are always opened as read-only in binary mode.
  * @param uri KIO URI.
  */
-RpFileKio::RpFileKio(const char *uri)
+RpFileKio::RpFileKio(string_view uri)
 	: super()
 	, d_ptr(new RpFileKioPrivate(this, uri))
 {

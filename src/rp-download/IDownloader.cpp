@@ -18,7 +18,7 @@
 #include <string>
 using std::tstring;
 
-#if defined(__unix__) && __ANDROID__
+#if defined(__unix__) && defined(__ANDROID__)
 #  define PLATFORM_ANDROID 1
 #elif defined(__linux__)
 #  define PLATFORM_LINUX 1

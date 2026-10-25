@@ -161,7 +161,7 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 
 	// Validate flags.
 	// Cannot have both checkboxes and icons.
-	bool hasCheckboxes, hasIcons;
+	bool hasCheckboxes = false, hasIcons = false;
 	if (field.validateListDataFlags(hasCheckboxes, hasIcons) != 0) {
 		// Not valid...
 		return 0;
@@ -231,7 +231,7 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 					// TODO: Ideal icon size? Using 32x32 for now.
 					static constexpr int icon_sz = 32;
 
-#if RP_GTK_USE_CAIRO
+#ifdef RP_GTK_USE_CAIRO
 					// NOTE: Assuming square icons.
 					int icon_w = icon->width();
 					int icon_h = icon->height();

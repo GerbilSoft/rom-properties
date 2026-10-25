@@ -41,6 +41,9 @@ ENDIF()
 # Check for glibc features.h.
 CHECK_INCLUDE_FILE("features.h" HAVE_FEATURES_H)
 
+# Write the libc configuration file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libc.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libc.h")
+
 # Check for std::variant<>.
 # If not found, use mpark variant from extlib.
 CHECK_INCLUDE_FILE_CXX("variant" HAVE_STD_VARIANT)
@@ -48,8 +51,29 @@ IF(NOT HAVE_STD_VARIANT)
 	INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/extlib/mpark-variant/include")
 ENDIF(NOT HAVE_STD_VARIANT)
 
-# Write the libc configuration file.
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libc.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libc.h")
+# Write the std::variant configuration file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/rp-variant.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/rp-variant.hpp")
+
+# Check for std::string_view (or std::experimental::string_view).
+INCLUDE(CheckCXXSourceCompiles)
+CHECK_CXX_SOURCE_COMPILES("
+#include <string_view>
+std::string_view sv;
+int main(void) { return 0; }
+" HAVE_STD_STRING_VIEW)
+IF(NOT HAVE_STD_STRING_VIEW)
+	CHECK_CXX_SOURCE_COMPILES("
+	#include <experimental/string_view>
+	std::experimental::string_view sv;
+	int main(void) { return 0; }
+	" HAVE_STD_EXPERIMENTAL_STRING_VIEW)
+	IF(NOT HAVE_STD_EXPERIMENTAL_STRING_VIEW)
+		MESSAGE(FATAL_ERROR "std::string_view is not available! (Add a copy of string_view_lite?)")
+	ENDIF(NOT HAVE_STD_EXPERIMENTAL_STRING_VIEW)
+ENDIF(NOT HAVE_STD_STRING_VIEW)
+
+# Write the std::string_view configuration file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/rp-string_view.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/rp-string_view.hpp")
 
 # C++11 compatibility header.
 # NOTE: This must be included regardless of C++11 support in the compiler.

@@ -10,7 +10,7 @@
 
 #ifdef __cplusplus
 
-#include "config.libc.h"
+#cmakedefine HAVE_STD_VARIANT 1
 
 #ifdef HAVE_STD_VARIANT
 #  include <variant>

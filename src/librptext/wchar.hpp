@@ -21,13 +21,17 @@
  * result in a dangling pointer.
  */
 
+// C includes
+#include "tcharx.h"
+
+// C++ STL classes
+#include "rp-string_view.hpp"
+
+#ifdef _WIN32
+
 // Make sure conversion.hpp was included.
 #include "librptext/conversion.hpp"
 #include "common.h"
-
-#ifdef _WIN32
-#  include "tcharx.h"
-#endif /* _WIN32 */
 
 #ifndef RP_WIS16
 #  error Cannot use librptext/wchar.hpp if sizeof(wchar_t) != 2
@@ -36,198 +40,155 @@
 /** wchar_t (Unicode) **/
 
 /**
- * Convert UTF-8 const char* to UTF-16 const wchar_t*.
- * @param str UTF-8 const char*
- * @return UTF-16 const wchar_t*
+ * Convert UTF-8 to UTF-16.
+ * @param str UTF-8 string
+ * @return UTF-16 string
  */
-#define U82W_c(str) \
-	(reinterpret_cast<const wchar_t*>( \
-		LibRpText::utf8_to_utf16(str, -1).c_str()))
-
-/**
- * Convert UTF-8 std::string to UTF-16 const wchar_t*.
- * @param str UTF-8 std::string
- * @return UTF-16 const wchar_t*
- */
-#define U82W_s(str) \
-	(reinterpret_cast<const wchar_t*>( \
-		LibRpText::utf8_to_utf16(str).c_str()))
-
-/**
- * Convert UTF-16 const wchar_t* to UTF-8 std::string.
- * @param wcs UTF-16 const wchar_t*
- * @param len Length. (If -1, assuming this is a C string.)
- * @return UTF-8 std::string.
- */
-static inline std::string W2U8(const wchar_t *wcs, int len = -1)
+static inline std::u16string U82U16_str(std::string_view str)
 {
-	return LibRpText::utf16_to_utf8(
-		reinterpret_cast<const char16_t*>(wcs), len);
+	return LibRpText::utf8_to_utf16(str.data(), static_cast<int>(str.size()));
 }
 
+#define U82W(str) (reinterpret_cast<const wchar_t*>(U82U16_str(str).c_str()))
+
+// FIXME: Better U82W_str().
+#define U82W_str(str) U82W(str)
+
 /**
- * Convert UTF-16 std::wstring to UTF-8 std::string.
- * @param wcs UTF-16 std::wstring
- * @return UTF-8 std::string
+ * Convert UTF-16 to UTF-8.
+ * @param wcs UTF-16 string
+ * @return UTF-8 string
  */
-static inline std::string W2U8(const std::wstring &wcs)
+static inline std::string W2U8_str(std::wstring_view wcs)
 {
-	return LibRpText::utf16_to_utf8(
-		reinterpret_cast<const char16_t*>(
-			wcs.data()), static_cast<int>(wcs.size()));
+	return LibRpText::utf16_to_utf8(reinterpret_cast<const char16_t*>(wcs.data()), static_cast<int>(wcs.size()));
 }
+
+#define W2U8(wcs) (W2U8_str(wcs).c_str())
 
 /** char (ANSI) **/
 
 /**
- * Convert UTF-8 const char* to ANSI const char*.
- * @param str UTF-8 const char*
- * @return ANSI const char*
+ * Convert UTF-8 to ANSI.
+ * @param str UTF-8 string
+ * @return ANSI string
  */
-#define U82A_c(str) \
-	(LibRpText::utf8_to_ansi(str, -1).c_str())
-
-/**
- * Convert UTF-8 std::string to ANSI const char*.
- * @param str UTF-8 std::string
- * @return ANSI const char*
- */
-#define U82A_s(str) \
-	(LibRpText::utf8_to_ansi(str).c_str())
-
-/**
- * Convert ANSI const char* to UTF-8 std::string.
- * @param str ANSI const char*
- * @param len Length. (If -1, assuming this is a C string.)
- * @return UTF-8 std::string.
- */
-static inline std::string A2U8(const char *str, int len = -1)
+static inline std::string U82A_str(std::string_view str)
 {
-	return LibRpText::ansi_to_utf8(str, len);
+	return LibRpText::utf8_to_ansi(str.data(), static_cast<int>(str.size()));
 }
 
+#define U82A(str) (U82A_str(str).c_str())
+
 /**
- * Convert ANSI std::string to UTF-8 std::string.
- * @param str ANSI std::string
- * @return UTF-8 std::string
+ * Convert ANSI to UTF-8.
+ * @param str ANSI string
+ * @return UTF-8 string
  */
-static inline std::string A2U8(const std::string &str)
+static inline std::string A2U8_str(std::string_view str)
 {
-	return LibRpText::ansi_to_utf8(
-		str.data(), static_cast<int>(str.size()));
+	return LibRpText::ansi_to_utf8(str.data(), static_cast<int>(str.size()));
 }
+
+#define A2U8(str) (A2U8_str(str).c_str())
 
 /** UTF-16 to ANSI and vice-versa **/
 
 /**
- * Convert ANSI const char* to UTF-16 const wchar_t*.
- * @param str ANSI const char*
- * @return UTF-16 const wchar_t*
+ * Convert ANSI to UTF-16.
+ * @param str ANSI string
+ * @return UTF-16 string
  */
-#define A2W_c(str) \
-	(reinterpret_cast<const wchar_t*>( \
-		LibRpText::cpN_to_utf16(CP_ACP, str, -1).c_str()))
-
-/**
- * Convert ANSI std::string to UTF-16 const wchar_t*.
- * @param str ANSI std::string
- * @return UTF-16 const wchar_t*
- */
-#define A2W_s(str) \
-	(reinterpret_cast<const wchar_t*>( \
-		LibRpText::cpN_to_utf16( \
-			CP_ACP, str.data(), static_cast<int>(str.size())).c_str()))
-
-/**
- * Convert UTF-16 const wchar_t* to ANSI std::string.
- * @param wcs UTF-16 const wchar_t*
- * @param len Length. (If -1, assuming this is a C string.)
- * @return ANSI std::string.
- */
-static inline std::string W2A(const wchar_t *wcs, int len = -1)
+static inline std::u16string A2U16_str(std::string_view str)
 {
-	return LibRpText::utf16_to_cpN(
-		CP_ACP, reinterpret_cast<const char16_t*>(wcs), len);
+	return LibRpText::cpN_to_utf16(CP_ACP, str.data(), static_cast<int>(str.size()));
 }
 
+#define A2W(str) (reinterpret_cast<const wchar_t*>(A2U16_str(str).c_str()))
+
 /**
- * Convert UTF-16 std::wstring to ANSI std::string.
- * @param wcs UTF-16 std::wstring
- * @return ANSI std::string
+ * Convert UTF-16 to ANSI.
+ * @param wcs UTF-16 string
+ * @return ANSI string
  */
-static inline std::string W2A(const std::wstring &wcs)
+static inline std::string W2A_str(std::wstring_view wcs)
 {
 	return LibRpText::utf16_to_cpN(
-		CP_ACP, reinterpret_cast<const char16_t*>(
-			wcs.data()), static_cast<int>(wcs.size()));
+		CP_ACP, reinterpret_cast<const char16_t*>(wcs.data()), static_cast<int>(wcs.size()));
 }
+
+#define W2A(wcs) (W2A_str(wcs).c_str())
 
 /** TCHAR **/
 
-#ifdef _WIN32
 #ifdef UNICODE
 
-#define U82T_c(tcs) U82W_c(tcs)
-#define U82T_s(tcs) U82W_s(tcs)
+#define U82T_str(str) U82W_str(str)
+#define T2U8_str(wcs) W2U8_str(wcs)
 
-/**
- * Convert const TCHAR* to UTF-8 std::string.
- * @param tcs const TCHAR*
- * @param len Length. (If -1, assuming this is a C string.)
- * @return UTF-8 std::string.
- */
-static inline std::string T2U8(const TCHAR *tcs, int len = -1)
-{
-	return W2U8(tcs, len);
-}
-
-/**
- * Convert TCHAR std::string to UTF-8 std::string.
- * @param tcs TCHAR std::string
- * @return UTF-8 std::string
- */
-static inline std::string T2U8(const std::tstring &tcs)
-{
-	return W2U8(tcs);
-}
+#define U82T(str) U82W(str)
+#define T2U8(wcs) W2U8(wcs)
 
 #else /* !UNICODE */
 
-#define U82T_c(tcs) U82A_c(tcs)
-#define U82T_s(tcs) U82A_s(tcs)
+#define U82T_str(str) U82A_str(str)
+#define T2U8_str(wcs) A2U8_str(wcs)
 
-/**
- * Convert const TCHAR* to UTF-8 std::string.
- * @param str const TCHAR*
- * @param len Length. (If -1, assuming this is a C string.)
- * @return UTF-8 std::string.
- */
-static inline std::string T2U8(const TCHAR *tcs, int len = -1)
-{
-	return A2U8(tcs, len);
-}
-
-/**
- * Convert TCHAR std::tstring to UTF-8 std::string.
- * @param str TCHAR std::string
- * @return UTF-8 std::string
- */
-static inline std::string T2U8(const std::tstring &tcs)
-{
-	return A2U8(tcs);
-}
+#define U82T(str) U82A(str)
+#define T2U8(wcs) A2U8(wcs)
 
 #endif /* UNICODE */
 
-// Helper macro for using C_() with U82T_c().
-// NOTE: Must include i18n.hpp before using this macro!
-#define T_(msgid)				U82T_c(_(msgid))
-#define TC_(msgctxt, msgid)			U82T_c(C_(msgctxt, msgid))
-#define TN_(msgid1, msgid2, n)			U82T_c(N_(msgid1, msgid2, n))
-#define TNC_(msgctxt, msgid1, msgid2, n)	U82T_c(NC_(msgctxt, msgid1, msgid2, n))
-#define tpgettext_expr(msgctxt, msgid)				U82T_c(pgettext_expr(msgctxt, msgid))
-#define tdpgettext_expr(domain, msgctxt, msgid)			U82T_c(dpgettext_expr(domain, msgctxt, msgid))
-#define tnpgettext_expr(msgctxt, msgid1, msgid2, n)		U82T_c(npgettext_expr(msgctxt, msgid1, msgid2, n))
-#define tdnpgettext_expr(domain, msgctxt, msgid1, msgid2, n)	U82T_c(dnpgettext_expr(domain, msgctxt, msgid1, msgid2, n))
+#else /* !_WIN32 */
+
+// Compatibility functions for U82T() / T2U8() on non-Windows systems.
+
+static inline std::tstring U82T_str(const char *str)
+{
+	return std::tstring(str);
+}
+static inline std::tstring U82T_str(const std::string &str)
+{
+	return str;
+}
+static inline std::string T2U8_str(const TCHAR *tcs)
+{
+	return std::string(tcs);
+}
+static inline std::string T2U8_str(const std::tstring &tcs)
+{
+	return tcs;
+}
+
+static inline const TCHAR *U82T(const char *str)
+{
+	return str;
+}
+/*static inline const TCHAR *U82T(const std::string &str)
+{
+	return str.c_str();
+}*/
+static inline const char *T2U8(const TCHAR *tcs)
+{
+	return tcs;
+}
+/*static inline const char *T2U8(const std::tstring &tcs)
+{
+	return tcs.c_str();
+}*/
+
+#define U82T(str) (U82T_str(str).c_str())
+#define T2U8(str) (T2U8_str(str).c_str())
 
 #endif /* _WIN32 */
+
+// Helper macro for using C_() with U82T().
+// NOTE: Must include i18n.hpp before using this macro!
+#define T_(msgid)				U82T(_(msgid))
+#define TC_(msgctxt, msgid)			U82T(C_(msgctxt, msgid))
+#define TN_(msgid1, msgid2, n)			U82T(N_(msgid1, msgid2, n))
+#define TNC_(msgctxt, msgid1, msgid2, n)	U82T(NC_(msgctxt, msgid1, msgid2, n))
+#define tpgettext_expr(msgctxt, msgid)				U82T(pgettext_expr(msgctxt, msgid))
+#define tdpgettext_expr(domain, msgctxt, msgid)			U82T(dpgettext_expr(domain, msgctxt, msgid))
+#define tnpgettext_expr(msgctxt, msgid1, msgid2, n)		U82T(npgettext_expr(msgctxt, msgid1, msgid2, n))
+#define tdnpgettext_expr(domain, msgctxt, msgid1, msgid2, n)	U82T(dnpgettext_expr(domain, msgctxt, msgid1, msgid2, n))

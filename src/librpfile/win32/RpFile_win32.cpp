@@ -23,7 +23,9 @@ using namespace LibWin32Common;
 
 // C++ STL classes
 using std::string;
+using std::string_view;
 using std::wstring;
+using std::wstring_view;
 
 // tcharx
 #include "tcharx.h"
@@ -42,15 +44,15 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 
 /** RpFilePrivate **/
 
-RpFilePrivate::RpFilePrivate(RpFile *q, const wchar_t *filenameW, RpFile::FileMode mode)
+RpFilePrivate::RpFilePrivate(RpFile *q, wstring_view filenameW, RpFile::FileMode mode)
 	: q_ptr(q)
 	, file(nullptr)
 	, mode(mode)
 	, gzfd(nullptr)
 	, gzsz(-1)
 {
-	assert(filenameW != nullptr);
-	this->filenameW.assign(filenameW);
+	assert(!filenameW.empty());
+	WSTRING_VIEW_ASSIGN(this->filenameW, filenameW);
 }
 
 RpFilePrivate::~RpFilePrivate()
@@ -305,7 +307,7 @@ int RpFilePrivate::reOpenFile(void)
  * @param filename Filename (UTF-16)
  * @param mode File mode
  */
-RpFile::RpFile(const wchar_t *filenameW, FileMode mode)
+RpFile::RpFile(wstring_view filenameW, FileMode mode)
 	: d_ptr(new RpFilePrivate(this, filenameW, mode))
 {
 	RP_D(RpFile);
@@ -424,28 +426,8 @@ RpFile::RpFile(const wchar_t *filenameW, FileMode mode)
  * @param filename Filename (UTF-8)
  * @param mode File mode
  */
-RpFile::RpFile(const char *filename, FileMode mode)
-	: RpFile(U82W_c(filename), mode)
-{}
-
-/**
- * Open a file.
- * NOTE: Files are always opened in binary mode.
- * @param filename Filename (UTF-8)
- * @param mode File mode
- */
-RpFile::RpFile(const string &filename, FileMode mode)
-	: RpFile(U82W_s(filename), mode)
-{}
-
-/**
- * Open a file.
- * NOTE: Files are always opened in binary mode.
- * @param filename Filename (UTF-16)
- * @param mode File mode
- */
-RpFile::RpFile(const wstring &filenameW, FileMode mode)
-	: RpFile(filenameW.c_str(), mode)
+RpFile::RpFile(string_view filename, FileMode mode)
+	: RpFile(U82W_str(filename), mode)
 {}
 
 RpFile::~RpFile()
@@ -774,7 +756,7 @@ const char *RpFile::filename(void) const
 	if (unlikely(!d->filename.empty())) {
 		return d->filename.c_str();
 	} else if (likely(!d->filenameW.empty())) {
-		const_cast<RpFilePrivate*>(d)->filename = W2U8(d->filenameW);
+		const_cast<RpFilePrivate*>(d)->filename = W2U8_str(d->filenameW);
 		return d->filename.c_str();
 	}
 

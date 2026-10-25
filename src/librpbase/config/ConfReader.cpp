@@ -18,7 +18,7 @@ using namespace LibRpFile;
 
 // OS-specific includes
 #ifdef _WIN32
-// for U82T_s()
+// for U82T()
 #  include "librptext/wchar.hpp"
 #endif
 
@@ -170,7 +170,7 @@ int ConfReader::load(bool force)
 	// then parse it using ini_parse_file().
 	int ret = 0;
 	errno = 0;
-	FILE *f_ini = _tfopen(U82T_s(d->conf_filename), _T("rb"));
+	FILE *f_ini = _tfopen(U82T(d->conf_filename), _T("rb"));
 	if (f_ini) {
 		// Parse the INI file.
 		ret = ini_parse_file(f_ini, ConfReaderPrivate::processConfigLine_static, d);

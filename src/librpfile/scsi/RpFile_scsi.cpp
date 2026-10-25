@@ -606,13 +606,13 @@ int RpFile::ata_identify_device_int(struct _ATA_RESP_IDENTIFY_DEVICE *pResp, boo
 		return -EIO;
 	}
 
-#if SYS_BYTE_ORDER == SYS_BIG_ENDIAN
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
 	// All ATA IDENTIFY DEVICE fields are in little-endian,
 	// so byteswap the whole thing. This will also handle
 	// byteswapping the string fields.
 	// TODO: NAA/OUI/WWN and other >16-bit fields.
 	rp_byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp), sizeof(*pResp));
-#else /* SYS_BYTE_ORDER == SYS_LIL_ENDIAN */
+#else /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 	// String fields are always "swapped" regardless of
 	// host endian, so we'll have to unswap those.
 	rp_byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp->serial_number),

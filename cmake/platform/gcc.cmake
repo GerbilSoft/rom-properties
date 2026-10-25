@@ -25,13 +25,14 @@ ADD_DEFINITIONS(-D_GNU_SOURCE=1)
 # NOTE: Not adding -Werror=format-nonliteral because there are some
 # legitimate uses of non-literal format strings.
 SET(CFLAGS_WARNINGS -Wall -Wextra -Wno-multichar -Werror=return-type -Wheader-hygiene -Wno-psabi -Winit-self)
+SET(CFLAGS_WERROR -Werror=undef)
 SET(CFLAGS_WERROR_FORMAT -Werror=format -Werror=format-security -Werror=format-signedness -Werror=format-truncation -Werror=format-y2k)
 SET(CFLAGS_OPTIONS -fstrict-aliasing -Werror=strict-aliasing -fno-common -fcf-protection -fno-math-errno)
 IF(MINGW)
 	# MinGW: Ignore warnings caused by casting from GetProcAddress().
 	SET(CFLAGS_WARNINGS ${CFLAGS_WARNINGS} -Wno-cast-function-type)
 ENDIF(MINGW)
-FOREACH(FLAG_TEST ${CFLAGS_WARNINGS} ${CFLAGS_WERROR_FORMAT} ${CFLAGS_OPTIONS})
+FOREACH(FLAG_TEST ${CFLAGS_WARNINGS} ${CFLAGS_WERROR} ${CFLAGS_WERROR_FORMAT} ${CFLAGS_OPTIONS})
 	# CMake doesn't like certain characters in variable names.
 	STRING(REGEX REPLACE "/|:|=" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
 

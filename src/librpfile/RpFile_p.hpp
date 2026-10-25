@@ -58,10 +58,10 @@ class RpFilePrivate
 public:
 #ifdef _WIN32
 	typedef HANDLE FILE_TYPE;
-	RpFilePrivate(RpFile *q, const wchar_t *filenameW, RpFile::FileMode mode);
+	RpFilePrivate(RpFile *q, std::wstring_view filenameW, RpFile::FileMode mode);
 #else /* !_WIN32 */
 	typedef FILE *FILE_TYPE;
-	RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode);
+	RpFilePrivate(RpFile *q, std::string_view filename, RpFile::FileMode mode);
 #endif /* _WIN32 */
 
 	~RpFilePrivate();

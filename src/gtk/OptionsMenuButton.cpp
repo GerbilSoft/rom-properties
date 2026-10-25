@@ -262,7 +262,7 @@ rp_options_menu_button_init(RpOptionsMenuButton *widget)
 		G_CALLBACK(btnOptions_event_signal_handler), widget, G_CONNECT_DEFAULT);
 #endif /* !USE_GTK_MENU_BUTTON */
 
-#if USE_G_MENU_MODEL
+#ifdef USE_G_MENU_MODEL
 	widget->actionGroup = nullptr;	// will be created later
 #endif /* USE_G_MENU_MODEL */
 }
@@ -536,7 +536,7 @@ rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
 {
 	g_return_if_fail(RP_IS_OPTIONS_MENU_BUTTON(widget));
 
-#if USE_G_MENU_MODEL
+#ifdef USE_G_MENU_MODEL
 	const string s_prefix = fmt::format(FSTR("rp-OptionsMenuButton-{:p}"), static_cast<void*>(widget));
 
 	// Remove the existing GActionGroup from the widget.

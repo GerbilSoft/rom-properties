@@ -519,7 +519,7 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 		// NOTE: Not checking for duplicates, since there
 		// shouldn't be duplicate attribute names.
 		string s_value(value.data(), valuelen);
-#if HAVE_SYS_EXTATTR_H
+#ifdef HAVE_SYS_EXTATTR_H
 		string s_name_prefixed(s_namespace);
 		s_name_prefixed.append(name);
 		genericXAttrs.emplace(std::move(s_name_prefixed), std::move(s_value));

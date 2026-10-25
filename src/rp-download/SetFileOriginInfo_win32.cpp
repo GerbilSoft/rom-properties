@@ -89,7 +89,7 @@ static bool getStoreFileOriginInfo(void)
 	// Get the config filename.
 	// NOTE: Not cached, since rp-download downloads one file per run.
 	// NOTE: This is sitll readable even when running as Low integrity.
-	tstring conf_filename = U82T_s(LibWin32Common::getConfigDirectory());
+	tstring conf_filename = U82T_str(LibWin32Common::getConfigDirectory());
 	if (conf_filename.empty()) {
 		// Empty filename...
 		return default_value;
@@ -131,7 +131,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, rp_time_t mtime)
 
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
-#if _USE_32BIT_TIME_T || SIZEOF_TIME_T < 8
+#if defined(_USE_32BIT_TIME_T) || SIZEOF_TIME_T < 8
 #  error 32-bit time_t is not supported. Get a newer compiler.
 #endif
 
@@ -207,7 +207,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, rp_time_t mtime)
 		string s_zoneID;
 		s_zoneID.reserve(sizeof(zoneID_hdr) + _tcslen(url) + 2 + 16);
 		s_zoneID = zoneID_hdr;
-		s_zoneID += T2U8(url);
+		s_zoneID += T2U8_str(url);
 		s_zoneID += "\r\n";
 
 		status = pfn_NtWriteFile(

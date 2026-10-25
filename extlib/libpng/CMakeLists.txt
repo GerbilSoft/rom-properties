@@ -18,6 +18,10 @@ IF(0) # rom-properties: Disabled; use the main project policies.
 cmake_minimum_required(VERSION 3.14...4.4)
 ENDIF(0)
 
+# rom-properties: Remove "-Werror=undef".
+string(REPLACE "-Werror=undef" "" CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}")
+string(REPLACE "-Werror=undef" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
 set(PNGLIB_MAJOR 1)
 set(PNGLIB_MINOR 6)
 set(PNGLIB_REVISION 59)

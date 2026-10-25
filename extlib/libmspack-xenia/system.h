@@ -42,7 +42,7 @@ extern "C" {
 # endif
 #endif
 
-#if DEBUG
+#ifdef DEBUG
 # include <stdio.h>
 # define D(x) do { printf("%s:%d (%s) ",__FILE__, __LINE__, __func__); \
                    printf x ; fputc('\n', stdout); fflush(stdout);} while (0);
@@ -57,7 +57,7 @@ extern "C" {
  * greater than 2GB is detected, an error message indicating the library
  * can't support the file should be printed.
  */
-#if HAVE_INTTYPES_H
+#ifdef HAVE_INTTYPES_H
 # include <inttypes.h>
 #else
 # define PRId64 "lld"

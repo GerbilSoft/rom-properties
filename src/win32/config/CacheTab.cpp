@@ -180,7 +180,7 @@ CacheTabPrivate::~CacheTabPrivate()
 void CacheTabPrivate::initDialog(void)
 {
 	// Initialize strings.
-	SetWindowText(GetDlgItem(hWndPropSheet, IDC_CACHE_DESCRIPTION), U82T_c(isVista
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_CACHE_DESCRIPTION), U82T(isVista
 		// tr: Windows Vista and later. Has a centralized thumbnails cache.
 		? C_("CacheTab", "If any image type settings were changed, you will need to clear the system thumbnail cache.")
 		// tr: Windows XP or earlier. Has Thumbs.db scattered throughout the system.
@@ -554,7 +554,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	} else {
 		success_message = C_("CacheTab", "System thumbnail cache is already empty. Nothing to do here.");
 	}
-	SetWindowText(hStatusLabel, U82T_c(success_message));
+	SetWindowText(hStatusLabel, U82T(success_message));
 	pCallback->Release();
 	EnableWindow(hClearSysThumbs, TRUE);
 	EnableWindow(hClearRpDl, TRUE);
@@ -589,7 +589,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	if (cacheDir.size() < 8 || bscount < 6) {
 		const string s_err = fmt::format(FRUN(C_("CacheTab", "ERROR: {:s}")),
 			C_("CacheCleaner", "Unable to get the rom-properties cache directory."));
-		SetWindowText(hStatusLabel, U82T_s(s_err));
+		SetWindowText(hStatusLabel, U82T(s_err));
 		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
 		SendMessage(hProgressBar, PBM_SETPOS, 1, 0);
 		// FIXME: Not working...
@@ -603,7 +603,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	// RpFile_Win32 normally prepends it automatically, but we're not
 	// using that here.
 	tstring cacheDirT = _T("\\\\?\\");
-	cacheDirT += U82T_s(cacheDir);
+	cacheDirT += U82T_str(cacheDir);
 
 	// Disable the buttons until we're done.
 	// TODO: Disable the main tab control too?
@@ -644,7 +644,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 		// Non-image file found.
 		const string s_err = fmt::format(FRUN(C_("CacheTab", "ERROR: {:s}")),
 			C_("CacheCleaner", "rom-properties cache has unexpected files. Not clearing it."));
-		SetWindowText(hStatusLabel, U82T_s(s_err));
+		SetWindowText(hStatusLabel, U82T(s_err));
 		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
 		SendMessage(hProgressBar, PBM_SETPOS, 1, 0);
 		EnableWindow(hClearSysThumbs, TRUE);
@@ -729,7 +729,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 		const string s_err = fmt::format(FRUN(C_("CacheTab", "ERROR: {:s}")),
 			fmt::format(FRUN(C_("CacheTab", "Unable to delete {0:Ld} file(s) and/or {1:Ld} dir(s).")),
 				fileErrs, dirErrs));
-		SetWindowText(hStatusLabel, U82T_s(s_err));
+		SetWindowText(hStatusLabel, U82T(s_err));
 		MessageBeep(MB_ICONWARNING);
 	} else {
 		SetWindowText(hStatusLabel, TC_("CacheTab", "rom-properties cache cleared successfully."));

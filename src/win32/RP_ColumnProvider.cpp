@@ -211,6 +211,6 @@ IFACEMETHODIMP RP_ColumnProvider::GetItemData(_In_ LPCSHCOLUMNID pscid, _In_ LPC
 		return S_FALSE;
 	}
 
-	InitVariantFromString(U82T_c(prop->data.str), pvarData);
+	InitVariantFromString(U82T(prop->data.str), pvarData);
 	return S_OK;
 }

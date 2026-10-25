@@ -21,6 +21,9 @@
 // librpfile
 #include "librpfile/IRpFile.hpp"
 
+// C++ STL classes
+#include "rp-string_view.hpp"
+
 // Qt includes.
 #include <QtCore/QObject>
 #include <QtCore/QUrl>
@@ -36,16 +39,7 @@ public:
 	 * NOTE: Files are always opened as read-only in binary mode.
 	 * @param uri KIO URI
 	 */
-	explicit RpFileKio(const char *uri);
-
-	/**
-	 * Open a file.
-	 * NOTE: Files are always opened as read-only in binary mode.
-	 * @param uri KIO URI
-	 */
-	explicit RpFileKio(const std::string &uri)
-		: RpFileKio(uri.c_str())
-	{}
+	explicit RpFileKio(std::string_view uri);
 
 	explicit RpFileKio(const QUrl &uri);
 

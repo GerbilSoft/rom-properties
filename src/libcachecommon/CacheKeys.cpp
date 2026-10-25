@@ -22,8 +22,10 @@
 #include <string>
 using std::array;
 using std::string;
+using std::string_view;
 #ifdef _WIN32
 using std::wstring;
+using std::wstring_view;
 #endif /* _WIN32 */
 
 // OS-specific directory separator.
@@ -323,22 +325,21 @@ int filterCacheKey(wchar_t *pCacheKey)
 
 /**
  * Combine a cache key with the cache directory to get a cache filename.
- * @param cacheKey Cache key. (Must be UTF-8, NULL-terminated.) (Will be filtered using filterCacheKey().)
+ * @param cacheKey Cache key. (Must be UTF-8.) (Will be filtered using filterCacheKey().)
  * @return Cache filename, or empty string on error.
  */
-string getCacheFilename(const char *pCacheKey)
+string getCacheFilename(string_view cacheKey)
 {
 	string cacheFilename;
 
-	assert(pCacheKey != nullptr);
-	assert(pCacheKey[0] != '\0');
-	if (!pCacheKey || pCacheKey[0] == '\0') {
+	assert(!cacheKey.empty());
+	if (cacheKey.empty()) {
 		// No cache key...
 		return cacheFilename;
 	}
 
 	// Filter the cache key.
-	string filteredCacheKey = pCacheKey;
+	string filteredCacheKey(cacheKey);
 	int ret = filterCacheKey(filteredCacheKey);
 	if (ret != 0) {
 		// Invalid cache key.
@@ -383,12 +384,13 @@ string getCacheFilename(const char *pCacheKey)
 
 #ifdef _WIN32
 /**
- * Internal U82W() function.
+ * Internal U82W_str() function.
  * @param mbs UTF-8 string.
  * @return UTF-16 C++ string.
  */
-static inline wstring U82W(const string &mbs)
+static inline wstring U82W_str(const string &mbs)
 {
+	// TODO: Use MiniU82T or librptext/wchar.hpp?
 	wstring s_wcs;
 
 	const int cchWcs = MultiByteToWideChar(CP_UTF8, 0, mbs.c_str(), static_cast<int>(mbs.size()), nullptr, 0);
@@ -406,12 +408,11 @@ static inline wstring U82W(const string &mbs)
  * @param cacheKey Cache key. (Must be UTF-16.) (Will be filtered using filterCacheKey().)
  * @return Cache filename, or empty string on error.
  */
-wstring getCacheFilename(const wchar_t *pCacheKey)
+wstring getCacheFilename(wstring_view cacheKey)
 {
 	wstring cacheFilename_user;
-	assert(pCacheKey != nullptr);
-	assert(pCacheKey[0] != L'\0');
-	if (!pCacheKey || pCacheKey[0] == L'\0') {
+	assert(!cacheKey.empty());
+	if (cacheKey.empty()) {
 		// No cache key...
 		return cacheFilename_user;
 	}
@@ -424,7 +425,7 @@ wstring getCacheFilename(const wchar_t *pCacheKey)
 	}
 
 	// Filter the cache key.
-	wstring filteredCacheKey = pCacheKey;
+	wstring filteredCacheKey(cacheKey);
 	int ret = filterCacheKey(filteredCacheKey);
 	if (ret != 0) {
 		// Invalid cache key.
@@ -433,7 +434,7 @@ wstring getCacheFilename(const wchar_t *pCacheKey)
 
 	// Get the cache filename.
 	// This is the cache directory plus the cache key.
-	cacheFilename_user = U82W(cache_dir);
+	cacheFilename_user = U82W_str(cache_dir);
 	if (cacheFilename_user.at(cacheFilename_user.size()-1) != DIR_SEP_WCHR) {
 		cacheFilename_user += DIR_SEP_WCHR;
 	}

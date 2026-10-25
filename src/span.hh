@@ -27,7 +27,7 @@ namespace vhvc {
 #include <utility>	// for std::declval
 
 namespace vhvc {
-#if __cpp_inline_variables >= 201606L
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L
 	inline
 #endif
 	constexpr size_t dynamic_extent = std::numeric_limits<size_t>::max();
@@ -176,7 +176,7 @@ namespace vhvc {
 		// Not needed and requires __cpp_constexpr_dynamic_alloc >= 201907L
 		// constexpr ~span() noexcept = default;
 
-#if __cpp_constexpr >= 201304L
+#if defined(__cpp_constexpr) && __cpp_constexpr >= 201304L
 		constexpr
 #endif
 		span& operator=(const span& other) noexcept = default;
@@ -237,7 +237,7 @@ namespace vhvc {
 		pointer data_;
 	};
 
-#if __cpp_deduction_guides >= 201606L
+#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201606L
 	template<class It, class EndOrSize>
 	span(It, EndOrSize) -> span<std::remove_reference_t<decltype(*std::declval<It>())>>;
 	template<class T, size_t N>
@@ -250,7 +250,7 @@ namespace vhvc {
 	span(R&&) -> span<std::remove_reference_t<decltype(*std::declval<R>().data())>>;
 #endif
 
-#if __cpp_lib_byte >= 201603L && (!defined(_MSC_VER) || _MSC_VER >= 1920)
+#if defined(__cpp_lib_byte) && __cpp_lib_byte >= 201603L && (!defined(_MSC_VER) || _MSC_VER >= 1920)
 	template<class ElementType, size_t Extent>
 	span<const std::byte, Extent == dynamic_extent ? dynamic_extent : sizeof(ElementType) * Extent>
 	as_bytes(span<ElementType, Extent> s) {

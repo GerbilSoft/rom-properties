@@ -1,6 +1,11 @@
 # KDE UI frontend test suite
 PROJECT(kde-tests LANGUAGES CXX)
 
+# Remove "-Werror=undef".
+# TODO: Only for Google Test libraries; it should remain enabled for our own code...
+string(REPLACE "-Werror=undef" "" CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}")
+string(REPLACE "-Werror=undef" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
 ###### Sources
 
 ### ListDataSortProxyModel tests

@@ -260,7 +260,7 @@ int RP_ShellPropSheetExt_Private::updateField(int fieldIdx)
 			}
 
 			if (field->data.str) {
-				const tstring ts_text = LibWin32UI::unix2dos(U82T_s(field->data.str));
+				const tstring ts_text = LibWin32UI::unix2dos(U82T(field->data.str));
 				SetWindowText(hLabel, ts_text.c_str());
 			} else {
 				SetWindowText(hLabel, _T(""));
@@ -361,7 +361,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 
 		if (!info.toClipboard) {
 			if (ts_prevExportDir.empty()) {
-				ts_prevExportDir = U82T_c(rom_filename);
+				ts_prevExportDir = U82T_str(rom_filename);
 
 				// Remove the filename portion.
 				const size_t bspos = ts_prevExportDir.find_last_of(_T("\\/"));
@@ -385,12 +385,12 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			const char *const spos = strrchr(rom_filename, '/');
 			if (bspos || spos) {
 				if (bspos > spos) {
-					rom_basename = U82T_c(bspos+1);
+					rom_basename = U82T_str(bspos+1);
 				} else if (spos > bspos) {
-					rom_basename = U82T_c(spos+1);
+					rom_basename = U82T_str(spos+1);
 				}
 			} else {
-				rom_basename = U82T_c(rom_filename);
+				rom_basename = U82T_str(rom_filename);
 			}
 			// Remove the extension, if present.
 			const size_t extpos = rom_basename.rfind(_T('.'));
@@ -420,7 +420,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			ofs.open(tfilename.c_str(), ofstream::out);
 #else /* !HAVE_OFSTREAM_CTOR_WCHAR_T */
 			// FIXME: Convert to ANSI, not UTF-8.
-			ofs.open(T2U8(tfilename).c_str(), ofstream::out);
+			ofs.open(T2U8(tfilename), ofstream::out);
 #endif /* HAVE_OFSTREAM_CTOR_WCHAR_T */
 			if (ofs.fail())
 				return;
@@ -457,7 +457,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				ROMOutput ro(romData.get(), lc);
 				oss << ro;
 				oss.flush();
-				ts_out = LibWin32UI::unix2dos(U82T_s(oss.str()));
+				ts_out = LibWin32UI::unix2dos(U82T(oss.str()));
 				break;
 			}
 			case IDM_OPTIONS_MENU_COPY_JSON: {
@@ -466,7 +466,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				jsro.setCrlf(true);
 				oss << jsro << '\n';
 				oss.flush();
-				ts_out = U82T_s(oss.str());
+				ts_out = U82T_str(oss.str());
 				break;
 			}
 			default:
@@ -522,10 +522,10 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 
 		// Prompt for a save file.
 		tstring t_save_filename = LibWin32UI::getSaveFileName(hDlgSheet,
-			U82T_c(op->sfi.title), U82T_s(filter), U82T_s(initialFile));
+			U82T(op->sfi.title), U82T(filter), U82T(initialFile));
 		if (t_save_filename.empty())
 			return;
-		s_save_filename = T2U8(t_save_filename);
+		s_save_filename = T2U8_str(t_save_filename);
 		params.save_filename = s_save_filename.c_str();
 	}
 
@@ -595,6 +595,6 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			SetWindowFont(hMessageWidget, GetWindowFont(hDlgSheet), false);
 		}
 
-		showMessageWidget(messageType, U82T_s(params.msg));
+		showMessageWidget(messageType, U82T(params.msg));
 	}
 }

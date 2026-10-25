@@ -58,7 +58,7 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
 	// so we'll store in a tstring.
 	// NOTE: Spaces are allowed in cache keys, so everything
 	// needs to be quoted properly.
-	tstring t_filteredCacheKey = U82T_s(filteredCacheKey);
+	tstring t_filteredCacheKey = U82T(filteredCacheKey);
 	tstring t_cmd_line;
 	t_cmd_line.reserve(rp_download_exe.size() + 5 + t_filteredCacheKey.size());
 	t_cmd_line += _T('"');

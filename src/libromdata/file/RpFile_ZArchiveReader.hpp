@@ -17,6 +17,7 @@
 // C++ STL classes
 #include <memory>
 #include <string>
+#include "rp-string_view.hpp"
 
 namespace LibRomData {
 
@@ -32,7 +33,7 @@ public:
 	 * @param package_name	[in] Package name within the ZArchive (usually title ID + version)
 	 * @param filename	[in] File to open within the ZArchive
 	 */
-	explicit RpFile_ZArchiveReader(const std::shared_ptr<ZArchiveReader> &zarchive, const char *package_name, const char *filename);
+	explicit RpFile_ZArchiveReader(const std::shared_ptr<ZArchiveReader> &zarchive, std::string_view package_name, std::string_view filename);
 
 private:
 	typedef LibRpFile::IRpFile super;

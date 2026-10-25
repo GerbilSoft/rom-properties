@@ -81,7 +81,7 @@ static constexpr unsigned int VALID_DOS_ATTRIBUTES_FAT = \
 
 #ifdef _UNICODE
 XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
-	: XAttrReaderPrivate(U82T_c(filename))
+	: XAttrReaderPrivate(U82T(filename))
 {}
 
 XAttrReaderPrivate::XAttrReaderPrivate(const wchar_t *filename)
@@ -471,10 +471,14 @@ int XAttrReaderPrivate::loadGenericXattrs_FindFirstStreamW(void)
 		// FIXME: Currently allowing blank stream names. Is this valid?
 		string s_name, s_value;
 		if (fsd.cStreamName[0] != L'\0') {
-			s_name.assign(W2U8(&fsd.cStreamName[1]));
+			s_name = W2U8_str(&fsd.cStreamName[1]);
 		}
 		if (ads_data.zero_data != 0) {
-			s_value.assign(is_unicode ? W2U8(ads_data.wch) : A2U8(ads_data.ch));
+			if (is_unicode) {
+				s_value = W2U8_str(ads_data.wch);
+			} else {
+				s_value = A2U8_str(ads_data.ch);
+			}
 		}
 		genericXAttrs.emplace(std::move(s_name), std::move(s_value));
 	} while (_FindNextStreamW(hFindADS, &fsd));

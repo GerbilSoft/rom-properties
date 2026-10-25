@@ -176,7 +176,7 @@ static int msp_seek(struct mspack_file *file, off_t offset, int mode) {
     case MSPACK_SYS_SEEK_END:   mode = SEEK_END; break;
     default: return -1;
     }
-#if HAVE_FSEEKO
+#ifdef HAVE_FSEEKO
     return fseeko(self->fh, offset, mode);
 #else
     return fseek(self->fh, offset, mode);
@@ -187,7 +187,7 @@ static int msp_seek(struct mspack_file *file, off_t offset, int mode) {
 
 static off_t msp_tell(struct mspack_file *file) {
   struct mspack_file_p *self = (struct mspack_file_p *) file;
-#if HAVE_FSEEKO
+#ifdef HAVE_FSEEKO
   return (self) ? (off_t) ftello(self->fh) : 0;
 #else
   return (self) ? (off_t) ftell(self->fh) : 0;
@@ -206,7 +206,7 @@ static void msp_msg(struct mspack_file *file, const char *format, ...) {
 
 static void *msp_alloc(struct mspack_system *self, size_t bytes) {
   ((void)self);
-#if DEBUG
+#ifdef DEBUG
   /* make uninitialised data obvious */
   char *buf = malloc(bytes + 8);
   if (buf) memset(buf, 0xDC, bytes);
@@ -218,7 +218,7 @@ static void *msp_alloc(struct mspack_system *self, size_t bytes) {
 }
 
 static void msp_free(void *buffer) {
-#if DEBUG
+#ifdef DEBUG
   char *buf = buffer;
   size_t bytes;
   if (buf) {

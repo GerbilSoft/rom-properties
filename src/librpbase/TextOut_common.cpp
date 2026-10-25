@@ -15,6 +15,7 @@
 // C++ includes.
 #include <string>
 using std::string;
+using std::string_view;
 
 namespace LibRpBase {
 
@@ -24,10 +25,14 @@ namespace LibRpBase {
  * @param url URL.
  * @return Partially unescaped URL.
  */
-string urlPartialUnescape(const string &url)
+string urlPartialUnescape(string_view url)
 {
 	// Unescape everything except %20, %23, and %25.
 	string unesc_url;
+	if (url.empty()) {
+		return unesc_url;
+	}
+
 	const size_t src_size = url.size();
 	unesc_url.reserve(src_size);
 

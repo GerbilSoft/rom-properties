@@ -22,9 +22,12 @@
 
 // C++ STL classes
 #include <mutex>
+#include "rp-string_view.hpp"
 using std::string;
+using std::string_view;
 using std::unique_ptr;
 using std::wstring;
+using std::wstring_view;
 
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
@@ -61,26 +64,26 @@ static constexpr inline bool isBackslashOrSlash(CharType c)
  * @param filename Original Windows filename.
  * @return Windows filename with "\\\\?\\" prepended.
  */
-static inline wstring makeWinPath(const char *filename)
+static inline wstring makeWinPath(string_view filename)
 {
 	wstring filenameW;
-	assert(filename != nullptr);
-	assert(filename[0] != '\0');
-	if (unlikely(!filename || filename[0] == '\0')) {
+	assert(!filename.empty());
+	if (unlikely(!filename.empty())) {
 		return filenameW;
 	}
 
 	// TODO: Don't bother if the filename is <= 240 characters?
-	if (IsDriveLetterA(filename[0]) &&
+	if (filename.size() >= 3 &&
+	    IsDriveLetterA(filename[0]) &&
 	    filename[1] == ':' && isBackslashOrSlash(filename[2]))
 	{
 		// Absolute path. Prepend "\\\\?\\" to the path.
 		filenameW = L"\\\\?\\";
-		filenameW += U82W_c(filename);
+		filenameW += U82W_str(filename);
 	} else {
 		// Not an absolute path, or "\\\\?\\" is already
 		// prepended. Use it as-is.
-		filenameW = U82W_c(filename);
+		filenameW = U82W_str(filename);
 	}
 	return filenameW;
 }
@@ -91,7 +94,7 @@ static inline wstring makeWinPath(const char *filename)
  * @param filename Original Windows filename.
  * @return Windows filename with "\\\\?\\" prepended.
  */
-static inline wstring makeWinPath(const string &filename)
+static inline wstring makeWinPath(wstring_view filename)
 {
 	wstring filenameW;
 	assert(!filename.empty());
@@ -100,38 +103,9 @@ static inline wstring makeWinPath(const string &filename)
 	}
 
 	// TODO: Don't bother if the filename is <= 240 characters?
-	if (IsDriveLetterA(filename[0]) &&
-	    filename[1] == ':' && isBackslashOrSlash(filename[2]))
-	{
-		// Absolute path. Prepend "\\\\?\\" to the path.
-		filenameW = L"\\\\?\\";
-		filenameW += U82W_s(filename);
-	} else {
-		// Not an absolute path, or "\\\\?\\" is already
-		// prepended. Use it as-is.
-		filenameW = U82W_s(filename);
-	}
-	return filenameW;
-}
-
-/**
- * Prepend "\\\\?\\" to an absolute Windows path.
- * This is needed in order to support filenames longer than MAX_PATH.
- * @param filename Original Windows filename.
- * @return Windows filename with "\\\\?\\" prepended.
- */
-static inline wstring makeWinPath(const wchar_t *filename)
-{
-	wstring filenameW;
-	assert(filename != nullptr);
-	assert(filename[0] != '\0');
-	if (unlikely(!filename || filename[0] == L'\0')) {
-		return filenameW;
-	}
-
-	// TODO: Don't bother if the filename is <= 240 characters?
-	if (IsDriveLetterW(filename[0]) &&
-	    filename[1] == ':' && isBackslashOrSlash(filename[2]))
+	if (filename.size() >= 3 &&
+	    IsDriveLetterW(filename[0]) &&
+	    filename[1] == L':' && isBackslashOrSlash(filename[2]))
 	{
 		// Absolute path. Prepend "\\\\?\\" to the path.
 		filenameW = L"\\\\?\\";
@@ -139,36 +113,7 @@ static inline wstring makeWinPath(const wchar_t *filename)
 	} else {
 		// Not an absolute path, or "\\\\?\\" is already
 		// prepended. Use it as-is.
-		filenameW = filename;
-	}
-	return filenameW;
-}
-
-/**
- * Prepend "\\\\?\\" to an absolute Windows path.
- * This is needed in order to support filenames longer than MAX_PATH.
- * @param filename Original Windows filename.
- * @return Windows filename with "\\\\?\\" prepended.
- */
-static inline wstring makeWinPath(const wstring &filename)
-{
-	wstring filenameW;
-	assert(!filename.empty());
-	if (unlikely(filename.empty())) {
-		return filenameW;
-	}
-
-	// TODO: Don't bother if the filename is <= 240 characters?
-	if (IsDriveLetterW(filename[0]) &&
-	    filename[1] == ':' && isBackslashOrSlash(filename[2]))
-	{
-		// Absolute path. Prepend "\\\\?\\" to the path.
-		filenameW = L"\\\\?\\";
-		filenameW += filename;
-	} else {
-		// Not an absolute path, or "\\\\?\\" is already
-		// prepended. Use it as-is.
-		filenameW = filename;
+		WSTRING_VIEW_ASSIGN(filenameW, filename);
 	}
 	return filenameW;
 }
@@ -179,12 +124,12 @@ static inline wstring makeWinPath(const wstring &filename)
  * Windows' ANSI functions doesn't support the use of
  * "\\\\?\\" for paths longer than MAX_PATH.
  *
- * @param filename UTF-8 filename.
- * @return ANSI filename.
+ * @param filename UTF-8 filename
+ * @return ANSI filename
  */
-static inline tstring makeWinPath(const char *filename)
+static inline tstring makeWinPath(string_view filename)
 {
-	return U82T_c(filename);
+	return U82T_str(filename);
 }
 
 /**
@@ -196,37 +141,9 @@ static inline tstring makeWinPath(const char *filename)
  * @param filename UTF-8 filename.
  * @return ANSI filename.
  */
-static inline tstring makeWinPath(const string &filename)
+static inline tstring makeWinPath(wstring_view filename)
 {
-	return U82T_s(filename);
-}
-
-/**
- * Convert a path from ANSI to UTF-8.
- *
- * Windows' ANSI functions doesn't support the use of
- * "\\\\?\\" for paths longer than MAX_PATH.
- *
- * @param filename UTF-8 filename.
- * @return ANSI filename.
- */
-static inline tstring makeWinPath(const wchar_t *filename)
-{
-	return W2U8(filename);
-}
-
-/**
- * Convert a path from ANSI to UTF-8.
- *
- * Windows' ANSI functions doesn't support the use of
- * "\\\\?\\" for paths longer than MAX_PATH.
- *
- * @param filename UTF-8 filename.
- * @return ANSI filename.
- */
-static inline tstring makeWinPath(const wstring &filename)
-{
-	return W2U8(filename);
+	return W2U8_str(filename);
 }
 #endif /* UNICODE */
 
@@ -250,11 +167,11 @@ int rmkdir(const string &path, int mode)
 	static_assert(sizeof(wchar_t) == sizeof(char16_t), "wchar_t is not 16-bit!");
 	RP_UNUSED(mode);
 
-	// NOTE: Explicitly calling U82W_s(), not U82T_s(), to prevent
+	// NOTE: Explicitly calling U82W(), not U82T(), to prevent
 	// infinite recursion in ANSI builds.
 	// NOTE 2: This probably won't work in ANSI builds anyway...
 	// TODO: makeWinPath()?
-	return rmkdir(U82W_s(path));
+	return rmkdir(U82W(path));
 }
 
 /**
@@ -397,7 +314,7 @@ static int get_mtime_int(const tstring &tfilename, rp_time_t *pMtime)
 {
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
-#if _USE_32BIT_TIME_T || SIZEOF_TIME_T < 8
+#if defined(_USE_32BIT_TIME_T) || SIZEOF_TIME_T < 8
 #  error 32-bit time_t is not supported. Get a newer compiler.
 #endif
 
@@ -731,7 +648,7 @@ string resolve_symlink(const char *filename)
 	}
 	const tstring tfilename = makeWinPath(filename);
 #ifdef UNICODE
-	return W2U8(resolve_symlink_int(tfilename.c_str()));
+	return W2U8_str(resolve_symlink_int(tfilename.c_str()));
 #else /* !UNICODE */
 	return resolve_symlink_int(tfilename.c_str());
 #endif /* UNICODE */
@@ -757,7 +674,7 @@ wstring resolve_symlink(const wchar_t *filename)
 #ifdef UNICODE
 	return resolve_symlink_int(tfilename.c_str());
 #else /* !UNICODE */
-	return A2W_s(resolve_symlink_int(tfilename.c_str()));
+	return A2W(resolve_symlink_int(tfilename.c_str()));
 #endif /* UNICODE */
 }
 
@@ -918,7 +835,7 @@ static int get_file_size_and_mtime_int(const tstring &tfilename, off64_t *pFileS
 {
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
-#if _USE_32BIT_TIME_T || SIZEOF_TIME_T < 8
+#if defined(_USE_32BIT_TIME_T) || SIZEOF_TIME_T < 8
 #  error 32-bit time_t is not supported. Get a newer compiler.
 #endif
 
@@ -979,4 +896,4 @@ int get_file_size_and_mtime(const wchar_t *filename, off64_t *pFileSize, rp_time
 	return get_file_size_and_mtime_int(makeWinPath(filename), pFileSize, pMtime);
 }
 
-} }
+} } // namespace LibRpFile::FileSystem

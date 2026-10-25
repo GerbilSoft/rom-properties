@@ -15,12 +15,12 @@
 #include <array>
 using std::array;
 using std::string;
+using std::string_view;
 
 class RpFileGioPrivate
 {
 public:
-	explicit RpFileGioPrivate(const char *uri);
-	explicit RpFileGioPrivate(const string &uri);
+	explicit RpFileGioPrivate(string_view uri);
 	~RpFileGioPrivate();
 
 public:
@@ -28,7 +28,7 @@ public:
 
 public:
 	GFileInputStream *stream;	// File input stream.
-	char *uri;			// GVfs URI.
+	string uri;			// GVfs URI.
 
 public:
 	/**
@@ -41,22 +41,15 @@ public:
 
 /** RpFileGioPrivate **/
 
-RpFileGioPrivate::RpFileGioPrivate(const char *uri)
+RpFileGioPrivate::RpFileGioPrivate(string_view uri)
 	: stream(nullptr)
 {
-	this->uri = g_strdup(uri);
-}
-
-RpFileGioPrivate::RpFileGioPrivate(const string &uri)
-	: stream(nullptr)
-{
-	this->uri = (!uri.empty() ? g_strdup(uri.c_str()) : nullptr);
+	STRING_VIEW_ASSIGN(this->uri, uri);
 }
 
 RpFileGioPrivate::~RpFileGioPrivate()
 {
 	g_clear_object(&stream);
-	free(uri);
 }
 
 /**
@@ -88,14 +81,14 @@ int RpFileGioPrivate::gioerr_to_posix(gint gioerr)
  * NOTE: Files are always opened as read-only in binary mode.
  * @param uri GVfs URI.
  */
-RpFileGio::RpFileGio(const char *uri)
+RpFileGio::RpFileGio(string_view uri)
 	: d_ptr(new RpFileGioPrivate(uri))
 {
 	RP_D(RpFileGio);
 	GError *err = nullptr;
 
 	// Open the file.
-	GFile *const file = g_file_new_for_uri(d->uri);
+	GFile *const file = g_file_new_for_uri(d->uri.c_str());
 	d->stream = g_file_read(file, nullptr, &err);
 	g_object_unref(file);
 	if (!d->stream || err != nullptr) {
@@ -294,5 +287,5 @@ off64_t RpFileGio::size(void)
 const char *RpFileGio::filename(void) const
 {
 	RP_D(const RpFileGio);
-	return d->uri;
+	return d->uri.c_str();
 }

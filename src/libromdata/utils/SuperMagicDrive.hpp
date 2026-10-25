@@ -64,7 +64,7 @@ void RP_LIBROMDATA_PUBLIC decodeBlock_cpp(uint8_t *RESTRICT pDest, const uint8_t
 // implementations using intrinsics are significantly faster.
 // (clang and MSVC do not have this issue.)
 
-#if SMD_HAS_MMX
+#ifdef SMD_HAS_MMX
 /**
  * Decode a Super Magic Drive interleaved block.
  * MMX-optimized version.
@@ -75,7 +75,7 @@ void RP_LIBROMDATA_PUBLIC decodeBlock_cpp(uint8_t *RESTRICT pDest, const uint8_t
 void RP_LIBROMDATA_PUBLIC decodeBlock_mmx(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
 #endif /* SMD_HAS_MMX */
 
-#if SMD_HAS_SSE2
+#ifdef SMD_HAS_SSE2
 /**
  * Decode a Super Magic Drive interleaved block.
  * SSE2-optimized version.
@@ -86,7 +86,7 @@ void RP_LIBROMDATA_PUBLIC decodeBlock_mmx(uint8_t *RESTRICT pDest, const uint8_t
 void RP_LIBROMDATA_PUBLIC decodeBlock_sse2(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
 #endif /* SMD_HAS_SSE2 */
 
-#if SMD_HAS_NEON
+#ifdef SMD_HAS_NEON
 /**
  * Decode a Super Magic Drive interleaved block.
  * NEON-optimized version.
