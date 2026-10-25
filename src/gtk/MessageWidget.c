@@ -286,7 +286,7 @@ rp_message_widget_init(RpMessageWidget *widget)
 	gtk_widget_set_margin_end(widget->hbox, 4);
 #endif /* GTK_CHECK_VERSION(4, 0, 0) */
 
-#if USE_GTK_REVEALER
+#ifdef USE_GTK_REVEALER
 	gtk_revealer_set_child(GTK_REVEALER(widget->revealer), widget->hbox);
 #else /* !USE_GTK_REVEALER */
 #  if GTK_CHECK_VERSION(4, 0, 0)
@@ -342,7 +342,7 @@ rp_message_widget_init(RpMessageWidget *widget)
 	gtk_box_pack_start(hbox, widget->image, FALSE, FALSE, 4);
 	gtk_box_pack_start(hbox, widget->label, FALSE, FALSE, 0);
 	gtk_box_pack_end(hbox, widget->close_button, FALSE, FALSE, 0);
-#  if USE_GTK_REVEALER
+#  ifdef USE_GTK_REVEALER
 	gtk_widget_show_all(widget->revealer);
 #  else /* USE_GTK_REVEALER */
 	gtk_widget_show_all(widget->evbox_inner);

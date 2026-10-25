@@ -208,7 +208,7 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	// May be a theme-specific thing...
 	gtk_widget_set_margin_bottom(dialog->tabWidget, 8);
 #endif /* RP_USE_GTK_ALIGNMENT */
-#if USE_GTK_DIALOG
+#ifdef USE_GTK_DIALOG
 	gtk_container_add(GTK_CONTAINER(content_area), dialog->tabWidget);
 #else /* !USE_GTK_DIALOG */
 	gtk_box_append(GTK_BOX(dialog->vboxDialog), dialog->tabWidget);
@@ -308,7 +308,7 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	gchar *const s_reset    = rpGtk_convert_accel_to_gtk(C_("ConfigDialog", "&Reset"));
 	gchar *const s_defaults = rpGtk_convert_accel_to_gtk(C_("ConfigDialog", "Defaults"));
 
-#if USE_GTK_DIALOG
+#ifdef USE_GTK_DIALOG
 	// Secondary buttons
 	dialog->btnReset = gtk_dialog_add_button(GTK_DIALOG(dialog),
 		s_reset, CONFIG_DIALOG_RESPONSE_RESET);
