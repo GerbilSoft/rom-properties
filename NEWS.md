@@ -64,6 +64,8 @@
     Android packages and .jar for J2ME.
     * Pull request #515: [libromdata] RomDataFactory.cpp: only open zip if file extension is known and supported
       * Submitted by @Di-Strix.
+  * Internal: Initial usage of std::string_view.
+    * Falls back to std::experimental::string_view on older gcc.
 
 ## v2.9 (released 2026/09/13)
 
