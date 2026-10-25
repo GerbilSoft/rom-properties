@@ -549,7 +549,7 @@ vector<string> J2MEPrivate::parseMIDlet1tag(void)
 		size_t comma = midlet_1.find(',', pos);
 		if (comma == string::npos) {
 			// End of string.
-			string str = midlet_1.substr(pos);
+			string str(midlet_1, pos, string::npos);
 			// Remove trailing spaces.
 			while (!str.empty()) {
 				const size_t size_minus_one = str.size() - 1;
@@ -568,7 +568,7 @@ vector<string> J2MEPrivate::parseMIDlet1tag(void)
 		if (vec.size() == 1 && midlet_1[pos] == '/') {
 			pos++;
 		}
-		string str = midlet_1.substr(pos, comma - pos);
+		string str(midlet_1, pos, comma - pos);
 		// Remove trailing spaces.
 		while (!str.empty()) {
 			const size_t size_minus_one = str.size() - 1;

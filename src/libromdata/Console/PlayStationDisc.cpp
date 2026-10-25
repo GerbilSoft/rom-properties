@@ -440,7 +440,7 @@ PlayStationDisc::PlayStationDisc(const IRpFilePtr &file)
 				}
 			}
 		}
-		d->boot_filename = bf_str.substr(pos);
+		d->boot_filename.assign(bf_str, pos, string::npos);
 	}
 	if (d->boot_filename.empty()) {
 		// No boot filename specified.
@@ -461,7 +461,7 @@ PlayStationDisc::PlayStationDisc(const IRpFilePtr &file)
 	if (pos != string::npos && pos > 0) {
 		// Found a space.
 		// Everything after the space is a boot argument.
-		d->boot_argument = d->boot_filename.substr(pos+1);
+		d->boot_argument.assign(d->boot_filename, pos+1, string::npos);
 		d->boot_filename.resize(pos-1);
 	}
 
@@ -997,11 +997,11 @@ int PlayStationDisc::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int s
 	string region_code;
 	size_t pos = gameID.find('_');
 	if (pos != string::npos) {
-		region_code = gameID.substr(0, pos);
+		region_code.assign(gameID, 0, pos);
 		gameID[pos] = '-';
 	} else if (gameID.size() > 4) {
 		// No underscore. Use the first four characters as the region.
-		region_code = gameID.substr(0, 4);
+		region_code.assign(gameID, 0, 4);
 	} else {
 		// Too short to be a game ID.
 		return -ENOENT;

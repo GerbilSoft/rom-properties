@@ -334,7 +334,7 @@ const WUP_FST_Entry *WiiUFstPrivate::find_path(const char *path) const
 		if (next_slash_pos == string::npos) {
 			// No more slashes.
 			are_more_slashes = false;
-			path_component = s_path.substr(slash_pos + 1);
+			path_component.assign(s_path, slash_pos + 1, string::npos);
 		} else {
 			// Found another slash.
 			int sz = static_cast<int>(next_slash_pos - slash_pos - 1);
@@ -343,7 +343,7 @@ const WUP_FST_Entry *WiiUFstPrivate::find_path(const char *path) const
 				slash_pos = next_slash_pos;
 				continue;
 			}
-			path_component = s_path.substr(slash_pos + 1, static_cast<size_t>(sz));
+			path_component.assign(s_path, slash_pos + 1, static_cast<size_t>(sz));
 		}
 
 		if (path_component.empty()) {

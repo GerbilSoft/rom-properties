@@ -601,7 +601,7 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup(const char *filename)
 	const char *const sl = findLastSlash(s_filename);
 	if (sl) {
 		// This file is in a subdirectory.
-		const string s_parentDir = s_filename.substr(0, sl - s_filename.c_str());
+		const string s_parentDir(s_filename, 0, sl - s_filename.c_str());
 		s_filename.assign(sl + 1);
 		pDir = getDirectory(s_parentDir.c_str());
 	} else {

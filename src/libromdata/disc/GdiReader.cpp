@@ -309,7 +309,7 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	string ext;
 	const size_t dotpos = basename.rfind('.');
 	if (dotpos != string::npos) {
-		ext = basename.substr(dotpos);
+		ext.assign(basename, dotpos, string::npos);
 		basename.resize(dotpos);
 	} else {
 		// No extension. Add one based on sector size.

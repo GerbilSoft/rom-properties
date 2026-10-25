@@ -663,7 +663,7 @@ int ParamSFO::loadMetaData(void)
 				// Not a letter.
 				// Add a dash and then the rest of the game ID.
 				gameID_dash += '-';
-				gameID_dash += gameID.substr(i);
+				gameID_dash.append(gameID, i, string::npos);
 				break;
 			}
 		}
@@ -685,7 +685,7 @@ int ParamSFO::loadMetaData(void)
 				// Not a letter.
 				// Add a dash and then the rest of the game ID.
 				titleID_dash += '-';
-				titleID_dash += titleID.substr(i);
+				titleID_dash.append(titleID, i, string::npos);
 				break;
 			}
 		}
