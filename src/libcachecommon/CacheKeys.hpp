@@ -11,8 +11,9 @@
 #include "dll-macros.h"			// for RP_LIBROMDATA_PUBLIC
 #include "librptext/config.librptext.h"	// for RP_WIS16
 
-// C++ includes.
+// C++ includes
 #include <string>
+#include "rp-string_view.hpp"
 
 namespace LibCacheCommon {
 
@@ -78,38 +79,18 @@ static inline int filterCacheKey(std::wstring &cacheKey)
 
 /**
  * Get a cache filename.
- * @param cacheKey Cache key. (Must be UTF-8, NULL-terminated.) (Will be filtered using filterCacheKey().)
- * @return Cache filename, or empty string on error.
- */
-std::string getCacheFilename(const char *pCacheKey);
-
-/**
- * Get a cache filename.
  * @param cacheKey Cache key. (Must be UTF-8.) (Will be filtered using filterCacheKey().)
  * @return Cache filename, or empty string on error.
  */
-static inline std::string getCacheFilename(const std::string &cacheKey)
-{
-	return getCacheFilename(cacheKey.c_str());
-}
+std::string getCacheFilename(std::string_view cacheKey);
 
 #ifdef _WIN32
-/**
- * Get a cache filename.
- * @param cacheKey Cache key. (Must be UTF-16, NULL-terminated.) (Will be filtered using filterCacheKey().)
- * @return Cache filename, or empty string on error.
- */
-std::wstring getCacheFilename(const wchar_t *pCacheKey);
-
 /**
  * Get a cache filename.
  * @param cacheKey Cache key. (Must be UTF-16.) (Will be filtered using filterCacheKey().)
  * @return Cache filename, or empty string on error.
  */
-static inline std::wstring getCacheFilename(const std::wstring &cacheKey)
-{
-	return getCacheFilename(cacheKey.c_str());
-}
+std::wstring getCacheFilename(std::wstring_view cacheKey);
 #endif /* _WIN32 */
 
 /**

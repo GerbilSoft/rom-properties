@@ -18,6 +18,7 @@
 // C++ includes
 #include <string>
 #include <ostream>
+#include "rp-string_view.hpp"
 
 namespace LibRpBase {
 
@@ -36,7 +37,7 @@ enum ATTR_FLAG_ENUM OutputFlags {
  * @param url URL.
  * @return Partially unescaped URL.
  */
-std::string urlPartialUnescape(const std::string &url);
+std::string urlPartialUnescape(std::string_view url);
 
 class ROMOutput {
 	const RomData *const romData;
