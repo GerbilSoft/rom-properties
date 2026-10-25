@@ -37,6 +37,14 @@ typedef enum {
 	RPCT_ERROR_INVALID_IMAGE_SIZE			= 9,	// Invalid image size requested. (e.g. 0 or less)
 	RPCT_ERROR_INVALID_FLAGS			= 10,	// Invalid flag values. (v2)
 	RPCT_ERROR_DIRECTORY_THUMBNAILING_DISABLED	= 11,	// Directory thumbnailing is disabled. (v2+)
+
+	// v3.0: New error codes to improve rp-thumbnail debugging.
+	RPCT_ERROR_INVALID_EXT_IMAGE_TYPE		= 12,	// Invalid image type passed to getExternalImage().
+	RPCT_ERROR_SOURCE_FILE_HAS_NO_EXTURLS		= 13,	// Source file has no external image URLs.
+
+	RPCT_ERROR_INVALID_INT_IMAGE_TYPE		= 20,	// Invalid image type passed to getInternalImage().
+
+	RPCT_ERROR_INTERNAL_ERROR			= 126,	// Internal error! (v2+)
 } RpCreateThumbnailError;
 
 /**
@@ -126,6 +134,28 @@ public:
 	struct ImgSize {
 		int width;
 		int height;
+
+		ImgSize()
+			: width(0)
+			, height(0)
+		{}
+
+		// NOTE: Don't mark as explicit; otherwise,
+		// ImgSize x = {1, 2} won't work.
+		ImgSize(int width, int height)
+			: width(width)
+			, height(height)
+		{}
+	};
+
+	/**
+	 * getThumbnail() output parameters
+	 */
+	struct GetThumbnailOutParams_t {
+		ImgClass retImg;			// [out] Returned image
+		ImgSize thumbSize;			// [out] Thumbnail size
+		ImgSize fullSize;			// [out] Full image size
+		LibRpTexture::rp_image::sBIT_t sBIT;	// [out] sBIT metadata
 	};
 
 	/**
@@ -143,54 +173,45 @@ public:
 
 	/**
 	 * Get an external image.
+	 * @param pOutParams	[out] Pointer to GetThumbnailOutParams_t (fullSize and retImg will be modified)
 	 * @param romData	[in] RomData object
 	 * @param imageType	[in] Image type
-	 * @param reqSize	[in] Requested image size. [0 for largest]
-	 * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size
-	 * @param sBIT		[out,opt] sBIT metadata
-	 * @return External image, or null ImgClass on error.
+	 * @param reqSize	[in,opt] Requested image size. [0 for largest]
+	 * @param pErr		[out,opt] RpCreateThumbnailError
+	 * @return RPCT_SUCCESS on success; other value on error.
 	 */
-	ImgClass getExternalImage(const LibRpBase::RomDataPtr &romData,
+	RpCreateThumbnailError getExternalImage(
+		GetThumbnailOutParams_t *pOutParams,
+		const LibRpBase::RomDataPtr &romData,
 		LibRpBase::RomData::ImageType imageType,
-		int reqSize = 0, ImgSize *pOutSize = nullptr,
-		LibRpTexture::rp_image::sBIT_t *sBIT = nullptr);
-
-	/**
-	 * getThumbnail() output parameters
-	 */
-	struct GetThumbnailOutParams_t {
-		ImgClass retImg;			// [out] Returned image
-		ImgSize thumbSize;			// [out] Thumbnail size
-		ImgSize fullSize;			// [out] Full image size
-		LibRpTexture::rp_image::sBIT_t sBIT;	// [out] sBIT metadata
-	};
+		int reqSize = 0);
 
 	/**
 	 * Create a thumbnail for the specified ROM file.
 	 * @param romData	[in] RomData object
 	 * @param reqSize	[in] Requested image size (single dimension; assuming square image) [0 for full size or largest]
 	 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
-	 * @return 0 on success; non-zero on error.
+	 * @return RPCT_SUCCESS on success; other value on error.
 	 */
-	int getThumbnail(const LibRpBase::RomDataPtr &romData, int reqSize, GetThumbnailOutParams_t *pOutParams);
+	RpCreateThumbnailError getThumbnail(const LibRpBase::RomDataPtr &romData, int reqSize, GetThumbnailOutParams_t *pOutParams);
 
 	/**
 	 * Create a thumbnail for the specified ROM file.
 	 * @param file		[in] Open IRpFile object
 	 * @param reqSize	[in] Requested image size (single dimension; assuming square image) [0 for full size or largest]
 	 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
-	 * @return 0 on success; non-zero on error.
+	 * @return RPCT_SUCCESS on success; other value on error.
 	 */
-	int getThumbnail(const LibRpFile::IRpFilePtr &file, int reqSize, GetThumbnailOutParams_t *pOutParams);
+	RpCreateThumbnailError getThumbnail(const LibRpFile::IRpFilePtr &file, int reqSize, GetThumbnailOutParams_t *pOutParams);
 
 	/**
 	 * Create a thumbnail for the specified ROM file.
 	 * @param filename	[in] ROM file
 	 * @param reqSize	[in] Requested image size (single dimension; assuming square image) [0 for full size or largest]
 	 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
-	 * @return 0 on success; non-zero on error.
+	 * @return RPCT_SUCCESS on success; other value on error.
 	 */
-	int getThumbnail(const char *filename, int reqSize, GetThumbnailOutParams_t *pOutParams);
+	RpCreateThumbnailError getThumbnail(const char *filename, int reqSize, GetThumbnailOutParams_t *pOutParams);
 
 protected:
 	/**

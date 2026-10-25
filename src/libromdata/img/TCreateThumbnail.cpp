@@ -108,21 +108,28 @@ ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
 
 /**
  * Get an external image.
+ * @param pOutParams	[out] Pointer to GetThumbnailOutParams_t (fullSize and retImg will be modified)
  * @param romData	[in] RomData object
  * @param imageType	[in] Image type
- * @param reqSize	[in] Requested image size
- * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size
+ * @param reqSize	[in,opt] Requested image size
  * @param sBIT		[out,opt] sBIT metadata
  * @return External image, or null ImgClass on error.
  */
 template<typename ImgClass>
-ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
+RpCreateThumbnailError TCreateThumbnail<ImgClass>::getExternalImage(
+	GetThumbnailOutParams_t *pOutParams,
 	const LibRpBase::RomDataPtr &romData,
 	LibRpBase::RomData::ImageType imageType,
-	int reqSize, ImgSize *pOutSize,
-	LibRpTexture::rp_image::sBIT_t *sBIT)
+	int reqSize)
 {
-	ImgClass ret_img = getNullImgClass();
+	assert(pOutParams != nullptr);
+	if (!pOutParams) {
+		return RPCT_ERROR_INTERNAL_ERROR;
+	}
+
+	// Initialize the output parameters.
+	pOutParams->retImg = getNullImgClass();
+	memset(&pOutParams->sBIT, 0, sizeof(pOutParams->sBIT));
 
 	using namespace LibRpBase;
 	using LibRpFile::IRpFilePtr;
@@ -132,10 +139,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 	assert(imageType >= RomData::IMG_EXT_MIN && imageType <= RomData::IMG_EXT_MAX);
 	if (imageType < RomData::IMG_EXT_MIN || imageType > RomData::IMG_EXT_MAX) {
 		// Out of range.
-		if (sBIT) {
-			memset(sBIT, 0, sizeof(*sBIT));
-		}
-		return ret_img;
+		return RPCT_ERROR_INVALID_EXT_IMAGE_TYPE;;
 	}
 
 	// Synchronously download from the source URLs.
@@ -144,10 +148,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 	int ret = romData->extURLs(imageType, extURLs, reqSize);
 	if (ret != 0 || extURLs.empty()) {
 		// No URLs.
-		if (sBIT) {
-			memset(sBIT, 0, sizeof(*sBIT));
-		}
-		return ret_img;
+		return RPCT_ERROR_SOURCE_FILE_HAS_NO_EXTURLS;
 	}
 
 	// NOTE: This will force a configuration timestamp check.
@@ -193,36 +194,24 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 			if (dl_img && dl_img->isValid()) {
 				// Image loaded successfully.
 				file->close();
-				ret_img = rpImageToImgClass(dl_img);
-				if (isImgClassValid(ret_img)) {
+				pOutParams->retImg = rpImageToImgClass(dl_img);
+				if (isImgClassValid(pOutParams->retImg)) {
 					// Image converted successfully.
-					if (pOutSize) {
-						// Get the image size.
-						pOutSize->width = dl_img->width();
-						pOutSize->height = dl_img->height();
-					}
-					// Get the sBIT metadata.
-					if (sBIT) {
-						if (dl_img->get_sBIT(sBIT) != 0) {
-							// No sBIT metadata.
-							// Clear the struct.
-							memset(sBIT, 0, sizeof(*sBIT));
-						}
+					pOutParams->fullSize = ImgSize(dl_img->width(), dl_img->height());
+					if (dl_img->get_sBIT(&pOutParams->sBIT) != 0) {
+						// No sBIT metadata.
+						// Clear the struct.
+						memset(&pOutParams->sBIT, 0, sizeof(pOutParams->sBIT));
 					}
 					// TODO: Transparency processing?
-					return ret_img;
+					return RPCT_SUCCESS;
 				}
 			}
 		}
 	}
 
 	// No image.
-	if (sBIT) {
-		memset(sBIT, 0, sizeof(*sBIT));
-	}
-	// NOTE: Assigning to `ret_img` for named-return-value optimization.
-	ret_img = getNullImgClass();
-	return ret_img;
+	return RPCT_ERROR_SOURCE_FILE_NO_IMAGE;
 }
 
 /**
@@ -258,10 +247,10 @@ inline void TCreateThumbnail<ImgClass>::rescale_aspect(ImgSize &rs_size, ImgSize
  * @param romData	[in] RomData object
  * @param reqSize	[in] Requested image size (single dimension; assuming square image) [0 for full size or largest]
  * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
- * @return 0 on success; non-zero on error.
+ * @return RPCT_SUCCESS on success; other value on error.
  */
 template<typename ImgClass>
-int TCreateThumbnail<ImgClass>::getThumbnail(const LibRpBase::RomDataPtr &romData, int reqSize, GetThumbnailOutParams_t *pOutParams)
+RpCreateThumbnailError TCreateThumbnail<ImgClass>::getThumbnail(const LibRpBase::RomDataPtr &romData, int reqSize, GetThumbnailOutParams_t *pOutParams)
 {
 	using LibRpBase::Config;
 	using LibRpBase::RomData;
@@ -341,17 +330,18 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const LibRpBase::RomDataPtr &romDat
 		}
 
 		// This image may be present.
+		RpCreateThumbnailError err = RPCT_SUCCESS;
 		if (imgType <= RomData::IMG_INT_MAX) {
 			// Internal image.
 			pOutParams->retImg = getInternalImage(romData, imgType, &pOutParams->fullSize, &pOutParams->sBIT);
 			imgpf = romData->imgpf(imgType);
 		} else {
 			// External image.
-			pOutParams->retImg = getExternalImage(romData, imgType, reqSize, &pOutParams->fullSize, &pOutParams->sBIT);
+			err = getExternalImage(pOutParams, romData, imgType, reqSize);
 			imgpf = romData->imgpf(imgType);
 		}
 
-		if (isImgClassValid(pOutParams->retImg)) {
+		if (/*err == RPCT_SUCCESS &&*/ isImgClassValid(pOutParams->retImg)) {
 			// Image retrieved.
 			break;
 		}
@@ -526,10 +516,10 @@ skip_image_check:
  * @param file		[in] Open IRpFile object
  * @param reqSize	[in] Requested image size (single dimension; assuming square image)
  * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
- * @return 0 on success; non-zero on error.
+ * @return RPCT_SUCCESS on success; other value on error.
  */
 template<typename ImgClass>
-int TCreateThumbnail<ImgClass>::getThumbnail(const LibRpFile::IRpFilePtr &file, int reqSize, GetThumbnailOutParams_t *pOutParams)
+RpCreateThumbnailError TCreateThumbnail<ImgClass>::getThumbnail(const LibRpFile::IRpFilePtr &file, int reqSize, GetThumbnailOutParams_t *pOutParams)
 {
 	using LibRpBase::RomDataPtr;
 
@@ -558,10 +548,10 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const LibRpFile::IRpFilePtr &file, 
  * @param filename	[in] ROM file
  * @param reqSize	[in] Requested image size (single dimension; assuming square image)
  * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
- * @return 0 on success; non-zero on error.
+ * @return RPCT_SUCCESS on success; other value on error.
  */
 template<typename ImgClass>
-int TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int reqSize, GetThumbnailOutParams_t *pOutParams)
+RpCreateThumbnailError TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int reqSize, GetThumbnailOutParams_t *pOutParams)
 {
 	using LibRpBase::RomDataPtr;
 	using LibRpFile::IRpFilePtr;
