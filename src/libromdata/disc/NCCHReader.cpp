@@ -156,7 +156,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 	}
 
 #ifdef ENABLE_DECRYPTION
-	if (!(ncch_header.hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) ||
+	if (!(ncch_header.hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) &&
 	     !forceNoCrypto)
 	{
 		// Initialize the AES cipher.
