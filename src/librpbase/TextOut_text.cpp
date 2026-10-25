@@ -29,10 +29,12 @@ using LibRpTexture::rp_image;
 
 // C++ STL classes
 #include <algorithm>
+#include "rp-string_view.hpp"
 using std::array;
 using std::max;
 using std::ostream;
 using std::string;
+using std::string_view;
 using std::unique_ptr;
 using std::vector;
 
@@ -111,33 +113,13 @@ public:
 	};
 
 private:
-	const char *str;
-	size_t len;
+	string_view sv;
 	size_t width;
 	SafeStringFlags flags;
 
 public:
-	explicit SafeString(const char *str, SafeStringFlags flags = SSF_QUOTES, size_t width = 0)
-		: str(str)
-		, len(str ? strlen(str) : 0)
-		, width(width)
-		, flags(flags) { }
-
-	explicit SafeString(const char *str, size_t len, SafeStringFlags flags = SSF_QUOTES, size_t width = 0)
-		: str(str)
-		, len(len)
-		, width(width)
-		, flags(flags) { }
-
-	explicit SafeString(const string *str, SafeStringFlags flags = SSF_QUOTES, size_t width = 0)
-		: str(str ? str->c_str() : nullptr)
-		, len(str ? str->size() : 0)
-		, width(width)
-		, flags(flags) { }
-
-	explicit SafeString(const string &str, SafeStringFlags flags = SSF_QUOTES, size_t width = 0)
-		: str(str.c_str())
-		, len(str.size())
+	explicit SafeString(string_view sv, SafeStringFlags flags = SSF_QUOTES, size_t width = 0)
+		: sv(sv)
 		, width(width)
 		, flags(flags) { }
 
@@ -149,20 +131,19 @@ private:
 		// TODO: Try optimizing it out while preserving setw().
 		string escaped;
 
-		assert(cp.str != nullptr);
-		if (!cp.str || cp.len == 0) {
-			// nullptr or empty string.
+		if (cp.sv.empty()) {
+			// Empty string.
 			escaped.assign("''");
 			return escaped;
 		}
 
-		escaped.reserve(cp.len + ((cp.flags & SSF_QUOTES) ? 2 : 0));
+		escaped.reserve(cp.sv.size() + ((cp.flags & SSF_QUOTES) ? 2 : 0));
 		if (cp.flags & SSF_QUOTES) {
 			escaped += '\'';
 		}
 
-		size_t n = cp.len;
-		for (const char *p = cp.str; n > 0; p++, n--) {
+		size_t n = cp.sv.size();
+		for (const char *p = cp.sv.data(); n > 0; p++, n--) {
 			if (cp.width && *p == '\n') {
 				escaped += '\n';
 				escaped.append(cp.width + ((cp.flags & SSF_QUOTES) ? 1 : 0), ' ');
@@ -184,10 +165,8 @@ private:
 
 public:
 	friend ostream& operator<<(ostream& os, const SafeString& cp) {
-		if (!cp.str) {
-			return os << "(null)";
-		}
-
+		// TODO: Differentiate empty vs. null?
+		// (string_view only supports empty...)
 		return os << process(cp);
 	}
 
@@ -842,7 +821,7 @@ public:
 							linePos[col] = (unsigned int)string::npos;
 						} else {
 							// Found a newline.
-							str = SafeString(jt->c_str() + linePos[col], nl_pos - linePos[col], SafeString::SSF_NO_QUOTES);
+							str = SafeString(string_view(jt->c_str() + linePos[col], nl_pos - linePos[col]), SafeString::SSF_NO_QUOTES);
 							linePos[col] = (unsigned int)(nl_pos + 1);
 							if (linePos[col] > (unsigned int)jt->size()) {
 								// End of string.
@@ -992,7 +971,11 @@ public:
 			// Get the string and update the text.
 			const string *const pStr = RomFields::getFromStringMulti(pStr_multi, field.def_lc, field.user_lc);
 			assert(pStr != nullptr);
-			os << SafeString((pStr ? *pStr : ""), SafeString::SSF_QUOTES, field.width);
+			if (pStr) {
+				os << SafeString(*pStr, SafeString::SSF_QUOTES, field.width);
+			} else {
+				os << SafeString(string_view(), SafeString::SSF_QUOTES, field.width);
+			}
 		} else {
 			// Empty string.
 			os << "''";
