@@ -69,6 +69,12 @@
       * Submitted by @Di-Strix.
   * Internal: Initial usage of std::string_view.
     * Falls back to std::experimental::string_view on older gcc.
+  * rp-thumbnail: Improved error handling for cases where `rp-download` is missing.
+    * Added several more error codes, and an error code string table to convert the
+      error codes to strings when running `rp-stub` or `rp-thumbnail` manually.
+    * TODO: Add more extensive logging for better debugging.
+    * Fixes #523: [BUG] No error message when rp-download can't be executed
+      * Reported by @Amnesia1000.
 
 ## v2.9 (released 2026/09/13)
 
