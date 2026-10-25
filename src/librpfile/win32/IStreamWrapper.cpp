@@ -235,9 +235,8 @@ IFACEMETHODIMP IStreamWrapper::Stat(STATSTG *pstatstg, DWORD grfStatFlag) noexce
 	// Some shortcuts are available if m_file is RpFile.
 	RpFile *const rpFile = dynamic_cast<RpFile*>(m_file.get());
 
-	if (grfStatFlag & STATFLAG_NONAME) {
-		pstatstg->pwcsName = nullptr;
-	} else {
+	pstatstg->pwcsName = nullptr;
+	if (!(grfStatFlag & STATFLAG_NONAME)) {
 		// Copy the filename
 		// TODO: Is nullptr for empty filename allowed?
 		// For now, we'll just return an empty name.
@@ -250,18 +249,18 @@ IFACEMETHODIMP IStreamWrapper::Stat(STATSTG *pstatstg, DWORD grfStatFlag) noexce
 					return E_OUTOFMEMORY;
 				}
 				memcpy(pstatstg->pwcsName, wfilename, cb);
-			} else {
-				pstatstg->pwcsName = nullptr;
 			}
 		} else {
 			const char *const u8_filename = m_file->filename();
-			const wstring wfilename(u8_filename ? U82W(u8_filename) : L"");
-			const size_t cb = (wfilename.size() + 1) * sizeof(wchar_t);
-			pstatstg->pwcsName = static_cast<LPOLESTR>(CoTaskMemAlloc(cb));
-			if (!pstatstg->pwcsName) {
-				return E_OUTOFMEMORY;
+			if (u8_filename) {
+				const wstring wfilename = U82W_str(u8_filename);
+				const size_t cb = (wfilename.size() + 1) * sizeof(wchar_t);
+				pstatstg->pwcsName = static_cast<LPOLESTR>(CoTaskMemAlloc(cb));
+				if (!pstatstg->pwcsName) {
+					return E_OUTOFMEMORY;
+				}
+				memcpy(pstatstg->pwcsName, wfilename.c_str(), cb);
 			}
-			memcpy(pstatstg->pwcsName, wfilename.c_str(), cb);
 		}
 	}
 

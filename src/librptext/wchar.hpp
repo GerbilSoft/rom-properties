@@ -111,11 +111,13 @@ static inline std::u16string A2U16_str(std::string_view str)
  * @param wcs UTF-16 string
  * @return ANSI string
  */
-static inline std::string W2A(std::wstring_view wcs)
+static inline std::string W2A_str(std::wstring_view wcs)
 {
 	return LibRpText::utf16_to_cpN(
 		CP_ACP, reinterpret_cast<const char16_t*>(wcs.data()), static_cast<int>(wcs.size()));
 }
+
+#define W2A(wcs) (W2A_str(wcs).c_str())
 
 /** TCHAR **/
 

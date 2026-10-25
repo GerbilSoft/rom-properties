@@ -923,7 +923,7 @@ void AboutTabPrivate::initProgramTitleText(void)
 			s_version += gitDescription;
 		}
 	}
-	const tstring st_version = U82T(s_version);
+	const tstring st_version = U82T_str(s_version);
 	SetWindowText(hStaticVersion, st_version.c_str());
 
 	// Reduce the vertical size of hStaticVersion to fit the text.

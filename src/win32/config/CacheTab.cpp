@@ -603,7 +603,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	// RpFile_Win32 normally prepends it automatically, but we're not
 	// using that here.
 	tstring cacheDirT = _T("\\\\?\\");
-	cacheDirT += U82T(cacheDir);
+	cacheDirT += U82T_str(cacheDir);
 
 	// Disable the buttons until we're done.
 	// TODO: Disable the main tab control too?

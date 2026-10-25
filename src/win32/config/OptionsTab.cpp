@@ -331,7 +331,7 @@ void OptionsTabPrivate::save(void)
 		return;
 	}
 
-	const tstring tfilename = U82T(filename);
+	const tstring tfilename = U82T_str(filename);
 
 	// Downloads
 	const TCHAR *btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_CHKEXTIMGDL));

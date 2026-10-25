@@ -425,7 +425,7 @@ RpFile::RpFile(const wchar_t *filenameW, FileMode mode)
  * @param mode File mode
  */
 RpFile::RpFile(const char *filename, FileMode mode)
-	: RpFile(U82W(filename), mode)
+	: RpFile(U82W_str(filename), mode)
 {}
 
 /**
@@ -435,7 +435,7 @@ RpFile::RpFile(const char *filename, FileMode mode)
  * @param mode File mode
  */
 RpFile::RpFile(const string &filename, FileMode mode)
-	: RpFile(U82W(filename), mode)
+	: RpFile(U82W_str(filename), mode)
 {}
 
 /**
@@ -774,7 +774,7 @@ const char *RpFile::filename(void) const
 	if (unlikely(!d->filename.empty())) {
 		return d->filename.c_str();
 	} else if (likely(!d->filenameW.empty())) {
-		const_cast<RpFilePrivate*>(d)->filename = W2U8(d->filenameW);
+		const_cast<RpFilePrivate*>(d)->filename = W2U8_str(d->filenameW);
 		return d->filename.c_str();
 	}
 

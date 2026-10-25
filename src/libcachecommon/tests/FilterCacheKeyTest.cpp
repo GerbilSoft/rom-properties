@@ -120,7 +120,7 @@ TEST_P(FilterCacheKeyTest, filterCacheKey_wchar_t)
 	if (!mode.canTestAsUTF16)
 		return;
 
-	wstring wkeyFiltered = U82W(mode.keyOrig);
+	wstring wkeyFiltered = U82W_str(mode.keyOrig);
 	int ret = LibCacheCommon::filterCacheKey(wkeyFiltered);
 
 	// If it starts with certain invalid characters, we should expect -EINVAL.

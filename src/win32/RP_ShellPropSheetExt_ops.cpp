@@ -361,7 +361,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 
 		if (!info.toClipboard) {
 			if (ts_prevExportDir.empty()) {
-				ts_prevExportDir = U82T(rom_filename);
+				ts_prevExportDir = U82T_str(rom_filename);
 
 				// Remove the filename portion.
 				const size_t bspos = ts_prevExportDir.find_last_of(_T("\\/"));
@@ -385,12 +385,12 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			const char *const spos = strrchr(rom_filename, '/');
 			if (bspos || spos) {
 				if (bspos > spos) {
-					rom_basename = U82T(bspos+1);
+					rom_basename = U82T_str(bspos+1);
 				} else if (spos > bspos) {
-					rom_basename = U82T(spos+1);
+					rom_basename = U82T_str(spos+1);
 				}
 			} else {
-				rom_basename = U82T(rom_filename);
+				rom_basename = U82T_str(rom_filename);
 			}
 			// Remove the extension, if present.
 			const size_t extpos = rom_basename.rfind(_T('.'));
@@ -466,7 +466,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				jsro.setCrlf(true);
 				oss << jsro << '\n';
 				oss.flush();
-				ts_out = U82T(oss.str());
+				ts_out = U82T_str(oss.str());
 				break;
 			}
 			default:
@@ -525,7 +525,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			U82T(op->sfi.title), U82T(filter), U82T(initialFile));
 		if (t_save_filename.empty())
 			return;
-		s_save_filename = T2U8(t_save_filename);
+		s_save_filename = T2U8_str(t_save_filename);
 		params.save_filename = s_save_filename.c_str();
 	}
 

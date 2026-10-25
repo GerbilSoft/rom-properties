@@ -104,7 +104,7 @@ WiiUPackagePrivate::WiiUPackagePrivate(const char *path)
 	if (path && path[0] != '\0') {
 #ifdef _WIN32
 		// Windows: Storing the path as UTF-16 internally.
-		this->data = nus_t(U82T(path));
+		this->data = nus_t(U82T_str(path));
 #else /* !_WIN32 */
 		this->data = nus_t(path);
 #endif /* _WIN32 */
@@ -262,7 +262,7 @@ std::tstring WiiUPackagePrivate::host_system_filename(const char *filename) cons
 #ifdef _WIN32
 	const size_t old_sz = ts_full_filename.size();
 #endif /* _WIN32 */
-	ts_full_filename += U82T(filename);
+	ts_full_filename += U82T_str(filename);
 #ifdef _WIN32
 	// Replace all slashes with backslashes.
 	const auto start_iter = ts_full_filename.begin() + old_sz;
@@ -621,7 +621,7 @@ void WiiUPackage::init(void)
 
 		d->packageType = WiiUPackagePrivate::PackageType::WUA;
 		ts_path = _T("/");
-		ts_path += U82T(wua.package_name);
+		ts_path += U82T_str(wua.package_name);
 		ts_path += _T('/');
 #else /* !HAVE_ZARCHIVE */
 		// Can't open .wua on this system...

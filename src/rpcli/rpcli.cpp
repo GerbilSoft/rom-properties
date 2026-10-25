@@ -181,11 +181,11 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 				if (likely(!isMipmap)) {
 					// tr: {0:s} == image type name, {1:s} == output filename
 					Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Extracting {0:s} into '{1:s}'")),
-						RomData::getImageTypeName(imageType), T2U8(p.filename)));
+						RomData::getImageTypeName(imageType), T2U8_str(p.filename)));
 				} else {
 					// tr: {0:d} == mipmap level, {1:s} == output filename
 					Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Extracting mipmap level {0:d} into '{1:s}'")),
-						p.mipmapLevel, T2U8(p.filename)));
+						p.mipmapLevel, T2U8_str(p.filename)));
 				}
 				Gsvt::StdErr.textColorReset();
 				Gsvt::StdErr.newline();
@@ -196,7 +196,7 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 					// tr: {0:s} == filename, {1:s} == error message
 					Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_RED, true);
 					Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Couldn't create file '{0:s}': {1:s}")),
-						T2U8(p.filename), strerror(-errcode)));
+						T2U8_str(p.filename), strerror(-errcode)));
 					Gsvt::StdErr.textColorReset();
 					Gsvt::StdErr.newline();
 				} else {
@@ -213,7 +213,7 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 				found = true;
 				Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_CYAN, true);
 				Gsvt::StdErr.fputs("-- ");
-				Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Extracting animated icon into '{:s}'")), T2U8(p.filename)));
+				Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Extracting animated icon into '{:s}'")), T2U8_str(p.filename)));
 				Gsvt::StdErr.textColorReset();
 				Gsvt::StdErr.newline();
 				Gsvt::StdErr.fflush();
@@ -233,7 +233,7 @@ static void ExtractImages(const RomData *romData, const vector<ExtractParam> &ex
 					Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_RED, true);
 					Gsvt::StdErr.fputs("   ");
 					Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Couldn't create file '{0:s}': {1:s}")),
-						T2U8(p.filename), strerror(-errcode)));
+						T2U8_str(p.filename), strerror(-errcode)));
 					Gsvt::StdErr.textColorReset();
 					Gsvt::StdErr.newline();
 				} else {
@@ -285,10 +285,10 @@ static void DoFile(const TCHAR *filename, bool json, bool doSixel,
 	if (likely(!FileSystem::is_directory(filename))) {
 		// File: Open the file and call RomDataFactory::create() with the opened file.
 
-		// FIXME: Make T2U8() unnecessary here.
+		// FIXME: Make T2U8_str() unnecessary here.
 		Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_CYAN, true);
 		Gsvt::StdErr.fputs("== ");
-		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Reading file '{:s}'...")), T2U8(filename)));
+		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Reading file '{:s}'...")), T2U8_str(filename)));
 		Gsvt::StdErr.textColorReset();
 		Gsvt::StdErr.newline();
 		Gsvt::StdErr.fflush();
@@ -313,10 +313,10 @@ static void DoFile(const TCHAR *filename, bool json, bool doSixel,
 	} else {
 		// Directory: Call RomDataFactory::create() with the filename.
 
-		// FIXME: Make T2U8() unnecessary here.
+		// FIXME: Make T2U8_str() unnecessary here.
 		Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_CYAN, true);
 		Gsvt::StdErr.fputs("== ");
-		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Reading directory '{:s}'...")), T2U8(filename)));
+		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Reading directory '{:s}'...")), T2U8_str(filename)));
 		Gsvt::StdErr.textColorReset();
 		Gsvt::StdErr.newline();
 		Gsvt::StdErr.fflush();
@@ -510,10 +510,10 @@ static void DoDeviceInquiry_int(ostream &os, RpFile *file, bool json, DeviceInqu
  */
 static void DoDeviceInquiry(const TCHAR *filename, bool json, DeviceInquiryCommand cmd)
 {
-	// FIXME: Make T2U8() unnecessary here.
+	// FIXME: Make T2U8_str() unnecessary here.
 	Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_CYAN, true);
 	Gsvt::StdErr.fputs("== ");
-	Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8(filename)));
+	Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Opening device file '{:s}'...")), T2U8_str(filename)));
 	Gsvt::StdErr.textColorReset();
 	Gsvt::StdErr.newline();
 	Gsvt::StdErr.fflush();
@@ -884,7 +884,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				if (new_lc == 0 || (pos == 4 && s_lang[pos] != _T('\0'))) {
 					// Invalid language code.
 					Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_YELLOW, true);
-					Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Warning: ignoring invalid language code '{:s}'")), T2U8(s_lang)));
+					Gsvt::StdErr.fputs(fmt::format(FRUN(C_("rpcli", "Warning: ignoring invalid language code '{:s}'")), T2U8_str(s_lang)));
 					Gsvt::StdErr.textColorReset();
 					Gsvt::StdErr.newline();
 					Gsvt::StdErr.fflush();
@@ -923,7 +923,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				if (*endptr != '\0') {
 #ifdef _WIN32
 					// fmt::print() doesn't allow mixing narrow and wide strings.
-					const string s_imgType = T2U8(ts_imgType);
+					const string s_imgType = T2U8_str(ts_imgType);
 #else /* !_WIN32 */
 					const char *const s_imgType = ts_imgType;
 #endif /* _WIN32 */
@@ -952,7 +952,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				if (*endptr != '\0') {
 #ifdef _WIN32
 					// fmt::print() doesn't allow mixing narrow and wide strings.
-					const string s_mipmapLevel = T2U8(ts_mipmapLevel);
+					const string s_mipmapLevel = T2U8_str(ts_mipmapLevel);
 #else /* !_WIN32 */
 					const char *const s_mipmapLevel = ts_mipmapLevel;
 #endif /* _WIN32 */

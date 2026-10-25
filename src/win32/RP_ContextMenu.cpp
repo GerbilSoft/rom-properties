@@ -413,7 +413,7 @@ IFACEMETHODIMP RP_ContextMenu::Initialize(
 
 		// The list of supported file extensions is in UTF-8.
 		// Convert the file extension from TCHAR to UTF-8.
-		const string s_ext = T2U8(FileSystem::file_ext(tfilename));
+		const string s_ext = T2U8_str(FileSystem::file_ext(tfilename));
 
 		bool is_texture = false;
 		for (const char *texture_ext : texture_exts) {

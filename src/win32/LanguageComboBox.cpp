@@ -173,7 +173,7 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 
 		tstring s_lc;
 		if (lc_str) {
-			s_lc = U82T(lc_str);
+			s_lc = U82T_str(lc_str);
 		} else {
 			// Invalid language code.
 			s_lc = SystemRegion::lcToTString(lc);

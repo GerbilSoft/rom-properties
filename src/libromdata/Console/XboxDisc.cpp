@@ -213,7 +213,7 @@ XboxDiscPrivate::XboxDiscPrivate(const char *path)
 	if (path && path[0] != '\0') {
 #ifdef _WIN32
 		// Windows: Storing the path as UTF-16 internally.
-		this->path.assign(U82T(path));
+		this->path.assign(U82T_str(path));
 #else /* !_WIN32 */
 		this->path.assign(path);
 #endif /* _WIN32 */
@@ -286,7 +286,7 @@ IRpFilePtr XboxDiscPrivate::open(const char *filename)
 	}
 
 	const size_t old_sz = ts_full_filename.size();
-	ts_full_filename += U82T(filename);
+	ts_full_filename += U82T_str(filename);
 #ifdef _WIN32
 	// Replace all slashes with backslashes.
 	const auto start_iter = ts_full_filename.begin() + old_sz;

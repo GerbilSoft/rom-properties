@@ -78,8 +78,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	rp_i18n_init();
 
 	if (argc < 2 || argc > 3) {
-		// FIXME: T2U8() shouldn't be needed on Windows, but MSVC is complaining...
-		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("WiiUFstPrint", "Syntax: {:s} fst.bin")), T2U8(argv[0])));
+		// FIXME: T2U8_str() shouldn't be needed on Windows, but MSVC is complaining...
+		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("WiiUFstPrint", "Syntax: {:s} fst.bin")), T2U8_str(argv[0])));
 		Gsvt::StdErr.newline();
 		return EXIT_FAILURE;
 	}
@@ -88,9 +88,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	FILE *f = _tfopen(argv[1], _T("rb"));
 	if (!f) {
 		Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_RED, true);
-		// FIXME: T2U8() shouldn't be needed on Windows, but MSVC is complaining...
+		// FIXME: T2U8_str() shouldn't be needed on Windows, but MSVC is complaining...
 		// tr: {0:s} == filename, {1:s} == error message
-		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("GcnFstPrint", "Error opening '{0:s}': '{1:s}'")), T2U8(argv[1]), T2U8(_tcserror(errno))));
+		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("GcnFstPrint", "Error opening '{0:s}': '{1:s}'")), T2U8_str(argv[1]), T2U8_str(_tcserror(errno))));
 		Gsvt::StdErr.textColorReset();
 		Gsvt::StdErr.newline();
 		return EXIT_FAILURE;
@@ -130,8 +130,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	unique_ptr<IFst> fst(new WiiUFst(fstData.get(), static_cast<uint32_t>(fileSize)));
 	if (!fst->isOpen()) {
 		Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_RED, true);
-		// FIXME: T2U8() shouldn't be needed on Windows, but MSVC is complaining...
-		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("WiiUFstPrint", "*** ERROR: Could not parse '{:s}' as WiiUFst.")), T2U8(argv[1])));
+		// FIXME: T2U8_str() shouldn't be needed on Windows, but MSVC is complaining...
+		Gsvt::StdErr.fputs(fmt::format(FRUN(C_("WiiUFstPrint", "*** ERROR: Could not parse '{:s}' as WiiUFst.")), T2U8_str(argv[1])));
 		Gsvt::StdErr.textColorReset();
 		Gsvt::StdErr.newline();
 		return EXIT_FAILURE;

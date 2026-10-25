@@ -206,7 +206,7 @@ void SystemsTabPrivate::save(void)
 		return;
 	}
 
-	const tstring tfilename = U82T(filename);
+	const tstring tfilename = U82T_str(filename);
 
 	static const TCHAR s_dmg_dmg[][4] = {_T("DMG"), _T("CGB")};
 	const int idxDMG = ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_DMG));

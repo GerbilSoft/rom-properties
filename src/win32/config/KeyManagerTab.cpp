@@ -435,7 +435,7 @@ void KeyManagerTabPrivate::initDialog(void)
 			lvGroup.mask = LVGF_ALIGN | LVGF_GROUPID | LVGF_HEADER | LVGF_ITEMS;
 			lvGroup.uAlign = LVGA_HEADER_LEFT;
 			for (int sectIdx = 0; sectIdx < keyStore->sectCount(); sectIdx++) {
-				const wstring sectName = U82W(keyStore->sectName(sectIdx));
+				const wstring sectName = U82W_str(keyStore->sectName(sectIdx));
 				lvGroup.iGroupId = sectIdx;
 				lvGroup.pszHeader = const_cast<LPWSTR>(sectName.c_str());
 				lvGroup.cItems = keyStore->keyCount(sectIdx);
@@ -586,7 +586,7 @@ void KeyManagerTabPrivate::save(void)
 	}
 
 	// Save the keys.
-	const tstring tfilename = U82T(filename);
+	const tstring tfilename = U82T_str(filename);
 	const int totalKeyCount = keyStore->totalKeyCount();
 	for (int i = 0; i < totalKeyCount; i++) {
 		const KeyStoreWin32::Key *const pKey = keyStore->getKey(i);

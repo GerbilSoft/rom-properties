@@ -170,14 +170,14 @@ int RP_XAttrView_Private::loadADS(void)
 	lvItem.mask = LVIF_TEXT;
 	lvItem.iItem = 0;
 	for (const auto &xattr : xattrList) {
-		tstring tstr = U82T(xattr.first.c_str());
+		tstring tstr = U82T_str(xattr.first.c_str());
 		lvItem.iSubItem = 0;
 		lvItem.pszText = const_cast<LPTSTR>(tstr.c_str());
 		ListView_InsertItem(hListViewADS, &lvItem);
 
 		// Trim spaces for the value.
 		// TODO: Split this into a separate function.
-		tstr = U82T(xattr.second.c_str());
+		tstr = U82T_str(xattr.second.c_str());
 		// Trim at the end.
 		size_t pos = tstr.size();
 		while (pos > 0 && ISSPACE(tstr[pos-1])) {

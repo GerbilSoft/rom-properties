@@ -757,9 +757,9 @@ int RP_ShellPropSheetExt_Private::initBitfield(_In_ HWND hWndTab,
 	tnames.reserve(count);
 	for (const string &name : *(bitfieldDesc.names)) {
 		if (!name.empty()) {
-			tnames.push_back(U82T(name));
+			tnames.push_back(U82T_str(name));
 		} else {
-			// Skip U82T() for empty strings.
+			// Skip U82T_str() for empty strings.
 			tnames.push_back(tstring());
 		}
 	}
@@ -1027,7 +1027,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 				// NOTE: pszText is LPTSTR, not LPCTSTR...
 				// NOTE 2: ListView is limited to 260 characters. (259+1)
 				// TODO: Handle surrogate pairs?
-				tstring tstr = U82T(str);
+				tstring tstr = U82T_str(str);
 				if (tstr.size() >= 260) {
 					// Reduce to 256 and add "..."
 					tstr.resize(256);
@@ -1133,7 +1133,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 						tstr = TC_("RomData", "Unknown");
 					}
 				} else {
-					tstr = U82T(data_str);
+					tstr = U82T_str(data_str);
 					if (tstr.size() >= 260) {
 						// Reduce to 256 and add "..."
 						tstr.resize(256);
@@ -1597,7 +1597,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 
 					// NOTE: ListView is limited to 260 characters. (259+1)
 					// TODO: Handle surrogate pairs?
-					tstring tstr = U82T(str);
+					tstring tstr = U82T_str(str);
 					if (tstr.size() >= 260) {
 						// Reduce to 256 and add "..."
 						tstr.resize(256);
@@ -1643,7 +1643,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 							tstr = TC_("RomData", "Unknown");
 						}
 					} else {
-						tstr = U82T(*iter_sdr);
+						tstr = U82T_str(*iter_sdr);
 						if (tstr.size() >= 260) {
 							// Reduce to 256 and add "..."
 							tstr.resize(256);
@@ -1866,7 +1866,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		if (!field.isValid())
 			continue;
 
-		tstring desc_text = U82T(fmt::format(FRUN(desc_label_fmt), field.name));
+		tstring desc_text = U82T_str(fmt::format(FRUN(desc_label_fmt), field.name));
 
 		// Get the width of this specific entry.
 		// TODO: Use measureTextSize()?
@@ -1993,7 +1993,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 				// Skip this tab.
 				continue;
 			}
-			const tstring tstr = U82T(name);
+			const tstring tstr = U82T_str(name);
 
 			TCITEM tcItem;
 			tcItem.mask = TCIF_TEXT;

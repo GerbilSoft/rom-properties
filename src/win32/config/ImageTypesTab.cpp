@@ -475,7 +475,7 @@ int ImageTypesTabPrivate::saveStart(void)
 
 	// Store the configuration filename.
 	assert(tmp_conf_filename.empty());
-	tmp_conf_filename = U82T(filename);
+	tmp_conf_filename = U82T_str(filename);
 	return 0;
 }
 

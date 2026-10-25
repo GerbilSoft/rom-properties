@@ -285,7 +285,7 @@ HGLOBAL DILDataObjectPrivate::getFileDescriptorW(void) const
 #ifdef UNICODE
 	wcsncpy_s(fileDesc->cFileName, _countof(fileDesc->cFileName), filename.c_str(), _TRUNCATE);
 #else /* !UNICODE */
-	const wstring wstr = A2W(filename);
+	const wstring wstr = A2W_str(filename);
 	wcsncpy_s(fileDesc->cFileName, _countof(fileDesc->cFileName), wstr.c_str(), _TRUNCATE);
 #endif /* UNICODE */
 
@@ -349,7 +349,7 @@ HGLOBAL DILDataObjectPrivate::getFileDescriptorA(void) const
 	}
 
 #ifdef UNICODE
-	const string str = W2A(filename);
+	const string str = W2A_str(filename);
 	strncpy_s(fileDesc->cFileName, _countof(fileDesc->cFileName), str.c_str(), _TRUNCATE);
 #else /* !UNICODE */
 	strncpy_s(fileDesc->cFileName, _countof(fileDesc->cFileName), filename.c_str(), _TRUNCATE);

@@ -283,7 +283,7 @@ int CurlDownloader::download(void)
 	if (!m_reqMimeType.empty()) {
 		// Add the "Accept:" header.
 		string accept_header = "Accept: ";
-		accept_header += T2U8(m_reqMimeType);
+		accept_header += T2U8_str(m_reqMimeType);
 		req_headers = pcurl_slist_append(req_headers, accept_header.c_str());
 	}
 
