@@ -40,20 +40,25 @@ namespace LibRomData {
 
 /**
  * Get an internal image.
+ * @param pOutParams	[out] Pointer to GetThumbnailOutParams_t (fullSize and retImg will be modified)
  * @param romData	[in] RomData object
  * @param imageType	[in] Image type
- * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size
- * @param sBIT		[out,opt] sBIT metadata
- * @return Internal image, or null ImgClass on error.
+ * @return RPCT_SUCCESS on success; other value on error.
  */
 template<typename ImgClass>
-ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
+RpCreateThumbnailError TCreateThumbnail<ImgClass>::getInternalImage(
+	GetThumbnailOutParams_t *pOutParams,
 	const LibRpBase::RomDataPtr &romData,
-	LibRpBase::RomData::ImageType imageType,
-	ImgSize *pOutSize,
-	LibRpTexture::rp_image::sBIT_t *sBIT)
+	LibRpBase::RomData::ImageType imageType)
 {
-	ImgClass ret_img = getNullImgClass();
+	assert(pOutParams != nullptr);
+	if (!pOutParams) {
+		return RPCT_ERROR_INTERNAL_ERROR;
+	}
+
+	// Initialize the output parameters.
+	pOutParams->retImg = getNullImgClass();
+	memset(&pOutParams->sBIT, 0, sizeof(pOutParams->sBIT));
 
 	using LibRpBase::RomData;
 	using LibRpTexture::rp_image_const_ptr;
@@ -61,49 +66,43 @@ ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
 	assert(imageType >= RomData::IMG_INT_MIN && imageType <= RomData::IMG_INT_MAX);
 	if (imageType < RomData::IMG_INT_MIN || imageType > RomData::IMG_INT_MAX) {
 		// Out of range.
-		if (sBIT) {
-			memset(sBIT, 0, sizeof(*sBIT));
-		}
-		return ret_img;
+		return RPCT_ERROR_INVALID_INT_IMAGE_TYPE;
 	}
 
 	const rp_image_const_ptr image = romData->image(imageType);
 	if (!image) {
 		// No image.
-		if (sBIT) {
-			memset(sBIT, 0, sizeof(*sBIT));
-		}
-		return ret_img;
+		return RPCT_ERROR_INT_IMAGE_NOT_FOUND;
 	}
 
 	// TODO: Multiple internal image sizes. [add reqSize]
 
 	// Convert the rp_image to ImgClass.
-	ret_img = rpImageToImgClass(image);
-	if (isImgClassValid(ret_img)) {
+	pOutParams->retImg = rpImageToImgClass(image);
+	if (isImgClassValid(pOutParams->retImg)) {
 		// Image converted successfully.
-		if (pOutSize) {
-			// Get the image size.
-			// NOTE: The image may have been resized on Windows,
-			// since Windows has issues with non-square images.
-			// Hence, we have to get the size from ret_img.
-			// TODO: Check for errors?
-			getImgClassSize(ret_img, pOutSize);
-		}
-		if (sBIT) {
-			// Get the sBIT metadata.
-			if (image->get_sBIT(sBIT) != 0) {
-				// No sBIT metadata.
-				// Clear the struct.
-				memset(sBIT, 0, sizeof(*sBIT));
-			}
+
+		// Get the image size.
+		// NOTE: The image may have been resized on Windows,
+		// since Windows has issues with non-square images.
+		// Hence, we have to get the size from ret_img.
+		// TODO: Check for errors?
+		getImgClassSize(pOutParams->retImg, &pOutParams->fullSize);
+
+		// Get the sBIT metadata.
+		if (image->get_sBIT(&pOutParams->sBIT) != 0) {
+			// No sBIT metadata.
+			// Clear the struct.
+			memset(&pOutParams->sBIT, 0, sizeof(pOutParams->sBIT));
 		}
 	} else {
-		// NOTE: Assigning to `ret_img` for named-return-value optimization.
-		ret_img = getNullImgClass();
+		// Shouldn't happen...
+		freeImgClass(pOutParams->retImg);
+		pOutParams->retImg = getNullImgClass();
+		return RPCT_ERROR_INTERNAL_ERROR;
 	}
 
-	return ret_img;
+	return RPCT_SUCCESS;
 }
 
 /**
@@ -209,6 +208,10 @@ RpCreateThumbnailError TCreateThumbnail<ImgClass>::getExternalImage(
 					}
 					// TODO: Transparency processing?
 					return RPCT_SUCCESS;
+				} else {
+					freeImgClass(pOutParams->retImg);
+					pOutParams->retImg = getNullImgClass();
+					// TODO: Log as an error.
 				}
 			}
 		}
@@ -304,13 +307,14 @@ RpCreateThumbnailError TCreateThumbnail<ImgClass>::getThumbnail(const LibRpBase:
 		// Check for an icon first.
 		// TODO: Define "small sizes" somewhere. (DPI independence?)
 		if (imgbf & RomData::IMGBF_INT_ICON) {
-			pOutParams->retImg = getInternalImage(romData, RomData::IMG_INT_ICON, &pOutParams->fullSize, &pOutParams->sBIT);
+			RpCreateThumbnailError err = getInternalImage(pOutParams, romData, RomData::IMG_INT_ICON);
 			imgpf = romData->imgpf(RomData::IMG_INT_ICON);
 			imgbf &= ~RomData::IMGBF_INT_ICON;
 
-			if (isImgClassValid(pOutParams->retImg)) {
+			if (err == RPCT_SUCCESS) {
 				// Image retrieved.
 				// TODO: Better method than goto?
+				assert(isImgClassValid(pOutParams->retImg));
 				goto skip_image_check;
 			}
 		}
@@ -334,10 +338,11 @@ RpCreateThumbnailError TCreateThumbnail<ImgClass>::getThumbnail(const LibRpBase:
 		}
 
 		// This image may be present.
+		// TODO: Log all errors and add a debugging option to view them?
 		RpCreateThumbnailError err = RPCT_SUCCESS;
 		if (imgType <= RomData::IMG_INT_MAX) {
 			// Internal image.
-			pOutParams->retImg = getInternalImage(romData, imgType, &pOutParams->fullSize, &pOutParams->sBIT);
+			err = getInternalImage(pOutParams, romData, imgType);
 			imgpf = romData->imgpf(imgType);
 		} else {
 			// External image.
@@ -345,8 +350,9 @@ RpCreateThumbnailError TCreateThumbnail<ImgClass>::getThumbnail(const LibRpBase:
 			imgpf = romData->imgpf(imgType);
 		}
 
-		if (/*err == RPCT_SUCCESS &&*/ isImgClassValid(pOutParams->retImg)) {
+		if (err == RPCT_SUCCESS) {
 			// Image retrieved.
+			assert(isImgClassValid(pOutParams->retImg));
 			break;
 		}
 

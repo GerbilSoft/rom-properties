@@ -60,6 +60,7 @@ typedef enum {
 
 	// Internal images
 	RPCT_ERROR_INVALID_INT_IMAGE_TYPE			= 50,	// Invalid image type passed to getInternalImage().
+	RPCT_ERROR_INT_IMAGE_NOT_FOUND				= 51,	// The specified internal image was not found.
 
 	RPCT_ERROR_INTERNAL_ERROR				= 126,	// Internal error! (v2+)
 } RpCreateThumbnailError;
@@ -177,16 +178,15 @@ public:
 
 	/**
 	 * Get an internal image.
+	 * @param pOutParams	[out] Pointer to GetThumbnailOutParams_t (fullSize and retImg will be modified)
 	 * @param romData	[in] RomData object
 	 * @param imageType	[in] Image type
-	 * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size
-	 * @param sBIT		[out,opt] sBIT metadata
-	 * @return Internal image, or null ImgClass on error.
+	 * @return RPCT_SUCCESS on success; other value on error.
 	 */
-	ImgClass getInternalImage(const LibRpBase::RomDataPtr &romData,
-		LibRpBase::RomData::ImageType imageType,
-		ImgSize *pOutSize = nullptr,
-		LibRpTexture::rp_image::sBIT_t *sBIT = nullptr);
+	RpCreateThumbnailError getInternalImage(
+		GetThumbnailOutParams_t *pOutParams,
+		const LibRpBase::RomDataPtr &romData,
+		LibRpBase::RomData::ImageType imageType);
 
 	/**
 	 * Get an external image.
