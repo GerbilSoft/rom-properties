@@ -6,6 +6,11 @@ IF(NOT GLib2_FOUND)
 	RETURN()
 ENDIF(NOT GLib2_FOUND)
 
+# Remove "-Werror=undef".
+# TODO: Only for Google Test libraries; it should remain enabled for our own code...
+string(REPLACE "-Werror=undef" "" CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}")
+string(REPLACE "-Werror=undef" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
 # Top-level src directory
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../..)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../..)

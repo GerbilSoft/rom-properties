@@ -1,6 +1,11 @@
 # libromdata test suite
 PROJECT(libromdata-tests LANGUAGES C CXX)
 
+# Remove "-Werror=undef".
+# TODO: Only for Google Test libraries; it should remain enabled for our own code...
+string(REPLACE "-Werror=undef" "" CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}")
+string(REPLACE "-Werror=undef" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
 # Current binary directory for config.libromdata-tests.h
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 
