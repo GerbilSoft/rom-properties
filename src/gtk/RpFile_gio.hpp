@@ -13,6 +13,7 @@
 
 // C++ STL classes
 #include <string>
+#include "rp-string_view.hpp"
 
 class RpFileGioPrivate;
 class RpFileGio final : public LibRpFile::IRpFile
@@ -23,16 +24,7 @@ public:
 	 * NOTE: Files are always opened as read-only in binary mode.
 	 * @param uri GVfs URI
 	 */
-	explicit RpFileGio(const char *uri);
-
-	/**
-	 * Open a file.
-	 * NOTE: Files are always opened as read-only in binary mode.
-	 * @param uri GVfs URI
-	 */
-	explicit RpFileGio(const std::string &uri)
-		: RpFileGio(uri.c_str())
-	{}
+	explicit RpFileGio(std::string_view uri);
 
 public:
 	~RpFileGio() final;
