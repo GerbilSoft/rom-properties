@@ -18,8 +18,7 @@ streambuf_IRpFile::streambuf_IRpFile(const IRpFilePtr &file)
 	}
 
 	// Initialize the read buffer.
-	// NOTE: Read-only; not supporting writes.
-	m_in_buffer.resize(BUFFER_SIZE);
+	m_in_buffer.fill(0);
 }
 
 /**

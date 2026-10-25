@@ -4,8 +4,8 @@
 #include "librpfile/IRpFile.hpp"
 
 // C++ STL classes
+#include <array>
 #include <iostream>
-#include <vector>
 
 namespace LibRomData {
 
@@ -45,7 +45,7 @@ protected:
 private:
 	static constexpr size_t BUFFER_SIZE = 4096U;
 	LibRpFile::IRpFilePtr m_file;
-	std::vector<char> m_in_buffer;
+	std::array<char, BUFFER_SIZE> m_in_buffer;
 };
 
 } // namespace libromdata
