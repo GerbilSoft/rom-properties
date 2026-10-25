@@ -474,7 +474,7 @@ static string formatDateTime(rp_time_t timestamp, RomFields::DateTimeFlags dtfla
 		static_assert(sizeof(formats_strtbl) == 33, "formats_offtbl[] needs to be recalculated");
 
 		const unsigned int offset = (dtflags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK);
-		const char *format = &formats_strtbl[formats_offtbl[offset]];
+		const char *const format = &formats_strtbl[formats_offtbl[offset]];
 		assert(format[0] != '\0');
 		if (likely(format[0] != '\0')) {
 			// TODO: fmt::format()? [may need <fmt/chrono.h>]
@@ -1029,7 +1029,7 @@ public:
 				tabIdx = romField.tabIdx;
 
 				// TODO: Better formatting?
-				const char *name = fo.fields.tabName(tabIdx);
+				const char *const name = fo.fields.tabName(tabIdx);
 				assert(name != nullptr);
 				os << "----- ";
 				if (name) {
