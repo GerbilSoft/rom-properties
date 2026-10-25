@@ -343,7 +343,7 @@ IRpFilePtr WiiUPackagePrivate::open(const char *filename)
 				return fp;
 			}
 
-			fp = std::make_shared<RpFile_ZArchiveReader>(wua.zarchive, wua.package_name.c_str(), filename);
+			fp = std::make_shared<RpFile_ZArchiveReader>(wua.zarchive, wua.package_name, filename);
 			return fp;
 		}
 #endif /* HAVE_ZARCHIVE */
@@ -668,7 +668,7 @@ void WiiUPackage::init(void)
 #ifdef HAVE_ZARCHIVE
 	if (d->packageType == WiiUPackagePrivate::PackageType::WUA) {
 		const wua_t &wua = std::get<wua_t>(d->data);
-		subfile = std::make_shared<RpFile_ZArchiveReader>(wua.zarchive, wua.package_name.c_str(), T2U8(ts_path));
+		subfile = std::make_shared<RpFile_ZArchiveReader>(wua.zarchive, wua.package_name, T2U8_str(ts_path));
 	} else
 #endif /* HAVE_ZARCHIVE */
 	{
@@ -714,7 +714,7 @@ void WiiUPackage::init(void)
 #ifdef HAVE_ZARCHIVE
 	if (d->packageType == WiiUPackagePrivate::PackageType::WUA) {
 		const wua_t &wua = std::get<wua_t>(d->data);
-		subfile = std::make_shared<RpFile_ZArchiveReader>(wua.zarchive, wua.package_name.c_str(), T2U8(ts_path));
+		subfile = std::make_shared<RpFile_ZArchiveReader>(wua.zarchive, wua.package_name, T2U8_str(ts_path));
 	} else
 #endif /* HAVE_ZARCHIVE */
 	{

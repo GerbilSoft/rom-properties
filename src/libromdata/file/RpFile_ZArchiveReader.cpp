@@ -23,15 +23,13 @@ namespace LibRomData {
  * @param package_name	[in] Package name within the ZArchive (usually title ID + version)
  * @param filename	[in] File to open within the ZArchive
  */
-RpFile_ZArchiveReader::RpFile_ZArchiveReader(const shared_ptr<ZArchiveReader> &zarchive, const char *package_name, const char *filename)
+RpFile_ZArchiveReader::RpFile_ZArchiveReader(const shared_ptr<ZArchiveReader> &zarchive, std::string_view package_name, std::string_view filename)
 	: m_zarchive(zarchive)
 	, m_pos(0)
 	, m_size(0)
 	, m_handle(ZARCHIVE_INVALID_NODE)
 {
-	if (!package_name || package_name[0] == '\0' ||
-	    !filename || filename[0] == '\0')
-	{
+	if (package_name.empty() || filename.empty()) {
 		return;
 	}
 
