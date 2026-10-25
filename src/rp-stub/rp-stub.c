@@ -26,6 +26,9 @@
 // OS-specific security options
 #include "rp-stub_secure.h"
 
+// RPCT error code strings
+#include "rp-thumbnail-errors.h"
+
 // C includes
 #include <dlfcn.h>
 #include <errno.h>
@@ -474,9 +477,37 @@ int main(int argc, char *argv[])
 			fputc('\n', stderr);
 		}
 	} else {
-		// tr: %1$s == function name, %2$d == return value
-		fprintf_p(stderr, C_("rp-stub", "*** ERROR: %1$s() returned %2$d."), symname, ret);
-		fputc('\n', stderr);
+		bool found_error_code = false;
+		if (mode == MODE_THUMBNAIL) {
+			// Check for a description of this error code.
+			const RPCT_Err_String_t *p = RPCT_Err_String_tbl;
+			const RPCT_Err_String_t *const p_end = &RPCT_Err_String_tbl[ARRAY_SIZE(RPCT_Err_String_tbl)];
+			for (; p < p_end; p++) {
+				if (p->err == ret) {
+					// Found the error code.
+					found_error_code = true;
+
+					if (p->desc) {
+						// tr: %1$s == function name, %2$d == return value, %3$s == error code name, %4$s == error code description
+						fprintf_p(stderr, C_("rp-stub", "*** ERROR: %1$s() returned %2$d: %3$s - %4$s"),
+							symname, ret, p->name, p->desc);
+					} else {
+						// tr: %1$s == function name, %2$d == return value, %3$s == error code name
+						fprintf_p(stderr, C_("rp-stub", "*** ERROR: %1$s() returned %2$d: %3$s"),
+							symname, ret, p->name);
+					}
+					fputc('\n', stderr);
+					break;
+				}
+			}
+		}
+
+		if (!found_error_code) {
+			// No error code description found.
+			// tr: %1$s == function name, %2$d == return value
+			fprintf_p(stderr, C_("rp-stub", "*** ERROR: %1$s() returned %2$d."), symname, ret);
+			fputc('\n', stderr);
+		}
 	}
 	return ret;
 }

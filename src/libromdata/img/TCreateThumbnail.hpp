@@ -28,7 +28,7 @@ typedef enum {
 	RPCT_SUCCESS						= 0,
 	RPCT_ERROR_CANNOT_LOAD_DLL				= 1,	// Cannot load the shared library.
 	RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE			= 2,	// Cannot open the source file.
-	RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED			= 3,	// Source file isn't supported.
+	RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED			= 3,	// Source file is not supported.
 	RPCT_ERROR_SOURCE_FILE_NO_IMAGE				= 4,	// Source file has no image.
 	RPCT_ERROR_OUTPUT_FILE_FAILED				= 5,	// Failed to save the output file.
 	RPCT_ERROR_SOURCE_FILE_CLASS_DISABLED			= 6,	// User configuration has disabled thumbnails for this class.
@@ -38,7 +38,7 @@ typedef enum {
 	RPCT_ERROR_INVALID_FLAGS				= 10,	// Invalid flag values. (v2)
 	RPCT_ERROR_DIRECTORY_THUMBNAILING_DISABLED		= 11,	// Directory thumbnailing is disabled. (v2+)
 
-	/// v3.0: New error codes to improve rp-thumbnail debugging.
+	/// rom-properties 3.0: New error codes to improve rp-thumbnail debugging.
 
 	// External image caching
 	RPCT_ERROR_INVALID_EXT_IMAGE_TYPE			= 20,	// Invalid image type passed to getExternalImage().
@@ -51,7 +51,7 @@ typedef enum {
 
 	// `rp-download` for external image downloads
 	RPCT_ERROR_EXECRPDOWNLOAD_NOT_IMPLEMENTED		= 30,	// execRpDownload() is not implemented on this system.
-	RPCT_ERROR_RP_DOWNLOAD_MISSING				= 31,	// `rp-download` executable is missing?
+	RPCT_ERROR_RP_DOWNLOAD_MISSING				= 31,	// `rp-download` executable is missing.
 	RPCT_ERROR_RP_DOWNLOAD_FAILED				= 32,	// `rp-download` executable failed to start for some reason.
 	RPCT_ERROR_RP_DOWNLOAD_HUNG				= 33,	// `rp-download` never completed...
 	RPCT_ERROR_EXT_FILE_NOT_FOUND				= 34,	// External URL returned 404.
