@@ -28,9 +28,9 @@ namespace LibRomData {
 /**
  * Execute rp-download. (Win32 version)
  * @param filteredCacheKey Filtered cache key.
- * @return 0 on success; negative POSIX error code on error.
+ * @return DownloadError::Success on success; other DownloadError on error.
  */
-int CacheManager::execRpDownload(const string &filteredCacheKey)
+CacheManager::DownloadError CacheManager::execRpDownload(const string &filteredCacheKey)
 {
 	// The executable should be located in the DLL directory.
 	TCHAR dll_filename[MAX_PATH];
@@ -41,7 +41,7 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
 		// Cannot get the DLL filename.
 		// TODO: Windows XP doesn't SetLastError() if the
 		// filename is too big for the buffer.
-		return -EINVAL;
+		return DownloadError::InternalError;
 	}
 
 	tstring rp_download_exe = dll_filename;
@@ -49,7 +49,7 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
 	if (bs == tstring::npos) {
 		// Backslash not found.
 		// TODO: Better error code?
-		return -EINVAL;
+		return DownloadError::InternalError;
 	}
 	rp_download_exe.resize(bs+1);
 	rp_download_exe += _T("rp-download.exe");
@@ -113,8 +113,11 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
 	if (!bRet) {
 		// Error starting rp-download.exe.
 		// TODO: Try the architecture-specific subdirectory?
-		// TODO: Better error code?
-		return -ECHILD;
+		DWORD dwErr = GetLastError();
+		if (dwErr == ERROR_FILE_NOT_FOUND) {
+			return DownloadError::RpDownload_missing;
+		}
+		return DownloadError::RpDownload_failed;
 	}
 
 	// Wait up to 10 seconds for the process to exit.
@@ -126,21 +129,14 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
 		TerminateProcess(pi.hProcess, EXIT_FAILURE);
 		CloseHandle(pi.hThread);
 		CloseHandle(pi.hProcess);
-		// TODO: Better error code?
-		return -ECHILD;
+		return DownloadError::RpDownload_hung;
 	}
 
 	CloseHandle(pi.hThread);
 	CloseHandle(pi.hProcess);
 
-	if (status != 0) {
-		// rp-download failed for some reason.
-		// TODO: Better error code?
-		return -EIO;
-	}
-
-	// rp-download has successfully downloaded the file.
-	return 0;
+	// Return the status code.
+	return static_cast<CacheManager::DownloadError>(status);
 }
 
 } // namespace LibRomData

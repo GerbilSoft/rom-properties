@@ -33,7 +33,7 @@ namespace LibRomData {
 /**
  * Execute rp-download. (POSIX version)
  * @param filteredCacheKey Filtered cache key.
- * @return 0 on success; negative POSIX error code on error.
+ * @return DownloadError::Success on success; other DownloadError on error.
  */
 CacheManager::DownloadError CacheManager::execRpDownload(const string &filteredCacheKey)
 {

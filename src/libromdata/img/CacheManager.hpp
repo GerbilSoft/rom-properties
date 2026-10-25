@@ -70,12 +70,13 @@ public:
 		Cache_UnknownCacheEntryError		= 26,	// Unknown cache entry error...
 
 		// `rp-download` for external image downloads
-		RpDownload_missing			= 30,	// `rp-download` executable is missing?
-		RpDownload_failed			= 31,	// `rp-download` executable failed to start for some reason.
-		RpDownload_hung				= 32,	// `rp-download` never completed...
-		ExtFileNotFound				= 33,	// External URL returned 404.
-		ExtOtherError				= 34,	// External URL returned a different error.
-		ExtFileNotInCache			= 35,	// External URL is not in the local cache, and a cache-only search was requested.
+		ExecRpDownload_Not_Implemented		= 30,	// execRpDownload() is not implemented on this system.
+		RpDownload_missing			= 31,	// `rp-download` executable is missing?
+		RpDownload_failed			= 32,	// `rp-download` executable failed to start for some reason.
+		RpDownload_hung				= 33,	// `rp-download` never completed...
+		ExtFileNotFound				= 34,	// External URL returned 404.
+		ExtOtherError				= 35,	// External URL returned a different error.
+		ExtFileNotInCache			= 36,	// External URL is not in the local cache, and a cache-only search was requested.
 
 		InternalError				= 126,
 	};

@@ -50,12 +50,13 @@ typedef enum {
 	RPCT_ERROR_CACHE_UNKNOWN_CACHE_ENTRY_ERROR		= 26,	// Unknown cache entry error...
 
 	// `rp-download` for external image downloads
-	RPCT_ERROR_RP_DOWNLOAD_MISSING				= 30,	// `rp-download` executable is missing?
-	RPCT_ERROR_RP_DOWNLOAD_FAILED				= 31,	// `rp-download` executable failed to start for some reason.
-	RPCT_ERROR_RP_DOWNLOAD_HUNG				= 32,	// `rp-download` never completed...
-	RPCT_ERROR_EXT_FILE_NOT_FOUND				= 33,	// External URL returned 404.
-	RPCT_ERROR_EXT_OTHER_ERROR				= 34,	// External URL returned a different error.
-	RPCT_ERROR_EXT_FILE_NOT_IN_CACHE			= 35,	// External URL is not in the local cache, and a cache-only search was requested.
+	RPCT_ERROR_EXECRPDOWNLOAD_NOT_IMPLEMENTED		= 30,	// execRpDownload() is not implemented on this system.
+	RPCT_ERROR_RP_DOWNLOAD_MISSING				= 31,	// `rp-download` executable is missing?
+	RPCT_ERROR_RP_DOWNLOAD_FAILED				= 32,	// `rp-download` executable failed to start for some reason.
+	RPCT_ERROR_RP_DOWNLOAD_HUNG				= 33,	// `rp-download` never completed...
+	RPCT_ERROR_EXT_FILE_NOT_FOUND				= 34,	// External URL returned 404.
+	RPCT_ERROR_EXT_OTHER_ERROR				= 35,	// External URL returned a different error.
+	RPCT_ERROR_EXT_FILE_NOT_IN_CACHE			= 36,	// External URL is not in the local cache, and a cache-only search was requested.
 
 	// Internal images
 	RPCT_ERROR_INVALID_INT_IMAGE_TYPE			= 50,	// Invalid image type passed to getInternalImage().
