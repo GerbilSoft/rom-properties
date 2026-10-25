@@ -27,7 +27,7 @@
 #include "rp-stub_secure.h"
 
 // RPCT error code strings
-#include "rp-thumbnail-errors.h"
+#include "RPCT_data.h"
 
 // C includes
 #include <dlfcn.h>
@@ -480,25 +480,23 @@ int main(int argc, char *argv[])
 		bool found_error_code = false;
 		if (mode == MODE_THUMBNAIL) {
 			// Check for a description of this error code.
-			const RPCT_Err_String_t *p = RPCT_Err_String_tbl;
-			const RPCT_Err_String_t *const p_end = &RPCT_Err_String_tbl[ARRAY_SIZE(RPCT_Err_String_tbl)];
-			for (; p < p_end; p++) {
-				if (p->err == ret) {
-					// Found the error code.
-					found_error_code = true;
+			if (ret >= 0 && ret < ARRAY_SIZE_I(RPCT_Err_String_offtbl) && RPCT_Err_String_offtbl[ret].name_idx != 0) {
+				// Found a description.
+				found_error_code = true;
 
-					if (p->desc) {
-						// tr: %1$s == function name, %2$d == return value, %3$s == error code name, %4$s == error code description
-						fprintf_p(stderr, C_("rp-stub", "*** ERROR: %1$s() returned %2$d: %3$s - %4$s"),
-							symname, ret, p->name, p->desc);
-					} else {
-						// tr: %1$s == function name, %2$d == return value, %3$s == error code name
-						fprintf_p(stderr, C_("rp-stub", "*** ERROR: %1$s() returned %2$d: %3$s"),
-							symname, ret, p->name);
-					}
-					fputc('\n', stderr);
-					break;
+				if (RPCT_Err_String_offtbl[ret].desc_idx != 0) {
+					// tr: %1$s == function name, %2$d == return value, %3$s == error code name, %4$s == error code description
+					fprintf_p(stderr, C_("rp-stub", "*** ERROR: %1$s() returned %2$d: %3$s - %4$s"),
+						symname, ret,
+						&RPCT_error_code_strtbl[RPCT_Err_String_offtbl[ret].name_idx],
+						&RPCT_error_code_strtbl[RPCT_Err_String_offtbl[ret].desc_idx]);
+				} else {
+					// tr: %1$s == function name, %2$d == return value, %3$s == error code name
+					fprintf_p(stderr, C_("rp-stub", "*** ERROR: %1$s() returned %2$d: %3$s"),
+						symname, ret,
+						&RPCT_error_code_strtbl[RPCT_Err_String_offtbl[ret].name_idx]);
 				}
+				fputc('\n', stderr);
 			}
 		}
 

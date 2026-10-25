@@ -1,0 +1,45 @@
+# RPCT error code strings.
+# Format: Number|Name|Description
+# Number is always interpreted as decimal.
+
+# NOTE: Keep this in sync with RpCreateThumbnailError.
+# src/libromdata/img/TCreateThumbnail.hpp
+
+0|RPCT_SUCCESS|
+1|RPCT_ERROR_CANNOT_LOAD_DLL|Cannot load the shared library.
+2|RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE|Cannot open the source file.
+3|RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED|Source file is not supported.
+4|RPCT_ERROR_SOURCE_FILE_NO_IMAGE|Source file has no image.
+5|RPCT_ERROR_OUTPUT_FILE_FAILED|Failed to save the output file.
+6|RPCT_ERROR_SOURCE_FILE_CLASS_DISABLED|User configuration has disabled thumbnails for this class.
+7|RPCT_ERROR_SOURCE_FILE_BAD_FS|Source file is located on a "bad" file system.
+8|RPCT_ERROR_RUNNING_AS_ROOT|Running as root is not supported.
+9|RPCT_ERROR_INVALID_IMAGE_SIZE|Invalid image size requested. (e.g. 0 or less)
+10|RPCT_ERROR_INVALID_FLAGS|Invalid flag values.
+11|RPCT_ERROR_DIRECTORY_THUMBNAILING_DISABLED|Directory thumbnailing is disabled.
+
+### rom-properties 3.0: New error codes to improve rp-thumbnail debugging.
+
+# External image caching
+20|RPCT_ERROR_INVALID_EXT_IMAGE_TYPE|Invalid image type passed to getExternalImage().
+21|RPCT_ERROR_SOURCE_FILE_HAS_NO_EXTURLS|Source file has no external image URLs.
+22|RPCT_ERROR_CANNOT_GET_CACHE_FILENAME|LibCacheCommon::getCacheFilename() failed.
+23|RPCT_ERROR_CACHE_NEGATIVE_CACHE_UNEXPIRED|File has a negative cache entry that has not expired yet.
+24|RPCT_ERROR_CACHE_CANNOT_DELETE_NEGATIVE_CACHE_ENTRY|Could not delete an expired negative cache entry.
+25|RPCT_ERROR_CACHE_CANNOT_READ_CACHED_FILE|Cannot read a file in the cache.
+26|RPCT_ERROR_CACHE_UNKNOWN_CACHE_ENTRY_ERROR|Unknown cache entry error...
+
+# `rp-download` for external image downloads
+30|RPCT_ERROR_EXECRPDOWNLOAD_NOT_IMPLEMENTED|execRpDownload() is not implemented on this system.
+31|RPCT_ERROR_RP_DOWNLOAD_MISSING|`rp-download` executable is missing.
+32|RPCT_ERROR_RP_DOWNLOAD_FAILED|`rp-download` executable failed to start for some reason.
+33|RPCT_ERROR_RP_DOWNLOAD_HUNG|`rp-download` never completed...
+34|RPCT_ERROR_EXT_FILE_NOT_FOUND|External URL returned 404.
+35|RPCT_ERROR_EXT_OTHER_ERROR|External URL returned a different error.
+36|RPCT_ERROR_EXT_FILE_NOT_IN_CACHE|External URL is not in the local cache, and a cache-only search was requested.
+
+# Internal images
+50|RPCT_ERROR_INVALID_INT_IMAGE_TYPE|Invalid image type passed to getInternalImage().
+51|RPCT_ERROR_INT_IMAGE_NOT_FOUND|The specified internal image was not found.
+
+126|RPCT_ERROR_INTERNAL_ERROR|Internal error!
