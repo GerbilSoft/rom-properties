@@ -12,7 +12,6 @@
 #include "librpfile/IRpFile.hpp"
 
 // C++ STL classes
-#include <string>
 #include "rp-string_view.hpp"
 
 class RpFileGioPrivate;
