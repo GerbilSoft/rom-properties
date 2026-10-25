@@ -176,7 +176,7 @@ static int msp_seek(struct mspack_file *file, off_t offset, int mode) {
     case MSPACK_SYS_SEEK_END:   mode = SEEK_END; break;
     default: return -1;
     }
-#if HAVE_FSEEKO
+#ifdef HAVE_FSEEKO
     return fseeko(self->fh, offset, mode);
 #else
     return fseek(self->fh, offset, mode);
@@ -187,7 +187,7 @@ static int msp_seek(struct mspack_file *file, off_t offset, int mode) {
 
 static off_t msp_tell(struct mspack_file *file) {
   struct mspack_file_p *self = (struct mspack_file_p *) file;
-#if HAVE_FSEEKO
+#ifdef HAVE_FSEEKO
   return (self) ? (off_t) ftello(self->fh) : 0;
 #else
   return (self) ? (off_t) ftell(self->fh) : 0;

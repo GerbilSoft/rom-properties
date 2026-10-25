@@ -92,7 +92,7 @@
 # endif
 #endif
 
-#if HAVE_LIMITS_H
+#ifdef HAVE_LIMITS_H
 # include <limits.h>
 #endif
 #ifndef CHAR_BIT
