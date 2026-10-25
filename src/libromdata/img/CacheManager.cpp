@@ -73,20 +73,23 @@ void CacheManager::setProxyUrl(const char *proxyUrl)
  * the last time it was requested, an empty string will be
  * returned, and a zero-byte file will be stored in the cache.
  *
- * @return Absolute path to the cached file.
+ * @param out_filename	[out] Filename in the cache (empty on error)
+ * @param cache_key	[in] Cache key
+ * @return DownloadError::Success on success; other DownloadError on error.
  */
-string CacheManager::download(const char *cache_key)
+CacheManager::DownloadError CacheManager::download(std::string &out_filename, const char *cache_key)
 {
 	// TODO: Only filter the cache key once.
 	// Currently it's filtered twice:
 	// - getCacheFilename() filters it
 	// - We call filterCacheKey() before passing it to rp-download.
+	out_filename.clear();
 
 	// Check the main cache key.
 	string cache_filename = LibCacheCommon::getCacheFilename(cache_key);
 	if (cache_filename.empty()) {
 		// Error obtaining the cache key filename.
-		return cache_filename;
+		return DownloadError::Cache_CannotGetFilename;
 	}
 
 	// If the cache key begins with "sys/", then we have to
@@ -114,26 +117,24 @@ string CacheManager::download(const char *cache_key)
 				const time_t systime = time(nullptr);
 				if ((systime - filemtime) < (86400*7)) {
 					// Less than a week old.
-					cache_filename.clear();
-					return cache_filename;
+					return DownloadError::Cache_NegativeCacheUnexpired;
 				}
 
 				// More than a week old.
 				// Delete the cache file and try to download it again.
 				if (FileSystem::delete_file(cache_filename) != 0) {
 					// Unable to delete the cache file.
-					cache_filename.clear();
-					return cache_filename;
+					return DownloadError::Cache_CannotDeleteNegativeCacheEntry;
 				}
 			} else if (filesize > 0) {
 				// File is larger than 0 bytes, which indicates
 				// it was cached successfully.
-				return cache_filename;
+				out_filename = std::move(cache_filename);
+				return DownloadError::Success;
 			}
 		} else if (ret != -ENOENT) {
 			// Some error other than "file not found" occurred.
-			cache_filename.clear();
-			return cache_filename;
+			return DownloadError::Cache_UnknownCacheEntryError;
 		}
 	}
 
@@ -149,37 +150,40 @@ string CacheManager::download(const char *cache_key)
 	// NOTE: Using the unfiltered cache key, since filtering it
 	// results in slashes being changed to backslashes on Windows.
 	// rp-download will filter the key itself.
-	int ret = execRpDownload(cache_key);
-	if (ret != 0) {
-		// rp-download failed for some reason.
-		cache_filename.clear();
-		return cache_filename;
+	DownloadError err = execRpDownload(cache_key);
+	if (err == DownloadError::Success) {
+		// `rp-download` succeeded.
+		out_filename = std::move(cache_filename);
 	}
 
-	// rp-download has successfully downloaded the file.
-	return cache_filename;
+	return err;
 }
 
 /**
  * Check if a file has already been cached.
- * @param cache_key Cache key
- * @return Filename in the cache, or empty string if not found.
+ * @param out_filename	[out] Filename in the cache (empty on error)
+ * @param cache_key	[in] Cache key
+ * @return DownloadError::Success on success; other DownloadError on error.
  */
-string CacheManager::findInCache(const char *cache_key)
+CacheManager::DownloadError CacheManager::findInCache(string &out_filename, const char *cache_key)
 {
+	out_filename.clear();
+
 	// Get the cache key filename.
 	string cache_filename = LibCacheCommon::getCacheFilename(cache_key);
 	if (cache_filename.empty()) {
 		// Error obtaining the cache key filename.
-		return cache_filename;
+		return DownloadError::Cache_CannotGetFilename;
 	}
 
 	// Return the filename if the file exists.
 	if (FileSystem::access(cache_filename.c_str(), R_OK) != 0) {
 		// Unable to read the cache file.
-		cache_filename.clear();
+		return DownloadError::Cache_CannotReadCachedFile;
 	}
-	return cache_filename;
+
+	out_filename = std::move(cache_filename);
+	return DownloadError::Success;;
 }
 
 } // namespace LibRomData

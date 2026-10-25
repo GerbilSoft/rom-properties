@@ -25,26 +25,42 @@ extern "C" {
  * TCreateThumbnail::create() errors.
  */
 typedef enum {
-	RPCT_SUCCESS					= 0,
-	RPCT_ERROR_CANNOT_LOAD_DLL			= 1,	// Cannot load the shared library.
-	RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE		= 2,	// Cannot open the source file.
-	RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED		= 3,	// Source file isn't supported.
-	RPCT_ERROR_SOURCE_FILE_NO_IMAGE			= 4,	// Source file has no image.
-	RPCT_ERROR_OUTPUT_FILE_FAILED			= 5,	// Failed to save the output file.
-	RPCT_ERROR_SOURCE_FILE_CLASS_DISABLED		= 6,	// User configuration has disabled thumbnails for this class.
-	RPCT_ERROR_SOURCE_FILE_BAD_FS			= 7,	// Source file is located on a "bad" file system.
-	RPCT_ERROR_RUNNING_AS_ROOT			= 8,	// Running as root is not supported.
-	RPCT_ERROR_INVALID_IMAGE_SIZE			= 9,	// Invalid image size requested. (e.g. 0 or less)
-	RPCT_ERROR_INVALID_FLAGS			= 10,	// Invalid flag values. (v2)
-	RPCT_ERROR_DIRECTORY_THUMBNAILING_DISABLED	= 11,	// Directory thumbnailing is disabled. (v2+)
+	RPCT_SUCCESS						= 0,
+	RPCT_ERROR_CANNOT_LOAD_DLL				= 1,	// Cannot load the shared library.
+	RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE			= 2,	// Cannot open the source file.
+	RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED			= 3,	// Source file isn't supported.
+	RPCT_ERROR_SOURCE_FILE_NO_IMAGE				= 4,	// Source file has no image.
+	RPCT_ERROR_OUTPUT_FILE_FAILED				= 5,	// Failed to save the output file.
+	RPCT_ERROR_SOURCE_FILE_CLASS_DISABLED			= 6,	// User configuration has disabled thumbnails for this class.
+	RPCT_ERROR_SOURCE_FILE_BAD_FS				= 7,	// Source file is located on a "bad" file system.
+	RPCT_ERROR_RUNNING_AS_ROOT				= 8,	// Running as root is not supported.
+	RPCT_ERROR_INVALID_IMAGE_SIZE				= 9,	// Invalid image size requested. (e.g. 0 or less)
+	RPCT_ERROR_INVALID_FLAGS				= 10,	// Invalid flag values. (v2)
+	RPCT_ERROR_DIRECTORY_THUMBNAILING_DISABLED		= 11,	// Directory thumbnailing is disabled. (v2+)
 
-	// v3.0: New error codes to improve rp-thumbnail debugging.
-	RPCT_ERROR_INVALID_EXT_IMAGE_TYPE		= 12,	// Invalid image type passed to getExternalImage().
-	RPCT_ERROR_SOURCE_FILE_HAS_NO_EXTURLS		= 13,	// Source file has no external image URLs.
+	/// v3.0: New error codes to improve rp-thumbnail debugging.
 
-	RPCT_ERROR_INVALID_INT_IMAGE_TYPE		= 20,	// Invalid image type passed to getInternalImage().
+	// External image caching
+	RPCT_ERROR_INVALID_EXT_IMAGE_TYPE			= 20,	// Invalid image type passed to getExternalImage().
+	RPCT_ERROR_SOURCE_FILE_HAS_NO_EXTURLS			= 21,	// Source file has no external image URLs.
+	RPCT_ERROR_CANNOT_GET_CACHE_FILENAME			= 22,	// LibCacheCommon::getCacheFilename() failed.
+	RPCT_ERROR_CACHE_NEGATIVE_CACHE_UNEXPIRED		= 23,	// File has a negative cache entry that has not expired yet.
+	RPCT_ERROR_CACHE_CANNOT_DELETE_NEGATIVE_CACHE_ENTRY	= 24,	// Could not delete an expired negative cache entry.
+	RPCT_ERROR_CACHE_CANNOT_READ_CACHED_FILE		= 25,	// Cannot read a file in the cache.
+	RPCT_ERROR_CACHE_UNKNOWN_CACHE_ENTRY_ERROR		= 26,	// Unknown cache entry error...
 
-	RPCT_ERROR_INTERNAL_ERROR			= 126,	// Internal error! (v2+)
+	// `rp-download` for external image downloads
+	RPCT_ERROR_RP_DOWNLOAD_MISSING				= 30,	// `rp-download` executable is missing?
+	RPCT_ERROR_RP_DOWNLOAD_FAILED				= 31,	// `rp-download` executable failed to start for some reason.
+	RPCT_ERROR_RP_DOWNLOAD_HUNG				= 32,	// `rp-download` never completed...
+	RPCT_ERROR_EXT_FILE_NOT_FOUND				= 33,	// External URL returned 404.
+	RPCT_ERROR_EXT_OTHER_ERROR				= 34,	// External URL returned a different error.
+	RPCT_ERROR_EXT_FILE_NOT_IN_CACHE			= 35,	// External URL is not in the local cache, and a cache-only search was requested.
+
+	// Internal images
+	RPCT_ERROR_INVALID_INT_IMAGE_TYPE			= 50,	// Invalid image type passed to getInternalImage().
+
+	RPCT_ERROR_INTERNAL_ERROR				= 126,	// Internal error! (v2+)
 } RpCreateThumbnailError;
 
 /**

@@ -174,18 +174,22 @@ RpCreateThumbnailError TCreateThumbnail<ImgClass>::getExternalImage(
 		}
 
 		// TODO: Have download() return the actual data and/or load the cached file.
+		CacheManager::DownloadError err;
 		std::string cache_filename;
 		if (download) {
 			// Attempt to download the image if it isn't already
 			// present in the rom-properties cache.
-			cache_filename = cache.download(extURL.cache_key);
+			err = cache.download(cache_filename, extURL.cache_key);
 		} else {
 			// Don't attempt to download the image.
 			// Only check the rom-properties cache.
-			cache_filename = cache.findInCache(extURL.cache_key);
+			err = cache.findInCache(cache_filename, extURL.cache_key);
 		}
-		if (cache_filename.empty())
+		if (err != CacheManager::DownloadError::Success) {
+			// TODO: Log errors.
+			// TODO: Abort if it's RPCT_ERROR_RP_DOWNLOAD_MISSING.
 			continue;
+		}
 
 		// Attempt to load the image.
 		IRpFilePtr file = std::make_shared<RpFile>(cache_filename, RpFile::FM_OPEN_READ);

@@ -35,7 +35,7 @@ namespace LibRomData {
  * @param filteredCacheKey Filtered cache key.
  * @return 0 on success; negative POSIX error code on error.
  */
-int CacheManager::execRpDownload(const string &filteredCacheKey)
+CacheManager::DownloadError CacheManager::execRpDownload(const string &filteredCacheKey)
 {
 	// TODO: Mac OS X path. (bundle?)
  	static constexpr char rp_download_exe[] = DIR_INSTALL_LIBEXEC "/rp-download";
@@ -118,11 +118,11 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
 		(char *const *)envp.data());
 	if (ret != 0) {
 		// Error creating the child process.
-		int err = errno;
-		if (err == 0) {
-			err = EIO;
+		DownloadError err = DownloadError::RpDownload_failed;
+		if (errno == ENOENT) {
+			err = DownloadError::RpDownload_missing;
 		}
-		return -err;
+		return err;
 	}
 #else /* !HAVE_POSIX_SPAWN */
 	// fork()/execve().
@@ -130,19 +130,20 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
 	pid_t pid = fork();
 	if (pid == 0) {
 		// Child process.
+		errno = 0;
 		int ret = execve(rp_download_exe, (char *const *)argv.data(), (char *const *)envp.data());
 		if (ret != 0) {
 			// execve() failed.
-			exit(EXIT_FAILURE);
+			DownloadError err = DownloadError::RpDownload_failed;
+			if (errno == ENOENT) {
+				err = DownloadError::RpDownload_missing;
+			}
+			exit(static_cast<int>(err));
 		}
 		assert(!"Shouldn't get here...");
-		exit(EXIT_FAILURE);
+		exit(static_cast<int>(DownloadError::InternalError));
 	} else if (pid == -1) {
 		// fork() failed.
-		int err = errno;
-		if (err == 0) {
-			err = EIO;
-		}
 		return -err;
 	}
 #endif /* HAVE_POSIX_SPAWN */
@@ -151,26 +152,21 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
 	// Wait up to 10 seconds for the process to exit.
 	// TODO: User-configurable timeout?
 	// TODO: Report errors somewhere.
-	bool ok = false;	// rp-download terminated successfully.
 	bool waited = false;	// waitpid() was successful.
 	int wstatus = 0;
+	DownloadError retcode = DownloadError::Success;	// `rp-download` return code (0 == success)
 	for (unsigned int i = 10*4; i > 0; i--) {
 		pid_t wpid = waitpid(pid, &wstatus, WNOHANG);
 		if (wpid == pid) {
 			// Process has changed state.
 			if (WIFEXITED(wstatus)) {
 				// Child process has exited.
-				// If the return status is non-zero, it failed.
-				if (WEXITSTATUS(wstatus) != 0) {
-					// Failure.
-					break;
-				}
-				// Success!
-				ok = true;
+				retcode = static_cast<DownloadError>(WEXITSTATUS(wstatus));
 				waited = true;
 				break;
 			} else if (WIFSIGNALED(wstatus)) {
 				// Child process terminated abnormally.
+				retcode = DownloadError::RpDownload_failed;
 				waited = true;
 				break;
 			}
@@ -185,17 +181,11 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
 		// TODO: Prevent race conditions by using waitid() instead of waitpid()?
 		// TODO: Better error code?
 		kill(pid, SIGTERM);
-		return -ECHILD;
+		return DownloadError::RpDownload_hung;
 	}
 
-	if (!ok) {
-		// rp-download failed for some reason.
-		// TODO: Better error code?
-		return -EIO;
-	}
-
-	// rp-download has successfully downloaded the file.
-	return 0;
+	// Return the `rp-donwload` return code.
+	return retcode;
 }
 
 } // namespace LibRomData
