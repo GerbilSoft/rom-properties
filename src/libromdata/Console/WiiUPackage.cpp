@@ -32,7 +32,7 @@ using namespace LibRpText;
 using namespace LibRpTexture;
 
 // C++ STL classes
-#include <string_view>
+#include "rp-string_view.hpp"
 using std::array;
 using std::string;
 using std::string_view;

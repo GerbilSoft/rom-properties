@@ -51,6 +51,28 @@ ENDIF(NOT HAVE_STD_VARIANT)
 # Write the libc configuration file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libc.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libc.h")
 
+# Check for std::string_view (or std::experimental::string_view).
+# TODO: Move std::variant<>'s config out of config.libc.h.in and into rp-variant.hpp.in?
+INCLUDE(CheckCXXSourceCompiles)
+CHECK_CXX_SOURCE_COMPILES("
+#include <string_view>
+std::string_view sv;
+int main(void) { return 0; }
+" HAVE_STD_STRING_VIEW)
+IF(NOT HAVE_STD_STRING_VIEW)
+	CHECK_CXX_SOURCE_COMPILES("
+	#include <experimental/string_view>
+	std::experimental::string_view sv;
+	int main(void) { return 0; }
+	" HAVE_STD_EXPERIMENTAL_STRING_VIEW)
+	IF(NOT HAVE_STD_EXPERIMENTAL_STRING_VIEW)
+		MESSAGE(FATAL_ERROR "std::string_view is not available! (Add a copy of string_view_lite?)")
+	ENDIF(NOT HAVE_STD_EXPERIMENTAL_STRING_VIEW)
+ENDIF(NOT HAVE_STD_STRING_VIEW)
+
+# Write the std::string_view configuration file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/rp-string_view.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/rp-string_view.hpp")
+
 # C++11 compatibility header.
 # NOTE: This must be included regardless of C++11 support in the compiler.
 # gcc-4.6 supports some C++11, but is missing explicit virtual overrides.

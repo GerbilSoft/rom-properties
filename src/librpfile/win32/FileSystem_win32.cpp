@@ -22,7 +22,7 @@
 
 // C++ STL classes
 #include <mutex>
-#include <string_view>
+#include "rp-string_view.hpp"
 using std::string;
 using std::string_view;
 using std::unique_ptr;

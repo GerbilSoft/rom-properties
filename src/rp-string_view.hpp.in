@@ -1,0 +1,27 @@
+/***************************************************************************
+ * ROM Properties Page shell extension.                                    *
+ * rp-string_view.hpp: std::string_view compatibility wrapper header.      *
+ *                                                                         *
+ * Copyright (c) 2026 by David Korth.                                      *
+ * SPDX-License-Identifier: GPL-2.0-or-later                               *
+ ***************************************************************************/
+
+#pragma once
+
+#ifdef __cplusplus
+
+#cmakedefine HAVE_STD_STRING_VIEW 1
+#cmakedefine HAVE_STD_EXPERIMENTAL_STRING_VIEW 1
+
+#if defined(HAVE_STD_STRING_VIEW)
+#  include <string_view>
+#elif defined(HAVE_STD_EXPERIMENTAL_STRING_VIEW)
+// Pull std::experimental::string_view into the std nemspace.
+#  include <experimental/string_view>
+namespace std {
+	using string_view = std::experimental::string_view;
+	using wstring_view = std::experimental::wstring_view;
+}
+#endif
+
+#endif /* __cplusplus */

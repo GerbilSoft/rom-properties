@@ -81,8 +81,8 @@ using namespace LibRpTexture;
 
 // C++ STL classes
 #include <iostream>
-#include <string_view>
 #include <sstream>
+#include "rp-string_view.hpp"
 using std::array;
 using std::cout;
 using std::cerr;

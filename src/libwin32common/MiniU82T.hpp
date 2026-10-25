@@ -14,7 +14,7 @@
 // C++ STL classes
 #include <memory>
 #include <string>
-#include <string_view>
+#include "rp-string_view.hpp"
 
 namespace LibWin32Common {
 

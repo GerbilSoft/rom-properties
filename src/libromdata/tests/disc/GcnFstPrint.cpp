@@ -33,7 +33,7 @@ using LibRomData::GcnFst;
 #include <memory>
 #include <sstream>
 #include <string>
-#include <string_view>
+#include "rp-string_view.hpp"
 using std::array;
 using std::locale;
 using std::ostream;

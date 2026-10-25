@@ -25,7 +25,7 @@
 #include "tcharx.h"
 
 // C++ STL classes
-#include <string_view>
+#include "rp-string_view.hpp"
 
 #ifdef _WIN32
 

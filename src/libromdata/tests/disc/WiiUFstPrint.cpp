@@ -35,7 +35,7 @@ using LibRomData::WiiUFst;
 #include <memory>
 #include <sstream>
 #include <string>
-#include <string_view>
+#include "rp-string_view.hpp"
 using std::locale;
 using std::ostream;
 using std::ostringstream;
