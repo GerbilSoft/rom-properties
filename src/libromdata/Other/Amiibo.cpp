@@ -385,14 +385,28 @@ int Amiibo::loadFieldData(void)
 		'0','1','2','3','4','5','6','7',
 		'8','9','A','B','C','D','E','F'
 	}};
-	char buf[32]; char *pBuf = buf;
-	for (unsigned int i = 0; i < 8; i++, pBuf += 2) {
-		if (i == 3) {
-			// Byte 3 is CB0.
-			i++;
+
+	// Convert the 7-byte unique ID number to ASCII.
+	char buf[16]; char *pBuf = buf;
+	// FIXME: Need to make a separate "type" field because some NT3H2111/NT3H2211
+	// dumps are truncated to NTAG215 sizes. (Check the fixed fields to distinguish
+	// them, since there's no check digits in the unique ID.)
+	if (d->nfpSize < NFP_SNW_STANDARD) {
+		// NTAG215: Need to skip BCC0.
+		for (unsigned int i = 0; i < 8; i++, pBuf += 2) {
+			if (i == 3) {
+				// Byte 3 is BCC0.
+				i++;
+			}
+			pBuf[0] = hex_lookup[d->nfpData.ntag215.uid[i] >> 4];
+			pBuf[1] = hex_lookup[d->nfpData.ntag215.uid[i] & 0x0F];
 		}
-		pBuf[0] = hex_lookup[d->nfpData.ntag215.uid[i] >> 4];
-		pBuf[1] = hex_lookup[d->nfpData.ntag215.uid[i] & 0x0F];
+	} else {
+		// NT3H2111/NT3H2211: No check bytes to skip.
+		for (unsigned int i = 0; i < sizeof(d->nfpData.nt3h2111.uid); i++, pBuf += 2) {
+			pBuf[0] = hex_lookup[d->nfpData.nt3h2111.uid[i] >> 4];
+			pBuf[1] = hex_lookup[d->nfpData.nt3h2111.uid[i] & 0x0F];
+		}
 	}
 	*pBuf = 0;
 
