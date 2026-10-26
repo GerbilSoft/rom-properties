@@ -41,13 +41,23 @@ public:
 	static const RomDataInfo romDataInfo;
 
 public:
-	// NFC data
-	// TODO: Use nfpSize to determine an "nfpType" value?
-	// TODO: Need to have a separate value to distinguish NTAG215 vs. NT3H2111/NT3H2211,
-	// since there are some bad NT3H2111/NT3H2211 dumps that are truncated to the
-	// same size as NTAG215.
-	int nfpSize;		// NFP_File_Size
+	// amiibo type
+	enum class AmiiboType {
+		Unknown	= -1,
 
+		NTAG215		= 0,	// NTAG215 (original amiibo aka v2)
+		NT3H2111	= 1,	// NT3H2111 (Super Nintendo World bands)
+		NT3H2211	= 2,	// NT3H2211 (v3)
+
+		Max
+	};
+	AmiiboType amiiboType;
+
+	// NFP file size.
+	// Can identify the tag type and/or if it's truncated.
+	uint32_t nfpSize;
+
+	// NFC data
 	union {
 		NFP_NTAG215_Data_t ntag215;
 		NFP_NT3H2111_Data_t nt3h2111;
@@ -145,40 +155,16 @@ Amiibo::Amiibo(const IRpFilePtr &file)
 	// Read the NFC data.
 	d->file->rewind();
 	size_t size = d->file->read(&d->nfpData, sizeof(d->nfpData));
-	switch (size) {
-		case NFP_FILE_NO_PW:	// Missing password bytes
-			// Zero out the password bytes.
-			memset(d->nfpData.ntag215.pwd, 0, sizeof(d->nfpData.ntag215.pwd));
-			memset(d->nfpData.ntag215.pack, 0, sizeof(d->nfpData.ntag215.pack));
-			memset(d->nfpData.ntag215.rfui, 0, sizeof(d->nfpData.ntag215.rfui));
-			d->nfpSize = static_cast<int>(size);
-			break;
-
-		case NFP_FILE_STANDARD:	// Standard dump
-		case NFP_FILE_EXTENDED:	// Extended dump
-
-		case NFP_SNW_STANDARD:	// Super Nintendo World band (standard)
-		case NFP_SNW_EXTENDED:	// Super Nintendo World band (extended)
-
-		case NFP_V3_STANDARD:	// amiibo v3
-		case NFP_V3_EXTENDED:	// amiibo v3
-			// Size is valid.
-			d->nfpSize = static_cast<int>(size);
-			break;
-
-		default:
-			// Unsupported file size.
-			d->file.reset();
-			return;
-	}
+	d->nfpSize = static_cast<uint32_t>(size);
 
 	// Check if the NFC data is supported.
 	const DetectInfo info = {
-		{0, sizeof(d->nfpData), reinterpret_cast<const uint8_t*>(&d->nfpData)},
+		{0, d->nfpSize, reinterpret_cast<const uint8_t*>(&d->nfpData)},
 		nullptr,	// ext (not needed for Amiibo)
 		d->file->size()	// szFile
 	};
-	d->isValid = (isRomSupported_static(&info) >= 0);
+	d->amiiboType = static_cast<AmiiboPrivate::AmiiboType>(isRomSupported_static(&info));
+	d->isValid = (static_cast<int>(d->amiiboType) >= 0);
 
 	if (!d->isValid) {
 		d->file.reset();
@@ -201,7 +187,7 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 		// Either no detection information was specified,
 		// the header is too small, or the file is the
 		// wrong size.
-		return -1;
+		return static_cast<int>(AmiiboPrivate::AmiiboType::Unknown);
 	}
 
 	// Check the file size.
@@ -218,67 +204,105 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 		case NFP_V3_EXTENDED:	// amiibo v3
 			if (info->header.size < NFP_FILE_NO_PW) {
 				// Not enough data is available.
-				return -1;
+				return static_cast<int>(AmiiboPrivate::AmiiboType::Unknown);
 			}
 			break;
 
 		default:
 			// Unsupported file size.
-			return -1;
+			return static_cast<int>(AmiiboPrivate::AmiiboType::Unknown);
 	}
 
-	const NFP_NTAG215_Data_t *const nfpData =
+	// Check if this is a valid NTAG215.
+	const NFP_NTAG215_Data_t *const pNtag215 =
 		reinterpret_cast<const NFP_NTAG215_Data_t*>(info->header.pData);
 
-	// UID must start with 0x04.
-	if (nfpData->uid[0] != 0x04) {
-		// Invalid UID.
-		return -1;
-	}
+	do {
+		// UID must start with 0x04.
+		if (pNtag215->uid[0] != 0x04) {
+			// Invalid UID.
+			break;
+		}
 
-	// FIXME: UID check bytes are different on non-NTAG215 devices.
-	if (info->szFile < NFP_SNW_STANDARD) {
 		// Validate the UID check bytes.
-		if (!AmiiboPrivate::verifyNTAG215CheckBytes(nfpData->uid)) {
+		if (!AmiiboPrivate::verifyNTAG215CheckBytes(pNtag215->uid)) {
 			// Check bytes are invalid.
 			// These are read-only, so something went wrong
 			// when the tag was being dumped.
-
-			// NOTE: Some Super Nintendo World power-up bands, e.g.
-			// the Gold Mario Power-Up Band, have incorrect check bytes.
-			// Not sure why.
-			const uint32_t char_id = be32_to_cpu(nfpData->user_data.char_id);
-			if ((char_id & 0xFF) != NFP_TYPE_BAND) {
-				return -1;
-			}
+			break;
 		}
 
 		// Check the "must match" values.
 		static constexpr array<uint8_t, 3> lock_footer = {{0x01, 0x00, 0x0F}};
-		static_assert(sizeof(nfpData->lock_footer) == sizeof(lock_footer)+1, "lock_footer is the wrong size.");
+		static_assert(sizeof(pNtag215->lock_footer) == sizeof(lock_footer)+1, "lock_footer is the wrong size.");
 
-		if (nfpData->lock_header != cpu_to_be16(NFP_NTAG215_LOCK_HEADER) ||
-		    nfpData->cap_container != cpu_to_be32(NFP_NTAG215_CAP_CONTAINER) ||
-		    memcmp(nfpData->lock_footer, lock_footer.data(), lock_footer.size()) != 0 ||
-		    nfpData->cfg0 != cpu_to_be32(NFP_NTAG215_CFG0) ||
-		    nfpData->cfg1 != cpu_to_be32(NFP_NTAG215_CFG1))
+		if (pNtag215->lock_header != cpu_to_be16(NFP_NTAG215_LOCK_HEADER) ||
+		    pNtag215->cap_container != cpu_to_be32(NFP_NTAG215_CAP_CONTAINER) ||
+		    memcmp(pNtag215->lock_footer, lock_footer.data(), lock_footer.size()) != 0 ||
+		    pNtag215->cfg0 != cpu_to_be32(NFP_NTAG215_CFG0) ||
+		    pNtag215->cfg1 != cpu_to_be32(NFP_NTAG215_CFG1))
 		{
-			// Not an amiibo.
-			return -1;
+			// Not an NTAG215 amiibo.
+			break;
 		}
-	}
 
-	// Low byte of amiibo_id indicates the version.
-	// Usually 0x02, except for amiibo v3.
-	// FIXME: Check SNW bands?
-	const uint8_t expected_version = (unlikely(info->szFile >= NFP_V3_STANDARD) ? 0x03 : 0x02);
-	if (nfpData->user_data.amiibo_id.u8[3] != expected_version) {
-		// Incorrect amiibo ID.
-		return -1;
-	}
+		// Low byte of amiibo_id indicates the version.
+		// It should be 0x02 for NTAG215.
+		if (pNtag215->user_data.amiibo_id.u8[3] == 0x02) {
+			// This is an NTAG215.
+			return static_cast<int>(AmiiboPrivate::AmiiboType::NTAG215);
+		}
+	} while (0);
 
-	// This is an amiibo.
-	return 0;
+	// Not a valid NTAG215.
+	// Check if it's a valid NT3H2111.
+	const NFP_NT3H2111_Data_t *const pNt3H2111 =
+		reinterpret_cast<const NFP_NT3H2111_Data_t*>(info->header.pData);
+
+	do {
+		// UID must start with 0x04.
+		if (pNt3H2111->uid[0] != 0x04) {
+			// Invalid UID.
+			break;
+		}
+
+		// Check the lock header and cap container.
+		// NOTE: These are the same values as NTAG215.
+		if (pNt3H2111->lock_header != cpu_to_be16(NFP_NT3H2111_LOCK_HEADER) ||
+		    pNt3H2111->cap_container != cpu_to_be32(NFP_NT3H2111_CAP_CONTAINER))
+		{
+			// Not an NT3H2111 amiibo.
+			break;
+		}
+
+		// If the file is large enough, check the footer values.
+		if (info->header.size >= NFP_SNW_STANDARD) {
+			// TODO: Check rfu_pwd?
+			if (pNt3H2111->cfg0 != cpu_to_be32(NFP_NT3H2111_CFG0) ||
+			    pNt3H2111->cfg1 != cpu_to_be32(NFP_NT3H2111_CFG1))
+			{
+				// Not an NT3H2111 amiibo.
+				break;
+			}
+		}
+
+		// Low byte of amiibo_id indicates the version.
+		// It should be 0x02 for NT3H2111, or 0x03 for NT3H2211.
+		switch (pNt3H2111->user_data.amiibo_id.u8[3]) {
+			case 0x02:
+				// NT3H2111
+				return static_cast<int>(AmiiboPrivate::AmiiboType::NT3H2111);
+			case 0x03:
+				// NT3H2211
+				return static_cast<int>(AmiiboPrivate::AmiiboType::NT3H2211);
+			default:
+				// Not valid...
+				break;
+		}
+	} while (0);
+
+	// Not a supported amiibo NFC tag...
+	return static_cast<int>(AmiiboPrivate::AmiiboType::Unknown);
 }
 
 /**
@@ -391,7 +415,7 @@ int Amiibo::loadFieldData(void)
 	// FIXME: Need to make a separate "type" field because some NT3H2111/NT3H2211
 	// dumps are truncated to NTAG215 sizes. (Check the fixed fields to distinguish
 	// them, since there's no check digits in the unique ID.)
-	if (d->nfpSize < NFP_SNW_STANDARD) {
+	if (d->amiiboType == AmiiboPrivate::AmiiboType::NTAG215) {
 		// NTAG215: Need to skip BCC0.
 		for (unsigned int i = 0; i < 8; i++, pBuf += 2) {
 			if (i == 3) {
