@@ -402,7 +402,19 @@ int Amiibo::loadFieldData(void)
 	}
 
 	// NTAG215 data
-	d->fields.reserve(10);	// Maximum of 10 fields.
+	d->fields.reserve(11);	// Maximum of 11 fields.
+
+	// Tag type
+	static const char tag_type_tbl[3][10] = {
+		"NTAG215", "NT3H2111", "NT3H2211"
+	};
+	const char *const s_tag_type_title = C_("Amiibo", "Tag Type");
+	if (static_cast<int>(d->amiiboType) >= 0 && d->amiiboType < AmiiboPrivate::AmiiboType::Max) {
+		d->fields.addField_string(s_tag_type_title, tag_type_tbl[static_cast<int>(d->amiiboType)]);
+	} else {
+		d->fields.addField_string(s_tag_type_title,
+			fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), static_cast<int>(d->amiiboType)));
+	}
 
 	// Unique ID
 	static constexpr array<char, 16> hex_lookup = {{
