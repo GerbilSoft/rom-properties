@@ -291,23 +291,27 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 		switch (pNt3H2111->user_data.amiibo_id.u8[3]) {
 			case 0x02: {
 				// NT3H2111
-				// Check the lock footer.
-				static constexpr array<uint8_t, 3> lock_footer = {{0x01, 0x01, 0x1F}};
-				static_assert(sizeof(pNt3H2111->lock_footer) == sizeof(lock_footer)+1, "lock_footer is the wrong size.");
-				if (memcmp(pNt3H2111->lock_footer, lock_footer.data(), lock_footer.size()) == 0) {
-					return static_cast<int>(AmiiboPrivate::AmiiboType::NT3H2111);
+				if (info->header.size >= NFP_SNW_STANDARD) {
+					// Check the lock footer.
+					static constexpr array<uint8_t, 3> lock_footer = {{0x01, 0x01, 0x1F}};
+					static_assert(sizeof(pNt3H2111->lock_footer) == sizeof(lock_footer)+1, "lock_footer is the wrong size.");
+					if (memcmp(pNt3H2111->lock_footer, lock_footer.data(), lock_footer.size()) != 0) {
+						break;
+					}
 				}
-				break;
+				return static_cast<int>(AmiiboPrivate::AmiiboType::NT3H2111);
 			}
 
 			case 0x03: {
 				// NT3H2211
-				static constexpr array<uint8_t, 3> lock_footer = {{0x01, 0x00, 0xFF}};
-				static_assert(sizeof(pNt3H2111->lock_footer) == sizeof(lock_footer)+1, "lock_footer is the wrong size.");
-				if (memcmp(pNt3H2111->lock_footer, lock_footer.data(), lock_footer.size()) == 0) {
-					return static_cast<int>(AmiiboPrivate::AmiiboType::NT3H2211);
+				if (info->header.size >= NFP_SNW_STANDARD) {
+					static constexpr array<uint8_t, 3> lock_footer = {{0x01, 0x00, 0xFF}};
+					static_assert(sizeof(pNt3H2111->lock_footer) == sizeof(lock_footer)+1, "lock_footer is the wrong size.");
+					if (memcmp(pNt3H2111->lock_footer, lock_footer.data(), lock_footer.size()) != 0) {
+						break;
+					}
 				}
-				break;
+				return static_cast<int>(AmiiboPrivate::AmiiboType::NT3H2211);
 			}
 
 			default:
