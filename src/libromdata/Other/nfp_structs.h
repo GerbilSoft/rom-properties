@@ -144,6 +144,7 @@ ASSERT_STRUCT(NFP_NTAG215_Data_t, NFP_FILE_EXTENDED);
 #define NFP_NT3H2111_LOCK_HEADER 0x0FE0U
 #define NFP_NT3H2111_CAP_CONTAINER 0xF110FFEEU
 #define NTP_NT3H2111_LOCK_FOOTER 0x01011F00U
+#define NTP_NT3H2211_LOCK_FOOTER 0x0100FF00U
 #define NFP_NT3H2111_CFG0 0x0100F848U
 #define NFP_NT3H2111_CFG1 0x08010000U
 typedef struct _NFP_NT3H2111_Data_t {
@@ -159,7 +160,9 @@ typedef struct _NFP_NT3H2111_Data_t {
 
 	/** NT3H2111 footer **/
 	uint8_t lock_footer[4];		// [0xE2,RO] NT3H2111 dynamic lock bytes.
-					// First 3 bytes must match: 0x01 0x01 0x1F
+					// First 3 bytes must match:
+					// - NT3H2111: 0x01 0x01 0x1F
+					// - NT3H2211: 0x01 0x00 0xFF
 	uint32_t rfu_pwd[5];		// [0xE3,RO] RFU/PWD stuff
 
 	uint32_t cfg0;			// [0xE8,RO] NT3H2111 CFG0. Must match: 0x0100F848
