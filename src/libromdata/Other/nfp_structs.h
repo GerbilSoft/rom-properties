@@ -16,6 +16,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <uchar.h>
 #include "common.h"
 
 #ifdef __cplusplus
@@ -42,9 +43,18 @@ typedef enum {
 	NFP_MAX_SIZE		= NFP_V3_EXTENDED
 } NFP_File_Size;
 
+// uint8_t[4] / uint32_t union
+typedef union _NFP_U8_U32_u {
+	uint32_t u32;
+	uint8_t u8[4];
+} NFP_U8_U32_u;
+ASSERT_STRUCT(NFP_U8_U32_u, sizeof(uint32_t));
+
 /**
  * Common user data structure for both NTAG215 and NT3H2111/NT3H2211 amiibo.
- * Reference: https://www.3dbrew.org/wiki/Amiibo
+ * References:
+ * - https://www.3dbrew.org/wiki/Amiibo
+ * - https://wiki.gbatemp.net/w/index.php?title=Amiibo
  *
  * Page size: 4 bytes
  * Page count: 135 pages (540 bytes)
@@ -58,26 +68,55 @@ typedef enum {
  */
 typedef struct _NFP_User_Data_t {
 	/** User data area (page 0x04) **/
-	uint8_t hmac_counter[4];	// [0x04,RW] Some counter used with HMAC.
-	uint8_t crypt_data[32];		// [0x05,RW] Encryption data.
-	uint8_t sha256_hash_1[32];	// [0x0D,RO] SHA256(-HMAC?) hash of something.
-					// First 0x18 bytes of this hash is section3 in the encrypted buffer.
+
+#pragma pack(1)
+	struct RP_PACKED {
+		uint8_t a5;		// [0x04,RO] 0xA5
+		uint16_t write_counter;	// [0x04,RW] Write counter (incremented on every write)
+		uint8_t nfp_version;	// [0x04,RO] Figure version
+	} page4;
+#pragma pack()
+
+	// First encrypted data section
+	union {
+		struct {
+			uint16_t settings;	// [0x05,RW]
+			uint16_t crc_counter;	// [0x05,RW]
+			uint16_t init_date;	// [0x06,RW]
+			uint16_t write_date;	// [0x06,RW]
+			uint32_t crc;		// [0x07,RW]
+			char16_t nickname[10];	// [0x08,RW] (UTF-16BE)
+		};
+		uint8_t u8[8*4];
+		uint32_t u32[8];
+	} crypt1;
+
+	uint8_t locked_hash[32];	// [0x0D,RO] Locked hash
 
 	// Character identification (page 0x15, raw offset 0x54)
 	uint32_t char_id;		// [0x15,RO] Character identification.
-	union {
-		uint32_t u32;
-		uint8_t u8[4];
-	} amiibo_id;			// [0x16,RO] amiibo series identification.
-	uint8_t unknown1[4];		// [0x17,RO]
-	uint8_t sha256_hash_2[32];	// [0x18,RO] SHA256(-HMAC?) hash of something.
-
-	uint8_t sha256_hash_data[32];	// [0x20,RW] SHA256-HMAC hash over 0x1DF bytes.
+	NFP_U8_U32_u amiibo_id;		// [0x16,RO] amiibo series identification.
+	uint32_t unknown1;		// [0x17,RO]
+	uint8_t keygen_salt[32];	// [0x18,RO]
+	uint8_t unfixed_hash[32];	// [0x20,RW] SHA256-HMAC hash over 0x1DF bytes.
 					// First 3 bytes are the last 3 bytes of [0x04,RW].
 					// Remaining is first 0x1DC bytes of plaintext data.
 
-	uint8_t section1[0x114];	// [0x28,RW] section1 of encrypted data.
-	uint8_t section2[0x54];		// [0x6D,RW] section2 of encrypted data.
+	union {
+#pragma pack(1)
+		struct RP_PACKED {
+			uint8_t owner_mii[96];		// [0x28,RW] Owner Mii data
+			uint64_t title_id;		// [0x40,RW] Title ID (FIXME: BE format like Wii U?)
+			uint16_t write_counter;		// [0x42,RW]
+			uint32_t amiibo_appid;		// [0x42,RW]
+			uint16_t unknown1;		// [0x43,RW]
+			uint8_t unknown_hash[32];	// [0x44,RW]
+			uint8_t application_data[216];	// [0x4C,RW] Application data
+		};
+#pragma pack()
+		uint8_t u8[90*4];
+		uint32_t u32[90];
+	} crypt2;
 } NFP_User_Data_t;
 ASSERT_STRUCT(NFP_User_Data_t, 504);
 
