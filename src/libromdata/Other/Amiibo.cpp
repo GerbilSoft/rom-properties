@@ -69,7 +69,15 @@ public:
 	 * @param uid	[in] NTAG215 unique ID (9 bytes)
 	 * @return True if the unique ID has valid check bytes; false if not.
 	 */
-	static bool verifyNTAG215CheckBytes(const uint8_t *uid);
+	static CONSTEXPR_MULTILINE bool verifyNTAG215CheckBytes(const uint8_t *uid)
+	{
+		// Check Byte 0 (BCC0) = CT ^ SN0 ^ SN1 ^ SN2
+		// Check Byte 1 (BCC1) = SN3 ^ SN4 ^ SN5 ^ SN6
+		// NTAG215 uses Cascade Level 2, so CT = 0x88.
+		const uint8_t bcc0 = 0x88 ^ uid[0] ^ uid[1] ^ uid[2];
+		const uint8_t bcc1 = uid[4] ^ uid[5] ^ uid[6] ^ uid[7];
+		return (bcc0 == uid[3] && bcc1 == uid[8]);
+	}
 };
 
 ROMDATA_IMPL(Amiibo)
@@ -107,21 +115,6 @@ AmiiboPrivate::AmiiboPrivate(const IRpFilePtr &file)
 {
 	// Clear the NFP data struct.
 	memset(&nfpData, 0, sizeof(nfpData));
-}
-
-/**
- * Verify the check bytes in an NTAG215 unique ID.
- * @param uid	[in] NTAG215 unique ID (9 bytes)
- * @return True if the unique ID number has valid check bytes; false if not.
- */
-bool AmiiboPrivate::verifyNTAG215CheckBytes(const uint8_t *uid)
-{
-	// Check Byte 0 (BCC0) = CT ^ SN0 ^ SN1 ^ SN2
-	// Check Byte 1 (BCC1) = SN3 ^ SN4 ^ SN5 ^ SN6
-	// NTAG215 uses Cascade Level 2, so CT = 0x88.
-	const uint8_t bcc0 = 0x88 ^ uid[0] ^ uid[1] ^ uid[2];
-	const uint8_t bcc1 = uid[4] ^ uid[5] ^ uid[6] ^ uid[7];
-	return (bcc0 == uid[3] && bcc1 == uid[8]);
 }
 
 /** Amiibo **/
