@@ -8,6 +8,10 @@
     compiler is used, .wua support will not be included.
     * Implements #378: [Feature Request] Add support for WUA Wii U games
       * Reported by @dnmodder.
+  * Amiibo: Add full support for NT3H2111 and NT3H2211 tag formats.
+    * NT3H2111 is used in Super Nintendo World bands.
+    * NT3H2211 is used in amiibo v3, starting with Kirby Air Riders.
+    * Information provided by @CheatFreak47.
 
 * Bug fixes:
   * WiiUPackage: Fix icon thumbnailing for packages extracted from a Wii U MLC.
