@@ -77,10 +77,11 @@ typedef struct _NFP_User_Data_t {
 	} page4;
 #pragma pack()
 
-	// First encrypted data section
+	// amiibo settings (encrypted)
 	union {
 		struct {
-			uint16_t settings;	// [0x05,RW]
+			uint8_t flags;		// [0x05,RW]
+			uint8_t country_code;	// [0x05,RW] // Country code ID from system that setup the amiibo.
 			uint16_t crc_counter;	// [0x05,RW]
 			uint16_t init_date;	// [0x06,RW]
 			uint16_t write_date;	// [0x06,RW]
@@ -89,7 +90,7 @@ typedef struct _NFP_User_Data_t {
 		};
 		uint8_t u8[8*4];
 		uint32_t u32[8];
-	} crypt1;
+	} settings;
 
 	uint8_t locked_hash[32];	// [0x0D,RO] Locked hash
 
@@ -102,6 +103,7 @@ typedef struct _NFP_User_Data_t {
 					// First 3 bytes are the last 3 bytes of [0x04,RW].
 					// Remaining is first 0x1DC bytes of plaintext data.
 
+	// Application data (encrypted)
 	union {
 #pragma pack(1)
 		struct RP_PACKED {
@@ -111,12 +113,12 @@ typedef struct _NFP_User_Data_t {
 			uint32_t amiibo_appid;		// [0x42,RW]
 			uint16_t unknown1;		// [0x43,RW]
 			uint8_t unknown_hash[32];	// [0x44,RW]
-			uint8_t application_data[216];	// [0x4C,RW] Application data
+			uint8_t data[216];		// [0x4C,RW] Application data
 		};
 #pragma pack()
 		uint8_t u8[90*4];
 		uint32_t u32[90];
-	} crypt2;
+	} app_data;
 } NFP_User_Data_t;
 ASSERT_STRUCT(NFP_User_Data_t, 504);
 
