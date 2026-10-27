@@ -217,13 +217,22 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 	const NFP_NTAG215_Data_t *const pNtag215 =
 		reinterpret_cast<const NFP_NTAG215_Data_t*>(info->header.pData);
 
-	do {
-		// UID must start with 0x04.
-		if (pNtag215->uid[0] != 0x04) {
-			// Invalid UID.
-			break;
-		}
+	// Common checks for NTAG215 and NT3H2111/NT3H2211.
 
+	// UID must start with 0x04.
+	if (pNtag215->uid[0] != 0x04) {
+		// Invalid UID.
+		return static_cast<int>(AmiiboPrivate::AmiiboType::Unknown);
+	}
+
+	// High byte of page 4 must be 0xA5.
+	if (pNtag215->user_data.page4.a5 != 0xA5) {
+		// Not 0xA5.
+		return static_cast<int>(AmiiboPrivate::AmiiboType::Unknown);
+	}
+
+	// Check for an NTAG215.
+	do {
 		// Validate the UID check bytes.
 		if (!AmiiboPrivate::verifyNTAG215CheckBytes(pNtag215->uid)) {
 			// Check bytes are invalid.
@@ -260,12 +269,6 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 		reinterpret_cast<const NFP_NT3H2111_Data_t*>(info->header.pData);
 
 	do {
-		// UID must start with 0x04.
-		if (pNt3H2111->uid[0] != 0x04) {
-			// Invalid UID.
-			break;
-		}
-
 		// Check the lock header and cap container.
 		// NOTE: These are the same values as NTAG215.
 		if (pNt3H2111->lock_header != cpu_to_be16(NFP_NT3H2111_LOCK_HEADER) ||
