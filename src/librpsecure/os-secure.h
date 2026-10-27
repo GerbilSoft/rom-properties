@@ -16,11 +16,11 @@
 #    include <windows.h>
 #  else /* !_WIN32 */
 #    include <unistd.h>
-#    ifdef HAVE_SECCOMP
+#    if defined(HAVE_SECCOMP)
 #      include <linux/unistd.h>
 #      include <seccomp.h>
 #      include <stdint.h>
-#    elif HAVE_TAME
+#    elif defined(HAVE_TAME)
 #      include <sys/tame.h>
 #    endif
 #  endif /* _WIN32 */
