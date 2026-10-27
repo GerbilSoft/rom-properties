@@ -95,30 +95,31 @@ ASSERT_STRUCT(NFP_User_Data_t, 504);
  * RO = read-only
  * RW = read/write
  */
-#define NFP_NTAG215_LOCK_HEADER 0x0FE0U
-#define NFP_NTAG215_CAP_CONTAINER 0xF110FFEEU
-#define NTP_NTAG215_LOCK_FOOTER 0x01000FBDU
-#define NFP_NTAG215_CFG0 0x00000004U
-#define NFP_NTAG215_CFG1 0x5F000000U
+#define NFP_NTAG215_LOCK_HEADER		0x0FE0U
+#define NFP_NTAG215_CAP_CONTAINER	0xF110FFEEU
+#define NTP_NTAG215_LOCK_FOOTER		0x01000F00U
+#define NTP_NTAG215_LOCK_FOOTER_MASK	0xFFFFFF00U
+#define NFP_NTAG215_CFG0		0x00000004U
+#define NFP_NTAG215_CFG1		0x5F000000U
 typedef struct _NFP_NTAG215_Data_t {
 	/** NTAG215 header **/
-	uint8_t uid[9];			// [0x00,RO] NTAG215 unique ID (includes two check bytes, BCC0/BCC1)
-	uint8_t int_u8;			// [0x02,RO] "Internal" u8 value
-	uint16_t lock_header;		// [0x02,RO] Lock bytes. Must match: 0x0FE0
-	uint32_t cap_container;		// [0x03,RO] Must match: 0xF1 0x10 0xFF 0xEE
+	uint8_t uid[9];		// [0x00,RO] NTAG215 unique ID (includes two check bytes, BCC0/BCC1)
+	uint8_t int_u8;		// [0x02,RO] "Internal" u8 value
+	uint16_t lock_header;	// [0x02,RO] Lock bytes. Must match: 0x0FE0
+	uint32_t cap_container;	// [0x03,RO] Must match: 0xF1 0x10 0xFF 0xEE
 
 	/** User data area (page 0x04) **/
 	NFP_User_Data_t user_data;
 
 	/** NTAG215 footer **/
-	uint8_t lock_footer[4];		// [0x82,RO] NTAG215 dynamic lock bytes.
-					// First 3 bytes must match: 0x01 0x00 0x0F (fourth is always 0xBD?)
-	uint32_t cfg0;			// [0x83,RO] NTAG215 CFG0. Must match: 0x00000004
-	uint32_t cfg1;			// [0x84,RO] NTAG215 CFG1. Must match: 0x5F000000
+	uint32_t lock_footer;	// [0x82,RO] NTAG215 dynamic lock bytes.
+				// First 3 bytes must match: 0x01 0x00 0x0F (fourth is always 0xBD?)
+	uint32_t cfg0;		// [0x83,RO] NTAG215 CFG0. Must match: 0x00000004
+	uint32_t cfg1;		// [0x84,RO] NTAG215 CFG1. Must match: 0x5F000000
 
-	uint8_t pwd[4];			// [0x85,RO]
-	uint8_t pack[2];		// [0x86,RO]
-	uint8_t rfui[2];		// [0x87,RO]
+	uint32_t pwd;		// [0x85,RO]
+	uint16_t pack;		// [0x86,RO]
+	uint16_t rfui;		// [0x87,RO]
 
 	// Extra data present in extended dumps.
 	// TODO: What is this data?
@@ -141,36 +142,38 @@ ASSERT_STRUCT(NFP_NTAG215_Data_t, NFP_FILE_EXTENDED);
  * RO = read-only
  * RW = read/write
  */
-#define NFP_NT3H2111_LOCK_HEADER 0x0FE0U
-#define NFP_NT3H2111_CAP_CONTAINER 0xF110FFEEU
-#define NTP_NT3H2111_LOCK_FOOTER 0x01011F00U
-#define NTP_NT3H2211_LOCK_FOOTER 0x0100FF00U
-#define NFP_NT3H2111_CFG0 0x0100F848U
-#define NFP_NT3H2111_CFG1 0x08010000U
+#define NFP_NT3H2111_LOCK_HEADER	0x0FE0U
+#define NFP_NT3H2111_CAP_CONTAINER	0xF110FFEEU
+#define NTP_NT3H2111_LOCK_FOOTER	0x01011F00U
+#define NTP_NT3H2111_LOCK_FOOTER_MASK	0xFFFFFF00U
+#define NTP_NT3H2211_LOCK_FOOTER	0x0100FF00U
+#define NTP_NT3H2211_LOCK_FOOTER_MASK	0xFFFFFF00U
+#define NFP_NT3H2111_CFG0		0x0100F848U
+#define NFP_NT3H2111_CFG1		0x08010000U
 typedef struct _NFP_NT3H2111_Data_t {
 	/** NT3H2111 header **/
-	uint8_t uid[7];			// [0x00,RO] NT3H2111 unique ID (no check bytes!)
-	uint8_t int_u8[3];		// [0x01/0x02,RO] "Internal" u8 values
-	uint16_t lock_header;		// [0x02,RO] Lock bytes. Must match: 0x0FE0
-	uint32_t cap_container;		// [0x03,RO] Must match: 0xF1 0x10 0xFF 0xEE
+	uint8_t uid[7];		// [0x00,RO] NT3H2111 unique ID (no check bytes!)
+	uint8_t int_u8[3];	// [0x01/0x02,RO] "Internal" u8 values
+	uint16_t lock_header;	// [0x02,RO] Lock bytes. Must match: 0x0FE0
+	uint32_t cap_container;	// [0x03,RO] Must match: 0xF1 0x10 0xFF 0xEE
 
 	/** User data area (page 0x04) **/
 	NFP_User_Data_t user_data;
-	uint8_t section3[384];		// [0x82,RW] assuming extra data for NT3H2111/NT3H2211...
+	uint8_t section3[384];	// [0x82,RW] assuming extra data for NT3H2111/NT3H2211...
 
 	/** NT3H2111 footer **/
-	uint8_t lock_footer[4];		// [0xE2,RO] NT3H2111 dynamic lock bytes.
-					// First 3 bytes must match:
-					// - NT3H2111: 0x01 0x01 0x1F
-					// - NT3H2211: 0x01 0x00 0xFF
-	uint32_t rfu_pwd[5];		// [0xE3,RO] RFU/PWD stuff
+	uint32_t lock_footer;	// [0xE2,RO] NT3H2111 dynamic lock bytes.
+				// First 3 bytes must match:
+				// - NT3H2111: 0x01 0x01 0x1F
+				// - NT3H2211: 0x01 0x00 0xFF
+	uint32_t rfu_pwd[5];	// [0xE3,RO] RFU/PWD stuff
 
-	uint32_t cfg0;			// [0xE8,RO] NT3H2111 CFG0. Must match: 0x0100F848
-	uint32_t cfg1;			// [0xE9,RO] NT3H2111 CFG1. Must match: 0x08010000
+	uint32_t cfg0;		// [0xE8,RO] NT3H2111 CFG0. Must match: 0x0100F848
+	uint32_t cfg1;		// [0xE9,RO] NT3H2111 CFG1. Must match: 0x08010000
 
-	uint32_t nak0[2];		// [0xEA,RO] Invalid access - returns NAK
-	uint32_t session[2];		// [0xEC,RO] Session registers
-	uint32_t nak1[18];		// [0xEE,RO] Invalid access - returns NAK
+	uint32_t nak0[2];	// [0xEA,RO] Invalid access - returns NAK
+	uint32_t session[2];	// [0xEC,RO] Session registers
+	uint32_t nak1[18];	// [0xEE,RO] Invalid access - returns NAK
 } NFP_NT3H2111_Data_t;
 ASSERT_STRUCT(NFP_NT3H2111_Data_t, NFP_SNW_EXTENDED);
 

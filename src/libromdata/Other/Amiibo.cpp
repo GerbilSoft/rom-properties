@@ -238,7 +238,7 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 
 		if (pNtag215->lock_header != cpu_to_be16(NFP_NTAG215_LOCK_HEADER) ||
 		    pNtag215->cap_container != cpu_to_be32(NFP_NTAG215_CAP_CONTAINER) ||
-		    memcmp(pNtag215->lock_footer, lock_footer.data(), lock_footer.size()) != 0 ||
+		    ((be32_to_cpu(pNtag215->lock_footer) & NTP_NTAG215_LOCK_FOOTER_MASK) != NTP_NTAG215_LOCK_FOOTER) ||
 		    pNtag215->cfg0 != cpu_to_be32(NFP_NTAG215_CFG0) ||
 		    pNtag215->cfg1 != cpu_to_be32(NFP_NTAG215_CFG1))
 		{
@@ -293,9 +293,7 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 				// NT3H2111
 				if (info->header.size >= NFP_SNW_STANDARD) {
 					// Check the lock footer.
-					static constexpr array<uint8_t, 3> lock_footer = {{0x01, 0x01, 0x1F}};
-					static_assert(sizeof(pNt3H2111->lock_footer) == sizeof(lock_footer)+1, "lock_footer is the wrong size.");
-					if (memcmp(pNt3H2111->lock_footer, lock_footer.data(), lock_footer.size()) != 0) {
+					if ((be32_to_cpu(pNt3H2111->lock_footer) & NTP_NT3H2111_LOCK_FOOTER_MASK) != NTP_NT3H2111_LOCK_FOOTER) {
 						break;
 					}
 				}
@@ -305,9 +303,7 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 			case 0x03: {
 				// NT3H2211
 				if (info->header.size >= NFP_SNW_STANDARD) {
-					static constexpr array<uint8_t, 3> lock_footer = {{0x01, 0x00, 0xFF}};
-					static_assert(sizeof(pNt3H2111->lock_footer) == sizeof(lock_footer)+1, "lock_footer is the wrong size.");
-					if (memcmp(pNt3H2111->lock_footer, lock_footer.data(), lock_footer.size()) != 0) {
+					if ((be32_to_cpu(pNt3H2111->lock_footer) & NTP_NT3H2211_LOCK_FOOTER_MASK) != NTP_NT3H2211_LOCK_FOOTER) {
 						break;
 					}
 				}
