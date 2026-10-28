@@ -519,7 +519,10 @@ if (FMT_INSTALL)
   endif ()
 
   # Install the library and headers.
-  # rom-properties: Only install the DLL, and use our custom destination path.  
+  # rom-properties:
+  # - Only install the DLL.
+  # - Use our custom destination path.
+  # - Install PDB files.
   install(
     TARGETS ${INSTALL_TARGETS}
     COMPONENT fmt_core
@@ -528,7 +531,25 @@ if (FMT_INSTALL)
     #ARCHIVE DESTINATION ${FMT_LIB_DIR}
     #PUBLIC_HEADER DESTINATION ${FMT_INC_DIR}/fmt
     #RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
     ${INSTALL_FILE_SET})
+
+  IF(INSTALL_DEBUG AND PNG_SHARED)
+    # FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
+    # TODO: Test on MinGW.
+    # FIXME: Generator PDB expression doesn't have the debug postfix for some reason,
+    # so cpack fails in debug builds if we get the PDB property.
+    INCLUDE(DirInstallPaths)
+    SET(PDB_FILENAME_D "$<TARGET_FILE_DIR:fmt>/fmt-${CPACK_PACKAGE_VERSION_MAJOR}${FMT_DEBUG_POSTFIX}.pdb")
+    SET(PDB_FILENAME_R "$<TARGET_FILE_DIR:fmt>/fmt-${CPACK_PACKAGE_VERSION_MAJOR}.pdb")
+    INSTALL(FILES "${PDB_FILENAME_D}" "${PDB_FILENAME_R}"
+            DESTINATION "${DIR_INSTALL_DLL_DEBUG}"
+            COMPONENT "debug"
+            OPTIONAL
+            )
+    UNSET(PDB_FILENAME_D)
+    UNSET(PDB_FILENAME_R)
+  ENDIF(INSTALL_DEBUG AND PNG_SHARED)
 
   # Use a namespace because CMake provides better diagnostics for namespaced
   # imported targets.
