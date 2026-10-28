@@ -655,7 +655,7 @@ const char *AmiiboData::lookup_char_name(uint32_t char_id) const
 				// NOTE: pb is from pCharVarTbl, so it needs to be byteswapped.
 
 				// Compare the character ID first.
-				int char_id_diff = static_cast<int>(pa->char_id) - static_cast<int>(le32_to_cpu(pb->char_id));
+				int char_id_diff = static_cast<int>(pa->char_id) - static_cast<int>(le16_to_cpu(pb->char_id));
 				if (char_id_diff != 0) {
 					return char_id_diff;
 				}

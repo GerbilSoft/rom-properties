@@ -52,6 +52,8 @@
   * Nintendo3DS: Fix incorrect NoCrypto flag warning on some decrypted 3DS ROMs.
     * Fixes #524: [BUG] NCCH: decrypted ROMs get the 'encryption flags are incorrect' warning
       * Reported by @Amnesia1000.
+  * Amiibo: Fix character variant lookup on big-endian systems.
+    * Affects: v2.9
 
 * Other changes:
   * 64-bit time_t (using the rp_time_t typedef) is now used regardless of
