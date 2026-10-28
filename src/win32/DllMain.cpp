@@ -55,18 +55,40 @@ using namespace LibRpTexture;
 static ULONG_PTR gdipToken = 0;
 
 #include "libi18n/config.libi18n.h"
-#if defined(_MSC_VER) && defined(ENABLE_NLS)
+
+#ifdef _MSC_VER
 // MSVC: Exception handling for /DELAYLOAD.
 #  include "libwin32common/DelayLoadHelper.h"
+
+// DelayLoad: fmt
+// NOTE: Not using DELAYLOAD_TEST_FUNCTION_IMPL1 here due to the use of C++ functions.
+DELAYLOAD_FILTER_FUNCTION_IMPL(fmt_format_to);
+static int DelayLoad_test_fmt_format_to(void) {
+	static bool success = 0;
+	if (!success) {
+		__try {
+			// NOTE: Cannot use fmt::to_string() due to C2712.
+			char buf[4];
+			fmt::format_to(buf, FSTR(""));
+		} __except (DelayLoad_filter_fmt_format_to(GetExceptionCode())) {
+			return -ENOTSUP;
+		}
+		success = 1;
+	}
+	return 0;
+}
+
+#  ifdef ENABLE_NLS
 // DelayLoad test implementation.
 // NOTE: ClangCL with MSVC 2026 uses a path that doesn't define libintl_textdomain.
-#  ifdef __clang__
+#    ifdef __clang__
 DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
-#    define DelayLoad_test_libintl_textdomain DelayLoad_test_textdomain
-#  else /* !__clang__ */
+#      define DelayLoad_test_libintl_textdomain DelayLoad_test_textdomain
+#    else /* !__clang__ */
 DELAYLOAD_TEST_FUNCTION_IMPL1(libintl_textdomain, nullptr);
-#  endif /* __clang__ */
-#endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
+#    endif /* __clang__ */
+#  endif /* ENABLE_NLS */
+#endif /* _MSC_VER */
 
 /**
  * DLL entry point.
@@ -170,7 +192,9 @@ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Outptr_ LPVOID
 
 #if defined(_MSC_VER) && defined(ENABLE_NLS)
 	// Delay load verification.
-	if (DelayLoad_test_libintl_textdomain() != 0) {
+	if (DelayLoad_test_fmt_format_to() != 0 ||
+	    DelayLoad_test_libintl_textdomain() != 0)
+	{
 		// Delay load failed.
 		return E_UNEXPECTED;
 	}

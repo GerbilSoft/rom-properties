@@ -106,6 +106,24 @@ using std::vector;
 // MSVC: Exception handling for /DELAYLOAD.
 #include "libwin32common/DelayLoadHelper.h"
 
+// DelayLoad: fmt
+// NOTE: Not using DELAYLOAD_TEST_FUNCTION_IMPL1 here due to the use of C++ functions.
+DELAYLOAD_FILTER_FUNCTION_IMPL(fmt_format_to);
+static int DelayLoad_test_fmt_format_to(void) {
+	static bool success = 0;
+	if (!success) {
+		__try {
+			// NOTE: Cannot use fmt::to_string() due to C2712.
+			char buf[4];
+			fmt::format_to(buf, FSTR(""));
+		} __except (DelayLoad_filter_fmt_format_to(GetExceptionCode())) {
+			return -ENOTSUP;
+		}
+		success = 1;
+	}
+	return 0;
+}
+
 // DelayLoad: libromdata
 // NOTE: Not using DELAYLOAD_TEST_FUNCTION_IMPL1 here due to the use of C++ functions.
 #include "libromdata/config/ImageTypesConfig.hpp"
@@ -683,7 +701,30 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// will call this for us...
 	gsvt_init();
 
-#if defined(ENABLE_NLS) && defined(_MSC_VER)
+#ifdef _MSC_VER
+	// Delay load verification: fmt
+	// TODO: Skip this if not linked with /DELAYLOAD?
+	if (DelayLoad_test_fmt_format_to() != 0) {
+		// Delay load failed.
+		char dll_buf[20];
+#ifdef NDEBUG
+		snprintf(dll_buf, sizeof(dll_buf), "fmt-%d.dll", FMT_VERSION / 10000);
+#else /* !NDEBUG */
+		snprintf(dll_buf, sizeof(dll_buf), "fmt-%dd.dll", FMT_VERSION / 10000);
+#endif /* NDEBUG */
+		Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_RED, true);
+		Gsvt::StdErr.fputs("*** ERROR: ");
+		Gsvt::StdErr.fputs(dll_buf);
+		Gsvt::StdErr.fputs(" could not be loaded.");
+		Gsvt::StdErr.textColorReset();
+		Gsvt::StdErr.fputs("\n\n"
+			"Please redownload rom-properties " RP_VERSION_STRING " and copy the\n");
+		Gsvt::StdErr.fputs(dll_buf);
+		Gsvt::StdErr.fputs(" file to the installation directory.\n");
+		Gsvt::StdErr.fflush();
+		return EXIT_FAILURE;
+	}
+#  ifdef ENABLE_NLS
 	// Delay load verification: libgnuintl
 	// TODO: Skip this if not linked with /DELAYLOAD?
 	if (DelayLoad_test_libintl_textdomain() != 0) {
@@ -699,7 +740,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		Gsvt::StdErr.fflush();
 		return EXIT_FAILURE;
 	}
-#endif /* ENABLE_NLS && _MSC_VER */
+#  endif /* ENABLE_NLS */
+#endif /* _MSC_VER */
 
 #ifdef RP_LIBROMDATA_IS_DLL
 #  ifdef _MSC_VER
