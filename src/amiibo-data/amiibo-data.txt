@@ -1176,8 +1176,7 @@ A:0x0007:8:1:Wii Fit Trainer
 A:0x0008:9:1:Villager
 A:0x0009:10:1:Pikachu
 A:0x000A:11:1:Kirby
-A:0x000B:12:1:Marth# Kingdom Hearts [0x
-
+A:0x000B:12:1:Marth
 
 # SSB: Wave 2 [0x000C-0x0012]
 A:0x000E:13:2:Zelda
@@ -2133,8 +2132,8 @@ A:0x03D6:447:8:Roswell
 A:0x03D7:448:8:Faith
 
 # Monster Hunter Stories (Wave 2) [0x040C-0x040E]
-A:0x040C:8:2:Razewing Ratha
 A:0x040D:7:2:Ena
+A:0x040C:8:2:Razewing Ratha
 A:0x040E:9:2:Tsukino
 
 # Monster Hunter Rise (Wave 1) [0x040F-0x0411]
