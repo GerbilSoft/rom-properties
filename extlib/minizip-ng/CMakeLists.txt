@@ -832,7 +832,10 @@ if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
             # so cpack fails in debug builds if we get the PDB property.
             SET(PDB_FILENAME_D "$<TARGET_FILE_DIR:${MINIZIP_TARGET}>/minizip${CMAKE_DEBUG_POSTFIX}.pdb")
             SET(PDB_FILENAME_R "$<TARGET_FILE_DIR:${MINIZIP_TARGET}>/minizip${CMAKE_RELEASE_POSTFIX}.pdb")
+            SET(PDB_FILENAME_NG_D "$<TARGET_FILE_DIR:${MINIZIP_TARGET}>/minizip-ng${CMAKE_DEBUG_POSTFIX}.pdb")
+            SET(PDB_FILENAME_NG_R "$<TARGET_FILE_DIR:${MINIZIP_TARGET}>/minizip-ng${CMAKE_RELEASE_POSTFIX}.pdb")
             INSTALL(FILES "${PDB_FILENAME_D}" "${PDB_FILENAME_R}"
+                          "${PDB_FILENAME_NG_D}" "${PDB_FILENAME_NG_R}"
                     DESTINATION "${DIR_INSTALL_DLL_DEBUG}"
                     COMPONENT "debug"
                     OPTIONAL
