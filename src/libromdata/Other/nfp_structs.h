@@ -97,7 +97,7 @@ typedef struct _NFP_User_Data_t {
 	// Character identification (page 0x15, raw offset 0x54)
 	uint32_t char_id;		// [0x15,RO] Character identification.
 	NFP_U8_U32_u amiibo_id;		// [0x16,RO] amiibo series identification.
-	uint32_t unknown1;		// [0x17,RO]
+	uint32_t nt3h_aabbccdd;		// [0x17,RO] On NT3H2111/NT3H2211, contains 0xAABBCCDD.
 	uint8_t keygen_salt[32];	// [0x18,RO]
 	uint8_t unfixed_hash[32];	// [0x20,RW] SHA256-HMAC hash over 0x1DF bytes.
 					// First 3 bytes are the last 3 bytes of [0x04,RW].

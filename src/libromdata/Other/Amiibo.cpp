@@ -271,6 +271,13 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 			break;
 		}
 
+		// Check the 0xAABBCCDD value.
+		// NTAG215s have some other value here. (manufacturer ID?)
+		if (pNt3H2111->user_data.nt3h_aabbccdd != cpu_to_be32(0xAABBCCDD)) {
+			// Not an NT3H2111 amiibo.
+			break;
+		}
+
 		// If the file is large enough, check the footer values.
 		if (info->header.size >= NFP_SNW_STANDARD) {
 			// TODO: Check rfu_pwd?
