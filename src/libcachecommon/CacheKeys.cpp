@@ -456,7 +456,7 @@ string urlencode(string_view url)
 	s_ret.reserve(len + 8);
 
 	assert(!url.empty());
-	for (const char *p = url.data(); len > 0; p++, len++) {
+	for (const char *p = url.data(); len > 0; p++, len--) {
 		const uint8_t c = static_cast<uint8_t>(*p);
 		if (c & 0x80) {
 			// UTF-8 code sequence
@@ -501,7 +501,7 @@ wstring urlencode(wstring_view url)
 	ws_ret.reserve(len + 8);
 
 	assert(!url.empty());
-	for (const wchar_t *p = url.data(); len > 0; p++, len++) {
+	for (const wchar_t *p = url.data(); len > 0; p++, len--) {
 		// TODO: urlencode() characters >= 0x80?
 		const wchar_t wc = *p;
 		switch (wc) {
