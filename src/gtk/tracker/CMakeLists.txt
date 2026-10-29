@@ -144,6 +144,7 @@ ENDIF()
 
 SET(RULE_FILES
 	rules/14-rp-application-packages.rule
+	rules/14-rp-animation-files.rule
 	rules/14-rp-archives.rule
 	rules/14-rp-audio.rule
 	rules/14-rp-banners.rule

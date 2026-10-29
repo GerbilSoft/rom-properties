@@ -352,7 +352,7 @@ static const array<RomDataFns, 40> romDataFns_header = {{
 	GetRomDataFns(ColecoVision, ATTR_HAS_METADATA),
 	GetRomDataFns(Dreamcast, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
 	GetRomDataFns(DreamcastSave, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
-	GetRomDataFns(FlipnoteStudio, ATTR_HAS_THUMBNAIL),	// FIXME: Has magic, but KWZ only uses three bytes...
+	GetRomDataFns(FlipnoteStudio, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),	// FIXME: Has magic, but KWZ only uses three bytes...
 	GetRomDataFns(GameCube, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
 	GetRomDataFns(GameCubeSave, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(Intellivision, ATTR_HAS_METADATA),

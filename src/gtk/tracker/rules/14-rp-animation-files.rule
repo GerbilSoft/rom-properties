@@ -1,0 +1,5 @@
+[ExtractorRule]
+ModulePath=libextract-rom-properties.so
+MimeTypes=image/x-flipnote-studio;image/x-flipnote-studio-3d;image/x-portable-pixmap;
+FallbackRdfTypes=nfo:Image;nfo:RasterImage;
+Graph=tracker:Pictures

@@ -489,6 +489,7 @@ int FlipnoteStudio::loadFieldData(void)
 			break;
 
 		case FlipnoteStudioPrivate::AnimType::PPM: {
+			// File header is read in the constructor.
 			const FlipnoteStudio_PPM_Header_t *const ppmHeader = &d->header.ppm;
 			d->fields.reserve(5);	// Maximum of 5 fields. (TODO: Add more fields?)
 
@@ -524,6 +525,7 @@ int FlipnoteStudio::loadFieldData(void)
 		}
 
 		case FlipnoteStudioPrivate::AnimType::KWZ: {
+			// File header is read in the constructor.
 			const FlipnoteStudio3D_KFH_t *const kfhHeader = &d->header.kfh;
 			d->fields.reserve(6);	// Maximum of 6 fields. (TODO: Add more fields?)
 
@@ -566,6 +568,75 @@ int FlipnoteStudio::loadFieldData(void)
 
 	// Finished reading the field data.
 	return d->fields.count();
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the metadata hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int FlipnoteStudio::loadMetaData(void)
+{
+	RP_D(FlipnoteStudio);
+	if (!d->metaData.empty()) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || static_cast<int>(d->animType) < 0) {
+		// Animation file isn't valid.
+		return -EIO;
+	}
+
+	switch (d->animType) {
+		default:
+			assert(!"Unsupported animation type???");
+			break;
+
+		case FlipnoteStudioPrivate::AnimType::PPM: {
+			// File header is read in the constructor.
+			const FlipnoteStudio_PPM_Header_t *const ppmHeader = &d->header.ppm;
+			d->metaData.reserve(2);	// Maximum of 2 metadata properties. (TODO: Add more?)
+
+			// Author name (NOTE: Only listing original author.)
+			if (ppmHeader->orig_author_name[0] != 0) {
+				d->metaData.addMetaData_string(Property::Author,
+					utf16le_to_utf8(ppmHeader->orig_author_name, ARRAY_SIZE(ppmHeader->orig_author_name)));
+			}
+
+			// Timestamp
+			// NOTE: Using CreationDate. (no ModificationDate property...)
+			// TODO: Adjust for local timezone, since it's UTC.
+			d->metaData.addMetaData_timestamp(Property::CreationDate,
+				static_cast<rp_time_t>(ppmHeader->timestamp) + static_cast<rp_time_t>(GC_UNIX_TIME_DIFF));
+
+			break;
+		}
+
+		case FlipnoteStudioPrivate::AnimType::KWZ: {
+			// File header is read in the constructor.
+			const FlipnoteStudio3D_KFH_t *const kfhHeader = &d->header.kfh;
+			d->metaData.reserve(2);	// Maximum of 2 metadata properties. (TODO: Add more?)
+
+			// Author name (NOTE: Only listing root author.)
+			if (kfhHeader->root_author_name[0] != 0) {
+				d->metaData.addMetaData_string(Property::Author,
+					utf16le_to_utf8(kfhHeader->root_author_name, ARRAY_SIZE(kfhHeader->root_author_name)));
+			}
+
+			// Timestamp
+			// NOTE: Using CreationDate. (no ModificationDate property...)
+			// TODO: Adjust for local timezone, since it's UTC.
+			d->metaData.addMetaData_timestamp(Property::CreationDate,
+				static_cast<rp_time_t>(kfhHeader->creation_time) + static_cast<rp_time_t>(GC_UNIX_TIME_DIFF));
+
+			break;
+		}
+	}
+
+	// Finished reading the metadata.
+	return d->metaData.count();
 }
 
 /**
