@@ -483,9 +483,6 @@ int FlipnoteStudio::loadFieldData(void)
 		return -EIO;
 	}
 
-	// TODO: Add more fields?
-	d->fields.reserve(5);	// Maximum of 5 fields. (TESTING)
-
 	switch (d->animType) {
 		default:
 			assert(!"Unsupported animation type???");
@@ -493,6 +490,7 @@ int FlipnoteStudio::loadFieldData(void)
 
 		case FlipnoteStudioPrivate::AnimType::PPM: {
 			const FlipnoteStudio_PPM_Header_t *const ppmHeader = &d->header.ppm;
+			d->fields.reserve(5);	// Maximum of 5 fields. (TODO: Add more fields?)
 
 			// # of frames
 			d->fields.addField_string_numeric(C_("FlipnoteStudio", "# of Frames"),
@@ -513,7 +511,8 @@ int FlipnoteStudio::loadFieldData(void)
 					utf16le_to_utf8(ppmHeader->user_name, ARRAY_SIZE(ppmHeader->user_name)));
 			}
 
-			// Last Modified timestamp
+			// Timestamp
+			// TODO: "Timestamp" or "Last Modified"?
 			d->fields.addField_dateTime(C_("RomData", "Timestamp"),
 				static_cast<rp_time_t>(ppmHeader->timestamp) + static_cast<rp_time_t>(GC_UNIX_TIME_DIFF),
 				RomFields::RFT_DATETIME_HAS_DATE |
@@ -526,10 +525,40 @@ int FlipnoteStudio::loadFieldData(void)
 
 		case FlipnoteStudioPrivate::AnimType::KWZ: {
 			const FlipnoteStudio3D_KFH_t *const kfhHeader = &d->header.kfh;
+			d->fields.reserve(6);	// Maximum of 6 fields. (TODO: Add more fields?)
 
 			// # of frames
 			d->fields.addField_string_numeric(C_("FlipnoteStudio", "# of Frames"),
 				le32_to_cpu(kfhHeader->frame_count));
+
+			// Author names
+			// TODO: U+E000 private use area from Nintendo fonts.
+			if (kfhHeader->root_author_name[0] != 0) {
+				d->fields.addField_string(C_("FlipnoteStudio", "Root Author"),
+					utf16le_to_utf8(kfhHeader->root_author_name, ARRAY_SIZE(kfhHeader->root_author_name)));
+			}
+			if (kfhHeader->parent_author_name[0] != 0) {
+				d->fields.addField_string(C_("FlipnoteStudio", "Parent Author"),
+					utf16le_to_utf8(kfhHeader->parent_author_name, ARRAY_SIZE(kfhHeader->parent_author_name)));
+			}
+			if (kfhHeader->current_author_name[0] != 0) {
+				d->fields.addField_string(C_("FlipnoteStudio", "Current Author"),
+					utf16le_to_utf8(kfhHeader->current_author_name, ARRAY_SIZE(kfhHeader->current_author_name)));
+			}
+
+			// Timestamps
+			d->fields.addField_dateTime(C_("RomData", "Creation Time"),
+				static_cast<rp_time_t>(kfhHeader->creation_time) + static_cast<rp_time_t>(GC_UNIX_TIME_DIFF),
+				RomFields::RFT_DATETIME_HAS_DATE |
+				RomFields::RFT_DATETIME_HAS_TIME |
+				RomFields::RFT_DATETIME_IS_UTC	// 3DS doesn't support timezones.
+				);
+			d->fields.addField_dateTime(C_("RomData", "Modified Time"),
+				static_cast<rp_time_t>(kfhHeader->modified_time) + static_cast<rp_time_t>(GC_UNIX_TIME_DIFF),
+				RomFields::RFT_DATETIME_HAS_DATE |
+				RomFields::RFT_DATETIME_HAS_TIME |
+				RomFields::RFT_DATETIME_IS_UTC	// 3DS doesn't support timezones.
+				);
 
 			break;
 		}
