@@ -10,8 +10,8 @@
 #include "RomData_p.hpp"
 
 #include "flipnote_structs.h"
+#include "../Console/gcn_card.h"	// for GC_UNIX_TIME_DIFF
 
-// Other rom-properties libraries
 // Other rom-properties libraries
 #include "librptexture/decoder/ImageDecoder_NDS.hpp"
 #include "bitstuff.h"
@@ -338,11 +338,34 @@ int FlipnoteStudio::loadFieldData(void)
 	// TODO: Add more fields?
 
 	const FlipnoteStudio_PPM_Header_t *const ppmHeader = &d->ppmHeader;
-	d->fields.reserve(1);	// Maximum of 1 field. (TESTING)
+	d->fields.reserve(5);	// Maximum of 5 fields. (TESTING)
 
 	// # of frames
 	d->fields.addField_string_numeric(C_("FlipnoteStudio", "# of Frames"),
 		le32_to_cpu(ppmHeader->num_frames));
+
+	// Author names
+	// TODO: U+E000 private use area from Nintendo fonts.
+	if (ppmHeader->orig_author_name[0] != 0) {
+		d->fields.addField_string(C_("FlipnoteStudio", "Original Author"),
+			utf16le_to_utf8(ppmHeader->orig_author_name, ARRAY_SIZE(ppmHeader->orig_author_name)));
+	}
+	if (ppmHeader->last_edited_author_name[0] != 0) {
+		d->fields.addField_string(C_("FlipnoteStudio", "Last Edited By"),
+			utf16le_to_utf8(ppmHeader->last_edited_author_name, ARRAY_SIZE(ppmHeader->last_edited_author_name)));
+	}
+	if (ppmHeader->user_name[0] != 0) {
+		d->fields.addField_string(C_("FlipnoteStudio", "Username"),
+			utf16le_to_utf8(ppmHeader->user_name, ARRAY_SIZE(ppmHeader->user_name)));
+	}
+
+	// Last Modified timestamp
+	d->fields.addField_dateTime(C_("RomData", "Timestamp"),
+		static_cast<rp_time_t>(ppmHeader->timestamp) + static_cast<rp_time_t>(GC_UNIX_TIME_DIFF),
+		RomFields::RFT_DATETIME_HAS_DATE |
+		RomFields::RFT_DATETIME_HAS_TIME |
+		RomFields::RFT_DATETIME_IS_UTC	// DSi doesn't support timezones.
+		);
 
 	// Finished reading the field data.
 	return d->fields.count();
