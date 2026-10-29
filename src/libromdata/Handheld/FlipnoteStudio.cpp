@@ -236,7 +236,13 @@ int FlipnoteStudio::isRomSupported_static(const DetectInfo *info)
 		reinterpret_cast<const FlipnoteStudio_PPM_Header_t*>(info->header.pData);
 	if (ppmHeader->magic == cpu_to_be32(FLIPNOTE_PPM_MAGIC)) {
 		// Magic number is correct.
-		return 0;
+		// Verify some fields that are known to have fixed values.
+		if (ppmHeader->unknown_00E == cpu_to_le16(0x0024) &&
+		    ppmHeader->unknown_09E == 0)
+		{
+			// Fixed values match.
+			return 0;
+		}
 	}
 
 	// Not supported.
