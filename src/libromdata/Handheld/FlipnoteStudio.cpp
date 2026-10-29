@@ -48,8 +48,8 @@ public:
 	// .ppm header
 	FlipnoteStudio_PPM_Header_t ppmHeader;
 
-	// Icon
-	rp_image_ptr img_icon;
+	// Preview image
+	rp_image_ptr img_image;
 
 	/**
 	 * Load the image.
@@ -127,38 +127,38 @@ FlipnoteStudioPrivate::FlipnoteStudioPrivate(const IRpFilePtr &file)
  */
 rp_image_const_ptr FlipnoteStudioPrivate::loadImage(void)
 {
-	rp_image_const_ptr icon;
+	rp_image_const_ptr img;
 
-	if (img_icon) {
-		// Icon has already been loaded.
-		// NOTE: Assigning to `icon` for named-return-value optimization.
-		icon = img_icon;
-		return icon;
+	if (img_image) {
+		// Preview image has already been loaded.
+		// NOTE: Assigning to `img` for named-return-value optimization.
+		img = img_image;
+		return img;
 	} else if (!this->isValid || !this->file) {
-		// Can't load the icon.
-		return icon;
+		// Can't load the preview image.
+		return img;
 	}
 
 	// PPM images are stored in the header in NDS 4bpp tiled format.
-	rp_image_ptr tmp_icon = ImageDecoder::fromNDS_CI4(
+	rp_image_ptr tmp_image = ImageDecoder::fromNDS_CI4(
 		FLIPNOTE_PPM_WIDTH, FLIPNOTE_PPM_HEIGHT,
 		ppmHeader.preview_bitmap, sizeof(ppmHeader.preview_bitmap),
 		ppm_palette.data(), sizeof(ppm_palette));
-	if (!tmp_icon) {
+	if (!tmp_image) {
 		// Unable to decode the icon.
-		return icon;
+		return img;
 	}
 
 	// Set the sBIT metadata.
 	// TODO: Transparency?
 	static const rp_image::sBIT_t sBIT = {5,5,5,0,0};
-	tmp_icon->set_sBIT(sBIT);
+	tmp_image->set_sBIT(sBIT);
 
 	// Save and return the icon.
 	// NOTE: Assigning to `icon` for named-return-value optimization.
-	this->img_icon = tmp_icon;
-	icon = std::move(tmp_icon);
-	return icon;
+	this->img_image = tmp_image;
+	img = std::move(tmp_image);
+	return img;
 }
 
 /** FlipnoteStudio **/
@@ -394,7 +394,7 @@ int FlipnoteStudio::loadInternalImage(ImageType imageType, rp_image_const_ptr &p
 		d->file,	// file
 		d->isValid,	// isValid
 		0,		// romType
-		d->img_icon,	// imgCache
+		d->img_image,	// imgCache
 		d->loadImage);	// func
 }
 
