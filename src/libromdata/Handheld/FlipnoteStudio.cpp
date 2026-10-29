@@ -162,8 +162,7 @@ rp_image_const_ptr FlipnoteStudioPrivate::loadImage(void)
 	rp_image_ptr tmp_image;
 	switch (animType) {
 		default:
-			//assert(!"Unsupported animation type???");
-			return img;
+			assert(!"Unsupported animation type???");
 			break;
 
 		case AnimType::PPM: {
@@ -437,7 +436,7 @@ int FlipnoteStudio::loadFieldData(void)
 
 	switch (d->animType) {
 		default:
-			//assert(!"Unsupported animation type???");
+			assert(!"Unsupported animation type???");
 			break;
 
 		case FlipnoteStudioPrivate::AnimType::PPM: {
