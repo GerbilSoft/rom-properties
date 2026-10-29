@@ -446,24 +446,25 @@ wstring getCacheFilename(wstring_view cacheKey)
 /**
  * urlencode a URL component.
  * This only encodes essential characters, e.g. ' ' and '%'.
- * @param url URL component.
- * @return urlencoded URL component.
+ * @param url URL component
+ * @return urlencoded URL component
  */
-string urlencode(const char *url)
+string urlencode(string_view url)
 {
 	string s_ret;
-	s_ret.reserve(strlen(url)+8);
+	size_t len = url.size();
+	s_ret.reserve(len + 8);
 
-	assert(url != nullptr);
-	for (; *url != '\0'; url++) {
-		const uint8_t chr = static_cast<uint8_t>(*url);
-		if (chr & 0x80) {
+	assert(!url.empty());
+	for (const char *p = url.data(); len > 0; p++, len++) {
+		const uint8_t c = static_cast<uint8_t>(*p);
+		if (c & 0x80) {
 			// UTF-8 code sequence
 			char buf[8];
-			snprintf(buf, sizeof(buf), "%%%02X", chr);
+			snprintf(buf, sizeof(buf), "%%%02X", c);
 			s_ret += buf;
 		} else {
-			switch (*url) {
+			switch (c) {
 				case ' ':
 					s_ret += "%20";
 					break;
@@ -477,7 +478,7 @@ string urlencode(const char *url)
 					s_ret += "%5E";
 					break;
 				default:
-					s_ret += *url;
+					s_ret += c;
 					break;
 			}
 		}
@@ -490,17 +491,20 @@ string urlencode(const char *url)
 /**
  * urlencode a URL component.
  * This only encodes essential characters, e.g. ' ' and '%'.
- * @param url URL component.
- * @return urlencoded URL component.
+ * @param url URL component
+ * @return urlencoded URL component
  */
-wstring urlencode(const wchar_t *url)
+wstring urlencode(wstring_view url)
 {
 	wstring ws_ret;
-	ws_ret.reserve(wcslen(url)+8);
+	size_t len = url.size();
+	ws_ret.reserve(len + 8);
 
-	assert(url != nullptr);
-	for (; *url != L'\0'; url++) {
-		switch (*url) {
+	assert(!url.empty());
+	for (const wchar_t *p = url.data(); len > 0; p++, len++) {
+		// TODO: urlencode() characters >= 0x80?
+		const wchar_t wc = *p;
+		switch (wc) {
 			case L' ':
 				ws_ret += L"%20";
 				break;
@@ -514,7 +518,7 @@ wstring urlencode(const wchar_t *url)
 				ws_ret += L"%5E";
 				break;
 			default:
-				ws_ret += *url;
+				ws_ret += wc;
 				break;
 		}
 	}
