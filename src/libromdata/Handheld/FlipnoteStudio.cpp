@@ -255,7 +255,6 @@ FlipnoteStudio::FlipnoteStudio(const IRpFilePtr &file)
 	: super(new FlipnoteStudioPrivate(file))
 {
 	RP_D(FlipnoteStudio);
-	d->mimeType = "image/x-flipnote-studio";	// unofficial, not on fd.o
 	d->fileType = FileType::AnimationFile;
 
 	if (!d->file) {
@@ -282,6 +281,19 @@ FlipnoteStudio::FlipnoteStudio(const IRpFilePtr &file)
 	if (!d->isValid) {
 		d->file.reset();
 		return;
+	}
+
+	switch (d->animType) {
+		default:
+			assert(!"Unsupported animation type???");
+			break;
+
+		case FlipnoteStudioPrivate::AnimType::PPM:
+			d->mimeType = "image/x-flipnote-studio";
+			break;
+		case FlipnoteStudioPrivate::AnimType::KWZ:
+			d->mimeType = "image/x-flipnote-studio-3d";
+			break;
 	}
 }
 
