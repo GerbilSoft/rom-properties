@@ -20,7 +20,7 @@ using LibRpBase::RomData;
 #include <commctrl.h>
 
 // Win32 dark mode
-#include "libwin32darkmode/DarkMode.hpp"
+#include "libwin32darkmode/DarkModeCtrl.hpp"
 
 // C++ STL classes
 using std::array;
@@ -42,9 +42,6 @@ public:
 	// Is the UI locale right-to-left?
 	// If so, this will be set to WS_EX_LAYOUTRTL.
 	DWORD dwExStyleRTL;
-
-	// Is the dialog in Dark Mode? (requires something like StartAllBack)
-	bool isDarkModeEnabled;
 
 public:
 	/**
@@ -73,7 +70,6 @@ OptionsMenuButtonPrivate::OptionsMenuButtonPrivate(HWND hWnd)
 	: hWnd(hWnd)
 	, hMenuOptions(nullptr)
 	, dwExStyleRTL(LibWin32UI::isSystemRTL())
-	, isDarkModeEnabled(false)
 {
 	// Initialize the text and style for the "Options" menu button.
 	const bool isComCtl32_v610 = LibWin32UI::isComCtl32_v610();
@@ -220,8 +216,8 @@ OptionsMenuButtonWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			OptionsMenuButtonPrivate *const d = new OptionsMenuButtonPrivate(hWnd);
 			SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
-			// Determine if Dark Mode is enabled.
-			d->isDarkModeEnabled = VerifyDialogDarkMode(GetParent(hWnd));
+			// Set the dark mode subclass.
+			DarkMode_InitButton(hWnd);
 			break;
 		}
 
@@ -229,41 +225,6 @@ OptionsMenuButtonWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			OptionsMenuButtonPrivate *const d = reinterpret_cast<OptionsMenuButtonPrivate*>(
 				GetWindowLongPtr(hWnd, GWLP_USERDATA));
 			delete d;
-			break;
-		}
-
-		case WM_SYSCOLORCHANGE:
-		case WM_THEMECHANGED: {
-			auto* const d = reinterpret_cast<OptionsMenuButtonPrivate*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
-			if (!d) {
-				// No RP_ShellPropSheetExt_Private. Can't do anything...
-				return false;
-			}
-
-			UpdateDarkModeEnabled();
-			d->isDarkModeEnabled = VerifyDialogDarkMode(GetParent(hWnd));
-			// TODO: Force a window update?
-			break;
-		}
-
-		case WM_CTLCOLORMSGBOX:
-		case WM_CTLCOLOREDIT:
-		case WM_CTLCOLORLISTBOX:
-		case WM_CTLCOLORBTN:
-		case WM_CTLCOLORDLG:
-		case WM_CTLCOLORSCROLLBAR:
-		case WM_CTLCOLORSTATIC: {
-			// If using Dark Mode, forward WM_CTLCOLOR* to the parent window.
-			// This fixes issues when using StartAllBack on Windows 11
-			// to enforce Dark Mode schemes in Windows Explorer.
-			// TODO: Handle color scheme changes?
-			// TODO: Cache isDarkModeEnabled?
-			HWND hParent = GetParent(hWnd);
-			assert(hParent != nullptr);
-			auto* const d = reinterpret_cast<OptionsMenuButtonPrivate*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
-			if (d && d->isDarkModeEnabled) {
-				return SendMessage(hParent, uMsg, wParam, lParam);
-			}
 			break;
 		}
 
