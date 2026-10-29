@@ -14,6 +14,7 @@
 
 // C++ STL classes
 using std::string;
+using std::string_view;
 
 // glib includes
 #include <glib.h>
@@ -24,7 +25,7 @@ using std::string;
  * @param url URL
  * @return Proxy, or empty string if no proxy is needed.
  */
-string proxyForUrl(const char *url)
+string proxyForUrl(string_view url)
 {
 	// TODO: Support multiple proxies?
 	string ret;
@@ -36,7 +37,10 @@ string proxyForUrl(const char *url)
 		return ret;
 	}
 
-	gchar **proxies = g_proxy_resolver_lookup(proxy_resolver, url, nullptr, nullptr);
+	// NOTE: Need to convert the URL to a NULL-terminated string.
+	gchar *const sz_url = g_strndup(url.data(), url.size());
+	gchar **proxies = g_proxy_resolver_lookup(proxy_resolver, sz_url, nullptr, nullptr);
+	g_free(sz_url);
 	gchar *proxy = nullptr;
 	if (proxies) {
 		// Check if the first proxy is "direct://".

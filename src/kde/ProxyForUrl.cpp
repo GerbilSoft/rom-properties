@@ -11,6 +11,7 @@
 
 // C++ STL classes
 using std::string;
+using std::string_view;
 
 // Qt includes
 #include <QtCore/QUrl>
@@ -29,7 +30,7 @@ using std::string;
  * @param url URL
  * @return Proxy, or empty string if no proxy is needed.
  */
-string proxyForUrl(const char *url)
+string proxyForUrl(string_view url)
 {
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 	QList<QNetworkProxy> proxies = QNetworkProxyFactory::proxyForQuery(

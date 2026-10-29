@@ -159,7 +159,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 
 	CacheManager cache;
 	for (const auto &extURL : extURLs) {
-		std::string proxy = proxyForUrl(extURL.url.c_str());
+		std::string proxy = proxyForUrl(extURL.url);
 		cache.setProxyUrl(!proxy.empty() ? proxy.c_str() : nullptr);
 
 		// Should we attempt to download the image,

@@ -11,6 +11,9 @@
 #include "compiler-attrs.h"	// for ATTR_FLAG_ENUM
 #include "dll-macros.h"		// for RP_C_API
 
+// C++ STL classes
+#include "rp-string_view.hpp"
+
 /**
  * NOTE: TCreateThumbnail.cpp MUST be #included by a file in
  * the UI frontend. Otherwise, the instantiated template won't
@@ -261,7 +264,7 @@ protected:
 	 * @param url URL
 	 * @return Proxy, or empty string if no proxy is needed.
 	 */
-	virtual std::string proxyForUrl(const char *url) const = 0;
+	virtual std::string proxyForUrl(std::string_view url) const = 0;
 
 	/**
 	 * Is the system using a metered connection?

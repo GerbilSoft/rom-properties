@@ -16,4 +16,4 @@
  * @param url URL
  * @return Proxy, or empty string if no proxy is needed.
  */
-std::string proxyForUrl(const char *url);
+std::string proxyForUrl(std::string_view url);

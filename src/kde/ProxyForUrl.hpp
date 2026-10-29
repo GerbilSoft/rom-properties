@@ -10,10 +10,11 @@
 
 // C++ includes
 #include <string>
+#include "rp-string_view.hpp"
 
 /**
  * Get the proxy for the specified URL.
  * @param url URL
  * @return Proxy, or empty string if no proxy is needed.
  */
-std::string proxyForUrl(const char *url);
+std::string proxyForUrl(std::string_view url);

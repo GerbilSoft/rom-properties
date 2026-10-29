@@ -130,7 +130,7 @@ public:
 	 * @param url URL
 	 * @return Proxy, or empty string if no proxy is needed.
 	 */
-	inline string proxyForUrl(const char *url) const final
+	inline string proxyForUrl(std::string_view url) const final
 	{
 #ifdef ENABLE_NETWORKING
 		return ::proxyForUrl(url);

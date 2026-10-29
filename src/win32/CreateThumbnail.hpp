@@ -91,7 +91,7 @@ public:
 	 * @param url URL
 	 * @return Proxy, or empty string if no proxy is needed.
 	 */
-	inline std::string proxyForUrl(const char *url) const final
+	inline std::string proxyForUrl(std::string_view url) const final
 	{
 		// rp-download uses WinInet on Windows, which
 		// always uses the system proxy.
