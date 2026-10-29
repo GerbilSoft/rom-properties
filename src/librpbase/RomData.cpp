@@ -758,6 +758,8 @@ const char *RomData::fileType_to_string(FileType fileType)
 		NOP_C_("RomData|FileType", "Configuration File"),
 		// tr: FileType::ArchiveFile
 		NOP_C_("RomData|FileType", "Archive File"),
+		// tr: FileType::AnimationFile
+		NOP_C_("RomData|FileType", "Animation File"),
 	}};
  
 	const char *const s_fileType = fileType_names[static_cast<size_t>(fileType)];

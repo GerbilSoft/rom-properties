@@ -181,6 +181,7 @@ FlipnoteStudio::FlipnoteStudio(const IRpFilePtr &file)
 {
 	RP_D(FlipnoteStudio);
 	d->mimeType = "image/x-flipnote-studio";	// unofficial, not on fd.o
+	d->fileType = FileType::AnimationFile;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
