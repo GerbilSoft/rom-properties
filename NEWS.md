@@ -54,6 +54,9 @@
       * Reported by @Amnesia1000.
   * Amiibo: Fix character variant lookup on big-endian systems.
     * Affects: v2.9
+  * Windows: Fix the text color on the "Options" button when using a dark mode
+    tool such as StartAllBack.
+    * Reported by @CheatFreak47.
 
 * Other changes:
   * 64-bit time_t (using the rp_time_t typedef) is now used regardless of

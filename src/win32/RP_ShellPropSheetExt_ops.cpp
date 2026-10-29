@@ -97,6 +97,7 @@ void RP_ShellPropSheetExt_Private::showMessageWidget(unsigned int messageType, c
  * @param lParam	LPARAM
  * @param uIdSubclass	Subclass ID (usually the control ID)
  * @param dwRefData	RP_ShellPropSheetExt_Private*
+ * @return
  */
 LRESULT CALLBACK RP_ShellPropSheetExt_Private::MainDialogSubclassProc(
 	HWND hWnd, UINT uMsg,

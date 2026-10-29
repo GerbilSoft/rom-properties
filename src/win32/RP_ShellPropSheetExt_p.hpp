@@ -399,6 +399,7 @@ public:
 	 * @param lParam	LPARAM
 	 * @param uIdSubclass	Subclass ID (usually the control ID)
 	 * @param dwRefData	RP_ShellPropSheetExt_Private*
+	 * @return
 	 */
 	static LRESULT CALLBACK MainDialogSubclassProc(
 		HWND hWnd, UINT uMsg,
