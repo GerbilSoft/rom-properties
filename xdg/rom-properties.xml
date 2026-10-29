@@ -758,6 +758,15 @@
       <match value="PARA" type="string" offset="0"/>
     </magic>
   </mime-type>
+  <mime-type type="image/x-flipnote-studio-3d">
+    <comment>Flipnote Studio 3D animation</comment>
+    <generic-icon name="image-x-generic"/>
+    <glob pattern="*.kwz"/>
+    <magic priority="75">
+      <!-- TODO: Add more magic? -->
+      <match value="KFH" type="string" offset="0"/>
+    </magic>
+  </mime-type>
 
   <!-- GameCom -->
   <mime-type type="application/x-game-com-rom">

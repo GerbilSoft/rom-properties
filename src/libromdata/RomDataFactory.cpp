@@ -275,7 +275,7 @@ static constexpr size_t ZARCHIVE_MAGIC_COUNT = 1;
 #else /* !HAVE_ZARCHIVE */
 static constexpr size_t ZARCHIVE_MAGIC_COUNT = 0;
 #endif /* HAVE_ZARCHIVE */
-static const array<RomDataFns, XML_MAGIC_COUNT+ZARCHIVE_MAGIC_COUNT+40> romDataFns_magic = {{
+static const array<RomDataFns, XML_MAGIC_COUNT+ZARCHIVE_MAGIC_COUNT+39> romDataFns_magic = {{
 	// Consoles
 	GetRomDataFns_magic1(Atari7800, ATTR_HAS_METADATA, 4, 'RI78'),	// "ATARI7800"
 	GetRomDataFns_magic2(GameCubeBNR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'BNR1', 'BNR2'),
@@ -299,7 +299,6 @@ static const array<RomDataFns, XML_MAGIC_COUNT+ZARCHIVE_MAGIC_COUNT+40> romDataF
 #endif /* ENABLE_XML */
 	GetRomDataFns_magic2(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x104, 0xCEED6666, 0x0110CEEF),
 	GetRomDataFns_magic1(DMG, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x304, 0xCEED6666),	// headered
-	GetRomDataFns_magic1(FlipnoteStudio, ATTR_HAS_THUMBNAIL, 0, 'PARA'),
 	GetRomDataFns_magic1(GameBoyAdvance, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x04, 0x24FFAE51),
 	GetRomDataFns_magic1(Lynx, ATTR_HAS_METADATA, 0, 'LYNX'),
 	GetRomDataFns_magic1(NGPC, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 12, ' SNK'),
@@ -348,11 +347,12 @@ static const array<RomDataFns, XML_MAGIC_COUNT+ZARCHIVE_MAGIC_COUNT+40> romDataF
  * Headers with addresses other than 0 should be
  * placed at the end of this array.
  */
-static const array<RomDataFns, 39> romDataFns_header = {{
+static const array<RomDataFns, 40> romDataFns_header = {{
 	// Consoles
 	GetRomDataFns(ColecoVision, ATTR_HAS_METADATA),
 	GetRomDataFns(Dreamcast, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
 	GetRomDataFns(DreamcastSave, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
+	GetRomDataFns(FlipnoteStudio, ATTR_HAS_THUMBNAIL),	// FIXME: Has magic, but KWZ only uses three bytes...
 	GetRomDataFns(GameCube, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
 	GetRomDataFns(GameCubeSave, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(Intellivision, ATTR_HAS_METADATA),
