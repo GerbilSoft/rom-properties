@@ -26,6 +26,7 @@ using namespace LibRpBase;
 using namespace LibRpTexture;
 
 // C++ STL classes
+using std::array;
 using std::set;
 using std::string;
 using std::unique_ptr;
@@ -56,6 +57,7 @@ GQuark RFT_BITFIELD_value_quark = 0;
 GQuark RFT_LISTDATA_rows_visible_quark = 0;
 GQuark RFT_fieldIdx_quark = 0;
 GQuark RFT_STRING_warning_quark = 0;
+GQuark RFT_STRING_ntlg_font_quark = 0;
 
 static void	rp_rom_data_view_set_property	(GObject	*object,
 						 guint		 prop_id,
@@ -129,6 +131,9 @@ rp_rom_data_view_class_init(RpRomDataViewClass *klass)
 	if (RFT_STRING_warning_quark == 0) {
 		RFT_STRING_warning_quark = g_quark_from_string("RFT_STRING_warning");
 	}
+	if (RFT_STRING_ntlg_font_quark == 0) {
+		RFT_STRING_ntlg_font_quark = g_quark_from_string("RFT_STRING_ntlg_font_quark");
+	}
 
 	/** Properties **/
 
@@ -158,7 +163,7 @@ rp_rom_data_view_class_init(RpRomDataViewClass *klass)
  * (Re-)Initialize the Pango attribute lists for the current RpDescFormatType.
  * @param page RomDataView
  */
-static inline void
+static void
 init_pango_attr_lists(RpRomDataView *page)
 {
 	pango_attr_list_unref(page->pango_attr_desc_label);
@@ -189,6 +194,96 @@ init_pango_attr_lists(RpRomDataView *page)
 }
 
 /**
+ * Check if the system has a Nintendo Rodin NTLG font.
+ * @param page RomDataView
+ * @return Font family name, or nullptr if not found.
+ */
+static const char*
+get_ntlg_font_family_name(RpRomDataView *page)
+{
+	if (page->ntlg_font_name) {
+		// Already found the font name.
+		return page->ntlg_font_name;
+	}
+
+	// Try finding a known Nintendo Rodin NTLG font.
+	static const array<const char*, 4> ntlg_font_name_tbl = {{
+		"nintendo_NTLG-DB_001",
+		"FOT-RodinNTLG Pro",
+		"FOT-RodinNTLG Pro DB",
+		"FOT-RodinNTLG Pro EB",
+	}};
+	array<bool, ntlg_font_name_tbl.size()> found_font;
+	found_font.fill(0);
+	size_t found_count = 0;
+
+	PangoContext *const pctx = gtk_widget_get_pango_context(GTK_WIDGET(page));
+	PangoFontMap *const pfm = pango_context_get_font_map(pctx);
+
+	// FIXME: PangoFontMap has a GListModel interface, but that requires glib-2.48.
+#if 0
+	guint n = g_list_model_get_n_items(G_LIST_MODEL(pfm));
+	for (guint i = 0; i < n; i++) {
+		PangoFontFamily *const pff = PANGO_FONT_FAMILY(
+			g_list_model_get_object(G_LIST_MODEL(pfm), i));
+		printf("found: '%s'\n", pango_font_family_get_name(pff));
+	}
+#endif
+
+	PangoFontFamily **ppff = nullptr;
+	int n = 0;
+	pango_font_map_list_families(pfm, &ppff, &n);
+	for (int i = 0; i < n; i++) {
+		PangoFontFamily *const pff = ppff[i];
+		const char *font_name = pango_font_family_get_name(pff);
+		assert(font_name != nullptr);
+		if (!font_name || font_name[0] == '\0') {
+			continue;
+		}
+
+		// Check if this font matches any of the NTLG fonts.
+		for (size_t i = 0; i < ntlg_font_name_tbl.size(); i++) {
+			if (found_font[i]) {
+				break;
+			}
+			if (!strcmp(ntlg_font_name_tbl[i], font_name)) {
+				// Found a match!
+				found_font[i] = true;
+				found_count++;
+				break;
+			}
+		}
+
+		if (found_font[0] || found_count >= ntlg_font_name_tbl.size()) {
+			// Found all the fonts!
+			break;
+		}
+	}
+	g_free(ppff);
+
+	if (found_count > 0) {
+		// At least one font was found.
+		const char *font_name = nullptr;
+		for (size_t i = 0; i < ntlg_font_name_tbl.size(); i++) {
+			if (found_font[i]) {
+				font_name = ntlg_font_name_tbl[i];
+				break;
+			}
+		}
+
+		assert(font_name != nullptr);
+		if (font_name) {
+			// Cache the font name and return it.
+			page->ntlg_font_name = font_name;
+			return font_name;
+		}
+	}
+
+	// No NTLG font available...
+	return nullptr;
+}
+
+/**
  * Set the formatting attributes for the specified label.
  * @param page RomDataView
  * @param label GtkLabel
@@ -201,7 +296,7 @@ set_label_format_type(RpRomDataView *page, GtkLabel *label)
 		init_pango_attr_lists(page);
 	}
 
-	// Check if this label has the "Warning" flag set.
+	// Check if this label has any font flags set.
 	const gboolean is_warning = (gboolean)GPOINTER_TO_UINT(
 		g_object_get_qdata(G_OBJECT(label), RFT_STRING_warning_quark));
 	if (unlikely(is_warning)) {
@@ -873,6 +968,14 @@ rp_rom_data_view_init_string(RpRomDataView *page,
 		if (field.flags & RomFields::STRF_WARNING) {
 			pango_attr_list_insert(attr_lst, pango_attr_weight_new(PANGO_WEIGHT_BOLD));
 			pango_attr_list_insert(attr_lst, pango_attr_foreground_new(65535, 0, 0));
+		}
+
+		// Nintendo Rodin NTLG font?
+		if (field.flags & RomFields::STRF_NTLG_FONT) {
+			const char *const font_name = get_ntlg_font_family_name(page);
+			if (font_name) {
+				pango_attr_list_insert(attr_lst, pango_attr_family_new(font_name));
+			}
 		}
 
 		gtk_label_set_attributes(GTK_LABEL(widget), attr_lst);
@@ -1599,11 +1702,13 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 		GtkWidget *const lblDesc = gtk_label_new(txt.c_str());
 		// NOTE: No name for this GtkWidget.
 
-		// Check if this is an RFT_STRING with warning set.
-		// If it is, set the "RFT_STRING_warning" flag.
-		const guint is_warning = ((field.type == RomFields::RomFieldType::RFT_STRING) &&
-		                          (field.flags & RomFields::STRF_WARNING));
-		g_object_set_qdata(G_OBJECT(lblDesc), RFT_STRING_warning_quark, GUINT_TO_POINTER((guint)is_warning));
+		// Check for any RFT_STRING font flags.
+		if (field.type == RomFields::RomFieldType::RFT_STRING) {
+			const guint is_warning = !!(field.flags & RomFields::STRF_WARNING);
+			const guint is_ntlg_font = !!(field.flags & RomFields::STRF_NTLG_FONT);
+			g_object_set_qdata(G_OBJECT(lblDesc), RFT_STRING_warning_quark, GUINT_TO_POINTER(is_warning));
+			g_object_set_qdata(G_OBJECT(lblDesc), RFT_STRING_ntlg_font_quark, GUINT_TO_POINTER(is_ntlg_font));
+		}
 
 		gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
 		set_label_format_type(page, GTK_LABEL(lblDesc));

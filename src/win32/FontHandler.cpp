@@ -46,9 +46,11 @@ public:
 	// Fonts
 	HFONT hFontBold;
 	HFONT hFontMono;
+	HFONT hFontNTLG;
 
 	// Controls
-	vector<HWND> vecMonoControls;	// Controls using the monospaced font.
+	vector<HWND> vecMonoControls;	// Controls using the monospaced font
+	vector<HWND> vecNTLGControls;	// Controls using the Nintendo Rodin NTLG font
 
 	// Previous ClearType setting
 	bool bPrevIsClearType;
@@ -56,12 +58,25 @@ public:
 private:
 	/**
 	 * Monospaced font enumeration procedure.
-	 * @param lpelfe Enumerated font information.
-	 * @param lpntme Font metrics.
-	 * @param FontType Font type.
-	 * @param lParam Pointer to RP_ShellPropSheetExt_Private.
+	 * @param lpelfe Enumerated font information
+	 * @param lpntme Font metrics
+	 * @param FontType Font type
+	 * @param lParam Pointer to unordered_set<tstring> to store matching fonts.
 	 */
 	static int CALLBACK MonospacedFontEnumProc(
+		_In_ const LOGFONT *lpelfe,
+		_In_ const TEXTMETRIC *lpntme,
+		_In_ DWORD FontType,
+		_In_ LPARAM lParam);
+
+	/**
+	 * NTLG font enumeration procedure.
+	 * @param lpelfe Enumerated font information
+	 * @param lpntme Font metrics
+	 * @param FontType Font type
+	 * @param lParam Pointer to unordered_set<tstring> to store matching fonts.
+	 */
+	static int CALLBACK NTLGFontEnumProc(
 		_In_ const LOGFONT *lpelfe,
 		_In_ const TEXTMETRIC *lpntme,
 		_In_ DWORD FontType,
@@ -74,6 +89,13 @@ public:
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
 	static int findMonospacedFont(LOGFONT *plfFontMono);
+
+	/**
+	 * Find a Nintendo Rodin NTLG font.
+	 * @param plfFontNTLG Pointer to LOGFONT to store the font name in.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	static int findNTLGFont(LOGFONT *plfFontNTLG);
 
 	/**
 	 * Get the current ClearType setting.
@@ -92,6 +114,12 @@ public:
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
 	int initMonospacedFont(void);
+
+	/**
+	 * (Re)Initialize the Nintendo Rodin NTLG font.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int initNTLGFont(void);
 
 public:
 	/**
@@ -123,10 +151,10 @@ FontHandlerPrivate::~FontHandlerPrivate()
 
 /**
  * Monospaced font enumeration procedure.
- * @param lpelfe Enumerated font information.
- * @param lpntme Font metrics.
- * @param FontType Font type.
- * @param lParam Pointer to RP_ShellPropSheetExt_Private.
+ * @param lpelfe Enumerated font information
+ * @param lpntme Font metrics
+ * @param FontType Font type
+ * @param lParam Pointer to unordered_set<tstring> to store matching fonts.
  */
 int CALLBACK FontHandlerPrivate::MonospacedFontEnumProc(
 	_In_ const LOGFONT *lpelfe,
@@ -144,6 +172,35 @@ int CALLBACK FontHandlerPrivate::MonospacedFontEnumProc(
 	if ((lpelfe->lfPitchAndFamily & FIXED_PITCH) &&
 	     lpelfe->lfFaceName[0] != _T('@'))
 	{
+		pFonts->insert(lpelfe->lfFaceName);
+	}
+
+	// Continue enumeration.
+	return 1;
+}
+
+/**
+ * NTLG font enumeration procedure.
+ * @param lpelfe Enumerated font information
+ * @param lpntme Font metrics
+ * @param FontType Font type
+ * @param lParam Pointer to unordered_set<tstring> to store matching fonts.
+ */
+int CALLBACK FontHandlerPrivate::NTLGFontEnumProc(
+	_In_ const LOGFONT *lpelfe,
+	_In_ const TEXTMETRIC *lpntme,
+	_In_ DWORD FontType,
+	_In_ LPARAM lParam)
+{
+	((void)lpntme);
+	((void)FontType);
+	unordered_set<tstring> *const pFonts = reinterpret_cast<unordered_set<tstring>*>(lParam);
+
+	// Check if the font name contains "NTLG".
+	if (lpelfe->lfFaceName[0] != _T('@') &&
+	    _tcsstr(lpelfe->lfFaceName, _T("NTLG")) != nullptr)
+	{
+		// Found a matching font.
 		pFonts->insert(lpelfe->lfFaceName);
 	}
 
@@ -222,8 +279,76 @@ int FontHandlerPrivate::findMonospacedFont(LOGFONT *plfFontMono)
 		return -ENOENT;
 	}
 
-	// Found the monospaced font.
+	// Found a monospaced font.
 	_tcscpy_s(plfFontMono->lfFaceName, _countof(plfFontMono->lfFaceName), mono_font);
+	return 0;
+}
+
+/**
+ * Find a Nintendo Rodin NTLG font.
+ * @param plfFontNTLG Pointer to LOGFONT to store the font name in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int FontHandlerPrivate::findNTLGFont(LOGFONT *plfFontNTLG)
+{
+	// Enumerate all monospaced fonts.
+	// Reference: http://www.catch22.net/tuts/fixed-width-font-enumeration
+	unordered_set<tstring> enum_fonts;
+#ifdef HAVE_UNORDERED_SET_RESERVE
+	enum_fonts.reserve(64);
+#endif /* HAVE_UNORDERED_SET_RESERVE */
+
+	LOGFONT lfEnumFonts = {
+		0,	// lfHeight
+		0,	// lfWidth
+		0,	// lfEscapement
+		0,	// lfOrientation
+		0,	// lfWeight
+		0,	// lfItalic
+		0,	// lfUnderline
+		0,	// lfStrikeOut
+		DEFAULT_CHARSET, // lfCharSet
+		0,	// lfOutPrecision
+		0,	// lfClipPrecision
+		0,	// lfQuality
+		0,	// lfPitchAndFamily
+		_T(""),	// lfFaceName
+	};
+
+	HDC hDC = GetDC(nullptr);
+	EnumFontFamiliesEx(hDC, &lfEnumFonts, NTLGFontEnumProc,
+		reinterpret_cast<LPARAM>(&enum_fonts), 0);
+	ReleaseDC(nullptr, hDC);
+
+	if (enum_fonts.empty()) {
+		// No fonts...
+		return -ENOENT;
+	}
+
+	// Fonts to try.
+	static const array<LPCTSTR, 4> ntlg_font_names = {{
+		_T("nintendo_NTLG-DB_001"),
+		_T("FOT-RodinNTLG Pro"),
+		_T("FOT-RodinNTLG Pro DB"),
+		_T("FOT-RodinNTLG Pro EB"),
+	}};
+
+	const TCHAR *ntlg_font = nullptr;
+	for (const TCHAR *pFontTest : ntlg_font_names) {
+		if (enum_fonts.find(pFontTest) != enum_fonts.end()) {
+			// Found a font.
+			ntlg_font = pFontTest;
+			break;
+		}
+	}
+
+	if (!ntlg_font) {
+		// No NTLG font found.
+		return -ENOENT;
+	}
+
+	// Found an NTLG font.
+	_tcscpy_s(plfFontNTLG->lfFaceName, _countof(plfFontNTLG->lfFaceName), ntlg_font);
 	return 0;
 }
 
@@ -361,6 +486,69 @@ int FontHandlerPrivate::initMonospacedFont(void)
 }
 
 /**
+ * (Re)Initialize the Nintendo Rodin NTLG font.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int FontHandlerPrivate::initNTLGFont(void)
+{
+	if (!hWnd) {
+		// No window. Delete the font.
+		if (hFontNTLG) {
+			DeleteFont(hFontNTLG);
+			hFontNTLG = nullptr;
+		}
+		return -EBADF;
+	}
+
+	// Get the current window font.
+	HFONT hFont = GetWindowFont(hWnd);
+	assert(hFont != nullptr);
+	if (!hFont) {
+		// Unable to get the window font.
+		return -ENOENT;
+	}
+
+	LOGFONT lfFontNTLG;
+	if (GetObject(hFont, sizeof(lfFontNTLG), &lfFontNTLG) == 0) {
+		// Unable to obtain the LOGFONT.
+		return -EIO;
+	}
+
+	// Find a monospaced font.
+	int ret = findNTLGFont(&lfFontNTLG);
+	if (ret != 0) {
+		// NTLGspaced font not found.
+		return -ENOENT;
+	}
+
+	// Create the NTLG font.
+	// If ClearType is enabled, use DEFAULT_QUALITY;
+	// otherwise, use NONANTIALIASED_QUALITY.
+	const bool bIsClearType = isClearTypeEnabled();
+	lfFontNTLG.lfQuality = (bIsClearType ? DEFAULT_QUALITY : NONANTIALIASED_QUALITY);
+	HFONT hFontNTLGNew = CreateFontIndirect(&lfFontNTLG);
+	if (!hFontNTLGNew) {
+		// Unable to create the new font.
+		return -w32err_to_posix(GetLastError());
+	}
+
+	// Update all monospaced controls to use the new font.
+	for (HWND hWnd : vecNTLGControls) {
+		SetWindowFont(hWnd, hFontNTLGNew, false);
+	}
+
+	// Delete the old font and save the new one.
+	HFONT hFontNTLGOld = hFontNTLG;
+	hFontNTLG = hFontNTLGNew;
+	if (hFontNTLGOld) {
+		DeleteFont(hFontNTLGOld);
+	}
+
+	// Font created.
+	return 0;
+}
+
+/**
  * Update fonts.
  * @param force Force update. (Use for WM_THEMECHANGED.)
  * @return 0 on success; negative POSIX error code on error.
@@ -376,6 +564,10 @@ int FontHandlerPrivate::updateFonts(bool force)
 		if (hFontMono) {
 			DeleteFont(hFontMono);
 			hFontMono = nullptr;
+		}
+		if (hFontNTLG) {
+			DeleteFont(hFontNTLG);
+			hFontNTLG = nullptr;
 		}
 		return -EBADF;
 	}
@@ -394,6 +586,9 @@ int FontHandlerPrivate::updateFonts(bool force)
 	}
 	if (hFontMono || !vecMonoControls.empty()) {
 		initMonospacedFont();
+	}
+	if (hFontNTLG || !vecNTLGControls.empty()) {
+		initNTLGFont();
 	}
 
 	// Update the ClearType state.
@@ -464,8 +659,22 @@ HFONT FontHandler::monospacedFont(void) const
 }
 
 /**
+ * Get the Nintendo Rodin NTLG font, if available.
+ * @return Nintendo NTLG font, or nullptr on error.
+ */
+HFONT FontHandler::ntlgFont(void) const
+{
+	RP_D(FontHandler);
+	if (!d->hFontNTLG) {
+		d->initNTLGFont();
+	}
+	assert(d->hFontMono != nullptr);
+	return d->hFontMono;
+}
+
+/**
  * Add a control that should use the monospaced font.
- * @param hWnd Control.
+ * @param hWnd Control
  */
 void FontHandler::addMonoControl(HWND hWnd)
 {
@@ -475,7 +684,26 @@ void FontHandler::addMonoControl(HWND hWnd)
 		d->initMonospacedFont();
 	}
 	d->vecMonoControls.push_back(hWnd);
-	SetWindowFont(hWnd, d->hFontMono, false);
+	if (d->hFontMono) {
+		SetWindowFont(hWnd, d->hFontMono, false);
+	}
+}
+
+/**
+ * Add a control that should use the Nintendo Rodin NTLG font.
+ * @param hWnd Control
+ */
+void FontHandler::addNTLGControl(HWND hWnd)
+{
+	RP_D(FontHandler);
+	assert(d->hWnd != nullptr);
+	if (!d->hFontNTLG) {
+		d->initNTLGFont();
+	}
+	d->vecNTLGControls.push_back(hWnd);
+	if (d->hFontNTLG) {
+		SetWindowFont(hWnd, d->hFontNTLG, false);
+	}
 }
 
 /**

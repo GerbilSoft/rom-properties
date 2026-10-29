@@ -501,15 +501,18 @@ int FlipnoteStudio::loadFieldData(void)
 			// TODO: U+E000 private use area from Nintendo fonts.
 			if (ppmHeader->orig_author_name[0] != 0) {
 				d->fields.addField_string(C_("FlipnoteStudio", "Original Author"),
-					utf16le_to_utf8(ppmHeader->orig_author_name, ARRAY_SIZE(ppmHeader->orig_author_name)));
+					utf16le_to_utf8(ppmHeader->orig_author_name, ARRAY_SIZE(ppmHeader->orig_author_name)),
+					RomFields::STRF_NTLG_FONT);
 			}
 			if (ppmHeader->last_edited_author_name[0] != 0) {
 				d->fields.addField_string(C_("FlipnoteStudio", "Last Edited By"),
-					utf16le_to_utf8(ppmHeader->last_edited_author_name, ARRAY_SIZE(ppmHeader->last_edited_author_name)));
+					utf16le_to_utf8(ppmHeader->last_edited_author_name, ARRAY_SIZE(ppmHeader->last_edited_author_name)),
+					RomFields::STRF_NTLG_FONT);
 			}
 			if (ppmHeader->user_name[0] != 0) {
 				d->fields.addField_string(C_("FlipnoteStudio", "Username"),
-					utf16le_to_utf8(ppmHeader->user_name, ARRAY_SIZE(ppmHeader->user_name)));
+					utf16le_to_utf8(ppmHeader->user_name, ARRAY_SIZE(ppmHeader->user_name)),
+					RomFields::STRF_NTLG_FONT);
 			}
 
 			// Timestamp
@@ -537,15 +540,18 @@ int FlipnoteStudio::loadFieldData(void)
 			// TODO: U+E000 private use area from Nintendo fonts.
 			if (kfhHeader->root_author_name[0] != 0) {
 				d->fields.addField_string(C_("FlipnoteStudio", "Root Author"),
-					utf16le_to_utf8(kfhHeader->root_author_name, ARRAY_SIZE(kfhHeader->root_author_name)));
+					utf16le_to_utf8(kfhHeader->root_author_name, ARRAY_SIZE(kfhHeader->root_author_name)),
+					RomFields::STRF_NTLG_FONT);
 			}
 			if (kfhHeader->parent_author_name[0] != 0) {
 				d->fields.addField_string(C_("FlipnoteStudio", "Parent Author"),
-					utf16le_to_utf8(kfhHeader->parent_author_name, ARRAY_SIZE(kfhHeader->parent_author_name)));
+					utf16le_to_utf8(kfhHeader->parent_author_name, ARRAY_SIZE(kfhHeader->parent_author_name)),
+					RomFields::STRF_NTLG_FONT);
 			}
 			if (kfhHeader->current_author_name[0] != 0) {
 				d->fields.addField_string(C_("FlipnoteStudio", "Current Author"),
-					utf16le_to_utf8(kfhHeader->current_author_name, ARRAY_SIZE(kfhHeader->current_author_name)));
+					utf16le_to_utf8(kfhHeader->current_author_name, ARRAY_SIZE(kfhHeader->current_author_name)),
+					RomFields::STRF_NTLG_FONT);
 			}
 
 			// Timestamps

@@ -112,6 +112,12 @@ public:
 		// - Standard HTML entity rules apply, e.g. `&lt;`, `&gt`;, and `&amp;`.
 		// - HTML tags other than `<a>` will be displayed as plaintext.
 		STRF_PARSE_LINKS	= (1U << 6),
+
+		// Use the Nintendo Rodin NTLG font if available.
+		// Use for strings that might include characters in the
+		// U+E000 Private Use Area, e.g. Nintendo GameCube, Wii, Wii U,
+		// DS, DSi, and 3DS button symbols.
+		STRF_NTLG_FONT		= (1U << 7),
 	};
 
 	// Display flags for RFT_LISTDATA
