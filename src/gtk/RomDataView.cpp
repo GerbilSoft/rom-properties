@@ -35,6 +35,10 @@ using std::vector;
 // libfmt
 #include "rp-libfmt.h"
 
+#if GTK_CHECK_VERSION(4, 0, 0)
+#  define USE_G_LIST_MODEL 1
+#endif /* GTK_CHECK_VERSION */
+
 // References:
 // - audio-tags plugin
 // - http://api.xfce.m8t.in/xfce-4.10/thunarx-1.4.0/ThunarxPropertyPage.html
@@ -220,16 +224,43 @@ get_ntlg_font_family_name(RpRomDataView *page)
 	PangoContext *const pctx = gtk_widget_get_pango_context(GTK_WIDGET(page));
 	PangoFontMap *const pfm = pango_context_get_font_map(pctx);
 
-	// FIXME: PangoFontMap has a GListModel interface, but that requires glib-2.48.
-#if 0
+#ifdef USE_G_LIST_MODEL
+	// GListModel is available.
 	guint n = g_list_model_get_n_items(G_LIST_MODEL(pfm));
 	for (guint i = 0; i < n; i++) {
 		PangoFontFamily *const pff = PANGO_FONT_FAMILY(
 			g_list_model_get_object(G_LIST_MODEL(pfm), i));
-		printf("found: '%s'\n", pango_font_family_get_name(pff));
-	}
-#endif
+		assert(pff != nullptr);
+		if (!pff) {
+			continue;
+		}
 
+		const char *font_name = pango_font_family_get_name(pff);
+		assert(font_name != nullptr);
+		if (!font_name || font_name[0] == '\0') {
+			continue;
+		}
+
+		// Check if this font matches any of the NTLG fonts.
+		for (size_t i = 0; i < ntlg_font_name_tbl.size(); i++) {
+			if (found_font[i]) {
+				break;
+			}
+			if (!strcmp(ntlg_font_name_tbl[i], font_name)) {
+				// Found a match!
+				found_font[i] = true;
+				found_count++;
+				break;
+			}
+		}
+
+		if (found_font[0] || found_count >= ntlg_font_name_tbl.size()) {
+			// Found all the fonts!
+			break;
+		}
+	}
+#else /* !USE_G_LIST_MODEL */
+	// GListModel is not available. Use pango_font_map_list_families().
 	PangoFontFamily **ppff = nullptr;
 	int n = 0;
 	pango_font_map_list_families(pfm, &ppff, &n);
@@ -260,6 +291,7 @@ get_ntlg_font_family_name(RpRomDataView *page)
 		}
 	}
 	g_free(ppff);
+#endif /* USE_G_LIST_MODEL */
 
 	if (found_count > 0) {
 		// At least one font was found.
