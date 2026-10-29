@@ -74,6 +74,8 @@ CS:0x33C:Tekken
 CS:0x348:Mega Man
 CS:0x34C:Street Fighter
 CS:0x350:Monster Hunter
+CS:0x354:Resident Evil
+CS:0x358:Pragmata
 CS:0x35C:Shovel Knight
 CS:0x360:Final Fantasy
 CS:0x364:Dragon Quest
@@ -104,6 +106,8 @@ C:0x0000:Mario
 CV:0x0000:0x00:Mario
 CV:0x0000:0x01:Dr. Mario
 CV:0x0000:0x03:Cat Mario
+CV:0x0000:0x04:Elephant Mario
+CV:0x0000:0x05:Mario and Luma
 C:0x0001:Luigi
 C:0x0002:Peach
 CV:0x0002:0x00:Peach
@@ -131,12 +135,17 @@ CV:0x0008:0xFF:Turbo Charge Donkey Kong
 #CV:0x0008:0xFF:Dark Turbo Charge Donkey Kong
 C:0x0009:Diddy Kong
 C:0x000A:Toad
+CV:0x000A:0x00:Toad
+CV:0x000A:0x01:Captain Toad & Talking Flower
 C:0x0013:Daisy
 C:0x0014:Waluigi
 C:0x0015:Goomba
 C:0x0017:Boo
 C:0x0023:Koopa Troopa
 C:0x0024:Piranha Plant
+# No CV=0 available for 0x0025...
+C:0x0025:Poplin & Prince Florian
+CV:0x0025:0x01:Poplin & Prince Florian
 
 # Yoshi (character series == 0x008)
 C:0x0080:Poochy
@@ -166,6 +175,7 @@ C:0x0109:Riju
 C:0x010A:Sidon
 C:0x010B:Tulin
 C:0x010C:Yunobo
+C:0x010D:Mineru's Construct
 
 # The Legend of Zelda [enemies] (character series == 0x014)
 C:0x0140:Guardian
@@ -927,6 +937,7 @@ C:0x1F00:Kirby
 C:0x1F01:Meta Knight
 C:0x1F02:King Dedede
 C:0x1F03:Waddle Dee
+C:0x1F04:Chef Kawasaki
 
 # BoxBoy! (character series == 0x1F4)
 C:0x1F40:Qbby
@@ -1044,6 +1055,13 @@ C:0x350C:Ratha
 C:0x350D:Ratha V
 C:0x350E:Rudy
 
+# Resident Evil (character series = 0x354)
+C:0x3540:Grace Ashcroft
+C:0x3541:Leon S. Kennedy
+
+# Pragmata (character series = 0x358)
+C:0x3580:Diana
+
 # Shovel Knight (character series == 0x35C)
 C:0x35C0:Shovel Knight
 C:0x35C1:Plague Knight
@@ -1138,6 +1156,9 @@ AS:0x18:Monster Hunter
 AS:0x19:Yu-Gi-Oh!
 AS:0x1A:Donkey Kong Bananza
 AS:0x1C:My Mario Wooden Blocks
+AS:0x1E:Kirby Air Riders
+AS:0x20:Resident Evil
+AS:0x21:Pragmata
 AS:0xFF:Super Nintendo World
 
 ### amiibo IDs (A) [p.22]
@@ -1155,8 +1176,7 @@ A:0x0007:8:1:Wii Fit Trainer
 A:0x0008:9:1:Villager
 A:0x0009:10:1:Pikachu
 A:0x000A:11:1:Kirby
-A:0x000B:12:1:Marth# Kingdom Hearts [0x
-
+A:0x000B:12:1:Marth
 
 # SSB: Wave 2 [0x000C-0x0012]
 A:0x000E:13:2:Zelda
@@ -2037,6 +2057,7 @@ A:0x0398:6:0:Daijobu
 A:0x0399:0:0:Link
 
 # Super Nintendo World: Power-Up Bands [0x039B-0x039F]
+# NOTE: 0x039B is also used for the Invincible Power-Up Band.
 A:0x039B:1:1:Mario Power-Up Band
 A:0x039C:2:1:Luigi Power-Up Band
 A:0x039D:3:1:Peach Power-Up Band
@@ -2111,8 +2132,8 @@ A:0x03D6:447:8:Roswell
 A:0x03D7:448:8:Faith
 
 # Monster Hunter Stories (Wave 2) [0x040C-0x040E]
-A:0x040C:8:2:Razewing Ratha
 A:0x040D:7:2:Ena
+A:0x040C:8:2:Razewing Ratha
 A:0x040E:9:2:Tsukino
 
 # Monster Hunter Rise (Wave 1) [0x040F-0x0411]
@@ -2165,17 +2186,20 @@ A:0x042F:1:0:Donkey Kong and Pauline
 A:0x043D:1:0:Noah
 A:0x043E:2:0:Mio
 
-# My Mario Wooden Blocks [0x043F-0x0442]
+# My Mario Wooden Blocks [0x043F-0x0443,0x0445]
 A:0x043F:1:0:Mario
 A:0x0440:2:0:Luigi
 A:0x0441:3:0:Peach
 A:0x0442:4:0:Yoshi
+A:0x0443:5:0:Mario (Melody Car)
+A:0x0445:6:0:Toad
 
-# The Legend of Zelda: Tears of the Kingdom Series (Wave 2) [0x04A3-0x04A6]
+# The Legend of Zelda: Tears of the Kingdom Series (Wave 2) [0x04A3-0x04A7]
 A:0x04A3:0:6:Riju
 A:0x04A4:0:6:Sidon
 A:0x04A5:0:6:Tulin
 A:0x04A6:0:6:Yunobo
+A:0x04A7:0:6:Mineru's Construct
 
 # Street Fighter 6 [0x04AA,0x04AC,0x04AE]
 A:0x04AA:0:0:Luke
@@ -2206,7 +2230,20 @@ A:0x04BE:20:1:A.K.I.
 A:0x04BF:21:1:ED
 A:0x04C0:22:1:Akuma
 
-# Street Fighter 6, Series 2 (Cards) [0x04CD-0x04DB,0x04DD-0x04E1,0x04E3-0x04E8,0x04EB-0x04F3]
+# Super Mario Wonder [0x04C1-0x04C3]
+A:0x04C1:0:0:Elephant Mario
+A:0x04C2:0:0:Captain Toad & Talking Flower
+A:0x04C3:0:0:Poplin & Prince Florian
+
+# Kirby Air Riders [0x04C4,0x4C6-0x04C7,0x04C9-0x04CA]
+# NOTE: These use NT3H2211 tags. (amiibo v3)
+A:0x04C4:0:0:Kirby
+A:0x04C6:0:0:Meta Knight
+A:0x04C7:0:0:King Dedede
+A:0x04C9:0:0:Bandana Waddle Dee
+A:0x04CA:0:0:Chef Kawasaki
+
+# Street Fighter 6, Series 2 (Cards) [0x04CD-0x04DB,0x04DD-0x04E1,0x04E3-0x04E8]
 A:0x04CB:41:2:Ryu
 A:0x04CC:45:2:Ken
 A:0x04CD:31:2:Luke
@@ -2235,6 +2272,12 @@ A:0x04E5:28:2:C. Viper
 A:0x04E6:29:2:Alex
 A:0x04E7:30:1:Ingrid
 A:0x04E8:24:2:Terry
+
+# Super Mario Wonder [0x04E9-0x04EA]
+A:0x04E9:0:0:Mario and Luma
+A:0x04EA:0:0:Rosalina and Lumas
+
+# Street Fighter 6, Series 2 (Cards) [0x04EB-0x04F3]
 A:0x04EB:53:2:M. Bison (Alt)
 A:0x04EC:56:2:Elena (Alt)
 A:0x04ED:57:2:Sagat (Alt)
@@ -2245,7 +2288,19 @@ A:0x04F1:54:2:Terry (Alt)
 A:0x04F2:25:2:Mai
 A:0x04F3:55:2:Mai (Alt)
 
+# Splatoon: Wave 9 (Raiders) [0x04F7-0x04F9]
+A:0x04F7:0:9:Shiver (Raiders)
+A:0x04F8:0:9:Frye (Raiders)
+A:0x04F9:0:9:Big Man (Raiders)
+
 # Monster Hunter Stories (Wave 3) [0x04FA-0x04FC]
 A:0x04FA:10:3:Ratha
 A:0x04FB:11:3:Ratha V
 A:0x04FC:12:3:Rudy
+
+# Resident Evil [0x0503-0x0504]
+A:0x0503:0:0:Grace Ashcroft
+A:0x0504:0:0:Leon S. Kennedy
+
+# Pragmata [0x0506]
+A:0x0506:0:0:Diana

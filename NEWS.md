@@ -8,6 +8,10 @@
     compiler is used, .wua support will not be included.
     * Implements #378: [Feature Request] Add support for WUA Wii U games
       * Reported by @dnmodder.
+  * Amiibo: Add full support for NT3H2111 and NT3H2211 tag formats.
+    * NT3H2111 is used in Super Nintendo World bands.
+    * NT3H2211 is used in amiibo v3, starting with Kirby Air Riders.
+    * Information provided by @CheatFreak47.
 
 * Bug fixes:
   * WiiUPackage: Fix icon thumbnailing for packages extracted from a Wii U MLC.
@@ -48,6 +52,8 @@
   * Nintendo3DS: Fix incorrect NoCrypto flag warning on some decrypted 3DS ROMs.
     * Fixes #524: [BUG] NCCH: decrypted ROMs get the 'encryption flags are incorrect' warning
       * Reported by @Amnesia1000.
+  * Amiibo: Fix character variant lookup on big-endian systems.
+    * Affects: v2.9
 
 * Other changes:
   * 64-bit time_t (using the rp_time_t typedef) is now used regardless of
