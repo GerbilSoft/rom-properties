@@ -748,6 +748,17 @@
 
   <!-- *** Handheld *** -->
 
+  <!-- FlipnoteStudio -->
+  <mime-type type="image/x-flipnote-studio">
+    <comment>Flipnote Studio animation</comment>
+    <generic-icon name="image-x-generic"/>
+    <!--<glob pattern="*.ppm"/>--> <!-- FIXME: Conflicts with PPM image format! -->
+    <magic priority="90">
+      <!-- TODO: Add more magic? -->
+      <match value="PARA" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- GameCom -->
   <mime-type type="application/x-game-com-rom">
     <comment>game.com ROM image</comment>
