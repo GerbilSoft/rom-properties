@@ -84,7 +84,6 @@ private:
 };
 
 ROMDATA_IMPL(FlipnoteStudio)
-ROMDATA_IMPL_IMG(FlipnoteStudio)
 
 /** FlipnoteStudioPrivate **/
 
@@ -372,6 +371,16 @@ uint32_t FlipnoteStudio::supportedImageTypes_static(void)
 }
 
 /**
+ * Get a bitfield of image types this object can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t FlipnoteStudio::supportedImageTypes(void) const
+{
+	// TODO: For KWZ, verify that a 'KTN' chunk is present?
+	return IMGBF_INT_IMAGE;
+}
+
+/**
  * Get a list of all available image sizes for the specified image type.
  * @param imageType Image type.
  * @return Vector of available image sizes, or empty vector if no images are available.
@@ -385,8 +394,39 @@ vector<RomData::ImageSizeDef> FlipnoteStudio::supportedImageSizes_static(ImageTy
 		return {};
 	}
 
-	// TODO: Non-static version returning the proper size for KWZ.
+	// NOTE: Only returning PPM (DSi) sizes.
 	return {{nullptr, FLIPNOTE_PPM_WIDTH, FLIPNOTE_PPM_HEIGHT, 0}};
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> FlipnoteStudio::supportedImageSizes(ImageType imageType) const
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	if (imageType != IMG_INT_IMAGE) {
+		// Only IMG_INT_IMAGE is supported.
+		return {};
+	}
+
+	RP_D(const FlipnoteStudio);
+	switch (d->animType) {
+		default:
+			assert(!"Unsupported animation type???");
+			break;
+
+		case FlipnoteStudioPrivate::AnimType::PPM:
+			return {{nullptr, FLIPNOTE_PPM_WIDTH, FLIPNOTE_PPM_HEIGHT, 0}};
+
+		case FlipnoteStudioPrivate::AnimType::KWZ:
+			// TODO: Verify that a 'KTN' chunk is present?
+			return {{nullptr, FLIPNOTE3D_KTN_WIDTH, FLIPNOTE3D_KTN_HEIGHT, 0}};
+	}
+
+	return {};
 }
 
 /**

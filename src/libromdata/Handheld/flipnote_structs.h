@@ -73,7 +73,6 @@ ASSERT_STRUCT(FlipnoteStudio3D_Chunk_Header_t, 3*sizeof(uint32_t));
  */
 #define FLIPNOTE3D_KFH_MAGIC		0x4B464800U	// 'KFH\0'
 #define FLIPNOTE3D_KFH_MAGIC_MASK	0xFFFFFF00U
-
 typedef struct _FlipnoteStudio3D_KFH_t {
 	FlipnoteStudio3D_Chunk_Header_t header;	// [0x000] Chunk header (magic: 'KFHx')
 	uint32_t creation_time;			// [0x00C] Creation time (GameCube format)
@@ -104,6 +103,8 @@ ASSERT_STRUCT(FlipnoteStudio3D_KFH_t, 212);
  */
 #define FLIPNOTE3D_KTN_MAGIC		0x4B544E00U	// 'KTN\0'
 #define FLIPNOTE3D_KTN_MAGIC_MASK	0xFFFFFF00U
+#define FLIPNOTE3D_KTN_WIDTH 80
+#define FLIPNOTE3D_KTN_HEIGHT 64
 
 #ifdef __cplusplus
 }
