@@ -18,6 +18,7 @@
 // C++ includes and STL classes
 #include <string>
 using std::string;
+using std::string_view;
 using std::u16string;
 
 namespace LibRpText {
@@ -168,31 +169,30 @@ void trimEnd(char *str)
 
 /**
  * Convert DOS (CRLF) line endings to UNIX (LF) line endings.
- * @param str_dos	[in] String with DOS line endings.
- * @param len		[in] Length of str, in characters. (-1 for NULL-terminated string)
- * @param lf_count	[out,opt] Number of CRLF pairs found.
+ * @param sv_dos	[in] String with DOS line endings
+ * @param lf_count	[out,opt] Number of CRLF pairs found
  * @return String with UNIX line endings.
  */
-std::string dos2unix(const char *str_dos, int len, int *lf_count)
+std::string dos2unix(string_view sv_dos, int *lf_count)
 {
 	// TODO: Optimize this!
 	string str_unix;
-	if (len < 0) {
-		len = static_cast<int>(strlen(str_dos));
-	}
+	size_t len = sv_dos.size();
 	str_unix.reserve(len);
 
+	const char *p = sv_dos.data();
 	int lf = 0;
-	for (; len > 1; str_dos++, len--) {
-		switch (str_dos[0]) {
+	for (; len > 1; p++, len--) {
+		const char c = *p;
+		switch (c) {
 			case '\r':
 				// Handle all '\r' characters as newlines,
 				// even if a '\n' isn't found after it.
 				str_unix += '\n';
 				lf++;
-				if (str_dos[1] == '\n') {
+				if (p[1] == '\n') {
 					// Skip the '\n' after the '\r'.
-					str_dos++;
+					p++;
 					len--;
 				}
 				break;
@@ -203,13 +203,13 @@ std::string dos2unix(const char *str_dos, int len, int *lf_count)
 				break;
 			default:
 				// Other character. Add it.
-				str_unix += *str_dos;
+				str_unix += c;
 				break;
 		}
 	}
 
 	// Check the last character.
-	switch (*str_dos) {
+	switch (*p) {
 		case '\0':
 			// End of string
 			break;
@@ -220,7 +220,7 @@ std::string dos2unix(const char *str_dos, int len, int *lf_count)
 			break;
 		default:
 			// Some other character.
-			str_unix += *str_dos;
+			str_unix += *p;
 			break;
 	}
 

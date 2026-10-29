@@ -29,6 +29,7 @@ using namespace LibRpTexture;
 using std::array;
 using std::shared_ptr;
 using std::string;
+using std::string_view;
 using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
@@ -533,7 +534,7 @@ string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t str
 				// Character set conversion isn't needed, since
 				// the string table is UTF-8, but we do need to
 				// convert from DOS to UNIX line endings.
-				s_ret = dos2unix(p_str, length);
+				s_ret = dos2unix(string_view(p_str, length));
 			}
 			break;
 		} else {

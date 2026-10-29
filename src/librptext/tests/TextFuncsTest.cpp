@@ -1223,54 +1223,27 @@ TEST_F(TextFuncsTest, dos2unix)
 
 	// Basic conversion. (no trailing newline sequence)
 	lf_count = 0;
-	EXPECT_EQ(expected_lf, dos2unix(test1, -1, &lf_count));
+	EXPECT_EQ(expected_lf, dos2unix(test1, &lf_count));
 	EXPECT_EQ(2, lf_count);
 
 	// Trailing "\r\n"
 	lf_count = 0;
-	EXPECT_EQ(expected_lf2, dos2unix(test2, -1, &lf_count));
+	EXPECT_EQ(expected_lf2, dos2unix(test2, &lf_count));
 	EXPECT_EQ(3, lf_count);
 
 	// Trailing '\r' should be converted to '\n'.
 	lf_count = 0;
-	EXPECT_EQ(expected_lf2, dos2unix(test3, -1, &lf_count));
+	EXPECT_EQ(expected_lf2, dos2unix(test3, &lf_count));
 	EXPECT_EQ(3, lf_count);
 
 	// All standalone '\r' characters should be converted to '\n'.
 	lf_count = 0;
-	EXPECT_EQ(expected_lf2, dos2unix(test4, -1, &lf_count));
+	EXPECT_EQ(expected_lf2, dos2unix(test4, &lf_count));
 	EXPECT_EQ(3, lf_count);
 
 	// Existing standalone '\n' should be counted but not changed.
 	lf_count = 0;
-	EXPECT_EQ(expected_lf2, dos2unix(test5, -1, &lf_count));
-	EXPECT_EQ(3, lf_count);
-
-	/** Same tests as above, but with an std::string source **/
-
-	// Basic conversion. (no trailing newline sequence)
-	lf_count = 0;
-	EXPECT_EQ(expected_lf, dos2unix(string(test1), &lf_count));
-	EXPECT_EQ(2, lf_count);
-
-	// Trailing "\r\n"
-	lf_count = 0;
-	EXPECT_EQ(expected_lf2, dos2unix(string(test2), &lf_count));
-	EXPECT_EQ(3, lf_count);
-
-	// Trailing '\r' should be converted to '\n'.
-	lf_count = 0;
-	EXPECT_EQ(expected_lf2, dos2unix(string(test3), &lf_count));
-	EXPECT_EQ(3, lf_count);
-
-	// All standalone '\r' characters should be converted to '\n'.
-	lf_count = 0;
-	EXPECT_EQ(expected_lf2, dos2unix(string(test4), &lf_count));
-	EXPECT_EQ(3, lf_count);
-
-	// Existing standalone '\n' should be counted but not changed.
-	lf_count = 0;
-	EXPECT_EQ(expected_lf2, dos2unix(string(test5), &lf_count));
+	EXPECT_EQ(expected_lf2, dos2unix(test5, &lf_count));
 	EXPECT_EQ(3, lf_count);
 }
 

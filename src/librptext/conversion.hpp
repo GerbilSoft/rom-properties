@@ -23,6 +23,7 @@
 
 // C++ includes
 #include <string>
+#include "rp-string_view.hpp"
 
 #ifdef __cplusplus
 namespace LibRpText {
@@ -635,23 +636,11 @@ void trimEnd(char *str);
 
 /**
  * Convert DOS (CRLF) line endings to UNIX (LF) line endings.
- * @param str_dos	[in] String with DOS line endings.
- * @param len		[in] Length of str, in characters. (-1 for NULL-terminated string)
- * @param lf_count	[out,opt] Number of CRLF pairs found.
+ * @param sv_dos	[in] String with DOS line endings
+ * @param lf_count	[out,opt] Number of CRLF pairs found
  * @return String with UNIX line endings.
  */
-std::string dos2unix(const char *str_dos, int len = -1, int *lf_count = nullptr);
-
-/**
- * Convert DOS (CRLF) line endings to UNIX (LF) line endings.
- * @param str_dos	[in] String with DOS line endings.
- * @param lf_count	[out,opt] Number of CRLF pairs found.
- * @return String with UNIX line endings.
- */
-static inline std::string dos2unix(const std::string &str_dos, int *lf_count = nullptr)
-{
-	return dos2unix(str_dos.data(), static_cast<int>(str_dos.size()), lf_count);
-}
+std::string dos2unix(std::string_view sv_dos, int *lf_count = nullptr);
 
 }
 #endif /* __cplusplus */

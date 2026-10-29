@@ -89,13 +89,13 @@ public:
 
 class ColonPad {
 	size_t width;
-	const char* str;
+	string_view sv;
 public:
-	ColonPad(size_t width, const char* str) :width(width), str(str) {}
+	ColonPad(size_t width, string_view sv) :width(width), sv(sv) {}
 	friend ostream& operator<<(ostream& os, const ColonPad& cp) {
 		StreamStateSaver state(os);
-		const size_t str_sz = utf8_disp_strlen(cp.str);
-		os << cp.str << ':';
+		const size_t str_sz = utf8_disp_strlen(cp.sv);
+		os << cp.sv << ':';
 		for (size_t x = str_sz; x < cp.width-1; x++) {
 			os << ' ';
 		}
@@ -645,7 +645,7 @@ public:
 						str = C_("RomData", "Unknown");
 					}
 
-					colSize[col] = max(utf8_disp_strlen(str.c_str()), colSize[col]);
+					colSize[col] = max(utf8_disp_strlen(str), colSize[col]);
 					nl_count[row] = 0;
 					continue;
 				}
@@ -662,11 +662,11 @@ public:
 					if (cur_pos == string::npos) {
 						// End of string.
 						cur_sz = str_sz - prev_pos;
-						col_sz = utf8_disp_strlen(&(*jt)[prev_pos], cur_sz);
+						col_sz = utf8_disp_strlen(string_view(&(*jt)[prev_pos], cur_sz));
 					} else {
 						// Found a newline.
 						cur_sz = cur_pos - prev_pos;
-						col_sz = utf8_disp_strlen(&(*jt)[prev_pos], cur_sz);
+						col_sz = utf8_disp_strlen(string_view(&(*jt)[prev_pos], cur_sz));
 						prev_pos = cur_pos + 1;
 						nl_row++;
 					}
