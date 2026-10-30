@@ -227,12 +227,22 @@ get_ntlg_font_family_name(RpRomDataView *page)
 #ifdef USE_G_LIST_MODEL
 	// GListModel is available.
 	guint n = g_list_model_get_n_items(G_LIST_MODEL(pfm));
+	assert(n > 0);
+	if (n == 0) {
+		return;
+	}
 	for (guint i = 0; i < n; i++)
 #else /* !USE_G_LIST_MODEL */
 	// GListModel is not available. Use pango_font_map_list_families().
 	PangoFontFamily **ppff = nullptr;
 	int n = 0;
 	pango_font_map_list_families(pfm, &ppff, &n);
+	assert(ppff != nullptr);
+	assert(n > 0);
+	if (!ppff || n <= 0) {
+		g_free(ppff);
+		return;
+	}
 	for (int i = 0; i < n; i++)
 #endif /* USE_G_LIST_MODEL */
 	{
