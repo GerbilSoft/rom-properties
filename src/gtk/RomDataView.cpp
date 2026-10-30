@@ -227,9 +227,21 @@ get_ntlg_font_family_name(RpRomDataView *page)
 #ifdef USE_G_LIST_MODEL
 	// GListModel is available.
 	guint n = g_list_model_get_n_items(G_LIST_MODEL(pfm));
-	for (guint i = 0; i < n; i++) {
+	for (guint i = 0; i < n; i++)
+#else /* !USE_G_LIST_MODEL */
+	// GListModel is not available. Use pango_font_map_list_families().
+	PangoFontFamily **ppff = nullptr;
+	int n = 0;
+	pango_font_map_list_families(pfm, &ppff, &n);
+	for (int i = 0; i < n; i++)
+#endif /* USE_G_LIST_MODEL */
+	{
+#ifdef USE_G_LIST_MODEL
 		PangoFontFamily *const pff = PANGO_FONT_FAMILY(
 			g_list_model_get_object(G_LIST_MODEL(pfm), i));
+#else /* !USE_G_LIST_MODEL */
+		PangoFontFamily *const pff = ppff[i];
+#endif /* USE_G_LIST_MODEL */
 		assert(pff != nullptr);
 		if (!pff) {
 			continue;
@@ -259,39 +271,9 @@ get_ntlg_font_family_name(RpRomDataView *page)
 			break;
 		}
 	}
-#else /* !USE_G_LIST_MODEL */
-	// GListModel is not available. Use pango_font_map_list_families().
-	PangoFontFamily **ppff = nullptr;
-	int n = 0;
-	pango_font_map_list_families(pfm, &ppff, &n);
-	for (int i = 0; i < n; i++) {
-		PangoFontFamily *const pff = ppff[i];
-		const char *font_name = pango_font_family_get_name(pff);
-		assert(font_name != nullptr);
-		if (!font_name || font_name[0] == '\0') {
-			continue;
-		}
-
-		// Check if this font matches any of the NTLG fonts.
-		for (size_t i = 0; i < ntlg_font_name_tbl.size(); i++) {
-			if (found_font[i]) {
-				break;
-			}
-			if (!strcmp(ntlg_font_name_tbl[i], font_name)) {
-				// Found a match!
-				found_font[i] = true;
-				found_count++;
-				break;
-			}
-		}
-
-		if (found_font[0] || found_count >= ntlg_font_name_tbl.size()) {
-			// Found all the fonts!
-			break;
-		}
-	}
+#ifndef USE_G_LIST_MODEL
 	g_free(ppff);
-#endif /* USE_G_LIST_MODEL */
+#endif /* !USE_G_LIST_MODEL */
 
 	if (found_count > 0) {
 		// At least one font was found.
