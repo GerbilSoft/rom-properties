@@ -239,7 +239,7 @@ rp_image_const_ptr FlipnoteStudioPrivate::loadImage(void)
 /** FlipnoteStudio **/
 
 /**
- * Read a Tiger game.com ROM image.
+ * Read a Flipnote Studio (or Flipnote Studio 3D) animation file.
  *
  * A ROM image must be opened by the caller. The file handle
  * will be ref()'d and must be kept open in order to load
@@ -304,8 +304,6 @@ FlipnoteStudio::FlipnoteStudio(const IRpFilePtr &file)
  */
 int FlipnoteStudio::isRomSupported_static(const DetectInfo *info)
 {
-	// NOTE: The official game.com emulator requires the header to be at 0x40000.
-	// Some ROMs have the header at 0, though.
 	assert(info != nullptr);
 	assert(info->header.pData != nullptr);
 	assert(info->header.addr == 0);
@@ -361,7 +359,7 @@ const char *FlipnoteStudio::systemName(unsigned int type) const
 		return nullptr;
 	}
 
-	// game.com has the same name worldwide, so we can
+	// Flipnote Studio has the same name worldwide, so we can
 	// ignore the region selection.
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"FlipnoteStudio::systemName() array index optimization needs to be updated.");
