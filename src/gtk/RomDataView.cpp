@@ -229,7 +229,7 @@ get_ntlg_font_family_name(RpRomDataView *page)
 	guint n = g_list_model_get_n_items(G_LIST_MODEL(pfm));
 	assert(n > 0);
 	if (n == 0) {
-		return;
+		return nullptr;
 	}
 	for (guint i = 0; i < n; i++)
 #else /* !USE_G_LIST_MODEL */
@@ -241,7 +241,7 @@ get_ntlg_font_family_name(RpRomDataView *page)
 	assert(n > 0);
 	if (!ppff || n <= 0) {
 		g_free(ppff);
-		return;
+		return nullptr;
 	}
 	for (int i = 0; i < n; i++)
 #endif /* USE_G_LIST_MODEL */
