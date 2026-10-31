@@ -805,8 +805,7 @@ string AboutTabPrivate::rtfEscape(const char *str)
 		} else {
 			// Convert to a signed 16-bit integer.
 			// Surrogate pairs are encoded as two separate characters.
-			// FIXME: fmt::format_to() here fails on MSVC 2017 due to a constexpr issue?
-			s_rtf += fmt::format(FSTR("\\u{:d}?"), static_cast<int16_t>(c16));
+			fmt::format_to(std::back_inserter(s_rtf), FSTR("\\u{:d}?"), static_cast<int16_t>(c16));
 		}
 	}
 
