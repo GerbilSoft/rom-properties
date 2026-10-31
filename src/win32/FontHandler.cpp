@@ -49,6 +49,7 @@ public:
 	HFONT hFontNTLG;
 
 	// Controls
+	vector<HWND> vecBoldControls;	// Controls using the bold font
 	vector<HWND> vecMonoControls;	// Controls using the monospaced font
 	vector<HWND> vecNTLGControls;	// Controls using the Nintendo Rodin NTLG font
 
@@ -411,6 +412,11 @@ int FontHandlerPrivate::initBoldFont(void)
 		return -w32err_to_posix(GetLastError());
 	}
 
+	// Update all bold controls to use the new font.
+	for (HWND hWnd : vecBoldControls) {
+		SetWindowFont(hWnd, hFontBoldNew, false);
+	}
+
 	// Delete the old font and save the new one.
 	HFONT hFontBoldOld = hFontBold;
 	hFontBold = hFontBoldNew;
@@ -581,7 +587,7 @@ int FontHandlerPrivate::updateFonts(bool force)
 	}
 
 	// Update fonts if they were previously created.
-	if (hFontBold) {
+	if (hFontBold || !vecBoldControls.empty()) {
 		initBoldFont();
 	}
 	if (hFontMono || !vecMonoControls.empty()) {
@@ -670,6 +676,23 @@ HFONT FontHandler::ntlgFont(void) const
 	}
 	assert(d->hFontMono != nullptr);
 	return d->hFontMono;
+}
+
+/**
+ * Add a control that should use the bold font.
+ * @param hWnd Control
+ */
+void FontHandler::addBoldControl(HWND hWnd)
+{
+	RP_D(FontHandler);
+	assert(d->hWnd != nullptr);
+	if (!d->hFontBold) {
+		d->initBoldFont();
+	}
+	d->vecBoldControls.push_back(hWnd);
+	if (d->hFontBold) {
+		SetWindowFont(hWnd, d->hFontBold, false);
+	}
 }
 
 /**

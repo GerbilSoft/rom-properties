@@ -62,6 +62,12 @@ public:
 
 public:
 	/**
+	 * Add a control that should use the bold font.
+	 * @param hWnd Control
+	 */
+	void addBoldControl(HWND hWnd);
+
+	/**
 	 * Add a control that should use the monospaced font.
 	 * @param hWnd Control
 	 */

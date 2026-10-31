@@ -358,7 +358,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(_In_ POINT pt_start, _In_ SIZE
 			ptSysInfo.x, ptSysInfo.y,
 			size_lblSysInfo.cx, size_lblSysInfo.cy,
 			hDlgSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
-		SetWindowFont(lblSysInfo, hFont, false);
+		fontHandler.addBoldControl(lblSysInfo);
 		curPt.x += size_lblSysInfo.cx + pt_start.x;
 	}
 
@@ -620,16 +620,6 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 		if (field.flags & RomFields::STRF_WARNING) {
 			// "Warning" font
 			isWarning = true;
-			HFONT hFontBold = fontHandler.boldFont();
-			if (hFontBold) {
-				hFont = hFontBold;
-			}
-			// Set the font of the description control.
-			HWND hStatic = GetDlgItem(hWndTab, IDC_STATIC_DESC(fieldIdx));
-			if (hStatic) {
-				SetWindowFont(hStatic, hFont, false);
-				SetWindowLongPtr(hStatic, GWLP_USERDATA, static_cast<LONG_PTR>(RGB(255, 0, 0)));
-			}
 		} else if (field.flags & RomFields::STRF_MONOSPACE) {
 			// Monospaced font
 			isMonospace = true;
@@ -708,6 +698,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 	// Save the control in the appropriate container, if necessary.
 	if (isWarning) {
 		SetWindowLongPtr(hDlgItem, GWLP_USERDATA, static_cast<LONG_PTR>(RGB(255, 0, 0)));
+		fontHandler.addBoldControl(hDlgItem);
 	} else if (isMonospace) {
 		fontHandler.addMonoControl(hDlgItem);
 	} else if (isNTLGFont) {
@@ -1892,9 +1883,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 			if (hFontBold) {
 				SelectFont(hDC, hFontOrig);
 			}
-		}
-		else
-		{
+		} else {
 			// Regular font.
 			GetTextExtentPoint32(hDC, desc_text.data(),
 				static_cast<int>(desc_text.size()), &textSize);
