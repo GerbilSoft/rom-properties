@@ -66,6 +66,9 @@
   * C64Cart: Fix an issue where external title screen URLs were missing leading
     zeroes in some cases.
     * Affects: v2.5 - v2.9
+  * CisoPspReader: Fix reading all formats on big-endian systems.
+    * This bug has been present since CisoPspReader was added in v1.7.
+    * Affects: v1.7 - v2.9
 
 * Other changes:
   * 64-bit time_t (using the rp_time_t typedef) is now used regardless of

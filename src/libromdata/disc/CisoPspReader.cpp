@@ -72,6 +72,7 @@ public:
 
 	// Index entries. These are *absolute* offsets.
 	// High bit interpretation depends on CISO version.
+	// NOTE: Stored in little-endian format! Use le32_to_cpu() to access.
 	// - v0/v1: If set, block is not compressed.
 	// - v2: If set, block is compressed using LZ4; otherwise, deflate.
 	rp::uvector<uint32_t> indexEntries;
@@ -170,7 +171,7 @@ uint32_t CisoPspReaderPrivate::getBlockCompressedSize(uint32_t blockNum) const
 
 		case CisoPspReaderPrivate::CisoType::DAX:
 			// DAX uses a separate size table.
-			size = static_cast<uint32_t>(daxSizeTable[blockNum]);
+			size = static_cast<uint32_t>(le16_to_cpu(daxSizeTable[blockNum]));
 			break;
 	}
 	return size;
@@ -489,7 +490,7 @@ int CisoPspReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 	     *pu32 == be32_to_cpu(ZISO_MAGIC)) &&
 	    szHeader >= sizeof(CisoPspHeader))
 	{
-		// CISO/ZISO magic.
+		// CISO/ZISO magic
 		const CisoPspHeader *const cisoPspHeader = reinterpret_cast<const CisoPspHeader*>(pHeader);
 
 		// Header size:
@@ -528,7 +529,7 @@ int CisoPspReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 
 		// Must have at least one block and less than 16 GB of uncompressed data.
 		const uint64_t uncompressed_size = le64_to_cpu(cisoPspHeader->uncompressed_size);
-		if (uncompressed_size < cisoPspHeader->block_size ||
+		if (uncompressed_size < block_size ||
 		    uncompressed_size > 16ULL*1024ULL*1024ULL*1024ULL)
 		{
 			// Less than one block, or more than 16 GB...
@@ -546,7 +547,7 @@ int CisoPspReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 			? (int)CisoPspReaderPrivate::CisoType::ZISO
 			: (int)CisoPspReaderPrivate::CisoType::CISO;
 	} else if (*pu32 == be32_to_cpu(JISO_MAGIC) && szHeader >= sizeof(JisoHeader)) {
-		// JISO magic.
+		// JISO magic
 		const JisoHeader *const jisoHeader = reinterpret_cast<const JisoHeader*>(pHeader);
 
 		// TODO: Version number field?
@@ -561,7 +562,7 @@ int CisoPspReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 		// Check if the block size is a supported power of two.
 		// - Minimum: JISO_BLOCK_SIZE_MIN ( 2 KB, 1 << 11)
 		// - Maximum: JISO_BLOCK_SIZE_MAX (64 KB, 1 << 16)
-		const uint32_t block_size = le32_to_cpu(jisoHeader->block_size);
+		const unsigned int block_size = le16_to_cpu(jisoHeader->block_size);
 		if (!isPow2(block_size) ||
 		    block_size < JISO_BLOCK_SIZE_MIN || block_size > JISO_BLOCK_SIZE_MAX)
 		{
@@ -586,7 +587,7 @@ int CisoPspReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 		// This is a valid JISO image.
 		return (int)CisoPspReaderPrivate::CisoType::JISO;
 	} else if (*pu32 == be32_to_cpu(DAX_MAGIC) && szHeader >= sizeof(DaxHeader)) {
-		// DAX magic.
+		// DAX magic
 		const DaxHeader *const daxHeader = reinterpret_cast<const DaxHeader*>(pHeader);
 
 		// Version must be 0 or 1.
@@ -659,18 +660,18 @@ off64_t CisoPspReader::getPhysBlockAddr(uint32_t blockIdx) const
 
 		case CisoPspReaderPrivate::CisoType::CISO:
 		case CisoPspReaderPrivate::CisoType::ZISO:
-			addr = static_cast<off64_t>(d->indexEntries[blockIdx] & ~CISO_PSP_V0_NOT_COMPRESSED);
+			addr = static_cast<off64_t>(le32_to_cpu(d->indexEntries[blockIdx]) & ~CISO_PSP_V0_NOT_COMPRESSED);
 			addr <<= d->index_shift;
 			break;
 
 		case CisoPspReaderPrivate::CisoType::JISO:
 			// TODO: Does JISO have an index_shift field? Assuming it doesn't for now...
-			addr = static_cast<off64_t>(d->indexEntries[blockIdx]);
+			addr = static_cast<off64_t>(le32_to_cpu(d->indexEntries[blockIdx]));
 			break;
 
 		case CisoPspReaderPrivate::CisoType::DAX:
 			// TODO: Does DAX have an index_shift field? Assuming it doesn't for now...
-			addr = static_cast<off64_t>(d->indexEntries[blockIdx]);
+			addr = static_cast<off64_t>(le32_to_cpu(d->indexEntries[blockIdx]));
 			break;
 	}
 
@@ -716,7 +717,7 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 	}
 
 	// Get the physical address first.
-	const uint32_t indexEntry = d->indexEntries[blockIdx];
+	const uint32_t indexEntry = le32_to_cpu(d->indexEntries[blockIdx]);
 	uint32_t z_block_size = d->getBlockCompressedSize(blockIdx);
 	if (z_block_size == 0 || z_block_size > d->blockCache.size()) {
 		// Unable to get the block's compressed size,
