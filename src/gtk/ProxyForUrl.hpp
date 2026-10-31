@@ -10,6 +10,7 @@
 
 // C++ includes
 #include <string>
+#include "rp-string_view.hpp"
 
 /**
  * Get the proxy for the specified URL.
