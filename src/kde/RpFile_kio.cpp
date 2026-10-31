@@ -69,7 +69,7 @@ RpFileKioPrivate::RpFileKioPrivate(RpFileKio *q, string_view uri)
 	, pos(0)
 {
 	// Check if the source filename is a URI.
-	const QString qs_uri(QString::fromUtf8(uri.data(), static_cast<rp_qsizetype>(uri.size())));
+	const QString qs_uri(U82Q(uri));
 	QUrl url(qs_uri);
 	if (url.scheme().isEmpty()) {
 		// No scheme. This is a plain old filename.
