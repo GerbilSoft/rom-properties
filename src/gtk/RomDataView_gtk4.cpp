@@ -415,7 +415,6 @@ rp_rom_data_view_init_listdata(RpRomDataView *page, const RomFields::Field &fiel
 						(likely(str != nullptr) ? str : C_("RomData", "Unknown")));
 					g_free(str);
 				} else {
-					// TODO: If text format is expanded, change RpListDataItem's "is_achievement" to "text_format"?
 					switch (text_format & RomFields::ColTextFormat::COLTEXTFORMAT_MASK) {
 						default:
 						case COLTEXTFMT_DEFAULT:
@@ -568,7 +567,6 @@ rp_rom_data_view_update_multi_RFT_LISTDATA_MULTI(RpRomDataView *page, uint32_t u
 							(likely(str != nullptr) ? str : C_("RomData", "Unknown")));
 						g_free(str);
 					} else {
-						// TODO: If text format is expanded, change RpListDataItem's "is_achievement" to "text_format"?
 						switch (text_format & RomFields::ColTextFormat::COLTEXTFORMAT_MASK) {
 							default:
 							case COLTEXTFMT_DEFAULT:
