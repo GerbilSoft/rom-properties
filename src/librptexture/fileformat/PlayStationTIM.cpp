@@ -171,8 +171,11 @@ rp_image_const_ptr PlayStationTIMPrivate::loadImage(void)
 				uint8_t ch_8bpp = 0;
 				for (unsigned int i = 0; i < 16; i++, ch_8bpp += 0x11) {
 					// Need to convert to 5-bit BGR.
+					// NOTE: Must be converted to little-endian in order for
+					// ImageDecoder::fromLinearCI4() to decode it correctly.
 					const uint8_t ch_5bpp = (ch_8bpp >> 3);
-					clut_buf[i] = 0x8000 | (ch_5bpp << 10) | (ch_5bpp << 5) | ch_5bpp;
+					const uint16_t bgr555 = 0x8000 | (ch_5bpp << 10) | (ch_5bpp << 5) | ch_5bpp;
+					clut_buf[i] = cpu_to_le16(bgr555);
 				}
 				break;
 			}
@@ -182,8 +185,11 @@ rp_image_const_ptr PlayStationTIMPrivate::loadImage(void)
 				uint8_t ch_8bpp = 0;
 				for (unsigned int i = 0; i < 256; i++, ch_8bpp += 1) {
 					// Need to convert to 5-bit BGR.
+					// NOTE: Must be converted to little-endian in order for
+					// ImageDecoder::fromLinearCI4() to decode it correctly.
 					const uint8_t ch_5bpp = (ch_8bpp >> 3);
-					clut_buf[i] = 0x8000 | (ch_5bpp << 10) | (ch_5bpp << 5) | ch_5bpp;
+					const uint16_t bgr555 = 0x8000 | (ch_5bpp << 10) | (ch_5bpp << 5) | ch_5bpp;
+					clut_buf[i] = cpu_to_le16(bgr555);
 				}
 				break;
 			}
@@ -284,11 +290,11 @@ PlayStationTIM::PlayStationTIM(const IRpFilePtr &file)
 		return;
 	}
 
-#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+#if SYS_BYTEORDER != SYS_LIL_ENDIAN
 	// Byteswap the TIM flags field to host-endian,
 	// since we use it quite often.
 	d->timHeader.flags = le32_to_cpu(d->timHeader.flags);
-#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+#endif /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
 
 	// Verify the TIM magic.
 	// NOTE: File extension should also be checked, since the
