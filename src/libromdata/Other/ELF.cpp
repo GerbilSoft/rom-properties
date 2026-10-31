@@ -1163,7 +1163,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 			} else if (sym.st_shndx == SHN_COMMON) {
 				row.push_back(elf_sym_common);
 			} else {
-				row.push_back(fmt::to_string(sym.st_shndx));
+				row.push_back(fmt::format_int(sym.st_shndx).str());
 			}
 			row.push_back(fmt::format(FSTR("0x{:0>8X}"), sym.st_value));
 			row.push_back(fmt::format(FSTR("0x{:0>8X}"), sym.st_size));

@@ -409,7 +409,7 @@ int AndroidResourceReaderPrivate::processType(const uint8_t *data, size_t size, 
 					refKeys.emplace(resource_id, u32data);
 					break;
 				default:
-					data = fmt::to_string(u32data);
+					data = fmt::format_int(u32data).str();
 					break;
 			}
 

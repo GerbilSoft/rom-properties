@@ -1317,7 +1317,7 @@ int CBMDOS::loadFieldData(void)
 			}
 
 			// # of blocks (filesize)
-			p_list.push_back(fmt::to_string(le16_to_cpu(p_dir->sector_count)));
+			p_list.push_back(fmt::format_int(le16_to_cpu(p_dir->sector_count)).str());
 
 			// Filename
 			const int filename_len = static_cast<int>(d->remove_A0_padding(p_dir->filename, sizeof(p_dir->filename)));
@@ -1353,7 +1353,7 @@ int CBMDOS::loadFieldData(void)
 				s_file_type += file_type_tbl[file_type];
 			} else {
 				// Print the numeric value instead.
-				s_file_type += fmt::to_string(file_type);
+				s_file_type += fmt::format_int(file_type).str();
 			}
 
 			// Append the other flags, if set.

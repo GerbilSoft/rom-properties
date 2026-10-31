@@ -456,7 +456,7 @@ string RomFields::ageRatingDecode(AgeRatingsCountry country, uint16_t rating)
 	} else {
 		// No string rating.
 		// Print the numeric value.
-		s_ret = fmt::to_string(static_cast<unsigned int>(rating) & RomFields::AGEBF_MIN_AGE_MASK);
+		s_ret = fmt::format_int(static_cast<unsigned int>(rating) & RomFields::AGEBF_MIN_AGE_MASK).str();
 	}
 
 	if (rating & RomFields::AGEBF_ONLINE_PLAY) {
@@ -509,7 +509,7 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 		} else {
 			// Invalid age rating organization.
 			// Use the numeric index.
-			s_ret += fmt::to_string(i);
+			s_ret += fmt::format_int(i).str();
 		}
 		s_ret += '=';
 		s_ret += ageRatingDecode(static_cast<AgeRatingsCountry>(i), rating);

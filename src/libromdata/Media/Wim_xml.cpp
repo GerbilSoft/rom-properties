@@ -297,7 +297,7 @@ int WimPrivate::addFields_XML()
 
 		if (likely(!image.is_unstaged)) {
 			// Staged images use the format "1", "2", "3", etc.
-			data_row.push_back(fmt::to_string(image.index));
+			data_row.push_back(fmt::format_int(image.index).str());
 		} else {
 			// Unstaged sub-images will use the format "1a", "1b", "1c", etc.
 			// If there's more than 26, it'll wrap back to "1aa", "1ab", "1ac", etc.
@@ -308,7 +308,7 @@ int WimPrivate::addFields_XML()
 				unstaged_idx--;
 				unstaged_idx /= 26;
 			}
-			image_index += fmt::to_string(image.index);
+			image_index += fmt::format_int(image.index).str();
 			std::reverse(image_index.begin(), image_index.end());
 			data_row.push_back(std::move(image_index));
 		}

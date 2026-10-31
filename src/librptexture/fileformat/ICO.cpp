@@ -1550,7 +1550,7 @@ int ICO::getFields(RomFields *fields) const
 
 			// Add text fields.
 			data_row.push_back(fmt::format(FSTR("{:d}x{:d}"), data.width, data.height));
-			data_row.push_back(fmt::to_string(data.bitcount));
+			data_row.push_back(fmt::format_int(data.bitcount).str());
 			string s_pixel_format = d->getIconPixelFormat(data);
 			if (data.isPNG) {
 				s_pixel_format += " (PNG)";

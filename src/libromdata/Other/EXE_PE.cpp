@@ -1037,9 +1037,9 @@ int EXEPrivate::addFields_PE_Export(void)
 		auto &row = vv_data->back();
 		row.reserve(5);
 		row.push_back(ent.name);
-		row.push_back(fmt::to_string(ent.ordinal));
+		row.push_back(fmt::format_int(ent.ordinal).str());
 		if (ent.hint != -1) {
-			row.push_back(fmt::to_string(ent.hint));
+			row.push_back(fmt::format_int(ent.hint).str());
 		} else {
 			row.push_back(C_("EXE|Exports", "None"));
 		}
@@ -1276,7 +1276,7 @@ int EXEPrivate::addFields_PE_Import(void)
 		row.reserve(3);
 		if (it.is_ordinal) {
 			row.push_back(fmt::format(FRUN(C_("EXE|Exports", "Ordinal #{:d}")), it.value));
-			row.push_back(fmt::to_string(it.value));
+			row.push_back(fmt::format_int(it.value).str());
 		} else {
 			// RVA to hint number followed by NUL terminated name.
 			// FIXME: How does XEX handle this?
@@ -1286,7 +1286,7 @@ int EXEPrivate::addFields_PE_Import(void)
 			const uint16_t hint = ent_u8[0] | (ent_u8[1] << 8);
 			// strings
 			row.push_back(ent+2);
-			row.push_back(fmt::to_string(hint));
+			row.push_back(fmt::format_int(hint).str());
 		}
 		if (it.dllname) {
 			row.push_back(*(it.dllname));

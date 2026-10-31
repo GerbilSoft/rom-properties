@@ -1471,7 +1471,7 @@ int NES::loadFieldData(void)
 				mapper, mapper_name);
 		} else {
 			// tr: Print only the mapper ID.
-			s_mapper = fmt::to_string(mapper);
+			s_mapper = fmt::format_int(mapper).str();
 		}
 		d->fields.addField_string(mapper_title, s_mapper);
 	} else {
@@ -1498,7 +1498,7 @@ int NES::loadFieldData(void)
 				submapper, submapper_name);
 		} else {
 			// tr: Print only the submapper ID.
-			s_submapper = fmt::to_string(submapper);
+			s_submapper = fmt::format_int(submapper).str();
 		}
 		d->fields.addField_string(C_("NES", "Submapper"), s_submapper);
 	}
@@ -1820,7 +1820,7 @@ int NES::loadFieldData(void)
 					footer_mapper, footer_mapper_tbl[footer_mapper]);
 			} else {
 				// tr: Print only the mapper ID.
-				s_footer_mapper = fmt::to_string(footer_mapper);
+				s_footer_mapper = fmt::format_int(footer_mapper).str();
 			}
 			d->fields.addField_string(C_("NES", "Board Type"), s_footer_mapper);
 
@@ -1967,7 +1967,7 @@ int NES::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 	const char *ps_mapper = nullptr;
 	string s_mapper;
 	if (likely(!isFDS)) {
-		s_mapper = fmt::to_string(d->get_iNES_mapper_number());
+		s_mapper = fmt::format_int(d->get_iNES_mapper_number()).str();
 		ps_mapper = s_mapper.c_str();
 	}
 

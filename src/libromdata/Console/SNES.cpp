@@ -875,7 +875,7 @@ int SNESPrivate::addFields_NP(void)
 		data_row.reserve(5);
 
 		// #
-		data_row.push_back(fmt::to_string(entry.directory_index));
+		data_row.push_back(fmt::format_int(entry.directory_index).str());
 
 		// Title
 		data_row.push_back(cp1252_sjis_to_utf8(

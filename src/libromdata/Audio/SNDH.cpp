@@ -895,7 +895,7 @@ int SNDH::loadFieldData(void)
 		for (vector<string> &data_row : *vv_subtune_list) {
 			data_row.reserve(col_count);	// 2 or 3 fields per row.
 
-			data_row.push_back(fmt::to_string(idx+1));	// NOTE: First subtune is 1, not 0.
+			data_row.push_back(fmt::format_int(idx+1).str());	// NOTE: First subtune is 1, not 0.
 			if (has_SN) {
 				if (idx < tags.subtune_names.size()) {
 					data_row.push_back(tags.subtune_names.at(idx));

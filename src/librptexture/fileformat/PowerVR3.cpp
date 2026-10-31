@@ -1297,7 +1297,7 @@ const char *PowerVR3::pixelFormat(void) const
 		}
 
 		s_pxf += TOUPPER(pxf);
-		s_chcnt += fmt::to_string(static_cast<unsigned int>(channel_depth & 0xFF));
+		s_chcnt += fmt::format_int(static_cast<unsigned int>(channel_depth & 0xFF)).str();
 	}
 
 	if (likely(!s_pxf.empty())) {

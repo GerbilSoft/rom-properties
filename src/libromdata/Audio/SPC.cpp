@@ -931,7 +931,7 @@ int SPC::loadFieldData(void)
 			// Low byte: Optional letter.
 			// TODO: Restrict track number?
 			const uint8_t track_num = data.uvalue >> 8;
-			string s_track_num = fmt::to_string(track_num);
+			string s_track_num = fmt::format_int(track_num).str();
 
 			const char track_letter = data.uvalue & 0xFF;
 			if (isalnum_ascii(track_letter)) {
