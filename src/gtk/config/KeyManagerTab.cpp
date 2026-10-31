@@ -575,12 +575,12 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 		case KeyStoreUI::ImportStatus::OpenError:
 			if (iret.error_code != 0) {
 				// tr: {0:s} == filename, {1:s} == error message
-				msg = fmt::format(FRUN(C_("KeyManagerTab",
+				fmt::format_to(std::back_inserter(msg), FRUN(C_("KeyManagerTab",
 					"An error occurred while opening '{0:s}': {1:s}")),
 					fileNoPath, strerror(iret.error_code));
 			} else {
 				// tr: {:s} == filename
-				msg = fmt::format(FRUN(C_("KeyManagerTab",
+				fmt::format_to(std::back_inserter(msg), FRUN(C_("KeyManagerTab",
 					"An error occurred while opening '{:s}'.")),
 					fileNoPath);
 			}
@@ -591,12 +591,12 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 			// TODO: Error code for short reads.
 			if (iret.error_code != 0) {
 				// tr: {0:s} == filename, {1:s} == error message
-				msg = fmt::format(FRUN(C_("KeyManagerTab",
+				fmt::format_to(std::back_inserter(msg), FRUN(C_("KeyManagerTab",
 					"An error occurred while reading '{0:s}': {1:s}")),
 					fileNoPath, strerror(iret.error_code));
 			} else {
 				// tr: {:s} == filename
-				msg = fmt::format(FRUN(C_("KeyManagerTab",
+				fmt::format_to(std::back_inserter(msg), FRUN(C_("KeyManagerTab",
 					"An error occurred while reading '{:s}'.")),
 					fileNoPath);
 			}
@@ -605,7 +605,7 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 
 		case KeyStoreUI::ImportStatus::InvalidFile:
 			// tr: {0:s} == filename, {1:s} == type of file
-			msg = fmt::format(FRUN(C_("KeyManagerTab",
+			fmt::format_to(std::back_inserter(msg), FRUN(C_("KeyManagerTab",
 				"The file '{0:s}' is not a valid {1:s} file.")),
 				fileNoPath, keyType);
 			type = GTK_MESSAGE_WARNING;
@@ -613,7 +613,7 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 
 		case KeyStoreUI::ImportStatus::NoKeysImported:
 			// tr: {:s} == filename
-			msg = fmt::format(FRUN(C_("KeyManagerTab",
+			fmt::format_to(std::back_inserter(msg), FRUN(C_("KeyManagerTab",
 				"No keys were imported from '{:s}'.")),
 				fileNoPath);
 			type = GTK_MESSAGE_INFO;
@@ -623,7 +623,7 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 		case KeyStoreUI::ImportStatus::KeysImported: {
 			const int keyCount = static_cast<int>(iret.keysImportedVerify + iret.keysImportedNoVerify);
 			// tr: {0:Ld} == number of keys, {1:s} == filename
-			msg = fmt::format(FRUN(NC_("KeyManagerTab",
+			fmt::format_to(std::back_inserter(msg), FRUN(NC_("KeyManagerTab",
 				"{0:Ld} key was imported from '{1:s}'.",
 				"{0:Ld} keys were imported from '{1:s}'.",
 				keyCount)),
@@ -641,7 +641,7 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 		if (iret.keysExist > 0) {
 			msg += nl_bullet;
 			// tr: {:Ld} == number of keys
-			msg += fmt::format(FRUN(NC_("KeyManagerTab",
+			fmt::format_to(std::back_inserter(msg), FRUN(NC_("KeyManagerTab",
 				"{:Ld} key already exists in the Key Manager.",
 				"{:Ld} keys already exist in the Key Manager.",
 				iret.keysExist)),
@@ -650,7 +650,7 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 		if (iret.keysInvalid > 0) {
 			msg += nl_bullet;
 			// tr: {:Ld} == number of keys
-			msg += fmt::format(FRUN(NC_("KeyManagerTab",
+			fmt::format_to(std::back_inserter(msg), FRUN(NC_("KeyManagerTab",
 				"{:Ld} key was not imported because it is incorrect.",
 				"{:Ld} keys were not imported because they are incorrect.",
 				iret.keysInvalid)),
@@ -659,7 +659,7 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 		if (iret.keysNotUsed > 0) {
 			msg += nl_bullet;
 			// tr: {:Ld} == number of keys
-			msg += fmt::format(FRUN(NC_("KeyManagerTab",
+			fmt::format_to(std::back_inserter(msg), FRUN(NC_("KeyManagerTab",
 				"{:Ld} key was not imported because it isn't used by rom-properties.",
 				"{:Ld} keys were not imported because they aren't used by rom-properties.",
 				iret.keysNotUsed)),
@@ -668,7 +668,7 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 		if (iret.keysCantDecrypt > 0) {
 			msg += nl_bullet;
 			// tr: {:Ld} == number of keys
-			msg += fmt::format(FRUN(NC_("KeyManagerTab",
+			fmt::format_to(std::back_inserter(msg), FRUN(NC_("KeyManagerTab",
 				"{:Ld} key was not imported because it is encrypted and the master key isn't available.",
 				"{:Ld} keys were not imported because they are encrypted and the master key isn't available.",
 				iret.keysCantDecrypt)),
@@ -677,7 +677,7 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 		if (iret.keysImportedVerify > 0) {
 			msg += nl_bullet;
 			// tr: {:Ld} == number of keys
-			msg += fmt::format(FRUN(NC_("KeyManagerTab",
+			fmt::format_to(std::back_inserter(msg), FRUN(NC_("KeyManagerTab",
 				"{:Ld} key has been imported and verified as correct.",
 				"{:Ld} keys have been imported and verified as correct.",
 				iret.keysImportedVerify)),
@@ -686,7 +686,7 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 		if (iret.keysImportedNoVerify > 0) {
 			msg += nl_bullet;
 			// tr: {:Ld} == number of keys
-			msg += fmt::format(FRUN(NC_("KeyManagerTab",
+			fmt::format_to(std::back_inserter(msg), FRUN(NC_("KeyManagerTab",
 				"{:Ld} key has been imported without verification.",
 				"{:Ld} keys have been imported without verification.",
 				iret.keysImportedNoVerify)),
