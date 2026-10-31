@@ -549,7 +549,7 @@ int WonderSwan::loadFieldData(void)
 	if (publisher) {
 		s_publisher = publisher;
 	} else {
-		s_publisher = fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), romFooter->publisher);
+		fmt::format_to(std::back_inserter(s_publisher), FRUN(C_("RomData", "Unknown (0x{:0>2X})")), romFooter->publisher);
 	}
 	d->fields.addField_string(C_("RomData", "Publisher"), s_publisher);
 

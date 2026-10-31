@@ -641,9 +641,9 @@ string SNESPrivate::getPublisher(void) const
 					romHeader.snes.ext.new_publisher_code.c[1],
 					'\0'
 				}};
-				s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_pub_code.data());
+				fmt::format_to(std::back_inserter(s_ret), FRUN(C_("RomData", "Unknown ({:s})")), s_pub_code.data());
 			} else {
-				s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
+				fmt::format_to(std::back_inserter(s_ret), FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
 					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code.c[0]),
 					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code.c[1]));
 			}
@@ -654,7 +654,7 @@ string SNESPrivate::getPublisher(void) const
 		if (publisher) {
 			s_ret = publisher;
 		} else {
-			s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X})")),
+			fmt::format_to(std::back_inserter(s_ret), FRUN(C_("RomData", "Unknown ({:0>2X})")),
 				romHeader.snes.old_publisher_code);
 		}
 	}

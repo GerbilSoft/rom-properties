@@ -403,7 +403,7 @@ int WiiTMD::loadFieldData(void)
 						break;
 					default:
 						if (tid_lo < 256) {
-							s_os_name = fmt::format(FSTR("IOS{:d}"), tid_lo);
+							fmt::format_to(std::back_inserter(s_os_name), FSTR("IOS{:d}"), tid_lo);
 						}
 						break;
 				}
@@ -448,14 +448,14 @@ int WiiTMD::loadFieldData(void)
 					break;
 				}
 
-				s_os_name = fmt::format(FSTR("OSv{:d} {:s}"), (tid_lo & 0xFF), s_debug_flag);
+				fmt::format_to(std::back_inserter(s_os_name), FSTR("OSv{:d} {:s}"), (tid_lo & 0xFF), s_debug_flag);
 				break;
 			}
 		}
 
 		if (unlikely(s_os_name.empty())) {
 			// Print the OS title ID.
-			s_os_name = fmt::format(FSTR("{:0>8X}-{:0>8X}"),
+			fmt::format_to(std::back_inserter(s_os_name), FSTR("{:0>8X}-{:0>8X}"),
 				be32_to_cpu(os_tid.hi),
 				be32_to_cpu(os_tid.lo));
 		}

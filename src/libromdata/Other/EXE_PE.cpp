@@ -547,7 +547,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		// Check for MSVC 2015-2026. (vcruntime140.dll)
 		if (!strcasecmp(dll_name, "vcruntime140.dll")) {
 			// TODO: If host OS is Windows XP or earlier, limit it to 2017?
-			refDesc = fmt::format(
+			fmt::format_to(std::back_inserter(refDesc),
 				FRUN(C_("EXE|Runtime", "Microsoft Visual C++ {:s} Runtime")), "2015-2026");
 			switch (le16_to_cpu(hdr.pe.FileHeader.Machine)) {
 				default:
@@ -569,7 +569,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 			}
 			break;
 		} else if (!strcasecmp(dll_name, "vcruntime140d.dll")) {
-			refDesc = fmt::format(
+			fmt::format_to(std::back_inserter(refDesc),
 				FRUN(C_("EXE|Runtime", "Microsoft Visual C++ {:s} Debug Runtime")), "2015-2026");
 			break;
 		}
@@ -587,7 +587,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 				for (const auto &p : msvc_dll_tbl) {
 					if (p.dll_name_version == dll_name_version) {
 						// Found a matching version.
-						refDesc = fmt::format(
+						fmt::format_to(std::back_inserter(refDesc),
 							FRUN(C_("EXE|Runtime", "Microsoft Visual C++ {:s} Debug Runtime")),
 							p.display_version);
 						found = true;
@@ -604,7 +604,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 				for (const auto &p : msvc_dll_tbl) {
 					if (p.dll_name_version == dll_name_version) {
 						// Found a matching version.
-						refDesc = fmt::format(
+						fmt::format_to(std::back_inserter(refDesc),
 							FRUN(C_("EXE|Runtime", "Microsoft Visual C++ {:s} Runtime")),
 							p.display_version);
 						if (is64) {
@@ -632,7 +632,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 			refDesc = C_("EXE|Runtime", "Microsoft System C Runtime (MSVCRT)");
 			break;
 		} else if (!strcasecmp(dll_name, "msvcrtd.dll")) {
-			refDesc = fmt::format(
+			fmt::format_to(std::back_inserter(refDesc),
 				FRUN(C_("EXE|Runtime", "Microsoft Visual C++ {:s} Debug Runtime")), "6.0");
 			break;
 		}
@@ -649,8 +649,9 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		for (const auto &p : msvb_dll_tbl) {
 			if (!strcasecmp(dll_name, p.dll_name)) {
 				// Found a matching version.
-				refDesc = fmt::format(FRUN(C_("EXE|Runtime", "Microsoft Visual Basic {:d}.{:d} Runtime")),
-					p.ver_major, p.ver_minor);
+				fmt::format_to(std::back_inserter(refDesc),
+					FRUN(C_("EXE|Runtime", "Microsoft Visual Basic {:d}.{:d} Runtime")),
+						p.ver_major, p.ver_minor);
 				refLink = p.url;
 				break;
 			}
@@ -729,7 +730,7 @@ void EXEPrivate::addFields_PE(void)
 		if (cpu != nullptr) {
 			s_cpu = cpu;
 		} else {
-			s_cpu = fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>4X})")), machine);
+			fmt::format_to(std::back_inserter(s_cpu), FRUN(C_("RomData", "Unknown (0x{:0>4X})")), machine);
 		}
 	}
 	if (dotnet) {

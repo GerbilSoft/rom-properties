@@ -430,7 +430,7 @@ string ICOPrivate::getIconPixelFormat(const IconBitmapHeader_data &data)
 			break;
 		case 4:
 		case 8:
-			s_ret = fmt::format(FSTR("CI{:d}"), data.bitcount);
+			fmt::format_to(std::back_inserter(s_ret), FSTR("CI{:d}"), data.bitcount);
 			break;
 		case 24:
 			s_ret = "RGB";
@@ -440,7 +440,7 @@ string ICOPrivate::getIconPixelFormat(const IconBitmapHeader_data &data)
 			break;
 		default:
 			// Invalid bitcount?
-			s_ret = fmt::format(FSTR("{:d}-bit"), data.bitcount);
+			fmt::format_to(std::back_inserter(s_ret), FSTR("{:d}-bit"), data.bitcount);
 			break;
 	}
 

@@ -651,25 +651,25 @@ int RomMetaData::addMetaData_string(Property name, const char *str, unsigned int
  */
 int RomMetaData::addMetaData_string_numeric(Property name, uint32_t val, Base base, int digits, unsigned int flags)
 {
-	string s;
+	string str;
 	switch (base) {
 		case Base::Dec:
 		default:
-			s = fmt::format(FSTR("{:0>{}d}"), val, digits);
+			fmt::format_to(std::back_inserter(str), FSTR("{:0>{}d}"), val, digits);
 			break;
 		case Base::Hex:
 			if (unlikely(flags & STRF_HEX_LOWER)) {
-				s = fmt::format(FSTR("0x{:0>{}x}"), val, digits);
+				fmt::format_to(std::back_inserter(str), FSTR("0x{:0>{}x}"), val, digits);
 			} else {
-				s = fmt::format(FSTR("0x{:0>{}X}"), val, digits);
+				fmt::format_to(std::back_inserter(str), FSTR("0x{:0>{}X}"), val, digits);
 			}
 			break;
 		case Base::Oct:
-			s = fmt::format(FSTR("0{:0>{}o}"), val, digits);
+			fmt::format_to(std::back_inserter(str), FSTR("0{:0>{}o}"), val, digits);
 			break;
 	}
 
-	return addMetaData_string(name, s, flags);
+	return addMetaData_string(name, str, flags);
 }
 
 /**

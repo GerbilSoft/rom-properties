@@ -1164,9 +1164,9 @@ const char *GodotSTEX::pixelFormat(void) const
 	// Invalid pixel format.
 	// Store an error message instead.
 	if (d->invalid_pixel_format.empty()) {
-		d->invalid_pixel_format = fmt::format(
+		fmt::format_to(std::back_inserter(d->invalid_pixel_format),
 			FRUN(C_("RomData", "Unknown ({:d})")),
-			static_cast<int>(d->pixelFormat));
+				static_cast<int>(d->pixelFormat));
 	}
 	return d->invalid_pixel_format.c_str();
 }

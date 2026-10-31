@@ -120,7 +120,8 @@ void CtrKeyScramblerTest::CompareByteArrays(
 				s_actual += '\n';
 			}
 
-			s_tmp = fmt::format(FSTR("{:0>4X}:  "), static_cast<unsigned int>(i));
+			s_tmp.clear();
+			fmt::format_to(std::back_inserter(s_tmp), FSTR("{:0>4X}:  "), static_cast<unsigned int>(i));
 			s_expected += s_tmp;
 			s_actual += s_tmp;
 		}

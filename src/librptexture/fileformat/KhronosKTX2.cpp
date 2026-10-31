@@ -951,9 +951,9 @@ const char *KhronosKTX2::pixelFormat(void) const
 	// Store an error message instead.
 	if (d->invalid_pixel_format.empty()) {
 		// TODO: Localization?
-		d->invalid_pixel_format = fmt::format(
+		fmt::format_to(std::back_inserter(d->invalid_pixel_format),
 			FRUN(C_("RomData", "Unknown ({:d})")),
-			d->ktx2Header.vkFormat);
+				d->ktx2Header.vkFormat);
 	}
 	return d->invalid_pixel_format.c_str();
 }

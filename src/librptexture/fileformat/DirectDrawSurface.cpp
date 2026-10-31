@@ -1289,24 +1289,24 @@ const char *DirectDrawSurface::pixelFormat(void) const
 	// Manually determine the pixel format.
 	if (ddspf.dwFlags & DDPF_RGB) {
 		// Uncompressed RGB data
-		d->pixel_format = fmt::format(
+		fmt::format_to(std::back_inserter(d->pixel_format),
 			 FRUN(C_("DirectDrawSurface", "RGB ({:d}-bit)")), ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_ALPHA) {
 		// Alpha channel
-		d->pixel_format = fmt::format(
+		fmt::format_to(std::back_inserter(d->pixel_format),
 			FRUN(C_("DirectDrawSurface", "Alpha ({:d}-bit)")), ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_YUV) {
 		// YUV (TODO: Determine the format.)
-		d->pixel_format = fmt::format(
+		fmt::format_to(std::back_inserter(d->pixel_format),
 			FRUN(C_("DirectDrawSurface", "YUV ({:d}-bit)")), ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
 		// Luminance
 		if (ddspf.dwFlags & DDPF_ALPHAPIXELS) {
-			d->pixel_format = fmt::format(
+			fmt::format_to(std::back_inserter(d->pixel_format),
 				FRUN(C_("DirectDrawSurface", "Luminance + Alpha ({:d}-bit)")),
 				ddspf.dwRGBBitCount);
 		} else {
-			d->pixel_format = fmt::format(
+			fmt::format_to(std::back_inserter(d->pixel_format),
 				FRUN(C_("DirectDrawSurface", "Luminance ({:d}-bit)")),
 				ddspf.dwRGBBitCount);
 		}

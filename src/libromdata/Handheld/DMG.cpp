@@ -553,9 +553,9 @@ string DMGPrivate::getPublisher(void) const
 					romHeader.new_publisher_code[1],
 					'\0'
 				}};
-				s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_company.data());
+				fmt::format_to(std::back_inserter(s_ret), FRUN(C_("RomData", "Unknown ({:s})")), s_company.data());
 			} else {
-				s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
+				fmt::format_to(std::back_inserter(s_ret), FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
 					static_cast<uint8_t>(romHeader.new_publisher_code[0]),
 					static_cast<uint8_t>(romHeader.new_publisher_code[1]));
 			}
@@ -566,7 +566,7 @@ string DMGPrivate::getPublisher(void) const
 		if (publisher) {
 			s_ret = publisher;
 		} else {
-			s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X})")),
+			fmt::format_to(std::back_inserter(s_ret), FRUN(C_("RomData", "Unknown ({:0>2X})")),
 				romHeader.old_publisher_code);
 		}
 	}

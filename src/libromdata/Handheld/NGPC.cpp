@@ -474,7 +474,7 @@ int NGPC::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 	switch (id_code) {
 		default:
 			// No special handling for this game.
-			game_id = fmt::format(FSTR("NEOP{:0>4X}"), id_code);
+			fmt::format_to(std::back_inserter(game_id), FSTR("NEOP{:0>4X}"), id_code);
 			break;
 
 		case 0x0000:	// Homebrew
@@ -493,7 +493,7 @@ int NGPC::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 				return -ENOENT;
 			}
 
-			extra_subdir = fmt::format(FSTR("NEOP{:0>4X}"), id_code);
+			fmt::format_to(std::back_inserter(extra_subdir), FSTR("NEOP{:0>4X}"), id_code);
 			p_extra_subdir = extra_subdir.c_str();
 			break;
 	}

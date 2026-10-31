@@ -777,15 +777,15 @@ int NintendoBadge::loadFieldData(void)
 					if (isN3DS) {
 						if (region) {
 							// tr: {0:s} == Title name, {1:s} == Region
-							str = fmt::format(FRUN(C_("NintendoBadge", "{0:s} (New3DS) ({1:s})")), title, region);
+							fmt::format_to(std::back_inserter(str), FRUN(C_("NintendoBadge", "{0:s} (New3DS) ({1:s})")), title, region);
 						} else {
 							// tr: Title name
-							str = fmt::format(FRUN(C_("NintendoBadge", "{:s} (New3DS)")), title);
+							fmt::format_to(std::back_inserter(str), FRUN(C_("NintendoBadge", "{:s} (New3DS)")), title);
 						}
 					} else {
 						if (region) {
 							// tr: {0:s} == Title name, {1:s} == Region
-							str = fmt::format(FRUN(C_("NintendoBadge", "{0:s} ({1:s})")), title, region);
+							fmt::format_to(std::back_inserter(str), FRUN(C_("NintendoBadge", "{0:s} ({1:s})")), title, region);
 						} else {
 							str = title;
 						}

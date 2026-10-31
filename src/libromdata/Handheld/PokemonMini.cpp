@@ -342,13 +342,13 @@ int PokemonMini::loadFieldData(void)
 			// Standard vector jump opcode.
 			uint32_t offset = (irq[5] << 8) | irq[4];
 			offset += pc + 3 + 3 - 1;
-			s_address = fmt::format(FSTR("0x{:0>4X}"), offset);
+			fmt::format_to(std::back_inserter(s_address), FSTR("0x{:0>4X}"), offset);
 		} else if (irq[0] == 0xF3) {
 			// JMPW without MOV U.
 			// Seen in some homebrew.
 			uint32_t offset = (irq[2] << 8) | irq[1];
 			offset += pc + 3 - 1;
-			s_address = fmt::format(FSTR("0x{:0>4X}"), offset);
+			fmt::format_to(std::back_inserter(s_address), FSTR("0x{:0>4X}"), offset);
 		} else if (!memcmp(irq, vec_empty_ff.data(), vec_empty_ff.size()) ||
 			   !memcmp(irq, vec_empty_00.data(), vec_empty_00.size())) {
 			// Empty vector.
@@ -356,8 +356,9 @@ int PokemonMini::loadFieldData(void)
 		} else {
 			// Not a standard jump opcode.
 			// Show the hexdump.
-			s_address = fmt::format(FSTR("{:0>2X} {:0>2X} {:0>2X} {:0>2X} {:0>2X} {:0>2X}"),
-				irq[0], irq[1], irq[2], irq[3], irq[4], irq[5]);
+			fmt::format_to(std::back_inserter(s_address),
+				FSTR("{:0>2X} {:0>2X} {:0>2X} {:0>2X} {:0>2X} {:0>2X}"),
+					irq[0], irq[1], irq[2], irq[3], irq[4], irq[5]);
 		}
 		data_row.push_back(std::move(s_address));
 	}

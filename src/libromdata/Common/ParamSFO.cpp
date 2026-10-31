@@ -373,7 +373,7 @@ string ParamSFOPrivate::getMinimumOSVersion(void)
 		// Also, the value is in BCD, so print it as hex.
 		// FIXME: "EB0035-CUSA42526_00-DEGROIDPS4EE0000-A0102-V0100-PARAM.SFO" has 0x10508000...
 		u_systemVer >>= 16;
-		s_ret = fmt::format(FSTR("{:X}.{:0>2X}"), (u_systemVer >> 8) & 0xFF, u_systemVer & 0xFF);
+		fmt::format_to(std::back_inserter(s_ret), FSTR("{:X}.{:0>2X}"), (u_systemVer >> 8) & 0xFF, u_systemVer & 0xFF);
 	}
 
 	return s_ret;

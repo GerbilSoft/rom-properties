@@ -197,11 +197,11 @@ string WiiWADPrivate::wii_getIOSVersion(void) const
 		ios_lo > 2 && ios_lo < 0x300)
 	{
 		// Standard IOS slot.
-		s_ret = fmt::format(FSTR("IOS{:d}"), ios_lo);
+		fmt::format_to(std::back_inserter(s_ret), FSTR("IOS{:d}"), ios_lo);
 	} else if (tmdHeader.sys_version.id != 0) {
 		// Non-standard IOS slot.
 		// Print the full title ID.
-		s_ret = fmt::format(FSTR("{:0>8X}-{:0>8X}"),
+		fmt::format_to(std::back_inserter(s_ret), FSTR("{:0>8X}-{:0>8X}"),
 			be32_to_cpu(tmdHeader.sys_version.hi),
 			be32_to_cpu(tmdHeader.sys_version.lo));
 	}
@@ -1048,7 +1048,7 @@ int WiiWAD::loadFieldData(void)
 			string s_region;
 			if (suffix) {
 				// tr: {0:s} == full region name, {1:s} == abbreviation
-				s_region = fmt::format(FRUN(C_("Wii", "{0:s} ({1:s})")), region, suffix);
+				fmt::format_to(std::back_inserter(s_region), FRUN(C_("Wii", "{0:s} ({1:s})")), region, suffix);
 			} else {
 				s_region = region;
 			}

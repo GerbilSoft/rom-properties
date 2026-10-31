@@ -1467,7 +1467,7 @@ int NES::loadFieldData(void)
 		const char *const mapper_name = NESMappers::lookup_ines(mapper);
 		if (mapper_name) {
 			// tr: Print the mapper ID followed by the mapper name.
-			s_mapper = fmt::format(FRUN(C_("NES|Mapper", "{0:d} - {1:s}")),
+			fmt::format_to(std::back_inserter(s_mapper), FRUN(C_("NES|Mapper", "{0:d} - {1:s}")),
 				mapper, mapper_name);
 		} else {
 			// tr: Print only the mapper ID.
@@ -1494,7 +1494,7 @@ int NES::loadFieldData(void)
 		const char *const submapper_name = NESMappers::lookup_nes2_submapper(mapper, submapper);
 		if (submapper_name) {
 			// tr: Print the submapper ID followed by the submapper name.
-			s_submapper = fmt::format(FRUN(C_("NES|Mapper", "{0:d} - {1:s}")),
+			fmt::format_to(std::back_inserter(s_submapper), FRUN(C_("NES|Mapper", "{0:d} - {1:s}")),
 				submapper, submapper_name);
 		} else {
 			// tr: Print only the submapper ID.
@@ -1777,7 +1777,7 @@ int NES::loadFieldData(void)
 			if (prg_size > 0) {
 				s_prg_size = formatFileSizeKiB(prg_size);
 			} else {
-				s_prg_size = fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), prg_sz_idx);
+				fmt::format_to(std::back_inserter(s_prg_size), FRUN(C_("RomData", "Unknown (0x{:0>2X})")), prg_sz_idx);
 			}
 			d->fields.addField_string(C_("NES", "PRG ROM Size"), s_prg_size);
 
@@ -1787,7 +1787,7 @@ int NES::loadFieldData(void)
 			if (chr_size > 0) {
 				s_chr_size = formatFileSizeKiB(chr_size);
 			} else {
-				s_chr_size = fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), chr_sz_idx);
+				fmt::format_to(std::back_inserter(s_chr_size), FRUN(C_("RomData", "Unknown (0x{:0>2X})")), chr_sz_idx);
 			}
 			if (likely(!b_chr_ram)) {
 				d->fields.addField_string(C_("NES", "CHR ROM Size"), s_chr_size);
@@ -1816,7 +1816,7 @@ int NES::loadFieldData(void)
 			string s_footer_mapper;
 			if (footer_mapper < ARRAY_SIZE(footer_mapper_tbl)) {
 				// tr: Print the mapper ID followed by the mapper name.
-				s_footer_mapper = fmt::format(FRUN(C_("NES|Mapper", "{0:d} - {1:s}")),
+				fmt::format_to(std::back_inserter(s_footer_mapper), FRUN(C_("NES|Mapper", "{0:d} - {1:s}")),
 					footer_mapper, footer_mapper_tbl[footer_mapper]);
 			} else {
 				// tr: Print only the mapper ID.
@@ -1889,11 +1889,11 @@ int NES::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 		// Lowercase hex CRC32s are used.
 		if (likely(d->rom_8k_crc32[1] != 0)) {
 			// CHR ROM is present.
-			s_filename = fmt::format(FSTR("{:0>8X}-{:0>8X}"),
+			fmt::format_to(std::back_inserter(s_filename), FSTR("{:0>8X}-{:0>8X}"),
 				d->rom_8k_crc32[0], d->rom_8k_crc32[1]);
 		} else {
 			// CHR ROM is not present.
-			s_filename = fmt::format(FSTR("{:0>8X}"),
+			fmt::format_to(std::back_inserter(s_filename), FSTR("{:0>8X}"),
 				d->rom_8k_crc32[0]);
 		}
 	} else {
@@ -1913,7 +1913,7 @@ int NES::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 			}
 		}
 
-		s_filename = fmt::format(FSTR("{:s}-{:s}"),
+		fmt::format_to(std::back_inserter(s_filename), FSTR("{:s}-{:s}"),
 			(header->fds.disk_type == FDS_DTYPE_FSC ? "FSC" : "FMC"), game_id);
 	}
 

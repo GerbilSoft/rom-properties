@@ -368,13 +368,15 @@ int WiiU::loadFieldData(void)
 		if (isalnum_ascii(publisher_code[0]) && isalnum_ascii(publisher_code[1]) &&
 		    isalnum_ascii(publisher_code[2]) && isalnum_ascii(publisher_code[3]))
 		{
-			s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), publisher_code.data());
+			fmt::format_to(std::back_inserter(s_publisher),
+				FRUN(C_("RomData", "Unknown ({:s})")), publisher_code.data());
 		} else {
-			s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X} {:0>2X} {:0>2X})")),
-				static_cast<uint8_t>(publisher_code[0]),
-				static_cast<uint8_t>(publisher_code[1]),
-				static_cast<uint8_t>(publisher_code[2]),
-				static_cast<uint8_t>(publisher_code[3]));
+			fmt::format_to(std::back_inserter(s_publisher),
+				FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X} {:0>2X} {:0>2X})")),
+					static_cast<uint8_t>(publisher_code[0]),
+					static_cast<uint8_t>(publisher_code[1]),
+					static_cast<uint8_t>(publisher_code[2]),
+					static_cast<uint8_t>(publisher_code[3]));
 		}
 	}
 	d->fields.addField_string(C_("RomData", "Publisher"), s_publisher);

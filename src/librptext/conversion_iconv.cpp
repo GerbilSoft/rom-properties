@@ -201,7 +201,7 @@ static string codePageToEncName(unsigned int cp)
 			break;
 
 		default: {
-			str = fmt::format(FSTR("CP{:d}"), cp);
+			fmt::format_to(std::back_inserter(str), FSTR("CP{:d}"), cp);
 			break;
 		}
 	}

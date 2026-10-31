@@ -582,7 +582,7 @@ int CBMCart::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) con
 	string s_subdir;
 	if (d->romType == CBMCartPrivate::RomType::C64) {
 		// TODO: Separate dir for UltiMax?
-		s_subdir = fmt::format(FSTR("crt/{:d}"), be16_to_cpu(romHeader->type));
+		fmt::format_to(std::back_inserter(s_subdir), FSTR("crt/{:d}"), be16_to_cpu(romHeader->type));
 	} else {
 		s_subdir = "crt";
 	}

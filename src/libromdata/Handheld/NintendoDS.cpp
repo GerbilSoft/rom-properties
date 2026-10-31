@@ -176,10 +176,10 @@ string NintendoDSPrivate::getPublisher(void)
 	// Unknown publisher. Print the company code as two characters if they're
 	// both alphanumeric; otherwise, hexadecimal.
 	if (isalnum_ascii(romHeader.company[0]) && isalnum_ascii(romHeader.company[1])) {
-		s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:c}{:c})")),
+		fmt::format_to(std::back_inserter(s_ret), FRUN(C_("RomData", "Unknown ({:c}{:c})")),
 			romHeader.company[0], romHeader.company[1]);
 	} else {
-		s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
+		fmt::format_to(std::back_inserter(s_ret), FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
 			static_cast<unsigned int>(romHeader.company[0]),
 			static_cast<unsigned int>(romHeader.company[1]));
 	}

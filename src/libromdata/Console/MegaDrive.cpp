@@ -735,7 +735,7 @@ string MegaDrivePrivate::getPublisher(const MD_RomHeader *pRomHeader)
 		// Check for a T-code.
 		if (t_code > 0) {
 			// Found a T-code.
-			s_ret = fmt::format(FSTR("T-{:d}"), t_code);
+			fmt::format_to(std::back_inserter(s_ret), FSTR("T-{:d}"), t_code);
 		} else {
 			// Unknown publisher.
 			s_ret = C_("RomData", "Unknown");
@@ -1830,7 +1830,8 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) c
 				region_code[0] = 'G';
 				region_code[1] = 'T';
 				region_code[2] = '\0';
-				gameID = fmt::format(FSTR("{:0>8X}"), d->gt_crc);
+				gameID.clear();
+				fmt::format_to(std::back_inserter(gameID), FSTR("{:0>8X}"), d->gt_crc);
 				break;
 			}
 

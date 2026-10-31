@@ -326,8 +326,9 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 			for (const auto &p : msvb_dll_tbl) {
 				if (!strncasecmp(pDllName, p.dll_name, sizeof(p.dll_name))) {
 					// Found a matching version.
-					refDesc = fmt::format(FRUN(C_("EXE|Runtime", "Microsoft Visual Basic {:d}.{:d} Runtime")),
-						p.ver_major, p.ver_minor);
+					fmt::format_to(std::back_inserter(refDesc),
+						FRUN(C_("EXE|Runtime", "Microsoft Visual Basic {:d}.{:d} Runtime")),
+							p.ver_major, p.ver_minor);
 					if (p.url) {
 						refLink = p.url;
 					}

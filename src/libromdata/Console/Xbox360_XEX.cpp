@@ -1460,12 +1460,12 @@ string Xbox360_XEX_Private::getPublisher(void) const
 	    isalnum_ascii(executionID.title_id.b))
 	{
 		// Publisher ID is alphanumeric.
-		s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:c}{:c})")),
+		fmt::format_to(std::back_inserter(s_ret), FRUN(C_("RomData", "Unknown ({:c}{:c})")),
 			executionID.title_id.a,
 			executionID.title_id.b);
 	} else {
 		// Publisher ID is not alphanumeric.
-		s_ret = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
+		fmt::format_to(std::back_inserter(s_ret), FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
 			static_cast<uint8_t>(executionID.title_id.a),
 			static_cast<uint8_t>(executionID.title_id.b));
 	}
@@ -1828,7 +1828,7 @@ int Xbox360_XEX::loadFieldData(void)
 	const Xbox360_Version_t minver = d->getMinKernelVersion();
 	string s_minver;
 	if (minver.u32 != 0) {
-		s_minver = fmt::format(FSTR("{:d}.{:d}.{:d}.{:d}"),
+		fmt::format_to(std::back_inserter(s_minver), FSTR("{:d}.{:d}.{:d}.{:d}"),
 			static_cast<unsigned int>(minver.major),
 			static_cast<unsigned int>(minver.minor),
 			static_cast<unsigned int>(minver.build),

@@ -163,10 +163,10 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 			// Print the attributes. (address, size)
 			string s_attrs;
 			if (pt) {
-				s_attrs = fmt::format(FSTR("[pt:0x{:0>2x}, addr:0x{:0>8X}, size:{:d}]"),
+				fmt::format_to(std::back_inserter(s_attrs), FSTR("[pt:0x{:0>2x}, addr:0x{:0>8X}, size:{:d}]"),
 					dirent->ptnum, static_cast<uint64_t>(dirent->offset), dirent->size);
 			} else {
-				s_attrs = fmt::format(FSTR("[addr:0x{:0>8X}, size:{:d}]"),
+				fmt::format_to(std::back_inserter(s_attrs), FSTR("[addr:0x{:0>8X}, size:{:d}]"),
 					static_cast<uint64_t>(dirent->offset), dirent->size);
 			}
 

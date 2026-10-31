@@ -143,7 +143,7 @@ string N64Private::getOSVersion(void) const
 	    romHeader.os_version[1] == 0x00 &&
 	    isalpha_ascii(romHeader.os_version[3]))
 	{
-		s_ret = fmt::format(FSTR("OS{:d}.{:d}{:c}"),
+		fmt::format_to(std::back_inserter(s_ret), FSTR("OS{:d}.{:d}{:c}"),
 			romHeader.os_version[2] / 10,
 			romHeader.os_version[2] % 10,
 			romHeader.os_version[3]);

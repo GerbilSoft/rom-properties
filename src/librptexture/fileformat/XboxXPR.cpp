@@ -677,9 +677,9 @@ const char *XboxXPR::pixelFormat(void) const
 	// Invalid pixel format.
 	// Store an error message instead.
 	if (d->invalid_pixel_format.empty()) {
-		d->invalid_pixel_format = fmt::format(
+		fmt::format_to(std::back_inserter(d->invalid_pixel_format),
 			FRUN(C_("RomData", "Unknown (0x{:0>2X})")),
-			d->xpr0Header.pixel_format);
+				d->xpr0Header.pixel_format);
 	}
 	return d->invalid_pixel_format.c_str();
 }

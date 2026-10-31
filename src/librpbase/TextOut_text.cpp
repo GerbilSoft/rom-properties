@@ -504,19 +504,19 @@ static string formatDateTime(rp_time_t timestamp, RomFields::DateTimeFlags dtfla
 
 			case RomFields::RFT_DATETIME_HAS_DATE:
 				// Date, with year
-				s_ret = fmt::format(FSTR("{:0>4d}/{:0>2d}/{:0>2d}"),
+				fmt::format_to(std::back_inserter(s_ret), FSTR("{:0>4d}/{:0>2d}/{:0>2d}"),
 					tm_struct.tm_year + 1900, tm_struct.tm_mon + 1, tm_struct.tm_mday);
 				break;
 			case RomFields::RFT_DATETIME_HAS_TIME:
 			case RomFields::RFT_DATETIME_HAS_TIME | RomFields::RFT_DATETIME_NO_YEAR:
 				// Time
-				s_ret = fmt::format(FSTR("{:0>2d}:{:0>2d}:{:0>2d}"),
+				fmt::format_to(std::back_inserter(s_ret), FSTR("{:0>2d}:{:0>2d}:{:0>2d}"),
 					 tm_struct.tm_hour, tm_struct.tm_min, tm_struct.tm_sec);
 				break;
 			case RomFields::RFT_DATETIME_HAS_DATE |
 			     RomFields::RFT_DATETIME_HAS_TIME:
 				// Date and time (with year)
-				s_ret = fmt::format(FSTR("{:0>4d}/{:0>2d}/{:0>2d} {:0>2d}:{:0>2d}:{:0>2d}"),
+				fmt::format_to(std::back_inserter(s_ret), FSTR("{:0>4d}/{:0>2d}/{:0>2d} {:0>2d}:{:0>2d}:{:0>2d}"),
 					tm_struct.tm_year + 1900, tm_struct.tm_mon + 1, tm_struct.tm_mday,
 					tm_struct.tm_hour, tm_struct.tm_min, tm_struct.tm_sec);
 				break;
@@ -527,7 +527,7 @@ static string formatDateTime(rp_time_t timestamp, RomFields::DateTimeFlags dtfla
 					? months[tm_struct.tm_mon]
 					: "Unk";
 
-				s_ret = fmt::format(FSTR("{:s} {:0>2d}"), s_mon, tm_struct.tm_mday);
+				fmt::format_to(std::back_inserter(s_ret), FSTR("{:s} {:0>2d}"), s_mon, tm_struct.tm_mday);
 				break;
 			}
 
@@ -538,7 +538,7 @@ static string formatDateTime(rp_time_t timestamp, RomFields::DateTimeFlags dtfla
 					? months[tm_struct.tm_mon]
 					: "Unk";
 
-				s_ret = fmt::format(FSTR("{:s} {:0>2d} {:0>2d}:{:0>2d}:{:0>2d}"),
+				fmt::format_to(std::back_inserter(s_ret), FSTR("{:s} {:0>2d} {:0>2d}:{:0>2d}:{:0>2d}"),
 					s_mon, tm_struct.tm_mday,
 					tm_struct.tm_hour, tm_struct.tm_min, tm_struct.tm_sec);
 				break;

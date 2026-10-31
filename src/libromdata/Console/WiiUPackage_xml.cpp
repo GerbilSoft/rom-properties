@@ -593,7 +593,7 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(bool addTicketProperties)
 			// Get the system language code and see if we have a matching title.
 			// NOTE: Using the same LC for all fields once we find a matching title.
 			s_def_lc = SystemRegion::lcToString(SystemRegion::getLanguageCode());
-			nodeName = fmt::format(FSTR("shortname_{:s}"), s_def_lc);
+			fmt::format_to(std::back_inserter(nodeName), FSTR("shortname_{:s}"), s_def_lc);
 
 			shortname = metaRootNode.child(nodeName.c_str()).text();
 			if (!shortname) {
@@ -625,7 +625,8 @@ int WiiUPackagePrivate::addMetaData_System_XMLs(bool addTicketProperties)
 	}
 
 	// Publisher
-	nodeName = fmt::format(FSTR("publisher_{:s}"), s_def_lc);
+	nodeName.clear();
+	fmt::format_to(std::back_inserter(nodeName), FSTR("publisher_{:s}"), s_def_lc);
 	xml_text publisher = metaRootNode.child(nodeName.c_str()).text();
 	if (publisher) {
 		metaData.addMetaData_string(Property::Publisher, publisher.get());

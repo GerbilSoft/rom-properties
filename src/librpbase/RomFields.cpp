@@ -956,25 +956,25 @@ int RomFields::addField_string_numeric(const char *name, uint32_t val, Base base
 	if (!name)
 		return -1;
 
-	string s;
+	string str;
 	switch (base) {
 		case Base::Dec:
 		default:
-			s = fmt::format(FSTR("{:0>{}d}"), val, digits);
+			fmt::format_to(std::back_inserter(str), FSTR("{:0>{}d}"), val, digits);
 			break;
 		case Base::Hex:
 			if (unlikely(flags & STRF_HEX_LOWER)) {
-				s = fmt::format(FSTR("0x{:0>{}x}"), val, digits);
+				fmt::format_to(std::back_inserter(str), FSTR("0x{:0>{}x}"), val, digits);
 			} else {
-				s = fmt::format(FSTR("0x{:0>{}X}"), val, digits);
+				fmt::format_to(std::back_inserter(str), FSTR("0x{:0>{}X}"), val, digits);
 			}
 			break;
 		case Base::Oct:
-			s = fmt::format(FSTR("0{:0>{}o}"), val, digits);
+			fmt::format_to(std::back_inserter(str), FSTR("0{:0>{}o}"), val, digits);
 			break;
 	}
 
-	return addField_string(name, s, flags);
+	return addField_string(name, str, flags);
 }
 
 /**
@@ -1060,20 +1060,20 @@ int RomFields::addField_string_address_range(const char *name,
 	}
 
 	// Address range
-	string s;
-	s.reserve(digits * 2 + (suffix ? 8+4 : 4));
+	string str;
+	str.reserve(digits * 2 + (suffix ? 8+4 : 4));
 	if (unlikely(flags & STRF_HEX_LOWER)) {
-		s = fmt::format(FSTR("0x{:0>{}x} - 0x{:0>{}x}"), start, digits, end, digits);
+		fmt::format_to(std::back_inserter(str), FSTR("0x{:0>{}x} - 0x{:0>{}x}"), start, digits, end, digits);
 	} else {
-		s = fmt::format(FSTR("0x{:0>{}X} - 0x{:0>{}X}"), start, digits, end, digits);
+		fmt::format_to(std::back_inserter(str), FSTR("0x{:0>{}X} - 0x{:0>{}X}"), start, digits, end, digits);
 	}
-	if (suffix && suffix[0] != 0 && !s.empty()) {
+	if (suffix && suffix[0] != 0 && !str.empty()) {
 		// Append a space and the specified suffix.
-		s += ' ';
-		s += suffix;
+		str += ' ';
+		str += suffix;
 	}
 
-	return addField_string(name, s, flags);
+	return addField_string(name, str, flags);
 }
 
 /**

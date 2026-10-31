@@ -747,13 +747,13 @@ string GameCubePrivate::getRegionCode(void) const
 
 		if (suffix) {
 			// tr: {0:s} == full region name, {1:s} == abbreviation
-			s_region = fmt::format(FRUN(C_("Wii", "{0:s} ({1:s})")), region, suffix);
+			fmt::format_to(std::back_inserter(s_region), FRUN(C_("Wii", "{0:s} ({1:s})")), region, suffix);
 		} else {
 			s_region = region;
 		}
 	} else {
 		// Invalid region code.
-		s_region = fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>8X})")), gcnRegion);
+		fmt::format_to(std::back_inserter(s_region), FRUN(C_("RomData", "Unknown (0x{:0>8X})")), gcnRegion);
 	}
 
 	return s_region;
@@ -1843,7 +1843,7 @@ int GameCube::loadFieldData(void)
 					s_ptype = latin1_to_utf8(part_type.chr, sizeof(part_type.chr));
 				} else {
 					// Non-ASCII data. Print the hex values instead.
-					s_ptype = fmt::format(FSTR("{:0>8X}"), entry.type);
+					fmt::format_to(std::back_inserter(s_ptype), FSTR("{:0>8X}"), entry.type);
 				}
 			}
 			data_row.push_back(std::move(s_ptype));

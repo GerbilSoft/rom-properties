@@ -401,9 +401,9 @@ int VirtualBoy::loadFieldData(void)
 				romFooter->publisher[1],
 				'\0'
 			}};
-			s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_company.data());
+			fmt::format_to(std::back_inserter(s_publisher), FRUN(C_("RomData", "Unknown ({:s})")), s_company.data());
 		} else {
-			s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
+			fmt::format_to(std::back_inserter(s_publisher), FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
 				static_cast<uint8_t>(romFooter->publisher[0]),
 				static_cast<uint8_t>(romFooter->publisher[1]));
 		}
@@ -480,9 +480,9 @@ int VirtualBoy::loadMetaData(void)
 				romFooter->publisher[1],
 				'\0'
 			}};
-			s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_company.data());
+			fmt::format_to(std::back_inserter(s_publisher), FRUN(C_("RomData", "Unknown ({:s})")), s_company.data());
 		} else {
-			s_publisher = fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
+			fmt::format_to(std::back_inserter(s_publisher), FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
 				static_cast<uint8_t>(romFooter->publisher[0]),
 				static_cast<uint8_t>(romFooter->publisher[1]));
 		}
