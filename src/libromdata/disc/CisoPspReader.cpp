@@ -572,7 +572,7 @@ int CisoPspReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 		// Must have at least one block and less than 4 GB of uncompressed data.
 		// NOTE: 4 GB is the implied maximum size due to use of uint32_t.
 		const uint32_t uncompressed_size = le32_to_cpu(jisoHeader->uncompressed_size);
-		if (uncompressed_size < DAX_BLOCK_SIZE) {
+		if (uncompressed_size < JISO_BLOCK_SIZE_MIN) {
 			// Less than one block...
 			return (int)CisoPspReaderPrivate::CisoType::Unknown;
 		}
