@@ -91,6 +91,23 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_GTK3MIN_H    "${rom-prop
 SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} "${CMAKE_CURRENT_BINARY_DIR}/../rp-gtk-enums.c")
 SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    "${CMAKE_CURRENT_BINARY_DIR}/../rp-gtk-enums.h")
 
+# NOTE: Prior to CMake policy CMP0118 (cmake-3.20),
+# ADD_CUSTOM_COMMAND() only set the GENERATED source file property
+# within the current directory. We need it set for subdirectories
+# as well, so explicitly set it here.
+# References:
+# - https://gitlab.kitware.com/cmake/cmake/-/work_items/18399
+# - https://cmake.org/cmake/help/latest/policy/CMP0118.html
+IF(NOT POLICY CMP0118)
+	SET(IS_CMP0118 "OLD")
+ELSE(NOT POLICY CMP0118)
+	CMAKE_POLICY(GET CMP0118 IS_CMP0118)
+ENDIF(NOT POLICY CMP0118)
+IF(IS_CMP0118 STREQUAL "OLD")
+	SET_PROPERTY(SOURCE "${out_c_file}" PROPERTY GENERATED 1)
+	SET_PROPERTY(SOURCE "${out_h_file}" PROPERTY GENERATED 1)
+ENDIF(IS_CMP0118 STREQUAL "OLD")
+
 # CairoImageConv (GTK+ 3.x)
 SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} CairoImageConv.cpp)
 SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    CairoImageConv.hpp)
