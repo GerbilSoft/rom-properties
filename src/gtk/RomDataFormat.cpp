@@ -86,10 +86,10 @@ rom_data_format_dimensions(const int dimensions[3])
 	// TODO: 'x' or '×'? Using 'x' for now.
 	if (dimensions[1] > 0) {
 		if (dimensions[2] > 0) {
-			str = fmt::format(FSTR("{:d}x{:d}x{:d}"),
+			fmt::format_to(std::back_inserter(str), FSTR("{:d}x{:d}x{:d}"),
 				dimensions[0], dimensions[1], dimensions[2]);
 		} else {
-			str = fmt::format(FSTR("{:d}x{:d}"),
+			fmt::format_to(std::back_inserter(str), FSTR("{:d}x{:d}"),
 				dimensions[0], dimensions[1]);
 		}
 	} else {
