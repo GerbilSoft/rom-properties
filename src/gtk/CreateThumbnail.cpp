@@ -385,6 +385,9 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 	CreateThumbnailPrivate::GetThumbnailOutParams_t outParams;
 	ret = d->getThumbnail(romData, maximum_size, &outParams);
 	if (ret != 0) {
+		// getThumbnail() failed.
+		return ret;
+	} else if (!outParams.retImg) {
 		// No image.
 		return RPCT_ERROR_SOURCE_FILE_NO_IMAGE;
 	}

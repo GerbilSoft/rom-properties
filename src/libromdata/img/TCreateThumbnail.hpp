@@ -28,18 +28,44 @@ extern "C" {
  * TCreateThumbnail::create() errors.
  */
 typedef enum {
-	RPCT_SUCCESS					= 0,
-	RPCT_ERROR_CANNOT_LOAD_DLL			= 1,	// Cannot load the shared library.
-	RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE		= 2,	// Cannot open the source file.
-	RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED		= 3,	// Source file isn't supported.
-	RPCT_ERROR_SOURCE_FILE_NO_IMAGE			= 4,	// Source file has no image.
-	RPCT_ERROR_OUTPUT_FILE_FAILED			= 5,	// Failed to save the output file.
-	RPCT_ERROR_SOURCE_FILE_CLASS_DISABLED		= 6,	// User configuration has disabled thumbnails for this class.
-	RPCT_ERROR_SOURCE_FILE_BAD_FS			= 7,	// Source file is located on a "bad" file system.
-	RPCT_ERROR_RUNNING_AS_ROOT			= 8,	// Running as root is not supported.
-	RPCT_ERROR_INVALID_IMAGE_SIZE			= 9,	// Invalid image size requested. (e.g. 0 or less)
-	RPCT_ERROR_INVALID_FLAGS			= 10,	// Invalid flag values. (v2)
-	RPCT_ERROR_DIRECTORY_THUMBNAILING_DISABLED	= 11,	// Directory thumbnailing is disabled. (v2+)
+	RPCT_SUCCESS						= 0,
+	RPCT_ERROR_CANNOT_LOAD_DLL				= 1,	// Cannot load the shared library.
+	RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE			= 2,	// Cannot open the source file.
+	RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED			= 3,	// Source file is not supported.
+	RPCT_ERROR_SOURCE_FILE_NO_IMAGE				= 4,	// Source file has no image.
+	RPCT_ERROR_OUTPUT_FILE_FAILED				= 5,	// Failed to save the output file.
+	RPCT_ERROR_SOURCE_FILE_CLASS_DISABLED			= 6,	// User configuration has disabled thumbnails for this class.
+	RPCT_ERROR_SOURCE_FILE_BAD_FS				= 7,	// Source file is located on a "bad" file system.
+	RPCT_ERROR_RUNNING_AS_ROOT				= 8,	// Running as root is not supported.
+	RPCT_ERROR_INVALID_IMAGE_SIZE				= 9,	// Invalid image size requested. (e.g. 0 or less)
+	RPCT_ERROR_INVALID_FLAGS				= 10,	// Invalid flag values. (v2)
+	RPCT_ERROR_DIRECTORY_THUMBNAILING_DISABLED		= 11,	// Directory thumbnailing is disabled. (v2+)
+
+	/// rom-properties 3.0: New error codes to improve rp-thumbnail debugging.
+
+	// External image caching
+	RPCT_ERROR_INVALID_EXT_IMAGE_TYPE			= 20,	// Invalid image type passed to getExternalImage().
+	RPCT_ERROR_SOURCE_FILE_HAS_NO_EXTURLS			= 21,	// Source file has no external image URLs.
+	RPCT_ERROR_CANNOT_GET_CACHE_FILENAME			= 22,	// LibCacheCommon::getCacheFilename() failed.
+	RPCT_ERROR_CACHE_NEGATIVE_CACHE_UNEXPIRED		= 23,	// File has a negative cache entry that has not expired yet.
+	RPCT_ERROR_CACHE_CANNOT_DELETE_NEGATIVE_CACHE_ENTRY	= 24,	// Could not delete an expired negative cache entry.
+	RPCT_ERROR_CACHE_CANNOT_READ_CACHED_FILE		= 25,	// Cannot read a file in the cache.
+	RPCT_ERROR_CACHE_UNKNOWN_CACHE_ENTRY_ERROR		= 26,	// Unknown cache entry error...
+
+	// `rp-download` for external image downloads
+	RPCT_ERROR_EXECRPDOWNLOAD_NOT_IMPLEMENTED		= 30,	// execRpDownload() is not implemented on this system.
+	RPCT_ERROR_RP_DOWNLOAD_MISSING				= 31,	// `rp-download` executable is missing.
+	RPCT_ERROR_RP_DOWNLOAD_FAILED				= 32,	// `rp-download` executable failed to start for some reason.
+	RPCT_ERROR_RP_DOWNLOAD_HUNG				= 33,	// `rp-download` never completed...
+	RPCT_ERROR_EXT_FILE_NOT_FOUND				= 34,	// External URL returned 404.
+	RPCT_ERROR_EXT_OTHER_ERROR				= 35,	// External URL returned a different error.
+	RPCT_ERROR_EXT_FILE_NOT_IN_CACHE			= 36,	// External URL is not in the local cache, and a cache-only search was requested.
+
+	// Internal images
+	RPCT_ERROR_INVALID_INT_IMAGE_TYPE			= 50,	// Invalid image type passed to getInternalImage().
+	RPCT_ERROR_INT_IMAGE_NOT_FOUND				= 51,	// The specified internal image was not found.
+
+	RPCT_ERROR_INTERNAL_ERROR				= 126,	// Internal error! (v2+)
 } RpCreateThumbnailError;
 
 /**
@@ -129,34 +155,19 @@ public:
 	struct ImgSize {
 		int width;
 		int height;
+
+		ImgSize()
+			: width(0)
+			, height(0)
+		{}
+
+		// NOTE: Don't mark as explicit; otherwise,
+		// ImgSize x = {1, 2} won't work.
+		ImgSize(int width, int height)
+			: width(width)
+			, height(height)
+		{}
 	};
-
-	/**
-	 * Get an internal image.
-	 * @param romData	[in] RomData object
-	 * @param imageType	[in] Image type
-	 * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size
-	 * @param sBIT		[out,opt] sBIT metadata
-	 * @return Internal image, or null ImgClass on error.
-	 */
-	ImgClass getInternalImage(const LibRpBase::RomDataPtr &romData,
-		LibRpBase::RomData::ImageType imageType,
-		ImgSize *pOutSize = nullptr,
-		LibRpTexture::rp_image::sBIT_t *sBIT = nullptr);
-
-	/**
-	 * Get an external image.
-	 * @param romData	[in] RomData object
-	 * @param imageType	[in] Image type
-	 * @param reqSize	[in] Requested image size. [0 for largest]
-	 * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size
-	 * @param sBIT		[out,opt] sBIT metadata
-	 * @return External image, or null ImgClass on error.
-	 */
-	ImgClass getExternalImage(const LibRpBase::RomDataPtr &romData,
-		LibRpBase::RomData::ImageType imageType,
-		int reqSize = 0, ImgSize *pOutSize = nullptr,
-		LibRpTexture::rp_image::sBIT_t *sBIT = nullptr);
 
 	/**
 	 * getThumbnail() output parameters
@@ -169,31 +180,58 @@ public:
 	};
 
 	/**
+	 * Get an internal image.
+	 * @param pOutParams	[out] Pointer to GetThumbnailOutParams_t (fullSize and retImg will be modified)
+	 * @param romData	[in] RomData object
+	 * @param imageType	[in] Image type
+	 * @return RPCT_SUCCESS on success; other value on error.
+	 */
+	RpCreateThumbnailError getInternalImage(
+		GetThumbnailOutParams_t *pOutParams,
+		const LibRpBase::RomDataPtr &romData,
+		LibRpBase::RomData::ImageType imageType);
+
+	/**
+	 * Get an external image.
+	 * @param pOutParams	[out] Pointer to GetThumbnailOutParams_t (fullSize and retImg will be modified)
+	 * @param romData	[in] RomData object
+	 * @param imageType	[in] Image type
+	 * @param reqSize	[in,opt] Requested image size. [0 for largest]
+	 * @param pErr		[out,opt] RpCreateThumbnailError
+	 * @return RPCT_SUCCESS on success; other value on error.
+	 */
+	RpCreateThumbnailError getExternalImage(
+		GetThumbnailOutParams_t *pOutParams,
+		const LibRpBase::RomDataPtr &romData,
+		LibRpBase::RomData::ImageType imageType,
+		int reqSize = 0);
+
+	/**
 	 * Create a thumbnail for the specified ROM file.
 	 * @param romData	[in] RomData object
 	 * @param reqSize	[in] Requested image size (single dimension; assuming square image) [0 for full size or largest]
 	 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
-	 * @return 0 on success; non-zero on error.
+	 * @return RPCT_SUCCESS on success; other value on error.
 	 */
-	int getThumbnail(const LibRpBase::RomDataPtr &romData, int reqSize, GetThumbnailOutParams_t *pOutParams);
+	RpCreateThumbnailError getThumbnail(const LibRpBase::RomDataPtr &romData, int reqSize, GetThumbnailOutParams_t *pOutParams);
 
 	/**
 	 * Create a thumbnail for the specified ROM file.
 	 * @param file		[in] Open IRpFile object
 	 * @param reqSize	[in] Requested image size (single dimension; assuming square image) [0 for full size or largest]
 	 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
-	 * @return 0 on success; non-zero on error.
+	 * @return RPCT_SUCCESS on success; other value on error.
 	 */
-	int getThumbnail(const LibRpFile::IRpFilePtr &file, int reqSize, GetThumbnailOutParams_t *pOutParams);
+	RpCreateThumbnailError getThumbnail(const LibRpFile::IRpFilePtr &file, int reqSize, GetThumbnailOutParams_t *pOutParams);
 
 	/**
 	 * Create a thumbnail for the specified ROM file.
 	 * @param filename	[in] ROM file
 	 * @param reqSize	[in] Requested image size (single dimension; assuming square image) [0 for full size or largest]
 	 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
-	 * @return 0 on success; non-zero on error.
+	 * @return RPCT_SUCCESS on success; other value on error.
 	 */
-	int getThumbnail(const char *filename, int reqSize, GetThumbnailOutParams_t *pOutParams);
+	RpCreateThumbnailError getThumbnail(const char *filename, int reqSize, GetThumbnailOutParams_t *pOutParams);
 
 protected:
 	/**

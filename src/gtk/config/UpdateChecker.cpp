@@ -154,9 +154,11 @@ rp_update_checker_thread_run(RpUpdateChecker *updChecker)
 	}
 
 	// Download the version file.
-	const string cache_filename = cache.download(updateVersionCacheKey);
-	if (cache_filename.empty()) {
+	string cache_filename;
+	CacheManager::DownloadError err = cache.download(cache_filename, updateVersionCacheKey);
+	if (err != CacheManager::DownloadError::Success) {
 		// Unable to download the version file.
+		// TODO: Convert the error to a string.
 		g_signal_emit(updChecker, signals[SIGNAL_ERROR], 0,
 			C_("UpdateChecker", "Failed to download version file."));
 		g_signal_emit(updChecker, signals[SIGNAL_FINISHED], 0);

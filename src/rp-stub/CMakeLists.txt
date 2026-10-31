@@ -2,7 +2,12 @@
 PROJECT(rp-stub LANGUAGES C)
 
 # rp-stub
-ADD_EXECUTABLE(${PROJECT_NAME} rp-stub.c rp-stub_secure.c rp-stub_secure.h)
+ADD_EXECUTABLE(${PROJECT_NAME}
+	rp-stub.c
+	rp-stub_secure.c
+	rp-stub_secure.h
+	RPCT_data.h
+	)
 DO_SPLIT_DEBUG(${PROJECT_NAME})
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# rp-stub

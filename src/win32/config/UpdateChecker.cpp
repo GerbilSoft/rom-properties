@@ -68,9 +68,11 @@ unsigned int WINAPI UpdateChecker::ThreadProc(LPVOID lpParameter)
 
 	// Download the version file.
 	CacheManager cache;
-	const string cache_filename = cache.download(updateVersionCacheKey);
-	if (cache_filename.empty()) {
+	string cache_filename;
+	CacheManager::DownloadError err = cache.download(cache_filename, updateVersionCacheKey);
+	if (err != CacheManager::DownloadError::Success) {
 		// Unable to download the version file.
+		// TODO: Convert the error to a string.
 		updChecker->m_errorMessage = C_("UpdateChecker", "Failed to download version file.");
 		SendMessage(updChecker->m_hWnd, WM_UPD_ERROR, 0, 0);
 		return 2;

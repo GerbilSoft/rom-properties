@@ -20,12 +20,13 @@ namespace LibRomData {
 /**
  * Execute rp-download. (Dummy version)
  * @param filteredCacheKey Filtered cache key.
- * @return 0 on success; negative POSIX error code on error.
+ * @return DownloadError::Success on success; other DownloadError on error.
  */
-int CacheManager::execRpDownload(const string &filteredCacheKey)
+CacheManager::DownloadError CacheManager::execRpDownload(const string &filteredCacheKey)
 {
 #pragma message("*** WARNING: CacheManager::execRpDownload() is not implemented!")
-	return -ENOSYS;
+	((void)filteredCacheKey);
+	return DownloadError::ExecRpDownload_Not_Implemented;
 }
 
 } // namespace LibRomData
