@@ -861,7 +861,7 @@ int NintendoBadge::loadMetaData(void)
 
 			// Badge ID (NOTE: Decimal...) (as Title ID)
 			d->metaData.addMetaData_string(Property::TitleID,
-				fmt::format(FSTR("{:d}"), le32_to_cpu(prbs->badge_id)));
+				fmt::format_int(le32_to_cpu(prbs->badge_id)).c_str());
 
 			break;
 		}
@@ -877,7 +877,7 @@ int NintendoBadge::loadMetaData(void)
 
 			// Set ID (NOTE: Decimal...) (as Title ID)
 			d->metaData.addMetaData_string(Property::TitleID,
-				fmt::format(FSTR("{:d}"), le32_to_cpu(cabs->set_id)));
+				fmt::format_int(le32_to_cpu(cabs->set_id)).c_str());
 
 			break;
 		}

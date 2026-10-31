@@ -655,7 +655,8 @@ int ELFPrivate::checkSectionHeaders(void)
 						const uint32_t ver_maj = desc / 100000000;
 						osVersion = fmt::format(FSTR("NetBSD {:d}.{:d}"), ver_maj, ver_min);
 						if (ver_rel == 0 && ver_patch != 0) {
-							osVersion += fmt::format(FSTR(".{:d}"), ver_patch);
+							osVersion += '.';
+							osVersion += fmt::format_int(ver_patch).str();
 						} else if (ver_rel != 0) {
 							while (ver_rel > 26) {
 								osVersion += 'Z';
@@ -683,7 +684,8 @@ int ELFPrivate::checkSectionHeaders(void)
 						osVersion = fmt::format(FSTR("FreeBSD {:d}.{:d}"),
 							desc / 100000, desc / 10000 % 10);
 						if (desc / 1000 % 10 > 0) {
-							osVersion += fmt::format(FSTR(".{:d}"), desc / 1000 % 10);
+							osVersion += '.';
+							osVersion += fmt::format_int(desc / 1000 % 10).str();
 						}
 						if ((desc % 1000 > 0) || (desc % 100000 == 0)) {
 							osVersion += fmt::format(FSTR(" ({:d})"), desc);
@@ -695,7 +697,8 @@ int ELFPrivate::checkSectionHeaders(void)
 						if (desc / 100 % 10 > 0) {
 							osVersion += fmt::format(FSTR(" ({:d})"), desc);
 						} else if (desc / 10 % 10 > 0) {
-							osVersion += fmt::format(FSTR(".{:d}"), desc / 10 % 10);
+							osVersion += '.';
+							osVersion += fmt::format_int(desc / 10 % 10).str();
 						}
 					} else {
 						osVersion = fmt::format(FSTR("FreeBSD {:d}.{:d}"),
@@ -703,7 +706,8 @@ int ELFPrivate::checkSectionHeaders(void)
 						if ((desc / 100 % 10 > 0) || (desc % 100000 / 100 == 0)) {
 							osVersion += fmt::format(FSTR(" ({:d})"), desc);
 						} else if (desc / 10 % 10 > 0) {
-							osVersion += fmt::format(FSTR(".{:d}"), desc / 10 % 10);
+							osVersion += '.';
+							osVersion += fmt::format_int(desc / 10 % 10).str();
 						}
 					}
 				} else if (nhdr->n_namesz == 8 && !strcmp(pName, "OpenBSD")) {

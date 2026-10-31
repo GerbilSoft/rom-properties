@@ -1234,7 +1234,8 @@ void AboutTabPrivate::initLibrariesTab(void)
 	string pugiXmlVersion = fmt::format(FSTR("PugiXML {:d}.{:d}"),
 		pugixml_major, pugixml_minor);
 	if (pugixml_patch > 0) {
-		pugiXmlVersion += fmt::format(FSTR(".{:d}"), pugixml_patch);
+		pugiXmlVersion += '.';
+		pugiXmlVersion += fmt::format_int(pugixml_patch).str();
 	}
 
 	// FIXME: Runtime version?

@@ -315,7 +315,7 @@ xml_document *AndroidManifestXMLPrivate::decompressAndroidBinaryXml(const uint8_
 						}
 
 						case Res_value::TYPE_INT_DEC:
-							xmlAttr.set_value(XMLSTR(fmt::format(FSTR("{:d}"), u32data)));
+							xmlAttr.set_value(XMLSTR(fmt::format_int(u32data).str()));
 							break;
 						case Res_value::TYPE_INT_HEX:
 							xmlAttr.set_value(XMLSTR(fmt::format(FSTR("0x{:x}"), u32data)));
