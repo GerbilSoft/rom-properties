@@ -110,7 +110,6 @@ static int mtar_zstd_read(mtar_t *tar, void *data, unsigned size)
 		size_t ret = ZSTD_decompressStream(ctx->dctx, &ctx->output, &ctx->input);
 		if (my_ZSTD_isError(ret)) {
 			// Decompression error!
-			printf("ERR\n");
 			ctx->output.size = 0;
 			ctx->output.pos = 0;
 			ctx->output_ptr = 0;
