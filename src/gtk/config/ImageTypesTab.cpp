@@ -19,6 +19,9 @@ using namespace LibRomData;
 #include "libi18n/i18n.hpp"
 using LibRpBase::RomData;
 
+// C++ STL classes
+using std::string;
+
 // libfmt
 #include "rp-libfmt.h"
 
@@ -177,6 +180,7 @@ void RpImageTypesTabPrivate::createGridLabels(void)
 	// Create the image type labels.
 	RP_Q(RpImageTypesTab);
 	const unsigned int imageTypeCount = ImageTypesConfig::imageTypeCount();
+	string widget_name = "lblImageType";
 	for (unsigned int i = 0; i < imageTypeCount; i++) {
 		// TODO: Decrement the column number for >IMG_INT_MEDIA?
 		if (i == RomData::IMG_INT_MEDIA) {
@@ -185,7 +189,9 @@ void RpImageTypesTabPrivate::createGridLabels(void)
 		}
 
 		GtkWidget *const lblImageType = gtk_label_new(imageTypeName(i));
-		gtk_widget_set_name(lblImageType, fmt::format(FSTR("lblImageType{:d}"), i).c_str());
+		widget_name.resize(sizeof("lblImageType")-1);
+		widget_name += fmt::format_int(i).c_str();
+		gtk_widget_set_name(lblImageType, widget_name.c_str());
 
 #if !GTK_CHECK_VERSION(4, 0, 0)
 		gtk_widget_show(lblImageType);
@@ -210,9 +216,12 @@ void RpImageTypesTabPrivate::createGridLabels(void)
 
 	// Create the system name labels.
 	const unsigned int sysCount = ImageTypesConfig::sysCount();
+	widget_name = "lblSysName";
 	for (unsigned int sys = 0; sys < sysCount; sys++) {
 		GtkWidget *const lblSysName = gtk_label_new(sysName(sys));
-		gtk_widget_set_name(lblSysName, fmt::format(FSTR("lblSysName{:d}"), sys).c_str());
+		widget_name.resize(sizeof("lblSysName")-1);
+		widget_name += fmt::format_int(sys).c_str();
+		gtk_widget_set_name(lblSysName, widget_name.c_str());
 
 #if !GTK_CHECK_VERSION(4, 0, 0)
 		gtk_widget_show(lblSysName);
