@@ -5,13 +5,15 @@
 * New parsers:
   * FlipnoteStudio: Flipnote Studio (DSi) .ppm and Flipnote Studio 3D (3DS) .kwz
     files. Only the thumbnail preview image is shown; not the animation.
+    * Implements #525: [FEATURE REQUEST] Flipnote Studio PPMs
+      * Requested by @korbosoft.
 
 * New parser features:
   * WiiUPackage: Support for Wii U Archive (.wua) format. This uses the ZArchive
     library, which requires a C++20 compiler in order to build. If an older
     compiler is used, .wua support will not be included.
     * Implements #378: [Feature Request] Add support for WUA Wii U games
-      * Reported by @dnmodder.
+      * Requested by @dnmodder.
   * Amiibo: Add full support for NT3H2111 and NT3H2211 tag formats.
     * NT3H2111 is used in Super Nintendo World bands.
     * NT3H2211 is used in amiibo v3, starting with Kirby Air Riders.
