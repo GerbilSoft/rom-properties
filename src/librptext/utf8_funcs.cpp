@@ -122,34 +122,34 @@ size_t utf8_disp_strlen(std::string_view sv)
  */
 string utf8_encode_code_point(char32_t chr)
 {
-	char buf[4];
-	size_t size;
+	string s_ret;
+	s_ret.reserve(4);
 
 	if (chr <= 0x7F) {
-		buf[0] = static_cast<char>(chr);
-		size = 1;
+		s_ret.resize(1);
+		s_ret[0] = static_cast<char>(chr);
 	} else if (chr <= 0x7FF) {
-		buf[0] = static_cast<char>(0xC0 |  (chr >>  6));
-		buf[1] = static_cast<char>(0x80 |  (chr & 0x3F));
-		size = 2;
+		s_ret.resize(2);
+		s_ret[0] = static_cast<char>(0xC0 |  (chr >>  6));
+		s_ret[1] = static_cast<char>(0x80 |  (chr & 0x3F));
 	} else if (chr <= 0xFFFF) {
-		buf[0] = static_cast<char>(0xE0 |  (chr >> 12));
-		buf[1] = static_cast<char>(0x80 | ((chr >>  6) & 0x3F));
-		buf[2] = static_cast<char>(0x80 |  (chr & 0x3F));
-		size = 3;
+		s_ret.resize(3);
+		s_ret[0] = static_cast<char>(0xE0 |  (chr >> 12));
+		s_ret[1] = static_cast<char>(0x80 | ((chr >>  6) & 0x3F));
+		s_ret[2] = static_cast<char>(0x80 |  (chr & 0x3F));
 	} else if (chr <= 0x10FFFF) {
-		buf[0] = static_cast<char>(0xF0 |  (chr >> 18));
-		buf[1] = static_cast<char>(0x80 | ((chr >> 12) & 0x3F));
-		buf[2] = static_cast<char>(0x80 | ((chr >>  6) & 0x3F));
-		buf[3] = static_cast<char>(0x80 |  (chr & 0x3F));
-		size = 4;
+		s_ret.resize(4);
+		s_ret[0] = static_cast<char>(0xF0 |  (chr >> 18));
+		s_ret[1] = static_cast<char>(0x80 | ((chr >> 12) & 0x3F));
+		s_ret[2] = static_cast<char>(0x80 | ((chr >>  6) & 0x3F));
+		s_ret[3] = static_cast<char>(0x80 |  (chr & 0x3F));
 	} else {
 		// Invalid UTF-8 character...
 		// Use the Unicode replacment character. (U+FFFD)
-		return "\xEF\xBF\xBD";
+		s_ret = "\xEF\xBF\xBD";
 	}
 
-	return string(buf, size);
+	return s_ret;
 }
 
 } // namespace LibRpText

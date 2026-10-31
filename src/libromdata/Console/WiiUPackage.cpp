@@ -608,7 +608,8 @@ void WiiUPackage::init(void)
 			// Check if it's a game entry.
 			if (strncmp(dirEntry.name.data(), "00050000", 8) == 0) {
 				// It's a game entry. We'll use it.
-				wua.package_name = "/" + string(dirEntry.name);
+				wua.package_name = "/";
+				wua.package_name += dirEntry.name;
 				break;
 			}
 		}
