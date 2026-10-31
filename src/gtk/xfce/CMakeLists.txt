@@ -53,6 +53,12 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_H    "${rom-properties-g
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_GTK3MAX_SRCS "${rom-properties-gtk_GTK3MAX_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_GTK3MAX_H    "${rom-properties-gtk_GTK3MAX_H}")
 
+# rp-gtk-enums (generated as part of rom-properties-glib)
+# NOTE: Adding these files to ${rom-properties-gtk_SRCS} and ${rom-properties-gtk_H}
+# breaks due to the above regular expressions, so just add them here.
+SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} "${CMAKE_CURRENT_BINARY_DIR}/../rp-gtk-enums.c")
+SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    "${CMAKE_CURRENT_BINARY_DIR}/../rp-gtk-enums.h")
+
 # GdkImageConv (GTK+ 2.x)
 SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} GdkImageConv.cpp)
 SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    GdkImageConv.hpp)

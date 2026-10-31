@@ -85,6 +85,12 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_GTK3MAX_H    "${rom-prop
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_GTK3MIN_SRCS "${rom-properties-gtk_GTK3MIN_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_GTK3MIN_H    "${rom-properties-gtk_GTK3MIN_H}")
 
+# rp-gtk-enums (generated as part of rom-properties-glib)
+# NOTE: Adding these files to ${rom-properties-gtk_SRCS} and ${rom-properties-gtk_H}
+# breaks due to the above regular expressions, so just add them here.
+SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} "${CMAKE_CURRENT_BINARY_DIR}/../rp-gtk-enums.c")
+SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    "${CMAKE_CURRENT_BINARY_DIR}/../rp-gtk-enums.h")
+
 # CairoImageConv (GTK+ 3.x)
 SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} CairoImageConv.cpp)
 SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    CairoImageConv.hpp)

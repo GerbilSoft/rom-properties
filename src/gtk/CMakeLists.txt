@@ -88,7 +88,6 @@ SET(${PROJECT_NAME}_SRCS
 	DragImage.cpp
 	CreateThumbnail.cpp
 	PIMGTYPE.cpp
-	rp-gtk-enums.c
 	MessageWidget.c
 	RpGtk.c
 	gtk-compat.c
@@ -119,7 +118,6 @@ SET(${PROJECT_NAME}_H
 	DragImage.hpp
 	CreateThumbnail.hpp
 	PIMGTYPE.hpp
-	rp-gtk-enums.h
 	MessageWidget.h
 	RpGtk.h
 	gtk-compat.h
@@ -302,6 +300,21 @@ IF(BUILD_XFCE OR BUILD_GTK3 OR BUILD_GTK4)
 	IF(Fmt_FOUND)
 		TARGET_LINK_LIBRARIES(rom-properties-glib PRIVATE ${Fmt_LIBRARY})
 	ENDIF(Fmt_FOUND)
+
+	# glib-mkenums
+	# NOTE: Not directly used by rom-properties-glib.
+	# Used by the xfce, gtk3, and gtk4 UI frontends.
+	INCLUDE(GLibMKEnums)
+	DO_GLIB_MKENUMS(
+		rom-properties-glib
+		"rp-gtk-enums.template.h"
+		"rp-gtk-enums.template.c"
+		"${CMAKE_CURRENT_BINARY_DIR}/rp-gtk-enums.h"
+		"${CMAKE_CURRENT_BINARY_DIR}/rp-gtk-enums.c"
+		RomDataView.hpp
+		config/CacheCleaner.hpp
+		ListDataItem.h
+		)
 ENDIF(BUILD_XFCE OR BUILD_GTK3 OR BUILD_GTK4)
 
 # Build GTK+ 2.x frontends.
