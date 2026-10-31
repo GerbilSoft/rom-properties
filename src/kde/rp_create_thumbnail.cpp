@@ -144,7 +144,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	}
 
 	const bool doXDG = !(flags & RPCT_FLAG_NO_XDG_THUMBNAIL_METADATA);
-	kv.reserve(doXDG ? 5 : 1);
+	kv.reserve(doXDG ? 7 : 1);
 
 	// Software
 	kv.emplace_back("Software", "ROM Properties Page shell extension (" RP_KDE_UPPER ")");
@@ -160,7 +160,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 
 		// Modification time and file size
 		// FIXME: Local files only. Figure out how to handle this for remote.
-		int64_t mtime = 0;
+		rp_time_t mtime = 0;
 		off64_t szFile = -1;
 		if (!qs_source_filename.isEmpty()) {
 			const QFileInfo fi_src(qs_source_filename);

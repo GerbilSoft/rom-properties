@@ -425,7 +425,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 
 	// Get values for the XDG thumbnail cache text chunks.
 	// KDE uses this order: Software, MTime, Mimetype, Size, URI
-	kv.reserve(doXDG ? 5 : 1);
+	kv.reserve(doXDG ? 7 : 1);
 
 	// Software
 	kv.emplace_back("Software", "ROM Properties Page shell extension (GTK" GTK_MAJOR_STR ")");
@@ -457,7 +457,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 
 		// Modification time
 		if (mtime > 0) {
-			kv.emplace_back("Thumb::MTime", fmt::format_int(static_cast<int64_t>(mtime)).str());
+			kv.emplace_back("Thumb::MTime", fmt::format_int(static_cast<rp_time_t>(mtime)).str());
 		}
 
 		// MIME type
