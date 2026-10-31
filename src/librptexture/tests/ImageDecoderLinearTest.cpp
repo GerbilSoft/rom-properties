@@ -285,12 +285,12 @@ void ImageDecoderLinearTest::SetUp(void)
 
 			uint8_t bytes[3];
 			if (!(mode.src_pixel & 0xFF)) {
-				// MSB aligned.
-				bytes[0] = (mode.src_pixel >>  8) & 0xFF;
+				// MSB aligned (requires byteswapping)
+				bytes[0] = (mode.src_pixel >> 24) & 0xFF;
 				bytes[1] = (mode.src_pixel >> 16) & 0xFF;
-				bytes[2] = (mode.src_pixel >> 24) & 0xFF;
+				bytes[2] = (mode.src_pixel >>  8) & 0xFF;
 			} else {
-				// LSB aligned.
+				// LSB aligned
 				bytes[0] = (mode.src_pixel      ) & 0xFF;
 				bytes[1] = (mode.src_pixel >>  8) & 0xFF;
 				bytes[2] = (mode.src_pixel >> 16) & 0xFF;
