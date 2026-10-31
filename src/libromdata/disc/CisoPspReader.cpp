@@ -562,7 +562,7 @@ int CisoPspReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 		// Check if the block size is a supported power of two.
 		// - Minimum: JISO_BLOCK_SIZE_MIN ( 2 KB, 1 << 11)
 		// - Maximum: JISO_BLOCK_SIZE_MAX (64 KB, 1 << 16)
-		const unsigned int block_size = le16_to_cpu(jisoHeader->block_size);
+		const uint32_t block_size = le16_to_cpu(jisoHeader->block_size);
 		if (!isPow2(block_size) ||
 		    block_size < JISO_BLOCK_SIZE_MIN || block_size > JISO_BLOCK_SIZE_MAX)
 		{
