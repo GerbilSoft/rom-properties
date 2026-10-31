@@ -349,7 +349,6 @@ int WiiUAncast::isRomSupported_static(const DetectInfo *info)
 		sigCommon = reinterpret_cast<const WiiU_Ancast_Header_SigCommon_t*>(&info->header.pData[start_addr]);
 		if (sigCommon->magic != cpu_to_be32(WIIU_ANCAST_HEADER_MAGIC)) {
 			// Still no magic.
-			printf("toucan NOPE\n");
 			return static_cast<int>(WiiUAncastPrivate::AncastType::Unknown);
 		}
 	} else if (sigCommon->magic != cpu_to_be32(WIIU_ANCAST_HEADER_MAGIC)) {
