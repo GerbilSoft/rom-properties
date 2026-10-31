@@ -41,6 +41,9 @@ using std::array;
 using std::string;
 using std::u16string;
 
+// libfmt
+#include "rp-libfmt.h"
+
 #define C8(x) reinterpret_cast<const char*>((x).data())
 #define C16(x) reinterpret_cast<const char16_t*>((x).data())
 
@@ -1339,11 +1342,12 @@ static const array<fourCC_test_data_t, 7> fourCC_test_data = {{
  */
 TEST_F(TextFuncsTest, fourCCtoString_char)
 {
-	char fourCC_hex[16];
+	string fourCC_hex;
 	char buf[5];
 
 	for (const fourCC_test_data_t &p : fourCC_test_data) {
-		snprintf(fourCC_hex, sizeof(fourCC_hex), "0x%08X", p.u32);
+		fourCC_hex.clear();
+		fmt::format_to(std::back_inserter(fourCC_hex), FSTR("0x{:0>8X}"), p.u32);
 		int ret = fourCCtoString(buf, sizeof(buf), p.u32);
 		EXPECT_EQ(0, ret) << "Failed to convert FourCC: " << fourCC_hex;
 		if (ret == 0) {
@@ -1358,10 +1362,11 @@ TEST_F(TextFuncsTest, fourCCtoString_char)
  */
 TEST_F(TextFuncsTest, fourCCtoString_string)
 {
-	char fourCC_hex[16];
+	string fourCC_hex;
 
 	for (const fourCC_test_data_t &p : fourCC_test_data) {
-		snprintf(fourCC_hex, sizeof(fourCC_hex), "0x%08X", p.u32);
+		fourCC_hex.clear();
+		fmt::format_to(std::back_inserter(fourCC_hex), FSTR("0x{:0>8X}"), p.u32);
 		string str = fourCCtoString(p.u32);
 		EXPECT_EQ(4U, str.size()) << "Failed to convert FourCC: " << fourCC_hex;
 		if (str.size() == 4) {
