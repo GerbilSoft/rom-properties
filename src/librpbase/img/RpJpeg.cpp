@@ -96,7 +96,8 @@ static void JPEGCALL my_output_message(j_common_ptr cinfo)
 	// The default libjpeg error handler uses MessageBox() on Windows.
 	// This is bad design, so we'll use OutputDebugStringA() instead.
 	char txtbuf[JMSG_LENGTH_MAX+64];
-	snprintf(txtbuf, sizeof(txtbuf), "libjpeg error: %s\n", buffer);
+	auto result = fmt::format_to_n(txtbuf, sizeof(txtbuf)-1, "libjpeg error: {:s}\n", buffer);
+	*(result.out) = '\0';
 	OutputDebugStringA(txtbuf);
 #else /* !_WIN32 */
 	// Print to stderr.

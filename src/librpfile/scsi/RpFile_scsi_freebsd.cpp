@@ -118,7 +118,10 @@ int RpFilePrivate::scsi_send_cdb(const void *cdb, size_t cdb_len,
 			return -errno;
 		}
 		char pass[40];
-		snprintf(pass, sizeof(pass), "/dev/%.15s%u", ccb.cgdl.periph_name, ccb.cgdl.unit_number);
+		auto result = fmt::format_to_n(pass, sizeof(pass)-1,
+			FSTR("/dev/{:.15s}{:d}"),
+				ccb.cgdl.periph_name, ccb.cgdl.unit_number);
+		*(result.out) = '\0';
 
 		struct cam_device *cam = cam_open_pass(pass, O_RDWR, nullptr);
 		if (!cam) {

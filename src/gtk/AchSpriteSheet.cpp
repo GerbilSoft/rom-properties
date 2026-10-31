@@ -11,6 +11,9 @@
 // librpbase
 using LibRpBase::Achievements;
 
+// libfmt
+#include "rp-libfmt.h"
+
 /**
  * Achievements sprite sheet
  * @param iconSize Icon size
@@ -32,9 +35,16 @@ AchSpriteSheet::AchSpriteSheet(int iconSize)
  */
 int AchSpriteSheet::getFilename(char *buf, size_t size, int width, int height, bool gray) const
 {
-	snprintf(buf, size,
-		"/com/gerbilsoft/rom-properties/ach/ach%s-%dx%d.png",
-		(gray ? "-gray" : ""), width, height);
+	assert(buf != nullptr);
+	assert(size > 0);
+	if (!buf || size == 0) {
+		return -EINVAL;
+	}
+
+	auto result = fmt::format_to_n(buf, size-1,
+		FSTR("/com/gerbilsoft/rom-properties/ach/ach{:s}-{:d}x{:d}.png"),
+			(gray ? "-gray" : ""), width, height);
+	*(result.out) = '\0';
 	return 0;
 }
 

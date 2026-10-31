@@ -12,6 +12,9 @@
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
 
+// libfmt
+#include "rp-libfmt.h"
+
 /**
  * Flags sprite sheet
  * @param iconSize Icon size
@@ -35,9 +38,17 @@ int FlagSpriteSheet::getFilename(char *buf, size_t size, int width, int height, 
 {
 	// NOTE: Gray is not used for flags.
 	RP_UNUSED(gray);
-	snprintf(buf, size,
-		"/com/gerbilsoft/rom-properties/flags/flags-%dx%d.png",
-		width, height);
+
+	assert(buf != nullptr);
+	assert(size > 0);
+	if (!buf || size == 0) {
+		return -EINVAL;
+	}
+
+	auto result = fmt::format_to_n(buf, size-1,
+		FSTR("/com/gerbilsoft/rom-properties/flags/flags-{:d}x{:d}.png"),
+			width, height);
+	*(result.out) = '\0';
 	return 0;
 }
 

@@ -532,7 +532,8 @@ const XEX2_Resource_Info *Xbox360_XEX_Private::getXdbfResInfo(const char *resour
 	char title_id[9];
 	if (!resource_id) {
 		// No resource ID specified. Use the title ID.
-		snprintf(title_id, sizeof(title_id), "%08X", be32_to_cpu(executionID.title_id.u32));
+		auto result = fmt::format_to_n(title_id, sizeof(title_id)-1, FSTR("{:0>8X}"), be32_to_cpu(executionID.title_id.u32));
+		*(result.out) = '\0';
 		resource_id = title_id;
 	}
 
