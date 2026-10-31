@@ -96,9 +96,8 @@ static char *rp_iconv(const char *src, int len,
 	// if ignoreErr == true.
 	// TODO: Destination, not source?
 	if (ignoreErr) {
-		char tmpsrc[32];
-		snprintf(tmpsrc, sizeof(tmpsrc), "%s//IGNORE", src_charset);
-		cd = iconv_open(dest_charset, tmpsrc);
+		const string tmpsrc = fmt::format(FSTR("{:s}//IGNORE"), src_charset);
+		cd = iconv_open(dest_charset, tmpsrc.c_str());
 	} else {
 		// Not ignoring errors.
 		cd = iconv_open(dest_charset, src_charset);
