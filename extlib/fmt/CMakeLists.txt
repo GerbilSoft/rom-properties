@@ -299,7 +299,9 @@ endforeach ()
 # Add the main fmt library.
 add_library(fmt src/format.cc ${FMT_HEADERS} README.md ChangeLog.md)
 setup_target(fmt PUBLIC)
+IF(0) # rom-properties: Disable public headers.
 set_target_properties(fmt PROPERTIES PUBLIC_HEADER "${FMT_HEADERS}")
+ENDIF(0) # rom-properties
 
 if (FMT_OS)
   target_sources(fmt PRIVATE src/os.cc)
