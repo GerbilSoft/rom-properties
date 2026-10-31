@@ -2,6 +2,10 @@
 
 ## v3.0 (released 2026/??/??)
 
+* New parsers:
+  * FlipnoteStudio: Flipnote Studio (DSi) .ppm and Flipnote Studio 3D (3DS) .kwz
+    files. Only the thumbnail preview image is shown; not the animation.
+
 * New parser features:
   * WiiUPackage: Support for Wii U Archive (.wua) format. This uses the ZArchive
     library, which requires a C++20 compiler in order to build. If an older
