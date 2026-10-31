@@ -692,9 +692,6 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 			SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 	}
 
-	// Set the font.
-	SetWindowFont(hDlgItem, hFont, false);
-
 	// Save the control in the appropriate container, if necessary.
 	if (isWarning) {
 		SetWindowLongPtr(hDlgItem, GWLP_USERDATA, static_cast<LONG_PTR>(RGB(255, 0, 0)));
@@ -703,6 +700,9 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 		fontHandler.addMonoControl(hDlgItem);
 	} else if (isNTLGFont) {
 		fontHandler.addNTLGControl(hDlgItem);
+	} else {
+		// Using the default font.
+		SetWindowFont(hDlgItem, hFont, false);
 	}
 
 	// Return the HWND if requested.
@@ -2126,6 +2126,11 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 			case RomFields::RomFieldType::RFT_STRING:
 				// String data.
 				field_cy = initString(tab.hDlg, pt_start, size, field, fieldIdx, nullptr);
+				if (field.flags & RomFields::STRF_WARNING) {
+					// Use the Warning font on hStatic, too.
+					SetWindowLongPtr(hStatic, GWLP_USERDATA, static_cast<LONG_PTR>(RGB(255, 0, 0)));
+					fontHandler.addBoldControl(hStatic);
+				}
 				break;
 			case RomFields::RomFieldType::RFT_BITFIELD:
 				// Create checkboxes starting at the current point.
