@@ -484,7 +484,13 @@ template <typename OutputIt>
 inline FMT_CONSTEXPR auto get_container(OutputIt it) ->
     typename OutputIt::container_type& {
   struct accessor : OutputIt {
+#if defined(_MSC_VER) && _MSC_VER < 1920
+    // rom-properties: MSVC 2017 doesn't like constexpr here.
+    // (It breaks std::format_to(std::back_inserter()).)
+    /*constexpr*/ accessor(OutputIt base) : OutputIt(base) {}
+#else
     constexpr accessor(OutputIt base) : OutputIt(base) {}
+#endif
     using OutputIt::container;
   };
   return *accessor(it).container;
