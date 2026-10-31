@@ -1415,12 +1415,12 @@ string Xbox360_XEX_Private::getTitleID(void) const
 	if (isupper_ascii(executionID.title_id.a)) {
 		tid_str += (char)executionID.title_id.a;
 	} else {
-		tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)executionID.title_id.a);
+		fmt::format_to(std::back_inserter(tid_str), FSTR("\\x{:0>2X}"), (uint8_t)executionID.title_id.a);
 	}
 	if (isupper_ascii(executionID.title_id.b)) {
 		tid_str += (char)executionID.title_id.b;
 	} else {
-		tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)executionID.title_id.b);
+		fmt::format_to(std::back_inserter(tid_str), FSTR("\\x{:0>2X}"), (uint8_t)executionID.title_id.b);
 	}
 
 	// tr: Xbox 360 title ID (32-bit hex, then two letters followed by a 4-digit decimal number)

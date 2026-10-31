@@ -981,12 +981,12 @@ int Xbox360_XDBF_Private::addFields_strings_SPA(RomFields *fields) const
 			if (isupper_ascii(xthd.title_id.a)) {
 				tid_str += (char)xthd.title_id.a;
 			} else {
-				tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)xthd.title_id.a);
+				fmt::format_to(std::back_inserter(tid_str), FSTR("\\x{:0>2X}"), (uint8_t)xthd.title_id.a);
 			}
 			if (isupper_ascii(xthd.title_id.b)) {
 				tid_str += (char)xthd.title_id.b;
 			} else {
-				tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)xthd.title_id.b);
+				fmt::format_to(std::back_inserter(tid_str), FSTR("\\x{:0>2X}"), (uint8_t)xthd.title_id.b);
 			}
 
 			fields->addField_string(C_("Xbox360_XEX", "Title ID"),
@@ -1959,12 +1959,12 @@ int Xbox360_XDBF::loadMetaData(void)
 			if (isupper_ascii(xthd.title_id.a)) {
 				tid_str += (char)xthd.title_id.a;
 			} else {
-				tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)xthd.title_id.a);
+				fmt::format_to(std::back_inserter(tid_str), FSTR("\\x{:0>2X}"), (uint8_t)xthd.title_id.a);
 			}
 			if (isupper_ascii(xthd.title_id.b)) {
 				tid_str += (char)xthd.title_id.b;
 			} else {
-				tid_str += fmt::format(FSTR("\\x{:0>2X}"), (uint8_t)xthd.title_id.b);
+				fmt::format_to(std::back_inserter(tid_str), FSTR("\\x{:0>2X}"), (uint8_t)xthd.title_id.b);
 			}
 
 			d->metaData.addMetaData_string(Property::TitleID,

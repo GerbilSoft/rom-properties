@@ -1239,13 +1239,14 @@ int ISO::loadFieldData(void)
 	string sector_format;
 	if (unlikely(d->discType == ISOPrivate::DiscType::CDi)) {
 		// CD-i uses its own sector format.
-		sector_format = fmt::format(FSTR("CDI/{:d}"), cdsi->sector_size);
+		fmt::format_to(std::back_inserter(sector_format), FSTR("CDI/{:d}"), cdsi->sector_size);
 	} else {
 		// Regular sector format
-		sector_format = fmt::format(FSTR("MODE{:d}/{:d}"), cdsi->mode, cdsi->sector_size);
+		fmt::format_to(std::back_inserter(sector_format), FSTR("MODE{:d}/{:d}"), cdsi->mode, cdsi->sector_size);
 	}
 	if (cdsi->subchannel_size > 0) {
-		sector_format += fmt::format(FSTR("+{:d}"), cdsi->subchannel_size);
+		sector_format += '+';
+		sector_format += fmt::format_int(cdsi->subchannel_size).str();
 	}
 	d->fields.addField_string(C_("ISO", "Sector Format"), sector_format);
 

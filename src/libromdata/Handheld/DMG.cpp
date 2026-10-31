@@ -1587,7 +1587,7 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 		// Append the ROM checksum.
 		// NOTE: pandocs says "high byte first", but the actual ROMs
 		// seem to use little-endian.
-		img_filename += fmt::format(FSTR("-{:0>4X}"), le16_to_cpu(romHeader->rom_checksum));
+		fmt::format_to(std::back_inserter(img_filename), FSTR("-{:0>4X}"), le16_to_cpu(romHeader->rom_checksum));
 	}
 
 	// Check for invalid characters and replace them with '_'.

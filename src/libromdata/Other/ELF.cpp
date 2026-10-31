@@ -610,7 +610,7 @@ int ELFPrivate::checkSectionHeaders(void)
 						// Header is too small...
 						break;
 					}
-					osVersion = fmt::format(FSTR("SuSE Linux {:d}.{:d}"), pData[0], pData[1]);
+					fmt::format_to(std::back_inserter(osVersion), FSTR("SuSE Linux {:d}.{:d}"), pData[0], pData[1]);
 				} else if (nhdr->n_namesz == 4 && !strcmp(pName, ELF_NOTE_GNU)) {
 					// GNU system
 					if (nhdr->n_descsz < sizeof(uint32_t)*4) {
@@ -632,7 +632,7 @@ int ELFPrivate::checkSectionHeaders(void)
 						s_os = "<unknown>";
 					}
 
-					osVersion = fmt::format(FSTR("GNU/{:s} {:d}.{:d}.{:d}"),
+					fmt::format_to(std::back_inserter(osVersion), FSTR("GNU/{:s} {:d}.{:d}.{:d}"),
 						s_os, elf32_to_cpu(desc[1]),
 						elf32_to_cpu(desc[2]), elf32_to_cpu(desc[3]));
 				} else if (nhdr->n_namesz == 7 && !strcmp(pName, "NetBSD")) {
@@ -653,7 +653,7 @@ int ELFPrivate::checkSectionHeaders(void)
 						uint32_t ver_rel = (desc / 10000) % 100;
 						const uint32_t ver_min = (desc / 1000000) % 100;
 						const uint32_t ver_maj = desc / 100000000;
-						osVersion = fmt::format(FSTR("NetBSD {:d}.{:d}"), ver_maj, ver_min);
+						fmt::format_to(std::back_inserter(osVersion), FSTR("NetBSD {:d}.{:d}"), ver_maj, ver_min);
 						if (ver_rel == 0 && ver_patch != 0) {
 							osVersion += '.';
 							osVersion += fmt::format_int(ver_patch).str();
@@ -681,30 +681,30 @@ int ELFPrivate::checkSectionHeaders(void)
 					if (desc == 460002) {
 						osVersion = "FreeBSD 4.6.2";
 					} else if (desc < 460100) {
-						osVersion = fmt::format(FSTR("FreeBSD {:d}.{:d}"),
+						fmt::format_to(std::back_inserter(osVersion), FSTR("FreeBSD {:d}.{:d}"),
 							desc / 100000, desc / 10000 % 10);
 						if (desc / 1000 % 10 > 0) {
 							osVersion += '.';
 							osVersion += fmt::format_int(desc / 1000 % 10).str();
 						}
 						if ((desc % 1000 > 0) || (desc % 100000 == 0)) {
-							osVersion += fmt::format(FSTR(" ({:d})"), desc);
+							fmt::format_to(std::back_inserter(osVersion), FSTR(" ({:d})"), desc);
 						}
 					} else if (desc < 500000) {
 						// FIXME: This doesn't look quite right...
-						osVersion = fmt::format(FSTR("FreeBSD {:d}.{:d}"),
+						fmt::format_to(std::back_inserter(osVersion), FSTR("FreeBSD {:d}.{:d}"),
 							desc / 100000, desc / 10000 % 10 + desc / 1000 % 10);
 						if (desc / 100 % 10 > 0) {
-							osVersion += fmt::format(FSTR(" ({:d})"), desc);
+							fmt::format_to(std::back_inserter(osVersion), FSTR(" ({:d})"), desc);
 						} else if (desc / 10 % 10 > 0) {
 							osVersion += '.';
 							osVersion += fmt::format_int(desc / 10 % 10).str();
 						}
 					} else {
-						osVersion = fmt::format(FSTR("FreeBSD {:d}.{:d}"),
+						fmt::format_to(std::back_inserter(osVersion), FSTR("FreeBSD {:d}.{:d}"),
 							desc / 100000, desc / 1000 % 100);
 						if ((desc / 100 % 10 > 0) || (desc % 100000 / 100 == 0)) {
-							osVersion += fmt::format(FSTR(" ({:d})"), desc);
+							fmt::format_to(std::back_inserter(osVersion), FSTR(" ({:d})"), desc);
 						} else if (desc / 10 % 10 > 0) {
 							osVersion += '.';
 							osVersion += fmt::format_int(desc / 10 % 10).str();
@@ -722,7 +722,7 @@ int ELFPrivate::checkSectionHeaders(void)
 					memcpy(&desc, pData, sizeof(desc));
 					desc = elf32_to_cpu(desc);
 
-					osVersion = fmt::format(FSTR("DragonFlyBSD {:d}.{:d}.{:d}"),
+					fmt::format_to(std::back_inserter(osVersion), FSTR("DragonFlyBSD {:d}.{:d}.{:d}"),
 						desc / 100000, desc / 10000 % 10, desc % 10000);
 				}
 				break;
@@ -1981,14 +1981,14 @@ int ELF::loadFieldData(void)
 			string s_avr_subtype;
 			const uint8_t avr_subtype = (e_flags & 0xFF);
 			if (avr_subtype < 10) {
-				s_avr_subtype = fmt::format(FSTR("AVR{:d}"), avr_subtype);
+				fmt::format_to(std::back_inserter(s_avr_subtype), FSTR("AVR{:d}"), avr_subtype);
 			} else if (avr_subtype < 100) {
-				s_avr_subtype = fmt::format(FSTR("AVR{:d}.{:d}"),
+				fmt::format_to(std::back_inserter(s_avr_subtype), FSTR("AVR{:d}.{:d}"),
 					avr_subtype / 10, avr_subtype % 10);
 			} else if (avr_subtype == 100) {
 				s_avr_subtype = "AVR Tiny";
 			} else if (avr_subtype < 110) {
-				s_avr_subtype = fmt::format(FSTR("XMEGA{:d}"), (avr_subtype % 100));
+				fmt::format_to(std::back_inserter(s_avr_subtype), FSTR("XMEGA{:d}"), (avr_subtype % 100));
 			}
 
 			if (!s_avr_subtype.empty()) {
@@ -2032,7 +2032,7 @@ int ELF::loadFieldData(void)
 			} else if (msp430_subtype == 110) {
 				s_msp430_subtype = "MSP430x11x1";
 			} else if (msp430_subtype <= 54) {
-				s_msp430_subtype = fmt::format(FSTR("MSP430x{:d}"), msp430_subtype);
+				fmt::format_to(std::back_inserter(s_msp430_subtype), FSTR("MSP430x{:d}"), msp430_subtype);
 			}
 
 			if (!s_msp430_subtype.empty()) {
@@ -2171,9 +2171,9 @@ int ELF::loadFieldData(void)
 	if (d->fileType == FileType::Executable) {
 		string entry_point;
 		if (primary->e_class == ELFCLASS64) {
-			entry_point = fmt::format(FSTR("0x{:0>8X}"), d->Elf_Header.elf64.e_entry);
+			fmt::format_to(std::back_inserter(entry_point), FSTR("0x{:0>8X}"), d->Elf_Header.elf64.e_entry);
 		} else {
-			entry_point = fmt::format(FSTR("0x{:0>8X}"), d->Elf_Header.elf32.e_entry);
+			fmt::format_to(std::back_inserter(entry_point), FSTR("0x{:0>8X}"), d->Elf_Header.elf32.e_entry);
 		}
 		if (d->isPie) {
 			// tr: Entry point, then "Position-Independent".

@@ -790,7 +790,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 		/* Parameter count. I haven't found any module where this is
 		 * actually used. */
 		if (ent.flags & 0xF8) {
-			flags += fmt::format(FSTR("PARAMS={:d} "), ent.flags>>3);
+			fmt::format_to(std::back_inserter(flags), FSTR("PARAMS={:d} "), ent.flags>>3);
 		}
 		if (ent.has_name && ent.is_resident) {
 			flags += "RESIDENTNAME ";

@@ -394,13 +394,13 @@ string Xbox_XBE_Private::getTitleID(void) const
 	if (isupper_ascii(xbeCertificate.title_id.a)) {
 		tid_str += xbeCertificate.title_id.a;
 	} else {
-		tid_str += fmt::format(FSTR("\\x{:0>2X}"),
+		fmt::format_to(std::back_inserter(tid_str), FSTR("\\x{:0>2X}"),
 			static_cast<uint8_t>(xbeCertificate.title_id.a));
 	}
 	if (isupper_ascii(xbeCertificate.title_id.b)) {
 		tid_str += xbeCertificate.title_id.b;
 	} else {
-		tid_str += fmt::format(FSTR("\\x{:0>2X}"),
+		fmt::format_to(std::back_inserter(tid_str), FSTR("\\x{:0>2X}"),
 			static_cast<uint8_t>(xbeCertificate.title_id.b));
 	}
 

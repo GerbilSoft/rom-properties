@@ -181,13 +181,13 @@ IDiscReaderPtr WiiUPackagePrivate::openContentFile(unsigned int idx)
 
 	// Try with lowercase hex first.
 	const uint32_t content_id = be32_to_cpu(entry.content_id);
-	ts_path += fmt::format(FSTR(_T("{:0>8x}.app")), content_id);
+	fmt::format_to(std::back_inserter(ts_path), FSTR(_T("{:0>8x}.app")), content_id);
 
 	IRpFilePtr subfile = std::make_shared<RpFile>(ts_path.c_str(), RpFile::FM_OPEN_READ);
 	if (!subfile->isOpen()) {
 		// Try with uppercase hex.
 		ts_path.resize(orig_path_size);
-		ts_path += fmt::format(FSTR(_T("{:0>8X}.app")), content_id);
+		fmt::format_to(std::back_inserter(ts_path), FSTR(_T("{:0>8X}.app")), content_id);
 
 		subfile = std::make_shared<RpFile>(ts_path.c_str(), RpFile::FM_OPEN_READ);
 		if (!subfile->isOpen()) {

@@ -1881,7 +1881,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) c
 
 				// Found a match! Append the checksum.
 				// NOTE: Not supporting "early" ROM headers here.
-				gameID += fmt::format(FSTR(".{:0>4X}"), be16_to_cpu(pRomHeader->checksum));
+				fmt::format_to(std::back_inserter(gameID), FSTR(".{:0>4X}"), be16_to_cpu(pRomHeader->checksum));
 				break;
 			}
 			break;
