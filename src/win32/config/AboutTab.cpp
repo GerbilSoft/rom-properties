@@ -795,16 +795,17 @@ string AboutTabPrivate::rtfEscape(const char *str)
 
 	// Reference: http://www.zopatista.com/python/2012/06/06/rtf-and-unicode/
 	for (const char16_t *p = u16str.c_str(); *p != 0; p++) {
-		if (*p == '\n') {
+		const char16_t c16 = *p;
+		if (c16 == '\n') {
 			// Newline
 			s_rtf += RTF_BR;
-		} else if (*p <= 0x00FF) {
+		} else if (c16 <= 0x00FF) {
 			// cp1252 is a superset of ISO-8859-1.
-			s_rtf += (char)*p;
+			s_rtf += static_cast<char>(c16);
 		} else {
 			// Convert to a signed 16-bit integer.
 			// Surrogate pairs are encoded as two separate characters.
-			s_rtf += fmt::format(FSTR("\\u{:d}?"), (int16_t)*p);
+			fmt::format_to(std::back_inserter(s_rtf), FSTR("\\u{:d}?"), static_cast<int16_t>(c16));
 		}
 	}
 
@@ -910,9 +911,10 @@ void AboutTabPrivate::initProgramTitleText(void)
 		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::ProgramVersion);
 	const char *const gitVersion =
 		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::GitVersion);
+	assert(programVersion != nullptr);
 
 	string s_version = fmt::format(FRUN(C_("AboutTab", "Version {:s}")), programVersion);
-	s_version.reserve(1024);
+	s_version.reserve(256);
 	if (gitVersion) {
 		s_version += "\r\n";
 		s_version += gitVersion;
@@ -1023,7 +1025,7 @@ void AboutTabPrivate::initCreditsTab(void)
 	// NOTE: Copyright is NOT localized.
 	sCredits += AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::Copyright);
 	sCredits += RTF_BR RTF_BR;
-	sCredits += fmt::format(
+	fmt::format_to(std::back_inserter(sCredits),
 		// tr: {:s} is the name of the license.
 		FRUN(rtfEscape(C_("AboutTab|Credits", "This program is licensed under the {:s} or later."))),
 			rtfFriendlyLink(
@@ -1066,8 +1068,7 @@ void AboutTabPrivate::initCreditsTab(void)
 		}
 
 		// Append the contributor's name.
-		sCredits += RTF_BR RTF_TAB RTF_BULLET " ";
-		sCredits += rtfEscape(creditsData->name);
+		fmt::format_to(std::back_inserter(sCredits), FSTR(RTF_BR RTF_TAB RTF_BULLET " {:s}"), rtfEscape(creditsData->name));
 		if (creditsData->url) {
 			// FIXME: Figure out how to get hyperlinks working.
 			sCredits += " <";
@@ -1080,7 +1081,7 @@ void AboutTabPrivate::initCreditsTab(void)
 		}
 		if (creditsData->sub) {
 			// tr: Sub-credit
-			sCredits += fmt::format(FRUN(rtfEscape(C_("AboutTab|Credits", " ({:s})"))),
+			fmt::format_to(std::back_inserter(sCredits), FRUN(rtfEscape(C_("AboutTab|Credits", " ({:s})"))),
 				rtfEscape(creditsData->sub));
 		}
 
@@ -1103,7 +1104,7 @@ void AboutTabPrivate::initCreditsTab(void)
 void AboutTabPrivate::initLibrariesTab(void)
 {
 	sLibraries.clear();
-	sLibraries.reserve(8192);
+	sLibraries.reserve(4096);
 	sLibraries = RTF_START;
 	sLibraries += initRtfColorTable();
 
@@ -1132,15 +1133,15 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sZlibVersion += RpPng::zlib_version_string();
 
 #if defined(USE_INTERNAL_ZLIB) && !defined(USE_INTERNAL_ZLIB_DLL)
-	sLibraries += fmt::format(FRUN(sIntCopyOf), sZlibVersion);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sIntCopyOf), sZlibVersion);
 #else
 #  ifdef ZLIBNG_VERSION
-	sLibraries += fmt::format(FRUN(sCompiledWith), "zlib-ng " ZLIBNG_VERSION);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sCompiledWith), "zlib-ng " ZLIBNG_VERSION);
 #  else /* !ZLIBNG_VERSION */
-	sLibraries += fmt::format(FRUN(sCompiledWith), "zlib " ZLIB_VERSION);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sCompiledWith), "zlib " ZLIB_VERSION);
 #  endif /* ZLIBNG_VERSION */
 	sLibraries += RTF_BR;
-	sLibraries += fmt::format(FRUN(sUsingDll), sZlibVersion);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sUsingDll), sZlibVersion);
 #endif
 	sLibraries += RTF_BR
 		"Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler." RTF_BR
@@ -1149,7 +1150,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	// TODO: Also if zlibVersion() contains "zlib-ng"?
 	sLibraries += "https://github.com/zlib-ng/zlib-ng" RTF_BR;
 #  endif /* ZLIBNG_VERSION */
-	sLibraries += fmt::format(FRUN(sLicense), "zlib license");
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sLicense), "zlib license");
 #endif /* HAVE_ZLIB */
 
 	/** libpng **/
@@ -1166,7 +1167,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	sLibraries += RTF_BR RTF_BR;
 #if defined(USE_INTERNAL_PNG) && !defined(USE_INTERNAL_ZLIB_DLL)
-	sLibraries += fmt::format(FRUN(sIntCopyOf), pngVersion);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sIntCopyOf), pngVersion);
 #else
 	// NOTE: Gentoo's libpng has "+apng" at the end of
 	// PNG_LIBPNG_VER_STRING if APNG is enabled.
@@ -1189,9 +1190,9 @@ void AboutTabPrivate::initLibrariesTab(void)
 		fullPngVersionCompiled = fmt::format(FSTR("{:s} (No APNG support)"), pngVersionCompiled);
 	}
 
-	sLibraries += fmt::format(FRUN(sCompiledWith), fullPngVersionCompiled);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sCompiledWith), fullPngVersionCompiled);
 	sLibraries += RTF_BR;
-	sLibraries += fmt::format(FRUN(sUsingDll), pngVersion);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sUsingDll), pngVersion);
 #endif
 
 	/**
@@ -1213,7 +1214,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 		sLibraries += rtfEscape(C_("AboutTab|Libraries", "APNG patch:"));
 		sLibraries += " https://sourceforge.net/projects/libpng-apng/" RTF_BR;
 	}
-	sLibraries += fmt::format(FRUN(sLicense), "libpng license");
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sLicense), "libpng license");
 #endif /* HAVE_PNG */
 
 	/** PugiXML **/
@@ -1240,11 +1241,11 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	// FIXME: Runtime version?
 	sLibraries += RTF_BR RTF_BR;
-	sLibraries += fmt::format(FRUN(sCompiledWith), pugiXmlVersion);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sCompiledWith), pugiXmlVersion);
 	sLibraries += RTF_BR
 		"Copyright (C) 2006-2025, by Arseny Kapoulkine (arseny.kapoulkine@gmail.com)" RTF_BR
 		"https://pugixml.org/" RTF_BR;
-	sLibraries += fmt::format(FRUN(sLicense), "MIT license");
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sLicense), "MIT license");
 #endif /* ENABLE_XML */
 
 	/** GNU gettext **/
@@ -1265,11 +1266,11 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	sLibraries += RTF_BR RTF_BR;
 	// NOTE: Not actually an "internal copy"...
-	sLibraries += fmt::format(FRUN(sIntCopyOf), gettextVersion);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sIntCopyOf), gettextVersion);
 	sLibraries += RTF_BR
 		"Copyright (C) 1995-1997, 2000-2016, 2018-2020 Free Software Foundation, Inc." RTF_BR
 		"https://www.gnu.org/software/gettext/" RTF_BR;
-	sLibraries += fmt::format(FRUN(sLicense), "GNU LGPL v2.1+");
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sLicense), "GNU LGPL v2.1+");
 #endif /* HAVE_GETTEXT && LIBINTL_VERSION */
 
 	/** zstd **/
@@ -1282,17 +1283,17 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	sLibraries += RTF_BR RTF_BR;
 #if defined(USE_INTERNAL_PNG) && !defined(USE_INTERNAL_ZLIB_DLL)
-	sLibraries += fmt::format(FRUN(sIntCopyOf), zstdVersionUsing);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sIntCopyOf), zstdVersionUsing);
 #else
-	sLibraries += fmt::format(FRUN(sCompiledWith), ZSTD_VERSION_STRING);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sCompiledWith), ZSTD_VERSION_STRING);
 	sLibraries += RTF_BR;
-	sLibraries += fmt::format(FRUN(sUsingDll), zstdVersionUsing);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sUsingDll), zstdVersionUsing);
 #endif
 
 	sLibraries += RTF_BR
 		"Copyright (c) Meta Platforms, Inc. and affiliates." RTF_BR
 		"All rights reserved." RTF_BR;
-	sLibraries += fmt::format(FRUN(sLicenses), "BSD (3-clause), GNU GPL v2");
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sLicenses), "BSD (3-clause), GNU GPL v2");
 #endif /* HAVE_ZSTD */
 
 	sLibraries += '}';
@@ -1311,7 +1312,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 void AboutTabPrivate::initSupportTab(void)
 {
 	sSupport.clear();
-	sSupport.reserve(4096);
+	sSupport.reserve(1024);
 	sSupport = RTF_START;
 	sSupport += initRtfColorTable();
 
@@ -1322,12 +1323,9 @@ void AboutTabPrivate::initSupportTab(void)
 	for (const AboutTabText::SupportSite_t *supportSite = AboutTabText::getSupportSites();
 	     supportSite->name != nullptr; supportSite++)
 	{
-		sSupport += RTF_TAB RTF_BULLET " ";
-		sSupport += rtfEscape(supportSite->name);
-		sSupport += " <";
-		sSupport += rtfEscape(supportSite->url);
-		sSupport += '>';
-		sSupport += RTF_BR;
+		fmt::format_to(std::back_inserter(sSupport),
+			FSTR(RTF_TAB RTF_BULLET " {:s} <{:s}>" RTF_BR),
+				rtfEscape(supportSite->name), rtfEscape(supportSite->url));
 	}
 
 	// Email the author.

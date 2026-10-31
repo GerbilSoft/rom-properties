@@ -213,15 +213,14 @@ void AboutTabPrivate::initProgramTitleText(void)
 		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::ProgramVersion);
 	const char *const gitVersion =
 		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::GitVersion);
-
 	assert(programVersion != nullptr);
 
 	string sPrgTitle;
-	sPrgTitle.reserve(1024);
+	sPrgTitle.reserve(256);
 	// tr: Uses Qt's HTML subset for formatting.
 	sPrgTitle += C_("AboutTab", "<b>ROM Properties Page</b><br>Shell Extension");
 	sPrgTitle += BR BR;
-	sPrgTitle += fmt::format(FRUN(C_("AboutTab", "Version {:s}")), programVersion);
+	fmt::format_to(std::back_inserter(sPrgTitle), FRUN(C_("AboutTab", "Version {:s}")), programVersion);
 	if (gitVersion) {
 		sPrgTitle += BR;
 		sPrgTitle += gitVersion;
@@ -251,7 +250,7 @@ void AboutTabPrivate::initCreditsTab(void)
 	// NOTE: Copyright is NOT localized.
 	sCredits += AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::Copyright);
 	sCredits += BR;
-	sCredits += fmt::format(
+	fmt::format_to(std::back_inserter(sCredits),
 		// tr: {:s} is the name of the license.
 		FRUN(C_("AboutTab|Credits", "This program is licensed under the {:s} or later.")), sPrgLicense);
 
@@ -287,23 +286,17 @@ void AboutTabPrivate::initCreditsTab(void)
 		}
 
 		// Append the contributor's name.
-		sCredits += BR INDENT BULLET " ";
-		sCredits += creditsData->name;
+		fmt::format_to(std::back_inserter(sCredits), FSTR(BR INDENT BULLET " {:s}"), creditsData->name);
 		if (creditsData->url) {
-			sCredits += " &lt;<a href='";
-			sCredits += creditsData->url;
-			sCredits += "'>";
-			if (creditsData->linkText) {
-				sCredits += creditsData->linkText;
-			} else {
-				sCredits += creditsData->url;
-			}
-			sCredits += "</a>&gt;";
+			fmt::format_to(std::back_inserter(sCredits),
+				FSTR(" &lt;<a href='{:s}'>{:s}</a>&gt;"),
+					creditsData->url,
+					(creditsData->linkText) ? creditsData->linkText : creditsData->url);
 		}
 		if (creditsData->sub) {
 			// tr: Sub-credit
-			sCredits += fmt::format(FRUN(C_("AboutTab|Credits", " ({:s})")),
-				creditsData->sub);
+			fmt::format_to(std::back_inserter(sCredits),
+				FRUN(C_("AboutTab|Credits", " ({:s})")), creditsData->sub);
 		}
 
 		lastCreditType = creditsData->type;
@@ -341,46 +334,46 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	// Included libraries string.
 	string sLibraries;
-	sLibraries.reserve(8192);
+	sLibraries.reserve(4096);
 
 	/** Qt **/
 	string qtVersion = "Qt ";
 	qtVersion += qVersion();
 #ifdef QT_IS_STATIC
-	sLibraries += fmt::format(FRUN(sIntCopyOf), qtVersion);
-#else
-	sLibraries += fmt::format(FRUN(sCompiledWith), "Qt " QT_VERSION_STR);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sIntCopyOf), qtVersion);
+#else /* !QT_IS_STATIC */
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sCompiledWith), "Qt " QT_VERSION_STR);
 	sLibraries += BR;
-	sLibraries += fmt::format(FRUN(sUsingDll), qtVersion);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sUsingDll), qtVersion);
 #endif /* QT_IS_STATIC */
 	sLibraries += BR
 		"Copyright (C) 1995-2025 The Qt Company Ltd. and/or its subsidiaries." BR
 		"<a href='https://www.qt.io/'>https://www.qt.io/</a>" BR;
 	// TODO: Check QT_VERSION at runtime?
 #if QT_VERSION >= QT_VERSION_CHECK(4, 5, 0)
-	sLibraries += fmt::format(FRUN(sLicenses), "GNU LGPL v2.1+, GNU GPL v2+");
-#else
-	sLibraries += fmt::format(FRUN(sLicense), "GNU GPL v2+");
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sLicenses), "GNU LGPL v2.1+, GNU GPL v2+");
+#else /* QT_VERSION < QT_VERSION_CHECK(4, 5, 0) */
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sLicense), "GNU GPL v2+");
 #endif /* QT_VERSION */
 
 	/** KDE **/
 	sLibraries += BR BR;
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	// NOTE: Can't obtain the runtime version for KF5 easily...
-	sLibraries += fmt::format(FRUN(sCompiledWith), "KDE Frameworks " KIO_VERSION_STRING);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sCompiledWith), "KDE Frameworks " KIO_VERSION_STRING);
 	sLibraries += BR
 		"Copyright (C) 1996-2025 KDE contributors." BR
 		"<a href='https://www.kde.org/'>https://www.kde.org/</a>" BR;
-	sLibraries += fmt::format(FRUN(sLicense), "GNU LGPL v2.1+");
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sLicense), "GNU LGPL v2.1+");
 #else /* QT_VERSION < QT_VERSION_CHECK(5, 0, 0) */
 	string kdeVersion = "KDE Libraries ";
 	kdeVersion += KDE::versionString();
-	sLibraries += fmt::format(FRUN(sCompiledWith), "KDE Libraries " KDE_VERSION_STRING);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sCompiledWith), "KDE Libraries " KDE_VERSION_STRING);
 	sLibraries += BR;
-	sLibraries += fmt::format(FRUN(sUsingDll), kdeVersion);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sUsingDll), kdeVersion);
 	sLibraries += BR
 		"Copyright (C) 1996-2017 KDE contributors." BR;
-	sLibraries += fmt::format(FRUN(sLicense), "GNU LGPL v2.1+");
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sLicense), "GNU LGPL v2.1+");
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */
 
 	/** zlib **/
@@ -391,15 +384,15 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sZlibVersion += RpPng::zlib_version_string();
 
 #if defined(USE_INTERNAL_ZLIB) && !defined(USE_INTERNAL_ZLIB_DLL)
-	sLibraries += fmt::format(FRUN(sIntCopyOf), sZlibVersion);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sIntCopyOf), sZlibVersion);
 #else
 #  ifdef ZLIBNG_VERSION
-	sLibraries += fmt::format(FRUN(sCompiledWith), "zlib-ng " ZLIBNG_VERSION);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sCompiledWith), "zlib-ng " ZLIBNG_VERSION);
 #  else /* !ZLIBNG_VERSION */
-	sLibraries += fmt::format(FRUN(sCompiledWith), "zlib " ZLIB_VERSION);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sCompiledWith), "zlib " ZLIB_VERSION);
 #  endif /* ZLIBNG_VERSION */
 	sLibraries += BR;
-	sLibraries += fmt::format(FRUN(sUsingDll), sZlibVersion);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sUsingDll), sZlibVersion);
 #endif
 	sLibraries += BR
 		"Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler." BR
@@ -407,7 +400,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	if (zlib_is_ng) {
 		sLibraries += "<a href='https://github.com/zlib-ng/zlib-ng'>https://github.com/zlib-ng/zlib-ng</a>" BR;
 	}
-	sLibraries += fmt::format(FRUN(sLicense), "zlib license");
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sLicense), "zlib license");
 #endif /* HAVE_ZLIB */
 
 	/** libpng **/
@@ -422,7 +415,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	sLibraries += BR BR;
 #if defined(USE_INTERNAL_PNG) && !defined(USE_INTERNAL_ZLIB_DLL)
-	sLibraries += fmt::format(FRUN(sIntCopyOf), pngVersion);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sIntCopyOf), pngVersion);
 #else
 	// NOTE: Gentoo's libpng has "+apng" at the end of
 	// PNG_LIBPNG_VER_STRING if APNG is enabled.
@@ -445,9 +438,9 @@ void AboutTabPrivate::initLibrariesTab(void)
 		fullPngVersionCompiled = fmt::format(FSTR("{:s} (No APNG support)"), pngVersionCompiled);
 	}
 
-	sLibraries += fmt::format(FRUN(sCompiledWith), fullPngVersionCompiled);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sCompiledWith), fullPngVersionCompiled);
 	sLibraries += BR;
-	sLibraries += fmt::format(FRUN(sUsingDll), pngVersion);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sUsingDll), pngVersion);
 #endif
 
 	// Convert newlines to "<br/>\n".
@@ -467,7 +460,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 		sLibraries += C_("AboutTab|Libraries", "APNG patch:");
 		sLibraries += " <a href='https://sourceforge.net/projects/libpng-apng/'>https://sourceforge.net/projects/libpng-apng/</a>" BR;
 	}
-	sLibraries += fmt::format(FRUN(sLicense), "libpng license");
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sLicense), "libpng license");
 #endif /* HAVE_PNG */
 
 	/** nettle **/
@@ -477,18 +470,18 @@ void AboutTabPrivate::initLibrariesTab(void)
 	int ret = AesNettle::get_nettle_compile_time_version(&nettle_major, &nettle_minor);
 	if (ret == 0) {
 		if (nettle_major >= 3) {
-			sLibraries += fmt::format(FRUN(sCompiledWith),
+			fmt::format_to(std::back_inserter(sLibraries), FRUN(sCompiledWith),
 				fmt::format(FSTR("GNU Nettle {:d}.{:d}"),
 					nettle_major, nettle_minor));
 		} else {
-			sLibraries += fmt::format(FRUN(sCompiledWith), "GNU Nettle 2.x");
+			fmt::format_to(std::back_inserter(sLibraries), FRUN(sCompiledWith), "GNU Nettle 2.x");
 		}
 		sLibraries += BR;
 	}
 
 	ret = AesNettle::get_nettle_runtime_version(&nettle_major, &nettle_minor);
 	if (ret == 0) {
-		sLibraries += fmt::format(FRUN(sUsingDll),
+		fmt::format_to(std::back_inserter(sLibraries), FRUN(sUsingDll),
 			fmt::format(FSTR("GNU Nettle {:d}.{:d}"),
 				nettle_major, nettle_minor));
 		sLibraries += BR;
@@ -502,12 +495,12 @@ void AboutTabPrivate::initLibrariesTab(void)
 			sLibraries += "Copyright (C) 2001-2014 Niels Möller." BR
 				"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>" BR;
 		}
-		sLibraries += fmt::format(FRUN(sLicenses), "GNU LGPL v3+, GNU GPL v2+");
+		fmt::format_to(std::back_inserter(sLibraries), FRUN(sLicenses), "GNU LGPL v3+, GNU GPL v2+");
 	} else {
 		sLibraries +=
 			"Copyright (C) 2001-2013 Niels Möller." BR
 			"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>" BR;
-		sLibraries += fmt::format(FRUN(sLicense), "GNU LGPL v2.1+");
+		fmt::format_to(std::back_inserter(sLibraries), FRUN(sLicense), "GNU LGPL v2.1+");
 	}
 #endif /* ENABLE_DECRYPTION && HAVE_NETTLE */
 
@@ -535,15 +528,15 @@ void AboutTabPrivate::initLibrariesTab(void)
 	}
 
 #  if defined(USE_INTERNAL_XML) && !defined(USE_INTERNAL_XML_DLL)
-	sLibraries += fmt::format(FRUN(sIntCopyOf), pugiXmlVersion);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sIntCopyOf), pugiXmlVersion);
 #  else
 	// FIXME: Runtime version?
-	sLibraries += fmt::format(FRUN(sCompiledWith), pugiXmlVersion);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sCompiledWith), pugiXmlVersion);
 #  endif
 	sLibraries += BR
 		"Copyright (C) 2006-2025, by Arseny Kapoulkine (arseny.kapoulkine@gmail.com)" BR
 		"<a href='https://pugixml.org/'>https://pugixml.org/</a>" BR;
-	sLibraries += fmt::format(FRUN(sLicense), "MIT license");
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sLicense), "MIT license");
 #endif /* ENABLE_XML */
 
 	/** GNU gettext **/
@@ -562,11 +555,11 @@ void AboutTabPrivate::initLibrariesTab(void)
 			static_cast<unsigned int>((LIBINTL_VERSION >>  8) & 0xFF));
 	}
 	// FIXME: Runtime version?
-	sLibraries += fmt::format(FRUN(sCompiledWith), gettextVersion);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sCompiledWith), gettextVersion);
 	sLibraries += BR
 		"Copyright (C) 1995-1997, 2000-2016, 2018-2020 Free Software Foundation, Inc." BR
 		"<a href='https://www.gnu.org/software/gettext/'>https://www.gnu.org/software/gettext/</a>" BR;
-	sLibraries += fmt::format(FRUN(sLicense), "GNU LGPL v2.1+");
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sLicense), "GNU LGPL v2.1+");
 #endif /* HAVE_GETTEXT && LIBINTL_VERSION */
 
 	/** zstd **/
@@ -579,17 +572,17 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	sLibraries += BR BR;
 #if defined(USE_INTERNAL_PNG) && !defined(USE_INTERNAL_ZLIB_DLL)
-	sLibraries += fmt::format(FRUN(sIntCopyOf), zstdVersionUsing);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sIntCopyOf), zstdVersionUsing);
 #else
-	sLibraries += fmt::format(FRUN(sCompiledWith), ZSTD_VERSION_STRING);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sCompiledWith), ZSTD_VERSION_STRING);
 	sLibraries += BR;
-	sLibraries += fmt::format(FRUN(sUsingDll), zstdVersionUsing);
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sUsingDll), zstdVersionUsing);
 #endif
 
 	sLibraries += BR
 		"Copyright (c) Meta Platforms, Inc. and affiliates." BR
 		"All rights reserved." BR;
-	sLibraries += fmt::format(FRUN(sLicenses), "BSD (3-clause), GNU GPL v2");
+	fmt::format_to(std::back_inserter(sLibraries), FRUN(sLicenses), "BSD (3-clause), GNU GPL v2");
 #endif /* HAVE_ZSTD */
 
 	// We're done building the string.
@@ -603,7 +596,7 @@ void AboutTabPrivate::initSupportTab(void)
 {
 	// lblSupport is RichText.
 	string sSupport;
-	sSupport.reserve(4096);
+	sSupport.reserve(1024);
 	sSupport = C_("AboutTab|Support",
 		"For technical support, you can visit the following websites:");
 	sSupport += BR;
@@ -611,13 +604,9 @@ void AboutTabPrivate::initSupportTab(void)
 	for (const AboutTabText::SupportSite_t *supportSite = AboutTabText::getSupportSites();
 	     supportSite->name != nullptr; supportSite++)
 	{
-		sSupport += INDENT BULLET " ";
-		sSupport += supportSite->name;
-		sSupport += " &lt;<a href='";
-		sSupport += supportSite->url;
-		sSupport += "'>";
-		sSupport += supportSite->url;
-		sSupport += "</a>&gt;" BR;
+		fmt::format_to(std::back_inserter(sSupport),
+			FSTR(INDENT BULLET " {0:s} &lt;<a href='{1:s}'>{1:s}</a>&gt;" BR),
+				supportSite->name, supportSite->url);
 	}
 
 	// Email the author.
