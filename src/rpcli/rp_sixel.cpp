@@ -33,6 +33,9 @@ using namespace LibRpTexture;
 using std::array;
 using std::unique_ptr;
 
+// libfmt
+#include "rp-libfmt.h"
+
 namespace SixelDll {
 
 static unique_ptr<HMODULE, HMODULE_deleter> libsixel_dll;
@@ -232,7 +235,7 @@ static void print_sixel_icon_banner_int(const RomDataPtr &romData)
 	for (int i = 0; i < rows; i++) {
 		putchar('\n');
 	}
-	printf("\x1B[%dA\x1B[s", rows);	// move up `rows` rows, save cursor position
+	fmt::print(FSTR("\x1B[{:d}A\x1B[s"), rows);	// move up `rows` rows, save cursor position
 
 	int cur_col = 0;
 	if (icon) {
@@ -243,7 +246,7 @@ static void print_sixel_icon_banner_int(const RomDataPtr &romData)
 			icon_cols++;
 		}
 		cur_col += icon_cols;
-		printf("\x1B[u\x1B[%dC", cur_col);	// restore cursor position; move right `cur_col` columns
+		fmt::print(FSTR("\x1B[u\x1B[{:d}C"), cur_col);	// restore cursor position; move right `cur_col` columns
 	}
 	if (banner) {
 		print_sixel_image(output, banner);
@@ -253,11 +256,11 @@ static void print_sixel_icon_banner_int(const RomDataPtr &romData)
 			banner_cols++;
 		}
 		cur_col += banner_cols;
-		printf("\x1B[u\x1B[%dC", cur_col);	// restore cursor position; move right `cur_col` columns
+		fmt::print(FSTR("\x1B[u\x1B[{:d}C"), cur_col);	// restore cursor position; move right `cur_col` columns
 	}
 
 	// Move back down to after the icon/banner.
-	printf("\x1B[%dE", rows);
+	fmt::print(FSTR("\x1B[{:d}E"), rows);
 	fflush(stdout);
 
 	SixelDll::psixel_output_destroy(output);
@@ -327,9 +330,9 @@ static int print_kitty_image(const rp_image *image_src, bool is_animated = false
 
 	// Print the image header.
 	if (likely(!is_animated)) {
-		printf("\x1B_Ga=T,q=2,f=32,s=%d,v=%d,m=1;", width, height);
+		fmt::print(FSTR("\x1B_Ga=T,q=2,f=32,s={:d},v={:d},m=1;"), width, height);
 	} else {
-		printf("\x1B_Ga=%c,q=2,f=32,s=%d,v=%d,I=%d,z=%d;" /*,m=1;"*/,
+		fmt::print(FSTR("\x1B_Ga={:c},q=2,f=32,s={:d},v={:d},I={:d},z={:d};") /*,m=1;"*/,
 			(anim_frame_0 ? 'T' : 'f'),
 			width, height, image_number, ms);
 	}
@@ -395,7 +398,7 @@ static int print_kitty_image(const rp_image *image_src, bool is_animated = false
 				// we're starting pixel data. Remaining chunks need an escape
 				// sequence indicating we're continuing to print.
 				const int final_chunk = !(y == 1 && linebuf_used <= BASE64_CHUNK_SIZE && tmpbuf_size == 0);
-				printf("\x1B_Gq=2,m=%d;", final_chunk);
+				fmt::print(FSTR("\x1B_Gq=2,m={:d};"), final_chunk);
 			}
 
 			fwrite(p, 1, bytes_to_print, stdout);
@@ -437,7 +440,7 @@ static int print_kitty_image(const rp_image *image_src, bool is_animated = false
 
 		// Write the last 4 bytes.
 		if (likely(!is_animated)) {
-			printf("\x1B_Gq=2,m=0;%s\x1B\\", p);
+			fmt::print(FSTR("\x1B_Gq=2,m=0;{:s}\x1B\\"), p);
 			chunk_number += 2;
 		} else {
 			fwrite(p, 1, 4, stdout);
@@ -447,7 +450,7 @@ static int print_kitty_image(const rp_image *image_src, bool is_animated = false
 	if (likely(!is_animated)) {
 		// No chunks, or only one chunk (with m=1), were written.
 		// Need to write a dummy final chunk.
-		printf("\x1B_Gq=2,m=0;\x1B\\");
+		fputs("\x1B_Gq=2,m=0;\x1B\\", stdout);
 	} else if (chunk_number <= 1) {
 		fwrite("\x1B\\", 1, 2, stdout);
 	}
@@ -522,7 +525,7 @@ static int print_kitty_animated_image(const IconAnimDataConstPtr &iconAnimData)
 	}
 
 	// Start the animation.
-	printf("\x1B_Ga=a,I=%d,s=3,v=1\x1B\\", image_number);
+	fmt::print(FSTR("\x1B_Ga=a,I={:d},s=3,v=1\x1B\\"), image_number);
 
 	// Increment the image number for the next invocation.
 	image_number++;
@@ -576,7 +579,7 @@ static void print_kitty_icon_banner_int(const RomDataPtr &romData)
 	for (int i = 0; i < rows; i++) {
 		putchar('\n');
 	}
-	printf("\x1B[%dA\x1B[s", rows);	// move up `rows` rows, save cursor position
+	fmt::print(FSTR("\x1B[{:d}A\x1B[s"), rows);	// move up `rows` rows, save cursor position
 
 	int cur_col = 0;
 	if (icon) {
@@ -600,7 +603,7 @@ static void print_kitty_icon_banner_int(const RomDataPtr &romData)
 			icon_cols++;
 		}
 		cur_col += icon_cols;
-		printf("\x1B[u\x1B[%dC", cur_col);	// restore cursor position; move right `cur_col` columns
+		fmt::print(FSTR("\x1B[u\x1B[{:d}C"), cur_col);	// restore cursor position; move right `cur_col` columns
 	}
 	if (banner) {
 		print_kitty_image(banner);
@@ -610,11 +613,11 @@ static void print_kitty_icon_banner_int(const RomDataPtr &romData)
 			banner_cols++;
 		}
 		cur_col += banner_cols;
-		printf("\x1B[u\x1B[%dC", cur_col);	// restore cursor position; move right `cur_col` columns
+		fmt::print(FSTR("\x1B[u\x1B[{:d}C"), cur_col);	// restore cursor position; move right `cur_col` columns
 	}
 
 	// Move back down to after the icon/banner.
-	printf("\x1B[%dE", rows);
+	fmt::print(FSTR("\x1B[{:d}E"), rows);
 	fflush(stdout);
 }
 
