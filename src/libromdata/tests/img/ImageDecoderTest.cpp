@@ -596,7 +596,7 @@ string ImageDecoderTest::test_case_suffix_generator(const ::testing::TestParamIn
 		}
 	} else {
 		// Mipmap
-		suffix += fmt::format(FSTR("_Mipmap{:d}"), info.param.mipmapLevel);
+		fmt::format_to(std::back_inserter(suffix), FSTR("_Mipmap{:d}"), info.param.mipmapLevel);
 	}
 
 	// TODO: Convert to ASCII?
