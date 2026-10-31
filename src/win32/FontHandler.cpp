@@ -48,10 +48,31 @@ public:
 	HFONT hFontMono;
 	HFONT hFontNTLG;
 
+	enum class ControlFormatting : uint8_t {
+		None		= 0,
+
+		Bold		= 1,
+		Monospace	= 2,
+		NTLG		= 3,
+	};
+
+	struct ControlData_t {
+		HWND hWnd;
+		ControlFormatting formatting;
+
+		explicit ControlData_t()
+			: hWnd(nullptr)
+			, formatting(ControlFormatting::None)
+		{}
+
+		explicit ControlData_t(HWND hWnd, ControlFormatting formatting)
+			: hWnd(hWnd)
+			, formatting(formatting)
+		{}
+	};
+
 	// Controls
-	vector<HWND> vecBoldControls;	// Controls using the bold font
-	vector<HWND> vecMonoControls;	// Controls using the monospaced font
-	vector<HWND> vecNTLGControls;	// Controls using the Nintendo Rodin NTLG font
+	vector<ControlData_t> vecControls;
 
 	// Previous ClearType setting
 	bool bPrevIsClearType;
@@ -413,8 +434,10 @@ int FontHandlerPrivate::initBoldFont(void)
 	}
 
 	// Update all bold controls to use the new font.
-	for (HWND hWnd : vecBoldControls) {
-		SetWindowFont(hWnd, hFontBoldNew, false);
+	for (const auto &p : vecControls) {
+		if (p.formatting == ControlFormatting::Bold) {
+			SetWindowFont(p.hWnd, hFontBoldNew, false);
+		}
 	}
 
 	// Delete the old font and save the new one.
@@ -476,8 +499,10 @@ int FontHandlerPrivate::initMonospacedFont(void)
 	}
 
 	// Update all monospaced controls to use the new font.
-	for (HWND hWnd : vecMonoControls) {
-		SetWindowFont(hWnd, hFontMonoNew, false);
+	for (const auto &p : vecControls) {
+		if (p.formatting == ControlFormatting::Monospace) {
+			SetWindowFont(p.hWnd, hFontMonoNew, false);
+		}
 	}
 
 	// Delete the old font and save the new one.
@@ -539,8 +564,10 @@ int FontHandlerPrivate::initNTLGFont(void)
 	}
 
 	// Update all monospaced controls to use the new font.
-	for (HWND hWnd : vecNTLGControls) {
-		SetWindowFont(hWnd, hFontNTLGNew, false);
+	for (const auto &p : vecControls) {
+		if (p.formatting == ControlFormatting::NTLG) {
+			SetWindowFont(p.hWnd, hFontNTLGNew, false);
+		}
 	}
 
 	// Delete the old font and save the new one.
@@ -575,6 +602,7 @@ int FontHandlerPrivate::updateFonts(bool force)
 			DeleteFont(hFontNTLG);
 			hFontNTLG = nullptr;
 		}
+		vecControls.clear();
 		return -EBADF;
 	}
 
@@ -587,13 +615,15 @@ int FontHandlerPrivate::updateFonts(bool force)
 	}
 
 	// Update fonts if they were previously created.
-	if (hFontBold || !vecBoldControls.empty()) {
+	// NOTE: No longer checking vecControls because it contains
+	// all controls with formatting, not just a specific format.
+	if (hFontBold) {
 		initBoldFont();
 	}
-	if (hFontMono || !vecMonoControls.empty()) {
+	if (hFontMono) {
 		initMonospacedFont();
 	}
-	if (hFontNTLG || !vecNTLGControls.empty()) {
+	if (hFontNTLG) {
 		initNTLGFont();
 	}
 
@@ -689,7 +719,8 @@ void FontHandler::addBoldControl(HWND hWnd)
 	if (!d->hFontBold) {
 		d->initBoldFont();
 	}
-	d->vecBoldControls.push_back(hWnd);
+	d->vecControls.push_back(FontHandlerPrivate::ControlData_t(
+		hWnd, FontHandlerPrivate::ControlFormatting::Bold));
 	if (d->hFontBold) {
 		SetWindowFont(hWnd, d->hFontBold, false);
 	}
@@ -706,7 +737,8 @@ void FontHandler::addMonoControl(HWND hWnd)
 	if (!d->hFontMono) {
 		d->initMonospacedFont();
 	}
-	d->vecMonoControls.push_back(hWnd);
+	d->vecControls.push_back(FontHandlerPrivate::ControlData_t(
+		hWnd, FontHandlerPrivate::ControlFormatting::Monospace));
 	if (d->hFontMono) {
 		SetWindowFont(hWnd, d->hFontMono, false);
 	}
@@ -723,7 +755,8 @@ void FontHandler::addNTLGControl(HWND hWnd)
 	if (!d->hFontNTLG) {
 		d->initNTLGFont();
 	}
-	d->vecNTLGControls.push_back(hWnd);
+	d->vecControls.push_back(FontHandlerPrivate::ControlData_t(
+		hWnd, FontHandlerPrivate::ControlFormatting::NTLG));
 	if (d->hFontNTLG) {
 		SetWindowFont(hWnd, d->hFontNTLG, false);
 	}
