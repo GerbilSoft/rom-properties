@@ -126,8 +126,8 @@ void CtrKeyScramblerTest::CompareByteArrays(
 		}
 
 		// Print the byte.
-		s_expected += fmt::format(FSTR("{:0>2X}"), *pE);
-		s_actual   += fmt::format(FSTR("{:0>2X}"), *pA);
+		fmt::format_to(std::back_inserter(s_expected), FSTR("{:0>2X}"), *pE);
+		fmt::format_to(std::back_inserter(s_actual),   FSTR("{:0>2X}"), *pA);
 
 		if (i % 16 == 7) {
 			s_expected += "  ";
