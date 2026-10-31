@@ -178,9 +178,9 @@ void Ext2AttrViewPrivate::updateZAlgorithmLabel(void)
 	if (s_alg) {
 		string s_lbl;
 		if (likely(zLevel == 0)) {
-			s_lbl = fmt::format(FRUN(C_("Ext2AttrView", "Compression: {:s}")), s_alg);
+			fmt::format_to(std::back_inserter(s_lbl), FRUN(C_("Ext2AttrView", "Compression: {:s}")), s_alg);
 		} else {
-			s_lbl = fmt::format(FRUN(C_("Ext2AttrView", "Compression: {:s}:{:d}")), s_alg, zLevel);
+			fmt::format_to(std::back_inserter(s_lbl), FRUN(C_("Ext2AttrView", "Compression: {:s}:{:d}")), s_alg, zLevel);
 		}
 		ui.lblCompression->setText(U82Q(s_lbl));
 	} else {

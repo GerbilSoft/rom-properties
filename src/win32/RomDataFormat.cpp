@@ -124,13 +124,15 @@ tstring formatDimensions(const int dimensions[3])
 
 	if (dimensions[1] > 0) {
 		if (dimensions[2] > 0) {
-			tstr = fmt::format(FSTR(_T("{:d}x{:d}x{:d}")),
+			fmt::format_to(std::back_inserter(tstr), FSTR(_T("{:d}x{:d}x{:d}")),
 				dimensions[0], dimensions[1], dimensions[2]);
 		} else {
-			tstr = fmt::format(FSTR(_T("{:d}x{:d}")),
+			fmt::format_to(std::back_inserter(tstr), FSTR(_T("{:d}x{:d}")),
 				dimensions[0], dimensions[1]);
 		}
 	} else {
+		// FIXME: There's no version of fmt::format_int() that returns tstring/wstring...
+		// (as of fmtlib-12.2.0)
 		tstr = fmt::to_tstring(dimensions[0]);
 	}
 

@@ -721,7 +721,8 @@ STDAPI DllRegisterServer(void)
 	tstring ts_regPath;
 	for (const auto &sid : user_SIDs) {
 		// Incorrect file extension registrations.
-		ts_regPath = fmt::format(
+		ts_regPath.clear();
+		fmt::format_to(std::back_inserter(ts_regPath),
 			FSTR(_T("{:s}\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts")), sid);
 
 		RegKey hkuvxd(HKEY_USERS, ts_regPath.c_str(), KEY_WRITE, false);
@@ -731,7 +732,9 @@ STDAPI DllRegisterServer(void)
 		}
 
 		// "HKU\\xxx\\SOFTWARE\\Classes\\Applications" entries
-		ts_regPath = fmt::format(FSTR(_T("{:s}\\SOFTWARE\\Classes\\Applications")), sid);
+		ts_regPath.clear();
+		fmt::format_to(std::back_inserter(ts_regPath),
+			FSTR(_T("{:s}\\SOFTWARE\\Classes\\Applications")), sid);
 		RegKey hku_Applications(HKEY_USERS, ts_regPath.c_str(), KEY_READ|KEY_WRITE, false);
 		if (hku_Applications.isOpen()) {
 			UnregisterFromApplications(hku_Applications);
@@ -857,7 +860,8 @@ STDAPI DllUnregisterServer(void)
 	tstring ts_regPath;
 	for (const auto &sid : user_SIDs) {
 		// Incorrect file extension registrations.
-		ts_regPath = fmt::format(
+		ts_regPath.clear();
+		fmt::format_to(std::back_inserter(ts_regPath),
 			FSTR(_T("{:s}\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts")), sid);
 		RegKey hkuvxd(HKEY_USERS, ts_regPath.c_str(), KEY_WRITE, false);
 		if (hkuvxd.isOpen()) {
@@ -866,7 +870,8 @@ STDAPI DllUnregisterServer(void)
 		}
 
 		// "HKU\\xxx\\SOFTWARE\\Classes\\Applications" entries
-		ts_regPath = fmt::format(
+		ts_regPath.clear();
+		fmt::format_to(std::back_inserter(ts_regPath),
 			FSTR(_T("{:s}\\SOFTWARE\\Classes\\Applications")), sid);
 		RegKey hku_Applications(HKEY_USERS, ts_regPath.c_str(), KEY_READ | KEY_WRITE, false);
 		if (hku_Applications.isOpen()) {

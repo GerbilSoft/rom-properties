@@ -1184,10 +1184,10 @@ void AboutTabPrivate::initLibrariesTab(void)
 	string fullPngVersionCompiled;
 	if (APNG_is_supported) {
 		// PNG version, with APNG support.
-		fullPngVersionCompiled = fmt::format(FSTR("{:s} + APNG"), pngVersionCompiled);
+		fmt::format_to(std::back_inserter(fullPngVersionCompiled), FSTR("{:s} + APNG"), pngVersionCompiled);
 	} else {
 		// PNG version, without APNG support.
-		fullPngVersionCompiled = fmt::format(FSTR("{:s} (No APNG support)"), pngVersionCompiled);
+		fmt::format_to(std::back_inserter(fullPngVersionCompiled), FSTR("{:s} (No APNG support)"), pngVersionCompiled);
 	}
 
 	fmt::format_to(std::back_inserter(sLibraries), FRUN(sCompiledWith), fullPngVersionCompiled);
@@ -1254,12 +1254,12 @@ void AboutTabPrivate::initLibrariesTab(void)
 #if defined(HAVE_GETTEXT) && defined(LIBINTL_VERSION)
 	string gettextVersion;
 	if (LIBINTL_VERSION & 0xFF) {
-		gettextVersion = fmt::format(FSTR("GNU gettext {:d}.{:d}.{:d}"),
+		fmt::format_to(std::back_inserter(gettextVersion), FSTR("GNU gettext {:d}.{:d}.{:d}"),
 			static_cast<unsigned int>( LIBINTL_VERSION >> 16),
 			static_cast<unsigned int>((LIBINTL_VERSION >>  8) & 0xFF),
 			static_cast<unsigned int>( LIBINTL_VERSION        & 0xFF));
 	} else {
-		gettextVersion = fmt::format(FSTR("GNU gettext {:d}.{:d}"),
+		fmt::format_to(std::back_inserter(gettextVersion), FSTR("GNU gettext {:d}.{:d}"),
 			static_cast<unsigned int>( LIBINTL_VERSION >> 16),
 			static_cast<unsigned int>((LIBINTL_VERSION >>  8) & 0xFF));
 	}

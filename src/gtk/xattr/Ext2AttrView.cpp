@@ -373,9 +373,9 @@ rp_ext2_attr_view_update_zAlgorithm_label(RpExt2AttrView *widget)
 	if (s_alg) {
 		string s_lbl;
 		if (likely(widget->zLevel == 0)) {
-			s_lbl = fmt::format(FRUN(C_("Ext2AttrView", "Compression: {:s}")), s_alg);
+			fmt::format_to(std::back_inserter(s_lbl), FRUN(C_("Ext2AttrView", "Compression: {:s}")), s_alg);
 		} else {
-			s_lbl = fmt::format(FRUN(C_("Ext2AttrView", "Compression: {:s}:{:d}")), s_alg, widget->zLevel);
+			fmt::format_to(std::back_inserter(s_lbl), FRUN(C_("Ext2AttrView", "Compression: {:s}:{:d}")), s_alg, widget->zLevel);
 		}
 		gtk_label_set_text(GTK_LABEL(widget->lblCompression), s_lbl.c_str());
 		gtk_widget_set_visible(widget->lblCompression, true);
