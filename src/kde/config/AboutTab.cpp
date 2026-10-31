@@ -745,15 +745,15 @@ void AboutTab::updChecker_retrieved(quint64 updateVersion)
 	}};
 
 	if (upd[2] == 0) {
-		sUpdVersion = fmt::format(FSTR("{:d}.{:d}"), upd[0], upd[1]);
+		fmt::format_to(std::back_inserter(sUpdVersion), FSTR("{:d}.{:d}"), upd[0], upd[1]);
 	} else {
-		sUpdVersion = fmt::format(FSTR("{:d}.{:d}.{:d}"), upd[0], upd[1], upd[2]);
+		fmt::format_to(std::back_inserter(sUpdVersion), FSTR("{:d}.{:d}.{:d}"), upd[0], upd[1], upd[2]);
 	}
 
 	string sVersionLabel;
 	sVersionLabel.reserve(512);
 
-	sVersionLabel = fmt::format(FRUN(C_("AboutTab", "Latest version: {:s}")), sUpdVersion);
+	fmt::format_to(std::back_inserter(sVersionLabel), FRUN(C_("AboutTab", "Latest version: {:s}")), sUpdVersion);
 	if (updateVersion > ourVersion) {
 		sVersionLabel += BR BR;
 		sVersionLabel += C_("AboutTab", "<b>New version available!</b>");

@@ -701,9 +701,9 @@ void AboutTabPrivate::updChecker_retrieved(void)
 	}};
 
 	if (upd[2] == 0) {
-		sUpdVersion = fmt::format(FSTR("{:d}.{:d}"), upd[0], upd[1]);
+		fmt::format_to(std::back_inserter(sUpdVersion), FSTR("{:d}.{:d}"), upd[0], upd[1]);
 	} else {
-		sUpdVersion = fmt::format(FSTR("{:d}.{:d}.{:d}"), upd[0], upd[1], upd[2]);
+		fmt::format_to(std::back_inserter(sUpdVersion), FSTR("{:d}.{:d}.{:d}"), upd[0], upd[1], upd[2]);
 	}
 
 	sVersionLabel.clear();
