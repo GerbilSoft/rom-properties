@@ -18,12 +18,14 @@ using namespace LibRpTexture;
 
 // C++ STL classes
 #include <set>
+using std::array;
 using std::set;
 using std::string;
 
 // Qt includes
 #include <QCheckBox>
 #include <QDialogButtonBox>
+#include <QFont>
 #include <QHeaderView>
 
 // Custom widgets
@@ -400,6 +402,27 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 			const QString css = QLatin1String("color: #F00; font-weight: bold;");
 			lblDesc->setStyleSheet(css);
 			lblString->setStyleSheet(css);
+		}
+
+		// NTLG font?
+		if (field.flags & RomFields::STRF_NTLG_FONT) {
+			// Try finding a known Nintendo Rodin NTLG font.
+			// NOTE: Qt 5.15 <=5.15.2, and Qt 6.2.3?, might have a broken exactMatch() function.
+			// https://qt-project.atlassian.net/browse/QTBUG-87267
+			static const array<const char*, 4> ntlg_font_name_tbl = {{
+				"nintendo_NTLG-DB_001",
+				"FOT-RodinNTLG Pro",
+				"FOT-RodinNTLG Pro DB",
+				"FOT-RodinNTLG Pro EB",
+			}};
+			for (const char *font_name : ntlg_font_name_tbl) {
+				QFont font(QString::fromLatin1(font_name));
+				if (font.exactMatch()) {
+					// Found a matching font.
+					lblString->setFont(font);
+					break;
+				}
+			}
 		}
 	}
 

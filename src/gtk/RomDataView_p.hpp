@@ -132,6 +132,7 @@ struct _RpRomDataView {
 	RpDescFormatType	desc_format_type;
 	PangoAttrList		*pango_attr_desc_label;
 	PangoAttrList		*pango_attr_warning;
+	const char		*ntlg_font_name;	// static string; do NOT free!
 
 	// Inhibit checkbox toggling for RFT_BITFIELD while updating.
 	bool inhibit_checkbox_no_toggle;

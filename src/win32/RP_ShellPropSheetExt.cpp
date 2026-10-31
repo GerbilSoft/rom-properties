@@ -358,7 +358,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(_In_ POINT pt_start, _In_ SIZE
 			ptSysInfo.x, ptSysInfo.y,
 			size_lblSysInfo.cx, size_lblSysInfo.cy,
 			hDlgSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
-		SetWindowFont(lblSysInfo, hFont, false);
+		fontHandler.addBoldControl(lblSysInfo);
 		curPt.x += size_lblSysInfo.cx + pt_start.x;
 	}
 
@@ -606,30 +606,26 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 	HFONT hFont = GetWindowFont(hDlgSheet);
 
 	// Check for any formatting options.
-	bool isWarning = false, isMonospace = false;
+	bool isWarning = false, isMonospace = false, isNTLGFont = false;
 	if (field.type == RomFields::RomFieldType::RFT_STRING) {
-		// FIXME: STRF_MONOSPACE | STRF_WARNING is not supported.
-		// Preferring STRF_WARNING.
-		assert((field.flags &
-			(RomFields::STRF_MONOSPACE | RomFields::STRF_WARNING)) !=
-			(RomFields::STRF_MONOSPACE | RomFields::STRF_WARNING));
+		// FIXME: These flags are mutually exclusive:
+		// - STRF_MONOSPACE
+		// - STRF_WARNING
+		// - STRF_NTLG_FONT
+		// See below for the preferred ordering.
+		assert((((field.flags & RomFields::STRF_MONOSPACE) ? 1 : 0) +
+		        ((field.flags & RomFields::STRF_WARNING) ? 1 : 0) +
+		        ((field.flags & RomFields::STRF_NTLG_FONT) ? 1 : 0)) <= 1);
 
 		if (field.flags & RomFields::STRF_WARNING) {
-			// "Warning" font.
+			// "Warning" font
 			isWarning = true;
-			HFONT hFontBold = fontHandler.boldFont();
-			if (hFontBold) {
-				hFont = hFontBold;
-			}
-			// Set the font of the description control.
-			HWND hStatic = GetDlgItem(hWndTab, IDC_STATIC_DESC(fieldIdx));
-			if (hStatic) {
-				SetWindowFont(hStatic, hFont, false);
-				SetWindowLongPtr(hStatic, GWLP_USERDATA, static_cast<LONG_PTR>(RGB(255, 0, 0)));
-			}
 		} else if (field.flags & RomFields::STRF_MONOSPACE) {
-			// Monospaced font.
+			// Monospaced font
 			isMonospace = true;
+		} else if (field.flags & RomFields::STRF_NTLG_FONT) {
+			// Nintendo Rodin NTLG font
+			isNTLGFont = true;
 		}
 	}
 
@@ -696,15 +692,17 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 			SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 	}
 
-	// Set the font.
-	SetWindowFont(hDlgItem, hFont, false);
-
 	// Save the control in the appropriate container, if necessary.
 	if (isWarning) {
 		SetWindowLongPtr(hDlgItem, GWLP_USERDATA, static_cast<LONG_PTR>(RGB(255, 0, 0)));
-	}
-	if (isMonospace) {
+		fontHandler.addBoldControl(hDlgItem);
+	} else if (isMonospace) {
 		fontHandler.addMonoControl(hDlgItem);
+	} else if (isNTLGFont) {
+		fontHandler.addNTLGControl(hDlgItem);
+	} else {
+		// Using the default font.
+		SetWindowFont(hDlgItem, hFont, false);
 	}
 
 	// Return the HWND if requested.
@@ -1885,9 +1883,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 			if (hFontBold) {
 				SelectFont(hDC, hFontOrig);
 			}
-		}
-		else
-		{
+		} else {
 			// Regular font.
 			GetTextExtentPoint32(hDC, desc_text.data(),
 				static_cast<int>(desc_text.size()), &textSize);
@@ -2130,6 +2126,11 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 			case RomFields::RomFieldType::RFT_STRING:
 				// String data.
 				field_cy = initString(tab.hDlg, pt_start, size, field, fieldIdx, nullptr);
+				if (field.flags & RomFields::STRF_WARNING) {
+					// Use the Warning font on hStatic, too.
+					SetWindowLongPtr(hStatic, GWLP_USERDATA, static_cast<LONG_PTR>(RGB(255, 0, 0)));
+					fontHandler.addBoldControl(hStatic);
+				}
 				break;
 			case RomFields::RomFieldType::RFT_BITFIELD:
 				// Create checkboxes starting at the current point.

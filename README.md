@@ -187,6 +187,7 @@ so administrator access is required.
 |:-----------------------------:|:--------------:|:--------:|:---------------:|:---------------:|
 | Atari Lynx                    |       Yes      |    Yes   |       N/A       |        No       |
 | Bandai WonderSwan (Color)     |       Yes      |    Yes   |       N/A       |      Title      |
+| Flipnote Studio (DSi/3DS)     |       Yes      |    Yes   |      Image      |       N/A       |
 | Google Android                |       Yes      |    Yes   |       Icon      |       N/A       |
 | J2ME                          |       Yes      |    Yes   |       Icon      |       N/A       |
 | Neo Geo Pocket (Color)        |       Yes      |    Yes   |       N/A       |      Title      |

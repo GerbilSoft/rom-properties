@@ -524,6 +524,12 @@ tracker_extract_get_metadata(TrackerExtractInfo *info, GError **error)
 		case FileType::ArchiveFile:
 			fileTypes[0] = "nfo:Archive";
 			break;
+
+		case FileType::AnimationFile:
+			// TODO: "nfo:Video"?
+			fileTypes[0] = "nfo:Image";
+			fileTypes[1] = "nfo:RasterImage";
+			break;
 	}
 
 	if (fileTypes[0]) {

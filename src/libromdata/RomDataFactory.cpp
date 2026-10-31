@@ -91,6 +91,7 @@ using std::unordered_set;
 #  include "Handheld/AndroidManifestXML.hpp"
 #endif /* ENABLE_XML */
 #include "Handheld/DMG.hpp"
+#include "Handheld/FlipnoteStudio.hpp"
 #include "Handheld/GameBoyAdvance.hpp"
 #include "Handheld/GameCom.hpp"
 #include "Handheld/J2ME.hpp"
@@ -346,11 +347,12 @@ static const array<RomDataFns, XML_MAGIC_COUNT+ZARCHIVE_MAGIC_COUNT+39> romDataF
  * Headers with addresses other than 0 should be
  * placed at the end of this array.
  */
-static const array<RomDataFns, 39> romDataFns_header = {{
+static const array<RomDataFns, 40> romDataFns_header = {{
 	// Consoles
 	GetRomDataFns(ColecoVision, ATTR_HAS_METADATA),
 	GetRomDataFns(Dreamcast, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
 	GetRomDataFns(DreamcastSave, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
+	GetRomDataFns(FlipnoteStudio, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),	// FIXME: Has magic, but KWZ only uses three bytes...
 	GetRomDataFns(GameCube, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
 	GetRomDataFns(GameCubeSave, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(Intellivision, ATTR_HAS_METADATA),

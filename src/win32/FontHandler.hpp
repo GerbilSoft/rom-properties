@@ -54,12 +54,30 @@ public:
 	 */
 	HFONT monospacedFont(void) const;
 
+	/**
+	 * Get the Nintendo Rodin NTLG font, if available.
+	 * @return Nintendo NTLG font, or nullptr on error.
+	 */
+	HFONT ntlgFont(void) const;
+
 public:
 	/**
+	 * Add a control that should use the bold font.
+	 * @param hWnd Control
+	 */
+	void addBoldControl(HWND hWnd);
+
+	/**
 	 * Add a control that should use the monospaced font.
-	 * @param hWnd Control.
+	 * @param hWnd Control
 	 */
 	void addMonoControl(HWND hWnd);
+
+	/**
+	 * Add a control that should use the Nintendo Rodin NTLG font.
+	 * @param hWnd Control
+	 */
+	void addNTLGControl(HWND hWnd);
 
 	/**
 	 * Update fonts.

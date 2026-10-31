@@ -64,6 +64,7 @@ SET(${PROJECT_NAME}_SRCS
 	Console/XboxDisc.cpp
 
 	Handheld/DMG.cpp
+	Handheld/FlipnoteStudio.cpp
 	Handheld/GameBoyAdvance.cpp
 	Handheld/GameCom.cpp
 	Handheld/J2ME.cpp
@@ -250,6 +251,7 @@ SET(${PROJECT_NAME}_H
 	Console/xbox360_xex_structs.h
 
 	Handheld/DMG.hpp
+	Handheld/FlipnoteStudio.hpp
 	Handheld/GameBoyAdvance.hpp
 	Handheld/GameCom.hpp
 	Handheld/J2ME.hpp
@@ -271,6 +273,7 @@ SET(${PROJECT_NAME}_H
 
 	Handheld/dmg_structs.h
 	Handheld/gba_structs.h
+	Handheld/flipnote_structs.h
 	Handheld/gcom_structs.h
 	Handheld/n3ds_structs.h
 	Handheld/nds_structs.h
