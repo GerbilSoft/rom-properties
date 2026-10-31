@@ -547,7 +547,7 @@ int CBMCart::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) con
 	}
 
 	// Lowercase hex CRC32s are used.
-	const string s_crc32 = fmt::format(FSTR("{:0>2x}"), d->rom_16k_crc32);
+	const string s_crc32 = fmt::format(FSTR("{:0>8x}"), d->rom_16k_crc32);
 
 	// NOTE: We only have one size for CBMCart right now.
 	// TODO: Determine the actual image size.

@@ -63,6 +63,9 @@
   * Windows: Fix the text color on the "Options" button when using a dark mode
     tool such as StartAllBack.
     * Reported by @CheatFreak47.
+  * C64Cart: Fix an issue where external title screen URLs were missing leading
+    zeroes in some cases.
+    * Affects: v2.5 - v2.9
 
 * Other changes:
   * 64-bit time_t (using the rp_time_t typedef) is now used regardless of
