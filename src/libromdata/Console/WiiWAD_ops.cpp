@@ -34,15 +34,16 @@ namespace LibRomData {
  */
 vector<RomData::RomOp> WiiWAD::romOps_int(void) const
 {
-	RP_D(const WiiWAD);
 	vector<RomOp> ops;
 
+	RP_D(const WiiWAD);
 	if (be16_to_cpu(d->tmdHeader.title_id.sysID) != NINTENDO_SYSID_TWL) {
 		// We only have a ROM operation for DSi TADs right now.
 		return ops;
 	}
 
-	RomOp op("E&xtract SRL...", RomOp::ROF_ENABLED | RomOp::ROF_SAVE_FILE);
+	ops.emplace_back("E&xtract SRL...", RomOp::ROF_ENABLED | RomOp::ROF_SAVE_FILE);
+	RomOp &op = ops.back();
 	op.sfi.title = C_("Nintendo|RomOps", "Extract Nintendo DS SRL File");
 	op.sfi.filter = C_("Nintendo|RomOps", "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom");
 	op.sfi.ext = ".nds";
@@ -50,7 +51,6 @@ vector<RomData::RomOp> WiiWAD::romOps_int(void) const
 	op.flags &= ~RomOp::ROF_ENABLED;
 #endif /* ENABLE_DECRYPTION */
 
-	ops.push_back(std::move(op));
 	return ops;
 }
 

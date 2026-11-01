@@ -193,11 +193,6 @@ vector<RomData::RomOp> NintendoDS::romOps_int(void) const
 	}
 
 	uint32_t flags;
-#ifdef ENABLE_DECRYPTION
-	ops.resize(2);
-#else /* !ENABLE_DECRYPTION */
-	ops.resize(1);
-#endif /* ENABLE_DECRYPTION */
 
 	// Trim/Untrim ROM
 	bool showUntrim = false;
@@ -222,10 +217,10 @@ vector<RomData::RomOp> NintendoDS::romOps_int(void) const
 		// Empty ROM?
 		flags = 0;
 	}
-	ops[0].desc = showUntrim
+
+	ops.emplace_back(showUntrim
 		? C_("NintendoDS|RomOps", "&Untrim ROM")
-		: C_("NintendoDS|RomOps", "&Trim ROM");
-	ops[0].flags = flags;
+		: C_("NintendoDS|RomOps", "&Trim ROM"), flags);
 
 #ifdef ENABLE_DECRYPTION
 	// Encrypt/Decrypt ROM
@@ -244,10 +239,10 @@ vector<RomData::RomOp> NintendoDS::romOps_int(void) const
 			flags = RomOp::ROF_REQ_WRITABLE;
 			break;
 	}
-	ops[1].desc = showEncrypt
+
+	ops.emplace_back(showEncrypt
 		? C_("NintendoDS|RomOps", "Encrypt ROM")
-		: C_("NintendoDS|RomOps", "Decrypt ROM");
-	ops[1].flags = flags;
+		: C_("NintendoDS|RomOps", "Decrypt ROM"), flags);
 #endif /* ENABLE_DECRYPTION */
 
 	return ops;

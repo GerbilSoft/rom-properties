@@ -33,10 +33,10 @@ namespace LibRomData {
  */
 vector<RomData::RomOp> Nintendo3DS::romOps_int(void) const
 {
-	RP_D(const Nintendo3DS);
 	vector<RomOp> ops;
 
 	// TMD needs to be loaded so we can check if it's a DSiWare SRL.
+	RP_D(const Nintendo3DS);
 	if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
 		const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 	}
@@ -44,11 +44,11 @@ vector<RomData::RomOp> Nintendo3DS::romOps_int(void) const
 	// Check for a DSi SRL.
 	NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent.get());
 	if (srl) {
-		RomOp op("E&xtract SRL...", RomOp::ROF_SAVE_FILE | RomOp::ROF_ENABLED);
+		ops.emplace_back("E&xtract SRL...", RomOp::ROF_SAVE_FILE | RomOp::ROF_ENABLED);
+		RomOp &op = ops.back();
 		op.sfi.title = C_("Nintendo|RomOps", "Extract Nintendo DS SRL File");
 		op.sfi.filter = C_("Nintendo|RomOps", "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom");
 		op.sfi.ext = ".nds";
-		ops.push_back(std::move(op));
 	}
 
 	return ops;
