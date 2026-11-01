@@ -271,8 +271,9 @@ size_t RpFileGio::write(const void *ptr, size_t size)
 	// FIXME: "Out of disk space" doesn't return a valid error???
 	GError *err = nullptr;
 	size_t sz_total = 0;
+	const uint8_t *ptr8 = static_cast<const uint8_t*>(ptr);
 	do {
-		gssize ret = g_output_stream_write(o_stream, ptr, size, nullptr, &err);
+		gssize ret = g_output_stream_write(o_stream, ptr8, size, nullptr, &err);
 		if (ret <= 0 || err != nullptr) {
 			// An error occurred.
 			if (err) {
@@ -286,6 +287,7 @@ size_t RpFileGio::write(const void *ptr, size_t size)
 		}
 
 		sz_total += ret;
+		ptr8 += ret;
 		if (likely(static_cast<size_t>(ret) <= size)) {
 			size -= ret;
 		} else {
