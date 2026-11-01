@@ -509,7 +509,6 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		return;
 	}
 
-	string s_save_filename;
 	RomData::RomOpParams params;
 	const RomData::RomOp *op = &ops[id];
 	if (op->flags & RomData::RomOp::ROF_SAVE_FILE) {
