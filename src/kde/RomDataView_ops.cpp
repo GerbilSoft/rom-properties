@@ -313,6 +313,13 @@ void RomDataViewPrivate::showMessage(QMessageBox::Icon messageType, const QStrin
 		ui.vboxLayout->addWidget(messageWidget);
 	}
 
+#  ifdef HAVE_KMESSAGEWIDGET_SETICON
+#    define KMessageWidget_SetIcon(messageWidget, iconID) \
+	(messageWidget)->setIcon((messageWidget)->style()->standardIcon(iconID))
+#  else /* !HAVE_KMESSAGEWIDGET_SETICON */
+#    define KMessageWidget_SetIcon(messageWidget, iconID) do { } while (0)
+#  endif /* HAVE_KMESSAGEWIDGET_SETICON */
+
 	switch (messageType) {
 		default:
 		case QMessageBox::NoIcon:
@@ -320,35 +327,23 @@ void RomDataViewPrivate::showMessage(QMessageBox::Icon messageType, const QStrin
 
 		case QMessageBox::Information:
 			messageWidget->setMessageType(KMessageWidget::Information);
-#  ifdef HAVE_KMESSAGEWIDGET_SETICON
-			messageWidget->setIcon(
-				messageWidget->style()->standardIcon(QStyle::SP_MessageBoxInformation));
-#  endif /* HAVE_KMESSAGEWIDGET_SETICON */
+			KMessageWidget_SetIcon(messageWidget, QStyle::SP_MessageBoxInformation);
 			break;
 
 		case QMessageBox::Warning:
 			messageWidget->setMessageType(KMessageWidget::Warning);
-#  ifdef HAVE_KMESSAGEWIDGET_SETICON
-			messageWidget->setIcon(
-				messageWidget->style()->standardIcon(QStyle::SP_MessageBoxWarning));
-#  endif /* HAVE_KMESSAGEWIDGET_SETICON */
+			KMessageWidget_SetIcon(messageWidget, QStyle::SP_MessageBoxWarning);
 			break;
 
 		case QMessageBox::Critical:
 			messageWidget->setMessageType(KMessageWidget::Error);
-#  ifdef HAVE_KMESSAGEWIDGET_SETICON
-			messageWidget->setIcon(
-				messageWidget->style()->standardIcon(QStyle::SP_MessageBoxCritical));
-#  endif /* HAVE_KMESSAGEWIDGET_SETICON */
+			KMessageWidget_SetIcon(messageWidget, QStyle::SP_MessageBoxCritical);
 			break;
 
 		case QMessageBox::Question:
 			// Doesn't exactly map to "question"...
 			messageWidget->setMessageType(KMessageWidget::Positive);
-#  ifdef HAVE_KMESSAGEWIDGET_SETICON
-			messageWidget->setIcon(
-				messageWidget->style()->standardIcon(QStyle::SP_MessageBoxQuestion));
-#  endif /* HAVE_KMESSAGEWIDGET_SETICON */
+			KMessageWidget_SetIcon(messageWidget, QStyle::SP_MessageBoxQuestion);
 			break;
 	}
 
