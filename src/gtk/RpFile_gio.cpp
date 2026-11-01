@@ -466,6 +466,9 @@ off64_t RpFileGio::size(void)
 	if (G_IS_FILE_INPUT_STREAM(d->stream)) {
 		fileInfo = g_file_input_stream_query_info(G_FILE_INPUT_STREAM(d->stream),
 			G_FILE_ATTRIBUTE_STANDARD_SIZE, nullptr, &err);
+	} else if (G_IS_FILE_OUTPUT_STREAM(d->stream)) {
+		fileInfo = g_file_output_stream_query_info(G_FILE_OUTPUT_STREAM(d->stream),
+			G_FILE_ATTRIBUTE_STANDARD_SIZE, nullptr, &err);
 	} else if (G_IS_FILE_IO_STREAM(d->stream)) {
 		fileInfo = g_file_io_stream_query_info(G_FILE_IO_STREAM(d->stream),
 			G_FILE_ATTRIBUTE_STANDARD_SIZE, nullptr, &err);
