@@ -12,6 +12,15 @@
 using LibRpFile::IRpFile;
 using LibRpFile::IRpFilePtr;
 
+// streambuf_IRpFile *is* used by libromdata (in WiiUPackage),
+// but for some reason, ld doesn't find it when linking the
+// GTK UI frontends on Debian 8 (ppc). (gcc-4.9.2)
+// Use some linker hax to force linkage.
+extern "C" {
+	extern unsigned char RP_LibRpFile_streambuf_IRpFile_ForceLinkage;
+	unsigned char RP_LibRpFile_streambuf_IRpFile_ForceLinkage;
+}
+
 namespace LibRpFile {
 
 /**
