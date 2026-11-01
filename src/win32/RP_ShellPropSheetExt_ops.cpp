@@ -423,8 +423,15 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			// FIXME: Convert to ANSI, not UTF-8.
 			ofs.open(T2U8(tfilename), ofstream::out);
 #endif /* HAVE_OFSTREAM_CTOR_WCHAR_T */
-			if (ofs.fail())
+			if (ofs.fail()) {
+				// Delete the file, since it's likely only 0 bytes.
+				// TODO: Only if it was created by us...
+				ofs.close();
+				//DeleteFile(tfilename.c_str());
+
+				// TODO: Show an error message?
 				return;
+			}
 		}
 
 		// TODO: Optimize this such that we can pass ofstream or ostringstream
@@ -524,10 +531,27 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		// Prompt for a save file.
 		tstring t_save_filename = LibWin32UI::getSaveFileName(hDlgSheet,
 			U82T(op->sfi.title), U82T(filter), U82T(initialFile));
-		if (t_save_filename.empty())
+		if (t_save_filename.empty()) {
 			return;
-		s_save_filename = T2U8_str(t_save_filename);
-		params.save_filename = s_save_filename.c_str();
+		}
+
+		// Open the save file.
+		params.save_file = std::make_shared<RpFile>(t_save_filename, RpFile::FM_CREATE_WRITE);
+		if (!params.save_file->isOpen()) {
+			// Show an error message.
+			// TODO: Include the filename?
+			// TODO: Thread-safe strerror()?
+			const QString msg = U82Q(fmt::format(FRUN(C_("RomDataView", "Error opening output file: {:s}")),
+				strerror(params.save_file->lastError())));
+
+			// Delete the file if it was created.
+			// TODO: Only if it was created by us...
+			out_file.reset();
+			//DeleteFile(t_save_filename.c_str());
+
+			// TODO: Show an error message.
+			return;
+		}
 	}
 
 	const int ret = romData->doRomOp(id, &params);
@@ -550,8 +574,11 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		}
 	} else {
 		// An error occurred...
-		// TODO: Show an error message.
 		messageType = MB_ICONWARNING;
+
+		// Delete the file, since it's likely only 0 bytes.
+		params.save_file.reset();
+		DeleteFile(save_filename.c_str());
 	}
 
 	if (!params.msg.empty()) {
