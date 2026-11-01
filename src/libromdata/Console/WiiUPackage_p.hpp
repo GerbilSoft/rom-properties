@@ -55,7 +55,7 @@
 // for .wua files
 #ifdef HAVE_ZARCHIVE
 #  include "zarchive/zarchivereader.h"
-#  include "file/streambuf_IRpFile.hpp"
+#  include "librpfile/streambuf_IRpFile.hpp"
 #endif /* HAVE_ZARCHIVE */
 
 namespace LibRomData {
@@ -126,7 +126,7 @@ public:
 		std::string package_name;
 
 		// streambuf_IRpFile wrapper
-		streambuf_IRpFile *streambuf;
+		LibRpFile::streambuf_IRpFile *streambuf;
 
 		wua_t()
 			: streambuf(nullptr)

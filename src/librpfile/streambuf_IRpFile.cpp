@@ -1,10 +1,18 @@
+/***************************************************************************
+ * ROM Properties Page shell extension. (librpfile)                        *
+ * streambuf_IRpFile.cpp: std::streambuf wrapper around IRpFile.           *
+ *                                                                         *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
+ * SPDX-License-Identifier: GPL-2.0-or-later                               *
+ ***************************************************************************/
+
 #include "streambuf_IRpFile.hpp"
 
 // Other rom-properties classes
 using LibRpFile::IRpFile;
 using LibRpFile::IRpFilePtr;
 
-namespace LibRomData {
+namespace LibRpFile {
 
 /**
  * Create a (read-only) std::streambuf wrapper around an IRpFile.
@@ -102,4 +110,4 @@ streambuf_IRpFile::pos_type streambuf_IRpFile::seekpos(
 	return seekoff(static_cast<off_type>(sp), std::ios_base::beg, which);
 }
 
-} // namespace LibRomData
+} // namespace LibRpFile

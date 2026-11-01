@@ -39,6 +39,7 @@ SET(${PROJECT_NAME}_SRCS
 	FileSystem_common.cpp
 	RelatedFile.cpp
 	DualFile.cpp
+	streambuf_IRpFile.cpp
 	scsi/RpFile_Kreon.cpp
 	scsi/RpFile_scsi.cpp
 	xattr/XAttrReader.cpp
@@ -57,6 +58,7 @@ SET(${PROJECT_NAME}_H
 	RelatedFile.hpp
 	SubFile.hpp
 	VectorFile.hpp
+	streambuf_IRpFile.hpp
 	scsi/ata_protocol.h
 	scsi/scsi_protocol.h
 	scsi/scsi_ata_cmds.h
