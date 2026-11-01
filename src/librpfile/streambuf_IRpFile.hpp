@@ -17,7 +17,7 @@
 
 namespace LibRpFile {
 
-class streambuf_IRpFile : public std::streambuf
+class RP_LIBROMDATA_PUBLIC streambuf_IRpFile : public std::streambuf
 {
 public:
 	/**

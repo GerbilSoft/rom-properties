@@ -110,10 +110,10 @@ GInputStream *RpFileGioPrivate::get_GInputStream(void)
 GOutputStream *RpFileGioPrivate::get_GOutputStream(void)
 {
 	// Likely a GIOStream, so check that first.
-	if (G_IS_IO_STREAM(stream)) {
-		return g_io_stream_get_output_stream(G_IO_STREAM(stream));
-	} else if (G_IS_OUTPUT_STREAM(stream)) {
+	if (G_IS_OUTPUT_STREAM(stream)) {
 		return G_OUTPUT_STREAM(stream);
+	} else if (G_IS_IO_STREAM(stream)) {
+		return g_io_stream_get_output_stream(G_IO_STREAM(stream));
 	}
 	return nullptr;
 }
@@ -139,14 +139,20 @@ RpFileGio::RpFileGio(string_view uri, FileMode mode)
 			d->stream = (GObject*)g_file_read(file, nullptr, &err);
 			break;
 		case FM_CREATE_WRITE:
-			d->stream = (GObject*)g_file_replace_readwrite(file, nullptr, FALSE, G_FILE_CREATE_REPLACE_DESTINATION, nullptr, &err);
+			// FIXME: sftp:// doesn't support read/write. Using write-only instead.
+			//d->stream = (GObject*)g_file_replace_readwrite(file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &err);
+			d->stream = (GObject*)g_file_replace(file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &err);
 			break;
 		case FM_OPEN_WRITE:
-			d->stream = (GObject*)g_file_open_readwrite(file, nullptr, &err);
+			// FIXME: Not supported due to e.g. sftp:// not supporting read/write.
+			//d->stream = (GObject*)g_file_open_readwrite(file, nullptr, &err);
+			m_lastError = ENOTSUP;
+			g_object_unref(file);
 			break;
 		default:
 			// Invalid mode.
 			m_lastError = EINVAL;
+			g_object_unref(file);
 			return;
 	}
 	g_object_unref(file);

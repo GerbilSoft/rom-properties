@@ -514,13 +514,16 @@ rp_key_manager_tab_handle_menu_action(RpKeyManagerTab *tab, gint id)
 	open_data->id = static_cast<LibRomData::KeyStoreUI::ImportFileID>(id);
 
 	const rpGtk_getFileName_t gfndata = {
+		(rpGtk_fileDialogCallback)rp_key_manager_getOpenFileDialog_callback,	// callback
+		open_data,		// user_data
+
 		parent,			// parent
 		title,			// title
 		filter,			// filter
 		tab->prevOpenDir,	// init_dir
 		nullptr,		// init_name
-		(rpGtk_fileDialogCallback)rp_key_manager_getOpenFileDialog_callback,	// callback
-		open_data,		// user_data
+
+		TRUE,			// bLocalOnly (TODO)
 	};
 	const int ret = rpGtk_getOpenFileName(&gfndata);
 	if (ret != 0) {

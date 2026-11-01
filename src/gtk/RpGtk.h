@@ -38,13 +38,17 @@ typedef void (*rpGtk_fileDialogCallback)(GFile *file, gpointer user_data);
  * File dialog data struct
  */
 typedef struct _rpGtk_getFileName_t {
+	rpGtk_fileDialogCallback callback;	// Callback function
+	gpointer user_data;			// User data for the callback function
+
 	GtkWindow *parent;			// (nullable) Parent window to set as modal
 	const char *title;			// Dialog title
 	const char *filter;			// RP file dialog filter (UTF-8, from gettext())
 	const char *init_dir;			// (nullable) Initial directory
 	const char *init_name;			// (nullable) Initial name
-	rpGtk_fileDialogCallback callback;	// Callback function
-	gpointer user_data;			// User data for the callback function
+
+	// Flags
+	gboolean bLocalOnly;			// True to restrict files to local only
 } rpGtk_getFileName_t;
 
 /**

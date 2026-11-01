@@ -10,10 +10,14 @@
 #include "RomDataView_p.hpp"
 #include "RpGtk.h"
 
+// RpFileGio
+#include "RpFile_gio.hpp"
+
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
 #include "librpbase/TextOut.hpp"
 #include "librpfile/FileSystem.hpp"
+#include "librpfile/streambuf_IRpFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 
@@ -21,11 +25,12 @@ using namespace LibRpFile;
 #include "tcharx.h"
 
 // C++ STL classes
-#include <fstream>
 #include <sstream>
-using std::ofstream;
+using std::ostream;
 using std::ostringstream;
+using std::shared_ptr;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 // Custom widgets
@@ -271,38 +276,47 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 		return;
 	}
 
-	// TODO: URIs?
-	gchar *filename = nullptr;
-	if (file) {
-		filename = g_file_get_path(file);
-		g_object_unref(file);
-		if (!filename && save_data->isFileRequired) {
-			// No filename, but a file is required...
-			g_free(save_data);
-			return;
-		}
+	// NOTE: Only using RpFileGio for file writing here.
+	// RpFile isn't needed because the file write capabilities should be the same.
+
+	// Get the URI.
+	gchar *const uri = g_file_get_uri(file);
+	if (!uri && save_data->isFileRequired) {
+		// No URI, but a file is required...
+		g_free(save_data);
+		return;
 	}
 
 	// for convenience purposes
 	RpRomDataView *const page = save_data->page;
 	RomData *const romData = page->cxx->romData.get();
 
+	// Save the previous export directory.
+	// FIXME: Handle this with non-local files?
+	gchar *const filename = g_file_get_path(file);
 	if (filename) {
-		// Save the previous export directory.
 		g_free(page->prevExportDir);
 		page->prevExportDir = g_path_get_dirname(filename);
 	}
 
 	const int id = save_data->id;
-	g_free(save_data);
 	if (id < 0) {
 		// Standard operation.
-		// TODO: GIO wrapper for ostream?
-		// For now, we'll use ofstream.
-		ofstream ofs;
-		ofs.open(filename, ofstream::out);
+		// NOTE: Only the uri is needed; we don't need the local filename anymore.
 		g_free(filename);
-		if (ofs.fail()) {
+		g_free(save_data);
+
+		shared_ptr<RpFileGio> out_file = std::make_shared<RpFileGio>(uri, RpFileGio::FM_CREATE_WRITE);
+		g_free(uri);
+		if (!out_file->isOpen()) {
+			// TODO: Show an error message?
+			// TODO: Delete the 0-byte file?
+			return;
+		}
+
+		unique_ptr<streambuf_IRpFile> streambuf(new streambuf_IRpFile(out_file, std::ios_base::out));
+		ostream os(streambuf.get());
+		if (os.fail()) {
 			// TODO: Show an error message?
 			return;
 		}
@@ -313,17 +327,15 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 					? rp_language_combo_box_get_selected_lc(RP_LANGUAGE_COMBO_BOX(page->cboLanguage))
 					: 0;
 
-				ofs << "== " << fmt::format(FRUN(C_("RomDataView", "File: '{:s}'")), romData->filename()) << '\n';
+				os << "== " << fmt::format(FRUN(C_("RomDataView", "File: '{:s}'")), romData->filename()) << '\n';
 				ROMOutput ro(romData, sel_lc);
-				ofs << ro;
-				ofs.flush();
+				os << ro;
 				break;
 			}
 
 			case OPTION_EXPORT_JSON: {
 				JSONROMOutput jsro(romData);
-				ofs << jsro << '\n';
-				ofs.flush();
+				os << jsro << '\n';
 				break;
 			}
 
@@ -332,15 +344,25 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 				break;
 		}
 
-		ofs.close();
+		os.flush();
+		streambuf->pubsync();
 		return;
 	}
 
 	// Run the ROM operation.
+	// TODO: Add URI support? For now, it's local filename only.
+	g_free(uri);
+	if (!filename && save_data->isFileRequired) {
+		// No local filename, but a file is required...
+		g_free(save_data);
+		return;
+	}
+
 	RomData::RomOpParams params;
 	params.save_filename = filename;
 	const int ret = romData->doRomOp(id, &params);
 	g_free(filename);
+	g_free(save_data);
 
 	GtkMessageType messageType;
 	if (ret == 0) {
@@ -479,13 +501,16 @@ rp_rom_data_view_doRomOp_stdop(RpRomDataView *page, int id)
 	save_data->isFileRequired = true;
 
 	const rpGtk_getFileName_t gfndata = {
+		(rpGtk_fileDialogCallback)rp_rom_data_view_getSaveFileDialog_callback,	// callback
+		save_data,		// user_data
+
 		parent,			// parent
 		title,			// title
 		filter,			// filter
 		page->prevExportDir,	// init_dir
 		defaultName.c_str(),	// init_name
-		(rpGtk_fileDialogCallback)rp_rom_data_view_getSaveFileDialog_callback,	// callback
-		save_data,		// user_data
+
+		FALSE,			// bLocalOnly
 	};
 	int ret = rpGtk_getSaveFileName(&gfndata);
 	if (ret != 0) {
@@ -566,13 +591,16 @@ btnOptions_triggered_signal_handler(RpOptionsMenuButton *menuButton,
 
 		GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(page));
 		const rpGtk_getFileName_t gfndata = {
+			(rpGtk_fileDialogCallback)rp_rom_data_view_getSaveFileDialog_callback,	// callback
+			save_data,		// user_data
+
 			parent,			// parent
 			op->sfi.title,		// title
 			filter.c_str(),		// filter
 			!init_dir.empty() ? init_dir.c_str() : nullptr,		// init_dir
 			!init_name.empty() ? init_name.c_str() : nullptr,	// init_name
-			(rpGtk_fileDialogCallback)rp_rom_data_view_getSaveFileDialog_callback,	// callback
-			save_data,		// user_data
+
+			TRUE,			// bLocalOnly (TODO: Enable this for custom RomOps later?)
 		};
 		int ret = rpGtk_getSaveFileName(&gfndata);
 		if (ret != 0) {
