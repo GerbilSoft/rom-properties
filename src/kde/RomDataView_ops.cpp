@@ -423,8 +423,9 @@ void RomDataView::btnOptions_triggered(int id)
 			const QString msg = U82Q(fmt::format(FRUN(C_("RomDataView", "Error opening output file: {:s}")),
 				strerror(params.save_file->lastError())));
 
-			// TODO: Delete the file if it was created.
-			//g_file_delete(file, nullptr, nullptr);
+			// Delete the file if it was created.
+			params.save_file.reset();
+			QFile::remove(save_filename);
 			
 			d->showMessage(QMessageBox::Warning, msg);
 			return;
