@@ -148,6 +148,10 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 out:
 	pParams->save_file->close();
 	if (!wasMainContentOpen) {
+		// Make sure the icon/title is loaded, in case
+		// a standard RomOp is done after reopening the
+		// SRL file.
+		srl->ensureIconTitleDataIsLoaded();
 		d->mainContent->close();
 	}
 	return pParams->status;
