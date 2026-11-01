@@ -22,28 +22,43 @@ namespace LibRpFile {
 streambuf_IRpFile::streambuf_IRpFile(const IRpFilePtr &file, std::ios_base::openmode mode)
 	: m_file(file)
 	, m_mode(mode)
+	, m_buffer(nullptr)
+	, m_in_buffer(nullptr)
+	, m_out_buffer(nullptr)
 {
-	if (!m_file) {
+	assert((mode & (std::ios_base::in | std::ios_base::out)) != 0);
+	if (!m_file || ((mode & (std::ios_base::in | std::ios_base::out)) == 0)) {
+		// No file, and/or no open mode.
 		return;
 	}
 
 	// NOTE: Not checking m_file->isWritable() here.
 
 	// Initialize the buffers.
-	m_in_buffer.fill(0);
-	m_out_buffer.fill(0);	// TODO: Only if output?
+	// NOTE: If both In and Out are enabled, we need 2x the buffer size.
+	const bool alloc2x = (mode & (std::ios_base::in | std::ios_base::out)) ==
+	                             (std::ios_base::in | std::ios_base::out);
+	const size_t buffer_size = (alloc2x) ? (BUFFER_SIZE * 2) : BUFFER_SIZE;
+	m_buffer = new char[buffer_size];
 
 	// Initialize the streambuf pointers.
 	if (mode & std::ios_base::in) {
 		// Input buffer is initially empty.
-		setg(m_in_buffer.data(), m_in_buffer.data(), m_in_buffer.data());
+		m_in_buffer = m_buffer;
+		setg(m_in_buffer, m_in_buffer, m_in_buffer);
 	}
 	if (mode & std::ios_base::out) {
 		// Output buffer is also initially empty,
 		// but it's writable, so let streambuf know
 		// the full size is available.
-		setp(m_out_buffer.data(), m_out_buffer.data() + m_out_buffer.size());
+		m_out_buffer = (alloc2x) ? &m_buffer[BUFFER_SIZE] : m_buffer;
+		setp(m_out_buffer, m_out_buffer + BUFFER_SIZE);
 	}
+}
+
+streambuf_IRpFile::~streambuf_IRpFile()
+{
+	delete[] m_buffer;
 }
 
 /**
@@ -52,7 +67,9 @@ streambuf_IRpFile::streambuf_IRpFile(const IRpFilePtr &file, std::ios_base::open
  */
 streambuf_IRpFile::int_type streambuf_IRpFile::underflow(void)
 {
-	if (!m_file) {
+	assert((bool)m_file);
+	assert(m_mode & std::ios_base::in);
+	if (!m_file || !(m_mode & std::ios_base::in)) {
 		return traits_type::eof();
 	}
 
@@ -62,14 +79,14 @@ streambuf_IRpFile::int_type streambuf_IRpFile::underflow(void)
 	}
 
 	// Load data from the file.
-	size_t sz_read = m_file->read(m_in_buffer.data(), m_in_buffer.size());
+	size_t sz_read = m_file->read(m_in_buffer, BUFFER_SIZE);
 	if (sz_read == 0) {
 		// Couldn't load anything...
 		return traits_type::eof();
 	}
 
 	// Update the "get" pointers to tell streambuf how much data is available.
-	setg(m_in_buffer.data(), m_in_buffer.data(), m_in_buffer.data() + sz_read);
+	setg(m_in_buffer, m_in_buffer, m_in_buffer + sz_read);
 	return traits_type::to_int_type(*gptr());
 }
 
@@ -80,7 +97,9 @@ streambuf_IRpFile::int_type streambuf_IRpFile::underflow(void)
  */
 streambuf_IRpFile::int_type streambuf_IRpFile::overflow(int_type ch)
 {
-	if (!m_file) {
+	assert((bool)m_file);
+	assert(m_mode & std::ios_base::out);
+	if (!m_file || !(m_mode & std::ios_base::out)) {
 		return traits_type::eof();
 	}
 
@@ -189,6 +208,8 @@ int streambuf_IRpFile::sync(void)
  */
 int streambuf_IRpFile::flush_output_buffer(void)
 {
+	assert((bool)m_file);
+	assert(m_mode & std::ios_base::out);
 	if (!m_file || !(m_mode & std::ios_base::out)) {
 		return -1;
 	}
@@ -203,7 +224,7 @@ int streambuf_IRpFile::flush_output_buffer(void)
 	}
 
 	// Reset the output buffer pointer.
-	setp(m_out_buffer.data(), m_out_buffer.data() + m_out_buffer.size());
+	setp(m_out_buffer, m_out_buffer + BUFFER_SIZE);
 	return 0;
 }
 

@@ -27,6 +27,8 @@ public:
 	 */
 	explicit streambuf_IRpFile(const LibRpFile::IRpFilePtr &file, std::ios_base::openmode mode);
 
+	~streambuf_IRpFile() override;
+
 protected:
 	/**
 	 * Read buffer has underflowed.
@@ -72,11 +74,19 @@ private:
 	int flush_output_buffer(void);
 
 private:
+	// Size of each buffer (4 KB)
 	static constexpr size_t BUFFER_SIZE = 4096U;
+
+	// File pointer and mode
 	LibRpFile::IRpFilePtr m_file;
 	std::ios_base::openmode m_mode;
-	std::array<char, BUFFER_SIZE> m_in_buffer;
-	std::array<char, BUFFER_SIZE> m_out_buffer;	// TODO: Only if open for write?
+
+	// Allocated buffer
+	char *m_buffer;
+
+	// Pointers to Input and Output sections of the allocated buffer
+	char *m_in_buffer;
+	char *m_out_buffer;
 };
 
 } // namespace LibRpFile
