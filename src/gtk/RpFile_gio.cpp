@@ -20,15 +20,16 @@ using std::string_view;
 class RpFileGioPrivate
 {
 public:
-	explicit RpFileGioPrivate(string_view uri);
+	explicit RpFileGioPrivate(string_view uri, RpFileGio::FileMode mode);
 	~RpFileGioPrivate();
 
 public:
 	RP_DISABLE_COPY(RpFileGioPrivate)
 
 public:
-	GFileInputStream *stream;	// File input stream.
-	string uri;			// GVfs URI.
+	GObject *stream;		// may be GFileInputStream (read-only) or GFileIOStream (read-write)
+	string uri;			// GVfs URI
+	RpFileGio::FileMode mode;	// File mode
 
 public:
 	/**
@@ -37,13 +38,26 @@ public:
 	 * @return POSIX error code.
 	 */
 	static int gioerr_to_posix(gint gioerr);
+
+	/**
+	 * Get the GInputStream.
+	 * @return GInputStream, or nullptr if not available.
+	 */
+	GInputStream *get_GInputStream(void);
+
+	/**
+	 * Get the GOutputStream.
+	 * @return GOutputStream, or nullptr if not available.
+	 */
+	GOutputStream *get_GOutputStream(void);
 };
 
 /** RpFileGioPrivate **/
 
-RpFileGioPrivate::RpFileGioPrivate(string_view uri)
-	: stream(nullptr)
+RpFileGioPrivate::RpFileGioPrivate(string_view uri, RpFileGio::FileMode mode)
+	: mode(mode)
 {
+	stream = nullptr;
 	STRING_VIEW_ASSIGN(this->uri, uri);
 }
 
@@ -74,6 +88,36 @@ int RpFileGioPrivate::gioerr_to_posix(gint gioerr)
 	return err;
 }
 
+/**
+ * Get the GInputStream.
+ * @return GInputStream, or nullptr if not available.
+ */
+GInputStream *RpFileGioPrivate::get_GInputStream(void)
+{
+	// Likely a GInputStream, so check that first.
+	if (G_IS_INPUT_STREAM(stream)) {
+		return G_INPUT_STREAM(stream);
+	} else if (G_IS_IO_STREAM(stream)) {
+		return g_io_stream_get_input_stream(G_IO_STREAM(stream));
+	}
+	return nullptr;
+}
+
+/**
+ * Get the GOutputStream.
+ * @return GOutputStream, or nullptr if not available.
+ */
+GOutputStream *RpFileGioPrivate::get_GOutputStream(void)
+{
+	// Likely a GIOStream, so check that first.
+	if (G_IS_IO_STREAM(stream)) {
+		return g_io_stream_get_output_stream(G_IO_STREAM(stream));
+	} else if (G_IS_OUTPUT_STREAM(stream)) {
+		return G_OUTPUT_STREAM(stream);
+	}
+	return nullptr;
+}
+
 /** RpFileGio **/
 
 /**
@@ -81,16 +125,32 @@ int RpFileGioPrivate::gioerr_to_posix(gint gioerr)
  * NOTE: Files are always opened as read-only in binary mode.
  * @param uri GVfs URI.
  */
-RpFileGio::RpFileGio(string_view uri)
-	: d_ptr(new RpFileGioPrivate(uri))
+RpFileGio::RpFileGio(string_view uri, FileMode mode)
+	: d_ptr(new RpFileGioPrivate(uri, mode))
 {
 	RP_D(RpFileGio);
 	GError *err = nullptr;
 
 	// Open the file.
 	GFile *const file = g_file_new_for_uri(d->uri.c_str());
-	d->stream = g_file_read(file, nullptr, &err);
+
+	switch (mode & FM_MODE_MASK) {
+		case FM_OPEN_READ:
+			d->stream = (GObject*)g_file_read(file, nullptr, &err);
+			break;
+		case FM_CREATE_WRITE:
+			d->stream = (GObject*)g_file_replace_readwrite(file, nullptr, FALSE, G_FILE_CREATE_REPLACE_DESTINATION, nullptr, &err);
+			break;
+		case FM_OPEN_WRITE:
+			d->stream = (GObject*)g_file_open_readwrite(file, nullptr, &err);
+			break;
+		default:
+			// Invalid mode.
+			m_lastError = EINVAL;
+			return;
+	}
 	g_object_unref(file);
+
 	if (!d->stream || err != nullptr) {
 		// An error occurred.
 		if (err) {
@@ -148,8 +208,15 @@ size_t RpFileGio::read(void *ptr, size_t size)
 		return 0;
 	}
 
+	GInputStream *const i_stream = d->get_GInputStream();
+	if (!i_stream) {
+		// No input stream...
+		m_lastError = EBADF;
+		return 0;
+	}
+
 	GError *err = nullptr;
-	gssize ret = g_input_stream_read(G_INPUT_STREAM(d->stream),
+	gssize ret = g_input_stream_read(i_stream,
 		ptr, size, nullptr, &err);
 	if (ret < 0 || err != nullptr) {
 		// An error occurred.
@@ -175,11 +242,37 @@ size_t RpFileGio::read(void *ptr, size_t size)
  */
 size_t RpFileGio::write(const void *ptr, size_t size)
 {
-	// Not a valid operation for RpFileGio.
-	RP_UNUSED(ptr);
-	RP_UNUSED(size);
-	m_lastError = EBADF;
-	return 0;
+	RP_D(RpFileGio);
+	if (!d->stream || !(d->mode & FM_WRITE)) {
+		// Either the file isn't open,
+		// or it's read-only.
+		m_lastError = EBADF;
+		return 0;
+	}
+
+	GOutputStream *const o_stream = d->get_GOutputStream();
+	if (!o_stream) {
+		// No input stream...
+		m_lastError = EBADF;
+		return 0;
+	}
+
+	GError *err = nullptr;
+	gssize ret = g_output_stream_write(o_stream,
+		ptr, size, nullptr, &err);
+	if (ret < 0 || err != nullptr) {
+		// An error occurred.
+		if (err) {
+			m_lastError = d->gioerr_to_posix(err->code);
+			g_error_free(err);
+		} else {
+			// No GError...
+			m_lastError = EIO;
+		}
+		ret = 0;
+	}
+
+	return ret;
 }
 
 /**
@@ -210,7 +303,15 @@ int RpFileGio::seek(off64_t pos, SeekWhence whence)
 
 	int ret = 0;
 	GError *err = nullptr;
-	gboolean bRet = g_seekable_seek(G_SEEKABLE(d->stream), pos, seekType, nullptr, &err);
+
+	// Seek in the input stream.
+	GInputStream *const i_stream = d->get_GInputStream();
+	if (!i_stream) {
+		// No input stream...
+		m_lastError = EBADF;
+		return -1;
+	}
+	gboolean bRet = g_seekable_seek(G_SEEKABLE(i_stream), pos, seekType, nullptr, &err);
 	if (bRet < 0 || err != nullptr) {
 		// An error occurred.
 		if (err) {
@@ -221,6 +322,31 @@ int RpFileGio::seek(off64_t pos, SeekWhence whence)
 			m_lastError = EIO;
 		}
 		ret = -1;
+		return ret;
+	}
+
+	// Seek in the output stream. (only if input stream seek succeeded)
+	// NOTE: Using G_SEEK_CUR might result in the streams getting desynchronized.
+	if (d->mode & FM_WRITE) {
+		GOutputStream *const o_stream = d->get_GOutputStream();
+		if (!o_stream) {
+			// No output stream, but file is open for write...
+			m_lastError = EBADF;
+			return -1;
+		}
+		gboolean bRet = g_seekable_seek(G_SEEKABLE(o_stream), pos, seekType, nullptr, &err);
+		if (bRet < 0 || err != nullptr) {
+			// An error occurred.
+			if (err) {
+				m_lastError = d->gioerr_to_posix(err->code);
+				g_error_free(err);
+			} else {
+				// No GError...
+				m_lastError = EIO;
+			}
+			ret = -1;
+			return ret;
+		}
 	}
 
 	return ret;
@@ -238,7 +364,15 @@ off64_t RpFileGio::tell(void)
 		return -1;
 	}
 
-	return g_seekable_tell(G_SEEKABLE(d->stream));
+	// TODO: Check the last stream used?
+	// For now, only checking the input stream.
+	GInputStream *const i_stream = d->get_GInputStream();
+	if (!i_stream) {
+		// No input stream...
+		m_lastError = EBADF;
+		return -1;
+	}
+	return g_seekable_tell(G_SEEKABLE(i_stream));
 }
 
 /** File properties **/
@@ -257,8 +391,15 @@ off64_t RpFileGio::size(void)
 
 	// TODO: Error checking?
 	GError *err = nullptr;
-	GFileInfo *fileInfo = g_file_input_stream_query_info(d->stream,
-		G_FILE_ATTRIBUTE_STANDARD_SIZE, nullptr, &err);
+	GFileInfo *fileInfo = nullptr;
+	if (G_IS_FILE_INPUT_STREAM(d->stream)) {
+		fileInfo = g_file_input_stream_query_info(G_FILE_INPUT_STREAM(d->stream),
+			G_FILE_ATTRIBUTE_STANDARD_SIZE, nullptr, &err);
+	} else if (G_IS_FILE_IO_STREAM(d->stream)) {
+		fileInfo = g_file_io_stream_query_info(G_FILE_IO_STREAM(d->stream),
+			G_FILE_ATTRIBUTE_STANDARD_SIZE, nullptr, &err);
+	}
+
 	if (!fileInfo || err != nullptr) {
 		// An error occurred.
 		if (err) {
