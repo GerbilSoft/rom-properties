@@ -378,6 +378,75 @@ off64_t RpFileGio::tell(void)
 	return g_seekable_tell(G_SEEKABLE(i_stream));
 }
 
+/**
+ * Truncate the file.
+ * @param size New size. (default is 0)
+ * @return 0 on success; -1 on error.
+ */
+int RpFileGio::truncate(off64_t size)
+{
+	RP_D(RpFileGio);
+	if (!G_SEEKABLE(d->stream) || !(d->mode & FM_WRITE)) {
+		// Either the file isn't open,
+		// or it's read-only.
+		m_lastError = EBADF;
+		return -1;
+	} else if (size < 0) {
+		m_lastError = EINVAL;
+		return -1;
+	}
+
+	GSeekable *const seekable = G_SEEKABLE(d->stream);
+	if (!seekable || !g_seekable_can_seek(seekable) || !g_seekable_can_truncate(seekable)) {
+		// Not a seekable or truncatable stream.
+		m_lastError = EBADF;
+		return -1;
+	}
+
+	// Get the current position.
+	off64_t pos = g_seekable_tell(seekable);
+	if (pos < 0) {
+		m_lastError = EIO;
+		return -1;
+	}
+
+	// Truncate the file.
+	GError *err = nullptr;
+	gboolean bRet = g_seekable_truncate(seekable, size, nullptr, &err);
+	if (!bRet || err != nullptr) {
+		// An error occurred.
+		if (err) {
+			m_lastError = d->gioerr_to_posix(err->code);
+			g_error_free(err);
+		} else {
+			// No GError...
+			m_lastError = EIO;
+		}
+
+		return -1;
+	}
+
+	// If the previous position was past the new
+	// file size, reset the pointer.
+	if (pos > size) {
+		bRet = g_seekable_seek(seekable, pos, G_SEEK_SET, nullptr, &err);
+		if (bRet < 0 || err != nullptr) {
+			// An error occurred.
+			if (err) {
+				m_lastError = d->gioerr_to_posix(err->code);
+				g_error_free(err);
+			} else {
+				// No GError...
+				m_lastError = EIO;
+			}
+			return -1;
+		}
+	}
+
+	// File truncated.
+	return 0;
+}
+
 /** File properties **/
 
 /**
@@ -392,7 +461,7 @@ off64_t RpFileGio::size(void)
 		return -1;
 	}
 
-	// TODO: Error checking?
+	// TODO: Better error checking?
 	GError *err = nullptr;
 	GFileInfo *fileInfo = nullptr;
 	if (G_IS_FILE_INPUT_STREAM(d->stream)) {

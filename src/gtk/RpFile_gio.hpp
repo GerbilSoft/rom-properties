@@ -107,6 +107,13 @@ public:
 	 */
 	off64_t tell(void) final;
 
+	/**
+	 * Truncate the file.
+	 * @param size New size. (default is 0)
+	 * @return 0 on success; -1 on error.
+	 */
+	int truncate(off64_t size = 0) final;
+
 public:
 	/** File properties **/
 
