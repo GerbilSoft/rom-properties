@@ -313,6 +313,13 @@ int RpFileGio::seek(off64_t pos, SeekWhence whence)
 		return -1;
 	}
 
+	GSeekable *const seekable = G_SEEKABLE(d->stream);
+	if (!seekable || !g_seekable_can_seek(seekable)) {
+		// Not a seekable stream.
+		m_lastError = EBADF;
+		return -1;
+	}
+
 	// NOTE: GSeekType does *not* map to stdio SeekWhence values.
 	static const array<uint8_t /*GSeekType*/, 3> whenceToSeekType = {
 		G_SEEK_SET,
@@ -321,6 +328,7 @@ int RpFileGio::seek(off64_t pos, SeekWhence whence)
 	};
 	if ((int)whence < 0 || (int)whence > (int)whenceToSeekType.size()) {
 		// Invalid `whence`.
+		m_lastError = EINVAL;
 		return -1;
 	}
 	const GSeekType seekType = static_cast<GSeekType>(whenceToSeekType[(int)whence]);
@@ -331,13 +339,6 @@ int RpFileGio::seek(off64_t pos, SeekWhence whence)
 	// Seek in the stream.
 	// NOTE: Assuming GFileIOStream will adjust seek pointers on both streams,
 	// and/or both streams share the same seek pointer.
-	GSeekable *const seekable = G_SEEKABLE(d->stream);
-	if (!seekable || !g_seekable_can_seek(seekable)) {
-		// Not a seekable stream.
-		m_lastError = EBADF;
-		return -1;
-	}
-
 	gboolean bRet = g_seekable_seek(seekable, pos, seekType, nullptr, &err);
 	if (bRet < 0 || err != nullptr) {
 		// An error occurred.
