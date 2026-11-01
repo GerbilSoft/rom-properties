@@ -272,7 +272,7 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 		//QFile::remove(out_filename);
 
 		// TODO: Better error message?
-		showMessage(QMessageBox::Warning, QC_("RomDataView", "Could not open the output file."));
+		showMessageWidget(QMessageBox::Warning, QC_("RomDataView", "Could not open the output file."));
 		return;
 	}
 
@@ -296,7 +296,7 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 			assert(!"Invalid ID for an Export Standard ROM Operation.");
 			ofs.close();
 			QFile::remove(out_filename);
-			showMessage(QMessageBox::Critical, QC_("RomDataView", "Invalid ID for an Export Standard ROM Operation."));
+			showMessageWidget(QMessageBox::Critical, QC_("RomDataView", "Invalid ID for an Export Standard ROM Operation."));
 			return;
 	}
 
@@ -308,7 +308,7 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
  * @param messageType QMessageBox::Icon
  * @param msg Message
  */
-void RomDataViewPrivate::showMessage(QMessageBox::Icon messageType, const QString &msg)
+void RomDataViewPrivate::showMessageWidget(QMessageBox::Icon messageType, const QString &msg)
 {
 #ifdef HAVE_KMESSAGEWIDGET
 	Q_Q(RomDataView);
@@ -429,7 +429,7 @@ void RomDataView::btnOptions_triggered(int id)
 			params.save_file.reset();
 			//QFile::remove(save_filename);
 			
-			d->showMessage(QMessageBox::Warning, msg);
+			d->showMessageWidget(QMessageBox::Warning, msg);
 			return;
 		}
 	}
@@ -465,6 +465,6 @@ void RomDataView::btnOptions_triggered(int id)
 	}
 
 	if (!qs_msg.isEmpty()) {
-		d->showMessage(messageType, qs_msg);
+		d->showMessageWidget(messageType, qs_msg);
 	}
 }

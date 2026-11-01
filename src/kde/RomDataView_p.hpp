@@ -257,7 +257,7 @@ public:
 	 * @param messageType QMessageBox::Icon
 	 * @param msg Message
 	 */
-	void showMessage(QMessageBox::Icon messageType, const QString &msg);
+	void showMessageWidget(QMessageBox::Icon messageType, const QString &msg);
 
 	/**
 	 * ROM operation: Standard Operations

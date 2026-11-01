@@ -260,7 +260,7 @@ rp_rom_data_view_update_field(RpRomDataView *page, int fieldIdx)
  * @param msg Message
  */
 static void
-rp_rom_data_view_show_message(RpRomDataView *page, GtkMessageType messageType, const char *msg)
+rp_rom_data_view_show_message_widget(RpRomDataView *page, GtkMessageType messageType, const char *msg)
 {
 #ifdef ENABLE_MESSAGESOUND
 	MessageSound::play(messageType, msg, GTK_WIDGET(page));
@@ -350,7 +350,7 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 		//g_file_delete(file, nullptr, nullptr);
 		g_object_unref(file);
 		
-		rp_rom_data_view_show_message(page, GTK_MESSAGE_WARNING, msg.c_str());
+		rp_rom_data_view_show_message_widget(page, GTK_MESSAGE_WARNING, msg.c_str());
 		return;
 	}
 
@@ -366,7 +366,7 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 			g_object_unref(file);
 
 			// TODO: Better error message?
-			rp_rom_data_view_show_message(page, GTK_MESSAGE_WARNING, C_("RomDataView", "Could not open the output file."));
+			rp_rom_data_view_show_message_widget(page, GTK_MESSAGE_WARNING, C_("RomDataView", "Could not open the output file."));
 			return;
 		}
 
@@ -394,7 +394,7 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 				streambuf.reset();
 				g_file_delete(file, nullptr, nullptr);
 				g_object_unref(file);
-				rp_rom_data_view_show_message(page, GTK_MESSAGE_ERROR, C_("RomDataView", "Invalid ID for an Export Standard ROM Operation."));
+				rp_rom_data_view_show_message_widget(page, GTK_MESSAGE_ERROR, C_("RomDataView", "Invalid ID for an Export Standard ROM Operation."));
 				return;
 		}
 
@@ -439,7 +439,7 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 
 	g_object_unref(file);
 	if (!params.msg.empty()) {
-		rp_rom_data_view_show_message(page, messageType, params.msg.c_str());
+		rp_rom_data_view_show_message_widget(page, messageType, params.msg.c_str());
 	}
 }
 
