@@ -268,6 +268,7 @@ size_t RpFileGio::write(const void *ptr, size_t size)
 
 	// NOTE: g_output_stream_write() may do a partial write without an error.
 	// If this happens, keep writing data until either we're done or it fails.
+	// FIXME: "Out of disk space" doesn't return a valid error???
 	GError *err = nullptr;
 	size_t sz_total = 0;
 	do {
