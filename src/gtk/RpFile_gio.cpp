@@ -137,18 +137,20 @@ RpFileGio::RpFileGio(string_view uri, FileMode mode)
 	switch (mode & FM_MODE_MASK) {
 		case FM_OPEN_READ:
 			d->stream = (GObject*)g_file_read(file, nullptr, &err);
+			m_isWritable = false;
 			break;
 		case FM_CREATE_WRITE:
 			// FIXME: sftp:// doesn't support read/write. Using write-only instead.
 			//d->stream = (GObject*)g_file_replace_readwrite(file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &err);
 			d->stream = (GObject*)g_file_replace(file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &err);
+			m_isWritable = true;
 			break;
 		case FM_OPEN_WRITE:
 			// FIXME: Not supported due to e.g. sftp:// not supporting read/write.
 			//d->stream = (GObject*)g_file_open_readwrite(file, nullptr, &err);
 			m_lastError = ENOTSUP;
 			g_object_unref(file);
-			break;
+			return;
 		default:
 			// Invalid mode.
 			m_lastError = EINVAL;
