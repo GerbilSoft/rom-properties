@@ -293,6 +293,9 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 
 		default:
 			assert(!"Invalid ID for an Export Standard ROM Operation.");
+			ofs.close();
+			QFile::remove(out_filename);
+			showMessage(QMessageBox::Critical, QC_("RomDataView", "Invalid ID for an Export Standard ROM Operation."));
 			return;
 	}
 

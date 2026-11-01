@@ -387,7 +387,12 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 
 			default:
 				assert(!"Invalid ID for an Export Standard ROM Operation.");
-				break;
+				out_file.reset();
+				streambuf.reset();
+				g_file_delete(file, nullptr, nullptr);
+				g_object_unref(file);
+				rp_rom_data_view_show_message(page, GTK_MESSAGE_ERROR, C_("RomDataView", "Invalid ID for an Export Standard ROM Operation."));
+				return;
 		}
 
 		os.flush();
