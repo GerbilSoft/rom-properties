@@ -295,7 +295,7 @@ struct save_data_t {
 /**
  * File dialog callback function.
  * @param file (in) (transfer full): Selected file, or nullptr if no file was selected
- * @param open_data (in) (transfer full): open_data_t specified as user_data when rpGtk_getSaveFileName() was called.
+ * @param save_data (in) (transfer full): open_data_t specified as user_data when rpGtk_getSaveFileName() was called.
  */
 static void
 rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
@@ -333,6 +333,7 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 			g_free(filename);
 		}
 	}
+	g_object_unref(file);
 
 	// Open the output file using RpFileGio.
 	shared_ptr<RpFileGio> out_file = std::make_shared<RpFileGio>(uri, RpFileGio::FM_CREATE_WRITE);
