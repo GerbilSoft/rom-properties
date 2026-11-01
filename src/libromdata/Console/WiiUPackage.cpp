@@ -571,7 +571,7 @@ void WiiUPackage::init(void)
 
 		// Create an std::streambuf wrapper around the IRpFile.
 		// The streambuf will be used for an std::istream.
-		wua.streambuf = new streambuf_IRpFile(d->file);
+		wua.streambuf = new streambuf_IRpFile(d->file, std::ios_base::in);
 		wua.zarchive.reset(ZArchiveReader::OpenFromStream(unique_ptr<std::istream>(new std::istream(wua.streambuf))));
 		if (!wua.zarchive) {
 			d->reset();

@@ -67,7 +67,7 @@ public:
 	}
 
 	/**
-	 * Is the file compressed?
+	 * Is the file writable?
 	 * @return True if writable; false if not.
 	 */
 	inline bool isWritable(void) const

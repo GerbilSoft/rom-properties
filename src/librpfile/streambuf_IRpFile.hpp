@@ -21,10 +21,11 @@ class streambuf_IRpFile : public std::streambuf
 {
 public:
 	/**
-	 * Create a (read-only) std::streambuf wrapper around an IRpFile.
+	 * Create an std::streambuf wrapper around an IRpFile.
 	 * @param file IRpFilePtr
+	 * @param mode std::ios_base::openmode
 	 */
-	explicit streambuf_IRpFile(const LibRpFile::IRpFilePtr &file);
+	explicit streambuf_IRpFile(const LibRpFile::IRpFilePtr &file, std::ios_base::openmode mode);
 
 protected:
 	/**
@@ -32,6 +33,13 @@ protected:
 	 * @return Next available character
 	 */
 	int_type underflow() override;
+
+	/**
+	 * Write buffer has overflowed.
+	 * @param ch Character to write
+	 * @return Next available character
+	 */
+	int_type overflow(int_type ch) override;
 
 	/**
 	 * Seek to the specified offset in the file.
@@ -50,10 +58,25 @@ protected:
 	 */
 	pos_type seekpos(pos_type sp, std::ios_base::openmode which = std::ios_base::in | std::ios_base::out) override;
 
+	/**
+	 * Synchronize the buffers.
+	 * @return 0 on success; non-zero on error.
+	 */
+	int sync(void) override;
+
+private:
+	/**
+	 * Flush the output buffer.
+	 * @return 0 on success; -1 on error.
+	 */
+	int flush_output_buffer(void);
+
 private:
 	static constexpr size_t BUFFER_SIZE = 4096U;
 	LibRpFile::IRpFilePtr m_file;
+	std::ios_base::openmode m_mode;
 	std::array<char, BUFFER_SIZE> m_in_buffer;
+	std::array<char, BUFFER_SIZE> m_out_buffer;	// TODO: Only if open for write?
 };
 
 } // namespace LibRpFile
