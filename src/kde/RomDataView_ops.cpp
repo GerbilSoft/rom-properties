@@ -382,7 +382,7 @@ void RomDataView::btnOptions_triggered(int id)
 		return;
 	}
 
-	QByteArray ba_save_filename;
+	QString save_filename;
 	RomData::RomOpParams params;
 	const RomData::RomOp *op = &ops[id];
 	if (op->flags & RomData::RomOp::ROF_SAVE_FILE) {
@@ -398,11 +398,12 @@ void RomDataView::btnOptions_triggered(int id)
 		const QString initialFile = U82Q(FileSystem::replace_ext(d->romData->filename(), op->sfi.ext));
 
 		// Prompt for a save file.
-		const QString filename = QFileDialog::getSaveFileName(this,
+		save_filename = QFileDialog::getSaveFileName(this,
 			U82Q(op->sfi.title), initialFile, filter);
-		if (filename.isEmpty())
+		if (save_filename.isEmpty()) {
 			return;
-		ba_save_filename = filename.toUtf8();
+		}
+		QByteArray ba_save_filename = save_filename.toUtf8();
 
 		// Open the save file.
 		// TODO: RpFileKio?
@@ -447,6 +448,10 @@ void RomDataView::btnOptions_triggered(int id)
 	} else {
 		// An error occurred...
 		messageType = QMessageBox::Warning;
+
+		// Delete the file, since it's likely only 0 bytes.
+		params.save_file.reset();
+		QFile::remove(save_filename);
 	}
 
 	if (!qs_msg.isEmpty()) {
