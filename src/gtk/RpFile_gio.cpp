@@ -362,20 +362,19 @@ int RpFileGio::seek(off64_t pos, SeekWhence whence)
 off64_t RpFileGio::tell(void)
 {
 	RP_D(RpFileGio);
-	if (!d->stream) {
+	if (!G_SEEKABLE(d->stream)) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
-	// TODO: Check the last stream used?
-	// For now, only checking the input stream.
-	GInputStream *const i_stream = d->get_GInputStream();
-	if (!i_stream) {
-		// No input stream...
+	GSeekable *const seekable = G_SEEKABLE(d->stream);
+	if (!seekable || !g_seekable_can_seek(seekable)) {
+		// Not a seekable.
 		m_lastError = EBADF;
 		return -1;
 	}
-	return g_seekable_tell(G_SEEKABLE(i_stream));
+
+	return g_seekable_tell(seekable);
 }
 
 /**
