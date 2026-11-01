@@ -333,7 +333,6 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 			g_free(filename);
 		}
 	}
-	g_object_unref(file);
 
 	// Open the output file using RpFileGio.
 	shared_ptr<RpFileGio> out_file = std::make_shared<RpFileGio>(uri, RpFileGio::FM_CREATE_WRITE);
@@ -345,8 +344,10 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 		const string msg = fmt::format(FRUN(C_("RomDataView", "Error opening output file: {:s}")),
 			strerror(out_file->lastError()));
 
-		// TODO: Delete the 0-byte file, if it was created?
+		// Delete the file if it was created.
 		out_file.reset();
+		g_file_delete(file, nullptr, nullptr);
+		g_object_unref(file);
 		
 		rp_rom_data_view_show_message(page, GTK_MESSAGE_WARNING, msg.c_str());
 		return;
@@ -358,6 +359,10 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 		ostream os(streambuf.get());
 		if (os.fail()) {
 			// TODO: Show an error message?
+			out_file.reset();
+			streambuf.reset();
+			g_file_delete(file, nullptr, nullptr);
+			g_object_unref(file);
 			return;
 		}
 
@@ -386,6 +391,7 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 
 		os.flush();
 		streambuf->pubsync();
+		g_object_unref(file);
 		return;
 	}
 
@@ -415,10 +421,14 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 		messageType = GTK_MESSAGE_INFO;
 	} else {
 		// An error occurred...
-		// TODO: Show an error message.
 		messageType = GTK_MESSAGE_WARNING;
+
+		// Delete the file, since it's likely only 0 bytes.
+		params.save_file.reset();
+		g_file_delete(file, nullptr, nullptr);
 	}
 
+	g_object_unref(file);
 	if (!params.msg.empty()) {
 		rp_rom_data_view_show_message(page, messageType, params.msg.c_str());
 	}
