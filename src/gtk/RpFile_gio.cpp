@@ -308,7 +308,7 @@ size_t RpFileGio::write(const void *ptr, size_t size)
 int RpFileGio::seek(off64_t pos, SeekWhence whence)
 {
 	RP_D(RpFileGio);
-	if (!d->stream) {
+	if (!G_IS_SEEKABLE(d->stream)) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -328,14 +328,17 @@ int RpFileGio::seek(off64_t pos, SeekWhence whence)
 	int ret = 0;
 	GError *err = nullptr;
 
-	// Seek in the input stream.
-	GInputStream *const i_stream = d->get_GInputStream();
-	if (!i_stream) {
-		// No input stream...
+	// Seek in the stream.
+	// NOTE: Assuming GFileIOStream will adjust seek pointers on both streams,
+	// and/or both streams share the same seek pointer.
+	GSeekable *const seekable = G_SEEKABLE(d->stream);
+	if (!seekable || !g_seekable_can_seek(seekable)) {
+		// Not a seekable stream.
 		m_lastError = EBADF;
 		return -1;
 	}
-	gboolean bRet = g_seekable_seek(G_SEEKABLE(i_stream), pos, seekType, nullptr, &err);
+
+	gboolean bRet = g_seekable_seek(seekable, pos, seekType, nullptr, &err);
 	if (bRet < 0 || err != nullptr) {
 		// An error occurred.
 		if (err) {
@@ -346,31 +349,6 @@ int RpFileGio::seek(off64_t pos, SeekWhence whence)
 			m_lastError = EIO;
 		}
 		ret = -1;
-		return ret;
-	}
-
-	// Seek in the output stream. (only if input stream seek succeeded)
-	// NOTE: Using G_SEEK_CUR might result in the streams getting desynchronized.
-	if (d->mode & FM_WRITE) {
-		GOutputStream *const o_stream = d->get_GOutputStream();
-		if (!o_stream) {
-			// No output stream, but file is open for write...
-			m_lastError = EBADF;
-			return -1;
-		}
-		gboolean bRet = g_seekable_seek(G_SEEKABLE(o_stream), pos, seekType, nullptr, &err);
-		if (bRet < 0 || err != nullptr) {
-			// An error occurred.
-			if (err) {
-				m_lastError = d->gioerr_to_posix(err->code);
-				g_error_free(err);
-			} else {
-				// No GError...
-				m_lastError = EIO;
-			}
-			ret = -1;
-			return ret;
-		}
 	}
 
 	return ret;
