@@ -71,17 +71,53 @@ void RP_ShellPropSheetExt_Private::adjustTabsForMessageWidgetVisibility(bool bVi
 
 /**
  * Show the message widget.
- * Message widget must have been created first.
- * @param messageType Message type.
- * @param lpszMsg Message.
+ * @param messageType Message type
+ * @param lpszMsg Message
  */
 void RP_ShellPropSheetExt_Private::showMessageWidget(unsigned int messageType, const TCHAR *lpszMsg)
 {
-	assert(hMessageWidget != nullptr);
-	if (!hMessageWidget)
-		return;
+	if (!hMessageWidget) {
+		// FIXME: Make sure this works if multiple tabs are present.
+		MessageWidgetRegister();
 
-	// Set the message widget stuff.
+		// Align to the bottom of the dialog and center-align the text.
+		// 7x7 DLU margin is recommended by the Windows UX guidelines.
+		// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
+		RECT tmpRect = {7, 7, 8, 8};
+		MapDialogRect(hDlgSheet, &tmpRect);
+		RECT winRect;
+		GetClientRect(hDlgSheet, &winRect);
+		// NOTE: We need to move left by 1px.
+		OffsetRect(&winRect, -1, 0);
+
+		// Determine the position.
+		// TODO: Update on DPI change.
+		const int cySmIcon = GetSystemMetrics(SM_CYSMICON);
+		SIZE szMsgw = {winRect.right - winRect.left, cySmIcon + 8};
+		POINT ptMsgw = {winRect.left, winRect.bottom - szMsgw.cy};
+		if (tabs.size() > 1) {
+			ptMsgw.x += tmpRect.left;
+			ptMsgw.y -= tmpRect.top;
+			szMsgw.cx -= (tmpRect.left * 2);
+		} else {
+			ptMsgw.x += (tmpRect.left / 2);
+			ptMsgw.y -= (tmpRect.top / 2);
+			szMsgw.cx -= tmpRect.left;
+		}
+
+		hMessageWidget = CreateWindowEx(
+			WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
+			WC_MESSAGEWIDGET, nullptr,
+			WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+			ptMsgw.x, ptMsgw.y, szMsgw.cx, szMsgw.cy,
+			hDlgSheet, (HMENU)IDC_MESSAGE_WIDGET,
+			HINST_THISCOMPONENT, nullptr);
+		assert(hMessageWidget != nullptr);
+		SetWindowFont(hMessageWidget, GetWindowFont(hDlgSheet), false);
+	}
+
+	MessageBeep(messageType);
+
 	MessageWidget_SetMessageType(hMessageWidget, messageType);
 	SetWindowText(hMessageWidget, lpszMsg);
 
@@ -509,6 +545,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		return;
 	}
 
+	tstring t_save_filename;
 	RomData::RomOpParams params;
 	const RomData::RomOp *op = &ops[id];
 	if (op->flags & RomData::RomOp::ROF_SAVE_FILE) {
@@ -528,7 +565,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		string initialFile = FileSystem::replace_ext(romData->filename(), op->sfi.ext);
 
 		// Prompt for a save file.
-		tstring t_save_filename = LibWin32UI::getSaveFileName(hDlgSheet,
+		t_save_filename = LibWin32UI::getSaveFileName(hDlgSheet,
 			U82T(op->sfi.title), U82T(filter), U82T(initialFile));
 		if (t_save_filename.empty()) {
 			return;
@@ -540,15 +577,15 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			// Show an error message.
 			// TODO: Include the filename?
 			// TODO: Thread-safe strerror()?
-			const QString msg = U82Q(fmt::format(FRUN(C_("RomDataView", "Error opening output file: {:s}")),
-				strerror(params.save_file->lastError())));
+			const tstring msg = fmt::format(FRUN(TC_("RomDataView", "Error opening output file: {:s}")),
+				_tcserror(params.save_file->lastError()));
 
 			// Delete the file if it was created.
 			// TODO: Only if it was created by us...
-			out_file.reset();
+			params.save_file.reset();
 			//DeleteFile(t_save_filename.c_str());
 
-			// TODO: Show an error message.
+			showMessageWidget(MB_ICONWARNING, msg.c_str());
 			return;
 		}
 	}
@@ -577,51 +614,10 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 
 		// Delete the file, since it's likely only 0 bytes.
 		params.save_file.reset();
-		DeleteFile(save_filename.c_str());
+		DeleteFile(t_save_filename.c_str());
 	}
 
 	if (!params.msg.empty()) {
-		MessageBeep(messageType);
-
-		if (!hMessageWidget) {
-			// FIXME: Make sure this works if multiple tabs are present.
-			MessageWidgetRegister();
-
-			// Align to the bottom of the dialog and center-align the text.
-			// 7x7 DLU margin is recommended by the Windows UX guidelines.
-			// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
-			RECT tmpRect = {7, 7, 8, 8};
-			MapDialogRect(hDlgSheet, &tmpRect);
-			RECT winRect;
-			GetClientRect(hDlgSheet, &winRect);
-			// NOTE: We need to move left by 1px.
-			OffsetRect(&winRect, -1, 0);
-
-			// Determine the position.
-			// TODO: Update on DPI change.
-			const int cySmIcon = GetSystemMetrics(SM_CYSMICON);
-			SIZE szMsgw = {winRect.right - winRect.left, cySmIcon + 8};
-			POINT ptMsgw = {winRect.left, winRect.bottom - szMsgw.cy};
-			if (tabs.size() > 1) {
-				ptMsgw.x += tmpRect.left;
-				ptMsgw.y -= tmpRect.top;
-				szMsgw.cx -= (tmpRect.left * 2);
-			} else {
-				ptMsgw.x += (tmpRect.left / 2);
-				ptMsgw.y -= (tmpRect.top / 2);
-				szMsgw.cx -= tmpRect.left;
-			}
-
-			hMessageWidget = CreateWindowEx(
-				WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
-				WC_MESSAGEWIDGET, nullptr,
-				WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-				ptMsgw.x, ptMsgw.y, szMsgw.cx, szMsgw.cy,
-				hDlgSheet, (HMENU)IDC_MESSAGE_WIDGET,
-				HINST_THISCOMPONENT, nullptr);
-			SetWindowFont(hMessageWidget, GetWindowFont(hDlgSheet), false);
-		}
-
 		showMessageWidget(messageType, U82T(params.msg));
 	}
 }

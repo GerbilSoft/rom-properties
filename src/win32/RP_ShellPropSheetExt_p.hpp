@@ -379,9 +379,8 @@ public:
 
 	/**
 	 * Show the message widget.
-	 * Message widget must have been created first.
-	 * @param messageType Message type.
-	 * @param lpszMsg Message.
+	 * @param messageType Message type
+	 * @param lpszMsg Message
 	 */
 	void showMessageWidget(unsigned int messageType, const TCHAR *lpszMsg);
 
