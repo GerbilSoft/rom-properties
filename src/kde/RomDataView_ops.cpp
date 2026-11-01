@@ -424,8 +424,9 @@ void RomDataView::btnOptions_triggered(int id)
 				strerror(params.save_file->lastError())));
 
 			// Delete the file if it was created.
+			// TODO: Only if it was created by us...
 			params.save_file.reset();
-			QFile::remove(save_filename);
+			//QFile::remove(save_filename);
 			
 			d->showMessage(QMessageBox::Warning, msg);
 			return;

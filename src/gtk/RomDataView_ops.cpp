@@ -345,8 +345,9 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 			strerror(out_file->lastError()));
 
 		// Delete the file if it was created.
+		// TODO: Only if it was created by us...
 		out_file.reset();
-		g_file_delete(file, nullptr, nullptr);
+		//g_file_delete(file, nullptr, nullptr);
 		g_object_unref(file);
 		
 		rp_rom_data_view_show_message(page, GTK_MESSAGE_WARNING, msg.c_str());
