@@ -223,9 +223,10 @@ size_t RpFileGio::read(void *ptr, size_t size)
 		return 0;
 	}
 
+	// TODO: Check if g_input_stream_read() has the same partial read
+	// behavior as g_output_stream_write()'s partial write behavior.
 	GError *err = nullptr;
-	gssize ret = g_input_stream_read(i_stream,
-		ptr, size, nullptr, &err);
+	gssize ret = g_input_stream_read(i_stream, ptr, size, nullptr, &err);
 	if (ret < 0 || err != nullptr) {
 		// An error occurred.
 		if (err) {
@@ -265,22 +266,34 @@ size_t RpFileGio::write(const void *ptr, size_t size)
 		return 0;
 	}
 
+	// NOTE: g_output_stream_write() may do a partial write without an error.
+	// If this happens, keep writing data until either we're done or it fails.
 	GError *err = nullptr;
-	gssize ret = g_output_stream_write(o_stream,
-		ptr, size, nullptr, &err);
-	if (ret < 0 || err != nullptr) {
-		// An error occurred.
-		if (err) {
-			m_lastError = d->gioerr_to_posix(err->code);
-			g_error_free(err);
-		} else {
-			// No GError...
-			m_lastError = EIO;
+	size_t sz_total = 0;
+	do {
+		gssize ret = g_output_stream_write(o_stream, ptr, size, nullptr, &err);
+		if (ret <= 0 || err != nullptr) {
+			// An error occurred.
+			if (err) {
+				m_lastError = d->gioerr_to_posix(err->code);
+				g_error_free(err);
+			} else {
+				// No GError...
+				m_lastError = EIO;
+			}
+			break;
 		}
-		ret = 0;
-	}
 
-	return ret;
+		sz_total += ret;
+		if (likely(static_cast<size_t>(ret) <= size)) {
+			size -= ret;
+		} else {
+			// Wrote more bytes than requested? Shouldn't happen...
+			size = 0;
+		}
+	} while (size > 0);
+
+	return sz_total;
 }
 
 /**

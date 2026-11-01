@@ -72,8 +72,8 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 		return -EINVAL;
 	}
 
-	assert(pParams->save_filename != nullptr);
-	if (!pParams->save_filename) {
+	assert((bool)pParams->save_file);
+	if (!pParams->save_file) {
 		pParams->status = -EINVAL;
 		pParams->msg = C_("RomData", "Save filename was not specified.");
 		return -EINVAL;
@@ -113,7 +113,6 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 	}
 
 	// Get the source file.
-	RpFile *destFile = nullptr;
 	const IRpFilePtr srcFile(srl->ref_file());
 	assert((bool)srcFile);
 	if (!srcFile) {
@@ -124,22 +123,19 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 		goto out;
 	}
 
-	// Create the output file.
-	destFile = new RpFile(pParams->save_filename, RpFile::FM_CREATE_WRITE);
-	if (!destFile->isOpen()) {
-		// TODO: More useful message?
-		pParams->status = -destFile->lastError();
-		pParams->msg = C_("Nintendo", "Could not open output SRL file.");
-		goto out;
-	}
+	// NOTE: Output file was already created by the calling function.
+	// TODO: Delete on error?
 
 	// Extract the file.
 	srcFile->rewind();
-	ret = srcFile->copyTo(destFile, srcFile->size());
+	ret = srcFile->copyTo(pParams->save_file.get(), srcFile->size());
 	pParams->status = ret;
 	switch (ret) {
 		case 0:
 			pParams->msg = C_("Nintendo", "SRL file extracted successfully.");
+			break;
+		case -EPERM:
+			pParams->msg = C_("Nintendo", "The output SRL file is not writable.");
 			break;
 		case -EIO:
 			pParams->msg = C_("Nintendo", "An I/O error occurred while extracting the SRL.");
@@ -150,7 +146,7 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 	}
 
 out:
-	delete destFile;
+	pParams->save_file->close();
 	if (!wasMainContentOpen) {
 		d->mainContent->close();
 	}

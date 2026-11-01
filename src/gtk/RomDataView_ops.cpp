@@ -290,30 +290,31 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 	// for convenience purposes
 	RpRomDataView *const page = save_data->page;
 	RomData *const romData = page->cxx->romData.get();
+	const int id = save_data->id;
+	g_free(save_data);
 
 	// Save the previous export directory.
 	// FIXME: Handle this with non-local files?
-	gchar *const filename = g_file_get_path(file);
-	if (filename) {
-		g_free(page->prevExportDir);
-		page->prevExportDir = g_path_get_dirname(filename);
+	{
+		gchar *const filename = g_file_get_path(file);
+		if (filename) {
+			g_free(page->prevExportDir);
+			page->prevExportDir = g_path_get_dirname(filename);
+			g_free(filename);
+		}
 	}
 
-	const int id = save_data->id;
+	// Open the output file using RpFileGio.
+	shared_ptr<RpFileGio> out_file = std::make_shared<RpFileGio>(uri, RpFileGio::FM_CREATE_WRITE);
+	g_free(uri);
+	if (!out_file->isOpen()) {
+		// TODO: Show an error message? (see end of function)
+		// TODO: Delete the 0-byte file?
+		return;
+	}
+
 	if (id < 0) {
 		// Standard operation.
-		// NOTE: Only the uri is needed; we don't need the local filename anymore.
-		g_free(filename);
-		g_free(save_data);
-
-		shared_ptr<RpFileGio> out_file = std::make_shared<RpFileGio>(uri, RpFileGio::FM_CREATE_WRITE);
-		g_free(uri);
-		if (!out_file->isOpen()) {
-			// TODO: Show an error message?
-			// TODO: Delete the 0-byte file?
-			return;
-		}
-
 		unique_ptr<streambuf_IRpFile> streambuf(new streambuf_IRpFile(out_file, std::ios_base::out));
 		ostream os(streambuf.get());
 		if (os.fail()) {
@@ -350,19 +351,9 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 	}
 
 	// Run the ROM operation.
-	// TODO: Add URI support? For now, it's local filename only.
-	g_free(uri);
-	if (!filename && save_data->isFileRequired) {
-		// No local filename, but a file is required...
-		g_free(save_data);
-		return;
-	}
-
 	RomData::RomOpParams params;
-	params.save_filename = filename;
+	params.save_file = std::move(out_file);
 	const int ret = romData->doRomOp(id, &params);
-	g_free(filename);
-	g_free(save_data);
 
 	GtkMessageType messageType;
 	if (ret == 0) {
@@ -600,7 +591,7 @@ btnOptions_triggered_signal_handler(RpOptionsMenuButton *menuButton,
 			!init_dir.empty() ? init_dir.c_str() : nullptr,		// init_dir
 			!init_name.empty() ? init_name.c_str() : nullptr,	// init_name
 
-			TRUE,			// bLocalOnly (TODO: Enable this for custom RomOps later?)
+			FALSE,			// bLocalOnly
 		};
 		int ret = rpGtk_getSaveFileName(&gfndata);
 		if (ret != 0) {
