@@ -267,10 +267,11 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 	ofs.open(Q2U8(out_filename), ofstream::out);
 	if (ofs.fail()) {
 		// Delete the file, since it's likely only 0 bytes.
+		// TODO: Only if it was created by us...
 		ofs.close();
-		QFile::remove(out_filename);
+		//QFile::remove(out_filename);
 
-		// TODO: Delete the file?
+		// TODO: Better error message?
 		showMessage(QMessageBox::Warning, QC_("RomDataView", "Could not open the output file."));
 		return;
 	}

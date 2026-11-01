@@ -359,11 +359,13 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 		unique_ptr<streambuf_IRpFile> streambuf(new streambuf_IRpFile(out_file, std::ios_base::out));
 		ostream os(streambuf.get());
 		if (os.fail()) {
-			// TODO: Better error message?
+			// Delete the file, since it's likely only 0 bytes.
 			out_file.reset();
 			streambuf.reset();
 			g_file_delete(file, nullptr, nullptr);
 			g_object_unref(file);
+
+			// TODO: Better error message?
 			rp_rom_data_view_show_message(page, GTK_MESSAGE_WARNING, C_("RomDataView", "Could not open the output file."));
 			return;
 		}
