@@ -253,6 +253,36 @@ rp_rom_data_view_update_field(RpRomDataView *page, int fieldIdx)
 	return ret;
 }
 
+/**
+ * Show a message in the Message Widget.
+ * @param page RomDataView
+ * @param messageType GtkMessageType
+ * @param msg Message
+ */
+static void
+rp_rom_data_view_show_message(RpRomDataView *page, GtkMessageType messageType, const char *msg)
+{
+#ifdef ENABLE_MESSAGESOUND
+	MessageSound::play(messageType, msg, GTK_WIDGET(page));
+#endif /* ENABLE_MESSAGESOUND */
+
+	// Show the MessageWidget.
+	if (!page->messageWidget) {
+		page->messageWidget = rp_message_widget_new();
+		rp_message_widget_set_transition_type(RP_MESSAGE_WIDGET(page->messageWidget), GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP);
+#if GTK_CHECK_VERSION(4, 0, 0)
+		gtk_box_append(GTK_BOX(page), page->messageWidget);
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
+		gtk_box_pack_end(GTK_BOX(page), page->messageWidget, false, false, 0);
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
+	}
+
+	RpMessageWidget *const messageWidget = RP_MESSAGE_WIDGET(page->messageWidget);
+	rp_message_widget_set_message_type(messageWidget, messageType);
+	rp_message_widget_set_text(messageWidget, msg);
+	rp_message_widget_set_reveal_child(messageWidget, true);
+}
+
 // Simple struct for passing both RomDataView and the operation ID.
 struct save_data_t {
 	RpRomDataView *page;
@@ -308,8 +338,16 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 	shared_ptr<RpFileGio> out_file = std::make_shared<RpFileGio>(uri, RpFileGio::FM_CREATE_WRITE);
 	g_free(uri);
 	if (!out_file->isOpen()) {
-		// TODO: Show an error message? (see end of function)
-		// TODO: Delete the 0-byte file?
+		// Show an error message.
+		// TODO: Include the filename?
+		// TODO: Thread-safe strerror()?
+		const string msg = fmt::format(FRUN(C_("RomDataView", "Error opening output file: {:s}")),
+			strerror(out_file->lastError()));
+
+		// TODO: Delete the 0-byte file, if it was created?
+		out_file.reset();
+		
+		rp_rom_data_view_show_message(page, GTK_MESSAGE_WARNING, msg.c_str());
 		return;
 	}
 
@@ -381,25 +419,7 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 	}
 
 	if (!params.msg.empty()) {
-#ifdef ENABLE_MESSAGESOUND
-		MessageSound::play(messageType, params.msg.c_str(), GTK_WIDGET(page));
-#endif /* ENABLE_MESSAGESOUND */
-
-		// Show the MessageWidget.
-		if (!page->messageWidget) {
-			page->messageWidget = rp_message_widget_new();
-			rp_message_widget_set_transition_type(RP_MESSAGE_WIDGET(page->messageWidget), GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP);
-#if GTK_CHECK_VERSION(4, 0, 0)
-			gtk_box_append(GTK_BOX(page), page->messageWidget);
-#else /* !GTK_CHECK_VERSION(4, 0, 0) */
-			gtk_box_pack_end(GTK_BOX(page), page->messageWidget, false, false, 0);
-#endif /* GTK_CHECK_VERSION(4, 0, 0) */
-		}
-
-		RpMessageWidget *const messageWidget = RP_MESSAGE_WIDGET(page->messageWidget);
-		rp_message_widget_set_message_type(messageWidget, messageType);
-		rp_message_widget_set_text(messageWidget, params.msg.c_str());
-		rp_message_widget_set_reveal_child(messageWidget, true);
+		rp_rom_data_view_show_message(page, messageType, params.msg.c_str());
 	}
 }
 
