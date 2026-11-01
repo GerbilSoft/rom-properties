@@ -396,6 +396,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		ofstream ofs;
 		tstring ts_out;
 
+		tstring t_save_filename;
 		if (!info.toClipboard) {
 			if (ts_prevExportDir.empty()) {
 				ts_prevExportDir = U82T_str(rom_filename);
@@ -439,25 +440,26 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				defaultFileName += info.default_ext;
 			}
 
-			const tstring tfilename = LibWin32UI::getSaveFileName(hDlgSheet,
+			t_save_filename = LibWin32UI::getSaveFileName(hDlgSheet,
 				tpgettext_expr("RomDataView", info.title),
 				tpgettext_expr("RomDataView", info.filter),
 				defaultFileName.c_str());
-			if (tfilename.empty())
+			if (t_save_filename.empty()) {
 				return;
+			}
 
 			// Save the previous export directory.
-			ts_prevExportDir = tfilename;
+			ts_prevExportDir = t_save_filename;
 			const size_t bspos2 = ts_prevExportDir.find_last_of(_T("\\/"));
 			if (bspos2 != tstring::npos && bspos2 > 3) {
 				ts_prevExportDir.resize(bspos2);
 			}
 
 #ifdef HAVE_OFSTREAM_CTOR_WCHAR_T
-			ofs.open(tfilename.c_str(), ofstream::out);
+			ofs.open(t_save_filename.c_str(), ofstream::out);
 #else /* !HAVE_OFSTREAM_CTOR_WCHAR_T */
 			// FIXME: Convert to ANSI, not UTF-8.
-			ofs.open(T2U8(tfilename), ofstream::out);
+			ofs.open(T2U8(t_save_filename), ofstream::out);
 #endif /* HAVE_OFSTREAM_CTOR_WCHAR_T */
 			if (ofs.fail()) {
 				// Delete the file, since it's likely only 0 bytes.
@@ -465,7 +467,8 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				ofs.close();
 				//DeleteFile(tfilename.c_str());
 
-				// TODO: Show an error message?
+				// TODO: Better error message?
+				showMessageWidget(MB_ICONWARNING, TC_("RomDataView", "Could not open the output file."));
 				return;
 			}
 		}
@@ -515,6 +518,11 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			}
 			default:
 				assert(!"Invalid action ID.");
+				ofs.close();
+				if (!t_save_filename.empty()) {
+					DeleteFile(t_save_filename.c_str());
+				}
+				showMessageWidget(MB_ICONERROR, TC_("RomDataView", "Invalid action ID."));
 				return;
 		}
 
