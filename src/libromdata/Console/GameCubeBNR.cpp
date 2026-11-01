@@ -377,7 +377,7 @@ string GameCubeBNRPrivate::getGameInfoString(const gcn_banner_comment_t *comment
 
 	// Remove trailing newlines.
 	// TODO: Optimize this by using a `for` loop and counter. (maybe ptr)
-	while (!s_gameInfo.empty() && s_gameInfo[s_gameInfo.size()-1] == '\n') {
+	while (!s_gameInfo.empty() && s_gameInfo.back() == '\n') {
 		s_gameInfo.resize(s_gameInfo.size()-1);
 	}
 

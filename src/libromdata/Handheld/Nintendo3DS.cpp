@@ -1216,7 +1216,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 		// Add the service.
 		// TODO: Service descriptions?
 		vv_svc->resize(vv_svc->size()+1);
-		auto &data_row = vv_svc->at(vv_svc->size()-1);
+		auto &data_row = vv_svc->back();
 		data_row.push_back(latin1_to_utf8(svc, N3DS_SERVICE_LEN));
 	}
 

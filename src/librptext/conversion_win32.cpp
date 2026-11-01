@@ -115,7 +115,7 @@ string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags
 		// Convert from UTF-16 to UTF-8.
 		if (!W32U_UTF16_to_mbs(s_mbs, s_wcs.data(), static_cast<int>(s_wcs.size()), CP_UTF8)) {
 			// Remove the NULL terminator if present.
-			if (!s_mbs.empty() && s_mbs[s_mbs.size()-1] == 0) {
+			if (!s_mbs.empty() && s_mbs.back() == '\0') {
 				s_mbs.resize(s_mbs.size()-1);
 			}
 		} else {
@@ -198,7 +198,7 @@ u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned int f
 	}
 
 	// Remove the NULL terminator if present.
-	if (!s_wcs.empty() && s_wcs[s_wcs.size()-1] == 0) {
+	if (!s_wcs.empty() && s_wcs.back() == u'\0') {
 		s_wcs.resize(s_wcs.size()-1);
 	}
 	return s_wcs;
@@ -227,7 +227,7 @@ string utf8_to_cpN(unsigned int cp, const char *str, int len)
 		// Then, convert from UTF-16 to `cp`.
 		if (!W32U_UTF16_to_mbs(s_mbs, s_wcs.data(), static_cast<int>(s_wcs.size()), cp)) {
 			// Remove the NULL terminator if present.
-			if (!s_mbs.empty() && s_mbs[s_mbs.size()-1] == 0) {
+			if (!s_mbs.empty() && s_mbs.back() == '\0') {
 				s_mbs.resize(s_mbs.size()-1);
 			}
 		} else {
@@ -262,7 +262,7 @@ string utf16_to_cpN(unsigned int cp, const char16_t *wcs, int len)
 	// Convert from UTF-16 to `cp`.
 	if (!W32U_UTF16_to_mbs(s_mbs, wcs, len, cp)) {
 		// Remove the NULL terminator if present.
-		if (!s_mbs.empty() && s_mbs[s_mbs.size()-1] == 0) {
+		if (!s_mbs.empty() && s_mbs.back() == '\0') {
 			s_mbs.resize(s_mbs.size()-1);
 		}
 	} else {

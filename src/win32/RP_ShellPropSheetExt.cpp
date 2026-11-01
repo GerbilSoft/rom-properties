@@ -1079,7 +1079,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 
 		// Destination row
 		lvData.vvStr.resize(lvData.vvStr.size()+1);
-		auto &lv_row_data = lvData.vvStr.at(lvData.vvStr.size()-1);
+		auto &lv_row_data = lvData.vvStr.back();
 		lv_row_data.reserve(data_row.size());
 
 		// String data
@@ -1315,7 +1315,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 
 	// Set the last column to LVSCW_AUTOSIZE_USEHEADER.
 	// FIXME: This doesn't account for the vertical scrollbar...
-	//lvData.col_widths[lvData.col_widths.size()-1] = LVSCW_AUTOSIZE_USEHEADER
+	//lvData.col_widths.back() = LVSCW_AUTOSIZE_USEHEADER
 
 	if (!isMulti) {
 		// Resize all of the columns.
@@ -1662,7 +1662,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 
 			// Set the last column to LVSCW_AUTOSIZE_USEHEADER.
 			// FIXME: This doesn't account for the vertical scrollbar...
-			//lvData.col_widths[lvData.col_widths.size()-1] = LVSCW_AUTOSIZE_USEHEADER;
+			//lvData.col_widths.back() = LVSCW_AUTOSIZE_USEHEADER;
 
 			// Resize the columns to fit the contents.
 			// NOTE: Only done on first load. (TODO: Maybe we should do it every time?)

@@ -371,7 +371,7 @@ void GcnFstTest::checkNoDuplicateFilenames(const char *subdir)
 	// Check subdirectories.
 	for (const string &p : subdirs) {
 		string path = subdir;
-		if (!path.empty() && path[path.size()-1] != '/') {
+		if (!path.empty() && path.back() != '/') {
 			path += '/';
 		}
 		path += p;

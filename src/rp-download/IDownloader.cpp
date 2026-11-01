@@ -402,7 +402,7 @@ tstring IDownloader::getOSRelease(void)
 		os_release++;
 	}
 	s_os_release.assign(os_release);
-	if (!s_os_release.empty() && (s_os_release[s_os_release.size()-1] == '"' || s_os_release[s_os_release.size()-1] == '\'')) {
+	if (!s_os_release.empty() && (s_os_release.back() == '"' || s_os_release.back() == '\'')) {
 		s_os_release.resize(s_os_release.size()-1);
 	}
 #endif

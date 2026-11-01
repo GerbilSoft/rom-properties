@@ -179,7 +179,7 @@ public:
 		if (filename.empty())
 			return filename;
 
-		if (filename.at(filename.size()-1) != DIR_SEP_CHR) {
+		if (filename.back() != DIR_SEP_CHR) {
 			filename += DIR_SEP_CHR;
 		}
 		filename += ACH_BIN_FILENAME;

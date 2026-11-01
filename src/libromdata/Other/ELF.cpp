@@ -898,8 +898,8 @@ int ELFPrivate::addPtDynamicFields(void)
 		if (readDataAtVA(val_dtag[DT_STRTAB], strtab_buf) == 0) {
 			// The first the last byte of the string table MUST be zero.
 			// This is pretty nice, because it simplifies the checks later on.
-			assert(!strtab_buf.empty() && strtab_buf[0] == 0 && strtab_buf[strtab_buf.size()-1] == 0);
-			if (!strtab_buf.empty() && strtab_buf[0] == 0 && strtab_buf[strtab_buf.size()-1] == 0) {
+			assert(!strtab_buf.empty() && strtab_buf[0] == 0 && strtab_buf.back() == '\0');
+			if (!strtab_buf.empty() && strtab_buf[0] == 0 && strtab_buf.back() == '\0') {
 				strtab = reinterpret_span<const char>(strtab_buf);
 			}
 		}
@@ -1210,8 +1210,8 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 		size_t nread = file->seekAndRead(info.strtab_offset, buf.data(), buf.size());
 		assert(nread == buf.size());
 		if (nread == buf.size()) {
-			assert(buf[0] == 0 && buf[buf.size()-1] == 0);
-			if (buf[0] == 0 && buf[buf.size()-1] == 0) {
+			assert(buf[0] == 0 && buf.back() == '\0');
+			if (buf[0] == 0 && buf.back() == '\0') {
 				return reinterpret_span<const char>(buf);
 			}
 		}

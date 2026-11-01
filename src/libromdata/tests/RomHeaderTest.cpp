@@ -306,7 +306,7 @@ TEST_P(RomHeaderTest, Text)
 		// The string should end with a single newline.
 		string str = oss.str();
 		while (!str.empty()) {
-			if (str[str.size()-1] == '\n') {
+			if (str.back() == '\n') {
 				str.resize(str.size()-1);
 			} else {
 				break;

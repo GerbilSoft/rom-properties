@@ -413,7 +413,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			}
 
 			tstring defaultFileName = ts_prevExportDir;
-			if (!defaultFileName.empty() && !isBackslashOrSlash(defaultFileName.at(defaultFileName.size()-1))) {
+			if (!defaultFileName.empty() && !isBackslashOrSlash(defaultFileName.back())) {
 				defaultFileName += _T('\\');
 			}
 
@@ -561,7 +561,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		string filter = op->sfi.filter;
 		if (!filter.empty()) {
 			// Make sure the last field isn't empty.
-			if (filter.at(filter.size()-1) == '|') {
+			if (filter.back() == '|') {
 				filter += '-';
 			}
 			filter += '|';

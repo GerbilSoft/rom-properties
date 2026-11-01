@@ -92,7 +92,7 @@ int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 		// Unable to get the configuration directory.
 		return -ENOENT;
 	}
-	if (bin_filename.at(bin_filename.size()-1) != DIR_SEP_CHR) {
+	if (bin_filename.back() != DIR_SEP_CHR) {
 		bin_filename += DIR_SEP_CHR;
 	}
 	bin_filename += filenames[bfkey];

@@ -258,7 +258,7 @@ tstring AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileT
 		case AmiiboBinFileType::User:
 			tfilename = U82T(FileSystem::getConfigDirectory());
 			if (!tfilename.empty()) {
-				if (tfilename.at(tfilename.size()-1) != DIR_SEP_CHR) {
+				if (tfilename.back() != DIR_SEP_CHR) {
 					tfilename += DIR_SEP_CHR;
 				}
 			}
