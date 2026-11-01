@@ -20,15 +20,18 @@
 #include "libi18n/i18n.hpp"
 #include "librpbase/TextOut.hpp"
 #include "librpfile/FileSystem.hpp"
+#include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 
 // C++ STL classes
 #include <fstream>
 #include <sstream>
+#include "rp-string_view.hpp"
 using std::ofstream;
 using std::ostringstream;
 using std::string;
+using std::string_view;
 using std::vector;
 
 // Qt includes
@@ -292,6 +295,73 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 }
 
 /**
+ * Show a message in the Message Widget.
+ * @param messageType QMessageBox::Icon
+ * @param msg Message
+ */
+void RomDataViewPrivate::showMessage(QMessageBox::Icon messageType, const QString &msg)
+{
+#ifdef HAVE_KMESSAGEWIDGET
+	Q_Q(RomDataView);
+	MessageSound::play(messageType, msg, q);
+
+	if (!messageWidget) {
+		messageWidget = new KMessageWidget(q);
+		messageWidget->setObjectName(QLatin1String("messageWidget"));
+		messageWidget->setCloseButtonVisible(true);
+		messageWidget->setWordWrap(true);
+		ui.vboxLayout->addWidget(messageWidget);
+	}
+
+	switch (messageType) {
+		default:
+		case QMessageBox::NoIcon:
+			break;
+
+		case QMessageBox::Information:
+			messageWidget->setMessageType(KMessageWidget::Information);
+#  ifdef HAVE_KMESSAGEWIDGET_SETICON
+			messageWidget->setIcon(
+				messageWidget->style()->standardIcon(QStyle::SP_MessageBoxInformation));
+#  endif /* HAVE_KMESSAGEWIDGET_SETICON */
+			break;
+
+		case QMessageBox::Warning:
+			messageWidget->setMessageType(KMessageWidget::Warning);
+#  ifdef HAVE_KMESSAGEWIDGET_SETICON
+			messageWidget->setIcon(
+				messageWidget->style()->standardIcon(QStyle::SP_MessageBoxWarning));
+#  endif /* HAVE_KMESSAGEWIDGET_SETICON */
+			break;
+
+		case QMessageBox::Critical:
+			messageWidget->setMessageType(KMessageWidget::Error);
+#  ifdef HAVE_KMESSAGEWIDGET_SETICON
+			messageWidget->setIcon(
+				messageWidget->style()->standardIcon(QStyle::SP_MessageBoxCritical));
+#  endif /* HAVE_KMESSAGEWIDGET_SETICON */
+			break;
+
+		case QMessageBox::Question:
+			// Doesn't exactly map to "question"...
+			messageWidget->setMessageType(KMessageWidget::Positive);
+#  ifdef HAVE_KMESSAGEWIDGET_SETICON
+			messageWidget->setIcon(
+				messageWidget->style()->standardIcon(QStyle::SP_MessageBoxQuestion));
+#  endif /* HAVE_KMESSAGEWIDGET_SETICON */
+			break;
+	}
+
+	messageWidget->setText(msg);
+	messageWidget->animatedShow();
+#else /* !HAVE_KMESSAGEWIDGET */
+	// No KMessageWidget...
+	Q_UNUSED(messageType);
+	Q_UNUSED(msg);
+#endif /* HAVE_KMESSAGEWIDGET */
+}
+
+/**
  * An "Options" menu action was triggered.
  * @param id Options ID.
  */
@@ -337,7 +407,24 @@ void RomDataView::btnOptions_triggered(int id)
 		if (filename.isEmpty())
 			return;
 		ba_save_filename = filename.toUtf8();
-		params.save_filename = ba_save_filename.constData();
+
+		// Open the save file.
+		// TODO: RpFileKio?
+		params.save_file = std::make_shared<RpFile>(
+			string_view(ba_save_filename.constData(), ba_save_filename.size()), RpFile::FM_CREATE_WRITE);
+		if (!params.save_file->isOpen()) {
+			// Show an error message.
+			// TODO: Include the filename?
+			// TODO: Thread-safe strerror()?
+			const QString msg = U82Q(fmt::format(FRUN(C_("RomDataView", "Error opening output file: {:s}")),
+				strerror(params.save_file->lastError())));
+
+			// TODO: Delete the file if it was created.
+			//g_file_delete(file, nullptr, nullptr);
+			
+			d->showMessage(QMessageBox::Warning, msg);
+			return;
+		}
 	}
 
 	const int ret = d->romData->doRomOp(id, &params);
@@ -367,32 +454,6 @@ void RomDataView::btnOptions_triggered(int id)
 	}
 
 	if (!qs_msg.isEmpty()) {
-#ifdef HAVE_KMESSAGEWIDGET
-		MessageSound::play(messageType, qs_msg, this);
-
-		if (!d->messageWidget) {
-			d->messageWidget = new KMessageWidget(this);
-			d->messageWidget->setObjectName(QLatin1String("messageWidget"));
-			d->messageWidget->setCloseButtonVisible(true);
-			d->messageWidget->setWordWrap(true);
-			d->ui.vboxLayout->addWidget(d->messageWidget);
-		}
-
-		if (ret == 0) {
-			d->messageWidget->setMessageType(KMessageWidget::Information);
-#  ifdef HAVE_KMESSAGEWIDGET_SETICON
-			d->messageWidget->setIcon(
-				d->messageWidget->style()->standardIcon(QStyle::SP_MessageBoxInformation));
-#  endif /* HAVE_KMESSAGEWIDGET_SETICON */
-		} else {
-			d->messageWidget->setMessageType(KMessageWidget::Warning);
-#  ifdef HAVE_KMESSAGEWIDGET_SETICON
-			d->messageWidget->setIcon(
-				d->messageWidget->style()->standardIcon(QStyle::SP_MessageBoxWarning));
-#  endif /* HAVE_KMESSAGEWIDGET_SETICON */
-		}
-		d->messageWidget->setText(qs_msg);
-		d->messageWidget->animatedShow();
-#endif /* HAVE_KMESSAGEWIDGET */
+		d->showMessage(messageType, qs_msg);
 	}
 }

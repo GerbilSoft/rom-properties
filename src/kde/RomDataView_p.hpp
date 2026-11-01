@@ -48,6 +48,7 @@ class ListDataModel;
 
 // Qt includes
 #include <QFormLayout>
+#include <QMessageBox>
 #include <QTreeView>
 
 #include "ui_RomDataView.h"
@@ -251,6 +252,13 @@ public:
 	void initDisplayWidgets(void);
 
 public:
+	/**
+	 * Show a message in the Message Widget.
+	 * @param messageType QMessageBox::Icon
+	 * @param msg Message
+	 */
+	void showMessage(QMessageBox::Icon messageType, const QString &msg);
+
 	/**
 	 * ROM operation: Standard Operations
 	 * Dispatched by RomDataView::btnOptions_triggered().
