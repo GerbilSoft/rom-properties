@@ -217,6 +217,8 @@ OptionsMenuButtonWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
 			// Set the dark mode subclass.
+			// FIXME: If StartAllBack is *not* installed, and Dark Mode is enabled,
+			// this results in a dark button on a light properties dialog. (Win10 1809)
 			DarkMode_InitButton(hWnd);
 			break;
 		}
