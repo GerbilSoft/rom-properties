@@ -668,8 +668,8 @@ string KeyStoreUIPrivate::convertKanjiToHex(const char *str)
 	// Convert to a UTF-16LE hex string, starting with U+FEFF.
 	// TODO: Combine with the first loop?
 	const size_t hexlen = 4+(u16str.size()*4);
-	unique_ptr<char[]> hexstr(new char[hexlen]);
-	char *pHex = hexstr.get();
+	s_ret.resize(hexlen);
+	char *pHex = &s_ret[0];
 	memcpy(pHex, "FFFE", 4);
 	pHex += 4;
 	for (const char16_t *pu16 = u16str.c_str(); *pu16 != '\0'; pu16++, pHex += 4) {
@@ -680,8 +680,6 @@ string KeyStoreUIPrivate::convertKanjiToHex(const char *str)
 		pHex[3] = hex_lookup[(u16 >>  8) & 0x0F];
 	}
 
-	// TODO: Write directly to `s_ret`?
-	s_ret.assign(hexstr.get(), hexlen);
 	return s_ret;
 }
 
