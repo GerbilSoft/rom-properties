@@ -22,6 +22,7 @@
 
 // C++ STL classes
 #include <algorithm>
+#include "rp-string_view.hpp"
 using std::string;
 using std::unique_ptr;
 #ifdef _WIN32
@@ -77,6 +78,7 @@ template<typename CharType>
 IRpFile *T_openRelatedFile_rawptr(const CharType *filename, const CharType *basename, const CharType *ext)
 {
 	using ct_string = std::basic_string<CharType>;
+	using ct_string_view = std::basic_string_view<CharType>;
 
 	assert(filename != nullptr);
 	assert(ext != nullptr);
@@ -85,28 +87,28 @@ IRpFile *T_openRelatedFile_rawptr(const CharType *filename, const CharType *base
 	}
 
 	// Get the directory portion of the filename.
-	ct_string s_dir = filename;
-	const size_t slash_pos = s_dir.rfind(DIR_SEP_CHR);
+	ct_string_view sv_dir(filename);
+	const size_t slash_pos = sv_dir.rfind(DIR_SEP_CHR);
 	if (slash_pos != string::npos) {
-		s_dir.resize(slash_pos+1);
+		sv_dir = ct_string_view(filename, slash_pos + 1);
 	} else {
 		// No directory. Probably a filename in the
 		// current directory, e.g. when using `rpcli`.
-		s_dir.clear();
+		sv_dir = ct_string_view();
 	}
 
 	// Get the base name.
-	ct_string s_basename;
+	ct_string_view sv_basename;
 	if (basename) {
-		s_basename = basename;
+		sv_basename = ct_string_view(basename);
 	} else {
-		s_basename = &filename[slash_pos+1];
+		sv_basename = ct_string_view(&filename[slash_pos+1]);
 
 		// Check for any dots.
-		const size_t dot_pos = s_basename.rfind('.');
+		const size_t dot_pos = sv_basename.rfind('.');
 		if (dot_pos != string::npos) {
 			// Remove the extension.
-			s_basename.resize(dot_pos);
+			sv_basename = ct_string_view(sv_basename.data(), dot_pos);
 		}
 	}
 
@@ -121,7 +123,9 @@ IRpFile *T_openRelatedFile_rawptr(const CharType *filename, const CharType *base
 		[](CharType c) noexcept -> CharType { return toupper_wrapper(c); });
 
 	// Attempt to open the related file.
-	ct_string s_rel_filename = s_dir + s_basename + s_ext;
+	ct_string s_rel_filename(sv_dir);
+	s_rel_filename += sv_basename;
+	s_rel_filename += s_ext;
 	unique_ptr<IRpFile> test_file(new RpFile(s_rel_filename, RpFile::FM_OPEN_READ));
 	if (!test_file->isOpen()) {
 		// Error opening the related file.
