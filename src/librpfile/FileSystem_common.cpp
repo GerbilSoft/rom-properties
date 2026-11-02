@@ -50,8 +50,9 @@ static void initConfigDirectories(void)
 	config_dir = OS_NAMESPACE::getConfigDirectory();
 	if (!config_dir.empty()) {
 		// Add a trailing slash if necessary.
-		if (config_dir.at(config_dir.size()-1) != DIR_SEP_CHR)
+		if (config_dir.back() != DIR_SEP_CHR) {
 			config_dir += DIR_SEP_CHR;
+		}
 		// Append "rom-properties".
 		config_dir += "rom-properties";
 	}

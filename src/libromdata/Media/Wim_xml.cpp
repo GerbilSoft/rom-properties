@@ -292,7 +292,7 @@ int WimPrivate::addFields_XML()
 	// loop for the rows
 	for (const auto &image : images) {
 		vv_data->resize(vv_data->size()+1);
-		auto &data_row = vv_data->at(vv_data->size()-1);
+		auto &data_row = vv_data->back();
 		data_row.reserve(10);
 
 		if (likely(!image.is_unstaged)) {

@@ -39,11 +39,12 @@ static void initCacheDirectory(void)
 {
 	// Uses LibUnixCommon or LibWin32Common, depending on platform.
 	cache_dir = OS_NAMESPACE::getCacheDirectory();
-	if (cache_dir.empty())
+	if (cache_dir.empty()) {
 		return;
+	}
 
 	// Add a trailing slash if necessary.
-	if (cache_dir.at(cache_dir.size()-1) != DIR_SEP_CHR)
+	if (cache_dir.back() != DIR_SEP_CHR)
 		cache_dir += DIR_SEP_CHR;
 #ifdef _WIN32
 	// Append "rom-properties\\cache".

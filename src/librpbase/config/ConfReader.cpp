@@ -135,7 +135,7 @@ int ConfReader::load(bool force)
 		// Get the configuration filename.
 		d->conf_filename = FileSystem::getConfigDirectory();
 		if (!d->conf_filename.empty()) {
-			if (d->conf_filename.at(d->conf_filename.size()-1) != DIR_SEP_CHR) {
+			if (d->conf_filename.back() != DIR_SEP_CHR) {
 				d->conf_filename += DIR_SEP_CHR;
 			}
 			d->conf_filename += d->conf_rel_filename;

@@ -707,7 +707,7 @@ string GameCubeSavePrivate::getComment(void) const
 		desc = cp1252_to_utf8(comment.desc, static_cast<int>(desc_len));
 	}
 	// NOTE: Some games (e.g. TMNT Mutant Melee [GE5EA4]) end the field with CR.
-	if (!desc.empty() && desc[desc.size()-1] == '\r') {
+	if (!desc.empty() && desc.back() == '\r') {
 		desc.resize(desc.size()-1);
 	}
 	desc += '\n';
@@ -725,7 +725,7 @@ string GameCubeSavePrivate::getComment(void) const
 		desc += cp1252_to_utf8(comment.file, static_cast<int>(desc_len));
 	}
 	// NOTE: Some games (e.g. TMNT Mutant Melee [GE5EA4]) end the field with CR.
-	if (!desc.empty() && desc[desc.size()-1] == '\r') {
+	if (!desc.empty() && desc.back() == '\r') {
 		desc.resize(desc.size()-1);
 	}
 
@@ -1040,7 +1040,7 @@ int GameCubeSave::loadFieldData(void)
 	// TODO: Remove trailing spaces.
 	// NOTE: Some games (e.g. TMNT Mutant Melee [GE5EA4]) end the field with CR.
 	string filename = cp1252_sjis_to_utf8(direntry->filename, sizeof(direntry->filename));
-	if (!filename.empty() && filename[filename.size()-1] == '\r') {
+	if (!filename.empty() && filename.back() == '\r') {
 		filename.resize(filename.size()-1);
 	}
 	d->fields.addField_string(C_("RomData", "Filename"), filename);

@@ -442,7 +442,7 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 
 #ifdef HAVE_SYS_XATTR_H
 	// Linux, macOS: List should end with a NULL terminator.
-	if (keylist[keylist.size()-1] != '\0') {
+	if (keylist.back() != '\0') {
 		// Not NULL-terminated...
 		return -EIO;
 	}

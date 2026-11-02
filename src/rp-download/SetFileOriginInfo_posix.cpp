@@ -91,7 +91,7 @@ static bool getStoreFileOriginInfo(void)
 		return default_value;
 	}
 	// Add a trailing slash if necessary.
-	if (conf_filename.at(conf_filename.size()-1) != DIR_SEP_CHR) {
+	if (conf_filename.back() != DIR_SEP_CHR) {
 		conf_filename += DIR_SEP_CHR;
 	}
 	conf_filename += "rom-properties/rom-properties.conf";

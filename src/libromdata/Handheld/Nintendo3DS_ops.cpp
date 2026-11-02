@@ -33,10 +33,10 @@ namespace LibRomData {
  */
 vector<RomData::RomOp> Nintendo3DS::romOps_int(void) const
 {
-	RP_D(const Nintendo3DS);
 	vector<RomOp> ops;
 
 	// TMD needs to be loaded so we can check if it's a DSiWare SRL.
+	RP_D(const Nintendo3DS);
 	if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
 		const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 	}
@@ -44,11 +44,11 @@ vector<RomData::RomOp> Nintendo3DS::romOps_int(void) const
 	// Check for a DSi SRL.
 	NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent.get());
 	if (srl) {
-		RomOp op("E&xtract SRL...", RomOp::ROF_SAVE_FILE | RomOp::ROF_ENABLED);
+		ops.emplace_back("E&xtract SRL...", RomOp::ROF_SAVE_FILE | RomOp::ROF_ENABLED);
+		RomOp &op = ops.back();
 		op.sfi.title = C_("Nintendo|RomOps", "Extract Nintendo DS SRL File");
 		op.sfi.filter = C_("Nintendo|RomOps", "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom");
 		op.sfi.ext = ".nds";
-		ops.push_back(std::move(op));
 	}
 
 	return ops;
@@ -72,8 +72,8 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 		return -EINVAL;
 	}
 
-	assert(pParams->save_filename != nullptr);
-	if (!pParams->save_filename) {
+	assert((bool)pParams->save_file);
+	if (!pParams->save_file) {
 		pParams->status = -EINVAL;
 		pParams->msg = C_("RomData", "Save filename was not specified.");
 		return -EINVAL;
@@ -113,7 +113,6 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 	}
 
 	// Get the source file.
-	RpFile *destFile = nullptr;
 	const IRpFilePtr srcFile(srl->ref_file());
 	assert((bool)srcFile);
 	if (!srcFile) {
@@ -124,22 +123,19 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 		goto out;
 	}
 
-	// Create the output file.
-	destFile = new RpFile(pParams->save_filename, RpFile::FM_CREATE_WRITE);
-	if (!destFile->isOpen()) {
-		// TODO: More useful message?
-		pParams->status = -destFile->lastError();
-		pParams->msg = C_("Nintendo", "Could not open output SRL file.");
-		goto out;
-	}
+	// NOTE: Output file was already created by the calling function.
+	// TODO: Delete on error?
 
 	// Extract the file.
 	srcFile->rewind();
-	ret = srcFile->copyTo(destFile, srcFile->size());
+	ret = srcFile->copyTo(pParams->save_file.get(), srcFile->size());
 	pParams->status = ret;
 	switch (ret) {
 		case 0:
 			pParams->msg = C_("Nintendo", "SRL file extracted successfully.");
+			break;
+		case -EPERM:
+			pParams->msg = C_("Nintendo", "The output SRL file is not writable.");
 			break;
 		case -EIO:
 			pParams->msg = C_("Nintendo", "An I/O error occurred while extracting the SRL.");
@@ -150,8 +146,12 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 	}
 
 out:
-	delete destFile;
+	pParams->save_file->close();
 	if (!wasMainContentOpen) {
+		// Make sure the icon/title is loaded, in case
+		// a standard RomOp is done after reopening the
+		// SRL file.
+		srl->ensureIconTitleDataIsLoaded();
 		d->mainContent->close();
 	}
 	return pParams->status;

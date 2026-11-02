@@ -125,11 +125,15 @@ std::string NintendoDSPrivate::dsi_getTitleID(void) const
  */
 int NintendoDSPrivate::loadIconTitleData(void)
 {
-	assert(this->file != nullptr);
-
 	if ((bool)nds_icon_title) {
 		// Icon/title data is already loaded.
 		return 0;
+	}
+
+	assert(this->file != nullptr);
+	if (!this->file) {
+		// File is not open.
+		return -EBADF;
 	}
 
 	// Get the address of the icon/title information.
@@ -482,6 +486,16 @@ NintendoDS::NintendoDS(const IRpFilePtr &file, bool cia)
 			d->mimeType = "application/x-nintendo-ds-rom";
 			break;
 	}
+}
+
+/**
+ * Ensure icon/title data is loaded.
+ * Used by Nintendo3DS::doRomOp_int().
+ */
+void NintendoDS::ensureIconTitleDataIsLoaded(void)
+{
+	RP_D(NintendoDS);
+	d->loadIconTitleData();
 }
 
 /**

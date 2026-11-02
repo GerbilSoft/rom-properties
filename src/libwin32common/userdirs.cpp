@@ -44,7 +44,7 @@ static string getCSIDLPath(int csidl)
 		s_path = T2U8(path);
 		if (!s_path.empty()) {
 			// Remove the trailing backslash if necessary.
-			if (s_path.at(s_path.size()-1) == '\\') {
+			if (s_path.back() == '\\') {
 				s_path.resize(s_path.size()-1);
 			}
 		}
@@ -173,7 +173,7 @@ string getCacheDirectory(void)
 	// We're done trying to obtain the cache directory.
 	if (!cache_dir.empty()) {
 		// Remove the trailing backslash if necessary.
-		if (cache_dir.at(cache_dir.size()-1) == '\\') {
+		if (cache_dir.back() == '\\') {
 			cache_dir.resize(cache_dir.size()-1);
 		}
 	}

@@ -310,7 +310,7 @@ const WUP_FST_Entry *WiiUFstPrivate::find_path(const char *path) const
 	s_path.append(path);
 
 	// Remove trailing slashes.
-	while (s_path.size() > 1 && s_path[s_path.size()-1] == '/') {
+	while (s_path.size() > 1 && s_path.back() == '/') {
 		s_path.resize(s_path.size()-1);
 	}
 	if (s_path.empty() || s_path == "/") {

@@ -71,17 +71,53 @@ void RP_ShellPropSheetExt_Private::adjustTabsForMessageWidgetVisibility(bool bVi
 
 /**
  * Show the message widget.
- * Message widget must have been created first.
- * @param messageType Message type.
- * @param lpszMsg Message.
+ * @param messageType Message type
+ * @param lpszMsg Message
  */
 void RP_ShellPropSheetExt_Private::showMessageWidget(unsigned int messageType, const TCHAR *lpszMsg)
 {
-	assert(hMessageWidget != nullptr);
-	if (!hMessageWidget)
-		return;
+	if (!hMessageWidget) {
+		// FIXME: Make sure this works if multiple tabs are present.
+		MessageWidgetRegister();
 
-	// Set the message widget stuff.
+		// Align to the bottom of the dialog and center-align the text.
+		// 7x7 DLU margin is recommended by the Windows UX guidelines.
+		// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
+		RECT tmpRect = {7, 7, 8, 8};
+		MapDialogRect(hDlgSheet, &tmpRect);
+		RECT winRect;
+		GetClientRect(hDlgSheet, &winRect);
+		// NOTE: We need to move left by 1px.
+		OffsetRect(&winRect, -1, 0);
+
+		// Determine the position.
+		// TODO: Update on DPI change.
+		const int cySmIcon = GetSystemMetrics(SM_CYSMICON);
+		SIZE szMsgw = {winRect.right - winRect.left, cySmIcon + 8};
+		POINT ptMsgw = {winRect.left, winRect.bottom - szMsgw.cy};
+		if (tabs.size() > 1) {
+			ptMsgw.x += tmpRect.left;
+			ptMsgw.y -= tmpRect.top;
+			szMsgw.cx -= (tmpRect.left * 2);
+		} else {
+			ptMsgw.x += (tmpRect.left / 2);
+			ptMsgw.y -= (tmpRect.top / 2);
+			szMsgw.cx -= tmpRect.left;
+		}
+
+		hMessageWidget = CreateWindowEx(
+			WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
+			WC_MESSAGEWIDGET, nullptr,
+			WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+			ptMsgw.x, ptMsgw.y, szMsgw.cx, szMsgw.cy,
+			hDlgSheet, (HMENU)IDC_MESSAGE_WIDGET,
+			HINST_THISCOMPONENT, nullptr);
+		assert(hMessageWidget != nullptr);
+		SetWindowFont(hMessageWidget, GetWindowFont(hDlgSheet), false);
+	}
+
+	MessageBeep(messageType);
+
 	MessageWidget_SetMessageType(hMessageWidget, messageType);
 	SetWindowText(hMessageWidget, lpszMsg);
 
@@ -360,6 +396,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		ofstream ofs;
 		tstring ts_out;
 
+		tstring t_save_filename;
 		if (!info.toClipboard) {
 			if (ts_prevExportDir.empty()) {
 				ts_prevExportDir = U82T_str(rom_filename);
@@ -376,7 +413,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			}
 
 			tstring defaultFileName = ts_prevExportDir;
-			if (!defaultFileName.empty() && !isBackslashOrSlash(defaultFileName.at(defaultFileName.size()-1))) {
+			if (!defaultFileName.empty() && !isBackslashOrSlash(defaultFileName.back())) {
 				defaultFileName += _T('\\');
 			}
 
@@ -403,28 +440,37 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				defaultFileName += info.default_ext;
 			}
 
-			const tstring tfilename = LibWin32UI::getSaveFileName(hDlgSheet,
+			t_save_filename = LibWin32UI::getSaveFileName(hDlgSheet,
 				tpgettext_expr("RomDataView", info.title),
 				tpgettext_expr("RomDataView", info.filter),
 				defaultFileName.c_str());
-			if (tfilename.empty())
+			if (t_save_filename.empty()) {
 				return;
+			}
 
 			// Save the previous export directory.
-			ts_prevExportDir = tfilename;
+			ts_prevExportDir = t_save_filename;
 			const size_t bspos2 = ts_prevExportDir.find_last_of(_T("\\/"));
 			if (bspos2 != tstring::npos && bspos2 > 3) {
 				ts_prevExportDir.resize(bspos2);
 			}
 
 #ifdef HAVE_OFSTREAM_CTOR_WCHAR_T
-			ofs.open(tfilename.c_str(), ofstream::out);
+			ofs.open(t_save_filename.c_str(), ofstream::out);
 #else /* !HAVE_OFSTREAM_CTOR_WCHAR_T */
 			// FIXME: Convert to ANSI, not UTF-8.
-			ofs.open(T2U8(tfilename), ofstream::out);
+			ofs.open(T2U8(t_save_filename), ofstream::out);
 #endif /* HAVE_OFSTREAM_CTOR_WCHAR_T */
-			if (ofs.fail())
+			if (ofs.fail()) {
+				// Delete the file, since it's likely only 0 bytes.
+				// TODO: Only if it was created by us...
+				ofs.close();
+				//DeleteFile(tfilename.c_str());
+
+				// TODO: Better error message?
+				showMessageWidget(MB_ICONWARNING, TC_("RomDataView", "Could not open the output file."));
 				return;
+			}
 		}
 
 		// TODO: Optimize this such that we can pass ofstream or ostringstream
@@ -472,6 +518,11 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			}
 			default:
 				assert(!"Invalid action ID.");
+				ofs.close();
+				if (!t_save_filename.empty()) {
+					DeleteFile(t_save_filename.c_str());
+				}
+				showMessageWidget(MB_ICONERROR, TC_("RomDataView", "Invalid action ID."));
 				return;
 		}
 
@@ -502,7 +553,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		return;
 	}
 
-	string s_save_filename;
+	tstring t_save_filename;
 	RomData::RomOpParams params;
 	const RomData::RomOp *op = &ops[id];
 	if (op->flags & RomData::RomOp::ROF_SAVE_FILE) {
@@ -510,7 +561,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		string filter = op->sfi.filter;
 		if (!filter.empty()) {
 			// Make sure the last field isn't empty.
-			if (filter.at(filter.size()-1) == '|') {
+			if (filter.back() == '|') {
 				filter += '-';
 			}
 			filter += '|';
@@ -522,12 +573,29 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		string initialFile = FileSystem::replace_ext(romData->filename(), op->sfi.ext);
 
 		// Prompt for a save file.
-		tstring t_save_filename = LibWin32UI::getSaveFileName(hDlgSheet,
+		t_save_filename = LibWin32UI::getSaveFileName(hDlgSheet,
 			U82T(op->sfi.title), U82T(filter), U82T(initialFile));
-		if (t_save_filename.empty())
+		if (t_save_filename.empty()) {
 			return;
-		s_save_filename = T2U8_str(t_save_filename);
-		params.save_filename = s_save_filename.c_str();
+		}
+
+		// Open the save file.
+		params.save_file = std::make_shared<RpFile>(t_save_filename, RpFile::FM_CREATE_WRITE);
+		if (!params.save_file->isOpen()) {
+			// Show an error message.
+			// TODO: Include the filename?
+			// TODO: Thread-safe strerror()?
+			const tstring msg = fmt::format(FRUN(TC_("RomDataView", "Error opening output file: {:s}")),
+				_tcserror(params.save_file->lastError()));
+
+			// Delete the file if it was created.
+			// TODO: Only if it was created by us...
+			params.save_file.reset();
+			//DeleteFile(t_save_filename.c_str());
+
+			showMessageWidget(MB_ICONWARNING, msg.c_str());
+			return;
+		}
 	}
 
 	const int ret = romData->doRomOp(id, &params);
@@ -550,52 +618,14 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		}
 	} else {
 		// An error occurred...
-		// TODO: Show an error message.
 		messageType = MB_ICONWARNING;
+
+		// Delete the file, since it's likely only 0 bytes.
+		params.save_file.reset();
+		DeleteFile(t_save_filename.c_str());
 	}
 
 	if (!params.msg.empty()) {
-		MessageBeep(messageType);
-
-		if (!hMessageWidget) {
-			// FIXME: Make sure this works if multiple tabs are present.
-			MessageWidgetRegister();
-
-			// Align to the bottom of the dialog and center-align the text.
-			// 7x7 DLU margin is recommended by the Windows UX guidelines.
-			// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
-			RECT tmpRect = {7, 7, 8, 8};
-			MapDialogRect(hDlgSheet, &tmpRect);
-			RECT winRect;
-			GetClientRect(hDlgSheet, &winRect);
-			// NOTE: We need to move left by 1px.
-			OffsetRect(&winRect, -1, 0);
-
-			// Determine the position.
-			// TODO: Update on DPI change.
-			const int cySmIcon = GetSystemMetrics(SM_CYSMICON);
-			SIZE szMsgw = {winRect.right - winRect.left, cySmIcon + 8};
-			POINT ptMsgw = {winRect.left, winRect.bottom - szMsgw.cy};
-			if (tabs.size() > 1) {
-				ptMsgw.x += tmpRect.left;
-				ptMsgw.y -= tmpRect.top;
-				szMsgw.cx -= (tmpRect.left * 2);
-			} else {
-				ptMsgw.x += (tmpRect.left / 2);
-				ptMsgw.y -= (tmpRect.top / 2);
-				szMsgw.cx -= tmpRect.left;
-			}
-
-			hMessageWidget = CreateWindowEx(
-				WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
-				WC_MESSAGEWIDGET, nullptr,
-				WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-				ptMsgw.x, ptMsgw.y, szMsgw.cx, szMsgw.cy,
-				hDlgSheet, (HMENU)IDC_MESSAGE_WIDGET,
-				HINST_THISCOMPONENT, nullptr);
-			SetWindowFont(hMessageWidget, GetWindowFont(hDlgSheet), false);
-		}
-
 		showMessageWidget(messageType, U82T(params.msg));
 	}
 }

@@ -10,10 +10,14 @@
 #include "RomDataView_p.hpp"
 #include "RpGtk.h"
 
+// RpFileGio
+#include "RpFile_gio.hpp"
+
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
 #include "librpbase/TextOut.hpp"
 #include "librpfile/FileSystem.hpp"
+#include "librpfile/streambuf_IRpFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 
@@ -21,11 +25,12 @@ using namespace LibRpFile;
 #include "tcharx.h"
 
 // C++ STL classes
-#include <fstream>
 #include <sstream>
-using std::ofstream;
+using std::ostream;
 using std::ostringstream;
+using std::shared_ptr;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 // Custom widgets
@@ -248,6 +253,36 @@ rp_rom_data_view_update_field(RpRomDataView *page, int fieldIdx)
 	return ret;
 }
 
+/**
+ * Show a message in the Message Widget.
+ * @param page RomDataView
+ * @param messageType GtkMessageType
+ * @param msg Message
+ */
+static void
+rp_rom_data_view_show_message_widget(RpRomDataView *page, GtkMessageType messageType, const char *msg)
+{
+#ifdef ENABLE_MESSAGESOUND
+	MessageSound::play(messageType, msg, GTK_WIDGET(page));
+#endif /* ENABLE_MESSAGESOUND */
+
+	// Show the MessageWidget.
+	if (!page->messageWidget) {
+		page->messageWidget = rp_message_widget_new();
+		rp_message_widget_set_transition_type(RP_MESSAGE_WIDGET(page->messageWidget), GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP);
+#if GTK_CHECK_VERSION(4, 0, 0)
+		gtk_box_append(GTK_BOX(page), page->messageWidget);
+#else /* !GTK_CHECK_VERSION(4, 0, 0) */
+		gtk_box_pack_end(GTK_BOX(page), page->messageWidget, false, false, 0);
+#endif /* GTK_CHECK_VERSION(4, 0, 0) */
+	}
+
+	RpMessageWidget *const messageWidget = RP_MESSAGE_WIDGET(page->messageWidget);
+	rp_message_widget_set_message_type(messageWidget, messageType);
+	rp_message_widget_set_text(messageWidget, msg);
+	rp_message_widget_set_reveal_child(messageWidget, true);
+}
+
 // Simple struct for passing both RomDataView and the operation ID.
 struct save_data_t {
 	RpRomDataView *page;
@@ -260,7 +295,7 @@ struct save_data_t {
 /**
  * File dialog callback function.
  * @param file (in) (transfer full): Selected file, or nullptr if no file was selected
- * @param open_data (in) (transfer full): open_data_t specified as user_data when rpGtk_getSaveFileName() was called.
+ * @param save_data (in) (transfer full): open_data_t specified as user_data when rpGtk_getSaveFileName() was called.
  */
 static void
 rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
@@ -271,39 +306,67 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 		return;
 	}
 
-	// TODO: URIs?
-	gchar *filename = nullptr;
-	if (file) {
-		filename = g_file_get_path(file);
-		g_object_unref(file);
-		if (!filename && save_data->isFileRequired) {
-			// No filename, but a file is required...
-			g_free(save_data);
-			return;
-		}
+	// NOTE: Only using RpFileGio for file writing here.
+	// RpFile isn't needed because the file write capabilities should be the same.
+
+	// Get the URI.
+	gchar *const uri = g_file_get_uri(file);
+	if (!uri && save_data->isFileRequired) {
+		// No URI, but a file is required...
+		g_free(save_data);
+		return;
 	}
 
 	// for convenience purposes
 	RpRomDataView *const page = save_data->page;
 	RomData *const romData = page->cxx->romData.get();
-
-	if (filename) {
-		// Save the previous export directory.
-		g_free(page->prevExportDir);
-		page->prevExportDir = g_path_get_dirname(filename);
-	}
-
 	const int id = save_data->id;
 	g_free(save_data);
+
+	// Save the previous export directory.
+	// FIXME: Handle this with non-local files?
+	{
+		gchar *const filename = g_file_get_path(file);
+		if (filename) {
+			g_free(page->prevExportDir);
+			page->prevExportDir = g_path_get_dirname(filename);
+			g_free(filename);
+		}
+	}
+
+	// Open the output file using RpFileGio.
+	shared_ptr<RpFileGio> out_file = std::make_shared<RpFileGio>(uri, RpFileGio::FM_CREATE_WRITE);
+	g_free(uri);
+	if (!out_file->isOpen()) {
+		// Show an error message.
+		// TODO: Include the filename?
+		// TODO: Thread-safe strerror()?
+		const string msg = fmt::format(FRUN(C_("RomDataView", "Error opening output file: {:s}")),
+			strerror(out_file->lastError()));
+
+		// Delete the file if it was created.
+		// TODO: Only if it was created by us...
+		out_file.reset();
+		//g_file_delete(file, nullptr, nullptr);
+		g_object_unref(file);
+
+		rp_rom_data_view_show_message_widget(page, GTK_MESSAGE_WARNING, msg.c_str());
+		return;
+	}
+
 	if (id < 0) {
 		// Standard operation.
-		// TODO: GIO wrapper for ostream?
-		// For now, we'll use ofstream.
-		ofstream ofs;
-		ofs.open(filename, ofstream::out);
-		g_free(filename);
-		if (ofs.fail()) {
-			// TODO: Show an error message?
+		unique_ptr<streambuf_IRpFile> streambuf(new streambuf_IRpFile(out_file, std::ios_base::out));
+		ostream os(streambuf.get());
+		if (os.fail()) {
+			// Delete the file, since it's likely only 0 bytes.
+			out_file.reset();
+			streambuf.reset();
+			g_file_delete(file, nullptr, nullptr);
+			g_object_unref(file);
+
+			// TODO: Better error message?
+			rp_rom_data_view_show_message_widget(page, GTK_MESSAGE_WARNING, C_("RomDataView", "Could not open the output file."));
 			return;
 		}
 
@@ -313,34 +376,38 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 					? rp_language_combo_box_get_selected_lc(RP_LANGUAGE_COMBO_BOX(page->cboLanguage))
 					: 0;
 
-				ofs << "== " << fmt::format(FRUN(C_("RomDataView", "File: '{:s}'")), romData->filename()) << '\n';
+				os << "== " << fmt::format(FRUN(C_("RomDataView", "File: '{:s}'")), romData->filename()) << '\n';
 				ROMOutput ro(romData, sel_lc);
-				ofs << ro;
-				ofs.flush();
+				os << ro;
 				break;
 			}
 
 			case OPTION_EXPORT_JSON: {
 				JSONROMOutput jsro(romData);
-				ofs << jsro << '\n';
-				ofs.flush();
+				os << jsro << '\n';
 				break;
 			}
 
 			default:
 				assert(!"Invalid ID for an Export Standard ROM Operation.");
-				break;
+				out_file.reset();
+				streambuf.reset();
+				g_file_delete(file, nullptr, nullptr);
+				g_object_unref(file);
+				rp_rom_data_view_show_message_widget(page, GTK_MESSAGE_ERROR, C_("RomDataView", "Invalid ID for an Export Standard ROM Operation."));
+				return;
 		}
 
-		ofs.close();
+		os.flush();
+		streambuf->pubsync();
+		g_object_unref(file);
 		return;
 	}
 
 	// Run the ROM operation.
 	RomData::RomOpParams params;
-	params.save_filename = filename;
+	params.save_file = std::move(out_file);
 	const int ret = romData->doRomOp(id, &params);
-	g_free(filename);
 
 	GtkMessageType messageType;
 	if (ret == 0) {
@@ -363,30 +430,16 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 		messageType = GTK_MESSAGE_INFO;
 	} else {
 		// An error occurred...
-		// TODO: Show an error message.
 		messageType = GTK_MESSAGE_WARNING;
+
+		// Delete the file, since it's likely only 0 bytes.
+		params.save_file.reset();
+		g_file_delete(file, nullptr, nullptr);
 	}
 
+	g_object_unref(file);
 	if (!params.msg.empty()) {
-#ifdef ENABLE_MESSAGESOUND
-		MessageSound::play(messageType, params.msg.c_str(), GTK_WIDGET(page));
-#endif /* ENABLE_MESSAGESOUND */
-
-		// Show the MessageWidget.
-		if (!page->messageWidget) {
-			page->messageWidget = rp_message_widget_new();
-			rp_message_widget_set_transition_type(RP_MESSAGE_WIDGET(page->messageWidget), GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP);
-#if GTK_CHECK_VERSION(4, 0, 0)
-			gtk_box_append(GTK_BOX(page), page->messageWidget);
-#else /* !GTK_CHECK_VERSION(4, 0, 0) */
-			gtk_box_pack_end(GTK_BOX(page), page->messageWidget, false, false, 0);
-#endif /* GTK_CHECK_VERSION(4, 0, 0) */
-		}
-
-		RpMessageWidget *const messageWidget = RP_MESSAGE_WIDGET(page->messageWidget);
-		rp_message_widget_set_message_type(messageWidget, messageType);
-		rp_message_widget_set_text(messageWidget, params.msg.c_str());
-		rp_message_widget_set_reveal_child(messageWidget, true);
+		rp_rom_data_view_show_message_widget(page, messageType, params.msg.c_str());
 	}
 }
 
@@ -479,13 +532,16 @@ rp_rom_data_view_doRomOp_stdop(RpRomDataView *page, int id)
 	save_data->isFileRequired = true;
 
 	const rpGtk_getFileName_t gfndata = {
+		(rpGtk_fileDialogCallback)rp_rom_data_view_getSaveFileDialog_callback,	// callback
+		save_data,		// user_data
+
 		parent,			// parent
 		title,			// title
 		filter,			// filter
 		page->prevExportDir,	// init_dir
 		defaultName.c_str(),	// init_name
-		(rpGtk_fileDialogCallback)rp_rom_data_view_getSaveFileDialog_callback,	// callback
-		save_data,		// user_data
+
+		FALSE,			// bLocalOnly
 	};
 	int ret = rpGtk_getSaveFileName(&gfndata);
 	if (ret != 0) {
@@ -566,13 +622,16 @@ btnOptions_triggered_signal_handler(RpOptionsMenuButton *menuButton,
 
 		GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(page));
 		const rpGtk_getFileName_t gfndata = {
+			(rpGtk_fileDialogCallback)rp_rom_data_view_getSaveFileDialog_callback,	// callback
+			save_data,		// user_data
+
 			parent,			// parent
 			op->sfi.title,		// title
 			filter.c_str(),		// filter
 			!init_dir.empty() ? init_dir.c_str() : nullptr,		// init_dir
 			!init_name.empty() ? init_name.c_str() : nullptr,	// init_name
-			(rpGtk_fileDialogCallback)rp_rom_data_view_getSaveFileDialog_callback,	// callback
-			save_data,		// user_data
+
+			FALSE,			// bLocalOnly
 		};
 		int ret = rpGtk_getSaveFileName(&gfndata);
 		if (ret != 0) {

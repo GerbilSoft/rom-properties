@@ -460,7 +460,7 @@ int loadIconFromFilenameAndIndex(LPCTSTR lpszIconFilename, HICON *phiconLarge, H
 	}
 
 	// Remove the trailing double-quote, if present.
-	if (ts_filename[ts_filename.size()-1] == _T('"')) {
+	if (ts_filename.back() == _T('"')) {
 		ts_filename.resize(ts_filename.size()-1);
 		if (ts_filename.empty()) {
 			return ERROR_INVALID_PARAMETER;

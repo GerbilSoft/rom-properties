@@ -107,7 +107,7 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 			fc.dirs++;
 
 			string subdir = path;
-			if (path.empty() || (path[path.size()-1] != '/')) {
+			if (path.empty() || (path.back() != '/')) {
 				// Append a trailing slash.
 				subdir += '/';
 			}

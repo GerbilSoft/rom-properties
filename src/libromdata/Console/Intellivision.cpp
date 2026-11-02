@@ -146,7 +146,7 @@ string IntellivisionPrivate::getTitle(int *pOutYear) const
 	// NOTE: Games that don't use EXEC don't necessarily have a valid title.
 	// The title field is usually single space in that case, and we should
 	// ignore it. (date is 0 aka 1900; maybe we should skip if that's the case?)
-	while (!title.empty() && ISSPACE(title[title.size()-1])) {
+	while (!title.empty() && ISSPACE(title.back())) {
 		title.resize(title.size()-1);
 	}
 

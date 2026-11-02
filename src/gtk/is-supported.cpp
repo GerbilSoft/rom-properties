@@ -87,7 +87,7 @@ RomDataPtr rp_gtk_open_uri(const char *uri, unsigned int attrs)
 		const Config *const config = Config::instance();
 		const bool enableThumbnailOnNetworkFS = config->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS);
 		if (enableThumbnailOnNetworkFS) {
-			IRpFilePtr file = std::make_shared<RpFileGio>(uri);
+			IRpFilePtr file = std::make_shared<RpFileGio>(uri, RpFileGio::FM_OPEN_READ);
 			if (file->isOpen()) {
 				romData = RomDataFactory::create(file, attrs);
 			}

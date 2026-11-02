@@ -319,7 +319,7 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, bool isThumbnai
 
 		// Open the file using RpFileGio.
 		// TODO: Directories using RpFileGio?
-		const IRpFilePtr file = std::make_shared<RpFileGio>(source_file);
+		const IRpFilePtr file = std::make_shared<RpFileGio>(source_file, RpFileGio::FM_OPEN_READ);
 		if (!file) {
 			// Could not open the file.
 			*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;

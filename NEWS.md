@@ -98,6 +98,10 @@
       * Reported by @Amnesia1000.
   * Linux: rp-stub now has a `-F` option to bypass "bad" file system and
     "don't check directories" checks.
+  * GTK: The "Options" button now supports exporting text, JSON, and other
+    ROM-specific data (e.g. the SRL contained in some 3DS CIA files) to GVfs
+    network locations.
+  * Options button: Improved some error messages on all platforms.
 
 ## v2.9 (released 2026/09/13)
 

@@ -69,7 +69,7 @@ bool isWritableDirectory(const char *path)
  */
 static inline void removeTrailingSlashes(string &path)
 {
-	while (!path.empty() && path[path.size()-1] == '/') {
+	while (!path.empty() && path.back() == '/') {
 		path.resize(path.size()-1);
 	}
 }

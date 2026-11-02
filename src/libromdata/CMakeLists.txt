@@ -165,7 +165,6 @@ SET(${PROJECT_NAME}_SRCS
 	img/CacheManager.cpp
 	utils/SuperMagicDrive.cpp
 	file/mz_stream_IRpFile.cpp
-	file/streambuf_IRpFile.cpp
 	)
 # Headers
 SET(${PROJECT_NAME}_H
@@ -410,7 +409,6 @@ SET(${PROJECT_NAME}_H
 	img/CacheManager.hpp
 	utils/SuperMagicDrive.hpp
 	file/mz_stream_IRpFile.hpp
-	file/streambuf_IRpFile.hpp
 	)
 
 IF(ENABLE_XML)
@@ -735,6 +733,7 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 		RP_LibRpFile_RecursiveScan_ForceLinkage
 		RP_LibRpFile_XAttrReader_ForceLinkage
 		RP_LibRpFile_XAttrReader_impl_ForceLinkage
+		RP_LibRpFile_streambuf_IRpFile_ForceLinkage
 		)
 	IF(WIN32)
 		SET(SYMS_FORCE ${SYMS_FORCE}

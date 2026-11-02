@@ -615,7 +615,7 @@ public:
 			} sfi;
 		};
 
-		RomOp()
+		explicit RomOp()
 			: desc(nullptr), flags(0)
 		{
 			sfi.title = nullptr;
@@ -623,7 +623,7 @@ public:
 			sfi.ext = nullptr;
 		}
 
-		RomOp(const char *desc, uint32_t flags)
+		explicit RomOp(const char *desc, uint32_t flags)
 			: desc(desc), flags(flags)
 		{
 			sfi.title = nullptr;
@@ -634,16 +634,15 @@ public:
 
 	struct RomOpParams {
 		/** OUT: Results **/
-		int status;			// Status. (0 == success; negative == POSIX error; positive == other error)
-		std::string msg;		// Status message. (optional)
-		std::vector<int> fieldIdx;	// Field indexes that were updated.
+		int status;				// Status (0 == success; negative == POSIX error; positive == other error)
+		std::string msg;			// Status message (optional)
+		std::vector<int> fieldIdx;		// Field indexes that were updated.
 
 		/** IN: Parameters **/
-		const char *save_filename;	// Filename for saving data.
+		LibRpFile::IRpFilePtr save_file;	// IRpFile for saving data (must be writable!)
 
-		RomOpParams()
+		explicit RomOpParams()
 			: status(0)
-			, save_filename(nullptr)
 		{}
 	};
 

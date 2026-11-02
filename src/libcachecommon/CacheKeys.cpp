@@ -354,7 +354,7 @@ string getCacheFilename(string_view cacheKey)
 		// Get the cache filename.
 		// This is the cache directory plus the cache key.
 		cacheFilename.assign(cache_dir);
-		if (cacheFilename.at(cacheFilename.size()-1) != DIR_SEP_CHR) {
+		if (cacheFilename.back() != DIR_SEP_CHR) {
 			cacheFilename += DIR_SEP_CHR;
 		}
 		cacheFilename += filteredCacheKey;
@@ -366,7 +366,7 @@ string getCacheFilename(string_view cacheKey)
 	// directory. This is useful in cases where the thumbnailer cannot
 	// download files, e.g. bubblewrap.
 	string cacheFilename_sys = DIR_INSTALL_CACHE;
-	if (cacheFilename_sys.at(cacheFilename_sys.size()-1) != DIR_SEP_CHR) {
+	if (cacheFilename_sys.back() != DIR_SEP_CHR) {
 		cacheFilename_sys += DIR_SEP_CHR;
 	}
 	cacheFilename_sys += filteredCacheKey;
@@ -435,7 +435,7 @@ wstring getCacheFilename(wstring_view cacheKey)
 	// Get the cache filename.
 	// This is the cache directory plus the cache key.
 	cacheFilename_user = U82W_str(cache_dir);
-	if (cacheFilename_user.at(cacheFilename_user.size()-1) != DIR_SEP_WCHR) {
+	if (cacheFilename_user.back() != DIR_SEP_WCHR) {
 		cacheFilename_user += DIR_SEP_WCHR;
 	}
 	cacheFilename_user += filteredCacheKey;

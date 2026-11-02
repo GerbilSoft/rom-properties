@@ -153,7 +153,7 @@ RP_PropertyStore_Private::RP_PropertyStore_Private()
 	: file(nullptr)
 	, grfMode(0)
 {
-	assert(metaDataConv[metaDataConv.size()-1].pkey != nullptr);
+	assert(metaDataConv.back().pkey != nullptr);
 }
 
 RP_PropertyStore_Private::~RP_PropertyStore_Private()

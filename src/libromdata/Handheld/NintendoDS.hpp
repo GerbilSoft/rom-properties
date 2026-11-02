@@ -12,6 +12,8 @@
 
 namespace LibRomData {
 
+class Nintendo3DS;
+
 ROMDATA_DECL_BEGIN_NO_CTOR(NintendoDS)
 
 public:
@@ -47,6 +49,15 @@ public:
 	 * @param cia If true, hide fields that aren't relevant to DSiWare in 3DS CIA packages.
 	 */
 	explicit NintendoDS(const LibRpFile::IRpFilePtr &file, bool cia);
+
+protected:
+	friend class Nintendo3DS;
+
+	/**
+	 * Ensure icon/title data is loaded.
+	 * Used by Nintendo3DS::doRomOp_int().
+	 */
+	void ensureIconTitleDataIsLoaded(void);
 
 ROMDATA_DECL_COMMON_FNS()
 ROMDATA_DECL_DANGEROUS()

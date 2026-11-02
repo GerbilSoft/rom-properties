@@ -29,6 +29,7 @@ typedef struct _rpGtk_getFileName_int_callback_data_t {
 	rpGtk_fileDialogCallback callback;
 	gpointer user_data;
 	bool bSave;
+	bool bLocalOnly;
 } rpGtk_getFileName_int_callback_data_t;
 
 /**
@@ -297,8 +298,8 @@ rp_GClosureNotify_g_free(gpointer ptr, GClosure *closure)
  * The dialog is opened as modal, but is handled asynchronously.
  * The callback function is run when the dialog is closed.
  *
- * @param gfndata (in): rpGtk_getFileName_t
- * @param bSave (in): True for save; false for open
+ * @param gfndata	[in] rpGtk_getFileName_t
+ * @param bSave		[in] True for save; false for open
  * @return 0 on success; negative POSIX error code on error
  */
 static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
@@ -309,6 +310,7 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 	if (gfndata->title) {
 		gtk_file_dialog_set_title(fileDialog, gfndata->title);
 	}
+	// GTK4: Local-only was *removed*, so you can always pick a file from GVfs.
 #else /* !USE_GTK4_FILE_DIALOG */
 	GtkFileChooserAction accept_action;
 	const char *accept_text;
@@ -327,6 +329,10 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 		accept_text, GTK_RESPONSE_ACCEPT,
 		NULL);
 	gtk_widget_set_name(fileDialog, "rpGtk_getFileName");
+#  if !GTK_CHECK_VERSION(4, 0, 0)
+	// GTK3: Local-only defaults to true.
+	gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(fileDialog), gfndata->bLocalOnly);
+#  endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 #endif /* USE_GTK4_FILE_DIALOG */
 
 #if GTK_CHECK_VERSION(4, 0, 0)
