@@ -88,6 +88,9 @@ streambuf_IRpFile::streambuf_IRpFile(const IRpFilePtr &file, std::ios_base::open
 
 streambuf_IRpFile::~streambuf_IRpFile()
 {
+	if (m_mode & std::ios_base::out) {
+		flush_output_buffer();
+	}
 	delete[] m_buffer;
 }
 
