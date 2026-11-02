@@ -91,8 +91,10 @@ struct fsxattr {
 
 // C++ STL classes
 #include <array>
+#include "rp-string_view.hpp"
 using std::array;
 using std::string;
+using std::string_view;
 
 // XAttrReader isn't used by libromdata directly,
 // so use some linker hax to force linkage.
@@ -518,13 +520,13 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 		// We have the attribute.
 		// NOTE: Not checking for duplicates, since there
 		// shouldn't be duplicate attribute names.
-		string s_value(value.data(), valuelen);
+		string_view sv_value(value.data(), valuelen);
 #ifdef HAVE_SYS_EXTATTR_H
 		string s_name_prefixed(s_namespace);
 		s_name_prefixed.append(name);
-		genericXAttrs.emplace(std::move(s_name_prefixed), std::move(s_value));
+		genericXAttrs.emplace(std::move(s_name_prefixed), sv_value);
 #else /* !HAVE_SYS_EXTATTR_H */
-		genericXAttrs.emplace(std::move(name), std::move(s_value));
+		genericXAttrs.emplace(std::move(name), sv_value);
 #endif /* HAVE_SYS_EXTATTR_H */
 	}
 

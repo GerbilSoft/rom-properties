@@ -25,7 +25,9 @@ using namespace LibRpText;
 
 // C++ STL classes
 #include <algorithm>
+#include "rp-string_view.hpp"
 using std::string;
+using std::string_view;
 using std::unordered_map;
 
 namespace LibRomData { namespace PSFTagParser {
@@ -132,8 +134,8 @@ unordered_map<string, string> parseTags(const char *pData, size_t size, PSFTagSt
 					}
 				}
 
-				string s_value(eq+1, v_len);
-				kv.emplace(std::move(s_key), std::move(s_value));
+				const string_view sv_value(eq + 1, v_len);
+				kv.emplace(std::move(s_key), sv_value);
 			}
 		}
 

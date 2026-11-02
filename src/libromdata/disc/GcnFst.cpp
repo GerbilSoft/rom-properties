@@ -189,8 +189,8 @@ inline const char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) con
 	// Do the conversion now.
 	const char *str = &string_table_ptr[offset];
 	int len = static_cast<int>(strlen(str));	// TODO: Bounds checking.
-	const string u8str = cp1252_sjis_to_utf8(str, len);
-	iter = u8_string_table.emplace(offset, u8str).first;
+	string u8str = cp1252_sjis_to_utf8(str, len);
+	iter = u8_string_table.emplace(offset, std::move(u8str)).first;
 	return iter->second.c_str();
 }
 

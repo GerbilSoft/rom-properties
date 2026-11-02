@@ -50,11 +50,13 @@ using LibRpBase::IFst;
 #include <string>
 #include <unordered_set>
 #include <vector>
+#include "rp-string_view.hpp"
 using std::array;
 using std::istringstream;
 using std::ostream;
 using std::string;
 using std::stringstream;
+using std::string_view;
 using std::unordered_set;
 using std::vector;
 
@@ -85,18 +87,11 @@ struct GcnFstTest_mode
 	uint8_t offsetShift;		// File offset shift. (0 == GCN, 2 == Wii)
 
 	GcnFstTest_mode(
-		const char *fst_filename,
+		string_view fst_filename,
 		uint8_t offsetShift)
 		: fst_filename(fst_filename)
 		, offsetShift(offsetShift)
-	{ }
-
-	GcnFstTest_mode(
-		const string &fst_filename,
-		uint8_t offsetShift)
-		: fst_filename(fst_filename)
-		, offsetShift(offsetShift)
-	{ }
+	{}
 };
 
 /**
@@ -551,7 +546,8 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 			// Add this filename to the list.
 			// NOTE: Filename might not be NULL-terminated,
 			// so use the explicit length.
-			files.emplace_back(string(file_info->filename, file_info->filename_size), offsetShift);
+			const string_view sv_filename(file_info->filename, file_info->filename_size);
+			files.emplace_back(sv_filename, offsetShift);
 		}
 
 		// Next file.

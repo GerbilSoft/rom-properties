@@ -18,8 +18,10 @@ using namespace LibRpFile;
 
 // C++ STL classes
 #include <vector>
+#include "rp-string_view.hpp"
 using std::pair;
 using std::string;
+using std::string_view;
 using std::vector;
 
 // Uninitialized vector class
@@ -383,7 +385,7 @@ Z3DSReader::Metadata_t Z3DSReader::getZ3DSMetaData(void)
 		}
 
 		// Get the item key.
-		string key(reinterpret_cast<const char*>(p), key_len);
+		const string_view key(reinterpret_cast<const char*>(p), key_len);
 		p += key_len;
 
 		// Get the item value.
