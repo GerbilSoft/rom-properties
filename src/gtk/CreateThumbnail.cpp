@@ -42,6 +42,7 @@ using LibRomData::TCreateThumbnail;
 
 // C++ STL classes
 using std::string;
+using std::string_view;
 using std::unique_ptr;
 
 // libfmt
@@ -130,7 +131,7 @@ public:
 	 * @param url URL
 	 * @return Proxy, or empty string if no proxy is needed.
 	 */
-	inline string proxyForUrl(std::string_view url) const final
+	inline string proxyForUrl(string_view url) const final
 	{
 #ifdef ENABLE_NETWORKING
 		return ::proxyForUrl(url);
