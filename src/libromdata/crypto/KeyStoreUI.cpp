@@ -796,15 +796,13 @@ string KeyStoreUIPrivate::binToHexStr(const uint8_t *data, size_t len)
 	}
 
 	const size_t hexlen = len * 2;
-	unique_ptr<char[]> hexstr(new char[hexlen]);
-	char *pHex = hexstr.get();
+	s_ret.resize(hexlen);
+	char *pHex = &s_ret[0];
 	for (; len > 0; len--, data++, pHex += 2) {
 		pHex[0] = hex_lookup[*data >> 4];
 		pHex[1] = hex_lookup[*data & 0x0F];
 	}
 
-	// TODO: Write directly to `s_ret`?
-	s_ret.assign(hexstr.get(), hexlen);
 	return s_ret;
 }
 
