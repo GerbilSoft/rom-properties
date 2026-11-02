@@ -555,9 +555,9 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(SectionID sectIdx
 		int ret = verifyKeyData(keyData, verifyData, 16);
 		if (ret == 0) {
 			// Found a match!
-			const string new_value = binToHexStr(keyData, 16);
+			string new_value = binToHexStr(keyData, 16);
 			if (pKey->value != new_value) {
-				pKey->value = binToHexStr(keyData, 16);
+				pKey->value = std::move(new_value);
 				pKey->status = KeyStoreUI::Key::Status::OK;
 				pKey->modified = true;
 				iret.keysImportedVerify++;
