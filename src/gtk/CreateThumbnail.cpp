@@ -193,11 +193,12 @@ public:
 /**
  * Create a RomData object from a filename or URI.
  * @param source_file	[in] Source filename or URI
+ * @param isThumbnail	[in] True to check for bad file systems and/or directories.
  * @param s_uri		[out] Normalized URI (file:/ for a filename, etc.)
  * @param p_err		[out] RPCT error code
  * @return RomDataPtr on success; nullptr on error.
  */
-static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, int *p_err)
+static RomDataPtr openFromFilenameOrURI(const char *source_file, bool isThumbnail, string &s_uri, int *p_err)
 {
 	RomDataPtr romData;
 
@@ -211,8 +212,9 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 	}
 
 	s_uri.clear();
-	const bool enableThumbnailOnNetworkFS =
-		Config::instance()->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS);
+	const bool enableThumbnailOnNetworkFS = (isThumbnail)
+		? Config::instance()->getBoolConfigOption(Config::BoolConfig::Options_EnableThumbnailOnNetworkFS)
+		: true;
 
 	char *const uri_scheme = g_uri_parse_scheme(source_file);
 	char *source_filename = nullptr;	// allocated; free it later
@@ -292,12 +294,14 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, string &s_uri, 
 			// RomData class *must* support at least one image type.
 			romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
 		} else {
-			const Config *const config = Config::instance();
-			if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {
-				// Directory package thumbnailing is disabled.
-				*p_err = RPCT_ERROR_DIRECTORY_THUMBNAILING_DISABLED;
-				g_free(source_filename);
-				return romData;
+			if (isThumbnail) {
+				const Config *const config = Config::instance();
+				if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {
+					// Directory package thumbnailing is disabled.
+					*p_err = RPCT_ERROR_DIRECTORY_THUMBNAILING_DISABLED;
+					g_free(source_filename);
+					return romData;
+				}
 			}
 
 			// Directory: Call RomDataFactory::create() with the filename.
@@ -371,10 +375,14 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 	// ROM file and getting RomData*, but we're doing it here
 	// in order to return better error codes.
 
+	// `isThumbnail` is set to true to skip the bad file system check.
+	// Also skips the "don't thumbnail directories" check.
+	const bool isThumbnail = !(flags & RPCT_FLAG_NO_BAD_FS_CHECK);
+
 	// Attempt to open the ROM file.
 	string s_uri;
 	int ret = -1;
-	const RomDataPtr romData = openFromFilenameOrURI(source_file, s_uri, &ret);
+	const RomDataPtr romData = openFromFilenameOrURI(source_file, isThumbnail, s_uri, &ret);
 	if (!romData || ret != 0) {
 		// Error opening the file.
 		return ret;

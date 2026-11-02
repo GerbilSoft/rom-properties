@@ -63,14 +63,20 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	// TODO: Check enableThumbnailOnNetworkFS
 	RomDataPtr romData;
 
+	// `isThumbnail` is set to true to skip the bad file system check.
+	// Also skips the "don't thumbnail directories" check.
+	const bool isThumbnail = !(flags & RPCT_FLAG_NO_BAD_FS_CHECK);
+
 	// Check if this is a directory.
 	const QUrl localUrl = localizeQUrl(QUrl(QString::fromUtf8(source_file)));
 	const string s_local_filename = Q2U8_StdString(localUrl.toLocalFile());
 	if (unlikely(!s_local_filename.empty() && FileSystem::is_directory(s_local_filename))) {
-		const Config *const config = Config::instance();
-		if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {
-			// Directory package thumbnailing is disabled.
-			return RPCT_ERROR_DIRECTORY_THUMBNAILING_DISABLED;
+		if (isThumbnail) {
+			const Config *const config = Config::instance();
+			if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {
+				// Directory package thumbnailing is disabled.
+				return RPCT_ERROR_DIRECTORY_THUMBNAILING_DISABLED;
+			}
 		}
 
 		// Directory: Call RomDataFactory::create() with the filename.
@@ -79,7 +85,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 		// File: Open the file and call RomDataFactory::create() with the opened file.
 
 		// Attempt to open the ROM file.
-		const IRpFilePtr file(openQUrl(localUrl, true));
+		const IRpFilePtr file(openQUrl(localUrl, isThumbnail));
 		if (!file) {
 			// Could not open the file.
 			return RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;

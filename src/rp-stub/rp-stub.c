@@ -65,6 +65,7 @@ static bool is_debug = false;
  */
 typedef enum ATTR_FLAG_ENUM {
 	RPCT_FLAG_NO_XDG_THUMBNAIL_METADATA	= (1U << 0),	/*< Don't add XDG thumbnail metadata */
+	RPCT_FLAG_NO_BAD_FS_CHECK		= (1U << 1),	/*< Don't check for bad file systems (also force-enables directories) */
 } RpCreateThumbnailFlags;
 
 /**
@@ -137,6 +138,8 @@ static void show_help(const char *argv0)
 			{"  -a, --autoext",	NOP_C_("rp-stub|Help", "Generate the output filename based on the source filename.")},
 			{"               ",	NOP_C_("rp-stub|Help", "(WARNING: May overwrite an existing file without prompting.)")},
 			{"  -n, --noxdg",	NOP_C_("rp-stub|Help", "Don't include XDG thumbnail metadata.")},
+			{"  -F, --nobadfs",	NOP_C_("rp-stub|Help", "Don't check for slow (aka \"bad\") file systems.")},
+			{"               ",	NOP_C_("rp-stub|Help", "(Also force-enables directory thumbnailing.)")},
 		};
 		static const struct opt_t *const thumb_opts_end = &thumb_opts[ARRAY_SIZE(thumb_opts)];
 
@@ -270,6 +273,7 @@ int main(int argc, char *argv[])
 		{"size",	required_argument,	NULL, 's'},
 		{"autoext",	no_argument,		NULL, 'a'},
 		{"noxdg",	no_argument,		NULL, 'n'},
+		{"nobadfs",	no_argument,		NULL, 'F'},
 		{"config",	no_argument,		NULL, 'c'},
 		{"RomDataView",	no_argument,		NULL, 'R'},
 		{"debug",	no_argument,		NULL, 'd'},
@@ -285,7 +289,7 @@ int main(int argc, char *argv[])
 	unsigned int flags = 0;
 	bool autoext = false;
 	int c, option_index;
-	while ((c = getopt_long(argc, argv, "s:acdnhRV", long_options, &option_index)) != -1) {
+	while ((c = getopt_long(argc, argv, "s:acdnhFRV", long_options, &option_index)) != -1) {
 		switch (c) {
 			case 's': {
 				char *endptr = NULL;
@@ -324,6 +328,11 @@ int main(int argc, char *argv[])
 			case 'n':
 				// Don't add XDG thumbnail metadata.
 				flags |= RPCT_FLAG_NO_XDG_THUMBNAIL_METADATA;
+				break;
+
+			case 'F':
+				// Don't check for bad file systems.
+				flags |= RPCT_FLAG_NO_BAD_FS_CHECK;
 				break;
 
 			case 'R':

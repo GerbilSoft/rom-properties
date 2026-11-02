@@ -73,8 +73,9 @@ typedef enum {
  */
 typedef enum ATTR_FLAG_ENUM {
 	RPCT_FLAG_NO_XDG_THUMBNAIL_METADATA	= (1U << 0),	/*< Don't add XDG thumbnail metadata */
+	RPCT_FLAG_NO_BAD_FS_CHECK		= (1U << 1),	/*< Don't check for bad file systems (also force-enables directories) */
 
-	RPCT_FLAG_VALID_MASK			= 0x00000001,
+	RPCT_FLAG_VALID_MASK			= 0x00000003,
 } RpCreateThumbnailFlags;
 
 /**
