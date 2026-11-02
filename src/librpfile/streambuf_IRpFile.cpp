@@ -63,6 +63,12 @@ streambuf_IRpFile::streambuf_IRpFile(const IRpFilePtr &file, std::ios_base::open
 		m_out_buffer = (alloc2x) ? &m_buffer[BUFFER_SIZE] : m_buffer;
 		setp(m_out_buffer, m_out_buffer + BUFFER_SIZE);
 	}
+
+	if (mode & (std::ios_base::app | std::ios_base::ate)) {
+		// Seek to the end of the file.
+		// TODO: std::ios_base::app requires seeking to the end on every write.
+		m_file->seek(0, IRpFile::SeekWhence::End);
+	}
 }
 
 streambuf_IRpFile::~streambuf_IRpFile()
