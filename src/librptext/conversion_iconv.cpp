@@ -265,7 +265,7 @@ static std::basic_string<T> T_cpN_to_unicode(const char *out_encoding, unsigned 
 
 		if (is0208) {
 			// Make the string EUC-JP compatible.
-			string eucJP(str, 0, len);
+			string eucJP(str, len);
 			for (char &c : eucJP) {
 				c |= 0x80;
 			}
