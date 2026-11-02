@@ -1541,9 +1541,9 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 				int ret = verifyKeyData(aesKey->key, verifyData, 16);
 				if (ret == 0) {
 					// Found a match!
-					const string new_value = binToHexStr(aesKey->key, sizeof(aesKey->key));
+					string new_value = binToHexStr(aesKey->key, sizeof(aesKey->key));
 					if (pKey->value != new_value) {
-						pKey->value = new_value;
+						pKey->value = std::move(new_value);
 						pKey->status = KeyStoreUI::Key::Status::OK;
 						pKey->modified = true;
 						iret.keysImportedVerify++;
