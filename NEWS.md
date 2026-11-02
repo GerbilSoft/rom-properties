@@ -96,6 +96,8 @@
     * TODO: Add more extensive logging for better debugging.
     * Fixes #523: [BUG] No error message when rp-download can't be executed
       * Reported by @Amnesia1000.
+  * Linux: rp-stub now has a `-F` option to bypass "bad" file system and
+    "don't check directories" checks.
 
 ## v2.9 (released 2026/09/13)
 
