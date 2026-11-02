@@ -329,8 +329,10 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 		accept_text, GTK_RESPONSE_ACCEPT,
 		NULL);
 	gtk_widget_set_name(fileDialog, "rpGtk_getFileName");
+#  if !GTK_CHECK_VERSION(4, 0, 0)
 	// GTK3: Local-only defaults to true.
 	gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(fileDialog), gfndata->bLocalOnly);
+#  endif /* !GTK_CHECK_VERSION(4, 0, 0) */
 #endif /* USE_GTK4_FILE_DIALOG */
 
 #if GTK_CHECK_VERSION(4, 0, 0)
