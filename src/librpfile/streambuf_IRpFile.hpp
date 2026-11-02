@@ -84,6 +84,14 @@ protected:
 	 */
 	std::streamsize xsgetn(char_type *s, std::streamsize n) override;
 
+	/**
+	 * Write a block of data.
+	 * @param s Input buffer
+	 * @param n Number of bytes to write
+	 * @return Number of bytes written
+	 */
+	std::streamsize xsputn(const char_type *s, std::streamsize n) override;
+
 private:
 	// Size of each buffer (4 KB)
 	static constexpr size_t BUFFER_SIZE = 4096U;

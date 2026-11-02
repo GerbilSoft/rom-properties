@@ -246,8 +246,12 @@ int streambuf_IRpFile::flush_output_buffer(void)
 	}
 
 	if (m_mode & std::ios_base::app) {
+		// Append mode: Seek to the end of the file before writing.
 		// TODO: Verify if this is correct!
-		m_file->seek(0, IRpFile::SeekWhence::End);
+		if (m_file->seek(0, IRpFile::SeekWhence::End) != 0) {
+			// Seek error.
+			return -1;
+		}
 	}
 
 	ptrdiff_t pending = pptr() - pbase();
@@ -290,7 +294,7 @@ streamsize streambuf_IRpFile::xsgetn(char_type *s, streamsize n)
 
 	while (n > 0) {
 		// Check if any data is still available in streambuf's "get" buffer.
-		ptrdiff_t gbuf_remain = egptr() - gptr();
+		const ptrdiff_t gbuf_remain = egptr() - gptr();
 
 		if (gbuf_remain > 0) {
 			// Use up the rest of the "get" buffer.
@@ -306,7 +310,7 @@ streamsize streambuf_IRpFile::xsgetn(char_type *s, streamsize n)
 		if (n > 0) {
 			// More data has been requested than is available in the "get" buffer.
 			if (n >= static_cast<streamsize>(BUFFER_SIZE)) {
-				// Requested more than our internal buffer size.
+				// Requested read of more data than can fit in the "get" buffer.
 				// Read directly from the file.
 				if (m_mode & std::ios_base::out) {
 					// Open for writing, so we need to flush the write buffers first.
@@ -331,6 +335,79 @@ streamsize streambuf_IRpFile::xsgetn(char_type *s, streamsize n)
 					// End of file?
 					return sz_total;
 				}
+			}
+		}
+	}
+
+	return sz_total;
+}
+
+/**
+ * Write a block of data.
+ * @param s Input buffer
+ * @param n Number of bytes to write
+ * @return Number of bytes written
+ */
+streamsize streambuf_IRpFile::xsputn(const char_type *s, streamsize n)
+{
+	assert((bool)m_file);
+	assert(m_mode & std::ios_base::out);
+	assert(s != nullptr);
+	assert(n > 0);
+	if (!m_file || !(m_mode & std::ios_base::out)) {
+		return 0;
+	}
+	if (!s || n <= 0) {
+		// Empty input buffer?
+		return 0;
+	}
+
+	streamsize sz_total = 0;
+
+	while (n > 0) {
+		// Check if any space is still available in streambuf's "put" buffer.
+		const ptrdiff_t pbuf_remain = epptr() - pptr();
+
+		if (pbuf_remain > 0) {
+			// Use up the rest of the "put" buffer.
+			streamsize to_copy = std::min(n, static_cast<streamsize>(pbuf_remain));
+			memcpy(pptr(), s, to_copy);
+			pbump(static_cast<int>(to_copy));
+
+			s += to_copy;
+			n -= to_copy;
+			sz_total += to_copy;
+		}
+
+		if (n > 0) {
+			// More data needs to be written than can fit in the "put" buffer.
+			// Flush the "put" buffer to disk first.
+			if (flush_output_buffer() != 0) {
+				// flush_output_buffer() failed...
+				return sz_total;
+			}
+
+			if (n >= static_cast<streamsize>(BUFFER_SIZE)) {
+				// Requested write of more data than can fit in the "put" buffer.
+				// Write directly to the file.
+
+				if (m_mode & std::ios_base::app) {
+					// Append mode: Seek to the end of the file before writing.
+					// TODO: Verify if this is correct!
+					if (m_file->seek(0, IRpFile::SeekWhence::End) != 0) {
+						// Seek error.
+						return sz_total;
+					}
+				}
+
+				size_t sz_write = m_file->write(s, n);
+				if (sz_write == 0) {
+					// Write failed.
+					return sz_total;
+				}
+
+				sz_total += sz_write;
+				break;
 			}
 		}
 	}
