@@ -16,7 +16,6 @@
 // C includes
 #include <sys/types.h>
 #include <dirent.h>
-#include "tcharx.h"
 
 // C includes (C++ namespace)
 #include <cerrno>
@@ -54,6 +53,10 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 		return -errno;
 	}
 
+	string fullpath(path);
+	fullpath += '/';
+	const size_t fullpath_base_len = fullpath.size();
+
 	// Search for files and directories.
 	struct dirent *dirent;
 	while ((dirent = readdir(pdir)) != nullptr) {
@@ -65,8 +68,7 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 			continue;
 		}
 
-		string fullpath(path);
-		fullpath += '/';
+		fullpath.resize(fullpath_base_len);
 		fullpath += dirent->d_name;
 
 		// Check if this is a regular file.

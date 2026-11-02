@@ -52,6 +52,10 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 		return -1;
 	}
 
+	tstring fullpath(path);
+	fullpath += _T('\\');
+	const size_t fullpath_base_len = fullpath.size();
+
 	do {
 		// Skip "." and "..".
 		if (findFileData.cFileName[0] == _T('.') &&
@@ -91,19 +95,18 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 		}
 
 	isok:
-		tstring fullFileName(path);
-		fullFileName += _T('\\');
-		fullFileName += findFileData.cFileName;
+		fullpath.resize(fullpath_base_len);
+		fullpath += findFileData.cFileName;
 
 		// Add the filename and d_type.
-		rlist.emplace_front(fullFileName, FileSystem::win32_attrs_to_d_type(findFileData.dwFileAttributes));
+		rlist.emplace_front(fullpath, FileSystem::win32_attrs_to_d_type(findFileData.dwFileAttributes));
 
 		// If this is a directory, recursively scan it.
 		// This is done *after* adding the directory because forward_list
 		// enumerates items in reverse order.
 		if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 			// Recursively scan it.
-			recursiveScan(fullFileName.c_str(), rlist);
+			recursiveScan(fullpath.c_str(), rlist);
 		}
 	} while (FindNextFile(hFindFile, &findFileData));
 	FindClose(hFindFile);
