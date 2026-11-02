@@ -19,7 +19,6 @@
 
 // C++ STL classes
 #include <string>
-using std::string_view;
 
 // for rpToQImage()
 #include "RpQt.hpp"
@@ -108,7 +107,7 @@ public:
 	 * @param url URL
 	 * @return Proxy, or empty string if no proxy is needed.
 	 */
-	inline std::string proxyForUrl(string_view url) const final
+	inline std::string proxyForUrl(std::string_view url) const final
 	{
 #ifdef ENABLE_NETWORKING
 		return ::proxyForUrl(url);
