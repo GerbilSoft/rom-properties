@@ -73,6 +73,17 @@ private:
 	 */
 	int flush_output_buffer(void);
 
+protected:
+	/** Bulk read/write functions **/
+
+	/**
+	 * Read a block of data.
+	 * @param s Output buffer
+	 * @param n Number of bytes to read
+	 * @return Number of bytes read
+	 */
+	std::streamsize xsgetn(char_type *s, std::streamsize n) override;
+
 private:
 	// Size of each buffer (4 KB)
 	static constexpr size_t BUFFER_SIZE = 4096U;

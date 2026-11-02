@@ -12,6 +12,12 @@
 using LibRpFile::IRpFile;
 using LibRpFile::IRpFilePtr;
 
+// C includes (C++ namespace)
+#include <cstring>
+
+// C++ STL classes
+using std::streamsize;
+
 // streambuf_IRpFile *is* used by libromdata (in WiiUPackage),
 // but for some reason, ld doesn't find it when linking the
 // GTK UI frontends on Debian 8 (ppc). (gcc-4.9.2)
@@ -183,6 +189,7 @@ streambuf_IRpFile::pos_type streambuf_IRpFile::seekoff(off_type off,
 		}
 	}
 
+	// FIXME: Maintain two separate seek pointers, one for "get" and one for "put"?
 	int ret = m_file->seek(off, static_cast<IRpFile::SeekWhence>(way));
 	if (ret != 0) {
 		return static_cast<pos_type>(-1);
@@ -255,6 +262,80 @@ int streambuf_IRpFile::flush_output_buffer(void)
 	// Reset the output buffer pointer.
 	setp(m_out_buffer, m_out_buffer + BUFFER_SIZE);
 	return 0;
+}
+
+/** Bulk read/write functions **/
+
+/**
+ * Read a block of data.
+ * @param s Output buffer
+ * @param n Number of bytes to read
+ * @return Number of bytes read
+ */
+streamsize streambuf_IRpFile::xsgetn(char_type *s, streamsize n)
+{
+	assert((bool)m_file);
+	assert(m_mode & std::ios_base::in);
+	assert(s != nullptr);
+	assert(n > 0);
+	if (!m_file || !(m_mode & std::ios_base::in)) {
+		return 0;
+	}
+	if (!s || n <= 0) {
+		// Empty output buffer?
+		return 0;
+	}
+
+	streamsize sz_total = 0;
+
+	while (n > 0) {
+		// Check if any data is still available in streambuf's "get" buffer.
+		ptrdiff_t gbuf_remain = egptr() - gptr();
+
+		if (gbuf_remain > 0) {
+			// Use up the rest of the "get" buffer.
+			streamsize to_copy = std::min(n, static_cast<streamsize>(gbuf_remain));
+			memcpy(s, gptr(), n);
+			gbump(static_cast<int>(to_copy));
+
+			s += to_copy;
+			n -= to_copy;
+			sz_total += to_copy;
+		}
+
+		if (n > 0) {
+			// More data has been requested than is available in the "get" buffer.
+			if (n >= static_cast<streamsize>(BUFFER_SIZE)) {
+				// Requested more than our internal buffer size.
+				// Read directly from the file.
+				if (m_mode & std::ios_base::out) {
+					// Open for writing, so we need to flush the write buffers first.
+					if (flush_output_buffer() != 0) {
+						// flush_output_buffer() failed...
+						return sz_total;
+					}
+				}
+
+				size_t sz_read = m_file->read(s, n);
+				if (sz_read == 0) {
+					// Read failed.
+					return sz_total;
+				}
+
+				sz_total += sz_read;
+				break;
+			} else {
+				// Less than the buffer size.
+				// Use underflow() to read the data into the "get" buffer.
+				if (underflow() == traits_type::eof()) {
+					// End of file?
+					return sz_total;
+				}
+			}
+		}
+	}
+
+	return sz_total;
 }
 
 } // namespace LibRpFile
