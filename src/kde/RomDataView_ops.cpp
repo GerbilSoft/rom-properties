@@ -428,7 +428,7 @@ void RomDataView::btnOptions_triggered(int id)
 			// TODO: Only if it was created by us...
 			params.save_file.reset();
 			//QFile::remove(save_filename);
-			
+
 			d->showMessageWidget(QMessageBox::Warning, msg);
 			return;
 		}

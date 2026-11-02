@@ -349,7 +349,7 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 		out_file.reset();
 		//g_file_delete(file, nullptr, nullptr);
 		g_object_unref(file);
-		
+
 		rp_rom_data_view_show_message_widget(page, GTK_MESSAGE_WARNING, msg.c_str());
 		return;
 	}
