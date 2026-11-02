@@ -43,6 +43,12 @@ IF(NOT MSVC)
     ADD_DEFINITIONS(-Wno-error=reorder)
 ENDIF(NOT MSVC)
 
+# rom-properties: Hide all symbols so they're not exported by libromdata.
+CMAKE_POLICY(SET CMP0063 NEW)
+SET(CMAKE_C_VISIBILITY_PRESET "hidden")
+SET(CMAKE_CXX_VISIBILITY_PRESET "hidden")
+SET(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
+
 # build static library
 add_library (zarchive STATIC ${SOURCE_FILES_LIB})
 add_library (ZArchive::zarchive ALIAS zarchive)
