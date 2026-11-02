@@ -20,6 +20,7 @@
 #include "libi18n/i18n.hpp"
 #include "librpbase/TextOut.hpp"
 #include "librpfile/FileSystem.hpp"
+#include "librpfile/RpFile.hpp"
 #include "librptext/wchar.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
