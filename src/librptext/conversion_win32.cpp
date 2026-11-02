@@ -175,7 +175,7 @@ u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned int f
 
 		if (is0208) {
 			// Make the string EUC-JP compatible.
-			string eucJP(str, 0, len);
+			string eucJP(str, len);
 			for (char &c : eucJP) {
 				c |= 0x80;
 			}
