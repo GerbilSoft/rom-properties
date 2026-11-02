@@ -66,7 +66,6 @@ streambuf_IRpFile::streambuf_IRpFile(const IRpFilePtr &file, std::ios_base::open
 
 	if (mode & (std::ios_base::app | std::ios_base::ate)) {
 		// Seek to the end of the file.
-		// TODO: std::ios_base::app requires seeking to the end on every write.
 		m_file->seek(0, IRpFile::SeekWhence::End);
 	}
 }
@@ -227,6 +226,11 @@ int streambuf_IRpFile::flush_output_buffer(void)
 	assert(m_mode & std::ios_base::out);
 	if (!m_file || !(m_mode & std::ios_base::out)) {
 		return -1;
+	}
+
+	if (m_mode & std::ios_base::app) {
+		// TODO: Verify if this is correct!
+		m_file->seek(0, IRpFile::SeekWhence::End);
 	}
 
 	ptrdiff_t pending = pptr() - pbase();
