@@ -1233,7 +1233,7 @@ int CBMDOS::loadFieldData(void)
 	CpRp cpRp = CpRp::PETSCII_Unshifted;
 
 	// Disk BAM/header is read in the constructor.
-	const auto *diskHeader = &d->diskHeader;
+	//const auto *diskHeader = &d->diskHeader;
 	d->fields.reserve(4);	// Maximum of 4 fields.
 
 	// Get the disk ID and DOS type.
@@ -1496,7 +1496,7 @@ int CBMDOS::loadMetaData(void)
 	}
 
 	// Disk header is read in the constructor.
-	const auto *diskHeader = &d->diskHeader;
+	//const auto *diskHeader = &d->diskHeader;
 	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
 
 	// Title (disk name)
