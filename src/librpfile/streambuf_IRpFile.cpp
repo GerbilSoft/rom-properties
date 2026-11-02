@@ -64,6 +64,14 @@ streambuf_IRpFile::streambuf_IRpFile(const IRpFilePtr &file, std::ios_base::open
 		setp(m_out_buffer, m_out_buffer + BUFFER_SIZE);
 	}
 
+	if ((mode & (std::ios_base::out | std::ios_base::trunc)) == (std::ios_base::out | std::ios_base::trunc)) {
+		// Truncate the file. (Only if writable!)
+		// All IRpFile implementations that support truncate()
+		// will adjust the file pointer as necessary.
+		// TODO: What if it fails?
+		m_file->truncate();
+	}
+
 	if (mode & (std::ios_base::app | std::ios_base::ate)) {
 		// Seek to the end of the file.
 		m_file->seek(0, IRpFile::SeekWhence::End);
