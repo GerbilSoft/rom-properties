@@ -357,9 +357,15 @@ static void DoFile(const TCHAR *filename, bool json, bool doSixel,
 			// FIXME: gsvt_fwrite_raw() function to skip ANSI escape parsing.
 			ostringstream oss;
 			oss << JSONROMOutput(romData.get(), flags) << '\n';
-			const string str = oss.str();
+
 			// TODO: Error checking.
+#ifdef HAVE_STD_OSTRINGSTREAM_VIEW
+			const string_view sv = oss.view();
+			Gsvt::StdOut.fwrite(sv.data(), sv.size());
+#else /* !HAVE_STD_OSTRINGSTREAM_VIEW */
+			const string str = oss.str();
 			Gsvt::StdOut.fputs(str);
+#endif /* HAVE_STD_OSTRINGSTREAM_VIEW */
 #else /* !_WIN32 */
 			// Not Windows: Write directly to cout.
 			// FIXME: gsvt_cout wrapper.
@@ -377,9 +383,14 @@ static void DoFile(const TCHAR *filename, bool json, bool doSixel,
 			// FIXME: gsvt_cout wrapper.
 			ostringstream oss;
 			oss << ROMOutput(romData.get(), lc, flags) << '\n';
-			const string str = oss.str();
 			// TODO: Error checking.
+#ifdef HAVE_STD_OSTRINGSTREAM_VIEW
+			const string_view sv = oss.view();
+			Gsvt::StdOut.fwrite(sv.data(), sv.size());
+#else /* !HAVE_STD_OSTRINGSTREAM_VIEW */
+			const string str = oss.str();
 			Gsvt::StdOut.fputs(str);
+#endif /* HAVE_STD_OSTRINGSTREAM_VIEW */
 #else /* !_WIN32 */
 			// Not Windows: Write directly to cout.
 			// FIXME: gsvt_cout wrapper.
@@ -585,9 +596,14 @@ static void DoDeviceInquiry(const TCHAR *filename, bool json, DeviceInquiryComma
 	// FIXME: gsvt_fwrite_raw() function to skip ANSI escape parsing.
 	ostringstream oss;
 	DoDeviceInquiry_int(oss, file.get(), json, cmd);
+			// TODO: Error checking.
+#ifdef HAVE_STD_OSTRINGSTREAM_VIEW
+	const string_view sv = oss.view();
+	Gsvt::StdOut.fwrite(sv.data(), sv.size());
+#else /* !HAVE_STD_OSTRINGSTREAM_VIEW */
 	const string str = oss.str();
-	// TODO: Error checking.
 	Gsvt::StdOut.fputs(str);
+#endif /* HAVE_STD_OSTRINGSTREAM_VIEW */
 #else /* !_WIN32 */
 	// Not Windows: Write directly to cout.
 	// FIXME: gsvt_cout wrapper.

@@ -55,7 +55,6 @@ ENDIF(NOT HAVE_STD_VARIANT)
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/rp-variant.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/rp-variant.hpp")
 
 # Check for std::string_view (or std::experimental::string_view).
-INCLUDE(CheckCXXSourceCompiles)
 CHECK_CXX_SOURCE_COMPILES("
 #include <string_view>
 std::string_view sv;
@@ -71,6 +70,16 @@ IF(NOT HAVE_STD_STRING_VIEW)
 		MESSAGE(FATAL_ERROR "std::string_view is not available! (Add a copy of string_view_lite?)")
 	ENDIF(NOT HAVE_STD_EXPERIMENTAL_STRING_VIEW)
 ENDIF(NOT HAVE_STD_STRING_VIEW)
+
+# Check for std::ostringstream::view().
+INCLUDE(CheckCXXSourceCompiles)
+CHECK_CXX_SOURCE_COMPILES("
+#include <sstream>
+int main(void) {
+	std::ostringstream oss;
+	oss.view();
+	return 0;
+}" HAVE_STD_OSTRINGSTREAM_VIEW)
 
 # Write the std::string_view configuration file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/rp-string_view.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/rp-string_view.hpp")

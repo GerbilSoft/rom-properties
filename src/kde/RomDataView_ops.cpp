@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
- * RomDataView.cpp: RomData viewer. (ROM operations)                       *
+ * RomDataView_ops.cpp: RomData viewer. (ROM operations)                   *
  *                                                                         *
  * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -206,7 +206,12 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 			ROMOutput ro(romData.get(), sel_lc);
 			oss << ro;
 			oss.flush();
+
+#ifdef HAVE_STD_OSTRINGSTREAM_VIEW
+			QApplication::clipboard()->setText(U82Q(oss.view()));
+#else /* !HAVE_STD_OSTRINGSTREAM_VIEW */
 			QApplication::clipboard()->setText(U82Q(oss.str()));
+#endif /* HAVE_STD_OSTRINGSTREAM_VIEW */
 			// Nothing else to do here.
 			return;
 		}
@@ -216,7 +221,12 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 			JSONROMOutput jsro(romData.get());
 			oss << jsro << '\n';
 			oss.flush();
+
+#ifdef HAVE_STD_OSTRINGSTREAM_VIEW
+			QApplication::clipboard()->setText(U82Q(oss.view()));
+#else /* !HAVE_STD_OSTRINGSTREAM_VIEW */
 			QApplication::clipboard()->setText(U82Q(oss.str()));
+#endif /* HAVE_STD_OSTRINGSTREAM_VIEW */
 			// Nothing else to do here.
 			return;
 		}

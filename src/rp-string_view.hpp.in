@@ -10,8 +10,14 @@
 
 #ifdef __cplusplus
 
+/* Define to 1 if std::string_view is available. */
 #cmakedefine HAVE_STD_STRING_VIEW 1
+
+/* Define to 1 if std::experimental::string_view is available. */
 #cmakedefine HAVE_STD_EXPERIMENTAL_STRING_VIEW 1
+
+/* Define to 1 if std::ostringstream has a view() function. */
+#cmakedefine HAVE_STD_OSTRINGSTREAM_VIEW 1
 
 #if defined(HAVE_STD_STRING_VIEW)
 #  include <string_view>

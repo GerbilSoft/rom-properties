@@ -505,7 +505,12 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				ROMOutput ro(romData.get(), lc);
 				oss << ro;
 				oss.flush();
+
+#ifdef HAVE_STD_OSTRINGSTREAM_VIEW
+				ts_out = LibWin32UI::unix2dos(U82T(oss.view()));
+#else /* !HAVE_STD_OSTRINGSTREAM_VIEW */
 				ts_out = LibWin32UI::unix2dos(U82T(oss.str()));
+#endif /* HAVE_STD_OSTRINGSTREAM_VIEW */
 				break;
 			}
 			case IDM_OPTIONS_MENU_COPY_JSON: {
@@ -514,7 +519,12 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				jsro.setCrlf(true);
 				oss << jsro << '\n';
 				oss.flush();
-				ts_out = U82T_str(oss.str());
+
+#ifdef HAVE_STD_OSTRINGSTREAM_VIEW
+				ts_out = LibWin32UI::unix2dos(U82T(oss.view()));
+#else /* !HAVE_STD_OSTRINGSTREAM_VIEW */
+				ts_out = LibWin32UI::unix2dos(U82T(oss.str()));
+#endif /* HAVE_STD_OSTRINGSTREAM_VIEW */
 				break;
 			}
 			default:

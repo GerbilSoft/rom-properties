@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ common)                      *
- * RomDataView.cpp: RomData viewer widget. (ROM operations)                *
+ * RomDataView_ops.cpp: RomData viewer widget. (ROM operations)            *
  *                                                                         *
  * Copyright (c) 2017-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -478,8 +478,15 @@ rp_rom_data_view_doRomOp_stdop(RpRomDataView *page, int id)
 			oss << "== " << fmt::format(FRUN(C_("RomDataView", "File: '{:s}'")), rom_filename) << '\n';
 			ROMOutput ro(romData, sel_lc);
 			oss << ro;
+
+#ifdef HAVE_STD_OSTRINGSTREAM_VIEW
+			oss << std::ends;	// for NULL termination
+			oss.flush();
+			rp_gtk_main_clipboard_set_text(oss.view().data());
+#else /* !HAVE_STD_OSTRINGSTREAM_VIEW */
 			oss.flush();
 			rp_gtk_main_clipboard_set_text(oss.str().c_str());
+#endif /* HAVE_STD_OSTRINGSTREAM_VIEW */
 			// Nothing else to do here.
 			return;
 		}
@@ -488,8 +495,15 @@ rp_rom_data_view_doRomOp_stdop(RpRomDataView *page, int id)
 			ostringstream oss;
 			JSONROMOutput jsro(romData);
 			oss << jsro << '\n';
+
+#ifdef HAVE_STD_OSTRINGSTREAM_VIEW
+			oss << std::ends;	// for NULL termination
+			oss.flush();
+			rp_gtk_main_clipboard_set_text(oss.view().data());
+#else /* !HAVE_STD_OSTRINGSTREAM_VIEW */
 			oss.flush();
 			rp_gtk_main_clipboard_set_text(oss.str().c_str());
+#endif /* HAVE_STD_OSTRINGSTREAM_VIEW */
 			// Nothing else to do here.
 			return;
 		}

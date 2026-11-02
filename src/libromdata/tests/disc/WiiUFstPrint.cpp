@@ -140,8 +140,13 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// Print the FST to an ostringstream.
 	ostringstream oss;
 	LibRomData::fstPrint(fst.get(), oss, true);
+#ifdef HAVE_STD_OSTRINGSTREAM_VIEW
+	const string_view fst_sv = oss.view();
+	Gsvt::StdOut.fwrite(fst_sv.data(), fst_sv.size());
+#else /* !HAVE_STD_OSTRINGSTREAM_VIEW */
 	const string fst_str = oss.str();
 	Gsvt::StdOut.fputs(oss.str());
+#endif /* HAVE_STD_OSTRINGSTREAM_VIEW */
 
 	if (fst->hasErrors()) {
 		Gsvt::StdErr.newline();
