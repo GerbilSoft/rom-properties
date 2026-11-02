@@ -64,7 +64,9 @@ streambuf_IRpFile::streambuf_IRpFile(const IRpFilePtr &file, std::ios_base::open
 		setp(m_out_buffer, m_out_buffer + BUFFER_SIZE);
 	}
 
-	if ((mode & (std::ios_base::out | std::ios_base::trunc)) == (std::ios_base::out | std::ios_base::trunc)) {
+	const bool is_trunc = (mode & (std::ios_base::out | std::ios_base::trunc)) ==
+	                              (std::ios_base::out | std::ios_base::trunc);
+	if (is_trunc) {
 		// Truncate the file. (Only if writable!)
 		// All IRpFile implementations that support truncate()
 		// will adjust the file pointer as necessary.
