@@ -79,7 +79,7 @@ public:
 				// NOTE: Win32 version uses this as primary.
 				// UTF-8 filename is only used for the filename() function.
 #endif /* _WIN32 */
-	RpFile::FileMode mode;	// File mode
+	IRpFile::FileMode mode;	// File mode
 
 	gzFile gzfd;		// Used for transparent gzip decompression.
 	off64_t gzsz;		// Uncompressed file size.

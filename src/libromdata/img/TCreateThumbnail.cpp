@@ -21,6 +21,7 @@
 #include "librpbase/RomFields.hpp"
 #include "librpbase/config/Config.hpp"
 #include "librpbase/img/RpImageLoader.hpp"
+#include "librpfile/GzipFile.hpp"
 #include "librpfile/RpFile.hpp"
 
 // librptexture
@@ -577,8 +578,10 @@ RpCreateThumbnailError TCreateThumbnail<ImgClass>::getThumbnail(const LibRpFile:
 template<typename ImgClass>
 RpCreateThumbnailError TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int reqSize, GetThumbnailOutParams_t *pOutParams)
 {
+	using LibRpFile::GzipFilePtr;
 	using LibRpBase::RomDataPtr;
 	using LibRpFile::IRpFilePtr;
+	using LibRpFile::GzipFile;
 	using LibRpFile::RpFile;
 
 	assert(filename != nullptr);
@@ -592,10 +595,16 @@ RpCreateThumbnailError TCreateThumbnail<ImgClass>::getThumbnail(const char *file
 	// Attempt to open the ROM file.
 	// TODO: OS-specific wrappers, e.g. RpQFile or RpGVfsFile.
 	// For now, using RpFile, which is an stdio wrapper.
-	IRpFilePtr file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
+	IRpFilePtr file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ);
 	if (!file->isOpen()) {
 		// Could not open the file.
 		return RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
+	}
+
+	// Check for gzip.
+	GzipFilePtr gzFile = std::make_shared<GzipFile>(file);
+	if (gzFile->isGzip()) {
+		file = std::move(gzFile);
 	}
 
 	// Get the appropriate RomData class for this ROM.

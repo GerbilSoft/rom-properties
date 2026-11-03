@@ -14,6 +14,7 @@
 // Other rom-properties libraries
 #include "librpbase/config/Config.hpp"
 #include "librpfile/FileSystem.hpp"
+#include "librpfile/GzipFile.hpp"
 #include "librpfile/RpFile.hpp"
 using LibRpBase::Config;
 using namespace LibRpFile;
@@ -181,7 +182,7 @@ IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
 	// Attempt to open an IRpFile.
 	if (!s_local_filename.empty()) {
 		// Local filename. Use RpFile.
-		file = std::make_shared<RpFile>(s_local_filename, RpFile::FM_OPEN_READ_GZ);
+		file = std::make_shared<RpFile>(s_local_filename, RpFile::FM_OPEN_READ);
 	} else {
 #ifdef HAVE_RPFILE_KIO
 		// Remote filename. Use RpFile_kio.
@@ -194,6 +195,13 @@ IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
 
 	if (file && file->isOpen()) {
 		// File opened successfully.
+
+		// Check for gzip.
+		GzipFilePtr gzFile = std::make_shared<GzipFile>(file);
+		if (gzFile->isGzip()) {
+			// NOTE: Assigning to `file` for named-return-value optimization.
+			file = std::move(gzFile);
+		}
 		return file;
 	}
 

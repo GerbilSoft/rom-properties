@@ -19,6 +19,7 @@
 #include "librpbase/img/RpPngWriter.hpp"
 #include "librpbase/RomData.hpp"
 #include "librpfile/FileSystem.hpp"
+#include "librpfile/GzipFile.hpp"
 #include "libromdata/RomDataFactory.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -282,13 +283,18 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, bool isThumbnai
 			// File: Open the file and call RomDataFactory::create() with the opened file.
 
 			// Attempt to open the ROM file.
-			const IRpFilePtr file =
-				std::make_shared<RpFile>(source_filename, RpFile::FM_OPEN_READ_GZ);
+			IRpFilePtr file = std::make_shared<RpFile>(source_filename, RpFile::FM_OPEN_READ);
 			if (!file->isOpen()) {
 				// Could not open the file.
 				*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
 				g_free(source_filename);
 				return romData;
+			}
+
+			// Check for gzip.
+			GzipFilePtr gzFile = std::make_shared<GzipFile>(file);
+			if (gzFile->isGzip()) {
+				file = std::move(gzFile);
 			}
 
 			// Get the appropriate RomData class for this ROM.

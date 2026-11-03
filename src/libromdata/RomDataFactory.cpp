@@ -16,6 +16,7 @@
 // librpbase, librpfile
 #include "librpfile/DualFile.hpp"
 #include "librpfile/FileSystem.hpp"
+#include "librpfile/GzipFile.hpp"
 #include "librpfile/RelatedFile.hpp"
 #include "librpfile/RpFile.hpp"
 #include "librptexture/FileFormatFactory.hpp"
@@ -1305,8 +1306,14 @@ static RomDataPtr T_create(const CharType *filename, unsigned int attrs)
 	// call create(IRpFile*,unsigned int).
 	if (likely(!FileSystem::is_directory(filename))) {
 		// Not a directory.
-		IRpFilePtr file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
+		IRpFilePtr file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ);
 		if (file->isOpen()) {
+			// Check for gzip.
+			GzipFilePtr gzFile = std::make_shared<GzipFile>(file);
+			if (gzFile->isGzip()) {
+				file = std::move(gzFile);
+			}
+
 			// NOTE: Assigning to `romData` for named-return-value optimization.
 			romData = create(file, attrs);
 			return romData;
