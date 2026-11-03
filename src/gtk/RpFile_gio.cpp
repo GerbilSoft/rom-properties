@@ -13,6 +13,7 @@
 
 // C++ STL classes
 #include <array>
+#include <string>
 using std::array;
 using std::string;
 using std::string_view;
