@@ -58,7 +58,7 @@ RpFileGioPrivate::RpFileGioPrivate(string_view uri, RpFileGio::FileMode mode)
 	: mode(mode)
 {
 	stream = nullptr;
-	STRING_VIEW_ASSIGN(this->uri, uri);
+	STRING_ASSIGN_SV(this->uri, uri);
 }
 
 RpFileGioPrivate::~RpFileGioPrivate()

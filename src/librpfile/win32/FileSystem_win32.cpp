@@ -113,7 +113,7 @@ static inline wstring makeWinPath(wstring_view filename)
 	} else {
 		// Not an absolute path, or "\\\\?\\" is already
 		// prepended. Use it as-is.
-		WSTRING_VIEW_ASSIGN(filenameW, filename);
+		WSTRING_ASSIGN_WSV(filenameW, filename);
 	}
 	return filenameW;
 }

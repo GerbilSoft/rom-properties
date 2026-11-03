@@ -52,7 +52,7 @@ RpFilePrivate::RpFilePrivate(RpFile *q, wstring_view filenameW, RpFile::FileMode
 	, gzsz(-1)
 {
 	assert(!filenameW.empty());
-	WSTRING_VIEW_ASSIGN(this->filenameW, filenameW);
+	WSTRING_ASSIGN_WSV(this->filenameW, filenameW);
 }
 
 RpFilePrivate::~RpFilePrivate()

@@ -40,7 +40,7 @@ RpFilePrivate::RpFilePrivate(RpFile *q, string_view filename, RpFile::FileMode m
 	, mode(mode), gzfd(nullptr), gzsz(-1)
 {
 	assert(!filename.empty());
-	STRING_VIEW_ASSIGN(this->filename, filename);
+	STRING_ASSIGN_SV(this->filename, filename);
 }
 
 RpFilePrivate::~RpFilePrivate()

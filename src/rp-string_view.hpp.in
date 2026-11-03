@@ -21,8 +21,8 @@
 
 #if defined(HAVE_STD_STRING_VIEW)
 #  include <string_view>
-#  define STRING_VIEW_ASSIGN(sv, str)   (sv).assign(str)
-#  define WSTRING_VIEW_ASSIGN(wsv, wcs) (wsv).assign(wcs)
+#  define STRING_ASSIGN_SV(str, sv)    (str).assign(sv)
+#  define WSTRING_ASSIGN_WSV(wcs, wsv) (wcs).assign(wsv)
 #elif defined(HAVE_STD_EXPERIMENTAL_STRING_VIEW)
 // Pull std::experimental::string_view into the std nemspace.
 #  include <experimental/string_view>
@@ -31,8 +31,8 @@ namespace std {
 	using std::experimental::string_view;
 	using std::experimental::wstring_view;
 }
-#  define STRING_VIEW_ASSIGN(sv, str)    (sv) =  std::string(str)
-#  define WSTRING_VIEW_ASSIGN(wsv, wcs) (wsv) = std::wstring(str)
+#  define STRING_ASSIGN_SV(str, sv)    (str) =  std::string(sv)
+#  define WSTRING_ASSIGN_WSV(wcs, wsv) (wcs) = std::wstring(wsv)
 #endif
 
 #endif /* __cplusplus */
