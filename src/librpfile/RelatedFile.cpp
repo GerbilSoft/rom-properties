@@ -124,7 +124,7 @@ IRpFile *T_openRelatedFile_rawptr(const CharType *filename, const CharType *base
 
 	// Attempt to open the related file.
 	ct_string s_rel_filename(sv_dir);
-	s_rel_filename += sv_basename;
+	STRING_APPEND_SV(s_rel_filename, sv_basename);
 	s_rel_filename += s_ext;
 	unique_ptr<IRpFile> test_file(new RpFile(s_rel_filename, RpFile::FM_OPEN_READ));
 	if (!test_file->isOpen()) {

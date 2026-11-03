@@ -22,7 +22,11 @@
 #if defined(HAVE_STD_STRING_VIEW)
 #  include <string_view>
 #  define STRING_ASSIGN_SV(str, sv)    (str).assign(sv)
+#  define STRING_APPEND_SV(str, sv)    (str).append(sv)
 #  define WSTRING_ASSIGN_WSV(wcs, wsv) (wcs).assign(wsv)
+#  define WSTRING_APPEND_WSV(str, wsv) (wcs).append(wsv)
+#  define SV_EMPLACE(sv)   (sv)
+#  define WSV_EMPLACE(wsv) (wsv)
 #elif defined(HAVE_STD_EXPERIMENTAL_STRING_VIEW)
 // Pull std::experimental::string_view into the std nemspace.
 #  include <experimental/string_view>
@@ -31,8 +35,12 @@ namespace std {
 	using std::experimental::string_view;
 	using std::experimental::wstring_view;
 }
-#  define STRING_ASSIGN_SV(str, sv)    (str) =  std::string(sv)
-#  define WSTRING_ASSIGN_WSV(wcs, wsv) (wcs) = std::wstring(wsv)
+#  define STRING_ASSIGN_SV(str, sv)    (str).assign(sv.data(), sv.size())
+#  define STRING_APPEND_SV(str, sv)    (str).append(sv.data(), sv.size())
+#  define WSTRING_ASSIGN_WSV(wcs, wsv) (wcs).assign(wsv.data(), wsv.size())
+#  define WSTRING_APPEND_WSV(wcs, wsv) (wcs).append(wsv.data(), wsv.size())
+#  define SV_EMPLACE(sv)   (std::string(sv))
+#  define WSV_EMPLACE(wsv) (std::wstring(wsv))
 #endif
 
 #endif /* __cplusplus */

@@ -135,7 +135,7 @@ unordered_map<string, string> parseTags(const char *pData, size_t size, PSFTagSt
 				}
 
 				const string_view sv_value(eq + 1, v_len);
-				kv.emplace(std::move(s_key), sv_value);
+				kv.emplace(std::move(s_key), SV_EMPLACE(sv_value));
 			}
 		}
 

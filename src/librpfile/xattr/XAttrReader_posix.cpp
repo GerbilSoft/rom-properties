@@ -524,9 +524,9 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 #ifdef HAVE_SYS_EXTATTR_H
 		string s_name_prefixed(s_namespace);
 		s_name_prefixed.append(name);
-		genericXAttrs.emplace(std::move(s_name_prefixed), sv_value);
+		genericXAttrs.emplace(std::move(s_name_prefixed), SV_EMPLACE(sv_value));
 #else /* !HAVE_SYS_EXTATTR_H */
-		genericXAttrs.emplace(std::move(name), sv_value);
+		genericXAttrs.emplace(std::move(name), SV_EMPLACE(sv_value));
 #endif /* HAVE_SYS_EXTATTR_H */
 	}
 

@@ -547,7 +547,7 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 			// NOTE: Filename might not be NULL-terminated,
 			// so use the explicit length.
 			const string_view sv_filename(file_info->filename, file_info->filename_size);
-			files.emplace_back(sv_filename, offsetShift);
+			files.emplace_back(SV_EMPLACE(sv_filename), offsetShift);
 		}
 
 		// Next file.
