@@ -33,9 +33,6 @@
 #include <cassert>
 #include <cstring>
 
-// C++ STL classes
-using std::array;
-
 namespace LibRomData {
 
 /**
@@ -396,7 +393,7 @@ skip_image_check:
 		// Find the second RFT_DIMENSIONS field.
 		const RomFields *const fields = romData->fields();
 		assert(fields != nullptr);
-		array<const RomFields::Field*, 2> field = {{nullptr, nullptr}};
+		std::array<const RomFields::Field*, 2> field = {{nullptr, nullptr}};
 		for (const RomFields::Field &pf : *fields) {
 			if (pf.type != RomFields::RomFieldType::RFT_DIMENSIONS)
 				continue;
