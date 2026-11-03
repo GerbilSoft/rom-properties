@@ -10,6 +10,7 @@
 #include "sha_256.h"
 
 #include <cassert>
+#include <cstdlib>
 #include <algorithm>
 
 ZArchiveWriter::ZArchiveWriter(CB_NewOutputFile cbNewOutputFile, CB_WriteOutputData cbWriteOutputData, void* ctx) : m_cbCtx(ctx), m_cbNewOutputFile(cbNewOutputFile), m_cbWriteOutputData(cbWriteOutputData)
