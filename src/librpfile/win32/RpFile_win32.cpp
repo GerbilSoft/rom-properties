@@ -44,7 +44,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 
 /** RpFilePrivate **/
 
-RpFilePrivate::RpFilePrivate(RpFile *q, wstring_view filenameW, RpFile::FileMode mode)
+RpFilePrivate::RpFilePrivate(RpFile *q, wstring_view filenameW, IRpFile::FileMode mode)
 	: q_ptr(q)
 	, file(nullptr)
 	, mode(mode)
@@ -66,31 +66,31 @@ RpFilePrivate::~RpFilePrivate()
 }
 
 /**
- * Convert an RpFile::FileMode to Win32 CreateFile() parameters.
+ * Convert an IRpFile::FileMode to Win32 CreateFile() parameters.
  * @param mode				[in] FileMode
  * @param pdwDesiredAccess		[out] dwDesiredAccess
  * @param pdwShareMode			[out] dwShareMode
  * @param pdwCreationDisposition	[out] dwCreationDisposition
  * @return 0 on success; non-zero on error.
  */
-inline int RpFilePrivate::mode_to_win32(RpFile::FileMode mode,
+inline int RpFilePrivate::mode_to_win32(IRpFile::FileMode mode,
 	DWORD *pdwDesiredAccess,
 	DWORD *pdwShareMode,
 	DWORD *pdwCreationDisposition)
 {
-	switch (mode & RpFile::FM_MODE_MASK) {
-		case RpFile::FM_OPEN_READ:
+	switch (mode & IRpFile::FM_MODE_MASK) {
+		case IRpFile::FM_OPEN_READ:
 			*pdwDesiredAccess = GENERIC_READ;
 			*pdwShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
 			*pdwCreationDisposition = OPEN_EXISTING;
 			break;
-		case RpFile::FM_OPEN_WRITE:
+		case IRpFile::FM_OPEN_WRITE:
 			*pdwDesiredAccess = GENERIC_READ | GENERIC_WRITE;
 			*pdwShareMode = FILE_SHARE_READ;
 			*pdwCreationDisposition = OPEN_EXISTING;
 			break;
-		case RpFile::FM_CREATE|RpFile::FM_READ /*RpFile::FM_CREATE_READ*/ :
-		case RpFile::FM_CREATE_WRITE:
+		case IRpFile::FM_CREATE | IRpFile::FM_READ /*RpFile::FM_CREATE_READ*/ :
+		case IRpFile::FM_CREATE_WRITE:
 			*pdwDesiredAccess = GENERIC_READ | GENERIC_WRITE;
 			*pdwShareMode = FILE_SHARE_READ;
 			*pdwCreationDisposition = CREATE_ALWAYS;
@@ -841,7 +841,7 @@ int RpFile::makeWritable(void)
 	RP_D(RpFile);
 	const off64_t prev_pos = this->tell();
 	// Set file mode to FM_WRITE and reopen it.
-	d->mode = (RpFile::FileMode)(d->mode | FM_WRITE);
+	d->mode = static_cast<FileMode>(d->mode | FM_WRITE);
 	int ret = d->reOpenFile();
 	if (!ret) {
 		// File is now writable.
@@ -849,7 +849,7 @@ int RpFile::makeWritable(void)
 	} else {
 		// Failed to open the file as writable.
 		// Try reopening as read-only.
-		d->mode = (RpFile::FileMode)(d->mode & ~FM_WRITE);
+		d->mode = static_cast<FileMode>(d->mode & ~FM_WRITE);
 		if (d->reOpenFile() != 0) {
 			// FIXME: g++ can't resolve IRpFile::seek(off64_t) here, so explicitly specify SeekWhence::Set.
 			this->seek(prev_pos, IRpFile::SeekWhence::Set);

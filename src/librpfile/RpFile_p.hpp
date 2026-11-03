@@ -58,10 +58,10 @@ class RpFilePrivate
 public:
 #ifdef _WIN32
 	typedef HANDLE FILE_TYPE;
-	RpFilePrivate(RpFile *q, std::wstring_view filenameW, RpFile::FileMode mode);
+	RpFilePrivate(RpFile *q, std::wstring_view filenameW, IRpFile::FileMode mode);
 #else /* !_WIN32 */
 	typedef FILE *FILE_TYPE;
-	RpFilePrivate(RpFile *q, std::string_view filename, RpFile::FileMode mode);
+	RpFilePrivate(RpFile *q, std::string_view filename, IRpFile::FileMode mode);
 #endif /* _WIN32 */
 
 	~RpFilePrivate();
@@ -162,7 +162,7 @@ public:
 	ATTR_ACCESS(write_only, 2)
 	ATTR_ACCESS(write_only, 3)
 	ATTR_ACCESS(write_only, 4)
-	static inline int mode_to_win32(RpFile::FileMode mode,
+	static inline int mode_to_win32(IRpFile::FileMode mode,
 		DWORD *pdwDesiredAccess,
 		DWORD *pdwShareMode,
 		DWORD *pdwCreationDisposition);
@@ -173,7 +173,7 @@ public:
 	 * @param mode		[in] FileMode
 	 * @return FILE*, or nullptr on error.
 	 */
-	static FILE *fopen_cloexec(const char *pathname, RpFile::FileMode mode);
+	static FILE *fopen_cloexec(const char *pathname, IRpFile::FileMode mode);
 #endif /* _WIN32 */
 
 	/**

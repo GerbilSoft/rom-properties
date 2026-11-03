@@ -8,6 +8,9 @@
 
 #include "RpFile_gio.hpp"
 
+// librpfile
+using LibRpFile::IRpFile;
+
 // gio
 #include <gio/gio.h>
 
@@ -21,16 +24,16 @@ using std::string_view;
 class RpFileGioPrivate
 {
 public:
-	explicit RpFileGioPrivate(string_view uri, RpFileGio::FileMode mode);
+	explicit RpFileGioPrivate(string_view uri, IRpFile::FileMode mode);
 	~RpFileGioPrivate();
 
 public:
 	RP_DISABLE_COPY(RpFileGioPrivate)
 
 public:
-	GObject *stream;		// may be GFileInputStream (read-only) or GFileIOStream (read-write)
-	string uri;			// GVfs URI
-	RpFileGio::FileMode mode;	// File mode
+	GObject *stream;	// may be GFileInputStream (read-only) or GFileIOStream (read-write)
+	string uri;		// GVfs URI
+	IRpFile::FileMode mode;	// File mode
 
 public:
 	/**
@@ -55,7 +58,7 @@ public:
 
 /** RpFileGioPrivate **/
 
-RpFileGioPrivate::RpFileGioPrivate(string_view uri, RpFileGio::FileMode mode)
+RpFileGioPrivate::RpFileGioPrivate(string_view uri, IRpFile::FileMode mode)
 	: mode(mode)
 {
 	stream = nullptr;

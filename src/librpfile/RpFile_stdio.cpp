@@ -35,7 +35,7 @@ namespace LibRpFile {
 
 /** RpFilePrivate **/
 
-RpFilePrivate::RpFilePrivate(RpFile *q, string_view filename, RpFile::FileMode mode)
+RpFilePrivate::RpFilePrivate(RpFile *q, string_view filename, IRpFile::FileMode mode)
 	: q_ptr(q), file(nullptr)
 	, mode(mode), gzfd(nullptr), gzsz(-1)
 {
@@ -59,7 +59,7 @@ RpFilePrivate::~RpFilePrivate()
  * @param mode		[in] FileMode
  * @return FILE*, or nullptr on error.
  */
-FILE *RpFilePrivate::fopen_cloexec(const char *pathname, RpFile::FileMode mode)
+FILE *RpFilePrivate::fopen_cloexec(const char *pathname, IRpFile::FileMode mode)
 {
 	const char *mode_str;
 	switch (mode & RpFile::FM_MODE_MASK) {
@@ -665,14 +665,14 @@ int RpFile::makeWritable(void)
 	RP_D(RpFile);
 	off64_t prev_pos = ftello(d->file);
 	fclose(d->file);
-	d->file = d->fopen_cloexec(d->filename.c_str(), RpFile::FM_OPEN_WRITE);
+	d->file = d->fopen_cloexec(d->filename.c_str(), IRpFile::FM_OPEN_WRITE);
 	if (d->file) {
 		// File is now writable.
 		m_isWritable = true;
 	} else {
 		// Failed to open the file as writable.
 		// Try reopening as read-only.
-		d->file = d->fopen_cloexec(d->filename.c_str(), RpFile::FM_OPEN_READ);
+		d->file = d->fopen_cloexec(d->filename.c_str(), IRpFile::FM_OPEN_READ);
 		if (d->file) {
 			fseeko(d->file, prev_pos, SEEK_SET);
 		}
@@ -681,7 +681,7 @@ int RpFile::makeWritable(void)
 
 	// Restore the seek position.
 	fseeko(d->file, prev_pos, SEEK_SET);
-	d->mode = static_cast<RpFile::FileMode>(d->mode | FM_WRITE);
+	d->mode = static_cast<FileMode>(d->mode | FM_WRITE);
 	return 0;
 }
 

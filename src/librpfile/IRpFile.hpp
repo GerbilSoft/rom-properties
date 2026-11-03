@@ -10,9 +10,10 @@
 
 // Common macros
 #include "common.h"
-#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
+#include "compiler-attrs.h"	// for ATTR_FLAG_ENUM
+#include "dll-macros.h"		// for RP_LIBROMDATA_PUBLIC
 #include "d_type.h"
-#include "time_r.h"	// for rp_time_t
+#include "time_r.h"		// for rp_time_t
 
 // C includes
 #include <sys/types.h>	// for off64_t
@@ -33,6 +34,27 @@ namespace LibRpFile {
 
 class RP_LIBROMDATA_PUBLIC NOVTABLE IRpFile
 {
+public:
+	enum ATTR_FLAG_ENUM FileMode : uint8_t {
+		FM_READ = 0,		// Read-only
+		FM_WRITE = 1,		// Read/write
+		FM_OPEN = 0,		// Open the file (Must exist!)
+		FM_CREATE = 2,		// Create the file (Will overwrite!)
+
+		// Combinations
+		FM_OPEN_READ = 0,	// Open for reading (Must exist!)
+		FM_OPEN_WRITE = 1,	// Open for reading/writing (Must exist!)
+		//FM_CREATE_READ = 2,	// Not valid; handled as FM_CREATE_WRITE.
+		FM_CREATE_WRITE = 3,	// Create for reading/writing (Will overwrite!)
+
+		// Mask
+		FM_MODE_MASK = 3,	// Mode mask
+
+		// Extras (not supported by all IRpFile implementations)
+		FM_GZIP_DECOMPRESS = 4,	// Transparent gzip decompression (read-only!)
+		FM_OPEN_READ_GZ = FM_OPEN_READ | FM_GZIP_DECOMPRESS,
+	};
+
 protected:
 	explicit IRpFile();
 public:
