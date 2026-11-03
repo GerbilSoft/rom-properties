@@ -669,7 +669,8 @@ string KeyStoreUIPrivate::convertKanjiToHex(const char *str)
 	// TODO: Combine with the first loop?
 	const size_t hexlen = 4+(u16str.size()*4);
 	s_ret.resize(hexlen);
-	char *pHex = s_ret.data();
+	// NOTE: const_cast<char*> is needed for pre-C++17 systems.
+	char *pHex = const_cast<char*>(s_ret.data());
 	memcpy(pHex, "FFFE", 4);
 	pHex += 4;
 	for (const char16_t *pu16 = u16str.c_str(); *pu16 != '\0'; pu16++, pHex += 4) {
@@ -795,7 +796,8 @@ string KeyStoreUIPrivate::binToHexStr(const uint8_t *data, size_t len)
 
 	const size_t hexlen = len * 2;
 	s_ret.resize(hexlen);
-	char *pHex = s_ret.data();
+	// NOTE: const_cast<char*> is needed for pre-C++17 systems.
+	char *pHex = const_cast<char*>(s_ret.data());
 	for (; len > 0; len--, data++, pHex += 2) {
 		pHex[0] = hex_lookup[*data >> 4];
 		pHex[1] = hex_lookup[*data & 0x0F];
