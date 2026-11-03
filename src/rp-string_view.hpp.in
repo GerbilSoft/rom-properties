@@ -27,8 +27,9 @@
 // Pull std::experimental::string_view into the std nemspace.
 #  include <experimental/string_view>
 namespace std {
-	using string_view = std::experimental::string_view;
-	using wstring_view = std::experimental::wstring_view;
+	using std::experimental::basic_string_view;
+	using std::experimental::string_view;
+	using std::experimental::wstring_view;
 }
 #  define STRING_VIEW_ASSIGN(sv, str)    (sv) =  std::string(str)
 #  define WSTRING_VIEW_ASSIGN(wsv, wcs) (wsv) = std::wstring(str)
