@@ -48,11 +48,9 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 class GzipFilePrivate
 {
 public:
-	GzipFilePrivate(GzipFile *q, const IRpFilePtr &file);
+	GzipFilePrivate(const IRpFilePtr &file);
 	~GzipFilePrivate();
 
-private:
-	GzipFile *const q_ptr;
 public:
 	RP_DISABLE_COPY(GzipFilePrivate)
 
@@ -75,9 +73,8 @@ public:
 
 /** GzipFilePrivate **/
 
-GzipFilePrivate::GzipFilePrivate(GzipFile *q, const IRpFilePtr &file)
-	: q_ptr(q)
-	, file(file)
+GzipFilePrivate::GzipFilePrivate(const IRpFilePtr &file)
+	: file(file)
 	, gzsz(-1)
 	, z_realpos(0)
 	, z_filepos(0)
@@ -107,7 +104,7 @@ GzipFilePrivate::~GzipFilePrivate()
  * @param file Other IRpFile that was already opened
  */
 GzipFile::GzipFile(const IRpFilePtr &file)
-	: d_ptr(new GzipFilePrivate(this, file))
+	: d_ptr(new GzipFilePrivate(file))
 {
 	RP_D(GzipFile);
 	m_isWritable = false;
