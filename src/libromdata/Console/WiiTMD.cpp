@@ -634,7 +634,7 @@ rp::uvector<WUP_Content_Entry> WiiTMD::contentsTableV1(unsigned int grpIdx)
 	const off64_t addr = contents_tbl_offset + (be16_to_cpu(d->cmdGroupHeader->entries[grpIdx].offset) * sizeof(WUP_Content_Entry));
 
 	const size_t data_size = nbr_cont * sizeof(WUP_Content_Entry);
-	contentsTbl.resize(data_size);
+	contentsTbl.resize(nbr_cont);
 	size_t size = d->file->seekAndRead(addr, contentsTbl.data(), data_size);
 	if (unlikely(size != data_size)) {
 		// Error reading the contents table...
