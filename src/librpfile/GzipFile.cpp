@@ -150,6 +150,9 @@ GzipFile::GzipFile(const IRpFilePtr &file)
 
 	// Rewind back to the beginning of the stream.
 	d->file->rewind();
+
+	// File is compressed.
+	m_isCompressed = true;
 }
 
 GzipFile::~GzipFile()
