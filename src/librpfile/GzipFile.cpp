@@ -33,7 +33,17 @@ using std::unique_ptr;
 #  define gzclose_w(file) gzclose(file)
 #endif
 
+#ifdef _MSC_VER
+// MSVC: Exception handling for /DELAYLOAD.
+#include "libwin32common/DelayLoadHelper.h"
+#endif /* _MSC_VER */
+
 namespace LibRpFile {
+
+#ifdef _MSC_VER
+// DelayLoad test implementation.
+DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
+#endif /* _MSC_VER */
 
 class GzipFilePrivate
 {
@@ -137,8 +147,18 @@ GzipFile::GzipFile(const IRpFilePtr &file)
 	// TODO: Add better verification heuristics?
 	d->gzsz = static_cast<off64_t>(uncomp_sz);
 
-	// Make sure the CRC32 table is initialized.
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
+	// Delay load verification.
+	if (DelayLoad_test_get_crc_table() != 0) {
+		// Delay load failed.
+		// Don't do any gzip checking.
+		return;
+	}
+#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
+	// zlib isn't in a DLL, but we need to ensure that the
+	// CRC table is initialized anyway.
 	get_crc_table();
+#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
 	int err = inflateInit2(&d->zstream, 16 + MAX_WBITS);
 	if (err != Z_OK) {
