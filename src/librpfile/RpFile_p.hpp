@@ -19,18 +19,6 @@
 #include <memory>
 #include <string>
 
-// zlib for transparent gzip decompression.
-#include <zlib.h>
-// gzclose_r() and gzclose_w() were introduced in zlib-1.2.4.
-#if (ZLIB_VER_MAJOR > 1) || \
-    (ZLIB_VER_MAJOR == 1 && ZLIB_VER_MINOR > 2) || \
-    (ZLIB_VER_MAJOR == 1 && ZLIB_VER_MINOR == 2 && ZLIB_VER_REVISION >= 4)
-// zlib-1.2.4 or later
-#else
-#  define gzclose_r(file) gzclose(file)
-#  define gzclose_w(file) gzclose(file)
-#endif
-
 #ifdef _WIN32
 // Windows SDK
 #  include <windows.h>
@@ -80,9 +68,6 @@ public:
 				// UTF-8 filename is only used for the filename() function.
 #endif /* _WIN32 */
 	IRpFile::FileMode mode;	// File mode
-
-	gzFile gzfd;		// Used for transparent gzip decompression.
-	off64_t gzsz;		// Uncompressed file size.
 
 public:
 	// Device information struct.
@@ -179,7 +164,7 @@ public:
 	/**
 	 * (Re-)Open the main file.
 	 *
-	 * INTERNAL FUNCTION. This does NOT affect gzfd.
+	 * INTERNAL FUNCTION!
 	 * NOTE: This function sets q->m_lastError.
 	 *
 	 * Uses parameters stored in this->filename and this->mode.

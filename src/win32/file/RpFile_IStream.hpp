@@ -32,11 +32,10 @@ public:
 	 * Create an IRpFile using IStream* as the underlying storage mechanism.
 	 * NOTE: RpFile_IStream does NOT take ownership of the IStream*.
 	 * @param pStream	[in] IStream*
-	 * @param gzip		[in] If true, handle gzipped files automatically.
 	 */
-	explicit RpFile_IStream(IStream *pStream, bool gzip = false);
+	explicit RpFile_IStream(IStream *pStream);
 public:
-	~RpFile_IStream() final;
+	~RpFile_IStream() final = default;
 
 private:
 	typedef LibRpFile::IRpFile super;
@@ -134,21 +133,4 @@ public:
 protected:
 	IStreamPtr m_pStream;
 	std::string m_filename;
-
-	// zlib
-	unsigned int m_z_uncomp_sz;
-	unsigned int m_z_filepos;	// position in compressed file
-	off64_t m_z_realpos;		// position in real file
-	struct z_stream_s *m_pZstm;
-	// zlib buffer
-	uint8_t *m_pZbuf;
-	ULONG m_zbufLen;
-	ULONG m_zcurPos;
-
-	/**
-	 * Copy the zlib stream from another RpFile_IStream.
-	 * @param other
-	 * @return 0 on success; non-zero on error.
-	 */
-	int copyZlibStream(const RpFile_IStream &other);
 };

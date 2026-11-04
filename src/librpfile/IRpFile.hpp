@@ -49,10 +49,6 @@ public:
 
 		// Mask
 		FM_MODE_MASK = 3,	// Mode mask
-
-		// Extras (not supported by all IRpFile implementations)
-		FM_GZIP_DECOMPRESS = 4,	// Transparent gzip decompression (read-only!)
-		FM_OPEN_READ_GZ = FM_OPEN_READ | FM_GZIP_DECOMPRESS,
 	};
 
 protected:
