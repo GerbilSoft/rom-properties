@@ -41,14 +41,12 @@ DELAYLOAD_TEST_FUNCTION_IMPL1(ZSTD_freeDCtx, nullptr);
 struct zstd_ctx {
 	ZSTD_DCtx *dctx;
 
-	// Data buffers
-	uint8_t *buf_in;
-	uint8_t *buf_out;
-
+	// Data buffer sizes
 	size_t buf_in_size;
 	size_t buf_out_size;
 
 	// Buffer status
+	// input.src and output.dst are allocated by us.
 	// NOTE: output.pos is how much data was read into the buffer,
 	// not our current output read position. For that, use output_ptr.
 	ZSTD_inBuffer input;
@@ -92,12 +90,12 @@ ZstdFilePrivate::ZstdFilePrivate(const IRpFilePtr &file)
 
 ZstdFilePrivate::~ZstdFilePrivate()
 {
+	free(const_cast<void*>(zctx.input.src));
+	free(zctx.output.dst);
+
 	if (zctx.dctx) {
 		ZSTD_freeDCtx(zctx.dctx);
 	}
-
-	free(zctx.buf_in);
-	free(zctx.buf_out);
 }
 
 /** ZstdFile **/
@@ -230,19 +228,16 @@ ZstdFile::ZstdFile(const IRpFilePtr &file)
 	zctx.buf_in_size = ZSTD_DStreamInSize();
 	zctx.buf_out_size = ZSTD_DStreamOutSize();
 
-	zctx.buf_in = static_cast<uint8_t*>(malloc(zctx.buf_in_size));
-	zctx.buf_out = static_cast<uint8_t*>(malloc(zctx.buf_out_size));
-	if (!zctx.buf_in || !zctx.buf_out) {
+	zctx.input.src = static_cast<uint8_t*>(malloc(zctx.buf_in_size));
+	zctx.output.dst = static_cast<uint8_t*>(malloc(zctx.buf_out_size));
+	if (!zctx.input.src || !zctx.output.dst) {
 		// Could not allocate buffers...
-		free(zctx.buf_in);
-		free(zctx.buf_out);
+		free(const_cast<void*>(zctx.input.src));
+		free(zctx.output.dst);
 		ZSTD_freeDCtx(zctx.dctx);
 		memset(&zctx, 0, sizeof(zctx));
 		return;
 	}
-
-	zctx.input.src = zctx.buf_in;
-	zctx.output.dst = zctx.buf_out;
 
 	// File is compressed.
 	m_isCompressed = true;
@@ -271,12 +266,13 @@ void ZstdFile::close(void)
 {
 	RP_D(ZstdFile);
 
-	if (d->zctx.dctx) {
-		ZSTD_freeDCtx(d->zctx.dctx);
-	}
+	zstd_ctx &zctx = d->zctx;
+	free(const_cast<void*>(zctx.input.src));
+	free(zctx.output.dst);
 
-	free(d->zctx.buf_in);
-	free(d->zctx.buf_out);
+	if (zctx.dctx) {
+		ZSTD_freeDCtx(zctx.dctx);
+	}
 
 	memset(&d->zctx, 0, sizeof(d->zctx));
 }
@@ -321,7 +317,7 @@ size_t ZstdFile::read(void *ptr, size_t size)
 		if (zctx.output_ptr < zctx.output.pos) {
 			// We have data remaining. Determine how much to use.
 			size_t toCopy = std::min(zctx.output.pos - zctx.output_ptr, size);
-			memcpy(ptr8, &zctx.buf_out[zctx.output_ptr], toCopy);
+			memcpy(ptr8, static_cast<uint8_t*>(zctx.output.dst) + zctx.output_ptr, toCopy);
 
 			ptr8 += toCopy;
 			size -= toCopy;
@@ -335,7 +331,7 @@ size_t ZstdFile::read(void *ptr, size_t size)
 
 		// Check if we need to read more data from the file.
 		if (zctx.input.pos >= zctx.input.size) {
-			size_t sz_read = d->file->read(zctx.buf_in, zctx.buf_in_size);
+			size_t sz_read = d->file->read(const_cast<void*>(zctx.input.src), zctx.buf_in_size);
 			if (sz_read == 0) {
 				// No more data...
 				break;

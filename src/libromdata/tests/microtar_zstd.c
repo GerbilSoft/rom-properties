@@ -31,14 +31,12 @@ typedef struct _mzstd_ctx {
 	ZSTD_DCtx *dctx;
 	FILE *f;
 
-	// Data buffers
-	uint8_t *buf_in;
-	uint8_t *buf_out;
-
+	// Data buffer sizes
 	size_t buf_in_size;
 	size_t buf_out_size;
 
 	// Buffer status
+	// input.src and output.dst are allocated by us.
 	// NOTE: output.pos is how much data was read into the buffer,
 	// not our current output read position. For that, use output_ptr.
 	ZSTD_inBuffer input;
@@ -81,7 +79,7 @@ static int mtar_zstd_read(mtar_t *tar, void *data, unsigned size)
 		if (ctx->output_ptr < ctx->output.pos) {
 			// We have data remaining. Determine how much to use.
 			size_t toCopy = min_sz(ctx->output.pos - ctx->output_ptr, size);
-			memcpy(data8, &ctx->buf_out[ctx->output_ptr], toCopy);
+			memcpy(data8, (const uint8_t*)ctx->output.dst + ctx->output_ptr, toCopy);
 
 			data8 += toCopy;
 			size -= (unsigned)toCopy;
@@ -93,7 +91,7 @@ static int mtar_zstd_read(mtar_t *tar, void *data, unsigned size)
 
 		// Check if we need to read more data from the file.
 		if (ctx->input.pos >= ctx->input.size) {
-			size_t ret = fread(ctx->buf_in, 1, ctx->buf_in_size, ctx->f);
+			size_t ret = fread((uint8_t*)ctx->input.src, 1, ctx->buf_in_size, ctx->f);
 			if (ret == 0) {
 				// No more data...
 				return MTAR_EREADFAIL;
@@ -209,8 +207,8 @@ static int mtar_zstd_close(mtar_t *tar)
 	if (ctx->dctx)
 		ZSTD_freeDCtx(ctx->dctx);
 
-	free(ctx->buf_in);
-	free(ctx->buf_out);
+	free((void*)ctx->input.src);
+	free(ctx->output.dst);
 	free(ctx);
 	return MTAR_ESUCCESS;
 }
@@ -244,19 +242,16 @@ int mtar_zstd_open_ro(mtar_t *tar, const char *filename)
 	ctx->buf_in_size = ZSTD_DStreamInSize();
 	ctx->buf_out_size = ZSTD_DStreamOutSize();
 
-	ctx->buf_in = malloc(ctx->buf_in_size);
-	ctx->buf_out = malloc(ctx->buf_out_size);
-	if (!ctx->buf_in || !ctx->buf_out) {
-		free(ctx->buf_in);
-		free(ctx->buf_out);
+	ctx->input.src = malloc(ctx->buf_in_size);
+	ctx->output.dst = malloc(ctx->buf_out_size);
+	if (!ctx->input.src || !ctx->output.dst) {
+		free((void*)ctx->input.src);
+		free(ctx->output.dst);
 		ZSTD_freeDCtx(ctx->dctx);
 		fclose(ctx->f);
 		free(ctx);
 		return MTAR_EOPENFAIL;
 	}
-
-	ctx->input.src = ctx->buf_in;
-	ctx->output.dst = ctx->buf_out;
 
 	memset(tar, 0, sizeof(*tar));
 	tar->read = mtar_zstd_read;
