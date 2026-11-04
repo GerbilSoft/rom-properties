@@ -10,9 +10,16 @@
 
 // Transparent decompression handler IRpFile subclasses
 #include "GzipFile.hpp"
+#include "ZstdFile.hpp"
+
+// for FileSystem::file_ext()
+#include "../FileSystem.hpp"
 
 // librpbyteswap
 #include "librpbyteswap/byteswap_rp.h"
+
+// C includes
+#include "tcharx.h"	// for strcasecmp() or equivalent
 
 // C includes (C++ namespace)
 #include <cstdint>
@@ -49,6 +56,24 @@ IRpFilePtr create(const IRpFilePtr &file)
 		if (static_cast<GzipFile*>(z_file.get())->isGzip()) {
 			// It's Gzip!
 			return z_file;
+		}
+	}
+
+	if (magic.u32 == be32_to_cpu(0x28B52FFD)) {
+		// zstd magic number
+		// NOTE: Need to check that the file extension is *not* ".wua".
+		const char *const filename = file->filename();
+		const char *ext = nullptr;
+		if (filename) {
+			ext = FileSystem::file_ext(filename);
+		}
+		if (!ext || strcasecmp(ext, ".wua") != 0) {
+			// Not a ".wua" extension. Try zstd.
+			z_file = std::make_shared<ZstdFile>(file);
+			if (static_cast<ZstdFile*>(z_file.get())->isZstd()) {
+				// It's Zstd!
+				return z_file;
+			}
 		}
 	}
 

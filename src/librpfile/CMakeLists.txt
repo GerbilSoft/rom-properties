@@ -74,6 +74,11 @@ SET(${PROJECT_NAME}_H
 	xattr/XfsAttrData.h
 	)
 
+IF(ENABLE_ZSTD)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} compression/ZstdFile.cpp)
+	SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H} compression/ZstdFile.hpp)
+ENDIF(ENABLE_ZSTD)
+
 # OS-specific implementations
 IF(WIN32)
 	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} scsi/RpFile_scsi_win32.cpp)
@@ -234,6 +239,9 @@ FOREACH(_target ${TARGETS})
 	ELSE(ZLIB_FOUND)
 		MESSAGE(FATAL_ERROR "ZLIB_LIBRARIES has not been set by CheckZLIB.cmake.")
 	ENDIF(ZLIB_FOUND)
+	IF(ENABLE_ZSTD)
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE microtar ${ZSTD_LIBRARY})
+	ENDIF(ENABLE_ZSTD)
 	IF(SCSI_LIBRARY)
 		# An extra library is needed for SCSI support.
 		TARGET_LINK_LIBRARIES(${_target} PRIVATE ${SCSI_LIBRARY})
