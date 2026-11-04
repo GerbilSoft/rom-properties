@@ -218,7 +218,6 @@ ZstdFile::ZstdFile(const IRpFilePtr &file)
 #endif /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
 			break;
 	}
-	d->unz_sz = static_cast<off64_t>(uncomp_sz);
 
 	// Create the zstd context.
 	zstd_ctx &zctx = d->zctx;
@@ -243,6 +242,7 @@ ZstdFile::ZstdFile(const IRpFilePtr &file)
 	}
 
 	// File is compressed.
+	d->unz_sz = static_cast<off64_t>(uncomp_sz);
 	m_isCompressed = true;
 }
 
