@@ -113,10 +113,10 @@ GzipFile::GzipFile(const IRpFilePtr &file)
 	// If it isn't, then we'll just pass through the read() calls.
 	// NOTE: File will be at position 0 after initialization.
 	// (Physical position 0 if not gzip; logical position 0 if gzip)
-	d->file->rewind();
 	uint16_t gzmagic;
+	d->file->rewind();
 	size_t size = d->file->read(&gzmagic, sizeof(gzmagic));
-	if (size != sizeof(gzmagic) || gzmagic != be16_to_cpu(0x1F8B)) {
+	if (unlikely(size != sizeof(gzmagic)) || gzmagic != be16_to_cpu(0x1F8B)) {
 		// Not a gzipped file.
 		d->file->rewind();
 		return;
@@ -132,12 +132,17 @@ GzipFile::GzipFile(const IRpFilePtr &file)
 
 	uint32_t uncomp_sz;
 	size = d->file->read(&uncomp_sz, sizeof(uncomp_sz));
+#if SYS_BYTEORDER != SYS_LIL_ENDIAN
 	uncomp_sz = le32_to_cpu(uncomp_sz);
+#endif /* BYTEORDER != SYS_LIL_ENDIAN */
 	if (size != sizeof(uncomp_sz) /*|| uncomp_sz < real_sz-(10+8)*/) {
 		// Read error.
 		d->file->rewind();
 		return;
 	}
+
+	// Rewind back to the beginning of the stream.
+	d->file->rewind();
 
 	// NOTE: Uncompressed size might be smaller than the real filesize
 	// in cases where gzip doesn't help much.
@@ -161,12 +166,8 @@ GzipFile::GzipFile(const IRpFilePtr &file)
 	if (err != Z_OK) {
 		// zlib stream initialization failed.
 		d->gzsz = -1;
-		d->file->rewind();
 		return;
 	}
-
-	// Rewind back to the beginning of the stream.
-	d->file->rewind();
 
 	// File is compressed.
 	m_isCompressed = true;
@@ -215,12 +216,12 @@ void GzipFile::close(void)
 size_t GzipFile::read(void *ptr, size_t size)
 {
 	RP_D(GzipFile);
-	if (!d->file || !d->file->isOpen()) {
+	if (unlikely(!d->file || !d->file->isOpen())) {
 		m_lastError = EBADF;
 		return 0;
 	}
 
-	if (d->gzsz < 0) {
+	if (unlikely(d->gzsz < 0)) {
 		// Not a gzipped file. Read directly.
 		size_t sz_ret = d->file->read(ptr, size);
 		m_lastError = d->file->lastError();
@@ -351,12 +352,12 @@ size_t GzipFile::write(const void *ptr, size_t size)
 int GzipFile::seek(off64_t pos, SeekWhence whence)
 {
 	RP_D(GzipFile);
-	if (!d->file || !d->file->isOpen()) {
+	if (unlikely(!d->file || !d->file->isOpen())) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
-	if (d->gzsz < 0) {
+	if (unlikely(d->gzsz < 0)) {
 		// Not a gzipped file. Seek directly.
 		int ret = d->file->seek(pos, whence);
 		m_lastError = d->file->lastError();
@@ -404,14 +405,17 @@ int GzipFile::seek(off64_t pos, SeekWhence whence)
 		return -1;
 	}
 
-	// Skip over the required number of bytes.
+	// Seek to the requested position by skipping over the required number of bytes.
 	unique_ptr<uint8_t[]> skip_buf(new uint8_t[GzipFilePrivate::ZLIB_BUFFER_SIZE]);
 	while (skip_bytes > 0) {
-		size_t sz_to_read = (skip_bytes > GzipFilePrivate::ZLIB_BUFFER_SIZE ? GzipFilePrivate::ZLIB_BUFFER_SIZE : skip_bytes);
+		size_t sz_to_read = std::min(GzipFilePrivate::ZLIB_BUFFER_SIZE, skip_bytes);
 		size_t sz_read = this->read(skip_buf.get(), sz_to_read);
 		if (sz_read != sz_to_read) {
-			// Error...
-			m_lastError = -EIO;
+			// Read error...
+			m_lastError = d->file->lastError();
+			if (m_lastError == 0) {
+				m_lastError = EIO;
+			}
 			return -1;
 		}
 
@@ -429,12 +433,12 @@ int GzipFile::seek(off64_t pos, SeekWhence whence)
 off64_t GzipFile::tell(void)
 {
 	RP_D(GzipFile);
-	if (!d->file || !d->file->isOpen()) {
+	if (unlikely(!d->file || !d->file->isOpen())) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
-	if (d->gzsz < 0) {
+	if (unlikely(d->gzsz < 0)) {
 		// Not a gzipped file. Call tell() directly.
 		return d->file->tell();
 	}
@@ -452,12 +456,12 @@ off64_t GzipFile::tell(void)
 off64_t GzipFile::size(void)
 {
 	RP_D(GzipFile);
-	if (!d->file || !d->file->isOpen()) {
+	if (unlikely(!d->file || !d->file->isOpen())) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
-	if (d->gzsz < 0) {
+	if (unlikely(d->gzsz < 0)) {
 		// Not a gzipped file. Call size() directly.
 		return d->file->size();
 	}
@@ -484,23 +488,11 @@ const char *GzipFile::filename(void) const
 rp_time_t GzipFile::mtime(void)
 {
 	RP_D(GzipFile);
-	if (!d->file || !d->file->isOpen()) {
+	if (unlikely(!d->file || !d->file->isOpen())) {
 		m_lastError = EBADF;
 		return -1;
 	}
 	return d->file->mtime();
-}
-
-/** GzipFile-specific properties **/
-
-/**
- * Is this file actually compressed with gzip?
- * @return True if compressed with gzip; false if not.
- */
-bool GzipFile::isGzip(void) const
-{
-	RP_D(const GzipFile);
-	return (d->gzsz >= 0);
 }
 
 } // namespace LibRpFile

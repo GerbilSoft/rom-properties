@@ -122,14 +122,14 @@ ZstdFile::ZstdFile(const IRpFilePtr &file)
 	// If it isn't, then we'll just pass through the read() calls.
 	// NOTE: File will be at position 0 after initialization.
 	// (Physical position 0 if not zstd; logical position 0 if zstd)
-	d->file->rewind();
 	union {
 		uint8_t u8[18];
 		uint32_t u32;
 	} zstd_header;
+	d->file->rewind();
 	size_t size = d->file->read(&zstd_header, sizeof(zstd_header));
 	d->file->rewind();	// Rewind after reading the header.
-	if (size != sizeof(zstd_header) || zstd_header.u32 != be32_to_cpu(0x28B52FFD)) {
+	if (unlikely(size != sizeof(zstd_header)) || zstd_header.u32 != be32_to_cpu(0x28B52FFD)) {
 		// Not a zstd file.
 		return;
 	}
@@ -299,12 +299,12 @@ static inline unsigned my_ZSTD_isError(size_t code)
 size_t ZstdFile::read(void *ptr, size_t size)
 {
 	RP_D(ZstdFile);
-	if (!d->file || !d->file->isOpen()) {
+	if (unlikely(!d->file || !d->file->isOpen())) {
 		m_lastError = EBADF;
 		return 0;
 	}
 
-	if (d->unz_sz < 0) {
+	if (unlikely(d->unz_sz < 0)) {
 		// Not a zstd file. Read directly.
 		size_t sz_ret = d->file->read(ptr, size);
 		m_lastError = d->file->lastError();
@@ -388,12 +388,12 @@ size_t ZstdFile::write(const void *ptr, size_t size)
 int ZstdFile::seek(off64_t pos, SeekWhence whence)
 {
 	RP_D(ZstdFile);
-	if (!d->file || !d->file->isOpen()) {
+	if (unlikely(!d->file || !d->file->isOpen())) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
-	if (d->unz_sz < 0) {
+	if (unlikely(d->unz_sz < 0)) {
 		// Not a gzipped file. Seek directly.
 		int ret = d->file->seek(pos, whence);
 		m_lastError = d->file->lastError();
@@ -445,21 +445,28 @@ int ZstdFile::seek(off64_t pos, SeekWhence whence)
 		return 0;
 	}
 
-	// Seek to the requested position.
-	uint8_t seek_buf[512];
-	size_t seek_diff = pos - zctx.unz_pos;
-	while (seek_diff > 0) {
+	// Seek to the requested position by skipping over the required number of bytes.
+	// TODO: Optimal buffer size?
+	static constexpr size_t SKIP_BUF_SIZE = 16384U;
+	unique_ptr<uint8_t[]> skip_buf(new uint8_t[SKIP_BUF_SIZE]);
+	size_t skip_bytes = pos - zctx.unz_pos;
+	while (skip_bytes > 0) {
 		// Read up to seek_buf bytes.
-		size_t toCopy = std::min(sizeof(seek_buf), seek_diff);
-		size_t sz_read = this->read(seek_buf, toCopy);
-		if (sz_read != toCopy) {
-			// Seek error...
+		size_t sz_to_read = std::min(SKIP_BUF_SIZE, skip_bytes);
+		size_t sz_read = this->read(skip_buf.get(), sz_to_read);
+		if (sz_read != sz_to_read) {
+			// Read error...
+			m_lastError = d->file->lastError();
+			if (m_lastError == 0) {
+				m_lastError = EIO;
+			}
 			return -1;
 		}
 
-		seek_diff -= toCopy;
+		skip_bytes -= sz_to_read;
 	}
 
+	// Seek was successful.
 	return 0;
 }
 
@@ -470,12 +477,12 @@ int ZstdFile::seek(off64_t pos, SeekWhence whence)
 off64_t ZstdFile::tell(void)
 {
 	RP_D(ZstdFile);
-	if (!d->file || !d->file->isOpen()) {
+	if (unlikely(!d->file || !d->file->isOpen())) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
-	if (d->unz_sz < 0) {
+	if (unlikely(d->unz_sz < 0)) {
 		// Not a gzipped file. Call tell() directly.
 		return d->file->tell();
 	}
@@ -493,12 +500,12 @@ off64_t ZstdFile::tell(void)
 off64_t ZstdFile::size(void)
 {
 	RP_D(ZstdFile);
-	if (!d->file || !d->file->isOpen()) {
+	if (unlikely(!d->file || !d->file->isOpen())) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
-	if (d->unz_sz < 0) {
+	if (unlikely(d->unz_sz < 0)) {
 		// Not a zstd file. Call size() directly.
 		return d->file->size();
 	}
@@ -524,23 +531,11 @@ const char *ZstdFile::filename(void) const
 rp_time_t ZstdFile::mtime(void)
 {
 	RP_D(ZstdFile);
-	if (!d->file || !d->file->isOpen()) {
+	if (unlikely(!d->file || !d->file->isOpen())) {
 		m_lastError = EBADF;
 		return -1;
 	}
 	return d->file->mtime();
-}
-
-/** ZstdFile-specific properties **/
-
-/**
- * Is this file actually compressed with zstd?
- * @return True if compressed with zstd; false if not.
- */
-bool ZstdFile::isZstd(void) const
-{
-	RP_D(const ZstdFile);
-	return (d->unz_sz >= 0);
 }
 
 } // namespace LibRpFile

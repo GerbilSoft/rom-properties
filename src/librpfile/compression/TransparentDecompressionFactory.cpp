@@ -53,7 +53,7 @@ IRpFilePtr create(const IRpFilePtr &file)
 	if (magic.u16[0] == cpu_to_be16(0x1F8B)) {
 		// gzip magic number
 		z_file = std::make_shared<GzipFile>(file);
-		if (static_cast<GzipFile*>(z_file.get())->isGzip()) {
+		if (z_file->isCompressed()) {
 			// It's Gzip!
 			return z_file;
 		}
@@ -70,7 +70,7 @@ IRpFilePtr create(const IRpFilePtr &file)
 		if (!ext || strcasecmp(ext, ".wua") != 0) {
 			// Not a ".wua" extension. Try zstd.
 			z_file = std::make_shared<ZstdFile>(file);
-			if (static_cast<ZstdFile*>(z_file.get())->isZstd()) {
+			if (z_file->isCompressed()) {
 				// It's Zstd!
 				return z_file;
 			}

@@ -102,15 +102,6 @@ public:
 	 * @return File modification time, or -1 if not available.
 	 */
 	rp_time_t mtime(void) final;
-
-public:
-	/** ZstdFile-specific properties **/
-
-	/**
-	 * Is this file actually compressed with zstd?
-	 * @return True if compressed with zstd; false if not.
-	 */
-	bool isZstd(void) const;
 };
 
 typedef std::shared_ptr<ZstdFile> ZstdFilePtr;

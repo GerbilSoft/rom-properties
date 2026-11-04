@@ -102,15 +102,6 @@ public:
 	 * @return File modification time, or -1 if not available.
 	 */
 	rp_time_t mtime(void) final;
-
-public:
-	/** GzipFile-specific properties **/
-
-	/**
-	 * Is this file actually compressed with gzip?
-	 * @return True if compressed with gzip; false if not.
-	 */
-	bool isGzip(void) const;
 };
 
 typedef std::shared_ptr<GzipFile> GzipFilePtr;
