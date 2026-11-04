@@ -40,6 +40,8 @@ SET(${PROJECT_NAME}_SRCS
 	RelatedFile.cpp
 	DualFile.cpp
 	streambuf_IRpFile.cpp
+	compression/TransparentDecompressionFactory.cpp
+	compression/GzipFile.cpp
 	scsi/RpFile_Kreon.cpp
 	scsi/RpFile_scsi.cpp
 	xattr/XAttrReader.cpp
@@ -59,6 +61,8 @@ SET(${PROJECT_NAME}_H
 	SubFile.hpp
 	VectorFile.hpp
 	streambuf_IRpFile.hpp
+	compression/TransparentDecompressionFactory.hpp
+	compression/GzipFile.hpp
 	scsi/ata_protocol.h
 	scsi/scsi_protocol.h
 	scsi/scsi_ata_cmds.h
@@ -69,6 +73,11 @@ SET(${PROJECT_NAME}_H
 	xattr/xfs_flags.h
 	xattr/XfsAttrData.h
 	)
+
+IF(ENABLE_ZSTD)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} compression/ZstdFile.cpp)
+	SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H} compression/ZstdFile.hpp)
+ENDIF(ENABLE_ZSTD)
 
 # OS-specific implementations
 IF(WIN32)
@@ -230,6 +239,9 @@ FOREACH(_target ${TARGETS})
 	ELSE(ZLIB_FOUND)
 		MESSAGE(FATAL_ERROR "ZLIB_LIBRARIES has not been set by CheckZLIB.cmake.")
 	ENDIF(ZLIB_FOUND)
+	IF(ENABLE_ZSTD)
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE microtar ${ZSTD_LIBRARY})
+	ENDIF(ENABLE_ZSTD)
 	IF(SCSI_LIBRARY)
 		# An extra library is needed for SCSI support.
 		TARGET_LINK_LIBRARIES(${_target} PRIVATE ${SCSI_LIBRARY})

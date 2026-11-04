@@ -15,6 +15,7 @@
 #include "librpbase/config/Config.hpp"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
+#include "librpfile/compression/TransparentDecompressionFactory.hpp"
 using LibRpBase::Config;
 using namespace LibRpFile;
 
@@ -181,7 +182,7 @@ IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
 	// Attempt to open an IRpFile.
 	if (!s_local_filename.empty()) {
 		// Local filename. Use RpFile.
-		file = std::make_shared<RpFile>(s_local_filename, RpFile::FM_OPEN_READ_GZ);
+		file = std::make_shared<RpFile>(s_local_filename, RpFile::FM_OPEN_READ);
 	} else {
 #ifdef HAVE_RPFILE_KIO
 		// Remote filename. Use RpFile_kio.
@@ -194,7 +195,12 @@ IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
 
 	if (file && file->isOpen()) {
 		// File opened successfully.
-		return file;
+
+		// Check for a compressed file.
+		IRpFilePtr z_file = TransparentDecompressionFactory::create(file);
+		if (z_file) {
+			file = std::move(z_file);
+		}
 	}
 
 	// Unable to open the file...

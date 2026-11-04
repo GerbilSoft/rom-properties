@@ -12,6 +12,7 @@
 
 // Other rom-properties libraries
 #include "librpfile/IRpFile.hpp"
+#include "librpfile/compression/TransparentDecompressionFactory.hpp"
 using namespace LibRpFile;
 using namespace LibRpTexture;
 
@@ -75,10 +76,16 @@ IFACEMETHODIMP RP_ThumbnailProvider::Initialize(_In_ IStream *pstream, DWORD grf
 
 	// Create an IRpFile wrapper for the IStream.
 	// NOTE: RpFile_IStream adds a reference to the IStream.
-	IRpFilePtr file = std::make_shared<RpFile_IStream>(pstream, true);
+	IRpFilePtr file = std::make_shared<RpFile_IStream>(pstream);
 	if (!file->isOpen() || file->lastError() != 0) {
 		// Error initializing the IRpFile.
 		return E_FAIL;
+	}
+
+	// Check for a compressed file.
+	IRpFilePtr z_file = TransparentDecompressionFactory::create(file);
+	if (z_file) {
+		file = std::move(z_file);
 	}
 
 	RP_D(RP_ThumbnailProvider);

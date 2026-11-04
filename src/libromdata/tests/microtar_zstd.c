@@ -31,14 +31,12 @@ typedef struct _mzstd_ctx {
 	ZSTD_DCtx *dctx;
 	FILE *f;
 
-	// Data buffers
-	uint8_t *buf_in;
-	uint8_t *buf_out;
-
+	// Data buffer sizes
 	size_t buf_in_size;
 	size_t buf_out_size;
 
 	// Buffer status
+	// input.src and output.dst are allocated by us.
 	// NOTE: output.pos is how much data was read into the buffer,
 	// not our current output read position. For that, use output_ptr.
 	ZSTD_inBuffer input;
@@ -70,49 +68,50 @@ static int mtar_zstd_read(mtar_t *tar, void *data, unsigned size)
 {
 	// Decompress data until we read `size` bytes.
 	// Reference: zstd/examples/streaming_decompression.c
-	mzstd_ctx *const ctx = (mzstd_ctx*)tar->stream;
-	if (!ctx)
+	mzstd_ctx *const zctx = (mzstd_ctx*)tar->stream;
+	if (!zctx) {
 		return MTAR_EFAILURE;
+	}
 
 	uint8_t *data8 = (uint8_t*)data;
 	while (size > 0) {
 		// Check if we have any data remaining in the output buffer.
-		// NOTE: ctx->output.pos indicates how much is left in the buffer.
-		if (ctx->output_ptr < ctx->output.pos) {
+		// NOTE: zctx->output.pos indicates how much is left in the buffer.
+		if (zctx->output_ptr < zctx->output.pos) {
 			// We have data remaining. Determine how much to use.
-			size_t toCopy = min_sz(ctx->output.pos - ctx->output_ptr, size);
-			memcpy(data8, &ctx->buf_out[ctx->output_ptr], toCopy);
+			size_t toCopy = min_sz(zctx->output.pos - zctx->output_ptr, size);
+			memcpy(data8, (const uint8_t*)zctx->output.dst + zctx->output_ptr, toCopy);
 
 			data8 += toCopy;
 			size -= (unsigned)toCopy;
-			ctx->output_ptr += toCopy;
-			ctx->unz_pos += toCopy;
+			zctx->output_ptr += toCopy;
+			zctx->unz_pos += toCopy;
 			if (size == 0)
 				break;
 		}
 
 		// Check if we need to read more data from the file.
-		if (ctx->input.pos >= ctx->input.size) {
-			size_t ret = fread(ctx->buf_in, 1, ctx->buf_in_size, ctx->f);
+		if (zctx->input.pos >= zctx->input.size) {
+			size_t ret = fread((uint8_t*)zctx->input.src, 1, zctx->buf_in_size, zctx->f);
 			if (ret == 0) {
 				// No more data...
 				return MTAR_EREADFAIL;
 			}
 
-			ctx->input.size = ret;
-			ctx->input.pos = 0;
+			zctx->input.size = ret;
+			zctx->input.pos = 0;
 		}
 
 		// Decompress the input buffer.
-		ctx->output.size = ctx->buf_out_size;
-		ctx->output.pos = 0;
-		ctx->output_ptr = 0;
-		size_t ret = ZSTD_decompressStream(ctx->dctx, &ctx->output, &ctx->input);
+		zctx->output.size = zctx->buf_out_size;
+		zctx->output.pos = 0;
+		zctx->output_ptr = 0;
+		size_t ret = ZSTD_decompressStream(zctx->dctx, &zctx->output, &zctx->input);
 		if (my_ZSTD_isError(ret)) {
 			// Decompression error!
-			ctx->output.size = 0;
-			ctx->output.pos = 0;
-			ctx->output_ptr = 0;
+			zctx->output.size = 0;
+			zctx->output.pos = 0;
+			zctx->output_ptr = 0;
 			return MTAR_EREADFAIL;
 		}
 
@@ -130,16 +129,17 @@ static int mtar_zstd_read(mtar_t *tar, void *data, unsigned size)
  */
 static int mtar_zstd_seek(mtar_t *tar, unsigned pos)
 {
-	mzstd_ctx *const ctx = (mzstd_ctx*)tar->stream;
-	if (!ctx)
+	mzstd_ctx *const zctx = (mzstd_ctx*)tar->stream;
+	if (!zctx) {
 		return MTAR_EFAILURE;
+	}
 
-	if (pos == ctx->unz_pos) {
+	if (pos == zctx->unz_pos) {
 		// Useless seek to the same position...
 		return MTAR_ESUCCESS;
 	}
 
-	if (pos < ctx->unz_pos) {
+	if (pos < zctx->unz_pos) {
 		// NOTE: MicroTAR seeks backwards after reading the .tar header.
 		// If we can seek backwards in the input buffer, do that so we
 		// don't have to re-decompress everything.
@@ -151,25 +151,25 @@ static int mtar_zstd_seek(mtar_t *tar, unsigned pos)
 		// - .tar: 1,093 ms
 		// - .tar.zst: 2,805 ms
 		if (pos > 0) {
-			size_t bytes_to_reverse = ctx->unz_pos - pos;
-			if (ctx->output.pos != 0 && ctx->output_ptr <= ctx->output.pos) {
-				if (bytes_to_reverse <= ctx->output_ptr) {
-					ctx->output_ptr -= bytes_to_reverse;
-					ctx->unz_pos -= bytes_to_reverse;
+			size_t bytes_to_reverse = zctx->unz_pos - pos;
+			if (zctx->output.pos != 0 && zctx->output_ptr <= zctx->output.pos) {
+				if (bytes_to_reverse <= zctx->output_ptr) {
+					zctx->output_ptr -= bytes_to_reverse;
+					zctx->unz_pos -= bytes_to_reverse;
 					return MTAR_ESUCCESS;
 				}
 			}
 		}
 
 		// Rewind the file and reset ZSTD decompression.
-		rewind(ctx->f);
-		ctx->input.size = 0;
-		ctx->input.pos = 0;
-		ctx->output.size = 0;
-		ctx->output.pos = 0;
-		ctx->output_ptr = 0;
-		ctx->unz_pos = 0;
-		ZSTD_DCtx_reset(ctx->dctx, ZSTD_reset_session_and_parameters);
+		rewind(zctx->f);
+		zctx->input.size = 0;
+		zctx->input.pos = 0;
+		zctx->output.size = 0;
+		zctx->output.pos = 0;
+		zctx->output_ptr = 0;
+		zctx->unz_pos = 0;
+		ZSTD_DCtx_reset(zctx->dctx, ZSTD_reset_session_and_parameters);
 	}
 
 	if (pos == 0) {
@@ -179,7 +179,7 @@ static int mtar_zstd_seek(mtar_t *tar, unsigned pos)
 
 	// Seek to the requested position.
 	uint8_t seek_buf[512];
-	size_t seek_diff = pos - ctx->unz_pos;
+	size_t seek_diff = pos - zctx->unz_pos;
 	while (seek_diff > 0) {
 		// Read up to seek_buf bytes.
 		size_t toCopy = min_sz(sizeof(seek_buf), seek_diff);
@@ -200,18 +200,21 @@ static int mtar_zstd_seek(mtar_t *tar, unsigned pos)
  */
 static int mtar_zstd_close(mtar_t *tar)
 {
-	mzstd_ctx *const ctx = (mzstd_ctx*)tar->stream;
-	if (!ctx)
+	mzstd_ctx *const zctx = (mzstd_ctx*)tar->stream;
+	if (!zctx) {
 		return MTAR_EFAILURE;
+	}
 
-	if (ctx->f)
-		fclose(ctx->f);
-	if (ctx->dctx)
-		ZSTD_freeDCtx(ctx->dctx);
+	if (zctx->f) {
+		fclose(zctx->f);
+	}
+	if (zctx->dctx) {
+		ZSTD_freeDCtx(zctx->dctx);
+	}
 
-	free(ctx->buf_in);
-	free(ctx->buf_out);
-	free(ctx);
+	free((void*)zctx->input.src);
+	free(zctx->output.dst);
+	free(zctx);
 	return MTAR_ESUCCESS;
 }
 
@@ -224,50 +227,48 @@ static int mtar_zstd_close(mtar_t *tar)
 int mtar_zstd_open_ro(mtar_t *tar, const char *filename)
 {
 	// Allocate buffers.
-	mzstd_ctx *const ctx = calloc(1, sizeof(mzstd_ctx));
-	if (!ctx)
+	mzstd_ctx *const zctx = calloc(1, sizeof(mzstd_ctx));
+	if (!zctx) {
 		return MTAR_EFAILURE;
+	}
 
-	ctx->f = fopen(filename, "rb");
-	if (!ctx->f) {
-		free(ctx);
+	zctx->f = fopen(filename, "rb");
+	if (!zctx->f) {
+		free(zctx);
 		return MTAR_EOPENFAIL;
 	}
 
-	ctx->dctx = ZSTD_createDCtx();
-	if (!ctx->dctx) {
-		fclose(ctx->f);
-		free(ctx);
+	zctx->dctx = ZSTD_createDCtx();
+	if (!zctx->dctx) {
+		fclose(zctx->f);
+		free(zctx);
 		return MTAR_EOPENFAIL;
 	}
 
-	ctx->buf_in_size = ZSTD_DStreamInSize();
-	ctx->buf_out_size = ZSTD_DStreamOutSize();
+	zctx->buf_in_size = ZSTD_DStreamInSize();
+	zctx->buf_out_size = ZSTD_DStreamOutSize();
 
-	ctx->buf_in = malloc(ctx->buf_in_size);
-	ctx->buf_out = malloc(ctx->buf_out_size);
-	if (!ctx->buf_in || !ctx->buf_out) {
-		free(ctx->buf_in);
-		free(ctx->buf_out);
-		ZSTD_freeDCtx(ctx->dctx);
-		fclose(ctx->f);
-		free(ctx);
+	zctx->input.src = malloc(zctx->buf_in_size);
+	zctx->output.dst = malloc(zctx->buf_out_size);
+	if (!zctx->input.src || !zctx->output.dst) {
+		free((void*)zctx->input.src);
+		free(zctx->output.dst);
+		ZSTD_freeDCtx(zctx->dctx);
+		fclose(zctx->f);
+		free(zctx);
 		return MTAR_EOPENFAIL;
 	}
-
-	ctx->input.src = ctx->buf_in;
-	ctx->output.dst = ctx->buf_out;
 
 	memset(tar, 0, sizeof(*tar));
 	tar->read = mtar_zstd_read;
 	tar->seek = mtar_zstd_seek;
 	tar->close = mtar_zstd_close;
-	tar->stream = ctx;
+	tar->stream = zctx;
 
 #ifdef HAVE_POSIX_FADVISE
 	// Advise the kernel that we will be doing sequential access.
 	// This may improve performance in some cases.
-	posix_fadvise(fileno(ctx->f), 0, 0, POSIX_FADV_SEQUENTIAL);
+	posix_fadvise(fileno(zctx->f), 0, 0, POSIX_FADV_SEQUENTIAL);
 #endif /* HAVE_POSIX_FADVISE */
 	return MTAR_ESUCCESS;
 }

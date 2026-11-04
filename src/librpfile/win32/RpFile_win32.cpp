@@ -30,26 +30,14 @@ using std::wstring_view;
 // tcharx
 #include "tcharx.h"
 
-#ifdef _MSC_VER
-// MSVC: Exception handling for /DELAYLOAD.
-#include "libwin32common/DelayLoadHelper.h"
-#endif /* _MSC_VER */
-
 namespace LibRpFile {
-
-#ifdef _MSC_VER
-// DelayLoad test implementation.
-DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
-#endif /* _MSC_VER */
 
 /** RpFilePrivate **/
 
-RpFilePrivate::RpFilePrivate(RpFile *q, wstring_view filenameW, RpFile::FileMode mode)
+RpFilePrivate::RpFilePrivate(RpFile *q, wstring_view filenameW, IRpFile::FileMode mode)
 	: q_ptr(q)
 	, file(nullptr)
 	, mode(mode)
-	, gzfd(nullptr)
-	, gzsz(-1)
 {
 	assert(!filenameW.empty());
 	WSTRING_ASSIGN_WSV(this->filenameW, filenameW);
@@ -57,40 +45,37 @@ RpFilePrivate::RpFilePrivate(RpFile *q, wstring_view filenameW, RpFile::FileMode
 
 RpFilePrivate::~RpFilePrivate()
 {
-	if (gzfd) {
-		gzclose_r(gzfd);
-	}
 	if (file) {
 		CloseHandle(file);
 	}
 }
 
 /**
- * Convert an RpFile::FileMode to Win32 CreateFile() parameters.
+ * Convert an IRpFile::FileMode to Win32 CreateFile() parameters.
  * @param mode				[in] FileMode
  * @param pdwDesiredAccess		[out] dwDesiredAccess
  * @param pdwShareMode			[out] dwShareMode
  * @param pdwCreationDisposition	[out] dwCreationDisposition
  * @return 0 on success; non-zero on error.
  */
-inline int RpFilePrivate::mode_to_win32(RpFile::FileMode mode,
+inline int RpFilePrivate::mode_to_win32(IRpFile::FileMode mode,
 	DWORD *pdwDesiredAccess,
 	DWORD *pdwShareMode,
 	DWORD *pdwCreationDisposition)
 {
-	switch (mode & RpFile::FM_MODE_MASK) {
-		case RpFile::FM_OPEN_READ:
+	switch (mode & IRpFile::FM_MODE_MASK) {
+		case IRpFile::FM_OPEN_READ:
 			*pdwDesiredAccess = GENERIC_READ;
 			*pdwShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
 			*pdwCreationDisposition = OPEN_EXISTING;
 			break;
-		case RpFile::FM_OPEN_WRITE:
+		case IRpFile::FM_OPEN_WRITE:
 			*pdwDesiredAccess = GENERIC_READ | GENERIC_WRITE;
 			*pdwShareMode = FILE_SHARE_READ;
 			*pdwCreationDisposition = OPEN_EXISTING;
 			break;
-		case RpFile::FM_CREATE|RpFile::FM_READ /*RpFile::FM_CREATE_READ*/ :
-		case RpFile::FM_CREATE_WRITE:
+		case IRpFile::FM_CREATE | IRpFile::FM_READ /*RpFile::FM_CREATE_READ*/ :
+		case IRpFile::FM_CREATE_WRITE:
 			*pdwDesiredAccess = GENERIC_READ | GENERIC_WRITE;
 			*pdwShareMode = FILE_SHARE_READ;
 			*pdwCreationDisposition = CREATE_ALWAYS;
@@ -114,7 +99,7 @@ static constexpr inline bool isBackslashOrSlash(CharType c)
 /**
  * (Re-)Open the main file.
  *
- * INTERNAL FUNCTION. This does NOT affect gzfd.
+ * INTERNAL FUNCTION!
  * NOTE: This function sets q->m_lastError.
  *
  * Uses parameters stored in this->filename and this->mode.
@@ -312,13 +297,6 @@ RpFile::RpFile(wstring_view filenameW, FileMode mode)
 {
 	RP_D(RpFile);
 
-#ifndef NDEBUG
-	// Cannot use decompression with writing.
-	if (d->mode & RpFile::FM_GZIP_DECOMPRESS) {
-		assert((d->mode & FM_MODE_MASK) != RpFile::FM_WRITE);
-	}
-#endif /* NDEBUG */
-
 	// Open the file.
 	if (d->reOpenFile() != 0) {
 		// An error occurred while opening the file.
@@ -326,98 +304,6 @@ RpFile::RpFile(wstring_view filenameW, FileMode mode)
 	}
 
 	m_isWritable = !!(d->mode & RpFile::FM_WRITE);
-
-	// Check if this is a gzipped file.
-	// If it is, use transparent decompression.
-	// Reference: https://www.forensicswiki.org/wiki/Gzip
-	const bool tryGzip = (!d->devInfo && d->mode == FM_OPEN_READ_GZ);
-	if (tryGzip) { do {
-#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
-		// Delay load verification.
-		if (DelayLoad_test_get_crc_table() != 0) {
-			// Delay load failed.
-			// Don't do any gzip checking.
-			return;
-		}
-#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
-		// zlib isn't in a DLL, but we need to ensure that the
-		// CRC table is initialized anyway.
-		get_crc_table();
-#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
-
-		DWORD bytesRead;
-		uint16_t gzmagic;
-		BOOL bRet = ReadFile(d->file, &gzmagic, sizeof(gzmagic), &bytesRead, nullptr);
-		if (!bRet || bytesRead != sizeof(gzmagic) || gzmagic != be16_to_cpu(0x1F8B)) {
-			break;
-		}
-
-		// This is a gzipped file.
-		// Get the uncompressed size at the end of the file.
-		LARGE_INTEGER liSeekPos;
-		liSeekPos.QuadPart = -4;
-		if (!SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_END)) {
-			break;
-		}
-
-		uint32_t uncomp_sz;
-		bRet = ReadFile(d->file, &uncomp_sz, sizeof(uncomp_sz), &bytesRead, nullptr);
-		uncomp_sz = le32_to_cpu(uncomp_sz);
-		if (!bRet || bytesRead != sizeof(uncomp_sz) /*|| uncomp_sz < liFileSize.QuadPart-(10+8)*/) {
-			break;
-		}
-
-		// NOTE: Uncompressed size might be smaller than the real filesize
-		// in cases where gzip doesn't help much.
-		// TODO: Add better verification heuristics?
-		d->gzsz = (off64_t)uncomp_sz;
-
-		liSeekPos.QuadPart = 0;
-		SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_BEGIN);
-		// NOTE: Not sure if this is needed on Windows.
-		FlushFileBuffers(d->file);
-
-		// Open the file with gzdopen().
-		HANDLE hGzDup;
-		bRet = DuplicateHandle(
-			GetCurrentProcess(),	// hSourceProcessHandle
-			d->file,		// hSourceHandle
-			GetCurrentProcess(),	// hTargetProcessHandle
-			&hGzDup,		// lpTargetHandle
-			0,			// dwDesiredAccess
-			FALSE,			// bInheritHandle
-			DUPLICATE_SAME_ACCESS);	// dwOptions
-		if (!bRet) {
-			break;
-		}
-
-		// NOTE: close() on gzfd_dup() will close the
-		// underlying Windows handle.
-		int gzfd_dup = _open_osfhandle(reinterpret_cast<intptr_t>(hGzDup), _O_RDONLY);
-		if (gzfd_dup >= 0) {
-			d->gzfd = gzdopen(gzfd_dup, "r");
-			if (d->gzfd) {
-				m_isCompressed = true;
-			} else {
-				// gzdopen() failed.
-				// Close the dup()'d handle to prevent a leak.
-				_close(gzfd_dup);
-			}
-		} else {
-			// Unable to open an fd.
-			CloseHandle(hGzDup);
-		}
-	} while (0); }
-
-	if (tryGzip && !d->gzfd) {
-		// Not a gzipped file.
-		// Rewind and flush the file.
-		LARGE_INTEGER liSeekPos;
-		liSeekPos.QuadPart = 0;
-		SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_BEGIN);
-		// NOTE: Not sure if this is needed on Windows.
-		FlushFileBuffers(d->file);
-	}
 }
 
 /**
@@ -461,10 +347,6 @@ void RpFile::close(void)
 		d->devInfo->close();
 	}
 
-	if (d->gzfd) {
-		gzclose_r(d->gzfd);
-		d->gzfd = nullptr;
-	}
 	if (d->file) {
 		CloseHandle(d->file);
 		d->file = nullptr;
@@ -494,22 +376,11 @@ size_t RpFile::read(void *ptr, size_t size)
 	}
 
 	DWORD bytesRead;
-	if (d->gzfd) {
-		int iret = gzread(d->gzfd, ptr, (unsigned int)size);
-		if (iret >= 0) {
-			bytesRead = (DWORD)iret;
-		} else {
-			// An error occurred.
-			bytesRead = 0;
-			m_lastError = errno;
-		}
-	} else {
-		BOOL bRet = ReadFile(d->file, ptr, static_cast<DWORD>(size), &bytesRead, nullptr);
-		if (!bRet) {
-			// An error occurred.
-			m_lastError = w32err_to_posix(GetLastError());
-			bytesRead = 0;
-		}
+	BOOL bRet = ReadFile(d->file, ptr, static_cast<DWORD>(size), &bytesRead, nullptr);
+	if (!bRet) {
+		// An error occurred.
+		m_lastError = w32err_to_posix(GetLastError());
+		bytesRead = 0;
 	}
 
 	return bytesRead;
@@ -572,28 +443,15 @@ int RpFile::seek(off64_t pos, SeekWhence whence)
 	}
 
 	int ret;
-	if (d->gzfd) {
-		// FIXME: Might not work with >2GB files...
-		z_off_t zret = gzseek(d->gzfd, static_cast<long>(pos), static_cast<int>(whence));
-		if (zret >= 0) {
-			ret = 0;
-		} else {
-			ret = -1;
-			m_lastError = -errno;
-			if (m_lastError == 0) {
-				m_lastError = -EIO;
-			}
-		}
+
+	LARGE_INTEGER liSeekPos;
+	liSeekPos.QuadPart = pos;
+	BOOL bRet = SetFilePointerEx(d->file, liSeekPos, nullptr, static_cast<DWORD>(whence));
+	if (bRet) {
+		ret = 0;
 	} else {
-		LARGE_INTEGER liSeekPos;
-		liSeekPos.QuadPart = pos;
-		BOOL bRet = SetFilePointerEx(d->file, liSeekPos, nullptr, static_cast<DWORD>(whence));
-		if (bRet) {
-			ret = 0;
-		} else {
-			ret = -1;
-			m_lastError = w32err_to_posix(GetLastError());
-		}
+		ret = -1;
+		m_lastError = w32err_to_posix(GetLastError());
 	}
 
 	return ret;
@@ -616,10 +474,6 @@ off64_t RpFile::tell(void)
 		// accessing device files. Hence, we'll have to maintain
 		// our own device position.
 		return d->devInfo->device_pos;
-	}
-
-	if (d->gzfd) {
-		return (off64_t)gztell(d->gzfd);
 	}
 
 	LARGE_INTEGER liSeekPos, liSeekRet;
@@ -728,10 +582,6 @@ off64_t RpFile::size(void)
 	if (d->devInfo) {
 		// Block device. Use the cached device size.
 		return d->devInfo->device_size;
-	} else if (d->gzfd) {
-		// gzipped files have the uncompressed size stored
-		// at the end of the stream.
-		return d->gzsz;
 	}
 
 	// Regular file.
@@ -841,7 +691,7 @@ int RpFile::makeWritable(void)
 	RP_D(RpFile);
 	const off64_t prev_pos = this->tell();
 	// Set file mode to FM_WRITE and reopen it.
-	d->mode = (RpFile::FileMode)(d->mode | FM_WRITE);
+	d->mode = static_cast<FileMode>(d->mode | FM_WRITE);
 	int ret = d->reOpenFile();
 	if (!ret) {
 		// File is now writable.
@@ -849,7 +699,7 @@ int RpFile::makeWritable(void)
 	} else {
 		// Failed to open the file as writable.
 		// Try reopening as read-only.
-		d->mode = (RpFile::FileMode)(d->mode & ~FM_WRITE);
+		d->mode = static_cast<FileMode>(d->mode & ~FM_WRITE);
 		if (d->reOpenFile() != 0) {
 			// FIXME: g++ can't resolve IRpFile::seek(off64_t) here, so explicitly specify SeekWhence::Set.
 			this->seek(prev_pos, IRpFile::SeekWhence::Set);

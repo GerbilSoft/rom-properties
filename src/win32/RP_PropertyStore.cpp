@@ -11,10 +11,11 @@
 #include "RpImageWin32.hpp"
 
 // Other rom-properties libraries
+#include "librpfile/compression/TransparentDecompressionFactory.hpp"
 #include "librptext/wchar.hpp"
 #include "libromdata/RomDataFactory.hpp"
-using LibRpFile::IRpFilePtr;
 using namespace LibRpBase;
+using namespace LibRpFile;
 using namespace LibRomData;
 
 // C++ STL classes
@@ -206,10 +207,16 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 
 	// Create an IRpFile wrapper for the IStream.
 	// NOTE: RpFile_IStream does NOT take ownership of the IStream*.
-	IRpFilePtr file = std::make_shared<RpFile_IStream>(pstream, true);
+	IRpFilePtr file = std::make_shared<RpFile_IStream>(pstream);
 	if (file->lastError() != 0) {
 		// Error initializing the IRpFile.
 		return E_FAIL;
+	}
+
+	// Check for a compressed file.
+	IRpFilePtr z_file = TransparentDecompressionFactory::create(file);
+	if (z_file) {
+		file = std::move(z_file);
 	}
 
 	// Update d->file().

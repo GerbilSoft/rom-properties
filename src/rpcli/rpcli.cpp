@@ -35,6 +35,7 @@ using namespace LibRpBase;
 #include "librpfile/config.librpfile.h"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
+#include "librpfile/compression/TransparentDecompressionFactory.hpp"
 using namespace LibRpFile;
 
 // libromdata
@@ -311,7 +312,7 @@ static void DoFile(const TCHAR *filename, bool json, bool doSixel,
 		Gsvt::StdErr.newline();
 		Gsvt::StdErr.fflush();
 
-		shared_ptr<RpFile> file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
+		IRpFilePtr file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ);
 		if (!file->isOpen()) {
 			// TODO: Return an error code?
 			Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_RED, true);
@@ -325,6 +326,12 @@ static void DoFile(const TCHAR *filename, bool json, bool doSixel,
 				Gsvt::StdOut.fflush();
 			}
 			return;
+		}
+
+		// Check for a compressed file.
+		IRpFilePtr z_file = TransparentDecompressionFactory::create(file);
+		if (z_file) {
+			file = std::move(z_file);
 		}
 
 		romData = RomDataFactory::create(file);
@@ -547,7 +554,7 @@ static void DoDeviceInquiry(const TCHAR *filename, bool json, DeviceInquiryComma
 	Gsvt::StdErr.newline();
 	Gsvt::StdErr.fflush();
 
-	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ_GZ));
+	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
 	if (!file->isOpen()) {
 		// TODO: Return an error code?
 		Gsvt::StdErr.textColorSet8(ANSI_COLOR_8_RED, true);

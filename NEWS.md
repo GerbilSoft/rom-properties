@@ -19,6 +19,14 @@
     * NT3H2211 is used in amiibo v3, starting with Kirby Air Riders.
     * Information provided by @CheatFreak47.
 
+* New features:
+  * Transparent gzip decompression has been moved out of RpFile and into a separate
+    GzipFile class, which is now used in more places. In particular, this means
+    the GTK+ UI frontend can now make use of GzipFile with RpFileGio.
+  * New ZstdFile class for transparent decompression of .zst files.
+  * New TransparentDecompressionFactory::create() function to automatically detect
+    and make use of supported decompression methods.
+
 * Bug fixes:
   * WiiUPackage: Fix icon thumbnailing for packages extracted from a Wii U MLC.
   * DidjTex: Fix the zlib delay-load check on Windows.

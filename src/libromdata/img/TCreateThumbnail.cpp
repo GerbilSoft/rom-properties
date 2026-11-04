@@ -22,6 +22,7 @@
 #include "librpbase/config/Config.hpp"
 #include "librpbase/img/RpImageLoader.hpp"
 #include "librpfile/RpFile.hpp"
+#include "librpfile/compression/TransparentDecompressionFactory.hpp"
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
@@ -32,9 +33,6 @@
 // C includes (C++ namespace)
 #include <cassert>
 #include <cstring>
-
-// C++ STL classes
-using std::array;
 
 namespace LibRomData {
 
@@ -396,7 +394,7 @@ skip_image_check:
 		// Find the second RFT_DIMENSIONS field.
 		const RomFields *const fields = romData->fields();
 		assert(fields != nullptr);
-		array<const RomFields::Field*, 2> field = {{nullptr, nullptr}};
+		std::array<const RomFields::Field*, 2> field = {{nullptr, nullptr}};
 		for (const RomFields::Field &pf : *fields) {
 			if (pf.type != RomFields::RomFieldType::RFT_DIMENSIONS)
 				continue;
@@ -581,8 +579,7 @@ template<typename ImgClass>
 RpCreateThumbnailError TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int reqSize, GetThumbnailOutParams_t *pOutParams)
 {
 	using LibRpBase::RomDataPtr;
-	using LibRpFile::IRpFilePtr;
-	using LibRpFile::RpFile;
+	using namespace LibRpFile;
 
 	assert(filename != nullptr);
 	assert(reqSize > 0);
@@ -595,10 +592,16 @@ RpCreateThumbnailError TCreateThumbnail<ImgClass>::getThumbnail(const char *file
 	// Attempt to open the ROM file.
 	// TODO: OS-specific wrappers, e.g. RpQFile or RpGVfsFile.
 	// For now, using RpFile, which is an stdio wrapper.
-	IRpFilePtr file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ_GZ);
+	IRpFilePtr file = std::make_shared<RpFile>(filename, RpFile::FM_OPEN_READ);
 	if (!file->isOpen()) {
 		// Could not open the file.
 		return RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
+	}
+
+	// Check for a compressed file.
+	IRpFilePtr z_file = TransparentDecompressionFactory::create(file);
+	if (z_file) {
+		file = std::move(z_file);
 	}
 
 	// Get the appropriate RomData class for this ROM.

@@ -35,9 +35,10 @@ namespace LibRpFile {
 
 /** RpFilePrivate **/
 
-RpFilePrivate::RpFilePrivate(RpFile *q, string_view filename, RpFile::FileMode mode)
-	: q_ptr(q), file(nullptr)
-	, mode(mode), gzfd(nullptr), gzsz(-1)
+RpFilePrivate::RpFilePrivate(RpFile *q, string_view filename, IRpFile::FileMode mode)
+	: q_ptr(q)
+	, file(nullptr)
+	, mode(mode)
 {
 	assert(!filename.empty());
 	STRING_ASSIGN_SV(this->filename, filename);
@@ -45,9 +46,6 @@ RpFilePrivate::RpFilePrivate(RpFile *q, string_view filename, RpFile::FileMode m
 
 RpFilePrivate::~RpFilePrivate()
 {
-	if (gzfd != nullptr) {
-		gzclose_r(gzfd);
-	}
 	if (file) {
 		fclose(file);
 	}
@@ -59,7 +57,7 @@ RpFilePrivate::~RpFilePrivate()
  * @param mode		[in] FileMode
  * @return FILE*, or nullptr on error.
  */
-FILE *RpFilePrivate::fopen_cloexec(const char *pathname, RpFile::FileMode mode)
+FILE *RpFilePrivate::fopen_cloexec(const char *pathname, IRpFile::FileMode mode)
 {
 	const char *mode_str;
 	switch (mode & RpFile::FM_MODE_MASK) {
@@ -104,7 +102,7 @@ FILE *RpFilePrivate::fopen_cloexec(const char *pathname, RpFile::FileMode mode)
 /**
  * (Re-)Open the main file.
  *
- * INTERNAL FUNCTION. This does NOT affect gzfd.
+ * INTERNAL FUNCTION!
  * NOTE: This function sets q->m_lastError.
  *
  * Uses parameters stored in this->filename and this->mode.
@@ -247,13 +245,6 @@ RpFile::RpFile(std::string_view filename, FileMode mode)
 {
 	RP_D(RpFile);
 
-#ifndef NDEBUG
-	// Cannot use decompression with writing.
-	if (d->mode & RpFile::FM_GZIP_DECOMPRESS) {
-		assert((d->mode & FM_MODE_MASK) != RpFile::FM_WRITE);
-	}
-#endif /* NDEBUG */
-
 	// Open the file.
 	if (d->reOpenFile() != 0) {
 		// An error occurred while opening the file.
@@ -261,61 +252,6 @@ RpFile::RpFile(std::string_view filename, FileMode mode)
 	}
 
 	m_isWritable = !!(d->mode & RpFile::FM_WRITE);
-
-	// Check if this is a gzipped file.
-	// If it is, use transparent decompression.
-	// Reference: https://www.forensicswiki.org/wiki/Gzip
-	const bool tryGzip = (d->mode == FM_OPEN_READ_GZ);
-	if (tryGzip) { do {
-		uint16_t gzmagic;
-		size_t size = fread(&gzmagic, 1, sizeof(gzmagic), d->file);
-		if (size != sizeof(gzmagic) || gzmagic != be16_to_cpu(0x1F8B)) {
-			break;
-		}
-
-		// This is a gzipped file.
-		// Get the uncompressed size at the end of the file.
-		if (fseeko(d->file, -4, SEEK_END) != 0) {
-			break;
-		}
-
-		uint32_t uncomp_sz;
-		size = fread(&uncomp_sz, 1, sizeof(uncomp_sz), d->file);
-		uncomp_sz = le32_to_cpu(uncomp_sz);
-		if (size != sizeof(uncomp_sz) /*|| uncomp_sz < real_sz-(10+8)*/) {
-			break;
-		}
-
-		// NOTE: Uncompressed size might be smaller than the real filesize
-		// in cases where gzip doesn't help much.
-		// TODO: Add better verification heuristics?
-		d->gzsz = static_cast<off64_t>(uncomp_sz);
-
-		// Make sure the CRC32 table is initialized.
-		get_crc_table();
-
-		// Open the file with gzdopen().
-		::rewind(d->file);
-		::fflush(d->file);
-		int gzfd_dup = ::dup(fileno(d->file));
-		if (gzfd_dup >= 0) {
-			d->gzfd = gzdopen(gzfd_dup, "r");
-			if (d->gzfd) {
-				m_isCompressed = true;
-			} else {
-				// gzdopen() failed.
-				// Close the dup()'d handle to prevent a leak.
-				::close(gzfd_dup);
-			}
-		}
-	} while (0); }
-
-	if (tryGzip && !d->gzfd) {
-		// Not a gzipped file.
-		// Rewind and flush the file.
-		::rewind(d->file);
-		::fflush(d->file);
-	}
 }
 
 RpFile::~RpFile()
@@ -349,10 +285,6 @@ void RpFile::close(void)
 		d->devInfo->close();
 	}
 
-	if (d->gzfd != nullptr) {
-		gzclose_r(d->gzfd);
-		d->gzfd = nullptr;
-	}
 	if (d->file) {
 		fclose(d->file);
 		d->file = nullptr;
@@ -378,22 +310,10 @@ size_t RpFile::read(void *ptr, size_t size)
 		return d->readUsingBlocks(ptr, size);
 	}
 
-	size_t ret;
-	if (d->gzfd != nullptr) {
-		int iret = gzread(d->gzfd, ptr, size);
-		if (iret >= 0) {
-			ret = static_cast<size_t>(iret);
-		} else {
-			// An error occurred.
-			ret = 0;
-			m_lastError = errno;
-		}
-	} else {
-		ret = fread(ptr, 1, size, d->file);
-		if (ferror(d->file)) {
-			// An error occurred.
-			m_lastError = errno;
-		}
+	size_t ret = fread(ptr, 1, size, d->file);
+	if (ferror(d->file)) {
+		// An error occurred.
+		m_lastError = errno;
 	}
 	return ret;
 }
@@ -445,24 +365,9 @@ int RpFile::seek(off64_t pos, SeekWhence whence)
 		return 0;
 	}
 
-	int ret;
-	if (d->gzfd != nullptr) {
-		errno = 0;
-		z_off_t zret = gzseek(d->gzfd, pos, static_cast<int>(whence));
-		if (zret >= 0) {
-			ret = 0;
-		} else {
-			ret = -1;
-			m_lastError = -errno;
-			if (m_lastError == 0) {
-				m_lastError = -EIO;
-			}
-		}
-	} else {
-		ret = fseeko(d->file, pos, static_cast<int>(whence));
-		if (ret != 0) {
-			m_lastError = errno;
-		}
+	int ret = fseeko(d->file, pos, static_cast<int>(whence));
+	if (ret != 0) {
+		m_lastError = errno;
 	}
 	::fflush(d->file);	// needed for some things like gzip
 	return ret;
@@ -480,9 +385,6 @@ off64_t RpFile::tell(void)
 		return -1;
 	}
 
-	if (d->gzfd != nullptr) {
-		return static_cast<off64_t>(gztell(d->gzfd));
-	}
 	return ftello(d->file);
 }
 
@@ -573,10 +475,6 @@ off64_t RpFile::size(void)
 	if (d->devInfo) {
 		// Block device. Use the cached device size.
 		return d->devInfo->device_size;
-	} else if (d->gzfd != nullptr) {
-		// gzipped files have the uncompressed size stored
-		// at the end of the stream.
-		return d->gzsz;
 	}
 
 	// Save the current position.
@@ -665,14 +563,14 @@ int RpFile::makeWritable(void)
 	RP_D(RpFile);
 	off64_t prev_pos = ftello(d->file);
 	fclose(d->file);
-	d->file = d->fopen_cloexec(d->filename.c_str(), RpFile::FM_OPEN_WRITE);
+	d->file = d->fopen_cloexec(d->filename.c_str(), IRpFile::FM_OPEN_WRITE);
 	if (d->file) {
 		// File is now writable.
 		m_isWritable = true;
 	} else {
 		// Failed to open the file as writable.
 		// Try reopening as read-only.
-		d->file = d->fopen_cloexec(d->filename.c_str(), RpFile::FM_OPEN_READ);
+		d->file = d->fopen_cloexec(d->filename.c_str(), IRpFile::FM_OPEN_READ);
 		if (d->file) {
 			fseeko(d->file, prev_pos, SEEK_SET);
 		}
@@ -681,7 +579,7 @@ int RpFile::makeWritable(void)
 
 	// Restore the seek position.
 	fseeko(d->file, prev_pos, SEEK_SET);
-	d->mode = static_cast<RpFile::FileMode>(d->mode | FM_WRITE);
+	d->mode = static_cast<FileMode>(d->mode | FM_WRITE);
 	return 0;
 }
 
