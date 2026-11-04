@@ -30,11 +30,6 @@ using std::wstring_view;
 // tcharx
 #include "tcharx.h"
 
-#ifdef _MSC_VER
-// MSVC: Exception handling for /DELAYLOAD.
-#include "libwin32common/DelayLoadHelper.h"
-#endif /* _MSC_VER */
-
 namespace LibRpFile {
 
 /** RpFilePrivate **/

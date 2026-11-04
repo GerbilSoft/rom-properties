@@ -20,11 +20,6 @@ using std::unique_ptr;
 // zlib buffer size.
 static constexpr size_t ZLIB_BUFFER_SIZE = 16384U;
 
-#ifdef _MSC_VER
-// MSVC: Exception handling for /DELAYLOAD.
-#  include "libwin32common/DelayLoadHelper.h"
-#endif /* _MSC_VER */
-
 /**
  * Create an IRpFile using IStream* as the underlying storage mechanism.
  * NOTE: RpFile_IStream does NOT take ownership of the IStream*.
