@@ -177,6 +177,10 @@ int RpFile_IStream::truncate(off64_t size)
 	} else if (size < 0) {
 		m_lastError = EINVAL;
 		return -1;
+	} else if (!isWritable()) {
+		// Not writable...
+		m_lastError = EPERM;
+		return -1;
 	}
 
 	// Get the current stream position.
