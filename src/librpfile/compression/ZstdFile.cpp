@@ -128,9 +128,9 @@ ZstdFile::ZstdFile(const IRpFilePtr &file)
 		uint32_t u32;
 	} zstd_header;
 	size_t size = d->file->read(&zstd_header, sizeof(zstd_header));
+	d->file->rewind();	// Rewind after reading the header.
 	if (size != sizeof(zstd_header) || zstd_header.u32 != be32_to_cpu(0x28B52FFD)) {
 		// Not a zstd file.
-		d->file->rewind();
 		return;
 	}
 
@@ -173,10 +173,16 @@ ZstdFile::ZstdFile(const IRpFilePtr &file)
 		default:
 			// Should not happen...
 			assert(!"Invalid zstd Frame Content Size flag?");
-			d->file->rewind();
 			return;
 
 		case 0:
+			// If Single_Segment_flag is *not* set, no content size is available.
+			if (!(frame_header_descriptor & (1U << 5))) {
+				// No content size. Cannot handle this file.
+				// TODO: Handle it somehow?
+				return;
+			}
+
 			// 1-byte content size
 			uncomp_sz = static_cast<uint64_t>(zstd_header.u8[pos]);
 			break;
@@ -213,9 +219,6 @@ ZstdFile::ZstdFile(const IRpFilePtr &file)
 			break;
 	}
 	d->unz_sz = static_cast<off64_t>(uncomp_sz);
-
-	// Rewind back to the beginning of the stream.
-	d->file->rewind();
 
 	// Create the zstd context.
 	zstd_ctx &zctx = d->zctx;
