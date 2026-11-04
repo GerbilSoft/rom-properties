@@ -11,7 +11,7 @@
 #include "RpImageWin32.hpp"
 
 // Other rom-properties libraries
-#include "librpfile/TransparentDecompressionFactory.hpp"
+#include "librpfile/compression/TransparentDecompressionFactory.hpp"
 #include "librptext/wchar.hpp"
 #include "libromdata/RomDataFactory.hpp"
 using namespace LibRpBase;

@@ -35,7 +35,7 @@ using namespace LibRpBase;
 #include "librpfile/config.librpfile.h"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
-#include "librpfile/TransparentDecompressionFactory.hpp"
+#include "librpfile/compression/TransparentDecompressionFactory.hpp"
 using namespace LibRpFile;
 
 // libromdata

@@ -15,7 +15,7 @@
 #include "librpbase/config/Config.hpp"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
-#include "librpfile/TransparentDecompressionFactory.hpp"
+#include "librpfile/compression/TransparentDecompressionFactory.hpp"
 using LibRpBase::Config;
 using namespace LibRpFile;
 

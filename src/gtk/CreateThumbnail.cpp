@@ -19,7 +19,7 @@
 #include "librpbase/img/RpPngWriter.hpp"
 #include "librpbase/RomData.hpp"
 #include "librpfile/FileSystem.hpp"
-#include "librpfile/TransparentDecompressionFactory.hpp"
+#include "librpfile/compression/TransparentDecompressionFactory.hpp"
 #include "libromdata/RomDataFactory.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;

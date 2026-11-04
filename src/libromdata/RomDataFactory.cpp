@@ -18,7 +18,7 @@
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RelatedFile.hpp"
 #include "librpfile/RpFile.hpp"
-#include "librpfile/TransparentDecompressionFactory.hpp"
+#include "librpfile/compression/TransparentDecompressionFactory.hpp"
 #include "librptexture/FileFormatFactory.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;

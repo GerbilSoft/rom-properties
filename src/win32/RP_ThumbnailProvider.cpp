@@ -12,7 +12,7 @@
 
 // Other rom-properties libraries
 #include "librpfile/IRpFile.hpp"
-#include "librpfile/TransparentDecompressionFactory.hpp"
+#include "librpfile/compression/TransparentDecompressionFactory.hpp"
 using namespace LibRpFile;
 using namespace LibRpTexture;
 

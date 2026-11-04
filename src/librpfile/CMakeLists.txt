@@ -40,8 +40,8 @@ SET(${PROJECT_NAME}_SRCS
 	RelatedFile.cpp
 	DualFile.cpp
 	streambuf_IRpFile.cpp
-	GzipFile.cpp
-	TransparentDecompressionFactory.cpp
+	compression/TransparentDecompressionFactory.cpp
+	compression/GzipFile.cpp
 	scsi/RpFile_Kreon.cpp
 	scsi/RpFile_scsi.cpp
 	xattr/XAttrReader.cpp
@@ -61,8 +61,8 @@ SET(${PROJECT_NAME}_H
 	SubFile.hpp
 	VectorFile.hpp
 	streambuf_IRpFile.hpp
-	GzipFile.hpp
-	TransparentDecompressionFactory.hpp
+	compression/TransparentDecompressionFactory.hpp
+	compression/GzipFile.hpp
 	scsi/ata_protocol.h
 	scsi/scsi_protocol.h
 	scsi/scsi_ata_cmds.h
