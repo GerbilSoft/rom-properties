@@ -19,7 +19,7 @@
 #include "librpbase/img/RpPngWriter.hpp"
 #include "librpbase/RomData.hpp"
 #include "librpfile/FileSystem.hpp"
-#include "librpfile/GzipFile.hpp"
+#include "librpfile/TransparentDecompressionFactory.hpp"
 #include "libromdata/RomDataFactory.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -291,10 +291,10 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, bool isThumbnai
 				return romData;
 			}
 
-			// Check for gzip.
-			GzipFilePtr gzFile = std::make_shared<GzipFile>(file);
-			if (gzFile->isGzip()) {
-				file = std::move(gzFile);
+			// Check for a compressed file.
+			IRpFilePtr z_file = TransparentDecompressionFactory::create(file);
+			if (z_file) {
+				file = std::move(z_file);
 			}
 
 			// Get the appropriate RomData class for this ROM.

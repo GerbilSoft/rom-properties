@@ -14,8 +14,8 @@
 // Other rom-properties libraries
 #include "librpbase/config/Config.hpp"
 #include "librpfile/FileSystem.hpp"
-#include "librpfile/GzipFile.hpp"
 #include "librpfile/RpFile.hpp"
+#include "librpfile/TransparentDecompressionFactory.hpp"
 using LibRpBase::Config;
 using namespace LibRpFile;
 
@@ -196,13 +196,11 @@ IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
 	if (file && file->isOpen()) {
 		// File opened successfully.
 
-		// Check for gzip.
-		GzipFilePtr gzFile = std::make_shared<GzipFile>(file);
-		if (gzFile->isGzip()) {
-			// NOTE: Assigning to `file` for named-return-value optimization.
-			file = std::move(gzFile);
+		// Check for a compressed file.
+		IRpFilePtr z_file = TransparentDecompressionFactory::create(file);
+		if (z_file) {
+			file = std::move(z_file);
 		}
-		return file;
 	}
 
 	// Unable to open the file...

@@ -35,7 +35,7 @@ using namespace LibRpBase;
 #include "librpfile/config.librpfile.h"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
-#include "librpfile/GzipFile.hpp"
+#include "librpfile/TransparentDecompressionFactory.hpp"
 using namespace LibRpFile;
 
 // libromdata
@@ -327,10 +327,11 @@ static void DoFile(const TCHAR *filename, bool json, bool doSixel,
 			}
 			return;
 		}
-		// Check for gzip.
-		GzipFilePtr gzFile = std::make_shared<GzipFile>(file);
-		if (gzFile->isGzip()) {
-			file = std::move(gzFile);
+
+		// Check for a compressed file.
+		IRpFilePtr z_file = TransparentDecompressionFactory::create(file);
+		if (z_file) {
+			file = std::move(z_file);
 		}
 
 		romData = RomDataFactory::create(file);

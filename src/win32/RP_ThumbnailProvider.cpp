@@ -12,7 +12,7 @@
 
 // Other rom-properties libraries
 #include "librpfile/IRpFile.hpp"
-#include "librpfile/GzipFile.hpp"
+#include "librpfile/TransparentDecompressionFactory.hpp"
 using namespace LibRpFile;
 using namespace LibRpTexture;
 
@@ -82,10 +82,10 @@ IFACEMETHODIMP RP_ThumbnailProvider::Initialize(_In_ IStream *pstream, DWORD grf
 		return E_FAIL;
 	}
 
-	// Check for gzip.
-	GzipFilePtr gzFile = std::make_shared<GzipFile>(file);
-	if (gzFile->isGzip()) {
-		file = std::move(gzFile);
+	// Check for a compressed file.
+	IRpFilePtr z_file = TransparentDecompressionFactory::create(file);
+	if (z_file) {
+		file = std::move(z_file);
 	}
 
 	RP_D(RP_ThumbnailProvider);

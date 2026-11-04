@@ -11,7 +11,7 @@
 #include "RpImageWin32.hpp"
 
 // Other rom-properties libraries
-#include "librpfile/GzipFile.hpp"
+#include "librpfile/TransparentDecompressionFactory.hpp"
 #include "librptext/wchar.hpp"
 #include "libromdata/RomDataFactory.hpp"
 using namespace LibRpBase;
@@ -213,10 +213,10 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 		return E_FAIL;
 	}
 
-	// Check for gzip.
-	GzipFilePtr gzFile = std::make_shared<GzipFile>(file);
-	if (gzFile->isGzip()) {
-		file = std::move(gzFile);
+	// Check for a compressed file.
+	IRpFilePtr z_file = TransparentDecompressionFactory::create(file);
+	if (z_file) {
+		file = std::move(z_file);
 	}
 
 	// Update d->file().

@@ -24,10 +24,8 @@ public:
 	 * Open a file for transparent Gzip decompression. (read-only)
 	 * @param file Other IRpFile that was already opened
 	 */
-	RP_LIBROMDATA_PUBLIC
 	GzipFile(const IRpFilePtr &file);
 
-	RP_LIBROMDATA_PUBLIC
 	~GzipFile() final;
 
 private:
@@ -112,7 +110,6 @@ public:
 	 * Is this file actually compressed with gzip?
 	 * @return True if compressed with gzip; false if not.
 	 */
-	RP_LIBROMDATA_PUBLIC
 	bool isGzip(void) const;
 };
 

@@ -21,8 +21,8 @@
 #include "librpbase/RomFields.hpp"
 #include "librpbase/config/Config.hpp"
 #include "librpbase/img/RpImageLoader.hpp"
-#include "librpfile/GzipFile.hpp"
 #include "librpfile/RpFile.hpp"
+#include "librpfile/TransparentDecompressionFactory.hpp"
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
@@ -578,11 +578,8 @@ RpCreateThumbnailError TCreateThumbnail<ImgClass>::getThumbnail(const LibRpFile:
 template<typename ImgClass>
 RpCreateThumbnailError TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int reqSize, GetThumbnailOutParams_t *pOutParams)
 {
-	using LibRpFile::GzipFilePtr;
 	using LibRpBase::RomDataPtr;
-	using LibRpFile::IRpFilePtr;
-	using LibRpFile::GzipFile;
-	using LibRpFile::RpFile;
+	using namespace LibRpFile;
 
 	assert(filename != nullptr);
 	assert(reqSize > 0);
@@ -601,10 +598,10 @@ RpCreateThumbnailError TCreateThumbnail<ImgClass>::getThumbnail(const char *file
 		return RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
 	}
 
-	// Check for gzip.
-	GzipFilePtr gzFile = std::make_shared<GzipFile>(file);
-	if (gzFile->isGzip()) {
-		file = std::move(gzFile);
+	// Check for a compressed file.
+	IRpFilePtr z_file = TransparentDecompressionFactory::create(file);
+	if (z_file) {
+		file = std::move(z_file);
 	}
 
 	// Get the appropriate RomData class for this ROM.
