@@ -22,6 +22,16 @@
     <glob pattern="*.adx"/>
   </mime-type>
 
+  <!-- AY -->
+  <mime-type type="audio/x-ay">
+    <comment>ZX Spectrum AY audio</comment>
+    <generic-icon name="audio-x-generic"/>
+    <glob pattern="*.ay"/>
+    <magic priority="50">
+      <match value="ZXAYEMUL" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- BCSTM -->
   <mime-type type="audio/x-bcstm">
     <comment>Nintendo 3DS BCSTM audio</comment>
@@ -90,6 +100,40 @@
     </magic>
   </mime-type>
 
+  <!-- GYM -->
+  <mime-type type="audio/x-gym">
+    <comment>Sega Genesis/Mega Drive GYM audio</comment>
+    <acronym>GYM</acronym>
+    <expanded-acronym>Genesis YM2612</expanded-acronym>
+    <generic-icon name="audio-x-generic"/>
+    <glob pattern="*.gym"/>
+  </mime-type>
+
+  <!-- HES -->
+  <mime-type type="audio/x-hes">
+    <comment>Hudson Entertainment System audio</comment>
+    <acronym>HES</acronym>
+    <expanded-acronym>Hudson Entertainment System</expanded-acronym>
+    <generic-icon name="audio-x-generic"/>
+    <glob pattern="*.hes"/>
+    <magic priority="50">
+      <match value="HESM" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
+  <!-- KSS -->
+  <mime-type type="audio/x-kss">
+    <comment>Konami Sound System audio</comment>
+    <acronym>KSS</acronym>
+    <expanded-acronym>Konami Sound System</expanded-acronym>
+    <generic-icon name="audio-x-generic"/>
+    <glob pattern="*.kss"/>
+    <magic priority="50">
+      <match value="KSCC" type="string" offset="0"/>
+      <match value="KSSX" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- NSF -->
   <mime-type type="audio/x-nsf">
     <comment>Nintendo Sound Format audio</comment>
@@ -102,6 +146,18 @@
         <match value="1" type="byte" offset="5"/>
         <match value="2" type="byte" offset="5"/>
       </match>
+    </magic>
+  </mime-type>
+
+  <!-- NSFE -->
+  <mime-type type="audio/x-nsfe">
+    <comment>Nintendo Sound Format Extended audio</comment>
+    <acronym>NSFE</acronym>
+    <expanded-acronym>Nintendo Sound Format Extended</expanded-acronym>
+    <generic-icon name="audio-x-generic"/>
+    <glob pattern="*.nsfe"/>
+    <magic priority="50">
+      <match value="NSFE" type="string" offset="0"/>
     </magic>
   </mime-type>
 
