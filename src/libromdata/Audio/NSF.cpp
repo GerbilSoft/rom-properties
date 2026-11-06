@@ -283,9 +283,12 @@ int NSF::loadFieldData(void)
 			"IRQ support", "Non-returning INIT",
 			"No PLAY subroutine", "NSFe has mandatory chunk",
 		}};
+
+		// Bits 0-3 are reserved. Adjust the flags to match the names.
+		const uint32_t adjflags = (nsfHeader->nsf2_feature_flags) >> 4;
 		vector<string> *const v_nsf2_feature_flags_names = RomFields::strArrayToVector(nsf2_feature_flags_names);
 		d->fields.addField_bitfield(C_("NSF", "NSF2 Feature Flags"),
-			v_nsf2_feature_flags_names, 2, nsfHeader->nsf2_feature_flags);
+			v_nsf2_feature_flags_names, 2, adjflags);
 
 		// TODO: NSFe metadata.
 	}
