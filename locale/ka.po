@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-05 23:32-0500\n"
+"POT-Creation-Date: 2026-11-06 00:06-0500\n"
 "PO-Revision-Date: 2026-09-01 09:16\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
@@ -2712,7 +2712,9 @@ msgid "Filename"
 msgstr "ფაილის სახელი"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1452
-msgctxt "DreamcastSave"
+#: ../src/libromdata/Handheld/FlipnoteStudio.cpp:556
+#: ../src/libromdata/Media/ISO.cpp:616
+msgctxt "RomData"
 msgid "Creation Time"
 msgstr "შექმნის დრო"
 
@@ -5873,11 +5875,6 @@ msgctxt "FlipnoteStudio"
 msgid "Current Author"
 msgstr ""
 
-#: ../src/libromdata/Handheld/FlipnoteStudio.cpp:556
-msgctxt "RomData"
-msgid "Creation Time"
-msgstr "შექმნის დრო"
-
 #: ../src/libromdata/Handheld/FlipnoteStudio.cpp:562
 msgctxt "RomData"
 msgid "Modified Time"
@@ -6851,11 +6848,6 @@ msgstr "საავტორო უფლების ფაილი"
 msgctxt "ISO"
 msgid "Abstract File"
 msgstr "აბსტრაქტული ფაილი"
-
-#: ../src/libromdata/Media/ISO.cpp:616
-msgctxt "ISO"
-msgid "Creation Time"
-msgstr "შექმნის დრო"
 
 #: ../src/libromdata/Media/ISO.cpp:622
 msgctxt "ISO"
@@ -11169,3 +11161,11 @@ msgstr "&პარამეტრები..."
 msgctxt "RomDataView"
 msgid "Invalid action ID."
 msgstr ""
+
+#~ msgctxt "DreamcastSave"
+#~ msgid "Creation Time"
+#~ msgstr "შექმნის დრო"
+
+#~ msgctxt "ISO"
+#~ msgid "Creation Time"
+#~ msgstr "შექმნის დრო"
