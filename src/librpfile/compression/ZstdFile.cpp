@@ -194,7 +194,7 @@ ZstdFile::ZstdFile(const IRpFilePtr &file)
 			uint16_t uncomp_sz16;
 			memcpy(&uncomp_sz16, &zstd_header.u8[pos], sizeof(uncomp_sz16));
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
-			uncomp_sz16 = le16_to_cpu(uncomp_sz32);
+			uncomp_sz16 = le16_to_cpu(uncomp_sz16);
 #endif /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
 			uncomp_sz = static_cast<uint64_t>(uncomp_sz16) + 256;
 			break;
