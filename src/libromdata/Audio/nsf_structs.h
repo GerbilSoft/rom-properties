@@ -32,9 +32,9 @@ typedef struct _NSF_Header {
 	uint8_t version;		// [0x005] Version (1 or 2)
 	uint8_t track_count;		// [0x006] Number of tracks
 	uint8_t default_track;		// [0x007] Default track number, plus one.
-	uint16_t load_address;		// [0x008] Load address. (must be $8000-$FFFF)
-	uint16_t init_address;		// [0x00A] Init address. (must be $8000-$FFFF)
-	uint16_t play_address;		// [0x00C] Play address.
+	uint16_t load_address;		// [0x008] Load address (must be $8000-$FFFF)
+	uint16_t init_address;		// [0x00A] Init address (must be $8000-$FFFF)
+	uint16_t play_address;		// [0x00C] Play address (must be $8000-$FFFF)
 	char title[32];			// [0x00E] Title. (ASCII, NULL-terminated)
 	char composer[32];		// [0x02E] Composer. (ASCII, NULL-terminated)
 	char copyright[32];		// [0x04E] Copyright. (ASCII, NULL-terminated)
