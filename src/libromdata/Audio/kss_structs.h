@@ -21,7 +21,9 @@ extern "C" {
 
 /**
  * Konami Sound System sound format.
- * All fields are in little-endian.
+ *
+ * All fields are in little-endian, except for the
+ * magic number, which is considered "big-endian".
  */
 #define KSS_MAGIC 'KSCC'
 #define KSSX_MAGIC 'KSSX'
