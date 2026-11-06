@@ -52,4 +52,13 @@
 #  endif /* _UNICODE */
 #endif /* _WIN32 */
 
+/**
+ * Append fmt::format_int() to an std::string without using a temporary std::string.
+ * Usage: STRING_APPEND_FORMAT_INT(str, n)
+ */
+#define STRING_APPEND_FORMAT_INT(str, n) do { \
+	fmt::format_int fi(n); \
+	(str).append(fi.data(), fi.size()); \
+} while (0)
+
 #endif /* __cplusplus */

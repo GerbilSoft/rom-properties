@@ -308,7 +308,7 @@ int WimPrivate::addFields_XML()
 				unstaged_idx--;
 				unstaged_idx /= 26;
 			}
-			image_index += fmt::format_int(image.index).str();
+			STRING_APPEND_FORMAT_INT(image_index, image.index);
 			std::reverse(image_index.begin(), image_index.end());
 			data_row.push_back(std::move(image_index));
 		}

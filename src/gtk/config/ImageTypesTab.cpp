@@ -190,7 +190,7 @@ void RpImageTypesTabPrivate::createGridLabels(void)
 
 		GtkWidget *const lblImageType = gtk_label_new(imageTypeName(i));
 		widget_name.resize(sizeof("lblImageType")-1);
-		widget_name += fmt::format_int(i).c_str();
+		STRING_APPEND_FORMAT_INT(widget_name, i);
 		gtk_widget_set_name(lblImageType, widget_name.c_str());
 
 #if !GTK_CHECK_VERSION(4, 0, 0)

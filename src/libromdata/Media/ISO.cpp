@@ -1246,7 +1246,7 @@ int ISO::loadFieldData(void)
 	}
 	if (cdsi->subchannel_size > 0) {
 		sector_format += '+';
-		sector_format += fmt::format_int(cdsi->subchannel_size).str();
+		STRING_APPEND_FORMAT_INT(sector_format, cdsi->subchannel_size);
 	}
 	d->fields.addField_string(C_("ISO", "Sector Format"), sector_format);
 

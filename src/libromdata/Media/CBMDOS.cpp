@@ -1353,7 +1353,7 @@ int CBMDOS::loadFieldData(void)
 				s_file_type += file_type_tbl[file_type];
 			} else {
 				// Print the numeric value instead.
-				s_file_type += fmt::format_int(file_type).str();
+				STRING_APPEND_FORMAT_INT(s_file_type, file_type);
 			}
 
 			// Append the other flags, if set.

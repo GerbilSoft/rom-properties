@@ -509,7 +509,7 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 		} else {
 			// Invalid age rating organization.
 			// Use the numeric index.
-			s_ret += fmt::format_int(i).str();
+			STRING_APPEND_FORMAT_INT(s_ret, i);
 		}
 		s_ret += '=';
 		s_ret += ageRatingDecode(static_cast<AgeRatingsCountry>(i), rating);

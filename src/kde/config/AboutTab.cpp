@@ -524,7 +524,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 		pugixml_major, pugixml_minor);
 	if (pugixml_patch > 0) {
 		pugiXmlVersion += '.';
-		pugiXmlVersion += fmt::format_int(pugixml_patch).str();
+		STRING_APPEND_FORMAT_INT(pugiXmlVersion, pugixml_patch);
 	}
 
 #  if defined(USE_INTERNAL_XML) && !defined(USE_INTERNAL_XML_DLL)
