@@ -149,7 +149,11 @@ int NSF::isRomSupported_static(const DetectInfo *info)
 	// Check the NSF magic number.
 	if (!memcmp(nsfHeader->magic, NSF_MAGIC, sizeof(nsfHeader->magic))) {
 		// Found the NSF magic number.
-		return 0;
+		// Version number must be either 1 or 2.
+		if (nsfHeader->version == 1 || nsfHeader->version == 2) {
+			// Valid version number.
+			return 0;
+		}
 	}
 
 	// Not supported.
@@ -200,55 +204,55 @@ int NSF::loadFieldData(void)
 		return -EIO;
 	}
 
-	// NSF header.
+	// NSF header
 	const NSF_Header *const nsfHeader = &d->nsfHeader;
-	d->fields.reserve(10);	// Maximum of 10 fields.
+	d->fields.reserve(11);	// Maximum of 11 fields.
 
 	// NOTE: The NSF specification says ASCII, but I'm assuming
 	// the text is cp1252 and/or Shift-JIS.
 
-	// Title.
+	// Title
 	if (nsfHeader->title[0] != 0) {
 		d->fields.addField_string(C_("RomData|Audio", "Title"),
 			cp1252_sjis_to_utf8(nsfHeader->title, sizeof(nsfHeader->title)));
 	}
 
-	// Composer.
+	// Composer
 	if (nsfHeader->composer[0] != 0) {
 		d->fields.addField_string(C_("RomData|Audio", "Composer"),
 			cp1252_sjis_to_utf8(nsfHeader->composer, sizeof(nsfHeader->composer)));
 	}
 
-	// Copyright.
+	// Copyright
 	if (nsfHeader->copyright[0] != 0) {
 		d->fields.addField_string(C_("RomData", "Copyright"),
 			cp1252_sjis_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
 	}
 
-	// Number of tracks.
+	// Number of tracks
 	d->fields.addField_string_numeric(C_("RomData|Audio", "Track Count"),
 		nsfHeader->track_count);
 
-	// Default track number.
+	// Default track number
 	d->fields.addField_string_numeric(C_("RomData|Audio", "Default Track #"),
 		nsfHeader->default_track);
 
-	// Load address.
+	// Load address
 	d->fields.addField_string_numeric(C_("NSF", "Load Address"),
 		le16_to_cpu(nsfHeader->load_address),
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
-	// Init address.
+	// Init address
 	d->fields.addField_string_numeric(C_("NSF", "Init Address"),
 		le16_to_cpu(nsfHeader->init_address),
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
-	// Play address.
+	// Play address
 	d->fields.addField_string_numeric(C_("NSF", "Play Address"),
 		le16_to_cpu(nsfHeader->play_address),
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
-	// TV System.
+	// TV System
 	// TODO: NTSC/PAL framerates?
 	// NOTE: NSF uses an enum, not a bitfield.
 	static const array<const char*, 2> tv_system_bitfield_names = {{
@@ -264,7 +268,7 @@ int NSF::loadFieldData(void)
 	d->fields.addField_bitfield(C_("NSF", "TV System"),
 		v_tv_system_bitfield_names, 0, bfval);
 
-	// Expansion audio.
+	// Expansion audio
 	static const array<const char*, 6> expansion_bitfield_names = {{
 		"Konami VRC6", "Konami VRC7", "2C33 (FDS)",
 		"MMC5", "Namco N163", "Sunsoft 5B",
@@ -272,6 +276,19 @@ int NSF::loadFieldData(void)
 	vector<string> *const v_expansion_bitfield_names = RomFields::strArrayToVector(expansion_bitfield_names);
 	d->fields.addField_bitfield(C_("NSF", "Expansion"),
 		v_expansion_bitfield_names, 3, nsfHeader->expansion_audio);
+
+	if (nsfHeader->version >= 2) {
+		// NSF2 feature flags
+		static const array<const char*, 4> nsf2_feature_flags_names = {{
+			"IRQ support", "Non-returning INIT",
+			"No PLAY subroutine", "NSFe has mandatory chunk",
+		}};
+		vector<string> *const v_nsf2_feature_flags_names = RomFields::strArrayToVector(nsf2_feature_flags_names);
+		d->fields.addField_bitfield(C_("NSF", "NSF2 Feature Flags"),
+			v_nsf2_feature_flags_names, 2, nsfHeader->nsf2_feature_flags);
+
+		// TODO: NSFe metadata.
+	}
 
 	// Finished reading the field data.
 	return d->fields.count();
@@ -296,27 +313,29 @@ int NSF::loadMetaData(void)
 		return -EIO;
 	}
 
-	// NSF header.
+	// NSF header
 	const NSF_Header *const nsfHeader = &d->nsfHeader;
 	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
-	// Title.
+	// Title
 	if (nsfHeader->title[0] != 0) {
 		d->metaData.addMetaData_string(Property::Title,
 			cp1252_sjis_to_utf8(nsfHeader->title, sizeof(nsfHeader->title)));
 	}
 
-	// Composer.
+	// Composer
 	if (nsfHeader->composer[0] != 0) {
 		d->metaData.addMetaData_string(Property::Composer,
 			cp1252_sjis_to_utf8(nsfHeader->composer, sizeof(nsfHeader->composer)));
 	}
 
-	// Copyright.
+	// Copyright
 	if (nsfHeader->copyright[0] != 0) {
 		d->metaData.addMetaData_string(Property::Copyright,
 			cp1252_sjis_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
 	}
+
+	// TODO: NSFe metadata?
 
 	// Finished reading the metadata.
 	return d->metaData.count();
