@@ -7,6 +7,7 @@
     files. Only the thumbnail preview image is shown; not the animation.
     * Implements #525: [FEATURE REQUEST] Flipnote Studio PPMs
       * Requested by @korbosoft.
+  * KSS: Konami Sound System format.
 
 * New parser features:
   * WiiUPackage: Support for Wii U Archive (.wua) format. This uses the ZArchive
