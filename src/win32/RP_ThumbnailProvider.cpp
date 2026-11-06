@@ -89,7 +89,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::Initialize(_In_ IStream *pstream, DWORD grf
 	}
 
 	RP_D(RP_ThumbnailProvider);
-	std::swap(d->file, file);
+	d->file = std::move(file);
 
 	// Save the IStream and grfMode.
 	d->pstream.Attach(pstream, true);

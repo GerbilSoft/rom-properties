@@ -219,11 +219,11 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 		file = std::move(z_file);
 	}
 
-	// Update d->file().
+	// Update d->file.
 	// shared_ptr<> will automatically unreference the old
 	// file if one is set.
 	RP_D(RP_PropertyStore);
-	std::swap(d->file, file);
+	d->file = std::move(file);
 
 	// Save the IStream and grfMode.
 	d->pstream.Attach(pstream, true);
