@@ -98,7 +98,10 @@
     <generic-icon name="audio-x-generic"/>
     <glob pattern="*.nsf"/>
     <magic priority="50">
-      <match value="NESM\x1A\x01" type="string" offset="0"/>
+      <match value="NESM\x1A" type="string" offset="0">
+        <match value="1" type="byte" offset="5"/>
+        <match value="2" type="byte" offset="5"/>
+      </match>
     </magic>
   </mime-type>
 
