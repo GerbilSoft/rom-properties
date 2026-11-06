@@ -243,17 +243,17 @@ int SID::loadFieldData(void)
 	}
 
 	// Load address.
-	d->fields.addField_string_numeric(C_("SID", "Load Address"),
+	d->fields.addField_string_numeric(C_("RomData|Audio", "Load Address"),
 		be16_to_cpu(sidHeader->loadAddress),
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Init address.
-	d->fields.addField_string_numeric(C_("SID", "Init Address"),
+	d->fields.addField_string_numeric(C_("RomData|Audio", "Init Address"),
 		be16_to_cpu(sidHeader->initAddress),
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Play address.
-	d->fields.addField_string_numeric(C_("SID", "Play Address"),
+	d->fields.addField_string_numeric(C_("RomData|Audio", "Play Address"),
 		be16_to_cpu(sidHeader->playAddress),
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 

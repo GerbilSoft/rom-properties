@@ -266,22 +266,22 @@ int GBS::loadFieldData(void)
 				gbs->default_track);
 
 			// Load address
-			d->fields.addField_string_numeric(C_("GBS", "Load Address"),
+			d->fields.addField_string_numeric(C_("RomData|Audio", "Load Address"),
 				le16_to_cpu(gbs->load_address),
 				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 			// Init address
-			d->fields.addField_string_numeric(C_("GBS", "Init Address"),
+			d->fields.addField_string_numeric(C_("RomData|Audio", "Init Address"),
 				le16_to_cpu(gbs->init_address),
 				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 			// Play address
-			d->fields.addField_string_numeric(C_("GBS", "Play Address"),
+			d->fields.addField_string_numeric(C_("RomData|Audio", "Play Address"),
 				le16_to_cpu(gbs->play_address),
 				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 			// Play address
-			d->fields.addField_string_numeric(C_("GBS", "Stack Pointer"),
+			d->fields.addField_string_numeric(C_("RomData|Audio", "Stack Pointer"),
 				le16_to_cpu(gbs->stack_pointer),
 				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 			break;
@@ -296,7 +296,7 @@ int GBS::loadFieldData(void)
 			d->fields.setTabName(0, "GBR");
 
 			// Init address
-			d->fields.addField_string_numeric(C_("GBS", "Init Address"),
+			d->fields.addField_string_numeric(C_("RomData|Audio", "Init Address"),
 				le16_to_cpu(gbr->init_address),
 				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
