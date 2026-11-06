@@ -641,20 +641,20 @@ int SAP::loadFieldData(void)
 			break;
 
 		case 'B': case 'D': case 'S':
-			d->fields.addField_string_numeric(C_("SAP", "Init Address"),
+			d->fields.addField_string_numeric(C_("RomData|Audio", "Init Address"),
 				tags.init_addr,
 				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 			break;
 
 		case 'C':
-			d->fields.addField_string_numeric(C_("SAP", "Music Address"),
+			d->fields.addField_string_numeric(C_("RomData|Audio", "Music Address"),
 				tags.music_addr,
 				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 			break;
 	}
 
 	// Player address.
-	d->fields.addField_string_numeric(C_("SAP", "Player Address"),
+	d->fields.addField_string_numeric(C_("RomData|Audio", "Player Address"),
 		tags.player_addr,
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 

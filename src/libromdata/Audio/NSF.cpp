@@ -238,17 +238,17 @@ int NSF::loadFieldData(void)
 		nsfHeader->default_track);
 
 	// Load address
-	d->fields.addField_string_numeric(C_("NSF", "Load Address"),
+	d->fields.addField_string_numeric(C_("RomData|Audio", "Load Address"),
 		le16_to_cpu(nsfHeader->load_address),
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Init address
-	d->fields.addField_string_numeric(C_("NSF", "Init Address"),
+	d->fields.addField_string_numeric(C_("RomData|Audio", "Init Address"),
 		le16_to_cpu(nsfHeader->init_address),
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Play address
-	d->fields.addField_string_numeric(C_("NSF", "Play Address"),
+	d->fields.addField_string_numeric(C_("RomData|Audio", "Play Address"),
 		le16_to_cpu(nsfHeader->play_address),
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
