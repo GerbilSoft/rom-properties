@@ -1145,7 +1145,7 @@ msgstr "Desconhecido"
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:599
 #, c++-format
 msgctxt "RomDataView"
-msgid "Error opening output file: {:s}"
+msgid "Error opening output file: '{:s}'"
 msgstr ""
 
 #: ../src/gtk/RomDataView_ops.cpp:369 ../src/kde/RomDataView_ops.cpp:285

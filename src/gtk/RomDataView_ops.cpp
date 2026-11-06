@@ -341,7 +341,7 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 		// Show an error message.
 		// TODO: Include the filename?
 		// TODO: Thread-safe strerror()?
-		const string msg = fmt::format(FRUN(C_("RomDataView", "Error opening output file: {:s}")),
+		const string msg = fmt::format(FRUN(C_("RomDataView", "Error opening output file: '{:s}'")),
 			strerror(out_file->lastError()));
 
 		// Delete the file if it was created.
