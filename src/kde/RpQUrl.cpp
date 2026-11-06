@@ -201,6 +201,8 @@ IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
 		if (z_file) {
 			file = std::move(z_file);
 		}
+
+		return file;
 	}
 
 	// Unable to open the file...
