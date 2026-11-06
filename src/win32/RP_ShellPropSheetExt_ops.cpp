@@ -596,7 +596,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			// Show an error message.
 			// TODO: Include the filename?
 			// TODO: Thread-safe strerror()?
-			const tstring msg = fmt::format(FRUN(TC_("RomDataView", "Error opening output file: {:s}")),
+			const tstring msg = fmt::format(FRUN(TC_("RomDataView", "Error opening output file: '{:s}'")),
 				_tcserror(params.save_file->lastError()));
 
 			// Delete the file if it was created.
