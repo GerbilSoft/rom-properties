@@ -117,6 +117,7 @@ using std::unordered_set;
 #include "Audio/BCSTM.hpp"
 #include "Audio/BRSTM.hpp"
 #include "Audio/GBS.hpp"
+#include "Audio/KSS.hpp"
 #include "Audio/NSF.hpp"
 #include "Audio/PSF.hpp"
 #include "Audio/S98.hpp"
@@ -276,7 +277,7 @@ static constexpr size_t ZARCHIVE_MAGIC_COUNT = 1;
 #else /* !HAVE_ZARCHIVE */
 static constexpr size_t ZARCHIVE_MAGIC_COUNT = 0;
 #endif /* HAVE_ZARCHIVE */
-static const array<RomDataFns, XML_MAGIC_COUNT+ZARCHIVE_MAGIC_COUNT+39> romDataFns_magic = {{
+static const array<RomDataFns, XML_MAGIC_COUNT+ZARCHIVE_MAGIC_COUNT+40> romDataFns_magic = {{
 	// Consoles
 	GetRomDataFns_magic1(Atari7800, ATTR_HAS_METADATA, 4, 'RI78'),	// "ATARI7800"
 	GetRomDataFns_magic2(GameCubeBNR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'BNR1', 'BNR2'),
@@ -318,6 +319,7 @@ static const array<RomDataFns, XML_MAGIC_COUNT+ZARCHIVE_MAGIC_COUNT+39> romDataF
 	// Audio
 	GetRomDataFns_magic1(BRSTM, ATTR_HAS_METADATA, 0, 'RSTM'),
 	GetRomDataFns_magic2(GBS, ATTR_HAS_METADATA, 0, 0x47425301U, 'GBRF'),	// 'GBS\x01', 'GBRF'
+	GetRomDataFns_magic2(KSS, 0, 0, 'KSCC', 'KSSX'),
 	GetRomDataFns_magic1(NSF, ATTR_HAS_METADATA, 0, 'NESM'),
 	GetRomDataFns_magic2(S98, ATTR_HAS_METADATA, 0, 'S983', 'S982'),
 	GetRomDataFns_magic2(S98, ATTR_HAS_METADATA, 0, 'S981', 'S980'),
