@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.9+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-05 23:32-0500\n"
+"POT-Creation-Date: 2026-11-06 00:06-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2709,7 +2709,9 @@ msgid "Filename"
 msgstr ""
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1452
-msgctxt "DreamcastSave"
+#: ../src/libromdata/Handheld/FlipnoteStudio.cpp:556
+#: ../src/libromdata/Media/ISO.cpp:616
+msgctxt "RomData"
 msgid "Creation Time"
 msgstr ""
 
@@ -5870,11 +5872,6 @@ msgctxt "FlipnoteStudio"
 msgid "Current Author"
 msgstr ""
 
-#: ../src/libromdata/Handheld/FlipnoteStudio.cpp:556
-msgctxt "RomData"
-msgid "Creation Time"
-msgstr ""
-
 #: ../src/libromdata/Handheld/FlipnoteStudio.cpp:562
 msgctxt "RomData"
 msgid "Modified Time"
@@ -6847,11 +6844,6 @@ msgstr ""
 #: ../src/libromdata/Media/ISO.cpp:600
 msgctxt "ISO"
 msgid "Abstract File"
-msgstr ""
-
-#: ../src/libromdata/Media/ISO.cpp:616
-msgctxt "ISO"
-msgid "Creation Time"
 msgstr ""
 
 #: ../src/libromdata/Media/ISO.cpp:622

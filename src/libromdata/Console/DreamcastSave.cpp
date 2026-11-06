@@ -1449,7 +1449,7 @@ int DreamcastSave::loadFieldData(void)
 			latin1_to_utf8(d->vms_dirent.filename, sizeof(d->vms_dirent.filename)));
 
 		// Creation time
-		d->fields.addField_dateTime(C_("DreamcastSave", "Creation Time"), d->ctime,
+		d->fields.addField_dateTime(C_("RomData", "Creation Time"), d->ctime,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME |
 			RomFields::RFT_DATETIME_IS_UTC  // Dreamcast doesn't support timezones.
