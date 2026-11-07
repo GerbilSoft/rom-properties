@@ -174,7 +174,7 @@ public:
 
 	/**
 	 * Read the NSFe metadata.
-	 * @return 0 on success; non-zero on error.
+	 * @return 0 on success; negative POSIX error code on error.
 	 */
 	int readNSFeMetadata(void);
 };
@@ -258,7 +258,7 @@ uint32_t NSFPrivate::getNSFeMetadataStartAddress(void) const
 
 /**
  * Read the NSFe metadata.
- * @return 0 on success; non-zero on error.
+ * @return 0 on success; negative POSIX error code on error.
  */
 int NSFPrivate::readNSFeMetadata(void)
 {
@@ -311,6 +311,31 @@ int NSFPrivate::readNSFeMetadata(void)
 				// End of file.
 				done = true;
 				break;
+
+			case NSFe_Chunk_INFO: {
+				// 'info' chunk
+				// NOTE: Chunk may be larger than 10 bytes. Ignore the extra data.
+				assert(!isNSF2);
+				assert(chunk_size >= sizeof(NSFe_INFO_t));
+				if (isNSF2 || chunk_size < sizeof(NSFe_INFO_t)) {
+					// isNSF2: This chunk is not allowed.
+					// Other: Chunk size is incorrect.
+					skip = true;
+					break;
+				}
+
+				size = file->read(&nsfe.INFO, sizeof(nsfe.INFO));
+				if (size != sizeof(nsfe.INFO)) {
+					// Read error.
+					int err = -file->lastError();
+					if (err == 0) {
+						err = -EIO;
+					}
+					return err;
+				}
+				nsfe.has.INFO = 1;
+				break;
+			}
 
 			case NSFe_Chunk_auth: {
 				// 'auth' chunk. Read the chunk data into nsfe.auth.strtbl.
@@ -592,8 +617,11 @@ int NSF::loadFieldData(void)
 	// Field count:
 	// - NSF Version: 1
 	// - NSF1/NSF2: 10
-	// - NSFe: 5
-	d->fields.reserve(1+10+5);
+	// - NSFe:
+	//   - 'auth': 4
+	//   - 'INFO': 7
+	//   - 'text': 1
+	d->fields.reserve(1+10+4+7+1);
 
 	// NSF version
 	string s_nsfVersion;
@@ -610,6 +638,18 @@ int NSF::loadFieldData(void)
 	}
 	d->fields.addField_string(C_("NSF", "NSF Version"),
 		(likely(!s_nsfVersion.empty())) ? s_nsfVersion.c_str() : C_("RomData", "Unknown"));
+
+	// TV system
+	static const array<const char*, 2> tv_system_bitfield_names = {{
+		"NTSC", "PAL",
+	}};
+
+	// Expansion audio
+	static const array<const char*, 7> expansion_bitfield_names = {{
+		"Konami VRC6", "Konami VRC7", "2C33 (FDS)",
+		"MMC5", "Namco N163", "Sunsoft 5B",
+		"VT02+"
+	}};
 
 	bool hasNSFtab = false;
 	if (d->audioFormat == NSFPrivate::AudioFormat::NSF) {
@@ -662,12 +702,9 @@ int NSF::loadFieldData(void)
 			le16_to_cpu(nsfHeader->play_address),
 			RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
-		// TV System
+		// TV system
 		// TODO: NTSC/PAL framerates?
 		// NOTE: NSF uses an enum, not a bitfield.
-		static const array<const char*, 2> tv_system_bitfield_names = {{
-			"NTSC", "PAL",
-		}};
 		uint32_t bfval = nsfHeader->tv_system;
 		if (bfval < NSF_TV_MAX) {
 			bfval++;
@@ -679,11 +716,6 @@ int NSF::loadFieldData(void)
 			v_tv_system_bitfield_names, 0, bfval);
 
 		// Expansion audio
-		static const array<const char*, 7> expansion_bitfield_names = {{
-			"Konami VRC6", "Konami VRC7", "2C33 (FDS)",
-			"MMC5", "Namco N163", "Sunsoft 5B",
-			"VT02+"
-		}};
 		vector<string> *const v_expansion_bitfield_names = RomFields::strArrayToVector(expansion_bitfield_names);
 		d->fields.addField_bitfield(C_("NSF", "Expansion"),
 			v_expansion_bitfield_names, 3, nsfHeader->expansion_audio);
@@ -711,6 +743,8 @@ int NSF::loadFieldData(void)
 			d->fields.setTabName(0, "NSFe");
 		}
 
+		// NOTE: Using the same ordering as NSF2, even though it
+		// doesn't necessarily match NSFe ordering.
 		const auto *nsfe = &d->nsfe;
 
 		if (nsfe->has.auth) {
@@ -735,6 +769,53 @@ int NSF::loadFieldData(void)
 			if (nsfe->auth.ripper) {
 				d->fields.addField_string(C_("RomData|Audio", "Ripper"), nsfe->auth.ripper);
 			}
+		}
+
+		if (nsfe->has.INFO) {
+			// Number of tracks
+			d->fields.addField_string_numeric(C_("RomData|Audio", "Track Count"),
+				nsfe->INFO.song_count);
+
+			// Default track number
+			d->fields.addField_string_numeric(C_("RomData|Audio", "Default Track #"),
+				nsfe->INFO.starting_song);
+
+			// Load address
+			d->fields.addField_string_numeric(C_("RomData|Audio", "Load Address"),
+				le16_to_cpu(nsfe->INFO.load_address),
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
+
+			// Init address
+			d->fields.addField_string_numeric(C_("RomData|Audio", "Init Address"),
+				le16_to_cpu(nsfe->INFO.init_address),
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
+
+			// Play address
+			d->fields.addField_string_numeric(C_("RomData|Audio", "Play Address"),
+				le16_to_cpu(nsfe->INFO.play_address),
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
+
+			// TV System
+			// TODO: NTSC/PAL framerates?
+			// NOTE: NSFe uses an unusual format:
+			// - Bit 0: clear for NTSC, set for PAL
+			// - Bit 1: if set, supports both NTSC and PAL
+			uint32_t bfval;
+			if (nsfe->INFO.extra_sound_chips & NSFe_INFO_DUAL_NTSC_PAL) {
+				bfval = 3;	// NTSC and PAL
+			} else if (nsfe->INFO.extra_sound_chips & NSFe_INFO_TV_TYPE_MASK) {
+				bfval = 2;	// PAL
+			} else {
+				bfval = 1;	// NTSC
+			}
+			vector<string> *const v_tv_system_bitfield_names = RomFields::strArrayToVector(tv_system_bitfield_names);
+			d->fields.addField_bitfield(C_("NSF", "TV System"),
+				v_tv_system_bitfield_names, 0, bfval);
+
+			// Expansion audio
+			vector<string> *const v_expansion_bitfield_names = RomFields::strArrayToVector(expansion_bitfield_names);
+			d->fields.addField_bitfield(C_("NSF", "Expansion"),
+				v_expansion_bitfield_names, 3, nsfe->INFO.extra_sound_chips);
 		}
 
 		if (nsfe->has.text && likely(!nsfe->text.empty())) {
