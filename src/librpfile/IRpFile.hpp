@@ -130,6 +130,16 @@ public:
 	virtual void close(void) = 0;
 
 	/**
+	 * Are we at EOF?
+	 * @return True if EOF; false if not.
+	 */
+	virtual bool eof(void)
+	{
+		// Assume EOF if the file pointer is larger than the file size.
+		return (tell() >= size());
+	}
+
+	/**
 	 * Read data from the file.
 	 * @param ptr	[out] Output data buffer.
 	 * @param size	[in] Amount of data to read, in bytes.

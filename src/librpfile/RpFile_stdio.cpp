@@ -292,6 +292,16 @@ void RpFile::close(void)
 }
 
 /**
+ * Are we at EOF?
+ * @return True if EOF; false if not.
+ */
+bool RpFile::eof(void)
+{
+	RP_D(RpFile);
+	return feof(d->file);
+}
+
+/**
  * Read data from the file.
  * @param ptr Output data buffer.
  * @param size Amount of data to read, in bytes.

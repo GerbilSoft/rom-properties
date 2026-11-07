@@ -84,6 +84,12 @@ public:
 	void close(void) final;
 
 	/**
+	 * Are we at EOF?
+	 * @return True if EOF; false if not.
+	 */
+	bool eof(void) final;
+
+	/**
 	 * Read data from the file.
 	 * @param ptr Output data buffer.
 	 * @param size Amount of data to read, in bytes.
