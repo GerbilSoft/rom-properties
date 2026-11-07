@@ -398,6 +398,10 @@ public:
 		// generated icon, and is not an internal or external image from
 		// the ROM itself. (e.g. "Happy Wii U" for WiiUAncast)
 		IMGPF_RP_GENERATED		= (1U << 8),
+
+		// Image is internally stored as a JPEG file.
+		// (Internal images only)
+		IMGPF_INTERNAL_JPEG_FORMAT	= (1U << 9),
 	};
 
 	struct ImageSizeDef {

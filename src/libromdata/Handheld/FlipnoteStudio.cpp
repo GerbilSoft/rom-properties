@@ -453,9 +453,26 @@ uint32_t FlipnoteStudio::imgpf(ImageType imageType) const
 	ASSERT_imgpf(imageType);
 
 	switch (imageType) {
-		case IMG_INT_IMAGE:
+		case IMG_INT_IMAGE: {
 			// Use nearest-neighbor scaling.
-			return IMGPF_RESCALE_NEAREST;
+			RP_D(FlipnoteStudio);
+			switch (d->animType) {
+				default:
+					assert(!"Unsupported animation type???");
+					break;
+
+				case FlipnoteStudioPrivate::AnimType::PPM:
+					// PPM's thumbnail is stored as a tiled NDS image.
+					return IMGPF_RESCALE_NEAREST;
+
+				case FlipnoteStudioPrivate::AnimType::KWZ:
+					// KWZ's thumbnail is in JPEG format.
+					return IMGPF_RESCALE_NEAREST |
+					       IMGPF_INTERNAL_JPEG_FORMAT;
+			}
+			break;
+		}
+
 		default:
 			break;
 	}
