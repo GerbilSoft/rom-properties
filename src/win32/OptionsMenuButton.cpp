@@ -135,12 +135,9 @@ void OptionsMenuButtonPrivate::reinitMenu(const RomData *romData)
 
 		unsigned int i = IDM_OPTIONS_MENU_BASE;
 		for (const auto &op : ops) {
-			UINT uFlags;
-			if (!(op.flags & RomData::RomOp::ROF_ENABLED)) {
-				uFlags = MF_STRING | MF_DISABLED;
-			} else {
-				uFlags = MF_STRING;
-			}
+			const UINT uFlags = likely(op.flags & RomData::RomOp::ROF_ENABLED)
+				? (MF_STRING)
+				: (MF_STRING | MF_DISABLED);
 			AppendMenu(hMenuOptions, uFlags, i, U82T(op.desc));
 
 			// Next menu item.
@@ -162,12 +159,9 @@ void OptionsMenuButtonPrivate::updateOp(int id, const RomData::RomOp *op)
 	if (id < 0 || !op)
 		return;
 
-	UINT uFlags;
-	if (!(op->flags & RomData::RomOp::ROF_ENABLED)) {
-		uFlags = MF_BYCOMMAND | MF_STRING | MF_DISABLED;
-	} else {
-		uFlags = MF_BYCOMMAND | MF_STRING;
-	}
+	const UINT uFlags = likely(op->flags & RomData::RomOp::ROF_ENABLED)
+		? (MF_BYCOMMAND | MF_STRING)
+		: (MF_BYCOMMAND | MF_STRING | MF_DISABLED);
 
 	const int menuId = id + IDM_OPTIONS_MENU_BASE;
 	ModifyMenu(hMenuOptions, menuId, uFlags, menuId, U82T(op->desc));
