@@ -173,6 +173,12 @@ public:
 	uint32_t getNSFeMetadataStartAddress(void) const;
 
 	/**
+	 * Resize nsfe.tracks to match the track count.
+	 * @return Number of tracks (or 0 if no track count) on success; negative POSIX error code on error.
+	 */
+	int initNSFeTracks(void);
+
+	/**
 	 * Read the NSFe metadata.
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
@@ -257,6 +263,41 @@ uint32_t NSFPrivate::getNSFeMetadataStartAddress(void) const
 }
 
 /**
+ * Resize nsfe.tracks to match the track count.
+ * @return Number of tracks (or 0 if no track count) on success; negative POSIX error code on error.
+ */
+int NSFPrivate::initNSFeTracks(void)
+{
+	if (!nsfe.tracks.empty()) {
+		// nsfe.tracks was already initialized.
+		return static_cast<int>(nsfe.tracks.size());
+	}
+
+	uint8_t track_count = 0;
+
+	switch (audioFormat) {
+		default:
+			assert(!"Invalid NSF audio format.");
+			return -EINVAL;
+
+		case NSFPrivate::AudioFormat::NSF:
+			track_count = header.nsf.track_count;
+			break;
+
+		case NSFPrivate::AudioFormat::NSFe:
+			// 'INFO' chunk must have been loaded before calling this function.
+			assert(nsfe.has.INFO);
+			if (!nsfe.has.INFO) {
+				return -EINVAL;
+			}
+			track_count = nsfe.INFO.song_count;
+	}
+
+	nsfe.tracks.resize(track_count);
+	return static_cast<int>(track_count);
+}
+
+/**
  * Read the NSFe metadata.
  * @return 0 on success; negative POSIX error code on error.
  */
@@ -325,6 +366,70 @@ int NSFPrivate::readNSFeMetadata(void)
 					return err;
 				}
 				nsfe.has.INFO = 1;
+				break;
+			}
+
+			case NSFe_Chunk_tlbl: {
+				// 'tlbl' chunk.
+				int track_count = initNSFeTracks();
+				if (track_count <= 0) {
+					// No tracks...
+					break;
+				}
+
+				// Read the chunk data into a temporary buffer.
+				// NOTE: Limiting to 16,384 bytes.
+				assert(chunk_size > 0);
+				assert(chunk_size <= 16384);
+				if (chunk_size == 0 || chunk_size > 16384) {
+					// Empty chunk, or too big...
+					break;
+				}
+
+				rp::uvector<char> buf;
+				buf.resize(chunk_size);
+				size = file->read(buf.data(), buf.size());
+				if (size != buf.size()) {
+					// Read error.
+					int err = -file->lastError();
+					if (err == 0) {
+						err = -EIO;
+					}
+					return err;
+				}
+
+				// Make sure the strings are NULL-terminated.
+				if (buf.back() != '\0') {
+					buf.push_back('\0');
+				}
+
+				// Should contain track_count strings.
+				// We'll allow up to track_count, ignoring any additional strings.
+				const char *p = buf.data();
+				const char *const p_end = buf.data() + buf.size();
+				for (int i = 0; i < track_count && p < p_end; i++) {
+					auto &track = nsfe.tracks[i];
+
+					size_t remain = p_end - p;
+					const char *const p_nul = static_cast<const char*>(memchr(p, '\0', remain));
+					assert(p_nul != nullptr);
+					if (!p_nul) {
+						// Shouldn't happen...
+						break;
+					}
+
+					if ((p_nul - p) <= 1) {
+						// Empty string.
+						track.name.clear();
+					} else {
+						// Copy the string data.
+						track.name.assign(p, (p_nul - p));
+					}
+
+					// Next string.
+					p = p_nul + 1;
+				}
+				nsfe.has.tlbl = 1;
 				break;
 			}
 
@@ -800,6 +905,65 @@ int NSF::loadFieldData(void)
 		if (nsfe->has.text && likely(!nsfe->text.empty())) {
 			// 'text' chunk is available.
 			d->fields.addField_string(C_("NSF", "Description"), nsfe->text);
+		}
+
+		if (!nsfe->tracks.empty()) {
+			// Track list
+			const char *const s_yes = C_("RomData", "Yes");
+			const char *const s_no = C_("RomData", "No");
+
+			unsigned int track_num = 0;
+			auto *const vv_track_list = new RomFields::ListData_t(nsfe->tracks.size());
+			auto src_iter = nsfe->tracks.cbegin();
+			auto dest_iter = vv_track_list->begin();
+			const auto track_list_end = vv_track_list->end();
+			for ( ; dest_iter != track_list_end; ++src_iter, ++dest_iter, track_num++) {
+				vector<string> &data_row = *dest_iter;
+				data_row.reserve(7);	// 7 fields per row.
+
+				data_row.push_back(fmt::format_int(track_num).str());
+				data_row.push_back(fmt::format_int(src_iter->order).str());
+				data_row.push_back(src_iter->is_sfx ? s_yes : s_no);
+				data_row.push_back(src_iter->name);
+				data_row.push_back(src_iter->author);
+
+				// Format duration as m:ss.ddd.
+				// TODO: Separate function?
+				{
+					const uint32_t duration = src_iter->duration;
+					const uint32_t min = (duration / 1000) / 60;
+					const uint32_t sec = (duration / 1000) % 60;
+					const uint32_t ms =  (duration % 1000);
+					data_row.push_back(fmt::format(FSTR("{:d}:{:0>2d}.{:0>3d}"), min, sec, ms));
+				}
+
+				// Format fade as m:ss.ddd.
+				// TODO: Separate function?
+				{
+					const uint32_t duration = src_iter->fade;
+					const uint32_t min = (duration / 1000) / 60;
+					const uint32_t sec = (duration / 1000) % 60;
+					const uint32_t ms =  (duration % 1000);
+					data_row.push_back(fmt::format(FSTR("{:d}:{:0>2d}.{:0>3d}"), min, sec, ms));
+				}
+			}
+
+			static const array<const char*, 7> track_list_headers = {{
+				NOP_C_("NSF|TrackList", "#"),
+				NOP_C_("NSF|TrackList", "Order"),
+				NOP_C_("NSF|TrackList", "Is SFX"),
+				NOP_C_("NSF|TrackList", "Name"),
+				NOP_C_("NSF|TrackList", "Author"),
+				NOP_C_("NSF|TrackList", "Duration"),
+				NOP_C_("NSF|TrackList", "Fade"),
+			}};
+			vector<string> *const v_track_list_headers = RomFields::strArrayToVector_i18n(
+				"NSF|TrackList", track_list_headers);
+
+			RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
+			params.headers = v_track_list_headers;
+			params.data.single = vv_track_list;
+			d->fields.addField_listData(C_("NSF", "Track List"), &params);
 		}
 	}
 
