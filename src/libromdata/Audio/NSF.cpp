@@ -10,6 +10,7 @@
 #include "RomData_p.hpp"
 
 #include "nsf_structs.h"
+#include "nsfe_structs.h"
 
 // Other rom-properties libraries
 using namespace LibRpBase;
@@ -35,14 +36,29 @@ public:
 
 public:
 	/** RomDataInfo **/
-	static const array<const char*, 1+1> exts;
-	static const array<const char*, 1+1> mimeTypes;
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 2+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
+
+public:
+	// Audio format
+	enum class AudioFormat {
+		Unknown = -1,
+
+		NSF	= 0,	// NSF or NSF2
+		NSFe	= 1,	// NSFe
+
+		Max
+	};
+	AudioFormat audioFormat;
 
 public:
 	// NSF header
 	// NOTE: **NOT** byteswapped in memory.
-	NSF_Header nsfHeader;
+	union {
+		NSF_Header nsf;		// NSF/NSF2 header
+		NSFe_Header nsfe;	// NSFe header (just a magic number)
+	} header;
 };
 
 ROMDATA_IMPL(NSF)
@@ -50,14 +66,17 @@ ROMDATA_IMPL(NSF)
 /** NSFPrivate **/
 
 /* RomDataInfo */
-const array<const char*, 1+1> NSFPrivate::exts = {{
-	".nsf",
+const array<const char*, 2+1> NSFPrivate::exts = {{
+	".nsf",		// Common file extension
+	".nsfe",	// Sometimes used for NSFe
 
 	nullptr
 }};
-const array<const char*, 1+1> NSFPrivate::mimeTypes = {{
+const array<const char*, 2+1> NSFPrivate::mimeTypes = {{
 	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
 	"audio/x-nsf",
+	"audio/x-nsfe",
 
 	nullptr
 }};
@@ -69,7 +88,7 @@ NSFPrivate::NSFPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the NSF header struct.
-	memset(&nsfHeader, 0, sizeof(nsfHeader));
+	memset(&header, 0, sizeof(header));
 }
 
 /** NSF **/
@@ -91,7 +110,6 @@ NSF::NSF(const IRpFilePtr &file)
 	: super(new NSFPrivate(file))
 {
 	RP_D(NSF);
-	d->mimeType = "audio/x-nsf";	// unofficial
 	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
@@ -101,27 +119,46 @@ NSF::NSF(const IRpFilePtr &file)
 
 	// Read the NSF header.
 	d->file->rewind();
-	size_t size = d->file->read(&d->nsfHeader, sizeof(d->nsfHeader));
-	if (size != sizeof(d->nsfHeader)) {
+	size_t size = d->file->read(&d->header, sizeof(d->header));
+	if (size != sizeof(d->header)) {
 		d->file.reset();
 		return;
 	}
 
 	// Check if this file is supported.
 	const DetectInfo info = {
-		{0, sizeof(d->nsfHeader), reinterpret_cast<const uint8_t*>(&d->nsfHeader)},
+		{0, sizeof(d->header), reinterpret_cast<const uint8_t*>(&d->header)},
 		nullptr,	// ext (not needed for NSF)
 		0		// szFile (not needed for NSF)
 	};
-	d->isValid = (isRomSupported_static(&info) >= 0);
+	d->audioFormat = static_cast<NSFPrivate::AudioFormat>(isRomSupported_static(&info));
+	d->isValid = (static_cast<int>(d->audioFormat) >= 0);
 
 	if (!d->isValid) {
 		d->file.reset();
 		return;
 	}
 
-	// Is PAL?
-	d->isPAL = (d->nsfHeader.tv_system == NSF_TV_PAL);
+	switch (d->audioFormat) {
+		default:
+			assert(!"Invalid NSF audio format.");
+			d->isValid = false;
+			d->file.reset();
+			break;
+		case NSFPrivate::AudioFormat::NSF:
+			d->mimeType = "audio/x-nsf";	// unofficial
+			break;
+		case NSFPrivate::AudioFormat::NSFe:
+			d->mimeType = "audio/x-nsfe";	// unofficial
+			break;
+	}
+
+	// TODO: Read chunks for NSFe/NSF2, up to the 'DATA' chunk.
+
+	// Is PAL? (TODO: NSFe)
+	if (d->audioFormat == NSFPrivate::AudioFormat::NSF) {
+		d->isPAL = (d->header.nsf.tv_system == NSF_TV_PAL);
+	}
 }
 
 /**
@@ -140,24 +177,32 @@ int NSF::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(NSFPrivate::AudioFormat::Unknown);
 	}
 
 	const NSF_Header *const nsfHeader =
 		reinterpret_cast<const NSF_Header*>(info->header.pData);
 
-	// Check the NSF magic number.
+	// Check for the NSF magic number.
 	if (!memcmp(nsfHeader->magic, NSF_MAGIC, sizeof(nsfHeader->magic))) {
 		// Found the NSF magic number.
 		// Version number must be either 1 or 2.
 		if (nsfHeader->version == 1 || nsfHeader->version == 2) {
 			// Valid version number.
-			return 0;
+			return static_cast<int>(NSFPrivate::AudioFormat::NSF);
 		}
 	}
 
+	// Check for the NSFe magic number.
+	const NSFe_Header *const nsfeHeader =
+		reinterpret_cast<const NSFe_Header*>(info->header.pData);
+	if (nsfeHeader->magic == cpu_to_be32(NSFe_MAGIC)) {
+		// It's an NSFe file.
+		return static_cast<int>(NSFPrivate::AudioFormat::NSFe);
+	}
+
 	// Not supported.
-	return -1;
+	return static_cast<int>(NSFPrivate::AudioFormat::Unknown);
 }
 
 /**
@@ -204,93 +249,113 @@ int NSF::loadFieldData(void)
 		return -EIO;
 	}
 
-	// NSF header
-	const NSF_Header *const nsfHeader = &d->nsfHeader;
-	d->fields.reserve(11);	// Maximum of 11 fields.
+	d->fields.reserve(12);	// Maximum of 12 fields.
 
-	// NOTE: The NSF specification says ASCII, but I'm assuming
-	// the text is cp1252 and/or Shift-JIS.
-
-	// Title
-	if (nsfHeader->title[0] != 0) {
-		d->fields.addField_string(C_("RomData|Audio", "Title"),
-			cp1252_sjis_to_utf8(nsfHeader->title, sizeof(nsfHeader->title)));
+	// NSF version
+	string s_nsfVersion;
+	switch (d->audioFormat) {
+		default:
+			assert(!"Invalid NSF audio format.");
+			break;
+		case NSFPrivate::AudioFormat::NSF:
+			fmt::format_to(std::back_inserter(s_nsfVersion), FSTR("NSF{:d}"), d->header.nsf.version);
+			break;
+		case NSFPrivate::AudioFormat::NSFe:
+			s_nsfVersion = "NSFe";
+			break;
 	}
+	d->fields.addField_string(C_("NSF", "NSF Version"),
+		(likely(!s_nsfVersion.empty())) ? s_nsfVersion.c_str() : C_("RomData", "Unknown"));
 
-	// Composer
-	if (nsfHeader->composer[0] != 0) {
-		d->fields.addField_string(C_("RomData|Audio", "Composer"),
-			cp1252_sjis_to_utf8(nsfHeader->composer, sizeof(nsfHeader->composer)));
-	}
+	if (d->audioFormat == NSFPrivate::AudioFormat::NSF) {
+		// NSF header
+		// TODO: Override NSF2 fields with NSFe metadata, if present?
+		const NSF_Header *const nsfHeader = &d->header.nsf;
 
-	// Copyright
-	if (nsfHeader->copyright[0] != 0) {
-		d->fields.addField_string(C_("RomData", "Copyright"),
-			cp1252_sjis_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
-	}
+		// NOTE: The NSF specification says ASCII, but I'm assuming
+		// the text is cp1252 and/or Shift-JIS.
 
-	// Number of tracks
-	d->fields.addField_string_numeric(C_("RomData|Audio", "Track Count"),
-		nsfHeader->track_count);
+		// Title
+		if (nsfHeader->title[0] != 0) {
+			d->fields.addField_string(C_("RomData|Audio", "Title"),
+				cp1252_sjis_to_utf8(nsfHeader->title, sizeof(nsfHeader->title)));
+		}
 
-	// Default track number
-	d->fields.addField_string_numeric(C_("RomData|Audio", "Default Track #"),
-		nsfHeader->default_track);
+		// Composer
+		if (nsfHeader->composer[0] != 0) {
+			d->fields.addField_string(C_("RomData|Audio", "Composer"),
+				cp1252_sjis_to_utf8(nsfHeader->composer, sizeof(nsfHeader->composer)));
+		}
 
-	// Load address
-	d->fields.addField_string_numeric(C_("RomData|Audio", "Load Address"),
-		le16_to_cpu(nsfHeader->load_address),
-		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
+		// Copyright
+		if (nsfHeader->copyright[0] != 0) {
+			d->fields.addField_string(C_("RomData", "Copyright"),
+				cp1252_sjis_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
+		}
 
-	// Init address
-	d->fields.addField_string_numeric(C_("RomData|Audio", "Init Address"),
-		le16_to_cpu(nsfHeader->init_address),
-		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
+		// Number of tracks
+		d->fields.addField_string_numeric(C_("RomData|Audio", "Track Count"),
+			nsfHeader->track_count);
 
-	// Play address
-	d->fields.addField_string_numeric(C_("RomData|Audio", "Play Address"),
-		le16_to_cpu(nsfHeader->play_address),
-		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
+		// Default track number
+		d->fields.addField_string_numeric(C_("RomData|Audio", "Default Track #"),
+			nsfHeader->default_track);
 
-	// TV System
-	// TODO: NTSC/PAL framerates?
-	// NOTE: NSF uses an enum, not a bitfield.
-	static const array<const char*, 2> tv_system_bitfield_names = {{
-		"NTSC", "PAL",
-	}};
-	uint32_t bfval = nsfHeader->tv_system;
-	if (bfval < NSF_TV_MAX) {
-		bfval++;
-	} else {
-		bfval = 0;
-	}
-	vector<string> *const v_tv_system_bitfield_names = RomFields::strArrayToVector(tv_system_bitfield_names);
-	d->fields.addField_bitfield(C_("NSF", "TV System"),
-		v_tv_system_bitfield_names, 0, bfval);
+		// Load address
+		d->fields.addField_string_numeric(C_("RomData|Audio", "Load Address"),
+			le16_to_cpu(nsfHeader->load_address),
+			RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
-	// Expansion audio
-	static const array<const char*, 6> expansion_bitfield_names = {{
-		"Konami VRC6", "Konami VRC7", "2C33 (FDS)",
-		"MMC5", "Namco N163", "Sunsoft 5B",
-	}};
-	vector<string> *const v_expansion_bitfield_names = RomFields::strArrayToVector(expansion_bitfield_names);
-	d->fields.addField_bitfield(C_("NSF", "Expansion"),
-		v_expansion_bitfield_names, 3, nsfHeader->expansion_audio);
+		// Init address
+		d->fields.addField_string_numeric(C_("RomData|Audio", "Init Address"),
+			le16_to_cpu(nsfHeader->init_address),
+			RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
-	if (nsfHeader->version >= 2) {
-		// NSF2 feature flags
-		static const array<const char*, 4> nsf2_feature_flags_names = {{
-			"IRQ support", "Non-returning INIT",
-			"No PLAY subroutine", "NSFe has mandatory chunk",
+		// Play address
+		d->fields.addField_string_numeric(C_("RomData|Audio", "Play Address"),
+			le16_to_cpu(nsfHeader->play_address),
+			RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
+
+		// TV System
+		// TODO: NTSC/PAL framerates?
+		// NOTE: NSF uses an enum, not a bitfield.
+		static const array<const char*, 2> tv_system_bitfield_names = {{
+			"NTSC", "PAL",
 		}};
+		uint32_t bfval = nsfHeader->tv_system;
+		if (bfval < NSF_TV_MAX) {
+			bfval++;
+		} else {
+			bfval = 0;
+		}
+		vector<string> *const v_tv_system_bitfield_names = RomFields::strArrayToVector(tv_system_bitfield_names);
+		d->fields.addField_bitfield(C_("NSF", "TV System"),
+			v_tv_system_bitfield_names, 0, bfval);
 
-		// Bits 0-3 are reserved. Adjust the flags to match the names.
-		const uint32_t adjflags = (nsfHeader->nsf2_feature_flags) >> 4;
-		vector<string> *const v_nsf2_feature_flags_names = RomFields::strArrayToVector(nsf2_feature_flags_names);
-		d->fields.addField_bitfield(C_("NSF", "NSF2 Feature Flags"),
-			v_nsf2_feature_flags_names, 2, adjflags);
+		// Expansion audio
+		static const array<const char*, 6> expansion_bitfield_names = {{
+			"Konami VRC6", "Konami VRC7", "2C33 (FDS)",
+			"MMC5", "Namco N163", "Sunsoft 5B",
+		}};
+		vector<string> *const v_expansion_bitfield_names = RomFields::strArrayToVector(expansion_bitfield_names);
+		d->fields.addField_bitfield(C_("NSF", "Expansion"),
+			v_expansion_bitfield_names, 3, nsfHeader->expansion_audio);
 
-		// TODO: NSFe metadata.
+		if (nsfHeader->version >= 2) {
+			// NSF2 feature flags
+			static const array<const char*, 4> nsf2_feature_flags_names = {{
+				"IRQ support", "Non-returning INIT",
+				"No PLAY subroutine", "NSFe has mandatory chunk",
+			}};
+
+			// Bits 0-3 are reserved. Adjust the flags to match the names.
+			const uint32_t adjflags = (nsfHeader->nsf2_feature_flags) >> 4;
+			vector<string> *const v_nsf2_feature_flags_names = RomFields::strArrayToVector(nsf2_feature_flags_names);
+			d->fields.addField_bitfield(C_("NSF", "NSF2 Feature Flags"),
+				v_nsf2_feature_flags_names, 2, adjflags);
+
+			// TODO: NSFe metadata.
+		}
 	}
 
 	// Finished reading the field data.
@@ -316,29 +381,30 @@ int NSF::loadMetaData(void)
 		return -EIO;
 	}
 
-	// NSF header
-	const NSF_Header *const nsfHeader = &d->nsfHeader;
-	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
+	if (d->audioFormat == NSFPrivate::AudioFormat::NSF) {
+		// NSF header
+		// TODO: Override NSF2 fields with NSFe metadata, if present?
+		const NSF_Header *const nsfHeader = &d->header.nsf;
+		d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
-	// Title
-	if (nsfHeader->title[0] != 0) {
-		d->metaData.addMetaData_string(Property::Title,
-			cp1252_sjis_to_utf8(nsfHeader->title, sizeof(nsfHeader->title)));
+		// Title
+		if (nsfHeader->title[0] != 0) {
+			d->metaData.addMetaData_string(Property::Title,
+				cp1252_sjis_to_utf8(nsfHeader->title, sizeof(nsfHeader->title)));
+		}
+
+		// Composer
+		if (nsfHeader->composer[0] != 0) {
+			d->metaData.addMetaData_string(Property::Composer,
+				cp1252_sjis_to_utf8(nsfHeader->composer, sizeof(nsfHeader->composer)));
+		}
+
+		// Copyright
+		if (nsfHeader->copyright[0] != 0) {
+			d->metaData.addMetaData_string(Property::Copyright,
+				cp1252_sjis_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
+		}
 	}
-
-	// Composer
-	if (nsfHeader->composer[0] != 0) {
-		d->metaData.addMetaData_string(Property::Composer,
-			cp1252_sjis_to_utf8(nsfHeader->composer, sizeof(nsfHeader->composer)));
-	}
-
-	// Copyright
-	if (nsfHeader->copyright[0] != 0) {
-		d->metaData.addMetaData_string(Property::Copyright,
-			cp1252_sjis_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
-	}
-
-	// TODO: NSFe metadata?
 
 	// Finished reading the metadata.
 	return d->metaData.count();

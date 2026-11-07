@@ -156,7 +156,7 @@
     <expanded-acronym>Nintendo Sound Format Extended</expanded-acronym>
     <generic-icon name="audio-x-generic"/>
     <glob pattern="*.nsfe"/>
-    <magic priority="50">
+    <magic priority="90">
       <match value="NSFE" type="string" offset="0"/>
     </magic>
   </mime-type>

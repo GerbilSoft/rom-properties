@@ -320,7 +320,7 @@ static const array<RomDataFns, XML_MAGIC_COUNT+ZARCHIVE_MAGIC_COUNT+40> romDataF
 	GetRomDataFns_magic1(BRSTM, ATTR_HAS_METADATA, 0, 'RSTM'),
 	GetRomDataFns_magic2(GBS, ATTR_HAS_METADATA, 0, 0x47425301U, 'GBRF'),	// 'GBS\x01', 'GBRF'
 	GetRomDataFns_magic2(KSS, 0, 0, 'KSCC', 'KSSX'),
-	GetRomDataFns_magic1(NSF, ATTR_HAS_METADATA, 0, 'NESM'),
+	GetRomDataFns_magic2(NSF, ATTR_HAS_METADATA, 0, 'NESM', 'NSFE'),
 	GetRomDataFns_magic2(S98, ATTR_HAS_METADATA, 0, 'S983', 'S982'),
 	GetRomDataFns_magic2(S98, ATTR_HAS_METADATA, 0, 'S981', 'S980'),
 	GetRomDataFns_magic1(SPC, ATTR_HAS_METADATA, 0, 'SNES'),

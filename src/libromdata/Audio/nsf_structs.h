@@ -35,14 +35,14 @@ typedef struct _NSF_Header {
 	uint16_t load_address;		// [0x008] Load address (must be $8000-$FFFF)
 	uint16_t init_address;		// [0x00A] Init address (must be $8000-$FFFF)
 	uint16_t play_address;		// [0x00C] Play address (must be $8000-$FFFF)
-	char title[32];			// [0x00E] Title. (ASCII, NULL-terminated)
-	char composer[32];		// [0x02E] Composer. (ASCII, NULL-terminated)
-	char copyright[32];		// [0x04E] Copyright. (ASCII, NULL-terminated)
-	uint16_t ntsc_framerate;	// [0x06E] NTSC framerate, in microseconds.
+	char title[32];			// [0x00E] Title (ASCII, NULL-terminated)
+	char composer[32];		// [0x02E] Composer (ASCII, NULL-terminated)
+	char copyright[32];		// [0x04E] Copyright (ASCII, NULL-terminated)
+	uint16_t rate_ntsc;		// [0x06E] NTSC playback rate, in microseconds.
 					//         (not always in use)
 	uint8_t bankswitching[8];	// [0x070] If non-zero, initial bank setting for
 					//         $8xxx, $9xxx, etc.
-	uint16_t pal_framerate;		// [0x078] PAL framerate, in microseconds.
+	uint16_t rate_pal;		// [0x078] PAL playback rate, in microseconds.
 					//         (not always in use)
 	uint8_t tv_system;		// [0x07A] TV system (See NSF_TV_System_e)
 	uint8_t expansion_audio;	// [0x07B] Expansion audio (See NSF_Expansion_e)
