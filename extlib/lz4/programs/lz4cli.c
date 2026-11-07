@@ -227,7 +227,8 @@ static int usage_longhelp(const char* exeName)
     DISPLAY( "\n");
     DISPLAY( "Compression levels : \n");
     DISPLAY( "---------------------\n");
-    DISPLAY( "-0  => Default level, identical to -%u \n", LZ4_CLEVEL_DEFAULT);
+    // rom-properties: Cast to unsigned int to match the format string.
+    DISPLAY( "-0  => Default level, identical to -%u \n", (unsigned int)LZ4_CLEVEL_DEFAULT);
     DISPLAY( "-1  => Fast compression \n");
     DISPLAY( "-2 .. -%d => High compression; higher number == more compression but slower\n", LZ4HC_CLEVEL_MAX);
     DISPLAY( "--best    => Highest available compression level (-%d) \n", LZ4HC_CLEVEL_MAX);

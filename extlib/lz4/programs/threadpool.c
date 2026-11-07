@@ -28,6 +28,9 @@
 #include "lz4conf.h"  /* LZ4IO_MULTITHREAD */
 #include "threadpool.h"
 
+// rom-properties: Needed for the MSVC build.
+#include <stdlib.h>
+
 
 /* ======   Compiler specifics   ====== */
 #if defined(_MSC_VER)
