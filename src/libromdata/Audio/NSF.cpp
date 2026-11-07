@@ -118,10 +118,15 @@ public:
 			rp::uvector<char> strtbl;
 
 			// Pointers into strtbl.
-			const char *game_title;
-			const char *artist;
-			const char *copyright;
-			const char *ripper;
+			union {
+				struct {
+					const char *game_title;
+					const char *artist;
+					const char *copyright;
+					const char *ripper;
+				};
+				const char *str[4];
+			};
 		};
 		auth_t auth;
 
@@ -307,11 +312,69 @@ int NSFPrivate::readNSFeMetadata(void)
 				done = true;
 				break;
 
+			case NSFe_Chunk_auth: {
+				// 'auth' chunk. Read the chunk data into nsfe.auth.strtbl.
+				// NOTE: Limiting to 16,384 bytes.
+				assert(chunk_size > 0);
+				assert(chunk_size <= 16384);
+				if (chunk_size == 0 || chunk_size > 16384) {
+					// Empty chunk, or too big...
+					skip = true;
+					break;
+				}
+
+				rp::uvector<char> &strtbl = nsfe.auth.strtbl;
+				strtbl.resize(chunk_size);
+				size = file->read(const_cast<char*>(strtbl.data()), chunk_size);
+				if (size != chunk_size) {
+					// Read error.
+					strtbl.clear();
+					int err = -file->lastError();
+					if (err == 0) {
+						err = -EIO;
+					}
+					return err;
+				}
+
+				// Make sure the strings are NULL-terminated.
+				if (strtbl.back() != '\0') {
+					strtbl.push_back('\0');
+				}
+
+				// Should contain 4 strings.
+				// We'll allow up to 4, ignoring any additional strings.
+				const char *p = nsfe.auth.strtbl.data();
+				const char *const p_end = nsfe.auth.strtbl.data() + nsfe.auth.strtbl.size();
+				for (size_t i = 0; i < ARRAY_SIZE(nsfe.auth.str) && p < p_end; i++) {
+					size_t remain = p_end - p;
+					const char *const p_nul = static_cast<const char*>(memchr(p, '\0', remain));
+					assert(p_nul != nullptr);
+					if (!p_nul) {
+						// Shouldn't happen...
+						break;
+					}
+
+					if ((p_nul - p) <= 1) {
+						// Empty string.
+						nsfe.auth.str[i] = nullptr;
+					} else {
+						// Set the string pointer.
+						nsfe.auth.str[i] = p;
+					}
+
+					// Next string.
+					p = p_nul + 1;
+				}
+				nsfe.has.auth = 1;
+				break;
+			}
+
 			case NSFe_Chunk_text: {
 				// 'text' chunk. Read the chunk data into nsfe.text.
 				// NOTE: Limiting to 16,384 bytes.
+				assert(chunk_size > 0);
 				assert(chunk_size <= 16384);
-				if (chunk_size > 16384) {
+				if (chunk_size == 0 || chunk_size > 16384) {
 					// Too big...
 					skip = true;
 					break;
@@ -526,7 +589,11 @@ int NSF::loadFieldData(void)
 		return -EIO;
 	}
 
-	d->fields.reserve(12);	// Maximum of 12 fields.
+	// Field count:
+	// - NSF Version: 1
+	// - NSF1/NSF2: 10
+	// - NSFe: 5
+	d->fields.reserve(1+10+5);
 
 	// NSF version
 	string s_nsfVersion;
@@ -644,6 +711,30 @@ int NSF::loadFieldData(void)
 		}
 
 		const auto *nsfe = &d->nsfe;
+
+		if (nsfe->has.auth) {
+			// 'auth' chunk is available.
+
+			// Title
+			if (nsfe->auth.game_title) {
+				d->fields.addField_string(C_("RomData|Audio", "Title"), nsfe->auth.game_title);
+			}
+
+			// Artist
+			if (nsfe->auth.artist) {
+				d->fields.addField_string(C_("RomData|Audio", "Composer"), nsfe->auth.artist);
+			}
+
+			// Copyright
+			if (nsfe->auth.copyright) {
+				d->fields.addField_string(C_("RomData", "Copyright"), nsfe->auth.copyright);
+			}
+
+			// Ripper
+			if (nsfe->auth.ripper) {
+				d->fields.addField_string(C_("RomData|Audio", "Ripper"), nsfe->auth.ripper);
+			}
+		}
 
 		if (nsfe->has.text && likely(!nsfe->text.empty())) {
 			// 'text' chunk is available.
