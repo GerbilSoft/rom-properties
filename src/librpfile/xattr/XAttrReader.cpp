@@ -12,6 +12,10 @@
 // C includes (C++ namespace)
 #include <cassert>
 
+// C++ STL classes
+#include <array>
+using std::array;
+
 // XAttrReader isn't used by libromdata directly,
 // so use some linker hax to force linkage.
 extern "C" {
@@ -54,21 +58,25 @@ int XAttrReader::lastError(void) const
  */
 const char *XAttrReader::zAlgorithmToString(ZAlgorithm zAlgorithm)
 {
-	static const char *const zAlgorithm_tbl[] = {
-		nullptr,
+	static const char zAlgorithm_strtbl[] =
+		"\0"		// 0
 
 		// NTFS-specific compression
-		"LZNT1",
-		"XPRESS4K",
-		"LZX",
-		"XPRESS8K",
-		"XPRESS16K",
+		"LZNT1\0"	// 1
+		"XPRESS4K\0"	// 7
+		"LZX\0"		// 16
+		"XPRESS8K\0"	// 20
+		"XPRESS16K\0"	// 29
 
 		// btrfs compression algorithms
-		"zlib",
-		"lzo",
-		"zstd",
-	};
+		"zlib\0"	// 39
+		"lzo\0"		// 44
+		"zstd\0";	// 48
+	static const array<uint8_t, 9> zAlgorithm_offtbl = {{
+		0,
+		1, 7, 16, 20, 29,
+		39, 44, 48
+	}};
 
 	assert(zAlgorithm >= ZAlgorithm::None);
 	assert(zAlgorithm < ZAlgorithm::Max);
@@ -76,7 +84,8 @@ const char *XAttrReader::zAlgorithmToString(ZAlgorithm zAlgorithm)
 		return nullptr;
 	}
 
-	return zAlgorithm_tbl[static_cast<int>(zAlgorithm)];
+	const uint8_t offset = zAlgorithm_offtbl[static_cast<int>(zAlgorithm)];
+	return &zAlgorithm_strtbl[offset];
 }
 
 /**

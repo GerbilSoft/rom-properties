@@ -428,25 +428,31 @@ const char *PlayStationTIM::pixelFormat(void) const
 	// Using a simple string lookup table.
 	// NOTE: Bit 2 isn't used, so splitting this into two tables
 	// to avoid having 8 nullptr entries.
-	static const char *const tim_format_tbl_noCLUT[] = {
-		"CI4 (no CLUT)",
-		"CI8 (no CLUT)",
-		"BGR555_PS1",
-		"BGR888",
-	};
+	static const char tim_format_tbl_noCLUT_strtbl[] =
+		"CI4 (no CLUT)\0"	// 0
+		"CI8 (no CLUT)\0"	// 14
+		"BGR555_PS1\0"		// 28
+		"BGR888\0";		// 39
+	static const array<uint8_t, 4> tim_format_tbl_noCLUT_offtbl = {{
+		0, 14, 28, 39
+	}};
 
-	static const char *const tim_format_tbl_CLUT[] = {
-		"CI4",
-		"CI8",
-		nullptr,
-		nullptr,
-	};
+	static const char tim_format_tbl_CLUT_strtbl[] =
+		"CI4\0"		// 0
+		"CI8\0"		// 4
+		"\0";		// 8
+	static const array<uint8_t, 4> tim_format_tbl_CLUT_offtbl = {{
+		0, 4, 8, 8
+	}};
 
 	// TODO: Invalid pixel format for 15-bit/24-bit with CLUT?
+	const uint8_t idx = (d->timHeader.flags & PS1_TIM_FLAG_BPP_MASK);
 	if (d->timHeader.flags & PS1_TIM_FLAG_CLP) {
-		return tim_format_tbl_CLUT[d->timHeader.flags & PS1_TIM_FLAG_BPP_MASK];
+		const uint8_t offset = tim_format_tbl_CLUT_offtbl[idx];
+		return &tim_format_tbl_CLUT_strtbl[offset];
 	} else {
-		return tim_format_tbl_noCLUT[d->timHeader.flags & PS1_TIM_FLAG_BPP_MASK];
+		const uint8_t offset = tim_format_tbl_noCLUT_offtbl[idx];
+		return &tim_format_tbl_noCLUT_strtbl[offset];
 	}
 }
 
