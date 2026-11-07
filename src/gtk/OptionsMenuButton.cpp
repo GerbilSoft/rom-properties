@@ -701,7 +701,7 @@ rp_options_menu_button_update_op(RpOptionsMenuButton *widget,
 	gchar *const desc = rpGtk_convert_accel_to_gtk(op->desc);
 	g_simple_action_set_enabled(action, !!(op->flags & RomData::RomOp::ROF_ENABLED));
 	g_menu_insert(widget->menuRomOps, id, desc,
-		fmt::format(FSTR("{:p}.{:d}"), static_cast<void*>(widget), id).c_str());
+		fmt::format(FSTR("rp-OptionsMenuButton-{:p}.{:d}"), static_cast<void*>(widget), id).c_str());
 	g_free(desc);
 #else /* !USE_G_MENU_MODEL */
 	GtkMenuItem *menuItem = nullptr;

@@ -77,6 +77,10 @@
   * CisoPspReader: Fix reading all formats on big-endian systems.
     * This bug has been present since CisoPspReader was added in v1.7.
     * Affects: v1.7 - v2.9
+  * GTK: Fix a bug where, when using the new-style GTK popup menus, selecting
+    an operation like "Trim ROM" for Nintendo DS resulted in the updated
+    "Untrim ROM" option being disabled.
+    * Affects: v2.5 - v2.9
 
 * Other changes:
   * 64-bit time_t (using the rp_time_t typedef) is now used regardless of
