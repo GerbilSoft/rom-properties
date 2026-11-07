@@ -57,7 +57,7 @@ public:
 public:
 	IRpFilePtr file;	// File pointer
 
-	static constexpr size_t ZLIB_BUFFER_SIZE = 16384U;
+#define ZLIB_BUFFER_SIZE 16384U
 
 	// zlib/gzip variables
 	off64_t gzsz;				// Uncompressed file size
