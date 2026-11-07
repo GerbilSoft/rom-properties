@@ -22,6 +22,9 @@ using std::array;
 using std::string;
 using std::vector;
 
+// Uninitialized vector class
+#include "uvector.h"
+
 namespace LibRomData {
 
 class NSFPrivate final : public RomDataPrivate
@@ -59,6 +62,116 @@ public:
 		NSF_Header nsf;		// NSF/NSF2 header
 		NSFe_Header nsfe;	// NSFe header (just a magic number)
 	} header;
+
+	// NSFe metadata
+	// NOTE: All strings are encoded in UTF-8 in the original file.
+	struct {
+		// NOTE: The following chunks may NOT be present in an NSF2 file:
+		// 'INFO', 'DATA', 'BANK', 'NSF2'
+		// These chunks will be indicated with [E].
+
+		// Bitfield indicating which chunks are present.
+		union {
+			struct {
+				uint16_t INFO : 1;	// [E]
+				uint16_t BANK : 1;	// [E]
+				uint16_t RATE : 1;
+				uint16_t NSF2 : 1;	// [E]
+				uint16_t VRC7 : 1;
+				uint16_t regn : 1;
+
+				// Text chunks
+				uint16_t auth : 1;
+				uint16_t text : 1;
+
+				// Track list chunks
+				uint16_t plst : 1;
+				uint16_t psfx : 1;
+				uint16_t time : 1;
+				uint16_t fade : 1;
+				uint16_t tlbl : 1;
+				uint16_t taut : 1;
+
+				// Per-device chunks
+				uint16_t mixe : 1;
+			};
+			uint16_t u16;
+		} has;
+
+		NSFe_INFO_t INFO;	// [E]
+		NSFe_BANK_t BANK;	// [E]
+		NSFe_RATE_t RATE;
+		NSFe_NSF2_t NSF2;	// [E]
+		NSFe_VRC7_t VRC7;
+		NSFe_regn_t regn;
+
+		// 'auth' chunk
+		struct auth_t {
+			explicit auth_t()
+				: game_title(nullptr)
+				, artist(nullptr)
+				, copyright(nullptr)
+				, ripper(nullptr)
+			{}
+
+			// Table containing the four NULL-terminated strings.
+			rp::uvector<char> strtbl;
+
+			// Pointers into strtbl.
+			const char *game_title;
+			const char *artist;
+			const char *copyright;
+			const char *ripper;
+		};
+		auth_t auth;
+
+		// 'text' chunk
+		string text;
+
+		// Track struct
+		// Contains information from the following chunks:
+		// 'plst', 'psfx', 'time', 'fade', 'tlbl', 'taut'
+		struct track_t {
+			explicit track_t()
+				: order(0)
+				, is_sfx(false)
+				, duration(0)
+				, fade(0)
+			{}
+
+			explicit track_t(uint8_t index)
+				: order(index)
+				, is_sfx(false)
+				, duration(0)
+				, fade(0)
+			{}
+
+			uint8_t order;		// 'plst': playback order (if 'plst' is not set, this is set to the track index)
+			bool is_sfx;		// 'psfx': true if this is a "sound effect" instead of music
+			uint32_t duration;	// 'time': track duration, in milliseconds
+			uint32_t fade;		// 'fade': fadeout duration, in milliseconds (default is 0)
+
+			string name;		// 'tlbl': Track name (label)
+			string author;		// 'taut': Track author
+		};
+		vector<track_t> tracks;
+	} nsfe;
+
+public:
+	/**
+	 * Get the NSFe metadata start address.
+	 * If NSF1, this is invalid and returns 0.
+	 * If NSF2, converts nsf2_prg_size from 24-bit to uint32_t.
+	 * If NSFe, returns the beginning of the file, right after the "NSFE" magic number.
+	 * @return NSFe metadata start address, or 0 on error.
+	 */
+	uint32_t getNSFeMetadataStartAddress(void) const;
+
+	/**
+	 * Read the NSFe metadata.
+	 * @return 0 on success; non-zero on error.
+	 */
+	int readNSFeMetadata(void);
 };
 
 ROMDATA_IMPL(NSF)
@@ -89,6 +202,159 @@ NSFPrivate::NSFPrivate(const IRpFilePtr &file)
 {
 	// Clear the NSF header struct.
 	memset(&header, 0, sizeof(header));
+
+	// Initialize the NSFe chunk struct.
+	nsfe.has.u16 = 0;
+}
+
+/**
+ * Get the NSFe metadata start address.
+ * If NSF1, this is invalid and returns 0.
+ * If NSF2, converts nsf2_prg_size from 24-bit to uint32_t.
+ * If NSFe, returns the beginning of the file, right after the "NSFE" magic number.
+ * @return NSFe metadata start address, or 0 on error.
+ */
+uint32_t NSFPrivate::getNSFeMetadataStartAddress(void) const
+{
+	uint32_t ret = 0;
+
+	switch (audioFormat) {
+		default:
+			assert(!"Invalid NSF audio format.");
+			break;
+
+		case NSFPrivate::AudioFormat::NSF: {
+			const NSF_Header *const nsfHeader = &header.nsf;
+			assert(nsfHeader->version == 2);
+			if (nsfHeader->version != 2) {
+				break;
+			}
+
+			ret = (nsfHeader->nsf2_prg_size[2] << 16) |
+			      (nsfHeader->nsf2_prg_size[1] <<  8) |
+			       nsfHeader->nsf2_prg_size[0];
+			if (ret != 0) {
+				// Non-zero value indicates the metadata is present.
+				// The value actually contains the program data length,
+				// so add the NSF header size to get the start of the
+				// metadata section.
+				ret += static_cast<unsigned int>(sizeof(NSF_Header));
+			}
+			break;
+		}
+
+		case NSFPrivate::AudioFormat::NSFe:
+			ret = static_cast<unsigned int>(sizeof(NSFe_Header));
+			break;
+	}
+
+	return ret;
+}
+
+/**
+ * Read the NSFe metadata.
+ * @return 0 on success; non-zero on error.
+ */
+int NSFPrivate::readNSFeMetadata(void)
+{
+	uint32_t addr = getNSFeMetadataStartAddress();
+	if (addr == 0) {
+		// No NSFe metadata...
+		return -ENOENT;
+	}
+
+	// Seek to the beginning of the NSFe metadata.
+	int ret = file->seek(addr);
+	if (ret != 0) {
+		// Seek error.
+		int err = -file->lastError();
+		if (err == 0) {
+			err = -EIO;
+		}
+		return err;
+	}
+
+	// If NSF2: 'INFO', 'DATA', 'BANK', and 'NSF2' chunks are invalid.
+	const bool isNSF2 = (audioFormat != NSFPrivate::AudioFormat::NSFe);
+
+	// Start reading chunk headers.
+	while (true) {
+		NSFe_Chunk_Header chunkHeader;
+		size_t size = file->read(&chunkHeader, sizeof(chunkHeader));
+		if (size != sizeof(chunkHeader)) {
+			// Read error.
+			if (file->eof()) {
+				// End of file. (No 'NEND' chunk, which seems to happen with NSF2.)
+				break;
+			}
+
+			int err = -file->lastError();
+			if (err == 0) {
+				err = -EIO;
+			}
+			return err;
+		}
+
+		const uint32_t chunk_size = le32_to_cpu(chunkHeader.size);
+
+		// Check the chunk ID.
+		bool done = false;
+		bool skip = false;	// Skip the chunk. (assuming file->read() was not called)
+		switch (be32_to_cpu(chunkHeader.fourCC)) {
+			case 0:	// assuming all zeroes means an error
+			case NSFe_Chunk_NEND:
+				// End of file.
+				done = true;
+				break;
+
+			case NSFe_Chunk_text: {
+				// 'text' chunk. Read the chunk data into nsfe.text.
+				// NOTE: Limiting to 16,384 bytes.
+				assert(chunk_size <= 16384);
+				if (chunk_size > 16384) {
+					// Too big...
+					skip = true;
+					break;
+				}
+
+				nsfe.text.resize(chunk_size);
+				size = file->read(const_cast<char*>(nsfe.text.data()), chunk_size);
+				if (size != chunk_size) {
+					// Read error.
+					nsfe.text.clear();
+					int err = -file->lastError();
+					if (err == 0) {
+						err = -EIO;
+					}
+					return err;
+				}
+				nsfe.has.text = 1;
+				break;
+			}
+
+			default:
+				skip = true;
+				break;
+		}
+
+		if (skip) {
+			// Skipping this chunk...
+			ret = file->seek(chunk_size, IRpFile::SeekWhence::Cur);
+			if (ret != 0) {
+				int err = -file->lastError();
+				if (err == 0) {
+					err = -EIO;
+				}
+				return err;
+			}
+		}
+
+		if (done) {
+			break;
+		}
+	}
+
+	return 0;
 }
 
 /** NSF **/
@@ -145,19 +411,30 @@ NSF::NSF(const IRpFilePtr &file)
 			d->isValid = false;
 			d->file.reset();
 			break;
-		case NSFPrivate::AudioFormat::NSF:
+
+		case NSFPrivate::AudioFormat::NSF: {
 			d->mimeType = "audio/x-nsf";	// unofficial
+
+			const NSF_Header *const nsfHeader = &d->header.nsf;
+			d->isPAL = (nsfHeader->tv_system == NSF_TV_PAL);
+
+			// If this is NSF2, and metadata is available,
+			// read the metadata.
+			if (nsfHeader->version == 2) {
+				d->readNSFeMetadata();
+			}
 			break;
+		}
+
 		case NSFPrivate::AudioFormat::NSFe:
 			d->mimeType = "audio/x-nsfe";	// unofficial
+
+			// Read the NSFe metadata.
+			d->readNSFeMetadata();
+			if (d->nsfe.has.INFO) {
+				d->isPAL = (d->nsfe.INFO.pal_ntsc_bits == NSFe_INFO_IS_PAL);
+			}
 			break;
-	}
-
-	// TODO: Read chunks for NSFe/NSF2, up to the 'DATA' chunk.
-
-	// Is PAL? (TODO: NSFe)
-	if (d->audioFormat == NSFPrivate::AudioFormat::NSF) {
-		d->isPAL = (d->header.nsf.tv_system == NSF_TV_PAL);
 	}
 }
 
@@ -267,10 +544,12 @@ int NSF::loadFieldData(void)
 	d->fields.addField_string(C_("NSF", "NSF Version"),
 		(likely(!s_nsfVersion.empty())) ? s_nsfVersion.c_str() : C_("RomData", "Unknown"));
 
+	bool hasNSFtab = false;
 	if (d->audioFormat == NSFPrivate::AudioFormat::NSF) {
 		// NSF header
-		// TODO: Override NSF2 fields with NSFe metadata, if present?
 		const NSF_Header *const nsfHeader = &d->header.nsf;
+		d->fields.setTabName(0, "NSF");
+		hasNSFtab = true;
 
 		// NOTE: The NSF specification says ASCII, but I'm assuming
 		// the text is cp1252 and/or Shift-JIS.
@@ -353,8 +632,22 @@ int NSF::loadFieldData(void)
 			vector<string> *const v_nsf2_feature_flags_names = RomFields::strArrayToVector(nsf2_feature_flags_names);
 			d->fields.addField_bitfield(C_("NSF", "NSF2 Feature Flags"),
 				v_nsf2_feature_flags_names, 2, adjflags);
+		}
+	}
 
-			// TODO: NSFe metadata.
+	if (d->nsfe.has.u16 != 0) {
+		// NSFe metadata was loaded.
+		if (hasNSFtab) {
+			d->fields.addTab("NSFe");
+		} else {
+			d->fields.setTabName(0, "NSFe");
+		}
+
+		const auto *nsfe = &d->nsfe;
+
+		if (nsfe->has.text && likely(!nsfe->text.empty())) {
+			// 'text' chunk is available.
+			d->fields.addField_string(C_("NSF", "Description"), nsfe->text);
 		}
 	}
 

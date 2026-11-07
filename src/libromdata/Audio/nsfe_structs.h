@@ -122,7 +122,8 @@ typedef enum ATTR_FLAG_ENUM {
  * contains 8 banks specifying which 8 banks to initialize with.
  */
 typedef struct _NSFe_BANK_t {
-	uint8_t banks[8];		// [0x008] Bankswitch initialization
+	uint8_t banks_init[8];	// [0x000] If non-zero, initial bank setting for
+				//         $8xxx, $9xxx, etc.
 } NSFe_BANK_t;
 ASSERT_STRUCT(NSFe_BANK_t, 8);
 

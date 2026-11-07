@@ -40,7 +40,7 @@ typedef struct _NSF_Header {
 	char copyright[32];		// [0x04E] Copyright (ASCII, NULL-terminated)
 	uint16_t rate_ntsc;		// [0x06E] NTSC playback rate, in microseconds.
 					//         (not always in use)
-	uint8_t bankswitching[8];	// [0x070] If non-zero, initial bank setting for
+	uint8_t banks_init[8];		// [0x070] If non-zero, initial bank setting for
 					//         $8xxx, $9xxx, etc.
 	uint16_t rate_pal;		// [0x078] PAL playback rate, in microseconds.
 					//         (not always in use)
