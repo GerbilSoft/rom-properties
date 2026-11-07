@@ -406,9 +406,9 @@ int GzipFile::seek(off64_t pos, SeekWhence whence)
 	}
 
 	// Seek to the requested position by skipping over the required number of bytes.
-	unique_ptr<uint8_t[]> skip_buf(new uint8_t[GzipFilePrivate::ZLIB_BUFFER_SIZE]);
+	unique_ptr<uint8_t[]> skip_buf(new uint8_t[ZLIB_BUFFER_SIZE]);
 	while (skip_bytes > 0) {
-		size_t sz_to_read = std::min(GzipFilePrivate::ZLIB_BUFFER_SIZE, skip_bytes);
+		size_t sz_to_read = std::min(ZLIB_BUFFER_SIZE, skip_bytes);
 		size_t sz_read = this->read(skip_buf.get(), sz_to_read);
 		if (sz_read != sz_to_read) {
 			// Read error...
