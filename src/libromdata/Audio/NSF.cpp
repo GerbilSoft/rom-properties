@@ -85,6 +85,7 @@ public:
 				uint16_t text : 1;
 
 				// Track list chunks
+				uint16_t any_tlist : 1;	// set if any of the chunks are present
 				uint16_t plst : 1;
 				uint16_t psfx : 1;
 				uint16_t time : 1;
@@ -430,6 +431,7 @@ int NSFPrivate::readNSFeMetadata(void)
 					p = p_nul + 1;
 				}
 				nsfe.has.tlbl = 1;
+				nsfe.has.any_tlist = 1;
 				break;
 			}
 
@@ -907,8 +909,9 @@ int NSF::loadFieldData(void)
 			d->fields.addField_string(C_("NSF", "Description"), nsfe->text);
 		}
 
-		if (!nsfe->tracks.empty()) {
+		if (nsfe->has.any_tlist && !nsfe->tracks.empty()) {
 			// Track list
+			// NOTE: Not showing columns if we don't have the data for them.
 			const char *const s_yes = C_("RomData", "Yes");
 			const char *const s_no = C_("RomData", "No");
 
@@ -922,14 +925,22 @@ int NSF::loadFieldData(void)
 				data_row.reserve(7);	// 7 fields per row.
 
 				data_row.push_back(fmt::format_int(track_num).str());
-				data_row.push_back(fmt::format_int(src_iter->order).str());
-				data_row.push_back(src_iter->is_sfx ? s_yes : s_no);
-				data_row.push_back(src_iter->name);
-				data_row.push_back(src_iter->author);
+				if (nsfe->has.plst) {
+					data_row.push_back(fmt::format_int(src_iter->order).str());
+				}
+				if (nsfe->has.psfx) {
+					data_row.push_back(src_iter->is_sfx ? s_yes : s_no);
+				}
+				if (nsfe->has.tlbl) {
+					data_row.push_back(src_iter->name);
+				}
+				if (nsfe->has.taut) {
+					data_row.push_back(src_iter->author);
+				}
 
 				// Format duration as m:ss.ddd.
 				// TODO: Separate function?
-				{
+				if (nsfe->has.time) {
 					const uint32_t duration = src_iter->duration;
 					const uint32_t min = (duration / 1000) / 60;
 					const uint32_t sec = (duration / 1000) % 60;
@@ -939,7 +950,7 @@ int NSF::loadFieldData(void)
 
 				// Format fade as m:ss.ddd.
 				// TODO: Separate function?
-				{
+				if (nsfe->has.fade) {
 					const uint32_t duration = src_iter->fade;
 					const uint32_t min = (duration / 1000) / 60;
 					const uint32_t sec = (duration / 1000) % 60;
@@ -948,17 +959,28 @@ int NSF::loadFieldData(void)
 				}
 			}
 
-			static const array<const char*, 7> track_list_headers = {{
-				NOP_C_("NSF|TrackList", "#"),
-				NOP_C_("NSF|TrackList", "Order"),
-				NOP_C_("NSF|TrackList", "Is SFX"),
-				NOP_C_("NSF|TrackList", "Name"),
-				NOP_C_("NSF|TrackList", "Author"),
-				NOP_C_("NSF|TrackList", "Duration"),
-				NOP_C_("NSF|TrackList", "Fade"),
-			}};
-			vector<string> *const v_track_list_headers = RomFields::strArrayToVector_i18n(
-				"NSF|TrackList", track_list_headers);
+			vector<const char*> track_list_headers;
+			track_list_headers.reserve(7);
+			track_list_headers.push_back(C_("NSF|TrackList", "#"));
+			if (nsfe->has.plst) {
+				track_list_headers.push_back(C_("NSF|TrackList", "Order"));
+			}
+			if (nsfe->has.psfx) {
+				track_list_headers.push_back(C_("NSF|TrackList", "Is SFX"));
+			}
+			if (nsfe->has.tlbl) {
+				track_list_headers.push_back(C_("NSF|TrackList", "Name"));
+			}
+			if (nsfe->has.taut) {
+				track_list_headers.push_back(C_("NSF|TrackList", "Author"));
+			}
+			if (nsfe->has.time) {
+				track_list_headers.push_back(C_("NSF|TrackList", "Duration"));
+			}
+			if (nsfe->has.fade) {
+				track_list_headers.push_back(C_("NSF|TrackList", "Fade"));
+			}
+			vector<string> *const v_track_list_headers = RomFields::strArrayToVector(track_list_headers);
 
 			RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
 			params.headers = v_track_list_headers;

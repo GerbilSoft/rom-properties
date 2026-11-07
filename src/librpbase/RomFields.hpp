@@ -663,6 +663,17 @@ public:
 	}
 
 	/**
+	 * Convert a vector of char strings to a vector of std::string.
+	 * This can be used for addField_bitfield() and addField_listData().
+	 * @param strVector Array of strings
+	 * @return Allocated std::vector<std::string>.
+	 */
+	static inline std::vector<std::string> *strArrayToVector(const std::vector<const char*> &strVector)
+	{
+		return strArrayToVector(strVector.data(), strVector.size());
+	}
+
+	/**
 	 * Convert an array of char strings to a vector of std::string.
 	 * This can be used for addField_bitfield() and addField_listData().
 	 * @param msgctxt i18n context
@@ -685,6 +696,19 @@ public:
 	static inline std::vector<std::string> *strArrayToVector_i18n(const char *msgctxt, const std::array<const char*, size> &strArray)
 	{
 		return strArrayToVector_i18n(msgctxt, strArray.data(), strArray.size());
+	}
+
+	/**
+	 * Convert a vector of char strings to a vector of std::string.
+	 * This can be used for addField_bitfield() and addField_listData().
+	 * @param msgctxt i18n context
+	 * @param strVector Array of strings
+	 * @param count Number of strings (nullptrs will be handled as empty strings)
+	 * @return Allocated std::vector<std::string>.
+	 */
+	static inline std::vector<std::string> *strArrayToVector_i18n(const char *msgctxt, const std::vector<const char*> &strVector)
+	{
+		return strArrayToVector_i18n(msgctxt, strVector.data(), strVector.size());
 	}
 
 	enum TabOffset {
