@@ -679,9 +679,10 @@ int NSF::loadFieldData(void)
 			v_tv_system_bitfield_names, 0, bfval);
 
 		// Expansion audio
-		static const array<const char*, 6> expansion_bitfield_names = {{
+		static const array<const char*, 7> expansion_bitfield_names = {{
 			"Konami VRC6", "Konami VRC7", "2C33 (FDS)",
 			"MMC5", "Namco N163", "Sunsoft 5B",
+			"VT02+"
 		}};
 		vector<string> *const v_expansion_bitfield_names = RomFields::strArrayToVector(expansion_bitfield_names);
 		d->fields.addField_bitfield(C_("NSF", "Expansion"),
