@@ -18,6 +18,9 @@
 #include <array>
 using std::array;
 
+// libfmt
+#include "rp-libfmt.h"
+
 namespace LibRomData { namespace DMGSpecialCases {
 
 // Special cases for ROM images with identical titles.
@@ -158,7 +161,7 @@ int get_publisher_code(char (*pbcode)[3], const DMG_RomHeader *romHeader)
 {
 	// TODO: Consolidate with DMG's code.
 	if (romHeader->old_publisher_code == 0x33) {
-		// New publisher code.
+		// New publisher code
 		if (unlikely(romHeader->new_publisher_code[0] == '\0' &&
 		             romHeader->new_publisher_code[1] == '\0'))
 		{
@@ -173,8 +176,10 @@ int get_publisher_code(char (*pbcode)[3], const DMG_RomHeader *romHeader)
 			(*pbcode)[2] = '\0';
 		}
 	} else {
-		// Old publisher code.
-		snprintf(*pbcode, 3, "%02X", romHeader->old_publisher_code);
+		// Old publisher code
+		auto result = fmt::format_to_n(*pbcode, 3-1, FSTR("{:0>2X}"),
+			romHeader->old_publisher_code);
+		*(result.out) = '\0';
 	}
 
 	return 0;
