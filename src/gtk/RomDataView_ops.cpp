@@ -310,7 +310,10 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 	// RpFile isn't needed because the file write capabilities should be the same.
 
 	// Get the URI.
-	gchar *const uri = g_file_get_uri(file);
+	gchar *uri = nullptr;
+	if (file) {
+		uri = g_file_get_uri(file);
+	}
 	if (!uri && save_data->isFileRequired) {
 		// No URI, but a file is required...
 		g_free(save_data);
@@ -325,7 +328,7 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 
 	// Save the previous export directory.
 	// FIXME: Handle this with non-local files?
-	{
+	if (file) {
 		gchar *const filename = g_file_get_path(file);
 		if (filename) {
 			g_free(page->prevExportDir);
@@ -335,26 +338,31 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 	}
 
 	// Open the output file using RpFileGio.
-	shared_ptr<RpFileGio> out_file = std::make_shared<RpFileGio>(uri, RpFileGio::FM_CREATE_WRITE);
-	g_free(uri);
-	if (!out_file->isOpen()) {
-		// Show an error message.
-		// TODO: Include the filename?
-		// TODO: Thread-safe strerror()?
-		const string msg = fmt::format(FRUN(C_("RomDataView", "Error opening output file: {:s}")),
-			strerror(out_file->lastError()));
+	shared_ptr<RpFileGio> out_file;
+	if (uri) {
+		out_file = std::make_shared<RpFileGio>(uri, RpFileGio::FM_CREATE_WRITE);
+		g_free(uri);
+		if (!out_file->isOpen()) {
+			// Show an error message.
+			// TODO: Include the filename?
+			// TODO: Thread-safe strerror()?
+			const string msg = fmt::format(FRUN(C_("RomDataView", "Error opening output file: {:s}")),
+				strerror(out_file->lastError()));
 
-		// Delete the file if it was created.
-		// TODO: Only if it was created by us...
-		out_file.reset();
-		//g_file_delete(file, nullptr, nullptr);
-		g_object_unref(file);
+			// Delete the file if it was created.
+			// TODO: Only if it was created by us...
+			out_file.reset();
+			if (file) {
+				//g_file_delete(file, nullptr, nullptr);
+				g_object_unref(file);
+			}
 
-		rp_rom_data_view_show_message_widget(page, GTK_MESSAGE_WARNING, msg.c_str());
-		return;
+			rp_rom_data_view_show_message_widget(page, GTK_MESSAGE_WARNING, msg.c_str());
+			return;
+		}
 	}
 
-	if (id < 0) {
+	if (id < 0 && ((bool)out_file)) {
 		// Standard operation.
 		unique_ptr<streambuf_IRpFile> streambuf(new streambuf_IRpFile(out_file, std::ios_base::out));
 		ostream os(streambuf.get());
@@ -362,8 +370,10 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 			// Delete the file, since it's likely only 0 bytes.
 			out_file.reset();
 			streambuf.reset();
-			g_file_delete(file, nullptr, nullptr);
-			g_object_unref(file);
+			if (file) {
+				g_file_delete(file, nullptr, nullptr);
+				g_object_unref(file);
+			}
 
 			// TODO: Better error message?
 			rp_rom_data_view_show_message_widget(page, GTK_MESSAGE_WARNING, C_("RomDataView", "Could not open the output file."));
@@ -392,21 +402,27 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 				assert(!"Invalid ID for an Export Standard ROM Operation.");
 				out_file.reset();
 				streambuf.reset();
-				g_file_delete(file, nullptr, nullptr);
-				g_object_unref(file);
+				if (file) {
+					g_file_delete(file, nullptr, nullptr);
+					g_object_unref(file);
+				}
 				rp_rom_data_view_show_message_widget(page, GTK_MESSAGE_ERROR, C_("RomDataView", "Invalid ID for an Export Standard ROM Operation."));
 				return;
 		}
 
 		os.flush();
 		streambuf->pubsync();
-		g_object_unref(file);
+		if (file) {
+			g_object_unref(file);
+		}
 		return;
 	}
 
 	// Run the ROM operation.
 	RomData::RomOpParams params;
-	params.save_file = std::move(out_file);
+	if (out_file) {
+		params.save_file = std::move(out_file);
+	}
 	const int ret = romData->doRomOp(id, &params);
 
 	GtkMessageType messageType;
@@ -434,10 +450,14 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 
 		// Delete the file, since it's likely only 0 bytes.
 		params.save_file.reset();
-		g_file_delete(file, nullptr, nullptr);
+		if (file) {
+			g_file_delete(file, nullptr, nullptr);
+		}
 	}
 
-	g_object_unref(file);
+	if (file) {
+		g_object_unref(file);
+	}
 	if (!params.msg.empty()) {
 		rp_rom_data_view_show_message_widget(page, messageType, params.msg.c_str());
 	}
