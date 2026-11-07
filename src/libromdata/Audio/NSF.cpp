@@ -262,22 +262,15 @@ uint32_t NSFPrivate::getNSFeMetadataStartAddress(void) const
  */
 int NSFPrivate::readNSFeMetadata(void)
 {
-	uint32_t addr = getNSFeMetadataStartAddress();
-	if (addr == 0) {
+	off64_t pos = getNSFeMetadataStartAddress();
+	if (pos == 0) {
 		// No NSFe metadata...
 		return -ENOENT;
 	}
 
-	// Seek to the beginning of the NSFe metadata.
-	int ret = file->seek(addr);
-	if (ret != 0) {
-		// Seek error.
-		int err = -file->lastError();
-		if (err == 0) {
-			err = -EIO;
-		}
-		return err;
-	}
+	// NOTE: We need to maintain our own seek pointer because
+	// some chunks may be larger than what we're expecting.
+	// Hence, we'll use file->seekAndRead(pos) for every chunk read.
 
 	// If NSF2: 'INFO', 'DATA', 'BANK', and 'NSF2' chunks are invalid.
 	const bool isNSF2 = (audioFormat != NSFPrivate::AudioFormat::NSFe);
@@ -285,9 +278,9 @@ int NSFPrivate::readNSFeMetadata(void)
 	// Start reading chunk headers.
 	while (true) {
 		NSFe_Chunk_Header chunkHeader;
-		size_t size = file->read(&chunkHeader, sizeof(chunkHeader));
+		size_t size = file->seekAndRead(pos, &chunkHeader, sizeof(chunkHeader));
 		if (size != sizeof(chunkHeader)) {
-			// Read error.
+			// Seek and/or read error.
 			if (file->eof()) {
 				// End of file. (No 'NEND' chunk, which seems to happen with NSF2.)
 				break;
@@ -304,7 +297,6 @@ int NSFPrivate::readNSFeMetadata(void)
 
 		// Check the chunk ID.
 		bool done = false;
-		bool skip = false;	// Skip the chunk. (assuming file->read() was not called)
 		switch (be32_to_cpu(chunkHeader.fourCC)) {
 			case 0:	// assuming all zeroes means an error
 			case NSFe_Chunk_NEND:
@@ -320,7 +312,6 @@ int NSFPrivate::readNSFeMetadata(void)
 				if (isNSF2 || chunk_size < sizeof(NSFe_INFO_t)) {
 					// isNSF2: This chunk is not allowed.
 					// Other: Chunk size is incorrect.
-					skip = true;
 					break;
 				}
 
@@ -344,14 +335,13 @@ int NSFPrivate::readNSFeMetadata(void)
 				assert(chunk_size <= 16384);
 				if (chunk_size == 0 || chunk_size > 16384) {
 					// Empty chunk, or too big...
-					skip = true;
 					break;
 				}
 
 				rp::uvector<char> &strtbl = nsfe.auth.strtbl;
 				strtbl.resize(chunk_size);
-				size = file->read(const_cast<char*>(strtbl.data()), chunk_size);
-				if (size != chunk_size) {
+				size = file->read(strtbl.data(), strtbl.size());
+				if (size != strtbl.size()) {
 					// Read error.
 					strtbl.clear();
 					int err = -file->lastError();
@@ -401,7 +391,6 @@ int NSFPrivate::readNSFeMetadata(void)
 				assert(chunk_size <= 16384);
 				if (chunk_size == 0 || chunk_size > 16384) {
 					// Too big...
-					skip = true;
 					break;
 				}
 
@@ -421,25 +410,15 @@ int NSFPrivate::readNSFeMetadata(void)
 			}
 
 			default:
-				skip = true;
 				break;
-		}
-
-		if (skip) {
-			// Skipping this chunk...
-			ret = file->seek(chunk_size, IRpFile::SeekWhence::Cur);
-			if (ret != 0) {
-				int err = -file->lastError();
-				if (err == 0) {
-					err = -EIO;
-				}
-				return err;
-			}
 		}
 
 		if (done) {
 			break;
 		}
+
+		// Add the chunk header and chunk size to the seek position.
+		pos += sizeof(chunkHeader) + chunk_size;
 	}
 
 	return 0;
