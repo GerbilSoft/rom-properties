@@ -24,6 +24,9 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
+// libfmt
+#include "rp-libfmt.h"
+
 namespace LibRomData {
 
 class GameComPrivate final : public RomDataPrivate
@@ -776,7 +779,7 @@ int GameCom::loadMetaData(void)
 
 	// Game ID
 	char buf[16];
-	auto result = fmt::format_to_n(buf, sizeof(buf)-1, FSTR("{:0>4X}"), le16_to_cpu(romHeader->game_id));
+	auto result = fmt::format_to_n(buf, sizeof(buf)-1, FSTR("0x{:0>4X}"), le16_to_cpu(romHeader->game_id));
 	*(result.out) = '\0';
 	d->metaData.addMetaData_string(Property::GameID, buf);
 
