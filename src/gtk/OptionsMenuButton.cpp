@@ -537,10 +537,13 @@ rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
 	g_return_if_fail(RP_IS_OPTIONS_MENU_BUTTON(widget));
 
 #ifdef USE_G_MENU_MODEL
-	const string s_prefix = fmt::format(FSTR("rp-OptionsMenuButton-{:p}"), static_cast<void*>(widget));
+	string s_short_prefix = "option-";
+	string s_full_prefix = fmt::format(FSTR("rp-OptionsMenuButton-{:p}"), static_cast<void*>(widget));
+	const size_t s_short_prefix_base_len = s_short_prefix.size();
+	const size_t s_full_prefix_base_len = s_full_prefix.size();
 
 	// Remove the existing GActionGroup from the widget.
-	gtk_widget_insert_action_group(GTK_WIDGET(widget), s_prefix.c_str(), nullptr);
+	gtk_widget_insert_action_group(GTK_WIDGET(widget), s_full_prefix.c_str(), nullptr);
 	GSimpleActionGroup *const actionGroup = g_simple_action_group_new();
 
 	// GMenuModel does not have separator items per se.
@@ -553,18 +556,22 @@ rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
 	GMenu *const menuStdActs = g_menu_new();
 	g_menu_append_section(menuModel, nullptr, G_MENU_MODEL(menuStdActs));
 	for (const option_menu_action_t &p : OptionsMenuButton_stdacts) {
-		// Create the action.
-		GSimpleAction *const action = g_simple_action_new(
-			fmt::format_int(p.id).c_str(), nullptr);
+		// "option-{:d}", p.id
+		s_short_prefix.resize(s_short_prefix_base_len);
+		STRING_APPEND_FORMAT_INT(s_short_prefix, p.id);
+		GSimpleAction *const action = g_simple_action_new(s_short_prefix.c_str(), nullptr);
+
 		g_simple_action_set_enabled(action, TRUE);
 		g_object_set_qdata(G_OBJECT(action), menuOptions_id_quark, GINT_TO_POINTER(p.id));
 		g_signal_connect_object(action, "activate",
 			G_CALLBACK(action_triggered_signal_handler), widget, G_CONNECT_DEFAULT);
 		g_action_map_add_action(G_ACTION_MAP(actionGroup), G_ACTION(action));
 
-		// Create the menu item.
-		g_menu_append(menuStdActs, pgettext_expr("RomDataView|Options", p.desc),
-			fmt::format(FSTR("{:s}.{:d}"), s_prefix, p.id).c_str());
+		// "rp-OptionsMenuButton-{:p}.option-{:d}", widget, p.id
+		s_full_prefix.resize(s_full_prefix_base_len);
+		s_full_prefix += '.';
+		s_full_prefix += s_short_prefix;
+		g_menu_append(menuStdActs, pgettext_expr("RomDataView|Options", p.desc), s_full_prefix.c_str());
 	}
 
 	/** ROM operations **/
@@ -577,18 +584,23 @@ rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
 
 		int i = 0;
 		for (const RomData::RomOp &op : ops) {
-			// Create the action.
-			GSimpleAction *const action = g_simple_action_new(
-				fmt::format_int(i).c_str(), nullptr);
+			// "option-{:d}", i
+			s_short_prefix.resize(s_short_prefix_base_len);
+			STRING_APPEND_FORMAT_INT(s_short_prefix, i);
+			GSimpleAction *const action = g_simple_action_new(s_short_prefix.c_str(), nullptr);
+
 			g_simple_action_set_enabled(action, !!(op.flags & RomData::RomOp::ROF_ENABLED));
 			g_object_set_qdata(G_OBJECT(action), menuOptions_id_quark, GINT_TO_POINTER(i));
 			g_signal_connect_object(action, "activate",
 				G_CALLBACK(action_triggered_signal_handler), widget, G_CONNECT_DEFAULT);
 			g_action_map_add_action(G_ACTION_MAP(actionGroup), G_ACTION(action));
 
-			// Create the menu item.
+			// "rp-OptionsMenuButton-{:p}.option-{:d}", widget, i
 			gchar *const desc = rpGtk_convert_accel_to_gtk(op.desc);
-			g_menu_append(menuRomOps, desc, fmt::format(FSTR("{:s}.{:d}"), s_prefix, i).c_str());
+			s_full_prefix.resize(s_full_prefix_base_len);
+			s_full_prefix += '.';
+			s_full_prefix += s_short_prefix;
+			g_menu_append(menuRomOps, desc, s_full_prefix.c_str());
 			g_free(desc);
 
 			// Next operation.
@@ -657,7 +669,9 @@ rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
 	widget->menuRomOps = menuRomOps;
 	g_clear_object(&widget->actionGroup);
 	widget->actionGroup = actionGroup;
-	gtk_widget_insert_action_group(GTK_WIDGET(widget), s_prefix.c_str(), G_ACTION_GROUP(actionGroup));
+
+	s_full_prefix.resize(s_full_prefix_base_len);
+	gtk_widget_insert_action_group(GTK_WIDGET(widget), s_full_prefix.c_str(), G_ACTION_GROUP(actionGroup));
 #else /* !USE_G_MENU_MODEL */
 	g_clear_object(&widget->menuOptions);
 	widget->menuOptions = menuOptions;
@@ -686,8 +700,9 @@ rp_options_menu_button_update_op(RpOptionsMenuButton *widget,
 	GSimpleAction *const action = G_SIMPLE_ACTION(
 		g_action_map_lookup_action(G_ACTION_MAP(widget->actionGroup),
 			fmt::format_int(id).c_str()));
-	if (!action)
+	if (!action) {
 		return;
+	}
 
 	// It seems we can't simply edit a menu item in place,
 	// so we'll need to delete the old item and add the new one.

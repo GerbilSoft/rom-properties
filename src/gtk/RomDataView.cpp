@@ -1560,6 +1560,13 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 		// Add spacing between the system info header and the table.
 		g_object_set(page, "spacing", 8, nullptr);
 
+		string s_vboxTab = "vboxTab";
+		string s_tableTab = "tableTab";
+		string s_lblTab = "lblTab";
+		const size_t s_vboxTab_base_len = s_vboxTab.size();
+		const size_t s_tableTab_base_len = s_tableTab.size();
+		const size_t s_lblTab_base_len = s_lblTab.size();
+
 		auto tabIter = tabs.begin();
 		for (int i = 0; i < tabCount; i++, ++tabIter) {
 			// Create a tab.
@@ -1572,7 +1579,9 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 			auto &tab = *tabIter;
 
 			tab.vbox = rp_gtk_vbox_new(8);
-			gtk_widget_set_name(tab.vbox, fmt::format(FSTR("vboxTab{:d}"), i).c_str());
+			s_vboxTab.resize(s_vboxTab_base_len);
+			STRING_APPEND_FORMAT_INT(s_vboxTab, i);
+			gtk_widget_set_name(tab.vbox, s_vboxTab.c_str());
 #ifdef USE_GTK_GRID
 			tab.table = gtk_grid_new();
 			gtk_grid_set_row_spacing(GTK_GRID(tab.table), 2);
@@ -1583,7 +1592,9 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 			gtk_table_set_row_spacings(GTK_TABLE(tab.table), 2);
 			gtk_table_set_col_spacings(GTK_TABLE(tab.table), 8);
 #endif /* USE_GTK_GRID */
-			gtk_widget_set_name(tab.table, fmt::format(FSTR("tableTab{:d}"), i).c_str());
+			s_tableTab.resize(s_tableTab_base_len);
+			STRING_APPEND_FORMAT_INT(s_tableTab, i);
+			gtk_widget_set_name(tab.table, s_tableTab.c_str());
 
 #if GTK_CHECK_VERSION(4, 0, 0)
 			// FIXME: GTK4 equivalent of gtk_container_set_border_width().
@@ -1598,7 +1609,9 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 
 			// Add the tab.
 			GtkWidget *const lblTabName = gtk_label_new(name);
-			gtk_widget_set_name(lblTabName, fmt::format(FSTR("lblTab{:d}"), i).c_str());
+			s_lblTab.resize(s_lblTab_base_len);
+			STRING_APPEND_FORMAT_INT(s_lblTab, i);
+			gtk_widget_set_name(lblTabName, s_lblTab.c_str());
 			gtk_notebook_append_page(GTK_NOTEBOOK(page->tabWidget), tab.vbox, lblTabName);
 
 #if GTK_CHECK_VERSION(4, 0, 0)

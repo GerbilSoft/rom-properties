@@ -511,19 +511,31 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 	image->menuEcksBawks = g_menu_new();
 	image->actionGroup = g_simple_action_group_new();
 
-	const string s_prefix = fmt::format(FSTR("rp-EcksBawks-{:p}"), static_cast<void*>(image));
+	string s_short_prefix = "ecksbawks-";
+	string s_full_prefix = fmt::format(FSTR("rp-EcksBawks-{:p}"), static_cast<void*>(image));
+	const size_t s_short_prefix_base_len = s_short_prefix.size();
+	const size_t s_full_prefix_base_len = s_full_prefix.size();
+
 	for (int i = 0; i < ARRAY_SIZE_I(menu_items); i++) {
-		GSimpleAction *const action = g_simple_action_new(
-			fmt::format(FSTR("ecksbawks-{:d}"), i+1).c_str(), nullptr);
+		// "ecksbawks-{:d}", i
+		s_short_prefix.resize(s_short_prefix_base_len);
+		STRING_APPEND_FORMAT_INT(s_short_prefix, i+1);
+		GSimpleAction *const action = g_simple_action_new(s_short_prefix.c_str(), nullptr);
+
 		g_simple_action_set_enabled(action, TRUE);
 		g_object_set_qdata(G_OBJECT(action), ecksbawks_quark, GINT_TO_POINTER(i+1));
 		g_signal_connect_object(action, "activate", G_CALLBACK(ecksbawks_action_triggered_signal_handler), image, G_CONNECT_DEFAULT);
 		g_action_map_add_action(G_ACTION_MAP(image->actionGroup), G_ACTION(action));
-		g_menu_append(image->menuEcksBawks, menu_items[i],
-			fmt::format(FSTR("{:s}.ecksbawks-{:d}"), s_prefix, i+1).c_str());
+
+		// "rp-EcksBawks-{:p}.ecksbawks-{:d}", image, i
+		s_full_prefix.resize(s_full_prefix_base_len);
+		s_full_prefix += '.';
+		s_full_prefix += s_short_prefix;
+		g_menu_append(image->menuEcksBawks, menu_items[i], s_full_prefix.c_str());
 	}
 
-	gtk_widget_insert_action_group(GTK_WIDGET(image), s_prefix.c_str(), G_ACTION_GROUP(image->actionGroup));
+	s_full_prefix.resize(s_full_prefix_base_len);
+	gtk_widget_insert_action_group(GTK_WIDGET(image), s_full_prefix.c_str(), G_ACTION_GROUP(image->actionGroup));
 #  if GTK_CHECK_VERSION(4, 0, 0)
 	image->popEcksBawks = gtk_popover_menu_new_from_model(G_MENU_MODEL(image->menuEcksBawks));
 	// GTK4: Need to set parent. Otherwise, gtk_popover_popup() will crash.
