@@ -93,7 +93,7 @@ rom_data_format_dimensions(const int dimensions[3])
 				dimensions[0], dimensions[1]);
 		}
 	} else {
-		str = fmt::format_int(dimensions[0]).str();
+		STRING_APPEND_FORMAT_INT(str, dimensions[0]);
 	}
 
 	return str;
