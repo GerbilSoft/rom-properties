@@ -11,6 +11,9 @@
 // librpbase
 using LibRpBase::Achievements;
 
+// C includes (C++ namespace)
+#include <cassert>
+
 // libfmt
 #include "rp-libfmt.h"
 

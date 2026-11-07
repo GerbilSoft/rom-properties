@@ -12,6 +12,9 @@
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
 
+// C includes (C++ namespace)
+#include <cassert>
+
 // libfmt
 #include "rp-libfmt.h"
 
