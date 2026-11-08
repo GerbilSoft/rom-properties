@@ -65,7 +65,7 @@ public:
 
 	// NSFe metadata
 	// NOTE: All strings are encoded in UTF-8 in the original file.
-	struct {
+	struct nsfe_t {
 		// NOTE: The following chunks may NOT be present in an NSF2 file:
 		// 'INFO', 'DATA', 'BANK', 'NSF2'
 		// These chunks will be indicated with [E].
@@ -154,7 +154,8 @@ public:
 			string author;		// 'taut': Track author
 		};
 		vector<track_t> tracks;
-	} nsfe;
+	};
+	nsfe_t nsfe;
 
 public:
 	/**
