@@ -202,7 +202,12 @@ int KSS::loadFieldData(void)
 
 	// KSS header
 	const KSS_Header *const kssHeader = &d->kssHeader;
-	d->fields.reserve(4);	// Maximum of 11 fields.
+	d->fields.reserve(5);	// Maximum of 5 fields.
+
+	// Version
+	// KSCC == v1.03, KSSX == v1.20 [according to `file`]
+	bool isKSSX = (kssHeader->magic == be32_to_cpu(KSSX_MAGIC));
+	d->fields.addField_string(C_("RomData", "Version"), (isKSSX) ? "v1.20" : "v1.03");
 
 	// Load address
 	d->fields.addField_string_numeric(C_("RomData|Audio", "Load Address"),
@@ -227,6 +232,7 @@ int KSS::loadFieldData(void)
 
 	// TODO: Number of banked data blocks.
 	// TODO: Extra sound chip flags.
+	// TODO: KSSX (v1.20) extensions.
 
 	// Finished reading the field data.
 	return d->fields.count();

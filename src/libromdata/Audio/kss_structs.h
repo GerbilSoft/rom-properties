@@ -50,14 +50,19 @@ typedef enum ATTR_FLAG_ENUM {
 	// Bits 0, 2, and 3 have different meanings depending on if bit 1 is set or not.
 
 	// Bit 1 is set: SN76489 systems
-	KSS_SOUND_CHIP_SN7_USES_FMUNIT		= (1U << 0),	// If set, uses FM UNIT
+	KSS_SOUND_CHIP_SN7_USES_FMUNIT		= (1U << 0),	// If set, uses FM UNIT (YM2413)
 	KSS_SOUND_CHIP_SN7_USES_GG_STEREO	= (1U << 2),	// If set, uses Game Gear Stereo
 	KSS_SOUND_CHIP_SN7_USES_RAM		= (1U << 3),	// If set, uses RAM
 
-	// Bit 0 is set: No SN76489
-	KSS_SOUND_CHIP_NOSN7_USES_FMPAC		= (1U << 0),	// If set, uses FM PAC
+	// Bit 1 is clear: No SN76489
+	KSS_SOUND_CHIP_NOSN7_USES_FMPAC		= (1U << 0),	// If set, uses FM PAC (YM2413)
 	KSS_SOUND_CHIP_NOSN7_USES_RAM		= (1U << 2),	// If set, uses RAM
-	KSS_SOUND_CHIP_NOSN7_USES_MSX_AUDIO	= (1U << 3),	// If set, uses MSX-AUDIO
+	KSS_SOUND_CHIP_NOSN7_USES_MSX_AUDIO	= (1U << 3),	// If set, uses Y8950 (MSX-AUDIO)
+
+	// KSSX (v1.20) flags
+	// FIXME: Not entirely sure if these are correct...
+	KSS_SOUND_CHIP_KSSX_SN7_MAJUTSUSHI_DAC	= (1U << 4),	// If set, uses Majutsushi DAC
+	KSS_SOUND_CHIP_KSSX_PAL			= (1U << 6),	// If set, uses PAL clockrates (50 Hz)
 } KSS_Extra_Sound_Chip_e;
 
 /**
