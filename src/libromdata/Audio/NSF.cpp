@@ -317,6 +317,43 @@ int NSFPrivate::readNSFeMetadata(void)
 	// If NSF2: 'INFO', 'DATA', 'BANK', and 'NSF2' chunks are invalid.
 	const bool isNSF2 = (audioFormat != NSFPrivate::AudioFormat::NSFe);
 
+	// Temporary read buffer
+	rp::uvector<uint8_t> buf;
+
+	/**
+	 * Read a data chunk into the temporary buffer.
+	 * @param chunk_size Chunk size
+	 * @return 0 on success; positive if the chunk should be skipped; negative POSIX error code on error.
+	 */
+	auto read_chunk = [&buf, this](unsigned int chunk_size) -> int
+	{
+		// Read the chunk data into the temporary buffer.
+		// NOTE: Limiting to 16,384 bytes.
+		static constexpr unsigned int CHUNK_SIZE_MAX = 16384;
+		assert(chunk_size > 0);
+		assert(chunk_size <= CHUNK_SIZE_MAX);
+		if (chunk_size == 0) {
+			// Empty chunk. Skip it.
+			return 1;
+		} else if (chunk_size > CHUNK_SIZE_MAX) {
+			// Chunk is too big. Skip it.
+			return 2;
+		}
+
+		buf.resize(chunk_size);
+		size_t size = file->read(buf.data(), buf.size());
+		if (size != buf.size()) {
+			// Read error.
+			int err = -file->lastError();
+			if (err == 0) {
+				err = -EIO;
+			}
+			return err;
+		}
+
+		return 0;
+	};
+
 	// Start reading chunk headers.
 	while (true) {
 		NSFe_Chunk_Header chunkHeader;
@@ -370,32 +407,57 @@ int NSFPrivate::readNSFeMetadata(void)
 				break;
 			}
 
-			case NSFe_Chunk_tlbl: {
-				// 'tlbl' chunk.
+			case NSFe_Chunk_plst: {
+				// 'plst' chunk
 				int track_count = initNSFeTracks();
 				if (track_count <= 0) {
 					// No tracks...
 					break;
 				}
 
-				// Read the chunk data into a temporary buffer.
-				// NOTE: Limiting to 16,384 bytes.
-				assert(chunk_size > 0);
-				assert(chunk_size <= 16384);
-				if (chunk_size == 0 || chunk_size > 16384) {
-					// Empty chunk, or too big...
+				// Chunk contains one byte per track.
+				assert(chunk_size >= static_cast<unsigned int>(track_count));
+				if (chunk_size < static_cast<unsigned int>(track_count)) {
+					// Chunk is too small...
 					break;
 				}
 
-				rp::uvector<char> buf;
-				buf.resize(chunk_size);
-				size = file->read(buf.data(), buf.size());
-				if (size != buf.size()) {
-					// Read error.
-					int err = -file->lastError();
-					if (err == 0) {
-						err = -EIO;
-					}
+				// Read the chunk data into the temporary buffer.
+				int err = read_chunk(chunk_size);
+				if (err > 0) {
+					// Skip the chunk.
+					break;
+				} else if (err < 0) {
+					// Error reading the chunk...
+					return err;
+				}
+
+				// Update the track list.
+				const uint8_t *p = buf.data();
+				const uint8_t *const p_end = p + buf.size();
+				for (int i = 0; i < track_count && p < p_end; i++, p++) {
+					nsfe.tracks[i].order = *p;
+				}
+				nsfe.has.plst = 1;
+				nsfe.has.any_tlist = 1;
+				break;
+			}
+
+			case NSFe_Chunk_tlbl: {
+				// 'tlbl' chunk
+				int track_count = initNSFeTracks();
+				if (track_count <= 0) {
+					// No tracks...
+					break;
+				}
+
+				// Read the chunk data into the temporary buffer.
+				int err = read_chunk(chunk_size);
+				if (err > 0) {
+					// Skip the chunk.
+					break;
+				} else if (err < 0) {
+					// Error reading the chunk...
 					return err;
 				}
 
@@ -406,8 +468,8 @@ int NSFPrivate::readNSFeMetadata(void)
 
 				// Should contain track_count strings.
 				// We'll allow up to track_count, ignoring any additional strings.
-				const char *p = buf.data();
-				const char *const p_end = buf.data() + buf.size();
+				const char *p = reinterpret_cast<const char*>(buf.data());
+				const char *const p_end = p + buf.size();
 				for (int i = 0; i < track_count && p < p_end; i++) {
 					auto &track = nsfe.tracks[i];
 
@@ -436,7 +498,8 @@ int NSFPrivate::readNSFeMetadata(void)
 			}
 
 			case NSFe_Chunk_auth: {
-				// 'auth' chunk. Read the chunk data into nsfe.auth.strtbl.
+				// 'auth' chunk
+				// Read the chunk data into nsfe.auth.strtbl.
 				// NOTE: Limiting to 16,384 bytes.
 				assert(chunk_size > 0);
 				assert(chunk_size <= 16384);
@@ -492,7 +555,8 @@ int NSFPrivate::readNSFeMetadata(void)
 			}
 
 			case NSFe_Chunk_text: {
-				// 'text' chunk. Read the chunk data into nsfe.text.
+				// 'text' chunk
+				// Read the chunk data into nsfe.text.
 				// NOTE: Limiting to 16,384 bytes.
 				assert(chunk_size > 0);
 				assert(chunk_size <= 16384);
