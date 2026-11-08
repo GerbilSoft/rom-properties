@@ -14,6 +14,9 @@
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
 
+// C includes (C++ namespace)
+#include <cstdlib>	// for bsearch()
+
 // C++ STL classes
 #include <array>
 using std::array;

@@ -17,6 +17,7 @@
 // C includes (C++ namespace)
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>	// for bsearch()
 
 // C++ STL classes
 #include <array>
