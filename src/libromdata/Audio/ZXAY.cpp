@@ -330,6 +330,7 @@ int ZXAY::loadFieldData(void)
 	zxayHeader = reinterpret_cast<const ZXAY_Header*>(d->zxay_buf.data()); \
 } while (0)
 	UPDATE_ZXAYHEADER_PTR();
+	const bool isEMUL = (zxayHeader->type == cpu_to_be32(ZXAY_TYPE_EMUL));
 
 	d->fields.reserve(5);	// Maximum of 5 fields.
 
@@ -379,22 +380,49 @@ int ZXAY::loadFieldData(void)
 
 			// Song name
 			data_row.push_back(d->readCString(song_struct_addr + offsetof(ZXAY_Song_Struct, p_song_name)));
+
+			if (isEMUL) {
+				// Get the ZXAY_EMUL_Song_Data.
+				const ZXAY_Song_Struct *const pSongStruct =
+					reinterpret_cast<const ZXAY_Song_Struct*>(d->zxay_buf.data() + song_struct_addr);
+				unsigned int emul_song_data_addr = be16_to_cpu(pSongStruct->p_song_data) +
+					offsetof(ZXAY_Song_Struct, p_song_data) + song_struct_addr;
+				const size_t req_size_emul = emul_song_data_addr + sizeof(ZXAY_EMUL_Song_Data);
+				// NOTE: Including +256 for read-ahead.
+				new_size = d->expand_zxay_buf(req_size_emul + 256);
+				if (new_size >= req_size_emul) {
+					const ZXAY_EMUL_Song_Data *pEmulSongData =
+						reinterpret_cast<const ZXAY_EMUL_Song_Data*>(d->zxay_buf.data() + emul_song_data_addr);
+
+					// song_length is in units of 1/50th of a second. (PAL)
+					const unsigned int duration = be16_to_cpu(pEmulSongData->song_length);
+					const unsigned int min = (duration / 50) / 60;
+					const unsigned int sec = (duration / 50) % 60;
+					const unsigned int cs =  (duration % 50) * 2;
+					data_row.push_back(fmt::format(FSTR("{:d}:{:0>2d}.{:0>2d}"), min, sec, cs));
+				} else {
+					// Unable to read ZXAY_EMUL_Song_Data...
+					data_row.push_back("<?>");
+				}
+			}
 		}
 
 		// TODO: Duration for EMUL?
-		static const array<const char*, 2> song_list_hdr = {{
+		static const array<const char*, 3> song_list_hdr = {{
 			NOP_C_("ZXAY|SongList", "#"),
 			NOP_C_("ZXAY|SongList", "Name"),
+			NOP_C_("ZXAY|SongList", "Duration"),	// 'EMUL' type only
 		}};
-		vector<string> *const v_song_list_hdr = RomFields::strArrayToVector_i18n("ZXAY|SongList", 2);
+		vector<string> *const v_song_list_hdr = RomFields::strArrayToVector_i18n("ZXAY|SongList",
+			song_list_hdr.data(), (isEMUL) ? 3 : 2);
 
 		RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
 		params.headers = v_song_list_hdr;
 		params.data.single = v_song_list;
-		params.col_attrs.align_headers = AFLD_ALIGN2(TXA_D, TXA_D);
-		params.col_attrs.align_data = AFLD_ALIGN2(TXA_R, TXA_D);
-		params.col_attrs.sizing = AFLD_ALIGN2(COLSZ_R, COLSZ_S);
-		params.col_attrs.sorting = AFLD_ALIGN2(COLSORT_NUM, COLSORT_NC);
+		params.col_attrs.align_headers = AFLD_ALIGN3(TXA_D, TXA_D, TXA_D);
+		params.col_attrs.align_data = AFLD_ALIGN3(TXA_R, TXA_D, TXA_R);
+		params.col_attrs.sizing = AFLD_ALIGN3(COLSZ_R, COLSZ_S, COLSZ_R);
+		params.col_attrs.sorting = AFLD_ALIGN3(COLSORT_NUM, COLSORT_NC, COLSORT_NUM);
 		params.col_attrs.sort_col = 0; // #
 		params.col_attrs.sort_dir = RomFields::COLSORTORDER_ASCENDING;
 		d->fields.addField_listData(C_("ZXAY", "Song List"), &params);
