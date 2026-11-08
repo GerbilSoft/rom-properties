@@ -618,6 +618,60 @@ int NSFPrivate::readNSFeMetadata(void)
 				break;
 			}
 
+			case NSFe_Chunk_taut: {
+				// 'taut' chunk
+				int track_count = initNSFeTracks();
+				if (track_count <= 0) {
+					// No tracks...
+					break;
+				}
+
+				// Read the chunk data into the temporary buffer.
+				int err = read_chunk(chunk_size);
+				if (err > 0) {
+					// Skip the chunk.
+					break;
+				} else if (err < 0) {
+					// Error reading the chunk...
+					return err;
+				}
+
+				// Make sure the strings are NULL-terminated.
+				if (buf.back() != '\0') {
+					buf.push_back('\0');
+				}
+
+				// Should contain track_count strings.
+				// We'll allow up to track_count, ignoring any additional strings.
+				const char *p = reinterpret_cast<const char*>(buf.data());
+				const char *const p_end = p + buf.size();
+				for (int i = 0; i < track_count && p < p_end; i++) {
+					auto &track = nsfe.tracks[i];
+
+					size_t remain = p_end - p;
+					const char *const p_nul = static_cast<const char*>(memchr(p, '\0', remain));
+					assert(p_nul != nullptr);
+					if (!p_nul) {
+						// Shouldn't happen...
+						break;
+					}
+
+					if ((p_nul - p) <= 1) {
+						// Empty string.
+						track.author.clear();
+					} else {
+						// Copy the string data.
+						track.author.assign(p, (p_nul - p));
+					}
+
+					// Next string.
+					p = p_nul + 1;
+				}
+				nsfe.has.taut = 1;
+				nsfe.has.any_tlist = 1;
+				break;
+			}
+
 			case NSFe_Chunk_auth: {
 				// 'auth' chunk
 				// Read the chunk data into nsfe.auth.strtbl.
