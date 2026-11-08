@@ -418,7 +418,13 @@ int NSFPrivate::readNSFeMetadata(void)
 				break
 			
 			NSFe_STANDARD_CHUNK(INFO, true);
+			NSFe_STANDARD_CHUNK(BANK, true);
+			NSFe_STANDARD_CHUNK(RATE, false);	// allowed in NSF2 for Dendy mode
 			NSFe_STANDARD_CHUNK(NSF2, true);
+
+			// 'VRC7' is allowed in NSF2 for patch data.
+			// NOTE: We're not reading the patch data here.
+			NSFe_STANDARD_CHUNK(VRC7, false);
 
 			case NSFe_Chunk_plst: {
 				// 'plst' chunk
