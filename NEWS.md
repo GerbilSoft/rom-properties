@@ -7,6 +7,8 @@
     files. Only the thumbnail preview image is shown; not the animation.
     * Implements #525: [FEATURE REQUEST] Flipnote Studio PPMs
       * Requested by @korbosoft.
+  * KSS: Konami Sound System format.
+  * ZXAY: ZX Spectrum AY-file format.
 
 * New parser features:
   * WiiUPackage: Support for Wii U Archive (.wua) format. This uses the ZArchive
@@ -18,6 +20,8 @@
     * NT3H2111 is used in Super Nintendo World bands.
     * NT3H2211 is used in amiibo v3, starting with Kirby Air Riders.
     * Information provided by @CheatFreak47.
+  * NSF: Added suport for NSF2 extensions and NSFe format.
+    * Includes NSFe metadata in NSF2 files.
 
 * New features:
   * Transparent gzip decompression has been moved out of RpFile and into a separate

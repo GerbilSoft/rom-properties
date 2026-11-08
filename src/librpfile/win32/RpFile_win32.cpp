@@ -354,6 +354,48 @@ void RpFile::close(void)
 }
 
 /**
+ * Are we at EOF?
+ * @return True if EOF; false if not.
+ */
+bool RpFile::eof(void)
+{
+	RP_D(RpFile);
+	if (!d->file) {
+		m_lastError = EBADF;
+		return true;
+	}
+
+	// Check if the current position is >= the file size.
+
+	// Get the current file position.
+	LARGE_INTEGER liPos;
+	if (d->devInfo) {
+		// SetFilePointerEx() *requires* sector alignment when
+		// accessing device files. Hence, we'll have to maintain
+		// our own device position.
+		liPos.QuadPart = d->devInfo->device_pos;
+	} else {
+		LARGE_INTEGER liSeekPos;
+		liSeekPos.QuadPart = 0;
+		BOOL bRet = SetFilePointerEx(d->file, liSeekPos, &liPos, FILE_CURRENT);
+		if (!bRet) {
+			m_lastError = w32err_to_posix(GetLastError());
+			return true;
+		}
+	}
+
+	// Get the file size.
+	LARGE_INTEGER liFileSize;
+	if (!GetFileSizeEx(d->file, &liFileSize)) {
+		// Could not get the file size.
+		m_lastError = w32err_to_posix(GetLastError());
+		return true;
+	}
+
+	return (liPos.QuadPart >= liFileSize.QuadPart);
+}
+
+/**
  * Read data from the file.
  * @param ptr Output data buffer.
  * @param size Amount of data to read, in bytes.

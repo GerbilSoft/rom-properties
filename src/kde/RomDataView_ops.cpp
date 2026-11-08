@@ -431,7 +431,7 @@ void RomDataView::btnOptions_triggered(int id)
 			// Show an error message.
 			// TODO: Include the filename?
 			// TODO: Thread-safe strerror()?
-			const QString msg = U82Q(fmt::format(FRUN(C_("RomDataView", "Error opening output file: {:s}")),
+			const QString msg = U82Q(fmt::format(FRUN(C_("RomDataView", "Error opening output file: '{:s}'")),
 				strerror(params.save_file->lastError())));
 
 			// Delete the file if it was created.

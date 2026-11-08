@@ -1,0 +1,135 @@
+AY-file format is designed by Patrik Rak for his DeliAY plug-in to DeliTracker (Amiga computer). James McKay gave second life to this format (AYPlay and AYMake utilities) on PC. Next description I wrote after year of working with AY-files, but I could understand all only after discussion with Patrik Rak.
+	So, format is designed on Amiga with MC68000 processor. Due to this fact, all word values are in Motorola order (first byte is high) and must be aligned to two byte offsets from AY-file beginning. Second important thing is all pointers in the format are signed and relative (i.e. are offsets from current position in file to pointed data). Range of the offsets is from –32768 to +32767.
+
+AY-file is sequence of records. They order have no limitation, but first record must be header. Header record structure follows.
+
+
+Offset	Length in bytes	Name	Description
+
++0	4	FileID	File identifier ‘ZXAY’
++4	4	TypeID	File type. Emulator supports ‘EMUL’ type, which requires Z80 emulation, and ‘AMAD’ type, which is analog of FXM file.
++8	1	FileVersion	File version, you can use this field as free as you want, however, format author recommends to numerate versions in turn (first version (release) is 0, second is 1 and so on).
++9	1	PlayerVersion	Required player version for playing. Only three versions are exists now. 0	Use zero if you do not know what player version you need.
+
+1	Initial player version.
+			2	First 256 byte of Z80 memory is fill with 0xC9 value (RET instruction).
+			3	Last version for now. Full Z80 emulation plus beeper port emulation. See its full description at the end of this description.
++10	2	PSpecialPlayer	This is for AY-files which contain player in MC68000 machine codes. As Patrik Rak is saying, only one file of this kind is exists, so, can be simply ignored.
++12	2	PAuthor	Pointer to null-terminated string with author name, only one for whole AY-file.
+
++14	2	PMisc	Same, but to string with miscellaneous information.
++16	1	NumOfSongs	Number of tunes in file decreased by 1.
++17	1	FirstSong	Tune number, which must be played first, decreased by 1 too.
++18	2	PSongsStructure	Relative pointer to “Song structure” record.
+
+So, size of header is 20 bytes. Last offset of header points to records “Song structure” (one record per tune, the records follows one after another). Any “Song structure” record structure follows.
+
++0	2	PSongName	Relative offset to null-terminated string with name of corresponding tune.
++2	2	PSongData	Offset to record “Song data”
+
+All described above is rightly for any AY-files. Next data only for ‘EMUL’ AY-file type.
+	Record “Song data” for ‘EMUL’ type has next structure.
+
++0	1	AChan	Amiga’s channel number for emulating A AY channel.
++1	1	BChan	Amiga’s channel number for emulating B AY channel.
++2	1	CChan	Amiga’s channel number for emulating C AY channel.
++3	1	Noise	Amiga’s channel number for emulating AY noise.
+			Typically these four bytes are 0, 1, 2, 3. You also can use these four numbers in any order.
++4	2	SongLength	Song duration in 1/50 of second. If zero, than length is unknown (infinitely).
+
++6	2	FadeLength	Duration of fade after end of song in 1/50 of second.
++8	1	HiReg	Values of high halves of all Z80 common registers (AF, AF’, HL, HL', DE, DE', BC, BC', IX and IY).
++9	1	LoReg	Values of low halves of all Z80 common registers including flag registers.
++10	2	PPoints	Pointer to “Pointers” record.
++12	2	PAddresses	Pointer to “Data blocks” record.
+
+Record “Pointers” is simple. There are stack, initialization and playing routines addresses for the tune.
+
++0	2	Stack	Value of SP register before starting emulation.
++2	2	INIT	Initialization subprogram address in Z80 memory.
++4	2	INTERRUPT	Playing subprogram address (calls 50 times per second).
+
+Record “Data blocks” is simple too. It is sequences of groups by three word values. End of sequence is first zero address (i.e. Address = 0).
+
++0	2	Address1	First block address in Z80 memory.
++2	2	Length1	Length of first block in bytes.
++6	2	Offset1	Relative offset to begin of 1st block in the AY-file.
++8	2	Address2	Second block address in Z80 memory.
++10	2	Length2	Length of 2nd block in bytes.
++12	2	Offset2	Relative offset to begin of 2nd block in the AY-file.
+
+and so on while Address = 0 will be met.
+
+Follow next rules, if you want that your own AY-files player will be playing most now existing AY-files (this rules enable to play corrupted AY-files even) during loading blocks:
+1. If Address + Length > 65536 then decrease Length to make it 65536.
+2. if CurrentPositionInFile + Offset + Length > FileSize then decrease Length too.
+
+	And now about that how player of version 3 must to play AY-files of ‘EMUL’ type.
+
+
+1.	Fill range #0000-#00FF with #C9 byte value.
+2.	Fill range #0100-#3FFF with #FF byte value.
+3.	Fill range #4000-#FFFF with #00 byte value
+4. 	Place at #0038 address #FB byte.
+5.	If INIT for this song is equal to zero, then place first block loading address at first CALL instruction (see next 6 and 7 steps).
+6.	If INTERRUPT for the song is equal to zero, then place at zero address next player:
+
+DI
+		CALL INIT
+	LOOP:	IM 2
+		EI
+		HALT
+		JR LOOP
+
+7.	If INTERRUPT is not equal to zero, then use another player:
+
+DI
+		CALL INIT
+	LOOP:	IM 1
+		EI
+		HALT
+		CALL INTERRUPT
+		JR LOOP
+
+8.	Load all blocks for the song.
+9.	Load to low halves of Z80 common registers (including flag registers) LoReg value.
+10.	Load to high halves of Z80 common registers HiReg value.
+11.	Load into I register value 3 (this player version).
+12.	Load to SP register Stack value.
+13.	Load to PC zero value.
+14.	Disable interrupts and set IM0 mode.
+15.	Reset AY sound chip.
+16.	Run Z80 emulation.
+
+You can see that blocks can overwrite standard player even. You can use this possibility if you need to run non-standard player routine. In this case you can place it at INIT address or at #0001 address even. In common data blocks can be loaded at any Z80 memory address, except 0.
+
+	And now some words about ‘AMAD’ type.
+	Record “Song data” for ‘AMAD’ type has next structure.
+
++0	2	AllocAddress	Allocation address of data block in Spectrum memory.
++2	1	Andsix	The parameter must either 31 or 15. It is used for correction result of addition current noise value and parameter of 8D command (see FXM description). I.e. some players use 5 bits of noise register, and some only 4 ones.
++3	1	Loops	Number of loops.
++4	2	LoopLen	Length of one loop in interrupts (VBI).
++6	2	FadeOffset	Precise fade specification (unused in Ay_Emul)
++8	2	FadeLen	How long to fade (unused in Ay_Emul)
+
++10	1	AChan	Amiga’s channel number for emulating A AY channel.
++11	1	BChan	Amiga’s channel number for emulating B AY channel.
++12	1	CChan	Amiga’s channel number for emulating C AY channel.
++13	1	Noise	Amiga’s channel number for emulating AY noise.
+			Typically these four bytes are 0, 1, 2, 3. You also can use these four numbers in any order.
++14	???	ZXData	Original data block from ZX Spectrum program. See full description in FXM module description of this help system.
+
+As you can see, both EMUL and AMAD subtypes can contain more than one tune in one AY-file.
+
+	And now about insufficient flaws of AY-format and about AY-files supporting realization in AY_Emul.
+
+	First flaw is specification allows to set SongLength field to “infinite playing” value (zero). The AY emulator has no this term, so files with zero SongLength would be played 15000 interrupts instead of infinite.
+	Second flaw is vagueness with term “1/50 of second”. If it is interrupt period, than it must to depend of two values: Z80 frequency and number of TStates between interrupts (maybe only for Russian ZX Spectrum clones). Anyway, interrupt period is different in different Spectrum models. So, specification standardizes no one of described parameters. In this version of AY_Emul is used 3494400 Hz for Z80 frequency and 69888 for TStates between interrupts (i.e. 69888/3494400 = 1/50 of second).
+
+Third flaw is in that no able to load blocks at #0000 address. This problem can be decided if first block (and only first block) can to have zero address. But this decision is not compatible with other players and therefore not supported in AY_Emul for now.
+	I can to add that AY-format means only 48K-memory model. But the most part of Spectrum music can be adapted to 48K limitations in any way.
+	AY Emulator works as player of version 3.
+	AY-format developing on PC occurs through efforts of other programmers. For example, firstly James McKay made beeper supporting and more realistic Z80 emulation. But his AYMake remakes many AY-files with big error: information about time length was lost. Now bcass (Project AY site owner) is adding time information into existing AY-files. Patrik Rak want to make PC DeliPlayer plug-in for AY-files, maybe soon we’ll can to listen AY-format author’s PC realization of AY-player.
+
+Well, and with other things in AY-format you can to meet by yourself, if you’ll want rip AY-music from Speccy programs. You can find my utilities (aysplitr and AYMakeR) with source codes for splitting and creating new AY-files on official emulator site.

@@ -15,7 +15,9 @@ audio/x-bcwav				# BCSTM
 audio/x-brstm				# BRSTM
 audio/x-gbr				# GBS
 audio/x-gbs				# GBS
+audio/x-kss				# KSS
 audio/x-nsf				# NSF
+audio/x-nsfe				# NSF
 audio/x-psf				# PSF
 audio/x-minipsf				# PSF
 audio/x-sap				# SAP
@@ -23,6 +25,7 @@ audio/prs.sid				# SID
 audio/x-sndh				# SNDH
 audio/x-spc				# SPC
 audio/x-vgm				# VGM
+audio/x-ay				# ZXAY
 
 # Common
 application/x-playstation-sfo		# ParamSFO

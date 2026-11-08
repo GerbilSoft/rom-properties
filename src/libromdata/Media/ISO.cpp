@@ -613,7 +613,7 @@ void ISOPrivate::addPVDTimestamps(const T *pvd)
 	// For now, converting to UTC and showing as local time.
 
 	// Volume creation time
-	fields.addField_dateTime(C_("ISO", "Creation Time"),
+	fields.addField_dateTime(C_("RomData", "Creation Time"),
 		pvd_time_to_unix_time(&pvd->btime),
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_HAS_TIME);

@@ -264,6 +264,7 @@ so administrator access is required.
 | Commodore 64 SID Music        |       Yes      |    Yes   |       N/A       |       N/A      |
 | Game Boy Sound System         |       Yes      |    Yes   |       N/A       |       N/A      |
 | Game Boy Ripped               |       Yes      |    N/A   |       N/A       |       N/A      |
+| Konami Sound System           |       Yes      |    N/A   |       N/A       |       N/A      |
 | Nintendo 3DS BCSTM and BCWAV  |       Yes      |    Yes   |       N/A       |       N/A      |
 | Nintendo Sound Format         |       Yes      |    Yes   |       N/A       |       N/A      |
 | Nintendo Wii BRSTM            |       Yes      |    Yes   |       N/A       |       N/A      |
@@ -272,6 +273,7 @@ so administrator access is required.
 | S98 Format                    |       Yes      |    Yes   |       N/A       |       N/A      |
 | Super NES SPC Format          |       Yes      |    Yes   |       N/A       |       N/A      |
 | Video Game Music              |       Yes      |    Yes   |       N/A       |       N/A      |
+| ZX Spectrum AY-file           |       Yes      |    No    |       N/A       |       N/A      |
 
 ### Media Formats
 
@@ -543,3 +545,7 @@ under CC-BY 4.0.
   repository.
 * [unusedino.de](http://unusedino.de/ec64/technical3.html) for its archive of
   C64 emulator file format documentation by Peter Schepers.
+* [nesdev.org](https://www.nesdev.org) for documentation on lots of NES and
+  NES-related formats, including NSF, NSF2, and NSFe.
+* [vgmrips.net](https://vgmrips.net/) for test files and .ay file format information.
+* [ocremix.org](https://ocremix.org/) for test files and .kss file format information.

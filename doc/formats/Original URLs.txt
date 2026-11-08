@@ -1,2 +1,7 @@
 s98spec2.txt: https://www.purose.net/befis/download/kmp/old/s98spec2.txt
 s98spec3.txt: https://vgmrips.net/mirror/s98spec3.txt
+
+AY_Spec.txt: http://projectay.dl.spilsby.net/AY_Spec.txt
+- Retrieved from archive.org:
+  - https://web.archive.org/web/20160304140808/http://projectay.dl.spilsby.net/AY_Spec.txt
+  - https://web.archive.org/web/20160304140808if_/http://projectay.dl.spilsby.net/AY_Spec.txt

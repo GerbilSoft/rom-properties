@@ -88,6 +88,7 @@ SET(${PROJECT_NAME}_SRCS
 	Audio/BCSTM.cpp
 	Audio/BRSTM.cpp
 	Audio/GBS.cpp
+	Audio/KSS.cpp
 	Audio/NSF.cpp
 	Audio/PSF.cpp
 	Audio/PSFTagParser.cpp
@@ -97,6 +98,7 @@ SET(${PROJECT_NAME}_SRCS
 	Audio/SID.cpp
 	Audio/SPC.cpp
 	Audio/VGM.cpp
+	Audio/ZXAY.cpp
 
 	Media/CBMDOS.cpp
 	Media/ISO.cpp
@@ -287,6 +289,7 @@ SET(${PROJECT_NAME}_H
 	Audio/BCSTM.hpp
 	Audio/BRSTM.hpp
 	Audio/GBS.hpp
+	Audio/KSS.hpp
 	Audio/NSF.hpp
 	Audio/PSF.hpp
 	Audio/PSFTagParser.hpp
@@ -296,17 +299,20 @@ SET(${PROJECT_NAME}_H
 	Audio/SID.hpp
 	Audio/SPC.hpp
 	Audio/VGM.hpp
+	Audio/ZXAY.hpp
 
 	Audio/adx_structs.h
 	Audio/bcstm_structs.h
 	Audio/brstm_structs.h
 	Audio/gbs_structs.h
+	Audio/kss_structs.h
 	Audio/nsf_structs.h
 	Audio/psf_structs.h
 	Audio/s98_structs.h
 	Audio/sid_structs.h
 	Audio/spc_structs.h
 	Audio/vgm_structs.h
+	Audio/zxay_structs.h
 
 	Media/CBMDOS.hpp
 	Media/ISO.hpp

@@ -10,6 +10,7 @@
 #include "RomData_p.hpp"
 
 #include "nsf_structs.h"
+#include "nsfe_structs.h"
 
 // Other rom-properties libraries
 using namespace LibRpBase;
@@ -20,6 +21,9 @@ using namespace LibRpText;
 using std::array;
 using std::string;
 using std::vector;
+
+// Uninitialized vector class
+#include "uvector.h"
 
 namespace LibRomData {
 
@@ -35,14 +39,152 @@ public:
 
 public:
 	/** RomDataInfo **/
-	static const array<const char*, 1+1> exts;
-	static const array<const char*, 1+1> mimeTypes;
+	static const array<const char*, 2+1> exts;
+	static const array<const char*, 2+1> mimeTypes;
 	static const RomDataInfo romDataInfo;
+
+public:
+	// Audio format
+	enum class AudioFormat {
+		Unknown = -1,
+
+		NSF	= 0,	// NSF or NSF2
+		NSFe	= 1,	// NSFe
+
+		Max
+	};
+	AudioFormat audioFormat;
 
 public:
 	// NSF header
 	// NOTE: **NOT** byteswapped in memory.
-	NSF_Header nsfHeader;
+	union {
+		NSF_Header nsf;		// NSF/NSF2 header
+		NSFe_Header nsfe;	// NSFe header (just a magic number)
+	} header;
+
+	// NSFe metadata
+	// NOTE: All strings are encoded in UTF-8 in the original file.
+	struct nsfe_t {
+		// NOTE: The following chunks may NOT be present in an NSF2 file:
+		// 'INFO', 'DATA', 'BANK', 'NSF2'
+		// These chunks will be indicated with [E].
+
+		// Bitfield indicating which chunks are present.
+		union {
+			struct {
+				uint16_t INFO : 1;	// [E]
+				uint16_t BANK : 1;	// [E]
+				uint16_t RATE : 1;
+				uint16_t NSF2 : 1;	// [E]
+				uint16_t VRC7 : 1;
+				uint16_t regn : 1;
+
+				// Text chunks
+				uint16_t auth : 1;
+				uint16_t text : 1;
+
+				// Track list chunks
+				uint16_t any_tlist : 1;	// set if any of the chunks are present
+				uint16_t plst : 1;
+				uint16_t psfx : 1;
+				uint16_t time : 1;
+				uint16_t fade : 1;
+				uint16_t tlbl : 1;
+				uint16_t taut : 1;
+
+				// Per-device chunks
+				uint16_t mixe : 1;
+			};
+			uint16_t u16;
+		} has;
+
+		NSFe_INFO_t INFO;	// [E]
+		NSFe_BANK_t BANK;	// [E]
+		NSFe_RATE_t RATE;
+		NSFe_NSF2_t NSF2;	// [E]
+		NSFe_VRC7_t VRC7;
+		NSFe_regn_t regn;
+
+		// 'auth' chunk
+		struct auth_t {
+			explicit auth_t()
+				: game_title(nullptr)
+				, artist(nullptr)
+				, copyright(nullptr)
+				, ripper(nullptr)
+			{}
+
+			// Table containing the four NULL-terminated strings.
+			rp::uvector<char> strtbl;
+
+			// Pointers into strtbl.
+			union {
+				struct {
+					const char *game_title;
+					const char *artist;
+					const char *copyright;
+					const char *ripper;
+				};
+				const char *str[4];
+			};
+		};
+		auth_t auth;
+
+		// 'text' chunk
+		string text;
+
+		// Track struct
+		// Contains information from the following chunks:
+		// 'plst', 'psfx', 'time', 'fade', 'tlbl', 'taut'
+		struct track_t {
+			explicit track_t()
+				: order(-1)
+				, is_sfx(false)
+				, duration(-1)
+				, fade(-1)
+			{}
+
+			int16_t order;		// 'plst': playback order (-1 if not set)
+			bool is_sfx;		// 'psfx': true if this is a "sound effect" instead of music
+			int32_t duration;	// 'time': track duration, in milliseconds (negative for not specified)
+			int32_t fade;		// 'fade': fadeout duration, in milliseconds (negative for not specified)
+
+			string name;		// 'tlbl': Track name (label)
+			string author;		// 'taut': Track author
+		};
+		vector<track_t> tracks;
+	};
+	nsfe_t nsfe;
+
+public:
+	/**
+	 * Get the NSFe metadata start address.
+	 * If NSF1, this is invalid and returns 0.
+	 * If NSF2, converts nsf2_prg_size from 24-bit to uint32_t.
+	 * If NSFe, returns the beginning of the file, right after the "NSFE" magic number.
+	 * @return NSFe metadata start address, or 0 on error.
+	 */
+	uint32_t getNSFeMetadataStartAddress(void) const;
+
+	/**
+	 * Resize nsfe.tracks to match the track count.
+	 * @return Number of tracks (or 0 if no track count) on success; negative POSIX error code on error.
+	 */
+	int initNSFeTracks(void);
+
+	/**
+	 * Read the NSFe metadata.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int readNSFeMetadata(void);
+
+	/**
+	 * Format a duration as m:ss.dd.
+	 * @param duration Duration
+	 * @return Formatted duration ("<?>" if negative)
+	 */
+	static string formatDuration(int32_t duration);
 };
 
 ROMDATA_IMPL(NSF)
@@ -50,14 +192,17 @@ ROMDATA_IMPL(NSF)
 /** NSFPrivate **/
 
 /* RomDataInfo */
-const array<const char*, 1+1> NSFPrivate::exts = {{
-	".nsf",
+const array<const char*, 2+1> NSFPrivate::exts = {{
+	".nsf",		// Common file extension
+	".nsfe",	// Sometimes used for NSFe
 
 	nullptr
 }};
-const array<const char*, 1+1> NSFPrivate::mimeTypes = {{
+const array<const char*, 2+1> NSFPrivate::mimeTypes = {{
 	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
 	"audio/x-nsf",
+	"audio/x-nsfe",
 
 	nullptr
 }};
@@ -69,8 +214,605 @@ NSFPrivate::NSFPrivate(const IRpFilePtr &file)
 	: super(file, &romDataInfo)
 {
 	// Clear the NSF header struct.
-	memset(&nsfHeader, 0, sizeof(nsfHeader));
+	memset(&header, 0, sizeof(header));
+
+	// Initialize the NSFe chunk struct.
+	nsfe.has.u16 = 0;
 }
+
+/**
+ * Get the NSFe metadata start address.
+ * If NSF1, this is invalid and returns 0.
+ * If NSF2, converts nsf2_prg_size from 24-bit to uint32_t.
+ * If NSFe, returns the beginning of the file, right after the "NSFE" magic number.
+ * @return NSFe metadata start address, or 0 on error.
+ */
+uint32_t NSFPrivate::getNSFeMetadataStartAddress(void) const
+{
+	uint32_t ret = 0;
+
+	switch (audioFormat) {
+		default:
+			assert(!"Invalid NSF audio format.");
+			break;
+
+		case NSFPrivate::AudioFormat::NSF: {
+			const NSF_Header *const nsfHeader = &header.nsf;
+			assert(nsfHeader->version == 2);
+			if (nsfHeader->version != 2) {
+				break;
+			}
+
+			ret = (nsfHeader->nsf2_prg_size[2] << 16) |
+			      (nsfHeader->nsf2_prg_size[1] <<  8) |
+			       nsfHeader->nsf2_prg_size[0];
+			if (ret != 0) {
+				// Non-zero value indicates the metadata is present.
+				// The value actually contains the program data length,
+				// so add the NSF header size to get the start of the
+				// metadata section.
+				ret += static_cast<unsigned int>(sizeof(NSF_Header));
+			}
+			break;
+		}
+
+		case NSFPrivate::AudioFormat::NSFe:
+			ret = static_cast<unsigned int>(sizeof(NSFe_Header));
+			break;
+	}
+
+	return ret;
+}
+
+/**
+ * Resize nsfe.tracks to match the track count.
+ * @return Number of tracks (or 0 if no track count) on success; negative POSIX error code on error.
+ */
+int NSFPrivate::initNSFeTracks(void)
+{
+	if (!nsfe.tracks.empty()) {
+		// nsfe.tracks was already initialized.
+		return static_cast<int>(nsfe.tracks.size());
+	}
+
+	uint8_t track_count = 0;
+
+	switch (audioFormat) {
+		default:
+			assert(!"Invalid NSF audio format.");
+			return -EINVAL;
+
+		case NSFPrivate::AudioFormat::NSF:
+			track_count = header.nsf.track_count;
+			break;
+
+		case NSFPrivate::AudioFormat::NSFe:
+			// 'INFO' chunk must have been loaded before calling this function.
+			assert(nsfe.has.INFO);
+			if (!nsfe.has.INFO) {
+				return -EINVAL;
+			}
+			track_count = nsfe.INFO.song_count;
+	}
+
+	nsfe.tracks.resize(track_count);
+	return static_cast<int>(track_count);
+}
+
+/**
+ * Read the NSFe metadata.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int NSFPrivate::readNSFeMetadata(void)
+{
+	off64_t pos = getNSFeMetadataStartAddress();
+	if (pos == 0) {
+		// No NSFe metadata...
+		return -ENOENT;
+	}
+
+	// NOTE: We need to maintain our own seek pointer because
+	// some chunks may be larger than what we're expecting.
+	// Hence, we'll use file->seekAndRead(pos) for every chunk read.
+
+	// If NSF2: 'INFO', 'DATA', 'BANK', and 'NSF2' chunks are invalid.
+	const bool isNSF2 = (audioFormat != NSFPrivate::AudioFormat::NSFe);
+
+	// Temporary read buffer
+	rp::uvector<uint8_t> buf;
+
+	/**
+	 * Read a data chunk into the temporary buffer.
+	 * @param chunk_size Chunk size
+	 * @return 0 on success; positive if the chunk should be skipped; negative POSIX error code on error.
+	 */
+	auto read_chunk = [&buf, this](unsigned int chunk_size) -> int {
+		// Read the chunk data into the temporary buffer.
+		// NOTE: Limiting to 16,384 bytes.
+		static constexpr unsigned int CHUNK_SIZE_MAX = 16384U;
+		assert(chunk_size > 0);
+		assert(chunk_size <= CHUNK_SIZE_MAX);
+		if (chunk_size == 0) {
+			// Empty chunk. Skip it.
+			return 1;
+		} else if (chunk_size > CHUNK_SIZE_MAX) {
+			// Chunk is too big. Skip it.
+			return 2;
+		}
+
+		buf.resize(chunk_size);
+		size_t size = file->read(buf.data(), buf.size());
+		if (size != buf.size()) {
+			// Read error.
+			int err = -file->lastError();
+			if (err == 0) {
+				err = -EIO;
+			}
+			return err;
+		}
+
+		return 0;
+	};
+
+	// Start reading chunk headers.
+	while (true) {
+		NSFe_Chunk_Header chunkHeader;
+		size_t size = file->seekAndRead(pos, &chunkHeader, sizeof(chunkHeader));
+		if (size != sizeof(chunkHeader)) {
+			// Seek and/or read error.
+			if (file->eof()) {
+				// End of file. (No 'NEND' chunk, which seems to happen with NSF2.)
+				break;
+			}
+
+			int err = -file->lastError();
+			if (err == 0) {
+				err = -EIO;
+			}
+			return err;
+		}
+
+		const uint32_t chunk_size = le32_to_cpu(chunkHeader.size);
+
+		// Check the chunk ID.
+		bool done = false;
+		switch (be32_to_cpu(chunkHeader.fourCC)) {
+			case 0:	// assuming all zeroes means an error
+			case NSFe_Chunk_NEND:
+				// End of file.
+				done = true;
+				break;
+
+			/**
+			 * Standard chunks that read in a fixed block of data.
+			 * @param fourCC Chunk fourCC (no quotes)
+			 * @param no_NSF2 If true, this chunk is not allowed in NSF2 files.
+			 */
+#define NSFe_STANDARD_CHUNK(fourCC, no_NSF2) \
+			case NSFe_Chunk_##fourCC: \
+				/* Standard chunk */ \
+				if (no_NSF2) { \
+					assert(!isNSF2); \
+					if (isNSF2) { \
+						/* Chunk is not allowed in NSF2 files. */ \
+						break; \
+					} \
+				} \
+\
+				assert(chunk_size >= sizeof(nsfe.fourCC)); \
+				if (chunk_size < sizeof(nsfe.fourCC)) { \
+					/* Chunk size is incorrect. */ \
+					break; \
+				} \
+\
+				size = file->read(&nsfe.fourCC, sizeof(nsfe.fourCC)); \
+				if (size != sizeof(nsfe.fourCC)) { \
+					/* Read error. */ \
+					int err = -file->lastError(); \
+					if (err == 0) { \
+						err = -EIO; \
+					} \
+					return err; \
+				} \
+				nsfe.has.fourCC = 1; \
+				break
+			
+			NSFe_STANDARD_CHUNK(INFO, true);
+			NSFe_STANDARD_CHUNK(BANK, true);
+			NSFe_STANDARD_CHUNK(RATE, false);	// allowed in NSF2 for Dendy mode
+			NSFe_STANDARD_CHUNK(NSF2, true);
+
+			// 'VRC7' is allowed in NSF2 for patch data.
+			// NOTE: We're not reading the patch data here.
+			NSFe_STANDARD_CHUNK(VRC7, false);
+
+			case NSFe_Chunk_plst: {
+				// 'plst' chunk
+				int track_count = initNSFeTracks();
+				if (track_count <= 0) {
+					// No tracks...
+					break;
+				}
+
+				// Chunk contains one byte per track.
+				// NOTE: May not contain every track number, and may have
+				// duplicated track numbers.
+				assert(chunk_size > 0);
+				if (chunk_size == 0) {
+					// Chunk is empty.
+					break;
+				}
+
+				// Read the chunk data into the temporary buffer.
+				int err = read_chunk(chunk_size);
+				if (err > 0) {
+					// Skip the chunk.
+					break;
+				} else if (err < 0) {
+					// Error reading the chunk...
+					return err;
+				}
+
+				// Update the track list.
+				const uint8_t *p = buf.data();
+				const uint8_t *const p_end = p + buf.size();
+				int16_t order = 0;
+				for (; p < p_end; p++) {
+					unsigned int i = static_cast<unsigned int>(*p);
+					if (i < nsfe.tracks.size()) {
+						// TODO: Handle duplicates?
+						if (nsfe.tracks[i].order < 0) {
+							nsfe.tracks[i].order = order++;
+						}
+					}
+				}
+				nsfe.has.plst = 1;
+				nsfe.has.any_tlist = 1;
+				break;
+			}
+
+			case NSFe_Chunk_psfx: {
+				// 'psfx' chunk
+				int track_count = initNSFeTracks();
+				if (track_count <= 0) {
+					// No tracks...
+					break;
+				}
+
+				// Chunk contains a list of which tracks are "sound effects".
+				assert(chunk_size > 0);
+				if (chunk_size == 0) {
+					// Chunk is empty.
+					break;
+				}
+
+				// Read the chunk data into the temporary buffer.
+				int err = read_chunk(chunk_size);
+				if (err > 0) {
+					// Skip the chunk.
+					break;
+				} else if (err < 0) {
+					// Error reading the chunk...
+					return err;
+				}
+
+				// Update the track list.
+				const uint8_t *p = buf.data();
+				const uint8_t *const p_end = p + buf.size();
+				for (; p < p_end; p++) {
+					unsigned int i = static_cast<unsigned int>(*p);
+					if (i < nsfe.tracks.size()) {
+						nsfe.tracks[i].is_sfx = true;
+					}
+				}
+				nsfe.has.psfx = 1;
+				nsfe.has.any_tlist = 1;
+				break;
+			}
+
+			case NSFe_Chunk_time: {
+				// 'time' chunk
+				int track_count = initNSFeTracks();
+				if (track_count <= 0) {
+					// No tracks...
+					break;
+				}
+
+				// Chunk contains a list of 32-bit times (in milliseconds),
+				// one for each track. (Note that it may be shorter than expected.)
+				assert(chunk_size > 0);
+				if (chunk_size == 0) {
+					// Chunk is empty.
+					break;
+				}
+
+				// Read the chunk data into the temporary buffer.
+				int err = read_chunk(chunk_size);
+				if (err > 0) {
+					// Skip the chunk.
+					break;
+				} else if (err < 0) {
+					// Error reading the chunk...
+					return err;
+				}
+
+				// Update the track list.
+				const uint32_t *p = reinterpret_cast<const uint32_t*>(buf.data());
+				const uint32_t *const p_end = p + (buf.size() / sizeof(uint32_t));
+				for (int i = 0; i < track_count && p < p_end; i++, p++) {
+					nsfe.tracks[i].duration = le32_to_cpu(*p);
+				}
+				nsfe.has.time = 1;
+				nsfe.has.any_tlist = 1;
+				break;
+			}
+
+			case NSFe_Chunk_fade: {
+				// 'fade' chunk
+				int track_count = initNSFeTracks();
+				if (track_count <= 0) {
+					// No tracks...
+					break;
+				}
+
+				// Chunk contains a list of 32-bit times (in milliseconds),
+				// one for each track. (Note that it may be shorter than expected.)
+				assert(chunk_size > 0);
+				if (chunk_size == 0) {
+					// Chunk is empty.
+					break;
+				}
+
+				// Read the chunk data into the temporary buffer.
+				int err = read_chunk(chunk_size);
+				if (err > 0) {
+					// Skip the chunk.
+					break;
+				} else if (err < 0) {
+					// Error reading the chunk...
+					return err;
+				}
+
+				// Update the track list.
+				const uint32_t *p = reinterpret_cast<const uint32_t*>(buf.data());
+				const uint32_t *const p_end = p + (buf.size() / sizeof(uint32_t));
+				for (int i = 0; i < track_count && p < p_end; i++, p++) {
+					nsfe.tracks[i].fade = le32_to_cpu(*p);
+				}
+				nsfe.has.fade = 1;
+				nsfe.has.any_tlist = 1;
+				break;
+			}
+
+			case NSFe_Chunk_tlbl: {
+				// 'tlbl' chunk
+				int track_count = initNSFeTracks();
+				if (track_count <= 0) {
+					// No tracks...
+					break;
+				}
+
+				// Read the chunk data into the temporary buffer.
+				int err = read_chunk(chunk_size);
+				if (err > 0) {
+					// Skip the chunk.
+					break;
+				} else if (err < 0) {
+					// Error reading the chunk...
+					return err;
+				}
+
+				// Make sure the strings are NULL-terminated.
+				if (buf.back() != '\0') {
+					buf.push_back('\0');
+				}
+
+				// Should contain track_count strings.
+				// We'll allow up to track_count, ignoring any additional strings.
+				const char *p = reinterpret_cast<const char*>(buf.data());
+				const char *const p_end = p + buf.size();
+				for (int i = 0; i < track_count && p < p_end; i++) {
+					auto &track = nsfe.tracks[i];
+
+					size_t remain = p_end - p;
+					const char *const p_nul = static_cast<const char*>(memchr(p, '\0', remain));
+					assert(p_nul != nullptr);
+					if (!p_nul) {
+						// Shouldn't happen...
+						break;
+					}
+
+					if ((p_nul - p) <= 1) {
+						// Empty string.
+						track.name.clear();
+					} else {
+						// Copy the string data.
+						track.name.assign(p, (p_nul - p));
+					}
+
+					// Next string.
+					p = p_nul + 1;
+				}
+				nsfe.has.tlbl = 1;
+				nsfe.has.any_tlist = 1;
+				break;
+			}
+
+			case NSFe_Chunk_taut: {
+				// 'taut' chunk
+				int track_count = initNSFeTracks();
+				if (track_count <= 0) {
+					// No tracks...
+					break;
+				}
+
+				// Read the chunk data into the temporary buffer.
+				int err = read_chunk(chunk_size);
+				if (err > 0) {
+					// Skip the chunk.
+					break;
+				} else if (err < 0) {
+					// Error reading the chunk...
+					return err;
+				}
+
+				// Make sure the strings are NULL-terminated.
+				if (buf.back() != '\0') {
+					buf.push_back('\0');
+				}
+
+				// Should contain track_count strings.
+				// We'll allow up to track_count, ignoring any additional strings.
+				const char *p = reinterpret_cast<const char*>(buf.data());
+				const char *const p_end = p + buf.size();
+				for (int i = 0; i < track_count && p < p_end; i++) {
+					auto &track = nsfe.tracks[i];
+
+					size_t remain = p_end - p;
+					const char *const p_nul = static_cast<const char*>(memchr(p, '\0', remain));
+					assert(p_nul != nullptr);
+					if (!p_nul) {
+						// Shouldn't happen...
+						break;
+					}
+
+					if ((p_nul - p) <= 1) {
+						// Empty string.
+						track.author.clear();
+					} else {
+						// Copy the string data.
+						track.author.assign(p, (p_nul - p));
+					}
+
+					// Next string.
+					p = p_nul + 1;
+				}
+				nsfe.has.taut = 1;
+				nsfe.has.any_tlist = 1;
+				break;
+			}
+
+			case NSFe_Chunk_auth: {
+				// 'auth' chunk
+				// Read the chunk data into nsfe.auth.strtbl.
+				// NOTE: Limiting to 16,384 bytes.
+				assert(chunk_size > 0);
+				assert(chunk_size <= 16384);
+				if (chunk_size == 0 || chunk_size > 16384) {
+					// Empty chunk, or too big...
+					break;
+				}
+
+				rp::uvector<char> &strtbl = nsfe.auth.strtbl;
+				strtbl.resize(chunk_size);
+				size = file->read(strtbl.data(), strtbl.size());
+				if (size != strtbl.size()) {
+					// Read error.
+					strtbl.clear();
+					int err = -file->lastError();
+					if (err == 0) {
+						err = -EIO;
+					}
+					return err;
+				}
+
+				// Make sure the strings are NULL-terminated.
+				if (strtbl.back() != '\0') {
+					strtbl.push_back('\0');
+				}
+
+				// Should contain 4 strings.
+				// We'll allow up to 4, ignoring any additional strings.
+				const char *p = nsfe.auth.strtbl.data();
+				const char *const p_end = nsfe.auth.strtbl.data() + nsfe.auth.strtbl.size();
+				for (size_t i = 0; i < ARRAY_SIZE(nsfe.auth.str) && p < p_end; i++) {
+					size_t remain = p_end - p;
+					const char *const p_nul = static_cast<const char*>(memchr(p, '\0', remain));
+					assert(p_nul != nullptr);
+					if (!p_nul) {
+						// Shouldn't happen...
+						break;
+					}
+
+					if ((p_nul - p) <= 1) {
+						// Empty string.
+						nsfe.auth.str[i] = nullptr;
+					} else {
+						// Set the string pointer.
+						nsfe.auth.str[i] = p;
+					}
+
+					// Next string.
+					p = p_nul + 1;
+				}
+				nsfe.has.auth = 1;
+				break;
+			}
+
+			case NSFe_Chunk_text: {
+				// 'text' chunk
+				// Read the chunk data into nsfe.text.
+				// NOTE: Limiting to 16,384 bytes.
+				assert(chunk_size > 0);
+				assert(chunk_size <= 16384);
+				if (chunk_size == 0 || chunk_size > 16384) {
+					// Too big...
+					break;
+				}
+
+				nsfe.text.resize(chunk_size);
+				size = file->read(const_cast<char*>(nsfe.text.data()), chunk_size);
+				if (size != chunk_size) {
+					// Read error.
+					nsfe.text.clear();
+					int err = -file->lastError();
+					if (err == 0) {
+						err = -EIO;
+					}
+					return err;
+				}
+				nsfe.has.text = 1;
+				break;
+			}
+
+			default:
+				break;
+		}
+
+		if (done) {
+			break;
+		}
+
+		// Add the chunk header and chunk size to the seek position.
+		pos += sizeof(chunkHeader) + chunk_size;
+	}
+
+	return 0;
+}
+
+/**
+ * Format a duration as m:ss.dd.
+ * @param duration Duration
+ * @return Formatted duration ("<?>" if negative)
+ */
+string NSFPrivate::formatDuration(int32_t duration)
+{
+	string s_ret;
+
+	if (duration < 0) {
+		// Duration not set.
+		// NOTE: Assigning to `s_ret` for named-return-value optimization.
+		s_ret.assign("<?>", 3);
+		return s_ret;
+	}
+
+	const uint32_t u_duration = static_cast<uint32_t>(duration);
+	const unsigned int min = (u_duration / 1000) / 60;
+	const unsigned int sec = (u_duration / 1000) % 60;
+	const unsigned int ms =  (u_duration % 1000);
+	fmt::format_to(std::back_inserter(s_ret), FSTR("{:d}:{:0>2d}.{:0>3d}"), min, sec, ms);
+	return s_ret;
+};
 
 /** NSF **/
 
@@ -91,7 +833,6 @@ NSF::NSF(const IRpFilePtr &file)
 	: super(new NSFPrivate(file))
 {
 	RP_D(NSF);
-	d->mimeType = "audio/x-nsf";	// unofficial
 	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
@@ -101,27 +842,57 @@ NSF::NSF(const IRpFilePtr &file)
 
 	// Read the NSF header.
 	d->file->rewind();
-	size_t size = d->file->read(&d->nsfHeader, sizeof(d->nsfHeader));
-	if (size != sizeof(d->nsfHeader)) {
+	size_t size = d->file->read(&d->header, sizeof(d->header));
+	if (size != sizeof(d->header)) {
 		d->file.reset();
 		return;
 	}
 
 	// Check if this file is supported.
 	const DetectInfo info = {
-		{0, sizeof(d->nsfHeader), reinterpret_cast<const uint8_t*>(&d->nsfHeader)},
+		{0, sizeof(d->header), reinterpret_cast<const uint8_t*>(&d->header)},
 		nullptr,	// ext (not needed for NSF)
 		0		// szFile (not needed for NSF)
 	};
-	d->isValid = (isRomSupported_static(&info) >= 0);
+	d->audioFormat = static_cast<NSFPrivate::AudioFormat>(isRomSupported_static(&info));
+	d->isValid = (static_cast<int>(d->audioFormat) >= 0);
 
 	if (!d->isValid) {
 		d->file.reset();
 		return;
 	}
 
-	// Is PAL?
-	d->isPAL = (d->nsfHeader.tv_system == NSF_TV_PAL);
+	switch (d->audioFormat) {
+		default:
+			assert(!"Invalid NSF audio format.");
+			d->isValid = false;
+			d->file.reset();
+			break;
+
+		case NSFPrivate::AudioFormat::NSF: {
+			d->mimeType = "audio/x-nsf";	// unofficial
+
+			const NSF_Header *const nsfHeader = &d->header.nsf;
+			d->isPAL = (nsfHeader->tv_system == NSF_TV_PAL);
+
+			// If this is NSF2, and metadata is available,
+			// read the metadata.
+			if (nsfHeader->version == 2) {
+				d->readNSFeMetadata();
+			}
+			break;
+		}
+
+		case NSFPrivate::AudioFormat::NSFe:
+			d->mimeType = "audio/x-nsfe";	// unofficial
+
+			// Read the NSFe metadata.
+			d->readNSFeMetadata();
+			if (d->nsfe.has.INFO) {
+				d->isPAL = (d->nsfe.INFO.pal_ntsc_bits == NSFe_INFO_IS_PAL);
+			}
+			break;
+	}
 }
 
 /**
@@ -140,20 +911,32 @@ int NSF::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(NSFPrivate::AudioFormat::Unknown);
 	}
 
 	const NSF_Header *const nsfHeader =
 		reinterpret_cast<const NSF_Header*>(info->header.pData);
 
-	// Check the NSF magic number.
+	// Check for the NSF magic number.
 	if (!memcmp(nsfHeader->magic, NSF_MAGIC, sizeof(nsfHeader->magic))) {
 		// Found the NSF magic number.
-		return 0;
+		// Version number must be either 1 or 2.
+		if (nsfHeader->version == 1 || nsfHeader->version == 2) {
+			// Valid version number.
+			return static_cast<int>(NSFPrivate::AudioFormat::NSF);
+		}
+	}
+
+	// Check for the NSFe magic number.
+	const NSFe_Header *const nsfeHeader =
+		reinterpret_cast<const NSFe_Header*>(info->header.pData);
+	if (nsfeHeader->magic == cpu_to_be32(NSFe_MAGIC)) {
+		// It's an NSFe file.
+		return static_cast<int>(NSFPrivate::AudioFormat::NSFe);
 	}
 
 	// Not supported.
-	return -1;
+	return static_cast<int>(NSFPrivate::AudioFormat::Unknown);
 }
 
 /**
@@ -200,78 +983,330 @@ int NSF::loadFieldData(void)
 		return -EIO;
 	}
 
-	// NSF header.
-	const NSF_Header *const nsfHeader = &d->nsfHeader;
-	d->fields.reserve(10);	// Maximum of 10 fields.
+	// Field count:
+	// - NSF Version: 1
+	// - NSF1/NSF2: 10
+	// - NSFe:
+	//   - 'auth': 4
+	//   - 'INFO': 7
+	//   - 'text': 1
+	d->fields.reserve(1+10+4+7+1);
 
-	// NOTE: The NSF specification says ASCII, but I'm assuming
-	// the text is cp1252 and/or Shift-JIS.
-
-	// Title.
-	if (nsfHeader->title[0] != 0) {
-		d->fields.addField_string(C_("RomData|Audio", "Title"),
-			cp1252_sjis_to_utf8(nsfHeader->title, sizeof(nsfHeader->title)));
+	// NSF version
+	string s_nsfVersion;
+	switch (d->audioFormat) {
+		default:
+			assert(!"Invalid NSF audio format.");
+			break;
+		case NSFPrivate::AudioFormat::NSF:
+			fmt::format_to(std::back_inserter(s_nsfVersion), FSTR("NSF{:d}"), d->header.nsf.version);
+			break;
+		case NSFPrivate::AudioFormat::NSFe:
+			s_nsfVersion = "NSFe";
+			break;
 	}
+	d->fields.addField_string(C_("NSF", "NSF Version"),
+		(likely(!s_nsfVersion.empty())) ? s_nsfVersion.c_str() : C_("RomData", "Unknown"));
 
-	// Composer.
-	if (nsfHeader->composer[0] != 0) {
-		d->fields.addField_string(C_("RomData|Audio", "Composer"),
-			cp1252_sjis_to_utf8(nsfHeader->composer, sizeof(nsfHeader->composer)));
-	}
-
-	// Copyright.
-	if (nsfHeader->copyright[0] != 0) {
-		d->fields.addField_string(C_("RomData", "Copyright"),
-			cp1252_sjis_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
-	}
-
-	// Number of tracks.
-	d->fields.addField_string_numeric(C_("RomData|Audio", "Track Count"),
-		nsfHeader->track_count);
-
-	// Default track number.
-	d->fields.addField_string_numeric(C_("RomData|Audio", "Default Track #"),
-		nsfHeader->default_track);
-
-	// Load address.
-	d->fields.addField_string_numeric(C_("NSF", "Load Address"),
-		le16_to_cpu(nsfHeader->load_address),
-		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
-
-	// Init address.
-	d->fields.addField_string_numeric(C_("NSF", "Init Address"),
-		le16_to_cpu(nsfHeader->init_address),
-		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
-
-	// Play address.
-	d->fields.addField_string_numeric(C_("NSF", "Play Address"),
-		le16_to_cpu(nsfHeader->play_address),
-		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
-
-	// TV System.
-	// TODO: NTSC/PAL framerates?
-	// NOTE: NSF uses an enum, not a bitfield.
+	// TV system
 	static const array<const char*, 2> tv_system_bitfield_names = {{
 		"NTSC", "PAL",
 	}};
-	uint32_t bfval = nsfHeader->tv_system;
-	if (bfval < NSF_TV_MAX) {
-		bfval++;
-	} else {
-		bfval = 0;
-	}
-	vector<string> *const v_tv_system_bitfield_names = RomFields::strArrayToVector(tv_system_bitfield_names);
-	d->fields.addField_bitfield(C_("NSF", "TV System"),
-		v_tv_system_bitfield_names, 0, bfval);
 
-	// Expansion audio.
-	static const array<const char*, 6> expansion_bitfield_names = {{
+	// Expansion audio
+	static const array<const char*, 7> expansion_bitfield_names = {{
 		"Konami VRC6", "Konami VRC7", "2C33 (FDS)",
 		"MMC5", "Namco N163", "Sunsoft 5B",
+		"VT02+"
 	}};
-	vector<string> *const v_expansion_bitfield_names = RomFields::strArrayToVector(expansion_bitfield_names);
-	d->fields.addField_bitfield(C_("NSF", "Expansion"),
-		v_expansion_bitfield_names, 3, nsfHeader->expansion_audio);
+
+	static const array<const char*, 4> nsf2_feature_flags_names = {{
+		"IRQ support", "Non-returning INIT",
+		"No PLAY subroutine", "NSFe has mandatory chunk",
+	}};
+
+	bool hasNSFtab = false;
+	if (d->audioFormat == NSFPrivate::AudioFormat::NSF) {
+		// NSF header
+		const NSF_Header *const nsfHeader = &d->header.nsf;
+		d->fields.setTabName(0, "NSF");
+		hasNSFtab = true;
+
+		// NOTE: The NSF specification says ASCII, but I'm assuming
+		// the text is cp1252 and/or Shift-JIS.
+
+		// Title
+		if (nsfHeader->title[0] != 0) {
+			d->fields.addField_string(C_("RomData|Audio", "Title"),
+				cp1252_sjis_to_utf8(nsfHeader->title, sizeof(nsfHeader->title)));
+		}
+
+		// Composer
+		if (nsfHeader->composer[0] != 0) {
+			d->fields.addField_string(C_("RomData|Audio", "Composer"),
+				cp1252_sjis_to_utf8(nsfHeader->composer, sizeof(nsfHeader->composer)));
+		}
+
+		// Copyright
+		if (nsfHeader->copyright[0] != 0) {
+			d->fields.addField_string(C_("RomData", "Copyright"),
+				cp1252_sjis_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
+		}
+
+		// Number of tracks
+		d->fields.addField_string_numeric(C_("RomData|Audio", "Track Count"),
+			nsfHeader->track_count);
+
+		// Default track number
+		d->fields.addField_string_numeric(C_("RomData|Audio", "Default Track #"),
+			nsfHeader->default_track);
+
+		// Load address
+		d->fields.addField_string_numeric(C_("RomData|Audio", "Load Address"),
+			le16_to_cpu(nsfHeader->load_address),
+			RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
+
+		// Init address
+		d->fields.addField_string_numeric(C_("RomData|Audio", "Init Address"),
+			le16_to_cpu(nsfHeader->init_address),
+			RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
+
+		// Play address
+		d->fields.addField_string_numeric(C_("RomData|Audio", "Play Address"),
+			le16_to_cpu(nsfHeader->play_address),
+			RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
+
+		// TV system
+		// TODO: NTSC/PAL framerates?
+		// NOTE: NSF uses an enum, not a bitfield.
+		uint32_t bfval = nsfHeader->tv_system;
+		if (bfval < NSF_TV_MAX) {
+			bfval++;
+		} else {
+			bfval = 0;
+		}
+		vector<string> *const v_tv_system_bitfield_names = RomFields::strArrayToVector(tv_system_bitfield_names);
+		d->fields.addField_bitfield(C_("NSF", "TV System"),
+			v_tv_system_bitfield_names, 0, bfval);
+
+		// Expansion audio
+		vector<string> *const v_expansion_bitfield_names = RomFields::strArrayToVector(expansion_bitfield_names);
+		d->fields.addField_bitfield(C_("NSF", "Expansion"),
+			v_expansion_bitfield_names, 3, nsfHeader->expansion_audio);
+
+		if (nsfHeader->version >= 2) {
+			// NSF2 feature flags
+			// Bits 0-3 are reserved. Adjust the flags to match the names.
+			const uint32_t adjflags = (nsfHeader->nsf2_feature_flags) >> 4;
+			vector<string> *const v_nsf2_feature_flags_names = RomFields::strArrayToVector(nsf2_feature_flags_names);
+			d->fields.addField_bitfield(C_("NSF", "NSF2 Feature Flags"),
+				v_nsf2_feature_flags_names, 2, adjflags);
+		}
+	}
+
+	if (d->nsfe.has.u16 != 0) {
+		// NSFe metadata was loaded.
+		if (hasNSFtab) {
+			d->fields.addTab("NSFe");
+		} else {
+			d->fields.setTabName(0, "NSFe");
+		}
+
+		// NOTE: Using the same ordering as NSF2, even though it
+		// doesn't necessarily match NSFe ordering.
+		const auto *nsfe = &d->nsfe;
+
+		if (nsfe->has.auth) {
+			// 'auth' chunk is available.
+
+			// Title
+			if (nsfe->auth.game_title) {
+				d->fields.addField_string(C_("RomData|Audio", "Title"), nsfe->auth.game_title);
+			}
+
+			// Artist
+			if (nsfe->auth.artist) {
+				d->fields.addField_string(C_("RomData|Audio", "Composer"), nsfe->auth.artist);
+			}
+
+			// Copyright
+			if (nsfe->auth.copyright) {
+				d->fields.addField_string(C_("RomData", "Copyright"), nsfe->auth.copyright);
+			}
+
+			// Ripper
+			if (nsfe->auth.ripper) {
+				d->fields.addField_string(C_("RomData|Audio", "Ripper"), nsfe->auth.ripper);
+			}
+		}
+
+		if (nsfe->has.INFO) {
+			// Number of tracks
+			d->fields.addField_string_numeric(C_("RomData|Audio", "Track Count"),
+				nsfe->INFO.song_count);
+
+			// Default track number
+			d->fields.addField_string_numeric(C_("RomData|Audio", "Default Track #"),
+				nsfe->INFO.starting_song);
+
+			// Load address
+			d->fields.addField_string_numeric(C_("RomData|Audio", "Load Address"),
+				le16_to_cpu(nsfe->INFO.load_address),
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
+
+			// Init address
+			d->fields.addField_string_numeric(C_("RomData|Audio", "Init Address"),
+				le16_to_cpu(nsfe->INFO.init_address),
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
+
+			// Play address
+			d->fields.addField_string_numeric(C_("RomData|Audio", "Play Address"),
+				le16_to_cpu(nsfe->INFO.play_address),
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
+
+			// TV System
+			// TODO: NTSC/PAL framerates?
+			// NOTE: NSFe uses an unusual format:
+			// - Bit 0: clear for NTSC, set for PAL
+			// - Bit 1: if set, supports both NTSC and PAL
+			uint32_t bfval;
+			if (nsfe->INFO.extra_sound_chips & NSFe_INFO_DUAL_NTSC_PAL) {
+				bfval = 3;	// NTSC and PAL
+			} else if (nsfe->INFO.extra_sound_chips & NSFe_INFO_TV_TYPE_MASK) {
+				bfval = 2;	// PAL
+			} else {
+				bfval = 1;	// NTSC
+			}
+			vector<string> *const v_tv_system_bitfield_names = RomFields::strArrayToVector(tv_system_bitfield_names);
+			d->fields.addField_bitfield(C_("NSF", "TV System"),
+				v_tv_system_bitfield_names, 0, bfval);
+
+			// Expansion audio
+			vector<string> *const v_expansion_bitfield_names = RomFields::strArrayToVector(expansion_bitfield_names);
+			d->fields.addField_bitfield(C_("NSF", "Expansion"),
+				v_expansion_bitfield_names, 3, nsfe->INFO.extra_sound_chips);
+		}
+
+		if (nsfe->has.NSF2) {
+			// NSF2 feature flags
+			// Bits 0-3 are reserved. Adjust the flags to match the names.
+			const uint32_t adjflags = (nsfe->NSF2.nsf2_feature_flags) >> 4;
+			vector<string> *const v_nsf2_feature_flags_names = RomFields::strArrayToVector(nsf2_feature_flags_names);
+			d->fields.addField_bitfield(C_("NSF", "NSF2 Feature Flags"),
+				v_nsf2_feature_flags_names, 2, adjflags);
+		}
+
+		if (nsfe->has.text && likely(!nsfe->text.empty())) {
+			// 'text' chunk is available.
+			d->fields.addField_string(C_("NSF", "Description"), nsfe->text);
+		}
+
+		if (nsfe->has.any_tlist && !nsfe->tracks.empty()) {
+			// Track list
+			// NOTE: Not showing columns if we don't have the data for them.
+			const char *const s_yes = C_("RomData", "Yes");
+			const char *const s_no = C_("RomData", "No");
+
+			unsigned int track_num = 0;
+			auto *const vv_track_list = new RomFields::ListData_t(nsfe->tracks.size());
+			auto src_iter = nsfe->tracks.cbegin();
+			auto dest_iter = vv_track_list->begin();
+			const auto track_list_end = vv_track_list->end();
+			for ( ; dest_iter != track_list_end; ++src_iter, ++dest_iter, track_num++) {
+				vector<string> &data_row = *dest_iter;
+				data_row.reserve(7);	// 7 fields per row.
+
+				data_row.push_back(fmt::format_int(track_num).str());
+				if (nsfe->has.plst) {
+					if (src_iter->order >= 0) {
+						data_row.push_back(fmt::format_int(src_iter->order).str());
+					} else {
+						data_row.push_back(string());
+					}
+				}
+				if (nsfe->has.psfx) {
+					data_row.push_back(src_iter->is_sfx ? s_yes : s_no);
+				}
+				if (nsfe->has.tlbl) {
+					data_row.push_back(src_iter->name);
+				}
+				if (nsfe->has.taut) {
+					data_row.push_back(src_iter->author);
+				}
+
+				if (nsfe->has.time) {
+					data_row.push_back(d->formatDuration(src_iter->duration));
+				}
+				if (nsfe->has.fade) {
+					data_row.push_back(d->formatDuration(src_iter->fade));
+				}
+			}
+
+			vector<const char*> track_list_headers;
+			track_list_headers.reserve(7);
+
+			uint16_t align_data = TXA_R;
+			uint16_t sizing = COLSZ_R;
+			uint16_t sorting = COLSORT_NUM;
+			track_list_headers.push_back(C_("NSF|TrackList", "#"));
+
+			unsigned int shift = 2;	// for alignment/sorting
+			if (nsfe->has.plst) {
+				track_list_headers.push_back(C_("NSF|TrackList", "Order"));
+				align_data |= (TXA_R << shift);
+				sizing |= (COLSZ_R << shift);
+				sorting |= (COLSORT_NUM << shift);
+				shift += 2;
+			}
+			if (nsfe->has.psfx) {
+				track_list_headers.push_back(C_("NSF|TrackList", "Is SFX"));
+				align_data |= (TXA_R << shift);
+				sizing |= (COLSZ_R << shift);
+				sorting |= (COLSORT_STD << shift);
+				shift += 2;
+			}
+			if (nsfe->has.tlbl) {
+				track_list_headers.push_back(C_("NSF|TrackList", "Name"));
+				align_data |= (TXA_D << shift);
+				sizing |= (COLSZ_S << shift);
+				sorting |= (COLSORT_NC << shift);
+				shift += 2;
+			}
+			if (nsfe->has.taut) {
+				track_list_headers.push_back(C_("NSF|TrackList", "Author"));
+				align_data |= (TXA_D << shift);
+				sizing |= (COLSZ_S << shift);
+				sorting |= (COLSORT_NC << shift);
+				shift += 2;
+			}
+			if (nsfe->has.time) {
+				track_list_headers.push_back(C_("NSF|TrackList", "Duration"));
+				align_data |= (TXA_R << shift);
+				sizing |= (COLSZ_R << shift);
+				sorting |= (COLSORT_NUM << shift);
+				shift += 2;
+			}
+			if (nsfe->has.fade) {
+				track_list_headers.push_back(C_("NSF|TrackList", "Fade"));
+				align_data |= (TXA_R << shift);
+				sizing |= (COLSZ_R << shift);
+				sorting |= (COLSORT_NUM << shift);
+				shift += 2;
+			}
+			vector<string> *const v_track_list_headers = RomFields::strArrayToVector(track_list_headers);
+
+			RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
+			params.headers = v_track_list_headers;
+			params.data.single = vv_track_list;
+			params.col_attrs.align_headers = AFLD_ALIGN7(TXA_D, TXA_D, TXA_D, TXA_D, TXA_D, TXA_D, TXA_D);
+			params.col_attrs.align_data = align_data;
+			params.col_attrs.sizing = sizing;
+			params.col_attrs.sorting = sorting;
+			params.col_attrs.sort_col = 0; // #
+			params.col_attrs.sort_dir = RomFields::COLSORTORDER_ASCENDING;
+			d->fields.addField_listData(C_("NSF", "Track List"), &params);
+		}
+	}
 
 	// Finished reading the field data.
 	return d->fields.count();
@@ -296,26 +1331,50 @@ int NSF::loadMetaData(void)
 		return -EIO;
 	}
 
-	// NSF header.
-	const NSF_Header *const nsfHeader = &d->nsfHeader;
-	d->metaData.reserve(3);	// Maximum of 3 metadata properties.
+	if (d->audioFormat == NSFPrivate::AudioFormat::NSF) {
+		// NSF header
+		// TODO: Override NSF2 fields with NSFe metadata, if present?
+		const NSF_Header *const nsfHeader = &d->header.nsf;
+		d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
-	// Title.
-	if (nsfHeader->title[0] != 0) {
-		d->metaData.addMetaData_string(Property::Title,
-			cp1252_sjis_to_utf8(nsfHeader->title, sizeof(nsfHeader->title)));
+		// Title
+		if (nsfHeader->title[0] != 0) {
+			d->metaData.addMetaData_string(Property::Title,
+				cp1252_sjis_to_utf8(nsfHeader->title, sizeof(nsfHeader->title)));
+		}
+
+		// Composer
+		if (nsfHeader->composer[0] != 0) {
+			d->metaData.addMetaData_string(Property::Composer,
+				cp1252_sjis_to_utf8(nsfHeader->composer, sizeof(nsfHeader->composer)));
+		}
+
+		// Copyright
+		if (nsfHeader->copyright[0] != 0) {
+			d->metaData.addMetaData_string(Property::Copyright,
+				cp1252_sjis_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
+		}
 	}
 
-	// Composer.
-	if (nsfHeader->composer[0] != 0) {
-		d->metaData.addMetaData_string(Property::Composer,
-			cp1252_sjis_to_utf8(nsfHeader->composer, sizeof(nsfHeader->composer)));
-	}
+	if (d->nsfe.has.auth) {
+		// 'auth' chunk is available.
+		// NOTE: May overwrite NSF2 metadata if it's already present.
+		const auto *nsfe = &d->nsfe;
 
-	// Copyright.
-	if (nsfHeader->copyright[0] != 0) {
-		d->metaData.addMetaData_string(Property::Copyright,
-			cp1252_sjis_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
+		// Title
+		if (nsfe->auth.game_title) {
+			d->metaData.addMetaData_string(Property::Title, nsfe->auth.game_title);
+		}
+
+		// Artist
+		if (nsfe->auth.artist) {
+			d->metaData.addMetaData_string(Property::Composer, nsfe->auth.artist);
+		}
+
+		// Copyright
+		if (nsfe->auth.copyright) {
+			d->metaData.addMetaData_string(Property::Copyright, nsfe->auth.copyright);
+		}
 	}
 
 	// Finished reading the metadata.
