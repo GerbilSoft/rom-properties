@@ -1217,6 +1217,7 @@ int NSF::loadFieldData(void)
 			track_list_headers.reserve(7);
 
 			uint16_t align_data = TXA_R;
+			uint16_t sizing = COLSZ_R;
 			uint16_t sorting = COLSORT_NUM;
 			track_list_headers.push_back(C_("NSF|TrackList", "#"));
 
@@ -1224,36 +1225,42 @@ int NSF::loadFieldData(void)
 			if (nsfe->has.plst) {
 				track_list_headers.push_back(C_("NSF|TrackList", "Order"));
 				align_data |= (TXA_R << shift);
+				sizing |= (COLSZ_R << shift);
 				sorting |= (COLSORT_NUM << shift);
 				shift += 2;
 			}
 			if (nsfe->has.psfx) {
 				track_list_headers.push_back(C_("NSF|TrackList", "Is SFX"));
 				align_data |= (TXA_R << shift);
+				sizing |= (COLSZ_R << shift);
 				sorting |= (COLSORT_STD << shift);
 				shift += 2;
 			}
 			if (nsfe->has.tlbl) {
 				track_list_headers.push_back(C_("NSF|TrackList", "Name"));
 				align_data |= (TXA_D << shift);
+				sizing |= (COLSZ_S << shift);
 				sorting |= (COLSORT_NC << shift);
 				shift += 2;
 			}
 			if (nsfe->has.taut) {
 				track_list_headers.push_back(C_("NSF|TrackList", "Author"));
 				align_data |= (TXA_D << shift);
+				sizing |= (COLSZ_S << shift);
 				sorting |= (COLSORT_NC << shift);
 				shift += 2;
 			}
 			if (nsfe->has.time) {
 				track_list_headers.push_back(C_("NSF|TrackList", "Duration"));
 				align_data |= (TXA_R << shift);
+				sizing |= (COLSZ_R << shift);
 				sorting |= (COLSORT_STD << shift);
 				shift += 2;
 			}
 			if (nsfe->has.fade) {
 				track_list_headers.push_back(C_("NSF|TrackList", "Fade"));
 				align_data |= (TXA_R << shift);
+				sizing |= (COLSZ_R << shift);
 				sorting |= (COLSORT_STD << shift);
 				shift += 2;
 			}
@@ -1264,6 +1271,7 @@ int NSF::loadFieldData(void)
 			params.data.single = vv_track_list;
 			params.col_attrs.align_headers = AFLD_ALIGN7(TXA_D, TXA_D, TXA_D, TXA_D, TXA_D, TXA_D, TXA_D);
 			params.col_attrs.align_data = align_data;
+			params.col_attrs.sizing = sizing;
 			params.col_attrs.sorting = sorting;
 			params.col_attrs.sort_col = 0; // #
 			params.col_attrs.sort_dir = RomFields::COLSORTORDER_ASCENDING;
