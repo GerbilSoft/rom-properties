@@ -54,6 +54,14 @@ public:
 
 public:
 	/**
+	 * Expand zxay_buf to the specified size.
+	 * This is done by reading more data from the file.
+	 * @param req_size Requested size
+	 * @return Actual size
+	 */
+	size_t expand_zxay_buf(size_t req_size);
+
+	/**
 	 * Read a C string from the file.
 	 * @param p_address Offset in the file that contains the 16-bit pointer
 	 * @return C string (as std::string), or empty string on error.
@@ -87,6 +95,42 @@ ZXAYPrivate::ZXAYPrivate(const IRpFilePtr &file)
 {}
 
 /**
+ * Expand zxay_buf to the specified size.
+ * This is done by reading more data from the file.
+ * @param req_size Requested size
+ * @return Actual size
+ */
+size_t ZXAYPrivate::expand_zxay_buf(size_t req_size)
+{
+	if (!file || !file->isOpen()) {
+		// File isn't open...
+		return zxay_buf.size();
+	}
+
+	if (req_size <= zxay_buf.size()) {
+		// Not going to shrink the buffer...
+		return zxay_buf.size();
+	}
+
+	// Resize zxay_buf.
+	const size_t cur_size = zxay_buf.size();
+	zxay_buf.resize(req_size);
+
+	// Read more data from the file.
+	size_t to_read = req_size - cur_size;
+	size_t sz_read = file->seekAndRead(
+		static_cast<off64_t>(cur_size),
+		&zxay_buf[cur_size], to_read);
+	if (sz_read != to_read) {
+		// Short read? May still be able to continue.
+		zxay_buf.resize(cur_size + sz_read);
+	}
+
+	// Buffer resized.
+	return zxay_buf.size();
+}
+
+/**
  * Read a C string from the file.
  * @param p_address Offset in the file that contains the 16-bit pointer
  * @return C string (as std::string), or empty string on error.
@@ -98,24 +142,8 @@ string ZXAYPrivate::readCString(off64_t p_address)
 	// Check if the address is available in the buffer.
 	size_t req_size = static_cast<size_t>(p_address) + 2;
 	if (zxay_buf.size() < req_size) {
-		// Need to read more data into the buffer!
-		// As a read-ahead optimization read 256 bytes
-		// past the requested address.
-		size_t to_resize = req_size += 256;
-		const size_t cur_size = zxay_buf.size();
-		zxay_buf.resize(to_resize);
-
-		// Read in more data.
-		size_t to_read = to_resize - cur_size;
-		size_t sz_read = file->seekAndRead(
-			static_cast<off64_t>(cur_size),
-			&zxay_buf[cur_size], to_read);
-		if (sz_read != to_read) {
-			// Short read? May still be able to continue.
-			zxay_buf.resize(cur_size + sz_read);
-		}
-
-		if (zxay_buf.size() < req_size) {
+		size_t new_size = expand_zxay_buf(req_size + 256);
+		if (new_size < req_size) {
 			// Still unable to read data...
 			return s_ret;
 		}
@@ -132,21 +160,8 @@ string ZXAYPrivate::readCString(off64_t p_address)
 	if (zxay_buf.size() < req_size) {
 		// Need to read more data into the buffer!
 		// Read the required size.
-		const size_t to_resize = req_size;
-		const size_t cur_size = zxay_buf.size();
-		zxay_buf.resize(to_resize);
-
-		// Read in more data.
-		size_t to_read = to_resize - cur_size;
-		size_t sz_read = file->seekAndRead(
-			static_cast<off64_t>(cur_size),
-			&zxay_buf[cur_size], to_read);
-		if (sz_read != to_read) {
-			// Short read? May still be able to continue.
-			zxay_buf.resize(cur_size + sz_read);
-		}
-
-		if (zxay_buf.size() < req_size) {
+		size_t new_size = expand_zxay_buf(req_size + 256);
+		if (new_size < req_size) {
 			// Still unable to read data...
 			return s_ret;
 		}
