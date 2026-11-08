@@ -139,20 +139,13 @@ public:
 		// 'plst', 'psfx', 'time', 'fade', 'tlbl', 'taut'
 		struct track_t {
 			explicit track_t()
-				: order(0)
+				: order(-1)
 				, is_sfx(false)
 				, duration(0)
 				, fade(0)
 			{}
 
-			explicit track_t(uint8_t index)
-				: order(index)
-				, is_sfx(false)
-				, duration(0)
-				, fade(0)
-			{}
-
-			uint8_t order;		// 'plst': playback order (if 'plst' is not set, this is set to the track index)
+			int16_t order;		// 'plst': playback order (-1 if not set)
 			bool is_sfx;		// 'psfx': true if this is a "sound effect" instead of music
 			uint32_t duration;	// 'time': track duration, in milliseconds
 			uint32_t fade;		// 'fade': fadeout duration, in milliseconds (default is 0)
@@ -416,9 +409,11 @@ int NSFPrivate::readNSFeMetadata(void)
 				}
 
 				// Chunk contains one byte per track.
-				assert(chunk_size >= static_cast<unsigned int>(track_count));
-				if (chunk_size < static_cast<unsigned int>(track_count)) {
-					// Chunk is too small...
+				// NOTE: May not contain every track number, and may have
+				// duplicated track numbers.
+				assert(chunk_size > 0);
+				if (chunk_size == 0) {
+					// Chunk is empty.
 					break;
 				}
 
@@ -435,8 +430,15 @@ int NSFPrivate::readNSFeMetadata(void)
 				// Update the track list.
 				const uint8_t *p = buf.data();
 				const uint8_t *const p_end = p + buf.size();
-				for (int i = 0; i < track_count && p < p_end; i++, p++) {
-					nsfe.tracks[i].order = *p;
+				int16_t order = 0;
+				for (; p < p_end; p++) {
+					unsigned int i = static_cast<unsigned int>(*p);
+					if (i < nsfe.tracks.size()) {
+						// TODO: Handle duplicates?
+						if (nsfe.tracks[i].order < 0) {
+							nsfe.tracks[i].order = order++;
+						}
+					}
 				}
 				nsfe.has.plst = 1;
 				nsfe.has.any_tlist = 1;
@@ -1029,7 +1031,11 @@ int NSF::loadFieldData(void)
 
 				data_row.push_back(fmt::format_int(track_num).str());
 				if (nsfe->has.plst) {
-					data_row.push_back(fmt::format_int(src_iter->order).str());
+					if (src_iter->order >= 0) {
+						data_row.push_back(fmt::format_int(src_iter->order).str());
+					} else {
+						data_row.push_back(string());
+					}
 				}
 				if (nsfe->has.psfx) {
 					data_row.push_back(src_iter->is_sfx ? s_yes : s_no);
