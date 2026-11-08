@@ -328,7 +328,7 @@ int NSFPrivate::readNSFeMetadata(void)
 	auto read_chunk = [&buf, this](unsigned int chunk_size) -> int {
 		// Read the chunk data into the temporary buffer.
 		// NOTE: Limiting to 16,384 bytes.
-		static constexpr unsigned int CHUNK_SIZE_MAX = 16384;
+		static constexpr unsigned int CHUNK_SIZE_MAX = 16384U;
 		assert(chunk_size > 0);
 		assert(chunk_size <= CHUNK_SIZE_MAX);
 		if (chunk_size == 0) {
