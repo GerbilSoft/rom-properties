@@ -177,6 +177,13 @@ public:
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
 	int readNSFeMetadata(void);
+
+	/**
+	 * Format a duration as m:ss.dd.
+	 * @param duration Duration
+	 * @return Formatted duration ("<?>" if negative)
+	 */
+	static string formatDuration(int32_t duration);
 };
 
 ROMDATA_IMPL(NSF)
@@ -672,6 +679,30 @@ int NSFPrivate::readNSFeMetadata(void)
 	return 0;
 }
 
+/**
+ * Format a duration as m:ss.dd.
+ * @param duration Duration
+ * @return Formatted duration ("<?>" if negative)
+ */
+string NSFPrivate::formatDuration(int32_t duration)
+{
+	string s_ret;
+
+	if (duration < 0) {
+		// Duration not set.
+		// NOTE: Assigning to `s_ret` for named-return-value optimization.
+		s_ret.assign("<?>", 3);
+		return s_ret;
+	}
+
+	const uint32_t u_duration = static_cast<unsigned int>(duration);
+	const uint32_t min = (u_duration / 1000) / 60;
+	const uint32_t sec = (u_duration / 1000) % 60;
+	const uint32_t ms =  (u_duration % 1000);
+	fmt::format_to(std::back_inserter(s_ret), FSTR("{:d}:{:0>2d}.{:0>3d}"), min, sec, ms);
+	return s_ret;
+};
+
 /** NSF **/
 
 /**
@@ -1083,33 +1114,11 @@ int NSF::loadFieldData(void)
 					data_row.push_back(src_iter->author);
 				}
 
-				/**
-				 * Format a duration as m:ss.dd.
-				 * @param duration Duration
-				 * @return Formatted duration ("<?>" if negative)
-				 */
-				auto format_duration = [](int32_t duration) -> std::string {
-					std::string s_ret;
-					if (duration < 0) {
-						// Duration not set.
-						// NOTE: Assigning to `s_ret` for named-return-value optimization.
-						s_ret.assign("<?>", 3);
-						return s_ret;
-					}
-
-					const uint32_t u_duration = static_cast<unsigned int>(duration);
-					const uint32_t min = (u_duration / 1000) / 60;
-					const uint32_t sec = (u_duration / 1000) % 60;
-					const uint32_t ms =  (u_duration % 1000);
-					fmt::format_to(std::back_inserter(s_ret), FSTR("{:d}:{:0>2d}.{:0>3d}"), min, sec, ms);
-					return s_ret;
-				};
-
 				if (nsfe->has.time) {
-					data_row.push_back(format_duration(src_iter->duration));
+					data_row.push_back(d->formatDuration(src_iter->duration));
 				}
 				if (nsfe->has.fade) {
-					data_row.push_back(format_duration(src_iter->fade));
+					data_row.push_back(d->formatDuration(src_iter->fade));
 				}
 			}
 
