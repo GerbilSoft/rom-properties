@@ -273,6 +273,7 @@ so administrator access is required.
 | S98 Format                    |       Yes      |    Yes   |       N/A       |       N/A      |
 | Super NES SPC Format          |       Yes      |    Yes   |       N/A       |       N/A      |
 | Video Game Music              |       Yes      |    Yes   |       N/A       |       N/A      |
+| ZX Spectrum AY-file           |       Yes      |    No    |       N/A       |       N/A      |
 
 ### Media Formats
 
