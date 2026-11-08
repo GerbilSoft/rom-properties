@@ -407,6 +407,30 @@ int NSFPrivate::readNSFeMetadata(void)
 				break;
 			}
 
+			case NSFe_Chunk_NSF2: {
+				// 'NSF2' chunk
+				// NOTE: Chunk may be larger than 1 byte. Ignore the extra data.
+				assert(!isNSF2);
+				assert(chunk_size >= sizeof(NSFe_NSF2_t));
+				if (isNSF2 || chunk_size < sizeof(NSFe_NSF2_t)) {
+					// isNSF2: This chunk is not allowed.
+					// Other: Chunk size is incorrect.
+					break;
+				}
+
+				size = file->read(&nsfe.NSF2, sizeof(nsfe.NSF2));
+				if (size != sizeof(nsfe.NSF2)) {
+					// Read error.
+					int err = -file->lastError();
+					if (err == 0) {
+						err = -EIO;
+					}
+					return err;
+				}
+				nsfe.has.NSF2 = 1;
+				break;
+			}
+
 			case NSFe_Chunk_plst: {
 				// 'plst' chunk
 				int track_count = initNSFeTracks();
@@ -1001,6 +1025,11 @@ int NSF::loadFieldData(void)
 		"VT02+"
 	}};
 
+	static const array<const char*, 4> nsf2_feature_flags_names = {{
+		"IRQ support", "Non-returning INIT",
+		"No PLAY subroutine", "NSFe has mandatory chunk",
+	}};
+
 	bool hasNSFtab = false;
 	if (d->audioFormat == NSFPrivate::AudioFormat::NSF) {
 		// NSF header
@@ -1072,11 +1101,6 @@ int NSF::loadFieldData(void)
 
 		if (nsfHeader->version >= 2) {
 			// NSF2 feature flags
-			static const array<const char*, 4> nsf2_feature_flags_names = {{
-				"IRQ support", "Non-returning INIT",
-				"No PLAY subroutine", "NSFe has mandatory chunk",
-			}};
-
 			// Bits 0-3 are reserved. Adjust the flags to match the names.
 			const uint32_t adjflags = (nsfHeader->nsf2_feature_flags) >> 4;
 			vector<string> *const v_nsf2_feature_flags_names = RomFields::strArrayToVector(nsf2_feature_flags_names);
@@ -1166,6 +1190,15 @@ int NSF::loadFieldData(void)
 			vector<string> *const v_expansion_bitfield_names = RomFields::strArrayToVector(expansion_bitfield_names);
 			d->fields.addField_bitfield(C_("NSF", "Expansion"),
 				v_expansion_bitfield_names, 3, nsfe->INFO.extra_sound_chips);
+		}
+
+		if (nsfe->has.NSF2) {
+			// NSF2 feature flags
+			// Bits 0-3 are reserved. Adjust the flags to match the names.
+			const uint32_t adjflags = (nsfe->NSF2.nsf2_feature_flags) >> 4;
+			vector<string> *const v_nsf2_feature_flags_names = RomFields::strArrayToVector(nsf2_feature_flags_names);
+			d->fields.addField_bitfield(C_("NSF", "NSF2 Feature Flags"),
+				v_nsf2_feature_flags_names, 2, adjflags);
 		}
 
 		if (nsfe->has.text && likely(!nsfe->text.empty())) {
