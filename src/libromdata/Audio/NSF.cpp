@@ -787,10 +787,10 @@ string NSFPrivate::formatDuration(int32_t duration)
 		return s_ret;
 	}
 
-	const uint32_t u_duration = static_cast<unsigned int>(duration);
-	const uint32_t min = (u_duration / 1000) / 60;
-	const uint32_t sec = (u_duration / 1000) % 60;
-	const uint32_t ms =  (u_duration % 1000);
+	const uint32_t u_duration = static_cast<uint32_t>(duration);
+	const unsigned int min = (u_duration / 1000) / 60;
+	const unsigned int sec = (u_duration / 1000) % 60;
+	const unsigned int ms =  (u_duration % 1000);
 	fmt::format_to(std::back_inserter(s_ret), FSTR("{:d}:{:0>2d}.{:0>3d}"), min, sec, ms);
 	return s_ret;
 };
@@ -1255,14 +1255,14 @@ int NSF::loadFieldData(void)
 				track_list_headers.push_back(C_("NSF|TrackList", "Duration"));
 				align_data |= (TXA_R << shift);
 				sizing |= (COLSZ_R << shift);
-				sorting |= (COLSORT_STD << shift);
+				sorting |= (COLSORT_NUM << shift);
 				shift += 2;
 			}
 			if (nsfe->has.fade) {
 				track_list_headers.push_back(C_("NSF|TrackList", "Fade"));
 				align_data |= (TXA_R << shift);
 				sizing |= (COLSZ_R << shift);
-				sorting |= (COLSORT_STD << shift);
+				sorting |= (COLSORT_NUM << shift);
 				shift += 2;
 			}
 			vector<string> *const v_track_list_headers = RomFields::strArrayToVector(track_list_headers);
