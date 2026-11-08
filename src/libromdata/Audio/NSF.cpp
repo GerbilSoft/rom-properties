@@ -383,53 +383,42 @@ int NSFPrivate::readNSFeMetadata(void)
 				done = true;
 				break;
 
-			case NSFe_Chunk_INFO: {
-				// 'info' chunk
-				// NOTE: Chunk may be larger than 10 bytes. Ignore the extra data.
-				assert(!isNSF2);
-				assert(chunk_size >= sizeof(NSFe_INFO_t));
-				if (isNSF2 || chunk_size < sizeof(NSFe_INFO_t)) {
-					// isNSF2: This chunk is not allowed.
-					// Other: Chunk size is incorrect.
-					break;
-				}
-
-				size = file->read(&nsfe.INFO, sizeof(nsfe.INFO));
-				if (size != sizeof(nsfe.INFO)) {
-					// Read error.
-					int err = -file->lastError();
-					if (err == 0) {
-						err = -EIO;
-					}
-					return err;
-				}
-				nsfe.has.INFO = 1;
-				break;
-			}
-
-			case NSFe_Chunk_NSF2: {
-				// 'NSF2' chunk
-				// NOTE: Chunk may be larger than 1 byte. Ignore the extra data.
-				assert(!isNSF2);
-				assert(chunk_size >= sizeof(NSFe_NSF2_t));
-				if (isNSF2 || chunk_size < sizeof(NSFe_NSF2_t)) {
-					// isNSF2: This chunk is not allowed.
-					// Other: Chunk size is incorrect.
-					break;
-				}
-
-				size = file->read(&nsfe.NSF2, sizeof(nsfe.NSF2));
-				if (size != sizeof(nsfe.NSF2)) {
-					// Read error.
-					int err = -file->lastError();
-					if (err == 0) {
-						err = -EIO;
-					}
-					return err;
-				}
-				nsfe.has.NSF2 = 1;
-				break;
-			}
+			/**
+			 * Standard chunks that read in a fixed block of data.
+			 * @param fourCC Chunk fourCC (no quotes)
+			 * @param no_NSF2 If true, this chunk is not allowed in NSF2 files.
+			 */
+#define NSFe_STANDARD_CHUNK(fourCC, no_NSF2) \
+			case NSFe_Chunk_##fourCC: \
+				/* Standard chunk */ \
+				if (no_NSF2) { \
+					assert(!isNSF2); \
+					if (isNSF2) { \
+						/* Chunk is not allowed in NSF2 files. */ \
+						break; \
+					} \
+				} \
+\
+				assert(chunk_size >= sizeof(nsfe.fourCC)); \
+				if (chunk_size < sizeof(nsfe.fourCC)) { \
+					/* Chunk size is incorrect. */ \
+					break; \
+				} \
+\
+				size = file->read(&nsfe.fourCC, sizeof(nsfe.fourCC)); \
+				if (size != sizeof(nsfe.fourCC)) { \
+					/* Read error. */ \
+					int err = -file->lastError(); \
+					if (err == 0) { \
+						err = -EIO; \
+					} \
+					return err; \
+				} \
+				nsfe.has.fourCC = 1; \
+				break
+			
+			NSFe_STANDARD_CHUNK(INFO, true);
+			NSFe_STANDARD_CHUNK(NSF2, true);
 
 			case NSFe_Chunk_plst: {
 				// 'plst' chunk
