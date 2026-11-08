@@ -1161,30 +1161,58 @@ int NSF::loadFieldData(void)
 
 			vector<const char*> track_list_headers;
 			track_list_headers.reserve(7);
+
+			uint16_t align_data = TXA_R;
+			uint16_t sorting = COLSORT_NUM;
 			track_list_headers.push_back(C_("NSF|TrackList", "#"));
+
+			unsigned int shift = 2;	// for alignment/sorting
 			if (nsfe->has.plst) {
 				track_list_headers.push_back(C_("NSF|TrackList", "Order"));
+				align_data |= (TXA_R << shift);
+				sorting |= (COLSORT_NUM << shift);
+				shift += 2;
 			}
 			if (nsfe->has.psfx) {
 				track_list_headers.push_back(C_("NSF|TrackList", "Is SFX"));
+				align_data |= (TXA_R << shift);
+				sorting |= (COLSORT_STD << shift);
+				shift += 2;
 			}
 			if (nsfe->has.tlbl) {
 				track_list_headers.push_back(C_("NSF|TrackList", "Name"));
+				align_data |= (TXA_D << shift);
+				sorting |= (COLSORT_NC << shift);
+				shift += 2;
 			}
 			if (nsfe->has.taut) {
 				track_list_headers.push_back(C_("NSF|TrackList", "Author"));
+				align_data |= (TXA_D << shift);
+				sorting |= (COLSORT_NC << shift);
+				shift += 2;
 			}
 			if (nsfe->has.time) {
 				track_list_headers.push_back(C_("NSF|TrackList", "Duration"));
+				align_data |= (TXA_R << shift);
+				sorting |= (COLSORT_STD << shift);
+				shift += 2;
 			}
 			if (nsfe->has.fade) {
 				track_list_headers.push_back(C_("NSF|TrackList", "Fade"));
+				align_data |= (TXA_R << shift);
+				sorting |= (COLSORT_STD << shift);
+				shift += 2;
 			}
 			vector<string> *const v_track_list_headers = RomFields::strArrayToVector(track_list_headers);
 
 			RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
 			params.headers = v_track_list_headers;
 			params.data.single = vv_track_list;
+			params.col_attrs.align_headers = AFLD_ALIGN7(TXA_D, TXA_D, TXA_D, TXA_D, TXA_D, TXA_D, TXA_D);
+			params.col_attrs.align_data = align_data;
+			params.col_attrs.sorting = sorting;
+			params.col_attrs.sort_col = 0; // #
+			params.col_attrs.sort_dir = RomFields::COLSORTORDER_ASCENDING;
 			d->fields.addField_listData(C_("NSF", "Track List"), &params);
 		}
 	}
