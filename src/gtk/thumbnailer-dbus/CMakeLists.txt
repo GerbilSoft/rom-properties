@@ -65,10 +65,8 @@ CONFIGURE_FILE(com.gerbilsoft.rom-properties.SpecializedThumbnailer1.service.in
 ########################################
 
 # D-Bus thumbnailer.
-ADD_EXECUTABLE(${PROJECT_NAME}
-	${${PROJECT_NAME}_SRCS}
-	${${PROJECT_NAME}_H}
-	)
+ADD_EXECUTABLE(${PROJECT_NAME} ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H})
+ADD_DEPENDENCIES(${PROJECT_NAME} rom-properties-glib_mkenums)
 DO_SPLIT_DEBUG(${PROJECT_NAME})
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
