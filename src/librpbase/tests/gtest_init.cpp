@@ -177,8 +177,8 @@ static constexpr int16_t syscall_wl_qt[] = {
 	SCMP_SYS(shutdown),
 	SCMP_SYS(shmget), SCMP_SYS(shmat),
 	SCMP_SYS(shmctl), SCMP_SYS(shmdt),
-	SCMP_SYS(getsockopt),	// Qt4 only
-	SCMP_SYS(pipe2),	// Qt4 only
+	SCMP_SYS(getsockopt),			// Qt4 only
+	SCMP_SYS(pipe), SCMP_SYS(pipe2),	// Qt4 only [pipe() for Alpine Linux (musl libc)]
 
 	// Needed with xvfb-run on Xubuntu 16.04.
 	SCMP_SYS(uname),
@@ -256,7 +256,7 @@ static constexpr int16_t syscall_wl_gtk[] = {
 	SCMP_SYS(statfs), SCMP_SYS(statfs64),
 	SCMP_SYS(inotify_init1), SCMP_SYS(inotify_add_watch),
 	// GTK3 on AppVeyor (using Xvfb-run)
-	SCMP_SYS(pipe2),
+	SCMP_SYS(pipe), SCMP_SYS(pipe2),	// pipe() for Alpine Linux (musl libc)
 	SCMP_SYS(wait4),
 	SCMP_SYS(dup2),
 	//SCMP_SYS(execve),	// only used if the above syscalls fail?
@@ -289,6 +289,9 @@ static constexpr int16_t syscall_wl_gtk[] = {
 	// Needed for RomDataViewTest_gtk[234] on Ubuntu 26.04 for armhf/arm64.
 	SCMP_SYS(recv),
 	SCMP_SYS(send),
+
+	// Alpine Linux (musl libc) needs fork() for RomDataViewTest_gtk3
+	SCMP_SYS(fork),
 };
 
 #endif /* HAVE_SECCOMP */

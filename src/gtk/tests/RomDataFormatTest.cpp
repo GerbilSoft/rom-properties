@@ -311,9 +311,9 @@ TEST_F(RomDataFormatTest, formatDimensions)
 
 #ifdef HAVE_SECCOMP
 #  ifndef NDEBUG
-const unsigned int rp_gtest_syscall_set = RP_GTEST_SYSCALL_SET_GTEST_DEATH_TEST;
+const unsigned int rp_gtest_syscall_set = RP_GTEST_SYSCALL_SET_GTK | RP_GTEST_SYSCALL_SET_GTEST_DEATH_TEST;
 #  else /* !NDEBUG */
-const unsigned int rp_gtest_syscall_set = 0;
+const unsigned int rp_gtest_syscall_set = RP_GTEST_SYSCALL_SET_GTK;
 #  endif /* NDEBUG */
 #endif /* HAVE_SECCOMP */
 

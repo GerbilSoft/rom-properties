@@ -163,7 +163,7 @@ TEST_F(SortFuncsTest_gtk3, descendingSort)
 } }
 
 #ifdef HAVE_SECCOMP
-const unsigned int rp_gtest_syscall_set = 0;
+const unsigned int rp_gtest_syscall_set = RP_GTEST_SYSCALL_SET_GTK;
 #endif /* HAVE_SECCOMP */
 
 /**
