@@ -46,8 +46,9 @@ typedef struct RP_PACKED _ZXAY_Header {
 	uint16_t p_misc;		// [0x00E] Pointer to description string
 	uint8_t song_count;		// [0x010] Song count, minus 1
 	uint8_t first_song;		// [0x011] First song (0-index)
+	uint16_t p_first_song_struct;	// [0x012] Pointer to first song struct
 } ZXAY_Header;
-ASSERT_STRUCT(ZXAY_Header, 18);
+ASSERT_STRUCT(ZXAY_Header, 20);
 #pragma pack()
 
 /**

@@ -336,6 +336,49 @@ int ZXAY::loadFieldData(void)
 		d->fields.addField_string(C_("RomData", "Description"), s_description);
 	}
 
+	// Song list
+	const unsigned int song_count = zxayHeader->song_count + 1;
+	rp::uvector<ZXAY_Song_Struct> v_song_structs;
+	v_song_structs.resize(song_count);
+	off64_t song_struct_addr = be16_to_cpu(zxayHeader->p_first_song_struct) + offsetof(ZXAY_Header, p_first_song_struct);
+	const size_t expected_size = sizeof(ZXAY_Song_Struct) * song_count;
+	size_t size = d->file->seekAndRead(song_struct_addr, v_song_structs.data(), expected_size);
+	if (size == expected_size) {
+		unsigned int song_num = 0;
+		auto *const v_song_list = new RomFields::ListData_t(song_count);
+		auto src_iter = v_song_structs.cbegin();
+		auto dest_iter = v_song_list->begin();
+		const auto song_list_end = v_song_list->end();
+		for ( ; dest_iter != song_list_end; ++src_iter, ++dest_iter, song_num++, song_struct_addr += sizeof(ZXAY_Song_Struct)) {
+			vector<string> &data_row = *dest_iter;
+			data_row.reserve(2);	// 2 fields per row.
+
+			// Song number
+			data_row.push_back(fmt::format_int(song_num).str());
+
+			// Song name
+			data_row.push_back(d->readCString(song_struct_addr + offsetof(ZXAY_Song_Struct, p_song_name)));
+		}
+
+		// TODO: Duration for EMUL?
+		static const array<const char*, 2> song_list_hdr = {{
+			NOP_C_("ZXAY|SongList", "#"),
+			NOP_C_("ZXAY|SongList", "Name"),
+		}};
+		vector<string> *const v_song_list_hdr = RomFields::strArrayToVector_i18n("ZXAY|SongList", song_list_hdr);
+
+		RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
+		params.headers = v_song_list_hdr;
+		params.data.single = v_song_list;
+		params.col_attrs.align_headers = AFLD_ALIGN2(TXA_D, TXA_D);
+		params.col_attrs.align_data = AFLD_ALIGN2(TXA_R, TXA_D);
+		params.col_attrs.sizing = AFLD_ALIGN2(COLSZ_R, COLSZ_S);
+		params.col_attrs.sorting = AFLD_ALIGN2(COLSORT_NUM, COLSORT_NC);
+		params.col_attrs.sort_col = 0; // #
+		params.col_attrs.sort_dir = RomFields::COLSORTORDER_ASCENDING;
+		d->fields.addField_listData(C_("ZXAY", "Song List"), &params);
+	}
+
 	// Finished reading the field data.
 	return d->fields.count();
 }
