@@ -1,9 +1,9 @@
-This copy of fmtlib 12.2.0 is a modified version of the original.
+This copy of fmtlib 12.2.1 is a modified version of the original.
 
-commit 1be298e1bd68957e4cd352e1f676f00e07dcfb57
+commit 208219daff58f2a7438f6931cc2ddc358acf33ef
 Update version
     
-Tag: 12.2.0
+Tag: 12.2.1
 
 The following changes have been made to the original:
 
@@ -14,5 +14,5 @@ The following changes have been made to the original:
 - Backported some fixes from fmt/main:
   - Fix fallback uint128 bitwise not
 
-To obtain the original fmtlib-12.2.0, visit:
+To obtain the original fmtlib-12.2.1, visit:
 https://github.com/fmtlib/fmt
