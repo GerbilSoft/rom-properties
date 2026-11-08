@@ -360,8 +360,6 @@ int ZXAY::loadFieldData(void)
 	// Song list
 	UPDATE_ZXAYHEADER_PTR();
 	const unsigned int song_count = zxayHeader->song_count + 1;
-	rp::uvector<ZXAY_Song_Struct> v_song_structs;
-	v_song_structs.resize(song_count);
 
 	// Ensure the song structs are in zxay_buf.
 	unsigned int song_struct_addr = be16_to_cpu(zxayHeader->p_first_song_struct) + offsetof(ZXAY_Header, p_first_song_struct);
