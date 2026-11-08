@@ -424,11 +424,13 @@ WiiWAD::WiiWAD(const IRpFilePtr &file)
 			const uint32_t name_size = be32_to_cpu(d->wadHeader.bwf.name_size);
 			if (name_size > 0 && name_size <= 1024) {
 				const uint32_t name_addr = tmd_addr + be32_to_cpu(d->wadHeader.bwf.tmd_size);
-				unique_ptr<char[]> namebuf(new char[name_size]);
-				size = d->file->seekAndRead(name_addr, namebuf.get(), name_size);
+				d->wadName.resize(name_size);
+				size = d->file->seekAndRead(name_addr, const_cast<char*>(d->wadName.data()), name_size);
 				if (size == name_size) {
 					// TODO: Trim NULLs?
-					d->wadName.assign(namebuf.get(), name_size);
+				} else {
+					// Unable to read the WAD name...
+					d->wadName.clear();
 				}
 			}
 			break;
