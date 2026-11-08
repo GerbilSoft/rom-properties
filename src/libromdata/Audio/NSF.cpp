@@ -1327,6 +1327,27 @@ int NSF::loadMetaData(void)
 		}
 	}
 
+	if (d->nsfe.has.auth) {
+		// 'auth' chunk is available.
+		// NOTE: May overwrite NSF2 metadata if it's already present.
+		const auto *nsfe = &d->nsfe;
+
+		// Title
+		if (nsfe->auth.game_title) {
+			d->metaData.addMetaData_string(Property::Title, nsfe->auth.game_title);
+		}
+
+		// Artist
+		if (nsfe->auth.artist) {
+			d->metaData.addMetaData_string(Property::Composer, nsfe->auth.artist);
+		}
+
+		// Copyright
+		if (nsfe->auth.copyright) {
+			d->metaData.addMetaData_string(Property::Copyright, nsfe->auth.copyright);
+		}
+	}
+
 	// Finished reading the metadata.
 	return d->metaData.count();
 }
