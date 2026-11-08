@@ -148,8 +148,6 @@
       </match>
     </magic>
   </mime-type>
-
-  <!-- NSFE -->
   <mime-type type="audio/x-nsfe">
     <comment>Nintendo Sound Format Extended audio</comment>
     <acronym>NSFE</acronym>
@@ -157,18 +155,6 @@
     <generic-icon name="audio-x-generic"/>
     <glob pattern="*.nsfe"/>
     <magic priority="90">
-      <match value="NSFE" type="string" offset="0"/>
-    </magic>
-  </mime-type>
-
-  <!-- NSFE -->
-  <mime-type type="audio/x-nsfe">
-    <comment>Nintendo Sound Format Extended audio</comment>
-    <acronym>NSFE</acronym>
-    <expanded-acronym>Nintendo Sound Format Extended</expanded-acronym>
-    <generic-icon name="audio-x-generic"/>
-    <glob pattern="*.nsfe"/>
-    <magic priority="50">
       <match value="NSFE" type="string" offset="0"/>
     </magic>
   </mime-type>
