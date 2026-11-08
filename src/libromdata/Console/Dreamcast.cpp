@@ -317,9 +317,7 @@ string DreamcastPrivate::getPublisher(void) const
 
 	if (publisher) {
 		// Found the publisher.
-		// NOTE: Assigning to `s_ret` for named-return-value optimization.
 		s_ret.assign(publisher);
-		return s_ret;
 	} else {
 		// Unknown publisher.
 		// List the field as-is.
