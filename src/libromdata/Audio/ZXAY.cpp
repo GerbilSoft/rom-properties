@@ -355,16 +355,17 @@ int ZXAY::loadFieldData(void)
 	const unsigned int song_count = zxayHeader->song_count + 1;
 	rp::uvector<ZXAY_Song_Struct> v_song_structs;
 	v_song_structs.resize(song_count);
-	off64_t song_struct_addr = be16_to_cpu(zxayHeader->p_first_song_struct) + offsetof(ZXAY_Header, p_first_song_struct);
-	const size_t expected_size = sizeof(ZXAY_Song_Struct) * song_count;
-	size_t size = d->file->seekAndRead(song_struct_addr, v_song_structs.data(), expected_size);
-	if (size == expected_size) {
+
+	// Ensure the song structs are in zxay_buf.
+	unsigned int song_struct_addr = be16_to_cpu(zxayHeader->p_first_song_struct) + offsetof(ZXAY_Header, p_first_song_struct);
+	const size_t req_size = song_struct_addr + (sizeof(ZXAY_Song_Struct) * song_count);
+	size_t new_size = d->expand_zxay_buf(req_size);
+	if (new_size >= req_size) {
 		unsigned int song_num = 0;
 		auto *const v_song_list = new RomFields::ListData_t(song_count);
-		auto src_iter = v_song_structs.cbegin();
 		auto dest_iter = v_song_list->begin();
 		const auto song_list_end = v_song_list->end();
-		for ( ; dest_iter != song_list_end; ++src_iter, ++dest_iter, song_num++, song_struct_addr += sizeof(ZXAY_Song_Struct)) {
+		for ( ; dest_iter != song_list_end; ++dest_iter, song_num++, song_struct_addr += sizeof(ZXAY_Song_Struct)) {
 			vector<string> &data_row = *dest_iter;
 			data_row.reserve(2);	// 2 fields per row.
 
