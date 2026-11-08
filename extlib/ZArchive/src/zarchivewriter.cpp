@@ -13,7 +13,10 @@
 #include <cstdlib>
 #include <algorithm>
 
-ZArchiveWriter::ZArchiveWriter(CB_NewOutputFile cbNewOutputFile, CB_WriteOutputData cbWriteOutputData, void* ctx) : m_cbCtx(ctx), m_cbNewOutputFile(cbNewOutputFile), m_cbWriteOutputData(cbWriteOutputData)
+ZArchiveWriter::ZArchiveWriter(CB_NewOutputFile cbNewOutputFile, CB_WriteOutputData cbWriteOutputData, void* ctx)
+	: m_cbNewOutputFile(cbNewOutputFile)
+	, m_cbWriteOutputData(cbWriteOutputData)
+	, m_cbCtx(ctx)
 {
 	cbNewOutputFile(-1, ctx);
 	m_mainShaCtx = (struct Sha_256*)malloc(sizeof(struct Sha_256));
@@ -27,6 +30,7 @@ ZArchiveWriter::~ZArchiveWriter()
 
 ZArchiveWriter::PathNode* ZArchiveWriter::GetNodeByPath(ZArchiveWriter::PathNode* root, std::string_view path)
 {
+	((void)root);	// rom-properties: unused variable
 	PathNode* currentNode = &m_rootNode;
 
 	std::string_view pathParser = path;
@@ -141,7 +145,7 @@ void ZArchiveWriter::StoreBlock(const uint8_t* uncompressedData)
 	uint64_t compressedWriteOffset = GetCurrentOutputOffset();
 	m_compressionBuffer.resize(ZSTD_compressBound(_ZARCHIVE::COMPRESSED_BLOCK_SIZE));
 	size_t outputSize = ZSTD_compress(m_compressionBuffer.data(), m_compressionBuffer.size(), uncompressedData, _ZARCHIVE::COMPRESSED_BLOCK_SIZE, 6);
-	assert(outputSize >= 0);
+	//assert(outputSize >= 0);	// rom-properties: size_t is unsigned, comparison is always true
 	if (outputSize >= _ZARCHIVE::COMPRESSED_BLOCK_SIZE)
 	{
 		// store block uncompressed if it is equal or larger than the input after compression
