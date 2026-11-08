@@ -141,14 +141,14 @@ public:
 			explicit track_t()
 				: order(-1)
 				, is_sfx(false)
-				, duration(0)
-				, fade(0)
+				, duration(-1)
+				, fade(-1)
 			{}
 
 			int16_t order;		// 'plst': playback order (-1 if not set)
 			bool is_sfx;		// 'psfx': true if this is a "sound effect" instead of music
-			uint32_t duration;	// 'time': track duration, in milliseconds
-			uint32_t fade;		// 'fade': fadeout duration, in milliseconds (default is 0)
+			int32_t duration;	// 'time': track duration, in milliseconds (negative for not specified)
+			int32_t fade;		// 'fade': fadeout duration, in milliseconds (negative for not specified)
 
 			string name;		// 'tlbl': Track name (label)
 			string author;		// 'taut': Track author
@@ -480,6 +480,43 @@ int NSFPrivate::readNSFeMetadata(void)
 					}
 				}
 				nsfe.has.psfx = 1;
+				nsfe.has.any_tlist = 1;
+				break;
+			}
+
+			case NSFe_Chunk_time: {
+				// 'time' chunk
+				int track_count = initNSFeTracks();
+				if (track_count <= 0) {
+					// No tracks...
+					break;
+				}
+
+				// Chunk contains a list of 32-bit times (in milliseconds),
+				// one for each track. (Note that it may be shorter than expected.)
+				assert(chunk_size > 0);
+				if (chunk_size == 0) {
+					// Chunk is empty.
+					break;
+				}
+
+				// Read the chunk data into the temporary buffer.
+				int err = read_chunk(chunk_size);
+				if (err > 0) {
+					// Skip the chunk.
+					break;
+				} else if (err < 0) {
+					// Error reading the chunk...
+					return err;
+				}
+
+				// Update the track list.
+				const uint32_t *p = reinterpret_cast<const uint32_t*>(buf.data());
+				const uint32_t *const p_end = p + (buf.size() / sizeof(uint32_t));
+				for (int i = 0; i < track_count && p < p_end; i++, p++) {
+					nsfe.tracks[i].duration = le32_to_cpu(*p);
+				}
+				nsfe.has.time = 1;
 				nsfe.has.any_tlist = 1;
 				break;
 			}
@@ -1050,21 +1087,31 @@ int NSF::loadFieldData(void)
 				// Format duration as m:ss.ddd.
 				// TODO: Separate function?
 				if (nsfe->has.time) {
-					const uint32_t duration = src_iter->duration;
-					const uint32_t min = (duration / 1000) / 60;
-					const uint32_t sec = (duration / 1000) % 60;
-					const uint32_t ms =  (duration % 1000);
-					data_row.push_back(fmt::format(FSTR("{:d}:{:0>2d}.{:0>3d}"), min, sec, ms));
+					const int32_t duration = src_iter->duration;
+					if (duration >= 0) {
+						const uint32_t u_duration = static_cast<unsigned int>(duration);
+						const uint32_t min = (u_duration / 1000) / 60;
+						const uint32_t sec = (u_duration / 1000) % 60;
+						const uint32_t ms =  (u_duration % 1000);
+						data_row.push_back(fmt::format(FSTR("{:d}:{:0>2d}.{:0>3d}"), min, sec, ms));
+					} else {
+						data_row.push_back("<?>");
+					}
 				}
 
 				// Format fade as m:ss.ddd.
 				// TODO: Separate function?
 				if (nsfe->has.fade) {
-					const uint32_t duration = src_iter->fade;
-					const uint32_t min = (duration / 1000) / 60;
-					const uint32_t sec = (duration / 1000) % 60;
-					const uint32_t ms =  (duration % 1000);
-					data_row.push_back(fmt::format(FSTR("{:d}:{:0>2d}.{:0>3d}"), min, sec, ms));
+					const int32_t duration = src_iter->fade;
+					if (duration >= 0) {
+						const uint32_t u_duration = static_cast<unsigned int>(duration);
+						const uint32_t min = (u_duration / 1000) / 60;
+						const uint32_t sec = (u_duration / 1000) % 60;
+						const uint32_t ms =  (u_duration % 1000);
+						data_row.push_back(fmt::format(FSTR("{:d}:{:0>2d}.{:0>3d}"), min, sec, ms));
+					} else {
+						data_row.push_back("<?>");
+					}
 				}
 			}
 
