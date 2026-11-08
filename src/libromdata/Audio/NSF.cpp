@@ -510,187 +510,120 @@ int NSFPrivate::readNSFeMetadata(void)
 				break;
 			}
 
-			case NSFe_Chunk_time: {
-				// 'time' chunk
-				int track_count = initNSFeTracks();
-				if (track_count <= 0) {
-					// No tracks...
-					break;
-				}
-
-				// Chunk contains a list of 32-bit times (in milliseconds),
-				// one for each track. (Note that it may be shorter than expected.)
-				assert(chunk_size > 0);
-				if (chunk_size == 0) {
-					// Chunk is empty.
-					break;
-				}
-
-				// Read the chunk data into the temporary buffer.
-				int err = read_chunk(chunk_size);
-				if (err > 0) {
-					// Skip the chunk.
-					break;
-				} else if (err < 0) {
-					// Error reading the chunk...
-					return err;
-				}
-
-				// Update the track list.
-				const uint32_t *p = reinterpret_cast<const uint32_t*>(buf.data());
-				const uint32_t *const p_end = p + (buf.size() / sizeof(uint32_t));
-				for (int i = 0; i < track_count && p < p_end; i++, p++) {
-					nsfe.tracks[i].duration = le32_to_cpu(*p);
-				}
-				nsfe.has.time = 1;
-				nsfe.has.any_tlist = 1;
-				break;
+			/**
+			 * Chunks that contain a list of durations for the track list.
+			 * @param fourCC Chunk fourCC (no quotes)
+			 * @param field Field name within track_t
+			 */
+#define NSFe_DURATION_LIST_CHUNK(fourCC, field) \
+			case NSFe_Chunk_##fourCC: { \
+				/* Duration chunk */ \
+				/* Chunk contains a list of 32-bit times (in milliseconds), */ \
+				/* one for each track. (Note that it may be shorter than expected.) */ \
+				assert(chunk_size >= sizeof(uint32_t)); \
+				if (chunk_size < sizeof(uint32_t)) { \
+					/* Chunk is empty. */ \
+					break; \
+				} \
+\
+				const int track_count = initNSFeTracks(); \
+				if (track_count <= 0) { \
+					/* No tracks... */ \
+					break; \
+				} \
+\
+				/* Read the chunk data into the temporary buffer. */ \
+				int err = read_chunk(chunk_size); \
+				if (err > 0) { \
+					/* Skip the chunk. */ \
+					break; \
+				} else if (err < 0) { \
+					/* Error reading the chunk... */ \
+					return err; \
+				} \
+\
+				/* Update the track list. */ \
+				const uint32_t *p = reinterpret_cast<const uint32_t*>(buf.data()); \
+				const uint32_t *const p_end = p + (buf.size() / sizeof(uint32_t)); \
+				for (int i = 0; i < track_count && p < p_end; i++, p++) { \
+					nsfe.tracks[i].field = le32_to_cpu(*p); \
+				} \
+				nsfe.has.fourCC = 1; \
+				nsfe.has.any_tlist = 1; \
+				break; \
 			}
 
-			case NSFe_Chunk_fade: {
-				// 'fade' chunk
-				int track_count = initNSFeTracks();
-				if (track_count <= 0) {
-					// No tracks...
-					break;
-				}
+			NSFe_DURATION_LIST_CHUNK(time, duration)
+			NSFe_DURATION_LIST_CHUNK(fade, fade)
 
-				// Chunk contains a list of 32-bit times (in milliseconds),
-				// one for each track. (Note that it may be shorter than expected.)
-				assert(chunk_size > 0);
-				if (chunk_size == 0) {
-					// Chunk is empty.
-					break;
-				}
-
-				// Read the chunk data into the temporary buffer.
-				int err = read_chunk(chunk_size);
-				if (err > 0) {
-					// Skip the chunk.
-					break;
-				} else if (err < 0) {
-					// Error reading the chunk...
-					return err;
-				}
-
-				// Update the track list.
-				const uint32_t *p = reinterpret_cast<const uint32_t*>(buf.data());
-				const uint32_t *const p_end = p + (buf.size() / sizeof(uint32_t));
-				for (int i = 0; i < track_count && p < p_end; i++, p++) {
-					nsfe.tracks[i].fade = le32_to_cpu(*p);
-				}
-				nsfe.has.fade = 1;
-				nsfe.has.any_tlist = 1;
-				break;
+			/**
+			 * Chunks that contain a list of strings for the track list.
+			 * @param fourCC Chunk fourCC (no quotes)
+			 * @param field Field name within track_t
+			 */
+#define NSFe_STRING_LIST_CHUNK(fourCC, field) \
+			case NSFe_Chunk_##fourCC: { \
+				/* 'tlbl' chunk */ \
+				assert(chunk_size > 0); \
+				if (chunk_size == 0) { \
+					/* Chunk is empty. */ \
+					break; \
+				} \
+\
+				int track_count = initNSFeTracks(); \
+				if (track_count <= 0) { \
+					/* No tracks... */ \
+					break; \
+				} \
+\
+				/* Read the chunk data into the temporary buffer. */ \
+				int err = read_chunk(chunk_size); \
+				if (err > 0) { \
+					/* Skip the chunk. */ \
+					break; \
+				} else if (err < 0) { \
+					/* Error reading the chunk... */ \
+					return err; \
+				} \
+\
+				/* Make sure the strings are NULL-terminated. */ \
+				if (buf.back() != '\0') { \
+					buf.push_back('\0'); \
+				} \
+\
+				/* Should contain track_count strings. */ \
+				/* We'll allow up to track_count, ignoring any additional strings. */ \
+				const char *p = reinterpret_cast<const char*>(buf.data()); \
+				const char *const p_end = p + buf.size(); \
+				for (int i = 0; i < track_count && p < p_end; i++) { \
+					auto &track = nsfe.tracks[i]; \
+\
+					size_t remain = p_end - p; \
+					const char *const p_nul = static_cast<const char*>(memchr(p, '\0', remain)); \
+					assert(p_nul != nullptr); \
+					if (!p_nul) { \
+						/* Shouldn't happen... */ \
+						break; \
+					} \
+\
+					if ((p_nul - p) <= 1) { \
+						/* Empty string. */ \
+						track.field.clear(); \
+					} else { \
+						/* Copy the string data. */ \
+						track.field.assign(p, (p_nul - p)); \
+					} \
+\
+					/* Next string. */ \
+					p = p_nul + 1; \
+				} \
+				nsfe.has.fourCC = 1; \
+				nsfe.has.any_tlist = 1; \
+				break; \
 			}
 
-			case NSFe_Chunk_tlbl: {
-				// 'tlbl' chunk
-				int track_count = initNSFeTracks();
-				if (track_count <= 0) {
-					// No tracks...
-					break;
-				}
-
-				// Read the chunk data into the temporary buffer.
-				int err = read_chunk(chunk_size);
-				if (err > 0) {
-					// Skip the chunk.
-					break;
-				} else if (err < 0) {
-					// Error reading the chunk...
-					return err;
-				}
-
-				// Make sure the strings are NULL-terminated.
-				if (buf.back() != '\0') {
-					buf.push_back('\0');
-				}
-
-				// Should contain track_count strings.
-				// We'll allow up to track_count, ignoring any additional strings.
-				const char *p = reinterpret_cast<const char*>(buf.data());
-				const char *const p_end = p + buf.size();
-				for (int i = 0; i < track_count && p < p_end; i++) {
-					auto &track = nsfe.tracks[i];
-
-					size_t remain = p_end - p;
-					const char *const p_nul = static_cast<const char*>(memchr(p, '\0', remain));
-					assert(p_nul != nullptr);
-					if (!p_nul) {
-						// Shouldn't happen...
-						break;
-					}
-
-					if ((p_nul - p) <= 1) {
-						// Empty string.
-						track.name.clear();
-					} else {
-						// Copy the string data.
-						track.name.assign(p, (p_nul - p));
-					}
-
-					// Next string.
-					p = p_nul + 1;
-				}
-				nsfe.has.tlbl = 1;
-				nsfe.has.any_tlist = 1;
-				break;
-			}
-
-			case NSFe_Chunk_taut: {
-				// 'taut' chunk
-				int track_count = initNSFeTracks();
-				if (track_count <= 0) {
-					// No tracks...
-					break;
-				}
-
-				// Read the chunk data into the temporary buffer.
-				int err = read_chunk(chunk_size);
-				if (err > 0) {
-					// Skip the chunk.
-					break;
-				} else if (err < 0) {
-					// Error reading the chunk...
-					return err;
-				}
-
-				// Make sure the strings are NULL-terminated.
-				if (buf.back() != '\0') {
-					buf.push_back('\0');
-				}
-
-				// Should contain track_count strings.
-				// We'll allow up to track_count, ignoring any additional strings.
-				const char *p = reinterpret_cast<const char*>(buf.data());
-				const char *const p_end = p + buf.size();
-				for (int i = 0; i < track_count && p < p_end; i++) {
-					auto &track = nsfe.tracks[i];
-
-					size_t remain = p_end - p;
-					const char *const p_nul = static_cast<const char*>(memchr(p, '\0', remain));
-					assert(p_nul != nullptr);
-					if (!p_nul) {
-						// Shouldn't happen...
-						break;
-					}
-
-					if ((p_nul - p) <= 1) {
-						// Empty string.
-						track.author.clear();
-					} else {
-						// Copy the string data.
-						track.author.assign(p, (p_nul - p));
-					}
-
-					// Next string.
-					p = p_nul + 1;
-				}
-				nsfe.has.taut = 1;
-				nsfe.has.any_tlist = 1;
-				break;
-			}
+			NSFe_STRING_LIST_CHUNK(tlbl, name)
+			NSFe_STRING_LIST_CHUNK(taut, author)
 
 			case NSFe_Chunk_auth: {
 				// 'auth' chunk
