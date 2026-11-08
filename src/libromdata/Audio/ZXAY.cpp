@@ -323,8 +323,14 @@ int ZXAY::loadFieldData(void)
 
 	// ZXAY header
 	// NOTE: It's located at the start of a data buffer.
-	const ZXAY_Header *const zxayHeader =
-		reinterpret_cast<const ZXAY_Header*>(d->zxay_buf.data());
+	// NOTE: zxay_buf may be reallocated when expanded, so we can't
+	// keep this pointer!
+	const ZXAY_Header *zxayHeader;
+#define UPDATE_ZXAYHEADER_PTR()  do { \
+	zxayHeader = reinterpret_cast<const ZXAY_Header*>(d->zxay_buf.data()); \
+} while (0)
+	UPDATE_ZXAYHEADER_PTR();
+
 	d->fields.reserve(5);	// Maximum of 5 fields.
 
 	// Type
@@ -357,6 +363,7 @@ int ZXAY::loadFieldData(void)
 	v_song_structs.resize(song_count);
 
 	// Ensure the song structs are in zxay_buf.
+	UPDATE_ZXAYHEADER_PTR();
 	unsigned int song_struct_addr = be16_to_cpu(zxayHeader->p_first_song_struct) + offsetof(ZXAY_Header, p_first_song_struct);
 	const size_t req_size = song_struct_addr + (sizeof(ZXAY_Song_Struct) * song_count);
 	size_t new_size = d->expand_zxay_buf(req_size);
@@ -381,7 +388,7 @@ int ZXAY::loadFieldData(void)
 			NOP_C_("ZXAY|SongList", "#"),
 			NOP_C_("ZXAY|SongList", "Name"),
 		}};
-		vector<string> *const v_song_list_hdr = RomFields::strArrayToVector_i18n("ZXAY|SongList", song_list_hdr);
+		vector<string> *const v_song_list_hdr = RomFields::strArrayToVector_i18n("ZXAY|SongList", 2);
 
 		RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
 		params.headers = v_song_list_hdr;
