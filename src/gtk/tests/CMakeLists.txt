@@ -19,9 +19,14 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../..)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/..)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/..)
 
+# rp-gtk-enums (generated as part of rom-properties-glib)
+SET(rp-gtk-enums_SRCS "${CMAKE_CURRENT_BINARY_DIR}/../rp-gtk-enums.c")
+SET(rp-gtk-enums_H    "${CMAKE_CURRENT_BINARY_DIR}/../rp-gtk-enums.h")
+
 ### RomDataFormat tests
 SET(RomDataFormatTest_SRCS RomDataFormatTest.cpp)
 ADD_EXECUTABLE(RomDataFormatTest_glib ${RomDataFormatTest_SRCS})
+ADD_DEPENDENCIES(RomDataFormatTest_glib rom-properties-glib_mkenums)
 TARGET_LINK_LIBRARIES(RomDataFormatTest_glib PRIVATE rptest romdata)
 TARGET_LINK_LIBRARIES(RomDataFormatTest_glib PUBLIC rom-properties-glib)
 LIST(APPEND GTK_TESTS RomDataFormatTest_glib)
@@ -53,11 +58,10 @@ SET(SortFuncsTest_GTK4_H
 
 IF(BUILD_XFCE)
 	ADD_EXECUTABLE(SortFuncsTest_gtk2
-		${SortFuncsTest_GTK_COMMON_SRCS}
-		${SortFuncsTest_GTK_COMMON_H}
-		${SortFuncsTest_GTK3_SRCS}
-		${SortFuncsTest_GTK3_H}
+		${SortFuncsTest_GTK_COMMON_SRCS} ${SortFuncsTest_GTK_COMMON_H}
+		${SortFuncsTest_GTK3_SRCS} ${SortFuncsTest_GTK3_H}
 		)
+	ADD_DEPENDENCIES(SortFuncsTest_gtk2 rom-properties-glib_mkenums)
 	TARGET_LINK_LIBRARIES(SortFuncsTest_gtk2 PRIVATE rptest)
 	#TARGET_LINK_LIBRARIES(SortFuncsTest_gtk2 PRIVATE GdkPixbuf2::gdkpixbuf2)
 	TARGET_LINK_LIBRARIES(SortFuncsTest_gtk2 PUBLIC GTK2::gtk GTK2::gdk GTK2::pango)
@@ -73,11 +77,10 @@ IF(BUILD_XFCE)
 ENDIF(BUILD_XFCE)
 IF(BUILD_GTK3)
 	ADD_EXECUTABLE(SortFuncsTest_gtk3
-		${SortFuncsTest_GTK_COMMON_SRCS}
-		${SortFuncsTest_GTK_COMMON_H}
-		${SortFuncsTest_GTK3_SRCS}
-		${SortFuncsTest_GTK3_H}
+		${SortFuncsTest_GTK_COMMON_SRCS} ${SortFuncsTest_GTK_COMMON_H}
+		${SortFuncsTest_GTK3_SRCS} ${SortFuncsTest_GTK3_H}
 		)
+	ADD_DEPENDENCIES(SortFuncsTest_gtk3 rom-properties-glib_mkenums)
 	TARGET_LINK_LIBRARIES(SortFuncsTest_gtk3 PRIVATE rptest)
 	#TARGET_LINK_LIBRARIES(SortFuncsTest_gtk3 PRIVATE Cairo::gobject)
 	TARGET_LINK_LIBRARIES(SortFuncsTest_gtk3 PUBLIC GTK3::gtk GTK3::gdk GTK3::pango GTK3::cairo)
@@ -92,11 +95,10 @@ IF(BUILD_GTK3)
 ENDIF(BUILD_GTK3)
 IF(BUILD_GTK4)
 	ADD_EXECUTABLE(SortFuncsTest_gtk4
-		${SortFuncsTest_GTK_COMMON_SRCS}
-		${SortFuncsTest_GTK_COMMON_H}
-		${SortFuncsTest_GTK4_SRCS}
-		${SortFuncsTest_GTK4_H}
+		${SortFuncsTest_GTK_COMMON_SRCS} ${SortFuncsTest_GTK_COMMON_H}
+		${SortFuncsTest_GTK4_SRCS} ${SortFuncsTest_GTK4_H}
 		)
+	ADD_DEPENDENCIES(SortFuncsTest_gtk4 rom-properties-glib_mkenums)
 	TARGET_LINK_LIBRARIES(SortFuncsTest_gtk4 PRIVATE rptest)
 	#TARGET_LINK_LIBRARIES(SortFuncsTest_gtk4 PRIVATE Cairo::gobject)
 	TARGET_LINK_LIBRARIES(SortFuncsTest_gtk4 PUBLIC GTK4::gtk GTK4::pango)
