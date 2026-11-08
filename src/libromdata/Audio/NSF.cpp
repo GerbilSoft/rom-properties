@@ -443,6 +443,45 @@ int NSFPrivate::readNSFeMetadata(void)
 				break;
 			}
 
+			case NSFe_Chunk_psfx: {
+				// 'psfx' chunk
+				int track_count = initNSFeTracks();
+				if (track_count <= 0) {
+					// No tracks...
+					break;
+				}
+
+				// Chunk contains a list of which tracks are "sound effects".
+				assert(chunk_size > 0);
+				if (chunk_size == 0) {
+					// Chunk is empty.
+					break;
+				}
+
+				// Read the chunk data into the temporary buffer.
+				int err = read_chunk(chunk_size);
+				if (err > 0) {
+					// Skip the chunk.
+					break;
+				} else if (err < 0) {
+					// Error reading the chunk...
+					return err;
+				}
+
+				// Update the track list.
+				const uint8_t *p = buf.data();
+				const uint8_t *const p_end = p + buf.size();
+				for (; p < p_end; p++) {
+					unsigned int i = static_cast<unsigned int>(*p);
+					if (i < nsfe.tracks.size()) {
+						nsfe.tracks[i].is_sfx = true;
+					}
+				}
+				nsfe.has.psfx = 1;
+				nsfe.has.any_tlist = 1;
+				break;
+			}
+
 			case NSFe_Chunk_tlbl: {
 				// 'tlbl' chunk
 				int track_count = initNSFeTracks();
