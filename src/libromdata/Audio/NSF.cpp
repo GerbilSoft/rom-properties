@@ -318,8 +318,7 @@ int NSFPrivate::readNSFeMetadata(void)
 	 * @param chunk_size Chunk size
 	 * @return 0 on success; positive if the chunk should be skipped; negative POSIX error code on error.
 	 */
-	auto read_chunk = [&buf, this](unsigned int chunk_size) -> int
-	{
+	auto read_chunk = [&buf, this](unsigned int chunk_size) -> int {
 		// Read the chunk data into the temporary buffer.
 		// NOTE: Limiting to 16,384 bytes.
 		static constexpr unsigned int CHUNK_SIZE_MAX = 16384;
@@ -1084,34 +1083,33 @@ int NSF::loadFieldData(void)
 					data_row.push_back(src_iter->author);
 				}
 
-				// Format duration as m:ss.ddd.
-				// TODO: Separate function?
-				if (nsfe->has.time) {
-					const int32_t duration = src_iter->duration;
-					if (duration >= 0) {
-						const uint32_t u_duration = static_cast<unsigned int>(duration);
-						const uint32_t min = (u_duration / 1000) / 60;
-						const uint32_t sec = (u_duration / 1000) % 60;
-						const uint32_t ms =  (u_duration % 1000);
-						data_row.push_back(fmt::format(FSTR("{:d}:{:0>2d}.{:0>3d}"), min, sec, ms));
-					} else {
-						data_row.push_back("<?>");
+				/**
+				 * Format a duration as m:ss.dd.
+				 * @param duration Duration
+				 * @return Formatted duration ("<?>" if negative)
+				 */
+				auto format_duration = [](int32_t duration) -> std::string {
+					std::string s_ret;
+					if (duration < 0) {
+						// Duration not set.
+						// NOTE: Assigning to `s_ret` for named-return-value optimization.
+						s_ret.assign("<?>", 3);
+						return s_ret;
 					}
-				}
 
-				// Format fade as m:ss.ddd.
-				// TODO: Separate function?
+					const uint32_t u_duration = static_cast<unsigned int>(duration);
+					const uint32_t min = (u_duration / 1000) / 60;
+					const uint32_t sec = (u_duration / 1000) % 60;
+					const uint32_t ms =  (u_duration % 1000);
+					fmt::format_to(std::back_inserter(s_ret), FSTR("{:d}:{:0>2d}.{:0>3d}"), min, sec, ms);
+					return s_ret;
+				};
+
+				if (nsfe->has.time) {
+					data_row.push_back(format_duration(src_iter->duration));
+				}
 				if (nsfe->has.fade) {
-					const int32_t duration = src_iter->fade;
-					if (duration >= 0) {
-						const uint32_t u_duration = static_cast<unsigned int>(duration);
-						const uint32_t min = (u_duration / 1000) / 60;
-						const uint32_t sec = (u_duration / 1000) % 60;
-						const uint32_t ms =  (u_duration % 1000);
-						data_row.push_back(fmt::format(FSTR("{:d}:{:0>2d}.{:0>3d}"), min, sec, ms));
-					} else {
-						data_row.push_back("<?>");
-					}
+					data_row.push_back(format_duration(src_iter->fade));
 				}
 			}
 
