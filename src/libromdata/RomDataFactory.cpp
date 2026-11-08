@@ -126,6 +126,7 @@ using std::unordered_set;
 #include "Audio/SID.hpp"
 #include "Audio/SPC.hpp"
 #include "Audio/VGM.hpp"
+#include "Audio/ZXAY.hpp"
 
 // RomData subclasses: Media
 #include "Media/CBMDOS.hpp"
@@ -277,7 +278,7 @@ static constexpr size_t ZARCHIVE_MAGIC_COUNT = 1;
 #else /* !HAVE_ZARCHIVE */
 static constexpr size_t ZARCHIVE_MAGIC_COUNT = 0;
 #endif /* HAVE_ZARCHIVE */
-static const array<RomDataFns, XML_MAGIC_COUNT+ZARCHIVE_MAGIC_COUNT+40> romDataFns_magic = {{
+static const array<RomDataFns, XML_MAGIC_COUNT+ZARCHIVE_MAGIC_COUNT+41> romDataFns_magic = {{
 	// Consoles
 	GetRomDataFns_magic1(Atari7800, ATTR_HAS_METADATA, 4, 'RI78'),	// "ATARI7800"
 	GetRomDataFns_magic2(GameCubeBNR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'BNR1', 'BNR2'),
@@ -325,6 +326,7 @@ static const array<RomDataFns, XML_MAGIC_COUNT+ZARCHIVE_MAGIC_COUNT+40> romDataF
 	GetRomDataFns_magic2(S98, ATTR_HAS_METADATA, 0, 'S981', 'S980'),
 	GetRomDataFns_magic1(SPC, ATTR_HAS_METADATA, 0, 'SNES'),
 	GetRomDataFns_magic1(VGM, ATTR_HAS_METADATA, 0, 'Vgm '),
+	GetRomDataFns_magic1(ZXAY, ATTR_HAS_METADATA, 0, 'ZXAY'),
 
 	// Other
 	GetRomDataFns_addr(ELF, ATTR_NONE, 0, 0x7F454C46),		// '\177ELF'

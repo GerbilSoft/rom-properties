@@ -98,6 +98,7 @@ SET(${PROJECT_NAME}_SRCS
 	Audio/SID.cpp
 	Audio/SPC.cpp
 	Audio/VGM.cpp
+	Audio/ZXAY.cpp
 
 	Media/CBMDOS.cpp
 	Media/ISO.cpp
@@ -298,6 +299,7 @@ SET(${PROJECT_NAME}_H
 	Audio/SID.hpp
 	Audio/SPC.hpp
 	Audio/VGM.hpp
+	Audio/ZXAY.hpp
 
 	Audio/adx_structs.h
 	Audio/bcstm_structs.h
@@ -310,6 +312,7 @@ SET(${PROJECT_NAME}_H
 	Audio/sid_structs.h
 	Audio/spc_structs.h
 	Audio/vgm_structs.h
+	Audio/zxay_structs.h
 
 	Media/CBMDOS.hpp
 	Media/ISO.hpp
