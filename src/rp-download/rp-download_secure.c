@@ -50,9 +50,8 @@ int rp_download_do_security_options(void)
 		SCMP_SYS(getppid),	// for bubblewrap verification
 		SCMP_SYS(getrusage),
 		SCMP_SYS(gettimeofday),	// 32-bit only?
-		SCMP_SYS(getuid),	// TODO: Only use geteuid()?
 		SCMP_SYS(lseek), SCMP_SYS(_llseek),
-		//SCMP_SYS(lstat), SCMP_SYS(lstat64),	// Not sure if used?
+		SCMP_SYS(lstat), SCMP_SYS(lstat64),	// Needed by Alpine Linux (musl libc)
 		SCMP_SYS(mkdir), SCMP_SYS(mmap), SCMP_SYS(mmap2),
 		SCMP_SYS(munmap),
 		SCMP_SYS(open),		// Ubuntu 16.04
@@ -71,6 +70,12 @@ int rp_download_do_security_options(void)
 #elif defined(__NR_utimensat_time64)
 		__NR_utimensat_time64,
 #endif
+
+		// UID calls - needed by:
+		// - libnss_resolve.so (systemd-resolved)
+		// - Alpine Linux (musl libc)
+		SCMP_SYS(geteuid), SCMP_SYS(getuid),
+		SCMP_SYS(getegid), SCMP_SYS(getgid),
 
 		// select()
 		SCMP_SYS(select),
@@ -107,7 +112,6 @@ int rp_download_do_security_options(void)
 		SCMP_SYS(getuid32),	// Ubuntu 16.04: RAND_status() -> RAND_poll() [i386 only]
 
 		// libnss_resolve.so (systemd-resolved)
-		SCMP_SYS(geteuid),
 		SCMP_SYS(sendmsg),	// libpthread.so [_nss_resolve_gethostbyname4_r() from libnss_resolve.so]
 
 		// FIXME: Manjaro is using these syscalls for some reason...
@@ -116,7 +120,7 @@ int rp_download_do_security_options(void)
 		// cURL's "easy" functions use multi internally, which uses pipe().
 		// Some update, either cURL 8.4.0 -> 8.5.0 or glibc 2.38 -> 2.39,
 		// is now using the pipe2() syscall.
-		SCMP_SYS(pipe2),
+		SCMP_SYS(pipe), SCMP_SYS(pipe2),	// pipe() for Alpine Linux (musl libc)
 
 		// Needed on 32-bit Ubuntu 16.04 (glibc-2.23, cURL 7.47.0) for some reason...
 		// (called from getaddrinfo())
