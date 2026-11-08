@@ -527,6 +527,43 @@ int NSFPrivate::readNSFeMetadata(void)
 				break;
 			}
 
+			case NSFe_Chunk_fade: {
+				// 'fade' chunk
+				int track_count = initNSFeTracks();
+				if (track_count <= 0) {
+					// No tracks...
+					break;
+				}
+
+				// Chunk contains a list of 32-bit times (in milliseconds),
+				// one for each track. (Note that it may be shorter than expected.)
+				assert(chunk_size > 0);
+				if (chunk_size == 0) {
+					// Chunk is empty.
+					break;
+				}
+
+				// Read the chunk data into the temporary buffer.
+				int err = read_chunk(chunk_size);
+				if (err > 0) {
+					// Skip the chunk.
+					break;
+				} else if (err < 0) {
+					// Error reading the chunk...
+					return err;
+				}
+
+				// Update the track list.
+				const uint32_t *p = reinterpret_cast<const uint32_t*>(buf.data());
+				const uint32_t *const p_end = p + (buf.size() / sizeof(uint32_t));
+				for (int i = 0; i < track_count && p < p_end; i++, p++) {
+					nsfe.tracks[i].fade = le32_to_cpu(*p);
+				}
+				nsfe.has.fade = 1;
+				nsfe.has.any_tlist = 1;
+				break;
+			}
+
 			case NSFe_Chunk_tlbl: {
 				// 'tlbl' chunk
 				int track_count = initNSFeTracks();
