@@ -2,6 +2,8 @@
 
 ## Linux
 
+### Debian (and derivatives)
+
 On Debian/Ubuntu, you will need build-essential and the following development
 packages:
 * All: cmake zlib1g-dev libpng-dev libjpeg-dev nettle-dev pkg-config libpugixml-dev gettext libseccomp-dev libfmt-dev
@@ -26,10 +28,12 @@ NOTE: On older versions of Ubuntu, some packages were different:
     * libcanberra-gtk-dev
     * libcanberra-gtk3-dev
 
+### Red Hat, Fedora, other RPM distributions
+
 On Red Hat, Fedora, OpenSUSE, and other RPM-based distributions, you will need
 to install "C Development Tools and Libraries" and the following development
 packages:
-* All: cmake zlib-devel libpng-devel libjpeg-turbo-devel nettle-devel pugixml-devel gettext-devel libseccomp-devel
+* All: cmake zlib-devel libpng-devel libjpeg-turbo-devel nettle-devel pugixml-devel gettext-devel libseccomp-devel fmt-devel
 * Optional decompression: libzstd-devel lz4-devel lzo-devel minizip-ng-devel
 * KDE 4.x: qt-devel kdelibs-devel
 * KDE 5.x: qt5-qtbase-devel qt5-qttools extra-cmake-modules kf5-kio-devel kf5-kwidgetsaddons-devel kf5-kfilemetadata-devel kf5-kcrash-devel
@@ -44,9 +48,11 @@ Optional runtime dependencies:
 
 NOTE: If gsound-devel is not available, use libcanberra-devel instead.
 
+### Arch
+
 On Arch and Arch-based distros, you will need to install "base-devel" and the
 following development packages:
-* All: cmake zlib libpng libjpeg-turbo nettle pkgconf pugixml gettext libseccomp
+* All: cmake zlib libpng libjpeg-turbo nettle pkgconf pugixml gettext libseccomp fmt
 * Optional decompression: zstd minizip-ng
 * KDE 5.x: qt5-base qt5-tools extra-cmake-modules kio kwidgetsaddons kfilemetadata kcrash
 * KDE 6.x: qt6-base qt6-tools extra-cmake-modules kio kwidgetsaddons kfilemetadata kcrash
@@ -59,6 +65,26 @@ Optional runtime dependencies:
 
 NOTE: If gsound is not available, use libcanberra instead.
 
+### Alpine
+
+On Alpine Linux, you will need to install "alpine-sdk" and the following packages:
+* All: cmake zlib-dev libpng-dev jpeg-dev nettle-dev pkgconf gettext libseccomp-dev fmt-dev
+  * From the community repository: pugixml-dev minizip-ng-dev
+* Optional decompression: zstd-dev
+
+For desktop support, the "community" repository must be enabled, then install these packages:
+* KDE 5.x: qt5-qtbase-dev qt5-qttools extra-cmake-modules kio5-dev kwidgetsaddons5-dev kfilemetadata5-dev kcrash5-dev
+  * NOTE: kfilemetadata5-dev seems to be missing...
+* KDE 6.x: qt6-qtbase-dev qt6-qttools extra-cmake-modules kio-dev kwidgetsaddons-dev kfilemetadata-dev kcrash-dev
+* XFCE (GTK+ 3.x): glib-dev gtk+3.0-dev cairo-dev thunar-dev gsound-dev
+* GNOME, MATE, Cinnamon: glib-dev gtk+3.0-dev cairo-dev nautilus-dev gsound-dev
+* GNOME 43: glib-dev gtk4.0-dev gdk-pixbuf-dev nautilus-dev gsound-dev
+
+Optional runtime dependencies:
+* lz4 lzo libwebp
+
+### XFCE Notes
+
 NOTE: XFCE's Thunar file browser requires the Tumbler D-Bus daemon to be
 installed in order to create thumbnails.
 * Debian/Ubuntu: tumbler
@@ -70,6 +96,8 @@ available in most distribution repositories. The Fedora RPM listed above
 may change by the time it hits the repositories, or it may stay the same
 if they decide not to allow both ThunarX2 and ThunarX3 to be installed
 side-by-side.
+
+### Compile from source
 
 Clone the repository, then:
 ```
