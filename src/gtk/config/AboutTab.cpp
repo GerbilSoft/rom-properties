@@ -808,7 +808,7 @@ rp_about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 	fmt::format_to(std::back_inserter(sLibraries), FRUN(sIntCopyOf), zstdVersionUsing);
 #else
 	fmt::format_to(std::back_inserter(sLibraries), FRUN(sCompiledWith), ZSTD_VERSION_STRING);
-	sLibraries += "\n";
+	sLibraries += '\n';
 	fmt::format_to(std::back_inserter(sLibraries), FRUN(sUsingDll), zstdVersionUsing);
 #endif
 

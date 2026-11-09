@@ -100,7 +100,7 @@ rp_nautilus_properties_model_init_bitfield(RpNautilusPropertiesModel *self, cons
 		if ((iter + 1) != names_cend) {
 			col++;
 			if (col == bitfieldDesc.elemsPerRow) {
-				str += "\n";
+				str += '\n';
 				col = 0;
 			} else if (!str.empty()) {
 				// FIXME: Better alignment. (markup isn't supported)
