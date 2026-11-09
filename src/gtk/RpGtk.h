@@ -92,4 +92,11 @@ int rpGtk_getSaveFileName(const rpGtk_getFileName_t *gfndata);
  */
 gchar *rpGtk_convert_accel_to_gtk(const gchar *str) G_GNUC_MALLOC;
 
+/**
+ * Get the scale factor for a GtkWidget.
+ * @param widget GtkWidget
+ * @return Scale factor, or -1 on error.
+ */
+int rpGtk_get_scale_factor(GtkWidget *widget);
+
 G_END_DECLS

@@ -8,6 +8,7 @@
 
 #include "AchievementsTab.hpp"
 #include "RpConfigTab.h"
+#include "RpGtk.h"
 
 #include "../AchSpriteSheet.hpp"
 
@@ -329,31 +330,12 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 	// - Adjust on scale factor changes?
 	// - Multi-monitor handling.
 	// - Fractional scaling, if GTK ever implements it...
-#if GTK_CHECK_VERSION(3, 98, 0)
-	GtkNative *const native = gtk_widget_get_native(GTK_WIDGET(tab));
-	if (!native) {
-		// Not mapped yet...
+	int scale_factor = rpGtk_get_scale_factor(GTK_WIDGET(tab));
+	if (scale_factor < 0) {
+		// Unable to get the scale factor?
+		// Tab will be reset again once it's actually visible.
 		return;
 	}
-	GdkSurface *const surface = gtk_native_get_surface(native);
-	GdkMonitor *const monitor = gdk_display_get_monitor_at_surface(gdk_display_get_default(), surface);
-	gint scale_factor = gdk_monitor_get_scale_factor(monitor);
-#elif GTK_CHECK_VERSION(3, 21, 2)
-	GdkWindow *const window = gtk_widget_get_window(GTK_WIDGET(tab));
-	if (!window) {
-		// Not mapped yet...
-		return;
-	}
-	GdkMonitor *const monitor = gdk_display_get_monitor_at_window(gdk_display_get_default(), window);
-	gint scale_factor = gdk_monitor_get_scale_factor(monitor);
-#elif GTK_CHECK_VERSION(3, 9, 8)
-	// TODO: Get the monitor number the window is on.
-	gint scale_factor = gdk_screen_get_monitor_scale_factor(gdk_screen_get_default(), 0);
-#else
-	// Can't get the scaling factor on this version...
-	// TODO: Get X11 DPI?
-	gint scale_factor = 1;
-#endif
 
 	// NOTE: Only a scale factor of 1 or 2 is supported here.
 	if (scale_factor < 1) {
