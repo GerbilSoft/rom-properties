@@ -127,7 +127,7 @@ for c in string_table:
 		i += 4
 	elif c == 34:
 		# Double-quotes need to be backslash-escaped.
-		f_out.write("\\\"");
+		f_out.write("\\\"")
 		i += 2
 	else:
 		if last_was_hex:
