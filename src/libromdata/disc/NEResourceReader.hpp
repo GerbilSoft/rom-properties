@@ -22,11 +22,11 @@ public:
 	 * NOTE: The IRpFile *must* remain valid while this
 	 * NEResourceReader is open.
 	 *
-	 * @param file IRpFile.
-	 * @param rsrc_tbl_addr Resource table start address.
-	 * @param rsrc_tbl_size Resource table size.
+	 * @param file IRpFile
+	 * @param rsrc_tbl_addr Resource table start address
+	 * @param rsrc_tbl_size Resource table size
 	 */
-	NEResourceReader(const LibRpFile::IRpFilePtr &file, uint32_t rsrc_tbl_addr, uint32_t rsrc_tbl_size);
+	explicit NEResourceReader(const LibRpFile::IRpFilePtr &file, uint32_t rsrc_tbl_addr, uint32_t rsrc_tbl_size);
 	~NEResourceReader() final;
 
 private:

@@ -38,7 +38,7 @@ namespace LibRomData {
 class NEResourceReaderPrivate
 {
 public:
-	NEResourceReaderPrivate(NEResourceReader *q,
+	explicit NEResourceReaderPrivate(NEResourceReader *q,
 		uint32_t rsrc_tbl_addr, uint32_t rsrc_tbl_size);
 
 protected:
@@ -588,9 +588,9 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
  * NOTE: The IRpFile *must* remain valid while this
  * NEResourceReader is open.
  *
- * @param file IRpFile.
- * @param rsrc_tbl_addr Resource table start address.
- * @param rsrc_tbl_size Resource table size.
+ * @param file IRpFile
+ * @param rsrc_tbl_addr Resource table start address
+ * @param rsrc_tbl_size Resource table size
  */
 NEResourceReader::NEResourceReader(const IRpFilePtr &file, uint32_t rsrc_tbl_addr, uint32_t rsrc_tbl_size)
 	: super(file)

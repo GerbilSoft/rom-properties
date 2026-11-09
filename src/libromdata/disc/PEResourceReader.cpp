@@ -43,7 +43,7 @@ namespace LibRomData {
 class PEResourceReaderPrivate
 {
 public:
-	PEResourceReaderPrivate(PEResourceReader *q,
+	explicit PEResourceReaderPrivate(PEResourceReader *q,
 		uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va);
 
 protected:
@@ -641,10 +641,10 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
  * NOTE: The IRpFile *must* remain valid while this
  * PEResourceReader is open.
  *
- * @param file IRpFile.
- * @param rsrc_addr .rsrc section start offset.
- * @param rsrc_size .rsrc section size.
- * @param rsrc_va .rsrc virtual address.
+ * @param file IRpFile
+ * @param rsrc_addr .rsrc section start offset
+ * @param rsrc_size .rsrc section size
+ * @param rsrc_va .rsrc virtual address
  */
 PEResourceReader::PEResourceReader(const IRpFilePtr &file, uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va)
 	: super(file)

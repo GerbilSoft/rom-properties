@@ -22,12 +22,12 @@ public:
 	 * NOTE: The IRpFile *must* remain valid while this
 	 * PEResourceReader is open.
 	 *
-	 * @param file IRpFile.
-	 * @param rsrc_addr .rsrc section start offset.
-	 * @param rsrc_size .rsrc section size.
-	 * @param rsrc_va .rsrc virtual address.
+	 * @param file IRpFile
+	 * @param rsrc_addr .rsrc section start offset
+	 * @param rsrc_size .rsrc section size
+	 * @param rsrc_va .rsrc virtual address
 	 */
-	PEResourceReader(const LibRpFile::IRpFilePtr &file, uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va);
+	explicit PEResourceReader(const LibRpFile::IRpFilePtr &file, uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va);
 	~PEResourceReader() final;
 
 private:
