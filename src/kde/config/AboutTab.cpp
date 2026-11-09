@@ -242,7 +242,7 @@ void AboutTabPrivate::initCreditsTab(void)
 {
 	// License name, with HTML formatting.
 	const string sPrgLicense = fmt::format(FSTR("<a href='https://www.gnu.org/licenses/gpl-2.0.html'>{:s}</a>"),
-		C_("AboutTabl|Credits", "GNU GPL v2"));
+		C_("AboutTab|Credits", "GNU GPL v2"));
 
 	// lblCredits is RichText.
 	string sCredits;

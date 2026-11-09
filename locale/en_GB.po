@@ -420,7 +420,7 @@ msgstr "Version {:s}"
 
 #: ../src/gtk/config/AboutTab.cpp:497 ../src/kde/config/AboutTab.cpp:245
 #: ../src/win32/config/AboutTab.cpp:1033
-msgctxt "AboutTabl|Credits"
+msgctxt "AboutTab|Credits"
 msgid "GNU GPL v2"
 msgstr "GNU GPL v2"
 

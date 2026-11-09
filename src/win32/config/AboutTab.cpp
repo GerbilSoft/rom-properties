@@ -1030,7 +1030,7 @@ void AboutTabPrivate::initCreditsTab(void)
 		FRUN(rtfEscape(C_("AboutTab|Credits", "This program is licensed under the {:s} or later."))),
 			rtfFriendlyLink(
 				"https://www.gnu.org/licenses/gpl-2.0.html",
-				C_("AboutTabl|Credits", "GNU GPL v2")));
+				C_("AboutTab|Credits", "GNU GPL v2")));
 	if (!bUseFriendlyLinks) {
 		sCredits += RTF_BR
 			"https://www.gnu.org/licenses/gpl-2.0.html";

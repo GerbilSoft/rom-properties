@@ -494,7 +494,7 @@ rp_about_tab_init_credits_tab(GtkLabel *lblCredits)
 {
 	// License name, with HTML formatting.
 	const string sPrgLicense = fmt::format(FSTR("<a href='https://www.gnu.org/licenses/gpl-2.0.html'>{:s}</a>"),
-		C_("AboutTabl|Credits", "GNU GPL v2"));
+		C_("AboutTab|Credits", "GNU GPL v2"));
 
 	// Credits string
 	// NOTE: lblCredits is RichText.
