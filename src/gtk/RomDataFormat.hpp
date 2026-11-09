@@ -39,6 +39,16 @@ std::string
 rom_data_format_dimensions(const int dimensions[3]);
 
 /**
+ * Format two lines of text for Achievements display using Pango markup.
+ * Used for AchievementsTab.
+ * @param name Achievement name
+ * @param desc Description
+ * @return Text formatted for Achievements display using Pango markup.
+ */
+std::string
+rom_data_format_text_as_achievements(const char *name, const char *desc);
+
+/**
  * Format multi-line text for Achievements display using Pango markup.
  * Used for AchievementsTab and Achievements-like RFT_LISTDATA fields.
  * @param text Multi-line text
@@ -49,7 +59,7 @@ rom_data_format_RFT_LISTDATA_text_as_achievements(const char *text);
 
 /**
  * Format multi-line text for Achievements display using Pango markup.
- * Used for AchievementsTab and Achievements-like RFT_LISTDATA fields.
+ * Used for Achievements-like RFT_LISTDATA fields.
  * @param text Multi-line text
  * @return Text formatted for Achievements display using Pango markup.
  */

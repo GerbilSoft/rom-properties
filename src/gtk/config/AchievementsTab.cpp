@@ -382,8 +382,7 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 #endif /* RP_GTK_USE_CAIRO */
 
 		// Get the name and description.
-		string s_ach = fmt::format(FSTR("{:s}\n{:s}"), pAch->getName(id), pAch->getDescUnlocked(id));
-		s_ach = rom_data_format_RFT_LISTDATA_text_as_achievements(s_ach);
+		string s_ach = rom_data_format_text_as_achievements(pAch->getName(id), pAch->getDescUnlocked(id));
 
 		// Add the list item.
 #ifdef USE_GTK_COLUMN_VIEW

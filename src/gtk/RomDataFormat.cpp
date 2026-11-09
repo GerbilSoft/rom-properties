@@ -100,6 +100,40 @@ rom_data_format_dimensions(const int dimensions[3])
 }
 
 /**
+ * Format two lines of text for Achievements display using Pango markup.
+ * Used for AchievementsTab.
+ * @param name Achievement name
+ * @param desc Description
+ * @return Text formatted for Achievements display using Pango markup.
+ */
+std::string
+rom_data_format_text_as_achievements(const char *name, const char *desc)
+{
+	string s_ret;
+
+	// Escape the text for Pango markup.
+	gchar *esc_name = g_markup_escape_text(name, -1);
+	gchar *esc_desc = g_markup_escape_text(desc, -1);
+
+	// Pango 1.49.0 [2021/08/22] added percentage sizes.
+	// For older versions, we'll need to use 'smaller' instead.
+	// Note that compared to the KDE version, 'smaller' is slightly
+	// big, and 'smaller'+'smaller' is too small.
+	const char *const span_start_line2 = (pango_version() >= PANGO_VERSION_ENCODE(1,49,0))
+		? "\n<span size='75%'>"
+		: "\n<span size='smaller'>";
+
+	s_ret = esc_name;
+	s_ret += span_start_line2;
+	s_ret += esc_desc;
+	s_ret += "</span>";
+
+	g_free(esc_desc);
+	g_free(esc_name);
+	return s_ret;
+}
+
+/**
  * Format multi-line text for Achievements display using Pango markup.
  * Used for AchievementsTab and Achievements-like RFT_LISTDATA fields.
  * @param text Multi-line text
@@ -130,7 +164,7 @@ rom_data_format_RFT_LISTDATA_text_as_achievements(const char *text)
 	// For older versions, we'll need to use 'smaller' instead.
 	// Note that compared to the KDE version, 'smaller' is slightly
 	// big, and 'smaller'+'smaller' is too small.
-	static const char *const span_start_line2 = (pango_version() >= PANGO_VERSION_ENCODE(1,49,0))
+	const char *const span_start_line2 = (pango_version() >= PANGO_VERSION_ENCODE(1,49,0))
 		? "\n<span size='75%'>"
 		: "\n<span size='smaller'>";
 	s_ret += span_start_line2;
