@@ -507,11 +507,20 @@ int rpGtk_get_scale_factor(GtkWidget *widget)
 	GdkMonitor *const monitor = gdk_display_get_monitor_at_window(gdk_display_get_default(), window);
 	scale_factor = gdk_monitor_get_scale_factor(monitor);
 #elif GTK_CHECK_VERSION(3, 9, 8)
-	// TODO: Get the monitor number the window is on.
-	scale_factor = gdk_screen_get_monitor_scale_factor(gdk_screen_get_default(), 0);
+	// Get the monitor this widget is on.
+	int monitor = 0;
+	GdkScreen *const screen = gdk_screen_get_default();
+	if (screen) {
+		GdkWindow *const window = gtk_widget_get_window(widget);
+		if (window) {
+			monitor = gdk_screen_get_monitor_at_window(screen, window);
+		}
+	}
+	scale_factor = gdk_screen_get_monitor_scale_factor(gdk_screen_get_default(), monitor);
 #else
 	// Can't get the scaling factor on this version...
 	// TODO: Get X11 DPI?
+	((void)widget);
 	scale_factor = 1;
 #endif
 
