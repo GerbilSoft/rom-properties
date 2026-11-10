@@ -35,6 +35,7 @@ using std::array;
 using std::map;
 using std::shared_ptr;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 // Uninitialized vector class
@@ -67,7 +68,7 @@ public:
 	rp::uvector<PalmOS_PRC_ResHeader_t> resHeaders;
 
 	// Icon bitmap
-	shared_ptr<PalmOS_Tbmp> tbmpData;
+	unique_ptr<PalmOS_Tbmp> tbmpData;
 
 	/**
 	 * Find a resource header.
@@ -315,7 +316,7 @@ rp_image_const_ptr PalmOSPrivate::loadIcon(void)
 	// Load the bitmap.
 	// NOTE: To avoid having to store both an IDiscReader and PartitionFile,
 	// PalmOS_Tbmp has a constructor that takes a starting address.
-	shared_ptr<PalmOS_Tbmp> tmp_tbmp = std::make_shared<PalmOS_Tbmp>(this->file, addr);
+	unique_ptr<PalmOS_Tbmp> tmp_tbmp(new PalmOS_Tbmp(this->file, addr));
 	if (tmp_tbmp->isValid()) {
 		// Bitmap image loaded.
 		this->tbmpData = std::move(tmp_tbmp);
