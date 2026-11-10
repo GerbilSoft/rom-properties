@@ -142,6 +142,7 @@ rp_item_convert_to_png(MenuItem_t *item, GList *files)
 	if (!thread) {
 		// Could not create the thread for some reason...
 		// NOTE: `files` will be freed by the closure created by g_signal_connect_data().
+		g_list_free(new_files);
 		return;
 	}
 
