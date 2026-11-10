@@ -45,7 +45,7 @@ public:
 	// Last read data
 	QByteArray lastData;
 
-	// Last result
+	// Last result (KIO::Error)
 	int lastResult;
 
 	// Current file position.
@@ -58,6 +58,13 @@ public:
 	 * Reference: https://github.com/KDE/kio/blob/master/autotests/jobremotetest.cpp
 	 */
 	void enterLoop(void);
+
+	/**
+	 * Convert a KIO error code to POSIX.
+	 * @param gioerr KIO error code.
+	 * @return POSIX error code.
+	 */
+	static int kioerr_to_posix(int kioerr);
 };
 
 /** RpFileKioPrivate **/
@@ -102,6 +109,122 @@ void RpFileKioPrivate::enterLoop(void)
 	QEventLoop eventLoop;
 	QObject::connect(q, &RpFileKio::exitLoop, &eventLoop, &QEventLoop::quit);
 	eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
+}
+
+/**
+ * Convert a KIO error code to POSIX.
+ * @param gioerr KIO error code.
+ * @return POSIX error code.
+ */
+int RpFileKioPrivate::kioerr_to_posix(int kioerr)
+{
+	// Reference: KIOCore/kio/global.h from KF6 6.31.0
+	int ret = EIO;
+
+	// NOTE: All error codes start at KJob::UserDefinedError (100), plus 1.
+	// NOTE: Most of KIO's error codes don't map nicely to POSIX,
+	// so we'll use switch/case instead of an array.
+	switch (kioerr) {
+		default:
+			break;
+
+		case KIO::ERR_NONE:
+			ret = 0;
+			break;
+
+		case KIO::ERR_IS_DIRECTORY:
+			ret = EISDIR;
+			break;
+		case KIO::ERR_IS_FILE:
+			ret = ENOTDIR;
+			break;
+		case KIO::ERR_DOES_NOT_EXIST:
+			ret = ENOENT;
+			break;
+		case KIO::ERR_FILE_ALREADY_EXIST:
+		case KIO::ERR_DIR_ALREADY_EXIST:
+			ret = EEXIST;
+			break;
+		case KIO::ERR_UNKNOWN_HOST:
+			ret = ENOENT;	// FIXME
+			break;
+		case KIO::ERR_ACCESS_DENIED:
+		case KIO::ERR_WRITE_ACCESS_DENIED:
+		case KIO::ERR_CANNOT_ENTER_DIRECTORY:
+			ret = EACCES;
+			break;
+		case KIO::ERR_USER_CANCELED:
+			ret = ECANCELED;
+			break;
+		case KIO::ERR_CANNOT_CONNECT:
+		case KIO::ERR_CONNECTION_BROKEN:
+			ret = ECONNRESET;
+			break;
+
+		case KIO::ERR_CANNOT_MOUNT:
+		case KIO::ERR_CANNOT_UNMOUNT:
+		case KIO::ERR_CANNOT_READ:
+		case KIO::ERR_CANNOT_WRITE:
+		case KIO::ERR_CANNOT_BIND:
+		case KIO::ERR_CANNOT_LISTEN:
+		case KIO::ERR_CANNOT_ACCEPT:
+		case KIO::ERR_CANNOT_LOGIN:
+		case KIO::ERR_CANNOT_STAT:
+		case KIO::ERR_CANNOT_CLOSEDIR:
+		case KIO::ERR_CANNOT_MKDIR:
+		case KIO::ERR_CANNOT_RMDIR:
+		case KIO::ERR_CANNOT_RESUME:
+		case KIO::ERR_CANNOT_RENAME:
+		case KIO::ERR_CANNOT_CHMOD:
+		case KIO::ERR_CANNOT_DELETE:
+			ret = EACCES;
+			break;
+
+		case KIO::ERR_WORKER_DIED:
+			ret = ECHILD;	// FIXME
+			break;
+		case KIO::ERR_OUT_OF_MEMORY:
+			ret = ENOMEM;
+			break;
+		case KIO::ERR_ABORTED:
+			ret = ECANCELED;
+			break;
+		case KIO::ERR_SERVER_TIMEOUT:
+			ret = ETIMEDOUT;
+			break;
+		case KIO::ERR_DISK_FULL:
+			ret = ENOSPC;
+			break;
+		case KIO::ERR_CANNOT_SEEK:
+			ret = ESPIPE;
+			break;
+
+		case KIO::ERR_CANNOT_SETTIME:
+		case KIO::ERR_CANNOT_CHOWN:
+			ret = EACCES;	// FIXME: Or ENOTSUP?
+			break;
+
+		case KIO::ERR_CANNOT_CREATE_WORKER:
+			ret = ENOMEM;	// FIXME
+			break;
+		case KIO::ERR_FILE_TOO_LARGE_FOR_FAT32:
+			ret = ENOSPC;	// FIXME
+			break;
+		case KIO::ERR_OWNER_DIED:
+			ret = EOWNERDEAD;
+			break;
+		case KIO::ERR_CANNOT_TRUNCATE:
+			ret = ESPIPE;
+			break;
+		case KIO::ERR_SYMLINKS_NOT_SUPPORTED:
+			ret = ENOTSUP;
+			break;
+		case KIO::ERR_TRASH_FILE_TOO_LARGE:
+			ret = ENOSPC;	// FIXME
+			break;
+	};
+
+	return ret;
 }
 
 /** RpFileKio **/
@@ -336,8 +459,7 @@ void RpFileKio::fileJob_result(KJob *job)
 	d->lastResult = d->fileJob->error();
 	if (d->lastResult != 0) {
 		// An error occurred.
-		// TODO: POSIX error code?
-		m_lastError = EIO;
+		m_lastError = d->kioerr_to_posix(d->lastResult);
 	}
 
 	// NOTE: KIO::Job will delete itself after sending the result,
