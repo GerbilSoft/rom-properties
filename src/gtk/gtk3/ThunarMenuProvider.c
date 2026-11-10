@@ -111,7 +111,9 @@ rp_item_convert_to_png_ThreadFunc(GList *files)
 		g_free(source_uri);
 	}
 
-	// NOTE: `files` will be freed by the closure created by g_signal_connect_data().
+	// We have another copy of the files list here, so we
+	// need to free it here.
+	thunarx_file_info_list_free(files);
 	return NULL;
 }
 
@@ -130,9 +132,13 @@ rp_item_convert_to_png(MenuItem_t *item, GList *files)
 	}
 
 	// Process the files in a separate thread.
+	// NOTE: We need to copy the list *again*, because the original list
+	// might be deleted before the thread completes.
+	GList *const new_files = thunarx_file_info_list_copy(files);
+
 	char thread_name[64];
 	snprintf(thread_name, sizeof(thread_name), "rp-convert-to-png-%p", files);
-	GThread *const thread = g_thread_new(thread_name, (GThreadFunc)rp_item_convert_to_png_ThreadFunc, files);
+	GThread *const thread = g_thread_new(thread_name, (GThreadFunc)rp_item_convert_to_png_ThreadFunc, new_files);
 	if (!thread) {
 		// Could not create the thread for some reason...
 		// NOTE: `files` will be freed by the closure created by g_signal_connect_data().

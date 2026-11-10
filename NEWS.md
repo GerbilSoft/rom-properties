@@ -85,6 +85,7 @@
     an operation like "Trim ROM" for Nintendo DS resulted in the updated
     "Untrim ROM" option being disabled.
     * Affects: v2.5 - v2.9
+  * GTK: Fix potential crashes when using the "Convert to PNG" menu item.
 
 * Other changes:
   * 64-bit time_t (using the rp_time_t typedef) is now used regardless of
