@@ -333,6 +333,7 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 	const QUrl localUrl = localizeQUrl(inputUrl);
 	const string s_local_filename = Q2U8_StdString(localUrl.toLocalFile());
 	if (unlikely(!s_local_filename.empty() && FileSystem::is_directory(s_local_filename))) {
+		// TODO: Handle non-local directories?
 		const Config *const config = Config::instance();
 		if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {
 			// Directory package thumbnailing is disabled.
@@ -343,7 +344,7 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 		romData = RomDataFactory::create(s_local_filename);
 	} else {
 		// File: Open the file and call RomDataFactory::create() with the opened file.
-		IRpFilePtr file(openQUrl(localUrl, true));
+		IRpFilePtr file(openQUrl(inputUrl, true));
 		if (!file) {
 			// Could not open the file.
 			return;
