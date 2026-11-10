@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-11-06 00:06-0500\n"
-"PO-Revision-Date: 2026-11-08 07:34\n"
+"PO-Revision-Date: 2026-11-10 02:51\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -404,9 +404,9 @@ msgstr "Версия {:s}"
 
 #: ../src/gtk/config/AboutTab.cpp:497 ../src/kde/config/AboutTab.cpp:245
 #: ../src/win32/config/AboutTab.cpp:1033
-msgctxt "AboutTabl|Credits"
+msgctxt "AboutTab|Credits"
 msgid "GNU GPL v2"
-msgstr "GNU GPL v2"
+msgstr ""
 
 #. tr: {:s} is the name of the license.
 #: ../src/gtk/config/AboutTab.cpp:508 ../src/kde/config/AboutTab.cpp:255
