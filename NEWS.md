@@ -120,6 +120,8 @@
     network locations.
   * Options button: Improved some error messages on all platforms.
   * GTK: "Convert to PNG" now works when the destination is a network location.
+  * KDE: The "Pixel Format" property is now available when compiled with
+    KF6 6.13.0 or later.
 
 ## v2.9 (released 2026/09/13)
 
