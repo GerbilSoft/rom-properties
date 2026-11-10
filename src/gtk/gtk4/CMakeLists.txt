@@ -113,7 +113,7 @@ SET(${PROJECT_NAME}_SRCS
 	NautilusPropertiesModel.cpp
 	../gtk3/NautilusMenuProvider.c
 	../gtk3/NautilusInfoProvider.cpp
-	../gtk3/NautilusColumnProvider.c
+	../gtk3/NautilusColumnProvider.cpp
 	../gtk3/MenuProviderCommon.c
 	dlopen-notes.c
 
@@ -131,7 +131,7 @@ SET(${PROJECT_NAME}_H
 	NautilusPropertiesModel.hpp
 	../gtk3/NautilusMenuProvider.h
 	../gtk3/NautilusInfoProvider.hpp
-	../gtk3/NautilusColumnProvider.h
+	../gtk3/NautilusColumnProvider.hpp
 	nautilus-extension-mini.h
 	../gtk3/MenuProviderCommon.h
 

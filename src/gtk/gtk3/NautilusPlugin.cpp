@@ -17,7 +17,7 @@
 #include "NautilusPropertyPageProvider.hpp"
 #include "NautilusMenuProvider.h"
 #include "NautilusInfoProvider.hpp"
-#include "NautilusColumnProvider.h"
+#include "NautilusColumnProvider.hpp"
 
 #include "NautilusExtraInterfaces.h"
 

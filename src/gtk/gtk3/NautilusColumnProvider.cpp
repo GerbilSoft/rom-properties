@@ -8,13 +8,15 @@
 
 // Reference: https://github.com/xfce-mirror/thunar-archive-plugin/blob/master/thunar-archive-plugin/tap-provider.c
 
-#include "NautilusColumnProvider.h"
+#include "NautilusColumnProvider.hpp"
 #include "NautilusExtraInterfaces.h"
 
 #include "common.h"
 
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
+#include "librpbase/RomMetaData.hpp"
+using namespace LibRpBase;
 
 // nautilus-extension.h mini replacement
 #if GTK_CHECK_VERSION(4, 0, 0)
@@ -42,18 +44,21 @@ struct _RpNautilusColumnProvider {
 // Exported here so it can be shared with NautilusInfoProvider.
 // (Uses NULL termination.)
 const struct rp_nautilus_column_provider_column_desc_data_t rp_nautilus_column_provider_column_desc_data[] = {
-	{"rp-game-id",		"Game ID"},
-	{"rp-title-id",		"Title ID"},
-	{"rp-media-id",		"Media ID"},
-	{"rp-os-version",	"OS Version"},
-	{"rp-encryption-key",	"Encryption Key"},
-	{"rp-pixel-format",	"Pixel Format"},
-	{"rp-region-code",	"Region Code"},
-	{"rp-category",		"Category"},
-	{"rp-ripped-by",	"Ripped By"},
-	{"rp-version",		"Version"},
+	// Properties in KFileMetaData
+	{"rp-pixel-format",	"Pixel Format",		(int8_t)Property::PixelFormat},
 
-	{NULL,			NULL}
+	// Custom properties!
+	{"rp-game-id",		"Game ID",		(int8_t)Property::GameID},
+	{"rp-title-id",		"Title ID",		(int8_t)Property::TitleID},
+	{"rp-media-id",		"Media ID",		(int8_t)Property::MediaID},
+	{"rp-os-version",	"OS Version",		(int8_t)Property::OSVersion},
+	{"rp-encryption-key",	"Encryption Key",	(int8_t)Property::EncryptionKey},
+	{"rp-region-code",	"Region Code",		(int8_t)Property::RegionCode},
+	{"rp-category",		"Category",		(int8_t)Property::Category},
+	{"rp-ripped-by",	"Ripped By",		(int8_t)Property::RippedBy},
+	{"rp-version",		"Version",		(int8_t)Property::Version},
+
+	{NULL,			NULL,			0}
 };
 
 #if !GLIB_CHECK_VERSION(2, 59, 1)
@@ -67,7 +72,7 @@ const struct rp_nautilus_column_provider_column_desc_data_t rp_nautilus_column_p
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_DYNAMIC_TYPE_EXTENDED(RpNautilusColumnProvider, rp_nautilus_column_provider,
-	G_TYPE_OBJECT, (GTypeFlags)0,
+	G_TYPE_OBJECT, static_cast<GTypeFlags>(0),
 	G_IMPLEMENT_INTERFACE_DYNAMIC(NAUTILUS_TYPE_COLUMN_PROVIDER, rp_nautilus_column_provider_interface_init)
 );
 
