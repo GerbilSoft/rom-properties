@@ -43,15 +43,22 @@ IF(HAVE_QtDBus)
 		STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_SRCS "${rom-properties-kde-notify_SRCS}")
 		STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_H    "${rom-properties-kde-notify_H}")
 		QT6_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_NOTIFY_SRCS
-			"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.Notifications.xml"
+			../../dbus/org.freedesktop.Notifications.xml
 			)
 	ENDIF(HAVE_QtDBus_NOTIFY)
 	IF(ENABLE_NETWORKING)
 		QT6_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_NM_SRCS
-			"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.NetworkManager.xml"
+			../../dbus/org.freedesktop.NetworkManager.xml
 			)
 	ENDIF(ENABLE_NETWORKING)
 ENDIF(HAVE_QtDBus)
+
+# In theory, RpFile_kio should work with KDE Frameworks 5,
+# but I'm only testing it on KDE Frameworks 6, and in previous
+# testing on KF6, Dolphin ended up hanging.
+SET(${PROJECT_NAME}_KIO_SRCS ../RpFile_kio.cpp)
+SET(${PROJECT_NAME}_KIO_H    ../RpFile_kio.hpp)
+
 
 # Main plugin
 SET(${PROJECT_NAME}_SRCS
@@ -60,12 +67,14 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}-notify_SRCS}
 	${${PROJECT_NAME}_DBUS_IFACE_NM_SRCS}
 	${${PROJECT_NAME}_DBUS_IFACE_NOTIFY_SRCS}
+	${${PROJECT_NAME}_KIO_SRCS}
 	${${PROJECT_NAME}_RCC_O}
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_H}
 	${rom-properties-kio6_H}
 	${${PROJECT_NAME}-notify_H}
+	${${PROJECT_NAME}_KIO_H}
 	)
 
 # FIXME: -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC causes crashes in QtDBus. (Qt6 only...)
@@ -78,6 +87,11 @@ ENDIF(HAVE_QtDBus)
 SET(${PROJECT_NAME}_XATTR_SRCS
 	${${PROJECT_NAME}_XATTR_SRCS}
 	XAttrViewPluginFactoryKF6.cpp
+	${${PROJECT_NAME}_KIO_SRCS}
+	)
+SET(${PROJECT_NAME}_XATTR_H
+	${${PROJECT_NAME}_XATTR_H}
+	${${PROJECT_NAME}_KIO_H}
 	)
 
 IF(COMMAND QT6_WRAP_UI)
@@ -160,6 +174,7 @@ SET(${RomThumbnailCreator_NAME}_SRC
 	../RpQImageBackend.cpp
 	../RpQUrl.cpp
 	../RpQt.cpp
+	${${PROJECT_NAME}_KIO_SRCS}
 
 	# NetworkManager D-Bus interface
 	${${PROJECT_NAME}_DBUS_IFACE_NM_SRCS}
@@ -171,6 +186,7 @@ SET(${RomThumbnailCreator_NAME}_H
 	../RpQImageBackend.hpp
 	../RpQUrl.hpp
 	../RpQt.hpp
+	${${PROJECT_NAME}_KIO_H}
 	)
 
 FOREACH(RTC_SUFFIX "" "-dir")
@@ -238,10 +254,12 @@ ENDIF(Fmt_FOUND)
 ADD_LIBRARY(kfilemetadata_${PROJECT_NAME} MODULE
 	../plugins/ExtractorPlugin.cpp
 	../RpQUrl.cpp
+	${${PROJECT_NAME}_KIO_SRCS}
 
 	../plugins/ExtractorPluginKF6.hpp
 	../RpQtNS.hpp
 	../RpQUrl.hpp
+	${${PROJECT_NAME}_KIO_H}
 	)
 SET_TARGET_PROPERTIES(kfilemetadata_${PROJECT_NAME} PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(kfilemetadata_${PROJECT_NAME})
@@ -272,10 +290,12 @@ ENDIF(Fmt_FOUND)
 ADD_LIBRARY(overlayiconplugin_${PROJECT_NAME} MODULE
 	../plugins/OverlayIconPlugin.cpp
 	../RpQUrl.cpp
+	${${PROJECT_NAME}_KIO_SRCS}
 
 	../plugins/OverlayIconPluginKF6.hpp
 	../RpQtNS.hpp
 	../RpQUrl.hpp
+	${${PROJECT_NAME}_KIO_H}
 	)
 SET_TARGET_PROPERTIES(overlayiconplugin_${PROJECT_NAME} PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(overlayiconplugin_${PROJECT_NAME})

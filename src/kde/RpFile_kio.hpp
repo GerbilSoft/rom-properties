@@ -11,11 +11,15 @@
 // FIXME: Dolphin ends up hanging for some reason...
 #if 1
 
-// NOTE: Only available for KDE Frameworks 5.
-// KDE 4.x's KIO doesn't have KIO::open().
+// KDE 4's KIO doesn't have KIO::open(), so there's no
+// chance of RpFileKio working on KDE 4.
+
+// In theory, RpFile_kio should work with KDE Frameworks 5,
+// but I'm only testing it on KDE Frameworks 6, and in previous
+// testing on KF6, Dolphin ended up hanging.
 #include <QtCore/qglobal.h>
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #define HAVE_RPFILE_KIO 1
 
 // librpfile

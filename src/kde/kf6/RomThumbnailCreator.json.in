@@ -7,9 +7,5 @@
 @MIMETYPES_THUMBONLY_JSON_ARRAY@
         ]
     },
-    "MimeType": "@MIMETYPES_THUMBONLY@",
-    "X-KDE-Protocols": [
-        "file",
-        "desktop"
-    ]
+    "MimeType": "@MIMETYPES_THUMBONLY@"
 }
