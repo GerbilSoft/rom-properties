@@ -147,16 +147,23 @@ RpFileGio::RpFileGio(string_view uri, FileMode mode)
 	switch (mode & FM_MODE_MASK) {
 		case FM_OPEN_READ:
 			d->stream = (GObject*)g_file_read(file, nullptr, &err);
-			m_isWritable = false;
 			break;
 
 		case FM_CREATE_WRITE:
 			d->stream = (GObject*)g_file_replace_readwrite(file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &err);
 			if (!d->stream) {
 				if (err) {
-					// TODO: Check for the specific "stream does not support read/write" error.
+					if (err->code != G_IO_ERROR_NOT_SUPPORTED) {
+						// G_IO_ERROR_NOT_SUPPORTED is returned if the protocl does not support read/write.
+						// Anything else is an actual error.
+						m_lastError = d->gioerr_to_posix(err->code);
+						g_clear_error(&err);
+						g_object_unref(file);
+						return;
+					}
 					g_clear_error(&err);
 				}
+
 				// URI does not support simultaneous read/write. (e.g. sftp://)
 				// We'll still open it for write-only access.
 				d->stream = (GObject*)g_file_replace(file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &err);
@@ -171,20 +178,26 @@ RpFileGio::RpFileGio(string_view uri, FileMode mode)
 				m_isWritable = true;
 			} else {
 				if (err) {
-					// TODO: Check for the specific "stream does not support read/write" error.
+					if (err->code != G_IO_ERROR_NOT_SUPPORTED) {
+						// G_IO_ERROR_NOT_SUPPORTED is returned if the protocl does not support read/write.
+						// Anything else is an actual error.
+						m_lastError = d->gioerr_to_posix(err->code);
+						g_clear_error(&err);
+						g_object_unref(file);
+						return;
+					}
 					g_clear_error(&err);
 				}
+
 				// URI does not support simultaneous read/write. (e.g. sftp://)
 				// We'll still open it for read-only access.
 				d->stream = (GObject*)g_file_read(file, nullptr, &err);
-				m_isWritable = false;
 			}
 			break;
 
 		default:
 			// Invalid mode.
 			m_lastError = EINVAL;
-			m_isWritable = false;
 			g_object_unref(file);
 			return;
 	}
