@@ -157,14 +157,13 @@ void RpFileKio::init(void)
 	d->enterLoop();
 	if (m_lastError != 0) {
 		// An error occurred.
-		d->fileJob->close();
-		d->fileJob->deleteLater();
+		// NOTE: If result() is called, the KIO::Job will delete itself
+		// after the slot is finished running.
 		d->fileJob = nullptr;
 		return;
 	}
 
 	// File is open.
-	// TODO: Transparent gzip decompression?
 }
 
 RpFileKio::~RpFileKio()
@@ -339,6 +338,10 @@ void RpFileKio::fileJob_result(KJob *job)
 		// TODO: POSIX error code?
 		m_lastError = EIO;
 	}
+
+	// NOTE: KIO::Job will delete itself after sending the result,
+	// since this means an error occurred.
+	d->fileJob = nullptr;
 	emit exitLoop();
 }
 
