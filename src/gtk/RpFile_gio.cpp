@@ -14,6 +14,9 @@ using LibRpFile::IRpFile;
 // gio
 #include <gio/gio.h>
 
+// C includes (C++ namespace)
+#include <cerrno>
+
 // C++ STL classes
 #include <array>
 #include <string>
@@ -83,19 +86,79 @@ RpFileGioPrivate::~RpFileGioPrivate()
  */
 int RpFileGioPrivate::gioerr_to_posix(gint gioerr)
 {
-	int err;
-	switch (gioerr) {
-		case G_IO_ERROR_NOT_FOUND:
-			err = ENOENT;
-			break;
-		case G_IO_ERROR_IS_DIRECTORY:
-			err = EISDIR;
-			break;
-		default:
-			err = EIO;
-			break;
+	// glib has g_io_error_from_errno(), but not the other way around.
+	// This function implements the other way around, using the most
+	// likely POSIX error code. If a particular error was not listed
+	// in g_io_error_from_errno(), we'll come up with our own mapping.
+
+	// NOTE: Special values:
+	// - 0: Not actually an error.
+	// - If an error code isn't defined by the system, we'll default to EIO.
+
+#ifndef EFTYPE
+// Not available on Linux as of glibc-2.44.
+#  define EFTYPE EIO
+#endif
+
+	static const uint8_t gio_err_to_posix[] = {
+		EIO,		// G_IO_ERROR_FAILED
+		ENOENT,		// G_IO_ERROR_NOT_FOUND
+		EEXIST,		// G_IO_ERROR_EXISTS
+		EISDIR,		// G_IO_ERROR_IS_DIRECTORY
+		ENOTDIR,	// G_IO_ERROR_NOT_DIRECTORY
+		ENOTEMPTY,	// G_IO_ERROR_NOT_EMPTY
+		EFTYPE,		// G_IO_ERROR_NOT_REGULAR_FILE (FIXME)
+		EFTYPE,		// G_IO_ERROR_NOT_SYMBOLIC_LINK (FIXME)
+		EFTYPE,		// G_IO_ERROR_NOT_MOUNTABLE_FILE (FIXME)
+		ENAMETOOLONG,	// G_IO_ERROR_FILENAME_TOO_LONG
+		EINVAL,		// G_IO_ERROR_INVALID_FILENAME (FIXME)
+		EMLINK,		// G_IO_ERROR_TOO_MANY_LINKS
+		ENOSPC,		// G_IO_ERROR_NO_SPACE
+		ENOTSOCK,	// G_IO_ERROR_INVALID_ARGUMENT (FIXME: Not EINVAL?)
+		EACCES,		// G_IO_ERROR_PERMISSION_DENIED
+		ENOTSUP,	// G_IO_ERROR_NOT_SUPPORTED
+		EIO,		// G_IO_ERROR_NOT_MOUNTED (FIXME)
+		EIO,		// G_IO_ERROR_ALREADY_MOUNTED (FIXME)
+		EBADF,		// G_IO_ERROR_CLOSED (FIXME)
+		ECANCELED,	// G_IO_ERROR_CANCELLED
+		EAGAIN,		// G_IO_ERROR_PENDING (FIXME)
+		EROFS,		// G_IO_ERROR_READ_ONLY (FIXME)
+		EIO,		// G_IO_ERROR_CANT_CREATE_BACKUP (FIXME)
+		EIO,		// G_IO_ERROR_WRONG_ETAG (FIXME)
+		ETIMEDOUT,	// G_IO_ERROR_TIMED_OUT (FIXME)
+		ELOOP,		// G_IO_ERROR_WOULD_RECURSE (FIXME)
+		EBUSY,		// G_IO_ERROR_BUSY
+		EWOULDBLOCK,	// G_IO_ERROR_WOULD_BLOCK (NOTE: May be the same as EAGAIN)
+		ENOENT,		// G_IO_ERROR_HOST_NOT_FOUND (FIXME)
+		EEXIST,		// G_IO_ERROR_WOULD_MERGE (FIXME)
+		0,		// G_IO_ERROR_FAILED_HANDLED (FIXME)
+		EMFILE,		// G_IO_ERROR_TOO_MANY_OPEN_FILES
+		EINVAL,		// G_IO_ERROR_NOT_INITIALIZED (FIXME)
+		EADDRINUSE,	// G_IO_ERROR_ADDRESS_IN_USE
+		EAGAIN,		// G_IO_ERROR_PARTIAL_INPUT (FIXME)
+		EBADMSG,	// G_IO_ERROR_INVALID_DATA
+		EIO,		// G_IO_ERROR_DBUS_ERROR (FIXME)
+		EHOSTUNREACH,	// G_IO_ERROR_HOST_UNREACHABLE
+		ENETUNREACH,	// G_IO_ERROR_NETWORK_UNREACHABLE
+		ECONNREFUSED,	// G_IO_ERROR_CONNECTION_REFUSED
+		EIO,		// G_IO_ERROR_PROXY_FAILED (FIXME)
+		EIO,		// G_IO_ERROR_PROXY_AUTH_FAILED (FIXME)
+		EIO,		// G_IO_ERROR_PROXY_NEED_AUTH (FIXME)
+		EPERM,		// G_IO_ERROR_PROXY_NOT_ALLOWED (FIXME)
+		/*not used*/	// G_IO_ERROR_BROKEN_PIPE
+		ECONNRESET,	// G_IO_ERROR_CONNECTION_CLOSED = G_IO_ERROR_BROKEN_PIPE
+		ENOTCONN,	// G_IO_ERROR_NOT_CONNECTED
+		EMSGSIZE,	// G_IO_ERROR_MESSAGE_TOO_LARGE
+		ENXIO,		// G_IO_ERROR_NO_SUCH_DEVICE
+		EDESTADDRREQ,	// G_IO_ERROR_DESTINATION_UNSET
+	};
+
+	if (gioerr >= 0 && gioerr < ARRAY_SIZE_I(gio_err_to_posix)) {
+		return gio_err_to_posix[gioerr];
 	}
-	return err;
+
+	// Default to EIO.
+	return EIO;
 }
 
 /**
