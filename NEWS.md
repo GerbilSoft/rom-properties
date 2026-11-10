@@ -85,6 +85,7 @@
     an operation like "Trim ROM" for Nintendo DS resulted in the updated
     "Untrim ROM" option being disabled.
     * Affects: v2.5 - v2.9
+  * GTK: Fix potential crashes when using the "Convert to PNG" menu item.
 
 * Other changes:
   * 64-bit time_t (using the rp_time_t typedef) is now used regardless of
@@ -118,6 +119,7 @@
     ROM-specific data (e.g. the SRL contained in some 3DS CIA files) to GVfs
     network locations.
   * Options button: Improved some error messages on all platforms.
+  * GTK: "Convert to PNG" now works when the destination is a network location.
 
 ## v2.9 (released 2026/09/13)
 

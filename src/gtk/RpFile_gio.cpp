@@ -14,6 +14,9 @@ using LibRpFile::IRpFile;
 // gio
 #include <gio/gio.h>
 
+// C includes (C++ namespace)
+#include <cerrno>
+
 // C++ STL classes
 #include <array>
 #include <string>
@@ -31,7 +34,13 @@ public:
 	RP_DISABLE_COPY(RpFileGioPrivate)
 
 public:
-	GObject *stream;	// may be GFileInputStream (read-only) or GFileIOStream (read-write)
+	// File stream. May be one of the following:
+	// - GFileInputStream (read-only)
+	// - GFileIOStream (read-write)
+	// - GFileOutputStream (if opened with FM_CREATE_WRITE but using e.g. sftp://,
+	//                      which doesn't support read-write)
+	GObject *stream;
+
 	string uri;		// GVfs URI
 	IRpFile::FileMode mode;	// File mode
 
@@ -59,9 +68,9 @@ public:
 /** RpFileGioPrivate **/
 
 RpFileGioPrivate::RpFileGioPrivate(string_view uri, IRpFile::FileMode mode)
-	: mode(mode)
+	: stream(nullptr)
+	, mode(mode)
 {
-	stream = nullptr;
 	STRING_ASSIGN_SV(this->uri, uri);
 }
 
@@ -77,19 +86,79 @@ RpFileGioPrivate::~RpFileGioPrivate()
  */
 int RpFileGioPrivate::gioerr_to_posix(gint gioerr)
 {
-	int err;
-	switch (gioerr) {
-		case G_IO_ERROR_NOT_FOUND:
-			err = ENOENT;
-			break;
-		case G_IO_ERROR_IS_DIRECTORY:
-			err = EISDIR;
-			break;
-		default:
-			err = EIO;
-			break;
+	// glib has g_io_error_from_errno(), but not the other way around.
+	// This function implements the other way around, using the most
+	// likely POSIX error code. If a particular error was not listed
+	// in g_io_error_from_errno(), we'll come up with our own mapping.
+
+	// NOTE: Special values:
+	// - 0: Not actually an error.
+	// - If an error code isn't defined by the system, we'll default to EIO.
+
+#ifndef EFTYPE
+// Not available on Linux as of glibc-2.44.
+#  define EFTYPE EIO
+#endif
+
+	static const uint8_t gio_err_to_posix[] = {
+		EIO,		// G_IO_ERROR_FAILED
+		ENOENT,		// G_IO_ERROR_NOT_FOUND
+		EEXIST,		// G_IO_ERROR_EXISTS
+		EISDIR,		// G_IO_ERROR_IS_DIRECTORY
+		ENOTDIR,	// G_IO_ERROR_NOT_DIRECTORY
+		ENOTEMPTY,	// G_IO_ERROR_NOT_EMPTY
+		EFTYPE,		// G_IO_ERROR_NOT_REGULAR_FILE (FIXME)
+		EFTYPE,		// G_IO_ERROR_NOT_SYMBOLIC_LINK (FIXME)
+		EFTYPE,		// G_IO_ERROR_NOT_MOUNTABLE_FILE (FIXME)
+		ENAMETOOLONG,	// G_IO_ERROR_FILENAME_TOO_LONG
+		EINVAL,		// G_IO_ERROR_INVALID_FILENAME (FIXME)
+		EMLINK,		// G_IO_ERROR_TOO_MANY_LINKS
+		ENOSPC,		// G_IO_ERROR_NO_SPACE
+		ENOTSOCK,	// G_IO_ERROR_INVALID_ARGUMENT (FIXME: Not EINVAL?)
+		EACCES,		// G_IO_ERROR_PERMISSION_DENIED
+		ENOTSUP,	// G_IO_ERROR_NOT_SUPPORTED
+		EIO,		// G_IO_ERROR_NOT_MOUNTED (FIXME)
+		EIO,		// G_IO_ERROR_ALREADY_MOUNTED (FIXME)
+		EBADF,		// G_IO_ERROR_CLOSED (FIXME)
+		ECANCELED,	// G_IO_ERROR_CANCELLED
+		EAGAIN,		// G_IO_ERROR_PENDING (FIXME)
+		EROFS,		// G_IO_ERROR_READ_ONLY (FIXME)
+		EIO,		// G_IO_ERROR_CANT_CREATE_BACKUP (FIXME)
+		EIO,		// G_IO_ERROR_WRONG_ETAG (FIXME)
+		ETIMEDOUT,	// G_IO_ERROR_TIMED_OUT (FIXME)
+		ELOOP,		// G_IO_ERROR_WOULD_RECURSE (FIXME)
+		EBUSY,		// G_IO_ERROR_BUSY
+		EWOULDBLOCK,	// G_IO_ERROR_WOULD_BLOCK (NOTE: May be the same as EAGAIN)
+		ENOENT,		// G_IO_ERROR_HOST_NOT_FOUND (FIXME)
+		EEXIST,		// G_IO_ERROR_WOULD_MERGE (FIXME)
+		0,		// G_IO_ERROR_FAILED_HANDLED (FIXME)
+		EMFILE,		// G_IO_ERROR_TOO_MANY_OPEN_FILES
+		EINVAL,		// G_IO_ERROR_NOT_INITIALIZED (FIXME)
+		EADDRINUSE,	// G_IO_ERROR_ADDRESS_IN_USE
+		EAGAIN,		// G_IO_ERROR_PARTIAL_INPUT (FIXME)
+		EBADMSG,	// G_IO_ERROR_INVALID_DATA
+		EIO,		// G_IO_ERROR_DBUS_ERROR (FIXME)
+		EHOSTUNREACH,	// G_IO_ERROR_HOST_UNREACHABLE
+		ENETUNREACH,	// G_IO_ERROR_NETWORK_UNREACHABLE
+		ECONNREFUSED,	// G_IO_ERROR_CONNECTION_REFUSED
+		EIO,		// G_IO_ERROR_PROXY_FAILED (FIXME)
+		EIO,		// G_IO_ERROR_PROXY_AUTH_FAILED (FIXME)
+		EIO,		// G_IO_ERROR_PROXY_NEED_AUTH (FIXME)
+		EPERM,		// G_IO_ERROR_PROXY_NOT_ALLOWED (FIXME)
+		/*not used*/	// G_IO_ERROR_BROKEN_PIPE
+		ECONNRESET,	// G_IO_ERROR_CONNECTION_CLOSED = G_IO_ERROR_BROKEN_PIPE
+		ENOTCONN,	// G_IO_ERROR_NOT_CONNECTED
+		EMSGSIZE,	// G_IO_ERROR_MESSAGE_TOO_LARGE
+		ENXIO,		// G_IO_ERROR_NO_SUCH_DEVICE
+		EDESTADDRREQ,	// G_IO_ERROR_DESTINATION_UNSET
+	};
+
+	if (gioerr >= 0 && gioerr < ARRAY_SIZE_I(gio_err_to_posix)) {
+		return gio_err_to_posix[gioerr];
 	}
-	return err;
+
+	// Default to EIO.
+	return EIO;
 }
 
 /**
@@ -114,10 +183,10 @@ GInputStream *RpFileGioPrivate::get_GInputStream(void)
 GOutputStream *RpFileGioPrivate::get_GOutputStream(void)
 {
 	// Likely a GIOStream, so check that first.
-	if (G_IS_OUTPUT_STREAM(stream)) {
-		return G_OUTPUT_STREAM(stream);
-	} else if (G_IS_IO_STREAM(stream)) {
+	if (G_IS_IO_STREAM(stream)) {
 		return g_io_stream_get_output_stream(G_IO_STREAM(stream));
+	} else if (G_IS_OUTPUT_STREAM(stream)) {
+		return G_OUTPUT_STREAM(stream);
 	}
 	return nullptr;
 }
@@ -141,20 +210,54 @@ RpFileGio::RpFileGio(string_view uri, FileMode mode)
 	switch (mode & FM_MODE_MASK) {
 		case FM_OPEN_READ:
 			d->stream = (GObject*)g_file_read(file, nullptr, &err);
-			m_isWritable = false;
 			break;
+
 		case FM_CREATE_WRITE:
-			// FIXME: sftp:// doesn't support read/write. Using write-only instead.
-			//d->stream = (GObject*)g_file_replace_readwrite(file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &err);
-			d->stream = (GObject*)g_file_replace(file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &err);
+			d->stream = (GObject*)g_file_replace_readwrite(file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &err);
+			if (!d->stream) {
+				if (err) {
+					if (err->code != G_IO_ERROR_NOT_SUPPORTED) {
+						// G_IO_ERROR_NOT_SUPPORTED is returned if the protocl does not support read/write.
+						// Anything else is an actual error.
+						m_lastError = d->gioerr_to_posix(err->code);
+						g_clear_error(&err);
+						g_object_unref(file);
+						return;
+					}
+					g_clear_error(&err);
+				}
+
+				// URI does not support simultaneous read/write. (e.g. sftp://)
+				// We'll still open it for write-only access.
+				d->stream = (GObject*)g_file_replace(file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &err);
+			}
 			m_isWritable = true;
 			break;
+
 		case FM_OPEN_WRITE:
-			// FIXME: Not supported due to e.g. sftp:// not supporting read/write.
-			//d->stream = (GObject*)g_file_open_readwrite(file, nullptr, &err);
-			m_lastError = ENOTSUP;
-			g_object_unref(file);
-			return;
+			d->stream = (GObject*)g_file_open_readwrite(file, nullptr, &err);
+			if (d->stream) {
+				// Read/write stream opened successfully.
+				m_isWritable = true;
+			} else {
+				if (err) {
+					if (err->code != G_IO_ERROR_NOT_SUPPORTED) {
+						// G_IO_ERROR_NOT_SUPPORTED is returned if the protocl does not support read/write.
+						// Anything else is an actual error.
+						m_lastError = d->gioerr_to_posix(err->code);
+						g_clear_error(&err);
+						g_object_unref(file);
+						return;
+					}
+					g_clear_error(&err);
+				}
+
+				// URI does not support simultaneous read/write. (e.g. sftp://)
+				// We'll still open it for read-only access.
+				d->stream = (GObject*)g_file_read(file, nullptr, &err);
+			}
+			break;
+
 		default:
 			// Invalid mode.
 			m_lastError = EINVAL;
@@ -320,7 +423,7 @@ int RpFileGio::seek(off64_t pos, SeekWhence whence)
 	GSeekable *const seekable = G_SEEKABLE(d->stream);
 	if (!seekable || !g_seekable_can_seek(seekable)) {
 		// Not a seekable stream.
-		m_lastError = EBADF;
+		m_lastError = ESPIPE;
 		return -1;
 	}
 
@@ -373,8 +476,8 @@ off64_t RpFileGio::tell(void)
 
 	GSeekable *const seekable = G_SEEKABLE(d->stream);
 	if (!seekable || !g_seekable_can_seek(seekable)) {
-		// Not a seekable.
-		m_lastError = EBADF;
+		// Not a seekable stream.
+		m_lastError = ESPIPE;
 		return -1;
 	}
 
@@ -402,7 +505,7 @@ int RpFileGio::truncate(off64_t size)
 	GSeekable *const seekable = G_SEEKABLE(d->stream);
 	if (!seekable || !g_seekable_can_seek(seekable) || !g_seekable_can_truncate(seekable)) {
 		// Not a seekable or truncatable stream.
-		m_lastError = EBADF;
+		m_lastError = ESPIPE;
 		return -1;
 	}
 

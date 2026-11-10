@@ -85,4 +85,24 @@ int IRpFile::copyTo(IRpFile *pDestFile, off64_t size,
 	return ret;
 }
 
+/** Extra functions **/
+
+/**
+ * Make the file writable.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int IRpFile::makeWritable(void)
+{
+	if (isCompressed()) {
+		// File is compressed. Cannot make it writable.
+		return -ENOTSUP;
+	} else if (isWritable()) {
+		// File is already writable.
+		return 0;
+	}
+
+	// Base class; cannot make the file writable.
+	return -ENOTSUP;
+}
+
 }

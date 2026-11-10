@@ -259,10 +259,7 @@ public:
 	 * Make the file writable.
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
-	virtual int makeWritable(void)
-	{
-		return -ENOTSUP;
-	}
+	virtual int makeWritable(void);
 
 public:
 	/** Convenience functions implemented for all IRpFile subclasses **/
