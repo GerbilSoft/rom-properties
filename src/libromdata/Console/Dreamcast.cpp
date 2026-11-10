@@ -39,6 +39,7 @@ using namespace LibRpTexture;
 using std::array;
 using std::shared_ptr;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -92,7 +93,7 @@ public:
 	DC_IP0000_BIN_t discHeader;
 
 	// 0GDTEX.PVR image
-	shared_ptr<SegaPVR> pvrData;	// SegaPVR object
+	unique_ptr<SegaPVR> pvrData;	// SegaPVR object
 
 	/**
 	 * Calculate the Product CRC16.
@@ -278,7 +279,7 @@ rp_image_const_ptr DreamcastPrivate::load0GDTEX(void)
 	}
 
 	// Create the SegaPVR object.
-	shared_ptr<SegaPVR> pvrData_tmp = std::make_shared<SegaPVR>(pvrFile_tmp);
+	unique_ptr<SegaPVR> pvrData_tmp(new SegaPVR(pvrFile_tmp));
 	if (!pvrData_tmp->isValid()) {
 		// PVR is invalid.
 		return {};

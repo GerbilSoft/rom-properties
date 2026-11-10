@@ -64,7 +64,7 @@ namespace RomPropertiesKDE {
 
 // - Index: RomMetaData::Property
 // - Value: KFileMetaData::Property (as uint8_t)
-static array<uint8_t, static_cast<size_t>(LibRpBase::Property::PropertyCount)> kfmd_PropIdxMap = {{
+static const uint8_t kfmd_PropIdxMap[] = {
 	KFileMetaData::Property::Empty,
 
 	// Audio
@@ -156,14 +156,20 @@ static array<uint8_t, static_cast<size_t>(LibRpBase::Property::PropertyCount)> k
 #if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 53, 0)
 	KFileMetaData::Property::Description,		// string
 #endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 53, 0) */
-}};
+
+	// Added in KF6 6.13
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(6, 13, 0)
+	KFileMetaData::Property::VideoCodec,		// string
+	KFileMetaData::Property::AudioCodec,		// string
+	KFileMetaData::Property::PixelFormat,		// string
+	KFileMetaData::Property::ColorSpace,		// string
+	KFileMetaData::Property::AssistiveAlternateDescription,	// string
+#endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(6, 13, 0) */
+};
 
 ExtractorPlugin::ExtractorPlugin(QObject *parent)
 	: super(parent)
-{
-	assert(kfmd_PropIdxMap.size() >= (static_cast<size_t>(LibRpBase::Property::LastKFMDProperty) + 1));
-	assert(kfmd_PropIdxMap[static_cast<size_t>(LibRpBase::Property::LastKFMDProperty)] != 0);
-}
+{}
 
 QStringList ExtractorPlugin::mimetypes(void) const
 {
@@ -194,6 +200,11 @@ void ExtractorPlugin::extract_properties(KFileMetaData::ExtractionResult *result
 	// Process the metadata.
 	for (const RomMetaData::MetaData &prop : *metaData) {
 		// Get the mapped property name.
+		if (static_cast<size_t>(prop.name) >= ARRAY_SIZE(kfmd_PropIdxMap)) {
+			// Out of bounds.
+			continue;
+		}
+
 		KFileMetaData::Property::Property kfmd_Property =
 			static_cast<KFileMetaData::Property::Property>(kfmd_PropIdxMap[static_cast<size_t>(prop.name)]);
 		if (kfmd_Property == KFileMetaData::Property::Empty) {
@@ -333,6 +344,7 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 	const QUrl localUrl = localizeQUrl(inputUrl);
 	const string s_local_filename = Q2U8_StdString(localUrl.toLocalFile());
 	if (unlikely(!s_local_filename.empty() && FileSystem::is_directory(s_local_filename))) {
+		// TODO: Handle non-local directories?
 		const Config *const config = Config::instance();
 		if (!config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages)) {
 			// Directory package thumbnailing is disabled.
@@ -343,7 +355,7 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 		romData = RomDataFactory::create(s_local_filename);
 	} else {
 		// File: Open the file and call RomDataFactory::create() with the opened file.
-		IRpFilePtr file(openQUrl(localUrl, true));
+		IRpFilePtr file(openQUrl(inputUrl, true));
 		if (!file) {
 			// Could not open the file.
 			return;

@@ -12,7 +12,7 @@
 #include "NautilusExtraInterfaces.h"
 
 // for rp_nautilus_column_provider_column_desc_data[]
-#include "NautilusColumnProvider.h"
+#include "NautilusColumnProvider.hpp"
 
 // rp_gtk_open_uri()
 #include "is-supported.hpp"
@@ -259,43 +259,25 @@ rp_nautilus_info_provider_process(RpNautilusInfoProvider *provider)
 
 	// Check for custom metadata propreties.
 	// NOTE: Only strings are supported.
-	static constexpr size_t custom_property_count = static_cast<size_t>(Property::PropertyCount) - static_cast<size_t>(Property::GameID);
-#ifndef NDEBUG
-	// Sanity check (debug builds): Make sure the array is the correct size.
-	// NOTE: Don't really need to use std::call_once() for this...
-	static bool done_once = false;
-	if (!done_once) {
-		size_t actual_size = 0;
+	const RomMetaData *const metaData = romData->metaData();
+	if (metaData && !metaData->empty()) {
+		// Check if metaData has any properties that we support for columns.
 		for (const rp_nautilus_column_provider_column_desc_data_t *p = rp_nautilus_column_provider_column_desc_data;
 		     p->name != nullptr; p++)
 		{
-			actual_size++;
-		}
-		assert(actual_size == custom_property_count);
-		done_once = true;
-	}
-#endif /* !NDEBUG */
-
-	// Custom metadata property names start at Prpoerty::GameID.
-	const RomMetaData *const metaData = romData->metaData();
-	if (metaData && !metaData->empty()) {
-		for (const RomMetaData::MetaData &prop : *metaData) {
-			if (prop.name < Property::GameID) {
+			const RomMetaData::MetaData *const prop = metaData->get(static_cast<Property>(p->property));
+			if (!prop) {
 				continue;
 			}
 
 			// Only strings are accepted for now.
-			assert(prop.type == PropertyType::String);
-			if (prop.type != PropertyType::String) {
+			assert(prop->type == PropertyType::String);
+			if (prop->type != PropertyType::String) {
 				continue;
 			}
 
 			// Add the property.
-			const size_t index = static_cast<size_t>(prop.name) - static_cast<size_t>(Property::GameID);
-			assert(index < custom_property_count);
-			if (index < custom_property_count) {
-				nautilus_file_info_add_string_attribute(req->file_info, rp_nautilus_column_provider_column_desc_data[index].name, prop.data.str);
-			}
+			nautilus_file_info_add_string_attribute(req->file_info, p->name, prop->data.str);
 		}
 	}
 

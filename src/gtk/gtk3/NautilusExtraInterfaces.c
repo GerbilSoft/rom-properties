@@ -32,7 +32,7 @@ PFN_NEMO_NAME_AND_DESC_PROVIDER_GET_TYPE	pfn_nemo_name_and_desc_provider_get_typ
 #  include "NautilusPropertyPageProvider.hpp"
 #  include "NautilusMenuProvider.h"
 #  include "NautilusInfoProvider.hpp"
-#  include "NautilusColumnProvider.h"
+#  include "NautilusColumnProvider.hpp"
 #endif /* HAVE_NEMO_INTERFACES */
 
 /** rom-properties functions **/

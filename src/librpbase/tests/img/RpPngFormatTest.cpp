@@ -59,6 +59,7 @@ using namespace LibRpTexture;
 using std::array;
 using std::shared_ptr;
 using std::string;
+using std::unique_ptr;
 
 // libfmt
 #include "rp-libfmt.h"
@@ -316,7 +317,7 @@ void RpPngFormatTest::SetUp(void)
 	const RpPngFormatTest_mode &mode = GetParam();
 
 	// Open the PNG image file being tested.
-	shared_ptr<RpFile> file = std::make_shared<RpFile>(mode.png_filename, RpFile::FM_OPEN_READ);
+	unique_ptr<RpFile> file(new RpFile(mode.png_filename, RpFile::FM_OPEN_READ));
 	ASSERT_TRUE(file->isOpen());
 
 	// Maximum image size.

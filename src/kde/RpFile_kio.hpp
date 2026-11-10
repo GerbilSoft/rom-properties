@@ -8,14 +8,18 @@
 
 #pragma once
 
-// FIXME: Dolphin ends up hanging for some reason...
+// FIXME: Dolphin may crash if too many files are queued for previewing...
 #if 0
 
-// NOTE: Only available for KDE Frameworks 5.
-// KDE 4.x's KIO doesn't have KIO::open().
+// KDE 4's KIO doesn't have KIO::open(), so there's no
+// chance of RpFileKio working on KDE 4.
+
+// In theory, RpFile_kio should work with KDE Frameworks 5,
+// but I'm only testing it on KDE Frameworks 6, and in previous
+// testing on KF6, Dolphin ended up hanging.
 #include <QtCore/qglobal.h>
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #define HAVE_RPFILE_KIO 1
 
 // librpfile
@@ -27,6 +31,10 @@
 // Qt includes.
 #include <QtCore/QObject>
 #include <QtCore/QUrl>
+
+// KDE includes
+#include <KIO/Global>
+#include <KIO/Job>
 
 class RpFileKioPrivate;
 class RpFileKio : public QObject, public LibRpFile::IRpFile
@@ -123,6 +131,12 @@ signals:
 	// Event loop handling.
 	// Reference: https://github.com/KDE/kio/blob/master/autotests/jobremotetest.cpp
 	void exitLoop(void);
+
+private slots:
+	void fileJob_result(KJob *job);
+	void fileJob_open(KIO::Job *job);
+	void fileJob_data(KIO::Job *job, const QByteArray &data);
+	void fileJob_position(KIO::Job *job, KIO::filesize_t offset);
 };
 
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */

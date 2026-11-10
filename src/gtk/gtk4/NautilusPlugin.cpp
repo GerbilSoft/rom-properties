@@ -17,7 +17,7 @@
 #include "NautilusPropertiesModelProvider.hpp"
 #include "../gtk3/NautilusMenuProvider.h"
 #include "../gtk3/NautilusInfoProvider.hpp"
-#include "../gtk3/NautilusColumnProvider.h"
+#include "../gtk3/NautilusColumnProvider.hpp"
 
 // C includes (C++ namespace)
 #include <cassert>

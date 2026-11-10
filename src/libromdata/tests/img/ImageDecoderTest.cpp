@@ -66,6 +66,7 @@ using namespace LibRpTexture;
 using std::array;
 using std::shared_ptr;
 using std::string;
+using std::unique_ptr;
 
 // libfmt
 #include "rp-libfmt.h"
@@ -287,7 +288,7 @@ void ImageDecoderTest::SetUp(void)
 	// Open the PNG image file being tested.
 	path = mode.png_filename;
 	replace_slashes(path);
-	shared_ptr<RpFile> file = std::make_shared<RpFile>(path, RpFile::FM_OPEN_READ);
+	unique_ptr<RpFile> file(new RpFile(path, RpFile::FM_OPEN_READ));
 	ASSERT_TRUE(file->isOpen()) << "Error loading PNG file '" << path << "': " << strerror(file->lastError());
 
 	// Maximum image size.

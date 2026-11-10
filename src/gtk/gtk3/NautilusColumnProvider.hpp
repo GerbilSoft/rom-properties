@@ -1,14 +1,15 @@
-/*****************************************************************************
- * ROM Properties Page shell extension. (GTK+ 3.x)                           *
- * NautilusColumnProvider.h: Nautilus (and forks) Column Provider Definition *
- *                                                                           *
- * Copyright (c) 2017-2026 by David Korth.                                   *
- * SPDX-License-Identifier: GPL-2.0-or-later                                 *
- *****************************************************************************/
+/*******************************************************************************
+ * ROM Properties Page shell extension. (GTK+ 3.x)                             *
+ * NautilusColumnProvider.hpp: Nautilus (and forks) Column Provider Definition *
+ *                                                                             *
+ * Copyright (c) 2017-2026 by David Korth.                                     *
+ * SPDX-License-Identifier: GPL-2.0-or-later                                   *
+ *******************************************************************************/
 
 #pragma once
 
 #include "glib-compat.h"
+#include <stdint.h>
 
 G_BEGIN_DECLS
 
@@ -26,6 +27,7 @@ struct rp_nautilus_column_provider_column_desc_data_t {
 	const char *name;		// used for both name and attribute
 	const char *label;
 	//const char *description;	// TODO?
+	int8_t property;		// RomMetaData::Property
 };
 
 extern const struct rp_nautilus_column_provider_column_desc_data_t rp_nautilus_column_provider_column_desc_data[];
