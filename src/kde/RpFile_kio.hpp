@@ -9,7 +9,7 @@
 #pragma once
 
 // FIXME: Dolphin ends up hanging for some reason...
-#if 0
+#if 1
 
 // NOTE: Only available for KDE Frameworks 5.
 // KDE 4.x's KIO doesn't have KIO::open().

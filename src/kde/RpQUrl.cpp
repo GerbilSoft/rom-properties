@@ -135,13 +135,10 @@ IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
 		return file;
 	}
 
-	const QUrl localUrl = localizeQUrl(url);
-	if (localUrl.isEmpty()) {
-		// Unable to localize the URL.
-		return file;
-	}
-
+	// Attempt to localize the URL first.
+	// If it's a local file, we can use RpFile instead of RpFileKio.
 	string s_local_filename;
+	const QUrl localUrl = localizeQUrl(url);
 	if (localUrl.scheme().isEmpty()) {
 		s_local_filename = Q2U8_StdString(localUrl.path());
 	} else if (localUrl.isLocalFile()) {
@@ -154,7 +151,8 @@ IRpFilePtr openQUrl(const QUrl &url, bool isThumbnail)
 		// We're thumbnailing the file. Check "bad FS" settings.
 		const Config *const config = Config::instance();
 
-		if (unlikely(FileSystem::is_directory(s_local_filename.c_str()))) {
+		// Directory thumbnailing only works with local filenames for now.
+		if (!s_local_filename.empty() && unlikely(FileSystem::is_directory(s_local_filename.c_str()))) {
 			// This is a directory. Check if directory thumbnailing is enabled.
 			const bool thumbnailDirectoryPackages = config->getBoolConfigOption(Config::BoolConfig::Options_ThumbnailDirectoryPackages);
 			if (!thumbnailDirectoryPackages) {
