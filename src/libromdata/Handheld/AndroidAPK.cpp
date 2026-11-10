@@ -179,6 +179,7 @@ public:
 };
 
 ROMDATA_IMPL(AndroidAPK)
+ROMDATA_IMPL_systemName(AndroidAPK, "Google Android", "Android", "Android")
 
 /** AndroidAPKPrivate **/
 
@@ -737,29 +738,6 @@ int AndroidAPK::isRomSupported_static(const DetectInfo *info)
 
 	// Not supported.
 	return -1;
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @return System name, or nullptr if not supported.
- */
-const char *AndroidAPK::systemName(unsigned int type) const
-{
-	RP_D(const AndroidAPK);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	// AndroidAPK has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"AndroidAPK::systemName() array index optimization needs to be updated.");
-
-	static const array<const char*, 4> sysNames = {{
-		"Google Android", "Android", "Android", nullptr,
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**

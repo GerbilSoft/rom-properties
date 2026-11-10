@@ -121,6 +121,8 @@ public:
 
 ROMDATA_IMPL(iQuePlayer)
 ROMDATA_IMPL_IMG(iQuePlayer)
+// Ignore region selection; iQue Player was only released in China.
+ROMDATA_IMPL_systemName(iQuePlayer, "iQue Player", "iQue Player", "iQue")
 
 /** iQuePlayerPrivate **/
 
@@ -525,31 +527,6 @@ int iQuePlayer::isRomSupported_static(const DetectInfo *info)
 	}
 
 	return static_cast<int>(iQueFileType);
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char *iQuePlayer::systemName(unsigned int type) const
-{
-	RP_D(const iQuePlayer);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	// iQue was only released in China, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"iQuePlayer::systemName() array index optimization needs to be updated.");
-
-	// Bits 0-1: Type. (long, short, abbreviation)
-	static const array<const char*, 4> sysNames = {{
-		"iQue Player", "iQue Player", "iQue", nullptr
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**

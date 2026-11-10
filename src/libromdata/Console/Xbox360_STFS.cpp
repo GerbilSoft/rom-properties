@@ -181,6 +181,7 @@ public:
 
 ROMDATA_IMPL(Xbox360_STFS)
 ROMDATA_IMPL_IMG_TYPES(Xbox360_STFS)
+ROMDATA_IMPL_systemName(Xbox360_STFS, "Microsoft Xbox 360", "Xbox 360", "X360")
 
 /** Xbox360_STFS_Private **/
 
@@ -830,32 +831,6 @@ int Xbox360_STFS::isRomSupported_static(const DetectInfo *info)
 	}
 
 	return static_cast<int>(stfsType);
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char *Xbox360_STFS::systemName(unsigned int type) const
-{
-	RP_D(const Xbox360_STFS);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	// Xbox 360 has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"Xbox360_STFS::systemName() array index optimization needs to be updated.");
-
-	// Bits 0-1: Type. (long, short, abbreviation)
-	// TODO: STFS-specific, or just use Xbox 360?
-	static const array<const char*, 4> sysNames = {{
-		"Microsoft Xbox 360", "Xbox 360", "X360", nullptr
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**

@@ -74,6 +74,7 @@ public:
 
 ROMDATA_IMPL(GameBoyAdvance)
 ROMDATA_IMPL_IMG(GameBoyAdvance)
+ROMDATA_IMPL_systemName(GameBoyAdvance, "Nintendo Game Boy Advance", "Game Boy Advance", "GBA")
 
 /** GameBoyAdvancePrivate **/
 
@@ -270,31 +271,6 @@ int GameBoyAdvance::isRomSupported_static(const DetectInfo *info)
 	}
 
 	return static_cast<int>(romType);
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char *GameBoyAdvance::systemName(unsigned int type) const
-{
-	RP_D(const GameBoyAdvance);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	// GBA has the same name worldwide, so we can
-	// ignore the region selection.
-	// TODO: Abbreviation might be different... (Japan uses AGB?)
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"GameBoyAdvance::systemName() array index optimization needs to be updated.");
-
-	static const array<const char*, 4> sysNames = {{
-		"Nintendo Game Boy Advance", "Game Boy Advance", "GBA", nullptr
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**

@@ -85,6 +85,7 @@ public:
 
 ROMDATA_IMPL(PlayStationSave)
 ROMDATA_IMPL_IMG(PlayStationSave)
+ROMDATA_IMPL_systemName(PlayStationSave, "Sony PlayStation", "PlayStation", "PS1")
 
 /** PlayStationSavePrivate **/
 
@@ -366,31 +367,6 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 
 	// Not supported.
 	return static_cast<int>(PlayStationSavePrivate::SaveType::Unknown);
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char *PlayStationSave::systemName(unsigned int type) const
-{
-	RP_D(const PlayStationSave);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	// PlayStation has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"PlayStationSave::systemName() array index optimization needs to be updated.");
-
-	// Bits 0-1: Type. (long, short, abbreviation)
-	static const array<const char*, 4> sysNames = {{
-		"Sony PlayStation", "PlayStation", "PS1", nullptr
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**

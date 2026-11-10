@@ -59,6 +59,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL1(ZSTD_freeDCtx, nullptr);
 #endif /* HAVE_ZARCHIVE && _MSC_VER && ZSTD_IS_DLL */
 
 ROMDATA_IMPL(WiiUPackage)
+ROMDATA_IMPL_systemName(WiiUPackage, "Nintendo Wii U", "Wii U", "Wii U")
 
 /** WiiUPackagePrivate **/
 
@@ -961,31 +962,6 @@ int WiiUPackage::isDirSupported_static(const wchar_t *path)
 	return static_cast<int>(WiiUPackagePrivate::PackageType::Unknown);
 }
 #endif /* defined(_WIN32) && defined(_UNICODE) */
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char *WiiUPackage::systemName(unsigned int type) const
-{
-	RP_D(const WiiUPackage);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	// WiiUPackage has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"WiiUPackage::systemName() array index optimization needs to be updated.");
-
-	// Bits 0-1: Type. (long, short, abbreviation)
-	static const array<const char*, 4> sysNames = {{
-		"Nintendo Wii U", "Wii U", "Wii U", nullptr
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
-}
 
 /**
  * Get a bitfield of image types this class can retrieve.

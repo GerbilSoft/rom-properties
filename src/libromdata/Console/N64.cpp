@@ -87,6 +87,7 @@ public:
 };
 
 ROMDATA_IMPL(N64)
+ROMDATA_IMPL_systemName(N64, "Nintendo 64", "Nintendo 64", "N64")
 
 /** N64Private **/
 
@@ -283,31 +284,6 @@ int N64::isRomSupported_static(const DetectInfo *info)
 	}
 
 	return static_cast<int>(romType);
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char *N64::systemName(unsigned int type) const
-{
-	RP_D(const N64);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	// N64 has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"N64::systemName() array index optimization needs to be updated.");
-
-	// Bits 0-1: Type. (long, short, abbreviation)
-	static const array<const char*, 4> sysNames = {{
-		"Nintendo 64", "Nintendo 64", "N64", nullptr
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**

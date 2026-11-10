@@ -74,6 +74,7 @@ public:
 };
 
 ROMDATA_IMPL(VGM)
+ROMDATA_IMPL_systemName(VGM, "Video Game Music", "VGM", "VGM")
 
 /** VGMPrivate **/
 
@@ -292,31 +293,6 @@ int VGM::isRomSupported_static(const DetectInfo *info)
 
 	// Not supported.
 	return -1;
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char *VGM::systemName(unsigned int type) const
-{
-	RP_D(const VGM);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	// VGM has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"VGM::systemName() array index optimization needs to be updated.");
-
-	// Bits 0-1: Type. (long, short, abbreviation)
-	static const array<const char*, 4> sysNames = {{
-		"Video Game Music", "VGM", "VGM", nullptr
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**

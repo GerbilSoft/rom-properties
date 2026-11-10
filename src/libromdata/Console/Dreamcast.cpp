@@ -138,6 +138,7 @@ public:
 
 ROMDATA_IMPL(Dreamcast)
 ROMDATA_IMPL_IMG_TYPES(Dreamcast)
+ROMDATA_IMPL_systemName(Dreamcast, "Sega Dreamcast", "Dreamcast", "DC")
 
 /** DreamcastPrivate **/
 
@@ -584,31 +585,6 @@ int Dreamcast::isRomSupported_static(const DetectInfo *info)
 
 	// Not supported.
 	return static_cast<int>(DreamcastPrivate::DiscType::Unknown);
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char *Dreamcast::systemName(unsigned int type) const
-{
-	RP_D(const Dreamcast);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	// Dreamcast has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"Dreamcast::systemName() array index optimization needs to be updated.");
-
-	// Bits 0-1: Type. (long, short, abbreviation)
-	static const array<const char*, 4> sysNames = {{
-		"Sega Dreamcast", "Dreamcast", "DC", nullptr
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**

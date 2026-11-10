@@ -274,6 +274,7 @@ public:
 };
 
 ROMDATA_IMPL(Xbox360_XEX)
+ROMDATA_IMPL_systemName(Xbox360_XEX, "Microsoft Xbox 360", "Xbox 360", "X360")
 
 /** Xbox360_XEX_Private **/
 
@@ -1650,32 +1651,6 @@ int Xbox360_XEX::isRomSupported_static(const DetectInfo *info)
 	}
 
 	return static_cast<int>(xexType);
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char *Xbox360_XEX::systemName(unsigned int type) const
-{
-	RP_D(const Xbox360_XEX);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	// Xbox 360 has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"Xbox360_XEX::systemName() array index optimization needs to be updated.");
-
-	// Bits 0-1: Type. (long, short, abbreviation)
-	// TODO: XEX-specific, or just use Xbox 360?
-	static const array<const char*, 4> sysNames = {{
-		"Microsoft Xbox 360", "Xbox 360", "X360", nullptr
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**

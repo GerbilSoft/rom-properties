@@ -61,6 +61,7 @@ public:
 };
 
 ROMDATA_IMPL(PokemonMini)
+ROMDATA_IMPL_systemName(PokemonMini, "Pok\xC3\xA9mon Mini", "Pok\xC3\xA9mon Mini", "Pkmn Mini")
 
 /** PokemonMiniPrivate **/
 
@@ -213,30 +214,6 @@ int PokemonMini::isRomSupported_static(const DetectInfo *info)
 
 	// This appears to be a Pokémon Mini ROM image.
 	return 0;
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char *PokemonMini::systemName(unsigned int type) const
-{
-	RP_D(const PokemonMini);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	// Pokémon Mini has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"PokemonMini::systemName() array index optimization needs to be updated.");
-
-	static const array<const char*, 4> sysNames = {{
-		"Pok\xC3\xA9mon Mini", "Pok\xC3\xA9mon Mini", "Pkmn Mini", nullptr
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**

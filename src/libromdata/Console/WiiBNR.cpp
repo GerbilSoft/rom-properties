@@ -52,6 +52,7 @@ public:
 };
 
 ROMDATA_IMPL(WiiBNR)
+ROMDATA_IMPL_systemName(WiiBNR, "Nintendo Wii", "Wii", "Wii")
 
 /** WiiBNRPrivate **/
 
@@ -183,31 +184,6 @@ int WiiBNR::isRomSupported_static(const DetectInfo *info)
 
 	// Not found...
 	return -1;
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char *WiiBNR::systemName(unsigned int type) const
-{
-	RP_D(const WiiBNR);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	// Wii has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"WiiBNR::systemName() array index optimization needs to be updated.");
-
-	// Bits 0-1: Type. (long, short, abbreviation)
-	static const array<const char*, 4> sysNames = {{
-		"Nintendo Wii", "Wii", "Wii", nullptr,
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**

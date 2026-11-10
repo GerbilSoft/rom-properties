@@ -82,6 +82,10 @@ public:
 
 ROMDATA_IMPL(Amiibo)
 ROMDATA_IMPL_IMG(Amiibo)
+// The "correct" name is "Nintendo Figurine Platform".
+// It's unknown whether or not Nintendo will release
+// NFC-enabled figurines that aren't amiibo.
+ROMDATA_IMPL_systemName(Amiibo, "Nintendo Figurine Platform", "Nintendo Figurine Platform", "NFP")
 
 /** AmiiboPrivate **/
 
@@ -321,34 +325,6 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 
 	// Not a supported amiibo NFC tag...
 	return static_cast<int>(AmiiboPrivate::AmiiboType::Unknown);
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char *Amiibo::systemName(unsigned int type) const
-{
-	RP_D(const Amiibo);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	// The "correct" name is "Nintendo Figurine Platform".
-	// It's unknown whether or not Nintendo will release
-	// NFC-enabled figurines that aren't amiibo.
-
-	// NFP has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"Amiibo::systemName() array index optimization needs to be updated.");
-
-	static const array<const char*, 4> sysNames = {{
-		"Nintendo Figurine Platform", "Nintendo Figurine Platform", "NFP", nullptr
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**

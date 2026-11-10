@@ -84,6 +84,7 @@ private:
 };
 
 ROMDATA_IMPL(FlipnoteStudio)
+ROMDATA_IMPL_systemName(FlipnoteStudio, "Flipnote Studio", "Flipnote", "Flipnote")
 
 /** FlipnoteStudioPrivate **/
 
@@ -345,30 +346,6 @@ int FlipnoteStudio::isRomSupported_static(const DetectInfo *info)
 
 	// Not supported.
 	return static_cast<int>(FlipnoteStudioPrivate::AnimType::Unknown);
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char *FlipnoteStudio::systemName(unsigned int type) const
-{
-	RP_D(const FlipnoteStudio);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	// Flipnote Studio has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"FlipnoteStudio::systemName() array index optimization needs to be updated.");
-
-	static const array<const char*, 4> sysNames = {{
-		"Flipnote Studio", "Flipnote", "Flipnote", nullptr
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**

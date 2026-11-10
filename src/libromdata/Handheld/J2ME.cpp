@@ -180,6 +180,7 @@ public:
 };
 
 ROMDATA_IMPL(J2ME)
+ROMDATA_IMPL_systemName(J2ME, "Java 2 Micro Edition", "J2ME", "J2ME")
 
 /** J2MEPrivate **/
 
@@ -985,29 +986,6 @@ int J2ME::isRomSupported_static(const DetectInfo *info)
 
 	// Not supported.
 	return static_cast<int>(J2MEPrivate::JFileType::Unknown);
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @return System name, or nullptr if not supported.
- */
-const char *J2ME::systemName(unsigned int type) const
-{
-	RP_D(const J2ME);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	// J2ME has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"J2ME::systemName() array index optimization needs to be updated.");
-
-	static const array<const char*, 4> sysNames = {{
-		"Java 2 Micro Edition", "J2ME", "J2ME", nullptr,
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**

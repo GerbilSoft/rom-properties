@@ -83,6 +83,7 @@ public:
 
 ROMDATA_IMPL(WiiSave)
 ROMDATA_IMPL_IMG(WiiSave)
+ROMDATA_IMPL_systemName(WiiSave, "Nintendo Wii", "Wii", "Wii")
 
 /** WiiSavePrivate **/
 
@@ -323,30 +324,6 @@ int WiiSave::isRomSupported_static(const DetectInfo *info)
 
 	// Not supported.
 	return -1;
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char *WiiSave::systemName(unsigned int type) const
-{
-	RP_D(const WiiSave);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	// Wii has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"WiiSave::systemName() array index optimization needs to be updated.");
-
-	static const array<const char*, 4> sysNames = {{
-		"Nintendo Wii", "Wii", "Wii", nullptr
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**

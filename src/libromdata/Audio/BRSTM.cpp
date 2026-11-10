@@ -69,6 +69,7 @@ public:
 };
 
 ROMDATA_IMPL(BRSTM)
+ROMDATA_IMPL_systemName(BRSTM, "Nintendo Wii", "Wii", "Wii")
 
 /** BRSTMPrivate **/
 
@@ -264,31 +265,6 @@ int BRSTM::isRomSupported_static(const DetectInfo *info)
 
 	// This is a BRSTM file.
 	return 0;
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char *BRSTM::systemName(unsigned int type) const
-{
-	RP_D(const BRSTM);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	// BRSTM has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"BRSTM::systemName() array index optimization needs to be updated.");
-
-	// Bits 0-1: Type. (long, short, abbreviation)
-	static const array<const char*, 4> sysNames = {{
-		"Nintendo Wii", "Wii", "Wii", nullptr
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**

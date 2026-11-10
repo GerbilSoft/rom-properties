@@ -155,6 +155,7 @@ public:
 /** SegaSaturnPrivate **/
 
 ROMDATA_IMPL(SegaSaturn)
+ROMDATA_IMPL_systemName(SegaSaturn, "Sega Saturn", "Saturn", "Sat")
 
 /* RomDataInfo */
 const array<const char*, 2+1> SegaSaturnPrivate::exts = {{
@@ -474,30 +475,6 @@ int SegaSaturn::isRomSupported_static(const DetectInfo *info)
 
 	// Not supported.
 	return static_cast<int>(SegaSaturnPrivate::DiscType::Unknown);
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char *SegaSaturn::systemName(unsigned int type) const
-{
-	RP_D(const SegaSaturn);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	// Sega Saturn has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"SegaSaturn::systemName() array index optimization needs to be updated.");
-
-	static const array<const char*, 4> sysNames = {{
-		"Sega Saturn", "Saturn", "Sat", nullptr
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**

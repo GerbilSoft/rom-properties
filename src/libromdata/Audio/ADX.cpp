@@ -46,6 +46,7 @@ public:
 };
 
 ROMDATA_IMPL(ADX)
+ROMDATA_IMPL_systemName(ADX, "CRI ADX", "ADX", "ADX")
 
 /** ADXPrivate **/
 
@@ -208,31 +209,6 @@ int ADX::isRomSupported_static(const DetectInfo *info)
 
 	// This is an ADX file.
 	return 0;
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char *ADX::systemName(unsigned int type) const
-{
-	RP_D(const ADX);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	// ADX has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"ADX::systemName() array index optimization needs to be updated.");
-
-	// Bits 0-1: Type. (long, short, abbreviation)
-	static const array<const char*, 4> sysNames = {{
-		"CRI ADX", "ADX", "ADX", nullptr
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**

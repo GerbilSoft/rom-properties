@@ -44,6 +44,7 @@ public:
 };
 
 ROMDATA_IMPL(Atari7800)
+ROMDATA_IMPL_systemName(Atari7800, "Atari 7800", "Atari 7800", "7800")
 
 /** Atari7800Private **/
 
@@ -149,31 +150,6 @@ int Atari7800::isRomSupported_static(const DetectInfo *info)
 
 	// Not supported.
 	return -1;
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char *Atari7800::systemName(unsigned int type) const
-{
-	RP_D(const Atari7800);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	// Atari 7800 has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"Atari7800::systemName() array index optimization needs to be updated.");
-
-	// Bits 0-1: Type. (long, short, abbreviation)
-	static const array<const char*, 4> sysNames = {{
-		"Atari 7800", "Atari 7800", "7800", nullptr
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**

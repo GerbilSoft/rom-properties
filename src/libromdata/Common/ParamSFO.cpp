@@ -95,6 +95,7 @@ public:
 };
 
 ROMDATA_IMPL(ParamSFO)
+ROMDATA_IMPL_systemName(ParamSFO, "Sony PlayStation PARAM.SFO", "PARAM.SFO", "SFO")
 
 const array<const char*, 1+1> ParamSFOPrivate::exts = {{
 	".sfo",
@@ -493,28 +494,6 @@ int ParamSFO::isRomSupported_static(const DetectInfo *info)
 	}
 
 	return 0;
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char *ParamSFO::systemName(unsigned int type) const
-{
-	RP_D(const ParamSFO);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"ParamSFO::systemName() array index optimization needs to be updated.");
-
-	static const array<const char*, 4> sysNames = {{
-		"Sony PlayStation PARAM.SFO", "PARAM.SFO", "SFO", nullptr
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**

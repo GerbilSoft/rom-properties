@@ -606,3 +606,38 @@ std::vector<RomData::ImageSizeDef> klass::supportedImageSizes(ImageType imageTyp
 	(pImage) = (func)(); \
 	return (pImage) ? 0 : -EIO; \
 } while (0)
+
+/**
+ * systemName() implementation for RomData subclasses
+ * that have a single name used everywhere.
+ *
+ * @param klass Class name (unquoted)
+ * @param longname Long system name
+ * @param shortname Short system name
+ * @param abbrev System abbreviation
+ */
+#define ROMDATA_IMPL_systemName(klass, longname, shortname, abbrev) \
+/** \
+ * Get the name of the system the loaded ROM is designed for. \
+ * @param type System name type. (See the SystemName enum.) \
+ * @return System name, or nullptr if type is invalid. \
+ */ \
+const char *klass::systemName(unsigned int type) const \
+{ \
+	RP_D(const klass); \
+	if (!d->isValid || !isSystemNameTypeValid(type)) { \
+		return nullptr; \
+	} \
+\
+	/* This system has the same name worldwide, so we can */ \
+	/* ignore the region selection. */ \
+	static_assert(SYSNAME_TYPE_MASK == 3, \
+		#klass "::systemName() array index optimization needs to be updated."); \
+\
+	/* Bits 0-1: Type (long, short, abbreviation) */ \
+	static const std::array<const char*, 4> sysNames = {{ \
+		(longname), (shortname), (abbrev), nullptr \
+	}}; \
+\
+	return sysNames[type & SYSNAME_TYPE_MASK]; \
+}

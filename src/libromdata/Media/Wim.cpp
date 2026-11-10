@@ -26,6 +26,7 @@ using std::vector;
 namespace LibRomData {
 
 ROMDATA_IMPL(Wim)
+ROMDATA_IMPL_systemName(Wim, "Microsoft WIM Image", "WIM Image", "WIM")
 
 const array<const char*, 3+1> WimPrivate::exts = {{
 	".wim",
@@ -168,28 +169,6 @@ int Wim::isRomSupported_static(const DetectInfo* info)
 	}
 
 	return ret;
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char* Wim::systemName(unsigned int type) const
-{
-	RP_D(const Wim);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"Wim::systemName() array index optimization needs to be updated.");
-
-	static const array<const char*, 4> sysNames = {{
-		"Microsoft WIM", "WIM Image", "WIM", nullptr
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**

@@ -104,6 +104,7 @@ public:
 };
 
 ROMDATA_IMPL(AndroidManifestXML)
+ROMDATA_IMPL_systemName(AndroidManifestXML, "Google Android", "Android", "Android")
 
 /** AndroidManifestXMLPrivate **/
 
@@ -537,29 +538,6 @@ int AndroidManifestXML::isRomSupported_static(const DetectInfo *info)
 
 	// This appears to be an Android Binary XML file..
 	return 0;
-}
-
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @return System name, or nullptr if not supported.
- */
-const char *AndroidManifestXML::systemName(unsigned int type) const
-{
-	RP_D(const AndroidManifestXML);
-	if (!d->isValid || !isSystemNameTypeValid(type)) {
-		return nullptr;
-	}
-
-	// AndroidManifestXML has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"AndroidManifestXML::systemName() array index optimization needs to be updated.");
-
-	static const array<const char*, 4> sysNames = {{
-		"Google Android", "Android", "Android", nullptr,
-	}};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**
