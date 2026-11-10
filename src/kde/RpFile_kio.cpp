@@ -83,10 +83,10 @@ RpFileKioPrivate::RpFileKioPrivate(RpFileKio *q, string_view uri)
 RpFileKioPrivate::~RpFileKioPrivate()
 {
 	if (fileJob) {
-		// NOTE: Using deleteLater() in case something is still
-		// using this object in another thread.
+		// NOTE: Calling fileJob->close() will emit close() and result().
+		// result() will handle clearing the pointer.
 		fileJob->close();
-		fileJob->deleteLater();
+		enterLoop();
 	}
 }
 
@@ -189,9 +189,10 @@ void RpFileKio::close(void)
 {
 	RP_D(RpFileKio);
 	if (d->fileJob) {
+		// NOTE: Calling fileJob->close() will emit close() and result().
+		// result() will handle clearing the pointer.
 		d->fileJob->close();
-		d->fileJob->deleteLater();
-		d->fileJob = nullptr;
+		d->enterLoop();
 	}
 }
 
