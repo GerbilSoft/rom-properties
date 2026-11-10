@@ -119,6 +119,7 @@
     ROM-specific data (e.g. the SRL contained in some 3DS CIA files) to GVfs
     network locations.
   * Options button: Improved some error messages on all platforms.
+  * GTK: "Convert to PNG" now works when the destination is a network location.
 
 ## v2.9 (released 2026/09/13)
 
