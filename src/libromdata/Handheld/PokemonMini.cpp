@@ -61,6 +61,7 @@ public:
 };
 
 ROMDATA_IMPL(PokemonMini)
+// TODO: Switch to raw UTF-8 in the strings? (Don't remember why we're using hex escapes here...)
 ROMDATA_IMPL_systemName(PokemonMini, "Pok\xC3\xA9mon Mini", "Pok\xC3\xA9mon Mini", "Pkmn Mini")
 
 /** PokemonMiniPrivate **/

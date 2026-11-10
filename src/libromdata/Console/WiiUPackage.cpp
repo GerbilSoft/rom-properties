@@ -59,6 +59,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL1(ZSTD_freeDCtx, nullptr);
 #endif /* HAVE_ZARCHIVE && _MSC_VER && ZSTD_IS_DLL */
 
 ROMDATA_IMPL(WiiUPackage)
+// TODO: Handle split Wii packages?
 ROMDATA_IMPL_systemName(WiiUPackage, "Nintendo Wii U", "Wii U", "Wii U")
 
 /** WiiUPackagePrivate **/
