@@ -8,8 +8,8 @@
 
 #pragma once
 
-// FIXME: Dolphin ends up hanging for some reason...
-#if 1
+// FIXME: Dolphin may crash if too many files are queued for previewing...
+#if 0
 
 // KDE 4's KIO doesn't have KIO::open(), so there's no
 // chance of RpFileKio working on KDE 4.

@@ -56,9 +56,9 @@ ENDIF(HAVE_QtDBus)
 # In theory, RpFile_kio should work with KDE Frameworks 5,
 # but I'm only testing it on KDE Frameworks 6, and in previous
 # testing on KF6, Dolphin ended up hanging.
-SET(${PROJECT_NAME}_KIO_SRCS ../RpFile_kio.cpp)
-SET(${PROJECT_NAME}_KIO_H    ../RpFile_kio.hpp)
-
+# FIXME: Dolphin may crash if too many files are queued for previewing...
+#SET(${PROJECT_NAME}_KIO_SRCS ../RpFile_kio.cpp)
+#SET(${PROJECT_NAME}_KIO_H    ../RpFile_kio.hpp)
 
 # Main plugin
 SET(${PROJECT_NAME}_SRCS
