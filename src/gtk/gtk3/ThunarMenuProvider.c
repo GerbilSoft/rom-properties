@@ -184,16 +184,6 @@ rp_thunar_menu_provider_get_file_menu_items(ThunarxMenuProvider *provider, GtkWi
 	for (GList *file = files; file != NULL; file = file->next) {
 		ThunarxFileInfo *const file_info = THUNARX_FILE_INFO(file->data);
 
-		// FIXME: We don't support writing to non-local files right now.
-		// Only allow file:// protocol.
-		gchar *const scheme = thunarx_file_info_get_uri_scheme(file_info);
-		const bool is_file = (scheme && !g_ascii_strcasecmp(scheme, "file"));
-		g_free(scheme);
-		if (!is_file) {
-			// Not file:// protocol.
-			continue;
-		}
-
 		// Get the file's MIME type.
 		gchar *const mime_type = thunarx_file_info_get_mime_type(file_info);
 		if (!mime_type) {
@@ -204,8 +194,9 @@ rp_thunar_menu_provider_get_file_menu_items(ThunarxMenuProvider *provider, GtkWi
 		// Check if the MIME type is supported.
 		is_supported = rp_menu_provider_is_mime_type_supported(mime_type);
 		g_free(mime_type);
-		if (!is_supported)
+		if (!is_supported) {
 			break;
+		}
 
 		file_count++;
 	}

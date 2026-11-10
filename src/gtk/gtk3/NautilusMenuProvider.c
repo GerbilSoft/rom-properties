@@ -199,16 +199,6 @@ rp_nautilus_menu_provider_get_file_items(
 	for (GList *file = files; file != NULL; file = file->next) {
 		NautilusFileInfo *const file_info = NAUTILUS_FILE_INFO(file->data);
 
-		// FIXME: We don't support writing to non-local files right now.
-		// Only allow file:// protocol.
-		gchar *const scheme = nautilus_file_info_get_uri_scheme(file_info);
-		const bool is_file = (scheme && !g_ascii_strcasecmp(scheme, "file"));
-		g_free(scheme);
-		if (!is_file) {
-			// Not file:// protocol.
-			continue;
-		}
-
 		// Get the file's MIME type.
 		gchar *const mime_type = nautilus_file_info_get_mime_type(file_info);
 		if (!mime_type) {

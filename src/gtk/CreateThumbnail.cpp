@@ -193,6 +193,85 @@ public:
 /** CreateThumbnail **/
 
 /**
+ * Open a file from a filename or URI.
+ * @param uri	[in] Filename or URI
+ * @param mode	[in] File mode
+ * @param p_err	[out] RPCT error code
+ * @return IRpFilePtr on success; nullptr on error.
+ */
+static IRpFilePtr openIRpFileFromFilenameOrURI(const char *uri, IRpFile::FileMode mode, int *p_err)
+{
+	// TODO: Consolidate some of this with openRomDataFromFilenameOrURI()?
+	// The RomData version supports directories; this function does not.
+	IRpFilePtr file;
+
+	assert(uri != nullptr);
+	assert(p_err != nullptr);
+	if (!uri || !p_err) {
+		if (!p_err) {
+			*p_err = RPCT_ERROR_OUTPUT_FILE_FAILED;
+		}
+		return file;
+	}
+
+	char *const uri_scheme = g_uri_parse_scheme(uri);
+	char *filename = nullptr;	// allocated; free it later
+
+	if (uri_scheme != nullptr) {
+		// This is a URI.
+		g_free(uri_scheme);
+
+		// Check if it's a local filename.
+		// filename will be nullptr if it's not local.
+		filename = g_filename_from_uri(uri, nullptr, nullptr);
+	} else {
+		// This is a local filename.
+
+		// Check if we have an absolute or relative path.
+		if (g_path_is_absolute(uri)) {
+			// We have an absolute path.
+			filename = g_strdup(uri);
+		} else {
+			// We have a relative path.
+			// Convert the filename to an absolute path.
+			GFile *const curdir = g_file_new_for_path(".");
+			if (curdir) {
+				GFile *const abspath = g_file_resolve_relative_path(curdir, uri);
+				if (abspath) {
+					filename = g_file_get_path(abspath);
+					g_object_unref(abspath);
+				}
+				g_object_unref(curdir);
+			}
+		}
+
+		if (!filename) {
+			// Unable to resolve the source filename...
+			// TODO: More error codes?
+			*p_err = RPCT_ERROR_OUTPUT_FILE_FAILED;;
+			return file;
+		}
+	}
+
+	if (filename) {
+		// It's a local filename. Open using RpFile.
+		file = std::make_shared<RpFile>(filename, mode);
+		g_free(filename);
+	} else {
+		// It's a URI. Open using RpFileGio.
+		file = std::make_shared<RpFileGio>(uri, mode);
+	}
+
+	if (!file->isOpen()) {
+		// Could not open the file...
+		file.reset();
+		*p_err = RPCT_ERROR_OUTPUT_FILE_FAILED;
+	}
+
+	return file;
+}
+
+/**
  * Create a RomData object from a filename or URI.
  * @param source_file	[in] Source filename or URI
  * @param isThumbnail	[in] True to check for bad file systems and/or directories.
@@ -200,7 +279,7 @@ public:
  * @param p_err		[out] RPCT error code
  * @return RomDataPtr on success; nullptr on error.
  */
-static RomDataPtr openFromFilenameOrURI(const char *source_file, bool isThumbnail, string &s_uri, int *p_err)
+static RomDataPtr openRomDataFromFilenameOrURI(const char *source_file, bool isThumbnail, string &s_uri, int *p_err)
 {
 	RomDataPtr romData;
 
@@ -283,7 +362,7 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, bool isThumbnai
 			// File: Open the file and call RomDataFactory::create() with the opened file.
 
 			// Attempt to open the ROM file.
-			IRpFilePtr file = std::make_shared<RpFile>(source_filename, RpFile::FM_OPEN_READ);
+			IRpFilePtr file = std::make_shared<RpFile>(source_filename, IRpFile::FM_OPEN_READ);
 			if (!file->isOpen()) {
 				// Could not open the file.
 				*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
@@ -326,7 +405,7 @@ static RomDataPtr openFromFilenameOrURI(const char *source_file, bool isThumbnai
 
 		// Open the file using RpFileGio.
 		// TODO: Directories using RpFileGio?
-		const IRpFilePtr file = std::make_shared<RpFileGio>(source_file, RpFileGio::FM_OPEN_READ);
+		const IRpFilePtr file = std::make_shared<RpFileGio>(source_file, IRpFile::FM_OPEN_READ);
 		if (!file) {
 			// Could not open the file.
 			*p_err = RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
@@ -389,7 +468,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 	// Attempt to open the ROM file.
 	string s_uri;
 	int ret = -1;
-	const RomDataPtr romData = openFromFilenameOrURI(source_file, isThumbnail, s_uri, &ret);
+	const RomDataPtr romData = openRomDataFromFilenameOrURI(source_file, isThumbnail, s_uri, &ret);
 	if (!romData || ret != 0) {
 		// Error opening the file.
 		return ret;
@@ -422,10 +501,19 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 	RpPngWriter::kv_vector kv;
 	const bool doXDG = !(flags & RPCT_FLAG_NO_XDG_THUMBNAIL_METADATA);
 
+	// Open the output file.
+	IRpFilePtr f_out = openIRpFileFromFilenameOrURI(output_file, IRpFile::FM_CREATE_WRITE, &ret);
+	if (!f_out || ret != 0) {
+		// Error opening the file.
+		// TODO: Delete the file if it was created?
+		return ret;
+	}
+
+	// Check if the output file is a local filename or a URI.
 	// gdk-pixbuf doesn't support CI8, so we'll assume all
 	// images are ARGB32. (Well, ABGR32, but close enough.)
 	// TODO: Verify channels, etc.?
-	RpPngWriter pngWriter(output_file,
+	RpPngWriter pngWriter(f_out,
 		outParams.thumbSize.width, outParams.thumbSize.height,
 		rp_image::Format::ARGB32);
 	if (!pngWriter.isOpen()) {
