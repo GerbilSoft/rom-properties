@@ -135,13 +135,19 @@ const array<PropertyType, static_cast<size_t>(Property::PropertyCount)> RomMetaD
 	// Added in KF5 5.53
 	PropertyType::String,	// Description
 
+	// Added in KF6 6.13
+	PropertyType::String,	// Video Codec
+	PropertyType::String,	// Audio Codec
+	PropertyType::String,	// Pixel Format
+	PropertyType::String,	// Color Space
+	PropertyType::String,	// Assistive Alternate Description
+
 	/** Custom properties! **/
 	PropertyType::String,	// Game ID
 	PropertyType::String,	// Title ID
 	PropertyType::String,	// Media ID
 	PropertyType::String,	// OS Version
 	PropertyType::String,	// Encryption Key
-	PropertyType::String,	// Pixel Format
 	PropertyType::String,	// Region Code
 	PropertyType::String,	// Category
 	PropertyType::String,	// Ripped By

@@ -156,6 +156,13 @@ static array<uint8_t, static_cast<size_t>(LibRpBase::Property::PropertyCount)> k
 #if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 53, 0)
 	KFileMetaData::Property::Description,		// string
 #endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 53, 0) */
+
+	// Added in KF6 6.13
+	KFileMetaData::Property::VideoCodec,		// string
+	KFileMetaData::Property::AudioCodec,		// string
+	KFileMetaData::Property::PixelFormat,		// string
+	KFileMetaData::Property::ColorSpace,		// string
+	KFileMetaData::Property::AssistiveAlternateDescription,	// string
 }};
 
 ExtractorPlugin::ExtractorPlugin(QObject *parent)

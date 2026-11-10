@@ -104,13 +104,19 @@ enum class Property : int8_t {
 	// Added in KF5 5.53
 	Description,		// string
 
+	// Added in KF6 6.13
+	VideoCodec,			// string
+	AudioCodec,			// string
+	PixelFormat,			// string
+	ColorSpace,			// string
+	AssistiveAlternateDescription,	// string
+
 	/** Custom properties! **/
 	GameID,			// string
 	TitleID,		// string
 	MediaID,		// string
 	OSVersion,		// string
 	EncryptionKey,		// string
-	PixelFormat,		// string
 	RegionCode,		// string
 	Category,		// string
 	RippedBy,		// string
