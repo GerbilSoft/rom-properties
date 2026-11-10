@@ -1185,6 +1185,7 @@ int RomData::doRomOp(int id, RomOpParams *pParams)
 		closeFileAfter = false;
 	} else {
 		// Reopen the file.
+		// FIXME: This won't work if the file wasn't an RpFile! (RpFileGio, RpFile_IStream, etc.)
 		closeFileAfter = true;
 		IRpFilePtr file;
 #ifdef _WIN32
