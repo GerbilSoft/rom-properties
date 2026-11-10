@@ -17,6 +17,7 @@
 #include "libi18n/i18n.hpp"
 #include "librpbase/TextOut.hpp"
 #include "librpfile/FileSystem.hpp"
+#include "librpfile/RpFile.hpp"
 #include "librpfile/streambuf_IRpFile.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -306,15 +307,14 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 		return;
 	}
 
-	// NOTE: Only using RpFileGio for file writing here.
-	// RpFile isn't needed because the file write capabilities should be the same.
-
 	// Get the URI.
 	gchar *uri = nullptr;
+	gchar *filename = nullptr;
 	if (file) {
 		uri = g_file_get_uri(file);
+		filename = g_file_get_path(file);
 	}
-	if (!uri && save_data->isFileRequired) {
+	if (!uri && !filename && save_data->isFileRequired) {
 		// No URI, but a file is required...
 		g_free(save_data);
 		return;
@@ -328,38 +328,42 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 
 	// Save the previous export directory.
 	// FIXME: Handle this with non-local files?
-	if (file) {
-		gchar *const filename = g_file_get_path(file);
-		if (filename) {
-			g_free(page->prevExportDir);
-			page->prevExportDir = g_path_get_dirname(filename);
-			g_free(filename);
-		}
+	if (filename) {
+		g_free(page->prevExportDir);
+		page->prevExportDir = g_path_get_dirname(filename);
 	}
 
 	// Open the output file using RpFileGio.
-	shared_ptr<RpFileGio> out_file;
-	if (uri) {
+	IRpFilePtr out_file;
+	if (filename) {
+		// Local file: Use RpFile.
+		out_file = std::make_shared<RpFile>(filename, RpFileGio::FM_CREATE_WRITE);
+	} else if (uri) {
+		// Network file: Use RpFileGio.
 		out_file = std::make_shared<RpFileGio>(uri, RpFileGio::FM_CREATE_WRITE);
-		g_free(uri);
-		if (!out_file->isOpen()) {
-			// Show an error message.
-			// TODO: Include the filename?
-			// TODO: Thread-safe strerror()?
-			const string msg = fmt::format(FRUN(C_("RomDataView", "Error opening output file: '{:s}'")),
-				strerror(out_file->lastError()));
+	}
+	g_free(filename);
+	g_free(uri);
 
-			// Delete the file if it was created.
-			// TODO: Only if it was created by us...
-			out_file.reset();
-			if (file) {
-				//g_file_delete(file, nullptr, nullptr);
-				g_object_unref(file);
-			}
+	if (!out_file || !out_file->isOpen()) {
+		// Show an error message.
+		// TODO: Include the filename?
+		// TODO: Thread-safe strerror()?
+		int err = ((bool)out_file) ? out_file->lastError() : EIO;
+		const string msg = fmt::format(
+			FRUN(C_("RomDataView", "Error opening output file: '{:s}'")),
+				strerror(err));
 
-			rp_rom_data_view_show_message_widget(page, GTK_MESSAGE_WARNING, msg.c_str());
-			return;
+		// Delete the file if it was created.
+		// TODO: Only if it was created by us...
+		out_file.reset();
+		if (file) {
+			//g_file_delete(file, nullptr, nullptr);
+			g_object_unref(file);
 		}
+
+		rp_rom_data_view_show_message_widget(page, GTK_MESSAGE_WARNING, msg.c_str());
+		return;
 	}
 
 	if (id < 0 && ((bool)out_file)) {
