@@ -31,7 +31,13 @@ public:
 	RP_DISABLE_COPY(RpFileGioPrivate)
 
 public:
-	GObject *stream;	// may be GFileInputStream (read-only) or GFileIOStream (read-write)
+	// File stream. May be one of the following:
+	// - GFileInputStream (read-only)
+	// - GFileIOStream (read-write)
+	// - GFileOutputStream (if opened with FM_CREATE_WRITE but using e.g. sftp://,
+	//                      which doesn't support read-write)
+	GObject *stream;
+
 	string uri;		// GVfs URI
 	IRpFile::FileMode mode;	// File mode
 
@@ -59,9 +65,9 @@ public:
 /** RpFileGioPrivate **/
 
 RpFileGioPrivate::RpFileGioPrivate(string_view uri, IRpFile::FileMode mode)
-	: mode(mode)
+	: stream(nullptr)
+	, mode(mode)
 {
-	stream = nullptr;
 	STRING_ASSIGN_SV(this->uri, uri);
 }
 
@@ -114,9 +120,9 @@ GInputStream *RpFileGioPrivate::get_GInputStream(void)
 GOutputStream *RpFileGioPrivate::get_GOutputStream(void)
 {
 	// Likely a GIOStream, so check that first.
-	if (G_IS_OUTPUT_STREAM(stream)) {
+	if (G_IS_IO_STREAM(stream)) {
 		return G_OUTPUT_STREAM(stream);
-	} else if (G_IS_IO_STREAM(stream)) {
+	} else if (G_IS_OUTPUT_STREAM(stream)) {
 		return g_io_stream_get_output_stream(G_IO_STREAM(stream));
 	}
 	return nullptr;
@@ -143,21 +149,42 @@ RpFileGio::RpFileGio(string_view uri, FileMode mode)
 			d->stream = (GObject*)g_file_read(file, nullptr, &err);
 			m_isWritable = false;
 			break;
+
 		case FM_CREATE_WRITE:
-			// FIXME: sftp:// doesn't support read/write. Using write-only instead.
-			//d->stream = (GObject*)g_file_replace_readwrite(file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &err);
-			d->stream = (GObject*)g_file_replace(file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &err);
+			d->stream = (GObject*)g_file_replace_readwrite(file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &err);
+			if (!d->stream) {
+				if (err) {
+					// TODO: Check for the specific "stream does not support read/write" error.
+					g_clear_error(&err);
+				}
+				// URI does not support simultaneous read/write. (e.g. sftp://)
+				// We'll still open it for write-only access.
+				d->stream = (GObject*)g_file_replace(file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &err);
+			}
 			m_isWritable = true;
 			break;
+
 		case FM_OPEN_WRITE:
-			// FIXME: Not supported due to e.g. sftp:// not supporting read/write.
-			//d->stream = (GObject*)g_file_open_readwrite(file, nullptr, &err);
-			m_lastError = ENOTSUP;
-			g_object_unref(file);
-			return;
+			d->stream = (GObject*)g_file_open_readwrite(file, nullptr, &err);
+			if (d->stream) {
+				// Read/write stream opened successfully.
+				m_isWritable = true;
+			} else {
+				if (err) {
+					// TODO: Check for the specific "stream does not support read/write" error.
+					g_clear_error(&err);
+				}
+				// URI does not support simultaneous read/write. (e.g. sftp://)
+				// We'll still open it for read-only access.
+				d->stream = (GObject*)g_file_read(file, nullptr, &err);
+				m_isWritable = false;
+			}
+			break;
+
 		default:
 			// Invalid mode.
 			m_lastError = EINVAL;
+			m_isWritable = false;
 			g_object_unref(file);
 			return;
 	}
