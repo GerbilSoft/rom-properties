@@ -121,13 +121,19 @@ const array<RP_PropertyStore_Private::MetaDataConv, static_cast<size_t>(Property
 	// Added in KF5 5.53
 	{&PKEY_FileDescription, VT_BSTR},	// Description
 
+	// Added in KF6 6.13
+	{nullptr, VT_EMPTY},				// VideoCodec
+	{nullptr, VT_EMPTY},				// AudioCodec
+	{&PKEY_RomProperties_PixelFormat, VT_BSTR},	// PixelFormat
+	{&PKEY_Image_ColorSpace, VT_UI2},		// ColorSpace (FIXME: KDE uses string?)
+	{nullptr, VT_EMPTY},				// AssistiveAlternateDescription
+
 	/** Custom properties! **/
 	{&PKEY_RomProperties_GameID, VT_BSTR},		// Game ID
 	{&PKEY_RomProperties_TitleID, VT_BSTR},		// Title ID
 	{&PKEY_RomProperties_MediaID, VT_BSTR},		// Media ID
 	{&PKEY_RomProperties_OSVersion, VT_BSTR},	// OS Version
 	{&PKEY_RomProperties_EncryptionKey, VT_BSTR},	// Encryption Key
-	{&PKEY_RomProperties_PixelFormat, VT_BSTR},	// Pixel Format
 	{&PKEY_RomProperties_RegionCode, VT_BSTR},	// Region Code
 	{&PKEY_Category, VT_BSTR},			// Category
 	{&PKEY_RomProperties_RippedBy, VT_BSTR},	// Ripped By
@@ -331,6 +337,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 			}
 
 			case VT_UI2:
+				// TODO: Special handling for ColorSpace.
 				assert(prop.type == PropertyType::Integer || prop.type == PropertyType::UnsignedInteger);
 				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger) {
 					continue;
