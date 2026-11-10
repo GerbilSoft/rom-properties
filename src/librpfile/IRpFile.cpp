@@ -93,7 +93,6 @@ int IRpFile::copyTo(IRpFile *pDestFile, off64_t size,
  */
 int IRpFile::makeWritable(void)
 {
-	printf("make writable?\n");
 	if (isCompressed()) {
 		// File is compressed. Cannot make it writable.
 		return -ENOTSUP;
