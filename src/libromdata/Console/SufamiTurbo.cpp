@@ -57,6 +57,7 @@ public:
 
 ROMDATA_IMPL(SufamiTurbo)
 ROMDATA_IMPL_IMG(SufamiTurbo)
+// Sufami Turbo was only released in Japan, so we can ignore the region selection.
 ROMDATA_IMPL_systemName(SufamiTurbo, "Sufami Turbo", "Sufami Turbo", "ST")
 
 /** SufamiTurboPrivate **/
