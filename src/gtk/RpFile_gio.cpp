@@ -121,9 +121,9 @@ GOutputStream *RpFileGioPrivate::get_GOutputStream(void)
 {
 	// Likely a GIOStream, so check that first.
 	if (G_IS_IO_STREAM(stream)) {
-		return G_OUTPUT_STREAM(stream);
-	} else if (G_IS_OUTPUT_STREAM(stream)) {
 		return g_io_stream_get_output_stream(G_IO_STREAM(stream));
+	} else if (G_IS_OUTPUT_STREAM(stream)) {
+		return G_OUTPUT_STREAM(stream);
 	}
 	return nullptr;
 }
