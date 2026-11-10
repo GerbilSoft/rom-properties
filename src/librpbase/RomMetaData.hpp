@@ -125,7 +125,7 @@ enum class Property : int8_t {
 	// TODO: More fields.
 	PropertyCount,
 	LastProperty = PropertyCount-1,
-	LastKFMDProperty = Description,
+	LastKFMDProperty = AssistiveAlternateDescription,
 };
 
 // Property types.
