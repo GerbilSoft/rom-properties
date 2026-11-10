@@ -28,6 +28,10 @@
 #include <QtCore/QObject>
 #include <QtCore/QUrl>
 
+// KDE includes
+#include <KIO/Global>
+#include <KIO/Job>
+
 class RpFileKioPrivate;
 class RpFileKio : public QObject, public LibRpFile::IRpFile
 {
@@ -123,6 +127,12 @@ signals:
 	// Event loop handling.
 	// Reference: https://github.com/KDE/kio/blob/master/autotests/jobremotetest.cpp
 	void exitLoop(void);
+
+private slots:
+	void fileJob_result(KJob *job);
+	void fileJob_open(KIO::Job *job);
+	void fileJob_data(KIO::Job *job, const QByteArray &data);
+	void fileJob_position(KIO::Job *job, KIO::filesize_t offset);
 };
 
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) */

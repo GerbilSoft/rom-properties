@@ -145,33 +145,13 @@ void RpFileKio::init(void)
 
 	/** Signals **/
 
-	// open(): File was opened.
-	QObject::connect(d->fileJob, &KIO::FileJob::open, this, [d, this]() {
-		// FileJob has been opened.
-		emit exitLoop();
-	});
-	// result(): An operation finished. (ONLY emitted on failure)
-	QObject::connect(d->fileJob, &KIO::FileJob::result, this, [d, this]() {
-		// Did an error occur?
-		d->lastResult = d->fileJob->error();
-		if (d->lastResult != 0) {
-			// An error occurred.
-			// TODO: POSIX error code?
-			this->m_lastError = EIO;
-		}
-		emit exitLoop();
-	});
-	// read(): Data has been read.
-	QObject::connect(d->fileJob, &KIO::FileJob::data, this, [d, this](KIO::Job*, const QByteArray &data) {
-		d->lastData = data;
-		d->pos += data.size();
-		emit exitLoop();
-	});
-	// position(): File position has been set.
-	QObject::connect(d->fileJob, &KIO::FileJob::position, this, [d, this](KIO::Job*, KIO::filesize_t offset) {
-		d->pos = offset;
-		emit exitLoop();
-	});
+	// NOTE: KIO::result() is a private signal, so we have to use the old
+	// signal/slot syntax to connect to it. (...though lambda syntax may work?)
+	QObject::connect(d->fileJob, SIGNAL(result(KJob*)), this, SLOT(fileJob_result(KJob*)));
+
+	QObject::connect(d->fileJob, &KIO::FileJob::open, this, &RpFileKio::fileJob_open);
+	QObject::connect(d->fileJob, &KIO::FileJob::data, this, &RpFileKio::fileJob_data);
+	QObject::connect(d->fileJob, &KIO::FileJob::position, this, &RpFileKio::fileJob_position);
 
 	// Run the loop.
 	d->enterLoop();
@@ -339,4 +319,65 @@ const char *RpFileKio::filename(void) const
 	RP_D(const RpFileKio);
 	// FIXME: Q2U8() returns a temporary, which may be gone by the time this function returns...
 	return (!d->uri.isEmpty() ? Q2U8(d->uri.toString()) : nullptr);
+}
+
+/** Private slots **/
+
+void RpFileKio::fileJob_result(KJob *job)
+{
+	RP_D(RpFileKio);
+	assert(d->fileJob == job);
+	if (d->fileJob != job) {
+		// Wrong job...
+		return;
+	}
+
+	// Did an error occur?
+	d->lastResult = d->fileJob->error();
+	if (d->lastResult != 0) {
+		// An error occurred.
+		// TODO: POSIX error code?
+		m_lastError = EIO;
+	}
+	emit exitLoop();
+}
+
+void RpFileKio::fileJob_open(KIO::Job *job)
+{
+	RP_D(RpFileKio);
+	assert(d->fileJob == job);
+	if (d->fileJob != job) {
+		// Wrong job...
+		return;
+	}
+
+	// FileJob has been opened.
+	emit exitLoop();
+}
+
+void RpFileKio::fileJob_data(KIO::Job *job, const QByteArray &data)
+{
+	RP_D(RpFileKio);
+	assert(d->fileJob == job);
+	if (d->fileJob != job) {
+		// Wrong job...
+		return;
+	}
+
+	d->lastData = data;
+	d->pos += data.size();
+	emit exitLoop();
+}
+
+void RpFileKio::fileJob_position(KIO::Job *job, KIO::filesize_t offset)
+{
+	RP_D(RpFileKio);
+	assert(d->fileJob == job);
+	if (d->fileJob != job) {
+		// Wrong job...
+		return;
+	}
+
+	d->pos = offset;
+	emit exitLoop();
 }
