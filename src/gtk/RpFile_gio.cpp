@@ -320,7 +320,7 @@ int RpFileGio::seek(off64_t pos, SeekWhence whence)
 	GSeekable *const seekable = G_SEEKABLE(d->stream);
 	if (!seekable || !g_seekable_can_seek(seekable)) {
 		// Not a seekable stream.
-		m_lastError = EBADF;
+		m_lastError = ESPIPE;
 		return -1;
 	}
 
@@ -373,8 +373,8 @@ off64_t RpFileGio::tell(void)
 
 	GSeekable *const seekable = G_SEEKABLE(d->stream);
 	if (!seekable || !g_seekable_can_seek(seekable)) {
-		// Not a seekable.
-		m_lastError = EBADF;
+		// Not a seekable stream.
+		m_lastError = ESPIPE;
 		return -1;
 	}
 
@@ -402,7 +402,7 @@ int RpFileGio::truncate(off64_t size)
 	GSeekable *const seekable = G_SEEKABLE(d->stream);
 	if (!seekable || !g_seekable_can_seek(seekable) || !g_seekable_can_truncate(seekable)) {
 		// Not a seekable or truncatable stream.
-		m_lastError = EBADF;
+		m_lastError = ESPIPE;
 		return -1;
 	}
 
