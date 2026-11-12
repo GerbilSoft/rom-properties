@@ -392,21 +392,16 @@ uint32_t getLanguageCode(void)
 const char *getLocalizedLanguageName(uint32_t lc)
 {
 	// Do a binary search.
-	const LanguageOffTbl_t key = {lc, 0};
-	void *ptr = bsearch(&key, languages_offtbl.data(),
-		languages_offtbl.size(), sizeof(languages_offtbl[0]),
-		[](const void *a, const void *b) -> int
-		{
-			const LanguageOffTbl_t *const pa = static_cast<const LanguageOffTbl_t*>(a);
-			const LanguageOffTbl_t *const pb = static_cast<const LanguageOffTbl_t*>(b);
-			return static_cast<int>(pa->lc) - static_cast<int>(pb->lc);
+	auto iter = std::lower_bound(languages_offtbl.cbegin(), languages_offtbl.cend(), lc,
+		[](LanguageOffTbl_t langOffTbl, uint32_t lc) noexcept -> bool {
+			return (langOffTbl.lc < lc);
 		});
-	if (!ptr) {
+	if (iter == languages_offtbl.cend() || iter->lc != lc) {
+		// Not found.
 		return nullptr;
 	}
 
-	const LanguageOffTbl_t *const pLangOffTbl = static_cast<const LanguageOffTbl_t*>(ptr);
-	return &languages_strtbl[pLangOffTbl->offset];
+	return &languages_strtbl[iter->offset];
 }
 
 /**

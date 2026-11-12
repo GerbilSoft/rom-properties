@@ -12,6 +12,7 @@
 #include "libi18n/i18n.hpp"
 
 // C++ STL classes
+#include <algorithm>
 #include <array>
 using std::array;
 

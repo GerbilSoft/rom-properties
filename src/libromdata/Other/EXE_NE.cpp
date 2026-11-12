@@ -18,6 +18,7 @@ using namespace LibRpBase;
 using namespace LibRpText;
 
 // C++ STL classes
+#include <algorithm>
 #include <unordered_set>
 using std::array;
 using std::string;
@@ -716,33 +717,26 @@ int EXEPrivate::addFields_NE_Entry(void)
 			const uint16_t ordinal = static_cast<uint8_t>(p[len]) | static_cast<uint8_t>(p[len+1])<<8;
 
 			// binary search for the ordinal
-			static const char empty_name[] = "";
-			const Entry key = {span<const char>(empty_name, 1), ordinal, 0, 0, 0, false, false, false};
-			void *ptr = bsearch(&key, ents.data(),
-				ents.size(), sizeof(ents[0]),
-				[](const void *a, const void *b) -> int
-				{
-					const Entry *const pa = static_cast<const Entry*>(a);
-					const Entry *const pb = static_cast<const Entry*>(b);
-					return (pa->ordinal - pb->ordinal);
+			auto it = std::lower_bound(ents.begin(), ents.end(), ordinal,
+				[](const Entry &lhs, uint16_t rhs) noexcept -> bool {
+					return (lhs.ordinal < rhs);
 				});
-			if (!ptr) {
+			if (it == ents.cend() || it->ordinal != ordinal) {
 				// name points to non-existent ordinal
 				return -ENOENT;
 			}
 
-			Entry *const pEntry = static_cast<Entry*>(ptr);
-			if (pEntry->has_name) {
+			if (it->has_name) {
 				// This ordinal already has a name.
 				// Duplicate the entry, replace name in the copy.
-				Entry ent = *pEntry;
+				Entry ent = *it;
 				ent.name = name;
 				ent.is_resident = is_resident;
 				ents.push_back(std::move(ent));
 			} else {
-				pEntry->has_name = true;
-				pEntry->name = name;
-				pEntry->is_resident = is_resident;
+				it->has_name = true;
+				it->name = name;
+				it->is_resident = is_resident;
 			}
 
 			p += len + 2;

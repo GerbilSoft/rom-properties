@@ -32,6 +32,7 @@ using namespace LibRpTexture;
 #include "tcharx.h"
 
 // C++ STL classes
+#include <algorithm>
 using std::array;
 using std::tstring;
 using std::unique_ptr;
@@ -762,22 +763,16 @@ int XboxDisc::isRomSupported_static(
 	// Search the XGD PVD table for a matching timestamp, but only if
 	// the btime is in range.
 	if (btime <= 1430092800) {
-		const xgd_pvd_t key = {static_cast<DiscType>(0), 0, static_cast<int32_t>(btime)};
-		void *ptr = bsearch(&key, xgd_tbl.data(),
-			xgd_tbl.size(), sizeof(xgd_tbl[0]),
-			[](const void *a, const void *b) -> int
-			{
-				const xgd_pvd_t *const pa = static_cast<const xgd_pvd_t*>(a);
-				const xgd_pvd_t *const pb = static_cast<const xgd_pvd_t*>(b);
-				return (pa->btime - pb->btime);
+		auto iter = std::lower_bound(xgd_tbl.cbegin(), xgd_tbl.cend(), static_cast<int32_t>(btime),
+			[](const xgd_pvd_t &xgd_pvd, int32_t btime) noexcept -> bool {
+				return (xgd_pvd.btime < btime);
 			});
-		if (ptr) {
+		if (iter != xgd_tbl.cend() && iter->btime == static_cast<int32_t>(btime)) {
 			// Found a match!
-			const xgd_pvd_t *const pXgd = static_cast<const xgd_pvd_t*>(ptr);
 			if (pWave) {
-				*pWave = pXgd->wave;
+				*pWave = iter->wave;
 			}
-			return static_cast<int>(pXgd->xgd);
+			return static_cast<int>(iter->xgd);
 		}
 	}
 

@@ -15,9 +15,8 @@
 // C includes
 #include "tcharx.h"
 
-// C includes (C++ namespace)
-#include <cstring>
-#include <cstdlib>
+// C++ STL classes
+#include <algorithm>
 
 namespace LibRomData { namespace EXENEEntries {
 
@@ -43,48 +42,29 @@ struct OrdinalNameTable {
  */
 const char *lookup_ordinal(const char *modname, uint16_t ordinal)
 {
-	// NOTE: key.modname is *not* NULL-terminated.
-	// MSVC's strncpy_s() doesn't like this, so we'll have to
-	// do some manual shenanigans.
-	OrdinalNameTable key;
-	memset(&key, 0, sizeof(key));
-	size_t modname_len = strlen(modname);
-	assert(modname_len <= sizeof(key.modname));
-	if (modname_len > sizeof(key.modname)) {
-		// Not possible to match a module name longer than 8 chars.
-		return nullptr;
-	}
-	memcpy(key.modname, modname, modname_len);
-
-	void *ptr = bsearch(&key, entries,
-		ARRAY_SIZE(entries), sizeof(entries[0]),
-		[](const void *a, const void *b) -> int
-		{
-			const OrdinalNameTable *const pa = static_cast<const OrdinalNameTable*>(a);
-			const OrdinalNameTable *const pb = static_cast<const OrdinalNameTable*>(b);
-			return strncasecmp(pa->modname, pb->modname, 8);
+	// Search for the module.
+	static const OrdinalNameTable *const pEntries_end = &entries[ARRAY_SIZE(entries)];
+	auto iter = std::lower_bound(entries, pEntries_end, modname,
+		[](const OrdinalNameTable &ont, const char *modname) noexcept -> bool {
+			return (strncasecmp(ont.modname, modname, 8) < 0);
 		});
-	if (!ptr) {
+	if (iter == pEntries_end || strncasecmp(iter->modname, modname, 8) != 0) {
+		// Module name not found.
 		return nullptr;
 	}
 
-	const OrdinalNameTable *const pNameTbl = static_cast<const OrdinalNameTable*>(ptr);
-	const OrdinalName key2 = {ordinal, 0};
-
-	ptr = bsearch(&key2, pNameTbl->table,
-		pNameTbl->count, sizeof(pNameTbl->table[0]),
-		[](const void *a, const void *b) -> int
-		{
-			const OrdinalName *const pa = static_cast<const OrdinalName*>(a);
-			const OrdinalName *const pb = static_cast<const OrdinalName*>(b);
-			return (static_cast<int>(pa->ordinal) - static_cast<int>(pb->ordinal));
+	// Search for the ordinal within the module.
+	const OrdinalName *const pOrdinals_end = &iter->table[iter->count];
+	auto iter2 = std::lower_bound(iter->table, pOrdinals_end, ordinal,
+		[](OrdinalName on, uint16_t ordinal) noexcept -> bool {
+			return (on.ordinal < ordinal);
 		});
-	if (!ptr) {
+	if (iter2 == pOrdinals_end || iter2->ordinal != ordinal) {
+		// Ordinal not found for this module.
 		return nullptr;
 	}
 
-	const OrdinalName *const pNameInfo = static_cast<const OrdinalName*>(ptr);
-	return (likely(pNameInfo->offset != 0) ? &EXENEEntries_strtbl[pNameInfo->offset] : nullptr);
+	return (likely(iter2->offset != 0) ? &EXENEEntries_strtbl[iter2->offset] : nullptr);
 }
 
 } } // namespace LibRomData::EXENEEntries

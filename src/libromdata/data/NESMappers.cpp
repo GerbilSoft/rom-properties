@@ -17,9 +17,9 @@
 // C includes (C++ namespace)
 #include <cassert>
 #include <cstdint>
-#include <cstdlib>	// for bsearch()
 
 // C++ STL classes
+#include <algorithm>
 #include <array>
 using std::array;
 
@@ -407,39 +407,29 @@ const NESSubmapperInfo *lookup_nes2_submapper_info(int mapper, int submapper)
 	}
 
 	// Do a binary search in submappers[].
-	const NESSubmapperEntry key = {static_cast<uint16_t>(mapper), 0, nullptr};
-	void *ptr = bsearch(&key, submappers.data(),
-		submappers.size(), sizeof(submappers[0]),
-		[](const void *a, const void *b) -> int
-		{
-			const NESSubmapperEntry *const pa = static_cast<const NESSubmapperEntry*>(a);
-			const NESSubmapperEntry *const pb = static_cast<const NESSubmapperEntry*>(b);
-			return (static_cast<int>(pa->mapper) - static_cast<int>(pb->mapper));
+	auto iter = std::lower_bound(submappers.cbegin(), submappers.cend(), static_cast<uint16_t>(mapper),
+		[](const NESSubmapperEntry &submapper, uint16_t mapper) noexcept -> bool {
+			return (submapper.mapper < mapper);
 		});
-	if (!ptr) {
-		return nullptr;
-	}
-
-	const NESSubmapperEntry *const pSubmapper = static_cast<const NESSubmapperEntry*>(ptr);
-	if (!pSubmapper->info || pSubmapper->info_size == 0) {
+	if (iter == submappers.cend() || iter ->mapper != mapper ||
+	    !iter->info || iter->info_size == 0)
+	{
+		// Mapper does not have any defined submappers.
 		return nullptr;
 	}
 
 	// Do a binary search in pSubmapper->info.
-	const NESSubmapperInfo key2 = {static_cast<uint8_t>(submapper), 0, 0, static_cast<NESMirroring>(0), nullptr};
-	void *ptr2 = bsearch(&key2, pSubmapper->info,
-		pSubmapper->info_size, sizeof(*pSubmapper->info),
-		[](const void *a, const void *b) -> int
-		{
-			const NESSubmapperInfo *const pa = static_cast<const NESSubmapperInfo*>(a);
-			const NESSubmapperInfo *const pb = static_cast<const NESSubmapperInfo*>(b);
-			return (static_cast<int>(pa->submapper) - static_cast<int>(pb->submapper));
+	const NESSubmapperInfo *const pInfo_end = &iter->info[iter->info_size];
+	auto iter2 = std::lower_bound(iter->info, pInfo_end, static_cast<uint8_t>(submapper),
+		[](const NESSubmapperInfo &submapperInfo, uint8_t submapper) noexcept -> bool {
+			return (submapperInfo.submapper < submapper);
 		});
-	if (!ptr2) {
+	if (iter2 == pInfo_end || iter2->submapper != submapper) {
+		// Submapper not found for this mapper.
 		return nullptr;
 	}
 
-	return static_cast<const NESSubmapperInfo*>(ptr2);
+	return iter2;
 }
 
 /**

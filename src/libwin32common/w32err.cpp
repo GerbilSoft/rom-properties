@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * w32err.cpp: Error code mapping. (Windows to POSIX)                      *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,9 +12,9 @@
 #include <cassert>
 #include <cerrno>
 #include <cstdint>
-#include <cstdlib>
 
 // C++ STL classes
+#include <algorithm>
 #include <limits>
 
 // Some errors aren't present in various SDKs.
@@ -129,28 +129,24 @@ int w32err_to_posix(DWORD w32err)
 	}
 
 	// Check the error code table.
-	const errmap_t key = {static_cast<uint16_t>(w32err), 0};
-	void *ptr = bsearch(&key, w32_to_posix,
-		_countof(w32_to_posix), sizeof(w32_to_posix[0]),
-		[](const void *a, const void *b) -> int
-		{
-			const errmap_t *const pa = static_cast<const errmap_t*>(a);
-			const errmap_t *const pb = static_cast<const errmap_t*>(b);
-			return static_cast<int>(pa->w32) - static_cast<int>(pb->w32);
+	static const errmap_t *const p_w32_to_posix_end = &w32_to_posix[_countof(w32_to_posix)];
+	auto iter = std::lower_bound(w32_to_posix, p_w32_to_posix_end, w32err,
+		[](errmap_t err, DWORD w32err) noexcept -> bool {
+			return (err.w32 < w32err);
 		});
-	if (ptr) {
+	if (iter != p_w32_to_posix_end && iter->w32 == w32err) {
 		// Found an error code.
-		const errmap_t *const pErr = static_cast<const errmap_t*>(ptr);
-		return pErr->posix;
+		return iter->posix;
 	}
 
-	/* The error code wasn't in the table.  We check for a range of */
-	/* EACCES errors or exec failure errors (ENOEXEC).  Otherwise   */
-	/* EINVAL is returned.                                          */
-	if (w32err >= MIN_EACCES_RANGE && w32err <= MAX_EACCES_RANGE)
+	// The error code wasn't in the table.  We check for a range of
+	// EACCES errors or exec failure errors (ENOEXEC).  Otherwise
+	// EINVAL is returned.
+	if (w32err >= MIN_EACCES_RANGE && w32err <= MAX_EACCES_RANGE) {
 		return EACCES;
-	else if (w32err >= MIN_EXEC_ERROR && w32err <= MAX_EXEC_ERROR)
+	} else if (w32err >= MIN_EXEC_ERROR && w32err <= MAX_EXEC_ERROR) {
 		return ENOEXEC;
+	}
 
 	// Error code not found.
 	// Return the default EINVAL.

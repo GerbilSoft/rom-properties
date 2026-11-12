@@ -14,10 +14,8 @@
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
 
-// C includes (C++ namespace)
-#include <cstdlib>	// for bsearch()
-
 // C++ STL classes
+#include <algorithm>
 #include <array>
 using std::array;
 
@@ -83,21 +81,17 @@ static const array<const char*, IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION+1> subs
 const char *lookup_pe_cpu(uint16_t cpu)
 {
 	// Do a binary search.
-	const EXEPEMachineTypes_offtbl_t key = {cpu, 0};
-	void *ptr = bsearch(&key, EXEPEMachineTypes_offtbl,
-		ARRAY_SIZE(EXEPEMachineTypes_offtbl), sizeof(EXEPEMachineTypes_offtbl[0]),
-		[](const void *a, const void *b) -> int
-		{
-			const EXEPEMachineTypes_offtbl_t *const pa = static_cast<const EXEPEMachineTypes_offtbl_t*>(a);
-			const EXEPEMachineTypes_offtbl_t *const pb = static_cast<const EXEPEMachineTypes_offtbl_t*>(b);
-			return (static_cast<int>(pa->machineType) - static_cast<int>(pb->machineType));
+	static const auto *const p_EXEPEMachineTypes_offtbl_end = &EXEPEMachineTypes_offtbl[ARRAY_SIZE(EXEPEMachineTypes_offtbl)];
+	auto iter = std::lower_bound(EXEPEMachineTypes_offtbl, p_EXEPEMachineTypes_offtbl_end, cpu,
+		[](const EXEPEMachineTypes_offtbl_t &pe, uint16_t cpu) noexcept -> bool {
+			return (pe.machineType < cpu);
 		});
-	if (!ptr) {
+	if (iter == p_EXEPEMachineTypes_offtbl_end || iter->machineType != cpu) {
+		// PE machine type not found.
 		return nullptr;
 	}
 
-	const EXEPEMachineTypes_offtbl_t *const pPE = static_cast<const EXEPEMachineTypes_offtbl_t*>(ptr);
-	return &EXEPEMachineTypes_strtbl[pPE->offset];
+	return &EXEPEMachineTypes_strtbl[iter->offset];
 }
 
 /**
@@ -117,21 +111,17 @@ const char *lookup_le_cpu(uint16_t cpu)
 	}
 
 	// Do a binary search.
-	const EXELEMachineTypes_offtbl_t key = {static_cast<uint8_t>(cpu), 0};
-	void *ptr = bsearch(&key, EXELEMachineTypes_offtbl,
-		ARRAY_SIZE(EXELEMachineTypes_offtbl), sizeof(EXELEMachineTypes_offtbl[0]),
-		[](const void *a, const void *b) -> int
-		{
-			const EXELEMachineTypes_offtbl_t *const pa = static_cast<const EXELEMachineTypes_offtbl_t*>(a);
-			const EXELEMachineTypes_offtbl_t *const pb = static_cast<const EXELEMachineTypes_offtbl_t*>(b);
-			return (static_cast<int>(pa->machineType) - static_cast<int>(pb->machineType));
+	static const auto *const p_EXELEMachineTypes_offtbl_end = &EXELEMachineTypes_offtbl[ARRAY_SIZE(EXELEMachineTypes_offtbl)];
+	auto iter = std::lower_bound(EXELEMachineTypes_offtbl, p_EXELEMachineTypes_offtbl_end, static_cast<uint8_t>(cpu),
+		[](const EXELEMachineTypes_offtbl_t &le, uint8_t cpu) noexcept -> bool {
+			return (le.machineType < cpu);
 		});
-	if (!ptr) {
+	if (iter == p_EXELEMachineTypes_offtbl_end || iter->machineType != cpu) {
+		// LE machine type not found.
 		return nullptr;
 	}
 
-	const EXELEMachineTypes_offtbl_t *const pLE = static_cast<const EXELEMachineTypes_offtbl_t*>(ptr);
-	return &EXELEMachineTypes_strtbl[pLE->offset];
+	return &EXELEMachineTypes_strtbl[iter->offset];
 }
 
 /**

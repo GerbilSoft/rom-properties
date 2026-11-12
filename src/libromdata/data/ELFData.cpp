@@ -13,6 +13,7 @@
 #include <cstdlib>
 
 // C++ STL classes
+#include <algorithm>
 #include <array>
 using std::array;
 
@@ -79,21 +80,15 @@ const char *lookup_cpu(uint16_t cpu)
 
 	// CPU ID is in the "other" IDs array.
 	// Do a binary search.
-	const ELFMachineType key = {cpu, nullptr};
-	void *ptr = bsearch(&key, ELFMachineTypes_other.data(),
-		ELFMachineTypes_other.size(), sizeof(ELFMachineTypes_other[0]),
-		[](const void *a, const void *b) -> int
-		{
-			const ELFMachineType *const pa = static_cast<const ELFMachineType*>(a);
-			const ELFMachineType *const pb = static_cast<const ELFMachineType*>(b);
-			return (static_cast<int>(pa->cpu) - static_cast<int>(pb->cpu));
+	auto iter = std::lower_bound(ELFMachineTypes_other.cbegin(), ELFMachineTypes_other.cend(), cpu,
+		[](const ELFMachineType &elfmt, uint16_t cpu) noexcept -> bool {
+			return (elfmt.cpu < cpu);
 		});
-	if (!ptr) {
+	if (iter == ELFMachineTypes_other.cend() || iter->cpu != cpu) {
 		return nullptr;
 	}
 
-	const ELFMachineType *const pELF = static_cast<const ELFMachineType*>(ptr);
-	return pELF->name;
+	return iter->name;
 }
 
 /**

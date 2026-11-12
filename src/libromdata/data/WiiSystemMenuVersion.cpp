@@ -11,9 +11,9 @@
 // C includes (C++ namespace)
 #include <cassert>
 #include <cstdint>
-#include <cstdlib>
 
 // C++ STL classes
+#include <algorithm>
 #include <array>
 #include <limits>
 using std::array;
@@ -76,21 +76,16 @@ const char *lookup(unsigned int version)
 	}
 
 	// Do a binary search.
-	const SysVersionEntry_t key = {static_cast<uint16_t>(version), ""};
-	void *ptr = bsearch(&key, sysVersionList.data(),
-		sysVersionList.size(), sizeof(sysVersionList[0]),
-		[](const void *a, const void *b) -> int
-		{
-			const SysVersionEntry_t *const pa = static_cast<const SysVersionEntry_t*>(a);
-			const SysVersionEntry_t *const pb = static_cast<const SysVersionEntry_t*>(b);
-			return (static_cast<int>(pa->version) - static_cast<int>(pb->version));
+	auto iter = std::lower_bound(sysVersionList.cbegin(), sysVersionList.cend(), version,
+		[](SysVersionEntry_t sysVersion, unsigned int version) noexcept -> bool {
+			return (sysVersion.version < version);
 		});
-	if (!ptr) {
+	if (iter == sysVersionList.cend() || iter->version != version) {
+		// Version number not found.
 		return nullptr;
 	}
 
-	const SysVersionEntry_t *const pVer = static_cast<const SysVersionEntry_t*>(ptr);
-	return pVer->str;
+	return iter->str;
 }
 
 } } // namespace LibRomData::WiiSystemMenuVersion
