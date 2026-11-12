@@ -175,11 +175,11 @@ string ZXAYPrivate::readCString(off64_t p_address)
 	const char *p_nul = static_cast<const char*>(memchr(p, '\0', remain));
 	if (p_nul) {
 		// Found the NULL terminator.
-		s_ret = cp1252_to_utf8(p, (p_nul - p));
+		s_ret = cp1252_to_utf8(p, static_cast<int>(p_nul - p));
 	} else {
 		// Did not find a NULL terminator...
 		// TODO: Expand the buffer again?
-		s_ret = cp1252_to_utf8(p, remain);
+		s_ret = cp1252_to_utf8(p, static_cast<int>(remain));
 	}
 
 	return s_ret;
