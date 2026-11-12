@@ -107,7 +107,7 @@ ENDIF(0) # rom-properties
 if(NOT BUILD_SHARED_LIBS AND NOT BUILD_STATIC_LIBS)
   message(FATAL_ERROR "Both BUILD_SHARED_LIBS and BUILD_STATIC_LIBS have been disabled")
 endif(NOT BUILD_SHARED_LIBS AND NOT BUILD_STATIC_LIBS)
- 
+
 #-----------------------------------------------------------------------------
 # SOURCE FILES & DIRECTORIES - Path setup and source file collection
 #-----------------------------------------------------------------------------
