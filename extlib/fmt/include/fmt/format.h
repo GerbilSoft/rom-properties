@@ -3106,15 +3106,10 @@ FMT_CONSTEXPR20 void format_hexfloat(Float value, format_specs specs,
 
   int print_xdigits = num_xdigits - 1;
   if (specs.precision >= 0 && print_xdigits > specs.precision) {
-    const int shift = ((print_xdigits - specs.precision - 1) * 4);
-    const auto mask = carrier_uint(0xF) << shift;
-    const auto v = static_cast<uint32_t>((f.f & mask) >> shift);
-
-    if (v >= 8) {
-      const auto inc = carrier_uint(1) << (shift + 4);
-      f.f += inc;
-      f.f &= ~(inc - 1);
-    }
+    const int shift = (print_xdigits - specs.precision) * 4;
+    const auto inc = carrier_uint(1) << shift;
+    // Round half to even like printf.
+    f.f += (inc >> 1) - 1 + ((f.f >> shift) & 1);
 
     // Check long double overflow
     if (!has_implicit_bit<Float>()) {
