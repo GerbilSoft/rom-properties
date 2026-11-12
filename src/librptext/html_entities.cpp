@@ -8,13 +8,15 @@
 
 #include "html_entities.hpp"
 
+#include <cstdio>
 // C includes (C++ namespace)
 #include <cstddef>	// for size_t
-#include <cstdlib>
 #include <cstring>
 
 // C++ STL classes
+#include <algorithm>
 #include <array>
+#include <string>
 using std::array;
 
 namespace LibRpText { namespace HtmlEntities {
@@ -150,6 +152,8 @@ static inline unsigned long strtoul_wrapper(const wchar_t *nptr, wchar_t **endpt
 template<typename CharType>
 static char32_t T_parseHtmlEntity(const CharType *&entity)
 {
+	using ct_string = std::basic_string<CharType>;
+
 	// First character is always '&', so skip it.
 	const CharType *p = entity + 1;
 
@@ -195,32 +199,15 @@ static char32_t T_parseHtmlEntity(const CharType *&entity)
 		return chr;
 	}
 
-	// Check for known HTML entities.
-	html_entity_tbl_t key;
-	if (len >= sizeof(key.entity) - 1) {
-		// Entity is too long!
-		entity++;
-	}
-	// TODO: `if constexpr` to use strcpy() for char?
-	// NOTE: html_entity_tbl_t uses ASCII.
-	// Assuming the source entity is also ASCII.
-	// TODO: Fail if it isn't...
-	for (size_t i = 0; i < len && p[i] != 0; i++) {
-		key.entity[i] = static_cast<char>(p[i]);
-	}
-	key.entity[len] = '\0';
-	key.chr = 0;
+	// Temporary string to ensure NULL termination.
+	ct_string s_tmp_entity(p, len);
 
-	void *ptr = bsearch(&key, html_entity_tbl.data(),
-		html_entity_tbl.size(), sizeof(html_entity_tbl[0]),
-		[](const void *a, const void *b) -> int
-		{
-			const html_entity_tbl_t *const pa = static_cast<const html_entity_tbl_t*>(a);
-			const html_entity_tbl_t *const pb = static_cast<const html_entity_tbl_t*>(b);
-			return strcmp(pa->entity, pb->entity);
+	// Check if this HTML entity is known.
+	auto iter = std::lower_bound(html_entity_tbl.cbegin(), html_entity_tbl.cend(), s_tmp_entity.c_str(),
+		[](const html_entity_tbl_t &etbl, const char *ent) noexcept -> bool {
+			return (strcmp(etbl.entity, ent) < 0);
 		});
-
-	if (!ptr) {
+	if (iter == html_entity_tbl.cend() || s_tmp_entity != iter->entity) {
 		// Unsupported entity...
 		entity++;
 		return U'&';
@@ -228,8 +215,7 @@ static char32_t T_parseHtmlEntity(const CharType *&entity)
 
 	// Return the decoded entity.
 	entity = p_end + 1;
-	const html_entity_tbl_t *const p_tbl = reinterpret_cast<const html_entity_tbl_t*>(ptr);
-	return static_cast<char32_t>(p_tbl->chr);
+	return static_cast<char32_t>(iter->chr);
 }
 
 /**
