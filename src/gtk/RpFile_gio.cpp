@@ -40,6 +40,7 @@ public:
 	// - GFileOutputStream (if opened with FM_CREATE_WRITE but using e.g. sftp://,
 	//                      which doesn't support read-write)
 	GObject *stream;
+	GFile *file;
 
 	string uri;		// GVfs URI
 	IRpFile::FileMode mode;	// File mode
@@ -69,14 +70,19 @@ public:
 
 RpFileGioPrivate::RpFileGioPrivate(string_view uri, IRpFile::FileMode mode)
 	: stream(nullptr)
+	, file(nullptr)
 	, mode(mode)
 {
-	STRING_ASSIGN_SV(this->uri, uri);
+	if (!uri.empty()) {
+		STRING_ASSIGN_SV(this->uri, uri);
+		file = g_file_new_for_uri(this->uri.c_str());
+	}
 }
 
 RpFileGioPrivate::~RpFileGioPrivate()
 {
 	g_clear_object(&stream);
+	g_clear_object(&file);
 }
 
 /**
@@ -204,67 +210,69 @@ RpFileGio::RpFileGio(string_view uri, FileMode mode)
 	RP_D(RpFileGio);
 	GError *err = nullptr;
 
-	// Open the file.
-	GFile *const file = g_file_new_for_uri(d->uri.c_str());
+	// Make sure the GFile has been opened.
+	assert(d->file != nullptr);
+	if (!d->file) {
+		// Not opened...
+		m_lastError = EBADF;
+		return;
+	}
 
 	switch (mode & FM_MODE_MASK) {
 		case FM_OPEN_READ:
-			d->stream = (GObject*)g_file_read(file, nullptr, &err);
+			// TODO: Implement makeWritable()?
+			d->stream = (GObject*)g_file_read(d->file, nullptr, &err);
 			break;
 
 		case FM_CREATE_WRITE:
-			d->stream = (GObject*)g_file_replace_readwrite(file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &err);
+			d->stream = (GObject*)g_file_replace_readwrite(d->file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &err);
 			if (!d->stream) {
 				if (err) {
-					if (err->code != G_IO_ERROR_NOT_SUPPORTED) {
+					const int err_code = err->code;
+					g_clear_error(&err);
+					if (err_code != G_IO_ERROR_NOT_SUPPORTED) {
 						// G_IO_ERROR_NOT_SUPPORTED is returned if the protocl does not support read/write.
 						// Anything else is an actual error.
-						m_lastError = d->gioerr_to_posix(err->code);
-						g_clear_error(&err);
-						g_object_unref(file);
+						m_lastError = d->gioerr_to_posix(err_code);
 						return;
 					}
-					g_clear_error(&err);
 				}
 
 				// URI does not support simultaneous read/write. (e.g. sftp://)
 				// We'll still open it for write-only access.
-				d->stream = (GObject*)g_file_replace(file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &err);
+				d->stream = (GObject*)g_file_replace(d->file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &err);
 			}
 			m_isWritable = true;
 			break;
 
 		case FM_OPEN_WRITE:
-			d->stream = (GObject*)g_file_open_readwrite(file, nullptr, &err);
+			d->stream = (GObject*)g_file_open_readwrite(d->file, nullptr, &err);
 			if (d->stream) {
 				// Read/write stream opened successfully.
 				m_isWritable = true;
 			} else {
 				if (err) {
-					if (err->code != G_IO_ERROR_NOT_SUPPORTED) {
+					const int err_code = err->code;
+					g_clear_error(&err);
+					if (err_code != G_IO_ERROR_NOT_SUPPORTED) {
 						// G_IO_ERROR_NOT_SUPPORTED is returned if the protocl does not support read/write.
 						// Anything else is an actual error.
-						m_lastError = d->gioerr_to_posix(err->code);
-						g_clear_error(&err);
-						g_object_unref(file);
+						m_lastError = d->gioerr_to_posix(err_code);
 						return;
 					}
-					g_clear_error(&err);
 				}
 
 				// URI does not support simultaneous read/write. (e.g. sftp://)
 				// We'll still open it for read-only access.
-				d->stream = (GObject*)g_file_read(file, nullptr, &err);
+				d->stream = (GObject*)g_file_read(d->file, nullptr, &err);
 			}
 			break;
 
 		default:
 			// Invalid mode.
 			m_lastError = EINVAL;
-			g_object_unref(file);
 			return;
 	}
-	g_object_unref(file);
 
 	if (!d->stream || err != nullptr) {
 		// An error occurred.
@@ -433,7 +441,7 @@ int RpFileGio::seek(off64_t pos, SeekWhence whence)
 		G_SEEK_CUR,
 		G_SEEK_END,
 	};
-	if ((int)whence < 0 || (int)whence > (int)whenceToSeekType.size()) {
+	if (static_cast<int>(whence) < 0 || static_cast<int>(whence) > static_cast<int>(whenceToSeekType.size())) {
 		// Invalid `whence`.
 		m_lastError = EINVAL;
 		return -1;
@@ -568,6 +576,7 @@ off64_t RpFileGio::size(void)
 	}
 
 	// TODO: Better error checking?
+	// TODO: Use d->file instead of d->stream?
 	GError *err = nullptr;
 	GFileInfo *fileInfo = nullptr;
 	if (G_IS_FILE_INPUT_STREAM(d->stream)) {
@@ -609,5 +618,45 @@ off64_t RpFileGio::size(void)
 const char *RpFileGio::filename(void) const
 {
 	RP_D(const RpFileGio);
+
+	// NOTE: We *could* retrieve the URI from the GFile instead of saving
+	// it in a separate std::string, but that returns an allocated string,
+	// and the string returned by this function is not expected to be
+	// freed by the caller, so that would result in a memory leak.
 	return d->uri.c_str();
+}
+
+/**
+ * Get the file modification time.
+ * @return File modification time, or -1 if not available.
+ */
+rp_time_t RpFileGio::mtime(void)
+{
+	RP_D(RpFileGio);
+	if (!d->file) {
+		m_lastError = EBADF;
+		return -1;
+	}
+
+	GError *err = nullptr;
+	GFileInfo *const fi = g_file_query_info(d->file,
+		G_FILE_ATTRIBUTE_TIME_MODIFIED,
+		G_FILE_QUERY_INFO_NONE, nullptr, &err);
+	if (!fi) {
+		if (err) {
+			m_lastError = d->gioerr_to_posix(err->code);
+			g_error_free(err);
+		} else {
+			m_lastError = EBADF;
+		}
+		return -1;
+	}
+
+	// Get the modification time.
+	// NOTE: The GVfs mtime is **uint64_t**, not int64_t.
+	rp_time_t mtime = static_cast<rp_time_t>(
+		g_file_info_get_attribute_uint64(
+			fi, G_FILE_ATTRIBUTE_TIME_MODIFIED));
+	g_object_unref(fi);
+	return mtime;
 }

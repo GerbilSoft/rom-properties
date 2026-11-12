@@ -105,4 +105,10 @@ public:
 	 * @return Filename. (May be nullptr if the filename is not available.)
 	 */
 	const char *filename(void) const final;
+
+	/**
+	 * Get the file modification time.
+	 * @return File modification time, or -1 if not available.
+	 */
+	rp_time_t mtime(void) final;
 };
