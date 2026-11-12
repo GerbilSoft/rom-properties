@@ -562,34 +562,57 @@ rp_time_t RpFile::mtime(void)
  */
 int RpFile::makeWritable(void)
 {
-	if (isCompressed()) {
-		// File is compressed. Cannot make it writable.
-		return -ENOTSUP;
-	} else if (isWritable()) {
-		// File is already writable.
+	int ret = makeWritable_basic_checks();
+	if (ret > 0) {
+		// Already writable.
 		return 0;
+	} else if (ret != 0) {
+		// Cannot make writable.
+		return ret;
 	}
 
+	// Attempt to open the file a second time without closing the existing file pointer.
+	// Should work on most systems...
 	RP_D(RpFile);
-	off64_t prev_pos = ftello(d->file);
-	fclose(d->file);
-	d->file = d->fopen_cloexec(d->filename.c_str(), IRpFile::FM_OPEN_WRITE);
-	if (d->file) {
-		// File is now writable.
-		m_isWritable = true;
-	} else {
-		// Failed to open the file as writable.
-		// Try reopening as read-only.
-		d->file = d->fopen_cloexec(d->filename.c_str(), IRpFile::FM_OPEN_READ);
-		if (d->file) {
-			fseeko(d->file, prev_pos, SEEK_SET);
+	FILE *f_new = d->fopen_cloexec(d->filename.c_str(), IRpFile::FM_OPEN_WRITE);
+	if (!f_new) {
+		// Failed to open the file as writable...
+		int err = -errno;
+		if (err == 0) {
+			err = -EIO;
 		}
-		return -ENOTSUP;
+		return err;
 	}
 
-	// Restore the seek position.
-	fseeko(d->file, prev_pos, SEEK_SET);
+	// Copy the seek pointer from the old FILE*.
+	off64_t pos = ftello(d->file);
+	if (pos < 0) {
+		// ftello() failed.
+		int err = -errno;
+		if (err == 0) {
+			err = -EIO;
+		}
+		fclose(f_new);
+		return err;
+	}
+	ret = fseeko(f_new, pos, SEEK_SET);
+	if (ret != 0) {
+		// fseeko() failed.
+		int err = -errno;
+		if (err == 0) {
+			err = -EIO;
+		}
+		fclose(f_new);
+		return err;
+	}
+
+	// Close the old file pointer and save the new one.
+	if (d->file) {
+		fclose(d->file);
+	}
+	d->file = f_new;
 	d->mode = static_cast<FileMode>(d->mode | FM_WRITE);
+	m_isWritable = true;
 	return 0;
 }
 
