@@ -562,12 +562,13 @@ rp_time_t RpFile::mtime(void)
  */
 int RpFile::makeWritable(void)
 {
-	if (isCompressed()) {
-		// File is compressed. Cannot make it writable.
-		return -ENOTSUP;
-	} else if (isWritable()) {
-		// File is already writable.
+	int ret = makeWritable_basic_checks();
+	if (ret > 0) {
+		// Already writable.
 		return 0;
+	} else if (ret != 0) {
+		// Cannot make writable.
+		return ret;
 	}
 
 	RP_D(RpFile);

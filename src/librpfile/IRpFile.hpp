@@ -261,6 +261,29 @@ public:
 	 */
 	virtual int makeWritable(void);
 
+protected:
+	/**
+	 * Convenience function for IRpFile subclasses to do some
+	 * basic checks to see if the file can be made writable.
+	 * @return 0 if the basic checks pass; 1 for already writable; negative POSIX error code on error.
+	 */
+	inline int makeWritable_basic_checks(void) const
+	{
+		if (isCompressed()) {
+			// File is compressed. Cannot make it writable.
+			return -ENOTSUP;
+		} else if (isWritable()) {
+			// File is already writable.
+			return 1;
+		} else if (fileType() != DT_REG) {
+			// Not a regular file.
+			return -ENOTSUP;
+		}
+
+		// Basic checks have passed.
+		return 0;
+	}
+
 public:
 	/** Convenience functions implemented for all IRpFile subclasses **/
 

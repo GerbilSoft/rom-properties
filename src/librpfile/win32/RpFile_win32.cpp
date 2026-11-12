@@ -722,19 +722,20 @@ int RpFile::mtime(FILETIME *mtime)
  */
 int RpFile::makeWritable(void)
 {
-	if (isCompressed()) {
-		// File is compressed. Cannot make it writable.
-		return -ENOTSUP;
-	} else if (isWritable()) {
-		// File is already writable.
+	int ret = makeWritable_basic_checks();
+	if (ret > 0) {
+		// Already writable.
 		return 0;
+	} else if (ret != 0) {
+		// Cannot make writable.
+		return ret;
 	}
 
 	RP_D(RpFile);
 	const off64_t prev_pos = this->tell();
 	// Set file mode to FM_WRITE and reopen it.
 	d->mode = static_cast<FileMode>(d->mode | FM_WRITE);
-	int ret = d->reOpenFile();
+	ret = d->reOpenFile();
 	if (!ret) {
 		// File is now writable.
 		m_isWritable = true;
