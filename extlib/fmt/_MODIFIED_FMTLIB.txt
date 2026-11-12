@@ -12,7 +12,6 @@ The following changes have been made to the original:
 - Disable some CMake stuff that breaks on Ubuntu 16.04 (CMake 3.5.1).
 
 - Backported some fixes from fmt/main:
-  - Fix fallback uint128 bitwise not
   - Fix format_hexfloat causing compile errors on gcc-5.4 (Ubuntu 16.04).
     - Faulting statement: `f.f &= ~(inc - 1);`
     - Backported commit b2b9b074d4de754e533b2c9aae681155f1452859:
