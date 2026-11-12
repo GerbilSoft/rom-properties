@@ -697,9 +697,10 @@ rp_options_menu_button_update_op(RpOptionsMenuButton *widget,
 
 #ifdef USE_G_MENU_MODEL
 	// Look up the GAction in the map.
+	string s_short_prefix = fmt::format(FSTR("option-{:d}"), id);
 	GSimpleAction *const action = G_SIMPLE_ACTION(
 		g_action_map_lookup_action(G_ACTION_MAP(widget->actionGroup),
-			fmt::format_int(id).c_str()));
+			s_short_prefix.c_str()));
 	if (!action) {
 		return;
 	}
@@ -709,14 +710,16 @@ rp_options_menu_button_update_op(RpOptionsMenuButton *widget,
 	g_return_if_fail(G_IS_MENU_MODEL(widget->menuRomOps));
 	assert(id >= 0);
 	assert(id < g_menu_model_get_n_items(G_MENU_MODEL(widget->menuRomOps)));
-	if (id < 0 || id >= g_menu_model_get_n_items(G_MENU_MODEL(widget->menuRomOps)))
+	if (id < 0 || id >= g_menu_model_get_n_items(G_MENU_MODEL(widget->menuRomOps))) {
 		return;
+	}
 
 	g_menu_remove(widget->menuRomOps, id);
 	gchar *const desc = rpGtk_convert_accel_to_gtk(op->desc);
 	g_simple_action_set_enabled(action, !!(op->flags & RomData::RomOp::ROF_ENABLED));
 	g_menu_insert(widget->menuRomOps, id, desc,
-		fmt::format(FSTR("rp-OptionsMenuButton-{:p}.{:d}"), static_cast<void*>(widget), id).c_str());
+		fmt::format(FSTR("rp-OptionsMenuButton-{:p}.{:s}"),
+			static_cast<void*>(widget), s_short_prefix).c_str());
 	g_free(desc);
 #else /* !USE_G_MENU_MODEL */
 	GtkMenuItem *menuItem = nullptr;
