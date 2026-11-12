@@ -94,7 +94,9 @@ const FirmBin_t *lookup_firmBin(const uint32_t crc)
 		return nullptr;
 	}
 
-	return iter;
+	// NOTE: MSVC uses actual iterators, whereas gcc does not.
+	// This is needed in order to work properly on MSVC.
+	return &(*iter);
 }
 
 } } // namespace LibRomData::Nintendo3DSFirmData
