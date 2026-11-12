@@ -827,7 +827,9 @@ int RpFileGio::makeWritable(void)
 	}
 
 	// Unref the old stream and keep the new one.
-	g_object_unref(d->stream);
+	if (d->stream) {
+		g_object_unref(d->stream);
+	}
 	d->stream = stream;
 	d->mode = static_cast<FileMode>(d->mode | FM_WRITE);
 	m_isWritable = isWritable;

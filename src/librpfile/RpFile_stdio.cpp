@@ -607,7 +607,9 @@ int RpFile::makeWritable(void)
 	}
 
 	// Close the old file pointer and save the new one.
-	fclose(d->file);
+	if (d->file) {
+		fclose(d->file);
+	}
 	d->file = f_new;
 	d->mode = static_cast<FileMode>(d->mode | FM_WRITE);
 	m_isWritable = true;
