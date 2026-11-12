@@ -535,32 +535,30 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(
 
 	if (doXDG) {
 		// Modification time and file size
-		uint64_t mtime = 0;
+		rp_time_t mtime = 0;
 		off64_t szFile = -1;
 		GFile *const f_src = g_file_new_for_uri(s_uri.c_str());
 		if (f_src) {
-			GError *error = nullptr;
 			GFileInfo *const fi_src = g_file_query_info(f_src,
 				G_FILE_ATTRIBUTE_TIME_MODIFIED "," G_FILE_ATTRIBUTE_STANDARD_SIZE,
-				G_FILE_QUERY_INFO_NONE, nullptr, &error);
-			if (!error) {
+				G_FILE_QUERY_INFO_NONE, nullptr, nullptr);
+			if (fi_src) {
 				// Get the modification time.
 				// NOTE: This is **uint64**, not int64.
-				mtime = g_file_info_get_attribute_uint64(fi_src, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+				mtime = static_cast<rp_time_t>(g_file_info_get_attribute_uint64(
+					fi_src, G_FILE_ATTRIBUTE_TIME_MODIFIED));
 
 				// Get the file size.
 				szFile = g_file_info_get_size(fi_src);
 
 				g_object_unref(fi_src);
-			} else {
-				g_error_free(error);
 			}
 			g_object_unref(f_src);
 		}
 
 		// Modification time
 		if (mtime > 0) {
-			kv.emplace_back("Thumb::MTime", fmt::format_int(static_cast<rp_time_t>(mtime)).str());
+			kv.emplace_back("Thumb::MTime", fmt::format_int(mtime).str());
 		}
 
 		// MIME type
