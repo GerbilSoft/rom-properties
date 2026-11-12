@@ -3075,6 +3075,7 @@ FMT_CONSTEXPR20 inline void format_dragon(basic_fp<uint128_t> value,
   buf[num_digits - 1] = static_cast<char>('0' + digit);
 }
 
+#if 0   // rom-properties: `f.f &= ~(inc - 1)` breaks on gcc-5.4. (Ubuntu 16.04)
 // Formats a floating-point number using the hexfloat format.
 template <typename Float, FMT_ENABLE_IF(!is_double_double<Float>::value)>
 FMT_CONSTEXPR20 void format_hexfloat(Float value, format_specs specs,
@@ -3161,6 +3162,7 @@ FMT_CONSTEXPR20 void format_hexfloat(Float value, format_specs specs,
                                      buffer<char>& buf) {
   format_hexfloat(static_cast<double>(value), specs, buf);
 }
+#endif  // rom-properties
 
 constexpr auto fractional_part_rounding_thresholds(int index) -> uint32_t {
   // For checking rounding thresholds.
@@ -3506,9 +3508,11 @@ FMT_CONSTEXPR20 auto write(OutputIt out, T value, format_specs specs,
   memory_buffer buffer;
   if (specs.type() == presentation_type::hexfloat) {
     if (s != sign::none) buffer.push_back(detail::getsign<char>(s));
-    format_hexfloat(convert_float(value), specs, buffer);
-    return write_bytes<Char, align::right>(out, {buffer.data(), buffer.size()},
-                                           specs);
+    // rom-properties: format_hexfloat() breaks on gcc-5.4. (Ubuntu 16.04)
+    FMT_THROW(std::runtime_error("hexfloat is broken on gcc-5.4!"));
+    //format_hexfloat(convert_float(value), specs, buffer);
+    //return write_bytes<Char, align::right>(out, {buffer.data(), buffer.size()},
+    //                                       specs);
   }
 
   if (specs.type() == presentation_type::exp) {
