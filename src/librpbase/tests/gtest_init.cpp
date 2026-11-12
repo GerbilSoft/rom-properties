@@ -453,6 +453,12 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// which requires access to the unlink() syscall.
 	static TCHAR mesa_shader_cache_disable[] =_T("MESA_SHADER_CACHE_DISABLE=true");
 	_tputenv(mesa_shader_cache_disable);
+
+	// Disable KDE Plasma 6.8's Union cache.
+	// As of 6.8.3, Union's StyleCache attempts to fchmod() its cache file.
+	// This is done via QSaveFile::commit(). (May be related to Qt 6.12 instead...)
+	static TCHAR kde_plasma_68_disable_union_style_cache[] = _T("UNION_DISABLE_STYLE_CACHE=1");
+	_tputenv(kde_plasma_68_disable_union_style_cache);
 #endif /* HAVE_SECCOMP */
 
 	// Call the actual main function.
