@@ -408,4 +408,41 @@ int ZXAY::loadFieldData(void)
 	return d->fields.count();
 }
 
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the metadata hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int ZXAY::loadMetaData(void)
+{
+	RP_D(ZXAY);
+	if (!d->metaData.empty()) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown file type.
+		return -EIO;
+	}
+
+	d->metaData.reserve(2);	// Maximum of 2 metadata properties.
+
+	// Author
+	string s_author = d->readCString(offsetof(ZXAY_Header, p_author));
+	if (!s_author.empty()) {
+		d->metaData.addMetaData_string(Property::Author, s_author);
+	}
+
+	// Description
+	string s_description = d->readCString(offsetof(ZXAY_Header, p_misc));
+	if (!s_description.empty()) {
+		d->metaData.addMetaData_string(Property::Description, s_description);
+	}
+
+	// Finished reading the metadata.
+	return d->metaData.count();
+}
+
 } // namespace LibRomData

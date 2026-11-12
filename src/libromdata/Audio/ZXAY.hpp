@@ -13,6 +13,7 @@
 namespace LibRomData {
 
 ROMDATA_DECL_BEGIN(ZXAY)
+ROMDATA_DECL_METADATA()
 ROMDATA_DECL_END()
 
 } // namespace LibRomData
