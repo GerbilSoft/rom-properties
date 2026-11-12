@@ -64,6 +64,16 @@ public:
 	 * @return GOutputStream, or nullptr if not available.
 	 */
 	GOutputStream *get_GOutputStream(void);
+
+	/**
+	 * (Re-)Open the stream.
+	 * d->file must already be initialized.
+	 * @param mode		[in] Requested file mode
+	 * @param p_isWritable	[out] Indicates if the opened stream is writable
+	 * @param p_err		[out] POSIX error code on error
+	 * @return GIO stream object, or nullptr on error.
+	 */
+	GObject *reOpenStream(IRpFile::FileMode mode, bool *p_isWritable, int *p_err);
 };
 
 /** RpFileGioPrivate **/
@@ -197,6 +207,112 @@ GOutputStream *RpFileGioPrivate::get_GOutputStream(void)
 	return nullptr;
 }
 
+/**
+ * (Re-)Open the stream.
+ * d->file must already be initialized.
+ * @param mode		[in] Requested file mode
+ * @param p_isWritable	[out] Indicates if the opened stream is writable
+ * @param p_err		[out] POSIX error code on error
+ * @return GIO stream object, or nullptr on error.
+ */
+GObject *RpFileGioPrivate::reOpenStream(IRpFile::FileMode mode, bool *p_isWritable, int *p_err)
+{
+	assert(p_isWritable != nullptr);
+	assert(p_err != nullptr);
+
+	// Initialize the output variables.
+	*p_isWritable = false;
+	*p_err = 0;
+
+	// Make sure the GFile has been opened.
+	assert(file != nullptr);
+	if (!file) {
+		// Not opened...
+		*p_err = EBADF;
+		return nullptr;
+	}
+
+	GObject *stream = nullptr;
+	GError *g_err = nullptr;
+
+	switch (mode & IRpFile::FM_MODE_MASK) {
+		case IRpFile::FM_OPEN_READ:
+			stream = (GObject*)g_file_read(file, nullptr, &g_err);
+			break;
+
+		case IRpFile::FM_CREATE_WRITE:
+			stream = (GObject*)g_file_replace_readwrite(file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &g_err);
+			if (stream) {
+				// Read/write stream opened successfully.
+				*p_isWritable = true;
+				break;
+			}
+
+			// g_file_replace_readwrite() failed...
+			if (g_err) {
+				const int g_err_code = g_err->code;
+				g_clear_error(&g_err);
+				if (g_err_code != G_IO_ERROR_NOT_SUPPORTED) {
+					// G_IO_ERROR_NOT_SUPPORTED is returned if the protocl does not support read/write.
+					// Anything else is an actual error.
+					*p_err = gioerr_to_posix(g_err_code);
+					return nullptr;
+				}
+			}
+
+			// URI does not support simultaneous read/write. (e.g. sftp://)
+			// We'll still open it for write-only access.
+			stream = (GObject*)g_file_replace(file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &g_err);
+			if (stream) {
+				*p_isWritable = true;
+			}
+			break;
+
+		case IRpFile::FM_OPEN_WRITE:
+			stream = (GObject*)g_file_open_readwrite(file, nullptr, &g_err);
+			if (stream) {
+				// Read/write stream opened successfully.
+				*p_isWritable = true;
+				break;
+			}
+
+			// g_file_open_readwrite() failed...
+			if (g_err) {
+				const int g_err_code = g_err->code;
+				g_clear_error(&g_err);
+				if (g_err_code != G_IO_ERROR_NOT_SUPPORTED) {
+					// G_IO_ERROR_NOT_SUPPORTED is returned if the protocl does not support read/write.
+					// Anything else is an actual error.
+					*p_err = gioerr_to_posix(g_err_code);
+					return nullptr;
+				}
+			}
+
+			// URI does not support simultaneous read/write. (e.g. sftp://)
+			// We'll still open it for read-only access.
+			stream = (GObject*)g_file_read(file, nullptr, &g_err);
+			break;
+
+		default:
+			// Invalid mode.
+			*p_err = EINVAL;
+			return nullptr;
+	}
+
+	if (g_err) {
+		// An error occurred...
+		*p_isWritable = false;
+		*p_err = gioerr_to_posix(g_err->code);
+		g_clear_error(&g_err);
+	} else if (!stream) {
+		// No stream?
+		*p_isWritable = false;
+		*p_err = EIO;
+	}
+
+	return stream;
+}
+
 /** RpFileGio **/
 
 /**
@@ -207,10 +323,8 @@ GOutputStream *RpFileGioPrivate::get_GOutputStream(void)
 RpFileGio::RpFileGio(string_view uri, FileMode mode)
 	: d_ptr(new RpFileGioPrivate(uri, mode))
 {
-	RP_D(RpFileGio);
-	GError *err = nullptr;
-
 	// Make sure the GFile has been opened.
+	RP_D(RpFileGio);
 	assert(d->file != nullptr);
 	if (!d->file) {
 		// Not opened...
@@ -218,74 +332,61 @@ RpFileGio::RpFileGio(string_view uri, FileMode mode)
 		return;
 	}
 
-	switch (mode & FM_MODE_MASK) {
-		case FM_OPEN_READ:
-			// TODO: Implement makeWritable()?
-			d->stream = (GObject*)g_file_read(d->file, nullptr, &err);
-			break;
+	// Get the file type.
+	GFileInfo *const fi = g_file_query_info(d->file,
+		G_FILE_ATTRIBUTE_STANDARD_TYPE,
+		G_FILE_QUERY_INFO_NONE, nullptr, nullptr);
+	if (fi) {
+		uint32_t fileType = g_file_info_get_attribute_uint32(fi, G_FILE_ATTRIBUTE_STANDARD_TYPE);
+		switch (fileType) {
+			default:
+			case G_FILE_TYPE_UNKNOWN:
+			case G_FILE_TYPE_SHORTCUT:	// Windows .lnk shortcut
+				// Unknown file type...
+				m_fileType = DT_UNKNOWN;
+				m_lastError = EIO;	// TODO: Get error?
+				break;
 
-		case FM_CREATE_WRITE:
-			d->stream = (GObject*)g_file_replace_readwrite(d->file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &err);
-			if (!d->stream) {
-				if (err) {
-					const int err_code = err->code;
-					g_clear_error(&err);
-					if (err_code != G_IO_ERROR_NOT_SUPPORTED) {
-						// G_IO_ERROR_NOT_SUPPORTED is returned if the protocl does not support read/write.
-						// Anything else is an actual error.
-						m_lastError = d->gioerr_to_posix(err_code);
-						return;
-					}
-				}
+			case G_FILE_TYPE_REGULAR:
+				m_fileType = DT_REG;
+				break;
 
-				// URI does not support simultaneous read/write. (e.g. sftp://)
-				// We'll still open it for write-only access.
-				d->stream = (GObject*)g_file_replace(d->file, nullptr, FALSE, (GFileCreateFlags)0, nullptr, &err);
-			}
-			m_isWritable = true;
-			break;
+			case G_FILE_TYPE_DIRECTORY:
+			case G_FILE_TYPE_MOUNTABLE:	// Mount point
+				// This is a directory.
+				// Directories for e.g. NUS packages are handled separately in RomDataFactory.
+				// TODO: That doesn't work for GIO...
+				m_fileType = DT_DIR;
+				m_lastError = EISDIR;
+				break;
 
-		case FM_OPEN_WRITE:
-			d->stream = (GObject*)g_file_open_readwrite(d->file, nullptr, &err);
-			if (d->stream) {
-				// Read/write stream opened successfully.
-				m_isWritable = true;
-			} else {
-				if (err) {
-					const int err_code = err->code;
-					g_clear_error(&err);
-					if (err_code != G_IO_ERROR_NOT_SUPPORTED) {
-						// G_IO_ERROR_NOT_SUPPORTED is returned if the protocl does not support read/write.
-						// Anything else is an actual error.
-						m_lastError = d->gioerr_to_posix(err_code);
-						return;
-					}
-				}
+			case G_FILE_TYPE_SYMBOLIC_LINK:
+				// Shouldn't happen, but we'll treat it as DT_REG for now.
+				assert(!"Symbolic link???");
+				m_fileType = DT_REG;
+				break;
 
-				// URI does not support simultaneous read/write. (e.g. sftp://)
-				// We'll still open it for read-only access.
-				d->stream = (GObject*)g_file_read(d->file, nullptr, &err);
-			}
-			break;
-
-		default:
-			// Invalid mode.
-			m_lastError = EINVAL;
-			return;
-	}
-
-	if (!d->stream || err != nullptr) {
-		// An error occurred.
-		if (err) {
-			m_lastError = d->gioerr_to_posix(err->code);
-			g_error_free(err);
-		} else {
-			// No GError...
-			m_lastError = EIO;
+			case G_FILE_TYPE_SPECIAL:
+				// FIXME: May be a socket, fifo, block device, or character device.
+				// Block devices are allowed, but remote block device access
+				// doesn't make much sense, so prevent it from working in case
+				// it's a problem.
+				m_fileType = DT_BLK;
+				m_lastError = ENOTSUP;
+				break;
 		}
 
-		g_clear_object(&d->stream);
-		return;
+		if (m_lastError != 0) {
+			return;
+		}
+	}
+
+	int err = 0;
+	d->stream = d->reOpenStream(mode, &m_isWritable, &err);
+	if (!d->stream) {
+		// Error opening the stream.
+		m_isWritable = false;
+		m_lastError = err;
 	}
 
 	// File is open.
