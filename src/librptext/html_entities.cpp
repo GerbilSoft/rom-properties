@@ -172,24 +172,28 @@ static char32_t T_parseHtmlEntity(const CharType *&entity)
 		return U'&';
 	}
 
+	// Need to copy the value into a buffer for NULL termination.
+	CharType tmpbuf[33];
+
 	// Check for a numeric entity.
 	if (p[0] == '#') {
 		// Numeric Unicode entity.
-		ct_string s_tmp_num;
 		CharType *endptr = nullptr;
 		unsigned int chr;
 		if (p[1] == 'x') {
 			// Hexadecimal number
 			p += 2;
 			len -= 2;
-			s_tmp_num.assign(p, len);
-			chr = strtoul_wrapper(s_tmp_num.c_str(), &endptr, 16);
+			memcpy(tmpbuf, p, len * sizeof(CharType));
+			tmpbuf[len] = '\0';
+			chr = strtoul_wrapper(tmpbuf, &endptr, 16);
 		} else {
 			// Decimal number
 			p++;
 			len--;
-			s_tmp_num.assign(p, len);
-			chr = strtoul_wrapper(s_tmp_num.c_str(), &endptr, 10);
+			memcpy(tmpbuf, p, len * sizeof(CharType));
+			tmpbuf[len] = '\0';
+			chr = strtoul_wrapper(tmpbuf, &endptr, 10);
 		}
 		entity = p_end + 1;
 		return chr;
