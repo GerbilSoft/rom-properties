@@ -70,7 +70,7 @@ public:
 	 * d->file must already be initialized.
 	 * @param mode		[in] Requested file mode
 	 * @param p_isWritable	[out] Indicates if the opened stream is writable
-	 * @param p_err		[out] POSIX error code on error
+	 * @param p_err		[out] 0 on success; positive POSIX error code on error
 	 * @return GIO stream object, or nullptr on error.
 	 */
 	GObject *reOpenStream(IRpFile::FileMode mode, bool *p_isWritable, int *p_err);
@@ -212,7 +212,7 @@ GOutputStream *RpFileGioPrivate::get_GOutputStream(void)
  * d->file must already be initialized.
  * @param mode		[in] Requested file mode
  * @param p_isWritable	[out] Indicates if the opened stream is writable
- * @param p_err		[out] POSIX error code on error
+ * @param p_err		[out] 0 on success; positive POSIX error code on error
  * @return GIO stream object, or nullptr on error.
  */
 GObject *RpFileGioPrivate::reOpenStream(IRpFile::FileMode mode, bool *p_isWritable, int *p_err)
@@ -760,4 +760,76 @@ rp_time_t RpFileGio::mtime(void)
 			fi, G_FILE_ATTRIBUTE_TIME_MODIFIED));
 	g_object_unref(fi);
 	return mtime;
+}
+
+/** Extra functions **/
+
+/**
+ * Make the file writable.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpFileGio::makeWritable(void)
+{
+	int ret = makeWritable_basic_checks();
+	if (ret > 0) {
+		// Already writable.
+		return 0;
+	} else if (ret != 0) {
+		// Cannot make writable.
+		return ret;
+	}
+
+	RP_D(RpFileGio);
+	if (!G_IS_SEEKABLE(d->stream)) {
+		// Current stream is not seekable for some reason...
+		return -ESPIPE;
+	}
+
+	// Attempt to open the file a second time without closing the existing file pointer.
+	// Should work on most systems...
+	bool isWritable = false;
+	int err = 0;
+
+	GObject *const stream = d->reOpenStream(FM_OPEN_WRITE, &isWritable, &err);
+	if (!stream) {
+		// Error reopening the stream...
+		return -err;
+	}
+
+	if (!isWritable) {
+		// New stream isn't writable. There's no point in using it.
+		g_object_unref(stream);
+		return -EROFS;	// TODO: Better error code?
+	}
+
+	// Copy the seek pointer.
+	if (!G_IS_SEEKABLE(stream)) {
+		// The new stream is not seekable...
+		g_object_unref(stream);
+		return -ESPIPE;
+	}
+
+	GError *g_err = nullptr;
+	gboolean bRet = g_seekable_seek(
+		G_SEEKABLE(stream),
+		g_seekable_tell(G_SEEKABLE(d->stream)),
+		G_SEEK_SET, nullptr, &g_err);
+	if (!bRet || g_err) {
+		// Seek failed...
+		if (g_err) {
+			err = -d->gioerr_to_posix(g_err->code);
+			g_error_free(g_err);
+		} else {
+			err = -EIO;
+		}
+		g_object_unref(stream);
+		return err;
+	}
+
+	// Unref the old stream and keep the new one.
+	g_object_unref(d->stream);
+	d->stream = stream;
+	d->mode = static_cast<FileMode>(d->mode | FM_WRITE);
+	m_isWritable = isWritable;
+	return 0;
 }
