@@ -301,7 +301,8 @@ struct save_data_t {
 static void
 rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 {
-	if (!file && save_data->isFileRequired) {
+	const bool isFileRequired = save_data->isFileRequired;
+	if (!file && isFileRequired) {
 		// No file selected, but a file is required.
 		g_free(save_data);
 		return;
@@ -314,7 +315,7 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 		uri = g_file_get_uri(file);
 		filename = g_file_get_path(file);
 	}
-	if (!uri && !filename && save_data->isFileRequired) {
+	if (!uri && !filename && isFileRequired) {
 		// No URI, but a file is required...
 		g_free(save_data);
 		return;
@@ -345,7 +346,7 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 	g_free(filename);
 	g_free(uri);
 
-	if (!out_file || !out_file->isOpen()) {
+	if (isFileRequired && (!out_file || !out_file->isOpen())) {
 		// Show an error message.
 		// TODO: Include the filename?
 		// TODO: Thread-safe strerror()?
