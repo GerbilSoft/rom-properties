@@ -16,7 +16,6 @@
 // C++ STL classes
 #include <algorithm>
 #include <array>
-#include <string>
 using std::array;
 
 namespace LibRpText { namespace HtmlEntities {
@@ -152,8 +151,6 @@ static inline unsigned long strtoul_wrapper(const wchar_t *nptr, wchar_t **endpt
 template<typename CharType>
 static char32_t T_parseHtmlEntity(const CharType *&entity)
 {
-	using ct_string = std::basic_string<CharType>;
-
 	// First character is always '&', so skip it.
 	const CharType *p = entity + 1;
 
@@ -172,12 +169,10 @@ static char32_t T_parseHtmlEntity(const CharType *&entity)
 		return U'&';
 	}
 
-	// Need to copy the value into a buffer for NULL termination.
-	CharType tmpbuf[33];
-
 	// Check for a numeric entity.
 	if (p[0] == '#') {
 		// Numeric Unicode entity.
+		CharType tmpbuf[33];
 		CharType *endptr = nullptr;
 		unsigned int chr;
 		if (p[1] == 'x') {
@@ -199,15 +194,26 @@ static char32_t T_parseHtmlEntity(const CharType *&entity)
 		return chr;
 	}
 
-	// Temporary string to ensure NULL termination.
-	ct_string s_tmp_entity(p, len);
+	// Copy the entity into tmpbuf to ensure it's NULL-terminated.
+	// NOTE: Entity *must* be ASCII. Fail if it's non-ASCII.
+	char entitybuf[33];
+	for (size_t i = 0; i < len; i++) {
+		if (static_cast<unsigned int>(p[i]) >= 0x80) {
+			// Found a non-ASCII character.
+			entity++;
+			return U'&';
+		}
+
+		entitybuf[i] = static_cast<char>(p[i]);
+	}
+	entitybuf[len] = '\0';
 
 	// Check if this HTML entity is known.
-	auto iter = std::lower_bound(html_entity_tbl.cbegin(), html_entity_tbl.cend(), s_tmp_entity.c_str(),
+	auto iter = std::lower_bound(html_entity_tbl.cbegin(), html_entity_tbl.cend(), entitybuf,
 		[](const html_entity_tbl_t &etbl, const char *ent) noexcept -> bool {
 			return (strcmp(etbl.entity, ent) < 0);
 		});
-	if (iter == html_entity_tbl.cend() || s_tmp_entity != iter->entity) {
+	if (iter == html_entity_tbl.cend() || strcmp(iter->entity, entitybuf) != 0) {
 		// Unsupported entity...
 		entity++;
 		return U'&';
