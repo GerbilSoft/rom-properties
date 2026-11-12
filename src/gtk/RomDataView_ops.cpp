@@ -316,7 +316,7 @@ rp_rom_data_view_getSaveFileDialog_callback(GFile *file, save_data_t *save_data)
 		filename = g_file_get_path(file);
 	}
 	if (!uri && !filename && isFileRequired) {
-		// No URI, but a file is required...
+		// No URI or filename, but a file is required...
 		g_free(save_data);
 		return;
 	}
