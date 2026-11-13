@@ -1203,7 +1203,7 @@ int NSF::loadFieldData(void)
 
 		if (nsfe->has.text && likely(!nsfe->text.empty())) {
 			// 'text' chunk is available.
-			d->fields.addField_string(C_("NSF", "Description"), nsfe->text);
+			d->fields.addField_string(C_("RomData", "Description"), nsfe->text);
 		}
 
 		if (nsfe->has.any_tlist && !nsfe->tracks.empty()) {

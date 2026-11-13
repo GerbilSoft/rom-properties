@@ -7,11 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-12 20:25-0500\n"
+"POT-Creation-Date: 2026-11-12 20:47-0500\n"
 "PO-Revision-Date: 2026-08-25 17:02\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese, Brazilian\n"
-"Language: pt\n"
+"Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1571,8 +1571,15 @@ msgctxt "RomData|Audio"
 msgid "Ripper"
 msgstr ""
 
-#: ../src/libromdata/Audio/NSF.cpp:1206
-msgctxt "NSF"
+#: ../src/libromdata/Audio/NSF.cpp:1206 ../src/libromdata/Audio/ZXAY.cpp:334
+#: ../src/libromdata/Console/GameCubeBNR.cpp:628
+#: ../src/libromdata/Console/GameCubeSave.cpp:1051
+#: ../src/libromdata/Console/PlayStationSave.cpp:484
+#: ../src/libromdata/Console/Sega8Bit.cpp:654
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:1022
+#: ../src/libromdata/Handheld/AndroidCommon.cpp:93
+#: ../src/libromdata/Other/EXE_manifest.cpp:261
+msgctxt "RomData"
 msgid "Description"
 msgstr "Descrição"
 
@@ -2139,18 +2146,6 @@ msgstr "Versão de arquivo"
 msgctxt "ZXAY"
 msgid "Player Version"
 msgstr ""
-
-#: ../src/libromdata/Audio/ZXAY.cpp:334
-#: ../src/libromdata/Console/GameCubeBNR.cpp:628
-#: ../src/libromdata/Console/GameCubeSave.cpp:1051
-#: ../src/libromdata/Console/PlayStationSave.cpp:484
-#: ../src/libromdata/Console/Sega8Bit.cpp:654
-#: ../src/libromdata/Console/Xbox360_STFS.cpp:1022
-#: ../src/libromdata/Handheld/AndroidCommon.cpp:93
-#: ../src/libromdata/Other/EXE_manifest.cpp:261
-msgctxt "RomData"
-msgid "Description"
-msgstr "Descrição"
 
 #: ../src/libromdata/Audio/ZXAY.cpp:388
 msgctxt "ZXAY|SongList"
