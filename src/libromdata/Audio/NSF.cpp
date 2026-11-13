@@ -1265,46 +1265,46 @@ int NSF::loadFieldData(void)
 			uint16_t align_data = TXA_R;
 			uint16_t sizing = COLSZ_R;
 			uint16_t sorting = COLSORT_NUM;
-			track_list_headers.push_back(C_("NSF|TrackList", "#"));
+			track_list_headers.push_back(C_("Audio|SongList", "#"));
 
 			unsigned int shift = 2;	// for alignment/sorting
 			if (nsfe->has.plst) {
-				track_list_headers.push_back(C_("NSF|TrackList", "Order"));
+				track_list_headers.push_back(C_("Audio|SongList", "Order"));
 				align_data |= (TXA_R << shift);
 				sizing |= (COLSZ_R << shift);
 				sorting |= (COLSORT_NUM << shift);
 				shift += 2;
 			}
 			if (nsfe->has.psfx) {
-				track_list_headers.push_back(C_("NSF|TrackList", "Is SFX"));
+				track_list_headers.push_back(C_("Audio|SongList", "Is SFX"));
 				align_data |= (TXA_R << shift);
 				sizing |= (COLSZ_R << shift);
 				sorting |= (COLSORT_STD << shift);
 				shift += 2;
 			}
 			if (nsfe->has.tlbl) {
-				track_list_headers.push_back(C_("NSF|TrackList", "Name"));
+				track_list_headers.push_back(C_("Audio|SongList", "Name"));
 				align_data |= (TXA_D << shift);
 				sizing |= (COLSZ_S << shift);
 				sorting |= (COLSORT_NC << shift);
 				shift += 2;
 			}
 			if (nsfe->has.taut) {
-				track_list_headers.push_back(C_("NSF|TrackList", "Author"));
+				track_list_headers.push_back(C_("Audio|SongList", "Author"));
 				align_data |= (TXA_D << shift);
 				sizing |= (COLSZ_S << shift);
 				sorting |= (COLSORT_NC << shift);
 				shift += 2;
 			}
 			if (nsfe->has.time) {
-				track_list_headers.push_back(C_("NSF|TrackList", "Duration"));
+				track_list_headers.push_back(C_("Audio|SongList", "Duration"));
 				align_data |= (TXA_R << shift);
 				sizing |= (COLSZ_R << shift);
 				sorting |= (COLSORT_NUM << shift);
 				shift += 2;
 			}
 			if (nsfe->has.fade) {
-				track_list_headers.push_back(C_("NSF|TrackList", "Fade"));
+				track_list_headers.push_back(C_("Audio|SongList", "Fade"));
 				align_data |= (TXA_R << shift);
 				sizing |= (COLSZ_R << shift);
 				sorting |= (COLSORT_NUM << shift);
@@ -1321,7 +1321,7 @@ int NSF::loadFieldData(void)
 			params.col_attrs.sorting = sorting;
 			params.col_attrs.sort_col = 0; // #
 			params.col_attrs.sort_dir = RomFields::COLSORTORDER_ASCENDING;
-			d->fields.addField_listData(C_("NSF", "Track List"), &params);
+			d->fields.addField_listData(C_("Audio", "Song List"), &params);
 		}
 	}
 

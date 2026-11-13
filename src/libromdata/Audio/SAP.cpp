@@ -667,16 +667,16 @@ int SAP::loadFieldData(void)
 		}
 
 		static const array<const char*, 3> song_list_hdr = {{
-			NOP_C_("SAP|SongList", "#"),
-			NOP_C_("RomData|Audio", "Duration"),
-			NOP_C_("SAP|SongList", "Looping"),
+			NOP_C_("Audio|SongList", "#"),
+			NOP_C_("Audio|SongList", "Duration"),
+			NOP_C_("Audio|SongList", "Looping"),
 		}};
-		vector<string> *const v_song_list_hdr = RomFields::strArrayToVector_i18n("SAP|SongList", song_list_hdr);
+		vector<string> *const v_song_list_hdr = RomFields::strArrayToVector_i18n("Audio|SongList", song_list_hdr);
 
 		RomFields::AFLD_PARAMS params;
 		params.headers = v_song_list_hdr;
 		params.data.single = song_list;
-		d->fields.addField_listData(C_("SAP", "Song List"), &params);
+		d->fields.addField_listData(C_("Audio", "Song List"), &params);
 	}
 
 	// Finished reading the field data.

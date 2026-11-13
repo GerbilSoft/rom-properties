@@ -26,7 +26,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.7.1\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-12 22:55-0500\n"
+"POT-Creation-Date: 2026-11-12 23:06-0500\n"
 "PO-Revision-Date: 2018-04-13 04:36+0200\n"
 "Last-Translator: Egor <egor@opensrc.club>\n"
 "Language-Team: none\n"
@@ -1609,44 +1609,49 @@ msgctxt "RomData"
 msgid "Description"
 msgstr ""
 
-#: ../src/libromdata/Audio/NSF.cpp:1268
-msgctxt "NSF|TrackList"
+#: ../src/libromdata/Audio/NSF.cpp:1268 ../src/libromdata/Audio/SAP.cpp:670
+#: ../src/libromdata/Audio/SNDH.cpp:906 ../src/libromdata/Audio/ZXAY.cpp:388
+msgctxt "Audio|SongList"
 msgid "#"
 msgstr ""
 
 #: ../src/libromdata/Audio/NSF.cpp:1272
-msgctxt "NSF|TrackList"
+msgctxt "Audio|SongList"
 msgid "Order"
 msgstr ""
 
 #: ../src/libromdata/Audio/NSF.cpp:1279
-msgctxt "NSF|TrackList"
+msgctxt "Audio|SongList"
 msgid "Is SFX"
 msgstr ""
 
-#: ../src/libromdata/Audio/NSF.cpp:1286
-msgctxt "NSF|TrackList"
+#: ../src/libromdata/Audio/NSF.cpp:1286 ../src/libromdata/Audio/SNDH.cpp:911
+#: ../src/libromdata/Audio/SNDH.cpp:914 ../src/libromdata/Audio/ZXAY.cpp:389
+msgctxt "Audio|SongList"
 msgid "Name"
 msgstr ""
 
 #: ../src/libromdata/Audio/NSF.cpp:1293
-msgctxt "NSF|TrackList"
+msgctxt "Audio|SongList"
 msgid "Author"
 msgstr ""
 
-#: ../src/libromdata/Audio/NSF.cpp:1300
-msgctxt "NSF|TrackList"
+#: ../src/libromdata/Audio/NSF.cpp:1300 ../src/libromdata/Audio/SAP.cpp:671
+#: ../src/libromdata/Audio/SNDH.cpp:912 ../src/libromdata/Audio/SNDH.cpp:916
+#: ../src/libromdata/Audio/ZXAY.cpp:390
+msgctxt "Audio|SongList"
 msgid "Duration"
 msgstr ""
 
 #: ../src/libromdata/Audio/NSF.cpp:1307
-msgctxt "NSF|TrackList"
+msgctxt "Audio|SongList"
 msgid "Fade"
 msgstr ""
 
-#: ../src/libromdata/Audio/NSF.cpp:1324
-msgctxt "NSF"
-msgid "Track List"
+#: ../src/libromdata/Audio/NSF.cpp:1324 ../src/libromdata/Audio/SAP.cpp:679
+#: ../src/libromdata/Audio/SNDH.cpp:928 ../src/libromdata/Audio/ZXAY.cpp:404
+msgctxt "Audio"
+msgid "Song List"
 msgstr ""
 
 #: ../src/libromdata/Audio/PSF.cpp:116
@@ -1774,9 +1779,8 @@ msgid "Volume"
 msgstr ""
 
 #: ../src/libromdata/Audio/PSFTagParser.cpp:240
-#: ../src/libromdata/Audio/SAP.cpp:671 ../src/libromdata/Audio/SNDH.cpp:912
-#: ../src/libromdata/Audio/SNDH.cpp:916 ../src/libromdata/Audio/SNDH.cpp:940
-#: ../src/libromdata/Audio/SPC.cpp:810 ../src/libromdata/Audio/VGM.cpp:402
+#: ../src/libromdata/Audio/SNDH.cpp:940 ../src/libromdata/Audio/SPC.cpp:810
+#: ../src/libromdata/Audio/VGM.cpp:402
 msgctxt "RomData|Audio"
 msgid "Duration"
 msgstr ""
@@ -1887,19 +1891,9 @@ msgctxt "SAP"
 msgid "COVOX Address"
 msgstr ""
 
-#: ../src/libromdata/Audio/SAP.cpp:670
-msgctxt "SAP|SongList"
-msgid "#"
-msgstr ""
-
 #: ../src/libromdata/Audio/SAP.cpp:672
-msgctxt "SAP|SongList"
+msgctxt "Audio|SongList"
 msgid "Looping"
-msgstr ""
-
-#: ../src/libromdata/Audio/SAP.cpp:679
-msgctxt "SAP"
-msgid "Song List"
 msgstr ""
 
 #: ../src/libromdata/Audio/SID.cpp:205
@@ -1947,21 +1941,6 @@ msgstr ""
 #: ../src/libromdata/Audio/SNDH.cpp:847
 msgctxt "SMDH"
 msgid "Default Subtune"
-msgstr ""
-
-#: ../src/libromdata/Audio/SNDH.cpp:906
-msgctxt "SNDH|SubtuneList"
-msgid "#"
-msgstr ""
-
-#: ../src/libromdata/Audio/SNDH.cpp:911 ../src/libromdata/Audio/SNDH.cpp:914
-msgctxt "SNDH|SubtuneList"
-msgid "Name"
-msgstr ""
-
-#: ../src/libromdata/Audio/SNDH.cpp:928
-msgctxt "SNDH"
-msgid "Subtune List"
 msgstr ""
 
 #: ../src/libromdata/Audio/SPC.cpp:766
@@ -2171,26 +2150,6 @@ msgstr ""
 #: ../src/libromdata/Audio/ZXAY.cpp:322
 msgctxt "ZXAY"
 msgid "Player Version"
-msgstr ""
-
-#: ../src/libromdata/Audio/ZXAY.cpp:388
-msgctxt "ZXAY|SongList"
-msgid "#"
-msgstr ""
-
-#: ../src/libromdata/Audio/ZXAY.cpp:389
-msgctxt "ZXAY|SongList"
-msgid "Name"
-msgstr ""
-
-#: ../src/libromdata/Audio/ZXAY.cpp:390
-msgctxt "ZXAY|SongList"
-msgid "Duration"
-msgstr ""
-
-#: ../src/libromdata/Audio/ZXAY.cpp:404
-msgctxt "ZXAY"
-msgid "Song List"
 msgstr ""
 
 #: ../src/libromdata/Common/ParamSFO.cpp:544

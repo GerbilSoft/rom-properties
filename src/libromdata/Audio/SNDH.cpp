@@ -903,29 +903,29 @@ int SNDH::loadFieldData(void)
 			delete vv_subtune_list;
 		} else {
 			array<const char*, 3> subtune_list_hdr = {{
-				NOP_C_("SNDH|SubtuneList", "#"),
+				NOP_C_("Audio|SongList", "#"),
 				nullptr,
 				nullptr
 			}};
 			if (has_SN && has_TIME) {
-				subtune_list_hdr[1] = NOP_C_("SNDH|SubtuneList", "Name");
-				subtune_list_hdr[2] = NOP_C_("RomData|Audio", "Duration");
+				subtune_list_hdr[1] = NOP_C_("Audio|SongList", "Name");
+				subtune_list_hdr[2] = NOP_C_("Audio|SongList", "Duration");
 			} else if (has_SN) {
-				subtune_list_hdr[1] = NOP_C_("SNDH|SubtuneList", "Name");
+				subtune_list_hdr[1] = NOP_C_("Audio|SongList", "Name");
 			} else if (has_TIME) {
-				subtune_list_hdr[1] = NOP_C_("RomData|Audio", "Duration");
+				subtune_list_hdr[1] = NOP_C_("Audio|SongList", "Duration");
 			} else {
 				assert(!"Invalid combination of has_SN and has_TIME.");
 				col_count = 1;
 			}
 
 			vector<string> *const v_subtune_list_hdr = RomFields::strArrayToVector_i18n(
-				"SNDH|SubtuneList", subtune_list_hdr.data(), col_count);
+				"Audio|SongList", subtune_list_hdr.data(), col_count);
 
 			RomFields::AFLD_PARAMS params;
 			params.headers = v_subtune_list_hdr;
 			params.data.single = vv_subtune_list;
-			d->fields.addField_listData(C_("SNDH", "Subtune List"), &params);
+			d->fields.addField_listData(C_("Audio", "Song List"), &params);
 		}
 	} else if (tags.subtune_names.empty() && tags.subtune_lengths.size() == 1) {
 		// No subtune names, but we have one subtune length.

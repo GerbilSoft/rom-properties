@@ -385,11 +385,11 @@ int ZXAY::loadFieldData(void)
 
 		// TODO: Duration for EMUL?
 		static const array<const char*, 3> song_list_hdr = {{
-			NOP_C_("ZXAY|SongList", "#"),
-			NOP_C_("ZXAY|SongList", "Name"),
-			NOP_C_("ZXAY|SongList", "Duration"),	// 'EMUL' type only
+			NOP_C_("Audio|SongList", "#"),
+			NOP_C_("Audio|SongList", "Name"),
+			NOP_C_("Audio|SongList", "Duration"),	// 'EMUL' type only
 		}};
-		vector<string> *const v_song_list_hdr = RomFields::strArrayToVector_i18n("ZXAY|SongList",
+		vector<string> *const v_song_list_hdr = RomFields::strArrayToVector_i18n("Audio|SongList",
 			song_list_hdr.data(), (isEMUL) ? 3 : 2);
 
 		RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
@@ -401,7 +401,7 @@ int ZXAY::loadFieldData(void)
 		params.col_attrs.sorting = AFLD_ALIGN3(COLSORT_NUM, COLSORT_NC, COLSORT_NUM);
 		params.col_attrs.sort_col = 0; // #
 		params.col_attrs.sort_dir = RomFields::COLSORTORDER_ASCENDING;
-		d->fields.addField_listData(C_("ZXAY", "Song List"), &params);
+		d->fields.addField_listData(C_("Audio", "Song List"), &params);
 	}
 
 	// Finished reading the field data.
