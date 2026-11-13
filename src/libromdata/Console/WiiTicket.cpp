@@ -524,7 +524,7 @@ int WiiTicket::loadFieldData(void)
 	d->fields.reserve(5);	// Maximum of 4 fields.
 
 	// Title ID
-	d->fields.addField_string(C_("Nintendo", "Title ID"),
+	d->fields.addField_string(C_("RomData", "Title ID"),
 		d->getTitleID(), RomFields::STRF_MONOSPACE);
 
 	// Issuer

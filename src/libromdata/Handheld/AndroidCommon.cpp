@@ -129,7 +129,7 @@ int loadFieldData(LibRpBase::RomFields &fields, const pugi::xml_document &manife
 	// Version (and version code)
 	const char *const versionName = manifest_node.attribute("versionName").as_string(nullptr);
 	if (versionName && versionName[0] != '\0') {
-		fields.addField_string(C_("AndroidAPK", "Version"), versionName);
+		fields.addField_string(C_("RomData", "Version"), versionName);
 	}
 	const char *const s_versionCode = manifest_node.attribute("versionCode").as_string(nullptr);
 	if (s_versionCode && s_versionCode[0] != '\0') {

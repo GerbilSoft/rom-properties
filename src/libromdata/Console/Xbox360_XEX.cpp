@@ -1927,7 +1927,7 @@ int Xbox360_XEX::loadFieldData(void)
 		v_region_code, 4, region_code);
 
 	// Media ID
-	d->fields.addField_string(C_("Xbox360_XEX", "Media ID"),
+	d->fields.addField_string(C_("RomData", "Media ID"),
 		d->formatMediaID(
 			(d->xexType != Xbox360_XEX_Private::XexType::XEX1
 				? d->secInfo.xex2.xgd2_media_id
@@ -1947,7 +1947,7 @@ int Xbox360_XEX::loadFieldData(void)
 	d->getXdbfResInfo();
 	if (d->isExecutionIDLoaded) {
 		// Title ID
-		const char *const s_titleID_desc = C_("Xbox360_XEX", "Title ID");
+		const char *const s_titleID_desc = C_("RomData", "Title ID");
 		const string s_titleID = d->getTitleID();
 		if (!s_titleID.empty()) {
 			d->fields.addField_string(s_titleID_desc,

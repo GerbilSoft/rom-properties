@@ -345,7 +345,7 @@ int WiiTMD::loadFieldData(void)
 	d->fields.reserve(4);	// Maximum of 4 fields.
 
 	// Title ID
-	d->fields.addField_string(C_("Nintendo", "Title ID"),
+	d->fields.addField_string(C_("RomData", "Title ID"),
 		d->getTitleID(), RomFields::STRF_MONOSPACE);
 
 	// Issuer

@@ -251,7 +251,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		ADD_ATTR(assemblyIdentity, "type", C_("EXE|Manifest", "Type"));
 		ADD_ATTR(assemblyIdentity, "name", C_("EXE|Manifest", "Name"));
 		ADD_ATTR(assemblyIdentity, "language", C_("EXE|Manifest", "Language"));
-		ADD_ATTR(assemblyIdentity, "version", C_("EXE|Manifest", "Version"));
+		ADD_ATTR(assemblyIdentity, "version", C_("RomData", "Version"));
 		// TODO: Replace "*" with "Any"?
 		ADD_ATTR(assemblyIdentity, "processorArchitecture", C_("EXE|Manifest", "CPU Arch"));
 		ADD_ATTR(assemblyIdentity, "publicKeyToken", C_("EXE|Manifest", "publicKeyToken"));

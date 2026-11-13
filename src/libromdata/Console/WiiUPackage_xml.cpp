@@ -417,7 +417,7 @@ int WiiUPackagePrivate::addFields_System_XMLs(bool addTicketFields)
 
 	// Title ID (only if adding fields usually provided by Tickets)
 	if (addTicketFields) {
-		const char *const s_title_id_title = C_("Nintendo", "Title ID");
+		const char *const s_title_id_title = C_("RomData", "Title ID");
 		const char *const s_title_id = metaRootNode.child("title_id").text().as_string(nullptr);
 		if (s_title_id) {
 			if (strlen(s_title_id) == 16) {

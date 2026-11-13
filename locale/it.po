@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.7.1\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-13 00:52-0500\n"
+"POT-Creation-Date: 2026-11-13 01:16-0500\n"
 "PO-Revision-Date: 2025-01-24 15:53\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
@@ -1108,9 +1108,9 @@ msgstr "ROM Properties"
 #: ../src/libromdata/Handheld/DMG.cpp:660
 #: ../src/libromdata/Handheld/DMG.cpp:729
 #: ../src/libromdata/Handheld/DMG.cpp:764
-#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:151
-#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:154
-#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:404
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:152
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:156
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:405
 #: ../src/libromdata/Handheld/Lynx.cpp:195
 #: ../src/libromdata/Handheld/NGPC.cpp:362
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:725
@@ -1120,15 +1120,13 @@ msgstr "ROM Properties"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2007
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:497
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:520
-#: ../src/libromdata/Handheld/NintendoDS.cpp:184
-#: ../src/libromdata/Handheld/NintendoDS.cpp:188
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1015
+#: ../src/libromdata/Handheld/NintendoDS.cpp:187
+#: ../src/libromdata/Handheld/NintendoDS.cpp:191
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1018
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:173
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:383
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:386
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:414
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:464
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:467
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:196
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:200
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:428
 #: ../src/libromdata/Handheld/WonderSwan.cpp:553
 #: ../src/libromdata/Handheld/WonderSwan.cpp:580
 #: ../src/libromdata/Media/Wim.cpp:248 ../src/libromdata/Media/Wim_xml.cpp:368
@@ -1395,7 +1393,7 @@ msgstr "Taglio Passa-Alto"
 #: ../src/libromdata/Audio/SAP.cpp:646 ../src/libromdata/Audio/VGM.cpp:430
 #: ../src/libromdata/Console/WiiUAncast.cpp:565
 #: ../src/libromdata/Console/WiiWAD.cpp:1111
-#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:415
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:416
 msgctxt "RomData"
 msgid "Yes"
 msgstr "Si"
@@ -1406,7 +1404,7 @@ msgstr "Si"
 #: ../src/libromdata/Audio/SAP.cpp:647 ../src/libromdata/Audio/VGM.cpp:431
 #: ../src/libromdata/Console/WiiUAncast.cpp:565
 #: ../src/libromdata/Console/WiiWAD.cpp:1112
-#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:417
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:418
 msgctxt "RomData"
 msgid "No"
 msgstr "No"
@@ -1445,7 +1443,7 @@ msgstr "Fine Ciclo"
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:501
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:604
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:619
-#: ../src/libromdata/Handheld/NintendoDS.cpp:817
+#: ../src/libromdata/Handheld/NintendoDS.cpp:820
 #: ../src/libromdata/Handheld/PalmOS.cpp:623
 #: ../src/libromdata/Other/EXE.cpp:1158
 #: ../src/libromdata/Other/NintendoBadge.cpp:693
@@ -1594,12 +1592,15 @@ msgstr "Indirizzo Timer"
 #: ../src/libromdata/Console/SegaSaturn.cpp:520
 #: ../src/libromdata/Console/WiiU.cpp:362
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1085
+#: ../src/libromdata/Handheld/AndroidCommon.cpp:132
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2150
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:613
 #: ../src/libromdata/Handheld/PalmOS.cpp:648
 #: ../src/libromdata/Handheld/PSP.cpp:643
+#: ../src/libromdata/Other/EXE_manifest.cpp:254
 #: ../src/libromdata/Other/EXE_NE.cpp:578
-#: ../src/libromdata/Other/EXE_PE.cpp:840
+#: ../src/libromdata/Other/EXE_PE.cpp:841
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1349
 msgctxt "RomData"
 msgid "Version"
 msgstr "Versione"
@@ -1879,8 +1880,8 @@ msgstr "Stereo"
 #: ../src/libromdata/Audio/SAP.cpp:590
 #: ../src/libromdata/Console/Intellivision.cpp:292
 #: ../src/libromdata/Console/WiiWIBN.cpp:462
-#: ../src/libromdata/Handheld/NintendoDS.cpp:917
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1139
+#: ../src/libromdata/Handheld/NintendoDS.cpp:920
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1142
 #: ../src/libromdata/Media/Wim.cpp:220 ../src/libromdata/Other/MachO.cpp:547
 msgctxt "RomData"
 msgid "Flags"
@@ -2378,17 +2379,17 @@ msgstr "File WAD Wii"
 #: ../src/libromdata/Console/Xbox_XBE.cpp:733
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:88
 #: ../src/libromdata/Handheld/DMG.cpp:658
-#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:357
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:358
 #: ../src/libromdata/Handheld/GameCom.cpp:709
 #: ../src/libromdata/Handheld/Lynx.cpp:181
 #: ../src/libromdata/Handheld/NGPC.cpp:320
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:608
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:517
-#: ../src/libromdata/Handheld/NintendoDS.cpp:820
+#: ../src/libromdata/Handheld/NintendoDS.cpp:823
 #: ../src/libromdata/Handheld/PalmOS.cpp:613
 #: ../src/libromdata/Handheld/PokemonMini.cpp:244
 #: ../src/libromdata/Handheld/PSP.cpp:631
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:362
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:396
 msgctxt "RomData"
 msgid "Title"
 msgstr "Titolo"
@@ -2456,7 +2457,7 @@ msgstr "{:d} Controller"
 
 #: ../src/libromdata/Console/ColecoVision.cpp:430
 #: ../src/libromdata/Console/N64.cpp:327 ../src/libromdata/Handheld/DMG.cpp:673
-#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:371
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:372
 #: ../src/libromdata/Handheld/GameCom.cpp:719
 #: ../src/libromdata/Handheld/NGPC.cpp:343 ../src/libromdata/Other/ELF.cpp:2182
 msgctxt "RomData"
@@ -2483,7 +2484,7 @@ msgstr "Vettore NMI"
 #: ../src/libromdata/Console/WiiCommon.cpp:181
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:303
 #: ../src/libromdata/Console/Xbox_XBE.cpp:162
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:401
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:415
 msgctxt "Region"
 msgid "Japan"
 msgstr "Giappone"
@@ -2494,7 +2495,7 @@ msgstr "Giappone"
 #: ../src/libromdata/Console/SegaSaturn.cpp:185
 #: ../src/libromdata/Console/WiiCommon.cpp:182
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:302
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:404
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:418
 msgctxt "Region"
 msgid "USA"
 msgstr "Stati Uniti"
@@ -2529,10 +2530,10 @@ msgstr "Dreamcast"
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1964
 #: ../src/libromdata/Console/Xbox_XBE.cpp:771
 #: ../src/libromdata/Handheld/DMG.cpp:706
-#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:364
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:365
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:519
-#: ../src/libromdata/Handheld/NintendoDS.cpp:842
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:368
+#: ../src/libromdata/Handheld/NintendoDS.cpp:845
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:404
 #: ../src/libromdata/Handheld/WonderSwan.cpp:555
 #: ../src/libromdata/Media/ISO.cpp:580
 msgctxt "RomData"
@@ -2576,9 +2577,9 @@ msgstr "{0:d} di {1:d}"
 #: ../src/libromdata/Console/Xbox_XBE.cpp:851
 #: ../src/libromdata/Handheld/DMG.cpp:768
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:546
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1037
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:411
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:413
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1040
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:425
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:427
 msgctxt "RomData"
 msgid "Region Code"
 msgstr "Codice regionale"
@@ -2768,8 +2769,8 @@ msgstr "Controller Opz."
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1867
 #: ../src/libromdata/Media/Wim.cpp:261 ../src/libromdata/Media/Wim.cpp:266
 #: ../src/libromdata/Other/EXE.cpp:414 ../src/libromdata/Other/EXE.cpp:418
-#: ../src/libromdata/Other/EXE.cpp:458 ../src/libromdata/Other/EXE_PE.cpp:849
-#: ../src/libromdata/Other/EXE_PE.cpp:855 ../src/libromdata/Other/Lua.cpp:752
+#: ../src/libromdata/Other/EXE.cpp:458 ../src/libromdata/Other/EXE_PE.cpp:850
+#: ../src/libromdata/Other/EXE_PE.cpp:856 ../src/libromdata/Other/Lua.cpp:752
 #: ../src/libromdata/Other/Lua.cpp:755 ../src/libromdata/Other/Lua.cpp:758
 msgctxt "RomData"
 msgid "Warning"
@@ -2932,12 +2933,12 @@ msgstr ""
 #: ../src/libromdata/Console/WiiU.cpp:321
 #: ../src/libromdata/Console/WiiWAD.cpp:1022
 #: ../src/libromdata/Handheld/DMG.cpp:659
-#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:361
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:362
 #: ../src/libromdata/Handheld/GameCom.cpp:714
-#: ../src/libromdata/Handheld/NintendoDS.cpp:838
+#: ../src/libromdata/Handheld/NintendoDS.cpp:841
 #: ../src/libromdata/Handheld/PokemonMini.cpp:247
 #: ../src/libromdata/Handheld/PSP.cpp:620
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:365
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:399
 #: ../src/libromdata/Handheld/WonderSwan.cpp:535
 msgctxt "RomData"
 msgid "Game ID"
@@ -2946,10 +2947,10 @@ msgstr "Id del gioco"
 #: ../src/libromdata/Console/GameCube.cpp:1533
 #: ../src/libromdata/Console/N64.cpp:323 ../src/libromdata/Console/NES.cpp:1592
 #: ../src/libromdata/Handheld/DMG.cpp:779
-#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:367
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:368
 #: ../src/libromdata/Handheld/NGPC.cpp:328
-#: ../src/libromdata/Handheld/NintendoDS.cpp:845
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:394
+#: ../src/libromdata/Handheld/NintendoDS.cpp:848
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:408
 #: ../src/libromdata/Handheld/WonderSwan.cpp:544
 msgctxt "RomData"
 msgid "Revision"
@@ -2960,10 +2961,14 @@ msgstr "Revisione"
 #: ../src/libromdata/Console/WiiTMD.cpp:348
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:420
 #: ../src/libromdata/Console/WiiWAD.cpp:1013
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:1077
+#: ../src/libromdata/Console/Xbox360_XDBF.cpp:993
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1950
+#: ../src/libromdata/Console/Xbox_XBE.cpp:759
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:687
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:691
-#: ../src/libromdata/Handheld/NintendoDS.cpp:974
-msgctxt "Nintendo"
+#: ../src/libromdata/Handheld/NintendoDS.cpp:977
+msgctxt "RomData"
 msgid "Title ID"
 msgstr "ID Titolo"
 
@@ -2992,7 +2997,7 @@ msgstr "Versione IOS"
 #: ../src/libromdata/Console/WiiWAD.cpp:1150
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:2017
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:584
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1084
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1087
 msgctxt "RomData"
 msgid "Age Ratings"
 msgstr "Classificazione di età"
@@ -3096,8 +3101,8 @@ msgstr "Taiwan"
 #: ../src/libromdata/Console/GameCubeRegions.cpp:129
 #: ../src/libromdata/Console/SNES.cpp:827
 #: ../src/libromdata/Console/WiiCommon.cpp:186
-#: ../src/libromdata/Handheld/NintendoDS.cpp:899
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1225
+#: ../src/libromdata/Handheld/NintendoDS.cpp:902
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1228
 msgctxt "Region"
 msgid "South Korea"
 msgstr "Corea del Sud"
@@ -3107,8 +3112,8 @@ msgstr "Corea del Sud"
 #: ../src/libromdata/Console/SNES.cpp:825
 #: ../src/libromdata/Console/WiiCommon.cpp:185
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:304
-#: ../src/libromdata/Handheld/NintendoDS.cpp:900
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1222
+#: ../src/libromdata/Handheld/NintendoDS.cpp:903
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1225
 msgctxt "Region"
 msgid "China"
 msgstr "Cina"
@@ -3161,8 +3166,8 @@ msgid "Australia"
 msgstr "Australia"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:153
-#: ../src/libromdata/Handheld/NintendoDS.cpp:898
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1234
+#: ../src/libromdata/Handheld/NintendoDS.cpp:901
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1237
 msgctxt "Region"
 msgid "Region-Free"
 msgstr "Region-Free"
@@ -4072,7 +4077,7 @@ msgid "Issuer"
 msgstr "Emittente"
 
 #: ../src/libromdata/Console/WiiTicket.cpp:541
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1034
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1037
 msgctxt "Nintendo"
 msgid "Key Index"
 msgstr "Indice Chiave"
@@ -4213,13 +4218,13 @@ msgid "Console Type"
 msgstr "Tipo Console"
 
 #: ../src/libromdata/Console/WiiUPackage.cpp:1164
-#: ../src/libromdata/Media/Wim.cpp:262 ../src/libromdata/Other/EXE_PE.cpp:850
+#: ../src/libromdata/Media/Wim.cpp:262 ../src/libromdata/Other/EXE_PE.cpp:851
 msgctxt "RomData"
 msgid "XML parsing failed."
 msgstr ""
 
 #: ../src/libromdata/Console/WiiUPackage.cpp:1170
-#: ../src/libromdata/Media/Wim.cpp:267 ../src/libromdata/Other/EXE_PE.cpp:856
+#: ../src/libromdata/Media/Wim.cpp:267 ../src/libromdata/Other/EXE_PE.cpp:857
 msgctxt "RomData"
 msgid "XML parsing is disabled in this build."
 msgstr "L'analisi XML è disabilitata in questa build."
@@ -4457,16 +4462,10 @@ msgstr "Tipo di contenuto"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1071
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1930
-msgctxt "Xbox360_XEX"
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:683
+msgctxt "RomData"
 msgid "Media ID"
-msgstr ""
-
-#: ../src/libromdata/Console/Xbox360_STFS.cpp:1077
-#: ../src/libromdata/Console/Xbox360_XDBF.cpp:993
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1950
-msgctxt "Xbox360_XEX"
-msgid "Title ID"
-msgstr "ID Titolo"
+msgstr "ID Media"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1091
 msgctxt "Xbox360_XEX"
@@ -4797,11 +4796,6 @@ msgstr "{0:0>8X} ({1:s}-{2:0>3d})"
 msgctxt "Xbox_XBE"
 msgid "PE Filename"
 msgstr "Nome File PE"
-
-#: ../src/libromdata/Console/Xbox_XBE.cpp:759
-msgctxt "Xbox_XBE"
-msgid "Title ID"
-msgstr "ID Titolo"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:774
 msgctxt "Xbox_XBE"
@@ -5775,11 +5769,6 @@ msgctxt "AndroidAPK"
 msgid "Target SDK Version"
 msgstr ""
 
-#: ../src/libromdata/Handheld/AndroidCommon.cpp:132
-msgctxt "AndroidAPK"
-msgid "Version"
-msgstr "Versione"
-
 #: ../src/libromdata/Handheld/AndroidCommon.cpp:136
 msgctxt "AndroidAPK"
 msgid "Version Code"
@@ -5934,6 +5923,7 @@ msgid "Username"
 msgstr ""
 
 #: ../src/libromdata/Handheld/FlipnoteStudio.cpp:512
+#: ../src/libromdata/Other/EXE_PE.cpp:804
 msgctxt "RomData"
 msgid "Timestamp"
 msgstr "Timestamp"
@@ -5958,12 +5948,12 @@ msgctxt "RomData"
 msgid "Modified Time"
 msgstr ""
 
-#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:398
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:399
 msgctxt "GameBoyAdvance"
 msgid "Not bootable (Nintendo DS expansion)"
 msgstr ""
 
-#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:412
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:413
 msgctxt "GameBoyAdvance"
 msgid "Enable Debug"
 msgstr ""
@@ -6020,11 +6010,6 @@ msgstr "On"
 msgctxt "NGPC"
 msgid "Debug Mode"
 msgstr "Modalità Debug"
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:683
-msgctxt "Nintendo3DS"
-msgid "Media ID"
-msgstr "ID Media"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:711
 msgctxt "Nintendo3DS"
@@ -6297,216 +6282,216 @@ msgid "Publishing Approval No."
 msgstr ""
 
 #. tr: Uses the DSi-specific touchscreen protocol.
-#: ../src/libromdata/Handheld/NintendoDS.cpp:388
+#: ../src/libromdata/Handheld/NintendoDS.cpp:391
 msgctxt "NintendoDS|DSi_Flags"
 msgid "DSi Touchscreen"
 msgstr ""
 
 #. tr: Game requires agreeing to the Nintendo online services agreement.
-#: ../src/libromdata/Handheld/NintendoDS.cpp:390
+#: ../src/libromdata/Handheld/NintendoDS.cpp:393
 msgctxt "NintendoDS|DSi_Flags"
 msgid "Require EULA"
 msgstr ""
 
 #. tr: Custom icon is used from the save file.
-#: ../src/libromdata/Handheld/NintendoDS.cpp:392
+#: ../src/libromdata/Handheld/NintendoDS.cpp:395
 msgctxt "NintendoDS|DSi_Flags"
 msgid "Custom Icon"
 msgstr ""
 
 #. tr: Game supports Nintendo Wi-Fi Connection.
-#: ../src/libromdata/Handheld/NintendoDS.cpp:394
+#: ../src/libromdata/Handheld/NintendoDS.cpp:397
 msgctxt "NintendoDS|DSi_Flags"
 msgid "Nintendo WFC"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:395
+#: ../src/libromdata/Handheld/NintendoDS.cpp:398
 msgctxt "NintendoDS|DSi_Flags"
 msgid "DS Wireless"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:396
+#: ../src/libromdata/Handheld/NintendoDS.cpp:399
 msgctxt "NintendoDS|DSi_Flags"
 msgid "NDS Icon SHA-1"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:397
+#: ../src/libromdata/Handheld/NintendoDS.cpp:400
 msgctxt "NintendoDS|DSi_Flags"
 msgid "NDS Header RSA"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:398
+#: ../src/libromdata/Handheld/NintendoDS.cpp:401
 msgctxt "NintendoDS|DSi_Flags"
 msgid "Developer"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:850
+#: ../src/libromdata/Handheld/NintendoDS.cpp:853
 msgctxt "NintendoDS|SecurityData"
 msgid "Blowfish Tables"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:851
+#: ../src/libromdata/Handheld/NintendoDS.cpp:854
 msgctxt "NintendoDS|SecurityData"
 msgid "Static Data"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:852
+#: ../src/libromdata/Handheld/NintendoDS.cpp:855
 msgctxt "NintendoDS|SecurityData"
 msgid "Random Data"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:856
+#: ../src/libromdata/Handheld/NintendoDS.cpp:859
 msgctxt "NintendoDS"
 msgid "Security Data"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:862
+#: ../src/libromdata/Handheld/NintendoDS.cpp:865
 msgctxt "NintendoDS"
 msgid "Secure Area"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:878
+#: ../src/libromdata/Handheld/NintendoDS.cpp:881
 msgctxt "NintendoDS"
 msgid "Hardware"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:903
+#: ../src/libromdata/Handheld/NintendoDS.cpp:906
 msgctxt "NintendoDS"
 msgid "DS Region Code"
 msgstr ""
 
 #. tr: DSi-enhanced or DSi-exclusive cartridge.
-#: ../src/libromdata/Handheld/NintendoDS.cpp:984
+#: ../src/libromdata/Handheld/NintendoDS.cpp:987
 msgctxt "NintendoDS|DSiFileType"
 msgid "Cartridge"
 msgstr ""
 
 #. tr: DSiWare (download-only title)
-#: ../src/libromdata/Handheld/NintendoDS.cpp:986
+#: ../src/libromdata/Handheld/NintendoDS.cpp:989
 msgctxt "NintendoDS|DSiFileType"
 msgid "DSiWare"
 msgstr ""
 
 #. tr: DSi_FTYPE_SYSTEM_FUN_TOOL
-#: ../src/libromdata/Handheld/NintendoDS.cpp:988
+#: ../src/libromdata/Handheld/NintendoDS.cpp:991
 msgctxt "NintendoDS|DSiFileType"
 msgid "System Fun Tool"
 msgstr ""
 
 #. tr: Data file, e.g. DS cartridge whitelist.
-#: ../src/libromdata/Handheld/NintendoDS.cpp:990
+#: ../src/libromdata/Handheld/NintendoDS.cpp:993
 msgctxt "NintendoDS|DSiFileType"
 msgid "Non-Executable Data File"
 msgstr ""
 
 #. tr: DSi_FTYPE_SYSTEM_BASE_TOOL
-#: ../src/libromdata/Handheld/NintendoDS.cpp:992
+#: ../src/libromdata/Handheld/NintendoDS.cpp:995
 msgctxt "NintendoDS|DSiFileType"
 msgid "System Base Tool"
 msgstr ""
 
 #. tr: System Menu
-#: ../src/libromdata/Handheld/NintendoDS.cpp:994
+#: ../src/libromdata/Handheld/NintendoDS.cpp:997
 msgctxt "NintendoDS|DSiFileType"
 msgid "System Menu"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1008
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1011
 msgctxt "NintendoDS"
 msgid "DSi ROM Type"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1038
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1041
 msgctxt "NintendoDS"
 msgid "DSi Region Code"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1091
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1094
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "Common Key"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1092
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1095
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "AES Slot B"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1093
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1096
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "AES Slot C"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1094
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1097
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "SD Card"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1095
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1098
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "eMMC Access"
 msgstr "Accesso eMMC"
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1096
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1099
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "Game Card Power On"
 msgstr "Alimentazione Cartuccia"
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1097
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1100
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "Shared2 File"
 msgstr "File Shared2"
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1098
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1101
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "Sign JPEG for Launcher"
 msgstr "Firma JPEG per Launcher"
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1099
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1102
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "Game Card NTR Mode"
 msgstr "Modalità NTR della Cartuccia"
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1100
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1103
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "SSL Client Cert"
 msgstr "Certificato Client SSL"
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1101
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1104
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "Sign JPEG for User"
 msgstr "Firma JPEG per utente"
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1102
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1105
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "Photo Read Access"
 msgstr "Accesso Lettura Foto"
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1103
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1106
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "Photo Write Access"
 msgstr "Accesso Scrittura Foto"
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1104
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1107
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "SD Card Read Access"
 msgstr "Accesso Lettura Scheda SD"
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1105
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1108
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "SD Card Write Access"
 msgstr "Accesso Scrittura Scheda SD"
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1106
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1109
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "Game Card Save Read Access"
 msgstr "Accesso Lettura Salv Cartuccia"
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1107
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1110
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "Game Card Save Write Access"
 msgstr "Accesso Scrittura Salv Cartuccia"
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1132
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1135
 msgctxt "NintendoDS"
 msgid "Permissions"
 msgstr "Permessi"
@@ -7784,11 +7769,6 @@ msgctxt "EXE|Manifest"
 msgid "Language"
 msgstr "Lingua"
 
-#: ../src/libromdata/Other/EXE_manifest.cpp:254
-msgctxt "EXE|Manifest"
-msgid "Version"
-msgstr "Versione"
-
 #: ../src/libromdata/Other/EXE_manifest.cpp:256
 msgctxt "EXE|Manifest"
 msgid "CPU Arch"
@@ -8043,13 +8023,12 @@ msgid "Other Flags"
 msgstr ""
 
 #: ../src/libromdata/Other/EXE_NE.cpp:527
-#: ../src/libromdata/Other/EXE_PE.cpp:804
 msgctxt "EXE"
 msgid "Timestamp"
 msgstr ""
 
 #: ../src/libromdata/Other/EXE_NE.cpp:537
-#: ../src/libromdata/Other/EXE_PE.cpp:818
+#: ../src/libromdata/Other/EXE_PE.cpp:819
 msgctxt "EXE"
 msgid "Runtime DLL"
 msgstr "DLL Runtime"
@@ -8102,15 +8081,15 @@ msgstr ""
 
 #: ../src/libromdata/Other/EXE_NE.cpp:820
 #: ../src/libromdata/Other/EXE_NE.cpp:1027
-#: ../src/libromdata/Other/EXE_PE.cpp:1068
+#: ../src/libromdata/Other/EXE_PE.cpp:1069
 msgctxt "EXE|Exports"
 msgid "Ordinal"
 msgstr "Ordinale"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:821
 #: ../src/libromdata/Other/EXE_NE.cpp:1026
-#: ../src/libromdata/Other/EXE_PE.cpp:1067
-#: ../src/libromdata/Other/EXE_PE.cpp:1335
+#: ../src/libromdata/Other/EXE_PE.cpp:1068
+#: ../src/libromdata/Other/EXE_PE.cpp:1336
 msgctxt "EXE|Exports"
 msgid "Name"
 msgstr "Nome"
@@ -8127,14 +8106,14 @@ msgstr "Flags"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:1021
 #: ../src/libromdata/Other/EXE_NE.cpp:1041
-#: ../src/libromdata/Other/EXE_PE.cpp:1330
-#: ../src/libromdata/Other/EXE_PE.cpp:1350
+#: ../src/libromdata/Other/EXE_PE.cpp:1331
+#: ../src/libromdata/Other/EXE_PE.cpp:1351
 msgctxt "EXE"
 msgid "Imports"
 msgstr "Imports"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:1028
-#: ../src/libromdata/Other/EXE_PE.cpp:1337
+#: ../src/libromdata/Other/EXE_PE.cpp:1338
 msgctxt "EXE|Exports"
 msgid "Module"
 msgstr "Modulo"
@@ -8269,55 +8248,56 @@ msgctxt "EXE"
 msgid "DLL Search Dirs"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_PE.cpp:811
+#. tr: EXE timestamp is not set
+#: ../src/libromdata/Other/EXE_PE.cpp:812
 msgctxt "EXE"
 msgid "Not set"
 msgstr "Non impostato"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:1046
+#: ../src/libromdata/Other/EXE_PE.cpp:1047
 msgctxt "EXE|Exports"
 msgid "None"
 msgstr "Nessuno"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:1063
-#: ../src/libromdata/Other/EXE_PE.cpp:1084
+#: ../src/libromdata/Other/EXE_PE.cpp:1064
+#: ../src/libromdata/Other/EXE_PE.cpp:1085
 msgctxt "EXE"
 msgid "Exports"
 msgstr "Esportazioni"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:1069
-#: ../src/libromdata/Other/EXE_PE.cpp:1336
+#: ../src/libromdata/Other/EXE_PE.cpp:1070
+#: ../src/libromdata/Other/EXE_PE.cpp:1337
 msgctxt "EXE|Exports"
 msgid "Hint"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_PE.cpp:1070
+#: ../src/libromdata/Other/EXE_PE.cpp:1071
 msgctxt "EXE|Exports"
 msgid "Virtual Address"
 msgstr "Indirizzo Virtuale"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:1071
+#: ../src/libromdata/Other/EXE_PE.cpp:1072
 msgctxt "EXE|Exports"
 msgid "File Offset"
 msgstr "Offset file"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:1280
+#: ../src/libromdata/Other/EXE_PE.cpp:1281
 #, c++-format
 msgctxt "EXE|Exports"
 msgid "Ordinal #{:d}"
 msgstr "Ordinale #{:d}"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:1406
+#: ../src/libromdata/Other/EXE_PE.cpp:1407
 msgctxt "EXE|PDB"
 msgid "CodeView Timestamp"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_PE.cpp:1430
+#: ../src/libromdata/Other/EXE_PE.cpp:1431
 msgctxt "EXE|PDB"
 msgid "Symbol Server ID"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_PE.cpp:1452
+#: ../src/libromdata/Other/EXE_PE.cpp:1453
 msgctxt "EXE|PDB"
 msgid "PDB Link"
 msgstr ""
@@ -9956,11 +9936,6 @@ msgstr ""
 msgctxt "PlayStationTIM"
 msgid "CLUT Size"
 msgstr ""
-
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1349
-msgctxt "PowerVR3"
-msgid "Version"
-msgstr "Versione"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1369
 msgctxt "PowerVR3|Flags"

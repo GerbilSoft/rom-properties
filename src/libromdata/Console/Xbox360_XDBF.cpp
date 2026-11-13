@@ -990,7 +990,7 @@ int Xbox360_XDBF_Private::addFields_strings_SPA(RomFields *fields) const
 				fmt::format_to(std::back_inserter(tid_str), FSTR("\\x{:0>2X}"), (uint8_t)xthd.title_id.b);
 			}
 
-			fields->addField_string(C_("Xbox360_XEX", "Title ID"),
+			fields->addField_string(C_("RomData", "Title ID"),
 				// tr: Xbox 360 title ID (32-bit hex, then two letters followed by a 4-digit decimal number)
 				fmt::format(FRUN(C_("Xbox360_XEX", "{0:0>8X} ({1:s}-{2:0>4d})")),
 					be32_to_cpu(xthd.title_id.u32),

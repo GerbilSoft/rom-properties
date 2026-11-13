@@ -801,13 +801,14 @@ void EXEPrivate::addFields_PE(void)
 	// Timestamp
 	// TODO: Windows 10 modules have hashes here instead of timestamps.
 	// We should detect that by checking for obviously out-of-range values.
-	const char *const timestamp_title = C_("EXE", "Timestamp");
+	const char *const timestamp_title = C_("RomData", "Timestamp");
 	const rp_time_t timestamp = static_cast<rp_time_t>(le32_to_cpu(hdr.pe.FileHeader.TimeDateStamp));
 	if (timestamp != 0) {
 		fields.addField_dateTime(timestamp_title, timestamp,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME);
 	} else {
+		// tr: EXE timestamp is not set
 		fields.addField_string(timestamp_title, C_("EXE", "Not set"));
 	}
 

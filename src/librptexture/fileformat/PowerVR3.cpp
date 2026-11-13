@@ -1346,7 +1346,7 @@ int PowerVR3::getFields(RomFields *fields) const
 			break;
 	}
 	if (s_version) {
-		fields->addField_string(C_("PowerVR3", "Version"), s_version);
+		fields->addField_string(C_("RomData", "Version"), s_version);
 	}
 
 	// Endianness

@@ -756,7 +756,7 @@ int Xbox_XBE::loadFieldData(void)
 	}
 
 	// Title ID
-	const char *const s_titleID_desc = C_("Xbox_XBE", "Title ID");
+	const char *const s_titleID_desc = C_("RomData", "Title ID");
 	const string s_titleID = d->getTitleID();
 	if (!s_titleID.empty()) {
 		d->fields.addField_string(s_titleID_desc,

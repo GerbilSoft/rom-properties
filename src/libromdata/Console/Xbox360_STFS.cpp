@@ -1068,13 +1068,13 @@ int Xbox360_STFS::loadFieldData(void)
 	}
 
 	// Media ID
-	d->fields.addField_string(C_("Xbox360_XEX", "Media ID"),
+	d->fields.addField_string(C_("RomData", "Media ID"),
 		fmt::format(FSTR("{:0>8X}"), be32_to_cpu(stfsMetadata->media_id)),
 		RomFields::STRF_MONOSPACE);
 
 	// Title ID
 	// TODO: Consolidate implementations into a shared function.
-	d->fields.addField_string(C_("Xbox360_XEX", "Title ID"),
+	d->fields.addField_string(C_("RomData", "Title ID"),
 		d->getTitleID(), RomFields::STRF_MONOSPACE);
 
 	// Version and base version

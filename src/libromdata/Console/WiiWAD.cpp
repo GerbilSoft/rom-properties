@@ -1010,7 +1010,7 @@ int WiiWAD::loadFieldData(void)
 	// Title ID
 	const string s_titleID = d->getTitleID();
 	if (!s_titleID.empty()) {
-		d->fields.addField_string(C_("Nintendo", "Title ID"),
+		d->fields.addField_string(C_("RomData", "Title ID"),
 			s_titleID, RomFields::STRF_MONOSPACE);
 	}
 
