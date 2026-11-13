@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-13 11:55-0500\n"
-"PO-Revision-Date: 2026-11-13 17:26\n"
+"POT-Creation-Date: 2026-11-13 12:23-0500\n"
+"PO-Revision-Date: 2026-11-13 18:30\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -989,10 +989,10 @@ msgstr ""
 #: ../src/libromdata/Console/MegaDrive.cpp:741
 #: ../src/libromdata/Console/NES.cpp:1431
 #: ../src/libromdata/Console/NES.cpp:1588
-#: ../src/libromdata/Console/NES.cpp:1710
-#: ../src/libromdata/Console/NES.cpp:1781
-#: ../src/libromdata/Console/NES.cpp:1792
-#: ../src/libromdata/Console/NES.cpp:1837
+#: ../src/libromdata/Console/NES.cpp:1714
+#: ../src/libromdata/Console/NES.cpp:1785
+#: ../src/libromdata/Console/NES.cpp:1796
+#: ../src/libromdata/Console/NES.cpp:1841
 #: ../src/libromdata/Console/Sega8Bit.cpp:580
 #: ../src/libromdata/Console/Sega8Bit.cpp:582
 #: ../src/libromdata/Console/SNES.cpp:645
@@ -2423,7 +2423,7 @@ msgstr ""
 #: ../src/libromdata/Console/GameCubeSave.cpp:1036
 #: ../src/libromdata/Console/MegaDrive.cpp:455
 #: ../src/libromdata/Console/NES.cpp:1581
-#: ../src/libromdata/Console/NES.cpp:1830
+#: ../src/libromdata/Console/NES.cpp:1834
 #: ../src/libromdata/Console/SegaSaturn.cpp:510
 #: ../src/libromdata/Console/SNES.cpp:1554
 #: ../src/libromdata/Console/WiiU.cpp:358
@@ -3401,7 +3401,7 @@ msgstr "Маппер"
 #. tr: Print the mapper ID followed by the mapper name.
 #: ../src/libromdata/Console/NES.cpp:1470
 #: ../src/libromdata/Console/NES.cpp:1497
-#: ../src/libromdata/Console/NES.cpp:1821
+#: ../src/libromdata/Console/NES.cpp:1825
 #, c++-format
 msgctxt "NES|Mapper"
 msgid "{0:d} - {1:s}"
@@ -3458,13 +3458,13 @@ msgid "Features"
 msgstr ""
 
 #: ../src/libromdata/Console/NES.cpp:1540
-#: ../src/libromdata/Console/NES.cpp:1783
+#: ../src/libromdata/Console/NES.cpp:1787
 msgctxt "NES"
 msgid "PRG ROM Size"
 msgstr ""
 
 #: ../src/libromdata/Console/NES.cpp:1544
-#: ../src/libromdata/Console/NES.cpp:1795
+#: ../src/libromdata/Console/NES.cpp:1799
 msgctxt "NES"
 msgid "CHR ROM Size"
 msgstr ""
@@ -3481,7 +3481,7 @@ msgid "Save RAM (backed up)"
 msgstr ""
 
 #: ../src/libromdata/Console/NES.cpp:1559
-#: ../src/libromdata/Console/NES.cpp:1800
+#: ../src/libromdata/Console/NES.cpp:1804
 msgctxt "NES"
 msgid "CHR RAM Size"
 msgstr ""
@@ -3497,76 +3497,76 @@ msgctxt "NES"
 msgid "Manufacturing Date"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:1698
+#: ../src/libromdata/Console/NES.cpp:1702
 msgctxt "NES|Mirroring"
 msgid "One Screen"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:1700
+#: ../src/libromdata/Console/NES.cpp:1704
 msgctxt "NES|Mirroring"
 msgid "Programmable"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:1704
-#: ../src/libromdata/Console/NES.cpp:1807
-#: ../src/libromdata/data/NESMappers.cpp:626
+#: ../src/libromdata/Console/NES.cpp:1708
+#: ../src/libromdata/Console/NES.cpp:1811
+#: ../src/libromdata/data/NESMappers.cpp:636
 msgctxt "NES|Mirroring"
 msgid "Horizontal"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:1707
-#: ../src/libromdata/Console/NES.cpp:1809
-#: ../src/libromdata/data/NESMappers.cpp:626
+#: ../src/libromdata/Console/NES.cpp:1711
+#: ../src/libromdata/Console/NES.cpp:1813
+#: ../src/libromdata/data/NESMappers.cpp:635
 msgctxt "NES|Mirroring"
 msgid "Vertical"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:1719
+#: ../src/libromdata/Console/NES.cpp:1723
 msgctxt "NES"
 msgid "Mirroring"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:1724
+#: ../src/libromdata/Console/NES.cpp:1728
 msgctxt "NES"
 msgid "Vs. PPU"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:1728
+#: ../src/libromdata/Console/NES.cpp:1732
 msgctxt "NES"
 msgid "Vs. Hardware"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:1732
+#: ../src/libromdata/Console/NES.cpp:1736
 msgctxt "NES"
 msgid "Console Type"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:1736
+#: ../src/libromdata/Console/NES.cpp:1740
 msgctxt "NES"
 msgid "Misc. ROM Count"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:1740
+#: ../src/libromdata/Console/NES.cpp:1744
 msgctxt "NES"
 msgid "Default Expansion"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:1751
+#: ../src/libromdata/Console/NES.cpp:1755
 msgctxt "NES"
 msgid "Internal Name"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:1756
+#: ../src/libromdata/Console/NES.cpp:1760
 msgctxt "NES"
 msgid "PRG Checksum"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:1761
+#: ../src/libromdata/Console/NES.cpp:1765
 msgctxt "NES"
 msgid "CHR Checksum"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:1827
+#: ../src/libromdata/Console/NES.cpp:1831
 msgctxt "NES"
 msgid "Board Type"
 msgstr ""
@@ -4841,37 +4841,27 @@ msgctxt "EXE|Subsystem"
 msgid "Boot Application"
 msgstr ""
 
-#: ../src/libromdata/data/NESMappers.cpp:629
+#: ../src/libromdata/data/NESMappers.cpp:641
 msgctxt "NES|Mirroring"
 msgid "Mapper-controlled"
 msgstr ""
 
-#: ../src/libromdata/data/NESMappers.cpp:631
+#: ../src/libromdata/data/NESMappers.cpp:646
+#: ../src/libromdata/data/NESMappers.cpp:650
+#: ../src/libromdata/data/NESMappers.cpp:654
+#, c++-format
 msgctxt "NES|Mirroring"
-msgid "Mapper-controlled (H/V/A/B)"
+msgid "Mapper-controlled ({:s})"
 msgstr ""
 
-#: ../src/libromdata/data/NESMappers.cpp:633
+#: ../src/libromdata/data/NESMappers.cpp:659
+#: ../src/libromdata/data/NESMappers.cpp:663
+#, c++-format
 msgctxt "NES|Mirroring"
-msgid "Mapper-controlled (H/V)"
+msgid "Single Screen ({:c})"
 msgstr ""
 
-#: ../src/libromdata/data/NESMappers.cpp:635
-msgctxt "NES|Mirroring"
-msgid "Mapper-controlled (A/B)"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:637
-msgctxt "NES|Mirroring"
-msgid "Single Screen (A)"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:639
-msgctxt "NES|Mirroring"
-msgid "Single Screen (B)"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:641
+#: ../src/libromdata/data/NESMappers.cpp:667
 msgctxt "NES|Mirroring"
 msgid "Four Screens"
 msgstr ""
