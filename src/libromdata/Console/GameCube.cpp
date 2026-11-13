@@ -1872,18 +1872,18 @@ int GameCube::loadFieldData(void)
 		// Fields
 		static const array<const char*, 5> partitions_names = {{
 			// tr: Partition number.
-			NOP_C_("Wii|Partition", "#"),
+			NOP_C_("PartitionTable", "#"),
 			// tr: Partition type.
-			NOP_C_("Wii|Partition", "Type"),
+			NOP_C_("PartitionTable", "Type"),
 			// tr: Encryption key.
-			NOP_C_("Wii|Partition", "Key"),
+			NOP_C_("PartitionTable", "Key"),
 			// tr: Actual data used within the partition.
-			NOP_C_("Wii|Partition", "Used Size"),
+			NOP_C_("PartitionTable", "Used Size"),
 			// tr: Total size of the partition.
-			NOP_C_("Wii|Partition", "Total Size"),
+			NOP_C_("PartitionTable", "Total Size"),
 		}};
 		vector<string> *const v_partitions_names = RomFields::strArrayToVector_i18n(
-			"Wii|Partition", partitions_names);
+			"PartitionTable", partitions_names);
 
 		RomFields::AFLD_PARAMS params;
 		params.headers = v_partitions_names;

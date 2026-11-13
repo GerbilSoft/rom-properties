@@ -1914,13 +1914,13 @@ int Nintendo3DS::loadFieldData(void)
 
 			// Columns for the partition table.
 			static const array<const char*, 5> cci_partitions_names = {{
-				NOP_C_("Nintendo3DS|CCI", "#"),
-				NOP_C_("Nintendo3DS|CCI", "Type"),
-				NOP_C_("Nintendo3DS|CCI", "Encryption"),
-				NOP_C_("Nintendo3DS|CCI", "Version"),
-				NOP_C_("Nintendo3DS|CCI", "Size"),
+				NOP_C_("PartitionTable", "#"),
+				NOP_C_("PartitionTable", "Type"),
+				NOP_C_("PartitionTable", "Encryption"),
+				NOP_C_("PartitionTable", "Version"),
+				NOP_C_("PartitionTable", "Size"),
 			}};
-			v_partitions_names = RomFields::strArrayToVector_i18n("Nintendo3DS|CCI", cci_partitions_names);
+			v_partitions_names = RomFields::strArrayToVector_i18n("PartitionTable", cci_partitions_names);
 		} else {
 			// eMMC (NAND dump)
 
@@ -1940,12 +1940,12 @@ int Nintendo3DS::loadFieldData(void)
 
 			// Columns for the partition table.
 			static const array<const char*, 4> emmc_partitions_names = {{
-				NOP_C_("Nintendo3DS|eMMC", "#"),
-				NOP_C_("Nintendo3DS|eMMC", "Type"),
-				NOP_C_("Nintendo3DS|eMMC", "Keyslot"),
-				NOP_C_("Nintendo3DS|eMMC", "Size"),
+				NOP_C_("PartitionTable", "#"),
+				NOP_C_("PartitionTable", "Type"),
+				NOP_C_("PartitionTable", "Keyslot"),
+				NOP_C_("PartitionTable", "Size"),
 			}};
-			v_partitions_names = RomFields::strArrayToVector_i18n("Nintendo3DS|eMMC", emmc_partitions_names);
+			v_partitions_names = RomFields::strArrayToVector_i18n("PartitionTable", emmc_partitions_names);
 		}
 
 		if (d->romType == Nintendo3DSPrivate::RomType::CCI) {
@@ -2311,13 +2311,13 @@ int Nintendo3DS::loadFieldData(void)
 
 		// Add the contents table.
 		static const array<const char*, 5> contents_names = {{
-			NOP_C_("Nintendo3DS|CtNames", "#"),
-			NOP_C_("Nintendo3DS|CtNames", "Type"),
-			NOP_C_("Nintendo3DS|CtNames", "Encryption"),
-			NOP_C_("Nintendo3DS|CtNames", "Version"),
-			NOP_C_("Nintendo3DS|CtNames", "Size"),
+			NOP_C_("PartitionTable", "#"),
+			NOP_C_("PartitionTable", "Type"),
+			NOP_C_("PartitionTable", "Encryption"),
+			NOP_C_("PartitionTable", "Version"),
+			NOP_C_("PartitionTable", "Size"),
 		}};
-		vector<string> *const v_contents_names = RomFields::strArrayToVector_i18n("Nintendo3DS|CtNames", contents_names);
+		vector<string> *const v_contents_names = RomFields::strArrayToVector_i18n("PartitionTable", contents_names);
 
 		RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 0);
 		params.headers = v_contents_names;

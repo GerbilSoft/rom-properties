@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-12 23:06-0500\n"
+"POT-Creation-Date: 2026-11-12 23:21-0500\n"
 "PO-Revision-Date: 2026-08-24 23:14\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
@@ -3044,31 +3044,37 @@ msgstr ""
 
 #. tr: Partition number.
 #: ../src/libromdata/Console/GameCube.cpp:1875
-msgctxt "Wii|Partition"
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1917
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1943
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2314
+msgctxt "PartitionTable"
 msgid "#"
 msgstr "#"
 
 #. tr: Partition type.
 #: ../src/libromdata/Console/GameCube.cpp:1877
-msgctxt "Wii|Partition"
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1918
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1944
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2315
+msgctxt "PartitionTable"
 msgid "Type"
 msgstr ""
 
 #. tr: Encryption key.
 #: ../src/libromdata/Console/GameCube.cpp:1879
-msgctxt "Wii|Partition"
+msgctxt "PartitionTable"
 msgid "Key"
 msgstr ""
 
 #. tr: Actual data used within the partition.
 #: ../src/libromdata/Console/GameCube.cpp:1881
-msgctxt "Wii|Partition"
+msgctxt "PartitionTable"
 msgid "Used Size"
 msgstr ""
 
 #. tr: Total size of the partition.
 #: ../src/libromdata/Console/GameCube.cpp:1883
-msgctxt "Wii|Partition"
+msgctxt "PartitionTable"
 msgid "Total Size"
 msgstr ""
 
@@ -6114,49 +6120,28 @@ msgctxt "Nintendo3DS"
 msgid "NCCH encryption flags are incorrect. Use GodMode9 to fix."
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1917
-msgctxt "Nintendo3DS|CCI"
-msgid "#"
-msgstr "#"
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1918
-msgctxt "Nintendo3DS|CCI"
-msgid "Type"
-msgstr ""
-
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1919
-msgctxt "Nintendo3DS|CCI"
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2316
+msgctxt "PartitionTable"
 msgid "Encryption"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1920
-msgctxt "Nintendo3DS|CCI"
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2317
+msgctxt "PartitionTable"
 msgid "Version"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1921
-msgctxt "Nintendo3DS|CCI"
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1946
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2318
+msgctxt "PartitionTable"
 msgid "Size"
-msgstr ""
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1943
-msgctxt "Nintendo3DS|eMMC"
-msgid "#"
-msgstr "#"
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1944
-msgctxt "Nintendo3DS|eMMC"
-msgid "Type"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1945
-msgctxt "Nintendo3DS|eMMC"
+msgctxt "PartitionTable"
 msgid "Keyslot"
-msgstr ""
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1946
-msgctxt "Nintendo3DS|eMMC"
-msgid "Size"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1965
@@ -6209,31 +6194,6 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2180
 msgctxt "Nintendo3DS"
 msgid "Demo Use Limit"
-msgstr ""
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2314
-msgctxt "Nintendo3DS|CtNames"
-msgid "#"
-msgstr "#"
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2315
-msgctxt "Nintendo3DS|CtNames"
-msgid "Type"
-msgstr ""
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2316
-msgctxt "Nintendo3DS|CtNames"
-msgid "Encryption"
-msgstr ""
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2317
-msgctxt "Nintendo3DS|CtNames"
-msgid "Version"
-msgstr ""
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2318
-msgctxt "Nintendo3DS|CtNames"
-msgid "Size"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2325
