@@ -16,6 +16,7 @@
 #include "res/resource.h"
 
 // Other rom-properties libraries
+#include "libi18n/i18n.hpp"
 #include "librpbase/config/Config.hpp"
 #include "librpfile/xattr/XAttrReader.hpp"
 #include "librptext/wchar.hpp"
