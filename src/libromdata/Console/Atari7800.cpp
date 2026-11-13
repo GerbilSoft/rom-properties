@@ -224,7 +224,7 @@ int Atari7800::loadFieldData(void)
 					controller_tbl[control_type]));
 		} else {
 			d->fields.addField_string(control_title.c_str(),
-				fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), control_type));
+				fmt::format(FSTR("{:s} ({:d})"), C_("RomData", "Unknown"), control_type));
 		}
 	}
 

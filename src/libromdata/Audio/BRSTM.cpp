@@ -319,7 +319,7 @@ int BRSTM::loadFieldData(void)
 			pgettext_expr("BRSTM|Codec", codec_tbl[headChunk1->codec]));
 	} else {
 		d->fields.addField_string(codec_title,
-			fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), headChunk1->codec));
+			fmt::format(FSTR("{:s} ({:d})"), C_("RomData", "Unknown"), headChunk1->codec));
 	}
 
 	// Number of channels

@@ -413,7 +413,7 @@ int BCSTM::loadFieldData(void)
 		d->fields.addField_string(type_title, type_tbl[static_cast<int>(d->audioFormat)]);
 	} else {
 		d->fields.addField_string(type_title,
-			fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), static_cast<int>(d->audioFormat)));
+			fmt::format(FSTR("{:s} ({:d})"), C_("RomData", "Unknown"), static_cast<int>(d->audioFormat)));
 	}
 
 	// TODO: Show the version field?
@@ -480,7 +480,7 @@ int BCSTM::loadFieldData(void)
 			pgettext_expr("BCSTM|Codec", codec_tbl[codec]));
 	} else {
 		d->fields.addField_string(codec_title,
-			fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), codec));
+			fmt::format(FSTR("{:s} ({:d})"), C_("RomData", "Unknown"), codec));
 	}
 
 	// Number of channels

@@ -1058,7 +1058,7 @@ int WiiWAD::loadFieldData(void)
 			d->fields.addField_string(region_code_title, s_region);
 		} else {
 			d->fields.addField_string(region_code_title,
-				fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), gcnRegion));
+				fmt::format(FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), gcnRegion));
 		}
 
 		// Required IOS version
@@ -1102,7 +1102,7 @@ int WiiWAD::loadFieldData(void)
 					pgettext_expr("Wii|NetCardGBASaveType", save_type_tbl[save_type]));
 			} else {
 				d->fields.addField_string(s_save_type_title,
-					fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), save_type));
+					fmt::format(FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), save_type));
 			}
 
 			// tr: NetCard: RTC emulation

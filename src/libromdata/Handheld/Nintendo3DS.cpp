@@ -1968,7 +1968,7 @@ int Nintendo3DS::loadFieldData(void)
 					media_type_tbl[media_type]);
 			} else {
 				d->fields.addField_string(media_type_title,
-					fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), media_type));
+					fmt::format(FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), media_type));
 			}
 
 			if (ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_TYPE_INDEX] == N3DS_NCSD_MEDIA_TYPE_CARD2) {
@@ -2003,7 +2003,8 @@ int Nintendo3DS::loadFieldData(void)
 			} else {
 				d->fields.addField_string(card_device_title,
 					// tr: Unrecognized card device (the raw SDK2 and SDK3 values are shown)
-					fmt::format(FRUN(C_("Nintendo3DS|CDev", "Unknown (SDK2=0x{0:0>2X}, SDK3=0x{1:0>2X})")),
+					fmt::format(FSTR("{:s} (SDK2=0x{:0>2X}, SDK3=0x{:0>2X})"),
+						C_("RomData", "Unknown"),
 						ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK2],
 						ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK3]));
 			}

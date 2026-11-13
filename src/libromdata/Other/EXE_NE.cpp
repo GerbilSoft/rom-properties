@@ -414,7 +414,7 @@ void EXEPrivate::addFields_NE(void)
 		}
 	} else {
 		fields.addField_string(targetOS_title,
-			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), hdr.ne.targOS));
+			fmt::format(FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), hdr.ne.targOS));
 	}
 
 	// DGroup type.

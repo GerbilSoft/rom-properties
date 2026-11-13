@@ -180,12 +180,14 @@ string NintendoDSPrivate::getPublisher(void)
 	// Unknown publisher. Print the company code as two characters if they're
 	// both alphanumeric; otherwise, hexadecimal.
 	if (isalnum_ascii(romHeader.company[0]) && isalnum_ascii(romHeader.company[1])) {
-		fmt::format_to(std::back_inserter(s_ret), FRUN(C_("RomData", "Unknown ({:c}{:c})")),
-			romHeader.company[0], romHeader.company[1]);
+		fmt::format_to(std::back_inserter(s_ret),
+			FSTR("{:s} ({:c}{:c})"), C_("RomData", "Unknown"),
+				romHeader.company[0], romHeader.company[1]);
 	} else {
-		fmt::format_to(std::back_inserter(s_ret), FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
-			static_cast<unsigned int>(romHeader.company[0]),
-			static_cast<unsigned int>(romHeader.company[1]));
+		fmt::format_to(std::back_inserter(s_ret),
+			FSTR("{:s} ({:0>2X} {:0>2X})"), C_("RomData", "Unknown"),
+				static_cast<unsigned int>(romHeader.company[0]),
+				static_cast<unsigned int>(romHeader.company[1]));
 	}
 
 	return s_ret;
@@ -1010,7 +1012,7 @@ int NintendoDS::loadFieldData(void)
 	} else {
 		// Invalid file type.
 		d->fields.addField_string(dsi_rom_type_title,
-			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), dsi_filetype));
+			fmt::format(FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), dsi_filetype));
 	}
 
 	// Key index. Determined by title ID.

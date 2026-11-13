@@ -345,10 +345,10 @@ int WiiU::loadFieldData(void)
 		    isalnum_ascii(publisher_code[2]) && isalnum_ascii(publisher_code[3]))
 		{
 			fmt::format_to(std::back_inserter(s_publisher),
-				FRUN(C_("RomData", "Unknown ({:s})")), publisher_code.data());
+				FSTR("{:s} ({:s})"), C_("RomData", "Unknown"), publisher_code.data());
 		} else {
 			fmt::format_to(std::back_inserter(s_publisher),
-				FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X} {:0>2X} {:0>2X})")),
+				FSTR("{:s} ({:0>2X} {:0>2X} {:0>2X} {:0>2X})"), C_("RomData", "Unknown"),
 					static_cast<uint8_t>(publisher_code[0]),
 					static_cast<uint8_t>(publisher_code[1]),
 					static_cast<uint8_t>(publisher_code[2]),

@@ -730,7 +730,8 @@ void EXEPrivate::addFields_PE(void)
 		if (cpu != nullptr) {
 			s_cpu = cpu;
 		} else {
-			fmt::format_to(std::back_inserter(s_cpu), FRUN(C_("RomData", "Unknown (0x{:0>4X})")), machine);
+			fmt::format_to(std::back_inserter(s_cpu),
+				FSTR("{:s} (0x{:0>4X})"), C_("RomData", "Unknown"), machine);
 		}
 	}
 	if (dotnet) {

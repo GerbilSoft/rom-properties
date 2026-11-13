@@ -407,7 +407,7 @@ int Amiibo::loadFieldData(void)
 		d->fields.addField_string(s_tag_type_title, tag_type_tbl[static_cast<int>(d->amiiboType)]);
 	} else {
 		d->fields.addField_string(s_tag_type_title,
-			fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), static_cast<int>(d->amiiboType)));
+			fmt::format(FSTR("{:s} ({:d})"), C_("RomData", "Unknown"), static_cast<int>(d->amiiboType)));
 	}
 
 	// Unique ID
@@ -474,7 +474,7 @@ int Amiibo::loadFieldData(void)
 	} else {
 		// Invalid amiibo type.
 		d->fields.addField_string(amiibo_type_title,
-			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), (char_id & 0xFF)));
+			fmt::format(FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), (char_id & 0xFF)));
 	}
 
 	// Get the AmiiboData instance.

@@ -480,11 +480,11 @@ string GameCubePrivate::getPublisher(void) const
 			discHeader.company[1],
 			'\0'
 		}};
-		return fmt::format(FRUN(C_("RomData", "Unknown ({:s})")), s_company.data());
+		return fmt::format(FSTR("{:s} ({:s})"), C_("RomData", "Unknown"), s_company.data());
 	}
 
 	// Disc ID is not alphanumeric.
-	return fmt::format(FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
+	return fmt::format(FSTR("{:s} ({:0>2X} {:0>2X})"), C_("RomData", "Unknown"),
 		static_cast<uint8_t>(discHeader.company[0]),
 		static_cast<uint8_t>(discHeader.company[1]));
 }
@@ -747,13 +747,15 @@ string GameCubePrivate::getRegionCode(void) const
 
 		if (suffix) {
 			// tr: {0:s} == full region name, {1:s} == abbreviation
-			fmt::format_to(std::back_inserter(s_region), FRUN(C_("Wii", "{0:s} ({1:s})")), region, suffix);
+			fmt::format_to(std::back_inserter(s_region),
+				FRUN(C_("Wii", "{0:s} ({1:s})")), region, suffix);
 		} else {
 			s_region = region;
 		}
 	} else {
 		// Invalid region code.
-		fmt::format_to(std::back_inserter(s_region), FRUN(C_("RomData", "Unknown (0x{:0>8X})")), gcnRegion);
+		fmt::format_to(std::back_inserter(s_region),
+			FSTR("{:s} (0x{:0>8X})"), C_("RomData", "Unknown"), gcnRegion);
 	}
 
 	return s_region;
@@ -1862,7 +1864,7 @@ int GameCube::loadFieldData(void)
 				data_row.push_back(LibRpText::formatFileSize(used_size));
 			} else {
 				// tr: Unknown used size.
-				data_row.push_back(C_("Wii|Partition", "Unknown"));
+				data_row.push_back(C_("RomData", "Unknown"));
 			}
 
 			// Partition size

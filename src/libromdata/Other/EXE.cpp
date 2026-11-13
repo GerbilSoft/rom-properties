@@ -213,7 +213,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		fields.addField_string(fileOS_title, s_fileOS);
 	} else {
 		fields.addField_string(fileOS_title,
-			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>8X})")), dwFileOS));
+			fmt::format(FSTR("{:s} (0x{:0>8X})"), C_("RomData", "Unknown"), dwFileOS));
 	}
 
 	// File type
@@ -246,7 +246,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 			fields.addField_string(fileType_title, C_("RomData", "Unknown"));
 		} else {
 			fields.addField_string(fileType_title,
-				fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>8X})")), pVsFfi->dwFileType));
+				fmt::format(FSTR("{:s} (0x{:0>8X})"), C_("RomData", "Unknown"), pVsFfi->dwFileType));
 		}
 	}
 
@@ -319,7 +319,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 				pgettext_expr("EXE|FileSubType", fileSubtype));
 		} else {
 			fields.addField_string(fileSubType_title,
-				fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), pVsFfi->dwFileSubtype));
+				fmt::format(FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), pVsFfi->dwFileSubtype));
 		}
 	}
 
@@ -486,7 +486,7 @@ void EXEPrivate::addFields_LE(void)
 		fields.addField_string(cpu_title, cpu);
 	} else {
 		fields.addField_string(cpu_title,
-			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>4X})")), cpu_type));
+			fmt::format(FSTR("{:s} (0x{:0>4X})"), C_("RomData", "Unknown"), cpu_type));
 	}
 
 	// Target OS
@@ -497,7 +497,7 @@ void EXEPrivate::addFields_LE(void)
 		fields.addField_string(targetOS_title, NE_TargetOSes[targOS]);
 	} else {
 		fields.addField_string(targetOS_title,
-			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), targOS));
+			fmt::format(FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), targOS));
 	}
 }
 
@@ -1282,7 +1282,7 @@ int EXE::loadMetaData(void)
 				}
 			} else {
 				d->metaData.addMetaData_string(Property::OSVersion,
-					fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), d->hdr.ne.targOS));
+					fmt::format(FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), d->hdr.ne.targOS));
 			}
 			break;
 		}

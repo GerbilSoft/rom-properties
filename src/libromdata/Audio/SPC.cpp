@@ -872,7 +872,7 @@ int SPC::loadFieldData(void)
 				d->fields.addField_string(emulator_used_title, emu);
 			} else {
 				d->fields.addField_string(emulator_used_title,
-					fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), data.uvalue));
+					fmt::format(FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), data.uvalue));
 			}
 		}
 	}

@@ -678,8 +678,7 @@ const char *XboxXPR::pixelFormat(void) const
 	// Store an error message instead.
 	if (d->invalid_pixel_format.empty()) {
 		fmt::format_to(std::back_inserter(d->invalid_pixel_format),
-			FRUN(C_("RomData", "Unknown (0x{:0>2X})")),
-				d->xpr0Header.pixel_format);
+			FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), d->xpr0Header.pixel_format);
 	}
 	return d->invalid_pixel_format.c_str();
 }
@@ -716,7 +715,7 @@ int XboxXPR::getFields(RomFields *fields) const
 		fields->addField_string(s_type_title, type_tbl[static_cast<size_t>(d->xprType)]);
 	} else {
 		fields->addField_string(s_type_title,
-			fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), static_cast<int>(d->xprType)));
+			fmt::format(FSTR("{:s} ({:d})"), C_("RomData", "Unknown"), static_cast<int>(d->xprType)));
 	}
 
 	// Finished reading the field data.

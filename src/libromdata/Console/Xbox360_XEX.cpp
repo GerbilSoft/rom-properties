@@ -1462,12 +1462,12 @@ string Xbox360_XEX_Private::getPublisher(void) const
 	    isalnum_ascii(executionID.title_id.b))
 	{
 		// Publisher ID is alphanumeric.
-		fmt::format_to(std::back_inserter(s_ret), FRUN(C_("RomData", "Unknown ({:c}{:c})")),
+		fmt::format_to(std::back_inserter(s_ret), FSTR("{:s} ({:c}{:c})"), C_("RomData", "Unknown"),
 			executionID.title_id.a,
 			executionID.title_id.b);
 	} else {
 		// Publisher ID is not alphanumeric.
-		fmt::format_to(std::back_inserter(s_ret), FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
+		fmt::format_to(std::back_inserter(s_ret), FSTR("{:s} ({:0>2X} {:0>2X})"), C_("RomData", "Unknown"),
 			static_cast<uint8_t>(executionID.title_id.a),
 			static_cast<uint8_t>(executionID.title_id.b));
 	}
@@ -1997,7 +1997,7 @@ int Xbox360_XEX::loadFieldData(void)
 				compression_tbl[d->fileFormatInfo.compression_type]));
 	} else {
 		d->fields.addField_string(C_("Xbox360_XEX", "Compression"),
-			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")),
+			fmt::format(FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"),
 				d->fileFormatInfo.compression_type));
 	}
 

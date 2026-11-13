@@ -952,8 +952,7 @@ const char *KhronosKTX2::pixelFormat(void) const
 	if (d->invalid_pixel_format.empty()) {
 		// TODO: Localization?
 		fmt::format_to(std::back_inserter(d->invalid_pixel_format),
-			FRUN(C_("RomData", "Unknown ({:d})")),
-				d->ktx2Header.vkFormat);
+			FSTR("{:s} ({:d})"), C_("RomData", "Unknown"), d->ktx2Header.vkFormat);
 	}
 	return d->invalid_pixel_format.c_str();
 }
@@ -994,8 +993,7 @@ int KhronosKTX2::getFields(RomFields *fields) const
 			supercompression_tbl[ktx2Header->supercompressionScheme]);
 	} else {
 		fields->addField_string(C_("KhronosKTX2", "Supercompression"),
-			fmt::format(FRUN(C_("RomData", "Unknown ({:d})")),
-				ktx2Header->supercompressionScheme));
+			fmt::format(FSTR("{:s} ({:d})"), C_("RomData", "Unknown"), ktx2Header->supercompressionScheme));
 	}
 
 	// NOTE: Vulkan field names should not be localized.

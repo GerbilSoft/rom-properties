@@ -434,12 +434,12 @@ string Xbox_XBE_Private::getPublisher(void) const
 	    isalnum_ascii(xbeCertificate.title_id.b))
 	{
 		// Publisher ID is alphanumeric.
-		fmt::format_to(std::back_inserter(s_ret), FRUN(C_("RomData", "Unknown ({:c}{:c})")),
+		fmt::format_to(std::back_inserter(s_ret), FSTR("{:s} ({:c}{:c})"), C_("RomData", "Unknown"),
 			xbeCertificate.title_id.a,
 			xbeCertificate.title_id.b);
 	} else {
 		// Publisher ID is not alphanumeric.
-		fmt::format_to(std::back_inserter(s_ret), FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
+		fmt::format_to(std::back_inserter(s_ret), FSTR("{:s} ({:0>2X} {:0>2X})"), C_("RomData", "Unknown"),
 			static_cast<uint8_t>(xbeCertificate.title_id.a),
 			static_cast<uint8_t>(xbeCertificate.title_id.b));
 	}

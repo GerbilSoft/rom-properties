@@ -1010,8 +1010,7 @@ const char *KhronosKTX::pixelFormat(void) const
 	// Store an error message instead.
 	if (d->invalid_pixel_format.empty()) {
 		fmt::format_to(std::back_inserter(d->invalid_pixel_format),
-			FRUN(C_("RomData", "Unknown (0x{:0>8X})")),
-				d->ktxHeader.glInternalFormat);
+			FSTR("{:s} (0x{:0>8X})"), C_("RomData", "Unknown"), d->ktxHeader.glInternalFormat);
 	}
 	return d->invalid_pixel_format.c_str();
 }

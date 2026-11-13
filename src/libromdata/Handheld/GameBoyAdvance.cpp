@@ -147,11 +147,13 @@ string GameBoyAdvancePrivate::getPublisher(void) const
 				romHeader.company[1],
 				'\0'
 			}};
-			fmt::format_to(std::back_inserter(s_ret), FRUN(C_("RomData", "Unknown ({:s})")), s_company.data());
+			fmt::format_to(std::back_inserter(s_ret),
+				FSTR("{:s} ({:s})"), C_("RomData", "Unknown"), s_company.data());
 		} else {
-			fmt::format_to(std::back_inserter(s_ret), FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
-				static_cast<uint8_t>(romHeader.company[0]),
-				static_cast<uint8_t>(romHeader.company[1]));
+			fmt::format_to(std::back_inserter(s_ret),
+				FSTR("{:s} ({:0>2X} {:0>2X})"), C_("RomData", "Unknown"),
+					static_cast<uint8_t>(romHeader.company[0]),
+					static_cast<uint8_t>(romHeader.company[1]));
 		}
 	}
 

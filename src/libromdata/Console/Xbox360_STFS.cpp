@@ -1063,7 +1063,7 @@ int Xbox360_STFS::loadFieldData(void)
 		d->fields.addField_string(s_content_type_title, s_content_type);
 	} else {
 		d->fields.addField_string(s_content_type_title,
-			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>8X})")),
+			fmt::format(FSTR("{:s} (0x{:0>8X})"), C_("RomData", "Unknown"),
 				be32_to_cpu(stfsMetadata->content_type)));
 	}
 
@@ -1128,7 +1128,7 @@ int Xbox360_STFS::loadFieldData(void)
 			d->fields.addField_string(s_console_type_title, s_console_type);
 		} else {
 			d->fields.addField_string(s_console_type_title,
-				fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), stfsHeader->console.console_type));
+				fmt::format(FSTR("{:s} ({:d})"), C_("RomData", "Unknown"), stfsHeader->console.console_type));
 		}
 	}
 

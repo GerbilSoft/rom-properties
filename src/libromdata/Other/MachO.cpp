@@ -513,7 +513,7 @@ int MachO::loadFieldData(void)
 			d->fields.addField_string(cpu_title, s_cpu);
 		} else {
 			d->fields.addField_string(cpu_title,
-				fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), machHeader->cputype & 0xFFFFFF));
+				fmt::format(FSTR("{:s} ({:d})"), C_("RomData", "Unknown"), machHeader->cputype & 0xFFFFFF));
 		}
 
 		// CPU subtype.

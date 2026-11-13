@@ -1585,7 +1585,7 @@ int NES::loadFieldData(void)
 			d->fields.addField_string(publisher_title, publisher);
 		} else {
 			d->fields.addField_string(publisher_title,
-				fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), header->fds.publisher_code));
+				fmt::format(FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), header->fds.publisher_code));
 		}
 
 		// Revision
@@ -1777,7 +1777,8 @@ int NES::loadFieldData(void)
 			if (prg_size > 0) {
 				s_prg_size = formatFileSizeKiB(prg_size);
 			} else {
-				fmt::format_to(std::back_inserter(s_prg_size), FRUN(C_("RomData", "Unknown (0x{:0>2X})")), prg_sz_idx);
+				fmt::format_to(std::back_inserter(s_prg_size),
+					FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), prg_sz_idx);
 			}
 			d->fields.addField_string(C_("NES", "PRG ROM Size"), s_prg_size);
 
@@ -1787,7 +1788,8 @@ int NES::loadFieldData(void)
 			if (chr_size > 0) {
 				s_chr_size = formatFileSizeKiB(chr_size);
 			} else {
-				fmt::format_to(std::back_inserter(s_chr_size), FRUN(C_("RomData", "Unknown (0x{:0>2X})")), chr_sz_idx);
+				fmt::format_to(std::back_inserter(s_chr_size),
+					FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), chr_sz_idx);
 			}
 			if (likely(!b_chr_ram)) {
 				d->fields.addField_string(C_("NES", "CHR ROM Size"), s_chr_size);
@@ -1832,7 +1834,7 @@ int NES::loadFieldData(void)
 				d->fields.addField_string(publisher_title, publisher);
 			} else {
 				d->fields.addField_string(publisher_title,
-					fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), footer.publisher_code));
+					fmt::format(FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), footer.publisher_code));
 			}
 		}
 	}

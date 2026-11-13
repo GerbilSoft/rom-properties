@@ -641,11 +641,13 @@ string SNESPrivate::getPublisher(void) const
 					romHeader.snes.ext.new_publisher_code.c[1],
 					'\0'
 				}};
-				fmt::format_to(std::back_inserter(s_ret), FRUN(C_("RomData", "Unknown ({:s})")), s_pub_code.data());
+				fmt::format_to(std::back_inserter(s_ret),
+					FSTR("{:s} ({:s})"), C_("RomData", "Unknown"), s_pub_code.data());
 			} else {
-				fmt::format_to(std::back_inserter(s_ret), FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
-					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code.c[0]),
-					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code.c[1]));
+				fmt::format_to(std::back_inserter(s_ret),
+					FSTR("{:s} ({:0>2X} {:0>2X})"), C_("RomData", "Unknown"),
+						static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code.c[0]),
+						static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code.c[1]));
 			}
 		}
 	} else {
@@ -654,8 +656,9 @@ string SNESPrivate::getPublisher(void) const
 		if (publisher) {
 			s_ret = publisher;
 		} else {
-			fmt::format_to(std::back_inserter(s_ret), FRUN(C_("RomData", "Unknown ({:0>2X})")),
-				romHeader.snes.old_publisher_code);
+			fmt::format_to(std::back_inserter(s_ret),
+				FSTR("{:s} ({:0>2X})"), C_("RomData", "Unknown"),
+					romHeader.snes.old_publisher_code);
 		}
 	}
 
@@ -1599,7 +1602,7 @@ int SNES::loadFieldData(void)
 	} else {
 		// Unknown ROM mapping.
 		d->fields.addField_string(rom_mapping_title,
-			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), rom_mapping));
+			fmt::format(FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), rom_mapping));
 	}
 
 	// Cartridge HW
@@ -1618,7 +1621,7 @@ int SNES::loadFieldData(void)
 					pgettext_expr("Region", region_lkup));
 			} else {
 				d->fields.addField_string(region_title,
-					fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")),
+					fmt::format(FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"),
 						romHeader->snes.destination_code));
 			}
 
@@ -1689,7 +1692,7 @@ int SNES::loadFieldData(void)
 					pgettext_expr("SNES|ProgramType", program_type));
 			} else {
 				d->fields.addField_string(program_type_title,
-					fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>8X})")),
+					fmt::format(FSTR("{:s} (0x{:0>8X})"), C_("RomData", "Unknown"),
 						le32_to_cpu(romHeader->bsx.ext.program_type)));
 			}
 

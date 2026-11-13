@@ -1497,7 +1497,7 @@ const char *SegaPVR::pixelFormat(void) const
 		}
 
 		fmt::format_to(std::back_inserter(d->invalid_pixel_format),
-			FRUN(C_("RomData", "Unknown (0x{:0>2X})")), val);
+			FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), val);
 	}
 	return d->invalid_pixel_format.c_str();
 }

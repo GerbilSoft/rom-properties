@@ -549,7 +549,8 @@ int WonderSwan::loadFieldData(void)
 	if (publisher) {
 		s_publisher = publisher;
 	} else {
-		fmt::format_to(std::back_inserter(s_publisher), FRUN(C_("RomData", "Unknown (0x{:0>2X})")), romFooter->publisher);
+		fmt::format_to(std::back_inserter(s_publisher),
+			FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), romFooter->publisher);
 	}
 	d->fields.addField_string(C_("RomData", "Publisher"), s_publisher);
 
@@ -576,7 +577,7 @@ int WonderSwan::loadFieldData(void)
 			formatFileSizeKiB(rom_size_tbl[romFooter->rom_size]));
 	} else {
 		d->fields.addField_string(rom_size_title,
-			fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), romFooter->publisher));
+			fmt::format(FSTR("{:s} ({:d})"), C_("RomData", "Unknown"), romFooter->publisher));
 	}
 
 	// Save size and type

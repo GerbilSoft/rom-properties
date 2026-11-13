@@ -1600,7 +1600,7 @@ int ELF::loadFieldData(void)
 		d->fields.addField_string(cpu_title, cpu);
 	} else {
 		d->fields.addField_string(cpu_title,
-			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>4X})")), primary->e_machine));
+			fmt::format(FSTR("{:s} (0x{:0>4X})"), C_("RomData", "Unknown"), primary->e_machine));
 	}
 
 	// CPU flags.
@@ -1708,7 +1708,7 @@ int ELF::loadFieldData(void)
 				d->fields.addField_string(cpu_level_title, mips_levels[level]);
 			} else {
 				d->fields.addField_string(cpu_level_title,
-					fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")), level));
+					fmt::format(FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), level));
 			}
 
 			// MIPS CPU flags
@@ -2137,7 +2137,7 @@ int ELF::loadFieldData(void)
 		d->fields.addField_string(osabi_title, osabi);
 	} else {
 		d->fields.addField_string(osabi_title,
-			fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), primary->e_osabi));
+			fmt::format(FSTR("{:s} ({:d})"), C_("RomData", "Unknown"), primary->e_osabi));
 	}
 
 	// ABI version.

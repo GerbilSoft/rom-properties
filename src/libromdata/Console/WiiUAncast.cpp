@@ -593,7 +593,7 @@ int WiiUAncast::loadFieldData(void)
 		d->fields.addField_string(s_target_device_title, iter->desc);
 	} else {
 		d->fields.addField_string(s_target_device_title,
-			fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), target_device));
+			fmt::format(FSTR("{:s} ({:d})"), C_("RomData", "Unknown"), target_device));
 	}
 
 	// Console type
@@ -605,7 +605,7 @@ int WiiUAncast::loadFieldData(void)
 		d->fields.addField_string(s_console_type_title, console_type_tbl[console_type]);
 	} else {
 		d->fields.addField_string(s_console_type_title,
-			fmt::format(FRUN(C_("RomData", "Unknown ({:d})")), console_type));
+			fmt::format(FSTR("{:s} ({:d})"), C_("RomData", "Unknown"), console_type));
 	}
 
 	// Finished reading the field data.

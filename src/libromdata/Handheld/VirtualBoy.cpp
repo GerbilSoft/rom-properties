@@ -379,11 +379,13 @@ int VirtualBoy::loadFieldData(void)
 				romFooter->publisher[1],
 				'\0'
 			}};
-			fmt::format_to(std::back_inserter(s_publisher), FRUN(C_("RomData", "Unknown ({:s})")), s_company.data());
+			fmt::format_to(std::back_inserter(s_publisher),
+				FSTR("{:s} ({:s})"), C_("RomData", "Unknown"), s_company.data());
 		} else {
-			fmt::format_to(std::back_inserter(s_publisher), FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
-				static_cast<uint8_t>(romFooter->publisher[0]),
-				static_cast<uint8_t>(romFooter->publisher[1]));
+			fmt::format_to(std::back_inserter(s_publisher),
+				FSTR("{:s} ({:0>2X} {:0>2X})"), C_("RomData", "Unknown"),
+					static_cast<uint8_t>(romFooter->publisher[0]),
+					static_cast<uint8_t>(romFooter->publisher[1]));
 		}
 		d->fields.addField_string(s_publisher_title, s_publisher);
 	}
@@ -409,7 +411,7 @@ int VirtualBoy::loadFieldData(void)
 		d->fields.addField_string(C_("RomData", "Region Code"), s_region);
 	} else {
 		d->fields.addField_string(C_("RomData", "Region Code"),
-			fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>2X})")),
+			fmt::format(FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"),
 				static_cast<uint8_t>(romFooter->gameid[3])));
 	}
 
@@ -458,11 +460,13 @@ int VirtualBoy::loadMetaData(void)
 				romFooter->publisher[1],
 				'\0'
 			}};
-			fmt::format_to(std::back_inserter(s_publisher), FRUN(C_("RomData", "Unknown ({:s})")), s_company.data());
+			fmt::format_to(std::back_inserter(s_publisher),
+				FSTR("{:s} ({:s})"), C_("RomData", "Unknown"), s_company.data());
 		} else {
-			fmt::format_to(std::back_inserter(s_publisher), FRUN(C_("RomData", "Unknown ({:0>2X} {:0>2X})")),
-				static_cast<uint8_t>(romFooter->publisher[0]),
-				static_cast<uint8_t>(romFooter->publisher[1]));
+			fmt::format_to(std::back_inserter(s_publisher),
+				FSTR("{:s} ({:0>2X} {:0>2X})"), C_("RomData", "Unknown"),
+					static_cast<uint8_t>(romFooter->publisher[0]),
+					static_cast<uint8_t>(romFooter->publisher[1]));
 		}
 		d->metaData.addMetaData_string(Property::Publisher, s_publisher);
 	}

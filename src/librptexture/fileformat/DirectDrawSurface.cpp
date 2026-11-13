@@ -1358,7 +1358,7 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 		const char *const texFormat = DX10Formats::lookup_dxgiFormat(d->dxgi_format);
 		fields->addField_string(C_("DirectDrawSurface", "DX10 Format"),
 			(texFormat ? texFormat :
-				fmt::format(FRUN(C_("RomData", "Unknown (0x{:0>8X})")), d->dxgi_format)));
+				fmt::format(FSTR("{:s} (0x{:0>8X})"), C_("RomData", "Unknown"), d->dxgi_format)));
 	}
 
 	// nVidia Texture Tools header
