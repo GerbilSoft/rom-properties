@@ -176,7 +176,9 @@ msgstr ""
 "Selectați tipurile de imagini pe care doriți să le utilizați pentru fiecare "
 "sistem ca imagine miniaturală.\n"
 "Imaginile interne sunt conţinute în fişierul ROM.\n"
-"Imaginile externe sunt descărcate dintr-o bază de date externă de imagini"
+"Imaginile externe sunt descărcate dintr-o bază de date externă de imagini.\n"
+"\n"
+"1 = prioritatea cea mai mare; 2 = a doua prioritate principală; Nu = ignorară"
 
 #: ../build/src/kde/kf6/ui_KeyManagerTab.h:92
 #: ../src/gtk/config/KeyManagerTab.cpp:153
