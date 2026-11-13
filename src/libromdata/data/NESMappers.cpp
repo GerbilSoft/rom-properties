@@ -22,6 +22,10 @@
 #include <algorithm>
 #include <array>
 using std::array;
+using std::string;
+
+// libfmt
+#include "rp-libfmt.h"
 
 namespace LibRomData { namespace NESMappers {
 
@@ -564,17 +568,21 @@ const char *lookup_nes2_submapper(int mapper, int submapper)
  * @param submapper Submapper number.
  * @param vert Vertical bit in the iNES header
  * @param vert Four-screen bit in the iNES header
- * @return String describing the mirroring behavior
+ * @return String describing the mirroring behavior (empty string on error)
  */
-const char *lookup_ines_mirroring(int mapper, int submapper, bool vert, bool four)
+string lookup_ines_mirroring(int mapper, int submapper, bool vert, bool four)
 {
+	string s_ret;
+
 	const NESMapperEntry *const ent1 = lookup_ines_info(mapper);
 	const NESSubmapperInfo *const ent2 = lookup_nes2_submapper_info(mapper, submapper);
 	NESMirroring mirror = ent1 ? ent1->mirroring : NESMirroring::Unknown;
 
 	const NESMirroring submapper_mirror = ent2 ? ent2->mirroring :NESMirroring::Unknown;
-	if (submapper_mirror != NESMirroring::Unknown) // Override mapper's value
+	if (submapper_mirror != NESMirroring::Unknown) {
+		// Override mapper's value
 		mirror = submapper_mirror;
+	}
 
 	// Handle some special cases
 	switch (mirror) {
@@ -623,23 +631,44 @@ const char *lookup_ines_mirroring(int mapper, int submapper, bool vert, bool fou
 	// mirroring types are grouped under "Mapper-controlled"
 	switch (mirror) {
 		case NESMirroring::Header:
-			return vert ? C_("NES|Mirroring", "Vertical") : C_("NES|Mirroring", "Horizontal");
+			s_ret = (vert)
+				? C_("NES|Mirroring", "Vertical")
+				: C_("NES|Mirroring", "Horizontal");
+			break;
+
 		case NESMirroring::Mapper:
 		default:
-			return C_("NES|Mirroring", "Mapper-controlled");
+			s_ret = C_("NES|Mirroring", "Mapper-controlled");
+			break;
+
 		case NESMirroring::MapperHVAB:
-			return C_("NES|Mirroring", "Mapper-controlled (H/V/A/B)");
+			fmt::format_to(std::back_inserter(s_ret),
+				FRUN(C_("NES|Mirroring", "Mapper-controlled ({:s})")), "H/V/A/B");
+			break;
 		case NESMirroring::MapperHV:
-			return C_("NES|Mirroring", "Mapper-controlled (H/V)");
+			fmt::format_to(std::back_inserter(s_ret),
+				FRUN(C_("NES|Mirroring", "Mapper-controlled ({:s})")), "H/V");
+			break;
 		case NESMirroring::MapperAB:
-			return C_("NES|Mirroring", "Mapper-controlled (A/B)");
+			fmt::format_to(std::back_inserter(s_ret),
+				FRUN(C_("NES|Mirroring", "Mapper-controlled ({:s})")), "A/B");
+			break;
+
 		case NESMirroring::OneScreen_A:
-			return C_("NES|Mirroring", "Single Screen (A)");
+			fmt::format_to(std::back_inserter(s_ret),
+				FRUN(C_("NES|Mirroring", "Single Screen ({:c})")), 'A');
+			break;
 		case NESMirroring::OneScreen_B:
-			return C_("NES|Mirroring", "Single Screen (B)");
+			fmt::format_to(std::back_inserter(s_ret),
+				FRUN(C_("NES|Mirroring", "Single Screen ({:c})")), 'B');
+			break;
+
 		case NESMirroring::FourScreen:
-			return C_("NES|Mirroring", "Four Screens");
+			s_ret = C_("NES|Mirroring", "Four Screens");
+			break;
 	}
+
+	return s_ret;
 }
 
 /**

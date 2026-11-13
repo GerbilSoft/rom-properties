@@ -1603,6 +1603,7 @@ int NES::loadFieldData(void)
 	} else {
 		// Add non-FDS fields.
 		const char *s_mirroring = nullptr;
+		string stds_mirroring;	// for lookup_ines_mirroring()
 		const char *s_vs_ppu = nullptr;
 		const char *s_vs_hw = nullptr;
 		const char *s_extd_ct = nullptr;
@@ -1613,9 +1614,12 @@ int NES::loadFieldData(void)
 			case NESPrivate::ROM_FORMAT_INES:
 			case NESPrivate::ROM_FORMAT_NES2:
 				// Mirroring
-				s_mirroring = NESMappers::lookup_ines_mirroring(mapper, submapper == -1 ? 0 : submapper,
+				stds_mirroring = NESMappers::lookup_ines_mirroring(mapper, submapper == -1 ? 0 : submapper,
 					header->ines.mapper_lo & INES_F6_MIRROR_VERT,
 					header->ines.mapper_lo & INES_F6_MIRROR_FOUR);
+				if (!stds_mirroring.empty()) {
+					s_mirroring = stds_mirroring.c_str();
+				}
 
 				// Check for NES 2.0 extended console types, including VS hardware.
 				if ((d->romType & (NESPrivate::ROM_SYSTEM_MASK | NESPrivate::ROM_FORMAT_MASK)) ==

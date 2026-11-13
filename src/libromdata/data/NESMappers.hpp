@@ -12,6 +12,9 @@
 // C includes (C++ namespace)
 #include <cstdint>
 
+// C++ STL classes
+#include <string>
+
 namespace LibRomData { namespace NESMappers {
 
 /**
@@ -43,9 +46,9 @@ const char *lookup_nes2_submapper(int mapper, int submapper);
  * @param submapper Submapper number.
  * @param vert Vertical bit in the iNES header
  * @param vert Four-screen bit in the iNES header
- * @return String describing the mirroring behavior
+ * @return String describing the mirroring behavior (empty string on error)
  */
-const char *lookup_ines_mirroring(int mapper, int submapper, bool vert, bool four);
+std::string lookup_ines_mirroring(int mapper, int submapper, bool vert, bool four);
 
 /**
  * Look up the description for an NES 2.0 default expansion device.
