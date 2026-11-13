@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-11-12 23:21-0500\n"
-"PO-Revision-Date: 2026-11-13 04:52\n"
+"PO-Revision-Date: 2026-11-13 05:53\n"
 "Last-Translator: \n"
 "Language-Team: Romanian\n"
 "Language: ro_RO\n"
@@ -179,7 +179,8 @@ msgid "Select the image types you would like to use for each system as its thumb
 "1 = highest priority; 2 = second highest priority; No = ignore"
 msgstr "Selectați tipurile de imagini pe care doriți să le utilizați pentru fiecare sistem ca imagine miniaturală.\n"
 "Imaginile interne sunt conţinute în fişierul ROM.\n"
-"Imaginile externe sunt descărcate dintr-o bază de date externă de imagini"
+"Imaginile externe sunt descărcate dintr-o bază de date externă de imagini.\n\n"
+"1 = prioritatea cea mai mare; 2 = a doua prioritate principală; Nu = ignorară"
 
 #: ../build/src/kde/kf6/ui_KeyManagerTab.h:92
 #: ../src/gtk/config/KeyManagerTab.cpp:153
