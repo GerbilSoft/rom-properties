@@ -771,7 +771,7 @@ int Xbox_XBE::loadFieldData(void)
 	d->fields.addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
 	// Timestamp
-	const char *const s_timestamp_title = C_("Xbox_XBE", "Timestamp");
+	const char *const s_timestamp_title = C_("RomData", "Timestamp");
 	const rp_time_t timestamp = static_cast<rp_time_t>(le32_to_cpu(xbeHeader->timestamp));
 	if (timestamp != 0) {
 		d->fields.addField_dateTime(s_timestamp_title, timestamp,

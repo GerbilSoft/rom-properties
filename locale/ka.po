@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-13 01:16-0500\n"
+"POT-Creation-Date: 2026-11-13 01:28-0500\n"
 "PO-Revision-Date: 2026-09-01 09:16\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
@@ -4746,7 +4746,10 @@ msgid "PE Filename"
 msgstr "PE ფაილის სახელი"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:774
-msgctxt "Xbox_XBE"
+#: ../src/libromdata/Handheld/FlipnoteStudio.cpp:512
+#: ../src/libromdata/Other/EXE_NE.cpp:527
+#: ../src/libromdata/Other/EXE_PE.cpp:804
+msgctxt "RomData"
 msgid "Timestamp"
 msgstr "დროის შტამპი"
 
@@ -5869,12 +5872,6 @@ msgstr ""
 msgctxt "FlipnoteStudio"
 msgid "Username"
 msgstr ""
-
-#: ../src/libromdata/Handheld/FlipnoteStudio.cpp:512
-#: ../src/libromdata/Other/EXE_PE.cpp:804
-msgctxt "RomData"
-msgid "Timestamp"
-msgstr "დროის შტამპი"
 
 #: ../src/libromdata/Handheld/FlipnoteStudio.cpp:534
 msgctxt "FlipnoteStudio"
@@ -7965,11 +7962,6 @@ msgstr "Gangload Area"
 msgctxt "EXE"
 msgid "Other Flags"
 msgstr "სხვა ალმები"
-
-#: ../src/libromdata/Other/EXE_NE.cpp:527
-msgctxt "EXE"
-msgid "Timestamp"
-msgstr "დროის შტამპი"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:537
 #: ../src/libromdata/Other/EXE_PE.cpp:819

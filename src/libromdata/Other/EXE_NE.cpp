@@ -524,7 +524,7 @@ void EXEPrivate::addFields_NE(void)
 		{
 			// In range.
 			const rp_time_t ne_time = rp_timegm(&ne_tm);
-			fields.addField_dateTime(C_("EXE", "Timestamp"), ne_time,
+			fields.addField_dateTime(C_("RomData", "Timestamp"), ne_time,
 				RomFields::RFT_DATETIME_HAS_DATE |
 				RomFields::RFT_DATETIME_HAS_TIME |
 				RomFields::RFT_DATETIME_IS_UTC);	// no timezone

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-13 01:16-0500\n"
+"POT-Creation-Date: 2026-11-13 01:28-0500\n"
 "PO-Revision-Date: 2026-01-29 06:37\n"
 "Last-Translator: \n"
 "Language-Team: English, United Kingdom\n"
@@ -4782,7 +4782,10 @@ msgid "PE Filename"
 msgstr "PE Filename"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:774
-msgctxt "Xbox_XBE"
+#: ../src/libromdata/Handheld/FlipnoteStudio.cpp:512
+#: ../src/libromdata/Other/EXE_NE.cpp:527
+#: ../src/libromdata/Other/EXE_PE.cpp:804
+msgctxt "RomData"
 msgid "Timestamp"
 msgstr "Timestamp"
 
@@ -5905,12 +5908,6 @@ msgstr "Last Edited By"
 msgctxt "FlipnoteStudio"
 msgid "Username"
 msgstr "Username"
-
-#: ../src/libromdata/Handheld/FlipnoteStudio.cpp:512
-#: ../src/libromdata/Other/EXE_PE.cpp:804
-msgctxt "RomData"
-msgid "Timestamp"
-msgstr "Timestamp"
 
 #: ../src/libromdata/Handheld/FlipnoteStudio.cpp:534
 msgctxt "FlipnoteStudio"
@@ -8003,11 +8000,6 @@ msgstr "Gangload Area"
 msgctxt "EXE"
 msgid "Other Flags"
 msgstr "Other Flags"
-
-#: ../src/libromdata/Other/EXE_NE.cpp:527
-msgctxt "EXE"
-msgid "Timestamp"
-msgstr "Timestamp"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:537
 #: ../src/libromdata/Other/EXE_PE.cpp:819
