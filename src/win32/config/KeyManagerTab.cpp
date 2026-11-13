@@ -62,11 +62,13 @@ using LibWin32UI::WTSSessionNotification;
 _COM_SMARTPTR_TYPEDEF(IOwnerDataCallback, IID_IOwnerDataCallback);
 
 // KeyStoreUI::ImportFileID
-static const array<LPCTSTR, 4> import_menu_actions = {{
-	_T("Wii keys.bin"),
-	_T("Wii U otp.bin"),
-	_T("3DS boot9.bin"),
-	_T("3DS aeskeydb.bin"),
+static const TCHAR import_menu_actions_strtbl[] =
+	_T("Wii keys.bin\0")		// 0
+	_T("Wii U otp.bin\0")		// 13
+	_T("3DS boot9.bin\0")		// 27
+	_T("3DS aeskeydb.bin\0");	// 41
+static const array<uint8_t, 4> import_menu_actions_offtbl = {{
+	0, 13, 27, 41
 }};
 
 static constexpr array<uint16_t, 4> import_menu_actions_ids = {{
@@ -253,7 +255,7 @@ public:
 	 * @param iret ImportReturn
 	 */
 	void showKeyImportReturnStatus(const tstring &filename,
-		const TCHAR *keyType, KeyStoreUI::ImportReturn iret);
+		LPCTSTR keyType, KeyStoreUI::ImportReturn iret);
 
 	/**
 	 * Import keys from a binary file.
@@ -720,8 +722,9 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 							// Unable to create the "Import" popup menu.
 							return true;
 						}
-						for (size_t i = 0; i < import_menu_actions.size(); i++) {
-							AppendMenu(d->hMenuImport, MF_STRING, import_menu_actions_ids[i], import_menu_actions[i]);
+						for (size_t i = 0; i < import_menu_actions_offtbl.size(); i++) {
+							const LPCTSTR ts_file_type = &import_menu_actions_strtbl[import_menu_actions_offtbl[i]];
+							AppendMenu(d->hMenuImport, MF_STRING, import_menu_actions_ids[i], ts_file_type);
 						}
 					}
 
@@ -1584,7 +1587,7 @@ void KeyManagerTabPrivate::loadImages(void)
  */
 void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	const tstring &filename,
-	const TCHAR *keyType,
+	LPCTSTR keyType,
 	KeyStoreUI::ImportReturn iret)
 {
 	unsigned int type = MB_ICONINFORMATION;
@@ -1811,46 +1814,48 @@ void KeyManagerTabPrivate::importKeysFromBin(KeyStoreUI::ImportFileID id)
 	assert(id <= KeyStoreUI::ImportFileID::N3DSaeskeydb);
 	if (id < KeyStoreUI::ImportFileID::WiiKeysBin ||
 	    id > KeyStoreUI::ImportFileID::N3DSaeskeydb)
+	{
 		return;
+	}
 
 	assert(hWndPropSheet != nullptr);
-	if (!hWndPropSheet)
+	if (!hWndPropSheet) {
 		return;
+	}
 
-	static constexpr char dialog_titles_tbl[][32] = {
-		// tr: Wii keys.bin dialog title
-		NOP_C_("KeyManagerTab", "Select Wii keys.bin File"),
-		// tr: Wii U otp.bin dialog title
-		NOP_C_("KeyManagerTab", "Select Wii U otp.bin File"),
-		// tr: Nintendo 3DS boot9.bin dialog title
-		NOP_C_("KeyManagerTab", "Select 3DS boot9.bin File"),
-		// tr: Nintendo 3DS aeskeydb.bin dialog title
-		NOP_C_("KeyManagerTab", "Select 3DS aeskeydb.bin File"),
-	};
+	const LPCTSTR ts_file_type = &import_menu_actions_strtbl[import_menu_actions_offtbl[static_cast<size_t>(id)]];
 
-	static constexpr char file_filters_tbl[][88] = {
-		// tr: Wii keys.bin file filter (RP format)
-		NOP_C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|-|All Files|*|-"),
-		// tr: Wii U otp.bin file filter (RP format)
-		NOP_C_("KeyManagerTab", "otp.bin|otp.bin|-|Binary Files|*.bin|-|All Files|*|-"),
-		// tr: Nintendo 3DS boot9.bin file filter (RP format)
-		NOP_C_("KeyManagerTab", "boot9.bin|boot9.bin|-|Binary Files|*.bin|-|All Files|*|-"),
-		// tr: Nintendo 3DS aeskeydb.bin file filter (RP format)
-		NOP_C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|-|All Files|*|-"),
-	};
+	// tr: Dialog title for selecting a keys database file to import. {:s} = type of file to import
+	tstring ts_title = fmt::format(
+		FRUN(TC_("KeyManagerTab", "Select {:s} File")), ts_file_type);
+
+	static const TCHAR file_name_strtbl[] =
+		_T("keys.bin\0")	// 0
+		_T("otp.bin\0")		// 9
+		_T("boot9.bin\0")	// 17
+		_T("aeskeydb.bin\0");	// 27
+	static const array<uint8_t, 4> file_name_offtbl = {{
+		0, 9, 17, 27
+	}};
+
+	tstring ts_filter = fmt::format(FSTR(_T("{0:s}|{0:s}|-|{1:s}|{2:s}")),
+		&file_name_strtbl[file_name_offtbl[static_cast<size_t>(id)]],
+		// tr: "Binary Files" filter (RP format)
+		TC_("KeyManagerTab", "Binary Files|*.bin|-"),
+		// tr: "All Files" filter (RP format)
+		TC_("KeyManagerTab", "All Files|*|-"));
 
 	const tstring tfilename = LibWin32UI::getOpenFileName(hWndPropSheet,
-		tpgettext_expr("KeyManagerTab", dialog_titles_tbl[(int)id]),
-		tpgettext_expr("KeyManagerTab", file_filters_tbl[(int)id]),
-		ts_keyFileDir.c_str());
-	if (tfilename.empty())
+		ts_title.c_str(), ts_filter.c_str(), ts_keyFileDir.c_str());
+	if (tfilename.empty()) {
 		return;
+	}
 
 	// Update ts_keyFileDir using the returned filename.
 	updateKeyFileDir(tfilename);
 
 	const KeyStoreWin32::ImportReturn iret = keyStore->importKeysFromBin(id, tfilename.c_str());
-	showKeyImportReturnStatus(tfilename, import_menu_actions[(int)id], iret);
+	showKeyImportReturnStatus(tfilename, ts_file_type, iret);
 }
 
 /** KeyManagerTab **/

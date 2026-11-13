@@ -21,11 +21,13 @@ using std::string;
 #include "rp-libfmt.h"
 
 // KeyStoreUI::ImportFileID
-static const array<const char*, 4> import_menu_actions = {{
-	"Wii keys.bin",
-	"Wii U otp.bin",
-	"3DS boot9.bin",
-	"3DS aeskeydb.bin",
+static const char import_menu_actions_strtbl[] =
+	"Wii keys.bin\0"	// 0
+	"Wii U otp.bin\0"	// 13
+	"3DS boot9.bin\0"	// 27
+	"3DS aeskeydb.bin\0";	// 41
+static const array<uint8_t, 4> import_menu_actions_offtbl = {{
+	0, 13, 27, 41
 }};
 
 static GQuark menuImport_id_quark = 0;
@@ -201,7 +203,7 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 
 	tab->actionGroup = g_simple_action_group_new();
 	tab->menuModel = g_menu_new();
-	for (int i = 0; i < ARRAY_SIZE_I(import_menu_actions); i++) {
+	for (unsigned int i = 0; i < static_cast<unsigned int>(import_menu_actions_offtbl.size()); i++) {
 		// Create the action.
 		GSimpleAction *const action = g_simple_action_new(
 			fmt::format_int(i).c_str(), nullptr);
@@ -212,7 +214,7 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 		g_action_map_add_action(G_ACTION_MAP(tab->actionGroup), G_ACTION(action));
 
 		// Create the menu item.
-		g_menu_append(tab->menuModel, import_menu_actions[i],
+		g_menu_append(tab->menuModel, &import_menu_actions_strtbl[import_menu_actions_offtbl[i]],
 			fmt::format(FSTR("{:s}.{:d}"), s_prefix, i).c_str());
 	}
 
@@ -220,8 +222,8 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 #else /* !USE_G_MENU_MODEL */
 	tab->menuImport = gtk_menu_new();
 	gtk_widget_set_name(tab->menuImport, "menuImport");
-	for (int i = 0; i < ARRAY_SIZE_I(import_menu_actions); i++) {
-		GtkWidget *const menuItem = gtk_menu_item_new_with_label(import_menu_actions[i]);
+	for (unsigned int i = 0; i < static_cast<unsigned int>(import_menu_actions_offtbl.size()); i++) {
+		GtkWidget *const menuItem = gtk_menu_item_new_with_label(&import_menu_actions_strtbl[import_menu_actions_offtbl[i]]);
 		gtk_widget_set_name(menuItem, fmt::format(FSTR("menuImport{:d}"), i).c_str());
 		g_object_set_qdata(G_OBJECT(menuItem), menuImport_id_quark, GINT_TO_POINTER(i));
 		g_signal_connect_object(menuItem, "activate",
@@ -463,7 +465,8 @@ rp_key_manager_getOpenFileDialog_callback(GFile *file, open_data_t *open_data)
 	KeyStoreUI *const keyStoreUI = rp_key_store_gtk_get_key_store_ui(tab->keyStore);
 	const KeyStoreUI::ImportReturn iret = keyStoreUI->importKeysFromBin(open_data->id, filename);
 
-	rp_key_manager_tab_show_key_import_return_status(tab, filename, import_menu_actions[static_cast<size_t>(open_data->id)], iret);
+	const char *const s_file_type = &import_menu_actions_strtbl[import_menu_actions_offtbl[static_cast<size_t>(open_data->id)]];
+	rp_key_manager_tab_show_key_import_return_status(tab, filename, s_file_type, iret);
 	g_free(filename);
 	g_free(open_data);
 }
@@ -481,33 +484,33 @@ rp_key_manager_tab_handle_menu_action(RpKeyManagerTab *tab, gint id)
 	assert(id <= static_cast<int>(KeyStoreUI::ImportFileID::N3DSaeskeydb));
 	if (id < static_cast<int>(KeyStoreUI::ImportFileID::WiiKeysBin) ||
 	    id > static_cast<int>(KeyStoreUI::ImportFileID::N3DSaeskeydb))
+	{
 		return;
+	}
 
-	static constexpr char dialog_titles_tbl[][32] = {
-		// tr: Wii keys.bin dialog title
-		NOP_C_("KeyManagerTab", "Select Wii keys.bin File"),
-		// tr: Wii U otp.bin dialog title
-		NOP_C_("KeyManagerTab", "Select Wii U otp.bin File"),
-		// tr: Nintendo 3DS boot9.bin dialog title
-		NOP_C_("KeyManagerTab", "Select 3DS boot9.bin File"),
-		// tr: Nintendo 3DS aeskeydb.bin dialog title
-		NOP_C_("KeyManagerTab", "Select 3DS aeskeydb.bin File"),
-	};
+	const char *const s_file_type = &import_menu_actions_strtbl[import_menu_actions_offtbl[static_cast<size_t>(id)]];
 
-	static constexpr char file_filters_tbl[][64] = {
-		// tr: Wii keys.bin file filter (RP format)
-		NOP_C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|-|All Files|*|-"),
-		// tr: Wii U otp.bin file filter (RP format)
-		NOP_C_("KeyManagerTab", "otp.bin|otp.bin|-|Binary Files|*.bin|-|All Files|*|-"),
-		// tr: Nintendo 3DS boot9.bin file filter (RP format)
-		NOP_C_("KeyManagerTab", "boot9.bin|boot9.bin|-|Binary Files|*.bin|-|All Files|*|-"),
-		// tr: Nintendo 3DS aeskeydb.bin file filter (RP format)
-		NOP_C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|-|All Files|*|-"),
-	};
+	// tr: Dialog title for selecting a keys database file to import. {:s} = type of file to import
+	string s_title = fmt::format(
+		FRUN(C_("KeyManagerTab", "Select {:s} File")), s_file_type);
+
+	static const char file_name_strtbl[] =
+		"keys.bin\0"		// 0
+		"otp.bin\0"		// 9
+		"boot9.bin\0"		// 17
+		"aeskeydb.bin\0";	// 27
+	static const array<uint8_t, 4> file_name_offtbl = {{
+		0, 9, 17, 27
+	}};
+
+	string s_filter = fmt::format(FSTR("{0:s}|{0:s}|-|{1:s}|{2:s}"),
+		&file_name_strtbl[file_name_offtbl[id]],
+		// tr: "Binary Files" filter (RP format)
+		C_("KeyManagerTab", "Binary Files|*.bin|-"),
+		// tr: "All Files" filter (RP format)
+		C_("KeyManagerTab", "All Files|*|-"));
 
 	GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(tab));
-	const char *const title = pgettext_expr("KeyManagerTab", dialog_titles_tbl[id]);
-	const char *const filter = pgettext_expr("KeyManagerTab", file_filters_tbl[id]);
 
 	open_data_t *const open_data = static_cast<open_data_t*>(g_malloc(sizeof(*open_data)));
 	open_data->tab = tab;
@@ -518,8 +521,8 @@ rp_key_manager_tab_handle_menu_action(RpKeyManagerTab *tab, gint id)
 		open_data,		// user_data
 
 		parent,			// parent
-		title,			// title
-		filter,			// filter
+		s_title.c_str(),	// title
+		s_filter.c_str(),	// filter
 		tab->prevOpenDir,	// init_dir
 		nullptr,		// init_name
 
