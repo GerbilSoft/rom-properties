@@ -1564,6 +1564,8 @@ int SNES::loadFieldData(void)
 		"ExHiROM + FastROM\0"	// 97
 		"HiROM + SPC7110\0"	// 115
 	};
+
+	// ROM mapping offset table (sorted by `rom_mapping`)
 	struct rom_mapping_offtbl_t {
 		uint8_t rom_mapping;
 		uint8_t offset;
@@ -1582,11 +1584,12 @@ int SNES::loadFieldData(void)
 	}};
 
 	const char *s_rom_mapping = nullptr;
-	auto iter = std::find_if(rom_mapping_offtbl.cbegin(), rom_mapping_offtbl.cend(),
-		[rom_mapping](rom_mapping_offtbl_t p) noexcept -> bool {
-			return (p.rom_mapping == rom_mapping);
+	auto iter = std::lower_bound(rom_mapping_offtbl.cbegin(), rom_mapping_offtbl.cend(), rom_mapping,
+		[](rom_mapping_offtbl_t p, uint8_t rom_mapping) noexcept -> bool {
+			return (p.rom_mapping < rom_mapping);
 		});
-	if (iter != rom_mapping_offtbl.cend()) {
+	if (iter != rom_mapping_offtbl.cend() && iter->rom_mapping == rom_mapping) {
+		// Found a matching ROM mapping.
 		s_rom_mapping = &rom_mapping_strtbl[iter->offset];
 	}
 

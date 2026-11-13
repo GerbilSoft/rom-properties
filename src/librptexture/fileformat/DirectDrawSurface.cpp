@@ -382,6 +382,8 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 	// Check if a FourCC is specified.
 	if (ddspf.dwFourCC != 0) {
 		// FourCC is specified.
+
+		// TODO: Sort by fourCC so we can use std::lower_bound()?
 		struct fourCC_dxgi_tbl_t {
 			uint32_t dwFourCC;
 			uint8_t dxgi_format;
@@ -447,6 +449,7 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 			dxgi_format = dxt10Header.dxgiFormat;
 			dxgi_alpha = dxt10Header.miscFlags2;
 
+			// DX10 mapping table (sorted by `dxgi_format`)
 			struct dx10_tbl_t {
 				uint8_t dxgi_format;
 				ImageDecoder::PixelFormat pxf_uncomp;
@@ -497,13 +500,12 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 
 			// If the dxgi_format is not listed in the table, we'll use it
 			// as-is, assuming it's compressed.
-			const uint8_t dxgi_format_tmp = dxgi_format;	// needed for lambda capture
-			auto dx10_iter = std::find_if(dx10_tbl.cbegin(), dx10_tbl.cend(),
-				[dxgi_format_tmp](dx10_tbl_t p) noexcept -> bool {
-					return (p.dxgi_format == dxgi_format_tmp);
+			auto dx10_iter = std::lower_bound(dx10_tbl.cbegin(), dx10_tbl.cend(), dxgi_format,
+				[](dx10_tbl_t p, uint8_t dxgi_format) noexcept -> bool {
+					return (p.dxgi_format < dxgi_format);
 				});
-			if (dx10_iter != dx10_tbl.cend()) {
-				// Found a match.
+			if (dx10_iter != dx10_tbl.cend() && dx10_iter->dxgi_format == dxgi_format) {
+				// Found a matching DX10 format.
 				pxf_uncomp = dx10_iter->pxf_uncomp;
 				bytespp = dx10_iter->bytespp;
 			}

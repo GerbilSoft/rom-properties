@@ -972,7 +972,7 @@ int NintendoDS::loadFieldData(void)
 	d->fields.addField_string(C_("Nintendo", "Title ID"),
 		d->dsi_getTitleID(), RomFields::STRF_MONOSPACE);
 
-	// DSi filetype
+	// DSi filetype (sorted by `dsi_filetype`)
 	struct dsi_filetype_tbl_t{
 		uint8_t dsi_filetype;
 		const char *s_dsi_filetype;
@@ -993,12 +993,12 @@ int NintendoDS::loadFieldData(void)
 	}};
 
 	const char *s_dsi_filetype = nullptr;
-	auto iter = std::find_if(dsi_filetype_tbl.cbegin(), dsi_filetype_tbl.cend(),
-		[dsi_filetype](const dsi_filetype_tbl_t &p) noexcept -> bool {
-			return (p.dsi_filetype == dsi_filetype);
+	auto iter = std::lower_bound(dsi_filetype_tbl.cbegin(), dsi_filetype_tbl.cend(), dsi_filetype,
+		[](dsi_filetype_tbl_t p, uint16_t dsi_filetype) noexcept -> bool {
+			return (p.dsi_filetype < dsi_filetype);
 		});
-	if (iter != dsi_filetype_tbl.cend()) {
-		// Found a match.
+	if (iter != dsi_filetype_tbl.cend() && iter->dsi_filetype == dsi_filetype) {
+		// Found a matching DSi filetype.
 		s_dsi_filetype = iter->s_dsi_filetype;
 	}
 

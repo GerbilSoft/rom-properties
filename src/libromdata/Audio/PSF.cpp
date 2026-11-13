@@ -111,7 +111,7 @@ const RomDataInfo PSFPrivate::romDataInfo = {
 	"PSF", exts.data(), mimeTypes.data()
 };
 
-// PSF types
+// PSF types (sorted by `version`)
 const array<PSFPrivate::psf_type_tbl_t, 9> PSFPrivate::psf_type_tbl = {{
 	{PSF_VERSION_PLAYSTATION,	"psfby",	NOP_C_("PSF|System", "Sony PlayStation")},
 	{PSF_VERSION_PLAYSTATION_2,	"psfby",	NOP_C_("PSF|System", "Sony PlayStation 2")},
@@ -166,12 +166,12 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
  */
 const char *PSFPrivate::getRippedByTagName(uint8_t version)
 {
-	auto iter = std::find_if(psf_type_tbl.cbegin(), psf_type_tbl.cend(),
-		[version](const psf_type_tbl_t &p) noexcept -> bool{
-			return (p.version == version);
+	auto iter = std::lower_bound(psf_type_tbl.cbegin(), psf_type_tbl.cend(), version,
+		[](const psf_type_tbl_t &p, uint8_t version) noexcept -> bool {
+			return (p.version < version);
 		});
-	if (iter != psf_type_tbl.cend()) {
-		// Found a match.
+	if (iter != psf_type_tbl.cend() && iter->version == version) {
+		// Found a matching PSF version.
 		return iter->tag_name;
 	}
 
@@ -289,12 +289,12 @@ int PSF::loadFieldData(void)
 	// System
 	const char *sys_name = nullptr;
 	const uint8_t psf_version = psfHeader->version;
-	auto iter = std::find_if(PSFPrivate::psf_type_tbl.cbegin(), PSFPrivate::psf_type_tbl.cend(),
-		[psf_version](const PSFPrivate::psf_type_tbl_t &p) noexcept -> bool {
-			return (p.version == psf_version);
+	auto iter = std::lower_bound(PSFPrivate::psf_type_tbl.cbegin(), PSFPrivate::psf_type_tbl.cend(), psf_version,
+		[](const PSFPrivate::psf_type_tbl_t &p, uint8_t version) noexcept -> bool {
+			return (p.version < version);
 		});
-	if (iter != PSFPrivate::psf_type_tbl.cend()) {
-		// Found a match.
+	if (iter != PSFPrivate::psf_type_tbl.cend() && iter->version == psf_version) {
+		// Found a matching PSF version.
 		sys_name = iter->sys_name;
 	}
 

@@ -564,7 +564,7 @@ int WiiUAncast::loadFieldData(void)
 	d->fields.addField_string(C_("WiiUAncast", "Has Signature?"),
 		has_signature ? C_("RomData", "Yes") : C_("RomData", "No"));
 
-	// Target device
+	// Target device (sorted by `id`)
 	const char *const s_target_device_title = C_("WiiUAncast", "Target Device");
 	struct target_device_tbl_t {
 		uint8_t id;
@@ -585,11 +585,11 @@ int WiiUAncast::loadFieldData(void)
 		{WIIU_ANCAST_TARGET_DEVICE_ARM_SD,	"SD"},
 	}};
 
-	auto iter = std::find_if(target_device_tbl.cbegin(), target_device_tbl.cend(),
-		[target_device](target_device_tbl_t entry) noexcept -> bool {
-			return (entry.id == target_device);
+	auto iter = std::lower_bound(target_device_tbl.cbegin(), target_device_tbl.cend(), target_device,
+		[](target_device_tbl_t entry, unsigned int target_device) noexcept -> bool {
+			return (entry.id < target_device);
 		});
-	if (iter != target_device_tbl.cend()) {
+	if (iter != target_device_tbl.cend() && iter->id == target_device) {
 		d->fields.addField_string(s_target_device_title, iter->desc);
 	} else {
 		d->fields.addField_string(s_target_device_title,
