@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-12 23:21-0500\n"
+"POT-Creation-Date: 2026-11-13 00:05-0500\n"
 "PO-Revision-Date: 2026-01-29 06:37\n"
 "Last-Translator: \n"
 "Language-Team: English, United Kingdom\n"
@@ -9793,87 +9793,22 @@ msgctxt "DirectDrawSurface"
 msgid "PF Flags"
 msgstr "PF Flags"
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1427
-msgctxt "DirectDrawSurface|dwCaps"
-msgid "Complex"
-msgstr "Complex"
-
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1433
-msgctxt "DirectDrawSurface|dwCaps"
-msgid "Texture"
-msgstr "Texture"
-
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1439
-msgctxt "DirectDrawSurface|dwCaps"
-msgid "Mipmap"
-msgstr "Mipmap"
-
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1442
-msgctxt "DirectDrawSurface"
-msgid "Caps"
-msgstr "Caps"
-
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1449
-msgctxt "DirectDrawSurface|dwCaps2"
-msgid "Cubemap"
-msgstr "Cubemap"
-
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1450
-msgctxt "DirectDrawSurface|dwCaps2"
-msgid "+X"
-msgstr "+X"
-
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1451
-msgctxt "DirectDrawSurface|dwCaps2"
-msgid "-X"
-msgstr "-X"
-
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1453
-msgctxt "DirectDrawSurface|dwCaps2"
-msgid "+Y"
-msgstr "+Y"
-
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1454
-msgctxt "DirectDrawSurface|dwCaps2"
-msgid "-Y"
-msgstr "-Y"
-
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1455
-msgctxt "DirectDrawSurface|dwCaps2"
-msgid "+Z"
-msgstr "+Z"
-
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1456
-msgctxt "DirectDrawSurface|dwCaps2"
-msgid "-Z"
-msgstr "-Z"
-
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1461
-msgctxt "DirectDrawSurface|dwCaps2"
-msgid "Volume"
-msgstr "Volume"
-
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1464
-msgctxt "DirectDrawSurface"
-msgid "Caps2"
-msgstr "Caps2"
-
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1471
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1459
 msgctxt "DirectDrawSurface"
 msgid "Tile Mode"
 msgstr "Tile Mode"
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1472
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1460
 msgctxt "DirectDrawSurface"
 msgid "Base Alignment"
 msgstr "Base Alignment"
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1474
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1462
 msgctxt "DirectDrawSurface"
 msgid "Data Size"
 msgstr "Data Size"
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1476
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1464
 msgctxt "DirectDrawSurface"
 msgid "XDK Version"
 msgstr "XDK Version"
@@ -10299,151 +10234,6 @@ msgstr "None"
 msgctxt "ValveVTF"
 msgid "VTF Version"
 msgstr "VTF Version"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:796
-msgctxt "ValveVTF|Flags"
-msgid "Point Sampling"
-msgstr "Point Sampling"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:797
-msgctxt "ValveVTF|Flags"
-msgid "Trilinear Sampling"
-msgstr "Trilinear Sampling"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:798
-msgctxt "ValveVTF|Flags"
-msgid "Clamp S"
-msgstr "Clamp S"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:799
-msgctxt "ValveVTF|Flags"
-msgid "Clamp T"
-msgstr "Clamp T"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:801
-msgctxt "ValveVTF|Flags"
-msgid "Anisotropic Sampling"
-msgstr "Anisotropic Sampling"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:802
-msgctxt "ValveVTF|Flags"
-msgid "Hint DXT5"
-msgstr "Hint DXT5"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:803
-msgctxt "ValveVTF|Flags"
-msgid "PWL Corrected"
-msgstr "PWL Corrected"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:804
-msgctxt "ValveVTF|Flags"
-msgid "Normal Map"
-msgstr "Normal Map"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:806
-msgctxt "ValveVTF|Flags"
-msgid "No Mipmaps"
-msgstr "No Mipmaps"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:807
-msgctxt "ValveVTF|Flags"
-msgid "No Level of Detail"
-msgstr "No Level of Detail"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:808
-msgctxt "ValveVTF|Flags"
-msgid "No Minimum Mipmap"
-msgstr "No Minimum Mipmap"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:809
-msgctxt "ValveVTF|Flags"
-msgid "Procedural"
-msgstr "Procedural"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:811
-msgctxt "ValveVTF|Flags"
-msgid "1-bit Alpha"
-msgstr "1-bit Alpha"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:812
-msgctxt "ValveVTF|Flags"
-msgid "8-bit Alpha"
-msgstr "8-bit Alpha"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:813
-msgctxt "ValveVTF|Flags"
-msgid "Environment Map"
-msgstr "Environment Map"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:814
-msgctxt "ValveVTF|Flags"
-msgid "Render Target"
-msgstr "Render Target"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:816
-msgctxt "ValveVTF|Flags"
-msgid "Depth Render Target"
-msgstr "Depth Render Target"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:817
-msgctxt "ValveVTF|Flags"
-msgid "No Debug Override"
-msgstr "No Debug Override"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:818
-msgctxt "ValveVTF|Flags"
-msgid "Single Copy"
-msgstr "Single Copy"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:819
-msgctxt "ValveVTF|Flags"
-msgid "Pre SRGB"
-msgstr "Pre SRGB"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:821
-msgctxt "ValveVTF|Flags"
-msgid "Premult Color by 1/mipmap"
-msgstr "Premult Colour by 1/mipmap"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:822
-msgctxt "ValveVTF|Flags"
-msgid "Normal to DuDv"
-msgstr "Normal to DuDv"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:823
-msgctxt "ValveVTF|Flags"
-msgid "Alpha Test Mipmap Gen"
-msgstr "Alpha Test Mipmap Gen"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:824
-msgctxt "ValveVTF|Flags"
-msgid "No Depth Buffer"
-msgstr "No Depth Buffer"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:826
-msgctxt "ValveVTF|Flags"
-msgid "Nice Filtered"
-msgstr "Nice Filtered"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:827
-msgctxt "ValveVTF|Flags"
-msgid "Clamp U"
-msgstr "Clamp U"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:828
-msgctxt "ValveVTF|Flags"
-msgid "Vertex Texture"
-msgstr "Vertex Texture"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:829
-msgctxt "ValveVTF|Flags"
-msgid "SSBump"
-msgstr "SSBump"
-
-#: ../src/librptexture/fileformat/ValveVTF.cpp:832
-msgctxt "ValveVTF|Flags"
-msgid "Border"
-msgstr "Border"
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:853
 msgctxt "ValveVTF"

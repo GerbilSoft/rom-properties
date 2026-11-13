@@ -793,43 +793,43 @@ int ValveVTF::getFields(RomFields *fields) const
 	// TODO: Show "deprecated" flags for older versions.
 	static const array<const char*, 30> flags_names = {{
 		// 0x1-0x8
-		NOP_C_("ValveVTF|Flags", "Point Sampling"),
-		NOP_C_("ValveVTF|Flags", "Trilinear Sampling"),
-		NOP_C_("ValveVTF|Flags", "Clamp S"),
-		NOP_C_("ValveVTF|Flags", "Clamp T"),
+		"Point Sampling",
+		"Trilinear Sampling",
+		"Clamp S",
+		"Clamp T",
 		// 0x10-0x80
-		NOP_C_("ValveVTF|Flags", "Anisotropic Sampling"),
-		NOP_C_("ValveVTF|Flags", "Hint DXT5"),
-		NOP_C_("ValveVTF|Flags", "PWL Corrected"),	// "No Compress" (deprecated)
-		NOP_C_("ValveVTF|Flags", "Normal Map"),
+		"Anisotropic Sampling",
+		"Hint DXT5",
+		"PWL Corrected",	// "No Compress" (deprecated)
+		"Normal Map",
 		// 0x100-0x800
-		NOP_C_("ValveVTF|Flags", "No Mipmaps"),
-		NOP_C_("ValveVTF|Flags", "No Level of Detail"),
-		NOP_C_("ValveVTF|Flags", "No Minimum Mipmap"),
-		NOP_C_("ValveVTF|Flags", "Procedural"),
+		"No Mipmaps",
+		"No Level of Detail",
+		"No Minimum Mipmap",
+		"Procedural",
 		// 0x1000-0x8000
-		NOP_C_("ValveVTF|Flags", "1-bit Alpha"),
-		NOP_C_("ValveVTF|Flags", "8-bit Alpha"),
-		NOP_C_("ValveVTF|Flags", "Environment Map"),
-		NOP_C_("ValveVTF|Flags", "Render Target"),
+		"1-bit Alpha",
+		"8-bit Alpha",
+		"Environment Map",
+		"Render Target",
 		// 0x10000-0x80000
-		NOP_C_("ValveVTF|Flags", "Depth Render Target"),
-		NOP_C_("ValveVTF|Flags", "No Debug Override"),
-		NOP_C_("ValveVTF|Flags", "Single Copy"),
-		NOP_C_("ValveVTF|Flags", "Pre SRGB"),		// "One Over Mipmap Level in Alpha" (deprecated)
+		"Depth Render Target",
+		"No Debug Override",
+		"Single Copy",
+		"Pre SRGB",		// "One Over Mipmap Level in Alpha" (deprecated)
 		// 0x100000-0x800000
-		NOP_C_("ValveVTF|Flags", "Premult Color by 1/mipmap"),
-		NOP_C_("ValveVTF|Flags", "Normal to DuDv"),
-		NOP_C_("ValveVTF|Flags", "Alpha Test Mipmap Gen"),
-		NOP_C_("ValveVTF|Flags", "No Depth Buffer"),
+		"Premult Color by 1/mipmap",
+		"Normal to DuDv",
+		"Alpha Test Mipmap Gen",
+		"No Depth Buffer",
 		// 0x1000000-0x8000000
-		NOP_C_("ValveVTF|Flags", "Nice Filtered"),
-		NOP_C_("ValveVTF|Flags", "Clamp U"),
-		NOP_C_("ValveVTF|Flags", "Vertex Texture"),
-		NOP_C_("ValveVTF|Flags", "SSBump"),
+		"Nice Filtered",
+		"Clamp U",
+		"Vertex Texture",
+		"SSBump",
 		// 0x10000000-0x20000000
 		nullptr,
-		NOP_C_("ValveVTF|Flags", "Border"),
+		"Border",
 	}};
 
 	// Convert to ListData_t for RFT_LISTDATA.
@@ -843,7 +843,7 @@ int ValveVTF::getFields(RomFields *fields) const
 		const size_t j = vv_flags->size()+1;
 		vv_flags->resize(j);
 		auto &data_row = vv_flags->at(j-1);
-		data_row.push_back(pgettext_expr("ValveVTF|Flags", pFlagName));
+		data_row.push_back(pFlagName);
 	}
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, rows_visible);

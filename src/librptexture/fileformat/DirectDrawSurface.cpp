@@ -1423,46 +1423,34 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 	// dwCaps
 	static const array<const char*, 23> dwCaps_names = {{
 		// 0x1-0x8
-		nullptr, nullptr, nullptr,
-		NOP_C_("DirectDrawSurface|dwCaps", "Complex"),
+		nullptr, nullptr, nullptr, "Complex",
 		// 0x10-0x80
 		nullptr, nullptr, nullptr, nullptr,
 		// 0x100-0x800
 		nullptr, nullptr, nullptr, nullptr,
 		// 0x1000-0x8000
-		NOP_C_("DirectDrawSurface|dwCaps", "Texture"),
-		nullptr, nullptr, nullptr,
+		"Texture", nullptr, nullptr, nullptr,
 		// 0x10000-0x80000
 		nullptr, nullptr, nullptr, nullptr,
 		// 0x100000-0x400000
-		nullptr, nullptr,
-		NOP_C_("DirectDrawSurface|dwCaps", "Mipmap"),
+		nullptr, nullptr, "Mipmap",
 	}};
 	vector<string> *const v_dwCaps_names = RomFields::strArrayToVector_i18n("DirectDrawSurface|dwFlags", dwCaps_names);
-	fields->addField_bitfield(C_("DirectDrawSurface", "Caps"),
-		v_dwCaps_names, 3, ddsHeader->dwCaps);
+	fields->addField_bitfield("Caps", v_dwCaps_names, 3, ddsHeader->dwCaps);
 
 	// dwCaps2 (rshifted by 8)
 	static const array<const char*, 14> dwCaps2_names = {{
 		// 0x100-0x800
-		nullptr,
-		NOP_C_("DirectDrawSurface|dwCaps2", "Cubemap"),
-		NOP_C_("DirectDrawSurface|dwCaps2", "+X"),
-		NOP_C_("DirectDrawSurface|dwCaps2", "-X"),
+		nullptr, "Cubemap", "+X", "-X",
 		// 0x1000-0x8000
-		NOP_C_("DirectDrawSurface|dwCaps2", "+Y"),
-		NOP_C_("DirectDrawSurface|dwCaps2", "-Y"),
-		NOP_C_("DirectDrawSurface|dwCaps2", "+Z"),
-		NOP_C_("DirectDrawSurface|dwCaps2", "-Z"),
+		"+Y", "-Y", "+Z", "-Z",
 		// 0x10000-0x80000
 		nullptr, nullptr, nullptr, nullptr,
 		// 0x100000-0x200000
-		nullptr,
-		NOP_C_("DirectDrawSurface|dwCaps2", "Volume"),
+		nullptr, "Volume",
 	}};
-	vector<string> *const v_dwCaps2_names = RomFields::strArrayToVector_i18n("DirectDrawSurface|dwCaps2", dwCaps2_names);
-	fields->addField_bitfield(C_("DirectDrawSurface", "Caps2"),
-		v_dwCaps2_names, 4, (ddsHeader->dwCaps2 >> 8));
+	vector<string> *const v_dwCaps2_names = RomFields::strArrayToVector(dwCaps2_names);
+	fields->addField_bitfield("Caps2", v_dwCaps2_names, 4, (ddsHeader->dwCaps2 >> 8));
 
 	if (ddsHeader->ddspf.dwFourCC == DDPF_FOURCC_XBOX) {
 		// Xbox One texture.
