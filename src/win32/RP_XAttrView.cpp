@@ -640,6 +640,7 @@ INT_PTR RP_XAttrView_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
  */
 INT_PTR RP_XAttrView_Private::DlgProc_WM_COMMAND(HWND hDlg, WPARAM wParam, LPARAM lParam)
 {
+	RP_UNUSED(hDlg);
 	RP_UNUSED(lParam);
 
 	if (wParam == MAKEWPARAM(IDC_XATTRVIEW_NTFS_COMPRESSION_ALG, CBN_SELCHANGE)) {
