@@ -17,6 +17,7 @@
 
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
+#include "librpbase/SystemRegion.hpp"
 #include "librpbase/config/AboutTabText.hpp"
 using namespace LibRpBase;
 
@@ -467,9 +468,25 @@ rp_about_tab_init_program_title_text(GtkWidget *imgLogo, GtkLabel *lblTitle)
 
 	string sPrgTitle;
 	sPrgTitle.reserve(256);
-	// tr: Uses Pango's HTML subset for formatting.
-	sPrgTitle += C_("AboutTab", "<b>ROM Properties Page</b>\nShell Extension");
+
+	// NOTE: ru/uk has the strings swapped, including formatting.
+	const uint32_t lc = SystemRegion::getLanguageCode();
+	switch (lc) {
+		default:
+			sPrgTitle += fmt::format(FSTR("<b>{:s}</b>\n{:s}"),
+				C_("AboutTab", "ROM Properties Page"),
+				C_("AboutTab", "Shell Extension"));
+			break;
+
+		case 'ru':
+		case 'uk':
+			sPrgTitle += fmt::format(FSTR("{:s}\n<b>{:s}</b>"),
+				C_("AboutTab", "Shell Extension"),
+				C_("AboutTab", "ROM Properties Page"));
+			break;
+	}
 	sPrgTitle += "\n\n";
+
 	fmt::format_to(std::back_inserter(sPrgTitle), FRUN(C_("AboutTab", "Version {:s}")), programVersion);
 	if (gitVersion) {
 		sPrgTitle += '\n';

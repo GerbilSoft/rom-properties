@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-12 20:53-0500\n"
+"POT-Creation-Date: 2026-11-12 22:03-0500\n"
 "PO-Revision-Date: 2026-09-01 09:16\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
@@ -22,17 +22,17 @@ msgstr ""
 "X-Crowdin-File: /master/locale/rom-properties.pot\n"
 "X-Crowdin-File-ID: 5\n"
 
-#: ../build/src/kde/kf6/ui_AboutTab.h:276 ../src/gtk/config/AboutTab.cpp:300
+#: ../build/src/kde/kf6/ui_AboutTab.h:276 ../src/gtk/config/AboutTab.cpp:301
 msgctxt "AboutTab"
 msgid "C&redits"
 msgstr "ავტო&რები"
 
-#: ../build/src/kde/kf6/ui_AboutTab.h:277 ../src/gtk/config/AboutTab.cpp:303
+#: ../build/src/kde/kf6/ui_AboutTab.h:277 ../src/gtk/config/AboutTab.cpp:304
 msgctxt "AboutTab"
 msgid "&Libraries"
 msgstr "&ბიბლიოთეკები"
 
-#: ../build/src/kde/kf6/ui_AboutTab.h:278 ../src/gtk/config/AboutTab.cpp:306
+#: ../build/src/kde/kf6/ui_AboutTab.h:278 ../src/gtk/config/AboutTab.cpp:307
 msgctxt "AboutTab"
 msgid "&Support"
 msgstr "&მხარდაჭერა"
@@ -395,55 +395,61 @@ msgctxt "Achievements"
 msgid "Achievement Unlocked"
 msgstr ""
 
-#. tr: Uses Pango's HTML subset for formatting.
-#: ../src/gtk/config/AboutTab.cpp:471
+#: ../src/gtk/config/AboutTab.cpp:477 ../src/gtk/config/AboutTab.cpp:485
+#: ../src/kde/config/AboutTab.cpp:227 ../src/kde/config/AboutTab.cpp:235
+#: ../src/win32/config/AboutTab.cpp:909
 msgctxt "AboutTab"
-msgid ""
-"<b>ROM Properties Page</b>\n"
-"Shell Extension"
+msgid "ROM Properties Page"
 msgstr ""
 
-#: ../src/gtk/config/AboutTab.cpp:473 ../src/kde/config/AboutTab.cpp:223
+#: ../src/gtk/config/AboutTab.cpp:478 ../src/gtk/config/AboutTab.cpp:484
+#: ../src/kde/config/AboutTab.cpp:228 ../src/kde/config/AboutTab.cpp:234
+#: ../src/win32/config/AboutTab.cpp:910
+msgctxt "AboutTab"
+msgid "Shell Extension"
+msgstr ""
+
+#: ../src/gtk/config/AboutTab.cpp:490 ../src/kde/config/AboutTab.cpp:240
 #: ../src/win32/config/AboutTab.cpp:919
 #, c++-format
 msgctxt "AboutTab"
 msgid "Version {:s}"
 msgstr "ვერსია {:s}"
 
-#: ../src/gtk/config/AboutTab.cpp:497 ../src/kde/config/AboutTab.cpp:245
+#: ../src/gtk/config/AboutTab.cpp:514 ../src/kde/config/AboutTab.cpp:262
 #: ../src/win32/config/AboutTab.cpp:1036
 msgctxt "AboutTab|Credits"
 msgid "GNU GPL v2"
 msgstr "GNU GPL v2"
 
 #. tr: {:s} is the name of the license.
-#: ../src/gtk/config/AboutTab.cpp:508 ../src/kde/config/AboutTab.cpp:255
+#: ../src/gtk/config/AboutTab.cpp:525 ../src/kde/config/AboutTab.cpp:272
 #: ../src/win32/config/AboutTab.cpp:1033
 #, c++-format
 msgctxt "AboutTab|Credits"
 msgid "This program is licensed under the {:s} or later."
 msgstr ""
 
-#: ../src/gtk/config/AboutTab.cpp:522 ../src/kde/config/AboutTab.cpp:269
+#: ../src/gtk/config/AboutTab.cpp:539 ../src/kde/config/AboutTab.cpp:286
 #: ../src/win32/config/AboutTab.cpp:1054
 msgctxt "AboutTab|Credits"
 msgid "Developers:"
 msgstr "პროგრამისტები:"
 
-#: ../src/gtk/config/AboutTab.cpp:525 ../src/kde/config/AboutTab.cpp:272
+#: ../src/gtk/config/AboutTab.cpp:542 ../src/kde/config/AboutTab.cpp:289
 #: ../src/win32/config/AboutTab.cpp:1057
 msgctxt "AboutTab|Credits"
 msgid "Contributors:"
 msgstr "მოხალისეები:"
 
-#: ../src/gtk/config/AboutTab.cpp:528 ../src/kde/config/AboutTab.cpp:275
+#: ../src/gtk/config/AboutTab.cpp:545 ../src/kde/config/AboutTab.cpp:292
 #: ../src/win32/config/AboutTab.cpp:1060
 msgctxt "AboutTab|Credits"
 msgid "Translators:"
 msgstr "მთარგმნელები:"
 
 #. tr: Sub-credit
-#: ../src/gtk/config/AboutTab.cpp:552 ../src/kde/config/AboutTab.cpp:299
+#: ../src/gtk/config/AboutTab.cpp:569 ../src/kde/config/AboutTab.cpp:316
 #: ../src/win32/config/AboutTab.cpp:1087
 #, c++-format
 msgctxt "AboutTab|Credits"
@@ -451,7 +457,7 @@ msgid " ({:s})"
 msgstr " ({:s})"
 
 #. tr: Using an internal copy of a library.
-#: ../src/gtk/config/AboutTab.cpp:576 ../src/kde/config/AboutTab.cpp:319
+#: ../src/gtk/config/AboutTab.cpp:593 ../src/kde/config/AboutTab.cpp:336
 #: ../src/win32/config/AboutTab.cpp:1119
 #, c++-format
 msgctxt "AboutTab|Libraries"
@@ -459,7 +465,7 @@ msgid "Internal copy of {:s}."
 msgstr ""
 
 #. tr: Compiled with a specific version of an external library.
-#: ../src/gtk/config/AboutTab.cpp:578 ../src/kde/config/AboutTab.cpp:321
+#: ../src/gtk/config/AboutTab.cpp:595 ../src/kde/config/AboutTab.cpp:338
 #: ../src/win32/config/AboutTab.cpp:1121
 #, c++-format
 msgctxt "AboutTab|Libraries"
@@ -467,7 +473,7 @@ msgid "Compiled with {:s}."
 msgstr ""
 
 #. tr: Using an external library, e.g. libpcre.so
-#: ../src/gtk/config/AboutTab.cpp:580 ../src/kde/config/AboutTab.cpp:323
+#: ../src/gtk/config/AboutTab.cpp:597 ../src/kde/config/AboutTab.cpp:340
 #: ../src/win32/config/AboutTab.cpp:1123
 #, c++-format
 msgctxt "AboutTab|Libraries"
@@ -475,7 +481,7 @@ msgid "Using {:s}."
 msgstr "გამოყენება {:s}."
 
 #. tr: License: (libraries with only a single license)
-#: ../src/gtk/config/AboutTab.cpp:582 ../src/kde/config/AboutTab.cpp:325
+#: ../src/gtk/config/AboutTab.cpp:599 ../src/kde/config/AboutTab.cpp:342
 #: ../src/win32/config/AboutTab.cpp:1125
 #, c++-format
 msgctxt "AboutTab|Libraries"
@@ -483,58 +489,58 @@ msgid "License: {:s}"
 msgstr "ლიცენზია: {:s}"
 
 #. tr: Licenses: (libraries with multiple licenses)
-#: ../src/gtk/config/AboutTab.cpp:584 ../src/kde/config/AboutTab.cpp:327
+#: ../src/gtk/config/AboutTab.cpp:601 ../src/kde/config/AboutTab.cpp:344
 #: ../src/win32/config/AboutTab.cpp:1127
 #, c++-format
 msgctxt "AboutTab|Libraries"
 msgid "Licenses: {:s}"
 msgstr "ლიცენზიები: {:s}"
 
-#: ../src/gtk/config/AboutTab.cpp:693 ../src/kde/config/AboutTab.cpp:460
+#: ../src/gtk/config/AboutTab.cpp:710 ../src/kde/config/AboutTab.cpp:477
 #: ../src/win32/config/AboutTab.cpp:1217
 msgctxt "AboutTab|Libraries"
 msgid "APNG patch:"
 msgstr "APNG-ის პაჩი:"
 
-#: ../src/gtk/config/AboutTab.cpp:837 ../src/kde/config/AboutTab.cpp:601
+#: ../src/gtk/config/AboutTab.cpp:854 ../src/kde/config/AboutTab.cpp:618
 #: ../src/win32/config/AboutTab.cpp:1323
 msgctxt "AboutTab|Support"
 msgid "For technical support, you can visit the following websites:"
 msgstr ""
 
-#: ../src/gtk/config/AboutTab.cpp:850 ../src/kde/config/AboutTab.cpp:614
+#: ../src/gtk/config/AboutTab.cpp:867 ../src/kde/config/AboutTab.cpp:631
 #: ../src/win32/config/AboutTab.cpp:1336
 msgctxt "AboutTab|Support"
 msgid "You can also email the developer directly:"
 msgstr ""
 
-#: ../src/gtk/config/AboutTab.cpp:876 ../src/kde/config/AboutTab.cpp:642
+#: ../src/gtk/config/AboutTab.cpp:893 ../src/kde/config/AboutTab.cpp:659
 #: ../src/win32/config/AboutTab.cpp:610
 msgctxt "AboutTab"
 msgid "Checking for updates..."
 msgstr ""
 
 #. tr: Error message template. (GTK version, with C++20 formatting)
-#: ../src/gtk/config/AboutTab.cpp:898 ../src/gtk/config/CacheTab.cpp:474
+#: ../src/gtk/config/AboutTab.cpp:915 ../src/gtk/config/CacheTab.cpp:474
 #: ../src/gtk/config/CacheTab.cpp:529
 #, c++-format
 msgctxt "ConfigDialog"
 msgid "<b>ERROR:</b> {:s}"
 msgstr ""
 
-#: ../src/gtk/config/AboutTab.cpp:928 ../src/kde/config/AboutTab.cpp:756
+#: ../src/gtk/config/AboutTab.cpp:945 ../src/kde/config/AboutTab.cpp:773
 #: ../src/win32/config/AboutTab.cpp:713
 #, c++-format
 msgctxt "AboutTab"
 msgid "Latest version: {:s}"
 msgstr ""
 
-#: ../src/gtk/config/AboutTab.cpp:931 ../src/kde/config/AboutTab.cpp:759
+#: ../src/gtk/config/AboutTab.cpp:948 ../src/kde/config/AboutTab.cpp:776
 msgctxt "AboutTab"
 msgid "<b>New version available!</b>"
 msgstr ""
 
-#: ../src/gtk/config/AboutTab.cpp:934 ../src/kde/config/AboutTab.cpp:762
+#: ../src/gtk/config/AboutTab.cpp:951 ../src/kde/config/AboutTab.cpp:779
 #: ../src/win32/config/AboutTab.cpp:719
 msgctxt "AboutTab"
 msgid "Download at GitHub"
@@ -1212,14 +1218,8 @@ msgctxt "XAttrView"
 msgid "Extended Attributes"
 msgstr ""
 
-#. tr: Uses Qt's HTML subset for formatting.
-#: ../src/kde/config/AboutTab.cpp:221
-msgctxt "AboutTab"
-msgid "<b>ROM Properties Page</b><br>Shell Extension"
-msgstr ""
-
 #. tr: Error message template. (Qt version, with formatting)
-#: ../src/kde/config/AboutTab.cpp:720 ../src/kde/config/CacheTab.cpp:278
+#: ../src/kde/config/AboutTab.cpp:737 ../src/kde/config/CacheTab.cpp:278
 #: ../src/kde/config/CacheTab.cpp:322
 msgctxt "ConfigDialog"
 msgid "<b>ERROR:</b> %1"
@@ -11120,16 +11120,6 @@ msgstr "შეცდომა:"
 #: ../src/win32/config/AboutTab.cpp:717
 msgctxt "AboutTab"
 msgid "New version available!"
-msgstr ""
-
-#: ../src/win32/config/AboutTab.cpp:909
-msgctxt "AboutTab"
-msgid "ROM Properties Page"
-msgstr ""
-
-#: ../src/win32/config/AboutTab.cpp:910
-msgctxt "AboutTab"
-msgid "Shell Extension"
 msgstr ""
 
 #: ../src/win32/config/AboutTab.cpp:1097
