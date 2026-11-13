@@ -135,26 +135,27 @@ string GameBoyAdvancePrivate::getPublisher(void) const
 {
 	string s_ret;
 
+	// Look up the publisher.
 	const char *const publisher = NintendoPublishers::lookup(romHeader.company);
 	if (publisher) {
+		// NOTE: Assigning to `s_ret` for named-return-value optimization.
 		s_ret = publisher;
+		return s_ret;
+	}
+
+	// Unknown publisher. Print the company code as two characters if they're
+	// both alphanumeric; otherwise, hexadecimal.
+	if (isalnum_ascii(romHeader.company[0]) &&
+	    isalnum_ascii(romHeader.company[1]))
+	{
+		fmt::format_to(std::back_inserter(s_ret),
+			FSTR("{:s} ({:c}{:c})"), C_("RomData", "Unknown"),
+				romHeader.company[0], romHeader.company[1]);
 	} else {
-		if (isalnum_ascii(romHeader.company[0]) &&
-		    isalnum_ascii(romHeader.company[1]))
-		{
-			const array<char, 3> s_company = {{
-				romHeader.company[0],
-				romHeader.company[1],
-				'\0'
-			}};
-			fmt::format_to(std::back_inserter(s_ret),
-				FSTR("{:s} ({:s})"), C_("RomData", "Unknown"), s_company.data());
-		} else {
-			fmt::format_to(std::back_inserter(s_ret),
-				FSTR("{:s} ({:0>2X} {:0>2X})"), C_("RomData", "Unknown"),
-					static_cast<uint8_t>(romHeader.company[0]),
-					static_cast<uint8_t>(romHeader.company[1]));
-		}
+		fmt::format_to(std::back_inserter(s_ret),
+			FSTR("{:s} ({:0>2X} {:0>2X})"), C_("RomData", "Unknown"),
+				static_cast<uint8_t>(romHeader.company[0]),
+				static_cast<uint8_t>(romHeader.company[1]));
 	}
 
 	return s_ret;

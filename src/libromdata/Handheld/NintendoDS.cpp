@@ -170,6 +170,7 @@ string NintendoDSPrivate::getPublisher(void)
 {
 	string s_ret;
 
+	// Look up the publisher.
 	const char *const publisher = NintendoPublishers::lookup(romHeader.company);
 	if (publisher) {
 		// NOTE: Assigning to `s_ret` for named-return-value optimization.
@@ -179,7 +180,9 @@ string NintendoDSPrivate::getPublisher(void)
 
 	// Unknown publisher. Print the company code as two characters if they're
 	// both alphanumeric; otherwise, hexadecimal.
-	if (isalnum_ascii(romHeader.company[0]) && isalnum_ascii(romHeader.company[1])) {
+	if (isalnum_ascii(romHeader.company[0]) &&
+	    isalnum_ascii(romHeader.company[1]))
+	{
 		fmt::format_to(std::back_inserter(s_ret),
 			FSTR("{:s} ({:c}{:c})"), C_("RomData", "Unknown"),
 				romHeader.company[0], romHeader.company[1]);
