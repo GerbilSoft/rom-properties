@@ -787,8 +787,8 @@ QLabel *RomDataViewPrivate::initDateTime(QLabel *lblDesc,
 {
 	// Date/Time
 	if (field.data.date_time == -1) {
-		// tr: Invalid date/time
-		return initString(lblDesc, field, QC_("RomDataView", "Unknown"));
+		// tr: Invalid date/time.
+		return initString(lblDesc, field, QC_("RomData", "Unknown"));
 	}
 
 	QString str = formatDateTime(field.data.date_time, field.flags);

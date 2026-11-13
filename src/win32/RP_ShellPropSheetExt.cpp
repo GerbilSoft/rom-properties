@@ -1407,9 +1407,9 @@ int RP_ShellPropSheetExt_Private::initDateTime(_In_ HWND hWndTab,
 	_In_ const RomFields::Field &field, _In_ int fieldIdx)
 {
 	if (field.data.date_time == -1) {
-		// Invalid date/time.
+		// tr: Invalid date/time.
 		return initString(hWndTab, pt_start, size, field, fieldIdx,
-			TC_("RomDataView", "Unknown"));
+			TC_("RomData", "Unknown"));
 	}
 
 	// Format the date/time.
@@ -1417,7 +1417,7 @@ int RP_ShellPropSheetExt_Private::initDateTime(_In_ HWND hWndTab,
 
 	// Initialize the string.
 	return initString(hWndTab, pt_start, size, field, fieldIdx,
-		(likely(!dateTimeStr.empty()) ? dateTimeStr.c_str() : TC_("RomDataView", "Unknown")));
+		(likely(!dateTimeStr.empty()) ? dateTimeStr.c_str() : TC_("RomData", "Unknown")));
 }
 
 /**

@@ -1142,7 +1142,7 @@ rp_rom_data_view_init_datetime(RpRomDataView *page,
 		g_free(str);
 	} else {
 		// tr: Invalid date/time.
-		widget = rp_rom_data_view_init_string(page, field, C_("RomDataView", "Unknown"));
+		widget = rp_rom_data_view_init_string(page, field, C_("RomData", "Unknown"));
 	}
 
 	return widget;

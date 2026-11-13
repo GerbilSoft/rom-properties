@@ -126,7 +126,7 @@ rp_nautilus_properties_model_init_datetime(RpNautilusPropertiesModel *self, cons
 		g_free(str);
 	} else {
 		// tr: Invalid date/time.
-		append_item(self, field.name, C_("RomDataView", "Unknown"));
+		append_item(self, field.name, C_("RomData", "Unknown"));
 	}
 }
 

@@ -26,7 +26,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.7.1\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-13 00:05-0500\n"
+"POT-Creation-Date: 2026-11-13 00:14-0500\n"
 "PO-Revision-Date: 2018-04-13 04:36+0200\n"
 "Last-Translator: Egor <egor@opensrc.club>\n"
 "Language-Team: none\n"
@@ -1041,12 +1041,70 @@ msgid "ROM Properties"
 msgstr ""
 
 #. tr: Invalid date/time.
-#. tr: Invalid date/time
+#. tr: EncryptionKeys::Unknown
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:129
-#: ../src/gtk/RomDataView.cpp:1145 ../src/kde/RomDataView.cpp:791
+#: ../src/gtk/RomDataView.cpp:1145 ../src/gtk/RomDataView_gtk3.cpp:294
+#: ../src/gtk/RomDataView_gtk3.cpp:604 ../src/gtk/RomDataView_gtk4.cpp:415
+#: ../src/gtk/RomDataView_gtk4.cpp:567 ../src/kde/ListDataModel.cpp:263
+#: ../src/kde/RomDataView.cpp:791 ../src/libromdata/Audio/ADX.cpp:261
+#: ../src/libromdata/Audio/NSF.cpp:1010
+#: ../src/libromdata/Console/GameCube.cpp:1654
+#: ../src/libromdata/Console/GameCube.cpp:1855
+#: ../src/libromdata/Console/GameCubeSave.cpp:1037
+#: ../src/libromdata/Console/MegaDrive.cpp:741
+#: ../src/libromdata/Console/NES.cpp:1431
+#: ../src/libromdata/Console/NES.cpp:1710
+#: ../src/libromdata/Console/Sega8Bit.cpp:580
+#: ../src/libromdata/Console/Sega8Bit.cpp:582
+#: ../src/libromdata/Console/SNES.cpp:1506
+#: ../src/libromdata/Console/SNES.cpp:1511
+#: ../src/libromdata/Console/SNES.cpp:1547
+#: ../src/libromdata/Console/WiiUAncast.cpp:486
+#: ../src/libromdata/Console/WiiUAncast.cpp:504
+#: ../src/libromdata/Console/WiiUAncast.cpp:554
+#: ../src/libromdata/Console/WiiUPackage_xml.cpp:373
+#: ../src/libromdata/Console/WiiWAD.cpp:999
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:1019
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:1055
+#: ../src/libromdata/Console/Xbox360_XDBF.cpp:957
+#: ../src/libromdata/Console/Xbox360_XDBF.cpp:967
+#: ../src/libromdata/Console/Xbox360_XDBF.cpp:1448
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1237
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1813
+#: ../src/libromdata/Console/XboxDisc.cpp:1061
+#: ../src/libromdata/Console/Xbox_XBE.cpp:751
+#: ../src/libromdata/Console/Xbox_XBE.cpp:755
+#: ../src/libromdata/Handheld/DMG.cpp:657
+#: ../src/libromdata/Handheld/DMG.cpp:726
+#: ../src/libromdata/Handheld/DMG.cpp:761
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:402
+#: ../src/libromdata/Handheld/Lynx.cpp:195
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:725
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:739
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1713
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:497
+#: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:520
+#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:173
+#: ../src/libromdata/Media/Wim.cpp:248 ../src/libromdata/Other/Amiibo.cpp:486
+#: ../src/libromdata/Other/Amiibo.cpp:491
+#: ../src/libromdata/Other/Amiibo.cpp:496
+#: ../src/libromdata/Other/Amiibo.cpp:511 ../src/libromdata/Other/ELF.cpp:1593
+#: ../src/libromdata/Other/EXE.cpp:246 ../src/libromdata/Other/EXE.cpp:1163
+#: ../src/libromdata/Other/EXE_manifest.cpp:237
+#: ../src/libromdata/Other/EXE_PE.cpp:53 ../src/libromdata/Other/MachO.cpp:507
+#: ../src/libromdata/Other/NintendoBadge.cpp:461
+#: ../src/libromdata/Other/NintendoBadge.cpp:699
+#: ../src/librpbase/TextOut_text.cpp:645 ../src/librpbase/TextOut_text.cpp:807
+#: ../src/librpbase/TextOut_text.cpp:890 ../src/librpbase/TextOut_text.cpp:900
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1317
+#: ../src/librptexture/fileformat/ICO.cpp:1444
+#: ../src/librptexture/fileformat/ICO.cpp:1457
+#: ../src/librptexture/fileformat/PowerVR3.cpp:1309
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1131
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1412
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1420
-msgctxt "RomDataView"
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1641
+msgctxt "RomData"
 msgid "Unknown"
 msgstr "Невідомо"
 
@@ -1110,69 +1168,6 @@ msgstr ""
 msgctxt "RomDataView"
 msgid "{:s}:"
 msgstr ""
-
-#. tr: EncryptionKeys::Unknown
-#: ../src/gtk/RomDataView_gtk3.cpp:294 ../src/gtk/RomDataView_gtk3.cpp:604
-#: ../src/gtk/RomDataView_gtk4.cpp:415 ../src/gtk/RomDataView_gtk4.cpp:567
-#: ../src/kde/ListDataModel.cpp:263 ../src/libromdata/Audio/ADX.cpp:261
-#: ../src/libromdata/Audio/NSF.cpp:1010
-#: ../src/libromdata/Console/GameCube.cpp:1654
-#: ../src/libromdata/Console/GameCube.cpp:1855
-#: ../src/libromdata/Console/GameCubeSave.cpp:1037
-#: ../src/libromdata/Console/MegaDrive.cpp:741
-#: ../src/libromdata/Console/NES.cpp:1431
-#: ../src/libromdata/Console/NES.cpp:1710
-#: ../src/libromdata/Console/Sega8Bit.cpp:580
-#: ../src/libromdata/Console/Sega8Bit.cpp:582
-#: ../src/libromdata/Console/SNES.cpp:1506
-#: ../src/libromdata/Console/SNES.cpp:1511
-#: ../src/libromdata/Console/SNES.cpp:1547
-#: ../src/libromdata/Console/WiiUAncast.cpp:486
-#: ../src/libromdata/Console/WiiUAncast.cpp:504
-#: ../src/libromdata/Console/WiiUAncast.cpp:554
-#: ../src/libromdata/Console/WiiUPackage_xml.cpp:373
-#: ../src/libromdata/Console/WiiWAD.cpp:999
-#: ../src/libromdata/Console/Xbox360_STFS.cpp:1019
-#: ../src/libromdata/Console/Xbox360_STFS.cpp:1055
-#: ../src/libromdata/Console/Xbox360_XDBF.cpp:957
-#: ../src/libromdata/Console/Xbox360_XDBF.cpp:967
-#: ../src/libromdata/Console/Xbox360_XDBF.cpp:1448
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1237
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1813
-#: ../src/libromdata/Console/XboxDisc.cpp:1061
-#: ../src/libromdata/Console/Xbox_XBE.cpp:751
-#: ../src/libromdata/Console/Xbox_XBE.cpp:755
-#: ../src/libromdata/Handheld/DMG.cpp:657
-#: ../src/libromdata/Handheld/DMG.cpp:726
-#: ../src/libromdata/Handheld/DMG.cpp:761
-#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:402
-#: ../src/libromdata/Handheld/Lynx.cpp:195
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:725
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:739
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1713
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:497
-#: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:520
-#: ../src/libromdata/Handheld/NintendoDS_ops.cpp:173
-#: ../src/libromdata/Media/Wim.cpp:248 ../src/libromdata/Other/Amiibo.cpp:486
-#: ../src/libromdata/Other/Amiibo.cpp:491
-#: ../src/libromdata/Other/Amiibo.cpp:496
-#: ../src/libromdata/Other/Amiibo.cpp:511 ../src/libromdata/Other/ELF.cpp:1593
-#: ../src/libromdata/Other/EXE.cpp:246 ../src/libromdata/Other/EXE.cpp:1163
-#: ../src/libromdata/Other/EXE_manifest.cpp:237
-#: ../src/libromdata/Other/EXE_PE.cpp:53 ../src/libromdata/Other/MachO.cpp:507
-#: ../src/libromdata/Other/NintendoBadge.cpp:461
-#: ../src/libromdata/Other/NintendoBadge.cpp:699
-#: ../src/librpbase/TextOut_text.cpp:645 ../src/librpbase/TextOut_text.cpp:807
-#: ../src/librpbase/TextOut_text.cpp:890 ../src/librpbase/TextOut_text.cpp:900
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1317
-#: ../src/librptexture/fileformat/ICO.cpp:1444
-#: ../src/librptexture/fileformat/ICO.cpp:1457
-#: ../src/librptexture/fileformat/PowerVR3.cpp:1309
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1131
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1641
-msgctxt "RomData"
-msgid "Unknown"
-msgstr "Невідомо"
 
 #: ../src/gtk/RomDataView_ops.cpp:355 ../src/kde/RomDataView_ops.cpp:434
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:599
