@@ -94,7 +94,20 @@ public:
 	 * Get the game ID, with unprintable characters replaced with '_'.
 	 * @return Game ID
 	 */
-	inline string getGameID(void) const;
+	inline string getGameID(void) const
+	{
+		// NOTE: Game ID and Publisher ID characters were verified in the
+		// public class constructor.
+		string id6(romFooter.gameid, sizeof(romFooter.gameid));
+		id6.append(romFooter.publisher, sizeof(romFooter.publisher));
+		return id6;
+	}
+
+	/**
+	 * Get the publisher.
+	 * @return Publisher, or "Unknown (xxx)" if unknown.
+	 */
+	string getPublisher(void) const;
 
 public:
 	// ROM footer
@@ -159,16 +172,38 @@ string VirtualBoyPrivate::getTitle(void) const
 }
 
 /**
- * Get the game ID, with unprintable characters replaced with '_'.
- * @return Game ID
+ * Get the publisher.
+ * @return Publisher, or "Unknown (xxx)" if unknown.
  */
-inline string VirtualBoyPrivate::getGameID(void) const
+string VirtualBoyPrivate::getPublisher(void) const
 {
-	// NOTE: Game ID and Publisher ID characters were verified in the
-	// public class constructor.
-	string id6(romFooter.gameid, sizeof(romFooter.gameid));
-	id6.append(romFooter.publisher, sizeof(romFooter.publisher));
-	return id6;
+	string s_ret;
+
+	// Look up the publisher.
+	const char *const publisher = NintendoPublishers::lookup(romFooter.publisher);
+	if (publisher) {
+		s_ret = publisher;
+		return s_ret;
+	}
+
+	if (isalnum_ascii(romFooter.publisher[0]) &&
+	    isalnum_ascii(romFooter.publisher[1]))
+	{
+		const array<char, 3> s_company = {{
+			romFooter.publisher[0],
+			romFooter.publisher[1],
+			'\0'
+		}};
+		fmt::format_to(std::back_inserter(s_ret),
+			FSTR("{:s} ({:s})"), C_("RomData", "Unknown"), s_company.data());
+	} else {
+		fmt::format_to(std::back_inserter(s_ret),
+			FSTR("{:s} ({:0>2X} {:0>2X})"), C_("RomData", "Unknown"),
+				static_cast<uint8_t>(romFooter.publisher[0]),
+				static_cast<uint8_t>(romFooter.publisher[1]));
+	}
+
+	return s_ret;
 }
 
 /** VirtualBoy **/
@@ -364,30 +399,10 @@ int VirtualBoy::loadFieldData(void)
 	// Game ID
 	d->fields.addField_string(C_("RomData", "Game ID"), d->getGameID());
 
-	// Look up the publisher.
-	const char *const s_publisher_title = C_("RomData", "Publisher");
-	const char *const publisher = NintendoPublishers::lookup(romFooter->publisher);
-	if (publisher) {
-		d->fields.addField_string(s_publisher_title, publisher);
-	} else {
-		string s_publisher;
-		if (isalnum_ascii(romFooter->publisher[0]) &&
-		    isalnum_ascii(romFooter->publisher[1]))
-		{
-			const array<char, 3> s_company = {{
-				romFooter->publisher[0],
-				romFooter->publisher[1],
-				'\0'
-			}};
-			fmt::format_to(std::back_inserter(s_publisher),
-				FSTR("{:s} ({:s})"), C_("RomData", "Unknown"), s_company.data());
-		} else {
-			fmt::format_to(std::back_inserter(s_publisher),
-				FSTR("{:s} ({:0>2X} {:0>2X})"), C_("RomData", "Unknown"),
-					static_cast<uint8_t>(romFooter->publisher[0]),
-					static_cast<uint8_t>(romFooter->publisher[1]));
-		}
-		d->fields.addField_string(s_publisher_title, s_publisher);
+	// Publisher
+	string s_publisher = d->getPublisher();
+	if (likely(!s_publisher.empty())) {
+		d->fields.addField_string(C_("RomData", "Publisher"), s_publisher);
 	}
 
 	// Revision
@@ -446,28 +461,8 @@ int VirtualBoy::loadMetaData(void)
 	d->metaData.addMetaData_string(Property::Title, d->getTitle());
 
 	// Publisher (aka manufacturer)
-	// Look up the publisher.
-	const char *const publisher = NintendoPublishers::lookup(romFooter->publisher);
-	if (publisher) {
-		d->metaData.addMetaData_string(Property::Publisher, publisher);
-	} else {
-		string s_publisher;
-		if (isalnum_ascii(romFooter->publisher[0]) &&
-		    isalnum_ascii(romFooter->publisher[1]))
-		{
-			const array<char, 3> s_company = {{
-				romFooter->publisher[0],
-				romFooter->publisher[1],
-				'\0'
-			}};
-			fmt::format_to(std::back_inserter(s_publisher),
-				FSTR("{:s} ({:s})"), C_("RomData", "Unknown"), s_company.data());
-		} else {
-			fmt::format_to(std::back_inserter(s_publisher),
-				FSTR("{:s} ({:0>2X} {:0>2X})"), C_("RomData", "Unknown"),
-					static_cast<uint8_t>(romFooter->publisher[0]),
-					static_cast<uint8_t>(romFooter->publisher[1]));
-		}
+	string s_publisher = d->getPublisher();
+	if (likely(!s_publisher.empty())) {
 		d->metaData.addMetaData_string(Property::Publisher, s_publisher);
 	}
 
