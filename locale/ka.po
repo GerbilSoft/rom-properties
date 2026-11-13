@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-13 01:46-0500\n"
-"PO-Revision-Date: 2026-11-13 07:31\n"
+"POT-Creation-Date: 2026-11-13 03:26-0500\n"
+"PO-Revision-Date: 2026-11-13 08:57\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
 "Language: ka_GE\n"
@@ -178,9 +178,9 @@ msgid "Select the image types you would like to use for each system as its thumb
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_KeyManagerTab.h:92
-#: ../src/gtk/config/KeyManagerTab.cpp:153
-#: ../src/kde/config/KeyManagerTab.cpp:331
-#: ../src/win32/config/KeyManagerTab.cpp:363
+#: ../src/gtk/config/KeyManagerTab.cpp:155
+#: ../src/kde/config/KeyManagerTab.cpp:390
+#: ../src/win32/config/KeyManagerTab.cpp:365
 msgctxt "KeyManagerTab"
 msgid "I&mport"
 msgstr "შე&მოტანა"
@@ -655,137 +655,97 @@ msgid "GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
 "amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</a>, the Unofficial amiibo Database."
 msgstr ""
 
-#. tr: Wii keys.bin dialog title
-#: ../src/gtk/config/KeyManagerTab.cpp:488
-#: ../src/kde/config/KeyManagerTab.cpp:465
-#: ../src/win32/config/KeyManagerTab.cpp:1822
+#: ../src/gtk/config/KeyManagerTab.cpp:495
+#: ../src/kde/config/KeyManagerTab.cpp:332
+#: ../src/win32/config/KeyManagerTab.cpp:1830
+#, c++-format
 msgctxt "KeyManagerTab"
-msgid "Select Wii keys.bin File"
+msgid "Select {:s} File"
 msgstr ""
 
-#. tr: Wii U otp.bin dialog title
-#: ../src/gtk/config/KeyManagerTab.cpp:490
-#: ../src/kde/config/KeyManagerTab.cpp:487
-#: ../src/win32/config/KeyManagerTab.cpp:1824
+#. tr: "Binary Files" filter (RP format)
+#: ../src/gtk/config/KeyManagerTab.cpp:509
+#: ../src/kde/config/KeyManagerTab.cpp:346
+#: ../src/win32/config/KeyManagerTab.cpp:1844
 msgctxt "KeyManagerTab"
-msgid "Select Wii U otp.bin File"
+msgid "Binary Files|*.bin|-"
 msgstr ""
 
-#. tr: Nintendo 3DS boot9.bin dialog title
-#: ../src/gtk/config/KeyManagerTab.cpp:492
-#: ../src/kde/config/KeyManagerTab.cpp:509
-#: ../src/win32/config/KeyManagerTab.cpp:1826
+#. tr: "All Files" filter (RP format)
+#: ../src/gtk/config/KeyManagerTab.cpp:511
+#: ../src/kde/config/KeyManagerTab.cpp:348
+#: ../src/win32/config/KeyManagerTab.cpp:1846
 msgctxt "KeyManagerTab"
-msgid "Select 3DS boot9.bin File"
-msgstr ""
+msgid "All Files|*|-"
+msgstr "ყველა ფაილი|*|-"
 
-#. tr: Nintendo 3DS aeskeydb.bin dialog title
-#: ../src/gtk/config/KeyManagerTab.cpp:494
-#: ../src/kde/config/KeyManagerTab.cpp:531
-#: ../src/win32/config/KeyManagerTab.cpp:1828
-msgctxt "KeyManagerTab"
-msgid "Select 3DS aeskeydb.bin File"
-msgstr ""
-
-#. tr: Wii keys.bin file filter (RP format)
-#: ../src/gtk/config/KeyManagerTab.cpp:499
-#: ../src/kde/config/KeyManagerTab.cpp:469
-#: ../src/win32/config/KeyManagerTab.cpp:1833
-msgctxt "KeyManagerTab"
-msgid "keys.bin|keys.bin|-|Binary Files|*.bin|-|All Files|*|-"
-msgstr ""
-
-#. tr: Wii U otp.bin file filter (RP format)
-#: ../src/gtk/config/KeyManagerTab.cpp:501
-#: ../src/kde/config/KeyManagerTab.cpp:491
-#: ../src/win32/config/KeyManagerTab.cpp:1835
-msgctxt "KeyManagerTab"
-msgid "otp.bin|otp.bin|-|Binary Files|*.bin|-|All Files|*|-"
-msgstr ""
-
-#. tr: Nintendo 3DS boot9.bin file filter (RP format)
-#: ../src/gtk/config/KeyManagerTab.cpp:503
-#: ../src/kde/config/KeyManagerTab.cpp:513
-#: ../src/win32/config/KeyManagerTab.cpp:1837
-msgctxt "KeyManagerTab"
-msgid "boot9.bin|boot9.bin|-|Binary Files|*.bin|-|All Files|*|-"
-msgstr ""
-
-#. tr: Nintendo 3DS aeskeydb.bin file filter (RP format)
-#: ../src/gtk/config/KeyManagerTab.cpp:505
-#: ../src/kde/config/KeyManagerTab.cpp:535
-#: ../src/win32/config/KeyManagerTab.cpp:1839
-msgctxt "KeyManagerTab"
-msgid "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|-|All Files|*|-"
-msgstr ""
-
-#: ../src/gtk/config/KeyManagerTab.cpp:566
-#: ../src/kde/config/KeyManagerTab.cpp:153
-#: ../src/win32/config/KeyManagerTab.cpp:1610
+#: ../src/gtk/config/KeyManagerTab.cpp:569
+#: ../src/kde/config/KeyManagerTab.cpp:160
+#: ../src/win32/config/KeyManagerTab.cpp:1613
 msgctxt "KeyManagerTab"
 msgid "An invalid parameter was passed to the key importer.\n"
 "THIS IS A BUG; please report this to the developers!"
 msgstr ""
 
-#: ../src/gtk/config/KeyManagerTab.cpp:573
-#: ../src/kde/config/KeyManagerTab.cpp:161
-#: ../src/win32/config/KeyManagerTab.cpp:1617
+#: ../src/gtk/config/KeyManagerTab.cpp:576
+#: ../src/kde/config/KeyManagerTab.cpp:168
+#: ../src/win32/config/KeyManagerTab.cpp:1620
 msgctxt "KeyManagerTab"
 msgid "An unknown key ID was passed to the key importer.\n"
 "THIS IS A BUG; please report this to the developers!"
 msgstr ""
 
-#: ../src/gtk/config/KeyManagerTab.cpp:582
-#: ../src/kde/config/KeyManagerTab.cpp:171
-#: ../src/win32/config/KeyManagerTab.cpp:1626
+#: ../src/gtk/config/KeyManagerTab.cpp:585
+#: ../src/kde/config/KeyManagerTab.cpp:178
+#: ../src/win32/config/KeyManagerTab.cpp:1629
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while opening '{0:s}': {1:s}"
 msgstr ""
 
-#: ../src/gtk/config/KeyManagerTab.cpp:587
-#: ../src/kde/config/KeyManagerTab.cpp:177
-#: ../src/win32/config/KeyManagerTab.cpp:1631
+#: ../src/gtk/config/KeyManagerTab.cpp:590
+#: ../src/kde/config/KeyManagerTab.cpp:184
+#: ../src/win32/config/KeyManagerTab.cpp:1634
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while opening '{:s}'."
 msgstr ""
 
-#: ../src/gtk/config/KeyManagerTab.cpp:598
-#: ../src/kde/config/KeyManagerTab.cpp:189
-#: ../src/win32/config/KeyManagerTab.cpp:1642
+#: ../src/gtk/config/KeyManagerTab.cpp:601
+#: ../src/kde/config/KeyManagerTab.cpp:196
+#: ../src/win32/config/KeyManagerTab.cpp:1645
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while reading '{0:s}': {1:s}"
 msgstr ""
 
-#: ../src/gtk/config/KeyManagerTab.cpp:603
-#: ../src/kde/config/KeyManagerTab.cpp:195
-#: ../src/win32/config/KeyManagerTab.cpp:1647
+#: ../src/gtk/config/KeyManagerTab.cpp:606
+#: ../src/kde/config/KeyManagerTab.cpp:202
+#: ../src/win32/config/KeyManagerTab.cpp:1650
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while reading '{:s}'."
 msgstr ""
 
-#: ../src/gtk/config/KeyManagerTab.cpp:612
-#: ../src/kde/config/KeyManagerTab.cpp:205
-#: ../src/win32/config/KeyManagerTab.cpp:1656
+#: ../src/gtk/config/KeyManagerTab.cpp:615
+#: ../src/kde/config/KeyManagerTab.cpp:212
+#: ../src/win32/config/KeyManagerTab.cpp:1659
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "The file '{0:s}' is not a valid {1:s} file."
 msgstr ""
 
-#: ../src/gtk/config/KeyManagerTab.cpp:620
-#: ../src/kde/config/KeyManagerTab.cpp:214
-#: ../src/win32/config/KeyManagerTab.cpp:1664
+#: ../src/gtk/config/KeyManagerTab.cpp:623
+#: ../src/kde/config/KeyManagerTab.cpp:221
+#: ../src/win32/config/KeyManagerTab.cpp:1667
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "No keys were imported from '{:s}'."
 msgstr ""
 
-#: ../src/gtk/config/KeyManagerTab.cpp:630
-#: ../src/kde/config/KeyManagerTab.cpp:225
-#: ../src/win32/config/KeyManagerTab.cpp:1674
+#: ../src/gtk/config/KeyManagerTab.cpp:633
+#: ../src/kde/config/KeyManagerTab.cpp:232
+#: ../src/win32/config/KeyManagerTab.cpp:1677
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "{0:Ld} key was imported from '{1:s}'."
@@ -793,9 +753,9 @@ msgid_plural "{0:Ld} keys were imported from '{1:s}'."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/gtk/config/KeyManagerTab.cpp:648
-#: ../src/kde/config/KeyManagerTab.cpp:244
-#: ../src/win32/config/KeyManagerTab.cpp:1697
+#: ../src/gtk/config/KeyManagerTab.cpp:651
+#: ../src/kde/config/KeyManagerTab.cpp:251
+#: ../src/win32/config/KeyManagerTab.cpp:1700
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key already exists in the Key Manager."
@@ -803,9 +763,9 @@ msgid_plural "{:Ld} keys already exist in the Key Manager."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/gtk/config/KeyManagerTab.cpp:657
-#: ../src/kde/config/KeyManagerTab.cpp:253
-#: ../src/win32/config/KeyManagerTab.cpp:1706
+#: ../src/gtk/config/KeyManagerTab.cpp:660
+#: ../src/kde/config/KeyManagerTab.cpp:260
+#: ../src/win32/config/KeyManagerTab.cpp:1709
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key was not imported because it is incorrect."
@@ -813,9 +773,9 @@ msgid_plural "{:Ld} keys were not imported because they are incorrect."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/gtk/config/KeyManagerTab.cpp:666
-#: ../src/kde/config/KeyManagerTab.cpp:262
-#: ../src/win32/config/KeyManagerTab.cpp:1715
+#: ../src/gtk/config/KeyManagerTab.cpp:669
+#: ../src/kde/config/KeyManagerTab.cpp:269
+#: ../src/win32/config/KeyManagerTab.cpp:1718
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key was not imported because it isn't used by rom-properties."
@@ -823,9 +783,9 @@ msgid_plural "{:Ld} keys were not imported because they aren't used by rom-prope
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/gtk/config/KeyManagerTab.cpp:675
-#: ../src/kde/config/KeyManagerTab.cpp:271
-#: ../src/win32/config/KeyManagerTab.cpp:1724
+#: ../src/gtk/config/KeyManagerTab.cpp:678
+#: ../src/kde/config/KeyManagerTab.cpp:278
+#: ../src/win32/config/KeyManagerTab.cpp:1727
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key was not imported because it is encrypted and the master key isn't available."
@@ -833,9 +793,9 @@ msgid_plural "{:Ld} keys were not imported because they are encrypted and the ma
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/gtk/config/KeyManagerTab.cpp:684
-#: ../src/kde/config/KeyManagerTab.cpp:280
-#: ../src/win32/config/KeyManagerTab.cpp:1733
+#: ../src/gtk/config/KeyManagerTab.cpp:687
+#: ../src/kde/config/KeyManagerTab.cpp:287
+#: ../src/win32/config/KeyManagerTab.cpp:1736
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key has been imported and verified as correct."
@@ -843,9 +803,9 @@ msgid_plural "{:Ld} keys have been imported and verified as correct."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/gtk/config/KeyManagerTab.cpp:693
-#: ../src/kde/config/KeyManagerTab.cpp:289
-#: ../src/win32/config/KeyManagerTab.cpp:1741
+#: ../src/gtk/config/KeyManagerTab.cpp:696
+#: ../src/kde/config/KeyManagerTab.cpp:296
+#: ../src/win32/config/KeyManagerTab.cpp:1744
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key has been imported without verification."
@@ -858,7 +818,7 @@ msgstr[1] ""
 #: ../src/gtk/config/KeyManagerTab_gtk3.cpp:73
 #: ../src/gtk/config/KeyManagerTab_gtk4.cpp:320
 #: ../src/kde/config/KeyStoreModel.cpp:152
-#: ../src/win32/config/KeyManagerTab.cpp:386
+#: ../src/win32/config/KeyManagerTab.cpp:388
 msgctxt "KeyManagerTab"
 msgid "Key Name"
 msgstr "გასაღების სახელი"
@@ -868,7 +828,7 @@ msgstr "გასაღების სახელი"
 #: ../src/gtk/config/KeyManagerTab_gtk3.cpp:84
 #: ../src/gtk/config/KeyManagerTab_gtk4.cpp:321
 #: ../src/kde/config/KeyStoreModel.cpp:154
-#: ../src/win32/config/KeyManagerTab.cpp:395
+#: ../src/win32/config/KeyManagerTab.cpp:397
 msgctxt "KeyManagerTab"
 msgid "Value"
 msgstr "მნიშვნელობა"
@@ -878,7 +838,7 @@ msgstr "მნიშვნელობა"
 #: ../src/gtk/config/KeyManagerTab_gtk3.cpp:98
 #: ../src/gtk/config/KeyManagerTab_gtk4.cpp:322
 #: ../src/kde/config/KeyStoreModel.cpp:156
-#: ../src/win32/config/KeyManagerTab.cpp:401
+#: ../src/win32/config/KeyManagerTab.cpp:403
 msgctxt "KeyManagerTab"
 msgid "Valid?"
 msgstr "სწორია?"
@@ -10753,13 +10713,13 @@ msgctxt "ImageTypesTab"
 msgid "Image Types"
 msgstr "გამოსახულების ტიპები"
 
-#: ../src/win32/config/KeyManagerTab.cpp:368
+#: ../src/win32/config/KeyManagerTab.cpp:370
 msgctxt "KeyManagerTab"
 msgid "I&mport..."
 msgstr "შე&მოტანა..."
 
 #. tr: Tab title.
-#: ../src/win32/config/KeyManagerTab.cpp:1885
+#: ../src/win32/config/KeyManagerTab.cpp:1890
 msgctxt "KeyManagerTab"
 msgid "Key Manager"
 msgstr "გასაღებების მმართველი"
