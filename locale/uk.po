@@ -26,7 +26,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.7.1\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-12 22:03-0500\n"
+"POT-Creation-Date: 2026-11-12 22:55-0500\n"
 "PO-Revision-Date: 2018-04-13 04:36+0200\n"
 "Last-Translator: Egor <egor@opensrc.club>\n"
 "Language-Team: none\n"
@@ -229,96 +229,92 @@ msgid "E&xternal Image Downloads"
 msgstr "Завантажувати зовнішні зображення."
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:186
-#: ../src/gtk/config/OptionsTab.cpp:150
+#: ../src/gtk/config/OptionsTab.cpp:150 ../src/win32/config/OptionsTab.cpp:188
 msgctxt "OptionsTab"
-msgid ""
-"When using an unlimited\n"
-"network connection:"
+msgid "When using an unlimited network connection:"
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:188
-#: ../build/src/kde/kf6/ui_OptionsTab.h:194
+#: ../build/src/kde/kf6/ui_OptionsTab.h:187
+#: ../build/src/kde/kf6/ui_OptionsTab.h:192
 #: ../src/gtk/config/OptionsTab.cpp:156 ../src/win32/config/OptionsTab.cpp:211
 msgctxt "OptionsTab"
 msgid "Don't download any images"
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:189
-#: ../build/src/kde/kf6/ui_OptionsTab.h:195
+#: ../build/src/kde/kf6/ui_OptionsTab.h:188
+#: ../build/src/kde/kf6/ui_OptionsTab.h:193
 #: ../src/gtk/config/OptionsTab.cpp:157 ../src/win32/config/OptionsTab.cpp:212
 msgctxt "OptionsTab"
 msgid "Download normal-resolution images"
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:190
-#: ../build/src/kde/kf6/ui_OptionsTab.h:196
+#: ../build/src/kde/kf6/ui_OptionsTab.h:189
+#: ../build/src/kde/kf6/ui_OptionsTab.h:194
 #: ../src/gtk/config/OptionsTab.cpp:158 ../src/win32/config/OptionsTab.cpp:213
 msgctxt "OptionsTab"
 msgid "Download high-resolution images"
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:192
-#: ../src/gtk/config/OptionsTab.cpp:152
+#: ../build/src/kde/kf6/ui_OptionsTab.h:191
+#: ../src/gtk/config/OptionsTab.cpp:152 ../src/win32/config/OptionsTab.cpp:190
 msgctxt "OptionsTab"
-msgid ""
-"When using a metered\n"
-"network connection:"
+msgid "When using a metered network connection:"
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:198
-#: ../src/gtk/config/OptionsTab.cpp:228 ../src/win32/config/OptionsTab.cpp:192
+#: ../build/src/kde/kf6/ui_OptionsTab.h:196
+#: ../src/gtk/config/OptionsTab.cpp:250 ../src/win32/config/OptionsTab.cpp:192
 msgctxt "OptionsTab"
 msgid "Always use the internal icon (if present) for small sizes."
 msgstr ""
 "Завжди використовувати вбудовану іконку (якщо присутня) для невеликих "
 "розмірів."
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:199
-#: ../src/gtk/config/OptionsTab.cpp:231 ../src/win32/config/OptionsTab.cpp:194
+#: ../build/src/kde/kf6/ui_OptionsTab.h:197
+#: ../src/gtk/config/OptionsTab.cpp:253 ../src/win32/config/OptionsTab.cpp:194
 msgctxt "OptionsTab"
 msgid ""
 "Store cached file origin information using extended attributes.\n"
 "This helps to identify where cached files were downloaded from."
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:201
-#: ../src/gtk/config/OptionsTab.cpp:238 ../src/win32/config/OptionsTab.cpp:196
+#: ../build/src/kde/kf6/ui_OptionsTab.h:199
+#: ../src/gtk/config/OptionsTab.cpp:260 ../src/win32/config/OptionsTab.cpp:196
 msgctxt "OptionsTab"
 msgid "Language for PAL titles on GameTDB:"
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:202
+#: ../build/src/kde/kf6/ui_OptionsTab.h:200
 #: ../src/win32/config/OptionsTab.cpp:200
 msgctxt "OptionsTab"
 msgid "&Options"
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:203
-#: ../src/gtk/config/OptionsTab.cpp:264 ../src/win32/config/OptionsTab.cpp:202
+#: ../build/src/kde/kf6/ui_OptionsTab.h:201
+#: ../src/gtk/config/OptionsTab.cpp:286 ../src/win32/config/OptionsTab.cpp:202
 msgctxt "OptionsTab"
 msgid ""
 "Show a security overlay icon for ROM images with\n"
 "\"dangerous\" permissions."
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:205
-#: ../src/gtk/config/OptionsTab.cpp:267 ../src/win32/config/OptionsTab.cpp:204
+#: ../build/src/kde/kf6/ui_OptionsTab.h:203
+#: ../src/gtk/config/OptionsTab.cpp:289 ../src/win32/config/OptionsTab.cpp:204
 msgctxt "OptionsTab"
 msgid ""
 "Enable thumbnailing and metadata extraction on network\n"
 "file systems. This may slow down file browsing."
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:207
-#: ../src/gtk/config/OptionsTab.cpp:271 ../src/win32/config/OptionsTab.cpp:206
+#: ../build/src/kde/kf6/ui_OptionsTab.h:205
+#: ../src/gtk/config/OptionsTab.cpp:293 ../src/win32/config/OptionsTab.cpp:206
 msgctxt "OptionsTab"
 msgid ""
 "Enable thumbnailing and metadata extraction of directory-based\n"
 "packages, e.g. for Wii U. This may slow down file browsing."
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:209
-#: ../src/gtk/config/OptionsTab.cpp:275 ../src/win32/config/OptionsTab.cpp:208
+#: ../build/src/kde/kf6/ui_OptionsTab.h:207
+#: ../src/gtk/config/OptionsTab.cpp:297 ../src/win32/config/OptionsTab.cpp:208
 msgctxt "OptionsTab"
 msgid "Show the Extended Attributes tab."
 msgstr ""
@@ -953,7 +949,7 @@ msgid "Downloads"
 msgstr "&Завантаження"
 
 #. tr: Tab title.
-#: ../src/gtk/config/OptionsTab.cpp:247 ../src/win32/config/OptionsTab.cpp:731
+#: ../src/gtk/config/OptionsTab.cpp:269 ../src/win32/config/OptionsTab.cpp:731
 msgctxt "OptionsTab"
 msgid "Options"
 msgstr ""
@@ -11312,16 +11308,6 @@ msgstr ""
 msgctxt "KeyManagerTab"
 msgid "Key Manager"
 msgstr "Менеджер ключів"
-
-#: ../src/win32/config/OptionsTab.cpp:188
-msgctxt "OptionsTab"
-msgid "When using an unlimited network connection:"
-msgstr ""
-
-#: ../src/win32/config/OptionsTab.cpp:190
-msgctxt "OptionsTab"
-msgid "When using a metered network connection:"
-msgstr ""
 
 #. tr: Tab title.
 #: ../src/win32/config/SystemsTab.cpp:523

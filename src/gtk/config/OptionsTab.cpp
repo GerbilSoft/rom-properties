@@ -147,15 +147,37 @@ rp_options_tab_init(RpOptionsTab *tab)
 
 	// Image bandwidth options: Labels and dropdowns
 	tab->lblUnmeteredConnection = gtk_label_new(
-		C_("OptionsTab", "When using an unlimited\nnetwork connection:"));
+		C_("OptionsTab", "When using an unlimited network connection:"));
 	tab->lblMeteredConnection = gtk_label_new(
-		C_("OptionsTab", "When using a metered\nnetwork connection:"));
+		C_("OptionsTab", "When using a metered network connection:"));
 	gtk_widget_set_name(tab->lblUnmeteredConnection, "lblUnmeteredConnection");
 	gtk_widget_set_name(tab->lblMeteredConnection, "lblMeteredConnection");
 
 	const char *const s_ImgBandwidthNone      = C_("OptionsTab", "Don't download any images");
 	const char *const s_ImgBandwidthNormalRes = C_("OptionsTab", "Download normal-resolution images");
 	const char *const s_ImgBandwidthHighRes   = C_("OptionsTab", "Download high-resolution images");
+
+	// Right-align the labels.
+#if GTK_CHECK_VERSION(3, 16, 0)
+	// NOTE: gtk_widget_set_?align() doesn't work properly
+	// when using a GtkSizeGroup on GTK+ 3.x.
+	// gtk_label_set_?align() was introduced in GTK+ 3.16.
+	gtk_widget_set_halign(tab->lblUnmeteredConnection, GTK_ALIGN_END);
+	gtk_widget_set_valign(tab->lblUnmeteredConnection, GTK_ALIGN_CENTER);
+	gtk_label_set_xalign(GTK_LABEL(tab->lblUnmeteredConnection), 1.0f);
+	gtk_label_set_yalign(GTK_LABEL(tab->lblUnmeteredConnection), 0.5f);
+
+	gtk_widget_set_halign(tab->lblMeteredConnection, GTK_ALIGN_END);
+	gtk_widget_set_valign(tab->lblMeteredConnection, GTK_ALIGN_CENTER);
+	gtk_label_set_xalign(GTK_LABEL(tab->lblMeteredConnection), 1.0f);
+	gtk_label_set_yalign(GTK_LABEL(tab->lblMeteredConnection), 0.5f);
+#else /* !GTK_CHECK_VERSION(3, 16, 0) */
+	// NOTE: GtkMisc is deprecated on GTK+ 3.x, but it's
+	// needed for proper text alignment when using
+	// GtkSizeGroup prior to GTK+ 3.16.
+	gtk_misc_set_alignment(GTK_MISC(tab->lblUnmeteredConnection), 1.0f, 0.5f);
+	gtk_misc_set_alignment(GTK_MISC(tab->lblMeteredConnection), 1.0f, 0.5f);
+#endif /* GTK_CHECK_VERSION(3, 16, 0) */
 
 #ifdef USE_GTK_DROP_DOWN
 	// GtkStringList model for the GtkDropDowns
@@ -211,9 +233,9 @@ rp_options_tab_init(RpOptionsTab *tab)
 	gtk_widget_set_name(tblImgBandwidth, "tblImgBandwidth");
 	gtk_table_set_row_spacings(GTK_TABLE(tblImgBandwidth), 2);
 	gtk_table_set_col_spacings(GTK_TABLE(tblImgBandwidth), 8);
-	gtk_table_attach(GTK_TABLE(tblImgBandwidth), tab->lblUnmeteredConnection, 0, 1, 0, 1, GTK_EXPAND, GTK_EXPAND, 0, 0);
+	gtk_table_attach(GTK_TABLE(tblImgBandwidth), tab->lblUnmeteredConnection, 0, 1, 0, 1, GTK_FILL, GTK_EXPAND, 0, 0);
 	gtk_table_attach(GTK_TABLE(tblImgBandwidth), tab->cboUnmeteredConnection, 1, 2, 0, 1, GTK_EXPAND, GTK_EXPAND, 0, 0);
-	gtk_table_attach(GTK_TABLE(tblImgBandwidth), tab->lblMeteredConnection, 0, 1, 1, 2, GTK_EXPAND, GTK_EXPAND, 0, 0);
+	gtk_table_attach(GTK_TABLE(tblImgBandwidth), tab->lblMeteredConnection, 0, 1, 1, 2, GTK_FILL, GTK_EXPAND, 0, 0);
 	gtk_table_attach(GTK_TABLE(tblImgBandwidth), tab->cboMeteredConnection, 1, 2, 1, 2, GTK_EXPAND, GTK_EXPAND, 0, 0);
 
 	GtkWidget *const alignImgBandwidth = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
