@@ -599,11 +599,10 @@ inline int RP_XAttrView_Private::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd) cons
 
 /**
  * WM_NOTIFY handler for the property sheet.
- * @param hDlg Dialog window.
  * @param pHdr NMHDR
  * @return Return value.
  */
-INT_PTR RP_XAttrView_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
+INT_PTR RP_XAttrView_Private::DlgProc_WM_NOTIFY(NMHDR *pHdr)
 {
 	INT_PTR ret = FALSE;
 
@@ -619,7 +618,7 @@ INT_PTR RP_XAttrView_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 			// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
 			// - https://stackoverflow.com/a/40552426
 			const int result = ListView_CustomDraw(reinterpret_cast<NMLVCUSTOMDRAW*>(pHdr));
-			SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
+			SetWindowLongPtr(hDlgSheet, DWLP_MSGRESULT, result);
 			ret = true;
 			break;
 		}
@@ -633,14 +632,12 @@ INT_PTR RP_XAttrView_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 
 /**
  * WM_COMMAND handler for the property sheet.
- * @param hDlg Dialog window
  * @param wParam
  * @param lParam
  * @return Return value.
  */
-INT_PTR RP_XAttrView_Private::DlgProc_WM_COMMAND(HWND hDlg, WPARAM wParam, LPARAM lParam)
+INT_PTR RP_XAttrView_Private::DlgProc_WM_COMMAND(WPARAM wParam, LPARAM lParam)
 {
-	RP_UNUSED(hDlg);
 	RP_UNUSED(lParam);
 
 	if (wParam == MAKEWPARAM(IDC_XATTRVIEW_NTFS_COMPRESSION_ALG, CBN_SELCHANGE)) {
@@ -721,7 +718,7 @@ INT_PTR CALLBACK RP_XAttrView_Private::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				return false;
 			}
 
-			return d->DlgProc_WM_NOTIFY(hDlg, reinterpret_cast<NMHDR*>(lParam));
+			return d->DlgProc_WM_NOTIFY(reinterpret_cast<NMHDR*>(lParam));
 		}
 
 		case WM_COMMAND: {
@@ -731,7 +728,7 @@ INT_PTR CALLBACK RP_XAttrView_Private::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				return false;
 			}
 
-			return d->DlgProc_WM_COMMAND(hDlg, wParam, lParam);
+			return d->DlgProc_WM_COMMAND(wParam, lParam);
 		}
 
 		case WM_SYSCOLORCHANGE:
