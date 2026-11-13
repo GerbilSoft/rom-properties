@@ -1088,12 +1088,12 @@ int WiiWAD::loadFieldData(void)
 			// tr: NetCard: GBA save type
 			const char *const s_save_type_title = C_("Wii", "GBA Save Type");
 			static const array<const char*, 6> save_type_tbl = {{
-				C_("Wii|NetCardGBASaveType", "None"),
-				C_("Wii|NetCardGBASaveType", "32 KiB SRAM"),
-				C_("Wii|NetCardGBASaveType", "64 KiB Flash ROM"),
-				C_("Wii|NetCardGBASaveType", "128 KiB Flash ROM"),
-				C_("Wii|NetCardGBASaveType", "512-byte EEPROM"),
-				C_("Wii|NetCardGBASaveType", "8 KiB EEPROM"),
+				NOP_C_("Wii|NetCardGBASaveType", "None"),
+				NOP_C_("Wii|NetCardGBASaveType", "32 KiB SRAM"),
+				NOP_C_("Wii|NetCardGBASaveType", "64 KiB Flash ROM"),
+				NOP_C_("Wii|NetCardGBASaveType", "128 KiB Flash ROM"),
+				NOP_C_("Wii|NetCardGBASaveType", "512-byte EEPROM"),
+				NOP_C_("Wii|NetCardGBASaveType", "8 KiB EEPROM"),
 			}};
 
 			const unsigned int save_type = (access_rights & NC_ACCESS_RIGHTS_SAVE_TYPE_MASK);
