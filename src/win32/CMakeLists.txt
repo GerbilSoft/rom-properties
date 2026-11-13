@@ -150,9 +150,10 @@ SET(${PROJECT_NAME}_H
 	res/resource.h
 	)
 SET(${PROJECT_NAME}_RC
+	# TODO: Remove .rc files that are basically the same as rp-en_US.rc?
+	# The .po files are now used for the strings.
 	res/resource.rc
 	res/rp-de_DE.rc
-	res/rp-en_GB.rc
 	res/rp-en_US.rc
 	res/rp-es_ES.rc
 	res/rp-fr_FR.rc
