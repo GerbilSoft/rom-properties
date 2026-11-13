@@ -180,7 +180,7 @@ public:
 	int readNSFeMetadata(void);
 
 	/**
-	 * Format a duration as m:ss.dd.
+	 * Format a duration as "m:ss.ddd".
 	 * @param duration Duration
 	 * @return Formatted duration ("<?>" if negative)
 	 */
@@ -725,7 +725,7 @@ int NSFPrivate::readNSFeMetadata(void)
 }
 
 /**
- * Format a duration as m:ss.dd.
+ * Format a duration as "m:ss.ddd".
  * @param duration Duration
  * @return Formatted duration ("<?>" if negative)
  */
