@@ -490,8 +490,16 @@ rp_config_dialog_apply(RpConfigDialog *dialog)
 #endif /* ENABLE_DECRYPTION */
 	const gint n_pages = gtk_notebook_get_n_pages(GTK_NOTEBOOK(dialog->tabWidget));
 	for (gint i = 0; i < n_pages; i++) {
+#ifndef RP_USE_GTK_ALIGNMENT
+		// GTK3/GTK4: GtkNotebook contains RpConfigTab.
 		RpConfigTab *const tab = RP_CONFIG_TAB(gtk_notebook_get_nth_page(GTK_NOTEBOOK(dialog->tabWidget), i));
+#else /* RP_USE_GTK_ALIGNMENT */
+		// GTK2: GtkNotebook contains GtkAlignment, which contains RpConfigTab.
+		GtkAlignment *const align = GTK_ALIGNMENT(gtk_notebook_get_nth_page(GTK_NOTEBOOK(dialog->tabWidget), i));
+		RpConfigTab *const tab = RP_CONFIG_TAB(gtk_bin_get_child(GTK_BIN(align)));
+#endif /* !RP_USE_GTK_ALIGNMENT */
 		assert(tab != nullptr);
+
 #ifdef ENABLE_DECRYPTION
 		if (RP_IS_KEY_MANAGER_TAB(tab)) {
 			// Found KeyManagerTab.
