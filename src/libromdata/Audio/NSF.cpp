@@ -27,6 +27,9 @@ using std::vector;
 
 namespace LibRomData {
 
+// NOTE: Limiting the maximum chunk size to 16,384 bytes.
+#define CHUNK_SIZE_MAX 16384U
+
 class NSFPrivate final : public RomDataPrivate
 {
 public:
@@ -62,6 +65,12 @@ public:
 		NSF_Header nsf;		// NSF/NSF2 header
 		NSFe_Header nsfe;	// NSFe header (just a magic number)
 	} header;
+
+	// String table offset type
+	// Negative indciates empty string.
+	// (We can't use 0 because the string table is loaded directly
+	// from the NSFe metadata, and prepending a 0 wastes time.)
+	typedef int32_t strtbl_offset_t;
 
 	// NSFe metadata
 	// NOTE: All strings are encoded in UTF-8 in the original file.
@@ -109,30 +118,34 @@ public:
 		// 'auth' chunk
 		struct auth_t {
 			explicit auth_t()
-				: game_title(nullptr)
-				, artist(nullptr)
-				, copyright(nullptr)
-				, ripper(nullptr)
+				: game_title(-1)
+				, artist(-1)
+				, copyright(-1)
+				, ripper(-1)
 			{}
 
 			// Table containing the four NULL-terminated strings.
 			rp::uvector<char> strtbl;
 
-			// Pointers into strtbl.
+			// Offsets into strtbl.
 			union {
 				struct {
-					const char *game_title;
-					const char *artist;
-					const char *copyright;
-					const char *ripper;
+					strtbl_offset_t game_title;
+					strtbl_offset_t artist;
+					strtbl_offset_t copyright;
+					strtbl_offset_t ripper;
 				};
-				const char *str[4];
+				strtbl_offset_t str[4];
 			};
 		};
 		auth_t auth;
 
 		// 'text' chunk
 		string text;
+
+		// String tables for the tracks struct.
+		rp::uvector<char> track_name_strtbl;	// 'tlbl'
+		rp::uvector<char> track_author_strtbl;	// 'taut'
 
 		// Track struct
 		// Contains information from the following chunks:
@@ -143,6 +156,8 @@ public:
 				, is_sfx(false)
 				, duration(-1)
 				, fade(-1)
+				, name(-1)
+				, author(-1)
 			{}
 
 			int16_t order;		// 'plst': playback order (-1 if not set)
@@ -150,8 +165,8 @@ public:
 			int32_t duration;	// 'time': track duration, in milliseconds (negative for not specified)
 			int32_t fade;		// 'fade': fadeout duration, in milliseconds (negative for not specified)
 
-			string name;		// 'tlbl': Track name (label)
-			string author;		// 'taut': Track author
+			strtbl_offset_t name;	// 'tlbl': Track name (label) [offset into track_name_strtbl]
+			strtbl_offset_t author;	// 'taut': Track author [offset into track_author_strtbl]
 		};
 		vector<track_t> tracks;
 	};
@@ -174,6 +189,32 @@ public:
 	int initNSFeTracks(void);
 
 	/**
+	 * Decode a chunk of NULL-terminated strings into a vector of string offsets.
+	 * strtbl_offset_t is int32_t; -1 indicates an invalid string.
+	 * (Can't use 0 because 0 is the start of the chunk, and prepending a NUL
+	 * would be a waste of time.)
+	 *
+	 * @param data Chunk data (must be NULL-terminated!)
+	 * @param size Size of chunk data
+	 * @return Vector of string offsets, or empty vector on error.
+	 */
+	static vector<strtbl_offset_t> decodeChunkOfStrings(const char *data, size_t size);
+
+	/**
+	 * Decode a chunk of NULL-terminated strings into a vector of string offsets.
+	 * strtbl_offset_t is int32_t; -1 indicates an invalid string.
+	 * (Can't use 0 because 0 is the start of the chunk, and prepending a NUL
+	 * would be a waste of time.)
+	 *
+	 * @param vec Chunk data (must be NULL-terminated!)
+	 * @return Vector of string offsets, or empty vector on error.
+	 */
+	static inline vector<strtbl_offset_t> decodeChunkOfStrings(const rp::uvector<char> &vec)
+	{
+		return decodeChunkOfStrings(vec.data(), vec.size());
+	}
+
+	/**
 	 * Read the NSFe metadata.
 	 * @return 0 on success; negative POSIX error code on error.
 	 */
@@ -185,6 +226,34 @@ public:
 	 * @return Formatted duration ("<?>" if negative)
 	 */
 	static string formatDuration(int32_t duration);
+
+	/**
+	 * Get a C string pointer from a string table and offset.
+	 * @param data String table data
+	 * @param size String table size
+	 * @param offset Offset
+	 * @return C string pointer, or nullptr if invalid.
+	 */
+	static inline const char *getCStringPointerFromTable(const char *data, size_t size, strtbl_offset_t offset)
+	{
+		assert(offset <= static_cast<strtbl_offset_t>(CHUNK_SIZE_MAX));
+		assert(offset < static_cast<strtbl_offset_t>(size));
+		if (offset < 0 || static_cast<size_t>(offset) >= size) {
+			return nullptr;
+		}
+		return &data[offset];
+	}
+
+	/**
+	 * Get a C string pointer from a string table and offset.
+	 * @param vec String table data
+	 * @param offset Offset
+	 * @return C string pointer, or nullptr if invalid.
+	 */
+	static inline const char *getCStringPointerFromTable(const rp::uvector<char> &vec, strtbl_offset_t offset)
+	{
+		return getCStringPointerFromTable(vec.data(), vec.size(), offset);
+	}
 };
 
 ROMDATA_IMPL(NSF)
@@ -301,6 +370,61 @@ int NSFPrivate::initNSFeTracks(void)
 }
 
 /**
+ * Decode a chunk of NULL-terminated strings into a vector of string offsets.
+ * strtbl_offset_t is int32_t; -1 indicates an invalid string.
+ * (Can't use 0 because 0 is the start of the chunk, and prepending a NUL
+ * would be a waste of time.)
+ *
+ * @param data Chunk data (must be NULL-terminated!)
+ * @param size Size of chunk data
+ * @return Vector of string offsets, or empty vector on error.
+ */
+vector<NSFPrivate::strtbl_offset_t> NSFPrivate::decodeChunkOfStrings(const char *data, size_t size)
+{
+	vector<strtbl_offset_t> v_ret;
+
+	assert(data != nullptr);
+	assert(size > 0);
+	assert(size <= CHUNK_SIZE_MAX);
+	if (!data || size == 0 || size > CHUNK_SIZE_MAX) {
+		// Invalid parameters.
+		return v_ret;
+	}
+
+	// Make sure the chunk is NULL-terminated.
+	assert(data[size-1] == '\0');
+	if (data[size-1] != '\0') {
+		// Not NULL-terminated.
+		return v_ret;
+	}
+
+	const char *p = data;
+	const char *const p_end = data + size;
+	for (; p < p_end; ) {
+		size_t remain = p_end - p;
+		const char *const p_nul = static_cast<const char*>(memchr(p, '\0', remain));
+		assert(p_nul != nullptr);
+		if (!p_nul) {
+			// Shouldn't happen...
+			break;
+		}
+
+		if ((p_nul - p) > 1) {
+			// Push the starting offset of the string.
+			v_ret.push_back(static_cast<strtbl_offset_t>(p - data));
+		} else {
+			// Empty string.
+			v_ret.push_back(-1);
+		}
+
+		// Next string.
+		p = p_nul + 1;
+	}
+
+	return v_ret;
+}
+
+/**
  * Read the NSFe metadata.
  * @return 0 on success; negative POSIX error code on error.
  */
@@ -320,17 +444,16 @@ int NSFPrivate::readNSFeMetadata(void)
 	const bool isNSF2 = (audioFormat != NSFPrivate::AudioFormat::NSFe);
 
 	// Temporary read buffer
-	rp::uvector<uint8_t> buf;
+	rp::uvector<char> buf;
 
 	/**
 	 * Read a data chunk into the temporary buffer.
-	 * @param chunk_size Chunk size
+	 * @param chunk_size	[in] Chunk size
+	 * @param rdbuf		[out,opt] Alternate read buffer to use
 	 * @return 0 on success; positive if the chunk should be skipped; negative POSIX error code on error.
 	 */
-	auto read_chunk = [&buf, this](unsigned int chunk_size) -> int {
+	auto read_chunk = [&buf, this](unsigned int chunk_size, rp::uvector<char> *rdbuf = nullptr) -> int {
 		// Read the chunk data into the temporary buffer.
-		// NOTE: Limiting to 16,384 bytes.
-		static constexpr unsigned int CHUNK_SIZE_MAX = 16384U;
 		assert(chunk_size > 0);
 		assert(chunk_size <= CHUNK_SIZE_MAX);
 		if (chunk_size == 0) {
@@ -341,9 +464,12 @@ int NSFPrivate::readNSFeMetadata(void)
 			return 2;
 		}
 
-		buf.resize(chunk_size);
-		size_t size = file->read(buf.data(), buf.size());
-		if (size != buf.size()) {
+		if (!rdbuf) {
+			rdbuf = &buf;
+		}
+		rdbuf->resize(chunk_size);
+		size_t size = file->read(rdbuf->data(), rdbuf->size());
+		if (size != rdbuf->size()) {
 			// Read error.
 			int err = -file->lastError();
 			if (err == 0) {
@@ -376,8 +502,13 @@ int NSFPrivate::readNSFeMetadata(void)
 		const uint32_t chunk_size = le32_to_cpu(chunkHeader.size);
 
 		// Check the chunk ID.
+		// TODO: Don't allow duplicate chunks?
 		bool done = false;
 		switch (be32_to_cpu(chunkHeader.fourCC)) {
+			default:
+				// Skip unknown chunks.
+				break;
+
 			case 0:	// assuming all zeroes means an error
 			case NSFe_Chunk_NEND:
 				// End of file.
@@ -455,7 +586,7 @@ int NSFPrivate::readNSFeMetadata(void)
 				}
 
 				// Update the track list.
-				const uint8_t *p = buf.data();
+				const uint8_t *p = reinterpret_cast<const uint8_t*>(buf.data());
 				const uint8_t *const p_end = p + buf.size();
 				int16_t order = 0;
 				for (; p < p_end; p++) {
@@ -498,7 +629,7 @@ int NSFPrivate::readNSFeMetadata(void)
 				}
 
 				// Update the track list.
-				const uint8_t *p = buf.data();
+				const uint8_t *p = reinterpret_cast<const uint8_t*>(buf.data());
 				const uint8_t *const p_end = p + buf.size();
 				for (; p < p_end; p++) {
 					unsigned int i = static_cast<unsigned int>(*p);
@@ -577,46 +708,29 @@ int NSFPrivate::readNSFeMetadata(void)
 					break; \
 				} \
 \
-				/* Read the chunk data into the temporary buffer. */ \
-				int err = read_chunk(chunk_size); \
+				/* Read the chunk data into track_##field##_strtbl. */ \
+				int err = read_chunk(chunk_size, &nsfe.track_##field##_strtbl); \
 				if (err > 0) { \
 					/* Skip the chunk. */ \
 					break; \
 				} else if (err < 0) { \
 					/* Error reading the chunk... */ \
+					nsfe.track_##field##_strtbl.clear(); \
 					return err; \
 				} \
 \
-				/* Make sure the strings are NULL-terminated. */ \
-				if (buf.back() != '\0') { \
-					buf.push_back('\0'); \
+				/* Make sure the chunk is NULL-terminated. */ \
+				if (nsfe.track_##field##_strtbl.back() != '\0') { \
+					nsfe.track_##field##_strtbl.push_back('\0'); \
 				} \
 \
 				/* Should contain track_count strings. */ \
 				/* We'll allow up to track_count, ignoring any additional strings. */ \
-				const char *p = reinterpret_cast<const char*>(buf.data()); \
-				const char *const p_end = p + buf.size(); \
-				for (int i = 0; i < track_count && p < p_end; i++) { \
-					auto &track = nsfe.tracks[i]; \
-\
-					size_t remain = p_end - p; \
-					const char *const p_nul = static_cast<const char*>(memchr(p, '\0', remain)); \
-					assert(p_nul != nullptr); \
-					if (!p_nul) { \
-						/* Shouldn't happen... */ \
-						break; \
-					} \
-\
-					if ((p_nul - p) <= 1) { \
-						/* Empty string. */ \
-						track.field.clear(); \
-					} else { \
-						/* Copy the string data. */ \
-						track.field.assign(p, (p_nul - p)); \
-					} \
-\
-					/* Next string. */ \
-					p = p_nul + 1; \
+				/* TODO: Add a maximum string count parameter to decodeChunkOfStrings()? */ \
+				vector<strtbl_offset_t> v_str = decodeChunkOfStrings(nsfe.track_##field##_strtbl); \
+				const int v_str_size = static_cast<int>(v_str.size()); \
+				for (int i = 0; i < track_count && i < v_str_size; i++) { \
+					nsfe.tracks[i].field = v_str[i]; \
 				} \
 				nsfe.has.fourCC = 1; \
 				nsfe.has.any_tlist = 1; \
@@ -629,55 +743,37 @@ int NSFPrivate::readNSFeMetadata(void)
 			case NSFe_Chunk_auth: {
 				// 'auth' chunk
 				// Read the chunk data into nsfe.auth.strtbl.
-				// NOTE: Limiting to 16,384 bytes.
 				assert(chunk_size > 0);
-				assert(chunk_size <= 16384);
-				if (chunk_size == 0 || chunk_size > 16384) {
+				assert(chunk_size <= CHUNK_SIZE_MAX);
+				if (chunk_size == 0 || chunk_size > CHUNK_SIZE_MAX) {
 					// Empty chunk, or too big...
 					break;
 				}
 
-				rp::uvector<char> &strtbl = nsfe.auth.strtbl;
-				strtbl.resize(chunk_size);
-				size = file->read(strtbl.data(), strtbl.size());
-				if (size != strtbl.size()) {
-					// Read error.
-					strtbl.clear();
-					int err = -file->lastError();
-					if (err == 0) {
-						err = -EIO;
-					}
+				// Read the chunk data into nsfe.auth.strtbl.
+				int err = read_chunk(chunk_size, &nsfe.auth.strtbl);
+				if (err > 0) {
+					// Skip the chunk.
+					break; \
+				} else if (err < 0) {
+					// Error reading the chunk...
+					nsfe.auth.strtbl.clear();
 					return err;
 				}
 
-				// Make sure the strings are NULL-terminated.
-				if (strtbl.back() != '\0') {
-					strtbl.push_back('\0');
+				// Make sure the chunk is NULL-terminated.
+				if (nsfe.auth.strtbl.back() != '\0') {
+					nsfe.auth.strtbl.push_back('\0');
 				}
 
 				// Should contain 4 strings.
 				// We'll allow up to 4, ignoring any additional strings.
-				const char *p = nsfe.auth.strtbl.data();
-				const char *const p_end = nsfe.auth.strtbl.data() + nsfe.auth.strtbl.size();
-				for (size_t i = 0; i < ARRAY_SIZE(nsfe.auth.str) && p < p_end; i++) {
-					size_t remain = p_end - p;
-					const char *const p_nul = static_cast<const char*>(memchr(p, '\0', remain));
-					assert(p_nul != nullptr);
-					if (!p_nul) {
-						// Shouldn't happen...
-						break;
-					}
-
-					if ((p_nul - p) <= 1) {
-						// Empty string.
-						nsfe.auth.str[i] = nullptr;
-					} else {
-						// Set the string pointer.
-						nsfe.auth.str[i] = p;
-					}
-
-					// Next string.
-					p = p_nul + 1;
+				// TODO: Add a maximum string count parameter to decodeChunkOfStrings()?
+				vector<strtbl_offset_t> v_str = decodeChunkOfStrings(nsfe.auth.strtbl);
+				const size_t v_str_size = static_cast<int>(v_str.size()); \
+				// TODO: memcpy() or std::copy()?
+				for (size_t i = 0; i < ARRAY_SIZE(nsfe.auth.str) && i < v_str_size; i++) {
+					nsfe.auth.str[i] = v_str[i];
 				}
 				nsfe.has.auth = 1;
 				break;
@@ -686,10 +782,9 @@ int NSFPrivate::readNSFeMetadata(void)
 			case NSFe_Chunk_text: {
 				// 'text' chunk
 				// Read the chunk data into nsfe.text.
-				// NOTE: Limiting to 16,384 bytes.
 				assert(chunk_size > 0);
-				assert(chunk_size <= 16384);
-				if (chunk_size == 0 || chunk_size > 16384) {
+				assert(chunk_size <= CHUNK_SIZE_MAX);
+				if (chunk_size == 0 || chunk_size > CHUNK_SIZE_MAX) {
 					// Too big...
 					break;
 				}
@@ -708,9 +803,6 @@ int NSFPrivate::readNSFeMetadata(void)
 				nsfe.has.text = 1;
 				break;
 			}
-
-			default:
-				break;
 		}
 
 		if (done) {
@@ -1029,23 +1121,27 @@ int NSF::loadFieldData(void)
 			// 'auth' chunk is available.
 
 			// Title
-			if (nsfe->auth.game_title) {
-				d->fields.addField_string(C_("RomData|Audio", "Title"), nsfe->auth.game_title);
+			const char *const game_title = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.game_title);
+			if (game_title) {
+				d->fields.addField_string(C_("RomData|Audio", "Title"), game_title);
 			}
 
 			// Artist
-			if (nsfe->auth.artist) {
-				d->fields.addField_string(C_("RomData|Audio", "Composer"), nsfe->auth.artist);
+			const char *const artist = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.artist);
+			if (artist) {
+				d->fields.addField_string(C_("RomData|Audio", "Composer"), artist);
 			}
 
 			// Copyright
-			if (nsfe->auth.copyright) {
-				d->fields.addField_string(C_("RomData", "Copyright"), nsfe->auth.copyright);
+			const char *const copyright = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.copyright);
+			if (copyright) {
+				d->fields.addField_string(C_("RomData|Audio", "Copyright"), copyright);
 			}
 
 			// Ripper
-			if (nsfe->auth.ripper) {
-				d->fields.addField_string(C_("RomData|Audio", "Ripper"), nsfe->auth.ripper);
+			const char *const ripper = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.ripper);
+			if (ripper) {
+				d->fields.addField_string(C_("RomData|Audio", "Ripper"), ripper);
 			}
 		}
 
@@ -1136,11 +1232,23 @@ int NSF::loadFieldData(void)
 				if (nsfe->has.psfx) {
 					data_row.push_back(src_iter->is_sfx ? s_yes : s_no);
 				}
+
 				if (nsfe->has.tlbl) {
-					data_row.push_back(src_iter->name);
+					const char *const name = d->getCStringPointerFromTable(nsfe->track_name_strtbl, src_iter->name);
+					if (name) {
+						data_row.push_back(name);
+					} else {
+						data_row.push_back(string());
+					}
 				}
+
 				if (nsfe->has.taut) {
-					data_row.push_back(src_iter->author);
+					const char *const author = d->getCStringPointerFromTable(nsfe->track_author_strtbl, src_iter->author);
+					if (author) {
+						data_row.push_back(author);
+					} else {
+						data_row.push_back(string());
+					}
 				}
 
 				if (nsfe->has.time) {
@@ -1271,18 +1379,21 @@ int NSF::loadMetaData(void)
 		const auto *nsfe = &d->nsfe;
 
 		// Title
-		if (nsfe->auth.game_title) {
-			d->metaData.addMetaData_string(Property::Title, nsfe->auth.game_title);
+		const char *const game_title = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.game_title);
+		if (game_title) {
+			d->metaData.addMetaData_string(Property::Title, game_title);
 		}
 
 		// Artist
-		if (nsfe->auth.artist) {
-			d->metaData.addMetaData_string(Property::Composer, nsfe->auth.artist);
+		const char *const artist = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.artist);
+		if (artist) {
+			d->metaData.addMetaData_string(Property::Composer, artist);
 		}
 
 		// Copyright
-		if (nsfe->auth.copyright) {
-			d->metaData.addMetaData_string(Property::Copyright, nsfe->auth.copyright);
+		const char *const copyright = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.copyright);
+		if (copyright) {
+			d->metaData.addMetaData_string(Property::Copyright, copyright);
 		}
 	}
 
