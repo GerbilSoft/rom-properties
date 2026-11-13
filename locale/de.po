@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-13 03:26-0500\n"
-"PO-Revision-Date: 2026-11-13 08:57\n"
+"POT-Creation-Date: 2026-11-13 11:55-0500\n"
+"PO-Revision-Date: 2026-11-13 17:26\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -4867,406 +4867,6 @@ msgctxt "NES|Mirroring"
 msgid "Four Screens"
 msgstr "Vier Bildschirme"
 
-#: ../src/libromdata/data/NESMappers.cpp:654
-msgctxt "NES|Expansion"
-msgid "Unspecified"
-msgstr "Nicht angegeben"
-
-#: ../src/libromdata/data/NESMappers.cpp:655
-msgctxt "NES|Expansion"
-msgid "NES/Famicom Controllers"
-msgstr "NES/Famicom Controller"
-
-#: ../src/libromdata/data/NESMappers.cpp:656
-msgctxt "NES|Expansion"
-msgid "NES Four Score / Satellite"
-msgstr "NES Four Score / Satellite"
-
-#: ../src/libromdata/data/NESMappers.cpp:657
-msgctxt "NES|Expansion"
-msgid "Famicom Four Players Adapter"
-msgstr "Famicom Vier-Spieler-Adapter"
-
-#: ../src/libromdata/data/NESMappers.cpp:658
-msgctxt "NES|Expansion"
-msgid "Vs. System (1P via $4016)"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:659
-msgctxt "NES|Expansion"
-msgid "Vs. System (1P via $4017)"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:660
-msgctxt "NES|Expansion"
-msgid "Vs. Pinball (Japan)"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:661
-msgctxt "NES|Expansion"
-msgid "Vs. Zapper"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:662
-msgctxt "NES|Expansion"
-msgid "Zapper ($4017)"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:663
-msgctxt "NES|Expansion"
-msgid "Two Zappers"
-msgstr "Zwei Zapper"
-
-#: ../src/libromdata/data/NESMappers.cpp:664
-msgctxt "NES|Expansion"
-msgid "Bandai Hyper Shot Lightgun"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:665
-msgctxt "NES|Expansion"
-msgid "Power Pad (Side A)"
-msgstr "Power Pad (Seite A)"
-
-#: ../src/libromdata/data/NESMappers.cpp:666
-msgctxt "NES|Expansion"
-msgid "Power Pad (Side B)"
-msgstr "Power Pad (Seite B)"
-
-#: ../src/libromdata/data/NESMappers.cpp:667
-msgctxt "NES|Expansion"
-msgid "Family Trainer (Side A)"
-msgstr "Family Trainer (Seite A)"
-
-#: ../src/libromdata/data/NESMappers.cpp:668
-msgctxt "NES|Expansion"
-msgid "Family Trainer (Side B)"
-msgstr "Family Trainer (Seite B)"
-
-#: ../src/libromdata/data/NESMappers.cpp:669
-msgctxt "NES|Expansion"
-msgid "Arkanoid Vaus Controller (NES)"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:672
-msgctxt "NES|Expansion"
-msgid "Arkanoid Vaus Controller (Famicom)"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:673
-msgctxt "NES|Expansion"
-msgid "Two Vaus Controllers plus Famicom Data Recorder"
-msgstr "Zwei Vaus Controller inklusive Famicom Data Recorder"
-
-#: ../src/libromdata/data/NESMappers.cpp:674
-msgctxt "NES|Expansion"
-msgid "Konami Hyper Shot Controller"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:675
-msgctxt "NES|Expansion"
-msgid "Coconuts Pachinko Controller"
-msgstr "Coconuts Pachinko Controller"
-
-#: ../src/libromdata/data/NESMappers.cpp:676
-msgctxt "NES|Expansion"
-msgid "Exciting Boxing Punching Bag"
-msgstr "Exciting Boxing Punching Bag"
-
-#: ../src/libromdata/data/NESMappers.cpp:677
-msgctxt "NES|Expansion"
-msgid "Jissen Mahjong Controller"
-msgstr "Jissen Mahjong Controller"
-
-#: ../src/libromdata/data/NESMappers.cpp:678
-msgctxt "NES|Expansion"
-msgid "Yonezawa Party Tap"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:679
-msgctxt "NES|Expansion"
-msgid "Oeka Kids Tablet"
-msgstr "Oeka Kids Tablet"
-
-#: ../src/libromdata/data/NESMappers.cpp:680
-msgctxt "NES|Expansion"
-msgid "Sunsoft Barcode Battler"
-msgstr "Sunsoft Barcode Battler"
-
-#: ../src/libromdata/data/NESMappers.cpp:681
-msgctxt "NES|Expansion"
-msgid "Miracle Piano Keyboard"
-msgstr "Miracle Piano Keyboard"
-
-#: ../src/libromdata/data/NESMappers.cpp:682
-msgctxt "NES|Expansion"
-msgid "Pokkun Mogura Tap-tap Mat"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:683
-msgctxt "NES|Expansion"
-msgid "Top Rider (Handlebars)"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:684
-msgctxt "NES|Expansion"
-msgid "Double-Fisted"
-msgstr "Double-Fisted"
-
-#: ../src/libromdata/data/NESMappers.cpp:685
-msgctxt "NES|Expansion"
-msgid "Famicom 3D System"
-msgstr "Famicom 3D System"
-
-#: ../src/libromdata/data/NESMappers.cpp:686
-msgctxt "NES|Expansion"
-msgid "Doremikko Keyboard"
-msgstr "Doremikko Tastatur"
-
-#: ../src/libromdata/data/NESMappers.cpp:687
-msgctxt "NES|Expansion"
-msgid "R.O.B. Gyromite"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:690
-msgctxt "NES|Expansion"
-msgid "Famicom Data Recorder (\"silent\" keyboard)"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:691
-msgctxt "NES|Expansion"
-msgid "ASCII Turbo File"
-msgstr "ASCII Turbo File"
-
-#: ../src/libromdata/data/NESMappers.cpp:692
-msgctxt "NES|Expansion"
-msgid "IGS Storage Battle Box"
-msgstr "IGS Storage Battle Box"
-
-#: ../src/libromdata/data/NESMappers.cpp:693
-msgctxt "NES|Expansion"
-msgid "Family BASIC Keyboard plus Famicom Data Recorder"
-msgstr "Familie BASIC Tastatur mit Famicom Data Recorder"
-
-#: ../src/libromdata/data/NESMappers.cpp:694
-msgctxt "NES|Expansion"
-msgid "Dōngdá PEC Keyboard"
-msgstr "Dōngdá PEC Tastatur"
-
-#: ../src/libromdata/data/NESMappers.cpp:695
-msgctxt "NES|Expansion"
-msgid "Bit Corp. Bit-79 Keyboard"
-msgstr "Bit Corp. Bit-79 Tastatur"
-
-#: ../src/libromdata/data/NESMappers.cpp:696
-msgctxt "NES|Expansion"
-msgid "Subor Keyboard"
-msgstr "Subor Tastatur"
-
-#: ../src/libromdata/data/NESMappers.cpp:697
-msgctxt "NES|Expansion"
-msgid "Subor Keyboard plus Macro Winners Mouse"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:698
-msgctxt "NES|Expansion"
-msgid "Subor Keyboard plus Subor Mouse via $4016"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:699
-msgctxt "NES|Expansion"
-msgid "SNES Mouse ($4016)"
-msgstr "SNES Maus ($4016)"
-
-#: ../src/libromdata/data/NESMappers.cpp:700
-msgctxt "NES|Expansion"
-msgid "Multicart"
-msgstr "Multicart"
-
-#: ../src/libromdata/data/NESMappers.cpp:701
-msgctxt "NES|Expansion"
-msgid "SNES Controllers"
-msgstr "SNES Controller"
-
-#: ../src/libromdata/data/NESMappers.cpp:702
-msgctxt "NES|Expansion"
-msgid "RacerMate Bicycle"
-msgstr "RacerMate Fahrrad"
-
-#: ../src/libromdata/data/NESMappers.cpp:703
-msgctxt "NES|Expansion"
-msgid "U-Force"
-msgstr "U-Force"
-
-#: ../src/libromdata/data/NESMappers.cpp:704
-msgctxt "NES|Expansion"
-msgid "R.O.B. Stack-Up"
-msgstr "R.O.B. Stack-Up"
-
-#: ../src/libromdata/data/NESMappers.cpp:705
-msgctxt "NES|Expansion"
-msgid "City Patrolman Lightgun"
-msgstr "City Patrolman Lightgun"
-
-#: ../src/libromdata/data/NESMappers.cpp:708
-msgctxt "NES|Expansion"
-msgid "Sharp C1 Cassette Interface"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:709
-msgctxt "NES|Expansion"
-msgid "Standard Controller with Swapped Left-Right/Up-Down/B-A"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:710
-msgctxt "NES|Expansion"
-msgid "Excalibur Sudoku Pad"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:711
-msgctxt "NES|Expansion"
-msgid "ABL Pinball"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:712
-msgctxt "NES|Expansion"
-msgid "Golden Nugget Casino extra buttons"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:713
-msgctxt "NES|Expansion"
-msgid "Kēdá Keyboard"
-msgstr "Kēdá Tastatur"
-
-#: ../src/libromdata/data/NESMappers.cpp:714
-msgctxt "NES|Expansion"
-msgid "Subor Keyboard plus Subor Mouse via $4017"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:715
-msgctxt "NES|Expansion"
-msgid "Port test controller"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:716
-msgctxt "NES|Expansion"
-msgid "Bandai Multi Game Player Gamepad buttons"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:717
-msgctxt "NES|Expansion"
-msgid "Venom TV Dance Mat"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:718
-msgctxt "NES|Expansion"
-msgid "LG TV Remote Control"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:719
-msgctxt "NES|Expansion"
-msgid "Famicom Network Controller"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:720
-msgctxt "NES|Expansion"
-msgid "King Fishing Controller"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:721
-msgctxt "NES|Expansion"
-msgid "Croaky Karaoke Controller"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:722
-msgctxt "NES|Expansion"
-msgid "Kingwon Keyboard"
-msgstr "Kingwon Tastatur"
-
-#: ../src/libromdata/data/NESMappers.cpp:723
-msgctxt "NES|Expansion"
-msgid "Zéchéng Keyboard"
-msgstr "Zéchéng Tastatur"
-
-#: ../src/libromdata/data/NESMappers.cpp:726
-msgctxt "NES|Expansion"
-msgid "Subor Keyboard plus L90-rotated PS/2 mouse in $4017"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:727
-msgctxt "NES|Expansion"
-msgid "PS/2 Keyboard in UM6578 PS/2 port, PS/2 Mouse via $4017"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:728
-msgctxt "NES|Expansion"
-msgid "PS/2 Mouse in UM6578 PS/2 port"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:729
-msgctxt "NES|Expansion"
-msgid "Yùxìng Mouse via $4016"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:730
-msgctxt "NES|Expansion"
-msgid "Subor Keyboard plus Yùxìng Mouse in $4016"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:731
-msgctxt "NES|Expansion"
-msgid "Gigggle TV Pump"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:732
-msgctxt "NES|Expansion"
-msgid "BBK Keyboard plus R90-rotated PS/2 mouse in $4017"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:733
-msgctxt "NES|Expansion"
-msgid "Magical Cooking"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:734
-msgctxt "NES|Expansion"
-msgid "SNES Mouse ($4017)"
-msgstr "SNES Maus ($4017)"
-
-#: ../src/libromdata/data/NESMappers.cpp:735
-msgctxt "NES|Expansion"
-msgid "Zapper ($4016)"
-msgstr "Zapper ($4016)"
-
-#: ../src/libromdata/data/NESMappers.cpp:736
-msgctxt "NES|Expansion"
-msgid "Arkanoid Vaus Controller (Prototype)"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:737
-msgctxt "NES|Expansion"
-msgid "TV Mahjong Game Controller"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:738
-msgctxt "NES|Expansion"
-msgid "Mahjong Gekitou Densetsu"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:739
-msgctxt "NES|Expansion"
-msgid "Subor Keyboard plus X-inverted PS/2 mouse in $4017"
-msgstr ""
-
-#: ../src/libromdata/data/NESMappers.cpp:740
-msgctxt "NES|Expansion"
-msgid "IBM PC/XT Keyboard"
-msgstr "IBM PC/XT Tastatur"
-
-#: ../src/libromdata/data/NESMappers.cpp:741
-msgctxt "NES|Expansion"
-msgid "Subor Keyboard plus Mega Book Mouse"
-msgstr ""
-
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:46
 msgctxt "Nintendo3DSSysTitles"
 msgid "System Settings"
@@ -8184,37 +7784,37 @@ msgctxt "GameMaker"
 msgid "Screen Flags"
 msgstr ""
 
-#: ../src/libromdata/Other/GameMaker.cpp:700
+#: ../src/libromdata/Other/GameMaker.cpp:701
 msgctxt "GameMaker"
 msgid "Function Classes"
 msgstr ""
 
-#: ../src/libromdata/Other/GameMaker.cpp:709
+#: ../src/libromdata/Other/GameMaker.cpp:710
 msgctxt "GameMaker"
 msgid "Steam App ID"
 msgstr ""
 
-#: ../src/libromdata/Other/GameMaker.cpp:715
+#: ../src/libromdata/Other/GameMaker.cpp:716
 msgctxt "GameMaker"
 msgid "Debugger Port"
 msgstr ""
 
-#: ../src/libromdata/Other/GameMaker.cpp:721
+#: ../src/libromdata/Other/GameMaker.cpp:722
 msgctxt "GameMaker"
 msgid "Game Speed"
 msgstr ""
 
-#: ../src/libromdata/Other/GameMaker.cpp:724
+#: ../src/libromdata/Other/GameMaker.cpp:725
 msgctxt "GameMaker"
 msgid "Allow Statistics"
 msgstr ""
 
-#: ../src/libromdata/Other/GameMaker.cpp:728
+#: ../src/libromdata/Other/GameMaker.cpp:729
 msgctxt "GameMaker"
 msgid "Statistics"
 msgstr ""
 
-#: ../src/libromdata/Other/GameMaker.cpp:731
+#: ../src/libromdata/Other/GameMaker.cpp:732
 msgctxt "GameMaker"
 msgid "Room Count"
 msgstr ""
