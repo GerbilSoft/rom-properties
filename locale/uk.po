@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-12 22:03-0500\n"
-"PO-Revision-Date: 2026-11-13 03:39\n"
+"POT-Creation-Date: 2026-11-12 23:21-0500\n"
+"PO-Revision-Date: 2026-11-13 04:53\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Language: uk_UA\n"
@@ -201,88 +201,86 @@ msgid "E&xternal Image Downloads"
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:186
-#: ../src/gtk/config/OptionsTab.cpp:150
+#: ../src/gtk/config/OptionsTab.cpp:150 ../src/win32/config/OptionsTab.cpp:188
 msgctxt "OptionsTab"
-msgid "When using an unlimited\n"
-"network connection:"
+msgid "When using an unlimited network connection:"
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:188
-#: ../build/src/kde/kf6/ui_OptionsTab.h:194
+#: ../build/src/kde/kf6/ui_OptionsTab.h:187
+#: ../build/src/kde/kf6/ui_OptionsTab.h:192
 #: ../src/gtk/config/OptionsTab.cpp:156 ../src/win32/config/OptionsTab.cpp:211
 msgctxt "OptionsTab"
 msgid "Don't download any images"
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:189
-#: ../build/src/kde/kf6/ui_OptionsTab.h:195
+#: ../build/src/kde/kf6/ui_OptionsTab.h:188
+#: ../build/src/kde/kf6/ui_OptionsTab.h:193
 #: ../src/gtk/config/OptionsTab.cpp:157 ../src/win32/config/OptionsTab.cpp:212
 msgctxt "OptionsTab"
 msgid "Download normal-resolution images"
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:190
-#: ../build/src/kde/kf6/ui_OptionsTab.h:196
+#: ../build/src/kde/kf6/ui_OptionsTab.h:189
+#: ../build/src/kde/kf6/ui_OptionsTab.h:194
 #: ../src/gtk/config/OptionsTab.cpp:158 ../src/win32/config/OptionsTab.cpp:213
 msgctxt "OptionsTab"
 msgid "Download high-resolution images"
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:192
-#: ../src/gtk/config/OptionsTab.cpp:152
+#: ../build/src/kde/kf6/ui_OptionsTab.h:191
+#: ../src/gtk/config/OptionsTab.cpp:152 ../src/win32/config/OptionsTab.cpp:190
 msgctxt "OptionsTab"
-msgid "When using a metered\n"
-"network connection:"
+msgid "When using a metered network connection:"
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:198
-#: ../src/gtk/config/OptionsTab.cpp:228 ../src/win32/config/OptionsTab.cpp:192
+#: ../build/src/kde/kf6/ui_OptionsTab.h:196
+#: ../src/gtk/config/OptionsTab.cpp:250 ../src/win32/config/OptionsTab.cpp:192
 msgctxt "OptionsTab"
 msgid "Always use the internal icon (if present) for small sizes."
 msgstr "Завжди використовувати вбудовану іконку (якщо присутня) для невеликих розмірів."
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:199
-#: ../src/gtk/config/OptionsTab.cpp:231 ../src/win32/config/OptionsTab.cpp:194
+#: ../build/src/kde/kf6/ui_OptionsTab.h:197
+#: ../src/gtk/config/OptionsTab.cpp:253 ../src/win32/config/OptionsTab.cpp:194
 msgctxt "OptionsTab"
 msgid "Store cached file origin information using extended attributes.\n"
 "This helps to identify where cached files were downloaded from."
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:201
-#: ../src/gtk/config/OptionsTab.cpp:238 ../src/win32/config/OptionsTab.cpp:196
+#: ../build/src/kde/kf6/ui_OptionsTab.h:199
+#: ../src/gtk/config/OptionsTab.cpp:260 ../src/win32/config/OptionsTab.cpp:196
 msgctxt "OptionsTab"
 msgid "Language for PAL titles on GameTDB:"
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:202
+#: ../build/src/kde/kf6/ui_OptionsTab.h:200
 #: ../src/win32/config/OptionsTab.cpp:200
 msgctxt "OptionsTab"
 msgid "&Options"
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:203
-#: ../src/gtk/config/OptionsTab.cpp:264 ../src/win32/config/OptionsTab.cpp:202
+#: ../build/src/kde/kf6/ui_OptionsTab.h:201
+#: ../src/gtk/config/OptionsTab.cpp:286 ../src/win32/config/OptionsTab.cpp:202
 msgctxt "OptionsTab"
 msgid "Show a security overlay icon for ROM images with\n"
 "\"dangerous\" permissions."
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:205
-#: ../src/gtk/config/OptionsTab.cpp:267 ../src/win32/config/OptionsTab.cpp:204
+#: ../build/src/kde/kf6/ui_OptionsTab.h:203
+#: ../src/gtk/config/OptionsTab.cpp:289 ../src/win32/config/OptionsTab.cpp:204
 msgctxt "OptionsTab"
 msgid "Enable thumbnailing and metadata extraction on network\n"
 "file systems. This may slow down file browsing."
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:207
-#: ../src/gtk/config/OptionsTab.cpp:271 ../src/win32/config/OptionsTab.cpp:206
+#: ../build/src/kde/kf6/ui_OptionsTab.h:205
+#: ../src/gtk/config/OptionsTab.cpp:293 ../src/win32/config/OptionsTab.cpp:206
 msgctxt "OptionsTab"
 msgid "Enable thumbnailing and metadata extraction of directory-based\n"
 "packages, e.g. for Wii U. This may slow down file browsing."
 msgstr ""
 
-#: ../build/src/kde/kf6/ui_OptionsTab.h:209
-#: ../src/gtk/config/OptionsTab.cpp:275 ../src/win32/config/OptionsTab.cpp:208
+#: ../build/src/kde/kf6/ui_OptionsTab.h:207
+#: ../src/gtk/config/OptionsTab.cpp:297 ../src/win32/config/OptionsTab.cpp:208
 msgctxt "OptionsTab"
 msgid "Show the Extended Attributes tab."
 msgstr ""
@@ -907,7 +905,7 @@ msgid "Downloads"
 msgstr "&Завантаження"
 
 #. tr: Tab title.
-#: ../src/gtk/config/OptionsTab.cpp:247 ../src/win32/config/OptionsTab.cpp:731
+#: ../src/gtk/config/OptionsTab.cpp:269 ../src/win32/config/OptionsTab.cpp:731
 msgctxt "OptionsTab"
 msgid "Options"
 msgstr ""
@@ -1567,44 +1565,49 @@ msgctxt "RomData"
 msgid "Description"
 msgstr ""
 
-#: ../src/libromdata/Audio/NSF.cpp:1268
-msgctxt "NSF|TrackList"
+#: ../src/libromdata/Audio/NSF.cpp:1268 ../src/libromdata/Audio/SAP.cpp:670
+#: ../src/libromdata/Audio/SNDH.cpp:906 ../src/libromdata/Audio/ZXAY.cpp:388
+msgctxt "Audio|SongList"
 msgid "#"
 msgstr ""
 
 #: ../src/libromdata/Audio/NSF.cpp:1272
-msgctxt "NSF|TrackList"
+msgctxt "Audio|SongList"
 msgid "Order"
 msgstr ""
 
 #: ../src/libromdata/Audio/NSF.cpp:1279
-msgctxt "NSF|TrackList"
+msgctxt "Audio|SongList"
 msgid "Is SFX"
 msgstr ""
 
-#: ../src/libromdata/Audio/NSF.cpp:1286
-msgctxt "NSF|TrackList"
+#: ../src/libromdata/Audio/NSF.cpp:1286 ../src/libromdata/Audio/SNDH.cpp:911
+#: ../src/libromdata/Audio/SNDH.cpp:914 ../src/libromdata/Audio/ZXAY.cpp:389
+msgctxt "Audio|SongList"
 msgid "Name"
 msgstr ""
 
 #: ../src/libromdata/Audio/NSF.cpp:1293
-msgctxt "NSF|TrackList"
+msgctxt "Audio|SongList"
 msgid "Author"
 msgstr ""
 
-#: ../src/libromdata/Audio/NSF.cpp:1300
-msgctxt "NSF|TrackList"
+#: ../src/libromdata/Audio/NSF.cpp:1300 ../src/libromdata/Audio/SAP.cpp:671
+#: ../src/libromdata/Audio/SNDH.cpp:912 ../src/libromdata/Audio/SNDH.cpp:916
+#: ../src/libromdata/Audio/ZXAY.cpp:390
+msgctxt "Audio|SongList"
 msgid "Duration"
 msgstr ""
 
 #: ../src/libromdata/Audio/NSF.cpp:1307
-msgctxt "NSF|TrackList"
+msgctxt "Audio|SongList"
 msgid "Fade"
 msgstr ""
 
-#: ../src/libromdata/Audio/NSF.cpp:1324
-msgctxt "NSF"
-msgid "Track List"
+#: ../src/libromdata/Audio/NSF.cpp:1324 ../src/libromdata/Audio/SAP.cpp:679
+#: ../src/libromdata/Audio/SNDH.cpp:928 ../src/libromdata/Audio/ZXAY.cpp:404
+msgctxt "Audio"
+msgid "Song List"
 msgstr ""
 
 #: ../src/libromdata/Audio/PSF.cpp:116
@@ -1732,9 +1735,8 @@ msgid "Volume"
 msgstr ""
 
 #: ../src/libromdata/Audio/PSFTagParser.cpp:240
-#: ../src/libromdata/Audio/SAP.cpp:671 ../src/libromdata/Audio/SNDH.cpp:912
-#: ../src/libromdata/Audio/SNDH.cpp:916 ../src/libromdata/Audio/SNDH.cpp:940
-#: ../src/libromdata/Audio/SPC.cpp:810 ../src/libromdata/Audio/VGM.cpp:402
+#: ../src/libromdata/Audio/SNDH.cpp:940 ../src/libromdata/Audio/SPC.cpp:810
+#: ../src/libromdata/Audio/VGM.cpp:402
 msgctxt "RomData|Audio"
 msgid "Duration"
 msgstr ""
@@ -1845,19 +1847,9 @@ msgctxt "SAP"
 msgid "COVOX Address"
 msgstr ""
 
-#: ../src/libromdata/Audio/SAP.cpp:670
-msgctxt "SAP|SongList"
-msgid "#"
-msgstr ""
-
 #: ../src/libromdata/Audio/SAP.cpp:672
-msgctxt "SAP|SongList"
+msgctxt "Audio|SongList"
 msgid "Looping"
-msgstr ""
-
-#: ../src/libromdata/Audio/SAP.cpp:679
-msgctxt "SAP"
-msgid "Song List"
 msgstr ""
 
 #: ../src/libromdata/Audio/SID.cpp:205
@@ -1905,21 +1897,6 @@ msgstr ""
 #: ../src/libromdata/Audio/SNDH.cpp:847
 msgctxt "SMDH"
 msgid "Default Subtune"
-msgstr ""
-
-#: ../src/libromdata/Audio/SNDH.cpp:906
-msgctxt "SNDH|SubtuneList"
-msgid "#"
-msgstr ""
-
-#: ../src/libromdata/Audio/SNDH.cpp:911 ../src/libromdata/Audio/SNDH.cpp:914
-msgctxt "SNDH|SubtuneList"
-msgid "Name"
-msgstr ""
-
-#: ../src/libromdata/Audio/SNDH.cpp:928
-msgctxt "SNDH"
-msgid "Subtune List"
 msgstr ""
 
 #: ../src/libromdata/Audio/SPC.cpp:766
@@ -2129,26 +2106,6 @@ msgstr ""
 #: ../src/libromdata/Audio/ZXAY.cpp:322
 msgctxt "ZXAY"
 msgid "Player Version"
-msgstr ""
-
-#: ../src/libromdata/Audio/ZXAY.cpp:388
-msgctxt "ZXAY|SongList"
-msgid "#"
-msgstr ""
-
-#: ../src/libromdata/Audio/ZXAY.cpp:389
-msgctxt "ZXAY|SongList"
-msgid "Name"
-msgstr ""
-
-#: ../src/libromdata/Audio/ZXAY.cpp:390
-msgctxt "ZXAY|SongList"
-msgid "Duration"
-msgstr ""
-
-#: ../src/libromdata/Audio/ZXAY.cpp:404
-msgctxt "ZXAY"
-msgid "Song List"
 msgstr ""
 
 #: ../src/libromdata/Common/ParamSFO.cpp:544
@@ -3038,31 +2995,37 @@ msgstr "Невідомо"
 
 #. tr: Partition number.
 #: ../src/libromdata/Console/GameCube.cpp:1875
-msgctxt "Wii|Partition"
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1917
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1943
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2314
+msgctxt "PartitionTable"
 msgid "#"
 msgstr ""
 
 #. tr: Partition type.
 #: ../src/libromdata/Console/GameCube.cpp:1877
-msgctxt "Wii|Partition"
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1918
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1944
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2315
+msgctxt "PartitionTable"
 msgid "Type"
 msgstr ""
 
 #. tr: Encryption key.
 #: ../src/libromdata/Console/GameCube.cpp:1879
-msgctxt "Wii|Partition"
+msgctxt "PartitionTable"
 msgid "Key"
 msgstr ""
 
 #. tr: Actual data used within the partition.
 #: ../src/libromdata/Console/GameCube.cpp:1881
-msgctxt "Wii|Partition"
+msgctxt "PartitionTable"
 msgid "Used Size"
 msgstr ""
 
 #. tr: Total size of the partition.
 #: ../src/libromdata/Console/GameCube.cpp:1883
-msgctxt "Wii|Partition"
+msgctxt "PartitionTable"
 msgid "Total Size"
 msgstr ""
 
@@ -6104,49 +6067,28 @@ msgctxt "Nintendo3DS"
 msgid "NCCH encryption flags are incorrect. Use GodMode9 to fix."
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1917
-msgctxt "Nintendo3DS|CCI"
-msgid "#"
-msgstr ""
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1918
-msgctxt "Nintendo3DS|CCI"
-msgid "Type"
-msgstr ""
-
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1919
-msgctxt "Nintendo3DS|CCI"
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2316
+msgctxt "PartitionTable"
 msgid "Encryption"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1920
-msgctxt "Nintendo3DS|CCI"
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2317
+msgctxt "PartitionTable"
 msgid "Version"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1921
-msgctxt "Nintendo3DS|CCI"
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1946
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2318
+msgctxt "PartitionTable"
 msgid "Size"
-msgstr ""
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1943
-msgctxt "Nintendo3DS|eMMC"
-msgid "#"
-msgstr ""
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1944
-msgctxt "Nintendo3DS|eMMC"
-msgid "Type"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1945
-msgctxt "Nintendo3DS|eMMC"
+msgctxt "PartitionTable"
 msgid "Keyslot"
-msgstr ""
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1946
-msgctxt "Nintendo3DS|eMMC"
-msgid "Size"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1965
@@ -6199,31 +6141,6 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2180
 msgctxt "Nintendo3DS"
 msgid "Demo Use Limit"
-msgstr ""
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2314
-msgctxt "Nintendo3DS|CtNames"
-msgid "#"
-msgstr ""
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2315
-msgctxt "Nintendo3DS|CtNames"
-msgid "Type"
-msgstr ""
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2316
-msgctxt "Nintendo3DS|CtNames"
-msgid "Encryption"
-msgstr ""
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2317
-msgctxt "Nintendo3DS|CtNames"
-msgid "Version"
-msgstr ""
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2318
-msgctxt "Nintendo3DS|CtNames"
-msgid "Size"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2325
@@ -11235,16 +11152,6 @@ msgstr ""
 msgctxt "KeyManagerTab"
 msgid "Key Manager"
 msgstr "Менеджер ключів"
-
-#: ../src/win32/config/OptionsTab.cpp:188
-msgctxt "OptionsTab"
-msgid "When using an unlimited network connection:"
-msgstr ""
-
-#: ../src/win32/config/OptionsTab.cpp:190
-msgctxt "OptionsTab"
-msgid "When using a metered network connection:"
-msgstr ""
 
 #. tr: Tab title.
 #: ../src/win32/config/SystemsTab.cpp:523
