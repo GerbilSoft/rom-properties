@@ -1044,7 +1044,7 @@ int EXEPrivate::addFields_PE_Export(void)
 		if (ent.hint != -1) {
 			row.push_back(fmt::format_int(ent.hint).str());
 		} else {
-			row.push_back(C_("EXE|Exports", "None"));
+			row.push_back(C_("RomData", "None"));
 		}
 		if (ent.forwarder.size() != 0) {
 			row.push_back(ent.forwarder);

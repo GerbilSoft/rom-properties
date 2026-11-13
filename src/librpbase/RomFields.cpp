@@ -518,7 +518,7 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 
 	if (ratings_count == 0) {
 		// tr: No age ratings.
-		s_ret = C_("RomFields|AgeRating", "None");
+		s_ret = C_("RomData", "None");
 	}
 
 	return s_ret;

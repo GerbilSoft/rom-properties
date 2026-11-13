@@ -508,7 +508,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 		bit <<= 1;
 	}
 	if (s_io_devices.empty()) {
-		s_io_devices = C_("MegaDrive|I/O", "None");
+		s_io_devices = C_("RomData", "None");
 	}
 	fields.addField_string(C_("MegaDrive", "I/O Support"), s_io_devices);
 
@@ -557,7 +557,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 				suffix, 8, RomFields::STRF_MONOSPACE);
 		} else {
 			// tr: No SRAM
-			fields.addField_string(sram_range_title, C_("MegaDrive", "None"));
+			fields.addField_string(sram_range_title, C_("RomData", "None"));
 		}
 
 		// Check for an extra ROM chip.

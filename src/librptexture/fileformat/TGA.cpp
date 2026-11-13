@@ -887,7 +887,7 @@ int TGA::getFields(RomFields *fields) const
 	} else if (tgaHeader->image_type & TGA_IMAGETYPE_RLE_FLAG) {
 		s_compression = "RLE";
 	} else {
-		s_compression = C_("TGA|Compression", "None");
+		s_compression = C_("RomData", "None");
 	}
 	fields->addField_string(C_("TGA", "Compression"), s_compression);
 

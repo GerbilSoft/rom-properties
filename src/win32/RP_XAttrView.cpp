@@ -328,7 +328,7 @@ void RP_XAttrView_Private::initDialog(void)
 	// NOTE: Not localized!
 	// NOTE 2: Only adding NTFS algorithms, not general algorithms.
 	HWND hCboZAlg = GetDlgItem(hDlgSheet, IDC_XATTRVIEW_NTFS_COMPRESSION_ALG);
-	ComboBox_AddString(hCboZAlg, _T("None"));	// TODO: Localize this?
+	ComboBox_AddString(hCboZAlg, TC_("RomData", "None"));
 	for (int i = (int)XAttrReader::ZAlgorithm::LZNT1; i <= (int)XAttrReader::ZAlgorithm::XPRESS16K; i++) {
 		ComboBox_AddString(hCboZAlg, U82T(XAttrReader::zAlgorithmToString(static_cast<XAttrReader::ZAlgorithm>(i))));
 	}

@@ -740,7 +740,7 @@ const char *ValveVTF::pixelFormat(void) const
 		return d->img_format_tbl[fmt];
 	} else if (fmt < 0) {
 		// Negative == none (usually -1)
-		return C_("ValveVTF|ImageFormat", "None");
+		return C_("RomData", "None");
 	}
 
 	// Invalid pixel format.

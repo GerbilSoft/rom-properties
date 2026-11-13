@@ -330,7 +330,7 @@ int PokemonMini::loadFieldData(void)
 		} else if (!memcmp(irq, vec_empty_ff.data(), vec_empty_ff.size()) ||
 			   !memcmp(irq, vec_empty_00.data(), vec_empty_00.size())) {
 			// Empty vector.
-			s_address = C_("RomData|VectorTable", "None");
+			s_address = C_("RomData", "None");
 		} else {
 			// Not a standard jump opcode.
 			// Show the hexdump.

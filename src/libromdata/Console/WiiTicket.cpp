@@ -787,7 +787,7 @@ const char *WiiTicket::encKeyName_static(EncryptionKeys encKey)
 		s_key_name = pgettext_expr("Wii|KeyIdx", wii_key_tbl[static_cast<size_t>(encKey)]);
 	} else if (encKey == WiiTicket::EncryptionKeys::None) {
 		// tr: EncryptionKeys::None - No encryption.
-		s_key_name = C_("Wii|EncKey", "None");
+		s_key_name = C_("RomData", "None");
 	} else {
 		// Returning nullptr for Unknown.
 		// The caller will have to handle this.

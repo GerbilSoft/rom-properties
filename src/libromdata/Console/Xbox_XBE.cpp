@@ -830,7 +830,7 @@ int Xbox_XBE::loadFieldData(void)
 	}
 
 	d->fields.addField_string(C_("Xbox_XBE", "Media Types"),
-		found ? oss.str() : C_("Xbox_XBE|MediaType", "None"));
+		found ? oss.str() : C_("RomData", "None"));
 
 	// Initialization flags
 	const uint32_t init_flags = le32_to_cpu(xbeHeader->init_flags);

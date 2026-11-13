@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.9+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-13 01:28-0500\n"
+"POT-Creation-Date: 2026-11-13 01:39-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2749,8 +2749,25 @@ msgid "Icon Data"
 msgstr ""
 
 #. tr: No file type entry.
+#. tr: No SRAM
+#. tr: EncryptionKeys::None - No encryption.
+#. tr: No age ratings.
 #: ../src/libromdata/Console/DreamcastSave.cpp:1358
-msgctxt "DreamcastSave"
+#: ../src/libromdata/Console/MegaDrive.cpp:511
+#: ../src/libromdata/Console/MegaDrive.cpp:560
+#: ../src/libromdata/Console/WiiTicket.cpp:790
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1227
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1917
+#: ../src/libromdata/Console/Xbox_XBE.cpp:833
+#: ../src/libromdata/Handheld/PokemonMini.cpp:333
+#: ../src/libromdata/Handheld/WonderSwan.cpp:540
+#: ../src/libromdata/Media/Wim.cpp:249 ../src/libromdata/Other/EXE_PE.cpp:1047
+#: ../src/libromdata/Other/NintendoBadge.cpp:736
+#: ../src/librpbase/RomFields.cpp:521
+#: ../src/librptexture/fileformat/TGA.cpp:890
+#: ../src/librptexture/fileformat/ValveVTF.cpp:743
+#: ../src/win32/RP_XAttrView.cpp:331
+msgctxt "RomData"
 msgid "None"
 msgstr ""
 
@@ -3272,11 +3289,6 @@ msgctxt "MegaDrive|I/O"
 msgid "Mega Mouse"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:511
-msgctxt "MegaDrive|I/O"
-msgid "None"
-msgstr ""
-
 #: ../src/libromdata/Console/MegaDrive.cpp:513
 msgctxt "MegaDrive"
 msgid "I/O Support"
@@ -3313,12 +3325,6 @@ msgstr ""
 #: ../src/libromdata/Console/MegaDrive.cpp:550
 msgctxt "MegaDrive|SRAM"
 msgid "(16-bit)"
-msgstr ""
-
-#. tr: No SRAM
-#: ../src/libromdata/Console/MegaDrive.cpp:560
-msgctxt "MegaDrive"
-msgid "None"
 msgstr ""
 
 #: ../src/libromdata/Console/MegaDrive.cpp:575
@@ -4111,12 +4117,6 @@ msgctxt "Wii|EncKey"
 msgid "Debug (iQue NetCard)"
 msgstr ""
 
-#. tr: EncryptionKeys::None - No encryption.
-#: ../src/libromdata/Console/WiiTicket.cpp:790
-msgctxt "Wii|EncKey"
-msgid "None"
-msgstr ""
-
 #: ../src/libromdata/Console/WiiTMD.cpp:359
 #: ../src/libromdata/Console/WiiWAD.cpp:1027
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:970
@@ -4497,11 +4497,6 @@ msgctxt "Region"
 msgid "New Zealand"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1227
-msgctxt "Xbox360_XEX|EncKey"
-msgid "None"
-msgstr ""
-
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1239
 msgctxt "Xbox360_XEX|EncKey"
 msgid "Cannot Determine"
@@ -4655,11 +4650,6 @@ msgctxt "Xbox360_XEX|MediaType"
 msgid "Xbox Package"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1917
-msgctxt "Xbox360_XEX|MediaType"
-msgid "None"
-msgstr ""
-
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1940
 msgctxt "Xbox360_XEX"
 msgid "Disc Profile ID"
@@ -4764,11 +4754,6 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox_XBE.cpp:832
 msgctxt "Xbox_XBE"
 msgid "Media Types"
-msgstr ""
-
-#: ../src/libromdata/Console/Xbox_XBE.cpp:833
-msgctxt "Xbox_XBE|MediaType"
-msgid "None"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:838
@@ -6593,19 +6578,9 @@ msgctxt "PalmOS"
 msgid "Category"
 msgstr ""
 
-#: ../src/libromdata/Handheld/PokemonMini.cpp:333
-msgctxt "RomData|VectorTable"
-msgid "None"
-msgstr ""
-
 #: ../src/libromdata/Handheld/PSP.cpp:619
 msgctxt "RomData"
 msgid "Video Title"
-msgstr ""
-
-#: ../src/libromdata/Handheld/WonderSwan.cpp:540
-msgctxt "WonderSwan"
-msgid "None"
 msgstr ""
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:574
@@ -6885,11 +6860,6 @@ msgstr ""
 #: ../src/libromdata/Media/Wim.cpp:214
 msgctxt "Wim|Flags"
 msgid "Write in progress"
-msgstr ""
-
-#: ../src/libromdata/Media/Wim.cpp:249
-msgctxt "RomData"
-msgid "None"
 msgstr ""
 
 #: ../src/libromdata/Media/Wim.cpp:252
@@ -8178,11 +8148,6 @@ msgctxt "EXE"
 msgid "Not set"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_PE.cpp:1047
-msgctxt "EXE|Exports"
-msgid "None"
-msgstr ""
-
 #: ../src/libromdata/Other/EXE_PE.cpp:1064
 #: ../src/libromdata/Other/EXE_PE.cpp:1085
 msgctxt "EXE"
@@ -8411,43 +8376,38 @@ msgctxt "NintendoBadge"
 msgid "Launch Title ID"
 msgstr ""
 
-#: ../src/libromdata/Other/NintendoBadge.cpp:737
-msgctxt "NintendoBadge"
-msgid "None"
-msgstr ""
-
 #. tr: {0:s} == Title name, {1:s} == Region
-#: ../src/libromdata/Other/NintendoBadge.cpp:757
+#: ../src/libromdata/Other/NintendoBadge.cpp:756
 #, c++-format
 msgctxt "NintendoBadge"
 msgid "{0:s} (New3DS) ({1:s})"
 msgstr ""
 
 #. tr: Title name
-#: ../src/libromdata/Other/NintendoBadge.cpp:760
+#: ../src/libromdata/Other/NintendoBadge.cpp:759
 #, c++-format
 msgctxt "NintendoBadge"
 msgid "{:s} (New3DS)"
 msgstr ""
 
 #. tr: {0:s} == Title name, {1:s} == Region
-#: ../src/libromdata/Other/NintendoBadge.cpp:765
+#: ../src/libromdata/Other/NintendoBadge.cpp:764
 #, c++-format
 msgctxt "NintendoBadge"
 msgid "{0:s} ({1:s})"
 msgstr ""
 
-#: ../src/libromdata/Other/NintendoBadge.cpp:770
+#: ../src/libromdata/Other/NintendoBadge.cpp:769
 msgctxt "NintendoBadge"
 msgid "Launch Title Name"
 msgstr ""
 
-#: ../src/libromdata/Other/NintendoBadge.cpp:778
+#: ../src/libromdata/Other/NintendoBadge.cpp:777
 msgctxt "NintendoBadge"
 msgid "Badge Set"
 msgstr ""
 
-#: ../src/libromdata/Other/NintendoBadge.cpp:787
+#: ../src/libromdata/Other/NintendoBadge.cpp:786
 msgctxt "NintendoBadge"
 msgid "Set ID"
 msgstr ""
@@ -8988,12 +8948,6 @@ msgstr ""
 #: ../src/librpbase/RomFields.cpp:345
 msgctxt "RomFields|AgeRating"
 msgid "All"
-msgstr ""
-
-#. tr: No age ratings.
-#: ../src/librpbase/RomFields.cpp:521
-msgctxt "RomFields|AgeRating"
-msgid "None"
 msgstr ""
 
 #: ../src/librpbase/TextOut_text.cpp:591 ../src/librpbase/TextOut_text.cpp:612
@@ -9990,11 +9944,6 @@ msgctxt "TGA|Compression"
 msgid "Huffman+Delta, 4-pass"
 msgstr ""
 
-#: ../src/librptexture/fileformat/TGA.cpp:890
-msgctxt "TGA|Compression"
-msgid "None"
-msgstr ""
-
 #: ../src/librptexture/fileformat/TGA.cpp:892
 msgctxt "TGA"
 msgid "Compression"
@@ -10070,12 +10019,6 @@ msgctxt "TGA"
 msgid "Gamma Value"
 msgstr ""
 
-#: ../src/librptexture/fileformat/ValveVTF.cpp:743
-#: ../src/librptexture/fileformat/ValveVTF.cpp:880
-msgctxt "ValveVTF|ImageFormat"
-msgid "None"
-msgstr ""
-
 #: ../src/librptexture/fileformat/ValveVTF.cpp:789
 msgctxt "ValveVTF"
 msgid "VTF Version"
@@ -10104,6 +10047,11 @@ msgstr ""
 #: ../src/librptexture/fileformat/ValveVTF.cpp:869
 msgctxt "ValveVTF"
 msgid "Bumpmap Scale"
+msgstr ""
+
+#: ../src/librptexture/fileformat/ValveVTF.cpp:880
+msgctxt "ValveVTF|ImageFormat"
+msgid "None"
 msgstr ""
 
 #: ../src/librptexture/fileformat/ValveVTF.cpp:886

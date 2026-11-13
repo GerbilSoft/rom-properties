@@ -537,7 +537,7 @@ int WonderSwan::loadFieldData(void)
 	if (!game_id.empty()) {
 		d->fields.addField_string(game_id_title, game_id);
 	} else {
-		d->fields.addField_string(game_id_title, C_("WonderSwan", "None"));
+		d->fields.addField_string(game_id_title, C_("RomData", "None"));
 	}
 
 	// Revision

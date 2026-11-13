@@ -733,8 +733,7 @@ int NintendoBadge::loadFieldData(void)
 			const char *const launch_title_id_title = C_("NintendoBadge", "Launch Title ID");
 			if (prbs->title_id.id == cpu_to_le64(0xFFFFFFFFFFFFFFFFULL)) {
 				// No title ID.
-				d->fields.addField_string(launch_title_id_title,
-					C_("NintendoBadge", "None"));
+				d->fields.addField_string(launch_title_id_title, C_("RomData", "None"));
 			} else {
 				// Title ID is present.
 				d->fields.addField_string(launch_title_id_title,

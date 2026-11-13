@@ -1355,7 +1355,7 @@ int DreamcastSave::loadFieldData(void)
 		switch (d->vms_dirent.filetype) {
 			case DC_VMS_DIRENT_FTYPE_NONE:
 				// tr: No file type entry.
-				filetype = C_("DreamcastSave", "None");
+				filetype = C_("RomData", "None");
 				break;
 			case DC_VMS_DIRENT_FTYPE_DATA:
 				// tr: Save file.

@@ -1224,7 +1224,7 @@ const char *Xbox360_XEX_Private::getEncryptionKeyName(void) const
 {
 	if (fileFormatInfo.encryption_type == cpu_to_be16(XEX2_ENCRYPTION_TYPE_NONE)) {
 		// No encryption.
-		return C_("Xbox360_XEX|EncKey", "None");
+		return C_("RomData", "None");
 	}
 
 	const char *s_ret = nullptr;
@@ -1914,7 +1914,7 @@ int Xbox360_XEX::loadFieldData(void)
 		}
 
 		d->fields.addField_string(C_("Xbox360_XEX", "Media Types"),
-			found ? oss.str().c_str() : C_("Xbox360_XEX|MediaType", "None"));
+			found ? oss.str().c_str() : C_("RomData", "None"));
 	}
 
 	// Region code
