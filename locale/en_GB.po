@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-13 01:39-0500\n"
+"POT-Creation-Date: 2026-11-13 01:46-0500\n"
 "PO-Revision-Date: 2026-01-29 06:37\n"
 "Last-Translator: \n"
 "Language-Team: English, United Kingdom\n"
@@ -605,6 +605,7 @@ msgid "Clearing the system thumbnail cache..."
 msgstr "Clearing the system thumbnail cache..."
 
 #: ../src/gtk/config/CacheTab.cpp:373 ../src/kde/config/CacheTab.cpp:173
+#: ../src/win32/config/CacheTab.cpp:648
 msgctxt "CacheTab"
 msgid "Clearing the ROM Properties Page cache..."
 msgstr "Clearing the ROM Properties Page cache..."
@@ -10866,11 +10867,6 @@ msgstr "System thumbnail cache is already empty. Nothing to do here."
 msgctxt "CacheTab"
 msgid "ERROR: {:s}"
 msgstr "ERROR: {:s}"
-
-#: ../src/win32/config/CacheTab.cpp:648
-msgctxt "CacheTab"
-msgid "Clearing the rom-properties cache..."
-msgstr "Clearing the rom-properties cache..."
 
 #. tr: Tab title.
 #: ../src/win32/config/CacheTab.cpp:1061

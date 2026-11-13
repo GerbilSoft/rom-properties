@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-13 01:39-0500\n"
+"POT-Creation-Date: 2026-11-13 01:46-0500\n"
 "PO-Revision-Date: 2026-08-25 20:35\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
@@ -617,6 +617,7 @@ msgid "Clearing the system thumbnail cache..."
 msgstr "Limpiando el caché de miniaturas del sistema..."
 
 #: ../src/gtk/config/CacheTab.cpp:373 ../src/kde/config/CacheTab.cpp:173
+#: ../src/win32/config/CacheTab.cpp:648
 msgctxt "CacheTab"
 msgid "Clearing the ROM Properties Page cache..."
 msgstr "Limpiando el caché de ROM Properties..."
@@ -10883,11 +10884,6 @@ msgstr ""
 msgctxt "CacheTab"
 msgid "ERROR: {:s}"
 msgstr ""
-
-#: ../src/win32/config/CacheTab.cpp:648
-msgctxt "CacheTab"
-msgid "Clearing the rom-properties cache..."
-msgstr "Limpiando el cache de rom-properties..."
 
 #. tr: Tab title.
 #: ../src/win32/config/CacheTab.cpp:1061

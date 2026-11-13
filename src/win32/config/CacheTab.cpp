@@ -645,7 +645,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	EnableWindow(hClearRpDl, FALSE);
 	SetCursor(LoadCursor(nullptr, IDC_WAIT));
 
-	SetWindowText(hStatusLabel, TC_("CacheTab", "Clearing the rom-properties cache..."));
+	SetWindowText(hStatusLabel, TC_("CacheTab", "Clearing the ROM Properties Page cache..."));
 
 	// Initialize the progress bar.
 	// TODO: Before or after scanning?
