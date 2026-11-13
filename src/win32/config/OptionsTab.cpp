@@ -86,6 +86,12 @@ protected:
 
 public:
 	/**
+	 * Initialize the dialog.
+	 * Call this function from WM_INITDIALOG.
+	 */
+	void initDialog(void);
+
+	/**
 	 * Reset the configuration.
 	 */
 	void reset(void);
@@ -159,6 +165,89 @@ OptionsTabPrivate::~OptionsTabPrivate()
 }
 
 /**
+ * Initialize the dialog.
+ * Call this function from WM_INITDIALOG.
+ */
+void OptionsTabPrivate::initDialog(void)
+{
+	assert(hWndPropSheet != nullptr);
+	if (!hWndPropSheet) {
+		return;
+	}
+
+	// NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+	DarkMode_InitDialog(hWndPropSheet);
+	lastDarkModeEnabled = g_darkModeEnabled;
+
+	// Initialize strings. (Downloads groupbox)
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_OPTIONS_GRPDOWNLOADS),
+		TC_("OptionsTab", "&Downloads"));
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_OPTIONS_CHKEXTIMGDL),
+		TC_("OptionsTab", "E&xternal Image Downloads"));
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_OPTIONS_LBL_UNMETERED_DL),
+		TC_("OptionsTab", "When using an unlimited network connection:"));
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_OPTIONS_LBL_METERED_DL),
+		TC_("OptionsTab", "When using a metered network connection:"));
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_OPTIONS_INTICONSMALL),
+		TC_("OptionsTab", "Always use the internal icon (if present) for small sizes."));
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_OPTIONS_STOREFILEORIGININFO),
+		TC_("OptionsTab", "Store cached file origin information using extended attributes.\nThis helps to identify where cached files were downloaded from."));
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_OPTIONS_LBL_PALLANGUAGEFORGAMETDB),
+		TC_("OptionsTab", "Language for PAL titles on GameTDB:"));
+
+	// Initialize strings. (Options groupbox)
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_OPTIONS_GRPOPTIONS),
+		TC_("OptionsTab", "&Options"));
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_OPTIONS_DANGEROUSPERMISSIONS),
+		TC_("OptionsTab", "Show a security overlay icon for ROM images with\n\"dangerous\" permissions."));
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS),
+		TC_("OptionsTab", "Enable thumbnailing and metadata extraction on network\nfile systems. This may slow down file browsing."));
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_OPTIONS_THUMBNAILDIRECTORYPACKAGES),
+		TC_("OptionsTab", "Enable thumbnailing and metadata extraction of directory-based\npackages, e.g. for Wii U. This may slow down file browsing."));
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_OPTIONS_SHOWXATTRVIEW),
+		TC_("OptionsTab", "Show the Extended Attributes tab."));
+
+	// Populate the combo boxes.
+	const tstring s_dl_None = TC_("OptionsTab", "Don't download any images");
+	const tstring s_dl_NormalRes = TC_("OptionsTab", "Download normal-resolution images");
+	const tstring s_dl_HighRes = TC_("OptionsTab", "Download high-resolution images");
+	HWND cboUnmeteredDL = GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_UNMETERED_DL);
+	ComboBox_AddString(cboUnmeteredDL, s_dl_None.c_str());
+	ComboBox_AddString(cboUnmeteredDL, s_dl_NormalRes.c_str());
+	ComboBox_AddString(cboUnmeteredDL, s_dl_HighRes.c_str());
+	HWND cboMeteredDL = GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_METERED_DL);
+	ComboBox_AddString(cboMeteredDL, s_dl_None.c_str());
+	ComboBox_AddString(cboMeteredDL, s_dl_NormalRes.c_str());
+	ComboBox_AddString(cboMeteredDL, s_dl_HighRes.c_str());
+
+	// Initialize the PAL language dropdown.
+	// TODO: "Force PAL" option.
+	HWND cboLanguage = GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_PALLANGUAGEFORGAMETDB);
+	assert(cboLanguage != nullptr);
+	if (cboLanguage) {
+		LanguageComboBox_SetForcePAL(cboLanguage, true);
+		LanguageComboBox_SetLCs(cboLanguage, Config::get_all_pal_lcs());
+	}
+
+	// Set window themes for Win10's dark mode.
+	if (g_darkModeSupported) {
+		DarkMode_InitButton_Dlg(hWndPropSheet, IDC_OPTIONS_GRPDOWNLOADS);
+		DarkMode_InitButton_Dlg(hWndPropSheet, IDC_OPTIONS_GRPEXTIMGDL);
+		DarkMode_InitButton_Dlg(hWndPropSheet, IDC_OPTIONS_CHKEXTIMGDL);
+		DarkMode_InitComboBox(cboUnmeteredDL);
+		DarkMode_InitComboBox(cboMeteredDL);
+		DarkMode_InitButton_Dlg(hWndPropSheet, IDC_OPTIONS_INTICONSMALL);
+		DarkMode_InitButton_Dlg(hWndPropSheet, IDC_OPTIONS_STOREFILEORIGININFO);
+		DarkMode_InitComboBoxEx(cboLanguage);
+		DarkMode_InitButton_Dlg(hWndPropSheet, IDC_OPTIONS_GRPOPTIONS);
+		DarkMode_InitButton_Dlg(hWndPropSheet, IDC_OPTIONS_DANGEROUSPERMISSIONS);
+		DarkMode_InitButton_Dlg(hWndPropSheet, IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS);
+		DarkMode_InitButton_Dlg(hWndPropSheet, IDC_OPTIONS_THUMBNAILDIRECTORYPACKAGES);
+		DarkMode_InitButton_Dlg(hWndPropSheet, IDC_OPTIONS_SHOWXATTRVIEW);
+	}
+}
+
+/**
  * Reset the configuration.
  */
 void OptionsTabPrivate::reset(void)
@@ -182,7 +271,7 @@ void OptionsTabPrivate::reset(void)
 	updateGrpExtImgDl();
 
 	// PAL language code
-	HWND cboGameTDBPAL = GetDlgItem(hWndPropSheet, IDC_OPTIONS_PALLANGUAGEFORGAMETDB);
+	HWND cboGameTDBPAL = GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_PALLANGUAGEFORGAMETDB);
 	LanguageComboBox_SetSelectedLC(cboGameTDBPAL, config->palLanguageForGameTDB());
 
 	// Options
@@ -241,7 +330,7 @@ void OptionsTabPrivate::loadDefaults(void)
 		CheckDlgButton(hWndPropSheet, IDC_OPTIONS_STOREFILEORIGININFO, boolToBstChecked(bdef));
 		isDefChanged = true;
 	}
-	HWND cboGameTDBPAL = GetDlgItem(hWndPropSheet, IDC_OPTIONS_PALLANGUAGEFORGAMETDB);
+	HWND cboGameTDBPAL = GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_PALLANGUAGEFORGAMETDB);
 	uint32_t u32cur = LanguageComboBox_GetSelectedLC(cboGameTDBPAL);
 	uint32_t u32def = Config::palLanguageForGameTDB_default();
 	if (u32cur != u32def) {
@@ -343,7 +432,7 @@ void OptionsTabPrivate::save(void)
 	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_STOREFILEORIGININFO));
 	WritePrivateProfileString(_T("Downloads"), _T("StoreFileOriginInfo"), btstr, tfilename.c_str());
 
-	uint32_t lc = LanguageComboBox_GetSelectedLC(GetDlgItem(hWndPropSheet, IDC_OPTIONS_PALLANGUAGEFORGAMETDB));
+	uint32_t lc = LanguageComboBox_GetSelectedLC(GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_PALLANGUAGEFORGAMETDB));
 	WritePrivateProfileString(_T("Downloads"), _T("PalLanguageForGameTDB"),
 		SystemRegion::lcToTString(lc).c_str(), tfilename.c_str());
 
@@ -397,7 +486,7 @@ void OptionsTabPrivate::updateGrpExtImgDl(void)
 	EnableWindow(GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_METERED_DL), enable);
 #else /* !ENABLE_NETWORKING */
 	// No-network build: Disable *all* controls related to downloads.
-	for (uint16_t i = IDC_OPTIONS_GRPDOWNLOADS; i <= IDC_OPTIONS_PALLANGUAGEFORGAMETDB; i++) {
+	for (uint16_t i = IDC_OPTIONS_GRPDOWNLOADS; i <= IDC_OPTIONS_CBO_PALLANGUAGEFORGAMETDB; i++) {
 		EnableWindow(GetDlgItem(hWndPropSheet, i), FALSE);
 	}
 #endif /* ENABLE_NETWORKING */
@@ -431,50 +520,10 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			// Store the D object pointer with this particular page dialog.
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
-			// NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
-			DarkMode_InitDialog(hDlg);
-			d->lastDarkModeEnabled = g_darkModeEnabled;
+			// Initialize the dialog.
+			d->initDialog();
 
-			// Populate the combo boxes.
-			const tstring s_dl_None = TC_("OptionsTab", "Don't download any images");
-			const tstring s_dl_NormalRes = TC_("OptionsTab", "Download normal-resolution images");
-			const tstring s_dl_HighRes = TC_("OptionsTab", "Download high-resolution images");
-			HWND cboUnmeteredDL = GetDlgItem(hDlg, IDC_OPTIONS_CBO_UNMETERED_DL);
-			ComboBox_AddString(cboUnmeteredDL, s_dl_None.c_str());
-			ComboBox_AddString(cboUnmeteredDL, s_dl_NormalRes.c_str());
-			ComboBox_AddString(cboUnmeteredDL, s_dl_HighRes.c_str());
-			HWND cboMeteredDL = GetDlgItem(hDlg, IDC_OPTIONS_CBO_METERED_DL);
-			ComboBox_AddString(cboMeteredDL, s_dl_None.c_str());
-			ComboBox_AddString(cboMeteredDL, s_dl_NormalRes.c_str());
-			ComboBox_AddString(cboMeteredDL, s_dl_HighRes.c_str());
-
-			// Initialize the PAL language dropdown.
-			// TODO: "Force PAL" option.
-			HWND cboLanguage = GetDlgItem(hDlg, IDC_OPTIONS_PALLANGUAGEFORGAMETDB);
-			assert(cboLanguage != nullptr);
-			if (cboLanguage) {
-				LanguageComboBox_SetForcePAL(cboLanguage, true);
-				LanguageComboBox_SetLCs(cboLanguage, Config::get_all_pal_lcs());
-			}
-
-			// Set window themes for Win10's dark mode.
-			if (g_darkModeSupported) {
-				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_GRPDOWNLOADS);
-				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_GRPEXTIMGDL);
-				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_CHKEXTIMGDL);
-				DarkMode_InitComboBox(cboUnmeteredDL);
-				DarkMode_InitComboBox(cboMeteredDL);
-				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_INTICONSMALL);
-				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_STOREFILEORIGININFO);
-				DarkMode_InitComboBoxEx(cboLanguage);
-				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_GRPOPTIONS);
-				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_DANGEROUSPERMISSIONS);
-				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS);
-				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_THUMBNAILDIRECTORYPACKAGES);
-				DarkMode_InitButton_Dlg(hDlg, IDC_OPTIONS_SHOWXATTRVIEW);
-			}
-
-			// Reset the configuration. 338
+			// Reset the configuration.
 			d->reset();
 			return TRUE;
 		}
@@ -604,7 +653,7 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 
 					// ComboBoxEx needs extra handling.
 					// TODO: Move this to LanguageComboBox's window procedure?
-					HWND cboGameTDBPAL = GetDlgItem(hDlg, IDC_OPTIONS_PALLANGUAGEFORGAMETDB);
+					HWND cboGameTDBPAL = GetDlgItem(hDlg, IDC_OPTIONS_CBO_PALLANGUAGEFORGAMETDB);
 					assert(cboGameTDBPAL != nullptr);
 					SendMessage(cboGameTDBPAL, WM_THEMECHANGED, 0, 0);
 					HWND hCombo = reinterpret_cast<HWND>(SendMessage(cboGameTDBPAL, CBEM_GETCOMBOCONTROL, 0, 0));

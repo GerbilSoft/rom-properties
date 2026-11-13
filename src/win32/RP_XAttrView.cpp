@@ -306,6 +306,24 @@ void RP_XAttrView_Private::initDialog(void)
 	// Determine if Dark Mode is enabled.
 	isDarkModeEnabled = VerifyDialogDarkMode(GetParent(hDlgSheet));
 
+	// Initialize strings.
+	SetWindowText(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_LBL_DOS_ATTRS),
+		TC_("XAttrView", "MS-DOS Attributes"));
+	SetWindowText(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_DOS_READONLY),
+		TC_("DosAttrView", "&Read-only"));
+	SetWindowText(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_DOS_HIDDEN),
+		TC_("DosAttrView", "&Hidden"));
+	SetWindowText(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_DOS_ARCHIVE),
+		TC_("DosAttrView", "&Archive"));
+	SetWindowText(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_DOS_SYSTEM),
+		TC_("DosAttrView", "&System"));
+	SetWindowText(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_NTFS_COMPRESSED),
+		TC_("DosAttrView", "&Compressed:"));
+	SetWindowText(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_NTFS_ENCRYPTED),
+		TC_("DosAttrView", "&Encrypted"));
+	SetWindowText(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_GRPADS),
+		TC_("XAttrView", "Alternate Data Streams:"));
+
 	// Set up strings for NTFS compression.
 	// NOTE: Not localized!
 	// NOTE 2: Only adding NTFS algorithms, not general algorithms.
@@ -647,13 +665,15 @@ INT_PTR CALLBACK RP_XAttrView_Private::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			// Get the pointer to the property sheet page object. This is 
 			// contained in the LPARAM of the PROPSHEETPAGE structure.
 			LPPROPSHEETPAGE pPage = reinterpret_cast<LPPROPSHEETPAGE>(lParam);
-			if (!pPage)
+			if (!pPage) {
 				return true;
+			}
 
 			// Access the property sheet extension from property page.
 			RP_XAttrView *const pExt = reinterpret_cast<RP_XAttrView*>(pPage->lParam);
-			if (!pExt)
+			if (!pExt) {
 				return true;
+			}
 			RP_XAttrView_Private *const d = pExt->d_ptr;
 
 			// Store the D object pointer with this particular page dialog.

@@ -124,9 +124,10 @@ public:
 	/** Other ImageTypesTabPrivate functions **/
 
 	/**
-	 * Initialize strings.
+	 * Initialize the dialog.
+	 * Call this function from WM_INITDIALOG.
 	 */
-	void initStrings(void);
+	void initDialog(void);
 
 	/**
 	 * Dialog procedure.
@@ -215,8 +216,9 @@ void ImageTypesTabPrivate::createGridLabels(void)
 {
 	assert(hWndPropSheet != nullptr);
 	assert(sz_cboImageType.cx == 0);
-	if (!hWndPropSheet || sz_cboImageType.cx != 0)
+	if (!hWndPropSheet || sz_cboImageType.cx != 0) {
 		return;
+	}
 
 	// Get the dialog margin.
 	// 7x7 DLU margin is recommended by the Windows UX guidelines.
@@ -232,16 +234,16 @@ void ImageTypesTabPrivate::createGridLabels(void)
 		return;
 	}
 
-	// Get the dimensions of IDC_IMAGETYPES_DESC2.
-	HWND lblDesc2 = GetDlgItem(hWndPropSheet, IDC_IMAGETYPES_DESC2);
-	assert(lblDesc2 != nullptr);
-	if (!lblDesc2) {
+	// Get the dimensions of IDC_IMAGETYPES_DESC.
+	HWND lblDesc = GetDlgItem(hWndPropSheet, IDC_IMAGETYPES_DESC);
+	assert(lblDesc != nullptr);
+	if (!lblDesc) {
 		// Label is missing...
 		return;
 	}
-	RECT rect_lblDesc2;
-	GetWindowRect(lblDesc2, &rect_lblDesc2);
-	MapWindowPoints(HWND_DESKTOP, GetParent(lblDesc2), (LPPOINT)&rect_lblDesc2, 2);
+	RECT rect_lblDesc;
+	GetWindowRect(lblDesc, &rect_lblDesc);
+	MapWindowPoints(HWND_DESKTOP, GetParent(lblDesc), (LPPOINT)&rect_lblDesc, 2);
 
 	// Determine the size of the largest image type label.
 	// NOTE: Keeping heights of each label in order to
@@ -299,8 +301,8 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	DestroyWindow(cboTestBox);
 
 	// Create the image type labels.
-	POINT curPt = {rect_lblDesc2.left + sz_lblSysName.cx + (dlgMargin.right/2),
-		rect_lblDesc2.bottom + dlgMargin.bottom};
+	POINT curPt = {rect_lblDesc.left + sz_lblSysName.cx + (dlgMargin.right/2),
+		rect_lblDesc.bottom + dlgMargin.bottom};
 	for (unsigned int i = 0; i < imageTypeCount; i++) {
 		if (i == RomData::IMG_INT_MEDIA) {
 			// No INT MEDIA boxes, so eliminate the column.
@@ -318,7 +320,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	}
 
 	// Determine the starting point.
-	curPt.x = rect_lblDesc2.left;
+	curPt.x = rect_lblDesc.left;
 	curPt.y += sz_lblImageType.cy + (dlgMargin.bottom / 2);
 	int yadj_lblSysName = (rect_cboTestBox.bottom - sz_lblSysName.cy) / 2;
 	if (yadj_lblSysName < 0) {
@@ -535,16 +537,35 @@ void ImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, unsi
 /** Other ImageTypesTabPrivate functions **/
 
 /**
- * Initialize strings.
+ * Initialize the dialog.
+ * Call this function from WM_INITDIALOG.
  */
-void ImageTypesTabPrivate::initStrings(void)
+void ImageTypesTabPrivate::initDialog(void)
 {
+	assert(hWndPropSheet != nullptr);
+	if (!hWndPropSheet) {
+		return;
+	}
+
+	// NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+	DarkMode_InitDialog(hWndPropSheet);
+	lastDarkModeEnabled = g_darkModeEnabled;
+
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_IMAGETYPES_DESC), TC_("ImageTypesTab",
+		"Select the image types you would like to use for each system as its thumbnail image.\n"
+		"Internal images are contained within the ROM file.\n"
+		"External images are downloaded from an external image database.\n\n"
+		"1 = highest priority; 2 = second highest priority; No = ignore"));
+
 	// tr: External image credits.
 	SetWindowText(GetDlgItem(hWndPropSheet, IDC_IMAGETYPES_CREDITS), TC_("ImageTypesTab",
 		"GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
 		"are provided by <a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
 		"amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</a>,"
 		" the Unofficial amiibo Database."));
+
+	// Create the control grid.
+	createGrid();
 }
 
 /**
@@ -575,15 +596,10 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			// Store the D object pointer with this particular page dialog.
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
-			// NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
-			DarkMode_InitDialog(hDlg);
-			d->lastDarkModeEnabled = g_darkModeEnabled;
+			// Initialize the dialog.
+			d->initDialog();
 
-			// Initialize strings.
-			d->initStrings();
-
-			// Create the control grid.
-			d->createGrid();
+			// TODO: Reset the configuration? (SystemTab does this.)
 			return TRUE;
 		}
 

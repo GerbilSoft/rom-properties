@@ -43,6 +43,12 @@ public:
 
 public:
 	/**
+	 * Initialize the dialog.
+	 * Call this function from WM_INITDIALOG.
+	 */
+	void initDialog(void);
+
+	/**
 	 * Reset the configuration.
 	 */
 	void reset(void);
@@ -110,13 +116,69 @@ SystemsTabPrivate::~SystemsTabPrivate()
 }
 
 /**
+ * Initialize the dialog.
+ * Call this function from WM_INITDIALOG.
+ */
+void SystemsTabPrivate::initDialog(void)
+{
+	assert(hWndPropSheet != nullptr);
+	if (!hWndPropSheet) {
+		return;
+	}
+
+	// NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+	DarkMode_InitDialog(hWndPropSheet);
+	lastDarkModeEnabled = g_darkModeEnabled;
+
+	// Initialize strings.
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_GROUPBOX),
+		TC_("SystemsTab", "Game Boy Title Screens"));
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_SELECT_MODEL),
+		TC_("SystemsTab", "Select the Game Boy model to use for title screens for different types of\nGame Boy ROM images."));
+
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_LBL_DMGTS_DMG),
+		TC_("SystemsTab", "Game &Boy:"));
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_LBL_DMGTS_SGB),
+		TC_("SystemsTab", "&Super Game Boy:"));
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_LBL_DMGTS_CGB),
+		TC_("SystemsTab", "Game Boy &Color:"));
+
+	// Populate the combo boxes.
+	const tstring ts_DMG = TC_("SystemsTab", "Game Boy");
+	const tstring ts_SGB = TC_("SystemsTab", "Super Game Boy");
+	const tstring ts_CGB = TC_("SystemsTab", "Game Boy Color");
+
+	HWND hwndDmgTs = GetDlgItem(hWndPropSheet, IDC_SYSTEMS_CBO_DMGTS_DMG);
+	ComboBox_AddString(hwndDmgTs, ts_DMG.c_str());
+	ComboBox_AddString(hwndDmgTs, ts_CGB.c_str());
+	hwndDmgTs = GetDlgItem(hWndPropSheet, IDC_SYSTEMS_CBO_DMGTS_SGB);
+	ComboBox_AddString(hwndDmgTs, ts_DMG.c_str());
+	ComboBox_AddString(hwndDmgTs, ts_SGB.c_str());
+	ComboBox_AddString(hwndDmgTs, ts_CGB.c_str());
+	hwndDmgTs = GetDlgItem(hWndPropSheet, IDC_SYSTEMS_CBO_DMGTS_CGB);
+	ComboBox_AddString(hwndDmgTs, ts_DMG.c_str());
+	ComboBox_AddString(hwndDmgTs, ts_SGB.c_str());
+	ComboBox_AddString(hwndDmgTs, ts_CGB.c_str());
+
+	// Set window themes for Win10's dark mode.
+	// FIXME: Not working for BS_GROUPBOX.
+	if (g_darkModeSupported) {
+		DarkMode_InitButton_Dlg(hWndPropSheet, IDC_SYSTEMS_DMGTS_GROUPBOX);
+		DarkMode_InitComboBox_Dlg(hWndPropSheet, IDC_SYSTEMS_CBO_DMGTS_DMG);
+		DarkMode_InitComboBox_Dlg(hWndPropSheet, IDC_SYSTEMS_CBO_DMGTS_SGB);
+		DarkMode_InitComboBox_Dlg(hWndPropSheet, IDC_SYSTEMS_CBO_DMGTS_CGB);
+	}
+}
+
+/**
  * Reset the configuration.
  */
 void SystemsTabPrivate::reset(void)
 {
 	assert(hWndPropSheet != nullptr);
-	if (!hWndPropSheet)
+	if (!hWndPropSheet) {
 		return;
+	}
 
 	// NOTE: This may re-check the configuration timestamp.
 	const Config *const config = Config::instance();
@@ -125,7 +187,7 @@ void SystemsTabPrivate::reset(void)
 	// so handle it as DMG.
 	const Config::DMG_TitleScreen_Mode tsMode =
 		config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG);
-	const HWND hwndDmgTsDMG = GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_DMG);
+	const HWND hwndDmgTsDMG = GetDlgItem(hWndPropSheet, IDC_SYSTEMS_CBO_DMGTS_DMG);
 	switch (tsMode) {
 		case Config::DMG_TitleScreen_Mode::DMG:
 		case Config::DMG_TitleScreen_Mode::SGB:
@@ -138,9 +200,9 @@ void SystemsTabPrivate::reset(void)
 	}
 
 	// The SGB and CGB dropdowns have all three.
-	ComboBox_SetCurSel(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_SGB),
+	ComboBox_SetCurSel(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_CBO_DMGTS_SGB),
 		(int)config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::SGB));
-	ComboBox_SetCurSel(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_CGB),
+	ComboBox_SetCurSel(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_CBO_DMGTS_CGB),
 		(int)config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::CGB));
 
 	// No longer changed.
@@ -150,25 +212,26 @@ void SystemsTabPrivate::reset(void)
 void SystemsTabPrivate::loadDefaults(void)
 {
 	assert(hWndPropSheet != nullptr);
-	if (!hWndPropSheet)
+	if (!hWndPropSheet) {
 		return;
+	}
 
 	const Config::DMG_TitleScreen_Mode idxDMG_default = Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::DMG);
 	const Config::DMG_TitleScreen_Mode idxSGB_default = Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::SGB);
 	const Config::DMG_TitleScreen_Mode idxCGB_default = Config::dmgTitleScreenMode_default(Config::DMG_TitleScreen_Mode::CGB);
 	bool isDefChanged = false;
 
-	HWND hwndDmgTs = GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_DMG);
+	HWND hwndDmgTs = GetDlgItem(hWndPropSheet, IDC_SYSTEMS_CBO_DMGTS_DMG);
 	if (ComboBox_GetCurSel(hwndDmgTs) != static_cast<int>(idxDMG_default)) {
 		ComboBox_SetCurSel(hwndDmgTs, static_cast<int>(idxDMG_default));
 		isDefChanged = true;
 	}
-	hwndDmgTs = GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_SGB);
+	hwndDmgTs = GetDlgItem(hWndPropSheet, IDC_SYSTEMS_CBO_DMGTS_SGB);
 	if (ComboBox_GetCurSel(hwndDmgTs) != static_cast<int>(idxSGB_default)) {
 		ComboBox_SetCurSel(hwndDmgTs, static_cast<int>(idxSGB_default));
 		isDefChanged = true;
 	}
-	hwndDmgTs = GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_CGB);
+	hwndDmgTs = GetDlgItem(hWndPropSheet, IDC_SYSTEMS_CBO_DMGTS_CGB);
 	if (ComboBox_GetCurSel(hwndDmgTs) != static_cast<int>(idxCGB_default)) {
 		ComboBox_SetCurSel(hwndDmgTs, static_cast<int>(idxCGB_default));
 		isDefChanged = true;
@@ -186,8 +249,9 @@ void SystemsTabPrivate::loadDefaults(void)
 void SystemsTabPrivate::save(void)
 {
 	assert(hWndPropSheet != nullptr);
-	if (!hWndPropSheet)
+	if (!hWndPropSheet) {
 		return;
+	}
 
 	// NOTE: This may re-check the configuration timestamp.
 	const Config *const config = Config::instance();
@@ -209,7 +273,7 @@ void SystemsTabPrivate::save(void)
 	const tstring tfilename = U82T_str(filename);
 
 	static const TCHAR s_dmg_dmg[][4] = {_T("DMG"), _T("CGB")};
-	const int idxDMG = ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_DMG));
+	const int idxDMG = ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_CBO_DMGTS_DMG));
 	assert(idxDMG >= 0);
 	assert(idxDMG < ARRAY_SIZE_I(s_dmg_dmg));
 	if (idxDMG >= 0 && idxDMG < ARRAY_SIZE_I(s_dmg_dmg)) {
@@ -217,8 +281,8 @@ void SystemsTabPrivate::save(void)
 	}
 
 	static const TCHAR s_dmg_other[][4] = {_T("DMG"), _T("SGB"), _T("CGB")};
-	const int idxSGB = ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_SGB));
-	const int idxCGB = ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_DMGTS_CGB));
+	const int idxSGB = ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_CBO_DMGTS_SGB));
+	const int idxCGB = ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_SYSTEMS_CBO_DMGTS_CGB));
 
 	assert(idxSGB >= 0);
 	assert(idxSGB < ARRAY_SIZE_I(s_dmg_other));
@@ -249,13 +313,15 @@ INT_PTR CALLBACK SystemsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			// Get the pointer to the property sheet page object. This is 
 			// contained in the LPARAM of the PROPSHEETPAGE structure.
 			LPPROPSHEETPAGE pPage = reinterpret_cast<LPPROPSHEETPAGE>(lParam);
-			if (!pPage)
+			if (!pPage) {
 				return TRUE;
+			}
 
 			// Get the pointer to the SystemsTabPrivate object.
 			SystemsTabPrivate *const d = reinterpret_cast<SystemsTabPrivate*>(pPage->lParam);
-			if (!d)
+			if (!d) {
 				return TRUE;
+			}
 
 			assert(d->hWndPropSheet == nullptr);
 			d->hWndPropSheet = hDlg;
@@ -263,31 +329,8 @@ INT_PTR CALLBACK SystemsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			// Store the D object pointer with this particular page dialog.
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
-			// NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
-			DarkMode_InitDialog(hDlg);
-			d->lastDarkModeEnabled = g_darkModeEnabled;
-
-			// Populate the combo boxes.
-			HWND hwndDmgTs = GetDlgItem(hDlg, IDC_SYSTEMS_DMGTS_DMG);
-			ComboBox_AddString(hwndDmgTs, _T("Game Boy"));
-			ComboBox_AddString(hwndDmgTs, _T("Game Boy Color"));
-			hwndDmgTs = GetDlgItem(hDlg, IDC_SYSTEMS_DMGTS_SGB);
-			ComboBox_AddString(hwndDmgTs, _T("Game Boy"));
-			ComboBox_AddString(hwndDmgTs, _T("Super Game Boy"));
-			ComboBox_AddString(hwndDmgTs, _T("Game Boy Color"));
-			hwndDmgTs = GetDlgItem(hDlg, IDC_SYSTEMS_DMGTS_CGB);
-			ComboBox_AddString(hwndDmgTs, _T("Game Boy"));
-			ComboBox_AddString(hwndDmgTs, _T("Super Game Boy"));
-			ComboBox_AddString(hwndDmgTs, _T("Game Boy Color"));
-
-			// Set window themes for Win10's dark mode.
-			// FIXME: Not working for BS_GROUPBOX.
-			if (g_darkModeSupported) {
-				DarkMode_InitButton_Dlg(hDlg, IDC_SYSTEMS_DMGTS_GROUPBOX);
-				DarkMode_InitComboBox_Dlg(hDlg, IDC_SYSTEMS_DMGTS_DMG);
-				DarkMode_InitComboBox_Dlg(hDlg, IDC_SYSTEMS_DMGTS_SGB);
-				DarkMode_InitComboBox_Dlg(hDlg, IDC_SYSTEMS_DMGTS_CGB);
-			}
+			// Initialize the dialog.
+			d->initDialog();
 
 			// Reset the configuration.
 			d->reset();
@@ -404,9 +447,9 @@ INT_PTR CALLBACK SystemsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 
 					// Propagate WM_THEMECHANGED to window controls that don't
 					// automatically handle Dark Mode changes, e.g. ComboBox and Button.
-					SendMessage(GetDlgItem(hDlg, IDC_SYSTEMS_DMGTS_DMG), WM_THEMECHANGED, 0, 0);
-					SendMessage(GetDlgItem(hDlg, IDC_SYSTEMS_DMGTS_SGB), WM_THEMECHANGED, 0, 0);
-					SendMessage(GetDlgItem(hDlg, IDC_SYSTEMS_DMGTS_CGB), WM_THEMECHANGED, 0, 0);
+					SendMessage(GetDlgItem(hDlg, IDC_SYSTEMS_CBO_DMGTS_DMG), WM_THEMECHANGED, 0, 0);
+					SendMessage(GetDlgItem(hDlg, IDC_SYSTEMS_CBO_DMGTS_SGB), WM_THEMECHANGED, 0, 0);
+					SendMessage(GetDlgItem(hDlg, IDC_SYSTEMS_CBO_DMGTS_CGB), WM_THEMECHANGED, 0, 0);
 				}
 			}
 			break;

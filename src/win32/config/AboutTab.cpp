@@ -275,6 +275,7 @@ protected:
 public:
 	/**
 	 * Initialize the dialog.
+	 * Call this function from WM_INITDIALOG.
 	 */
 	void initDialog(void);
 
@@ -359,10 +360,6 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 
 			// Store the D object pointer with this particular page dialog.
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
-
-			// NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
-			DarkMode_InitDialog(hDlg);
-			d->lastDarkModeEnabled = g_darkModeEnabled;
 
 			// Initialize the dialog.
 			d->initDialog();
@@ -883,13 +880,15 @@ void AboutTabPrivate::initProgramTitleText(void)
 	// Get the controls.
 	HWND hStaticIcon = GetDlgItem(hWndPropSheet, IDC_ABOUT_ICON);
 	HWND hStaticLine1 = GetDlgItem(hWndPropSheet, IDC_ABOUT_LINE1);
+	HWND hStaticLine2 = GetDlgItem(hWndPropSheet, IDC_ABOUT_LINE2);
 	HWND hStaticVersion = GetDlgItem(hWndPropSheet, IDC_ABOUT_VERSION);
 	HWND hTabControl = GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL);
 	assert(hStaticIcon != nullptr);
 	assert(hStaticLine1 != nullptr);
+	assert(hStaticLine2 != nullptr);
 	assert(hStaticVersion != nullptr);
 	assert(hTabControl != nullptr);
-	if (unlikely(!hStaticIcon || !hStaticLine1 || !hStaticVersion || !hTabControl)) {
+	if (unlikely(!hStaticIcon || !hStaticLine1 || !hStaticLine2 || !hStaticVersion || !hTabControl)) {
 		// Something went wrong...
 		return;
 	}
@@ -905,6 +904,10 @@ void AboutTabPrivate::initProgramTitleText(void)
 	if (unlikely(hFontBold)) {
 		SetWindowFont(hStaticLine1, hFontBold, FALSE);
 	}
+
+	// Program name
+	SetWindowText(hStaticLine1, TC_("AboutTab", "ROM Properties Page"));
+	SetWindowText(hStaticLine2, TC_("AboutTab", "Shell Extension"));
 
 	// Version number.
 	const char *const programVersion =
@@ -1446,9 +1449,19 @@ void AboutTabPrivate::updateRtfColorTablesInRtfStrings(void)
 
 /**
  * Initialize the dialog.
+ * Call this function from WM_INITDIALOG.
  */
 void AboutTabPrivate::initDialog(void)
 {
+	assert(hWndPropSheet != nullptr);
+	if (!hWndPropSheet) {
+		return;
+	}
+
+	// NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+	DarkMode_InitDialog(hWndPropSheet);
+	lastDarkModeEnabled = g_darkModeEnabled;
+
 	// Initialize the program title text.
 	initProgramTitleText();
 

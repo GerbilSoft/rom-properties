@@ -26,7 +26,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.7.1\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-12 20:47-0500\n"
+"POT-Creation-Date: 2026-11-12 20:53-0500\n"
 "PO-Revision-Date: 2018-04-13 04:36+0200\n"
 "Last-Translator: Egor <egor@opensrc.club>\n"
 "Language-Team: none\n"
@@ -81,11 +81,13 @@ msgid ""
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_CacheTab.h:100 ../src/gtk/config/CacheTab.cpp:162
+#: ../src/win32/config/CacheTab.cpp:199
 msgctxt "CacheTab"
 msgid "Clear the System Thumbnail Cache"
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_CacheTab.h:101 ../src/gtk/config/CacheTab.cpp:166
+#: ../src/win32/config/CacheTab.cpp:219
 msgctxt "CacheTab"
 msgid ""
 "ROM Properties Page maintains its own download cache for external images.\n"
@@ -93,6 +95,7 @@ msgid ""
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_CacheTab.h:103 ../src/gtk/config/CacheTab.cpp:172
+#: ../src/win32/config/CacheTab.cpp:201
 msgctxt "CacheTab"
 msgid "Clear the ROM Properties Page Download Cache"
 msgstr ""
@@ -142,21 +145,25 @@ msgid "Abou&t"
 msgstr "Про програму"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:100 ../src/gtk/xattr/DosAttrView.c:139
+#: ../src/win32/RP_XAttrView.cpp:313
 msgctxt "DosAttrView"
 msgid "&Read-only"
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:101 ../src/gtk/xattr/DosAttrView.c:141
+#: ../src/win32/RP_XAttrView.cpp:315
 msgctxt "DosAttrView"
 msgid "&Hidden"
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:102 ../src/gtk/xattr/DosAttrView.c:143
+#: ../src/win32/RP_XAttrView.cpp:317
 msgctxt "DosAttrView"
 msgid "&Archive"
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:103 ../src/gtk/xattr/DosAttrView.c:145
+#: ../src/win32/RP_XAttrView.cpp:319
 msgctxt "DosAttrView"
 msgid "&System"
 msgstr ""
@@ -167,6 +174,7 @@ msgid "&Compressed"
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:105 ../src/gtk/xattr/DosAttrView.c:169
+#: ../src/win32/RP_XAttrView.cpp:323
 msgctxt "DosAttrView"
 msgid "&Encrypted"
 msgstr ""
@@ -179,6 +187,7 @@ msgstr ""
 
 #: ../build/src/kde/kf6/ui_ImageTypesTab.h:67
 #: ../src/gtk/config/ImageTypesTab.cpp:444
+#: ../src/win32/config/ImageTypesTab.cpp:555
 msgctxt "ImageTypesTab"
 msgid ""
 "Select the image types you would like to use for each system as its "
@@ -199,19 +208,21 @@ msgstr ""
 #: ../build/src/kde/kf6/ui_KeyManagerTab.h:92
 #: ../src/gtk/config/KeyManagerTab.cpp:153
 #: ../src/kde/config/KeyManagerTab.cpp:331
+#: ../src/win32/config/KeyManagerTab.cpp:363
 msgctxt "KeyManagerTab"
 msgid "I&mport"
 msgstr ""
 
 # Is this word plural or singular or both?
 #: ../build/src/kde/kf6/ui_OptionsTab.h:184
+#: ../src/win32/config/OptionsTab.cpp:184
 #, fuzzy
 msgctxt "OptionsTab"
 msgid "&Downloads"
 msgstr "&Завантаження"
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:185
-#: ../src/gtk/config/OptionsTab.cpp:144
+#: ../src/gtk/config/OptionsTab.cpp:144 ../src/win32/config/OptionsTab.cpp:186
 #, fuzzy
 msgctxt "OptionsTab"
 msgid "E&xternal Image Downloads"
@@ -227,21 +238,21 @@ msgstr ""
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:188
 #: ../build/src/kde/kf6/ui_OptionsTab.h:194
-#: ../src/gtk/config/OptionsTab.cpp:156 ../src/win32/config/OptionsTab.cpp:439
+#: ../src/gtk/config/OptionsTab.cpp:156 ../src/win32/config/OptionsTab.cpp:211
 msgctxt "OptionsTab"
 msgid "Don't download any images"
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:189
 #: ../build/src/kde/kf6/ui_OptionsTab.h:195
-#: ../src/gtk/config/OptionsTab.cpp:157 ../src/win32/config/OptionsTab.cpp:440
+#: ../src/gtk/config/OptionsTab.cpp:157 ../src/win32/config/OptionsTab.cpp:212
 msgctxt "OptionsTab"
 msgid "Download normal-resolution images"
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:190
 #: ../build/src/kde/kf6/ui_OptionsTab.h:196
-#: ../src/gtk/config/OptionsTab.cpp:158 ../src/win32/config/OptionsTab.cpp:441
+#: ../src/gtk/config/OptionsTab.cpp:158 ../src/win32/config/OptionsTab.cpp:213
 msgctxt "OptionsTab"
 msgid "Download high-resolution images"
 msgstr ""
@@ -255,7 +266,7 @@ msgid ""
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:198
-#: ../src/gtk/config/OptionsTab.cpp:228
+#: ../src/gtk/config/OptionsTab.cpp:228 ../src/win32/config/OptionsTab.cpp:192
 msgctxt "OptionsTab"
 msgid "Always use the internal icon (if present) for small sizes."
 msgstr ""
@@ -263,7 +274,7 @@ msgstr ""
 "розмірів."
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:199
-#: ../src/gtk/config/OptionsTab.cpp:231
+#: ../src/gtk/config/OptionsTab.cpp:231 ../src/win32/config/OptionsTab.cpp:194
 msgctxt "OptionsTab"
 msgid ""
 "Store cached file origin information using extended attributes.\n"
@@ -271,18 +282,19 @@ msgid ""
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:201
-#: ../src/gtk/config/OptionsTab.cpp:238
+#: ../src/gtk/config/OptionsTab.cpp:238 ../src/win32/config/OptionsTab.cpp:196
 msgctxt "OptionsTab"
 msgid "Language for PAL titles on GameTDB:"
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:202
+#: ../src/win32/config/OptionsTab.cpp:200
 msgctxt "OptionsTab"
 msgid "&Options"
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:203
-#: ../src/gtk/config/OptionsTab.cpp:264
+#: ../src/gtk/config/OptionsTab.cpp:264 ../src/win32/config/OptionsTab.cpp:202
 msgctxt "OptionsTab"
 msgid ""
 "Show a security overlay icon for ROM images with\n"
@@ -290,7 +302,7 @@ msgid ""
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:205
-#: ../src/gtk/config/OptionsTab.cpp:267
+#: ../src/gtk/config/OptionsTab.cpp:267 ../src/win32/config/OptionsTab.cpp:204
 msgctxt "OptionsTab"
 msgid ""
 "Enable thumbnailing and metadata extraction on network\n"
@@ -298,7 +310,7 @@ msgid ""
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:207
-#: ../src/gtk/config/OptionsTab.cpp:271
+#: ../src/gtk/config/OptionsTab.cpp:271 ../src/win32/config/OptionsTab.cpp:206
 msgctxt "OptionsTab"
 msgid ""
 "Enable thumbnailing and metadata extraction of directory-based\n"
@@ -306,7 +318,7 @@ msgid ""
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:209
-#: ../src/gtk/config/OptionsTab.cpp:275
+#: ../src/gtk/config/OptionsTab.cpp:275 ../src/win32/config/OptionsTab.cpp:208
 msgctxt "OptionsTab"
 msgid "Show the Extended Attributes tab."
 msgstr ""
@@ -317,7 +329,7 @@ msgid "&Game Boy Title Screens"
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:125
-#: ../src/gtk/config/SystemsTab.cpp:119
+#: ../src/gtk/config/SystemsTab.cpp:119 ../src/win32/config/SystemsTab.cpp:140
 msgctxt "SystemsTab"
 msgid "Game &Boy:"
 msgstr ""
@@ -325,7 +337,7 @@ msgstr ""
 #: ../build/src/kde/kf6/ui_SystemsTab.h:126
 #: ../build/src/kde/kf6/ui_SystemsTab.h:130
 #: ../build/src/kde/kf6/ui_SystemsTab.h:135
-#: ../src/gtk/config/SystemsTab.cpp:127
+#: ../src/gtk/config/SystemsTab.cpp:127 ../src/win32/config/SystemsTab.cpp:147
 msgctxt "SystemsTab"
 msgid "Game Boy"
 msgstr ""
@@ -333,32 +345,32 @@ msgstr ""
 #: ../build/src/kde/kf6/ui_SystemsTab.h:127
 #: ../build/src/kde/kf6/ui_SystemsTab.h:132
 #: ../build/src/kde/kf6/ui_SystemsTab.h:137
-#: ../src/gtk/config/SystemsTab.cpp:129
+#: ../src/gtk/config/SystemsTab.cpp:129 ../src/win32/config/SystemsTab.cpp:149
 msgctxt "SystemsTab"
 msgid "Game Boy Color"
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:129
-#: ../src/gtk/config/SystemsTab.cpp:120
+#: ../src/gtk/config/SystemsTab.cpp:120 ../src/win32/config/SystemsTab.cpp:142
 msgctxt "SystemsTab"
 msgid "&Super Game Boy:"
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:131
 #: ../build/src/kde/kf6/ui_SystemsTab.h:136
-#: ../src/gtk/config/SystemsTab.cpp:128
+#: ../src/gtk/config/SystemsTab.cpp:128 ../src/win32/config/SystemsTab.cpp:148
 msgctxt "SystemsTab"
 msgid "Super Game Boy"
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:134
-#: ../src/gtk/config/SystemsTab.cpp:121
+#: ../src/gtk/config/SystemsTab.cpp:121 ../src/win32/config/SystemsTab.cpp:144
 msgctxt "SystemsTab"
 msgid "Game Boy &Color:"
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:139
-#: ../src/gtk/config/SystemsTab.cpp:114
+#: ../src/gtk/config/SystemsTab.cpp:114 ../src/win32/config/SystemsTab.cpp:137
 msgctxt "SystemsTab"
 msgid ""
 "Select the Game Boy model to use for title screens for different types of\n"
@@ -376,6 +388,7 @@ msgid "XFS Attributes"
 msgstr ""
 
 #: ../build/src/kde/kf6/ui_XAttrView.h:121 ../src/gtk/xattr/XAttrView.cpp:89
+#: ../src/win32/RP_XAttrView.cpp:311
 msgctxt "XAttrView"
 msgid "MS-DOS Attributes"
 msgstr ""
@@ -421,21 +434,21 @@ msgstr ""
 "<b>ROM Properties Page</b>"
 
 #: ../src/gtk/config/AboutTab.cpp:473 ../src/kde/config/AboutTab.cpp:223
-#: ../src/win32/config/AboutTab.cpp:916
+#: ../src/win32/config/AboutTab.cpp:919
 #, c++-format
 msgctxt "AboutTab"
 msgid "Version {:s}"
 msgstr "Версія {:s}"
 
 #: ../src/gtk/config/AboutTab.cpp:497 ../src/kde/config/AboutTab.cpp:245
-#: ../src/win32/config/AboutTab.cpp:1033
+#: ../src/win32/config/AboutTab.cpp:1036
 msgctxt "AboutTab|Credits"
 msgid "GNU GPL v2"
 msgstr "GNU GPL v2"
 
 #. tr: {:s} is the name of the license.
 #: ../src/gtk/config/AboutTab.cpp:508 ../src/kde/config/AboutTab.cpp:255
-#: ../src/win32/config/AboutTab.cpp:1030
+#: ../src/win32/config/AboutTab.cpp:1033
 #, c++-format
 msgctxt "AboutTab|Credits"
 msgid "This program is licensed under the {:s} or later."
@@ -444,27 +457,27 @@ msgstr ""
 "версією."
 
 #: ../src/gtk/config/AboutTab.cpp:522 ../src/kde/config/AboutTab.cpp:269
-#: ../src/win32/config/AboutTab.cpp:1051
+#: ../src/win32/config/AboutTab.cpp:1054
 msgctxt "AboutTab|Credits"
 msgid "Developers:"
 msgstr "Розробники:"
 
 # Anglicism
 #: ../src/gtk/config/AboutTab.cpp:525 ../src/kde/config/AboutTab.cpp:272
-#: ../src/win32/config/AboutTab.cpp:1054
+#: ../src/win32/config/AboutTab.cpp:1057
 msgctxt "AboutTab|Credits"
 msgid "Contributors:"
 msgstr "Контріб'ютор:"
 
 #: ../src/gtk/config/AboutTab.cpp:528 ../src/kde/config/AboutTab.cpp:275
-#: ../src/win32/config/AboutTab.cpp:1057
+#: ../src/win32/config/AboutTab.cpp:1060
 msgctxt "AboutTab|Credits"
 msgid "Translators:"
 msgstr "Перекладачі:"
 
 #. tr: Sub-credit
 #: ../src/gtk/config/AboutTab.cpp:552 ../src/kde/config/AboutTab.cpp:299
-#: ../src/win32/config/AboutTab.cpp:1084
+#: ../src/win32/config/AboutTab.cpp:1087
 #, c++-format
 msgctxt "AboutTab|Credits"
 msgid " ({:s})"
@@ -472,7 +485,7 @@ msgstr " ({:s})"
 
 #. tr: Using an internal copy of a library.
 #: ../src/gtk/config/AboutTab.cpp:576 ../src/kde/config/AboutTab.cpp:319
-#: ../src/win32/config/AboutTab.cpp:1116
+#: ../src/win32/config/AboutTab.cpp:1119
 #, c++-format
 msgctxt "AboutTab|Libraries"
 msgid "Internal copy of {:s}."
@@ -481,7 +494,7 @@ msgstr "Вбудована копія бібліотеки {:s}."
 # "бібліотекою" is inserted there to avoid problems with spelling of з depending on the library name. (з Qt vs зі zlib)
 #. tr: Compiled with a specific version of an external library.
 #: ../src/gtk/config/AboutTab.cpp:578 ../src/kde/config/AboutTab.cpp:321
-#: ../src/win32/config/AboutTab.cpp:1118
+#: ../src/win32/config/AboutTab.cpp:1121
 #, c++-format
 msgctxt "AboutTab|Libraries"
 msgid "Compiled with {:s}."
@@ -489,7 +502,7 @@ msgstr "Скомпільовано з бібліотекою {:s}."
 
 #. tr: Using an external library, e.g. libpcre.so
 #: ../src/gtk/config/AboutTab.cpp:580 ../src/kde/config/AboutTab.cpp:323
-#: ../src/win32/config/AboutTab.cpp:1120
+#: ../src/win32/config/AboutTab.cpp:1123
 #, c++-format
 msgctxt "AboutTab|Libraries"
 msgid "Using {:s}."
@@ -497,7 +510,7 @@ msgstr "Використовується: {:s}."
 
 #. tr: License: (libraries with only a single license)
 #: ../src/gtk/config/AboutTab.cpp:582 ../src/kde/config/AboutTab.cpp:325
-#: ../src/win32/config/AboutTab.cpp:1122
+#: ../src/win32/config/AboutTab.cpp:1125
 #, c++-format
 msgctxt "AboutTab|Libraries"
 msgid "License: {:s}"
@@ -505,32 +518,32 @@ msgstr "Ліцензія: {:s}"
 
 #. tr: Licenses: (libraries with multiple licenses)
 #: ../src/gtk/config/AboutTab.cpp:584 ../src/kde/config/AboutTab.cpp:327
-#: ../src/win32/config/AboutTab.cpp:1124
+#: ../src/win32/config/AboutTab.cpp:1127
 #, c++-format
 msgctxt "AboutTab|Libraries"
 msgid "Licenses: {:s}"
 msgstr "Ліцензії: {:s}"
 
 #: ../src/gtk/config/AboutTab.cpp:693 ../src/kde/config/AboutTab.cpp:460
-#: ../src/win32/config/AboutTab.cpp:1214
+#: ../src/win32/config/AboutTab.cpp:1217
 msgctxt "AboutTab|Libraries"
 msgid "APNG patch:"
 msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:837 ../src/kde/config/AboutTab.cpp:601
-#: ../src/win32/config/AboutTab.cpp:1320
+#: ../src/win32/config/AboutTab.cpp:1323
 msgctxt "AboutTab|Support"
 msgid "For technical support, you can visit the following websites:"
 msgstr "Для отримання технічної підтримки, відвідуйте наступні веб-сайти:"
 
 #: ../src/gtk/config/AboutTab.cpp:850 ../src/kde/config/AboutTab.cpp:614
-#: ../src/win32/config/AboutTab.cpp:1333
+#: ../src/win32/config/AboutTab.cpp:1336
 msgctxt "AboutTab|Support"
 msgid "You can also email the developer directly:"
 msgstr "Ви також можете зв'язатися з розробником безпосередньо:"
 
 #: ../src/gtk/config/AboutTab.cpp:876 ../src/kde/config/AboutTab.cpp:642
-#: ../src/win32/config/AboutTab.cpp:613
+#: ../src/win32/config/AboutTab.cpp:610
 msgctxt "AboutTab"
 msgid "Checking for updates..."
 msgstr ""
@@ -544,7 +557,7 @@ msgid "<b>ERROR:</b> {:s}"
 msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:928 ../src/kde/config/AboutTab.cpp:756
-#: ../src/win32/config/AboutTab.cpp:716
+#: ../src/win32/config/AboutTab.cpp:713
 #, c++-format
 msgctxt "AboutTab"
 msgid "Latest version: {:s}"
@@ -556,7 +569,7 @@ msgid "<b>New version available!</b>"
 msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:934 ../src/kde/config/AboutTab.cpp:762
-#: ../src/win32/config/AboutTab.cpp:722
+#: ../src/win32/config/AboutTab.cpp:719
 msgctxt "AboutTab"
 msgid "Download at GitHub"
 msgstr ""
@@ -579,7 +592,7 @@ msgid "Thumbnails cache directory does not exist."
 msgstr ""
 
 #: ../src/gtk/config/CacheCleaner.cpp:285 ../src/kde/config/CacheCleaner.cpp:72
-#: ../src/win32/config/CacheTab.cpp:591
+#: ../src/win32/config/CacheTab.cpp:623
 msgctxt "CacheCleaner"
 msgid "Unable to get the rom-properties cache directory."
 msgstr ""
@@ -591,7 +604,7 @@ msgid "System thumbnail cache has unexpected files. Not clearing it."
 msgstr ""
 
 #: ../src/gtk/config/CacheCleaner.cpp:325
-#: ../src/kde/config/CacheCleaner.cpp:112 ../src/win32/config/CacheTab.cpp:646
+#: ../src/kde/config/CacheCleaner.cpp:112 ../src/win32/config/CacheTab.cpp:678
 msgctxt "CacheCleaner"
 msgid "rom-properties cache has unexpected files. Not clearing it."
 msgstr ""
@@ -619,26 +632,26 @@ msgid "System thumbnail cache is empty. Nothing to do."
 msgstr ""
 
 #: ../src/gtk/config/CacheTab.cpp:503 ../src/kde/config/CacheTab.cpp:299
-#: ../src/win32/config/CacheTab.cpp:628 ../src/win32/config/CacheTab.cpp:659
+#: ../src/win32/config/CacheTab.cpp:660 ../src/win32/config/CacheTab.cpp:691
 msgctxt "CacheTab"
 msgid "rom-properties cache is empty. Nothing to do."
 msgstr ""
 
 #: ../src/gtk/config/CacheTab.cpp:530 ../src/kde/config/CacheTab.cpp:323
-#: ../src/win32/config/CacheTab.cpp:730
+#: ../src/win32/config/CacheTab.cpp:762
 #, c++-format
 msgctxt "CacheTab"
 msgid "Unable to delete {0:Ld} file(s) and/or {1:Ld} dir(s)."
 msgstr ""
 
 #: ../src/gtk/config/CacheTab.cpp:547 ../src/kde/config/CacheTab.cpp:339
-#: ../src/win32/config/CacheTab.cpp:553
+#: ../src/win32/config/CacheTab.cpp:585
 msgctxt "CacheTab"
 msgid "System thumbnail cache cleared successfully."
 msgstr ""
 
 #: ../src/gtk/config/CacheTab.cpp:551 ../src/kde/config/CacheTab.cpp:343
-#: ../src/win32/config/CacheTab.cpp:735
+#: ../src/win32/config/CacheTab.cpp:767
 msgctxt "CacheTab"
 msgid "rom-properties cache cleared successfully."
 msgstr ""
@@ -666,14 +679,14 @@ msgstr ""
 #: ../src/gtk/config/ImageTypesTab.cpp:329
 #: ../src/gtk/config/ImageTypesTab.cpp:339
 #: ../src/kde/config/ImageTypesTab.cpp:257
-#: ../src/win32/config/ImageTypesTab.cpp:420
+#: ../src/win32/config/ImageTypesTab.cpp:422
 msgctxt "ImageTypesTab|Values"
 msgid "No"
 msgstr "Вимк"
 
 #: ../src/gtk/config/ImageTypesTab.cpp:457
 #: ../src/kde/config/ImageTypesTab.cpp:372
-#: ../src/win32/config/ImageTypesTab.cpp:544
+#: ../src/win32/config/ImageTypesTab.cpp:562
 #, fuzzy
 msgctxt "ImageTypesTab"
 msgid ""
@@ -690,7 +703,7 @@ msgstr ""
 #. tr: Wii keys.bin dialog title
 #: ../src/gtk/config/KeyManagerTab.cpp:488
 #: ../src/kde/config/KeyManagerTab.cpp:465
-#: ../src/win32/config/KeyManagerTab.cpp:1818
+#: ../src/win32/config/KeyManagerTab.cpp:1822
 msgctxt "KeyManagerTab"
 msgid "Select Wii keys.bin File"
 msgstr ""
@@ -698,7 +711,7 @@ msgstr ""
 #. tr: Wii U otp.bin dialog title
 #: ../src/gtk/config/KeyManagerTab.cpp:490
 #: ../src/kde/config/KeyManagerTab.cpp:487
-#: ../src/win32/config/KeyManagerTab.cpp:1820
+#: ../src/win32/config/KeyManagerTab.cpp:1824
 msgctxt "KeyManagerTab"
 msgid "Select Wii U otp.bin File"
 msgstr ""
@@ -706,7 +719,7 @@ msgstr ""
 #. tr: Nintendo 3DS boot9.bin dialog title
 #: ../src/gtk/config/KeyManagerTab.cpp:492
 #: ../src/kde/config/KeyManagerTab.cpp:509
-#: ../src/win32/config/KeyManagerTab.cpp:1822
+#: ../src/win32/config/KeyManagerTab.cpp:1826
 msgctxt "KeyManagerTab"
 msgid "Select 3DS boot9.bin File"
 msgstr ""
@@ -714,7 +727,7 @@ msgstr ""
 #. tr: Nintendo 3DS aeskeydb.bin dialog title
 #: ../src/gtk/config/KeyManagerTab.cpp:494
 #: ../src/kde/config/KeyManagerTab.cpp:531
-#: ../src/win32/config/KeyManagerTab.cpp:1824
+#: ../src/win32/config/KeyManagerTab.cpp:1828
 msgctxt "KeyManagerTab"
 msgid "Select 3DS aeskeydb.bin File"
 msgstr ""
@@ -722,7 +735,7 @@ msgstr ""
 #. tr: Wii keys.bin file filter (RP format)
 #: ../src/gtk/config/KeyManagerTab.cpp:499
 #: ../src/kde/config/KeyManagerTab.cpp:469
-#: ../src/win32/config/KeyManagerTab.cpp:1829
+#: ../src/win32/config/KeyManagerTab.cpp:1833
 msgctxt "KeyManagerTab"
 msgid "keys.bin|keys.bin|-|Binary Files|*.bin|-|All Files|*|-"
 msgstr ""
@@ -730,7 +743,7 @@ msgstr ""
 #. tr: Wii U otp.bin file filter (RP format)
 #: ../src/gtk/config/KeyManagerTab.cpp:501
 #: ../src/kde/config/KeyManagerTab.cpp:491
-#: ../src/win32/config/KeyManagerTab.cpp:1831
+#: ../src/win32/config/KeyManagerTab.cpp:1835
 msgctxt "KeyManagerTab"
 msgid "otp.bin|otp.bin|-|Binary Files|*.bin|-|All Files|*|-"
 msgstr ""
@@ -738,7 +751,7 @@ msgstr ""
 #. tr: Nintendo 3DS boot9.bin file filter (RP format)
 #: ../src/gtk/config/KeyManagerTab.cpp:503
 #: ../src/kde/config/KeyManagerTab.cpp:513
-#: ../src/win32/config/KeyManagerTab.cpp:1833
+#: ../src/win32/config/KeyManagerTab.cpp:1837
 msgctxt "KeyManagerTab"
 msgid "boot9.bin|boot9.bin|-|Binary Files|*.bin|-|All Files|*|-"
 msgstr ""
@@ -746,14 +759,14 @@ msgstr ""
 #. tr: Nintendo 3DS aeskeydb.bin file filter (RP format)
 #: ../src/gtk/config/KeyManagerTab.cpp:505
 #: ../src/kde/config/KeyManagerTab.cpp:535
-#: ../src/win32/config/KeyManagerTab.cpp:1835
+#: ../src/win32/config/KeyManagerTab.cpp:1839
 msgctxt "KeyManagerTab"
 msgid "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|-|All Files|*|-"
 msgstr ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:566
 #: ../src/kde/config/KeyManagerTab.cpp:153
-#: ../src/win32/config/KeyManagerTab.cpp:1606
+#: ../src/win32/config/KeyManagerTab.cpp:1610
 msgctxt "KeyManagerTab"
 msgid ""
 "An invalid parameter was passed to the key importer.\n"
@@ -762,7 +775,7 @@ msgstr ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:573
 #: ../src/kde/config/KeyManagerTab.cpp:161
-#: ../src/win32/config/KeyManagerTab.cpp:1613
+#: ../src/win32/config/KeyManagerTab.cpp:1617
 msgctxt "KeyManagerTab"
 msgid ""
 "An unknown key ID was passed to the key importer.\n"
@@ -771,7 +784,7 @@ msgstr ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:582
 #: ../src/kde/config/KeyManagerTab.cpp:171
-#: ../src/win32/config/KeyManagerTab.cpp:1622
+#: ../src/win32/config/KeyManagerTab.cpp:1626
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while opening '{0:s}': {1:s}"
@@ -779,7 +792,7 @@ msgstr ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:587
 #: ../src/kde/config/KeyManagerTab.cpp:177
-#: ../src/win32/config/KeyManagerTab.cpp:1627
+#: ../src/win32/config/KeyManagerTab.cpp:1631
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while opening '{:s}'."
@@ -787,7 +800,7 @@ msgstr ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:598
 #: ../src/kde/config/KeyManagerTab.cpp:189
-#: ../src/win32/config/KeyManagerTab.cpp:1638
+#: ../src/win32/config/KeyManagerTab.cpp:1642
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while reading '{0:s}': {1:s}"
@@ -795,7 +808,7 @@ msgstr ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:603
 #: ../src/kde/config/KeyManagerTab.cpp:195
-#: ../src/win32/config/KeyManagerTab.cpp:1643
+#: ../src/win32/config/KeyManagerTab.cpp:1647
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while reading '{:s}'."
@@ -803,7 +816,7 @@ msgstr ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:612
 #: ../src/kde/config/KeyManagerTab.cpp:205
-#: ../src/win32/config/KeyManagerTab.cpp:1652
+#: ../src/win32/config/KeyManagerTab.cpp:1656
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "The file '{0:s}' is not a valid {1:s} file."
@@ -811,7 +824,7 @@ msgstr ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:620
 #: ../src/kde/config/KeyManagerTab.cpp:214
-#: ../src/win32/config/KeyManagerTab.cpp:1660
+#: ../src/win32/config/KeyManagerTab.cpp:1664
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "No keys were imported from '{:s}'."
@@ -819,7 +832,7 @@ msgstr ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:630
 #: ../src/kde/config/KeyManagerTab.cpp:225
-#: ../src/win32/config/KeyManagerTab.cpp:1670
+#: ../src/win32/config/KeyManagerTab.cpp:1674
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "{0:Ld} key was imported from '{1:s}'."
@@ -830,7 +843,7 @@ msgstr[2] ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:648
 #: ../src/kde/config/KeyManagerTab.cpp:244
-#: ../src/win32/config/KeyManagerTab.cpp:1693
+#: ../src/win32/config/KeyManagerTab.cpp:1697
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key already exists in the Key Manager."
@@ -841,7 +854,7 @@ msgstr[2] ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:657
 #: ../src/kde/config/KeyManagerTab.cpp:253
-#: ../src/win32/config/KeyManagerTab.cpp:1702
+#: ../src/win32/config/KeyManagerTab.cpp:1706
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key was not imported because it is incorrect."
@@ -852,7 +865,7 @@ msgstr[2] ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:666
 #: ../src/kde/config/KeyManagerTab.cpp:262
-#: ../src/win32/config/KeyManagerTab.cpp:1711
+#: ../src/win32/config/KeyManagerTab.cpp:1715
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key was not imported because it isn't used by rom-properties."
@@ -864,7 +877,7 @@ msgstr[2] ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:675
 #: ../src/kde/config/KeyManagerTab.cpp:271
-#: ../src/win32/config/KeyManagerTab.cpp:1720
+#: ../src/win32/config/KeyManagerTab.cpp:1724
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid ""
@@ -879,7 +892,7 @@ msgstr[2] ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:684
 #: ../src/kde/config/KeyManagerTab.cpp:280
-#: ../src/win32/config/KeyManagerTab.cpp:1729
+#: ../src/win32/config/KeyManagerTab.cpp:1733
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key has been imported and verified as correct."
@@ -890,7 +903,7 @@ msgstr[2] ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:693
 #: ../src/kde/config/KeyManagerTab.cpp:289
-#: ../src/win32/config/KeyManagerTab.cpp:1737
+#: ../src/win32/config/KeyManagerTab.cpp:1741
 #, c++-format
 msgctxt "KeyManagerTab"
 msgid "{:Ld} key has been imported without verification."
@@ -904,7 +917,7 @@ msgstr[2] ""
 #: ../src/gtk/config/KeyManagerTab_gtk3.cpp:73
 #: ../src/gtk/config/KeyManagerTab_gtk4.cpp:320
 #: ../src/kde/config/KeyStoreModel.cpp:152
-#: ../src/win32/config/KeyManagerTab.cpp:378
+#: ../src/win32/config/KeyManagerTab.cpp:386
 msgctxt "KeyManagerTab"
 msgid "Key Name"
 msgstr ""
@@ -914,7 +927,7 @@ msgstr ""
 #: ../src/gtk/config/KeyManagerTab_gtk3.cpp:84
 #: ../src/gtk/config/KeyManagerTab_gtk4.cpp:321
 #: ../src/kde/config/KeyStoreModel.cpp:154
-#: ../src/win32/config/KeyManagerTab.cpp:387
+#: ../src/win32/config/KeyManagerTab.cpp:395
 msgctxt "KeyManagerTab"
 msgid "Value"
 msgstr ""
@@ -924,7 +937,7 @@ msgstr ""
 #: ../src/gtk/config/KeyManagerTab_gtk3.cpp:98
 #: ../src/gtk/config/KeyManagerTab_gtk4.cpp:322
 #: ../src/kde/config/KeyStoreModel.cpp:156
-#: ../src/win32/config/KeyManagerTab.cpp:393
+#: ../src/win32/config/KeyManagerTab.cpp:401
 msgctxt "KeyManagerTab"
 msgid "Valid?"
 msgstr ""
@@ -936,12 +949,12 @@ msgid "Downloads"
 msgstr "&Завантаження"
 
 #. tr: Tab title.
-#: ../src/gtk/config/OptionsTab.cpp:247 ../src/win32/config/OptionsTab.cpp:682
+#: ../src/gtk/config/OptionsTab.cpp:247 ../src/win32/config/OptionsTab.cpp:731
 msgctxt "OptionsTab"
 msgid "Options"
 msgstr ""
 
-#: ../src/gtk/config/SystemsTab.cpp:96
+#: ../src/gtk/config/SystemsTab.cpp:96 ../src/win32/config/SystemsTab.cpp:135
 msgctxt "SystemsTab"
 msgid "Game Boy Title Screens"
 msgstr ""
@@ -11134,39 +11147,51 @@ msgctxt "rp-stub"
 msgid "*** ERROR: %1$s() returned %2$d."
 msgstr ""
 
-#: ../src/win32/config/AboutTab.cpp:634
+#: ../src/win32/config/AboutTab.cpp:631
 msgctxt "AboutTab"
 msgid "Update check failed!"
 msgstr ""
 
 #. tr: Error message template. (Windows version, without formatting)
-#: ../src/win32/config/AboutTab.cpp:667
+#: ../src/win32/config/AboutTab.cpp:664
 msgctxt "AboutTab"
 msgid "ERROR:"
 msgstr ""
 
-#: ../src/win32/config/AboutTab.cpp:720
+#: ../src/win32/config/AboutTab.cpp:717
 msgctxt "AboutTab"
 msgid "New version available!"
 msgstr ""
 
-#: ../src/win32/config/AboutTab.cpp:1094
+# NOTE: Lines are swapped in the uk translation!
+#: ../src/win32/config/AboutTab.cpp:909
+msgctxt "AboutTab"
+msgid "ROM Properties Page"
+msgstr "Розширення оболонки"
+
+# NOTE: Lines are swapped in the uk translation!
+#: ../src/win32/config/AboutTab.cpp:910
+msgctxt "AboutTab"
+msgid "Shell Extension"
+msgstr "ROM Properties Page"
+
+#: ../src/win32/config/AboutTab.cpp:1097
 msgctxt "AboutTab"
 msgid "Credits"
 msgstr "Автори"
 
-#: ../src/win32/config/AboutTab.cpp:1302
+#: ../src/win32/config/AboutTab.cpp:1305
 msgctxt "AboutTab"
 msgid "Libraries"
 msgstr "Бібліотеки"
 
-#: ../src/win32/config/AboutTab.cpp:1339
+#: ../src/win32/config/AboutTab.cpp:1342
 msgctxt "AboutTab"
 msgid "Support"
 msgstr "Техпідтримка"
 
 #. tr: Tab title.
-#: ../src/win32/config/AboutTab.cpp:1638
+#: ../src/win32/config/AboutTab.cpp:1651
 msgctxt "AboutTab"
 msgid "About"
 msgstr "Про програму"
@@ -11178,15 +11203,14 @@ msgid "Achievements"
 msgstr ""
 
 #. tr: Windows Vista and later. Has a centralized thumbnails cache.
-#: ../src/win32/config/CacheTab.cpp:185
+#: ../src/win32/config/CacheTab.cpp:197
 msgctxt "CacheTab"
 msgid ""
 "If any image type settings were changed, you will need to clear the system "
 "thumbnail cache."
 msgstr ""
 
-#. tr: Windows XP or earlier. Has Thumbs.db scattered throughout the system.
-#: ../src/win32/config/CacheTab.cpp:187
+#: ../src/win32/config/CacheTab.cpp:205
 msgctxt "CacheTab"
 msgid ""
 "If any image type settings were changed, you will need to clear the "
@@ -11195,35 +11219,60 @@ msgid ""
 "it may take a while for all Thumbs.db files to be located and deleted."
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:395
+#: ../src/win32/config/CacheTab.cpp:207
+msgctxt "CacheTab"
+msgid "Find all Thumbs.db files on the specified drive(s):"
+msgstr ""
+
+#: ../src/win32/config/CacheTab.cpp:209
+msgctxt "CacheTab"
+msgid "Specify a path"
+msgstr ""
+
+#: ../src/win32/config/CacheTab.cpp:211
+msgctxt "CacheTab"
+msgid "Browse..."
+msgstr ""
+
+#: ../src/win32/config/CacheTab.cpp:213
+msgctxt "CacheTab"
+msgid "Find and Remove Thumbs.db Files"
+msgstr ""
+
+#: ../src/win32/config/CacheTab.cpp:215
+msgctxt "CacheTab"
+msgid "Clear"
+msgstr ""
+
+#: ../src/win32/config/CacheTab.cpp:427
 #, c++-format
 msgctxt "CacheTab|Win32"
 msgid "ERROR: GetLogicalDrives() failed. (GetLastError() == 0x{:0>8X})"
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:420
+#: ../src/win32/config/CacheTab.cpp:452
 msgctxt "CacheTab|Win32"
 msgid "ERROR: No fixed HDDs or SSDs detected."
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:430
+#: ../src/win32/config/CacheTab.cpp:462
 #, c++-format
 msgctxt "CacheTab|Win32"
 msgid "ERROR: Thumbnail Cache cleaner not found. (res == {:d})"
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:441 ../src/win32/config/CacheTab.cpp:450
+#: ../src/win32/config/CacheTab.cpp:473 ../src/win32/config/CacheTab.cpp:482
 msgctxt "CacheTab|Win32"
 msgid "ERROR: Thumbnail Cache cleaner CLSID is invalid."
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:464
+#: ../src/win32/config/CacheTab.cpp:496
 #, c++-format
 msgctxt "CacheTab|Win32"
 msgid "ERROR: CoCreateInstance() failed. (hr == 0x{:0>8X})"
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:517
+#: ../src/win32/config/CacheTab.cpp:549
 #, c++-format
 msgctxt "CacheTab|Win32"
 msgid ""
@@ -11231,55 +11280,65 @@ msgid ""
 "0x{:0>8X})"
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:533
+#: ../src/win32/config/CacheTab.cpp:565
 #, c++-format
 msgctxt "CacheTab|Win32"
 msgid ""
 "ERROR: IEmptyVolumeCache::Purge() failed on drive {:c}. (hr == 0x{:0>8X})"
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:555
+#: ../src/win32/config/CacheTab.cpp:587
 msgctxt "CacheTab"
 msgid "System thumbnail cache is already empty. Nothing to do here."
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:590 ../src/win32/config/CacheTab.cpp:645
-#: ../src/win32/config/CacheTab.cpp:729
+#: ../src/win32/config/CacheTab.cpp:622 ../src/win32/config/CacheTab.cpp:677
+#: ../src/win32/config/CacheTab.cpp:761
 #, c++-format
 msgctxt "CacheTab"
 msgid "ERROR: {:s}"
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:616
+#: ../src/win32/config/CacheTab.cpp:648
 msgctxt "CacheTab"
 msgid "Clearing the rom-properties cache..."
 msgstr ""
 
 #. tr: Tab title.
-#: ../src/win32/config/CacheTab.cpp:1033
+#: ../src/win32/config/CacheTab.cpp:1061
 msgctxt "CacheTab"
 msgid "Thumbnail Cache"
 msgstr ""
 
 #. tr: Tab title.
-#: ../src/win32/config/ImageTypesTab.cpp:808
+#: ../src/win32/config/ImageTypesTab.cpp:824
 msgctxt "ImageTypesTab"
 msgid "Image Types"
 msgstr "Типи зображень"
 
-#: ../src/win32/config/KeyManagerTab.cpp:360
+#: ../src/win32/config/KeyManagerTab.cpp:368
 msgctxt "KeyManagerTab"
 msgid "I&mport..."
 msgstr ""
 
 #. tr: Tab title.
-#: ../src/win32/config/KeyManagerTab.cpp:1881
+#: ../src/win32/config/KeyManagerTab.cpp:1885
 msgctxt "KeyManagerTab"
 msgid "Key Manager"
 msgstr "Менеджер ключів"
 
+#: ../src/win32/config/OptionsTab.cpp:188
+msgctxt "OptionsTab"
+msgid "When using an unlimited network connection:"
+msgstr ""
+
+#: ../src/win32/config/OptionsTab.cpp:190
+msgctxt "OptionsTab"
+msgid "When using a metered network connection:"
+msgstr ""
+
 #. tr: Tab title.
-#: ../src/win32/config/SystemsTab.cpp:480
+#: ../src/win32/config/SystemsTab.cpp:523
 msgctxt "SystemsTab"
 msgid "Systems"
 msgstr ""
@@ -11298,4 +11357,14 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:536
 msgctxt "RomDataView"
 msgid "Invalid action ID."
+msgstr ""
+
+#: ../src/win32/RP_XAttrView.cpp:321
+msgctxt "DosAttrView"
+msgid "&Compressed:"
+msgstr ""
+
+#: ../src/win32/RP_XAttrView.cpp:325
+msgctxt "XAttrView"
+msgid "Alternate Data Streams:"
 msgstr ""

@@ -88,10 +88,10 @@ public:
 public:
 	/**
 	 * Initialize the dialog.
+	 * Call this function from WM_INITDIALOG.
 	 */
 	void initDialog(void);
 
-public:
 	/**
 	 * Reset the configuration.
 	 */
@@ -325,12 +325,18 @@ KeyManagerTabPrivate::~KeyManagerTabPrivate()
 
 /**
  * Initialize the dialog.
+ * Call this function from WM_INITDIALOG.
  */
 void KeyManagerTabPrivate::initDialog(void)
 {
 	assert(hWndPropSheet != nullptr);
-	if (!hWndPropSheet)
+	if (!hWndPropSheet) {
 		return;
+	}
+
+	// NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+	DarkMode_InitDialog(hWndPropSheet);
+	lastDarkModeEnabled = g_darkModeEnabled;
 
 	// Initialize the fonts.
 	fontHandler.setWindow(hWndPropSheet);
@@ -340,8 +346,9 @@ void KeyManagerTabPrivate::initDialog(void)
 	HWND hListView = GetDlgItem(hWndPropSheet, IDC_KEYMANAGER_LIST);
 	assert(hBtnImport != nullptr);
 	assert(hListView != nullptr);
-	if (!hBtnImport || !hListView)
+	if (!hBtnImport || !hListView) {
 		return;
+	}
 
 	if (isComCtl32_v610) {
 		// COMCTL32 is v6.10 or later. Use BS_SPLITBUTTON.
@@ -353,6 +360,7 @@ void KeyManagerTabPrivate::initDialog(void)
 		bsi.mask = BCSIF_STYLE;
 		bsi.uSplitStyle = BCSS_NOSPLIT;
 		Button_SetSplitInfo(hBtnImport, &bsi);
+		SetWindowText(hBtnImport, TC_("KeyManagerTab", "I&mport"));
 	} else {
 		// COMCTL32 is older than v6.10. Use a regular button.
 		// NOTE: The Unicode down arrow doesn't show on on Windows XP.
@@ -631,10 +639,6 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 
 			// Store the D object pointer with this particular page dialog.
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
-
-			// NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
-			DarkMode_InitDialog(hDlg);
-			d->lastDarkModeEnabled = g_darkModeEnabled;
 
 			// Initialize the dialog.
 			d->initDialog();

@@ -76,6 +76,7 @@ public:
 public:
 	/**
 	 * Initialize the dialog.
+	 * Call this function from WM_INITDIALOG.
 	 */
 	void initDialog(void);
 
@@ -176,18 +177,49 @@ CacheTabPrivate::~CacheTabPrivate()
 
 /**
  * Initialize the dialog.
+ * Call this function from WM_INITDIALOG.
  */
 void CacheTabPrivate::initDialog(void)
 {
+	assert(hWndPropSheet != nullptr);
+	if (!hWndPropSheet) {
+		return;
+	}
+
+	// NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
+	DarkMode_InitDialog(hWndPropSheet);
+	lastDarkModeEnabled = g_darkModeEnabled;
+
 	// Initialize strings.
-	SetWindowText(GetDlgItem(hWndPropSheet, IDC_CACHE_DESCRIPTION), U82T(isVista
-		// tr: Windows Vista and later. Has a centralized thumbnails cache.
-		? C_("CacheTab", "If any image type settings were changed, you will need to clear the system thumbnail cache.")
+	if (isVista) {
+		SetWindowText(GetDlgItem(hWndPropSheet, IDC_CACHE_DESC_SYS_CACHE),
+			// tr: Windows Vista and later. Has a centralized thumbnails cache.
+			TC_("CacheTab", "If any image type settings were changed, you will need to clear the system thumbnail cache."));
+		SetWindowText(GetDlgItem(hWndPropSheet, IDC_CACHE_CLEAR_SYS_THUMBS),
+			TC_("CacheTab", "Clear the System Thumbnail Cache"));
+		SetWindowText(GetDlgItem(hWndPropSheet, IDC_CACHE_CLEAR_RP_DL),
+			TC_("CacheTab", "Clear the ROM Properties Page Download Cache"));
+	} else {
 		// tr: Windows XP or earlier. Has Thumbs.db scattered throughout the system.
-		: C_("CacheTab", "If any image type settings were changed, you will need to clear the thumbnail cache files.\nThis version of Windows does not have a centralized thumbnail database, so it may take a while for all Thumbs.db files to be located and deleted.")));
+		SetWindowText(GetDlgItem(hWndPropSheet, IDC_CACHE_DESC_SYS_CACHE),
+			TC_("CacheTab", "If any image type settings were changed, you will need to clear the thumbnail cache files.\nThis version of Windows does not have a centralized thumbnail database, so it may take a while for all Thumbs.db files to be located and deleted."));
+		SetWindowText(GetDlgItem(hWndPropSheet, IDC_CACHE_XP_FIND_DRIVES),
+			TC_("CacheTab", "Find all Thumbs.db files on the specified drive(s):"));
+		SetWindowText(GetDlgItem(hWndPropSheet, IDC_CACHE_XP_FIND_PATH),
+			TC_("CacheTab", "Specify a path"));
+		SetWindowText(GetDlgItem(hWndPropSheet, IDC_CACHE_XP_BROWSE),
+			TC_("CacheTab", "Browse..."));
+		SetWindowText(GetDlgItem(hWndPropSheet, IDC_CACHE_XP_CLEAR_SYS_THUMBS),
+			TC_("CacheTab", "Find and Remove Thumbs.db Files"));
+		SetWindowText(GetDlgItem(hWndPropSheet, IDC_CACHE_CLEAR_RP_DL),
+			TC_("CacheTab", "Clear"));
+	}
+
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_CACHE_DESC_RP_CACHE),
+		TC_("CacheTab", "ROM Properties Page maintains its own download cache for external images.\nClearing this cache will force external images to be redownloaded."));
 
 	// Set window themes for Win10's dark mode.
-	if (this->isVista && g_darkModeSupported) {
+	if (isVista && g_darkModeSupported) {
 		// TODO: Progress bar?
 		DarkMode_InitButton_Dlg(hWndPropSheet, IDC_CACHE_CLEAR_SYS_THUMBS);
 		DarkMode_InitButton_Dlg(hWndPropSheet, IDC_CACHE_CLEAR_RP_DL);
@@ -769,10 +801,6 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 
 			// Store the D object pointer with this particular page dialog.
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
-
-			// NOTE: This should be in WM_CREATE, but we don't receive WM_CREATE here.
-			DarkMode_InitDialog(hDlg);
-			d->lastDarkModeEnabled = g_darkModeEnabled;
 
 			// Initialize the dialog.
 			d->initDialog();
