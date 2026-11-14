@@ -326,6 +326,7 @@ string formatFileSize(off64_t size, BinaryUnitDialect dialect)
 	}
 
 	// Do the actual localization here.
+	// (...except for "byte"/"bytes")
 	if (suffix && needs_pgettext) {
 		suffix = pgettext_expr("LibRpText|FileSize", suffix);
 	}
@@ -368,6 +369,119 @@ string formatFileSize(off64_t size, BinaryUnitDialect dialect)
 
 	// No suffix needed.
 	return s_value.str();
+}
+
+/**
+ * Format a file size, but only return the localized units.
+ * @param size File size
+ * @param dialect
+ * @return Localized units for this file size, or nullptr on error.
+ */
+const char *formatFileSize_unitsOnly(off64_t size, BinaryUnitDialect dialect)
+{
+	const char *suffix = nullptr;
+	bool needs_pgettext = true;
+
+	if (dialect == BinaryUnitDialect::DefaultBinaryDialect) {
+		// If the UI frontend has registered a user setting query function,
+		// call it to get the default dialect.
+		if (userSettingQueryFunc) {
+			int val = userSettingQueryFunc(usq_user_data, UserSetting::BinaryUnitDialect);
+			if (val >= 0) {
+				dialect = static_cast<BinaryUnitDialect>(val);
+			}
+		} else {
+			// No UI frontend function was registered.
+			// Use IEC as the default.
+			dialect = BinaryUnitDialect::IECBinaryDialect;
+		}
+	}
+
+	if (likely(dialect != BinaryUnitDialect::MetricBinaryDialect)) {
+		// Binary KiB (or binary KB)
+		const bool isKiB = (dialect == BinaryUnitDialect::IECBinaryDialect);
+
+		if (size < 0) {
+			// Invalid size.
+			suffix = nullptr;
+		} else if (size < (2LL << 10)) {
+			// tr: Bytes (< 1,024)
+			suffix = NC_("LibRpText|FileSize", "byte", "bytes", static_cast<int>(size));
+			needs_pgettext = false;
+		} else if (size < (2LL << 20)) {
+			suffix = isKiB
+				// tr: Kilobytes (binary)
+				? NOP_C_("LibRpText|FileSize", "KiB")
+				// tr: Kilobytes (decimal)
+				: NOP_C_("LibRpText|FileSize", "KB");
+		} else if (size < (2LL << 30)) {
+			suffix = isKiB
+				// tr: Megabytes (binary)
+				? NOP_C_("LibRpText|FileSize", "MiB")
+				// tr: Megabytes (decimal)
+				: NOP_C_("LibRpText|FileSize", "MB");
+		} else if (size < (2LL << 40)) {
+			suffix = isKiB
+				// tr: Gigabytes (binary)
+				? NOP_C_("LibRpText|FileSize", "GiB")
+				// tr: Gigabytes (decimal)
+				: NOP_C_("LibRpText|FileSize", "GB");
+		} else if (size < (2LL << 50)) {
+			suffix = isKiB
+				// tr: Terabytes (binary)
+				? NOP_C_("LibRpText|FileSize", "TiB")
+				// tr: Terabytes (decimal)
+				: NOP_C_("LibRpText|FileSize", "TB");
+		} else if (size < (2LL << 60)) {
+			suffix = isKiB
+				// tr: Petabytes (binary)
+				? NOP_C_("LibRpText|FileSize", "PiB")
+				// tr: Petabytes (decimal)
+				: NOP_C_("LibRpText|FileSize", "PB");
+		} else /*if (size < (2LL << 70))*/ {
+			suffix = isKiB
+				// tr: Exabytes (binary)
+				? NOP_C_("LibRpText|FileSize", "EiB")
+				// tr: Exabytes (decimal)
+				: NOP_C_("LibRpText|FileSize", "EB");
+		}
+	} else {
+		// Decimal KB
+		if (size < 0) {
+			// Invalid size. Print the value as-is.
+			suffix = nullptr;
+		} else if (size < (2LL * 1000)) {
+			// tr: Bytes (< 1,000)
+			suffix = NC_("LibRpText|FileSize", "byte", "bytes", static_cast<int>(size));
+			needs_pgettext = false;
+		} else if (size < (2LL * 1000*1000)) {
+			// tr: Kilobytes (decimal)
+			suffix = NOP_C_("LibRpText|FileSize", "KB");
+		} else if (size < (2LL * 1000*1000*1000)) {
+			// tr: Megabytes (decimal)
+			suffix = NOP_C_("LibRpText|FileSize", "MB");
+		} else if (size < (2LL * 1000*1000*1000*1000)) {
+			// tr: Gigabytes (decimal)
+			suffix = NOP_C_("LibRpText|FileSize", "GB");
+		} else if (size < (2LL * 1000*1000*1000*1000*1000)) {
+			// tr: Terabytes (decimal)
+			suffix = NOP_C_("LibRpText|FileSize", "TB");
+		} else if (size < (2LL * 1000*1000*1000*1000*1000*1000)) {
+			// tr: Petabytes (decimal)
+			suffix = NOP_C_("LibRpText|FileSize", "PB");
+		} else /*if (size < (2LL * 1000*1000*1000*1000*1000*1000*1000))*/ {
+			// tr: Exabytes (decimal)
+			suffix = NOP_C_("LibRpText|FileSize", "EB");
+		}
+	}
+
+	// Do the actual localization here.
+	// (...except for "byte"/"bytes")
+	if (suffix && needs_pgettext) {
+		suffix = pgettext_expr("LibRpText|FileSize", suffix);
+	}
+
+	return suffix;
 }
 
 /**

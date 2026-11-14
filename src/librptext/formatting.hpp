@@ -70,11 +70,19 @@ enum class BinaryUnitDialect {
 
 /**
  * Format a file size.
- * @param fileSize File size
+ * @param size File size
  * @param dialect
  * @return Formatted file size.
  */
-std::string formatFileSize(off64_t fileSize, BinaryUnitDialect dialect = BinaryUnitDialect::DefaultBinaryDialect);
+std::string formatFileSize(off64_t size, BinaryUnitDialect dialect = BinaryUnitDialect::DefaultBinaryDialect);
+
+/**
+ * Format a file size, but only return the localized units.
+ * @param size File size
+ * @param dialect
+ * @return Localized units for this file size, or nullptr on error.
+ */
+const char *formatFileSize_unitsOnly(off64_t size, BinaryUnitDialect dialect = BinaryUnitDialect::DefaultBinaryDialect);
 
 /**
  * Format a file size, in KiB.

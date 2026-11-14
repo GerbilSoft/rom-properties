@@ -1105,29 +1105,29 @@ int WiiWAD::loadFieldData(void)
 					break;
 				case NC_ACCESS_RIGHTS_SAVE_TYPE_32_KIB_SRAM:
 					kb = 32;
-					unit_l10n = C_("LibRpText|FileSize", "KiB");
+					unit_l10n = formatFileSize_unitsOnly(32*1024);
 					chip_type = "SRAM";
 					break;
 				case NC_ACCESS_RIGHTS_SAVE_TYPE_64_KIB_FLASH:
 					kb = 64;
-					unit_l10n = C_("LibRpText|FileSize", "KiB");
+					unit_l10n = formatFileSize_unitsOnly(64*1024);
 					chip_type = "Flash ROM";
 					break;
 				case NC_ACCESS_RIGHTS_SAVE_TYPE_128_KIB_FLASH:
 					kb = 128;
-					unit_l10n = C_("LibRpText|FileSize", "KiB");
+					unit_l10n = formatFileSize_unitsOnly(128*1024);
 					chip_type = "Flash ROM";
 					break;
 				case NC_ACCESS_RIGHTS_SAVE_TYPE_512_BYTE_EEPROM:
 					// Special handling: We want "512-byte".
 					// TODO: Does that localize the same everywhere?
 					kb = 512;
-					unit_l10n = NC_("LibRpText|FileSize", "byte", "bytes", 1);
+					unit_l10n = formatFileSize_unitsOnly(1);
 					chip_type = "EEPROM";
 					break;
 				case NC_ACCESS_RIGHTS_SAVE_TYPE_8_KIB_EEPROM:
 					kb = 8;
-					unit_l10n = C_("LibRpText|FileSize", "KiB");
+					unit_l10n = formatFileSize_unitsOnly(8*1024);
 					chip_type = "EEPROM";
 					break;
 			}
