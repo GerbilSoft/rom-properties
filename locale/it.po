@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-13 20:19-0500\n"
-"PO-Revision-Date: 2026-11-14 01:35\n"
+"POT-Creation-Date: 2026-11-13 22:41-0500\n"
+"PO-Revision-Date: 2026-11-14 04:04\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -520,27 +520,28 @@ msgctxt "AboutTab"
 msgid "Checking for updates..."
 msgstr "Ricerca aggiornamenti..."
 
-#. tr: Error message template. (GTK version, with C++20 formatting)
-#: ../src/gtk/config/AboutTab.cpp:915 ../src/gtk/config/CacheTab.cpp:474
-#: ../src/gtk/config/CacheTab.cpp:529
+#. tr: Error message template.
+#: ../src/gtk/config/AboutTab.cpp:915 ../src/gtk/config/CacheTab.cpp:475
+#: ../src/gtk/config/CacheTab.cpp:532 ../src/kde/config/AboutTab.cpp:740
+#: ../src/kde/config/CacheTab.cpp:282 ../src/kde/config/CacheTab.cpp:330
 #, c++-format
 msgctxt "ConfigDialog"
 msgid "<b>ERROR:</b> {:s}"
 msgstr "<b>ERRORE:</b> {:s}"
 
-#: ../src/gtk/config/AboutTab.cpp:945 ../src/kde/config/AboutTab.cpp:773
+#: ../src/gtk/config/AboutTab.cpp:945 ../src/kde/config/AboutTab.cpp:777
 #: ../src/win32/config/AboutTab.cpp:713
 #, c++-format
 msgctxt "AboutTab"
 msgid "Latest version: {:s}"
 msgstr "Ultima versione: {:s}"
 
-#: ../src/gtk/config/AboutTab.cpp:948 ../src/kde/config/AboutTab.cpp:776
+#: ../src/gtk/config/AboutTab.cpp:948 ../src/kde/config/AboutTab.cpp:780
 msgctxt "AboutTab"
 msgid "<b>New version available!</b>"
 msgstr "<b>Nuova versione disponibile!</b>"
 
-#: ../src/gtk/config/AboutTab.cpp:951 ../src/kde/config/AboutTab.cpp:779
+#: ../src/gtk/config/AboutTab.cpp:951 ../src/kde/config/AboutTab.cpp:783
 #: ../src/win32/config/AboutTab.cpp:719
 msgctxt "AboutTab"
 msgid "Download at GitHub"
@@ -581,9 +582,9 @@ msgctxt "CacheCleaner"
 msgid "rom-properties cache has unexpected files. Not clearing it."
 msgstr "La cache di rom-properties ha file sconosciuti. Non la svuoto."
 
-#: ../src/gtk/config/CacheTab.cpp:367 ../src/gtk/config/CacheTab.cpp:497
-#: ../src/gtk/config/CacheTab.cpp:543 ../src/kde/config/CacheTab.cpp:167
-#: ../src/kde/config/CacheTab.cpp:293 ../src/kde/config/CacheTab.cpp:335
+#: ../src/gtk/config/CacheTab.cpp:367 ../src/gtk/config/CacheTab.cpp:498
+#: ../src/gtk/config/CacheTab.cpp:545 ../src/kde/config/CacheTab.cpp:167
+#: ../src/kde/config/CacheTab.cpp:298 ../src/kde/config/CacheTab.cpp:342
 msgctxt "CacheTab"
 msgid "Invalid cache directory specified."
 msgstr "Directory di cache specificata non valida."
@@ -599,31 +600,31 @@ msgctxt "CacheTab"
 msgid "Clearing the ROM Properties Page cache..."
 msgstr "Ripulendo la cache di ROM Properties..."
 
-#: ../src/gtk/config/CacheTab.cpp:500 ../src/kde/config/CacheTab.cpp:296
+#: ../src/gtk/config/CacheTab.cpp:501 ../src/kde/config/CacheTab.cpp:301
 msgctxt "CacheTab"
 msgid "System thumbnail cache is empty. Nothing to do."
 msgstr "La cache delle anteprime di sistema è vuota. Non ho nulla da svuotare."
 
-#: ../src/gtk/config/CacheTab.cpp:503 ../src/kde/config/CacheTab.cpp:299
+#: ../src/gtk/config/CacheTab.cpp:504 ../src/kde/config/CacheTab.cpp:304
 #: ../src/win32/config/CacheTab.cpp:660 ../src/win32/config/CacheTab.cpp:691
 msgctxt "CacheTab"
 msgid "rom-properties cache is empty. Nothing to do."
 msgstr "La cache di rom-properites è vuota. Non ho nulla da svuotare."
 
-#: ../src/gtk/config/CacheTab.cpp:530 ../src/kde/config/CacheTab.cpp:323
+#: ../src/gtk/config/CacheTab.cpp:529 ../src/kde/config/CacheTab.cpp:326
 #: ../src/win32/config/CacheTab.cpp:762
 #, c++-format
 msgctxt "CacheTab"
 msgid "Unable to delete {0:Ld} file(s) and/or {1:Ld} dir(s)."
 msgstr "Impossibile eliminare i file {0:Ld} e/o l(a/e) directory {1:Ld}."
 
-#: ../src/gtk/config/CacheTab.cpp:547 ../src/kde/config/CacheTab.cpp:339
+#: ../src/gtk/config/CacheTab.cpp:549 ../src/kde/config/CacheTab.cpp:346
 #: ../src/win32/config/CacheTab.cpp:585
 msgctxt "CacheTab"
 msgid "System thumbnail cache cleared successfully."
 msgstr "La cache delle anteprime di sistema è stata ripulita con successo."
 
-#: ../src/gtk/config/CacheTab.cpp:551 ../src/kde/config/CacheTab.cpp:343
+#: ../src/gtk/config/CacheTab.cpp:553 ../src/kde/config/CacheTab.cpp:350
 #: ../src/win32/config/CacheTab.cpp:767
 msgctxt "CacheTab"
 msgid "rom-properties cache cleared successfully."
@@ -979,10 +980,10 @@ msgstr "ROM Properties"
 #: ../src/libromdata/Console/MegaDrive.cpp:741
 #: ../src/libromdata/Console/NES.cpp:1431
 #: ../src/libromdata/Console/NES.cpp:1588
-#: ../src/libromdata/Console/NES.cpp:1714
-#: ../src/libromdata/Console/NES.cpp:1785
-#: ../src/libromdata/Console/NES.cpp:1796
-#: ../src/libromdata/Console/NES.cpp:1841
+#: ../src/libromdata/Console/NES.cpp:1715
+#: ../src/libromdata/Console/NES.cpp:1786
+#: ../src/libromdata/Console/NES.cpp:1797
+#: ../src/libromdata/Console/NES.cpp:1842
 #: ../src/libromdata/Console/Sega8Bit.cpp:580
 #: ../src/libromdata/Console/Sega8Bit.cpp:582
 #: ../src/libromdata/Console/SNES.cpp:645
@@ -1239,13 +1240,6 @@ msgstr ""
 msgctxt "XAttrView"
 msgid "Extended Attributes"
 msgstr "Attributi estesi"
-
-#. tr: Error message template. (Qt version, with formatting)
-#: ../src/kde/config/AboutTab.cpp:737 ../src/kde/config/CacheTab.cpp:278
-#: ../src/kde/config/CacheTab.cpp:322
-msgctxt "ConfigDialog"
-msgid "<b>ERROR:</b> %1"
-msgstr "<b>ERRORE:</b> %1"
 
 #. tr: format string for Ext2 attribute checkbox labels (%1 == lsattr character)
 #: ../src/kde/xattr/Ext2AttrView.cpp:97
@@ -2417,7 +2411,7 @@ msgstr "Dreamcast"
 #: ../src/libromdata/Console/GameCubeSave.cpp:1036
 #: ../src/libromdata/Console/MegaDrive.cpp:455
 #: ../src/libromdata/Console/NES.cpp:1581
-#: ../src/libromdata/Console/NES.cpp:1834
+#: ../src/libromdata/Console/NES.cpp:1835
 #: ../src/libromdata/Console/SegaSaturn.cpp:510
 #: ../src/libromdata/Console/SNES.cpp:1554
 #: ../src/libromdata/Console/WiiU.cpp:358
@@ -3395,7 +3389,7 @@ msgstr "Mapper"
 #. tr: Print the mapper ID followed by the mapper name.
 #: ../src/libromdata/Console/NES.cpp:1470
 #: ../src/libromdata/Console/NES.cpp:1497
-#: ../src/libromdata/Console/NES.cpp:1825
+#: ../src/libromdata/Console/NES.cpp:1826
 #, c++-format
 msgctxt "NES|Mapper"
 msgid "{0:d} - {1:s}"
@@ -3452,13 +3446,13 @@ msgid "Features"
 msgstr "Funzioni"
 
 #: ../src/libromdata/Console/NES.cpp:1540
-#: ../src/libromdata/Console/NES.cpp:1787
+#: ../src/libromdata/Console/NES.cpp:1788
 msgctxt "NES"
 msgid "PRG ROM Size"
 msgstr "Dim ROM PRG"
 
 #: ../src/libromdata/Console/NES.cpp:1544
-#: ../src/libromdata/Console/NES.cpp:1799
+#: ../src/libromdata/Console/NES.cpp:1800
 msgctxt "NES"
 msgid "CHR ROM Size"
 msgstr "Dim ROM CHR"
@@ -3475,7 +3469,7 @@ msgid "Save RAM (backed up)"
 msgstr "RAM di Salv (ten. in mem.)"
 
 #: ../src/libromdata/Console/NES.cpp:1559
-#: ../src/libromdata/Console/NES.cpp:1804
+#: ../src/libromdata/Console/NES.cpp:1805
 msgctxt "NES"
 msgid "CHR RAM Size"
 msgstr "Dim RAM CHR"
@@ -3491,78 +3485,78 @@ msgctxt "NES"
 msgid "Manufacturing Date"
 msgstr "Data Di Produzione"
 
-#: ../src/libromdata/Console/NES.cpp:1702
+#: ../src/libromdata/Console/NES.cpp:1703
 msgctxt "NES|Mirroring"
 msgid "One Screen"
 msgstr "Uno Schermo"
 
-#: ../src/libromdata/Console/NES.cpp:1704
+#: ../src/libromdata/Console/NES.cpp:1705
 msgctxt "NES|Mirroring"
 msgid "Programmable"
 msgstr "Programmabile"
 
-#: ../src/libromdata/Console/NES.cpp:1708
-#: ../src/libromdata/Console/NES.cpp:1811
+#: ../src/libromdata/Console/NES.cpp:1709
+#: ../src/libromdata/Console/NES.cpp:1812
 #: ../src/libromdata/data/NESMappers.cpp:636
 msgctxt "NES|Mirroring"
 msgid "Horizontal"
 msgstr "Orizzontale"
 
-#: ../src/libromdata/Console/NES.cpp:1711
-#: ../src/libromdata/Console/NES.cpp:1813
+#: ../src/libromdata/Console/NES.cpp:1712
+#: ../src/libromdata/Console/NES.cpp:1814
 #: ../src/libromdata/data/NESMappers.cpp:635
 msgctxt "NES|Mirroring"
 msgid "Vertical"
 msgstr "Verticale"
 
-#: ../src/libromdata/Console/NES.cpp:1723
+#: ../src/libromdata/Console/NES.cpp:1724
 msgctxt "NES"
 msgid "Mirroring"
 msgstr "Mirroring"
 
-#: ../src/libromdata/Console/NES.cpp:1728
+#: ../src/libromdata/Console/NES.cpp:1729
 msgctxt "NES"
 msgid "Vs. PPU"
 msgstr "Vs. PPU"
 
-#: ../src/libromdata/Console/NES.cpp:1732
+#: ../src/libromdata/Console/NES.cpp:1733
 msgctxt "NES"
 msgid "Vs. Hardware"
 msgstr "Vs. Hardware"
 
-#: ../src/libromdata/Console/NES.cpp:1736
+#: ../src/libromdata/Console/NES.cpp:1737
 #: ../src/libromdata/Console/WiiUAncast.cpp:600
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1126
 msgctxt "RomData"
 msgid "Console Type"
 msgstr "Tipo Console"
 
-#: ../src/libromdata/Console/NES.cpp:1740
+#: ../src/libromdata/Console/NES.cpp:1741
 msgctxt "NES"
 msgid "Misc. ROM Count"
 msgstr "Misc. ROM Count"
 
-#: ../src/libromdata/Console/NES.cpp:1744
+#: ../src/libromdata/Console/NES.cpp:1745
 msgctxt "NES"
 msgid "Default Expansion"
 msgstr "Espansione Predefinita"
 
-#: ../src/libromdata/Console/NES.cpp:1755
+#: ../src/libromdata/Console/NES.cpp:1756
 msgctxt "NES"
 msgid "Internal Name"
 msgstr "Nome interno"
 
-#: ../src/libromdata/Console/NES.cpp:1760
+#: ../src/libromdata/Console/NES.cpp:1761
 msgctxt "NES"
 msgid "PRG Checksum"
 msgstr "Checksum PRG"
 
-#: ../src/libromdata/Console/NES.cpp:1765
+#: ../src/libromdata/Console/NES.cpp:1766
 msgctxt "NES"
 msgid "CHR Checksum"
 msgstr "Checksum CHR"
 
-#: ../src/libromdata/Console/NES.cpp:1831
+#: ../src/libromdata/Console/NES.cpp:1832
 msgctxt "NES"
 msgid "Board Type"
 msgstr "Tipo Scheda"
