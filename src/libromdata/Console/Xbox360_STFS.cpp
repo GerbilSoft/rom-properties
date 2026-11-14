@@ -1114,16 +1114,16 @@ int Xbox360_STFS::loadFieldData(void)
 		const char *s_console_type;
 		switch (stfsHeader->console.console_type) {
 			case STFS_CONSOLE_TYPE_DEBUG:
-				s_console_type = C_("Xbox360_XEX|ConsoleType", "Debug");
+				s_console_type = C_("RomData|ConsoleType", "Debug");
 				break;
 			case STFS_CONSOLE_TYPE_RETAIL:
-				s_console_type = C_("Xbox360_XEX|ConsoleType", "Retail");
+				s_console_type = C_("RomData|ConsoleType", "Retail");
 				break;
 			default:
 				s_console_type = nullptr;
 				break;
 		}
-		const char *const s_console_type_title = C_("Xbox360_XEX", "Console Type");
+		const char *const s_console_type_title = C_("RomData", "Console Type");
 		if (s_console_type) {
 			d->fields.addField_string(s_console_type_title, s_console_type);
 		} else {

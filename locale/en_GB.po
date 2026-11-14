@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-13 12:23-0500\n"
+"POT-Creation-Date: 2026-11-13 20:19-0500\n"
 "PO-Revision-Date: 2026-01-29 06:37\n"
 "Last-Translator: \n"
 "Language-Team: English, United Kingdom\n"
@@ -128,25 +128,25 @@ msgid "Abou&t"
 msgstr "Abou&t"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:100 ../src/gtk/xattr/DosAttrView.c:139
-#: ../src/win32/RP_XAttrView.cpp:313
+#: ../src/win32/RP_XAttrView.cpp:314
 msgctxt "DosAttrView"
 msgid "&Read-only"
 msgstr "&Read-only"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:101 ../src/gtk/xattr/DosAttrView.c:141
-#: ../src/win32/RP_XAttrView.cpp:315
+#: ../src/win32/RP_XAttrView.cpp:316
 msgctxt "DosAttrView"
 msgid "&Hidden"
 msgstr "&Hidden"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:102 ../src/gtk/xattr/DosAttrView.c:143
-#: ../src/win32/RP_XAttrView.cpp:317
+#: ../src/win32/RP_XAttrView.cpp:318
 msgctxt "DosAttrView"
 msgid "&Archive"
 msgstr "&Archive"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:103 ../src/gtk/xattr/DosAttrView.c:145
-#: ../src/win32/RP_XAttrView.cpp:319
+#: ../src/win32/RP_XAttrView.cpp:320
 msgctxt "DosAttrView"
 msgid "&System"
 msgstr "&System"
@@ -157,7 +157,7 @@ msgid "&Compressed"
 msgstr "&Compressed"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:105 ../src/gtk/xattr/DosAttrView.c:169
-#: ../src/win32/RP_XAttrView.cpp:323
+#: ../src/win32/RP_XAttrView.cpp:324
 msgctxt "DosAttrView"
 msgid "&Encrypted"
 msgstr "&Encrypted"
@@ -371,7 +371,7 @@ msgid "XFS Attributes"
 msgstr "XFS Attributes"
 
 #: ../build/src/kde/kf6/ui_XAttrView.h:121 ../src/gtk/xattr/XAttrView.cpp:89
-#: ../src/win32/RP_XAttrView.cpp:311
+#: ../src/win32/RP_XAttrView.cpp:312
 msgctxt "XAttrView"
 msgid "MS-DOS Attributes"
 msgstr "MS-DOS Attributes"
@@ -1027,7 +1027,7 @@ msgstr "ROM Properties"
 #: ../src/libromdata/Console/WiiUAncast.cpp:504
 #: ../src/libromdata/Console/WiiUAncast.cpp:554
 #: ../src/libromdata/Console/WiiUAncast.cpp:596
-#: ../src/libromdata/Console/WiiUAncast.cpp:608
+#: ../src/libromdata/Console/WiiUAncast.cpp:611
 #: ../src/libromdata/Console/WiiU.cpp:348
 #: ../src/libromdata/Console/WiiU.cpp:351
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:373
@@ -2773,7 +2773,7 @@ msgstr "Icon Data"
 #: ../src/librpbase/RomFields.cpp:521
 #: ../src/librptexture/fileformat/TGA.cpp:890
 #: ../src/librptexture/fileformat/ValveVTF.cpp:743
-#: ../src/win32/RP_XAttrView.cpp:331
+#: ../src/win32/RP_XAttrView.cpp:332
 msgctxt "RomData"
 msgid "None"
 msgstr "None"
@@ -3580,7 +3580,9 @@ msgid "Vs. Hardware"
 msgstr "Vs. Hardware"
 
 #: ../src/libromdata/Console/NES.cpp:1736
-msgctxt "NES"
+#: ../src/libromdata/Console/WiiUAncast.cpp:600
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:1126
+msgctxt "RomData"
 msgid "Console Type"
 msgstr "Console Type"
 
@@ -4157,10 +4159,22 @@ msgctxt "WiiUAncast"
 msgid "Target Device"
 msgstr "Target Device"
 
-#: ../src/libromdata/Console/WiiUAncast.cpp:600
-msgctxt "WiiUAncast"
-msgid "Console Type"
-msgstr "Console Type"
+#: ../src/libromdata/Console/WiiUAncast.cpp:602
+msgctxt "RomData|ConsoleType"
+msgid "Factory"
+msgstr "Factory"
+
+#: ../src/libromdata/Console/WiiUAncast.cpp:603
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:1117
+msgctxt "RomData|ConsoleType"
+msgid "Debug"
+msgstr "Debug"
+
+#: ../src/libromdata/Console/WiiUAncast.cpp:604
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:1120
+msgctxt "RomData|ConsoleType"
+msgid "Retail"
+msgstr "Retail"
 
 #: ../src/libromdata/Console/WiiUPackage.cpp:1164
 #: ../src/libromdata/Media/Wim.cpp:262 ../src/libromdata/Other/EXE_PE.cpp:851
@@ -4426,21 +4440,6 @@ msgstr "Console ID"
 msgctxt "Xbox360_XEX"
 msgid "Part Number"
 msgstr "Part Number"
-
-#: ../src/libromdata/Console/Xbox360_STFS.cpp:1117
-msgctxt "Xbox360_XEX|ConsoleType"
-msgid "Debug"
-msgstr "Debug"
-
-#: ../src/libromdata/Console/Xbox360_STFS.cpp:1120
-msgctxt "Xbox360_XEX|ConsoleType"
-msgid "Retail"
-msgstr "Retail"
-
-#: ../src/libromdata/Console/Xbox360_STFS.cpp:1126
-msgctxt "Xbox360_XEX"
-msgid "Console Type"
-msgstr "Console Type"
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:881
 msgctxt "Xbox360_XDBF|TitleType"
@@ -10463,12 +10462,12 @@ msgctxt "RomDataView"
 msgid "Invalid action ID."
 msgstr "Invalid action ID."
 
-#: ../src/win32/RP_XAttrView.cpp:321
+#: ../src/win32/RP_XAttrView.cpp:322
 msgctxt "DosAttrView"
 msgid "&Compressed:"
 msgstr "&Compressed:"
 
-#: ../src/win32/RP_XAttrView.cpp:325
+#: ../src/win32/RP_XAttrView.cpp:326
 msgctxt "XAttrView"
 msgid "Alternate Data Streams:"
 msgstr "Alternate Data Streams:"

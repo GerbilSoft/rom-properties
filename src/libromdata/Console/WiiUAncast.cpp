@@ -597,12 +597,15 @@ int WiiUAncast::loadFieldData(void)
 	}
 
 	// Console type
-	const char *const s_console_type_title = C_("WiiUAncast", "Console Type");
+	const char *const s_console_type_title = C_("RomData", "Console Type");
 	static const array<const char*, 3> console_type_tbl = {{
-		"Factory", "Debug", "Retail"
+		NOP_C_("RomData|ConsoleType", "Factory"),
+		NOP_C_("RomData|ConsoleType", "Debug"),
+		NOP_C_("RomData|ConsoleType", "Retail"),
 	}};
 	if (console_type < console_type_tbl.size()) {
-		d->fields.addField_string(s_console_type_title, console_type_tbl[console_type]);
+		d->fields.addField_string(s_console_type_title,
+			pgettext_expr("RomData|ConsoleType", console_type_tbl[console_type]));
 	} else {
 		d->fields.addField_string(s_console_type_title,
 			fmt::format(FSTR("{:s} ({:d})"), C_("RomData", "Unknown"), console_type));

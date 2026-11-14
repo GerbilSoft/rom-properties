@@ -1733,7 +1733,7 @@ int NES::loadFieldData(void)
 		}
 		if (s_extd_ct) {
 			// TODO: Increase the reserved field count?
-			d->fields.addField_string(C_("NES", "Console Type"), s_extd_ct);
+			d->fields.addField_string(C_("RomData", "Console Type"), s_extd_ct);
 		}
 		if (misc_roms > 0) {
 			// TODO: Increase the reserved field count?
