@@ -1091,6 +1091,12 @@ int WiiWAD::loadFieldData(void)
 
 			// TODO: Consolidate the fmt:format_to() calls?
 			string s_save_type;
+			// for fmt::format_to()
+			unsigned int kb = 0;
+			char sep = ' ';
+			const char *unit_l10n = nullptr;
+			const char *chip_type = nullptr;
+
 			switch (save_type) {
 				default:
 					break;
@@ -1098,27 +1104,37 @@ int WiiWAD::loadFieldData(void)
 					s_save_type = C_("RomData", "None");
 					break;
 				case NC_ACCESS_RIGHTS_SAVE_TYPE_32_KIB_SRAM:
-					fmt::format_to(std::back_inserter(s_save_type), FSTR("{:d} {:s} {:s}"),
-						32, C_("LibRpText|FileSize", "KiB"), "SRAM");
+					kb = 32;
+					unit_l10n = C_("LibRpText|FileSize", "KiB");
+					chip_type = "SRAM";
 					break;
 				case NC_ACCESS_RIGHTS_SAVE_TYPE_64_KIB_FLASH:
-					fmt::format_to(std::back_inserter(s_save_type), FSTR("{:d} {:s} {:s}"),
-						64, C_("LibRpText|FileSize", "KiB"), "Flash ROM");
+					kb = 64;
+					unit_l10n = C_("LibRpText|FileSize", "KiB");
+					chip_type = "Flash ROM";
 					break;
 				case NC_ACCESS_RIGHTS_SAVE_TYPE_128_KIB_FLASH:
-					fmt::format_to(std::back_inserter(s_save_type), FSTR("{:d} {:s} {:s}"),
-						128, C_("LibRpText|FileSize", "KiB"), "Flash ROM");
+					kb = 128;
+					unit_l10n = C_("LibRpText|FileSize", "KiB");
+					chip_type = "Flash ROM";
 					break;
 				case NC_ACCESS_RIGHTS_SAVE_TYPE_512_BYTE_EEPROM:
 					// Special handling: We want "512-byte".
 					// TODO: Does that localize the same everywhere?
-					fmt::format_to(std::back_inserter(s_save_type), FSTR("{:d}-{:s} {:s}"),
-						512, NC_("LibRpText|FileSize", "byte", "bytes", 1), "EEPROM");
+					kb = 512;
+					unit_l10n = NC_("LibRpText|FileSize", "byte", "bytes", 1);
+					chip_type = "EEPROM";
 					break;
 				case NC_ACCESS_RIGHTS_SAVE_TYPE_8_KIB_EEPROM:
-					fmt::format_to(std::back_inserter(s_save_type), FSTR("{:d} {:s} {:s}"),
-						8, C_("LibRpText|FileSize", "KiB"), "EEPROM");
+					kb = 8;
+					unit_l10n = C_("LibRpText|FileSize", "KiB");
+					chip_type = "EEPROM";
 					break;
+			}
+
+			if (kb != 0) {
+				fmt::format_to(std::back_inserter(s_save_type), FSTR("{:d}{:c}{:s} {:s}"),
+					kb, sep, unit_l10n, chip_type);
 			}
 
 			// tr: NetCard GBA save type
