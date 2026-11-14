@@ -1662,6 +1662,7 @@ int NES::loadFieldData(void)
 				if ((d->romType & NESPrivate::ROM_FORMAT_MASK) == NESPrivate::ROM_FORMAT_NES2) {
 					if ((header->ines.mapper_hi & INES_F7_SYSTEM_MASK) == INES_F7_SYSTEM_EXTD) {
 						// NES 2.0 Extended Console Type
+						// NOTE: Not translating these strings for now.
 						static const array<const char*, 12> ext_hw_types = {{
 							"NES/Famicom/Dendy",	// Not normally used.
 							"Nintendo Vs. System",	// Not normally used.
