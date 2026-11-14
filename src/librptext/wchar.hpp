@@ -192,3 +192,14 @@ static inline const char *T2U8(const TCHAR *tcs)
 #define tdpgettext_expr(domain, msgctxt, msgid)			U82T(dpgettext_expr(domain, msgctxt, msgid))
 #define tnpgettext_expr(msgctxt, msgid1, msgid2, n)		U82T(npgettext_expr(msgctxt, msgid1, msgid2, n))
 #define tdnpgettext_expr(domain, msgctxt, msgid1, msgid2, n)	U82T(dnpgettext_expr(domain, msgctxt, msgid1, msgid2, n))
+
+// Helper macro for using C_() with U82T_str(). [returns std::string]
+// NOTE: Must include i18n.hpp before using this macro!
+#define TS_(msgid)				U82T_str(_(msgid))
+#define TCS_(msgctxt, msgid)			U82T_str(C_(msgctxt, msgid))
+#define TNS_(msgid1, msgid2, n)			U82T_str(N_(msgid1, msgid2, n))
+#define TNCS_(msgctxt, msgid1, msgid2, n)	U82T_str(NC_(msgctxt, msgid1, msgid2, n))
+#define tpgettext_expr_str(msgctxt, msgid)				U82T_str(pgettext_expr(msgctxt, msgid))
+#define tdpgettext_expr_str(domain, msgctxt, msgid)			U82T_str(dpgettext_expr(domain, msgctxt, msgid))
+#define tnpgettext_expr_str(msgctxt, msgid1, msgid2, n)			U82T_str(npgettext_expr(msgctxt, msgid1, msgid2, n))
+#define tdnpgettext_expr_str(domain, msgctxt, msgid1, msgid2, n)	U82T_str(dnpgettext_expr(domain, msgctxt, msgid1, msgid2, n))

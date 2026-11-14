@@ -1128,7 +1128,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 					tstr = formatDateTime(time_string.time,
 						listDataDesc.col_attrs.dtflags);
 					if (unlikely(tstr.empty())) {
-						tstr = TC_("RomData", "Unknown");
+						tstr = TCS_("RomData", "Unknown");
 					}
 				} else {
 					tstr = U82T_str(data_str);
@@ -1638,7 +1638,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 						tstr = formatDateTime(time_string.time,
 							listDataDesc.col_attrs.dtflags);
 						if (unlikely(tstr.empty())) {
-							tstr = TC_("RomData", "Unknown");
+							tstr = TCS_("RomData", "Unknown");
 						}
 					} else {
 						tstr = U82T_str(*iter_sdr);
@@ -2420,7 +2420,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(_In_ LPFNADDPROPSHEETPAGE pfnAddPa
 	}
 
 	// tr: Tab title.
-	const tstring tsTabTitle = TC_("RomDataView", "ROM Properties");
+	const tstring tsTabTitle = TCS_("RomDataView", "ROM Properties");
 
 	// Create a property sheet page.
 	PROPSHEETPAGE psp;

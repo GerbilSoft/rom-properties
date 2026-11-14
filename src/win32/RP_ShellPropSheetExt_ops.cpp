@@ -75,7 +75,7 @@ void RP_ShellPropSheetExt_Private::adjustTabsForMessageWidgetVisibility(bool bVi
  * @param messageType Message type
  * @param lpszMsg Message
  */
-void RP_ShellPropSheetExt_Private::showMessageWidget(unsigned int messageType, const TCHAR *lpszMsg)
+void RP_ShellPropSheetExt_Private::showMessageWidget(unsigned int messageType, LPCTSTR lpszMsg)
 {
 	if (!hMessageWidget) {
 		// FIXME: Make sure this works if multiple tabs are present.

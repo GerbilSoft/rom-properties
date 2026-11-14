@@ -144,9 +144,9 @@ void SystemsTabPrivate::initDialog(void)
 		TC_("SystemsTab", "Game Boy &Color:"));
 
 	// Populate the combo boxes.
-	const tstring ts_DMG = TC_("SystemsTab", "Game Boy");
-	const tstring ts_SGB = TC_("SystemsTab", "Super Game Boy");
-	const tstring ts_CGB = TC_("SystemsTab", "Game Boy Color");
+	const tstring ts_DMG = TCS_("SystemsTab", "Game Boy");
+	const tstring ts_SGB = TCS_("SystemsTab", "Super Game Boy");
+	const tstring ts_CGB = TCS_("SystemsTab", "Game Boy Color");
 
 	HWND hwndDmgTs = GetDlgItem(hWndPropSheet, IDC_SYSTEMS_CBO_DMGTS_DMG);
 	ComboBox_AddString(hwndDmgTs, ts_DMG.c_str());
@@ -520,7 +520,7 @@ HPROPSHEETPAGE SystemsTab::getHPropSheetPage(void)
 	}
 
 	// tr: Tab title.
-	const tstring tsTabTitle = TC_("SystemsTab", "Systems");
+	const tstring tsTabTitle = TCS_("SystemsTab", "Systems");
 
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);

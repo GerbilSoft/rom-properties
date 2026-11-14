@@ -132,6 +132,9 @@ ADD_CUSTOM_TARGET(rom-properties.pot
 		--keyword=T_ --keyword=TC_:1c,2 --keyword=TN_:1,2 --keyword=TNC_:1c,2,3
 		--keyword=tpgettext_expr:1c,2 --keyword=tdpgettext_expr:2c,3
 		--keyword=tnpgettext_expr:1c,2,3 --keyword=tdnpgettext_expr:2c,3,4
+		--keyword=TS_ --keyword=TCS_:1c,2 --keyword=TNS_:1,2 --keyword=TNCS_:1c,2,3
+		--keyword=tpgettext_expr_str:1c,2 --keyword=tdpgettext_expr_str:2c,3
+		--keyword=tnpgettext_expr_str:1c,2,3 --keyword=tdnpgettext_expr_str:2c,3,4
 		--keyword=Q_ --keyword=QC_:1c,2 --keyword=QN_:1,2 --keyword=QNC_:1c,2,3
 		--keyword=qpgettext_expr:1c,2 --keyword=qdpgettext_expr:2c,3
 		--keyword=qnpgettext_expr:1c,2,3 --keyword=qdnpgettext_expr:2c,3,4

@@ -382,7 +382,7 @@ public:
 	 * @param messageType Message type
 	 * @param lpszMsg Message
 	 */
-	void showMessageWidget(unsigned int messageType, const TCHAR *lpszMsg);
+	void showMessageWidget(unsigned int messageType, LPCTSTR lpszMsg);
 
 	/**
 	 * An "Options" menu button action was triggered.

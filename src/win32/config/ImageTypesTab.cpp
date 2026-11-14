@@ -821,7 +821,7 @@ HPROPSHEETPAGE ImageTypesTab::getHPropSheetPage(void)
 	// FIXME: SysLink controls won't work in ANSI builds.
 
 	// tr: Tab title.
-	const tstring tsTabTitle = TC_("ImageTypesTab", "Image Types");
+	const tstring tsTabTitle = TCS_("ImageTypesTab", "Image Types");
 
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);

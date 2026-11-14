@@ -385,7 +385,7 @@ void KeyManagerTabPrivate::initDialog(void)
 	tstring tsColTitle;
 
 	// tr: Column 0: Key Name
-	tsColTitle = TC_("KeyManagerTab", "Key Name");
+	tsColTitle = TCS_("KeyManagerTab", "Key Name");
 	LVCOLUMN lvColumn;
 	lvColumn.mask = LVCF_FMT | LVCF_TEXT | LVCF_SUBITEM;
 	lvColumn.fmt = LVCFMT_LEFT;
@@ -394,13 +394,13 @@ void KeyManagerTabPrivate::initDialog(void)
 	ListView_InsertColumn(hListView, 0, &lvColumn);
 
 	// tr: Column 1: Value
-	tsColTitle = TC_("KeyManagerTab", "Value");
+	tsColTitle = TCS_("KeyManagerTab", "Value");
 	lvColumn.pszText = const_cast<LPTSTR>(tsColTitle.c_str());
 	lvColumn.iSubItem = 1;
 	ListView_InsertColumn(hListView, 1, &lvColumn);
 
 	// tr: Column 2: Verification status
-	tsColTitle = TC_("KeyManagerTab", "Valid?");
+	tsColTitle = TCS_("KeyManagerTab", "Valid?");
 	lvColumn.pszText = const_cast<LPTSTR>(tsColTitle.c_str());
 	lvColumn.iSubItem = 2;
 	ListView_InsertColumn(hListView, 2, &lvColumn);
@@ -1887,7 +1887,7 @@ HPROPSHEETPAGE KeyManagerTab::getHPropSheetPage(void)
 	}
 
 	// tr: Tab title.
-	const tstring tsTabTitle = TC_("KeyManagerTab", "Key Manager");
+	const tstring tsTabTitle = TCS_("KeyManagerTab", "Key Manager");
 
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);

@@ -1094,7 +1094,7 @@ void AboutTabPrivate::initCreditsTab(void)
 	sCredits += '}';
 
 	// Add the "Credits" tab.
-	const tstring tsTabTitle = TC_("AboutTab", "Credits");
+	const tstring tsTabTitle = TCS_("AboutTab", "Credits");
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
 	tcItem.pszText = const_cast<LPTSTR>(tsTabTitle.c_str());
@@ -1302,7 +1302,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += '}';
 
 	// Add the "Libraries" tab.
-	const tstring tsTabTitle = TC_("AboutTab", "Libraries");
+	const tstring tsTabTitle = TCS_("AboutTab", "Libraries");
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
 	tcItem.pszText = const_cast<LPTSTR>(tsTabTitle.c_str());
@@ -1339,7 +1339,7 @@ void AboutTabPrivate::initSupportTab(void)
 	sSupport += ">}";
 
 	// Add the "Support" tab.
-	const tstring tsTabTitle = TC_("AboutTab", "Support");
+	const tstring tsTabTitle = TCS_("AboutTab", "Support");
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
 	tcItem.pszText = const_cast<LPTSTR>(tsTabTitle.c_str());
@@ -1648,7 +1648,7 @@ HPROPSHEETPAGE AboutTab::getHPropSheetPage(void)
 	}
 
 	// tr: Tab title.
-	const tstring tsTabTitle = TC_("AboutTab", "About");
+	const tstring tsTabTitle = TCS_("AboutTab", "About");
 
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);
