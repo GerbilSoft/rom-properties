@@ -1085,21 +1085,47 @@ int WiiWAD::loadFieldData(void)
 		{
 			const uint32_t access_rights = be32_to_cpu(tmdHeader->access_rights);
 
-			// tr: NetCard: GBA save type
-			const char *const s_save_type_title = C_("Wii", "GBA Save Type");
-			static const array<const char*, 6> save_type_tbl = {{
-				NOP_C_("Wii|NetCardGBASaveType", "None"),
-				NOP_C_("Wii|NetCardGBASaveType", "32 KiB SRAM"),
-				NOP_C_("Wii|NetCardGBASaveType", "64 KiB Flash ROM"),
-				NOP_C_("Wii|NetCardGBASaveType", "128 KiB Flash ROM"),
-				NOP_C_("Wii|NetCardGBASaveType", "512-byte EEPROM"),
-				NOP_C_("Wii|NetCardGBASaveType", "8 KiB EEPROM"),
-			}};
-
+			// NOTE: The actual chip type is *not* localized (for now).
+			// Using localized KiB and non-localized format string.
 			const unsigned int save_type = (access_rights & NC_ACCESS_RIGHTS_SAVE_TYPE_MASK);
-			if (save_type < save_type_tbl.size()) {
-				d->fields.addField_string(s_save_type_title,
-					pgettext_expr("Wii|NetCardGBASaveType", save_type_tbl[save_type]));
+
+			// TODO: Consolidate the fmt:format_to() calls?
+			string s_save_type;
+			switch (save_type) {
+				default:
+					break;
+				case NC_ACCESS_RIGHTS_SAVE_TYPE_NONE:
+					s_save_type = C_("RomData", "None");
+					break;
+				case NC_ACCESS_RIGHTS_SAVE_TYPE_32_KIB_SRAM:
+					fmt::format_to(std::back_inserter(s_save_type), FSTR("{:d} {:s} {:s}"),
+						32, C_("LibRpText|FileSize", "KiB"), "SRAM");
+					break;
+				case NC_ACCESS_RIGHTS_SAVE_TYPE_64_KIB_FLASH:
+					fmt::format_to(std::back_inserter(s_save_type), FSTR("{:d} {:s} {:s}"),
+						64, C_("LibRpText|FileSize", "KiB"), "Flash ROM");
+					break;
+				case NC_ACCESS_RIGHTS_SAVE_TYPE_128_KIB_FLASH:
+					fmt::format_to(std::back_inserter(s_save_type), FSTR("{:d} {:s} {:s}"),
+						128, C_("LibRpText|FileSize", "KiB"), "Flash ROM");
+					break;
+				case NC_ACCESS_RIGHTS_SAVE_TYPE_512_BYTE_EEPROM:
+					// Special handling: We want "512-byte".
+					// TODO: Does that localize the same everywhere?
+					fmt::format_to(std::back_inserter(s_save_type), FSTR("{:d}-{:s} {:s}"),
+						512, NC_("LibRpText|FileSize", "byte", "bytes", 1), "EEPROM");
+					break;
+				case NC_ACCESS_RIGHTS_SAVE_TYPE_8_KIB_EEPROM:
+					fmt::format_to(std::back_inserter(s_save_type), FSTR("{:d} {:s} {:s}"),
+						8, C_("LibRpText|FileSize", "KiB"), "EEPROM");
+					break;
+			}
+
+			// tr: NetCard GBA save type
+			const char *const s_save_type_title = C_("Wii", "GBA Save Type");
+
+			if (likely(!s_save_type.empty())) {
+				d->fields.addField_string(s_save_type_title, s_save_type);
 			} else {
 				d->fields.addField_string(s_save_type_title,
 					fmt::format(FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), save_type));
