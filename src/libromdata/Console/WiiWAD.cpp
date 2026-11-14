@@ -1122,6 +1122,7 @@ int WiiWAD::loadFieldData(void)
 					// Special handling: We want "512-byte".
 					// TODO: Does that localize the same everywhere?
 					kb = 512;
+					sep = '-';
 					unit_l10n = formatFileSize_unitsOnly(1);
 					chip_type = "EEPROM";
 					break;
