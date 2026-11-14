@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-13 22:41-0500\n"
-"PO-Revision-Date: 2026-11-14 04:04\n"
+"POT-Creation-Date: 2026-11-14 11:14-0500\n"
+"PO-Revision-Date: 2026-11-14 16:50\n"
 "Last-Translator: \n"
 "Language-Team: Romanian\n"
 "Language: ro_RO\n"
@@ -1006,7 +1006,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:373
 #: ../src/libromdata/Console/WiiWAD.cpp:999
 #: ../src/libromdata/Console/WiiWAD.cpp:1061
-#: ../src/libromdata/Console/WiiWAD.cpp:1105
+#: ../src/libromdata/Console/WiiWAD.cpp:1147
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1019
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1055
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1066
@@ -1305,7 +1305,7 @@ msgstr ""
 #: ../src/libromdata/Audio/BRSTM.cpp:342 ../src/libromdata/Audio/NSF.cpp:1212
 #: ../src/libromdata/Audio/SAP.cpp:646 ../src/libromdata/Audio/VGM.cpp:430
 #: ../src/libromdata/Console/WiiUAncast.cpp:565
-#: ../src/libromdata/Console/WiiWAD.cpp:1111
+#: ../src/libromdata/Console/WiiWAD.cpp:1153
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:416
 msgctxt "RomData"
 msgid "Yes"
@@ -1316,7 +1316,7 @@ msgstr ""
 #: ../src/libromdata/Audio/BRSTM.cpp:342 ../src/libromdata/Audio/NSF.cpp:1213
 #: ../src/libromdata/Audio/SAP.cpp:647 ../src/libromdata/Audio/VGM.cpp:431
 #: ../src/libromdata/Console/WiiUAncast.cpp:565
-#: ../src/libromdata/Console/WiiWAD.cpp:1112
+#: ../src/libromdata/Console/WiiWAD.cpp:1154
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:418
 msgctxt "RomData"
 msgid "No"
@@ -2638,7 +2638,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiUPackage.cpp:1163
 #: ../src/libromdata/Console/WiiUPackage.cpp:1169
 #: ../src/libromdata/Console/WiiWAD.cpp:964
-#: ../src/libromdata/Console/WiiWAD.cpp:1159
+#: ../src/libromdata/Console/WiiWAD.cpp:1201
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1771
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1749
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1766
@@ -2696,6 +2696,7 @@ msgstr ""
 #: ../src/libromdata/Console/MegaDrive.cpp:511
 #: ../src/libromdata/Console/MegaDrive.cpp:560
 #: ../src/libromdata/Console/WiiTicket.cpp:790
+#: ../src/libromdata/Console/WiiWAD.cpp:1104
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1227
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1917
 #: ../src/libromdata/Console/Xbox_XBE.cpp:833
@@ -2889,7 +2890,7 @@ msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:1634
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:526
-#: ../src/libromdata/Console/WiiWAD.cpp:1150
+#: ../src/libromdata/Console/WiiWAD.cpp:1192
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:2017
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:584
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1087
@@ -3115,7 +3116,7 @@ msgstr ""
 
 #: ../src/libromdata/Console/iQuePlayer.cpp:650
 #: ../src/libromdata/Console/WiiTicket.cpp:536
-#: ../src/libromdata/Console/WiiWAD.cpp:1166
+#: ../src/libromdata/Console/WiiWAD.cpp:1208
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2188
 msgctxt "Nintendo"
 msgid "Console ID"
@@ -3969,14 +3970,14 @@ msgid "Key Index"
 msgstr ""
 
 #: ../src/libromdata/Console/WiiTicket.cpp:546
-#: ../src/libromdata/Console/WiiWAD.cpp:1157
+#: ../src/libromdata/Console/WiiWAD.cpp:1199
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1984
 msgctxt "RomData"
 msgid "Encryption Key"
 msgstr ""
 
 #: ../src/libromdata/Console/WiiTicket.cpp:553
-#: ../src/libromdata/Console/WiiWAD.cpp:1160
+#: ../src/libromdata/Console/WiiWAD.cpp:1202
 msgctxt "RomData"
 msgid "Could not determine the required encryption key."
 msgstr ""
@@ -4179,49 +4180,19 @@ msgctxt "WiiWAD"
 msgid "BroadOn WAD Format"
 msgstr ""
 
-#. tr: NetCard: GBA save type
-#: ../src/libromdata/Console/WiiWAD.cpp:1089
+#. tr: NetCard GBA save type
+#: ../src/libromdata/Console/WiiWAD.cpp:1141
 msgctxt "Wii"
 msgid "GBA Save Type"
 msgstr ""
 
-#: ../src/libromdata/Console/WiiWAD.cpp:1091
-msgctxt "Wii|NetCardGBASaveType"
-msgid "None"
-msgstr ""
-
-#: ../src/libromdata/Console/WiiWAD.cpp:1092
-msgctxt "Wii|NetCardGBASaveType"
-msgid "32 KiB SRAM"
-msgstr ""
-
-#: ../src/libromdata/Console/WiiWAD.cpp:1093
-msgctxt "Wii|NetCardGBASaveType"
-msgid "64 KiB Flash ROM"
-msgstr ""
-
-#: ../src/libromdata/Console/WiiWAD.cpp:1094
-msgctxt "Wii|NetCardGBASaveType"
-msgid "128 KiB Flash ROM"
-msgstr ""
-
-#: ../src/libromdata/Console/WiiWAD.cpp:1095
-msgctxt "Wii|NetCardGBASaveType"
-msgid "512-byte EEPROM"
-msgstr ""
-
-#: ../src/libromdata/Console/WiiWAD.cpp:1096
-msgctxt "Wii|NetCardGBASaveType"
-msgid "8 KiB EEPROM"
-msgstr ""
-
 #. tr: NetCard: RTC emulation
-#: ../src/libromdata/Console/WiiWAD.cpp:1109
+#: ../src/libromdata/Console/WiiWAD.cpp:1151
 msgctxt "Wii"
 msgid "RTC Emulation"
 msgstr ""
 
-#: ../src/libromdata/Console/WiiWAD.cpp:1193
+#: ../src/libromdata/Console/WiiWAD.cpp:1235
 msgctxt "WiiWAD"
 msgid "Game Info"
 msgstr ""
@@ -8890,7 +8861,10 @@ msgstr ""
 
 #. tr: Bytes (< 1,024)
 #. tr: Bytes (< 1,000)
+#. tr: Bytes (< 1,024)
+#. tr: Bytes (< 1,000)
 #: ../src/librptext/formatting.cpp:229 ../src/librptext/formatting.cpp:291
+#: ../src/librptext/formatting.cpp:409 ../src/librptext/formatting.cpp:455
 msgctxt "LibRpText|FileSize"
 msgid "byte"
 msgid_plural "bytes"
@@ -8900,117 +8874,124 @@ msgstr[2] ""
 
 #. tr: Kilobytes (binary)
 #: ../src/librptext/formatting.cpp:236 ../src/librptext/formatting.cpp:414
+#: ../src/librptext/formatting.cpp:528
 msgctxt "LibRpText|FileSize"
 msgid "KiB"
 msgstr ""
 
 #. tr: Kilobytes (decimal)
 #: ../src/librptext/formatting.cpp:238 ../src/librptext/formatting.cpp:297
-#: ../src/librptext/formatting.cpp:419
+#: ../src/librptext/formatting.cpp:416 ../src/librptext/formatting.cpp:459
+#: ../src/librptext/formatting.cpp:533
 msgctxt "LibRpText|FileSize"
 msgid "KB"
 msgstr ""
 
 #. tr: Megabytes (binary)
-#: ../src/librptext/formatting.cpp:244
+#: ../src/librptext/formatting.cpp:244 ../src/librptext/formatting.cpp:420
 msgctxt "LibRpText|FileSize"
 msgid "MiB"
 msgstr ""
 
 #. tr: Megabytes (decimal)
 #: ../src/librptext/formatting.cpp:246 ../src/librptext/formatting.cpp:302
+#: ../src/librptext/formatting.cpp:422 ../src/librptext/formatting.cpp:462
 msgctxt "LibRpText|FileSize"
 msgid "MB"
 msgstr ""
 
 #. tr: Gigabytes (binary)
-#: ../src/librptext/formatting.cpp:252
+#: ../src/librptext/formatting.cpp:252 ../src/librptext/formatting.cpp:426
 msgctxt "LibRpText|FileSize"
 msgid "GiB"
 msgstr ""
 
 #. tr: Gigabytes (decimal)
 #: ../src/librptext/formatting.cpp:254 ../src/librptext/formatting.cpp:307
+#: ../src/librptext/formatting.cpp:428 ../src/librptext/formatting.cpp:465
 msgctxt "LibRpText|FileSize"
 msgid "GB"
 msgstr ""
 
 #. tr: Terabytes (binary)
-#: ../src/librptext/formatting.cpp:260
+#: ../src/librptext/formatting.cpp:260 ../src/librptext/formatting.cpp:432
 msgctxt "LibRpText|FileSize"
 msgid "TiB"
 msgstr ""
 
 #. tr: Terabytes (decimal)
 #: ../src/librptext/formatting.cpp:262 ../src/librptext/formatting.cpp:312
+#: ../src/librptext/formatting.cpp:434 ../src/librptext/formatting.cpp:468
 msgctxt "LibRpText|FileSize"
 msgid "TB"
 msgstr ""
 
 #. tr: Petabytes (binary)
-#: ../src/librptext/formatting.cpp:268
+#: ../src/librptext/formatting.cpp:268 ../src/librptext/formatting.cpp:438
 msgctxt "LibRpText|FileSize"
 msgid "PiB"
 msgstr ""
 
 #. tr: Petabytes (decimal)
 #: ../src/librptext/formatting.cpp:270 ../src/librptext/formatting.cpp:317
+#: ../src/librptext/formatting.cpp:440 ../src/librptext/formatting.cpp:471
 msgctxt "LibRpText|FileSize"
 msgid "PB"
 msgstr ""
 
 #. tr: Exabytes (binary)
-#: ../src/librptext/formatting.cpp:276
+#: ../src/librptext/formatting.cpp:276 ../src/librptext/formatting.cpp:444
 msgctxt "LibRpText|FileSize"
 msgid "EiB"
 msgstr ""
 
 #. tr: Exabytes (decimal)
 #: ../src/librptext/formatting.cpp:278 ../src/librptext/formatting.cpp:322
+#: ../src/librptext/formatting.cpp:446 ../src/librptext/formatting.cpp:474
 msgctxt "LibRpText|FileSize"
 msgid "EB"
 msgstr ""
 
 #. tr: {0:s} == localized value, {1:s} == suffix (e.g. MiB)
-#: ../src/librptext/formatting.cpp:365
+#: ../src/librptext/formatting.cpp:366
 #, c++-format
 msgctxt "LibRpText|FileSize"
 msgid "{0:s} {1:s}"
 msgstr ""
 
 #. tr: {0:Ld} == localized value, {1:s} == suffix (e.g. MiB)
-#: ../src/librptext/formatting.cpp:424
+#: ../src/librptext/formatting.cpp:538
 #, c++-format
 msgctxt "LibRpText|FileSize"
 msgid "{0:Ld} {1:s}"
 msgstr ""
 
 #. tr: Hertz (< 1,000)
-#: ../src/librptext/formatting.cpp:442
+#: ../src/librptext/formatting.cpp:556
 msgctxt "LibRpText|Frequency"
 msgid "Hz"
 msgstr ""
 
 #. tr: Kilohertz
-#: ../src/librptext/formatting.cpp:447
+#: ../src/librptext/formatting.cpp:561
 msgctxt "LibRpText|Frequency"
 msgid "kHz"
 msgstr ""
 
 #. tr: Megahertz
-#: ../src/librptext/formatting.cpp:452
+#: ../src/librptext/formatting.cpp:566
 msgctxt "LibRpText|Frequency"
 msgid "MHz"
 msgstr ""
 
 #. tr: Gigahertz
-#: ../src/librptext/formatting.cpp:457
+#: ../src/librptext/formatting.cpp:571
 msgctxt "LibRpText|Frequency"
 msgid "GHz"
 msgstr ""
 
 #. tr: {0:s} == localized value, {1:s} == suffix (e.g. MHz)
-#: ../src/librptext/formatting.cpp:488
+#: ../src/librptext/formatting.cpp:602
 #, c++-format
 msgctxt "LibRpText|Frequency"
 msgid "{0:s} {1:s}"
