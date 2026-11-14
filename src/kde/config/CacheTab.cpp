@@ -274,8 +274,13 @@ void CacheTab::ccCleaner_error(const QString &error)
 	d->ui.pbStatus->setMaximum(1);
 	d->ui.pbStatus->setValue(1);
 	d->ui.pbStatus->setError(true);
-	// tr: Error message template. (Qt version, with formatting)
-	const QString qs_msg = QC_("ConfigDialog", "<b>ERROR:</b> %1").arg(error);
+
+	// TODO: Reduce/eliminate QString to C/C++-string conversions.
+
+	// tr: Error message template.
+	const QString qs_msg = U82Q(
+		fmt::format(FRUN(C_("ConfigDialog", "<b>ERROR:</b> {:s}")), Q2U8(error)));
+
 	d->ui.lblStatus->setText(qs_msg);
 	MessageSound::play(QMessageBox::Warning, qs_msg, this);
 }
@@ -318,10 +323,12 @@ void CacheTab::ccCleaner_cacheCleared(CacheCleaner::CacheDir cacheDir, unsigned 
 	Q_D(CacheTab);
 
 	if (dirErrs > 0 || fileErrs > 0) {
-		// tr: Error message template. (Qt version, with formatting)
-		const QString qs_msg = QC_("ConfigDialog", "<b>ERROR:</b> %1")
-			.arg(U82Q(fmt::format(FRUN(C_("CacheTab", "Unable to delete {0:Ld} file(s) and/or {1:Ld} dir(s).")),
-				fileErrs, dirErrs)));
+		const string s_error = fmt::format(FRUN(C_("CacheTab", "Unable to delete {0:Ld} file(s) and/or {1:Ld} dir(s).")));
+
+		// tr: Error message template.
+		const QString qs_msg = U82Q(
+			fmt::format(FRUN(C_("ConfigDialog", "<b>ERROR:</b> {:s}")), s_error));
+
 		d->ui.lblStatus->setText(qs_msg);
 		MessageSound::play(QMessageBox::Warning, qs_msg, this);
 		return;

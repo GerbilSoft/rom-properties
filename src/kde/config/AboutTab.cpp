@@ -733,9 +733,13 @@ void AboutTab::updChecker_error(const QString &error)
 #ifdef ENABLE_NETWORKING
 	Q_D(AboutTab);
 
-	// tr: Error message template. (Qt version, with formatting)
-	const QString errTemplate = QC_("ConfigDialog", "<b>ERROR:</b> %1");
-	d->ui.lblUpdateCheck->setText(errTemplate.arg(error));
+	// TODO: Reduce/eliminate QString to C/C++-string conversions.
+
+	// tr: Error message template.
+	const QString qs_msg = U82Q(
+		fmt::format(FRUN(C_("ConfigDialog", "<b>ERROR:</b> {:s}")), Q2U8(error)));
+
+	d->ui.lblUpdateCheck->setText(qs_msg);
 #else /* !ENABLE_NETWORKING */
 	Q_UNUSED(error)
 #endif /* ENABLE_NETWORKING */

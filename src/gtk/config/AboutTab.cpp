@@ -910,8 +910,8 @@ updChecker_error(RpUpdateChecker	*updChecker,
 {
 	RP_UNUSED(updChecker);
 
+	// tr: Error message template.
 	gtk_label_set_markup(GTK_LABEL(tab->lblUpdateCheck),
-		// tr: Error message template. (GTK version, with C++20 formatting)
 		fmt::format(FRUN(C_("ConfigDialog", "<b>ERROR:</b> {:s}")), error).c_str());
 }
 
