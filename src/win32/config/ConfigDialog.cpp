@@ -12,7 +12,9 @@
 
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
+#include "librpbase/SystemRegion.hpp"
 #include "librptext/wchar.hpp"
+using namespace LibRpBase;
 
 // rp_image backend registration
 #include "librptexture/img/GdiplusHelper.hpp"
@@ -319,12 +321,17 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 				0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
 			// Create the "Defaults" button.
+			// NOTE: Width needs to be adjusted for the Georgian language.
+			int btnDefaults_widthAdj = 0;
+			if (SystemRegion::getLanguageCode() == 'ka') {
+				btnDefaults_widthAdj = szBtn.cx / 2;
+			}
 			ptBtn.x += szBtn.cx + (rect_btnCancel.left - rect_btnOK.right);
 			HWND hBtnDefaults = CreateWindowEx(0, WC_BUTTON,
 				// tr: "Defaults" button.
 				TC_("ConfigDialog", "Defaults"),
 				WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_CENTER,
-				ptBtn.x, ptBtn.y, szBtn.cx, szBtn.cy,
+				ptBtn.x, ptBtn.y, szBtn.cx + btnDefaults_widthAdj, szBtn.cy,
 				hWnd, (HMENU)IDC_RP_DEFAULTS, nullptr, nullptr);
 			SetWindowFont(hBtnDefaults, hDlgFont, FALSE);
 
