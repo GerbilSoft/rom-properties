@@ -7,7 +7,7 @@
  ***************************************************************************/
 
 #include "fourCC.hpp"
-#include "librpbyteswap/byteorder.h"
+#include "librpbyteswap/byteswap_rp.h"
 
 // C includes (C++ namespace)
 #include <cassert>
@@ -60,16 +60,17 @@ int fourCCtoString(char *buf, size_t size, uint32_t fourCC)
  */
 string fourCCtoString(uint32_t fourCC)
 {
+	string s_ret;
+	s_ret.resize(4);
+
 	union {
 		char c[4];
 		uint32_t u32;
 	} conv;
-	conv.u32 = fourCC;
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-	return {conv.c[3], conv.c[2], conv.c[1], conv.c[0]};
-#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-	return {conv.c[0], conv.c[1], conv.c[2], conv.c[3]};
-#endif
+	conv.u32 = cpu_to_be32(fourCC);
+
+	memcpy(&s_ret[0], conv.c, sizeof(conv.c));
+	return s_ret;
 }
 
 }
