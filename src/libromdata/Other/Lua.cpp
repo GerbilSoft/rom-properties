@@ -718,16 +718,32 @@ int Lua::loadFieldData(void)
 			d->fields.addField_string(C_("RomData", "Endianness"), s_endianness);
 		}
 	}
-	if (d->int_size != -1)
-		d->fields.addField_string_numeric(C_("Lua", "int size"), d->int_size);
-	if (d->size_t_size != -1)
-		d->fields.addField_string_numeric(C_("Lua", "size_t size"), d->size_t_size);
-	if (d->instruction_size != -1)
-		d->fields.addField_string_numeric(C_("Lua", "lua_Instruction size"), d->instruction_size);
-	if (d->integer_size != -1)
-		d->fields.addField_string_numeric(C_("Lua", "lua_Integer size"), d->integer_size);
-	if (d->number_size != -1)
-		d->fields.addField_string_numeric(C_("Lua", "lua_Number size"), d->number_size);
+
+	// tr: Lua type size - {:s} is the type name, e.g. "int".
+	const char *const size_fmt_str = C_("Lua", "{:s} size");
+
+	// NOTE: Type names are *not* localized.
+	if (d->int_size != -1) {
+		d->fields.addField_string_numeric(fmt::format(
+			FRUN(size_fmt_str), "int").c_str(), d->int_size);
+	}
+	if (d->size_t_size != -1) {
+		d->fields.addField_string_numeric(fmt::format(
+			FRUN(size_fmt_str), "size_t").c_str(), d->size_t_size);
+	}
+	if (d->instruction_size != -1) {
+		d->fields.addField_string_numeric(fmt::format(
+			FRUN(size_fmt_str), "lua_Instruction").c_str(), d->instruction_size);
+	}
+	if (d->integer_size != -1) {
+		d->fields.addField_string_numeric(fmt::format(
+			FRUN(size_fmt_str), "lua_Integer").c_str(), d->integer_size);
+	}
+	if (d->number_size != -1) {
+		d->fields.addField_string_numeric(fmt::format(
+			FRUN(size_fmt_str), "lua_Number").c_str(), d->number_size);
+	}
+
 	if (d->is_integral != LuaPrivate::IntegralType::Unknown) {
 		const char *s_integral_type = nullptr;
 		switch (d->is_integral) {
