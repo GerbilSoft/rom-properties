@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-14 11:14-0500\n"
-"PO-Revision-Date: 2026-11-14 16:51\n"
+"POT-Creation-Date: 2026-11-15 01:22-0500\n"
+"PO-Revision-Date: 2026-11-15 06:33\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -531,9 +531,10 @@ msgid "Latest version: {:s}"
 msgstr "Последняя версия: {:s}"
 
 #: ../src/gtk/config/AboutTab.cpp:948 ../src/kde/config/AboutTab.cpp:780
+#: ../src/win32/config/AboutTab.cpp:717
 msgctxt "AboutTab"
-msgid "<b>New version available!</b>"
-msgstr "<b>Доступна новая версия!</b>"
+msgid "New version available!"
+msgstr "Доступна новая версия!"
 
 #: ../src/gtk/config/AboutTab.cpp:951 ../src/kde/config/AboutTab.cpp:783
 #: ../src/win32/config/AboutTab.cpp:719
@@ -1015,7 +1016,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:373
 #: ../src/libromdata/Console/WiiWAD.cpp:999
 #: ../src/libromdata/Console/WiiWAD.cpp:1061
-#: ../src/libromdata/Console/WiiWAD.cpp:1147
+#: ../src/libromdata/Console/WiiWAD.cpp:1148
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1019
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1055
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1066
@@ -1314,7 +1315,7 @@ msgstr ""
 #: ../src/libromdata/Audio/BRSTM.cpp:342 ../src/libromdata/Audio/NSF.cpp:1212
 #: ../src/libromdata/Audio/SAP.cpp:646 ../src/libromdata/Audio/VGM.cpp:430
 #: ../src/libromdata/Console/WiiUAncast.cpp:565
-#: ../src/libromdata/Console/WiiWAD.cpp:1153
+#: ../src/libromdata/Console/WiiWAD.cpp:1154
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:416
 msgctxt "RomData"
 msgid "Yes"
@@ -1325,7 +1326,7 @@ msgstr ""
 #: ../src/libromdata/Audio/BRSTM.cpp:342 ../src/libromdata/Audio/NSF.cpp:1213
 #: ../src/libromdata/Audio/SAP.cpp:647 ../src/libromdata/Audio/VGM.cpp:431
 #: ../src/libromdata/Console/WiiUAncast.cpp:565
-#: ../src/libromdata/Console/WiiWAD.cpp:1154
+#: ../src/libromdata/Console/WiiWAD.cpp:1155
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:418
 msgctxt "RomData"
 msgid "No"
@@ -2888,14 +2889,14 @@ msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:1585
 #: ../src/libromdata/Console/WiiTMD.cpp:469
-#: ../src/libromdata/Console/WiiWAD.cpp:1079
+#: ../src/libromdata/Console/WiiWAD.cpp:1080
 msgctxt "Wii"
 msgid "DVD Video"
 msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:1587
 #: ../src/libromdata/Console/WiiTMD.cpp:471
-#: ../src/libromdata/Console/WiiWAD.cpp:1081
+#: ../src/libromdata/Console/WiiWAD.cpp:1082
 msgctxt "Wii"
 msgid "Access Rights"
 msgstr ""
@@ -2908,7 +2909,7 @@ msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:1634
 #: ../src/libromdata/Console/WiiUPackage_xml.cpp:526
-#: ../src/libromdata/Console/WiiWAD.cpp:1192
+#: ../src/libromdata/Console/WiiWAD.cpp:1193
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:2017
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:584
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1087
@@ -4199,13 +4200,13 @@ msgid "BroadOn WAD Format"
 msgstr ""
 
 #. tr: NetCard GBA save type
-#: ../src/libromdata/Console/WiiWAD.cpp:1141
+#: ../src/libromdata/Console/WiiWAD.cpp:1142
 msgctxt "Wii"
 msgid "GBA Save Type"
 msgstr ""
 
 #. tr: NetCard: RTC emulation
-#: ../src/libromdata/Console/WiiWAD.cpp:1151
+#: ../src/libromdata/Console/WiiWAD.cpp:1152
 msgctxt "Wii"
 msgid "RTC Emulation"
 msgstr ""
@@ -5460,7 +5461,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:732
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2025
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2162
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2575
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2581
 msgctxt "Nintendo3DS"
 msgid "Debug"
 msgstr ""
@@ -5468,7 +5469,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:733
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2026
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2159
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2576
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2582
 msgctxt "Nintendo3DS"
 msgid "Retail"
 msgstr ""
@@ -5623,8 +5624,8 @@ msgid "SysModule"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2359
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2402
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2424
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2405
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2430
 #, c++-format
 msgctxt "Nintendo3DS"
 msgid "INVALID (0x{:0>2X})"
@@ -5635,31 +5636,31 @@ msgctxt "Nintendo3DS"
 msgid "Old3DS Sys Mode"
 msgstr ""
 
-#. tr: {0:s} == Old3DS system mode; {1:d} == RAM allocation, in megabytes
-#. tr: {0:s} == New3DS system mode; {1:d} == RAM allocation, in megabytes
+#. tr: {0:s} == Old3DS system mode; {1:d} == RAM allocation, in megabytes; {2:s} == MiB or MB
+#. tr: {0:s} == New3DS system mode; {1:d} == RAM allocation, in megabytes; {2:s} == MiB or MB
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2399
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2421
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2424
 #, c++-format
 msgctxt "Nintendo3DS"
-msgid "{0:s} ({1:d} MiB)"
+msgid "{0:s} ({1:d} {2:s})"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2414
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2417
 msgctxt "Nintendo3DS"
 msgid "New3DS Sys Mode"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2430
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2436
 msgctxt "Nintendo3DS|N3DSCPUMode"
 msgid "L2 Cache"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2431
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2437
 msgctxt "Nintendo3DS|N3DSCPUMode"
 msgid "804 MHz"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2445
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2451
 msgctxt "Nintendo3DS"
 msgid "Permissions"
 msgstr ""
@@ -10183,11 +10184,6 @@ msgstr ""
 msgctxt "AboutTab"
 msgid "ERROR:"
 msgstr "ОШИБКА:"
-
-#: ../src/win32/config/AboutTab.cpp:717
-msgctxt "AboutTab"
-msgid "New version available!"
-msgstr ""
 
 #: ../src/win32/config/AboutTab.cpp:1097
 msgctxt "AboutTab"
