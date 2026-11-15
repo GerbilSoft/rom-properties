@@ -34,22 +34,14 @@ int fourCCtoString(char *buf, size_t size, uint32_t fourCC)
 	}
 
 	// Convert from a FourCC to a string.
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	union {
 		char c[4];
 		uint32_t u32;
 	} conv;
-	conv.u32 = fourCC;
-	buf[0] = conv.c[3];
-	buf[1] = conv.c[2];
-	buf[2] = conv.c[1];
-	buf[3] = conv.c[0];
-	buf[4] = '\0';
-#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-	memcpy(buf, &fourCC, 4);
-	buf[4] = '\0';
-#endif
+	conv.u32 = cpu_to_be32(fourCC);
 
+	memcpy(buf, &conv.c, 4);
+	buf[4] = '\0';
 	return 0;
 }
 
