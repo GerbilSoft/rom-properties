@@ -254,6 +254,28 @@ public:
 	{
 		return getCStringPointerFromTable(vec.data(), vec.size(), offset);
 	}
+
+	/**
+	 * Check if any of the strings might be Shift-JIS.
+	 * @return True if strings might be Shift-JIS; false if not.
+	 */
+	bool isAnyStringShiftJIS(void) const;
+
+	/**
+	 * Convert a string from Shift-JIS and/or cp1252 to UTF-8.
+	 * @param str String
+	 * @param size Size of string (if -1, indicates NULL-terminated string)
+	 * @param sjis If true, try Shift-JIS first; otherwise, only try cp1252.
+	 * @return Converted string.
+	 */
+	static inline string convStringFromEncodingToUTF8(const char *str, int len = -1, bool sjis = false)
+	{
+		if (sjis) {
+			return cp1252_sjis_to_utf8(str, len);
+		} else {
+			return cp1252_to_utf8(str, len);
+		}
+	}
 };
 
 ROMDATA_IMPL(NSF)
@@ -842,6 +864,54 @@ string NSFPrivate::formatDuration(int32_t duration)
 	return s_ret;
 };
 
+/**
+ * Check if any of the strings might be Shift-JIS.
+ * @return True if strings might be Shift-JIS; false if not.
+ */
+bool NSFPrivate::isAnyStringShiftJIS(void) const
+{
+	// Using a very simple algorithm for Shift-JIS detection:
+	// If the string contains 0x83 (cp1252 'ƒ'), it's probably Shift-JIS.
+
+	if (audioFormat == AudioFormat::NSF) {
+		// Check the NSF header first.
+		if (header.nsf.title[0] != '\0' && memchr(header.nsf.title, 0x83, sizeof(header.nsf.title)) != nullptr) {
+			return true;
+		}
+		if (header.nsf.composer[0] != '\0' && memchr(header.nsf.composer, 0x83, sizeof(header.nsf.composer)) != nullptr) {
+			return true;
+		}
+		if (header.nsf.copyright[0] != '\0' && memchr(header.nsf.copyright, 0x83, sizeof(header.nsf.copyright)) != nullptr) {
+			return true;
+		}
+	}
+
+	// Check if any NSFe chunks have been loaded.
+	if (nsfe.has.auth) {
+		if (memchr(nsfe.auth.strtbl.data(), 0x83, nsfe.auth.strtbl.size()) != nullptr) {
+			return true;
+		}
+	}
+	if (nsfe.has.text) {
+		if (memchr(nsfe.text.data(), 0x83, nsfe.text.size()) != nullptr) {
+			return true;
+		}
+	}
+	if (nsfe.has.tlbl) {
+		if (memchr(nsfe.track_name_strtbl.data(), 0x83, nsfe.track_name_strtbl.size()) != nullptr) {
+			return true;
+		}
+	}
+	if (nsfe.has.taut) {
+		if (memchr(nsfe.track_author_strtbl.data(), 0x83, nsfe.track_author_strtbl.size()) != nullptr) {
+			return true;
+		}
+	}
+
+	// 0x83 (cp1252 'ƒ') not found. Assume it's cp1252.
+	return false;
+}
+
 /** NSF **/
 
 /**
@@ -1028,6 +1098,9 @@ int NSF::loadFieldData(void)
 		"No PLAY subroutine", "NSFe has mandatory chunk",
 	}};
 
+	// Is any string Shift-JIS?
+	const bool isSJIS = d->isAnyStringShiftJIS();
+
 	bool hasNSFtab = false;
 	if (d->audioFormat == NSFPrivate::AudioFormat::NSF) {
 		// NSF header
@@ -1036,25 +1109,24 @@ int NSF::loadFieldData(void)
 		hasNSFtab = true;
 
 		// NOTE: The NSF specification says ASCII, but I'm assuming
-		// the text is cp1252.
-		// TODO: Better Shift-JIS detection? [Scan for 'ƒ' (cp1252 0x83)?]
+		// the text is cp1252 (or sometimes Shift-JIS).
 
 		// Title
 		if (nsfHeader->title[0] != 0) {
 			d->fields.addField_string(C_("RomData|Audio", "Title"),
-				cp1252_to_utf8(nsfHeader->title, sizeof(nsfHeader->title)));
+				d->convStringFromEncodingToUTF8(nsfHeader->title, sizeof(nsfHeader->title), isSJIS));
 		}
 
 		// Composer
 		if (nsfHeader->composer[0] != 0) {
 			d->fields.addField_string(C_("RomData|Audio", "Composer"),
-				cp1252_to_utf8(nsfHeader->composer, sizeof(nsfHeader->composer)));
+				d->convStringFromEncodingToUTF8(nsfHeader->composer, sizeof(nsfHeader->composer), isSJIS));
 		}
 
 		// Copyright
 		if (nsfHeader->copyright[0] != 0) {
 			d->fields.addField_string(C_("RomData", "Copyright"),
-				cp1252_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
+				d->convStringFromEncodingToUTF8(nsfHeader->copyright, sizeof(nsfHeader->copyright), isSJIS));
 		}
 
 		// Number of tracks
@@ -1119,10 +1191,8 @@ int NSF::loadFieldData(void)
 		// NOTE: Using the same ordering as NSF2, even though it
 		// doesn't necessarily match NSFe ordering.
 		// FIXME: NSFe recommends UTF-8 encoding, but the files I've
-		// tested all seem to be cp1252... (and Shift-JIS is misdetected,
-		// so using cp1252 only.)
+		// tested all seem to be cp1252... (and sometimes Shift-JIS)
 		// TODO: Better detection to see if the strings have valid UTF-8 encoding?
-		// TODO: Better Shift-JIS detection? [Scan for 'ƒ' (cp1252 0x83)?]
 		const auto *nsfe = &d->nsfe;
 
 		if (nsfe->has.auth) {
@@ -1132,28 +1202,28 @@ int NSF::loadFieldData(void)
 			const char *const game_title = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.game_title);
 			if (game_title) {
 				d->fields.addField_string(C_("RomData|Audio", "Title"),
-					cp1252_to_utf8(game_title, -1));
+					d->convStringFromEncodingToUTF8(game_title, -1, isSJIS));
 			}
 
 			// Artist
 			const char *const artist = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.artist);
 			if (artist) {
 				d->fields.addField_string(C_("RomData|Audio", "Composer"),
-					cp1252_to_utf8(artist, -1));
+					d->convStringFromEncodingToUTF8(artist, -1, isSJIS));
 			}
 
 			// Copyright
 			const char *const copyright = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.copyright);
 			if (copyright) {
 				d->fields.addField_string(C_("RomData|Audio", "Copyright"),
-					cp1252_to_utf8(copyright, -1));
+					d->convStringFromEncodingToUTF8(copyright, -1, isSJIS));
 			}
 
 			// Ripper
 			const char *const ripper = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.ripper);
 			if (ripper) {
 				d->fields.addField_string(C_("RomData|Audio", "Ripper"),
-					cp1252_to_utf8(ripper, -1));
+					d->convStringFromEncodingToUTF8(ripper, -1, isSJIS));
 			}
 		}
 
@@ -1248,7 +1318,7 @@ int NSF::loadFieldData(void)
 				if (nsfe->has.tlbl) {
 					const char *const name = d->getCStringPointerFromTable(nsfe->track_name_strtbl, src_iter->name);
 					if (name) {
-						data_row.push_back(cp1252_to_utf8(name, -1));
+						data_row.push_back(d->convStringFromEncodingToUTF8(name, -1, isSJIS));
 					} else {
 						data_row.push_back(string());
 					}
@@ -1257,7 +1327,7 @@ int NSF::loadFieldData(void)
 				if (nsfe->has.taut) {
 					const char *const author = d->getCStringPointerFromTable(nsfe->track_author_strtbl, src_iter->author);
 					if (author) {
-						data_row.push_back(cp1252_to_utf8(author, -1));
+						data_row.push_back(d->convStringFromEncodingToUTF8(author, -1, isSJIS));
 					} else {
 						data_row.push_back(string());
 					}
@@ -1360,31 +1430,33 @@ int NSF::loadMetaData(void)
 		return -EIO;
 	}
 
+	// Is any string Shift-JIS?
+	const bool isSJIS = d->isAnyStringShiftJIS();
+
 	if (d->audioFormat == NSFPrivate::AudioFormat::NSF) {
 		// NSF header
 		// TODO: Override NSF2 fields with NSFe metadata, if present?
 		// NOTE: The NSF specification says ASCII, but I'm assuming
-		// the text is cp1252.
-		// TODO: Better Shift-JIS detection? [Scan for 'ƒ' (cp1252 0x83)?]
+		// the text is cp1252 (or sometimes Shift-JIS).
 		const NSF_Header *const nsfHeader = &d->header.nsf;
 		d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 		// Title
 		if (nsfHeader->title[0] != 0) {
 			d->metaData.addMetaData_string(Property::Title,
-				cp1252_to_utf8(nsfHeader->title, sizeof(nsfHeader->title)));
+				d->convStringFromEncodingToUTF8(nsfHeader->title, sizeof(nsfHeader->title), isSJIS));
 		}
 
 		// Composer
 		if (nsfHeader->composer[0] != 0) {
 			d->metaData.addMetaData_string(Property::Composer,
-				cp1252_to_utf8(nsfHeader->composer, sizeof(nsfHeader->composer)));
+				d->convStringFromEncodingToUTF8(nsfHeader->composer, sizeof(nsfHeader->composer), isSJIS));
 		}
 
 		// Copyright
 		if (nsfHeader->copyright[0] != 0) {
 			d->metaData.addMetaData_string(Property::Copyright,
-				cp1252_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
+				d->convStringFromEncodingToUTF8(nsfHeader->copyright, sizeof(nsfHeader->copyright), isSJIS));
 		}
 	}
 
@@ -1392,28 +1464,29 @@ int NSF::loadMetaData(void)
 		// 'auth' chunk is available.
 		// NOTE: May overwrite NSF2 metadata if it's already present.
 		// FIXME: NSFe recommends UTF-8 encoding, but the files I've
-		// tested all seem to be cp1252... (and Shift-JIS is misdetected,
-		// so using cp1252 only.)
+		// tested all seem to be cp1252... (and sometimes Shift-JIS)
 		// TODO: Better detection to see if the strings have valid UTF-8 encoding?
-		// TODO: Better Shift-JIS detection? [Scan for 'ƒ' (cp1252 0x83)?]
 		const auto *nsfe = &d->nsfe;
 
 		// Title
 		const char *const game_title = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.game_title);
 		if (game_title) {
-			d->metaData.addMetaData_string(Property::Title, cp1252_to_utf8(game_title, -1));
+			d->metaData.addMetaData_string(Property::Title,
+				d->convStringFromEncodingToUTF8(game_title, -1, isSJIS));
 		}
 
 		// Artist
 		const char *const artist = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.artist);
 		if (artist) {
-			d->metaData.addMetaData_string(Property::Composer, cp1252_to_utf8(artist, -1));
+			d->metaData.addMetaData_string(Property::Composer,
+				d->convStringFromEncodingToUTF8(artist, -1, isSJIS));
 		}
 
 		// Copyright
 		const char *const copyright = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.copyright);
 		if (copyright) {
-			d->metaData.addMetaData_string(Property::Copyright, cp1252_to_utf8(copyright, -1));
+			d->metaData.addMetaData_string(Property::Copyright,
+				d->convStringFromEncodingToUTF8(copyright, -1, isSJIS));
 		}
 	}
 
