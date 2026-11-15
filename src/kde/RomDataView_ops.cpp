@@ -195,8 +195,8 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 	const uint32_t sel_lc = (cboLanguage ? cboLanguage->selectedLC() : 0);
 
 	const char *title = nullptr;
-	const char *filter = nullptr;
 	const char *default_ext = nullptr;
+	string s_filter;
 
 	// Check the standard operation.
 	switch (id) {
@@ -233,15 +233,21 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 
 		case OPTION_EXPORT_TEXT:
 			title = C_("RomDataView", "Export to Text File");
-			// tr: "Text Files" filter (RP format)
-			filter = C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*|-");
+			s_filter = fmt::format(FSTR("{0:s}|{1:s}"),
+				// tr: "Text Files" filter (RP format)
+				C_("RomDataView", "Text Files|*.txt|text/plain"),
+				// tr: "All Files" filter (RP format)
+				C_("RomDataView", "All Files|*|-"));
 			default_ext = ".txt";
 			break;
 
 		case OPTION_EXPORT_JSON:
 			title = C_("RomDataView", "Export to JSON File");
-			// tr: "JSON Files" filter (RP format)
-			filter = C_("RomDataView", "JSON Files|*.json|application/json|All Files|*|-");
+			s_filter = fmt::format(FSTR("{0:s}|{1:s}"),
+				// tr: "JSON Files" filter (RP format)
+				C_("RomDataView", "JSON Files|*.json|application/json"),
+				// tr: "All Files" filter (RP format)
+				C_("RomDataView", "All Files|*|-"));
 			default_ext = ".json";
 			break;
 
@@ -263,9 +269,10 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 	// TODO: Rework so it's not application-modal.
 	Q_Q(RomDataView);
 	const QString out_filename = QFileDialog::getSaveFileName(q,
-		U82Q(title), defaultFileName, rpFileDialogFilterToQt(filter));
-	if (out_filename.isEmpty())
+		U82Q(title), defaultFileName, rpFileDialogFilterToQt(s_filter.c_str()));
+	if (out_filename.isEmpty()) {
 		return;
+	}
 
 	// Save the previous export directory.
 	const QFileInfo fi2(out_filename);
@@ -410,7 +417,7 @@ void RomDataView::btnOptions_triggered(int id)
 			filter += QLatin1String(";;");
 		}
 		// tr: "All Files" filter (RP format)
-		filter += rpFileDialogFilterToQt(C_("RomData", "All Files|*|-"));
+		filter += rpFileDialogFilterToQt(C_("RomDataView", "All Files|*|-"));
 
 		// Initial file and directory, based on the current file.
 		const QString initialFile = U82Q(FileSystem::replace_ext(d->romData->filename(), op->sfi.ext));

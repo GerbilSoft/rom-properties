@@ -489,8 +489,8 @@ rp_rom_data_view_doRomOp_stdop(RpRomDataView *page, int id)
 		return;
 
 	const char *title = nullptr;
-	const char *filter = nullptr;
 	const char *default_ext = nullptr;
+	string s_filter;
 
 	// Check the standard operation.
 	switch (id) {
@@ -535,15 +535,21 @@ rp_rom_data_view_doRomOp_stdop(RpRomDataView *page, int id)
 
 		case OPTION_EXPORT_TEXT:
 			title = C_("RomDataView", "Export to Text File");
-			// tr: "Text Files" filter (RP format)
-			filter = C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*|-");
+			s_filter = fmt::format(FSTR("{0:s}|{1:s}"),
+				// tr: "Text Files" filter (RP format)
+				C_("RomDataView", "Text Files|*.txt|text/plain"),
+				// tr: "All Files" filter (RP format)
+				C_("RomDataView", "All Files|*|-"));
 			default_ext = ".txt";
 			break;
 
 		case OPTION_EXPORT_JSON:
 			title = C_("RomDataView", "Export to JSON File");
-			// tr: "JSON Files" filter (RP format)
-			filter = C_("RomDataView", "JSON Files|*.json|application/json|All Files|*|-");
+			s_filter = fmt::format(FSTR("{0:s}|{1:s}"),
+				// tr: "JSON Files" filter (RP format)
+				C_("RomDataView", "JSON Files|*.json|application/json"),
+				// tr: "All Files" filter (RP format)
+				C_("RomDataView", "All Files|*|-"));
 			default_ext = ".json";
 			break;
 
@@ -576,7 +582,7 @@ rp_rom_data_view_doRomOp_stdop(RpRomDataView *page, int id)
 
 		parent,			// parent
 		title,			// title
-		filter,			// filter
+		s_filter.c_str(),	// filter
 		page->prevExportDir,	// init_dir
 		defaultName.c_str(),	// init_name
 
@@ -640,7 +646,7 @@ btnOptions_triggered_signal_handler(RpOptionsMenuButton *menuButton,
 			filter += '|';
 		}
 		// tr: "All Files" filter (RP format)
-		filter += C_("RomData", "All Files|*|-");
+		filter += C_("RomDataView", "All Files|*|-");
 
 		// Initial file and directory, based on the current file.
 		// NOTE: Not checking if it's a file or a directory. Assuming it's a file.

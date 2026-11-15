@@ -375,13 +375,13 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			// OPTION_EXPORT_TEXT
 			{NOP_C_("RomDataView", "Export to Text File"),
 			 // tr: "Text Files" filter (RP format)
-			 NOP_C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*|-"),
+			 NOP_C_("RomDataView", "Text Files|*.txt|text/plain"),
 			 _T(".txt"), false},
 
 			// OPTION_EXPORT_JSON
 			{NOP_C_("RomDataView", "Export to JSON File"),
 			 // tr: "JSON Files" filter (RP format)
-			 NOP_C_("RomDataView", "JSON Files|*.json|application/json|All Files|*|-"),
+			 NOP_C_("RomDataView", "JSON Files|*.json|application/json"),
 			 _T(".json"), false},
 
 			// OPTION_COPY_TEXT
@@ -441,9 +441,14 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				defaultFileName += info.default_ext;
 			}
 
+			const tstring ts_filter = U82T_str(fmt::format(FSTR("{0:s}|{1:s}"),
+				info.filter,
+				// tr: "All Files" filter (RP format)
+				C_("RomDataView", "All Files|*|-")));
+
 			t_save_filename = LibWin32UI::getSaveFileName(hDlgSheet,
 				tpgettext_expr("RomDataView", info.title),
-				tpgettext_expr("RomDataView", info.filter),
+				ts_filter.c_str(),
 				defaultFileName.c_str());
 			if (t_save_filename.empty()) {
 				return;
@@ -578,7 +583,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			filter += '|';
 		}
 		// tr: "All Files" filter (RP format)
-		filter += C_("RomData", "All Files|*|-");
+		filter += C_("RomDataView", "All Files|*|-");
 
 		// Initial file and directory, based on the current file.
 		string initialFile = FileSystem::replace_ext(romData->filename(), op->sfi.ext);
