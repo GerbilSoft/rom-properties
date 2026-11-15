@@ -367,9 +367,8 @@ msgid ""
 "Select the Game Boy model to use for title screens for different types of\n"
 "Game Boy ROM images."
 msgstr ""
-"Selecione o modelo do Game Boy a ser usado para as telas de título para "
-"diferentes tipos de imagens de ROM do\n"
-"Game Boy."
+"Selecione o modelo do Game Boy a ser usado para as telas de título\n"
+"para diferentes tipos de imagens de ROM do Game Boy."
 
 #: ../build/src/kde/kf6/ui_XAttrView.h:119 ../src/gtk/xattr/XAttrView.cpp:73
 msgctxt "XAttrView"
