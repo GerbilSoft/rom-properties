@@ -114,7 +114,6 @@ static const array<html_entity_tbl_t, 76> html_entity_tbl = {{
 	{"starf",	0x2605},	// ★
 	{"sung",	0x266A},	// ♪
 	{"trade",	0x2122},	// ™
-	//{"VerticalSeparator",	0x2758},	// ❘ (TODO: Special check for this one?)
 	{"weierp",	0x2118},	// ℘
 	{"yen",		0x00A5},	// ¥
 }};
@@ -214,6 +213,13 @@ static char32_t T_parseHtmlEntity(const CharType *&entity)
 			return (strcmp(etbl.entity, ent) < 0);
 		});
 	if (iter == html_entity_tbl.cend() || strcmp(iter->entity, entitybuf) != 0) {
+		// Special case check for "VerticalSeparator".
+		if (entitybuf[0] == 'V' && strcmp(entitybuf, "VerticalSeparator") == 0) {
+			// Found "VerticalSeparator".
+			entity = p_end + 1;
+			return U'\x00002758';
+		}
+
 		// Unsupported entity...
 		entity++;
 		return U'&';
