@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-15 01:22-0500\n"
-"PO-Revision-Date: 2026-11-15 06:33\n"
+"POT-Creation-Date: 2026-11-15 01:53-0500\n"
+"PO-Revision-Date: 2026-11-15 08:17\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese, Brazilian\n"
 "Language: pt_BR\n"
@@ -40,20 +40,20 @@ msgstr "&Obter apoio"
 #: ../src/win32/config/AchievementsTab.cpp:561
 msgctxt "AchievementsTab"
 msgid "Unlock Time"
-msgstr ""
+msgstr "Tempo desbloqueado"
 
 #: ../build/src/kde/kf6/ui_AchievementsTab.h:52
 #: ../src/gtk/config/AchievementsTab.cpp:219
 #: ../src/win32/config/AchievementsTab.cpp:555
 msgctxt "AchievementsTab"
 msgid "Achievement"
-msgstr ""
+msgstr "Conquista"
 
 #: ../build/src/kde/kf6/ui_AchievementsTab.h:53
 #: ../src/gtk/config/AchievementsTab.cpp:218
 msgctxt "AchievementsTab"
 msgid "Icon"
-msgstr ""
+msgstr "Ícone "
 
 #: ../build/src/kde/kf6/ui_CacheTab.h:98
 #: ../src/gtk/config/CacheTab.cpp:157
@@ -74,7 +74,8 @@ msgstr "Apagar Cachê de Miniaturas de Sistema"
 msgctxt "CacheTab"
 msgid "ROM Properties Page maintains its own download cache for external images.\n"
 "Clearing this cache will force external images to be redownloaded."
-msgstr ""
+msgstr "A página de propriedades da ROM contém seu próprio cache de download para imagens externas.\n"
+"Limpar esse cache forçará um novo download das imagens externas."
 
 #: ../build/src/kde/kf6/ui_CacheTab.h:103
 #: ../src/gtk/config/CacheTab.cpp:172 ../src/win32/config/CacheTab.cpp:201
@@ -106,7 +107,7 @@ msgstr "&Sistemas"
 #: ../src/gtk/config/ConfigDialog.cpp:247
 msgctxt "ConfigDialog"
 msgid "&Options"
-msgstr ""
+msgstr "&Opções "
 
 #: ../build/src/kde/kf6/ui_ConfigDialog.h:95
 #: ../src/gtk/config/ConfigDialog.cpp:248
@@ -118,7 +119,7 @@ msgstr "Cachê de Miniaturas"
 #: ../src/gtk/config/ConfigDialog.cpp:249
 msgctxt "ConfigDialog"
 msgid "&Achievements"
-msgstr ""
+msgstr "&Conquistas"
 
 #: ../build/src/kde/kf6/ui_ConfigDialog.h:97
 #: ../src/gtk/config/ConfigDialog.cpp:253
@@ -130,19 +131,19 @@ msgstr "Sob&re"
 #: ../src/gtk/xattr/DosAttrView.c:139 ../src/win32/RP_XAttrView.cpp:314
 msgctxt "DosAttrView"
 msgid "&Read-only"
-msgstr ""
+msgstr "&Apenas Ler"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:101
 #: ../src/gtk/xattr/DosAttrView.c:141 ../src/win32/RP_XAttrView.cpp:316
 msgctxt "DosAttrView"
 msgid "&Hidden"
-msgstr ""
+msgstr "&Oculto"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:102
 #: ../src/gtk/xattr/DosAttrView.c:143 ../src/win32/RP_XAttrView.cpp:318
 msgctxt "DosAttrView"
 msgid "&Archive"
-msgstr ""
+msgstr "&Arquivo"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:103
 #: ../src/gtk/xattr/DosAttrView.c:145 ../src/win32/RP_XAttrView.cpp:320
@@ -154,7 +155,7 @@ msgstr "&Sistema"
 #: ../src/gtk/xattr/DosAttrView.c:167
 msgctxt "DosAttrView"
 msgid "&Compressed"
-msgstr ""
+msgstr "&Comprimido"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:105
 #: ../src/gtk/xattr/DosAttrView.c:169 ../src/win32/RP_XAttrView.cpp:324
@@ -166,7 +167,7 @@ msgstr "&Criptografada"
 #: ../src/gtk/xattr/Ext2AttrView.cpp:149
 msgctxt "Ext2AttrView"
 msgid "lsattr:"
-msgstr ""
+msgstr "Isattr:"
 
 #: ../build/src/kde/kf6/ui_ImageTypesTab.h:67
 #: ../src/gtk/config/ImageTypesTab.cpp:444
@@ -199,40 +200,40 @@ msgstr "&Recebimentos"
 #: ../src/gtk/config/OptionsTab.cpp:144 ../src/win32/config/OptionsTab.cpp:186
 msgctxt "OptionsTab"
 msgid "E&xternal Image Downloads"
-msgstr ""
+msgstr "Download de imagem E&xternal"
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:186
 #: ../src/gtk/config/OptionsTab.cpp:150 ../src/win32/config/OptionsTab.cpp:188
 msgctxt "OptionsTab"
 msgid "When using an unlimited network connection:"
-msgstr ""
+msgstr "Ao usar uma rede limitada:"
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:187
 #: ../build/src/kde/kf6/ui_OptionsTab.h:192
 #: ../src/gtk/config/OptionsTab.cpp:156 ../src/win32/config/OptionsTab.cpp:211
 msgctxt "OptionsTab"
 msgid "Don't download any images"
-msgstr ""
+msgstr "Não baixar nenhuma imagem"
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:188
 #: ../build/src/kde/kf6/ui_OptionsTab.h:193
 #: ../src/gtk/config/OptionsTab.cpp:157 ../src/win32/config/OptionsTab.cpp:212
 msgctxt "OptionsTab"
 msgid "Download normal-resolution images"
-msgstr ""
+msgstr "Baixar imagem em resolução normal"
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:189
 #: ../build/src/kde/kf6/ui_OptionsTab.h:194
 #: ../src/gtk/config/OptionsTab.cpp:158 ../src/win32/config/OptionsTab.cpp:213
 msgctxt "OptionsTab"
 msgid "Download high-resolution images"
-msgstr ""
+msgstr "Baixar imagem em alta resolução "
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:191
 #: ../src/gtk/config/OptionsTab.cpp:152 ../src/win32/config/OptionsTab.cpp:190
 msgctxt "OptionsTab"
 msgid "When using a metered network connection:"
-msgstr ""
+msgstr "Ao usar uma conexão de rede limitada:"
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:196
 #: ../src/gtk/config/OptionsTab.cpp:250 ../src/win32/config/OptionsTab.cpp:192
@@ -245,57 +246,60 @@ msgstr "Sempre utilizar o ícone interno (se presente) para tamanhos pequenos."
 msgctxt "OptionsTab"
 msgid "Store cached file origin information using extended attributes.\n"
 "This helps to identify where cached files were downloaded from."
-msgstr ""
+msgstr "Guarde informações sobre a origem de arquivos em cache usando os atributos estendidos. Isso ajuda a identificar de onde os arquivos de cache foram baixados."
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:199
 #: ../src/gtk/config/OptionsTab.cpp:260 ../src/win32/config/OptionsTab.cpp:196
 msgctxt "OptionsTab"
 msgid "Language for PAL titles on GameTDB:"
-msgstr ""
+msgstr "Idioma para os títulos PAL no GameTDB:"
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:200
 #: ../src/win32/config/OptionsTab.cpp:200
 msgctxt "OptionsTab"
 msgid "&Options"
-msgstr ""
+msgstr "&Opções "
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:201
 #: ../src/gtk/config/OptionsTab.cpp:286 ../src/win32/config/OptionsTab.cpp:202
 msgctxt "OptionsTab"
 msgid "Show a security overlay icon for ROM images with\n"
 "\"dangerous\" permissions."
-msgstr ""
+msgstr "Mostrar um Ícone de segurança para imagens de ROM com permissões \"perigosas\"."
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:203
 #: ../src/gtk/config/OptionsTab.cpp:289 ../src/win32/config/OptionsTab.cpp:204
 msgctxt "OptionsTab"
 msgid "Enable thumbnailing and metadata extraction on network\n"
 "file systems. This may slow down file browsing."
-msgstr ""
+msgstr "Ative a geração de miniaturas e a extração de metadados em\n"
+"sistemas de arquivos em rede. Isso pode tornar a navegação pelos arquivos lento."
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:205
 #: ../src/gtk/config/OptionsTab.cpp:293 ../src/win32/config/OptionsTab.cpp:206
 msgctxt "OptionsTab"
 msgid "Enable thumbnailing and metadata extraction of directory-based\n"
 "packages, e.g. for Wii U. This may slow down file browsing."
-msgstr ""
+msgstr "Ativar a geração de miniaturas e a extração de metadados de pacotes baseados em diretórios,\n"
+"por exemplo, para o Wii U. Isso pode tornar a navegação pelos arquivos\n"
+"lento."
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:207
 #: ../src/gtk/config/OptionsTab.cpp:297 ../src/win32/config/OptionsTab.cpp:208
 msgctxt "OptionsTab"
 msgid "Show the Extended Attributes tab."
-msgstr ""
+msgstr "Mostrar o painel dos Atributos entendidos "
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:124
 msgctxt "SystemsTab"
 msgid "&Game Boy Title Screens"
-msgstr ""
+msgstr "&Tela de título do Game Boy"
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:125
 #: ../src/gtk/config/SystemsTab.cpp:119 ../src/win32/config/SystemsTab.cpp:140
 msgctxt "SystemsTab"
 msgid "Game &Boy:"
-msgstr ""
+msgstr "Game &Boy:"
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:126
 #: ../build/src/kde/kf6/ui_SystemsTab.h:130
@@ -303,7 +307,7 @@ msgstr ""
 #: ../src/gtk/config/SystemsTab.cpp:127 ../src/win32/config/SystemsTab.cpp:147
 msgctxt "SystemsTab"
 msgid "Game Boy"
-msgstr ""
+msgstr "Game Boy"
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:127
 #: ../build/src/kde/kf6/ui_SystemsTab.h:132
@@ -311,56 +315,57 @@ msgstr ""
 #: ../src/gtk/config/SystemsTab.cpp:129 ../src/win32/config/SystemsTab.cpp:149
 msgctxt "SystemsTab"
 msgid "Game Boy Color"
-msgstr ""
+msgstr "Game Boy Color"
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:129
 #: ../src/gtk/config/SystemsTab.cpp:120 ../src/win32/config/SystemsTab.cpp:142
 msgctxt "SystemsTab"
 msgid "&Super Game Boy:"
-msgstr ""
+msgstr "&Super Game Boy:"
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:131
 #: ../build/src/kde/kf6/ui_SystemsTab.h:136
 #: ../src/gtk/config/SystemsTab.cpp:128 ../src/win32/config/SystemsTab.cpp:148
 msgctxt "SystemsTab"
 msgid "Super Game Boy"
-msgstr ""
+msgstr "Super Game Boy"
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:134
 #: ../src/gtk/config/SystemsTab.cpp:121 ../src/win32/config/SystemsTab.cpp:144
 msgctxt "SystemsTab"
 msgid "Game Boy &Color:"
-msgstr ""
+msgstr "Game Boy &Color:"
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:139
 #: ../src/gtk/config/SystemsTab.cpp:114 ../src/win32/config/SystemsTab.cpp:137
 msgctxt "SystemsTab"
 msgid "Select the Game Boy model to use for title screens for different types of\n"
 "Game Boy ROM images."
-msgstr ""
+msgstr "Selecione o modelo do Game Boy a ser usado para as telas de título para diferentes tipos de imagens de ROM do\n"
+"Game Boy."
 
 #: ../build/src/kde/kf6/ui_XAttrView.h:119
 #: ../src/gtk/xattr/XAttrView.cpp:73
 msgctxt "XAttrView"
 msgid "Ext2 Attributes"
-msgstr ""
+msgstr "Atributos Ext2"
 
 #: ../build/src/kde/kf6/ui_XAttrView.h:120
 #: ../src/gtk/xattr/XAttrView.cpp:81
 msgctxt "XAttrView"
 msgid "XFS Attributes"
-msgstr ""
+msgstr "Atributos XFS"
 
 #: ../build/src/kde/kf6/ui_XAttrView.h:121
 #: ../src/gtk/xattr/XAttrView.cpp:89 ../src/win32/RP_XAttrView.cpp:312
 msgctxt "XAttrView"
 msgid "MS-DOS Attributes"
-msgstr ""
+msgstr "Atributos MS-DOS"
 
 #: ../build/src/kde/kf6/ui_XAttrView.h:122
 msgctxt "XAttrView"
 msgid "E&xtended Attributes"
-msgstr ""
+msgstr "Atributos E&xtended"
 
 #: ../build/src/kde/kf6/ui_XAttrView.h:124
 #: ../src/gtk/xattr/XAttrView_gtk3.cpp:54
@@ -380,13 +385,13 @@ msgstr "Nome"
 #: ../src/gtk/xattr/XfsAttrView.c:176
 msgctxt "XfsAttrView"
 msgid "Project ID:"
-msgstr ""
+msgstr "ID do projeto:"
 
 #: ../src/gtk/AchGDBus.cpp:199 ../src/kde/AchQtDBus.cpp:195
 #: ../src/win32/AchWin32.cpp:292
 msgctxt "Achievements"
 msgid "Achievement Unlocked"
-msgstr ""
+msgstr "Conquista desbloqueada!"
 
 #: ../src/gtk/config/AboutTab.cpp:477 ../src/gtk/config/AboutTab.cpp:485
 #: ../src/kde/config/AboutTab.cpp:227 ../src/kde/config/AboutTab.cpp:235
@@ -447,7 +452,7 @@ msgstr "Tradutores:"
 #, c++-format
 msgctxt "AboutTab|Credits"
 msgid " ({:s})"
-msgstr ""
+msgstr " ({:s})"
 
 #. tr: Using an internal copy of a library.
 #: ../src/gtk/config/AboutTab.cpp:593 ../src/kde/config/AboutTab.cpp:336
@@ -511,7 +516,7 @@ msgstr "Ou entre em contato diretamente com o desenvolvedor:"
 #: ../src/win32/config/AboutTab.cpp:610
 msgctxt "AboutTab"
 msgid "Checking for updates..."
-msgstr ""
+msgstr "Verificando por atualizações..."
 
 #. tr: Error message template.
 #: ../src/gtk/config/AboutTab.cpp:915 ../src/gtk/config/CacheTab.cpp:475
@@ -533,20 +538,20 @@ msgstr "Versão de rom-properties: {:s}"
 #: ../src/win32/config/AboutTab.cpp:717
 msgctxt "AboutTab"
 msgid "New version available!"
-msgstr ""
+msgstr "Nova versão disponível!"
 
 #: ../src/gtk/config/AboutTab.cpp:951 ../src/kde/config/AboutTab.cpp:783
 #: ../src/win32/config/AboutTab.cpp:719
 msgctxt "AboutTab"
 msgid "Download at GitHub"
-msgstr ""
+msgstr "Baixe no GitHub"
 
 #: ../src/gtk/config/CacheCleaner.cpp:261
 #: ../src/gtk/config/CacheCleaner.cpp:319 ../src/kde/config/CacheCleaner.cpp:48
 #: ../src/kde/config/CacheCleaner.cpp:106
 msgctxt "CacheCleaner"
 msgid "Invalid cache directory specified."
-msgstr ""
+msgstr "Diretório do cache inválido."
 
 #: ../src/gtk/config/CacheCleaner.cpp:268 ../src/kde/config/CacheCleaner.cpp:55
 msgctxt "CacheCleaner"
@@ -556,7 +561,7 @@ msgstr "Não é possível obter o caminho do diretório de cachê de XDG."
 #: ../src/gtk/config/CacheCleaner.cpp:276 ../src/kde/config/CacheCleaner.cpp:63
 msgctxt "CacheCleaner"
 msgid "Thumbnails cache directory does not exist."
-msgstr ""
+msgstr "O diretório do cache de miniaturas não existe."
 
 #: ../src/gtk/config/CacheCleaner.cpp:285 ../src/kde/config/CacheCleaner.cpp:72
 #: ../src/win32/config/CacheTab.cpp:623
@@ -581,7 +586,7 @@ msgstr "Cachê do rom-properties possui arquivos estranhos. Cachê não será ap
 #: ../src/kde/config/CacheTab.cpp:298 ../src/kde/config/CacheTab.cpp:342
 msgctxt "CacheTab"
 msgid "Invalid cache directory specified."
-msgstr ""
+msgstr "Diretório do cache inválido."
 
 #: ../src/gtk/config/CacheTab.cpp:370 ../src/kde/config/CacheTab.cpp:170
 msgctxt "CacheTab"
@@ -610,7 +615,7 @@ msgstr "O cachê de rom-properties está vazio. Nada a fazer."
 #, c++-format
 msgctxt "CacheTab"
 msgid "Unable to delete {0:Ld} file(s) and/or {1:Ld} dir(s)."
-msgstr ""
+msgstr "Não foi possível excluir {0:Ld} arquivo(s) e/ou {1:Ld} diretório(s)."
 
 #: ../src/gtk/config/CacheTab.cpp:549 ../src/kde/config/CacheTab.cpp:346
 #: ../src/win32/config/CacheTab.cpp:585
@@ -862,26 +867,26 @@ msgstr "Recebimentos"
 #: ../src/gtk/config/OptionsTab.cpp:269 ../src/win32/config/OptionsTab.cpp:731
 msgctxt "OptionsTab"
 msgid "Options"
-msgstr ""
+msgstr "Opções "
 
 #: ../src/gtk/config/SystemsTab.cpp:96 ../src/win32/config/SystemsTab.cpp:135
 msgctxt "SystemsTab"
 msgid "Game Boy Title Screens"
-msgstr ""
+msgstr "Tela de Título do Game Boy"
 
 #: ../src/gtk/config/UpdateChecker.cpp:163
 #: ../src/kde/config/UpdateChecker.cpp:66
 #: ../src/win32/config/UpdateChecker.cpp:76
 msgctxt "UpdateChecker"
 msgid "Failed to download version file."
-msgstr ""
+msgstr "Falha ao baixar o arquivo de versão."
 
 #: ../src/gtk/config/UpdateChecker.cpp:173
 #: ../src/kde/config/UpdateChecker.cpp:75
 #: ../src/win32/config/UpdateChecker.cpp:92
 msgctxt "UpdateChecker"
 msgid "Failed to open version file."
-msgstr ""
+msgstr "Falha ao abrir o arquivo de versão."
 
 #: ../src/gtk/config/UpdateChecker.cpp:185
 #: ../src/gtk/config/UpdateChecker.cpp:198
@@ -1109,10 +1114,10 @@ msgstr ""
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:214
 #: ../src/gtk/RomDataView.cpp:825 ../src/kde/RomDataView.cpp:182
-#: ../src/librpbase/TextOut_text.cpp:1100
+#: ../src/librpbase/RomData.cpp:698 ../src/librpbase/TextOut_text.cpp:1100
 #: ../src/win32/RP_ShellPropSheetExt.cpp:297
-msgctxt "RomDataView"
-msgid "(unknown filetype)"
+msgctxt "RomData|FileType"
+msgid "(unknown file type)"
 msgstr ""
 
 #. tr: {0:s} == system name, {1:s} == file type
@@ -2651,8 +2656,8 @@ msgstr "Controle opcional"
 #: ../src/libromdata/Media/Wim.cpp:261 ../src/libromdata/Media/Wim.cpp:266
 #: ../src/libromdata/Other/EXE.cpp:414 ../src/libromdata/Other/EXE.cpp:418
 #: ../src/libromdata/Other/EXE.cpp:458 ../src/libromdata/Other/EXE_PE.cpp:850
-#: ../src/libromdata/Other/EXE_PE.cpp:856 ../src/libromdata/Other/Lua.cpp:752
-#: ../src/libromdata/Other/Lua.cpp:755 ../src/libromdata/Other/Lua.cpp:758
+#: ../src/libromdata/Other/EXE_PE.cpp:856 ../src/libromdata/Other/Lua.cpp:768
+#: ../src/libromdata/Other/Lua.cpp:771 ../src/libromdata/Other/Lua.cpp:774
 msgctxt "RomData"
 msgid "Warning"
 msgstr "Aviso"
@@ -7767,62 +7772,44 @@ msgctxt "GameMaker"
 msgid "Room Count"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:722
+#. tr: Lua type size - {:s} is the type name, e.g. "int".
+#: ../src/libromdata/Other/Lua.cpp:723
+#, c++-format
 msgctxt "Lua"
-msgid "int size"
+msgid "{:s} size"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:724
-msgctxt "Lua"
-msgid "size_t size"
-msgstr ""
-
-#: ../src/libromdata/Other/Lua.cpp:726
-msgctxt "Lua"
-msgid "lua_Instruction size"
-msgstr ""
-
-#: ../src/libromdata/Other/Lua.cpp:728
-msgctxt "Lua"
-msgid "lua_Integer size"
-msgstr ""
-
-#: ../src/libromdata/Other/Lua.cpp:730
-msgctxt "Lua"
-msgid "lua_Number size"
-msgstr ""
-
-#: ../src/libromdata/Other/Lua.cpp:735
+#: ../src/libromdata/Other/Lua.cpp:751
 msgctxt "Lua"
 msgid "Floating-point"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:738
+#: ../src/libromdata/Other/Lua.cpp:754
 msgctxt "Lua"
 msgid "Integer"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:741
+#: ../src/libromdata/Other/Lua.cpp:757
 msgctxt "Lua"
 msgid "String"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:748
+#: ../src/libromdata/Other/Lua.cpp:764
 msgctxt "Lua"
 msgid "lua_Number type"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:753
+#: ../src/libromdata/Other/Lua.cpp:769
 msgctxt "Lua"
 msgid "Floating-point values are byte-swapped"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:756
+#: ../src/libromdata/Other/Lua.cpp:772
 msgctxt "Lua"
 msgid "Unusual instruction layout"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:759
+#: ../src/libromdata/Other/Lua.cpp:775
 msgctxt "Lua"
 msgid "File corrupted"
 msgstr ""
@@ -8160,11 +8147,6 @@ msgstr ""
 #: ../src/librpbase/OptionsMenuButton_data.inc.h:29
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Copy as JSON"
-msgstr ""
-
-#: ../src/librpbase/RomData.cpp:698
-msgctxt "RomData|FileType"
-msgid "(unknown file type)"
 msgstr ""
 
 #. tr: FileType::ROM_Image
