@@ -612,7 +612,9 @@ int NSFPrivate::readNSFeMetadata(void)
 				}
 
 				// Chunk contains a list of which tracks are "sound effects".
-				assert(chunk_size > 0);
+				// NOTE: At least one NSFe file I've tested has a zero-byte
+				// 'psfx' chunk, so we won't assert on it.
+				//assert(chunk_size > 0);
 				if (chunk_size == 0) {
 					// Chunk is empty.
 					break;
@@ -1035,6 +1037,7 @@ int NSF::loadFieldData(void)
 
 		// NOTE: The NSF specification says ASCII, but I'm assuming
 		// the text is cp1252.
+		// TODO: Better Shift-JIS detection? [Scan for 'ƒ' (cp1252 0x83)?]
 
 		// Title
 		if (nsfHeader->title[0] != 0) {
@@ -1119,6 +1122,7 @@ int NSF::loadFieldData(void)
 		// tested all seem to be cp1252... (and Shift-JIS is misdetected,
 		// so using cp1252 only.)
 		// TODO: Better detection to see if the strings have valid UTF-8 encoding?
+		// TODO: Better Shift-JIS detection? [Scan for 'ƒ' (cp1252 0x83)?]
 		const auto *nsfe = &d->nsfe;
 
 		if (nsfe->has.auth) {
@@ -1361,6 +1365,7 @@ int NSF::loadMetaData(void)
 		// TODO: Override NSF2 fields with NSFe metadata, if present?
 		// NOTE: The NSF specification says ASCII, but I'm assuming
 		// the text is cp1252.
+		// TODO: Better Shift-JIS detection? [Scan for 'ƒ' (cp1252 0x83)?]
 		const NSF_Header *const nsfHeader = &d->header.nsf;
 		d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
@@ -1390,6 +1395,7 @@ int NSF::loadMetaData(void)
 		// tested all seem to be cp1252... (and Shift-JIS is misdetected,
 		// so using cp1252 only.)
 		// TODO: Better detection to see if the strings have valid UTF-8 encoding?
+		// TODO: Better Shift-JIS detection? [Scan for 'ƒ' (cp1252 0x83)?]
 		const auto *nsfe = &d->nsfe;
 
 		// Title
