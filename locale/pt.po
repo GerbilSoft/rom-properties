@@ -720,7 +720,7 @@ msgstr "Arquivos binários|*.bin|-"
 #: ../src/win32/config/KeyManagerTab.cpp:1846
 msgctxt "KeyManagerTab"
 msgid "All Files|*|-"
-msgstr "Todos os arquivos|*|-"
+msgstr "Todos os Arquivos|*|-"
 
 #: ../src/gtk/config/KeyManagerTab.cpp:569
 #: ../src/kde/config/KeyManagerTab.cpp:160
@@ -1240,7 +1240,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:378
 msgctxt "RomDataView"
 msgid "Text Files|*.txt|text/plain"
-msgstr ""
+msgstr "Arquivos de texto|*.txt|text/plain"
 
 #. tr: "All Files" filter (RP format)
 #: ../src/gtk/RomDataView_ops.cpp:542 ../src/gtk/RomDataView_ops.cpp:552
@@ -1250,7 +1250,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:586
 msgctxt "RomDataView"
 msgid "All Files|*|-"
-msgstr "Todos os arquivos|*|-"
+msgstr "Todos os Arquivos|*|-"
 
 #: ../src/gtk/RomDataView_ops.cpp:547 ../src/kde/RomDataView_ops.cpp:245
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:382
@@ -1263,7 +1263,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:384
 msgctxt "RomDataView"
 msgid "JSON Files|*.json|application/json"
-msgstr ""
+msgstr "Arquivo JSON|*.json|application/json"
 
 #. tr: format string for Ext2 attribute checkbox labels ({0:c} == lsattr character)
 #: ../src/gtk/xattr/Ext2AttrView.cpp:181
