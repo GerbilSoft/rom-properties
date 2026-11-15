@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-15 01:22-0500\n"
-"PO-Revision-Date: 2026-11-15 06:32\n"
+"POT-Creation-Date: 2026-11-15 01:53-0500\n"
+"PO-Revision-Date: 2026-11-15 08:16\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -1114,10 +1114,10 @@ msgstr "(sistema desconocido)"
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:214
 #: ../src/gtk/RomDataView.cpp:825 ../src/kde/RomDataView.cpp:182
-#: ../src/librpbase/TextOut_text.cpp:1100
+#: ../src/librpbase/RomData.cpp:698 ../src/librpbase/TextOut_text.cpp:1100
 #: ../src/win32/RP_ShellPropSheetExt.cpp:297
-msgctxt "RomDataView"
-msgid "(unknown filetype)"
+msgctxt "RomData|FileType"
+msgid "(unknown file type)"
 msgstr "(tipo de archivo desconocido)"
 
 #. tr: {0:s} == system name, {1:s} == file type
@@ -2658,8 +2658,8 @@ msgstr "Control opcional"
 #: ../src/libromdata/Media/Wim.cpp:261 ../src/libromdata/Media/Wim.cpp:266
 #: ../src/libromdata/Other/EXE.cpp:414 ../src/libromdata/Other/EXE.cpp:418
 #: ../src/libromdata/Other/EXE.cpp:458 ../src/libromdata/Other/EXE_PE.cpp:850
-#: ../src/libromdata/Other/EXE_PE.cpp:856 ../src/libromdata/Other/Lua.cpp:752
-#: ../src/libromdata/Other/Lua.cpp:755 ../src/libromdata/Other/Lua.cpp:758
+#: ../src/libromdata/Other/EXE_PE.cpp:856 ../src/libromdata/Other/Lua.cpp:768
+#: ../src/libromdata/Other/Lua.cpp:771 ../src/libromdata/Other/Lua.cpp:774
 msgctxt "RomData"
 msgid "Warning"
 msgstr "Aviso"
@@ -7774,62 +7774,44 @@ msgctxt "GameMaker"
 msgid "Room Count"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:722
+#. tr: Lua type size - {:s} is the type name, e.g. "int".
+#: ../src/libromdata/Other/Lua.cpp:723
+#, c++-format
 msgctxt "Lua"
-msgid "int size"
+msgid "{:s} size"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:724
-msgctxt "Lua"
-msgid "size_t size"
-msgstr ""
-
-#: ../src/libromdata/Other/Lua.cpp:726
-msgctxt "Lua"
-msgid "lua_Instruction size"
-msgstr ""
-
-#: ../src/libromdata/Other/Lua.cpp:728
-msgctxt "Lua"
-msgid "lua_Integer size"
-msgstr ""
-
-#: ../src/libromdata/Other/Lua.cpp:730
-msgctxt "Lua"
-msgid "lua_Number size"
-msgstr ""
-
-#: ../src/libromdata/Other/Lua.cpp:735
+#: ../src/libromdata/Other/Lua.cpp:751
 msgctxt "Lua"
 msgid "Floating-point"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:738
+#: ../src/libromdata/Other/Lua.cpp:754
 msgctxt "Lua"
 msgid "Integer"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:741
+#: ../src/libromdata/Other/Lua.cpp:757
 msgctxt "Lua"
 msgid "String"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:748
+#: ../src/libromdata/Other/Lua.cpp:764
 msgctxt "Lua"
 msgid "lua_Number type"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:753
+#: ../src/libromdata/Other/Lua.cpp:769
 msgctxt "Lua"
 msgid "Floating-point values are byte-swapped"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:756
+#: ../src/libromdata/Other/Lua.cpp:772
 msgctxt "Lua"
 msgid "Unusual instruction layout"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:759
+#: ../src/libromdata/Other/Lua.cpp:775
 msgctxt "Lua"
 msgid "File corrupted"
 msgstr ""
@@ -8168,11 +8150,6 @@ msgstr "Copiar como texto"
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Copy as JSON"
 msgstr "Copiar como JSON"
-
-#: ../src/librpbase/RomData.cpp:698
-msgctxt "RomData|FileType"
-msgid "(unknown file type)"
-msgstr "(tipo de archivo desconocido)"
 
 #. tr: FileType::ROM_Image
 #: ../src/librpbase/RomData.cpp:700
