@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-15 01:53-0500\n"
-"PO-Revision-Date: 2026-11-15 08:16\n"
+"POT-Creation-Date: 2026-11-15 14:05-0500\n"
+"PO-Revision-Date: 2026-11-15 19:42\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -86,7 +86,7 @@ msgstr "Borrar la caché de descarga de la página de ROM Properties"
 #. tr: Dialog title.
 #: ../build/src/kde/kf6/ui_ConfigDialog.h:91
 #: ../src/gtk/config/ConfigDialog.cpp:161 ../src/kde/config/stub-export.cpp:141
-#: ../src/win32/config/ConfigDialog.cpp:262
+#: ../src/win32/config/ConfigDialog.cpp:264
 msgctxt "ConfigDialog"
 msgid "ROM Properties Page configuration"
 msgstr "Configuración de ROM Properties"
@@ -636,14 +636,14 @@ msgstr "Gestor de &Claves"
 
 #. tr: "Reset" button.
 #: ../src/gtk/config/ConfigDialog.cpp:308
-#: ../src/win32/config/ConfigDialog.cpp:308
+#: ../src/win32/config/ConfigDialog.cpp:310
 msgctxt "ConfigDialog"
 msgid "&Reset"
 msgstr ""
 
 #. tr: "Defaults" button.
 #: ../src/gtk/config/ConfigDialog.cpp:309
-#: ../src/win32/config/ConfigDialog.cpp:325
+#: ../src/win32/config/ConfigDialog.cpp:332
 msgctxt "ConfigDialog"
 msgid "Defaults"
 msgstr "Defecto"
@@ -1156,29 +1156,29 @@ msgctxt "RomDataView"
 msgid "{:s}:"
 msgstr ""
 
-#: ../src/gtk/RomDataView_ops.cpp:355 ../src/kde/RomDataView_ops.cpp:434
-#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:599
+#: ../src/gtk/RomDataView_ops.cpp:355 ../src/kde/RomDataView_ops.cpp:441
+#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:604
 #, c++-format
 msgctxt "RomDataView"
 msgid "Error opening output file: '{:s}'"
 msgstr ""
 
-#: ../src/gtk/RomDataView_ops.cpp:384 ../src/kde/RomDataView_ops.cpp:285
-#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:472
+#: ../src/gtk/RomDataView_ops.cpp:384 ../src/kde/RomDataView_ops.cpp:292
+#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:477
 msgctxt "RomDataView"
 msgid "Could not open the output file."
 msgstr ""
 
 #: ../src/gtk/RomDataView_ops.cpp:394 ../src/gtk/RomDataView_ops.cpp:503
-#: ../src/kde/RomDataView_ops.cpp:205 ../src/kde/RomDataView_ops.cpp:291
-#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:485
-#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:504
+#: ../src/kde/RomDataView_ops.cpp:205 ../src/kde/RomDataView_ops.cpp:298
+#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:490
+#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:509
 #, c++-format
 msgctxt "RomDataView"
 msgid "File: '{:s}'"
 msgstr "Archivo: '{:s}'"
 
-#: ../src/gtk/RomDataView_ops.cpp:414 ../src/kde/RomDataView_ops.cpp:309
+#: ../src/gtk/RomDataView_ops.cpp:414 ../src/kde/RomDataView_ops.cpp:316
 msgctxt "RomDataView"
 msgid "Invalid ID for an Export Standard ROM Operation."
 msgstr ""
@@ -1190,31 +1190,34 @@ msgid "Export to Text File"
 msgstr "Exportar a un Archivo de Texto"
 
 #. tr: "Text Files" filter (RP format)
-#: ../src/gtk/RomDataView_ops.cpp:539 ../src/kde/RomDataView_ops.cpp:237
+#: ../src/gtk/RomDataView_ops.cpp:540 ../src/kde/RomDataView_ops.cpp:238
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:378
 msgctxt "RomDataView"
-msgid "Text Files|*.txt|text/plain|All Files|*|-"
-msgstr "Archivos de texto|*.txt|text/plain|Todos los archivos|*|-"
+msgid "Text Files|*.txt|text/plain"
+msgstr "Archivos de texto|*.txt|text/plain"
 
-#: ../src/gtk/RomDataView_ops.cpp:544 ../src/kde/RomDataView_ops.cpp:242
+#. tr: "All Files" filter (RP format)
+#: ../src/gtk/RomDataView_ops.cpp:542 ../src/gtk/RomDataView_ops.cpp:552
+#: ../src/gtk/RomDataView_ops.cpp:649 ../src/kde/RomDataView_ops.cpp:240
+#: ../src/kde/RomDataView_ops.cpp:250 ../src/kde/RomDataView_ops.cpp:420
+#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:447
+#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:586
+msgctxt "RomDataView"
+msgid "All Files|*|-"
+msgstr "Todos los archivos|*|-"
+
+#: ../src/gtk/RomDataView_ops.cpp:547 ../src/kde/RomDataView_ops.cpp:245
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:382
 msgctxt "RomDataView"
 msgid "Export to JSON File"
 msgstr "Exportar a un Archivo JSON"
 
 #. tr: "JSON Files" filter (RP format)
-#: ../src/gtk/RomDataView_ops.cpp:546 ../src/kde/RomDataView_ops.cpp:244
+#: ../src/gtk/RomDataView_ops.cpp:550 ../src/kde/RomDataView_ops.cpp:248
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:384
 msgctxt "RomDataView"
-msgid "JSON Files|*.json|application/json|All Files|*|-"
-msgstr "Archivos JSON|*.json|application/json|Todos los archivos|*|-"
-
-#. tr: "All Files" filter (RP format)
-#: ../src/gtk/RomDataView_ops.cpp:643 ../src/kde/RomDataView_ops.cpp:413
-#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:581
-msgctxt "RomData"
-msgid "All Files|*|-"
-msgstr "Todos los archivos|*|-"
+msgid "JSON Files|*.json|application/json"
+msgstr "Archivos JSON|*.json|application/json"
 
 #. tr: format string for Ext2 attribute checkbox labels ({0:c} == lsattr character)
 #: ../src/gtk/xattr/Ext2AttrView.cpp:181
@@ -1364,7 +1367,7 @@ msgid "Type"
 msgstr "Tipo"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:422 ../src/libromdata/Audio/BRSTM.cpp:305
-#: ../src/libromdata/Other/Lua.cpp:718
+#: ../src/libromdata/Other/Lua.cpp:733
 #: ../src/librptexture/fileformat/KhronosKTX.cpp:1060
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1363
 msgctxt "RomData"
@@ -1372,7 +1375,7 @@ msgid "Endianness"
 msgstr "Orden de bytes"
 
 #: ../src/libromdata/Audio/BCSTM.cpp:424 ../src/libromdata/Audio/BRSTM.cpp:307
-#: ../src/libromdata/Other/Lua.cpp:708
+#: ../src/libromdata/Other/Lua.cpp:723
 #: ../src/librptexture/fileformat/KhronosKTX.cpp:1050
 #: ../src/librptexture/fileformat/KhronosKTX.cpp:1055
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1355
@@ -1383,7 +1386,7 @@ msgid "Big-Endian"
 msgstr ""
 
 #: ../src/libromdata/Audio/BCSTM.cpp:425 ../src/libromdata/Audio/BRSTM.cpp:308
-#: ../src/libromdata/Other/Lua.cpp:711
+#: ../src/libromdata/Other/Lua.cpp:726
 #: ../src/librptexture/fileformat/KhronosKTX.cpp:1048
 #: ../src/librptexture/fileformat/KhronosKTX.cpp:1057
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1354
@@ -2658,8 +2661,8 @@ msgstr "Control opcional"
 #: ../src/libromdata/Media/Wim.cpp:261 ../src/libromdata/Media/Wim.cpp:266
 #: ../src/libromdata/Other/EXE.cpp:414 ../src/libromdata/Other/EXE.cpp:418
 #: ../src/libromdata/Other/EXE.cpp:458 ../src/libromdata/Other/EXE_PE.cpp:850
-#: ../src/libromdata/Other/EXE_PE.cpp:856 ../src/libromdata/Other/Lua.cpp:768
-#: ../src/libromdata/Other/Lua.cpp:771 ../src/libromdata/Other/Lua.cpp:774
+#: ../src/libromdata/Other/EXE_PE.cpp:856 ../src/libromdata/Other/Lua.cpp:783
+#: ../src/libromdata/Other/Lua.cpp:786 ../src/libromdata/Other/Lua.cpp:789
 msgctxt "RomData"
 msgid "Warning"
 msgstr "Aviso"
@@ -7775,43 +7778,43 @@ msgid "Room Count"
 msgstr ""
 
 #. tr: Lua type size - {:s} is the type name, e.g. "int".
-#: ../src/libromdata/Other/Lua.cpp:723
+#: ../src/libromdata/Other/Lua.cpp:738
 #, c++-format
 msgctxt "Lua"
 msgid "{:s} size"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:751
+#: ../src/libromdata/Other/Lua.cpp:766
 msgctxt "Lua"
 msgid "Floating-point"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:754
+#: ../src/libromdata/Other/Lua.cpp:769
 msgctxt "Lua"
 msgid "Integer"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:757
+#: ../src/libromdata/Other/Lua.cpp:772
 msgctxt "Lua"
 msgid "String"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:764
+#: ../src/libromdata/Other/Lua.cpp:779
 msgctxt "Lua"
 msgid "lua_Number type"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:769
+#: ../src/libromdata/Other/Lua.cpp:784
 msgctxt "Lua"
 msgid "Floating-point values are byte-swapped"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:772
+#: ../src/libromdata/Other/Lua.cpp:787
 msgctxt "Lua"
 msgid "Unusual instruction layout"
 msgstr ""
 
-#: ../src/libromdata/Other/Lua.cpp:775
+#: ../src/libromdata/Other/Lua.cpp:790
 msgctxt "Lua"
 msgid "File corrupted"
 msgstr ""
@@ -10301,7 +10304,7 @@ msgctxt "OptionsMenuButton"
 msgid "&Options..."
 msgstr "&Opciones..."
 
-#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:536
+#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:541
 msgctxt "RomDataView"
 msgid "Invalid action ID."
 msgstr ""
