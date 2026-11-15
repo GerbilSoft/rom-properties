@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-15 14:05-0500\n"
-"PO-Revision-Date: 2026-11-15 19:42\n"
+"POT-Creation-Date: 2026-11-15 14:51-0500\n"
+"PO-Revision-Date: 2026-11-15 21:24\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -21,7 +21,7 @@ msgstr ""
 #: ../src/gtk/config/AboutTab.cpp:301
 msgctxt "AboutTab"
 msgid "C&redits"
-msgstr "الطاقم"
+msgstr "الطاقم (&R)"
 
 #: ../build/src/kde/kf6/ui_AboutTab.h:277
 #: ../src/gtk/config/AboutTab.cpp:304
@@ -93,19 +93,19 @@ msgstr ""
 #: ../src/gtk/config/ConfigDialog.cpp:245
 msgctxt "ConfigDialog"
 msgid "&Image Types"
-msgstr "أنواع الصور"
+msgstr "أنواع الصور (&I)"
 
 #: ../build/src/kde/kf6/ui_ConfigDialog.h:93
 #: ../src/gtk/config/ConfigDialog.cpp:246
 msgctxt "ConfigDialog"
 msgid "&Systems"
-msgstr "الأنظمة"
+msgstr "الأنظمة (&S)"
 
 #: ../build/src/kde/kf6/ui_ConfigDialog.h:94
 #: ../src/gtk/config/ConfigDialog.cpp:247
 msgctxt "ConfigDialog"
 msgid "&Options"
-msgstr "الخيارات"
+msgstr "الخيارات (&O)"
 
 #: ../build/src/kde/kf6/ui_ConfigDialog.h:95
 #: ../src/gtk/config/ConfigDialog.cpp:248
@@ -117,49 +117,49 @@ msgstr "تخزين الصور"
 #: ../src/gtk/config/ConfigDialog.cpp:249
 msgctxt "ConfigDialog"
 msgid "&Achievements"
-msgstr "الإحرازات"
+msgstr "الإحرازات (&A)"
 
 #: ../build/src/kde/kf6/ui_ConfigDialog.h:97
 #: ../src/gtk/config/ConfigDialog.cpp:253
 msgctxt "ConfigDialog"
 msgid "Abou&t"
-msgstr "عن الأداة"
+msgstr "عن الأداة (&t)"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:100
 #: ../src/gtk/xattr/DosAttrView.c:139 ../src/win32/RP_XAttrView.cpp:314
 msgctxt "DosAttrView"
 msgid "&Read-only"
-msgstr "قراءة فقط"
+msgstr "قراءة فقط (&R)"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:101
 #: ../src/gtk/xattr/DosAttrView.c:141 ../src/win32/RP_XAttrView.cpp:316
 msgctxt "DosAttrView"
 msgid "&Hidden"
-msgstr "مخفي"
+msgstr "مخفي (&H)"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:102
 #: ../src/gtk/xattr/DosAttrView.c:143 ../src/win32/RP_XAttrView.cpp:318
 msgctxt "DosAttrView"
 msgid "&Archive"
-msgstr "أرشيف"
+msgstr "أرشيف (&A)"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:103
 #: ../src/gtk/xattr/DosAttrView.c:145 ../src/win32/RP_XAttrView.cpp:320
 msgctxt "DosAttrView"
 msgid "&System"
-msgstr "نظام"
+msgstr "نظام (&S)"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:104
 #: ../src/gtk/xattr/DosAttrView.c:167
 msgctxt "DosAttrView"
 msgid "&Compressed"
-msgstr "مضغوط"
+msgstr "مضغوط (&C)"
 
 #: ../build/src/kde/kf6/ui_DosAttrView.h:105
 #: ../src/gtk/xattr/DosAttrView.c:169 ../src/win32/RP_XAttrView.cpp:324
 msgctxt "DosAttrView"
 msgid "&Encrypted"
-msgstr "مشفّر"
+msgstr "مشفّر (&E)"
 
 #: ../build/src/kde/kf6/ui_Ext2AttrView.h:89
 #: ../src/gtk/xattr/Ext2AttrView.cpp:149
@@ -186,19 +186,19 @@ msgstr "اختر أنواع الصورة الخاصة بكل نظام.\n"
 #: ../src/win32/config/KeyManagerTab.cpp:365
 msgctxt "KeyManagerTab"
 msgid "I&mport"
-msgstr "استيراد"
+msgstr "استيراد (&M)"
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:184
 #: ../src/win32/config/OptionsTab.cpp:184
 msgctxt "OptionsTab"
 msgid "&Downloads"
-msgstr "التنزيلات"
+msgstr "التنزيلات (&D)"
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:185
 #: ../src/gtk/config/OptionsTab.cpp:144 ../src/win32/config/OptionsTab.cpp:186
 msgctxt "OptionsTab"
 msgid "E&xternal Image Downloads"
-msgstr "تنزيلات الصور الخارجية"
+msgstr "تنزيلات الصور الخارجية (&X)"
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:186
 #: ../src/gtk/config/OptionsTab.cpp:150 ../src/win32/config/OptionsTab.cpp:188
@@ -256,7 +256,7 @@ msgstr "لغة الألعاب ذات نظام PAL:"
 #: ../src/win32/config/OptionsTab.cpp:200
 msgctxt "OptionsTab"
 msgid "&Options"
-msgstr "خيارات"
+msgstr "خيارات (&O)"
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:201
 #: ../src/gtk/config/OptionsTab.cpp:286 ../src/win32/config/OptionsTab.cpp:202
@@ -295,7 +295,7 @@ msgstr "صور غيم بوي"
 #: ../src/gtk/config/SystemsTab.cpp:119 ../src/win32/config/SystemsTab.cpp:140
 msgctxt "SystemsTab"
 msgid "Game &Boy:"
-msgstr "غيم بوي:"
+msgstr "غيم بوي (&B):"
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:126
 #: ../build/src/kde/kf6/ui_SystemsTab.h:130
@@ -317,7 +317,7 @@ msgstr "غيم بوي ملون"
 #: ../src/gtk/config/SystemsTab.cpp:120 ../src/win32/config/SystemsTab.cpp:142
 msgctxt "SystemsTab"
 msgid "&Super Game Boy:"
-msgstr "سوبر غيم بوي:"
+msgstr "سوبر غيم بوي (&S):"
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:131
 #: ../build/src/kde/kf6/ui_SystemsTab.h:136
@@ -330,7 +330,7 @@ msgstr "سوبر غيم بوي"
 #: ../src/gtk/config/SystemsTab.cpp:121 ../src/win32/config/SystemsTab.cpp:144
 msgctxt "SystemsTab"
 msgid "Game Boy &Color:"
-msgstr "غيم بوي ملون:"
+msgstr "غيم بوي ملون (&C):"
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:139
 #: ../src/gtk/config/SystemsTab.cpp:114 ../src/win32/config/SystemsTab.cpp:137
@@ -1245,20 +1245,20 @@ msgctxt "RomDataView"
 msgid "JSON Files|*.json|application/json"
 msgstr "JSON ملفات|*.json|application/json"
 
-#. tr: format string for Ext2 attribute checkbox labels ({0:c} == lsattr character)
-#: ../src/gtk/xattr/Ext2AttrView.cpp:181
+#. tr: format string for Ext2 attribute checkbox labels ({0:c} == lsattr character, {1:s} == attribute name)
+#: ../src/gtk/xattr/Ext2AttrView.cpp:181 ../src/kde/xattr/Ext2AttrView.cpp:97
 #, c++-format
 msgctxt "Ext2AttrView"
 msgid "{0:c}: {1:s}"
 msgstr ""
 
-#: ../src/gtk/xattr/Ext2AttrView.cpp:379 ../src/kde/xattr/Ext2AttrView.cpp:181
+#: ../src/gtk/xattr/Ext2AttrView.cpp:379 ../src/kde/xattr/Ext2AttrView.cpp:184
 #, c++-format
 msgctxt "Ext2AttrView"
 msgid "Compression: {:s}"
 msgstr ""
 
-#: ../src/gtk/xattr/Ext2AttrView.cpp:381 ../src/kde/xattr/Ext2AttrView.cpp:183
+#: ../src/gtk/xattr/Ext2AttrView.cpp:381 ../src/kde/xattr/Ext2AttrView.cpp:186
 #, c++-format
 msgctxt "Ext2AttrView"
 msgid "Compression: {:s}:{:d}"
@@ -1267,12 +1267,6 @@ msgstr ""
 #: ../src/gtk/xattr/XAttrView.cpp:97
 msgctxt "XAttrView"
 msgid "Extended Attributes"
-msgstr ""
-
-#. tr: format string for Ext2 attribute checkbox labels (%1 == lsattr character)
-#: ../src/kde/xattr/Ext2AttrView.cpp:97
-msgctxt "Ext2AttrView"
-msgid "%1: %2"
 msgstr ""
 
 #. tr: XAttrView tab title
