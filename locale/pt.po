@@ -305,14 +305,13 @@ msgid ""
 msgstr ""
 "Ativar a geração de miniaturas e a extração de metadados de pacotes baseados "
 "em diretórios,\n"
-"por exemplo, para o Wii U. Isso pode tornar a navegação pelos arquivos\n"
-"lento."
+"por exemplo, para o Wii U. Isso pode tornar a navegação pelos arquivos lento."
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:207
 #: ../src/gtk/config/OptionsTab.cpp:297 ../src/win32/config/OptionsTab.cpp:208
 msgctxt "OptionsTab"
 msgid "Show the Extended Attributes tab."
-msgstr "Mostrar o painel dos Atributos entendidos."
+msgstr "Mostrar o painel dos Atributos estendidos."
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:124
 msgctxt "SystemsTab"
