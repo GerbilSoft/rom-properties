@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-11-15 01:53-0500\n"
-"PO-Revision-Date: 2026-11-15 08:16\n"
+"PO-Revision-Date: 2026-11-15 18:37\n"
 "Last-Translator: \n"
 "Language-Team: Romanian\n"
 "Language: ro_RO\n"
@@ -341,7 +341,8 @@ msgstr "Game Boy Color:"
 msgctxt "SystemsTab"
 msgid "Select the Game Boy model to use for title screens for different types of\n"
 "Game Boy ROM images."
-msgstr "Selectați modelul de Game Boy pentru a utiliza pentru ecranele de titlu pentru diferite tipuri de imagini de la Game Boy ROM."
+msgstr "Selectați modelul de Game Boy pentru a utiliza pentru ecranele de titlu\n"
+"pentru diferite tipuri de imagini de la Game Boy ROM."
 
 #: ../build/src/kde/kf6/ui_XAttrView.h:119
 #: ../src/gtk/xattr/XAttrView.cpp:73
