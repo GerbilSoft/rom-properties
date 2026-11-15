@@ -177,7 +177,7 @@ rp_ext2_attr_view_init(RpExt2AttrView *widget)
 #endif /* USE_GTK_GRID */
 	gtk_widget_set_name(gridCheckboxes, "gridCheckboxes");
 
-	// tr: format string for Ext2 attribute checkbox labels ({0:c} == lsattr character)
+	// tr: format string for Ext2 attribute checkbox labels ({0:c} == lsattr character, {1:s} == attribute name)
 	const char *const s_lsattr_fmt = C_("Ext2AttrView", "{0:c}: {1:s}");
 
 	string s_lsattr_label;

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-15 14:05-0500\n"
+"POT-Creation-Date: 2026-11-15 14:51-0500\n"
 "PO-Revision-Date: 2026-11-15 19:43\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese, Brazilian\n"
@@ -1267,20 +1267,20 @@ msgctxt "RomDataView"
 msgid "JSON Files|*.json|application/json"
 msgstr "Arquivo JSON|*.json|application/json"
 
-#. tr: format string for Ext2 attribute checkbox labels ({0:c} == lsattr character)
-#: ../src/gtk/xattr/Ext2AttrView.cpp:181
+#. tr: format string for Ext2 attribute checkbox labels ({0:c} == lsattr character, {1:s} == attribute name)
+#: ../src/gtk/xattr/Ext2AttrView.cpp:181 ../src/kde/xattr/Ext2AttrView.cpp:97
 #, c++-format
 msgctxt "Ext2AttrView"
 msgid "{0:c}: {1:s}"
 msgstr "{0:c}: {1:s}"
 
-#: ../src/gtk/xattr/Ext2AttrView.cpp:379 ../src/kde/xattr/Ext2AttrView.cpp:181
+#: ../src/gtk/xattr/Ext2AttrView.cpp:379 ../src/kde/xattr/Ext2AttrView.cpp:184
 #, c++-format
 msgctxt "Ext2AttrView"
 msgid "Compression: {:s}"
 msgstr "Compressão: {:s}"
 
-#: ../src/gtk/xattr/Ext2AttrView.cpp:381 ../src/kde/xattr/Ext2AttrView.cpp:183
+#: ../src/gtk/xattr/Ext2AttrView.cpp:381 ../src/kde/xattr/Ext2AttrView.cpp:186
 #, c++-format
 msgctxt "Ext2AttrView"
 msgid "Compression: {:s}:{:d}"
@@ -1290,12 +1290,6 @@ msgstr "Compressão: {:s}:{:d}"
 msgctxt "XAttrView"
 msgid "Extended Attributes"
 msgstr "Atributos estendidos"
-
-#. tr: format string for Ext2 attribute checkbox labels (%1 == lsattr character)
-#: ../src/kde/xattr/Ext2AttrView.cpp:97
-msgctxt "Ext2AttrView"
-msgid "%1: %2"
-msgstr "%1: %2"
 
 #. tr: XAttrView tab title
 #: ../src/kde/xattr/XAttrViewPropertiesDialogPlugin.cpp:86
