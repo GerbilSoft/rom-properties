@@ -260,8 +260,8 @@ msgid ""
 "This helps to identify where cached files were downloaded from."
 msgstr ""
 "Guarde informações sobre a origem de arquivos em cache usando os atributos "
-"estendidos. Isso ajuda a identificar de onde os arquivos de cache foram "
-"baixados."
+"estendidos.\n"
+"Isso ajuda a identificar de onde os arquivos de cache foram baixados."
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:199
 #: ../src/gtk/config/OptionsTab.cpp:260 ../src/win32/config/OptionsTab.cpp:196
