@@ -470,6 +470,7 @@ under CC-BY 4.0.
 * spencerchris8080: Spanish
 * @NoNameWasDefined: French
 * temuri.doghonadze: Georgian
+* lastkh: Brazilian Portuguese
 
 ### Other Contributions
 
