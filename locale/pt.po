@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2026-11-15 01:53-0500\n"
-"PO-Revision-Date: 2026-11-15 08:17\n"
+"PO-Revision-Date: 2026-11-15 17:10\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese, Brazilian\n"
 "Language: pt_BR\n"
@@ -53,7 +53,7 @@ msgstr "Conquista"
 #: ../src/gtk/config/AchievementsTab.cpp:218
 msgctxt "AchievementsTab"
 msgid "Icon"
-msgstr "Ícone "
+msgstr "Ícone"
 
 #: ../build/src/kde/kf6/ui_CacheTab.h:98
 #: ../src/gtk/config/CacheTab.cpp:157
@@ -107,7 +107,7 @@ msgstr "&Sistemas"
 #: ../src/gtk/config/ConfigDialog.cpp:247
 msgctxt "ConfigDialog"
 msgid "&Options"
-msgstr "&Opções "
+msgstr "&Opções"
 
 #: ../build/src/kde/kf6/ui_ConfigDialog.h:95
 #: ../src/gtk/config/ConfigDialog.cpp:248
@@ -227,7 +227,7 @@ msgstr "Baixar imagem em resolução normal"
 #: ../src/gtk/config/OptionsTab.cpp:158 ../src/win32/config/OptionsTab.cpp:213
 msgctxt "OptionsTab"
 msgid "Download high-resolution images"
-msgstr "Baixar imagem em alta resolução "
+msgstr "Baixar imagem em alta resolução"
 
 #: ../build/src/kde/kf6/ui_OptionsTab.h:191
 #: ../src/gtk/config/OptionsTab.cpp:152 ../src/win32/config/OptionsTab.cpp:190
@@ -288,12 +288,12 @@ msgstr "Ativar a geração de miniaturas e a extração de metadados de pacotes 
 #: ../src/gtk/config/OptionsTab.cpp:297 ../src/win32/config/OptionsTab.cpp:208
 msgctxt "OptionsTab"
 msgid "Show the Extended Attributes tab."
-msgstr "Mostrar o painel dos Atributos entendidos "
+msgstr "Mostrar o painel dos Atributos entendidos."
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:124
 msgctxt "SystemsTab"
 msgid "&Game Boy Title Screens"
-msgstr "&Tela de título do Game Boy"
+msgstr "&Telas de título do Game Boy"
 
 #: ../build/src/kde/kf6/ui_SystemsTab.h:125
 #: ../src/gtk/config/SystemsTab.cpp:119 ../src/win32/config/SystemsTab.cpp:140
@@ -365,7 +365,7 @@ msgstr "Atributos MS-DOS"
 #: ../build/src/kde/kf6/ui_XAttrView.h:122
 msgctxt "XAttrView"
 msgid "E&xtended Attributes"
-msgstr "Atributos E&xtended"
+msgstr "Atributos E&stendidos"
 
 #: ../build/src/kde/kf6/ui_XAttrView.h:124
 #: ../src/gtk/xattr/XAttrView_gtk3.cpp:54
@@ -867,12 +867,12 @@ msgstr "Recebimentos"
 #: ../src/gtk/config/OptionsTab.cpp:269 ../src/win32/config/OptionsTab.cpp:731
 msgctxt "OptionsTab"
 msgid "Options"
-msgstr "Opções "
+msgstr "Opções"
 
 #: ../src/gtk/config/SystemsTab.cpp:96 ../src/win32/config/SystemsTab.cpp:135
 msgctxt "SystemsTab"
 msgid "Game Boy Title Screens"
-msgstr "Tela de Título do Game Boy"
+msgstr "Telas de Título do Game Boy"
 
 #: ../src/gtk/config/UpdateChecker.cpp:163
 #: ../src/kde/config/UpdateChecker.cpp:66
