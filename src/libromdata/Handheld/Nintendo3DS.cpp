@@ -2395,8 +2395,11 @@ int Nintendo3DS::loadFieldData(void)
 		{
 			const auto &ptbl = old3ds_sys_mode_tbl[old3ds_sys_mode];
 			d->fields.addField_string(old3ds_sys_mode_title,
-				// tr: {0:s} == Old3DS system mode; {1:d} == RAM allocation, in megabytes
-				fmt::format(FRUN(C_("Nintendo3DS", "{0:s} ({1:d} MiB)")), ptbl.name, ptbl.mb));
+				// tr: {0:s} == Old3DS system mode; {1:d} == RAM allocation, in megabytes; {2:s} == MiB or MB
+				fmt::format(FRUN(C_("Nintendo3DS", "{0:s} ({1:d} {2:s})")), ptbl.name, ptbl.mb,
+					// 4 MiB to ensure we get the MiB units.
+					// NOTE: Not showing decimal megabytes; just MiB or MB units!
+					formatFileSize_unitsOnly(4*1024*1024)));
 		} else {
 			d->fields.addField_string(old3ds_sys_mode_title,
 				fmt::format(FRUN(C_("Nintendo3DS", "INVALID (0x{:0>2X})")), old3ds_sys_mode),
@@ -2417,8 +2420,11 @@ int Nintendo3DS::loadFieldData(void)
 		if (new3ds_sys_mode < new3ds_sys_mode_tbl.size()) {
 			const auto &ptbl = new3ds_sys_mode_tbl[new3ds_sys_mode];
 			d->fields.addField_string(new3ds_sys_mode_title,
-				// tr: {0:s} == New3DS system mode; {1:d} == RAM allocation, in megabytes
-				fmt::format(FRUN(C_("Nintendo3DS", "{0:s} ({1:d} MiB)")), ptbl.name, ptbl.mb));
+				// tr: {0:s} == New3DS system mode; {1:d} == RAM allocation, in megabytes; {2:s} == MiB or MB
+				fmt::format(FRUN(C_("Nintendo3DS", "{0:s} ({1:d} {2:s})")), ptbl.name, ptbl.mb,
+					// 4 MiB to ensure we get the MiB units.
+					// NOTE: Not showing decimal megabytes; just MiB or MB units!
+					formatFileSize_unitsOnly(4*1024*1024)));
 		} else {
 			d->fields.addField_string(new3ds_sys_mode_title,
 				fmt::format(FRUN(C_("Nintendo3DS", "INVALID (0x{:0>2X})")), new3ds_sys_mode),
