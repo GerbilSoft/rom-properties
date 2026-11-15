@@ -822,7 +822,7 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 		systemName = C_("RomDataView", "(unknown system)");
 	}
 	if (!fileType) {
-		fileType = C_("RomDataView", "(unknown filetype)");
+		fileType = C_("RomData|FileType", "(unknown file type)");
 	}
 
 	const string sysInfo = fmt::format(

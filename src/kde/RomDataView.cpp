@@ -179,7 +179,7 @@ void RomDataViewPrivate::initHeaderRow(void)
 		systemName = C_("RomDataView", "(unknown system)");
 	}
 	if (!fileType) {
-		fileType = C_("RomDataView", "(unknown filetype)");
+		fileType = C_("RomData|FileType", "(unknown file type)");
 	}
 
 	const QString sysInfo = U82Q(fmt::format(

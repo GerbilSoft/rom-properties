@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-15 01:22-0500\n"
+"POT-Creation-Date: 2026-11-15 01:42-0500\n"
 "PO-Revision-Date: 2026-09-01 09:16\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
@@ -1117,10 +1117,10 @@ msgstr ""
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:214
 #: ../src/gtk/RomDataView.cpp:825 ../src/kde/RomDataView.cpp:182
-#: ../src/librpbase/TextOut_text.cpp:1100
+#: ../src/librpbase/RomData.cpp:698 ../src/librpbase/TextOut_text.cpp:1100
 #: ../src/win32/RP_ShellPropSheetExt.cpp:297
-msgctxt "RomDataView"
-msgid "(unknown filetype)"
+msgctxt "RomData|FileType"
+msgid "(unknown file type)"
 msgstr ""
 
 #. tr: {0:s} == system name, {1:s} == file type
@@ -8188,11 +8188,6 @@ msgstr "კოპირება ტექსტის სახით"
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Copy as JSON"
 msgstr "კოპირება JSON-ის სახით"
-
-#: ../src/librpbase/RomData.cpp:698
-msgctxt "RomData|FileType"
-msgid "(unknown file type)"
-msgstr ""
 
 #. tr: FileType::ROM_Image
 #: ../src/librpbase/RomData.cpp:700

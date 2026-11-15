@@ -211,7 +211,7 @@ rp_nautilus_properties_model_load_from_romData(RpNautilusPropertiesModel *self,
 		systemName = C_("RomDataView", "(unknown system)");
 	}
 	if (!fileType) {
-		fileType = C_("RomDataView", "(unknown filetype)");
+		fileType = C_("RomData|FileType", "(unknown file type)");
 	}
 
 	// Add a "File Type" field with the system name and file type.

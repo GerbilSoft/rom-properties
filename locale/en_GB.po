@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-15 01:22-0500\n"
+"POT-Creation-Date: 2026-11-15 01:42-0500\n"
 "PO-Revision-Date: 2026-01-29 06:37\n"
 "Last-Translator: \n"
 "Language-Team: English, United Kingdom\n"
@@ -1145,11 +1145,11 @@ msgstr "(unknown system)"
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:214
 #: ../src/gtk/RomDataView.cpp:825 ../src/kde/RomDataView.cpp:182
-#: ../src/librpbase/TextOut_text.cpp:1100
+#: ../src/librpbase/RomData.cpp:698 ../src/librpbase/TextOut_text.cpp:1100
 #: ../src/win32/RP_ShellPropSheetExt.cpp:297
-msgctxt "RomDataView"
-msgid "(unknown filetype)"
-msgstr "(unknown filetype)"
+msgctxt "RomData|FileType"
+msgid "(unknown file type)"
+msgstr "(unknown file type)"
 
 #. tr: {0:s} == system name, {1:s} == file type
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:222
@@ -8226,11 +8226,6 @@ msgstr "Copy as Text"
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Copy as JSON"
 msgstr "Copy as JSON"
-
-#: ../src/librpbase/RomData.cpp:698
-msgctxt "RomData|FileType"
-msgid "(unknown file type)"
-msgstr "(unknown file type)"
 
 #. tr: FileType::ROM_Image
 #: ../src/librpbase/RomData.cpp:700

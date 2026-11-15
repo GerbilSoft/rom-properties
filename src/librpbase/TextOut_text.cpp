@@ -1097,7 +1097,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 		// tr: "[System] [FileType] detected."
 		const string detectMsg = fmt::format(FRUN(C_("TextOut", "{0:s} {1:s} detected")),
 			(systemName ? systemName : C_("RomDataView", "(unknown system)")),
-			(fileType ? fileType : C_("RomDataView", "(unknown filetype)")));
+			(fileType ? fileType : C_("RomData|FileType", "(unknown file type)")));
 
 		os << "-- " << detectMsg << '\n';
 	}

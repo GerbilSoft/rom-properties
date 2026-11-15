@@ -294,7 +294,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(_In_ POINT pt_start, _In_ SIZE
 		systemName = C_("RomDataView", "(unknown system)");
 	}
 	if (!fileType) {
-		fileType = C_("RomDataView", "(unknown filetype)");
+		fileType = C_("RomData|FileType", "(unknown file type)");
 	}
 
 	const tstring ts_sysInfo =
