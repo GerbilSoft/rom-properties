@@ -17,6 +17,7 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 
 // C++ STL classes
+#include <algorithm>
 using std::array;
 using std::string;
 
@@ -225,22 +226,36 @@ void LuaPrivate::reset_lua(void)
  */
 LuaPrivate::LuaVersion LuaPrivate::to_version(uint8_t version)
 {
-	switch (version) {
+	struct lua_version_map_t {
+		uint8_t version;	// Version byte from the Lua header
+		int8_t lua_version;	// LuaVersion (as int8_t)
+	};
+
+	static const array<lua_version_map_t, 11> lua_version_map = {{
 		// Bytecode dumping was introduced in 2.3, which was never publicly released.
 		// 2.4 kept the same format, so we refer to the 0x23 format as "2.4".
-		case 0x23:	return LuaVersion::Lua2_4;
-		case 0x25:	return LuaVersion::Lua2_5; // Also used by 3.0
-		case 0x31:	return LuaVersion::Lua3_1;
-		case 0x32:	return LuaVersion::Lua3_2;
-		case 0x40:	return LuaVersion::Lua4_0;
-		case 0x50:	return LuaVersion::Lua5_0;
-		case 0x51:	return LuaVersion::Lua5_1;
-		case 0x52:	return LuaVersion::Lua5_2;
-		case 0x53:	return LuaVersion::Lua5_3;
-		case 0x54:	return LuaVersion::Lua5_4;
-		case 0x55:	return LuaVersion::Lua5_5;
-		default:	return LuaVersion::Unknown;
+		{0x23, static_cast<int8_t>(LuaVersion::Lua2_4)},
+		{0x25, static_cast<int8_t>(LuaVersion::Lua2_5)}, // Also used by 3.0
+		{0x31, static_cast<int8_t>(LuaVersion::Lua3_1)},
+		{0x32, static_cast<int8_t>(LuaVersion::Lua3_2)},
+		{0x40, static_cast<int8_t>(LuaVersion::Lua4_0)},
+		{0x50, static_cast<int8_t>(LuaVersion::Lua5_0)},
+		{0x51, static_cast<int8_t>(LuaVersion::Lua5_1)},
+		{0x52, static_cast<int8_t>(LuaVersion::Lua5_2)},
+		{0x53, static_cast<int8_t>(LuaVersion::Lua5_3)},
+		{0x54, static_cast<int8_t>(LuaVersion::Lua5_4)},
+		{0x55, static_cast<int8_t>(LuaVersion::Lua5_5)},
+	}};
+
+	auto iter = std::lower_bound(lua_version_map.cbegin(), lua_version_map.cend(), version,
+		[](lua_version_map_t map_entry, uint8_t version) {
+			return (map_entry.version < version);
+		});
+	if (iter != lua_version_map.cend() && iter->version == version) {
+		return static_cast<LuaVersion>(iter->lua_version);
 	}
+
+	return LuaVersion::Unknown;
 }
 
 /**
