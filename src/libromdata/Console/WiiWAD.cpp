@@ -1068,130 +1068,130 @@ int WiiWAD::loadFieldData(void)
 				d->fields.addField_string(C_("Wii", "IOS Version"), s_ios_version);
 			}
 		}
+	}
 
-		if (sysID == NINTENDO_SYSID_RVL ||
-			(sysID == NINTENDO_SYSID_BROADON &&
-				(catID == NINTENDO_CATID_BROADON_RVL || catID == NINTENDO_CATID_BROADON_WUP)))
-		{
-			// Wii: Access rights
-			vector<string> *const v_access_rights_hdr = new vector<string>({
-				"AHBPROT",
-				C_("Wii", "DVD Video")
-			});
-			d->fields.addField_bitfield(C_("Wii", "Access Rights"),
-				v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
-		} else if (sysID == NINTENDO_SYSID_NC ||
-			(sysID == NINTENDO_SYSID_BROADON && catID == NINTENDO_CATID_BROADON_NC))
-		{
-			const uint32_t access_rights = be32_to_cpu(tmdHeader->access_rights);
+	if (sysID == NINTENDO_SYSID_RVL ||
+		(sysID == NINTENDO_SYSID_BROADON &&
+			(catID == NINTENDO_CATID_BROADON_RVL || catID == NINTENDO_CATID_BROADON_WUP)))
+	{
+		// Wii: Access rights
+		vector<string> *const v_access_rights_hdr = new vector<string>({
+			"AHBPROT",
+			C_("Wii", "DVD Video")
+		});
+		d->fields.addField_bitfield(C_("Wii", "Access Rights"),
+			v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
+	} else if (sysID == NINTENDO_SYSID_NC ||
+		(sysID == NINTENDO_SYSID_BROADON && catID == NINTENDO_CATID_BROADON_NC))
+	{
+		const uint32_t access_rights = be32_to_cpu(tmdHeader->access_rights);
 
-			// NOTE: The actual chip type is *not* localized (for now).
-			// Using localized KiB and non-localized format string.
-			const unsigned int save_type = (access_rights & NC_ACCESS_RIGHTS_SAVE_TYPE_MASK);
+		// NOTE: The actual chip type is *not* localized (for now).
+		// Using localized KiB and non-localized format string.
+		const unsigned int save_type = (access_rights & NC_ACCESS_RIGHTS_SAVE_TYPE_MASK);
 
-			// TODO: Consolidate the fmt:format_to() calls?
-			string s_save_type;
-			// for fmt::format_to()
-			unsigned int kb = 0;
-			char sep = ' ';
-			const char *unit_l10n = nullptr;
-			const char *chip_type = nullptr;
+		// TODO: Consolidate the fmt:format_to() calls?
+		string s_save_type;
+		// for fmt::format_to()
+		unsigned int kb = 0;
+		char sep = ' ';
+		const char *unit_l10n = nullptr;
+		const char *chip_type = nullptr;
 
-			switch (save_type) {
-				default:
-					break;
-				case NC_ACCESS_RIGHTS_SAVE_TYPE_NONE:
-					s_save_type = C_("RomData", "None");
-					break;
-				case NC_ACCESS_RIGHTS_SAVE_TYPE_32_KIB_SRAM:
-					kb = 32;
-					unit_l10n = formatFileSize_unitsOnly(32*1024);
-					chip_type = "SRAM";
-					break;
-				case NC_ACCESS_RIGHTS_SAVE_TYPE_64_KIB_FLASH:
-					kb = 64;
-					unit_l10n = formatFileSize_unitsOnly(64*1024);
-					chip_type = "Flash ROM";
-					break;
-				case NC_ACCESS_RIGHTS_SAVE_TYPE_128_KIB_FLASH:
-					kb = 128;
-					unit_l10n = formatFileSize_unitsOnly(128*1024);
-					chip_type = "Flash ROM";
-					break;
-				case NC_ACCESS_RIGHTS_SAVE_TYPE_512_BYTE_EEPROM:
-					// Special handling: We want "512-byte".
-					// TODO: Does that localize the same everywhere?
-					kb = 512;
-					sep = '-';
-					unit_l10n = formatFileSize_unitsOnly(1);
-					chip_type = "EEPROM";
-					break;
-				case NC_ACCESS_RIGHTS_SAVE_TYPE_8_KIB_EEPROM:
-					kb = 8;
-					unit_l10n = formatFileSize_unitsOnly(8*1024);
-					chip_type = "EEPROM";
-					break;
-			}
-
-			if (kb != 0) {
-				fmt::format_to(std::back_inserter(s_save_type), FSTR("{:d}{:c}{:s} {:s}"),
-					kb, sep, unit_l10n, chip_type);
-			}
-
-			// tr: NetCard GBA save type
-			const char *const s_save_type_title = C_("Wii", "GBA Save Type");
-
-			if (likely(!s_save_type.empty())) {
-				d->fields.addField_string(s_save_type_title, s_save_type);
-			} else {
-				d->fields.addField_string(s_save_type_title,
-					fmt::format(FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), save_type));
-			}
-
-			// tr: NetCard: RTC emulation
-			d->fields.addField_string(C_("Wii", "RTC Emulation"),
-				(access_rights & NC_ACCESS_RIGHTS_RTC_EMULATION)
-					? C_("RomData", "Yes")
-					: C_("RomData", "No"));
+		switch (save_type) {
+			default:
+				break;
+			case NC_ACCESS_RIGHTS_SAVE_TYPE_NONE:
+				s_save_type = C_("RomData", "None");
+				break;
+			case NC_ACCESS_RIGHTS_SAVE_TYPE_32_KIB_SRAM:
+				kb = 32;
+				unit_l10n = formatFileSize_unitsOnly(32*1024);
+				chip_type = "SRAM";
+				break;
+			case NC_ACCESS_RIGHTS_SAVE_TYPE_64_KIB_FLASH:
+				kb = 64;
+				unit_l10n = formatFileSize_unitsOnly(64*1024);
+				chip_type = "Flash ROM";
+				break;
+			case NC_ACCESS_RIGHTS_SAVE_TYPE_128_KIB_FLASH:
+				kb = 128;
+				unit_l10n = formatFileSize_unitsOnly(128*1024);
+				chip_type = "Flash ROM";
+				break;
+			case NC_ACCESS_RIGHTS_SAVE_TYPE_512_BYTE_EEPROM:
+				// Special handling: We want "512-byte".
+				// TODO: Does that localize the same everywhere?
+				kb = 512;
+				sep = '-';
+				unit_l10n = formatFileSize_unitsOnly(1);
+				chip_type = "EEPROM";
+				break;
+			case NC_ACCESS_RIGHTS_SAVE_TYPE_8_KIB_EEPROM:
+				kb = 8;
+				unit_l10n = formatFileSize_unitsOnly(8*1024);
+				chip_type = "EEPROM";
+				break;
 		}
 
-		if (sysID == NINTENDO_SYSID_RVL) {
-			// Get age rating(s).
-			// TODO: Combine with GameCube::addFieldData()'s code.
-			// Note that not all 16 fields are present on Wii,
-			// though the fields do match exactly, so no
-			// mapping is necessary.
-			RomFields::age_ratings_t age_ratings;
-			// Valid ratings: 0-1, 3-9
-			static constexpr uint16_t valid_ratings = 0x3FB;
-
-			for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
-				if (!(valid_ratings & (1U << i))) {
-					// Rating is not applicable for Wii.
-					age_ratings[i] = 0;
-					continue;
-				}
-
-				// Wii ratings field:
-				// - 0x1F: Age rating.
-				// - 0x20: Has online play if set.
-				// - 0x80: Unused if set.
-				const uint8_t rvl_rating = tmdHeader->ratings[i];
-				if (rvl_rating & 0x80) {
-					// Rating is unused.
-					age_ratings[i] = 0;
-					continue;
-				}
-				// Set active | age value.
-				age_ratings[i] = RomFields::AGEBF_ACTIVE | (rvl_rating & 0x1F);
-
-				// Is "rating may change during online play" set?
-				if (rvl_rating & 0x20) {
-					age_ratings[i] |= RomFields::AGEBF_ONLINE_PLAY;
-				}
-			}
-			d->fields.addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
+		if (kb != 0) {
+			fmt::format_to(std::back_inserter(s_save_type), FSTR("{:d}{:c}{:s} {:s}"),
+				kb, sep, unit_l10n, chip_type);
 		}
+
+		// tr: NetCard GBA save type
+		const char *const s_save_type_title = C_("Wii", "GBA Save Type");
+
+		if (likely(!s_save_type.empty())) {
+			d->fields.addField_string(s_save_type_title, s_save_type);
+		} else {
+			d->fields.addField_string(s_save_type_title,
+				fmt::format(FSTR("{:s} (0x{:0>2X})"), C_("RomData", "Unknown"), save_type));
+		}
+
+		// tr: NetCard: RTC emulation
+		d->fields.addField_string(C_("Wii", "RTC Emulation"),
+			(access_rights & NC_ACCESS_RIGHTS_RTC_EMULATION)
+				? C_("RomData", "Yes")
+				: C_("RomData", "No"));
+	}
+
+	if (sysID == NINTENDO_SYSID_RVL) {
+		// Get age rating(s).
+		// TODO: Combine with GameCube::addFieldData()'s code.
+		// Note that not all 16 fields are present on Wii,
+		// though the fields do match exactly, so no
+		// mapping is necessary.
+		RomFields::age_ratings_t age_ratings;
+		// Valid ratings: 0-1, 3-9
+		static constexpr uint16_t valid_ratings = 0x3FB;
+
+		for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
+			if (!(valid_ratings & (1U << i))) {
+				// Rating is not applicable for Wii.
+				age_ratings[i] = 0;
+				continue;
+			}
+
+			// Wii ratings field:
+			// - 0x1F: Age rating.
+			// - 0x20: Has online play if set.
+			// - 0x80: Unused if set.
+			const uint8_t rvl_rating = tmdHeader->ratings[i];
+			if (rvl_rating & 0x80) {
+				// Rating is unused.
+				age_ratings[i] = 0;
+				continue;
+			}
+			// Set active | age value.
+			age_ratings[i] = RomFields::AGEBF_ACTIVE | (rvl_rating & 0x1F);
+
+			// Is "rating may change during online play" set?
+			if (rvl_rating & 0x20) {
+				age_ratings[i] |= RomFields::AGEBF_ONLINE_PLAY;
+			}
+		}
+		d->fields.addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
 	}
 
 	// Encryption key
