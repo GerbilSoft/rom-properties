@@ -27,8 +27,8 @@ using std::vector;
 
 namespace LibRomData {
 
-// NOTE: Limiting the maximum chunk size to 16,384 bytes.
-#define CHUNK_SIZE_MAX 16384U
+// NOTE: Limiting the maximum chunk size to 32 KB - 1.
+#define CHUNK_SIZE_MAX 32767U
 
 class NSFPrivate final : public RomDataPrivate
 {
