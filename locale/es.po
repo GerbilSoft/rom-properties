@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2026-11-15 01:13-0500\n"
+"POT-Creation-Date: 2026-11-15 01:22-0500\n"
 "PO-Revision-Date: 2026-08-25 20:35\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
@@ -556,8 +556,9 @@ msgid "Latest version: {:s}"
 msgstr "Versión de rom-properties: {:s}"
 
 #: ../src/gtk/config/AboutTab.cpp:948 ../src/kde/config/AboutTab.cpp:780
+#: ../src/win32/config/AboutTab.cpp:717
 msgctxt "AboutTab"
-msgid "<b>New version available!</b>"
+msgid "New version available!"
 msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:951 ../src/kde/config/AboutTab.cpp:783
@@ -5519,7 +5520,7 @@ msgstr "Tipo de contenido"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:732
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2025
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2162
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2579
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2581
 msgctxt "Nintendo3DS"
 msgid "Debug"
 msgstr "Depuración"
@@ -5527,7 +5528,7 @@ msgstr "Depuración"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:733
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2026
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2159
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2580
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2582
 msgctxt "Nintendo3DS"
 msgid "Retail"
 msgstr ""
@@ -5682,8 +5683,8 @@ msgid "SysModule"
 msgstr "Módulo de sistema"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2359
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2404
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2428
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2405
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2430
 #, c++-format
 msgctxt "Nintendo3DS"
 msgid "INVALID (0x{:0>2X})"
@@ -5697,28 +5698,28 @@ msgstr "Modo de sist. de Old3DS"
 #. tr: {0:s} == Old3DS system mode; {1:d} == RAM allocation, in megabytes; {2:s} == MiB or MB
 #. tr: {0:s} == New3DS system mode; {1:d} == RAM allocation, in megabytes; {2:s} == MiB or MB
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2399
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2423
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2424
 #, c++-format
 msgctxt "Nintendo3DS"
 msgid "{0:s} ({1:d} {2:s})"
 msgstr "{0:s} ({1:d} {2:s})"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2416
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2417
 msgctxt "Nintendo3DS"
 msgid "New3DS Sys Mode"
 msgstr "Modo de sist. de New3DS"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2434
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2436
 msgctxt "Nintendo3DS|N3DSCPUMode"
 msgid "L2 Cache"
 msgstr "Caché L2"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2435
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2437
 msgctxt "Nintendo3DS|N3DSCPUMode"
 msgid "804 MHz"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2449
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2451
 msgctxt "Nintendo3DS"
 msgid "Permissions"
 msgstr "Permisos"
@@ -10262,11 +10263,6 @@ msgstr "¡Falló la comprobación de actualización!"
 #: ../src/win32/config/AboutTab.cpp:664
 msgctxt "AboutTab"
 msgid "ERROR:"
-msgstr ""
-
-#: ../src/win32/config/AboutTab.cpp:717
-msgctxt "AboutTab"
-msgid "New version available!"
 msgstr ""
 
 #: ../src/win32/config/AboutTab.cpp:1097

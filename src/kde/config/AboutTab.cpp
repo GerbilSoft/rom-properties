@@ -776,9 +776,9 @@ void AboutTab::updChecker_retrieved(quint64 updateVersion)
 
 	fmt::format_to(std::back_inserter(sVersionLabel), FRUN(C_("AboutTab", "Latest version: {:s}")), sUpdVersion);
 	if (updateVersion > ourVersion) {
-		sVersionLabel += BR BR;
-		sVersionLabel += C_("AboutTab", "<b>New version available!</b>");
-		sVersionLabel += BR;
+		sVersionLabel += BR BR "<b>";
+		sVersionLabel += C_("AboutTab", "New version available!");
+		sVersionLabel += "</b>" BR;
 		sVersionLabel += "<a href='https://github.com/GerbilSoft/rom-properties/releases'>";
 		sVersionLabel += C_("AboutTab", "Download at GitHub");
 		sVersionLabel += "</a>";

@@ -944,9 +944,9 @@ updChecker_retrieved(RpUpdateChecker	*updChecker,
 
 	fmt::format_to(std::back_inserter(sVersionLabel), FRUN(C_("AboutTab", "Latest version: {:s}")), sUpdVersion);
 	if (updateVersion > ourVersion) {
-		sVersionLabel += "\n\n";
-		sVersionLabel += C_("AboutTab", "<b>New version available!</b>");
-		sVersionLabel += '\n';
+		sVersionLabel += "\n\n<b>";
+		sVersionLabel += C_("AboutTab", "New version available!");
+		sVersionLabel += "</b>\n";
 		sVersionLabel += "<a href='https://github.com/GerbilSoft/rom-properties/releases'>";
 		sVersionLabel += C_("AboutTab", "Download at GitHub");
 		sVersionLabel += "</a>";
