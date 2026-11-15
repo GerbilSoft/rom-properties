@@ -1034,24 +1034,24 @@ int NSF::loadFieldData(void)
 		hasNSFtab = true;
 
 		// NOTE: The NSF specification says ASCII, but I'm assuming
-		// the text is cp1252 and/or Shift-JIS.
+		// the text is cp1252.
 
 		// Title
 		if (nsfHeader->title[0] != 0) {
 			d->fields.addField_string(C_("RomData|Audio", "Title"),
-				cp1252_sjis_to_utf8(nsfHeader->title, sizeof(nsfHeader->title)));
+				cp1252_to_utf8(nsfHeader->title, sizeof(nsfHeader->title)));
 		}
 
 		// Composer
 		if (nsfHeader->composer[0] != 0) {
 			d->fields.addField_string(C_("RomData|Audio", "Composer"),
-				cp1252_sjis_to_utf8(nsfHeader->composer, sizeof(nsfHeader->composer)));
+				cp1252_to_utf8(nsfHeader->composer, sizeof(nsfHeader->composer)));
 		}
 
 		// Copyright
 		if (nsfHeader->copyright[0] != 0) {
 			d->fields.addField_string(C_("RomData", "Copyright"),
-				cp1252_sjis_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
+				cp1252_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
 		}
 
 		// Number of tracks
@@ -1115,6 +1115,10 @@ int NSF::loadFieldData(void)
 
 		// NOTE: Using the same ordering as NSF2, even though it
 		// doesn't necessarily match NSFe ordering.
+		// FIXME: NSFe recommends UTF-8 encoding, but the files I've
+		// tested all seem to be cp1252... (and Shift-JIS is misdetected,
+		// so using cp1252 only.)
+		// TODO: Better detection to see if the strings have valid UTF-8 encoding?
 		const auto *nsfe = &d->nsfe;
 
 		if (nsfe->has.auth) {
@@ -1123,25 +1127,29 @@ int NSF::loadFieldData(void)
 			// Title
 			const char *const game_title = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.game_title);
 			if (game_title) {
-				d->fields.addField_string(C_("RomData|Audio", "Title"), game_title);
+				d->fields.addField_string(C_("RomData|Audio", "Title"),
+					cp1252_to_utf8(game_title, -1));
 			}
 
 			// Artist
 			const char *const artist = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.artist);
 			if (artist) {
-				d->fields.addField_string(C_("RomData|Audio", "Composer"), artist);
+				d->fields.addField_string(C_("RomData|Audio", "Composer"),
+					cp1252_to_utf8(artist, -1));
 			}
 
 			// Copyright
 			const char *const copyright = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.copyright);
 			if (copyright) {
-				d->fields.addField_string(C_("RomData|Audio", "Copyright"), copyright);
+				d->fields.addField_string(C_("RomData|Audio", "Copyright"),
+					cp1252_to_utf8(copyright, -1));
 			}
 
 			// Ripper
 			const char *const ripper = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.ripper);
 			if (ripper) {
-				d->fields.addField_string(C_("RomData|Audio", "Ripper"), ripper);
+				d->fields.addField_string(C_("RomData|Audio", "Ripper"),
+					cp1252_to_utf8(ripper, -1));
 			}
 		}
 
@@ -1236,7 +1244,7 @@ int NSF::loadFieldData(void)
 				if (nsfe->has.tlbl) {
 					const char *const name = d->getCStringPointerFromTable(nsfe->track_name_strtbl, src_iter->name);
 					if (name) {
-						data_row.push_back(name);
+						data_row.push_back(cp1252_to_utf8(name, -1));
 					} else {
 						data_row.push_back(string());
 					}
@@ -1245,7 +1253,7 @@ int NSF::loadFieldData(void)
 				if (nsfe->has.taut) {
 					const char *const author = d->getCStringPointerFromTable(nsfe->track_author_strtbl, src_iter->author);
 					if (author) {
-						data_row.push_back(author);
+						data_row.push_back(cp1252_to_utf8(author, -1));
 					} else {
 						data_row.push_back(string());
 					}
@@ -1351,49 +1359,55 @@ int NSF::loadMetaData(void)
 	if (d->audioFormat == NSFPrivate::AudioFormat::NSF) {
 		// NSF header
 		// TODO: Override NSF2 fields with NSFe metadata, if present?
+		// NOTE: The NSF specification says ASCII, but I'm assuming
+		// the text is cp1252.
 		const NSF_Header *const nsfHeader = &d->header.nsf;
 		d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 		// Title
 		if (nsfHeader->title[0] != 0) {
 			d->metaData.addMetaData_string(Property::Title,
-				cp1252_sjis_to_utf8(nsfHeader->title, sizeof(nsfHeader->title)));
+				cp1252_to_utf8(nsfHeader->title, sizeof(nsfHeader->title)));
 		}
 
 		// Composer
 		if (nsfHeader->composer[0] != 0) {
 			d->metaData.addMetaData_string(Property::Composer,
-				cp1252_sjis_to_utf8(nsfHeader->composer, sizeof(nsfHeader->composer)));
+				cp1252_to_utf8(nsfHeader->composer, sizeof(nsfHeader->composer)));
 		}
 
 		// Copyright
 		if (nsfHeader->copyright[0] != 0) {
 			d->metaData.addMetaData_string(Property::Copyright,
-				cp1252_sjis_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
+				cp1252_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
 		}
 	}
 
 	if (d->nsfe.has.auth) {
 		// 'auth' chunk is available.
 		// NOTE: May overwrite NSF2 metadata if it's already present.
+		// FIXME: NSFe recommends UTF-8 encoding, but the files I've
+		// tested all seem to be cp1252... (and Shift-JIS is misdetected,
+		// so using cp1252 only.)
+		// TODO: Better detection to see if the strings have valid UTF-8 encoding?
 		const auto *nsfe = &d->nsfe;
 
 		// Title
 		const char *const game_title = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.game_title);
 		if (game_title) {
-			d->metaData.addMetaData_string(Property::Title, game_title);
+			d->metaData.addMetaData_string(Property::Title, cp1252_to_utf8(game_title, -1));
 		}
 
 		// Artist
 		const char *const artist = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.artist);
 		if (artist) {
-			d->metaData.addMetaData_string(Property::Composer, artist);
+			d->metaData.addMetaData_string(Property::Composer, cp1252_to_utf8(artist, -1));
 		}
 
 		// Copyright
 		const char *const copyright = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.copyright);
 		if (copyright) {
-			d->metaData.addMetaData_string(Property::Copyright, copyright);
+			d->metaData.addMetaData_string(Property::Copyright, cp1252_to_utf8(copyright, -1));
 		}
 	}
 
