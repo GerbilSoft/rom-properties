@@ -1090,7 +1090,6 @@ int WiiWAD::loadFieldData(void)
 		// Using localized KiB and non-localized format string.
 		const unsigned int save_type = (access_rights & NC_ACCESS_RIGHTS_SAVE_TYPE_MASK);
 
-		// TODO: Consolidate the fmt:format_to() calls?
 		string s_save_type;
 		// for fmt::format_to()
 		unsigned int kb = 0;
