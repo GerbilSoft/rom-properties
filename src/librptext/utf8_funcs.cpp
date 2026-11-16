@@ -34,32 +34,39 @@ namespace LibRpText {
  */
 size_t utf8_disp_strlen(std::string_view sv)
 {
-	size_t max_len = sv.size();
 	size_t len = 0;
-	for (const uint8_t *p = reinterpret_cast<const uint8_t*>(sv.data());
-	     max_len > 0; p++, max_len--)
-	{
+	const uint8_t *p = reinterpret_cast<const uint8_t*>(sv.data());
+	const uint8_t *const p_end = p + sv.size();
+	for (; p < p_end; p++) {
 		uint32_t c32;
 		if (!(p[0] & 0x80)) {
 			// 1-byte UTF-8 sequence
 			c32 = p[0];
 		} else if ((p[0] & 0xE0) == 0xC0) {
 			// 2-byte UTF-8 sequence
+			if (p + 2 > p_end) {
+				// Out of bounds!
+				assert(!"Invalid 2-byte UTF-8 sequence");
+				break;
+			}
+
 			if ((p[1] & 0xC0) == 0x80) {
 				// Valid sequence
 				c32 = ((p[0] & 0x1F) << 6) |
 				       (p[1] & 0x3F);
 				p++;
-				max_len--;
-			} else if (p[1] == 0) {
-				assert(!"Invalid 2-byte UTF-8 sequence");
-				break;
 			} else {
 				assert(!"Invalid 2-byte UTF-8 sequence");
 				continue;
 			}
 		} else if ((p[0] & 0xF0) == 0xE0) {
 			// 3-byte UTF-8 sequence
+			if (p + 3 > p_end) {
+				// Out of bounds!
+				assert(!"Invalid 3-byte UTF-8 sequence");
+				break;
+			}
+
 			if (((p[1] & 0xC0) == 0x80) &&
 			    ((p[2] & 0xC0) == 0x80))
 			{
@@ -68,16 +75,18 @@ size_t utf8_disp_strlen(std::string_view sv)
 				      ((p[1] & 0x3F) <<  6) |
 				       (p[2] & 0x3F);
 				p += 2;
-				max_len -= 2;
-			} else if (p[1] == 0 || p[2] == 0) {
-				assert(!"Invalid 3-byte UTF-8 sequence");
-				break;
 			} else {
 				assert(!"Invalid 3-byte UTF-8 sequence");
 				continue;
 			}
 		} else if ((p[0] & 0xF1) == 0xF0) {
 			// 4-byte UTF-8 sequence
+			if (p + 4 > p_end) {
+				// Out of bounds!
+				assert(!"Invalid 4-byte UTF-8 sequence");
+				break;
+			}
+
 			if (((p[1] & 0xC0) == 0x80) &&
 			    ((p[2] & 0xC0) == 0x80) &&
 			    ((p[3] & 0xC0) == 0x80))
@@ -88,10 +97,6 @@ size_t utf8_disp_strlen(std::string_view sv)
 				      ((p[2] & 0x3F) <<  6) |
 				     (p[3] & 0x3F);
 				p += 3;
-				max_len -= 3;
-			} else if (p[1] == 0 || p[2] == 0 || p[3] == 0) {
-				assert(!"Invalid 4-byte UTF-8 sequence");
-				continue;
 			} else {
 				assert(!"Invalid 4-byte UTF-8 sequence");
 				continue;
