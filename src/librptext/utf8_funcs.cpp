@@ -123,7 +123,6 @@ size_t utf8_disp_strlen(std::string_view sv)
 string utf8_encode_code_point(char32_t chr)
 {
 	string s_ret;
-	s_ret.reserve(4);
 
 	if (chr <= 0x7F) {
 		s_ret.resize(1);
