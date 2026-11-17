@@ -214,30 +214,31 @@ RpFile::RpFile(std::string_view filename, FileMode mode)
 	if (isDevice()) {
 		// Check the filename pattern.
 		// TODO: More systems.
-		// NOTE: "\x08ExtMedia" is interpreted as a 0x8E byte by both
-		// MSVC 2015 and gcc-4.5.2. In order to get it to work correctly,
-		// we have to store the length byte separately from the actual
-		// image type name.
-		static constexpr char fileNamePatterns[][16] = {
+		struct FileNamePattern_t {
+			uint8_t length;
+			char pattern[15];
+		};
+
+		static const FileNamePattern_t fileNamePatterns[] = {
 #if defined(__linux__)
-			"\x07" "/dev/sr",
-			"\x08" "/dev/scd",
-			"\x0A" "/dev/disk/",
-			"\x0B" "/dev/block/",
+			{ 7, "/dev/sr"},
+			{ 8, "/dev/scd"},
+			{10, "/dev/disk/"},
+			{11, "/dev/block/"},
 #elif defined(__FreeBSD__) || defined(__DragonFly__) || \
       defined(__NetBSD__) || defined(__OpenBSD__)
-			"\x07" "/dev/cd",
-			"\x08" "/dev/rcd",
+			{ 7, "/dev/cd"},
+			{ 8, "/dev/rcd"},
 #else
 #  define NO_PATTERNS_FOR_THIS_OS 1
-			"\x00"
+			{ 0, ""}
 #endif
 		};
 
 #ifndef NO_PATTERNS_FOR_THIS_OS
 		bool isMatch = false;
-		for (const auto &pattern : fileNamePatterns) {
-			if (!strncasecmp(d->filename.c_str(), &pattern[1], static_cast<uint8_t>(pattern[0]))) {
+		for (const auto &p : fileNamePatterns) {
+			if (!strncasecmp(d->filename.c_str(), p.pattern, p.length)) {
 				// Found a match!
 				isMatch = true;
 				break;
