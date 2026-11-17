@@ -98,20 +98,29 @@ static constexpr inline bool isBackslashOrSlash(CharType c)
 
 /**
  * (Re-)Open the main file.
- *
- * INTERNAL FUNCTION!
- * NOTE: This function sets q->m_lastError.
- *
- * Uses parameters stored in this->filename and this->mode.
- * @return 0 on success; non-zero on error.
+ * @param mode		[in] Requested file mode
+ * @param p_isWritable	[out] Indicates if the opened stream is writable
+ * @param p_err		[out] 0 on success; positive POSIX error code on error
+ * @return File handle, or NULL on error.
  */
-int RpFilePrivate::reOpenFile(void)
+HANDLE RpFilePrivate::reOpenFile(IRpFile::FileMode mode, bool *p_isWritable, int *p_err)
 {
-	RP_Q(RpFile);
-	if (unlikely(filenameW.empty())) {
-		// No filename...
-		q->m_lastError = EINVAL;
-		return -EINVAL;
+	RP_Q(RpFile);	// for q->m_fileType
+
+	assert(p_isWritable != nullptr);
+	assert(p_err != nullptr);
+
+	// Initialize the output variables.
+	*p_isWritable = false;
+	*p_err = 0;
+
+	// Make sure we have a filename and that the file can be opened.
+	assert(!filenameW.empty());
+	assert(canOpenFile);
+	if (unlikely(filenameW.empty()) || !canOpenFile) {
+		// No filename, or can't open the file...
+		*p_err = EBADF;
+		return nullptr;
 	}
 
 	// Determine the file mode.
@@ -120,22 +129,13 @@ int RpFilePrivate::reOpenFile(void)
 	DWORD dwCreationDisposition = 0;
 	if (mode_to_win32(mode, &dwDesiredAccess, &dwShareMode, &dwCreationDisposition) != 0) {
 		// Invalid mode.
-		q->m_lastError = EINVAL;
-		return -EINVAL;
-	}
-
-	// If the filename is "X:", change it to "X:\\".
-	if (IsDriveLetterW(filenameW[0]) &&
-	    filenameW[1] == L':' && filenameW[2] == L'\0')
-	{
-		// Drive letter. Append '\\'.
-		const wchar_t drvfilename[4] = {filenameW[0], L':', L'\\', L'\0'};
-		filenameW.assign(drvfilename);
-		filename.clear();
+		*p_err = EINVAL;
+		return nullptr;
 	}
 
 	// Adjusted filename for Windows.
 	tstring tfilename;
+	uint8_t fileType = DT_UNKNOWN;
 
 	// Check if the path starts with a drive letter.
 	if (IsDriveLetterW(filenameW[0]) &&
@@ -162,19 +162,19 @@ int RpFilePrivate::reOpenFile(void)
 				case DRIVE_UNKNOWN:
 				case DRIVE_NO_ROOT_DIR:
 					// No drive.
-					q->m_lastError = ENODEV;
-					return -ENODEV;
+					*p_err = ENODEV;
+					return nullptr;
 				default:
 					// Not a CD-ROM drive.
-					q->m_lastError = ENOTSUP;
-					return -ENOTSUP;
+					*p_err = ENOTSUP;
+					return nullptr;
 			}
 
 			// Create a raw device filename.
 			// Reference: https://support.microsoft.com/en-us/help/138434/how-win32-based-applications-read-cd-rom-sectors-in-windows-nt
 			tfilename = _T("\\\\.\\X:");
 			tfilename[4] = filenameW[0];
-			q->m_fileType = DT_BLK;	// this is a device
+			fileType = DT_BLK;	// this is a device
 		} else {
 			// Absolute path: Prepend "\\?\" in order to support filenames longer than MAX_PATH.
 			tfilename = _T("\\\\?\\");
@@ -186,44 +186,54 @@ int RpFilePrivate::reOpenFile(void)
 		tfilename = filenameW;
 	}
 
-	if (q->m_fileType == DT_BLK) {
-		// This is a device. Allocate devInfo.
-		// NOTE: This is kept around until RpFile is deleted,
-		// even if the device can't be opeend for some reason.
-		devInfo.reset(new DeviceInfo());
+	// Save the file type if it isn't already set.
+	if (q->m_fileType == DT_UNKNOWN) {
+		// q->m_fileType isn't set. First reOpenFile() call!
+		if (fileType != DT_BLK) {
+			// Make sure this isn't a directory.
+			// TODO: Other checks?
+			const DWORD dwAttr = GetFileAttributes(tfilename.c_str());
+			if (dwAttr == INVALID_FILE_ATTRIBUTES) {
+				// File cannot be opened.
+				// This is okay if creating a new file, but not if we're
+				// opening an existing file.
+				if (!(mode & RpFile::FM_CREATE)) {
+					int err = w32err_to_posix(GetLastError());
+					if (err == 0) {
+						err = EIO;
+					}
+					q->m_fileType = DT_UNKNOWN;
+					*p_err = err;
+					return nullptr;
+				}
+			} else if (dwAttr & FILE_ATTRIBUTE_DIRECTORY) {
+				// File is a directory.
+				q->m_fileType = DT_DIR;
+				*p_err = EISDIR;
+				return nullptr;
+			} else {
+				// Regular file.
+				fileType = DT_REG;
+			}
+		}
 
+		q->m_fileType = fileType;
+	} else {
+		// File type is already set. Load it.
+		fileType = q->m_fileType;
+	}
+
+	if (fileType == DT_BLK) {
 		if (mode & RpFile::FM_WRITE) {
 			// Writing to block devices is not allowed.
-			q->m_lastError = EINVAL;
-			return -EINVAL;
+			*p_err = EINVAL;
+			return nullptr;
 		}
+
 		// NOTE: We need WRITE permission for
 		// DeviceIoControl() to function properly.
 		dwDesiredAccess = GENERIC_READ | GENERIC_WRITE;
 		dwShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
-	} else {
-		// Not a device. Make sure this isn't a directory.
-		// TODO: Other checks?
-		const DWORD dwAttr = GetFileAttributes(tfilename.c_str());
-		if (dwAttr == INVALID_FILE_ATTRIBUTES) {
-			// File cannot be opened.
-			// This is okay if creating a new file, but not if we're
-			// opening an existing file.
-			if (!(mode & RpFile::FM_CREATE)) {
-				int err = w32err_to_posix(GetLastError());
-				if (err == 0) {
-					err = EIO;
-				}
-				q->m_fileType = DT_UNKNOWN;
-				q->m_lastError = err;
-				return -err;
-			}
-		} else if (dwAttr & FILE_ATTRIBUTE_DIRECTORY) {
-			// File is a directory.
-			q->m_fileType = DT_DIR;
-			q->m_lastError = EISDIR;
-			return -EISDIR;
-		}
 	}
 
 	// Open the file.
@@ -238,7 +248,7 @@ int RpFilePrivate::reOpenFile(void)
 		dwCreationDisposition,	// dwCreationDisposition
 		FILE_ATTRIBUTE_NORMAL,	// dwFlagsAndAttributes
 		nullptr);		// hTemplateFile
-	if (q->m_fileType == DT_BLK) {
+	if (fileType == DT_BLK) {
 		if (!file || file == INVALID_HANDLE_VALUE) {
 			// Try again without WRITE permission.
 			file = CreateFile(
@@ -253,35 +263,12 @@ int RpFilePrivate::reOpenFile(void)
 	}
 	if (!file || file == INVALID_HANDLE_VALUE) {
 		// Error opening the file.
-		q->m_lastError = w32err_to_posix(GetLastError());
-		file = nullptr;
-		return -q->m_lastError;
+		*p_err = w32err_to_posix(GetLastError());
+		return nullptr;
 	}
 
-	if (q->m_fileType == DT_BLK) {
-		// Get the disk space.
-		int ret = q->rereadDeviceSizeOS();
-		if (ret != 0) {
-			// An error occurred.
-			DWORD dwErr = GetLastError();
-			if (dwErr == ERROR_NOT_READY) {
-				// No media is present.
-				// We'll still keep the file open for e.g. SCSI INQUIRY commands.
-			} else {
-				// Some other error.
-				q->m_lastError = ret;
-				if (q->m_lastError == 0) {
-					q->m_lastError = EIO;
-				}
-				CloseHandle(file);
-				file = nullptr;
-				return -q->m_lastError;
-			}
-		}
-	}
-
-	// Return 0 if it's *not* nullptr.
-	return (!file);
+	// Return the file handle.
+	return file;
 }
 
 /** RpFile **/
@@ -297,13 +284,53 @@ RpFile::RpFile(wstring_view filenameW, FileMode mode)
 {
 	RP_D(RpFile);
 
+	// If the filename is "X:", change it to "X:\\".
+	if (IsDriveLetterW(d->filenameW[0]) &&
+	    d->filenameW[1] == L':' && d->filenameW[2] == L'\0')
+	{
+		// Drive letter. Append '\\'.
+		const wchar_t drvfilename[4] = {d->filenameW[0], L':', L'\\', L'\0'};
+		d->filenameW.assign(drvfilename);
+		d->filename.clear();
+	}
+
 	// Open the file.
-	if (d->reOpenFile() != 0) {
+	// NOTE: m_fileType is set by reOpenFile() if it's DT_UNKNOWN.
+	m_fileType = DT_UNKNOWN;
+	d->canOpenFile = true;
+	int err = 0;
+	d->file = d->reOpenFile(d->mode, &m_isWritable, &err);
+	if (!d->file || d->file == INVALID_HANDLE_VALUE) {
 		// An error occurred while opening the file.
 		return;
 	}
 
-	m_isWritable = !!(d->mode & RpFile::FM_WRITE);
+	if (isDevice()) {
+		// This is a device. Allocate devInfo.
+		// NOTE: This is kept around until RpFile is deleted,
+		// even if the device can't be opeend for some reason.
+		d->devInfo.reset(new RpFilePrivate::DeviceInfo());
+
+		// Get the disk space.
+		int ret = rereadDeviceSizeOS();
+		if (ret != 0) {
+			// An error occurred.
+			DWORD dwErr = GetLastError();
+			if (dwErr == ERROR_NOT_READY) {
+				// No media is present.
+				// We'll still keep the file open for e.g. SCSI INQUIRY commands.
+			} else {
+				// Some other error.
+				m_lastError = ret;
+				if (m_lastError == 0) {
+					m_lastError = EIO;
+				}
+				CloseHandle(d->file);
+				d->file = nullptr;
+				return;
+			}
+		}
+	}
 }
 
 /**
@@ -731,28 +758,56 @@ int RpFile::makeWritable(void)
 		return ret;
 	}
 
+	// Attempt to open the file a second time without closing the existing file pointer.
+	// Should work on most systems...
 	RP_D(RpFile);
-	const off64_t prev_pos = this->tell();
-	// Set file mode to FM_WRITE and reopen it.
-	d->mode = static_cast<FileMode>(d->mode | FM_WRITE);
-	ret = d->reOpenFile();
-	if (!ret) {
-		// File is now writable.
-		m_isWritable = true;
-	} else {
-		// Failed to open the file as writable.
-		// Try reopening as read-only.
-		d->mode = static_cast<FileMode>(d->mode & ~FM_WRITE);
-		if (d->reOpenFile() != 0) {
-			// FIXME: g++ can't resolve IRpFile::seek(off64_t) here, so explicitly specify SeekWhence::Set.
-			this->seek(prev_pos, IRpFile::SeekWhence::Set);
-		}
-		return -ENOTSUP;
+	bool isWritable = false;
+	int err = 0;
+	HANDLE f_new = d->reOpenFile(IRpFile::FM_OPEN_WRITE, &isWritable, &err);
+	if (!f_new) {
+		// Failed to open the file as writable...
+		m_lastError = err;
+		return -err;
 	}
 
-	// Restore the seek position.
-	// FIXME: g++ can't resolve IRpFile::seek(off64_t) here, so explicitly specify SeekWhence::Set.
-	this->seek(prev_pos, IRpFile::SeekWhence::Set);
+	if (!isWritable) {
+		// Newly-opened file isn't writable. There's no point in using it.
+		CloseHandle(f_new);
+		m_lastError = EROFS;	// TODO: Better error code?
+		return -EROFS;
+	}
+
+	// Copy the seek pointer from the old FILE*.
+	// NOTE: If the old HANDLE is nullptr, we'll assume pos == 0.
+	LARGE_INTEGER liCurPos;
+	liCurPos.QuadPart = 0;
+	if (d->file && d->file != INVALID_HANDLE_VALUE) {
+		LARGE_INTEGER liSeekPos;
+		liSeekPos.QuadPart = 0;
+		BOOL bRet = SetFilePointerEx(d->file, liSeekPos, &liCurPos, FILE_CURRENT);
+		if (!bRet) {
+			// SetFilePointerEx() to get the current file position failed.
+			m_lastError = w32err_to_posix(GetLastError());
+			CloseHandle(f_new);
+			return -m_lastError;;
+		}
+	}
+
+	BOOL bRet = SetFilePointerEx(f_new, liCurPos, nullptr, FILE_BEGIN);
+	if (!bRet) {
+		// SetFilePointerEx() to seek in the new file failed.
+		m_lastError = w32err_to_posix(GetLastError());
+		CloseHandle(f_new);
+		return -m_lastError;
+	}
+
+	// Close the old file pointer and save the new one.
+	if (d->file && d->file != INVALID_HANDLE_VALUE) {
+		CloseHandle(d->file);
+	}
+	d->file = f_new;
+	d->mode = static_cast<FileMode>(d->mode | FM_WRITE);
+	m_isWritable = isWritable;
 	return 0;
 }
 
