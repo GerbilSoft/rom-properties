@@ -39,6 +39,7 @@ RpFilePrivate::RpFilePrivate(RpFile *q, string_view filename, IRpFile::FileMode 
 	: q_ptr(q)
 	, file(nullptr)
 	, mode(mode)
+	, canOpenFile(false)
 {
 	assert(!filename.empty());
 	STRING_ASSIGN_SV(this->filename, filename);
@@ -76,6 +77,7 @@ FILE *RpFilePrivate::fopen_cloexec(const char *pathname, IRpFile::FileMode mode)
 			return nullptr;
 	}
 
+	errno = 0;
 	FILE *f = fopen(pathname, mode_str);
 	if (!f) {
 		// Unable to open the file.
@@ -96,42 +98,86 @@ FILE *RpFilePrivate::fopen_cloexec(const char *pathname, IRpFile::FileMode mode)
 	}
 #endif /* !HAVE_FOPEN_CLOEXEC && FD_CLOEXEC */
 
+	errno = 0;
 	return f;
 }
 
 /**
  * (Re-)Open the main file.
- *
- * INTERNAL FUNCTION!
- * NOTE: This function sets q->m_lastError.
- *
- * Uses parameters stored in this->filename and this->mode.
- * @return 0 on success; non-zero on error.
+ * @param mode		[in] Requested file mode
+ * @param p_isWritable	[out] Indicates if the opened stream is writable
+ * @param p_err		[out] 0 on success; positive POSIX error code on error
+ * @return File handle, or NULL on error.
  */
-int RpFilePrivate::reOpenFile(void)
+FILE *RpFilePrivate::reOpenFile(IRpFile::FileMode mode, bool *p_isWritable, int *p_err)
 {
-	RP_Q(RpFile);
+	assert(p_isWritable != nullptr);
+	assert(p_err != nullptr);
 
-	// Linux: Use UTF-8 filenames directly.
-	if (file) {
-		fclose(file);
-		file = nullptr;
+	// Initialize the output variables.
+	*p_isWritable = false;
+	*p_err = 0;
+
+	// Make sure we have a filename and that the file can be opened.
+	assert(!filename.empty());
+	assert(canOpenFile);
+	if (filename.empty() || !canOpenFile) {
+		// No filename, or can't open the file...
+		*p_err = EBADF;
+		return nullptr;
 	}
 
+	// Open the file with O_CLOEXEC.
+	file = fopen_cloexec(filename.c_str(), mode);
+
+	// If fopen() failed (and returned nullptr),
+	// return the non-zero error code.
+	if (!file) {
+		*p_err = errno;
+		if (*p_err == 0) {
+			*p_err = EIO;
+		}
+		return nullptr;
+	}
+
+	if (mode & IRpFile::FileMode::FM_WRITE) {
+		*p_isWritable = true;
+	}
+	return file;
+}
+
+/** RpFile **/
+
+/**
+ * Open a file.
+ * NOTE: Files are always opened in binary mode.
+ * @param filename Filename
+ * @param mode File mode
+ */
+RpFile::RpFile(std::string_view filename, FileMode mode)
+	: d_ptr(new RpFilePrivate(this, filename, mode))
+{
+	RP_D(RpFile);
+
+	assert(!filename.empty());
+	if (filename.empty()) {
+		m_lastError = EINVAL;
+		return;
+	}
+
+	// Check if this is a device.
 	// NOTE: Need to call stat() before fopen(), since if the file
 	// in question is a pipe, fopen() will hang. (No O_NONBLOCK).
 	// This *can* lead to a race condition, but we can't do much
 	// about that...
-
-	// Check if this is a device.
-	uint8_t fileType = FileSystem::get_file_d_type(filename.c_str());
+	uint8_t fileType = FileSystem::get_file_d_type(d->filename.c_str());
 	if (fileType != DT_UNKNOWN) {
-		q->m_lastError = 0;
+		m_lastError = 0;
 		switch (fileType) {
 			case DT_DIR:
 				// This is a directory.
 				// TODO: How to handle NUS packages?
-				q->m_lastError = EISDIR;
+				m_lastError = EISDIR;
 				break;
 
 			case DT_REG:
@@ -144,20 +190,20 @@ int RpFilePrivate::reOpenFile(void)
 				// NOTE: Some Unix systems use character devices for "raw"
 				// block devices. Linux does not, so on Linux, we'll only
 				// allow block devices and not character devices.
-				q->m_lastError = ENOTSUP;
+				m_lastError = ENOTSUP;
 				break;
 #endif /* !__linux__ */
 
 			default:
 				// Other file types aren't supported.
-				q->m_lastError = ENOTSUP;
+				m_lastError = ENOTSUP;
 				break;
 		}
 
-		if (q->m_lastError != 0) {
-			return -q->m_lastError;
+		if (m_lastError != 0) {
+			return;
 		}
-		q->m_fileType = fileType;
+		m_fileType = fileType;
 	}
 
 	// NOTE: Opening certain device files can cause crashes
@@ -165,7 +211,7 @@ int RpFilePrivate::reOpenFile(void)
 	// that match certain patterns.
 	// TODO: May need updates for *BSD, Mac OS X, etc.
 	// TODO: Check if a block device is a CD-ROM or something else.
-	if (q->isDevice()) {
+	if (isDevice()) {
 		// Check the filename pattern.
 		// TODO: More systems.
 		// NOTE: "\x08ExtMedia" is interpreted as a 0x8E byte by both
@@ -191,7 +237,7 @@ int RpFilePrivate::reOpenFile(void)
 #ifndef NO_PATTERNS_FOR_THIS_OS
 		bool isMatch = false;
 		for (const auto &pattern : fileNamePatterns) {
-			if (!strncasecmp(filename.c_str(), &pattern[1], static_cast<uint8_t>(pattern[0]))) {
+			if (!strncasecmp(d->filename.c_str(), &pattern[1], static_cast<uint8_t>(pattern[0]))) {
 				// Found a match!
 				isMatch = true;
 				break;
@@ -199,59 +245,31 @@ int RpFilePrivate::reOpenFile(void)
 		}
 		if (!isMatch) {
 			// Not a match.
-			q->m_lastError = ENOTSUP;
-			return -ENOTSUP;
+			m_lastError = ENOTSUP;
 		}
 #else
 		RP_UNUSED(fileNamePatterns);
 #endif /* NO_PATTERNS_FOR_THIS_OS */
 	}
 
-	file = fopen_cloexec(filename.c_str(), mode);
-
-	// If fopen() failed (and returned nullptr),
-	// return the non-zero error code.
-	if (!file) {
-		q->m_lastError = errno;
-		if (q->m_lastError == 0) {
-			q->m_lastError = EIO;
-		}
-		return q->m_lastError;
-	}
-
-	if (q->isDevice()) {
-		// Allocate devInfo.
-		// NOTE: This is kept around until RpFile is deleted,
-		// even if the device can't be opeend for some reason.
-		devInfo.reset(new DeviceInfo());
-
-		// Get the device size from the OS.
-		q->rereadDeviceSizeOS();
-	}
-
-	return 0;
-}
-
-/** RpFile **/
-
-/**
- * Open a file.
- * NOTE: Files are always opened in binary mode.
- * @param filename Filename
- * @param mode File mode
- */
-RpFile::RpFile(std::string_view filename, FileMode mode)
-	: d_ptr(new RpFilePrivate(this, filename, mode))
-{
-	RP_D(RpFile);
-
 	// Open the file.
-	if (d->reOpenFile() != 0) {
+	d->canOpenFile = true;
+	int err = 0;
+	d->file = d->reOpenFile(d->mode, &m_isWritable, &err);
+	if (!d->file) {
 		// An error occurred while opening the file.
 		return;
 	}
 
-	m_isWritable = !!(d->mode & RpFile::FM_WRITE);
+	if (isDevice()) {
+		// Allocate devInfo.
+		// NOTE: This is kept around until RpFile is deleted,
+		// even if the device can't be opeend for some reason.
+		d->devInfo.reset(new RpFilePrivate::DeviceInfo());
+
+		// Get the device size from the OS.
+		rereadDeviceSizeOS();
+	}
 }
 
 RpFile::~RpFile()
@@ -574,36 +592,48 @@ int RpFile::makeWritable(void)
 	// Attempt to open the file a second time without closing the existing file pointer.
 	// Should work on most systems...
 	RP_D(RpFile);
-	FILE *f_new = d->fopen_cloexec(d->filename.c_str(), IRpFile::FM_OPEN_WRITE);
+	bool isWritable = false;
+	int err = 0;
+	FILE *f_new = d->reOpenFile(IRpFile::FM_OPEN_WRITE, &isWritable, &err);
 	if (!f_new) {
 		// Failed to open the file as writable...
-		int err = -errno;
-		if (err == 0) {
-			err = -EIO;
-		}
-		return err;
+		m_lastError = err;
+		return -err;
+	}
+
+	if (!isWritable) {
+		// Newly-opened file isn't writable. There's no point in using it.
+		fclose(f_new);
+		m_lastError = EROFS;	// TODO: Better error code?
+		return -EROFS;
 	}
 
 	// Copy the seek pointer from the old FILE*.
-	off64_t pos = ftello(d->file);
-	if (pos < 0) {
-		// ftello() failed.
-		int err = -errno;
-		if (err == 0) {
-			err = -EIO;
+	// NOTE: If the old FILE* is nullptr, we'll assume pos == 0.
+	off64_t prev_pos = 0;
+	if (d->file) {
+		prev_pos = ftello(d->file);
+		if (prev_pos < 0) {
+			// ftello() failed.
+			int err = errno;
+			if (err == 0) {
+				err = EIO;
+			}
+			fclose(f_new);
+			m_lastError = err;
+			return -err;
 		}
-		fclose(f_new);
-		return err;
 	}
-	ret = fseeko(f_new, pos, SEEK_SET);
+	ret = fseeko(f_new, prev_pos, SEEK_SET);
 	if (ret != 0) {
 		// fseeko() failed.
-		int err = -errno;
+		int err = errno;
 		if (err == 0) {
-			err = -EIO;
+			err = EIO;
 		}
 		fclose(f_new);
-		return err;
+		m_lastError = err;
+		return -err;
 	}
 
 	// Close the old file pointer and save the new one.
@@ -612,7 +642,7 @@ int RpFile::makeWritable(void)
 	}
 	d->file = f_new;
 	d->mode = static_cast<FileMode>(d->mode | FM_WRITE);
-	m_isWritable = true;
+	m_isWritable = isWritable;
 	return 0;
 }
 

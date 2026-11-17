@@ -68,6 +68,7 @@ public:
 				// UTF-8 filename is only used for the filename() function.
 #endif /* _WIN32 */
 	IRpFile::FileMode mode;	// File mode
+	bool canOpenFile;	// Can the file be opened?
 
 public:
 	// Device information struct.
@@ -163,14 +164,12 @@ public:
 
 	/**
 	 * (Re-)Open the main file.
-	 *
-	 * INTERNAL FUNCTION!
-	 * NOTE: This function sets q->m_lastError.
-	 *
-	 * Uses parameters stored in this->filename and this->mode.
-	 * @return 0 on success; non-zero on error.
+	 * @param mode		[in] Requested file mode
+	 * @param p_isWritable	[out] Indicates if the opened stream is writable
+	 * @param p_err		[out] 0 on success; positive POSIX error code on error
+	 * @return File handle, or NULL on error.
 	 */
-	int reOpenFile(void);
+	FILE_TYPE reOpenFile(IRpFile::FileMode mode, bool *p_isWritable, int *p_err);
 
 public:
 	/**
