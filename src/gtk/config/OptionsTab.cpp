@@ -504,7 +504,7 @@ rp_options_tab_load_defaults(RpOptionsTab *tab)
 
 	if (isDefChanged) {
 		tab->changed = true;
-		g_signal_emit_by_name(tab, "modified", nullptr);
+		rp_config_tab_emit_modified(RP_CONFIG_TAB(tab));
 	}
 	tab->inhibit = false;
 }
@@ -576,7 +576,7 @@ rp_options_tab_notify_selected_handler(GtkDropDown *dropDown, GParamSpec *pspec,
 
 	// Forward the "modified" signal.
 	tab->changed = true;
-	g_signal_emit_by_name(tab, "modified", nullptr);
+	rp_config_tab_emit_modified(RP_CONFIG_TAB(tab));
 }
 #endif /* USE_GTK_DROP_DOWN */
 
@@ -594,7 +594,7 @@ rp_options_tab_modified_handler(GtkWidget *widget, RpOptionsTab *tab)
 
 	// Forward the "modified" signal.
 	tab->changed = true;
-	g_signal_emit_by_name(tab, "modified", nullptr);
+	rp_config_tab_emit_modified(RP_CONFIG_TAB(tab));
 }
 
 /**
@@ -615,7 +615,7 @@ cboGameTDBPAL_notify_selected_lc_handler(RpLanguageComboBox *widget,
 
 	// Forward the "modified" signal.
 	tab->changed = true;
-	g_signal_emit_by_name(tab, "modified", nullptr);
+	rp_config_tab_emit_modified(RP_CONFIG_TAB(tab));
 }
 
 /**

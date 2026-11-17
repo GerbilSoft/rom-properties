@@ -40,4 +40,7 @@ void		rp_config_tab_reset		(RpConfigTab *tab) G_GNUC_INTERNAL;
 void		rp_config_tab_load_defaults	(RpConfigTab *tab) G_GNUC_INTERNAL;
 void		rp_config_tab_save		(RpConfigTab *tab, GKeyFile *keyFile) G_GNUC_INTERNAL;
 
+/* Signal emission functions; to be used by RpConfigTab implementations. */
+void		rp_config_tab_emit_modified	(RpConfigTab *tab);
+
 G_END_DECLS

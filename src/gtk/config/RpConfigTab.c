@@ -77,3 +77,9 @@ void rp_config_tab_save(RpConfigTab *tab, GKeyFile *keyFile)
 	g_return_if_fail(iface->save != NULL);
 	return iface->save(tab, keyFile);
 }
+
+/* Signal emission functions; to be used by RpConfigTab implementations. */
+void rp_config_tab_emit_modified(RpConfigTab *tab)
+{
+	g_signal_emit(tab, signals[SIGNAL_MODIFIED], 0);
+}

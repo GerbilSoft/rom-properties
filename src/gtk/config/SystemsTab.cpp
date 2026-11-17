@@ -340,7 +340,7 @@ rp_systems_tab_load_defaults(RpSystemsTab *tab)
 
 	if (isDefChanged) {
 		tab->changed = true;
-		g_signal_emit_by_name(tab, "modified", nullptr);
+		rp_config_tab_emit_modified(RP_CONFIG_TAB(tab));
 	}
 	tab->inhibit = false;
 }
@@ -406,7 +406,7 @@ rp_systems_tab_notify_selected_handler(GtkDropDown *dropDown, GParamSpec *pspec,
 
 	// Forward the "modified" signal.
 	tab->changed = true;
-	g_signal_emit_by_name(tab, "modified", nullptr);
+	rp_config_tab_emit_modified(RP_CONFIG_TAB(tab));
 }
 #else /* !USE_GTK_DROP_DOWN */
 /**
@@ -424,6 +424,6 @@ rp_systems_tab_modified_handler(GtkComboBox *cbo, RpSystemsTab *tab)
 
 	// Forward the "modified" signal.
 	tab->changed = true;
-	g_signal_emit_by_name(tab, "modified", nullptr);
+	rp_config_tab_emit_modified(RP_CONFIG_TAB(tab));
 }
 #endif /* USE_GTK_DROP_DOWN */
