@@ -782,6 +782,7 @@ int RpFileGio::makeWritable(void)
 	RP_D(RpFileGio);
 	if (!G_IS_SEEKABLE(d->stream)) {
 		// Current stream is not seekable for some reason...
+		m_lastError = ESPIPE;
 		return -ESPIPE;
 	}
 
@@ -799,6 +800,7 @@ int RpFileGio::makeWritable(void)
 	if (!isWritable) {
 		// New stream isn't writable. There's no point in using it.
 		g_object_unref(stream);
+		m_lastError = EROFS;
 		return -EROFS;	// TODO: Better error code?
 	}
 
@@ -806,6 +808,7 @@ int RpFileGio::makeWritable(void)
 	if (!G_IS_SEEKABLE(stream)) {
 		// The new stream is not seekable...
 		g_object_unref(stream);
+		m_lastError = ESPIPE;
 		return -ESPIPE;
 	}
 
@@ -817,13 +820,14 @@ int RpFileGio::makeWritable(void)
 	if (!bRet || g_err) {
 		// Seek failed...
 		if (g_err) {
-			err = -d->gioerr_to_posix(g_err->code);
+			err = d->gioerr_to_posix(g_err->code);
 			g_error_free(g_err);
 		} else {
-			err = -EIO;
+			err = EIO;
 		}
 		g_object_unref(stream);
-		return err;
+		m_lastError = err;
+		return -err;
 	}
 
 	// Unref the old stream and keep the new one.
