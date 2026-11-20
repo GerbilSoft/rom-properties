@@ -137,10 +137,10 @@ int rp_secure_enable(rp_secure_param_t param)
 		// NOTE: Also used by Ubuntu 20.04's DNS resolver.
 		SCMP_SYS(rt_sigaction),
 		SCMP_SYS(rt_sigprocmask),
+		SCMP_SYS(getpid),
 
 #if !defined(NDEBUG) || defined(__SANITIZE_ADDRESS__)
 		// abort() [called by assert()]
-		SCMP_SYS(getpid),
 		SCMP_SYS(gettid),
 		SCMP_SYS(tgkill),
 		SCMP_SYS(uname),	// needed on some systems
