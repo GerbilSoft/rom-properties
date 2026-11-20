@@ -298,8 +298,7 @@ RpFile::RpFile(wstring_view filenameW, FileMode mode)
 	// NOTE: m_fileType is set by reOpenFile() if it's DT_UNKNOWN.
 	m_fileType = DT_UNKNOWN;
 	d->canOpenFile = true;
-	int err = 0;
-	d->file = d->reOpenFile(d->mode, &m_isWritable, &err);
+	d->file = d->reOpenFile(d->mode, &m_isWritable, &m_lastError);
 	if (!d->file || d->file == INVALID_HANDLE_VALUE) {
 		// An error occurred while opening the file.
 		return;

@@ -255,8 +255,7 @@ RpFile::RpFile(std::string_view filename, FileMode mode)
 
 	// Open the file.
 	d->canOpenFile = true;
-	int err = 0;
-	d->file = d->reOpenFile(d->mode, &m_isWritable, &err);
+	d->file = d->reOpenFile(d->mode, &m_isWritable, &m_lastError);
 	if (!d->file) {
 		// An error occurred while opening the file.
 		return;
