@@ -120,12 +120,19 @@ static std::basic_string<T> T_rp_iconv(
 
 	// Allocate the output buffer.
 	// UTF-8 is variable length, and the largest UTF-8 character is 4 bytes long.
-	// TODO: Maximum string output buffer size of 64 or 128 bytes,
-	// then increase by 64 or 128 bytes per iteration?
+	// Start with 64 bytes in the output buffer, and add 64 whenever we run out of space.
+	// FIXME: Or 128, or 64*sizeof(T)?
+#define OUT_BLOCK_SIZE 64U
 	size_t src_bytes_len = (size_t)len;
-	const size_t out_bytes_len = (src_bytes_len * 4) + 4;
+	size_t out_bytes_len = (src_bytes_len * 4) + 4;
+	if (out_bytes_len > OUT_BLOCK_SIZE) {
+		out_bytes_len = OUT_BLOCK_SIZE;
+	}
 	size_t out_bytes_remaining = out_bytes_len;
-	s_ret.resize(out_bytes_len / sizeof(T));
+	s_ret.resize(out_bytes_remaining / sizeof(T));
+
+	// Total output bytes used
+	size_t total_out_bytes = 0;
 
 	// Input and output pointers
 	char *inptr = const_cast<char*>(src);			// Input pointer
@@ -137,8 +144,8 @@ static std::basic_string<T> T_rp_iconv(
 #endif /* __FreeBSD */
 
 	bool success = true;
-	while (src_bytes_len > 0) {
-		size_t size;
+	while (success && src_bytes_len > 0) {
+		size_t size = 0;
 
 #ifdef __FreeBSD__
 		// Use FreeBSD's __iconv() to ignore errors if specified.
@@ -148,35 +155,94 @@ static std::basic_string<T> T_rp_iconv(
 #endif
 
 		if (size == static_cast<size_t>(-1)) {
-			// An error occurred while converting the string.
-			// FIXME: Flag to indicate that we want to have
-			// a partial Shift-JIS conversion?
-			// Madou Monogatari I (MD) has a broken Shift-JIS
-			// code point, which breaks conversion.
-			// (Reported by andlabs.)
-			success = false;
+			// Check the error code.
+			switch (errno) {
+				case EINVAL: {
+					// Incomplete multibyte sequence at the end of the chunk.
+					// This is probably an invalid byte sequence.
+					success = false;
+#if 0
+					// FIXME: If this was chunked, it could be an incomplete
+					// multibyte sequence, but that shouldn't happen, since
+					// we're using the full string as the input data...
+					const size_t in_bytes_processed = len - src_bytes_len;
+					src += in_bytes_processed;
+					src_bytes_len -= in_bytes_processed;
+					len = in_bytes_processed;
+#endif
+					break;
+				}
+
+				case E2BIG:
+					// Out of space in the output buffer.
+					// We'll expand it after the break.
+					break;
+
+				case EILSEQ:
+				default:
+					// Invalid byte sequence.
+					// FIXME: Flag to indicate that we want to have
+					// a partial Shift-JIS conversion?
+					// Madou Monogatari I (MD) has a broken Shift-JIS
+					// code point, which breaks conversion.
+					// (Reported by andlabs.)
+					success = false;
+					break;
+			}
+		}
+
+		if (!success) {
 			break;
 		}
+
+		if (out_bytes_remaining < 4 && src_bytes_len > 0) {
+			// Expand the output buffer.
+			const size_t out_bytes_processed = out_bytes_len - out_bytes_remaining;
+			total_out_bytes += out_bytes_processed;
+			assert((total_out_bytes % sizeof(T)) == 0);
+			if ((total_out_bytes % sizeof(T)) != 0) {
+				// Unaligned somehow...
+				iconv_close(cd);
+				s_ret.clear();
+				s_ret.shrink_to_fit();
+				return s_ret;
+			}
+
+			s_ret.resize((total_out_bytes + out_bytes_len) / sizeof(T));
+			outptr = reinterpret_cast<char*>(&s_ret[total_out_bytes / sizeof(T)]);
+			out_bytes_remaining = out_bytes_len;
+		}
+	}
+
+	if (!success) {
+		// The string was not converted successfully.
+		iconv_close(cd);
+		s_ret.clear();
+		s_ret.shrink_to_fit();
+		return s_ret;
+	}
+
+	// Add the last bytes processed.
+	const size_t out_bytes_processed = out_bytes_len - out_bytes_remaining;
+	total_out_bytes += out_bytes_processed;
+
+	// Flush any remaining shift sequences, if any.
+	size_t size = iconv(cd, nullptr, nullptr, &outptr, &out_bytes_remaining);
+	if (size > 0 && size != static_cast<size_t>(-1)) {
+		total_out_bytes += size;
 	}
 
 	// Close the iconv descriptor.
 	iconv_close(cd);
 
-	if (success) {
-		// The string was converted successfully.
-		assert((out_bytes_remaining % sizeof(T)) == 0);
-		assert((out_bytes_remaining / sizeof(T)) < s_ret.size());
-		if ((out_bytes_remaining / sizeof(T)) < s_ret.size()) {
-			s_ret.resize(s_ret.size() - (out_bytes_remaining / sizeof(T)));
-		}
-
-		// Return the output buffer.
-		s_ret.shrink_to_fit();
-		return s_ret;
+	// The string was converted successfully.
+	assert((out_bytes_remaining % sizeof(T)) == 0);
+	assert((out_bytes_remaining / sizeof(T)) < s_ret.size());
+	if ((out_bytes_remaining / sizeof(T)) < s_ret.size()) {
+		s_ret.resize(s_ret.size() - (out_bytes_remaining / sizeof(T)));
 	}
 
-	// The string was not converted successfully.
-	s_ret.clear();
+	// Return the output buffer.
 	s_ret.shrink_to_fit();
 	return s_ret;
 }
