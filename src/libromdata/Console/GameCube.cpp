@@ -44,7 +44,7 @@ using namespace LibRpTexture;
 #include "WiiTicket.hpp"
 
 // for strnlen() if it's not available in <string.h>
-#include "librptext/libc.h"
+#include "librptext/strfuncs.h"
 
 // C includes
 #include "ctypex.h"

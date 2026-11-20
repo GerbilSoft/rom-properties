@@ -26,7 +26,7 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // for memmem() if it's not available in <string.h>
-#include "librptext/libc.h"
+#include "librptext/strfuncs.h"
 
 // C includes
 #include "ctypex.h"

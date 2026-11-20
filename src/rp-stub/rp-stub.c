@@ -19,7 +19,7 @@
 #include "common.h"	// for ARRAY_SIZE() and likely()
 
 #include "libi18n/i18n.hpp"
-#include "librptext/libc.h"	// for strlcat()
+#include "librptext/strfuncs.h"	// for strlcat()
 #include "libunixcommon/dll-search.h"
 #include "stdboolx.h"
 

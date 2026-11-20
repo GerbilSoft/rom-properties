@@ -1,7 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librptext)                        *
- * libc.h: Reimplementations of libc functions that aren't present on      *
- * this system.                                                            *
+ * strfuncs.h: String functions.                                           *
  *                                                                         *
  * Copyright (c) 2009-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -18,6 +17,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/** Reimplementations of libc string functions that aren't present on this system. **/
 
 #ifndef HAVE_STRNLEN
 /**

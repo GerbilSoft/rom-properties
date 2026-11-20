@@ -21,7 +21,7 @@ using namespace LibRpFile;
 using namespace LibRpText;
 
 // for strnlen() if it's not available in <string.h>
-#include "librptext/libc.h"
+#include "librptext/strfuncs.h"
 
 // C++ STL classes
 #include <numeric>

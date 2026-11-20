@@ -15,7 +15,7 @@
 #include <cstring>
 
 // for strnlen() if it's not available in <string.h>
-#include "libc.h"
+#include "strfuncs.h"
 
 namespace LibRpText {
 
