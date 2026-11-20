@@ -85,14 +85,14 @@ typedef struct ZSTD_seekTable_s ZSTD_seekTable;
 ******************************************************************************/
 
 /*===== Seekable compressor management =====*/
-/*ZSTDLIB_API*/ ZSTD_seekable_CStream* ZSTD_seekable_createCStream(void);
-/*ZSTDLIB_API*/ size_t ZSTD_seekable_freeCStream(ZSTD_seekable_CStream* zcs);
+ZSTDLIB_API ZSTD_seekable_CStream* ZSTD_seekable_createCStream(void);
+ZSTDLIB_API size_t ZSTD_seekable_freeCStream(ZSTD_seekable_CStream* zcs);
 
 /*===== Seekable compression functions =====*/
-/*ZSTDLIB_API*/ size_t ZSTD_seekable_initCStream(ZSTD_seekable_CStream* zcs, int compressionLevel, int checksumFlag, unsigned maxFrameSize);
-/*ZSTDLIB_API*/ size_t ZSTD_seekable_compressStream(ZSTD_seekable_CStream* zcs, ZSTD_outBuffer* output, ZSTD_inBuffer* input);
-/*ZSTDLIB_API*/ size_t ZSTD_seekable_endFrame(ZSTD_seekable_CStream* zcs, ZSTD_outBuffer* output);
-/*ZSTDLIB_API*/ size_t ZSTD_seekable_endStream(ZSTD_seekable_CStream* zcs, ZSTD_outBuffer* output);
+ZSTDLIB_API size_t ZSTD_seekable_initCStream(ZSTD_seekable_CStream* zcs, int compressionLevel, int checksumFlag, unsigned maxFrameSize);
+ZSTDLIB_API size_t ZSTD_seekable_compressStream(ZSTD_seekable_CStream* zcs, ZSTD_outBuffer* output, ZSTD_inBuffer* input);
+ZSTDLIB_API size_t ZSTD_seekable_endFrame(ZSTD_seekable_CStream* zcs, ZSTD_outBuffer* output);
+ZSTDLIB_API size_t ZSTD_seekable_endStream(ZSTD_seekable_CStream* zcs, ZSTD_outBuffer* output);
 
 /*= Raw seek table API
  *  These functions allow for the seek table to be constructed directly.
@@ -112,10 +112,10 @@ typedef struct ZSTD_seekTable_s ZSTD_seekTable;
  *  If the entire table was written, the return value will be 0.  Otherwise,
  *  it will be equal to the number of bytes left to write. */
 typedef struct ZSTD_frameLog_s ZSTD_frameLog;
-/*ZSTDLIB_API*/ ZSTD_frameLog* ZSTD_seekable_createFrameLog(int checksumFlag);
-/*ZSTDLIB_API*/ size_t ZSTD_seekable_freeFrameLog(ZSTD_frameLog* fl);
-/*ZSTDLIB_API*/ size_t ZSTD_seekable_logFrame(ZSTD_frameLog* fl, unsigned compressedSize, unsigned decompressedSize, unsigned checksum);
-/*ZSTDLIB_API*/ size_t ZSTD_seekable_writeSeekTable(ZSTD_frameLog* fl, ZSTD_outBuffer* output);
+ZSTDLIB_API ZSTD_frameLog* ZSTD_seekable_createFrameLog(int checksumFlag);
+ZSTDLIB_API size_t ZSTD_seekable_freeFrameLog(ZSTD_frameLog* fl);
+ZSTDLIB_API size_t ZSTD_seekable_logFrame(ZSTD_frameLog* fl, unsigned compressedSize, unsigned decompressedSize, unsigned checksum);
+ZSTDLIB_API size_t ZSTD_seekable_writeSeekTable(ZSTD_frameLog* fl, ZSTD_outBuffer* output);
 
 
 /*-****************************************************************************
@@ -123,7 +123,12 @@ typedef struct ZSTD_frameLog_s ZSTD_frameLog;
 *  A ZSTD_seekable object is required to tracking the seekTable.
 *
 *  Call ZSTD_seekable_init* to initialize a ZSTD_seekable object with the
-*  the seek table provided in the input.
+*  seek table provided in the input. These functions may also be called again
+*  to reset the object for a new input. Resetting discards the previous input
+*  and seek table, even if initialization fails. Before the first successful
+*  initialization, or after a failed initialization, the object has no frames
+*  and decompression returns an initialization-missing error. The object may
+*  be initialized again or freed.
 *  There are three modes for ZSTD_seekable_init:
 *    - ZSTD_seekable_initBuff() : An in-memory API.  The data contained in
 *      `src` should be the entire seekable file, including the seek table.
@@ -152,9 +157,14 @@ typedef struct ZSTD_frameLog_s ZSTD_frameLog;
 *  consecutive range of data, it will efficiently retain the decompressor object
 *  and avoid redecompressing frame prefixes.  The return value is the number of
 *  bytes decompressed, or an error code checkable with ZSTD_isError().
+*  It is smaller than `dstSize` only when the data ends before
+*  `offset + dstSize`, and it is 0 when `offset` is the end of the data.
+*  An `offset` past the end of the data is an error.
+*  On error, saved decompression state is discarded; a later call restarts
+*  from the beginning of its selected frame.
 *
 *  The seek table access functions can be used to obtain the data contained
-*  in the seek table.  If frameIndex is larger than the value returned by
+*  in the seek table.  If frameIndex is greater than or equal to
 *  ZSTD_seekable_getNumFrames(), they will return error codes checkable with
 *  ZSTD_isError().  Note that since the offset access functions return
 *  unsigned long long instead of size_t, in this case they will instead return
@@ -162,23 +172,23 @@ typedef struct ZSTD_frameLog_s ZSTD_frameLog;
 ******************************************************************************/
 
 /*===== Seekable decompressor management =====*/
-/*ZSTDLIB_API*/ ZSTD_seekable* ZSTD_seekable_create(void);
-/*ZSTDLIB_API*/ size_t ZSTD_seekable_free(ZSTD_seekable* zs);
+ZSTDLIB_API ZSTD_seekable* ZSTD_seekable_create(void);
+ZSTDLIB_API size_t ZSTD_seekable_free(ZSTD_seekable* zs);
 
 /*===== Seekable decompression functions =====*/
-/*ZSTDLIB_API*/ size_t ZSTD_seekable_initBuff(ZSTD_seekable* zs, const void* src, size_t srcSize);
-/*ZSTDLIB_API*/ size_t ZSTD_seekable_initFile(ZSTD_seekable* zs, FILE* src);
-/*ZSTDLIB_API*/ size_t ZSTD_seekable_decompress(ZSTD_seekable* zs, void* dst, size_t dstSize, unsigned long long offset);
-/*ZSTDLIB_API*/ size_t ZSTD_seekable_decompressFrame(ZSTD_seekable* zs, void* dst, size_t dstSize, unsigned frameIndex);
+ZSTDLIB_API size_t ZSTD_seekable_initBuff(ZSTD_seekable* zs, const void* src, size_t srcSize);
+ZSTDLIB_API size_t ZSTD_seekable_initFile(ZSTD_seekable* zs, FILE* src);
+ZSTDLIB_API size_t ZSTD_seekable_decompress(ZSTD_seekable* zs, void* dst, size_t dstSize, unsigned long long offset);
+ZSTDLIB_API size_t ZSTD_seekable_decompressFrame(ZSTD_seekable* zs, void* dst, size_t dstSize, unsigned frameIndex);
 
 #define ZSTD_SEEKABLE_FRAMEINDEX_TOOLARGE (0ULL-2)
 /*===== Seekable seek table access functions =====*/
-/*ZSTDLIB_API*/ unsigned ZSTD_seekable_getNumFrames(const ZSTD_seekable* zs);
-/*ZSTDLIB_API*/ unsigned long long ZSTD_seekable_getFrameCompressedOffset(const ZSTD_seekable* zs, unsigned frameIndex);
-/*ZSTDLIB_API*/ unsigned long long ZSTD_seekable_getFrameDecompressedOffset(const ZSTD_seekable* zs, unsigned frameIndex);
-/*ZSTDLIB_API*/ size_t ZSTD_seekable_getFrameCompressedSize(const ZSTD_seekable* zs, unsigned frameIndex);
-/*ZSTDLIB_API*/ size_t ZSTD_seekable_getFrameDecompressedSize(const ZSTD_seekable* zs, unsigned frameIndex);
-/*ZSTDLIB_API*/ unsigned ZSTD_seekable_offsetToFrameIndex(const ZSTD_seekable* zs, unsigned long long offset);
+ZSTDLIB_API unsigned ZSTD_seekable_getNumFrames(const ZSTD_seekable* zs);
+ZSTDLIB_API unsigned long long ZSTD_seekable_getFrameCompressedOffset(const ZSTD_seekable* zs, unsigned frameIndex);
+ZSTDLIB_API unsigned long long ZSTD_seekable_getFrameDecompressedOffset(const ZSTD_seekable* zs, unsigned frameIndex);
+ZSTDLIB_API size_t ZSTD_seekable_getFrameCompressedSize(const ZSTD_seekable* zs, unsigned frameIndex);
+ZSTDLIB_API size_t ZSTD_seekable_getFrameDecompressedSize(const ZSTD_seekable* zs, unsigned frameIndex);
+ZSTDLIB_API unsigned ZSTD_seekable_offsetToFrameIndex(const ZSTD_seekable* zs, unsigned long long offset);
 
 
 /*-****************************************************************************
@@ -197,16 +207,16 @@ typedef struct ZSTD_frameLog_s ZSTD_frameLog;
 ******************************************************************************/
 
 /*===== Independent seek table management =====*/
-/*ZSTDLIB_API*/ ZSTD_seekTable* ZSTD_seekTable_create_fromSeekable(const ZSTD_seekable* zs);
-/*ZSTDLIB_API*/ size_t ZSTD_seekTable_free(ZSTD_seekTable* st);
+ZSTDLIB_API ZSTD_seekTable* ZSTD_seekTable_create_fromSeekable(const ZSTD_seekable* zs);
+ZSTDLIB_API size_t ZSTD_seekTable_free(ZSTD_seekTable* st);
 
 /*===== Direct seek table access functions =====*/
-/*ZSTDLIB_API*/ unsigned ZSTD_seekTable_getNumFrames(const ZSTD_seekTable* st);
-/*ZSTDLIB_API*/ unsigned long long ZSTD_seekTable_getFrameCompressedOffset(const ZSTD_seekTable* st, unsigned frameIndex);
-/*ZSTDLIB_API*/ unsigned long long ZSTD_seekTable_getFrameDecompressedOffset(const ZSTD_seekTable* st, unsigned frameIndex);
-/*ZSTDLIB_API*/ size_t ZSTD_seekTable_getFrameCompressedSize(const ZSTD_seekTable* st, unsigned frameIndex);
-/*ZSTDLIB_API*/ size_t ZSTD_seekTable_getFrameDecompressedSize(const ZSTD_seekTable* st, unsigned frameIndex);
-/*ZSTDLIB_API*/ unsigned ZSTD_seekTable_offsetToFrameIndex(const ZSTD_seekTable* st, unsigned long long offset);
+ZSTDLIB_API unsigned ZSTD_seekTable_getNumFrames(const ZSTD_seekTable* st);
+ZSTDLIB_API unsigned long long ZSTD_seekTable_getFrameCompressedOffset(const ZSTD_seekTable* st, unsigned frameIndex);
+ZSTDLIB_API unsigned long long ZSTD_seekTable_getFrameDecompressedOffset(const ZSTD_seekTable* st, unsigned frameIndex);
+ZSTDLIB_API size_t ZSTD_seekTable_getFrameCompressedSize(const ZSTD_seekTable* st, unsigned frameIndex);
+ZSTDLIB_API size_t ZSTD_seekTable_getFrameDecompressedSize(const ZSTD_seekTable* st, unsigned frameIndex);
+ZSTDLIB_API unsigned ZSTD_seekTable_offsetToFrameIndex(const ZSTD_seekTable* st, unsigned long long offset);
 
 
 /*===== Seekable advanced I/O API =====*/
@@ -217,7 +227,7 @@ typedef struct {
     ZSTD_seekable_read* read;
     ZSTD_seekable_seek* seek;
 } ZSTD_seekable_customFile;
-/*ZSTDLIB_API*/ size_t ZSTD_seekable_initAdvanced(ZSTD_seekable* zs, ZSTD_seekable_customFile src);
+ZSTDLIB_API size_t ZSTD_seekable_initAdvanced(ZSTD_seekable* zs, ZSTD_seekable_customFile src);
 
 #if defined (__cplusplus)
 }
