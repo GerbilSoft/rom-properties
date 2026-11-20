@@ -61,28 +61,33 @@ namespace LibRpText {
 
 /**
  * Convert a string from one character set to another.
- * @param src 		[in] Source string.
- * @param len           [in] Source length, in bytes.
- * @param src_charset	[in] Source character set.
- * @param dest_charset	[in] Destination character set.
+ * @tparam T		[in] char or char16_t, depending on string type
+ * @param src 		[in] Source string
+ * @param len           [in] Source length, in bytes
+ * @param src_charset	[in] Source character set
+ * @param dest_charset	[in] Destination character set
  * @param ignoreErr	[in] If true, ignore errors. ("//IGNORE" on glibc/libiconv)
- * @return malloc()'d UTF-8 string, or nullptr on error.
+ * @return Converted string, or nullptr on error.
  */
-static char *rp_iconv(const char *src, int len,
+template<typename T>
+static std::basic_string<T> T_rp_iconv(
+	const char *src, int len,
 	const char *src_charset, const char *dest_charset,
 	bool ignoreErr = false)
 {
+	std::basic_string<T> s_ret;
 #ifdef RP_WIS16
 	static_assert(sizeof(wchar_t) == sizeof(char16_t), "RP_WIS16 is defined, but wchar_t is not 16-bit!");
 #else /* !RP_WIS16 */
 	static_assert(sizeof(wchar_t) != sizeof(char16_t), "RP_WIS16 is not defined, but wchar_t is 16-bit!");
 #endif /* RP_WIS16 */
+
 	assert(src != nullptr);
 	//assert(len > 0);	// Don't assert on empty strings.
 	assert(src_charset != nullptr);
 	assert(dest_charset != nullptr);
 	if (!src || len <= 0 || !src_charset || !dest_charset) {
-		return nullptr;
+		return s_ret;
 	}
 
 	// Based on examples from:
@@ -110,19 +115,21 @@ static char *rp_iconv(const char *src, int len,
 
 	if (!cd || cd == (iconv_t)(-1)) {
 		// Error opening iconv.
-		return nullptr;
+		return s_ret;
 	}
 
 	// Allocate the output buffer.
 	// UTF-8 is variable length, and the largest UTF-8 character is 4 bytes long.
+	// TODO: Maximum string output buffer size of 64 or 128 bytes,
+	// then increase by 64 or 128 bytes per iteration?
 	size_t src_bytes_len = (size_t)len;
 	const size_t out_bytes_len = (src_bytes_len * 4) + 4;
 	size_t out_bytes_remaining = out_bytes_len;
-	char *outbuf = static_cast<char*>(malloc(out_bytes_len));
+	s_ret.resize(out_bytes_len / sizeof(T));
 
-	// Input and output pointers.
-	char *inptr = const_cast<char*>(src);	// Input pointer.
-	char *outptr = &outbuf[0];		// Output pointer.
+	// Input and output pointers
+	char *inptr = const_cast<char*>(src);			// Input pointer
+	char *outptr = reinterpret_cast<char*>(&s_ret[0]);	// Output pointer
 
 #ifdef __FreeBSD__
 	// Flags for FreeBSD's __iconv().
@@ -157,20 +164,21 @@ static char *rp_iconv(const char *src, int len,
 
 	if (success) {
 		// The string was converted successfully.
-
-		// Make sure the string is null-terminated.
-		const unsigned int null_bytes = (out_bytes_remaining > 4U) ? 4U : static_cast<unsigned int>(out_bytes_remaining);
-		for (size_t i = null_bytes; i > 0; i--) {
-			*outptr++ = 0x00;
+		assert((out_bytes_remaining % sizeof(T)) == 0);
+		assert((out_bytes_remaining / sizeof(T)) < s_ret.size());
+		if ((out_bytes_remaining / sizeof(T)) < s_ret.size()) {
+			s_ret.resize(s_ret.size() - (out_bytes_remaining / sizeof(T)));
 		}
 
 		// Return the output buffer.
-		return outbuf;
+		s_ret.shrink_to_fit();
+		return s_ret;
 	}
 
 	// The string was not converted successfully.
-	free(outbuf);
-	return nullptr;
+	s_ret.clear();
+	s_ret.shrink_to_fit();
+	return s_ret;
 }
 
 /** Generic code page functions **/
@@ -227,6 +235,8 @@ static string codePageToEncName(unsigned int cp)
 template<typename T>
 static std::basic_string<T> T_cpN_to_unicode(const char *out_encoding, unsigned int cp, const char *str, int len, unsigned int flags)
 {
+	std::basic_string<T> s_ret;
+
 	len = check_NULL_terminator(str, len);
 
 	// Get the encoding name for the primary code page.
@@ -239,8 +249,6 @@ static std::basic_string<T> T_cpN_to_unicode(const char *out_encoding, unsigned 
 	// Attempt to convert the text to UTF-8.
 	// NOTE: "//IGNORE" sometimes doesn't work, so we won't
 	// check for TEXTCONV_FLAG_CP1252_FALLBACK here.
-	std::basic_string<T> ret;
-	T *out_str = nullptr;
 
 	if ((flags & TEXTCONV_FLAG_JIS_X_0208) && len >= 1) {
 		// Check if the string might be JIS X 0208.
@@ -269,79 +277,75 @@ static std::basic_string<T> T_cpN_to_unicode(const char *out_encoding, unsigned 
 			for (char &c : eucJP) {
 				c |= 0x80;
 			}
-			out_str = reinterpret_cast<T*>(rp_iconv((char*)eucJP.data(), eucJP.size(), "EUC-JP", out_encoding, ignoreErr));
+			s_ret = T_rp_iconv<T>(eucJP.data(), eucJP.size(), "EUC-JP", out_encoding, ignoreErr);
 		}
 	}
 
-	if (!out_str) {
+	if (s_ret.empty()) {
 		// Standard string conversion
-		out_str = reinterpret_cast<T*>(rp_iconv((char*)str, len*sizeof(*str), cp_name.c_str(), out_encoding, ignoreErr));
+		s_ret = T_rp_iconv<T>(str, len*sizeof(*str), cp_name.c_str(), out_encoding, ignoreErr);
 	}
 
-	if (!out_str && (flags & TEXTCONV_FLAG_CP1252_FALLBACK)) {
+	if (s_ret.empty() && (flags & TEXTCONV_FLAG_CP1252_FALLBACK)) {
 		// Try cp1252 fallback.
 		// NOTE: Sometimes cp1252 fails, even with ignore set.
 		if (cp != 1252) {
-			out_str = reinterpret_cast<T*>(rp_iconv((char*)str, len*sizeof(*str), "CP1252", out_encoding, true));
+			s_ret = T_rp_iconv<T>(str, len*sizeof(*str), "CP1252", out_encoding, true);
 		}
-		if (!out_str) {
+		if (s_ret.empty()) {
 			// Try Latin-1 fallback.
 			if (cp != CP_LATIN1) {
-				out_str = reinterpret_cast<T*>(rp_iconv((char*)str, len*sizeof(*str), "LATIN1", out_encoding, true));
+				s_ret = T_rp_iconv<T>(str, len*sizeof(*str), "LATIN1", out_encoding, true);
 			}
 		}
 	}
-
-	if (out_str) {
-		ret.assign(out_str);
-		free(out_str);
 
 #if !defined(__GLIBC__) || defined(HAVE_ICONV_LIBICONV)
-		if (cp == CP_SJIS) {
-			// Some versions of libiconv map characters differently compared to cp932:
-			// - FreeBSD Shift-JIS: 8160: mapped to U+301C (WAVE DASH); cp932 uses U+FF5E (FULLWIDTH TILDE)
-			// - Termux libiconv: 817C: mapped to U+2212 (MINUS SIGN); cp932 uses U+FF0D (FULLWIDTH HYPHEN-MINUS)
-			// FIXME: musl libc's cp932 is lacking and can't really be fixed here...
-			if_constexpr (sizeof(T) == sizeof(uint8_t)) {
-				const auto ret_end = ret.end();
-				for (auto p = ret.begin(); p != ret_end; ++p) {
-					if ((uint8_t)p[0] == 0xE3 && (uint8_t)p[1] == 0x80 && (uint8_t)p[2] == 0x9C) {
-						// Found U+301C: WAVE DASH
-						// Convert to U+FF5E: FULLWIDTH TILDE
-						p[0] = (uint8_t)0xEF;
-						p[1] = (uint8_t)0xBD;
-						p[2] = (uint8_t)0x9E;
-						p += 2;
-					} else if ((uint8_t)p[0] == 0xE2 && (uint8_t)p[1] == 0x88 && (uint8_t)p[2] == 0x92) {
-						// Found U+2212: MINUS SIGN
-						// Convert to U+FF0D: FULLWIDTH HYPHEN-MINUS
-						p[0] = (uint8_t)0xEF;
-						p[1] = (uint8_t)0xBC;
-						p[2] = (uint8_t)0x8D;
-						p += 2;
-					}
+	if (!s_ret.empty() && cp == CP_SJIS) {
+		// Some versions of libiconv map characters differently compared to cp932:
+		// - FreeBSD Shift-JIS: 8160: mapped to U+301C (WAVE DASH); cp932 uses U+FF5E (FULLWIDTH TILDE)
+		// - Termux libiconv: 817C: mapped to U+2212 (MINUS SIGN); cp932 uses U+FF0D (FULLWIDTH HYPHEN-MINUS)
+		// FIXME: musl libc's cp932 is lacking and can't really be fixed here...
+		if_constexpr (sizeof(T) == sizeof(uint8_t)) {
+			const auto s_ret_end = s_ret.end();
+			for (auto p = s_ret.begin(); p != s_ret_end; ++p) {
+				if ((uint8_t)p[0] == 0xE3 && (uint8_t)p[1] == 0x80 && (uint8_t)p[2] == 0x9C) {
+					// Found U+301C: WAVE DASH
+					// Convert to U+FF5E: FULLWIDTH TILDE
+					p[0] = (uint8_t)0xEF;
+					p[1] = (uint8_t)0xBD;
+					p[2] = (uint8_t)0x9E;
+					p += 2;
+				} else if ((uint8_t)p[0] == 0xE2 && (uint8_t)p[1] == 0x88 && (uint8_t)p[2] == 0x92) {
+					// Found U+2212: MINUS SIGN
+					// Convert to U+FF0D: FULLWIDTH HYPHEN-MINUS
+					p[0] = (uint8_t)0xEF;
+					p[1] = (uint8_t)0xBC;
+					p[2] = (uint8_t)0x8D;
+					p += 2;
 				}
-			} else if_constexpr (sizeof(T) == sizeof(uint16_t)) {
-				const auto ret_end = ret.end();
-				for (auto p = ret.begin(); p != ret_end; ++p) {
-					const uint16_t chr = static_cast<uint16_t>(*p);
-					if (chr == 0x301C) {
-						// Found U+301C: WAVE DASH
-						// Convert to U+FF5E: FULLWIDTH TILDE
-						*p = 0xFF5E;
-					} else if (chr == 0x2212) {
-						// Found U+2212: MINUS SIGN
-						// Convert to U+FF0D: FULLWIDTH HYPHEN-MINUS
-						*p = 0xFF0D;
-					}
-				}
-			} else {
-				static_assert(sizeof(T) == sizeof(uint8_t) || sizeof(T) == sizeof(uint16_t), "Wrong character size!");
 			}
+		} else if_constexpr (sizeof(T) == sizeof(uint16_t)) {
+			const auto s_ret_end = s_ret.end();
+			for (auto p = s_ret.begin(); p != s_ret_end; ++p) {
+				const uint16_t chr = static_cast<uint16_t>(*p);
+				if (chr == 0x301C) {
+					// Found U+301C: WAVE DASH
+					// Convert to U+FF5E: FULLWIDTH TILDE
+					*p = 0xFF5E;
+				} else if (chr == 0x2212) {
+					// Found U+2212: MINUS SIGN
+					// Convert to U+FF0D: FULLWIDTH HYPHEN-MINUS
+					*p = 0xFF0D;
+				}
+			}
+		} else {
+			static_assert(sizeof(T) == sizeof(uint8_t) || sizeof(T) == sizeof(uint16_t), "Wrong character size!");
 		}
-#endif /* !__GLIBC__ || HAVE_ICONV_LIBICONV */
 	}
-	return ret;
+#endif /* !__GLIBC__ || HAVE_ICONV_LIBICONV */
+
+	return s_ret;
 }
 
 /**
@@ -358,12 +362,17 @@ static std::basic_string<T> T_cpN_to_unicode(const char *out_encoding, unsigned 
  */
 string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags)
 {
+	string s_ret;
+
 	if (cp & static_cast<unsigned int>(CpRp::Base)) {
 		// RP-custom code page.
-		return cpRP_to_utf8(static_cast<CpRp>(cp), str, len);
+		s_ret = cpRP_to_utf8(static_cast<CpRp>(cp), str, len);
+	} else {
+		// Regular code page.
+		s_ret = T_cpN_to_unicode<char>("UTF-8", cp, str, len, flags);
 	}
 
-	return T_cpN_to_unicode<char>("UTF-8", cp, str, len, flags);
+	return s_ret;
 }
 
 /**
@@ -397,19 +406,13 @@ u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned int f
  */
 string utf8_to_cpN(unsigned int cp, const char *str, int len)
 {
-	string s_ret;
 	len = check_NULL_terminator(str, len);
 
 	// Get the encoding name for the primary code page.
 	const string cp_name = codePageToEncName(cp);
 
 	// Attempt to convert the text from UTF-8.
-	char *const mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len*sizeof(*str), "UTF-8", cp_name.c_str(), true));
-	if (mbs) {
-		s_ret.assign(mbs);
-		free(mbs);
-	}
-	return s_ret;
+	return T_rp_iconv<char>(str, len*sizeof(*str), "UTF-8", cp_name.c_str(), true);
 }
 
 /**
@@ -426,7 +429,6 @@ string utf8_to_cpN(unsigned int cp, const char *str, int len)
  */
 string utf16_to_cpN(unsigned int cp, const char16_t *wcs, int len)
 {
-	string s_ret;
 	len = check_NULL_terminator(wcs, len);
 
 	// Get the encoding name for the primary code page.
@@ -436,12 +438,7 @@ string utf16_to_cpN(unsigned int cp, const char16_t *wcs, int len)
 	const bool ignoreErr = (cp != CP_UTF8);
 
 	// Attempt to convert the text from UTF-8.
-	char *const mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), RP_ICONV_UTF16_ENCODING, cp_name.c_str(), ignoreErr));
-	if (mbs) {
-		s_ret.assign(mbs);
-		free(mbs);
-	}
-	return s_ret;
+	return T_rp_iconv<char>(reinterpret_cast<const char*>(wcs), len*sizeof(*wcs), RP_ICONV_UTF16_ENCODING, cp_name.c_str(), ignoreErr);
 }
 
 /** Specialized UTF-16 conversion functions. **/
@@ -457,16 +454,10 @@ string utf16_to_cpN(unsigned int cp, const char16_t *wcs, int len)
  */
 static string INT_utf16_to_utf8(const char *src_encoding, const char16_t *wcs, int len)
 {
-	string s_ret;
 	len = check_NULL_terminator(wcs, len);
 
 	// Attempt to convert the text from UTF-16LE to UTF-8.
-	char *const mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), src_encoding, "UTF-8"));
-	if (mbs) {
-		s_ret.assign(mbs);
-		free(mbs);
-	}
-	return s_ret;
+	return T_rp_iconv<char>(reinterpret_cast<const char*>(wcs), len*sizeof(*wcs), src_encoding, "UTF-8");
 }
 
 /**
@@ -534,25 +525,18 @@ std::string utf16_to_cp1252(const char16_t *wcs, int len)
 
 	if (char_idx.empty()) {
 		// No invalid characters. Convert it directly.
-		char *mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), RP_ICONV_UTF16_ENCODING, "CP1252", false));
-		if (!mbs) {
-			// Conversion failed...
-			return s_ret;
-		}
-
-		s_ret.assign(mbs);
+		// NOTE: Assigning to `s_ret` for named-return-value optimization.
+		s_ret = T_rp_iconv<char>(reinterpret_cast<const char*>(wcs), len*sizeof(*wcs), RP_ICONV_UTF16_ENCODING, "CP1252", false);
 		return s_ret;
 	}
 
 	// Convert using "//TRANSLIT", then manually replace the bad characters.
-	char *const mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), RP_ICONV_UTF16_ENCODING, "CP1252//TRANSLIT", false));
-	if (!mbs) {
+	s_ret = T_rp_iconv<char>(reinterpret_cast<const char*>(wcs), len*sizeof(*wcs), RP_ICONV_UTF16_ENCODING, "CP1252//TRANSLIT", false);
+	if (s_ret.empty()) {
 		// Conversion failed...
 		return s_ret;
 	}
 
-	s_ret.assign(mbs);
-	free(mbs);
 	const int s_ret_size = static_cast<int>(s_ret.size());
 	for (int idx : char_idx) {
 		assert(idx < s_ret_size);
