@@ -256,6 +256,12 @@ Copyright:
  (C) TrueVision, Inc.
 License: TGA-2.0
 
+Files:
+ src/librptext/strfuncs.c
+ src/librptext/strfuncs.h
+Copyright: Various
+License: LGPL-2.1+
+
 Files: src/librptexture/fileformat/qoi.h
 Copyright:
  Copyright (c) 2021, Dominic Szablewski - https://phoboslab.org

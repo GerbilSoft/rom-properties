@@ -2,8 +2,7 @@
  * ROM Properties Page shell extension. (librptext)                        *
  * strfuncs.c: String functions.                                           *
  *                                                                         *
- * Copyright (c) 2009-2026 by David Korth.                                 *
- * SPDX-License-Identifier: GPL-2.0-or-later                               *
+ * SPDX-License-Identifier: LGPL-2.1-or-later                              *
  ***************************************************************************/
 
 #include "strfuncs.h"
