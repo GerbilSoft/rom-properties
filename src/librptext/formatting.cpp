@@ -80,8 +80,11 @@ void clearUserSettingQuery(UserSettingQuery_t func, void *user_data)
 
 // Localized decimal point
 static std::once_flag lc_decimal_once_flag;
-static bool is_C_locale;
 static char lc_decimal[8];
+
+#ifdef _WIN32
+static bool is_C_locale;
+#endif /* _WIN32 */
 
 /** File size formatting **/
 
@@ -136,7 +139,9 @@ static void initLocalizedDecimalPoint(void)
 	}
 	if (locale && locale[0] == 'C' && (locale[1] == '\0' || locale[1] == '.')) {
 		// We're using the "C" locale. (or "C.UTF-8")
+#ifdef _WIN32
 		is_C_locale = true;
+#endif /* _WIN32 */
 		strcpy(lc_decimal, ".");
 		return;
 	}
