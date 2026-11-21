@@ -120,7 +120,7 @@ unordered_map<string, string> parseTags(const char *pData, size_t size, PSFTagSt
 				// NOTE: Key *must* be ASCII.
 				string s_key(p, k_len);
 				std::transform(s_key.begin(), s_key.end(), s_key.begin(),
-					[](unsigned char c) noexcept -> char { return std::tolower(c); });
+					[](unsigned char c) noexcept -> char { return rp_ascii_tolower(c); });
 
 				if (style == PSFTagStyle::PSF) {
 					// Check for UTF-8.

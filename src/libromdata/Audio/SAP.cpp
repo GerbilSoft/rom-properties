@@ -609,7 +609,7 @@ int SAP::loadFieldData(void)
 	d->fields.addField_string_numeric(C_("SAP", "Fastplay"), scanlines);
 
 	// Init address (Types B, D, S) / music address (Type C)
-	switch (toupper(tags.type)) {
+	switch (rp_ascii_toupper(tags.type)) {
 		default:
 			// Skipping for invalid types.
 			break;

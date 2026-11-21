@@ -1004,7 +1004,7 @@ SNES::SNES(const IRpFilePtr &file)
 	// ".b", it's a BS-X ROM image.
 	const char *const filename = file->filename();
 	const char *const ext = FileSystem::file_ext(filename);
-	if (ext && ext[0] == '.' && tolower(ext[1]) == 'b') {
+	if (ext && ext[0] == '.' && rp_ascii_tolower(ext[1]) == 'b') {
 		// BS-X ROM image.
 		d->romType = SNESPrivate::RomType::BSX;
 	}

@@ -730,7 +730,7 @@ int ISOPrivate::parse_autorun_inf(void *user, const char *section, const char *n
 	// TODO: Store the original case elsewhere?
 	string s_name = name;
 	std::transform(s_name.begin(), s_name.end(), s_name.begin(),
-		[](char c) noexcept -> char { return std::tolower(c); });
+		[](char c) noexcept -> char { return rp_ascii_tolower(c); });
 
 	// Save the value for later.
 	ISOPrivate *const d = static_cast<ISOPrivate*>(user);
