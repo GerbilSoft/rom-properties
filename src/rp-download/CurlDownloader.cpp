@@ -338,7 +338,7 @@ int CurlDownloader::download(void)
 
 	LPCTSTR curl_insecure = _tgetenv(_T("CURL_INSECURE"));
 	if (curl_insecure) {
-		if (curl_insecure[0] != _T('\0') && rp_ascii_isdigit(curl_insecure[0]) && _tcscmp(curl_insecure, _T("0")) != 0) {
+		if (curl_insecure[0] != _T('\0') && rp_ascii_istdigit(curl_insecure[0]) && _tcscmp(curl_insecure, _T("0")) != 0) {
 			pcurl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
 		}
 	}
