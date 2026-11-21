@@ -17,6 +17,7 @@
 // Other rom-properties libraries
 #include "librpbase/disc/DiscReader.hpp"
 #include "librpfile/FileSystem.hpp"
+#include "librptext/strfuncs.h"
 #include "librptexture/fileformat/SegaPVR.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -31,9 +32,6 @@ using namespace LibRpTexture;
 
 // Other RomData subclasses
 #include "Media/ISO.hpp"
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -344,8 +342,8 @@ void DreamcastPrivate::parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) c
 	    discHeader.device_info[12] == '/')
 	{
 		// "GD-ROM" is present.
-		if (isdigit_ascii(discHeader.device_info[11]) &&
-		    isdigit_ascii(discHeader.device_info[13]))
+		if (rp_ascii_isdigit(discHeader.device_info[11]) &&
+		    rp_ascii_isdigit(discHeader.device_info[13]))
 		{
 			// Disc digits are present.
 			disc_num = discHeader.device_info[11] & 0x0F;

@@ -17,6 +17,7 @@
 // Other rom-properties libraries
 #include "librpbase/config/Config.hpp"
 #include "librpfile/SubFile.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpText;
 using namespace LibRpFile;
@@ -473,8 +474,8 @@ void DMGPrivate::getTitleAndGameID(const DMG_RomHeader *pRomHeader, string &s_ti
 
 		if (isGameID) {
 			// Second and third bytes must be uppercase and/or numeric.
-			if ((!isupper_ascii(pRomHeader->title15[12]) && !isdigit_ascii(pRomHeader->title15[12])) ||
-			    (!isupper_ascii(pRomHeader->title15[13]) && !isdigit_ascii(pRomHeader->title15[13])))
+			if ((!rp_ascii_isupper(pRomHeader->title15[12]) && !rp_ascii_isdigit(pRomHeader->title15[12])) ||
+			    (!rp_ascii_isupper(pRomHeader->title15[13]) && !rp_ascii_isdigit(pRomHeader->title15[13])))
 			{
 				// This is not a Game ID.
 				isGameID = false;
@@ -545,8 +546,8 @@ string DMGPrivate::getPublisher(void) const
 		if (publisher) {
 			s_ret = publisher;
 		} else {
-			if (isalnum_ascii(romHeader.new_publisher_code[0]) &&
-			    isalnum_ascii(romHeader.new_publisher_code[1]))
+			if (rp_ascii_isalnum(romHeader.new_publisher_code[0]) &&
+			    rp_ascii_isalnum(romHeader.new_publisher_code[1]))
 			{
 				const array<char, 3> s_company = {{
 					romHeader.new_publisher_code[0],

@@ -15,6 +15,7 @@
 
 // Other rom-properties libraries
 #include "librpbase/disc/DiscReader.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -32,9 +33,6 @@ using namespace LibRpText;
 
 // inih for SYSTEM.CNF
 #include "ini.h"
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 #include <unordered_map>
@@ -468,7 +466,7 @@ PlayStationDisc::PlayStationDisc(const IRpFilePtr &file)
 	// Remove the ISO version number.
 	const size_t len = d->boot_filename.size();
 	if (len > 2) {
-		if (isdigit_ascii(d->boot_filename[len-1]) && d->boot_filename[len-2] == ';') {
+		if (rp_ascii_isdigit(d->boot_filename[len-1]) && d->boot_filename[len-2] == ';') {
 			d->boot_filename.resize(len-2);
 		}
 	}

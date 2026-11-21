@@ -19,6 +19,7 @@
 #include "aligned_malloc.h"
 #include "librpbase/Achievements.hpp"
 #include "librpbase/crypto/Hash.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -1899,7 +1900,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) c
 				// Different discs have a different number in the
 				// MCD System ID, but the serial number is identical
 				// on all MCD discs, and all MCD32X discs.
-				if (isdigit_ascii(d->mcd_systemID.volume_name[10])) {
+				if (rp_ascii_isdigit(d->mcd_systemID.volume_name[10])) {
 					// Append the disc number.
 					gameID += ".disc";
 					gameID += d->mcd_systemID.volume_name[10];

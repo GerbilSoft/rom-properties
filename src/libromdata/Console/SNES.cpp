@@ -18,12 +18,10 @@
 #include "time_r.h"
 #include "librpbase/SystemRegion.hpp"
 #include "librpfile/FileSystem.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpText;
 using namespace LibRpFile;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -112,9 +110,9 @@ public:
 	 * @param c The character
 	 * @return Whether or not character is valid
 	 */
-	static inline constexpr bool isValidGameIDChar(char c)
+	static inline bool isValidGameIDChar(char c)
 	{
-		return isdigit_ascii(c) || isupper_ascii(c);
+		return rp_ascii_isdigit(c) || rp_ascii_isupper(c);
 	}
 
 	/**
@@ -388,8 +386,8 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 	if (romHeader->snes.old_publisher_code == 0x33) {
 		// Extended header should be present.
 		// New publisher code and game ID must be alphanumeric.
-		if (!isalnum_ascii(romHeader->snes.ext.new_publisher_code.c[0]) ||
-		    !isalnum_ascii(romHeader->snes.ext.new_publisher_code.c[1]))
+		if (!rp_ascii_isalnum(romHeader->snes.ext.new_publisher_code.c[0]) ||
+		    !rp_ascii_isalnum(romHeader->snes.ext.new_publisher_code.c[1]))
 		{
 			// New publisher code is invalid.
 			// NOTE: Allowing '00' for certain prototypes or homebrew.
@@ -405,7 +403,7 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 		} else {
 			for (size_t i = 0; i < ARRAY_SIZE(romHeader->snes.ext.id4.c); i++) {
 				// ID4 should be in the format "SMWJ" or "MW  ".
-				if (isalnum_ascii(romHeader->snes.ext.id4.c[i])) {
+				if (rp_ascii_isalnum(romHeader->snes.ext.id4.c[i])) {
 					// Alphanumeric character.
 					continue;
 				} else if (i >= 2 && (romHeader->snes.ext.id4.c[i] == ' ' || romHeader->snes.ext.id4.c[i] == '\0')) {
@@ -516,8 +514,8 @@ bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHi
 	// FIXME: Some BS-X ROMs have an invalid publisher code...
 #if 0
 	// New publisher code must be alphanumeric.
-	if (!isalnum_ascii(romHeader->bsx.ext.new_publisher_code.c[0]) ||
-	    !isalnum_ascii(romHeader->bsx.ext.new_publisher_code.c[1]))
+	if (!rp_ascii_isalnum(romHeader->bsx.ext.new_publisher_code.c[0]) ||
+	    !rp_ascii_isalnum(romHeader->bsx.ext.new_publisher_code.c[1]))
 	{
 		// New publisher code is invalid.
 		return false;
@@ -633,8 +631,8 @@ string SNESPrivate::getPublisher(void) const
 		if (publisher) {
 			s_ret = publisher;
 		} else {
-			if (isalnum_ascii(romHeader.snes.ext.new_publisher_code.c[0]) &&
-			    isalnum_ascii(romHeader.snes.ext.new_publisher_code.c[1]))
+			if (rp_ascii_isalnum(romHeader.snes.ext.new_publisher_code.c[0]) &&
+			    rp_ascii_isalnum(romHeader.snes.ext.new_publisher_code.c[1]))
 			{
 				const array<char, 3> s_pub_code = {{
 					romHeader.snes.ext.new_publisher_code.c[0],

@@ -38,6 +38,7 @@
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/MemFile.hpp"
 #include "librpfile/RpFile.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpFile;
 
 // librptexture
@@ -46,7 +47,6 @@ using namespace LibRpFile;
 using namespace LibRpTexture;
 
 // C includes (C++ namespace)
-#include "ctypex.h"
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -999,7 +999,7 @@ string RpPngFormatTest::test_case_suffix_generator(const ::testing::TestParamInf
 	// Replace all non-alphanumeric characters with '_'.
 	// See gtest-param-util.h::IsValidParamName().
 	std::replace_if(suffix.begin(), suffix.end(),
-		[](char c) noexcept -> bool { return !isalnum_ascii(c); }, '_');
+		[](char c) noexcept -> bool { return !rp_ascii_isalnum(c); }, '_');
 
 	return suffix;
 }

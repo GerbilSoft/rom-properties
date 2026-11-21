@@ -21,6 +21,7 @@
 #include "librpbase/Achievements.hpp"
 #include "librpbase/SystemRegion.hpp"
 #include "librpfile/MemFile.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -120,10 +121,10 @@ inline string WiiWADPrivate::getGameID(void) const
 
 	// NOTE: Only displayed if TID lo is all alphanumeric characters.
 	// TODO: Only for certain TID hi?
-	if (!isalnum_ascii(tmdHeader.title_id.u8[4]) ||
-	    !isalnum_ascii(tmdHeader.title_id.u8[5]) ||
-	    !isalnum_ascii(tmdHeader.title_id.u8[6]) ||
-	    !isalnum_ascii(tmdHeader.title_id.u8[7]))
+	if (!rp_ascii_isalnum(tmdHeader.title_id.u8[4]) ||
+	    !rp_ascii_isalnum(tmdHeader.title_id.u8[5]) ||
+	    !rp_ascii_isalnum(tmdHeader.title_id.u8[6]) ||
+	    !rp_ascii_isalnum(tmdHeader.title_id.u8[7]))
 	{
 		// Not a valid game ID.
 		return id4;
@@ -1428,7 +1429,7 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) cons
 			// that means it's a DLC title. GameTDB doesn't
 			// have artwork for DLC titles.
 			const char firstID4 = be32_to_cpu(tmdHeader->title_id.lo) >> 24;
-			if (islower_ascii(firstID4)) {
+			if (rp_ascii_islower(firstID4)) {
 				// It's lowercase.
 				return -ENOENT;
 			}

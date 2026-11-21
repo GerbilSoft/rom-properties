@@ -13,12 +13,10 @@
 
 // Other rom-properties libraries
 #include "librpfile/FileSystem.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using LibRpText::trimEnd;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -173,7 +171,7 @@ string ColecoVisionPrivate::getTitle(int *pOutYear) const
 		// Check if the next four characters are a release year.
 		int year = 0;
 		for (unsigned int i = 0; i < 4; i++, p++) {
-			if (!isdigit_ascii(*p)) {
+			if (!rp_ascii_isdigit(*p)) {
 				// Not a digit.
 				year = -1;
 				break;

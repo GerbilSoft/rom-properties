@@ -14,6 +14,7 @@
 #include "cdrom_structs.h"
 
 // Other rom-properties libraries
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -343,8 +344,8 @@ void SegaSaturnPrivate::parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) 
 	             discHeader.device_info[4] == '/')
 	{
 		// "CD-ROM" is present.
-		if (isdigit_ascii(discHeader.device_info[3]) &&
-		    isdigit_ascii(discHeader.device_info[5]))
+		if (rp_ascii_isdigit(discHeader.device_info[3]) &&
+		    rp_ascii_isdigit(discHeader.device_info[5]))
 		{
 			// Disc digits are present.
 			disc_num = discHeader.device_info[3] & 0x0F;

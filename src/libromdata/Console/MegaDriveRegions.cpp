@@ -9,6 +9,9 @@
 #include "MegaDriveRegions.hpp"
 #include "librpbase/SystemRegion.hpp"
 
+// Other rom-properties libraries
+#include "librptext/strfuncs.h"
+
 // C includes
 #include "ctypex.h"
 #include "tcharx.h"
@@ -47,7 +50,7 @@ unsigned int parseRegionCodes(const char *region_codes, int size)
 	unsigned int ret = 0;
 
 	// Check for a hex code.
-	if (isalnum_ascii(region_codes[0]) &&
+	if (rp_ascii_isalnum(region_codes[0]) &&
 	    (region_codes[1] == 0 || ISSPACE(region_codes[1])))
 	{
 		// Single character region code.

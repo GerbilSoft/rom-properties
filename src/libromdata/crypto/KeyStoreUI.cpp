@@ -16,6 +16,7 @@
 #include "librpbase/crypto/Hash.hpp"
 #include "librpfile/RpFile.hpp"
 #include "librptext/conversion.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpText;
 using namespace LibRpFile;
@@ -1034,7 +1035,7 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const char *value)
 		const auto new_value_end = new_value.end();
 		for (; *value != '\0' && iter_dest != new_value_end; ++value, ++iter_dest) {
 			const char chr = *value;
-			if (!isxdigit_ascii(chr)) {
+			if (!rp_ascii_isxdigit(chr)) {
 				// Not a hex digit.
 				return -EINVAL;
 			}

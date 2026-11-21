@@ -14,6 +14,7 @@
 #include "common.h"
 
 // Other rom-properties libraries
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -139,10 +140,10 @@ string N64Private::getOSVersion(void) const
 {
 	string s_ret;
 
-	// TODO: isalpha_ascii(), or isupper_ascii()?
+	// TODO: rp_ascii_isalpha(), or rp_ascii_isupper()?
 	if (romHeader.os_version[0] == 0x00 &&
 	    romHeader.os_version[1] == 0x00 &&
-	    isalpha_ascii(romHeader.os_version[3]))
+	    rp_ascii_isalpha(romHeader.os_version[3]))
 	{
 		fmt::format_to(std::back_inserter(s_ret), FSTR("OS{:d}.{:d}{:c}"),
 			romHeader.os_version[2] / 10,

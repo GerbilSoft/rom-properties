@@ -43,6 +43,7 @@ using namespace LibRpFile;
 using namespace LibRomData;
 
 // librptext
+#include "librptext/strfuncs.h"
 #include "librptext/wchar.hpp"
 
 // librptexture
@@ -936,8 +937,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				uint32_t new_lc = 0;
 				int pos;
 				for (pos = 0; pos < 4 && s_lang[pos] != _T('\0'); pos++) {
-					TCHAR c = tolower_ascii(s_lang[pos]);
-					if (!islower_ascii(c)) {
+					TCHAR c = rp_ascii_tolower(s_lang[pos]);
+					if (!rp_ascii_islower(c)) {
 						// Not a valid language code character.
 						new_lc = 0;
 						break;

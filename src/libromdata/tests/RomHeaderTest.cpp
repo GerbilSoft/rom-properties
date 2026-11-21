@@ -22,6 +22,7 @@
 #include "librpbase/TextOut.hpp"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/MemFile.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 
@@ -467,7 +468,7 @@ string RomHeaderTest::test_case_suffix_generator(const ::testing::TestParamInfo<
 	for (char &c : suffix) {
 		if (c == '+') {
 			c = 'x';
-		} else if (!isalnum_ascii(c)) {
+		} else if (!rp_ascii_isalnum(c)) {
 			c = '_';
 		}
 	}

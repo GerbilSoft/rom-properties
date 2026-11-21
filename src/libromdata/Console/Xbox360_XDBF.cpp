@@ -16,13 +16,11 @@
 // Other rom-properties libraries
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/MemFile.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 #include <unordered_map>
@@ -979,12 +977,12 @@ int Xbox360_XDBF_Private::addFields_strings_SPA(RomFields *fields) const
 			// FIXME: Verify behavior on big-endian.
 			// TODO: Consolidate implementations into a shared function.
 			string tid_str;
-			if (isupper_ascii(xthd.title_id.a)) {
+			if (rp_ascii_isupper(xthd.title_id.a)) {
 				tid_str += (char)xthd.title_id.a;
 			} else {
 				fmt::format_to(std::back_inserter(tid_str), FSTR("\\x{:0>2X}"), (uint8_t)xthd.title_id.a);
 			}
-			if (isupper_ascii(xthd.title_id.b)) {
+			if (rp_ascii_isupper(xthd.title_id.b)) {
 				tid_str += (char)xthd.title_id.b;
 			} else {
 				fmt::format_to(std::back_inserter(tid_str), FSTR("\\x{:0>2X}"), (uint8_t)xthd.title_id.b);
@@ -1931,12 +1929,12 @@ int Xbox360_XDBF::loadMetaData(void)
 			// FIXME: Verify behavior on big-endian.
 			// TODO: Consolidate implementations into a shared function.
 			string tid_str;
-			if (isupper_ascii(xthd.title_id.a)) {
+			if (rp_ascii_isupper(xthd.title_id.a)) {
 				tid_str += (char)xthd.title_id.a;
 			} else {
 				fmt::format_to(std::back_inserter(tid_str), FSTR("\\x{:0>2X}"), (uint8_t)xthd.title_id.a);
 			}
-			if (isupper_ascii(xthd.title_id.b)) {
+			if (rp_ascii_isupper(xthd.title_id.b)) {
 				tid_str += (char)xthd.title_id.b;
 			} else {
 				fmt::format_to(std::back_inserter(tid_str), FSTR("\\x{:0>2X}"), (uint8_t)xthd.title_id.b);

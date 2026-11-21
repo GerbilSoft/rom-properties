@@ -16,13 +16,11 @@
 
 // Other rom-properties libraries
 #include "librptexture/decoder/ImageDecoder_N3DS.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -588,7 +586,7 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 		// NOTE: Stored as ASCII, not UTF-16!
 		const char *const ique_data =
 			&reinterpret_cast<const char*>(smdhHeader->titles[N3DS_LANG_CHINESE_SIMP].desc_long)[218];
-		if (isdigit_ascii(ique_data[0])) {
+		if (rp_ascii_isdigit(ique_data[0])) {
 			// Found it.
 			// Each field is fixed-width.
 			// Format:

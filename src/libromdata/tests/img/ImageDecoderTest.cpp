@@ -29,7 +29,7 @@
 #  define gzclose_w(file) gzclose(file)
 #endif
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "common.h"
 #include "librpbase/img/RpPng.hpp"
 #include "librpbase/RomData.hpp"
@@ -38,6 +38,7 @@
 #include "librpfile/MemFile.hpp"
 #include "librpfile/RpFile.hpp"
 #include "librpfile/FileSystem.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 
@@ -53,7 +54,6 @@ using namespace LibRpTexture;
 #include "RomDataFactory.hpp"
 
 // C includes (C++ namespace)
-#include "ctypex.h"
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -580,7 +580,7 @@ string ImageDecoderTest::test_case_suffix_generator(const ::testing::TestParamIn
 	// Replace all non-alphanumeric characters with '_'.
 	// See gtest-param-util.h::IsValidParamName().
 	std::replace_if(suffix.begin(), suffix.end(),
-		[](char c) noexcept -> bool { return !isalnum_ascii(c); }, '_');
+		[](char c) noexcept -> bool { return !rp_ascii_isalnum(c); }, '_');
 
 	// Append the image type to allow checking multiple types
 	// of images in the same file.

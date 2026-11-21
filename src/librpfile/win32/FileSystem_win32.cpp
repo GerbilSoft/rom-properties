@@ -9,6 +9,9 @@
 #include "config.librpfile.h"
 #include "../FileSystem.hpp"
 
+// Other rom-properties libraries
+#include "librptext/strfuncs.h"
+
 // C includes
 #include <sys/stat.h>
 #include <sys/utime.h>
@@ -770,7 +773,7 @@ static inline bool T_isOnBadFS(const CharType *filename, bool allowNetFS)
 
 	// If it's a drive letter, check if it's DRIVE_REMOTE.
 	// TODO: Also check mount points? (not very common on Windows...)
-	if (isalpha_ascii(filename[0]) && filename[1] == ':') {
+	if (rp_ascii_isalpha(filename[0]) && filename[1] == ':') {
 		const CharType s_root[] = {filename[0], ':', '\\', '\0'};
 		if (GetDriveType_wrapper(s_root) == DRIVE_REMOTE) {
 			// It's a network share.

@@ -13,6 +13,7 @@
 #include "RomData_p.hpp"
 
 // Other rom-properties libraries
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -159,7 +160,7 @@ int SAPPrivate::durationToMsLoop(const char *str, uint32_t *pMs, bool *pLoop)
 		unsigned int digit_count = 0;
 		dp++;
 		for (; *dp != '\0'; dp++) {
-			if (isdigit_ascii(*dp)) {
+			if (rp_ascii_isdigit(*dp)) {
 				// Found a digit.
 				digit_count++;
 			} else {

@@ -15,6 +15,7 @@
 // Other rom-properties libraries
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/SubFile.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -25,9 +26,6 @@ using namespace LibRpTexture;
 
 // Other RomData subclasses
 #include "Other/EXE.hpp"
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 #include <sstream>
@@ -392,13 +390,13 @@ string Xbox_XBE_Private::getTitleID(void) const
 	// FIXME: Verify behavior on big-endian.
 	// TODO: Consolidate implementations into a shared function.
 	string tid_str;
-	if (isupper_ascii(xbeCertificate.title_id.a)) {
+	if (rp_ascii_isupper(xbeCertificate.title_id.a)) {
 		tid_str += xbeCertificate.title_id.a;
 	} else {
 		fmt::format_to(std::back_inserter(tid_str), FSTR("\\x{:0>2X}"),
 			static_cast<uint8_t>(xbeCertificate.title_id.a));
 	}
-	if (isupper_ascii(xbeCertificate.title_id.b)) {
+	if (rp_ascii_isupper(xbeCertificate.title_id.b)) {
 		tid_str += xbeCertificate.title_id.b;
 	} else {
 		fmt::format_to(std::back_inserter(tid_str), FSTR("\\x{:0>2X}"),
@@ -430,8 +428,8 @@ string Xbox_XBE_Private::getPublisher(void) const
 	}
 
 	// Unknown publisher.
-	if (isalnum_ascii(xbeCertificate.title_id.a) &&
-	    isalnum_ascii(xbeCertificate.title_id.b))
+	if (rp_ascii_isalnum(xbeCertificate.title_id.a) &&
+	    rp_ascii_isalnum(xbeCertificate.title_id.b))
 	{
 		// Publisher ID is alphanumeric.
 		fmt::format_to(std::back_inserter(s_ret), FSTR("{:s} ({:c}{:c})"), C_("RomData", "Unknown"),

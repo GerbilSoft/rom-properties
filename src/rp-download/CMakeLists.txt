@@ -105,6 +105,7 @@ SET_WINDOWS_ENTRYPOINT(${PROJECT_NAME} wmain OFF)
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpfile rpsecure cachecommon)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE boost-time64)	# for rp_time_t and 64-bit time functions
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rptext-noi18n)	# for text conversion and strfuncs
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# rp-download
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# rp-download
@@ -113,7 +114,7 @@ TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
 	)
 IF(WIN32)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE win32common rptext-noi18n)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE win32common)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE wininet advapi32)
 
 	# Delay-load shell32.dll and ole32.dll to prevent a performance penalty due to gdi32.dll.

@@ -13,6 +13,7 @@
 #include "gba_structs.h"
 
 // Other rom-properties libraries
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -145,8 +146,8 @@ string GameBoyAdvancePrivate::getPublisher(void) const
 
 	// Unknown publisher. Print the company code as two characters if they're
 	// both alphanumeric; otherwise, hexadecimal.
-	if (isalnum_ascii(romHeader.company[0]) &&
-	    isalnum_ascii(romHeader.company[1]))
+	if (rp_ascii_isalnum(romHeader.company[0]) &&
+	    rp_ascii_isalnum(romHeader.company[1]))
 	{
 		fmt::format_to(std::back_inserter(s_ret),
 			FSTR("{:s} ({:c}{:c})"), C_("RomData", "Unknown"),

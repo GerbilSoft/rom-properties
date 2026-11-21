@@ -22,6 +22,7 @@
 #include "librpbase/config/Config.hpp"
 #include "librpbase/disc/DiscReader.hpp"
 #include "librpbase/SystemRegion.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -180,8 +181,8 @@ string NintendoDSPrivate::getPublisher(void)
 
 	// Unknown publisher. Print the company code as two characters if they're
 	// both alphanumeric; otherwise, hexadecimal.
-	if (isalnum_ascii(romHeader.company[0]) &&
-	    isalnum_ascii(romHeader.company[1]))
+	if (rp_ascii_isalnum(romHeader.company[0]) &&
+	    rp_ascii_isalnum(romHeader.company[1]))
 	{
 		fmt::format_to(std::back_inserter(s_ret),
 			FSTR("{:s} ({:c}{:c})"), C_("RomData", "Unknown"),

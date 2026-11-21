@@ -26,6 +26,7 @@ typedef void *mzReader;
 // Other rom-properties libraries
 #include "librpfile/FileSystem.hpp"
 #include "librptext/conversion.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpText;
 
 // libromdata
@@ -39,9 +40,6 @@ using LibRpBase::IFst;
 
 // FST printer
 #include "FstPrint.hpp"
-
-// C includes (C++ namespace)
-#include "ctypex.h"
 
 // C++ includes
 #include <algorithm>
@@ -578,7 +576,7 @@ string GcnFstTest::test_case_suffix_generator(const ::testing::TestParamInfo<Gcn
 	// Replace all non-alphanumeric characters with '_'.
 	// See gtest-param-util.h::IsValidParamName().
 	std::replace_if(suffix.begin(), suffix.end(),
-		[](char c) noexcept -> bool { return !isalnum_ascii(c); }, '_');
+		[](char c) noexcept -> bool { return !rp_ascii_isalnum(c); }, '_');
 
 	return suffix;
 }

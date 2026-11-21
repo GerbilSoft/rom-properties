@@ -16,7 +16,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ctypex.h"
+// librptext
+#include "librptext/strfuncs.h"
 
 // Are Sixel or Kitty supported?
 static bool checked_graphics = false;
@@ -99,7 +100,7 @@ static void gsvt_check_graphics_protocol_support(void)
 			int num = -1;
 			for (p += 2; p < p_end; p++) {
 				TCHAR chr = *p;
-				if (isdigit_ascii(chr)) {
+				if (rp_ascii_isdigit(chr)) {
 					// This is a digit.
 					if (num < 0) {
 						num = (chr & 0x0F);

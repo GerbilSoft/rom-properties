@@ -10,8 +10,8 @@
 
 #include "common.h"
 
-// C includes
-#include "ctypex.h"
+// Other rom-properties libraries
+#include "librptext/strfuncs.h"
 
 // C includes (C++ namespace)
 #include <cassert>
@@ -67,13 +67,13 @@ const char *lookup(const char *code)
 
 	// Lookup table uses Base 26. [A-Z]
 	unsigned int idx;
-	if (isupper_ascii(code[0])) {
+	if (rp_ascii_isupper(code[0])) {
 		idx = (code[0] - 'A') * 26;
 	} else {
 		// Invalid code.
 		return nullptr;
 	}
-	if (isupper_ascii(code[1])) {
+	if (rp_ascii_isupper(code[1])) {
 		idx += (code[1] - 'A');
 	} else {
 		// Invalid code.

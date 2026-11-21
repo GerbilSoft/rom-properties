@@ -9,8 +9,8 @@
 
 #include "TextOut.hpp"
 
-// C includes. (C++ namespace)
-#include "ctypex.h"
+// Other rom-properties libraries
+#include "librptext/strfuncs.h"
 
 // C++ includes.
 #include <string>
@@ -41,7 +41,7 @@ string urlPartialUnescape(string_view url)
 			// Check for two hex digits.
 			const char chr0 = url[i+1];
 			const char chr1 = url[i+2];
-			if (isxdigit_ascii(chr0) && isxdigit_ascii(chr1)) {
+			if (rp_ascii_isxdigit(chr0) && rp_ascii_isxdigit(chr1)) {
 				// Unescape it.
 				uint8_t val = (chr0 & 0x0F) << 4;
 				if (chr0 >= 'A') {

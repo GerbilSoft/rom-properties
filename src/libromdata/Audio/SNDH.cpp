@@ -15,6 +15,7 @@
 #include "RomData_p.hpp"
 
 // Other rom-properties libraries
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -26,9 +27,6 @@ using namespace LibRpText;
 
 // for memmem() if it's not available in <string.h>
 #include "librptext/strfuncs.h"
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 #include <numeric>
@@ -464,14 +462,14 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				// two bytes per subtune, two more bytes, then two NULL bytes.
 				bool handled = false;
 				if (p < p_end - 4+2) {
-					if (p[4+2] == 0 && isupper_ascii(p[4+2+1])) {
+					if (p[4+2] == 0 && rp_ascii_isupper(p[4+2+1])) {
 						p += 4+2+1;
 						handled = true;
 					}
 				}
 
 				if (!handled && p < p_end - 4+3) {
-					if (p[4+3] == 0 && isupper_ascii(p[4+3+1])) {
+					if (p[4+3] == 0 && rp_ascii_isupper(p[4+3+1])) {
 						p += 4+3+1;
 						handled = true;
 					}
@@ -480,13 +478,13 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				// Check for the 5-byte version.
 				if (!handled && (p < p_end - 4+5+1)) {
 					// Might not have a NULL terminator.
-					if (p[4+5] != 0 && isupper_ascii(p[4+5+1])) {
+					if (p[4+5] != 0 && rp_ascii_isupper(p[4+5+1])) {
 						// No NULL terminator.
 						p += 4+5;
 						handled = true;
 					} else {
 						// NULL terminator.
-						if (p[4] == '~' && p + 4+6+2 < p_end && isupper_ascii(p[4+5+2])) {
+						if (p[4] == '~' && p + 4+6+2 < p_end && rp_ascii_isupper(p[4+5+2])) {
 							p += 4+5+1;
 							handled = true;
 						}
@@ -546,9 +544,9 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 					break;
 				}
 
-				assert(isdigit_ascii(p[2]));
-				assert(isdigit_ascii(p[3]));
-				if (!isdigit_ascii(p[2]) || !isdigit_ascii(p[3])) {
+				assert(rp_ascii_isdigit(p[2]));
+				assert(rp_ascii_isdigit(p[3]));
+				if (!rp_ascii_isdigit(p[2]) || !rp_ascii_isdigit(p[3])) {
 					// Not digits.
 					p = p_end;
 					break;
@@ -579,7 +577,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				// If present, this is probably the end of the header,
 				// and the file is missing an HDNS tag.
 				// See: Beast/Boring.sndh
-				if (!isdigit_ascii(p[2])) {
+				if (!rp_ascii_isdigit(p[2])) {
 					// End of header.
 					p = p_end;
 					break;

@@ -13,12 +13,10 @@
 
 // Other rom-properties libraries
 #include "time_r.h"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 #include <unordered_map>
@@ -910,7 +908,7 @@ int SPC::loadFieldData(void)
 			string s_track_num = fmt::format_int(track_num).str();
 
 			const char track_letter = data.uvalue & 0xFF;
-			if (isalnum_ascii(track_letter)) {
+			if (rp_ascii_isalnum(track_letter)) {
 				// Valid track letter
 				s_track_num += track_letter;
 			}

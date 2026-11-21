@@ -19,6 +19,7 @@
 
 // Other rom-properties libraries
 #include "librpbase/SystemRegion.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -341,8 +342,8 @@ int WiiU::loadFieldData(void)
 	if (publisher) {
 		s_publisher = publisher;
 	} else {
-		if (isalnum_ascii(publisher_code[0]) && isalnum_ascii(publisher_code[1]) &&
-		    isalnum_ascii(publisher_code[2]) && isalnum_ascii(publisher_code[3]))
+		if (rp_ascii_isalnum(publisher_code[0]) && rp_ascii_isalnum(publisher_code[1]) &&
+		    rp_ascii_isalnum(publisher_code[2]) && rp_ascii_isalnum(publisher_code[3]))
 		{
 			fmt::format_to(std::back_inserter(s_publisher),
 				FSTR("{:s} ({:s})"), C_("RomData", "Unknown"), publisher_code.data());
