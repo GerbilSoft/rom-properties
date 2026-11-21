@@ -19,12 +19,10 @@
 #include "libi18n/i18n.hpp"
 #include "librpbase/config/Config.hpp"
 #include "librpfile/xattr/XAttrReader.hpp"
+#include "librptext/strfuncs.h"
 #include "librptext/wchar.hpp"
 using LibRpBase::Config;
 using LibRpFile::XAttrReader;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 #include <array>
@@ -181,13 +179,13 @@ int RP_XAttrView_Private::loadADS(void)
 		tstr = U82T_str(xattr.second.c_str());
 		// Trim at the end.
 		size_t pos = tstr.size();
-		while (pos > 0 && ISSPACE(tstr[pos-1])) {
+		while (pos > 0 && rp_ascii_istspace(tstr[pos-1])) {
 			pos--;
 		}
 		tstr.resize(pos);
 		// Trim at the start.
 		pos = 0;
-		while (pos < tstr.size() && ISSPACE(tstr[pos])) {
+		while (pos < tstr.size() && rp_ascii_istspace(tstr[pos])) {
 			pos++;
 		}
 		if (pos == tstr.size()) {

@@ -172,11 +172,13 @@ wchar_t rp_ascii_towupper(wchar_t c) ATTR_CONST;
 
 #if defined(_WIN32) && defined(_UNICODE)
 #  define rp_ascii_istlower(c) (((c) < 256) && rp_ascii_islower((uint8_t)(c)))
+#  define rp_ascii_istspace(c) (((c) < 256) && rp_ascii_isspace((uint8_t)(c)))
 #  define rp_ascii_istupper(c) (((c) < 256) && rp_ascii_isupper((uint8_t)(c)))
 #  define rp_ascii_totlower(c) rp_ascii_towlower(c)
 #  define rp_ascii_totupper(c) rp_ascii_towupper(c)
 #else /* !(_WIN32 && _UNICODE) */
 #  define rp_ascii_istlower(c) rp_ascii_islower(c)
+#  define rp_ascii_istspace(c) rp_ascii_isspace(c)
 #  define rp_ascii_istupper(c) rp_ascii_isupper(c)
 #  define rp_ascii_totlower(c) rp_ascii_tolower(c)
 #  define rp_ascii_totupper(c) rp_ascii_toupper(c)
