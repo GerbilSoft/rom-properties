@@ -167,7 +167,7 @@ uint16_t rp_ascii_table_get(char c)
  */
 char rp_ascii_tolower(char c)
 {
-	return (rp_ascii_isupper(c)) ? (c & ~0x20) : c;
+	return (rp_ascii_isupper(c)) ? (c | 0x20) : c;
 }
 
 /**
@@ -177,5 +177,5 @@ char rp_ascii_tolower(char c)
  */
 char rp_ascii_toupper(char c)
 {
-	return (rp_ascii_islower(c)) ? (c | ~0x20) : c;
+	return (rp_ascii_islower(c)) ? (c & ~0x20) : c;
 }
