@@ -152,6 +152,36 @@ char rp_ascii_tolower(char c) ATTR_CONST;
 RP_LIBROMDATA_PUBLIC
 char rp_ascii_toupper(char c) ATTR_CONST;
 
+#ifdef _WIN32
+/**
+ * Convert an ASCII character to lowercase.
+ * @param c ASCII character
+ * @return Lowercase ASCII character
+ */
+RP_LIBROMDATA_PUBLIC
+wchar_t rp_ascii_towlower(wchar_t c) ATTR_CONST;
+
+/**
+ * Convert an ASCII character to uppercase.
+ * @param c ASCII character
+ * @return Uppercase ASCII character
+ */
+RP_LIBROMDATA_PUBLIC
+wchar_t rp_ascii_towupper(wchar_t c) ATTR_CONST;
+#endif /* _WIN32 */
+
+#if defined(_WIN32) && defined(_UNICODE)
+#  define rp_ascii_istlower(c) (((c) < 256) && rp_ascii_islower((uint8_t)(c)))
+#  define rp_ascii_istupper(c) (((c) < 256) && rp_ascii_isupper((uint8_t)(c)))
+#  define rp_ascii_totlower(c) rp_ascii_towlower(c)
+#  define rp_ascii_totupper(c) rp_ascii_towupper(c)
+#else /* !(_WIN32 && _UNICODE) */
+#  define rp_ascii_istlower(c) rp_ascii_islower(c)
+#  define rp_ascii_istupper(c) rp_ascii_isupper(c)
+#  define rp_ascii_totlower(c) rp_ascii_tolower(c)
+#  define rp_ascii_totupper(c) rp_ascii_toupper(c)
+#endif /* _WIN32 && _UNICODE */
+
 #ifdef __cplusplus
 }
 #endif

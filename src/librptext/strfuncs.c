@@ -179,3 +179,31 @@ char rp_ascii_toupper(char c)
 {
 	return (rp_ascii_islower(c)) ? (c & ~0x20) : c;
 }
+
+#ifdef _WIN32
+/**
+ * Convert an ASCII character to lowercase.
+ * @param c ASCII character
+ * @return Lowercase ASCII character
+ */
+wchar_t rp_ascii_towlower(wchar_t c)
+{
+	if (c >= 256) {
+		return c;
+	}
+	return (rp_ascii_isupper((uint8_t)c)) ? (c | 0x20) : c;
+}
+
+/**
+ * Convert an ASCII character to uppercase.
+ * @param c ASCII character
+ * @return Uppercase ASCII character
+ */
+wchar_t rp_ascii_towupper(wchar_t c)
+{
+	if (c >= 256) {
+		return c;
+	}
+	return (rp_ascii_islower((uint8_t)c)) ? (c & ~0x20) : c;
+}
+#endif /* _WIN32 */

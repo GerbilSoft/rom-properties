@@ -934,8 +934,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				uint32_t new_lc = 0;
 				int pos;
 				for (pos = 0; pos < 4 && s_lang[pos] != _T('\0'); pos++) {
-					TCHAR c = rp_ascii_tolower(s_lang[pos]);
-					if (!rp_ascii_islower(c)) {
+					TCHAR c = rp_ascii_totlower(s_lang[pos]);
+					if (!rp_ascii_istlower(c)) {
 						// Not a valid language code character.
 						new_lc = 0;
 						break;
