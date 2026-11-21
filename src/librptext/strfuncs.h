@@ -91,41 +91,50 @@ typedef enum {
 	RP_ASCII_XDIGIT = 1 << 10
 } ATTR_FLAG_ENUM RpAsciiType;
 
+// NOTE: Windows does not allow delay-loading a DLL if importing a data symbol.
+// On Windows, rp_ascii_table[] will not be exported; instead, an accessor
+// function will be used. This *will* add slight overhead...
+#ifdef _WIN32
+RP_LIBROMDATA_PUBLIC
+uint16_t rp_ascii_table_get(char c);
+#else /* !_WIN32 */
 RP_LIBROMDATA_PUBLIC
 extern const uint16_t rp_ascii_table[256];
+#define rp_ascii_table_get(c) (rp_ascii_table[(uint8_t) (c)])
+#endif /* _WIN32 */
 
 #define rp_ascii_isalnum(c) \
-	((rp_ascii_table[(uint8_t) (c)] & RP_ASCII_ALNUM) != 0)
+	((rp_ascii_table_get(c) & RP_ASCII_ALNUM) != 0)
 
 #define rp_ascii_isalpha(c) \
-	((rp_ascii_table[(uint8_t) (c)] & RP_ASCII_ALPHA) != 0)
+	((rp_ascii_table_get(c) & RP_ASCII_ALPHA) != 0)
 
 #define rp_ascii_iscntrl(c) \
-	((rp_ascii_table[(uint8_t) (c)] & RP_ASCII_CNTRL) != 0)
+	((rp_ascii_table_get(c) & RP_ASCII_CNTRL) != 0)
 
 #define rp_ascii_isdigit(c) \
-	((rp_ascii_table[(uint8_t) (c)] & RP_ASCII_DIGIT) != 0)
+	((rp_ascii_table_get(c) & RP_ASCII_DIGIT) != 0)
 
 #define rp_ascii_isgraph(c) \
-	((rp_ascii_table[(uint8_t) (c)] & RP_ASCII_GRAPH) != 0)
+	((rp_ascii_table_get(c) & RP_ASCII_GRAPH) != 0)
 
 #define rp_ascii_islower(c) \
-	((rp_ascii_table[(uint8_t) (c)] & RP_ASCII_LOWER) != 0)
+	((rp_ascii_table_get(c) & RP_ASCII_LOWER) != 0)
 
 #define rp_ascii_isprint(c) \
-	((rp_ascii_table[(uint8_t) (c)] & RP_ASCII_PRINT) != 0)
+	((rp_ascii_table_get(c) & RP_ASCII_PRINT) != 0)
 
 #define rp_ascii_ispunct(c) \
-	((rp_ascii_table[(uint8_t) (c)] & RP_ASCII_PUNCT) != 0)
+	((rp_ascii_table_get(c) & RP_ASCII_PUNCT) != 0)
 
 #define rp_ascii_isspace(c) \
-	((rp_ascii_table[(uint8_t) (c)] & RP_ASCII_SPACE) != 0)
+	((rp_ascii_table_get(c) & RP_ASCII_SPACE) != 0)
 
 #define rp_ascii_isupper(c) \
-	((rp_ascii_table[(uint8_t) (c)] & RP_ASCII_UPPER) != 0)
+	((rp_ascii_table_get(c) & RP_ASCII_UPPER) != 0)
 
 #define rp_ascii_isxdigit(c) \
-	((rp_ascii_table[(uint8_t) (c)] & RP_ASCII_XDIGIT) != 0)
+	((rp_ascii_table_get(c) & RP_ASCII_XDIGIT) != 0)
 
 /**
  * Convert an ASCII character to lowercase.

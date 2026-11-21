@@ -150,6 +150,16 @@ const uint16_t rp_ascii_table[256] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
+// NOTE: Windows does not allow delay-loading a DLL if importing a data symbol.
+// On Windows, rp_ascii_table[] will not be exported; instead, an accessor
+// function will be used. This *will* add slight overhead...
+#ifdef _WIN32
+uint16_t rp_ascii_table_get(char c)
+{
+	return rp_ascii_table[(uint8_t)c];
+}
+#endif /* _WIN32 */
+
 /**
  * Convert an ASCII character to lowercase.
  * @param c ASCII character

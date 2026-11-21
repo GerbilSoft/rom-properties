@@ -16,8 +16,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-// librptext
-#include "librptext/strfuncs.h"
+// FIXME: Cannot link to librptext due to issues with
+// multiple definitions of rp_ascii_table_get() in MSVC builds.
+static inline bool rp_ascii_isdigit(char c)
+{
+	return (c >= '0' && c <= '9');
+}
 
 // Are Sixel or Kitty supported?
 static bool checked_graphics = false;
