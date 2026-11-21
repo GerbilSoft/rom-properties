@@ -54,7 +54,7 @@ static inline wchar_t rp_ascii_toupper_wrapper(wchar_t c)
 
 static inline wchar_t rp_ascii_tolower_wrapper(wchar_t c)
 {
-	return std::rp_ascii_towlower(c);
+	return rp_ascii_towlower(c);
 }
 #endif /* _WIN32 && _UNICODE */
 
