@@ -170,7 +170,7 @@ int PlayStationDiscPrivate::parse_system_cnf(void *user, const char *section, co
 	// Save the value for later.
 	string s_name(name);
 	std::transform(s_name.begin(), s_name.end(), s_name.begin(),
-		[](char c) noexcept -> char { return std::toupper(c); });
+		[](char c) noexcept -> char { return rp_ascii_toupper(c); });
 
 	PlayStationDiscPrivate *const d = static_cast<PlayStationDiscPrivate*>(user);
 	auto ret = d->system_cnf.emplace(std::move(s_name), value);
@@ -916,7 +916,7 @@ int PlayStationDisc::loadMetaData(void)
 		// Boot filename format: SLUS_207.18
 		string gameID = d->boot_filename;
 		std::transform(gameID.begin(), gameID.end(), gameID.begin(),
-			[](char c) noexcept -> char { return std::toupper(c); });
+			[](char c) noexcept -> char { return rp_ascii_toupper(c); });
 		size_t pos = gameID.find('_');
 		if (pos != string::npos) {
 			gameID[pos] = '-';
@@ -991,7 +991,7 @@ int PlayStationDisc::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int s
 	// Using the first part as the region code.
 	string gameID = d->boot_filename;
 	std::transform(gameID.begin(), gameID.end(), gameID.begin(),
-		[](char c) noexcept -> char { return std::toupper(c); });
+		[](char c) noexcept -> char { return rp_ascii_toupper(c); });
 	string region_code;
 	size_t pos = gameID.find('_');
 	if (pos != string::npos) {
