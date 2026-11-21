@@ -21,15 +21,10 @@
 #  include "librpbase/crypto/IAesCipher.hpp"
 #  include "librpbase/crypto/KeyManager.hpp"
 #endif /* ENABLE_DECRYPTION */
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
-
-// for memmem() if it's not available in <string.h>
-#include "librptext/strfuncs.h"
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -547,7 +542,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 			const char *const end = reinterpret_cast<const char*>(firmBuf.data()) + firmBuf.size();
 			int count = 0;
 			while (verstr < end && count < 32 && verstr[count] != 0 &&
-			       !ISSPACE(verstr[count]) && verstr[count] != ')')
+			       !rp_ascii_isspace(verstr[count]) && verstr[count] != ')')
 			{
 				count++;
 			}

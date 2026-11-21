@@ -22,9 +22,6 @@ using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
 
-// C includes
-#include "ctypex.h"
-
 // C++ STL classes
 using std::array;
 using std::string;
@@ -630,7 +627,7 @@ inline string GameCubeSavePrivate::getGameID(void) const
 	string id6;
 	id6.resize(6, '_');
 	for (size_t i = 0; i < 6; i++) {
-		if (ISPRINT(direntry.id6[i])) {
+		if (rp_ascii_isprint(direntry.id6[i])) {
 			id6[i] = direntry.id6[i];
 		}
 	}

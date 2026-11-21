@@ -38,9 +38,6 @@ using namespace LibRpTexture;
 #include "WiiWIBN.hpp"
 #include "Handheld/NintendoDS.hpp"
 
-// C includes
-#include "ctypex.h"
-
 // C++ STL classes
 using std::array;
 using std::string;
@@ -1519,7 +1516,7 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) cons
 	memcpy(id4, &tmdHeader->title_id.u8[4], 4);
 	id4[4] = 0;
 	for (int i = 4-1; i >= 0; i--) {
-		if (!ISPRINT(id4[i])) {
+		if (!rp_ascii_isprint(id4[i])) {
 			// Non-printable character found.
 			return -ENOENT;
 		}

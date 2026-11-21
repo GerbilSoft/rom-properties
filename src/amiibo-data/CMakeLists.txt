@@ -35,7 +35,7 @@ ELSE(CMAKE_CROSSCOMPILING)
 	#SET_WINDOWS_NO_MANIFEST(amiiboc)
 	SET_WINDOWS_ENTRYPOINT(amiiboc wmain OFF)
 
-	TARGET_LINK_LIBRARIES(amiiboc PRIVATE rpsecure rpbyteswap)
+	TARGET_LINK_LIBRARIES(amiiboc PRIVATE rptext rpsecure rpbyteswap)
 	TARGET_INCLUDE_DIRECTORIES(amiiboc
 		PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>          # amiibo-data
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>          # amiibo-data

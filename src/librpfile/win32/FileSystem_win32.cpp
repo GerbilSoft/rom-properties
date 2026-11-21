@@ -17,7 +17,6 @@
 #include <sys/utime.h>
 
 #include "common.h"
-#include "ctypex.h"
 #include "d_type.h"	// DT_* enumeration
 
 // C includes (C++ namespace)

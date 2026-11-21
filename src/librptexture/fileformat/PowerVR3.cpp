@@ -21,6 +21,7 @@
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
 #include "librpbase/RomFields.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpFile;
 using LibRpBase::RomFields;
 
@@ -33,9 +34,6 @@ using LibRpBase::RomFields;
 #include "decoder/ImageDecoder_S3TC.hpp"
 #include "decoder/ImageDecoder_BC7.hpp"
 #include "decoder/ImageDecoder_ASTC.hpp"
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 #include <vector>
@@ -1295,7 +1293,7 @@ const char *PowerVR3::pixelFormat(void) const
 			break;
 		}
 
-		s_pxf += TOUPPER(pxf);
+		s_pxf += rp_ascii_toupper(pxf);
 		STRING_APPEND_FORMAT_INT(s_chcnt, static_cast<unsigned int>(channel_depth & 0xFF));
 	}
 

@@ -26,9 +26,6 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 
-// C includes (C++ namespace)
-#include "ctypex.h"
-
 // C++ includes
 #include <array>
 #include <forward_list>

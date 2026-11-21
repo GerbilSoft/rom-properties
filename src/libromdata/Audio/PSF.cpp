@@ -19,9 +19,6 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
-// C includes
-#include "ctypex.h"
-
 // C++ STL classes
 #include <unordered_map>
 using std::array;

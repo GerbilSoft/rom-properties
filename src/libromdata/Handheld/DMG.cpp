@@ -26,9 +26,6 @@ using namespace LibRpFile;
 #include "Audio/GBS.hpp"
 #include "Audio/gbs_structs.h"
 
-// C includes
-#include "ctypex.h"
-
 // C++ STL classes
 using std::array;
 using std::shared_ptr;
@@ -1298,10 +1295,10 @@ int DMG::loadFieldData(void)
 		} else {
 			// If the mapper ID is all printable characters, print the mapper as text.
 			// Otherwise, print a hexdump.
-			if (ISPRINT(gbxFooter->mapper[0]) &&
-			    ISPRINT(gbxFooter->mapper[1]) &&
-			    ISPRINT(gbxFooter->mapper[2]) &&
-			    ISPRINT(gbxFooter->mapper[3]))
+			if (rp_ascii_isprint(gbxFooter->mapper[0]) &&
+			    rp_ascii_isprint(gbxFooter->mapper[1]) &&
+			    rp_ascii_isprint(gbxFooter->mapper[2]) &&
+			    rp_ascii_isprint(gbxFooter->mapper[3]))
 			{
 				// All printable.
 				d->fields.addField_string(C_("DMG", "Mapper"),

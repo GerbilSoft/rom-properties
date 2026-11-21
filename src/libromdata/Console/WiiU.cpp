@@ -24,9 +24,6 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
-// C includes
-#include "ctypex.h"
-
 // C++ STL classes
 using std::array;
 using std::string;
@@ -528,7 +525,7 @@ int WiiU::extURLs_int(const char *id4, ImageType imageType, vector<ExtURL> &extU
 	// (GameCube NDDEMO has ID6 "00\0E01".)
 	char id6[7];
 	for (unsigned int i = 0; i < 4; i++) {
-		id6[i] = (ISPRINT(id4[i]))
+		id6[i] = (rp_ascii_isprint(id4[i]))
 			? id4[i]
 			: '_';
 	}

@@ -73,9 +73,6 @@ using namespace LibRpTexture;
 #  define OS_NAMESPACE LibUnixCommon
 #endif
 
-// C includes
-#include "ctypex.h"
-
 // for __GLIBC__
 #ifdef HAVE_FEATURES_H
 #  include <features.h>

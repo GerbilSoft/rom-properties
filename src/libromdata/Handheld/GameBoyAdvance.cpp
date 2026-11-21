@@ -18,9 +18,6 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
-// C includes
-#include "ctypex.h"
-
 // C++ STL classes
 using std::array;
 using std::string;
@@ -121,7 +118,7 @@ inline string GameBoyAdvancePrivate::getGameID(void) const
 	string id6;
 	id6.resize(6, '_');
 	for (size_t i = 0; i < 6; i++) {
-		if (ISPRINT(romHeader.id6[i])) {
+		if (rp_ascii_isprint(romHeader.id6[i])) {
 			id6[i] = romHeader.id6[i];
 		}
 	}
@@ -575,7 +572,7 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int si
 		// The ID6 cannot have non-printable characters.
 		name.resize(6);
 		for (int i = ARRAY_SIZE(romHeader->id6)-1; i >= 0; i--) {
-			if (!ISPRINT(romHeader->id6[i])) {
+			if (!rp_ascii_isprint(romHeader->id6[i])) {
 				// Non-printable character found.
 				return -ENOENT;
 			}

@@ -10,7 +10,9 @@
 
 #include "Config.hpp"
 #include "ConfReader_p.hpp"
-#include "ctypex.h"
+
+// Other rom-properties libraries
+#include "librptext/strfuncs.h"
 
 // C++ STL classes
 #include <unordered_map>
@@ -280,7 +282,7 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			palLanguageForGameTDB = 0;
 			for (unsigned int i = 0; i < 4 && *value != '\0'; i++, value++) {
 				palLanguageForGameTDB <<= 8;
-				palLanguageForGameTDB |= TOLOWER(*value);
+				palLanguageForGameTDB |= rp_ascii_tolower(*value);
 			}
 			return 1;
 		} else if (!strcasecmp(name, "ImgBandwidthUnmetered")) {
@@ -428,12 +430,12 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			}
 
 			// Check for spaces at the start of the string.
-			while (ISSPACE(*pos) && len > 0) {
+			while (rp_ascii_isspace(*pos) && len > 0) {
 				pos++;
 				len--;
 			}
 			// Check for spaces at the end of the string.
-			while (len > 0 && ISSPACE(pos[len-1])) {
+			while (len > 0 && rp_ascii_isspace(pos[len-1])) {
 				len--;
 			}
 

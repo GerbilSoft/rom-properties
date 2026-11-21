@@ -13,7 +13,6 @@
 #include "librptext/strfuncs.h"
 
 // C includes
-#include "ctypex.h"
 #include "tcharx.h"
 
 // C includes (C++ namespace)
@@ -51,7 +50,7 @@ unsigned int parseRegionCodes(const char *region_codes, int size)
 
 	// Check for a hex code.
 	if (rp_ascii_isalnum(region_codes[0]) &&
-	    (region_codes[1] == 0 || ISSPACE(region_codes[1])))
+	    (region_codes[1] == 0 || rp_ascii_isspace(region_codes[1])))
 	{
 		// Single character region code.
 		// Assume it's a hex code, *unless* it's 'E'.
@@ -75,7 +74,7 @@ unsigned int parseRegionCodes(const char *region_codes, int size)
 		}
 	}
 	else if ((region_codes[0] == '8' || region_codes[0] == 'E') &&
-	         (region_codes[2] == 0 || ISSPACE(region_codes[2])))
+	         (region_codes[2] == 0 || rp_ascii_isspace(region_codes[2])))
 	{
 		// Some Pico games have unusual European region codes,
 		// e.g. '8F' or 'EF' for France. Handle it here:
@@ -109,7 +108,7 @@ unsigned int parseRegionCodes(const char *region_codes, int size)
 			for (int i = 0; i < size; i++) {
 				// Allow spaces in the first three characters.
 				// "Psy-O-Blade (Japan)" has "  J".
-				if (i >= 3 && (region_codes[i] == 0 || ISSPACE(region_codes[i])))
+				if (i >= 3 && (region_codes[i] == 0 || rp_ascii_isspace(region_codes[i])))
 					break;
 
 				switch (region_codes[i]) {

@@ -25,9 +25,6 @@ using namespace LibRpText;
 // Other RomData subclasses
 #include "Media/ISO.hpp"
 
-// C includes
-#include "ctypex.h"
-
 // C++ STL classes
 using std::array;
 using std::string;
@@ -261,7 +258,7 @@ unsigned int SegaSaturnPrivate::parseRegionCodes(const char *region_codes, int s
 	// https://segaretro.org/ROM_header#Compatible_area_symbol
 	unsigned int ret = 0;
 	for (int i = 0; i < size; i++) {
-		if (region_codes[i] == 0 || ISSPACE(region_codes[i]))
+		if (region_codes[i] == 0 || rp_ascii_isspace(region_codes[i]))
 			break;
 		switch (region_codes[i]) {
 			case 'J':

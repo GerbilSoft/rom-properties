@@ -26,6 +26,7 @@
 #include "librpbase/disc/DiscReader.hpp"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RelatedFile.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -42,12 +43,6 @@ using namespace LibRpTexture;
 
 // WiiTicket for EncryptionKeys
 #include "WiiTicket.hpp"
-
-// for strnlen() if it's not available in <string.h>
-#include "librptext/strfuncs.h"
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -700,7 +695,7 @@ inline string GameCubePrivate::getGameID(void) const
 	string id6;
 	id6.resize(6, '_');
 	for (size_t i = 0; i < 6; i++) {
-		if (ISPRINT(discHeader.id6[i])) {
+		if (rp_ascii_isprint(discHeader.id6[i])) {
 			id6[i] = discHeader.id6[i];
 		}
 	}
@@ -2178,7 +2173,7 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) co
 	// (NDDEMO has ID6 "00\0E01".)
 	char id6[7];
 	for (unsigned int i = 0; i < 6; i++) {
-		id6[i] = (ISPRINT(discHeader->id6[i]))
+		id6[i] = (rp_ascii_isprint(discHeader->id6[i]))
 			? d->discHeader.id6[i]
 			: '_';
 	}

@@ -19,9 +19,6 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
-// C includes
-#include "ctypex.h"
-
 // C++ STL classes
 using std::array;
 using std::string;
@@ -125,7 +122,7 @@ inline string N64Private::getGameID(void) const
 	string id4;
 	id4.resize(4, '_');
 	for (size_t i = 0; i < 4; i++) {
-		if (ISPRINT(romHeader.id4[i])) {
+		if (rp_ascii_isprint(romHeader.id4[i])) {
 			id4[i] = romHeader.id4[i];
 		}
 	}

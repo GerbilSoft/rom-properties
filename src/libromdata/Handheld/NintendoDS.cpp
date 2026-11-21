@@ -28,9 +28,6 @@ using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
 
-// C includes
-#include "ctypex.h"
-
 // C++ STL classes
 using std::array;
 using std::unique_ptr;
@@ -97,7 +94,7 @@ inline string NintendoDSPrivate::getGameID(void) const
 	string id6;
 	id6.resize(6, '_');
 	for (size_t i = 0; i < 6; i++) {
-		if (ISPRINT(romHeader.id6[i])) {
+		if (rp_ascii_isprint(romHeader.id6[i])) {
 			id6[i] = romHeader.id6[i];
 		}
 	}
@@ -1395,7 +1392,7 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) 
 	// The ID4 cannot have non-printable characters.
 	char id4[5];
 	for (int i = ARRAY_SIZE(romHeader->id4)-1; i >= 0; i--) {
-		if (!ISPRINT(romHeader->id4[i])) {
+		if (!rp_ascii_isprint(romHeader->id4[i])) {
 			// Non-printable character found.
 			return -ENOENT;
 		}
