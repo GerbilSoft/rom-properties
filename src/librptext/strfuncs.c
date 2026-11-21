@@ -8,6 +8,7 @@
 #include "strfuncs.h"
 
 // C includes
+#include <assert.h>
 #include <string.h>
 
 /** Reimplementations of libc string functions that aren't present on this system. **/
@@ -207,3 +208,51 @@ wchar_t rp_ascii_towupper(wchar_t c)
 	return (rp_ascii_islower((uint8_t)c)) ? (c & ~0x20) : c;
 }
 #endif /* _WIN32 */
+
+/**
+ * Locale-invariant strcasecmp().
+ * @param s1
+ * @param s2
+ * @return
+ */
+int rp_ascii_strcasecmp(const char *s1, const char *s2)
+{
+	assert(s1 != NULL);
+	assert(s2 != NULL);
+
+	for (; *s1 && *s2; s1++, s2++) {
+		int c1 = (int)(unsigned char)rp_ascii_tolower(*s1);
+		int c2 = (int)(unsigned char)rp_ascii_tolower(*s2);
+		if (c1 != c2) {
+			return (c1 - c2);
+		}
+	}
+
+	return ((int)(unsigned char)*s1) - ((int)(unsigned char)*s2);
+}
+
+/**
+ * Locale-invariant strncasecmp().
+ * @param s1
+ * @param s2
+ * @param n
+ * @return
+ */
+int rp_ascii_strncasecmp(const char *s1, const char *s2, size_t n)
+{
+	assert(s1 != NULL);
+	assert(s2 != NULL);
+
+	for (; n != 0 && *s1 && *s2; s1++, s2++, n--) {
+		int c1 = (int)(unsigned char)rp_ascii_tolower(*s1);
+		int c2 = (int)(unsigned char)rp_ascii_tolower(*s2);
+		if (c1 != c2) {
+			return (c1 - c2);
+		}
+	}
+
+	if (n != 0) {
+		return ((int)(unsigned char)*s1) - ((int)(unsigned char)*s2);
+	}
+	return 0;
+}

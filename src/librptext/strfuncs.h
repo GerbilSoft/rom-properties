@@ -188,6 +188,25 @@ wchar_t rp_ascii_towupper(wchar_t c) ATTR_CONST;
 #  define rp_ascii_totupper(c) rp_ascii_toupper(c)
 #endif /* _WIN32 && _UNICODE */
 
+/**
+ * Locale-invariant strcasecmp().
+ * @param s1
+ * @param s2
+ * @return
+ */
+RP_LIBROMDATA_PUBLIC
+int rp_ascii_strcasecmp(const char *s1, const char *s2);
+
+/**
+ * Locale-invariant strncasecmp().
+ * @param s1
+ * @param s2
+ * @param n
+ * @return
+ */
+RP_LIBROMDATA_PUBLIC
+int rp_ascii_strncasecmp(const char *s1, const char *s2, size_t n);
+
 #ifdef __cplusplus
 }
 #endif
