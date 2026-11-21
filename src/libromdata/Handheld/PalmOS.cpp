@@ -24,6 +24,7 @@
 // Other rom-properties libraries
 #include "librpfile/FileSystem.hpp"
 #include "librptext/fourCC.hpp"
+#include "librptext/strfuncs.h"
 #include "librptexture/fileformat/PalmOS_Tbmp.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -477,7 +478,7 @@ int PalmOS::isRomSupported_static(const DetectInfo *info)
 	for (const char *const *ext = PalmOSPrivate::exts.data();
 	     *ext != nullptr; ext++)
 	{
-		if (!strcasecmp(info->ext, *ext)) {
+		if (!rp_ascii_strcasecmp(info->ext, *ext)) {
 			// File extension is supported.
 			ok = true;
 			break;

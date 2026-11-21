@@ -215,7 +215,7 @@ int SAPPrivate::durationToMsLoop(const char *str, uint32_t *pMs, bool *pLoop)
 	const char *space = strchr(str, ' ');
 	if (space) {
 		space++;
-		if (!strncasecmp(space, "LOOP", 4) && (space[4] == '\0' || rp_ascii_isspace(space[4]))) {
+		if (!rp_ascii_strncasecmp(space, "LOOP", 4) && (space[4] == '\0' || rp_ascii_isspace(space[4]))) {
 			// Found "LOOP".
 			*pLoop = true;
 		}
@@ -337,7 +337,7 @@ SAPPrivate::sap_tags_t SAPPrivate::parseTags(void)
 		// TODO: Show errors for unsupported tags?
 		// TODO: Print errors?
 		for (const KeywordDef &kwd : kwds) {
-			if (strcasecmp(kwd.keyword, token) != 0) {
+			if (rp_ascii_strcasecmp(kwd.keyword, token) != 0) {
 				// Not a match. Keep going.
 				continue;
 			}

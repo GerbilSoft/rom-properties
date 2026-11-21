@@ -13,6 +13,7 @@
 
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
+#include "librptext/strfuncs.h"
 
 // C includes
 #include "tcharx.h"
@@ -158,7 +159,7 @@ int KeyManagerPrivate::processConfigLine(const char *section, const char *name, 
 	// NOTE: Invalid lines are ignored, so we're always returning 1.
 
 	// Are we in the "Keys" section?
-	if (!section || strcasecmp(section, "Keys") != 0) {
+	if (!section || rp_ascii_strcasecmp(section, "Keys") != 0) {
 		// Not in the "Keys" section.
 		return 1;
 	}

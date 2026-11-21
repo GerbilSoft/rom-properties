@@ -94,12 +94,12 @@ unsigned int parseRegionCodes(const char *region_codes, int size)
 
 		// Check for string region codes.
 		// Some games incorrectly use these.
-		if (!strncasecmp(region_codes, "EUR", 3)) {
+		if (!rp_ascii_strncasecmp(region_codes, "EUR", 3)) {
 			ret = MD_REGION_EUROPE;
-		} else if (!strncasecmp(region_codes, "USA", 3)) {
+		} else if (!rp_ascii_strncasecmp(region_codes, "USA", 3)) {
 			ret = MD_REGION_USA;
-		} else if (!strncasecmp(region_codes, "JPN", 3) ||
-			   !strncasecmp(region_codes, "JAP", 3))
+		} else if (!rp_ascii_strncasecmp(region_codes, "JPN", 3) ||
+			   !rp_ascii_strncasecmp(region_codes, "JAP", 3))
 		{
 			ret = MD_REGION_JAPAN | MD_REGION_ASIA;
 		} else {

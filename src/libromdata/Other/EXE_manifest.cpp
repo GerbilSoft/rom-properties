@@ -13,6 +13,7 @@
 #endif
 
 // Other rom-properties libraries
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 
@@ -316,15 +317,15 @@ int EXEPrivate::addFields_PE_Manifest(void)
 				}
 
 				// Check for supported OSes.
-				if (!strcasecmp(Id, "{e2011457-1546-43c5-a5fe-008deee3d3f0}")) {
+				if (!rp_ascii_strcasecmp(Id, "{e2011457-1546-43c5-a5fe-008deee3d3f0}")) {
 					compat |= static_cast<uint32_t>(OS_Compatibility::WinVista);
-				} else if (!strcasecmp(Id, "{35138b9a-5d96-4fbd-8e2d-a2440225f93a}")) {
+				} else if (!rp_ascii_strcasecmp(Id, "{35138b9a-5d96-4fbd-8e2d-a2440225f93a}")) {
 					compat |= static_cast<uint32_t>(OS_Compatibility::Win7);
-				} else if (!strcasecmp(Id, "{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}")) {
+				} else if (!rp_ascii_strcasecmp(Id, "{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}")) {
 					compat |= static_cast<uint32_t>(OS_Compatibility::Win8);
-				} else if (!strcasecmp(Id, "{1f676c76-80e1-4239-95bb-83d0f6d0da78}")) {
+				} else if (!rp_ascii_strcasecmp(Id, "{1f676c76-80e1-4239-95bb-83d0f6d0da78}")) {
 					compat |= static_cast<uint32_t>(OS_Compatibility::Win81);
-				} else if (!strcasecmp(Id, "{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}")) {
+				} else if (!rp_ascii_strcasecmp(Id, "{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}")) {
 					// NOTE: Also used for Windows 11.
 					// Reference: https://stackoverflow.com/questions/68240304/whats-the-supportedos-guid-for-windows-11
 					compat |= static_cast<uint32_t>(OS_Compatibility::Win10);
@@ -370,7 +371,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		FIRST_CHILD_ELEMENT_NO_NS(child_elem, parent_elem, #setting_name); \
 		if (child_elem) { \
 			xml_text text = child_elem.text(); \
-			if (text && !strcasecmp(text.get(), "true")) { \
+			if (text && !rp_ascii_strcasecmp(text.get(), "true")) { \
 				settings |= static_cast<uint32_t>(WindowsSettings::setting_name); \
 			} \
 		} \
@@ -379,7 +380,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		FIRST_CHILD_ELEMENT_WSx(child_elem, parent_elem, #setting_name); \
 		if (child_elem) { \
 			xml_text text = child_elem.text(); \
-			if (text && !strcasecmp(text.get(), "true")) { \
+			if (text && !rp_ascii_strcasecmp(text.get(), "true")) { \
 				settings |= static_cast<uint32_t>(WindowsSettings::setting_name); \
 			} \
 		} \
@@ -481,7 +482,7 @@ bool EXEPrivate::doesExeRequireAdministrator(void) const
 	if (!attr) {
 		return false;
 	}
-	return (!strcasecmp(attr.value(), "requireAdministrator"));
+	return (!rp_ascii_strcasecmp(attr.value(), "requireAdministrator"));
 }
 
 } // namespace LibRomData

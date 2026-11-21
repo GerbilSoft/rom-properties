@@ -12,6 +12,7 @@
 
 // Other rom-properties libraries
 #include "librpbase/RomFields.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 
@@ -163,7 +164,7 @@ int Wim::isRomSupported_static(const DetectInfo* info)
 	} else if (!memcmp(wimData->magic, MSWIMOLD_MAGIC, 4)) {
 		// NOTE: This magic number is too generic.
 		// Verify the file extension.
-		if (info->ext && !strcasecmp(info->ext, ".wim")) {
+		if (info->ext && !rp_ascii_strcasecmp(info->ext, ".wim")) {
 			ret = Wim107_108;
 		}
 	}

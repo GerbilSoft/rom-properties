@@ -16,6 +16,9 @@
 // libunixcommon
 #include "libunixcommon/userdirs.hpp"
 
+// Other rom-properties libraries
+#include "librptext/strfuncs.h"
+
 // INI parser
 #include "ini.h"
 
@@ -51,13 +54,13 @@ namespace RpDownload {
  */
 static int processConfigLine(void *user, const char *section, const char *name, const char *value)
 {
-	if (!strcasecmp(section, "Downloads") &&
-	    !strcasecmp(name, "StoreFileOriginInfo"))
+	if (!rp_ascii_strcasecmp(section, "Downloads") &&
+	    !rp_ascii_strcasecmp(name, "StoreFileOriginInfo"))
 	{
 		// Found the key.
 		// Parse the value.
 		bool *const pbUser = reinterpret_cast<bool*>(user);
-		if (!strcasecmp(value, _T("false")) || !strcmp(value, "0")) {
+		if (!rp_ascii_strcasecmp(value, _T("false")) || !strcmp(value, "0")) {
 			// Disabled
 			*pbUser = false;
 			return 0;

@@ -20,6 +20,7 @@
 #include "libi18n/i18n.hpp"
 #include "librpbase/img/RpPngWriter.hpp"
 #include "librpfile/FileSystem.hpp"
+#include "librptext/strfuncs.h"
 #include "librptext/wchar.hpp"
 #include "librptexture/FileFormatFactory.hpp"
 #include "libromdata/RomDataFactory.hpp"
@@ -417,7 +418,7 @@ IFACEMETHODIMP RP_ContextMenu::Initialize(
 
 		bool is_texture = false;
 		for (const char *texture_ext : texture_exts) {
-			if (!strcasecmp(texture_ext, s_ext.c_str())) {
+			if (!rp_ascii_strcasecmp(texture_ext, s_ext.c_str())) {
 				is_texture = true;
 				break;
 			}

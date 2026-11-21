@@ -225,7 +225,7 @@ int Intellivision::isRomSupported_static(const DetectInfo *info)
 	for (const char *const *ext = IntellivisionPrivate::exts.data();
 	     *ext != nullptr; ext++)
 	{
-		if (!strcasecmp(info->ext, *ext)) {
+		if (!rp_ascii_strcasecmp(info->ext, *ext)) {
 			// File extension is supported.
 			return 0;
 		}

@@ -515,7 +515,7 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 		switch (p.flags_len & 0x3F) {
 			case 11:
 				// Check for default.xex.
-				if (!strncasecmp("default.xex", p.filename, 12)) {
+				if (!rp_ascii_strncasecmp("default.xex", p.filename, 12)) {
 					// Found default.xex.
 					dirEntry = &p;
 					break;
@@ -524,7 +524,7 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 
 			case 12:
 				// Check for default.xexp.
-				if (!strncasecmp("default.xexp", p.filename, 13)) {
+				if (!rp_ascii_strncasecmp("default.xexp", p.filename, 13)) {
 					// Found default.xexp.
 					dirEntry = &p;
 					break;

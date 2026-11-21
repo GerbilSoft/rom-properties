@@ -1421,7 +1421,7 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 	// NOTE: The header data is usually smaller than 0x2020,
 	// so only check the important contents.
 	if (info->ext && info->header.size > offsetof(N3DS_CIA_Header_t, content_index) &&
-	    (!strcasecmp(info->ext, ".cia") || !strcasecmp(info->ext, ".zcia")))
+	    (!rp_ascii_strcasecmp(info->ext, ".cia") || !rp_ascii_strcasecmp(info->ext, ".zcia")))
 	{
 		// Verify the header parameters.
 		const N3DS_CIA_Header_t *const cia_header =

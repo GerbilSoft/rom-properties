@@ -15,11 +15,10 @@
 #include "RpFile.hpp"
 #include "RpFile_p.hpp"
 
-// librpfile
+// Other rom-properties libraries
 #include "FileSystem.hpp"
-
-// librpbyteswap
 #include "librpbyteswap/byteswap_rp.h"
+#include "librptext/strfuncs.h"
 
 // C includes
 #include <fcntl.h>	// fcntl(), F_GETFD, F_SETFD
@@ -238,7 +237,7 @@ RpFile::RpFile(std::string_view filename, FileMode mode)
 #ifndef NO_PATTERNS_FOR_THIS_OS
 		bool isMatch = false;
 		for (const auto &p : fileNamePatterns) {
-			if (!strncasecmp(d->filename.c_str(), p.pattern, p.length)) {
+			if (!rp_ascii_strncasecmp(d->filename.c_str(), p.pattern, p.length)) {
 				// Found a match!
 				isMatch = true;
 				break;

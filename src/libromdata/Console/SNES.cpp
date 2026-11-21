@@ -1215,7 +1215,7 @@ int SNES::isRomSupported_static(const DetectInfo *info)
 		for (const char *const *ext = SNESPrivate::exts.data();
 		     *ext != nullptr; ext++)
 		{
-			if (!strcasecmp(info->ext, *ext)) {
+			if (!rp_ascii_strcasecmp(info->ext, *ext)) {
 				// File extension is supported.
 				if ((*ext)[1] == 'b') {
 					// BS-X extension.
@@ -1228,7 +1228,7 @@ int SNES::isRomSupported_static(const DetectInfo *info)
 		}
 
 		// Extra check for ".ic1", used by MAME for Nintendo Super System.
-		if (!strcasecmp(info->ext, ".ic1")) {
+		if (!rp_ascii_strcasecmp(info->ext, ".ic1")) {
 			// File extension is supported.
 			// TODO: Special handling for NSS?
 			return static_cast<int>(SNESPrivate::RomType::SNES);

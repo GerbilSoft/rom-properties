@@ -18,6 +18,7 @@
 #include "librpbase/Achievements.hpp"
 #include "librpbase/disc/PartitionFile.hpp"
 #include "librpbase/disc/SparseDiscReader.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -720,7 +721,7 @@ int ISOPrivate::parse_autorun_inf(void *user, const char *section, const char *n
 	}
 	s_name += name;
 #endif
-	if (strcasecmp(section, "autorun") != 0) {
+	if (rp_ascii_strcasecmp(section, "autorun") != 0) {
 		// Not "[autorun]".
 		return 0;
 	}
@@ -863,8 +864,8 @@ rp_image_const_ptr ISOPrivate::loadIcon(void)
 
 	const size_t icon_filename_size = icon_filename.size();
 	if (icon_filename_size > 4) {
-		if (!strncasecmp(&icon_filename[icon_filename_size-4], ".exe", 4) ||
-		    !strncasecmp(&icon_filename[icon_filename_size-4], ".dll", 4))
+		if (!rp_ascii_strncasecmp(&icon_filename[icon_filename_size-4], ".exe", 4) ||
+		    !rp_ascii_strncasecmp(&icon_filename[icon_filename_size-4], ".dll", 4))
 		{
 			// EXE or DLL.
 			unique_ptr<EXE> exe(new EXE(f_file));
@@ -1057,7 +1058,7 @@ int ISO::isRomSupported_static(const DetectInfo *info)
 	for (const char *const *ext = ISOPrivate::exts.data();
 	     *ext != nullptr; ext++)
 	{
-		if (!strcasecmp(info->ext, *ext)) {
+		if (!rp_ascii_strcasecmp(info->ext, *ext)) {
 			// Found a match.
 			return 0;
 		}

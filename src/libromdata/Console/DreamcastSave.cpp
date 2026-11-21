@@ -14,6 +14,7 @@
 // Other rom-properties libraries
 #include "aligned_malloc.h"
 #include "time_r.h"
+#include "librptext/strfuncs.h"
 #include "librptexture/decoder/ImageDecoder_Linear.hpp"
 #include "librptexture/decoder/ImageDecoder_Linear_Gray.hpp"
 using namespace LibRpBase;
@@ -1087,7 +1088,7 @@ int DreamcastSave::isRomSupported_static(const DetectInfo *info)
 	if (info->szFile == 108) {
 		// File size is correct for VMI files.
 		// Check the file extension.
-		if (!strcasecmp(info->ext, ".vmi")) {
+		if (!rp_ascii_strcasecmp(info->ext, ".vmi")) {
 			// It's a match!
 			return static_cast<int>(DreamcastSavePrivate::SaveType::VMI);
 		}
@@ -1098,7 +1099,7 @@ int DreamcastSave::isRomSupported_static(const DetectInfo *info)
 	{
 		// File size is correct for VMS files.
 		// Check the file extension.
-		if (!strcasecmp(info->ext, ".vms")) {
+		if (!rp_ascii_strcasecmp(info->ext, ".vms")) {
 			// It's a match!
 			return static_cast<int>(DreamcastSavePrivate::SaveType::VMS);
 		}
@@ -1116,7 +1117,7 @@ int DreamcastSave::isRomSupported_static(const DetectInfo *info)
 			if (*pData == 0x00 || *pData == 0x33 || *pData == 0xCC) {
 				// First byte is correct.
 				// Check the file extension.
-				if (!strcasecmp(info->ext, ".dci")) {
+				if (!rp_ascii_strcasecmp(info->ext, ".dci")) {
 					// It's a match!
 					return static_cast<int>(DreamcastSavePrivate::SaveType::DCI);
 				}

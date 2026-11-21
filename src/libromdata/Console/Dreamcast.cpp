@@ -527,14 +527,14 @@ int Dreamcast::isRomSupported_static(const DetectInfo *info)
 	}
 
 	if (info->ext && info->ext[0] != 0) {
-		if (!strcasecmp(info->ext, ".gdi")) {
+		if (!rp_ascii_strcasecmp(info->ext, ".gdi")) {
 			// This is a GD-ROM cuesheet.
 			// Check the first line.
 			if (GdiReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
 				// This is a supported GD-ROM cuesheet.
 				return static_cast<int>(DreamcastPrivate::DiscType::GDI);
 			}
-		} else if (!strcasecmp(info->ext, ".cdi")) {
+		} else if (!rp_ascii_strcasecmp(info->ext, ".cdi")) {
 			// This is a DiscJuggler disc image.
 			return static_cast<int>(DreamcastPrivate::DiscType::CDI);
 		}

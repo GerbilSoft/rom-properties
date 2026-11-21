@@ -19,6 +19,7 @@
 #include "librpfile/RelatedFile.hpp"
 #include "librpfile/RpFile.hpp"
 #include "librpfile/compression/TransparentDecompressionFactory.hpp"
+#include "librptext/strfuncs.h"
 #include "librptexture/FileFormatFactory.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -722,7 +723,7 @@ static IDiscReaderPtr openIDiscReader(const IRpFilePtr &file, uint32_t magic0)
 		if (ext) do {
 			// TODO: Make .wbf1 support optional. Disabled for now.
 			static constexpr bool enable_wbf1 = false;
-			if (unlikely(enable_wbf1 && !strcasecmp(ext, ".wbf1"))) {
+			if (unlikely(enable_wbf1 && !rp_ascii_strcasecmp(ext, ".wbf1"))) {
 				// Second part of split WBFS.
 				IRpFilePtr wbfs0 = FileSystem::openRelatedFile(filename, nullptr, ".wbfs");
 				if (unlikely(!wbfs0) || !wbfs0->isOpen()) {
@@ -974,8 +975,8 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 
 	// Special handling for Dreamcast .VMI+.VMS pairs.
 	if (info.ext != nullptr &&
-	    (!strcasecmp(info.ext, ".vms") ||
-	     !strcasecmp(info.ext, ".vmi")))
+	    (!rp_ascii_strcasecmp(info.ext, ".vms") ||
+	     !rp_ascii_strcasecmp(info.ext, ".vmi")))
 	{
 		// Dreamcast .VMI+.VMS pair.
 		// Attempt to open the other file in the pair.
@@ -1008,7 +1009,7 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 
 			// Check for a matching file extension
 			for (const char *const *ext = rdi->exts; *ext != nullptr; ++ext) {
-				if (!strcasecmp(info.ext, *ext)) {
+				if (!rp_ascii_strcasecmp(info.ext, *ext)) {
 					// This file extension is supported, try to open it.
 
 					// NOTE: Assigning to `romData` for named-return-value optimization.
@@ -1119,7 +1120,7 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 				// Check for a matching extension.
 				bool found = false;
 				for (const char *ext : exts) {
-					if (!strcasecmp(info.ext, ext)) {
+					if (!rp_ascii_strcasecmp(info.ext, ext)) {
 						// Found a match!
 						found = true;
 					}
@@ -1209,7 +1210,7 @@ RomDataPtr create(const IRpFilePtr &file, unsigned int attrs)
 		// Check for a matching extension.
 		bool found = false;
 		for (const char *ext : exts) {
-			if (!strcasecmp(info.ext, ext)) {
+			if (!rp_ascii_strcasecmp(info.ext, ext)) {
 				// Found a match!
 				found = true;
 			}

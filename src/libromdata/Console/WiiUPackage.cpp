@@ -25,6 +25,7 @@
 #include "librpbase/SystemRegion.hpp"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
+#include "librptext/strfuncs.h"
 #include "librptext/wchar.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -864,7 +865,7 @@ int WiiUPackage::isRomSupported_static(const DetectInfo *info)
 
 	// Check for a .wua file.
 	// File extension must be .wua, and it must start with the zstd magic number.
-	if (strcasecmp(info->ext, ".wua") != 0) {
+	if (rp_ascii_strcasecmp(info->ext, ".wua") != 0) {
 		// Not a .wua file.
 		return static_cast<int>(WiiUPackagePrivate::PackageType::Unknown);
 	}

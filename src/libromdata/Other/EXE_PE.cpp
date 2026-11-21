@@ -16,6 +16,7 @@
 #include "Console/Xbox360_XDBF.hpp"
 
 // Other rom-properties libraries
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -545,7 +546,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		const char *const dll_name = s_dll_name.c_str();
 
 		// Check for MSVC 2015-2026. (vcruntime140.dll)
-		if (!strcasecmp(dll_name, "vcruntime140.dll")) {
+		if (!rp_ascii_strcasecmp(dll_name, "vcruntime140.dll")) {
 			// TODO: If host OS is Windows XP or earlier, limit it to 2017?
 			fmt::format_to(std::back_inserter(refDesc),
 				FRUN(C_("EXE|Runtime", "Microsoft Visual C++ {:s} Runtime")), "2015-2026");
@@ -568,7 +569,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 					break;
 			}
 			break;
-		} else if (!strcasecmp(dll_name, "vcruntime140d.dll")) {
+		} else if (!rp_ascii_strcasecmp(dll_name, "vcruntime140d.dll")) {
 			fmt::format_to(std::back_inserter(refDesc),
 				FRUN(C_("EXE|Runtime", "Microsoft Visual C++ {:s} Debug Runtime")), "2015-2026");
 			break;
@@ -577,12 +578,12 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		// NOTE: MSVCP*.dll is usually listed first in executables
 		// that use C++, so check for both P and R.
 
-		if (!strncasecmp(dll_name, "msvcp", 5) || !strncasecmp(dll_name, "msvcr", 5)) {
+		if (!rp_ascii_strncasecmp(dll_name, "msvcp", 5) || !rp_ascii_strncasecmp(dll_name, "msvcr", 5)) {
 			unsigned int dll_name_version = 0;
 			char after_char = '\0';
 			int n = sscanf(dll_name+5, "%u%c", &dll_name_version, &after_char);
 			// Check for MSVCR debug build patterns.
-			if (n == 2 && !strcasecmp(strchr(dll_name+5, after_char), "d.dll")) {
+			if (n == 2 && !rp_ascii_strcasecmp(strchr(dll_name+5, after_char), "d.dll")) {
 				// Found an MSVC debug DLL.
 				for (const auto &p : msvc_dll_tbl) {
 					if (p.dll_name_version == dll_name_version) {
@@ -599,7 +600,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 				break;
 
 			// Check for MSVCR release build patterns.
-			if (n == 2 && !strcasecmp(strchr(dll_name+5, after_char), ".dll")) {
+			if (n == 2 && !rp_ascii_strcasecmp(strchr(dll_name+5, after_char), ".dll")) {
 				// Found an MSVC release DLL.
 				for (const auto &p : msvc_dll_tbl) {
 					if (p.dll_name_version == dll_name_version) {
@@ -626,19 +627,19 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 
 		// Check for MSVCRT.DLL.
 		// FIXME: This is used by both 5.0 and 6.0.
-		if (!strcasecmp(dll_name, "msvcrt.dll")) {
+		if (!rp_ascii_strcasecmp(dll_name, "msvcrt.dll")) {
 			// NOTE: Conflict between MSVC 6.0 and the "system" MSVCRT.
 			// TODO: Other heuristics to figure this out. (Check for msvcp60.dll?)
 			refDesc = C_("EXE|Runtime", "Microsoft System C Runtime (MSVCRT)");
 			break;
-		} else if (!strcasecmp(dll_name, "msvcrtd.dll")) {
+		} else if (!rp_ascii_strcasecmp(dll_name, "msvcrtd.dll")) {
 			fmt::format_to(std::back_inserter(refDesc),
 				FRUN(C_("EXE|Runtime", "Microsoft Visual C++ {:s} Debug Runtime")), "6.0");
 			break;
 		}
 
 		// Check for CRTDLL.DLL.
-		if (!strcasecmp(dll_name, "crtdll.dll")) {
+		if (!rp_ascii_strcasecmp(dll_name, "crtdll.dll")) {
 			refDesc = C_("EXE|Runtime", "Microsoft Windows NT System C Runtime (CRTDLL)");
 			break;
 		}
@@ -647,7 +648,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		// NOTE: There's only three 32-bit versions of Visual Basic,
 		// and .NET versions don't count.
 		for (const auto &p : msvb_dll_tbl) {
-			if (!strcasecmp(dll_name, p.dll_name)) {
+			if (!rp_ascii_strcasecmp(dll_name, p.dll_name)) {
 				// Found a matching version.
 				fmt::format_to(std::back_inserter(refDesc),
 					FRUN(C_("EXE|Runtime", "Microsoft Visual Basic {:d}.{:d} Runtime")),
@@ -1305,11 +1306,11 @@ int EXEPrivate::addFields_PE_Import(void)
 			// Vector index 0: Name
 			// Vector index 1: Hint
 			// Vector index 2: Module
-			int res = strcasecmp(lhs[2].c_str(), rhs[2].c_str());
+			int res = rp_ascii_strcasecmp(lhs[2].c_str(), rhs[2].c_str());
 			if (res < 0) return true;
 			if (res > 0) return false;
 
-			res = strcasecmp(lhs[0].c_str(), rhs[0].c_str());
+			res = rp_ascii_strcasecmp(lhs[0].c_str(), rhs[0].c_str());
 			if (res < 0) return true;
 			if (res > 0) return false;
 
@@ -1320,7 +1321,7 @@ int EXEPrivate::addFields_PE_Import(void)
 			hint_rhs = strtoul(lhs[1].c_str(), &endptr_rhs, 10);
 			if (!endptr_lhs || *endptr_lhs == '\0' || !endptr_rhs || *endptr_rhs == '\0') {
 				// Invalid numeric value. Do a string comparison instead.
-				return (strcasecmp(lhs[1].c_str(), rhs[1].c_str()) < 0);
+				return (rp_ascii_strcasecmp(lhs[1].c_str(), rhs[1].c_str()) < 0);
 			}
 
 			// Numeric conversion succeeded.

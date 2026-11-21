@@ -366,7 +366,7 @@ int ColecoVision::isRomSupported_static(const DetectInfo *info)
 	for (const char *const *ext = ColecoVisionPrivate::exts.data();
 	     *ext != nullptr; ext++)
 	{
-		if (!strcasecmp(info->ext, *ext)) {
+		if (!rp_ascii_strcasecmp(info->ext, *ext)) {
 			// File extension is supported.
 			// Also check for a valid magic number.
 			const ColecoVision_ROMHeader *const romHeader =

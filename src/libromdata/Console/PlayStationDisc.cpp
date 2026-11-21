@@ -422,7 +422,7 @@ PlayStationDisc::PlayStationDisc(const IRpFilePtr &file)
 	const auto &bf_str = iter->second;
 	if (!bf_str.empty()) {
 		size_t pos = 0;
-		if (!strncasecmp(bf_str.c_str(), "cdrom", 5)) {
+		if (!rp_ascii_strncasecmp(bf_str.c_str(), "cdrom", 5)) {
 			pos = 5;
 			if (bf_str[pos] == '0') {
 				// "cdrom0"
