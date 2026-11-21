@@ -88,6 +88,8 @@
 #   define LONG_SEEK fseeko64
 #elif defined(_WIN32) && !defined(__DJGPP__)
 #   include <windows.h>
+#   include <io.h>
+#   include <stdio.h>
     static int LONG_SEEK(FILE* file, __int64 offset, int origin) {
         LARGE_INTEGER off;
         DWORD method;
