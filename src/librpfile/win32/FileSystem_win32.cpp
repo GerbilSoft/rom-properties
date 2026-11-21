@@ -742,6 +742,16 @@ static inline UINT GetDriveType_wrapper(LPCTSTR lpRootPathName)
 	return GetDriveTypeW(lpRootPathName);
 }
 
+static inline bool rp_ascii_isalpha_wrapper(char c)
+{
+	return rp_ascii_isalpha(c);
+}
+
+static inline bool rp_ascii_isalpha_wrapper(wchar_t c)
+{
+	return (c < 256 && rp_ascii_isalpha(static_cast<char>(static_cast<uint8_t>(c))));
+}
+
 /**
  * Is a file located on a "bad" file system?
  *
@@ -772,7 +782,7 @@ static inline bool T_isOnBadFS(const CharType *filename, bool allowNetFS)
 
 	// If it's a drive letter, check if it's DRIVE_REMOTE.
 	// TODO: Also check mount points? (not very common on Windows...)
-	if (rp_ascii_isalpha(filename[0]) && filename[1] == ':') {
+	if (rp_ascii_isalpha_wrapper(filename[0]) && filename[1] == ':') {
 		const CharType s_root[] = {filename[0], ':', '\\', '\0'};
 		if (GetDriveType_wrapper(s_root) == DRIVE_REMOTE) {
 			// It's a network share.
