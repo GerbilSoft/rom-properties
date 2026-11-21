@@ -132,6 +132,7 @@ extern const uint16_t rp_ascii_table[256];
  * @param c ASCII character
  * @return Lowercase ASCII character
  */
+RP_LIBROMDATA_PUBLIC
 char rp_ascii_tolower(char c) ATTR_CONST;
 
 /**
@@ -139,6 +140,7 @@ char rp_ascii_tolower(char c) ATTR_CONST;
  * @param c ASCII character
  * @return Uppercase ASCII character
  */
+RP_LIBROMDATA_PUBLIC
 char rp_ascii_toupper(char c) ATTR_CONST;
 
 #ifdef __cplusplus
