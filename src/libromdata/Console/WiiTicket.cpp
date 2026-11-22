@@ -232,12 +232,6 @@ int WiiTicketPrivate::getEncKey(void)
 		return -EINVAL;
 	}
 
-	uint8_t common_key_index = ticket.v0.common_key_index;
-	if (common_key_index > 2) {
-		// Out of range. Assume Wii common key.
-		common_key_index = 0;
-	}
-
 	// Check CA and XS.
 	struct ca_xs_tbl_t {
 		uint32_t ca;
@@ -305,6 +299,45 @@ int WiiTicketPrivate::getEncKey(void)
 	if (static_cast<int>(encKey) < 0) {
 		// Unsupported CA/XS combination.
 		return -EINVAL;
+	}
+
+	// Check the common key index.
+	switch (ticket.v0.common_key_index) {
+		default:
+		case 0:
+			// Key index 0: Regular common key.
+			// No changes needed.
+			break;
+
+		case 1:
+			// Secure2 aka Korean key
+			switch (encKey) {
+				case WiiTicket::EncryptionKeys::Key_RVL_Common:
+					encKey = WiiTicket::EncryptionKeys::Key_RVL_Korean;
+					break;
+				case WiiTicket::EncryptionKeys::Key_RVT_Debug:
+					encKey = WiiTicket::EncryptionKeys::Key_RVT_Korean;
+					break;
+				default:
+					// TODO
+					break;
+			}
+			break;
+
+		case 2:
+			// vWii key
+			switch (encKey) {
+				case WiiTicket::EncryptionKeys::Key_RVL_Common:
+					encKey = WiiTicket::EncryptionKeys::Key_WUP_Starbuck_vWii_Common;
+					break;
+				case WiiTicket::EncryptionKeys::Key_RVT_Debug:
+					encKey = WiiTicket::EncryptionKeys::Key_CAT_Starbuck_vWii_Common;
+					break;
+				default:
+					// TODO
+					break;
+			}
+			break;
 	}
 
 	this->encKey = encKey;

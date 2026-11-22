@@ -22,6 +22,8 @@
     * Information provided by @CheatFreak47.
   * NSF: Added suport for NSF2 extensions and NSFe format.
     * Includes NSFe metadata in NSF2 files.
+  * WiiTicket: Check the common key index when determining the encryption key.
+    * Needed in order to identify Korean and vWii keys.
 
 * New features:
   * Transparent gzip decompression has been moved out of RpFile and into a separate
