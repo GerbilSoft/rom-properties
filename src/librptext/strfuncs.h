@@ -141,16 +141,20 @@ extern const uint16_t rp_ascii_table[256];
  * @param c ASCII character
  * @return Lowercase ASCII character
  */
-RP_LIBROMDATA_PUBLIC
-char rp_ascii_tolower(char c) ATTR_CONST;
+static inline ATTR_CONST char rp_ascii_tolower(char c)
+{
+	return (rp_ascii_isupper(c)) ? (c | 0x20) : c;
+}
 
 /**
  * Convert an ASCII character to uppercase.
  * @param c ASCII character
  * @return Uppercase ASCII character
  */
-RP_LIBROMDATA_PUBLIC
-char rp_ascii_toupper(char c) ATTR_CONST;
+static inline ATTR_CONST char rp_ascii_toupper(char c)
+{
+	return (rp_ascii_islower(c)) ? (c & ~0x20) : c;
+}
 
 #ifdef _WIN32
 /**
@@ -158,16 +162,26 @@ char rp_ascii_toupper(char c) ATTR_CONST;
  * @param c ASCII character
  * @return Lowercase ASCII character
  */
-RP_LIBROMDATA_PUBLIC
-wchar_t rp_ascii_towlower(wchar_t c) ATTR_CONST;
+static inline ATTR_CONST wchar_t rp_ascii_towlower(wchar_t c)
+{
+	if (c >= 256) {
+		return c;
+	}
+	return (rp_ascii_isupper((uint8_t)c)) ? (c | 0x20) : c;
+}
 
 /**
  * Convert an ASCII character to uppercase.
  * @param c ASCII character
  * @return Uppercase ASCII character
  */
-RP_LIBROMDATA_PUBLIC
-wchar_t rp_ascii_towupper(wchar_t c) ATTR_CONST;
+static inline wchar_t ATTR_CONST rp_ascii_towupper(wchar_t c)
+{
+	if (c >= 256) {
+		return c;
+	}
+	return (rp_ascii_islower((uint8_t)c)) ? (c & ~0x20) : c;
+}
 #endif /* _WIN32 */
 
 #if defined(_WIN32) && defined(_UNICODE)
