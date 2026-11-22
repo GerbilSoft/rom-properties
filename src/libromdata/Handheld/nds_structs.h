@@ -105,7 +105,13 @@ typedef struct _NDS_RomHeader {
 
 	uint32_t total_used_rom_size;		// [0x080] Total used ROM size, excluding DSi area
 	uint32_t rom_header_size;		// [0x084] Usually 0x4000
-	uint8_t reserved3[0x38];		// [0x088]
+	uint32_t dsi_arm9_param_tbl_offset;	// [0x088] DSi: ARM9 parameters table offset [NDS: unknown]
+	uint32_t dsi_arm7_param_tbl_offset;	// [0x08C] DSi: ARM7 parameters table offset [NDS: reserved]
+	uint16_t dsi_ntr_rom_region_end;	// [0x090] DSi: NTR ROM region end, div by 0x80000 [NDS: reserved] [same as 0x090?]
+	uint16_t dsi_twl_rom_region_start;	// [0x092] DSi: TWL ROM region start, div by 0x80000 [NDS: reserved] [same as 0x092?]
+	uint16_t dsi_ntr_rom_region_end_2;	// [0x094] copy of dsi_ntr_rom_region_end
+	uint16_t dsi_twl_rom_region_start_2;	// [0x096] copy of dsi_twl_rom_region_start
+	uint8_t reserved3[0x28];		// [0x098]
 	uint8_t nintendo_logo[0x9C];		// [0x0C0] GBA-style Nintendo logo
 	uint16_t nintendo_logo_checksum;	// [0x15C] CRC16 of nintendo_logo[] (always 0xCF56)
 	uint16_t header_checksum;		// [0x15E] CRC16 of 0x0000...0x015D
