@@ -197,15 +197,15 @@ FOR %%I IN (Community Professional Enterprise) DO (
 :: NOTE: MSVC 2022 switched to 64-bit Program Files
 :: NOTE: MSVC 2026 still has v141 but *not* v141_xp, so use MSVC 2022 for v141_xp.
 FOR %%I IN (Community Professional Enterprise) DO (
-	IF EXIST "%PrgFiles64%\Microsoft Visual Studio\18\%%I\VC\Tools\MSVC\14.51.36231\bin\HostX86\x86\cl.exe" (
-		SET "MSVC32_DIR=%PrgFiles64%\Microsoft Visual Studio\18\%%I\VC\Tools\MSVC\14.51.36231"
+	IF EXIST "%PrgFiles64%\Microsoft Visual Studio\18\%%I\VC\Tools\MSVC\14.52.37025\bin\HostX86\x86\cl.exe" (
+		SET "MSVC32_DIR=%PrgFiles64%\Microsoft Visual Studio\18\%%I\VC\Tools\MSVC\14.52.37025"
 		SET MSVC32_VERSION=14.51
 		SET MSVC32_YEAR=2026
 		SET CMAKE32_TOOLSET=v145
 		SET CMAKE32_GENERATOR=18 2026
 		SET CMAKE32_ARCH=-A Win32
 
-		SET "MSVC64_DIR=%PrgFiles64%\Microsoft Visual Studio\18\%%I\VC\Tools\MSVC\14.51.36231"
+		SET "MSVC64_DIR=%PrgFiles64%\Microsoft Visual Studio\18\%%I\VC\Tools\MSVC\14.52.37025"
 		SET MSVC64_VERSION=14.51
 		SET MSVC64_YEAR=2026
 		SET CMAKE64_TOOLSET=v145
