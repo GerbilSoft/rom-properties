@@ -266,14 +266,17 @@ int XAttrReaderPrivate::loadDosAttrs(void)
 	}
 
 	// Try system xattrs:
-	// ntfs3 has: system.dos_attrib, system.ntfs_attrib
-	// ntfs-3g has: system.ntfs_attrib, system.ntfs_attrib_be
-	// Attribute is stored as a 32-bit DWORD.
+	// - ntfs3 has: system.dos_attrib, system.ntfs_attrib; stored as 32-bit DWORD
+	// - ntfs-3g has: system.ntfs_attrib, system.ntfs_attrib_be; stored as 32-bit DWORD
+	// - wine/samba has: user.DOSATTRIB - 256-bit (32-byte/64-char) hex value with lots
+	//   of attributes; DOS attributes are the low 32 bits.
 	union {
-		uint8_t u8[16];
+		uint8_t u8[128];
+		char c[128];
 		uint32_t u32;
 	} buf;
 
+	// Check for an ntfs3/ntfs3g attribute.
 	struct DosAttrName {
 		const char name[23];
 		bool be32;
@@ -290,6 +293,37 @@ int XAttrReaderPrivate::loadDosAttrs(void)
 			validDosAttributes = VALID_DOS_ATTRIBUTES_NTFS;
 			hasAttributes |= static_cast<uint8_t>(AttrBit::DosAttributes);
 			return 0;
+		}
+	}
+
+	// Check for the wine/samba attribute.
+	ssize_t sz = fgetxattr(fd, "user.DOSATTRIB", buf.u8, sizeof(buf.u8));
+	if (sz >= 3 && !memcmp(buf.c, "0x", 2)) {
+		// Found the wine/samba attribute.
+		// Check up to the last 8 hex digits.
+		if (sz >= static_cast<ssize_t>(sizeof(buf.c))) {
+			sz = sizeof(buf.c) - 1;
+		}
+		buf.c[sz] = '\0';
+
+		int pos;
+		if (sz > 2+8) {
+			// More than 10 characters. ("0x" + 8 digits)
+			// Right-align the starting pointer.
+			pos = sz - 8;
+		} else {
+			// Fewer than 10 characters. ("0x" + 8 digits)
+			// Start right after the 'x'.
+			pos = 2;
+		}
+
+		char *endptr = nullptr;
+		dosAttributes = strtoul(&buf.c[pos], &endptr, 16);
+		if (*endptr == '\0') {
+			// Parsed the value successfully.
+			// TODO: Do wine/samba actually support the extra NTFS attributes?
+			validDosAttributes = VALID_DOS_ATTRIBUTES_NTFS;
+			hasAttributes |= static_cast<uint8_t>(AttrBit::DosAttributes);
 		}
 	}
 
