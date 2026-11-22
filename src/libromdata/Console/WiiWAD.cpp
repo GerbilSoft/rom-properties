@@ -717,8 +717,6 @@ const char *WiiWAD::systemName(unsigned int type) const
 		"Nintendo Wii U", "Wii U", "Wii U", nullptr
 	}};
 
-	// TODO: For Wii, sysID 7 isn't usually present in the TMD.
-	// Check the key index instead.
 	type &= SYSNAME_TYPE_MASK;
 	switch (be16_to_cpu(d->tmdHeader.title_id.sysID)) {
 		default:
@@ -727,6 +725,12 @@ const char *WiiWAD::systemName(unsigned int type) const
 			switch (be16_to_cpu(d->tmdHeader.title_id.catID)) {
 				default:
 				case NINTENDO_CATID_BROADON_RVL:
+					if (unlikely(d->key_idx == WiiTicket::EncryptionKeys::Key_WUP_Starbuck_vWii_Common ||
+					             d->key_idx == WiiTicket::EncryptionKeys::Key_CAT_Starbuck_vWii_Common))
+					{
+						// vWii key index
+						return sysNames_WiiU[type];
+					}
 					return sysNames_Wii[type];
 				case NINTENDO_CATID_BROADON_NC:
 					return sysNames_NC[type];
@@ -738,6 +742,12 @@ const char *WiiWAD::systemName(unsigned int type) const
 
 		case NINTENDO_SYSID_RVL:
 			// Wii
+			if (unlikely(d->key_idx == WiiTicket::EncryptionKeys::Key_WUP_Starbuck_vWii_Common ||
+			             d->key_idx == WiiTicket::EncryptionKeys::Key_CAT_Starbuck_vWii_Common))
+			{
+				// vWii key index
+				return sysNames_WiiU[type];
+			}
 			return sysNames_Wii[type];
 
 		case NINTENDO_SYSID_NC:

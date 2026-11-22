@@ -24,6 +24,7 @@
     * Includes NSFe metadata in NSF2 files.
   * WiiTicket: Check the common key index when determining the encryption key.
     * Needed in order to identify Korean and vWii keys.
+  * WiiWAD: vWii WADs now show "Wii U" instead of "Wii" as the console name.
 
 * New features:
   * Transparent gzip decompression has been moved out of RpFile and into a separate
