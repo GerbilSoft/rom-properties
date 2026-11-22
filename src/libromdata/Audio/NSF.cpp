@@ -276,6 +276,21 @@ public:
 			return cp1252_to_utf8(str, len);
 		}
 	}
+
+	/**
+	 * Convert a string from Shift-JIS and/or cp1252 to UTF-8.
+	 * @param str String
+	 * @param sjis If true, try Shift-JIS first; otherwise, only try cp1252.
+	 * @return Converted string.
+	 */
+	static inline string convStringFromEncodingToUTF8(const std::string &str, bool sjis = false)
+	{
+		if (sjis) {
+			return cp1252_sjis_to_utf8(str.data(), static_cast<int>(str.size()));
+		} else {
+			return cp1252_to_utf8(str.data(), static_cast<int>(str.size()));
+		}
+	}
 };
 
 ROMDATA_IMPL(NSF)
@@ -1285,7 +1300,8 @@ int NSF::loadFieldData(void)
 
 		if (nsfe->has.text && likely(!nsfe->text.empty())) {
 			// 'text' chunk is available.
-			d->fields.addField_string(C_("RomData", "Description"), nsfe->text);
+			d->fields.addField_string(C_("RomData", "Description"),
+				d->convStringFromEncodingToUTF8(nsfe->text, isSJIS));
 		}
 
 		if (nsfe->has.any_tlist && !nsfe->tracks.empty()) {
@@ -1430,6 +1446,8 @@ int NSF::loadMetaData(void)
 		return -EIO;
 	}
 
+	d->metaData.reserve(4);	// Maximum of 4 metadata properties.
+
 	// Is any string Shift-JIS?
 	const bool isSJIS = d->isAnyStringShiftJIS();
 
@@ -1439,7 +1457,6 @@ int NSF::loadMetaData(void)
 		// NOTE: The NSF specification says ASCII, but I'm assuming
 		// the text is cp1252 (or sometimes Shift-JIS).
 		const NSF_Header *const nsfHeader = &d->header.nsf;
-		d->metaData.reserve(3);	// Maximum of 3 metadata properties.
 
 		// Title
 		if (nsfHeader->title[0] != 0) {
@@ -1460,13 +1477,15 @@ int NSF::loadMetaData(void)
 		}
 	}
 
-	if (d->nsfe.has.auth) {
+	// NSFe metadata
+	const auto *nsfe = &d->nsfe;
+
+	if (nsfe->has.auth) {
 		// 'auth' chunk is available.
 		// NOTE: May overwrite NSF2 metadata if it's already present.
 		// FIXME: NSFe recommends UTF-8 encoding, but the files I've
 		// tested all seem to be cp1252... (and sometimes Shift-JIS)
 		// TODO: Better detection to see if the strings have valid UTF-8 encoding?
-		const auto *nsfe = &d->nsfe;
 
 		// Title
 		const char *const game_title = d->getCStringPointerFromTable(nsfe->auth.strtbl, nsfe->auth.game_title);
@@ -1488,6 +1507,12 @@ int NSF::loadMetaData(void)
 			d->metaData.addMetaData_string(Property::Copyright,
 				d->convStringFromEncodingToUTF8(copyright, -1, isSJIS));
 		}
+	}
+
+	if (nsfe->has.text && likely(!nsfe->text.empty())) {
+		// 'text' chunk is available.
+		d->metaData.addMetaData_string(Property::Description,
+			d->convStringFromEncodingToUTF8(nsfe->text, isSJIS));
 	}
 
 	// Finished reading the metadata.
