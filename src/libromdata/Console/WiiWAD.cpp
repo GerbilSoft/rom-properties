@@ -713,7 +713,12 @@ const char *WiiWAD::systemName(unsigned int type) const
 	static const array<const char*, 4> sysNames_NC = {{
 		"iQue NetCard", "NetCard", "NC", nullptr
 	}};
+	static const array<const char*, 4> sysNames_WiiU = {{
+		"Nintendo Wii U", "Wii U", "Wii U", nullptr
+	}};
 
+	// TODO: For Wii, sysID 7 isn't usually present in the TMD.
+	// Check the key index instead.
 	type &= SYSNAME_TYPE_MASK;
 	switch (be16_to_cpu(d->tmdHeader.title_id.sysID)) {
 		default:
@@ -722,12 +727,11 @@ const char *WiiWAD::systemName(unsigned int type) const
 			switch (be16_to_cpu(d->tmdHeader.title_id.catID)) {
 				default:
 				case NINTENDO_CATID_BROADON_RVL:
-				case NINTENDO_CATID_BROADON_WUP:
-					// TODO: Something else for WUP (vWii)?
 					return sysNames_Wii[type];
-
 				case NINTENDO_CATID_BROADON_NC:
 					return sysNames_NC[type];
+				case NINTENDO_CATID_BROADON_WUP:
+					return sysNames_WiiU[type];
 
 				// NOTE: Not sure if there are any TWL titles with sysID 0...
 			}
@@ -748,6 +752,10 @@ const char *WiiWAD::systemName(unsigned int type) const
 			}};
 			return sysNames_DSi[type];
 		}
+
+		case NINTENDO_SYSID_vWii:
+			// vWii (Wii U)
+			return sysNames_WiiU[type];
 	}
 
 	// Should not get here...
