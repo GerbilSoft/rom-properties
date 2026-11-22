@@ -9,8 +9,10 @@
 #include "MegaDriveRegions.hpp"
 #include "librpbase/SystemRegion.hpp"
 
+// Other rom-properties libraries
+#include "librptext/strfuncs.h"
+
 // C includes
-#include "ctypex.h"
 #include "tcharx.h"
 
 // C includes (C++ namespace)
@@ -47,8 +49,8 @@ unsigned int parseRegionCodes(const char *region_codes, int size)
 	unsigned int ret = 0;
 
 	// Check for a hex code.
-	if (isalnum_ascii(region_codes[0]) &&
-	    (region_codes[1] == 0 || ISSPACE(region_codes[1])))
+	if (rp_ascii_isalnum(region_codes[0]) &&
+	    (region_codes[1] == 0 || rp_ascii_isspace(region_codes[1])))
 	{
 		// Single character region code.
 		// Assume it's a hex code, *unless* it's 'E'.
@@ -72,7 +74,7 @@ unsigned int parseRegionCodes(const char *region_codes, int size)
 		}
 	}
 	else if ((region_codes[0] == '8' || region_codes[0] == 'E') &&
-	         (region_codes[2] == 0 || ISSPACE(region_codes[2])))
+	         (region_codes[2] == 0 || rp_ascii_isspace(region_codes[2])))
 	{
 		// Some Pico games have unusual European region codes,
 		// e.g. '8F' or 'EF' for France. Handle it here:
@@ -92,12 +94,12 @@ unsigned int parseRegionCodes(const char *region_codes, int size)
 
 		// Check for string region codes.
 		// Some games incorrectly use these.
-		if (!strncasecmp(region_codes, "EUR", 3)) {
+		if (!rp_ascii_strncasecmp(region_codes, "EUR", 3)) {
 			ret = MD_REGION_EUROPE;
-		} else if (!strncasecmp(region_codes, "USA", 3)) {
+		} else if (!rp_ascii_strncasecmp(region_codes, "USA", 3)) {
 			ret = MD_REGION_USA;
-		} else if (!strncasecmp(region_codes, "JPN", 3) ||
-			   !strncasecmp(region_codes, "JAP", 3))
+		} else if (!rp_ascii_strncasecmp(region_codes, "JPN", 3) ||
+			   !rp_ascii_strncasecmp(region_codes, "JAP", 3))
 		{
 			ret = MD_REGION_JAPAN | MD_REGION_ASIA;
 		} else {
@@ -106,7 +108,7 @@ unsigned int parseRegionCodes(const char *region_codes, int size)
 			for (int i = 0; i < size; i++) {
 				// Allow spaces in the first three characters.
 				// "Psy-O-Blade (Japan)" has "  J".
-				if (i >= 3 && (region_codes[i] == 0 || ISSPACE(region_codes[i])))
+				if (i >= 3 && (region_codes[i] == 0 || rp_ascii_isspace(region_codes[i])))
 					break;
 
 				switch (region_codes[i]) {

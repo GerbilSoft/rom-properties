@@ -14,6 +14,7 @@
 #include "cdrom_structs.h"
 
 // Other rom-properties libraries
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -23,9 +24,6 @@ using namespace LibRpText;
 
 // Other RomData subclasses
 #include "Media/ISO.hpp"
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -260,7 +258,7 @@ unsigned int SegaSaturnPrivate::parseRegionCodes(const char *region_codes, int s
 	// https://segaretro.org/ROM_header#Compatible_area_symbol
 	unsigned int ret = 0;
 	for (int i = 0; i < size; i++) {
-		if (region_codes[i] == 0 || ISSPACE(region_codes[i]))
+		if (region_codes[i] == 0 || rp_ascii_isspace(region_codes[i]))
 			break;
 		switch (region_codes[i]) {
 			case 'J':
@@ -343,8 +341,8 @@ void SegaSaturnPrivate::parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) 
 	             discHeader.device_info[4] == '/')
 	{
 		// "CD-ROM" is present.
-		if (isdigit_ascii(discHeader.device_info[3]) &&
-		    isdigit_ascii(discHeader.device_info[5]))
+		if (rp_ascii_isdigit(discHeader.device_info[3]) &&
+		    rp_ascii_isdigit(discHeader.device_info[5]))
 		{
 			// Disc digits are present.
 			disc_num = discHeader.device_info[3] & 0x0F;

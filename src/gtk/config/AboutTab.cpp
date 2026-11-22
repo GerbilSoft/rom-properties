@@ -19,10 +19,8 @@
 #include "libi18n/i18n.hpp"
 #include "librpbase/SystemRegion.hpp"
 #include "librpbase/config/AboutTabText.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 #include <array>
@@ -683,7 +681,7 @@ rp_about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 	string pngVersionCompiled = "libpng " PNG_LIBPNG_VER_STRING;
 	for (size_t i = pngVersionCompiled.size()-1; i > 6; i--) {
 		const char chr = pngVersionCompiled[i];
-		if (isdigit_ascii(chr)) {
+		if (rp_ascii_isdigit(chr)) {
 			break;
 		}
 		pngVersionCompiled.resize(i);

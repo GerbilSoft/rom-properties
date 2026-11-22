@@ -12,6 +12,9 @@
 // Needed for ARRAY_SIZE() in EXENEEntries_data.h
 #include "common.h"
 
+// Other rom-properties libraries
+#include "librptext/strfuncs.h"
+
 // C includes
 #include "tcharx.h"
 
@@ -46,9 +49,9 @@ const char *lookup_ordinal(const char *modname, uint16_t ordinal)
 	static const OrdinalNameTable *const pEntries_end = &entries[ARRAY_SIZE(entries)];
 	auto iter = std::lower_bound(entries, pEntries_end, modname,
 		[](const OrdinalNameTable &ont, const char *modname) noexcept -> bool {
-			return (strncasecmp(ont.modname, modname, 8) < 0);
+			return (rp_ascii_strncasecmp(ont.modname, modname, 8) < 0);
 		});
-	if (iter == pEntries_end || strncasecmp(iter->modname, modname, 8) != 0) {
+	if (iter == pEntries_end || rp_ascii_strncasecmp(iter->modname, modname, 8) != 0) {
 		// Module name not found.
 		return nullptr;
 	}

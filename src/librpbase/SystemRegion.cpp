@@ -7,7 +7,9 @@
  ***************************************************************************/
 
 #include "SystemRegion.hpp"
-#include "ctypex.h"
+
+// Other rom-properties libraries
+#include "librptext/strfuncs.h"
 
 // C includes (C++ namespace)
 #include <clocale>
@@ -171,16 +173,16 @@ static int getSystemRegion_LC_MESSAGES(const char *locale)
 	int ret = -1;
 
 	// Language code: Read up to the first non-alphabetic character.
-	if (isalpha_ascii(locale[0]) && isalpha_ascii(locale[1])) {
-		if (!isalpha_ascii(locale[2])) {
+	if (rp_ascii_isalpha(locale[0]) && rp_ascii_isalpha(locale[1])) {
+		if (!rp_ascii_isalpha(locale[2])) {
 			// 2-character language code.
-			lc = ((TOLOWER(locale[0]) << 8) |
-			       TOLOWER(locale[1]));
-		} else if (isalpha_ascii(locale[2]) && !isalpha_ascii(locale[3])) {
+			lc = ((rp_ascii_tolower(locale[0]) << 8) |
+			       rp_ascii_tolower(locale[1]));
+		} else if (rp_ascii_isalpha(locale[2]) && !rp_ascii_isalpha(locale[3])) {
 			// 3-character language code.
-			lc = ((TOLOWER(locale[0]) << 16) |
-			      (TOLOWER(locale[1]) << 8) |
-			       TOLOWER(locale[2]));
+			lc = ((rp_ascii_tolower(locale[0]) << 16) |
+			      (rp_ascii_tolower(locale[1]) << 8) |
+			       rp_ascii_tolower(locale[2]));
 		} else {
 			// Invalid language code.
 			lc = 0;
@@ -202,24 +204,24 @@ static int getSystemRegion_LC_MESSAGES(const char *locale)
 	}
 
 	// Found an underscore.
-	if (isalpha_ascii(underscore[1]) && isalpha_ascii(underscore[2])) {
-		if (!isalpha_ascii(underscore[3])) {
+	if (rp_ascii_isalpha(underscore[1]) && rp_ascii_isalpha(underscore[2])) {
+		if (!rp_ascii_isalpha(underscore[3])) {
 			// 2-character country code.
-			cc = ((TOUPPER(underscore[1]) << 8) |
-			       TOUPPER(underscore[2]));
+			cc = ((rp_ascii_toupper(underscore[1]) << 8) |
+			       rp_ascii_toupper(underscore[2]));
 			ret = 0;
-		} else if (isalpha_ascii(underscore[3]) && !isalpha_ascii(underscore[4])) {
+		} else if (rp_ascii_isalpha(underscore[3]) && !rp_ascii_isalpha(underscore[4])) {
 			// 3-character country code.
-			cc = ((TOUPPER(underscore[1]) << 16) |
-			      (TOUPPER(underscore[2]) << 8) |
-			       TOUPPER(underscore[3]));
+			cc = ((rp_ascii_toupper(underscore[1]) << 16) |
+			      (rp_ascii_toupper(underscore[2]) << 8) |
+			       rp_ascii_toupper(underscore[3]));
 			ret = 0;
-		} else if (isalpha_ascii(underscore[4]) && !isalpha_ascii(underscore[5])) {
+		} else if (rp_ascii_isalpha(underscore[4]) && !rp_ascii_isalpha(underscore[5])) {
 			// 4-character country code.
-			cc = ((TOUPPER(underscore[1]) << 24) |
-			      (TOUPPER(underscore[2]) << 16) |
-			      (TOUPPER(underscore[3]) << 8) |
-			       TOUPPER(underscore[4]));
+			cc = ((rp_ascii_toupper(underscore[1]) << 24) |
+			      (rp_ascii_toupper(underscore[2]) << 16) |
+			      (rp_ascii_toupper(underscore[3]) << 8) |
+			       rp_ascii_toupper(underscore[4]));
 
 			// Special handling for compatibility:
 			// - 'HANS' -> 'CN' (and/or 'SG')
@@ -484,9 +486,9 @@ string lcToString(uint32_t lc)
 	s_ret.reserve(4);
 
 	for (; lc != 0; lc <<= 8) {
-		const uint8_t chr = static_cast<uint8_t>(lc >> 24);
-		if (chr != 0) {
-			s_ret += TOLOWER(chr);
+		const char c = static_cast<char>(lc >> 24);
+		if (c != 0) {
+			s_ret += rp_ascii_tolower(c);
 		}
 	}
 
@@ -505,9 +507,9 @@ string lcToStringUpper(uint32_t lc)
 	s_ret.reserve(4);
 
 	for (; lc != 0; lc <<= 8) {
-		const uint8_t chr = static_cast<uint8_t>(lc >> 24);
-		if (chr != 0) {
-			s_ret += TOUPPER(chr);
+		const char c = static_cast<char>(lc >> 24);
+		if (c != 0) {
+			s_ret += rp_ascii_toupper(c);
 		}
 	}
 

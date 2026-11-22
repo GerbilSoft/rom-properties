@@ -16,7 +16,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ctypex.h"
+// FIXME: Cannot link to librptext due to issues with
+// multiple definitions of rp_ascii_table_get() in MSVC builds.
+static inline bool rp_ascii_isdigit(char c)
+{
+	return (c >= '0' && c <= '9');
+}
 
 // Are Sixel or Kitty supported?
 static bool checked_graphics = false;
@@ -99,7 +104,7 @@ static void gsvt_check_graphics_protocol_support(void)
 			int num = -1;
 			for (p += 2; p < p_end; p++) {
 				TCHAR chr = *p;
-				if (isdigit_ascii(chr)) {
+				if (rp_ascii_isdigit(chr)) {
 					// This is a digit.
 					if (num < 0) {
 						num = (chr & 0x0F);

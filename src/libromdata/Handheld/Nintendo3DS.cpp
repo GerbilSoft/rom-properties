@@ -27,6 +27,7 @@
 #include "librpbase/disc/DiscReader.hpp"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/SubFile.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -39,9 +40,6 @@ using namespace LibRpTexture;
 // NCCH and CIA readers.
 #include "disc/NCCHReader.hpp"
 #include "disc/CIAReader.hpp"
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -1423,7 +1421,7 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 	// NOTE: The header data is usually smaller than 0x2020,
 	// so only check the important contents.
 	if (info->ext && info->header.size > offsetof(N3DS_CIA_Header_t, content_index) &&
-	    (!strcasecmp(info->ext, ".cia") || !strcasecmp(info->ext, ".zcia")))
+	    (!rp_ascii_strcasecmp(info->ext, ".cia") || !rp_ascii_strcasecmp(info->ext, ".zcia")))
 	{
 		// Verify the header parameters.
 		const N3DS_CIA_Header_t *const cia_header =
@@ -2787,7 +2785,7 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size)
 	// NOTE: We're checking for NULL termination above.
 	const char *const id4 = &ncch_header->product_code[6];
 	for (int i = 3; i >= 0; i--) {
-		if (!ISPRINT(id4[i])) {
+		if (!rp_ascii_isprint(id4[i])) {
 			// Non-printable character found.
 			return -ENOENT;
 		}

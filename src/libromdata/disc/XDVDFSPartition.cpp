@@ -14,6 +14,7 @@
 #include "librpbase/timeconv.h"
 #include "librpbyteswap/byteswap_rp.h"
 #include "librptext/conversion.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -73,15 +74,6 @@ public:
 	 * @return Pointer to directory table (rp::uvector), or nullptr if not found.
 	 */
 	const rp::uvector<uint8_t> *getDirectory(const char *path);
-
-	/**
-	 * XDVDFS strcasecmp() implementation.
-	 * Uses generic ASCII handling instead of locale-specific case folding.
-	 * @param s1 String 1
-	 * @param s2 String 2
-	 * @return 0 (==), negative (<), or positive (>).
-	 */
-	static int xdvdfs_strcasecmp(const char *s1, const char *s2);
 };
 
 /** XDVDFSPartitionPrivate **/
@@ -140,34 +132,6 @@ XDVDFSPartitionPrivate::XDVDFSPartitionPrivate(XDVDFSPartition *q,
 }
 
 /**
- * XDVDFS strcasecmp() implementation.
- * Uses generic ASCII handling instead of locale-specific case folding.
- * @param s1 String 1
- * @param s2 String 2
- * @return 0 (==), negative (<), or positive (>).
- */
-int XDVDFSPartitionPrivate::xdvdfs_strcasecmp(const char *s1, const char *s2)
-{
-	// Reference: https://github.com/XboxDev/extract-xiso/blob/master/extract-xiso.c
-	// av1_compare_key()
-	while (true) {
-		char a = *s1++;
-		char b = *s2++;
-
-		// Convert to uppercase.
-		if (a >= 'a' && a <= 'z') a &= ~0x20;
-		if (b >= 'a' && b <= 'z') b &= ~0x20;
-
-		if (a) {
-			if (b) {
-				if (a < b) return -1;
-				if (a > b) return 1;
-			} else return 1;
-		} else return (b ? -1 : 0);
-	}
-}
-
-/**
  * Get an entry within a specified directory table.
  * @param dirTable Directory table.
  * @param filename Filename to find, without subdirectories.
@@ -207,7 +171,7 @@ const XDVDFS_DirEntry *XDVDFSPartitionPrivate::getDirEntry(const rp::uvector<uin
 
 		// Check the filename.
 		uint16_t subtree_offset = 0;
-		const int cmp = xdvdfs_strcasecmp(s_filename.c_str(), s_entry_filename.c_str());
+		const int cmp = rp_ascii_strcasecmp(s_filename.c_str(), s_entry_filename.c_str());
 		if (cmp == 0) {
 			// Found it!
 			dirEntry_found = dirEntry;

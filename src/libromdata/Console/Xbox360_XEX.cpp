@@ -22,6 +22,7 @@
 #include "librpbase/disc/CBCReader.hpp"
 #include "librpbase/disc/PartitionFile.hpp"
 #include "librpfile/MemFile.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -37,9 +38,6 @@ using namespace LibRpTexture;
 #  include "mspack.h"
 #  include "xenia_lzx.h"
 #endif /* ENABLE_LIBMSPACK */
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 #include <sstream>
@@ -1414,12 +1412,12 @@ string Xbox360_XEX_Private::getTitleID(void) const
 	// FIXME: Verify behavior on big-endian.
 	// TODO: Consolidate implementations into a shared function.
 	string tid_str;
-	if (isupper_ascii(executionID.title_id.a)) {
+	if (rp_ascii_isupper(executionID.title_id.a)) {
 		tid_str += (char)executionID.title_id.a;
 	} else {
 		fmt::format_to(std::back_inserter(tid_str), FSTR("\\x{:0>2X}"), (uint8_t)executionID.title_id.a);
 	}
-	if (isupper_ascii(executionID.title_id.b)) {
+	if (rp_ascii_isupper(executionID.title_id.b)) {
 		tid_str += (char)executionID.title_id.b;
 	} else {
 		fmt::format_to(std::back_inserter(tid_str), FSTR("\\x{:0>2X}"), (uint8_t)executionID.title_id.b);
@@ -1458,8 +1456,8 @@ string Xbox360_XEX_Private::getPublisher(void) const
 	}
 
 	// Unknown publisher
-	if (isalnum_ascii(executionID.title_id.a) &&
-	    isalnum_ascii(executionID.title_id.b))
+	if (rp_ascii_isalnum(executionID.title_id.a) &&
+	    rp_ascii_isalnum(executionID.title_id.b))
 	{
 		// Publisher ID is alphanumeric.
 		fmt::format_to(std::back_inserter(s_ret), FSTR("{:s} ({:c}{:c})"), C_("RomData", "Unknown"),

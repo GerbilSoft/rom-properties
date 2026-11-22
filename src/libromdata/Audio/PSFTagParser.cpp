@@ -14,11 +14,9 @@
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
 #include "librptext/conversion.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpText;
-
-// C includes
-#include "ctypex.h"
 
 // C includes (C++ namespace)
 #include <cstring>
@@ -122,7 +120,7 @@ unordered_map<string, string> parseTags(const char *pData, size_t size, PSFTagSt
 				// NOTE: Key *must* be ASCII.
 				string s_key(p, k_len);
 				std::transform(s_key.begin(), s_key.end(), s_key.begin(),
-					[](unsigned char c) noexcept -> char { return std::tolower(c); });
+					[](unsigned char c) noexcept -> char { return rp_ascii_tolower(c); });
 
 				if (style == PSFTagStyle::PSF) {
 					// Check for UTF-8.
@@ -298,7 +296,7 @@ static unsigned int lengthToMs(const char *str)
 		unsigned int digit_count = 0;
 		dp++;
 		for (; *dp != '\0'; dp++) {
-			if (isdigit_ascii(*dp)) {
+			if (rp_ascii_isdigit(*dp)) {
 				// Found a digit.
 				digit_count++;
 			} else {

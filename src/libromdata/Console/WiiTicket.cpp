@@ -17,6 +17,7 @@
 #  include "librpbase/crypto/AesCipherFactory.hpp"
 #endif /* ENABLE_DECRYPTION */
 #include "librpfile/FileSystem.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 
 // Other rom-properties libraries
@@ -384,7 +385,7 @@ int WiiTicket::isRomSupported_static(const DetectInfo *info)
 	for (const char *const *ext = WiiTicketPrivate::exts.data();
 	     *ext != nullptr; ext++)
 	{
-		if (!strcasecmp(info->ext, *ext)) {
+		if (!rp_ascii_strcasecmp(info->ext, *ext)) {
 			// File extension is supported.
 			ok = true;
 			break;

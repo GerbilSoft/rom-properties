@@ -37,6 +37,7 @@
 using LibWin32UI::RegKey;
 
 // Other rom-properties libraries
+#include "librptext/strfuncs.h"
 #include "librptext/wchar.hpp"
 #include "libromdata/RomDataFactory.hpp"
 #include "librptexture/FileFormatFactory.hpp"
@@ -148,7 +149,7 @@ static LONG RegisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory::
 
 	bool is_texture = false;
 	for (const char *texture_ext : texture_exts) {
-		if (!strcasecmp(texture_ext, extInfo.ext)) {
+		if (!rp_ascii_strcasecmp(texture_ext, extInfo.ext)) {
 			is_texture = true;
 			break;
 		}

@@ -10,8 +10,8 @@
 
 #include "common.h"
 
-// C includes
-#include "ctypex.h"
+// Other rom-properties libraries
+#include "librptext/strfuncs.h"
 
 // C++ STL classes
 #include <array>
@@ -57,17 +57,17 @@ const char *lookup(const char *code)
 
 	// Lookup table uses Base 36. [0-9A-Z]
 	unsigned int idx;
-	if (isdigit_ascii(code[0])) {
+	if (rp_ascii_isdigit(code[0])) {
 		idx = (code[0] - '0') * 36;
-	} else if (isupper_ascii(code[0])) {
+	} else if (rp_ascii_isupper(code[0])) {
 		idx = (code[0] - 'A' + 10) * 36;
 	} else {
 		// Invalid code.
 		return nullptr;
 	}
-	if (isdigit_ascii(code[1])) {
+	if (rp_ascii_isdigit(code[1])) {
 		idx += (code[1] - '0');
-	} else if (isupper_ascii(code[1])) {
+	} else if (rp_ascii_isupper(code[1])) {
 		idx += (code[1] - 'A' + 10);
 	} else {
 		// Invalid code.

@@ -24,6 +24,7 @@
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
 #include "librpbase/RomFields.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpFile;
 using LibRpBase::RomFields;
 
@@ -734,7 +735,7 @@ void KhronosKTX2Private::loadKeyValueData(void)
 		// NOTE: Only the first instance is used.
 		// NOTE 2: Specification says it's case-sensitive, but some files
 		// have "KTXOrientation", so use a case-insensitive comparison.
-		if (!hasKTXorientation && !strcasecmp(p, "KTXorientation")) {
+		if (!hasKTXorientation && !rp_ascii_strcasecmp(p, "KTXorientation")) {
 			hasKTXorientation = true;
 			// For KTX2, this field has one character per dimension.
 			// - X: rl
@@ -753,7 +754,7 @@ void KhronosKTX2Private::loadKeyValueData(void)
 
 		// Check if this is KTXswizzle.
 		// NOTE: Only the first instance is used.
-		if (!hasKTXswizzle && !strcasecmp(p, "KTXswizzle")) {
+		if (!hasKTXswizzle && !rp_ascii_strcasecmp(p, "KTXswizzle")) {
 			// Value must match the regex [rgba01]{4}.
 			const char *const v = k_end + 1;
 			bool isOK = true;

@@ -16,6 +16,7 @@
 #include "libi18n/i18n.hpp"
 #include "librpbase/RomFields.hpp"
 #include "librpfile/FileSystem.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpFile;
 using LibRpBase::RomFields;
 
@@ -381,7 +382,7 @@ DidjTex::DidjTex(const IRpFilePtr &file)
 	const char *const ext = LibRpFile::FileSystem::file_ext(filename);
 
 	const off64_t our_size = static_cast<off64_t>(le32_to_cpu(d->texHeader.compr_size) + sizeof(d->texHeader));
-	if (ext && !strcasecmp(ext, ".texs")) {
+	if (ext && !rp_ascii_strcasecmp(ext, ".texs")) {
 		// .texs - allow the total filesize to be larger than the compressed size.
 		if (our_size > filesize) {
 			// Incorrect compressed filesize.

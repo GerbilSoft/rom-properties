@@ -20,12 +20,10 @@
 // Other rom-properties libraries
 #include "time_r.h"
 #include "librpbase/SystemRegion.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -1914,7 +1912,7 @@ int NES::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 		// Verify that the game ID is valid. (uppercase letters, and numbers)
 		for (unsigned int i = 0; i < 3; i++) {
 			const char c = game_id[i];
-			if (!isupper_ascii(c) && !isdigit_ascii(c)) {
+			if (!rp_ascii_isupper(c) && !rp_ascii_isdigit(c)) {
 				// Not a valid character.
 				return -ENOENT;
 			}

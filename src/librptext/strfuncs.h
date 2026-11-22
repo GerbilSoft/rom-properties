@@ -9,9 +9,11 @@
 
 #include "config.librptext.h"
 #include "compiler-attrs.h"	// for ATTR_*
+#include "dll-macros.h"		// for RP_LIBROMDATA_PUBLIC
 
 // C includes
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -70,6 +72,154 @@ size_t rp_strlcat(char *dst, const char *src, size_t size);
 #  endif
 #  define strlcat(dst, src, size) rp_strlcat((dst), (src), (size))
 #endif /* !HAVE_STRLCAT */
+
+/** ASCII character functions **/
+/* from glib-2.90 (LGPL-2.1+) */
+/* Copyright (C) 1995-1997  Peter Mattis, Spencer Kimball and Josh MacDonald */
+
+typedef enum {
+	RP_ASCII_ALNUM  = 1 << 0,
+	RP_ASCII_ALPHA  = 1 << 1,
+	RP_ASCII_CNTRL  = 1 << 2,
+	RP_ASCII_DIGIT  = 1 << 3,
+	RP_ASCII_GRAPH  = 1 << 4,
+	RP_ASCII_LOWER  = 1 << 5,
+	RP_ASCII_PRINT  = 1 << 6,
+	RP_ASCII_PUNCT  = 1 << 7,
+	RP_ASCII_SPACE  = 1 << 8,
+	RP_ASCII_UPPER  = 1 << 9,
+	RP_ASCII_XDIGIT = 1 << 10
+} ATTR_FLAG_ENUM RpAsciiType;
+
+// NOTE: Windows does not allow delay-loading a DLL if importing a data symbol.
+// On Windows, rp_ascii_table[] will not be exported; instead, an accessor
+// function will be used. This *will* add slight overhead...
+#ifdef _WIN32
+RP_LIBROMDATA_PUBLIC
+uint16_t rp_ascii_table_get(char c);
+#else /* !_WIN32 */
+RP_LIBROMDATA_PUBLIC
+extern const uint16_t rp_ascii_table[256];
+#define rp_ascii_table_get(c) (rp_ascii_table[(uint8_t) (c)])
+#endif /* _WIN32 */
+
+#define rp_ascii_isalnum(c) \
+	((rp_ascii_table_get(c) & RP_ASCII_ALNUM) != 0)
+
+#define rp_ascii_isalpha(c) \
+	((rp_ascii_table_get(c) & RP_ASCII_ALPHA) != 0)
+
+#define rp_ascii_iscntrl(c) \
+	((rp_ascii_table_get(c) & RP_ASCII_CNTRL) != 0)
+
+#define rp_ascii_isdigit(c) \
+	((rp_ascii_table_get(c) & RP_ASCII_DIGIT) != 0)
+
+#define rp_ascii_isgraph(c) \
+	((rp_ascii_table_get(c) & RP_ASCII_GRAPH) != 0)
+
+#define rp_ascii_islower(c) \
+	((rp_ascii_table_get(c) & RP_ASCII_LOWER) != 0)
+
+#define rp_ascii_isprint(c) \
+	((rp_ascii_table_get(c) & RP_ASCII_PRINT) != 0)
+
+#define rp_ascii_ispunct(c) \
+	((rp_ascii_table_get(c) & RP_ASCII_PUNCT) != 0)
+
+#define rp_ascii_isspace(c) \
+	((rp_ascii_table_get(c) & RP_ASCII_SPACE) != 0)
+
+#define rp_ascii_isupper(c) \
+	((rp_ascii_table_get(c) & RP_ASCII_UPPER) != 0)
+
+#define rp_ascii_isxdigit(c) \
+	((rp_ascii_table_get(c) & RP_ASCII_XDIGIT) != 0)
+
+/**
+ * Convert an ASCII character to lowercase.
+ * @param c ASCII character
+ * @return Lowercase ASCII character
+ */
+static inline ATTR_CONST char rp_ascii_tolower(char c)
+{
+	return (rp_ascii_isupper(c)) ? (c | 0x20) : c;
+}
+
+/**
+ * Convert an ASCII character to uppercase.
+ * @param c ASCII character
+ * @return Uppercase ASCII character
+ */
+static inline ATTR_CONST char rp_ascii_toupper(char c)
+{
+	return (rp_ascii_islower(c)) ? (c & ~0x20) : c;
+}
+
+#ifdef _WIN32
+/**
+ * Convert an ASCII character to lowercase.
+ * @param c ASCII character
+ * @return Lowercase ASCII character
+ */
+static inline ATTR_CONST wchar_t rp_ascii_towlower(wchar_t c)
+{
+	if (c >= 256) {
+		return c;
+	}
+	return (rp_ascii_isupper((uint8_t)c)) ? (c | 0x20) : c;
+}
+
+/**
+ * Convert an ASCII character to uppercase.
+ * @param c ASCII character
+ * @return Uppercase ASCII character
+ */
+static inline wchar_t ATTR_CONST rp_ascii_towupper(wchar_t c)
+{
+	if (c >= 256) {
+		return c;
+	}
+	return (rp_ascii_islower((uint8_t)c)) ? (c & ~0x20) : c;
+}
+#endif /* _WIN32 */
+
+#if defined(_WIN32) && defined(_UNICODE)
+#  define rp_ascii_istalpha(c) (((c) < 256) && rp_ascii_isalpha((uint8_t)(c)))
+#  define rp_ascii_istdigit(c) (((c) < 256) && rp_ascii_isdigit((uint8_t)(c)))
+#  define rp_ascii_istlower(c) (((c) < 256) && rp_ascii_islower((uint8_t)(c)))
+#  define rp_ascii_istspace(c) (((c) < 256) && rp_ascii_isspace((uint8_t)(c)))
+#  define rp_ascii_istupper(c) (((c) < 256) && rp_ascii_isupper((uint8_t)(c)))
+#  define rp_ascii_totlower(c) rp_ascii_towlower(c)
+#  define rp_ascii_totupper(c) rp_ascii_towupper(c)
+#else /* !(_WIN32 && _UNICODE) */
+#  define rp_ascii_istalpha(c) rp_ascii_isalpha(c)
+#  define rp_ascii_istdigit(c) rp_ascii_isdigit(c)
+#  define rp_ascii_istlower(c) rp_ascii_islower(c)
+#  define rp_ascii_istspace(c) rp_ascii_isspace(c)
+#  define rp_ascii_istupper(c) rp_ascii_isupper(c)
+#  define rp_ascii_totlower(c) rp_ascii_tolower(c)
+#  define rp_ascii_totupper(c) rp_ascii_toupper(c)
+#endif /* _WIN32 && _UNICODE */
+
+/**
+ * Locale-invariant strcasecmp().
+ * @param s1
+ * @param s2
+ * @return
+ */
+RP_LIBROMDATA_PUBLIC
+int rp_ascii_strcasecmp(const char *s1, const char *s2);
+
+/**
+ * Locale-invariant strncasecmp().
+ * @param s1
+ * @param s2
+ * @param n
+ * @return
+ */
+RP_LIBROMDATA_PUBLIC
+int rp_ascii_strncasecmp(const char *s1, const char *s2, size_t n);
 
 #ifdef __cplusplus
 }

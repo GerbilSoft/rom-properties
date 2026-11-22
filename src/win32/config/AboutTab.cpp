@@ -20,12 +20,12 @@
 #include "libi18n/i18n.hpp"
 #include "librpbase/config/AboutTabText.hpp"
 #include "librptext/conversion.hpp"
+#include "librptext/strfuncs.h"
 #include "librptext/wchar.hpp"
 using namespace LibRpBase;
 using namespace LibRpText;
 
 // C includes
-#include "ctypex.h"
 #include "tcharx.h"
 
 // C++ STL classes
@@ -1178,7 +1178,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	string pngVersionCompiled = "libpng " PNG_LIBPNG_VER_STRING;
 	for (size_t i = pngVersionCompiled.size()-1; i > 6; i--) {
 		const char chr = pngVersionCompiled[i];
-		if (isdigit_ascii(chr)) {
+		if (rp_ascii_isdigit(chr)) {
 			break;
 		}
 		pngVersionCompiled.resize(i);

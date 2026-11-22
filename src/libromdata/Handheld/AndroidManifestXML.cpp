@@ -20,6 +20,7 @@
 // Other rom-properties libraries
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/MemFile.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpText;
 using namespace LibRpFile;
@@ -524,7 +525,7 @@ int AndroidManifestXML::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// File extension must be ".xml".
-	if (strcasecmp(info->ext, ".xml") != 0) {
+	if (rp_ascii_strcasecmp(info->ext, ".xml") != 0) {
 		// Not a .xml file.
 		return -1;
 	}

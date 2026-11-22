@@ -14,6 +14,7 @@
 
 // Other rom-properties libraries
 #include "librpfile/FileSystem.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -203,7 +204,7 @@ int WiiTMD::isRomSupported_static(const DetectInfo *info)
 	for (const char *const *ext = WiiTMDPrivate::exts.data();
 	     *ext != nullptr; ext++)
 	{
-		if (!strcasecmp(info->ext, *ext)) {
+		if (!rp_ascii_strcasecmp(info->ext, *ext)) {
 			// File extension is supported.
 			ok = true;
 			break;

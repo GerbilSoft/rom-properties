@@ -14,8 +14,9 @@
 
 // Byteswapping
 #include "byteswap_rp.h"
-// Unsigned ctype
-#include "ctypex.h"
+
+// librptext
+#include "librptext/strfuncs.h"
 
 // C includes (C++ namespace)
 #include <cassert>
@@ -213,7 +214,7 @@ int _tmain(int argc, TCHAR *argv[])
 		// Remove leading and trailing whitespace.
 		const char *const buf_end = buf + sizeof(buf);
 		char *p = buf;
-		while (p < buf_end && *p != '\0' && ISSPACE(*p)) {
+		while (p < buf_end && *p != '\0' && rp_ascii_isspace(*p)) {
 			p++;
 		}
 		if (*p == '#') {
@@ -222,7 +223,7 @@ int _tmain(int argc, TCHAR *argv[])
 		}
 		size_t plen = strlen(p);
 		while (plen > 0) {
-			if (!ISSPACE(p[plen - 1]))
+			if (!rp_ascii_isspace(p[plen - 1]))
 				break;
 
 			p[plen - 1] = '\0';

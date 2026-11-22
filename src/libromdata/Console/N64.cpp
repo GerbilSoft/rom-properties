@@ -14,12 +14,10 @@
 #include "common.h"
 
 // Other rom-properties libraries
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -124,7 +122,7 @@ inline string N64Private::getGameID(void) const
 	string id4;
 	id4.resize(4, '_');
 	for (size_t i = 0; i < 4; i++) {
-		if (ISPRINT(romHeader.id4[i])) {
+		if (rp_ascii_isprint(romHeader.id4[i])) {
 			id4[i] = romHeader.id4[i];
 		}
 	}
@@ -139,10 +137,10 @@ string N64Private::getOSVersion(void) const
 {
 	string s_ret;
 
-	// TODO: isalpha_ascii(), or isupper_ascii()?
+	// TODO: rp_ascii_isalpha(), or rp_ascii_isupper()?
 	if (romHeader.os_version[0] == 0x00 &&
 	    romHeader.os_version[1] == 0x00 &&
-	    isalpha_ascii(romHeader.os_version[3]))
+	    rp_ascii_isalpha(romHeader.os_version[3]))
 	{
 		fmt::format_to(std::back_inserter(s_ret), FSTR("OS{:d}.{:d}{:c}"),
 			romHeader.os_version[2] / 10,

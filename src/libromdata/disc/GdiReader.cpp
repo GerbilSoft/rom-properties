@@ -15,14 +15,12 @@
 // Other rom-properties libraries
 #include "librpbase/disc/PartitionFile.hpp"
 #include "librpfile/RelatedFile.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 
 // Other RomData subclasses
 #include "Media/ISO.hpp"
-
-// C includes
-#include "ctypex.h"
 
 // C includes (C++ namespace)
 #include <cstdlib>
@@ -504,7 +502,7 @@ int GdiReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
 		if (pHeader[i] == '\r' || pHeader[i] == '\n') {
 			// End of line.
 			break;
-		} else if (isdigit_ascii(pHeader[i])) {
+		} else if (rp_ascii_isdigit(pHeader[i])) {
 			// Digit.
 			trackCount *= 10;
 			trackCount += (pHeader[i] & 0xF);

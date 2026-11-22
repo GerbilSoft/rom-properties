@@ -13,12 +13,10 @@
 #include "gba_structs.h"
 
 // Other rom-properties libraries
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -120,7 +118,7 @@ inline string GameBoyAdvancePrivate::getGameID(void) const
 	string id6;
 	id6.resize(6, '_');
 	for (size_t i = 0; i < 6; i++) {
-		if (ISPRINT(romHeader.id6[i])) {
+		if (rp_ascii_isprint(romHeader.id6[i])) {
 			id6[i] = romHeader.id6[i];
 		}
 	}
@@ -145,8 +143,8 @@ string GameBoyAdvancePrivate::getPublisher(void) const
 
 	// Unknown publisher. Print the company code as two characters if they're
 	// both alphanumeric; otherwise, hexadecimal.
-	if (isalnum_ascii(romHeader.company[0]) &&
-	    isalnum_ascii(romHeader.company[1]))
+	if (rp_ascii_isalnum(romHeader.company[0]) &&
+	    rp_ascii_isalnum(romHeader.company[1]))
 	{
 		fmt::format_to(std::back_inserter(s_ret),
 			FSTR("{:s} ({:c}{:c})"), C_("RomData", "Unknown"),
@@ -574,7 +572,7 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int si
 		// The ID6 cannot have non-printable characters.
 		name.resize(6);
 		for (int i = ARRAY_SIZE(romHeader->id6)-1; i >= 0; i--) {
-			if (!ISPRINT(romHeader->id6[i])) {
+			if (!rp_ascii_isprint(romHeader->id6[i])) {
 				// Non-printable character found.
 				return -ENOENT;
 			}

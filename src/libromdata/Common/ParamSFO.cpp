@@ -15,12 +15,10 @@
 #include <cstdint>
 
 // Other rom-properties libraries
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 #include <unordered_map>
@@ -635,7 +633,7 @@ int ParamSFO::loadMetaData(void)
 		string gameID_dash;
 		gameID_dash.reserve(gameID.size() + 1);
 		for (size_t i = 0; i < gameID.size(); i++) {
-			if (isalpha_ascii(gameID[i])) {
+			if (rp_ascii_isalpha(gameID[i])) {
 				// Still a letter.
 				gameID_dash += gameID[i];
 			} else {
@@ -657,7 +655,7 @@ int ParamSFO::loadMetaData(void)
 		string titleID_dash;
 		titleID_dash.reserve(titleID.size() + 1);
 		for (size_t i = 0; i < titleID.size(); i++) {
-			if (isalpha_ascii(titleID[i])) {
+			if (rp_ascii_isalpha(titleID[i])) {
 				// Still a letter.
 				titleID_dash += titleID[i];
 			} else {

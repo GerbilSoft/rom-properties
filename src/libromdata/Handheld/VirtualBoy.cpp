@@ -14,12 +14,10 @@
 #include "vb_structs.h"
 
 // Other rom-properties libraries
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -60,12 +58,12 @@ public:
 	 * @param c The character
 	 * @return Whether or not character is valid
 	 */
-	static inline constexpr bool isPublisherID(char c)
+	static inline bool isPublisherID(char c)
 	{
 		// Valid characters:
 		// - Uppercase letters
 		// - Digits
-		return (isupper_ascii(c) || isdigit_ascii(c));
+		return (rp_ascii_isupper(c) || rp_ascii_isdigit(c));
 	}
 
 	/**
@@ -73,14 +71,14 @@ public:
 	 * @param c The character
 	 * @return Whether or not character is valid
 	 */
-	static inline constexpr bool isGameID(char c)
+	static inline bool isGameID(char c)
 	{
 		// Valid characters:
 		// - Uppercase letters
 		// - Digits
 		// - Space (' ')
 		// - Hyphen ('-')
-		return (isupper_ascii(c) || isdigit_ascii(c) || c == ' ' || c == '-');
+		return (rp_ascii_isupper(c) || rp_ascii_isdigit(c) || c == ' ' || c == '-');
 	}
 
 public:
@@ -189,8 +187,8 @@ string VirtualBoyPrivate::getPublisher(void) const
 
 	// Unknown publisher. Print the company code as two characters if they're
 	// both alphanumeric; otherwise, hexadecimal.
-	if (isalnum_ascii(romFooter.publisher[0]) &&
-	    isalnum_ascii(romFooter.publisher[1]))
+	if (rp_ascii_isalnum(romFooter.publisher[0]) &&
+	    rp_ascii_isalnum(romFooter.publisher[1]))
 	{
 		fmt::format_to(std::back_inserter(s_ret),
 			FSTR("{:s} ({:c}{:c})"), C_("RomData", "Unknown"),

@@ -45,5 +45,4 @@
 #endif /* __cplusplus */
 
 #include "common.h"
-#include "ctypex.h"
 #include "tcharx.h"

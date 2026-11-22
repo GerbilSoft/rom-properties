@@ -17,6 +17,7 @@
 // Other rom-properties libraries
 #include "librpbase/disc/DiscReader.hpp"
 #include "librpfile/FileSystem.hpp"
+#include "librptext/strfuncs.h"
 #include "librptexture/fileformat/SegaPVR.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -31,9 +32,6 @@ using namespace LibRpTexture;
 
 // Other RomData subclasses
 #include "Media/ISO.hpp"
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -344,8 +342,8 @@ void DreamcastPrivate::parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) c
 	    discHeader.device_info[12] == '/')
 	{
 		// "GD-ROM" is present.
-		if (isdigit_ascii(discHeader.device_info[11]) &&
-		    isdigit_ascii(discHeader.device_info[13]))
+		if (rp_ascii_isdigit(discHeader.device_info[11]) &&
+		    rp_ascii_isdigit(discHeader.device_info[13]))
 		{
 			// Disc digits are present.
 			disc_num = discHeader.device_info[11] & 0x0F;
@@ -529,14 +527,14 @@ int Dreamcast::isRomSupported_static(const DetectInfo *info)
 	}
 
 	if (info->ext && info->ext[0] != 0) {
-		if (!strcasecmp(info->ext, ".gdi")) {
+		if (!rp_ascii_strcasecmp(info->ext, ".gdi")) {
 			// This is a GD-ROM cuesheet.
 			// Check the first line.
 			if (GdiReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
 				// This is a supported GD-ROM cuesheet.
 				return static_cast<int>(DreamcastPrivate::DiscType::GDI);
 			}
-		} else if (!strcasecmp(info->ext, ".cdi")) {
+		} else if (!rp_ascii_strcasecmp(info->ext, ".cdi")) {
 			// This is a DiscJuggler disc image.
 			return static_cast<int>(DreamcastPrivate::DiscType::CDI);
 		}

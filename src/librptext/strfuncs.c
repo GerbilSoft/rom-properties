@@ -8,6 +8,7 @@
 #include "strfuncs.h"
 
 // C includes
+#include <assert.h>
 #include <string.h>
 
 /** Reimplementations of libc string functions that aren't present on this system. **/
@@ -116,3 +117,94 @@ size_t rp_strlcat(char *dst, const char *src, size_t size)
 	return(dlen + (s - src));	/* count does not include NUL */
 }
 #endif /* HAVE_STRLCAT */
+
+/** ASCII character functions **/
+/* from glib-2.90 (LGPL-2.1+) */
+/* Copyright (C) 1995-1997  Peter Mattis, Spencer Kimball and Josh MacDonald */
+
+const uint16_t rp_ascii_table[256] = {
+	0x004, 0x004, 0x004, 0x004, 0x004, 0x004, 0x004, 0x004,
+	0x004, 0x104, 0x104, 0x004, 0x104, 0x104, 0x004, 0x004,
+	0x004, 0x004, 0x004, 0x004, 0x004, 0x004, 0x004, 0x004,
+	0x004, 0x004, 0x004, 0x004, 0x004, 0x004, 0x004, 0x004,
+	0x140, 0x0d0, 0x0d0, 0x0d0, 0x0d0, 0x0d0, 0x0d0, 0x0d0,
+	0x0d0, 0x0d0, 0x0d0, 0x0d0, 0x0d0, 0x0d0, 0x0d0, 0x0d0,
+	0x459, 0x459, 0x459, 0x459, 0x459, 0x459, 0x459, 0x459,
+	0x459, 0x459, 0x0d0, 0x0d0, 0x0d0, 0x0d0, 0x0d0, 0x0d0,
+	0x0d0, 0x653, 0x653, 0x653, 0x653, 0x653, 0x653, 0x253,
+	0x253, 0x253, 0x253, 0x253, 0x253, 0x253, 0x253, 0x253,
+	0x253, 0x253, 0x253, 0x253, 0x253, 0x253, 0x253, 0x253,
+	0x253, 0x253, 0x253, 0x0d0, 0x0d0, 0x0d0, 0x0d0, 0x0d0,
+	0x0d0, 0x473, 0x473, 0x473, 0x473, 0x473, 0x473, 0x073,
+	0x073, 0x073, 0x073, 0x073, 0x073, 0x073, 0x073, 0x073,
+	0x073, 0x073, 0x073, 0x073, 0x073, 0x073, 0x073, 0x073,
+	0x073, 0x073, 0x073, 0x0d0, 0x0d0, 0x0d0, 0x0d0, 0x004,
+
+	/* the upper 128 are all zeroes */
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
+
+// NOTE: Windows does not allow delay-loading a DLL if importing a data symbol.
+// On Windows, rp_ascii_table[] will not be exported; instead, an accessor
+// function will be used. This *will* add slight overhead...
+#ifdef _WIN32
+uint16_t rp_ascii_table_get(char c)
+{
+	return rp_ascii_table[(uint8_t)c];
+}
+#endif /* _WIN32 */
+
+/**
+ * Locale-invariant strcasecmp().
+ * @param s1
+ * @param s2
+ * @return
+ */
+int rp_ascii_strcasecmp(const char *s1, const char *s2)
+{
+	assert(s1 != NULL);
+	assert(s2 != NULL);
+
+	for (; *s1 && *s2; s1++, s2++) {
+		int c1 = (int)(unsigned char)rp_ascii_tolower(*s1);
+		int c2 = (int)(unsigned char)rp_ascii_tolower(*s2);
+		if (c1 != c2) {
+			return (c1 - c2);
+		}
+	}
+
+	return ((int)(unsigned char)*s1) - ((int)(unsigned char)*s2);
+}
+
+/**
+ * Locale-invariant strncasecmp().
+ * @param s1
+ * @param s2
+ * @param n
+ * @return
+ */
+int rp_ascii_strncasecmp(const char *s1, const char *s2, size_t n)
+{
+	assert(s1 != NULL);
+	assert(s2 != NULL);
+
+	for (; n != 0 && *s1 && *s2; s1++, s2++, n--) {
+		int c1 = (int)(unsigned char)rp_ascii_tolower(*s1);
+		int c2 = (int)(unsigned char)rp_ascii_tolower(*s2);
+		if (c1 != c2) {
+			return (c1 - c2);
+		}
+	}
+
+	if (n != 0) {
+		return ((int)(unsigned char)*s1) - ((int)(unsigned char)*s2);
+	}
+	return 0;
+}

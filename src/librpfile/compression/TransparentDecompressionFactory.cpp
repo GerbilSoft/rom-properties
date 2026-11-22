@@ -12,14 +12,10 @@
 #include "GzipFile.hpp"
 #include "ZstdFile.hpp"
 
-// for FileSystem::file_ext()
+// Other rom-properties libraries
 #include "../FileSystem.hpp"
-
-// librpbyteswap
 #include "librpbyteswap/byteswap_rp.h"
-
-// C includes
-#include "tcharx.h"	// for strcasecmp() or equivalent
+#include "librptext/strfuncs.h"
 
 // C includes (C++ namespace)
 #include <cstdint>
@@ -67,7 +63,7 @@ IRpFilePtr create(const IRpFilePtr &file)
 		if (filename) {
 			ext = FileSystem::file_ext(filename);
 		}
-		if (!ext || strcasecmp(ext, ".wua") != 0) {
+		if (!ext || rp_ascii_strcasecmp(ext, ".wua") != 0) {
 			// Not a ".wua" extension. Try zstd.
 			z_file = std::make_shared<ZstdFile>(file);
 			if (z_file->isCompressed()) {

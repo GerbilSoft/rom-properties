@@ -12,12 +12,10 @@
 #include "pkmnmini_structs.h"
 
 // Other rom-properties libraries
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -116,7 +114,7 @@ inline string PokemonMiniPrivate::getGameID(void) const
 	string id4;
 	id4.resize(4, '_');
 	for (size_t i = 0; i < 4; i++) {
-		if (ISPRINT(romHeader.game_id[i])) {
+		if (rp_ascii_isprint(romHeader.game_id[i])) {
 			id4[i] = romHeader.game_id[i];
 		}
 	}

@@ -23,6 +23,7 @@
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
 #include "librpbase/RomFields.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpFile;
 using LibRpBase::RomFields;
 
@@ -817,7 +818,7 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 		// NOTE: Only the first instance is used.
 		// NOTE 2: Specification says it's case-sensitive, but some files
 		// have "KTXOrientation", so use a case-insensitive comparison.
-		if (!hasKTXorientation && !strcasecmp(p, "KTXorientation")) {
+		if (!hasKTXorientation && !rp_ascii_strcasecmp(p, "KTXorientation")) {
 			hasKTXorientation = true;
 			// Check for known values.
 			// NOTE: Ignoring the R component.

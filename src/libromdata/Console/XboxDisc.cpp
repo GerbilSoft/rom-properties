@@ -11,6 +11,7 @@
 
 // Other rom-properties libraries
 #include "librpfile/RpFile.hpp"
+#include "librptext/strfuncs.h"
 #include "librptext/wchar.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -28,7 +29,6 @@ using namespace LibRpTexture;
 #include "Xbox360_XEX.hpp"
 
 // C includes
-#include "ctypex.h"
 #include "tcharx.h"
 
 // C++ STL classes
@@ -305,7 +305,7 @@ IRpFilePtr XboxDiscPrivate::open(const char *filename)
 	// TODO: Handle subdirectories?
 
 	// Make the first character uppercase.
-	ts_full_filename[old_sz] = TOUPPER(ts_full_filename[old_sz]);
+	ts_full_filename[old_sz] = rp_ascii_totupper(ts_full_filename[old_sz]);
 	f = std::make_shared<RpFile>(ts_full_filename, RpFile::FM_OPEN_READ);
 	if (f && f->isOpen()) {
 		return f;
@@ -314,7 +314,7 @@ IRpFilePtr XboxDiscPrivate::open(const char *filename)
 	// Make the whole thing uppercase.
 	const auto toupper_iter = ts_full_filename.begin() + old_sz + 1;
 	std::transform(toupper_iter, ts_full_filename.end(), toupper_iter, [](TCHAR c) noexcept -> TCHAR {
-		return TOUPPER(c);
+		return rp_ascii_totupper(c);
 	});
 	// NOTE: Assigning to `f` for named-return-value optimization.
 	f = std::make_shared<RpFile>(ts_full_filename, RpFile::FM_OPEN_READ);

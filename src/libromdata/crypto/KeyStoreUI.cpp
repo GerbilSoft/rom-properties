@@ -16,6 +16,7 @@
 #include "librpbase/crypto/Hash.hpp"
 #include "librpfile/RpFile.hpp"
 #include "librptext/conversion.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpText;
 using namespace LibRpFile;
@@ -26,9 +27,6 @@ using namespace LibRpFile;
 #include "../crypto/N3DSVerifyKeys.hpp"
 #include "../Console/Xbox360_XEX.hpp"
 using namespace LibRomData;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 #include <numeric>
@@ -1033,12 +1031,12 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const char *value)
 		auto iter_dest = new_value.begin();
 		const auto new_value_end = new_value.end();
 		for (; *value != '\0' && iter_dest != new_value_end; ++value, ++iter_dest) {
-			const char chr = *value;
-			if (!isxdigit_ascii(chr)) {
+			const char c = *value;
+			if (!rp_ascii_isxdigit(c)) {
 				// Not a hex digit.
 				return -EINVAL;
 			}
-			*iter_dest = TOUPPER(chr);
+			*iter_dest = rp_ascii_toupper(c);
 		}
 	}
 

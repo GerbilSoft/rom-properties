@@ -22,13 +22,11 @@
 #include "librpfile/MemFile.hpp"
 #include "librpfile/SubFile.hpp"
 #include "librpfile/VectorFile.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -517,7 +515,7 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 		switch (p.flags_len & 0x3F) {
 			case 11:
 				// Check for default.xex.
-				if (!strncasecmp("default.xex", p.filename, 12)) {
+				if (!rp_ascii_strncasecmp("default.xex", p.filename, 12)) {
 					// Found default.xex.
 					dirEntry = &p;
 					break;
@@ -526,7 +524,7 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 
 			case 12:
 				// Check for default.xexp.
-				if (!strncasecmp("default.xexp", p.filename, 13)) {
+				if (!rp_ascii_strncasecmp("default.xexp", p.filename, 13)) {
 					// Found default.xexp.
 					dirEntry = &p;
 					break;
@@ -643,12 +641,12 @@ string Xbox360_STFS_Private::getTitleID(void) const
 	// FIXME: Verify behavior on big-endian.
 	// TODO: Consolidate implementations into a shared function.
 	string tid_str;
-	if (isupper_ascii(stfsMetadata.title_id.a)) {
+	if (rp_ascii_isupper(stfsMetadata.title_id.a)) {
 		tid_str += (char)stfsMetadata.title_id.a;
 	} else {
 		fmt::format_to(std::back_inserter(tid_str), FSTR("\\x{:0>2X}"), (uint8_t)stfsMetadata.title_id.a);
 	}
-	if (isupper_ascii(stfsMetadata.title_id.b)) {
+	if (rp_ascii_isupper(stfsMetadata.title_id.b)) {
 		tid_str += (char)stfsMetadata.title_id.b;
 	} else {
 		fmt::format_to(std::back_inserter(tid_str), FSTR("\\x{:0>2X}"), (uint8_t)stfsMetadata.title_id.b);

@@ -14,6 +14,7 @@
 
 // Other rom-properties libraries
 #include "time_r.h"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpText;
 
@@ -314,7 +315,7 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 			// This is needed in order to distinguish between really old
 			// OS/2 and Windows executables target OS == 0.
 			// Reference: https://github.com/wine-mirror/wine/blob/ba9f3dc198dfc81bb40159077b73b797006bb73c/dlls/kernel32/module.c#L262
-			if (!strncasecmp(pDllName, "KERNEL", 6)) {
+			if (!rp_ascii_strncasecmp(pDllName, "KERNEL", 6)) {
 				// Found KERNEL.
 				refHasKernel = true;
 				if (!refDesc.empty())
@@ -325,7 +326,7 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 			// NOTE: There's only three 32-bit versions of Visual Basic,
 			// and .NET versions don't count.
 			for (const auto &p : msvb_dll_tbl) {
-				if (!strncasecmp(pDllName, p.dll_name, sizeof(p.dll_name))) {
+				if (!rp_ascii_strncasecmp(pDllName, p.dll_name, sizeof(p.dll_name))) {
 					// Found a matching version.
 					fmt::format_to(std::back_inserter(refDesc),
 						FRUN(C_("EXE|Runtime", "Microsoft Visual Basic {:d}.{:d} Runtime")),
@@ -998,11 +999,11 @@ int EXEPrivate::addFields_NE_Import(void)
 			// Vector index 1: Ordinal
 			// Vector index 2: Module
 
-			int res = strcasecmp(lhs[2].c_str(), rhs[2].c_str());
+			int res = rp_ascii_strcasecmp(lhs[2].c_str(), rhs[2].c_str());
 			if (res < 0) return true;
 			if (res > 0) return false;
 
-			res = strcasecmp(lhs[0].c_str(), rhs[0].c_str());
+			res = rp_ascii_strcasecmp(lhs[0].c_str(), rhs[0].c_str());
 			if (res < 0) return true;
 			if (res > 0) return false;
 

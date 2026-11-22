@@ -52,8 +52,6 @@ ASSERT_STRUCT(XDVDFS_Header, XDVDFS_BLOCK_SIZE);
  * XDVDFS directories use a binary tree structure for fast searches.
  *
  * Binary search is case-insensitive.
- * NOTE: Not sure if strcasecmp() should be used - manual handling
- * of only 'a'-'z'? (this is what extract-xiso does)
  *
  * Filename is stored immediately after the directory entry.
  * If the filename does not end on a DWORD boundary, it is

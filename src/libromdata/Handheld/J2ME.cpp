@@ -27,6 +27,7 @@ typedef void *mzReader;
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/MemFile.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpText;
 using namespace LibRpFile;
@@ -979,7 +980,7 @@ int J2ME::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// .jad check: It's a text file, so we have to rely on the file extension.
-	if (info->ext && !strcasecmp(info->ext, ".jad")) {
+	if (info->ext && !rp_ascii_strcasecmp(info->ext, ".jad")) {
 		// File has a ".jad" extension.
 		return static_cast<int>(J2MEPrivate::JFileType::JAD);
 	}

@@ -26,6 +26,7 @@
 #include "librpbase/disc/DiscReader.hpp"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RelatedFile.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -42,12 +43,6 @@ using namespace LibRpTexture;
 
 // WiiTicket for EncryptionKeys
 #include "WiiTicket.hpp"
-
-// for strnlen() if it's not available in <string.h>
-#include "librptext/strfuncs.h"
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -471,8 +466,8 @@ string GameCubePrivate::getPublisher(void) const
 	}
 
 	// Unknown publisher.
-	if (isalnum_ascii(discHeader.company[0]) &&
-	    isalnum_ascii(discHeader.company[1]))
+	if (rp_ascii_isalnum(discHeader.company[0]) &&
+	    rp_ascii_isalnum(discHeader.company[1]))
 	{
 		// Disc ID is alphanumeric.
 		const array<char, 3> s_company = {{
@@ -700,7 +695,7 @@ inline string GameCubePrivate::getGameID(void) const
 	string id6;
 	id6.resize(6, '_');
 	for (size_t i = 0; i < 6; i++) {
-		if (ISPRINT(discHeader.id6[i])) {
+		if (rp_ascii_isprint(discHeader.id6[i])) {
 			id6[i] = discHeader.id6[i];
 		}
 	}
@@ -1838,8 +1833,8 @@ int GameCube::loadFieldData(void)
 					char chr[4];
 				} part_type;
 				part_type.be32_type = cpu_to_be32(entry.type);
-				if (isalnum_ascii(part_type.chr[0]) && isalnum_ascii(part_type.chr[1]) &&
-				    isalnum_ascii(part_type.chr[2]) && isalnum_ascii(part_type.chr[3]))
+				if (rp_ascii_isalnum(part_type.chr[0]) && rp_ascii_isalnum(part_type.chr[1]) &&
+				    rp_ascii_isalnum(part_type.chr[2]) && rp_ascii_isalnum(part_type.chr[3]))
 				{
 					// All four bytes are ASCII letters and/or numbers.
 					s_ptype = latin1_to_utf8(part_type.chr, sizeof(part_type.chr));
@@ -2178,7 +2173,7 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) co
 	// (NDDEMO has ID6 "00\0E01".)
 	char id6[7];
 	for (unsigned int i = 0; i < 6; i++) {
-		id6[i] = (ISPRINT(discHeader->id6[i]))
+		id6[i] = (rp_ascii_isprint(discHeader->id6[i]))
 			? d->discHeader.id6[i]
 			: '_';
 	}

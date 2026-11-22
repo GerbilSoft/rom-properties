@@ -22,13 +22,11 @@
 #include "librpbase/config/Config.hpp"
 #include "librpbase/disc/DiscReader.hpp"
 #include "librpbase/SystemRegion.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -96,7 +94,7 @@ inline string NintendoDSPrivate::getGameID(void) const
 	string id6;
 	id6.resize(6, '_');
 	for (size_t i = 0; i < 6; i++) {
-		if (ISPRINT(romHeader.id6[i])) {
+		if (rp_ascii_isprint(romHeader.id6[i])) {
 			id6[i] = romHeader.id6[i];
 		}
 	}
@@ -180,8 +178,8 @@ string NintendoDSPrivate::getPublisher(void)
 
 	// Unknown publisher. Print the company code as two characters if they're
 	// both alphanumeric; otherwise, hexadecimal.
-	if (isalnum_ascii(romHeader.company[0]) &&
-	    isalnum_ascii(romHeader.company[1]))
+	if (rp_ascii_isalnum(romHeader.company[0]) &&
+	    rp_ascii_isalnum(romHeader.company[1]))
 	{
 		fmt::format_to(std::back_inserter(s_ret),
 			FSTR("{:s} ({:c}{:c})"), C_("RomData", "Unknown"),
@@ -1394,7 +1392,7 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) 
 	// The ID4 cannot have non-printable characters.
 	char id4[5];
 	for (int i = ARRAY_SIZE(romHeader->id4)-1; i >= 0; i--) {
-		if (!ISPRINT(romHeader->id4[i])) {
+		if (!rp_ascii_isprint(romHeader->id4[i])) {
 			// Non-printable character found.
 			return -ENOENT;
 		}

@@ -13,12 +13,10 @@
 #include "RomData_p.hpp"
 
 // Other rom-properties libraries
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 #include <numeric>
@@ -159,7 +157,7 @@ int SAPPrivate::durationToMsLoop(const char *str, uint32_t *pMs, bool *pLoop)
 		unsigned int digit_count = 0;
 		dp++;
 		for (; *dp != '\0'; dp++) {
-			if (isdigit_ascii(*dp)) {
+			if (rp_ascii_isdigit(*dp)) {
 				// Found a digit.
 				digit_count++;
 			} else {
@@ -217,7 +215,7 @@ int SAPPrivate::durationToMsLoop(const char *str, uint32_t *pMs, bool *pLoop)
 	const char *space = strchr(str, ' ');
 	if (space) {
 		space++;
-		if (!strncasecmp(space, "LOOP", 4) && (space[4] == '\0' || ISSPACE(space[4]))) {
+		if (!rp_ascii_strncasecmp(space, "LOOP", 4) && (space[4] == '\0' || rp_ascii_isspace(space[4]))) {
 			// Found "LOOP".
 			*pLoop = true;
 		}
@@ -280,7 +278,7 @@ SAPPrivate::sap_tags_t SAPPrivate::parseTags(void)
 			*space = '\0';
 
 			// Check for the first non-space character in the parameter.
-			for (; *params != '\0' && ISSPACE(*params); params++) { }
+			for (; *params != '\0' && rp_ascii_isspace(*params); params++) { }
 			if (*params == '\0') {
 				// No non-space characters.
 				// Ignore the parameter.
@@ -339,7 +337,7 @@ SAPPrivate::sap_tags_t SAPPrivate::parseTags(void)
 		// TODO: Show errors for unsupported tags?
 		// TODO: Print errors?
 		for (const KeywordDef &kwd : kwds) {
-			if (strcasecmp(kwd.keyword, token) != 0) {
+			if (rp_ascii_strcasecmp(kwd.keyword, token) != 0) {
 				// Not a match. Keep going.
 				continue;
 			}
@@ -361,7 +359,7 @@ SAPPrivate::sap_tags_t SAPPrivate::parseTags(void)
 
 					char *endptr = nullptr;
 					long val = strtol(params, &endptr, 10);
-					if (endptr > params && (*endptr == '\0' || ISSPACE(*endptr))) {
+					if (endptr > params && (*endptr == '\0' || rp_ascii_isspace(*endptr))) {
 						*(static_cast<uint16_t*>(kwd.ptr)) = static_cast<uint16_t>(val);
 					}
 					break;
@@ -374,7 +372,7 @@ SAPPrivate::sap_tags_t SAPPrivate::parseTags(void)
 
 					char *endptr = nullptr;
 					long val = strtol(params, &endptr, 16);
-					if (endptr > params && (*endptr == '\0' || ISSPACE(*endptr))) {
+					if (endptr > params && (*endptr == '\0' || rp_ascii_isspace(*endptr))) {
 						*(static_cast<uint16_t*>(kwd.ptr)) = static_cast<uint16_t>(val);
 					}
 					break;
@@ -385,7 +383,7 @@ SAPPrivate::sap_tags_t SAPPrivate::parseTags(void)
 					if (!params)
 						break;
 
-					if (!ISSPACE(params[0] && (params[1] == '\0' || ISSPACE(params[1])))) {
+					if (!rp_ascii_isspace(params[0] && (params[1] == '\0' || rp_ascii_isspace(params[1])))) {
 						// Single character.
 						*(static_cast<char*>(kwd.ptr)) = params[0];
 					}
@@ -593,7 +591,7 @@ int SAP::loadFieldData(void)
 	// Type
 	// TODO: Verify that the type is valid?
 	const char *const type_title = C_("RomData", "Type");
-	if (ISALPHA(tags.type)) {
+	if (rp_ascii_isalpha(tags.type)) {
 		const char s_tag_type[2] = {tags.type, '\0'};
 		d->fields.addField_string(type_title, s_tag_type);
 	} else {
@@ -611,7 +609,7 @@ int SAP::loadFieldData(void)
 	d->fields.addField_string_numeric(C_("SAP", "Fastplay"), scanlines);
 
 	// Init address (Types B, D, S) / music address (Type C)
-	switch (toupper(tags.type)) {
+	switch (rp_ascii_toupper(tags.type)) {
 		default:
 			// Skipping for invalid types.
 			break;

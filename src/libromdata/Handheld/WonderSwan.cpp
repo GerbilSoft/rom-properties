@@ -14,6 +14,7 @@
 
 // Other rom-properties libraries
 #include "librpfile/FileSystem.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpText;
 using namespace LibRpFile;
@@ -344,9 +345,9 @@ int WonderSwan::isRomSupported_static(const DetectInfo *info)
 	// File extension must be ".ws", ".wsc", or ".pc2".
 	// TODO: Gzipped ROMs?
 	if (!info->ext || (
-	     strcasecmp(info->ext, ".ws") != 0 &&
-	     strcasecmp(info->ext, ".wsc") != 0 &&
-	     strcasecmp(info->ext, ".pc2") != 0))
+	     rp_ascii_strcasecmp(info->ext, ".ws") != 0 &&
+	     rp_ascii_strcasecmp(info->ext, ".wsc") != 0 &&
+	     rp_ascii_strcasecmp(info->ext, ".pc2") != 0))
 	{
 		// Not a supported file extension.
 		return static_cast<int>(WonderSwanPrivate::RomType::Unknown);

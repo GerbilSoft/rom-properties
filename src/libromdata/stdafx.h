@@ -65,7 +65,6 @@
 // librpbase common headers
 #include "common.h"
 #include "aligned_malloc.h"
-#include "ctypex.h"
 #include "dll-macros.h"
 
 // librpbyteswap
@@ -101,4 +100,5 @@
 // librptext C++ headers
 #include "librptext/conversion.hpp"
 #include "librptext/formatting.hpp"
+#include "librptext/strfuncs.h"
 #endif /* !__cplusplus */

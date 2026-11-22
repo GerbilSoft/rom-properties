@@ -19,12 +19,10 @@
 
 // Other rom-properties libraries
 #include "librpbase/SystemRegion.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -341,8 +339,8 @@ int WiiU::loadFieldData(void)
 	if (publisher) {
 		s_publisher = publisher;
 	} else {
-		if (isalnum_ascii(publisher_code[0]) && isalnum_ascii(publisher_code[1]) &&
-		    isalnum_ascii(publisher_code[2]) && isalnum_ascii(publisher_code[3]))
+		if (rp_ascii_isalnum(publisher_code[0]) && rp_ascii_isalnum(publisher_code[1]) &&
+		    rp_ascii_isalnum(publisher_code[2]) && rp_ascii_isalnum(publisher_code[3]))
 		{
 			fmt::format_to(std::back_inserter(s_publisher),
 				FSTR("{:s} ({:s})"), C_("RomData", "Unknown"), publisher_code.data());
@@ -527,7 +525,7 @@ int WiiU::extURLs_int(const char *id4, ImageType imageType, vector<ExtURL> &extU
 	// (GameCube NDDEMO has ID6 "00\0E01".)
 	char id6[7];
 	for (unsigned int i = 0; i < 4; i++) {
-		id6[i] = (ISPRINT(id4[i]))
+		id6[i] = (rp_ascii_isprint(id4[i]))
 			? id4[i]
 			: '_';
 	}

@@ -14,6 +14,7 @@
 
 // librpbase, librpfile
 #include "librpfile/FileSystem.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 
@@ -198,28 +199,28 @@ FileFormatPtr create(const IRpFilePtr &file)
 	if (!ext || ext[0] == '\0') {
 		// No extension. Check for TGA anyway.
 		maybe_tga = true;
-	} else if (!strcasecmp(ext, ".tga")) {
+	} else if (!rp_ascii_strcasecmp(ext, ".tga")) {
 		// TGA extension.
 		maybe_tga = true;
-	} else if (!strcasecmp(ext, ".ico") || !strcasecmp(ext, ".cur")) {
+	} else if (!rp_ascii_strcasecmp(ext, ".ico") || !rp_ascii_strcasecmp(ext, ".cur")) {
 		// ICO or CUR extension.
 		is_ico = true;
-	} else if (!strcasecmp(ext, ".tim")) {
+	} else if (!rp_ascii_strcasecmp(ext, ".tim")) {
 		// TIM extension.
 		is_tim = true;
-	} else if (!strcasecmp(ext, ".gz")) {
+	} else if (!rp_ascii_strcasecmp(ext, ".gz")) {
 		// Check if it's ".tga.gz".
 		const size_t filename_len = strlen(filename);
 		if (filename_len >= 7) {
-			if (!strncasecmp(&filename[filename_len-7], ".tga", 4)) {
+			if (!rp_ascii_strncasecmp(&filename[filename_len-7], ".tga", 4)) {
 				// It's ".tga.gz".
 				maybe_tga = true;
-			} else if (!strncasecmp(&filename[filename_len-7], ".ico", 4) ||
-			           !strncasecmp(&filename[filename_len-7], ".cur", 4))
+			} else if (!rp_ascii_strncasecmp(&filename[filename_len-7], ".ico", 4) ||
+			           !rp_ascii_strncasecmp(&filename[filename_len-7], ".cur", 4))
 			{
 				// It's ".ico.gz" or ".cur.gz".
 				is_ico = true;
-			} else if (!strncasecmp(&filename[filename_len-7], ".tim", 4)) {
+			} else if (!rp_ascii_strncasecmp(&filename[filename_len-7], ".tim", 4)) {
 				// It's ".tim.gz".
 				is_tim = true;
 			}

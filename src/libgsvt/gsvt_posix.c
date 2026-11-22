@@ -22,10 +22,16 @@
 #include <string.h>
 #include <unistd.h>
 #include <wchar.h>
-#include "ctypex.h"
 
 // Terminal I/O
 #include <termios.h>
+
+// FIXME: Cannot link to librptext due to issues with
+// multiple definitions of rp_ascii_table_get() in MSVC builds.
+static inline char rp_ascii_tolower(char c)
+{
+	return (c >= 'A' && c <= 'Z') ? (c | 0x20) : c;
+}
 
 struct _gsvt_console {
 	FILE *stream;		// File handle, e.g. stdout or stderr
@@ -64,7 +70,7 @@ static void check_TERM_variable(void)
 	// Convert to lowercase.
 	char *const TERM_lower = strdup(TERM);
 	for (char *p = TERM_lower; *p != '\0'; p++) {
-		*p = tolower(*p);
+		*p = rp_ascii_tolower(*p);
 	}
 
 	/// Check for matching terminals.

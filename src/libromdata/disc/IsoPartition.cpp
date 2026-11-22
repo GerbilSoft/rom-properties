@@ -13,6 +13,7 @@
 #include "time_r.h"
 #include "librpbase/disc/PartitionFile.hpp"
 #include "librptext/conversion.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -383,7 +384,7 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup_int(const DirData_t *pDir, const
 		if (dirEntry_filename_len == filename_len + 2) {
 			// +2 length match.
 			// This might have ";1".
-			if (!strncasecmp(entry_filename, filename, filename_len)) {
+			if (!rp_ascii_strncasecmp(entry_filename, filename, filename_len)) {
 				// Check for ";1".
 				// TODO: Also allow other version numbers?
 				if (entry_filename[filename_len]   == ';' &&
@@ -404,7 +405,7 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup_int(const DirData_t *pDir, const
 			}
 		} else if (dirEntry_filename_len == filename_len) {
 			// Exact length match.
-			if (!strncasecmp(entry_filename, filename, filename_len)) {
+			if (!rp_ascii_strncasecmp(entry_filename, filename, filename_len)) {
 				// Found it!
 				// Verify directory vs. file.
 				const bool isDir = !!(dirEntry->flags & ISO_FLAG_DIRECTORY);

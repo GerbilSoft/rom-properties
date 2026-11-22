@@ -14,6 +14,7 @@
 
 // Other rom-properties libraries
 #include "aligned_malloc.h"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -31,9 +32,6 @@ using namespace LibRpTexture;
 // WiiTicket for EncryptionKeys
 // TODO: Use for title key decryption.
 #include "../Console/WiiTicket.hpp"
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -315,7 +313,7 @@ int WiiSave::isRomSupported_static(const DetectInfo *info)
 		for (const char *const *ext = WiiSavePrivate::exts.data();
 		     *ext != nullptr; ext++)
 		{
-			if (!strcasecmp(info->ext, *ext)) {
+			if (!rp_ascii_strcasecmp(info->ext, *ext)) {
 				// File extension is supported.
 				return 0;
 			}
@@ -422,10 +420,10 @@ int WiiSave::loadFieldData(void)
 	// NOTE: Uses the ID from the Bk header.
 	// TODO: Check if it matches the savegame header?
 	if (isBkValid) {
-		if (isalnum_ascii(bkHeader->id4[0]) &&
-		    isalnum_ascii(bkHeader->id4[1]) &&
-		    isalnum_ascii(bkHeader->id4[2]) &&
-		    isalnum_ascii(bkHeader->id4[3]))
+		if (rp_ascii_isalnum(bkHeader->id4[0]) &&
+		    rp_ascii_isalnum(bkHeader->id4[1]) &&
+		    rp_ascii_isalnum(bkHeader->id4[2]) &&
+		    rp_ascii_isalnum(bkHeader->id4[3]))
 		{
 			// Print the game ID.
 			// TODO: Is the publisher code available anywhere?
@@ -526,10 +524,10 @@ int WiiSave::loadMetaData(void)
 	// NOTE: Uses the ID from the Bk header.
 	// TODO: Check if it matches the savegame header?
 	if (isBkValid) {
-		if (isalnum_ascii(bkHeader->id4[0]) &&
-		    isalnum_ascii(bkHeader->id4[1]) &&
-		    isalnum_ascii(bkHeader->id4[2]) &&
-		    isalnum_ascii(bkHeader->id4[3]))
+		if (rp_ascii_isalnum(bkHeader->id4[0]) &&
+		    rp_ascii_isalnum(bkHeader->id4[1]) &&
+		    rp_ascii_isalnum(bkHeader->id4[2]) &&
+		    rp_ascii_isalnum(bkHeader->id4[3]))
 		{
 			// Print the game ID.
 			// TODO: Is the publisher code available anywhere?

@@ -13,11 +13,9 @@
 #include "librpbase/config/AboutTabText.hpp"
 #include "librptext/wchar.hpp"
 #include "libromdata/img/CacheManager.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using LibRomData::CacheManager;
-
-// C includes
-#include "ctypex.h"
 
 // MSVCRT-specific
 #include <process.h>
@@ -99,7 +97,7 @@ unsigned int WINAPI UpdateChecker::ThreadProc(LPVOID lpParameter)
 	DWORD bytesRead = 0;
 	BOOL bRet = ReadFile(hVersionFile, buf, sizeof(buf)-1, &bytesRead, nullptr);
 	CloseHandle(hVersionFile);
-	if (!bRet || bytesRead == 0 || bytesRead > sizeof(buf)-1 || ISSPACE(buf[0])) {
+	if (!bRet || bytesRead == 0 || bytesRead > sizeof(buf)-1 || rp_ascii_isspace(buf[0])) {
 		// Read error?
 		updChecker->m_errorMessage = C_("UpdateChecker", "Version file is invalid.");
 		SendMessage(updChecker->m_hWnd, WM_UPD_ERROR, 0, 0);

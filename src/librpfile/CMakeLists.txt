@@ -201,7 +201,8 @@ FOREACH(_target ${TARGETS})
 	IF(ENABLE_NLS)
 		TARGET_LINK_LIBRARIES(${_target} PRIVATE i18n${_target_suffix})
 	ENDIF(ENABLE_NLS)
-	TARGET_LINK_LIBRARIES(${_target} PUBLIC boost-time64)	# for rp_time_t and 64-bit time functions
+	TARGET_LINK_LIBRARIES(${_target} PUBLIC boost-time64)			# for rp_time_t and 64-bit time functions
+	TARGET_LINK_LIBRARIES(${_target} PRIVATE rptext${_target_suffix})	# for strfuncs
 
 	# libwin32common / libunixcommon
 	IF(WIN32)

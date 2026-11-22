@@ -19,15 +19,13 @@
 #include "aligned_malloc.h"
 #include "librpbase/Achievements.hpp"
 #include "librpbase/crypto/Hash.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 
 // Other RomData subclasses
 #include "Media/ISO.hpp"
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -1899,7 +1897,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) c
 				// Different discs have a different number in the
 				// MCD System ID, but the serial number is identical
 				// on all MCD discs, and all MCD32X discs.
-				if (isdigit_ascii(d->mcd_systemID.volume_name[10])) {
+				if (rp_ascii_isdigit(d->mcd_systemID.volume_name[10])) {
 					// Append the disc number.
 					gameID += ".disc";
 					gameID += d->mcd_systemID.volume_name[10];
@@ -1913,7 +1911,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) c
 						if (!memcmp(s_serial_number, "GM MK-4411 -00", 14)) {
 							// Jurassic Park (EUR) - different language versions,
 							// which have different titles but the same serial number.
-							if (ISALPHA(pRomHeader->title_domestic[14])) {
+							if (rp_ascii_isalpha(pRomHeader->title_domestic[14])) {
 								// Append the first character of the region.
 								gameID += '.';
 								gameID += pRomHeader->title_domestic[14];

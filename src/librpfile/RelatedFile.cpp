@@ -14,6 +14,9 @@
 
 #include "force_inline.h"
 
+// Other rom-properties libraries
+#include "librptext/strfuncs.h"
+
 // C includes (C++ namespace)
 #include <cassert>
 #ifdef _WIN32
@@ -33,25 +36,25 @@ namespace LibRpFile { namespace FileSystem {
 
 namespace {
 
-static RP_FORCEINLINE char toupper_wrapper(char c)
+static inline char rp_ascii_toupper_wrapper(char c)
 {
-	return std::toupper(c);
+	return rp_ascii_toupper(c);
 }
 
-static RP_FORCEINLINE char tolower_wrapper(char c)
+static inline char rp_ascii_tolower_wrapper(char c)
 {
-	return std::tolower(c);
+	return rp_ascii_tolower(c);
 }
 
 #if defined(_WIN32) && defined(_UNICODE)
-static RP_FORCEINLINE wchar_t toupper_wrapper(wchar_t c)
+static inline wchar_t rp_ascii_toupper_wrapper(wchar_t c)
 {
-	return std::towupper(c);
+	return rp_ascii_towupper(c);
 }
 
-static RP_FORCEINLINE wchar_t tolower_wrapper(wchar_t c)
+static inline wchar_t rp_ascii_tolower_wrapper(wchar_t c)
 {
-	return std::towlower(c);
+	return rp_ascii_towlower(c);
 }
 #endif /* _WIN32 && _UNICODE */
 
@@ -117,10 +120,10 @@ IRpFile *T_openRelatedFile_rawptr(const CharType *filename, const CharType *base
 	// Hence, we should check for both uppercase and lowercase extensions
 	// on all platforms.
 
-	// Check for uppercase extensions first.
+	// Check for an uppercase extensions first.
 	ct_string s_ext = ext;
 	std::transform(s_ext.begin(), s_ext.end(), s_ext.begin(),
-		[](CharType c) noexcept -> CharType { return toupper_wrapper(c); });
+		[](CharType c) noexcept -> CharType { return rp_ascii_toupper_wrapper(c); });
 
 	// Attempt to open the related file.
 	ct_string s_rel_filename(sv_dir);
@@ -132,7 +135,7 @@ IRpFile *T_openRelatedFile_rawptr(const CharType *filename, const CharType *base
 
 		// Try again with a lowercase extension.
 		std::transform(s_ext.begin(), s_ext.end(), s_ext.begin(),
-			[](CharType c) noexcept -> CharType { return tolower_wrapper(c); });
+			[](CharType c) noexcept -> CharType { return rp_ascii_tolower_wrapper(c); });
 		s_rel_filename.replace(s_rel_filename.size() - s_ext.size(), s_ext.size(), s_ext);
 		test_file.reset(new RpFile(s_rel_filename, RpFile::FM_OPEN_READ));
 		if (!test_file->isOpen()) {

@@ -15,14 +15,12 @@
 // Other rom-properties libraries
 #include "aligned_malloc.h"
 #include "librpbase/SystemRegion.hpp"
+#include "librptext/strfuncs.h"
 #include "librptexture/decoder/ImageDecoder_GCN.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
 using namespace LibRpTexture;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -225,7 +223,7 @@ bool GameCubeSavePrivate::isCardDirEntry(const uint8_t *buffer, uint32_t data_si
 	// TODO: NDDEMO has a NULL in the game ID, but I don't think
 	// it has save files.
 	for (int i = 6-1; i >= 0; i--) {
-		if (!isalnum_ascii(direntry->id6[i])) {
+		if (!rp_ascii_isalnum(direntry->id6[i])) {
 			// Non-alphanumeric character.
 			return false;
 		}
@@ -629,7 +627,7 @@ inline string GameCubeSavePrivate::getGameID(void) const
 	string id6;
 	id6.resize(6, '_');
 	for (size_t i = 0; i < 6; i++) {
-		if (ISPRINT(direntry.id6[i])) {
+		if (rp_ascii_isprint(direntry.id6[i])) {
 			id6[i] = direntry.id6[i];
 		}
 	}

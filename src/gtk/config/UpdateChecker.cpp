@@ -12,12 +12,10 @@
 // Other rom-properties libraries
 #include "libi18n/i18n.hpp"
 #include "librpbase/config/AboutTabText.hpp"
+#include "librptext/strfuncs.h"
 #include "libromdata/img/CacheManager.hpp"
 using namespace LibRpBase;
 using LibRomData::CacheManager;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::string;
@@ -180,7 +178,7 @@ rp_update_checker_thread_run(RpUpdateChecker *updChecker)
 	char *fgret = fgets(buf, sizeof(buf)-1, f);
 	fclose(f);
 	fgret[sizeof(fgret)-1] = '\0';
-	if (!fgret || ISSPACE(buf[0])) {
+	if (!fgret || rp_ascii_isspace(buf[0])) {
 		g_signal_emit(updChecker, signals[SIGNAL_ERROR], 0,
 			C_("UpdateChecker", "Version file is invalid."));
 		g_signal_emit(updChecker, signals[SIGNAL_FINISHED], 0);

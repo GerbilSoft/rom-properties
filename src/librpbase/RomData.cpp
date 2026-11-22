@@ -15,11 +15,9 @@
 #include "libcachecommon/CacheKeys.hpp"
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpFile;
 using namespace LibRpTexture;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -272,7 +270,7 @@ rp_time_t RomDataPrivate::ascii_yyyymmdd_to_unix_time(const char *ascii_date)
 	// Convert the date to an unsigned integer first.
 	unsigned int ymd = 0;
 	for (unsigned int i = 0; i < 8; i++) {
-		if (unlikely(!isdigit_ascii(ascii_date[i]))) {
+		if (unlikely(!rp_ascii_isdigit(ascii_date[i]))) {
 			// Invalid digit.
 			return -1;
 		}

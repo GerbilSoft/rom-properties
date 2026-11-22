@@ -15,6 +15,7 @@
 
 // Other rom-properties libraries
 #include "librpbase/disc/DiscReader.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
@@ -32,9 +33,6 @@ using namespace LibRpText;
 
 // inih for SYSTEM.CNF
 #include "ini.h"
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 #include <unordered_map>
@@ -172,7 +170,7 @@ int PlayStationDiscPrivate::parse_system_cnf(void *user, const char *section, co
 	// Save the value for later.
 	string s_name(name);
 	std::transform(s_name.begin(), s_name.end(), s_name.begin(),
-		[](char c) noexcept -> char { return std::toupper(c); });
+		[](char c) noexcept -> char { return rp_ascii_toupper(c); });
 
 	PlayStationDiscPrivate *const d = static_cast<PlayStationDiscPrivate*>(user);
 	auto ret = d->system_cnf.emplace(std::move(s_name), value);
@@ -424,7 +422,7 @@ PlayStationDisc::PlayStationDisc(const IRpFilePtr &file)
 	const auto &bf_str = iter->second;
 	if (!bf_str.empty()) {
 		size_t pos = 0;
-		if (!strncasecmp(bf_str.c_str(), "cdrom", 5)) {
+		if (!rp_ascii_strncasecmp(bf_str.c_str(), "cdrom", 5)) {
 			pos = 5;
 			if (bf_str[pos] == '0') {
 				// "cdrom0"
@@ -468,7 +466,7 @@ PlayStationDisc::PlayStationDisc(const IRpFilePtr &file)
 	// Remove the ISO version number.
 	const size_t len = d->boot_filename.size();
 	if (len > 2) {
-		if (isdigit_ascii(d->boot_filename[len-1]) && d->boot_filename[len-2] == ';') {
+		if (rp_ascii_isdigit(d->boot_filename[len-1]) && d->boot_filename[len-2] == ';') {
 			d->boot_filename.resize(len-2);
 		}
 	}
@@ -918,7 +916,7 @@ int PlayStationDisc::loadMetaData(void)
 		// Boot filename format: SLUS_207.18
 		string gameID = d->boot_filename;
 		std::transform(gameID.begin(), gameID.end(), gameID.begin(),
-			[](char c) noexcept -> char { return std::toupper(c); });
+			[](char c) noexcept -> char { return rp_ascii_toupper(c); });
 		size_t pos = gameID.find('_');
 		if (pos != string::npos) {
 			gameID[pos] = '-';
@@ -993,7 +991,7 @@ int PlayStationDisc::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int s
 	// Using the first part as the region code.
 	string gameID = d->boot_filename;
 	std::transform(gameID.begin(), gameID.end(), gameID.begin(),
-		[](char c) noexcept -> char { return std::toupper(c); });
+		[](char c) noexcept -> char { return rp_ascii_toupper(c); });
 	string region_code;
 	size_t pos = gameID.find('_');
 	if (pos != string::npos) {

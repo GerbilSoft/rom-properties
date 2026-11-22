@@ -17,6 +17,7 @@
 // Other rom-properties libraries
 #include "librpbase/config/Config.hpp"
 #include "librpfile/SubFile.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpText;
 using namespace LibRpFile;
@@ -24,9 +25,6 @@ using namespace LibRpFile;
 // For sections delegated to other RomData subclasses.
 #include "Audio/GBS.hpp"
 #include "Audio/gbs_structs.h"
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -473,8 +471,8 @@ void DMGPrivate::getTitleAndGameID(const DMG_RomHeader *pRomHeader, string &s_ti
 
 		if (isGameID) {
 			// Second and third bytes must be uppercase and/or numeric.
-			if ((!isupper_ascii(pRomHeader->title15[12]) && !isdigit_ascii(pRomHeader->title15[12])) ||
-			    (!isupper_ascii(pRomHeader->title15[13]) && !isdigit_ascii(pRomHeader->title15[13])))
+			if ((!rp_ascii_isupper(pRomHeader->title15[12]) && !rp_ascii_isdigit(pRomHeader->title15[12])) ||
+			    (!rp_ascii_isupper(pRomHeader->title15[13]) && !rp_ascii_isdigit(pRomHeader->title15[13])))
 			{
 				// This is not a Game ID.
 				isGameID = false;
@@ -545,8 +543,8 @@ string DMGPrivate::getPublisher(void) const
 		if (publisher) {
 			s_ret = publisher;
 		} else {
-			if (isalnum_ascii(romHeader.new_publisher_code[0]) &&
-			    isalnum_ascii(romHeader.new_publisher_code[1]))
+			if (rp_ascii_isalnum(romHeader.new_publisher_code[0]) &&
+			    rp_ascii_isalnum(romHeader.new_publisher_code[1]))
 			{
 				const array<char, 3> s_company = {{
 					romHeader.new_publisher_code[0],
@@ -1297,10 +1295,10 @@ int DMG::loadFieldData(void)
 		} else {
 			// If the mapper ID is all printable characters, print the mapper as text.
 			// Otherwise, print a hexdump.
-			if (ISPRINT(gbxFooter->mapper[0]) &&
-			    ISPRINT(gbxFooter->mapper[1]) &&
-			    ISPRINT(gbxFooter->mapper[2]) &&
-			    ISPRINT(gbxFooter->mapper[3]))
+			if (rp_ascii_isprint(gbxFooter->mapper[0]) &&
+			    rp_ascii_isprint(gbxFooter->mapper[1]) &&
+			    rp_ascii_isprint(gbxFooter->mapper[2]) &&
+			    rp_ascii_isprint(gbxFooter->mapper[3]))
 			{
 				// All printable.
 				d->fields.addField_string(C_("DMG", "Mapper"),

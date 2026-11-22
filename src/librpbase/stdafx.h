@@ -80,12 +80,12 @@
 // librpbase common headers
 #include "common.h"
 #include "aligned_malloc.h"
-#include "ctypex.h"
 #include "dll-macros.h"
 
 #ifdef __cplusplus
 // librpbase C++ headers
 #include "librptext/conversion.hpp"
+#include "librptext/strfuncs.h"
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector

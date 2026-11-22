@@ -43,6 +43,7 @@ using namespace LibRpFile;
 using namespace LibRomData;
 
 // librptext
+#include "librptext/strfuncs.h"
 #include "librptext/wchar.hpp"
 
 // librptexture
@@ -71,9 +72,6 @@ using namespace LibRpTexture;
 #  include "libunixcommon/userdirs.hpp"
 #  define OS_NAMESPACE LibUnixCommon
 #endif
-
-// C includes
-#include "ctypex.h"
 
 // for __GLIBC__
 #ifdef HAVE_FEATURES_H
@@ -936,8 +934,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				uint32_t new_lc = 0;
 				int pos;
 				for (pos = 0; pos < 4 && s_lang[pos] != _T('\0'); pos++) {
-					TCHAR c = tolower_ascii(s_lang[pos]);
-					if (!islower_ascii(c)) {
+					TCHAR c = rp_ascii_totlower(s_lang[pos]);
+					if (!rp_ascii_istlower(c)) {
 						// Not a valid language code character.
 						new_lc = 0;
 						break;

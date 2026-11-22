@@ -13,6 +13,9 @@
 // d_type compatibility values
 #include "d_type.h"
 
+// Other rom-properties libraries
+#include "librptext/strfuncs.h"
+
 // C includes
 #include <sys/types.h>
 #include <dirent.h>
@@ -150,7 +153,7 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 		// Check the filename to see if we should delete it.
 		if (d_type == DT_REG || d_type == DT_UNKNOWN) {
 			// Thumbs.db files can be deleted.
-			if (!strcasecmp(dirent->d_name, "Thumbs.db")) {
+			if (!rp_ascii_strcasecmp(dirent->d_name, "Thumbs.db")) {
 				goto isok;
 			}
 
@@ -163,10 +166,10 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 			}
 
 			const char *pExt = &dirent->d_name[len-4];
-			if (strcasecmp(pExt, ".png") != 0 &&
-			    strcasecmp(pExt, ".jpg") != 0 &&
-			    strcasecmp(pExt, ".jxl") != 0 &&
-			    strcasecmp(dirent->d_name, "version.txt") != 0)
+			if (rp_ascii_strcasecmp(pExt, ".png") != 0 &&
+			    rp_ascii_strcasecmp(pExt, ".jpg") != 0 &&
+			    rp_ascii_strcasecmp(pExt, ".jxl") != 0 &&
+			    rp_ascii_strcasecmp(dirent->d_name, "version.txt") != 0)
 			{
 				// Extension is not valid.
 				closedir(pdir);

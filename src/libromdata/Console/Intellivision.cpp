@@ -13,12 +13,10 @@
 
 // Other rom-properties libraries
 #include "librpfile/FileSystem.hpp"
+#include "librptext/strfuncs.h"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpText;
-
-// C includes
-#include "ctypex.h"
 
 // C++ STL classes
 using std::array;
@@ -147,7 +145,7 @@ string IntellivisionPrivate::getTitle(int *pOutYear) const
 	// NOTE: Games that don't use EXEC don't necessarily have a valid title.
 	// The title field is usually single space in that case, and we should
 	// ignore it. (date is 0 aka 1900; maybe we should skip if that's the case?)
-	while (!title.empty() && ISSPACE(title.back())) {
+	while (!title.empty() && rp_ascii_isspace(title.back())) {
 		title.resize(title.size()-1);
 	}
 
@@ -227,7 +225,7 @@ int Intellivision::isRomSupported_static(const DetectInfo *info)
 	for (const char *const *ext = IntellivisionPrivate::exts.data();
 	     *ext != nullptr; ext++)
 	{
-		if (!strcasecmp(info->ext, *ext)) {
+		if (!rp_ascii_strcasecmp(info->ext, *ext)) {
 			// File extension is supported.
 			return 0;
 		}

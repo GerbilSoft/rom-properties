@@ -10,7 +10,9 @@
 
 #include "Config.hpp"
 #include "ConfReader_p.hpp"
-#include "ctypex.h"
+
+// Other rom-properties libraries
+#include "librptext/strfuncs.h"
 
 // C++ STL classes
 #include <unordered_map>
@@ -262,34 +264,34 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 	}
 
 	// Which section are we in?
-	if (!strcasecmp(section, "Downloads")) {
+	if (!rp_ascii_strcasecmp(section, "Downloads")) {
 		// Downloads. Check for one of the boolean options.
 		bool *bParam = nullptr;
 		Config::ImgBandwidth *ibParam = nullptr;
 
-		if (!strcasecmp(name, "ExtImageDownload")) {
+		if (!rp_ascii_strcasecmp(name, "ExtImageDownload")) {
 			bParam = &extImgDownloadEnabled;
-		} else if (!strcasecmp(name, "UseIntIconForSmallSizes")) {
+		} else if (!rp_ascii_strcasecmp(name, "UseIntIconForSmallSizes")) {
 			bParam = &useIntIconForSmallSizes;
-		} else if (!strcasecmp(name, "StoreFileOriginInfo")) {
+		} else if (!rp_ascii_strcasecmp(name, "StoreFileOriginInfo")) {
 			bParam = &storeFileOriginInfo;
-		} else if (!strcasecmp(name, "PalLanguageForGameTDB")) {
+		} else if (!rp_ascii_strcasecmp(name, "PalLanguageForGameTDB")) {
 			// PAL language. Parse the language code.
 			// NOTE: Converting to lowercase.
 			// TODO: Only allow valid language codes?
 			palLanguageForGameTDB = 0;
 			for (unsigned int i = 0; i < 4 && *value != '\0'; i++, value++) {
 				palLanguageForGameTDB <<= 8;
-				palLanguageForGameTDB |= TOLOWER(*value);
+				palLanguageForGameTDB |= rp_ascii_tolower(*value);
 			}
 			return 1;
-		} else if (!strcasecmp(name, "ImgBandwidthUnmetered")) {
+		} else if (!rp_ascii_strcasecmp(name, "ImgBandwidthUnmetered")) {
 			isNewBandwidthOptionSet = true;
 			ibParam = &imgBandwidthUnmetered;
-		} else if (!strcasecmp(name, "ImgBandwidthMetered")) {
+		} else if (!rp_ascii_strcasecmp(name, "ImgBandwidthMetered")) {
 			isNewBandwidthOptionSet = true;
 			ibParam = &imgBandwidthMetered;
-		} else if (!strcasecmp(name, "DownloadHighResScans")) {
+		} else if (!rp_ascii_strcasecmp(name, "DownloadHighResScans")) {
 			bParam = &downloadHighResScans;
 		} else {
 			// Invalid option.
@@ -299,20 +301,20 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 		if (bParam) {
 			// Boolean value.
 			// Acceptable values are "true", "false", "1", and "0".
-			if (!strcasecmp(value, "true") || !strcmp(value, "1")) {
+			if (!rp_ascii_strcasecmp(value, "true") || !strcmp(value, "1")) {
 				*bParam = true;
-			} else if (!strcasecmp(value, "false") || !strcmp(value, "0")) {
+			} else if (!rp_ascii_strcasecmp(value, "false") || !strcmp(value, "0")) {
 				*bParam = false;
 			} else {
 				// TODO: Show a warning or something?
 			}
 		} else if (ibParam) {
 			// ImgBandwidth value.
-			if (!strcasecmp(value, "None")) {
+			if (!rp_ascii_strcasecmp(value, "None")) {
 				*ibParam = Config::ImgBandwidth::None;
-			} else if (!strcasecmp(value, "NormalRes")) {
+			} else if (!rp_ascii_strcasecmp(value, "NormalRes")) {
 				*ibParam = Config::ImgBandwidth::NormalRes;
-			} else if (!strcasecmp(value, "HighRes")) {
+			} else if (!rp_ascii_strcasecmp(value, "HighRes")) {
 				*ibParam = Config::ImgBandwidth::HighRes;
 			} else {
 				// Invalid value.
@@ -323,16 +325,16 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			assert(!"Missing bParam or ibParam.");
 			return 1;
 		}
-	} else if (!strcasecmp(section, "DMGTitleScreenMode")) {
+	} else if (!rp_ascii_strcasecmp(section, "DMGTitleScreenMode")) {
 		// DMG title screen mode.
 		Config::DMG_TitleScreen_Mode dmg_key, dmg_value;
 
 		// Parse the key.
-		if (!strcasecmp(name, "DMG")) {
+		if (!rp_ascii_strcasecmp(name, "DMG")) {
 			dmg_key = Config::DMG_TitleScreen_Mode::DMG;
-		} else if (!strcasecmp(name, "SGB")) {
+		} else if (!rp_ascii_strcasecmp(name, "SGB")) {
 			dmg_key = Config::DMG_TitleScreen_Mode::SGB;
-		} else if (!strcasecmp(name, "CGB")) {
+		} else if (!rp_ascii_strcasecmp(name, "CGB")) {
 			dmg_key = Config::DMG_TitleScreen_Mode::CGB;
 		} else {
 			// Invalid key.
@@ -340,11 +342,11 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 		}
 
 		// Parse the value.
-		if (!strcasecmp(value, "DMG")) {
+		if (!rp_ascii_strcasecmp(value, "DMG")) {
 			dmg_value = Config::DMG_TitleScreen_Mode::DMG;
-		} else if (!strcasecmp(value, "SGB")) {
+		} else if (!rp_ascii_strcasecmp(value, "SGB")) {
 			dmg_value = Config::DMG_TitleScreen_Mode::SGB;
-		} else if (!strcasecmp(value, "CGB")) {
+		} else if (!rp_ascii_strcasecmp(value, "CGB")) {
 			dmg_value = Config::DMG_TitleScreen_Mode::CGB;
 		} else {
 			// Invalid value.
@@ -352,16 +354,16 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 		}
 
 		dmgTSMode[static_cast<size_t>(dmg_key)] = dmg_value;
-	} else if (!strcasecmp(section, "Options")) {
+	} else if (!rp_ascii_strcasecmp(section, "Options")) {
 		// Options.
 		bool *bParam;
-		if (!strcasecmp(name, "ShowDangerousPermissionsOverlayIcon")) {
+		if (!rp_ascii_strcasecmp(name, "ShowDangerousPermissionsOverlayIcon")) {
 			bParam = &showDangerousPermissionsOverlayIcon;
-		} else if (!strcasecmp(name, "EnableThumbnailOnNetworkFS")) {
+		} else if (!rp_ascii_strcasecmp(name, "EnableThumbnailOnNetworkFS")) {
 			bParam = &enableThumbnailOnNetworkFS;
-		} else if (!strcasecmp(name, "ShowXAttrView")) {
+		} else if (!rp_ascii_strcasecmp(name, "ShowXAttrView")) {
 			bParam = &showXAttrView;
-		} else if (!strcasecmp(name, "ThumbnailDirectoryPackages")) {
+		} else if (!rp_ascii_strcasecmp(name, "ThumbnailDirectoryPackages")) {
 			bParam = &thumbnailDirectoryPackages;
 		} else {
 			// Invalid option.
@@ -370,14 +372,14 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 
 		// Parse the value.
 		// Acceptable values are "true", "false", "1", and "0".
-		if (!strcasecmp(value, "true") || !strcmp(value, "1")) {
+		if (!rp_ascii_strcasecmp(value, "true") || !strcmp(value, "1")) {
 			*bParam = true;
-		} else if (!strcasecmp(value, "false") || !strcmp(value, "0")) {
+		} else if (!rp_ascii_strcasecmp(value, "false") || !strcmp(value, "0")) {
 			*bParam = false;
 		} else {
 			// TODO: Show a warning or something?
 		}
-	} else if (!strcasecmp(section, "ImageTypes")) {
+	} else if (!rp_ascii_strcasecmp(section, "ImageTypes")) {
 		// NOTE: Duplicates will overwrite previous entries in the map,
 		// though all of the data will remain in the vector.
 
@@ -412,7 +414,7 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 
 			// If the first entry is "no", then all thumbnails
 			// for this system are disabled.
-			if (count == 0 && len == 2 && !strncasecmp(pos, "no", 2)) {
+			if (count == 0 && len == 2 && !rp_ascii_strncasecmp(pos, "no", 2)) {
 				// Thumbnails are disabled.
 				vImgTypePrio.push_back((uint8_t)RomData::IMG_DISABLED);
 				count = 1;
@@ -428,12 +430,12 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			}
 
 			// Check for spaces at the start of the string.
-			while (ISSPACE(*pos) && len > 0) {
+			while (rp_ascii_isspace(*pos) && len > 0) {
 				pos++;
 				len--;
 			}
 			// Check for spaces at the end of the string.
-			while (len > 0 && ISSPACE(pos[len-1])) {
+			while (len > 0 && rp_ascii_isspace(pos[len-1])) {
 				len--;
 			}
 
@@ -469,7 +471,7 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			RomData::ImageType imgType = static_cast<RomData::ImageType>(-1);
 			for (size_t i = 0; i < imageTypeNames.size(); i++) {
 				if (static_cast<size_t>(imageTypeNames[i][0]) == len &&
-				    !strncasecmp(pos, &imageTypeNames[i][1], len))
+				    !rp_ascii_strncasecmp(pos, &imageTypeNames[i][1], len))
 				{
 					// Found a match!
 					imgType = static_cast<RomData::ImageType>(i);
@@ -514,7 +516,7 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			// Convert the class name to lowercase.
 			string className_lower(name);
 			std::transform(className_lower.begin(), className_lower.end(), className_lower.begin(),
-				[](char c) noexcept -> char { return std::tolower(c); });
+				[](char c) noexcept -> char { return rp_ascii_tolower(c); });
 
 			// Add the class name information to the map.
 			uint32_t keyIdx = static_cast<uint32_t>(vStartPos);
@@ -574,7 +576,7 @@ Config::ImgTypeResult Config::getImgTypePrio(const char *className, ImgTypePrio_
 	RP_D(const Config);
 	string className_lower(className);
 	std::transform(className_lower.begin(), className_lower.end(), className_lower.begin(),
-		[](char c) noexcept -> char { return std::tolower(c); });
+		[](char c) noexcept -> char { return rp_ascii_tolower(c); });
 	auto iter = d->mapImgTypePrio.find(className_lower);
 	if (iter == d->mapImgTypePrio.end()) {
 		// Class name not found.
