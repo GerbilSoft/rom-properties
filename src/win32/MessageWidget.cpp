@@ -65,7 +65,6 @@ public:
 	HBRUSH hbrBorder;		// Border brush
 	HBRUSH hbrBg;			// Background brush
 	COLORREF colorBg;		// Background color
-	unsigned int messageType;	// MB_ICON*
 	SIZE szIcon;			// Icon size
 
 	RECT rectBtnClose;		// Close button rect
@@ -78,6 +77,8 @@ public:
 		Pressed,
 	};
 	CloseButtonState closeButtonState;
+
+	uint8_t messageType; // MB_ICON*
 };
 
 MessageWidgetPrivate::MessageWidgetPrivate(HWND hWnd)
@@ -89,10 +90,10 @@ MessageWidgetPrivate::MessageWidgetPrivate(HWND hWnd)
 	, hbrBorder(nullptr)
 	, hbrBg(nullptr)
 	, colorBg(0)
-	, messageType(MB_ICONINFORMATION)
 	, bBtnCloseEntered(false)
 	, bBtnCloseDown(false)
 	, closeButtonState(CloseButtonState::Normal)
+	, messageType(MB_ICONINFORMATION)
 {
 	// TODO: Update szIcon on system DPI change.
 	szIcon.cx = GetSystemMetrics(SM_CXSMICON);
