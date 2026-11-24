@@ -66,7 +66,18 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 		}
 
 		// Make sure we should delete this file.
-		if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+		if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
+			// Reparse point! This is either a mount point or
+			// a symbolic link. NOT SUPPORTED!
+			FindClose(hFindFile);
+			return RSE_FOUND_SYMBOLIC_LINK;
+		} else if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DEVICE) {
+			// Device file? NOT SUPPORTED!
+			FindClose(hFindFile);
+			return RSE_FOUND_UNEXPECTED_FILE_TYPE;
+		} else if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+			// Regular file.
+
 			// Thumbs.db files can be deleted.
 			if (!_tcsicmp(findFileData.cFileName, _T("Thumbs.db"))) {
 				goto isok;
@@ -77,7 +88,7 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 			if (len <= 4) {
 				// Filename is too short. This is bad.
 				FindClose(hFindFile);
-				return -EIO;
+				return RSE_FOUND_UNEXPECTED_FILE_EXT;
 			}
 
 			const TCHAR *pExt = &findFileData.cFileName[len-4];
@@ -88,7 +99,7 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 			{
 				// Extension is not valid.
 				FindClose(hFindFile);
-				return -EIO;
+				return RSE_FOUND_UNEXPECTED_FILE_EXT;
 			}
 
 			// All checks pass.
