@@ -158,6 +158,21 @@ TEST_F(ByteswapTest, nonHostEndianMacroTest)
 #endif
 }
 
+/**
+ * Test __swabf() to byteswap 32-bit floating-point values.
+ */
+TEST_F(ByteswapTest, float32bitByteswapTest)
+{
+	// 0x3F800000 == 1.0f
+	// 0x0000803F == byteswapped 1.0f
+	union {
+		uint32_t u32;
+		float f;
+	} u32_f = { 0 };
+	u32_f.u32 = 0x0000803F;
+	EXPECT_EQ(1.0f, __swabf(u32_f.f));
+}
+
 #define rp_byte_swap_16_array_dispatch(ptr, n) rp_byte_swap_16_array(ptr, n)
 #define rp_byte_swap_32_array_dispatch(ptr, n) rp_byte_swap_32_array(ptr, n)
 
