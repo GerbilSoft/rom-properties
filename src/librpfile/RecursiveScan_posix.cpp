@@ -20,7 +20,6 @@
 // C includes
 #include <dirent.h>
 #include <fcntl.h>	// AT_FDCWD, O_NOFOLLOW
-#include <sys/stat.h>	// stat(), statx()
 #include <sys/types.h>
 
 // C includes (C++ namespace)
@@ -53,38 +52,15 @@ namespace LibRpFile {
  */
 int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlist)
 {
-	// Open the directory, but make sure we don't follow
-	// a symbolic link on the last path component.
-	int dfd = open(path, O_RDONLY | O_NOFOLLOW | O_CLOEXEC);
+	// Open the directory, with these flags:
+	// - O_RDONLY: Read-only
+	// - O_NOFOLLOW: Don't follow symlinks on the last path component
+	// - O_DIRECTORY: Fail if it's not a directory
+	// - O_CLOEXEC: Close on exec()
+	int dfd = open(path, O_RDONLY | O_NOFOLLOW | O_DIRECTORY | O_CLOEXEC);
 	if (dfd < 0) {
 		// Error opening the directory.
 		return -errno;
-	}
-
-	// Verify that this is, in fact, a directory.
-	uint16_t mode = 0;
-#ifdef HAVE_STATX
-	struct statx sbx;
-	int ret = statx(dfd, "", AT_EMPTY_PATH, STATX_TYPE, &sbx);
-	if (ret != 0 || !(sbx.stx_mask & STATX_TYPE)) {
-		// statx() failed and/or did not return the file type.
-		int ret = -errno;
-		return (ret != 0 ? ret : -EIO);
-	}
-	mode = sbx.stx_mode;
-#else /* !HAVE_STATX */
-	struct stat sb;
-	if (fstat(dfd, &sb) != 0) {
-		// stat() failed.
-		int ret = -errno;
-		return (ret != 0 ? ret : -EIO);
-	}
-	mode = sb.st_mode;
-#endif /* HAVE_STATX */
-	if (!S_ISDIR(mode)) {
-		// Not a directory.
-		close(dfd);
-		return -ENOTDIR;
 	}
 
 	// Open the directory as a DIR*.
