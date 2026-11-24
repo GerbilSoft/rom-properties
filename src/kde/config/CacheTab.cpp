@@ -323,7 +323,8 @@ void CacheTab::ccCleaner_cacheCleared(CacheCleaner::CacheDir cacheDir, unsigned 
 	Q_D(CacheTab);
 
 	if (dirErrs > 0 || fileErrs > 0) {
-		const string s_error = fmt::format(FRUN(C_("CacheTab", "Unable to delete {0:Ld} file(s) and/or {1:Ld} dir(s).")));
+		const string s_error = fmt::format(FRUN(C_("CacheTab", "Unable to delete {0:Ld} file(s) and/or {1:Ld} dir(s).")),
+			fileErrs, dirErrs);
 
 		// tr: Error message template.
 		const QString qs_msg = U82Q(
