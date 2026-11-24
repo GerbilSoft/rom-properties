@@ -1382,85 +1382,93 @@ int EXEPrivate::addFields_PE_PDB(void)
 	// NOTE: If size is not a multiple of sizeof(IMAGE_DEBUG_DIRECTORY),
 	// remove the trailing bytes.
 	uint32_t num_entries = size / sizeof(IMAGE_DEBUG_DIRECTORY);
-	if (size && debug_dir.VirtualAddress != 0 && num_entries < 16) { // cap to a reasonable limit
-		rp::uvector<IMAGE_DEBUG_DIRECTORY> debug_ents(num_entries);
-		const size_t real_size = num_entries * sizeof(IMAGE_DEBUG_DIRECTORY);
-		if (readFromPEVAddr(le32_to_cpu(debug_dir.VirtualAddress), debug_ents.data(), real_size) != real_size) {
-			// Reading the IMAGE_DEBUG_DIRECTORY failed.
+	if (size == 0 || debug_dir.VirtualAddress == 0 || num_entries >= 16) {
+		// Something is out of range.
+		return -EFAULT;
+	}
+
+	rp::uvector<IMAGE_DEBUG_DIRECTORY> debug_ents(num_entries);
+	const size_t real_size = num_entries * sizeof(IMAGE_DEBUG_DIRECTORY);
+	if (readFromPEVAddr(le32_to_cpu(debug_dir.VirtualAddress), debug_ents.data(), real_size) != real_size) {
+		// Reading the IMAGE_DEBUG_DIRECTORY failed.
+		return -EFAULT;
+	}
+
+	// oki we read all of them safely in
+	bool found_cv = false;
+	for (const IMAGE_DEBUG_DIRECTORY &dir : debug_ents) {
+		// sane bounds, cv data +  path + whatever-they-might-add-in-the-future
+		if (le32_to_cpu(dir.Type) != IMAGE_DEBUG_TYPE_CODEVIEW ||
+		    le32_to_cpu(dir.SizeOfData) > sizeof(CODEVIEW_INFO_PDB70) + win32_maxpath)
+		{
+			// Not a valid CodeView entry.
+			continue;
+		}
+
+		// aand we have a proper codeview entry
+		if (found_cv) {
+			// well, this is awkward
+			return -EALREADY;
+		}
+		found_cv = true;
+
+		fields.addTab("PDB");
+		const rp_time_t cv_timestamp = static_cast<rp_time_t>(le32_to_cpu(dir.TimeDateStamp));
+		if (cv_timestamp != 0) {
+			fields.addField_dateTime(C_("EXE|PDB", "CodeView Timestamp"), cv_timestamp,
+				RomFields::RFT_DATETIME_HAS_DATE |
+				RomFields::RFT_DATETIME_HAS_TIME);
+		}
+
+		CODEVIEW_INFO_PDB70 cv {};
+		if (readFromPEVAddr(le32_to_cpu(dir.AddressOfRawData), &cv, sizeof(CODEVIEW_INFO_PDB70)) != sizeof(CODEVIEW_INFO_PDB70)) {
+			// Unable to read the codeview entry...
 			return -EFAULT;
 		}
 
-		// oki we read all of them safely in
-		bool found_cv = false;
-		for (const IMAGE_DEBUG_DIRECTORY &dir : debug_ents) {
-			// sane bounds, cv data +  path + whatever-they-might-add-in-the-future
-			if (le32_to_cpu(dir.Type) == IMAGE_DEBUG_TYPE_CODEVIEW && le32_to_cpu(dir.SizeOfData) <=  sizeof(CODEVIEW_INFO_PDB70) + win32_maxpath) {
-				// aand we have a proper codeview entry
-				if (found_cv) {
-					// well, this is awkward
-					return -EALREADY;
-				}
-				found_cv = true;
+		string symsrv_path = fmt::format(FSTR(
+			"{:08X}{:04X}{:04X}"
+			"{:02X}{:02X}{:02X}{:02X}"
+			"{:02X}{:02X}{:02X}{:02X}"
+			"{:d}"),
+			le32_to_cpu(cv.PdbGuid.Data1),
+			le16_to_cpu(cv.PdbGuid.Data2),
+			le16_to_cpu(cv.PdbGuid.Data3),
+			cv.PdbGuid.Data4[0], cv.PdbGuid.Data4[1],
+			cv.PdbGuid.Data4[2], cv.PdbGuid.Data4[3],
+			cv.PdbGuid.Data4[4], cv.PdbGuid.Data4[5],
+			cv.PdbGuid.Data4[6], cv.PdbGuid.Data4[7],
+			le32_to_cpu(cv.PdbAge));
+		fields.addField_string(C_("EXE|PDB", "Symbol Server ID"), symsrv_path);
 
-				fields.addTab("PDB");
-				const rp_time_t cv_timestamp = static_cast<rp_time_t>(le32_to_cpu(dir.TimeDateStamp));
-				if (cv_timestamp != 0) {
-					fields.addField_dateTime(C_("EXE|PDB", "CodeView Timestamp"), cv_timestamp,
-						RomFields::RFT_DATETIME_HAS_DATE |
-						RomFields::RFT_DATETIME_HAS_TIME);
-				}
-
-				CODEVIEW_INFO_PDB70 cv {};
-				if (readFromPEVAddr(le32_to_cpu(dir.AddressOfRawData), &cv, sizeof(CODEVIEW_INFO_PDB70)) != sizeof(CODEVIEW_INFO_PDB70)) {
-					// Unable to read the codeview entry...
-					return -EFAULT;
-				}
-
-				string symsrv_path = fmt::format(FSTR(
-					"{:08X}{:04X}{:04X}"
-					"{:02X}{:02X}{:02X}{:02X}"
-					"{:02X}{:02X}{:02X}{:02X}"
-					"{:d}"),
-					le32_to_cpu(cv.PdbGuid.Data1),
-					le16_to_cpu(cv.PdbGuid.Data2),
-					le16_to_cpu(cv.PdbGuid.Data3),
-					cv.PdbGuid.Data4[0], cv.PdbGuid.Data4[1],
-					cv.PdbGuid.Data4[2], cv.PdbGuid.Data4[3],
-					cv.PdbGuid.Data4[4], cv.PdbGuid.Data4[5],
-					cv.PdbGuid.Data4[6], cv.PdbGuid.Data4[7],
-					le32_to_cpu(cv.PdbAge));
-				fields.addField_string(C_("EXE|PDB", "Symbol Server ID"), symsrv_path);
-
-				uint32_t str_addie = le32_to_cpu(dir.AddressOfRawData) + offsetof(CODEVIEW_INFO_PDB70, ImageName);
-				// - 1, null term, we ensure it ourselves
-				uint32_t strlen_chars = le32_to_cpu(dir.SizeOfData) - offsetof(CODEVIEW_INFO_PDB70, ImageName) - 1;
-				assert(strlen_chars <= 32768);
-				if (strlen_chars > 32768) {
-					// Too long...
-					return -EFAULT;
-				}
-				unique_ptr<char[]> path_buf(new char[strlen_chars + 1]);
-				if (readFromPEVAddr(str_addie, path_buf.get(), strlen_chars) == strlen_chars) {
-					path_buf[strlen_chars] = '\0'; // ensure nullterm
-					fields.addField_string("PDB Path", &path_buf[0]);
-					char* last_path_component = &path_buf[0];
-					for (char *cur = &path_buf[strlen_chars]; cur != &path_buf[0]; cur--) {
-						const char c = *cur;
-						if (c == '\\' || c == '/'){
-							last_path_component = cur + 1;
-							break;
-						}
-					}
-					fields.addField_string(C_("EXE|PDB", "PDB Link"),
-						fmt::format(FSTR("<a href=\"https://msdl.microsoft.com/download/symbols/{:s}/{:s}/{:s}\">Microsoft Symbol Server</a>"),
-							last_path_component, symsrv_path, last_path_component),
-							RomFields::STRF_PARSE_LINKS);
-					return 0;
-				}
-				// not fatal, though some information is missing
-				return 0;
-			}
+		uint32_t str_addie = le32_to_cpu(dir.AddressOfRawData) + offsetof(CODEVIEW_INFO_PDB70, ImageName);
+		// - 1, null term, we ensure it ourselves
+		uint32_t strlen_chars = le32_to_cpu(dir.SizeOfData) - offsetof(CODEVIEW_INFO_PDB70, ImageName) - 1;
+		assert(strlen_chars <= 32768);
+		if (strlen_chars > 32768) {
+			// Too long...
+			return -EFAULT;
 		}
+		unique_ptr<char[]> path_buf(new char[strlen_chars + 1]);
+		if (readFromPEVAddr(str_addie, path_buf.get(), strlen_chars) == strlen_chars) {
+			path_buf[strlen_chars] = '\0'; // ensure nullterm
+			fields.addField_string("PDB Path", &path_buf[0]);
+			char* last_path_component = &path_buf[0];
+			for (char *cur = &path_buf[strlen_chars]; cur != &path_buf[0]; cur--) {
+				const char c = *cur;
+				if (c == '\\' || c == '/'){
+					last_path_component = cur + 1;
+					break;
+				}
+			}
+			fields.addField_string(C_("EXE|PDB", "PDB Link"),
+				fmt::format(FSTR("<a href=\"https://msdl.microsoft.com/download/symbols/{:s}/{:s}/{:s}\">Microsoft Symbol Server</a>"),
+					last_path_component, symsrv_path, last_path_component),
+					RomFields::STRF_PARSE_LINKS);
+			return 0;
+		}
+		// not fatal, though some information is missing
+		return 0;
 	}
 
 	// Something failed...
