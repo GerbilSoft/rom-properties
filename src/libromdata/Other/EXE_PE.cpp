@@ -1466,6 +1466,23 @@ int EXEPrivate::addFields_PE_PDB(void)
 					break;
 				}
 			}
+
+			// Verify that the PDB filename doesn't have invalid characters.
+			for (const char *p = last_path_component; *p != '\0'; p++) {
+				switch (*p) {
+					case '<': case '>':
+					case '/': case '\\':
+					case '"': case '\'':
+					case '&':
+						// Something's odd with this filename.
+						// Symbol server ID and PDB path are still added,
+						// but we'll return -EFAULT to indicate something is wonky.
+						return -EFAULT;
+					default:
+						break;
+				}
+			}
+
 			fields.addField_string(C_("EXE|PDB", "PDB Link"),
 				fmt::format(FSTR("<a href=\"https://msdl.microsoft.com/download/symbols/{:s}/{:s}/{:s}\">Microsoft Symbol Server</a>"),
 					last_path_component, symsrv_path, last_path_component),
