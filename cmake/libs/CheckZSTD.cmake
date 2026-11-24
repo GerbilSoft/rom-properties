@@ -37,11 +37,11 @@ IF(USE_INTERNAL_ZSTD)
 	IF(WIN32)
 		# Using DLLs on Windows.
 		SET(USE_INTERNAL_ZSTD_DLL ON)
-		SET(ZSTD_LIBRARY zstd CACHE INTERNAL "ZSTD library" FORCE)
+		SET(ZSTD_LIBRARY libzstd_shared CACHE INTERNAL "ZSTD library" FORCE)
 	ELSE()
 		# Using static linking on other systems.
 		SET(USE_INTERNAL_ZSTD_DLL OFF)
-		SET(ZSTD_LIBRARY zstdstatic CACHE INTERNAL "ZSTD library" FORCE)
+		SET(ZSTD_LIBRARY libzstd_static CACHE INTERNAL "ZSTD library" FORCE)
 	ENDIF()
 	SET(ZSTD_LIBRARIES ${ZSTD_LIBRARY} CACHE INTERNAL "ZSTD libraries" FORCE)
 	# FIXME: When was it changed from DIR to DIRS?
