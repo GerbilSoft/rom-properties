@@ -11,6 +11,7 @@
   * ZXAY: ZX Spectrum AY-file format.
 
 * New parser features:
+  * KhronosKTX2: Add more Vulkan formats. (up to date with 1.4.357)
   * WiiUPackage: Support for Wii U Archive (.wua) format. This uses the ZArchive
     library, which requires a C++20 compiler in order to build. If an older
     compiler is used, .wua support will not be included.
