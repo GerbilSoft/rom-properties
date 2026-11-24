@@ -6,14 +6,14 @@ PROJECT(win32common LANGUAGES C CXX)
 # since MSVC will trim the object file. Compile it in the
 # executable target directly.
 
-# Check for unordered_set::reserve.
+# Check for std::unordered_set::reserve.
 UNSET(CMAKE_REQUIRED_INCLUDES)
 CHECK_CXX_SOURCE_COMPILES("#include <unordered_set>
 int main(void) {
 	std::unordered_set<int> testSet;
 	testSet.reserve(4);
 	return 0;
-}" HAVE_UNORDERED_SET_RESERVE)
+}" HAVE_STD_UNORDERED_SET_RESERVE)
 
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.lib${PROJECT_NAME}.h")

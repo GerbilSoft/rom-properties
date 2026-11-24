@@ -196,11 +196,11 @@ WiiUFstPrivate::WiiUFstPrivate(const uint8_t *fstData, uint32_t len)
 	// Cache the file offset factor.
 	file_offset_factor = be32_to_cpu(fstHeader->file_offset_factor);
 
-#ifdef HAVE_UNORDERED_MAP_RESERVE
+#ifdef HAVE_STD_UNORDERED_MAP_RESERVE
 	// Reserve space in the string table.
 	// NOTE: file_count includes the root directory entry.
 	u8_string_table.reserve(file_count - 1);
-#endif
+#endif /* HAVE_STD_UNORDERED_MAP_RESERVE */
 }
 
 WiiUFstPrivate::~WiiUFstPrivate()

@@ -240,9 +240,9 @@ int FontHandlerPrivate::findMonospacedFont(LOGFONT *plfFontMono)
 	// Enumerate all monospaced fonts.
 	// Reference: http://www.catch22.net/tuts/fixed-width-font-enumeration
 	unordered_set<tstring> enum_fonts;
-#ifdef HAVE_UNORDERED_SET_RESERVE
+#ifdef HAVE_STD_UNORDERED_SET_RESERVE
 	enum_fonts.reserve(64);
-#endif /* HAVE_UNORDERED_SET_RESERVE */
+#endif /* HAVE_STD_UNORDERED_SET_RESERVE */
 
 	LOGFONT lfEnumFonts = {
 		0,	// lfHeight
@@ -316,9 +316,9 @@ int FontHandlerPrivate::findNTLGFont(LOGFONT *plfFontNTLG)
 	// Enumerate all monospaced fonts.
 	// Reference: http://www.catch22.net/tuts/fixed-width-font-enumeration
 	unordered_set<tstring> enum_fonts;
-#ifdef HAVE_UNORDERED_SET_RESERVE
+#ifdef HAVE_STD_UNORDERED_SET_RESERVE
 	enum_fonts.reserve(64);
-#endif /* HAVE_UNORDERED_SET_RESERVE */
+#endif /* HAVE_STD_UNORDERED_SET_RESERVE */
 
 	LOGFONT lfEnumFonts = {
 		0,	// lfHeight

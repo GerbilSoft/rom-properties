@@ -211,10 +211,10 @@ void ConfigPrivate::reset(void)
 
 	// Reserve 1 KB for the image type priorities store.
 	vImgTypePrio.reserve(1024);
-#ifdef HAVE_UNORDERED_MAP_RESERVE
+#ifdef HAVE_STD_UNORDERED_MAP_RESERVE
 	// Reserve 16 entries for the map.
 	mapImgTypePrio.reserve(16);
-#endif
+#endif /* HAVE_STD_UNORDERED_MAP_RESERVE */
 
 	// Download options
 	extImgDownloadEnabled = extImgDownloadEnabled_default;

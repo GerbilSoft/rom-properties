@@ -354,9 +354,9 @@ static void init_supportedFileExtensions(void)
 		(FileFormatFns_magic.size() +
 		 FileFormatFns_mime.size()) * 2;
 	vec_exts.reserve(reserve_size);
-#ifdef HAVE_UNORDERED_SET_RESERVE
+#ifdef HAVE_STD_UNORDERED_SET_RESERVE
 	set_exts.reserve(reserve_size);
-#endif /* HAVE_UNORDERED_SET_RESERVE */
+#endif /* HAVE_STD_UNORDERED_SET_RESERVE */
 
 	for (const auto &fns : FileFormatFns_magic) {
 		const char *const *sys_exts = fns.textureInfo()->exts;
@@ -427,9 +427,9 @@ static void init_supportedMimeTypes(void)
 		(Private::FileFormatFns_magic.size() +
 		 Private::FileFormatFns_mime.size()) * 2;
 	vec_mimeTypes.reserve(reserve_size);
-#ifdef HAVE_UNORDERED_SET_RESERVE
+#ifdef HAVE_STD_UNORDERED_SET_RESERVE
 	set_mimeTypes.reserve(reserve_size);
-#endif /* HAVE_UNORDERED_SET_RESERVE */
+#endif /* HAVE_STD_UNORDERED_SET_RESERVE */
 
 	for (const auto &fns : FileFormatFns_magic) {
 		const char *const *sys_mimeTypes = fns.textureInfo()->mimeTypes;

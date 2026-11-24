@@ -85,9 +85,9 @@ unordered_map<string, string> parseTags(const char *pData, size_t size, PSFTagSt
 		}
 	}
 
-#ifdef HAVE_UNORDERED_MAP_RESERVE
+#ifdef HAVE_STD_UNORDERED_MAP_RESERVE
 	kv.reserve(12);
-#endif /* HAVE_UNORDERED_MAP_RESERVE */
+#endif /* HAVE_STD_UNORDERED_MAP_RESERVE */
 
 	for (; p < pEnd; p++) {
 		if (*p == '\0') {

@@ -16,5 +16,5 @@
 
 /** C++ standard library **/
 
-/* Define to 1 if you have the `unordered_set::reserve` function. */
-#cmakedefine HAVE_UNORDERED_SET_RESERVE 1
+/* Define to 1 if you have the `std::unordered_set::reserve` function. */
+#cmakedefine HAVE_STD_UNORDERED_SET_RESERVE 1

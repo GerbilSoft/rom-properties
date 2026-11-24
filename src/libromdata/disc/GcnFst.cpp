@@ -151,11 +151,11 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 	// Save a pointer to the string table.
 	string_table_ptr = reinterpret_cast<char*>(&fst8[string_table_offset]);
 
-#ifdef HAVE_UNORDERED_MAP_RESERVE
+#ifdef HAVE_STD_UNORDERED_MAP_RESERVE
 	// Reserve space in the string table.
 	// NOTE: file_count includes the root directory entry.
 	u8_string_table.reserve(file_count - 1);
-#endif
+#endif /* HAVE_STD_UNORDERED_MAP_RESERVE */
 }
 
 GcnFstPrivate::~GcnFstPrivate()

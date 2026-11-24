@@ -1431,9 +1431,9 @@ static void init_supportedFileExtensions(void)
 		 romDataFns_footer.size() +
 		 zipDetectTbl.size()) * 2;
 	vec_exts.reserve(reserve_size);
-#ifdef HAVE_UNORDERED_MAP_RESERVE
+#ifdef HAVE_STD_UNORDERED_MAP_RESERVE
 	map_exts.reserve(reserve_size);
-#endif /* HAVE_UNORDERED_MAP_RESERVE */
+#endif /* HAVE_STD_UNORDERED_MAP_RESERVE */
 
 	for (const auto &tblptr : Private::romDataFns_tbl) {
 		const RomDataFns *fns = tblptr.tbl;
@@ -1553,9 +1553,9 @@ static void init_supportedMimeTypes(void)
 		 romDataFns_footer.size() +
 		 zipDetectTbl.size()) * 2;
 	vec_mimeTypes.reserve(reserve_size);
-#ifdef HAVE_UNORDERED_SET_RESERVE
+#ifdef HAVE_STD_UNORDERED_SET_RESERVE
 	set_mimeTypes.reserve(reserve_size);
-#endif /* HAVE_UNORDERED_SET_RESERVE */
+#endif /* HAVE_STD_UNORDERED_SET_RESERVE */
 
 	for (const auto &tblptr : Private::romDataFns_tbl) {
 		const RomDataFns *fns = tblptr.tbl;

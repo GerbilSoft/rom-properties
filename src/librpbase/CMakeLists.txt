@@ -14,20 +14,20 @@ ENDIF(NOT WIN32)
 
 # ZLIB and libpng are checked in the top-level CMakeLists.txt.
 
-# Check for unordered_map::reserve and unordered_set::reserve.
+# Check for std::unordered_map::reserve and std::unordered_set::reserve.
 UNSET(CMAKE_REQUIRED_INCLUDES)
 CHECK_CXX_SOURCE_COMPILES("#include <unordered_map>
 int main(void) {
 	std::unordered_map<int, int> testMap;
 	testMap.reserve(4);
 	return 0;
-}" HAVE_UNORDERED_MAP_RESERVE)
+}" HAVE_STD_UNORDERED_MAP_RESERVE)
 CHECK_CXX_SOURCE_COMPILES("#include <unordered_set>
 int main(void) {
 	std::unordered_set<int> testSet;
 	testSet.reserve(4);
 	return 0;
-}" HAVE_UNORDERED_SET_RESERVE)
+}" HAVE_STD_UNORDERED_SET_RESERVE)
 
 # Sources
 SET(${PROJECT_NAME}_SRCS

@@ -134,11 +134,11 @@ void KeyManagerPrivate::reset(void)
 
 	// Reserve 1 KB for the key store.
 	vKeys.reserve(1024);
-#ifdef HAVE_UNORDERED_MAP_RESERVE
+#ifdef HAVE_STD_UNORDERED_MAP_RESERVE
 	// Reserve entries for the key names map.
 	// NOTE: Not reserving entries for invalid key names.
 	mapKeyNames.reserve(64);
-#endif
+#endif /* HAVE_STD_UNORDERED_MAP_RESERVE */
 #else /* !ENABLE_DECRYPTION */
 	assert(!"Should not be called in no-decryption builds.");
 #endif /* ENABLE_DECRYPTION */
