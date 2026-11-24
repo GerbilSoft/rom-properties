@@ -85,17 +85,8 @@ with open(infile, 'r') as f_in:
 f_out = open(outfile, 'w')
 
 # Create the arrays.
-# String table index type depends on the maximum string index:
-# - 255: uint8_t
-# - 65535: uint16_t
-# - otherwise: uint32_t
-idx_type = ''
-if len(string_table) < 256:
-	idx_type = 'uint8_t'
-elif len(string_table) < 65536:
-	idx_type = 'uint16_t'
-else:
-	idx_type = 'uint32_t'
+# NOTE: Always using uint16_t for VkFormatTbl_t compatibility.
+idx_type = 'uint16_t'
 
 f_out.write(
 	f"/** {prefix} (generated from {infile}) **/\n\n"
