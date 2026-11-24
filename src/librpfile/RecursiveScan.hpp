@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RecursiveScan.cpp: Recursively scan for cache files to delete.          *
  *                                                                         *
- * Copyright (c) 2016-2024 by David Korth.                                 *
+ * Copyright (c) 2016-2026 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,13 +20,20 @@
 
 namespace LibRpFile { 
 
+enum RecursiveScanError {
+	RSE_OK				= 0,
+	RSE_FOUND_UNEXPECTED_FILE_TYPE	= 1,
+	RSE_FOUND_SYMBOLIC_LINK		= 2,
+	RSE_FOUND_UNEXPECTED_FILE_EXT	= 3,
+};
+
 /**
  * Recursively scan a directory for cache files to delete.
  * This finds *.png, *.jpg, and "version.txt".
  *
  * @param path	[in] Path to scan.
  * @param rlist	[in/out] Return list for filenames and file types. (d_type)
- * @return 0 on success; non-zero on error.
+ * @return 0 on success; negative POSIX error code or positive RecursiveScanError on error.
  */
 RP_LIBROMDATA_PUBLIC
 int recursiveScan(const TCHAR *path, std::forward_list<std::pair<std::tstring, uint8_t> > &rlist);

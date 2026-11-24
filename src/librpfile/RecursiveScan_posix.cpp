@@ -46,7 +46,7 @@ namespace LibRpFile {
  *
  * @param path	[in] Path to scan.
  * @param rlist	[in/out] Return list for filenames and file types. (d_type)
- * @return 0 on success; non-zero on error.
+ * @return 0 on success; negative POSIX error code or positive RecursiveScanError on error.
  */
 int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlist)
 {
@@ -79,9 +79,8 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 		switch (d_type) {
 			default:
 				// Not supported.
-				// TODO: Better error message.
 				closedir(pdir);
-				return -EIO;
+				return RSE_FOUND_UNEXPECTED_FILE_TYPE;
 
 			case DT_REG:
 			case DT_DIR:
@@ -89,26 +88,11 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 				break;
 
 			case DT_LNK:
-				// Symbolic link. Dereference it and check again.
-				d_type = FileSystem::get_file_d_type(fullpath.c_str(), false);
-				switch (d_type) {
-					default:
-						// Not supported.
-						// TODO: Better error message.
-						closedir(pdir);
-						return -EIO;
-
-					case DT_REG:
-					case DT_DIR:
-						// Supported.
-						break;
-
-					case DT_UNKNOWN:
-						// This is probably a dangling symlink.
-						// Delete it anyway.
-						break;
-				}
-				break;
+				// Symbolic link.
+				// NOT SUPPORTED; there should not be symbolic links
+				// in the cache directories!
+				closedir(pdir);
+				return RSE_FOUND_SYMBOLIC_LINK;
 
 			case DT_UNKNOWN:
 				// Unknown. Use lstat().
@@ -116,9 +100,8 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 				switch (d_type) {
 					default:
 						// Not supported.
-						// TODO: Better error message.
 						closedir(pdir);
-						return -EIO;
+						return RSE_FOUND_UNEXPECTED_FILE_TYPE;
 
 					case DT_REG:
 					case DT_DIR:
@@ -126,32 +109,17 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 						break;
 
 					case DT_LNK:
-						// Symbolic link. Dereference it and check again.
-						d_type = FileSystem::get_file_d_type(fullpath.c_str(), false);
-						switch (d_type) {
-							default:
-								// Not supported.
-								// TODO: Better error message.
-								closedir(pdir);
-								return -EIO;
-
-							case DT_REG:
-							case DT_DIR:
-								// Supported.
-								break;
-
-							case DT_UNKNOWN:
-								// This is probably a dangling symlink.
-								// Delete it anyway.
-								break;
-						}
-						break;
+						// Symbolic link.
+						// NOT SUPPORTED; there should not be symbolic links
+						// in the cache directories!
+						closedir(pdir);
+						return RSE_FOUND_SYMBOLIC_LINK;
 				}
 				break;
 		}
 
 		// Check the filename to see if we should delete it.
-		if (d_type == DT_REG || d_type == DT_UNKNOWN) {
+		if (d_type == DT_REG) {
 			// Thumbs.db files can be deleted.
 			if (!rp_ascii_strcasecmp(dirent->d_name, "Thumbs.db")) {
 				goto isok;
@@ -162,7 +130,7 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 			if (len <= 4) {
 				// Filename is too short. This is bad.
 				closedir(pdir);
-				return -EIO;
+				return RSE_FOUND_UNEXPECTED_FILE_EXT;
 			}
 
 			const char *pExt = &dirent->d_name[len-4];
@@ -173,7 +141,7 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 			{
 				// Extension is not valid.
 				closedir(pdir);
-				return -EIO;
+				return RSE_FOUND_UNEXPECTED_FILE_EXT;
 			}
 
 			// All checks pass.
