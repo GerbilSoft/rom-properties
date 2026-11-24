@@ -1441,9 +1441,14 @@ int EXEPrivate::addFields_PE_PDB(void)
 			le32_to_cpu(cv.PdbAge));
 		fields.addField_string(C_("EXE|PDB", "Symbol Server ID"), symsrv_path);
 
-		uint32_t str_addie = le32_to_cpu(dir.AddressOfRawData) + offsetof(CODEVIEW_INFO_PDB70, ImageName);
+		const uint32_t str_addie = le32_to_cpu(dir.AddressOfRawData) + offsetof(CODEVIEW_INFO_PDB70, ImageName);
 		// - 1, null term, we ensure it ourselves
-		uint32_t strlen_chars = le32_to_cpu(dir.SizeOfData) - offsetof(CODEVIEW_INFO_PDB70, ImageName) - 1;
+		const uint32_t strlen_chars = le32_to_cpu(dir.SizeOfData) - offsetof(CODEVIEW_INFO_PDB70, ImageName) - 1;
+		if (strlen_chars == 0) {
+			// Empty string...
+			return -ENOENT;
+		}
+
 		assert(strlen_chars <= 32768);
 		if (strlen_chars > 32768) {
 			// Too long...
