@@ -90,8 +90,8 @@ const char *lookup_vkFormat(unsigned int vkFormat)
 	else if (vkFormat >= VK_FORMAT_R10X6_UINT_PACK16_ARM &&
 	         vkFormat <= VK_FORMAT_G14X2_B14X2R14X2_2PLANE_422_UNORM_3PACK16_ARM)
 	{
-		tbl = vkEnum_1000460xxx_strtbl;
-		offset = vkEnum_1000460xxx_offtbl[vkFormat - VK_FORMAT_R10X6_UINT_PACK16_ARM];
+		tbl = vkEnum_1000609xxx_strtbl;
+		offset = vkEnum_1000609xxx_offtbl[vkFormat - VK_FORMAT_R10X6_UINT_PACK16_ARM];
 	}
 	else if (vkFormat == VK_FORMAT_R16G16_SFIXED5_NV) {
 		return "R16G16_SFIXED5_NV";
