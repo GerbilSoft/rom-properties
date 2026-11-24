@@ -65,19 +65,29 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 			continue;
 		}
 
-		// Make sure we should delete this file.
-		if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
-			// Reparse point! This is either a mount point or
-			// a symbolic link. NOT SUPPORTED!
-			FindClose(hFindFile);
-			return RSE_FOUND_SYMBOLIC_LINK;
-		} else if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DEVICE) {
-			// Device file? NOT SUPPORTED!
-			FindClose(hFindFile);
-			return RSE_FOUND_UNEXPECTED_FILE_TYPE;
-		} else if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-			// Regular file.
+		// Check if this is a regular file.
+		const uint8_t d_type = FileSystem::win32_attrs_to_d_type(findFileData.dwFileAttributes);
+		switch (d_type) {
+			default:
+				// Not supported.
+				FindClose(hFindFile);
+				return RSE_FOUND_UNEXPECTED_FILE_TYPE;
 
+			case DT_REG:
+			case DT_DIR:
+				// Supported.
+				break;
+
+			case DT_LNK:
+				// Symbolic link.
+				// NOT SUPPORTED; there should not be symbolic links
+				// in the cache directories!
+				FindClose(hFindFile);
+				return RSE_FOUND_SYMBOLIC_LINK;
+		}
+
+		// Check the filename to see if we should delete it.
+		if (d_type == DT_REG) {
 			// Thumbs.db files can be deleted.
 			if (!_tcsicmp(findFileData.cFileName, _T("Thumbs.db"))) {
 				goto isok;
@@ -110,12 +120,12 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 		fullpath += findFileData.cFileName;
 
 		// Add the filename and d_type.
-		rlist.emplace_front(fullpath, FileSystem::win32_attrs_to_d_type(findFileData.dwFileAttributes));
+		rlist.emplace_front(fullpath, d_type);
 
 		// If this is a directory, recursively scan it.
 		// This is done *after* adding the directory because forward_list
 		// enumerates items in reverse order.
-		if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+		if (d_type == DT_DIR) {
 			// Recursively scan it.
 			recursiveScan(fullpath.c_str(), rlist);
 		}
