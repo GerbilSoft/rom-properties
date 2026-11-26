@@ -19,15 +19,16 @@
 
 // C includes
 #include <dirent.h>
-#include <fcntl.h>	// AT_FDCWD, O_NOFOLLOW
+#include <fcntl.h>	// AT_FDCWD, O_NOFOLLOW, AT_REMOVEDIR
 #include <sys/types.h>
+#include <unistd.h>
 
 // C includes (C++ namespace)
+#include <cassert>
 #include <cerrno>
 #include <cstring>
 
 // C++ STL classes
-using std::forward_list;
 using std::pair;
 using std::tstring;
 
@@ -42,15 +43,20 @@ namespace LibRpFile {
 
 /**
  * Recursively scan a directory for cache files to delete.
- * This finds *.png, *.jpg, *.jxl, and "version.txt".
+ * This finds *.png, *.jpg, and "version.txt".
  *
  * POSIX implementation: Uses readdir().
  *
- * @param path	[in] Path to scan.
- * @param rlist	[in/out] Return list for filenames and file types. (d_type)
- * @return 0 on success; negative POSIX error code or positive RecursiveScanError on error.
+ * @param state		[in/out] Current scan state (use zero-init struct on first call)
+ * @param path		[in] Path to scan
+ * @param mode		[in] Scan mode
+ * @param user_data	[in,opt] User data for the callback function
+ * @param callback	[in,opt] Callback function (at the end to make it easier to use lambdas)
+ * @return RecursiveScanRet_t
  */
-int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlist)
+int recursiveScan(RecursiveScanState_t &state,
+	const TCHAR *path, RecursiveScanMode mode,
+	void *user_data, RecursiveScanCallback_t callback)
 {
 	// Open the directory, with these flags:
 	// - O_RDONLY: Read-only
@@ -60,7 +66,12 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 	int dfd = open(path, O_RDONLY | O_NOFOLLOW | O_DIRECTORY | O_CLOEXEC);
 	if (dfd < 0) {
 		// Error opening the directory.
-		return -errno;
+		int err = -errno;
+		if (err == -ELOOP) {
+			// Unexpected symlink!
+			err = RSE_FOUND_SYMBOLIC_LINK;
+		}
+		return err;
 	}
 
 	// Open the directory as a DIR*.
@@ -100,8 +111,13 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 				return RSE_FOUND_UNEXPECTED_FILE_TYPE;
 
 			case DT_REG:
+				// Regular file: Supported.
+				state.fileCount++;
+				break;
+
 			case DT_DIR:
-				// Supported.
+				// Directory: Supported.
+				state.dirCount++;
 				break;
 
 			case DT_LNK:
@@ -121,8 +137,13 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 						return RSE_FOUND_UNEXPECTED_FILE_TYPE;
 
 					case DT_REG:
+						// Regular file: Supported.
+						state.fileCount++;
+						break;
+
 					case DT_DIR:
-						// Supported.
+						// Directory: Supported.
+						state.dirCount++;
 						break;
 
 					case DT_LNK:
@@ -165,24 +186,47 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 		}
 
 	isok:
-		// Add the filename and file type.
-		rlist.emplace_front(fullpath, d_type);
+		switch (d_type) {
+			default:
+				assert(!"Should not happen...");
+				break;
 
-		// If this is a directory, recursively scan it.
-		// This is done *after* adding the directory because forward_list
-		// enumerates items in reverse order.
-		if (d_type == DT_DIR) {
-			// Recursively scan the directory.
-			int ret = recursiveScan(fullpath.c_str(), rlist);
-			if (ret != 0) {
-				// recursiveScan() failed. Return immediately.
-				closedir(pdir);
-				return ret;
-			}
+			case DT_REG:
+				if (mode == RecursiveScanMode::ScanAndDelete) {
+					// Delete this file.
+					int ret = unlinkat(dfd, dirent->d_name, 0);
+					if (ret != 0) {
+						// Error deleting the file...
+						state.fileErrs++;
+					}
+				}
+				break;
+
+			case DT_DIR:
+				// Recursively scan this directory.
+				int ret = recursiveScan(state, fullpath.c_str(), mode, user_data, callback);
+				if (ret != 0) {
+					// recursiveScan() failed. Return immediately.
+					closedir(pdir);
+					return ret;
+				}
+				if (mode == RecursiveScanMode::ScanAndDelete) {
+					// Remove this directory.
+					int ret = unlinkat(dfd, dirent->d_name, AT_REMOVEDIR);
+					if (ret != 0) {
+						// Error removing the directory...
+						state.dirErrs++;
+					}
+				}
+				break;
+		}
+
+		if (callback) {
+			callback(state, user_data);
 		}
 	};
-	closedir(pdir);
 
+	closedir(pdir);
 	return 0;
 }
 
