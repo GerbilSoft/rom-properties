@@ -430,6 +430,20 @@ static int recursiveScan_int_NT(RecursiveScanState_t &state,
 			}
 
 		isok:
+			UNICODE_STRING us_path;
+			us_path.Length = static_cast<USHORT>(fdi->FileNameLength);
+			us_path.MaximumLength = us_path.Length;
+			us_path.Buffer = const_cast<PWSTR>(&fdi->FileName[0]);
+
+			OBJECT_ATTRIBUTES oa = {
+				sizeof(oa),	// Length
+				hDir,		// RootDirectory
+				&us_path,	// ObjectName
+				0,		// Attributes
+				nullptr,	// SecurityDescriptor
+				nullptr		// SecurityQualityOfService
+			};
+
 			switch (d_type) {
 				default:
 					assert(!"Should not happen...");
@@ -438,20 +452,6 @@ static int recursiveScan_int_NT(RecursiveScanState_t &state,
 				case DT_REG:
 					if (mode == RecursiveScanMode::ScanAndDelete) {
 						// Delete this file.
-						UNICODE_STRING us_file;
-						us_file.Length = static_cast<USHORT>(fdi->FileNameLength);
-						us_file.MaximumLength = us_file.Length;
-						us_file.Buffer = const_cast<PWSTR>(&fdi->FileName[0]);
-
-						OBJECT_ATTRIBUTES oa = {
-							sizeof(oa),	// Length
-							hDir,		// RootDirectory
-							&us_file,	// ObjectName
-							0,		// Attributes
-							nullptr,	// SecurityDescriptor
-							nullptr		// SecurityQualityOfService
-						};
-
 						// Check if the file has the legacy read-only attribute set.
 						status = STATUS_SUCCESS;
 						if (fdi->FileAttributes & FILE_ATTRIBUTE_READONLY) {
@@ -490,26 +490,10 @@ static int recursiveScan_int_NT(RecursiveScanState_t &state,
 
 				case DT_DIR: {
 					// Recursively scan this directory.
-					UNICODE_STRING us_path;
-					us_path.Length = static_cast<USHORT>(fdi->FileNameLength);
-					us_path.MaximumLength = us_path.Length;
-					us_path.Buffer = const_cast<PWSTR>(&fdi->FileName[0]);
-
-					// NOTE: We don't need to explicitly specify OBJ_CASE_INSENSITIVE here
-					// because we're using the filename directly from the directory.
-					OBJECT_ATTRIBUTES oa = {
-						sizeof(oa),	// Length
-						hDir,		// RootDirectory
-						&us_path,	// ObjectName
-						0,		// Attributes
-						nullptr,	// SecurityDescriptor
-						nullptr		// SecurityQualityOfService
-					};
-
 					HANDLE hSubDir = nullptr;
 					status = ntDllDlopen.pfn_NtOpenFile(
 						&hSubDir,		// FileHandle
-						FILE_READ_ATTRIBUTES | FILE_LIST_DIRECTORY | FILE_TRAVERSE, // DesiredAccess
+						FILE_READ_ATTRIBUTES | FILE_LIST_DIRECTORY | FILE_TRAVERSE | DELETE, // DesiredAccess
 						&oa,			// ObjectAttributes
 						&iosb,			// IoStatusBlock
 						FILE_SHARE_VALID_FLAGS,	// ShareAccess [TODO]
@@ -547,22 +531,21 @@ static int recursiveScan_int_NT(RecursiveScanState_t &state,
 					// NOTE: Unlike the POSIX version, recursiveScan_int_NT will *not*
 					// close hDir before returning, so we have to close it ourselves.
 					int ret = recursiveScan_int_NT(state, hSubDir, mode, user_data, callback);
-					ntDllDlopen.pfn_NtClose(hSubDir);
 					if (ret != 0) {
 						// recursiveScan() failed. Return immediately.
+						ntDllDlopen.pfn_NtClose(hSubDir);
 						return ret;
 					}
 
-#if 0
 					if (mode == RecursiveScanMode::ScanAndDelete) {
 						// Remove this directory.
-						BOOL bRet = RemoveDirectory(fullpath.c_str());
-						if (!bRet) {
+						status = ntDllDlopen.pfn_NtDeleteFile(&oa);
+						if (!NT_SUCCESS(status)) {
 							// Error removing the directory...
 							state.dirErrs++;
 						}
 					}
-#endif
+					ntDllDlopen.pfn_NtClose(hSubDir);
 					break;
 				}
 			}
