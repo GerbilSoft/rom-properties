@@ -16,6 +16,11 @@ extern "C" {
 #  define __kernel_entry
 #endif
 
+// https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-zwdeletefile
+__kernel_entry NTSYSCALLAPI NTSTATUS NtDeleteFile(
+	POBJECT_ATTRIBUTES ObjectAttributes
+);
+
 // NOTE: winternl.h does define FILE_INFORMATION_CLASS,
 // but it only has FileDirectoryInformation...
 // We'll call this one FILE_INFORMATION_CLASS_NT.
@@ -140,6 +145,15 @@ typedef struct _FILE_BASIC_INFORMATION {
 
 // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntqueryinformationfile
 __kernel_entry NTSYSCALLAPI NTSTATUS NtQueryInformationFile(
+	HANDLE                    FileHandle,
+	PIO_STATUS_BLOCK          IoStatusBlock,
+	PVOID                     FileInformation,
+	ULONG                     Length,
+	FILE_INFORMATION_CLASS_NT FileInformationClass
+);
+
+// https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntsetinformationfile
+__kernel_entry NTSYSCALLAPI NTSTATUS NtSetInformationFile(
 	HANDLE                    FileHandle,
 	PIO_STATUS_BLOCK          IoStatusBlock,
 	PVOID                     FileInformation,

@@ -20,6 +20,12 @@
 #include <winternl.h>	// for NT API
 #include "libwin32common/sdk/ntdll-not-in-sdk.h"
 
+// FILE_SHARE_VALID_FLAGS isn't defined in the Win32 SDK for some reason...
+// (MinGW-w64 has it in ntdef.h, winnt.h, and ddk/wdm.h.)
+#ifndef FILE_SHARE_VALID_FLAGS
+#  define FILE_SHARE_VALID_FLAGS (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+#endif /* !FILE_SHARE_VALID_FLAGS */
+
 // C++ STL classes
 using std::pair;
 using std::tstring;
@@ -64,16 +70,21 @@ public:
 		// Load the function pointers.
 #define NTDLL_LOAD_PTR(fn) pfn_##fn = reinterpret_cast<__typeof__(fn)*>(GetProcAddress(hNtDll, #fn))
 		NTDLL_LOAD_PTR(NtClose);
+		NTDLL_LOAD_PTR(NtDeleteFile);
 		NTDLL_LOAD_PTR(NtOpenFile);
 		NTDLL_LOAD_PTR(NtQueryDirectoryFile);
 		NTDLL_LOAD_PTR(NtQueryInformationFile);
+		NTDLL_LOAD_PTR(NtSetInformationFile);
 
 		if (!pfn_NtClose ||
+		    !pfn_NtDeleteFile ||
 		    !pfn_NtOpenFile ||
 		    !pfn_NtQueryDirectoryFile ||
-		    !pfn_NtQueryInformationFile)
+		    !pfn_NtQueryInformationFile ||
+		    !pfn_NtSetInformationFile)
 		{
 			// At least one function pointer is missing...
+			assert(!"Missing NTDLL.DLL function pointer???");
 			clearFnPtrs();
 		}
 	}
@@ -82,9 +93,11 @@ public:
 	{
 #define NTDLL_CLEAR_PTR(fn) pfn_##fn = nullptr
 		NTDLL_CLEAR_PTR(NtClose);
+		NTDLL_CLEAR_PTR(NtDeleteFile);
 		NTDLL_CLEAR_PTR(NtOpenFile);
 		NTDLL_CLEAR_PTR(NtQueryDirectoryFile);
 		NTDLL_CLEAR_PTR(NtQueryInformationFile);
+		NTDLL_CLEAR_PTR(NtSetInformationFile);
 
 		hNtDll = nullptr;
 	}
@@ -103,9 +116,11 @@ public:
 	pfn_##fn##_t pfn_##fn
 
 	NTDLL_DEF_PTR(NtClose);
+	NTDLL_DEF_PTR(NtDeleteFile);
 	NTDLL_DEF_PTR(NtOpenFile);
 	NTDLL_DEF_PTR(NtQueryDirectoryFile);
 	NTDLL_DEF_PTR(NtQueryInformationFile);
+	NTDLL_DEF_PTR(NtSetInformationFile);
 };
 
 static NtDllDlopen ntDllDlopen;
@@ -421,31 +436,56 @@ static int recursiveScan_int_NT(RecursiveScanState_t &state,
 					break;
 
 				case DT_REG:
-#if 0
 					if (mode == RecursiveScanMode::ScanAndDelete) {
 						// Delete this file.
+						UNICODE_STRING us_file;
+						us_file.Length = static_cast<USHORT>(fdi->FileNameLength);
+						us_file.MaximumLength = us_file.Length;
+						us_file.Buffer = const_cast<PWSTR>(&fdi->FileName[0]);
+
+						OBJECT_ATTRIBUTES oa = {
+							sizeof(oa),	// Length
+							hDir,		// RootDirectory
+							&us_file,	// ObjectName
+							0,		// Attributes
+							nullptr,	// SecurityDescriptor
+							nullptr		// SecurityQualityOfService
+						};
 
 						// Check if the file has the legacy read-only attribute set.
-						BOOL bRet = TRUE;
-						const DWORD attrs = GetFileAttributes(fullpath.c_str());
-						if (unlikely(attrs == INVALID_FILE_ATTRIBUTES)) {
-							// GetFileAttributes() failed...
-							bRet = FALSE;
-						} else if (attrs & FILE_ATTRIBUTE_READONLY) {
+						status = STATUS_SUCCESS;
+						if (fdi->FileAttributes & FILE_ATTRIBUTE_READONLY) {
 							// Read-only is set. Remove it.
-							bRet = SetFileAttributes(fullpath.c_str(), (attrs & ~FILE_ATTRIBUTE_READONLY));
+							// NOTE: We don't need to explicitly specify OBJ_CASE_INSENSITIVE here
+							// because we're using the filename directly from the directory.
+							HANDLE hFile = nullptr;
+							status = ntDllDlopen.pfn_NtOpenFile(
+								&hFile,		// FileHandle
+								FILE_WRITE_ATTRIBUTES,	// DesiredAccess
+								&oa,			// ObjectAttributes
+								&iosb,			// IoStatusBlock
+								FILE_SHARE_VALID_FLAGS,	// ShareAccess [TODO]
+								FILE_NON_DIRECTORY_FILE | FILE_OPEN_REPARSE_POINT);		// OpenOptions
+							if (NT_SUCCESS(status)) {
+								FILE_BASIC_INFORMATION fbi = {{}, {}, {}, {}, fdi->FileAttributes & ~FILE_ATTRIBUTE_READONLY};
+								status = ntDllDlopen.pfn_NtSetInformationFile(
+									hFile,	// FileHandle
+									&iosb,	// IoStatusBlock
+									&fbi,	// FileInformation
+									static_cast<ULONG>(sizeof(fbi)),	// Length
+									FileBasicInformation);	// FileInformationClass
+							}
 						}
-						if (bRet) {
-							bRet = DeleteFile(fullpath.c_str());
+						if (NT_SUCCESS(status)) {
+							status = ntDllDlopen.pfn_NtDeleteFile(&oa);
 						}
 
-						if (!bRet) {
+						if (!NT_SUCCESS(status)) {
 							// Error clearing the read-only attribute
 							// and/or deleting the file.
 							state.fileErrs++;
 						}
 					}
-#endif
 					break;
 
 				case DT_DIR: {
@@ -455,13 +495,15 @@ static int recursiveScan_int_NT(RecursiveScanState_t &state,
 					us_path.MaximumLength = us_path.Length;
 					us_path.Buffer = const_cast<PWSTR>(&fdi->FileName[0]);
 
+					// NOTE: We don't need to explicitly specify OBJ_CASE_INSENSITIVE here
+					// because we're using the filename directly from the directory.
 					OBJECT_ATTRIBUTES oa = {
-						sizeof(oa),		// Length
-						hDir,			// RootDirectory
-						&us_path,		// ObjectName
-						OBJ_CASE_INSENSITIVE,	// Attributes
-						nullptr,		// SecurityDescriptor
-						nullptr			// SecurityQualityOfService
+						sizeof(oa),	// Length
+						hDir,		// RootDirectory
+						&us_path,	// ObjectName
+						0,		// Attributes
+						nullptr,	// SecurityDescriptor
+						nullptr		// SecurityQualityOfService
 					};
 
 					HANDLE hSubDir = nullptr;
@@ -470,7 +512,7 @@ static int recursiveScan_int_NT(RecursiveScanState_t &state,
 						FILE_READ_ATTRIBUTES | FILE_LIST_DIRECTORY | FILE_TRAVERSE, // DesiredAccess
 						&oa,			// ObjectAttributes
 						&iosb,			// IoStatusBlock
-						FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,	// ShareAccess [TODO]
+						FILE_SHARE_VALID_FLAGS,	// ShareAccess [TODO]
 						FILE_DIRECTORY_FILE | FILE_OPEN_REPARSE_POINT);		// OpenOptions
 					if (!NT_SUCCESS(status)) {
 						// Failed to open the subdirectory...
@@ -609,7 +651,7 @@ int recursiveScan(RecursiveScanState_t &state,
 		FILE_READ_ATTRIBUTES | FILE_LIST_DIRECTORY | FILE_TRAVERSE, // DesiredAccess
 		&oa,			// ObjectAttributes
 		&iosb,			// IoStatusBlock
-		FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,	// ShareAccess [TODO]
+		FILE_SHARE_VALID_FLAGS,	// ShareAccess [TODO]
 		FILE_DIRECTORY_FILE | FILE_OPEN_REPARSE_POINT);		// OpenOptions
 	if (!NT_SUCCESS(status)) {
 		// Failed to open the directory...
