@@ -22,8 +22,12 @@ __kernel_entry NTSYSCALLAPI NTSTATUS NtDeleteFile(
 );
 
 // NOTE: winternl.h does define FILE_INFORMATION_CLASS,
-// but it only has FileDirectoryInformation...
-// We'll call this one FILE_INFORMATION_CLASS_NT.
+// but the official Windows SDK only has FileDirectoryInformation...
+// MinGW-w64 *does* have the other entries.
+// (TODO: Which MinGW-w64 version added it?)
+#ifdef __MINGW32__
+#  define FILE_INFORMATION_CLASS_NT FILE_INFORMATION_CLASS
+#else /* !__MINGW32__ */
 typedef enum _FILE_INFORMATION_CLASS_NT {
 	FileDirectoryInformation_NT = 1,
 	FileFullDirectoryInformation,
@@ -103,7 +107,9 @@ typedef enum _FILE_INFORMATION_CLASS_NT {
 	FileKnownFolderInformation,
 	FileMaximumInformation
 } FILE_INFORMATION_CLASS_NT, *PFILE_INFORMATION_CLASS_NT;
+#endif /* __MINGW32__ */
 
+#ifndef __MINGW32__
 // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_directory_information
 typedef struct _FILE_DIRECTORY_INFORMATION {
 	ULONG         NextEntryOffset;
@@ -118,6 +124,7 @@ typedef struct _FILE_DIRECTORY_INFORMATION {
 	ULONG         FileNameLength;
 	WCHAR         FileName[1];
 } FILE_DIRECTORY_INFORMATION, *PFILE_DIRECTORY_INFORMATION;
+#endif /* !__MINGW32__ */
 
 // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntquerydirectoryfile
 __kernel_entry NTSYSCALLAPI NTSTATUS NtQueryDirectoryFile(
@@ -134,6 +141,7 @@ __kernel_entry NTSYSCALLAPI NTSTATUS NtQueryDirectoryFile(
 	BOOLEAN                RestartScan
 );
 
+#ifndef __MINGW32__
 // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_file_basic_information
 typedef struct _FILE_BASIC_INFORMATION {
 	LARGE_INTEGER CreationTime;
@@ -142,6 +150,7 @@ typedef struct _FILE_BASIC_INFORMATION {
 	LARGE_INTEGER ChangeTime;
 	ULONG FileAttributes;
 } FILE_BASIC_INFORMATION, *PFILE_BASIC_INFORMATION;
+#endif /* !__MINGW32__ */
 
 // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntqueryinformationfile
 __kernel_entry NTSYSCALLAPI NTSTATUS NtQueryInformationFile(

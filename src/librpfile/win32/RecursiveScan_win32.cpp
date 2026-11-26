@@ -10,7 +10,7 @@
 #include "RecursiveScan.hpp"
 #include "FileSystem.hpp"
 
-// d_type compatibility values
+#include "common.h"
 #include "d_type.h"
 
 // libwin32common
@@ -26,7 +26,11 @@
 #  define FILE_SHARE_VALID_FLAGS (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
 #endif /* !FILE_SHARE_VALID_FLAGS */
 
+// C includes (C++ namespace)
+#include <cassert>
+
 // C++ STL classes
+#include <memory>
 using std::pair;
 using std::tstring;
 using std::unique_ptr;
@@ -435,14 +439,8 @@ static int recursiveScan_int_NT(RecursiveScanState_t &state,
 			us_path.MaximumLength = us_path.Length;
 			us_path.Buffer = const_cast<PWSTR>(&fdi->FileName[0]);
 
-			OBJECT_ATTRIBUTES oa = {
-				sizeof(oa),	// Length
-				hDir,		// RootDirectory
-				&us_path,	// ObjectName
-				0,		// Attributes
-				nullptr,	// SecurityDescriptor
-				nullptr		// SecurityQualityOfService
-			};
+			OBJECT_ATTRIBUTES oa;
+			InitializeObjectAttributes(&oa, &us_path, 0, hDir, nullptr);
 
 			switch (d_type) {
 				default:
@@ -618,14 +616,8 @@ int recursiveScan(RecursiveScanState_t &state,
 	us_path.MaximumLength = us_path.Length + sizeof(TCHAR);
 	us_path.Buffer = const_cast<PWSTR>(ts_path.c_str());
 
-	OBJECT_ATTRIBUTES oa = {
-		sizeof(oa),		// Length
-		nullptr,		// RootDirectory
-		&us_path,		// ObjectName
-		OBJ_CASE_INSENSITIVE,	// Attributes
-		nullptr,		// SecurityDescriptor
-		nullptr			// SecurityQualityOfService
-	};
+	OBJECT_ATTRIBUTES oa;
+	InitializeObjectAttributes(&oa, &us_path, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
 
 	IO_STATUS_BLOCK iosb;
 	HANDLE hDir = nullptr;
