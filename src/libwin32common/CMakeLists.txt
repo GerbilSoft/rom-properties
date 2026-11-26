@@ -43,6 +43,7 @@ SET(${PROJECT_NAME}_H
 	sdk/tsbase.h
 	sdk/windowsx_ts.h
 	sdk/commctrl_ts.h
+	sdk/ntdll-not-in-sdk.h
 	)
 
 ######################
