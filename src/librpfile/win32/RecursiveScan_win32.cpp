@@ -55,11 +55,15 @@ public:
 		clearFnPtrs();
 	}
 
-	void init(void)
+	/**
+	 * Initialize NTDLL.DLL function pointers.
+	 * @return 0 on success; negative POSIX error code on error.
+	 */
+	int init(void)
 	{
 		if (hNtDll) {
 			// Already initialized.
-			return;
+			return 0;
 		}
 
 		// NTDLL.DLL should always be loaded by default,
@@ -68,7 +72,7 @@ public:
 		if (!hNtDll) {
 			// NTDLL not found?
 			clearFnPtrs();
-			return;
+			return -ENOENT;
 		}
 
 		// Load the function pointers.
@@ -90,7 +94,10 @@ public:
 			// At least one function pointer is missing...
 			assert(!"Missing NTDLL.DLL function pointer???");
 			clearFnPtrs();
+			return -EIO;	// FIXME: No POSIX error code for "missing symbol"...
 		}
+
+		return 0;
 	}
 
 	void clearFnPtrs(void)
@@ -608,8 +615,7 @@ int recursiveScan(RecursiveScanState_t &state,
 	void *user_data, RecursiveScanCallback_t callback)
 {
 	// TODO: init once?
-	ntDllDlopen.init();
-	if (!ntDllDlopen.isInit()) {
+	if (ntDllDlopen.init() != 0) {
 		// NTDLL could not be initialized...
 		if (!isWindowsNT()) {
 			// Not Windows NT: try the path-based fallback.
