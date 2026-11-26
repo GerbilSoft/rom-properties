@@ -84,9 +84,9 @@ int recursiveScan(RecursiveScanState_t &state,
 		return -errno;
 	}
 
-	string fullpath(path);
-	fullpath += '/';
-	const size_t fullpath_base_len = fullpath.size();
+	// Lazy init: fullpath is initialized on first DT_DIR subdirectory scan.
+	string fullpath;
+	size_t fullpath_base_len = 0;
 
 	// Search for files and directories.
 	struct dirent *dirent;
@@ -98,9 +98,6 @@ int recursiveScan(RecursiveScanState_t &state,
 		{
 			continue;
 		}
-
-		fullpath.resize(fullpath_base_len);
-		fullpath += dirent->d_name;
 
 		// Check if this is a regular file.
 		uint8_t d_type = dirent->d_type;
@@ -204,12 +201,26 @@ int recursiveScan(RecursiveScanState_t &state,
 
 			case DT_DIR:
 				// Recursively scan this directory.
+				if (fullpath.empty()) {
+					// Need to initialize the full path string.
+					fullpath = path;
+					fullpath += '/';
+					fullpath_base_len = fullpath.size();
+				} else {
+					// Full path is already initialized.
+					// Truncate it to the base length.
+					fullpath.resize(fullpath_base_len);
+				}
+				// Add the subdirectory to the full path string.
+				fullpath += dirent->d_name;
+
 				int ret = recursiveScan(state, fullpath.c_str(), mode, user_data, callback);
 				if (ret != 0) {
 					// recursiveScan() failed. Return immediately.
 					closedir(pdir);
 					return ret;
 				}
+
 				if (mode == RecursiveScanMode::ScanAndDelete) {
 					// Remove this directory.
 					int ret = unlinkat(dfd, dirent->d_name, AT_REMOVEDIR);
