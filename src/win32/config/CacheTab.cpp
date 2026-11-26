@@ -667,16 +667,38 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 		return 0;
 	}
 
-	// Recursively scan the cache directory.
-	// TODO: Do we really want to store everything in a list? (Wastes memory.)
-	// Maybe do a simple counting scan first, then delete.
-	forward_list<pair<tstring, uint8_t> > rlist;
-	int ret = recursiveScan(cacheDirT.c_str(), rlist);
+	// This function always handles the rom-properties cache.
+	// NOTE: The WinXP Thumbs.db cache deletion isn't implemented yet...
+	const tstring ts_cache_type = TC_("CacheCleaner", "rom-properties cache");
+
+	// Recursively scan the cache directory to get an initial maximum progress value.
+	RecursiveScanState_t state;
+	int ret = recursiveScan(state, cacheDirT.c_str(), RecursiveScanMode::ScanOnly, nullptr, nullptr);
 	if (ret != 0) {
-		// Non-image file found.
-		const string s_err = fmt::format(FRUN(C_("CacheTab", "ERROR: {:s}")),
-			C_("CacheCleaner", "rom-properties cache has unexpected files. Not clearing it."));
-		SetWindowText(hStatusLabel, U82T(s_err));
+		// Recursive scan failed.
+		tstring stdts_err;
+		switch (ret) {
+			case RSE_FOUND_UNEXPECTED_FILE_TYPE:
+				fmt::format_to(std::back_inserter(stdts_err),
+					FRUN(TC_("CacheCleaner", "{:s} has non-regular files. Not clearing it.")), ts_cache_type);
+				break;
+			case RSE_FOUND_SYMBOLIC_LINK:
+				fmt::format_to(std::back_inserter(stdts_err),
+					FRUN(TC_("CacheCleaner", "{:s} has a symbolic link. Not clearing it.")), ts_cache_type);
+				break;
+			case RSE_FOUND_UNEXPECTED_FILE_EXT:
+				fmt::format_to(std::back_inserter(stdts_err),
+					FRUN(TC_("CacheCleaner", "{:s} has unexpected files. Not clearing it.")), ts_cache_type);
+				break;
+			default:
+				if (ret < 0) {
+					fmt::format_to(std::back_inserter(stdts_err), FRUN(TC_("CacheCleaner", "Initial scan failed: {:s}")), _tcserror(-ret));
+				} else {
+					fmt::format_to(std::back_inserter(stdts_err), FRUN(TC_("CacheCleaner", "Initial scan failed: error code {:d}")), ret);
+				}
+				break;
+		}
+		SetWindowText(hStatusLabel, stdts_err.c_str());
 		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
 		SendMessage(hProgressBar, PBM_SETPOS, 1, 0);
 		EnableWindow(hClearSysThumbs, TRUE);
@@ -685,8 +707,8 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 		// FIXME: Not working...
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		MessageBeep(MB_ICONERROR);
-		return 0;
-	} else if (rlist.empty()) {
+		return ret;
+	} else if (state.isEmpty()) {
 		// Nothing to do!
 		SetWindowText(hStatusLabel, TC_("CacheTab", "rom-properties cache is empty. Nothing to do."));
 		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
@@ -698,74 +720,70 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 		return 0;
 	}
 
-	// NOTE: std::forward_list doesn't have size().
-	const size_t rlist_size = std::distance(rlist.cbegin(), rlist.cend());
+	struct CallbackData_t {
+		size_t cache_entries_total;
+		HWND hProgressBar;
+	};
+	CallbackData_t callbackData;
+
+	// Get the number of files and directories.
+	// NOTE: This is an estimate; it might change due to TOCTOU.
+	callbackData.cache_entries_total = state.totalCount();
+	callbackData.hProgressBar = hProgressBar;
 
 	// Delete all of the files and subdirectories.
-	SendMessage(hProgressBar, PBM_SETRANGE32, 0, rlist_size);
+	SendMessage(hProgressBar, PBM_SETRANGE32, 0, callbackData.cache_entries_total);
 	SendMessage(hProgressBar, PBM_SETPOS, 2, 0);
-	unsigned int count = 0;
-	unsigned int dirErrs = 0, fileErrs = 0;
-	for (const auto &p : rlist) {
-		switch (p.second) {
-			case DT_DIR: {
-				// Remove the directory.
-				BOOL bRet = RemoveDirectory(p.first.c_str());
-				if (!bRet) {
-					dirErrs++;
-					SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
-				}
-				break;
-			}
+	state.reset();
 
-			case DT_REG: {
-				// Delete the file.
-				BOOL bRet = TRUE;
-				// Check if the file is read-only.
-				// TODO: Optimize by including the Win32 attributes in rlist instead of converting to d_type?
-				const DWORD attrs = GetFileAttributes(p.first.c_str());
-				if (unlikely(attrs == INVALID_FILE_ATTRIBUTES)) {
-					bRet = FALSE;
-				} else if (attrs & FILE_ATTRIBUTE_READONLY) {
-					// Need to remove the read-only attribute.
-					bRet = SetFileAttributes(p.first.c_str(), (attrs & ~FILE_ATTRIBUTE_READONLY));
-				}
-				if (!bRet) {
-					// Error removing the read-only attribute.
-					fileErrs++;
-					SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
-				} else {
-					bRet = DeleteFile(p.first.c_str());
-					if (!bRet) {
-						// Error deleting the file.
-						fileErrs++;
-						SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
-					}
-				}
-				break;
+	ret = recursiveScan(state, cacheDirT.c_str(), RecursiveScanMode::ScanAndDelete, &callbackData,
+		[](const RecursiveScanState_t &state, void *user_data) -> void {
+			// TODO: Restrict update frequency to X number of files/directories?
+			const CallbackData_t *const callbackData = static_cast<const CallbackData_t*>(user_data);
+			SendMessage(callbackData->hProgressBar, PBM_SETPOS, state.totalCount(), 0);
+			if (state.hasErrors()) {
+				// TODO: Only do this once per session?
+				SendMessage(callbackData->hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 			}
-
+		});
+	if (ret != 0) {
+		// Recursive scan failed.
+		tstring stdts_err;
+		switch (ret) {
+			case RSE_FOUND_UNEXPECTED_FILE_TYPE:
+				fmt::format_to(std::back_inserter(stdts_err),
+					FRUN(TC_("CacheCleaner", "{:s} has non-regular files. Cache clearing aborted.")), ts_cache_type);
+				break;
+			case RSE_FOUND_SYMBOLIC_LINK:
+				fmt::format_to(std::back_inserter(stdts_err),
+					FRUN(TC_("CacheCleaner", "{:s} has a symbolic link. Cache clearing aborted.")), ts_cache_type);
+				break;
+			case RSE_FOUND_UNEXPECTED_FILE_EXT:
+				fmt::format_to(std::back_inserter(stdts_err),
+					FRUN(TC_("CacheCleaner", "{:s} has unexpected files. Cache clearing aborted.")), ts_cache_type);
+				break;
 			default:
-				// FIXME: Other type of file?
-				fileErrs++;
-				SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
+				if (ret < 0) {
+					fmt::format_to(std::back_inserter(stdts_err), FRUN(TC_("CacheCleaner", "Secondary scan failed: {:s}")), _tcserror(-ret));
+				} else {
+					fmt::format_to(std::back_inserter(stdts_err), FRUN(TC_("CacheCleaner", "Secondary scan failed: error code {:d}")), ret);
+				}
 				break;
 		}
-
-		// TODO: Restrict update frequency to X number of files/directories?
-		count++;
-		SendMessage(hProgressBar, PBM_SETPOS, count, 0);
-	}
-
-	if (dirErrs > 0 || fileErrs > 0) {
-		const string s_err = fmt::format(FRUN(C_("CacheTab", "ERROR: {:s}")),
-			fmt::format(FRUN(C_("CacheTab", "Unable to delete {0:Ld} file(s) and/or {1:Ld} dir(s).")),
-				fileErrs, dirErrs));
-		SetWindowText(hStatusLabel, U82T(s_err));
-		MessageBeep(MB_ICONWARNING);
+		SetWindowText(hStatusLabel, stdts_err.c_str());
+		MessageBeep(MB_ICONERROR);
 	} else {
-		SetWindowText(hStatusLabel, TC_("CacheTab", "rom-properties cache cleared successfully."));
-		MessageBeep(MB_ICONINFORMATION);
+		// Directory processed.
+		if (state.hasErrors()) {
+			const string s_err = fmt::format(FRUN(C_("CacheTab", "ERROR: {:s}")),
+				fmt::format(FRUN(C_("CacheTab", "Unable to delete {0:Ld} file(s) and/or {1:Ld} dir(s).")),
+				state.fileErrs, state.dirErrs));
+			SetWindowText(hStatusLabel, U82T(s_err));
+			MessageBeep(MB_ICONWARNING);
+		} else {
+			SetWindowText(hStatusLabel, TC_("CacheTab", "rom-properties cache cleared successfully."));
+			MessageBeep(MB_ICONINFORMATION);
+		}
 	}
 
 	EnableWindow(hClearSysThumbs, TRUE);

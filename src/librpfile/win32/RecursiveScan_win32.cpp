@@ -14,7 +14,6 @@
 #include "d_type.h"
 
 // C++ STL classes
-using std::forward_list;
 using std::pair;
 using std::tstring;
 
@@ -36,11 +35,16 @@ namespace LibRpFile {
  *
  * Win32 implementation: Uses FindFirstFile() and FindNextFile().
  *
- * @param path	[in] Path to scan.
- * @param rlist	[in/out] Return list for filenames and file types. (d_type)
- * @return 0 on success; non-zero on error.
+ * @param state		[in/out] Current scan state (use zero-init struct on first call)
+ * @param path		[in] Path to scan
+ * @param mode		[in] Scan mode
+ * @param user_data	[in,opt] User data for the callback function
+ * @param callback	[in,opt] Callback function (at the end to make it easier to use lambdas)
+ * @return RecursiveScanRet_t
  */
-int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlist)
+int recursiveScan(RecursiveScanState_t &state,
+	const TCHAR *path, RecursiveScanMode mode,
+	void *user_data, RecursiveScanCallback_t callback)
 {
 	tstring findFilter(path);
 	findFilter += _T("\\*");
@@ -74,8 +78,13 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 				return RSE_FOUND_UNEXPECTED_FILE_TYPE;
 
 			case DT_REG:
+				// Regular file: Supported.
+				state.fileCount++;
+				break;
+
 			case DT_DIR:
-				// Supported.
+				// Directory: Supported.
+				state.dirCount++;
 				break;
 
 			case DT_LNK:
@@ -119,20 +128,59 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 		fullpath.resize(fullpath_base_len);
 		fullpath += findFileData.cFileName;
 
-		// Add the filename and d_type.
-		rlist.emplace_front(fullpath, d_type);
+		switch (d_type) {
+			default:
+				assert(!"Should not happen...");
+				break;
 
-		// If this is a directory, recursively scan it.
-		// This is done *after* adding the directory because forward_list
-		// enumerates items in reverse order.
-		if (d_type == DT_DIR) {
-			// Recursively scan it.
-			int ret = recursiveScan(fullpath.c_str(), rlist);
-			if (ret != 0) {
-				// recursiveScan() failed. Return immediately.
-				FindClose(hFindFile);
-				return ret;
-			}
+			case DT_REG:
+				if (mode == RecursiveScanMode::ScanAndDelete) {
+					// Delete this file.
+
+					// Check if the file has the legacy read-only attribute set.
+					BOOL bRet = TRUE;
+					const DWORD attrs = GetFileAttributes(fullpath.c_str());
+					if (unlikely(attrs == INVALID_FILE_ATTRIBUTES)) {
+						// GetFileAttributes() failed...
+						bRet = FALSE;
+					} else if (attrs & FILE_ATTRIBUTE_READONLY) {
+						// Read-only is set. Remove it.
+						bRet = SetFileAttributes(fullpath.c_str(), (attrs & ~FILE_ATTRIBUTE_READONLY));
+					}
+					if (bRet) {
+						bRet = DeleteFile(fullpath.c_str());
+					}
+
+					if (!bRet) {
+						// Error clearing the read-only attribute
+						// and/or deleting the file.
+						state.fileErrs++;
+					}
+				}
+				break;
+
+			case DT_DIR:
+				// Recursively scan this directory.
+				int ret = recursiveScan(state, fullpath.c_str(), mode, user_data, callback);
+				if (ret != 0) {
+					// recursiveScan() failed. Return immediately.
+					FindClose(hFindFile);
+					return ret;
+				}
+
+				if (mode == RecursiveScanMode::ScanAndDelete) {
+					// Remove this directory.
+					BOOL bRet = RemoveDirectory(fullpath.c_str());
+					if (!bRet) {
+						// Error removing the directory...
+						state.dirErrs++;
+					}
+				}
+				break;
+		}
+
+		if (callback) {
+			callback(state, user_data);
 		}
 	} while (FindNextFile(hFindFile, &findFileData));
 	FindClose(hFindFile);
