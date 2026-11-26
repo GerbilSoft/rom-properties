@@ -570,6 +570,27 @@ static int recursiveScan_int_NT(RecursiveScanState_t &state,
 }
 
 /**
+ * Is this Windows NT?
+ * @return True if NT; false if not.
+ */
+static inline bool isWindowsNT(void)
+{
+#ifdef _MSC_VER
+#  pragma warning(push)
+#  pragma warning(disable: 4996)
+#endif /* _MSC_VER */
+	// Get the OS version information.
+	OSVERSIONINFO osvi;
+	osvi.dwOSVersionInfoSize = sizeof(osvi);
+	GetVersionEx(&osvi);
+#ifdef _MSC_VER
+#  pragma warning(pop)
+#endif /* _MSC_VER */
+
+	return (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT);
+}
+
+/**
  * Recursively scan a directory for cache files to delete.
  * This finds *.png, *.jpg, *.jxl, and "version.txt".
  *
@@ -590,7 +611,12 @@ int recursiveScan(RecursiveScanState_t &state,
 	ntDllDlopen.init();
 	if (!ntDllDlopen.isInit()) {
 		// NTDLL could not be initialized...
-		// TODO: Win9x fallback? (or don't bother...)
+		if (!isWindowsNT()) {
+			// Not Windows NT: try the path-based fallback.
+			// (On NT, NTDLL.DLL is *always* available, so if it's
+			// not initializing for some reason, that's an error.)
+			return recursiveScan_int_nonNT(state, path, mode, user_data, callback);
+		}
 		return -ENOTSUP;
 	}
 
