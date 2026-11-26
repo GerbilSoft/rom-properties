@@ -17,7 +17,7 @@ extern "C" {
 #endif
 
 // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-zwdeletefile
-__kernel_entry NTSYSCALLAPI NTSTATUS NtDeleteFile(
+__kernel_entry NTSTATUS NTAPI NtDeleteFile(
 	POBJECT_ATTRIBUTES ObjectAttributes
 );
 
@@ -127,7 +127,7 @@ typedef struct _FILE_DIRECTORY_INFORMATION {
 #endif /* !__MINGW32__ */
 
 // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntquerydirectoryfile
-__kernel_entry NTSYSCALLAPI NTSTATUS NtQueryDirectoryFile(
+__kernel_entry NTSTATUS NTAPI NtQueryDirectoryFile(
 	HANDLE                 FileHandle,
 	HANDLE                 Event,
 	PIO_APC_ROUTINE        ApcRoutine,
@@ -153,7 +153,7 @@ typedef struct _FILE_BASIC_INFORMATION {
 #endif /* !__MINGW32__ */
 
 // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntqueryinformationfile
-__kernel_entry NTSYSCALLAPI NTSTATUS NtQueryInformationFile(
+__kernel_entry NTSTATUS NTAPI NtQueryInformationFile(
 	HANDLE                    FileHandle,
 	PIO_STATUS_BLOCK          IoStatusBlock,
 	PVOID                     FileInformation,
@@ -162,7 +162,7 @@ __kernel_entry NTSYSCALLAPI NTSTATUS NtQueryInformationFile(
 );
 
 // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntsetinformationfile
-__kernel_entry NTSYSCALLAPI NTSTATUS NtSetInformationFile(
+__kernel_entry NTSTATUS NTAPI NtSetInformationFile(
 	HANDLE                    FileHandle,
 	PIO_STATUS_BLOCK          IoStatusBlock,
 	PVOID                     FileInformation,
