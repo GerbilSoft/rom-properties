@@ -273,6 +273,18 @@ RP_LIBROMDATA_PUBLIC
 uint8_t get_file_d_type(const wchar_t *filename, bool no_deref = false);
 #endif /* _WIN32 */
 
+#ifndef _WIN32
+/**
+ * Get a file's d_type.
+ * @param dfd Directory fd
+ * @param filename Filename, relative to dfd (UTF-8)
+ * @param no_deref If true, don't resolve symlinks (i.e. lstat)
+ * @return d_type
+ */
+RP_LIBROMDATA_PUBLIC
+uint8_t get_file_d_type(int dfd, const char *filename, bool no_deref = false);
+#endif /* !_WIN32 */
+
 /**
  * Check if the specified file is a symbolic link.
  *

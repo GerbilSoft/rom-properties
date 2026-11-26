@@ -48,32 +48,16 @@ namespace LibRpFile {
  * POSIX implementation: Uses readdir().
  *
  * @param state		[in/out] Current scan state (use zero-init struct on first call)
- * @param path		[in] Path to scan
+ * @param dfd		[in] Directory fd (will be closed before returning)
  * @param mode		[in] Scan mode
  * @param user_data	[in,opt] User data for the callback function
  * @param callback	[in,opt] Callback function (at the end to make it easier to use lambdas)
  * @return RecursiveScanRet_t
  */
-int recursiveScan(RecursiveScanState_t &state,
-	const TCHAR *path, RecursiveScanMode mode,
+static int recursiveScan_int(RecursiveScanState_t &state,
+	int dfd, RecursiveScanMode mode,
 	void *user_data, RecursiveScanCallback_t callback)
 {
-	// Open the directory, with these flags:
-	// - O_RDONLY: Read-only
-	// - O_NOFOLLOW: Don't follow symlinks on the last path component
-	// - O_DIRECTORY: Fail if it's not a directory
-	// - O_CLOEXEC: Close on exec()
-	int dfd = open(path, O_RDONLY | O_NOFOLLOW | O_DIRECTORY | O_CLOEXEC);
-	if (dfd < 0) {
-		// Error opening the directory.
-		int err = -errno;
-		if (err == -ELOOP) {
-			// Unexpected symlink!
-			err = RSE_FOUND_SYMBOLIC_LINK;
-		}
-		return err;
-	}
-
 	// Open the directory as a DIR*.
 	// NOTE: dfd will be owned by the DIR* and will
 	// be closed when closedir() is called.
@@ -83,10 +67,6 @@ int recursiveScan(RecursiveScanState_t &state,
 		close(dfd);
 		return -errno;
 	}
-
-	// Lazy init: fullpath is initialized on first DT_DIR subdirectory scan.
-	string fullpath;
-	size_t fullpath_base_len = 0;
 
 	// Search for files and directories.
 	struct dirent *dirent;
@@ -126,7 +106,7 @@ int recursiveScan(RecursiveScanState_t &state,
 
 			case DT_UNKNOWN:
 				// Unknown. Use lstat().
-				d_type = FileSystem::get_file_d_type(fullpath.c_str(), true);
+				d_type = FileSystem::get_file_d_type(dfd, dirent->d_name, true);
 				switch (d_type) {
 					default:
 						// Not supported.
@@ -199,24 +179,24 @@ int recursiveScan(RecursiveScanState_t &state,
 				}
 				break;
 
-			case DT_DIR:
+			case DT_DIR: {
 				// Recursively scan this directory.
-				if (fullpath.empty()) {
-					// Need to initialize the full path string.
-					fullpath = path;
-					fullpath += '/';
-					fullpath_base_len = fullpath.size();
-				} else {
-					// Full path is already initialized.
-					// Truncate it to the base length.
-					fullpath.resize(fullpath_base_len);
+				int subdfd = openat(dfd, dirent->d_name, O_RDONLY | O_NOFOLLOW | O_DIRECTORY | O_CLOEXEC);
+				if (subdfd < 0) {
+					// Error opening the directory.
+					int err = -errno;
+					if (err == -ELOOP) {
+						// Unexpected symlink!
+						err = RSE_FOUND_SYMBOLIC_LINK;
+					}
+					closedir(pdir);
+					return err;
 				}
-				// Add the subdirectory to the full path string.
-				fullpath += dirent->d_name;
 
-				int ret = recursiveScan(state, fullpath.c_str(), mode, user_data, callback);
+				// NOTE: subdfd will be closed by recursiveScan_int() before returning.
+				int ret = recursiveScan_int(state, subdfd, mode, user_data, callback);
 				if (ret != 0) {
-					// recursiveScan() failed. Return immediately.
+					// recursiveScan_int() failed. Return immediately.
 					closedir(pdir);
 					return ret;
 				}
@@ -230,6 +210,7 @@ int recursiveScan(RecursiveScanState_t &state,
 					}
 				}
 				break;
+			}
 		}
 
 		if (callback) {
@@ -239,6 +220,44 @@ int recursiveScan(RecursiveScanState_t &state,
 
 	closedir(pdir);
 	return 0;
+}
+
+/**
+ * Recursively scan a directory for cache files to delete.
+ * This finds *.png, *.jpg, and "version.txt".
+ *
+ * POSIX implementation: Uses readdir().
+ *
+ * @param state		[in/out] Current scan state (use zero-init struct on first call)
+ * @param path		[in] Path to scan
+ * @param mode		[in] Scan mode
+ * @param user_data	[in,opt] User data for the callback function
+ * @param callback	[in,opt] Callback function (at the end to make it easier to use lambdas)
+ * @return RecursiveScanRet_t
+ */
+int recursiveScan(RecursiveScanState_t &state,
+	const TCHAR *path, RecursiveScanMode mode,
+	void *user_data, RecursiveScanCallback_t callback)
+{
+	// Open the directory, with these flags:
+	// - O_RDONLY: Read-only
+	// - O_NOFOLLOW: Don't follow symlinks on the last path component
+	// - O_DIRECTORY: Fail if it's not a directory
+	// - O_CLOEXEC: Close on exec()
+	int dfd = open(path, O_RDONLY | O_NOFOLLOW | O_DIRECTORY | O_CLOEXEC);
+	if (dfd < 0) {
+		// Error opening the directory.
+		int err = -errno;
+		if (err == -ELOOP) {
+			// Unexpected symlink!
+			err = RSE_FOUND_SYMBOLIC_LINK;
+		}
+		return err;
+	}
+
+	// Start the recursive scan.
+	// NOTE: recursiveScan_int will close dfd before returning.
+	return recursiveScan_int(state, dfd, mode, user_data, callback);
 }
 
 }
