@@ -141,15 +141,15 @@ void CacheCleaner::run(void)
 	}
 
 	struct CallbackData_t {
-		size_t cache_entries_total;
 		CacheCleaner *obj;
+		unsigned int cache_entries_total;
 	};
 	CallbackData_t callbackData;
 
 	// Get the number of files and directories.
 	// NOTE: This is an estimate; it might change due to TOCTOU.
-	callbackData.cache_entries_total = state.totalCount();
 	callbackData.obj = this;
+	callbackData.cache_entries_total = state.totalCount();
 
 	// Delete all of the files and subdirectories.
 	emit progress(0, static_cast<int>(callbackData.cache_entries_total), false);

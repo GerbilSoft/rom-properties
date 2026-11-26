@@ -353,15 +353,15 @@ rp_cache_cleaner_run(RpCacheCleaner *cleaner)
 	}
 
 	struct CallbackData_t {
-		size_t cache_entries_total;
 		RpCacheCleaner *obj;
+		unsigned int cache_entries_total;
 	};
 	CallbackData_t callbackData;
 
 	// Get the number of files and directories.
 	// NOTE: This is an estimate; it might change due to TOCTOU.
-	callbackData.cache_entries_total = state.totalCount();
 	callbackData.obj = cleaner;
+	callbackData.cache_entries_total = state.totalCount();
 
 	// Delete all of the files and subdirectories.
 	g_signal_emit(cleaner, signals[SIGNAL_PROGRESS], 0, 0, static_cast<int>(callbackData.cache_entries_total), FALSE);
