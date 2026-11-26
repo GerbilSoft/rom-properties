@@ -110,21 +110,21 @@ void CacheCleaner::run(void)
 		switch (ret) {
 			case RSE_FOUND_UNEXPECTED_FILE_TYPE:
 				fmt::format_to(std::back_inserter(stds_err),
-					FRUN("{:s} has non-regular files. Not clearing it."), s_cache_type);
+					FRUN(C_("CacheCleaner", "{:s} has non-regular files. Not clearing it.")), s_cache_type);
 				break;
 			case RSE_FOUND_SYMBOLIC_LINK:
 				fmt::format_to(std::back_inserter(stds_err),
-					FRUN("{:s} has a symbolic link. Not clearing it."), s_cache_type);
+					FRUN(C_("CacheCleaner", "{:s} has a symbolic link. Not clearing it.")), s_cache_type);
 				break;
 			case RSE_FOUND_UNEXPECTED_FILE_EXT:
 				fmt::format_to(std::back_inserter(stds_err),
-					FRUN("{:s} has unexpected files. Not clearing it."), s_cache_type);
+					FRUN(C_("CacheCleaner", "{:s} has unexpected files. Not clearing it.")), s_cache_type);
 				break;
 			default:
 				if (ret < 0) {
-					fmt::format_to(std::back_inserter(stds_err), FRUN("Initial scan failed: {:s}"), strerror(-ret));
+					fmt::format_to(std::back_inserter(stds_err), FRUN(C_("CacheCleaner", "Initial scan failed: {:s}")), strerror(-ret));
 				} else {
-					fmt::format_to(std::back_inserter(stds_err), FRUN("Initial scan failed: error code {:d}"), ret);
+					fmt::format_to(std::back_inserter(stds_err), FRUN(C_("CacheCleaner", "Initial scan failed: error code {:d}")), ret);
 				}
 				break;
 		}
@@ -169,21 +169,21 @@ void CacheCleaner::run(void)
 		switch (ret) {
 			case RSE_FOUND_UNEXPECTED_FILE_TYPE:
 				fmt::format_to(std::back_inserter(stds_err),
-					FRUN("{:s} has non-regular files. Cache clearing aborted."), s_cache_type);
+					FRUN(C_("CacheCleaner", "{:s} has non-regular files. Cache clearing aborted.")), s_cache_type);
 				break;
 			case RSE_FOUND_SYMBOLIC_LINK:
 				fmt::format_to(std::back_inserter(stds_err),
-					FRUN("{:s} has a symbolic link. Cache clearing aborted."), s_cache_type);
+					FRUN(C_("CacheCleaner", "{:s} has a symbolic link. Cache clearing aborted.")), s_cache_type);
 				break;
 			case RSE_FOUND_UNEXPECTED_FILE_EXT:
 				fmt::format_to(std::back_inserter(stds_err),
-					FRUN("{:s} has unexpected files. Cache clearing aborted."), s_cache_type);
+					FRUN(C_("CacheCleaner", "{:s} has unexpected files. Cache clearing aborted.")), s_cache_type);
 				break;
 			default:
 				if (ret < 0) {
-					fmt::format_to(std::back_inserter(stds_err), FRUN("Secondary scan failed: {:s}"), strerror(-ret));
+					fmt::format_to(std::back_inserter(stds_err), FRUN(C_("CacheCleaner", "Secondary scan failed: {:s}")), strerror(-ret));
 				} else {
-					fmt::format_to(std::back_inserter(stds_err), FRUN("Secondary scan failed: error code {:d}"), ret);
+					fmt::format_to(std::back_inserter(stds_err), FRUN(C_("CacheCleaner", "Secondary scan failed: error code {:d}")), ret);
 				}
 				break;
 		}
