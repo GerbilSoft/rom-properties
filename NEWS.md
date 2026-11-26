@@ -128,6 +128,8 @@
   * GTK: "Convert to PNG" now works when the destination is a network location.
   * KDE: The "Pixel Format" property is now available when compiled with
     KF6 6.13.0 or later.
+  * Linux: rp-config: Refactored the "clear cache" functionality to be more
+    robust when unrecognized files are found in the cache directories.
 
 ## v2.9 (released 2026/09/13)
 
