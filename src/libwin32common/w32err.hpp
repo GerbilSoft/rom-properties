@@ -23,6 +23,18 @@ extern "C" {
 RP_LIBROMDATA_PUBLIC
 int w32err_to_posix(DWORD w32err);
 
+// NOTE: NTSTATUS might not be typedef'd yet.
+// We'll typedef it here just in case.
+typedef LONG NTSTATUS;
+
+/**
+ * Convert an NTSTATUS error code to a POSIX error code.
+ * @param status NTSTATUS
+ * @return Positive POSIX error code. (If no equivalent is found, default is EINVAL.)
+ */
+RP_LIBROMDATA_PUBLIC
+int NTSTATUS_to_posix(NTSTATUS status);
+
 #ifdef __cplusplus
 }
 #endif

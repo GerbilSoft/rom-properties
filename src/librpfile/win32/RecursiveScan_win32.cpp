@@ -16,6 +16,7 @@
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
 #include "libwin32common/NtDllDlopen.hpp"
+#include "libwin32common/w32err.hpp"
 
 #include <ntstatus.h>
 #include <winternl.h>	// for NT API
@@ -269,8 +270,7 @@ static int recursiveScan_int_NT(RecursiveScanState_t &state,
 			continue;
 		} else if (!NT_SUCCESS(status)) {
 			// NtQueryDirectoryFile() failed.
-			// TODO: NTSTATUS_to_POSIX()?
-			return -EIO;
+			return -NTSTATUS_to_posix(status);
 		}
 
 		// Scan should not be restarted on the next iteration.
@@ -419,8 +419,7 @@ static int recursiveScan_int_NT(RecursiveScanState_t &state,
 						FILE_DIRECTORY_FILE | FILE_OPEN_REPARSE_POINT);		// OpenOptions
 					if (!NT_SUCCESS(status)) {
 						// Failed to open the subdirectory...
-						// TODO: NTSTATUS_to_POSIX()?
-						return -EIO;
+						return -NTSTATUS_to_posix(status);
 					}
 
 					// Verify that this is a regular directory and not a reparse point.
@@ -433,9 +432,8 @@ static int recursiveScan_int_NT(RecursiveScanState_t &state,
 						FileBasicInformation);
 					if (!NT_SUCCESS(status)) {
 						// Failed to get attributes.
-						// TODO: NTSTATUS_to_POSIX()?
 						ntDllDlopen.pfn_NtClose(hDir);
-						return -EIO;
+						return -NTSTATUS_to_posix(status);
 					}
 
 					if (fbi.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
@@ -576,8 +574,7 @@ int recursiveScan(RecursiveScanState_t &state,
 		FILE_DIRECTORY_FILE | FILE_OPEN_REPARSE_POINT);		// OpenOptions
 	if (!NT_SUCCESS(status)) {
 		// Failed to open the directory...
-		// TODO: NTSTATUS_to_POSIX()?
-		return -EIO;
+		return -NTSTATUS_to_posix(status);
 	}
 
 	// Verify that this is a regular directory and not a reparse point.
@@ -590,9 +587,8 @@ int recursiveScan(RecursiveScanState_t &state,
 		FileBasicInformation);
 	if (!NT_SUCCESS(status)) {
 		// Failed to get attributes.
-		// TODO: NTSTATUS_to_POSIX()?
 		ntDllDlopen.pfn_NtClose(hDir);
-		return -EIO;
+		return -NTSTATUS_to_posix(status);
 	}
 
 	if (fbi.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {

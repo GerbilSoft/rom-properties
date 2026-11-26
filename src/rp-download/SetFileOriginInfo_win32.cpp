@@ -146,12 +146,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, rp_time_t mtime)
 			0);			// EaLength
 		if (!NT_SUCCESS(status)) {
 			// Error opening the ADS.
-			// TODO: Convert NTSTATUS to POSIX?
-			/*err = w32err_to_posix(GetLastError());
-			if (err == 0) {
-				err = EIO;
-			}*/
-			err = EIO;
+			err = NTSTATUS_to_posix(status);
 			break;
 		}
 
@@ -182,9 +177,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, rp_time_t mtime)
 			// Error writing the stream data.
 			// Delete the stream.
 			ntDllDlopen.pfn_NtDeleteFile(&oa);
-
-			// TODO: Convert NTSTATUS to Win32?
-			err = -EIO;
+			err = NTSTATUS_to_posix(status);
 		}
 	} while (0);
 #endif /* UNICODE */
