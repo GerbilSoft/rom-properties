@@ -7,6 +7,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "config.librpfile.h"
 #include "RecursiveScan.hpp"
 #include "FileSystem.hpp"
 
@@ -17,15 +18,17 @@
 #include "librptext/strfuncs.h"
 
 // C includes
-#include <sys/types.h>
 #include <dirent.h>
+#include <fcntl.h>	// AT_FDCWD, O_NOFOLLOW, AT_REMOVEDIR
+#include <sys/types.h>
+#include <unistd.h>
 
 // C includes (C++ namespace)
+#include <cassert>
 #include <cerrno>
 #include <cstring>
 
 // C++ STL classes
-using std::forward_list;
 using std::pair;
 using std::tstring;
 
@@ -40,25 +43,30 @@ namespace LibRpFile {
 
 /**
  * Recursively scan a directory for cache files to delete.
- * This finds *.png, *.jpg, *.jxl, and "version.txt".
+ * This finds *.png, *.jpg, and "version.txt".
  *
  * POSIX implementation: Uses readdir().
  *
- * @param path	[in] Path to scan.
- * @param rlist	[in/out] Return list for filenames and file types. (d_type)
- * @return 0 on success; non-zero on error.
+ * @param state		[in/out] Current scan state (use zero-init struct on first call)
+ * @param dfd		[in] Directory fd (will be closed before returning)
+ * @param mode		[in] Scan mode
+ * @param user_data	[in,opt] User data for the callback function
+ * @param callback	[in,opt] Callback function (at the end to make it easier to use lambdas)
+ * @return RecursiveScanRet_t
  */
-int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlist)
+static int recursiveScan_int(RecursiveScanState_t &state,
+	int dfd, RecursiveScanMode mode,
+	void *user_data, RecursiveScanCallback_t callback)
 {
-	DIR *const pdir = opendir(path);
+	// Open the directory as a DIR*.
+	// NOTE: dfd will be owned by the DIR* and will
+	// be closed when closedir() is called.
+	DIR *const pdir = fdopendir(dfd);
 	if (!pdir) {
 		// Error opening the directory.
+		close(dfd);
 		return -errno;
 	}
-
-	string fullpath(path);
-	fullpath += '/';
-	const size_t fullpath_base_len = fullpath.size();
 
 	// Search for files and directories.
 	struct dirent *dirent;
@@ -71,87 +79,62 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 			continue;
 		}
 
-		fullpath.resize(fullpath_base_len);
-		fullpath += dirent->d_name;
-
 		// Check if this is a regular file.
 		uint8_t d_type = dirent->d_type;
 		switch (d_type) {
 			default:
 				// Not supported.
-				// TODO: Better error message.
 				closedir(pdir);
-				return -EIO;
+				return RSE_FOUND_UNEXPECTED_FILE_TYPE;
 
 			case DT_REG:
+				// Regular file: Supported.
+				state.fileCount++;
+				break;
+
 			case DT_DIR:
-				// Supported.
+				// Directory: Supported.
+				state.dirCount++;
 				break;
 
 			case DT_LNK:
-				// Symbolic link. Dereference it and check again.
-				d_type = FileSystem::get_file_d_type(fullpath.c_str(), false);
-				switch (d_type) {
-					default:
-						// Not supported.
-						// TODO: Better error message.
-						closedir(pdir);
-						return -EIO;
-
-					case DT_REG:
-					case DT_DIR:
-						// Supported.
-						break;
-
-					case DT_UNKNOWN:
-						// This is probably a dangling symlink.
-						// Delete it anyway.
-						break;
-				}
-				break;
+				// Symbolic link.
+				// NOT SUPPORTED; there should not be symbolic links
+				// in the cache directories!
+				closedir(pdir);
+				return RSE_FOUND_SYMBOLIC_LINK;
 
 			case DT_UNKNOWN:
 				// Unknown. Use lstat().
-				d_type = FileSystem::get_file_d_type(fullpath.c_str(), true);
+				d_type = FileSystem::get_file_d_type(dfd, dirent->d_name, true);
 				switch (d_type) {
 					default:
 						// Not supported.
-						// TODO: Better error message.
 						closedir(pdir);
-						return -EIO;
+						return RSE_FOUND_UNEXPECTED_FILE_TYPE;
 
 					case DT_REG:
+						// Regular file: Supported.
+						state.fileCount++;
+						break;
+
 					case DT_DIR:
-						// Supported.
+						// Directory: Supported.
+						state.dirCount++;
 						break;
 
 					case DT_LNK:
-						// Symbolic link. Dereference it and check again.
-						d_type = FileSystem::get_file_d_type(fullpath.c_str(), false);
-						switch (d_type) {
-							default:
-								// Not supported.
-								// TODO: Better error message.
-								closedir(pdir);
-								return -EIO;
-
-							case DT_REG:
-							case DT_DIR:
-								// Supported.
-								break;
-
-							case DT_UNKNOWN:
-								// This is probably a dangling symlink.
-								// Delete it anyway.
-								break;
-						}
-						break;
+						// Symbolic link.
+						// NOT SUPPORTED; there should not be symbolic links
+						// in the cache directories!
+						closedir(pdir);
+						return RSE_FOUND_SYMBOLIC_LINK;
 				}
 				break;
 		}
 
 		// Check the filename to see if we should delete it.
-		if (d_type == DT_REG || d_type == DT_UNKNOWN) {
+		if (d_type == DT_REG) {
 			// Thumbs.db files can be deleted.
 			if (!rp_ascii_strcasecmp(dirent->d_name, "Thumbs.db")) {
 				goto isok;
@@ -162,7 +145,7 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 			if (len <= 4) {
 				// Filename is too short. This is bad.
 				closedir(pdir);
-				return -EIO;
+				return RSE_FOUND_UNEXPECTED_FILE_EXT;
 			}
 
 			const char *pExt = &dirent->d_name[len-4];
@@ -173,27 +156,108 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 			{
 				// Extension is not valid.
 				closedir(pdir);
-				return -EIO;
+				return RSE_FOUND_UNEXPECTED_FILE_EXT;
 			}
 
 			// All checks pass.
 		}
 
 	isok:
-		// Add the filename and file type.
-		rlist.emplace_front(fullpath, d_type);
+		switch (d_type) {
+			default:
+				assert(!"Should not happen...");
+				break;
 
-		// If this is a directory, recursively scan it.
-		// This is done *after* adding the directory because forward_list
-		// enumerates items in reverse order.
-		if (d_type == DT_DIR) {
-			// Recursively scan the directory.
-			recursiveScan(fullpath.c_str(), rlist);
+			case DT_REG:
+				if (mode == RecursiveScanMode::ScanAndDelete) {
+					// Delete this file.
+					int ret = unlinkat(dfd, dirent->d_name, 0);
+					if (ret != 0) {
+						// Error deleting the file...
+						state.fileErrs++;
+					}
+				}
+				break;
+
+			case DT_DIR: {
+				// Recursively scan this directory.
+				int subdfd = openat(dfd, dirent->d_name, O_RDONLY | O_NOFOLLOW | O_DIRECTORY | O_CLOEXEC);
+				if (subdfd < 0) {
+					// Error opening the directory.
+					int err = -errno;
+					if (err == -ELOOP) {
+						// Unexpected symlink!
+						err = RSE_FOUND_SYMBOLIC_LINK;
+					}
+					closedir(pdir);
+					return err;
+				}
+
+				// NOTE: subdfd will be closed by recursiveScan_int() before returning.
+				int ret = recursiveScan_int(state, subdfd, mode, user_data, callback);
+				if (ret != 0) {
+					// recursiveScan_int() failed. Return immediately.
+					closedir(pdir);
+					return ret;
+				}
+
+				if (mode == RecursiveScanMode::ScanAndDelete) {
+					// Remove this directory.
+					int ret = unlinkat(dfd, dirent->d_name, AT_REMOVEDIR);
+					if (ret != 0) {
+						// Error removing the directory...
+						state.dirErrs++;
+					}
+				}
+				break;
+			}
+		}
+
+		if (callback) {
+			callback(state, user_data);
 		}
 	};
-	closedir(pdir);
 
+	closedir(pdir);
 	return 0;
+}
+
+/**
+ * Recursively scan a directory for cache files to delete.
+ * This finds *.png, *.jpg, and "version.txt".
+ *
+ * POSIX implementation: Uses readdir().
+ *
+ * @param state		[in/out] Current scan state (use zero-init struct on first call)
+ * @param path		[in] Path to scan
+ * @param mode		[in] Scan mode
+ * @param user_data	[in,opt] User data for the callback function
+ * @param callback	[in,opt] Callback function (at the end to make it easier to use lambdas)
+ * @return RecursiveScanRet_t
+ */
+int recursiveScan(RecursiveScanState_t &state,
+	const TCHAR *path, RecursiveScanMode mode,
+	void *user_data, RecursiveScanCallback_t callback)
+{
+	// Open the directory, with these flags:
+	// - O_RDONLY: Read-only
+	// - O_NOFOLLOW: Don't follow symlinks on the last path component
+	// - O_DIRECTORY: Fail if it's not a directory
+	// - O_CLOEXEC: Close on exec()
+	int dfd = open(path, O_RDONLY | O_NOFOLLOW | O_DIRECTORY | O_CLOEXEC);
+	if (dfd < 0) {
+		// Error opening the directory.
+		int err = -errno;
+		if (err == -ELOOP) {
+			// Unexpected symlink!
+			err = RSE_FOUND_SYMBOLIC_LINK;
+		}
+		return err;
+	}
+
+	// Start the recursive scan.
+	// NOTE: recursiveScan_int will close dfd before returning.
+	return recursiveScan_int(state, dfd, mode, user_data, callback);
 }
 
 }

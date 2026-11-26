@@ -526,7 +526,8 @@ ccCleaner_cacheCleared(RpCacheCleaner *cleaner, RpCacheDir cache_dir, unsigned i
 	RP_UNUSED(cleaner);
 
 	if (dirErrs > 0 || fileErrs > 0) {
-		const string s_error = fmt::format(FRUN(C_("CacheTab", "Unable to delete {0:Ld} file(s) and/or {1:Ld} dir(s).")));
+		const string s_error = fmt::format(FRUN(C_("CacheTab", "Unable to delete {0:Ld} file(s) and/or {1:Ld} dir(s).")),
+			fileErrs, dirErrs);
 
 		// tr: Error message template.
 		const string s_msg = fmt::format(FRUN(C_("ConfigDialog", "<b>ERROR:</b> {:s}")), s_error);

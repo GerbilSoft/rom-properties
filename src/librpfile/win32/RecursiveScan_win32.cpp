@@ -14,7 +14,6 @@
 #include "d_type.h"
 
 // C++ STL classes
-using std::forward_list;
 using std::pair;
 using std::tstring;
 
@@ -36,11 +35,16 @@ namespace LibRpFile {
  *
  * Win32 implementation: Uses FindFirstFile() and FindNextFile().
  *
- * @param path	[in] Path to scan.
- * @param rlist	[in/out] Return list for filenames and file types. (d_type)
- * @return 0 on success; non-zero on error.
+ * @param state		[in/out] Current scan state (use zero-init struct on first call)
+ * @param path		[in] Path to scan
+ * @param mode		[in] Scan mode
+ * @param user_data	[in,opt] User data for the callback function
+ * @param callback	[in,opt] Callback function (at the end to make it easier to use lambdas)
+ * @return RecursiveScanRet_t
  */
-int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlist)
+int recursiveScan(RecursiveScanState_t &state,
+	const TCHAR *path, RecursiveScanMode mode,
+	void *user_data, RecursiveScanCallback_t callback)
 {
 	tstring findFilter(path);
 	findFilter += _T("\\*");
@@ -65,8 +69,34 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 			continue;
 		}
 
-		// Make sure we should delete this file.
-		if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+		// Check if this is a regular file.
+		const uint8_t d_type = FileSystem::win32_attrs_to_d_type(findFileData.dwFileAttributes);
+		switch (d_type) {
+			default:
+				// Not supported.
+				FindClose(hFindFile);
+				return RSE_FOUND_UNEXPECTED_FILE_TYPE;
+
+			case DT_REG:
+				// Regular file: Supported.
+				state.fileCount++;
+				break;
+
+			case DT_DIR:
+				// Directory: Supported.
+				state.dirCount++;
+				break;
+
+			case DT_LNK:
+				// Symbolic link.
+				// NOT SUPPORTED; there should not be symbolic links
+				// in the cache directories!
+				FindClose(hFindFile);
+				return RSE_FOUND_SYMBOLIC_LINK;
+		}
+
+		// Check the filename to see if we should delete it.
+		if (d_type == DT_REG) {
 			// Thumbs.db files can be deleted.
 			if (!_tcsicmp(findFileData.cFileName, _T("Thumbs.db"))) {
 				goto isok;
@@ -77,7 +107,7 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 			if (len <= 4) {
 				// Filename is too short. This is bad.
 				FindClose(hFindFile);
-				return -EIO;
+				return RSE_FOUND_UNEXPECTED_FILE_EXT;
 			}
 
 			const TCHAR *pExt = &findFileData.cFileName[len-4];
@@ -88,7 +118,7 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 			{
 				// Extension is not valid.
 				FindClose(hFindFile);
-				return -EIO;
+				return RSE_FOUND_UNEXPECTED_FILE_EXT;
 			}
 
 			// All checks pass.
@@ -98,15 +128,59 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 		fullpath.resize(fullpath_base_len);
 		fullpath += findFileData.cFileName;
 
-		// Add the filename and d_type.
-		rlist.emplace_front(fullpath, FileSystem::win32_attrs_to_d_type(findFileData.dwFileAttributes));
+		switch (d_type) {
+			default:
+				assert(!"Should not happen...");
+				break;
 
-		// If this is a directory, recursively scan it.
-		// This is done *after* adding the directory because forward_list
-		// enumerates items in reverse order.
-		if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-			// Recursively scan it.
-			recursiveScan(fullpath.c_str(), rlist);
+			case DT_REG:
+				if (mode == RecursiveScanMode::ScanAndDelete) {
+					// Delete this file.
+
+					// Check if the file has the legacy read-only attribute set.
+					BOOL bRet = TRUE;
+					const DWORD attrs = GetFileAttributes(fullpath.c_str());
+					if (unlikely(attrs == INVALID_FILE_ATTRIBUTES)) {
+						// GetFileAttributes() failed...
+						bRet = FALSE;
+					} else if (attrs & FILE_ATTRIBUTE_READONLY) {
+						// Read-only is set. Remove it.
+						bRet = SetFileAttributes(fullpath.c_str(), (attrs & ~FILE_ATTRIBUTE_READONLY));
+					}
+					if (bRet) {
+						bRet = DeleteFile(fullpath.c_str());
+					}
+
+					if (!bRet) {
+						// Error clearing the read-only attribute
+						// and/or deleting the file.
+						state.fileErrs++;
+					}
+				}
+				break;
+
+			case DT_DIR:
+				// Recursively scan this directory.
+				int ret = recursiveScan(state, fullpath.c_str(), mode, user_data, callback);
+				if (ret != 0) {
+					// recursiveScan() failed. Return immediately.
+					FindClose(hFindFile);
+					return ret;
+				}
+
+				if (mode == RecursiveScanMode::ScanAndDelete) {
+					// Remove this directory.
+					BOOL bRet = RemoveDirectory(fullpath.c_str());
+					if (!bRet) {
+						// Error removing the directory...
+						state.dirErrs++;
+					}
+				}
+				break;
+		}
+
+		if (callback) {
+			callback(state, user_data);
 		}
 	} while (FindNextFile(hFindFile, &findFileData));
 	FindClose(hFindFile);

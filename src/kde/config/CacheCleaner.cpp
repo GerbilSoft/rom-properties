@@ -19,9 +19,11 @@
 using namespace LibRpFile;
 
 // C++ STL classes
-using std::forward_list;
 using std::pair;
 using std::string;
+
+// libfmt
+#include "rp-libfmt.h"
 
 #include "RpQt.hpp"
 
@@ -41,11 +43,13 @@ CacheCleaner::CacheCleaner(QObject *parent, CacheCleaner::CacheDir cacheDir)
 void CacheCleaner::run(void)
 {
 	string cacheDir;
+	const char *s_cache_type = nullptr;
 	const char *s_err = nullptr;
 	switch (m_cacheDir) {
 		default:
 			assert(!"Invalid cache directory specified.");
-			s_err = C_("CacheCleaner", "Invalid cache directory specified.");
+			// NOT TRANSLATABLE: This error shouldn't happen!
+			s_err = "Invalid cache directory specified.";
 			break;
 
 		case CacheDir::System:
@@ -55,6 +59,7 @@ void CacheCleaner::run(void)
 				s_err = C_("CacheCleaner", "Unable to get the XDG cache directory.");
 				break;
 			}
+
 			// Append "/thumbnails".
 			cacheDir += "/thumbnails";
 			if (!LibUnixCommon::isWritableDirectory(cacheDir.c_str())) {
@@ -63,6 +68,8 @@ void CacheCleaner::run(void)
 				s_err = C_("CacheCleaner", "Thumbnails cache directory does not exist.");
 				break;
 			}
+
+			s_cache_type = C_("CacheCleaner", "System thumbnail cache");
 			break;
 
 		case CacheDir::RomProperties:
@@ -82,6 +89,7 @@ void CacheCleaner::run(void)
 				return;
 			}
 
+			s_cache_type = C_("CacheCleaner", "rom-properties cache");
 			break;
 	}
 
@@ -93,30 +101,38 @@ void CacheCleaner::run(void)
 		return;
 	}
 
-	// Recursively scan the cache directory.
-	// TODO: Do we really want to store everything in a list? (Wastes memory.)
-	// Maybe do a simple counting scan first, then delete.
-	forward_list<pair<string, uint8_t> > rlist;
-	int ret = recursiveScan(cacheDir.c_str(), rlist);
+	// Recursively scan the cache directory to get an initial maximum progress value.
+	RecursiveScanState_t state;
+	int ret = recursiveScan(state, cacheDir.c_str(), RecursiveScanMode::ScanOnly, nullptr, nullptr);
 	if (ret != 0) {
-		// Non-image file found.
-		switch (m_cacheDir) {
+		// Recursive scan failed.
+		string stds_err;
+		switch (ret) {
+			case RSE_FOUND_UNEXPECTED_FILE_TYPE:
+				fmt::format_to(std::back_inserter(stds_err),
+					FRUN(C_("CacheCleaner", "{:s} has non-regular files. Not clearing it.")), s_cache_type);
+				break;
+			case RSE_FOUND_SYMBOLIC_LINK:
+				fmt::format_to(std::back_inserter(stds_err),
+					FRUN(C_("CacheCleaner", "{:s} has a symbolic link. Not clearing it.")), s_cache_type);
+				break;
+			case RSE_FOUND_UNEXPECTED_FILE_EXT:
+				fmt::format_to(std::back_inserter(stds_err),
+					FRUN(C_("CacheCleaner", "{:s} has unexpected files. Not clearing it.")), s_cache_type);
+				break;
 			default:
-				assert(!"Invalid cache directory specified.");
-				s_err = C_("CacheCleaner", "Invalid cache directory specified.");
-				break;
-			case CacheDir::System:
-				s_err = C_("CacheCleaner", "System thumbnail cache has unexpected files. Not clearing it.");
-				break;
-			case CacheDir::RomProperties:
-				s_err = C_("CacheCleaner", "rom-properties cache has unexpected files. Not clearing it.");
+				if (ret < 0) {
+					fmt::format_to(std::back_inserter(stds_err), FRUN(C_("CacheCleaner", "Initial scan failed: {:s}")), strerror(-ret));
+				} else {
+					fmt::format_to(std::back_inserter(stds_err), FRUN(C_("CacheCleaner", "Initial scan failed: error code {:d}")), ret);
+				}
 				break;
 		}
 		emit progress(1, 1, true);
-		emit error(U82Q(s_err));
+		emit error(U82Q(stds_err));
 		emit finished();
 		return;
-	} else if (rlist.empty()) {
+	} else if (state.isEmpty()) {
 		// Cache directory is empty.
 		emit progress(1, 1, false);
 		emit cacheIsEmpty(m_cacheDir);
@@ -124,38 +140,59 @@ void CacheCleaner::run(void)
 		return;
 	}
 
-	// NOTE: std::forward_list doesn't have size().
-	const size_t rlist_size = std::distance(rlist.cbegin(), rlist.cend());
+	struct CallbackData_t {
+		CacheCleaner *obj;
+		unsigned int cache_entries_total;
+	};
+	CallbackData_t callbackData;
+
+	// Get the number of files and directories.
+	// NOTE: This is an estimate; it might change due to TOCTOU.
+	callbackData.obj = this;
+	callbackData.cache_entries_total = state.totalCount();
 
 	// Delete all of the files and subdirectories.
-	emit progress(0, static_cast<int>(rlist_size), false);
-	unsigned int count = 0;
-	unsigned int dirErrs = 0, fileErrs = 0;
-	bool hasErrors = false;
-	for (const auto &p : rlist) {
-		if (p.second == DT_DIR) {
-			// Remove the directory.
-			int ret = rmdir(p.first.c_str());
-			if (ret != 0) {
-				dirErrs++;
-				hasErrors = true;
-			}
-		} else {
-			// Delete the file.
-			// TODO: Does the parent directory mode need to be changed to writable?
-			int ret = unlink(p.first.c_str());
-			if (ret != 0) {
-				fileErrs++;
-				hasErrors = true;
-			}
+	emit progress(0, static_cast<int>(callbackData.cache_entries_total), false);
+	state.reset();
+
+	ret = recursiveScan(state, cacheDir.c_str(), RecursiveScanMode::ScanAndDelete, &callbackData,
+		[](const RecursiveScanState_t &state, void *user_data) -> void {
+			// TODO: Restrict update frequency to X number of files/directories?
+			const CallbackData_t *const callbackData = static_cast<const CallbackData_t*>(user_data);
+			emit callbackData->obj->progress(state.totalCount(),
+				static_cast<int>(callbackData->cache_entries_total),
+				state.hasErrors());
+		});
+	if (ret != 0) {
+		// Recursive scan failed.
+		string stds_err;
+		switch (ret) {
+			case RSE_FOUND_UNEXPECTED_FILE_TYPE:
+				fmt::format_to(std::back_inserter(stds_err),
+					FRUN(C_("CacheCleaner", "{:s} has non-regular files. Cache clearing aborted.")), s_cache_type);
+				break;
+			case RSE_FOUND_SYMBOLIC_LINK:
+				fmt::format_to(std::back_inserter(stds_err),
+					FRUN(C_("CacheCleaner", "{:s} has a symbolic link. Cache clearing aborted.")), s_cache_type);
+				break;
+			case RSE_FOUND_UNEXPECTED_FILE_EXT:
+				fmt::format_to(std::back_inserter(stds_err),
+					FRUN(C_("CacheCleaner", "{:s} has unexpected files. Cache clearing aborted.")), s_cache_type);
+				break;
+			default:
+				if (ret < 0) {
+					fmt::format_to(std::back_inserter(stds_err), FRUN(C_("CacheCleaner", "Secondary scan failed: {:s}")), strerror(-ret));
+				} else {
+					fmt::format_to(std::back_inserter(stds_err), FRUN(C_("CacheCleaner", "Secondary scan failed: error code {:d}")), ret);
+				}
+				break;
 		}
-
-		// TODO: Restrict update frequency to X number of files/directories?
-		count++;
-		emit progress(count, static_cast<int>(rlist_size), hasErrors);
+		emit progress(1, 1, true);
+		emit error(U82Q(stds_err));
+		emit finished();
+	} else {
+		// Directory processed.
+		emit cacheCleared(m_cacheDir, state.dirErrs, state.fileErrs);
+		emit finished();
 	}
-
-	// Directory processed.
-	emit cacheCleared(m_cacheDir, dirErrs, fileErrs);
-	emit finished();
 }
