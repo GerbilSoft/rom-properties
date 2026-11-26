@@ -13,6 +13,7 @@
 #endif /* !_WIN32 */
 
 // libwin32common
+#include "libwin32common/NtDllDlopen.hpp"
 #include "libwin32common/userdirs.hpp"
 #include "libwin32common/w32err.hpp"
 #include "libwin32common/w32time.h"
@@ -29,49 +30,18 @@ using std::string;
 using std::tstring;
 
 #ifdef UNICODE
-// NTDLL function calls
+// for _get_osfhandle()
 #include <io.h>
-#include <winternl.h>
+#endif /* UNICODE */
 
 // FIXME: RTL_CONSTANT_STRING macro is in ntdef.h,
 // but #include'ing it breaks things.
 // This version is from MinGW-w64 12.0.0.
 #define RTL_CONSTANT_STRING(s) { sizeof(s)-sizeof((s)[0]), sizeof(s), const_cast<PWSTR>(s) }
 
-// NTDLL functions not declared in winternl.h.
-extern "C" {
-
-#ifndef _MSC_VER
-// MinGW might not have __kernel_entry defined.
-#  define __kernel_entry
-#endif
-
-__kernel_entry NTSTATUS NTAPI NtWriteFile(
-	HANDLE           FileHandle,
-	HANDLE           Event,
-	PIO_APC_ROUTINE  ApcRoutine,
-	PVOID            ApcContext,
-	PIO_STATUS_BLOCK IoStatusBlock,
-	PVOID            Buffer,
-	ULONG            Length,
-	PLARGE_INTEGER   ByteOffset,
-	PULONG           Key
-);
-
-typedef const OBJECT_ATTRIBUTES *PCOBJECT_ATTRIBUTES;
-__kernel_entry NTSTATUS NTAPI NtDeleteFile(
-	PCOBJECT_ATTRIBUTES ObjectAttributes
-);
-
-typedef __typeof__(NtCreateFile) *pfn_NtCreateFile_t;
-typedef __typeof__(NtWriteFile)  *pfn_NtWriteFile_t;
-typedef __typeof__(NtClose)      *pfn_NtClose_t;
-typedef __typeof__(NtDeleteFile) *pfn_NtDeleteFile_t;
-
-}
-#endif /* UNICODE */
-
 namespace RpDownload {
+
+static LibWin32Common::NtDllDlopen ntDllDlopen;
 
 /**
  * Get the storeFileOriginInfo setting from rom-properties.conf.
@@ -149,23 +119,9 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, rp_time_t mtime)
 		// - https://stackoverflow.com/a/46141949
 
 		// NOTE: ntdll.lib isn't present in all build environments.
-		// Use GetModuleHandle() and GetProcAddress() instead.
-		HMODULE hNtDll = GetModuleHandle(_T("ntdll.dll"));
-		if (!hNtDll) {
+		// Use NtDllDlopen instead.
+		if (ntDllDlopen.init() != 0) {
 			// No NTDLL.DLL? Maybe this is Win9x...
-			break;
-		}
-
-#define NTDLL_LOAD(fn) pfn_##fn##_t pfn_##fn = reinterpret_cast<pfn_##fn##_t>(GetProcAddress(hNtDll, #fn))
-		NTDLL_LOAD(NtCreateFile);
-		NTDLL_LOAD(NtWriteFile);
-		NTDLL_LOAD(NtClose);
-		NTDLL_LOAD(NtDeleteFile);
-
-		if (!pfn_NtCreateFile || !pfn_NtWriteFile ||
-		    !pfn_NtClose || !pfn_NtDeleteFile)
-		{
-			// At least one function pointer is missing.
 			break;
 		}
 
@@ -176,7 +132,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, rp_time_t mtime)
 		InitializeObjectAttributes(&oa, &ObjectName, 0, hFile, nullptr);
 
 		HANDLE hAds = nullptr;
-		NTSTATUS status = pfn_NtCreateFile(
+		NTSTATUS status = ntDllDlopen.pfn_NtCreateFile(
 			&hAds,			// FileHandle
 			FILE_GENERIC_WRITE,	// DesiredAccess
 			&oa,			// ObjectAttributes
@@ -188,7 +144,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, rp_time_t mtime)
 			FILE_NON_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT,	// CreateOptions
 			nullptr,		// EaBuffer
 			0);			// EaLength
-		if (status < 0) {
+		if (!NT_SUCCESS(status)) {
 			// Error opening the ADS.
 			// TODO: Convert NTSTATUS to POSIX?
 			/*err = w32err_to_posix(GetLastError());
@@ -210,7 +166,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, rp_time_t mtime)
 		s_zoneID += T2U8_str(url);
 		s_zoneID += "\r\n";
 
-		status = pfn_NtWriteFile(
+		status = ntDllDlopen.pfn_NtWriteFile(
 			hAds,					// FileHandle
 			nullptr,				// Event
 			nullptr,				// ApcRoutine
@@ -220,12 +176,12 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, rp_time_t mtime)
 			static_cast<DWORD>(s_zoneID.size()),	// Length
 			nullptr,				// ByteOffset
 			nullptr);				// Key
-		pfn_NtClose(hAds);
+		ntDllDlopen.pfn_NtClose(hAds);
 
-		if (status < 0) {
+		if (!NT_SUCCESS(status)) {
 			// Error writing the stream data.
 			// Delete the stream.
-			pfn_NtDeleteFile(&oa);
+			ntDllDlopen.pfn_NtDeleteFile(&oa);
 
 			// TODO: Convert NTSTATUS to Win32?
 			err = -EIO;

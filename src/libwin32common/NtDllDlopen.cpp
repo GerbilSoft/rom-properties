@@ -40,18 +40,22 @@ int NtDllDlopen::init(void)
 	// Load the function pointers.
 #define NTDLL_LOAD_PTR(fn) pfn_##fn = reinterpret_cast<__typeof__(fn)*>(GetProcAddress(hNtDll, #fn))
 	NTDLL_LOAD_PTR(NtClose);
+	NTDLL_LOAD_PTR(NtCreateFile);
 	NTDLL_LOAD_PTR(NtDeleteFile);
 	NTDLL_LOAD_PTR(NtOpenFile);
 	NTDLL_LOAD_PTR(NtQueryDirectoryFile);
 	NTDLL_LOAD_PTR(NtQueryInformationFile);
 	NTDLL_LOAD_PTR(NtSetInformationFile);
+	NTDLL_LOAD_PTR(NtWriteFile);
 
 	if (!pfn_NtClose ||
+	    !pfn_NtCreateFile ||
 	    !pfn_NtDeleteFile ||
 	    !pfn_NtOpenFile ||
 	    !pfn_NtQueryDirectoryFile ||
 	    !pfn_NtQueryInformationFile ||
-	    !pfn_NtSetInformationFile)
+	    !pfn_NtSetInformationFile ||
+	    !pfn_NtWriteFile)
 	{
 		// At least one function pointer is missing...
 		assert(!"Missing NTDLL.DLL function pointer???");
@@ -66,11 +70,13 @@ void NtDllDlopen::clearFnPtrs(void)
 {
 #define NTDLL_CLEAR_PTR(fn) pfn_##fn = nullptr
 	NTDLL_CLEAR_PTR(NtClose);
+	NTDLL_CLEAR_PTR(NtCreateFile);
 	NTDLL_CLEAR_PTR(NtDeleteFile);
 	NTDLL_CLEAR_PTR(NtOpenFile);
 	NTDLL_CLEAR_PTR(NtQueryDirectoryFile);
 	NTDLL_CLEAR_PTR(NtQueryInformationFile);
 	NTDLL_CLEAR_PTR(NtSetInformationFile);
+	NTDLL_CLEAR_PTR(NtWriteFile);
 
 	hNtDll = nullptr;
 }

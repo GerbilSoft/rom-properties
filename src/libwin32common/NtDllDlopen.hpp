@@ -47,11 +47,13 @@ public:
 	pfn_##fn##_t pfn_##fn
 
 	NTDLL_DEF_PTR(NtClose);
+	NTDLL_DEF_PTR(NtCreateFile);
 	NTDLL_DEF_PTR(NtDeleteFile);
 	NTDLL_DEF_PTR(NtOpenFile);
 	NTDLL_DEF_PTR(NtQueryDirectoryFile);
 	NTDLL_DEF_PTR(NtQueryInformationFile);
 	NTDLL_DEF_PTR(NtSetInformationFile);
+	NTDLL_DEF_PTR(NtWriteFile);
 };
 
 } // namespace LibWin32Common
