@@ -202,12 +202,9 @@ FOREACH(_target ${TARGETS})
 	ENDIF(ENABLE_NLS)
 
 	# libfmt
-	IF(NOT ${_target} STREQUAL "${PROJECT_NAME}-noi18n")
-		# Standard build: libfmt is used by formatting.cpp.
-		IF(Fmt_FOUND)
-			TARGET_LINK_LIBRARIES(${_target} PRIVATE ${Fmt_LIBRARY})
-		ENDIF(Fmt_FOUND)
-	ENDIF(NOT ${_target} STREQUAL "${PROJECT_NAME}-noi18n")
+	IF(Fmt_FOUND)
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE ${Fmt_LIBRARY})
+	ENDIF(Fmt_FOUND)
 ENDFOREACH(_target)
 UNSET(_target_suffix)
 
