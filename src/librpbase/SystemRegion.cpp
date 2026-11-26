@@ -558,6 +558,27 @@ wstring lcToWStringUpper(uint32_t lc)
 
 	return ws_ret;
 }
+
+/**
+ * Is this Windows NT?
+ * @return True if NT; false if not.
+ */
+static inline bool isWindowsNT(void)
+{
+#ifdef _MSC_VER
+#  pragma warning(push)
+#  pragma warning(disable: 4996)
+#endif /* _MSC_VER */
+	// Get the OS version information.
+	OSVERSIONINFO osvi;
+	osvi.dwOSVersionInfoSize = sizeof(osvi);
+	GetVersionEx(&osvi);
+#ifdef _MSC_VER
+#  pragma warning(pop)
+#endif /* _MSC_VER */
+
+	return (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT);
+}
 #endif /* _WIN32 */
 
 /**
@@ -569,20 +590,8 @@ wstring lcToWStringUpper(uint32_t lc)
 static void doesSystemSupportUnicode_int(void)
 {
 #ifdef _WIN32
-#  ifdef _MSC_VER
-#    pragma warning(push)
-#    pragma warning(disable: 4996)
-#  endif /* _MSC_VER */
-	// Get the OS version information.
-	OSVERSIONINFO osvi;
-	osvi.dwOSVersionInfoSize = sizeof(osvi);
-	GetVersionEx(&osvi);
-#  ifdef _MSC_VER
-#    pragma warning(pop)
-#  endif /* _MSC_VER */
-
 	// TODO: Ignore this if !UNICODE / !_UNICODE?
-	does_system_support_unicode = (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT);
+	does_system_support_unicode = isWindowsNT();
 #else /* !_WIN32 */
 	does_system_support_unicode = false;
 
