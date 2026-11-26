@@ -194,9 +194,9 @@ int WimPrivate::addFields_XML()
 			xml_text lowPart = creationTime.child("LOWPART").text();
 			if (highPart && lowPart) {
 				// Parse HIGHPART and LOWPART, then combine them like FILETIME.
-				const uint32_t lastmodtime_high = strtoul(highPart.get(), nullptr, 16);
 				const uint32_t lastmodtime_low = strtoul(lowPart.get(), nullptr, 16);
-				currentindex.lastmodificationtime = WindowsSplitTimeToUnixTime(lastmodtime_high, lastmodtime_low);
+				const uint32_t lastmodtime_high = strtoul(highPart.get(), nullptr, 16);
+				currentindex.lastmodificationtime = WindowsSplitTimeToUnixTime(lastmodtime_low, lastmodtime_high);
 			}
 		}
 

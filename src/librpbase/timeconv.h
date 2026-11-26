@@ -55,12 +55,12 @@ static inline CONSTEXPR rp_time_t WindowsTimeToUnixTime(int64_t wintime)
  * Convert from Windows time (split format) to Unix time.
  * Windows time is hectonanoseconds since 1601/01/01 00:00:00 GMT.
  * Unix time is seconds since 1970/01/01 00:00:00 GMT.
- * @param wintime_hi Windows time, high DWORD
  * @param wintime_lo Windows time, low DWORD
+ * @param wintime_hi Windows time, high DWORD
  * @return Unix time
  */
 ATTR_CONST
-static inline CONSTEXPR rp_time_t WindowsSplitTimeToUnixTime(uint32_t wintime_hi, uint32_t wintime_lo)
+static inline CONSTEXPR rp_time_t WindowsSplitTimeToUnixTime(uint32_t wintime_lo, uint32_t wintime_hi)
 {
 	return WindowsTimeToUnixTime(((rp_time_t)wintime_hi << 32U) | wintime_lo);
 }
