@@ -127,7 +127,12 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 		// enumerates items in reverse order.
 		if (d_type == DT_DIR) {
 			// Recursively scan it.
-			recursiveScan(fullpath.c_str(), rlist);
+			int ret = recursiveScan(fullpath.c_str(), rlist);
+			if (ret != 0) {
+				// recursiveScan() failed. Return immediately.
+				FindClose(hFindFile);
+				return ret;
+			}
 		}
 	} while (FindNextFile(hFindFile, &findFileData));
 	FindClose(hFindFile);
