@@ -27,6 +27,7 @@ using namespace LibRpText;
 // C++ STL classes
 using std::array;
 using std::string;
+using std::string_view;
 using std::vector;
 
 namespace LibRomData {
@@ -479,26 +480,26 @@ int WiiU::extURLs_int(const char *id4, ImageType imageType, vector<ExtURL> &extU
 
 	// Determine the image type name.
 	const char *imageTypeName_base;
-	const char *ext;
+	string_view sv_ext;
 	switch (imageType) {
 		case IMG_EXT_MEDIA:
 			imageTypeName_base = "disc";
-			ext = ".png";
+			sv_ext = string_view(".png");
 			break;
 #ifdef HAVE_JPEG
 		case IMG_EXT_COVER:
 			imageTypeName_base = "cover";
-			ext = ".jpg";
+			sv_ext = string_view(".jpg");
 			break;
 #endif /* HAVE_JPEG */
 		case IMG_EXT_COVER_3D:
 			imageTypeName_base = "cover3D";
-			ext = ".png";
+			sv_ext = string_view(".png");
 			break;
 #ifdef HAVE_JPEG
 		case IMG_EXT_COVER_FULL:
 			imageTypeName_base = "coverfull";
-			ext = ".jpg";
+			sv_ext = string_view(".jpg");
 			break;
 #endif /* HAVE_JPEG */
 		default:
@@ -562,8 +563,8 @@ int WiiU::extURLs_int(const char *id4, ImageType imageType, vector<ExtURL> &extU
 		for (const uint16_t lc : tdb_lc) {
 			const string lc_str = SystemRegion::lcToStringUpper(lc);
 			ExtURL &extURL = *extURL_iter;
-			extURL.url = RomDataPrivate::getURL_GameTDB("wiiu", imageTypeName.c_str(), lc_str.c_str(), id6, ext);
-			extURL.cache_key = RomDataPrivate::getCacheKey_GameTDB("wiiu", imageTypeName.c_str(), lc_str.c_str(), id6, ext);
+			extURL.url = RomDataPrivate::getURL_GameTDB("wiiu", imageTypeName, lc_str, id6, sv_ext);
+			extURL.cache_key = RomDataPrivate::getCacheKey_GameTDB("wiiu", imageTypeName, lc_str, id6, sv_ext);
 			extURL.width = szdefs_dl[i]->width;
 			extURL.height = szdefs_dl[i]->height;
 			extURL.high_res = (szdefs_dl[i]->index > 0);

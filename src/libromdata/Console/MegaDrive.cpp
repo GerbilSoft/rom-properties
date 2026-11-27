@@ -30,6 +30,7 @@ using namespace LibRpText;
 // C++ STL classes
 using std::array;
 using std::string;
+using std::string_view;
 using std::unique_ptr;
 using std::vector;
 
@@ -1982,12 +1983,12 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) c
 	// get the image size for the extURLs struct.
 
 	// Determine the image type name.
-	const char *imageTypeName;
-	const char *ext;
+	string_view sv_imageTypeName;
+	string_view sv_ext;
 	switch (imageType) {
 		case IMG_EXT_TITLE_SCREEN:
-			imageTypeName = "title";
-			ext = ".png";
+			sv_imageTypeName = string_view("title");
+			sv_ext = string_view(".png");
 			break;
 		default:
 			// Unsupported image type.
@@ -1997,8 +1998,8 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) c
 	// Add the URLs.
 	extURLs.resize(1);
 	ExtURL &extURL = extURLs[0];
-	extURL.url = d->getURL_RPDB(sys, imageTypeName, region_code, gameID.c_str(), ext);
-	extURL.cache_key = d->getCacheKey_RPDB(sys, imageTypeName, region_code, gameID.c_str(), ext);
+	extURL.url = d->getURL_RPDB(sys, sv_imageTypeName, region_code, gameID, sv_ext);
+	extURL.cache_key = d->getCacheKey_RPDB(sys, sv_imageTypeName, region_code, gameID, sv_ext);
 	extURL.width = sizeDefs[0].width;
 	extURL.height = sizeDefs[0].height;
 	extURL.high_res = (sizeDefs[0].index >= 2);

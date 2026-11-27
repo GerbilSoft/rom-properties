@@ -22,6 +22,7 @@ using namespace LibRpFile;
 // C++ STL classes
 using std::array;
 using std::string;
+using std::string_view;
 using std::vector;
 
 namespace LibRomData {
@@ -738,12 +739,12 @@ int WonderSwan::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) 
 	// get the image size for the extURLs struct.
 
 	// Determine the image type name.
-	const char *imageTypeName;
-	const char *ext;
+	string_view sv_imageTypeName;
+	string_view sv_ext;
 	switch (imageType) {
 		case IMG_EXT_TITLE_SCREEN:
-			imageTypeName = "title";
-			ext = ".png";
+			sv_imageTypeName = string_view("title");
+			sv_ext = string_view(".png");
 			break;
 		default:
 			// Unsupported image type.
@@ -758,8 +759,8 @@ int WonderSwan::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) 
 	// Add the URLs.
 	extURLs.resize(1);
 	ExtURL &extURL = extURLs[0];
-	extURL.url = d->getURL_RPDB("ws", imageTypeName, subdir, game_id.c_str(), ext);
-	extURL.cache_key = d->getCacheKey_RPDB("ws", imageTypeName, subdir, game_id.c_str(), ext);
+	extURL.url = d->getURL_RPDB("ws", sv_imageTypeName, subdir, game_id, sv_ext);
+	extURL.cache_key = d->getCacheKey_RPDB("ws", sv_imageTypeName, subdir, game_id, sv_ext);
 	extURL.width = sizeDefs[0].width;
 	extURL.height = sizeDefs[0].height;
 	extURL.high_res = (sizeDefs[0].index >= 2);

@@ -22,6 +22,7 @@ using namespace LibRpTexture;
 // C++ STL classes
 using std::array;
 using std::string;
+using std::string_view;
 using std::vector;
 
 // libfmt
@@ -83,17 +84,17 @@ RomDataPrivate::RomDataPrivate(const IRpFilePtr &file, const RomDataInfo *pRomDa
 
 /**
  * Get the GameTDB URL for a given game.
- * @param system System name.
- * @param type Image type.
- * @param region Region name.
- * @param gameID Game ID.
+ * @param system System name
+ * @param type Image type
+ * @param region Region name
+ * @param gameID Game ID
  * @param ext File extension, e.g. ".png" or ".jpg".
- * @return GameTDB URL.
+ * @return GameTDB URL
  */
 string RomDataPrivate::getURL_GameTDB(
-	const char *system, const char *type,
-	const char *region, const char *gameID,
-	const char *ext)
+	string_view system, string_view type,
+	string_view region, string_view gameID,
+	string_view ext)
 {
 	return fmt::format(FSTR("https://art.gametdb.com/{:s}/{:s}/{:s}/{:s}{:s}"),
 		system, type, region, gameID, ext);
@@ -101,17 +102,17 @@ string RomDataPrivate::getURL_GameTDB(
 
 /**
  * Get the GameTDB cache key for a given game.
- * @param system System name.
- * @param type Image type.
- * @param region Region name.
- * @param gameID Game ID.
+ * @param system System name
+ * @param type Image type
+ * @param region Region name
+ * @param gameID Game ID
  * @param ext File extension, e.g. ".png" or ".jpg".
- * @return GameTDB cache key.
+ * @return GameTDB cache key
  */
 string RomDataPrivate::getCacheKey_GameTDB(
-	const char *system, const char *type,
-	const char *region, const char *gameID,
-	const char *ext)
+	string_view system, string_view type,
+	string_view region, string_view gameID,
+	string_view ext)
 {
 	return fmt::format(FSTR("{:s}/{:s}/{:s}/{:s}{:s}"),
 		system, type, region, gameID, ext);
@@ -119,41 +120,41 @@ string RomDataPrivate::getCacheKey_GameTDB(
 
 /**
  * Get the RPDB URL for a given game.
- * @param system System name.
- * @param type Image type.
- * @param region Region name. (May be nullptr if no region is needed.)
- * @param gameID Game ID.
+ * @param system System name
+ * @param type Image type
+ * @param region Region name (May be empty if no region is needed.)
+ * @param gameID Game ID
  * @param ext File extension, e.g. ".png" or ".jpg".
- * @return RPDB URL.
+ * @return RPDB URL
  */
 string RomDataPrivate::getURL_RPDB(
-	const char *system, const char *type,
-	const char *region, const char *gameID,
-	const char *ext)
+	string_view system, string_view type,
+	string_view region, string_view gameID,
+	string_view ext)
 {
 	// Game ID may need to be urlencoded.
 	const string gameID_urlencode = LibCacheCommon::urlencode(gameID);
 	return fmt::format(FSTR("https://rpdb.gerbilsoft.com/{:s}/{:s}/{:s}{:s}{:s}{:s}"),
-		system, type, (region ? region : ""), (region ? "/" : ""),
+		system, type, region, (!region.empty() ? "/" : ""),
 		gameID_urlencode, ext);
 }
 
 /**
  * Get the RPDB cache key for a given game.
- * @param system System name.
- * @param type Image type.
- * @param region Region name. (May be nullptr if no region is needed.)
- * @param gameID Game ID.
+ * @param system System name
+ * @param type Image type
+ * @param region Region name (May be empty if no region is needed.)
+ * @param gameID Game ID
  * @param ext File extension, e.g. ".png" or ".jpg".
- * @return RPDB cache key.
+ * @return RPDB cache key
  */
 string RomDataPrivate::getCacheKey_RPDB(
-	const char *system, const char *type,
-	const char *region, const char *gameID,
-	const char *ext)
+	string_view system, string_view type,
+	string_view region, string_view gameID,
+	string_view ext)
 {
 	return fmt::format(FSTR("{:s}/{:s}/{:s}{:s}{:s}{:s}"),
-		system, type, (region ? region : ""), (region ? "/" : ""),
+		system, type, region, (!region.empty() ? "/" : ""),
 		gameID, ext);
 }
 

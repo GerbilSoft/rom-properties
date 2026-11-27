@@ -19,6 +19,7 @@ using namespace LibRpText;
 // C++ STL classes
 using std::array;
 using std::string;
+using std::string_view;
 using std::vector;
 
 namespace LibRomData {
@@ -448,12 +449,12 @@ int NGPC::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 	// get the image size for the extURLs struct.
 
 	// Determine the image type name.
-	const char *imageTypeName;
-	const char *ext;
+	string_view sv_imageTypeName;
+	string_view sv_ext;
 	switch (imageType) {
 		case IMG_EXT_TITLE_SCREEN:
-			imageTypeName = "title";
-			ext = ".png";
+			sv_imageTypeName = string_view("title");
+			sv_ext = string_view(".png");
 			break;
 		default:
 			// Unsupported image type.
@@ -467,7 +468,6 @@ int NGPC::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 	// For game ID, RPDB uses "NEOPxxxx" for NGPC.
 	// TODO: Special cases for duplicates?
 	const uint16_t id_code = (romHeader->id_code[1] << 8) | romHeader->id_code[0];
-	const char *p_extra_subdir = nullptr;
 	string extra_subdir;
 	string game_id;	// original size is 12
 
@@ -494,15 +494,14 @@ int NGPC::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 			}
 
 			fmt::format_to(std::back_inserter(extra_subdir), FSTR("NEOP{:0>4X}"), id_code);
-			p_extra_subdir = extra_subdir.c_str();
 			break;
 	}
 
 	// Add the URLs.
 	extURLs.resize(1);
 	ExtURL &extURL = extURLs[0];
-	extURL.url = d->getURL_RPDB("ngpc", imageTypeName, p_extra_subdir, game_id.c_str(), ext);
-	extURL.cache_key = d->getCacheKey_RPDB("ngpc", imageTypeName, p_extra_subdir, game_id.c_str(), ext);
+	extURL.url = d->getURL_RPDB("ngpc", sv_imageTypeName, extra_subdir, game_id, sv_ext);
+	extURL.cache_key = d->getCacheKey_RPDB("ngpc", sv_imageTypeName, extra_subdir, game_id, sv_ext);
 	extURL.width = sizeDefs[0].width;
 	extURL.height = sizeDefs[0].height;
 	extURL.high_res = (sizeDefs[0].index >= 2);

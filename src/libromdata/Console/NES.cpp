@@ -28,6 +28,7 @@ using namespace LibRpText;
 // C++ STL classes
 using std::array;
 using std::string;
+using std::string_view;
 using std::unique_ptr;
 using std::vector;
 
@@ -1936,12 +1937,12 @@ int NES::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 	// get the image size for the extURLs struct.
 
 	// Determine the image type name.
-	const char *imageTypeName;
-	const char *ext;
+	string_view sv_imageTypeName;
+	string_view sv_ext;
 	switch (imageType) {
 		case IMG_EXT_TITLE_SCREEN:
-			imageTypeName = "title";
-			ext = ".png";
+			sv_imageTypeName = string_view("title");
+			sv_ext = string_view(".png");
 			break;
 		default:
 			// Unsupported image type.
@@ -1949,19 +1950,19 @@ int NES::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 	}
 
 	// TODO: Table lookup?
-	const char *sys;
+	string_view sv_sys;
 	switch (d->romType & NESPrivate::ROM_SYSTEM_MASK) {
 		case NESPrivate::ROM_SYSTEM_NES:
-			sys = "nes";
+			sv_sys = string_view("nes");
 			break;
 		case NESPrivate::ROM_SYSTEM_FDS:
-			sys = "fds";
+			sv_sys = string_view("fds");
 			break;
 		case NESPrivate::ROM_SYSTEM_VS:
-			sys = "vs";
+			sv_sys = string_view("vs");
 			break;
 		case NESPrivate::ROM_SYSTEM_PC10:
-			sys = "pc10";
+			sv_sys = string_view("pc10");
 			break;
 		default:
 			assert(!"Invalid system.");
@@ -1969,18 +1970,16 @@ int NES::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) const
 	}
 
 	// NOTE: If this system doesn't have mappers, '-1' will be used.
-	const char *ps_mapper = nullptr;
 	string s_mapper;
 	if (likely(!isFDS)) {
 		s_mapper = fmt::format_int(d->get_iNES_mapper_number()).str();
-		ps_mapper = s_mapper.c_str();
 	}
 
 	// Add the URLs.
 	extURLs.resize(1);
 	ExtURL &extURL = extURLs[0];
-	extURL.url = d->getURL_RPDB(sys, imageTypeName, ps_mapper, s_filename.c_str(), ext);
-	extURL.cache_key = d->getCacheKey_RPDB(sys, imageTypeName, ps_mapper, s_filename.c_str(), ext);
+	extURL.url = d->getURL_RPDB(sv_sys, sv_imageTypeName, s_mapper, s_filename, sv_ext);
+	extURL.cache_key = d->getCacheKey_RPDB(sv_sys, sv_imageTypeName, s_mapper, s_filename, sv_ext);
 	extURL.width = sizeDefs[0].width;
 	extURL.height = sizeDefs[0].height;
 	extURL.high_res = (sizeDefs[0].index >= 2);

@@ -38,6 +38,7 @@ using namespace LibRpText;
 #include <unordered_map>
 using std::array;
 using std::string;
+using std::string_view;
 using std::unordered_map;
 using std::vector;
 
@@ -982,8 +983,9 @@ int PlayStationDisc::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int s
 	static constexpr char sys_tbl[][4] = {
 		"ps1", "ps2"
 	};
-	if (d->consoleType >= PlayStationDiscPrivate::ConsoleType::Max)
+	if (d->consoleType >= PlayStationDiscPrivate::ConsoleType::Max) {
 		return -ENOENT;
+	}
 	const char *const sys = sys_tbl[static_cast<size_t>(d->consoleType)];
 
 	// Game ID format: SLUS-20718
@@ -1024,18 +1026,18 @@ int PlayStationDisc::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int s
 	// get the image size for the extURLs struct.
 
 	// Determine the image type name.
-	const char *imageTypeName;
-	const char *ext;
+	string_view sv_imageTypeName;
+	string_view sv_ext;
 	switch (imageType) {
 #ifdef HAVE_JPEG
 		case IMG_EXT_COVER:
-			imageTypeName = "cover";
-			ext = ".jpg";
+			sv_imageTypeName = string_view("cover");
+			sv_ext = string_view(".jpg");
 			break;
 #endif /* HAVE_JPEG */
 		case IMG_EXT_COVER_3D:
-			imageTypeName = "cover3D";
-			ext = ".png";
+			sv_imageTypeName = string_view("cover3D");
+			sv_ext = string_view(".png");
 			break;
 		default:
 			// Unsupported image type.
@@ -1045,8 +1047,8 @@ int PlayStationDisc::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int s
 	// Add the URLs.
 	extURLs.resize(1);
 	ExtURL &extURL = extURLs[0];
-	extURL.url = d->getURL_RPDB(sys, imageTypeName, region_code.c_str(), gameID.c_str(), ext);
-	extURL.cache_key = d->getCacheKey_RPDB(sys, imageTypeName, region_code.c_str(), gameID.c_str(), ext);
+	extURL.url = d->getURL_RPDB(sys, sv_imageTypeName, region_code, gameID, sv_ext);
+	extURL.cache_key = d->getCacheKey_RPDB(sys, sv_imageTypeName, region_code, gameID, sv_ext);
 	extURL.width = sizeDefs[0].width;
 	extURL.height = sizeDefs[0].height;
 	extURL.high_res = (sizeDefs[0].index >= 2);

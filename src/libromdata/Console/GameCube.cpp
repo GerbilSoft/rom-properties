@@ -2212,8 +2212,8 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) co
 		for (const uint16_t lc : tdb_lc) {
 			const string lc_str = SystemRegion::lcToStringUpper(lc);
 			ExtURL &extURL = *extURL_iter;
-			extURL.url = d->getURL_GameTDB("wii", discName.c_str(), lc_str.c_str(), id6, ".png");
-			extURL.cache_key = d->getCacheKey_GameTDB("wii", discName.c_str(), lc_str.c_str(), id6, ".png");
+			extURL.url = d->getURL_GameTDB("wii", discName, lc_str, id6, ".png");
+			extURL.cache_key = d->getCacheKey_GameTDB("wii", discName, lc_str, id6, ".png");
 			extURL.width = sizeDef->width;
 			extURL.height = sizeDef->height;
 			++extURL_iter;
@@ -2224,8 +2224,8 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) co
 	for (const uint16_t lc : tdb_lc) {
 		const string lc_str = SystemRegion::lcToStringUpper(lc);
 		ExtURL &extURL = *extURL_iter;
-		extURL.url = d->getURL_GameTDB("wii", imageTypeName.c_str(), lc_str.c_str(), id6, ".png");
-		extURL.cache_key = d->getCacheKey_GameTDB("wii", imageTypeName.c_str(), lc_str.c_str(), id6, ".png");
+		extURL.url = d->getURL_GameTDB("wii", imageTypeName, lc_str, id6, ".png");
+		extURL.cache_key = d->getCacheKey_GameTDB("wii", imageTypeName, lc_str, id6, ".png");
 		extURL.width = sizeDef->width;
 		extURL.height = sizeDef->height;
 		extURL.high_res = false;	// Only one size is available.

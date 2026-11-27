@@ -41,6 +41,7 @@ using namespace LibRpTexture;
 // C++ STL classes
 using std::array;
 using std::string;
+using std::string_view;
 using std::unique_ptr;
 using std::vector;
 
@@ -1504,23 +1505,23 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) cons
 	// Determine the image type name.
 	// TODO: Extend for DSiWare.
 	const char *imageTypeName_base;
-	const char *ext;
+	string_view sv_ext;
 	switch (imageType) {
 		case IMG_EXT_COVER:
 			imageTypeName_base = "cover";
-			ext = ".png";
+			sv_ext = string_view(".png");
 			break;
 		case IMG_EXT_COVER_3D:
 			imageTypeName_base = "cover3D";
-			ext = ".png";
+			sv_ext = string_view(".png");
 			break;
 		case IMG_EXT_COVER_FULL:
 			imageTypeName_base = "coverfull";
-			ext = ".png";
+			sv_ext = string_view(".png");
 			break;
 		case IMG_EXT_TITLE_SCREEN:
 			imageTypeName_base = "wwtitle";
-			ext = ".png";
+			sv_ext = string_view(".png");
 			break;
 		default:
 			// Unsupported image type.
@@ -1572,8 +1573,8 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) cons
 		for (const uint16_t lc : tdb_lc) {
 			const string lc_str = SystemRegion::lcToStringUpper(lc);
 			ExtURL &extURL = *extURL_iter;
-			extURL.url = d->getURL_GameTDB(sysDir, imageTypeName.c_str(), lc_str.c_str(), id4, ext);
-			extURL.cache_key = d->getCacheKey_GameTDB(sysDir, imageTypeName.c_str(), lc_str.c_str(), id4, ext);
+			extURL.url = d->getURL_GameTDB(sysDir, imageTypeName, lc_str, id4, sv_ext);
+			extURL.cache_key = d->getCacheKey_GameTDB(sysDir, imageTypeName, lc_str, id4, sv_ext);
 			extURL.width = szdefs_dl[i]->width;
 			extURL.height = szdefs_dl[i]->height;
 			extURL.high_res = (szdefs_dl[i]->index >= 2);

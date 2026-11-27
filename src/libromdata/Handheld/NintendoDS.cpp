@@ -32,6 +32,7 @@ using namespace LibRpTexture;
 using std::array;
 using std::unique_ptr;
 using std::string;
+using std::string_view;
 using std::vector;
 
 namespace LibRomData {
@@ -1364,21 +1365,21 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) 
 
 	// Determine the image type name.
 	const char *imageTypeName_base;
-	const char *ext;
+	string_view sv_ext;
 	switch (imageType) {
 #ifdef HAVE_JPEG
 		case IMG_EXT_COVER:
 			imageTypeName_base = "cover";
-			ext = ".jpg";
+			sv_ext = string_view(".jpg");
 			break;
 		case IMG_EXT_COVER_FULL:
 			imageTypeName_base = "coverfull";
-			ext = ".jpg";
+			sv_ext = string_view(".jpg");
 			break;
 #endif /* HAVE_JPEG */
 		case IMG_EXT_BOX:
 			imageTypeName_base = "box";
-			ext = ".png";
+			sv_ext = string_view(".png");
 			break;
 		default:
 			// Unsupported image type.
@@ -1437,8 +1438,8 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> &extURLs, int size) 
 		for (const uint16_t lc : tdb_lc) {
 			const string lc_str = SystemRegion::lcToStringUpper(lc);
 			ExtURL &extURL = *extURL_iter;
-			extURL.url = d->getURL_GameTDB("ds", imageTypeName.c_str(), lc_str.c_str(), id4, ext);
-			extURL.cache_key = d->getCacheKey_GameTDB("ds", imageTypeName.c_str(), lc_str.c_str(), id4, ext);
+			extURL.url = d->getURL_GameTDB("ds", imageTypeName, lc_str, id4, sv_ext);
+			extURL.cache_key = d->getCacheKey_GameTDB("ds", imageTypeName, lc_str, id4, sv_ext);
 			extURL.width = szdefs_dl[i]->width;
 			extURL.height = szdefs_dl[i]->height;
 			extURL.high_res = (szdefs_dl[i]->index >= 2);

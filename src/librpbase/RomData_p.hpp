@@ -13,6 +13,7 @@
 
 // C++ includes
 #include <vector>
+#include "rp-string_view.hpp"
 
 #include "RomData.hpp"
 
@@ -89,59 +90,59 @@ public:
 
 	/**
 	 * Get the GameTDB URL for a given game.
-	 * @param system System name.
-	 * @param type Image type.
-	 * @param region Region name.
-	 * @param gameID Game ID.
+	 * @param system System name
+	 * @param type Image type
+	 * @param region Region name
+	 * @param gameID Game ID
 	 * @param ext File extension, e.g. ".png" or ".jpg".
-	 * @return GameTDB URL.
+	 * @return GameTDB URL
 	 */
 	static std::string getURL_GameTDB(
-		const char *system, const char *type,
-		const char *region, const char *gameID,
-		const char *ext);
+		std::string_view system, std::string_view type,
+		std::string_view region, std::string_view gameID,
+		std::string_view ext);
 
 	/**
 	 * Get the GameTDB cache key for a given game.
-	 * @param system System name.
-	 * @param type Image type.
-	 * @param region Region name.
-	 * @param gameID Game ID.
+	 * @param system System name
+	 * @param type Image type
+	 * @param region Region name
+	 * @param gameID Game ID
 	 * @param ext File extension, e.g. ".png" or ".jpg".
-	 * @return GameTDB cache key.
+	 * @return GameTDB cache key
 	 */
 	static std::string getCacheKey_GameTDB(
-		const char *system, const char *type,
-		const char *region, const char *gameID,
-		const char *ext);
+		std::string_view system, std::string_view type,
+		std::string_view region, std::string_view gameID,
+		std::string_view ext);
 
 	/**
 	 * Get the RPDB URL for a given game.
-	 * @param system System name.
-	 * @param type Image type.
-	 * @param region Region name. (May be nullptr if no region is needed.)
-	 * @param gameID Game ID.
+	 * @param system System name
+	 * @param type Image type
+	 * @param region Region name (May be empty if no region is needed.)
+	 * @param gameID Game ID
 	 * @param ext File extension, e.g. ".png" or ".jpg".
-	 * @return RPDB URL.
+	 * @return RPDB URL
 	 */
 	static std::string getURL_RPDB(
-		const char *system, const char *type,
-		const char *region, const char *gameID,
-		const char *ext);
+		std::string_view system, std::string_view type,
+		std::string_view region, std::string_view gameID,
+		std::string_view ext);
 
 	/**
 	 * Get the RPDB cache key for a given game.
-	 * @param system System name.
-	 * @param type Image type.
-	 * @param region Region name. (May be nullptr if no region is needed.)
-	 * @param gameID Game ID.
+	 * @param system System name
+	 * @param type Image type
+	 * @param region Region name (May be empty if no region is needed.)
+	 * @param gameID Game ID
 	 * @param ext File extension, e.g. ".png" or ".jpg".
-	 * @return RPDB cache key.
+	 * @return RPDB cache key
 	 */
 	static std::string getCacheKey_RPDB(
-		const char *system, const char *type,
-		const char *region, const char *gameID,
-		const char *ext);
+		std::string_view system, std::string_view type,
+		std::string_view region, std::string_view gameID,
+		std::string_view ext);
 
 	/**
 	 * Select the best size for an image.
