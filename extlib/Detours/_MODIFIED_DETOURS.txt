@@ -1,7 +1,7 @@
 This copy of Detours is a modified version of the original.
 
-commit adb07604aa56508448b95bf037c2a6d0d3b6831a
-Support hooking ARM64EC target functions (#388)
+commit 1dbd4ea281d73d478aa8d09a8b83fbd265f715f7
+Pin GitHub Actions to full-length commit SHAs (#391)
 
 The following changes have been made to the original:
 
