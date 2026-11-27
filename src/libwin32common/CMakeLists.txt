@@ -26,6 +26,7 @@ SET(${PROJECT_NAME}_SRCS
 	userdirs.cpp
 	MiniU82T.cpp
 	rp_LoadLibraryEx.c
+	NtDllDlopen.cpp
 	sdk/IOwnerDataCallback_guid.c
 	)
 SET(${PROJECT_NAME}_H
@@ -37,12 +38,14 @@ SET(${PROJECT_NAME}_H
 	userdirs.hpp
 	MiniU82T.hpp
 	rp_LoadLibraryEx.h
+	NtDllDlopen.hpp
 	sdk/QITab.h
 	sdk/IListView.hpp
 	sdk/IOwnerDataCallback.hpp
 	sdk/tsbase.h
 	sdk/windowsx_ts.h
 	sdk/commctrl_ts.h
+	sdk/ntdll-not-in-sdk.h
 	)
 
 ######################

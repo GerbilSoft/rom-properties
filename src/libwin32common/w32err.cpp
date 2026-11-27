@@ -8,6 +8,10 @@
 
 #include "w32err.hpp"
 
+#include "RpWin32_sdk.h"
+#include <winternl.h>	// for NT_SUCCESS() and related
+#include <ntstatus.h>
+
 // C includes (C++ namespace)
 #include <cassert>
 #include <cerrno>
@@ -25,12 +29,12 @@
 #  define ERROR_DISK_RESOURCES_EXHAUSTED 314
 #endif
 
-typedef struct _errmap_t {
-        uint16_t w32;	// Win32 error code.
-        uint16_t posix;	// POSIX error code.
-} errmap_t;
+typedef struct _w32err_map_t {
+        uint16_t w32;	// Win32 error code
+        uint16_t posix;	// POSIX error code
+} w32err_map_t;
 
-static const errmap_t w32_to_posix[] = {
+static const w32err_map_t w32err_map[] = {
 	{ERROR_SUCCESS,			0         },  // 0
 	{ERROR_INVALID_FUNCTION,	EINVAL    },  // 1
 	{ERROR_FILE_NOT_FOUND,		ENOENT    },  // 2
@@ -129,12 +133,12 @@ int w32err_to_posix(DWORD w32err)
 	}
 
 	// Check the error code table.
-	static const errmap_t *const p_w32_to_posix_end = &w32_to_posix[_countof(w32_to_posix)];
-	auto iter = std::lower_bound(w32_to_posix, p_w32_to_posix_end, w32err,
-		[](errmap_t err, DWORD w32err) noexcept -> bool {
+	static const w32err_map_t *const p_w32err_map_end = &w32err_map[_countof(w32err_map)];
+	auto iter = std::lower_bound(w32err_map, p_w32err_map_end, w32err,
+		[](w32err_map_t err, DWORD w32err) noexcept -> bool {
 			return (err.w32 < w32err);
 		});
-	if (iter != p_w32_to_posix_end && iter->w32 == w32err) {
+	if (iter != p_w32err_map_end && iter->w32 == w32err) {
 		// Found an error code.
 		return iter->posix;
 	}
@@ -146,6 +150,92 @@ int w32err_to_posix(DWORD w32err)
 		return EACCES;
 	} else if (w32err >= MIN_EXEC_ERROR && w32err <= MAX_EXEC_ERROR) {
 		return ENOEXEC;
+	}
+
+	// Error code not found.
+	// Return the default EINVAL.
+	return EINVAL;
+}
+
+typedef struct _NTSTATUS_map_t {
+        NTSTATUS status;// NTSTATUS
+        uint16_t posix;	// POSIX error code
+} NTSTATUS_map_t;
+
+static const NTSTATUS_map_t NTSTATUS_map[] = {
+	{STATUS_UNSUCCESSFUL,		EIO},		// 0xC0000001
+	{STATUS_NOT_IMPLEMENTED,	ENOTSUP},	// 0xC0000002
+	{STATUS_ACCESS_VIOLATION,	EFAULT},	// 0xC0000005
+	{STATUS_IN_PAGE_ERROR,		EFAULT},	// 0xC0000006
+	{STATUS_INVALID_HANDLE,		EBADF},		// 0xC0000008
+	{STATUS_NO_SUCH_DEVICE,		ENODEV},	// 0xC000000E
+	{STATUS_NO_SUCH_FILE,		ENOENT},	// 0xC000000F
+	{STATUS_INVALID_DEVICE_REQUEST,	ENOTSUP},	// 0xC0000010
+#ifdef EBADFD
+	// MinGW-w64 14.0.0 and MSVC 2026 don't have EBADFD.
+	{STATUS_END_OF_FILE,		EBADFD},	// 0xC0000011 (NOTE: POSIX doesn't have an EOF error code...)
+#endif
+#ifdef ENOMEDIUM
+	// MinGW-w64 14.0.0 and MSVC 2026 don't have ENOMEDIUM.
+	{STATUS_NO_MEDIA_IN_DEVICE,	ENOMEDIUM},	// 0xC0000013
+#endif
+#ifdef EMEDIUMTYPE
+	// MinGW-w64 14.0.0 and MSVC 2026 don't have EMEDIUMTYPE.
+	{STATUS_UNRECOGNIZED_MEDIA,	EMEDIUMTYPE},	// 0xC0000014
+#endif
+	{STATUS_NO_MEMORY,		ENOMEM},	// 0xC0000017
+	{STATUS_ACCESS_DENIED,		EACCES},	// 0xC0000022
+	//{STATUS_BUFFER_TOO_SMALL,	???},		// 0xC0000023 (TODO)
+	{STATUS_OBJECT_NAME_NOT_FOUND,	ENOENT},	// 0xC0000034
+	{STATUS_OBJECT_PATH_NOT_FOUND,	ENOENT},	// 0x0000003A
+	{STATUS_FILE_IS_A_DIRECTORY,	EISDIR},	// 0xC00000BA
+	{STATUS_NOT_SUPPORTED,		ENOTSUP},	// 0xC00000BB
+	{STATUS_NETWORK_BUSY,		EBUSY},		// 0xC00000BF
+	{STATUS_DEVICE_DOES_NOT_EXIST,	ENODEV},	// 0xC00000C0
+	{STATUS_DIRECTORY_NOT_EMPTY,	ENOTEMPTY},	// 0xC0000101
+	{STATUS_NOT_A_DIRECTORY,	ENOTDIR},	// 0xC0000103
+	{STATUS_NAME_TOO_LONG,		ENAMETOOLONG},	// 0xC0000106
+	{STATUS_CANCELLED,		ECANCELED},	// 0xC0000120
+	{STATUS_FILE_CLOSED,		EBADF},		// 0xC0000128
+	{STATUS_IO_DEVICE_ERROR,	EIO},		// 0xC0000185
+	{STATUS_NOT_FOUND,		ENOENT},	// 0xC0000225
+
+	// TODO: Reparse point errors?
+	//{STATUS_NOT_A_REPARSE_POINT,	???},		// 0xC0000275
+	//{STATUS_REPARSE_POINT_NOT_RESOLVED,	???},	// 0xC0000280
+	//{STATUS_DIRECTORY_IS_A_REPARSE_POINT,	???},	// 0xC0000281
+
+	{STATUS_SYSTEM_DEVICE_NOT_FOUND, ENODEV},	// 0xC0000452
+	{STATUS_FILE_TOO_LARGE,		EFBIG},		// 0xC0000904
+};
+
+/**
+ * Convert an NTSTATUS error code to a POSIX error code.
+ * @param status NTSTATUS
+ * @return Positive POSIX error code. (If no equivalent is found, default is EINVAL.)
+ */
+int NTSTATUS_to_posix(NTSTATUS status)
+{
+	if (NT_SUCCESS(status)) {
+		// Not an error.
+		return 0;
+	}
+
+	// NOTE: Only checking ERROR (0xC0000000) values right now.
+	// Need to check WARNING (0x80000000) values later.
+
+	// Check the error code table.
+	static const NTSTATUS_map_t *const p_NTSTATUS_map_end = &NTSTATUS_map[_countof(NTSTATUS_map)];
+	auto iter = std::lower_bound(NTSTATUS_map, p_NTSTATUS_map_end, status,
+		[](NTSTATUS_map_t err, NTSTATUS status) noexcept -> bool {
+			// NOTE: NTSTATUS is LONG (signed).
+			// We want an unsigned comparison because we're putting
+			// entries in NTSTATUS_map[] using unsigned values.
+			return (static_cast<DWORD>(err.status) < static_cast<DWORD>(status));
+		});
+	if (iter != p_NTSTATUS_map_end && iter->status == status) {
+		// Found an error code.
+		return iter->posix;
 	}
 
 	// Error code not found.
