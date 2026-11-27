@@ -27,7 +27,6 @@ using namespace LibRpTexture;
 #endif
 
 // C++ STL classes
-#include <mutex>
 using std::unique_ptr;
 
 // libwebp declarations
@@ -55,7 +54,6 @@ namespace Private {
 static unique_ptr<HMODULE, HMODULE_deleter> libsharpyuv_dll;
 #endif /* _WIN32 */
 static unique_ptr<HMODULE, HMODULE_deleter> libwebp_so;
-static std::once_flag webp_once_flag;
 
 static pfn_WebPGetInfo_t pfn_WebPGetInfo = nullptr;
 static pfn_WebPDecodeBGRAInto_t pfn_WebPDecodeBGRAInto = nullptr;
@@ -64,12 +62,15 @@ static pfn_WebPDecodeBGRAInto_t pfn_WebPDecodeBGRAInto = nullptr;
 
 /**
  * Initialize libwebp.
- * Called by std::call_once().
- *
- * Check if libwebp_so is nullptr afterwards.
+ * @return 0 on success; negative POSIX error code on error.
  */
-static void init_webp(void)
+static int init_webp(void)
 {
+	if (Private::pfn_WebPGetInfo != nullptr) {
+		// Already initialized.
+		return 0;
+	}
+
 #if defined(_WIN32)
 	// NOTE: Not bundling libwebp, so we'll only check for non-debug filenames.
 
@@ -86,7 +87,7 @@ static void init_webp(void)
 	}
 	if (!Private::libsharpyuv_dll) {
 		// Not found...
-		return;
+		return -ENOENT;
 	}
 
 	static const char libwebp_dll_filenames[4][16] = {
@@ -124,7 +125,7 @@ static void init_webp(void)
 #endif
 
 	if (!Private::libwebp_so) {
-		return;
+		return -ENOENT;
 	}
 
 	// Attempt to dlsym() the required symbols.
@@ -143,7 +144,10 @@ static void init_webp(void)
 #ifdef _WIN32
 		Private::libsharpyuv_dll.reset();
 #endif /* _WIN32 */
+		return -ENOENT;	// TODO: Better error for missing symbols?
 	}
+
+	return 0;
 }
 
 /**
@@ -167,8 +171,7 @@ rp_image_ptr load(IRpFile *file)
 	const size_t fileSize = static_cast<size_t>(fileSize_o64);
 
 	// Initialize libwebp.
-	std::call_once(Private::webp_once_flag, init_webp);
-	if (!Private::libwebp_so) {
+	if (init_webp() != 0) {
 		// Not found...
 		return img;
 	}
