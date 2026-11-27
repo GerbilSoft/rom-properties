@@ -1,11 +1,9 @@
-This copy of zstd-1.5.7 is a modified version of the original.
+This copy of zstd-1.6.0 is a modified version of the original.
 
 commit f8745da6ff1ad1e7bab384bd1f9d742439278e99
-Merge pull request #4298 from facebook/dev
+updated changelog for v1.6.0
 
-v1.5.7
-
-Tag: v1.5.7
+Tag: v1.6.0
 
 The following changes have been made to the original:
 
@@ -18,5 +16,5 @@ The following changes have been made to the original:
 
 - Added a CMakeLists.txt file for contrib/seekable_format/ .
 
-To obtain the original zstd-1.5.7, visit:
+To obtain the original zstd-1.6.0, visit:
 https://github.com/facebook/zstd
