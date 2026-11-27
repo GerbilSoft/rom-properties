@@ -264,13 +264,18 @@ const RomData::ImageSizeDef *RomDataPrivate::selectBestSize(const vector<RomData
  * @param ascii_date ASCII release date. (Must be 8 characters.)
  * @return Unix time_t, or -1 on error.
  */
-rp_time_t RomDataPrivate::ascii_yyyymmdd_to_unix_time(const char *ascii_date)
+rp_time_t RomDataPrivate::ascii_yyyymmdd_to_unix_time(string_view ascii_date)
 {
 	// Release date format: "YYYYMMDD"
+	assert(ascii_date.size() == 8);
+	if (ascii_date.size() != 8) {
+		// Invalid size.
+		return -1;
+	}
 
 	// Convert the date to an unsigned integer first.
 	unsigned int ymd = 0;
-	for (unsigned int i = 0; i < 8; i++) {
+	for (size_t i = 0; i < 8; i++) {
 		if (unlikely(!rp_ascii_isdigit(ascii_date[i]))) {
 			// Invalid digit.
 			return -1;

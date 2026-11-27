@@ -37,6 +37,7 @@ using namespace LibRpTexture;
 using std::array;
 using std::shared_ptr;
 using std::string;
+using std::string_view;
 using std::unique_ptr;
 using std::vector;
 
@@ -678,7 +679,8 @@ int Dreamcast::loadFieldData(void)
 		RomFields::STRF_TRIM_END);
 
 	// Release date
-	const rp_time_t release_date = d->ascii_yyyymmdd_to_unix_time(discHeader->release_date);
+	const rp_time_t release_date = d->ascii_yyyymmdd_to_unix_time(
+		string_view(discHeader->release_date, 8));
 	d->fields.addField_dateTime(C_("RomData", "Release Date"), release_date,
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_IS_UTC  // Date only.
@@ -881,7 +883,7 @@ int Dreamcast::loadMetaData(void)
 
 	// Release date
 	d->metaData.addMetaData_timestamp(Property::CreationDate,
-		d->ascii_yyyymmdd_to_unix_time(discHeader->release_date));
+		d->ascii_yyyymmdd_to_unix_time(string_view(discHeader->release_date, 8)));
 
 	// Disc number (multiple disc sets only)
 	uint8_t disc_num, disc_total;

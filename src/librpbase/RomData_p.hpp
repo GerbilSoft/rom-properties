@@ -160,7 +160,7 @@ public:
 	 * @param ascii_date ASCII release date. (Must be 8 characters.)
 	 * @return Unix time_t, or -1 on error.
 	 */
-	static rp_time_t ascii_yyyymmdd_to_unix_time(const char *ascii_date);
+	static rp_time_t ascii_yyyymmdd_to_unix_time(std::string_view ascii_date);
 
 	/**
 	 * Convert a BCD timestamp to Unix time.

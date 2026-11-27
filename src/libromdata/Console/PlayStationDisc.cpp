@@ -847,7 +847,7 @@ int PlayStationDisc::loadFieldData(void)
 		// Creation date
 		// NOTE: Marking as UTC because there's no timezone information.
 		d->fields.addField_dateTime(C_("PlayStationDisc", "Creation Date"),
-			d->ascii_yyyymmdd_to_unix_time(cdvdgen.creation_date),
+			d->ascii_yyyymmdd_to_unix_time(string_view(cdvdgen.creation_date, 8)),
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_IS_UTC);
 
