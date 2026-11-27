@@ -420,10 +420,11 @@ int ZstdFile::seek(off64_t pos, SeekWhence whence)
 		// - .tar: 1,093 ms
 		// - .tar.zst: 2,805 ms
 		if (pos > 0) {
-			size_t bytes_to_reverse = zctx.unz_pos - pos;
+			off64_t bytes_to_reverse = zctx.unz_pos - pos;
+			assert(bytes_to_reverse >= 0);
 			if (zctx.output.pos != 0 && zctx.output_ptr <= zctx.output.pos) {
-				if (bytes_to_reverse <= zctx.output_ptr) {
-					zctx.output_ptr -= bytes_to_reverse;
+				if (bytes_to_reverse > 0 && static_cast<size_t>(bytes_to_reverse) <= zctx.output_ptr) {
+					zctx.output_ptr -= static_cast<size_t>(bytes_to_reverse);
 					zctx.unz_pos -= bytes_to_reverse;
 					return 0;
 				}
@@ -450,10 +451,10 @@ int ZstdFile::seek(off64_t pos, SeekWhence whence)
 	// TODO: Optimal buffer size?
 	static constexpr size_t SKIP_BUF_SIZE = 16384U;
 	unique_ptr<uint8_t[]> skip_buf(new uint8_t[SKIP_BUF_SIZE]);
-	size_t skip_bytes = pos - zctx.unz_pos;
+	off64_t skip_bytes = pos - zctx.unz_pos;
 	while (skip_bytes > 0) {
 		// Read up to seek_buf bytes.
-		size_t sz_to_read = std::min(SKIP_BUF_SIZE, skip_bytes);
+		size_t sz_to_read = std::min(SKIP_BUF_SIZE, static_cast<size_t>(skip_bytes));
 		size_t sz_read = this->read(skip_buf.get(), sz_to_read);
 		if (sz_read != sz_to_read) {
 			// Read error...

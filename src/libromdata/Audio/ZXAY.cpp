@@ -66,7 +66,7 @@ public:
 	 * @param p_address Offset in the file that contains the 16-bit pointer
 	 * @return C string (as std::string), or empty string on error.
 	 */
-	string readCString(off64_t p_address);
+	string readCString(uint32_t p_address);
 };
 
 ROMDATA_IMPL(ZXAY)
@@ -136,7 +136,7 @@ size_t ZXAYPrivate::expand_zxay_buf(size_t req_size)
  * @param p_address Offset in the file that contains the 16-bit pointer
  * @return C string (as std::string), or empty string on error.
  */
-string ZXAYPrivate::readCString(off64_t p_address)
+string ZXAYPrivate::readCString(uint32_t p_address)
 {
 	string s_ret;
 
@@ -152,7 +152,7 @@ string ZXAYPrivate::readCString(off64_t p_address)
 
 	// Read the pointer and adjust it for relative offsets.
 	// TODO: Optimize byteswapping?
-	off64_t p_data = (zxay_buf[p_address] << 8) | zxay_buf[p_address + 1];
+	uint32_t p_data = (zxay_buf[p_address] << 8) | zxay_buf[p_address + 1];
 	p_data += p_address;
 
 	// Check if the data address is available in the buffer.

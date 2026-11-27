@@ -298,11 +298,12 @@ streamsize streambuf_IRpFile::xsgetn(char_type *s, streamsize n)
 	while (n > 0) {
 		// Check if any data is still available in streambuf's "get" buffer.
 		const ptrdiff_t gbuf_remain = egptr() - gptr();
+		assert(gbuf_remain >= 0);
 
 		if (gbuf_remain > 0) {
 			// Use up the rest of the "get" buffer.
 			streamsize to_copy = std::min(n, static_cast<streamsize>(gbuf_remain));
-			memcpy(s, gptr(), n);
+			memcpy(s, gptr(), static_cast<size_t>(n));
 			gbump(static_cast<int>(to_copy));
 
 			s += to_copy;
@@ -323,7 +324,7 @@ streamsize streambuf_IRpFile::xsgetn(char_type *s, streamsize n)
 					}
 				}
 
-				size_t sz_read = m_file->read(s, n);
+				size_t sz_read = m_file->read(s, static_cast<size_t>(n));
 				if (sz_read == 0) {
 					// Read failed.
 					return sz_total;
@@ -370,11 +371,12 @@ streamsize streambuf_IRpFile::xsputn(const char_type *s, streamsize n)
 	while (n > 0) {
 		// Check if any space is still available in streambuf's "put" buffer.
 		const ptrdiff_t pbuf_remain = epptr() - pptr();
+		assert(pbuf_remain >= 0);
 
 		if (pbuf_remain > 0) {
 			// Use up the rest of the "put" buffer.
 			streamsize to_copy = std::min(n, static_cast<streamsize>(pbuf_remain));
-			memcpy(pptr(), s, to_copy);
+			memcpy(pptr(), s, static_cast<size_t>(to_copy));
 			pbump(static_cast<int>(to_copy));
 
 			s += to_copy;
@@ -403,7 +405,7 @@ streamsize streambuf_IRpFile::xsputn(const char_type *s, streamsize n)
 					}
 				}
 
-				size_t sz_write = m_file->write(s, n);
+				size_t sz_write = m_file->write(s, static_cast<size_t>(n));
 				if (sz_write == 0) {
 					// Write failed.
 					return sz_total;

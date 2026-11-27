@@ -415,17 +415,18 @@ rp_image_const_ptr XboxXPRPrivate::loadXboxXPR0Image(void)
 
 	// Determine the expected size based on the pixel format.
 	const auto &mode = xpr_mode_tbl[xpr0Header.pixel_format];
-	const off64_t expected_size = static_cast<off64_t>(width) * static_cast<off64_t>(height) * mode.bpp / 8U;
-
-	if (expected_size > file_sz - data_offset) {
+	const off64_t expected_size_o64 = (static_cast<off64_t>(width) * static_cast<off64_t>(height) * mode.bpp) / 8U;
+	assert(expected_size_o64 > 0);
+	if (expected_size_o64 <= 0 || expected_size_o64 > (static_cast<off64_t>(file_sz) - data_offset)) {
 		// File is too small.
 		return img;
 	}
+	const size_t expected_size = static_cast<size_t>(expected_size_o64);
 
 	// Read the image data.
 	auto buf = aligned_uptr<uint8_t>(16, expected_size);
-	size_t size = file->seekAndRead(data_offset, buf.get(), static_cast<size_t>(expected_size));
-	if (size != static_cast<size_t>(expected_size)) {
+	size_t size = file->seekAndRead(data_offset, buf.get(), expected_size);
+	if (size != expected_size) {
 		// Seek and/or read error.
 		return img;
 	}
