@@ -120,6 +120,9 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.version.h.in" "${CMAKE_CURREN
 # Write stdboolx.h.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/stdboolx.h.in" "${CMAKE_CURRENT_BINARY_DIR}/stdboolx.h")
 
+# Write config.xxhash.h.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.xxhash.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.xxhash.h")
+
 # Build certain libraries as shared libraries on Linux and Windows.
 IF(CMAKE_C_COMPILER MATCHES afl)
 	# Don't enable libromdata.so when building with afl/afl++.

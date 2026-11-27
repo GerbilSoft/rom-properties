@@ -62,7 +62,7 @@ public:
 	 * @param tag_addr Tag section starting address.
 	 * @return Map containing key/value entries.
 	 */
-	unordered_map<string, string> parseTags(off64_t tag_addr);
+	PSFTagParser::TagMap_t parseTags(off64_t tag_addr);
 
 	/**
 	 * Get the "ripped by" tag name for the specified PSF version.
@@ -133,7 +133,7 @@ PSFPrivate::PSFPrivate(const IRpFilePtr &file)
  * @param tag_addr Tag section starting address.
  * @return Map containing key/value entries.
  */
-unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
+PSFTagParser::TagMap_t PSFPrivate::parseTags(off64_t tag_addr)
 {
 	// Load the tag section.
 	// NOTE: Maximum of 16 KB.
@@ -141,7 +141,7 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 	const off64_t data_len = file->size() - tag_addr;
 	if (data_len <= 0 || data_len > TAG_SIZE_MAX) {
 		// Not enough data, or too *much* data...
-		return unordered_map<string, string>();
+		return PSFTagParser::TagMap_t();
 	}
 
 	const size_t data_len_sz = static_cast<size_t>(data_len);
@@ -149,7 +149,7 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 	size_t size = file->seekAndRead(tag_addr, tag_data.get(), data_len_sz);
 	if (size != data_len_sz) {
 		// Read error.
-		return unordered_map<string, string>();
+		return PSFTagParser::TagMap_t();
 	}
 
 	// Parse the tags.
@@ -309,7 +309,7 @@ int PSF::loadFieldData(void)
 	const off64_t tag_addr = (off64_t)sizeof(*psfHeader) +
 		le32_to_cpu(psfHeader->reserved_size) +
 		le32_to_cpu(psfHeader->compressed_prg_length);
-	unordered_map<string, string> tags = d->parseTags(tag_addr);
+	PSFTagParser::TagMap_t tags = d->parseTags(tag_addr);
 	if (!tags.empty()) {
 		const char *const ripped_by_tag = d->getRippedByTagName(psfHeader->version);
 		PSFTagParser::addTagsToRomFields(&d->fields, tags, ripped_by_tag);
@@ -346,7 +346,7 @@ int PSF::loadMetaData(void)
 	const off64_t tag_addr = (off64_t)sizeof(*psfHeader) +
 		le32_to_cpu(psfHeader->reserved_size) +
 		le32_to_cpu(psfHeader->compressed_prg_length);
-	unordered_map<string, string> tags = d->parseTags(tag_addr);
+	PSFTagParser::TagMap_t tags = d->parseTags(tag_addr);
 	if (!tags.empty()) {
 		// Add the tags to the metadata properties.
 		const char *const ripped_by_tag = d->getRippedByTagName(psfHeader->version);

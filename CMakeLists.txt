@@ -188,6 +188,7 @@ INCLUDE(CheckLZ4)
 INCLUDE(CheckLZO)
 INCLUDE(CheckMinizipNG)
 INCLUDE(CheckLibfmt)
+INCLUDE(CheckXxHash)
 
 # Reference: https://cmake.org/Wiki/RecipeAddUninstallTarget
 ########### Add uninstall target ###############
@@ -386,6 +387,12 @@ ELSE(ENABLE_LZO)
 	SET(ENABLE_LZO_MSG "Disabled")
 ENDIF(ENABLE_LZO)
 
+IF(USE_XXHASH)
+	SET(USE_XXHASH_MSG "Enabled (system)")
+ELSE(USE_XXHASH)
+	SET(USE_XXHASH_MSG "Disabled")
+ENDIF(USE_XXHASH)
+
 
 UNSET(EXTLIB_BUILD)
 IF(USE_INTERNAL_Intl)
@@ -450,6 +457,7 @@ Build Summary:
 - ZSTD decompression: ${ENABLE_ZSTD_MSG}
 - LZ4 decompression: ${ENABLE_LZ4_MSG}
 - LZO decompression: ${ENABLE_LZO_MSG}
+- XxHash for std::hash<>: ${USE_XXHASH_MSG}
 
 Building these third-party libraries from extlib:
 ${EXTLIB_BUILD}")

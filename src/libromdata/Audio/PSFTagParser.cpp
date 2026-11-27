@@ -36,9 +36,9 @@ namespace LibRomData { namespace PSFTagParser {
  * @param size Size of tag section
  * @param style Style of PSF tags
  */
-unordered_map<string, string> parseTags(const char *pData, size_t size, PSFTagStyle style)
+TagMap_t parseTags(const char *pData, size_t size, PSFTagStyle style)
 {
-	unordered_map<string, string> kv;
+	TagMap_t kv;
 
 	const char *p = pData;
 	const char *const pEnd = pData + size;
@@ -158,7 +158,7 @@ unordered_map<string, string> parseTags(const char *pData, size_t size, PSFTagSt
  * @param psfby Key for "psfby" field
  * @return Number of fields added.
  */
-int addTagsToRomFields(RomFields *fields, const unordered_map<string, string> &tags, const char *psfby)
+int addTagsToRomFields(RomFields *fields, const TagMap_t &tags, const char *psfby)
 {
 	if (tags.empty()) {
 		// No tags...
@@ -401,7 +401,7 @@ static unsigned int lengthToMs(const char *str)
  * @param psfby Key for "psfby" field
  * @return Number of metadata properties added.
  */
-int addTagsToRomMetaData(LibRpBase::RomMetaData *metaData, const unordered_map<string, string> &tags, const char *psfby)
+int addTagsToRomMetaData(LibRpBase::RomMetaData *metaData, const TagMap_t &tags, const char *psfby)
 {
 	if (tags.empty()) {
 		// No tags...

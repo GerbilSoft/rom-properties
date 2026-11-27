@@ -67,7 +67,7 @@ public:
 	 * @param tag_addr Tag section starting address.
 	 * @return Map containing key/value entries.
 	 */
-	unordered_map<string, string> parseTags(off64_t tag_addr);
+	PSFTagParser::TagMap_t parseTags(off64_t tag_addr);
 };
 
 ROMDATA_IMPL(S98)
@@ -104,7 +104,7 @@ S98Private::S98Private(const IRpFilePtr &file)
  * @param tag_addr Tag section starting address.
  * @return Map containing key/value entries.
  */
-unordered_map<string, string> S98Private::parseTags(off64_t tag_addr)
+PSFTagParser::TagMap_t S98Private::parseTags(off64_t tag_addr)
 {
 	// Load the tag section.
 	// NOTE: Maximum of 16 KB.
@@ -112,7 +112,7 @@ unordered_map<string, string> S98Private::parseTags(off64_t tag_addr)
 	off64_t data_len = file->size() - tag_addr;
 	if (data_len <= 0) {
 		// Not enough data.
-		return unordered_map<string, string>();
+		return PSFTagParser::TagMap_t();
 	} else if (data_len > TAG_SIZE_MAX) {
 		// S98 tags aren't necessarily stored at the end of the file,
 		// so just truncate the data length.
@@ -124,7 +124,7 @@ unordered_map<string, string> S98Private::parseTags(off64_t tag_addr)
 	size_t size = file->seekAndRead(tag_addr, tag_data.get(), data_len_sz);
 	if (size != data_len_sz) {
 		// Read error.
-		return unordered_map<string, string>();
+		return PSFTagParser::TagMap_t();
 	}
 
 	// Parse the tags.
@@ -290,7 +290,7 @@ int S98::loadFieldData(void)
 
 	// Tags (v3 only)
 	if (isV3 && s98Header->tag_offset != 0) {
-		unordered_map<string, string> tags = d->parseTags(le32_to_cpu(s98Header->tag_offset));
+		PSFTagParser::TagMap_t tags = d->parseTags(le32_to_cpu(s98Header->tag_offset));
 		if (!tags.empty()) {
 			PSFTagParser::addTagsToRomFields(&d->fields, tags, "s98by");
 		}
@@ -417,7 +417,7 @@ int S98::loadMetaData(void)
 	}
 
 	// Tags (v3 only)
-	unordered_map<string, string> tags = d->parseTags(le32_to_cpu(s98Header->tag_offset));
+	PSFTagParser::TagMap_t tags = d->parseTags(le32_to_cpu(s98Header->tag_offset));
 	if (!tags.empty()) {
 		// Add the tags to the metadata properties.
 		PSFTagParser::addTagsToRomMetaData(&d->metaData, tags, "s98by");

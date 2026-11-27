@@ -91,6 +91,10 @@ OPTION(ENABLE_PVRTC "Enable the PowerVR Native SDK subset for PVRTC decompressio
 # Enable the ASTC decoder from Basis Universal.
 OPTION(ENABLE_ASTC "Enable ASTC decoding using the Basis Universal decoder." ON)
 
+# Use xxHash for std::hash<>. (System library only; defaults to AUTO)
+SET(USE_XXHASH AUTO CACHE STRING "Use xxHash for std::hash<>. (System library only!)")
+SET_PROPERTY(CACHE USE_XXHASH PROPERTY STRINGS AUTO ON OFF)
+
 # Enable precompiled headers.
 # NOTE: Requires CMake 3.16.0.
 IF(NOT (CMAKE_VERSION VERSION_LESS 3.16.0))

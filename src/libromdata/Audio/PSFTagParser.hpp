@@ -11,6 +11,7 @@
 // librpbase
 #include "librpbase/RomFields.hpp"
 #include "librpbase/RomMetaData.hpp"
+#include "RpXxHash.hpp"
 
 // C includes (C++ namespace)
 #include <cstdint>
@@ -29,13 +30,15 @@ enum class PSFTagStyle {
 	S98,	// S98 tags: UTF-8 is indicated by a UTF-8 BOM after the magic number
 };
 
+using TagMap_t = std::unordered_map<std::string, std::string, RpXxHash::StringHash>;
+
 /**
  * Parse a PSF tag section.
  * @param pData Tag section
  * @param size Size of tag section
  * @param style Style of PSF tags
  */
-std::unordered_map<std::string, std::string> parseTags(const char *pData, size_t size, PSFTagStyle style = PSFTagStyle::PSF);
+TagMap_t parseTags(const char *pData, size_t size, PSFTagStyle style = PSFTagStyle::PSF);
 
 /**
  * Add PSF tags to RomFields.
@@ -44,7 +47,7 @@ std::unordered_map<std::string, std::string> parseTags(const char *pData, size_t
  * @param psfby Key for "psfby" field
  * @return Number of fields added.
  */
-int addTagsToRomFields(LibRpBase::RomFields *fields, const std::unordered_map<std::string, std::string> &tags, const char *psfby = "psfby");
+int addTagsToRomFields(LibRpBase::RomFields *fields, const TagMap_t &tags, const char *psfby = "psfby");
 
 /**
  * Add PSF tags to RomMetaData.
@@ -53,6 +56,6 @@ int addTagsToRomFields(LibRpBase::RomFields *fields, const std::unordered_map<st
  * @param psfby Key for "psfby" field
  * @return Number of metadata properties added.
  */
-int addTagsToRomMetaData(LibRpBase::RomMetaData *metaData, const std::unordered_map<std::string, std::string> &tags, const char *psfby = "psfby");
+int addTagsToRomMetaData(LibRpBase::RomMetaData *metaData, const TagMap_t &tags, const char *psfby = "psfby");
 
 } } // namespace LibRomData::PSFTagParser
