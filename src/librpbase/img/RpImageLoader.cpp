@@ -58,30 +58,35 @@ rp_image_ptr load(const IRpFilePtr &file)
 	// Check the file header to see what kind of image this is.
 	uint8_t buf[16];
 	size_t sz = file->read(buf, sizeof(buf));
-	if (sz >= sizeof(buf)) {
-		// Check for PNG.
-		if (!memcmp(buf, png_magic.data(), png_magic.size())) {
-			// Found a PNG image.
-			return RpPng::load(file);
-		}
+	if (sz < sizeof(buf)) {
+		// Too small...
+		return {};
+	}
+
+	// Check for PNG.
+	if (!memcmp(buf, png_magic.data(), png_magic.size())) {
+		// Found a PNG image.
+		return RpPng::load(file);
+	}
+
 #ifdef HAVE_JPEG
-		else if (buf[0] == 0xFF && buf[1] != 0xFF && buf[2] == 0xFF) {
-			// This may be a JPEG.
-			// Check for the JFIF and Exif magic numbers.
-			if (!memcmp(&buf[6], jpeg_magic.data(), jpeg_magic.size()) ||
-			    !memcmp(&buf[6], exif_magic.data(), exif_magic.size()))
-			{
-				// Found a JPEG image.
-				return RpJpeg::load(file);
-			}
-		}
-#endif /* HAVE_JPEG */
-		else if (!memcmp(buf, riff_magic.data(), riff_magic.size()) &&
-		         !memcmp(&buf[8], webp_magic.data(), webp_magic.size()))
+	if (buf[0] == 0xFF && buf[1] != 0xFF && buf[2] == 0xFF) {
+		// This may be a JPEG.
+		// Check for the JFIF and Exif magic numbers.
+		if (!memcmp(&buf[6], jpeg_magic.data(), jpeg_magic.size()) ||
+		    !memcmp(&buf[6], exif_magic.data(), exif_magic.size()))
 		{
-			// Found a WebP image.
-			return RpWebP::load(file);
+			// Found a JPEG image.
+			return RpJpeg::load(file);
 		}
+	}
+#endif /* HAVE_JPEG */
+
+	if (!memcmp(buf, riff_magic.data(), riff_magic.size()) &&
+	    !memcmp(&buf[8], webp_magic.data(), webp_magic.size()))
+	{
+		// Found a WebP image.
+		return RpWebP::load(file);
 	}
 
 	// Unsupported image format.
