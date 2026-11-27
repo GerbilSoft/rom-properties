@@ -45,7 +45,7 @@ HRESULT RP_ThumbnailProvider_Private::Fallback_int(RegKey &hkey_Assoc,
 	// Is RP_Fallback present?
 	RegKey hkey_RP_Fallback(hkey_Assoc, _T("RP_Fallback"), KEY_READ, false);
 	if (!hkey_RP_Fallback.isOpen()) {
-		return hkey_RP_Fallback.lOpenRes();
+		return HRESULT_FROM_WIN32(hkey_RP_Fallback.lOpenRes());
 	}
 
 	// Get the IThumbnailProvider key.
@@ -126,7 +126,7 @@ HRESULT RP_ThumbnailProvider_Private::Fallback(UINT cx, HBITMAP *phbmp, WTS_ALPH
 	// Open the filetype key in HKCR.
 	RegKey hkey_Assoc(HKEY_CLASSES_ROOT, U82T(ext), KEY_READ, false);
 	if (!hkey_Assoc.isOpen()) {
-		return hkey_Assoc.lOpenRes();
+		return HRESULT_FROM_WIN32(hkey_Assoc.lOpenRes());
 	}
 
 	// If we have a ProgID, check it first.
