@@ -17,8 +17,10 @@
 // C++ STL classes
 #include <string>
 
+#ifdef HAVE_XXHASH
 // libxxhash
-#include "xxhash.h"
+#  include "xxhash.h"
+#endif /* HAVE_XXHASH */
 
 // Using XXH32 on 32-bit and XXH64 on 64-bit.
 // NOTE: If libxxhash is unavailable, these will fall back to implementations of std::hash<>.
