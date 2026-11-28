@@ -330,7 +330,7 @@ if (ZSTD_BUILD_SHARED)
     endif ()
 
     # rom-properties: Install the .pdb file.
-    IF(INSTALL_DEBUG)
+    IF(INSTALL_DEBUG AND TARGET libzstd_shared)
         # FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
         INCLUDE(DirInstallPaths)
         GET_TARGET_PROPERTY(DEBUG_FILENAME libzstd_shared PDB)
@@ -402,10 +402,12 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libzstd.pc" DESTINATION "${CMAKE_INST
 install(FILES ${PublicHeaders} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 ENDIF(0) # rom-properties
 
-foreach(target_suffix IN ITEMS "_shared" "_static" "")
+# rom-properties: Don't install the static library.
+#foreach(target_suffix IN ITEMS "_shared" "_static" "")
+foreach(target_suffix IN ITEMS "_shared")
     if(TARGET "libzstd${target_suffix}")
         install(TARGETS "libzstd${target_suffix}"
-	    # rom-properties: Only install the runtime. (.dll)
+            # rom-properties: Only install the runtime. (.dll)
             #EXPORT "zstdExports${target_suffix}"
             #INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
             #ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
