@@ -16,6 +16,7 @@ apt-get -y install \
 	gettext \
 	libseccomp-dev \
 	libfmt-dev \
+	libxxhash-dev \
 	\
 	libzstd-dev \
 	\
