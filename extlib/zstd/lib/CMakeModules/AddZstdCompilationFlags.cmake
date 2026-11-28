@@ -3,7 +3,10 @@ if(CMAKE_CXX_COMPILER)
     include(CheckCXXCompilerFlag)
 endif()
 
-if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
+# rom-properties: VERSION_GREATER_EQUAL was added in cmake-3.7.
+# Debian 8 (ppc) has cmake-3.6.2.
+#if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
+if (CMAKE_VERSION VERSION_GREATER 3.17)
     set(ZSTD_HAVE_CHECK_LINKER_FLAG true)
 else ()
     set(ZSTD_HAVE_CHECK_LINKER_FLAG false)
