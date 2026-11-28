@@ -1,0 +1,12 @@
+/***************************************************************************
+ * ROM Properties Page shell extension.                                    *
+ * config.xxhash.h.in: libxxhash detection. (source file)                  *
+ *                                                                         *
+ * Copyright (c) 2026 by David Korth.                                      *
+ * SPDX-License-Identifier: GPL-2.0-or-later                               *
+ ***************************************************************************/
+
+#pragma once
+
+/* Define to 1 if you have libxxhash. */
+#cmakedefine HAVE_XXHASH 1
