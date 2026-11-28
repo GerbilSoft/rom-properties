@@ -308,13 +308,16 @@ rp_image_ptr iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t
 		return img;
 	}
 
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+#if SYS_BYTEORDER != SYS_BIG_ENDIAN
 	if (byteswap) {
 		// Byteswap the image first.
 		// TODO: Integrate this into image decoding?
 		rp_byte_swap_16_array(img_buf.get(), unz_size);
 	}
-#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+#else  /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+	// `byteswap` parameter isn't used on big-endian.
+	RP_UNUSED(byteswap);
+#endif /* SYS_BYTEORDER != SYS_BIG_ENDIAN */
 
 	// Convert the image.
 	img = ImageDecoder::fromLinear16(px_format, w, h, img_buf.get(), unz_size);
